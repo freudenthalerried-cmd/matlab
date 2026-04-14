@@ -11,6 +11,14 @@
     <ul id="messages" class="messages" aria-live="polite"></ul>
 
     <form id="chat-form" class="chat-form" autocomplete="off">
+      <input type="file" id="chat-file" accept="application/pdf" hidden>
+      <button
+        id="attach-button"
+        class="attach-button"
+        type="button"
+        aria-label="PDF anhängen"
+      >&#128206;</button>
+      <div id="attachment-chip" class="attachment-chip" hidden></div>
       <input
         id="chat-input"
         class="chat-input"

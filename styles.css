@@ -45,6 +45,12 @@ html, body {
   align-self: flex-end;
 }
 
+.messages li a {
+  color: var(--orange);
+  text-decoration: underline;
+  word-break: break-all;
+}
+
 .chat-form {
   display: flex;
   gap: 8px;
@@ -65,7 +71,8 @@ html, body {
   color: var(--text);
 }
 
-.send-button {
+.send-button,
+.attach-button {
   width: 40px;
   height: 40px;
   border: none;
@@ -79,20 +86,25 @@ html, body {
   align-items: center;
   justify-content: center;
   transition: color 0.15s ease, background-color 0.15s ease, transform 0.05s ease;
+  flex-shrink: 0;
 }
 
 .send-button:hover:not(:disabled),
-.send-button:focus-visible:not(:disabled) {
+.send-button:focus-visible:not(:disabled),
+.attach-button:hover,
+.attach-button:focus-visible {
   color: var(--orange-dark);
   background: rgba(255, 140, 0, 0.1);
 }
 
-.send-button:focus-visible {
+.send-button:focus-visible,
+.attach-button:focus-visible {
   outline: 2px solid var(--orange);
   outline-offset: 2px;
 }
 
-.send-button:active:not(:disabled) {
+.send-button:active:not(:disabled),
+.attach-button:active {
   transform: scale(0.95);
 }
 
@@ -100,4 +112,38 @@ html, body {
   color: var(--orange);
   opacity: 0.35;
   cursor: not-allowed;
+}
+
+.attachment-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px 4px 2px 10px;
+  font-size: 13px;
+  max-width: 180px;
+  flex-shrink: 0;
+}
+
+.attachment-chip span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attachment-chip button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 2px 6px;
+  color: var(--text);
+  border-radius: 50%;
+}
+
+.attachment-chip button:hover,
+.attachment-chip button:focus-visible {
+  background: rgba(0, 0, 0, 0.06);
 }
