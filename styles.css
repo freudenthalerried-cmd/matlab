@@ -5,6 +5,8 @@
   --bg: #f6f8fa;
   --bubble: #ffffff;
   --text: #1f2328;
+  --muted: #6e7781;
+  --error: #d1242f;
 }
 
 * { box-sizing: border-box; }
@@ -45,6 +47,65 @@ html, body {
   align-self: flex-end;
 }
 
+.messages li.attachment {
+  max-width: 95%;
+}
+
+.messages li.loading {
+  color: var(--muted);
+  font-style: italic;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.messages li.error {
+  border-color: var(--error);
+  color: var(--error);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+.attachment-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.attachment-name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attachment-chip {
+  background: rgba(255, 140, 0, 0.12);
+  color: var(--orange-dark);
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.attachment-body {
+  margin: 0;
+  padding: 8px;
+  background: var(--bg);
+  border-radius: 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12.5px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  max-height: 320px;
+  overflow: auto;
+}
+
 .chat-form {
   display: flex;
   gap: 8px;
@@ -65,13 +126,13 @@ html, body {
   color: var(--text);
 }
 
-.send-button {
+.send-button,
+.attach-button {
   width: 40px;
   height: 40px;
   border: none;
   border-radius: 50%;
   background: transparent;
-  color: var(--orange);
   font-size: 22px;
   line-height: 1;
   cursor: pointer;
@@ -81,23 +142,34 @@ html, body {
   transition: color 0.15s ease, background-color 0.15s ease, transform 0.05s ease;
 }
 
+.send-button { color: var(--orange); }
+.attach-button { color: var(--muted); font-size: 20px; }
+
 .send-button:hover:not(:disabled),
 .send-button:focus-visible:not(:disabled) {
   color: var(--orange-dark);
   background: rgba(255, 140, 0, 0.1);
 }
 
-.send-button:focus-visible {
+.attach-button:hover:not(:disabled),
+.attach-button:focus-visible:not(:disabled) {
+  color: var(--text);
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.send-button:focus-visible,
+.attach-button:focus-visible {
   outline: 2px solid var(--orange);
   outline-offset: 2px;
 }
 
-.send-button:active:not(:disabled) {
+.send-button:active:not(:disabled),
+.attach-button:active:not(:disabled) {
   transform: scale(0.95);
 }
 
-.send-button:disabled {
-  color: var(--orange);
+.send-button:disabled,
+.attach-button:disabled {
   opacity: 0.35;
   cursor: not-allowed;
 }

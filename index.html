@@ -11,6 +11,20 @@
     <ul id="messages" class="messages" aria-live="polite"></ul>
 
     <form id="chat-form" class="chat-form" autocomplete="off">
+      <button
+        id="attach-button"
+        class="attach-button"
+        type="button"
+        aria-label="Datei anhängen"
+        title="PDF oder .msg anhängen"
+      >&#128206;</button>
+      <input
+        id="file-input"
+        class="file-input"
+        type="file"
+        accept=".pdf,application/pdf,.msg,application/vnd.ms-outlook"
+        hidden
+      >
       <input
         id="chat-input"
         class="chat-input"
@@ -28,6 +42,6 @@
     </form>
   </main>
 
-  <script src="script.js"></script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>
