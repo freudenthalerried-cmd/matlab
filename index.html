@@ -5,12 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chat</title>
   <link rel="stylesheet" href="styles.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.min.js"></script>
 </head>
 <body>
   <main class="chat">
     <ul id="messages" class="messages" aria-live="polite"></ul>
 
+    <div id="attachment-chip" class="attachment-chip-pending" hidden></div>
+
     <form id="chat-form" class="chat-form" autocomplete="off">
+      <button
+        id="attach-button"
+        class="attach-button"
+        type="button"
+        aria-label="Datei anhängen"
+        title="PDF oder .msg anhängen"
+      >&#128206;</button>
+      <input
+        id="file-input"
+        type="file"
+        accept=".pdf,application/pdf,.msg,application/vnd.ms-outlook"
+        hidden
+      >
       <input
         id="chat-input"
         class="chat-input"
@@ -28,6 +44,6 @@
     </form>
   </main>
 
-  <script src="script.js"></script>
+  <script defer src="script.js"></script>
 </body>
 </html>
