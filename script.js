@@ -1,9 +1,3 @@
-import * as pdfjsLib from 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.min.mjs';
-import MsgReader from 'https://cdn.jsdelivr.net/npm/@kenjiuno/msgreader@1.22.0/+esm';
-
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-  'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.worker.min.mjs';
-
 const form = document.getElementById('chat-form');
 const input = document.getElementById('chat-input');
 const sendButton = document.getElementById('send-button');
@@ -46,9 +40,62 @@ function appendMessage(text, opts = {}) {
   return li;
 }
 
+// --- Lazy-Loader mit Fallback-CDN -------------------------------------------
+let pdfjsLib = null;
+let MsgReader = null;
+
+async function loadPdfjs() {
+  if (pdfjsLib) return pdfjsLib;
+  const candidates = [
+    'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/+esm',
+    'https://esm.sh/pdfjs-dist@4.0.379',
+    'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.mjs',
+  ];
+  let lastErr;
+  for (const url of candidates) {
+    try {
+      const mod = await import(url);
+      const lib = mod.default && mod.default.getDocument ? mod.default : mod;
+      if (!lib.getDocument) throw new Error('getDocument fehlt im Modul');
+      lib.GlobalWorkerOptions.workerSrc =
+        'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.worker.min.mjs';
+      pdfjsLib = lib;
+      return lib;
+    } catch (e) {
+      lastErr = e;
+      console.warn('pdfjs load failed from', url, e);
+    }
+  }
+  throw new Error(`pdf.js konnte nicht geladen werden: ${lastErr && lastErr.message}`);
+}
+
+async function loadMsgReader() {
+  if (MsgReader) return MsgReader;
+  const candidates = [
+    'https://cdn.jsdelivr.net/npm/@kenjiuno/msgreader@1.22.0/+esm',
+    'https://esm.sh/@kenjiuno/msgreader@1.22.0',
+  ];
+  let lastErr;
+  for (const url of candidates) {
+    try {
+      const mod = await import(url);
+      const Ctor = mod.default || mod.MsgReader || mod;
+      if (typeof Ctor !== 'function') throw new Error('MsgReader-Klasse nicht gefunden');
+      MsgReader = Ctor;
+      return Ctor;
+    } catch (e) {
+      lastErr = e;
+      console.warn('msgreader load failed from', url, e);
+    }
+  }
+  throw new Error(`msgreader konnte nicht geladen werden: ${lastErr && lastErr.message}`);
+}
+
+// --- Extraktion -------------------------------------------------------------
 async function extractPdfText(file) {
+  const lib = await loadPdfjs();
   const data = new Uint8Array(await file.arrayBuffer());
-  const pdf = await pdfjsLib.getDocument({ data }).promise;
+  const pdf = await lib.getDocument({ data }).promise;
   const parts = [];
   for (let i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i);
@@ -60,8 +107,9 @@ async function extractPdfText(file) {
 }
 
 async function extractMsgText(file) {
+  const Ctor = await loadMsgReader();
   const buf = await file.arrayBuffer();
-  const reader = new MsgReader(buf);
+  const reader = new Ctor(buf);
   const data = reader.getFileData();
   if (data.error) throw new Error(data.error);
 
@@ -118,6 +166,7 @@ async function handleFile(file) {
     });
   } catch (err) {
     loading.remove();
+    console.error('Attachment error:', err);
     appendMessage(`Fehler beim Lesen von ${name}: ${err.message || err}`, {
       className: 'attachment error',
       meta: { name, kind },
@@ -145,6 +194,16 @@ form.addEventListener('submit', function (event) {
   input.value = '';
   updateSendState();
   input.focus();
+});
+
+// Globale Fehler sichtbar machen (statt stummer Abbruch)
+window.addEventListener('error', (e) => {
+  appendMessage(`Skript-Fehler: ${e.message}`, { className: 'error' });
+});
+window.addEventListener('unhandledrejection', (e) => {
+  appendMessage(`Promise-Fehler: ${(e.reason && e.reason.message) || e.reason}`, {
+    className: 'error',
+  });
 });
 
 updateSendState();
