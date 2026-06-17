@@ -26,23 +26,51 @@ html, body {
   flex-direction: column;
 }
 
+.chat-header {
+  font-weight: 600;
+  font-size: 18px;
+  padding: 4px 4px 12px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+
 .messages {
   list-style: none;
   padding: 0;
   margin: 0 0 12px 0;
   flex: 1;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
-.messages li {
-  background: var(--bubble);
+.message {
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 8px 12px;
   margin-bottom: 8px;
   max-width: 80%;
   word-wrap: break-word;
+}
+
+.message--user {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: #fff;
   align-self: flex-end;
+  border-bottom-right-radius: 4px;
+}
+
+.message--bot {
+  background: var(--bubble);
+  color: var(--text);
+  align-self: flex-start;
+  border-bottom-left-radius: 4px;
+}
+
+.message--typing {
+  color: #8a8f98;
+  letter-spacing: 2px;
 }
 
 .chat-form {
