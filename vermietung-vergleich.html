@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vermietung – Variantenvergleich (9 Apartments)</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --card:#fff; --ink:#1c2430; --muted:#6b7785;
+    --line:#e3e7ec; --good:#1e7d4f; --good-bg:#e8f6ee;
+    --warn:#b9791b; --warn-bg:#fdf3e3; --bad:#b3261e; --bad-bg:#fbe9e7;
+    --accent:#e8731a; --accent-bg:#fdeede;
+  }
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    margin:0;background:var(--bg);color:var(--ink);line-height:1.5;}
+  .wrap{max-width:1040px;margin:0 auto;padding:28px 20px 80px;}
+  h1{font-size:26px;margin:0 0 4px;}
+  h2{font-size:20px;margin:38px 0 12px;padding-top:10px;border-top:2px solid var(--line);}
+  h3{font-size:16px;margin:18px 0 8px;}
+  .sub{color:var(--muted);margin:0 0 6px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:18px 20px;margin:14px 0;}
+  table{border-collapse:collapse;width:100%;font-size:14px;margin:8px 0;}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;}
+  th{background:#f0f2f5;font-weight:600;}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;}
+  .good{color:var(--good);font-weight:600;} .bad{color:var(--bad);font-weight:600;}
+  .pill{display:inline-block;font-size:12px;font-weight:600;border-radius:999px;padding:2px 10px;}
+  .pill.good{background:var(--good-bg);color:var(--good);}
+  .pill.warn{background:var(--warn-bg);color:var(--warn);}
+  .pill.bad{background:var(--bad-bg);color:var(--bad);}
+  .pill.accent{background:var(--accent-bg);color:var(--accent);}
+  .note{background:var(--accent-bg);border:1px solid #f0d3b0;border-radius:10px;padding:12px 14px;font-size:13px;}
+  .winner{border:2px solid var(--good);background:var(--good-bg);}
+  .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+  @media(max-width:760px){.grid{grid-template-columns:1fr;}}
+  ul{margin:6px 0 6px 18px;padding:0;} li{margin:3px 0;}
+  .small{font-size:12px;color:var(--muted);}
+  .tot{background:#f0f2f5;font-weight:700;}
+  footer{margin-top:40px;color:var(--muted);font-size:12px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Vermietungs-Varianten im Vergleich</h1>
+  <p class="sub">9 Apartments · 8&nbsp;×&nbsp;30&nbsp;m² + 1&nbsp;×&nbsp;80&nbsp;m² · Betreiber-/Zwischenmietmodell · Stand 06/2026</p>
+
+  <div class="note">
+    <strong>Ziel laut Auftrag:</strong> möglichst <em>wenig eigener Aufwand</em>
+    (keine ständige Mietersuche, keine eigene Abrechnung) bei <em>maximalem
+    Gewinn</em>. Alle Zahlen sind nachvollziehbare Schätzwerte – bitte die
+    <a href="#annahmen">Annahmen</a> prüfen und ggf. korrigieren, dann rechne ich neu.
+  </div>
+
+  <!-- ============ KOSTEN ============ -->
+  <h2>1. Eure laufenden Kosten (Selbstkosten)</h2>
+  <p class="sub">Basis für alle Varianten. Ihr seid Betreiber/Zwischenmieter – die Miete an den Eigentümer ist Teil eurer Kosten.</p>
+
+  <div class="card">
+  <table>
+    <thead><tr><th>Position</th><th class="num">Voll betrieben<br>(Variante 1 & 3)</th><th class="num">Langzeit kalt<br>(Variante 2)</th><th>Bemerkung</th></tr></thead>
+    <tbody>
+      <tr><td>Miete + Neben- + Betriebskosten</td><td class="num">4.200</td><td class="num">≈ 3.000</td><td>BK bei Langzeit auf Mieter umgelegt</td></tr>
+      <tr><td>Putz / Reinigung</td><td class="num">500</td><td class="num">0</td><td>Mieter reinigt selbst</td></tr>
+      <tr><td>WLAN, Strom, Wasser, Heizung, Kleinkram</td><td class="num">~1.050</td><td class="num">0</td><td>Mieter meldet selbst an</td></tr>
+      <tr class="tot"><td>Selbstkosten / Monat</td><td class="num">≈ 5.750</td><td class="num">≈ 3.000</td><td>(Spanne 5.500–6.000)</td></tr>
+    </tbody>
+  </table>
+  <p class="small">Bei <strong>Variante 3 (Touristik)</strong> kommen wechselbedingte Mehrkosten dazu (Endreinigung/Wäsche pro Gast, höherer Strom-/Heizverbrauch): ich rechne mit <strong>+1.000 €/Monat → ≈ 6.750 €</strong>.</p>
+  </div>
+
+  <!-- ============ VARIANTE 1 ============ -->
+  <h2>2. Variante 1 — Monteurvermietung über Firma (z.&nbsp;B. „Group 99")</h2>
+  <p class="sub">Firma mietet die Apartments und vermietet an Monteure weiter. <strong>1.100–2.200 €/Apartment</strong>. Ihr habt mit Mietersuche & Abrechnung praktisch nichts zu tun.</p>
+  <div class="card">
+  <table>
+    <thead><tr><th>Szenario</th><th>Rechnung</th><th class="num">Einnahmen/Mt.</th><th class="num">− Kosten</th><th class="num">Gewinn/Mt.</th><th class="num">Gewinn/Jahr</th></tr></thead>
+    <tbody>
+      <tr><td>Pessimistisch</td><td>8 × 1.100 + 1 × 1.800</td><td class="num">10.600</td><td class="num">5.750</td><td class="num good">+4.850</td><td class="num good">+58.200</td></tr>
+      <tr><td>Realistisch</td><td>8 × 1.500 + 1 × 2.300</td><td class="num">14.300</td><td class="num">5.750</td><td class="num good">+8.550</td><td class="num good">+102.600</td></tr>
+      <tr><td>Optimistisch</td><td>8 × 2.200 + 1 × 2.300</td><td class="num">19.900</td><td class="num">5.750</td><td class="num good">+14.150</td><td class="num good">+169.800</td></tr>
+    </tbody>
+  </table>
+  <p><span class="pill good">Aufwand: sehr gering</span> &nbsp; <span class="pill good">Risiko: gering</span> &nbsp; <span class="pill good">Planbarkeit: hoch</span></p>
+  <ul>
+    <li><strong>Pro:</strong> Firma übernimmt Belegung, Betreuung & Abrechnung → genau euer Ziel. Volle Belegung garantiert/gepuffert, gleichmäßiger Cashflow, kalkulierbar.</li>
+    <li><strong>Contra:</strong> Margenabgabe an die Firma (sie verdient an der Weitervermietung mit), oft Mindestvertragslaufzeit, weniger Upside als gut ausgelastete Touristik.</li>
+    <li><strong>Wichtig prüfen:</strong> Sind die 1.100–2.200 € <em>garantiert</em> (auch bei Leerstand) oder nur „erzielbar"? Das entscheidet über das echte Risiko.</li>
+  </ul>
+  </div>
+
+  <!-- ============ VARIANTE 2 ============ -->
+  <h2>3. Variante 2 — Klassische Langzeitvermietung</h2>
+  <p class="sub">700–800 €/Apartment (kalt), dafür <strong>fallen Betriebskosten, Reinigung & Nebenkosten für euch weg</strong> (Mieter zahlt). Geringste Einnahmen, aber auch geringste Kosten und kaum Aufwand.</p>
+  <div class="card">
+  <table>
+    <thead><tr><th>Szenario</th><th>Rechnung</th><th class="num">Einnahmen/Mt.</th><th class="num">− Kosten</th><th class="num">Gewinn/Mt.</th><th class="num">Gewinn/Jahr</th></tr></thead>
+    <tbody>
+      <tr><td>Pessimistisch</td><td>8 × 700 + 1 × 1.000</td><td class="num">6.600</td><td class="num">3.000</td><td class="num good">+3.600</td><td class="num good">+43.200</td></tr>
+      <tr><td>Realistisch</td><td>8 × 750 + 1 × 1.100</td><td class="num">7.100</td><td class="num">3.000</td><td class="num good">+4.100</td><td class="num good">+49.200</td></tr>
+      <tr><td>Optimistisch</td><td>8 × 800 + 1 × 1.200</td><td class="num">7.600</td><td class="num">3.000</td><td class="num good">+4.600</td><td class="num good">+55.200</td></tr>
+    </tbody>
+  </table>
+  <p><span class="pill good">Aufwand: minimal</span> &nbsp; <span class="pill good">Risiko: sehr gering</span> &nbsp; <span class="pill warn">Upside: niedrig</span></p>
+  <ul>
+    <li><strong>Pro:</strong> Stabilster, sichersten Cashflow; kaum Fluktuation; ihr seid Großteil der Betriebskosten- und Verwaltungslast los.</li>
+    <li><strong>Contra:</strong> Niedrigste Marge; Kapital/Potenzial der möblierten Nutzung bleibt ungenutzt; Mieterschutz erschwert Rauskündigung bei Konzeptwechsel.</li>
+  </ul>
+  </div>
+
+  <!-- ============ VARIANTE 3 ============ -->
+  <h2>4. Variante 3 — Touristische Vermietung („Wiener Modell" + Smart Home)</h2>
+  <p class="sub">Agentur übernimmt touristische Vermittlung, <strong>80–90 €/Apartment/Nacht</strong>. Höchstes Potenzial, aber stark auslastungs- und saisonabhängig. Annahme: 85 €/Nacht, Agenturprovision 20 %, Kosten ≈ 6.750 €.</p>
+  <div class="card">
+  <table>
+    <thead><tr><th>Auslastung</th><th>Rechnung (9 × 85 € × 30 Tage)</th><th class="num">Brutto</th><th class="num">− Agentur 20 %</th><th class="num">− Kosten</th><th class="num">Gewinn/Mt.</th></tr></thead>
+    <tbody>
+      <tr><td>40 % (schwach)</td><td>× 0,40</td><td class="num">9.180</td><td class="num">7.344</td><td class="num">6.750</td><td class="num good">+594</td></tr>
+      <tr><td>55 % (realistisch)</td><td>× 0,55</td><td class="num">12.622</td><td class="num">10.098</td><td class="num">6.750</td><td class="num good">+3.348</td></tr>
+      <tr><td>70 % (gut)</td><td>× 0,70</td><td class="num">16.065</td><td class="num">12.852</td><td class="num">6.750</td><td class="num good">+6.102</td></tr>
+    </tbody>
+  </table>
+  <p><span class="pill warn">Aufwand: mittel</span> &nbsp; <span class="pill bad">Risiko: hoch (saisonal)</span> &nbsp; <span class="pill accent">Upside: hoch</span></p>
+  <ul>
+    <li><strong>Pro:</strong> Höchster Ertrag pro m² bei guter Auslastung; Smart Home (keyless, Energiesteuerung) senkt Aufwand & Nebenkosten; Preise dynamisch anpassbar.</li>
+    <li><strong>Contra:</strong> Schwankt mit Saison/Events; in der Nebensaison nahe Break-even; mehr Reinigung/Wäsche/Koordination; <strong>rechtlich-regulatorisches Risiko</strong> (Kurzzeitvermietung ist in vielen Orten genehmigungs-/zonenpflichtig, Ortstaxe) → vorab abklären.</li>
+  </ul>
+  </div>
+
+  <!-- ============ IST-ZUSTAND ============ -->
+  <h2>5. Zum Vergleich: euer jetziges Modell (20 €/Nacht)</h2>
+  <div class="card">
+  <p>Einzelzimmer um 20 €/Nacht, Doppelzimmer bleiben leer (Nachfrage will Einzelzimmer), teils Wochen-Deals mit Leasingfirmen (160 €/Mann bzw. 320 €/Woche). Realistisch erreicht ihr damit nur einen Bruchteil der ~5.750 € Selbstkosten verlässlich:</p>
+  <table>
+    <thead><tr><th>Beispiel</th><th class="num">Einnahmen/Mt.</th><th class="num">− Kosten</th><th class="num">Ergebnis</th></tr></thead>
+    <tbody>
+      <tr><td>9 Zimmer, ~50 % belegt, 20 €/Nacht</td><td class="num">~2.700</td><td class="num">5.750</td><td class="num bad">−3.050</td></tr>
+      <tr><td>Mit ein paar Wochen-Deals besser</td><td class="num">~4.000</td><td class="num">5.750</td><td class="num bad">−1.750</td></tr>
+    </tbody>
+  </table>
+  <p class="small"><strong>Fazit:</strong> Das aktuelle 20-€-Modell ist defizitär – viel Arbeit, kein Gewinn. Es sollte <strong>so schnell wie möglich</strong> durch eine der drei Varianten ersetzt werden.</p>
+  </div>
+
+  <!-- ============ GESAMTVERGLEICH ============ -->
+  <h2>6. Gesamtvergleich (realistisches Szenario)</h2>
+  <div class="card">
+  <table>
+    <thead><tr><th>Kriterium</th><th>V1 – Monteure</th><th>V2 – Langzeit</th><th>V3 – Touristik</th><th>Ist (20 €)</th></tr></thead>
+    <tbody>
+      <tr><td>Gewinn / Monat</td><td class="good">+8.550 €</td><td class="good">+4.100 €</td><td class="good">+3.348 €</td><td class="bad">−3.050 €</td></tr>
+      <tr><td>Gewinn / Jahr</td><td class="good">≈ +103.000 €</td><td class="good">≈ +49.000 €</td><td class="good">≈ +40.000 €</td><td class="bad">negativ</td></tr>
+      <tr><td>Upside (optimistisch)</td><td>+14.150 €/Mt.</td><td>+4.600 €/Mt.</td><td>+6.100 €/Mt.</td><td>—</td></tr>
+      <tr><td>Eigener Aufwand</td><td><span class="pill good">sehr gering</span></td><td><span class="pill good">minimal</span></td><td><span class="pill warn">mittel</span></td><td><span class="pill bad">hoch</span></td></tr>
+      <tr><td>Risiko / Schwankung</td><td><span class="pill good">gering</span></td><td><span class="pill good">sehr gering</span></td><td><span class="pill bad">hoch</span></td><td><span class="pill bad">hoch</span></td></tr>
+      <tr><td>Planbarkeit</td><td><span class="pill good">hoch</span></td><td><span class="pill good">sehr hoch</span></td><td><span class="pill warn">niedrig</span></td><td><span class="pill bad">niedrig</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <!-- ============ EMPFEHLUNG ============ -->
+  <h2>7. Empfehlung</h2>
+  <div class="card winner">
+    <p><span class="pill good">EMPFEHLUNG</span></p>
+    <h3 style="margin-top:6px;">➜ Variante 1 (Monteurvermietung über Firma) als Kernmodell</h3>
+    <p>Variante 1 gewinnt bei <strong>beiden</strong> eurer Hauptkriterien gleichzeitig:</p>
+    <ul>
+      <li><strong>Höchster realistischer Gewinn</strong> (~8.550 €/Monat, ~103.000 €/Jahr) – mehr als doppelt so viel wie Langzeit oder Touristik im Normalfall.</li>
+      <li><strong>Geringster Aufwand</strong> – die Firma macht Mietersuche, Belegung und Abrechnung. Genau das, was ihr wollt: „wenigstens Aufwand".</li>
+      <li><strong>Planbar & risikoarm</strong> – kein Saison-Risiko, kein Leerstand-Stress, ein Ansprechpartner statt vieler Einzelmieter.</li>
+    </ul>
+    <p class="small">Bedingung: vor Abschluss klären, ob die 1.100–2.200 € <strong>fix garantiert</strong> sind (Generalmietvertrag) – dann ist V1 nahezu unschlagbar.</p>
+  </div>
+
+  <div class="card">
+    <h3>Reihenfolge der Optionen</h3>
+    <ol>
+      <li><strong>Variante 1</strong> – bestes Verhältnis aus Gewinn & Aufwand. Erste Wahl.</li>
+      <li><strong>Variante 3</strong> – nur wenn ihr Saison-Schwankung tragen wollt und die Kurzzeitvermietung am Standort <em>rechtlich erlaubt</em> ist. Höhere Decke, aber mehr Risiko/Arbeit.</li>
+      <li><strong>Variante 2</strong> – als sicherer „Boden": niedrigster Gewinn, aber praktisch null Aufwand und Risiko. Gut als Absicherung für einzelne Einheiten.</li>
+    </ol>
+  </div>
+
+  <!-- ============ ZUKUNFT ============ -->
+  <h2>8. Zukunftskonzept – Hybrid (das eigentlich Interessante)</h2>
+  <div class="card">
+    <p>Ihr müsst euch nicht für <em>eine</em> Variante für alle 9 Einheiten entscheiden. Das wirtschaftlich attraktivste Modell für die Zukunft ist eine <strong>Kombination</strong>:</p>
+    <ul>
+      <li><strong>8 × 30 m² → Variante 1 (Monteure über Firma):</strong> stabiler, aufwandsarmer Sockel-Cashflow ohne Belegungsstress.</li>
+      <li><strong>1 × 80 m² → Premium-/Touristiknutzung:</strong> die große Einheit als getrennt vermietetes 2–3-Zimmer-Apartment (~2.300 €) oder hochwertig möbliert touristisch – hier ist die Marge pro m² am höchsten.</li>
+      <li><strong>Smart Home über alle Einheiten:</strong> Keyless-Entry, smarte Heizungs-/Energiesteuerung, Verbrauchsmonitoring senkt eure hohen Nebenkosten (4.200 €!) <em>und</em> ermöglicht spätere Umschaltung zwischen Nutzungsarten ohne Mehraufwand. Lohnt sich in <strong>jeder</strong> Variante.</li>
+      <li><strong>Saisonale Umschaltung (fortgeschritten):</strong> Monteure in der Nebensaison (verlässliche Auslastung) ⇄ Touristik in Hochsaison/bei Events (Spitzenpreise). Voraussetzung: flexible Verträge + Smart Home.</li>
+    </ul>
+    <p class="small"><strong>Idee dahinter:</strong> Sicherheit (V1/V2) auf der Masse, Upside (V3) auf der Premium-Einheit – maximaler Gewinn bei kontrolliertem Risiko und weiterhin geringem Aufwand.</p>
+  </div>
+
+  <!-- ============ ANNAHMEN ============ -->
+  <h2 id="annahmen">9. Annahmen (bitte prüfen)</h2>
+  <div class="card">
+  <ul>
+    <li>Selbstkosten voll betrieben: <strong>5.750 €/Monat</strong> (Mittel aus euren 5.500–6.000 €).</li>
+    <li>Langzeit-Kosten: Betriebskosten/Reinigung/Nebenkosten fallen weg → <strong>≈ 3.000 €</strong> (eure Restmiete an den Eigentümer). <em>Diese Zahl ist die größte Unsicherheit</em> – wie hoch ist eure reine Kaltmiete an den Eigentümer?</li>
+    <li>Touristik: 85 €/Nacht, 20 % Agenturprovision, +1.000 € wechselbedingte Mehrkosten, 30 Tage/Monat.</li>
+    <li>80-m²-Einheit: getrennt bis ~2.300 € erzielbar (eure Angabe; „23.000" als Tippfehler interpretiert).</li>
+    <li>Steuern (USt./ESt.) sind <strong>nicht</strong> eingerechnet – Gewinne sind Vor-Steuer.</li>
+  </ul>
+  <p class="small">Sag mir, welche Annahme abweicht (v.&nbsp;a. eure echte Kaltmiete an den Eigentümer und ob die Monteur-Miete garantiert ist), dann aktualisiere ich die Tabellen.</p>
+  </div>
+
+  <footer>
+    Erstellt als Entscheidungsgrundlage · alle Beträge in € · Schätzwerte ohne Gewähr · keine Steuer-/Rechtsberatung.
+  </footer>
+
+</div>
+</body>
+</html>
