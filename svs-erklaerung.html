@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SVS – was das für euch bedeutet</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --card:#fff; --ink:#1c2430; --muted:#6b7785;
+    --line:#e3e7ec; --good:#1e7d4f; --good-bg:#e8f6ee;
+    --warn:#b9791b; --warn-bg:#fdf3e3; --bad:#b3261e; --bad-bg:#fbe9e7;
+    --accent:#e8731a; --accent-bg:#fdeede;
+  }
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:0;background:var(--bg);color:var(--ink);line-height:1.55;}
+  .wrap{max-width:920px;margin:0 auto;padding:28px 20px 70px;}
+  h1{font-size:25px;margin:0 0 4px;}
+  h2{font-size:18px;margin:30px 0 10px;padding-top:10px;border-top:2px solid var(--line);}
+  h3{font-size:15px;margin:12px 0 6px;}
+  .sub{color:var(--muted);margin:0 0 6px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:12px 0;}
+  table{border-collapse:collapse;width:100%;font-size:13.5px;margin:6px 0;}
+  th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;}
+  th{background:#f0f2f5;font-weight:600;}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;}
+  .good{color:var(--good);font-weight:600;} .bad{color:var(--bad);font-weight:600;} .warn{color:var(--warn);font-weight:600;}
+  .pill{display:inline-block;font-size:12px;font-weight:600;border-radius:999px;padding:2px 10px;}
+  .pill.good{background:var(--good-bg);color:var(--good);}
+  .pill.bad{background:var(--bad-bg);color:var(--bad);}
+  .note{background:var(--accent-bg);border:1px solid #f0d3b0;border-radius:10px;padding:12px 14px;font-size:13px;}
+  .tot{background:#f0f2f5;font-weight:700;}
+  ul{margin:6px 0 6px 18px;padding:0;} li{margin:3px 0;}
+  .small{font-size:12px;color:var(--muted);}
+  footer{margin-top:34px;color:var(--muted);font-size:12px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>SVS – Sozialversicherung der Selbständigen</h1>
+  <p class="sub">Was es ist, warum es eure Vermietungs-Variante betrifft und wie viel es kostet · Stand 2026</p>
+
+  <div class="note">
+    <strong>Kurz gesagt:</strong> Die <strong>SVS</strong> ist die Pflicht-Sozialversicherung für Selbständige und Gewerbetreibende in Österreich — das Gegenstück zur ÖGK bei Angestellten. Wer ein <strong>Gewerbe</strong> betreibt (Monteurvermietung, Touristik), ist verpflichtend bei der SVS versichert und zahlt rund <strong>26,8 % vom Gewinn</strong>. Reine Wohnungsvermietung (Langzeit) ist <em>keine</em> Gewerbe­tätigkeit → <strong>keine SVS</strong>.
+  </div>
+
+  <!-- ===== WAS IST DAS ===== -->
+  <h2>1. Was ist die SVS?</h2>
+  <div class="card">
+    <p>Die SVS deckt — wie die Angestellten-Sozialversicherung — drei Bereiche ab:</p>
+    <ul>
+      <li><strong>Krankenversicherung</strong> (Arzt, Spital, Medikamente)</li>
+      <li><strong>Pensionsversicherung</strong> (eure spätere Pension)</li>
+      <li><strong>Unfallversicherung</strong> (Arbeitsunfall/Berufskrankheit)</li>
+    </ul>
+    <p>Dazu kommt die <strong>Selbständigenvorsorge</strong> (die „Abfertigung neu" für Selbständige). Ihr zahlt die Beiträge <strong>selbst</strong> ein (es gibt keinen Arbeitgeber, der die Hälfte übernimmt) — dafür ist ein großer Teil davon <strong>eure eigene Pension</strong>, also kein verlorenes Geld.</p>
+  </div>
+
+  <!-- ===== WARUM EUCH ===== -->
+  <h2>2. Warum betrifft es euch — und bei welcher Variante?</h2>
+  <div class="card">
+    <p>Entscheidend ist, ob die Tätigkeit als <strong>Gewerbe</strong> (= unternehmerische Beherbergung mit Dienstleistung) oder als bloße <strong>Vermögensverwaltung</strong> (= reine Wohnungsvermietung) gilt:</p>
+    <table>
+      <thead><tr><th>Variante</th><th>Einstufung</th><th>SVS-Pflicht?</th></tr></thead>
+      <tbody>
+        <tr><td>V1 – Monteure / Crew99</td><td>Gewerbe (kurze Verweildauer, Service)</td><td class="bad">JA</td></tr>
+        <tr><td>V3 – Touristik / Wiener Modell</td><td>Gewerbe (Beherbergung)</td><td class="bad">JA</td></tr>
+        <tr><td>V2 – Langzeitvermietung</td><td>Vermögensverwaltung</td><td class="good">NEIN</td></tr>
+      </tbody>
+    </table>
+    <p class="small">Als OG sind beide unbeschränkt haftenden Gesellschafter über die Gewerbeberechtigung <strong>je einzeln</strong> SVS-pflichtig — die Beiträge fallen also <strong>zweimal</strong> an (für jeden von euch auf seinen Gewinnanteil).</p>
+  </div>
+
+  <!-- ===== WORAUS BESTEHT ===== -->
+  <h2>3. Woraus besteht der Beitrag? (~26,8 % vom Gewinn)</h2>
+  <div class="card">
+    <table>
+      <thead><tr><th>Bestandteil</th><th class="num">Satz 2026 (ca.)</th></tr></thead>
+      <tbody>
+        <tr><td>Pensionsversicherung</td><td class="num">18,50 %</td></tr>
+        <tr><td>Krankenversicherung</td><td class="num">6,80 %</td></tr>
+        <tr><td>Selbständigenvorsorge</td><td class="num">1,53 %</td></tr>
+        <tr><td>Unfallversicherung</td><td class="num">fix ~11 €/Monat</td></tr>
+        <tr class="tot"><td>Summe (Prozentanteil)</td><td class="num">≈ 26,83 %</td></tr>
+      </tbody>
+    </table>
+    <p class="small">Bemessungsgrundlage ist der steuerliche <strong>Gewinn</strong> (Einkünfte aus Gewerbebetrieb). Es gibt eine <strong>Mindest-</strong> und eine <strong>Höchstbeitragsgrundlage</strong> (2026 ca. 7.000 €/Monat ≈ 84.000 €/Jahr) — darüber zahlt man nicht mehr.</p>
+  </div>
+
+  <!-- ===== KONKRET ===== -->
+  <h2>4. Konkret für euch (Variante 1, Crew99, 80 %)</h2>
+  <div class="card">
+    <p>Gewinn V1 vor Steuer: ~32.362 €/Jahr → pro Person ~16.181 €/Jahr.</p>
+    <table>
+      <thead><tr><th></th><th class="num">pro Person/Jahr</th><th class="num">pro Person/Monat</th><th class="num">beide zusammen/Jahr</th></tr></thead>
+      <tbody>
+        <tr><td>Gewinnanteil</td><td class="num">16.181 €</td><td class="num">1.348 €</td><td class="num">32.362 €</td></tr>
+        <tr><td>SVS ~26,8 %</td><td class="num bad">~4.340 €</td><td class="num bad">~362 €</td><td class="num bad">~8.680 €</td></tr>
+        <tr class="tot"><td>Gewinn nach SVS (vor ESt.)</td><td class="num">~11.840 €</td><td class="num">~987 €</td><td class="num">~23.680 €</td></tr>
+      </tbody>
+    </table>
+    <p class="small">Erst <em>danach</em> kommt noch die Einkommensteuer. Genau deshalb war in der Zusammenfassung der Netto-Wert pro Person (~590–985 €/Monat) deutlich niedriger als der Brutto-Gewinn (~1.348 €).</p>
+    <p><span class="pill good">Gute Nachricht</span> Von diesen ~8.680 €/Jahr sind grob <strong>zwei Drittel Pensionsbeiträge</strong> — ihr baut damit eure eigene Pension auf. Es ist also nicht komplett „weg".</p>
+  </div>
+
+  <!-- ===== ACHTUNG NACHZAHLUNG ===== -->
+  <h2>5. ⚠️ Wichtige Falle: die Nachzahlung in Jahr 3</h2>
+  <div class="card">
+    <p>In den <strong>ersten 3 Jahren</strong> schreibt die SVS nur <strong>vorläufige Beiträge</strong> vor (oft auf Basis der Mindestbeitragsgrundlage, also relativ niedrig). Sobald der echte Steuerbescheid kommt, wird <strong>nachbemessen</strong> — und es kann eine <strong>saftige Nachzahlung</strong> für die zurückliegenden Jahre kommen.</p>
+    <p><strong>Empfehlung:</strong> Von Anfang an <strong>~27 % jedes Gewinns zur Seite legen</strong>, damit die Nachzahlung später nicht überrascht. Das ist der häufigste Cashflow-Fehler bei Gründern.</p>
+  </div>
+
+  <!-- ===== FAZIT ===== -->
+  <h2>6. Fazit für eure Entscheidung</h2>
+  <div class="card">
+    <ul>
+      <li><strong>V1 & V3 (Gewerbe):</strong> ~26,8 % SVS auf den Gewinn — pro Person grob ~360 €/Monat. Das drückt den Netto-Gewinn spürbar.</li>
+      <li><strong>V2 (Langzeit):</strong> keine SVS — das ist einer der Gründe, warum V2 nach Steuer trotz niedrigerer Miete (600 €) knapp vorne bleibt.</li>
+      <li>Ein <strong>Teil ist Pensionsaufbau</strong> — also nicht reiner Aufwand, sondern auch Vorsorge.</li>
+    </ul>
+  </div>
+
+  <footer>Business &amp; Bed OG · Informationsblatt · Sätze 2026 gerundet/geschätzt · keine Steuer- oder Sozialversicherungsberatung — bitte mit eurem Steuerberater bestätigen.</footer>
+
+</div>
+</body>
+</html>

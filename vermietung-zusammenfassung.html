@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vermietung – Zusammenfassung (3 Varianten, bestätigte Zahlen)</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --card:#fff; --ink:#1c2430; --muted:#6b7785;
+    --line:#e3e7ec; --good:#1e7d4f; --good-bg:#e8f6ee;
+    --warn:#b9791b; --warn-bg:#fdf3e3; --bad:#b3261e; --bad-bg:#fbe9e7;
+    --accent:#e8731a; --accent-bg:#fdeede;
+  }
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    margin:0;background:var(--bg);color:var(--ink);line-height:1.5;}
+  .wrap{max-width:1000px;margin:0 auto;padding:28px 20px 70px;}
+  h1{font-size:25px;margin:0 0 4px;}
+  h2{font-size:19px;margin:34px 0 12px;padding-top:10px;border-top:2px solid var(--line);}
+  h3{font-size:15px;margin:14px 0 6px;}
+  .sub{color:var(--muted);margin:0 0 6px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:12px 0;}
+  table{border-collapse:collapse;width:100%;font-size:13.5px;margin:6px 0;}
+  th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;}
+  th{background:#f0f2f5;font-weight:600;}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;}
+  .good{color:var(--good);font-weight:600;} .bad{color:var(--bad);font-weight:600;} .warn{color:var(--warn);font-weight:600;}
+  .pill{display:inline-block;font-size:12px;font-weight:600;border-radius:999px;padding:2px 10px;}
+  .pill.good{background:var(--good-bg);color:var(--good);}
+  .pill.warn{background:var(--warn-bg);color:var(--warn);}
+  .pill.bad{background:var(--bad-bg);color:var(--bad);}
+  .note{background:var(--accent-bg);border:1px solid #f0d3b0;border-radius:10px;padding:12px 14px;font-size:13px;}
+  .winner{border:2px solid var(--good);background:var(--good-bg);}
+  .tot{background:#f0f2f5;font-weight:700;}
+  ul{margin:6px 0 6px 18px;padding:0;} li{margin:3px 0;}
+  .small{font-size:12px;color:var(--muted);}
+  footer{margin-top:36px;color:var(--muted);font-size:12px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Vermietung – Zusammenfassung der 3 Varianten</h1>
+  <p class="sub">Business &amp; Bed OG · 9 Wohnungen (8 × 30 m² + 1 × 80 m²) · bestätigte Zahlen · Stand 06/2026</p>
+
+  <div class="note">
+    <strong>Bestätigte Fixkosten: 5.700 €/Monat</strong> — Miete + Betriebskosten 4.200 € · Reinigung/Putzfrau 500 € · Sonstiges (Steuerberater u. a.) 500 € · Strom/Wasser/Heizung/WLAN 500 €. Diese laufen <em>unabhängig von der Belegung</em>.
+  </div>
+
+  <!-- ===== ÜBERBLICK ===== -->
+  <h2>Das Ergebnis auf einen Blick (realistisch, vor Steuer)</h2>
+  <div class="card">
+  <table>
+    <thead><tr><th>Variante</th><th class="num">Einnahmen/Mt.</th><th class="num">Kosten/Mt.</th><th class="num">Gewinn/Mt.</th><th class="num">Gewinn/Jahr</th><th class="num">pro Person/Mt.</th></tr></thead>
+    <tbody>
+      <tr><td>V3 – Touristik (55 %)</td><td class="num">12.622*</td><td class="num">6.700</td><td class="num good">+3.398</td><td class="num good">+40.776</td><td class="num">≈ 1.699</td></tr>
+      <tr class="winner"><td><strong>V2 – Langzeit (600 €)</strong></td><td class="num">5.800</td><td class="num">3.000</td><td class="num good">+2.800</td><td class="num good">+33.600</td><td class="num good">≈ 1.400</td></tr>
+      <tr><td>V1 – Monteure/Crew99 (80 %)</td><td class="num">10.240*</td><td class="num">5.700</td><td class="num good">+2.697</td><td class="num good">+32.362</td><td class="num">≈ 1.348</td></tr>
+      <tr><td>Ist-Zustand (20 €/Nacht)</td><td class="num">~2.700</td><td class="num">5.700</td><td class="num bad">−3.000</td><td class="num bad">negativ</td><td class="num bad">negativ</td></tr>
+    </tbody>
+  </table>
+  <p class="small">*Einnahmen vor Abzug der Provision (V1: Crew99 18 %; V3: Agentur 20 %). „pro Person" = ÷ 2 Gesellschafter, vor Steuer &amp; SVS.</p>
+  </div>
+
+  <div class="note">
+    <strong>⚠️ Wichtige Erkenntnis — alle drei liegen jetzt eng beisammen:</strong> Mit Langzeit bei nur <strong>600 €/Wohnung</strong> landen alle Varianten in einem schmalen Band von <strong>~2.700–3.400 €/Monat</strong> vor Steuer. Die Entscheidung hängt damit <strong>nicht mehr am reinen Gewinn</strong>, sondern an <strong>Risiko, Aufwand und SVS</strong>. <strong>V2 bleibt nach Steuer leicht vorne</strong>, weil keine SVS-Pflicht, keine Saisonschwankung und der geringste Aufwand anfallen. V3 hat den höchsten Rohgewinn, aber das höchste Risiko.
+  </div>
+
+  <!-- ===== V1 ===== -->
+  <h2>Variante 1 — Monteure über Crew99 (18 % Provision)</h2>
+  <p class="sub">Provisionsmodell → ihr tragt das Auslastungsrisiko. Jahresverlauf bei ⌀ 80 % (Sommer 95 %, Winter 55 %).</p>
+  <div class="card">
+  <table>
+    <thead><tr><th>Monat</th><th class="num">Ausl.</th><th class="num">Bruttomiete</th><th class="num">− Crew99 18 %</th><th class="num">− Fixkosten</th><th class="num">Gewinn v. St.</th></tr></thead>
+    <tbody>
+      <tr><td>Jän</td><td class="num">65 %</td><td class="num">8.320</td><td class="num">−1.498</td><td class="num">−5.700</td><td class="num">1.122</td></tr>
+      <tr><td>Feb</td><td class="num">65 %</td><td class="num">8.320</td><td class="num">−1.498</td><td class="num">−5.700</td><td class="num">1.122</td></tr>
+      <tr><td>Mär</td><td class="num">75 %</td><td class="num">9.600</td><td class="num">−1.728</td><td class="num">−5.700</td><td class="num">2.172</td></tr>
+      <tr><td>Apr</td><td class="num">85 %</td><td class="num">10.880</td><td class="num">−1.958</td><td class="num">−5.700</td><td class="num">3.222</td></tr>
+      <tr><td>Mai</td><td class="num">90 %</td><td class="num">11.520</td><td class="num">−2.074</td><td class="num">−5.700</td><td class="num">3.746</td></tr>
+      <tr><td>Jun</td><td class="num">95 %</td><td class="num">12.160</td><td class="num">−2.189</td><td class="num">−5.700</td><td class="num">4.271</td></tr>
+      <tr><td>Jul</td><td class="num">95 %</td><td class="num">12.160</td><td class="num">−2.189</td><td class="num">−5.700</td><td class="num">4.271</td></tr>
+      <tr><td>Aug</td><td class="num">95 %</td><td class="num">12.160</td><td class="num">−2.189</td><td class="num">−5.700</td><td class="num">4.271</td></tr>
+      <tr><td>Sep</td><td class="num">90 %</td><td class="num">11.520</td><td class="num">−2.074</td><td class="num">−5.700</td><td class="num">3.746</td></tr>
+      <tr><td>Okt</td><td class="num">80 %</td><td class="num">10.240</td><td class="num">−1.843</td><td class="num">−5.700</td><td class="num">2.697</td></tr>
+      <tr><td>Nov</td><td class="num">70 %</td><td class="num">8.960</td><td class="num">−1.613</td><td class="num">−5.700</td><td class="num">1.647</td></tr>
+      <tr><td>Dez</td><td class="num">55 %</td><td class="num">7.040</td><td class="num">−1.267</td><td class="num">−5.700</td><td class="num bad">73</td></tr>
+      <tr class="tot"><td>Jahr ⌀ 80 %</td><td class="num">80 %</td><td class="num">122.880</td><td class="num">−22.118</td><td class="num">−68.400</td><td class="num good">32.362</td></tr>
+    </tbody>
+  </table>
+  <p><strong>Pro Person:</strong> ≈ 1.348 €/Monat vor Steuer · nach Steuer &amp; SVS grob <strong>~590–985 €/Monat</strong>. <span class="pill warn">Dezember ≈ Null (73 €)</span></p>
+  <ul>
+    <li><strong>Crew99 kostet ~22.118 €/Jahr</strong> (≈ ein Drittel des Gewinns ohne Provision).</li>
+    <li><strong>Gewerbe → SVS-Pflicht (~27 %)</strong> für beide Gesellschafter.</li>
+    <li><strong>Upside:</strong> Bei <strong>Generalmietvertrag mit Mietgarantie</strong> (volle 12.800 € unabhängig von Belegung) läge der Gewinn stabil bei <strong>~7.100 €/Monat</strong> vor Provision/Saison — das ist der eigentliche Wert einer Garantie.</li>
+  </ul>
+  </div>
+
+  <!-- ===== V2 ===== -->
+  <h2>Variante 2 — Klassische Langzeitvermietung (600 €/Wohnung)</h2>
+  <p class="sub">8 × 600 € + 1 × 1.000 € (80 m²) = 5.800 €/Mt. Betriebskosten/Strom/Reinigung gehen an die Mieter → eure Kosten sinken auf ~3.000 €. Keine Provision, keine SVS, keine Saison.</p>
+  <div class="card">
+  <table>
+    <thead><tr><th></th><th class="num">Monat</th><th class="num">Jahr</th><th class="num">pro Person/Mt.</th></tr></thead>
+    <tbody>
+      <tr><td>Einnahmen (kalt)</td><td class="num">5.800</td><td class="num">69.600</td><td class="num"></td></tr>
+      <tr><td>− Kosten</td><td class="num">−3.000</td><td class="num">−36.000</td><td class="num"></td></tr>
+      <tr class="tot"><td>Gewinn vor Steuer</td><td class="num good">+2.800</td><td class="num good">+33.600</td><td class="num good">≈ 1.400</td></tr>
+      <tr><td>nach Steuer (keine SVS)</td><td class="num"></td><td class="num"></td><td class="num good">~840–1.340</td></tr>
+    </tbody>
+  </table>
+  <p><span class="pill good">stabilster Cashflow</span> <span class="pill good">geringster Aufwand</span> <span class="pill good">keine SVS, keine Saison</span> <span class="pill warn">niedrigere Miete drückt den Vorsprung</span></p>
+  <p class="small">Mit 600 € statt 750 € sinkt der Gewinn von ~4.100 € auf ~2.800 € — V2 liegt damit fast gleichauf mit V1, bleibt aber nach Steuer (keine SVS) leicht vorne. Nachteil: bindet über das MRG (Kündigungsschutz, Befristungen), erschwert späteren Konzeptwechsel. Einmalig 9 Dauermieter zu finden.</p>
+  </div>
+
+  <!-- ===== V3 ===== -->
+  <h2>Variante 3 — Touristik (Wiener Modell + Smart Home, Agentur 20 %)</h2>
+  <p class="sub">85 €/Wohnung/Nacht, Agenturprovision 20 %, Kosten inkl. Mehrreinigung ≈ 6.700 €. Stark auslastungsabhängig.</p>
+  <div class="card">
+  <table>
+    <thead><tr><th>Auslastung</th><th class="num">Brutto/Mt.</th><th class="num">− Agentur 20 %</th><th class="num">− Kosten</th><th class="num">Gewinn/Mt.</th><th class="num">pro Person</th></tr></thead>
+    <tbody>
+      <tr><td>40 % (schwach)</td><td class="num">9.180</td><td class="num">−1.836</td><td class="num">−6.700</td><td class="num good">+644</td><td class="num">≈ 322</td></tr>
+      <tr><td>55 % (realistisch Linz)</td><td class="num">12.622</td><td class="num">−2.524</td><td class="num">−6.700</td><td class="num good">+3.398</td><td class="num">≈ 1.699</td></tr>
+      <tr><td>70 % (gut)</td><td class="num">16.065</td><td class="num">−3.213</td><td class="num">−6.700</td><td class="num good">+6.152</td><td class="num">≈ 3.076</td></tr>
+    </tbody>
+  </table>
+  <p><span class="pill warn">Aufwand: hoch</span> <span class="pill bad">Risiko: hoch (saisonal)</span> <span class="pill bad">SVS-pflichtig</span> <span class="pill bad">rechtl./Widmungs-Risiko</span></p>
+  <p class="small">Höchster Upside bei guter Auslastung, aber widerspricht dem Wunsch „wenig Aufwand" am stärksten und hat das größte rechtliche Risiko (Kurzzeitvermietung, Ortstaxe, Widmung).</p>
+  </div>
+
+  <!-- ===== KIPPPUNKT ===== -->
+  <h2>Der Kipppunkt: Wann lohnt sich Crew99 (V1) gegenüber Langzeit (V2)?</h2>
+  <div class="card">
+    <p>Weil V2 jetzt nur ~2.800 € bringt, überholt V1 die Langzeitvermietung bereits ab <strong>~81 % Auslastung</strong> — bei euren angenommenen 80 % sind beide praktisch <strong>gleichauf</strong>:</p>
+    <table>
+      <thead><tr><th class="num">Auslastung V1</th><th class="num">Gewinn V1/Mt.</th><th>vs. V2 (2.800 €)</th></tr></thead>
+      <tbody>
+        <tr><td class="num">70 %</td><td class="num">1.647 €</td><td class="bad">V2 vorne</td></tr>
+        <tr><td class="num">80 %</td><td class="num">2.697 €</td><td class="warn">≈ Gleichstand</td></tr>
+        <tr><td class="num">90 %</td><td class="num">3.746 €</td><td class="good">V1 vorne</td></tr>
+        <tr><td class="num">100 %</td><td class="num">4.796 €</td><td class="good">V1 klar vorne</td></tr>
+      </tbody>
+    </table>
+    <p class="small">Vor Steuer sind V1 (80 %) und V2 also fast identisch. Den Ausschlag gibt: V2 hat <strong>keine SVS</strong> und keinen Saison-/Leerstandsstress → nach Steuer und risikobereinigt bleibt V2 knapp vorne. V1 zieht davon, sobald Crew99 dauerhaft &gt; 85 % hält.</p>
+  </div>
+
+  <!-- ===== EMPFEHLUNG ===== -->
+  <h2>Empfehlung (mit den bestätigten Zahlen)</h2>
+  <div class="card winner">
+    <p><span class="pill good">EMPFEHLUNG</span></p>
+    <h3 style="margin-top:6px;">1. Basis: Langzeit (V2) — knapp vorne wegen Stabilität, keine SVS, wenig Aufwand</h3>
+    <p>Mit nur 600 € Miete schrumpft der Gewinn auf ~2.800 €/Mt. (pro Person ~1.400 € vor Steuer) — fast gleichauf mit V1. Trotzdem bleibt V2 die <strong>solide Basis</strong>: keine Provision, keine SVS, keine Saison, am wenigsten Arbeit. Nach Steuer behält V2 einen leichten Vorsprung.</p>
+    <h3>2. Crew99/Monteure schlägt V2, sobald eine Bedingung erfüllbar ist:</h3>
+    <p class="small">Da der Abstand klein ist, kippt es schon bei leicht höherer Auslastung Richtung V1 —</p>
+    <ul>
+      <li>Crew99 hält dauerhaft <strong>&gt; 85 % Auslastung</strong> oder bietet eine <strong>fixe Mietgarantie</strong>, ODER</li>
+      <li>die <strong>Provision sinkt</strong> unter 18 % bzw. gilt nur für neu vermittelte Zimmer.</li>
+    </ul>
+    <h3>3. Beste Mischform (Barbell):</h3>
+    <p>8 × 30 m² an Monteure (Aufwand ausgelagert) <em>nur mit Mindestabnahme</em> + die 80-m²-Wohnung als stabilen Langzeit-/Business-Ankermieter, der die Fixkosten planbar deckt.</p>
+  </div>
+
+  <div class="card">
+    <h3>Sofort umsetzen (raus aus dem 20-€-Defizit)</h3>
+    <ul>
+      <li>Doppelzimmer sofort als Einzelzimmer zu 35–40 €/Nacht (~500 €/Mann/Monat) anbieten — die Nachfrage will das.</li>
+      <li><strong>Hauptmietvertrag prüfen:</strong> Erlaubt die (gemeinnützige!) Soziale Initiative die gewerbliche Untervermietung? Sonst sind V1/V3 hinfällig (§ 30 MRG-Risiko).</li>
+      <li>Mit Crew99 über <strong>Mindestabnahme/Garantie</strong> und Provisionshöhe verhandeln, bevor unterschrieben wird.</li>
+    </ul>
+  </div>
+
+  <h2>Annahmen</h2>
+  <div class="card">
+  <ul>
+    <li>Fixkosten Vollbetrieb (V1): 5.700 €/Mt. · V3 + 1.000 € Mehrreinigung = 6.700 € · V2 ~3.000 € (BK/Strom/Reinigung an Mieter).</li>
+    <li>V1 Bruttomiete bei 100 % = 12.800 € (8 × 1.200 + 4 × 800). Jahresschnitt 80 % (Sommer 95 %, Winter 55 %).</li>
+    <li>Crew99: 18 % der Bruttomiete (Provision, keine Garantie). V3-Agentur: 20 %.</li>
+    <li>V2 Kaltmiete 5.800 €/Mt. (8 × 600 € + 1 × 1.000 € für die 80-m²-Wohnung); Betriebskosten an Mieter weitergegeben. Die 1.000 € für die große Wohnung sind geschätzt — bitte prüfen.</li>
+    <li>Steuer/SVS sind grobe Faustregeln (OG, 2 Gesellschafter, Spanne je nach übrigem Einkommen). Keine Steuer-/Rechtsberatung.</li>
+  </ul>
+  </div>
+
+  <footer>Business &amp; Bed OG · Entscheidungsgrundlage · alle Beträge in € · Schätzwerte ohne Gewähr.</footer>
+
+</div>
+</body>
+</html>
