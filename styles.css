@@ -45,6 +45,79 @@ html, body {
   align-self: flex-end;
 }
 
+.snippets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.snippet-chip {
+  border: 1px solid var(--orange);
+  background: rgba(255, 140, 0, 0.08);
+  color: var(--orange-dark);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.snippet-chip:hover,
+.snippet-chip:focus-visible {
+  background: rgba(255, 140, 0, 0.18);
+  outline: none;
+}
+
+.messages li.snippet-message {
+  align-self: stretch;
+  max-width: 100%;
+  border-left: 4px solid var(--orange);
+}
+
+.snippet-title {
+  font-weight: 700;
+  font-size: 16px;
+  margin-bottom: 2px;
+}
+
+.snippet-fundstelle {
+  font-size: 13px;
+  color: #57606a;
+  margin-bottom: 10px;
+}
+
+.snippet-bild {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.snippet-text {
+  margin: 0 0 12px 0;
+  line-height: 1.45;
+}
+
+.copy-button {
+  border: 1px solid var(--orange);
+  background: var(--orange);
+  color: #fff;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.copy-button:hover,
+.copy-button:focus-visible {
+  background: var(--orange-dark);
+  outline: none;
+}
+
 .chat-form {
   display: flex;
   gap: 8px;
