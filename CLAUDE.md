@@ -11,11 +11,17 @@ schicken will):
 - Den vollständigen Mail-Inhalt vorher **im Chat anzeigen**, damit der Nutzer ihn prüfen kann.
 - Erst nach ausdrücklicher Freigabe tatsächlich versenden.
 
-Hinweis zur Umgebung: Ein lokales **Outlook** kann aus der Remote-Umgebung nicht direkt
-geöffnet/gesteuert werden. Nächstmögliche Umsetzung: einen **Entwurf im verbundenen
-Gmail-Konto** erstellen (erscheint in den Gmail-Entwürfen) bzw. den fertigen Text +
-Empfänger + Betreff so aufbereiten, dass er nur noch in Outlook eingefügt und gesendet
-werden muss.
+**Immer in Outlook öffnen (bevorzugter Weg, ausdrücklicher Wunsch des Nutzers):**
+Die fertige Mail **immer als `.eml`-Datei** liefern — mit Empfänger, Betreff, Text und
+Anhang —, die per Doppelklick **direkt in Outlook** aufgeht. **Keine Gmail-Entwürfe**
+verwenden, außer der Nutzer verlangt es ausdrücklich.
+
+Erzeugung der `.eml` z. B. mit Python (`email.message.EmailMessage`, `add_attachment`),
+dann via SendUserFile schicken. Den Mail-Inhalt zusätzlich im Chat anzeigen.
+
+Hinweis zur Umgebung: Ein lokales Outlook kann aus der Remote-/Cloud-Umgebung nicht
+direkt geöffnet/gesteuert werden — daher der `.eml`-Weg (Doppelklick öffnet Outlook,
+Nutzer klickt nur noch „Senden").
 
 ## Kontext zum Vermietungs-Projekt
 
