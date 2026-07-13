@@ -101,3 +101,79 @@ html, body {
   opacity: 0.35;
   cursor: not-allowed;
 }
+
+.timer {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  text-align: center;
+}
+
+.timer-heading {
+  margin: 0;
+  font-size: 24px;
+}
+
+.timer-display {
+  font-size: 72px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--orange);
+  background: var(--bubble);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px 48px;
+}
+
+.timer-display-done {
+  color: #fff;
+  background: var(--orange);
+}
+
+.timer-controls {
+  display: flex;
+  gap: 12px;
+}
+
+.timer-button {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 10px 20px;
+  font-size: 16px;
+  background: var(--bubble);
+  color: var(--text);
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease, transform 0.05s ease;
+}
+
+.timer-button:hover:not(:disabled),
+.timer-button:focus-visible:not(:disabled) {
+  background: rgba(255, 140, 0, 0.1);
+}
+
+.timer-button:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.timer-button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.timer-button-primary {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: #fff;
+}
+
+.timer-button-primary:hover:not(:disabled),
+.timer-button-primary:focus-visible:not(:disabled) {
+  background: var(--orange-dark);
+  border-color: var(--orange-dark);
+}
