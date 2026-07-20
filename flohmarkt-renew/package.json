@@ -1,0 +1,18 @@
+{
+  "name": "flohmarkt-renew",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Verlängert ablaufende Inserate auf flohmarkt.at automatisch.",
+  "bin": {
+    "flohmarkt-renew": "renew.mjs"
+  },
+  "scripts": {
+    "renew": "node renew.mjs",
+    "dry-run": "DRY_RUN=true node renew.mjs",
+    "postinstall-browser": "playwright install chromium"
+  },
+  "dependencies": {
+    "playwright": "^1.48.0"
+  }
+}
