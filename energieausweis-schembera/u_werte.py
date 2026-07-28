@@ -42,6 +42,11 @@ BGF = 389.93         # Brutto-Grundflaeche [m2]
 ZUSCHLAG_WB = 0.10   # Waermebruecken pauschal nach ON B 8110-6-1 (aus EA-alt)
 ZIELWERT_HWB = 44.0  # laut Notiz
 
+# Festlegung Bauherr/Ersteller: Kellerdecke = nur 5 cm unterseitig,
+# bestehender Fussbodenaufbau bleibt erhalten. Variante B ist als
+# Alternative dokumentiert, falls der Aufbau doch geoeffnet wird.
+GEWAEHLTE_KD_VARIANTE = "A"
+
 # Bauteilflaechen und Korrekturfaktoren aus dem GEQ-Heizlastblatt
 FLAECHEN = {
     "AD01": (192.58, 0.90),   # Decke zu unkond. geschlossenem Dachraum
@@ -154,8 +159,9 @@ MASSNAHMEN = [
             Schicht("Daemmung unterseitig 5 cm", 5.0, 0.035, neu=True),
         ],
         "KD01", anforderung=0.40,
-        hinweis="Notiz: 'Kellerdecke + 5 cm WD zusatz' / 'KG-Decke + 5 cm unten'. "
-                "Variante ohne Eingriff in den bestehenden Fussbodenaufbau.",
+        hinweis="GEWAEHLT. Notiz: 'Kellerdecke + 5 cm WD zusatz' / 'KG-Decke + 5 cm "
+                "unten'. Kein Eingriff in den bestehenden Fussbodenaufbau, die "
+                "19 cm Bestandsdaemmung bleiben erhalten.",
     ),
     Bauteil(
         "KD-01b", "Kellerdecke - Fussbodenaufbau neu + 5 cm unterseitig", 0.34,
@@ -168,9 +174,10 @@ MASSNAHMEN = [
             Schicht("Daemmung unterseitig 5 cm", 5.0, 0.035, neu=True),
         ],
         "KD01", anforderung=0.40,
-        hinweis="Notiz: 'FB = 7 cm Granulat // SDPL 3 cm, Estrich'. Variante mit "
-                "Rueckbau des Bestandsaufbaus fuer die Fussbodenheizung - dabei "
-                "gehen 5 cm Porit und 14 cm WO Hart verloren.",
+        hinweis="NICHT gewaehlt, als Alternative dokumentiert. Notiz: 'FB = 7 cm "
+                "Granulat // SDPL 3 cm, Estrich'. Rueckbau des Bestandsaufbaus fuer "
+                "die Fussbodenheizung - dabei gehen 5 cm Porit und 14 cm WO Hart "
+                "verloren, das Bauteil wird schlechter als der Bestand.",
     ),
     Bauteil(
         "AD-01", "Decke zum Dachraum - Bestand, keine Massnahme", 0.20,
@@ -238,8 +245,8 @@ def varianten():
     u_kd_b = next(b for b in MASSNAHMEN if b.kennung == "KD-01b").u
     u_fe = FENSTER_NEU["uw"]
     out = []
-    for name, u_kd in (("A - Bestandsaufbau bleibt", u_kd_a),
-                       ("B - Fussbodenaufbau neu", u_kd_b)):
+    for kuerzel, name, u_kd in (("A", "A - Bestandsaufbau bleibt", u_kd_a),
+                                ("B", "B - Fussbodenaufbau neu", u_kd_b)):
         s = leitwert_summe(u_aw, u_kd, u_fe)
         l_t = s * (1 + ZUSCHLAG_WB)
         l_ges = l_t + EA_ALT["l_v"]
@@ -247,6 +254,9 @@ def varianten():
         out.append({
             "name": name, "u_kd": u_kd, "summe": s, "l_t": l_t, "l_ges": l_ges,
             "hwb_min": h + AUFSCHLAG_G_MIN, "hwb_max": h + AUFSCHLAG_G_MAX,
+            "gewaehlt": kuerzel == GEWAEHLTE_KD_VARIANTE,
+            # Heizlast-Abschaetzung analog GEQ: L_ges * Temperaturdifferenz
+            "heizlast": l_ges * 36.7 / 1000.0,
         })
     return out
 
@@ -293,11 +303,13 @@ def ausgabe_text():
     print(f"  {f['hinweis']}")
 
     print("\n--- HWB-Abschaetzung ---")
-    print(f"  {'Variante':<28}{'U_KD':>8}{'Summe A*U*f':>14}{'L_ges':>10}"
-          f"{'HWB [kWh/m2a]':>16}")
+    print(f"  {'Variante':<30}{'U_KD':>8}{'L_ges':>10}{'Heizlast':>11}"
+          f"{'HWB [kWh/m2a]':>17}")
     for v in varianten():
-        print(f"  {v['name']:<28}{v['u_kd']:>8.3f}{v['summe']:>14.1f}"
-              f"{v['l_ges']:>10.1f}   ca. {v['hwb_min']:.0f} - {v['hwb_max']:.0f}")
+        marke = " <-- gewaehlt" if v["gewaehlt"] else ""
+        print(f"  {v['name']:<30}{v['u_kd']:>8.3f}{v['l_ges']:>10.1f}"
+              f"{v['heizlast']:>9.1f} kW   ca. {v['hwb_min']:.0f}-{v['hwb_max']:.0f}"
+              f"{marke}")
     print(f"\n  Zielwert laut Notiz: HWB <= {ZIELWERT_HWB:.0f} kWh/m2a")
     print("  Abschaetzung aus dem Gesamtleitwert - ersetzt den GEQ-Lauf nicht.")
 
@@ -334,15 +346,17 @@ def ausgabe_markdown():
     print(f"> {f['hinweis']}\n")
 
     print("## HWB-Abschätzung\n")
-    print("| Variante | U Kellerdecke | Summe A·U·f [W/K] | L_ges [W/K] | HWB_Ref,SK [kWh/m²a] |")
+    print("| Variante | U Kellerdecke | L_ges [W/K] | Heizlast | HWB_Ref,SK [kWh/m²a] |")
     print("| --- | ---: | ---: | ---: | ---: |")
-    print(f"| EA-alt ({EA_ALT['datum']}) | 0,196 | 509,4 | "
-          f"{EA_ALT['l_t'] + EA_ALT['l_v']:.1f} | {EA_ALT['hwb_ref_sk']:.1f} |")
-    print(f"| Variante 2023 (14 cm VWS) | 0,196 | 189,1 | "
-          f"{EA_VAR14['l_t'] + EA_VAR14['l_v']:.1f} | {EA_VAR14['hwb_ref_sk']:.1f} |")
+    print(f"| EA-alt ({EA_ALT['datum']}) | 0,196 | "
+          f"{EA_ALT['l_t'] + EA_ALT['l_v']:.1f} | 23,4 kW | {EA_ALT['hwb_ref_sk']:.1f} |")
+    print(f"| Variante 2023 (14 cm VWS) | 0,196 | "
+          f"{EA_VAR14['l_t'] + EA_VAR14['l_v']:.1f} | 10,5 kW | {EA_VAR14['hwb_ref_sk']:.1f} |")
     for v in varianten():
-        print(f"| **{v['name']}** | {v['u_kd']:.3f} | {v['summe']:.1f} | "
-              f"{v['l_ges']:.1f} | **ca. {v['hwb_min']:.0f}–{v['hwb_max']:.0f}** |")
+        marke = " — **gewählt**" if v["gewaehlt"] else ""
+        print(f"| **{v['name']}**{marke} | {v['u_kd']:.3f} | "
+              f"{v['l_ges']:.1f} | {v['heizlast']:.1f} kW | "
+              f"**ca. {v['hwb_min']:.0f}–{v['hwb_max']:.0f}** |")
     print(f"\nZielwert laut Notiz: **HWB ≤ {ZIELWERT_HWB:.0f} kWh/m²a**. "
           "Die Abschätzung interpoliert linear zwischen den beiden vorliegenden "
           "GEQ-Läufen desselben Gebäudes und enthält einen Aufschlag von "

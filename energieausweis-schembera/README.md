@@ -16,6 +16,18 @@ Eingabevorlage für GEQ.
 > Die Neuberechnung erfolgt in GEQ. Dieses Dokument liefert die Eingabewerte,
 > den Änderungsumfang und eine Plausibilitätsrechnung — nicht den Ausweis.
 
+## 0 Getroffene Festlegungen
+
+| Punkt | Festlegung |
+| --- | --- |
+| Umfang | nur Bestandsgebäude, **kein Zubau** |
+| Basis | **EA-alt vom 13.09.2022**, unsanierter Ist-Zustand |
+| Wärmepumpe | **Luft/Wasser** — passend zur Fußbodenheizung |
+| Kellerdecke | **Variante A: + 5 cm unterseitig**, bestehender Fußbodenaufbau bleibt |
+
+Damit ergibt die Abschätzung **HWB_Ref,SK ≈ 39–40 kWh/m²a** — der Zielwert von
+44 wird mit rund 4–5 kWh/m²a Reserve erreicht.
+
 ---
 
 ## 1 Transkription der Notiz
@@ -25,7 +37,7 @@ HWB ≤ 44
 
 EA - alt
 + Zubau lt. Plan bzw. BA          ← entfällt, Zubau wird nicht gebaut
-                 ↘ Luft/Luft
+                 ↘ Luft/Luft      ← korrigiert: Luft/Wasser
  •  WP + FB-Heizung gesamtes Haus
  ○  18 VWS Altbau, Zubau 50 + 5 VWS
  ○  Kellerdecke + 5 cm WD zusatz
@@ -33,7 +45,7 @@ EA - alt
  ○  Fenster + 3f. Internorm, Rollladen
  ◉  OG-Dämmung 22 cm Bestand
  •  KG-Decke + 5 cm unten
-    FB = 7 cm Granulat // SDPL 3 cm, Estrich
+    FB = 7 cm Granulat // SDPL 3 cm, Estrich   ← kein Rückbau des Bestandsaufbaus
 ```
 
 Gerechnet wird ausschließlich das Bestandsgebäude laut EA-alt. Der Zubau und
@@ -77,8 +89,8 @@ mit den GEQ-Werten, damit ist das Modell verifiziert.
 | Kennung | Bauteil | Bestand | nach Maßnahme | OIB-RL 6 max. |
 | --- | --- | ---: | ---: | ---: |
 | AW-01 | Außenwand + 18 cm VWS | 1,00 | **0,174** | 0,35 |
-| KD-01a | Kellerdecke, Bestandsaufbau + 5 cm unten | 0,196 | **0,153** | 0,40 |
-| KD-01b | Kellerdecke, Aufbau neu + 5 cm unten | 0,196 | **0,284** | 0,40 |
+| **KD-01a** | **Kellerdecke, Bestandsaufbau + 5 cm unten — gewählt** | 0,196 | **0,153** | 0,40 |
+| KD-01b | Kellerdecke, Aufbau neu + 5 cm unten — Alternative | 0,196 | 0,284 | 0,40 |
 | AD-01 | Decke zum Dachraum, Bestand | 0,134 | 0,134 | 0,20 |
 | FE-01 | Fenster 3-fach Internorm | 1,90 | **0,80** | 1,40 |
 
@@ -89,30 +101,32 @@ Die Außenwand ist der große Hebel: 356,18 m² bei U 1,00 sind allein
 354,6 W/K von 509,4 W/K Gesamtleitwert des Bestands. Mit 18 cm VWS bleiben
 davon 62,0 W/K.
 
-### 3.1 Der kritische Punkt: Kellerdecke
+### 3.1 Kellerdecke — Variante A festgelegt
 
 Die bestehende Kellerdecke ist **bereits sehr gut gedämmt** — 5 cm Porit plus
-14 cm WO Hart über der Stahlbetondecke, U = 0,196 W/m²K. Damit gibt es zwei
-grundverschiedene Varianten:
+14 cm WO Hart über der Stahlbetondecke, U = 0,196 W/m²K.
 
-**Variante A — Bestandsaufbau bleibt, 5 cm kommen unterseitig dazu.**
-U = 0,153 W/m²K. Setzt voraus, dass die Fußbodenheizung nicht in diesem
-Geschoß liegt oder der Bestandsaufbau erhalten werden kann.
+**Gewählt ist Variante A:** der Bestandsaufbau bleibt unangetastet, es kommen
+5 cm unterseitig dazu. U = 0,153 W/m²K.
 
-**Variante B — Fußbodenaufbau wird für die FB-Heizung erneuert**, also
-7 cm Granulat + 3 cm SDPL + Estrich laut Notiz, dazu 5 cm unterseitig.
-U = **0,284 W/m²K** — das ist **schlechter als der Bestand**, weil dem Aufbau
-19 cm Dämmung entnommen und nur 10 cm deutlich schwächeres Material plus
-5 cm unterseitig eingebracht werden.
+Zur Einordnung bleibt Variante B dokumentiert: würde der Fußbodenaufbau für die
+FB-Heizung erneuert (7 cm Granulat + 3 cm SDPL + Estrich laut Notiz), stiege der
+U-Wert auf 0,284 W/m²K — **schlechter als der Bestand**, weil dem Aufbau 19 cm
+Dämmung entnommen und nur 10 cm deutlich schwächeres Material plus 5 cm
+unterseitig eingebracht würden. Der OIB-Höchstwert von 0,40 wäre zwar weiter
+eingehalten, der HWB läge aber rund 4 kWh/m²a höher.
 
-Der OIB-Höchstwert von 0,40 wird in beiden Fällen eingehalten, der Unterschied
-im HWB ist aber erheblich — siehe Abschnitt 5.
+**Was daraus für die Ausführung folgt:** die Fußbodenheizung muss in den
+bestehenden Aufbau eingebracht werden, ohne die 19 cm Bestandsdämmung
+zurückzubauen. Wenn sich das auf der Baustelle nicht halten lässt, ändert sich
+die Rechnung — dann ist Variante B maßgeblich und die unterseitige Dämmung
+sollte auf 10–12 cm erhöht werden.
 
 ## 4 Anlagentechnik
 
 | Position | Bestand laut EA-alt | neu laut Notiz |
 | --- | --- | --- |
-| Wärmebereitstellung | Hackgut-Brennwertkessel, 27,2 kW | Wärmepumpe |
+| Wärmebereitstellung | Hackgut-Brennwertkessel, 27,2 kW | **Luft/Wasser-Wärmepumpe** |
 | Wärmeabgabe | Radiatoren 90/70, Ventile von Hand | Fußbodenheizung, gesamtes Haus |
 | Warmwasser | kombiniert mit Raumheizung, 546 l Speicher | über Wärmepumpe |
 | Lüftung | Fensterlüftung | unverändert |
@@ -123,18 +137,18 @@ und f_GEE — **nicht auf den HWB**. Der Zielwert HWB ≤ 44 wird ausschließlic
 über die Gebäudehülle erreicht. Die PV-Anlage verbessert EEB und f_GEE, der HWB
 bleibt unberührt.
 
-Die Heizlast sinkt von 23,4 kW (Bestand) auf rund 9 kW — relevant für die
+Die Heizlast sinkt von 23,4 kW (Bestand) auf rund 9,1 kW — relevant für die
 Auslegung der Wärmepumpe. Für die Dimensionierung ist eine Heizlastberechnung
 nach ÖNORM H 7500 erforderlich; die EA-Abschätzung genügt dafür nicht.
 
 ## 5 HWB-Abschätzung
 
-| Variante | Summe A·U·f | L_ges | HWB_Ref,SK |
+| Variante | L_ges | Heizlast | HWB_Ref,SK |
 | --- | ---: | ---: | ---: |
-| EA-alt (13.09.2022) | 509,4 | 637,6 | 139,3 |
-| Variante 2023 (14 cm VWS) | 189,1 | 285,8 | 47,4 |
-| **A — Bestandsaufbau Kellerdecke bleibt** | 154,1 | 246,7 | **ca. 39–40** |
-| **B — Fußbodenaufbau neu** | 167,6 | 261,6 | **ca. 43–44** |
+| EA-alt (13.09.2022) | 637,6 | 23,4 kW | 139,3 |
+| Variante 2023 (14 cm VWS) | 285,8 | 10,5 kW | 47,4 |
+| **A — Bestandsaufbau Kellerdecke bleibt — gewählt** | 246,7 | 9,1 kW | **ca. 39–40** |
+| B — Fußbodenaufbau neu (Alternative) | 261,6 | 9,6 kW | ca. 43–44 |
 
 Rechenweg: Leitwertbilanz über alle Bauteile mit den Flächen und
 Korrekturfaktoren des GEQ-Heizlastblatts, Wärmebrücken pauschal +10 % wie im
@@ -144,54 +158,48 @@ Nutzungsprofil, dieselbe Klimadatei, daher ist der Zusammenhang in diesem
 Bereich nahezu linear. Enthalten ist ein Aufschlag von 2–3 kWh/m²a für die
 geringeren solaren Gewinne der 3-fach-Verglasung (g sinkt von 0,62 auf 0,53).
 
-**Beurteilung:** Variante A erreicht den Zielwert mit rund 4–5 kWh/m²a Reserve.
-Variante B landet punktgenau auf der Grenze — ohne Reserve für Abweichungen bei
-λ-Werten, Wärmebrücken oder Fenster-Kennwerten. Wenn der Fußbodenaufbau für die
-FB-Heizung tatsächlich erneuert wird, sollte die unterseitige Dämmung von 5 auf
-10–12 cm erhöht werden; das bringt die Kellerdecke auf rund 0,20 W/m²K zurück
-und schafft wieder Luft zum Zielwert.
+**Beurteilung:** Die gewählte Variante A erreicht den Zielwert mit rund
+4–5 kWh/m²a Reserve. Das ist genug Puffer, um Abweichungen bei λ-Werten,
+Wärmebrücken oder Fenster-Kennwerten aufzufangen.
 
 **Die Abschätzung ersetzt den GEQ-Lauf nicht** — sie sagt, ob der Zielwert
 plausibel erreichbar ist, und wo die Reserve liegt.
 
 ## 6 Offene Punkte
 
-1. **„Luft/Luft"** steht in der Notiz beim Wärmepumpen-Punkt. Zusammen mit
-   einer Fußbodenheizung ist das nicht stimmig — eine FBH braucht eine
-   **Luft/Wasser**-Wärmepumpe. Vor der GEQ-Eingabe klären.
-2. **„OG-Dämmung 22 cm Bestand"** — der EA-alt weist für AD01 18 cm λ 0,042
+1. **„OG-Dämmung 22 cm Bestand"** — der EA-alt weist für AD01 18 cm λ 0,042
    plus 10 cm λ 0,035 aus, also 28 cm, U = 0,134 W/m²K. Entweder ist die Notiz
    ungenau oder der EA-alt bildet den Dachraum zu günstig ab. Bei tatsächlich
    22 cm läge der U-Wert bei rund 0,16 W/m²K, der HWB rund 0,5 kWh/m²a höher —
    für den Zielwert nicht entscheidend, für die Richtigkeit des Ausweises schon.
-3. **Kellerdecke: Variante A oder B?** Hängt daran, ob der bestehende
-   Fußbodenaufbau für die FB-Heizung geöffnet wird. Das ist die wichtigste
-   offene Entscheidung — sie kostet bis zu 4 kWh/m²a.
-4. **Fenster-Kennwerte** aus dem Angebot übernehmen. Uw wirkt über den
+2. **Fenster-Kennwerte** aus dem Angebot übernehmen. Uw wirkt über den
    Leitwert, g über die solaren Gewinne — beide direkt auf den HWB.
-5. **Rollläden** in GEQ als temporärer Wärmeschutz und/oder Verschattung
+3. **Rollläden** in GEQ als temporärer Wärmeschutz und/oder Verschattung
    erfassen; die beiden Effekte wirken gegenläufig.
-6. **λ des Vollwärmeschutzes.** Gerechnet ist 0,038 wie im bestehenden
+4. **λ des Vollwärmeschutzes.** Gerechnet ist 0,038 wie im bestehenden
    GEQ-Modell. Mit einem Grauschaum-EPS bei 0,032 sinkt der U-Wert der
    Außenwand von 0,174 auf 0,153 W/m²K.
-7. **Bestandswand.** Der EA-alt modelliert eine zweischalige Wand mit
+5. **Bestandswand.** Der EA-alt modelliert eine zweischalige Wand mit
    Luftschicht (U = 1,00), der Lauf von 2023 einen einschaligen 38er-Ziegel.
    Für den neuen Ausweis den zweischaligen Aufbau des EA-alt verwenden.
+6. **Ausführung Fußbodenheizung** — siehe Abschnitt 3.1: die FBH muss ohne
+   Rückbau der 19 cm Bestandsdämmung in der Kellerdecke eingebracht werden,
+   sonst gilt Variante B.
 
 ## 7 Checkliste für den GEQ-Lauf
 
 - [ ] Projekt aus dem EA-alt vom 13.09.2022 kopieren, Geometrie unverändert
 - [ ] AW02: 18 cm EPS-F + Silikatputz ergänzen → U 0,174
-- [ ] KD01: Variante A oder B festlegen (Punkt 6.3), Dämmstärke entsprechend
-- [ ] AD01 unverändert lassen, Dämmstärke vor Ort prüfen (Punkt 6.2)
+- [ ] KD01: 5 cm unterseitig ergänzen, Bestandsaufbau unverändert → U 0,153
+- [ ] AD01 unverändert lassen, Dämmstärke vor Ort prüfen (Punkt 6.1)
 - [ ] Fenster tauschen: Uw, Ug, g aus dem Angebot, Rollläden erfassen
-- [ ] Wärmeerzeuger auf Wärmepumpe umstellen (Bauart klären, Punkt 6.1)
+- [ ] Wärmeerzeuger auf **Luft/Wasser-Wärmepumpe** umstellen
 - [ ] Wärmeabgabe auf Fußbodenheizung, Systemtemperatur 35/28
 - [ ] Warmwasser über Wärmepumpe, Speicher prüfen
 - [ ] PV 20 kWp / 16 kW WR mit Ausrichtung und Neigung erfassen
-- [ ] **HWB_Ref,SK ≤ 44 kWh/m²a kontrollieren**
-- [ ] Bei Zielverfehlung: unterseitige Dämmung der Kellerdecke erhöhen,
-      danach λ des VWS senken, zuletzt KWL mit Wärmerückgewinnung
+- [ ] **HWB_Ref,SK ≤ 44 kWh/m²a kontrollieren** (Erwartung: 39–40)
+- [ ] Bei Zielverfehlung: λ des VWS senken (Grauschaum 0,032), unterseitige
+      Dämmung der Kellerdecke erhöhen, zuletzt KWL mit Wärmerückgewinnung
 
 ## 8 Dateien
 

@@ -49,7 +49,7 @@ Die nachgerechneten Bestands-U-Werte decken sich mit den GEQ-Werten des EA-alt �
 
 **U = 0.153 W/m²K** — OIB-RL 6 Anforderung U_max 0.40 W/m²K: erfüllt
 
-> Notiz: 'Kellerdecke + 5 cm WD zusatz' / 'KG-Decke + 5 cm unten'. Variante ohne Eingriff in den bestehenden Fussbodenaufbau.
+> GEWAEHLT. Notiz: 'Kellerdecke + 5 cm WD zusatz' / 'KG-Decke + 5 cm unten'. Kein Eingriff in den bestehenden Fussbodenaufbau, die 19 cm Bestandsdaemmung bleiben erhalten.
 
 ### KD-01b — Kellerdecke - Fussbodenaufbau neu + 5 cm unterseitig
 
@@ -66,7 +66,7 @@ Die nachgerechneten Bestands-U-Werte decken sich mit den GEQ-Werten des EA-alt �
 
 **U = 0.284 W/m²K** — OIB-RL 6 Anforderung U_max 0.40 W/m²K: erfüllt
 
-> Notiz: 'FB = 7 cm Granulat // SDPL 3 cm, Estrich'. Variante mit Rueckbau des Bestandsaufbaus fuer die Fussbodenheizung - dabei gehen 5 cm Porit und 14 cm WO Hart verloren.
+> NICHT gewaehlt, als Alternative dokumentiert. Notiz: 'FB = 7 cm Granulat // SDPL 3 cm, Estrich'. Rueckbau des Bestandsaufbaus fuer die Fussbodenheizung - dabei gehen 5 cm Porit und 14 cm WO Hart verloren, das Bauteil wird schlechter als der Bestand.
 
 ### AD-01 — Decke zum Dachraum - Bestand, keine Massnahme
 
@@ -92,12 +92,12 @@ Die nachgerechneten Bestands-U-Werte decken sich mit den GEQ-Werten des EA-alt �
 
 ## HWB-Abschätzung
 
-| Variante | U Kellerdecke | Summe A·U·f [W/K] | L_ges [W/K] | HWB_Ref,SK [kWh/m²a] |
+| Variante | U Kellerdecke | L_ges [W/K] | Heizlast | HWB_Ref,SK [kWh/m²a] |
 | --- | ---: | ---: | ---: | ---: |
-| EA-alt (13.09.2022) | 0,196 | 509,4 | 637.6 | 139.3 |
-| Variante 2023 (14 cm VWS) | 0,196 | 189,1 | 285.8 | 47.4 |
-| **A - Bestandsaufbau bleibt** | 0.153 | 154.1 | 246.7 | **ca. 39–40** |
-| **B - Fussbodenaufbau neu** | 0.284 | 167.6 | 261.6 | **ca. 43–44** |
+| EA-alt (13.09.2022) | 0,196 | 637.6 | 23,4 kW | 139.3 |
+| Variante 2023 (14 cm VWS) | 0,196 | 285.8 | 10,5 kW | 47.4 |
+| **A - Bestandsaufbau bleibt** — **gewählt** | 0.153 | 246.7 | 9.1 kW | **ca. 39–40** |
+| **B - Fussbodenaufbau neu** | 0.284 | 261.6 | 9.6 kW | **ca. 43–44** |
 
 Zielwert laut Notiz: **HWB ≤ 44 kWh/m²a**. Die Abschätzung interpoliert linear zwischen den beiden vorliegenden GEQ-Läufen desselben Gebäudes und enthält einen Aufschlag von 2–3 kWh/m²a für die geringeren solaren Gewinne der 3-fach-Verglasung. **Sie ersetzt den GEQ-Lauf nicht.**
 
