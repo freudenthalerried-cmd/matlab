@@ -318,6 +318,73 @@ body.landing {
   border-bottom: none;
 }
 
+.hero .button-secondary {
+  margin-left: 8px;
+}
+
+.geo {
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 16px 64px;
+  text-align: center;
+}
+
+.geo h2 {
+  font-size: 32px;
+  margin: 0 0 8px;
+}
+
+.geo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+  text-align: left;
+}
+
+.geo-card {
+  background: var(--bubble);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.geo-card h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.geo-card p {
+  margin: 0 0 12px;
+  color: #57606a;
+}
+
+.geo-features {
+  margin-bottom: 0;
+}
+
+.geo-features li {
+  padding-left: 20px;
+  position: relative;
+}
+
+.geo-features li::before {
+  content: "✓";
+  color: var(--orange);
+  font-weight: 700;
+  position: absolute;
+  left: 0;
+}
+
+.geo-card-cta {
+  border-color: var(--orange);
+  text-align: center;
+}
+
+.geo-card-cta .tier-price {
+  margin-bottom: 8px;
+}
+
 .contact {
   max-width: 960px;
   width: 100%;

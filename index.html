@@ -3,15 +3,59 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Landingpage – Preise</title>
-  <meta name="description" content="Unsere Pakete und Preisstaffel im Überblick – transparent und fair.">
+  <title>Preise &amp; GEO-Optimierung – sichtbar auch in KI-Antworten</title>
+  <meta name="description" content="Transparente Preisstaffel für unsere Pakete – plus GEO-Optimierung: Wir machen Ihre bestehende Homepage sichtbar in KI-Antworten von ChatGPT, Claude, Gemini &amp; Co.">
   <link rel="stylesheet" href="styles.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Service",
+        "name": "GEO-Optimierung (Generative Engine Optimization)",
+        "description": "Optimierung bestehender Websites für KI-Suchen und KI-Assistenten wie ChatGPT, Claude, Gemini und Perplexity: strukturierte Daten, maschinenlesbare Fakten und zitierfähige Inhalte.",
+        "areaServed": "DE, AT, CH",
+        "provider": { "@type": "Organization", "name": "Projekt" }
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Was ist GEO (Generative Engine Optimization)?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "GEO ist die Optimierung einer Website dafür, in Antworten von KI-Assistenten wie ChatGPT, Claude, Gemini oder Perplexity genannt und zitiert zu werden – so wie SEO für klassische Suchmaschinen."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Brauche ich dafür eine neue Website?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Nein. Wir optimieren Ihre bestehende Homepage: strukturierte Daten, klare Fakten, FAQ-Inhalte und maschinenlesbare Auszeichnung – ohne Redesign."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Wie erreiche ich Sie?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Ausschließlich schriftlich – per E-Mail-Formular oder Chat auf dieser Seite. Ein Telefonat ist nicht nötig."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 </head>
 <body class="landing">
   <header class="site-header">
     <a class="logo" href="index.html">Projekt</a>
     <nav class="site-nav">
       <a href="#preise">Preise</a>
+      <a href="#geo">GEO</a>
       <a href="#kontakt">Kontakt</a>
       <a class="nav-cta" href="chat.html">Zum Chat</a>
     </nav>
@@ -22,9 +66,12 @@
       <h1>Transparente Preise.<br>Faire Staffelung.</h1>
       <p class="hero-sub">
         Wählen Sie das Paket, das zu Ihnen passt – je mehr Sie nutzen,
-        desto günstiger wird es.
+        desto günstiger wird es. Und damit Sie gefunden werden, wo Ihre Kunden
+        morgen suchen: Wir optimieren Websites auch für KI-Antworten
+        (GEO) – von ChatGPT bis Gemini.
       </p>
       <a class="button-primary" href="#preise">Preisstaffel ansehen</a>
+      <a class="button-secondary" href="#geo">GEO-Optimierung entdecken</a>
     </section>
 
     <section id="preise" class="pricing">
@@ -85,6 +132,42 @@
             <tr><td>ab 25</td><td>30&nbsp;%</td><td>20,30&nbsp;€ / Lizenz</td></tr>
           </tbody>
         </table>
+      </div>
+    </section>
+
+    <section id="geo" class="geo">
+      <h2>GEO-Optimierung: Sichtbar in KI-Antworten</h2>
+      <p class="pricing-sub">
+        Immer mehr Kunden fragen nicht mehr Google, sondern ChatGPT, Claude,
+        Gemini oder Perplexity. GEO (Generative Engine Optimization) sorgt
+        dafür, dass Ihre Website in diesen KI-Antworten genannt wird –
+        so wie SEO für die klassische Suche.
+      </p>
+
+      <div class="geo-grid">
+        <article class="geo-card">
+          <h3>Sie haben schon eine Homepage?</h3>
+          <p>
+            Perfekt – wir bauen sie nicht neu, wir machen sie KI-lesbar:
+            strukturierte Daten (Schema.org), klare Fakten statt Werbefloskeln,
+            FAQ-Inhalte, die KI-Assistenten direkt zitieren können.
+          </p>
+        </article>
+        <article class="geo-card">
+          <h3>Das steckt drin</h3>
+          <ul class="tier-features geo-features">
+            <li>GEO-Analyse Ihrer bestehenden Website</li>
+            <li>Strukturierte Daten &amp; maschinenlesbare Fakten</li>
+            <li>Zitierfähige Inhalte (FAQ, Leistungen, Preise)</li>
+            <li>Vorher/Nachher-Check in gängigen KI-Assistenten</li>
+          </ul>
+        </article>
+        <article class="geo-card geo-card-cta">
+          <h3>GEO-Paket</h3>
+          <p class="tier-price">ab 490&nbsp;€<span> einmalig</span></p>
+          <p>Für bestehende Websites, ohne Redesign. Festpreis nach kurzer schriftlicher Analyse.</p>
+          <a class="button-primary" href="#kontakt">Unverbindlich anfragen</a>
+        </article>
       </div>
     </section>
 
