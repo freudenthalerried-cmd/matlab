@@ -12,6 +12,7 @@
     <a class="logo" href="index.html">Projekt</a>
     <nav class="site-nav">
       <a href="#preise">Preise</a>
+      <a href="#kontakt">Kontakt</a>
       <a class="nav-cta" href="chat.html">Zum Chat</a>
     </nav>
   </header>
@@ -86,10 +87,36 @@
         </table>
       </div>
     </section>
+
+    <section id="kontakt" class="contact">
+      <h2>Kontakt – ganz ohne Telefon</h2>
+      <p class="pricing-sub">
+        Kein Anruf nötig: Schicken Sie uns Ihre Anfrage schriftlich,
+        wir antworten per E-Mail oder im Chat.
+      </p>
+
+      <form id="contact-form" class="contact-form">
+        <label>
+          Name
+          <input type="text" name="name" required>
+        </label>
+        <label>
+          Ihre Nachricht
+          <textarea name="message" rows="5" required
+            placeholder="Welches Paket interessiert Sie? Wie viele Lizenzen?"></textarea>
+        </label>
+        <div class="contact-actions">
+          <button type="submit" class="button-primary">Anfrage per E-Mail senden</button>
+          <a class="button-secondary" href="chat.html">Lieber im Chat schreiben</a>
+        </div>
+      </form>
+    </section>
   </main>
 
   <footer class="site-footer">
-    <p>© 2026 Projekt · <a href="chat.html">Chat</a></p>
+    <p>© 2026 Projekt · <a href="chat.html">Chat</a> · <a href="#kontakt">Kontakt</a></p>
   </footer>
+
+  <script src="landing.js"></script>
 </body>
 </html>
