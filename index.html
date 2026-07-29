@@ -3,31 +3,93 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chat</title>
+  <title>Landingpage – Preise</title>
+  <meta name="description" content="Unsere Pakete und Preisstaffel im Überblick – transparent und fair.">
   <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-  <main class="chat">
-    <ul id="messages" class="messages" aria-live="polite"></ul>
+<body class="landing">
+  <header class="site-header">
+    <a class="logo" href="index.html">Projekt</a>
+    <nav class="site-nav">
+      <a href="#preise">Preise</a>
+      <a class="nav-cta" href="chat.html">Zum Chat</a>
+    </nav>
+  </header>
 
-    <form id="chat-form" class="chat-form" autocomplete="off">
-      <input
-        id="chat-input"
-        class="chat-input"
-        type="text"
-        placeholder="Nachricht eingeben…"
-        aria-label="Nachricht"
-      >
-      <button
-        id="send-button"
-        class="send-button"
-        type="submit"
-        aria-label="Senden"
-        disabled
-      >&#10148;</button>
-    </form>
+  <main>
+    <section class="hero">
+      <h1>Transparente Preise.<br>Faire Staffelung.</h1>
+      <p class="hero-sub">
+        Wählen Sie das Paket, das zu Ihnen passt – je mehr Sie nutzen,
+        desto günstiger wird es.
+      </p>
+      <a class="button-primary" href="#preise">Preisstaffel ansehen</a>
+    </section>
+
+    <section id="preise" class="pricing">
+      <h2>Preisstaffel</h2>
+      <p class="pricing-sub">Alle Preise zzgl. MwSt. Monatlich kündbar.</p>
+
+      <div class="tiers">
+        <article class="tier">
+          <h3>Starter</h3>
+          <p class="tier-price">9&nbsp;€<span>/ Monat</span></p>
+          <ul class="tier-features">
+            <li>1 Projekt</li>
+            <li>Bis zu 100 Nachrichten</li>
+            <li>E-Mail-Support</li>
+          </ul>
+          <a class="button-secondary" href="chat.html">Jetzt starten</a>
+        </article>
+
+        <article class="tier tier-featured">
+          <p class="tier-badge">Beliebt</p>
+          <h3>Business</h3>
+          <p class="tier-price">29&nbsp;€<span>/ Monat</span></p>
+          <ul class="tier-features">
+            <li>5 Projekte</li>
+            <li>Bis zu 1.000 Nachrichten</li>
+            <li>Prioritäts-Support</li>
+          </ul>
+          <a class="button-primary" href="chat.html">Jetzt starten</a>
+        </article>
+
+        <article class="tier">
+          <h3>Premium</h3>
+          <p class="tier-price">79&nbsp;€<span>/ Monat</span></p>
+          <ul class="tier-features">
+            <li>Unbegrenzte Projekte</li>
+            <li>Unbegrenzte Nachrichten</li>
+            <li>Persönlicher Ansprechpartner</li>
+          </ul>
+          <a class="button-secondary" href="chat.html">Jetzt starten</a>
+        </article>
+      </div>
+
+      <div class="volume">
+        <h3>Mengenstaffel</h3>
+        <p class="pricing-sub">Rabatt auf den Paketpreis bei mehreren Lizenzen.</p>
+        <table class="volume-table">
+          <thead>
+            <tr>
+              <th scope="col">Lizenzen</th>
+              <th scope="col">Rabatt</th>
+              <th scope="col">Beispiel Business</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>1–4</td><td>–</td><td>29&nbsp;€ / Lizenz</td></tr>
+            <tr><td>5–9</td><td>10&nbsp;%</td><td>26,10&nbsp;€ / Lizenz</td></tr>
+            <tr><td>10–24</td><td>20&nbsp;%</td><td>23,20&nbsp;€ / Lizenz</td></tr>
+            <tr><td>ab 25</td><td>30&nbsp;%</td><td>20,30&nbsp;€ / Lizenz</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
   </main>
 
-  <script src="script.js"></script>
+  <footer class="site-footer">
+    <p>© 2026 Projekt · <a href="chat.html">Chat</a></p>
+  </footer>
 </body>
 </html>
