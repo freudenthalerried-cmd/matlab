@@ -453,6 +453,30 @@ body.landing {
   border-color: var(--orange);
 }
 
+.legal {
+  max-width: 720px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 16px 16px 64px;
+}
+
+.legal h1 {
+  font-size: 32px;
+}
+
+.legal h2 {
+  font-size: 20px;
+  margin-top: 32px;
+}
+
+.legal p {
+  line-height: 1.6;
+}
+
+.legal a {
+  color: var(--orange-dark);
+}
+
 .site-footer {
   margin-top: auto;
   border-top: 1px solid var(--border);
