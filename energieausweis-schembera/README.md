@@ -28,6 +28,69 @@ Eingabevorlage für GEQ.
 Damit ergibt die Abschätzung **HWB_Ref,SK ≈ 39–40 kWh/m²a** — der Zielwert von
 44 wird mit rund 4–5 kWh/m²a Reserve erreicht.
 
+> ⚠️ **Zwei dieser Festlegungen stehen im Widerspruch zur Auftragsmail der
+> Bauherrin vom 24.05.2026 — siehe Abschnitt 0.1. Vor dem GEQ-Lauf klären.**
+
+## 0.1 Auftragsgrundlage — E-Mail Monika Schembera, 24.05.2026
+
+Wortlaut der Bestellung:
+
+> Wie bereits telefonisch besprochen brauchen wir einen Energieausweis des
+> gesamten Hauses inkl. Umbau Zubau.
+>
+> Die Energiekennzahl muss kleiner als 44 sein
+>
+> **Zubau**
+> kommt ein 50iger Ziegel XP Eder,
+> OG: Tischherd
+> Fussbodenheizung
+>
+> **Altbau wird:**
+> Kellerdecke gedämmt 5 cm
+> gesamter Estrich erneuert
+> Fenster 3 fach Verglasung
+> Rollläden
+> Kachlofen
+> Fussbodenheizung
+> Dämmung Außen 18 cm
+> Dachboden ist bereits gedämmt mit 30 cm und einer Holzspannplatte
+>
+> Heizung wäre entweder Peletts oder Wärmepumpe kommt auf Energieeffizienz an.
+>
+> Herr Mag. Karl Doller vom Energiesparverband war da.
+>
+> Plan Alt und Energieausweis alt kommt mit Post.
+
+### Abgleich mit dem gerechneten Stand
+
+| Punkt | Auftragsmail | gerechneter Stand | |
+| --- | --- | --- | :-: |
+| Umfang | gesamtes Haus **inkl. Umbau/Zubau** | nur Bestandsgebäude, kein Zubau | ⚠️ |
+| Fußbodenaufbau | **gesamter Estrich erneuert** | Bestandsaufbau bleibt (Variante A) | ⚠️ |
+| Außendämmung | 18 cm | 18 cm VWS | ✓ |
+| Fenster | 3-fach, Rollläden | Uw 0,80, Rollläden | ✓ |
+| Kellerdecke | 5 cm | 5 cm unterseitig | ✓ |
+| Dachboden | 30 cm, bereits gedämmt | 28 cm laut EA-alt, keine Maßnahme | ✓ |
+| Zubau-Außenwand | 50er Ziegel XP Eder | entfallen | ⚠️ |
+| Wärmeerzeuger | Pellets **oder** Wärmepumpe | Luft/Wasser-Wärmepumpe | offen |
+| Kachlofen, Tischherd OG | vorhanden | nicht erfasst | offen |
+| EA-alt | kommt **per Post** (Papier) | Pucking-PDF verwendet | ⚠️ |
+
+Die beiden ⚠️-Punkte mit Rechenwirkung:
+
+1. **„gesamter Estrich erneuert"** heißt, der bestehende Fußbodenaufbau der
+   Kellerdecke wird geöffnet. Damit gilt **Variante B**, nicht A — der U-Wert
+   steigt von 0,153 auf 0,284 W/m²K und der HWB von rund 39–40 auf 43–44,
+   also punktgenau auf den Zielwert. Siehe Abschnitt 3.1 und 5.
+2. **Der Zubau ist Teil des Auftrags.** Die Mail nennt dafür einen 50er Ziegel
+   XP Eder — das deckt sich mit „Zubau 50 + 5 VWS" auf dem Notizzettel.
+
+Dazu die Frage, welches Gebäude gerechnet wird: die Mail spricht vom Haus mit
+Zubau, die Baubeschreibung dazu lautet auf Fasangasse 20, 4050 Traun. Der hier
+verwendete EA-alt ist auf 4055 Pucking, Gst. 1006/15 ausgestellt — ein anderes
+Objekt. Der per Post angekündigte Energieausweis-alt ist der Papierscan des
+Traun-Hauses.
+
 ---
 
 ## 1 Transkription der Notiz
@@ -131,6 +194,7 @@ sollte auf 10–12 cm erhöht werden.
 | Warmwasser | kombiniert mit Raumheizung, 546 l Speicher | über Wärmepumpe |
 | Lüftung | Fensterlüftung | unverändert |
 | Photovoltaik | keine | 20 kWp, 16 kW Wechselrichter |
+| Einzelöfen | keine | Kachlofen, Tischherd OG — noch zu erfassen |
 
 Die Umstellung auf Wärmepumpe und Flächenheizung wirkt auf HEB, EEB, PEB, CO₂
 und f_GEE — **nicht auf den HWB**. Der Zielwert HWB ≤ 44 wird ausschließlich
@@ -150,6 +214,10 @@ nach ÖNORM H 7500 erforderlich; die EA-Abschätzung genügt dafür nicht.
 | **A — Bestandsaufbau Kellerdecke bleibt — gewählt** | 246,7 | 9,1 kW | **ca. 39–40** |
 | B — Fußbodenaufbau neu (Alternative) | 261,6 | 9,6 kW | ca. 43–44 |
 
+> ⚠️ Laut Auftragsmail wird der **gesamte Estrich erneuert** — dann gilt
+> **Variante B**, nicht A. Der Zielwert wäre damit punktgenau erreicht, ohne
+> jede Reserve. Siehe Abschnitt 0.1.
+
 Rechenweg: Leitwertbilanz über alle Bauteile mit den Flächen und
 Korrekturfaktoren des GEQ-Heizlastblatts, Wärmebrücken pauschal +10 % wie im
 EA-alt, Lüftungsleitwert 77,21 W/K unverändert. Der HWB wird linear zwischen
@@ -167,12 +235,17 @@ plausibel erreichbar ist, und wo die Reserve liegt.
 
 ## 6 Offene Punkte
 
-1. **„OG-Dämmung 22 cm Bestand"** — der EA-alt weist für AD01 18 cm λ 0,042
-   plus 10 cm λ 0,035 aus, also 28 cm, U = 0,134 W/m²K. Entweder ist die Notiz
-   ungenau oder der EA-alt bildet den Dachraum zu günstig ab. Bei tatsächlich
-   22 cm läge der U-Wert bei rund 0,16 W/m²K, der HWB rund 0,5 kWh/m²a höher —
-   für den Zielwert nicht entscheidend, für die Richtigkeit des Ausweises schon.
-2. **Fenster-Kennwerte** aus dem Angebot übernehmen. Uw wirkt über den
+1. **Umfang und Kellerdecke** — die beiden Widersprüche aus Abschnitt 0.1.
+   Das sind die einzigen Punkte mit nennenswerter Rechenwirkung.
+2. **Welches Gebäude** — Fasangasse 20 in Traun oder Pucking. Für Traun wird
+   der per Post gekommene Energieausweis-alt gebraucht; die Rechnung ist dann
+   auf dessen Bauteile und Flächen neu aufzubauen.
+3. **Dachbodendämmung erledigt:** die Auftragsmail nennt 30 cm plus
+   Holzspanplatte, der EA-alt 18 + 10 = 28 cm bei U = 0,134 W/m²K. Das deckt
+   sich; die „22 cm" vom Notizzettel sind damit überholt.
+4. **Kachlofen und Tischherd** sind in der Mail genannt, aber nicht erfasst.
+   In GEQ als sekundäres Wärmebereitstellungssystem hinterlegen.
+5. **Fenster-Kennwerte** aus dem Angebot übernehmen. Uw wirkt über den
    Leitwert, g über die solaren Gewinne — beide direkt auf den HWB.
 3. **Rollläden** in GEQ als temporärer Wärmeschutz und/oder Verschattung
    erfassen; die beiden Effekte wirken gegenläufig.
