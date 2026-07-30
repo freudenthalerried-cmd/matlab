@@ -101,3 +101,28 @@ html, body {
   opacity: 0.35;
   cursor: not-allowed;
 }
+
+.app-nav {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.app-nav__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bubble);
+  color: var(--orange-dark);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.app-nav__link:hover,
+.app-nav__link:focus-visible {
+  border-color: var(--orange);
+  background: rgba(255, 140, 0, 0.1);
+}

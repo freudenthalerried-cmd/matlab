@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Mail – Verwaltung</title>
+  <link rel="stylesheet" href="mail.css">
+</head>
+<body class="mail-app">
+
+  <svg class="icon-sprite" aria-hidden="true" focusable="false">
+    <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M3 13h4l2 3h6l2-3h4M3 13l2.5-7.5A2 2 0 0 1 7.4 4h9.2a2 2 0 0 1 1.9 1.5L21 13v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+    <symbol id="i-draft" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5"/></symbol>
+    <symbol id="i-sent" viewBox="0 0 24 24"><path d="M21 3 3 10.5l7 3 3 7z"/><path d="M10 13.5 21 3"/></symbol>
+    <symbol id="i-archive" viewBox="0 0 24 24"><path d="M3 7h18v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M2 3h20v4H2zM10 12h4"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 6h16M9 6V4h6v2M6 6l1 14h10l1-14M10 10v7M14 10v7"/></symbol>
+    <symbol id="i-junk" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/></symbol>
+    <symbol id="i-new" viewBox="0 0 24 24"><path d="M4 5h11M4 5v14h14V10"/><path d="m14.5 12.5 6-6a1.8 1.8 0 0 0-2.6-2.6l-6 6-.9 3.5z"/></symbol>
+    <symbol id="i-reply" viewBox="0 0 24 24"><path d="M9 5 3 11l6 6"/><path d="M3 11h9a8 8 0 0 1 8 8v1"/></symbol>
+    <symbol id="i-reply-all" viewBox="0 0 24 24"><path d="M7 5 2 10l5 5M12 5 7 10l5 5"/><path d="M7 10h7a7 7 0 0 1 7 7v2"/></symbol>
+    <symbol id="i-forward" viewBox="0 0 24 24"><path d="m15 5 6 6-6 6"/><path d="M21 11h-9a8 8 0 0 0-8 8v1"/></symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4M5 4h12l-2.5 4L17 12H5"/></symbol>
+    <symbol id="i-attach" viewBox="0 0 24 24"><path d="M21 11.5 12.5 20a5 5 0 0 1-7-7l8-8a3.4 3.4 0 0 1 4.8 4.8l-8 8a1.8 1.8 0 0 1-2.5-2.5l7.4-7.4"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+    <symbol id="i-read" viewBox="0 0 24 24"><path d="M3 7.5 12 13l9-5.5"/><rect x="3" y="5" width="18" height="14" rx="2"/></symbol>
+    <symbol id="i-snippet" viewBox="0 0 24 24"><path d="M4 6h16M4 11h16M4 16h9"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 7.5 19.4l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.6 1.6 0 0 0 3 14.6a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.6 7.5l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.6 1.6 0 0 0 10 3.1V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 2.5 1.4l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0 1.1 2.7H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6 18 18M18 6 6 18"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-save" viewBox="0 0 24 24"><path d="M5 3h11l3 3v15H5z"/><path d="M8 3v6h7M8 14h8v7H8z"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 9V3h10v6"/><path d="M5 9h14a2 2 0 0 1 2 2v6h-4v4H7v-4H3v-6a2 2 0 0 1 2-2z"/></symbol>
+    <symbol id="i-move" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M8 11l4 4 4-4M4 19h16"/></symbol>
+  </svg>
+
+  <!-- ======================= Kopfzeile ======================= -->
+  <header class="app-bar">
+    <button class="icon-btn app-bar__nav" id="btn-mobile-back" type="button" aria-label="Ordner anzeigen">
+      <svg class="icon"><use href="#i-menu"></use></svg>
+    </button>
+
+    <a class="app-bar__brand" href="index.html" title="Zur Verwaltung">
+      <span class="app-bar__logo">✉</span>
+      <span class="app-bar__title">E-Mail</span>
+    </a>
+
+    <div class="search">
+      <svg class="icon search__icon"><use href="#i-search"></use></svg>
+      <input id="search-input" class="search__input" type="search" placeholder="Alle Ordner durchsuchen (Strg+E)" aria-label="E-Mails durchsuchen">
+      <button class="icon-btn search__clear" id="search-clear" type="button" aria-label="Suche löschen" hidden>
+        <svg class="icon"><use href="#i-close"></use></svg>
+      </button>
+    </div>
+
+    <button class="icon-btn" id="btn-settings" type="button" aria-label="Einstellungen" title="Einstellungen">
+      <svg class="icon"><use href="#i-settings"></use></svg>
+    </button>
+  </header>
+
+  <!-- ======================= Befehlsleiste ======================= -->
+  <div class="ribbon" role="toolbar" aria-label="Befehle">
+    <button class="btn btn--primary" id="btn-new" type="button">
+      <svg class="icon"><use href="#i-new"></use></svg><span>Neue E-Mail</span>
+    </button>
+
+    <span class="ribbon__sep" role="separator"></span>
+
+    <button class="btn" id="btn-reply" type="button" data-needs-selection>
+      <svg class="icon"><use href="#i-reply"></use></svg><span>Antworten</span>
+    </button>
+    <button class="btn" id="btn-reply-all" type="button" data-needs-selection>
+      <svg class="icon"><use href="#i-reply-all"></use></svg><span>Allen antworten</span>
+    </button>
+    <button class="btn" id="btn-forward" type="button" data-needs-selection>
+      <svg class="icon"><use href="#i-forward"></use></svg><span>Weiterleiten</span>
+    </button>
+
+    <span class="ribbon__sep" role="separator"></span>
+
+    <button class="btn" id="btn-delete" type="button" data-needs-selection>
+      <svg class="icon"><use href="#i-trash"></use></svg><span>Löschen</span>
+    </button>
+    <button class="btn" id="btn-archive" type="button" data-needs-selection>
+      <svg class="icon"><use href="#i-archive"></use></svg><span>Archivieren</span>
+    </button>
+    <button class="btn" id="btn-move" type="button" data-needs-selection>
+      <svg class="icon"><use href="#i-move"></use></svg><span>Verschieben</span>
+    </button>
+    <button class="btn" id="btn-flag" type="button" data-needs-selection>
+      <svg class="icon"><use href="#i-flag"></use></svg><span>Kennzeichnen</span>
+    </button>
+    <button class="btn" id="btn-read" type="button" data-needs-selection>
+      <svg class="icon"><use href="#i-read"></use></svg><span>Gelesen</span>
+    </button>
+
+    <span class="ribbon__spacer"></span>
+
+    <button class="btn" id="btn-snippets" type="button" title="Textbausteine verwalten">
+      <svg class="icon"><use href="#i-snippet"></use></svg><span>Textbausteine</span>
+    </button>
+  </div>
+
+  <!-- ======================= Arbeitsbereich ======================= -->
+  <main class="workspace" id="workspace">
+
+    <!-- Ordner -->
+    <nav class="pane pane--folders" aria-label="Ordner">
+      <ul class="folders" id="folder-list"></ul>
+
+      <div class="folders__section">
+        <h2 class="folders__heading">Eigene Ordner</h2>
+        <ul class="folders" id="custom-folder-list"></ul>
+        <button class="link-btn" id="btn-add-folder" type="button">
+          <svg class="icon"><use href="#i-plus"></use></svg> Ordner anlegen
+        </button>
+      </div>
+    </nav>
+
+    <!-- Nachrichtenliste -->
+    <section class="pane pane--list" aria-label="Nachrichten">
+      <div class="list-head">
+        <h1 class="list-head__title" id="list-title">Posteingang</h1>
+        <div class="list-head__tools">
+          <label class="switch">
+            <input type="checkbox" id="filter-unread">
+            <span>Nur ungelesen</span>
+          </label>
+          <label class="sort">
+            <span class="sr-only">Sortierung</span>
+            <select id="sort-select">
+              <option value="date-desc">Datum (neueste zuerst)</option>
+              <option value="date-asc">Datum (älteste zuerst)</option>
+              <option value="from">Absender</option>
+              <option value="subject">Betreff</option>
+              <option value="flagged">Kennzeichnung</option>
+            </select>
+          </label>
+        </div>
+      </div>
+      <div class="list-scroll">
+        <ul class="msg-list" id="msg-list"></ul>
+        <p class="empty" id="list-empty" hidden>Keine Nachrichten in dieser Ansicht.</p>
+      </div>
+    </section>
+
+    <!-- Lesebereich -->
+    <section class="pane pane--reading" aria-label="Lesebereich" id="reading-pane">
+      <div class="reading-empty" id="reading-empty">
+        <svg class="icon reading-empty__icon"><use href="#i-read"></use></svg>
+        <p>Wählen Sie eine Nachricht aus, um sie zu lesen.</p>
+      </div>
+
+      <article class="reading" id="reading" hidden>
+        <header class="reading__head">
+          <h2 class="reading__subject" id="read-subject"></h2>
+          <div class="reading__actions">
+            <button class="icon-btn" id="read-reply" type="button" title="Antworten (Strg+R)" aria-label="Antworten">
+              <svg class="icon"><use href="#i-reply"></use></svg>
+            </button>
+            <button class="icon-btn" id="read-reply-all" type="button" title="Allen antworten (Strg+Umschalt+R)" aria-label="Allen antworten">
+              <svg class="icon"><use href="#i-reply-all"></use></svg>
+            </button>
+            <button class="icon-btn" id="read-forward" type="button" title="Weiterleiten (Strg+Umschalt+F)" aria-label="Weiterleiten">
+              <svg class="icon"><use href="#i-forward"></use></svg>
+            </button>
+            <button class="icon-btn" id="read-print" type="button" title="Drucken" aria-label="Drucken">
+              <svg class="icon"><use href="#i-print"></use></svg>
+            </button>
+          </div>
+        </header>
+
+        <div class="reading__meta">
+          <div class="avatar" id="read-avatar"></div>
+          <div class="reading__meta-main">
+            <div class="reading__from">
+              <strong id="read-from-name"></strong>
+              <span class="muted" id="read-from-mail"></span>
+              <span class="reading__date" id="read-date"></span>
+            </div>
+            <div class="reading__rcpt" id="read-to"></div>
+            <div class="reading__rcpt" id="read-cc"></div>
+          </div>
+        </div>
+
+        <div class="attachments" id="read-attachments" hidden></div>
+
+        <div class="reading__body" id="read-body"></div>
+      </article>
+    </section>
+  </main>
+
+  <p class="status-bar" id="status-bar" role="status" aria-live="polite"></p>
+
+  <!-- ======================= Verfassen ======================= -->
+  <div class="overlay" id="compose-overlay" hidden>
+    <form class="compose" id="compose-form" aria-label="Neue Nachricht">
+      <header class="compose__head">
+        <h2 class="compose__title" id="compose-title">Neue Nachricht</h2>
+        <button class="icon-btn" id="compose-close" type="button" aria-label="Schließen">
+          <svg class="icon"><use href="#i-close"></use></svg>
+        </button>
+      </header>
+
+      <div class="compose__fields">
+        <div class="field">
+          <label class="field__label" for="f-to">An</label>
+          <div class="field__control">
+            <input class="field__input" id="f-to" type="text" autocomplete="off" placeholder="name@beispiel.at; weitere@beispiel.at">
+            <div class="suggest" id="suggest-to" hidden></div>
+          </div>
+          <div class="field__toggles">
+            <button class="chip-btn" id="toggle-cc" type="button" aria-pressed="false">CC</button>
+            <button class="chip-btn" id="toggle-bcc" type="button" aria-pressed="false">BCC</button>
+          </div>
+        </div>
+
+        <div class="field" id="row-cc" hidden>
+          <label class="field__label" for="f-cc">CC</label>
+          <div class="field__control">
+            <input class="field__input" id="f-cc" type="text" autocomplete="off" placeholder="Kopie an …">
+            <div class="suggest" id="suggest-cc" hidden></div>
+          </div>
+          <div class="field__toggles">
+            <button class="chip-btn" id="btn-cc-me" type="button" title="Eigene Adresse als Kopie hinzufügen">+ Mich</button>
+          </div>
+        </div>
+
+        <div class="field" id="row-bcc" hidden>
+          <label class="field__label" for="f-bcc">BCC</label>
+          <div class="field__control">
+            <input class="field__input" id="f-bcc" type="text" autocomplete="off" placeholder="Blindkopie an …">
+            <div class="suggest" id="suggest-bcc" hidden></div>
+          </div>
+          <div class="field__toggles"></div>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="f-subject">Betreff</label>
+          <div class="field__control">
+            <input class="field__input" id="f-subject" type="text" placeholder="Betreff">
+          </div>
+          <div class="field__toggles"></div>
+        </div>
+      </div>
+
+      <div class="compose__toolbar" role="toolbar" aria-label="Formatierung">
+        <button class="fmt-btn" type="button" data-cmd="bold" title="Fett (Strg+B)"><b>F</b></button>
+        <button class="fmt-btn" type="button" data-cmd="italic" title="Kursiv (Strg+I)"><i>K</i></button>
+        <button class="fmt-btn" type="button" data-cmd="underline" title="Unterstrichen (Strg+U)"><u>U</u></button>
+        <span class="ribbon__sep" role="separator"></span>
+        <button class="fmt-btn" type="button" data-cmd="insertUnorderedList" title="Aufzählung">•—</button>
+        <button class="fmt-btn" type="button" data-cmd="insertOrderedList" title="Nummerierung">1.</button>
+        <button class="fmt-btn" type="button" data-cmd="createLink" title="Link einfügen">🔗</button>
+        <button class="fmt-btn" type="button" data-cmd="removeFormat" title="Formatierung entfernen">✕F</button>
+        <span class="ribbon__sep" role="separator"></span>
+
+        <div class="dropdown" id="snippet-dropdown">
+          <button class="btn btn--small" id="snippet-toggle" type="button" aria-expanded="false" aria-haspopup="true">
+            <svg class="icon"><use href="#i-snippet"></use></svg><span>Textbaustein einfügen</span>
+            <svg class="icon dropdown__caret"><use href="#i-chevron"></use></svg>
+          </button>
+          <div class="dropdown__menu" id="snippet-menu" hidden></div>
+        </div>
+
+        <button class="btn btn--small" id="btn-attach" type="button">
+          <svg class="icon"><use href="#i-attach"></use></svg><span>Anhang</span>
+        </button>
+        <input type="file" id="file-input" multiple hidden>
+      </div>
+
+      <div class="compose__attachments" id="compose-attachments" hidden></div>
+
+      <div class="compose__body-wrap" id="drop-zone">
+        <div class="compose__body" id="f-body" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Nachrichtentext"></div>
+        <div class="drop-hint" id="drop-hint" hidden>Dateien hier ablegen, um sie anzuhängen</div>
+      </div>
+
+      <footer class="compose__foot">
+        <button class="btn btn--primary" id="btn-send" type="submit">Senden</button>
+        <button class="btn" id="btn-save-draft" type="button">
+          <svg class="icon"><use href="#i-save"></use></svg><span>Entwurf speichern</span>
+        </button>
+        <button class="btn btn--ghost" id="btn-discard" type="button">Verwerfen</button>
+        <span class="compose__hint" id="compose-hint"></span>
+      </footer>
+    </form>
+  </div>
+
+  <!-- ======================= Textbausteine verwalten ======================= -->
+  <div class="overlay" id="snippets-overlay" hidden>
+    <section class="dialog dialog--wide" aria-label="Textbausteine">
+      <header class="compose__head">
+        <h2 class="compose__title">Textbausteine</h2>
+        <button class="icon-btn" id="snippets-close" type="button" aria-label="Schließen">
+          <svg class="icon"><use href="#i-close"></use></svg>
+        </button>
+      </header>
+      <div class="dialog__body">
+        <p class="hint">
+          Textbausteine sind Versatzstücke, die Sie an der Cursorposition in eine neue E-Mail einfügen.
+          Platzhalter <code>{{Empfänger}}</code>, <code>{{Absender}}</code> und <code>{{Datum}}</code> werden beim Einfügen ersetzt.
+        </p>
+        <div class="snippets-grid">
+          <ul class="snippet-list" id="snippet-list"></ul>
+          <form class="snippet-editor" id="snippet-editor">
+            <label class="stack">
+              <span>Titel</span>
+              <input type="text" id="sn-title" required placeholder="z. B. Terminbestätigung">
+            </label>
+            <label class="stack">
+              <span>Kategorie</span>
+              <input type="text" id="sn-category" list="sn-categories" placeholder="z. B. Standard">
+              <datalist id="sn-categories"></datalist>
+            </label>
+            <label class="stack">
+              <span>Text</span>
+              <textarea id="sn-body" rows="8" required placeholder="Sehr geehrte/r {{Empfänger}}, …"></textarea>
+            </label>
+            <div class="snippet-editor__foot">
+              <button class="btn btn--primary" type="submit" id="sn-save">Speichern</button>
+              <button class="btn" type="button" id="sn-new">Neu</button>
+              <button class="btn btn--ghost" type="button" id="sn-delete">Löschen</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ======================= Einstellungen ======================= -->
+  <div class="overlay" id="settings-overlay" hidden>
+    <section class="dialog" aria-label="Einstellungen">
+      <header class="compose__head">
+        <h2 class="compose__title">Einstellungen</h2>
+        <button class="icon-btn" id="settings-close" type="button" aria-label="Schließen">
+          <svg class="icon"><use href="#i-close"></use></svg>
+        </button>
+      </header>
+      <form class="dialog__body" id="settings-form">
+        <label class="stack">
+          <span>Anzeigename</span>
+          <input type="text" id="set-name" placeholder="Vor- und Nachname">
+        </label>
+        <label class="stack">
+          <span>Eigene E-Mail-Adresse</span>
+          <input type="email" id="set-mail" placeholder="ich@verwaltung.at">
+        </label>
+        <label class="stack">
+          <span>Standard-CC (immer in Kopie, mehrere mit <code>;</code> trennen)</span>
+          <input type="text" id="set-cc" placeholder="armin@verwaltung.at; buero@verwaltung.at">
+          <small class="hint">Diese Adressen stehen bei jeder neuen E-Mail und bei jeder Antwort automatisch im CC.</small>
+        </label>
+        <label class="check">
+          <input type="checkbox" id="set-cc-self">
+          <span>Mich selbst immer in CC setzen (Kopie an die eigene Adresse)</span>
+        </label>
+        <label class="check">
+          <input type="checkbox" id="set-reply-all-default">
+          <span>Bei Antworten standardmäßig „Allen antworten“ verwenden</span>
+        </label>
+        <label class="stack">
+          <span>Signatur</span>
+          <textarea id="set-signature" rows="5" placeholder="Mit freundlichen Grüßen&#10;…"></textarea>
+        </label>
+        <div class="snippet-editor__foot">
+          <button class="btn btn--primary" type="submit">Speichern</button>
+          <button class="btn btn--ghost" type="button" id="set-reset">Beispieldaten zurücksetzen</button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <!-- ======================= Verschieben-Auswahl ======================= -->
+  <div class="overlay" id="move-overlay" hidden>
+    <section class="dialog dialog--narrow" aria-label="Verschieben">
+      <header class="compose__head">
+        <h2 class="compose__title">In Ordner verschieben</h2>
+        <button class="icon-btn" id="move-close" type="button" aria-label="Schließen">
+          <svg class="icon"><use href="#i-close"></use></svg>
+        </button>
+      </header>
+      <div class="dialog__body">
+        <ul class="move-list" id="move-list"></ul>
+      </div>
+    </section>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="mail.js"></script>
+</body>
+</html>
