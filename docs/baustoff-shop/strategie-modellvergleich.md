@@ -7,6 +7,15 @@ einfacheren Weg, das Ziel ohne laufendes eigenes Zutun zu erreichen.
 empfohlene Modell umgestellt wird, und hat noch nicht geantwortet. Bis dahin
 bleibt die Radon-Nische der gültige Arbeitsstand; sie wird nicht verworfen.
 
+> **Teilweise überholt.** Die hier ausgesprochene Empfehlung für digitale
+> BauKG-Produkte erging ohne Wettbewerbsprüfung. Nachgeholt fällt sie durch
+> Gate 2 — ABK und wp software besetzen den österreichischen Markt, WEKA und
+> Forum Verlag den deutschen, und die Arbeitsinspektion stellt eine
+> Erstellungshilfe kostenlos bereit. Siehe
+> [`skalierung-und-passivitaet.md`](./skalierung-und-passivitaet.md). Die
+> Grundrechnung zum Kapitalweg und die Modellgegenüberstellung unten bleiben
+> gültig.
+
 ## Die Grundrechnung, die den Rahmen setzt
 
 „Komplett ohne eigenes Zutun" und „3.000 € netto im Monat" lassen sich nur auf
