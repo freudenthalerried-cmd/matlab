@@ -138,16 +138,102 @@ Alarmschwellen mitliefern, nicht nur Happy-Path-Automatisierung.
 
 ---
 
-## 6. Offene Entscheidungen
+## 6. Festgelegte Rahmenbedingungen
 
-Diese vier Punkte verändern den Prompt inhaltlich und sollten vor dem ersten
-Lauf festgelegt werden:
+| Parameter | Festlegung |
+|---|---|
+| Zielmarkt | **Österreich** |
+| Zielgröße | **3.000 € Gewinn vor Steuer pro Monat** |
+| Startbudget | **5.000–15.000 €** |
+| Logistikmodell | **Reines Streckengeschäft**, kein eigenes Lager |
 
-1. **Zielmarkt** — Österreich, Deutschland oder DACH? Bestimmt Recht,
-   Lieferanten, Frachtkosten und Wettbewerb.
-2. **3.000 € = Gewinn oder Umsatz?** Der Prompt unterstellt Gewinn vor Steuer.
-   Bei Umsatz wäre das Projekt trivial und wirtschaftlich sinnlos.
-3. **Startbudget und Zeithorizont** — mit 5.000 € Startkapital sieht der Plan
-   anders aus als mit 30.000 €. Break-even in 6 oder in 18 Monaten?
-4. **Lagerhaltung** — reines Streckengeschäft (kein Lager, weniger Marge) oder
-   kleines Eigenlager für die margenstarken Schnelldreher?
+### 6.1 Die Spannung im Modell — und wie sie aufzulösen ist
+
+Zwei dieser Festlegungen ziehen gegeneinander:
+
+- Das Gewinnziel verlangt **mindestens ~28 % Rohmarge** (Abschnitt 1).
+- Reines Streckengeschäft liefert im Baustoffhandel typischerweise **20–30 %** —
+  der Lieferant übernimmt Lagerung, Kommissionierung und Versand und behält
+  dafür einen Teil der Handelsspanne.
+
+Der Korridor ist also schmal, aber er existiert. Er liegt dort, wo ein
+**Hersteller ohne eigene Handelsstruktur** einen guten Händlerrabatt gewährt,
+weil er Distribution braucht: kleine und mittlere Spezialhersteller in engen
+Segmenten — Lehm- und Kalkbaustoffe, Injektionsharze, Bauwerksabdichtung,
+Radonschutz, Sanierungsputze. Genau dort ist auch der Wettbewerb dünn.
+
+Umgekehrt fällt alles weg, was über Großhändler mit etablierter Handelskette
+läuft: dort ist die Spanne bereits verteilt.
+
+**Damit wird die zentrale Rechercheaufgabe präzise formulierbar:** Finde
+Hersteller im österreichischen Markt, die gleichzeitig (a) Streckengeschäft
+anbieten, (b) mindestens 30 % Händlerrabatt auf UVP gewähren und (c) in einem
+Segment tätig sind, das Baumärkte nicht abdecken. Erfüllt ein Lieferant nur zwei
+der drei Bedingungen, trägt er das Modell nicht.
+
+### 6.2 Zahlen für dieses Szenario
+
+Fixkosten in Österreich, schlank, GmbH bzw. FlexKapG:
+
+```
+Shopsystem, Apps, Feed-Tool          100–150 €
+Steuerberater inkl. Bilanz           250–350 €
+WKO-Grundumlage                        ~15 €
+Rechtstexte, Domain, Mail              50–80 €
+Betriebshaftpflicht                     ~30 €
+Puffer                                  100 €
+--------------------------------------------
+Σ                                    550–725 €   → Rechnung mit 650 €
+```
+
+Benötigter Deckungsbeitrag nach Werbung: 3.650 €. Bei 10 % Werbekostenanteil:
+
+| Rohmarge | Nötiger Netto-Umsatz/Monat | Bestellungen bei Ø 400 € |
+|---|---|---|
+| 25 % | 24.300 € | 61 |
+| 28 % | 20.300 € | 51 |
+| 30 % | 18.250 € | 46 |
+| 32 % | 16.600 € | 42 |
+
+Der höhere Warenkorbwert von 400 € unterstellt Handwerksbetriebe als
+Hauptzielgruppe statt Privatkunden. Das ist im Streckengeschäft die
+naheliegende Ausrichtung: größere Bestellmengen, weniger Retouren, höhere
+Wiederkaufrate. Der Prompt lässt das prüfen, statt es vorauszusetzen.
+
+### 6.3 Was 3.000 € „vor Steuer" tatsächlich bedeuten
+
+Bei einer Kapitalgesellschaft in Österreich stehen zwischen Unternehmensgewinn
+und Privatvermögen zwei Stufen: 23 % Körperschaftsteuer, dann 27,5 %
+Kapitalertragsteuer auf die Ausschüttung.
+
+```
+3.000 € Gewinn vor Steuer
+ −  690 € KöSt (23 %)
+ = 2.310 € nach KöSt
+ −  635 € KESt (27,5 %) bei Ausschüttung
+ = 1.675 € netto beim Gesellschafter
+```
+
+Wer 3.000 € **netto** möchte, braucht rund **5.400 € Gewinn vor Steuer** — und
+damit je nach Marge 30.000–44.000 € Umsatz im Monat. Das ist eine andere
+Größenordnung von Projekt. Der Prompt rechnet mit der getroffenen Festlegung
+(3.000 € vor Steuer), weist das Nettoergebnis aber in jedem Szenario mit aus,
+damit die Entscheidung jederzeit revidierbar bleibt.
+
+### 6.4 Budgetverwendung ohne Lager
+
+Ohne Warenlager verschiebt sich der Kapitaleinsatz vollständig in Gründung,
+Technik und Marketing:
+
+| Position | Ansatz |
+|---|---|
+| Stammkapital GmbH/FlexKapG (bar einzuzahlen) | 5.000 € — bleibt als Betriebsmittel erhalten |
+| Notar, Firmenbuch, Gründungskosten | 1.500–2.500 € |
+| Shop-Aufbau, Feed-Anbindung, Rechtstexte | 1.500–3.000 € |
+| Werbebudget Anlaufphase (6 Monate) | 3.000–5.000 € |
+
+Das Stammkapital ist kein verbrauchter Aufwand, sondern liegt als Liquidität in
+der Firma — bei 15.000 € Budget bleibt der Plan damit finanzierbar, bei 5.000 €
+wird es eng und die Gründung als Einzelunternehmen wäre zu prüfen. Das
+widerspricht allerdings dem Ziel der persönlichen Trennung, weil dann keine
+Haftungstrennung besteht.

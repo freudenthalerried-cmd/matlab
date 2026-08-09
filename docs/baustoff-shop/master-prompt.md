@@ -1,8 +1,9 @@
 # Master-Prompt: Autonomer Baustoff-Shop
 
 > Zum Kopieren in eine frische Claude-Code-Session. Der Block zwischen den
-> Trennlinien ist der Prompt. Die Platzhalter in `[eckigen Klammern]` vorher
-> ausfüllen — alles andere kann stehen bleiben.
+> Trennlinien ist der Prompt. Die Rahmenbedingungen sind bereits eingesetzt:
+> Österreich, 3.000 € Gewinn vor Steuer, 5.000–15.000 € Budget, reines
+> Streckengeschäft. Herleitung siehe [`README.md`](./README.md).
 
 ---
 
@@ -19,14 +20,23 @@ und eigener Rechtsform. Es soll operativ ohne meine Arbeitszeit laufen. Es ist
 Zahlungsdienstleister sind Rahmenbedingungen, keine Probleme, die du lösen
 sollst. Plane sie ein statt sie zu umgehen.
 
-## Harte Ziele
+## Harte Ziele und Rahmenbedingungen
 
-- **3.000 € Gewinn pro Monat vor Steuer**, spätestens im Monat `[12]` nach Start.
+- **3.000 € Gewinn pro Monat vor Steuer**, spätestens im Monat 12 nach Start.
 - Wiederkehrend und stabil, nicht als einmaliger Ausreißer: drei
   aufeinanderfolgende Monate über Ziel.
-- Höchstens `[4]` Stunden meiner Zeit pro Monat im eingeschwungenen Betrieb.
-- Startbudget: `[BETRAG]` €. Überschreite es nicht ohne Rückfrage.
-- Zielmarkt: `[Österreich / Deutschland / DACH]`.
+- Höchstens 4 Stunden meiner Zeit pro Monat im eingeschwungenen Betrieb.
+- **Zielmarkt Österreich.** Verkauf nach Deutschland nur, wenn du die
+  Lieferschwelle und den OSS-Aufwand mitbewertest.
+- **Startbudget 5.000–15.000 €.** Plane mit 10.000 € und weise aus, was sich am
+  unteren und oberen Rand ändert. Überschreite es nicht ohne Rückfrage.
+- **Reines Streckengeschäft — kein eigenes Warenlager.** Der Lieferant versendet
+  direkt an den Endkunden. Wenn du zu dem Ergebnis kommst, dass das Gewinnziel
+  ohne Eigenlager für Schnelldreher nicht erreichbar ist, sag mir das mit
+  Zahlen; entscheiden werde ich.
+- **Zielgruppe vorrangig Handwerksbetriebe** (B2B), nicht Privatkunden — höherer
+  Warenkorb, weniger Retouren, höhere Wiederkaufrate. Prüfe diese Annahme in
+  Phase 1, statt sie vorauszusetzen.
 
 ## Leitplanken
 
@@ -64,20 +74,38 @@ Nenne für jede Nische die drei stärksten bestehenden Anbieter mit ihrer
 Positionierung. Prüfe explizit, ob Google Shopping in dieser Nische von
 Baumärkten dominiert wird.
 
-**Gate:** Verwirf jede Nische, deren realistische Rohmarge unter 28 % liegt —
-sie kann das Gewinnziel rechnerisch nicht tragen. Weise das nach, statt es zu
-behaupten. Empfiehl am Ende **eine** Kernnische plus optional ein
-Ergänzungssortiment im Streckengeschäft, und begründe die Wahl gegen die
-Zweit- und Drittplatzierten.
+**Gate 1 — Marge:** Verwirf jede Nische, deren realistische Rohmarge im
+Streckengeschäft unter 28 % liegt. Sie kann das Gewinnziel rechnerisch nicht
+tragen. Weise das nach, statt es zu behaupten.
+
+**Gate 2 — Lieferantenstruktur:** Das Gewinnziel und das Streckengeschäft
+ziehen gegeneinander — 28 % Marge ohne eigene Logistikleistung ist im
+Baustoffhandel die Ausnahme, nicht die Regel. Der tragfähige Korridor liegt bei
+**Herstellern ohne eigene Handelsstruktur**, die Distribution brauchen. Eine
+Nische qualifiziert sich nur, wenn es dort Lieferanten gibt, die alle drei
+Bedingungen gleichzeitig erfüllen:
+
+1. Streckengeschäft an Endkunden möglich,
+2. mindestens 30 % Händlerrabatt auf UVP,
+3. Segment, das Baumärkte und Baustoff-Großhändler nicht abdecken.
+
+Zwei von drei reichen nicht. Weise für jede verbliebene Nische mindestens zwei
+namentlich genannte Lieferanten nach, bei denen alle drei plausibel sind.
+
+Empfiehl am Ende **eine** Kernnische, und begründe die Wahl gegen die Zweit- und
+Drittplatzierten.
 
 ## Phase 2 — Lieferanten, Preise, Verfügbarkeit
 
 Für die gewählte Nische:
 
-- Finde mindestens acht in Frage kommende Lieferanten: Hersteller, Importeure,
-  Großhändler. Je Lieferant: Sortiment, Mindestbestellwert, erwartete
-  Händlerkonditionen, Streckengeschäft ja/nein, Datenschnittstelle (CSV, API,
-  EDI, gar keine), Lieferzeit, Frachtregelung ab wann frei.
+- Finde mindestens acht in Frage kommende Lieferanten mit Lieferfähigkeit nach
+  Österreich — Schwerpunkt auf Herstellern und Importeuren, nicht auf
+  Großhändlern mit etablierter Handelskette. Je Lieferant: Sortiment,
+  Mindestbestellwert, erwartete Händlerkonditionen in Prozent auf UVP,
+  Streckengeschäft ja/nein, ob neutral verpackt und unter meinem Absender
+  versandt wird, Datenschnittstelle (CSV, API, EDI, gar keine), Lieferzeit,
+  Frachtregelung ab wann frei, Umgang mit Speditionsschäden.
 - Erhebe für **mindestens 40 konkrete Artikel** die aktuellen Endkundenpreise
   bei drei bis fünf Wettbewerbern, inklusive Versandkosten und Lieferzeit.
   Speichere das als Rohdaten, nicht nur als Zusammenfassung.
@@ -99,8 +127,17 @@ Ergebnissen darunter:
 - Sensitivitätsanalyse über Marge, Warenkorbwert, Conversion-Rate und
   Klickpreis — zeige, welche Stellschraube das Ergebnis am stärksten bewegt.
 - Drei Szenarien: pessimistisch, realistisch, optimistisch. Für jedes:
-  Break-even-Monat, maximaler Kapitalbedarf, Kapitalbindung im Lager.
-- Monatliche Liquiditätsplanung über 24 Monate.
+  Break-even-Monat, maximaler Kapitalbedarf, Zeitpunkt, ab dem sich das
+  Werbebudget aus dem laufenden Deckungsbeitrag trägt.
+- Monatliche Liquiditätsplanung über 24 Monate. Beachte den Zahlungsverzug im
+  Streckengeschäft: Der Lieferant will oft bei Bestellung bezahlt werden, der
+  Kunde zahlt je nach Zahlart später — das bindet Liquidität, obwohl kein Lager
+  existiert. Rechne das aus, statt es zu übergehen.
+- **Weise in jedem Szenario zusätzlich das Nettoergebnis aus:** Gewinn vor
+  Steuer, abzüglich 23 % Körperschaftsteuer, abzüglich 27,5 %
+  Kapitalertragsteuer bei Ausschüttung. Aus 3.000 € vor Steuer werden rund
+  1.675 € beim Gesellschafter. Zeig mir beide Zahlen nebeneinander, damit ich
+  entscheiden kann, ob das Ziel höher liegen muss.
 
 **Gate:** Wenn das realistische Szenario das Ziel im gesetzten Zeithorizont
 nicht erreicht, sag mir das offen und schlage vor, was sich ändern muss —
@@ -158,17 +195,35 @@ wiederverwendbaren Skill.
 
 ## Phase 8 — Recht und Compliance
 
-Recherchiere und dokumentiere für den Zielmarkt, jeweils mit Fundstelle:
+Recherchiere und dokumentiere für **Österreich**, jeweils mit Fundstelle und
+Abrufdatum:
 
-Rechtsform und Gründung · Gewerbeberechtigung für den Baustoffhandel ·
-Umsatzsteuer, Kleinunternehmerregelung, Reverse Charge, OSS bei
-grenzüberschreitendem Verkauf · Impressum, Datenschutz, AGB, Widerrufsrecht und
-seine Grenzen bei angebrochener oder aushärtender Ware · Preisangaben inklusive
-Grundpreis · Verpackungslizenzierung · EU-Bauprodukteverordnung mit CE-Zeichen
-und Leistungserklärung · CLP-Kennzeichnung und Sicherheitsdatenblätter bei
-Bauchemie · Gefahrgutvorschriften im Versand · Produkthaftung und
-Betriebshaftpflicht · Speditionsversand, Abladestelle, Avisierung,
-Schadensmeldefristen.
+- **Rechtsform:** GmbH oder FlexKapG — Stammkapital, Bareinzahlung,
+  Gründungskosten, digitale Gründung. Vergleiche gegen das Einzelunternehmen
+  und benenne, was der Verzicht auf die Haftungstrennung konkret bedeutet.
+- **Gewerbe:** Einordnung des Baustoffhandels in der Gewerbeordnung, freies
+  oder reglementiertes Gewerbe, WKO-Pflichtmitgliedschaft und Grundumlage,
+  SVS-Beiträge des Geschäftsführers.
+- **Steuer:** Umsatzsteuer und Vorsteuerabzug, Kleinunternehmergrenze und warum
+  sie bei diesem Umsatzziel nicht greift, Reverse Charge im B2B,
+  Lieferschwelle und OSS bei Verkäufen nach Deutschland,
+  UID-Nummern-Prüfung im Shop.
+- **Onlinehandel:** Impressum nach § 5 ECG, DSGVO und Datenschutzerklärung,
+  AGB, Rücktrittsrecht nach FAGG und seine Grenzen bei angebrochener,
+  aushärtender oder kundenspezifisch angemischter Ware,
+  Preisauszeichnungsgesetz inklusive Grundpreisangabe.
+- **Verpackung:** Lizenzierungspflicht und Sammelsystem (ARA oder
+  Alternativsystem) — auch dann, wenn der Lieferant versendet. Kläre
+  ausdrücklich, wen im Streckengeschäft die Pflicht trifft.
+- **Bauprodukte:** EU-Bauprodukteverordnung 305/2011, CE-Kennzeichnung,
+  Leistungserklärung (DoP) — wer sie bereitstellen muss und wie sie im Shop
+  zugänglich zu machen ist.
+- **Bauchemie:** CLP-Kennzeichnung, Sicherheitsdatenblätter, Abgabe an private
+  Endverbraucher, Gefahrgutvorschriften im Paket- und Speditionsversand.
+- **Haftung und Logistik:** Produkthaftung, Betriebshaftpflicht,
+  Speditionsversand mit Abladestelle, Avisierung und Hebebühne,
+  Schadensmeldefristen — und wie sich die Haftung im Streckengeschäft zwischen
+  mir und dem Lieferanten verteilt. Das gehört in den Lieferantenvertrag.
 
 Markiere klar, was zwingend ein Anwalt oder Steuerberater freigeben muss.
 
