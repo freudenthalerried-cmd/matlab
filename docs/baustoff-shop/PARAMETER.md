@@ -14,6 +14,17 @@ zur Diskussion gestellt. Änderungen nur mit ausdrücklicher Freigabe.
 | Fachwissen Auftraggeber | Fundiert — Beruf/Ausbildung im Bau |
 | Ausgangslage | Firma bzw. Gewerbeschein vorhanden, sonst alles von null |
 
+## Veröffentlichte Artefakte
+
+| Artefakt | URL |
+|---|---|
+| Zwischenbericht Phase 1 und 3 | https://claude.ai/code/artifact/3d669d15-b632-41b9-838c-b9369dab8a4c |
+
+Quelldatei des Berichts: `bericht-radon.html` im Scratchpad der Session.
+**Wichtig für spätere Läufe:** Zum Aktualisieren dieses Berichts die obige URL
+als `url` an das Artifact-Tool übergeben — sonst entsteht eine neue Adresse und
+der Auftraggeber hat zwei widersprüchliche Stände.
+
 ## Freigaberegeln
 
 Der Auftraggeber wird ab jetzt **nur** noch kontaktiert bei:
