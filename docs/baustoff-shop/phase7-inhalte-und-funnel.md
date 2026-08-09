@@ -37,6 +37,13 @@ leichter erreichbar, nicht schwerer.
 
 ## Der Funnel, der beide Modelle verbindet
 
+> **Korrigiert.** Der unten beschriebene Dosimeter-**Verkauf** ist so nicht
+> zulässig: Radonmessung ist in Österreich eine ermächtigte Tätigkeit nach dem
+> Strahlenschutzgesetz. An seine Stelle tritt die **Vermittlung an eine
+> anerkannte Messstelle** (AGES, TÜV SÜD, Strahlenschutzlabor Stadt Wien). Die
+> Funnel-Logik bleibt unverändert, nur die Marge auf den Messvorgang entfällt.
+> Begründung in [`phase8-compliance.md`](./phase8-compliance.md).
+
 Die entscheidende Beobachtung: **Die Messung ist der natürliche Einstieg.**
 Niemand saniert, ohne gemessen zu haben, und die Messung kostet 50–150 € statt
 mehrerer Tausend.
