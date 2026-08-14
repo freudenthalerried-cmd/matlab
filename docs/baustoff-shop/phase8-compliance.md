@@ -9,6 +9,14 @@ shopspezifischen Punkte am Ende.
 > anwaltliche Prüfung erforderlich, insbesondere bei AGB, Rücktrittsbelehrung
 > und Datenweitergabe.
 
+> **Teilweise überholt.** Das unten als Hauptrisiko beschriebene
+> FAGG-Rücktrittsrecht samt Zwölfmonatsfalle entfällt für den Warenverkauf:
+> Nach Gate 7 in [`phase6-automatisierung.md`](./phase6-automatisierung.md)
+> wird der Shop rein B2B geführt, und im Unternehmergeschäft gilt § 11 FAGG
+> nicht. An seine Stelle tritt die Auflage, Verbraucherbestellungen wirksam
+> auszuschließen — Firmendaten, UID, Nettopreise, Unternehmerbestätigung im
+> Bestellprozess. Für Privatpersonen bleibt alles Weitere unverändert gültig.
+
 ## Der Fund, der den Funnel korrigiert
 
 Der Funnel in

@@ -95,7 +95,15 @@ werden kann, taugt nicht als Abbruchkriterium.
 | Antwortende Hersteller | ≥3 von 6 | 0 nach zweiter Nachfrage |
 | Zugesagter Händlerrabatt auf UVP | ≥35 % | <35 % bei allen Antwortenden |
 | Streckengeschäft zugesagt | ≥2 Hersteller | keiner |
+| Kalkulierbare Frachtregelung | ≥2 Hersteller | „Fracht nach Aufwand" bei allen |
+| Strukturierte Produktdaten (Gate 6) | ≥1 Kernlieferant | keiner → Shopmodell fällt |
 | Daraus abgeleitete Rohmarge | ≥32 % | <32 % |
+
+Die beiden mittleren Zeilen sind nachgetragen: Fracht aus
+[`phase4-sortiment-und-materialwert.md`](./phase4-sortiment-und-materialwert.md),
+Produktdaten aus [`phase6-automatisierung.md`](./phase6-automatisierung.md).
+Beide werden von Anschreiben A bereits abgefragt (Punkt 4 und Punkt 6) und
+kosten damit keinen Zusatzaufwand.
 
 Fällt Stufe 0, fällt die Nische — so in Gate 3 festgelegt. Phase 1 wird dann
 mit den nächstplatzierten Kandidaten neu aufgerollt, nicht das ganze Projekt
@@ -143,6 +151,11 @@ Reichweite ohne Transaktion ist in diesem Projekt wertlos; das steht schon in
 | Monatsumsatz bzw. Vermittlungserlös | 4.700 € | <2.000 € |
 | Deckungsbeitrag nach Werbung | ≥ Fixkosten | dauerhaft negativ |
 | Wiederkehrende Erlöse | ≥1 Retainer oder ≥20 % Bestandskunden | 0 |
+| Beratungsanfragen je Bestellung | ≤0,2 | dauerhaft >0,5 |
+
+Die letzte Zeile stammt aus [`phase6-automatisierung.md`](./phase6-automatisierung.md)
+und misst die Vorgabe „unabhängig von meiner Person" direkt: Bleibt der Wert
+hoch, ist das Geschäft ein Beratungsgeschäft mit angeschlossenem Verkauf.
 
 4.700 € ist der Break-even aus
 [`phase3-unit-economics.md`](./phase3-unit-economics.md). Er ist bewusst als
