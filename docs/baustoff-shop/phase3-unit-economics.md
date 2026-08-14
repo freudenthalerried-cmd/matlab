@@ -7,6 +7,13 @@ Radonvorsorge im Neubau aus [`phase1-nischen.md`](./phase1-nischen.md).
 > nichts verkauft und nichts eingenommen. Alle Zahlen dieses Dokuments sind
 > Modellrechnung. Der Konfidenzgrad jeder Eingangsgröße ist unten ausgewiesen.
 
+> **Teilweise nachgeführt.** Die Annahmen zu Ø Warenkorb (450 €),
+> Bestellzahl (54/Monat) und Materialwert je Gebäude (400–1.500 €) sind durch
+> die Stückliste in
+> [`phase4-sortiment-und-materialwert.md`](./phase4-sortiment-und-materialwert.md)
+> überholt. Gültig sind dort: 650 € Warenkorb, 37 Bestellungen, 1.260–2.955 €
+> Materialwert. Die Zielgröße, die Kaskade und Gate 3 bleiben unverändert.
+
 ## Zielgröße
 
 ```

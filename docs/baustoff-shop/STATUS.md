@@ -60,14 +60,16 @@ kosten sie unter 200 €.
 Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 **2.700 €**, nicht bei den früher genannten 8.000–12.000 €.
 
-## Die drei Zahlen, auf denen alles ruht — und unbelegt sind
+## Die Zahlen, auf denen alles ruht
 
-1. **Rohmarge 35 %** — kein Hersteller hat Konditionen genannt. Unter 32 %
-   fällt die Nische, so in Gate 3 festgelegt.
-2. **Materialwert je Gebäude 400–1.500 €** — reine Schätzung. Bestimmt, ob das
-   Umsatzziel 1,4 % oder 7 % Marktanteil bedeutet.
-3. **Suchvolumen** — nicht gemessen. Die Inhaltslandkarte beruht auf
-   Plausibilität.
+1. **Rohmarge 35 %** — weiterhin **unbelegt**. Kein Hersteller hat Konditionen
+   genannt. Unter 32 % fällt die Nische, so in Gate 3 festgelegt. Nur die
+   Herstelleranfrage kann das klären.
+2. **Suchvolumen** — weiterhin **nicht gemessen**. Die Inhaltslandkarte beruht
+   auf Plausibilität.
+3. **Materialwert je Gebäude** — ~~reine Schätzung 400–1.500 €~~ inzwischen
+   hergeleitet: 1.260–2.955 € für den beschlossenen Warenkorb, Konfidenz
+   mittel. Siehe `phase4-sortiment-und-materialwert.md`.
 
 ## Dokumente
 
@@ -83,6 +85,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 |---|---|
 | `phase1-nischen.md` | Radonvorsorge gewählt; Brandschutz und Betoninstandsetzung verworfen |
 | `phase3-unit-economics.md` | Drei Szenarien, Break-even 4.714 €, Zeithorizont 18–30 Monate |
+| `phase4-sortiment-und-materialwert.md` | Stückliste, Warenkorb 650 €, 37 Bestellungen; Fracht als vierte Gate-2-Bedingung |
 | `phase5-technik.md` | WordPress mit verwaltetem Hosting, weil ohne Neuaufbau erweiterbar |
 | `phase7-inhalte-und-funnel.md` | Inhaltslandkarte, 500 € Landesförderung als Zugmagnet |
 | `phase8-rechtsform-steuer.md` | GmbH, sobald anderes Einkommen besteht |
@@ -109,11 +112,15 @@ Damit niemand einer überholten Aussage folgt:
 | Arbeitsplatz-Messpflicht österreichweit | Nur für spezielle Arbeitsplätze; Frist lief 2022 ab |
 | Anlaufverlust 8.000–12.000 € vorab | Gilt nur für „Shop zuerst"; gestuft sind es 2.700 € bis zur ersten Einnahme |
 | Modellwahl als offene Blockade | Vertagt auf Ende Stufe 2, weil Stufe 0–2 für beide Modelle gleich sind |
+| Ø Warenkorb 450 €, 54 Bestellungen | 650 € und 37 Bestellungen — die Stückliste liegt deutlich höher |
+| Materialwert je Gebäude reine Schätzung | Aus Stückliste hergeleitet, amtlich gegengeprüft |
 
 ## Zum Arbeitsloop
 
-Der stündliche Arbeitsloop hat die letzten Aufgaben abgearbeitet, die ohne
-Entscheidung, Freigabe oder Geld auskommen — zuletzt das Stufenmodell in
-`phase9-meilensteine-und-abbruch.md`. Weitere Durchläufe prüfen nur noch den
-Stand und enden ohne neue Datei, statt Dokumente ohne Adressaten zu erzeugen.
-Sobald eine der beiden Freigaben vorliegt, nimmt er die Arbeit wieder auf.
+Der stündliche Arbeitsloop arbeitet ab, was ohne Entscheidung, Freigabe oder
+Geld möglich ist — zuletzt das Stufenmodell in
+`phase9-meilensteine-und-abbruch.md` und die Stückliste in
+`phase4-sortiment-und-materialwert.md`. Findet ein Durchlauf keine solche
+Aufgabe mehr, prüft er nur den Stand und endet ohne neue Datei, statt Dokumente
+ohne Adressaten zu erzeugen. Sobald eine der beiden Freigaben vorliegt, nimmt er
+die eigentliche Arbeit auf.
