@@ -130,6 +130,12 @@ Alleinstellung darin. Das ist eine Umstellung, kein Abbruch.
 | 3 | 8 | 150 | 0 |
 | 6 | 15 | 800 | 5 |
 
+Dazu als Frühindikator: **vermittelte Radonmessungen je Monat.** Sie laufen den
+Sanierungsleads um rund drei Monate voraus — so lange dauert eine normgerechte
+Langzeitmessung. Begründung in
+[`phase3b-leadmodell.md`](./phase3b-leadmodell.md); dort ist die jährliche Zahl
+der Messungen in Österreich als Engpass des Leadmodells benannt.
+
 „Erstgeschäft" heißt: bezahlte Vermittlung an eine Messstelle, qualifizierter
 Sanierungslead oder Materialbestellung — je nachdem, was zuerst eintritt. Die
 Art des ersten Geschäfts ist das eigentliche Ergebnis dieser Stufe, weil sie
