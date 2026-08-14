@@ -20,17 +20,39 @@ belegen — jede weitere Recherche im Netz kann sie nur schätzen.
 
 ### Empfängerkreis
 
-| Hersteller | Sortimentsbezug |
-|---|---|
-| BMI Österreich | radondichte Bitumenbahnen |
-| Bueho | Polymerbitumenbahnen, Radonsperre |
-| Ampack | Sisalex 871 Radonsperre |
-| Hauff-Technik | gasdichte Folien-Manschetten und Durchführungen |
-| Liapor | Radon-Ringdrainage |
-| Remmers | Radonschutzsysteme |
+Überarbeitet nach Gate 8 in
+[`phase2-lieferantenlandkarte.md`](./phase2-lieferantenlandkarte.md): zwölf
+statt sechs Adressaten, in drei Prioritäten, Rohr- und Bahnenseite getrennt.
 
-Sechs Adressaten für die geforderten zwei belastbaren Antworten — eine
-Rücklaufquote unter 50 % ist bei Kaltanfragen normal.
+| Priorität | Hersteller | Sortimentsbezug |
+|---|---|---|
+| 1 | **Bauernfeind** (Waizenkirchen, OÖ) | PP-MEGA-Drän; eigene Baustellenlieferung österreichweit |
+| 1 | Bueho | Bauwerksabdichtung gegen drückendes Wasser und Radon |
+| 1 | Liapor | Radon-Ringdrainage |
+| 1 | Poloplast (Leonding, OÖ) | Kunststoffrohrsysteme |
+| 2 | Riwega | Coll Radon, selbstklebende Bitumenbahn |
+| 2 | Botament | Radonabdichtung, Reaktivabdichtung |
+| 2 | CCM Europe (Carlisle) | EPDM-Radonabdichtung |
+| 2 | Köster | Abdichtungssysteme gegen Radon |
+| 2 | Ampack | Sisalex Radonsperre |
+| 2 | Remmers | Radonschutzsysteme |
+| 3 | BMI Österreich | Vedagard AL-E, radondicht mit abP |
+| 3 | Sika | SikaProof-Systeme, eigene Radon-Broschüre |
+| 3 | Rothoblaas | Radon Floor, zertifiziert |
+
+**Gestrichen: Hauff-Technik.** Mehrspartenhauseinführungen sind seit 2017
+ohnehin gas- und druckwasserdicht vorgeschrieben und werden bereits radondicht
+geliefert — nach Gate 5 kein Sortimentsbestandteil.
+
+Warum zwölf: Gate 0 verlangt zwei bezifferte Antworten. Bei angenommenen 30 %
+verwertbarem Rücklauf ist das Gate mit sechs Adressaten nur in 58 % der Fälle
+überhaupt entscheidbar, mit zwölf in 92 %. Sechs zusätzliche E-Mails kosten
+nichts, ein zweiter Anlauf kostet vier Wochen.
+
+**Priorität 2 ist inhaltlich die wichtigste.** Nach der Mischmargenrechnung in
+`phase2-lieferantenlandkarte.md` muss die Abdichtungsbahn rund 38 % Rohmarge
+tragen, damit der Warenkorb 32 % erreicht. Eine gute Rohrkondition rettet
+Gate 3 nicht.
 
 ### Entwurf A — Herstelleranfrage
 
@@ -78,6 +100,16 @@ Eine Antwort trägt die Gate-3-Auflage nur, wenn sie **Punkt 2 und Punkt 3
 beziffert**. „Wir arbeiten mit dem Fachhandel zusammen, melden Sie sich gerne"
 ist keine Kondition. Fehlt die Zahl, ist nachzufassen; bleibt sie aus, zählt
 der Hersteller als nicht verfügbar.
+
+Zwei weitere Punkte sind inzwischen zu Gate-Fragen aufgewertet worden und beim
+Auswerten gleichrangig zu behandeln:
+
+- **Punkt 4, Frachtregelung** — „Fracht nach Aufwand" macht die Kalkulation
+  unmöglich und zählt wie eine Absage. Begründung in
+  [`phase4-sortiment-und-materialwert.md`](./phase4-sortiment-und-materialwert.md).
+- **Punkt 6, Produktdaten** — liefert kein Kernlieferant strukturierte Daten,
+  fällt das Shopmodell an der Automatisierungsvorgabe (Gate 6). Begründung in
+  [`phase6-automatisierung.md`](./phase6-automatisierung.md).
 
 Erreichen zwei Hersteller gemeinsam keine 32 % Mischmarge, fällt die Nische —
 so in Gate 3 festgelegt.

@@ -64,7 +64,8 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 
 1. **Rohmarge 35 %** — weiterhin **unbelegt**. Kein Hersteller hat Konditionen
    genannt. Unter 32 % fällt die Nische, so in Gate 3 festgelegt. Nur die
-   Herstelleranfrage kann das klären.
+   Herstelleranfrage kann das klären. Präzisiert: Entscheidend ist die Marge auf
+   die Abdichtungsbahn, sie muss rund 38 % tragen.
 2. **Suchvolumen** — weiterhin **nicht gemessen**. Die Inhaltslandkarte beruht
    auf Plausibilität.
 3. **Materialwert je Gebäude** — ~~reine Schätzung 400–1.500 €~~ inzwischen
@@ -84,6 +85,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | Datei | Kernaussage |
 |---|---|
 | `phase1-nischen.md` | Radonvorsorge gewählt; Brandschutz und Betoninstandsetzung verworfen |
+| `phase2-lieferantenlandkarte.md` | 14 Hersteller kartiert; Empfängerkreis auf zwölf erweitert; Bahn muss 38 % Marge tragen |
 | `phase3-unit-economics.md` | Drei Szenarien, Break-even 4.714 €, Zeithorizont 18–30 Monate |
 | `phase4-sortiment-und-materialwert.md` | Stückliste, Warenkorb 650 €, 37 Bestellungen; Fracht als vierte Gate-2-Bedingung |
 | `phase5-technik.md` | WordPress mit verwaltetem Hosting, weil ohne Neuaufbau erweiterbar |
@@ -117,6 +119,8 @@ Damit niemand einer überholten Aussage folgt:
 | Materialwert je Gebäude reine Schätzung | Aus Stückliste hergeleitet, amtlich gegengeprüft |
 | FAGG-Rücktritt als Hauptrisiko des Shops | Entfällt im reinen B2B-Geschäft; dafür Auflage, Verbraucher wirksam auszuschließen |
 | „Unabhängig von meiner Person" als Zielbild | An eine messbare Marke gebunden: Beratungsanfragen je Bestellung ≤ 0,2 |
+| Sechs Adressaten für Anschreiben A | Zwölf — mit sechs wäre Gate 0 in 42 % der Fälle gar nicht entscheidbar |
+| Hauff-Technik als Lieferant gelistet | Gestrichen; Hauseinführungen sind nach Gate 5 kein Sortimentsbestandteil |
 
 ## Zum Arbeitsloop
 
