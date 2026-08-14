@@ -1,10 +1,16 @@
 # Status und Einstieg
 
-Stand: 2026-08-14. **Dieses Dokument zuerst lesen.** Zwanzig Arbeitsdateien
+Stand: 2026-08-14. **Dieses Dokument zuerst lesen.** Einundzwanzig Arbeitsdateien
 sind entstanden, mehrere davon korrigieren einander. Hier steht, was gilt.
 
 Veröffentlichter Bericht:
 [claude.ai/code/artifact/3d669d15…](https://claude.ai/code/artifact/3d669d15-b632-41b9-838c-b9369dab8a4c)
+
+> **Achtung, der veröffentlichte Bericht ist überholt.** Er gibt den Stand von
+> Phase 1 und 3 wieder, also vor sämtlichen Korrekturen in der Tabelle weiter
+> unten. Bis er aktualisiert ist, gilt ausschließlich dieses Verzeichnis.
+> Nächster Arbeitsschritt des Loops: Bericht unter derselben URL erneuern, wie
+> in [`PARAMETER.md`](./PARAMETER.md) vorgemerkt.
 
 ## Wo das Projekt steht
 
@@ -19,12 +25,13 @@ Radonvorsorge und Bausanierung in Österreich.
 |---|---|---|
 | Nötiger Erlös | 24.200 €/Monat | 5.724 €/Monat |
 | Break-even | ~4.714 € (7 Bestellungen) | ~350 € (2–3 Leads) |
-| Sessions für Zielgröße | 1.850/Monat | 1.270/Monat |
+| Sessions für Zielgröße | 1.850/Monat | ~2.550/Monat |
 | Kapital bis erste Einnahme | 2.700 € | < 1.000 € |
 | Laufender Aufwand | 6,5–12 h/Monat | 4–6 h/Monat |
 | Bestandseffekt | keiner | ja, ab Stufe B |
 | Obergrenze | offen nach oben | ~8.000–12.000 €/Monat |
 | Engpass | Rohmarge | Zahl der Radonmessungen |
+| Zeit bis erstem Erlös | Wochen | plus ein Quartal Messvorlauf |
 | Zeit bis Ziel | 18–30 Monate | ähnlich, geringeres Kapitalrisiko |
 
 Beide erreichen 3.000 € netto nur, wenn die Annahmen halten. Die schwächsten
@@ -99,6 +106,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `phase5-technik.md` | WordPress mit verwaltetem Hosting, weil ohne Neuaufbau erweiterbar |
 | `phase6-automatisierung.md` | Vier-Wochen-Test; Gate 6 Produktdaten, Gate 7 reiner B2B-Shop |
 | `phase7-inhalte-und-funnel.md` | Inhaltslandkarte, 500 € Landesförderung als Zugmagnet |
+| `phase7b-messstrecke.md` | Messung ist kostenlos — Gate 10 Erinnerungsdienst; Sessionbedarf auf 2.550 korrigiert |
 | `phase8-rechtsform-steuer.md` | GmbH, sobald anderes Einkommen besteht |
 | `phase8-compliance.md` | Messung nur über anerkannte Stelle; FAGG-Fristfalle |
 | `phase9-meilensteine-und-abbruch.md` | Fünf Stufen mit Kostendeckel, Kennzahlen und vier harten Abbruchregeln |
@@ -129,6 +137,9 @@ Damit niemand einer überholten Aussage folgt:
 | „Unabhängig von meiner Person" als Zielbild | An eine messbare Marke gebunden: Beratungsanfragen je Bestellung ≤ 0,2 |
 | Sechs Adressaten für Anschreiben A | Zwölf — mit sechs wäre Gate 0 in 42 % der Fälle gar nicht entscheidbar |
 | Hauff-Technik als Lieferant gelistet | Gestrichen; Hauseinführungen sind nach Gate 5 kein Sortimentsbestandteil |
+| Leadmodell braucht 1.270 Sessions | ~2.550 — der Weg der noch nicht Gemessenen war übersprungen |
+| Leadmodell braucht weniger Reichweite als der Shop | Falsch; es braucht mehr. Break-even- und Kapitalvorteil bleiben |
+| Messeinstieg erzeugt einen Kundendatensatz | Nein — die Messung ist kostenlos, also gibt es keine Transaktion |
 
 ## Zum Arbeitsloop
 

@@ -146,6 +146,15 @@ die Modellentscheidung aus Gate 4 beantwortet.
 | <300 Sessions/Monat | Inhalte greifen nicht — Umstellung auf Cluster C oder Abbruch |
 | 0 Erstgeschäfte bei ≥800 Sessions | Nachfrage ohne Kaufabsicht — Modell trägt nicht |
 
+> **Eingeschränkt für die Leadstrecke.** Nach
+> [`phase7b-messstrecke.md`](./phase7b-messstrecke.md) dauert eine
+> normgerechte Langzeitmessung rund drei Monate. Wurden die ersten Messungen in
+> Monat 4 angestoßen, kann bis Monat 6 physikalisch noch kein Sanierungslead
+> vorliegen. Für die Leadstrecke tritt deshalb der Frühindikator
+> **angeforderte Messungen je Monat** an die Stelle des Erstgeschäfts; für den
+> Warenverkauf bleibt die Marke unverändert. Das lockert ein selbst gesetztes
+> Kriterium, aber aus einer Eigenschaft der Sache, nicht aus Nachsicht.
+
 Der zweite Fall ist der gefährlichere, weil er sich als Erfolg tarnt.
 Reichweite ohne Transaktion ist in diesem Projekt wertlos; das steht schon in
 [`content-und-leadgen.md`](./content-und-leadgen.md) und gilt hier erneut.
