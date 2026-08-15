@@ -19,10 +19,49 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Materialbedarfsrechner | fertig | 11 |
 | Bestellstrecke mit Gate-7-Prüfung | fertig | 11 |
 | Messwert-Einordner | fertig | 10 |
+| Rechtstexte-Gerüst | fertig | 11 |
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig | headless geprüft |
-| **Summe** | | **68, alle grün** |
+| **Summe** | | **79, alle grün** |
 
-## Was zuletzt dazukam: der Messwert-Einordner
+## Was zuletzt dazukam: das Rechtstexte-Gerüst
+
+`shop/src/rechtstexte.js` ist **kein Ersatz für Rechtstexte**. Der
+Rechtstexteanbieter mit Aktualisierungsdienst für 10–25 € im Monat aus
+[`phase5-technik.md`](./phase5-technik.md) bleibt eingeplant. Was das Gerüst
+leistet, ist zweierlei.
+
+Erstens die Zuarbeit: Es benennt die dreizehn Pflichtangaben nach § 5 ECG und
+§ 14 UGB — also genau die Felder, die der Anbieter oder die Anwältin ohnehin
+abfragt. Zwei davon sind bedingt und entfallen ohne Firmenbucheintrag.
+
+Zweitens, und das ist der eigentliche Punkt: Die Lücken sind
+**maschinenprüfbar**. Der Shop meldet heute
+
+```
+Impressum unvollständig — 11 Pflichtangaben nach § 5 ECG fehlen.
+```
+
+statt mit einer leeren Seite online zu gehen. Das Impressum wird gerendert, aber
+jede fehlende Angabe steht sichtbar als `[[ Gewerbebehörde — FEHLT ]]` darin.
+Eine Vorlage, die Lücken hübsch verschweigt, geht irgendwann versehentlich live;
+diese kann es nicht.
+
+Die AGB-Gliederung hat zehn Punkte, und ihr wichtigster ist eine **Auslassung**:
+Es gibt keine Widerrufsbelehrung. Der ursprüngliche Plan sah sie noch vor. Sie
+gehört ins Verbrauchergeschäft, und eine AGB, die beides vermischt, weckt genau
+den Anschein, den Gate 7 vermeiden soll — dass sich der Shop eben doch an
+Verbraucher richtet. Ein Testfall prüft die Gliederung deshalb auf das Fehlen
+von „Widerruf" und „Rücktrittsrecht".
+
+Dazu eine Aufstellung, was der reine B2B-Verkauf spart und was er nicht spart.
+Entfallen: Widerrufsbelehrung samt Musterformular, die Verlängerung der
+Rücktrittsfrist auf zwölf Monate und vierzehn Tage bei fehlerhafter Belehrung,
+der Hinweis auf die Streitbeilegungsplattform. Es bleiben: Impressum,
+Datenschutzerklärung, Preisangaben mit gesonderter Umsatzsteuer — und der
+wirksame Ausschluss von Verbraucherbestellungen, ohne den Verbraucherrecht
+trotzdem gilt. Die Ersparnis ist real, sie ist nur keine Sorglosigkeit.
+
+## Was davor dazukam: der Messwert-Einordner
 
 `shop/src/messwert.js` setzt die Vorgabe aus
 [`messwert-einordnung.md`](./messwert-einordnung.md) um: drei Bänder, der
@@ -132,7 +171,7 @@ und die Bestellsperre fällt für die betroffenen Artikel weg.
 | Fehlt | Warum |
 |---|---|
 | Echte Einkaufspreise | Händlervertrag; Freigabe für die zwölf Anfragen, 0 € |
-| Impressum, AGB, Datenschutz | Firmendaten, dann Rechtstexte-Abo 10–25 €/Monat |
+| Firmendaten fürs Impressum | elf benannte Pflichtangaben, siehe oben; dann Rechtstexte-Abo 10–25 €/Monat |
 | Zahlungsanbieter | Geschäftskonto auf eine reale Firma |
 | Domain und Hosting | 35–105 €/Monat |
 | UID-Prüfung im Bestellprozess | Auflage aus Gate 7, vor der ersten echten Bestellung |
@@ -144,6 +183,7 @@ Nach Nutzen geordnet, alle ohne Freigabe und ohne Ausgabe machbar:
 1. **Gebietsabfrage** nach `phase10-datengrundlage-gebietsabfrage.md` — braucht
    die Gemeindeliste. RIS und der Geoserver sind aus dieser Umgebung weiterhin
    nicht erreichbar; zuletzt geprüft am 15. August.
-2. **Rechtstexte-Gerüst** — Impressum, AGB und Widerrufsbelehrung als Vorlagen
-   mit gekennzeichneten Lücken für die Firmendaten. Ersetzt keine anwaltliche
-   Prüfung, spart aber die Zuarbeit.
+2. **Angebots- und Rechnungsentwurf** — aus demselben Warenkorb, der schon die
+   Lieferantenbestellungen erzeugt, auch das Dokument für den Kunden: Positionen
+   netto, Umsatzsteuer gesondert, Teillieferungen je Lieferant ausgewiesen.
+   Braucht keine Freigabe und keine Ausgabe.

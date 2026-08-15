@@ -2,7 +2,8 @@
 
 Lauffähiges Gerüst für den Radonvorsorge-Fachhandel im Streckengeschäft.
 Kein Produktivsystem: **alle Preise sind Platzhalter**, es gibt keine
-Zahlungsanbindung, keine Rechtstexte und kein Impressum.
+Zahlungsanbindung und keine geprüften Rechtstexte. Das Impressum ist als
+Gerüst vorhanden und meldet selbst, welche Pflichtangaben ihm fehlen.
 
 ## Was funktioniert
 
@@ -19,11 +20,12 @@ Zahlungsanbindung, keine Rechtstexte und kein Impressum.
 | Materialbedarfsrechner | Außenmaße → Stückliste → Warenkorb, mit Verschnittausweis |
 | Bestellstrecke | Firmendaten, UID, Unternehmerbestätigung; endet vor der Zahlung |
 | Messwert-Einordner | Bq/m³ und Messdauer → rechtliche und bautechnische Einordnung |
+| Rechtstexte-Gerüst | Pflichtangaben nach § 5 ECG, Lücken maschinenprüfbar |
 
 ## Benutzen
 
 ```
-npm test          # 68 Testfälle
+npm test          # 79 Testfälle
 npm run build     # erzeugt demo.html, eine einzelne Datei ohne Abhängigkeiten
 npm run import -- <lieferantId> <datei.csv> [--schreiben]
 ```
@@ -45,6 +47,7 @@ src/import.js           Preisliste lesen, prüfen, mit dem Katalog vergleichen
 src/bedarf.js           Materialbedarf je Gebäude, Rollen- und Gebinderechnung
 src/kunde.js            Bestelldaten prüfen, UID, Gate-7-Bestätigung
 src/messwert.js         Messwert einordnen, Bänder und die drei Grenzen
+src/rechtstexte.js      Pflichtangaben prüfen, Impressum bauen, AGB-Gliederung
 bin/import.mjs          Kommandozeile dazu, Probelauf als Voreinstellung
 beispiel/               Musterpreisliste — erfundene Preise, nicht schreibbar
 test/                   node:test, ohne Fremdpakete
@@ -112,6 +115,26 @@ Darunter zeigt das Muster die Bestellentwürfe, die im Echtbetrieb an die
 Lieferanten gingen — je Lieferant einer, mit Baustellenadresse und der Bitte um
 neutrale Verpackung.
 
+## Das Rechtstexte-Gerüst
+
+**Kein Ersatz für Rechtstexte.** Der Anbieter mit Aktualisierungsdienst für
+10–25 € im Monat bleibt eingeplant. Das Gerüst benennt die dreizehn
+Pflichtangaben nach § 5 ECG und § 14 UGB — zwei davon entfallen ohne
+Firmenbucheintrag — und macht die Lücken **maschinenprüfbar**:
+
+```
+Impressum unvollständig — 11 Pflichtangaben nach § 5 ECG fehlen.
+```
+
+Das Impressum wird trotzdem gerendert, jede fehlende Angabe sichtbar als
+`[[ Gewerbebehörde — FEHLT ]]`. Eine Vorlage, die Lücken hübsch verschweigt,
+geht irgendwann versehentlich live; diese kann es nicht.
+
+Die AGB-Gliederung hat zehn Punkte, und ihr wichtigster ist eine **Auslassung**:
+keine Widerrufsbelehrung. Sie gehört ins Verbrauchergeschäft, und eine AGB, die
+beides vermischt, weckt genau den Anschein, den Gate 7 vermeiden soll. Ein
+Testfall prüft das Fehlen.
+
 ## Was das Muster bereits zeigt
 
 Die vier Drainageartikel stehen auf **WARN**: Bei 30 % Händlerrabatt ist die
@@ -129,7 +152,8 @@ sichtbar, statt in einer Tabelle zu stehen.
 |---|---|
 | Echte Einkaufspreise | entstehen erst aus einem Händlervertrag, siehe `docs/baustoff-shop/anschreiben-entwuerfe.md` |
 | Zahlungsanbieter | braucht ein Geschäftskonto auf eine reale Firma |
-| Impressum, AGB, Datenschutz | brauchen Firmendaten und anwaltliche Prüfung |
+| Firmendaten fürs Impressum | elf Pflichtangaben, vom Shop einzeln benannt |
+| Geprüfte AGB und Datenschutzerklärung | Gliederung steht, der Text braucht Anbieter oder Anwältin |
 | UID-Prüfung im Bestellprozess | Auflage aus Gate 7, umzusetzen vor der ersten echten Bestellung |
 | Produktbilder und Datenblätter | kommen mit den Herstellerdaten |
 

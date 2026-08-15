@@ -98,6 +98,12 @@
   .k-bestellung{border:1px solid var(--line);margin-top:.5rem}
   .k-bestellung h3{font-family:var(--sans);font-size:.85rem;padding:.5rem .8rem;background:var(--surface-2);margin:0;border-bottom:1px solid var(--line)}
   .k-bestellung pre{margin:0;padding:.7rem .8rem;font-family:var(--mono);font-size:.74rem;white-space:pre-wrap;color:var(--ink-2);overflow-x:auto}
+.recht{background:var(--surface);border:1px solid var(--line);padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:.8rem}
+  .recht-status{border-left:3px solid var(--warn);background:var(--surface-2);padding:.7rem .9rem;font-size:.88rem;font-weight:600}
+  .recht-spalten{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1.2rem}
+  .recht-spalten h3{font-family:var(--sans);font-size:.85rem;margin:0 0 .4rem}
+  .recht-spalten ul{margin:0;padding-left:1.1rem;font-size:.83rem;color:var(--ink-2);display:flex;flex-direction:column;gap:.25rem}
+  .recht pre{margin:0;padding:.7rem .8rem;background:var(--ground);border:1px solid var(--line);font-family:var(--mono);font-size:.72rem;white-space:pre-wrap;color:var(--ink-2);overflow-x:auto}
   footer{border-top:1px solid var(--line);padding-top:1rem;color:var(--muted);font-size:.82rem;display:flex;flex-direction:column;gap:.4rem}
   code{font-family:var(--mono);font-size:.85em}
 </style>
@@ -166,6 +172,8 @@
       <div class="aside-b" id="korb"></div>
     </aside>
   </div>
+
+  <section class="recht" id="recht"></section>
 
   <footer>
     <p>Im Streckengeschäft liefert jeder Hersteller getrennt. Was der Kunde als eine
@@ -514,6 +522,62 @@ document.getElementById('rechner').addEventListener('submit', (e) => {
   zeichneKorb();
 });
 
+function zeichneRecht() {
+  const el = document.getElementById('recht');
+  const betreiber = {}; // noch keine Firmendaten hinterlegt
+  const impressum = erzeugeImpressum(betreiber);
+  const pruefung = pruefeBetreiberdaten(betreiber);
+
+  const h2 = document.createElement('h2');
+  h2.textContent = 'Rechtliches';
+
+  const intro = document.createElement('p');
+  intro.className = 'r-intro';
+  intro.textContent =
+    'Kein Ersatz für geprüfte Rechtstexte — vorgesehen ist ein Anbieter mit Aktualisierungsdienst. ' +
+    'Was hier steht, ist die Zuarbeit: jedes Feld, das ohnehin abgefragt wird, und der Nachweis, ' +
+    'welche Angaben noch fehlen.';
+
+  const status = document.createElement('div');
+  status.className = 'recht-status';
+  status.textContent = pruefung.vollstaendig
+    ? 'Alle Pflichtangaben nach § 5 ECG liegen vor.'
+    : 'Impressum unvollständig — ' + pruefung.fehlend.length + ' Pflichtangaben nach § 5 ECG fehlen.';
+
+  const spalten = document.createElement('div');
+  spalten.className = 'recht-spalten';
+
+  const liste = (titel, eintraege) => {
+    const d = document.createElement('div');
+    const h3 = document.createElement('h3');
+    h3.textContent = titel;
+    const ul = document.createElement('ul');
+    for (const e of eintraege) {
+      const li = document.createElement('li');
+      li.textContent = e;
+      ul.append(li);
+    }
+    d.append(h3, ul);
+    return d;
+  };
+
+  spalten.append(liste('Fehlt noch — nur der Betreiber kann es liefern', pruefung.fehlend));
+  spalten.append(liste('Entfällt im reinen B2B-Geschäft', B2B_ABGRENZUNG.entfaellt));
+  spalten.append(liste('Bleibt trotzdem Pflicht', B2B_ABGRENZUNG.bleibt));
+  spalten.append(
+    liste(
+      'AGB-Gliederung, ' + AGB_GLIEDERUNG.length + ' Punkte',
+      AGB_GLIEDERUNG.map((a) => a.nr + '. ' + a.titel),
+    ),
+  );
+
+  const vorschau = document.createElement('pre');
+  vorschau.textContent = impressum.text;
+
+  el.append(h2, intro, status, spalten, vorschau);
+}
+
 zeichneKatalog();
 zeichneKorb();
+zeichneRecht();
 </script>
