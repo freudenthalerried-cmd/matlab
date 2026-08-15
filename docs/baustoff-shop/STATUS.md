@@ -1,6 +1,6 @@
 # Status und Einstieg
 
-Stand: 2026-08-14. **Dieses Dokument zuerst lesen.** Zweiundzwanzig Arbeitsdateien
+Stand: 2026-08-14. **Dieses Dokument zuerst lesen.** Dreiundzwanzig Arbeitsdateien
 sind entstanden, mehrere davon korrigieren einander. Hier steht, was gilt.
 
 Veröffentlichter Bericht:
@@ -79,7 +79,10 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 3. **Jährliche Zahl der Radonmessungen in Österreich** — nicht öffentlich
    beziffert. Sie ist der Engpass des Leadmodells, nicht die Zahl betroffener
    Gebäude. Neu benannt in `phase3b-leadmodell.md`.
-4. **Materialwert je Gebäude** — ~~reine Schätzung 400–1.500 €~~ inzwischen
+4. **Umsetzungsquote der Radonvorsorge** — wird nirgends erhoben. Sie ist die
+   eigentliche Wette des Shopmodells, nicht der Baumarkt. Siehe
+   `marktrisiko-neubau.md`.
+5. **Materialwert je Gebäude** — ~~reine Schätzung 400–1.500 €~~ inzwischen
    hergeleitet: 1.260–2.955 € für den beschlossenen Warenkorb, Konfidenz
    mittel. Siehe `phase4-sortiment-und-materialwert.md`.
 
@@ -108,6 +111,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `phase8-compliance.md` | Messung nur über anerkannte Stelle; FAGG-Fristfalle |
 | `phase9-meilensteine-und-abbruch.md` | Fünf Stufen mit Kostendeckel, Kennzahlen und vier harten Abbruchregeln |
 | `phase10-datengrundlage-gebietsabfrage.md` | Gebietsabfrage auf Gemeindeebene aus freiem Verordnungstext; Lizenzblocker gelöst |
+| `marktrisiko-neubau.md` | Neubau −40 % in zehn Jahren; Gate 12 kehrt die Beweislast um |
 | `content-und-leadgen.md` | Displaywerbung und Affiliate scheitern an der Reichweite |
 | `skalierung-und-passivitaet.md` | Bestandseffekt; digitale Vorlagen fallen durch |
 | `segment-arbeitsplatzmessung.md` | Nebenstrecke, kein eigenes Segment |
@@ -137,6 +141,8 @@ Damit niemand einer überholten Aussage folgt:
 | Hauff-Technik als Lieferant gelistet | Gestrichen; Hauseinführungen sind nach Gate 5 kein Sortimentsbestandteil |
 | Leadmodell braucht 1.270 Sessions | ~2.550 — der Weg der noch nicht Gemessenen war übersprungen |
 | Radonkarte als Lizenzrisiko für den Rechner | Die rechtlich entscheidende Liste ist Verordnungstext und damit frei |
+| Shop als Standardweg, Leadmodell als Auffangnetz | Gleichrangig; der Bestandsbezug ist das robustere Fundament |
+| Inhalte zuerst zur Neubaupflicht | Zuerst Bestandsthemen — sie hängen an keinem schrumpfenden Nenner |
 | Leadmodell braucht weniger Reichweite als der Shop | Falsch; es braucht mehr. Break-even- und Kapitalvorteil bleiben |
 | Messeinstieg erzeugt einen Kundendatensatz | Nein — die Messung ist kostenlos, also gibt es keine Transaktion |
 
