@@ -22,11 +22,12 @@ Gerüst vorhanden und meldet selbst, welche Pflichtangaben ihm fehlen.
 | Messwert-Einordner | Bq/m³ und Messdauer → rechtliche und bautechnische Einordnung |
 | Rechtstexte-Gerüst | Pflichtangaben nach § 5 ECG, Lücken maschinenprüfbar |
 | Angebot und Rechnung | § 11 UStG mit seinen drei Betragsschwellen, Reihengeschäft erkannt |
+| Trockenlauf | zehn Schritte durchgezählt: was liefe von selbst, was nicht |
 
 ## Benutzen
 
 ```
-npm test          # 94 Testfälle
+npm test          # 106 Testfälle
 npm run build     # erzeugt demo.html, eine einzelne Datei ohne Abhängigkeiten
 npm run import -- <lieferantId> <datei.csv> [--schreiben]
 ```
@@ -50,6 +51,7 @@ src/kunde.js            Bestelldaten prüfen, UID, Gate-7-Bestätigung
 src/messwert.js         Messwert einordnen, Bänder und die drei Grenzen
 src/rechtstexte.js      Pflichtangaben prüfen, Impressum bauen, AGB-Gliederung
 src/beleg.js            Angebot, Rechnung, § 11 UStG, Reihengeschäft
+src/auftragslauf.js     Trockenlauf über den ganzen Auftrag, Aufwand je Bestellung
 src/format.js           EUR und Lückenmarkierung — einmal, siehe unten
 bin/import.mjs          Kommandozeile dazu, Probelauf als Voreinstellung
 beispiel/               Musterpreisliste — erfundene Preise, nicht schreibbar
@@ -156,6 +158,22 @@ Umsatzsteuer als innergemeinschaftlicher Erwerb, während die Ausgangsrechnung
 20 % trägt. `reihengeschaeftEinordnung()` erkennt das am Feld `land` des
 Lieferanten und schreibt es in die Kasse. Ausführlich in
 `docs/baustoff-shop/beleg-und-reihengeschaeft.md`.
+
+## Der Trockenlauf
+
+Zehn Schritte von der Bestellung bis zur Buchung. Für jeden wird geprüft, ob er
+unter den heutigen Voraussetzungen von selbst liefe — ausgelöst wird nichts:
+
+```
+13 Minuten Handarbeit je Bestellung, zwei harte Blockaden.
+Blockiert: Zahlungseingang (kein Zahlungsanbieter),
+           Rechnung (keine Firmendaten, keine echten Konditionen)
+```
+
+Im Vollausbau meldet jeder Schritt „automatisch". Von den sechs
+Voraussetzungen dafür sind fünf Verträge, Konten oder Zusagen Dritter; nur die
+Produktdatenschnittstelle ist Arbeit, die hier entstehen kann. Ausführlich in
+`docs/baustoff-shop/trockenlauf-auftrag.md`.
 
 ## Warum `format.js` existiert
 

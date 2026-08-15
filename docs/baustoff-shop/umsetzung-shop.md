@@ -21,10 +21,32 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Messwert-Einordner | fertig | 10 |
 | Rechtstexte-Gerüst | fertig | 11 |
 | Angebot und Rechnung an den Kunden | fertig | 15 |
+| Trockenlauf des Auftrags | fertig | 12 |
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig | headless geprüft |
-| **Summe** | | **94, alle grün** |
+| **Summe** | | **106, alle grün** |
 
-## Was zuletzt dazukam: die Belege an den Kunden
+## Was zuletzt dazukam: der Trockenlauf
+
+`shop/src/auftragslauf.js` lässt den ganzen Auftrag einmal durchlaufen, ohne
+etwas auszulösen, und zählt, wo er stehen bleibt. Ausführlich in
+[`trockenlauf-auftrag.md`](./trockenlauf-auftrag.md).
+
+Ergebnis heute: **13 Minuten Handarbeit je Bestellung und zwei harte
+Blockaden** — Zahlungseingang und Rechnung. Bei 37 Bestellungen im Monat sind
+das 8,0 Stunden allein für die Vorgänge, die an einer Bestellung hängen.
+
+Zwei Dinge daran sind neu. Erstens: Die Tabelle in
+[`phase6-automatisierung.md`](./phase6-automatisierung.md) übersieht zwei
+Schritte — die UID-Abfrage beim EU-System (1,2 h/Monat) und das Einlesen der
+Auftragsbestätigung (1,85 h/Monat). Das Szenario „ohne Datenfeed" steigt damit
+von 12 auf rund 15 Stunden.
+
+Zweitens, und das ist der eigentliche Befund: **Der Teil, der sich bauen lässt,
+ist gebaut.** Von sechs Voraussetzungen sind fünf Verträge, Konten oder Zusagen
+Dritter. Nur die Produktdatenschnittstelle ist Arbeit, die hier entstehen kann
+— und auch sie setzt voraus, dass ein Hersteller Daten liefert.
+
+## Was davor dazukam: die Belege an den Kunden
 
 `shop/src/beleg.js` schließt die Gegenrichtung: Angebot und Rechnung entstehen
 aus demselben Warenkorb wie die Lieferantenbestellungen und können deshalb
@@ -210,8 +232,10 @@ Nach Nutzen geordnet, alle ohne Freigabe und ohne Ausgabe machbar:
 1. **Gebietsabfrage** nach `phase10-datengrundlage-gebietsabfrage.md` — braucht
    die Gemeindeliste. RIS und der Geoserver sind aus dieser Umgebung weiterhin
    nicht erreichbar; zuletzt geprüft am 15. August.
-2. **Zahlungsanbindung als Attrappe** — der Ablauf nach dem Zahlungseingang ist
-   heute nur als Bedingung vorhanden, nicht als Weg. Eine Attrappe, die den
-   Eingang setzt und die Bestellauslösung durchlaufen lässt, würde zeigen, ob
-   die Kette wirklich ohne Zutun schließt. Braucht keine Freigabe und keinen
-   Anbieter.
+2. **UID-Abfrage beim EU-Informationsaustauschsystem** — nach dem Trockenlauf
+   der einzige der sechs Engpässe, der ohne Freigabe und ohne Ausgabe lösbar
+   wäre; die Schnittstelle ist öffentlich und braucht keine Anmeldung. Sie
+   scheitert hier nur daran, dass diese Umgebung keine fremden Server erreicht.
+   Vorbereiten ließe sie sich trotzdem: Anbindung schreiben, gegen
+   aufgezeichnete Antworten prüfen, scharf schalten, sobald der Shop ins Netz
+   darf. Spart 1,2 h/Monat und schließt eine Auflage aus Gate 7.

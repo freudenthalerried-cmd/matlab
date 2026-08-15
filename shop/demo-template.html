@@ -103,6 +103,14 @@
   .recht-spalten{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1.2rem}
   .recht-spalten h3{font-family:var(--sans);font-size:.85rem;margin:0 0 .4rem}
   .recht-spalten ul{margin:0;padding-left:1.1rem;font-size:.83rem;color:var(--ink-2);display:flex;flex-direction:column;gap:.25rem}
+  .lauf-zeile{display:grid;grid-template-columns:7.5rem 1fr auto;gap:.6rem;align-items:baseline;padding:.35rem 0;border-bottom:1px solid var(--line);font-size:.85rem}
+  .lauf-zeile:last-child{border-bottom:0}
+  .lauf-stand{font-family:var(--mono);font-size:.7rem;letter-spacing:.04em;text-transform:uppercase}
+  .lauf-auto{color:var(--ok,#2f7d4f)}
+  .lauf-hand{color:var(--warn)}
+  .lauf-block{color:var(--warn);font-weight:700}
+  .lauf-grund{grid-column:2/4;font-size:.78rem;color:var(--ink-2);margin-top:.15rem}
+  .lauf-min{font-family:var(--mono);font-size:.78rem;color:var(--ink-2)}
   .recht pre{margin:0;padding:.7rem .8rem;background:var(--ground);border:1px solid var(--line);font-family:var(--mono);font-size:.72rem;white-space:pre-wrap;color:var(--ink-2);overflow-x:auto}
   footer{border-top:1px solid var(--line);padding-top:1rem;color:var(--muted);font-size:.82rem;display:flex;flex-direction:column;gap:.4rem}
   code{font-family:var(--mono);font-size:.85em}
@@ -172,6 +180,8 @@
       <div class="aside-b" id="korb"></div>
     </aside>
   </div>
+
+  <section class="recht" id="lauf"></section>
 
   <section class="recht" id="recht"></section>
 
@@ -557,6 +567,67 @@ document.getElementById('rechner').addEventListener('submit', (e) => {
   zeichneKorb();
 });
 
+function zeichneLauf() {
+  const el = document.getElementById('lauf');
+  const lauf = trockenlauf(WELT_HEUTE);
+  const monat = aufwandProMonat(WELT_HEUTE, 37);
+
+  const h2 = document.createElement('h2');
+  h2.textContent = 'Läuft die Kette ohne Zutun?';
+
+  const intro = document.createElement('p');
+  intro.className = 'a-meta';
+  intro.style.gridColumn = 'auto';
+  intro.textContent =
+    'Trockenlauf über den ganzen Auftrag. Es wird nichts ausgelöst — für jeden Schritt ' +
+    'wird geprüft, ob er unter den heutigen Voraussetzungen von selbst liefe.';
+
+  const status = document.createElement('div');
+  status.className = 'recht-status';
+  status.textContent = lauf.laeuftDurch
+    ? 'Die Kette läuft ohne einen Handgriff durch.'
+    : 'Die Kette bricht ab bei: ' + lauf.abbruchBei + '. ' +
+      lauf.minutenMensch + ' Minuten Handarbeit je Bestellung, ' +
+      'bei 37 Bestellungen im Monat sind das ' + monat.stundenProMonat + ' Stunden.';
+
+  const liste = document.createElement('div');
+  for (const p of lauf.protokoll) {
+    const z = document.createElement('div');
+    z.className = 'lauf-zeile';
+
+    const stand = document.createElement('span');
+    stand.className = 'lauf-stand ' +
+      (p.stand === 'automatisch' ? 'lauf-auto' : p.stand === 'blockiert' ? 'lauf-block' : 'lauf-hand');
+    stand.textContent = p.stand;
+
+    const name = document.createElement('span');
+    name.textContent = p.name;
+
+    const min = document.createElement('span');
+    min.className = 'lauf-min';
+    min.textContent = p.minuten ? p.minuten + ' min' : '—';
+
+    z.append(stand, name, min);
+    if (p.grund) {
+      const g = document.createElement('div');
+      g.className = 'lauf-grund';
+      g.textContent = p.grund + ' Fehlt: ' + p.fehlend.join(', ') + '.';
+      z.append(g);
+    }
+    liste.append(z);
+  }
+
+  const schluss = document.createElement('p');
+  schluss.className = 'a-meta';
+  schluss.style.gridColumn = 'auto';
+  schluss.textContent =
+    'Im Vollausbau erreicht diese Kette null Minuten. Was dort nicht steht, ist die ' +
+    'fachliche Auskunft vor dem Kauf — sie hängt nicht an der Bestellung und ist der ' +
+    'eigentliche Rest, der nicht verschwindet.';
+
+  el.append(h2, intro, status, liste, schluss);
+}
+
 function zeichneRecht() {
   const el = document.getElementById('recht');
   const betreiber = {}; // noch keine Firmendaten hinterlegt
@@ -615,4 +686,5 @@ function zeichneRecht() {
 zeichneKatalog();
 zeichneKorb();
 zeichneRecht();
+zeichneLauf();
 </script>

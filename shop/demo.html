@@ -103,6 +103,14 @@
   .recht-spalten{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1.2rem}
   .recht-spalten h3{font-family:var(--sans);font-size:.85rem;margin:0 0 .4rem}
   .recht-spalten ul{margin:0;padding-left:1.1rem;font-size:.83rem;color:var(--ink-2);display:flex;flex-direction:column;gap:.25rem}
+  .lauf-zeile{display:grid;grid-template-columns:7.5rem 1fr auto;gap:.6rem;align-items:baseline;padding:.35rem 0;border-bottom:1px solid var(--line);font-size:.85rem}
+  .lauf-zeile:last-child{border-bottom:0}
+  .lauf-stand{font-family:var(--mono);font-size:.7rem;letter-spacing:.04em;text-transform:uppercase}
+  .lauf-auto{color:var(--ok,#2f7d4f)}
+  .lauf-hand{color:var(--warn)}
+  .lauf-block{color:var(--warn);font-weight:700}
+  .lauf-grund{grid-column:2/4;font-size:.78rem;color:var(--ink-2);margin-top:.15rem}
+  .lauf-min{font-family:var(--mono);font-size:.78rem;color:var(--ink-2)}
   .recht pre{margin:0;padding:.7rem .8rem;background:var(--ground);border:1px solid var(--line);font-family:var(--mono);font-size:.72rem;white-space:pre-wrap;color:var(--ink-2);overflow-x:auto}
   footer{border-top:1px solid var(--line);padding-top:1rem;color:var(--muted);font-size:.82rem;display:flex;flex-direction:column;gap:.4rem}
   code{font-family:var(--mono);font-size:.85em}
@@ -172,6 +180,8 @@
       <div class="aside-b" id="korb"></div>
     </aside>
   </div>
+
+  <section class="recht" id="lauf"></section>
 
   <section class="recht" id="recht"></section>
 
@@ -1288,6 +1298,235 @@ function reihengeschaeftEinordnung(warenkorb, katalog) {
   };
 }
 
+/**
+ * Der Auftrag von der Bestellung bis zur Buchung — als Trockenlauf.
+ *
+ * Die Vorgabe des Auftraggebers lautet, das Geschäft solle ohne laufendes Zutun
+ * bestehen. `phase6-automatisierung.md` beziffert den Restaufwand mit 6,5 bis
+ * 12 Stunden im Monat. Beide Aussagen waren bisher Behauptungen: Niemand ist
+ * die Kette einmal Schritt für Schritt durchgegangen und hat gezählt, wo sie
+ * stehen bleibt.
+ *
+ * Diese Datei tut genau das. Sie führt keinen einzigen Schritt aus — sie prüft
+ * für jeden, ob er unter den gegebenen Umständen von selbst liefe, und
+ * protokolliert das Ergebnis. Wer die Kette hier durchlaufen lässt, bekommt
+ * eine Zahl statt einer Hoffnung.
+ *
+ * Die Zeitansätze stammen aus `phase6-automatisierung.md` und sind
+ * ausdrücklich Schätzungen. Was hier neu ist, ist nicht ihre Höhe, sondern
+ * ihre Zuordnung: welcher Schritt sie verursacht und welche fehlende
+ * Voraussetzung ihn erzwingt.
+ */
+
+/**
+ * Was die Umgebung bereitstellt. Alles `false` heißt: heutiger Stand.
+ * Jede Fähigkeit ist ein Vertrag, ein Konto oder eine Schnittstelle —
+ * nichts davon entsteht durch Programmieren.
+ */
+const WELT_HEUTE = {
+  zahlungsanbieter: false,
+  produktdatenSchnittstelle: false,
+  uidAbfrage: false,
+  buchhaltungsanbindung: false,
+  echteKonditionen: false,
+  betreiberdaten: false,
+};
+
+/** Der Ausbauzustand, den die Planung für Stufe 3 unterstellt. */
+const WELT_AUSGEBAUT = {
+  zahlungsanbieter: true,
+  produktdatenSchnittstelle: true,
+  uidAbfrage: true,
+  buchhaltungsanbindung: true,
+  echteKonditionen: true,
+  betreiberdaten: true,
+};
+
+/**
+ * Die Schritte in ihrer tatsächlichen Reihenfolge.
+ *
+ * `braucht` nennt die Voraussetzungen aus der Welt. Fehlt eine, fällt der
+ * Schritt auf `minutenOhne` Minuten Handarbeit zurück — oder er blockiert,
+ * wenn `blockiert` gesetzt ist. Der Unterschied ist wesentlich: Handarbeit
+ * kostet Zeit, eine Blockade kostet den Auftrag.
+ */
+const SCHRITTE = [
+  {
+    id: 'eingang',
+    name: 'Bestellung geht ein',
+    braucht: [],
+    minutenOhne: 0,
+    blockiert: false,
+  },
+  {
+    id: 'datenpruefung',
+    name: 'Bestelldaten und Unternehmerstatus prüfen',
+    braucht: [],
+    minutenOhne: 0,
+    blockiert: false,
+    hinweis: 'Läuft im Shop selbst — siehe kunde.js, Gate 7.',
+  },
+  {
+    id: 'uidPruefung',
+    name: 'UID beim EU-Informationsaustauschsystem abfragen',
+    braucht: ['uidAbfrage'],
+    minutenOhne: 2,
+    blockiert: false,
+    hinweis: 'Ohne Anbindung von Hand über das Portal. Zwei Minuten, aber bei jeder Bestellung.',
+  },
+  {
+    id: 'zahlung',
+    name: 'Zahlungseingang feststellen',
+    braucht: ['zahlungsanbieter'],
+    minutenOhne: 0,
+    blockiert: true,
+    hinweis: 'Ohne Zahlungsanbieter gibt es keinen Zahlungseingang, den man feststellen könnte.',
+  },
+  {
+    id: 'bestellauslösung',
+    name: 'Bestellung je Lieferant auslösen',
+    braucht: ['produktdatenSchnittstelle', 'echteKonditionen'],
+    minutenOhne: 4,
+    blockiert: false,
+    hinweis: 'Der Bruchpunkt aus Gate 6. Der Entwurf steht fertig da; ohne Schnittstelle muss ihn jemand abschicken.',
+  },
+  {
+    id: 'auftragsbestaetigung',
+    name: 'Auftragsbestätigung des Lieferanten einlesen',
+    braucht: ['produktdatenSchnittstelle'],
+    minutenOhne: 3,
+    blockiert: false,
+    hinweis: 'Kommt als PDF oder E-Mail. Lieferzeit und Teilmengen stehen nur dort.',
+  },
+  {
+    id: 'terminauskunft',
+    name: 'Liefertermin an den Kunden weitergeben',
+    braucht: ['produktdatenSchnittstelle'],
+    minutenOhne: 2,
+    blockiert: false,
+    hinweis: 'Im Streckengeschäft weiß der Händler nichts, was ihm der Hersteller nicht sagt.',
+  },
+  {
+    id: 'lieferung',
+    name: 'Direktlieferung an die Baustelle',
+    braucht: [],
+    minutenOhne: 0,
+    blockiert: false,
+    hinweis: 'Macht der Hersteller. Der einzige Schritt, der ohne jedes Zutun läuft.',
+  },
+  {
+    id: 'rechnung',
+    name: 'Rechnung an den Kunden stellen',
+    braucht: ['betreiberdaten', 'echteKonditionen'],
+    minutenOhne: 0,
+    blockiert: true,
+    hinweis: 'Ohne Firmendaten fehlen Pflichtangaben nach § 11 UStG — siehe beleg.js.',
+  },
+  {
+    id: 'buchung',
+    name: 'Beleg in die Buchhaltung',
+    braucht: ['buchhaltungsanbindung'],
+    minutenOhne: 2,
+    blockiert: false,
+    hinweis: 'Ausgangs- und Eingangsrechnung, im Reihengeschäft mit Erwerbsteuer.',
+  },
+];
+
+/**
+ * Führt die Kette einmal durch, ohne irgendetwas auszulösen.
+ *
+ * @param {object} welt Fähigkeiten der Umgebung
+ * @returns Protokoll je Schritt sowie die Summe der Handarbeit
+ */
+function trockenlauf(welt = WELT_HEUTE) {
+  const protokoll = [];
+  let minutenMensch = 0;
+  let abbruchBei = null;
+
+  for (const schritt of SCHRITTE) {
+    const fehlend = schritt.braucht.filter((v) => welt[v] !== true);
+
+    if (fehlend.length === 0) {
+      protokoll.push({ id: schritt.id, name: schritt.name, stand: 'automatisch', minuten: 0, fehlend: [] });
+      continue;
+    }
+
+    if (schritt.blockiert) {
+      protokoll.push({
+        id: schritt.id,
+        name: schritt.name,
+        stand: 'blockiert',
+        minuten: 0,
+        fehlend,
+        grund: schritt.hinweis,
+      });
+      if (!abbruchBei) abbruchBei = schritt.id;
+      continue;
+    }
+
+    minutenMensch += schritt.minutenOhne;
+    protokoll.push({
+      id: schritt.id,
+      name: schritt.name,
+      stand: 'handarbeit',
+      minuten: schritt.minutenOhne,
+      fehlend,
+      grund: schritt.hinweis,
+    });
+  }
+
+  return {
+    protokoll,
+    minutenMensch,
+    laeuftDurch: abbruchBei === null && minutenMensch === 0,
+    abbruchBei,
+    blockaden: protokoll.filter((p) => p.stand === 'blockiert').map((p) => p.id),
+  };
+}
+
+/**
+ * Was eine einzelne fehlende Fähigkeit kostet.
+ *
+ * Berechnet nicht die Differenz zum heutigen Stand, sondern zum Vollausbau:
+ * Was ändert sich, wenn genau diese eine Fähigkeit fehlt und sonst nichts?
+ * Nur so ist der Beitrag einer Fähigkeit von den anderen zu trennen.
+ */
+function engpaesse() {
+  const voll = trockenlauf(WELT_AUSGEBAUT);
+  const namen = Object.keys(WELT_AUSGEBAUT);
+
+  return namen
+    .map((fehlt) => {
+      const welt = { ...WELT_AUSGEBAUT, [fehlt]: false };
+      const lauf = trockenlauf(welt);
+      return {
+        faehigkeit: fehlt,
+        zusatzminuten: lauf.minutenMensch - voll.minutenMensch,
+        blockiert: lauf.blockaden,
+        betroffeneSchritte: lauf.protokoll.filter((p) => p.stand !== 'automatisch').map((p) => p.id),
+      };
+    })
+    .sort((a, b) => b.blockiert.length - a.blockiert.length || b.zusatzminuten - a.zusatzminuten);
+}
+
+/**
+ * Rechnet die Minuten je Bestellung auf den Monat hoch.
+ *
+ * Wichtig für den Vergleich mit `phase6-automatisierung.md`: Erfasst sind hier
+ * **nur die Vorgänge je Bestellung**. Inhaltspflege, Normenänderungen und
+ * Transportschäden hängen nicht an der Bestellmenge und stehen nicht darin.
+ */
+function aufwandProMonat(welt, bestellungenProMonat) {
+  const lauf = trockenlauf(welt);
+  const minuten = lauf.minutenMensch * bestellungenProMonat;
+  return {
+    minutenJeBestellung: lauf.minutenMensch,
+    bestellungenProMonat,
+    stundenProMonat: Math.round((minuten / 60) * 10) / 10,
+    blockaden: lauf.blockaden,
+  };
+}
+
 
 const daten = {"lieferanten":{"_datenstand":"PLATZHALTER — keine dieser Konditionen ist von einem Lieferanten bestätigt.","_hinweis":"Echte Werte entstehen erst aus den Antworten auf Anschreiben A, siehe docs/baustoff-shop/anschreiben-entwuerfe.md. Bis dahin dienen die Zahlen ausschliesslich dazu, die Rechenwege zu prüfen.","lieferanten":[{"id":"rohr-at","land":"AT","name":"Rohrhersteller Österreich","konditionenStand":"platzhalter","streckengeschaeft":true,"haendlerrabattAufUvp":0.3,"mindestbestellwertNetto":250,"fracht":{"modell":"pauschale","freiHausAbNetto":1500,"pauschaleNetto":75,"sperrgutZuschlagNetto":25},"produktdaten":"csv","lieferzeitWerktage":5},{"id":"bahnen-de","land":"DE","name":"Abdichtungsbahnen-Hersteller","konditionenStand":"platzhalter","streckengeschaeft":true,"haendlerrabattAufUvp":0.42,"mindestbestellwertNetto":400,"fracht":{"modell":"pauschale","freiHausAbNetto":1200,"pauschaleNetto":95,"sperrgutZuschlagNetto":40},"produktdaten":"csv","lieferzeitWerktage":8},{"id":"zubehoer-de","land":"DE","name":"Zubehör- und Dichtsysteme","konditionenStand":"platzhalter","streckengeschaeft":true,"haendlerrabattAufUvp":0.38,"mindestbestellwertNetto":150,"fracht":{"modell":"pauschale","freiHausAbNetto":600,"pauschaleNetto":12,"sperrgutZuschlagNetto":0},"produktdaten":"katalog","lieferzeitWerktage":4}]},"artikel":{"_datenstand":"PLATZHALTER — keine Preise sind von einem Lieferanten bestätigt.","_hinweis":"UVP-Spannen stammen aus der Stückliste in docs/baustoff-shop/phase4-sortiment-und-materialwert.md und sind öffentliche Listenpreisniveaus, keine Einkaufspreise. Der Einkaufspreis ergibt sich hier rechnerisch aus UVP × (1 − Händlerrabatt) und ist damit ebenfalls Platzhalter.","sortiment":"Radonvorsorge, mittlerer Warenkorb nach Gate 5","artikel":[{"sku":"DR-100-050","bezeichnung":"Drainagerohr perforiert DN100, Ringbund 50 m","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Ringbund","menge":"50 m","uvpNetto":165,"gewichtKg":22,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"DR-FT-SET","bezeichnung":"Formteilset Radondrainage: Bögen, Muffen, Anschlüsse","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Set","menge":"1 Gebäude","uvpNetto":145,"gewichtKg":6.5,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"DR-KS-100","bezeichnung":"Kontroll- und Sammelschacht DN100","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Stück","menge":"1","uvpNetto":118,"gewichtKg":9,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"DR-SL-100","bezeichnung":"Steigleitung DN100 inkl. Halterungen, 3 m","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Stück","menge":"3 m","uvpNetto":42,"gewichtKg":4,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"AB-RD-375","bezeichnung":"Radondichte Abdichtungsbahn, Rolle 37,5 m²","gruppe":"Abdichtung","lieferantId":"bahnen-de","einheit":"Rolle","menge":"37,5 m²","uvpNetto":398,"gewichtKg":20,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"AB-PR-010","bezeichnung":"Voranstrich / Primer, 10 l","gruppe":"Abdichtung","lieferantId":"bahnen-de","einheit":"Gebinde","menge":"10 l","uvpNetto":96,"gewichtKg":11,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"ZB-DB-150","bezeichnung":"Dichtband gasdicht, 150 mm × 25 m","gruppe":"Zubehör","lieferantId":"zubehoer-de","einheit":"Rolle","menge":"25 m","uvpNetto":78,"gewichtKg":2.2,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"ZB-MA-SET","bezeichnung":"Manschettenset Innen- und Außenecken","gruppe":"Zubehör","lieferantId":"zubehoer-de","einheit":"Set","menge":"1 Gebäude","uvpNetto":112,"gewichtKg":1.8,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"ZB-RR-125","bezeichnung":"Ringraumdichtung DN125 für Einzelleitung","gruppe":"Zubehör","lieferantId":"zubehoer-de","einheit":"Stück","menge":"1","uvpNetto":64,"gewichtKg":0.9,"sperrgut":false,"ekQuelle":"platzhalter"}]}};
 const ZIELMARGE = 0.35;
@@ -1658,6 +1897,67 @@ document.getElementById('rechner').addEventListener('submit', (e) => {
   zeichneKorb();
 });
 
+function zeichneLauf() {
+  const el = document.getElementById('lauf');
+  const lauf = trockenlauf(WELT_HEUTE);
+  const monat = aufwandProMonat(WELT_HEUTE, 37);
+
+  const h2 = document.createElement('h2');
+  h2.textContent = 'Läuft die Kette ohne Zutun?';
+
+  const intro = document.createElement('p');
+  intro.className = 'a-meta';
+  intro.style.gridColumn = 'auto';
+  intro.textContent =
+    'Trockenlauf über den ganzen Auftrag. Es wird nichts ausgelöst — für jeden Schritt ' +
+    'wird geprüft, ob er unter den heutigen Voraussetzungen von selbst liefe.';
+
+  const status = document.createElement('div');
+  status.className = 'recht-status';
+  status.textContent = lauf.laeuftDurch
+    ? 'Die Kette läuft ohne einen Handgriff durch.'
+    : 'Die Kette bricht ab bei: ' + lauf.abbruchBei + '. ' +
+      lauf.minutenMensch + ' Minuten Handarbeit je Bestellung, ' +
+      'bei 37 Bestellungen im Monat sind das ' + monat.stundenProMonat + ' Stunden.';
+
+  const liste = document.createElement('div');
+  for (const p of lauf.protokoll) {
+    const z = document.createElement('div');
+    z.className = 'lauf-zeile';
+
+    const stand = document.createElement('span');
+    stand.className = 'lauf-stand ' +
+      (p.stand === 'automatisch' ? 'lauf-auto' : p.stand === 'blockiert' ? 'lauf-block' : 'lauf-hand');
+    stand.textContent = p.stand;
+
+    const name = document.createElement('span');
+    name.textContent = p.name;
+
+    const min = document.createElement('span');
+    min.className = 'lauf-min';
+    min.textContent = p.minuten ? p.minuten + ' min' : '—';
+
+    z.append(stand, name, min);
+    if (p.grund) {
+      const g = document.createElement('div');
+      g.className = 'lauf-grund';
+      g.textContent = p.grund + ' Fehlt: ' + p.fehlend.join(', ') + '.';
+      z.append(g);
+    }
+    liste.append(z);
+  }
+
+  const schluss = document.createElement('p');
+  schluss.className = 'a-meta';
+  schluss.style.gridColumn = 'auto';
+  schluss.textContent =
+    'Im Vollausbau erreicht diese Kette null Minuten. Was dort nicht steht, ist die ' +
+    'fachliche Auskunft vor dem Kauf — sie hängt nicht an der Bestellung und ist der ' +
+    'eigentliche Rest, der nicht verschwindet.';
+
+  el.append(h2, intro, status, liste, schluss);
+}
+
 function zeichneRecht() {
   const el = document.getElementById('recht');
   const betreiber = {}; // noch keine Firmendaten hinterlegt
@@ -1716,4 +2016,5 @@ function zeichneRecht() {
 zeichneKatalog();
 zeichneKorb();
 zeichneRecht();
+zeichneLauf();
 </script>
