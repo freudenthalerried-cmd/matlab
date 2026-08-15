@@ -1,6 +1,6 @@
 # Status und Einstieg
 
-Stand: 2026-08-14. **Dieses Dokument zuerst lesen.** Sechsundzwanzig Arbeitsdateien
+Stand: 2026-08-14. **Dieses Dokument zuerst lesen.** Siebenundzwanzig Arbeitsdateien
 sind entstanden, mehrere davon korrigieren einander. Hier steht, was gilt.
 
 Veröffentlichter Bericht:
@@ -22,7 +22,7 @@ Radonvorsorge und Bausanierung in Österreich.
 |---|---|---|
 | Nötiger Erlös | 24.200 €/Monat | 5.724 €/Monat |
 | Break-even | ~4.714 € (7 Bestellungen) | ~350 € (2–3 Leads) |
-| Sessions für Zielgröße | 1.850/Monat | ~1.570/Monat |
+| Sessions für Zielgröße | 1.850/Monat | ~1.570/Monat, **unter Vorbehalt** |
 | Kapital bis erste Einnahme | 2.700 € | < 1.000 € |
 | Laufender Aufwand | 6,5–12 h/Monat | 4–6 h/Monat |
 | Bestandseffekt | keiner | ja, ab Stufe B |
@@ -59,11 +59,14 @@ offene Blockade mehr.
 Zwei Freigaben. Der Arbeitsloop kann keine davon selbst auslösen, zusammen
 kosten sie unter 200 €.
 
-| Nächster Schritt | Braucht | Vorbereitet in |
-|---|---|---|
-| Rohmarge belegen (Stufe 0) | Freigabe für E-Mails an zwölf Hersteller | `anschreiben-entwuerfe.md` |
-| Suchvolumina prüfen (Stufe 1) | Werkzeug für 100–200 €/Monat | `phase7-inhalte-und-funnel.md` |
-| Rechtsform, Shop, Inhalte | erst ab Stufe 2, nach den beiden obigen | `phase5-technik.md`, `phase8-*` |
+| Nächster Schritt | Braucht | Entscheidet | Vorbereitet in |
+|---|---|---|---|
+| Rohmarge belegen (Stufe 0) | Freigabe für E-Mails an zwölf Hersteller | den **Shop** — Gate 1, 2, 6 | `anschreiben-entwuerfe.md` |
+| Suchvolumina prüfen (Stufe 1) | Werkzeug für 100–200 €/Monat | das **Leadmodell** — Gate 15 | `pruefung-gruppe-c.md` |
+| Rechtsform, Shop, Inhalte | erst ab Stufe 2, nach den beiden obigen | — | `phase5-technik.md`, `phase8-*` |
+
+Seit Gate 15 sind beide Freigaben **gleichrangig**. Fällt eine Prüfung aus,
+bleibt ein Modell übrig; fallen beide aus, keines.
 
 Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 **2.700 €**, nicht bei den früher genannten 8.000–12.000 €.
@@ -76,9 +79,9 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
    die Abdichtungsbahn, sie muss rund 38 % tragen.
 2. **Suchvolumen** — weiterhin **nicht gemessen**. Die Inhaltslandkarte beruht
    auf Plausibilität.
-3. **Lead-Quote der Feuchte- und Abdichtungsthemen** — mit 2 % angenommen,
-   ungeprüft. Sie hat die Zahl der Radonmessungen als Engpass des Leadmodells
-   abgelöst. Siehe `messwert-einordnung.md`.
+3. **Lead-Quote der Feuchte- und Abdichtungsthemen** — mit 2 % angenommen und
+   nach Gate 15 **nicht mehr als Planungsgrundlage** geführt. Das Segment ist von
+   vertikal integrierten Franchisesystemen besetzt. Siehe `pruefung-gruppe-c.md`.
 4. **Umsetzungsquote der Radonvorsorge** — wird nirgends erhoben. Sie ist die
    eigentliche Wette des Shopmodells, nicht der Baumarkt. Siehe
    `marktrisiko-neubau.md`.
@@ -94,7 +97,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `PARAMETER.md` | Festgelegte Vorgaben, Umrechnung netto → vor Steuer, Margenschwelle |
 | `README.md` | Ursprüngliche Denkgrundlage. Teilweise überholt, Grundrechnungen gültig |
 | `master-prompt.md` | Die ursprüngliche Auftragsfassung. Als Handlungsanweisung überholt |
-| `gate-register.md` | **Alle vierzehn Gates an einer Stelle.** Maßgeblich bei Widerspruch |
+| `gate-register.md` | **Alle fünfzehn Gates an einer Stelle.** Maßgeblich bei Widerspruch |
 
 ### Analysen
 | Datei | Kernaussage |
@@ -115,6 +118,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `marktrisiko-neubau.md` | Neubau −40 % in zehn Jahren; Gate 12 kehrt die Beweislast um |
 | `partnerangebot-leadvermittlung.md` | Gate 13 Bezirke statt 104 Gemeinden; Exklusivität ist die DSGVO-Bauform |
 | `messwert-einordnung.md` | Messdauer sechs Monate; Gate 14 — den Motor liefert der Keller, nicht Radon |
+| `pruefung-gruppe-c.md` | Gate 15 — der Keller ist von Franchisesystemen besetzt; die zweite Freigabe wird entscheidend |
 | `content-und-leadgen.md` | Displaywerbung und Affiliate scheitern an der Reichweite |
 | `skalierung-und-passivitaet.md` | Bestandseffekt; digitale Vorlagen fallen durch |
 | `segment-arbeitsplatzmessung.md` | Nebenstrecke, kein eigenes Segment |
@@ -144,6 +148,8 @@ Damit niemand einer überholten Aussage folgt:
 | Messdauer rund drei Monate | Sechs Monate nach Radonschutzverordnung — die tote Zeit verdoppelt sich |
 | Strecke 2 mit 0,5–1,5 % Ende-zu-Ende | 0,05–0,45 %; die Spanne war aus den eigenen Teilquoten nicht ableitbar |
 | Radon als Mengenquelle des Leadmodells | Den Motor liefern die Feuchtethemen; Radon liefert die Alleinstellung |
+| Feuchtethemen als sichere Mengenquelle | Von ISOTEC und GETIFIX besetzt, samt Kostenrechner und Betriebsvermittlung — ungeprüft |
+| Keyword-Werkzeug als nützliche Ergänzung | Entscheidet, ob das Leadmodell überhaupt eine Mengenquelle hat |
 | Margenschwelle 28 % im master-prompt | 32 %, seit die Zielgröße auf netto umgestellt wurde |
 | „Bei den Gates anhalten und warten" | Ersetzt durch die Freigaberegeln — Gates werden selbst entschieden |
 | Hauff-Technik als Lieferant gelistet | Gestrichen; Hauseinführungen sind nach Gate 5 kein Sortimentsbestandteil |

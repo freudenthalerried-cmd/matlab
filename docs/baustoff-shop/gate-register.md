@@ -1,7 +1,7 @@
 # Gate-Register
 
-Stand: 2026-08-14. **Maßgeblich für alle Gate-Fragen.** Vierzehn Entscheidungen
-sind über die Phasen verteilt in zehn Dateien gefallen. Wer wissen will, was
+Stand: 2026-08-14. **Maßgeblich für alle Gate-Fragen.** Fünfzehn Entscheidungen
+sind über die Phasen verteilt in elf Dateien gefallen. Wer wissen will, was
 gilt, musste bisher alles lesen. Hier steht es an einer Stelle.
 
 Bei Widerspruch zwischen diesem Register und einem Phasendokument gilt das
@@ -24,7 +24,7 @@ Ebenso überholt: Der master-prompt nennt in Gate 1 eine Margenschwelle von
 **28 %**. Sie stammt aus dem Szenario „3.000 € vor Steuer". Seit der Umstellung
 auf 3.000 € netto gilt die harte Untergrenze von **32 %**.
 
-## Die vierzehn Gates
+## Die fünfzehn Gates
 
 ### Lieferantenseite — alle drei hängen an einer einzigen Freigabe
 
@@ -64,19 +64,24 @@ auf 3.000 € netto gilt die harte Untergrenze von **32 %**.
 | **10** | **Erfasst wird beim Anstoß der Messung**, nicht nach dem Ergebnis. Die Messung ist kostenlos, es gibt also keine Transaktion und keinen Datensatz. Das Produkt ist der Erinnerungs- und Einordnungsdienst über die drei Monate Messdauer. | entschieden | `phase7b-messstrecke.md` |
 | **14** | **Strecke 2 trägt die Mengenplanung nicht.** Sechs Monate Messdauer mal rund 90 %, die den Referenzwert nicht überschreiten, ergeben eine Ende-zu-Ende-Quote unter 0,5 %. Die Mengen kommen aus Strecke 1 und den Feuchtethemen der Gruppe C. Gate 10 bleibt gültig, dient aber der Bindung, nicht der Menge. | entschieden | `messwert-einordnung.md` |
 | **13** | **Gebietseinheit ist der politische Bezirk**, nicht die Radonschutzgemeinde. Die 104 Gemeinden bestimmen nur die Ausbaufolge, beginnend in Oberösterreich. | entschieden | `partnerangebot-leadvermittlung.md` |
+| **15** | **Die 2 % Lead-Quote in Gruppe C gilt als unbelegt** und wird nicht als Mengenquelle eingeplant, bis Suchvolumen und Wettbewerbsdichte gemessen sind. Grund: vertikal integrierte Franchisesysteme betreiben dieselben Formate und können für denselben Klick ein Vielfaches zahlen. | entschieden | `pruefung-gruppe-c.md` |
 
 ## Was die Gates auslöst
 
 | Auslöser | Entscheidet | Kosten |
 |---|---|---|
 | Zwölf Herstelleranfragen | Gate 1, 2, 6 — und damit Gate 3 | 0 € |
-| Keyword-Werkzeug, ein Monat | keine Gates, aber Stufe 1 | 100–200 € |
+| Keyword-Werkzeug, ein Monat | Gate 15 — und damit, ob das Leadmodell eine Mengenquelle hat | 100–200 € |
 | Drei bis fünf Partneranfragen | Preisniveau und Machbarkeit von Gate 9 und 13 | 0 € |
 | Betrieb ab Stufe 2 | Gate 4 | ab 2.500 € |
 
 Bemerkenswert daran: **Zwei der drei wirksamsten Auslöser kosten nichts.** Was
 sie brauchen, ist die Freigabe, E-Mails an Dritte zu senden — die einzige
 Kategorie neben Käufen und Ausgaben, in der nicht selbst entschieden wird.
+
+Seit Gate 15 sind die beiden offenen Freigaben **gleichrangig**: Die
+Herstelleranfragen entscheiden über den Shop, das Keyword-Werkzeug über das
+Leadmodell. Fällt eine Prüfung aus, bleibt ein Modell; fallen beide aus, keines.
 
 ## Gates, die sich noch ändern können
 
@@ -87,6 +92,7 @@ Kein Gate ist unumstößlich; drei sind erkennbar anfällig:
 | **5** | Wenn kein Hersteller radondichte Bahnen im Streckengeschäft liefert, bleibt nur das Drainagepaket — und damit ein Warenkorb, der die Marge nicht trägt |
 | **9** | Wenn Betriebe der namentlichen Nennung im Einwilligungstext nicht zustimmen, fällt die Bauform der Gebietsexklusivität |
 | **14** | Wenn die Lead-Quote in Gruppe C unter 2 % liegt, fehlt dem Leadmodell die Mengenquelle — und eine Ersatzquelle ist nicht in Sicht |
+| **15** | Wenn die Messung zeigt, dass die Feuchtebegriffe in Österreich schwächer besetzt sind als in Deutschland, kehrt Gruppe C als Mengenquelle zurück |
 | **12** | Wenn die Neubauzahlen 2026 drehen, verschiebt sich das Gewicht zurück zum Shop — belastbar erst im Frühjahr 2027 |
 
 ## Überholte Fassungen, die im Bestand stehen bleiben
