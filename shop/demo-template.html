@@ -91,6 +91,9 @@
   .k-felder{display:grid;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));gap:.8rem 1.2rem}
   .k-felder label{display:flex;flex-direction:column;gap:.2rem;font-size:.82rem;color:var(--ink-2)}
   .k-felder input[type=text],.k-felder input[type=email]{font:inherit;padding:.35rem .45rem;border:1px solid var(--line-strong);background:var(--ground);color:var(--ink);width:100%}
+  .k-sim{display:flex;flex-direction:column;gap:.3rem;font-size:.82rem;color:var(--ink-2);border:1px dashed var(--line-strong);padding:.6rem .7rem}
+  .k-sim select{font:inherit;padding:.3rem .4rem;border:1px solid var(--line-strong);background:var(--ground);color:var(--ink);max-width:24rem}
+  .k-sim small{color:var(--muted);font-size:.75rem}
   .k-bestaetigung{display:flex;gap:.5rem;align-items:flex-start;font-size:.85rem;border:1px solid var(--line-strong);padding:.6rem .7rem}
   .k-fehler{border:1px solid var(--warn);color:var(--warn);padding:.5rem .7rem;font-size:.83rem;display:flex;flex-direction:column;gap:.25rem}
   .k-warn{border:1px solid var(--accent);color:var(--accent);padding:.5rem .7rem;font-size:.83rem}
@@ -170,6 +173,15 @@
           <label>Ort<input type="text" id="k-ort" value="Wels"></label>
         </div>
         <label class="k-bestaetigung"><input type="checkbox" id="k-unternehmer" checked> Ich bestelle als Unternehmer im Rahmen meines Betriebs. Ein Rücktrittsrecht nach FAGG besteht damit nicht.</label>
+        <label class="k-sim">Antwort des EU-Informationsaustauschsystems <em>simulieren</em>
+          <select id="k-vies">
+            <option value="gueltig">bestätigt, mit Abfrage-Identifikation</option>
+            <option value="ohneNachweis">bestätigt, ohne Abfrage-Identifikation</option>
+            <option value="ungueltig">als ungültig gemeldet</option>
+            <option value="dienstAus" selected>Dienst nicht erreichbar</option>
+          </select>
+          <small>Der Dienst ist von hier aus nicht erreichbar. Die Auswahl zeigt, wie der Shop auf jede der Antworten reagiert.</small>
+        </label>
         <button type="submit">Bestellung prüfen</button>
         <div id="kasse-ergebnis"></div>
       </form>
@@ -450,7 +462,23 @@ document.getElementById('kasse').addEventListener('submit', (e) => {
 
   const wk = berechneWarenkorb([...korb].map(([sku, menge]) => ({ sku, menge })), katalog);
   const auftrag = baueAuftrag('MUSTER-0001', eingabe, { zahlungEingegangen: false });
-  const freigabe = darfAutomatischAusgeloestWerden(wk, auftrag);
+  let freigabe = darfAutomatischAusgeloestWerden(wk, auftrag);
+
+  // Simulierte Antwort des EU-Dienstes. Von hier aus ist er nicht erreichbar;
+  // gezeigt wird, wie der Shop auf jede der vier Antworten reagiert.
+  const VIES_MUSTER = {
+    gueltig: { isValid: true, requestDate: new Date().toLocaleDateString('de-AT'), userError: 'VALID',
+               name: eingabe.firma, address: eingabe.strasse, requestIdentifier: 'WAPI-MUSTER-0001' },
+    ohneNachweis: { isValid: true, userError: 'VALID', name: eingabe.firma, requestIdentifier: '' },
+    ungueltig: { isValid: false, userError: 'INVALID', name: '---', address: '---' },
+    dienstAus: { isValid: false, userError: 'MS_UNAVAILABLE' },
+  };
+  const uidAuswertung = werteAntwortAus(VIES_MUSTER[document.getElementById('k-vies').value]);
+  freigabe = ergaenzeFreigabe(freigabe, uidAuswertung);
+
+  ziel.append(kasten('k-warn', [
+    'UID-Abfrage (simuliert): ' + belegzeile(uidAuswertung, eingabe.uid),
+  ]));
 
   ziel.append(
     kasten('k-sperre', [

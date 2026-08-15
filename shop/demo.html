@@ -91,6 +91,9 @@
   .k-felder{display:grid;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));gap:.8rem 1.2rem}
   .k-felder label{display:flex;flex-direction:column;gap:.2rem;font-size:.82rem;color:var(--ink-2)}
   .k-felder input[type=text],.k-felder input[type=email]{font:inherit;padding:.35rem .45rem;border:1px solid var(--line-strong);background:var(--ground);color:var(--ink);width:100%}
+  .k-sim{display:flex;flex-direction:column;gap:.3rem;font-size:.82rem;color:var(--ink-2);border:1px dashed var(--line-strong);padding:.6rem .7rem}
+  .k-sim select{font:inherit;padding:.3rem .4rem;border:1px solid var(--line-strong);background:var(--ground);color:var(--ink);max-width:24rem}
+  .k-sim small{color:var(--muted);font-size:.75rem}
   .k-bestaetigung{display:flex;gap:.5rem;align-items:flex-start;font-size:.85rem;border:1px solid var(--line-strong);padding:.6rem .7rem}
   .k-fehler{border:1px solid var(--warn);color:var(--warn);padding:.5rem .7rem;font-size:.83rem;display:flex;flex-direction:column;gap:.25rem}
   .k-warn{border:1px solid var(--accent);color:var(--accent);padding:.5rem .7rem;font-size:.83rem}
@@ -170,6 +173,15 @@
           <label>Ort<input type="text" id="k-ort" value="Wels"></label>
         </div>
         <label class="k-bestaetigung"><input type="checkbox" id="k-unternehmer" checked> Ich bestelle als Unternehmer im Rahmen meines Betriebs. Ein Rücktrittsrecht nach FAGG besteht damit nicht.</label>
+        <label class="k-sim">Antwort des EU-Informationsaustauschsystems <em>simulieren</em>
+          <select id="k-vies">
+            <option value="gueltig">bestätigt, mit Abfrage-Identifikation</option>
+            <option value="ohneNachweis">bestätigt, ohne Abfrage-Identifikation</option>
+            <option value="ungueltig">als ungültig gemeldet</option>
+            <option value="dienstAus" selected>Dienst nicht erreichbar</option>
+          </select>
+          <small>Der Dienst ist von hier aus nicht erreichbar. Die Auswahl zeigt, wie der Shop auf jede der Antworten reagiert.</small>
+        </label>
         <button type="submit">Bestellung prüfen</button>
         <div id="kasse-ergebnis"></div>
       </form>
@@ -1527,6 +1539,209 @@ function aufwandProMonat(welt, bestellungenProMonat) {
   };
 }
 
+/**
+ * UID-Abfrage beim Mehrwertsteuer-Informationsaustauschsystem der EU.
+ *
+ * `kunde.js` prüft heute nur Format und Prüfziffer und sagt ausdrücklich, dass
+ * die verbindliche Abfrage aussteht. Der Trockenlauf in
+ * `docs/baustoff-shop/trockenlauf-auftrag.md` beziffert diese Lücke: zwei
+ * Minuten Handarbeit je Bestellung, 1,2 Stunden im Monat — und sie ist der
+ * einzige der sechs Engpässe, der ohne Freigabe und ohne Ausgabe lösbar wäre.
+ *
+ * **Was hier fehlt und warum.** Der Dienst ist aus dieser Umgebung nicht
+ * erreichbar; der Proxy beantwortet den Verbindungsaufbau mit 403. Die
+ * Antwortstruktur ist deshalb aus der Dokumentation nachgebildet, **nicht an
+ * der echten Schnittstelle geprüft**. Die Auswertung ist entsprechend
+ * misstrauisch gebaut: Was sie nicht sicher als gültig oder ungültig erkennt,
+ * gilt als unbestätigt — nie als in Ordnung.
+ *
+ * Die drei Zustände sind der eigentliche Inhalt dieser Datei. Ein Dienst, der
+ * nicht antwortet, sagt nichts über die UID. Wer daraus „ungültig" macht,
+ * weist Kunden ab, weil ein fremder Server gerade neu startet; wer daraus
+ * „gültig" macht, hat die Prüfung nicht.
+ */
+
+const VIES_ENDPUNKT = 'https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number';
+
+const STAND = {
+  GUELTIG: 'gueltig',
+  UNGUELTIG: 'ungueltig',
+  UNBESTAETIGT: 'unbestaetigt',
+};
+
+/** Fehlerkennungen, bei denen ein weiterer Versuch sinnvoll ist. */
+const VORUEBERGEHEND = new Set([
+  'MS_UNAVAILABLE',
+  'MS_MAX_CONCURRENT_REQ',
+  'SERVICE_UNAVAILABLE',
+  'TIMEOUT',
+  'SERVER_BUSY',
+  'GLOBAL_MAX_CONCURRENT_REQ',
+]);
+
+/**
+ * Länderkürzel, die der Dienst kennt.
+ *
+ * Zwei Fallen stecken darin. Griechenland führt seine UID unter **EL**, nicht
+ * unter GR — wer die ISO-Liste nimmt, weist griechische Kunden ab. Und **XI**
+ * steht für Nordirland, das nach dem Austritt für Warenlieferungen im
+ * Mehrwertsteuersystem der Union geblieben ist; GB steht nicht darin.
+ */
+const LAENDER = new Set([
+  'AT', 'BE', 'BG', 'CY', 'CZ', 'DE', 'DK', 'EE', 'EL', 'ES', 'FI', 'FR', 'HR',
+  'HU', 'IE', 'IT', 'LT', 'LU', 'LV', 'MT', 'NL', 'PL', 'PT', 'RO', 'SE', 'SI',
+  'SK', 'XI',
+]);
+
+/**
+ * Zerlegt eine UID in Länderkürzel und Nummer. Gibt null zurück, wenn das nicht geht.
+ *
+ * Das Länderkürzel wird gegen die Liste geprüft, nicht bloß gegen „zwei
+ * Buchstaben". Sonst wird aus jedem Tippfehler eine Anfrage an einen Dienst,
+ * der sie nicht beantworten kann — und aus „keine uid" ein Land namens KE.
+ */
+function zerlegeUid(uid) {
+  const roh = String(uid ?? '').toUpperCase().replace(/[\s.-]/g, '');
+  const treffer = /^([A-Z]{2})([0-9A-Z+*]{2,13})$/.exec(roh);
+  if (!treffer || !LAENDER.has(treffer[1])) return null;
+  return { land: treffer[1], nummer: treffer[2] };
+}
+
+/**
+ * Baut die Anfrage.
+ *
+ * Mit `eigeneUid` wird daraus eine **qualifizierte Bestätigungsanfrage**: Der
+ * Dienst gibt dann eine Abfrage-Identifikation zurück, und genau die ist der
+ * Nachweis, dass geprüft wurde. Ohne sie bleibt von der Prüfung nichts übrig,
+ * was man später vorlegen könnte — und der Nachweis ist der ganze Zweck.
+ */
+function baueAnfrage(uid, { eigeneUid = null } = {}) {
+  const teil = zerlegeUid(uid);
+  if (!teil) throw new Error(`Keine auswertbare UID: ${uid}`);
+
+  const koerper = { countryCode: teil.land, vatNumber: teil.nummer };
+
+  if (eigeneUid) {
+    const eigen = zerlegeUid(eigeneUid);
+    if (!eigen) throw new Error(`Keine auswertbare eigene UID: ${eigeneUid}`);
+    koerper.requesterMemberStateCode = eigen.land;
+    koerper.requesterNumber = eigen.nummer;
+  }
+
+  return { url: VIES_ENDPUNKT, methode: 'POST', koerper, qualifiziert: Boolean(eigeneUid) };
+}
+
+/**
+ * Wertet eine Antwort aus.
+ *
+ * Alles, was nicht eindeutig ist, wird `unbestaetigt`. Das gilt ausdrücklich
+ * auch für eine Antwort, deren Struktur nicht zu dieser Erwartung passt — die
+ * Struktur ist hier aus der Dokumentation nachgebaut, nicht gemessen.
+ */
+function werteAntwortAus(antwort) {
+  if (!antwort || typeof antwort !== 'object') {
+    return { stand: STAND.UNBESTAETIGT, grund: 'Keine auswertbare Antwort', wiederholbar: true };
+  }
+
+  const fehler = antwort.userError ?? antwort.errorWrappers?.[0]?.error ?? null;
+
+  if (fehler && fehler !== 'VALID' && fehler !== 'INVALID') {
+    return {
+      stand: STAND.UNBESTAETIGT,
+      grund: `Dienst meldet ${fehler}`,
+      wiederholbar: VORUEBERGEHEND.has(fehler),
+    };
+  }
+
+  if (typeof antwort.isValid !== 'boolean') {
+    return {
+      stand: STAND.UNBESTAETIGT,
+      grund: 'Antwort ohne verwertbares Gültigkeitskennzeichen',
+      wiederholbar: true,
+    };
+  }
+
+  return {
+    stand: antwort.isValid ? STAND.GUELTIG : STAND.UNGUELTIG,
+    name: antwort.name && antwort.name !== '---' ? antwort.name : null,
+    anschrift: antwort.address && antwort.address !== '---' ? antwort.address : null,
+    abfrageId: antwort.requestIdentifier || null,
+    abfrageDatum: antwort.requestDate || null,
+    grund: antwort.isValid ? 'Vom Mitgliedstaat bestätigt' : 'Vom Mitgliedstaat als ungültig gemeldet',
+    wiederholbar: false,
+  };
+}
+
+/**
+ * Führt die Abfrage aus. Der Abruf wird hereingereicht, damit die Testfälle
+ * ohne Netz auskommen — und damit später ein anderer Weg eingesetzt werden
+ * kann, ohne diese Datei zu ändern.
+ *
+ * @param {string} uid
+ * @param {{abruf: Function, eigeneUid?: string, versuche?: number}} optionen
+ */
+export async function pruefeUid(uid, { abruf, eigeneUid = null, versuche = 3 } = {}) {
+  if (typeof abruf !== 'function') throw new Error('pruefeUid braucht einen Abruf');
+
+  const anfrage = baueAnfrage(uid, { eigeneUid });
+  let letzte = { stand: STAND.UNBESTAETIGT, grund: 'Nicht ausgeführt', wiederholbar: true };
+
+  for (let versuch = 1; versuch <= versuche; versuch++) {
+    let auswertung;
+    try {
+      auswertung = werteAntwortAus(await abruf(anfrage));
+    } catch (fehler) {
+      auswertung = { stand: STAND.UNBESTAETIGT, grund: `Abruf gescheitert: ${fehler.message}`, wiederholbar: true };
+    }
+
+    letzte = { ...auswertung, versuche: versuch, qualifiziert: anfrage.qualifiziert };
+    if (!auswertung.wiederholbar) return letzte;
+  }
+
+  return letzte;
+}
+
+/**
+ * Die Zeile, die in die Ablage gehört.
+ *
+ * Eine Prüfung, die niemand belegen kann, ist keine Prüfung. Bei der
+ * qualifizierten Anfrage steht die Abfrage-Identifikation darin; fehlt sie,
+ * sagt die Zeile das ausdrücklich, statt es zu verschweigen.
+ */
+function belegzeile(auswertung, uid) {
+  const teile = [
+    `UID ${uid}`,
+    auswertung.stand,
+    auswertung.abfrageDatum ?? 'ohne Datum',
+    auswertung.abfrageId ? `Abfrage-ID ${auswertung.abfrageId}` : 'ohne Abfrage-ID — nicht als Nachweis geeignet',
+  ];
+  if (auswertung.name) teile.push(auswertung.name);
+  return teile.join(' · ');
+}
+
+/**
+ * Ergänzt eine bestehende Freigabeprüfung um das Abfrageergebnis.
+ *
+ * Bewusst additiv: `darfAutomatischAusgeloestWerden` bleibt unverändert, diese
+ * Funktion legt einen Grund oben drauf. Eine unbestätigte UID hält die
+ * **automatische Auslösung** an — sie weist die Bestellung nicht zurück. Der
+ * Unterschied ist der ganze Punkt: Der Dienst fällt regelmäßig aus, und ein
+ * Ausfall in Brüssel darf keinen Auftrag in Wels kosten.
+ */
+function ergaenzeFreigabe(freigabe, auswertung) {
+  const gruende = [...freigabe.gruende];
+
+  if (auswertung.stand === STAND.UNGUELTIG) {
+    gruende.push('UID vom Mitgliedstaat als ungültig gemeldet — Gate 7 nicht erfüllt');
+  } else if (auswertung.stand !== STAND.GUELTIG) {
+    gruende.push(`UID nicht bestätigt (${auswertung.grund}) — Bestellung wartet, sie ist nicht abgelehnt`);
+  } else if (!auswertung.abfrageId) {
+    gruende.push('UID bestätigt, aber ohne Abfrage-Identifikation — kein vorlegbarer Nachweis');
+  }
+
+  return { erlaubt: gruende.length === 0, gruende, uidStand: auswertung.stand };
+}
+
 
 const daten = {"lieferanten":{"_datenstand":"PLATZHALTER — keine dieser Konditionen ist von einem Lieferanten bestätigt.","_hinweis":"Echte Werte entstehen erst aus den Antworten auf Anschreiben A, siehe docs/baustoff-shop/anschreiben-entwuerfe.md. Bis dahin dienen die Zahlen ausschliesslich dazu, die Rechenwege zu prüfen.","lieferanten":[{"id":"rohr-at","land":"AT","name":"Rohrhersteller Österreich","konditionenStand":"platzhalter","streckengeschaeft":true,"haendlerrabattAufUvp":0.3,"mindestbestellwertNetto":250,"fracht":{"modell":"pauschale","freiHausAbNetto":1500,"pauschaleNetto":75,"sperrgutZuschlagNetto":25},"produktdaten":"csv","lieferzeitWerktage":5},{"id":"bahnen-de","land":"DE","name":"Abdichtungsbahnen-Hersteller","konditionenStand":"platzhalter","streckengeschaeft":true,"haendlerrabattAufUvp":0.42,"mindestbestellwertNetto":400,"fracht":{"modell":"pauschale","freiHausAbNetto":1200,"pauschaleNetto":95,"sperrgutZuschlagNetto":40},"produktdaten":"csv","lieferzeitWerktage":8},{"id":"zubehoer-de","land":"DE","name":"Zubehör- und Dichtsysteme","konditionenStand":"platzhalter","streckengeschaeft":true,"haendlerrabattAufUvp":0.38,"mindestbestellwertNetto":150,"fracht":{"modell":"pauschale","freiHausAbNetto":600,"pauschaleNetto":12,"sperrgutZuschlagNetto":0},"produktdaten":"katalog","lieferzeitWerktage":4}]},"artikel":{"_datenstand":"PLATZHALTER — keine Preise sind von einem Lieferanten bestätigt.","_hinweis":"UVP-Spannen stammen aus der Stückliste in docs/baustoff-shop/phase4-sortiment-und-materialwert.md und sind öffentliche Listenpreisniveaus, keine Einkaufspreise. Der Einkaufspreis ergibt sich hier rechnerisch aus UVP × (1 − Händlerrabatt) und ist damit ebenfalls Platzhalter.","sortiment":"Radonvorsorge, mittlerer Warenkorb nach Gate 5","artikel":[{"sku":"DR-100-050","bezeichnung":"Drainagerohr perforiert DN100, Ringbund 50 m","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Ringbund","menge":"50 m","uvpNetto":165,"gewichtKg":22,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"DR-FT-SET","bezeichnung":"Formteilset Radondrainage: Bögen, Muffen, Anschlüsse","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Set","menge":"1 Gebäude","uvpNetto":145,"gewichtKg":6.5,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"DR-KS-100","bezeichnung":"Kontroll- und Sammelschacht DN100","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Stück","menge":"1","uvpNetto":118,"gewichtKg":9,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"DR-SL-100","bezeichnung":"Steigleitung DN100 inkl. Halterungen, 3 m","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Stück","menge":"3 m","uvpNetto":42,"gewichtKg":4,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"AB-RD-375","bezeichnung":"Radondichte Abdichtungsbahn, Rolle 37,5 m²","gruppe":"Abdichtung","lieferantId":"bahnen-de","einheit":"Rolle","menge":"37,5 m²","uvpNetto":398,"gewichtKg":20,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"AB-PR-010","bezeichnung":"Voranstrich / Primer, 10 l","gruppe":"Abdichtung","lieferantId":"bahnen-de","einheit":"Gebinde","menge":"10 l","uvpNetto":96,"gewichtKg":11,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"ZB-DB-150","bezeichnung":"Dichtband gasdicht, 150 mm × 25 m","gruppe":"Zubehör","lieferantId":"zubehoer-de","einheit":"Rolle","menge":"25 m","uvpNetto":78,"gewichtKg":2.2,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"ZB-MA-SET","bezeichnung":"Manschettenset Innen- und Außenecken","gruppe":"Zubehör","lieferantId":"zubehoer-de","einheit":"Set","menge":"1 Gebäude","uvpNetto":112,"gewichtKg":1.8,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"ZB-RR-125","bezeichnung":"Ringraumdichtung DN125 für Einzelleitung","gruppe":"Zubehör","lieferantId":"zubehoer-de","einheit":"Stück","menge":"1","uvpNetto":64,"gewichtKg":0.9,"sperrgut":false,"ekQuelle":"platzhalter"}]}};
 const ZIELMARGE = 0.35;
@@ -1780,7 +1995,23 @@ document.getElementById('kasse').addEventListener('submit', (e) => {
 
   const wk = berechneWarenkorb([...korb].map(([sku, menge]) => ({ sku, menge })), katalog);
   const auftrag = baueAuftrag('MUSTER-0001', eingabe, { zahlungEingegangen: false });
-  const freigabe = darfAutomatischAusgeloestWerden(wk, auftrag);
+  let freigabe = darfAutomatischAusgeloestWerden(wk, auftrag);
+
+  // Simulierte Antwort des EU-Dienstes. Von hier aus ist er nicht erreichbar;
+  // gezeigt wird, wie der Shop auf jede der vier Antworten reagiert.
+  const VIES_MUSTER = {
+    gueltig: { isValid: true, requestDate: new Date().toLocaleDateString('de-AT'), userError: 'VALID',
+               name: eingabe.firma, address: eingabe.strasse, requestIdentifier: 'WAPI-MUSTER-0001' },
+    ohneNachweis: { isValid: true, userError: 'VALID', name: eingabe.firma, requestIdentifier: '' },
+    ungueltig: { isValid: false, userError: 'INVALID', name: '---', address: '---' },
+    dienstAus: { isValid: false, userError: 'MS_UNAVAILABLE' },
+  };
+  const uidAuswertung = werteAntwortAus(VIES_MUSTER[document.getElementById('k-vies').value]);
+  freigabe = ergaenzeFreigabe(freigabe, uidAuswertung);
+
+  ziel.append(kasten('k-warn', [
+    'UID-Abfrage (simuliert): ' + belegzeile(uidAuswertung, eingabe.uid),
+  ]));
 
   ziel.append(
     kasten('k-sperre', [

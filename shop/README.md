@@ -23,11 +23,12 @@ Gerüst vorhanden und meldet selbst, welche Pflichtangaben ihm fehlen.
 | Rechtstexte-Gerüst | Pflichtangaben nach § 5 ECG, Lücken maschinenprüfbar |
 | Angebot und Rechnung | § 11 UStG mit seinen drei Betragsschwellen, Reihengeschäft erkannt |
 | Trockenlauf | zehn Schritte durchgezählt: was liefe von selbst, was nicht |
+| UID-Abfrage | drei Zustände; ein Dienstausfall ist keine ungültige UID |
 
 ## Benutzen
 
 ```
-npm test          # 106 Testfälle
+npm test          # 123 Testfälle
 npm run build     # erzeugt demo.html, eine einzelne Datei ohne Abhängigkeiten
 npm run import -- <lieferantId> <datei.csv> [--schreiben]
 ```
@@ -52,6 +53,7 @@ src/messwert.js         Messwert einordnen, Bänder und die drei Grenzen
 src/rechtstexte.js      Pflichtangaben prüfen, Impressum bauen, AGB-Gliederung
 src/beleg.js            Angebot, Rechnung, § 11 UStG, Reihengeschäft
 src/auftragslauf.js     Trockenlauf über den ganzen Auftrag, Aufwand je Bestellung
+src/vies.js             UID beim EU-System abfragen, Nachweis, drei Zustände
 src/format.js           EUR und Lückenmarkierung — einmal, siehe unten
 bin/import.mjs          Kommandozeile dazu, Probelauf als Voreinstellung
 beispiel/               Musterpreisliste — erfundene Preise, nicht schreibbar
@@ -158,6 +160,27 @@ Umsatzsteuer als innergemeinschaftlicher Erwerb, während die Ausgangsrechnung
 20 % trägt. `reihengeschaeftEinordnung()` erkennt das am Feld `land` des
 Lieferanten und schreibt es in die Kasse. Ausführlich in
 `docs/baustoff-shop/beleg-und-reihengeschaeft.md`.
+
+## Die UID-Abfrage
+
+Drei Zustände, nicht zwei. Der Dienst der Kommission fällt regelmäßig aus, und
+ein `MS_UNAVAILABLE` ist keine Aussage über die UID:
+
+```
+ungültig gemeldet    → gesperrt, Gate 7 nicht erfüllt
+Dienst nicht erreichbar → angehalten, ausdrücklich nicht abgelehnt
+bestätigt ohne Abfrage-ID → angehalten, kein vorlegbarer Nachweis
+bestätigt mit Abfrage-ID  → läuft weiter
+```
+
+Nachweisfähig ist nur die **qualifizierte Bestätigungsanfrage** mit der eigenen
+UID im Aufruf — sie liefert die Abfrage-Identifikation. Eine Prüfung, die man
+nicht vorlegen kann, ist im Streitfall keine.
+
+Der Dienst ist aus dieser Umgebung nicht erreichbar (403 am Proxy); die
+Antwortstruktur ist aus der Dokumentation nachgebildet, **nicht gemessen**. Die
+Auswertung behandelt jede unerwartete Antwortform als unbestätigt. In der Kasse
+lassen sich alle vier Antworten simulieren.
 
 ## Der Trockenlauf
 

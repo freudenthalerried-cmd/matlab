@@ -22,10 +22,34 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Rechtstexte-Gerüst | fertig | 11 |
 | Angebot und Rechnung an den Kunden | fertig | 15 |
 | Trockenlauf des Auftrags | fertig | 12 |
+| UID-Abfrage beim EU-System | fertig, ungeprüft am Dienst | 17 |
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig | headless geprüft |
-| **Summe** | | **106, alle grün** |
+| **Summe** | | **123, alle grün** |
 
-## Was zuletzt dazukam: der Trockenlauf
+## Was zuletzt dazukam: die UID-Abfrage
+
+`shop/src/vies.js` schließt den Engpass, den der Trockenlauf als einzigen ohne
+Freigabe lösbaren benannt hat. Ausführlich in
+[`uid-abfrage.md`](./uid-abfrage.md).
+
+Der Kern sind **drei Zustände statt zwei**. Der Dienst der Kommission fällt
+regelmäßig aus; ein `MS_UNAVAILABLE` ist keine Aussage über die UID. Eine
+ungültige UID sperrt, eine unbestätigte hält nur die automatische Auslösung an
+— die Bestellung bleibt bestehen. Ein Ausfall in Brüssel darf keinen Auftrag in
+Wels kosten.
+
+Zwei Dinge sind dabei aufgefallen. Ein Testfall hat aufgedeckt, dass die erste
+Fassung **jedes Buchstabenpaar** für ein Länderkürzel hielt — aus „keine uid"
+wurde ein Land KE. Die Liste steht jetzt ausgeschrieben da, mit den beiden
+Fallen darin: Griechenland führt EL statt GR, und XI steht für Nordirland,
+während GB nicht mehr dazugehört.
+
+Und eine **Korrektur an meiner eigenen Aussage** von gestern: Die qualifizierte
+Bestätigungsanfrage, die als einzige einen vorlegbaren Nachweis liefert,
+braucht die eigene UID des Betreibers. Der Code ist fertig, die belegbare
+Prüfung nicht.
+
+## Was davor dazukam: der Trockenlauf
 
 `shop/src/auftragslauf.js` lässt den ganzen Auftrag einmal durchlaufen, ohne
 etwas auszulösen, und zählt, wo er stehen bleibt. Ausführlich in
@@ -232,10 +256,9 @@ Nach Nutzen geordnet, alle ohne Freigabe und ohne Ausgabe machbar:
 1. **Gebietsabfrage** nach `phase10-datengrundlage-gebietsabfrage.md` — braucht
    die Gemeindeliste. RIS und der Geoserver sind aus dieser Umgebung weiterhin
    nicht erreichbar; zuletzt geprüft am 15. August.
-2. **UID-Abfrage beim EU-Informationsaustauschsystem** — nach dem Trockenlauf
-   der einzige der sechs Engpässe, der ohne Freigabe und ohne Ausgabe lösbar
-   wäre; die Schnittstelle ist öffentlich und braucht keine Anmeldung. Sie
-   scheitert hier nur daran, dass diese Umgebung keine fremden Server erreicht.
-   Vorbereiten ließe sie sich trotzdem: Anbindung schreiben, gegen
-   aufgezeichnete Antworten prüfen, scharf schalten, sobald der Shop ins Netz
-   darf. Spart 1,2 h/Monat und schließt eine Auflage aus Gate 7.
+2. **Ablage der Vorgänge** — jede UID-Abfrage erzeugt eine Belegzeile, jede
+   Bestellung einen Entwurf, jede Rechnung eine Nummer. Bisher entsteht all das
+   und verschwindet wieder. Eine schlichte, dateibasierte Ablage mit
+   fortlaufender Nummernvergabe würde daraus einen nachvollziehbaren Vorgang
+   machen — und die fortlaufende Rechnungsnummer ist ohnehin Pflicht nach
+   § 11 UStG. Braucht keine Freigabe und keine Ausgabe.
