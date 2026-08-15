@@ -6,11 +6,8 @@ sind entstanden, mehrere davon korrigieren einander. Hier steht, was gilt.
 Veröffentlichter Bericht:
 [claude.ai/code/artifact/3d669d15…](https://claude.ai/code/artifact/3d669d15-b632-41b9-838c-b9369dab8a4c)
 
-> **Achtung, der veröffentlichte Bericht ist überholt.** Er gibt den Stand von
-> Phase 1 und 3 wieder, also vor sämtlichen Korrekturen in der Tabelle weiter
-> unten. Bis er aktualisiert ist, gilt ausschließlich dieses Verzeichnis.
-> Nächster Arbeitsschritt des Loops: Bericht unter derselben URL erneuern, wie
-> in [`PARAMETER.md`](./PARAMETER.md) vorgemerkt.
+Auf Stand 14. August 2026 gebracht: zehn Gates, zwei offene Freigaben, die
+Korrekturen. Quelldatei im Repo unter `bericht-radon.html`.
 
 ## Wo das Projekt steht
 

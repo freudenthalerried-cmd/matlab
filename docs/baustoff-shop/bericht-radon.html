@@ -1,438 +1,410 @@
-<title>Machbarkeitsanalyse Radonvorsorge — Zwischenbericht</title>
+<title>Radonvorsorge Österreich</title>
 <style>
-:root{
-  --bg:#F1F4F3; --surface:#FFFFFF; --surface-2:#E7EDEB;
-  --ink:#101617; --ink-2:#44514D; --muted:#6B7873; --line:#D2DAD7;
-  --accent:#14595E; --accent-soft:#CFE2E1;
-  --warn:#8A6410; --warn-bg:#F6EEDA; --warn-line:#D9BE7E;
-  --crit:#8E3627; --ok:#2F6349;
-  --font-display:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
-  --font-body:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
-  --font-mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
-}
-@media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    --bg:#0C1112; --surface:#141B1C; --surface-2:#1B2426;
-    --ink:#E7EDEB; --ink-2:#B4C1BC; --muted:#8B9994; --line:#283331;
-    --accent:#5CC0C0; --accent-soft:#1E3A3B;
-    --warn:#D9AE5A; --warn-bg:#231D0F; --warn-line:#5C4A22;
-    --crit:#E0806C; --ok:#6FB58F;
+  :root {
+    --ground: #F1F3F0;
+    --surface: #FFFFFF;
+    --surface-2: #E9ECE7;
+    --ink: #171A18;
+    --ink-2: #3E4642;
+    --muted: #6A736E;
+    --line: #D8DCD5;
+    --line-strong: #BEC4BB;
+    --accent: #8A5514;
+    --accent-soft: #F0E3D0;
+    --open: #8A3324;
+    --done: #3F5D45;
+    --serif: Georgia, "Iowan Old Style", "Palatino Linotype", ui-serif, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
   }
-}
-:root[data-theme="dark"]{
-  --bg:#0C1112; --surface:#141B1C; --surface-2:#1B2426;
-  --ink:#E7EDEB; --ink-2:#B4C1BC; --muted:#8B9994; --line:#283331;
-  --accent:#5CC0C0; --accent-soft:#1E3A3B;
-  --warn:#D9AE5A; --warn-bg:#231D0F; --warn-line:#5C4A22;
-  --crit:#E0806C; --ok:#6FB58F;
-}
-*{box-sizing:border-box}
-body{
-  background:var(--bg); color:var(--ink);
-  font-family:var(--font-body); font-size:17px; line-height:1.65;
-  margin:0; padding:0 20px 100px;
-  -webkit-font-smoothing:antialiased;
-}
-.wrap{max-width:1060px;margin:0 auto}
-.col{max-width:68ch}
-h1,h2,h3,.eyebrow,th,.stat-v,.tag,.barlab{font-family:var(--font-display)}
-h1{font-size:clamp(30px,4.4vw,45px);line-height:1.08;letter-spacing:-.025em;font-weight:680;margin:0 0 14px;text-wrap:balance}
-h2{font-size:25px;line-height:1.2;letter-spacing:-.018em;font-weight:660;margin:0 0 16px;text-wrap:balance}
-h3{font-size:17px;letter-spacing:-.008em;font-weight:640;margin:0 0 8px}
-p{margin:0 0 15px}
-.eyebrow{font-family:var(--font-mono);font-size:11.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin:0 0 10px}
-.masthead{border-bottom:2px solid var(--ink);padding:56px 0 26px;margin-bottom:34px}
-.meta{font-family:var(--font-mono);font-size:12.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:20px}
-section{padding:40px 0;border-top:1px solid var(--line)}
-section:first-of-type{border-top:none}
-.lede{font-size:19.5px;line-height:1.55;color:var(--ink-2)}
-strong{font-weight:600;color:var(--ink)}
-.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #131614;
+      --surface: #1A1E1B;
+      --surface-2: #222724;
+      --ink: #E9ECE7;
+      --ink-2: #C3C9C4;
+      --muted: #939B95;
+      --line: #2B312D;
+      --line-strong: #3C443E;
+      --accent: #D9A055;
+      --accent-soft: #33291B;
+      --open: #D98A72;
+      --done: #8FB398;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #131614;
+    --surface: #1A1E1B;
+    --surface-2: #222724;
+    --ink: #E9ECE7;
+    --ink-2: #C3C9C4;
+    --muted: #939B95;
+    --line: #2B312D;
+    --line-strong: #3C443E;
+    --accent: #D9A055;
+    --accent-soft: #33291B;
+    --open: #D98A72;
+    --done: #8FB398;
+  }
 
-/* Warnbanner */
-.alert{background:var(--warn-bg);border:1px solid var(--warn-line);border-left:4px solid var(--warn);
-  padding:22px 24px;margin:0 0 34px;display:flex;flex-direction:column;gap:10px}
-.alert .eyebrow{color:var(--warn);margin:0}
-.alert p{margin:0;color:var(--ink)}
+  * { box-sizing: border-box; }
 
-/* Kennzahlen */
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));gap:2px;background:var(--line);
-  border:1px solid var(--line);margin:26px 0}
-.stat{background:var(--surface);padding:18px 20px;display:flex;flex-direction:column;gap:5px}
-.stat-k{font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-.stat-v{font-size:27px;font-weight:670;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1}
-.stat-n{font-size:13.5px;color:var(--ink-2);line-height:1.4}
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
 
-/* Diagramm */
-figure{margin:30px 0;background:var(--surface);border:1px solid var(--line);padding:26px 24px}
-figcaption{font-size:13.5px;color:var(--muted);margin-top:18px;line-height:1.5}
-.chart{display:flex;flex-direction:column;gap:14px;position:relative;margin-top:6px}
-.row{display:grid;grid-template-columns:118px 1fr;gap:14px;align-items:center}
-.barlab{font-size:13px;font-weight:560;color:var(--ink-2);text-align:right}
-.track{position:relative;height:34px;display:flex;align-items:center}
-.bar{height:26px;background:var(--accent);border-radius:0 4px 4px 0;position:relative;
-  transition:filter .15s ease}
-.bar.tex{background:var(--surface-2);
-  background-image:repeating-linear-gradient(45deg,var(--accent) 0 2px,transparent 2px 7px);
-  border:1px solid var(--accent)}
-.row:hover .bar{filter:brightness(1.12)}
-.bval{position:absolute;left:calc(100% + 10px);top:50%;transform:translateY(-50%);
-  font-family:var(--font-mono);font-size:13px;font-variant-numeric:tabular-nums;color:var(--ink);white-space:nowrap}
-.tip{position:absolute;left:calc(100% + 10px);bottom:calc(100% - 2px);background:var(--ink);color:var(--bg);
-  font-family:var(--font-mono);font-size:11.5px;padding:5px 9px;white-space:nowrap;opacity:0;
-  pointer-events:none;transition:opacity .12s ease;z-index:5}
-.row:hover .tip,.row:focus-within .tip{opacity:1}
-.marker{position:absolute;top:-6px;bottom:-6px;border-left:1px dashed var(--muted);z-index:2}
-.mlab{position:absolute;top:-24px;left:6px;font-family:var(--font-mono);font-size:11px;color:var(--muted);white-space:nowrap}
-.chart-scroll{overflow-x:auto;padding:30px 92px 4px 0}
+  .wrap {
+    max-width: 62rem;
+    margin: 0 auto;
+    padding: clamp(2rem, 5vw, 4.5rem) clamp(1.1rem, 4vw, 2.5rem) 5rem;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(2.5rem, 5vw, 4rem);
+  }
 
-/* Tabellen */
-.tw{overflow-x:auto;margin:24px 0;border:1px solid var(--line);background:var(--surface)}
-table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:480px}
-th{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600;
-  text-align:left;padding:13px 16px;border-bottom:1px solid var(--line);white-space:nowrap}
-td{padding:12px 16px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink-2)}
-tr:last-child td{border-bottom:none}
-td.n{font-family:var(--font-mono);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;color:var(--ink)}
-th.n{text-align:right}
-td.k{color:var(--ink);font-weight:500}
+  .prose { max-width: 40rem; }
 
-.tag{display:inline-flex;align-items:center;gap:5px;font-family:var(--font-mono);font-size:10.5px;
-  letter-spacing:.07em;text-transform:uppercase;padding:2px 7px;border:1px solid currentColor;white-space:nowrap}
-.t-crit{color:var(--crit)} .t-warn{color:var(--warn)} .t-ok{color:var(--ok)} .t-acc{color:var(--accent)}
+  h1, h2, h3 { font-family: var(--serif); font-weight: 600; text-wrap: balance; margin: 0; }
 
-/* Kaskade */
-.casc{background:var(--surface);border:1px solid var(--line);padding:24px;margin:26px 0;
-  font-family:var(--font-mono);font-size:14px;font-variant-numeric:tabular-nums;overflow-x:auto}
-.cline{display:grid;grid-template-columns:1fr auto;gap:20px;padding:9px 0;border-bottom:1px dotted var(--line);min-width:340px}
-.cline:last-child{border-bottom:none;border-top:2px solid var(--ink);margin-top:6px;padding-top:12px;font-weight:600}
-.cline span:last-child{color:var(--ink);white-space:nowrap}
-.cline span:first-child{color:var(--ink-2)}
+  h1 {
+    font-size: clamp(2.1rem, 5.5vw, 3.1rem);
+    line-height: 1.08;
+    letter-spacing: -0.015em;
+  }
 
-/* Befundkarten */
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:2px;background:var(--line);
-  border:1px solid var(--line);margin:26px 0}
-.card{background:var(--surface);padding:20px;display:flex;flex-direction:column;gap:9px}
-.card p{margin:0;font-size:14.5px;line-height:1.55;color:var(--ink-2)}
-.card h3{margin:0}
+  h2 {
+    font-size: clamp(1.3rem, 2.8vw, 1.6rem);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
 
-ul{margin:0 0 15px;padding-left:1.15em}
-li{margin-bottom:9px}
-a{color:var(--accent)}
-a:focus-visible,.row:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-footer{border-top:1px solid var(--line);margin-top:44px;padding-top:22px;font-size:13.5px;color:var(--muted)}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
-@media (max-width:620px){
-  .row{grid-template-columns:1fr;gap:5px}
-  .barlab{text-align:left}
-  .chart-scroll{padding-right:0}
-  .bval{position:static;transform:none;display:block;margin-top:5px}
-}
+  h3 { font-size: 1.02rem; line-height: 1.3; }
+
+  p { margin: 0; }
+  .stack { display: flex; flex-direction: column; gap: 1rem; }
+  .stack-lg { display: flex; flex-direction: column; gap: 1.6rem; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .lede { font-size: 1.12rem; color: var(--ink-2); }
+  .note { font-size: 0.92rem; color: var(--muted); }
+
+  /* ---------- masthead ---------- */
+
+  header { display: flex; flex-direction: column; gap: 1.5rem; }
+
+  .rule { height: 1px; background: var(--line-strong); border: 0; margin: 0; }
+
+  .flag {
+    border-left: 3px solid var(--accent);
+    padding: 0.9rem 0 0.9rem 1.1rem;
+    background: var(--surface);
+    font-size: 1rem;
+  }
+  .flag strong { font-weight: 600; }
+
+  /* ---------- figures ---------- */
+
+  .figures {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+  }
+  .fig { background: var(--surface); padding: 1.15rem 1.2rem; display: flex; flex-direction: column; gap: 0.3rem; }
+  .fig-num {
+    font-family: var(--mono);
+    font-size: 1.75rem;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+  .fig-lab { font-size: 0.86rem; color: var(--muted); }
+
+  /* ---------- stufen rail ---------- */
+
+  .rail { display: flex; gap: 1px; background: var(--line); border: 1px solid var(--line); overflow-x: auto; }
+  .step {
+    background: var(--surface);
+    padding: 0.85rem 1rem;
+    min-width: 9rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .step[data-now="yes"] { background: var(--accent-soft); }
+  .step-n { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; }
+  .step-t { font-size: 0.94rem; font-weight: 600; }
+  .step-c { font-family: var(--mono); font-size: 0.8rem; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+
+  /* ---------- tables ---------- */
+
+  .scroll { overflow-x: auto; border: 1px solid var(--line); background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 0.94rem; }
+  th, td { text-align: left; padding: 0.72rem 1rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  thead th {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+    background: var(--surface-2);
+    white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: 0; }
+  td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  th.rowhead { font-weight: 500; color: var(--ink-2); }
+
+  /* ---------- gate ledger ---------- */
+
+  .gates { display: flex; flex-direction: column; border: 1px solid var(--line); background: var(--surface); }
+  .gate { display: grid; grid-template-columns: 3.4rem 1fr; gap: 0 1rem; padding: 0.85rem 1.1rem; border-bottom: 1px solid var(--line); }
+  .gate:last-child { border-bottom: 0; }
+  .gate-n {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    padding-top: 0.28rem;
+    white-space: nowrap;
+  }
+  .gate-b { display: flex; flex-direction: column; gap: 0.15rem; }
+  .gate-t { font-weight: 600; font-size: 0.98rem; }
+  .gate-w { font-size: 0.9rem; color: var(--muted); }
+
+  /* ---------- confidence marks ---------- */
+
+  .tag {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.14rem 0.42rem;
+    border: 1px solid currentColor;
+    white-space: nowrap;
+  }
+  .tag-open { color: var(--open); }
+  .tag-done { color: var(--done); }
+
+  ol.needs { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  ol.needs > li { background: var(--surface); padding: 1.1rem 1.2rem; display: flex; flex-direction: column; gap: 0.35rem; }
+  .need-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.6rem; }
+  .need-t { font-weight: 600; }
+  .need-c { font-family: var(--mono); font-size: 0.85rem; color: var(--accent); font-variant-numeric: tabular-nums; }
+
+  footer { color: var(--muted); font-size: 0.88rem; display: flex; flex-direction: column; gap: 0.4rem; }
+  code { font-family: var(--mono); font-size: 0.88em; }
+  a { color: var(--accent); }
+  a:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 </style>
 
 <div class="wrap">
 
-<header class="masthead">
-  <p class="eyebrow">Zwischenbericht · zweite Fassung</p>
-  <h1>Radonvorsorge in Österreich: zwei tragfähige Geschäftsmodelle, eine offene Entscheidung</h1>
-  <div class="col"><p class="lede">Machbarkeitsanalyse für ein Vorhaben, das 3.000 € netto monatlich abwerfen und ohne laufendes Zutun bestehen soll. Aus anfangs zehn Nischen und vier Modellen sind zwei Kandidaten geblieben.</p></div>
-  <div class="meta">
-    <span>Stand 9. August 2026, 15:30</span><span>Markt Österreich</span><span>13 Arbeitsdokumente</span>
-  </div>
-</header>
-
-<div class="alert">
-  <p class="eyebrow">Kein realisierter Gewinn</p>
-  <p><strong>Der Shop existiert nicht.</strong> Es wurde nichts gegründet, nichts verkauft und nichts eingenommen. Es gibt keinen Umsatz, keine Kunden und keine Lieferantenverträge.</p>
-  <p>Jede Zahl in diesem Bericht ist <strong>Modellrechnung</strong> — die Antwort auf „was müsste eintreten, damit 3.000 € netto herauskommen", nicht „so viel wurde verdient". Die beiden wichtigsten Eingangsgrößen des Modells sind bislang <strong>unbelegt</strong> und im Abschnitt Konfidenz einzeln ausgewiesen.</p>
-</div>
-
-<section>
-  <p class="eyebrow">Kurzfassung</p>
-  <div class="col">
-    <p>Von zehn geprüften Nischen bleibt eine übrig, die die Margenschwelle von 32 % im Streckengeschäft plausibel erreichen kann: <strong>Radonvorsorge im Neubau</strong>. Die Nachfrage ist eine Genehmigungsauflage, keine Kaufentscheidung — sie entsteht aus der OIB-Richtlinie 3 und der ÖNORM S 5280-2.</p>
-    <p>Das Modell trägt das Ziel, aber langsamer und auf schwächerem Fundament als die Ausgangsvorgabe unterstellte. Vier Feststellungen bestimmen alles Weitere:</p>
-    <ul>
-      <li><strong>Der Zeithorizont hält nicht.</strong> 18–30 Monate statt zwölf. Begrenzend ist nicht das Werbebudget, sondern die Zahl der Bauvorhaben.</li>
-      <li><strong>Der Markt schrumpft.</strong> Die Neubaubewilligungen liegen auf dem tiefsten Stand seit Erhebungsbeginn 2010.</li>
-      <li><strong>Die Marge ist unbestätigt.</strong> Kein Hersteller hat Konditionen genannt. Darauf ruht das gesamte Zahlenwerk.</li>
-      <li><strong>Ein zweites Modell ist dazugekommen.</strong> Die Leadvermittlung für Bausanierung erreicht dasselbe Ziel mit einem Viertel des Umsatzes und ohne Wareneinsatz.</li>
-    </ul>
-  </div>
-</section>
-
-<section>
-  <p class="eyebrow">Nachtrag zur ersten Fassung</p>
-  <h2>Vier Befunde, die den ersten Bericht überholen</h2>
-  <div class="col"><p>Die erste Fassung stand allein auf dem Warenverkauf. Seither sind vier Punkte dazugekommen, von denen zwei eigene frühere Aussagen korrigieren.</p></div>
-
-  <div class="cards">
-    <div class="card">
-      <span class="tag t-crit">Korrektur</span>
-      <h3>Der Dosimeter-Verkauf ist nicht zulässig</h3>
-      <p>Radonmessung ist in Österreich eine ermächtigte Tätigkeit nach dem Strahlenschutzgesetz — AGES, TÜV SÜD und das Strahlenschutzlabor der Stadt Wien sind akkreditiert. Der geplante Einstieg über den Verkauf von Messgeräten wird durch die <strong>Vermittlung an eine anerkannte Messstelle</strong> ersetzt. Die Funnel-Logik bleibt, die Marge auf den Messvorgang entfällt.</p>
+  <header>
+    <p class="eyebrow">Machbarkeitsanalyse · Stand 14. August 2026</p>
+    <h1>Radonvorsorge Österreich</h1>
+    <p class="lede prose">Kann ein Fachhandel oder ein Vermittlungsportal für Radonschutz
+      3.000 € netto im Monat tragen — ohne laufende Anwesenheit? Zehn Entscheidungen sind
+      gefallen. Zwei Freigaben fehlen, und drei Zahlen sind weiterhin unbelegt.</p>
+    <hr class="rule">
+    <div class="flag">
+      <strong>Nichts ist gegründet, verkauft oder eingenommen.</strong> Es gibt keinen Umsatz und
+      keinen Gewinn. Was hier steht, ist eine Analyse — kein Bericht über einen laufenden Betrieb.
     </div>
-    <div class="card">
-      <span class="tag t-crit">Korrektur</span>
-      <h3>Das Arbeitsplatz-Segment ist kleiner als gedacht</h3>
-      <p>Die Messpflicht gilt österreichweit nur für spezielle Arbeitsplätze wie Wasserversorgungsanlagen; die breite Pflicht hängt an den 104 Schutzgebietsgemeinden. Die Übergangsfrist lief am 31. Juli 2022 ab — der Bestand ist abgeschöpft. Bleibt als Nebenstrecke, nicht als Säule.</p>
+  </header>
+
+  <section class="stack-lg">
+    <div class="figures">
+      <div class="fig"><span class="fig-num">0 €</span><span class="fig-lab">Umsatz bis heute</span></div>
+      <div class="fig"><span class="fig-num">0 €</span><span class="fig-lab">bisher ausgegeben</span></div>
+      <div class="fig"><span class="fig-num">10</span><span class="fig-lab">Entscheidungen getroffen</span></div>
+      <div class="fig"><span class="fig-num">2</span><span class="fig-lab">Freigaben offen</span></div>
     </div>
-    <div class="card">
-      <span class="tag t-ok">Chance</span>
-      <h3>500 € Landesförderung als Zugmagnet</h3>
-      <p>Oberösterreich fördert die Radondrainage nach ÖNORM S 5280-2 mit 500 €, dazu kommt eine WKO-Beratungsförderung. Wer nach der Förderung sucht, plant den Einbau bereits — das ist der wertvollste Suchanlass in der ganzen Nische.</p>
-    </div>
-    <div class="card">
-      <span class="tag t-acc">Neu</span>
-      <h3>Die GmbH gewinnt, sobald Einkommen besteht</h3>
-      <p>Ohne weiteres Einkommen bräuchte ein Einzelunternehmen nur 4.500 € statt 5.374 € Monatsgewinn. Bei bestehendem Einkommen wird der Gewinn aber zum Grenzeinkommen mit 55–60 % Belastung — dagegen besteuert die Kapitalgesellschaft flach mit 44,2 %.</p>
-    </div>
-  </div>
-</section>
+    <p class="note prose">Der Zielwert 3.000 € netto beim Gesellschafter entspricht
+      <strong>5.374 € Gewinn vor Steuer</strong> im Monat — nach 23 % Körperschaftsteuer und
+      27,5 % Kapitalertragsteuer bleiben 55,8 % übrig.</p>
+  </section>
 
-<section>
-  <p class="eyebrow">Modellvergleich</p>
-  <h2>Warum ein zweiter Kandidat dazugekommen ist</h2>
-  <div class="col">
-    <p>Die Anforderung, dass das Vorhaben skalieren und ohne laufendes Zutun bestehen soll, hat vier Modelle gegeneinander gestellt. Zwei sind ausgeschieden, und zwar nicht an der Marge, sondern an der Reichweite:</p>
-    <ul>
-      <li><strong>Displaywerbung</strong> bräuchte 382.000–716.000 Seitenaufrufe im Monat, <strong>Affiliate</strong> 150.000–250.000 Sitzungen. In dieser Nische in 24–36 Monaten nicht erreichbar.</li>
-      <li><strong>Digitale BauKG-Vorlagen</strong> scheitern am besetzten Markt — ABK und wp software in Österreich, WEKA und Forum Verlag in Deutschland — und daran, dass die Arbeitsinspektion eine Erstellungshilfe kostenlos bereitstellt.</li>
-    </ul>
-    <p>Daraus die eigentliche Lehre: <strong>Passivität allein taugt nicht als Auswahlkriterium.</strong> Ein vollkommen passives Modell, das seine Erlösschwelle nie erreicht, ist wertlos.</p>
-  </div>
-
-  <div class="tw">
-    <table>
-      <thead><tr><th></th><th>Radon-Shop</th><th>Leadvermittlung Bausanierung</th></tr></thead>
-      <tbody>
-        <tr><td class="k">Nötiger Umsatz</td><td class="n">24.200 €/Monat</td><td class="n">~6.000 €/Monat</td></tr>
-        <tr><td class="k">Nötiger Traffic</td><td class="n">~2.700 Sitzungen</td><td class="n">5.000–15.000 Sitzungen</td></tr>
-        <tr><td class="k">Startkapital</td><td class="n">8.000–12.000 €</td><td class="n">&lt; 2.000 €</td></tr>
-        <tr><td class="k">Wareneinsatz, Logistik, Haftung</td><td>ja</td><td>nein</td></tr>
-        <tr><td class="k">Bestandseffekt</td><td>keiner — beginnt jeden Monat bei null</td><td>Retainer laufen weiter</td></tr>
-        <tr><td class="k">Laufender Aufwand</td><td>mittel bis hoch</td><td>4–8 h/Monat</td></tr>
-        <tr><td class="k">Hauptrisiko</td><td>unbelegte Marge, schrumpfender Markt</td><td>Partnergewinnung, Leadqualität</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="col">
-    <p>Der entscheidende Unterschied steht in der vorletzten Zeile. Ein Sanierungsauftrag liegt bei 3.000–15.000 €, weshalb ein qualifizierter Lead 100–250 € wert ist statt der zunächst angesetzten 50–70 €. Und Retainer tragen sich ins Folgejahr, während 54 Bestellungen im Januar für den Februar nichts bedeuten.</p>
-    <p><strong>Beide Modelle brauchen dieselben Inhalte.</strong> Erst die Monetarisierung trennt sie. Das erlaubt eine Reihenfolge statt einer Entweder-oder-Entscheidung: Inhalte zuerst, Leadvermittlung als frühe Einnahme, Warenverkauf später als Ergänzung.</p>
-  </div>
-</section>
-
-<section>
-  <p class="eyebrow">Nischenanalyse</p>
-  <h2>Was ausgeschieden ist — und warum</h2>
-  <div class="col"><p>Ausschlaggebend war selten der Wettbewerb. Meist scheiterte eine Nische an der Produktlogik oder daran, dass die Handelsspanne bereits vergeben ist.</p></div>
-
-  <div class="cards">
-    <div class="card">
-      <span class="tag t-crit">Verworfen</span>
-      <h3>Brandschutz</h3>
-      <p>Wirkte ideal: reguliert, leicht, hochmargig. Scheitert am Verwendbarkeitsnachweis — der gilt für das geprüfte System <em>eines</em> Herstellers. Ein Händler kann daran nichts kombinieren, ohne die Zulassung zu gefährden.</p>
-    </div>
-    <div class="card">
-      <span class="tag t-crit">Verworfen</span>
-      <h3>Betoninstandsetzung</h3>
-      <p>Sika, PCI, Röfix und Synthesa bedienen den Markt über etablierte Fachhandelsstrukturen. Die Spanne ist verteilt. Zusätzlich: Sackware, palettiert, frachtintensiv.</p>
-    </div>
-    <div class="card">
-      <span class="tag t-warn">Zurückgestellt</span>
-      <h3>Lehm- und Kalkbaustoffe</h3>
-      <p>Fachlich attraktiv, aber für die Marktgröße dicht besetzt — CLAYTEC führt seit 2010 eine eigene AT-Vertriebsgesellschaft, dazu ProLehm, Biokay, LEVITA und Sand&nbsp;&amp;&nbsp;Lehm. Ohne eigene Produktion bliebe nur der Preis als Unterschied.</p>
-    </div>
-    <div class="card">
-      <span class="tag t-acc">Gewählt</span>
-      <h3>Radonvorsorge im Neubau</h3>
-      <p>Regulierungsgetriebene Nachfrage, kein spezialisierter österreichischer Anbieter für das Neubausegment, Beratungsintensität als Vorteil statt als Last.</p>
-    </div>
-  </div>
-</section>
-
-<section>
-  <p class="eyebrow">Positionierung</p>
-  <h2>Warum die Pflicht weiter reicht als gedacht</h2>
-  <div class="col"><p>Die erste Einschätzung lautete, die Pflicht beschränke sich auf die ausgewiesenen Radonschutzgebiete. Das war falsch, und der Unterschied entscheidet über die Tragfähigkeit der Nische.</p></div>
-
-  <div class="tw">
-    <table>
-      <thead><tr><th>Gebietstyp</th><th class="n">Vorhersagewert</th><th>Umfang</th><th>Pflicht nach ÖNORM S 5280-2</th></tr></thead>
-      <tbody>
-        <tr><td class="k">Radonvorsorgegebiet</td><td class="n">&gt; 150 Bq/m³</td><td>nahezu ganz Österreich</td><td>konvektionsdichte Ausführung erdberührter Bauteile</td></tr>
-        <tr><td class="k">Radonschutzgebiet</td><td class="n">&gt; 300 Bq/m³</td><td>104 von 2.095 Gemeinden</td><td>zusätzlich Radondrainage</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="col">
-    <p>Das dreht die Sortimentslogik um. Die <strong>Abdichtungskomponenten</strong> — radondichte Bahnen und Folien, gasdichte Rohr- und Kabeldurchführungen, Anschlussbänder — sind bei erdberührten Aufenthaltsräumen praktisch landesweit gefordert und bilden das Volumengeschäft. Die <strong>Drainagekomponenten</strong> bleiben auf die 104 Gemeinden begrenzt und sind das margenstarke Spezialsortiment.</p>
-    <h3>Der Wettbewerber, den die erste Runde übersehen hatte</h3>
-    <p>Ein spezialisierter Anbieter existiert: <strong>RadonTec GmbH</strong> mit radonshop.com, 2017 in Deutschland gegründet, liefert in den DACH-Raum. Die Annahme „kein Spezialist vorhanden" ist damit widerlegt. Die Lücke besteht weiter, aber an anderer Stelle:</p>
-  </div>
-
-  <div class="tw">
-    <table>
-      <thead><tr><th></th><th>RadonTec</th><th>Freie Position</th></tr></thead>
-      <tbody>
-        <tr><td class="k">Schwerpunkt</td><td>Messtechnik, Sanierung im Bestand</td><td>Vorsorge im Neubau</td></tr>
-        <tr><td class="k">Käufer</td><td>betroffene Eigentümer, privat</td><td>ausführende Betriebe, Baumeister</td></tr>
-        <tr><td class="k">Normbezug</td><td>deutsches Strahlenschutzrecht</td><td>ÖNORM S 5280-2, OIB-Richtlinie 3</td></tr>
-        <tr><td class="k">Kaufauslöser</td><td>Grenzwert überschritten</td><td>Auflage vor Baubeginn</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="col"><p>Unterschiedliche Kunden mit unterschiedlichem Anlass. Ein deutscher Anbieter kann die österreichische Normenlage nicht glaubwürdig besetzen — genau dort liegt die vorhandene Fachkompetenz.</p></div>
-</section>
-
-<section>
-  <p class="eyebrow">Wirtschaftlichkeit</p>
-  <h2>Von 3.000 € netto rückwärts</h2>
-  <div class="col"><p>Bei einer Kapitalgesellschaft stehen zwischen Unternehmensgewinn und Privatvermögen zwei Stufen: 23 % Körperschaftsteuer, danach 27,5 % Kapitalertragsteuer auf die Ausschüttung.</p></div>
-
-  <div class="casc">
-    <div class="cline"><span>Ziel netto beim Gesellschafter</span><span>3.000 €</span></div>
-    <div class="cline"><span>÷ 0,558 — nach KöSt und KESt</span><span>5.374 €</span></div>
-    <div class="cline"><span>+ Fixkosten pro Monat</span><span>650 €</span></div>
-    <div class="cline"><span>= benötigter Deckungsbeitrag nach Werbung</span><span>6.024 €</span></div>
-  </div>
-
-  <div class="stats">
-    <div class="stat"><span class="stat-k">Zielumsatz / Monat</span><span class="stat-v">24.200 €</span><span class="stat-n">im Planungsfall, 35 % Rohmarge</span></div>
-    <div class="stat"><span class="stat-k">Bestellungen / Monat</span><span class="stat-v">54</span><span class="stat-n">à 450 € Warenkorb, B2B</span></div>
-    <div class="stat"><span class="stat-k">Break-even-Umsatz</span><span class="stat-v">4.714 €</span><span class="stat-n">≈ 10–11 Bestellungen</span></div>
-    <div class="stat"><span class="stat-k">Kapitalbedarf</span><span class="stat-v">8–12k €</span><span class="stat-n">kumulierter Anlaufverlust</span></div>
-  </div>
-
-  <figure>
-    <h3>Nötiger Monatsumsatz je Szenario</h3>
-    <div class="chart-scroll">
-      <div class="chart">
-        <div class="marker" style="left:calc(118px + 14px + 12.5% * 0.88)"><span class="mlab">Break-even 4.714 €</span></div>
-        <div class="row" tabindex="0">
-          <span class="barlab">Optimistisch</span>
-          <div class="track"><div class="bar" style="width:48.5%"><span class="tip">40 % Marge · 7 % Werbung · 31 Bestellungen</span></div><span class="bval">18.330 €</span></div>
-        </div>
-        <div class="row" tabindex="0">
-          <span class="barlab">Realistisch</span>
-          <div class="track"><div class="bar" style="width:64%"><span class="tip">35 % Marge · 10 % Werbung · 54 Bestellungen</span></div><span class="bval">24.200 €</span></div>
-        </div>
-        <div class="row" tabindex="0">
-          <span class="barlab">Pessimistisch</span>
-          <div class="track"><div class="bar tex" style="width:100%"><span class="tip">30 % Marge · 14 % Werbung · 108 Bestellungen</span></div><span class="bval">37.800 € · nicht erreichbar</span></div>
-        </div>
+  <section class="stack-lg">
+    <h2>Wo der Weg steht</h2>
+    <div class="rail">
+      <div class="step" data-now="yes">
+        <span class="step-n">Stufe 0 · jetzt</span>
+        <span class="step-t">Konditionen belegen</span>
+        <span class="step-c">0 € · 4 Wochen</span>
+      </div>
+      <div class="step">
+        <span class="step-n">Stufe 1</span>
+        <span class="step-t">Nachfrage messen</span>
+        <span class="step-c">200 € · 4 Wochen</span>
+      </div>
+      <div class="step">
+        <span class="step-n">Stufe 2</span>
+        <span class="step-t">Fundament bauen</span>
+        <span class="step-c">2.500 € · 6 Monate</span>
+      </div>
+      <div class="step">
+        <span class="step-n">Stufe 3</span>
+        <span class="step-t">Monetarisierung</span>
+        <span class="step-c">3.000 € · 3 Monate</span>
+      </div>
+      <div class="step">
+        <span class="step-n">Stufe 4</span>
+        <span class="step-t">Skalierung</span>
+        <span class="step-c">aus Marge</span>
       </div>
     </div>
-    <figcaption>Umsatz, der nötig wäre, um nach Wareneinsatz, Werbung und Fixkosten 3.000 € netto zu erreichen. Das pessimistische Szenario ist schraffiert, weil 108 Bestellungen im Monat bei rund 12.000 relevanten Neubauten jährlich einen Marktanteil bedeuten würden, den ein Neueinsteiger nicht holt — es dient als Abbruchmarke, nicht als Planungsfall.</figcaption>
-  </figure>
+    <p class="prose">Jede Stufe hat einen Kostendeckel, eine Frist und ein messbares Kriterium.
+      Wird es verfehlt, wird nicht nachgebessert, sondern abgebrochen oder umgestellt. Das
+      <strong>Kapitalrisiko bis zur ersten belegten Einnahme liegt bei 2.700 €</strong> —
+      nicht bei den ursprünglich veranschlagten 8.000 bis 12.000 €, weil Gründung, Shopsystem
+      und Werbebudget erst nach dem ersten Geschäft anfallen.</p>
+  </section>
 
-  <div class="tw">
-    <table>
-      <thead><tr><th>Kenngröße</th><th class="n">Pessimistisch</th><th class="n">Realistisch</th><th class="n">Optimistisch</th></tr></thead>
-      <tbody>
-        <tr><td class="k">Rohmarge</td><td class="n">30 %</td><td class="n">35 %</td><td class="n">40 %</td></tr>
-        <tr><td class="k">Werbekostenanteil</td><td class="n">14 %</td><td class="n">10 %</td><td class="n">7 %</td></tr>
-        <tr><td class="k">Deckungsbeitragsrate</td><td class="n">16 %</td><td class="n">25 %</td><td class="n">33 %</td></tr>
-        <tr><td class="k">Umsatz pro Monat</td><td class="n">37.800 €</td><td class="n">24.200 €</td><td class="n">18.330 €</td></tr>
-        <tr><td class="k">Ø Warenkorb</td><td class="n">350 €</td><td class="n">450 €</td><td class="n">600 €</td></tr>
-        <tr><td class="k">Bestellungen pro Monat</td><td class="n">108</td><td class="n">54</td><td class="n">31</td></tr>
-        <tr><td class="k">Sessions bei 2 % Conversion</td><td class="n">5.400</td><td class="n">2.700</td><td class="n">1.530</td></tr>
-      </tbody>
-    </table>
-  </div>
+  <section class="stack-lg">
+    <h2>Zwei Modelle, dieselbe Grundlage</h2>
+    <p class="prose">Beide bauen auf denselben Inhalten auf und trennen sich erst bei der
+      Monetarisierung. Deshalb muss die Wahl heute nicht fallen.</p>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr><th scope="col"></th><th scope="col">Radon-Fachhandel</th><th scope="col">Leadvermittlung</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row" class="rowhead">Nötiger Erlös je Monat</th><td class="num">24.200 €</td><td class="num">5.724 €</td></tr>
+          <tr><th scope="row" class="rowhead">Break-even</th><td class="num">7 Bestellungen</td><td class="num">2–3 Leads</td></tr>
+          <tr><th scope="row" class="rowhead">Besuche je Monat für das Ziel</th><td class="num">1.850</td><td class="num">~2.550</td></tr>
+          <tr><th scope="row" class="rowhead">Kapital bis erste Einnahme</th><td class="num">2.700 €</td><td class="num">&lt; 1.000 €</td></tr>
+          <tr><th scope="row" class="rowhead">Laufender Aufwand</th><td class="num">6,5–12 h</td><td class="num">4–6 h</td></tr>
+          <tr><th scope="row" class="rowhead">Wiederkehrende Erlöse</th><td>keine</td><td>ja, ab Stufe B</td></tr>
+          <tr><th scope="row" class="rowhead">Obergrenze</th><td>offen nach oben</td><td class="num">~8.000–12.000 €</td></tr>
+          <tr><th scope="row" class="rowhead">Engpass</th><td>Rohmarge</td><td>Zahl der Messungen</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="prose">Das Leadmodell <strong>scheitert und wartet billiger</strong> — es trägt sich
+      ab zwei bis drei Vorgängen im Monat selbst. Weniger Reichweite braucht es allerdings nicht:
+      Wer noch nicht gemessen hat, durchläuft einen viel längeren Weg, und die Messung dauert drei
+      Monate. Der erste Erlös verschiebt sich dadurch um ein Quartal.</p>
+  </section>
 
-  <div class="col">
-    <h3>Break-even kommt früh, das Ziel spät</h3>
-    <p>Bei 35 % Rohmarge, 650 € Fixkosten und zunächst 1.000 € Werbebudget liegt der Break-even bei <span class="mono">4.714 €</span> Monatsumsatz — realistisch im vierten bis achten Monat. Der kumulierte Anlaufverlust bis dahin beträgt überschlägig 8.000–12.000 €. Das deckt sich mit einem Startbudget von 10.000 €, lässt aber keinen Puffer; am unteren Rand von 5.000 € wird es eng.</p>
-    <p>Der eigentliche Aufwand liegt danach: der Weg von 4.714 € auf 24.200 €. Dafür sind <strong>18–30 Monate</strong> anzusetzen, nicht zwölf. Die Vorgabe „so schnell wie möglich" ändert daran wenig, weil der begrenzende Faktor nicht das Werbebudget ist, sondern die Zahl der Bauvorhaben und die Geschwindigkeit, mit der ausführende Betriebe einen neuen Lieferanten aufnehmen. Beides ist nicht käuflich.</p>
-  </div>
-</section>
+  <section class="stack-lg">
+    <h2>Die zehn Entscheidungen</h2>
+    <p class="prose">Getroffen und begründet, ohne Rückfrage — so vereinbart. Jede ist im
+      Projektverzeichnis mit ihrer Herleitung hinterlegt.</p>
+    <div class="gates">
+      <div class="gate"><span class="gate-n">Gate 1</span><span class="gate-b"><span class="gate-t">32 % Rohmarge als harte Untergrenze</span><span class="gate-w">Darunter ist das Nettoziel im Streckengeschäft rechnerisch nicht erreichbar. Nischen darunter fallen.</span></span></div>
+      <div class="gate"><span class="gate-n">Gate 2</span><span class="gate-b"><span class="gate-t">Vier Bedingungen an jeden Lieferanten</span><span class="gate-w">Streckengeschäft, mindestens 35 % Händlerrabatt, kalkulierbare Frachtregelung, strukturierte Produktdaten.</span></span></div>
+      <div class="gate"><span class="gate-n">Gate 3</span><span class="gate-b"><span class="gate-t">Fortsetzen nur mit schriftlichen Konditionen</span><span class="gate-w">Vor jeder Ausgabe müssen zwei Hersteller ihre Konditionen beziffert haben. Zeithorizont 18–30 Monate.</span></span></div>
+      <div class="gate"><span class="gate-n">Gate 4</span><span class="gate-b"><span class="gate-t">Modellwahl vertagt auf Ende Stufe 2</span><span class="gate-w">Stufe 0 bis 2 sind für beide Modelle gleich. Entschieden wird am ersten tatsächlichen Geschäft, nicht am Reißbrett.</span></span></div>
+      <div class="gate"><span class="gate-n">Gate 5</span><span class="gate-b"><span class="gate-t">Sortiment auf den radonspezifischen Kern</span><span class="gate-w">Abdichtungsbahnen und Drainage ja, Hauseinführungen nein — die sind ohnehin vorgeschrieben und schon radondicht.</span></span></div>
+      <div class="gate"><span class="gate-n">Gate 6</span><span class="gate-b"><span class="gate-t">Ohne Produktdaten kein Shop</span><span class="gate-w">Ohne Schnittstelle bricht die Bestellübergabe am ersten Tag Abwesenheit — das widerspricht dem ganzen Vorhaben.</span></span></div>
+      <div class="gate"><span class="gate-n">Gate 7</span><span class="gate-b"><span class="gate-t">Warenverkauf ausschließlich an Unternehmer</span><span class="gate-w">Damit entfällt das Rücktrittsrecht samt Zwölfmonatsfalle. Auflage: Privatbestellungen wirksam ausschließen.</span></span></div>
+      <div class="gate"><span class="gate-n">Gate 8</span><span class="gate-b"><span class="gate-t">Zwölf Herstelleranfragen statt sechs</span><span class="gate-w">Mit sechs Adressaten wäre die Margenfrage in vier von zehn Fällen gar nicht entscheidbar gewesen.</span></span></div>
+      <div class="gate"><span class="gate-n">Gate 9</span><span class="gate-b"><span class="gate-t">Leadmodell in zwei Stufen</span><span class="gate-w">Erst Erlös je Lead, dann Grundgebühr plus reduzierter Leadpreis. Ein reiner Retainer kündigt im schwachen Quartal.</span></span></div>
+      <div class="gate"><span class="gate-n">Gate 10</span><span class="gate-b"><span class="gate-t">Erfassung beim Anstoß der Messung</span><span class="gate-w">Die Messung ist kostenlos, es gibt also keine Transaktion. Das Produkt ist die Erinnerung nach drei Monaten.</span></span></div>
+    </div>
+  </section>
 
-<section>
-  <p class="eyebrow">Marktgröße</p>
-  <h2>Ein schrumpfender Markt</h2>
-  <div class="col">
-    <p>Statistik Austria weist für 2025 <span class="mono">47.636</span> bewilligte Wohnungen aus, davon <span class="mono">31.979</span> im Neubau — ein Minus von 7,1 % und der <strong>niedrigste Stand seit Erhebungsbeginn 2010</strong>.</p>
-    <p>Die kaufende Einheit ist das Gebäude, nicht die Wohnung. Daraus werden überschlägig 10.000–14.000 Gebäude mit erdberührten Aufenthaltsräumen; bei 400–1.500 € Materialwert je Gebäude ergibt das ein adressierbares Volumen von 4–21 Mio. € jährlich. Eine frühere Schätzung von 10–25 Mio. € war zu hoch, weil sie Wohnungen statt Gebäude zählte.</p>
-    <p>Ein Geschäftsmodell auf einen fallenden Markt zu setzen, ist ein echtes Risiko. Zwei Gegenargumente schwächen es ab, heben es aber nicht auf: die <strong>Durchdringung steigt</strong>, weil die Radonpflicht jung ist und erst allmählich umgesetzt wird — ein wachsender Anteil eines schrumpfenden Marktes kann in Summe wachsen. Und der <strong>Bestand</strong> ist in dieser Rechnung gar nicht enthalten.</p>
-  </div>
-</section>
+  <section class="stack-lg">
+    <h2>Worauf alles ruht</h2>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr><th scope="col">Größe</th><th scope="col">Stand</th><th scope="col">Wovon sie entscheidet</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row" class="rowhead">Rohmarge</th>
+            <td><span class="tag tag-open">unbelegt</span></td>
+            <td>Die Abdichtungsbahn muss rund 38 % tragen, damit der Warenkorb 32 % erreicht. Kein Hersteller hat bisher eine Zahl genannt.</td>
+          </tr>
+          <tr>
+            <th scope="row" class="rowhead">Suchvolumen</th>
+            <td><span class="tag tag-open">ungemessen</span></td>
+            <td>Die Themenauswahl beruht auf Fachplausibilität. Inhalte auf Verdacht zu schreiben wäre der teuerste Fehler im Plan.</td>
+          </tr>
+          <tr>
+            <th scope="row" class="rowhead">Zahl der Messungen je Jahr</th>
+            <td><span class="tag tag-open">unbekannt</span></td>
+            <td>Nicht die Zahl betroffener Gebäude begrenzt das Leadmodell, sondern wie viele Menschen tatsächlich messen.</td>
+          </tr>
+          <tr>
+            <th scope="row" class="rowhead">Materialwert je Gebäude</th>
+            <td><span class="tag tag-done">hergeleitet</span></td>
+            <td>1.260 bis 2.955 € aus einer Stückliste, gegengeprüft an einer amtlichen Angabe des Landes Oberösterreich.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 
-<section>
-  <p class="eyebrow">Konfidenz</p>
-  <h2>Worauf das Modell wirklich steht</h2>
-  <div class="col"><p>Ein Zahlenwerk ist so belastbar wie seine schwächste Eingangsgröße. Hier sind es zwei.</p></div>
+  <section class="stack-lg">
+    <h2>Was jetzt gebraucht wird</h2>
+    <p class="prose">Zwei Freigaben, zusammen unter 200 €. Beide liegen am Anfang des Wegs, und
+      ohne sie kann niemand weiterarbeiten — auch keine Maschine.</p>
+    <ol class="needs">
+      <li>
+        <div class="need-h"><span class="need-t">Zwölf Herstelleranfragen versenden</span><span class="need-c">0 €</span></div>
+        <p class="note">Die Anschreiben sind fertig formuliert und warten auf Zustimmung. Sie klären
+          Händlerrabatt, Streckengeschäft, Fracht und Produktdaten — also vier der zehn Entscheidungen
+          auf einmal. Bisher wurde nichts versendet.</p>
+      </li>
+      <li>
+        <div class="need-h"><span class="need-t">Suchvolumina prüfen</span><span class="need-c">100–200 € im Monat</span></div>
+        <p class="note">Ein Keyword-Werkzeug für einen Monat. Danach steht fest, ob die
+          Inhaltslandkarte trägt oder ob das Thema Radon zu dünn ist und breitere
+          Feuchte- und Abdichtungsthemen die Reichweite tragen müssen.</p>
+      </li>
+    </ol>
+  </section>
 
-  <div class="tw">
-    <table>
-      <thead><tr><th>Größe</th><th class="n">Wert</th><th>Konfidenz</th><th>Grundlage</th></tr></thead>
-      <tbody>
-        <tr><td class="k">Neubauzahlen</td><td class="n">31.979 (2025)</td><td><span class="tag t-ok">Hoch</span></td><td>Statistik Austria</td></tr>
-        <tr><td class="k">Steuerlast</td><td class="n">23 % + 27,5 %</td><td><span class="tag t-ok">Hoch</span></td><td>geltendes Recht</td></tr>
-        <tr><td class="k">Gebäude statt Wohnungen</td><td class="n">10–14.000</td><td><span class="tag t-warn">Mittel</span></td><td>eigene Ableitung</td></tr>
-        <tr><td class="k">Conversion-Rate</td><td class="n">2 %</td><td><span class="tag t-warn">Mittel</span></td><td>B2B-Erfahrungswert</td></tr>
-        <tr><td class="k">Fixkosten</td><td class="n">650 €/Monat</td><td><span class="tag t-warn">Mittel</span></td><td>kalkuliert</td></tr>
-        <tr><td class="k">Ø Warenkorb</td><td class="n">450 €</td><td><span class="tag t-crit">Niedrig</span></td><td>B2B-Annahme</td></tr>
-        <tr><td class="k">Materialwert je Gebäude</td><td class="n">400–1.500 €</td><td><span class="tag t-crit">Niedrig</span></td><td>Schätzung, unbelegt</td></tr>
-        <tr><td class="k">Rohmarge</td><td class="n">35 %</td><td><span class="tag t-crit">Niedrig</span></td><td>Branchenannahme, keine Konditionen erhoben</td></tr>
-      </tbody>
-    </table>
-  </div>
+  <section class="stack-lg">
+    <h2>Was sich im Verlauf als falsch erwiesen hat</h2>
+    <p class="prose">Die Analyse hat sich mehrfach selbst korrigiert. Diese Punkte sind die
+      folgenreichsten — sie stehen hier, damit niemand einer überholten Aussage folgt.</p>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr><th scope="col">Zuerst angenommen</th><th scope="col">Tatsächlich</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Radonvorsorge ist nur in 104 Gemeinden Pflicht</td><td>Vorsorgegebiet ist nahezu ganz Österreich; nur die Drainagepflicht hängt an den 104</td></tr>
+          <tr><td>Kein spezialisierter Wettbewerber</td><td>RadonTec besetzt das Feld bereits, mit Schwerpunkt Sanierung im Bestand</td></tr>
+          <tr><td>Dosimeter als Einstiegsprodukt verkaufen</td><td>Unzulässig — Radonmessung ist eine ermächtigte Tätigkeit</td></tr>
+          <tr><td>Der Messeinstieg erzeugt einen Kundendatensatz</td><td>Die Messung ist kostenlos, also gibt es keine Transaktion und keinen Datensatz</td></tr>
+          <tr><td>Das Leadmodell braucht weniger Reichweite als der Shop</td><td>Es braucht mehr; der Weg der noch nicht Gemessenen war übersprungen</td></tr>
+          <tr><td>Anlaufverlust 8.000 bis 12.000 € im Voraus</td><td>2.700 € bis zur ersten Einnahme, wenn in Stufen vorgegangen wird</td></tr>
+          <tr><td>Eine Inhaltsseite ist am passivsten und damit erste Wahl</td><td>Werbeerlöse scheitern an der nötigen Reichweite von mehreren Hunderttausend Aufrufen</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 
-  <div class="col">
-    <p><strong>Rohmarge und Materialwert je Gebäude sind die beiden Angelpunkte — und beide unbelegt.</strong> Sie lassen sich nur durch direkte Herstelleranfragen belegen, und die sind freigabepflichtig, weil dafür E-Mails an Dritte hinausgehen. Solange das offen ist, steht das Modell auf einer Annahme, nicht auf Daten.</p>
-    <p>Eine methodische Einschränkung kommt hinzu: Die Arbeitsumgebung blockiert den direkten Abruf von Webseiten, nur die Suche ist verfügbar. Für die geplante Preiserhebung an 40 konkreten Artikeln reicht das nicht.</p>
-  </div>
-</section>
+  <hr class="rule">
 
-<section>
-  <p class="eyebrow">Entscheidung</p>
-  <h2>Gate 3 und was daneben liegt</h2>
-  <div class="col">
-    <p>Das realistische Szenario erreicht das Ziel — in 18–30 Monaten und auf einer Margenannahme, die niemand bestätigt hat. <strong>Entscheidung: fortsetzen, unter zwei Auflagen.</strong></p>
-    <ul>
-      <li>Vor jeder Ausgabe für Gründung oder Shop müssen die Händlerkonditionen von mindestens zwei Herstellern schriftlich vorliegen. Liegt die Marge unter 32 %, fällt die Nische und die Nischensuche wird neu aufgerollt.</li>
-      <li>Der Zeithorizont wird auf 18–30 Monate korrigiert. Die Zwölf-Monats-Vorgabe ist mit dieser Nische nicht haltbar.</li>
-    </ul>
-    <h3>Was jetzt zur Entscheidung ansteht</h3>
-    <p>Drei Bedingungen stehen gegeneinander — <strong>Passivität, Tempo und Alleinstellung</strong> — und alle drei zugleich sind nicht zu haben. Welche gelockert wird, ist die eine Festlegung, die niemand außer dem Auftraggeber treffen kann:</p>
-  </div>
-
-  <div class="tw">
-    <table>
-      <thead><tr><th>Verzicht auf</th><th>Ergebnis</th></tr></thead>
-      <tbody>
-        <tr><td class="k">Passivität</td><td>Radon-Shop bauen — schnellster Weg zu Umsatz, dauerhafter Aufwand</td></tr>
-        <tr><td class="k">Tempo</td><td>Inhalte und Leadvermittlung aufbauen — geringster Kapitaleinsatz, 4–8 h/Monat, längerer Anlauf</td></tr>
-        <tr><td class="k">Alleinstellung</td><td>in ein besetztes Feld eintreten — Wettbewerb über Preis oder Fokus</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="col">
-    <p><strong>Empfehlung:</strong> Inhalte zuerst. Sie werden für beide Modelle gebraucht, kosten wenig und halten die Entscheidung offen, bis die Herstellerkonditionen vorliegen. Dann zeigt sich, ob der Warenverkauf die 32 % überhaupt trägt.</p>
-    <p>Bis zur Festlegung gehen keine Herstelleranfragen hinaus, es wird nichts gegründet und es entstehen keine Kosten. Die Anschreiben liegen fertig bereit und warten auf Freigabe.</p>
-  </div>
-</section>
-
-<section>
-  <p class="eyebrow">Was noch fehlt</p>
-  <h2>Die Grenzen dieser Analyse</h2>
-  <div class="col">
-    <ul>
-      <li><strong>Keine Herstellerkonditionen.</strong> Rohmarge und Materialwert je Gebäude sind Annahmen. Sie zu belegen erfordert E-Mails an Dritte und damit eine Freigabe.</li>
-      <li><strong>Keine Suchvolumina.</strong> Kein Keyword-Werkzeug verfügbar; ein solches kostet 100–200 € im Monat. Die Inhaltslandkarte beruht auf Recherchelage und fachlicher Plausibilität, nicht auf gemessener Nachfrage.</li>
-      <li><strong>Kein direkter Seitenabruf.</strong> Die Arbeitsumgebung blockiert das Laden fremder Webseiten; nur die Suche steht zur Verfügung. Für eine Preiserhebung an 40 Artikeln reicht das nicht.</li>
-      <li><strong>Steuerliche Optimierung offen.</strong> Die Mischung aus Geschäftsführerbezug und Ausschüttung kann den nötigen Gewinn spürbar senken — das gehört zum Steuerberater.</li>
-    </ul>
-  </div>
-</section>
-
-<footer>
-  <p>Quellen: Statistik Austria (Baubewilligungen 2025) · BMLUK Radonschutzverordnung · Fachstelle für Radon · Austrian Standards ÖNORM S 5280-2:2021 · Land Oberösterreich · OIB-Richtlinie 3 · Herstellerangaben BMI Österreich, Bueho, Ampack, Hauff-Technik, Liapor, RadonTec.</p>
-  <p>Vollständige Arbeitsstände samt Herleitungen im Repository unter <span class="mono">docs/baustoff-shop/</span>.</p>
-</footer>
+  <footer>
+    <p>Vollständige Herleitung, Quellen und Rechenwege im Projektverzeichnis
+      <code>docs/baustoff-shop/</code>, Einstieg über <code>STATUS.md</code>.</p>
+    <p>Keine Rechts-, Steuer- oder Anlageberatung. Alle Zahlen sind Modellrechnungen mit
+      ausgewiesenem Konfidenzgrad; vor Umsetzung sind Steuerberatung und anwaltliche Prüfung
+      erforderlich.</p>
+  </footer>
 
 </div>
