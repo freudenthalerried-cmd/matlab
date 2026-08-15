@@ -16,11 +16,12 @@ Zahlungsanbindung, keine Rechtstexte und kein Impressum.
 | Bestellübergabe | je Lieferant eine fertige Bestellung als Text und als CSV |
 | Freigabeprüfung | Gate 6 und Gate 7 als harte Sperren vor der Auslösung |
 | Preislisten-Import | CSV einlesen, prüfen, mit dem Katalog vergleichen |
+| Materialbedarfsrechner | Außenmaße → Stückliste → Warenkorb, mit Verschnittausweis |
 
 ## Benutzen
 
 ```
-npm test          # 36 Testfälle
+npm test          # 47 Testfälle
 npm run build     # erzeugt demo.html, eine einzelne Datei ohne Abhängigkeiten
 npm run import -- <lieferantId> <datei.csv> [--schreiben]
 ```
@@ -39,12 +40,33 @@ src/preis.js            Einkauf, Verkauf, Marge, Fracht
 src/warenkorb.js        Gruppierung nach Lieferant, Summen, Mischmarge
 src/bestellung.js       Bestelltext, CSV, Freigabeprüfung
 src/import.js           Preisliste lesen, prüfen, mit dem Katalog vergleichen
+src/bedarf.js           Materialbedarf je Gebäude, Rollen- und Gebinderechnung
 bin/import.mjs          Kommandozeile dazu, Probelauf als Voreinstellung
 beispiel/               Musterpreisliste — erfundene Preise, nicht schreibbar
 test/                   node:test, ohne Fremdpakete
 demo-template.html      Oberfläche mit Platzhaltern für Kern und Daten
 build-demo.mjs          fügt beides zu demo.html zusammen
 ```
+
+## Der Materialbedarfsrechner
+
+Außenmaße und Zahl der Durchführungen ergeben eine Stückliste, die direkt in den
+Warenkorb geht. Jede Position trägt ihre Begründung, jeder Ansatz steht als
+Konstante in `ANSAETZE` — Überlappung 10 %, Verschnitt 5 %, Aufkantung 30 cm,
+Rohrabstand 8 m nach ÖNORM S 5280-2.
+
+Sein eigentlicher Zweck steht in `phase4-sortiment-und-materialwert.md`:
+Radonfolien werden **nur rollenweise** abgegeben. Für ein Haus mit 12 × 10 m
+ergibt das
+
+```
+Bahnenbedarf 153,2 m²  →  5 Rollen à 37,5 m² = 187,5 m²
+Rollenbindung: 34,3 m² über dem Bedarf (18 %). Teilmengen gibt es nicht.
+```
+
+Diesen Satz bekommt der Kunde heute erst an der Kasse zu sehen. Hier steht er
+vor der Bestellung — und er erklärt zugleich, warum der tatsächliche Warenkorb
+über dem rechnerischen Materialwert je Quadratmeter liegt.
 
 ## Was das Muster bereits zeigt
 

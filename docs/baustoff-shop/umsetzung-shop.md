@@ -16,10 +16,30 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Bestellübergabe als Text und CSV | fertig | 4 |
 | Freigabesperren (Gate 6, Gate 7) | fertig | 3 |
 | Preislisten-Import | fertig | 14 |
+| Materialbedarfsrechner | fertig | 11 |
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig | headless geprüft |
-| **Summe** | | **36, alle grün** |
+| **Summe** | | **47, alle grün** |
 
-## Was zuletzt dazukam: der Weg für echte Preise
+## Was zuletzt dazukam: der Materialbedarfsrechner
+
+`shop/src/bedarf.js` macht aus Außenmaßen eine Stückliste und legt sie in den
+Warenkorb. Alle Ansätze stehen als benannte Konstanten beieinander —
+Überlappung 10 %, Verschnitt 5 %, Aufkantung 30 cm, Rohrabstand 8 m nach
+ÖNORM S 5280-2 — und jede Position trägt ihre Begründung mit.
+
+Der Zweck ist nicht Bequemlichkeit, sondern der Vorteil aus
+[`phase4-sortiment-und-materialwert.md`](./phase4-sortiment-und-materialwert.md):
+Radonfolien gibt es nur rollenweise. Für 12 × 10 m sind 153,2 m² nötig, geliefert
+werden 5 Rollen mit 187,5 m² — **18 % Überschuss, den heute niemand vorher
+ausweist.**
+
+Ein Nebenbefund daraus, der in die Kalkulation gehört: Der tatsächliche
+Warenkorb liegt über dem rechnerischen Materialwert je Quadratmeter, weil die
+Rollenbindung aufrundet. Das erklärt, warum das durchgerechnete Referenzgebäude
+mit 3.088 € netto am oberen Rand der in Phase 4 genannten Spanne von
+1.260–2.955 € liegt statt in ihrer Mitte.
+
+## Der Weg für echte Preise
 
 Bis hierher war der Katalog handgeschrieben. Das ist genau die Art laufender
 Arbeit, die der Auftrag ausschließen sollte — eine Preisrunde des Herstellers,
@@ -78,8 +98,7 @@ Nach Nutzen geordnet, alle ohne Freigabe und ohne Ausgabe machbar:
 
 1. **Bestellstrecke im Muster** — Adresseingabe, Unternehmerbestätigung,
    Zusammenfassung; endet bewusst vor der Zahlung.
-2. **Materialbedarfsrechner** aus `phase7-inhalte-und-funnel.md` — Grundfläche
-   und Durchführungen ergeben eine Stückliste, die in den Warenkorb geht. Rechnet
-   auch Rollen und Verschnitt aus, die Schwachstelle des Wettbewerbers.
-3. **Gebietsabfrage** nach `phase10-datengrundlage-gebietsabfrage.md` — braucht
+2. **Gebietsabfrage** nach `phase10-datengrundlage-gebietsabfrage.md` — braucht
    die Gemeindeliste, die aus dieser Umgebung nicht abrufbar ist.
+3. **Messwert-Einordner** nach `messwert-einordnung.md` — die Wertebänder und
+   die drei Grenzen stehen dort bereits als Vorgabe.

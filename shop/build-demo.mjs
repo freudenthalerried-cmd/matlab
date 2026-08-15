@@ -21,7 +21,11 @@ const entkleide = (quelle) =>
     .replace(/^import[^;]+;\s*$/gm, '')
     .replace(/^export (const|function) /gm, '$1 ');
 
-const kern = [entkleide(lies('./src/preis.js')), entkleide(lies('./src/warenkorb.js'))].join('\n');
+const kern = [
+  entkleide(lies('./src/preis.js')),
+  entkleide(lies('./src/warenkorb.js')),
+  entkleide(lies('./src/bedarf.js')),
+].join('\n');
 
 const html = lies('./demo-template.html')
   .replace('/*__KERN__*/', kern)

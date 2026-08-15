@@ -63,6 +63,19 @@
   .hinweis{font-size:.8rem;color:var(--warn);border:1px solid currentColor;padding:.5rem .6rem}
   .leer{color:var(--muted);font-size:.88rem}
   .qty{width:3.2rem;font:inherit;font-family:var(--mono);padding:.2rem .3rem;border:1px solid var(--line-strong);background:var(--ground);color:var(--ink);text-align:right}
+  .rechner{background:var(--surface);border:1px solid var(--line);padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:.85rem}
+  .r-intro{font-size:.9rem;color:var(--ink-2);max-width:44rem}
+  .r-felder{display:flex;flex-wrap:wrap;gap:.9rem 1.4rem;align-items:flex-end}
+  .r-felder label{display:flex;flex-direction:column;gap:.2rem;font-size:.82rem;color:var(--ink-2)}
+  .r-felder label span{color:var(--muted);font-size:.72rem}
+  .r-felder input[type=number]{font:inherit;font-family:var(--mono);width:6rem;padding:.3rem .4rem;border:1px solid var(--line-strong);background:var(--ground);color:var(--ink)}
+  .r-check{flex-direction:row!important;align-items:center;gap:.45rem!important}
+  .r-check small{color:var(--muted)}
+  .r-liste{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line);margin-top:.3rem}
+  .r-pos{background:var(--surface);padding:.5rem .8rem;display:grid;grid-template-columns:2.5rem 1fr;gap:0 .8rem;font-size:.85rem}
+  .r-pos b{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+  .r-pos em{grid-column:2;font-style:normal;font-size:.76rem;color:var(--muted)}
+  .r-hinweis{font-size:.82rem;color:var(--ink-2);border-left:3px solid var(--accent);padding:.4rem .7rem;background:var(--accent-soft);margin-top:.5rem}
   footer{border-top:1px solid var(--line);padding-top:1rem;color:var(--muted);font-size:.82rem;display:flex;flex-direction:column;gap:.4rem}
   code{font-family:var(--mono);font-size:.85em}
 </style>
@@ -81,7 +94,20 @@
   </div>
 
   <div class="layout">
-    <section>
+    <section style="display:flex;flex-direction:column;gap:1.5rem">
+      <form class="rechner" id="rechner">
+        <h2>Materialbedarf rechnen</h2>
+        <p class="r-intro">Außenmaße eingeben — der Rechner ermittelt die Stückliste und legt sie in den Warenkorb. Er weist dabei aus, wie viel Verschnitt die Rollenbindung erzwingt.</p>
+        <div class="r-felder">
+          <label>Länge <span>m</span><input type="number" id="laenge" value="12" min="1" step="0.5"></label>
+          <label>Breite <span>m</span><input type="number" id="breite" value="10" min="1" step="0.5"></label>
+          <label>Durchführungen<input type="number" id="durchfuehrungen" value="4" min="0" step="1"></label>
+          <label class="r-check"><input type="checkbox" id="drainage" checked> Radondrainage <small>(im Radonschutzgebiet gefordert)</small></label>
+        </div>
+        <button type="submit">Stückliste rechnen</button>
+        <div id="rechner-ergebnis"></div>
+      </form>
+
       <div class="katalog" id="katalog"></div>
     </section>
 
@@ -322,6 +348,134 @@ function berechneWarenkorb(zeilen, katalog) {
   };
 }
 
+/**
+ * Materialbedarf für die Radonvorsorge eines Gebäudes.
+ *
+ * Rechner Nummer 2 aus phase7-inhalte-und-funnel.md. Sein Zweck ist nicht die
+ * Bequemlichkeit, sondern ein konkreter Vorteil: Radonfolien werden nur
+ * rollenweise abgegeben, Teilmengen sind ausgeschlossen. Wer 140 m² braucht
+ * und Rollen zu 37,5 m² kauft, zahlt Verschnitt — und erfährt das heute erst
+ * an der Kasse. Dieser Rechner sagt es vorher.
+ *
+ * Alle Ansätze sind Planungswerte. Herstellerangaben und die Ausführungsplanung
+ * gehen im Zweifel vor; das gehört in die Ausgabe, nicht ins Kleingedruckte.
+ */
+
+const ANSAETZE = {
+  /** Überlappung der Bahnen, Anteil auf die Fläche. */
+  ueberlappung: 0.10,
+  /** Verschnitt an Ecken und Anschlüssen, Anteil auf die Fläche. */
+  verschnitt: 0.05,
+  /** Höhe der Aufkantung an aufgehenden Bauteilen, in Metern. */
+  aufkantungHoehe: 0.30,
+  /** Rohrabstand der Drainage im Kiesbett, in Metern (ÖNORM S 5280-2: bis 8 m). */
+  rohrabstand: 8,
+  /** Zuschlag auf die Rohrlänge für Bögen, Anschlüsse, Verschnitt. */
+  rohrZuschlag: 0.15,
+  /** Primerverbrauch je Quadratmeter, in Litern. */
+  primerProM2: 0.30,
+  /** Dichtbandbedarf je Durchführung, in Metern. */
+  dichtbandProDurchfuehrung: 1.0,
+};
+
+const aufrunden = (n) => Math.ceil(n - 1e-9);
+
+/**
+ * @param {object} gebaeude
+ * @param {number} gebaeude.laenge   Außenmaß in Metern
+ * @param {number} gebaeude.breite   Außenmaß in Metern
+ * @param {number} gebaeude.durchfuehrungen  Zahl der Leitungsdurchführungen
+ * @param {boolean} gebaeude.mitDrainage  true im Radonschutzgebiet
+ * @param {object} katalog  Ergebnis aus ladeKatalog()
+ */
+function berechneBedarf(gebaeude, katalog) {
+  const { laenge, breite, durchfuehrungen = 0, mitDrainage = false } = gebaeude;
+
+  if (!(laenge > 0) || !(breite > 0)) throw new Error('Länge und Breite müssen positiv sein');
+  if (!Number.isInteger(durchfuehrungen) || durchfuehrungen < 0) {
+    throw new Error('Durchführungen müssen eine ganze Zahl ab 0 sein');
+  }
+
+  const flaeche = laenge * breite;
+  const umfang = 2 * (laenge + breite);
+
+  // Bahnen: Fläche plus Aufkantung, dann Überlappung und Verschnitt.
+  const aufkantung = umfang * ANSAETZE.aufkantungHoehe;
+  const bahnBedarfM2 = (flaeche + aufkantung) * (1 + ANSAETZE.ueberlappung + ANSAETZE.verschnitt);
+
+  const positionen = [];
+  const hinweise = [];
+
+  const nimm = (sku, menge, begruendung) => {
+    const artikel = katalog.artikel.find((a) => a.sku === sku);
+    if (!artikel) return; // Sortiment kann kleiner sein als der Rechner
+    positionen.push({ sku, menge, bezeichnung: artikel.bezeichnung, begruendung });
+  };
+
+  // --- Abdichtung -------------------------------------------------------
+  const rolle = katalog.artikel.find((a) => a.sku === 'AB-RD-375');
+  if (rolle) {
+    const rollenflaeche = 37.5;
+    const rollen = aufrunden(bahnBedarfM2 / rollenflaeche);
+    const gelieferteFlaeche = rollen * rollenflaeche;
+    const ueberschuss = gelieferteFlaeche - bahnBedarfM2;
+
+    nimm(
+      'AB-RD-375',
+      rollen,
+      `${bahnBedarfM2.toFixed(1)} m² Bedarf inkl. ${(aufkantung).toFixed(1)} m² Aufkantung, ` +
+        `Überlappung und Verschnitt — Rollen zu ${rollenflaeche} m²`,
+    );
+
+    hinweise.push(
+      `Rollenbindung: ${rollen} Rollen ergeben ${gelieferteFlaeche.toFixed(1)} m², ` +
+        `das sind ${ueberschuss.toFixed(1)} m² über dem Bedarf ` +
+        `(${((ueberschuss / gelieferteFlaeche) * 100).toFixed(0)} %). Teilmengen gibt es nicht.`,
+    );
+  }
+
+  const primerLiter = flaeche * ANSAETZE.primerProM2;
+  nimm('AB-PR-010', aufrunden(primerLiter / 10), `${primerLiter.toFixed(1)} l bei ${ANSAETZE.primerProM2} l/m² — Gebinde zu 10 l`);
+
+  // --- Zubehör ----------------------------------------------------------
+  const dichtbandMeter = umfang + durchfuehrungen * ANSAETZE.dichtbandProDurchfuehrung;
+  nimm('ZB-DB-150', aufrunden(dichtbandMeter / 25), `${dichtbandMeter.toFixed(1)} m Umfang und Durchführungen — Rollen zu 25 m`);
+  nimm('ZB-MA-SET', 1, 'ein Set Innen- und Außenecken je Gebäude');
+  if (durchfuehrungen > 0) {
+    nimm('ZB-RR-125', durchfuehrungen, `eine Ringraumdichtung je Durchführung`);
+  }
+
+  // --- Drainage ---------------------------------------------------------
+  if (mitDrainage) {
+    const rohrMeter = (flaeche / ANSAETZE.rohrabstand) * (1 + ANSAETZE.rohrZuschlag);
+    nimm(
+      'DR-100-050',
+      aufrunden(rohrMeter / 50),
+      `${rohrMeter.toFixed(1)} m bei ${ANSAETZE.rohrabstand} m Rohrabstand plus Zuschlag — Ringbund zu 50 m`,
+    );
+    nimm('DR-FT-SET', 1, 'ein Formteilset je Gebäude');
+    nimm('DR-KS-100', 1, 'ein Kontrollschacht je Gebäude');
+    nimm('DR-SL-100', 1, 'eine Steigleitung je Gebäude');
+  } else {
+    hinweise.push(
+      'Ohne Radondrainage gerechnet. Sie ist nach ÖNORM S 5280-2 in den ' +
+        'Radonschutzgebieten gefordert — im Zweifel die Gemeinde prüfen.',
+    );
+  }
+
+  hinweise.push('Planungswerte. Herstellerangaben und Ausführungsplanung gehen vor.');
+
+  return {
+    flaeche: Number(flaeche.toFixed(1)),
+    umfang: Number(umfang.toFixed(1)),
+    bahnBedarfM2: Number(bahnBedarfM2.toFixed(1)),
+    positionen,
+    hinweise,
+    /** Direkt für berechneWarenkorb() verwendbar. */
+    warenkorbzeilen: positionen.map((p) => ({ sku: p.sku, menge: p.menge })),
+  };
+}
+
 
 const daten = {"lieferanten":{"_datenstand":"PLATZHALTER — keine dieser Konditionen ist von einem Lieferanten bestätigt.","_hinweis":"Echte Werte entstehen erst aus den Antworten auf Anschreiben A, siehe docs/baustoff-shop/anschreiben-entwuerfe.md. Bis dahin dienen die Zahlen ausschliesslich dazu, die Rechenwege zu prüfen.","lieferanten":[{"id":"rohr-at","name":"Rohrhersteller Österreich","konditionenStand":"platzhalter","streckengeschaeft":true,"haendlerrabattAufUvp":0.3,"mindestbestellwertNetto":250,"fracht":{"modell":"pauschale","freiHausAbNetto":1500,"pauschaleNetto":75,"sperrgutZuschlagNetto":25},"produktdaten":"csv","lieferzeitWerktage":5},{"id":"bahnen-de","name":"Abdichtungsbahnen-Hersteller","konditionenStand":"platzhalter","streckengeschaeft":true,"haendlerrabattAufUvp":0.42,"mindestbestellwertNetto":400,"fracht":{"modell":"pauschale","freiHausAbNetto":1200,"pauschaleNetto":95,"sperrgutZuschlagNetto":40},"produktdaten":"csv","lieferzeitWerktage":8},{"id":"zubehoer-de","name":"Zubehör- und Dichtsysteme","konditionenStand":"platzhalter","streckengeschaeft":true,"haendlerrabattAufUvp":0.38,"mindestbestellwertNetto":150,"fracht":{"modell":"pauschale","freiHausAbNetto":600,"pauschaleNetto":12,"sperrgutZuschlagNetto":0},"produktdaten":"katalog","lieferzeitWerktage":4}]},"artikel":{"_datenstand":"PLATZHALTER — keine Preise sind von einem Lieferanten bestätigt.","_hinweis":"UVP-Spannen stammen aus der Stückliste in docs/baustoff-shop/phase4-sortiment-und-materialwert.md und sind öffentliche Listenpreisniveaus, keine Einkaufspreise. Der Einkaufspreis ergibt sich hier rechnerisch aus UVP × (1 − Händlerrabatt) und ist damit ebenfalls Platzhalter.","sortiment":"Radonvorsorge, mittlerer Warenkorb nach Gate 5","artikel":[{"sku":"DR-100-050","bezeichnung":"Drainagerohr perforiert DN100, Ringbund 50 m","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Ringbund","menge":"50 m","uvpNetto":165,"gewichtKg":22,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"DR-FT-SET","bezeichnung":"Formteilset Radondrainage: Bögen, Muffen, Anschlüsse","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Set","menge":"1 Gebäude","uvpNetto":145,"gewichtKg":6.5,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"DR-KS-100","bezeichnung":"Kontroll- und Sammelschacht DN100","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Stück","menge":"1","uvpNetto":118,"gewichtKg":9,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"DR-SL-100","bezeichnung":"Steigleitung DN100 inkl. Halterungen, 3 m","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Stück","menge":"3 m","uvpNetto":42,"gewichtKg":4,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"AB-RD-375","bezeichnung":"Radondichte Abdichtungsbahn, Rolle 37,5 m²","gruppe":"Abdichtung","lieferantId":"bahnen-de","einheit":"Rolle","menge":"37,5 m²","uvpNetto":398,"gewichtKg":20,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"AB-PR-010","bezeichnung":"Voranstrich / Primer, 10 l","gruppe":"Abdichtung","lieferantId":"bahnen-de","einheit":"Gebinde","menge":"10 l","uvpNetto":96,"gewichtKg":11,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"ZB-DB-150","bezeichnung":"Dichtband gasdicht, 150 mm × 25 m","gruppe":"Zubehör","lieferantId":"zubehoer-de","einheit":"Rolle","menge":"25 m","uvpNetto":78,"gewichtKg":2.2,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"ZB-MA-SET","bezeichnung":"Manschettenset Innen- und Außenecken","gruppe":"Zubehör","lieferantId":"zubehoer-de","einheit":"Set","menge":"1 Gebäude","uvpNetto":112,"gewichtKg":1.8,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"ZB-RR-125","bezeichnung":"Ringraumdichtung DN125 für Einzelleitung","gruppe":"Zubehör","lieferantId":"zubehoer-de","einheit":"Stück","menge":"1","uvpNetto":64,"gewichtKg":0.9,"sperrgut":false,"ekQuelle":"platzhalter"}]}};
 const ZIELMARGE = 0.35;
@@ -488,6 +642,65 @@ function zeichneKorb() {
     el.append(w);
   }
 }
+
+document.getElementById('rechner').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const ziel = document.getElementById('rechner-ergebnis');
+  ziel.textContent = '';
+
+  const gebaeude = {
+    laenge: Number(document.getElementById('laenge').value),
+    breite: Number(document.getElementById('breite').value),
+    durchfuehrungen: Math.floor(Number(document.getElementById('durchfuehrungen').value) || 0),
+    mitDrainage: document.getElementById('drainage').checked,
+  };
+
+  let bedarf;
+  try {
+    bedarf = berechneBedarf(gebaeude, katalog);
+  } catch (fehler) {
+    const p = document.createElement('div');
+    p.className = 'hinweis';
+    p.textContent = fehler.message;
+    ziel.append(p);
+    return;
+  }
+
+  const kopf = document.createElement('p');
+  kopf.className = 'a-meta';
+  kopf.style.gridColumn = 'auto';
+  kopf.textContent =
+    bedarf.flaeche + ' m² Grundfläche · ' + bedarf.umfang + ' m Umfang · ' +
+    bedarf.bahnBedarfM2 + ' m² Bahnenbedarf inkl. Aufkantung und Verschnitt';
+  ziel.append(kopf);
+
+  const liste = document.createElement('div');
+  liste.className = 'r-liste';
+  for (const p of bedarf.positionen) {
+    const z = document.createElement('div');
+    z.className = 'r-pos';
+    const m = document.createElement('b');
+    m.textContent = p.menge + '×';
+    const n = document.createElement('span');
+    n.textContent = p.bezeichnung;
+    const g = document.createElement('em');
+    g.textContent = p.begruendung;
+    z.append(m, n, g);
+    liste.append(z);
+  }
+  ziel.append(liste);
+
+  for (const h of bedarf.hinweise) {
+    const d = document.createElement('div');
+    d.className = 'r-hinweis';
+    d.textContent = h;
+    ziel.append(d);
+  }
+
+  korb.clear();
+  for (const z of bedarf.warenkorbzeilen) korb.set(z.sku, z.menge);
+  zeichneKorb();
+});
 
 zeichneKatalog();
 zeichneKorb();
