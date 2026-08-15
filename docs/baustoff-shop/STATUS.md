@@ -1,6 +1,6 @@
 # Status und Einstieg
 
-Stand: 2026-08-15. **Dieses Dokument zuerst lesen.** Einunddreißig Arbeitsdateien
+Stand: 2026-08-15. **Dieses Dokument zuerst lesen.** Zweiunddreißig Arbeitsdateien
 sind entstanden, mehrere davon korrigieren einander. Hier steht, was gilt.
 
 Veröffentlichter Bericht:
@@ -12,7 +12,8 @@ letzten Runde, zwei gleichrangige Freigaben. Quelldatei im Repo unter
 
 Lauffähiges Shop-Funktionsmuster:
 [claude.ai/code/artifact/c40fd35f…](https://claude.ai/code/artifact/c40fd35f-56e1-4821-a3b1-a1a885102ec8) —
-Quelltext und 22 Testfälle unter `shop/`. Alle Preise sind Platzhalter.
+Quelltext und 36 Testfälle unter `shop/`. Alle Preise sind Platzhalter.
+Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 
 ## Wo das Projekt steht
 
@@ -108,6 +109,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `entscheidungsmatrix.md` | **Wie die zwei ausstehenden Prüfungen zu lesen sind.** Vier Ausgänge, vorab festgelegt |
 | `zahlenpruefung.md` | Alle zweiundzwanzig Rechenketten nachgerechnet; zwei kleine Fehler benannt |
 | `analyse-abgeschlossen.md` | **Gate 18 — die Analysephase ist geschlossen.** Was den Loop wieder aufweckt |
+| `umsetzung-shop.md` | **Bauprotokoll des Shops.** Baustand, Sperren, nächste Bausteine |
 
 ### Analysen
 | Datei | Kernaussage |

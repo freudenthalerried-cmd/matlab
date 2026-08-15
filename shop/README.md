@@ -15,12 +15,14 @@ Zahlungsanbindung, keine Rechtstexte und kein Impressum.
 | Warenkorb | Aufteilung nach Lieferant, Mindestbestellwert je Gruppe |
 | Bestellübergabe | je Lieferant eine fertige Bestellung als Text und als CSV |
 | Freigabeprüfung | Gate 6 und Gate 7 als harte Sperren vor der Auslösung |
+| Preislisten-Import | CSV einlesen, prüfen, mit dem Katalog vergleichen |
 
 ## Benutzen
 
 ```
-npm test          # 22 Testfälle
+npm test          # 36 Testfälle
 npm run build     # erzeugt demo.html, eine einzelne Datei ohne Abhängigkeiten
+npm run import -- <lieferantId> <datei.csv> [--schreiben]
 ```
 
 `demo.html` lässt sich direkt im Browser öffnen. Der Rechenkern wird beim Bauen
@@ -36,6 +38,9 @@ data/artikel.json       Sortiment mit UVP-Niveaus      ← Platzhalter
 src/preis.js            Einkauf, Verkauf, Marge, Fracht
 src/warenkorb.js        Gruppierung nach Lieferant, Summen, Mischmarge
 src/bestellung.js       Bestelltext, CSV, Freigabeprüfung
+src/import.js           Preisliste lesen, prüfen, mit dem Katalog vergleichen
+bin/import.mjs          Kommandozeile dazu, Probelauf als Voreinstellung
+beispiel/               Musterpreisliste — erfundene Preise, nicht schreibbar
 test/                   node:test, ohne Fremdpakete
 demo-template.html      Oberfläche mit Platzhaltern für Kern und Daten
 build-demo.mjs          fügt beides zu demo.html zusammen
@@ -62,7 +67,32 @@ sichtbar, statt in einer Tabelle zu stehen.
 | UID-Prüfung im Bestellprozess | Auflage aus Gate 7, umzusetzen vor der ersten echten Bestellung |
 | Produktbilder und Datenblätter | kommen mit den Herstellerdaten |
 
-Sobald echte Konditionen vorliegen, werden sie in `data/lieferanten.json`
-eingetragen und `ekQuelle` je Artikel auf `bestaetigt` gesetzt. Damit fällt die
-Sperre in `darfAutomatischAusgeloestWerden` weg — gebaut werden muss dafür
-nichts mehr.
+## Der Weg für echte Preise
+
+Sobald eine Preisliste eintrifft, wird sie eingelesen statt abgetippt:
+
+```
+npm run import -- bahnen-de preisliste.csv            # Probelauf: prüfen und berichten
+npm run import -- bahnen-de preisliste.csv --schreiben # übernehmen
+npm run build
+```
+
+Erwartete Spalten: `sku`, `bezeichnung`, `gruppe`, `einheit`, `menge`,
+`uvp_netto`, `ek_netto`, `gewicht_kg`, `sperrgut`. Pflicht sind `sku`,
+`bezeichnung` und mindestens eine Preisspalte; Semikolon und Komma werden beide
+als Trenner erkannt, ebenso deutsche und englische Dezimalschreibung.
+
+Der Import ist streng, wo Raten teuer wäre, und meldet statt zu raten:
+doppelte Artikelnummern, unlesbare Zahlen, Einkaufspreise über UVP. Solange ein
+Fehler offen ist, wird nichts geschrieben. Artikel unter 32 % Marge werden
+übernommen, aber gewarnt — Gate 1 ist eine Entscheidungsgrundlage, keine
+Eingabesperre.
+
+Nur Zeilen mit echtem `ek_netto` bekommen `ekQuelle: "bestaetigt"`. Genau daran
+hängt die Sperre in `darfAutomatischAusgeloestWerden`: Erst wenn ein Artikel
+einen bestätigten Einkaufspreis trägt, darf eine Bestellung dazu automatisch
+hinausgehen. **Gebaut werden muss dafür nichts mehr.**
+
+Dateien unter `beispiel/` lassen sich nicht mit `--schreiben` übernehmen. Sie
+enthalten erfundene Preise; würden sie geschrieben, hielte der Shop sie für
+bestätigt — die Sperre wäre ausgehebelt, ohne dass es jemand merkt.

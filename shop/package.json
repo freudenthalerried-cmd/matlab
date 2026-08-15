@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "test": "node --test test/*.test.js",
-    "build": "node build-demo.mjs"
+    "build": "node build-demo.mjs",
+    "import": "node bin/import.mjs"
   }
 }
