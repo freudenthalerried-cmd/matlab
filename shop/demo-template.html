@@ -76,6 +76,17 @@
   .r-pos b{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
   .r-pos em{grid-column:2;font-style:normal;font-size:.76rem;color:var(--muted)}
   .r-hinweis{font-size:.82rem;color:var(--ink-2);border-left:3px solid var(--accent);padding:.4rem .7rem;background:var(--accent-soft);margin-top:.5rem}
+.mw{background:var(--surface);border:1px solid var(--line);padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:.8rem}
+  .mw-felder{display:flex;flex-wrap:wrap;gap:.9rem 1.4rem;align-items:flex-end}
+  .mw-felder label{display:flex;flex-direction:column;gap:.2rem;font-size:.82rem;color:var(--ink-2)}
+  .mw-felder input{font:inherit;font-family:var(--mono);width:7rem;padding:.3rem .4rem;border:1px solid var(--line-strong);background:var(--ground);color:var(--ink)}
+  .mw-karte{border-left:3px solid var(--line-strong);padding:.7rem .9rem;background:var(--surface-2);display:flex;flex-direction:column;gap:.35rem}
+  .mw-karte[data-stufe="ueber"],.mw-karte[data-stufe="deutlich"]{border-left-color:var(--warn)}
+  .mw-karte[data-stufe="unter"]{border-left-color:var(--ok)}
+  .mw-karte[data-stufe="kurzzeit"]{border-left-color:var(--accent)}
+  .mw-titel{font-weight:650;font-size:.95rem}
+  .mw-text{font-size:.87rem;color:var(--ink-2)}
+  .mw-grenzen{font-size:.78rem;color:var(--muted);display:flex;flex-direction:column;gap:.25rem;margin-top:.3rem;padding-top:.5rem;border-top:1px dotted var(--line-strong)}
   .kasse{background:var(--surface);border:1px solid var(--line);padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:.85rem}
   .k-felder{display:grid;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));gap:.8rem 1.2rem}
   .k-felder label{display:flex;flex-direction:column;gap:.2rem;font-size:.82rem;color:var(--ink-2)}
@@ -103,6 +114,17 @@
     Die Einkaufspreise sind aus öffentlichen Listenpreisniveaus mal einem angenommenen
     Händlerrabatt gerechnet. Der Shop nimmt keine Bestellungen an und löst nichts aus.
   </div>
+
+  <form class="mw" id="messwert">
+    <h2>Messwert einordnen</h2>
+    <p class="r-intro">Wer bereits gemessen hat, will zuerst wissen, was der Wert bedeutet. Die Einordnung ist rechtlich und bautechnisch — nicht gesundheitlich.</p>
+    <div class="mw-felder">
+      <label>Messwert <span style="color:var(--muted);font-size:.72rem">Bq/m³</span><input type="number" id="mw-wert" value="450" min="0" step="10"></label>
+      <label>Messdauer <span style="color:var(--muted);font-size:.72rem">Monate</span><input type="number" id="mw-dauer" value="12" min="0.5" step="0.5"></label>
+      <button type="submit">Einordnen</button>
+    </div>
+    <div id="mw-ergebnis"></div>
+  </form>
 
   <div class="layout">
     <section style="display:flex;flex-direction:column;gap:1.5rem">
@@ -323,6 +345,53 @@ function zeichneKorb() {
     el.append(w);
   }
 }
+
+document.getElementById('messwert').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const ziel = document.getElementById('mw-ergebnis');
+  ziel.textContent = '';
+
+  let e2;
+  try {
+    e2 = ordneEin({
+      wert: Number(document.getElementById('mw-wert').value),
+      messdauerMonate: Number(document.getElementById('mw-dauer').value),
+    });
+  } catch (fehler) {
+    const d = document.createElement('div');
+    d.className = 'hinweis';
+    d.textContent = fehler.message;
+    ziel.append(d);
+    return;
+  }
+
+  const karte = document.createElement('div');
+  karte.className = 'mw-karte';
+  karte.dataset.stufe = e2.stufe;
+
+  const titel = document.createElement('div');
+  titel.className = 'mw-titel';
+  titel.textContent = e2.titel;
+
+  const aussage = document.createElement('div');
+  aussage.className = 'mw-text';
+  aussage.textContent = e2.aussage;
+
+  const massnahme = document.createElement('div');
+  massnahme.className = 'mw-text';
+  massnahme.textContent = e2.massnahme;
+
+  const grenzen = document.createElement('div');
+  grenzen.className = 'mw-grenzen';
+  for (const g of e2.grenzen) {
+    const z = document.createElement('div');
+    z.textContent = '· ' + g;
+    grenzen.append(z);
+  }
+
+  karte.append(titel, aussage, massnahme, grenzen);
+  ziel.append(karte);
+});
 
 document.getElementById('kasse').addEventListener('submit', (e) => {
   e.preventDefault();

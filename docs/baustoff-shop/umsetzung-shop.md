@@ -18,10 +18,30 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Preislisten-Import | fertig | 14 |
 | Materialbedarfsrechner | fertig | 11 |
 | Bestellstrecke mit Gate-7-Prüfung | fertig | 11 |
+| Messwert-Einordner | fertig | 10 |
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig | headless geprüft |
-| **Summe** | | **58, alle grün** |
+| **Summe** | | **68, alle grün** |
 
-## Was zuletzt dazukam: die Bestellstrecke
+## Was zuletzt dazukam: der Messwert-Einordner
+
+`shop/src/messwert.js` setzt die Vorgabe aus
+[`messwert-einordnung.md`](./messwert-einordnung.md) um: drei Bänder, der
+Sonderfall Kurzzeitmessung, und die drei Grenzen, die mit jeder Ausgabe
+hinausgehen statt im Impressum zu stehen.
+
+Bemerkenswert daran ist der Testfall, der auf Gesundheits- und Risikovokabular
+prüft. Er ist beim ersten Lauf **an einer eigenen Formulierung gescheitert**:
+Der Satz „keine Grenze zwischen unbedenklich und gefährlich" verneint zwar eine
+Risikoaussage, borgt sich dafür aber deren Vokabular. Statt die Prüfung zu
+lockern, ist der Satz umformuliert — „keine naturwissenschaftliche Schwelle"
+sagt dasselbe, ohne das Feld zu betreten.
+
+Der Einordner liefert außerdem `istQualifizierterAnlass`. Das ist genau die
+Bedingung aus dem Leadmodell: ein Wert über dem Referenzwert **aus einer
+Langzeitmessung**. Ein Kurzzeitwert von 900 Bq/m³ qualifiziert keinen Lead,
+auch wenn die Zahl hoch aussieht.
+
+## Was davor dazukam: die Bestellstrecke
 
 `shop/src/kunde.js` prüft die Bestelldaten und setzt damit Gate 7 um — nicht
 als Hinweis im Kleingedruckten, sondern als Bedingung: Ohne Firmendaten, UID
@@ -122,9 +142,8 @@ und die Bestellsperre fällt für die betroffenen Artikel weg.
 Nach Nutzen geordnet, alle ohne Freigabe und ohne Ausgabe machbar:
 
 1. **Gebietsabfrage** nach `phase10-datengrundlage-gebietsabfrage.md` — braucht
-   die Gemeindeliste, die aus dieser Umgebung nicht abrufbar ist.
-2. **Messwert-Einordner** nach `messwert-einordnung.md` — die Wertebänder und
-   die drei Grenzen stehen dort bereits als Vorgabe.
-3. **Rechtstexte-Gerüst** — Impressum, AGB und Widerrufsbelehrung als Vorlagen
+   die Gemeindeliste. RIS und der Geoserver sind aus dieser Umgebung weiterhin
+   nicht erreichbar; zuletzt geprüft am 15. August.
+2. **Rechtstexte-Gerüst** — Impressum, AGB und Widerrufsbelehrung als Vorlagen
    mit gekennzeichneten Lücken für die Firmendaten. Ersetzt keine anwaltliche
    Prüfung, spart aber die Zuarbeit.

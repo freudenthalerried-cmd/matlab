@@ -26,6 +26,7 @@ const kern = [
   entkleide(lies('./src/warenkorb.js')),
   entkleide(lies('./src/bedarf.js')),
   entkleide(lies('./src/kunde.js')),
+  entkleide(lies('./src/messwert.js')),
   entkleide(lies('./src/bestellung.js')),
 ].join('\n');
 

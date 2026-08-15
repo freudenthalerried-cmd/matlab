@@ -18,11 +18,12 @@ Zahlungsanbindung, keine Rechtstexte und kein Impressum.
 | Preislisten-Import | CSV einlesen, prüfen, mit dem Katalog vergleichen |
 | Materialbedarfsrechner | Außenmaße → Stückliste → Warenkorb, mit Verschnittausweis |
 | Bestellstrecke | Firmendaten, UID, Unternehmerbestätigung; endet vor der Zahlung |
+| Messwert-Einordner | Bq/m³ und Messdauer → rechtliche und bautechnische Einordnung |
 
 ## Benutzen
 
 ```
-npm test          # 58 Testfälle
+npm test          # 68 Testfälle
 npm run build     # erzeugt demo.html, eine einzelne Datei ohne Abhängigkeiten
 npm run import -- <lieferantId> <datei.csv> [--schreiben]
 ```
@@ -43,6 +44,7 @@ src/bestellung.js       Bestelltext, CSV, Freigabeprüfung
 src/import.js           Preisliste lesen, prüfen, mit dem Katalog vergleichen
 src/bedarf.js           Materialbedarf je Gebäude, Rollen- und Gebinderechnung
 src/kunde.js            Bestelldaten prüfen, UID, Gate-7-Bestätigung
+src/messwert.js         Messwert einordnen, Bänder und die drei Grenzen
 bin/import.mjs          Kommandozeile dazu, Probelauf als Voreinstellung
 beispiel/               Musterpreisliste — erfundene Preise, nicht schreibbar
 test/                   node:test, ohne Fremdpakete
@@ -69,6 +71,24 @@ Rollenbindung: 34,3 m² über dem Bedarf (18 %). Teilmengen gibt es nicht.
 Diesen Satz bekommt der Kunde heute erst an der Kasse zu sehen. Hier steht er
 vor der Bestellung — und er erklärt zugleich, warum der tatsächliche Warenkorb
 über dem rechnerischen Materialwert je Quadratmeter liegt.
+
+## Der Messwert-Einordner
+
+Bq/m³ und Messdauer ergeben eine Einordnung — **rechtlich und bautechnisch, nicht
+gesundheitlich**. Drei Bänder: unter 300 eingehalten, 300 bis 1.000 Sanierung
+nach ÖNORM S 5280-3 empfohlen, darüber zusätzlich Planung und
+Wirksamkeitskontrolle.
+
+Ein Kurzzeitwert wird **nicht** mit dem Referenzwert verglichen — die
+Radonschutzverordnung verlangt dafür mindestens sechs Monate. Er gilt als
+Hinweis, nicht als Ergebnis, und führt zur Empfehlung einer Langzeitmessung bei
+einer ermächtigten Stelle.
+
+Drei Grenzen gehen mit jeder Ausgabe hinaus, nicht ins Impressum: keine
+Gesundheitsaussage, keine Bewertung fremder Messungen als Ergebnis, keine
+Sanierungszusage. Ein Testfall prüft das mit einer Wortliste — und er hat beim
+ersten Lauf eine eigene Formulierung erwischt, die sich das Risikovokabular
+geborgt hatte, um es zu verneinen.
 
 ## Die Bestellstrecke
 
