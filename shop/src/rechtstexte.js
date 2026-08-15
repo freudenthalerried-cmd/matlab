@@ -33,7 +33,7 @@ export const IMPRESSUMSFELDER = [
   { feld: 'gewerbewortlaut', bezeichnung: 'Wortlaut des angemeldeten Gewerbes', bedingt: false },
 ];
 
-const LUECKE = (bezeichnung) => `[[ ${bezeichnung} — FEHLT ]]`;
+import { LUECKE } from './format.js';
 
 /**
  * Prüft die Betreiberdaten und benennt jede Lücke einzeln.

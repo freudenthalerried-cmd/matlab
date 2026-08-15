@@ -187,6 +187,27 @@
 
 <script type="module">
 /**
+ * Gemeinsame Darstellungshilfen.
+ *
+ * Sie stehen hier und nicht dreimal verstreut, aus einem Grund, der beim Bauen
+ * aufgefallen ist: Beim Zusammenfügen zu `demo.html` teilen sich alle Module
+ * einen Gültigkeitsbereich. Zwei gleichnamige Hilfsfunktionen ergeben dort
+ * einen SyntaxError — und der legt die ganze Seite still, während die Tests
+ * grün bleiben, weil sie die Module einzeln laden.
+ */
+
+/** Betrag in österreichischer Schreibweise. */
+const EUR = (n) => n.toFixed(2).replace('.', ',') + ' €';
+
+/**
+ * Sichtbare Markierung für eine fehlende Pflichtangabe.
+ *
+ * Absichtlich hässlich. Eine Lücke, die im Entwurf hübsch aussieht, geht
+ * irgendwann versehentlich hinaus.
+ */
+const LUECKE = (bezeichnung) => `[[ ${bezeichnung} — FEHLT ]]`;
+
+/**
  * Preis- und Margenrechnung.
  *
  * Bildet die Regeln ab, die in docs/baustoff-shop/ als Gates festgelegt wurden:
@@ -801,7 +822,6 @@ const IMPRESSUMSFELDER = [
   { feld: 'gewerbewortlaut', bezeichnung: 'Wortlaut des angemeldeten Gewerbes', bedingt: false },
 ];
 
-const LUECKE = (bezeichnung) => `[[ ${bezeichnung} — FEHLT ]]`;
 
 /**
  * Prüft die Betreiberdaten und benennt jede Lücke einzeln.
@@ -929,7 +949,6 @@ const B2B_ABGRENZUNG = {
  * Bestellung — als Text zum Versenden und als CSV für Schnittstellen.
  */
 
-const EUR = (n) => n.toFixed(2).replace('.', ',') + ' €';
 
 /** Erzeugt je Teillieferung eine Bestellung an den Lieferanten. */
 function erzeugeBestellungen(warenkorb, auftrag) {
@@ -1014,8 +1033,263 @@ function darfAutomatischAusgeloestWerden(warenkorb, auftrag) {
   return { erlaubt: gruende.length === 0, gruende };
 }
 
+/**
+ * Belege an den Kunden: Angebot und Rechnung.
+ *
+ * Bis hierher erzeugt der Shop Bestellungen an die Lieferanten. Was fehlte, ist
+ * die Gegenrichtung — das Dokument, das der Kunde bekommt. Es entsteht aus
+ * demselben Warenkorb, damit es gar nicht erst von den Lieferantenbestellungen
+ * abweichen kann.
+ *
+ * Grundlage der Pflichtangaben: § 11 UStG. Zwei Schwellen sind darin
+ * eingebaut, und beide hängen am **Bruttobetrag**:
+ *
+ *   bis 400 €      Kleinbetragsrechnung, sechs Angaben genügen (§ 11 Abs 6)
+ *   über 400 €     die vollen Merkmale
+ *   über 10.000 €  zusätzlich die UID des Leistungsempfängers (§ 11 Abs 1 Z 2)
+ *
+ * Für diesen Shop ist die dritte Schwelle keine Hürde: Gate 7 verlangt die UID
+ * ohnehin bei jeder Bestellung. Eine Auflage, die zum Ausschluss von
+ * Verbrauchern eingeführt wurde, erfüllt hier nebenbei eine Steuerpflicht.
+ */
 
-const daten = {"lieferanten":{"_datenstand":"PLATZHALTER — keine dieser Konditionen ist von einem Lieferanten bestätigt.","_hinweis":"Echte Werte entstehen erst aus den Antworten auf Anschreiben A, siehe docs/baustoff-shop/anschreiben-entwuerfe.md. Bis dahin dienen die Zahlen ausschliesslich dazu, die Rechenwege zu prüfen.","lieferanten":[{"id":"rohr-at","name":"Rohrhersteller Österreich","konditionenStand":"platzhalter","streckengeschaeft":true,"haendlerrabattAufUvp":0.3,"mindestbestellwertNetto":250,"fracht":{"modell":"pauschale","freiHausAbNetto":1500,"pauschaleNetto":75,"sperrgutZuschlagNetto":25},"produktdaten":"csv","lieferzeitWerktage":5},{"id":"bahnen-de","name":"Abdichtungsbahnen-Hersteller","konditionenStand":"platzhalter","streckengeschaeft":true,"haendlerrabattAufUvp":0.42,"mindestbestellwertNetto":400,"fracht":{"modell":"pauschale","freiHausAbNetto":1200,"pauschaleNetto":95,"sperrgutZuschlagNetto":40},"produktdaten":"csv","lieferzeitWerktage":8},{"id":"zubehoer-de","name":"Zubehör- und Dichtsysteme","konditionenStand":"platzhalter","streckengeschaeft":true,"haendlerrabattAufUvp":0.38,"mindestbestellwertNetto":150,"fracht":{"modell":"pauschale","freiHausAbNetto":600,"pauschaleNetto":12,"sperrgutZuschlagNetto":0},"produktdaten":"katalog","lieferzeitWerktage":4}]},"artikel":{"_datenstand":"PLATZHALTER — keine Preise sind von einem Lieferanten bestätigt.","_hinweis":"UVP-Spannen stammen aus der Stückliste in docs/baustoff-shop/phase4-sortiment-und-materialwert.md und sind öffentliche Listenpreisniveaus, keine Einkaufspreise. Der Einkaufspreis ergibt sich hier rechnerisch aus UVP × (1 − Händlerrabatt) und ist damit ebenfalls Platzhalter.","sortiment":"Radonvorsorge, mittlerer Warenkorb nach Gate 5","artikel":[{"sku":"DR-100-050","bezeichnung":"Drainagerohr perforiert DN100, Ringbund 50 m","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Ringbund","menge":"50 m","uvpNetto":165,"gewichtKg":22,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"DR-FT-SET","bezeichnung":"Formteilset Radondrainage: Bögen, Muffen, Anschlüsse","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Set","menge":"1 Gebäude","uvpNetto":145,"gewichtKg":6.5,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"DR-KS-100","bezeichnung":"Kontroll- und Sammelschacht DN100","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Stück","menge":"1","uvpNetto":118,"gewichtKg":9,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"DR-SL-100","bezeichnung":"Steigleitung DN100 inkl. Halterungen, 3 m","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Stück","menge":"3 m","uvpNetto":42,"gewichtKg":4,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"AB-RD-375","bezeichnung":"Radondichte Abdichtungsbahn, Rolle 37,5 m²","gruppe":"Abdichtung","lieferantId":"bahnen-de","einheit":"Rolle","menge":"37,5 m²","uvpNetto":398,"gewichtKg":20,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"AB-PR-010","bezeichnung":"Voranstrich / Primer, 10 l","gruppe":"Abdichtung","lieferantId":"bahnen-de","einheit":"Gebinde","menge":"10 l","uvpNetto":96,"gewichtKg":11,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"ZB-DB-150","bezeichnung":"Dichtband gasdicht, 150 mm × 25 m","gruppe":"Zubehör","lieferantId":"zubehoer-de","einheit":"Rolle","menge":"25 m","uvpNetto":78,"gewichtKg":2.2,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"ZB-MA-SET","bezeichnung":"Manschettenset Innen- und Außenecken","gruppe":"Zubehör","lieferantId":"zubehoer-de","einheit":"Set","menge":"1 Gebäude","uvpNetto":112,"gewichtKg":1.8,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"ZB-RR-125","bezeichnung":"Ringraumdichtung DN125 für Einzelleitung","gruppe":"Zubehör","lieferantId":"zubehoer-de","einheit":"Stück","menge":"1","uvpNetto":64,"gewichtKg":0.9,"sperrgut":false,"ekQuelle":"platzhalter"}]}};
+
+const KLEINBETRAG_GRENZE_BRUTTO = 400;
+const UID_EMPFAENGER_GRENZE_BRUTTO = 10000;
+
+/**
+ * Pflichtangaben nach § 11 UStG.
+ * `ab` sagt, ab welcher Schwelle die Angabe verlangt wird.
+ */
+const RECHNUNGSMERKMALE = [
+  { feld: 'ausstellerName', bezeichnung: 'Name und Anschrift des liefernden Unternehmers', ab: 0 },
+  { feld: 'leistung', bezeichnung: 'Menge und handelsübliche Bezeichnung der Gegenstände', ab: 0 },
+  { feld: 'lieferdatum', bezeichnung: 'Tag der Lieferung oder Leistungszeitraum', ab: 0 },
+  { feld: 'ausstellungsdatum', bezeichnung: 'Ausstellungsdatum', ab: 0 },
+  { feld: 'bruttobetrag', bezeichnung: 'Entgelt', ab: 0 },
+  { feld: 'steuersatz', bezeichnung: 'Steuersatz', ab: 0 },
+  { feld: 'empfaengerName', bezeichnung: 'Name und Anschrift des Abnehmers', ab: KLEINBETRAG_GRENZE_BRUTTO },
+  { feld: 'nettobetrag', bezeichnung: 'Entgelt netto und Steuerbetrag getrennt', ab: KLEINBETRAG_GRENZE_BRUTTO },
+  { feld: 'ausstellerUid', bezeichnung: 'UID-Nummer des Ausstellers', ab: KLEINBETRAG_GRENZE_BRUTTO },
+  { feld: 'rechnungsnummer', bezeichnung: 'Fortlaufende Rechnungsnummer', ab: KLEINBETRAG_GRENZE_BRUTTO },
+  { feld: 'empfaengerUid', bezeichnung: 'UID-Nummer des Leistungsempfängers', ab: UID_EMPFAENGER_GRENZE_BRUTTO },
+];
+
+/** Welche Merkmale ein Beleg über diesen Bruttobetrag tragen muss. */
+function erforderlicheMerkmale(bruttobetrag) {
+  return RECHNUNGSMERKMALE.filter((m) => bruttobetrag > m.ab || m.ab === 0);
+}
+
+const gefuellt = (wert) =>
+  (typeof wert === 'string' && wert.trim() !== '') || (typeof wert === 'number' && Number.isFinite(wert));
+
+/**
+ * Prüft einen Belegentwurf gegen § 11 UStG und benennt jede Lücke einzeln.
+ * @param {object} beleg Felder wie in RECHNUNGSMERKMALE benannt
+ */
+function pruefeRechnungsmerkmale(beleg = {}) {
+  const brutto = Number(beleg.bruttobetrag) || 0;
+  const noetig = erforderlicheMerkmale(brutto);
+  const fehlend = noetig.filter((m) => !gefuellt(beleg[m.feld]));
+
+  return {
+    vollstaendig: fehlend.length === 0,
+    kleinbetrag: brutto <= KLEINBETRAG_GRENZE_BRUTTO,
+    empfaengerUidNoetig: brutto > UID_EMPFAENGER_GRENZE_BRUTTO,
+    fehlend: fehlend.map((m) => m.bezeichnung),
+    fehlendeFelder: fehlend.map((m) => m.feld),
+  };
+}
+
+const wert = (v, bezeichnung) => (gefuellt(v) ? String(v).trim() : LUECKE(bezeichnung));
+
+function positionszeilen(warenkorb) {
+  const zeilen = [];
+  for (const teil of warenkorb.teillieferungen) {
+    zeilen.push(`${teil.lieferantName} — Direktlieferung, ${teil.lieferzeitWerktage} Werktage`);
+    for (const p of teil.positionen) {
+      zeilen.push(
+        `  ${String(p.menge).padStart(3)} ${(p.einheit ?? 'Stk').padEnd(4)} ` +
+          `${p.sku.padEnd(12)} ${p.bezeichnung}`,
+      );
+      zeilen.push(`      à ${EUR(p.vkNetto)} netto = ${EUR(p.zeilensummeNetto)}`);
+    }
+    zeilen.push(`  Fracht ${teil.lieferantName}: ${EUR(teil.frachtNetto)} (${teil.frachtGrund})`);
+    zeilen.push('');
+  }
+  return zeilen;
+}
+
+function summenblock(warenkorb) {
+  return [
+    `Warenwert netto      ${EUR(warenkorb.warenwertNetto).padStart(12)}`,
+    `Fracht netto         ${EUR(warenkorb.frachtNetto).padStart(12)}`,
+    `Summe netto          ${EUR(warenkorb.summeNetto).padStart(12)}`,
+    `Umsatzsteuer 20 %    ${EUR(warenkorb.ust).padStart(12)}`,
+    `Gesamtbetrag         ${EUR(warenkorb.summeBrutto).padStart(12)}`,
+  ];
+}
+
+/**
+ * Angebot an den Kunden.
+ *
+ * Kein Beleg im Sinne des § 11 UStG, deshalb ohne Rechnungsnummer — aber mit
+ * Bindefrist. Ein Angebot ohne Bindefrist bindet nach § 862 ABGB für eine
+ * angemessene Zeit, und „angemessen" entscheidet im Streitfall jemand anderer.
+ * Bei Streckengeschäft mit Herstellerpreisen ist das keine gute Idee.
+ */
+function erzeugeAngebot(warenkorb, { nummer, datum, bindefristTage = 14, kunde = {}, betreiber = {} }) {
+  const zeilen = [
+    `Angebot ${wert(nummer, 'Angebotsnummer')}`,
+    `Datum: ${wert(datum, 'Datum')}`,
+    '',
+    wert(betreiber.firma, 'Firma des Betreibers'),
+    '',
+    'An:',
+    `  ${wert(kunde.firma, 'Firma des Kunden')}`,
+    `  ${wert(kunde.strasse, 'Anschrift')}`,
+    `  ${wert(kunde.plz, 'PLZ')} ${wert(kunde.ort, 'Ort')}`,
+    '',
+    'Alle Preise verstehen sich netto zuzüglich Umsatzsteuer.',
+    '',
+    ...positionszeilen(warenkorb),
+    ...summenblock(warenkorb),
+    '',
+    `Bindefrist: ${bindefristTage} Tage ab Angebotsdatum.`,
+    'Lieferung im Streckengeschäft ab Werk der Hersteller; Teillieferungen je',
+    'Lieferant sind der Regelfall und werden nicht gesondert berechnet.',
+    'Abladen, Zufahrt und Anwesenheit auf der Baustelle obliegen dem Besteller.',
+  ];
+
+  if (warenkorb.hinweise.length) {
+    zeilen.push('', 'Hinweise:', ...warenkorb.hinweise.map((h) => `  · ${h}`));
+  }
+
+  return { text: zeilen.join('\n'), bruttobetrag: warenkorb.summeBrutto, bindefristTage };
+}
+
+/**
+ * Rechnung an den Kunden.
+ *
+ * Erzeugt wird sie immer — geprüft wird getrennt. Ein Entwurf mit sichtbaren
+ * Lücken ist besser als gar keiner: Er zeigt, welche Angabe fehlt, statt die
+ * Rechnung zu verweigern und den Grund für sich zu behalten.
+ */
+function erzeugeRechnung(warenkorb, { nummer, datum, lieferdatum, kunde = {}, betreiber = {} }) {
+  const pruefung = pruefeRechnungsmerkmale({
+    ausstellerName: betreiber.firma,
+    ausstellerUid: betreiber.uid,
+    empfaengerName: kunde.firma,
+    empfaengerUid: kunde.uid,
+    rechnungsnummer: nummer,
+    ausstellungsdatum: datum,
+    lieferdatum,
+    leistung: warenkorb.teillieferungen.length ? 'ja' : '',
+    nettobetrag: warenkorb.summeNetto,
+    bruttobetrag: warenkorb.summeBrutto,
+    steuersatz: '20 %',
+  });
+
+  const zeilen = [
+    `Rechnung ${wert(nummer, 'Rechnungsnummer')}`,
+    `Ausstellungsdatum: ${wert(datum, 'Ausstellungsdatum')}`,
+    `Lieferdatum: ${wert(lieferdatum, 'Lieferdatum')}`,
+    '',
+    wert(betreiber.firma, 'Firma und Anschrift des Ausstellers'),
+    `UID: ${wert(betreiber.uid, 'UID des Ausstellers')}`,
+    '',
+    'Rechnungsempfänger:',
+    `  ${wert(kunde.firma, 'Firma des Kunden')}`,
+    `  ${wert(kunde.strasse, 'Anschrift')}`,
+    `  ${wert(kunde.plz, 'PLZ')} ${wert(kunde.ort, 'Ort')}`,
+    `  UID: ${wert(kunde.uid, 'UID des Leistungsempfängers')}`,
+    '',
+    ...positionszeilen(warenkorb),
+    ...summenblock(warenkorb),
+    '',
+    'Leistungsort Österreich, Steuersatz 20 %.',
+    'Untersuchungs- und Rügepflicht nach § 377 UGB wird ausdrücklich vereinbart.',
+  ];
+
+  if (pruefung.kleinbetrag) {
+    zeilen.push(
+      '',
+      'Kleinbetragsrechnung nach § 11 Abs 6 UStG — die vereinfachten Angaben',
+      'genügen bis 400 € Gesamtbetrag.',
+    );
+  }
+
+  return {
+    text: zeilen.join('\n'),
+    ...pruefung,
+    bruttobetrag: warenkorb.summeBrutto,
+  };
+}
+
+/**
+ * Prüft, ob eine Rechnung gestellt werden darf.
+ *
+ * Dieselbe Haltung wie bei der Bestellsperre: Solange ein Platzhalterpreis im
+ * Warenkorb liegt, ist der ausgewiesene Betrag erfunden. Eine erfundene
+ * Rechnung ist schlimmer als eine fehlende — sie wird bezahlt.
+ */
+function darfRechnungGestelltWerden(warenkorb, rechnung, auftrag = {}) {
+  const gruende = [];
+
+  if (!rechnung.vollstaendig) {
+    gruende.push(`Pflichtangaben nach § 11 UStG fehlen: ${rechnung.fehlend.join(', ')}`);
+  }
+  if (warenkorb.teillieferungen.some((t) => t.positionen.some((p) => p.ekIstPlatzhalter))) {
+    gruende.push('Katalog enthält Platzhalterpreise — der ausgewiesene Betrag wäre erfunden');
+  }
+  if (auftrag.geliefert === false) {
+    gruende.push('Lieferung noch nicht erfolgt — Lieferdatum wäre unzutreffend');
+  }
+
+  return { erlaubt: gruende.length === 0, gruende };
+}
+
+/**
+ * Umsatzsteuerliche Einordnung des Streckengeschäfts.
+ *
+ * Sitzt der Lieferant im Ausland und liefert direkt an die österreichische
+ * Baustelle, ist das ein **Reihengeschäft**: drei Beteiligte, ein
+ * Warenbewegung. Der Lieferant befördert, also ist die bewegte Lieferung seine
+ * — steuerfreie innergemeinschaftliche Lieferung an uns, gegen unsere UID. Was
+ * wir dem Kunden liefern, ist die ruhende Lieferung am Ende der Beförderung:
+ * steuerbar in Österreich, 20 % Umsatzsteuer.
+ *
+ * Die praktische Folge steht in zwei Sätzen: Die Eingangsrechnung aus
+ * Deutschland kommt **ohne Umsatzsteuer** und ist als innergemeinschaftlicher
+ * Erwerb zu erklären. Die Ausgangsrechnung trägt trotzdem 20 %.
+ *
+ * Das ist keine Steuerberatung und ersetzt keine. Es ist die Angabe, welche
+ * Frage der Steuerberaterin zu stellen ist — und das ist bei zwei von drei
+ * Lieferanten eine.
+ */
+function reihengeschaeftEinordnung(warenkorb, katalog) {
+  const auslaendisch = warenkorb.teillieferungen.filter((t) => {
+    const l = katalog.lieferantenById.get(t.lieferantId);
+    return l && l.land && l.land !== 'AT';
+  });
+
+  const hinweise = auslaendisch.map(
+    (t) =>
+      `${t.lieferantName} liefert aus ${katalog.lieferantenById.get(t.lieferantId).land} direkt ` +
+      `an die Baustelle: Reihengeschäft. Eingangsrechnung ohne Umsatzsteuer ` +
+      `(innergemeinschaftlicher Erwerb), Ausgangsrechnung mit 20 %.`,
+  );
+
+  return {
+    reihengeschaeft: auslaendisch.length > 0,
+    betroffeneLieferanten: auslaendisch.map((t) => t.lieferantId),
+    hinweise,
+    uidPflicht: auslaendisch.length > 0,
+  };
+}
+
+
+const daten = {"lieferanten":{"_datenstand":"PLATZHALTER — keine dieser Konditionen ist von einem Lieferanten bestätigt.","_hinweis":"Echte Werte entstehen erst aus den Antworten auf Anschreiben A, siehe docs/baustoff-shop/anschreiben-entwuerfe.md. Bis dahin dienen die Zahlen ausschliesslich dazu, die Rechenwege zu prüfen.","lieferanten":[{"id":"rohr-at","land":"AT","name":"Rohrhersteller Österreich","konditionenStand":"platzhalter","streckengeschaeft":true,"haendlerrabattAufUvp":0.3,"mindestbestellwertNetto":250,"fracht":{"modell":"pauschale","freiHausAbNetto":1500,"pauschaleNetto":75,"sperrgutZuschlagNetto":25},"produktdaten":"csv","lieferzeitWerktage":5},{"id":"bahnen-de","land":"DE","name":"Abdichtungsbahnen-Hersteller","konditionenStand":"platzhalter","streckengeschaeft":true,"haendlerrabattAufUvp":0.42,"mindestbestellwertNetto":400,"fracht":{"modell":"pauschale","freiHausAbNetto":1200,"pauschaleNetto":95,"sperrgutZuschlagNetto":40},"produktdaten":"csv","lieferzeitWerktage":8},{"id":"zubehoer-de","land":"DE","name":"Zubehör- und Dichtsysteme","konditionenStand":"platzhalter","streckengeschaeft":true,"haendlerrabattAufUvp":0.38,"mindestbestellwertNetto":150,"fracht":{"modell":"pauschale","freiHausAbNetto":600,"pauschaleNetto":12,"sperrgutZuschlagNetto":0},"produktdaten":"katalog","lieferzeitWerktage":4}]},"artikel":{"_datenstand":"PLATZHALTER — keine Preise sind von einem Lieferanten bestätigt.","_hinweis":"UVP-Spannen stammen aus der Stückliste in docs/baustoff-shop/phase4-sortiment-und-materialwert.md und sind öffentliche Listenpreisniveaus, keine Einkaufspreise. Der Einkaufspreis ergibt sich hier rechnerisch aus UVP × (1 − Händlerrabatt) und ist damit ebenfalls Platzhalter.","sortiment":"Radonvorsorge, mittlerer Warenkorb nach Gate 5","artikel":[{"sku":"DR-100-050","bezeichnung":"Drainagerohr perforiert DN100, Ringbund 50 m","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Ringbund","menge":"50 m","uvpNetto":165,"gewichtKg":22,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"DR-FT-SET","bezeichnung":"Formteilset Radondrainage: Bögen, Muffen, Anschlüsse","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Set","menge":"1 Gebäude","uvpNetto":145,"gewichtKg":6.5,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"DR-KS-100","bezeichnung":"Kontroll- und Sammelschacht DN100","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Stück","menge":"1","uvpNetto":118,"gewichtKg":9,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"DR-SL-100","bezeichnung":"Steigleitung DN100 inkl. Halterungen, 3 m","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Stück","menge":"3 m","uvpNetto":42,"gewichtKg":4,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"AB-RD-375","bezeichnung":"Radondichte Abdichtungsbahn, Rolle 37,5 m²","gruppe":"Abdichtung","lieferantId":"bahnen-de","einheit":"Rolle","menge":"37,5 m²","uvpNetto":398,"gewichtKg":20,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"AB-PR-010","bezeichnung":"Voranstrich / Primer, 10 l","gruppe":"Abdichtung","lieferantId":"bahnen-de","einheit":"Gebinde","menge":"10 l","uvpNetto":96,"gewichtKg":11,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"ZB-DB-150","bezeichnung":"Dichtband gasdicht, 150 mm × 25 m","gruppe":"Zubehör","lieferantId":"zubehoer-de","einheit":"Rolle","menge":"25 m","uvpNetto":78,"gewichtKg":2.2,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"ZB-MA-SET","bezeichnung":"Manschettenset Innen- und Außenecken","gruppe":"Zubehör","lieferantId":"zubehoer-de","einheit":"Set","menge":"1 Gebäude","uvpNetto":112,"gewichtKg":1.8,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"ZB-RR-125","bezeichnung":"Ringraumdichtung DN125 für Einzelleitung","gruppe":"Zubehör","lieferantId":"zubehoer-de","einheit":"Stück","menge":"1","uvpNetto":64,"gewichtKg":0.9,"sperrgut":false,"ekQuelle":"platzhalter"}]}};
 const ZIELMARGE = 0.35;
 const katalog = ladeKatalog(daten, ZIELMARGE);
 const korb = new Map();
@@ -1278,15 +1552,50 @@ document.getElementById('kasse').addEventListener('submit', (e) => {
     ]),
   );
 
-  for (const b of erzeugeBestellungen(wk, auftrag)) {
+  // Belege an den Kunden. Das Datum kommt aus der Anzeige, nicht aus der Rechnung —
+  // der Rechenkern bleibt datumsfrei und damit prüfbar.
+  const heute = new Date().toLocaleDateString('de-AT');
+  const belegKunde = { ...geprueft.normalisiert };
+  const betreiber = {};
+
+  const angebot = erzeugeAngebot(wk, { nummer: 'AN-MUSTER', datum: heute, kunde: belegKunde, betreiber });
+  const rechnung = erzeugeRechnung(wk, {
+    nummer: 'RE-MUSTER',
+    datum: heute,
+    lieferdatum: heute,
+    kunde: belegKunde,
+    betreiber,
+  });
+  const rechnungFrei = darfRechnungGestelltWerden(wk, rechnung, auftrag);
+
+  const reihe = reihengeschaeftEinordnung(wk, katalog);
+  if (reihe.reihengeschaeft) {
+    ziel.append(kasten('k-warn', ['Umsatzsteuer im Streckengeschäft:', ...reihe.hinweise.map((h) => '· ' + h)]));
+  }
+
+  ziel.append(
+    kasten('k-sperre', [
+      rechnungFrei.erlaubt ? 'Die Rechnung wäre stellbar.' : 'Keine Rechnung. Offen sind:',
+      ...rechnungFrei.gruende.map((g) => '· ' + g),
+    ]),
+  );
+
+  const belegBox = (titel, text) => {
     const box = document.createElement('div');
     box.className = 'k-bestellung';
     const h3 = document.createElement('h3');
-    h3.textContent = 'Entwurf an ' + b.lieferantName + ' — ' + b.nummer;
+    h3.textContent = titel;
     const pre = document.createElement('pre');
-    pre.textContent = b.text;
+    pre.textContent = text;
     box.append(h3, pre);
-    ziel.append(box);
+    return box;
+  };
+
+  ziel.append(belegBox('Angebot an den Kunden — Entwurf', angebot.text));
+  ziel.append(belegBox('Rechnung an den Kunden — Entwurf', rechnung.text));
+
+  for (const b of erzeugeBestellungen(wk, auftrag)) {
+    ziel.append(belegBox('Entwurf an ' + b.lieferantName + ' — ' + b.nummer, b.text));
   }
 });
 

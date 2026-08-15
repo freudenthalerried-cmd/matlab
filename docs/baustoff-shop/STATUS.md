@@ -8,11 +8,13 @@ Veröffentlichter Bericht:
 
 Auf Stand 15. August 2026 gebracht: sechzehn Gates, die vier Befunde der
 letzten Runde, zwei gleichrangige Freigaben. Quelldatei im Repo unter
-`bericht-radon.html`.
+`bericht-radon.html`. **Der Bericht hinkt dem Register nach** — die Gates 17 bis
+19 sind seither dazugekommen und stehen nur in
+[`gate-register.md`](./gate-register.md); bei Widerspruch gilt das Register.
 
 Lauffähiges Shop-Funktionsmuster:
 [claude.ai/code/artifact/c40fd35f…](https://claude.ai/code/artifact/c40fd35f-56e1-4821-a3b1-a1a885102ec8) —
-Quelltext und 79 Testfälle unter `shop/`. Alle Preise sind Platzhalter.
+Quelltext und 94 Testfälle unter `shop/`. Alle Preise sind Platzhalter.
 Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 
 ## Wo das Projekt steht
@@ -105,11 +107,12 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `PARAMETER.md` | Festgelegte Vorgaben, Umrechnung netto → vor Steuer, Margenschwelle |
 | `README.md` | Ursprüngliche Denkgrundlage. Teilweise überholt, Grundrechnungen gültig |
 | `master-prompt.md` | Die ursprüngliche Auftragsfassung. Als Handlungsanweisung überholt |
-| `gate-register.md` | **Alle achtzehn Gates an einer Stelle.** Maßgeblich bei Widerspruch |
+| `gate-register.md` | **Alle neunzehn Gates an einer Stelle.** Maßgeblich bei Widerspruch |
 | `entscheidungsmatrix.md` | **Wie die zwei ausstehenden Prüfungen zu lesen sind.** Vier Ausgänge, vorab festgelegt |
 | `zahlenpruefung.md` | Alle zweiundzwanzig Rechenketten nachgerechnet; zwei kleine Fehler benannt |
 | `analyse-abgeschlossen.md` | **Gate 18 — die Analysephase ist geschlossen.** Was den Loop wieder aufweckt |
 | `umsetzung-shop.md` | **Bauprotokoll des Shops.** Baustand, Sperren, nächste Bausteine |
+| `beleg-und-reihengeschaeft.md` | **Gate 19** — Auslandslieferant macht das Streckengeschäft zum Reihengeschäft; § 11 UStG im Beleg |
 
 ### Analysen
 | Datei | Kernaussage |

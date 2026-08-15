@@ -20,10 +20,37 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Bestellstrecke mit Gate-7-Prüfung | fertig | 11 |
 | Messwert-Einordner | fertig | 10 |
 | Rechtstexte-Gerüst | fertig | 11 |
+| Angebot und Rechnung an den Kunden | fertig | 15 |
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig | headless geprüft |
-| **Summe** | | **79, alle grün** |
+| **Summe** | | **94, alle grün** |
 
-## Was zuletzt dazukam: das Rechtstexte-Gerüst
+## Was zuletzt dazukam: die Belege an den Kunden
+
+`shop/src/beleg.js` schließt die Gegenrichtung: Angebot und Rechnung entstehen
+aus demselben Warenkorb wie die Lieferantenbestellungen und können deshalb
+nicht von ihnen abweichen. Die Pflichtangaben folgen § 11 UStG mit seinen drei
+Betragsschwellen.
+
+Ausführlich in [`beleg-und-reihengeschaeft.md`](./beleg-und-reihengeschaeft.md).
+Zwei Befunde daraus gehören hierher, weil sie über den Beleg hinausgehen.
+
+**Streckengeschäft ist Reihengeschäft.** Zwei der drei Lieferanten sitzen in
+Deutschland. Liefert ein deutscher Hersteller direkt an die österreichische
+Baustelle, sind drei Beteiligte an einer Warenbewegung beteiligt: Die
+Eingangsrechnung kommt ohne Umsatzsteuer als innergemeinschaftlicher Erwerb,
+die Ausgangsrechnung trägt trotzdem 20 %. Daraus folgt **Gate 19** —
+Regelbesteuerung und UID von Anfang an, die Kleinunternehmerregelung ist keine
+Option. Jeder Lieferant trägt dafür jetzt ein Feld `land`, und ein Testfall
+besteht darauf.
+
+**Ein Fehler im eigenen Bauschritt.** `EUR` war in zwei Modulen deklariert. In
+Modulen harmlos, im zusammengefügten `demo.html` ein `SyntaxError` — der die
+ganze Seite stilllegt. Die Testfälle blieben grün, weil sie die Module einzeln
+laden; aufgefallen ist es erst im Browser. `build-demo.mjs` prüft das Bündel
+jetzt selbst auf doppelte Deklarationen und fand beim ersten Lauf sofort eine
+zweite Kollision, von der niemand wusste.
+
+## Was davor dazukam: das Rechtstexte-Gerüst
 
 `shop/src/rechtstexte.js` ist **kein Ersatz für Rechtstexte**. Der
 Rechtstexteanbieter mit Aktualisierungsdienst für 10–25 € im Monat aus
@@ -183,7 +210,8 @@ Nach Nutzen geordnet, alle ohne Freigabe und ohne Ausgabe machbar:
 1. **Gebietsabfrage** nach `phase10-datengrundlage-gebietsabfrage.md` — braucht
    die Gemeindeliste. RIS und der Geoserver sind aus dieser Umgebung weiterhin
    nicht erreichbar; zuletzt geprüft am 15. August.
-2. **Angebots- und Rechnungsentwurf** — aus demselben Warenkorb, der schon die
-   Lieferantenbestellungen erzeugt, auch das Dokument für den Kunden: Positionen
-   netto, Umsatzsteuer gesondert, Teillieferungen je Lieferant ausgewiesen.
-   Braucht keine Freigabe und keine Ausgabe.
+2. **Zahlungsanbindung als Attrappe** — der Ablauf nach dem Zahlungseingang ist
+   heute nur als Bedingung vorhanden, nicht als Weg. Eine Attrappe, die den
+   Eingang setzt und die Bestellauslösung durchlaufen lässt, würde zeigen, ob
+   die Kette wirklich ohne Zutun schließt. Braucht keine Freigabe und keinen
+   Anbieter.

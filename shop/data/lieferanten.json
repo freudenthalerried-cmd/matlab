@@ -4,6 +4,7 @@
   "lieferanten": [
     {
       "id": "rohr-at",
+      "land": "AT",
       "name": "Rohrhersteller Österreich",
       "konditionenStand": "platzhalter",
       "streckengeschaeft": true,
@@ -20,6 +21,7 @@
     },
     {
       "id": "bahnen-de",
+      "land": "DE",
       "name": "Abdichtungsbahnen-Hersteller",
       "konditionenStand": "platzhalter",
       "streckengeschaeft": true,
@@ -36,6 +38,7 @@
     },
     {
       "id": "zubehoer-de",
+      "land": "DE",
       "name": "Zubehör- und Dichtsysteme",
       "konditionenStand": "platzhalter",
       "streckengeschaeft": true,

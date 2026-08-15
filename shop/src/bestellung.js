@@ -8,7 +8,7 @@
  * Bestellung — als Text zum Versenden und als CSV für Schnittstellen.
  */
 
-const EUR = (n) => n.toFixed(2).replace('.', ',') + ' €';
+import { EUR } from './format.js';
 
 /** Erzeugt je Teillieferung eine Bestellung an den Lieferanten. */
 export function erzeugeBestellungen(warenkorb, auftrag) {

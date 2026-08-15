@@ -21,11 +21,12 @@ Gerüst vorhanden und meldet selbst, welche Pflichtangaben ihm fehlen.
 | Bestellstrecke | Firmendaten, UID, Unternehmerbestätigung; endet vor der Zahlung |
 | Messwert-Einordner | Bq/m³ und Messdauer → rechtliche und bautechnische Einordnung |
 | Rechtstexte-Gerüst | Pflichtangaben nach § 5 ECG, Lücken maschinenprüfbar |
+| Angebot und Rechnung | § 11 UStG mit seinen drei Betragsschwellen, Reihengeschäft erkannt |
 
 ## Benutzen
 
 ```
-npm test          # 79 Testfälle
+npm test          # 94 Testfälle
 npm run build     # erzeugt demo.html, eine einzelne Datei ohne Abhängigkeiten
 npm run import -- <lieferantId> <datei.csv> [--schreiben]
 ```
@@ -48,6 +49,8 @@ src/bedarf.js           Materialbedarf je Gebäude, Rollen- und Gebinderechnung
 src/kunde.js            Bestelldaten prüfen, UID, Gate-7-Bestätigung
 src/messwert.js         Messwert einordnen, Bänder und die drei Grenzen
 src/rechtstexte.js      Pflichtangaben prüfen, Impressum bauen, AGB-Gliederung
+src/beleg.js            Angebot, Rechnung, § 11 UStG, Reihengeschäft
+src/format.js           EUR und Lückenmarkierung — einmal, siehe unten
 bin/import.mjs          Kommandozeile dazu, Probelauf als Voreinstellung
 beispiel/               Musterpreisliste — erfundene Preise, nicht schreibbar
 test/                   node:test, ohne Fremdpakete
@@ -134,6 +137,36 @@ Die AGB-Gliederung hat zehn Punkte, und ihr wichtigster ist eine **Auslassung**:
 keine Widerrufsbelehrung. Sie gehört ins Verbrauchergeschäft, und eine AGB, die
 beides vermischt, weckt genau den Anschein, den Gate 7 vermeiden soll. Ein
 Testfall prüft das Fehlen.
+
+## Angebot und Rechnung
+
+Beide entstehen aus demselben Warenkorb wie die Lieferantenbestellungen und
+können deshalb nicht von ihnen abweichen. Die Pflichtangaben folgen § 11 UStG
+mit seinen drei Schwellen: bis 400 € brutto genügt die Kleinbetragsrechnung,
+über 400 € kommen Nummer, Empfänger und getrennte Steuer dazu, über 10.000 €
+die UID des Leistungsempfängers.
+
+Die letzte Schwelle ist hier keine Hürde — Gate 7 verlangt die UID ohnehin bei
+jeder Bestellung. Eine Auflage aus dem Konsumentenschutz erfüllt nebenbei eine
+Steuerpflicht.
+
+**Streckengeschäft ist Reihengeschäft.** Liefert ein ausländischer Hersteller
+direkt an die österreichische Baustelle, kommt die Eingangsrechnung ohne
+Umsatzsteuer als innergemeinschaftlicher Erwerb, während die Ausgangsrechnung
+20 % trägt. `reihengeschaeftEinordnung()` erkennt das am Feld `land` des
+Lieferanten und schreibt es in die Kasse. Ausführlich in
+`docs/baustoff-shop/beleg-und-reihengeschaeft.md`.
+
+## Warum `format.js` existiert
+
+Beim Bauen werden alle Module zu einem Skript verbunden und teilen sich einen
+Gültigkeitsbereich. Eine Hilfsfunktion `EUR` gab es in zwei Modulen — in
+Modulen harmlos, im Bündel ein `SyntaxError`, der die ganze Seite stilllegt.
+Die Tests blieben grün, weil sie die Module einzeln laden.
+
+Seither stehen gemeinsame Hilfen einmal in `src/format.js`, und `build-demo.mjs`
+prüft das Bündel selbst auf doppelte Deklarationen. Der Wächter fand beim ersten
+Lauf sofort eine zweite Kollision.
 
 ## Was das Muster bereits zeigt
 

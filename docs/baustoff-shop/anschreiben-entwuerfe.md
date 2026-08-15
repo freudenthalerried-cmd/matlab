@@ -180,7 +180,23 @@ nicht zustimmt, kann nicht Partner werden — unabhängig davon, wie gut die
 2. **Datenschutz bei Entwurf B.** Sobald tatsächlich Anfragedaten an Betriebe
    weitergegeben werden, sind Einwilligung und Auftragsverarbeitung zu regeln.
    Für die Vorabansprache spielt das noch keine Rolle.
-3. **Reihenfolge.** Entwurf A zuerst. Er entscheidet über Gate 3 und damit
+3. **Wer fakturiert?** Nachgetragen am 15. August, siehe
+   [`beleg-und-reihengeschaeft.md`](./beleg-und-reihengeschaeft.md). Die Mehrzahl
+   der Empfänger sitzt im Ausland, mehrere davon mit österreichischer
+   Niederlassung — BMI führt DE/AT, Sika CH/AT, Liapor AT/DE. Das erübrigt die
+   Frage nicht, es stellt sie erst: Fakturiert die österreichische Gesellschaft,
+   ist es ein Inlandsgeschäft mit 20 % und Vorsteuerabzug. Fakturiert die
+   deutsche, ist es ein Reihengeschäft — Rechnung ohne Umsatzsteuer an unsere
+   UID, während die Ware direkt an wechselnde österreichische Baustellen geht.
+   Der Unterschied entscheidet über 19–20 % auf jeden Einkauf, und er steht auf
+   keiner Preisliste. **Ein Satz im Anschreiben klärt ihn; Entwurf A enthält ihn
+   noch nicht.**
+4. **Die Schweizer Hersteller sind kein EU-Fall.** Sika und Ampack liefern aus
+   der Schweiz: Einfuhr, Zoll und Einfuhrumsatzsteuer statt innergemeinschaftlichem
+   Erwerb, und ein Direktversand an die Baustelle wirft die Frage auf, wer als
+   Anmelder auftritt. Das ist vor einer Aufnahme ins Sortiment zu klären, nicht
+   danach.
+5. **Reihenfolge.** Entwurf A zuerst. Er entscheidet über Gate 3 und damit
    darüber, ob der Shop überhaupt weiterverfolgt wird. Entwurf B kann parallel
    laufen, bindet aber Aufmerksamkeit.
 

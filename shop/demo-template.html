@@ -451,15 +451,50 @@ document.getElementById('kasse').addEventListener('submit', (e) => {
     ]),
   );
 
-  for (const b of erzeugeBestellungen(wk, auftrag)) {
+  // Belege an den Kunden. Das Datum kommt aus der Anzeige, nicht aus der Rechnung —
+  // der Rechenkern bleibt datumsfrei und damit prüfbar.
+  const heute = new Date().toLocaleDateString('de-AT');
+  const belegKunde = { ...geprueft.normalisiert };
+  const betreiber = {};
+
+  const angebot = erzeugeAngebot(wk, { nummer: 'AN-MUSTER', datum: heute, kunde: belegKunde, betreiber });
+  const rechnung = erzeugeRechnung(wk, {
+    nummer: 'RE-MUSTER',
+    datum: heute,
+    lieferdatum: heute,
+    kunde: belegKunde,
+    betreiber,
+  });
+  const rechnungFrei = darfRechnungGestelltWerden(wk, rechnung, auftrag);
+
+  const reihe = reihengeschaeftEinordnung(wk, katalog);
+  if (reihe.reihengeschaeft) {
+    ziel.append(kasten('k-warn', ['Umsatzsteuer im Streckengeschäft:', ...reihe.hinweise.map((h) => '· ' + h)]));
+  }
+
+  ziel.append(
+    kasten('k-sperre', [
+      rechnungFrei.erlaubt ? 'Die Rechnung wäre stellbar.' : 'Keine Rechnung. Offen sind:',
+      ...rechnungFrei.gruende.map((g) => '· ' + g),
+    ]),
+  );
+
+  const belegBox = (titel, text) => {
     const box = document.createElement('div');
     box.className = 'k-bestellung';
     const h3 = document.createElement('h3');
-    h3.textContent = 'Entwurf an ' + b.lieferantName + ' — ' + b.nummer;
+    h3.textContent = titel;
     const pre = document.createElement('pre');
-    pre.textContent = b.text;
+    pre.textContent = text;
     box.append(h3, pre);
-    ziel.append(box);
+    return box;
+  };
+
+  ziel.append(belegBox('Angebot an den Kunden — Entwurf', angebot.text));
+  ziel.append(belegBox('Rechnung an den Kunden — Entwurf', rechnung.text));
+
+  for (const b of erzeugeBestellungen(wk, auftrag)) {
+    ziel.append(belegBox('Entwurf an ' + b.lieferantName + ' — ' + b.nummer, b.text));
   }
 });
 

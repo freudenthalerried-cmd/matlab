@@ -22,6 +22,7 @@ const entkleide = (quelle) =>
     .replace(/^export (const|function) /gm, '$1 ');
 
 const kern = [
+  entkleide(lies('./src/format.js')),
   entkleide(lies('./src/preis.js')),
   entkleide(lies('./src/warenkorb.js')),
   entkleide(lies('./src/bedarf.js')),
@@ -29,7 +30,35 @@ const kern = [
   entkleide(lies('./src/messwert.js')),
   entkleide(lies('./src/rechtstexte.js')),
   entkleide(lies('./src/bestellung.js')),
+  entkleide(lies('./src/beleg.js')),
 ].join('\n');
+
+/**
+ * Namenskollisionen im Bündel finden.
+ *
+ * Getrennte Module dürfen denselben Namen tragen; im zusammengefügten Skript
+ * ist das ein SyntaxError, und dann läuft die ganze Seite nicht. Genau das ist
+ * mit einer Hilfsfunktion namens `EUR` passiert — die Tests blieben grün, weil
+ * sie die Module einzeln laden. Der Bauschritt muss es deshalb selbst merken.
+ */
+function pruefeNamenskollisionen(quelle) {
+  const gesehen = new Map();
+  const doppelt = [];
+  const muster = /^(?:const|let|function|class)\s+([A-Za-z_$][\w$]*)/gm;
+  for (const treffer of quelle.matchAll(muster)) {
+    const name = treffer[1];
+    if (gesehen.has(name)) doppelt.push(name);
+    else gesehen.set(name, true);
+  }
+  if (doppelt.length) {
+    throw new Error(
+      'Doppelt deklariert im Bündel: ' + [...new Set(doppelt)].join(', ') +
+        '\nIm Modul harmlos, im zusammengefügten Skript ein SyntaxError.',
+    );
+  }
+}
+
+pruefeNamenskollisionen(kern);
 
 const html = lies('./demo-template.html')
   .replace('/*__KERN__*/', kern)
