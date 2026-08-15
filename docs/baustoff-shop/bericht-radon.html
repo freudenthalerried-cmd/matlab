@@ -72,23 +72,11 @@
   .prose { max-width: 40rem; }
 
   h1, h2, h3 { font-family: var(--serif); font-weight: 600; text-wrap: balance; margin: 0; }
-
-  h1 {
-    font-size: clamp(2.1rem, 5.5vw, 3.1rem);
-    line-height: 1.08;
-    letter-spacing: -0.015em;
-  }
-
-  h2 {
-    font-size: clamp(1.3rem, 2.8vw, 1.6rem);
-    line-height: 1.2;
-    letter-spacing: -0.01em;
-  }
-
+  h1 { font-size: clamp(2.1rem, 5.5vw, 3.1rem); line-height: 1.08; letter-spacing: -0.015em; }
+  h2 { font-size: clamp(1.3rem, 2.8vw, 1.6rem); line-height: 1.2; letter-spacing: -0.01em; }
   h3 { font-size: 1.02rem; line-height: 1.3; }
 
   p { margin: 0; }
-  .stack { display: flex; flex-direction: column; gap: 1rem; }
   .stack-lg { display: flex; flex-direction: column; gap: 1.6rem; }
 
   .eyebrow {
@@ -102,10 +90,7 @@
   .lede { font-size: 1.12rem; color: var(--ink-2); }
   .note { font-size: 0.92rem; color: var(--muted); }
 
-  /* ---------- masthead ---------- */
-
   header { display: flex; flex-direction: column; gap: 1.5rem; }
-
   .rule { height: 1px; background: var(--line-strong); border: 0; margin: 0; }
 
   .flag {
@@ -114,9 +99,6 @@
     background: var(--surface);
     font-size: 1rem;
   }
-  .flag strong { font-weight: 600; }
-
-  /* ---------- figures ---------- */
 
   .figures {
     display: grid;
@@ -135,24 +117,12 @@
   }
   .fig-lab { font-size: 0.86rem; color: var(--muted); }
 
-  /* ---------- stufen rail ---------- */
-
   .rail { display: flex; gap: 1px; background: var(--line); border: 1px solid var(--line); overflow-x: auto; }
-  .step {
-    background: var(--surface);
-    padding: 0.85rem 1rem;
-    min-width: 9rem;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
+  .step { background: var(--surface); padding: 0.85rem 1rem; min-width: 9rem; flex: 1; display: flex; flex-direction: column; gap: 0.25rem; }
   .step[data-now="yes"] { background: var(--accent-soft); }
   .step-n { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; }
   .step-t { font-size: 0.94rem; font-weight: 600; }
   .step-c { font-family: var(--mono); font-size: 0.8rem; color: var(--ink-2); font-variant-numeric: tabular-nums; }
-
-  /* ---------- tables ---------- */
 
   .scroll { overflow-x: auto; border: 1px solid var(--line); background: var(--surface); }
   table { border-collapse: collapse; width: 100%; font-size: 0.94rem; }
@@ -171,24 +141,23 @@
   td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
   th.rowhead { font-weight: 500; color: var(--ink-2); }
 
-  /* ---------- gate ledger ---------- */
-
   .gates { display: flex; flex-direction: column; border: 1px solid var(--line); background: var(--surface); }
-  .gate { display: grid; grid-template-columns: 3.4rem 1fr; gap: 0 1rem; padding: 0.85rem 1.1rem; border-bottom: 1px solid var(--line); }
-  .gate:last-child { border-bottom: 0; }
-  .gate-n {
+  .gate-h {
     font-family: var(--mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.06em;
-    color: var(--accent);
-    padding-top: 0.28rem;
-    white-space: nowrap;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--surface-2);
+    padding: 0.5rem 1.1rem;
+    border-bottom: 1px solid var(--line);
   }
+  .gate { display: grid; grid-template-columns: 3.4rem 1fr; gap: 0 1rem; padding: 0.8rem 1.1rem; border-bottom: 1px solid var(--line); }
+  .gate:last-child { border-bottom: 0; }
+  .gate-n { font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.06em; color: var(--accent); padding-top: 0.28rem; white-space: nowrap; }
   .gate-b { display: flex; flex-direction: column; gap: 0.15rem; }
   .gate-t { font-weight: 600; font-size: 0.98rem; }
   .gate-w { font-size: 0.9rem; color: var(--muted); }
-
-  /* ---------- confidence marks ---------- */
 
   .tag {
     font-family: var(--mono);
@@ -208,20 +177,25 @@
   .need-t { font-weight: 600; }
   .need-c { font-family: var(--mono); font-size: 0.85rem; color: var(--accent); font-variant-numeric: tabular-nums; }
 
+  .findings { display: flex; flex-direction: column; gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  .finding { background: var(--surface); padding: 1.1rem 1.2rem; display: flex; flex-direction: column; gap: 0.35rem; }
+  .finding h3 { font-family: var(--sans); font-size: 1rem; font-weight: 600; }
+  .finding p { font-size: 0.93rem; color: var(--ink-2); }
+
   footer { color: var(--muted); font-size: 0.88rem; display: flex; flex-direction: column; gap: 0.4rem; }
   code { font-family: var(--mono); font-size: 0.88em; }
   a { color: var(--accent); }
-  a:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 </style>
 
 <div class="wrap">
 
   <header>
-    <p class="eyebrow">Machbarkeitsanalyse · Stand 14. August 2026</p>
+    <p class="eyebrow">Machbarkeitsanalyse · Stand 15. August 2026</p>
     <h1>Radonvorsorge Österreich</h1>
     <p class="lede prose">Kann ein Fachhandel oder ein Vermittlungsportal für Radonschutz
-      3.000 € netto im Monat tragen — ohne laufende Anwesenheit? Zehn Entscheidungen sind
-      gefallen. Zwei Freigaben fehlen, und drei Zahlen sind weiterhin unbelegt.</p>
+      3.000 € netto im Monat tragen — ohne laufende Anwesenheit? Sechzehn Entscheidungen sind
+      gefallen. Zwei Freigaben fehlen, und vier Zahlen sind weiterhin unbelegt.</p>
     <hr class="rule">
     <div class="flag">
       <strong>Nichts ist gegründet, verkauft oder eingenommen.</strong> Es gibt keinen Umsatz und
@@ -233,12 +207,49 @@
     <div class="figures">
       <div class="fig"><span class="fig-num">0 €</span><span class="fig-lab">Umsatz bis heute</span></div>
       <div class="fig"><span class="fig-num">0 €</span><span class="fig-lab">bisher ausgegeben</span></div>
-      <div class="fig"><span class="fig-num">10</span><span class="fig-lab">Entscheidungen getroffen</span></div>
+      <div class="fig"><span class="fig-num">16</span><span class="fig-lab">Entscheidungen getroffen</span></div>
       <div class="fig"><span class="fig-num">2</span><span class="fig-lab">Freigaben offen</span></div>
     </div>
     <p class="note prose">Der Zielwert 3.000 € netto beim Gesellschafter entspricht
       <strong>5.374 € Gewinn vor Steuer</strong> im Monat — nach 23 % Körperschaftsteuer und
       27,5 % Kapitalertragsteuer bleiben 55,8 % übrig.</p>
+  </section>
+
+  <section class="stack-lg">
+    <h2>Was die letzten Prüfungen ergeben haben</h2>
+    <p class="prose">Vier Befunde aus der jüngsten Runde. Alle vier machen das Fundament
+      schmaler, keiner davon war vorher bekannt — und sie gehören vor die Freigaben, nicht
+      danach.</p>
+    <div class="findings">
+      <div class="finding">
+        <h3>Der Neubaumarkt hat sich halbiert</h3>
+        <p>Bewilligte Wohnungen im Neubau: 53.043 im Jahr 2015, 31.979 im Jahr 2025 — minus 40 %
+          in zehn Jahren, gegenüber dem Höchststand 2017 rund minus 56 %. Der Shop hängt
+          praktisch vollständig an diesem Markt. Zahlen für 2026 gibt es frühestens im
+          Frühjahr 2027.</p>
+      </div>
+      <div class="finding">
+        <h3>Die Radonmessung dauert sechs Monate, nicht drei</h3>
+        <p>Für den Vergleich mit dem Referenzwert von 300 Bq/m³ verlangt die
+          Radonschutzverordnung eine Langzeitmessung über mindestens sechs Monate. Zusammen mit
+          der Tatsache, dass nur rund 6 % der Haushalte diesen Wert überschreiten, fällt der Weg
+          „Messung anstoßen und warten" als Anfragenquelle rechnerisch aus.</p>
+      </div>
+      <div class="finding">
+        <h3>Die Feuchtethemen sind besetzt</h3>
+        <p>Kostenrechner und Betriebsvermittlung für Kellerabdichtung betreiben bereits
+          Franchisesysteme wie ISOTEC und GETIFIX. Wer den Auftrag über 5.000–15.000 € selbst
+          ausführt, kann für denselben Klick ein Vielfaches zahlen wie ein Vermittler, der bis
+          150 € zahlungsfähig ist. In bezahlter Werbung verliert der Vermittler strukturell.</p>
+      </div>
+      <div class="finding">
+        <h3>Die österreichische Lücke ist eine Frist</h3>
+        <p>Heute gibt es genau einen ISOTEC-Fachbetrieb in Österreich. ISOTEC sucht aber gerade
+          Franchise-Partner für Wien, Tirol und Vorarlberg und plant Neugründungen ab dem
+          zweiten Halbjahr 2026 — also parallel zum eigenen Aufbau. Immerhin: Die geplante
+          Startregion Oberösterreich steht nicht auf dieser ersten Liste.</p>
+      </div>
+    </div>
   </section>
 
   <section class="stack-lg">
@@ -274,7 +285,8 @@
       Wird es verfehlt, wird nicht nachgebessert, sondern abgebrochen oder umgestellt. Das
       <strong>Kapitalrisiko bis zur ersten belegten Einnahme liegt bei 2.700 €</strong> —
       nicht bei den ursprünglich veranschlagten 8.000 bis 12.000 €, weil Gründung, Shopsystem
-      und Werbebudget erst nach dem ersten Geschäft anfallen.</p>
+      und Werbebudget erst nach dem ersten Geschäft anfallen. Vier harte Abbruchregeln stehen
+      daneben.</p>
   </section>
 
   <section class="stack-lg">
@@ -289,36 +301,51 @@
         <tbody>
           <tr><th scope="row" class="rowhead">Nötiger Erlös je Monat</th><td class="num">24.200 €</td><td class="num">5.724 €</td></tr>
           <tr><th scope="row" class="rowhead">Break-even</th><td class="num">7 Bestellungen</td><td class="num">2–3 Leads</td></tr>
-          <tr><th scope="row" class="rowhead">Besuche je Monat für das Ziel</th><td class="num">1.850</td><td class="num">~2.550</td></tr>
+          <tr><th scope="row" class="rowhead">Besuche je Monat für das Ziel</th><td class="num">1.850</td><td class="num">~1.570 *</td></tr>
           <tr><th scope="row" class="rowhead">Kapital bis erste Einnahme</th><td class="num">2.700 €</td><td class="num">&lt; 1.000 €</td></tr>
           <tr><th scope="row" class="rowhead">Laufender Aufwand</th><td class="num">6,5–12 h</td><td class="num">4–6 h</td></tr>
           <tr><th scope="row" class="rowhead">Wiederkehrende Erlöse</th><td>keine</td><td>ja, ab Stufe B</td></tr>
           <tr><th scope="row" class="rowhead">Obergrenze</th><td>offen nach oben</td><td class="num">~8.000–12.000 €</td></tr>
-          <tr><th scope="row" class="rowhead">Engpass</th><td>Rohmarge</td><td>Zahl der Messungen</td></tr>
+          <tr><th scope="row" class="rowhead">Steht auf</th><td>unbelegter Rohmarge in schrumpfendem Markt</td><td>Mengenquelle, die gerade besetzt wird</td></tr>
         </tbody>
       </table>
     </div>
+    <p class="note prose">* Diese Zahl steht unter Vorbehalt: Sie beruht auf einer Anfragequote
+      von 2 % bei den Feuchtethemen, die nach dem dritten Befund oben nicht mehr als belegt
+      gilt. Genau das misst die zweite Freigabe.</p>
     <p class="prose">Das Leadmodell <strong>scheitert und wartet billiger</strong> — es trägt sich
-      ab zwei bis drei Vorgängen im Monat selbst. Weniger Reichweite braucht es allerdings nicht:
-      Wer noch nicht gemessen hat, durchläuft einen viel längeren Weg, und die Messung dauert drei
-      Monate. Der erste Erlös verschiebt sich dadurch um ein Quartal.</p>
+      ab zwei bis drei Vorgängen im Monat selbst und braucht unter 1.000 € Anlauf. Das gilt
+      unverändert. Was nicht mehr gilt, ist die Annahme, es habe eine gesicherte Mengenquelle.</p>
   </section>
 
   <section class="stack-lg">
-    <h2>Die zehn Entscheidungen</h2>
+    <h2>Die sechzehn Entscheidungen</h2>
     <p class="prose">Getroffen und begründet, ohne Rückfrage — so vereinbart. Jede ist im
       Projektverzeichnis mit ihrer Herleitung hinterlegt.</p>
     <div class="gates">
-      <div class="gate"><span class="gate-n">Gate 1</span><span class="gate-b"><span class="gate-t">32 % Rohmarge als harte Untergrenze</span><span class="gate-w">Darunter ist das Nettoziel im Streckengeschäft rechnerisch nicht erreichbar. Nischen darunter fallen.</span></span></div>
+      <div class="gate-h">Lieferantenseite — alle drei hängen an einer einzigen Freigabe</div>
+      <div class="gate"><span class="gate-n">Gate 1</span><span class="gate-b"><span class="gate-t">32 % Rohmarge als harte Untergrenze</span><span class="gate-w">Die Abdichtungsbahn muss davon rund 38 % tragen, weil das Drainagerohr ein Preisprodukt ist.</span></span></div>
       <div class="gate"><span class="gate-n">Gate 2</span><span class="gate-b"><span class="gate-t">Vier Bedingungen an jeden Lieferanten</span><span class="gate-w">Streckengeschäft, mindestens 35 % Händlerrabatt, kalkulierbare Frachtregelung, strukturierte Produktdaten.</span></span></div>
+      <div class="gate"><span class="gate-n">Gate 6</span><span class="gate-b"><span class="gate-t">Ohne Produktdaten kein Shop</span><span class="gate-w">Ohne Schnittstelle bricht die Bestellübergabe am ersten Tag Abwesenheit — das widerspricht dem ganzen Vorhaben.</span></span></div>
+
+      <div class="gate-h">Weg und Reihenfolge</div>
       <div class="gate"><span class="gate-n">Gate 3</span><span class="gate-b"><span class="gate-t">Fortsetzen nur mit schriftlichen Konditionen</span><span class="gate-w">Vor jeder Ausgabe müssen zwei Hersteller ihre Konditionen beziffert haben. Zeithorizont 18–30 Monate.</span></span></div>
       <div class="gate"><span class="gate-n">Gate 4</span><span class="gate-b"><span class="gate-t">Modellwahl vertagt auf Ende Stufe 2</span><span class="gate-w">Stufe 0 bis 2 sind für beide Modelle gleich. Entschieden wird am ersten tatsächlichen Geschäft, nicht am Reißbrett.</span></span></div>
+      <div class="gate"><span class="gate-n">Gate 12</span><span class="gate-b"><span class="gate-t">Beide Modelle sind gleichrangig</span><span class="gate-w">Der Shop ist nicht mehr der Standardweg. Er hängt am Neubau, das Leadmodell am wachsenden Gebäudebestand.</span></span></div>
+
+      <div class="gate-h">Shopmodell</div>
       <div class="gate"><span class="gate-n">Gate 5</span><span class="gate-b"><span class="gate-t">Sortiment auf den radonspezifischen Kern</span><span class="gate-w">Abdichtungsbahnen und Drainage ja, Hauseinführungen nein — die sind ohnehin vorgeschrieben und schon radondicht.</span></span></div>
-      <div class="gate"><span class="gate-n">Gate 6</span><span class="gate-b"><span class="gate-t">Ohne Produktdaten kein Shop</span><span class="gate-w">Ohne Schnittstelle bricht die Bestellübergabe am ersten Tag Abwesenheit — das widerspricht dem ganzen Vorhaben.</span></span></div>
       <div class="gate"><span class="gate-n">Gate 7</span><span class="gate-b"><span class="gate-t">Warenverkauf ausschließlich an Unternehmer</span><span class="gate-w">Damit entfällt das Rücktrittsrecht samt Zwölfmonatsfalle. Auflage: Privatbestellungen wirksam ausschließen.</span></span></div>
       <div class="gate"><span class="gate-n">Gate 8</span><span class="gate-b"><span class="gate-t">Zwölf Herstelleranfragen statt sechs</span><span class="gate-w">Mit sechs Adressaten wäre die Margenfrage in vier von zehn Fällen gar nicht entscheidbar gewesen.</span></span></div>
-      <div class="gate"><span class="gate-n">Gate 9</span><span class="gate-b"><span class="gate-t">Leadmodell in zwei Stufen</span><span class="gate-w">Erst Erlös je Lead, dann Grundgebühr plus reduzierter Leadpreis. Ein reiner Retainer kündigt im schwachen Quartal.</span></span></div>
-      <div class="gate"><span class="gate-n">Gate 10</span><span class="gate-b"><span class="gate-t">Erfassung beim Anstoß der Messung</span><span class="gate-w">Die Messung ist kostenlos, es gibt also keine Transaktion. Das Produkt ist die Erinnerung nach drei Monaten.</span></span></div>
+      <div class="gate"><span class="gate-n">Gate 11</span><span class="gate-b"><span class="gate-t">Gebietsabfrage auf Gemeindeebene</span><span class="gate-w">Die Rechtsaussage stammt aus der Radonschutzverordnung — freier Verordnungstext, keine Lizenzfrage.</span></span></div>
+
+      <div class="gate-h">Leadmodell</div>
+      <div class="gate"><span class="gate-n">Gate 9</span><span class="gate-b"><span class="gate-t">Leadmodell in zwei Stufen</span><span class="gate-w">Erst Erlös je Lead, dann Grundgebühr plus reduzierter Leadpreis. Gebietsexklusivität ab Tag 1, bezahlt ab Stufe B.</span></span></div>
+      <div class="gate"><span class="gate-n">Gate 10</span><span class="gate-b"><span class="gate-t">Erfassung beim Anstoß der Messung</span><span class="gate-w">Die Messung ist kostenlos, es gibt also keine Transaktion. Das Produkt ist die Erinnerung nach der Messdauer.</span></span></div>
+      <div class="gate"><span class="gate-n">Gate 13</span><span class="gate-b"><span class="gate-t">Gebietseinheit ist der politische Bezirk</span><span class="gate-w">Nicht die Radonschutzgemeinde. Die 104 Gemeinden bestimmen nur die Ausbaufolge, beginnend in Oberösterreich.</span></span></div>
+      <div class="gate"><span class="gate-n">Gate 14</span><span class="gate-b"><span class="gate-t">Die Messstrecke liefert keine Mengen</span><span class="gate-w">Sechs Monate Wartezeit mal rund 90 %, die den Referenzwert nicht überschreiten. Sie dient der Bindung, nicht dem Volumen.</span></span></div>
+      <div class="gate"><span class="gate-n">Gate 15</span><span class="gate-b"><span class="gate-t">Die Anfragequote der Feuchtethemen gilt als unbelegt</span><span class="gate-w">Wird nicht mehr eingeplant, bis Suchvolumen und Wettbewerbsdichte gemessen sind.</span></span></div>
+      <div class="gate"><span class="gate-n">Gate 16</span><span class="gate-b"><span class="gate-t">Die heutige Marktlücke ist keine Planungsgrundlage</span><span class="gate-w">Eine Lücke, deren Schließung der Wettbewerber ankündigt, ist eine Frist. Inhalte deshalb mit Gebiets- statt Preisbezug.</span></span></div>
     </div>
   </section>
 
@@ -333,7 +360,12 @@
           <tr>
             <th scope="row" class="rowhead">Rohmarge</th>
             <td><span class="tag tag-open">unbelegt</span></td>
-            <td>Die Abdichtungsbahn muss rund 38 % tragen, damit der Warenkorb 32 % erreicht. Kein Hersteller hat bisher eine Zahl genannt.</td>
+            <td>Kein Hersteller hat bisher eine Zahl genannt. Entscheidet, ob der Shop überhaupt tragfähig ist.</td>
+          </tr>
+          <tr>
+            <th scope="row" class="rowhead">Anfragequote der Feuchtethemen</th>
+            <td><span class="tag tag-open">unbelegt</span></td>
+            <td>Mit 2 % angenommen. Seit dem Befund zu den Franchisesystemen der neue Engpass des Leadmodells.</td>
           </tr>
           <tr>
             <th scope="row" class="rowhead">Suchvolumen</th>
@@ -341,9 +373,9 @@
             <td>Die Themenauswahl beruht auf Fachplausibilität. Inhalte auf Verdacht zu schreiben wäre der teuerste Fehler im Plan.</td>
           </tr>
           <tr>
-            <th scope="row" class="rowhead">Zahl der Messungen je Jahr</th>
-            <td><span class="tag tag-open">unbekannt</span></td>
-            <td>Nicht die Zahl betroffener Gebäude begrenzt das Leadmodell, sondern wie viele Menschen tatsächlich messen.</td>
+            <th scope="row" class="rowhead">Umsetzungsquote der Radonvorsorge</th>
+            <td><span class="tag tag-open">unerhoben</span></td>
+            <td>Wird nirgends gemessen. Sie ist die eigentliche Wette des Shopmodells — nicht der Baumarkt.</td>
           </tr>
           <tr>
             <th scope="row" class="rowhead">Materialwert je Gebäude</th>
@@ -357,26 +389,29 @@
 
   <section class="stack-lg">
     <h2>Was jetzt gebraucht wird</h2>
-    <p class="prose">Zwei Freigaben, zusammen unter 200 €. Beide liegen am Anfang des Wegs, und
-      ohne sie kann niemand weiterarbeiten — auch keine Maschine.</p>
+    <p class="prose">Zwei Freigaben, zusammen unter 200 €. Sie sind seit dem letzten Stand
+      <strong>gleichrangig geworden</strong>: Die eine entscheidet über den Shop, die andere
+      über das Leadmodell. Fällt eine Prüfung aus, bleibt ein Modell übrig — fallen beide aus,
+      keines.</p>
     <ol class="needs">
       <li>
         <div class="need-h"><span class="need-t">Zwölf Herstelleranfragen versenden</span><span class="need-c">0 €</span></div>
-        <p class="note">Die Anschreiben sind fertig formuliert und warten auf Zustimmung. Sie klären
-          Händlerrabatt, Streckengeschäft, Fracht und Produktdaten — also vier der zehn Entscheidungen
-          auf einmal. Bisher wurde nichts versendet.</p>
+        <p class="note">Entscheidet über den <strong>Shop</strong>. Die Anschreiben sind fertig
+          formuliert und warten auf Zustimmung. Sie klären Händlerrabatt, Streckengeschäft,
+          Fracht und Produktdaten — also drei der sechzehn Entscheidungen auf einmal. Bisher
+          wurde nichts versendet.</p>
       </li>
       <li>
         <div class="need-h"><span class="need-t">Suchvolumina prüfen</span><span class="need-c">100–200 € im Monat</span></div>
-        <p class="note">Ein Keyword-Werkzeug für einen Monat. Danach steht fest, ob die
-          Inhaltslandkarte trägt oder ob das Thema Radon zu dünn ist und breitere
-          Feuchte- und Abdichtungsthemen die Reichweite tragen müssen.</p>
+        <p class="note">Entscheidet über das <strong>Leadmodell</strong>. Ein Keyword-Werkzeug
+          für einen Monat. Es beantwortet nicht mehr nur, welche Inhalte sich lohnen, sondern
+          ob das Leadmodell überhaupt eine Mengenquelle hat.</p>
       </li>
     </ol>
   </section>
 
   <section class="stack-lg">
-    <h2>Was sich im Verlauf als falsch erwiesen hat</h2>
+    <h2>Was sich als falsch erwiesen hat</h2>
     <p class="prose">Die Analyse hat sich mehrfach selbst korrigiert. Diese Punkte sind die
       folgenreichsten — sie stehen hier, damit niemand einer überholten Aussage folgt.</p>
     <div class="scroll">
@@ -389,7 +424,8 @@
           <tr><td>Kein spezialisierter Wettbewerber</td><td>RadonTec besetzt das Feld bereits, mit Schwerpunkt Sanierung im Bestand</td></tr>
           <tr><td>Dosimeter als Einstiegsprodukt verkaufen</td><td>Unzulässig — Radonmessung ist eine ermächtigte Tätigkeit</td></tr>
           <tr><td>Der Messeinstieg erzeugt einen Kundendatensatz</td><td>Die Messung ist kostenlos, also gibt es keine Transaktion und keinen Datensatz</td></tr>
-          <tr><td>Das Leadmodell braucht weniger Reichweite als der Shop</td><td>Es braucht mehr; der Weg der noch nicht Gemessenen war übersprungen</td></tr>
+          <tr><td>Die Messung dauert rund drei Monate</td><td>Sechs Monate nach Radonschutzverordnung — die Wartezeit verdoppelt sich</td></tr>
+          <tr><td>Die Feuchtethemen liefern das Volumen</td><td>Sie sind von Franchisesystemen besetzt; die Quote gilt als unbelegt</td></tr>
           <tr><td>Anlaufverlust 8.000 bis 12.000 € im Voraus</td><td>2.700 € bis zur ersten Einnahme, wenn in Stufen vorgegangen wird</td></tr>
           <tr><td>Eine Inhaltsseite ist am passivsten und damit erste Wahl</td><td>Werbeerlöse scheitern an der nötigen Reichweite von mehreren Hunderttausend Aufrufen</td></tr>
         </tbody>
@@ -401,7 +437,8 @@
 
   <footer>
     <p>Vollständige Herleitung, Quellen und Rechenwege im Projektverzeichnis
-      <code>docs/baustoff-shop/</code>, Einstieg über <code>STATUS.md</code>.</p>
+      <code>docs/baustoff-shop/</code>, Einstieg über <code>STATUS.md</code>, Entscheidungen im
+      <code>gate-register.md</code>.</p>
     <p>Keine Rechts-, Steuer- oder Anlageberatung. Alle Zahlen sind Modellrechnungen mit
       ausgewiesenem Konfidenzgrad; vor Umsetzung sind Steuerberatung und anwaltliche Prüfung
       erforderlich.</p>

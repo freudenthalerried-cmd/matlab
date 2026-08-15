@@ -18,7 +18,7 @@ zur Diskussion gestellt. Änderungen nur mit ausdrücklicher Freigabe.
 
 | Artefakt | URL |
 |---|---|
-| Statusbericht, Stand 14.08.2026 | https://claude.ai/code/artifact/3d669d15-b632-41b9-838c-b9369dab8a4c |
+| Statusbericht, Stand 15.08.2026 | https://claude.ai/code/artifact/3d669d15-b632-41b9-838c-b9369dab8a4c |
 
 Quelldatei des Berichts: `bericht-radon.html` im Repo neben dieser Datei.
 **Wichtig für spätere Läufe:** Zum Aktualisieren dieses Berichts die obige URL
