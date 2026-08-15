@@ -64,6 +64,12 @@ konservativere Kapitalgesellschaftsweg unterstellt.
 ### Neue Umsatzkaskade
 
 Fixkosten 650 €/Monat, benötigter Deckungsbeitrag nach Werbung 6.050 €.
+
+> **Rechnerisch wären es 6.024 €** (5.374 + 650). Die Kaskade unten ist
+> durchgehend aus 6.050 € gerechnet und damit rund 0,4 % zu hoch — in die
+> sichere Richtung. Sie bleibt unverändert; Begründung in
+> [`zahlenpruefung.md`](./zahlenpruefung.md). Wer die Kaskade neu aufsetzt,
+> beginnt bei 6.024 €.
 Bei 10 % Werbekostenanteil vom Umsatz:
 
 | Rohmarge | Nötiger Netto-Umsatz/Monat | Bestellungen bei Ø 400 € |

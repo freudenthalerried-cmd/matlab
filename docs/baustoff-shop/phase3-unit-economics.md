@@ -13,6 +13,12 @@ Radonvorsorge im Neubau aus [`phase1-nischen.md`](./phase1-nischen.md).
 > [`phase4-sortiment-und-materialwert.md`](./phase4-sortiment-und-materialwert.md)
 > überholt. Gültig sind dort: 650 € Warenkorb, 37 Bestellungen, 1.260–2.955 €
 > Materialwert. Die Zielgröße, die Kaskade und Gate 3 bleiben unverändert.
+>
+> **Nachtrag aus [`zahlenpruefung.md`](./zahlenpruefung.md):** Der unten
+> genannte Break-even „4.714 € ≈ 10–11 Bestellungen" enthält eine nicht
+> mitgezogene Folgegröße. Die Stückzahl stammt aus dem alten Warenkorb von
+> 450 €; bei 650 € sind es **7 Bestellungen**. Der Eurobetrag 4.714 € bleibt
+> richtig.
 
 ## Zielgröße
 
