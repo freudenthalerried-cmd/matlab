@@ -1,7 +1,7 @@
 # Gate-Register
 
-Stand: 2026-08-14. **Maßgeblich für alle Gate-Fragen.** Dreizehn Entscheidungen
-sind über die Phasen verteilt in neun Dateien gefallen. Wer wissen will, was
+Stand: 2026-08-14. **Maßgeblich für alle Gate-Fragen.** Vierzehn Entscheidungen
+sind über die Phasen verteilt in zehn Dateien gefallen. Wer wissen will, was
 gilt, musste bisher alles lesen. Hier steht es an einer Stelle.
 
 Bei Widerspruch zwischen diesem Register und einem Phasendokument gilt das
@@ -24,7 +24,7 @@ Ebenso überholt: Der master-prompt nennt in Gate 1 eine Margenschwelle von
 **28 %**. Sie stammt aus dem Szenario „3.000 € vor Steuer". Seit der Umstellung
 auf 3.000 € netto gilt die harte Untergrenze von **32 %**.
 
-## Die dreizehn Gates
+## Die vierzehn Gates
 
 ### Lieferantenseite — alle drei hängen an einer einzigen Freigabe
 
@@ -62,6 +62,7 @@ auf 3.000 € netto gilt die harte Untergrenze von **32 %**.
 |---|---|---|---|
 | **9** | **Zweistufiges Erlösmodell:** Stufe A Erlös je Lead, bis der Anfragefluss über drei Monate belegt ist; Stufe B Grundgebühr plus reduzierter Leadpreis. **Verfeinert:** Gebietsexklusivität gilt ab Tag 1 als Struktur, bezahlt wird sie erst ab Stufe B. | entschieden | `phase3b-leadmodell.md`, `partnerangebot-leadvermittlung.md` |
 | **10** | **Erfasst wird beim Anstoß der Messung**, nicht nach dem Ergebnis. Die Messung ist kostenlos, es gibt also keine Transaktion und keinen Datensatz. Das Produkt ist der Erinnerungs- und Einordnungsdienst über die drei Monate Messdauer. | entschieden | `phase7b-messstrecke.md` |
+| **14** | **Strecke 2 trägt die Mengenplanung nicht.** Sechs Monate Messdauer mal rund 90 %, die den Referenzwert nicht überschreiten, ergeben eine Ende-zu-Ende-Quote unter 0,5 %. Die Mengen kommen aus Strecke 1 und den Feuchtethemen der Gruppe C. Gate 10 bleibt gültig, dient aber der Bindung, nicht der Menge. | entschieden | `messwert-einordnung.md` |
 | **13** | **Gebietseinheit ist der politische Bezirk**, nicht die Radonschutzgemeinde. Die 104 Gemeinden bestimmen nur die Ausbaufolge, beginnend in Oberösterreich. | entschieden | `partnerangebot-leadvermittlung.md` |
 
 ## Was die Gates auslöst
@@ -85,6 +86,7 @@ Kein Gate ist unumstößlich; drei sind erkennbar anfällig:
 |---|---|
 | **5** | Wenn kein Hersteller radondichte Bahnen im Streckengeschäft liefert, bleibt nur das Drainagepaket — und damit ein Warenkorb, der die Marge nicht trägt |
 | **9** | Wenn Betriebe der namentlichen Nennung im Einwilligungstext nicht zustimmen, fällt die Bauform der Gebietsexklusivität |
+| **14** | Wenn die Lead-Quote in Gruppe C unter 2 % liegt, fehlt dem Leadmodell die Mengenquelle — und eine Ersatzquelle ist nicht in Sicht |
 | **12** | Wenn die Neubauzahlen 2026 drehen, verschiebt sich das Gewicht zurück zum Shop — belastbar erst im Frühjahr 2027 |
 
 ## Überholte Fassungen, die im Bestand stehen bleiben

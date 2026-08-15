@@ -1,6 +1,6 @@
 # Status und Einstieg
 
-Stand: 2026-08-14. **Dieses Dokument zuerst lesen.** Fünfundzwanzig Arbeitsdateien
+Stand: 2026-08-14. **Dieses Dokument zuerst lesen.** Sechsundzwanzig Arbeitsdateien
 sind entstanden, mehrere davon korrigieren einander. Hier steht, was gilt.
 
 Veröffentlichter Bericht:
@@ -22,13 +22,13 @@ Radonvorsorge und Bausanierung in Österreich.
 |---|---|---|
 | Nötiger Erlös | 24.200 €/Monat | 5.724 €/Monat |
 | Break-even | ~4.714 € (7 Bestellungen) | ~350 € (2–3 Leads) |
-| Sessions für Zielgröße | 1.850/Monat | ~2.550/Monat |
+| Sessions für Zielgröße | 1.850/Monat | ~1.570/Monat |
 | Kapital bis erste Einnahme | 2.700 € | < 1.000 € |
 | Laufender Aufwand | 6,5–12 h/Monat | 4–6 h/Monat |
 | Bestandseffekt | keiner | ja, ab Stufe B |
 | Obergrenze | offen nach oben | ~8.000–12.000 €/Monat |
-| Engpass | Rohmarge | Zahl der Radonmessungen |
-| Zeit bis erstem Erlös | Wochen | plus ein Quartal Messvorlauf |
+| Engpass | Rohmarge | Lead-Quote der Feuchtethemen |
+| Zeit bis erstem Erlös | Wochen | Wochen über Strecke 1 und Gruppe C |
 | Zeit bis Ziel | 18–30 Monate | ähnlich, geringeres Kapitalrisiko |
 
 Beide erreichen 3.000 € netto nur, wenn die Annahmen halten. Die schwächsten
@@ -76,9 +76,9 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
    die Abdichtungsbahn, sie muss rund 38 % tragen.
 2. **Suchvolumen** — weiterhin **nicht gemessen**. Die Inhaltslandkarte beruht
    auf Plausibilität.
-3. **Jährliche Zahl der Radonmessungen in Österreich** — nicht öffentlich
-   beziffert. Sie ist der Engpass des Leadmodells, nicht die Zahl betroffener
-   Gebäude. Neu benannt in `phase3b-leadmodell.md`.
+3. **Lead-Quote der Feuchte- und Abdichtungsthemen** — mit 2 % angenommen,
+   ungeprüft. Sie hat die Zahl der Radonmessungen als Engpass des Leadmodells
+   abgelöst. Siehe `messwert-einordnung.md`.
 4. **Umsetzungsquote der Radonvorsorge** — wird nirgends erhoben. Sie ist die
    eigentliche Wette des Shopmodells, nicht der Baumarkt. Siehe
    `marktrisiko-neubau.md`.
@@ -94,7 +94,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `PARAMETER.md` | Festgelegte Vorgaben, Umrechnung netto → vor Steuer, Margenschwelle |
 | `README.md` | Ursprüngliche Denkgrundlage. Teilweise überholt, Grundrechnungen gültig |
 | `master-prompt.md` | Die ursprüngliche Auftragsfassung. Als Handlungsanweisung überholt |
-| `gate-register.md` | **Alle dreizehn Gates an einer Stelle.** Maßgeblich bei Widerspruch |
+| `gate-register.md` | **Alle vierzehn Gates an einer Stelle.** Maßgeblich bei Widerspruch |
 
 ### Analysen
 | Datei | Kernaussage |
@@ -114,6 +114,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `phase10-datengrundlage-gebietsabfrage.md` | Gebietsabfrage auf Gemeindeebene aus freiem Verordnungstext; Lizenzblocker gelöst |
 | `marktrisiko-neubau.md` | Neubau −40 % in zehn Jahren; Gate 12 kehrt die Beweislast um |
 | `partnerangebot-leadvermittlung.md` | Gate 13 Bezirke statt 104 Gemeinden; Exklusivität ist die DSGVO-Bauform |
+| `messwert-einordnung.md` | Messdauer sechs Monate; Gate 14 — den Motor liefert der Keller, nicht Radon |
 | `content-und-leadgen.md` | Displaywerbung und Affiliate scheitern an der Reichweite |
 | `skalierung-und-passivitaet.md` | Bestandseffekt; digitale Vorlagen fallen durch |
 | `segment-arbeitsplatzmessung.md` | Nebenstrecke, kein eigenes Segment |
@@ -140,6 +141,9 @@ Damit niemand einer überholten Aussage folgt:
 | FAGG-Rücktritt als Hauptrisiko des Shops | Entfällt im reinen B2B-Geschäft; dafür Auflage, Verbraucher wirksam auszuschließen |
 | „Unabhängig von meiner Person" als Zielbild | An eine messbare Marke gebunden: Beratungsanfragen je Bestellung ≤ 0,2 |
 | Sechs Adressaten für Anschreiben A | Zwölf — mit sechs wäre Gate 0 in 42 % der Fälle gar nicht entscheidbar |
+| Messdauer rund drei Monate | Sechs Monate nach Radonschutzverordnung — die tote Zeit verdoppelt sich |
+| Strecke 2 mit 0,5–1,5 % Ende-zu-Ende | 0,05–0,45 %; die Spanne war aus den eigenen Teilquoten nicht ableitbar |
+| Radon als Mengenquelle des Leadmodells | Den Motor liefern die Feuchtethemen; Radon liefert die Alleinstellung |
 | Margenschwelle 28 % im master-prompt | 32 %, seit die Zielgröße auf netto umgestellt wurde |
 | „Bei den Gates anhalten und warten" | Ersetzt durch die Freigaberegeln — Gates werden selbst entschieden |
 | Hauff-Technik als Lieferant gelistet | Gestrichen; Hauseinführungen sind nach Gate 5 kein Sortimentsbestandteil |

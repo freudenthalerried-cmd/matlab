@@ -5,6 +5,14 @@ die Messung zum „zentralen Akt des Geschäftsmodells" erklärt, aber nicht
 ausgearbeitet. Das wird hier nachgeholt — und das Ergebnis korrigiert eine Zahl
 aus derselben Phase nach oben.
 
+> **Zwei Zahlen hier sind überholt**, siehe
+> [`messwert-einordnung.md`](./messwert-einordnung.md): Die Langzeitmessung
+> dauert nach Radonschutzverordnung **sechs Monate**, nicht drei. Und die
+> Ende-zu-Ende-Quote der Strecke 2 liegt bei 0,05–0,45 %, nicht bei 0,5–1,5 % —
+> die Spanne war aus den eigenen Teilquoten nicht ableitbar. Nach Gate 14 trägt
+> Strecke 2 die Mengenplanung nicht mehr; an ihre Stelle treten Strecke 1 und
+> die Feuchtethemen der Gruppe C.
+
 ## Der rechtliche Rahmen
 
 Radonmessung ist eine ermächtigte Tätigkeit nach dem Strahlenschutzgesetz 2020.
