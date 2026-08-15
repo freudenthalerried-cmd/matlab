@@ -560,6 +560,18 @@ document.getElementById('kasse').addEventListener('submit', (e) => {
     'Aufbewahrung bis ' + aufbewahrungBis(jahr).hinweis,
   ]));
 
+  // Was der Zahlweg von diesem Warenkorb wegnimmt. Die Gebühr faellt auf brutto
+  // an, der Deckungsbeitrag entsteht nur auf dem Warenwert netto.
+  const zeilenZahlung = ['karte-stripe', 'eps', 'rechnungskauf'].map((id) => {
+    const w = wirkungAufBestellung(wk, id);
+    return ZAHLWEGE.find((z) => z.id === id).name + ': ' + EUR(w.gebuehr) +
+      ' = ' + (w.anteilAmDeckungsbeitrag * 100).toFixed(1) + ' % des Deckungsbeitrags';
+  });
+  ziel.append(kasten('k-warn', [
+    'Zahlungsgebühren auf diesen Warenkorb (Listenpreise, kein Angebot):',
+    ...zeilenZahlung.map((z) => '· ' + z),
+  ]));
+
   ziel.append(belegBox('Vorgangsakte — nur ergänzt, nie geändert', alsCsv(ablage)));
 
   for (const b of erzeugeBestellungen(wk, auftrag)) {

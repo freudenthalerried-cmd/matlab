@@ -24,10 +24,36 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Trockenlauf des Auftrags | fertig | 12 |
 | UID-Abfrage beim EU-System | fertig, ungeprüft am Dienst | 17 |
 | Ablage und Nummernkreis | fertig, ohne Speicherung | 16 |
+| Zahlwege und Gebühren | fertig | 15 |
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig | headless geprüft |
-| **Summe** | | **140, alle grün** |
+| **Summe** | | **155, alle grün** |
 
-## Was zuletzt dazukam: die Ablage
+## Was zuletzt dazukam: die Zahlwege
+
+`shop/src/zahlung.js` sollte nur die Anforderungen an den Zahlungsanbieter
+sammeln, die sich über die letzten Bausteine angehäuft hatten. Beim Sammeln kam
+heraus, dass die **Kosten nirgends stehen**: Zahlungsgebühren kommen in Phase 3,
+4 und 5 nicht vor. Ausführlich in
+[`zahlwege-und-gebuehren.md`](./zahlwege-und-gebuehren.md).
+
+Gerechnet auf 24.200 € Umsatz netto und 37 Bestellungen liegen sie zwischen
+**0 € (Vorkasse) und 871 € im Monat (B2B-Rechnungskauf)** — letzteres 16,2 %
+des Zielgewinns von 5.374 €. Phase 3 trägt jetzt einen Hinweis am Kopf.
+
+Der Prozentsatz trifft härter, als er aussieht, weil die Gebühr auf den
+Bruttobetrag fällt und der Deckungsbeitrag nur auf dem Warenwert netto
+entsteht: Aus 1,4 % Kartengebühr werden am Referenzgebäude **5,2 % des
+Deckungsbeitrags**.
+
+Die eigentliche Spannung liegt woanders. Handwerksbetriebe kaufen auf Rechnung,
+der Shop kann aber nicht in Vorleistung gehen — ein Zahlungsziel bände rund
+24.000 €, mehr als das gesamte Startbudget. Der Ausweg wäre ein
+B2B-Rechnungskauf über einen Anbieter, und genau der ist das Teuerste.
+**Entscheidung: gestuft** — EPS und Karte von Anfang an, Rechnungskauf erst,
+wenn die Abbruchquote an der Zahlungsauswahl zeigt, dass er gebraucht wird.
+Seine Kosten sind sicher, sein Nutzen ist es nicht.
+
+## Was davor dazukam: die Ablage
 
 `shop/src/ablage.js` gibt dem Vorgang eine Form. Ausführlich in
 [`ablage-und-nummernkreis.md`](./ablage-und-nummernkreis.md).
@@ -280,9 +306,8 @@ Nach Nutzen geordnet, alle ohne Freigabe und ohne Ausgabe machbar:
 1. **Gebietsabfrage** nach `phase10-datengrundlage-gebietsabfrage.md` — braucht
    die Gemeindeliste. RIS und der Geoserver sind aus dieser Umgebung weiterhin
    nicht erreichbar; zuletzt geprüft am 15. August.
-2. **Anforderungsliste an den Zahlungsanbieter** — aus dem Trockenlauf, der
-   Ablage und Gate 7 ergeben sich inzwischen konkrete Bedingungen: keine
-   Nachnahme, Rückmeldung des Zahlungseingangs maschinell abrufbar,
-   B2B-tauglich ohne Verbraucherpflichten, Reihengeschäft im Ausland
-   unproblematisch. Zusammengetragen wäre das die Vorlage für die Auswahl —
-   und sie kostet nichts, solange niemand etwas abschließt.
+2. **Gesamtkostenbild je Bestellung** — Wareneinkauf, Fracht und jetzt auch
+   Zahlungsgebühr sind einzeln gerechnet, aber nie zusammengeführt. Eine
+   Rechnung, die vom Bruttobetrag alles abzieht, was tatsächlich abgeht, würde
+   zeigen, was von den 32 % Rohmarge am Ende übrig bleibt. Braucht keine
+   Freigabe und keine Ausgabe.

@@ -7,6 +7,12 @@ Radonvorsorge im Neubau aus [`phase1-nischen.md`](./phase1-nischen.md).
 > nichts verkauft und nichts eingenommen. Alle Zahlen dieses Dokuments sind
 > Modellrechnung. Der Konfidenzgrad jeder Eingangsgröße ist unten ausgewiesen.
 
+> **Lücke, nachgetragen am 15. August:** Dieses Dokument enthält **keine
+> Zahlungsgebühren**. Sie liegen je nach Zahlweg zwischen 0 und 871 € im Monat,
+> also bei bis zu 16 % des Zielgewinns, und fehlen damit in jeder Rechnung
+> darunter. Aufgestellt in
+> [`zahlwege-und-gebuehren.md`](./zahlwege-und-gebuehren.md).
+
 > **Teilweise nachgeführt.** Die Annahmen zu Ø Warenkorb (450 €),
 > Bestellzahl (54/Monat) und Materialwert je Gebäude (400–1.500 €) sind durch
 > die Stückliste in

@@ -25,11 +25,12 @@ Gerüst vorhanden und meldet selbst, welche Pflichtangaben ihm fehlen.
 | Trockenlauf | zehn Schritte durchgezählt: was liefe von selbst, was nicht |
 | UID-Abfrage | drei Zustände; ein Dienstausfall ist keine ungültige UID |
 | Ablage | Nummernkreise, Storno statt Änderung, Aufbewahrungsfrist |
+| Zahlwege | Gebühren je Zahlweg, Wirkung auf Deckungsbeitrag und Monat |
 
 ## Benutzen
 
 ```
-npm test          # 140 Testfälle
+npm test          # 155 Testfälle
 npm run build     # erzeugt demo.html, eine einzelne Datei ohne Abhängigkeiten
 npm run import -- <lieferantId> <datei.csv> [--schreiben]
 ```
@@ -56,6 +57,7 @@ src/beleg.js            Angebot, Rechnung, § 11 UStG, Reihengeschäft
 src/auftragslauf.js     Trockenlauf über den ganzen Auftrag, Aufwand je Bestellung
 src/vies.js             UID beim EU-System abfragen, Nachweis, drei Zustände
 src/ablage.js           Vorgangsakte, Nummernkreise, Storno, § 132 BAO
+src/zahlung.js          Zahlwege, Gebühren, Anforderungen an den Anbieter
 src/format.js           EUR und Lückenmarkierung — einmal, siehe unten
 bin/import.mjs          Kommandozeile dazu, Probelauf als Voreinstellung
 beispiel/               Musterpreisliste — erfundene Preise, nicht schreibbar
@@ -162,6 +164,22 @@ Umsatzsteuer als innergemeinschaftlicher Erwerb, während die Ausgangsrechnung
 20 % trägt. `reihengeschaeftEinordnung()` erkennt das am Feld `land` des
 Lieferanten und schreibt es in die Kasse. Ausführlich in
 `docs/baustoff-shop/beleg-und-reihengeschaeft.md`.
+
+## Die Zahlwege
+
+Zahlungsgebühren kamen in der Wirtschaftlichkeitsrechnung nirgends vor. Auf
+24.200 € Umsatz netto und 37 Bestellungen gerechnet:
+
+```
+Vorkasse              0 €/Monat    0,0 % des Zielgewinns
+EPS                 271 €/Monat    5,0 %
+Karte 1,4 %         416 €/Monat    7,7 %
+PayPal              736 €/Monat   13,7 %
+B2B-Rechnungskauf   871 €/Monat   16,2 %
+```
+
+Die Gebühr fällt auf brutto an, der Deckungsbeitrag entsteht auf dem Warenwert
+netto — aus 1,4 % werden am Referenzgebäude **5,2 % des Deckungsbeitrags**.
 
 ## Die Ablage
 
