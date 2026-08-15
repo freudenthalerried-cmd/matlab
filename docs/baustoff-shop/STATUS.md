@@ -1,6 +1,6 @@
 # Status und Einstieg
 
-Stand: 2026-08-14. **Dieses Dokument zuerst lesen.** Einundzwanzig Arbeitsdateien
+Stand: 2026-08-14. **Dieses Dokument zuerst lesen.** Zweiundzwanzig Arbeitsdateien
 sind entstanden, mehrere davon korrigieren einander. Hier steht, was gilt.
 
 Veröffentlichter Bericht:
@@ -107,6 +107,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `phase8-rechtsform-steuer.md` | GmbH, sobald anderes Einkommen besteht |
 | `phase8-compliance.md` | Messung nur über anerkannte Stelle; FAGG-Fristfalle |
 | `phase9-meilensteine-und-abbruch.md` | Fünf Stufen mit Kostendeckel, Kennzahlen und vier harten Abbruchregeln |
+| `phase10-datengrundlage-gebietsabfrage.md` | Gebietsabfrage auf Gemeindeebene aus freiem Verordnungstext; Lizenzblocker gelöst |
 | `content-und-leadgen.md` | Displaywerbung und Affiliate scheitern an der Reichweite |
 | `skalierung-und-passivitaet.md` | Bestandseffekt; digitale Vorlagen fallen durch |
 | `segment-arbeitsplatzmessung.md` | Nebenstrecke, kein eigenes Segment |
@@ -135,6 +136,7 @@ Damit niemand einer überholten Aussage folgt:
 | Sechs Adressaten für Anschreiben A | Zwölf — mit sechs wäre Gate 0 in 42 % der Fälle gar nicht entscheidbar |
 | Hauff-Technik als Lieferant gelistet | Gestrichen; Hauseinführungen sind nach Gate 5 kein Sortimentsbestandteil |
 | Leadmodell braucht 1.270 Sessions | ~2.550 — der Weg der noch nicht Gemessenen war übersprungen |
+| Radonkarte als Lizenzrisiko für den Rechner | Die rechtlich entscheidende Liste ist Verordnungstext und damit frei |
 | Leadmodell braucht weniger Reichweite als der Shop | Falsch; es braucht mehr. Break-even- und Kapitalvorteil bleiben |
 | Messeinstieg erzeugt einen Kundendatensatz | Nein — die Messung ist kostenlos, also gibt es keine Transaktion |
 

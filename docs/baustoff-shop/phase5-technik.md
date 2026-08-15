@@ -115,8 +115,12 @@ Das billigste Paket ist hier nicht automatisch das richtige.
 
 - **Konkrete Hosting-Auswahl** — erst sinnvoll, wenn die Entscheidung steht und
   klar ist, ob ein Shop dazukommt.
-- **Datenbasis für die Gebietsabfrage** — der geplante Rechner braucht die
-  amtliche Radonkarte. Nutzungsrechte sind vor der Umsetzung zu klären.
+- ~~**Datenbasis für die Gebietsabfrage**~~ — geklärt in
+  [`phase10-datengrundlage-gebietsabfrage.md`](./phase10-datengrundlage-gebietsabfrage.md).
+  Die Rechtsaussage stützt sich auf Anlage 1 der Radonschutzverordnung, also auf
+  freien Verordnungstext; die amtliche Potenzialkarte ist nur nachrangig und
+  ihre Lizenz allein für diesen Teil noch zu bestätigen. Umsetzung als statische
+  Datei ohne Kartendienst.
 - **Rechnerentwicklung** — Aufwand je Rechner überschlägig ein bis drei Tage.
   Ob das eingekauft wird, ist eine Ausgabenentscheidung.
 
