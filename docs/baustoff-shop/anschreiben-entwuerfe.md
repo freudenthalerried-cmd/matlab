@@ -116,9 +116,17 @@ so in Gate 3 festgelegt.
 
 ## Entwurf B — Partnerbetriebe für die Leadvermittlung
 
-Adressaten sind Abdichtungsbetriebe, Baumeister und Sanierungsspezialisten,
-zunächst in den 104 Radonschutzgemeinden mit Schwerpunkt Oberösterreich,
-Niederösterreich und Tirol.
+Adressaten sind Abdichtungsbetriebe, Baumeister und Sanierungsspezialisten.
+Gebietseinheit ist nach Gate 13 in
+[`partnerangebot-leadvermittlung.md`](./partnerangebot-leadvermittlung.md) der
+**politische Bezirk**, nicht die Radonschutzgemeinde — Messwerte entstehen im
+Vorsorgegebiet, also nahezu österreichweit, und die Feuchte- und
+Abdichtungsthemen haben gar keinen Gebietsbezug. Die 104 Schutzgemeinden
+bestimmen nur die Ausbaufolge: Oberösterreich zuerst, dann Niederösterreich,
+Steiermark, Kärnten, Tirol.
+
+Für Stufe A genügen **drei bis fünf Betriebe**. Mehr zu gewinnen, bevor Anfragen
+fließen, erzeugt Enttäuschung in der Fläche statt Erfahrung im Kleinen.
 
 > **Betreff:** Anfragen zu Radonsanierung — Kooperation für Ihren Betrieb
 >
@@ -137,19 +145,30 @@ Niederösterreich und Tirol.
 >
 > 1. Führen Sie Radonsanierungen aus — Abdichtung, Bodenluftabsaugung,
 >    Lüftungstechnik?
-> 2. Welche Bezirke decken Sie ab?
-> 3. Wie viele zusätzliche Anfragen im Monat könnten Sie aufnehmen?
-> 4. Ab welchem Auftragswert lohnt sich eine Anfrage für Sie?
-> 5. Wie schnell melden Sie sich üblicherweise bei einem Interessenten zurück?
+> 2. Übernehmen Sie auch Feuchte- und Abdichtungsarbeiten ohne Radonbezug —
+>    Kellersanierung, aufsteigende Feuchte, Bauwerksabdichtung?
+> 3. Welche Bezirke decken Sie ab?
+> 4. Wie viele zusätzliche Anfragen im Monat könnten Sie aufnehmen?
+> 5. Ab welchem Auftragswert lohnt sich eine Anfrage für Sie?
+> 6. Wie schnell melden Sie sich üblicherweise bei einem Interessenten zurück?
+> 7. Wären Sie damit einverstanden, im Einwilligungstext des Anfrageformulars
+>    namentlich genannt zu werden? Ohne diese Nennung dürfen wir Ihnen keine
+>    Kontaktdaten übermitteln.
 >
 > Das Portal befindet sich im Aufbau. Ich spreche Betriebe bewusst vorab an,
 > damit die regionale Abdeckung steht, bevor die ersten Anfragen eingehen.
 >
 > Mit freundlichen Grüßen
 
-Frage 3 und 5 sind die eigentlichen Auswahlkriterien. Ein Betrieb, der auf eine
+Frage 4 und 6 sind die eigentlichen Auswahlkriterien. Ein Betrieb, der auf eine
 Anfrage erst nach drei Tagen reagiert, verbrennt sie — und mit ihr den
 Wert des Portals.
+
+**Frage 7 ist eine Ausschlussfrage.** Eine Einwilligung zur Datenweitergabe ist
+nur wirksam, wenn der Empfänger namentlich ausgewiesen ist; eine pauschale
+Einwilligung „für einen unserer Partnerbetriebe" trägt nicht. Wer der Nennung
+nicht zustimmt, kann nicht Partner werden — unabhängig davon, wie gut die
+übrigen Antworten ausfallen.
 
 ## Was vor dem Versand zu klären ist
 
