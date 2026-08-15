@@ -1,0 +1,54 @@
+{
+  "_datenstand": "PLATZHALTER — keine dieser Konditionen ist von einem Lieferanten bestätigt.",
+  "_hinweis": "Echte Werte entstehen erst aus den Antworten auf Anschreiben A, siehe docs/baustoff-shop/anschreiben-entwuerfe.md. Bis dahin dienen die Zahlen ausschliesslich dazu, die Rechenwege zu prüfen.",
+  "lieferanten": [
+    {
+      "id": "rohr-at",
+      "name": "Rohrhersteller Österreich",
+      "konditionenStand": "platzhalter",
+      "streckengeschaeft": true,
+      "haendlerrabattAufUvp": 0.30,
+      "mindestbestellwertNetto": 250,
+      "fracht": {
+        "modell": "pauschale",
+        "freiHausAbNetto": 1500,
+        "pauschaleNetto": 75,
+        "sperrgutZuschlagNetto": 25
+      },
+      "produktdaten": "csv",
+      "lieferzeitWerktage": 5
+    },
+    {
+      "id": "bahnen-de",
+      "name": "Abdichtungsbahnen-Hersteller",
+      "konditionenStand": "platzhalter",
+      "streckengeschaeft": true,
+      "haendlerrabattAufUvp": 0.42,
+      "mindestbestellwertNetto": 400,
+      "fracht": {
+        "modell": "pauschale",
+        "freiHausAbNetto": 1200,
+        "pauschaleNetto": 95,
+        "sperrgutZuschlagNetto": 40
+      },
+      "produktdaten": "csv",
+      "lieferzeitWerktage": 8
+    },
+    {
+      "id": "zubehoer-de",
+      "name": "Zubehör- und Dichtsysteme",
+      "konditionenStand": "platzhalter",
+      "streckengeschaeft": true,
+      "haendlerrabattAufUvp": 0.38,
+      "mindestbestellwertNetto": 150,
+      "fracht": {
+        "modell": "pauschale",
+        "freiHausAbNetto": 600,
+        "pauschaleNetto": 12,
+        "sperrgutZuschlagNetto": 0
+      },
+      "produktdaten": "katalog",
+      "lieferzeitWerktage": 4
+    }
+  ]
+}

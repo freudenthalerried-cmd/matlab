@@ -1,0 +1,94 @@
+/**
+ * Bestellübergabe an die Lieferanten.
+ *
+ * Nach Gate 6 ist dies der Bruchpunkt des ganzen Modells: Ohne automatische
+ * Übergabe ist der Shop nach einem Tag Abwesenheit ein Betrieb, der Geld
+ * genommen und nichts bestellt hat. Deshalb erzeugt diese Datei aus einem
+ * bezahlten Warenkorb ohne weitere Eingabe je Lieferant eine fertige
+ * Bestellung — als Text zum Versenden und als CSV für Schnittstellen.
+ */
+
+const EUR = (n) => n.toFixed(2).replace('.', ',') + ' €';
+
+/** Erzeugt je Teillieferung eine Bestellung an den Lieferanten. */
+export function erzeugeBestellungen(warenkorb, auftrag) {
+  return warenkorb.teillieferungen.map((teil, index) => {
+    const nummer = `${auftrag.bestellnummer}-${String(index + 1).padStart(2, '0')}`;
+    return {
+      nummer,
+      lieferantId: teil.lieferantId,
+      lieferantName: teil.lieferantName,
+      betreff: `Bestellung ${nummer} — Streckengeschäft, Direktversand an Endkunden`,
+      text: bestelltext(nummer, teil, auftrag),
+      csv: bestellCsv(nummer, teil, auftrag),
+      warenwertNetto: teil.warenwertNetto,
+      einkaufNetto: teil.einkaufNetto,
+    };
+  });
+}
+
+function bestelltext(nummer, teil, auftrag) {
+  const zeilen = teil.positionen.map(
+    (p) => `  ${String(p.menge).padStart(3)} × ${p.sku.padEnd(12)} ${p.bezeichnung}`,
+  );
+
+  return [
+    `Bestellung ${nummer}`,
+    ``,
+    `Sehr geehrte Damen und Herren,`,
+    ``,
+    `hiermit bestelle ich im Streckengeschäft zur Direktlieferung an den unten`,
+    `genannten Endkunden:`,
+    ``,
+    ...zeilen,
+    ``,
+    `Lieferadresse (Baustelle):`,
+    `  ${auftrag.lieferadresse.name}`,
+    `  ${auftrag.lieferadresse.strasse}`,
+    `  ${auftrag.lieferadresse.plz} ${auftrag.lieferadresse.ort}`,
+    `  Ansprechpartner vor Ort: ${auftrag.lieferadresse.telefon}`,
+    ``,
+    `Bitte neutral verpackt und ohne Preisangaben liefern.`,
+    `Rechnung an den Auftraggeber laut hinterlegten Stammdaten.`,
+    ``,
+    `Warenwert netto laut meiner Kalkulation: ${EUR(teil.einkaufNetto)}`,
+    ``,
+    `Mit freundlichen Grüßen`,
+    auftrag.absender.firma,
+  ].join('\n');
+}
+
+function bestellCsv(nummer, teil, auftrag) {
+  const kopf = 'bestellnummer;sku;menge;bezeichnung;liefername;lieferstrasse;lieferplz;lieferort';
+  const zeilen = teil.positionen.map((p) =>
+    [
+      nummer,
+      p.sku,
+      p.menge,
+      p.bezeichnung.replaceAll(';', ','),
+      auftrag.lieferadresse.name.replaceAll(';', ','),
+      auftrag.lieferadresse.strasse.replaceAll(';', ','),
+      auftrag.lieferadresse.plz,
+      auftrag.lieferadresse.ort.replaceAll(';', ','),
+    ].join(';'),
+  );
+  return [kopf, ...zeilen].join('\n');
+}
+
+/**
+ * Prüft, ob eine Bestellung ohne menschliches Zutun ausgelöst werden darf.
+ * Alles, was hier false liefert, muss liegen bleiben statt falsch zu laufen.
+ */
+export function darfAutomatischAusgeloestWerden(warenkorb, auftrag) {
+  const gruende = [];
+
+  if (!warenkorb.bestellbar) gruende.push('Mindestbestellwert nicht erreicht');
+  if (!auftrag.zahlungEingegangen) gruende.push('Zahlung nicht eingegangen');
+  if (!auftrag.kundeIstUnternehmer) gruende.push('Kunde ist nicht als Unternehmer bestätigt (Gate 7)');
+  if (!auftrag.uid) gruende.push('UID fehlt');
+  if (warenkorb.teillieferungen.some((t) => t.positionen.some((p) => p.ekIstPlatzhalter))) {
+    gruende.push('Katalog enthält Platzhalterpreise — keine echten Konditionen');
+  }
+
+  return { erlaubt: gruende.length === 0, gruende };
+}

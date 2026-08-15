@@ -1,0 +1,275 @@
+<title>Radonvorsorge Fachhandel</title>
+<style>
+  :root {
+    --ground:#F1F3F0; --surface:#FFFFFF; --surface-2:#E9ECE7;
+    --ink:#171A18; --ink-2:#3E4642; --muted:#6A736E;
+    --line:#D8DCD5; --line-strong:#BEC4BB;
+    --accent:#8A5514; --accent-soft:#F0E3D0;
+    --warn:#8A3324; --ok:#3F5D45;
+    --serif:Georgia,"Iowan Old Style","Palatino Linotype",ui-serif,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --ground:#131614; --surface:#1A1E1B; --surface-2:#222724;
+    --ink:#E9ECE7; --ink-2:#C3C9C4; --muted:#939B95;
+    --line:#2B312D; --line-strong:#3C443E;
+    --accent:#D9A055; --accent-soft:#33291B;
+    --warn:#D98A72; --ok:#8FB398;
+  }}
+  :root[data-theme="dark"]{
+    --ground:#131614; --surface:#1A1E1B; --surface-2:#222724;
+    --ink:#E9ECE7; --ink-2:#C3C9C4; --muted:#939B95;
+    --line:#2B312D; --line-strong:#3C443E;
+    --accent:#D9A055; --accent-soft:#33291B;
+    --warn:#D98A72; --ok:#8FB398;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:74rem;margin:0 auto;padding:clamp(1.5rem,4vw,3rem) clamp(1rem,3vw,2rem) 4rem;display:flex;flex-direction:column;gap:1.75rem}
+  h1{font-family:var(--serif);font-size:clamp(1.7rem,4vw,2.4rem);line-height:1.1;margin:0;letter-spacing:-.015em}
+  h2{font-family:var(--serif);font-size:1.2rem;margin:0;letter-spacing:-.01em}
+  p{margin:0}
+  .eyebrow{font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  header{display:flex;flex-direction:column;gap:.6rem;border-bottom:2px solid var(--line-strong);padding-bottom:1.25rem}
+  .banner{background:var(--accent-soft);border-left:3px solid var(--accent);padding:.85rem 1.1rem;font-size:.93rem}
+  .banner strong{font-weight:650}
+  .layout{display:grid;grid-template-columns:1fr;gap:1.75rem}
+  @media (min-width:62rem){.layout{grid-template-columns:1fr 22rem;align-items:start}}
+  .katalog{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line)}
+  .gruppe{background:var(--surface-2);padding:.45rem 1rem;font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .artikel{background:var(--surface);padding:.9rem 1rem;display:grid;grid-template-columns:1fr auto;gap:.3rem 1rem;align-items:center}
+  .a-name{font-weight:600;font-size:.97rem}
+  .a-meta{font-family:var(--mono);font-size:.78rem;color:var(--muted);grid-column:1}
+  .a-preis{grid-row:1/3;text-align:right;display:flex;flex-direction:column;gap:.3rem;align-items:flex-end}
+  .p-netto{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:1.05rem;font-weight:600}
+  .p-brutto{font-family:var(--mono);font-size:.76rem;color:var(--muted);font-variant-numeric:tabular-nums}
+  .marge{font-family:var(--mono);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;padding:.1rem .35rem;border:1px solid currentColor}
+  .m-ok{color:var(--ok)} .m-warn{color:var(--warn)}
+  button{font:inherit;cursor:pointer;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);padding:.35rem .7rem;border-radius:2px}
+  button:hover{border-color:var(--accent);color:var(--accent)}
+  button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .add{white-space:nowrap}
+  aside{background:var(--surface);border:1px solid var(--line);position:sticky;top:1rem;display:flex;flex-direction:column}
+  .aside-h{padding:.8rem 1rem;border-bottom:1px solid var(--line);background:var(--surface-2);font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .aside-b{padding:1rem;display:flex;flex-direction:column;gap:.9rem}
+  .teil{border:1px solid var(--line);padding:.7rem .8rem;display:flex;flex-direction:column;gap:.4rem}
+  .teil-h{font-size:.82rem;font-weight:650}
+  .zeile{display:flex;justify-content:space-between;gap:.75rem;font-size:.82rem;font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .zeile span:first-child{font-family:var(--sans)}
+  .sum{border-top:2px solid var(--ink);padding-top:.6rem;display:flex;flex-direction:column;gap:.3rem}
+  .sum .zeile{font-size:.9rem}
+  .sum .gross{font-weight:700;font-size:1.05rem}
+  .hinweis{font-size:.8rem;color:var(--warn);border:1px solid currentColor;padding:.5rem .6rem}
+  .leer{color:var(--muted);font-size:.88rem}
+  .qty{width:3.2rem;font:inherit;font-family:var(--mono);padding:.2rem .3rem;border:1px solid var(--line-strong);background:var(--ground);color:var(--ink);text-align:right}
+  footer{border-top:1px solid var(--line);padding-top:1rem;color:var(--muted);font-size:.82rem;display:flex;flex-direction:column;gap:.4rem}
+  code{font-family:var(--mono);font-size:.85em}
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Funktionsmuster · Streckengeschäft Österreich</p>
+    <h1>Radonvorsorge Fachhandel</h1>
+    <p style="color:var(--ink-2)">Katalog, Preis- und Frachtrechnung, Warenkorb und Bestellaufteilung — lauffähig, mit demselben Rechenkern, den die Testfälle prüfen.</p>
+  </header>
+
+  <div class="banner">
+    <strong>Alle Preise sind Platzhalter.</strong> Kein Lieferant hat Konditionen bestätigt.
+    Die Einkaufspreise sind aus öffentlichen Listenpreisniveaus mal einem angenommenen
+    Händlerrabatt gerechnet. Der Shop nimmt keine Bestellungen an und löst nichts aus.
+  </div>
+
+  <div class="layout">
+    <section>
+      <div class="katalog" id="katalog"></div>
+    </section>
+
+    <aside>
+      <div class="aside-h">Warenkorb — Nettopreise für Unternehmer</div>
+      <div class="aside-b" id="korb"></div>
+    </aside>
+  </div>
+
+  <footer>
+    <p>Im Streckengeschäft liefert jeder Hersteller getrennt. Was der Kunde als eine
+      Bestellung aufgibt, wird betrieblich in eine Bestellung <em>je Lieferant</em> zerlegt —
+      mit eigener Fracht, eigenem Mindestbestellwert und eigener Lieferzeit. Genau das zeigt
+      der Warenkorb.</p>
+    <p>Quelltext und Testfälle: <code>shop/</code> im Projektverzeichnis. Rechtstexte,
+      Zahlungsanbieter und Impressum fehlen bewusst — sie brauchen eine reale Firma.</p>
+  </footer>
+</div>
+
+<script type="module">
+/*__KERN__*/
+
+const daten = /*__DATEN__*/;
+const ZIELMARGE = 0.35;
+const katalog = ladeKatalog(daten, ZIELMARGE);
+const korb = new Map();
+
+const eur = (n) => n.toLocaleString('de-AT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+const pct = (n) => (n * 100).toLocaleString('de-AT', { maximumFractionDigits: 1 }) + ' %';
+
+function zeichneKatalog() {
+  const el = document.getElementById('katalog');
+  el.textContent = '';
+  let letzteGruppe = null;
+
+  for (const a of katalog.artikel) {
+    if (a.gruppe !== letzteGruppe) {
+      letzteGruppe = a.gruppe;
+      const g = document.createElement('div');
+      g.className = 'gruppe';
+      g.textContent = a.gruppe;
+      el.append(g);
+    }
+
+    const row = document.createElement('div');
+    row.className = 'artikel';
+
+    const name = document.createElement('div');
+    name.className = 'a-name';
+    name.textContent = a.bezeichnung;
+
+    const meta = document.createElement('div');
+    meta.className = 'a-meta';
+    meta.textContent = a.sku + ' · ' + a.einheit + ' ' + a.menge + ' · ' + a.gewichtKg + ' kg' + (a.sperrgut ? ' · Sperrgut' : '');
+
+    const preis = document.createElement('div');
+    preis.className = 'a-preis';
+
+    const netto = document.createElement('div');
+    netto.className = 'p-netto';
+    netto.textContent = eur(a.vkNetto);
+
+    const brutto = document.createElement('div');
+    brutto.className = 'p-brutto';
+    brutto.textContent = 'inkl. USt ' + eur(a.vkBrutto);
+
+    const marge = document.createElement('span');
+    marge.className = 'marge ' + (a.margeErreicht ? 'm-ok' : 'm-warn');
+    marge.textContent = 'Marge ' + pct(a.rohmarge);
+    marge.title = a.margeErreicht ? 'trägt die Untergrenze von 32 %' : 'unter der Untergrenze von 32 % — Gate 1';
+
+    const btn = document.createElement('button');
+    btn.className = 'add';
+    btn.textContent = 'In den Warenkorb';
+    btn.addEventListener('click', () => {
+      korb.set(a.sku, (korb.get(a.sku) ?? 0) + 1);
+      zeichneKorb();
+    });
+
+    preis.append(netto, brutto, marge, btn);
+    row.append(name, preis, meta);
+    el.append(row);
+  }
+}
+
+function zeichneKorb() {
+  const el = document.getElementById('korb');
+  el.textContent = '';
+
+  if (korb.size === 0) {
+    const p = document.createElement('p');
+    p.className = 'leer';
+    p.textContent = 'Noch nichts ausgewählt. Die Frachtrechnung wird sichtbar, sobald Artikel von mehreren Lieferanten im Korb liegen.';
+    el.append(p);
+    return;
+  }
+
+  const zeilen = [...korb].map(([sku, menge]) => ({ sku, menge }));
+  const wk = berechneWarenkorb(zeilen, katalog);
+
+  for (const teil of wk.teillieferungen) {
+    const box = document.createElement('div');
+    box.className = 'teil';
+
+    const h = document.createElement('div');
+    h.className = 'teil-h';
+    h.textContent = teil.lieferantName + ' · ' + teil.lieferzeitWerktage + ' Werktage';
+    box.append(h);
+
+    for (const p of teil.positionen) {
+      const z = document.createElement('div');
+      z.className = 'zeile';
+      const links = document.createElement('span');
+      const feld = document.createElement('input');
+      feld.type = 'number';
+      feld.min = '1';
+      feld.step = '1';
+      feld.value = String(p.menge);
+      feld.className = 'qty';
+      feld.setAttribute('aria-label', 'Menge ' + p.bezeichnung);
+      feld.addEventListener('change', () => {
+        const n = Math.max(0, Math.floor(Number(feld.value) || 0));
+        if (n === 0) korb.delete(p.sku); else korb.set(p.sku, n);
+        zeichneKorb();
+      });
+      links.append(feld, document.createTextNode(' ' + p.bezeichnung));
+      const rechts = document.createElement('span');
+      rechts.textContent = eur(p.zeilensummeNetto);
+      z.append(links, rechts);
+      box.append(z);
+    }
+
+    const f = document.createElement('div');
+    f.className = 'zeile';
+    f.innerHTML = '';
+    const fl = document.createElement('span');
+    fl.textContent = 'Fracht — ' + teil.frachtGrund;
+    const fr = document.createElement('span');
+    fr.textContent = eur(teil.frachtNetto);
+    f.append(fl, fr);
+    box.append(f);
+
+    if (!teil.mindestbestellwert.erfuellt) {
+      const w = document.createElement('div');
+      w.className = 'hinweis';
+      w.textContent = 'Mindestbestellwert ' + eur(teil.mindestbestellwert.grenze) + ' — es fehlen ' + eur(teil.mindestbestellwert.fehlbetragNetto) + '.';
+      box.append(w);
+    }
+
+    el.append(box);
+  }
+
+  const sum = document.createElement('div');
+  sum.className = 'sum';
+  const zeile = (label, wert, klasse) => {
+    const z = document.createElement('div');
+    z.className = 'zeile' + (klasse ? ' ' + klasse : '');
+    const a = document.createElement('span');
+    a.textContent = label;
+    const b = document.createElement('span');
+    b.textContent = wert;
+    z.append(a, b);
+    return z;
+  };
+
+  sum.append(zeile('Warenwert netto', eur(wk.warenwertNetto)));
+  sum.append(zeile('Fracht netto', eur(wk.frachtNetto)));
+  sum.append(zeile('Summe netto', eur(wk.summeNetto)));
+  sum.append(zeile('Umsatzsteuer 20 %', eur(wk.ust)));
+  sum.append(zeile('Gesamt brutto', eur(wk.summeBrutto), 'gross'));
+  el.append(sum);
+
+  const kennz = document.createElement('div');
+  kennz.className = 'sum';
+  kennz.style.borderTopStyle = 'dotted';
+  kennz.append(zeile('Deckungsbeitrag', eur(wk.deckungsbeitragNetto)));
+  kennz.append(zeile('Mischmarge', pct(wk.mischmarge) + (wk.mischmargeErreicht ? '' : ' — unter 32 %')));
+  kennz.append(zeile('Frachtanteil am Warenwert', pct(wk.frachtanteilAmWarenwert)));
+  el.append(kennz);
+
+  for (const h of wk.hinweise) {
+    const w = document.createElement('div');
+    w.className = 'hinweis';
+    w.textContent = h;
+    el.append(w);
+  }
+}
+
+zeichneKatalog();
+zeichneKorb();
+</script>

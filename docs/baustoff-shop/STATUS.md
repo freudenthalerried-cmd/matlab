@@ -10,6 +10,10 @@ Auf Stand 15. August 2026 gebracht: sechzehn Gates, die vier Befunde der
 letzten Runde, zwei gleichrangige Freigaben. Quelldatei im Repo unter
 `bericht-radon.html`.
 
+Lauffähiges Shop-Funktionsmuster:
+[claude.ai/code/artifact/c40fd35f…](https://claude.ai/code/artifact/c40fd35f-56e1-4821-a3b1-a1a885102ec8) —
+Quelltext und 22 Testfälle unter `shop/`. Alle Preise sind Platzhalter.
+
 ## Wo das Projekt steht
 
 **Nichts ist gegründet, verkauft oder eingenommen.** Es gibt keinen Umsatz und
