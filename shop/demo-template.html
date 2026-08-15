@@ -531,6 +531,37 @@ document.getElementById('kasse').addEventListener('submit', (e) => {
   ziel.append(belegBox('Angebot an den Kunden — Entwurf', angebot.text));
   ziel.append(belegBox('Rechnung an den Kunden — Entwurf', rechnung.text));
 
+  // Ablage: was im Echtbetrieb aktenkundig würde. Die Rechnungsnummer entsteht
+  // erst mit der Ausstellung — eine unvollständige Rechnung verbraucht keine.
+  const jahr = new Date().getFullYear();
+  const ablage = neueAblage();
+  const vorgang = 'V-MUSTER-0001';
+
+  haltefest(ablage, { art: 'uidabfrage', zeitpunkt: heute, vorgang,
+                      text: belegzeile(uidAuswertung, eingabe.uid) });
+  haltefest(ablage, { art: 'angebot', nummer: naechsteNummer(ablage, 'angebot', jahr),
+                      zeitpunkt: heute, vorgang,
+                      betragNetto: wk.summeNetto, betragBrutto: wk.summeBrutto, text: 'Angebot an den Kunden' });
+  for (const b of erzeugeBestellungen(wk, auftrag)) {
+    haltefest(ablage, { art: 'lieferantenbestellung',
+                        nummer: naechsteNummer(ablage, 'lieferantenbestellung', jahr),
+                        zeitpunkt: heute, vorgang, betragNetto: b.einkaufNetto,
+                        text: 'Entwurf an ' + b.lieferantName });
+  }
+  const ausstellung = stelleRechnungAus(ablage, rechnung, { zeitpunkt: heute, jahr, vorgang });
+
+  const kreis = pruefeNummernkreis(ablage, 'rechnung', jahr);
+  ziel.append(kasten('k-sperre', [
+    ausstellung.ausgestellt
+      ? 'Rechnung ausgestellt unter ' + ausstellung.nummer
+      : 'Keine Rechnungsnummer vergeben. ' + ausstellung.grund,
+    'Nummernkreis Rechnungen ' + jahr + ': ' + kreis.anzahl + ' vergeben, ' +
+      (kreis.lueckenlos ? 'lückenlos' : 'Lücken bei ' + kreis.fehlend.join(', ')),
+    'Aufbewahrung bis ' + aufbewahrungBis(jahr).hinweis,
+  ]));
+
+  ziel.append(belegBox('Vorgangsakte — nur ergänzt, nie geändert', alsCsv(ablage)));
+
   for (const b of erzeugeBestellungen(wk, auftrag)) {
     ziel.append(belegBox('Entwurf an ' + b.lieferantName + ' — ' + b.nummer, b.text));
   }

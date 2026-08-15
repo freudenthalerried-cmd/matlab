@@ -117,7 +117,7 @@ export const AGB_GLIEDERUNG = [
   { nr: 4, titel: 'Lieferung im Streckengeschäft', hinweis: 'Direktversand durch den Hersteller; Teillieferungen je Lieferant sind der Regelfall.' },
   { nr: 5, titel: 'Fracht, Sperrgut und Baustellenanlieferung', hinweis: 'Abladen, Zufahrt und Anwesenheit sind Sache des Bestellers.' },
   { nr: 6, titel: 'Gefahrübergang und Transportschäden', hinweis: 'Untersuchungs- und Rügepflicht nach § 377 UGB — im B2B eine echte Obliegenheit.' },
-  { nr: 7, titel: 'Zahlung, Verzug, Eigentumsvorbehalt', hinweis: null },
+  { nr: 7, titel: 'Zahlung, Verzug, Eigentumsvorbehalt', hinweis: 'Keine Nachnahme und keine Barzahlung auf der Baustelle — sonst entsteht ein Barumsatz und damit Registrierkassenpflicht.' },
   { nr: 8, titel: 'Gewährleistung und Haftung', hinweis: 'Im B2B abdingbar, aber nicht grenzenlos.' },
   { nr: 9, titel: 'Rücknahme angebrochener Gebinde und Rollenware', hinweis: 'Ausschluss empfehlenswert; Rollenware ist nicht teilbar.' },
   { nr: 10, titel: 'Gerichtsstand und anwendbares Recht', hinweis: null },

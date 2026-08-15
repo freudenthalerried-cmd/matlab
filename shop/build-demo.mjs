@@ -33,6 +33,7 @@ const kern = [
   entkleide(lies('./src/beleg.js')),
   entkleide(lies('./src/auftragslauf.js')),
   entkleide(lies('./src/vies.js')),
+  entkleide(lies('./src/ablage.js')),
 ].join('\n');
 
 /**

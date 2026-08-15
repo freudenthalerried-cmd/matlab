@@ -24,11 +24,12 @@ Gerüst vorhanden und meldet selbst, welche Pflichtangaben ihm fehlen.
 | Angebot und Rechnung | § 11 UStG mit seinen drei Betragsschwellen, Reihengeschäft erkannt |
 | Trockenlauf | zehn Schritte durchgezählt: was liefe von selbst, was nicht |
 | UID-Abfrage | drei Zustände; ein Dienstausfall ist keine ungültige UID |
+| Ablage | Nummernkreise, Storno statt Änderung, Aufbewahrungsfrist |
 
 ## Benutzen
 
 ```
-npm test          # 123 Testfälle
+npm test          # 140 Testfälle
 npm run build     # erzeugt demo.html, eine einzelne Datei ohne Abhängigkeiten
 npm run import -- <lieferantId> <datei.csv> [--schreiben]
 ```
@@ -54,6 +55,7 @@ src/rechtstexte.js      Pflichtangaben prüfen, Impressum bauen, AGB-Gliederung
 src/beleg.js            Angebot, Rechnung, § 11 UStG, Reihengeschäft
 src/auftragslauf.js     Trockenlauf über den ganzen Auftrag, Aufwand je Bestellung
 src/vies.js             UID beim EU-System abfragen, Nachweis, drei Zustände
+src/ablage.js           Vorgangsakte, Nummernkreise, Storno, § 132 BAO
 src/format.js           EUR und Lückenmarkierung — einmal, siehe unten
 bin/import.mjs          Kommandozeile dazu, Probelauf als Voreinstellung
 beispiel/               Musterpreisliste — erfundene Preise, nicht schreibbar
@@ -160,6 +162,23 @@ Umsatzsteuer als innergemeinschaftlicher Erwerb, während die Ausgangsrechnung
 20 % trägt. `reihengeschaeftEinordnung()` erkennt das am Feld `land` des
 Lieferanten und schreibt es in die Kasse. Ausführlich in
 `docs/baustoff-shop/beleg-und-reihengeschaeft.md`.
+
+## Die Ablage
+
+Die Rechnungsnummer entsteht **erst bei der Ausstellung**. Wer sie schon im
+Warenkorb zieht, verbrennt für jeden abgebrochenen Kauf eine — und erklärt die
+Lücke später dem Prüfer:
+
+```
+Keine Rechnungsnummer vergeben. Pflichtangaben fehlen: … — keine Nummer vergeben
+Nummernkreis Rechnungen 2026: 0 vergeben, lückenlos
+```
+
+Abgelegte Einträge sind eingefroren; ein Storno ist eine neue Gutschrift, keine
+Änderung an der Rechnung (§ 131 BAO). Aufbewahrung sieben Jahre nach § 132 BAO.
+
+**Nicht enthalten: die Speicherung.** Die Ablage lebt im Arbeitsspeicher.
+Gebaut ist die Form des Vorgangs, nicht seine Aufbewahrung.
 
 ## Die UID-Abfrage
 

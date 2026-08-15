@@ -86,6 +86,14 @@ test('Die AGB-Gliederung enthält keine Widerrufsbelehrung', () => {
   assert.ok(AGB_GLIEDERUNG.some((a) => /Transportschäden/.test(a.titel)));
 });
 
+test('Der Zahlungspunkt schließt Nachnahme und Barzahlung aus', () => {
+  // Kartenzahlung im Web ist kein Barumsatz, Nachnahme schon. Ohne diesen
+  // Ausschluss entstünde Registrierkassenpflicht — siehe ablage-und-nummernkreis.md.
+  const zahlung = AGB_GLIEDERUNG.find((a) => a.nr === 7);
+  assert.match(zahlung.hinweis, /Nachnahme/);
+  assert.match(zahlung.hinweis, /Registrierkassenpflicht/);
+});
+
 test('Die Gliederung ist lückenlos durchnummeriert', () => {
   AGB_GLIEDERUNG.forEach((a, i) => assert.equal(a.nr, i + 1));
 });

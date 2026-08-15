@@ -23,10 +23,34 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Angebot und Rechnung an den Kunden | fertig | 15 |
 | Trockenlauf des Auftrags | fertig | 12 |
 | UID-Abfrage beim EU-System | fertig, ungeprüft am Dienst | 17 |
+| Ablage und Nummernkreis | fertig, ohne Speicherung | 16 |
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig | headless geprüft |
-| **Summe** | | **123, alle grün** |
+| **Summe** | | **140, alle grün** |
 
-## Was zuletzt dazukam: die UID-Abfrage
+## Was zuletzt dazukam: die Ablage
+
+`shop/src/ablage.js` gibt dem Vorgang eine Form. Ausführlich in
+[`ablage-und-nummernkreis.md`](./ablage-und-nummernkreis.md).
+
+Zwei Entwurfsentscheidungen tragen sie. **Die Rechnungsnummer entsteht erst bei
+der Ausstellung**, nicht im Warenkorb — sonst verbrennt jeder abgebrochene Kauf
+eine Nummer, und die Lücke ist später zu erklären. Und die Ablage wird **nur
+ergänzt, nie geändert**: § 131 BAO verlangt, dass der ursprüngliche Inhalt
+feststellbar bleibt, also ist ein Storno eine neue Gutschrift und keine
+Änderung an der Rechnung.
+
+Dabei ist ein Befund angefallen, der den Zahlungsweg betrifft: **Nachnahme
+würde eine Registrierkasse auslösen.** Karten- und Bankomatzahlungen zählen als
+Barumsatz, wenn sie vor Ort erfolgen; im Web-Checkout nicht. Bei 650 € Warenkorb
+reichen zwölf Nachnahmesendungen im Jahr, um die 7.500-€-Grenze zu reißen.
+Nachnahme und Barzahlung sind deshalb ausgeschlossen — als Hinweis in Punkt 7
+der AGB-Gliederung, mit Testfall.
+
+Was die Ablage **nicht** ist: eine Speicherung. Sie lebt im Arbeitsspeicher.
+Gebaut ist die Form des Vorgangs, nicht seine Aufbewahrung; dafür braucht es
+ein Hosting, und das ist freigabepflichtig.
+
+## Was davor dazukam: die UID-Abfrage
 
 `shop/src/vies.js` schließt den Engpass, den der Trockenlauf als einzigen ohne
 Freigabe lösbaren benannt hat. Ausführlich in
@@ -256,9 +280,9 @@ Nach Nutzen geordnet, alle ohne Freigabe und ohne Ausgabe machbar:
 1. **Gebietsabfrage** nach `phase10-datengrundlage-gebietsabfrage.md` — braucht
    die Gemeindeliste. RIS und der Geoserver sind aus dieser Umgebung weiterhin
    nicht erreichbar; zuletzt geprüft am 15. August.
-2. **Ablage der Vorgänge** — jede UID-Abfrage erzeugt eine Belegzeile, jede
-   Bestellung einen Entwurf, jede Rechnung eine Nummer. Bisher entsteht all das
-   und verschwindet wieder. Eine schlichte, dateibasierte Ablage mit
-   fortlaufender Nummernvergabe würde daraus einen nachvollziehbaren Vorgang
-   machen — und die fortlaufende Rechnungsnummer ist ohnehin Pflicht nach
-   § 11 UStG. Braucht keine Freigabe und keine Ausgabe.
+2. **Anforderungsliste an den Zahlungsanbieter** — aus dem Trockenlauf, der
+   Ablage und Gate 7 ergeben sich inzwischen konkrete Bedingungen: keine
+   Nachnahme, Rückmeldung des Zahlungseingangs maschinell abrufbar,
+   B2B-tauglich ohne Verbraucherpflichten, Reihengeschäft im Ausland
+   unproblematisch. Zusammengetragen wäre das die Vorlage für die Auswahl —
+   und sie kostet nichts, solange niemand etwas abschließt.
