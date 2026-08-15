@@ -1,6 +1,6 @@
 # Status und Einstieg
 
-Stand: 2026-08-15. **Dieses Dokument zuerst lesen.** Achtundzwanzig Arbeitsdateien
+Stand: 2026-08-15. **Dieses Dokument zuerst lesen.** Neunundzwanzig Arbeitsdateien
 sind entstanden, mehrere davon korrigieren einander. Hier steht, was gilt.
 
 Veröffentlichter Bericht:
@@ -63,11 +63,13 @@ kosten sie unter 200 €.
 | Nächster Schritt | Braucht | Entscheidet | Vorbereitet in |
 |---|---|---|---|
 | Rohmarge belegen (Stufe 0) | Freigabe für E-Mails an zwölf Hersteller | den **Shop** — Gate 1, 2, 6 | `anschreiben-entwuerfe.md` |
-| Suchvolumina prüfen (Stufe 1) | Werkzeug für 100–200 €/Monat | das **Leadmodell** — Gate 15 | `pruefung-gruppe-c.md` |
+| Suchvolumina prüfen (Stufe 1) | Werkzeug für 100–200 €/Monat | **beide Modelle** — Gate 15 | `entscheidungsmatrix.md` |
 | Rechtsform, Shop, Inhalte | erst ab Stufe 2, nach den beiden obigen | — | `phase5-technik.md`, `phase8-*` |
 
-Seit Gate 15 sind beide Freigaben **gleichrangig**. Fällt eine Prüfung aus,
-bleibt ein Modell übrig; fallen beide aus, keines.
+Beide Freigaben sind gleichrangig, und sie sollten **zugleich** laufen. Muss
+eine zuerst, dann das Keyword-Werkzeug: Es entscheidet über beide Modelle,
+während die Herstelleranfragen nur den Shop betreffen. Was welcher Ausgang
+bedeutet, steht in [`entscheidungsmatrix.md`](./entscheidungsmatrix.md).
 
 Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 **2.700 €**, nicht bei den früher genannten 8.000–12.000 €.
@@ -98,7 +100,8 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `PARAMETER.md` | Festgelegte Vorgaben, Umrechnung netto → vor Steuer, Margenschwelle |
 | `README.md` | Ursprüngliche Denkgrundlage. Teilweise überholt, Grundrechnungen gültig |
 | `master-prompt.md` | Die ursprüngliche Auftragsfassung. Als Handlungsanweisung überholt |
-| `gate-register.md` | **Alle sechzehn Gates an einer Stelle.** Maßgeblich bei Widerspruch |
+| `gate-register.md` | **Alle siebzehn Gates an einer Stelle.** Maßgeblich bei Widerspruch |
+| `entscheidungsmatrix.md` | **Wie die zwei ausstehenden Prüfungen zu lesen sind.** Vier Ausgänge, vorab festgelegt |
 
 ### Analysen
 | Datei | Kernaussage |
@@ -152,7 +155,8 @@ Damit niemand einer überholten Aussage folgt:
 | Radon als Mengenquelle des Leadmodells | Den Motor liefern die Feuchtethemen; Radon liefert die Alleinstellung |
 | Feuchtethemen als sichere Mengenquelle | Von ISOTEC und GETIFIX besetzt, samt Kostenrechner und Betriebsvermittlung — ungeprüft |
 | Österreich als dünn besetzte Chance in Gruppe C | Eine Frist, keine Lücke — ISOTEC gründet ab H2 2026, zuerst Wien, Tirol, Vorarlberg |
-| Keyword-Werkzeug als nützliche Ergänzung | Entscheidet, ob das Leadmodell überhaupt eine Mengenquelle hat |
+| Keyword-Werkzeug als nützliche Ergänzung | Entscheidet über beide Modelle — auch der Shop braucht 1.850 organische Besuche |
+| „A entscheidet den Shop, B das Leadmodell" | Zu sauber gezeichnet: A entscheidet nur den Shop, B beide |
 | Margenschwelle 28 % im master-prompt | 32 %, seit die Zielgröße auf netto umgestellt wurde |
 | „Bei den Gates anhalten und warten" | Ersetzt durch die Freigaberegeln — Gates werden selbst entschieden |
 | Hauff-Technik als Lieferant gelistet | Gestrichen; Hauseinführungen sind nach Gate 5 kein Sortimentsbestandteil |

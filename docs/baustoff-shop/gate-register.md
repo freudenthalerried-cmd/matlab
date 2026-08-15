@@ -1,7 +1,7 @@
 # Gate-Register
 
-Stand: 2026-08-14. **Maßgeblich für alle Gate-Fragen.** Sechzehn Entscheidungen
-sind über die Phasen verteilt in zwölf Dateien gefallen. Wer wissen will, was
+Stand: 2026-08-15. **Maßgeblich für alle Gate-Fragen.** Siebzehn Entscheidungen
+sind über die Phasen verteilt in dreizehn Dateien gefallen. Wer wissen will, was
 gilt, musste bisher alles lesen. Hier steht es an einer Stelle.
 
 Bei Widerspruch zwischen diesem Register und einem Phasendokument gilt das
@@ -24,7 +24,7 @@ Ebenso überholt: Der master-prompt nennt in Gate 1 eine Margenschwelle von
 **28 %**. Sie stammt aus dem Szenario „3.000 € vor Steuer". Seit der Umstellung
 auf 3.000 € netto gilt die harte Untergrenze von **32 %**.
 
-## Die sechzehn Gates
+## Die siebzehn Gates
 
 ### Lieferantenseite — alle drei hängen an einer einzigen Freigabe
 
@@ -45,6 +45,7 @@ auf 3.000 € netto gilt die harte Untergrenze von **32 %**.
 |---|---|---|---|
 | **3** | **Fortsetzen unter zwei Auflagen:** vor jeder Ausgabe schriftliche Konditionen von mindestens zwei Herstellern; Zeithorizont auf 18–30 Monate korrigiert. | entschieden, Auflage offen | `phase3-unit-economics.md` |
 | **4** | **Die Modellwahl fällt am Ende von Stufe 2**, nicht davor. Stufe 0 bis 2 sind für Shop und Leadmodell identisch; entschieden wird am ersten tatsächlichen Geschäft. | entschieden | `phase9-meilensteine-und-abbruch.md` |
+| **17** | **Die Auswertungsregel der beiden Prüfungen gilt vorab.** Gate 2 ist eine UND-Verknüpfung — drei von vier Bedingungen sind ein Nein. Suchvolumen nur bei generischen Feuchtebegriffen zählt ebenfalls als Nein. Vier Ausgänge mit je festgelegtem nächsten Schritt. | entschieden | `entscheidungsmatrix.md` |
 | **12** | **Beide Modelle sind gleichrangig.** Der Shop gilt nicht mehr als Standardweg mit dem Leadmodell als Auffangnetz — er hängt zu praktisch hundert Prozent am Neubau, der in zehn Jahren um 40 % geschrumpft ist. Gate 4 bleibt unangetastet, nur die Beweislast kehrt sich um. | entschieden | `marktrisiko-neubau.md` |
 
 ### Shopmodell
@@ -80,9 +81,11 @@ Bemerkenswert daran: **Zwei der drei wirksamsten Auslöser kosten nichts.** Was
 sie brauchen, ist die Freigabe, E-Mails an Dritte zu senden — die einzige
 Kategorie neben Käufen und Ausgaben, in der nicht selbst entschieden wird.
 
-Seit Gate 15 sind die beiden offenen Freigaben **gleichrangig**: Die
-Herstelleranfragen entscheiden über den Shop, das Keyword-Werkzeug über das
-Leadmodell. Fällt eine Prüfung aus, bleibt ein Modell; fallen beide aus, keines.
+Seit Gate 15 sind die beiden offenen Freigaben **gleichrangig**. Präzisiert in
+`entscheidungsmatrix.md`: Die Herstelleranfragen entscheiden **nur** über den
+Shop, das Keyword-Werkzeug über **beide** Modelle — auch der Shop braucht rund
+1.850 Besuche im Monat. Muss eine der beiden zuerst laufen, dann das
+Keyword-Werkzeug.
 
 ## Gates, die sich noch ändern können
 
