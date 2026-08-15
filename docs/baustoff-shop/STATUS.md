@@ -14,7 +14,7 @@ letzten Runde, zwei gleichrangige Freigaben. Quelldatei im Repo unter
 
 Lauffähiges Shop-Funktionsmuster:
 [claude.ai/code/artifact/c40fd35f…](https://claude.ai/code/artifact/c40fd35f-56e1-4821-a3b1-a1a885102ec8) —
-Quelltext und 155 Testfälle unter `shop/`. Alle Preise sind Platzhalter.
+Quelltext und 168 Testfälle unter `shop/`. Alle Preise sind Platzhalter.
 Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 
 ## Wo das Projekt steht
@@ -30,7 +30,7 @@ Radonvorsorge und Bausanierung in Österreich.
 |---|---|---|
 | Nötiger Erlös | 24.200 €/Monat | 5.724 €/Monat |
 | Break-even | ~4.714 € (7 Bestellungen) | ~350 € (2–3 Leads) |
-| Sessions für Zielgröße | 1.850/Monat | ~1.570/Monat, **unter Vorbehalt** |
+| Sessions für Zielgröße | **1.900–2.550/Monat** | ~1.570/Monat, **unter Vorbehalt** |
 | Kapital bis erste Einnahme | 2.700 € | < 1.000 € |
 | Laufender Aufwand | 6,5–15 h/Monat | 4–6 h/Monat |
 | Bestandseffekt | keiner | ja, ab Stufe B |
@@ -112,6 +112,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `zahlenpruefung.md` | Alle zweiundzwanzig Rechenketten nachgerechnet; zwei kleine Fehler benannt |
 | `analyse-abgeschlossen.md` | **Gate 18 — die Analysephase ist geschlossen.** Was den Loop wieder aufweckt |
 | `umsetzung-shop.md` | **Bauprotokoll des Shops.** Baustand, Sperren, nächste Bausteine |
+| `kostenbild-und-sessionbedarf.md` | **Von 34 % Mischmarge bleiben 22,5 %** — und der Sessionbedarf liegt bei 1.900–2.550, nicht bei 1.850 |
 | `zahlwege-und-gebuehren.md` | **Zahlungsgebühren fehlten in der ganzen Rechnung** — 0 bis 16 % des Zielgewinns; Rechnungskauf entspricht der Zielgruppe und ist das Teuerste |
 | `ablage-und-nummernkreis.md` | **Nummer erst bei der Ausstellung**, Ablage nur ergänzend; Nachnahme würde eine Registrierkasse auslösen |
 | `uid-abfrage.md` | **Drei Zustände statt zwei** — ein Dienstausfall ist keine ungültige UID; Nachweis nur mit qualifizierter Anfrage |
@@ -172,6 +173,7 @@ Damit niemand einer überholten Aussage folgt:
 | Österreich als dünn besetzte Chance in Gruppe C | Eine Frist, keine Lücke — ISOTEC gründet ab H2 2026, zuerst Wien, Tirol, Vorarlberg |
 | Keyword-Werkzeug als nützliche Ergänzung | Entscheidet über beide Modelle — auch der Shop braucht 1.850 organische Besuche |
 | „A entscheidet den Shop, B das Leadmodell" | Zu sauber gezeichnet: A entscheidet nur den Shop, B beide |
+| Sessionbedarf Shop 1.850/Monat | 1.900–2.550 — die alte Zahl war der beste Fall: ohne Gebühren und bei 35 % statt der zulässigen 32 % |
 | Kostenseite ohne Zahlungsgebühren | 0–871 €/Monat je nach Zahlweg, bis 16 % des Zielgewinns — fehlten in Phase 3, 4 und 5 |
 | Restaufwand ohne Datenfeed ~12 h/Monat | ~15 h — UID-Abfrage und Auftragsbestätigung fehlten in der Tabelle, zusammen 3,1 h |
 | Deckungsbeitrag 6.050 € | Rechnerisch 6.024 €; die Kaskade ist um 0,4 % zu hoch, aber in die sichere Richtung |

@@ -122,7 +122,8 @@ export const ZAHLWEGE = [
   },
 ];
 
-const findeZahlweg = (id) => {
+/** Nachschlagen mit klarer Fehlermeldung. Einmal hier, damit es im Bündel nicht kollidiert. */
+export const findeZahlweg = (id) => {
   const z = ZAHLWEGE.find((w) => w.id === id);
   if (!z) throw new Error(`Unbekannter Zahlweg: ${id}`);
   return z;

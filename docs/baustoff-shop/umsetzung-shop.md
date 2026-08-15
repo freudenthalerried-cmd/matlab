@@ -25,10 +25,33 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | UID-Abfrage beim EU-System | fertig, ungeprüft am Dienst | 17 |
 | Ablage und Nummernkreis | fertig, ohne Speicherung | 16 |
 | Zahlwege und Gebühren | fertig | 15 |
+| Gesamtkostenbild und Umsatzbedarf | fertig | 13 |
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig | headless geprüft |
-| **Summe** | | **155, alle grün** |
+| **Summe** | | **168, alle grün** |
 
-## Was zuletzt dazukam: die Zahlwege
+## Was zuletzt dazukam: das Gesamtkostenbild
+
+`shop/src/kostenbild.js` zieht die Kaskade einmal vollständig durch und dreht
+sie dann um. Ausführlich in
+[`kostenbild-und-sessionbedarf.md`](./kostenbild-und-sessionbedarf.md).
+
+Am Referenzgebäude bleiben **von 34,2 % ausgewiesener Mischmarge nach Werbung
+und Zahlungsgebühr 22,5 %**. Nebeneffekt, den man leicht übersieht: Die Fracht
+ist margenneutral, steht aber im Bruttobetrag — man zahlt Zahlungsgebühr auf
+durchlaufende Fracht, rund 100 € im Monat.
+
+Der Befund betrifft den Besucherbedarf. `STATUS.md` führte **1.850 Sessions im
+Monat**; diese Zahl entsteht ohne Zahlungsgebühren und bei 35 % Rohmarge. Gate 1
+lässt aber bis 32 % zu — das ist die Schwelle, nicht die Erwartung. Gerechnet
+über beide Achsen liegt der Bedarf zwischen **1.900 und 2.550 Sessions**, je
+nach Zahlweg und Marge. Die Spanne steht jetzt in `STATUS.md`.
+
+Kein neues Gate: Der Befund ändert keine Entscheidung, er schärft eine
+Planungsgröße. Für die gestufte Einführung des Rechnungskaufs liefert er ein
+zweites Argument — er verlangt sieben zusätzliche Bestellungen und 300
+zusätzliche Besucher, nur um sich selbst zu tragen.
+
+## Was davor dazukam: die Zahlwege
 
 `shop/src/zahlung.js` sollte nur die Anforderungen an den Zahlungsanbieter
 sammeln, die sich über die letzten Bausteine angehäuft hatten. Beim Sammeln kam
@@ -306,8 +329,9 @@ Nach Nutzen geordnet, alle ohne Freigabe und ohne Ausgabe machbar:
 1. **Gebietsabfrage** nach `phase10-datengrundlage-gebietsabfrage.md` — braucht
    die Gemeindeliste. RIS und der Geoserver sind aus dieser Umgebung weiterhin
    nicht erreichbar; zuletzt geprüft am 15. August.
-2. **Gesamtkostenbild je Bestellung** — Wareneinkauf, Fracht und jetzt auch
-   Zahlungsgebühr sind einzeln gerechnet, aber nie zusammengeführt. Eine
-   Rechnung, die vom Bruttobetrag alles abzieht, was tatsächlich abgeht, würde
-   zeigen, was von den 32 % Rohmarge am Ende übrig bleibt. Braucht keine
-   Freigabe und keine Ausgabe.
+2. **Empfindlichkeitsrechnung über die vier Annahmen** — Rohmarge,
+   Werbekostenanteil, Umsatzquote und Warenkorb tragen die ganze Planung, und
+   die Umsatzquote ist der empfindlichste Hebel: Halbiert sie sich, verdoppelt
+   sich der Besucherbedarf. Eine Rechnung, die jede Annahme einzeln variiert
+   und die Wirkung auf den Sessionbedarf zeigt, würde benennen, welche der vier
+   zuerst gemessen gehört. Braucht keine Freigabe und keine Ausgabe.

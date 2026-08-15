@@ -567,9 +567,15 @@ document.getElementById('kasse').addEventListener('submit', (e) => {
     return ZAHLWEGE.find((z) => z.id === id).name + ': ' + EUR(w.gebuehr) +
       ' = ' + (w.anteilAmDeckungsbeitrag * 100).toFixed(1) + ' % des Deckungsbeitrags';
   });
+  const bild = proBestellung(wk, 'karte-stripe', 0.10);
   ziel.append(kasten('k-warn', [
     'Zahlungsgebühren auf diesen Warenkorb (Listenpreise, kein Angebot):',
     ...zeilenZahlung.map((z) => '· ' + z),
+    'Was bleibt, bei Karte und 10 % Werbekostenanteil:',
+    '· Rohertrag ' + EUR(bild.rohertrag) + ' − Werbung ' + EUR(bild.werbung) +
+      ' − Gebühr ' + EUR(bild.gebuehr) + ' = ' + EUR(bild.bleibt) +
+      ' (' + (bild.margeNachAllem * 100).toFixed(1) + ' % statt ' +
+      (wk.mischmarge * 100).toFixed(1) + ' % Mischmarge)',
   ]));
 
   ziel.append(belegBox('Vorgangsakte — nur ergänzt, nie geändert', alsCsv(ablage)));

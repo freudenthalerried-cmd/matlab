@@ -26,11 +26,12 @@ Gerüst vorhanden und meldet selbst, welche Pflichtangaben ihm fehlen.
 | UID-Abfrage | drei Zustände; ein Dienstausfall ist keine ungültige UID |
 | Ablage | Nummernkreise, Storno statt Änderung, Aufbewahrungsfrist |
 | Zahlwege | Gebühren je Zahlweg, Wirkung auf Deckungsbeitrag und Monat |
+| Kostenbild | Kaskade bis zum Gewinn, umgekehrt der nötige Umsatz |
 
 ## Benutzen
 
 ```
-npm test          # 155 Testfälle
+npm test          # 168 Testfälle
 npm run build     # erzeugt demo.html, eine einzelne Datei ohne Abhängigkeiten
 npm run import -- <lieferantId> <datei.csv> [--schreiben]
 ```
@@ -58,6 +59,7 @@ src/auftragslauf.js     Trockenlauf über den ganzen Auftrag, Aufwand je Bestell
 src/vies.js             UID beim EU-System abfragen, Nachweis, drei Zustände
 src/ablage.js           Vorgangsakte, Nummernkreise, Storno, § 132 BAO
 src/zahlung.js          Zahlwege, Gebühren, Anforderungen an den Anbieter
+src/kostenbild.js       Kaskade, nötiger Umsatz, Bestellungen, Sessionbedarf
 src/format.js           EUR und Lückenmarkierung — einmal, siehe unten
 bin/import.mjs          Kommandozeile dazu, Probelauf als Voreinstellung
 beispiel/               Musterpreisliste — erfundene Preise, nicht schreibbar
@@ -164,6 +166,21 @@ Umsatzsteuer als innergemeinschaftlicher Erwerb, während die Ausgangsrechnung
 20 % trägt. `reihengeschaeftEinordnung()` erkennt das am Feld `land` des
 Lieferanten und schreibt es in die Kasse. Ausführlich in
 `docs/baustoff-shop/beleg-und-reihengeschaeft.md`.
+
+## Das Kostenbild
+
+Am Referenzgebäude, mit Kartenzahlung und 10 % Werbekostenanteil:
+
+```
+Rohertrag         1.057,37 €   34,2 % Mischmarge
+− Werbung           308,82 €
+− Zahlungsgebühr     54,85 €
+= bleibt            693,70 €   22,5 %
+```
+
+Umgekehrt gerechnet ergibt das den nötigen Umsatz und daraus den
+Besucherbedarf: **1.900 bis 2.550 Sessions im Monat**, je nach Zahlweg und ob
+man mit 35 % Rohmarge rechnet oder mit den 32 %, die Gate 1 zulässt.
 
 ## Die Zahlwege
 
