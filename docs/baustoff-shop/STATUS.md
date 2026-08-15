@@ -1,6 +1,6 @@
 # Status und Einstieg
 
-Stand: 2026-08-14. **Dieses Dokument zuerst lesen.** Siebenundzwanzig Arbeitsdateien
+Stand: 2026-08-14. **Dieses Dokument zuerst lesen.** Achtundzwanzig Arbeitsdateien
 sind entstanden, mehrere davon korrigieren einander. Hier steht, was gilt.
 
 Veröffentlichter Bericht:
@@ -97,7 +97,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `PARAMETER.md` | Festgelegte Vorgaben, Umrechnung netto → vor Steuer, Margenschwelle |
 | `README.md` | Ursprüngliche Denkgrundlage. Teilweise überholt, Grundrechnungen gültig |
 | `master-prompt.md` | Die ursprüngliche Auftragsfassung. Als Handlungsanweisung überholt |
-| `gate-register.md` | **Alle fünfzehn Gates an einer Stelle.** Maßgeblich bei Widerspruch |
+| `gate-register.md` | **Alle sechzehn Gates an einer Stelle.** Maßgeblich bei Widerspruch |
 
 ### Analysen
 | Datei | Kernaussage |
@@ -119,6 +119,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `partnerangebot-leadvermittlung.md` | Gate 13 Bezirke statt 104 Gemeinden; Exklusivität ist die DSGVO-Bauform |
 | `messwert-einordnung.md` | Messdauer sechs Monate; Gate 14 — den Motor liefert der Keller, nicht Radon |
 | `pruefung-gruppe-c.md` | Gate 15 — der Keller ist von Franchisesystemen besetzt; die zweite Freigabe wird entscheidend |
+| `franchise-zeitfenster.md` | Gate 16 — ISOTEC gründet ab H2 2026 in Österreich; die Lücke ist eine Frist |
 | `content-und-leadgen.md` | Displaywerbung und Affiliate scheitern an der Reichweite |
 | `skalierung-und-passivitaet.md` | Bestandseffekt; digitale Vorlagen fallen durch |
 | `segment-arbeitsplatzmessung.md` | Nebenstrecke, kein eigenes Segment |
@@ -149,6 +150,7 @@ Damit niemand einer überholten Aussage folgt:
 | Strecke 2 mit 0,5–1,5 % Ende-zu-Ende | 0,05–0,45 %; die Spanne war aus den eigenen Teilquoten nicht ableitbar |
 | Radon als Mengenquelle des Leadmodells | Den Motor liefern die Feuchtethemen; Radon liefert die Alleinstellung |
 | Feuchtethemen als sichere Mengenquelle | Von ISOTEC und GETIFIX besetzt, samt Kostenrechner und Betriebsvermittlung — ungeprüft |
+| Österreich als dünn besetzte Chance in Gruppe C | Eine Frist, keine Lücke — ISOTEC gründet ab H2 2026, zuerst Wien, Tirol, Vorarlberg |
 | Keyword-Werkzeug als nützliche Ergänzung | Entscheidet, ob das Leadmodell überhaupt eine Mengenquelle hat |
 | Margenschwelle 28 % im master-prompt | 32 %, seit die Zielgröße auf netto umgestellt wurde |
 | „Bei den Gates anhalten und warten" | Ersetzt durch die Freigaberegeln — Gates werden selbst entschieden |
