@@ -76,6 +76,17 @@
   .r-pos b{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
   .r-pos em{grid-column:2;font-style:normal;font-size:.76rem;color:var(--muted)}
   .r-hinweis{font-size:.82rem;color:var(--ink-2);border-left:3px solid var(--accent);padding:.4rem .7rem;background:var(--accent-soft);margin-top:.5rem}
+  .kasse{background:var(--surface);border:1px solid var(--line);padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:.85rem}
+  .k-felder{display:grid;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));gap:.8rem 1.2rem}
+  .k-felder label{display:flex;flex-direction:column;gap:.2rem;font-size:.82rem;color:var(--ink-2)}
+  .k-felder input[type=text],.k-felder input[type=email]{font:inherit;padding:.35rem .45rem;border:1px solid var(--line-strong);background:var(--ground);color:var(--ink);width:100%}
+  .k-bestaetigung{display:flex;gap:.5rem;align-items:flex-start;font-size:.85rem;border:1px solid var(--line-strong);padding:.6rem .7rem}
+  .k-fehler{border:1px solid var(--warn);color:var(--warn);padding:.5rem .7rem;font-size:.83rem;display:flex;flex-direction:column;gap:.25rem}
+  .k-warn{border:1px solid var(--accent);color:var(--accent);padding:.5rem .7rem;font-size:.83rem}
+  .k-sperre{border-left:3px solid var(--warn);background:var(--surface-2);padding:.7rem .9rem;font-size:.85rem;display:flex;flex-direction:column;gap:.3rem}
+  .k-bestellung{border:1px solid var(--line);margin-top:.5rem}
+  .k-bestellung h3{font-family:var(--sans);font-size:.85rem;padding:.5rem .8rem;background:var(--surface-2);margin:0;border-bottom:1px solid var(--line)}
+  .k-bestellung pre{margin:0;padding:.7rem .8rem;font-family:var(--mono);font-size:.74rem;white-space:pre-wrap;color:var(--ink-2);overflow-x:auto}
   footer{border-top:1px solid var(--line);padding-top:1rem;color:var(--muted);font-size:.82rem;display:flex;flex-direction:column;gap:.4rem}
   code{font-family:var(--mono);font-size:.85em}
 </style>
@@ -109,6 +120,23 @@
       </form>
 
       <div class="katalog" id="katalog"></div>
+
+      <form class="kasse" id="kasse">
+        <h2>Bestellung — nur für Unternehmer</h2>
+        <p class="r-intro">Alle Preise sind Nettopreise. Der Verkauf richtet sich ausschließlich an Unternehmer; deshalb sind Firmendaten und UID verpflichtend. Diese Strecke endet vor der Zahlung — es gibt keinen Zahlungsanbieter und es wird nichts ausgelöst.</p>
+        <div class="k-felder">
+          <label>Firma<input type="text" id="k-firma" value="Baumeister Muster GmbH"></label>
+          <label>UID-Nummer<input type="text" id="k-uid" value="ATU12345675" placeholder="ATU12345675"></label>
+          <label>E-Mail<input type="email" id="k-email" value="office@muster.at"></label>
+          <label>Telefon<input type="text" id="k-telefon" value="+43 660 0000000"></label>
+          <label>Straße und Hausnummer<input type="text" id="k-strasse" value="Feldweg 3"></label>
+          <label>PLZ<input type="text" id="k-plz" value="4600" inputmode="numeric"></label>
+          <label>Ort<input type="text" id="k-ort" value="Wels"></label>
+        </div>
+        <label class="k-bestaetigung"><input type="checkbox" id="k-unternehmer" checked> Ich bestelle als Unternehmer im Rahmen meines Betriebs. Ein Rücktrittsrecht nach FAGG besteht damit nicht.</label>
+        <button type="submit">Bestellung prüfen</button>
+        <div id="kasse-ergebnis"></div>
+      </form>
     </section>
 
     <aside>
@@ -476,6 +504,210 @@ function berechneBedarf(gebaeude, katalog) {
   };
 }
 
+/**
+ * Prüfung der Bestelldaten.
+ *
+ * Setzt Gate 7 um: Der Warenverkauf richtet sich ausschließlich an Unternehmer.
+ * Das ist keine Formalie — davon hängt ab, ob § 11 FAGG mit seiner
+ * Zwölfmonatsfalle greift. Ein Hinweis „nur für Gewerbetreibende" im
+ * Kleingedruckten genügt dafür nicht; der Bestellprozess muss
+ * Verbraucherbestellungen tatsächlich ausschließen.
+ */
+
+const AT_UID = /^ATU\d{8}$/;
+const EMAIL = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
+
+/**
+ * Prüfziffer einer österreichischen UID nach dem gebräuchlichen Verfahren.
+ *
+ * Bewusst **nur als Warnung** verwendet: Verbindlich ist allein die Abfrage
+ * beim Mehrwertsteuer-Informationsaustauschsystem der EU. Ein Validator, der
+ * eine gültige UID zurückweist, richtet mehr Schaden an als gar keiner.
+ */
+function uidPruefzifferStimmt(uid) {
+  if (!AT_UID.test(uid)) return false;
+  const z = uid.slice(3).split('').map(Number);
+  let summe = 0;
+  for (let i = 0; i < 7; i++) {
+    if (i % 2 === 0) {
+      summe += z[i];
+    } else {
+      const doppelt = z[i] * 2;
+      summe += Math.floor(doppelt / 10) + (doppelt % 10);
+    }
+  }
+  return (96 - summe) % 10 === z[7];
+}
+
+const pflicht = (wert) => typeof wert === 'string' && wert.trim().length > 0;
+
+/**
+ * @param {object} daten
+ * @returns {{gueltig: boolean, fehler: string[], warnungen: string[], normalisiert: object}}
+ */
+function pruefeBestelldaten(daten = {}) {
+  const fehler = [];
+  const warnungen = [];
+
+  const firma = String(daten.firma ?? '').trim();
+  const uid = String(daten.uid ?? '').trim().toUpperCase().replace(/\s/g, '');
+  const email = String(daten.email ?? '').trim();
+  const strasse = String(daten.strasse ?? '').trim();
+  const plz = String(daten.plz ?? '').trim();
+  const ort = String(daten.ort ?? '').trim();
+  const telefon = String(daten.telefon ?? '').trim();
+
+  if (!pflicht(firma)) fehler.push('Firmenname fehlt');
+  if (!pflicht(strasse)) fehler.push('Straße und Hausnummer fehlen');
+  if (!pflicht(ort)) fehler.push('Ort fehlt');
+  if (!pflicht(telefon)) fehler.push('Telefonnummer fehlt — die Spedition braucht sie für die Baustelle');
+
+  if (!/^\d{4}$/.test(plz)) {
+    fehler.push('Postleitzahl muss vierstellig sein');
+  } else if (Number(plz) < 1000) {
+    fehler.push('Postleitzahl außerhalb des österreichischen Bereichs');
+  }
+
+  if (!EMAIL.test(email)) fehler.push('E-Mail-Adresse fehlt oder ist unvollständig');
+
+  // Gate 7 — beides zusammen, nicht eines von beiden.
+  if (daten.unternehmerBestaetigt !== true) {
+    fehler.push('Bestätigung fehlt, dass die Bestellung für ein Unternehmen erfolgt (Gate 7)');
+  }
+  if (!AT_UID.test(uid)) {
+    fehler.push('UID-Nummer fehlt oder hat nicht das Format ATU gefolgt von acht Ziffern');
+  } else if (!uidPruefzifferStimmt(uid)) {
+    warnungen.push(
+      'Die Prüfziffer der UID passt nicht zum üblichen Verfahren. Verbindlich ist ' +
+        'die Abfrage beim EU-Informationsaustauschsystem — bitte vor der Rechnung prüfen.',
+    );
+  }
+
+  return {
+    gueltig: fehler.length === 0,
+    fehler,
+    warnungen,
+    normalisiert: { firma, uid, email, strasse, plz, ort, telefon },
+  };
+}
+
+/**
+ * Führt Warenkorb und Kundendaten zu einem Auftrag zusammen, wie ihn
+ * erzeugeBestellungen() und darfAutomatischAusgeloestWerden() erwarten.
+ */
+function baueAuftrag(bestellnummer, kundendaten, { zahlungEingegangen = false } = {}) {
+  const { normalisiert } = pruefeBestelldaten(kundendaten);
+  return {
+    bestellnummer,
+    zahlungEingegangen,
+    kundeIstUnternehmer: kundendaten.unternehmerBestaetigt === true,
+    uid: normalisiert.uid || null,
+    absender: { firma: '— Firmendaten des Betreibers fehlen noch —' },
+    lieferadresse: {
+      name: normalisiert.firma,
+      strasse: normalisiert.strasse,
+      plz: normalisiert.plz,
+      ort: normalisiert.ort,
+      telefon: normalisiert.telefon,
+    },
+  };
+}
+
+/**
+ * Bestellübergabe an die Lieferanten.
+ *
+ * Nach Gate 6 ist dies der Bruchpunkt des ganzen Modells: Ohne automatische
+ * Übergabe ist der Shop nach einem Tag Abwesenheit ein Betrieb, der Geld
+ * genommen und nichts bestellt hat. Deshalb erzeugt diese Datei aus einem
+ * bezahlten Warenkorb ohne weitere Eingabe je Lieferant eine fertige
+ * Bestellung — als Text zum Versenden und als CSV für Schnittstellen.
+ */
+
+const EUR = (n) => n.toFixed(2).replace('.', ',') + ' €';
+
+/** Erzeugt je Teillieferung eine Bestellung an den Lieferanten. */
+function erzeugeBestellungen(warenkorb, auftrag) {
+  return warenkorb.teillieferungen.map((teil, index) => {
+    const nummer = `${auftrag.bestellnummer}-${String(index + 1).padStart(2, '0')}`;
+    return {
+      nummer,
+      lieferantId: teil.lieferantId,
+      lieferantName: teil.lieferantName,
+      betreff: `Bestellung ${nummer} — Streckengeschäft, Direktversand an Endkunden`,
+      text: bestelltext(nummer, teil, auftrag),
+      csv: bestellCsv(nummer, teil, auftrag),
+      warenwertNetto: teil.warenwertNetto,
+      einkaufNetto: teil.einkaufNetto,
+    };
+  });
+}
+
+function bestelltext(nummer, teil, auftrag) {
+  const zeilen = teil.positionen.map(
+    (p) => `  ${String(p.menge).padStart(3)} × ${p.sku.padEnd(12)} ${p.bezeichnung}`,
+  );
+
+  return [
+    `Bestellung ${nummer}`,
+    ``,
+    `Sehr geehrte Damen und Herren,`,
+    ``,
+    `hiermit bestelle ich im Streckengeschäft zur Direktlieferung an den unten`,
+    `genannten Endkunden:`,
+    ``,
+    ...zeilen,
+    ``,
+    `Lieferadresse (Baustelle):`,
+    `  ${auftrag.lieferadresse.name}`,
+    `  ${auftrag.lieferadresse.strasse}`,
+    `  ${auftrag.lieferadresse.plz} ${auftrag.lieferadresse.ort}`,
+    `  Ansprechpartner vor Ort: ${auftrag.lieferadresse.telefon}`,
+    ``,
+    `Bitte neutral verpackt und ohne Preisangaben liefern.`,
+    `Rechnung an den Auftraggeber laut hinterlegten Stammdaten.`,
+    ``,
+    `Warenwert netto laut meiner Kalkulation: ${EUR(teil.einkaufNetto)}`,
+    ``,
+    `Mit freundlichen Grüßen`,
+    auftrag.absender.firma,
+  ].join('\n');
+}
+
+function bestellCsv(nummer, teil, auftrag) {
+  const kopf = 'bestellnummer;sku;menge;bezeichnung;liefername;lieferstrasse;lieferplz;lieferort';
+  const zeilen = teil.positionen.map((p) =>
+    [
+      nummer,
+      p.sku,
+      p.menge,
+      p.bezeichnung.replaceAll(';', ','),
+      auftrag.lieferadresse.name.replaceAll(';', ','),
+      auftrag.lieferadresse.strasse.replaceAll(';', ','),
+      auftrag.lieferadresse.plz,
+      auftrag.lieferadresse.ort.replaceAll(';', ','),
+    ].join(';'),
+  );
+  return [kopf, ...zeilen].join('\n');
+}
+
+/**
+ * Prüft, ob eine Bestellung ohne menschliches Zutun ausgelöst werden darf.
+ * Alles, was hier false liefert, muss liegen bleiben statt falsch zu laufen.
+ */
+function darfAutomatischAusgeloestWerden(warenkorb, auftrag) {
+  const gruende = [];
+
+  if (!warenkorb.bestellbar) gruende.push('Mindestbestellwert nicht erreicht');
+  if (!auftrag.zahlungEingegangen) gruende.push('Zahlung nicht eingegangen');
+  if (!auftrag.kundeIstUnternehmer) gruende.push('Kunde ist nicht als Unternehmer bestätigt (Gate 7)');
+  if (!auftrag.uid) gruende.push('UID fehlt');
+  if (warenkorb.teillieferungen.some((t) => t.positionen.some((p) => p.ekIstPlatzhalter))) {
+    gruende.push('Katalog enthält Platzhalterpreise — keine echten Konditionen');
+  }
+
+  return { erlaubt: gruende.length === 0, gruende };
+}
+
 
 const daten = {"lieferanten":{"_datenstand":"PLATZHALTER — keine dieser Konditionen ist von einem Lieferanten bestätigt.","_hinweis":"Echte Werte entstehen erst aus den Antworten auf Anschreiben A, siehe docs/baustoff-shop/anschreiben-entwuerfe.md. Bis dahin dienen die Zahlen ausschliesslich dazu, die Rechenwege zu prüfen.","lieferanten":[{"id":"rohr-at","name":"Rohrhersteller Österreich","konditionenStand":"platzhalter","streckengeschaeft":true,"haendlerrabattAufUvp":0.3,"mindestbestellwertNetto":250,"fracht":{"modell":"pauschale","freiHausAbNetto":1500,"pauschaleNetto":75,"sperrgutZuschlagNetto":25},"produktdaten":"csv","lieferzeitWerktage":5},{"id":"bahnen-de","name":"Abdichtungsbahnen-Hersteller","konditionenStand":"platzhalter","streckengeschaeft":true,"haendlerrabattAufUvp":0.42,"mindestbestellwertNetto":400,"fracht":{"modell":"pauschale","freiHausAbNetto":1200,"pauschaleNetto":95,"sperrgutZuschlagNetto":40},"produktdaten":"csv","lieferzeitWerktage":8},{"id":"zubehoer-de","name":"Zubehör- und Dichtsysteme","konditionenStand":"platzhalter","streckengeschaeft":true,"haendlerrabattAufUvp":0.38,"mindestbestellwertNetto":150,"fracht":{"modell":"pauschale","freiHausAbNetto":600,"pauschaleNetto":12,"sperrgutZuschlagNetto":0},"produktdaten":"katalog","lieferzeitWerktage":4}]},"artikel":{"_datenstand":"PLATZHALTER — keine Preise sind von einem Lieferanten bestätigt.","_hinweis":"UVP-Spannen stammen aus der Stückliste in docs/baustoff-shop/phase4-sortiment-und-materialwert.md und sind öffentliche Listenpreisniveaus, keine Einkaufspreise. Der Einkaufspreis ergibt sich hier rechnerisch aus UVP × (1 − Händlerrabatt) und ist damit ebenfalls Platzhalter.","sortiment":"Radonvorsorge, mittlerer Warenkorb nach Gate 5","artikel":[{"sku":"DR-100-050","bezeichnung":"Drainagerohr perforiert DN100, Ringbund 50 m","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Ringbund","menge":"50 m","uvpNetto":165,"gewichtKg":22,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"DR-FT-SET","bezeichnung":"Formteilset Radondrainage: Bögen, Muffen, Anschlüsse","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Set","menge":"1 Gebäude","uvpNetto":145,"gewichtKg":6.5,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"DR-KS-100","bezeichnung":"Kontroll- und Sammelschacht DN100","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Stück","menge":"1","uvpNetto":118,"gewichtKg":9,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"DR-SL-100","bezeichnung":"Steigleitung DN100 inkl. Halterungen, 3 m","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Stück","menge":"3 m","uvpNetto":42,"gewichtKg":4,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"AB-RD-375","bezeichnung":"Radondichte Abdichtungsbahn, Rolle 37,5 m²","gruppe":"Abdichtung","lieferantId":"bahnen-de","einheit":"Rolle","menge":"37,5 m²","uvpNetto":398,"gewichtKg":20,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"AB-PR-010","bezeichnung":"Voranstrich / Primer, 10 l","gruppe":"Abdichtung","lieferantId":"bahnen-de","einheit":"Gebinde","menge":"10 l","uvpNetto":96,"gewichtKg":11,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"ZB-DB-150","bezeichnung":"Dichtband gasdicht, 150 mm × 25 m","gruppe":"Zubehör","lieferantId":"zubehoer-de","einheit":"Rolle","menge":"25 m","uvpNetto":78,"gewichtKg":2.2,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"ZB-MA-SET","bezeichnung":"Manschettenset Innen- und Außenecken","gruppe":"Zubehör","lieferantId":"zubehoer-de","einheit":"Set","menge":"1 Gebäude","uvpNetto":112,"gewichtKg":1.8,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"ZB-RR-125","bezeichnung":"Ringraumdichtung DN125 für Einzelleitung","gruppe":"Zubehör","lieferantId":"zubehoer-de","einheit":"Stück","menge":"1","uvpNetto":64,"gewichtKg":0.9,"sperrgut":false,"ekQuelle":"platzhalter"}]}};
 const ZIELMARGE = 0.35;
@@ -642,6 +874,68 @@ function zeichneKorb() {
     el.append(w);
   }
 }
+
+document.getElementById('kasse').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const ziel = document.getElementById('kasse-ergebnis');
+  ziel.textContent = '';
+
+  const kasten = (klasse, zeilen) => {
+    const d = document.createElement('div');
+    d.className = klasse;
+    for (const z of [].concat(zeilen)) {
+      const p = document.createElement('div');
+      p.textContent = z;
+      d.append(p);
+    }
+    return d;
+  };
+
+  if (korb.size === 0) {
+    ziel.append(kasten('k-fehler', 'Der Warenkorb ist leer.'));
+    return;
+  }
+
+  const eingabe = {
+    firma: document.getElementById('k-firma').value,
+    uid: document.getElementById('k-uid').value,
+    email: document.getElementById('k-email').value,
+    telefon: document.getElementById('k-telefon').value,
+    strasse: document.getElementById('k-strasse').value,
+    plz: document.getElementById('k-plz').value,
+    ort: document.getElementById('k-ort').value,
+    unternehmerBestaetigt: document.getElementById('k-unternehmer').checked,
+  };
+
+  const geprueft = pruefeBestelldaten(eingabe);
+  if (geprueft.fehler.length) ziel.append(kasten('k-fehler', geprueft.fehler));
+  for (const w of geprueft.warnungen) ziel.append(kasten('k-warn', w));
+  if (!geprueft.gueltig) return;
+
+  const wk = berechneWarenkorb([...korb].map(([sku, menge]) => ({ sku, menge })), katalog);
+  const auftrag = baueAuftrag('MUSTER-0001', eingabe, { zahlungEingegangen: false });
+  const freigabe = darfAutomatischAusgeloestWerden(wk, auftrag);
+
+  ziel.append(
+    kasten('k-sperre', [
+      freigabe.erlaubt
+        ? 'Alle Voraussetzungen erfüllt — im Echtbetrieb ginge die Bestellung jetzt hinaus.'
+        : 'Es geht nichts hinaus. Offen sind:',
+      ...freigabe.gruende.map((g) => '· ' + g),
+    ]),
+  );
+
+  for (const b of erzeugeBestellungen(wk, auftrag)) {
+    const box = document.createElement('div');
+    box.className = 'k-bestellung';
+    const h3 = document.createElement('h3');
+    h3.textContent = 'Entwurf an ' + b.lieferantName + ' — ' + b.nummer;
+    const pre = document.createElement('pre');
+    pre.textContent = b.text;
+    box.append(h3, pre);
+    ziel.append(box);
+  }
+});
 
 document.getElementById('rechner').addEventListener('submit', (e) => {
   e.preventDefault();

@@ -17,11 +17,12 @@ Zahlungsanbindung, keine Rechtstexte und kein Impressum.
 | Freigabeprüfung | Gate 6 und Gate 7 als harte Sperren vor der Auslösung |
 | Preislisten-Import | CSV einlesen, prüfen, mit dem Katalog vergleichen |
 | Materialbedarfsrechner | Außenmaße → Stückliste → Warenkorb, mit Verschnittausweis |
+| Bestellstrecke | Firmendaten, UID, Unternehmerbestätigung; endet vor der Zahlung |
 
 ## Benutzen
 
 ```
-npm test          # 47 Testfälle
+npm test          # 58 Testfälle
 npm run build     # erzeugt demo.html, eine einzelne Datei ohne Abhängigkeiten
 npm run import -- <lieferantId> <datei.csv> [--schreiben]
 ```
@@ -41,6 +42,7 @@ src/warenkorb.js        Gruppierung nach Lieferant, Summen, Mischmarge
 src/bestellung.js       Bestelltext, CSV, Freigabeprüfung
 src/import.js           Preisliste lesen, prüfen, mit dem Katalog vergleichen
 src/bedarf.js           Materialbedarf je Gebäude, Rollen- und Gebinderechnung
+src/kunde.js            Bestelldaten prüfen, UID, Gate-7-Bestätigung
 bin/import.mjs          Kommandozeile dazu, Probelauf als Voreinstellung
 beispiel/               Musterpreisliste — erfundene Preise, nicht schreibbar
 test/                   node:test, ohne Fremdpakete
@@ -67,6 +69,28 @@ Rollenbindung: 34,3 m² über dem Bedarf (18 %). Teilmengen gibt es nicht.
 Diesen Satz bekommt der Kunde heute erst an der Kasse zu sehen. Hier steht er
 vor der Bestellung — und er erklärt zugleich, warum der tatsächliche Warenkorb
 über dem rechnerischen Materialwert je Quadratmeter liegt.
+
+## Die Bestellstrecke
+
+Sie setzt Gate 7 um: Firmenname, Anschrift, Telefon für die Spedition, E-Mail,
+**UID im Format ATU + acht Ziffern** und die ausdrückliche Bestätigung, als
+Unternehmer zu bestellen. Fehlt eines davon, kommt die Bestellung nicht zustande.
+
+Die UID-Prüfziffer wird gerechnet, aber **nur als Warnung** ausgegeben.
+Verbindlich ist die Abfrage beim EU-Informationsaustauschsystem; ein Validator,
+der eine gültige UID zurückweist, richtet mehr Schaden an als gar keiner.
+
+Am Ende steht keine Zahlung, sondern die Wahrheit über den Zustand:
+
+```
+Es geht nichts hinaus. Offen sind:
+· Zahlung nicht eingegangen
+· Katalog enthält Platzhalterpreise — keine echten Konditionen
+```
+
+Darunter zeigt das Muster die Bestellentwürfe, die im Echtbetrieb an die
+Lieferanten gingen — je Lieferant einer, mit Baustellenadresse und der Bitte um
+neutrale Verpackung.
 
 ## Was das Muster bereits zeigt
 

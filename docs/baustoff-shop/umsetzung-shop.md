@@ -17,10 +17,35 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Freigabesperren (Gate 6, Gate 7) | fertig | 3 |
 | Preislisten-Import | fertig | 14 |
 | Materialbedarfsrechner | fertig | 11 |
+| Bestellstrecke mit Gate-7-Prüfung | fertig | 11 |
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig | headless geprüft |
-| **Summe** | | **47, alle grün** |
+| **Summe** | | **58, alle grün** |
 
-## Was zuletzt dazukam: der Materialbedarfsrechner
+## Was zuletzt dazukam: die Bestellstrecke
+
+`shop/src/kunde.js` prüft die Bestelldaten und setzt damit Gate 7 um — nicht
+als Hinweis im Kleingedruckten, sondern als Bedingung: Ohne Firmendaten, UID
+und ausdrückliche Unternehmerbestätigung kommt keine Bestellung zustande.
+
+Die UID-Prüfziffer wird gerechnet, aber **nur als Warnung** ausgegeben.
+Verbindlich ist allein die Abfrage beim EU-Informationsaustauschsystem, und die
+braucht Netz. Ein Validator, der eine gültige UID zurückweist, richtet mehr
+Schaden an als gar keiner — deshalb Format hart, Prüfziffer weich.
+
+Die Strecke endet bewusst vor der Zahlung. Statt eines Zahlungsknopfs steht dort
+der tatsächliche Zustand:
+
+```
+Es geht nichts hinaus. Offen sind:
+· Zahlung nicht eingegangen
+· Katalog enthält Platzhalterpreise — keine echten Konditionen
+```
+
+Darunter die Bestellentwürfe, die im Echtbetrieb hinausgingen — je Lieferant
+einer. Damit ist der ganze Weg vom Bedarfsrechner bis zur Lieferantenbestellung
+sichtbar, ohne dass irgendetwas ausgelöst würde.
+
+## Was davor dazukam: der Materialbedarfsrechner
 
 `shop/src/bedarf.js` macht aus Außenmaßen eine Stückliste und legt sie in den
 Warenkorb. Alle Ansätze stehen als benannte Konstanten beieinander —
@@ -96,9 +121,10 @@ und die Bestellsperre fällt für die betroffenen Artikel weg.
 
 Nach Nutzen geordnet, alle ohne Freigabe und ohne Ausgabe machbar:
 
-1. **Bestellstrecke im Muster** — Adresseingabe, Unternehmerbestätigung,
-   Zusammenfassung; endet bewusst vor der Zahlung.
-2. **Gebietsabfrage** nach `phase10-datengrundlage-gebietsabfrage.md` — braucht
+1. **Gebietsabfrage** nach `phase10-datengrundlage-gebietsabfrage.md` — braucht
    die Gemeindeliste, die aus dieser Umgebung nicht abrufbar ist.
-3. **Messwert-Einordner** nach `messwert-einordnung.md` — die Wertebänder und
+2. **Messwert-Einordner** nach `messwert-einordnung.md` — die Wertebänder und
    die drei Grenzen stehen dort bereits als Vorgabe.
+3. **Rechtstexte-Gerüst** — Impressum, AGB und Widerrufsbelehrung als Vorlagen
+   mit gekennzeichneten Lücken für die Firmendaten. Ersetzt keine anwaltliche
+   Prüfung, spart aber die Zuarbeit.
