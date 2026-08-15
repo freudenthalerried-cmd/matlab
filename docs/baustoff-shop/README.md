@@ -1,5 +1,11 @@
 # Baustoff-Shop — Brainstorming & Entscheidungsgrundlage
 
+> **Teilweise überholt.** Die Margenschwelle liegt bei **32 %** statt 28 %, und
+> die Zielgröße ist **3.000 € netto** statt 3.000 € vor Steuer. Die
+> Grundrechnungen und die Denkgrundlage bleiben gültig. Einstieg über
+> [`STATUS.md`](./STATUS.md), Gate-Stände im
+> [`gate-register.md`](./gate-register.md).
+
 Ziel des Projekts: ein eigenständiger, weitgehend automatisierter Online-Shop für
 Baustoffe, der **mindestens 3.000 € pro Monat** abwirft und operativ ohne den
 Gründer läuft.

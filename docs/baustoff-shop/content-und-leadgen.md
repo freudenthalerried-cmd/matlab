@@ -1,5 +1,11 @@
 # Content und Leadgenerierung — Prüfung des passivsten Kandidaten
 
+> **Teilweise überholt.** Die hier angesetzten Leadpreise von 50–70 € je B-Lead
+> sind auf **100–250 €** korrigiert, abgeleitet aus Sanierungsauftragswerten von
+> 3.000–15.000 € — siehe [`phase7-inhalte-und-funnel.md`](./phase7-inhalte-und-funnel.md)
+> und die vollständige Rechnung in [`phase3b-leadmodell.md`](./phase3b-leadmodell.md).
+> Die Reichweitenprüfung für Displaywerbung und Affiliate bleibt gültig.
+
 Stand: 2026-08-09. In
 [`skalierung-und-passivitaet.md`](./skalierung-und-passivitaet.md) wurde die
 Content-/Affiliate-Seite auf Platz eins der Passivität gesetzt — **ohne jede

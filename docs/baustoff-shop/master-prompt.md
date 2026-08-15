@@ -1,5 +1,12 @@
 # Master-Prompt: Autonomer Baustoff-Shop
 
+> **Überholt als Handlungsanweisung, gültig als Beleg.** Zwei Stellen gelten
+> nicht mehr: Die Margenschwelle in Gate 1 liegt bei **32 %**, nicht bei 28 % —
+> das Ziel wurde auf netto umgestellt. Und die Anweisung, bei den Gates
+> anzuhalten und zu warten, ist durch die Freigaberegeln in
+> [`PARAMETER.md`](./PARAMETER.md) ersetzt: Gates werden selbst entschieden und
+> begründet. Was gilt, steht im [`gate-register.md`](./gate-register.md).
+
 > Zum Kopieren in eine frische Claude-Code-Session. Der Block zwischen den
 > Trennlinien ist der Prompt. Die Rahmenbedingungen sind bereits eingesetzt:
 > Österreich, 3.000 € Gewinn vor Steuer, 5.000–15.000 € Budget, reines
