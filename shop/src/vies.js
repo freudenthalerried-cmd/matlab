@@ -20,6 +20,8 @@
  * „gültig" macht, hat die Prüfung nicht.
  */
 
+import { textZeile } from './format.js';
+
 export const VIES_ENDPUNKT = 'https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number';
 
 export const STAND = {
@@ -174,7 +176,9 @@ export function belegzeile(auswertung, uid) {
     auswertung.abfrageDatum ?? 'ohne Datum',
     auswertung.abfrageId ? `Abfrage-ID ${auswertung.abfrageId}` : 'ohne Abfrage-ID — nicht als Nachweis geeignet',
   ];
-  if (auswertung.name) teile.push(auswertung.name);
+  // Der Name kommt aus der Antwort eines fremden Dienstes und landet in der
+  // Ablage. Ein Umbruch darin wäre eine zusätzliche Belegzeile.
+  if (auswertung.name) teile.push(textZeile(auswertung.name));
   return teile.join(' · ');
 }
 

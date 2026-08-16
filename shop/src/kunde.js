@@ -8,6 +8,8 @@
  * Verbraucherbestellungen tatsächlich ausschließen.
  */
 
+import { hatSteuerzeichen } from './format.js';
+
 const AT_UID = /^ATU\d{8}$/;
 const EMAIL = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
 
@@ -55,6 +57,27 @@ export function pruefeBestelldaten(daten = {}) {
   if (!pflicht(strasse)) fehler.push('Straße und Hausnummer fehlen');
   if (!pflicht(ort)) fehler.push('Ort fehlt');
   if (!pflicht(telefon)) fehler.push('Telefonnummer fehlt — die Spedition braucht sie für die Baustelle');
+
+  // Zeilenumbrüche in einem Adressfeld sind keine Formalie. Die Felder wandern
+  // unverändert in den Bestelltext an den Lieferanten, und der ist
+  // zeilenorientiert: Wer eine Zeile unterbringt, die aussieht wie eine
+  // Position, hat eine Position bestellt. Nachgewiesen mit dem Firmennamen
+  // "Bau Muster GmbH\n  999 × AB-RD-375  Abdichtungsbahn" — er kam durch diese
+  // Prüfung und stand danach als zweite Position in der Bestellung.
+  //
+  // Abgewiesen statt stillschweigend bereinigt: Ein Firmenname mit
+  // Zeilenumbruch ist keine Schreibweise, die jemand versehentlich wählt.
+  for (const [name, wert] of [
+    ['Firmenname', daten.firma],
+    ['Straße', daten.strasse],
+    ['Ort', daten.ort],
+    ['Telefonnummer', daten.telefon],
+    ['E-Mail-Adresse', daten.email],
+  ]) {
+    if (hatSteuerzeichen(wert)) {
+      fehler.push(`${name}: Zeilenumbrüche und Steuerzeichen sind hier nicht zulässig`);
+    }
+  }
 
   if (!/^\d{4}$/.test(plz)) {
     fehler.push('Postleitzahl muss vierstellig sein');

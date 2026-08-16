@@ -221,6 +221,35 @@
 /** Betrag in österreichischer Schreibweise. */
 const EUR = (n) => n.toFixed(2).replace('.', ',') + ' €';
 
+/*
+ * Alle Zeichen, die in einem einzeiligen Feld nichts verloren haben:
+ * Steuerzeichen U+0000–U+001F samt Tabulator, U+007F, dazu die drei Zeichen,
+ * die Unicode ausdrücklich als Zeilentrenner führt — U+0085 (NEL), U+2028
+ * (Line Separator), U+2029 (Paragraph Separator).
+ *
+ * Der Tabulator ist bewusst dabei. Er bricht zwar keine Zeile, verschiebt aber
+ * die mit `padStart`/`padEnd` gesetzten Spalten der Belege und bei manchen
+ * Lesern die Feldgrenzen einer CSV.
+ */
+const STEUERZEICHEN = /[\u0000-\u001F\u007F\u0085\u2028\u2029]/;
+const STEUERZEICHEN_FOLGE = /[\u0000-\u001F\u007F\u0085\u2028\u2029]+/g;
+
+/**
+ * Zwingt fremden Text in **eine** Zeile.
+ *
+ * Alle Belege dieses Shops sind zeilenorientiert: Eine Position ist eine Zeile,
+ * eine Summe ist eine Zeile, eine CSV-Position ist eine Zeile. Wer einen
+ * Zeilenumbruch in ein Feld unterbringt, das in so einen Beleg wandert,
+ * schreibt dort eine zusätzliche Zeile — und eine zusätzliche Zeile in einer
+ * Bestellung ist eine zusätzliche Position.
+ *
+ * Nachgewiesen, nicht befürchtet: Der Firmenname
+ * `"Bau Muster GmbH\n  999 × AB-RD-375  Abdichtungsbahn"` hat die
+ * Eingabeprüfung anstandslos passiert und im Bestelltext an den Lieferanten
+ * eine zweite Position über 999 Rollen erzeugt.
+ */
+const textZeile = (wert) => String(wert ?? '').replace(STEUERZEICHEN_FOLGE, ' ').trim();
+
 /**
  * Entschärft ein Feld für eine CSV mit Semikolon als Trenner.
  *
@@ -233,10 +262,19 @@ const EUR = (n) => n.toFixed(2).replace('.', ',') + ' €';
  * ausgerechnet in der Datei, die Ware bewegt. Deshalb steht es jetzt an einer
  * Stelle.
  */
-const csvFeld = (wert) =>
-  String(wert ?? '')
-    .replaceAll(';', ',')
-    .replace(/[\r\n]+/g, ' ');
+const csvFeld = (wert) => textZeile(wert).replaceAll(';', ',');
+
+/**
+ * Findet Zeichen, die `textZeile` entfernen würde.
+ *
+ * Das Gegenstück für den **Eingang**: Am Ausgang wird entschärft, am Eingang
+ * abgewiesen. Beides wird gebraucht. Nur entschärfen hieße, stillschweigend
+ * eine Eingabe anzunehmen, die so niemand gemeint haben kann — und wer eine
+ * Bestellposition in ein Namensfeld schreibt, hat sie gemeint. Nur abweisen
+ * deckt bloß die Felder ab, die durch eine Eingabeprüfung kommen;
+ * Artikelbezeichnungen aus einer Herstellerdatei kommen das nicht.
+ */
+const hatSteuerzeichen = (wert) => STEUERZEICHEN.test(String(wert ?? ''));
 
 /**
  * Sichtbare Markierung für eine fehlende Pflichtangabe.
@@ -604,6 +642,7 @@ function berechneBedarf(gebaeude, katalog) {
  * Verbraucherbestellungen tatsächlich ausschließen.
  */
 
+
 const AT_UID = /^ATU\d{8}$/;
 const EMAIL = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
 
@@ -651,6 +690,27 @@ function pruefeBestelldaten(daten = {}) {
   if (!pflicht(strasse)) fehler.push('Straße und Hausnummer fehlen');
   if (!pflicht(ort)) fehler.push('Ort fehlt');
   if (!pflicht(telefon)) fehler.push('Telefonnummer fehlt — die Spedition braucht sie für die Baustelle');
+
+  // Zeilenumbrüche in einem Adressfeld sind keine Formalie. Die Felder wandern
+  // unverändert in den Bestelltext an den Lieferanten, und der ist
+  // zeilenorientiert: Wer eine Zeile unterbringt, die aussieht wie eine
+  // Position, hat eine Position bestellt. Nachgewiesen mit dem Firmennamen
+  // "Bau Muster GmbH\n  999 × AB-RD-375  Abdichtungsbahn" — er kam durch diese
+  // Prüfung und stand danach als zweite Position in der Bestellung.
+  //
+  // Abgewiesen statt stillschweigend bereinigt: Ein Firmenname mit
+  // Zeilenumbruch ist keine Schreibweise, die jemand versehentlich wählt.
+  for (const [name, wert] of [
+    ['Firmenname', daten.firma],
+    ['Straße', daten.strasse],
+    ['Ort', daten.ort],
+    ['Telefonnummer', daten.telefon],
+    ['E-Mail-Adresse', daten.email],
+  ]) {
+    if (hatSteuerzeichen(wert)) {
+      fehler.push(`${name}: Zeilenumbrüche und Steuerzeichen sind hier nicht zulässig`);
+    }
+  }
 
   if (!/^\d{4}$/.test(plz)) {
     fehler.push('Postleitzahl muss vierstellig sein');
@@ -886,7 +946,7 @@ function pruefeBetreiberdaten(betreiber = {}) {
 
 const zeile = (betreiber, feld, bezeichnung) => {
   const wert = betreiber[feld];
-  return typeof wert === 'string' && wert.trim() !== '' ? wert.trim() : LUECKE(bezeichnung);
+  return typeof wert === 'string' && wert.trim() !== '' ? textZeile(wert) : LUECKE(bezeichnung);
 };
 
 /** Erzeugt den Impressumstext; Lücken bleiben sichtbar stehen. */
@@ -1006,9 +1066,17 @@ function erzeugeBestellungen(warenkorb, auftrag) {
   });
 }
 
+/**
+ * Der Text ist so zeilenorientiert wie die CSV, nur merkt man es ihm nicht an.
+ * Deshalb geht jedes fremde Feld durch `textZeile` — Artikelbezeichnungen aus
+ * einer Herstellerdatei ebenso wie die Adresse, die der Kunde selbst eingibt.
+ * Die Eingabeprüfung in `kunde.js` weist Zeilenumbrüche bereits ab; hier steht
+ * die zweite Sperre, weil nicht jeder Weg in diese Funktion über eine
+ * Eingabeprüfung führt.
+ */
 function bestelltext(nummer, teil, auftrag) {
   const zeilen = teil.positionen.map(
-    (p) => `  ${String(p.menge).padStart(3)} × ${p.sku.padEnd(12)} ${p.bezeichnung}`,
+    (p) => `  ${String(p.menge).padStart(3)} × ${textZeile(p.sku).padEnd(12)} ${textZeile(p.bezeichnung)}`,
   );
 
   return [
@@ -1022,10 +1090,10 @@ function bestelltext(nummer, teil, auftrag) {
     ...zeilen,
     ``,
     `Lieferadresse (Baustelle):`,
-    `  ${auftrag.lieferadresse.name}`,
-    `  ${auftrag.lieferadresse.strasse}`,
-    `  ${auftrag.lieferadresse.plz} ${auftrag.lieferadresse.ort}`,
-    `  Ansprechpartner vor Ort: ${auftrag.lieferadresse.telefon}`,
+    `  ${textZeile(auftrag.lieferadresse.name)}`,
+    `  ${textZeile(auftrag.lieferadresse.strasse)}`,
+    `  ${textZeile(auftrag.lieferadresse.plz)} ${textZeile(auftrag.lieferadresse.ort)}`,
+    `  Ansprechpartner vor Ort: ${textZeile(auftrag.lieferadresse.telefon)}`,
     ``,
     `Bitte neutral verpackt und ohne Preisangaben liefern.`,
     `Rechnung an den Auftraggeber laut hinterlegten Stammdaten.`,
@@ -1033,7 +1101,7 @@ function bestelltext(nummer, teil, auftrag) {
     `Warenwert netto laut meiner Kalkulation: ${EUR(teil.einkaufNetto)}`,
     ``,
     `Mit freundlichen Grüßen`,
-    auftrag.absender.firma,
+    textZeile(auftrag.absender.firma),
   ].join('\n');
 }
 
@@ -1140,20 +1208,30 @@ function pruefeRechnungsmerkmale(beleg = {}) {
   };
 }
 
-const wert = (v, bezeichnung) => (gefuellt(v) ? String(v).trim() : LUECKE(bezeichnung));
+/**
+ * Ein Feld für eine Belegzeile: entweder der Inhalt, auf eine Zeile gezwungen,
+ * oder die sichtbare Lückenmarkierung.
+ *
+ * `textZeile` statt `trim`, weil `trim` nur an den Enden räumt. Ein Umbruch in
+ * der Mitte eines Firmennamens überlebt ihn — und schreibt dann eine Zeile in
+ * einen Beleg, dessen Summenzeilen zeilenweise gelesen werden. Ein
+ * untergeschobenes „Gesamtbetrag …" wäre ein Rechnungsmangel nach § 11 UStG,
+ * und der Beleg landet unveränderbar in der Ablage.
+ */
+const wert = (v, bezeichnung) => (gefuellt(v) ? textZeile(v) : LUECKE(bezeichnung));
 
 function positionszeilen(warenkorb) {
   const zeilen = [];
   for (const teil of warenkorb.teillieferungen) {
-    zeilen.push(`${teil.lieferantName} — Direktlieferung, ${teil.lieferzeitWerktage} Werktage`);
+    zeilen.push(`${textZeile(teil.lieferantName)} — Direktlieferung, ${teil.lieferzeitWerktage} Werktage`);
     for (const p of teil.positionen) {
       zeilen.push(
-        `  ${String(p.menge).padStart(3)} ${(p.einheit ?? 'Stk').padEnd(4)} ` +
-          `${p.sku.padEnd(12)} ${p.bezeichnung}`,
+        `  ${String(p.menge).padStart(3)} ${textZeile(p.einheit ?? 'Stk').padEnd(4)} ` +
+          `${textZeile(p.sku).padEnd(12)} ${textZeile(p.bezeichnung)}`,
       );
       zeilen.push(`      à ${EUR(p.vkNetto)} netto = ${EUR(p.zeilensummeNetto)}`);
     }
-    zeilen.push(`  Fracht ${teil.lieferantName}: ${EUR(teil.frachtNetto)} (${teil.frachtGrund})`);
+    zeilen.push(`  Fracht ${textZeile(teil.lieferantName)}: ${EUR(teil.frachtNetto)} (${textZeile(teil.frachtGrund)})`);
     zeilen.push('');
   }
   return zeilen;
@@ -1201,7 +1279,7 @@ function erzeugeAngebot(warenkorb, { nummer, datum, bindefristTage = 14, kunde =
   ];
 
   if (warenkorb.hinweise.length) {
-    zeilen.push('', 'Hinweise:', ...warenkorb.hinweise.map((h) => `  · ${h}`));
+    zeilen.push('', 'Hinweise:', ...warenkorb.hinweise.map((h) => `  · ${textZeile(h)}`));
   }
 
   return { text: zeilen.join('\n'), bruttobetrag: warenkorb.summeBrutto, bindefristTage };
@@ -1578,6 +1656,7 @@ function aufwandProMonat(welt, bestellungenProMonat) {
  * „gültig" macht, hat die Prüfung nicht.
  */
 
+
 const VIES_ENDPUNKT = 'https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number';
 
 const STAND = {
@@ -1732,7 +1811,9 @@ function belegzeile(auswertung, uid) {
     auswertung.abfrageDatum ?? 'ohne Datum',
     auswertung.abfrageId ? `Abfrage-ID ${auswertung.abfrageId}` : 'ohne Abfrage-ID — nicht als Nachweis geeignet',
   ];
-  if (auswertung.name) teile.push(auswertung.name);
+  // Der Name kommt aus der Antwort eines fremden Dienstes und landet in der
+  // Ablage. Ein Umbruch darin wäre eine zusätzliche Belegzeile.
+  if (auswertung.name) teile.push(textZeile(auswertung.name));
   return teile.join(' · ');
 }
 

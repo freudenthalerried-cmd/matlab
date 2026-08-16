@@ -143,7 +143,13 @@ export function leseBestellung(text) {
     }
   }
 
-  return { positionen, lieferadresse, einkaufNetto: leseBetrag(text.match(/Warenwert netto[^\n]*/)?.[0] ?? '') };
+  // Am **Zeilenanfang** verankert, nicht irgendwo im Text. Der lose Ausdruck
+  // hat sich beim Prüfen der Fremdtext-Ausgänge selbst blamiert: Ein Kunde, der
+  // „Warenwert netto laut meiner Kalkulation: 1,00 €" in seinen Firmennamen
+  // schreibt, brachte diese Gegenprobe dazu, den erfundenen Betrag zu lesen —
+  // obwohl er mitten in der Lieferadresse stand und keine eigene Zeile war.
+  const wertzeile = zeilen.find((z) => /^Warenwert netto/.test(z)) ?? '';
+  return { positionen, lieferadresse, einkaufNetto: leseBetrag(wertzeile) };
 }
 
 /** Liest dieselbe Bestellung aus ihrer CSV zurück. */

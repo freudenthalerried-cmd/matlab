@@ -11,6 +11,35 @@
 /** Betrag in österreichischer Schreibweise. */
 export const EUR = (n) => n.toFixed(2).replace('.', ',') + ' €';
 
+/*
+ * Alle Zeichen, die in einem einzeiligen Feld nichts verloren haben:
+ * Steuerzeichen U+0000–U+001F samt Tabulator, U+007F, dazu die drei Zeichen,
+ * die Unicode ausdrücklich als Zeilentrenner führt — U+0085 (NEL), U+2028
+ * (Line Separator), U+2029 (Paragraph Separator).
+ *
+ * Der Tabulator ist bewusst dabei. Er bricht zwar keine Zeile, verschiebt aber
+ * die mit `padStart`/`padEnd` gesetzten Spalten der Belege und bei manchen
+ * Lesern die Feldgrenzen einer CSV.
+ */
+const STEUERZEICHEN = /[\u0000-\u001F\u007F\u0085\u2028\u2029]/;
+const STEUERZEICHEN_FOLGE = /[\u0000-\u001F\u007F\u0085\u2028\u2029]+/g;
+
+/**
+ * Zwingt fremden Text in **eine** Zeile.
+ *
+ * Alle Belege dieses Shops sind zeilenorientiert: Eine Position ist eine Zeile,
+ * eine Summe ist eine Zeile, eine CSV-Position ist eine Zeile. Wer einen
+ * Zeilenumbruch in ein Feld unterbringt, das in so einen Beleg wandert,
+ * schreibt dort eine zusätzliche Zeile — und eine zusätzliche Zeile in einer
+ * Bestellung ist eine zusätzliche Position.
+ *
+ * Nachgewiesen, nicht befürchtet: Der Firmenname
+ * `"Bau Muster GmbH\n  999 × AB-RD-375  Abdichtungsbahn"` hat die
+ * Eingabeprüfung anstandslos passiert und im Bestelltext an den Lieferanten
+ * eine zweite Position über 999 Rollen erzeugt.
+ */
+export const textZeile = (wert) => String(wert ?? '').replace(STEUERZEICHEN_FOLGE, ' ').trim();
+
 /**
  * Entschärft ein Feld für eine CSV mit Semikolon als Trenner.
  *
@@ -23,10 +52,19 @@ export const EUR = (n) => n.toFixed(2).replace('.', ',') + ' €';
  * ausgerechnet in der Datei, die Ware bewegt. Deshalb steht es jetzt an einer
  * Stelle.
  */
-export const csvFeld = (wert) =>
-  String(wert ?? '')
-    .replaceAll(';', ',')
-    .replace(/[\r\n]+/g, ' ');
+export const csvFeld = (wert) => textZeile(wert).replaceAll(';', ',');
+
+/**
+ * Findet Zeichen, die `textZeile` entfernen würde.
+ *
+ * Das Gegenstück für den **Eingang**: Am Ausgang wird entschärft, am Eingang
+ * abgewiesen. Beides wird gebraucht. Nur entschärfen hieße, stillschweigend
+ * eine Eingabe anzunehmen, die so niemand gemeint haben kann — und wer eine
+ * Bestellposition in ein Namensfeld schreibt, hat sie gemeint. Nur abweisen
+ * deckt bloß die Felder ab, die durch eine Eingabeprüfung kommen;
+ * Artikelbezeichnungen aus einer Herstellerdatei kommen das nicht.
+ */
+export const hatSteuerzeichen = (wert) => STEUERZEICHEN.test(String(wert ?? ''));
 
 /**
  * Sichtbare Markierung für eine fehlende Pflichtangabe.

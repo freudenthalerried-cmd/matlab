@@ -18,7 +18,7 @@
  * Verbrauchern eingeführt wurde, erfüllt hier nebenbei eine Steuerpflicht.
  */
 
-import { EUR, LUECKE } from './format.js';
+import { EUR, LUECKE, textZeile } from './format.js';
 
 export const KLEINBETRAG_GRENZE_BRUTTO = 400;
 export const UID_EMPFAENGER_GRENZE_BRUTTO = 10000;
@@ -67,20 +67,30 @@ export function pruefeRechnungsmerkmale(beleg = {}) {
   };
 }
 
-const wert = (v, bezeichnung) => (gefuellt(v) ? String(v).trim() : LUECKE(bezeichnung));
+/**
+ * Ein Feld für eine Belegzeile: entweder der Inhalt, auf eine Zeile gezwungen,
+ * oder die sichtbare Lückenmarkierung.
+ *
+ * `textZeile` statt `trim`, weil `trim` nur an den Enden räumt. Ein Umbruch in
+ * der Mitte eines Firmennamens überlebt ihn — und schreibt dann eine Zeile in
+ * einen Beleg, dessen Summenzeilen zeilenweise gelesen werden. Ein
+ * untergeschobenes „Gesamtbetrag …" wäre ein Rechnungsmangel nach § 11 UStG,
+ * und der Beleg landet unveränderbar in der Ablage.
+ */
+const wert = (v, bezeichnung) => (gefuellt(v) ? textZeile(v) : LUECKE(bezeichnung));
 
 function positionszeilen(warenkorb) {
   const zeilen = [];
   for (const teil of warenkorb.teillieferungen) {
-    zeilen.push(`${teil.lieferantName} — Direktlieferung, ${teil.lieferzeitWerktage} Werktage`);
+    zeilen.push(`${textZeile(teil.lieferantName)} — Direktlieferung, ${teil.lieferzeitWerktage} Werktage`);
     for (const p of teil.positionen) {
       zeilen.push(
-        `  ${String(p.menge).padStart(3)} ${(p.einheit ?? 'Stk').padEnd(4)} ` +
-          `${p.sku.padEnd(12)} ${p.bezeichnung}`,
+        `  ${String(p.menge).padStart(3)} ${textZeile(p.einheit ?? 'Stk').padEnd(4)} ` +
+          `${textZeile(p.sku).padEnd(12)} ${textZeile(p.bezeichnung)}`,
       );
       zeilen.push(`      à ${EUR(p.vkNetto)} netto = ${EUR(p.zeilensummeNetto)}`);
     }
-    zeilen.push(`  Fracht ${teil.lieferantName}: ${EUR(teil.frachtNetto)} (${teil.frachtGrund})`);
+    zeilen.push(`  Fracht ${textZeile(teil.lieferantName)}: ${EUR(teil.frachtNetto)} (${textZeile(teil.frachtGrund)})`);
     zeilen.push('');
   }
   return zeilen;
@@ -128,7 +138,7 @@ export function erzeugeAngebot(warenkorb, { nummer, datum, bindefristTage = 14, 
   ];
 
   if (warenkorb.hinweise.length) {
-    zeilen.push('', 'Hinweise:', ...warenkorb.hinweise.map((h) => `  · ${h}`));
+    zeilen.push('', 'Hinweise:', ...warenkorb.hinweise.map((h) => `  · ${textZeile(h)}`));
   }
 
   return { text: zeilen.join('\n'), bruttobetrag: warenkorb.summeBrutto, bindefristTage };

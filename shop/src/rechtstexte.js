@@ -33,7 +33,7 @@ export const IMPRESSUMSFELDER = [
   { feld: 'gewerbewortlaut', bezeichnung: 'Wortlaut des angemeldeten Gewerbes', bedingt: false },
 ];
 
-import { LUECKE } from './format.js';
+import { LUECKE, textZeile } from './format.js';
 
 /**
  * Prüft die Betreiberdaten und benennt jede Lücke einzeln.
@@ -59,7 +59,7 @@ export function pruefeBetreiberdaten(betreiber = {}) {
 
 const zeile = (betreiber, feld, bezeichnung) => {
   const wert = betreiber[feld];
-  return typeof wert === 'string' && wert.trim() !== '' ? wert.trim() : LUECKE(bezeichnung);
+  return typeof wert === 'string' && wert.trim() !== '' ? textZeile(wert) : LUECKE(bezeichnung);
 };
 
 /** Erzeugt den Impressumstext; Lücken bleiben sichtbar stehen. */

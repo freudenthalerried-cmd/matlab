@@ -32,10 +32,47 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Prüfer für die Testfälle selbst | fertig | gegen Probedatei nachgewiesen |
 | Gegenprobe am gerenderten Beleg | fertig | 14 |
 | Gegenprobe an der Lieferantenbestellung | fertig, ein Fehler behoben | 6 |
+| Fremdtext an allen Ein- und Ausgängen | fertig, ein Fehler behoben | 18 |
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig | headless geprüft |
-| **Summe** | | **233, alle grün, 0 hohl** |
+| **Summe** | | **251, alle grün, 0 hohl** |
 
-## Was zuletzt dazukam: die Gegenprobe an der Lieferantenbestellung
+## Was zuletzt dazukam: Fremdtext an den Ein- und Ausgängen
+
+Aufgabe war, einmal zusammenzustellen, wo fremder Text in den Shop eintritt und
+wo er austritt. Beim Zusammenstellen kam ein Fund heraus, der ernster ist als
+der Anlass. Ausführlich in
+[`fremdtext-ein-und-ausgaenge.md`](./fremdtext-ein-und-ausgaenge.md).
+
+**Ein Firmenname bestellt 999 Rollen.** Der Datensatz
+`firma: 'Bau Muster GmbH\n  999 × AB-RD-375  Abdichtungsbahn'` kam durch
+`pruefeBestelldaten` mit `gueltig: true` und stand danach als zweite Position im
+Bestelltext an den Lieferanten. Ursache ist eine Zeile, die richtig aussieht:
+`String(daten.firma).trim()` räumt an den Enden, nicht in der Mitte.
+
+Die Gegenprobe der Vorrunde hat den Fund gemeldet — sie ist aber ein
+Prüfwerkzeug und kein Riegel: Sie läuft in Testfällen, nicht im Bestellweg.
+
+**Die Regel steht jetzt an beiden Enden.** `hatSteuerzeichen` weist am Eingang
+ab, `textZeile` entschärft am Ausgang; `csvFeld` ist seither `textZeile` plus
+Semikolon. Beides wird gebraucht: Nur entschärfen nimmt stillschweigend an, was
+niemand so gemeint hat; nur abweisen deckt Artikelbezeichnungen aus einer
+Herstellerdatei nicht ab.
+
+**Das Verzeichnis ist der eigentliche Ertrag** — fünf Eingänge, acht Ausgänge,
+und es steht als ausführbarer Testfall in `shop/test/fremdtext.test.js`. Geprüft
+wird eine Eigenschaft, keine Zeichenkette: Der vergiftete Datensatz darf an
+keinem Ausgang mehr Zeilen oder Felder erzeugen als ein harmloser.
+
+Gegenprobe an der Prüfung: `textZeile` versuchsweise zur Identität gemacht —
+**15 Testfälle fallen um**. Am gebauten Bündel headless nachgesehen: gleiche
+Zeilenzahlen mit und ohne Gift, Eingabeprüfung meldet genau einen Fehler.
+
+Nebenfund: `leseBestellung` suchte den Einkaufswert irgendwo im Text statt am
+Zeilenanfang und las deshalb den erfundenen Betrag aus der Lieferadresse. Das
+Werkzeug der Vorrunde hatte selbst eine Schwäche derselben Art, die es finden
+sollte. Jetzt ist der Ausdruck verankert.
+
+## Was davor dazukam: die Gegenprobe an der Lieferantenbestellung
 
 `shop/src/kontrolle.js` liest jetzt auch die **Bestellung an den Lieferanten**
 zurück und vergleicht Warenkorb, Bestelltext und Bestell-CSV paarweise.
@@ -505,14 +542,20 @@ Nach Nutzen geordnet, alle ohne Freigabe und ohne Ausgabe machbar:
 1. **Gebietsabfrage** nach `phase10-datengrundlage-gebietsabfrage.md` — braucht
    die Gemeindeliste. RIS und der Geoserver sind aus dieser Umgebung weiterhin
    nicht erreichbar; zuletzt geprüft am 15. August.
-2. **Fremdtext an allen Ein- und Ausgängen** — der Fund dieser Runde war ein
-   Zeichen aus einer fremden Datei, das eine eigene Datei zerlegt hat. Der
-   Preislisten-Import nimmt CSV von Lieferanten entgegen, die Rechtstexte und
-   die Belege geben Text an Kunden aus. Wo Fremdtext eintritt und wo er
-   austritt, gehört einmal zusammengestellt und je Ausgang entschieden, welche
-   Regel gilt — bisher steht sie nur für die zwei CSV-Ausgänge fest. Braucht
-   keine Freigabe und keine Ausgabe.
-3. **CSV nach RFC 4180**, sobald ein Lieferant seine Schnittstelle benannt hat.
+2. **Die Zahlen der Bestellung gegen die des Kunden** — das Verzeichnis der
+   Fremdtext-Ausgänge deckt Text ab, nicht Beträge. Ungeprüft ist bisher, ob
+   Lieferantenbestellung und Kundenrechnung **denselben Vorgang** meinen:
+   Bestellnummer, Rechnungsnummer und Lieferadresse entstehen an drei Stellen
+   und werden nirgends gegeneinander gehalten. Eine Bestellung, die auf die
+   Baustelle eines anderen Auftrags geht, ist teurer als eine falsche Menge —
+   die Ware ist dann nicht zu viel, sondern weg. Braucht keine Freigabe und
+   keine Ausgabe.
+3. **Gedächtnis der Ablage** — `ablage.js` führt Nummernkreis und Journal
+   sauber, aber nur im Arbeitsspeicher. Nach einem Neuladen beginnt die
+   Rechnungsnummer wieder bei eins, und § 11 UStG verlangt Einmaligkeit. Solange
+   das so ist, darf der Shop keine echte Rechnung ausstellen. Braucht eine
+   Entscheidung über den Speicherort, keine Freigabe und keine Ausgabe.
+4. **CSV nach RFC 4180**, sobald ein Lieferant seine Schnittstelle benannt hat.
    `csvFeld()` ersetzt heute Semikolon und Zeilenumbruch, statt das Feld zu
    quoten; das erhält die Zeile, aber nicht den Inhalt. Solange kein Format
    feststeht, ist die gröbere Regel die robustere — siehe

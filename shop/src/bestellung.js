@@ -8,7 +8,7 @@
  * Bestellung — als Text zum Versenden und als CSV für Schnittstellen.
  */
 
-import { EUR, csvFeld } from './format.js';
+import { EUR, csvFeld, textZeile } from './format.js';
 
 /** Erzeugt je Teillieferung eine Bestellung an den Lieferanten. */
 export function erzeugeBestellungen(warenkorb, auftrag) {
@@ -27,9 +27,17 @@ export function erzeugeBestellungen(warenkorb, auftrag) {
   });
 }
 
+/**
+ * Der Text ist so zeilenorientiert wie die CSV, nur merkt man es ihm nicht an.
+ * Deshalb geht jedes fremde Feld durch `textZeile` — Artikelbezeichnungen aus
+ * einer Herstellerdatei ebenso wie die Adresse, die der Kunde selbst eingibt.
+ * Die Eingabeprüfung in `kunde.js` weist Zeilenumbrüche bereits ab; hier steht
+ * die zweite Sperre, weil nicht jeder Weg in diese Funktion über eine
+ * Eingabeprüfung führt.
+ */
 function bestelltext(nummer, teil, auftrag) {
   const zeilen = teil.positionen.map(
-    (p) => `  ${String(p.menge).padStart(3)} × ${p.sku.padEnd(12)} ${p.bezeichnung}`,
+    (p) => `  ${String(p.menge).padStart(3)} × ${textZeile(p.sku).padEnd(12)} ${textZeile(p.bezeichnung)}`,
   );
 
   return [
@@ -43,10 +51,10 @@ function bestelltext(nummer, teil, auftrag) {
     ...zeilen,
     ``,
     `Lieferadresse (Baustelle):`,
-    `  ${auftrag.lieferadresse.name}`,
-    `  ${auftrag.lieferadresse.strasse}`,
-    `  ${auftrag.lieferadresse.plz} ${auftrag.lieferadresse.ort}`,
-    `  Ansprechpartner vor Ort: ${auftrag.lieferadresse.telefon}`,
+    `  ${textZeile(auftrag.lieferadresse.name)}`,
+    `  ${textZeile(auftrag.lieferadresse.strasse)}`,
+    `  ${textZeile(auftrag.lieferadresse.plz)} ${textZeile(auftrag.lieferadresse.ort)}`,
+    `  Ansprechpartner vor Ort: ${textZeile(auftrag.lieferadresse.telefon)}`,
     ``,
     `Bitte neutral verpackt und ohne Preisangaben liefern.`,
     `Rechnung an den Auftraggeber laut hinterlegten Stammdaten.`,
@@ -54,7 +62,7 @@ function bestelltext(nummer, teil, auftrag) {
     `Warenwert netto laut meiner Kalkulation: ${EUR(teil.einkaufNetto)}`,
     ``,
     `Mit freundlichen Grüßen`,
-    auftrag.absender.firma,
+    textZeile(auftrag.absender.firma),
   ].join('\n');
 }
 
