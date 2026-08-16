@@ -13,6 +13,7 @@ import {
   leseBestellCsv,
   pruefeBestellung,
   pruefeBelegRechnerisch,
+  pruefeFrachtdeckung,
   pruefeBruttoUnabhaengig,
   vergleicheMitWarenkorb,
 } from '../src/kontrolle.js';
@@ -240,4 +241,64 @@ test('Ein leerer Text meldet fehlende Zeilen statt zu rechnen', () => {
   assert.equal(p.stimmig, false);
   assert.equal(p.fehler.length, 1);
   assert.match(p.fehler[0], /fehlen die Zeilen/);
+});
+
+/* ------------------------------------------------------------------ *
+ * Trägt die Fracht sich selbst?
+ *
+ * Die Kette hat zwei Seiten: Was der Kunde für Fracht zahlt und was der
+ * Lieferant dafür verlangt. Bis zu dieser Runde hat sie niemand gegeneinander
+ * gehalten — und genau dort saß ein Fehler, der Geld gekostet hätte.
+ * ------------------------------------------------------------------ */
+
+const lieferantVon = (teil) => katalog.lieferantenById.get(teil.lieferantId);
+
+test('Am Referenzgebäude deckt sich die Fracht auf jeder Teillieferung', () => {
+  const bestellungen = erzeugeBestellungen(referenz, auftrag);
+  assert.ok(bestellungen.length >= 2, 'Für diese Prüfung braucht es mehrere Lieferanten');
+
+  for (let i = 0; i < bestellungen.length; i++) {
+    const teil = referenz.teillieferungen[i];
+    const d = pruefeFrachtdeckung(bestellungen[i], teil, lieferantVon(teil));
+    assert.equal(d.gedeckt, true, `${teil.lieferantName}: ${d.grund}`);
+    assert.equal(d.differenz, 0);
+  }
+});
+
+test('Die Frachtdeckung meldet es, wenn dem Kunden zu wenig verrechnet wurde', () => {
+  const bestellungen = erzeugeBestellungen(referenz, auftrag);
+  const i = referenz.teillieferungen.findIndex((t) => t.frachtNetto > 0);
+  assert.ok(i >= 0, 'Für diese Prüfung braucht es eine Teillieferung mit Fracht');
+
+  const teil = referenz.teillieferungen[i];
+  const ohneFracht = { ...teil, frachtNetto: 0 };
+  const d = pruefeFrachtdeckung(bestellungen[i], ohneFracht, lieferantVon(teil));
+
+  assert.equal(d.gedeckt, false);
+  assert.equal(d.differenz, -teil.frachtNetto);
+  assert.match(d.grund, /gehen aus der Marge/);
+});
+
+test('Die Frachtdeckung misst die Schwelle am Bestellwert, nicht am Verkaufswert', () => {
+  const bestellungen = erzeugeBestellungen(referenz, auftrag);
+  const i = referenz.teillieferungen.findIndex((t) => t.frachtNetto > 0);
+  assert.ok(i >= 0);
+  const teil = referenz.teillieferungen[i];
+  const l = lieferantVon(teil);
+
+  const d = pruefeFrachtdeckung(bestellungen[i], teil, l);
+  assert.ok(d.bestellwert < l.fracht.freiHausAbNetto, 'Bestellwert liegt unter der Schwelle');
+  assert.ok(d.frachtLieferant > 0, 'also verlangt der Lieferant Fracht');
+  assert.equal(d.bestellwert, teil.einkaufNetto, 'gelesen wird der Einkaufswert, nicht der Verkaufswert');
+});
+
+test('Ohne Warenwert im Bestelltext urteilt die Frachtdeckung nicht', () => {
+  const bestellungen = erzeugeBestellungen(referenz, auftrag);
+  const teil = referenz.teillieferungen[0];
+  const ohne = { ...bestellungen[0], text: 'Bestellung ohne Wertangabe' };
+
+  const d = pruefeFrachtdeckung(ohne, teil, lieferantVon(teil));
+  assert.equal(d.gedeckt, false);
+  assert.equal(d.bestellwert, null);
+  assert.match(d.grund, /kein Warenwert/);
 });

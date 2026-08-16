@@ -76,31 +76,49 @@ const lieferant = {
 
 test('Fracht: Pauschale plus Sperrgutzuschlag je Sperrgutposition', () => {
   const positionen = [
-    { vkNetto: 100, menge: 2, sperrgut: true },
-    { vkNetto: 50, menge: 1, sperrgut: false },
+    { vkNetto: 100, ekNetto: 65, menge: 2, sperrgut: true },
+    { vkNetto: 50, ekNetto: 32.5, menge: 1, sperrgut: false },
   ];
   const f = fracht(positionen, lieferant);
   assert.equal(f.warenwertNetto, 250);
+  assert.equal(f.bestellwertNetto, 162.5);
   assert.equal(f.betragNetto, 100); // 75 + 1 × 25
   assert.match(f.grund, /Sperrgut/);
 });
 
-test('Fracht entfällt ab der Frei-Haus-Grenze', () => {
-  const positionen = [{ vkNetto: 800, menge: 2, sperrgut: true }];
-  const f = fracht(positionen, lieferant);
+test('Fracht entfällt ab der Frei-Haus-Grenze — gemessen am Bestellwert', () => {
+  const f = fracht([{ vkNetto: 1200, ekNetto: 780, menge: 2, sperrgut: true }], lieferant);
+  assert.equal(f.warenwertNetto, 2400);
+  assert.equal(f.bestellwertNetto, 1560);
   assert.equal(f.betragNetto, 0);
   assert.match(f.grund, /frei Haus/);
 });
 
+/*
+ * Der Fehler, den diese beiden Testfälle festhalten: Die Schwelle wurde am
+ * Verkaufswert gemessen statt am Bestellwert. Der Shop hat dann Frachtfreiheit
+ * gewährt, die der Lieferant nicht gewährt, und die Pauschale aus der eigenen
+ * Marge bezahlt. Bei 35 % Zielmarge liegen die beiden Werte rund 54 %
+ * auseinander — das Fenster ist entsprechend breit.
+ */
+test('Fracht: Verkaufswert über der Grenze, Bestellwert darunter — Pauschale bleibt', () => {
+  const f = fracht([{ vkNetto: 1600, ekNetto: 1040, menge: 1, sperrgut: false }], lieferant);
+  assert.equal(f.warenwertNetto, 1600, 'über der Frei-Haus-Grenze von 1500');
+  assert.equal(f.bestellwertNetto, 1040, 'aber die Bestellung liegt darunter');
+  assert.equal(f.betragNetto, 75, 'also zahlt der Lieferant nicht');
+  assert.equal(f.grund, 'Pauschale');
+});
+
 test('Fracht ohne Sperrgut ist die reine Pauschale', () => {
-  const f = fracht([{ vkNetto: 100, menge: 1, sperrgut: false }], lieferant);
+  const f = fracht([{ vkNetto: 100, ekNetto: 65, menge: 1, sperrgut: false }], lieferant);
   assert.equal(f.betragNetto, 75);
   assert.equal(f.grund, 'Pauschale');
 });
 
-test('Mindestbestellwert meldet den Fehlbetrag', () => {
+test('Mindestbestellwert wird am Bestellwert gemessen', () => {
   const unter = mindestbestellwertErfuellt(180, lieferant);
   assert.equal(unter.erfuellt, false);
+  assert.equal(unter.bestellwertNetto, 180);
   assert.equal(unter.fehlbetragNetto, 70);
 
   const drueber = mindestbestellwertErfuellt(250, lieferant);

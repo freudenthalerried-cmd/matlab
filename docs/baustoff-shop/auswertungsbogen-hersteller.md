@@ -76,6 +76,16 @@ Zwei Punkte sind gegenüber der ursprünglichen Liste dazugekommen:
   Sitz des Herstellers entscheidet über das Reihengeschäft, sondern die
   Gesellschaft, die die Rechnung stellt. Ohne Angabe unterstellt der Bogen
   nichts — das Feld bleibt `null`.
+- **Worauf sich die Schwellen beziehen**, aus
+  [`frachtschwelle-und-bestellwert.md`](./frachtschwelle-und-bestellwert.md).
+  Mindestbestellwert und Frei-Haus-Grenze gelten für den **Nettobestellwert nach
+  Händlerrabatt** — nicht für den Listenwert und erst recht nicht für den
+  Verkaufspreis an den Endkunden. Bei 42 % Rabatt ist der Unterschied fast ein
+  Faktor zwei. Eine Antwort, die „frachtfrei ab 1.200 €" sagt, ohne die
+  Bezugsgröße zu nennen, ist an dieser Stelle **nicht auswertbar**; sie gehört
+  nachgefragt, bevor daraus eine Planungszahl wird. Im Programm hatte genau
+  diese Verwechslung dazu geführt, dass der Shop Frachtfreiheit gewährte, die
+  kein Lieferant gewährt hatte.
 
 ## Von der Antwort zur Planungszahl
 

@@ -120,3 +120,82 @@ test('Ohne Zahlungseingang keine Auslösung', () => {
   const pruefung = darfAutomatischAusgeloestWerden(wk, { ...auftrag, zahlungEingegangen: false });
   assert.ok(pruefung.gruende.some((g) => /Zahlung/.test(g)));
 });
+
+/* ------------------------------------------------------------------ *
+ * Lieferantenschwellen gelten für den Bestellwert
+ *
+ * `freiHausAbNetto` und `mindestbestellwertNetto` stehen in
+ * `lieferanten.json` neben `haendlerrabattAufUvp` — es sind Konditionen des
+ * Lieferanten uns gegenüber. Die Frage im Anschreiben lautet „ab welchem
+ * Auftragswert liefern **Sie** frachtfrei?". Maßgeblich ist deshalb der Wert
+ * unserer Bestellung, nicht der Rechnungsbetrag des Kunden. Bei 35 %
+ * Zielmarge liegen die beiden rund 54 % auseinander.
+ * ------------------------------------------------------------------ */
+
+test('Die Frei-Haus-Schwelle wird am Bestellwert gemessen, nicht am Verkaufswert', () => {
+  // Ein Warenkorb, dessen Verkaufswert über der Schwelle liegt und dessen
+  // Bestellwert darunter — genau das Fenster, in dem der Fehler saß.
+  const korb = berechneWarenkorb([{ sku: 'AB-RD-375', menge: 4 }], katalog);
+  const teil = korb.teillieferungen.find((t) => t.lieferantId === 'bahnen-de');
+  assert.ok(teil, 'Teillieferung des Bahnenherstellers fehlt');
+
+  const grenze = katalog.lieferantenById.get('bahnen-de').fracht.freiHausAbNetto;
+  assert.ok(teil.warenwertNetto > grenze, 'Verkaufswert liegt über der Schwelle');
+  assert.ok(teil.einkaufNetto < grenze, 'Bestellwert liegt darunter');
+  assert.ok(teil.frachtNetto > 0, 'also fällt Fracht an');
+});
+
+test('Über der Schwelle im Bestellwert entfällt die Fracht wirklich', () => {
+  const korb = berechneWarenkorb([{ sku: 'AB-RD-375', menge: 6 }], katalog);
+  const teil = korb.teillieferungen.find((t) => t.lieferantId === 'bahnen-de');
+  assert.ok(teil);
+
+  const grenze = katalog.lieferantenById.get('bahnen-de').fracht.freiHausAbNetto;
+  assert.ok(teil.einkaufNetto >= grenze, 'Bestellwert erreicht die Schwelle');
+  assert.equal(teil.frachtNetto, 0);
+  assert.match(teil.frachtGrund, /Bestellwert/);
+});
+
+test('Der Mindestbestellwert wird am Bestellwert gemessen', () => {
+  // 2 × DR-100-050: Verkauf 330 €, Einkauf 231 €, Grenze 250 €.
+  // Am Verkaufswert gemessen wäre das bestellbar — beim Lieferanten nicht.
+  const korb = berechneWarenkorb([{ sku: 'DR-100-050', menge: 2 }], katalog);
+  const teil = korb.teillieferungen[0];
+  const grenze = katalog.lieferantenById.get('rohr-at').mindestbestellwertNetto;
+
+  assert.ok(teil.warenwertNetto > grenze, 'Verkaufswert liegt über der Grenze');
+  assert.ok(teil.einkaufNetto < grenze, 'Bestellwert liegt darunter');
+  assert.equal(teil.mindestbestellwert.erfuellt, false);
+  assert.equal(korb.bestellbar, false);
+  assert.equal(teil.mindestbestellwert.bestellwertNetto, teil.einkaufNetto);
+});
+
+test('Der Hinweis nennt den erreichten Bestellwert, nicht nur den Fehlbetrag', () => {
+  const korb = berechneWarenkorb([{ sku: 'DR-100-050', menge: 2 }], katalog);
+  assert.equal(korb.hinweise.length, 1);
+  assert.match(korb.hinweise[0], /Bestellwert/);
+  assert.match(korb.hinweise[0], /erreicht sind 231 €/);
+});
+
+test('Am Referenzgebäude ändert die Schwellenkorrektur nichts', () => {
+  // Dort liegt jede Teillieferung mit Verkaufs- und Bestellwert auf derselben
+  // Seite ihrer Schwelle. Die Kennzahlen der Analyse bleiben damit gültig.
+  const korb = berechneWarenkorb(
+    [
+      { sku: 'AB-RD-375', menge: 5 },
+      { sku: 'AB-PR-010', menge: 4 },
+      { sku: 'ZB-DB-150', menge: 2 },
+      { sku: 'ZB-MA-SET', menge: 1 },
+      { sku: 'ZB-RR-125', menge: 4 },
+      { sku: 'DR-100-050', menge: 1 },
+      { sku: 'DR-FT-SET', menge: 1 },
+      { sku: 'DR-KS-100', menge: 1 },
+      { sku: 'DR-SL-100', menge: 1 },
+    ],
+    katalog,
+  );
+  assert.equal(korb.summeBrutto, 3900.2);
+  assert.equal(korb.frachtNetto, 162);
+  assert.equal(korb.einkaufNetto, 2030.8);
+  assert.equal(korb.bestellbar, true);
+});

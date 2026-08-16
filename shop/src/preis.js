@@ -81,15 +81,32 @@ export function kalkuliere(artikel, lieferant, zielmarge) {
  * Im Streckengeschäft liefert jeder Lieferant getrennt, also fällt Fracht je
  * Lieferant an — nicht je Bestellung. Das ist der Grund, weshalb ein
  * Warenkorb aus drei Quellen dreimal Fracht trägt.
+ *
+ * **Die Schwelle wird am Einkauf gemessen, nicht am Verkauf.** `freiHausAbNetto`
+ * ist eine Kondition des Lieferanten uns gegenüber — die Frage im Anschreiben
+ * lautet „ab welchem Auftragswert liefern **Sie** frachtfrei?". Maßgeblich ist
+ * also der Wert unserer Bestellung, nicht der Rechnungsbetrag des Kunden. Bei
+ * 35 % Zielmarge liegen die beiden rund 54 % auseinander; wer sie verwechselt,
+ * gewährt Frachtfreiheit, die der Lieferant nicht gewährt, und zahlt die
+ * Pauschale aus der eigenen Marge. Genau das hat diese Funktion getan.
  */
 export function fracht(positionen, lieferant) {
   const regel = lieferant.fracht;
-  const warenwertNetto = cent(
-    positionen.reduce((s, p) => s + p.vkNetto * p.menge, 0),
-  );
 
-  if (regel.freiHausAbNetto != null && warenwertNetto >= regel.freiHausAbNetto) {
-    return { betragNetto: 0, grund: 'frei Haus ab ' + regel.freiHausAbNetto + ' €', warenwertNetto };
+  // Zwei verschiedene Beträge, und sie dürfen nicht verwechselt werden.
+  // `warenwertNetto` ist, was der Kunde für die Ware zahlt.
+  // `bestellwertNetto` ist, was wir beim Lieferanten bestellen — der Wert, an
+  // dem der Lieferant seine Schwellen misst.
+  const warenwertNetto = cent(positionen.reduce((s, p) => s + p.vkNetto * p.menge, 0));
+  const bestellwertNetto = cent(positionen.reduce((s, p) => s + p.ekNetto * p.menge, 0));
+
+  if (regel.freiHausAbNetto != null && bestellwertNetto >= regel.freiHausAbNetto) {
+    return {
+      betragNetto: 0,
+      grund: `frei Haus ab ${regel.freiHausAbNetto} € Bestellwert`,
+      warenwertNetto,
+      bestellwertNetto,
+    };
   }
 
   const sperrgutPositionen = positionen.filter((p) => p.sperrgut).length;
@@ -104,15 +121,25 @@ export function fracht(positionen, lieferant) {
         ? `Pauschale plus ${sperrgutPositionen}× Sperrgutzuschlag`
         : 'Pauschale',
     warenwertNetto,
+    bestellwertNetto,
   };
 }
 
-/** Prüft den Mindestbestellwert eines Lieferanten. */
-export function mindestbestellwertErfuellt(warenwertNetto, lieferant) {
+/**
+ * Prüft den Mindestbestellwert eines Lieferanten.
+ *
+ * Gemessen wird am **Bestellwert**, also an dem, was wir beim Lieferanten
+ * einkaufen — nicht an dem, was der Kunde bezahlt. Der Unterschied ist bei 35 %
+ * Zielmarge rund die Hälfte: Ein Warenkorb über 330 € Verkauf ist eine
+ * Bestellung über 231 € Einkauf, und an einem Mindestbestellwert von 250 €
+ * scheitert die zweite Zahl, nicht die erste.
+ */
+export function mindestbestellwertErfuellt(bestellwertNetto, lieferant) {
   const grenze = lieferant.mindestbestellwertNetto ?? 0;
   return {
-    erfuellt: warenwertNetto >= grenze,
+    erfuellt: bestellwertNetto >= grenze,
     grenze,
-    fehlbetragNetto: cent(Math.max(0, grenze - warenwertNetto)),
+    bestellwertNetto,
+    fehlbetragNetto: cent(Math.max(0, grenze - bestellwertNetto)),
   };
 }

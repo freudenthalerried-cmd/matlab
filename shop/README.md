@@ -12,8 +12,8 @@ Gerüst vorhanden und meldet selbst, welche Pflichtangaben ihm fehlen.
 | Katalog | 9 Artikel, 3 Lieferanten, Gruppierung nach Sortimentsbereich |
 | Preisrechnung | UVP → Einkauf → Verkauf, Nettopreise mit getrennter Umsatzsteuer |
 | Margenprüfung | Gate 1 als Ampel je Artikel und als Mischmarge im Warenkorb |
-| Frachtrechnung | je Lieferant, mit Frei-Haus-Grenze und Sperrgutzuschlag |
-| Warenkorb | Aufteilung nach Lieferant, Mindestbestellwert je Gruppe |
+| Frachtrechnung | je Lieferant, Frei-Haus-Grenze **am Bestellwert**, Sperrgutzuschlag |
+| Warenkorb | Aufteilung nach Lieferant, Mindestbestellwert je Gruppe am Bestellwert |
 | Bestellübergabe | je Lieferant eine fertige Bestellung als Text und als CSV |
 | Freigabeprüfung | Gate 6 und Gate 7 als harte Sperren vor der Auslösung |
 | Preislisten-Import | CSV einlesen, prüfen, mit dem Katalog vergleichen |
@@ -35,7 +35,7 @@ Gerüst vorhanden und meldet selbst, welche Pflichtangaben ihm fehlen.
 ## Benutzen
 
 ```
-npm test           # 251 Testfälle
+npm test           # 261 Testfälle
 npm run build      # erzeugt demo.html, eine einzelne Datei ohne Abhängigkeiten
 npm run import -- <lieferantId> <datei.csv> [--schreiben]
 npm run pruefe-tests  # prüft die Testfälle darauf, ob sie etwas behaupten

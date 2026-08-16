@@ -11,8 +11,8 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Baustein | Stand | Testfälle |
 |---|---|---|
 | Preis- und Margenrechnung | fertig | 8 |
-| Frachtrechnung je Lieferant | fertig | 4 |
-| Warenkorb mit Lieferantenaufteilung | fertig | 6 |
+| Frachtrechnung je Lieferant | fertig, Schwelle korrigiert | 5 |
+| Warenkorb mit Lieferantenaufteilung | fertig, Schwelle korrigiert | 11 |
 | Bestellübergabe als Text und CSV | fertig | 4 |
 | Freigabesperren (Gate 6, Gate 7) | fertig | 3 |
 | Preislisten-Import | fertig | 14 |
@@ -33,10 +33,55 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Gegenprobe am gerenderten Beleg | fertig | 14 |
 | Gegenprobe an der Lieferantenbestellung | fertig, ein Fehler behoben | 6 |
 | Fremdtext an allen Ein- und Ausgängen | fertig, ein Fehler behoben | 18 |
+| Frachtdeckung Kunde gegen Lieferant | fertig, ein Fehler behoben | 4 |
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig | headless geprüft |
-| **Summe** | | **251, alle grün, 0 hohl** |
+| **Summe** | | **261, alle grün, 0 hohl** |
 
-## Was zuletzt dazukam: Fremdtext an den Ein- und Ausgängen
+## Was zuletzt dazukam: die Schwelle stand auf der falschen Seite
+
+Vorgenommen war die Klammer zwischen den Zahlen des Kunden und denen des
+Lieferanten. Die erste gespannte Klammer — die Fracht — hat sofort etwas
+gefunden, und zwar nicht in der Klammer, sondern in der Rechnung darunter.
+Ausführlich in
+[`frachtschwelle-und-bestellwert.md`](./frachtschwelle-und-bestellwert.md).
+
+`preis.js` maß die Frei-Haus-Grenze am **Verkaufswert**. `freiHausAbNetto` ist
+aber eine Kondition des Lieferanten uns gegenüber — die Frage im Anschreiben
+lautet „ab welchem Auftragswert liefern **Sie** frachtfrei?". Maßgeblich ist der
+Wert unserer Bestellung. Bei 35 % Zielmarge liegen die beiden rund 54 %
+auseinander. Dasselbe galt für den Mindestbestellwert.
+
+**Der Fehler geht immer in dieselbe Richtung.** Der Verkaufswert ist stets
+größer als der Einkaufswert, also wird jede Schwelle zu früh erreicht, nie zu
+spät. Über 3.066 Warenkörbe: **1.024 Teillieferungen** mit zu früh gewährter
+Frachtfreiheit, zusammen **76.736 €** selbst getragene Fracht; größter
+Einzelfall 150 € auf 487,50 € Deckungsbeitrag. Dazu **928 Teillieferungen**, die
+als bestellbar gemeldet wurden, obwohl der Lieferant sie zurückgewiesen hätte —
+der Gate-6-Fall in Reinform.
+
+Der Kommentar im Warenkorb lautete: „Die Fracht wird an den Kunden weitergegeben
+und ist damit margenneutral." Das stimmt nur, wenn die weitergegebene Fracht
+dieselbe ist, die der Lieferant verlangt.
+
+**Am Referenzgebäude ändert sich nichts** — dort liegen Verkaufs- und
+Bestellwert jeder Teillieferung auf derselben Seite ihrer Schwelle. Genau
+deshalb konnte der Fehler so lange stehen. 3.900,20 € brutto, 162,00 € Fracht,
+34,2 % Mischmarge bleiben gültig, und mit ihnen alle daran hängenden Kennzahlen.
+
+Die Klammer selbst ist `pruefeFrachtdeckung` in `kontrolle.js`, bewusst
+unabhängig: Sie liest den Bestellwert aus dem **gerenderten Bestelltext** zurück
+und legt die Konditionen aus `lieferanten.json` darauf an, statt mit
+`warenkorb.js` zu rechnen. Wäre sie aus derselben Funktion gespeist worden, die
+den Fehler gemacht hat, hätte sie ihn bestätigt statt gefunden. Zwei Verfahren,
+dasselbe Ergebnis: 1.024 Fälle, 76.736 €. Nach der Behebung 0 ungedeckte
+Teillieferungen über 7.872 geprüfte Bestellungen.
+
+Nachgetragen in [`auswertungsbogen-hersteller.md`](./auswertungsbogen-hersteller.md):
+Bei jeder von einem Hersteller genannten Schwelle ist zu klären, **worauf sie
+sich bezieht** — Nettobestellwert nach Rabatt oder Listenwert. Bei 42 % Rabatt
+ist das fast ein Faktor zwei.
+
+## Was davor dazukam: Fremdtext an den Ein- und Ausgängen
 
 Aufgabe war, einmal zusammenzustellen, wo fremder Text in den Shop eintritt und
 wo er austritt. Beim Zusammenstellen kam ein Fund heraus, der ernster ist als
@@ -542,14 +587,12 @@ Nach Nutzen geordnet, alle ohne Freigabe und ohne Ausgabe machbar:
 1. **Gebietsabfrage** nach `phase10-datengrundlage-gebietsabfrage.md` — braucht
    die Gemeindeliste. RIS und der Geoserver sind aus dieser Umgebung weiterhin
    nicht erreichbar; zuletzt geprüft am 15. August.
-2. **Die Zahlen der Bestellung gegen die des Kunden** — das Verzeichnis der
-   Fremdtext-Ausgänge deckt Text ab, nicht Beträge. Ungeprüft ist bisher, ob
-   Lieferantenbestellung und Kundenrechnung **denselben Vorgang** meinen:
-   Bestellnummer, Rechnungsnummer und Lieferadresse entstehen an drei Stellen
-   und werden nirgends gegeneinander gehalten. Eine Bestellung, die auf die
-   Baustelle eines anderen Auftrags geht, ist teurer als eine falsche Menge —
-   die Ware ist dann nicht zu viel, sondern weg. Braucht keine Freigabe und
-   keine Ausgabe.
+2. **Die Vorgangsklammer zu Ende ziehen** — die Fracht ist geklammert, die
+   Kennungen nicht. Bestellnummer, Rechnungsnummer und Lieferadresse entstehen
+   an drei Stellen und werden nirgends gegeneinander gehalten. Eine Bestellung,
+   die auf die Baustelle eines anderen Auftrags geht, ist teurer als eine
+   falsche Menge — die Ware ist dann nicht zu viel, sondern weg. Braucht keine
+   Freigabe und keine Ausgabe.
 3. **Gedächtnis der Ablage** — `ablage.js` führt Nummernkreis und Journal
    sauber, aber nur im Arbeitsspeicher. Nach einem Neuladen beginnt die
    Rechnungsnummer wieder bei eins, und § 11 UStG verlangt Einmaligkeit. Solange

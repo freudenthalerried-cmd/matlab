@@ -219,6 +219,60 @@ export function pruefeBestellung(bestellung, teillieferung) {
 }
 
 /**
+ * Trägt die Fracht sich selbst?
+ *
+ * Die Kette hat zwei Seiten, und bisher hat niemand sie gegeneinander gehalten:
+ * Der Kunde zahlt eine Fracht, die im Warenkorb gerechnet wird — der Lieferant
+ * verlangt eine Fracht, die sich nach **seinen** Konditionen und nach dem Wert
+ * **unserer** Bestellung richtet. Stimmen die beiden nicht überein, geht die
+ * Differenz aus der Marge, und zwar unbemerkt: Auf keinem Beleg steht sie.
+ *
+ * Bewusst unabhängig gebaut. Die Funktion rechnet nicht mit `warenkorb.js`,
+ * sondern liest den **Bestellwert aus dem gerenderten Bestelltext** zurück und
+ * legt die Konditionen aus `lieferanten.json` darauf an. Ein Vorzeichenfehler
+ * auf der einen Seite fällt damit auf, statt sich auf beiden Seiten gleich
+ * auszuwirken.
+ *
+ * @param {object} bestellung  Eine Lieferantenbestellung mit `text`
+ * @param {object} teil        Die zugehörige Teillieferung aus dem Warenkorb
+ * @param {object} lieferant   Der Lieferantensatz mit `fracht`
+ */
+export function pruefeFrachtdeckung(bestellung, teil, lieferant) {
+  const gelesen = leseBestellung(bestellung.text);
+  const bestellwert = gelesen.einkaufNetto;
+  const regel = lieferant.fracht;
+
+  if (bestellwert === null) {
+    return { gedeckt: false, grund: 'Im Bestelltext steht kein Warenwert', bestellwert: null };
+  }
+
+  const sperrgut = teil.positionen.filter((p) => p.sperrgut).length;
+  const frachtLieferant =
+    regel.freiHausAbNetto != null && bestellwert >= regel.freiHausAbNetto
+      ? 0
+      : rund(regel.pauschaleNetto + sperrgut * (regel.sperrgutZuschlagNetto ?? 0));
+
+  const frachtKunde = teil.frachtNetto;
+  const differenz = rund(frachtKunde - frachtLieferant);
+
+  return {
+    gedeckt: differenz === 0,
+    bestellwert,
+    schwelle: regel.freiHausAbNetto ?? null,
+    frachtKunde,
+    frachtLieferant,
+    differenz,
+    grund:
+      differenz === 0
+        ? 'Fracht deckt sich'
+        : differenz < 0
+          ? `Der Kunde zahlt ${frachtKunde} €, der Lieferant verlangt ${frachtLieferant} € — ` +
+            `${-differenz} € gehen aus der Marge`
+          : `Der Kunde zahlt ${frachtKunde} €, der Lieferant verlangt nur ${frachtLieferant} €`,
+  };
+}
+
+/**
  * Die einzige wirklich unabhängige Gleichung.
  *
  * Vier der fünf Prüfungen oben nutzen dieselbe Arithmetik, die den Beleg

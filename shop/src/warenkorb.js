@@ -50,7 +50,9 @@ export function berechneWarenkorb(zeilen, katalog) {
   for (const [lieferantId, positionen] of gruppen) {
     const lieferant = katalog.lieferantenById.get(lieferantId);
     const f = fracht(positionen, lieferant);
-    const mbw = mindestbestellwertErfuellt(f.warenwertNetto, lieferant);
+    // Am Bestellwert gemessen, nicht am Warenwert: Der Mindestbestellwert ist
+    // eine Kondition des Lieferanten uns gegenüber.
+    const mbw = mindestbestellwertErfuellt(f.bestellwertNetto, lieferant);
 
     teillieferungen.push({
       lieferantId,
@@ -58,7 +60,7 @@ export function berechneWarenkorb(zeilen, katalog) {
       lieferzeitWerktage: lieferant.lieferzeitWerktage,
       positionen,
       warenwertNetto: f.warenwertNetto,
-      einkaufNetto: cent(positionen.reduce((s, p) => s + p.zeileneinkaufNetto, 0)),
+      einkaufNetto: f.bestellwertNetto,
       frachtNetto: f.betragNetto,
       frachtGrund: f.grund,
       mindestbestellwert: mbw,
@@ -94,8 +96,9 @@ export function berechneWarenkorb(zeilen, katalog) {
       .filter((t) => !t.mindestbestellwert.erfuellt)
       .map(
         (t) =>
-          `${t.lieferantName}: Mindestbestellwert ${t.mindestbestellwert.grenze} € netto, ` +
-          `es fehlen ${t.mindestbestellwert.fehlbetragNetto} €.`,
+          `${t.lieferantName}: Mindestbestellwert ${t.mindestbestellwert.grenze} € netto Bestellwert, ` +
+          `erreicht sind ${t.mindestbestellwert.bestellwertNetto} €, es fehlen ` +
+          `${t.mindestbestellwert.fehlbetragNetto} €.`,
       ),
   };
 }
