@@ -23,6 +23,7 @@ const entkleide = (quelle) =>
 
 const kern = [
   entkleide(lies('./src/format.js')),
+  entkleide(lies('./src/gebiet.js')),
   entkleide(lies('./src/preis.js')),
   entkleide(lies('./src/warenkorb.js')),
   entkleide(lies('./src/bedarf.js')),

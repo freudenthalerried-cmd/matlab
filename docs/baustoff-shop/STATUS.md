@@ -1,6 +1,6 @@
 # Status und Einstieg
 
-Stand: 2026-08-16. **Dieses Dokument zuerst lesen.** Achtundfünfzig Arbeitsdateien
+Stand: 2026-08-16. **Dieses Dokument zuerst lesen.** Neunundfünfzig Arbeitsdateien
 sind entstanden, mehrere davon korrigieren einander. Hier steht, was gilt.
 
 Veröffentlichter Bericht:
@@ -14,7 +14,7 @@ letzten Runde, zwei gleichrangige Freigaben. Quelldatei im Repo unter
 
 Lauffähiges Shop-Funktionsmuster:
 [claude.ai/code/artifact/c40fd35f…](https://claude.ai/code/artifact/c40fd35f-56e1-4821-a3b1-a1a885102ec8) —
-Quelltext und 364 Testfälle unter `shop/`, auf Hohlheit geprüft. Alle Preise sind Platzhalter.
+Quelltext und 374 Testfälle unter `shop/`, auf Hohlheit geprüft. Alle Preise sind Platzhalter.
 Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 
 ## Wo das Projekt steht
@@ -151,6 +151,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `felder-der-ablage.md` | **Ein eingefrorenes Feld kann nie wahr werden** — das Felderverzeichnis der Ablage; jedes Journalfeld trägt Grundlage oder Beweislast, das tote Feld `storniert` ist entfernt |
 | `gedaechtnis-der-ablage.md` | **Erst das Journal, dann der Speicher** — die Ablage überlebt den Neustart als Anhangdatei; auch die Nummernvergabe wird eine Zeile, sonst vergäbe der Neustart Rechnungsnummern doppelt |
 | `nachfragezahlen-pflichtgebiet-und-bestand.md` | **Das Pflichtgebiet ist fast ganz Österreich — ausgenommen Wien, zehn Bezirke und damit der Heimatbezirk des Betreibers** — EFH-Kern ~8.000–9.000 Häuser/Jahr; Bestand ~240.000 betroffene Wohnungen, Engpass ist die Messquote |
+| `gebietsauskunft-zwischenloesung.md` | **Elf Einträge statt 2.095 Gemeinden** — die Vorsorgegebiets-Auskunft über die Negativliste, als Auskunft mit ausgesprochenen Grenzen statt als Sperre; Schutzgebiets-Stufe bleibt am Verordnungstext blockiert |
 | `pruefung-der-testfaelle.md` | **Grüne Tests sind eine Aussage über die Testfälle, nicht über den Code** — elf hohle Schleifen gefunden und entschärft |
 | `verhandlungsziel-konditionen.md` | **Zehn Prozent Nachlass kosten 38,8 % Rabatt** — das Verhandlungsziel liegt über der Gate-2-Schwelle |
 | `auswertungsbogen-hersteller.md` | **Genau 35 % Rabatt lassen 4,4 % Preisspielraum** — die Auswertung der zwölf Antworten steht fertig bereit |

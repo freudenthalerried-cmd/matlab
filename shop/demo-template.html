@@ -94,6 +94,7 @@
   .k-sim{display:flex;flex-direction:column;gap:.3rem;font-size:.82rem;color:var(--ink-2);border:1px dashed var(--line-strong);padding:.6rem .7rem}
   .k-sim select{font:inherit;padding:.3rem .4rem;border:1px solid var(--line-strong);background:var(--ground);color:var(--ink);max-width:24rem}
   .k-sim small{color:var(--muted);font-size:.75rem}
+  .k-gebiet{grid-column:1/-1;color:var(--muted);font-size:.75rem;line-height:1.5}
   .k-bestaetigung{display:flex;gap:.5rem;align-items:flex-start;font-size:.85rem;border:1px solid var(--line-strong);padding:.6rem .7rem}
   .k-fehler{border:1px solid var(--warn);color:var(--warn);padding:.5rem .7rem;font-size:.83rem;display:flex;flex-direction:column;gap:.25rem}
   .k-warn{border:1px solid var(--accent);color:var(--accent);padding:.5rem .7rem;font-size:.83rem}
@@ -181,6 +182,8 @@
           <label>Land<input type="text" id="k-b-land" value="AT" placeholder="AT"></label>
           <label>Ansprechpartner vor Ort<input type="text" id="k-b-telefon" value="+43 664 9998877"></label>
           <label>Hinweis zur Zufahrt<input type="text" id="k-b-hinweis" value="Zufahrt über Baustraße, Kran bis 16 Uhr besetzt"></label>
+          <label>Bezirk der Baustelle<input type="text" id="k-b-bezirk" value="Ried im Innkreis"></label>
+          <small id="k-gebiet-auskunft" class="k-gebiet"></small>
         </div>
         <label class="k-bestaetigung" id="k-art14-zeile" hidden><input type="checkbox" id="k-art14"> <span id="k-art14-text"></span></label>
         <label class="k-bestaetigung"><input type="checkbox" id="k-unternehmer" checked> Ich bestelle als Unternehmer im Rahmen meines Betriebs. Ein Rücktrittsrecht nach FAGG besteht damit nicht.</label>
@@ -838,6 +841,18 @@ document.getElementById('k-baustelle-an').addEventListener('change', (e) => {
   document.getElementById('k-baustelle-felder').hidden = !e.target.checked;
   document.getElementById('k-art14-zeile').hidden = !e.target.checked;
 });
+
+// Die Gebietsauskunft ist eine Auskunft, keine Sperre: Sie beantwortet die
+// Vorsorgegebiets-Frage aus der Negativliste und nennt ihre eigene Grenze
+// (Schutzgebiete nur über die amtliche Liste). Text ausschließlich über
+// textContent — wie überall.
+const zeichneGebiet = () => {
+  document.getElementById('k-gebiet-auskunft').textContent = vorsorgeauskunft(
+    document.getElementById('k-b-bezirk').value,
+  ).text;
+};
+document.getElementById('k-b-bezirk').addEventListener('input', zeichneGebiet);
+zeichneGebiet();
 
 zeichneKatalog();
 zeichneKorb();

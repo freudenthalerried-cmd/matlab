@@ -38,10 +38,26 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Baustelle als eigene Lieferanschrift | fertig, Zusicherung nach Art. 14 | 29 |
 | Abgleich Versprechen gegen Verhalten | fertig, zwei Befunde | 14 |
 | Gedächtnis der Ablage (Journal aus Zeilen) | fertig, Senke wählbar | 14 |
+| Gebietsauskunft über die Negativliste | Zwischenlösung, Vollausbau blockiert | 10 |
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig, Baustelle abgefragt | headless geprüft |
-| **Summe** | | **364, alle grün, 0 hohl** |
+| **Summe** | | **374, alle grün, 0 hohl** |
 
-## Was zuletzt dazukam: das Gedächtnis der Ablage
+## Was zuletzt dazukam: die Gebietsauskunft über die Negativliste
+
+Ausführlich in
+[`gebietsauskunft-zwischenloesung.md`](./gebietsauskunft-zwischenloesung.md).
+`gebiet.js` beantwortet die erste Frage jedes Baumeisters — „Gilt das bei
+mir?" — für die Vorsorgegebiets-Ebene aus der Negativliste (Wien + zehn
+Bezirke, elf Einträge statt 2.095 Gemeinden). Die Demo fragt den Bezirk der
+Baustelle ab; Beispielwert ist Ried im Innkreis, der ausgenommene
+Heimatbezirk des Betreibers. Die Auskunft ist eine Auskunft, keine Sperre;
+sie nennt in jedem Ergebnis ihre eigene Grenze (Schutzgebiete nur über die
+amtliche Liste, Gate 11), trägt Stand, Quelle und den Vorbehalt der
+Gegenprüfung am Verordnungstext, und formuliert unbekannte Bezirke als
+Listenaussage statt als Ortskenntnis. Gegenproben: Ried gestrichen → 3
+Testfälle fallen; Liste ignoriert → 3.
+
+## Was davor dazukam: das Gedächtnis der Ablage
 
 Ausführlich in [`gedaechtnis-der-ablage.md`](./gedaechtnis-der-ablage.md).
 `speicher.js` gibt der Ablage ihr Gedächtnis: jedes Ereignis eine JSON-Zeile
@@ -918,9 +934,12 @@ und die Bestellsperre fällt für die betroffenen Artikel weg.
 
 Nach Nutzen geordnet, alle ohne Freigabe und ohne Ausgabe machbar:
 
-1. **Gebietsabfrage** nach `phase10-datengrundlage-gebietsabfrage.md` — braucht
-   die Gemeindeliste. RIS und der Geoserver sind aus dieser Umgebung weiterhin
-   nicht erreichbar; zuletzt geprüft am 15. August.
+1. **Gebietsabfrage, Vollausbau** nach `phase10-datengrundlage-gebietsabfrage.md`
+   — braucht die Gemeindeliste aus Anlage 1 RnV. RIS und der Geoserver sind aus
+   dieser Umgebung weiterhin nicht erreichbar; zuletzt geprüft am 16. August.
+   Die Vorsorgegebiets-Ebene ist seit dem 16. August als Zwischenlösung gebaut
+   (`gebiet.js`, Negativliste); offen sind die Schutzgebiets-Stufe und die
+   Gegenprüfung der Bezirksliste am Verordnungstext.
 2. **CSV nach RFC 4180**, sobald ein Lieferant seine Schnittstelle benannt hat.
    `csvFeld()` ersetzt heute Semikolon und Zeilenumbruch, statt das Feld zu
    quoten; das erhält die Zeile, aber nicht den Inhalt. Solange kein Format
