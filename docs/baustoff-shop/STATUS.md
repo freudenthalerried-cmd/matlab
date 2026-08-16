@@ -14,7 +14,7 @@ letzten Runde, zwei gleichrangige Freigaben. Quelldatei im Repo unter
 
 Lauffähiges Shop-Funktionsmuster:
 [claude.ai/code/artifact/c40fd35f…](https://claude.ai/code/artifact/c40fd35f-56e1-4821-a3b1-a1a885102ec8) —
-Quelltext und 182 Testfälle unter `shop/`. Alle Preise sind Platzhalter.
+Quelltext und 200 Testfälle unter `shop/`. Alle Preise sind Platzhalter.
 Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 
 ## Wo das Projekt steht
@@ -69,7 +69,7 @@ kosten sie unter 200 €.
 
 | Nächster Schritt | Braucht | Entscheidet | Vorbereitet in |
 |---|---|---|---|
-| Rohmarge belegen (Stufe 0) | Freigabe für E-Mails an zwölf Hersteller | den **Shop** — Gate 1, 2, 6 | `anschreiben-entwuerfe.md` |
+| Rohmarge belegen (Stufe 0) | Freigabe für E-Mails an zwölf Hersteller | den **Shop** — Gate 1, 2, 6 | `anschreiben-entwuerfe.md`, Auswertung in `auswertungsbogen-hersteller.md` |
 | Suchvolumina prüfen (Stufe 1) | Werkzeug für 100–200 €/Monat | **beide Modelle** — Gate 15 | `entscheidungsmatrix.md` |
 | Rechtsform, Shop, Inhalte | erst ab Stufe 2, nach den beiden obigen | — | `phase5-technik.md`, `phase8-*` |
 
@@ -124,6 +124,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `zahlenpruefung.md` | Alle zweiundzwanzig Rechenketten nachgerechnet; zwei kleine Fehler benannt |
 | `analyse-abgeschlossen.md` | **Gate 18 — die Analysephase ist geschlossen.** Was den Loop wieder aufweckt |
 | `umsetzung-shop.md` | **Bauprotokoll des Shops.** Baustand, Sperren, nächste Bausteine |
+| `auswertungsbogen-hersteller.md` | **Genau 35 % Rabatt lassen 4,4 % Preisspielraum** — die Auswertung der zwölf Antworten steht fertig bereit |
 | `empfindlichkeit-der-annahmen.md` | **Welche Annahme zuerst gemessen gehört** — die Rohmarge, Elastizität 1,75, als einzige mit Kipppunkt |
 | `kostenbild-und-sessionbedarf.md` | **Von 34 % Mischmarge bleiben 22,5 %** — und der Sessionbedarf liegt bei 1.900–2.550, nicht bei 1.850 |
 | `zahlwege-und-gebuehren.md` | **Zahlungsgebühren fehlten in der ganzen Rechnung** — 0 bis 16 % des Zielgewinns; Rechnungskauf entspricht der Zielgruppe und ist das Teuerste |

@@ -28,11 +28,12 @@ Gerüst vorhanden und meldet selbst, welche Pflichtangaben ihm fehlen.
 | Zahlwege | Gebühren je Zahlweg, Wirkung auf Deckungsbeitrag und Monat |
 | Kostenbild | Kaskade bis zum Gewinn, umgekehrt der nötige Umsatz |
 | Empfindlichkeit | welche der vier Annahmen zuerst gemessen gehört |
+| Auswertungsbogen | Herstellerantworten gegen die vier Gate-2-Bedingungen |
 
 ## Benutzen
 
 ```
-npm test          # 182 Testfälle
+npm test          # 200 Testfälle
 npm run build     # erzeugt demo.html, eine einzelne Datei ohne Abhängigkeiten
 npm run import -- <lieferantId> <datei.csv> [--schreiben]
 ```
@@ -62,6 +63,7 @@ src/ablage.js           Vorgangsakte, Nummernkreise, Storno, § 132 BAO
 src/zahlung.js          Zahlwege, Gebühren, Anforderungen an den Anbieter
 src/kostenbild.js       Kaskade, nötiger Umsatz, Bestellungen, Sessionbedarf
 src/empfindlichkeit.js  Elastizität der vier Annahmen, Kipppunkte
+src/auswertung.js       Herstellerantworten prüfen, Preisspielraum, Folgen
 src/format.js           EUR und Lückenmarkierung — einmal, siehe unten
 bin/import.mjs          Kommandozeile dazu, Probelauf als Voreinstellung
 beispiel/               Musterpreisliste — erfundene Preise, nicht schreibbar
@@ -168,6 +170,23 @@ Umsatzsteuer als innergemeinschaftlicher Erwerb, während die Ausgangsrechnung
 20 % trägt. `reihengeschaeftEinordnung()` erkennt das am Feld `land` des
 Lieferanten und schreibt es in die Kasse. Ausführlich in
 `docs/baustoff-shop/beleg-und-reihengeschaeft.md`.
+
+## Der Auswertungsbogen
+
+Die vier Gate-2-Bedingungen als UND-Verknüpfung; drei von vier ist nicht
+bestanden. Was nicht beantwortet wurde, gilt als **nicht zugesagt**.
+
+Dabei fällt auf, was ein Rabattsatz wirklich hergibt — der Verkaufspreis ist bei
+der UVP gedeckelt, also ist der Rabatt die Obergrenze der Rohmarge:
+
+```
+32 % Rabatt →  0,0 % Nachlass möglich
+35 % Rabatt →  4,4 %
+38 % Rabatt →  8,8 %
+```
+
+Die „≥ 35 %" aus Gate 2 sind also kein Puffer, sondern 4,4 Prozentpunkte
+Preisspielraum.
 
 ## Die Empfindlichkeit der Annahmen
 

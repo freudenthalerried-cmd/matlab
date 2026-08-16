@@ -27,10 +27,41 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Zahlwege und Gebühren | fertig | 15 |
 | Gesamtkostenbild und Umsatzbedarf | fertig | 13 |
 | Empfindlichkeit der vier Annahmen | fertig | 14 |
+| Auswertungsbogen für die Herstellerantworten | fertig, leer | 18 |
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig | headless geprüft |
-| **Summe** | | **182, alle grün** |
+| **Summe** | | **200, alle grün** |
 
-## Was zuletzt dazukam: die Empfindlichkeitsrechnung
+## Was zuletzt dazukam: der Auswertungsbogen
+
+`shop/src/auswertung.js` nimmt die Auswertung der zwölf Herstellerantworten
+vorweg — vor der Freigabe, wie Gate 17 es verlangt. Ausführlich in
+[`auswertungsbogen-hersteller.md`](./auswertungsbogen-hersteller.md).
+
+Beim Bauen ist ein Befund angefallen, der die Schwelle in Gate 2 in ein anderes
+Licht rückt. Der Verkaufspreis ist bei der UVP gedeckelt, also ist der
+Händlerrabatt zugleich die Obergrenze der Rohmarge. Gegen die 32 % aus Gate 1
+gerechnet bedeutet das:
+
+| Rabatt | möglicher Nachlass auf die UVP |
+|---|---|
+| 32 % | **0,0 %** |
+| 35 % | 4,4 % |
+| 38 % | 8,8 % |
+
+**Die „≥ 35 %" aus Gate 2 sind kein Puffer, sondern 4,4 Prozentpunkte
+Preisspielraum.** Der Wert 38 % aus Phase 2 bekommt damit eine zweite
+Begründung: Erst dort wird Preiswettbewerb überhaupt möglich. Kein neues Gate —
+die Schwelle ist nicht falsch, nur enger, als sie aussieht.
+
+Für die Planung zählt der **schwächere** der beiden besten Zusagen, weil beide
+Sortimentsteile gebraucht werden. Die Spanne zwischen der besten und der
+schlechtesten noch zulässigen Antwort beträgt **500 Besucher im Monat**, knapp
+28 %. Damit ist erstmals beziffert, worum es bei den zwölf Anfragen geht.
+
+Was nicht beantwortet wurde, gilt im Bogen als **nicht zugesagt** — Schweigen
+zur Fracht ist keine kalkulierbare Frachtregelung.
+
+## Was davor dazukam: die Empfindlichkeitsrechnung
 
 `shop/src/empfindlichkeit.js` verschiebt jede der vier tragenden Annahmen
 einzeln um zehn Prozent ins Ungünstige und misst die Wirkung auf den
@@ -356,10 +387,9 @@ Nach Nutzen geordnet, alle ohne Freigabe und ohne Ausgabe machbar:
 1. **Gebietsabfrage** nach `phase10-datengrundlage-gebietsabfrage.md` — braucht
    die Gemeindeliste. RIS und der Geoserver sind aus dieser Umgebung weiterhin
    nicht erreichbar; zuletzt geprüft am 15. August.
-2. **Auswertungsbogen für die Herstellerantworten** — sobald die zwölf
-   Anfragen freigegeben sind und Antworten eintreffen, entscheidet sich Gate 1,
-   2 und 6 an ihnen. Ein Bogen, der jede Antwort gegen die vier Bedingungen aus
-   Gate 2 prüft, die Rohmarge in die Kaskade einsetzt und den daraus folgenden
-   Besucherbedarf ausweist, würde die Auswertung von der Freigabe entkoppeln —
-   die Antworten wären dann nur noch einzutragen. Braucht keine Freigabe und
-   keine Ausgabe.
+2. **Rückwärtsrechnung vom Preis** — bisher entsteht der Verkaufspreis aus
+   Einkauf plus Zielmarge, gedeckelt bei der UVP. Die umgekehrte Frage ist
+   ungestellt: Welchen Einkaufspreis braucht ein Artikel, damit er zu einem
+   marktüblichen Verkaufspreis noch die Untergrenze trägt? Das wäre die Zahl,
+   mit der man in eine Konditionsverhandlung geht — und sie ergibt sich aus dem
+   vorhandenen Rechenkern. Braucht keine Freigabe und keine Ausgabe.
