@@ -35,7 +35,7 @@ Gerüst vorhanden und meldet selbst, welche Pflichtangaben ihm fehlen.
 ## Benutzen
 
 ```
-npm test           # 345 Testfälle
+npm test           # 350 Testfälle
 npm run build      # erzeugt demo.html, eine einzelne Datei ohne Abhängigkeiten
 npm run import -- <lieferantId> <datei.csv> [--schreiben]
 npm run pruefe-tests  # prüft die Testfälle darauf, ob sie etwas behaupten
@@ -300,6 +300,12 @@ Nummernkreis Rechnungen 2026: 0 vergeben, lückenlos
 
 Abgelegte Einträge sind eingefroren; ein Storno ist eine neue Gutschrift, keine
 Änderung an der Rechnung (§ 131 BAO). Aufbewahrung sieben Jahre nach § 132 BAO.
+
+Jedes Journalfeld hat seinen Eintrag in `FELDER_DER_ABLAGE` — Rechtsgrundlage
+oder ausdrücklich „betrieblich" —, und `pruefeAblagefelder` hält Einträge und
+Verzeichnis in beide Richtungen gegeneinander. Ob eine Rechnung storniert ist,
+beantwortet `istStorniert` aus der Gutschriftkette; eine Statuszelle im
+eingefrorenen Eintrag könnte den Wechsel nie vollziehen.
 
 **Nicht enthalten: die Speicherung.** Die Ablage lebt im Arbeitsspeicher.
 Gebaut ist die Form des Vorgangs, nicht seine Aufbewahrung.

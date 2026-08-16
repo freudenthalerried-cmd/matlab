@@ -2,13 +2,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   AUFBEWAHRUNG_JAHRE,
+  FELDER_DER_ABLAGE,
   neueAblage,
   naechsteNummer,
   haltefest,
   stelleRechnungAus,
   storniere,
+  istStorniert,
   vorgangsakte,
   pruefeNummernkreis,
+  pruefeAblagefelder,
   aufbewahrungBis,
   alsCsv,
 } from '../src/ablage.js';
@@ -163,6 +166,60 @@ test('Die Aufbewahrungsfrist endet sieben Jahre nach dem Kalenderjahr', () => {
   assert.equal(aufbewahrungBis(2026).jahr, 2033);
   assert.match(aufbewahrungBis(2026).hinweis, /31\.12\.2033.*§ 132 BAO/);
   assert.throws(() => aufbewahrungBis('2026'), /braucht ein Jahr/);
+});
+
+test('Das Verzeichnis begründet jedes Feld — Grundlage, Zweck, Klasse', () => {
+  const felder = Object.entries(FELDER_DER_ABLAGE);
+  assert.equal(felder.length, 9, 'neun Felder — jede Änderung dieser Zahl ist eine bewusste Entscheidung');
+  for (const [name, f] of felder) {
+    assert.ok(f.grundlage.length >= 3, `${name}: ohne Grundlage kein Verzeichniseintrag`);
+    assert.ok(f.zweck.length >= 10, `${name}: ohne Zweck kein Verzeichniseintrag`);
+    assert.equal(typeof f.verlangt, 'boolean', `${name}: verlangt oder betrieblich, eines von beiden`);
+  }
+});
+
+test('Jedes Journalfeld steht im Verzeichnis und jedes Verzeichnisfeld im Journal', () => {
+  const a = neueAblage();
+  haltefest(a, { art: 'vermerk', zeitpunkt: '2026-08-16', text: 'Vermerk' });
+  stelleRechnungAus(a, vollstaendig, { zeitpunkt: '2026-08-16', jahr: 2026, vorgang: 'V-1' });
+
+  const p = pruefeAblagefelder(a);
+  assert.equal(p.geprueft, 2);
+  assert.deepEqual(p.funde, []);
+  assert.equal(p.dicht, true);
+});
+
+test('Ein Feld ohne Verzeichniseintrag ist ein Befund — auch ein leeres', () => {
+  const a = neueAblage();
+  haltefest(a, { art: 'vermerk', zeitpunkt: '2026-08-16', text: 'Vermerk' });
+  // Am Riegel vorbei, wie es nur direkter Code kann — genau der Weg, den ein
+  // künftiges „nur ein Feld dazu" nähme:
+  a.eintraege.push({ ...a.eintraege[0], lfd: 2, storniert: false });
+
+  const p = pruefeAblagefelder(a);
+  assert.equal(p.dicht, false);
+  assert.equal(p.funde.length, 1);
+  assert.match(p.funde[0], /„storniert“|„storniert"/);
+});
+
+test('Ein Eintrag, der an haltefest vorbeikam, fällt an den fehlenden Feldern auf', () => {
+  const a = neueAblage();
+  a.eintraege.push({ lfd: 1, art: 'vermerk', zeitpunkt: '2026-08-16', text: 'nur vier Felder' });
+
+  const p = pruefeAblagefelder(a);
+  assert.equal(p.dicht, false);
+  assert.equal(p.funde.length, 5, 'nummer, vorgang, betragNetto, betragBrutto, bezugAuf');
+  for (const fund of p.funde) assert.match(fund, /fehlt/);
+});
+
+test('Der Storno steht in der Gutschriftkette, nicht in einer Zelle', () => {
+  const a = neueAblage();
+  const r = stelleRechnungAus(a, vollstaendig, { zeitpunkt: '2026-08-15', jahr: 2026, vorgang: 'V-1' });
+
+  assert.equal(istStorniert(a, r.nummer), false);
+  storniere(a, r.nummer, { grund: 'Irrtum', zeitpunkt: '2026-08-16', jahr: 2026 });
+  assert.equal(istStorniert(a, r.nummer), true);
+  assert.equal('storniert' in a.eintraege[0], false, 'kein totes Feld mehr im eingefrorenen Eintrag');
 });
 
 test('Das Journal geht als CSV hinaus, Semikolon und Umbruch entschärft', () => {

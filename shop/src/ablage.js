@@ -39,6 +39,68 @@ export const ARTEN = {
   vermerk: { kuerzel: 'VM', nummernkreis: false },
 };
 
+/**
+ * Das Verzeichnis der Journalfelder.
+ *
+ * Die Regel dazu steht in `zusicherung-und-ablage.md`: Was in die Ablage geht,
+ * geht für sieben Jahre hinein — eine Löschung nach Art. 17 DSGVO läuft dort
+ * ins Leere (Abs. 3 lit. b). Deshalb braucht jedes Feld seine Begründung,
+ * **bevor** es hineinkommt, nicht hinterher. Ein Feld ohne Eintrag hier kommt
+ * nicht durch `pruefeAblagefelder`.
+ *
+ * `verlangt` trennt zwei Klassen: Felder, die eine Vorschrift fordert, und
+ * Felder, die nur dem Betrieb dienen. Die zweite Klasse ist nicht verboten —
+ * aber sie trägt die Beweislast, und bei ihr beginnt jede künftige Diskussion
+ * über ein neues Feld.
+ */
+export const FELDER_DER_ABLAGE = Object.freeze({
+  lfd: {
+    verlangt: true,
+    grundlage: '§ 131 Abs 1 Z 2 BAO',
+    zweck: 'Eintragungen der Zeitfolge nach — die laufende Nummer macht Lücken und Umsortierungen sichtbar',
+  },
+  art: {
+    verlangt: true,
+    grundlage: '§ 131 BAO',
+    zweck: 'welche Aufzeichnung vorliegt; ohne die Art ist kein Nummernkreis prüfbar',
+  },
+  nummer: {
+    verlangt: true,
+    grundlage: '§ 11 Abs 1 Z 5 UStG',
+    zweck: 'die fortlaufende, einmalige Belegnummer',
+  },
+  zeitpunkt: {
+    verlangt: true,
+    grundlage: '§ 11 UStG, § 131 Abs 1 Z 2 BAO',
+    zweck: 'Ausstellungsdatum; zeitgerechte Eintragung in der Zeitfolge',
+  },
+  vorgang: {
+    verlangt: true,
+    grundlage: '§ 131 Abs 1 Z 5 BAO',
+    zweck: 'Rückführbarkeit zum Geschäftsfall — die Vorgangsakte ist die geordnete Belegablage',
+  },
+  betragNetto: {
+    verlangt: true,
+    grundlage: '§ 11 Abs 1 Z 5 UStG',
+    zweck: 'das Entgelt',
+  },
+  betragBrutto: {
+    verlangt: true,
+    grundlage: '§ 11 UStG',
+    zweck: 'Entgelt samt Steuer; die Differenz zum Netto ist der ausgewiesene Steuerbetrag',
+  },
+  text: {
+    verlangt: false,
+    grundlage: 'betrieblich',
+    zweck: 'Betreff oder Vermerk — nie der volle Belegtext; Schranke: keine Daten Dritter (pruefeAblageAufDrittdaten)',
+  },
+  bezugAuf: {
+    verlangt: true,
+    grundlage: '§ 131 Abs 1 Z 6 BAO',
+    zweck: 'die Stornokette: der ursprüngliche Inhalt bleibt feststellbar, weil die Gutschrift auf die Rechnung zeigt, statt sie zu ändern',
+  },
+});
+
 /** Legt eine leere Ablage an. `zaehler` kann einen Bestand fortschreiben. */
 export function neueAblage({ zaehler = {} } = {}) {
   return { eintraege: [], zaehler: { ...zaehler } };
@@ -84,7 +146,6 @@ export function haltefest(ablage, eintrag) {
     betragBrutto: eintrag.betragBrutto ?? null,
     text: eintrag.text ?? '',
     bezugAuf: eintrag.bezugAuf ?? null,
-    storniert: false,
   });
 
   ablage.eintraege.push(fertig);
@@ -131,7 +192,7 @@ export function stelleRechnungAus(ablage, rechnung, { zeitpunkt, jahr, vorgang }
 export function storniere(ablage, nummer, { grund, zeitpunkt, jahr }) {
   const ziel = ablage.eintraege.find((e) => e.nummer === nummer);
   if (!ziel) throw new Error(`Kein Eintrag mit der Nummer ${nummer}`);
-  if (ablage.eintraege.some((e) => e.bezugAuf === nummer && e.art === 'gutschrift')) {
+  if (istStorniert(ablage, nummer)) {
     throw new Error(`${nummer} ist bereits storniert`);
   }
 
@@ -185,6 +246,51 @@ export function pruefeNummernkreis(ablage, art, jahr) {
 export function aufbewahrungBis(jahr) {
   if (!Number.isInteger(jahr)) throw new Error('Die Frist braucht ein Jahr');
   return { jahr: jahr + AUFBEWAHRUNG_JAHRE, hinweis: `31.12.${jahr + AUFBEWAHRUNG_JAHRE} (§ 132 BAO)` };
+}
+
+/**
+ * Ob eine Nummer storniert ist, steht in keiner Zelle — es folgt aus der
+ * Gutschriftkette. Ein Feld im eingefrorenen Eintrag könnte den Wechsel auf
+ * „storniert" nie vollziehen; genau so ein Feld (`storniert`, immer `false`)
+ * stand bis zum Felderverzeichnis in jedem Eintrag.
+ */
+export function istStorniert(ablage, nummer) {
+  return ablage.eintraege.some((e) => e.art === 'gutschrift' && e.bezugAuf === nummer);
+}
+
+/**
+ * Hält jedes Feld jedes Eintrags gegen das Verzeichnis — in beide Richtungen.
+ *
+ * Richtung eins: Ein Feld ohne Verzeichniseintrag ist ein Befund, auch wenn es
+ * leer ist. So fiel beim Aufstellen des Verzeichnisses `storniert` auf: seit
+ * der ersten Fassung in jedem Eintrag, immer `false`, von niemandem gelesen —
+ * und strukturell unwahr, denn ein eingefrorener Eintrag kann den Wechsel auf
+ * `true` nie vollziehen. Der Storno steht in der Gutschriftkette
+ * (`istStorniert`), nicht im Eintrag.
+ *
+ * Richtung zwei: Ein Eintrag, dem ein Verzeichnisfeld fehlt, ist ebenso ein
+ * Befund. `haltefest` schreibt alle Felder; fehlt eines, kam der Eintrag an
+ * `haltefest` vorbei ins Journal.
+ */
+export function pruefeAblagefelder(ablage) {
+  const bekannt = Object.keys(FELDER_DER_ABLAGE);
+  const funde = [];
+
+  for (const e of ablage.eintraege) {
+    const vorhanden = Object.keys(e);
+    for (const feld of vorhanden) {
+      if (!bekannt.includes(feld)) {
+        funde.push(`Eintrag ${e.lfd ?? '?'}: Feld „${feld}" hat keinen Verzeichniseintrag`);
+      }
+    }
+    for (const feld of bekannt) {
+      if (!vorhanden.includes(feld)) {
+        funde.push(`Eintrag ${e.lfd ?? '?'}: Verzeichnisfeld „${feld}" fehlt — der Eintrag kam an haltefest vorbei`);
+      }
+    }
+  }
+
+  return { dicht: funde.length === 0, funde, geprueft: ablage.eintraege.length };
 }
 
 /** Das Journal als CSV — die Form, in der es die Buchhaltung übernimmt. */

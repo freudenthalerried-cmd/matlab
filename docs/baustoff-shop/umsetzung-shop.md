@@ -23,7 +23,7 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Angebot, Auftragsbestätigung und Rechnung | fertig, Vertragsschluss ergänzt | 24 |
 | Trockenlauf des Auftrags | fertig, elf Schritte | 14 |
 | UID-Abfrage beim EU-System | fertig, ungeprüft am Dienst | 17 |
-| Ablage und Nummernkreis | fertig, ohne Speicherung | 16 |
+| Ablage und Nummernkreis | fertig, Felderverzeichnis, ohne Speicherung | 21 |
 | Zahlwege und Gebühren | fertig | 15 |
 | Gesamtkostenbild und Umsatzbedarf | fertig | 13 |
 | Empfindlichkeit der vier Annahmen | fertig | 14 |
@@ -38,9 +38,30 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Baustelle als eigene Lieferanschrift | fertig, Zusicherung nach Art. 14 | 29 |
 | Abgleich Versprechen gegen Verhalten | fertig, zwei Befunde | 14 |
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig, Baustelle abgefragt | headless geprüft |
-| **Summe** | | **345, alle grün, 0 hohl** |
+| **Summe** | | **350, alle grün, 0 hohl** |
 
-## Was zuletzt dazukam: die Ablage ist die einzige Stelle ohne Löschtaste
+## Was zuletzt dazukam: jedes Journalfeld trägt jetzt seine Begründung
+
+Baustein 2 der Liste unten, ausführlich in
+[`felder-der-ablage.md`](./felder-der-ablage.md). `FELDER_DER_ABLAGE` in
+`ablage.js` hält für jedes der neun Journalfelder Grundlage und Zweck fest —
+acht tragen eine Vorschrift (§ 131/§ 132 BAO, § 11 UStG), nur `text` ist
+betrieblich, und genau dort sitzt die Drittdaten-Schranke der Vorrunde.
+`pruefeAblagefelder` hält Einträge und Verzeichnis in beide Richtungen
+gegeneinander: Ein Feld ohne Verzeichniseintrag ist ein Befund, ein fehlendes
+Verzeichnisfeld auch.
+
+**Der Fund beim Aufstellen:** Das Feld `storniert` stand seit der ersten
+Fassung in jedem Eintrag — immer `false`, nie gelesen, und strukturell unwahr,
+weil ein eingefrorener Eintrag den Wechsel auf `true` nie vollziehen kann. In
+einem Journal, das nur ergänzt wird, ist jeder Zustand eine Ableitung, keine
+Zelle: `istStorniert` liest den Storno jetzt aus der Gutschriftkette, das tote
+Feld ist entfernt, und der Doppelstorno-Riegel benutzt dieselbe Funktion.
+
+Gegenproben: das Feld wieder eingebaut → 3 Testfälle fallen; die Prüfung
+meldet immer „dicht" → 2 Testfälle fallen.
+
+## Was davor dazukam: die Ablage ist die einzige Stelle ohne Löschtaste
 
 Die Vorrunde hat den Befund benannt — der Ansprechpartner vor Ort ist ein
 Dritter, Art. 14 DSGVO verlangt, ihn zu informieren, und der Shop erreicht ihn
@@ -878,18 +899,15 @@ Nach Nutzen geordnet, alle ohne Freigabe und ohne Ausgabe machbar:
 1. **Gebietsabfrage** nach `phase10-datengrundlage-gebietsabfrage.md` — braucht
    die Gemeindeliste. RIS und der Geoserver sind aus dieser Umgebung weiterhin
    nicht erreichbar; zuletzt geprüft am 15. August.
-2. **Was sonst noch für sieben Jahre in die Ablage geht** — die Rufnummer des
-   Dritten ist geprüft, aber sie war nur das erste Feld, bei dem die Frage
-   auffiel. Welche Angaben § 132 BAO tatsächlich verlangt und welche bloß
-   mitgeschrieben werden, ist nirgends aufgestellt. Ein Verzeichnis wie das
-   für die Fremdtext-Ausgänge, diesmal für die Ablage. Braucht keine Freigabe
-   und keine Ausgabe.
-3. **Gedächtnis der Ablage** — `ablage.js` führt Nummernkreis und Journal
+2. **Gedächtnis der Ablage** — `ablage.js` führt Nummernkreis und Journal
    sauber, aber nur im Arbeitsspeicher. Nach einem Neuladen beginnt die
    Rechnungsnummer wieder bei eins, und § 11 UStG verlangt Einmaligkeit. Solange
    das so ist, darf der Shop keine echte Rechnung ausstellen. Braucht eine
-   Entscheidung über den Speicherort, keine Freigabe und keine Ausgabe.
-4. **CSV nach RFC 4180**, sobald ein Lieferant seine Schnittstelle benannt hat.
+   Entscheidung über den Speicherort, keine Freigabe und keine Ausgabe. Seit
+   dem Felderverzeichnis mit einer Schärfung: Ab dem ersten persistierten
+   Eintrag ist jede Feldänderung eine Migrationsfrage —
+   [`felder-der-ablage.md`](./felder-der-ablage.md).
+3. **CSV nach RFC 4180**, sobald ein Lieferant seine Schnittstelle benannt hat.
    `csvFeld()` ersetzt heute Semikolon und Zeilenumbruch, statt das Feld zu
    quoten; das erhält die Zeile, aber nicht den Inhalt. Solange kein Format
    feststeht, ist die gröbere Regel die robustere — siehe
