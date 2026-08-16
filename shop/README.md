@@ -27,11 +27,12 @@ Gerüst vorhanden und meldet selbst, welche Pflichtangaben ihm fehlen.
 | Ablage | Nummernkreise, Storno statt Änderung, Aufbewahrungsfrist |
 | Zahlwege | Gebühren je Zahlweg, Wirkung auf Deckungsbeitrag und Monat |
 | Kostenbild | Kaskade bis zum Gewinn, umgekehrt der nötige Umsatz |
+| Empfindlichkeit | welche der vier Annahmen zuerst gemessen gehört |
 
 ## Benutzen
 
 ```
-npm test          # 168 Testfälle
+npm test          # 182 Testfälle
 npm run build     # erzeugt demo.html, eine einzelne Datei ohne Abhängigkeiten
 npm run import -- <lieferantId> <datei.csv> [--schreiben]
 ```
@@ -60,6 +61,7 @@ src/vies.js             UID beim EU-System abfragen, Nachweis, drei Zustände
 src/ablage.js           Vorgangsakte, Nummernkreise, Storno, § 132 BAO
 src/zahlung.js          Zahlwege, Gebühren, Anforderungen an den Anbieter
 src/kostenbild.js       Kaskade, nötiger Umsatz, Bestellungen, Sessionbedarf
+src/empfindlichkeit.js  Elastizität der vier Annahmen, Kipppunkte
 src/format.js           EUR und Lückenmarkierung — einmal, siehe unten
 bin/import.mjs          Kommandozeile dazu, Probelauf als Voreinstellung
 beispiel/               Musterpreisliste — erfundene Preise, nicht schreibbar
@@ -166,6 +168,21 @@ Umsatzsteuer als innergemeinschaftlicher Erwerb, während die Ausgangsrechnung
 20 % trägt. `reihengeschaeftEinordnung()` erkennt das am Feld `land` des
 Lieferanten und schreibt es in die Kasse. Ausführlich in
 `docs/baustoff-shop/beleg-und-reihengeschaeft.md`.
+
+## Die Empfindlichkeit der Annahmen
+
+Jede der vier tragenden Annahmen einzeln um zehn Prozent ins Ungünstige,
+gemessen am Besucherbedarf:
+
+```
+Rohmarge            2.000 → 2.350 Sessions   Elastizität 1,75
+Warenkorb netto     2.000 → 2.250            1,25
+Umsatzquote         2.000 → 2.223            1,11
+Werbekostenanteil   2.000 → 2.100            0,50
+```
+
+Die Rohmarge ist der stärkste Hebel und die einzige mit einem **Kipppunkt**:
+bei 11,6 % fressen Werbung und Gebühren den ganzen Rohertrag.
 
 ## Das Kostenbild
 

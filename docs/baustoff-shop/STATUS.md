@@ -14,7 +14,7 @@ letzten Runde, zwei gleichrangige Freigaben. Quelldatei im Repo unter
 
 Lauffähiges Shop-Funktionsmuster:
 [claude.ai/code/artifact/c40fd35f…](https://claude.ai/code/artifact/c40fd35f-56e1-4821-a3b1-a1a885102ec8) —
-Quelltext und 168 Testfälle unter `shop/`. Alle Preise sind Platzhalter.
+Quelltext und 182 Testfälle unter `shop/`. Alle Preise sind Platzhalter.
 Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 
 ## Wo das Projekt steht
@@ -75,8 +75,20 @@ kosten sie unter 200 €.
 
 Beide Freigaben sind gleichrangig, und sie sollten **zugleich** laufen. Muss
 eine zuerst, dann das Keyword-Werkzeug: Es entscheidet über beide Modelle,
-während die Herstelleranfragen nur den Shop betreffen. Was welcher Ausgang
-bedeutet, steht in [`entscheidungsmatrix.md`](./entscheidungsmatrix.md).
+während die Herstelleranfragen nur den Shop betreffen.
+
+> **Zusatz vom 15. August**, aus
+> [`empfindlichkeit-der-annahmen.md`](./empfindlichkeit-der-annahmen.md): Die
+> Reihenfolgefrage stellt sich streng genommen gar nicht. Die
+> Herstelleranfragen kosten **0 €** und klären mit der Rohmarge die
+> empfindlichste der vier Planungsgrößen — Elastizität 1,75, und als einzige
+> mit einem Kipppunkt. Es gibt keinen Grund, eine kostenlose Freigabe auf eine
+> kostenpflichtige warten zu lassen. Und: **Das Keyword-Werkzeug misst nicht
+> die Umsatzquote**, sondern das Suchvolumen; die 2 % bleiben auch nach dieser
+> Ausgabe eine Annahme.
+
+Was welcher Ausgang bedeutet, steht in
+[`entscheidungsmatrix.md`](./entscheidungsmatrix.md).
 
 Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 **2.700 €**, nicht bei den früher genannten 8.000–12.000 €.
@@ -112,6 +124,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `zahlenpruefung.md` | Alle zweiundzwanzig Rechenketten nachgerechnet; zwei kleine Fehler benannt |
 | `analyse-abgeschlossen.md` | **Gate 18 — die Analysephase ist geschlossen.** Was den Loop wieder aufweckt |
 | `umsetzung-shop.md` | **Bauprotokoll des Shops.** Baustand, Sperren, nächste Bausteine |
+| `empfindlichkeit-der-annahmen.md` | **Welche Annahme zuerst gemessen gehört** — die Rohmarge, Elastizität 1,75, als einzige mit Kipppunkt |
 | `kostenbild-und-sessionbedarf.md` | **Von 34 % Mischmarge bleiben 22,5 %** — und der Sessionbedarf liegt bei 1.900–2.550, nicht bei 1.850 |
 | `zahlwege-und-gebuehren.md` | **Zahlungsgebühren fehlten in der ganzen Rechnung** — 0 bis 16 % des Zielgewinns; Rechnungskauf entspricht der Zielgruppe und ist das Teuerste |
 | `ablage-und-nummernkreis.md` | **Nummer erst bei der Ausstellung**, Ablage nur ergänzend; Nachnahme würde eine Registrierkasse auslösen |
