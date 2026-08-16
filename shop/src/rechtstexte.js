@@ -113,22 +113,39 @@ export function erzeugeImpressum(betreiber = {}) {
 export const AGB_GLIEDERUNG = [
   { nr: 1, titel: 'Geltungsbereich und Adressatenkreis', hinweis: 'Ausschließlich Unternehmer im Sinne des UGB; Verbrauchergeschäfte sind ausgeschlossen.' },
   { nr: 2, titel: 'Vertragsschluss', hinweis: 'Bestellung ist Angebot, Annahme durch Auftragsbestätigung.' },
-  { nr: 3, titel: 'Preise und Umsatzsteuer', hinweis: 'Nettopreise, Umsatzsteuer gesondert; Reverse Charge bei innergemeinschaftlicher Lieferung.' },
-  { nr: 4, titel: 'Lieferung im Streckengeschäft', hinweis: 'Direktversand durch den Hersteller; Teillieferungen je Lieferant sind der Regelfall.' },
-  { nr: 5, titel: 'Fracht, Sperrgut und Baustellenanlieferung', hinweis: 'Abladen, Zufahrt und Anwesenheit sind Sache des Bestellers.' },
   {
-    nr: 6,
+    nr: 3,
+    titel: 'Preise und Umsatzsteuer',
+    hinweis:
+      'Nettopreise, Umsatzsteuer gesondert mit 20 %. Leistungsort ist Österreich — für ' +
+      'Reverse Charge gegenüber dem Kunden ist kein Raum, weil nur ins Inland geliefert ' +
+      'wird (Punkt 12). Das Verfahren betrifft die Eingangsseite: den ' +
+      'innergemeinschaftlichen Erwerb bei ausländischen Herstellern im Reihengeschäft.',
+  },
+  { nr: 4, titel: 'Lieferung im Streckengeschäft', hinweis: 'Direktversand durch den Hersteller; Teillieferungen je Lieferant sind der Regelfall.' },
+  {
+    nr: 5,
+    titel: 'Mindestbestellmengen je Hersteller',
+    hinweis:
+      'Jeder Hersteller setzt eine Mindestbestellmenge. Wird sie für einen Hersteller nicht ' +
+      'erreicht, kann die Bestellung insoweit nicht angenommen werden; der Shop weist die ' +
+      'fehlende Menge im Warenwert aus. Der Punkt hat gefehlt, obwohl der Shop die Grenze ' +
+      'von Anfang an durchgesetzt hat — eine Ablehnung ohne veröffentlichte Grundlage.',
+  },
+  { nr: 6, titel: 'Fracht, Sperrgut und Baustellenanlieferung', hinweis: 'Abladen, Zufahrt und Anwesenheit sind Sache des Bestellers.' },
+  {
+    nr: 7,
     titel: 'Abweichende Lieferanschrift und Empfangsvollmacht',
     hinweis:
       'Wer auf der Baustelle übernimmt, nimmt für den Besteller an — auch ein anderes Gewerk oder der Bauherr. ' +
       'Der Besteller benennt einen Ansprechpartner vor Ort und trägt dessen Erreichbarkeit.',
   },
-  { nr: 7, titel: 'Gefahrübergang und Transportschäden', hinweis: 'Untersuchungs- und Rügepflicht nach § 377 UGB — im B2B eine echte Obliegenheit, und die Frist läuft ab Ablieferung auf der Baustelle.' },
-  { nr: 8, titel: 'Zahlung, Verzug, Eigentumsvorbehalt', hinweis: 'Keine Nachnahme und keine Barzahlung auf der Baustelle — sonst entsteht ein Barumsatz und damit Registrierkassenpflicht.' },
-  { nr: 9, titel: 'Gewährleistung und Haftung', hinweis: 'Im B2B abdingbar, aber nicht grenzenlos.' },
-  { nr: 10, titel: 'Rücknahme angebrochener Gebinde und Rollenware', hinweis: 'Ausschluss empfehlenswert; Rollenware ist nicht teilbar.' },
-  { nr: 11, titel: 'Lieferorte nur in Österreich', hinweis: 'Lieferung außerhalb Österreichs ist ausgeschlossen — sie wäre nach Art 6, 7 UStG steuerfrei bzw. eine Ausfuhr und damit anders zu verrechnen.' },
-  { nr: 12, titel: 'Gerichtsstand und anwendbares Recht', hinweis: null },
+  { nr: 8, titel: 'Gefahrübergang und Transportschäden', hinweis: 'Untersuchungs- und Rügepflicht nach § 377 UGB — im B2B eine echte Obliegenheit, und die Frist läuft ab Ablieferung auf der Baustelle.' },
+  { nr: 9, titel: 'Zahlung, Verzug, Eigentumsvorbehalt', hinweis: 'Keine Nachnahme und keine Barzahlung auf der Baustelle — sonst entsteht ein Barumsatz und damit Registrierkassenpflicht.' },
+  { nr: 10, titel: 'Gewährleistung und Haftung', hinweis: 'Im B2B abdingbar, aber nicht grenzenlos.' },
+  { nr: 11, titel: 'Rücknahme angebrochener Gebinde und Rollenware', hinweis: 'Ausschluss empfehlenswert; Rollenware ist nicht teilbar.' },
+  { nr: 12, titel: 'Lieferorte nur in Österreich', hinweis: 'Lieferung außerhalb Österreichs ist ausgeschlossen — sie wäre nach Art 6, 7 UStG steuerfrei bzw. eine Ausfuhr und damit anders zu verrechnen.' },
+  { nr: 13, titel: 'Gerichtsstand und anwendbares Recht', hinweis: null },
 ];
 
 /**

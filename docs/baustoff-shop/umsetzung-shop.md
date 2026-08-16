@@ -12,14 +12,14 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 |---|---|---|
 | Preis- und Margenrechnung | fertig | 8 |
 | Frachtrechnung je Lieferant | fertig, Schwelle korrigiert | 5 |
-| Warenkorb mit Lieferantenaufteilung | fertig, Schwelle korrigiert | 11 |
+| Warenkorb mit Lieferantenaufteilung | fertig, Hinweise getrennt | 17 |
 | Bestellübergabe als Text und CSV | fertig | 4 |
 | Freigabesperren (Gate 6, Gate 7) | fertig | 3 |
 | Preislisten-Import | fertig | 14 |
 | Materialbedarfsrechner | fertig | 11 |
 | Bestellstrecke mit Gate-7-Prüfung | fertig | 11 |
 | Messwert-Einordner | fertig | 10 |
-| Rechtstexte-Gerüst | fertig, um Baustelle erweitert | 18 |
+| Rechtstexte-Gerüst | fertig, dreizehn AGB-Punkte | 22 |
 | Angebot, Auftragsbestätigung und Rechnung | fertig, Vertragsschluss ergänzt | 24 |
 | Trockenlauf des Auftrags | fertig, elf Schritte | 14 |
 | UID-Abfrage beim EU-System | fertig, ungeprüft am Dienst | 17 |
@@ -34,12 +34,47 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Gegenprobe an der Lieferantenbestellung | fertig, ein Fehler behoben | 6 |
 | Fremdtext an allen Ein- und Ausgängen | fertig, ein Fehler behoben | 18 |
 | Frachtdeckung Kunde gegen Lieferant | fertig, ein Fehler behoben | 4 |
-| Vorgangsklammer über alle Papiere | fertig, ein Fehler behoben | 22 |
+| Vorgangsklammer über alle Papiere | fertig, ein Fehler behoben | 26 |
 | Baustelle als eigene Lieferanschrift | fertig, ein Fehler behoben | 12 |
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig, Baustelle abgefragt | headless geprüft |
-| **Summe** | | **313, alle grün, 0 hohl** |
+| **Summe** | | **322, alle grün, 0 hohl** |
 
-## Was zuletzt dazukam: Geld genommen, bevor ein Vertrag bestand
+## Was zuletzt dazukam: die eigene Korrektur hat die Handelsspanne verraten
+
+Vorgenommen war der systematische Abgleich: Was in den AGB steht, muss im Ablauf
+vorkommen — und umgekehrt. Dreizehn Punkte gegen elf Schritte. Drei Befunde,
+ausführlich in [`margenleck-im-angebot.md`](./margenleck-im-angebot.md).
+
+**Erstens, und das ist der teuerste:** Im **Angebot an den Kunden** stand neben
+einem Warenwert von 330 € der Satz „erreicht sind 231 €" — der Einkaufswert.
+Das sind 30 % Handelsspanne in Ziffern, mit dem Hersteller namentlich daneben.
+1.005 von 1.533 durchgerechneten Angeboten waren betroffen.
+
+Der Satz stammt aus meiner eigenen Korrektur von vor zwei Runden. Die Begründung
+lautete damals: „ein Fehlbetrag ohne Bezugsgröße lässt sich nicht nachrechnen."
+Der Gedanke war richtig, die Bezugsgröße war es nicht — sie gehört dem
+Betreiber. Behoben mit zwei Fassungen: `hinweise` für den Kunden, in **seiner**
+Währung („Es fehlen rund 28 € Warenwert netto"), `hinweiseIntern` vollständig.
+Dazu `pruefeMargenleck()` als Riegel; Gegenprobe: alten Hinweis wieder
+eingesetzt → vier Testfälle fallen.
+
+**Zweitens:** AGB-Punkt 3 versprach Reverse Charge bei innergemeinschaftlicher
+Lieferung, während Punkt 12 Lieferungen außerhalb Österreichs ausschließt. Der
+Fall kann nicht eintreten, und der Punkt beschrieb die Steuerlage falsch herum —
+Reverse Charge betrifft die **Eingangsseite**, den innergemeinschaftlichen
+Erwerb im Reihengeschäft. Berichtigt, mit Verweis auf Punkt 12; ein Testfall
+prüft, dass jeder Querverweis auf einen vorhandenen Punkt zeigt.
+
+**Drittens:** Der Shop weist Bestellungen unter dem Mindestbestellwert von
+Anfang an ab — in keinem AGB-Punkt stand, dass es Mindestbestellmengen gibt.
+Eine Ablehnung ohne veröffentlichte Grundlage. Neuer Punkt 5.
+
+Die Lehre ist eine über Korrekturen: Der Fund der Frachtschwelle war richtig und
+die Behebung auch — bis auf einen Satz, der beim Beheben nebenbei entstand und
+den niemand mehr prüfte, weil die eigentliche Sache stimmte. **Eine Korrektur
+ist eine Änderung wie jede andere und verdient dieselbe Gegenprobe.**
+
+## Was davor dazukam: Geld genommen, bevor ein Vertrag bestand
 
 Punkt 2 der eigenen AGB lautet seit dem ersten Entwurf: „Bestellung ist Angebot,
 Annahme durch Auftragsbestätigung." **Dieses Papier gab es nicht.** Ausführlich
@@ -758,11 +793,12 @@ Nach Nutzen geordnet, alle ohne Freigabe und ohne Ausgabe machbar:
 1. **Gebietsabfrage** nach `phase10-datengrundlage-gebietsabfrage.md` — braucht
    die Gemeindeliste. RIS und der Geoserver sind aus dieser Umgebung weiterhin
    nicht erreichbar; zuletzt geprüft am 15. August.
-2. **AGB gegen Ablauf, systematisch** — der Fund dieser Runde kam aus dem
-   Vergleich einer AGB-Zeile mit einer Ablaufliste. Zwölf AGB-Punkte stehen
-   elf Ablaufschritten gegenüber, und niemand hat sie je Punkt für Punkt
-   gegeneinandergehalten. Was in den AGB steht, muss im Ablauf vorkommen — und
-   umgekehrt. Braucht keine Freigabe und keine Ausgabe.
+2. **Der Abgleich als Werkzeug statt als Durchsicht** — die Zuordnung von
+   AGB-Punkt zu Ablaufschritt und Quelltextstelle steckt bisher nur in einem
+   Dokument. Als Datenstruktur mit Testfall wäre sie ein Verzeichnis wie das
+   für die Fremdtext-Ausgänge: Ein neuer AGB-Punkt ohne Entsprechung fiele
+   dann sofort auf, statt bis zur nächsten Durchsicht zu warten. Braucht keine
+   Freigabe und keine Ausgabe.
 3. **Gedächtnis der Ablage** — `ablage.js` führt Nummernkreis und Journal
    sauber, aber nur im Arbeitsspeicher. Nach einem Neuladen beginnt die
    Rechnungsnummer wieder bei eins, und § 11 UStG verlangt Einmaligkeit. Solange

@@ -92,7 +92,30 @@ export function berechneWarenkorb(zeilen, katalog) {
     mischmargeErreicht: mischmarge >= MARGENUNTERGRENZE - 1e-9,
     frachtanteilAmWarenwert: warenwertNetto > 0 ? frachtNetto / warenwertNetto : 0,
     bestellbar: teillieferungen.every((t) => t.mindestbestellwert.erfuellt),
+
+    // **Zwei Fassungen desselben Hinweises, und der Unterschied ist Geld wert.**
+    //
+    // Die Mindestbestellwerte der Lieferanten gelten für den Einkaufswert. Ein
+    // Hinweis, der ihn nennt, verrät dem Kunden die Handelsspanne: Neben einem
+    // Warenwert von 330 € stand „erreicht sind 231 €" — daraus liest jeder
+    // Einkäufer 30 % Marge ab, und der Hersteller steht mit Namen daneben.
+    // Genau das ging über 1.005 von 1.533 geprüften Angeboten hinaus.
+    //
+    // `hinweise` ist deshalb das, was der Kunde lesen darf: der Fehlbetrag in
+    // **seiner** Währung, dem Warenwert. `hinweiseIntern` bleibt vollständig
+    // und geht in keinen Beleg an den Kunden.
     hinweise: teillieferungen
+      .filter((t) => !t.mindestbestellwert.erfuellt)
+      .map((t) => {
+        const hebel = t.einkaufNetto > 0 ? t.warenwertNetto / t.einkaufNetto : 1;
+        const fehlt = Math.ceil(t.mindestbestellwert.fehlbetragNetto * hebel);
+        return (
+          `${t.lieferantName}: Die Bestellmenge für diesen Hersteller ist noch zu klein. ` +
+          `Es fehlen rund ${fehlt} € Warenwert netto.`
+        );
+      }),
+
+    hinweiseIntern: teillieferungen
       .filter((t) => !t.mindestbestellwert.erfuellt)
       .map(
         (t) =>

@@ -533,7 +533,30 @@ function berechneWarenkorb(zeilen, katalog) {
     mischmargeErreicht: mischmarge >= MARGENUNTERGRENZE - 1e-9,
     frachtanteilAmWarenwert: warenwertNetto > 0 ? frachtNetto / warenwertNetto : 0,
     bestellbar: teillieferungen.every((t) => t.mindestbestellwert.erfuellt),
+
+    // **Zwei Fassungen desselben Hinweises, und der Unterschied ist Geld wert.**
+    //
+    // Die Mindestbestellwerte der Lieferanten gelten für den Einkaufswert. Ein
+    // Hinweis, der ihn nennt, verrät dem Kunden die Handelsspanne: Neben einem
+    // Warenwert von 330 € stand „erreicht sind 231 €" — daraus liest jeder
+    // Einkäufer 30 % Marge ab, und der Hersteller steht mit Namen daneben.
+    // Genau das ging über 1.005 von 1.533 geprüften Angeboten hinaus.
+    //
+    // `hinweise` ist deshalb das, was der Kunde lesen darf: der Fehlbetrag in
+    // **seiner** Währung, dem Warenwert. `hinweiseIntern` bleibt vollständig
+    // und geht in keinen Beleg an den Kunden.
     hinweise: teillieferungen
+      .filter((t) => !t.mindestbestellwert.erfuellt)
+      .map((t) => {
+        const hebel = t.einkaufNetto > 0 ? t.warenwertNetto / t.einkaufNetto : 1;
+        const fehlt = Math.ceil(t.mindestbestellwert.fehlbetragNetto * hebel);
+        return (
+          `${t.lieferantName}: Die Bestellmenge für diesen Hersteller ist noch zu klein. ` +
+          `Es fehlen rund ${fehlt} € Warenwert netto.`
+        );
+      }),
+
+    hinweiseIntern: teillieferungen
       .filter((t) => !t.mindestbestellwert.erfuellt)
       .map(
         (t) =>
@@ -1150,22 +1173,39 @@ function erzeugeImpressum(betreiber = {}) {
 const AGB_GLIEDERUNG = [
   { nr: 1, titel: 'Geltungsbereich und Adressatenkreis', hinweis: 'Ausschließlich Unternehmer im Sinne des UGB; Verbrauchergeschäfte sind ausgeschlossen.' },
   { nr: 2, titel: 'Vertragsschluss', hinweis: 'Bestellung ist Angebot, Annahme durch Auftragsbestätigung.' },
-  { nr: 3, titel: 'Preise und Umsatzsteuer', hinweis: 'Nettopreise, Umsatzsteuer gesondert; Reverse Charge bei innergemeinschaftlicher Lieferung.' },
-  { nr: 4, titel: 'Lieferung im Streckengeschäft', hinweis: 'Direktversand durch den Hersteller; Teillieferungen je Lieferant sind der Regelfall.' },
-  { nr: 5, titel: 'Fracht, Sperrgut und Baustellenanlieferung', hinweis: 'Abladen, Zufahrt und Anwesenheit sind Sache des Bestellers.' },
   {
-    nr: 6,
+    nr: 3,
+    titel: 'Preise und Umsatzsteuer',
+    hinweis:
+      'Nettopreise, Umsatzsteuer gesondert mit 20 %. Leistungsort ist Österreich — für ' +
+      'Reverse Charge gegenüber dem Kunden ist kein Raum, weil nur ins Inland geliefert ' +
+      'wird (Punkt 12). Das Verfahren betrifft die Eingangsseite: den ' +
+      'innergemeinschaftlichen Erwerb bei ausländischen Herstellern im Reihengeschäft.',
+  },
+  { nr: 4, titel: 'Lieferung im Streckengeschäft', hinweis: 'Direktversand durch den Hersteller; Teillieferungen je Lieferant sind der Regelfall.' },
+  {
+    nr: 5,
+    titel: 'Mindestbestellmengen je Hersteller',
+    hinweis:
+      'Jeder Hersteller setzt eine Mindestbestellmenge. Wird sie für einen Hersteller nicht ' +
+      'erreicht, kann die Bestellung insoweit nicht angenommen werden; der Shop weist die ' +
+      'fehlende Menge im Warenwert aus. Der Punkt hat gefehlt, obwohl der Shop die Grenze ' +
+      'von Anfang an durchgesetzt hat — eine Ablehnung ohne veröffentlichte Grundlage.',
+  },
+  { nr: 6, titel: 'Fracht, Sperrgut und Baustellenanlieferung', hinweis: 'Abladen, Zufahrt und Anwesenheit sind Sache des Bestellers.' },
+  {
+    nr: 7,
     titel: 'Abweichende Lieferanschrift und Empfangsvollmacht',
     hinweis:
       'Wer auf der Baustelle übernimmt, nimmt für den Besteller an — auch ein anderes Gewerk oder der Bauherr. ' +
       'Der Besteller benennt einen Ansprechpartner vor Ort und trägt dessen Erreichbarkeit.',
   },
-  { nr: 7, titel: 'Gefahrübergang und Transportschäden', hinweis: 'Untersuchungs- und Rügepflicht nach § 377 UGB — im B2B eine echte Obliegenheit, und die Frist läuft ab Ablieferung auf der Baustelle.' },
-  { nr: 8, titel: 'Zahlung, Verzug, Eigentumsvorbehalt', hinweis: 'Keine Nachnahme und keine Barzahlung auf der Baustelle — sonst entsteht ein Barumsatz und damit Registrierkassenpflicht.' },
-  { nr: 9, titel: 'Gewährleistung und Haftung', hinweis: 'Im B2B abdingbar, aber nicht grenzenlos.' },
-  { nr: 10, titel: 'Rücknahme angebrochener Gebinde und Rollenware', hinweis: 'Ausschluss empfehlenswert; Rollenware ist nicht teilbar.' },
-  { nr: 11, titel: 'Lieferorte nur in Österreich', hinweis: 'Lieferung außerhalb Österreichs ist ausgeschlossen — sie wäre nach Art 6, 7 UStG steuerfrei bzw. eine Ausfuhr und damit anders zu verrechnen.' },
-  { nr: 12, titel: 'Gerichtsstand und anwendbares Recht', hinweis: null },
+  { nr: 8, titel: 'Gefahrübergang und Transportschäden', hinweis: 'Untersuchungs- und Rügepflicht nach § 377 UGB — im B2B eine echte Obliegenheit, und die Frist läuft ab Ablieferung auf der Baustelle.' },
+  { nr: 9, titel: 'Zahlung, Verzug, Eigentumsvorbehalt', hinweis: 'Keine Nachnahme und keine Barzahlung auf der Baustelle — sonst entsteht ein Barumsatz und damit Registrierkassenpflicht.' },
+  { nr: 10, titel: 'Gewährleistung und Haftung', hinweis: 'Im B2B abdingbar, aber nicht grenzenlos.' },
+  { nr: 11, titel: 'Rücknahme angebrochener Gebinde und Rollenware', hinweis: 'Ausschluss empfehlenswert; Rollenware ist nicht teilbar.' },
+  { nr: 12, titel: 'Lieferorte nur in Österreich', hinweis: 'Lieferung außerhalb Österreichs ist ausgeschlossen — sie wäre nach Art 6, 7 UStG steuerfrei bzw. eine Ausfuhr und damit anders zu verrechnen.' },
+  { nr: 13, titel: 'Gerichtsstand und anwendbares Recht', hinweis: null },
 ];
 
 /**
@@ -3158,10 +3198,21 @@ function zeichneKorb() {
   kennz.append(zeile('Frachtanteil am Warenwert', pct(wk.frachtanteilAmWarenwert)));
   el.append(kennz);
 
+  // Zwei Fassungen desselben Hinweises. Diese Tafel ist die Sicht des
+  // Betreibers — sie zeigt ohnehin Deckungsbeitrag und Mischmarge —, deshalb
+  // steht hier die vollständige. Was der Kunde bekommt, steht darunter, damit
+  // der Unterschied sichtbar ist: Der Einkaufswert gehört auf kein Papier, das
+  // hinausgeht.
+  for (const h of wk.hinweiseIntern) {
+    const w = document.createElement('div');
+    w.className = 'hinweis';
+    w.textContent = 'intern: ' + h;
+    el.append(w);
+  }
   for (const h of wk.hinweise) {
     const w = document.createElement('div');
     w.className = 'hinweis';
-    w.textContent = h;
+    w.textContent = 'an den Kunden: ' + h;
     el.append(w);
   }
 }

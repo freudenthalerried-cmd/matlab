@@ -69,7 +69,8 @@ test('Unterschrittener Mindestbestellwert blockiert die Bestellung', () => {
   const wk = berechneWarenkorb([{ sku: 'ZB-RR-125', menge: 1 }], katalog);
   assert.equal(wk.bestellbar, false);
   assert.equal(wk.hinweise.length, 1);
-  assert.match(wk.hinweise[0], /Mindestbestellwert/);
+  assert.equal(wk.hinweiseIntern.length, 1);
+  assert.match(wk.hinweiseIntern[0], /Mindestbestellwert/);
 });
 
 test('Unbekannte Artikelnummer und unsinnige Mengen werden abgewiesen', () => {
@@ -170,11 +171,43 @@ test('Der Mindestbestellwert wird am Bestellwert gemessen', () => {
   assert.equal(teil.mindestbestellwert.bestellwertNetto, teil.einkaufNetto);
 });
 
-test('Der Hinweis nennt den erreichten Bestellwert, nicht nur den Fehlbetrag', () => {
+test('Der interne Hinweis nennt den erreichten Bestellwert, nicht nur den Fehlbetrag', () => {
+  const korb = berechneWarenkorb([{ sku: 'DR-100-050', menge: 2 }], katalog);
+  assert.equal(korb.hinweiseIntern.length, 1);
+  assert.match(korb.hinweiseIntern[0], /Bestellwert/);
+  assert.match(korb.hinweiseIntern[0], /erreicht sind 231 €/);
+});
+
+/*
+ * Der Fund dieser Runde: Genau dieser Hinweis stand im Angebot an den Kunden.
+ * Neben einem Warenwert von 330 € war „erreicht sind 231 €" zu lesen — die
+ * Handelsspanne, in Ziffern, mit dem Hersteller daneben.
+ */
+test('Der Hinweis an den Kunden nennt keine Zahl aus dem Einkauf', () => {
   const korb = berechneWarenkorb([{ sku: 'DR-100-050', menge: 2 }], katalog);
   assert.equal(korb.hinweise.length, 1);
-  assert.match(korb.hinweise[0], /Bestellwert/);
-  assert.match(korb.hinweise[0], /erreicht sind 231 €/);
+
+  const teil = korb.teillieferungen[0];
+  for (const geheim of [teil.einkaufNetto, teil.mindestbestellwert.grenze, teil.mindestbestellwert.fehlbetragNetto]) {
+    assert.ok(
+      !korb.hinweise[0].includes(String(geheim)),
+      `${geheim} steht im Hinweis an den Kunden: ${korb.hinweise[0]}`,
+    );
+  }
+});
+
+test('Der Hinweis an den Kunden sagt trotzdem, was zu tun ist', () => {
+  const korb = berechneWarenkorb([{ sku: 'DR-100-050', menge: 2 }], katalog);
+  const teil = korb.teillieferungen[0];
+
+  assert.match(korb.hinweise[0], /zu klein/);
+  assert.match(korb.hinweise[0], /Warenwert netto/);
+  assert.match(korb.hinweise[0], new RegExp(teil.lieferantName));
+
+  // Der genannte Fehlbetrag ist in der Währung des Kunden gerechnet und
+  // deshalb größer als der im Einkauf — sonst wäre er wieder rückrechenbar.
+  const genannt = Number(/rund (\d+) €/.exec(korb.hinweise[0])[1]);
+  assert.ok(genannt > teil.mindestbestellwert.fehlbetragNetto, 'im Warenwert gerechnet, nicht im Einkauf');
 });
 
 test('Am Referenzgebäude ändert die Schwellenkorrektur nichts', () => {

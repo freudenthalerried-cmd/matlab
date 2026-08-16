@@ -173,3 +173,43 @@ test('Ohne Auftrag wird der weniger passende Hinweis weggelassen, nicht der wich
   assert.ok(h.length >= 3);
   assert.ok(h.some((x) => /§ 377 UGB/.test(x.grundlage)));
 });
+
+/* ------------------------------------------------------------------ *
+ * AGB gegen Ablauf — was der Shop tut, muss in den AGB stehen
+ * ------------------------------------------------------------------ */
+
+test('Die Umsatzsteuerklausel widerspricht der Lieferbeschränkung nicht mehr', () => {
+  // Sie versprach Reverse Charge bei innergemeinschaftlicher Lieferung —
+  // während ein anderer Punkt Lieferungen außerhalb Österreichs ausschließt.
+  const steuer = AGB_GLIEDERUNG.find((a) => /Preise und Umsatzsteuer/.test(a.titel));
+  const orte = AGB_GLIEDERUNG.find((a) => /Lieferorte nur in Österreich/.test(a.titel));
+  assert.ok(steuer && orte);
+
+  assert.match(steuer.hinweis, /Leistungsort ist Österreich/);
+  assert.match(steuer.hinweis, /Eingangsseite|innergemeinschaftlichen Erwerb/);
+  assert.match(steuer.hinweis, new RegExp('Punkt ' + orte.nr), 'Der Verweis muss auf den richtigen Punkt zeigen');
+});
+
+test('Die durchgesetzte Mindestbestellmenge hat einen eigenen AGB-Punkt', () => {
+  // Der Shop lehnt Bestellungen unter der Herstellergrenze ab. Bis zu dieser
+  // Runde stand das in keinem Punkt — eine Ablehnung ohne Grundlage.
+  const punkt = AGB_GLIEDERUNG.find((a) => /Mindestbestellmengen/.test(a.titel));
+  assert.ok(punkt, 'Der Punkt fehlt');
+  assert.match(punkt.hinweis, /nicht angenommen werden/);
+  assert.match(punkt.hinweis, /Warenwert/, 'in der Währung des Kunden, nicht im Einkauf');
+});
+
+test('Jeder Querverweis zwischen AGB-Punkten zeigt auf einen vorhandenen Punkt', () => {
+  const nummern = new Set(AGB_GLIEDERUNG.map((a) => a.nr));
+
+  // Erst sammeln, dann prüfen: So steht die Längenzusicherung vor der Schleife
+  // und nicht dahinter — sonst prüfte der Testfall bei null Verweisen nichts.
+  const verweise = AGB_GLIEDERUNG.flatMap((a) =>
+    [...String(a.hinweis ?? '').matchAll(/Punkt (\d+)/g)].map((t) => ({ von: a.nr, auf: Number(t[1]) })),
+  );
+  assert.ok(verweise.length >= 1, 'Ohne Querverweis prüft dieser Testfall nichts');
+
+  for (const v of verweise) {
+    assert.ok(nummern.has(v.auf), `Punkt ${v.von} verweist auf ${v.auf} — gibt es nicht`);
+  }
+});

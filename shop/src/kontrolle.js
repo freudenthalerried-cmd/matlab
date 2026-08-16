@@ -354,6 +354,52 @@ export function pruefeVorgangsklammer(vorgang) {
 }
 
 /**
+ * Verrät ein Papier an den Kunden die Handelsspanne?
+ *
+ * Nachgewiesen, nicht befürchtet: Der Hinweis zum Mindestbestellwert nannte
+ * neben einem Warenwert von 330 € den Satz „erreicht sind 231 €" — den
+ * Einkaufswert. Daraus liest jeder Einkäufer 30 % Marge ab, und der Hersteller
+ * steht mit Namen daneben. Über 1.005 von 1.533 geprüften Angeboten ging das
+ * hinaus.
+ *
+ * Die Prüfung sucht die Beträge, die **nur der Betreiber kennen darf**, in den
+ * Papieren, die **der Kunde bekommt**. Sie ist bewusst grob: Jede Schreibweise
+ * eines Einkaufswerts zählt als Fund, auch eine zufällige. Ein Fehlalarm kostet
+ * eine Minute Nachsehen; ein übersehener Betrag kostet die Verhandlungsposition
+ * bei jedem Folgeauftrag.
+ */
+export function pruefeMargenleck(vorgang) {
+  const wk = vorgang.warenkorb;
+  const geheim = [
+    { name: 'Wareneinsatz gesamt', betrag: wk.einkaufNetto },
+    { name: 'Deckungsbeitrag', betrag: wk.deckungsbeitragNetto },
+    ...wk.teillieferungen.map((t) => ({ name: `Einkauf ${t.lieferantName}`, betrag: t.einkaufNetto })),
+  ];
+
+  const belege = [
+    ['Angebot', vorgang.angebot],
+    ['Auftragsbestätigung', vorgang.bestaetigung],
+    ['Rechnung', vorgang.rechnung],
+  ].filter(([, b]) => b && typeof b.text === 'string');
+
+  const funde = [];
+  for (const [name, beleg] of belege) {
+    for (const g of geheim) {
+      if (g.betrag === null || g.betrag === undefined || g.betrag === 0) continue;
+      // Beide Schreibweisen: die rohe Zahl und die Euro-Darstellung. Umgeben von
+      // Ziffern zählt der Treffer nicht — 231 in 1231,00 ist keiner.
+      const formen = [String(g.betrag), g.betrag.toFixed(2).replace('.', ',')];
+      const treffer = formen.some((f) =>
+        new RegExp(`(^|[^\\d,.])${f.replace('.', '\\.')}($|[^\\d,])`).test(beleg.text),
+      );
+      if (treffer) funde.push(`${name}: ${g.name} (${g.betrag}) steht im Text`);
+    }
+  }
+
+  return { dicht: funde.length === 0, funde };
+}
+
+/**
  * Trägt die Fracht sich selbst?
  *
  * Die Kette hat zwei Seiten, und bisher hat niemand sie gegeneinander gehalten:

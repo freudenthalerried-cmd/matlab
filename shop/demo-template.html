@@ -378,10 +378,21 @@ function zeichneKorb() {
   kennz.append(zeile('Frachtanteil am Warenwert', pct(wk.frachtanteilAmWarenwert)));
   el.append(kennz);
 
+  // Zwei Fassungen desselben Hinweises. Diese Tafel ist die Sicht des
+  // Betreibers — sie zeigt ohnehin Deckungsbeitrag und Mischmarge —, deshalb
+  // steht hier die vollständige. Was der Kunde bekommt, steht darunter, damit
+  // der Unterschied sichtbar ist: Der Einkaufswert gehört auf kein Papier, das
+  // hinausgeht.
+  for (const h of wk.hinweiseIntern) {
+    const w = document.createElement('div');
+    w.className = 'hinweis';
+    w.textContent = 'intern: ' + h;
+    el.append(w);
+  }
   for (const h of wk.hinweise) {
     const w = document.createElement('div');
     w.className = 'hinweis';
-    w.textContent = h;
+    w.textContent = 'an den Kunden: ' + h;
     el.append(w);
   }
 }

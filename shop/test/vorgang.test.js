@@ -15,7 +15,7 @@ import { readFileSync } from 'node:fs';
 import { ladeKatalog, berechneWarenkorb } from '../src/warenkorb.js';
 import { baueVorgang, darfVorgangLaufen, ablageEintraege } from '../src/vorgang.js';
 import { erzeugeRechnung } from '../src/beleg.js';
-import { pruefeVorgangsklammer, leseBelegkopf } from '../src/kontrolle.js';
+import { pruefeVorgangsklammer, leseBelegkopf, pruefeMargenleck } from '../src/kontrolle.js';
 import { neueAblage, haltefest, vorgangsakte } from '../src/ablage.js';
 
 const lies = (p) => JSON.parse(readFileSync(new URL(p, import.meta.url), 'utf8'));
@@ -374,4 +374,54 @@ test('Die Ablage vermerkt den Vertragsschluss', () => {
   assert.ok(vermerk, 'Kein Vermerk zum Vertragsschluss');
   assert.equal(vermerk.vorgang, 'B-2026-0007');
   assert.match(vermerk.text, /AGB Punkt 2/);
+});
+
+/* ------------------------------------------------------------------ *
+ * Kein Papier an den Kunden verrät die Handelsspanne
+ * ------------------------------------------------------------------ */
+
+test('Die Kundenbelege eines gewöhnlichen Vorgangs sind dicht', () => {
+  const p = pruefeMargenleck(machVorgang());
+  assert.equal(p.dicht, true, p.funde.join(' | '));
+});
+
+test('Auch ein Warenkorb unter dem Mindestbestellwert bleibt dicht', () => {
+  // Genau dieser Fall hat geleckt: Der Hinweis zum Mindestbestellwert stand im
+  // Angebot und nannte den Einkaufswert.
+  const klein = berechneWarenkorb([{ sku: 'DR-100-050', menge: 2 }], katalog);
+  assert.equal(klein.bestellbar, false, 'Vorbedingung des Testfalls');
+
+  const v = baueVorgang({
+    vorgangsnummer: 'B-2026-0008', kundendaten: kundeA, warenkorb: klein, betreiber,
+    datum: '2026-08-16', lieferdatum: '2026-08-30', rechnungsnummer: 'RE-1',
+  });
+  assert.ok(v.angebot.text.includes('zu klein'), 'Der Hinweis muss überhaupt dastehen');
+
+  const p = pruefeMargenleck(v);
+  assert.equal(p.dicht, true, p.funde.join(' | '));
+});
+
+test('Ein untergeschobener Einkaufswert im Angebot fällt auf', () => {
+  const v = machVorgang();
+  const undicht = {
+    ...v,
+    angebot: { ...v.angebot, text: v.angebot.text + `\nWareneinsatz: ${warenkorb.einkaufNetto} €` },
+  };
+
+  const p = pruefeMargenleck(undicht);
+  assert.equal(p.dicht, false);
+  assert.ok(p.funde.some((f) => /^Angebot: Wareneinsatz gesamt/.test(f)), p.funde.join(' | '));
+});
+
+test('Ein Einkaufswert je Lieferant fällt ebenso auf wie die Summe', () => {
+  const v = machVorgang();
+  const teil = warenkorb.teillieferungen[0];
+  const undicht = {
+    ...v,
+    rechnung: { ...v.rechnung, text: v.rechnung.text + `\nintern: ${teil.einkaufNetto} €` },
+  };
+
+  const p = pruefeMargenleck(undicht);
+  assert.equal(p.dicht, false);
+  assert.ok(p.funde.some((f) => f.startsWith('Rechnung: Einkauf ')), p.funde.join(' | '));
 });
