@@ -86,6 +86,20 @@ Zwei Punkte sind gegenüber der ursprünglichen Liste dazugekommen:
   nachgefragt, bevor daraus eine Planungszahl wird. Im Programm hatte genau
   diese Verwechslung dazu geführt, dass der Shop Frachtfreiheit gewährte, die
   kein Lieferant gewährt hatte.
+- **Worauf sich der Rabatt bezieht — mit Zahlen**, aus
+  [`alternativen-ohne-freigabe.md`](./alternativen-ohne-freigabe.md). Die
+  Leitposition kostet im herstellereigenen Endkundenshop 398 € **inklusive**
+  Mehrwertsteuer, netto ~331,67 € (AT). Gilt der genannte Händlerrabatt auf
+  diese Netto-Liste, liefern 42 % am Straßenpreis-Deckel 42 % Marge; gilt er
+  auf eine Brutto- oder Fantasieliste, schrumpft die Marge um die Steuer. Eine
+  Rabattantwort ohne beigelegte Preisliste ist deshalb **nicht auswertbar**.
+- **Direktvertrieb und Händlerschutz.** RadonTec betreibt mit radonshop.com
+  einen eigenen Endkundenshop — ein Händler konkurriert dort mit seinem
+  Lieferanten, und der sichtbare Endpreis ist dessen aktive Preissetzung.
+  Zu klären: Verkauft der Hersteller selbst an Endkunden, und gibt es eine
+  Preisuntergrenze oder einen Gebietsschutz für Händler? Ohne Zusage ist der
+  Hersteller für die Leitposition ungeeignet, unabhängig vom Rabatt.
+
 
 ## Von der Antwort zur Planungszahl
 

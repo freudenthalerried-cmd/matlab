@@ -1,6 +1,6 @@
 # Status und Einstieg
 
-Stand: 2026-08-16. **Dieses Dokument zuerst lesen.** Dreiundfünfzig Arbeitsdateien
+Stand: 2026-08-16. **Dieses Dokument zuerst lesen.** Vierundfünfzig Arbeitsdateien
 sind entstanden, mehrere davon korrigieren einander. Hier steht, was gilt.
 
 Veröffentlichter Bericht:
@@ -95,17 +95,22 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 
 ## Die Zahlen, auf denen alles ruht
 
-1. **Rohmarge 35 %** — weiterhin **unbelegt**. Kein Hersteller hat Konditionen
-   genannt. Unter 32 % fällt die Nische, so in Gate 3 festgelegt. Nur die
-   Herstelleranfrage kann das klären. Präzisiert: Entscheidend ist die Marge auf
-   die Abdichtungsbahn, sie muss rund 38 % tragen.
+1. **Rohmarge 35 %** — weiterhin **unbelegt**, aber seit 16. August mit
+   Straßenpreisanker: Die Leitposition kostet im herstellereigenen Endkundenshop
+   398 € **brutto** (~331,67 € netto AT) — unsere Platzhalter-UVP war die
+   Bruttozahl. Am VK-Deckel braucht die Bahn 38 % Rabatt auf die Netto-Liste;
+   alles hängt an der Bezugsbasis, und die kann nur der Hersteller nennen.
+   Unter 32 % fällt die Nische (Gate 3). Siehe `alternativen-ohne-freigabe.md`.
 2. **Suchvolumen** — weiterhin **nicht gemessen**. Die Inhaltslandkarte beruht
    auf Plausibilität.
 3. **Lead-Quote der Feuchte- und Abdichtungsthemen** — mit 2 % angenommen und
    nach Gate 15 **nicht mehr als Planungsgrundlage** geführt. Das Segment ist von
    vertikal integrierten Franchisesystemen besetzt. Siehe `pruefung-gruppe-c.md`.
-4. **Umsetzungsquote der Radonvorsorge** — wird nirgends erhoben. Sie ist die
-   eigentliche Wette des Shopmodells, nicht der Baumarkt. Siehe
+4. **Umsetzungsquote der Radonvorsorge** — wird nirgends erhoben, hat aber
+   seit 16. August einen Anker: **~2.000 Haushalte/Jahr** nutzen die kostenlose
+   AGES-Messung, österreichweit. Der akute Sanierungsmarkt liefert damit
+   Hunderte Fälle pro Jahr, nicht Tausende pro Monat — die Sessions müssen aus
+   dem Neubau-Pflichtkanal kommen. Siehe `alternativen-ohne-freigabe.md` und
    `marktrisiko-neubau.md`.
 5. **Materialwert je Gebäude** — ~~reine Schätzung 400–1.500 €~~ inzwischen
    hergeleitet: 1.260–2.955 € für den beschlossenen Warenkorb, Konfidenz
@@ -135,6 +140,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `margenleck-im-angebot.md` | **Das Angebot nannte den Einkaufswert** — 30 % Handelsspanne in Ziffern, aus einer eigenen Korrektur entstanden; dazu zwei AGB-Befunde |
 | `abgleich-versprechen-und-verhalten.md` | **Der Ansprechpartner auf der Baustelle hat nie zugestimmt** — Art. 14 DSGVO; der Abgleich Versprechen gegen Verhalten als Werkzeug statt als Durchsicht |
 | `zusicherung-und-ablage.md` | **Was in die Ablage geht, geht für sieben Jahre hinein** — Zusicherung nach Art. 14; Daten Dritter bleiben aus dem unveränderbaren Journal |
+| `alternativen-ohne-freigabe.md` | **Die Platzhalter-UVP war der Bruttopreis** — Straßenpreisanker statt Herstellerantwort, AGES-Zahlen statt Keyword-Werkzeug; beide Freigaben bleiben nötig, aber entlastet |
 | `pruefung-der-testfaelle.md` | **Grüne Tests sind eine Aussage über die Testfälle, nicht über den Code** — elf hohle Schleifen gefunden und entschärft |
 | `verhandlungsziel-konditionen.md` | **Zehn Prozent Nachlass kosten 38,8 % Rabatt** — das Verhandlungsziel liegt über der Gate-2-Schwelle |
 | `auswertungsbogen-hersteller.md` | **Genau 35 % Rabatt lassen 4,4 % Preisspielraum** — die Auswertung der zwölf Antworten steht fertig bereit |
