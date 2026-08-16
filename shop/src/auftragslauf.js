@@ -75,6 +75,18 @@ export const SCHRITTE = [
     hinweis: 'Ohne Anbindung von Hand über das Portal. Zwei Minuten, aber bei jeder Bestellung.',
   },
   {
+    id: 'annahme',
+    name: 'Auftragsbestätigung an den Kunden senden',
+    braucht: ['echteKonditionen'],
+    minutenOhne: 3,
+    blockiert: false,
+    hinweis:
+      'Nach Punkt 2 der eigenen AGB kommt der Vertrag erst hiermit zustande. ' +
+      'Der Schritt hat im Ablauf gefehlt — der Shop wäre vom Zahlungseingang ' +
+      'direkt zur Lieferantenbestellung gegangen und hätte Geld genommen, ' +
+      'bevor er sich gebunden hatte. Steht bewusst vor der Zahlung.',
+  },
+  {
     id: 'zahlung',
     name: 'Zahlungseingang feststellen',
     braucht: ['zahlungsanbieter'],
@@ -91,7 +103,7 @@ export const SCHRITTE = [
     hinweis: 'Der Bruchpunkt aus Gate 6. Der Entwurf steht fertig da; ohne Schnittstelle muss ihn jemand abschicken.',
   },
   {
-    id: 'auftragsbestaetigung',
+    id: 'lieferantenbestaetigung',
     name: 'Auftragsbestätigung des Lieferanten einlesen',
     braucht: ['produktdatenSchnittstelle'],
     minutenOhne: 3,

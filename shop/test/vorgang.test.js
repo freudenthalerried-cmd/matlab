@@ -328,3 +328,50 @@ test('Auch mit Baustelle fällt eine umgelenkte Bestellung auf', () => {
   assert.equal(p.geschlossen, false);
   assert.ok(p.abweichungen.some((a) => /Ware geht nach 4020 Linz/.test(a)), p.abweichungen.join(' | '));
 });
+
+/* ------------------------------------------------------------------ *
+ * Die Auftragsbestätigung gehört zum Vorgang
+ * ------------------------------------------------------------------ */
+
+test('Der Vorgang erzeugt eine Auftragsbestätigung mit eigener Nummer', () => {
+  const v = machVorgang();
+  assert.ok(v.bestaetigung, 'Die Bestätigung fehlt im Vorgang');
+  assert.equal(leseBelegkopf(v.bestaetigung.text).nummer, 'AB-B-2026-0007');
+  assert.equal(leseBelegkopf(v.bestaetigung.text).empfaenger[0], kundeA.firma);
+});
+
+test('Die Bestätigung trägt die Lieferhinweise ins Papier', () => {
+  const v = machVorgang();
+  assert.match(v.bestaetigung.text, /§ 377 UGB/);
+});
+
+test('Die Klammer prüft auch die Auftragsbestätigung', () => {
+  const v = machVorgang();
+  const vertauscht = {
+    ...v,
+    bestaetigung: { ...v.bestaetigung, text: v.bestaetigung.text.replace(kundeA.firma, 'Bau Donau e.U.') },
+  };
+
+  const p = pruefeVorgangsklammer(vertauscht);
+  assert.equal(p.geschlossen, false);
+  assert.ok(
+    p.abweichungen.some((a) => /Auftragsbestätigung geht an/.test(a)),
+    `Die Bestätigung wurde nicht geprüft: ${p.abweichungen.join(' | ')}`,
+  );
+});
+
+test('Die Annahme steht als eigene Freigabe neben Bestellung und Rechnung', () => {
+  const v = machVorgang();
+  assert.ok(v.freigabe.annahme, 'Die Annahme fehlt in den Freigaben');
+  assert.equal(v.freigabe.annahme.erlaubt, false, 'Platzhalterpreise halten sie an');
+  assert.ok(darfVorgangLaufen(v).gruende.some((g) => /^Annahme: /.test(g)));
+});
+
+test('Die Ablage vermerkt den Vertragsschluss', () => {
+  const v = machVorgang();
+  const eintraege = ablageEintraege(v, '2026-08-16T10:00:00Z');
+  const vermerk = eintraege.find((e) => /Auftragsbestätigung an/.test(e.text));
+  assert.ok(vermerk, 'Kein Vermerk zum Vertragsschluss');
+  assert.equal(vermerk.vorgang, 'B-2026-0007');
+  assert.match(vermerk.text, /AGB Punkt 2/);
+});

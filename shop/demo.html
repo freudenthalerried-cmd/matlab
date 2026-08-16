@@ -1514,6 +1514,123 @@ function erzeugeAngebot(warenkorb, { nummer, datum, bindefristTage = 14, kunde =
 }
 
 /**
+ * Auftragsbestätigung an den Kunden — das Papier, mit dem der Vertrag zustande
+ * kommt.
+ *
+ * **Es hat bis hierher gefehlt, und das war kein Schönheitsfehler.** Punkt 2
+ * der eigenen AGB lautet: „Bestellung ist Angebot, Annahme durch
+ * Auftragsbestätigung." Der Ablauf in `auftragslauf.js` kannte diesen Schritt
+ * nicht — er ging vom Zahlungseingang direkt zur Lieferantenbestellung. Der
+ * Shop hätte also **Geld genommen, bevor nach seinen eigenen Bedingungen ein
+ * Vertrag bestand**, und die einzige „Auftragsbestätigung" im Ablauf war die
+ * des Lieferanten an uns, nicht unsere an den Kunden.
+ *
+ * Zwei Dinge stehen deshalb hier, die in keinem anderen Beleg stehen:
+ *
+ *   1. **Wann der Vertrag zustande kommt** — ausdrücklich, mit Verweis auf die
+ *      AGB, damit die beiden Texte dasselbe sagen.
+ *   2. **Wann die Baustelle vollständig beliefert ist.** Im Streckengeschäft
+ *      liefert jeder Hersteller selbst, und der Kunde kann erst arbeiten, wenn
+ *      das **letzte** Teil da ist. Angebot und Rechnung nennen die Lieferzeit
+ *      je Lieferant; keiner von beiden nennt die längste. Genau die braucht der
+ *      Bauleiter für seinen Terminplan.
+ */
+function erzeugeAuftragsbestaetigung(
+  warenkorb,
+  { nummer, datum, kunde = {}, betreiber = {}, auftrag = {}, hinweise = [] },
+) {
+  const werktage = warenkorb.teillieferungen.map((t) => t.lieferzeitWerktage ?? 0);
+  const laengste = werktage.length ? Math.max(...werktage) : 0;
+  const lieferadresse = auftrag.lieferadresse ?? null;
+
+  const zeilen = [
+    `Auftragsbestätigung ${wert(nummer, 'Auftragsnummer')}`,
+    `Datum: ${wert(datum, 'Datum')}`,
+    '',
+    wert(betreiber.firma, 'Firma des Betreibers'),
+    '',
+    'Auftraggeber:',
+    `  ${wert(kunde.firma, 'Firma des Kunden')}`,
+    `  ${wert(kunde.strasse, 'Anschrift')}`,
+    `  ${wert(kunde.plz, 'PLZ')} ${wert(kunde.ort, 'Ort')}`,
+    '',
+    'Wir nehmen Ihre Bestellung hiermit an. Mit dieser Bestätigung kommt der',
+    'Vertrag zustande (Punkt 2 unserer Allgemeinen Geschäftsbedingungen).',
+    '',
+  ];
+
+  if (lieferadresse) {
+    zeilen.push(
+      'Lieferanschrift:',
+      `  ${wert(lieferadresse.name, 'Name der Lieferanschrift')}`,
+      `  ${wert(lieferadresse.strasse, 'Anschrift')}`,
+      `  ${wert(lieferadresse.plz, 'PLZ')} ${wert(lieferadresse.ort, 'Ort')}`,
+      `  Ansprechpartner vor Ort: ${wert(lieferadresse.telefon, 'Ansprechpartner vor Ort')}`,
+    );
+    if (auftrag.lieferungAnRechnungsadresse === false) {
+      zeilen.push('  (abweichend von der Rechnungsanschrift)');
+    }
+    zeilen.push('');
+  }
+
+  zeilen.push(...positionszeilen(warenkorb), ...summenblock(warenkorb), '');
+
+  // Die Lieferzeiten einzeln — und die längste ausdrücklich. Ein Kunde, der
+  // drei Zahlen liest und selbst das Maximum bilden soll, bildet es nicht.
+  zeilen.push('Lieferzeiten je Hersteller, ab Bestellauslösung:');
+  for (const t of warenkorb.teillieferungen) {
+    zeilen.push(`  ${textZeile(t.lieferantName)}: ${t.lieferzeitWerktage} Werktage`);
+  }
+  zeilen.push(
+    '',
+    `Vollständig auf der Baustelle: nach ${laengste} Werktagen.`,
+    'Bis dahin treffen die Teillieferungen einzeln ein; jede ist für sich zu prüfen.',
+  );
+
+  if (hinweise.length) {
+    zeilen.push('', 'Bitte beachten Sie:');
+    for (const h of hinweise) {
+      zeilen.push(`  · ${textZeile(h.titel)}: ${textZeile(h.text)} (${textZeile(h.grundlage)})`);
+    }
+  }
+
+  return {
+    text: zeilen.join('\n'),
+    bruttobetrag: warenkorb.summeBrutto,
+    lieferzeitLaengsteWerktage: laengste,
+    teillieferungen: warenkorb.teillieferungen.length,
+  };
+}
+
+/**
+ * Darf dieser Auftrag überhaupt angenommen werden?
+ *
+ * Die Annahme ist die Stelle, an der der Shop sich bindet. Sie gehört deshalb
+ * **vor** die Zahlung und nicht danach — und sie darf nur erklärt werden, wenn
+ * die Bestellung beim Lieferanten auch platzierbar ist.
+ *
+ * Der Fall aus `frachtschwelle-und-bestellwert.md` ist genau dieser: Ein
+ * Warenkorb unter dem Mindestbestellwert des Lieferanten wurde als bestellbar
+ * gemeldet. Wer so etwas bestätigt, hat einen Vertrag geschlossen, den er nicht
+ * erfüllen kann — schlimmer als eine abgelehnte Bestellung.
+ */
+function darfBestaetigtWerden(warenkorb, auftrag = {}) {
+  const gruende = [];
+
+  if (!auftrag.kundeIstUnternehmer) gruende.push('Unternehmerstatus nicht bestätigt (Gate 7)');
+  if (!auftrag.uid) gruende.push('Keine UID-Nummer hinterlegt');
+  if (warenkorb.teillieferungen.length === 0) gruende.push('Leerer Warenkorb');
+  if (!warenkorb.bestellbar) {
+    gruende.push(...warenkorb.hinweise.map((h) => `Nicht platzierbar — ${h}`));
+  }
+  if (warenkorb.teillieferungen.some((t) => t.positionen.some((p) => p.ekIstPlatzhalter))) {
+    gruende.push('Katalog enthält Platzhalterpreise — der bestätigte Betrag wäre erfunden');
+  }
+
+  return { erlaubt: gruende.length === 0, gruende };
+}
+
+/**
  * Rechnung an den Kunden.
  *
  * Erzeugt wird sie immer — geprüft wird getrennt. Ein Entwurf mit sichtbaren
@@ -1662,6 +1779,7 @@ function reihengeschaeftEinordnung(warenkorb, katalog) {
 
 
 
+
 /**
  * Baut den vollständigen Vorgang.
  *
@@ -1707,6 +1825,17 @@ function baueVorgang({
     kunde,
     betreiber,
   });
+  // Die Auftragsbestätigung trägt dieselben Hinweise, die der Kunde vor der
+  // Bestellung gesehen hat. Ein Hinweis, der nur auf dem Bildschirm stand und
+  // in keinem Papier steht, ist später nicht mehr auffindbar.
+  const bestaetigung = erzeugeAuftragsbestaetigung(warenkorb, {
+    nummer: `AB-${vorgangsnummer}`,
+    datum,
+    kunde,
+    betreiber,
+    auftrag,
+    hinweise: lieferhinweise(auftrag),
+  });
   const rechnung = erzeugeRechnung(warenkorb, {
     nummer: rechnungsnummer,
     datum,
@@ -1729,9 +1858,13 @@ function baueVorgang({
     warenkorb,
     bestellungen,
     angebot,
+    bestaetigung,
     rechnung,
     freigabe: {
       kundendaten: kundenpruefung.gueltig,
+      // Die Annahme steht bewusst vor der Bestellung: Erst binden, dann Geld
+      // nehmen, dann auslösen. Vgl. AGB Punkt 2.
+      annahme: darfBestaetigtWerden(warenkorb, auftrag),
       bestellung: darfAutomatischAusgeloestWerden(warenkorb, auftrag),
       rechnung: darfRechnungGestelltWerden(warenkorb, rechnung, auftrag),
     },
@@ -1750,6 +1883,9 @@ function darfVorgangLaufen(vorgang) {
 
   if (!vorgang.kundenpruefung.gueltig) {
     gruende.push(...vorgang.kundenpruefung.fehler.map((f) => `Kundendaten: ${f}`));
+  }
+  if (!vorgang.freigabe.annahme.erlaubt) {
+    gruende.push(...vorgang.freigabe.annahme.gruende.map((g) => `Annahme: ${g}`));
   }
   if (!vorgang.freigabe.bestellung.erlaubt) {
     gruende.push(...vorgang.freigabe.bestellung.gruende.map((g) => `Bestellung: ${g}`));
@@ -1785,6 +1921,15 @@ function ablageEintraege(vorgang, zeitpunkt) {
     betragNetto: b.einkaufNetto,
     text: b.betreff,
   }));
+
+  eintraege.push({
+    art: 'vermerk',
+    zeitpunkt,
+    vorgang: vorgang.vorgangsnummer,
+    betragNetto: vorgang.warenkorb.summeNetto,
+    betragBrutto: vorgang.warenkorb.summeBrutto,
+    text: `Auftragsbestätigung an ${vorgang.kunde.firma} — Vertragsschluss nach AGB Punkt 2`,
+  });
 
   eintraege.push({
     art: 'angebot',
@@ -1875,6 +2020,18 @@ const SCHRITTE = [
     hinweis: 'Ohne Anbindung von Hand über das Portal. Zwei Minuten, aber bei jeder Bestellung.',
   },
   {
+    id: 'annahme',
+    name: 'Auftragsbestätigung an den Kunden senden',
+    braucht: ['echteKonditionen'],
+    minutenOhne: 3,
+    blockiert: false,
+    hinweis:
+      'Nach Punkt 2 der eigenen AGB kommt der Vertrag erst hiermit zustande. ' +
+      'Der Schritt hat im Ablauf gefehlt — der Shop wäre vom Zahlungseingang ' +
+      'direkt zur Lieferantenbestellung gegangen und hätte Geld genommen, ' +
+      'bevor er sich gebunden hatte. Steht bewusst vor der Zahlung.',
+  },
+  {
     id: 'zahlung',
     name: 'Zahlungseingang feststellen',
     braucht: ['zahlungsanbieter'],
@@ -1891,7 +2048,7 @@ const SCHRITTE = [
     hinweis: 'Der Bruchpunkt aus Gate 6. Der Entwurf steht fertig da; ohne Schnittstelle muss ihn jemand abschicken.',
   },
   {
-    id: 'auftragsbestaetigung',
+    id: 'lieferantenbestaetigung',
     name: 'Auftragsbestätigung des Lieferanten einlesen',
     braucht: ['produktdatenSchnittstelle'],
     minutenOhne: 3,
@@ -3162,10 +3319,31 @@ document.getElementById('kasse').addEventListener('submit', (e) => {
   });
   const rechnungFrei = darfRechnungGestelltWerden(wk, rechnung, auftrag);
 
+  // Die Auftragsbestätigung — das Papier, mit dem der Vertrag zustande kommt.
+  // Sie trägt dieselben Lieferhinweise, die oben in der Strecke standen.
+  const bestaetigung = erzeugeAuftragsbestaetigung(wk, {
+    nummer: 'AB-MUSTER',
+    datum: heute,
+    kunde: belegKunde,
+    betreiber,
+    auftrag,
+    hinweise: lieferhinweise(auftrag),
+  });
+  const annahmeFrei = darfBestaetigtWerden(wk, auftrag);
+
   const reihe = reihengeschaeftEinordnung(wk, katalog);
   if (reihe.reihengeschaeft) {
     ziel.append(kasten('k-warn', ['Umsatzsteuer im Streckengeschäft:', ...reihe.hinweise.map((h) => '· ' + h)]));
   }
+
+  ziel.append(
+    kasten('k-sperre', [
+      annahmeFrei.erlaubt
+        ? 'Der Auftrag wäre annehmbar — der Vertrag käme mit der Bestätigung zustande (AGB Punkt 2).'
+        : 'Keine Annahme, also kein Vertrag. Offen sind:',
+      ...annahmeFrei.gruende.map((g) => '· ' + g),
+    ]),
+  );
 
   ziel.append(
     kasten('k-sperre', [
@@ -3186,6 +3364,7 @@ document.getElementById('kasse').addEventListener('submit', (e) => {
   };
 
   ziel.append(belegBox('Angebot an den Kunden — Entwurf', angebot.text));
+  ziel.append(belegBox('Auftragsbestätigung — hiermit käme der Vertrag zustande', bestaetigung.text));
   ziel.append(belegBox('Rechnung an den Kunden — Entwurf', rechnung.text));
 
   // Ablage: was im Echtbetrieb aktenkundig würde. Die Rechnungsnummer entsteht

@@ -227,9 +227,9 @@ export function pruefeBestellung(bestellung, teillieferung) {
  */
 export function leseBelegkopf(text) {
   const zeilen = String(text ?? '').split('\n');
-  const nummer = /^(?:Rechnung|Angebot)\s+(\S+)/.exec(zeilen[0] ?? '')?.[1] ?? null;
+  const nummer = /^(?:Rechnung|Angebot|Auftragsbestätigung)\s+(\S+)/.exec(zeilen[0] ?? '')?.[1] ?? null;
 
-  const beginn = zeilen.findIndex((z) => /^(Rechnungsempfänger:|An:)$/.test(z.trim()));
+  const beginn = zeilen.findIndex((z) => /^(Rechnungsempfänger:|Auftraggeber:|An:)$/.test(z.trim()));
   const empfaenger = [];
   if (beginn >= 0) {
     for (let i = beginn + 1; i < zeilen.length && zeilen[i].trim() !== ''; i++) {
@@ -290,6 +290,7 @@ export function pruefeVorgangsklammer(vorgang) {
   // 3. Der Beleg an den Kunden nennt den Kunden des Vorgangs.
   for (const [name, beleg] of [
     ['Angebot', vorgang.angebot],
+    ['Auftragsbestätigung', vorgang.bestaetigung],
     ['Rechnung', vorgang.rechnung],
   ]) {
     if (!beleg) continue;

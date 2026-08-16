@@ -35,7 +35,7 @@ Gerüst vorhanden und meldet selbst, welche Pflichtangaben ihm fehlen.
 ## Benutzen
 
 ```
-npm test           # 297 Testfälle
+npm test           # 313 Testfälle
 npm run build      # erzeugt demo.html, eine einzelne Datei ohne Abhängigkeiten
 npm run import -- <lieferantId> <datei.csv> [--schreiben]
 npm run pruefe-tests  # prüft die Testfälle darauf, ob sie etwas behaupten

@@ -26,7 +26,14 @@
 
 import { baueAuftrag, pruefeBestelldaten } from './kunde.js';
 import { erzeugeBestellungen, darfAutomatischAusgeloestWerden } from './bestellung.js';
-import { erzeugeAngebot, erzeugeRechnung, darfRechnungGestelltWerden } from './beleg.js';
+import {
+  erzeugeAngebot,
+  erzeugeAuftragsbestaetigung,
+  erzeugeRechnung,
+  darfBestaetigtWerden,
+  darfRechnungGestelltWerden,
+} from './beleg.js';
+import { lieferhinweise } from './rechtstexte.js';
 
 /**
  * Baut den vollständigen Vorgang.
@@ -73,6 +80,17 @@ export function baueVorgang({
     kunde,
     betreiber,
   });
+  // Die Auftragsbestätigung trägt dieselben Hinweise, die der Kunde vor der
+  // Bestellung gesehen hat. Ein Hinweis, der nur auf dem Bildschirm stand und
+  // in keinem Papier steht, ist später nicht mehr auffindbar.
+  const bestaetigung = erzeugeAuftragsbestaetigung(warenkorb, {
+    nummer: `AB-${vorgangsnummer}`,
+    datum,
+    kunde,
+    betreiber,
+    auftrag,
+    hinweise: lieferhinweise(auftrag),
+  });
   const rechnung = erzeugeRechnung(warenkorb, {
     nummer: rechnungsnummer,
     datum,
@@ -95,9 +113,13 @@ export function baueVorgang({
     warenkorb,
     bestellungen,
     angebot,
+    bestaetigung,
     rechnung,
     freigabe: {
       kundendaten: kundenpruefung.gueltig,
+      // Die Annahme steht bewusst vor der Bestellung: Erst binden, dann Geld
+      // nehmen, dann auslösen. Vgl. AGB Punkt 2.
+      annahme: darfBestaetigtWerden(warenkorb, auftrag),
       bestellung: darfAutomatischAusgeloestWerden(warenkorb, auftrag),
       rechnung: darfRechnungGestelltWerden(warenkorb, rechnung, auftrag),
     },
@@ -116,6 +138,9 @@ export function darfVorgangLaufen(vorgang) {
 
   if (!vorgang.kundenpruefung.gueltig) {
     gruende.push(...vorgang.kundenpruefung.fehler.map((f) => `Kundendaten: ${f}`));
+  }
+  if (!vorgang.freigabe.annahme.erlaubt) {
+    gruende.push(...vorgang.freigabe.annahme.gruende.map((g) => `Annahme: ${g}`));
   }
   if (!vorgang.freigabe.bestellung.erlaubt) {
     gruende.push(...vorgang.freigabe.bestellung.gruende.map((g) => `Bestellung: ${g}`));
@@ -151,6 +176,15 @@ export function ablageEintraege(vorgang, zeitpunkt) {
     betragNetto: b.einkaufNetto,
     text: b.betreff,
   }));
+
+  eintraege.push({
+    art: 'vermerk',
+    zeitpunkt,
+    vorgang: vorgang.vorgangsnummer,
+    betragNetto: vorgang.warenkorb.summeNetto,
+    betragBrutto: vorgang.warenkorb.summeBrutto,
+    text: `Auftragsbestätigung an ${vorgang.kunde.firma} — Vertragsschluss nach AGB Punkt 2`,
+  });
 
   eintraege.push({
     art: 'angebot',

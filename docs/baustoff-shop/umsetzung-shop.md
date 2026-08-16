@@ -20,8 +20,8 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Bestellstrecke mit Gate-7-Prüfung | fertig | 11 |
 | Messwert-Einordner | fertig | 10 |
 | Rechtstexte-Gerüst | fertig, um Baustelle erweitert | 18 |
-| Angebot und Rechnung an den Kunden | fertig | 15 |
-| Trockenlauf des Auftrags | fertig | 12 |
+| Angebot, Auftragsbestätigung und Rechnung | fertig, Vertragsschluss ergänzt | 24 |
+| Trockenlauf des Auftrags | fertig, elf Schritte | 14 |
 | UID-Abfrage beim EU-System | fertig, ungeprüft am Dienst | 17 |
 | Ablage und Nummernkreis | fertig, ohne Speicherung | 16 |
 | Zahlwege und Gebühren | fertig | 15 |
@@ -34,12 +34,54 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Gegenprobe an der Lieferantenbestellung | fertig, ein Fehler behoben | 6 |
 | Fremdtext an allen Ein- und Ausgängen | fertig, ein Fehler behoben | 18 |
 | Frachtdeckung Kunde gegen Lieferant | fertig, ein Fehler behoben | 4 |
-| Vorgangsklammer über alle Papiere | fertig, ein Fehler behoben | 17 |
+| Vorgangsklammer über alle Papiere | fertig, ein Fehler behoben | 22 |
 | Baustelle als eigene Lieferanschrift | fertig, ein Fehler behoben | 12 |
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig, Baustelle abgefragt | headless geprüft |
-| **Summe** | | **297, alle grün, 0 hohl** |
+| **Summe** | | **313, alle grün, 0 hohl** |
 
-## Was zuletzt dazukam: die Rügefrist auf der Baustelle
+## Was zuletzt dazukam: Geld genommen, bevor ein Vertrag bestand
+
+Punkt 2 der eigenen AGB lautet seit dem ersten Entwurf: „Bestellung ist Angebot,
+Annahme durch Auftragsbestätigung." **Dieses Papier gab es nicht.** Ausführlich
+in [`auftragsbestaetigung.md`](./auftragsbestaetigung.md).
+
+`beleg.js` erzeugte Angebot und Rechnung, dazwischen nichts, und der Ablauf ging
+vom Zahlungseingang direkt zur Lieferantenbestellung. Leicht zu übersehen war es,
+weil der Ablauf einen Schritt `auftragsbestaetigung` führte — nur meinte der die
+Bestätigung, die der **Lieferant an uns** schickt. Zwei gegenläufige Papiere
+unter einem Wort; der Schritt sah besetzt aus.
+
+Der Widerspruch ist konkret: Nimmt man Geld ohne Annahme, hält man es ohne
+Rechtsgrund; liest man die Zahlungsannahme als schlüssige Annahme, widerspricht
+das dem veröffentlichten AGB-Punkt 2, und im Streitfall gilt die für den
+Verwender ungünstigere Auslegung.
+
+**Behoben:** `erzeugeAuftragsbestaetigung()` nennt den Vertragsschluss
+ausdrücklich mit Verweis auf die AGB — und **wann die Baustelle vollständig
+beliefert ist**. Angebot und Rechnung nennen die Lieferzeit je Lieferant; drei
+Zahlen, aus denen der Kunde selbst das Maximum bilden soll. Er bildet es nicht.
+Im Streckengeschäft ist die längste Lieferzeit die einzige, die zählt.
+
+Dazu `darfBestaetigtWerden()`: Die Annahme darf nur erklärt werden, wenn die
+Bestellung beim Lieferanten platzierbar ist. Der Fall aus
+[`frachtschwelle-und-bestellwert.md`](./frachtschwelle-und-bestellwert.md) ist
+genau dieser — wer einen Warenkorb unter dem Mindestbestellwert bestätigt, hat
+einen Vertrag geschlossen, den er nicht erfüllen kann.
+
+**Die Reihenfolge ist der eigentliche Inhalt:** annahme → zahlung →
+bestellauslösung → lieferantenbestaetigung. Erst binden, dann Geld nehmen, dann
+auslösen. Ein Testfall besteht auf der Reihenfolge, nicht bloß auf der Existenz
+des Schritts; ein zweiter darauf, dass die eigene Bestätigung und die des
+Lieferanten unterscheidbar benannt sind. Elf Schritte statt zehn, drei Minuten
+Handarbeit ohne Anbindung — der Trockenlauf soll den Aufwand nicht kleiner
+aussehen lassen, als er ist.
+
+Bemerkenswert ist die Herkunft: Der Fund kam nicht aus einer Prüfung des
+Programms, sondern aus dem Vergleich zweier Dinge, die längst nebeneinander im
+Repo lagen — einer Zeile in der AGB-Gliederung und einer Liste von
+Ablaufschritten in einer anderen Datei. Beide waren für sich richtig.
+
+## Was davor dazukam: die Rügefrist auf der Baustelle
 
 Die Vorrunde hat die Baustelle als Datenweg eingeführt, nicht ihre Folgen.
 Diese Runde zieht sie nach — in den Rechtstexten und in der Bestellstrecke.
@@ -716,12 +758,11 @@ Nach Nutzen geordnet, alle ohne Freigabe und ohne Ausgabe machbar:
 1. **Gebietsabfrage** nach `phase10-datengrundlage-gebietsabfrage.md` — braucht
    die Gemeindeliste. RIS und der Geoserver sind aus dieser Umgebung weiterhin
    nicht erreichbar; zuletzt geprüft am 15. August.
-2. **Die Auftragsbestätigung** — der Shop erzeugt Angebot, Rechnung und
-   Lieferantenbestellung, aber nicht das Papier dazwischen. Nach AGB Punkt 2
-   kommt der Vertrag erst mit der Auftragsbestätigung zustande; ohne sie ist
-   ungeklärt, wann der Kunde gebunden ist. Sie müsste die Teillieferungen mit
-   ihren Lieferzeiten einzeln nennen und die Lieferhinweise tragen. Braucht
-   keine Freigabe und keine Ausgabe.
+2. **AGB gegen Ablauf, systematisch** — der Fund dieser Runde kam aus dem
+   Vergleich einer AGB-Zeile mit einer Ablaufliste. Zwölf AGB-Punkte stehen
+   elf Ablaufschritten gegenüber, und niemand hat sie je Punkt für Punkt
+   gegeneinandergehalten. Was in den AGB steht, muss im Ablauf vorkommen — und
+   umgekehrt. Braucht keine Freigabe und keine Ausgabe.
 3. **Gedächtnis der Ablage** — `ablage.js` führt Nummernkreis und Journal
    sauber, aber nur im Arbeitsspeicher. Nach einem Neuladen beginnt die
    Rechnungsnummer wieder bei eins, und § 11 UStG verlangt Einmaligkeit. Solange

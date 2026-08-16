@@ -110,3 +110,27 @@ test('Jeder nicht automatische Schritt nennt einen Grund', () => {
     assert.ok(p.fehlend.length > 0, `${p.id} ohne benannte fehlende Fähigkeit`);
   }
 });
+
+/* ------------------------------------------------------------------ *
+ * Der Vertragsschluss hat im Ablauf gefehlt
+ * ------------------------------------------------------------------ */
+
+test('Die Auftragsbestätigung an den Kunden steht vor dem Zahlungseingang', () => {
+  const ids = SCHRITTE.map((s) => s.id);
+  const annahme = ids.indexOf('annahme');
+  const zahlung = ids.indexOf('zahlung');
+
+  assert.ok(annahme >= 0, 'Der Schritt fehlt — nach AGB Punkt 2 kommt der Vertrag damit zustande');
+  assert.ok(zahlung >= 0);
+  assert.ok(annahme < zahlung, 'Erst binden, dann Geld nehmen');
+});
+
+test('Die eigene Bestätigung ist nicht mit der des Lieferanten verwechselbar', () => {
+  const eigene = SCHRITTE.find((s) => s.id === 'annahme');
+  const fremde = SCHRITTE.find((s) => s.id === 'lieferantenbestaetigung');
+
+  assert.ok(eigene && fremde, 'Beide Schritte müssen es geben');
+  assert.match(eigene.name, /an den Kunden/);
+  assert.match(fremde.name, /des Lieferanten/);
+  assert.ok(SCHRITTE.indexOf(eigene) < SCHRITTE.indexOf(fremde));
+});

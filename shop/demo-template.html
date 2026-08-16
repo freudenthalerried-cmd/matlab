@@ -539,10 +539,31 @@ document.getElementById('kasse').addEventListener('submit', (e) => {
   });
   const rechnungFrei = darfRechnungGestelltWerden(wk, rechnung, auftrag);
 
+  // Die Auftragsbestätigung — das Papier, mit dem der Vertrag zustande kommt.
+  // Sie trägt dieselben Lieferhinweise, die oben in der Strecke standen.
+  const bestaetigung = erzeugeAuftragsbestaetigung(wk, {
+    nummer: 'AB-MUSTER',
+    datum: heute,
+    kunde: belegKunde,
+    betreiber,
+    auftrag,
+    hinweise: lieferhinweise(auftrag),
+  });
+  const annahmeFrei = darfBestaetigtWerden(wk, auftrag);
+
   const reihe = reihengeschaeftEinordnung(wk, katalog);
   if (reihe.reihengeschaeft) {
     ziel.append(kasten('k-warn', ['Umsatzsteuer im Streckengeschäft:', ...reihe.hinweise.map((h) => '· ' + h)]));
   }
+
+  ziel.append(
+    kasten('k-sperre', [
+      annahmeFrei.erlaubt
+        ? 'Der Auftrag wäre annehmbar — der Vertrag käme mit der Bestätigung zustande (AGB Punkt 2).'
+        : 'Keine Annahme, also kein Vertrag. Offen sind:',
+      ...annahmeFrei.gruende.map((g) => '· ' + g),
+    ]),
+  );
 
   ziel.append(
     kasten('k-sperre', [
@@ -563,6 +584,7 @@ document.getElementById('kasse').addEventListener('submit', (e) => {
   };
 
   ziel.append(belegBox('Angebot an den Kunden — Entwurf', angebot.text));
+  ziel.append(belegBox('Auftragsbestätigung — hiermit käme der Vertrag zustande', bestaetigung.text));
   ziel.append(belegBox('Rechnung an den Kunden — Entwurf', rechnung.text));
 
   // Ablage: was im Echtbetrieb aktenkundig würde. Die Rechnungsnummer entsteht

@@ -11,6 +11,8 @@ import {
   erzeugeRechnung,
   darfRechnungGestelltWerden,
   reihengeschaeftEinordnung,
+  erzeugeAuftragsbestaetigung,
+  darfBestaetigtWerden,
 } from '../src/beleg.js';
 
 const lies = (p) => JSON.parse(readFileSync(new URL(p, import.meta.url), 'utf8'));
@@ -140,4 +142,95 @@ test('Jeder Lieferant trägt ein Land — ohne das ist die Steuerfrage nicht zu 
   for (const l of daten.lieferanten.lieferanten) {
     assert.match(l.land, /^[A-Z]{2}$/, `${l.id} hat kein Land`);
   }
+});
+
+/* ------------------------------------------------------------------ *
+ * Auftragsbestätigung — das Papier, mit dem der Vertrag zustande kommt
+ *
+ * Es hat gefehlt, obwohl Punkt 2 der eigenen AGB darauf verweist. Der Ablauf
+ * ging vom Zahlungseingang direkt zur Lieferantenbestellung: Geld genommen,
+ * bevor nach den eigenen Bedingungen ein Vertrag bestand.
+ * ------------------------------------------------------------------ */
+
+test('Die Auftragsbestätigung sagt ausdrücklich, wann der Vertrag zustande kommt', () => {
+  const b = erzeugeAuftragsbestaetigung(korb, {
+    nummer: 'AB-2026-0001', datum: '2026-08-16', kunde: kunde, betreiber: betreiber,
+  });
+  assert.match(b.text, /Vertrag zustande/);
+  assert.match(b.text, /Punkt 2/);
+});
+
+test('Sie nennt die längste Lieferzeit, nicht nur die einzelnen', () => {
+  // Der Bauleiter kann erst arbeiten, wenn das letzte Teil da ist. Angebot und
+  // Rechnung nennen die Lieferzeit je Hersteller; keiner nennt das Maximum.
+  const b = erzeugeAuftragsbestaetigung(korb, {
+    nummer: 'AB-2026-0001', datum: '2026-08-16', kunde: kunde, betreiber: betreiber,
+  });
+  const einzeln = korb.teillieferungen.map((t) => t.lieferzeitWerktage);
+  assert.ok(einzeln.length >= 2, 'Für diese Prüfung braucht es mehrere Lieferanten');
+
+  const laengste = Math.max(...einzeln);
+  assert.equal(b.lieferzeitLaengsteWerktage, laengste);
+  assert.match(b.text, new RegExp('Vollständig auf der Baustelle: nach ' + laengste + ' Werktagen'));
+  assert.ok(laengste > Math.min(...einzeln), 'sonst prüft der Testfall nichts Eigenes');
+});
+
+test('Ohne Lieferanschrift bleibt der Block weg statt leer dazustehen', () => {
+  const b = erzeugeAuftragsbestaetigung(korb, {
+    nummer: 'AB-1', datum: '2026-08-16', kunde: kunde, betreiber: betreiber,
+  });
+  assert.ok(!/Lieferanschrift:/.test(b.text));
+});
+
+test('Eine abweichende Baustelle wird als solche gekennzeichnet', () => {
+  const auftrag = {
+    lieferungAnRechnungsadresse: false,
+    lieferadresse: {
+      name: 'Neubau Familie Berger', strasse: 'Feldgasse 27',
+      plz: '4910', ort: 'Ried im Innkreis', telefon: '+43 664 9998877',
+    },
+  };
+  const b = erzeugeAuftragsbestaetigung(korb, {
+    nummer: 'AB-1', datum: '2026-08-16', kunde: kunde, betreiber: betreiber, auftrag,
+  });
+  assert.match(b.text, /4910 Ried im Innkreis/);
+  assert.match(b.text, /abweichend von der Rechnungsanschrift/);
+  assert.match(b.text, /Ansprechpartner vor Ort/);
+});
+
+test('Die Hinweise wandern in das Papier, nicht nur auf den Bildschirm', () => {
+  const b = erzeugeAuftragsbestaetigung(korb, {
+    nummer: 'AB-1', datum: '2026-08-16', kunde: kunde, betreiber: betreiber,
+    hinweise: [{ titel: 'Rügefrist', text: 'Läuft ab Ablieferung.', grundlage: '§ 377 UGB' }],
+  });
+  assert.match(b.text, /Rügefrist: Läuft ab Ablieferung\. \(§ 377 UGB\)/);
+});
+
+test('Fehlende Angaben bleiben in der Bestätigung sichtbar stehen', () => {
+  const b = erzeugeAuftragsbestaetigung(korb, { nummer: null, datum: null, kunde: {}, betreiber: {} });
+  assert.match(b.text, /FEHLT/);
+});
+
+test('Ein Auftrag unter dem Mindestbestellwert darf nicht bestätigt werden', () => {
+  // Der Fall aus frachtschwelle-und-bestellwert.md: Wer das bestätigt, hat
+  // einen Vertrag geschlossen, den er nicht erfüllen kann.
+  const zuKlein = berechneWarenkorb([{ sku: 'DR-100-050', menge: 2 }], katalog);
+  assert.equal(zuKlein.bestellbar, false, 'Vorbedingung des Testfalls');
+
+  const f = darfBestaetigtWerden(zuKlein, { kundeIstUnternehmer: true, uid: 'ATU12345675' });
+  assert.equal(f.erlaubt, false);
+  assert.ok(f.gruende.some((g) => /Nicht platzierbar/.test(g)), f.gruende.join(' | '));
+});
+
+test('Ohne Unternehmerstatus und ohne UID keine Annahme', () => {
+  const ohne = darfBestaetigtWerden(korb, {});
+  assert.equal(ohne.erlaubt, false);
+  assert.ok(ohne.gruende.some((g) => /Gate 7/.test(g)));
+  assert.ok(ohne.gruende.some((g) => /UID/.test(g)));
+});
+
+test('Platzhalterpreise halten auch die Annahme an', () => {
+  const f = darfBestaetigtWerden(korb, { kundeIstUnternehmer: true, uid: 'ATU12345675' });
+  assert.equal(f.erlaubt, false);
+  assert.ok(f.gruende.some((g) => /Platzhalterpreise/.test(g)), f.gruende.join(' | '));
 });
