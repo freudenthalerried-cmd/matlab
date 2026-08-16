@@ -84,11 +84,12 @@ export function baueVorgang({
   return {
     vorgangsnummer,
     kunde,
-    // Heute erzwungen: `baueAuftrag` setzt die Lieferadresse aus den
-    // Rechnungsdaten. Im Streckengeschäft ist die Baustelle auf Dauer eine
-    // andere Adresse; das Feld steht hier, damit die Annahme benannt ist und
-    // die Klammer weiß, welche ihrer Prüfungen dann nicht mehr gilt.
-    lieferungAnRechnungsempfaenger: true,
+    // Nicht mehr fest verdrahtet: Seit der Vorgang eine eigene Baustelle
+    // führen kann, hängt die Annahme an den Daten. Die Klammer liest hier ab,
+    // ob ihr Vergleich „Ware und Rechnung an dieselbe Firma" noch gilt — bei
+    // abweichender Baustelle gilt er nicht, und genau dann würde er falsche
+    // Alarme schlagen statt Fehler zu finden.
+    lieferungAnRechnungsempfaenger: auftrag.lieferungAnRechnungsadresse,
     kundenpruefung,
     auftrag,
     warenkorb,

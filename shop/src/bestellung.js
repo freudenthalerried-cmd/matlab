@@ -40,6 +40,11 @@ function bestelltext(nummer, teil, auftrag) {
     (p) => `  ${String(p.menge).padStart(3)} × ${textZeile(p.sku).padEnd(12)} ${textZeile(p.bezeichnung)}`,
   );
 
+  // Ein Hinweis zur Zufahrt steht direkt unter der Adresse und nicht am Ende:
+  // Wer die Bestellung an die Spedition weiterreicht, kopiert den Adressblock,
+  // nicht den ganzen Brief.
+  const zufahrt = textZeile(auftrag.lieferadresse.hinweis);
+
   return [
     `Bestellung ${nummer}`,
     ``,
@@ -55,6 +60,7 @@ function bestelltext(nummer, teil, auftrag) {
     `  ${textZeile(auftrag.lieferadresse.strasse)}`,
     `  ${textZeile(auftrag.lieferadresse.plz)} ${textZeile(auftrag.lieferadresse.ort)}`,
     `  Ansprechpartner vor Ort: ${textZeile(auftrag.lieferadresse.telefon)}`,
+    ...(zufahrt ? [`  Hinweis zur Zufahrt: ${zufahrt}`] : []),
     ``,
     `Bitte neutral verpackt und ohne Preisangaben liefern.`,
     `Rechnung an den Auftraggeber laut hinterlegten Stammdaten.`,

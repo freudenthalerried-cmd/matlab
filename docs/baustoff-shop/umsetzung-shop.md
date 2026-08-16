@@ -34,11 +34,56 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Gegenprobe an der Lieferantenbestellung | fertig, ein Fehler behoben | 6 |
 | Fremdtext an allen Ein- und Ausgängen | fertig, ein Fehler behoben | 18 |
 | Frachtdeckung Kunde gegen Lieferant | fertig, ein Fehler behoben | 4 |
-| Vorgangsklammer über alle Papiere | fertig, ein Fehler behoben | 14 |
+| Vorgangsklammer über alle Papiere | fertig, ein Fehler behoben | 17 |
+| Baustelle als eigene Lieferanschrift | fertig, ein Fehler behoben | 12 |
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig | headless geprüft |
-| **Summe** | | **275, alle grün, 0 hohl** |
+| **Summe** | | **290, alle grün, 0 hohl** |
 
-## Was zuletzt dazukam: die Ware nach Innsbruck, die Rechnung nach Linz
+## Was zuletzt dazukam: die Baustelle als eigene Adresse
+
+Die Vorrunde hatte die Annahme „Ware und Rechnung gehen an dieselbe Adresse"
+benannt statt verschwiegen. Diese Runde löst sie auf. Ausführlich in
+[`baustelle-als-lieferort.md`](./baustelle-als-lieferort.md).
+
+**Der Shop konnte den Regelfall der Zielgruppe nicht abbilden.**
+`PARAMETER.md` nennt vorrangig Handwerksbetriebe; die bestellen vom Büro aus
+für eine Baustelle, die woanders liegt. `baueAuftrag` setzte die Lieferadresse
+zwingend aus den Rechnungsdaten — im Streckengeschäft hebt das den ganzen
+Vorteil der Direktlieferung auf. Bezeichnend: Der Bestelltext trug von Anfang
+an „Lieferadresse (**Baustelle**)" und „Ansprechpartner vor Ort". Die Absicht
+war da, die Datenstruktur nicht.
+
+Neu ist ein freiwilliger Block `baustelle` mit eigenem Ansprechpartner und
+einem Zufahrtshinweis, der im Bestelltext direkt unter dem Adressblock steht —
+wer die Bestellung an die Spedition weiterreicht, kopiert den Adressblock, nicht
+den ganzen Brief.
+
+**Der Fund: eine vierstellige Postleitzahl beweist nicht Österreich.** 6900 ist
+Lugano, 8001 ist Zürich, 9490 ist Vaduz — alle vierstellig, alle über 1000, alle
+bis dahin angenommen. Schweiz und Liechtenstein sind Drittland; eine Lieferung
+dorthin ist eine Ausfuhr. Der Rechnungstext behauptet aber „Leistungsort
+Österreich, Steuersatz 20 %", und `reihengeschaeftEinordnung` folgert daraus
+„Ausgangsrechnung mit 20 %". Bei Lieferung in einen anderen Mitgliedstaat wäre
+das nach Art 6, 7 UStG steuerfrei — 20 % wären schlicht falsch.
+
+Das Loch war älter als die Baustelle: Dieselbe Regel prüfte seit jeher die
+Rechnungsanschrift, dort entschärft durch die verlangte ATU-Nummer. Entschärft
+ist nicht geschlossen, und die Baustelle hat keine UID.
+
+Behoben mit einem eigenen Feld `land`: auf der Baustelle **Pflicht**, an der
+Rechnungsanschrift `AT` als ausgesprochene Voreinstellung. Eine Voreinstellung,
+die man benennen kann, ist keine stille Annahme mehr.
+
+**Die Vorrunde hat sich ausgezahlt.** Weil `lieferungAnRechnungsempfaenger` als
+Feld dastand und nicht als stille Voraussetzung im Code, war beim Auflösen genau
+eine Stelle zu ändern — und es war sichtbar, welche. Bei abweichender Baustelle
+schaltet sich genau die eine Prüfung ab, die Ware und Rechnung auf dieselbe
+Firma vergleicht; alle übrigen bleiben scharf.
+
+Gegenprobe an den neuen Sperren: Land wieder aus der Postleitzahl geraten →
+2 Testfälle fallen; Baustellenblock wieder ignoriert → 12 fallen.
+
+## Was davor dazukam: die Ware nach Innsbruck, die Rechnung nach Linz
 
 Die Frachtklammer der Vorrunde ließ die andere Hälfte offen: Meinen die Papiere
 eines Vorgangs überhaupt dieselbe Sache? Ausführlich in
@@ -631,12 +676,12 @@ Nach Nutzen geordnet, alle ohne Freigabe und ohne Ausgabe machbar:
 1. **Gebietsabfrage** nach `phase10-datengrundlage-gebietsabfrage.md` — braucht
    die Gemeindeliste. RIS und der Geoserver sind aus dieser Umgebung weiterhin
    nicht erreichbar; zuletzt geprüft am 15. August.
-2. **Die Baustelle als eigene Adresse** — heute erzwingt `baueAuftrag`, dass
-   die Ware an die Rechnungsanschrift geht. Für Handwerksbetriebe, die für eine
-   fremde Baustelle bestellen, ist das der Normalfall und nicht die Ausnahme;
-   der Shop kann diese Bestellung derzeit nicht abbilden. Die Vorgangsklammer
-   ist darauf vorbereitet — `lieferungAnRechnungsempfaenger` benennt die
-   Annahme, die dann fällt. Braucht keine Freigabe und keine Ausgabe.
+2. **Die Baustelle in Oberfläche und Rechtstexten** — der Datenweg steht, die
+   Bestellstrecke der Demoseite fragt die Baustelle aber noch nicht ab, und die
+   AGB-Gliederung kennt keinen abweichenden Lieferort. Wer Ware an eine dritte
+   Adresse schickt, sollte in den AGB regeln, wer dort abnimmt und wann die
+   Gefahr übergeht — § 377 UGB hängt daran. Braucht keine Freigabe und keine
+   Ausgabe.
 3. **Gedächtnis der Ablage** — `ablage.js` führt Nummernkreis und Journal
    sauber, aber nur im Arbeitsspeicher. Nach einem Neuladen beginnt die
    Rechnungsnummer wieder bei eins, und § 11 UStG verlangt Einmaligkeit. Solange

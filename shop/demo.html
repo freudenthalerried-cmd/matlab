@@ -677,6 +677,24 @@ const AT_UID = /^ATU\d{8}$/;
 const EMAIL = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
 
 /**
+ * Eine vierstellige Postleitzahl beweist **nicht** Österreich.
+ *
+ * Beim Bauen der Baustellenadresse aufgefallen und dann auch an der
+ * Rechnungsanschrift nachgewiesen: `6900` ist Lugano, `9490` ist Vaduz, `8001`
+ * ist Zürich — alle vierstellig, alle über 1000, alle bis hierher als
+ * österreichisch durchgegangen. Die Schweiz und Liechtenstein sind
+ * **Drittland**; eine Lieferung dorthin ist eine Ausfuhr und hat mit den 20 %
+ * auf der Rechnung nichts zu tun.
+ *
+ * Das Land muss deshalb dastehen, statt aus der Postleitzahl geraten zu
+ * werden. Voreinstellung `AT`, weil der Shop nur Österreich bedient — aber als
+ * ausgesprochene Voreinstellung, nicht als stille Annahme.
+ */
+const LIEFERLAND = 'AT';
+
+const landVon = (wert) => String(wert ?? LIEFERLAND).trim().toUpperCase() || LIEFERLAND;
+
+/**
  * Prüfziffer einer österreichischen UID nach dem gebräuchlichen Verfahren.
  *
  * Bewusst **nur als Warnung** verwendet: Verbindlich ist allein die Abfrage
@@ -701,6 +719,77 @@ function uidPruefzifferStimmt(uid) {
 const pflicht = (wert) => typeof wert === 'string' && wert.trim().length > 0;
 
 /**
+ * Prüft die abweichende Lieferanschrift — die Baustelle.
+ *
+ * Der Regelfall, nicht die Ausnahme: Ein Handwerksbetrieb bestellt vom Büro
+ * aus für eine Baustelle, die woanders liegt. Bis hierher konnte der Shop
+ * diese Bestellung gar nicht abbilden; die Ware ging zwangsläufig an die
+ * Rechnungsanschrift. Für die Zielgruppe aus `PARAMETER.md` — vorrangig
+ * Handwerksbetriebe — ist das keine kleine Lücke.
+ *
+ * **Die Baustelle muss in Österreich liegen, und das ist keine Formalie.**
+ * Der Rechnungstext schließt mit „Leistungsort Österreich, Steuersatz 20 %",
+ * und `reihengeschaeftEinordnung` schließt daraus auf „Ausgangsrechnung mit
+ * 20 %". Beides gilt nur, solange die Ware im Inland ankommt. Geht sie in
+ * einen anderen Mitgliedstaat, ist die Lieferung nach Art 6 und 7 UStG
+ * steuerfrei — dann wären 20 % auf der Rechnung schlicht falsch, und im
+ * Reihengeschäft entscheidet zusätzlich die bewegte Lieferung. Solange das
+ * nicht durchgerechnet ist, wird die Bestellung abgewiesen statt falsch
+ * verrechnet.
+ *
+ * Der Ansprechpartner ist hier ein eigenes Feld. Die Spedition ruft nicht im
+ * Büro an, sondern auf der Baustelle.
+ */
+function pruefeBaustelle(baustelle) {
+  const fehler = [];
+
+  const strasse = String(baustelle.strasse ?? '').trim();
+  const plz = String(baustelle.plz ?? '').trim();
+  const ort = String(baustelle.ort ?? '').trim();
+  const telefon = String(baustelle.telefon ?? '').trim();
+  const name = String(baustelle.name ?? '').trim();
+  const hinweis = String(baustelle.hinweis ?? '').trim();
+  // Hier **ohne** Voreinstellung. Die Baustelle ist der neue, freiwillige Block;
+  // ein Land zu verlangen kostet nichts und schließt genau die Lücke, um die es
+  // geht. Bei der Rechnungsanschrift bleibt `AT` die Voreinstellung — dort
+  // stützt die verlangte ATU-Nummer die Annahme, hier stützt sie nichts.
+  const land = String(baustelle.land ?? '').trim().toUpperCase();
+
+  if (!pflicht(strasse)) fehler.push('Baustelle: Straße und Hausnummer fehlen');
+  if (!pflicht(ort)) fehler.push('Baustelle: Ort fehlt');
+  if (!pflicht(telefon)) {
+    fehler.push('Baustelle: Ansprechpartner vor Ort fehlt — die Spedition braucht eine Nummer');
+  }
+
+  for (const [bezeichnung, wert] of [
+    ['Baustelle — Name', baustelle.name],
+    ['Baustelle — Straße', baustelle.strasse],
+    ['Baustelle — Ort', baustelle.ort],
+    ['Baustelle — Ansprechpartner', baustelle.telefon],
+    ['Baustelle — Hinweis', baustelle.hinweis],
+  ]) {
+    if (hatSteuerzeichen(wert)) {
+      fehler.push(`${bezeichnung}: Zeilenumbrüche und Steuerzeichen sind hier nicht zulässig`);
+    }
+  }
+
+  // Das Land zuerst, die Postleitzahl danach — in dieser Reihenfolge, weil die
+  // Postleitzahl das Land nicht bestimmt.
+  if (land === '') {
+    fehler.push('Baustelle: Land fehlt — eine vierstellige Postleitzahl beweist nicht Österreich');
+  } else if (land !== LIEFERLAND) {
+    fehler.push(
+      `Baustelle: Lieferung nur innerhalb Österreichs, angegeben ist ${land} — außerhalb ` +
+        'wäre die Rechnung mit 20 % Umsatzsteuer falsch (Art 6, 7 UStG; Drittland: Ausfuhr)',
+    );
+  } else if (!/^\d{4}$/.test(plz) || Number(plz) < 1000) {
+    fehler.push('Baustelle: Postleitzahl muss vierstellig und österreichisch sein');
+  }
+
+  return { fehler, normalisiert: { name, strasse, plz, ort, land, telefon, hinweis } };
+}
+
+/**
  * @param {object} daten
  * @returns {{gueltig: boolean, fehler: string[], warnungen: string[], normalisiert: object}}
  */
@@ -715,6 +804,7 @@ function pruefeBestelldaten(daten = {}) {
   const plz = String(daten.plz ?? '').trim();
   const ort = String(daten.ort ?? '').trim();
   const telefon = String(daten.telefon ?? '').trim();
+  const land = landVon(daten.land);
 
   if (!pflicht(firma)) fehler.push('Firmenname fehlt');
   if (!pflicht(strasse)) fehler.push('Straße und Hausnummer fehlen');
@@ -742,10 +832,10 @@ function pruefeBestelldaten(daten = {}) {
     }
   }
 
-  if (!/^\d{4}$/.test(plz)) {
-    fehler.push('Postleitzahl muss vierstellig sein');
-  } else if (Number(plz) < 1000) {
-    fehler.push('Postleitzahl außerhalb des österreichischen Bereichs');
+  if (land !== LIEFERLAND) {
+    fehler.push(`Rechnungsanschrift außerhalb Österreichs (${land}) — dieser Shop bedient nur Österreich`);
+  } else if (!/^\d{4}$/.test(plz) || Number(plz) < 1000) {
+    fehler.push('Postleitzahl muss vierstellig und österreichisch sein');
   }
 
   if (!EMAIL.test(email)) fehler.push('E-Mail-Adresse fehlt oder ist unvollständig');
@@ -763,11 +853,23 @@ function pruefeBestelldaten(daten = {}) {
     );
   }
 
+  // Die Baustelle ist freiwillig. Fehlt sie, geht die Ware an die
+  // Rechnungsanschrift — das bisherige Verhalten, unverändert.
+  let baustelle = null;
+  if (daten.baustelle) {
+    const b = pruefeBaustelle(daten.baustelle);
+    fehler.push(...b.fehler);
+    baustelle = b.normalisiert;
+    // Ohne eigenen Namen steht der Besteller auf dem Lieferschein. Das ist die
+    // richtige Voreinstellung: Wer die Ware annimmt, ist im Zweifel er selbst.
+    if (!baustelle.name) baustelle.name = firma;
+  }
+
   return {
     gueltig: fehler.length === 0,
     fehler,
     warnungen,
-    normalisiert: { firma, uid, email, strasse, plz, ort, telefon },
+    normalisiert: { firma, uid, email, strasse, plz, ort, land, telefon, baustelle },
   };
 }
 
@@ -777,19 +879,27 @@ function pruefeBestelldaten(daten = {}) {
  */
 function baueAuftrag(bestellnummer, kundendaten, { zahlungEingegangen = false } = {}) {
   const { normalisiert } = pruefeBestelldaten(kundendaten);
+  const b = normalisiert.baustelle;
+
   return {
     bestellnummer,
     zahlungEingegangen,
     kundeIstUnternehmer: kundendaten.unternehmerBestaetigt === true,
     uid: normalisiert.uid || null,
     absender: { firma: '— Firmendaten des Betreibers fehlen noch —' },
-    lieferadresse: {
-      name: normalisiert.firma,
-      strasse: normalisiert.strasse,
-      plz: normalisiert.plz,
-      ort: normalisiert.ort,
-      telefon: normalisiert.telefon,
-    },
+    // Ohne angegebene Baustelle bleibt es beim bisherigen Verhalten: Die Ware
+    // geht an die Rechnungsanschrift.
+    lieferungAnRechnungsadresse: b === null,
+    lieferadresse: b
+      ? { name: b.name, strasse: b.strasse, plz: b.plz, ort: b.ort, telefon: b.telefon, hinweis: b.hinweis }
+      : {
+          name: normalisiert.firma,
+          strasse: normalisiert.strasse,
+          plz: normalisiert.plz,
+          ort: normalisiert.ort,
+          telefon: normalisiert.telefon,
+          hinweis: '',
+        },
   };
 }
 
@@ -1109,6 +1219,11 @@ function bestelltext(nummer, teil, auftrag) {
     (p) => `  ${String(p.menge).padStart(3)} × ${textZeile(p.sku).padEnd(12)} ${textZeile(p.bezeichnung)}`,
   );
 
+  // Ein Hinweis zur Zufahrt steht direkt unter der Adresse und nicht am Ende:
+  // Wer die Bestellung an die Spedition weiterreicht, kopiert den Adressblock,
+  // nicht den ganzen Brief.
+  const zufahrt = textZeile(auftrag.lieferadresse.hinweis);
+
   return [
     `Bestellung ${nummer}`,
     ``,
@@ -1124,6 +1239,7 @@ function bestelltext(nummer, teil, auftrag) {
     `  ${textZeile(auftrag.lieferadresse.strasse)}`,
     `  ${textZeile(auftrag.lieferadresse.plz)} ${textZeile(auftrag.lieferadresse.ort)}`,
     `  Ansprechpartner vor Ort: ${textZeile(auftrag.lieferadresse.telefon)}`,
+    ...(zufahrt ? [`  Hinweis zur Zufahrt: ${zufahrt}`] : []),
     ``,
     `Bitte neutral verpackt und ohne Preisangaben liefern.`,
     `Rechnung an den Auftraggeber laut hinterlegten Stammdaten.`,
@@ -1520,11 +1636,12 @@ function baueVorgang({
   return {
     vorgangsnummer,
     kunde,
-    // Heute erzwungen: `baueAuftrag` setzt die Lieferadresse aus den
-    // Rechnungsdaten. Im Streckengeschäft ist die Baustelle auf Dauer eine
-    // andere Adresse; das Feld steht hier, damit die Annahme benannt ist und
-    // die Klammer weiß, welche ihrer Prüfungen dann nicht mehr gilt.
-    lieferungAnRechnungsempfaenger: true,
+    // Nicht mehr fest verdrahtet: Seit der Vorgang eine eigene Baustelle
+    // führen kann, hängt die Annahme an den Daten. Die Klammer liest hier ab,
+    // ob ihr Vergleich „Ware und Rechnung an dieselbe Firma" noch gilt — bei
+    // abweichender Baustelle gilt er nicht, und genau dann würde er falsche
+    // Alarme schlagen statt Fehler zu finden.
+    lieferungAnRechnungsempfaenger: auftrag.lieferungAnRechnungsadresse,
     kundenpruefung,
     auftrag,
     warenkorb,

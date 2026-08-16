@@ -254,3 +254,77 @@ test('Untaugliche Kundendaten halten den Vorgang an, ohne den Entwurf zu verweig
   assert.equal(f.erlaubt, false);
   assert.ok(f.gruende.some((g) => /Kundendaten: .*Gate 7/.test(g)), f.gruende.join(' | '));
 });
+
+/* ------------------------------------------------------------------ *
+ * Die Baustelle schaltet die Papier-gegen-Papier-Prüfung ab — von selbst
+ * ------------------------------------------------------------------ */
+
+test('Mit abweichender Baustelle liest der Vorgang die Annahme aus den Daten', () => {
+  const mitBaustelle = {
+    ...kundeA,
+    baustelle: {
+      name: 'Neubau Familie Berger',
+      strasse: 'Feldgasse 27',
+      plz: '4910',
+      ort: 'Ried im Innkreis',
+      land: 'AT',
+      telefon: '+43 664 9998877',
+    },
+  };
+
+  const ohne = machVorgang();
+  const mit = machVorgang(mitBaustelle);
+
+  assert.equal(ohne.lieferungAnRechnungsempfaenger, true);
+  assert.equal(mit.lieferungAnRechnungsempfaenger, false, 'nicht mehr fest verdrahtet');
+  assert.equal(mit.kundenpruefung.gueltig, true, mit.kundenpruefung.fehler.join(' | '));
+});
+
+test('Ware zur Baustelle, Rechnung ans Büro — und die Klammer bleibt geschlossen', () => {
+  const mitBaustelle = {
+    ...kundeA,
+    baustelle: {
+      name: 'Neubau Familie Berger',
+      strasse: 'Feldgasse 27',
+      plz: '4910',
+      ort: 'Ried im Innkreis',
+      land: 'AT',
+      telefon: '+43 664 9998877',
+    },
+  };
+  const v = machVorgang(mitBaustelle);
+
+  for (const b of v.bestellungen) assert.match(b.text, /4910 Ried im Innkreis/);
+  assert.equal(leseBelegkopf(v.rechnung.text).empfaenger[0], kundeA.firma);
+  assert.match(v.rechnung.text, /6020 Innsbruck/);
+
+  const p = pruefeVorgangsklammer(v);
+  assert.equal(p.geschlossen, true, p.abweichungen.join(' | '));
+});
+
+test('Auch mit Baustelle fällt eine umgelenkte Bestellung auf', () => {
+  // Die abgeschaltete Prüfung ist genau eine; die übrigen bleiben scharf.
+  const mitBaustelle = {
+    ...kundeA,
+    baustelle: {
+      name: 'Neubau Familie Berger',
+      strasse: 'Feldgasse 27',
+      plz: '4910',
+      ort: 'Ried im Innkreis',
+      land: 'AT',
+      telefon: '+43 664 9998877',
+    },
+  };
+  const v = machVorgang(mitBaustelle);
+  const umgelenkt = {
+    ...v,
+    bestellungen: v.bestellungen.map((b) => ({
+      ...b,
+      text: b.text.replace('4910 Ried im Innkreis', '4020 Linz'),
+    })),
+  };
+
+  const p = pruefeVorgangsklammer(umgelenkt);
+  assert.equal(p.geschlossen, false);
+  assert.ok(p.abweichungen.some((a) => /Ware geht nach 4020 Linz/.test(a)), p.abweichungen.join(' | '));
+});
