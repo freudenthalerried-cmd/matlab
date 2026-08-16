@@ -30,10 +30,42 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Auswertungsbogen für die Herstellerantworten | fertig, leer | 18 |
 | Rückwärtsrechnung fürs Konditionsgespräch | fertig | 13 |
 | Prüfer für die Testfälle selbst | fertig | gegen Probedatei nachgewiesen |
+| Gegenprobe am gerenderten Beleg | fertig | 14 |
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig | headless geprüft |
-| **Summe** | | **213, alle grün, 0 hohl** |
+| **Summe** | | **227, alle grün, 0 hohl** |
 
-## Was zuletzt dazukam: der Prüfer für die Testfälle
+## Was zuletzt dazukam: die zweite Rechnung
+
+`shop/src/kontrolle.js` liest den **gerenderten Belegtext** zurück und rechnet
+aus den Zeichen nach, ob er aufgeht. Ausführlich in
+[`zweite-rechnung.md`](./zweite-rechnung.md).
+
+Der Anlass ist derselbe wie beim Prüfer für die Testfälle: Bisher prüfen die
+Testfälle den Warenkorb mit denselben Funktionen nach, die sie prüfen sollen.
+Nebenbei schließt die Gegenprobe eine Lücke, die niemandem aufgefallen war —
+**der Kunde sieht nie ein Objekt, er sieht Zeichen**, und den Text hat bis jetzt
+kein Testfall angesehen.
+
+**Ergebnis: nichts gefunden.** 3.402 Belege durchgerechnet, dazu 19.440
+Warenkörbe für die eine wirklich unabhängige Gleichung. Keine Abweichung. Das
+ist ein negatives Ergebnis und steht als solches da.
+
+Wie viel es wert ist, gehört dazu: **Vier der fünf Gleichungen sind nicht
+unabhängig** — sie rechnen mit derselben Arithmetik, die den Beleg erzeugt hat,
+und finden Fehler beim Rendern, nicht beim Rechnen. Genau das zeigen die
+Testfälle, die den Text absichtlich verfälschen. Unabhängig ist nur eine: Brutto
+als `netto + gerundete USt` gegen Brutto als `netto × 1,2`. Die beiden können
+sich um einen Cent unterscheiden — über 19.440 Warenkörbe tun sie es nicht.
+
+Drei Runden ergeben zusammen ein Muster: 155 grüne Testfälle, während
+`demo.html` nicht startete; 213 grüne, während elf Schleifen nichts prüften;
+213 grüne, während den Belegtext niemand ansah. **Dreimal half nicht mehr
+Sorgfalt, sondern ein Werkzeug, das die Sorgfalt nicht braucht** — und jedes
+prüfte eine andere Ebene: Bündel, Testfall, Ausgabe. Ungeprüft bleibt die
+oberste: ob die Zahlen zur Wirklichkeit passen. Dagegen hilft nur eine Antwort
+von einem Hersteller.
+
+## Was davor dazukam: der Prüfer für die Testfälle
 
 `shop/bin/testpruefung.mjs` sucht Testfälle, die grün laufen und nichts
 behaupten. Ausführlich in
@@ -445,10 +477,10 @@ Nach Nutzen geordnet, alle ohne Freigabe und ohne Ausgabe machbar:
 1. **Gebietsabfrage** nach `phase10-datengrundlage-gebietsabfrage.md` — braucht
    die Gemeindeliste. RIS und der Geoserver sind aus dieser Umgebung weiterhin
    nicht erreichbar; zuletzt geprüft am 15. August.
-2. **Zweite Warenkorbprüfung im Rechenkern** — der Prüfer für die Testfälle
-   hat gezeigt, wo grüne Tests nichts aussagen. Dieselbe Frage stellt sich für
-   die Rechnung selbst: Der Warenkorb summiert Positionen, aber niemand prüft
-   die Summe gegen eine unabhängig gerechnete Kontrollzahl. Eine zweite,
-   bewusst anders gebaute Rechnung, die dasselbe Ergebnis liefern muss, würde
-   Rechenfehler finden, die beide Male gleich falsch gerechnet werden. Braucht
-   keine Freigabe und keine Ausgabe.
+2. **Gegenprobe an der Lieferantenbestellung** — die Gegenprobe deckt heute
+   den Beleg an den Kunden ab. Die Bestellung an den Lieferanten, die im
+   Echtbetrieb ohne Zutun hinausginge, ist noch ungeprüft: Ob im Bestelltext
+   dieselben Mengen und Artikelnummern stehen wie im Warenkorb, sieht bisher
+   niemand nach. Eine falsche Menge dort ist teurer als eine falsche Zahl auf
+   der Rechnung, weil sie Ware bewegt. Braucht keine Freigabe und keine
+   Ausgabe.

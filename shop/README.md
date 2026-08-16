@@ -30,11 +30,12 @@ Gerüst vorhanden und meldet selbst, welche Pflichtangaben ihm fehlen.
 | Empfindlichkeit | welche der vier Annahmen zuerst gemessen gehört |
 | Auswertungsbogen | Herstellerantworten gegen die vier Gate-2-Bedingungen |
 | Rückwärtsrechnung | vom marktüblichen Preis zum nötigen Einkauf und Rabatt |
+| Gegenprobe | liest den gerenderten Beleg zurück und rechnet ihn nach |
 
 ## Benutzen
 
 ```
-npm test           # 213 Testfälle
+npm test           # 227 Testfälle
 npm run build      # erzeugt demo.html, eine einzelne Datei ohne Abhängigkeiten
 npm run import -- <lieferantId> <datei.csv> [--schreiben]
 npm run pruefe-tests  # prüft die Testfälle darauf, ob sie etwas behaupten
@@ -67,6 +68,7 @@ src/kostenbild.js       Kaskade, nötiger Umsatz, Bestellungen, Sessionbedarf
 src/empfindlichkeit.js  Elastizität der vier Annahmen, Kipppunkte
 src/auswertung.js       Herstellerantworten prüfen, Preisspielraum, Folgen
 src/verhandlung.js      Rückwärts: nötiger Einkauf, nötiger Rabatt, Zielkatalog
+src/kontrolle.js        Belegtext zurücklesen und nachrechnen — die zweite Rechnung
 src/format.js           EUR und Lückenmarkierung — einmal, siehe unten
 bin/import.mjs          Kommandozeile dazu, Probelauf als Voreinstellung
 bin/testpruefung.mjs    prüft die Testfälle auf Hohlheit — siehe unten
@@ -174,6 +176,21 @@ Umsatzsteuer als innergemeinschaftlicher Erwerb, während die Ausgangsrechnung
 20 % trägt. `reihengeschaeftEinordnung()` erkennt das am Feld `land` des
 Lieferanten und schreibt es in die Kasse. Ausführlich in
 `docs/baustoff-shop/beleg-und-reihengeschaeft.md`.
+
+## Die zweite Rechnung
+
+Die Testfälle prüfen den Warenkorb mit denselben Funktionen nach, die sie
+prüfen sollen. `kontrolle.js` geht deshalb einen anderen Weg: Es liest den
+**gerenderten Belegtext** zurück und rechnet aus den Zeichen nach.
+
+Das schließt nebenbei eine Lücke — der Kunde sieht nie ein Objekt, er sieht
+Zeichen, und den Text hat bis dahin kein Testfall angesehen.
+
+Über 3.402 Belege fand die Gegenprobe **nichts**. Wie viel das wert ist, steht
+in `docs/baustoff-shop/zweite-rechnung.md`: Vier der fünf Gleichungen nutzen
+dieselbe Arithmetik, die den Beleg erzeugt hat — sie finden Fehler beim
+Rendern, nicht beim Rechnen. Unabhängig ist nur eine: Brutto über die Steuer
+gegen Brutto als `netto × 1,2`.
 
 ## Warum es `npm run pruefe-tests` gibt
 
