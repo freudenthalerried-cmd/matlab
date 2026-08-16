@@ -1,6 +1,6 @@
 # Status und Einstieg
 
-Stand: 2026-08-16. **Dieses Dokument zuerst lesen.** Neunundfünfzig Arbeitsdateien
+Stand: 2026-08-16. **Dieses Dokument zuerst lesen.** Sechzig Arbeitsdateien
 sind entstanden, mehrere davon korrigieren einander. Hier steht, was gilt.
 
 Veröffentlichter Bericht:
@@ -100,7 +100,10 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
    398 € **brutto** (~331,67 € netto AT) — unsere Platzhalter-UVP war die
    Bruttozahl. Am VK-Deckel braucht die Bahn 38 % Rabatt auf die Netto-Liste;
    alles hängt an der Bezugsbasis, und die kann nur der Hersteller nennen.
-   Unter 32 % fällt die Nische (Gate 3). Siehe `alternativen-ohne-freigabe.md`.
+   Unter 32 % fällt die Nische (Gate 3). Zweiter, unabhängiger Anker seit
+   16. August: Zertifizierte Radonabdichtung kostet am Markt herstellerübergreifend
+   ~10–11 €/m² brutto (Vedagard AL-E ab 10,27 €/m² im klassischen Händlerkanal).
+   Siehe `alternativen-ohne-freigabe.md` und `vertriebswege-der-hersteller.md`.
 2. **Suchvolumen** — weiterhin **nicht gemessen**. Die Inhaltslandkarte beruht
    auf Plausibilität.
 3. **Lead-Quote der Feuchte- und Abdichtungsthemen** — mit 2 % angenommen und
@@ -152,6 +155,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `gedaechtnis-der-ablage.md` | **Erst das Journal, dann der Speicher** — die Ablage überlebt den Neustart als Anhangdatei; auch die Nummernvergabe wird eine Zeile, sonst vergäbe der Neustart Rechnungsnummern doppelt |
 | `nachfragezahlen-pflichtgebiet-und-bestand.md` | **Das Pflichtgebiet ist fast ganz Österreich — ausgenommen Wien, zehn Bezirke und damit der Heimatbezirk des Betreibers** — EFH-Kern ~8.000–9.000 Häuser/Jahr; Bestand ~240.000 betroffene Wohnungen, Engpass ist die Messquote |
 | `gebietsauskunft-zwischenloesung.md` | **Elf Einträge statt 2.095 Gemeinden** — die Vorsorgegebiets-Auskunft über die Negativliste, als Auskunft mit ausgesprochenen Grenzen statt als Sperre; Schutzgebiets-Stufe bleibt am Verordnungstext blockiert |
+| `vertriebswege-der-hersteller.md` | **Die Zange ist kein Branchengesetz** — Vedagard AL-E läuft im klassischen Händlerkanal zum selben m²-Straßenpreis wie die AlphaBlock; die Anschreiben entscheiden über die Marge, nicht mehr allein über die Lieferfähigkeit; ein Großhändler wird dreizehnter Adressat |
 | `pruefung-der-testfaelle.md` | **Grüne Tests sind eine Aussage über die Testfälle, nicht über den Code** — elf hohle Schleifen gefunden und entschärft |
 | `verhandlungsziel-konditionen.md` | **Zehn Prozent Nachlass kosten 38,8 % Rabatt** — das Verhandlungsziel liegt über der Gate-2-Schwelle |
 | `auswertungsbogen-hersteller.md` | **Genau 35 % Rabatt lassen 4,4 % Preisspielraum** — die Auswertung der zwölf Antworten steht fertig bereit |

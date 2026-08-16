@@ -108,6 +108,19 @@ Zwei Punkte sind gegenüber der ursprünglichen Liste dazugekommen:
   nach Rabatt über ~80 € netto liegt, ist unverkäuflich. Die Gruppe zählt bei
   der Gate-2-Auswertung nicht als Margenträger.
 
+- **Welcher Vertriebskanal überhaupt angeboten wird**, aus
+  [`vertriebswege-der-hersteller.md`](./vertriebswege-der-hersteller.md). Die
+  Kanalbilder reichen von herstellerbesetzt (RadonTec: eigener Endkundenshop,
+  keine sichtbaren Händler) bis zum klassischen Dreistufenvertrieb
+  (BMI/Vedag: viele Händler, kein Direktvertrieb). Eine Antwort wird deshalb
+  auch daran bewertet, **welchen Weg** der Hersteller anbietet:
+  Direktkondition, Verweis auf einen Großhändler oder gar keinen
+  Händlerzugang. Ein Verweis auf den Großhandel ist keine Absage — die
+  Wiederverkäuferkondition eines Baustoffgroßhändlers ist ein eigener,
+  herstellerunabhängiger Bezugsweg; dafür steht ein Baustoffgroßhändler als
+  **dreizehnter Adressat** auf der Versandliste (dieselbe Freigabe, dieselbe
+  Regel: keine E-Mail ohne Zustimmung des Auftraggebers).
+
 
 ## Von der Antwort zur Planungszahl
 
