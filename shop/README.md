@@ -35,7 +35,7 @@ Gerüst vorhanden und meldet selbst, welche Pflichtangaben ihm fehlen.
 ## Benutzen
 
 ```
-npm test           # 350 Testfälle
+npm test           # 364 Testfälle
 npm run build      # erzeugt demo.html, eine einzelne Datei ohne Abhängigkeiten
 npm run import -- <lieferantId> <datei.csv> [--schreiben]
 npm run pruefe-tests  # prüft die Testfälle darauf, ob sie etwas behaupten
@@ -65,6 +65,7 @@ src/beleg.js            Angebot, Rechnung, § 11 UStG, Reihengeschäft
 src/auftragslauf.js     Trockenlauf über den ganzen Auftrag, Aufwand je Bestellung
 src/vies.js             UID beim EU-System abfragen, Nachweis, drei Zustände
 src/ablage.js           Vorgangsakte, Nummernkreise, Storno, § 132 BAO
+src/speicher.js         das Gedächtnis der Ablage — Journal aus Zeilen, Wiederaufbau
 src/zahlung.js          Zahlwege, Gebühren, Anforderungen an den Anbieter
 src/kostenbild.js       Kaskade, nötiger Umsatz, Bestellungen, Sessionbedarf
 src/empfindlichkeit.js  Elastizität der vier Annahmen, Kipppunkte
@@ -307,8 +308,14 @@ Verzeichnis in beide Richtungen gegeneinander. Ob eine Rechnung storniert ist,
 beantwortet `istStorniert` aus der Gutschriftkette; eine Statuszelle im
 eingefrorenen Eintrag könnte den Wechsel nie vollziehen.
 
-**Nicht enthalten: die Speicherung.** Die Ablage lebt im Arbeitsspeicher.
-Gebaut ist die Form des Vorgangs, nicht seine Aufbewahrung.
+**Das Gedächtnis** liefert `speicher.js`: Die Ablage schreibt jedes Ereignis —
+auch die Nummernvergabe — als eine JSON-Zeile in eine Senke, **bevor** sie
+ihren eigenen Zustand ändert; `ausJournal` baut daraus die Ablage wieder auf
+und weist dabei jedes Feld ab, das `FELDER_DER_ABLAGE` nicht kennt. Die Senke
+wählt der Aufrufer (Betrieb: eine Anhangdatei je Geschäftsjahr, z. B.
+`journal-2026.jsonl`). Das Funktionsmuster speichert bewusst nicht — es baut
+bei jeder Eingabe den ganzen Ablauf neu und würde sonst erfundene
+Geschäftsfälle sammeln.
 
 ## Die UID-Abfrage
 

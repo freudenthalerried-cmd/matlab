@@ -101,9 +101,17 @@ export const FELDER_DER_ABLAGE = Object.freeze({
   },
 });
 
-/** Legt eine leere Ablage an. `zaehler` kann einen Bestand fortschreiben. */
-export function neueAblage({ zaehler = {} } = {}) {
-  return { eintraege: [], zaehler: { ...zaehler } };
+/**
+ * Legt eine leere Ablage an. `zaehler` kann einen Bestand fortschreiben.
+ *
+ * `schreibe` ist das Gedächtnis: Wird es übergeben, ruft die Ablage es für
+ * jedes Ereignis auf — jede Nummernvergabe, jeden Eintrag — **bevor** sie
+ * ihren eigenen Zustand ändert. Wirft die Senke, bleibt der Speicher
+ * unverändert; eine Nummer, die das Journal nie gesehen hat, gilt als nie
+ * vergeben. Ohne `schreibe` arbeitet die Ablage wie bisher im Arbeitsspeicher.
+ */
+export function neueAblage({ zaehler = {}, schreibe = null } = {}) {
+  return { eintraege: [], zaehler: { ...zaehler }, schreibe };
 }
 
 const schluessel = (art, jahr) => `${art}:${jahr}`;
@@ -124,8 +132,14 @@ export function naechsteNummer(ablage, art, jahr) {
 
   const k = schluessel(art, jahr);
   const naechste = (ablage.zaehler[k] ?? 0) + 1;
+  const nummer = `${beschreibung.kuerzel}-${jahr}-${String(naechste).padStart(4, '0')}`;
+
+  // Erst das Journal, dann der Zähler: Eine Nummer, die nur im Arbeitsspeicher
+  // gezogen wurde, wäre nach einem Neustart wieder frei — und § 11 verlangt
+  // Einmaligkeit über den Neustart hinweg.
+  ablage.schreibe?.({ typ: 'nummernvergabe', art, jahr, nummer });
   ablage.zaehler[k] = naechste;
-  return `${beschreibung.kuerzel}-${jahr}-${String(naechste).padStart(4, '0')}`;
+  return nummer;
 }
 
 /**
@@ -148,6 +162,7 @@ export function haltefest(ablage, eintrag) {
     bezugAuf: eintrag.bezugAuf ?? null,
   });
 
+  ablage.schreibe?.({ typ: 'eintrag', eintrag: fertig });
   ablage.eintraege.push(fertig);
   return fertig;
 }

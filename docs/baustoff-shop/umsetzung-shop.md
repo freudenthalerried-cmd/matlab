@@ -37,10 +37,32 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Vorgangsklammer über alle Papiere | fertig, ein Fehler behoben | 29 |
 | Baustelle als eigene Lieferanschrift | fertig, Zusicherung nach Art. 14 | 29 |
 | Abgleich Versprechen gegen Verhalten | fertig, zwei Befunde | 14 |
+| Gedächtnis der Ablage (Journal aus Zeilen) | fertig, Senke wählbar | 14 |
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig, Baustelle abgefragt | headless geprüft |
-| **Summe** | | **350, alle grün, 0 hohl** |
+| **Summe** | | **364, alle grün, 0 hohl** |
 
-## Was zuletzt dazukam: jedes Journalfeld trägt jetzt seine Begründung
+## Was zuletzt dazukam: das Gedächtnis der Ablage
+
+Ausführlich in [`gedaechtnis-der-ablage.md`](./gedaechtnis-der-ablage.md).
+`speicher.js` gibt der Ablage ihr Gedächtnis: jedes Ereignis eine JSON-Zeile
+in eine Anhangdatei (Betrieb: `journal-2026.jsonl` je Geschäftsjahr, § 132
+BAO), `ausJournal` baut daraus die Ablage wieder auf. Erst das Journal, dann
+der Speicher — wirft die Senke, bleibt der Arbeitsspeicher unverändert.
+
+**Der Fund:** Ein Journal nur aus Einträgen wäre kein Gedächtnis für den
+Zähler — eine gezogene, nie festgehaltene Nummer stünde in keinem Eintrag und
+würde nach dem Neuladen **doppelt vergeben**, genau dann, wenn es darauf
+ankommt: nach einem Absturz. Deshalb ist auch die Nummernvergabe eine
+Journalzeile; die Lücke bleibt dauerhaft sichtbar und erklärungsbedürftig.
+
+Das Laden ist streng: unbekannte Felder, fehlende Verzeichnisfelder, gerissene
+Zeitfolge — Abbruch mit Zeilennummer statt Reparatur. Damit ist die
+Migrationsfrage aus dem Felderverzeichnis dort verankert, wo sie sich stellt.
+Die Demo speichert bewusst nicht (sie baut je Eingabe alles neu und würde
+erfundene Geschäftsfälle sammeln). Gegenproben: Maskierung entfernt → 2
+Testfälle fallen; Vergabe schreibt nicht → 3; Feldprüfung entfernt → 2.
+
+## Was davor dazukam: jedes Journalfeld trägt jetzt seine Begründung
 
 Baustein 2 der Liste unten, ausführlich in
 [`felder-der-ablage.md`](./felder-der-ablage.md). `FELDER_DER_ABLAGE` in
@@ -899,15 +921,7 @@ Nach Nutzen geordnet, alle ohne Freigabe und ohne Ausgabe machbar:
 1. **Gebietsabfrage** nach `phase10-datengrundlage-gebietsabfrage.md` — braucht
    die Gemeindeliste. RIS und der Geoserver sind aus dieser Umgebung weiterhin
    nicht erreichbar; zuletzt geprüft am 15. August.
-2. **Gedächtnis der Ablage** — `ablage.js` führt Nummernkreis und Journal
-   sauber, aber nur im Arbeitsspeicher. Nach einem Neuladen beginnt die
-   Rechnungsnummer wieder bei eins, und § 11 UStG verlangt Einmaligkeit. Solange
-   das so ist, darf der Shop keine echte Rechnung ausstellen. Braucht eine
-   Entscheidung über den Speicherort, keine Freigabe und keine Ausgabe. Seit
-   dem Felderverzeichnis mit einer Schärfung: Ab dem ersten persistierten
-   Eintrag ist jede Feldänderung eine Migrationsfrage —
-   [`felder-der-ablage.md`](./felder-der-ablage.md).
-3. **CSV nach RFC 4180**, sobald ein Lieferant seine Schnittstelle benannt hat.
+2. **CSV nach RFC 4180**, sobald ein Lieferant seine Schnittstelle benannt hat.
    `csvFeld()` ersetzt heute Semikolon und Zeilenumbruch, statt das Feld zu
    quoten; das erhält die Zeile, aber nicht den Inhalt. Solange kein Format
    feststeht, ist die gröbere Regel die robustere — siehe

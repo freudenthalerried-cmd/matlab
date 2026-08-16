@@ -35,6 +35,7 @@ const kern = [
   entkleide(lies('./src/auftragslauf.js')),
   entkleide(lies('./src/vies.js')),
   entkleide(lies('./src/ablage.js')),
+  entkleide(lies('./src/speicher.js')),
   entkleide(lies('./src/zahlung.js')),
   entkleide(lies('./src/kostenbild.js')),
 ].join('\n');

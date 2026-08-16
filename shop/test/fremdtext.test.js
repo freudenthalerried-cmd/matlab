@@ -30,6 +30,7 @@ import { erzeugeAngebot, erzeugeRechnung } from '../src/beleg.js';
 import { erzeugeImpressum } from '../src/rechtstexte.js';
 import { belegzeile } from '../src/vies.js';
 import { neueAblage, haltefest, alsCsv } from '../src/ablage.js';
+import { journalzeile, ausJournal } from '../src/speicher.js';
 import { leseBestellung, leseBestellCsv } from '../src/kontrolle.js';
 
 const lies = (p) => JSON.parse(readFileSync(new URL(p, import.meta.url), 'utf8'));
@@ -256,6 +257,28 @@ test('Ausgang Journal-CSV: ein mehrzeiliger Belegtext bleibt eine Zeile', () => 
   assert.equal(zahlen.length, 3, 'Kopfzeile plus zwei Einträge');
   assert.equal(zahlen[1], zahlen[0]);
   assert.equal(zahlen[2], zahlen[0]);
+});
+
+/* ------------------------------------------------------------------ *
+ * Ausgang 5a: das Journal auf der Platte (JSONL)
+ *
+ * Anders als jeder andere Ausgang darf dieser **nicht** entschärfen:
+ * § 131 BAO verlangt den ursprünglichen Inhalt. Die Eigenschaft ist
+ * deshalb eine andere — die Zeile bricht nie, der Inhalt bleibt
+ * zeichengenau erhalten.
+ * ------------------------------------------------------------------ */
+
+test('Ausgang Journal-JSONL: Gift bleibt eine Zeile und liest sich zeichengenau zurück', () => {
+  const geschrieben = [];
+  const ablage = neueAblage({ schreibe: (e) => geschrieben.push(journalzeile(e)) });
+  haltefest(ablage, { art: 'vermerk', zeitpunkt: '2026-08-16T09:00:00Z', text: `Notiz${GIFT}` });
+
+  assert.equal(geschrieben.length, 1);
+  assert.equal(zeilen(geschrieben[0]), 1, 'kein Umbruch des Gifts erreicht die Datei');
+  assert.equal(hatSteuerzeichen(geschrieben[0]), false);
+
+  const neu = ausJournal(geschrieben.join('\n'));
+  assert.equal(neu.eintraege[0].text, `Notiz${GIFT}`, 'bewahrt statt entschärft — § 131 BAO');
 });
 
 /* ------------------------------------------------------------------ *
