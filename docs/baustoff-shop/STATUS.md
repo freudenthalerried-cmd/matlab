@@ -69,7 +69,7 @@ kosten sie unter 200 €.
 
 | Nächster Schritt | Braucht | Entscheidet | Vorbereitet in |
 |---|---|---|---|
-| Rohmarge belegen (Stufe 0) | Freigabe für E-Mails an zwölf Hersteller | den **Shop** — Gate 1, 2, 6 | `anschreiben-entwuerfe.md`, Auswertung in `auswertungsbogen-hersteller.md` |
+| Rohmarge belegen (Stufe 0) | Freigabe für E-Mails an dreizehn Adressaten (zwölf Hersteller, ein Großhändler) | den **Shop** — Gate 1, 2, 6 | `anschreiben-entwuerfe.md`, Auswertung in `auswertungsbogen-hersteller.md` |
 | Suchvolumina prüfen (Stufe 1) | Werkzeug für 100–200 €/Monat | **beide Modelle** — Gate 15 | `entscheidungsmatrix.md` |
 | Rechtsform, Shop, Inhalte | erst ab Stufe 2, nach den beiden obigen | — | `phase5-technik.md`, `phase8-*` |
 
@@ -192,7 +192,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `skalierung-und-passivitaet.md` | Bestandseffekt; digitale Vorlagen fallen durch |
 | `segment-arbeitsplatzmessung.md` | Nebenstrecke, kein eigenes Segment |
 | `strategie-modellvergleich.md` | Kapitalweg braucht ~900.000 €; enthält überholte Empfehlung |
-| `anschreiben-entwuerfe.md` | Zwei Anschreiben, versandfertig, nicht versendet |
+| `anschreiben-entwuerfe.md` | Drei Anschreiben (Hersteller, Großhändler, Partnerbetriebe), versandfertig, nicht versendet |
 
 ### Korrekturen, die im Verlauf nötig waren
 

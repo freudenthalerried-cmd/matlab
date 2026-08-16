@@ -39,6 +39,7 @@ statt sechs Adressaten, in drei Prioritäten, Rohr- und Bahnenseite getrennt.
 | 3 | BMI Österreich | Vedagard AL-E, radondicht mit abP |
 | 3 | Sika | SikaProof-Systeme, eigene Radon-Broschüre |
 | 3 | Rothoblaas | Radon Floor, zertifiziert |
+| — | **ein Baustoffgroßhändler** (dreizehnter Adressat, Entwurf C) | herstellerunabhängiger Bezugsweg; Kandidat vor Versand festzulegen |
 
 **Gestrichen: Hauff-Technik.** Mehrspartenhauseinführungen sind seit 2017
 ohnehin gas- und druckwasserdicht vorgeschrieben und werden bereits radondicht
@@ -113,6 +114,70 @@ Auswerten gleichrangig zu behandeln:
 
 Erreichen zwei Hersteller gemeinsam keine 32 % Mischmarge, fällt die Nische —
 so in Gate 3 festgelegt.
+
+## Entwurf C — Großhändleranfrage (dreizehnter Adressat)
+
+Ergänzt am 16. August nach
+[`vertriebswege-der-hersteller.md`](./vertriebswege-der-hersteller.md): Die
+zertifizierte Bahn mit dem breitesten Händlernetz (Vedagard AL-E) läuft im
+klassischen Dreistufenvertrieb — der Weg zu ihr führt nicht über den
+Hersteller, sondern über die **Wiederverkäuferkondition eines
+Baustoffgroßhändlers**. Damit prüft ein einziges zusätzliches Anschreiben den
+herstellerunabhängigen Bezugsweg, der die zwölf Herstellerantworten von der
+Existenzfrage zur Margenfrage herabstuft.
+
+Der Großhandel beantwortet nebenbei eine Frage, an der die Hersteller
+scheitern können: **strukturierte Artikeldaten sind dort Branchenstandard**
+(DATANORM-Dateien, zunehmend IDS Connect als Live-Schnittstelle) — genau die
+Gate-6-Anforderung, die Entwurf A in Punkt 6 abfragt. Ein Großhändler mit
+IDS-Zugang löst das Datenproblem für sein gesamtes Sortiment auf einmal.
+
+> **Betreff:** Anfrage Wiederverkäuferkonditionen Abdichtung/Tiefbau
+>
+> Sehr geehrte Damen und Herren,
+>
+> ich baue derzeit einen auf Radonvorsorge spezialisierten Fachhandel für den
+> österreichischen Markt auf (Streckengeschäft, Zielgruppe ausführende
+> Betriebe nach ÖNORM S 5280-2) und prüfe den Bezug über den
+> Baustoffgroßhandel.
+>
+> Das Vorhaben befindet sich in der Planungsphase. Ich frage Konditionen an,
+> um die Wirtschaftlichkeit zu prüfen, bevor ich weitere Schritte setze — eine
+> Bestellung ist damit noch nicht verbunden.
+>
+> Für die Bewertung wären mir folgende Angaben wichtig:
+>
+> 1. Beliefern Sie Wiederverkäufer, und welche Voraussetzungen bestehen dafür
+>    (Gewerbeberechtigung, Mindestumsatz, Kundenkonto)?
+> 2. Führen Sie radondichte Abdichtungsbahnen mit Nachweis — etwa
+>    BMI/Vedag Vedagard AL-E — sowie Drainagerohr DN 100/150, und zu welchen
+>    Konditionen gegenüber Wiederverkäufern?
+> 3. Ist **Streckengeschäft** möglich, also Zustellung direkt an die Baustelle
+>    meines Kunden — österreichweit, und unter welcher Frachtregelung?
+> 4. Stellen Sie Artikeldaten strukturiert bereit — DATANORM, IDS Connect
+>    oder CSV — und für Wiederverkäufer auch mit Einkaufspreisen?
+> 5. Wie werden Transportschäden bei Baustellenzustellung abgewickelt, und
+>    wen trifft die Meldepflicht?
+>
+> Über eine Rückmeldung freue ich mich. Gerne stelle ich das Vorhaben auch in
+> einem kurzen Gespräch vor.
+>
+> Mit freundlichen Grüßen
+
+**Was der Entwurf bewusst nicht tut:** Er fragt nicht nach einem Rabatt „auf
+die UVP" — der Großhandel rechnet in eigenen Netto-Einkaufspreisen je Kunde,
+nicht in Herstellerlisten. Verwertbar ist die Antwort, wenn Punkt 2 einen
+konkreten Einkaufspreis oder eine Konditionslogik nennt und Punkt 3 das
+Streckengeschäft nicht ausschließt; die Marge wird dann gegen den bekannten
+Straßenpreis (~10–11 €/m² brutto) gerechnet, nicht gegen eine Liste.
+
+**Kandidatenauswahl vor dem Versand** (dieselbe Erhebung wie die
+Ansprechpartner der zwölf Hersteller): ein österreichweit lieferfähiger
+Baustoff- oder Dachbaustoffgroßhändler mit Abdichtungssortiment und
+Streckengeschäft. Naheliegende Kandidaten — BayWa Baustoffe Österreich,
+Quester, Lagerhaus/RWA — sind vor dem Versand darauf zu prüfen, dass sie
+Vedag/BMI tatsächlich führen; die Websuche konnte das für Österreich nicht
+belegen, nur für den deutschen Handel.
 
 ## Entwurf B — Partnerbetriebe für die Leadvermittlung
 
@@ -206,13 +271,16 @@ nicht zustimmt, kann nicht Partner werden — unabhängig davon, wie gut die
    **44,2 %**. Jeder Prozentpunkt Nachlass kostet mehr als einen Prozentpunkt
    Rabatt. Die 35 % aus Gate 2 sind die Schwelle, unter der nichts geht — nicht
    das Verhandlungsziel.
-6. **Reihenfolge.** Entwurf A zuerst. Er entscheidet über Gate 3 und damit
-   darüber, ob der Shop überhaupt weiterverfolgt wird. Entwurf B kann parallel
-   laufen, bindet aber Aufmerksamkeit.
+6. **Reihenfolge.** Entwurf A zuerst, **Entwurf C im selben Versand** — er
+   kostet eine einzige weitere E-Mail und prüft den Bezugsweg, der bleibt,
+   wenn die Herstellerantworten enttäuschen. Beide zusammen entscheiden über
+   Gate 3. Entwurf B kann parallel laufen, bindet aber Aufmerksamkeit.
 
 ## Freigabe
 
-Zum Versenden fehlt nur die Zustimmung. Sobald sie vorliegt, sind Empfänger,
+Zum Versenden fehlt nur die Zustimmung. Sie umfasst seit dem 16. August
+**dreizehn Anfragen** (zwölf Hersteller nach Entwurf A, ein Großhändler nach
+Entwurf C) — weiterhin 0 € Kosten. Sobald sie vorliegt, sind Empfänger,
 Absenderdaten und der Zeitpunkt festzulegen; die Antworten werden in
 `lieferanten.md` bzw. `partnerbetriebe.md` erfasst und fließen in die
 Gate-3-Prüfung ein.
