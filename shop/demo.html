@@ -1272,11 +1272,33 @@ function lieferhinweise(auftrag = {}) {
   return LIEFERHINWEISE.filter((h) => abweichend || h.grundlage !== 'AGB Punkt 6');
 }
 
+/**
+ * Gliederung der Datenschutzerklärung.
+ *
+ * Die beiden letzten Punkte sind beim Abgleich der Datenflüsse dazugekommen und
+ * betreffen **Menschen, die mit dem Shop keinen Vertrag haben**:
+ *
+ *   * Der **Ansprechpartner vor Ort** auf der Baustelle. Seine Telefonnummer
+ *     geht an die Spedition des Lieferanten. Art. 6 Abs. 1 lit. b trägt das
+ *     nicht — er ist nicht Vertragspartner; in Betracht kommt lit. f. Und
+ *     Art. 14 verlangt, **ihn** zu informieren, obwohl der Shop ihn nie zu
+ *     Gesicht bekommt. Die Angabe stammt vom Besteller.
+ *   * Die **UID-Abfrage** beim EU-Informationsaustauschsystem. Bei einem
+ *     Einzelunternehmer ist die UID ein personenbezogenes Datum, und die
+ *     Abfrage ist eine Übermittlung an eine Stelle außerhalb des Betriebs.
+ *
+ * Beides gehört benannt, nicht gelöst: Diese Datei ist Zuarbeit für den
+ * Rechtstexteanbieter aus `phase5-technik.md`, keine Rechtsberatung. Was sie
+ * leisten kann, ist die Frage auf den Tisch zu legen, bevor jemand sie im
+ * Echtbetrieb stellt.
+ */
 const DATENSCHUTZ_GLIEDERUNG = [
   'Verantwortlicher und Kontakt',
   'Welche Daten bei der Bestellung verarbeitet werden',
   'Rechtsgrundlage: Vertragserfüllung nach Art. 6 Abs. 1 lit. b DSGVO',
   'Weitergabe an Lieferanten zur Direktlieferung — mit Nennung der Empfängerkategorien',
+  'Daten Dritter: Ansprechpartner vor Ort auf der Baustelle — Art. 6 Abs. 1 lit. f, Informationspflicht nach Art. 14',
+  'UID-Abfrage beim EU-Informationsaustauschsystem — Übermittlung und Zweck',
   'Speicherdauer und steuerliche Aufbewahrungsfristen',
   'Rechte der betroffenen Person',
   'Beschwerderecht bei der Datenschutzbehörde',

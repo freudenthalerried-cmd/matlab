@@ -36,10 +36,55 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Frachtdeckung Kunde gegen Lieferant | fertig, ein Fehler behoben | 4 |
 | Vorgangsklammer über alle Papiere | fertig, ein Fehler behoben | 26 |
 | Baustelle als eigene Lieferanschrift | fertig, ein Fehler behoben | 12 |
+| Abgleich Versprechen gegen Verhalten | fertig, zwei Befunde | 13 |
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig, Baustelle abgefragt | headless geprüft |
-| **Summe** | | **322, alle grün, 0 hohl** |
+| **Summe** | | **335, alle grün, 0 hohl** |
 
-## Was zuletzt dazukam: die eigene Korrektur hat die Handelsspanne verraten
+## Was zuletzt dazukam: der Ansprechpartner auf der Baustelle hat nie zugestimmt
+
+Die Vorrunde hat ihre drei Befunde aus einer Durchsicht von Hand geholt. Eine
+Durchsicht findet nur, wonach man an dem Tag gesehen hat — diese Runde macht
+daraus ein Werkzeug. Ausführlich in
+[`abgleich-versprechen-und-verhalten.md`](./abgleich-versprechen-und-verhalten.md).
+
+`shop/src/abgleich.js` führt die Zuordnung **AGB-Punkt → Umsetzung** als Daten,
+nach dem Muster des Fremdtext-Verzeichnisses. Jede Zuordnung zeigt auf **Namen,
+die es geben muss** — eine Schritt-Kennung aus `SCHRITTE`, eine exportierte
+Funktion —, und der Abgleich schlägt jedes Ziel nach. Gegenprobe: ein AGB-Punkt
+ohne Zuordnung → 2 Testfälle fallen; ein Ablaufschritt ohne AGB-Bezug → 2
+Testfälle fallen.
+
+Der Abgleich der dreizehn Punkte selbst geht auf — negatives Ergebnis, die
+Vorrunde hat aufgeräumt.
+
+**Der Fund kam aus der anderen Richtung:** dieselbe Frage auf die
+Datenschutzerklärung angewandt. Fünf tatsächliche Datenflüsse, zwei davon
+nirgends genannt.
+
+Der **Ansprechpartner vor Ort** ist ein Dritter. Seine Telefonnummer geht an den
+Lieferanten und dessen Spedition; er hat mit dem Shop keinen Vertrag, die Nummer
+stammt vom Besteller. Art. 6 Abs. 1 lit. b — die Grundlage, auf der die ganze
+bisherige Gliederung steht — trägt das nicht; in Betracht kommt lit. f, und
+Art. 14 verlangt, **ihn** zu informieren. Auf einer Baustelle ist das
+typischerweise der Polier eines anderen Betriebs oder der Bauherr.
+
+Die **UID-Abfrage** beim EU-System ist eine Übermittlung. Bei einer GmbH ist die
+UID kein personenbezogenes Datum, bei einem Einzelunternehmer schon — und Gate 7
+schließt Einzelunternehmer nicht aus.
+
+Zwei neue Punkte in der Datenschutzgliederung, neun statt sieben, dazu
+`DATENFLUESSE` mit Rechtsgrundlage und, wo vorhanden, der offenen Frage. Benannt,
+nicht gelöst: `rechtstexte.js` ist Zuarbeit, keine Rechtsberatung — aber der
+Anbieter fragt das nicht von selbst, weil er das Streckengeschäft mit
+Baustellenanlieferung nicht kennt.
+
+**Das Muster über fünf Runden:** Die ergiebige Richtung ist immer dieselbe — vom
+Verhalten zur Erklärung, nicht umgekehrt. Eine Erklärung durchzugehen und zu
+fragen „wird das eingehalten?" findet wenig; Erklärungen werden geschrieben,
+nachdem man weiß, was man tut. Umgekehrt zu fragen „wo steht, dass wir das
+dürfen?" findet die Stellen, an die beim Schreiben niemand gedacht hat.
+
+## Was davor dazukam: die eigene Korrektur hat die Handelsspanne verraten
 
 Vorgenommen war der systematische Abgleich: Was in den AGB steht, muss im Ablauf
 vorkommen — und umgekehrt. Dreizehn Punkte gegen elf Schritte. Drei Befunde,
@@ -793,11 +838,12 @@ Nach Nutzen geordnet, alle ohne Freigabe und ohne Ausgabe machbar:
 1. **Gebietsabfrage** nach `phase10-datengrundlage-gebietsabfrage.md` — braucht
    die Gemeindeliste. RIS und der Geoserver sind aus dieser Umgebung weiterhin
    nicht erreichbar; zuletzt geprüft am 15. August.
-2. **Der Abgleich als Werkzeug statt als Durchsicht** — die Zuordnung von
-   AGB-Punkt zu Ablaufschritt und Quelltextstelle steckt bisher nur in einem
-   Dokument. Als Datenstruktur mit Testfall wäre sie ein Verzeichnis wie das
-   für die Fremdtext-Ausgänge: Ein neuer AGB-Punkt ohne Entsprechung fiele
-   dann sofort auf, statt bis zur nächsten Durchsicht zu warten. Braucht keine
+2. **Die Zusicherung nach Art. 14 im Bestellprozess** — der Ansprechpartner
+   auf der Baustelle muss informiert werden, und der Shop erreicht ihn nicht.
+   Der naheliegende Weg ist eine Zusicherung des Bestellers, dass er den
+   Genannten unterrichtet hat — ein Feld wie die Unternehmerbestätigung nach
+   Gate 7, mit derselben Prüfung. Ob das genügt, entscheidet der
+   Rechtstexteanbieter; das Feld lässt sich vorher bauen. Braucht keine
    Freigabe und keine Ausgabe.
 3. **Gedächtnis der Ablage** — `ablage.js` führt Nummernkreis und Journal
    sauber, aber nur im Arbeitsspeicher. Nach einem Neuladen beginnt die
