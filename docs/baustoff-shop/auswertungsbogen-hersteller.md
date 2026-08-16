@@ -100,6 +100,14 @@ Zwei Punkte sind gegenüber der ursprünglichen Liste dazugekommen:
   Preisuntergrenze oder einen Gebietsschutz für Händler? Ohne Zusage ist der
   Hersteller für die Leitposition ungeeignet, unabhängig vom Rabatt.
 
+- **Drainage-Konditionen gegen den Commodity-Preis**, aus
+  [`strassenpreisanker-sortiment.md`](./strassenpreisanker-sortiment.md). Das
+  Drainagerohr DN100 kostet am Markt 99,90 € brutto je 50-m-Rolle (~83 € netto)
+  — unsere Platzhalter-UVP von 165 € netto ist Fantasie. Ein Rabatt wird für
+  diese Gruppe **gegen den Straßenpreis** bewertet, nicht gegen die Liste: Was
+  nach Rabatt über ~80 € netto liegt, ist unverkäuflich. Die Gruppe zählt bei
+  der Gate-2-Auswertung nicht als Margenträger.
+
 
 ## Von der Antwort zur Planungszahl
 
