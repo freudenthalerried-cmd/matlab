@@ -219,6 +219,140 @@ export function pruefeBestellung(bestellung, teillieferung) {
 }
 
 /**
+ * Liest den Kopf eines Kundenbelegs zurück: Nummer und Empfänger.
+ *
+ * Wieder textnah. Der Empfängerblock ist das, was zwischen der Zeile
+ * „Rechnungsempfänger:" bzw. „An:" und der nächsten Leerzeile steht — genau
+ * das, was ein Mensch dort liest.
+ */
+export function leseBelegkopf(text) {
+  const zeilen = String(text ?? '').split('\n');
+  const nummer = /^(?:Rechnung|Angebot)\s+(\S+)/.exec(zeilen[0] ?? '')?.[1] ?? null;
+
+  const beginn = zeilen.findIndex((z) => /^(Rechnungsempfänger:|An:)$/.test(z.trim()));
+  const empfaenger = [];
+  if (beginn >= 0) {
+    for (let i = beginn + 1; i < zeilen.length && zeilen[i].trim() !== ''; i++) {
+      empfaenger.push(zeilen[i].trim());
+    }
+  }
+
+  return { nummer, empfaenger };
+}
+
+/**
+ * Hält die Papiere **eines** Vorgangs gegen den Vorgang selbst.
+ *
+ * Der Anlass ist nachgewiesen: Werden Bestellung und Rechnung mit den Daten
+ * zweier verschiedener Kunden gebaut, geht die Ware zum einen und die Rechnung
+ * zum anderen — und **keine bestehende Prüfung sieht es**. Die Rechnung ist
+ * nach § 11 UStG vollständig, die Gegenprobe an der Bestellung ist
+ * deckungsgleich, weil sie nur gegen den Warenkorb vergleicht. Beide prüfen ihr
+ * eigenes Papier; niemand prüft, ob es dieselbe Sache betrifft.
+ *
+ * Verglichen wird gegen die **erklärten Daten des Vorgangs**, nicht die beiden
+ * Papiere gegeneinander. Der Unterschied wird wichtig, sobald die Baustelle
+ * einmal eine andere Adresse hat als die Rechnung — im Streckengeschäft der
+ * Normalfall, heute noch nicht abgebildet. Ein Vergleich Papier gegen Papier
+ * müsste dann aufgegeben werden; dieser hier bleibt richtig.
+ */
+export function pruefeVorgangsklammer(vorgang) {
+  const abweichungen = [];
+
+  if (vorgang.bestellungen.length === 0) {
+    abweichungen.push('Der Vorgang führt keine einzige Lieferantenbestellung');
+  }
+
+  // 1. Jede Bestellung trägt die Nummer des Vorgangs.
+  for (const b of vorgang.bestellungen) {
+    if (!String(b.nummer).startsWith(vorgang.vorgangsnummer)) {
+      abweichungen.push(`Bestellnummer ${b.nummer} beginnt nicht mit ${vorgang.vorgangsnummer}`);
+    }
+  }
+
+  // 2. Jede Bestellung nennt die Lieferadresse des Vorgangs — gelesen aus dem
+  //    Text, der tatsächlich hinausgeht, nicht aus dem Objekt daneben.
+  const soll = vorgang.auftrag.lieferadresse;
+  for (const b of vorgang.bestellungen) {
+    const a = leseBestellung(b.text).lieferadresse;
+    if (!a) {
+      abweichungen.push(`${b.nummer}: keine Lieferadresse im Bestelltext`);
+      continue;
+    }
+    if (a.name !== soll.name) {
+      abweichungen.push(`${b.nummer}: Lieferadresse lautet auf „${a.name}", der Vorgang auf „${soll.name}"`);
+    }
+    if (a.plzOrt !== `${soll.plz} ${soll.ort}`) {
+      abweichungen.push(`${b.nummer}: Ware geht nach ${a.plzOrt}, der Vorgang nennt ${soll.plz} ${soll.ort}`);
+    }
+  }
+
+  // 3. Der Beleg an den Kunden nennt den Kunden des Vorgangs.
+  for (const [name, beleg] of [
+    ['Angebot', vorgang.angebot],
+    ['Rechnung', vorgang.rechnung],
+  ]) {
+    if (!beleg) continue;
+    const kopf = leseBelegkopf(beleg.text);
+    if (kopf.empfaenger.length === 0) {
+      abweichungen.push(`${name}: kein Empfänger im Text`);
+      continue;
+    }
+    if (kopf.empfaenger[0] !== vorgang.kunde.firma) {
+      abweichungen.push(
+        `${name} geht an „${kopf.empfaenger[0]}", der Vorgang lautet auf „${vorgang.kunde.firma}"`,
+      );
+    }
+  }
+
+  // 3b. Die einzige Prüfung hier, die **zwei gerenderte Papiere** gegeneinander
+  //     hält, statt beide gegen die Erklärung des Vorgangs. Der Unterschied ist
+  //     derselbe wie bei der Gegenprobe am Beleg: Wer gegen die eigene
+  //     Erklärung prüft, findet ein vertauschtes Papier, aber keinen Fehler in
+  //     der Stelle, die die Erklärung erzeugt hat.
+  //
+  //     Sie gilt nur, solange Baustelle und Rechnungsanschrift dieselbe Firma
+  //     nennen — heute erzwingt `baueAuftrag` das, im Streckengeschäft ist es
+  //     auf Dauer die Ausnahme. Deshalb steht die Annahme als Feld am Vorgang
+  //     und nicht als stille Voraussetzung im Code: Wer sie fallen lässt,
+  //     schaltet die Prüfung bewusst ab, statt sie unbemerkt zu entwerten.
+  if (vorgang.lieferungAnRechnungsempfaenger !== false && vorgang.rechnung) {
+    const imBeleg = leseBelegkopf(vorgang.rechnung.text).empfaenger[0] ?? null;
+    for (const b of vorgang.bestellungen) {
+      const imAuftrag = leseBestellung(b.text).lieferadresse?.name ?? null;
+      if (imBeleg !== null && imAuftrag !== null && imBeleg !== imAuftrag) {
+        abweichungen.push(
+          `${b.nummer}: Ware geht an „${imAuftrag}", die Rechnung an „${imBeleg}"`,
+        );
+      }
+    }
+  }
+
+  // 4. Was wir bestellen, ist zusammen der Wareneinsatz des Warenkorbs.
+  const bestellt = rund(vorgang.bestellungen.reduce((s, b) => s + b.einkaufNetto, 0));
+  if (bestellt !== vorgang.warenkorb.einkaufNetto) {
+    abweichungen.push(
+      `Die Bestellungen summieren ${bestellt}, der Warenkorb weist ${vorgang.warenkorb.einkaufNetto} aus`,
+    );
+  }
+
+  // 5. Was bestellt wird, ist zusammen das, was berechnet wird.
+  const positionenBestellt = vorgang.bestellungen.reduce(
+    (s, b) => s + leseBestellung(b.text).positionen.length,
+    0,
+  );
+  const positionenBerechnet = vorgang.rechnung ? leseBeleg(vorgang.rechnung.text).zeilensummen.length : null;
+  if (positionenBerechnet !== null && positionenBestellt !== positionenBerechnet) {
+    abweichungen.push(
+      `${positionenBestellt} Positionen werden bestellt, ${positionenBerechnet} berechnet — ` +
+        'eine Position, die nicht bestellt wird, kommt auch nicht an',
+    );
+  }
+
+  return { geschlossen: abweichungen.length === 0, abweichungen };
+}
+
+/**
  * Trägt die Fracht sich selbst?
  *
  * Die Kette hat zwei Seiten, und bisher hat niemand sie gegeneinander gehalten:

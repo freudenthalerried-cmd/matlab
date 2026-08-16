@@ -34,10 +34,54 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Gegenprobe an der Lieferantenbestellung | fertig, ein Fehler behoben | 6 |
 | Fremdtext an allen Ein- und Ausgängen | fertig, ein Fehler behoben | 18 |
 | Frachtdeckung Kunde gegen Lieferant | fertig, ein Fehler behoben | 4 |
+| Vorgangsklammer über alle Papiere | fertig, ein Fehler behoben | 14 |
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig | headless geprüft |
-| **Summe** | | **261, alle grün, 0 hohl** |
+| **Summe** | | **275, alle grün, 0 hohl** |
 
-## Was zuletzt dazukam: die Schwelle stand auf der falschen Seite
+## Was zuletzt dazukam: die Ware nach Innsbruck, die Rechnung nach Linz
+
+Die Frachtklammer der Vorrunde ließ die andere Hälfte offen: Meinen die Papiere
+eines Vorgangs überhaupt dieselbe Sache? Ausführlich in
+[`vorgangsklammer.md`](./vorgangsklammer.md).
+
+**Sie mussten es nicht.** Zwei Aufrufe, zwei Objekte, ein Vertipper — und die
+Ware geht auf die Baustelle in Innsbruck, während die Rechnung an eine Firma in
+Linz geht. Keine bestehende Prüfung sieht etwas: Die Rechnung ist nach § 11 UStG
+`vollstaendig`, die Gegenprobe an der Bestellung ist `deckungsgleich`, weil sie
+nur gegen den Warenkorb vergleicht. Jede prüft ihr eigenes Papier; keine prüft,
+ob es dieselbe Sache betrifft.
+
+Dass es heute nicht durchgeht, liegt allein an der Platzhaltersperre — und die
+fällt, sobald der erste Hersteller echte Konditionen nennt. Sie ist keine
+Sicherung gegen Verwechslung.
+
+Der Schaden ist von anderer Art als die bisherigen Funde: Ware steht auf einer
+**fremden Baustelle**, bezahlt und ausgeliefert, während der Besteller eine
+Rechnung hat und keine Ware.
+
+**Behoben durch `shop/src/vorgang.js`:** `baueVorgang()` nimmt einen Satz
+Kundendaten und lässt alle Papiere daraus hervorgehen. Wer zwei Kunden mischen
+will, muss zwei Vorgänge bauen — und die haben verschiedene Nummern. Dazu
+`darfVorgangLaufen()` additiv über den bestehenden Sperren und
+`ablageEintraege()`, damit die Vorgangsakte vollständig wird.
+
+**Ein Fehler in meiner eigenen Klammer**, gefunden durch die Gegenprobe an ihr:
+In der ersten Fassung verglich `pruefeVorgangsklammer` jedes Papier gegen die
+Erklärung des Vorgangs — und meldete `geschlossen: true`, als ich `baueVorgang`
+versuchsweise verfälschte. Sie musste, denn die Erklärung stammte aus derselben
+verfälschten Hand. Das ist der Befund aus
+[`zweite-rechnung.md`](./zweite-rechnung.md) noch einmal, diesmal an meiner
+eigenen Arbeit. Die Klammer hält jetzt zusätzlich **zwei gerenderte Papiere
+gegeneinander**, ohne den Vorgang anzusehen; bei derselben Mutation fallen
+seither zwei Testfälle statt einem.
+
+Die Annahme dahinter — Baustelle und Rechnungsanschrift nennen dieselbe Firma —
+steht als Feld `lieferungAnRechnungsempfaenger` am Vorgang, nicht als stille
+Voraussetzung im Code. Im Streckengeschäft ist sie auf Dauer die Ausnahme; wer
+sie fallen lässt, schaltet diese eine Prüfung bewusst ab statt sie unbemerkt zu
+entwerten.
+
+## Was davor dazukam: die Schwelle stand auf der falschen Seite
 
 Vorgenommen war die Klammer zwischen den Zahlen des Kunden und denen des
 Lieferanten. Die erste gespannte Klammer — die Fracht — hat sofort etwas
@@ -587,12 +631,12 @@ Nach Nutzen geordnet, alle ohne Freigabe und ohne Ausgabe machbar:
 1. **Gebietsabfrage** nach `phase10-datengrundlage-gebietsabfrage.md` — braucht
    die Gemeindeliste. RIS und der Geoserver sind aus dieser Umgebung weiterhin
    nicht erreichbar; zuletzt geprüft am 15. August.
-2. **Die Vorgangsklammer zu Ende ziehen** — die Fracht ist geklammert, die
-   Kennungen nicht. Bestellnummer, Rechnungsnummer und Lieferadresse entstehen
-   an drei Stellen und werden nirgends gegeneinander gehalten. Eine Bestellung,
-   die auf die Baustelle eines anderen Auftrags geht, ist teurer als eine
-   falsche Menge — die Ware ist dann nicht zu viel, sondern weg. Braucht keine
-   Freigabe und keine Ausgabe.
+2. **Die Baustelle als eigene Adresse** — heute erzwingt `baueAuftrag`, dass
+   die Ware an die Rechnungsanschrift geht. Für Handwerksbetriebe, die für eine
+   fremde Baustelle bestellen, ist das der Normalfall und nicht die Ausnahme;
+   der Shop kann diese Bestellung derzeit nicht abbilden. Die Vorgangsklammer
+   ist darauf vorbereitet — `lieferungAnRechnungsempfaenger` benennt die
+   Annahme, die dann fällt. Braucht keine Freigabe und keine Ausgabe.
 3. **Gedächtnis der Ablage** — `ablage.js` führt Nummernkreis und Journal
    sauber, aber nur im Arbeitsspeicher. Nach einem Neuladen beginnt die
    Rechnungsnummer wieder bei eins, und § 11 UStG verlangt Einmaligkeit. Solange

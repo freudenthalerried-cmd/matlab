@@ -35,7 +35,7 @@ Gerüst vorhanden und meldet selbst, welche Pflichtangaben ihm fehlen.
 ## Benutzen
 
 ```
-npm test           # 261 Testfälle
+npm test           # 275 Testfälle
 npm run build      # erzeugt demo.html, eine einzelne Datei ohne Abhängigkeiten
 npm run import -- <lieferantId> <datei.csv> [--schreiben]
 npm run pruefe-tests  # prüft die Testfälle darauf, ob sie etwas behaupten
@@ -52,6 +52,7 @@ unbemerkt falsche Preise anzuzeigen.
 data/lieferanten.json   Konditionen und Frachtregeln   ← Platzhalter
 data/artikel.json       Sortiment mit UVP-Niveaus      ← Platzhalter
 src/preis.js            Einkauf, Verkauf, Marge, Fracht
+src/vorgang.js          Klammer: alle Papiere eines Geschäfts aus einer Hand
 src/warenkorb.js        Gruppierung nach Lieferant, Summen, Mischmarge
 src/bestellung.js       Bestelltext, CSV, Freigabeprüfung
 src/import.js           Preisliste lesen, prüfen, mit dem Katalog vergleichen
