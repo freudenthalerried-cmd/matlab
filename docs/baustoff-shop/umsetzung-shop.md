@@ -1,6 +1,6 @@
 # Umsetzung — Baustand des Shops
 
-Stand: 2026-08-15. Fortlaufendes Bauprotokoll, keine Analyse. Gate 18 bleibt
+Stand: 2026-08-16. Fortlaufendes Bauprotokoll, keine Analyse. Gate 18 bleibt
 unberührt: Die Analysephase ist geschlossen, gebaut wird trotzdem.
 
 Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
@@ -31,10 +31,38 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Rückwärtsrechnung fürs Konditionsgespräch | fertig | 13 |
 | Prüfer für die Testfälle selbst | fertig | gegen Probedatei nachgewiesen |
 | Gegenprobe am gerenderten Beleg | fertig | 14 |
+| Gegenprobe an der Lieferantenbestellung | fertig, ein Fehler behoben | 6 |
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig | headless geprüft |
-| **Summe** | | **227, alle grün, 0 hohl** |
+| **Summe** | | **233, alle grün, 0 hohl** |
 
-## Was zuletzt dazukam: die zweite Rechnung
+## Was zuletzt dazukam: die Gegenprobe an der Lieferantenbestellung
+
+`shop/src/kontrolle.js` liest jetzt auch die **Bestellung an den Lieferanten**
+zurück und vergleicht Warenkorb, Bestelltext und Bestell-CSV paarweise.
+Ausführlich in [`gegenprobe-bestellung.md`](./gegenprobe-bestellung.md).
+
+Der Grund für diese Reihenfolge: Von allen Papieren des Shops ist das
+Lieferantenpapier das einzige, das **Ware bewegt**, und nach Gate 6 geht es im
+Echtbetrieb ohne menschliches Zutun hinaus.
+
+**Ergebnis: ein echter Fund.** Eine Artikelbezeichnung mit Zeilenumbruch zerlegt
+die Bestell-CSV in zwei Zeilen; die zweite wird zu einer Geisterposition mit
+dem Lieferantennamen als Artikelnummer und `NaN` als Menge.
+
+Die Asymmetrie ist der eigentliche Befund: `ablage.js` hat Zeilenumbrüche von
+Anfang an entschärft, `bestellung.js` nicht — ausgerechnet in der Datei, die
+Ware bewegt. Behoben mit einem gemeinsamen `csvFeld()` in `format.js`. Danach:
+2.044 Warenkörbe, 5.248 Bestellungen, 0 Abweichungen, dazu 6 Testfälle, die den
+Text und die CSV absichtlich verfälschen.
+
+Vier Runden ergeben zusammen ein Muster: 155 grüne Testfälle, während
+`demo.html` nicht startete; 213 grüne, während elf Schleifen nichts prüften; 213
+grüne, während den Belegtext niemand ansah; 227 grüne, während die Bestell-CSV
+an einem einzelnen Zeichen zerbrach. Die dritte Runde fand nichts, die vierte
+etwas — **welche fündig wird, weiß man vorher nicht.** Das ist der Grund, die
+Reihe nach einem negativen Ergebnis nicht einzustellen.
+
+## Was davor dazukam: die zweite Rechnung
 
 `shop/src/kontrolle.js` liest den **gerenderten Belegtext** zurück und rechnet
 aus den Zeichen nach, ob er aufgeht. Ausführlich in
@@ -477,10 +505,16 @@ Nach Nutzen geordnet, alle ohne Freigabe und ohne Ausgabe machbar:
 1. **Gebietsabfrage** nach `phase10-datengrundlage-gebietsabfrage.md` — braucht
    die Gemeindeliste. RIS und der Geoserver sind aus dieser Umgebung weiterhin
    nicht erreichbar; zuletzt geprüft am 15. August.
-2. **Gegenprobe an der Lieferantenbestellung** — die Gegenprobe deckt heute
-   den Beleg an den Kunden ab. Die Bestellung an den Lieferanten, die im
-   Echtbetrieb ohne Zutun hinausginge, ist noch ungeprüft: Ob im Bestelltext
-   dieselben Mengen und Artikelnummern stehen wie im Warenkorb, sieht bisher
-   niemand nach. Eine falsche Menge dort ist teurer als eine falsche Zahl auf
-   der Rechnung, weil sie Ware bewegt. Braucht keine Freigabe und keine
-   Ausgabe.
+2. **Fremdtext an allen Ein- und Ausgängen** — der Fund dieser Runde war ein
+   Zeichen aus einer fremden Datei, das eine eigene Datei zerlegt hat. Der
+   Preislisten-Import nimmt CSV von Lieferanten entgegen, die Rechtstexte und
+   die Belege geben Text an Kunden aus. Wo Fremdtext eintritt und wo er
+   austritt, gehört einmal zusammengestellt und je Ausgang entschieden, welche
+   Regel gilt — bisher steht sie nur für die zwei CSV-Ausgänge fest. Braucht
+   keine Freigabe und keine Ausgabe.
+3. **CSV nach RFC 4180**, sobald ein Lieferant seine Schnittstelle benannt hat.
+   `csvFeld()` ersetzt heute Semikolon und Zeilenumbruch, statt das Feld zu
+   quoten; das erhält die Zeile, aber nicht den Inhalt. Solange kein Format
+   feststeht, ist die gröbere Regel die robustere — siehe
+   [`gegenprobe-bestellung.md`](./gegenprobe-bestellung.md). Hängt an einer
+   Herstellerantwort, also an der ausstehenden Freigabe.

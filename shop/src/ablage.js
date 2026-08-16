@@ -25,6 +25,8 @@
  * auf die Uhr sieht, lässt sich nicht prüfen.
  */
 
+import { csvFeld } from './format.js';
+
 /** Aufbewahrungsfrist nach § 132 BAO: sieben Jahre nach Ablauf des Kalenderjahres. */
 export const AUFBEWAHRUNG_JAHRE = 7;
 
@@ -198,7 +200,7 @@ export function alsCsv(ablage) {
       e.betragNetto ?? '',
       e.betragBrutto ?? '',
       e.bezugAuf ?? '',
-      String(e.text).replaceAll(';', ',').replaceAll('\n', ' ').slice(0, 200),
+      csvFeld(e.text).slice(0, 200),
     ].join(';'),
   );
   return [kopf, ...zeilen].join('\n');

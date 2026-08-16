@@ -114,6 +114,105 @@ export function pruefeBelegRechnerisch(text) {
 }
 
 /**
+ * Liest eine Lieferantenbestellung aus ihrem Text zurück.
+ *
+ * Die Bestellung an den Lieferanten ist der einzige Beleg, der **Ware bewegt**.
+ * Eine falsche Zahl auf der Kundenrechnung kostet Geld; eine falsche Menge hier
+ * kostet Geld **und** eine Palette, die zurückgeht. Sie verdient deshalb
+ * dieselbe Gegenprobe wie der Beleg an den Kunden.
+ */
+export function leseBestellung(text) {
+  const zeilen = String(text ?? '').split('\n');
+  const positionen = [];
+  let lieferadresse = null;
+
+  for (let i = 0; i < zeilen.length; i++) {
+    // Die Menge ist mit padStart(3) eingerückt, die Artikelnummer mit padEnd(12)
+    // aufgefüllt — das Muster muss beides vertragen.
+    const p = /^\s+(\d+)\s+×\s+(\S+)\s+(.+)$/.exec(zeilen[i]);
+    if (p) {
+      positionen.push({ menge: Number(p[1]), sku: p[2], bezeichnung: p[3].trim() });
+      continue;
+    }
+    if (/^Lieferadresse/.test(zeilen[i])) {
+      lieferadresse = {
+        name: (zeilen[i + 1] ?? '').trim(),
+        strasse: (zeilen[i + 2] ?? '').trim(),
+        plzOrt: (zeilen[i + 3] ?? '').trim(),
+      };
+    }
+  }
+
+  return { positionen, lieferadresse, einkaufNetto: leseBetrag(text.match(/Warenwert netto[^\n]*/)?.[0] ?? '') };
+}
+
+/** Liest dieselbe Bestellung aus ihrer CSV zurück. */
+export function leseBestellCsv(csv) {
+  const zeilen = String(csv ?? '').split('\n').filter((z) => z.trim() !== '');
+  if (zeilen.length === 0) return { kopf: [], positionen: [] };
+
+  const kopf = zeilen[0].split(';');
+  const spalte = (felder, name) => felder[kopf.indexOf(name)];
+
+  const positionen = zeilen.slice(1).map((z) => {
+    const f = z.split(';');
+    return {
+      spalten: f.length,
+      sku: spalte(f, 'sku'),
+      menge: Number(spalte(f, 'menge')),
+      bezeichnung: spalte(f, 'bezeichnung'),
+      liefername: spalte(f, 'liefername'),
+      lieferort: spalte(f, 'lieferort'),
+    };
+  });
+
+  return { kopf, positionen };
+}
+
+/**
+ * Vergleicht Warenkorb, Bestelltext und Bestell-CSV paarweise.
+ *
+ * Drei Quellen, die getrennt entstehen: die gerechnete Teillieferung, der Text
+ * für den Menschen und die Datei für die Maschine. Sie müssen dieselben Mengen
+ * und dieselben Artikelnummern führen — sonst bestellt der Shop etwas anderes,
+ * als er anzeigt.
+ */
+export function pruefeBestellung(bestellung, teillieferung) {
+  const text = leseBestellung(bestellung.text);
+  const csv = leseBestellCsv(bestellung.csv);
+  const abweichungen = [];
+
+  const soll = teillieferung.positionen.map((p) => ({ sku: p.sku, menge: p.menge }));
+  const alsText = (liste) => liste.map((p) => `${p.sku}×${p.menge}`).sort().join(', ');
+
+  if (alsText(text.positionen) !== alsText(soll)) {
+    abweichungen.push(`Text führt ${alsText(text.positionen) || '—'}, der Warenkorb ${alsText(soll)}`);
+  }
+  if (alsText(csv.positionen) !== alsText(soll)) {
+    abweichungen.push(`CSV führt ${alsText(csv.positionen) || '—'}, der Warenkorb ${alsText(soll)}`);
+  }
+
+  // Eine CSV-Zeile mit mehr Feldern als Spalten ist verrutscht — dann steht die
+  // Menge in einer anderen Spalte, und niemand merkt es beim Lesen.
+  for (const p of csv.positionen) {
+    if (p.spalten !== csv.kopf.length) {
+      abweichungen.push(`CSV-Zeile mit ${p.spalten} Feldern bei ${csv.kopf.length} Spalten — verrutscht`);
+      break;
+    }
+    if (!Number.isFinite(p.menge)) {
+      abweichungen.push(`CSV-Zeile ohne lesbare Menge bei ${p.sku}`);
+      break;
+    }
+  }
+
+  if (text.einkaufNetto !== teillieferung.einkaufNetto) {
+    abweichungen.push(`Einkaufswert im Text ${text.einkaufNetto}, gerechnet ${teillieferung.einkaufNetto}`);
+  }
+
+  return { deckungsgleich: abweichungen.length === 0, abweichungen, text, csv };
+}
+
+/**
  * Die einzige wirklich unabhängige Gleichung.
  *
  * Vier der fünf Prüfungen oben nutzen dieselbe Arithmetik, die den Beleg

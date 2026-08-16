@@ -222,6 +222,23 @@
 const EUR = (n) => n.toFixed(2).replace('.', ',') + ' €';
 
 /**
+ * Entschärft ein Feld für eine CSV mit Semikolon als Trenner.
+ *
+ * Anlass: Eine Artikelbezeichnung mit Zeilenumbruch hat die Bestell-CSV an den
+ * Lieferanten in zwei Zeilen zerlegt — die zweite wurde beim Zurücklesen zu
+ * einer Geisterposition mit unlesbarer Menge. In einer Kette, die ohne Zutun
+ * bestellt, wäre das eine falsche Bestellung.
+ *
+ * `ablage.js` hat das von Anfang an richtig gemacht, `bestellung.js` nicht —
+ * ausgerechnet in der Datei, die Ware bewegt. Deshalb steht es jetzt an einer
+ * Stelle.
+ */
+const csvFeld = (wert) =>
+  String(wert ?? '')
+    .replaceAll(';', ',')
+    .replace(/[\r\n]+/g, ' ');
+
+/**
  * Sichtbare Markierung für eine fehlende Pflichtangabe.
  *
  * Absichtlich hässlich. Eine Lücke, die im Entwurf hübsch aussieht, geht
@@ -1025,13 +1042,13 @@ function bestellCsv(nummer, teil, auftrag) {
   const zeilen = teil.positionen.map((p) =>
     [
       nummer,
-      p.sku,
+      csvFeld(p.sku),
       p.menge,
-      p.bezeichnung.replaceAll(';', ','),
-      auftrag.lieferadresse.name.replaceAll(';', ','),
-      auftrag.lieferadresse.strasse.replaceAll(';', ','),
-      auftrag.lieferadresse.plz,
-      auftrag.lieferadresse.ort.replaceAll(';', ','),
+      csvFeld(p.bezeichnung),
+      csvFeld(auftrag.lieferadresse.name),
+      csvFeld(auftrag.lieferadresse.strasse),
+      csvFeld(auftrag.lieferadresse.plz),
+      csvFeld(auftrag.lieferadresse.ort),
     ].join(';'),
   );
   return [kopf, ...zeilen].join('\n');
@@ -1769,6 +1786,7 @@ function ergaenzeFreigabe(freigabe, auswertung) {
  * auf die Uhr sieht, lässt sich nicht prüfen.
  */
 
+
 /** Aufbewahrungsfrist nach § 132 BAO: sieben Jahre nach Ablauf des Kalenderjahres. */
 const AUFBEWAHRUNG_JAHRE = 7;
 
@@ -1942,7 +1960,7 @@ function alsCsv(ablage) {
       e.betragNetto ?? '',
       e.betragBrutto ?? '',
       e.bezugAuf ?? '',
-      String(e.text).replaceAll(';', ',').replaceAll('\n', ' ').slice(0, 200),
+      csvFeld(e.text).slice(0, 200),
     ].join(';'),
   );
   return [kopf, ...zeilen].join('\n');

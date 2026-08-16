@@ -8,7 +8,7 @@
  * Bestellung — als Text zum Versenden und als CSV für Schnittstellen.
  */
 
-import { EUR } from './format.js';
+import { EUR, csvFeld } from './format.js';
 
 /** Erzeugt je Teillieferung eine Bestellung an den Lieferanten. */
 export function erzeugeBestellungen(warenkorb, auftrag) {
@@ -63,13 +63,13 @@ function bestellCsv(nummer, teil, auftrag) {
   const zeilen = teil.positionen.map((p) =>
     [
       nummer,
-      p.sku,
+      csvFeld(p.sku),
       p.menge,
-      p.bezeichnung.replaceAll(';', ','),
-      auftrag.lieferadresse.name.replaceAll(';', ','),
-      auftrag.lieferadresse.strasse.replaceAll(';', ','),
-      auftrag.lieferadresse.plz,
-      auftrag.lieferadresse.ort.replaceAll(';', ','),
+      csvFeld(p.bezeichnung),
+      csvFeld(auftrag.lieferadresse.name),
+      csvFeld(auftrag.lieferadresse.strasse),
+      csvFeld(auftrag.lieferadresse.plz),
+      csvFeld(auftrag.lieferadresse.ort),
     ].join(';'),
   );
   return [kopf, ...zeilen].join('\n');
