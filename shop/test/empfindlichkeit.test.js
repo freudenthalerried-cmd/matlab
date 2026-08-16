@@ -93,7 +93,9 @@ test('Die Rangfolge stellt die Rohmarge nach oben', () => {
 });
 
 test('Die Rangfolge trägt mit, wie sich jede Annahme klären lässt', () => {
-  for (const e of rangfolge(LAGE, 'karte-stripe')) {
+  const r = rangfolge(LAGE, 'karte-stripe');
+  assert.equal(r.length, ANNAHMEN.length);
+  for (const e of r) {
     assert.ok(e.klaertDurch.length > 10);
     assert.ok(e.konfidenz.length > 3);
   }

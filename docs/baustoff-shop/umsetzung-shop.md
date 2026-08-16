@@ -29,10 +29,36 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Empfindlichkeit der vier Annahmen | fertig | 14 |
 | Auswertungsbogen für die Herstellerantworten | fertig, leer | 18 |
 | Rückwärtsrechnung fürs Konditionsgespräch | fertig | 13 |
+| Prüfer für die Testfälle selbst | fertig | gegen Probedatei nachgewiesen |
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig | headless geprüft |
-| **Summe** | | **213, alle grün** |
+| **Summe** | | **213, alle grün, 0 hohl** |
 
-## Was zuletzt dazukam: die Rückwärtsrechnung
+## Was zuletzt dazukam: der Prüfer für die Testfälle
+
+`shop/bin/testpruefung.mjs` sucht Testfälle, die grün laufen und nichts
+behaupten. Ausführlich in
+[`pruefung-der-testfaelle.md`](./pruefung-der-testfaelle.md).
+
+**Von 213 Testfällen waren 14 verdächtig**, nach Abzug der Fehlalarme elf — und
+alle elf aus derselben Kategorie: Schleifen über Listen, deren Länge vorher
+nicht zugesichert war. Kein einziger Testfall behauptete gar nichts; der eine
+hinter einem `if` versteckte war ein Ausrutscher, kein Muster.
+
+Die elf sind entschärft. Einer ist **begründet abgelehnt** — in
+`auftragslauf.test.js` darf `s.braucht` leer sein, weil drei Schritte keine
+Voraussetzungen haben. Dafür gibt es die Zeile `// pruefung: begruendet`; sie
+steht heute genau einmal im ganzen Bestand.
+
+Der Prüfer ist gegen eine Probedatei nachgewiesen, die alle drei Muster enthält
+— sonst wäre er selbst ein Testfall, der nichts prüft. Er läuft **nicht** bei
+`npm test` mit: Ein Verdacht, der den Testlauf rot färbt, wird binnen einer
+Woche stumpf gemacht.
+
+Die Lehre ist dieselbe wie bei der Namenskollision, bei der 155 Testfälle grün
+blieben, während `demo.html` gar nicht startete: **Grüne Tests sind eine Aussage
+über die Testfälle, nicht über den Code.**
+
+## Was davor dazukam: die Rückwärtsrechnung
 
 `shop/src/verhandlung.js` dreht die Preisrechnung um: Nicht Einkauf plus Marge
 ergibt den Verkauf, sondern der marktübliche Verkauf ergibt den nötigen
@@ -419,9 +445,10 @@ Nach Nutzen geordnet, alle ohne Freigabe und ohne Ausgabe machbar:
 1. **Gebietsabfrage** nach `phase10-datengrundlage-gebietsabfrage.md` — braucht
    die Gemeindeliste. RIS und der Geoserver sind aus dieser Umgebung weiterhin
    nicht erreichbar; zuletzt geprüft am 15. August.
-2. **Prüfung der eigenen Testfälle auf Hohlheit** — beim Bau der
-   Rückwärtsrechnung hat sich ein Testfall als wirkungslos erwiesen, weil seine
-   Behauptung hinter einem `if` stand, das nie zutraf. Zweihundert Testfälle
-   sind inzwischen entstanden; ein Durchgang, der jeden davon daraufhin ansieht,
-   ob er tatsächlich etwas behauptet, wäre der nächste sinnvolle Schritt.
-   Braucht keine Freigabe und keine Ausgabe.
+2. **Zweite Warenkorbprüfung im Rechenkern** — der Prüfer für die Testfälle
+   hat gezeigt, wo grüne Tests nichts aussagen. Dieselbe Frage stellt sich für
+   die Rechnung selbst: Der Warenkorb summiert Positionen, aber niemand prüft
+   die Summe gegen eine unabhängig gerechnete Kontrollzahl. Eine zweite,
+   bewusst anders gebaute Rechnung, die dasselbe Ergebnis liefern muss, würde
+   Rechenfehler finden, die beide Male gleich falsch gerechnet werden. Braucht
+   keine Freigabe und keine Ausgabe.

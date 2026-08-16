@@ -74,6 +74,7 @@ test('Das Angebot trägt eine Bindefrist und weist die Teillieferungen aus', () 
   assert.match(a.text, /Bindefrist: 14 Tage/);
   assert.match(a.text, /Angebot AN-0001/);
   assert.equal(a.bruttobetrag, korb.summeBrutto);
+  assert.ok(korb.teillieferungen.length >= 2, 'sonst prüft die Schleife keinen zweiten Lieferanten');
   for (const teil of korb.teillieferungen) {
     assert.ok(a.text.includes(teil.lieferantName), `${teil.lieferantName} fehlt im Angebot`);
   }
@@ -135,6 +136,7 @@ test('Ein rein österreichischer Warenkorb ist kein Reihengeschäft', () => {
 });
 
 test('Jeder Lieferant trägt ein Land — ohne das ist die Steuerfrage nicht zu stellen', () => {
+  assert.equal(daten.lieferanten.lieferanten.length, 3);
   for (const l of daten.lieferanten.lieferanten) {
     assert.match(l.land, /^[A-Z]{2}$/, `${l.id} hat kein Land`);
   }

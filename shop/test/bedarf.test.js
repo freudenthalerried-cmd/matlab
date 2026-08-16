@@ -96,6 +96,7 @@ test('Das Ergebnis lässt sich unmittelbar als Warenkorb rechnen', () => {
 
 test('Jede Position trägt ihre Begründung', () => {
   const b = berechneBedarf({ laenge: 12, breite: 10, durchfuehrungen: 2, mitDrainage: true }, katalog);
+  assert.ok(b.positionen.length >= 5, `nur ${b.positionen.length} Positionen`);
   for (const p of b.positionen) {
     assert.ok(p.begruendung && p.begruendung.length > 5, `Begründung fehlt bei ${p.sku}`);
   }

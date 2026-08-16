@@ -34,9 +34,10 @@ Gerüst vorhanden und meldet selbst, welche Pflichtangaben ihm fehlen.
 ## Benutzen
 
 ```
-npm test          # 213 Testfälle
-npm run build     # erzeugt demo.html, eine einzelne Datei ohne Abhängigkeiten
+npm test           # 213 Testfälle
+npm run build      # erzeugt demo.html, eine einzelne Datei ohne Abhängigkeiten
 npm run import -- <lieferantId> <datei.csv> [--schreiben]
+npm run pruefe-tests  # prüft die Testfälle darauf, ob sie etwas behaupten
 ```
 
 `demo.html` lässt sich direkt im Browser öffnen. Der Rechenkern wird beim Bauen
@@ -68,6 +69,7 @@ src/auswertung.js       Herstellerantworten prüfen, Preisspielraum, Folgen
 src/verhandlung.js      Rückwärts: nötiger Einkauf, nötiger Rabatt, Zielkatalog
 src/format.js           EUR und Lückenmarkierung — einmal, siehe unten
 bin/import.mjs          Kommandozeile dazu, Probelauf als Voreinstellung
+bin/testpruefung.mjs    prüft die Testfälle auf Hohlheit — siehe unten
 beispiel/               Musterpreisliste — erfundene Preise, nicht schreibbar
 test/                   node:test, ohne Fremdpakete
 demo-template.html      Oberfläche mit Platzhaltern für Kern und Daten
@@ -172,6 +174,20 @@ Umsatzsteuer als innergemeinschaftlicher Erwerb, während die Ausgangsrechnung
 20 % trägt. `reihengeschaeftEinordnung()` erkennt das am Feld `land` des
 Lieferanten und schreibt es in die Kasse. Ausführlich in
 `docs/baustoff-shop/beleg-und-reihengeschaeft.md`.
+
+## Warum es `npm run pruefe-tests` gibt
+
+Ein Testfall lief einmal grün und prüfte nichts: Seine Behauptung stand hinter
+einem `if`, das wegen eines Tippfehlers nie zutraf. Der Prüfer sucht drei
+Muster — Testfälle ohne Zusicherung, Zusicherungen nur innerhalb eines `if`, und
+Schleifen über Listen, deren Länge vorher nicht zugesichert wurde.
+
+Von 213 Testfällen waren elf verdächtig, alle aus der dritten Kategorie; sie
+sind entschärft. Ein Treffer ist begründet abgelehnt und trägt dafür die Zeile
+`// pruefung: begruendet` samt Grund.
+
+Der Prüfer läuft **nicht** bei `npm test` mit. Ein Verdacht, der den Testlauf
+rot färbt, wird binnen einer Woche stumpf gemacht.
 
 ## Die Rückwärtsrechnung
 

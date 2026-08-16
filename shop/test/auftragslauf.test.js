@@ -33,6 +33,12 @@ test('Der Trockenlauf löst nichts aus — er meldet nur', () => {
 
 test('Jeder Schritt trägt jede Voraussetzung, die es in der Welt gibt', () => {
   const bekannt = Object.keys(WELT_AUSGEBAUT);
+  assert.ok(SCHRITTE.length >= 10, 'die Kette hat zehn Schritte');
+  // pruefung: begruendet — `s.braucht` darf leer sein.
+  // Eingang, Datenprüfung und Lieferung brauchen
+  // nichts aus der Welt. Deshalb steht hier keine Längenzusicherung je Schritt,
+  // sondern eine über alle: Irgendein Schritt muss Voraussetzungen haben.
+  assert.ok(SCHRITTE.some((s) => s.braucht.length > 0), 'kein Schritt verlangt irgendetwas');
   for (const s of SCHRITTE) {
     for (const v of s.braucht) {
       assert.ok(bekannt.includes(v), `${s.id} verlangt unbekannte Fähigkeit ${v}`);
@@ -42,6 +48,7 @@ test('Jeder Schritt trägt jede Voraussetzung, die es in der Welt gibt', () => {
 
 test('Jede Fähigkeit wird von mindestens einem Schritt gebraucht', () => {
   const gebraucht = new Set(SCHRITTE.flatMap((s) => s.braucht));
+  assert.equal(Object.keys(WELT_AUSGEBAUT).length, 6, 'sechs Fähigkeiten stehen in der Welt');
   for (const v of Object.keys(WELT_AUSGEBAUT)) {
     assert.ok(gebraucht.has(v), `${v} steht in der Welt, wird aber von keinem Schritt verlangt`);
   }
@@ -94,7 +101,10 @@ test('Die Lieferung ist der einzige Schritt, der immer von selbst läuft', () =>
 });
 
 test('Jeder nicht automatische Schritt nennt einen Grund', () => {
-  for (const p of trockenlauf(WELT_HEUTE).protokoll) {
+  const lauf = trockenlauf(WELT_HEUTE);
+  assert.equal(lauf.protokoll.length, SCHRITTE.length, 'jeder Schritt steht im Protokoll');
+  assert.ok(lauf.protokoll.some((p) => p.stand !== 'automatisch'), 'sonst prüft die Schleife nichts');
+  for (const p of lauf.protokoll) {
     if (p.stand === 'automatisch') continue;
     assert.ok(p.grund && p.grund.length > 10, `${p.id} ohne Begründung`);
     assert.ok(p.fehlend.length > 0, `${p.id} ohne benannte fehlende Fähigkeit`);

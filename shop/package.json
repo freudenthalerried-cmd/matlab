@@ -5,6 +5,7 @@
   "scripts": {
     "test": "node --test test/*.test.js",
     "build": "node build-demo.mjs",
-    "import": "node bin/import.mjs"
+    "import": "node bin/import.mjs",
+    "pruefe-tests": "node bin/testpruefung.mjs"
   }
 }

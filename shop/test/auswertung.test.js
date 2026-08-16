@@ -143,6 +143,7 @@ test('Der Bogen nennt jedes Pflichtfeld, das fehlt', () => {
 });
 
 test('Jedes Bogenfeld trägt eine Frage', () => {
+  assert.ok(BOGEN.length >= 9, `nur ${BOGEN.length} Felder im Bogen`);
   for (const f of BOGEN) {
     assert.ok(f.frage.length > 5, `${f.feld} ohne Frage`);
   }

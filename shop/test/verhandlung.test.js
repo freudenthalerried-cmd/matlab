@@ -122,6 +122,8 @@ test('Je Gruppe lässt sich eine eigene Zielmarge setzen', () => {
 
 test('Die Lücke zum heutigen Platzhalterpreis wird ausgewiesen, nicht verschwiegen', () => {
   const r = rueckwaertsKatalog(katalog, { nachlassAufUvp: 0.10 });
+  assert.equal(r.length, katalog.artikel.length);
+  assert.ok(r.some((z) => z.heutigerEk !== null), 'sonst bleibt die innere Prüfung ungenutzt');
   for (const z of r) {
     assert.notEqual(z.luecke, undefined);
     if (z.heutigerEk !== null) {

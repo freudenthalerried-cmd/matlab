@@ -100,6 +100,7 @@ test('EPS erfüllt alle drei Anforderungen', () => {
 });
 
 test('Jede Anforderung nennt, woher sie kommt', () => {
+  assert.equal(ANFORDERUNGEN.length, 3);
   for (const a of ANFORDERUNGEN) {
     assert.ok(a.herkunft && a.herkunft.length > 5, `${a.id} ohne Herkunft`);
   }
@@ -115,6 +116,7 @@ test('Der Vergleich sortiert nach Monatskosten und lässt keinen Zahlweg aus', (
 });
 
 test('Jeder Zahlweg trägt Quelle und Konfidenz', () => {
+  assert.ok(ZAHLWEGE.length >= 7, `nur ${ZAHLWEGE.length} Zahlwege`);
   for (const z of ZAHLWEGE) {
     assert.ok(['hoch', 'mittel', 'niedrig'].includes(z.konfidenz), `${z.id} ohne Konfidenz`);
     assert.ok(z.quelle && z.quelle.length > 5, `${z.id} ohne Quelle`);
