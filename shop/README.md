@@ -29,11 +29,12 @@ Gerüst vorhanden und meldet selbst, welche Pflichtangaben ihm fehlen.
 | Kostenbild | Kaskade bis zum Gewinn, umgekehrt der nötige Umsatz |
 | Empfindlichkeit | welche der vier Annahmen zuerst gemessen gehört |
 | Auswertungsbogen | Herstellerantworten gegen die vier Gate-2-Bedingungen |
+| Rückwärtsrechnung | vom marktüblichen Preis zum nötigen Einkauf und Rabatt |
 
 ## Benutzen
 
 ```
-npm test          # 200 Testfälle
+npm test          # 213 Testfälle
 npm run build     # erzeugt demo.html, eine einzelne Datei ohne Abhängigkeiten
 npm run import -- <lieferantId> <datei.csv> [--schreiben]
 ```
@@ -64,6 +65,7 @@ src/zahlung.js          Zahlwege, Gebühren, Anforderungen an den Anbieter
 src/kostenbild.js       Kaskade, nötiger Umsatz, Bestellungen, Sessionbedarf
 src/empfindlichkeit.js  Elastizität der vier Annahmen, Kipppunkte
 src/auswertung.js       Herstellerantworten prüfen, Preisspielraum, Folgen
+src/verhandlung.js      Rückwärts: nötiger Einkauf, nötiger Rabatt, Zielkatalog
 src/format.js           EUR und Lückenmarkierung — einmal, siehe unten
 bin/import.mjs          Kommandozeile dazu, Probelauf als Voreinstellung
 beispiel/               Musterpreisliste — erfundene Preise, nicht schreibbar
@@ -170,6 +172,22 @@ Umsatzsteuer als innergemeinschaftlicher Erwerb, während die Ausgangsrechnung
 20 % trägt. `reihengeschaeftEinordnung()` erkennt das am Feld `land` des
 Lieferanten und schreibt es in die Kasse. Ausführlich in
 `docs/baustoff-shop/beleg-und-reihengeschaeft.md`.
+
+## Die Rückwärtsrechnung
+
+Nicht Einkauf plus Marge ergibt den Verkauf, sondern der marktübliche Verkauf
+ergibt den nötigen Einkauf:
+
+```
+Rabatt = 1 − (1 − Nachlass) × (1 − Marge)
+
+ 0 % Nachlass → 32,0 % Rabatt      (für 38 % Marge: 38,0 %)
+10 % Nachlass → 38,8 %             (für 38 % Marge: 44,2 %)
+20 % Nachlass → 45,6 %             (für 38 % Marge: 50,4 %)
+```
+
+Jeder Prozentpunkt Nachlass kostet mehr als einen Prozentpunkt Rabatt. Das
+Verhandlungsziel liegt damit deutlich über der Gate-2-Schwelle von 35 %.
 
 ## Der Auswertungsbogen
 

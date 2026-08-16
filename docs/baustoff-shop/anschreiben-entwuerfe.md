@@ -196,7 +196,17 @@ nicht zustimmt, kann nicht Partner werden — unabhängig davon, wie gut die
    Erwerb, und ein Direktversand an die Baustelle wirft die Frage auf, wer als
    Anmelder auftritt. Das ist vor einer Aufnahme ins Sortiment zu klären, nicht
    danach.
-5. **Reihenfolge.** Entwurf A zuerst. Er entscheidet über Gate 3 und damit
+5. **Eine Zahl nennen, nicht nach einer fragen.** Nachgetragen am 15. August,
+   siehe [`verhandlungsziel-konditionen.md`](./verhandlungsziel-konditionen.md).
+   Entwurf A fragt heute nach dem Händlerrabatt und lässt die Antwort offen —
+   wer nach einer Zahl fragt, ohne eine zu nennen, bekommt die des Gegenübers.
+   Ins Anschreiben gehört die Staffel: Bei einem im Onlinehandel üblichen
+   Nachlass von rund zehn Prozent auf die UVP verlangt die Untergrenze von 32 %
+   bereits **38,8 % Händlerrabatt**, die Abdichtungsbahn mit ihren 38 % sogar
+   **44,2 %**. Jeder Prozentpunkt Nachlass kostet mehr als einen Prozentpunkt
+   Rabatt. Die 35 % aus Gate 2 sind die Schwelle, unter der nichts geht — nicht
+   das Verhandlungsziel.
+6. **Reihenfolge.** Entwurf A zuerst. Er entscheidet über Gate 3 und damit
    darüber, ob der Shop überhaupt weiterverfolgt wird. Entwurf B kann parallel
    laufen, bindet aber Aufmerksamkeit.
 

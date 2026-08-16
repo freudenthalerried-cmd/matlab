@@ -28,10 +28,42 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Gesamtkostenbild und Umsatzbedarf | fertig | 13 |
 | Empfindlichkeit der vier Annahmen | fertig | 14 |
 | Auswertungsbogen für die Herstellerantworten | fertig, leer | 18 |
+| Rückwärtsrechnung fürs Konditionsgespräch | fertig | 13 |
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig | headless geprüft |
-| **Summe** | | **200, alle grün** |
+| **Summe** | | **213, alle grün** |
 
-## Was zuletzt dazukam: der Auswertungsbogen
+## Was zuletzt dazukam: die Rückwärtsrechnung
+
+`shop/src/verhandlung.js` dreht die Preisrechnung um: Nicht Einkauf plus Marge
+ergibt den Verkauf, sondern der marktübliche Verkauf ergibt den nötigen
+Einkauf. Ausführlich in
+[`verhandlungsziel-konditionen.md`](./verhandlungsziel-konditionen.md).
+
+| Nachlass auf die UVP | nötiger Rabatt für 32 % | für 38 % |
+|---|---|---|
+| 0 % | 32,0 % | 38,0 % |
+| **10 %** | **38,8 %** | **44,2 %** |
+| 20 % | 45,6 % | 50,4 % |
+
+**Jeder Prozentpunkt Nachlass kostet mehr als einen Prozentpunkt Rabatt.** Damit
+liegt das Verhandlungsziel deutlich über der Gate-2-Schwelle von 35 % — die ist
+die Grenze, unter der nichts geht, nicht das Ziel. Der Unterschied ist in
+`anschreiben-entwuerfe.md` nachgetragen, samt der Staffel, die ins Anschreiben
+gehört: Wer nach einer Zahl fragt, ohne eine zu nennen, bekommt die des
+Gegenübers.
+
+Der Rückwärtskatalog liefert dazu je Artikel einen Einkaufszielpreis. Die
+Verteilung ist aufschlussreicher als die Höhe: Die vier Drainageartikel liegen
+am weitesten daneben, das Zubehör fast auf dem Ziel — derselbe Befund wie die
+WARN-Ampel im Funktionsmuster, nur in Euro.
+
+Beim Bauen hat ein Testfall **sich selbst als hohl erwiesen**: Er prüfte die
+gruppenweise Zielmarge hinter einem `if`, das wegen eines falschen
+Gruppennamens nie zutraf. Ein Testfall, der sich hinter einer Bedingung
+versteckt, prüft bei einem Tippfehler gar nichts. Jetzt prüft er zuerst, dass
+die Gruppe überhaupt existiert.
+
+## Was davor dazukam: der Auswertungsbogen
 
 `shop/src/auswertung.js` nimmt die Auswertung der zwölf Herstellerantworten
 vorweg — vor der Freigabe, wie Gate 17 es verlangt. Ausführlich in
@@ -387,9 +419,9 @@ Nach Nutzen geordnet, alle ohne Freigabe und ohne Ausgabe machbar:
 1. **Gebietsabfrage** nach `phase10-datengrundlage-gebietsabfrage.md` — braucht
    die Gemeindeliste. RIS und der Geoserver sind aus dieser Umgebung weiterhin
    nicht erreichbar; zuletzt geprüft am 15. August.
-2. **Rückwärtsrechnung vom Preis** — bisher entsteht der Verkaufspreis aus
-   Einkauf plus Zielmarge, gedeckelt bei der UVP. Die umgekehrte Frage ist
-   ungestellt: Welchen Einkaufspreis braucht ein Artikel, damit er zu einem
-   marktüblichen Verkaufspreis noch die Untergrenze trägt? Das wäre die Zahl,
-   mit der man in eine Konditionsverhandlung geht — und sie ergibt sich aus dem
-   vorhandenen Rechenkern. Braucht keine Freigabe und keine Ausgabe.
+2. **Prüfung der eigenen Testfälle auf Hohlheit** — beim Bau der
+   Rückwärtsrechnung hat sich ein Testfall als wirkungslos erwiesen, weil seine
+   Behauptung hinter einem `if` stand, das nie zutraf. Zweihundert Testfälle
+   sind inzwischen entstanden; ein Durchgang, der jeden davon daraufhin ansieht,
+   ob er tatsächlich etwas behauptet, wäre der nächste sinnvolle Schritt.
+   Braucht keine Freigabe und keine Ausgabe.
