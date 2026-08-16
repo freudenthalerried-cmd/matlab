@@ -182,6 +182,7 @@
           <label>Ansprechpartner vor Ort<input type="text" id="k-b-telefon" value="+43 664 9998877"></label>
           <label>Hinweis zur Zufahrt<input type="text" id="k-b-hinweis" value="Zufahrt über Baustraße, Kran bis 16 Uhr besetzt"></label>
         </div>
+        <label class="k-bestaetigung" id="k-art14-zeile" hidden><input type="checkbox" id="k-art14"> <span id="k-art14-text"></span></label>
         <label class="k-bestaetigung"><input type="checkbox" id="k-unternehmer" checked> Ich bestelle als Unternehmer im Rahmen meines Betriebs. Ein Rücktrittsrecht nach FAGG besteht damit nicht.</label>
         <label class="k-sim">Antwort des EU-Informationsaustauschsystems <em>simulieren</em>
           <select id="k-vies">
@@ -706,6 +707,7 @@ function berechneBedarf(gebaeude, katalog) {
  */
 
 
+
 const AT_UID = /^ATU\d{8}$/;
 const EMAIL = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
 
@@ -893,6 +895,21 @@ function pruefeBestelldaten(daten = {}) {
     const b = pruefeBaustelle(daten.baustelle);
     fehler.push(...b.fehler);
     baustelle = b.normalisiert;
+
+    // Art. 14 DSGVO: Der Ansprechpartner vor Ort ist ein Dritter. Der Shop
+    // erreicht ihn nicht — der Besteller schon. Die Zusicherung wird deshalb
+    // hier verlangt und nicht im Kleingedruckten vermutet.
+    //
+    // Bewusst an die Baustelle geknüpft und nicht an eine Namensprüfung: Ob der
+    // genannte Ansprechpartner der Besteller selbst ist, kann der Shop nicht
+    // zuverlässig erkennen. Eine Kästchenauswahl zu viel kostet den Kunden
+    // nichts; eine zu wenig kostet die Grundlage.
+    if (daten[ZUSICHERUNG_DRITTER.feld] !== true) {
+      fehler.push(
+        'Baustelle: Bestätigung fehlt, dass der Ansprechpartner vor Ort über die ' +
+          'Weitergabe seiner Daten informiert wurde (Art. 14 DSGVO)',
+      );
+    }
     // Ohne eigenen Namen steht der Besteller auf dem Lieferschein. Das ist die
     // richtige Voreinstellung: Wer die Ware annimmt, ist im Zweifel er selbst.
     if (!baustelle.name) baustelle.name = firma;
@@ -1207,6 +1224,36 @@ const AGB_GLIEDERUNG = [
   { nr: 12, titel: 'Lieferorte nur in Österreich', hinweis: 'Lieferung außerhalb Österreichs ist ausgeschlossen — sie wäre nach Art 6, 7 UStG steuerfrei bzw. eine Ausfuhr und damit anders zu verrechnen.' },
   { nr: 13, titel: 'Gerichtsstand und anwendbares Recht', hinweis: null },
 ];
+
+/**
+ * Der Wortlaut der Zusicherung nach Art. 14 DSGVO.
+ *
+ * Der Befund der Vorrunde: Der **Ansprechpartner vor Ort** ist ein Dritter. Er
+ * hat mit dem Shop keinen Vertrag, seine Rufnummer stammt vom Besteller, und
+ * Art. 14 verlangt, **ihn** zu informieren — eine Person, die der Shop nie
+ * erreicht.
+ *
+ * Der einzige Weg, der offensteht, führt über den, der ihn kennt. Der Besteller
+ * sichert zu, ihn unterrichtet zu haben; der Shop hält die Zusicherung fest.
+ * Das ist **keine Erfüllung der Pflicht durch den Shop**, sondern die
+ * Verlagerung auf denjenigen, der sie erfüllen kann — und die
+ * Dokumentation, dass danach gefragt wurde.
+ *
+ * Ob das genügt, entscheidet der Rechtstexteanbieter aus `phase5-technik.md`.
+ * Was hier steht, ist der Wortlaut, über den er dann reden kann: an einer
+ * Stelle, prüfbar, und im Bestellprozess sichtbar statt im Kleingedruckten.
+ */
+const ZUSICHERUNG_DRITTER = {
+  feld: 'ansprechpartnerInformiert',
+  text:
+    'Ich habe den genannten Ansprechpartner vor Ort darüber informiert, dass sein Name und ' +
+    'seine Telefonnummer zur Zustellung an den Hersteller und dessen Spedition weitergegeben ' +
+    'werden.',
+  grundlage: 'Art. 14 DSGVO',
+  hinweis:
+    'Nur nötig, wenn die Ware an eine abweichende Baustelle geht. Ohne Baustelle gibt ' +
+    'es keinen Dritten, dessen Daten weitergereicht würden.',
+};
 
 /**
  * Die Hinweise, die ein Besteller sehen muss, **bevor** er eine abweichende
@@ -3330,6 +3377,8 @@ document.getElementById('kasse').addEventListener('submit', (e) => {
       telefon: document.getElementById('k-b-telefon').value,
       hinweis: document.getElementById('k-b-hinweis').value,
     };
+    // Art. 14 DSGVO: Der Ansprechpartner vor Ort ist ein Dritter.
+    eingabe[ZUSICHERUNG_DRITTER.feld] = document.getElementById('k-art14').checked;
   }
 
   const geprueft = pruefeBestelldaten(eingabe);
@@ -3669,8 +3718,13 @@ function zeichneRecht() {
   el.append(h2, intro, status, spalten, vorschau);
 }
 
+// Der Wortlaut steht in rechtstexte.js, nicht hier: Eine Zusicherung, deren
+// Text an zwei Stellen lebt, weicht irgendwann voneinander ab.
+document.getElementById('k-art14-text').textContent = ZUSICHERUNG_DRITTER.text;
+
 document.getElementById('k-baustelle-an').addEventListener('change', (e) => {
   document.getElementById('k-baustelle-felder').hidden = !e.target.checked;
+  document.getElementById('k-art14-zeile').hidden = !e.target.checked;
 });
 
 zeichneKatalog();

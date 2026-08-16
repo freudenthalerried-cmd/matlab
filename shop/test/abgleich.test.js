@@ -142,6 +142,16 @@ test('Der Ansprechpartner vor Ort ist als Datum eines Dritten geführt', () => {
   assert.ok(fluss.empfaenger.some((e) => /Spedition/.test(e)));
 });
 
+test('Zu jedem Datenfluss mit offener Frage steht auch, was dagegen getan wurde', () => {
+  // Eine offene Frage ohne Maßnahme ist eine Notiz. Eine Maßnahme ohne offene
+  // Frage wäre eine Beschönigung. Beides gehört zusammen.
+  const fluss = DATENFLUESSE.find((f) => /Ansprechpartners? vor Ort/.test(f.datum));
+  assert.ok(fluss.massnahme, 'Die Maßnahme fehlt');
+  assert.match(fluss.massnahme, /ZUSICHERUNG_DRITTER/);
+  assert.match(fluss.massnahme, /§ 131 BAO/, 'Warum die Nummer nicht in die Ablage darf');
+  assert.match(fluss.offen, /entscheidet der Rechtstexteanbieter/, 'Die Frage bleibt offen');
+});
+
 test('Die UID-Abfrage ist als Übermittlung geführt', () => {
   const fluss = DATENFLUESSE.find((f) => f.datum === 'UID-Nummer');
   assert.ok(fluss, 'Der Datenfluss fehlt');

@@ -9,6 +9,7 @@
  */
 
 import { hatSteuerzeichen } from './format.js';
+import { ZUSICHERUNG_DRITTER } from './rechtstexte.js';
 
 const AT_UID = /^ATU\d{8}$/;
 const EMAIL = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
@@ -197,6 +198,21 @@ export function pruefeBestelldaten(daten = {}) {
     const b = pruefeBaustelle(daten.baustelle);
     fehler.push(...b.fehler);
     baustelle = b.normalisiert;
+
+    // Art. 14 DSGVO: Der Ansprechpartner vor Ort ist ein Dritter. Der Shop
+    // erreicht ihn nicht — der Besteller schon. Die Zusicherung wird deshalb
+    // hier verlangt und nicht im Kleingedruckten vermutet.
+    //
+    // Bewusst an die Baustelle geknüpft und nicht an eine Namensprüfung: Ob der
+    // genannte Ansprechpartner der Besteller selbst ist, kann der Shop nicht
+    // zuverlässig erkennen. Eine Kästchenauswahl zu viel kostet den Kunden
+    // nichts; eine zu wenig kostet die Grundlage.
+    if (daten[ZUSICHERUNG_DRITTER.feld] !== true) {
+      fehler.push(
+        'Baustelle: Bestätigung fehlt, dass der Ansprechpartner vor Ort über die ' +
+          'Weitergabe seiner Daten informiert wurde (Art. 14 DSGVO)',
+      );
+    }
     // Ohne eigenen Namen steht der Besteller auf dem Lieferschein. Das ist die
     // richtige Voreinstellung: Wer die Ware annimmt, ist im Zweifel er selbst.
     if (!baustelle.name) baustelle.name = firma;

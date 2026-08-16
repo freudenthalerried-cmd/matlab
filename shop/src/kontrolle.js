@@ -400,6 +400,52 @@ export function pruefeMargenleck(vorgang) {
 }
 
 /**
+ * Stehen Daten eines Dritten in der Ablage?
+ *
+ * Die Ablage ist die **einzige Stelle, aus der nichts mehr verschwindet**:
+ * § 131 BAO verlangt, dass der ursprüngliche Inhalt feststellbar bleibt, § 132
+ * verlangt sieben Jahre Aufbewahrung. Eine Löschung nach Art. 17 DSGVO läuft
+ * dort ins Leere — und muss es auch, denn Art. 17 Abs. 3 lit. b nimmt
+ * gesetzliche Aufbewahrungspflichten aus.
+ *
+ * Genau deshalb gehört dorthin **nur, was die Aufbewahrungspflicht verlangt.**
+ * Die Rufnummer des Ansprechpartners auf der Baustelle verlangt sie nicht. Wer
+ * sie ins Journal schreibt, schafft einen Eintrag über einen Dritten, den
+ * niemand mehr löschen kann und für den es keine Rechtsgrundlage gibt, ihn zu
+ * behalten.
+ *
+ * Heute steht sie nicht drin — aber **aus Zufall, nicht aus Absicht**:
+ * `ablageEintraege` legt nur den Betreff der Bestellung ab, nicht ihren Text.
+ * Wer das einmal auf `b.text` ändert, um „mehr Nachvollziehbarkeit" zu haben,
+ * hätte die Rufnummer für sieben Jahre unlöschbar im Journal. Diese Prüfung
+ * macht aus dem Zufall eine Zusicherung.
+ */
+export function pruefeAblageAufDrittdaten(ablage, auftrag = {}) {
+  const adresse = auftrag.lieferadresse ?? {};
+  const abweichend = auftrag.lieferungAnRechnungsadresse === false;
+
+  if (!abweichend) {
+    return { dicht: true, funde: [], geprueft: 0, hinweis: 'Keine abweichende Baustelle — kein Dritter im Spiel' };
+  }
+
+  const geheim = [
+    { name: 'Rufnummer des Ansprechpartners', wert: adresse.telefon },
+    { name: 'Name der Baustelle', wert: adresse.name },
+  ].filter((g) => typeof g.wert === 'string' && g.wert.trim().length >= 4);
+
+  const funde = [];
+  for (const e of ablage.eintraege) {
+    for (const g of geheim) {
+      if (String(e.text ?? '').includes(g.wert)) {
+        funde.push(`Eintrag ${e.lfd} (${e.art}): ${g.name} steht im Journal`);
+      }
+    }
+  }
+
+  return { dicht: funde.length === 0, funde, geprueft: ablage.eintraege.length };
+}
+
+/**
  * Trägt die Fracht sich selbst?
  *
  * Die Kette hat zwei Seiten, und bisher hat niemand sie gegeneinander gehalten:

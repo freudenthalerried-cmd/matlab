@@ -34,13 +34,53 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Gegenprobe an der Lieferantenbestellung | fertig, ein Fehler behoben | 6 |
 | Fremdtext an allen Ein- und Ausgängen | fertig, ein Fehler behoben | 18 |
 | Frachtdeckung Kunde gegen Lieferant | fertig, ein Fehler behoben | 4 |
-| Vorgangsklammer über alle Papiere | fertig, ein Fehler behoben | 26 |
-| Baustelle als eigene Lieferanschrift | fertig, ein Fehler behoben | 12 |
-| Abgleich Versprechen gegen Verhalten | fertig, zwei Befunde | 13 |
+| Vorgangsklammer über alle Papiere | fertig, ein Fehler behoben | 29 |
+| Baustelle als eigene Lieferanschrift | fertig, Zusicherung nach Art. 14 | 29 |
+| Abgleich Versprechen gegen Verhalten | fertig, zwei Befunde | 14 |
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig, Baustelle abgefragt | headless geprüft |
-| **Summe** | | **335, alle grün, 0 hohl** |
+| **Summe** | | **345, alle grün, 0 hohl** |
 
-## Was zuletzt dazukam: der Ansprechpartner auf der Baustelle hat nie zugestimmt
+## Was zuletzt dazukam: die Ablage ist die einzige Stelle ohne Löschtaste
+
+Die Vorrunde hat den Befund benannt — der Ansprechpartner vor Ort ist ein
+Dritter, Art. 14 DSGVO verlangt, ihn zu informieren, und der Shop erreicht ihn
+nie. Diese Runde baut den einzigen Weg, der offensteht, und stößt dabei auf
+einen zweiten Ort, an dem dieselben Daten liegen könnten. Ausführlich in
+[`zusicherung-und-ablage.md`](./zusicherung-und-ablage.md).
+
+**Die Zusicherung.** `ZUSICHERUNG_DRITTER` in `rechtstexte.js` hält den Wortlaut
+an einer Stelle; `pruefeBestelldaten` verlangt den Haken, sobald eine
+abweichende Baustelle angegeben ist — ohne ihn keine gültige Bestellung, genau
+wie bei Gate 7. Ohne Baustelle wird sie **nicht** verlangt: Eine Bestätigung
+ohne Anlass gewöhnt Kunden daran, Kästchen ungelesen anzuhaken, und entwertet
+die, auf die es ankommt.
+
+Sie ist nicht die Erfüllung der Pflicht durch den Shop, sondern die Verlagerung
+auf denjenigen, der sie erfüllen kann. Der Eintrag in `DATENFLUESSE` führt
+deshalb **beides**: die Maßnahme und die offene Frage. Eine offene Frage ohne
+Maßnahme ist eine Notiz; eine Maßnahme ohne offene Frage wäre eine
+Beschönigung.
+
+**Der zweite Ort.** Die Ablage ist die einzige Stelle, aus der nichts mehr
+verschwindet: § 131 BAO verlangt Unveränderbarkeit, § 132 sieben Jahre, und
+Art. 17 Abs. 3 lit. b nimmt gesetzliche Aufbewahrungspflichten ausdrücklich vom
+Löschanspruch aus. Genau deshalb gehört dorthin nur, was die
+Aufbewahrungspflicht **verlangt** — die Rufnummer eines Poliers verlangt sie
+nicht.
+
+Heute steht sie nicht drin, weil `ablageEintraege` nur den Betreff der
+Bestellung ablegt, nicht ihren Text. **Das war keine Entscheidung, es war
+bequem.** Eine Zeile `text: b.text` statt `text: b.betreff`, geändert „für mehr
+Nachvollziehbarkeit", und die Nummer liegt sieben Jahre unlöschbar im Journal.
+`pruefeAblageAufDrittdaten` macht aus dem Zufall eine Zusicherung; Gegenprobe:
+genau diese Änderung vorgenommen → der Testfall fällt.
+
+Der Satz reicht über diese Runde hinaus: **Was in die Ablage geht, geht für
+sieben Jahre hinein.** Bisher war das eine Aussage über Rechnungsnummern und
+Unveränderbarkeit. Sie gilt genauso in die andere Richtung — jedes Feld, das
+man dort „zur Sicherheit" mitschreibt, wird man sieben Jahre nicht mehr los.
+
+## Was davor dazukam: der Ansprechpartner auf der Baustelle hat nie zugestimmt
 
 Die Vorrunde hat ihre drei Befunde aus einer Durchsicht von Hand geholt. Eine
 Durchsicht findet nur, wonach man an dem Tag gesehen hat — diese Runde macht
@@ -838,13 +878,12 @@ Nach Nutzen geordnet, alle ohne Freigabe und ohne Ausgabe machbar:
 1. **Gebietsabfrage** nach `phase10-datengrundlage-gebietsabfrage.md` — braucht
    die Gemeindeliste. RIS und der Geoserver sind aus dieser Umgebung weiterhin
    nicht erreichbar; zuletzt geprüft am 15. August.
-2. **Die Zusicherung nach Art. 14 im Bestellprozess** — der Ansprechpartner
-   auf der Baustelle muss informiert werden, und der Shop erreicht ihn nicht.
-   Der naheliegende Weg ist eine Zusicherung des Bestellers, dass er den
-   Genannten unterrichtet hat — ein Feld wie die Unternehmerbestätigung nach
-   Gate 7, mit derselben Prüfung. Ob das genügt, entscheidet der
-   Rechtstexteanbieter; das Feld lässt sich vorher bauen. Braucht keine
-   Freigabe und keine Ausgabe.
+2. **Was sonst noch für sieben Jahre in die Ablage geht** — die Rufnummer des
+   Dritten ist geprüft, aber sie war nur das erste Feld, bei dem die Frage
+   auffiel. Welche Angaben § 132 BAO tatsächlich verlangt und welche bloß
+   mitgeschrieben werden, ist nirgends aufgestellt. Ein Verzeichnis wie das
+   für die Fremdtext-Ausgänge, diesmal für die Ablage. Braucht keine Freigabe
+   und keine Ausgabe.
 3. **Gedächtnis der Ablage** — `ablage.js` führt Nummernkreis und Journal
    sauber, aber nur im Arbeitsspeicher. Nach einem Neuladen beginnt die
    Rechnungsnummer wieder bei eins, und § 11 UStG verlangt Einmaligkeit. Solange

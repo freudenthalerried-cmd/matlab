@@ -15,8 +15,13 @@ import { readFileSync } from 'node:fs';
 import { ladeKatalog, berechneWarenkorb } from '../src/warenkorb.js';
 import { baueVorgang, darfVorgangLaufen, ablageEintraege } from '../src/vorgang.js';
 import { erzeugeRechnung } from '../src/beleg.js';
-import { pruefeVorgangsklammer, leseBelegkopf, pruefeMargenleck } from '../src/kontrolle.js';
-import { neueAblage, haltefest, vorgangsakte } from '../src/ablage.js';
+import {
+  pruefeVorgangsklammer,
+  leseBelegkopf,
+  pruefeMargenleck,
+  pruefeAblageAufDrittdaten,
+} from '../src/kontrolle.js';
+import { neueAblage, haltefest, vorgangsakte, alsCsv } from '../src/ablage.js';
 
 const lies = (p) => JSON.parse(readFileSync(new URL(p, import.meta.url), 'utf8'));
 const katalog = ladeKatalog(
@@ -262,6 +267,7 @@ test('Untaugliche Kundendaten halten den Vorgang an, ohne den Entwurf zu verweig
 test('Mit abweichender Baustelle liest der Vorgang die Annahme aus den Daten', () => {
   const mitBaustelle = {
     ...kundeA,
+    ansprechpartnerInformiert: true,
     baustelle: {
       name: 'Neubau Familie Berger',
       strasse: 'Feldgasse 27',
@@ -283,6 +289,7 @@ test('Mit abweichender Baustelle liest der Vorgang die Annahme aus den Daten', (
 test('Ware zur Baustelle, Rechnung ans Büro — und die Klammer bleibt geschlossen', () => {
   const mitBaustelle = {
     ...kundeA,
+    ansprechpartnerInformiert: true,
     baustelle: {
       name: 'Neubau Familie Berger',
       strasse: 'Feldgasse 27',
@@ -306,6 +313,7 @@ test('Auch mit Baustelle fällt eine umgelenkte Bestellung auf', () => {
   // Die abgeschaltete Prüfung ist genau eine; die übrigen bleiben scharf.
   const mitBaustelle = {
     ...kundeA,
+    ansprechpartnerInformiert: true,
     baustelle: {
       name: 'Neubau Familie Berger',
       strasse: 'Feldgasse 27',
@@ -424,4 +432,71 @@ test('Ein Einkaufswert je Lieferant fällt ebenso auf wie die Summe', () => {
   const p = pruefeMargenleck(undicht);
   assert.equal(p.dicht, false);
   assert.ok(p.funde.some((f) => f.startsWith('Rechnung: Einkauf ')), p.funde.join(' | '));
+});
+
+/* ------------------------------------------------------------------ *
+ * Daten Dritter gehören nicht in die Ablage
+ *
+ * Die Ablage ist die einzige Stelle, aus der nichts mehr verschwindet:
+ * § 131 BAO verlangt Unveränderbarkeit, § 132 sieben Jahre. Eine Löschung
+ * nach Art. 17 DSGVO läuft dort ins Leere — deshalb gehört dorthin nur, was
+ * die Aufbewahrungspflicht verlangt. Die Rufnummer eines Poliers verlangt sie
+ * nicht.
+ * ------------------------------------------------------------------ */
+
+const NUMMER_DRITTER = '+43 664 9998877';
+
+const mitBaustelle = {
+  ...kundeA,
+  ansprechpartnerInformiert: true,
+  baustelle: {
+    name: 'Polier Huber',
+    strasse: 'Feldgasse 27',
+    plz: '4910',
+    ort: 'Ried im Innkreis',
+    land: 'AT',
+    telefon: NUMMER_DRITTER,
+  },
+};
+
+test('Die Rufnummer des Ansprechpartners steht in keinem Ablageeintrag', () => {
+  const v = machVorgang(mitBaustelle);
+  assert.equal(v.auftrag.lieferungAnRechnungsadresse, false, 'Vorbedingung: abweichende Baustelle');
+  assert.ok(v.bestellungen[0].text.includes(NUMMER_DRITTER), 'Im Bestelltext gehört sie hin');
+
+  const ablage = neueAblage();
+  for (const e of ablageEintraege(v, '2026-08-16T10:00:00Z')) haltefest(ablage, e);
+
+  const p = pruefeAblageAufDrittdaten(ablage, v.auftrag);
+  assert.ok(p.geprueft >= 3, 'Ohne Einträge prüft die Prüfung nichts');
+  assert.equal(p.dicht, true, p.funde.join(' | '));
+  assert.ok(!alsCsv(ablage).includes(NUMMER_DRITTER));
+});
+
+test('Ein Bestelltext im Journal statt nur des Betreffs fällt auf', () => {
+  // Genau die Änderung, die jemand „für mehr Nachvollziehbarkeit" machen würde:
+  // b.text statt b.betreff. Danach steht die Rufnummer sieben Jahre unlöschbar
+  // im Journal.
+  const v = machVorgang(mitBaustelle);
+  const ablage = neueAblage();
+  haltefest(ablage, {
+    art: 'lieferantenbestellung',
+    zeitpunkt: '2026-08-16T10:00:00Z',
+    vorgang: v.vorgangsnummer,
+    text: v.bestellungen[0].text,
+  });
+
+  const p = pruefeAblageAufDrittdaten(ablage, v.auftrag);
+  assert.equal(p.dicht, false);
+  assert.ok(p.funde.some((f) => /Rufnummer des Ansprechpartners/.test(f)), p.funde.join(' | '));
+});
+
+test('Ohne abweichende Baustelle ist niemand Dritter und die Prüfung sagt das', () => {
+  const v = machVorgang();
+  const ablage = neueAblage();
+  for (const e of ablageEintraege(v, '2026-08-16T10:00:00Z')) haltefest(ablage, e);
+
+  const p = pruefeAblageAufDrittdaten(ablage, v.auftrag);
+  assert.equal(p.dicht, true);
+  assert.match(p.hinweis, /kein Dritter/);
 });

@@ -262,7 +262,13 @@ export const DATENFLUESSE = [
     quelle: 'Bestellformular, angegeben vom Besteller',
     empfaenger: ['Lieferant', 'Spedition des Lieferanten'],
     grundlage: 'Art. 6 Abs. 1 lit. f DSGVO — nicht lit. b, er ist nicht Vertragspartner',
-    offen: 'Informationspflicht nach Art. 14 gegenüber einer Person, die der Shop nie erreicht',
+    massnahme:
+      'Der Besteller sichert im Bestellprozess zu, den Genannten informiert zu haben ' +
+      '(ZUSICHERUNG_DRITTER); ohne Haken keine Bestellung mit Baustelle. Seine Rufnummer ' +
+      'geht nicht in die Ablage — dort wäre sie nach § 131 BAO unlöschbar.',
+    offen:
+      'Ob die Zusicherung des Bestellers die Informationspflicht nach Art. 14 erfüllt, ' +
+      'entscheidet der Rechtstexteanbieter — der Shop erreicht den Dritten nicht selbst',
     traegtPunkt: 'Daten Dritter: Ansprechpartner vor Ort auf der Baustelle — Art. 6 Abs. 1 lit. f, Informationspflicht nach Art. 14',
   },
   {

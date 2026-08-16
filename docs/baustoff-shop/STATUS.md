@@ -1,6 +1,6 @@
 # Status und Einstieg
 
-Stand: 2026-08-16. **Dieses Dokument zuerst lesen.** Zweiundfünfzig Arbeitsdateien
+Stand: 2026-08-16. **Dieses Dokument zuerst lesen.** Dreiundfünfzig Arbeitsdateien
 sind entstanden, mehrere davon korrigieren einander. Hier steht, was gilt.
 
 Veröffentlichter Bericht:
@@ -14,7 +14,7 @@ letzten Runde, zwei gleichrangige Freigaben. Quelldatei im Repo unter
 
 Lauffähiges Shop-Funktionsmuster:
 [claude.ai/code/artifact/c40fd35f…](https://claude.ai/code/artifact/c40fd35f-56e1-4821-a3b1-a1a885102ec8) —
-Quelltext und 335 Testfälle unter `shop/`, auf Hohlheit geprüft. Alle Preise sind Platzhalter.
+Quelltext und 345 Testfälle unter `shop/`, auf Hohlheit geprüft. Alle Preise sind Platzhalter.
 Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 
 ## Wo das Projekt steht
@@ -134,6 +134,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `auftragsbestaetigung.md` | **Geld genommen, bevor ein Vertrag bestand** — AGB Punkt 2 verlangt eine Auftragsbestätigung, die es nicht gab; jetzt vor der Zahlung im Ablauf |
 | `margenleck-im-angebot.md` | **Das Angebot nannte den Einkaufswert** — 30 % Handelsspanne in Ziffern, aus einer eigenen Korrektur entstanden; dazu zwei AGB-Befunde |
 | `abgleich-versprechen-und-verhalten.md` | **Der Ansprechpartner auf der Baustelle hat nie zugestimmt** — Art. 14 DSGVO; der Abgleich Versprechen gegen Verhalten als Werkzeug statt als Durchsicht |
+| `zusicherung-und-ablage.md` | **Was in die Ablage geht, geht für sieben Jahre hinein** — Zusicherung nach Art. 14; Daten Dritter bleiben aus dem unveränderbaren Journal |
 | `pruefung-der-testfaelle.md` | **Grüne Tests sind eine Aussage über die Testfälle, nicht über den Code** — elf hohle Schleifen gefunden und entschärft |
 | `verhandlungsziel-konditionen.md` | **Zehn Prozent Nachlass kosten 38,8 % Rabatt** — das Verhandlungsziel liegt über der Gate-2-Schwelle |
 | `auswertungsbogen-hersteller.md` | **Genau 35 % Rabatt lassen 4,4 % Preisspielraum** — die Auswertung der zwölf Antworten steht fertig bereit |

@@ -182,6 +182,7 @@
           <label>Ansprechpartner vor Ort<input type="text" id="k-b-telefon" value="+43 664 9998877"></label>
           <label>Hinweis zur Zufahrt<input type="text" id="k-b-hinweis" value="Zufahrt über Baustraße, Kran bis 16 Uhr besetzt"></label>
         </div>
+        <label class="k-bestaetigung" id="k-art14-zeile" hidden><input type="checkbox" id="k-art14"> <span id="k-art14-text"></span></label>
         <label class="k-bestaetigung"><input type="checkbox" id="k-unternehmer" checked> Ich bestelle als Unternehmer im Rahmen meines Betriebs. Ein Rücktrittsrecht nach FAGG besteht damit nicht.</label>
         <label class="k-sim">Antwort des EU-Informationsaustauschsystems <em>simulieren</em>
           <select id="k-vies">
@@ -488,6 +489,8 @@ document.getElementById('kasse').addEventListener('submit', (e) => {
       telefon: document.getElementById('k-b-telefon').value,
       hinweis: document.getElementById('k-b-hinweis').value,
     };
+    // Art. 14 DSGVO: Der Ansprechpartner vor Ort ist ein Dritter.
+    eingabe[ZUSICHERUNG_DRITTER.feld] = document.getElementById('k-art14').checked;
   }
 
   const geprueft = pruefeBestelldaten(eingabe);
@@ -827,8 +830,13 @@ function zeichneRecht() {
   el.append(h2, intro, status, spalten, vorschau);
 }
 
+// Der Wortlaut steht in rechtstexte.js, nicht hier: Eine Zusicherung, deren
+// Text an zwei Stellen lebt, weicht irgendwann voneinander ab.
+document.getElementById('k-art14-text').textContent = ZUSICHERUNG_DRITTER.text;
+
 document.getElementById('k-baustelle-an').addEventListener('change', (e) => {
   document.getElementById('k-baustelle-felder').hidden = !e.target.checked;
+  document.getElementById('k-art14-zeile').hidden = !e.target.checked;
 });
 
 zeichneKatalog();

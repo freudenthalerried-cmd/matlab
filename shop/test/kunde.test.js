@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { pruefeBestelldaten, uidPruefzifferStimmt, baueAuftrag } from '../src/kunde.js';
+import { ZUSICHERUNG_DRITTER } from '../src/rechtstexte.js';
 import { ladeKatalog, berechneWarenkorb } from '../src/warenkorb.js';
 import { erzeugeBestellungen, darfAutomatischAusgeloestWerden } from '../src/bestellung.js';
 
@@ -122,6 +123,11 @@ test('Ohne Unternehmerbestätigung bleibt der Auftrag gesperrt', () => {
  * diese Bestellung gar nicht abbilden.
  * ------------------------------------------------------------------ */
 
+// Seit der Zusicherung nach Art. 14 gehört das Kästchen zu jeder Bestellung
+// mit abweichender Baustelle. Es steht hier einmal und wird überall
+// mitgereicht — ein Testfall, der es vergisst, prüft den falschen Fehler.
+const mitZusicherung = (daten) => ({ ...daten, ansprechpartnerInformiert: true });
+
 const baustelle = {
   name: 'Neubau Familie Berger',
   strasse: 'Feldgasse 27',
@@ -133,7 +139,7 @@ const baustelle = {
 };
 
 test('Eine vollständige Baustelle ist gültig und steht getrennt in den Daten', () => {
-  const p = pruefeBestelldaten({ ...vollstaendig, baustelle });
+  const p = pruefeBestelldaten(mitZusicherung({ ...vollstaendig, baustelle }));
   assert.equal(p.gueltig, true, p.fehler.join(' | '));
   assert.equal(p.normalisiert.baustelle.ort, 'Ried im Innkreis');
   assert.equal(p.normalisiert.ort, 'Wels', 'die Rechnungsanschrift bleibt unberührt');
@@ -149,7 +155,7 @@ test('Ohne Baustelle bleibt alles wie bisher', () => {
 });
 
 test('Mit Baustelle geht die Ware dorthin und die Rechnung ans Büro', () => {
-  const auftrag = baueAuftrag('A-1', { ...vollstaendig, baustelle });
+  const auftrag = baueAuftrag('A-1', mitZusicherung({ ...vollstaendig, baustelle }));
   assert.equal(auftrag.lieferungAnRechnungsadresse, false);
   assert.equal(auftrag.lieferadresse.ort, 'Ried im Innkreis');
   assert.equal(auftrag.lieferadresse.name, 'Neubau Familie Berger');
@@ -159,7 +165,7 @@ test('Mit Baustelle geht die Ware dorthin und die Rechnung ans Büro', () => {
 test('Ohne eigenen Namen steht der Besteller auf dem Lieferschein', () => {
   const ohneName = { ...baustelle };
   delete ohneName.name;
-  const p = pruefeBestelldaten({ ...vollstaendig, baustelle: ohneName });
+  const p = pruefeBestelldaten(mitZusicherung({ ...vollstaendig, baustelle: ohneName }));
   assert.equal(p.gueltig, true, p.fehler.join(' | '));
   assert.equal(p.normalisiert.baustelle.name, vollstaendig.firma);
 });
@@ -171,7 +177,7 @@ test('Der Zufahrtshinweis steht im Bestelltext unter der Adresse', () => {
   };
   const katalog = ladeKatalog(daten, 0.35);
   const wk = berechneWarenkorb([{ sku: 'AB-RD-375', menge: 5 }], katalog);
-  const b = erzeugeBestellungen(wk, baueAuftrag('A-1', { ...vollstaendig, baustelle }))[0];
+  const b = erzeugeBestellungen(wk, baueAuftrag('A-1', mitZusicherung({ ...vollstaendig, baustelle })))[0];
 
   const zeilen = b.text.split('\n');
   const adresse = zeilen.findIndex((z) => /Ried im Innkreis/.test(z));
@@ -189,8 +195,8 @@ test('Ohne Zufahrtshinweis entsteht keine leere Zeile', () => {
   const wk = berechneWarenkorb([{ sku: 'AB-RD-375', menge: 5 }], katalog);
   const ohneHinweis = { ...baustelle, hinweis: '' };
 
-  const mit = erzeugeBestellungen(wk, baueAuftrag('A-1', { ...vollstaendig, baustelle }))[0];
-  const ohne = erzeugeBestellungen(wk, baueAuftrag('A-1', { ...vollstaendig, baustelle: ohneHinweis }))[0];
+  const mit = erzeugeBestellungen(wk, baueAuftrag('A-1', mitZusicherung({ ...vollstaendig, baustelle })))[0];
+  const ohne = erzeugeBestellungen(wk, baueAuftrag('A-1', mitZusicherung({ ...vollstaendig, baustelle: ohneHinweis })))[0];
   assert.equal(ohne.text.split('\n').length, mit.text.split('\n').length - 1);
   assert.ok(!/Hinweis zur Zufahrt/.test(ohne.text));
 });
@@ -198,7 +204,7 @@ test('Ohne Zufahrtshinweis entsteht keine leere Zeile', () => {
 test('Die Baustelle braucht einen Ansprechpartner vor Ort', () => {
   const ohneTelefon = { ...baustelle };
   delete ohneTelefon.telefon;
-  const p = pruefeBestelldaten({ ...vollstaendig, baustelle: ohneTelefon });
+  const p = pruefeBestelldaten(mitZusicherung({ ...vollstaendig, baustelle: ohneTelefon }));
   assert.equal(p.gueltig, false);
   assert.ok(p.fehler.some((f) => /Ansprechpartner vor Ort/.test(f)), p.fehler.join(' | '));
 });
@@ -217,7 +223,7 @@ test('Eine Schweizer Postleitzahl allein macht die Baustelle nicht österreichis
   ];
   assert.equal(proben.length, 3);
   for (const [land, plz, ort] of proben) {
-    const p = pruefeBestelldaten({ ...vollstaendig, baustelle: { ...baustelle, land, plz, ort } });
+    const p = pruefeBestelldaten(mitZusicherung({ ...vollstaendig, baustelle: { ...baustelle, land, plz, ort } }));
     assert.equal(p.gueltig, false, `${ort} wurde angenommen`);
     assert.ok(p.fehler.some((f) => /nur innerhalb Österreichs/.test(f)), p.fehler.join(' | '));
   }
@@ -226,7 +232,7 @@ test('Eine Schweizer Postleitzahl allein macht die Baustelle nicht österreichis
 test('Ohne Landangabe wird die Baustelle abgewiesen, nicht stillschweigend nach AT gelegt', () => {
   const ohneLand = { ...baustelle };
   delete ohneLand.land;
-  const p = pruefeBestelldaten({ ...vollstaendig, baustelle: ohneLand });
+  const p = pruefeBestelldaten(mitZusicherung({ ...vollstaendig, baustelle: ohneLand }));
   assert.equal(p.gueltig, false);
   assert.ok(p.fehler.some((f) => /Land fehlt/.test(f)), p.fehler.join(' | '));
 });
@@ -235,13 +241,65 @@ test('Steuerzeichen sind auch in den Baustellenfeldern nicht zulässig', () => {
   const felder = ['name', 'strasse', 'ort', 'telefon', 'hinweis'];
   assert.equal(felder.length, 5);
   for (const feld of felder) {
-    const p = pruefeBestelldaten({
-      ...vollstaendig,
-      baustelle: { ...baustelle, [feld]: `${baustelle[feld] ?? 'x'}\nZusatz` },
-    });
+    const p = pruefeBestelldaten(
+      mitZusicherung({
+        ...vollstaendig,
+        baustelle: { ...baustelle, [feld]: `${baustelle[feld] ?? 'x'}\nZusatz` },
+      }),
+    );
     assert.ok(
       p.fehler.some((f) => /^Baustelle — /.test(f)),
       `${feld} ungeprüft: ${p.fehler.join(' | ')}`,
     );
   }
+});
+
+/* ------------------------------------------------------------------ *
+ * Die Zusicherung nach Art. 14 DSGVO
+ *
+ * Der Ansprechpartner vor Ort ist ein Dritter: kein Vertragspartner, seine
+ * Nummer stammt vom Besteller, und der Shop erreicht ihn nie. Der einzige Weg
+ * führt über den, der ihn kennt.
+ * ------------------------------------------------------------------ */
+
+test('Ohne Zusicherung wird eine Bestellung mit Baustelle abgewiesen', () => {
+  const p = pruefeBestelldaten({ ...vollstaendig, baustelle });
+  assert.equal(p.gueltig, false);
+  assert.ok(p.fehler.some((f) => /Art\. 14 DSGVO/.test(f)), p.fehler.join(' | '));
+});
+
+test('Mit Zusicherung geht dieselbe Bestellung durch', () => {
+  const p = pruefeBestelldaten(mitZusicherung({ ...vollstaendig, baustelle }));
+  assert.equal(p.gueltig, true, p.fehler.join(' | '));
+});
+
+test('Ohne Baustelle wird die Zusicherung nicht verlangt', () => {
+  // Ohne abweichende Anschrift gibt es keinen Dritten. Eine Bestätigung ohne
+  // Anlass gewöhnt Kunden daran, Kästchen ungelesen anzuhaken.
+  const p = pruefeBestelldaten(vollstaendig);
+  assert.equal(p.gueltig, true, p.fehler.join(' | '));
+  assert.ok(!p.fehler.some((f) => /Art\. 14/.test(f)));
+});
+
+test('Ein angehaktes Kästchen ohne Baustelle ändert nichts', () => {
+  const p = pruefeBestelldaten(mitZusicherung(vollstaendig));
+  assert.equal(p.gueltig, true, p.fehler.join(' | '));
+});
+
+test('Der Wortlaut der Zusicherung steht an einer Stelle und nennt seine Grundlage', () => {
+  assert.equal(ZUSICHERUNG_DRITTER.feld, 'ansprechpartnerInformiert');
+  assert.match(ZUSICHERUNG_DRITTER.grundlage, /Art\. 14 DSGVO/);
+  assert.match(ZUSICHERUNG_DRITTER.text, /Ansprechpartner vor Ort/);
+  assert.match(ZUSICHERUNG_DRITTER.text, /Spedition/, 'Der Empfänger gehört in den Wortlaut');
+  assert.ok(ZUSICHERUNG_DRITTER.text.length > 100, 'Ein Einzeiler erklärt dem Kunden nichts');
+});
+
+test('Das Feld der Zusicherung ist dasselbe, das die Prüfung liest', () => {
+  // Sonst stünde der Wortlaut an einer Stelle und die Prüfung an einer anderen
+  // — und ein umbenanntes Feld fiele niemandem auf.
+  const mitFeld = { ...vollstaendig, baustelle, [ZUSICHERUNG_DRITTER.feld]: true };
+  assert.equal(pruefeBestelldaten(mitFeld).gueltig, true);
+
+  const falschesFeld = { ...vollstaendig, baustelle, irgendeinAnderesFeld: true };
+  assert.equal(pruefeBestelldaten(falschesFeld).gueltig, false);
 });

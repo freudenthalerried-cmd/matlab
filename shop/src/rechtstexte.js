@@ -149,6 +149,36 @@ export const AGB_GLIEDERUNG = [
 ];
 
 /**
+ * Der Wortlaut der Zusicherung nach Art. 14 DSGVO.
+ *
+ * Der Befund der Vorrunde: Der **Ansprechpartner vor Ort** ist ein Dritter. Er
+ * hat mit dem Shop keinen Vertrag, seine Rufnummer stammt vom Besteller, und
+ * Art. 14 verlangt, **ihn** zu informieren — eine Person, die der Shop nie
+ * erreicht.
+ *
+ * Der einzige Weg, der offensteht, führt über den, der ihn kennt. Der Besteller
+ * sichert zu, ihn unterrichtet zu haben; der Shop hält die Zusicherung fest.
+ * Das ist **keine Erfüllung der Pflicht durch den Shop**, sondern die
+ * Verlagerung auf denjenigen, der sie erfüllen kann — und die
+ * Dokumentation, dass danach gefragt wurde.
+ *
+ * Ob das genügt, entscheidet der Rechtstexteanbieter aus `phase5-technik.md`.
+ * Was hier steht, ist der Wortlaut, über den er dann reden kann: an einer
+ * Stelle, prüfbar, und im Bestellprozess sichtbar statt im Kleingedruckten.
+ */
+export const ZUSICHERUNG_DRITTER = {
+  feld: 'ansprechpartnerInformiert',
+  text:
+    'Ich habe den genannten Ansprechpartner vor Ort darüber informiert, dass sein Name und ' +
+    'seine Telefonnummer zur Zustellung an den Hersteller und dessen Spedition weitergegeben ' +
+    'werden.',
+  grundlage: 'Art. 14 DSGVO',
+  hinweis:
+    'Nur nötig, wenn die Ware an eine abweichende Baustelle geht. Ohne Baustelle gibt ' +
+    'es keinen Dritten, dessen Daten weitergereicht würden.',
+};
+
+/**
  * Die Hinweise, die ein Besteller sehen muss, **bevor** er eine abweichende
  * Lieferanschrift angibt.
  *
