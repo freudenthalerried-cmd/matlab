@@ -60,6 +60,15 @@ zusagt, ist als Lieferant der Leitposition ungeeignet — egal wie gut der
 Rabatt ist. Nachgetragen in
 [`auswertungsbogen-hersteller.md`](./auswertungsbogen-hersteller.md).
 
+Die Gegensuche nach Fremdhändlern (AlphaBlock ohne die herstellereigenen
+Domains) fand **keinen einzigen sichtbaren Wiederverkäufer** — nur die eigenen
+Kanäle des Herstellers und einen schwedischen Shop für Zubehör. Zwei Lesarten,
+beide unangenehm: Entweder nimmt der Hersteller gar keine Händler, dann fällt
+die Leitposition für dieses Modell aus; oder Händler existieren, sind aber
+online unsichtbar, dann ist der Suchkanal — die Grundlage des ganzen
+Shopmodells — für dieses Produkt bereits vom Hersteller besetzt. Die
+Herstelleranfrage entscheidet, welche Lesart gilt.
+
 ### Und das Preisband ist breiter als gedacht
 
 Eine Radonsperre aus dem allgemeinen Baustoffhandel (Alujet Floorjet Speed,
