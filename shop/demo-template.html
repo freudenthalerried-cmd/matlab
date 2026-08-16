@@ -172,6 +172,16 @@
           <label>PLZ<input type="text" id="k-plz" value="4600" inputmode="numeric"></label>
           <label>Ort<input type="text" id="k-ort" value="Wels"></label>
         </div>
+        <label class="k-bestaetigung"><input type="checkbox" id="k-baustelle-an"> Die Ware geht an eine <strong>abweichende Lieferanschrift</strong> (Baustelle).</label>
+        <div class="k-felder" id="k-baustelle-felder" hidden>
+          <label>Baustelle — Bezeichnung<input type="text" id="k-b-name" value="Neubau Familie Berger" placeholder="leer = Ihr Firmenname"></label>
+          <label>Straße und Hausnummer<input type="text" id="k-b-strasse" value="Feldgasse 27"></label>
+          <label>PLZ<input type="text" id="k-b-plz" value="4910" inputmode="numeric"></label>
+          <label>Ort<input type="text" id="k-b-ort" value="Ried im Innkreis"></label>
+          <label>Land<input type="text" id="k-b-land" value="AT" placeholder="AT"></label>
+          <label>Ansprechpartner vor Ort<input type="text" id="k-b-telefon" value="+43 664 9998877"></label>
+          <label>Hinweis zur Zufahrt<input type="text" id="k-b-hinweis" value="Zufahrt über Baustraße, Kran bis 16 Uhr besetzt"></label>
+        </div>
         <label class="k-bestaetigung"><input type="checkbox" id="k-unternehmer" checked> Ich bestelle als Unternehmer im Rahmen meines Betriebs. Ein Rücktrittsrecht nach FAGG besteht damit nicht.</label>
         <label class="k-sim">Antwort des EU-Informationsaustauschsystems <em>simulieren</em>
           <select id="k-vies">
@@ -455,6 +465,20 @@ document.getElementById('kasse').addEventListener('submit', (e) => {
     unternehmerBestaetigt: document.getElementById('k-unternehmer').checked,
   };
 
+  // Die Baustelle ist freiwillig. Ohne sie geht die Ware an die
+  // Rechnungsanschrift — genau das bisherige Verhalten.
+  if (document.getElementById('k-baustelle-an').checked) {
+    eingabe.baustelle = {
+      name: document.getElementById('k-b-name').value,
+      strasse: document.getElementById('k-b-strasse').value,
+      plz: document.getElementById('k-b-plz').value,
+      ort: document.getElementById('k-b-ort').value,
+      land: document.getElementById('k-b-land').value,
+      telefon: document.getElementById('k-b-telefon').value,
+      hinweis: document.getElementById('k-b-hinweis').value,
+    };
+  }
+
   const geprueft = pruefeBestelldaten(eingabe);
   if (geprueft.fehler.length) ziel.append(kasten('k-fehler', geprueft.fehler));
   for (const w of geprueft.warnungen) ziel.append(kasten('k-warn', w));
@@ -473,6 +497,16 @@ document.getElementById('kasse').addEventListener('submit', (e) => {
     ungueltig: { isValid: false, userError: 'INVALID', name: '---', address: '---' },
     dienstAus: { isValid: false, userError: 'MS_UNAVAILABLE' },
   };
+  // Die Hinweise nach § 377 UGB gehören vor die Bestellung, nicht in die
+  // Auftragsbestätigung. Sie sind der Grund, weshalb der Ansprechpartner vor
+  // Ort ein Pflichtfeld ist.
+  ziel.append(
+    kasten(
+      auftrag.lieferungAnRechnungsadresse ? 'k-warn' : 'k-fehler',
+      lieferhinweise(auftrag).map((h) => h.titel + ' — ' + h.text + ' (' + h.grundlage + ')'),
+    ),
+  );
+
   const uidAuswertung = werteAntwortAus(VIES_MUSTER[document.getElementById('k-vies').value]);
   freigabe = ergaenzeFreigabe(freigabe, uidAuswertung);
 
@@ -759,6 +793,10 @@ function zeichneRecht() {
 
   el.append(h2, intro, status, spalten, vorschau);
 }
+
+document.getElementById('k-baustelle-an').addEventListener('change', (e) => {
+  document.getElementById('k-baustelle-felder').hidden = !e.target.checked;
+});
 
 zeichneKatalog();
 zeichneKorb();

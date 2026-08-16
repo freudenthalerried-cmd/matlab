@@ -7,6 +7,8 @@ import {
   AGB_GLIEDERUNG,
   DATENSCHUTZ_GLIEDERUNG,
   B2B_ABGRENZUNG,
+  LIEFERHINWEISE,
+  lieferhinweise,
 } from '../src/rechtstexte.js';
 
 const vollstaendig = {
@@ -89,7 +91,8 @@ test('Die AGB-Gliederung enthält keine Widerrufsbelehrung', () => {
 test('Der Zahlungspunkt schließt Nachnahme und Barzahlung aus', () => {
   // Kartenzahlung im Web ist kein Barumsatz, Nachnahme schon. Ohne diesen
   // Ausschluss entstünde Registrierkassenpflicht — siehe ablage-und-nummernkreis.md.
-  const zahlung = AGB_GLIEDERUNG.find((a) => a.nr === 7);
+  const zahlung = AGB_GLIEDERUNG.find((a) => /Zahlung, Verzug/.test(a.titel));
+  assert.ok(zahlung, 'Der Zahlungspunkt fehlt in der Gliederung');
   assert.match(zahlung.hinweis, /Nachnahme/);
   assert.match(zahlung.hinweis, /Registrierkassenpflicht/);
 });
@@ -111,4 +114,62 @@ test('Die B2B-Abgrenzung nennt Ersparnis und verbleibende Pflichten', () => {
 test('Die Datenschutzgliederung nennt die Weitergabe an Lieferanten', () => {
   assert.ok(DATENSCHUTZ_GLIEDERUNG.some((d) => /Weitergabe an Lieferanten/.test(d)));
   assert.ok(DATENSCHUTZ_GLIEDERUNG.some((d) => /Art\. 6/.test(d)));
+});
+
+/* ------------------------------------------------------------------ *
+ * Lieferhinweise nach § 377 UGB
+ *
+ * Der Punkt, an dem im B2B-Baustoffhandel wirklich Geld verlorengeht: Die
+ * Rügefrist läuft ab Ablieferung auf der Baustelle, nicht ab dem Tag, an dem
+ * der Besteller die Palette zum ersten Mal sieht.
+ * ------------------------------------------------------------------ */
+
+test('Die Gliederung regelt die abweichende Lieferanschrift', () => {
+  const punkt = AGB_GLIEDERUNG.find((a) => /Abweichende Lieferanschrift/.test(a.titel));
+  assert.ok(punkt, 'Der Punkt fehlt');
+  assert.match(punkt.hinweis, /Empfangsvollmacht|nimmt für den Besteller an/);
+  assert.match(punkt.hinweis, /Ansprechpartner vor Ort/);
+});
+
+test('Die Gliederung nennt die Beschränkung auf Lieferorte in Österreich', () => {
+  const punkt = AGB_GLIEDERUNG.find((a) => /Lieferorte nur in Österreich/.test(a.titel));
+  assert.ok(punkt, 'Der Punkt fehlt');
+  assert.match(punkt.hinweis, /Art 6, 7 UStG|Ausfuhr/);
+});
+
+test('Der Gefahrübergang nennt die Ablieferung auf der Baustelle als Fristbeginn', () => {
+  const punkt = AGB_GLIEDERUNG.find((a) => /Gefahrübergang/.test(a.titel));
+  assert.ok(punkt);
+  assert.match(punkt.hinweis, /§ 377 UGB/);
+  assert.match(punkt.hinweis, /ab Ablieferung/);
+});
+
+test('Jeder Lieferhinweis nennt seine Grundlage', () => {
+  assert.ok(LIEFERHINWEISE.length >= 4, 'zu wenige Hinweise für diese Prüfung');
+  for (const h of LIEFERHINWEISE) {
+    assert.ok(h.titel && h.titel.length > 0);
+    assert.ok(h.text && h.text.length > 40, `${h.titel}: zu dünn`);
+    assert.ok(h.grundlage && h.grundlage.length > 0, `${h.titel}: ohne Grundlage`);
+  }
+});
+
+test('Die Rügefrist steht immer da, auch ohne abweichende Baustelle', () => {
+  const ohne = lieferhinweise({ lieferungAnRechnungsadresse: true });
+  assert.ok(ohne.some((h) => /§ 377 UGB/.test(h.grundlage)), 'Die Frist gilt in jedem Fall');
+});
+
+test('Die Empfangsvollmacht erscheint nur bei abweichender Baustelle', () => {
+  const ohne = lieferhinweise({ lieferungAnRechnungsadresse: true });
+  const mit = lieferhinweise({ lieferungAnRechnungsadresse: false });
+
+  assert.ok(!ohne.some((h) => /übernimmt für Sie/.test(h.titel)), 'Hinweis ohne Anlass');
+  assert.ok(mit.some((h) => /übernimmt für Sie/.test(h.titel)), 'Hinweis fehlt, wo er hingehört');
+  assert.ok(mit.length > ohne.length);
+});
+
+test('Ohne Auftrag wird der weniger passende Hinweis weggelassen, nicht der wichtigere', () => {
+  // Ein Aufruf ohne Angaben darf nicht schweigen — die Rügefrist gilt immer.
+  const h = lieferhinweise();
+  assert.ok(h.length >= 3);
+  assert.ok(h.some((x) => /§ 377 UGB/.test(x.grundlage)));
 });

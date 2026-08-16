@@ -1,6 +1,6 @@
 # Status und Einstieg
 
-Stand: 2026-08-16. **Dieses Dokument zuerst lesen.** Achtundvierzig Arbeitsdateien
+Stand: 2026-08-16. **Dieses Dokument zuerst lesen.** Neunundvierzig Arbeitsdateien
 sind entstanden, mehrere davon korrigieren einander. Hier steht, was gilt.
 
 Veröffentlichter Bericht:
@@ -14,7 +14,7 @@ letzten Runde, zwei gleichrangige Freigaben. Quelldatei im Repo unter
 
 Lauffähiges Shop-Funktionsmuster:
 [claude.ai/code/artifact/c40fd35f…](https://claude.ai/code/artifact/c40fd35f-56e1-4821-a3b1-a1a885102ec8) —
-Quelltext und 290 Testfälle unter `shop/`, auf Hohlheit geprüft. Alle Preise sind Platzhalter.
+Quelltext und 297 Testfälle unter `shop/`, auf Hohlheit geprüft. Alle Preise sind Platzhalter.
 Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 
 ## Wo das Projekt steht
@@ -130,6 +130,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `frachtschwelle-und-bestellwert.md` | **Die Frei-Haus-Grenze wurde am Verkaufswert gemessen statt am Einkauf** — behoben; 1.024 Teillieferungen betroffen, Referenzgebäude unverändert |
 | `vorgangsklammer.md` | **Ware nach Innsbruck, Rechnung nach Linz** — nichts band die Papiere eines Vorgangs aneinander; behoben, und die Klammer hat zuerst sich selbst verraten |
 | `baustelle-als-lieferort.md` | **Eine vierstellige PLZ beweist nicht Österreich** — Lugano, Zürich und Vaduz kamen durch; dazu die Baustelle als eigene Lieferanschrift |
+| `ruegefrist-und-baustelle.md` | **Wer auf der Baustelle übernimmt, übernimmt für den Besteller** — § 377 UGB läuft ab Ablieferung; zwei neue AGB-Punkte und Hinweise vor der Bestellung |
 | `pruefung-der-testfaelle.md` | **Grüne Tests sind eine Aussage über die Testfälle, nicht über den Code** — elf hohle Schleifen gefunden und entschärft |
 | `verhandlungsziel-konditionen.md` | **Zehn Prozent Nachlass kosten 38,8 % Rabatt** — das Verhandlungsziel liegt über der Gate-2-Schwelle |
 | `auswertungsbogen-hersteller.md` | **Genau 35 % Rabatt lassen 4,4 % Preisspielraum** — die Auswertung der zwölf Antworten steht fertig bereit |

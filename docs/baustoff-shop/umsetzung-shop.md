@@ -19,7 +19,7 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Materialbedarfsrechner | fertig | 11 |
 | Bestellstrecke mit Gate-7-Prüfung | fertig | 11 |
 | Messwert-Einordner | fertig | 10 |
-| Rechtstexte-Gerüst | fertig | 11 |
+| Rechtstexte-Gerüst | fertig, um Baustelle erweitert | 18 |
 | Angebot und Rechnung an den Kunden | fertig | 15 |
 | Trockenlauf des Auftrags | fertig | 12 |
 | UID-Abfrage beim EU-System | fertig, ungeprüft am Dienst | 17 |
@@ -36,10 +36,50 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Frachtdeckung Kunde gegen Lieferant | fertig, ein Fehler behoben | 4 |
 | Vorgangsklammer über alle Papiere | fertig, ein Fehler behoben | 17 |
 | Baustelle als eigene Lieferanschrift | fertig, ein Fehler behoben | 12 |
-| Oberfläche als eine Datei ohne Abhängigkeiten | fertig | headless geprüft |
-| **Summe** | | **290, alle grün, 0 hohl** |
+| Oberfläche als eine Datei ohne Abhängigkeiten | fertig, Baustelle abgefragt | headless geprüft |
+| **Summe** | | **297, alle grün, 0 hohl** |
 
-## Was zuletzt dazukam: die Baustelle als eigene Adresse
+## Was zuletzt dazukam: die Rügefrist auf der Baustelle
+
+Die Vorrunde hat die Baustelle als Datenweg eingeführt, nicht ihre Folgen.
+Diese Runde zieht sie nach — in den Rechtstexten und in der Bestellstrecke.
+Ausführlich in [`ruegefrist-und-baustelle.md`](./ruegefrist-und-baustelle.md).
+
+**Die Folge, die kein Datenfeld abbildet:** Sobald die Ware an eine Adresse
+geht, an der der Besteller nicht ist, verschiebt sich der Beginn der Rügefrist.
+§ 377 UGB verlangt die Untersuchung **unverzüglich nach der Ablieferung** —
+maßgeblich ist die Ablieferung auf der Baustelle, nicht der Tag, an dem der
+Besteller die Palette zum ersten Mal sieht. Und auf einer Baustelle nimmt an,
+wer gerade dort ist; die Übernahme wirkt für den Besteller.
+
+Für dieses Sortiment ist das kein Formalismus: Eine Abdichtungsbahn kostet rund
+355 € netto die Rolle, das Referenzgebäude trägt fünf davon, und ein
+Transportschaden fällt oft erst beim Verlegen auf — dann ist die Rüge verspätet
+und die Ware gilt nach § 377 Abs 2 UGB als genehmigt.
+
+Das erklärt nachträglich, warum der **Ansprechpartner vor Ort** ein Pflichtfeld
+ist. Er ist nicht für die Spedition da, sondern für diese Frist. Beim Bauen war
+das nicht der ausgesprochene Grund — es ist der richtige.
+
+**In den Rechtstexten** zwei neue AGB-Punkte und ein geschärfter: abweichende
+Lieferanschrift mit Empfangsvollmacht (6), Fristbeginn ab Ablieferung auf der
+Baustelle (7), Lieferorte nur in Österreich (11). Zwölf Punkte statt zehn. Ein
+Testfall, der bisher an der Ordnungszahl 7 hing, prüft jetzt den Titel — eine
+Prüfung, die an einer Nummer klebt, geht beim nächsten Einschub kaputt, ohne
+dass sich inhaltlich etwas geändert hätte.
+
+**In der Strecke** liefert `lieferhinweise(auftrag)` die Punkte, die zu diesem
+Auftrag passen: die Rügefrist immer, die Empfangsvollmacht nur bei abweichender
+Baustelle. Der Entwurfsgedanke steht dahinter: Ein Hinweistext, den alle immer
+sehen, wird von niemandem gelesen. Ein Testfall besteht auf beidem — dass der
+Hinweis fehlt, wo er nicht hingehört, und dasteht, wo er hingehört.
+
+Die Demoseite fragt die Baustelle jetzt ab; die Felder klappen bei Auswahl auf.
+Am gebauten Bündel headless nachgesehen: Felder verborgen, klappen auf, die
+Baustelle landet im Bestelltext samt Zufahrtshinweis, § 377 erscheint immer,
+die Empfangsvollmacht nur mit Baustelle.
+
+## Was davor dazukam: die Baustelle als eigene Adresse
 
 Die Vorrunde hatte die Annahme „Ware und Rechnung gehen an dieselbe Adresse"
 benannt statt verschwiegen. Diese Runde löst sie auf. Ausführlich in
@@ -676,12 +716,12 @@ Nach Nutzen geordnet, alle ohne Freigabe und ohne Ausgabe machbar:
 1. **Gebietsabfrage** nach `phase10-datengrundlage-gebietsabfrage.md` — braucht
    die Gemeindeliste. RIS und der Geoserver sind aus dieser Umgebung weiterhin
    nicht erreichbar; zuletzt geprüft am 15. August.
-2. **Die Baustelle in Oberfläche und Rechtstexten** — der Datenweg steht, die
-   Bestellstrecke der Demoseite fragt die Baustelle aber noch nicht ab, und die
-   AGB-Gliederung kennt keinen abweichenden Lieferort. Wer Ware an eine dritte
-   Adresse schickt, sollte in den AGB regeln, wer dort abnimmt und wann die
-   Gefahr übergeht — § 377 UGB hängt daran. Braucht keine Freigabe und keine
-   Ausgabe.
+2. **Die Auftragsbestätigung** — der Shop erzeugt Angebot, Rechnung und
+   Lieferantenbestellung, aber nicht das Papier dazwischen. Nach AGB Punkt 2
+   kommt der Vertrag erst mit der Auftragsbestätigung zustande; ohne sie ist
+   ungeklärt, wann der Kunde gebunden ist. Sie müsste die Teillieferungen mit
+   ihren Lieferzeiten einzeln nennen und die Lieferhinweise tragen. Braucht
+   keine Freigabe und keine Ausgabe.
 3. **Gedächtnis der Ablage** — `ablage.js` führt Nummernkreis und Journal
    sauber, aber nur im Arbeitsspeicher. Nach einem Neuladen beginnt die
    Rechnungsnummer wieder bei eins, und § 11 UStG verlangt Einmaligkeit. Solange

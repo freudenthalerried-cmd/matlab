@@ -116,12 +116,84 @@ export const AGB_GLIEDERUNG = [
   { nr: 3, titel: 'Preise und Umsatzsteuer', hinweis: 'Nettopreise, Umsatzsteuer gesondert; Reverse Charge bei innergemeinschaftlicher Lieferung.' },
   { nr: 4, titel: 'Lieferung im Streckengeschäft', hinweis: 'Direktversand durch den Hersteller; Teillieferungen je Lieferant sind der Regelfall.' },
   { nr: 5, titel: 'Fracht, Sperrgut und Baustellenanlieferung', hinweis: 'Abladen, Zufahrt und Anwesenheit sind Sache des Bestellers.' },
-  { nr: 6, titel: 'Gefahrübergang und Transportschäden', hinweis: 'Untersuchungs- und Rügepflicht nach § 377 UGB — im B2B eine echte Obliegenheit.' },
-  { nr: 7, titel: 'Zahlung, Verzug, Eigentumsvorbehalt', hinweis: 'Keine Nachnahme und keine Barzahlung auf der Baustelle — sonst entsteht ein Barumsatz und damit Registrierkassenpflicht.' },
-  { nr: 8, titel: 'Gewährleistung und Haftung', hinweis: 'Im B2B abdingbar, aber nicht grenzenlos.' },
-  { nr: 9, titel: 'Rücknahme angebrochener Gebinde und Rollenware', hinweis: 'Ausschluss empfehlenswert; Rollenware ist nicht teilbar.' },
-  { nr: 10, titel: 'Gerichtsstand und anwendbares Recht', hinweis: null },
+  {
+    nr: 6,
+    titel: 'Abweichende Lieferanschrift und Empfangsvollmacht',
+    hinweis:
+      'Wer auf der Baustelle übernimmt, nimmt für den Besteller an — auch ein anderes Gewerk oder der Bauherr. ' +
+      'Der Besteller benennt einen Ansprechpartner vor Ort und trägt dessen Erreichbarkeit.',
+  },
+  { nr: 7, titel: 'Gefahrübergang und Transportschäden', hinweis: 'Untersuchungs- und Rügepflicht nach § 377 UGB — im B2B eine echte Obliegenheit, und die Frist läuft ab Ablieferung auf der Baustelle.' },
+  { nr: 8, titel: 'Zahlung, Verzug, Eigentumsvorbehalt', hinweis: 'Keine Nachnahme und keine Barzahlung auf der Baustelle — sonst entsteht ein Barumsatz und damit Registrierkassenpflicht.' },
+  { nr: 9, titel: 'Gewährleistung und Haftung', hinweis: 'Im B2B abdingbar, aber nicht grenzenlos.' },
+  { nr: 10, titel: 'Rücknahme angebrochener Gebinde und Rollenware', hinweis: 'Ausschluss empfehlenswert; Rollenware ist nicht teilbar.' },
+  { nr: 11, titel: 'Lieferorte nur in Österreich', hinweis: 'Lieferung außerhalb Österreichs ist ausgeschlossen — sie wäre nach Art 6, 7 UStG steuerfrei bzw. eine Ausfuhr und damit anders zu verrechnen.' },
+  { nr: 12, titel: 'Gerichtsstand und anwendbares Recht', hinweis: null },
 ];
+
+/**
+ * Die Hinweise, die ein Besteller sehen muss, **bevor** er eine abweichende
+ * Lieferanschrift angibt.
+ *
+ * Nicht Kleingedrucktes, sondern der Punkt, an dem im B2B-Baustoffhandel
+ * wirklich Geld verlorengeht. § 377 UGB verlangt, die Ware **unverzüglich nach
+ * der Ablieferung** zu untersuchen und Mängel unverzüglich zu rügen. Die Frist
+ * läuft ab der Ablieferung auf der Baustelle — nicht ab dem Tag, an dem der
+ * Besteller die Palette zum ersten Mal sieht.
+ *
+ * Für das Sortiment aus `phase4-sortiment-und-materialwert.md` ist das keine
+ * Spitzfindigkeit: Eine Abdichtungsbahn kostet rund 355 € netto die Rolle, und
+ * ein Transportschaden an der Rolle fällt oft erst beim Verlegen auf — Wochen
+ * später. Dann ist die Rüge verspätet und die Ware gilt als genehmigt.
+ *
+ * Daraus folgt auch, warum der Ansprechpartner vor Ort seit
+ * `baustelle-als-lieferort.md` ein Pflichtfeld ist: Er ist nicht für die
+ * Spedition da, sondern für diese Frist.
+ */
+export const LIEFERHINWEISE = [
+  {
+    titel: 'Wer übernimmt, übernimmt für Sie',
+    text:
+      'Auf einer Baustelle nimmt an, wer gerade dort ist — ein anderes Gewerk, der Bauherr, der Polier. ' +
+      'Die Übernahme wirkt für Sie als Besteller.',
+    grundlage: 'AGB Punkt 6',
+  },
+  {
+    titel: 'Die Rügefrist läuft ab Ablieferung',
+    text:
+      'Nach § 377 UGB ist die Ware unverzüglich nach der Ablieferung zu untersuchen und ein Mangel ' +
+      'unverzüglich zu rügen. Maßgeblich ist die Ablieferung auf der Baustelle, nicht der Tag, an dem ' +
+      'Sie selbst hinkommen.',
+    grundlage: '§ 377 UGB',
+  },
+  {
+    titel: 'Rollenware auf der Baustelle prüfen, nicht beim Verlegen',
+    text:
+      'Ein Transportschaden an einer Abdichtungsbahn fällt oft erst beim Verlegen auf. Zu diesem ' +
+      'Zeitpunkt ist die Rüge in aller Regel verspätet und die Ware gilt als genehmigt.',
+    grundlage: '§ 377 Abs 2 UGB',
+  },
+  {
+    titel: 'Teillieferungen kommen getrennt an',
+    text:
+      'Im Streckengeschäft liefert jeder Hersteller selbst. Eine Bestellung erreicht die Baustelle ' +
+      'deshalb in mehreren Sendungen an verschiedenen Tagen; jede ist für sich zu prüfen.',
+    grundlage: 'AGB Punkt 4',
+  },
+];
+
+/**
+ * Liefert die Hinweise, die zu diesem Auftrag tatsächlich passen.
+ *
+ * Ohne abweichende Baustelle geht die Ware an die Rechnungsanschrift; dann ist
+ * der Hinweis zur Empfangsvollmacht überflüssig und würde nur die anderen
+ * verwässern. Ein Hinweistext, den alle immer sehen, wird von niemandem
+ * gelesen.
+ */
+export function lieferhinweise(auftrag = {}) {
+  const abweichend = auftrag.lieferungAnRechnungsadresse === false;
+  return LIEFERHINWEISE.filter((h) => abweichend || h.grundlage !== 'AGB Punkt 6');
+}
 
 export const DATENSCHUTZ_GLIEDERUNG = [
   'Verantwortlicher und Kontakt',
