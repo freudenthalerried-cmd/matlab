@@ -1,6 +1,6 @@
 # Status und Einstieg
 
-Stand: 2026-08-16. **Dieses Dokument zuerst lesen.** Siebenundfünfzig Arbeitsdateien
+Stand: 2026-08-16. **Dieses Dokument zuerst lesen.** Achtundfünfzig Arbeitsdateien
 sind entstanden, mehrere davon korrigieren einander. Hier steht, was gilt.
 
 Veröffentlichter Bericht:
@@ -110,8 +110,11 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
    seit 16. August einen Anker: **~2.000 Haushalte/Jahr** nutzen die kostenlose
    AGES-Messung, österreichweit. Der akute Sanierungsmarkt liefert damit
    Hunderte Fälle pro Jahr, nicht Tausende pro Monat — die Sessions müssen aus
-   dem Neubau-Pflichtkanal kommen. Siehe `alternativen-ohne-freigabe.md` und
-   `marktrisiko-neubau.md`.
+   dem Neubau-Pflichtkanal kommen. Der ist seit dem 16. August auch räumlich
+   beziffert: fast flächendeckend, ausgenommen Wien und zehn Bezirke
+   (darunter Ried im Innkreis); EFH-Kern ~8.000–9.000 Häuser/Jahr. Siehe
+   `alternativen-ohne-freigabe.md`, `marktrisiko-neubau.md` und
+   `nachfragezahlen-pflichtgebiet-und-bestand.md`.
 5. **Materialwert je Gebäude** — ~~reine Schätzung 400–1.500 €~~ hergeleitet:
    1.260–2.955 € für den beschlossenen Warenkorb, Konfidenz mittel — **seit
    16. August als optimistisch markiert**: Alle drei Warengruppen stehen mit
@@ -147,6 +150,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `strassenpreisanker-sortiment.md` | **Das Drainagerohr kostet am Markt die Hälfte unseres Platzhalters** — die Drainagegruppe kann kein Margenträger sein; die Zange aus Commodity und Hersteller-Direktvertrieb ist vollständig benannt |
 | `felder-der-ablage.md` | **Ein eingefrorenes Feld kann nie wahr werden** — das Felderverzeichnis der Ablage; jedes Journalfeld trägt Grundlage oder Beweislast, das tote Feld `storniert` ist entfernt |
 | `gedaechtnis-der-ablage.md` | **Erst das Journal, dann der Speicher** — die Ablage überlebt den Neustart als Anhangdatei; auch die Nummernvergabe wird eine Zeile, sonst vergäbe der Neustart Rechnungsnummern doppelt |
+| `nachfragezahlen-pflichtgebiet-und-bestand.md` | **Das Pflichtgebiet ist fast ganz Österreich — ausgenommen Wien, zehn Bezirke und damit der Heimatbezirk des Betreibers** — EFH-Kern ~8.000–9.000 Häuser/Jahr; Bestand ~240.000 betroffene Wohnungen, Engpass ist die Messquote |
 | `pruefung-der-testfaelle.md` | **Grüne Tests sind eine Aussage über die Testfälle, nicht über den Code** — elf hohle Schleifen gefunden und entschärft |
 | `verhandlungsziel-konditionen.md` | **Zehn Prozent Nachlass kosten 38,8 % Rabatt** — das Verhandlungsziel liegt über der Gate-2-Schwelle |
 | `auswertungsbogen-hersteller.md` | **Genau 35 % Rabatt lassen 4,4 % Preisspielraum** — die Auswertung der zwölf Antworten steht fertig bereit |

@@ -167,7 +167,7 @@ Arbeit noch frei wählbar ist.
 |---|---|
 | Neubauentwicklung 2026 | Jahresstatistik, frühestens Frühjahr 2027 |
 | Umsetzungsquote der Radonvorsorge | wird nirgends erhoben; nur der Anfragenanteil ist ein Ersatzmaß |
-| Größe des relevanten Gebäudebestands | nicht beziffert; für die Modellwahl genügt die Richtung |
+| Größe des relevanten Gebäudebestands | **seit 16. August beziffert:** ~6 % der Haushalte über 300 Bq/m³, ~240.000 Wohnungen — siehe [`nachfragezahlen-pflichtgebiet-und-bestand.md`](./nachfragezahlen-pflichtgebiet-und-bestand.md) |
 
 ## Quellen
 
