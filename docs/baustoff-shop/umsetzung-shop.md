@@ -27,7 +27,7 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Zahlwege und Gebühren | fertig | 15 |
 | Gesamtkostenbild und Umsatzbedarf | fertig | 13 |
 | Empfindlichkeit der vier Annahmen | fertig | 14 |
-| Auswertungsbogen für die Herstellerantworten | fertig, leer | 18 |
+| Auswertungsbogen für die Herstellerantworten | fertig, leer, zwei Antwortwege | 25 |
 | Rückwärtsrechnung fürs Konditionsgespräch | fertig | 13 |
 | Prüfer für die Testfälle selbst | fertig | gegen Probedatei nachgewiesen |
 | Gegenprobe am gerenderten Beleg | fertig | 14 |
@@ -40,9 +40,22 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Gedächtnis der Ablage (Journal aus Zeilen) | fertig, Senke wählbar | 14 |
 | Gebietsauskunft über die Negativliste | Zwischenlösung, Vollausbau blockiert | 10 |
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig, Baustelle abgefragt | headless geprüft |
-| **Summe** | | **374, alle grün, 0 hohl** |
+| **Summe** | | **381, alle grün, 0 hohl** |
 
-## Was zuletzt dazukam: die Gebietsauskunft über die Negativliste
+## Was zuletzt dazukam: der Großhandelsweg im Auswertungsbogen
+
+Ausführlich in
+[`auswertung-grosshandelsweg.md`](./auswertung-grosshandelsweg.md). Entwurf C
+fragt einen Großhändler an, aber der Bogen konnte nur Herstellerantworten
+lesen (Rabatt auf UVP) — die erste Großhändlerantwort wäre als „nicht
+beziffert" verworfen worden. Jetzt werden zwei Wege gleichrangig
+ausgewertet: Rabatt auf die Liste oder Netto-Einkaufspreis gegen den
+Straßenpreis-Deckel. Ein Einkaufspreis ohne Deckel ist keine Kondition
+(Entweder-oder im Bogen); nennt eine Antwort beide Wege, gilt der
+schlechtere. Gegenproben: bessere Lesart gewinnt → 1 Testfall fällt;
+Großhandelsweg überlesen → 4.
+
+## Was davor dazukam: die Gebietsauskunft über die Negativliste
 
 Ausführlich in
 [`gebietsauskunft-zwischenloesung.md`](./gebietsauskunft-zwischenloesung.md).

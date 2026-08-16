@@ -1,8 +1,11 @@
 /**
  * Auswertungsbogen für die Herstellerantworten.
  *
- * Sobald die zwölf Anfragen aus `anschreiben-entwuerfe.md` freigegeben sind und
- * Antworten eintreffen, entscheidet sich daran Gate 1, 2 und 6 zugleich. Diese
+ * Sobald die dreizehn Anfragen aus `anschreiben-entwuerfe.md` freigegeben sind
+ * und Antworten eintreffen, entscheidet sich daran Gate 1, 2 und 6 zugleich.
+ * Seit Entwurf C werden zwei Antwortwege gleichrangig ausgewertet: der
+ * Händlerrabatt auf eine Liste (Hersteller) und der Netto-Einkaufspreis gegen
+ * den Straßenpreis-Deckel (Großhandel). Diese
  * Datei nimmt die Auswertung vorweg: Sie prüft jede Antwort gegen die vier
  * Bedingungen aus `entscheidungsmatrix.md`, setzt die zugesagte Kondition in
  * die Kaskade ein und weist aus, was daraus für den Besucherbedarf folgt.
@@ -29,8 +32,11 @@ export const GATE2_BEDINGUNGEN = [
   },
   {
     id: 'kondition',
-    text: `Händlerrabatt, aus dem ≥ ${Math.round(MARGENUNTERGRENZE * 100)} % Rohmarge bleiben`,
-    pruefe: (a) => typeof a.haendlerrabatt === 'number' && a.haendlerrabatt >= MARGENUNTERGRENZE,
+    text: `Kondition, aus der ≥ ${Math.round(MARGENUNTERGRENZE * 100)} % Rohmarge bleiben — als Händlerrabatt oder als Netto-Einkaufspreis gegen den Straßenpreis-Deckel`,
+    pruefe: (a) => {
+      const marge = margeAusAntwort(a);
+      return typeof marge === 'number' && marge >= MARGENUNTERGRENZE;
+    },
   },
   {
     id: 'fracht',
@@ -63,7 +69,9 @@ export function margenspielraum(haendlerrabatt) {
   const maxNachlass = 1 - (1 - haendlerrabatt) / (1 - MARGENUNTERGRENZE);
 
   return {
+    art: 'rabatt',
     haendlerrabatt,
+    marge: haendlerrabatt,
     margeBeiUvp: haendlerrabatt,
     reichtOhneNachlass: haendlerrabatt >= MARGENUNTERGRENZE,
     maxNachlass: Math.max(0, maxNachlass),
@@ -72,6 +80,72 @@ export function margenspielraum(haendlerrabatt) {
         ? 'Kein Preisspielraum — jeder Nachlass reißt die Untergrenze'
         : `Bis ${(maxNachlass * 100).toFixed(1)} % Nachlass auf die UVP bleibt die Untergrenze gehalten`,
   };
+}
+
+/**
+ * Der Spielraum für den Großhandelsweg (Entwurf C).
+ *
+ * Der Großhandel nennt keinen Rabatt auf eine Liste, sondern einen
+ * **Netto-Einkaufspreis je Kunde**. Eine Liste, gegen die man rechnen könnte,
+ * gibt es nicht — gerechnet wird gegen den **Straßenpreis-Deckel** aus
+ * `strassenpreisanker-sortiment.md` und `vertriebswege-der-hersteller.md`:
+ * den Preis, den derselbe Kunde bei einem sichtbaren Händler ohnehin zahlt.
+ * Wer darüber verkauft, verkauft nicht.
+ *
+ * Dieselbe Frage, andere Bezugsgröße: Wie viel unter dem Deckel kann der
+ * Shop anbieten, bevor die Untergrenze reißt?
+ */
+export function nettopreisSpielraum(einkaufNetto, deckelNetto) {
+  if (!(einkaufNetto > 0) || !(deckelNetto > 0)) {
+    throw new Error('Der Spielraum braucht Einkauf und Straßenpreis-Deckel, beide netto und größer null');
+  }
+
+  const marge = 1 - einkaufNetto / deckelNetto;
+  // Verkauf zu (1 − nachlass) × Deckel: Marge ≥ Untergrenze verlangt
+  // VK ≥ EK / (1 − UG), also nachlass ≤ 1 − EK / ((1 − UG) · Deckel).
+  const maxNachlass = 1 - einkaufNetto / ((1 - MARGENUNTERGRENZE) * deckelNetto);
+
+  return {
+    art: 'nettopreis',
+    einkaufNetto,
+    deckelNetto,
+    marge,
+    margeAmDeckel: marge,
+    reichtAmDeckel: marge >= MARGENUNTERGRENZE,
+    maxNachlass: Math.max(0, maxNachlass),
+    hinweis:
+      maxNachlass <= 0
+        ? 'Kein Preisspielraum — schon am Straßenpreis-Deckel reißt die Untergrenze'
+        : `Bis ${(maxNachlass * 100).toFixed(1)} % unter dem Straßenpreis-Deckel bleibt die Untergrenze gehalten`,
+  };
+}
+
+/**
+ * Liest aus einer Antwort die Rohmarge, gleich welchen Wegs.
+ *
+ * Nennt eine Antwort beides, gilt der **schlechtere** Wert — eine Antwort,
+ * die sich mit der günstigeren Lesart schmückt, würde sonst besser bewertet
+ * als zwei ehrliche.
+ */
+export function margeAusAntwort(antwort = {}) {
+  const wege = [];
+  if (typeof antwort.haendlerrabatt === 'number') wege.push(antwort.haendlerrabatt);
+  if (antwort.einkaufNetto > 0 && antwort.strassenpreisDeckelNetto > 0) {
+    wege.push(1 - antwort.einkaufNetto / antwort.strassenpreisDeckelNetto);
+  }
+  if (wege.length === 0) return null;
+  return Math.min(...wege);
+}
+
+/** Der passende Spielraum zu einer Antwort — Rabattweg oder Großhandelsweg. */
+export function spielraumAusAntwort(antwort = {}) {
+  const rabatt = typeof antwort.haendlerrabatt === 'number' ? margenspielraum(antwort.haendlerrabatt) : null;
+  const netto =
+    antwort.einkaufNetto > 0 && antwort.strassenpreisDeckelNetto > 0
+      ? nettopreisSpielraum(antwort.einkaufNetto, antwort.strassenpreisDeckelNetto)
+      : null;
+  if (rabatt && netto) return netto.marge <= rabatt.marge ? netto : rabatt;
+  return netto ?? rabatt;
 }
 
 /**
@@ -90,7 +164,7 @@ export function werteAntwortAus(antwort) {
     erfuellt: b.pruefe(antwort) === true,
   }));
 
-  const beziffert = typeof antwort.haendlerrabatt === 'number';
+  const beziffert = margeAusAntwort(antwort) !== null;
 
   return {
     hersteller: antwort.hersteller,
@@ -100,7 +174,7 @@ export function werteAntwortAus(antwort) {
     erfuellt: geprueft.filter((g) => g.erfuellt).length,
     bestanden: geprueft.every((g) => g.erfuellt),
     fehlend: geprueft.filter((g) => !g.erfuellt).map((g) => g.text),
-    spielraum: beziffert ? margenspielraum(antwort.haendlerrabatt) : null,
+    spielraum: beziffert ? spielraumAusAntwort(antwort) : null,
     // Aus beleg-und-reihengeschaeft.md: Nicht der Sitz entscheidet, sondern wer fakturiert.
     fakturierendesLand: antwort.fakturierendesLand ?? null,
     reihengeschaeft: antwort.fakturierendesLand ? antwort.fakturierendesLand !== 'AT' : null,
@@ -136,8 +210,9 @@ export function werteRundeAus(antworten, lage) {
   }
 
   // Für die Planung zählt der schwächere der beiden besten: Er begrenzt die
-  // Mischmarge, weil beide Sortimentsteile gebraucht werden.
-  const raenge = bestanden.map((e) => e.spielraum.haendlerrabatt).sort((a, b) => b - a);
+  // Mischmarge, weil beide Sortimentsteile gebraucht werden. `marge` tragen
+  // beide Wege — Rabatt wie Netto-Einkauf gegen den Straßenpreis-Deckel.
+  const raenge = bestanden.map((e) => e.spielraum.marge).sort((a, b) => b - a);
   const tragendeMarge = raenge[1];
 
   ergebnis.tragendeMarge = tragendeMarge;
@@ -153,10 +228,12 @@ export function werteRundeAus(antworten, lage) {
  * erfindet, das im Anschreiben gar nicht gefragt wurde.
  */
 export const BOGEN = [
-  { feld: 'hersteller', frage: 'Name des Herstellers', pflicht: true },
+  { feld: 'hersteller', frage: 'Name des Herstellers oder Großhändlers', pflicht: true },
   { feld: 'sortiment', frage: 'Bahnen, Rohr oder Zubehör', pflicht: false },
   { feld: 'streckengeschaeft', frage: 'Direktversand an den Endkunden möglich? (ja/nein)', pflicht: true },
-  { feld: 'haendlerrabatt', frage: 'Händlerrabatt auf UVP als Anteil, z. B. 0.38', pflicht: true },
+  { feld: 'haendlerrabatt', frage: 'Händlerrabatt auf UVP als Anteil, z. B. 0.38 (Entwurf A)', pflicht: false },
+  { feld: 'einkaufNetto', frage: 'Netto-Einkaufspreis je Einheit in Euro (Entwurf C)', pflicht: false },
+  { feld: 'strassenpreisDeckelNetto', frage: 'Straßenpreis-Deckel netto je Einheit, aus dem Straßenpreisanker', pflicht: false },
   { feld: 'frachtmodell', frage: 'pauschale, freiHausAb, staffel oder nachAufwand', pflicht: true },
   { feld: 'produktdaten', frage: 'csv, api, excel oder katalog', pflicht: true },
   { feld: 'preisrhythmus', frage: 'Angekündigter Rhythmus der Preispflege', pflicht: true },
@@ -164,9 +241,23 @@ export const BOGEN = [
   { feld: 'fakturierendesLand', frage: 'Welche Gesellschaft fakturiert? AT, DE, CH …', pflicht: true },
 ];
 
-/** Prüft, ob ein Eintrag alle Pflichtfelder trägt. */
+/**
+ * Prüft, ob ein Eintrag alle Pflichtfelder trägt.
+ *
+ * Die Kondition ist seit Entwurf C ein **Entweder-oder** statt eines
+ * Pflichtfelds: Entweder ein Händlerrabatt (Herstellerweg) oder ein
+ * Netto-Einkaufspreis **samt** Straßenpreis-Deckel (Großhandelsweg). Ein
+ * Einkaufspreis ohne Deckel ist keine Kondition — ohne Bezugsgröße lässt
+ * sich daraus keine Marge lesen, und genau diese Verwechslung von Zahlen
+ * ohne Bezug war schon zweimal der Fehler (Frachtschwelle, Brutto-UVP).
+ */
 export function pruefeBogen(antwort = {}) {
   const fehlend = BOGEN.filter((f) => f.pflicht && (antwort[f.feld] === undefined || antwort[f.feld] === null))
     .map((f) => f.frage);
+  if (margeAusAntwort(antwort) === null) {
+    fehlend.push(
+      'Kondition: entweder Händlerrabatt (Entwurf A) oder Netto-Einkaufspreis samt Straßenpreis-Deckel (Entwurf C)',
+    );
+  }
   return { vollstaendig: fehlend.length === 0, fehlend };
 }

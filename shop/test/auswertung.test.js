@@ -4,6 +4,8 @@ import {
   GATE2_BEDINGUNGEN,
   BOGEN,
   margenspielraum,
+  nettopreisSpielraum,
+  margeAusAntwort,
   werteAntwortAus,
   werteRundeAus,
   pruefeBogen,
@@ -151,4 +153,63 @@ test('Jedes Bogenfeld trägt eine Frage', () => {
 
 test('Eine Antwort ohne Hersteller wird zurückgewiesen', () => {
   assert.throws(() => werteAntwortAus({ haendlerrabatt: 0.4 }), /braucht einen Hersteller/);
+});
+
+// --- Der Großhandelsweg (Entwurf C): Nettopreis gegen den Straßenpreis-Deckel ---
+
+const grosshaendlerAntwort = {
+  hersteller: 'Muster Baustoffgroßhandel',
+  sortiment: 'Bahnen',
+  streckengeschaeft: true,
+  einkaufNetto: 5.5,
+  strassenpreisDeckelNetto: 10.0,
+  frachtmodell: 'staffel',
+  produktdaten: 'csv',
+  preisrhythmus: 'IDS Connect, tagesaktuell',
+  fakturierendesLand: 'AT',
+};
+
+test('Der Nettopreis-Spielraum rechnet gegen den Deckel, nicht gegen eine Liste', () => {
+  const s = nettopreisSpielraum(5.5, 10.0);
+  assert.equal(s.art, 'nettopreis');
+  assert.ok(Math.abs(s.marge - 0.45) < 1e-9, 'EK 5,50 am Deckel 10,00 sind 45 % Marge');
+  assert.equal(s.reichtAmDeckel, true);
+  assert.ok(s.maxNachlass > 0.19 && s.maxNachlass < 0.2, 'bis ~19,1 % unter den Deckel hält die Untergrenze');
+  assert.throws(() => nettopreisSpielraum(5.5, 0), /Straßenpreis-Deckel/);
+});
+
+test('Eine Großhändlerantwort ohne Rabattsatz besteht die Konditionsbedingung', () => {
+  const e = werteAntwortAus(grosshaendlerAntwort);
+  assert.equal(e.beziffert, true);
+  assert.equal(e.bestanden, true);
+  assert.equal(e.spielraum.art, 'nettopreis');
+});
+
+test('Ein Einkaufspreis über dem tragfähigen Deckelanteil fällt durch', () => {
+  const e = werteAntwortAus({ ...grosshaendlerAntwort, einkaufNetto: 7.5 });
+  assert.equal(e.bestanden, false, 'EK 7,50 am Deckel 10,00 sind nur 25 % — unter der Untergrenze');
+  assert.ok(e.fehlend.some((f) => /Kondition/.test(f)));
+});
+
+test('Nennt eine Antwort beide Wege, gilt der schlechtere', () => {
+  const marge = margeAusAntwort({ haendlerrabatt: 0.5, einkaufNetto: 7.0, strassenpreisDeckelNetto: 10.0 });
+  assert.ok(Math.abs(marge - 0.3) < 1e-9, 'nicht die geschmückten 50 %, sondern die 30 % vom Deckel');
+});
+
+test('Ein Einkaufspreis ohne Deckel ist keine Kondition', () => {
+  assert.equal(margeAusAntwort({ einkaufNetto: 5.5 }), null);
+  const p = pruefeBogen({ ...grosshaendlerAntwort, strassenpreisDeckelNetto: undefined });
+  assert.equal(p.vollstaendig, false);
+  assert.ok(p.fehlend.some((f) => /samt Straßenpreis-Deckel/.test(f)));
+});
+
+test('Der Bogen ist mit dem Großhandelsweg vollständig — ganz ohne Rabattfeld', () => {
+  assert.equal(pruefeBogen(grosshaendlerAntwort).vollstaendig, true);
+});
+
+test('Eine gemischte Runde besteht, und der schwächere Weg trägt die Planung', () => {
+  const r = werteRundeAus([guteAntwort, grosshaendlerAntwort], LAGE);
+  assert.equal(r.pruefungA, true);
+  assert.ok(Math.abs(r.tragendeMarge - 0.38) < 1e-9, 'Rabattweg 38 % ist schwächer als Großhandelsweg 45 %');
+  assert.ok(r.folgen, 'die Kaskade rechnet mit der tragenden Marge weiter');
 });
