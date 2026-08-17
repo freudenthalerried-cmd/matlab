@@ -35,7 +35,7 @@ Gerüst vorhanden und meldet selbst, welche Pflichtangaben ihm fehlen.
 ## Benutzen
 
 ```
-npm test           # 374 Testfälle
+npm test           # 391 Testfälle
 npm run build      # erzeugt demo.html, eine einzelne Datei ohne Abhängigkeiten
 npm run import -- <lieferantId> <datei.csv> [--schreiben]
 npm run pruefe-tests  # prüft die Testfälle darauf, ob sie etwas behaupten
@@ -72,6 +72,7 @@ src/empfindlichkeit.js  Elastizität der vier Annahmen, Kipppunkte
 src/auswertung.js       Herstellerantworten prüfen, Preisspielraum, Folgen
 src/verhandlung.js      Rückwärts: nötiger Einkauf, nötiger Rabatt, Zielkatalog
 src/kontrolle.js        Belegtext zurücklesen und nachrechnen — die zweite Rechnung
+src/partnerauswertung.js Partnerantworten auswerten — Gate 9 und 13, Regel vorab
 src/format.js           EUR und Lückenmarkierung — einmal, siehe unten
 src/gebiet.js           Vorsorgegebiets-Auskunft über die Negativliste (Zwischenlösung)
 bin/import.mjs          Kommandozeile dazu, Probelauf als Voreinstellung

@@ -28,6 +28,7 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Gesamtkostenbild und Umsatzbedarf | fertig | 13 |
 | Empfindlichkeit der vier Annahmen | fertig | 14 |
 | Auswertungsbogen für die Herstellerantworten | fertig, leer, zwei Antwortwege | 25 |
+| Auswertungsbogen für die Partnerantworten | fertig, leer | 10 |
 | Rückwärtsrechnung fürs Konditionsgespräch | fertig | 13 |
 | Prüfer für die Testfälle selbst | fertig | gegen Probedatei nachgewiesen |
 | Gegenprobe am gerenderten Beleg | fertig | 14 |
@@ -40,9 +41,22 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Gedächtnis der Ablage (Journal aus Zeilen) | fertig, Senke wählbar | 14 |
 | Gebietsauskunft über die Negativliste | Zwischenlösung, Vollausbau blockiert | 10 |
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig, Baustelle abgefragt | headless geprüft |
-| **Summe** | | **381, alle grün, 0 hohl** |
+| **Summe** | | **391, alle grün, 0 hohl** |
 
-## Was zuletzt dazukam: der Großhandelsweg im Auswertungsbogen
+## Was zuletzt dazukam: der Partner-Auswertungsbogen
+
+Ausführlich in [`partnerauswertung.md`](./partnerauswertung.md). Der dritte
+0-€-Auslöser (drei bis fünf Partneranfragen, Gate 9 und 13) war der einzige
+ohne vorab feststehende Auswertung. `partnerauswertung.js` übernimmt die
+Bedingungen aus dem Partnerangebot (Nennung als Ausschlussfrage, Leadpreis
+≥ 100 €, 24-h-Frist, leistungsgebundene Exklusivität) und legt zwei
+Rundenregeln fest: **Machbar ab zwei Bestandenen** — die Fristenlösung
+braucht je Bezirk einen Partner und einen genannten Ersatzbetrieb — und der
+**zweithöchste** Preis trägt die Planung, mit Ausweis, ob er im Band
+100–250 € liegt. Gegenproben: eine Nennung genügt → 1 Testfall fällt;
+der beste Preis trägt → 2.
+
+## Was davor dazukam: der Großhandelsweg im Auswertungsbogen
 
 Ausführlich in
 [`auswertung-grosshandelsweg.md`](./auswertung-grosshandelsweg.md). Entwurf C
