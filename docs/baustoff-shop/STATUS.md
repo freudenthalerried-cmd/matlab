@@ -1,14 +1,14 @@
 # Status und Einstieg
 
-Stand: 2026-08-17. **Dieses Dokument zuerst lesen.** Sechsundsiebzig Arbeitsdateien
+Stand: 2026-08-17. **Dieses Dokument zuerst lesen.** Siebenundsiebzig Arbeitsdateien
 sind entstanden, mehrere davon korrigieren einander. Hier steht, was gilt.
 
 Veröffentlichter Bericht:
 [claude.ai/code/artifact/3d669d15…](https://claude.ai/code/artifact/3d669d15-b632-41b9-838c-b9369dab8a4c)
 
-Auf Stand 16. August 2026 gebracht: alle neunzehn Gates, die vier Befunde des
-Tages (Straßenpreisanker, Händlerplatz, Pflichtgebiet, Bestand), dreizehn
-versandfertige Anfragen. Quelldatei im Repo unter `bericht-radon.html`; bei
+Auf Stand 17. August 2026 gebracht: alle neunzehn Gates, fünf Befunde
+(Straßenpreisanker, Händlerplatz, Pflichtgebiet, Bestand, Lagerhaus als
+dreizehnter Adressat), dreizehn versandfertige Anfragen. Quelldatei im Repo unter `bericht-radon.html`; bei
 Widerspruch gilt weiterhin [`gate-register.md`](./gate-register.md).
 
 Lauffähiges Shop-Funktionsmuster:
@@ -171,6 +171,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `import-riegel-umgangen.md` | **Der Muster-Riegel prüfte das Argument, nicht den Pfad** — aus beispiel/ heraus wären vier erfundene Preise als bestätigt in den Katalog geschrieben worden; Riegel am aufgelösten Pfad, Marker im Dateinamen, Meldung statt Stacktrace |
 | `bau-pruefte-nur-den-kern.md` | **Der Wächter bewachte nur den Kern** — Template-Kollisionen, $-Ersetzungsmuster und fehlende Platzhalter passierten den Bau stumm; jetzt parst der Bau das fertige Modulskript mit node --check; Nebenfund: export async function stand seit jeher unentkleidet im Bündel |
 | `pruefer-der-pruefer-auditiert.md` | **Eine fremde Länge schirmte hohle Schleifen ab** — die Längenregel des Hohlheitsprüfers band die Zusicherung nicht an die geschleifte Liste; verschärft ohne einen neuen Verdacht im Bestand; die Probedatei liegt jetzt im Repo und der Nachweis läuft bei jedem npm test |
+| `tagesstand-17-august.md` | **Alle Schaufenster auf denselben Stand** — Bericht-Artefakt, Funktionsmuster-Artefakt und PR-Beschreibung auf den 17. August gezogen (Lagerhaus, 422 Testfälle, vierzehn Audits); eine nicht mitgezogene Anzeige ist eine stille Falschaussage |
 | `pruefung-der-testfaelle.md` | **Grüne Tests sind eine Aussage über die Testfälle, nicht über den Code** — elf hohle Schleifen gefunden und entschärft |
 | `verhandlungsziel-konditionen.md` | **Zehn Prozent Nachlass kosten 38,8 % Rabatt** — das Verhandlungsziel liegt über der Gate-2-Schwelle |
 | `auswertungsbogen-hersteller.md` | **Genau 35 % Rabatt lassen 4,4 % Preisspielraum** — die Auswertung der zwölf Antworten steht fertig bereit |
