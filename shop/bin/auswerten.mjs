@@ -15,7 +15,15 @@ import { pruefeBogen, werteRundeAus } from '../src/auswertung.js';
 import { pruefePartnerbogen, wertePartnerrundeAus, PREISBAND_STUFE_A } from '../src/partnerauswertung.js';
 
 const datei = process.argv[2] ?? new URL('../beispiel/antworten-beispiel.json', import.meta.url);
-const daten = JSON.parse(readFileSync(datei, 'utf8'));
+let daten;
+try {
+  daten = JSON.parse(readFileSync(datei, 'utf8'));
+} catch (fehler) {
+  console.error(`Antwortdatei nicht lesbar: ${datei}`);
+  console.error(`  ${fehler.message}`);
+  console.error('Erwartet wird eine JSON-Datei nach dem Muster von beispiel/antworten-beispiel.json.');
+  process.exit(1);
+}
 
 const pct = (n) => (n * 100).toFixed(1).replace('.', ',') + ' %';
 const eur = (n) => Number(n).toFixed(2).replace('.', ',') + ' €';
@@ -45,6 +53,10 @@ if (!runde.pruefungA) {
   console.log(`  tragende Marge: ${pct(runde.tragendeMarge)} (der schwächere der beiden besten)`);
   if (runde.folgen?.tragfaehig) {
     console.log(`  Folgen: ${eur(runde.folgen.umsatzNetto)} Umsatz, ${runde.folgen.bestellungen} Bestellungen, ${runde.folgen.sessions ?? '—'} Sessions im Monat`);
+  } else if (runde.folgen) {
+    console.log(`  Folgen: NICHT TRAGFÄHIG — ${runde.folgen.grund}`);
+  } else {
+    console.log('  Folgen: nicht berechenbar — der Antwortdatei fehlt der lage-Block (Zielgewinn, Fixkosten, Warenkorb …)');
   }
 }
 for (const e of runde.einzeln) {

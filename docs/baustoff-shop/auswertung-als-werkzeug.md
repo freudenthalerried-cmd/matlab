@@ -82,3 +82,34 @@ Feldnamen der JSON-Datei sind die der Bögen (`BOGEN`, `PARTNER_BOGEN`);
 eine Eingabemaske gibt es nicht und braucht es für dreizehn Antworten
 nicht. Wenn die echten Antworten da sind, entsteht die Kopie der
 Beispieldatei — und die Auswertung ist ein Befehl, kein Nachmittag.
+
+## Nachtrag vom selben Tag: das Werkzeug selbst auditiert
+
+Die Audit-Serie „vom Verhalten zur Erklärung" hat als nächsten Prüfwinkel
+die Vortragsschicht bekommen — das Werkzeug, das tags zuvor entstand.
+Drei Befunde, alle vom selben Schlag wie die neun davor: **Schweigen an
+der falschen Stelle.**
+
+1. **Fehlender `lage`-Block verschwand stumm.** `werteRundeAus` liefert
+   dann `folgen: null`, und die Ausgabe ließ die Folgen-Zeile einfach
+   weg — „Prüfung A: BESTANDEN" stand da, als wäre nichts. Jetzt steht
+   dort: *Folgen: nicht berechenbar — der Antwortdatei fehlt der
+   lage-Block.*
+2. **Eine nicht tragfähige Lage wurde verschluckt.** Die Kaskade liefert
+   `tragfaehig: false` samt Grund („Nach Werbung und Gebühren bleibt
+   nichts übrig") — die Ausgabe druckte davon nichts. Das ist der
+   gefährlichste der drei: Prüfung A kann bestehen, während das
+   Kostenmodell das Vorhaben verwirft, und genau diese Zeile fehlte.
+   Jetzt: *Folgen: NICHT TRAGFÄHIG — <Grund aus der Kaskade>.*
+3. **Kaputte oder fehlende Dateien warfen rohe Stacktraces.** Am
+   Freigabetag ist ein Stacktrace keine Fehlermeldung. Jetzt: klare
+   Meldung mit Verweis auf das Muster `antworten-beispiel.json`,
+   Exit-Code 1.
+
+Drei neue Testfälle starten das Werkzeug als Kindprozess gegen präparierte
+Dateien (ohne Lage, Werbeanteil 45 %, kaputtes JSON). Gegenprobe per
+Mutation: Folgen-Zweige entfernt → 2 Testfälle fallen; Fehlerbehandlung
+entfernt → 1 fällt. Testbestand: 411, alle grün, Prüfer ohne Verdacht.
+
+Merkposten für die Serie: Auch eine Vortragsschicht kann optimistisch
+lügen — nicht durch falsche Zahlen, sondern durch weggelassene Zeilen.

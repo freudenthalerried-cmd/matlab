@@ -13,7 +13,7 @@ Widerspruch gilt weiterhin [`gate-register.md`](./gate-register.md).
 
 Lauffähiges Shop-Funktionsmuster:
 [claude.ai/code/artifact/c40fd35f…](https://claude.ai/code/artifact/c40fd35f-56e1-4821-a3b1-a1a885102ec8) —
-Quelltext und 408 Testfälle unter `shop/`, auf Hohlheit geprüft. Alle Preise sind Platzhalter.
+Quelltext und 411 Testfälle unter `shop/`, auf Hohlheit geprüft. Alle Preise sind Platzhalter.
 Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 
 ## Wo das Projekt steht
