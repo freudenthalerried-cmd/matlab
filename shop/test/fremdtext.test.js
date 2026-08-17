@@ -295,6 +295,19 @@ test('Ausgang UID-Belegzeile: der Name aus der fremden Antwort bleibt eine Zeile
   assert.equal(zeilen(belegzeile(auswertung, 'ATU12345675')), 1);
 });
 
+test('Ausgang UID-Belegzeile: auch Abfrage-ID und Datum sind fremder Text', () => {
+  // Der erste Testfall prüfte nur den Namen — dieselbe blinde Stelle wie der
+  // Code selbst: Alle drei Felder kommen aus der Antwort des fremden Dienstes.
+  const auswertung = {
+    stand: 'gueltig',
+    name: 'Muster GmbH',
+    abfrageDatum: `2026-08-16${GIFT}`,
+    abfrageId: `WAPI${GIFT}X123`,
+  };
+  assert.equal(zeilen(belegzeile(auswertung, 'ATU12345675')), 1);
+  assert.equal(hatSteuerzeichen(belegzeile(auswertung, 'ATU12345675')), false);
+});
+
 /* ------------------------------------------------------------------ *
  * Ausgang 7: das Impressum im Web
  * ------------------------------------------------------------------ */

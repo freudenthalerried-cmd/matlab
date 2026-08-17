@@ -176,10 +176,13 @@ export function belegzeile(auswertung, uid) {
     auswertung.abfrageDatum ?? 'ohne Datum',
     auswertung.abfrageId ? `Abfrage-ID ${auswertung.abfrageId}` : 'ohne Abfrage-ID — nicht als Nachweis geeignet',
   ];
-  // Der Name kommt aus der Antwort eines fremden Dienstes und landet in der
-  // Ablage. Ein Umbruch darin wäre eine zusätzliche Belegzeile.
-  if (auswertung.name) teile.push(textZeile(auswertung.name));
-  return teile.join(' · ');
+  if (auswertung.name) teile.push(auswertung.name);
+  // Name, Abfrage-Identifikation und Datum kommen alle aus der Antwort eines
+  // fremden Dienstes und landen in der Ablage. Die erste Fassung entschärfte
+  // nur den Namen — dieselbe Regel, ein Drittel der Felder. Deshalb geht jetzt
+  // die ganze Zeile durch textZeile: Egal welches Feld vergiftet ist, die
+  // Belegzeile bleibt eine Zeile.
+  return textZeile(teile.join(' · '));
 }
 
 /**

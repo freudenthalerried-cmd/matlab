@@ -22,7 +22,7 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Rechtstexte-Gerüst | fertig, dreizehn AGB-Punkte | 22 |
 | Angebot, Auftragsbestätigung und Rechnung | fertig, Vertragsschluss ergänzt | 24 |
 | Trockenlauf des Auftrags | fertig, elf Schritte | 14 |
-| UID-Abfrage beim EU-System | fertig, ungeprüft am Dienst | 17 |
+| UID-Abfrage beim EU-System | fertig, ungeprüft am Dienst, ein Fehler behoben | 17 |
 | Ablage und Nummernkreis | fertig, Felderverzeichnis, ohne Speicherung | 21 |
 | Zahlwege und Gebühren | fertig, Fracht in der Grundlage | 16 |
 | Gesamtkostenbild und Umsatzbedarf | fertig, ein Fehler behoben | 17 |
@@ -33,7 +33,7 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Prüfer für die Testfälle selbst | fertig | gegen Probedatei nachgewiesen |
 | Gegenprobe am gerenderten Beleg | fertig | 14 |
 | Gegenprobe an der Lieferantenbestellung | fertig, ein Fehler behoben | 6 |
-| Fremdtext an allen Ein- und Ausgängen | fertig, ein Fehler behoben | 18 |
+| Fremdtext an allen Ein- und Ausgängen | fertig, zwei Fehler behoben | 20 |
 | Frachtdeckung Kunde gegen Lieferant | fertig, ein Fehler behoben | 4 |
 | Vorgangsklammer über alle Papiere | fertig, ein Fehler behoben | 29 |
 | Baustelle als eigene Lieferanschrift | fertig, Zusicherung nach Art. 14 | 29 |
@@ -41,7 +41,7 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Gedächtnis der Ablage (Journal aus Zeilen) | fertig, Senke wählbar | 14 |
 | Gebietsauskunft über die Negativliste | Zwischenlösung, Vollausbau blockiert | 10 |
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig, Baustelle abgefragt | headless geprüft |
-| **Summe** | | **398, alle grün, 0 hohl** |
+| **Summe** | | **399, alle grün, 0 hohl** |
 
 ## Was zuletzt dazukam: die Gebühr auf die durchlaufende Fracht
 
