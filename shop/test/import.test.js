@@ -118,3 +118,28 @@ test('Vergleich ignoriert Artikel ohne bestätigten Einkaufspreis', () => {
   const d = vergleiche([{ sku: 'A-1' }], [{ sku: 'A-1', ekNetto: 99 }]);
   assert.equal(d.preisaenderungen.length, 0);
 });
+
+test('Eine mehrdeutige Zahl wird abgewiesen statt geraten', () => {
+  // `1.234` kann 1234 (deutsche Tausendergruppe) oder 1,234 (englische
+  // Dezimalzahl) bedeuten — die Kopfzeile von import.js verspricht: abweisen
+  // statt raten. Vor dieser Prüfung wurde englisch geraten; ein Einkaufspreis
+  // wäre still um den Faktor 1.000 geschrumpft.
+  assert.ok(Number.isNaN(zahl('1.234')), 'deutsch 1234 oder englisch 1,234 — nicht eindeutig');
+  assert.ok(Number.isNaN(zahl('1,234')), 'englisch 1234 oder deutsch 1,234 — nicht eindeutig');
+  assert.ok(Number.isNaN(zahl('12.345')), 'auch mit zwei führenden Ziffern mehrdeutig');
+
+  // Eindeutig bleibt lesbar: Tausendergruppen beginnen nie mit einzelner Null,
+  // und wer beide Trenner setzt, hat sich erklärt.
+  assert.equal(zahl('0,500'), 0.5);
+  assert.equal(zahl('0.500'), 0.5);
+  assert.equal(zahl('1.234,56'), 1234.56);
+  assert.equal(zahl('1234.567'), 1234.567);
+});
+
+test('Ein mehrdeutiger Preis lässt die Zeile am Import scheitern, nicht schrumpfen', () => {
+  const liste = 'sku;bezeichnung;uvp_netto\nXX-1;Testartikel;1.234\n';
+  const e = importierePreisliste(liste, { id: 'l1', haendlerrabattAufUvp: 0.35 });
+  assert.equal(e.artikel.length, 0);
+  assert.equal(e.fehler.length, 1);
+  assert.match(e.fehler[0], /Zahl nicht lesbar/);
+});

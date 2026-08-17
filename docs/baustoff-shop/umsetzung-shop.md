@@ -15,7 +15,7 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Warenkorb mit Lieferantenaufteilung | fertig, Hinweise getrennt | 17 |
 | Bestellübergabe als Text und CSV | fertig | 4 |
 | Freigabesperren (Gate 6, Gate 7) | fertig | 3 |
-| Preislisten-Import | fertig | 14 |
+| Preislisten-Import | fertig, ein Fehler behoben | 16 |
 | Materialbedarfsrechner | fertig | 11 |
 | Bestellstrecke mit Gate-7-Prüfung | fertig | 11 |
 | Messwert-Einordner | fertig | 10 |
@@ -41,7 +41,7 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Gedächtnis der Ablage (Journal aus Zeilen) | fertig, Senke wählbar | 14 |
 | Gebietsauskunft über die Negativliste | Zwischenlösung, Vollausbau blockiert | 10 |
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig, Baustelle abgefragt | headless geprüft |
-| **Summe** | | **396, alle grün, 0 hohl** |
+| **Summe** | | **398, alle grün, 0 hohl** |
 
 ## Was zuletzt dazukam: die Gebühr auf die durchlaufende Fracht
 

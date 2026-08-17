@@ -21,6 +21,15 @@ export function zahl(roh) {
   if (roh == null) return null;
   const s = String(roh).trim().replace(/\s|€/g, '');
   if (s === '') return null;
+
+  // `1.234` kann 1234 bedeuten (deutsche Tausendergruppe) oder 1,234
+  // (englische Dezimalzahl mit drei Stellen). Eindeutig ist das nicht — und
+  // die Kopfzeile dieser Datei verspricht: abweisen statt raten. Ein
+  // geratener Einkaufspreis wäre um den Faktor 1.000 falsch und fiele erst
+  // bei der Jahresabrechnung auf. `0,500` bleibt lesbar: Eine Tausendergruppe
+  // beginnt nie mit einer einzelnen Null, die Lesart ist eindeutig deutsch.
+  if (/^[1-9]\d{0,2}[.,]\d{3}$/.test(s)) return NaN;
+
   // 1.234,56 → 1234.56   |   1,234.56 → 1234.56   |   1234.56 → 1234.56
   const normalisiert =
     s.includes(',') && s.lastIndexOf(',') > s.lastIndexOf('.')
