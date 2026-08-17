@@ -6,7 +6,10 @@
  * Frontend wäre die sicherste Art, unbemerkt falsche Preise anzuzeigen.
  */
 
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 const lies = (p) => readFileSync(new URL(p, import.meta.url), 'utf8');
 
@@ -19,7 +22,7 @@ const daten = {
 const entkleide = (quelle) =>
   quelle
     .replace(/^import[^;]+;\s*$/gm, '')
-    .replace(/^export (const|function) /gm, '$1 ');
+    .replace(/^export (const|let|function|class|async function) /gm, '$1 ');
 
 const kern = [
   entkleide(lies('./src/format.js')),
@@ -52,7 +55,7 @@ const kern = [
 function pruefeNamenskollisionen(quelle) {
   const gesehen = new Map();
   const doppelt = [];
-  const muster = /^(?:const|let|function|class)\s+([A-Za-z_$][\w$]*)/gm;
+  const muster = /^(?:const|let|var|class|async\s+function|function)\s+([A-Za-z_$][\w$]*)/gm;
   for (const treffer of quelle.matchAll(muster)) {
     const name = treffer[1];
     if (gesehen.has(name)) doppelt.push(name);
@@ -68,9 +71,37 @@ function pruefeNamenskollisionen(quelle) {
 
 pruefeNamenskollisionen(kern);
 
-const html = lies('./demo-template.html')
-  .replace('/*__KERN__*/', kern)
-  .replace('/*__DATEN__*/', JSON.stringify(daten));
+// Ersetzt wird über Funktionen, nicht über Ersatztexte: In String.replace hat
+// „$&" (und Verwandte) im Ersatztext Sonderbedeutung. Ein Artikelname mit
+// „$&" — freier Text aus einer importierten Preisliste — würde sonst den
+// Platzhalter zurück in die Seite schreiben, ohne dass der Bau es merkt.
+const vorlage = lies('./demo-template.html');
+for (const platzhalter of ['/*__KERN__*/', '/*__DATEN__*/']) {
+  if (!vorlage.includes(platzhalter)) {
+    throw new Error(`Platzhalter fehlt in demo-template.html: ${platzhalter}`);
+  }
+}
+const html = vorlage
+  .replace('/*__KERN__*/', () => kern)
+  .replace('/*__DATEN__*/', () => JSON.stringify(daten));
+
+// Der Kollisionswächter sieht nur den Kern. Das Template deklariert im selben
+// Skript eigene Namen (daten, katalog, eur …) — eine Kollision dort, oder ein
+// Ersetzungsschaden, fällt erst beim Parsen des fertigen Skripts auf. Genau
+// wie beim EUR-Vorfall blieben die Tests grün, die Seite liefe nicht.
+const skriptAnfang = html.indexOf('<script type="module">') + '<script type="module">'.length;
+const skriptEnde = html.indexOf('</script>', skriptAnfang);
+const pruefverzeichnis = mkdtempSync(join(tmpdir(), 'demo-pruefung-'));
+try {
+  const pruefdatei = join(pruefverzeichnis, 'skript.mjs');
+  writeFileSync(pruefdatei, html.slice(skriptAnfang, skriptEnde));
+  const pruefung = spawnSync(process.execPath, ['--check', pruefdatei], { encoding: 'utf8' });
+  if (pruefung.status !== 0) {
+    throw new Error('Das zusammengefügte Skript parst nicht:\n' + pruefung.stderr);
+  }
+} finally {
+  rmSync(pruefverzeichnis, { recursive: true, force: true });
+}
 
 writeFileSync(new URL('./demo.html', import.meta.url), html);
 console.log('demo.html geschrieben — ' + daten.artikel.artikel.length + ' Artikel, ' + daten.lieferanten.lieferanten.length + ' Lieferanten');

@@ -40,10 +40,10 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Abgleich Versprechen gegen Verhalten | fertig, zwei Befunde | 14 |
 | Gedächtnis der Ablage (Journal aus Zeilen) | fertig, Senke wählbar | 14 |
 | Gebietsauskunft über die Negativliste | Zwischenlösung, Vollausbau blockiert | 10 |
-| Oberfläche als eine Datei ohne Abhängigkeiten | fertig, Baustelle abgefragt | headless geprüft |
+| Oberfläche als eine Datei ohne Abhängigkeiten | fertig, vier Baufehler behoben | 5, dazu headless geprüft |
 | Generalprobe des Freigabetags | fertig, fiktive Antworten | 3 |
 | Auswertung als Kommandozeilenwerkzeug | fertig, drei Fehler behoben | 5 |
-| **Summe** | | **415, alle grün, 0 hohl** |
+| **Summe** | | **420, alle grün, 0 hohl** |
 
 ## Was zuletzt dazukam: die Gebühr auf die durchlaufende Fracht
 

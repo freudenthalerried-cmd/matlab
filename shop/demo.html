@@ -2575,7 +2575,7 @@ function werteAntwortAus(antwort) {
  * @param {string} uid
  * @param {{abruf: Function, eigeneUid?: string, versuche?: number}} optionen
  */
-export async function pruefeUid(uid, { abruf, eigeneUid = null, versuche = 3 } = {}) {
+async function pruefeUid(uid, { abruf, eigeneUid = null, versuche = 3 } = {}) {
   if (typeof abruf !== 'function') throw new Error('pruefeUid braucht einen Abruf');
 
   const anfrage = baueAnfrage(uid, { eigeneUid });
