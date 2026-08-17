@@ -1,6 +1,6 @@
 # Status und Einstieg
 
-Stand: 2026-08-16. **Dieses Dokument zuerst lesen.** Neunundsechzig Arbeitsdateien
+Stand: 2026-08-16. **Dieses Dokument zuerst lesen.** Siebzig Arbeitsdateien
 sind entstanden, mehrere davon korrigieren einander. Hier steht, was gilt.
 
 Veröffentlichter Bericht:
@@ -164,6 +164,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `untergrenze-in-der-empfindlichkeit.md` | **Die Elastizität rechnete Betriebspunkte aus, die Gate 1 verbietet** — das nie gelesene Untergrenzen-Feld ist verdrahtet; die Nische fällt an Gate 1 bei 8,6 % Verschlechterung, lange vor dem rechnerischen Kipppunkt |
 | `grenze-bei-genau-300.md` | **Genau 300 überschreiten 300 nicht** — die Leadstrecke qualifizierte einen Anlass ohne Überschreitung und schrieb dem Kunden eine falsche Aussage; Grenze und Testfall korrigiert |
 | `verschnitt-auf-der-falschen-basis.md` | **22 % über dem Bedarf, nicht 18** — die Verschnitt-Prozentzahl stand auf der gelieferten Fläche statt auf dem Bedarf; und Positionen, die das Sortiment nicht führt, verschwinden nicht mehr stumm aus der Stückliste |
+| `verhandlung-geprueft-artefakt-aktuell.md` | **Zehntes Audit ohne Fund** — die Rückwärtsrechnung hält ihrer Erklärung stand; Funktionsmuster-Artefakt auf den Abendstand gebracht; die Audit-Serie braucht ab jetzt neue Eingangsdaten oder einen neuen Prüfwinkel |
 | `pruefung-der-testfaelle.md` | **Grüne Tests sind eine Aussage über die Testfälle, nicht über den Code** — elf hohle Schleifen gefunden und entschärft |
 | `verhandlungsziel-konditionen.md` | **Zehn Prozent Nachlass kosten 38,8 % Rabatt** — das Verhandlungsziel liegt über der Gate-2-Schwelle |
 | `auswertungsbogen-hersteller.md` | **Genau 35 % Rabatt lassen 4,4 % Preisspielraum** — die Auswertung der zwölf Antworten steht fertig bereit |
