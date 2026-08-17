@@ -1,6 +1,6 @@
 # Status und Einstieg
 
-Stand: 2026-08-17. **Dieses Dokument zuerst lesen.** Zweiundsiebzig Arbeitsdateien
+Stand: 2026-08-17. **Dieses Dokument zuerst lesen.** Dreiundsiebzig Arbeitsdateien
 sind entstanden, mehrere davon korrigieren einander. Hier steht, was gilt.
 
 Veröffentlichter Bericht:
@@ -68,7 +68,7 @@ kosten sie unter 200 €.
 
 | Nächster Schritt | Braucht | Entscheidet | Vorbereitet in |
 |---|---|---|---|
-| Rohmarge belegen (Stufe 0) | Freigabe für E-Mails an dreizehn Adressaten (zwölf Hersteller, ein Großhändler) | den **Shop** — Gate 1, 2, 6 | `anschreiben-entwuerfe.md`, Auswertung in `auswertungsbogen-hersteller.md` |
+| Rohmarge belegen (Stufe 0) | Freigabe für E-Mails an dreizehn Adressaten (zwölf Hersteller, Lagerhaus) | den **Shop** — Gate 1, 2, 6 | `anschreiben-entwuerfe.md`, Zugänge in `adressaten-und-zugaenge.md`, Auswertung per `npm run auswerten` |
 | Suchvolumina prüfen (Stufe 1) | Werkzeug für 100–200 €/Monat | **beide Modelle** — Gate 15 | `entscheidungsmatrix.md` |
 | Rechtsform, Shop, Inhalte | erst ab Stufe 2, nach den beiden obigen | — | `phase5-technik.md`, `phase8-*` |
 
@@ -167,6 +167,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `verhandlung-geprueft-artefakt-aktuell.md` | **Zehntes Audit ohne Fund** — die Rückwärtsrechnung hält ihrer Erklärung stand; Funktionsmuster-Artefakt auf den Abendstand gebracht; die Audit-Serie braucht ab jetzt neue Eingangsdaten oder einen neuen Prüfwinkel |
 | `generalprobe-freigabetag.md` | **Die Kette läuft, bevor es zählt** — fiktive Antworten laufen von Bogen bis Sessionzahl und Leadpreis durch; Gate 17 ist nicht mehr gefolgert, sondern vorgeführt, und die Probe läuft bei jedem npm test mit |
 | `auswertung-als-werkzeug.md` | **Der Bogen als Werkzeug, nicht als Testprotokoll** — `npm run auswerten -- <datei>` trägt die Antworten des Freigabetags vor: Bogenvollständigkeit, Prüfung A, Folgen, Partnerrunde; die Beispieldatei ist fiktiv und als solche beschriftet |
+| `adressaten-und-zugaenge.md` | **Der dreizehnte Adressat ist das Lagerhaus** — Quester ist im Konkurs (Räumung bis April 2026), BayWa AT verkauft ihre Lagerhaus-Mehrheit; das Lagerhaus führt BMI-Bitumenbahnen inkl. Vedatect; alle zwölf Herstellerzugänge erhoben, sieben mit AT-Sitz |
 | `pruefung-der-testfaelle.md` | **Grüne Tests sind eine Aussage über die Testfälle, nicht über den Code** — elf hohle Schleifen gefunden und entschärft |
 | `verhandlungsziel-konditionen.md` | **Zehn Prozent Nachlass kosten 38,8 % Rabatt** — das Verhandlungsziel liegt über der Gate-2-Schwelle |
 | `auswertungsbogen-hersteller.md` | **Genau 35 % Rabatt lassen 4,4 % Preisspielraum** — die Auswertung der zwölf Antworten steht fertig bereit |

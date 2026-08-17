@@ -39,7 +39,7 @@ statt sechs Adressaten, in drei Prioritäten, Rohr- und Bahnenseite getrennt.
 | 3 | BMI Österreich | Vedagard AL-E, radondicht mit abP |
 | 3 | Sika | SikaProof-Systeme, eigene Radon-Broschüre |
 | 3 | Rothoblaas | Radon Floor, zertifiziert |
-| — | **ein Baustoffgroßhändler** (dreizehnter Adressat, Entwurf C) | herstellerunabhängiger Bezugsweg; Kandidat vor Versand festzulegen |
+| — | **Lagerhaus** („Unser Lagerhaus" WHG, dreizehnter Adressat, Entwurf C) | herstellerunabhängiger Bezugsweg; führt BMI-Bitumenbahnen inkl. Vedatect — festgelegt in `adressaten-und-zugaenge.md`, Quester insolvent, BayWa AT im Umbruch |
 
 **Gestrichen: Hauff-Technik.** Mehrspartenhauseinführungen sind seit 2017
 ohnehin gas- und druckwasserdicht vorgeschrieben und werden bereits radondicht
