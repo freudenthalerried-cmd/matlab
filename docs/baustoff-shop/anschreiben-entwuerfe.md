@@ -73,17 +73,23 @@ Gate 3 nicht.
 > Für die Bewertung wären mir folgende Angaben wichtig:
 >
 > 1. Beliefern Sie Fachhändler, und welche Voraussetzungen bestehen dafür?
-> 2. Wie hoch ist der Händlerrabatt auf die unverbindliche Preisempfehlung,
->    gestaffelt nach Abnahmemenge?
+> 2. Für die Wirtschaftlichkeit rechne ich mit einem Händlerrabatt in der
+>    Größenordnung von 40 % auf die **Netto-Preisliste**, gestaffelt nach
+>    Abnahmemenge. Welche Konditionen können Sie darstellen — und dürfte ich
+>    dazu um Ihre aktuelle Netto-Preisliste bitten?
 > 3. Ist **Streckengeschäft** möglich, also Direktversand an meinen Endkunden?
 >    Falls ja: neutral verpackt und unter meinem Absender?
-> 4. Wie hoch ist der Mindestbestellwert, und ab welchem Auftragswert liefern
->    Sie frachtfrei?
+> 4. Wie hoch ist der Mindestbestellwert, und ab welchem Wert liefern Sie
+>    frachtfrei — jeweils bezogen auf den **Nettobestellwert nach Rabatt**?
 > 5. Welche Lieferzeit ist für Lagerware üblich?
 > 6. Stellen Sie Produktdaten strukturiert bereit — als CSV, über eine
 >    Schnittstelle oder ausschließlich als Katalog?
 > 7. Wie werden Transportschäden im Speditionsversand abgewickelt, und wen
 >    trifft die Meldepflicht?
+> 8. Vertreiben Sie selbst an Endkunden — und falls ja: Gibt es für Händler
+>    eine Preisuntergrenze oder einen Gebietsschutz?
+> 9. Aus welcher Gesellschaft fakturieren Sie an österreichische Händler —
+>    eine österreichische Niederlassung oder das Stammhaus?
 >
 > Über eine Rückmeldung freue ich mich. Gerne stelle ich das Vorhaben auch in
 > einem kurzen Gespräch vor.
@@ -94,6 +100,20 @@ Gate 3 nicht.
 keine Umsätze und keine Referenzen. Ein Hersteller, der Konditionen auf
 Grundlage einer erfundenen Größenordnung nennt, korrigiert sie spätestens beim
 ersten Auftrag — und dann ist die Kalkulation Makulatur.
+
+**Warum die Fragen 2, 4, 8 und 9 so formuliert sind** (ergänzt am 16. August):
+Frage 2 nennt eine eigene Zahl statt nach einer zu fragen — wer keine nennt,
+bekommt die des Gegenübers (`verhandlungsziel-konditionen.md`) — und bittet um
+die Netto-Preisliste, weil eine Rabattantwort ohne Bezugsbasis nicht auswertbar
+ist (`alternativen-ohne-freigabe.md`: die Platzhalter-UVP war eine Bruttozahl).
+Frage 4 legt die Bezugsgröße der Schwellen fest, an deren Verwechslung die
+eigene Frachtrechnung schon einmal gescheitert ist
+(`frachtschwelle-und-bestellwert.md`). Frage 8 ist die Händlerplatz-Frage aus
+`vertriebswege-der-hersteller.md` — ein Hersteller mit Endkundenvertrieb ohne
+Händlerschutz ist für die Leitposition ungeeignet, egal wie gut der Rabatt ist.
+Frage 9 entscheidet über das Reihengeschäft und damit über 19–20 % auf jeden
+Einkauf (`beleg-und-reihengeschaeft.md`). Alle vier Antworten hat der
+Auswertungsbogen bereits als Felder vorgesehen; jetzt werden sie auch gefragt.
 
 ### Wann eine Antwort verwertbar ist
 
@@ -254,23 +274,22 @@ nicht zustimmt, kann nicht Partner werden — unabhängig davon, wie gut die
    deutsche, ist es ein Reihengeschäft — Rechnung ohne Umsatzsteuer an unsere
    UID, während die Ware direkt an wechselnde österreichische Baustellen geht.
    Der Unterschied entscheidet über 19–20 % auf jeden Einkauf, und er steht auf
-   keiner Preisliste. **Ein Satz im Anschreiben klärt ihn; Entwurf A enthält ihn
-   noch nicht.**
+   keiner Preisliste. **Erledigt am 16. August: Frage 9 in Entwurf A stellt
+   ihn.**
 4. **Die Schweizer Hersteller sind kein EU-Fall.** Sika und Ampack liefern aus
    der Schweiz: Einfuhr, Zoll und Einfuhrumsatzsteuer statt innergemeinschaftlichem
    Erwerb, und ein Direktversand an die Baustelle wirft die Frage auf, wer als
    Anmelder auftritt. Das ist vor einer Aufnahme ins Sortiment zu klären, nicht
    danach.
 5. **Eine Zahl nennen, nicht nach einer fragen.** Nachgetragen am 15. August,
-   siehe [`verhandlungsziel-konditionen.md`](./verhandlungsziel-konditionen.md).
-   Entwurf A fragt heute nach dem Händlerrabatt und lässt die Antwort offen —
-   wer nach einer Zahl fragt, ohne eine zu nennen, bekommt die des Gegenübers.
-   Ins Anschreiben gehört die Staffel: Bei einem im Onlinehandel üblichen
-   Nachlass von rund zehn Prozent auf die UVP verlangt die Untergrenze von 32 %
-   bereits **38,8 % Händlerrabatt**, die Abdichtungsbahn mit ihren 38 % sogar
-   **44,2 %**. Jeder Prozentpunkt Nachlass kostet mehr als einen Prozentpunkt
-   Rabatt. Die 35 % aus Gate 2 sind die Schwelle, unter der nichts geht — nicht
-   das Verhandlungsziel.
+   siehe [`verhandlungsziel-konditionen.md`](./verhandlungsziel-konditionen.md):
+   Wer nach einer Zahl fragt, ohne eine zu nennen, bekommt die des Gegenübers.
+   Die Herleitung: Bei einem im Onlinehandel üblichen Nachlass von rund zehn
+   Prozent auf die UVP verlangt die Untergrenze von 32 % bereits **38,8 %
+   Händlerrabatt**, die Abdichtungsbahn mit ihren 38 % sogar **44,2 %**. Die
+   35 % aus Gate 2 sind die Schwelle, unter der nichts geht — nicht das
+   Verhandlungsziel. **Erledigt am 16. August: Frage 2 in Entwurf A nennt
+   „Größenordnung 40 % auf die Netto-Preisliste" und bittet um die Liste.**
 6. **Reihenfolge.** Entwurf A zuerst, **Entwurf C im selben Versand** — er
    kostet eine einzige weitere E-Mail und prüft den Bezugsweg, der bleibt,
    wenn die Herstellerantworten enttäuschen. Beide zusammen entscheiden über
