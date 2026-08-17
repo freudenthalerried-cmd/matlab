@@ -1,6 +1,6 @@
 # Status und Einstieg
 
-Stand: 2026-08-17. **Dieses Dokument zuerst lesen.** Siebenundsiebzig Arbeitsdateien
+Stand: 2026-08-17. **Dieses Dokument zuerst lesen.** Achtundsiebzig Arbeitsdateien
 sind entstanden, mehrere davon korrigieren einander. Hier steht, was gilt.
 
 Veröffentlichter Bericht:
@@ -69,7 +69,7 @@ kosten sie unter 200 €.
 | Nächster Schritt | Braucht | Entscheidet | Vorbereitet in |
 |---|---|---|---|
 | Rohmarge belegen (Stufe 0) | Freigabe für E-Mails an dreizehn Adressaten (zwölf Hersteller, Lagerhaus) | den **Shop** — Gate 1, 2, 6 | `anschreiben-entwuerfe.md`, Zugänge in `adressaten-und-zugaenge.md`, Auswertung per `npm run auswerten` |
-| Suchvolumina prüfen (Stufe 1) | Werkzeug für 100–200 €/Monat | **beide Modelle** — Gate 15 | `entscheidungsmatrix.md` |
+| Suchvolumina prüfen (Stufe 1) | Werkzeug festgelegt: Mangools-Monat ~50 €, bei Grenzbefund Sistrix-Monat ~119 € — Rahmen 100–200 € unverändert | **beide Modelle** — Gate 15 | `entscheidungsmatrix.md`, Werkzeugwahl in `werkzeugwahl-suchvolumen.md` |
 | Rechtsform, Shop, Inhalte | erst ab Stufe 2, nach den beiden obigen | — | `phase5-technik.md`, `phase8-*` |
 
 Beide Freigaben sind gleichrangig, und sie sollten **zugleich** laufen. Muss
@@ -172,6 +172,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `bau-pruefte-nur-den-kern.md` | **Der Wächter bewachte nur den Kern** — Template-Kollisionen, $-Ersetzungsmuster und fehlende Platzhalter passierten den Bau stumm; jetzt parst der Bau das fertige Modulskript mit node --check; Nebenfund: export async function stand seit jeher unentkleidet im Bündel |
 | `pruefer-der-pruefer-auditiert.md` | **Eine fremde Länge schirmte hohle Schleifen ab** — die Längenregel des Hohlheitsprüfers band die Zusicherung nicht an die geschleifte Liste; verschärft ohne einen neuen Verdacht im Bestand; die Probedatei liegt jetzt im Repo und der Nachweis läuft bei jedem npm test |
 | `tagesstand-17-august.md` | **Alle Schaufenster auf denselben Stand** — Bericht-Artefakt, Funktionsmuster-Artefakt und PR-Beschreibung auf den 17. August gezogen (Lagerhaus, 422 Testfälle, vierzehn Audits); eine nicht mitgezogene Anzeige ist eine stille Falschaussage |
+| `werkzeugwahl-suchvolumen.md` | **Das Messgerät für Prüfung B ist festgelegt** — zweistufig: Mangools-Monat (~50 €), nur bei Grenzbefund Sistrix Start (~119 €); der Keyword Planner misst die 200er-Schwelle nicht und bleibt Gegenprobe; Rahmen 100–200 € unverändert, gekauft ist nichts |
 | `pruefung-der-testfaelle.md` | **Grüne Tests sind eine Aussage über die Testfälle, nicht über den Code** — elf hohle Schleifen gefunden und entschärft |
 | `verhandlungsziel-konditionen.md` | **Zehn Prozent Nachlass kosten 38,8 % Rabatt** — das Verhandlungsziel liegt über der Gate-2-Schwelle |
 | `auswertungsbogen-hersteller.md` | **Genau 35 % Rabatt lassen 4,4 % Preisspielraum** — die Auswertung der zwölf Antworten steht fertig bereit |

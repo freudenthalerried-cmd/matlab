@@ -80,7 +80,7 @@ auf 3.000 € netto gilt die harte Untergrenze von **32 %**.
 | Auslöser | Entscheidet | Kosten |
 |---|---|---|
 | Dreizehn Anfragen (zwölf Hersteller, ein Großhändler) | Gate 1, 2, 6 — und damit Gate 3 | 0 € |
-| Keyword-Werkzeug, ein Monat | Gate 15 — und damit, ob das Leadmodell eine Mengenquelle hat | 100–200 € |
+| Keyword-Werkzeug, ein Monat | Gate 15 — und damit, ob das Leadmodell eine Mengenquelle hat | 100–200 €; Werkzeugwahl festgelegt in `werkzeugwahl-suchvolumen.md` |
 | Drei bis fünf Partneranfragen | Preisniveau und Machbarkeit von Gate 9 und 13 | 0 € |
 | Betrieb ab Stufe 2 | Gate 4 | ab 2.500 € |
 
