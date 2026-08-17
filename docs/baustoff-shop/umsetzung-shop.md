@@ -30,7 +30,7 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Auswertungsbogen für die Herstellerantworten | fertig, leer, zwei Antwortwege | 25 |
 | Auswertungsbogen für die Partnerantworten | fertig, leer | 10 |
 | Rückwärtsrechnung fürs Konditionsgespräch | fertig | 13 |
-| Prüfer für die Testfälle selbst | fertig | gegen Probedatei nachgewiesen |
+| Prüfer für die Testfälle selbst | fertig, zwei Fehler behoben | 2, Nachweis läuft in npm test mit |
 | Gegenprobe am gerenderten Beleg | fertig | 14 |
 | Gegenprobe an der Lieferantenbestellung | fertig, ein Fehler behoben | 6 |
 | Fremdtext an allen Ein- und Ausgängen | fertig, zwei Fehler behoben | 20 |
@@ -43,7 +43,7 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig, vier Baufehler behoben | 5, dazu headless geprüft |
 | Generalprobe des Freigabetags | fertig, fiktive Antworten | 3 |
 | Auswertung als Kommandozeilenwerkzeug | fertig, drei Fehler behoben | 5 |
-| **Summe** | | **420, alle grün, 0 hohl** |
+| **Summe** | | **422, alle grün, 0 hohl** |
 
 ## Was zuletzt dazukam: die Gebühr auf die durchlaufende Fracht
 

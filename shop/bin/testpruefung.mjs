@@ -134,13 +134,18 @@ function pruefeFall(fall) {
     const rumpfDerSchleife = fall.rumpf.slice(start, ende === -1 ? undefined : ende);
     if (!/\bassert\s*\./.test(rumpfDerSchleife)) continue;
 
-    // Wurde vorher die Länge oder Anzahl zugesichert?
+    // Wurde vorher die Länge oder Anzahl zugesichert — und zwar die DIESER
+    // Liste? Ein bloßes `.length` irgendwo davor genügte früher; damit
+    // schirmte die Längenzusicherung einer fremden Liste eine hohle Schleife
+    // ab. Jetzt muss ein Name aus dem Schleifenausdruck in derselben
+    // Zusicherung stehen wie `.length` oder `.size`.
     const davor = fall.rumpf.slice(0, schleife.index);
-    const basis = ueber.replace(/\..*$/, '').replace(/[^\w.]/g, '');
-    const laengeGeprueft =
-      new RegExp(`assert\\s*\\.\\s*\\w+\\([^)]*${basis}[^)]*\\.length`).test(davor) ||
-      /assert\s*\.\s*equal\([^)]*\.length/.test(davor) ||
-      /\.length\s*[,)]/.test(davor);
+    const namen = [...ueber.matchAll(/[A-Za-z_$][\w$]*/g)]
+      .map((t) => t[0])
+      .filter((n) => !['Object', 'Array', 'Map', 'Set', 'entries', 'keys', 'values', 'from', 'new', 'filter', 'map', 'slice', 'flat'].includes(n));
+    const laengeGeprueft = namen.some((n) =>
+      new RegExp(`assert[^;\\n]*\\b${n}\\b[^;\\n]*\\.(?:length|size)|assert[^;\\n]*\\.(?:length|size)[^;\\n]*\\b${n}\\b`).test(davor),
+    );
 
     if (!laengeGeprueft) {
       verdacht.push(`Schleife über \`${ueber}\` ohne vorherige Längenzusicherung — bei leerer Liste prüft sie nichts`);
@@ -150,7 +155,14 @@ function pruefeFall(fall) {
   return verdacht;
 }
 
-const dateien = readdirSync(testOrdner).filter((d) => d.endsWith('.test.js')).sort();
+let dateien;
+try {
+  dateien = readdirSync(testOrdner).filter((d) => d.endsWith('.test.js')).sort();
+} catch (fehler) {
+  console.error(`Testordner nicht lesbar: ${testOrdner}`);
+  console.error(`  ${fehler.message}`);
+  process.exit(2);
+}
 let faelleGesamt = 0;
 let verdaechtig = 0;
 
