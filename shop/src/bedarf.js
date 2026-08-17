@@ -55,10 +55,18 @@ export function berechneBedarf(gebaeude, katalog) {
 
   const positionen = [];
   const hinweise = [];
+  const nichtImSortiment = [];
 
   const nimm = (sku, menge, begruendung) => {
     const artikel = katalog.artikel.find((a) => a.sku === sku);
-    if (!artikel) return; // Sortiment kann kleiner sein als der Rechner
+    if (!artikel) {
+      // Das Sortiment kann kleiner sein als der Rechner — aber eine Position,
+      // die stumm verschwindet, macht die Stückliste unbemerkt unvollständig.
+      // Der Kopf dieser Datei verspricht: das gehört in die Ausgabe, nicht ins
+      // Kleingedruckte.
+      nichtImSortiment.push(sku);
+      return;
+    }
     positionen.push({ sku, menge, bezeichnung: artikel.bezeichnung, begruendung });
   };
 
@@ -77,11 +85,19 @@ export function berechneBedarf(gebaeude, katalog) {
         `Überlappung und Verschnitt — Rollen zu ${rollenflaeche} m²`,
     );
 
+    // Die Prozentzahl gehört auf den Bedarf, nicht auf die gelieferte Fläche:
+    // „X m² über dem Bedarf (Y %)" heißt Y = X/Bedarf. Die erste Fassung
+    // teilte durch die gelieferte Fläche und untertrieb die Rollenbindung —
+    // aus 22 % über dem Bedarf wurden 18 %.
     hinweise.push(
       `Rollenbindung: ${rollen} Rollen ergeben ${gelieferteFlaeche.toFixed(1)} m², ` +
         `das sind ${ueberschuss.toFixed(1)} m² über dem Bedarf ` +
-        `(${((ueberschuss / gelieferteFlaeche) * 100).toFixed(0)} %). Teilmengen gibt es nicht.`,
+        `(${((ueberschuss / bahnBedarfM2) * 100).toFixed(0)} %). Teilmengen gibt es nicht.`,
     );
+  } else {
+    // Der Wächter oben überspringt den ganzen Bahnen-Block — die Leitposition
+    // verschwände stumm, noch bevor nimm() sie melden könnte.
+    nichtImSortiment.push('AB-RD-375');
   }
 
   const primerLiter = flaeche * ANSAETZE.primerProM2;
@@ -110,6 +126,13 @@ export function berechneBedarf(gebaeude, katalog) {
     hinweise.push(
       'Ohne Radondrainage gerechnet. Sie ist nach ÖNORM S 5280-2 in den ' +
         'Radonschutzgebieten gefordert — im Zweifel die Gemeinde prüfen.',
+    );
+  }
+
+  if (nichtImSortiment.length > 0) {
+    hinweise.push(
+      `Nicht im Sortiment und deshalb nicht enthalten: ${nichtImSortiment.join(', ')} — ` +
+        'die Stückliste ist an diesen Stellen unvollständig.',
     );
   }
 

@@ -102,3 +102,25 @@ test('Jede Position trägt ihre Begründung', () => {
   }
   assert.ok(b.hinweise.some((h) => /Planungswerte/.test(h)));
 });
+
+test('Die Verschnitt-Prozentzahl steht auf dem Bedarf, nicht auf der gelieferten Fläche', () => {
+  // 12 × 10 m: Bedarf 153,2 m², geliefert 187,5 m², Überschuss 34,3 m².
+  // „über dem Bedarf" heißt 34,3/153,2 = 22 % — nicht 34,3/187,5 = 18 %.
+  // Die alte Basis untertrieb die Rollenbindung; fünfter Zahlenfehler in die
+  // optimistische Richtung.
+  const b = berechneBedarf({ laenge: 12, breite: 10, durchfuehrungen: 4, mitDrainage: true }, katalog);
+  const rollenhinweis = b.hinweise.find((h) => /Rollenbindung/.test(h));
+  assert.match(rollenhinweis, /\(22 %\)/);
+  assert.doesNotMatch(rollenhinweis, /\(18 %\)/);
+});
+
+test('Eine Position, die das Sortiment nicht führt, verschwindet nicht stumm', () => {
+  const kleinerKatalog = { artikel: katalog.artikel.filter((a) => a.sku !== 'AB-RD-375') };
+  const b = berechneBedarf({ laenge: 12, breite: 10, durchfuehrungen: 0, mitDrainage: false }, kleinerKatalog);
+
+  assert.ok(!b.positionen.some((p) => p.sku === 'AB-RD-375'), 'die Bahn kann nicht in der Liste sein');
+  const hinweis = b.hinweise.find((h) => /Nicht im Sortiment/.test(h));
+  assert.ok(hinweis, 'die Lücke steht in der Ausgabe, nicht im Kleingedruckten');
+  assert.match(hinweis, /AB-RD-375/);
+  assert.match(hinweis, /unvollständig/);
+});

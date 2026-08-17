@@ -35,7 +35,7 @@ Gerüst vorhanden und meldet selbst, welche Pflichtangaben ihm fehlen.
 ## Benutzen
 
 ```
-npm test           # 401 Testfälle
+npm test           # 403 Testfälle
 npm run build      # erzeugt demo.html, eine einzelne Datei ohne Abhängigkeiten
 npm run import -- <lieferantId> <datei.csv> [--schreiben]
 npm run pruefe-tests  # prüft die Testfälle darauf, ob sie etwas behaupten
@@ -96,7 +96,7 @@ ergibt das
 
 ```
 Bahnenbedarf 153,2 m²  →  5 Rollen à 37,5 m² = 187,5 m²
-Rollenbindung: 34,3 m² über dem Bedarf (18 %). Teilmengen gibt es nicht.
+Rollenbindung: 34,3 m² über dem Bedarf (22 %). Teilmengen gibt es nicht.
 ```
 
 Diesen Satz bekommt der Kunde heute erst an der Kasse zu sehen. Hier steht er
