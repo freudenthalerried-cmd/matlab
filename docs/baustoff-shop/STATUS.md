@@ -6,15 +6,14 @@ sind entstanden, mehrere davon korrigieren einander. Hier steht, was gilt.
 Veröffentlichter Bericht:
 [claude.ai/code/artifact/3d669d15…](https://claude.ai/code/artifact/3d669d15-b632-41b9-838c-b9369dab8a4c)
 
-Auf Stand 15. August 2026 gebracht: sechzehn Gates, die vier Befunde der
-letzten Runde, zwei gleichrangige Freigaben. Quelldatei im Repo unter
-`bericht-radon.html`. **Der Bericht hinkt dem Register nach** — die Gates 17 bis
-19 sind seither dazugekommen und stehen nur in
-[`gate-register.md`](./gate-register.md); bei Widerspruch gilt das Register.
+Auf Stand 16. August 2026 gebracht: alle neunzehn Gates, die vier Befunde des
+Tages (Straßenpreisanker, Händlerplatz, Pflichtgebiet, Bestand), dreizehn
+versandfertige Anfragen. Quelldatei im Repo unter `bericht-radon.html`; bei
+Widerspruch gilt weiterhin [`gate-register.md`](./gate-register.md).
 
 Lauffähiges Shop-Funktionsmuster:
 [claude.ai/code/artifact/c40fd35f…](https://claude.ai/code/artifact/c40fd35f-56e1-4821-a3b1-a1a885102ec8) —
-Quelltext und 395 Testfälle unter `shop/`, auf Hohlheit geprüft. Alle Preise sind Platzhalter.
+Quelltext und 396 Testfälle unter `shop/`, auf Hohlheit geprüft. Alle Preise sind Platzhalter.
 Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 
 ## Wo das Projekt steht

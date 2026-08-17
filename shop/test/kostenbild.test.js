@@ -165,3 +165,22 @@ test('Mit Fracht in der Grundlage braucht das Ziel mehr Umsatz — wenig, aber i
   assert.ok(mit.umsatzNetto > ohne.umsatzNetto);
   assert.ok(mit.umsatzNetto - ohne.umsatzNetto < ohne.umsatzNetto * 0.01, 'der Effekt bleibt unter einem Prozent');
 });
+
+test('Am Referenz-Frachtanteil ändern sich Bestellungen und Sessionbedarf nicht', () => {
+  // Der Referenzkorb trägt rund 5,2 % Fracht (162 € auf 3.088,17 € Warenwert);
+  // auf den 650-€-Planungskorb skaliert sind das ~34,10 € je Bestellung. Die
+  // Korrektur verschiebt den nötigen Umsatz um unter ein Prozent — Bestellungen
+  // und Sessions müssen dabei stehen bleiben. Wächst eine Gebühr oder die
+  // Fracht, springt zuerst dieser Testfall.
+  const frachtJe650 = referenz.frachtNetto * (650 / referenz.warenwertNetto);
+  assert.ok(frachtJe650 > 30 && frachtJe650 < 40, `Referenz-Frachtanteil ${frachtJe650.toFixed(2)} € je 650-€-Korb`);
+
+  for (const zw of ['karte-stripe', 'rechnungskauf', 'eps']) {
+    const ohne = noetigerUmsatz(ZIEL, zw);
+    const mit = noetigerUmsatz({ ...ZIEL, frachtProBestellungNetto: frachtJe650 }, zw);
+    assert.ok(mit.umsatzNetto > ohne.umsatzNetto, `${zw}: mehr Umsatz nötig`);
+    assert.ok(mit.umsatzNetto - ohne.umsatzNetto < ohne.umsatzNetto * 0.01, `${zw}: unter einem Prozent`);
+    assert.equal(mit.bestellungen, ohne.bestellungen, `${zw}: Bestellungen unverändert`);
+    assert.equal(mit.sessions, ohne.sessions, `${zw}: Sessions unverändert`);
+  }
+});

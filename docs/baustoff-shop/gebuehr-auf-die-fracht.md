@@ -65,6 +65,19 @@ Gegenproben an der Prüfung, beide sofort rot, danach zurückgenommen:
 Demo neu gebaut und headless geprüft (Kaskaden-Anzeige rechnet mit
 Standard 0 unverändert).
 
+## Nachtrag: die kanonischen Zahlen halten — nachgerechnet, nicht behauptet
+
+Eine Korrektur, die niemand aufruft, wäre nur eine Geste. Deshalb wurde der
+Effekt am **echten Referenzkorb** in die Planungsgrößen durchgerechnet: Der
+Referenzkorb trägt 162 € Fracht auf 3.088,17 € Warenwert (**5,2 %**), auf
+den 650-€-Planungskorb skaliert ~34,10 € je Bestellung. Damit steigt der
+nötige Umsatz je nach Zahlweg um 0,3–0,9 % (Kartenzahlung +98 €,
+B2B-Rechnungskauf +251 € im Monat) — **Bestellungen und Sessionbedarf
+ändern sich bei keinem der drei geprüften Zahlwege**, die Rundung fängt es
+auf. Die kanonischen Planungszahlen bleiben also stehen; ein eigener
+Testfall hält genau das fest und springt zuerst, falls eine Gebühr oder die
+Fracht wächst.
+
 ## Kein Gate
 
 Kein Gate ändert sich; die Referenzzahlen bleiben (als optimistisch
