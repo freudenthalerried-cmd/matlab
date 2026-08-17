@@ -30,7 +30,7 @@ Auswertungswerkzeug und die Lagerhaus-Festlegung.
 Die Regel dahinter ist dieselbe wie im Quelltext: Eine Anzeige, die nicht
 mitgezogen wird, ist eine stille Falschaussage — und die drei Schaufenster
 (Bericht, Funktionsmuster, PR) sind genau die Orte, an denen jemand den
-Stand liest, ohne die zweiundsiebzig Arbeitsdateien zu öffnen. Der
+Stand liest, ohne die siebenundsiebzig Arbeitsdateien zu öffnen. Der
 Abgleich gehört deshalb ans Ende jedes Tages mit Substanzänderungen,
 nicht in ein „bei Gelegenheit".
 
