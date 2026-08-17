@@ -6,6 +6,7 @@
     "test": "node --test test/*.test.js",
     "build": "node build-demo.mjs",
     "import": "node bin/import.mjs",
-    "pruefe-tests": "node bin/testpruefung.mjs"
+    "pruefe-tests": "node bin/testpruefung.mjs",
+    "auswerten": "node bin/auswerten.mjs"
   }
 }

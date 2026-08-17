@@ -42,7 +42,8 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Gebietsauskunft über die Negativliste | Zwischenlösung, Vollausbau blockiert | 10 |
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig, Baustelle abgefragt | headless geprüft |
 | Generalprobe des Freigabetags | fertig, fiktive Antworten | 3 |
-| **Summe** | | **406, alle grün, 0 hohl** |
+| Auswertung als Kommandozeilenwerkzeug | fertig, Beispieldatei fiktiv | 2 |
+| **Summe** | | **408, alle grün, 0 hohl** |
 
 ## Was zuletzt dazukam: die Gebühr auf die durchlaufende Fracht
 
