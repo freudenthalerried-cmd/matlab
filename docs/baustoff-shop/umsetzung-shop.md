@@ -41,7 +41,8 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Gedächtnis der Ablage (Journal aus Zeilen) | fertig, Senke wählbar | 14 |
 | Gebietsauskunft über die Negativliste | Zwischenlösung, Vollausbau blockiert | 10 |
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig, Baustelle abgefragt | headless geprüft |
-| **Summe** | | **403, alle grün, 0 hohl** |
+| Generalprobe des Freigabetags | fertig, fiktive Antworten | 3 |
+| **Summe** | | **406, alle grün, 0 hohl** |
 
 ## Was zuletzt dazukam: die Gebühr auf die durchlaufende Fracht
 
