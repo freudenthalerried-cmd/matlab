@@ -37,7 +37,7 @@ export const ANNAHMEN = [
     schlechterIst: 'kleiner',
     konfidenz: 'unbelegt',
     herkunft: 'phase3-unit-economics.md; Gate 1 setzt die Untergrenze bei 32 %',
-    klaertDurch: 'Die zwölf Herstelleranfragen — kostenlos, freigabepflichtig',
+    klaertDurch: 'Die dreizehn Anfragen (zwölf Hersteller, ein Großhändler) — kostenlos, freigabepflichtig',
   },
   {
     id: 'werbeanteil',
@@ -103,7 +103,20 @@ export function elastizitaet(lage, annahmeId, zahlwegId, umAnteil = 0.10) {
   const basis = sessionbedarf(lage, zahlwegId);
   if (basis === null) throw new Error('Die Ausgangslage trägt das Modell schon nicht');
 
-  const schlechter = sessionbedarf(verschlechtere(lage, annahmeId, umAnteil), zahlwegId);
+  const a = findeAnnahme(annahmeId);
+  const geprueft = verschlechtere(lage, annahmeId, umAnteil);
+  const schlechter = sessionbedarf(geprueft, zahlwegId);
+
+  // `untergrenze` stand seit der ersten Fassung in den ANNAHMEN — gelesen hat
+  // es niemand. Die Folge war inhaltlich: Für die Rohmarge bei −10 % (31,5 %)
+  // wurde brav ein Besucherbedarf ausgewiesen, obwohl Gate 1 diesen
+  // Betriebspunkt verbietet. Die Nische fiele dort, bevor die Besucherzahl
+  // irgendetwas bedeutet — das gehört in die Ausgabe, nicht ins Wissen des
+  // Lesers.
+  const unterUntergrenze = a.untergrenze != null && geprueft[annahmeId] < a.untergrenze - 1e-12;
+  const gateHinweis = unterUntergrenze
+    ? { unterUntergrenze: true, untergrenze: a.untergrenze, hinweisGate: 'Der geprüfte Wert liegt unter der Untergrenze aus Gate 1 — die Nische fiele dort, bevor der Besucherbedarf relevant wird' }
+    : { unterUntergrenze: false };
 
   if (schlechter === null) {
     return {
@@ -112,6 +125,7 @@ export function elastizitaet(lage, annahmeId, zahlwegId, umAnteil = 0.10) {
       neueSessions: null,
       traegtNicht: true,
       hinweis: 'Bei dieser Verschlechterung trägt das Modell nicht mehr',
+      ...gateHinweis,
     };
   }
 
@@ -123,6 +137,7 @@ export function elastizitaet(lage, annahmeId, zahlwegId, umAnteil = 0.10) {
     veraenderung: (schlechter - basis) / basis,
     elastizitaet: (schlechter - basis) / basis / umAnteil,
     traegtNicht: false,
+    ...gateHinweis,
   };
 }
 
@@ -145,11 +160,22 @@ export function rangfolge(lage, zahlwegId, umAnteil = 0.10) {
  * steigt der Besucherbedarf nur immer weiter.
  */
 export function kipppunkt(lage, annahmeId, zahlwegId, schritt = 0.01, maxAnteil = 0.9) {
+  // Wo Gate 1 fällt, steht fest, bevor irgendetwas gerechnet wird: bei einer
+  // Annahme mit Untergrenze ist es der Anteil, ab dem der Wert sie reißt.
+  // Für die Rohmarge (Basis 35 %, Untergrenze 32 %) sind das ~8,6 % — deutlich
+  // vor dem rechnerischen Kipppunkt des Modells. Beides gehört nebeneinander.
+  const a = findeAnnahme(annahmeId);
+  const alt = lage[annahmeId];
+  const untergrenzeBeiAnteil =
+    a.untergrenze != null && a.schlechterIst === 'kleiner' && typeof alt === 'number' && alt > a.untergrenze
+      ? Math.round((1 - a.untergrenze / alt) * 1000) / 1000
+      : null;
+
   for (let anteil = schritt; anteil <= maxAnteil + 1e-9; anteil += schritt) {
     const geprueft = verschlechtere(lage, annahmeId, anteil);
     if (sessionbedarf(geprueft, zahlwegId) === null) {
-      return { kippt: true, beiAnteil: Math.round(anteil * 1000) / 1000, wert: geprueft[annahmeId] };
+      return { kippt: true, beiAnteil: Math.round(anteil * 1000) / 1000, wert: geprueft[annahmeId], untergrenzeBeiAnteil };
     }
   }
-  return { kippt: false, geprueftBis: maxAnteil };
+  return { kippt: false, geprueftBis: maxAnteil, untergrenzeBeiAnteil };
 }

@@ -123,3 +123,24 @@ test('Eine Ausgangslage, die schon nicht trägt, wird nicht schöngerechnet', ()
   assert.equal(sessionbedarf(kaputt, 'karte-stripe'), null);
   assert.throws(() => elastizitaet(kaputt, 'rohmarge', 'karte-stripe'), /trägt das Modell schon nicht/);
 });
+
+test('Zehn Prozent schlechtere Rohmarge liegen bereits unter Gate 1 — und die Ausgabe sagt es', () => {
+  // 0,35 × 0,9 = 0,315 < 0,32: Der Betriebspunkt, für den die Elastizität
+  // rechnet, ist von Gate 1 verboten. `untergrenze` stand von Anfang an in
+  // den ANNAHMEN; gelesen hat es bis zu dieser Runde niemand.
+  const e = elastizitaet(LAGE, 'rohmarge', 'karte-stripe', 0.10);
+  assert.equal(e.unterUntergrenze, true);
+  assert.equal(e.untergrenze, 0.32);
+  assert.match(e.hinweisGate, /Gate 1/);
+
+  const klein = elastizitaet(LAGE, 'rohmarge', 'karte-stripe', 0.05);
+  assert.equal(klein.unterUntergrenze, false, '0,3325 liegt noch über der Untergrenze');
+  assert.equal(elastizitaet(LAGE, 'werbeanteil', 'karte-stripe').unterUntergrenze, false, 'ohne Untergrenze kein Alarm');
+});
+
+test('Gate 1 fällt vor dem rechnerischen Kipppunkt des Modells', () => {
+  const k = kipppunkt(LAGE, 'rohmarge', 'karte-stripe');
+  assert.equal(k.untergrenzeBeiAnteil, 0.086, 'bei ~8,6 % Verschlechterung reißt die Untergrenze');
+  assert.equal(k.kippt, true);
+  assert.ok(k.untergrenzeBeiAnteil < k.beiAnteil, 'die Nische fällt an Gate 1, lange bevor die Kaskade rechnerisch kippt');
+});

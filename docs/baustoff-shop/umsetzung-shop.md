@@ -26,7 +26,7 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Ablage und Nummernkreis | fertig, Felderverzeichnis, ohne Speicherung | 21 |
 | Zahlwege und Gebühren | fertig, Fracht in der Grundlage | 16 |
 | Gesamtkostenbild und Umsatzbedarf | fertig, ein Fehler behoben | 17 |
-| Empfindlichkeit der vier Annahmen | fertig | 14 |
+| Empfindlichkeit der vier Annahmen | fertig, ein Fehler behoben | 16 |
 | Auswertungsbogen für die Herstellerantworten | fertig, leer, zwei Antwortwege | 25 |
 | Auswertungsbogen für die Partnerantworten | fertig, leer | 10 |
 | Rückwärtsrechnung fürs Konditionsgespräch | fertig | 13 |
@@ -41,7 +41,7 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Gedächtnis der Ablage (Journal aus Zeilen) | fertig, Senke wählbar | 14 |
 | Gebietsauskunft über die Negativliste | Zwischenlösung, Vollausbau blockiert | 10 |
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig, Baustelle abgefragt | headless geprüft |
-| **Summe** | | **399, alle grün, 0 hohl** |
+| **Summe** | | **401, alle grün, 0 hohl** |
 
 ## Was zuletzt dazukam: die Gebühr auf die durchlaufende Fracht
 
