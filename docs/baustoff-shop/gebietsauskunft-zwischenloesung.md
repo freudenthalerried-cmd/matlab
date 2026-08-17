@@ -78,7 +78,11 @@ auch wenn die Gemeindeliste kommt — dann kommt die Schutzgebiets-Auskunft
 (Anlage 1, gemeindescharf) als zweite Stufe dazu, und der letzte Satz jeder
 Auskunft verweist nicht mehr auf eine externe Karte, sondern auf die eigene
 zweite Stufe. Offen bleibt bis dahin: die Gegenprüfung der Bezirksliste am
-Verordnungstext, sobald RIS erreichbar ist.
+Verordnungstext, sobald RIS erreichbar ist. **Nachtrag:** Eine Gegenprüfung
+aus unabhängigen Sekundärquellen hat noch am selben Tag sieben der zehn
+Bezirke ausdrücklich bestätigt, Ried im Innkreis amtlich durch das Land OÖ —
+siehe [`gegenpruefung-bezirksliste.md`](./gegenpruefung-bezirksliste.md);
+der Verordnungstext bleibt die ausständige Instanz.
 
 ## Kein Gate
 

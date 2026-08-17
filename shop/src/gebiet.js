@@ -34,9 +34,10 @@ import { textZeile } from './format.js';
 /** Stand und Quelle der Liste — wandert in jede Auskunft. */
 export const GEBIETSSTAND = Object.freeze({
   stand: '2026-08-16',
-  quelle: 'BMLUK, Gemeinden im Radonvorsorgegebiet (Sekundärquelle)',
+  quelle:
+    'BMLUK und Landesquellen (Sekundärquellen, mehrfach unabhängig; Oberösterreich amtlich durch das Land)',
   vorbehalt:
-    'Bezirksliste aus einer Sekundärquelle — vor einer Veröffentlichung am Verordnungstext gegenzuprüfen.',
+    'Bezirksliste aus Sekundärquellen — sieben der zehn Bezirke unabhängig bestätigt, Vorarlberg indirekt; vor einer Veröffentlichung am Verordnungstext gegenzuprüfen.',
 });
 
 /**

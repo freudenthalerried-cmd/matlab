@@ -1,6 +1,6 @@
 # Status und Einstieg
 
-Stand: 2026-08-16. **Dieses Dokument zuerst lesen.** Einundsechzig Arbeitsdateien
+Stand: 2026-08-16. **Dieses Dokument zuerst lesen.** Zweiundsechzig Arbeitsdateien
 sind entstanden, mehrere davon korrigieren einander. Hier steht, was gilt.
 
 Veröffentlichter Bericht:
@@ -157,6 +157,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `gebietsauskunft-zwischenloesung.md` | **Elf Einträge statt 2.095 Gemeinden** — die Vorsorgegebiets-Auskunft über die Negativliste, als Auskunft mit ausgesprochenen Grenzen statt als Sperre; Schutzgebiets-Stufe bleibt am Verordnungstext blockiert |
 | `vertriebswege-der-hersteller.md` | **Die Zange ist kein Branchengesetz** — Vedagard AL-E läuft im klassischen Händlerkanal zum selben m²-Straßenpreis wie die AlphaBlock; die Anschreiben entscheiden über die Marge, nicht mehr allein über die Lieferfähigkeit; ein Großhändler wird dreizehnter Adressat |
 | `auswertung-grosshandelsweg.md` | **Ein Einkaufspreis ohne Deckel ist keine Kondition** — der Auswertungsbogen liest jetzt beide Antwortwege; nennt eine Antwort beide, gilt der schlechtere; alle dreizehn Antworten sind am Tag ihres Eintreffens auswertbar |
+| `gegenpruefung-bezirksliste.md` | **Sieben von zehn Bezirken bestätigt, Ried amtlich** — die Negativliste der Gebietsauskunft hält der Gegenprüfung stand; der Verordnungstext bleibt die ausständige Instanz, drei Fundstellen für den ersten freien Netzzugang notiert |
 | `pruefung-der-testfaelle.md` | **Grüne Tests sind eine Aussage über die Testfälle, nicht über den Code** — elf hohle Schleifen gefunden und entschärft |
 | `verhandlungsziel-konditionen.md` | **Zehn Prozent Nachlass kosten 38,8 % Rabatt** — das Verhandlungsziel liegt über der Gate-2-Schwelle |
 | `auswertungsbogen-hersteller.md` | **Genau 35 % Rabatt lassen 4,4 % Preisspielraum** — die Auswertung der zwölf Antworten steht fertig bereit |
