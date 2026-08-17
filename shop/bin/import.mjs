@@ -10,6 +10,7 @@
  */
 
 import { readFileSync, writeFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { importierePreisliste, vergleiche } from '../src/import.js';
 
 const [, , lieferantId, datei, ...rest] = process.argv;
@@ -34,7 +35,16 @@ if (!lieferant) {
   process.exit(2);
 }
 
-const { artikel, fehler, warnungen } = importierePreisliste(readFileSync(datei, 'utf8'), lieferant);
+let inhalt;
+try {
+  inhalt = readFileSync(datei, 'utf8');
+} catch (fehler) {
+  console.error(`Preisliste nicht lesbar: ${datei}`);
+  console.error(`  ${fehler.message}`);
+  process.exit(2);
+}
+
+const { artikel, fehler, warnungen } = importierePreisliste(inhalt, lieferant);
 
 const eur = (n) => n.toFixed(2).replace('.', ',') + ' €';
 const pct = (n) => (n >= 0 ? '+' : '') + (n * 100).toFixed(1).replace('.', ',') + ' %';
@@ -83,7 +93,9 @@ if (!schreiben) {
 // Beispieldateien enthalten erfundene Einkaufspreise. Würden sie geschrieben,
 // stünde ekQuelle auf "bestaetigt" und die Sperre in bestellung.js fiele weg —
 // der Shop hielte erfundene Konditionen für echte. Deshalb hier ein Riegel.
-if (/muster|beispiel|demo/i.test(datei)) {
+// Geprüft wird der aufgelöste Pfad, nicht das Argument: ein relativer Name aus
+// beispiel/ heraus trüge das Verzeichnis sonst nicht im Text.
+if (/muster|beispiel|demo/i.test(resolve(datei))) {
   console.error('\nAbbruch: Diese Datei ist als Muster gekennzeichnet.');
   console.error('Muster enthalten erfundene Preise und dürfen nicht als bestätigt in den Katalog.');
   console.error('Echte Preislisten außerhalb von beispiel/ ablegen.');

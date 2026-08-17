@@ -15,7 +15,7 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Warenkorb mit Lieferantenaufteilung | fertig, Hinweise getrennt | 17 |
 | Bestellübergabe als Text und CSV | fertig | 4 |
 | Freigabesperren (Gate 6, Gate 7) | fertig | 3 |
-| Preislisten-Import | fertig, ein Fehler behoben | 16 |
+| Preislisten-Import | fertig, zwei Fehler behoben, Riegel am Pfad | 20 |
 | Materialbedarfsrechner | fertig, zwei Fehler behoben | 13 |
 | Bestellstrecke mit Gate-7-Prüfung | fertig | 11 |
 | Messwert-Einordner | fertig, ein Fehler behoben | 10 |
@@ -43,7 +43,7 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig, Baustelle abgefragt | headless geprüft |
 | Generalprobe des Freigabetags | fertig, fiktive Antworten | 3 |
 | Auswertung als Kommandozeilenwerkzeug | fertig, drei Fehler behoben | 5 |
-| **Summe** | | **411, alle grün, 0 hohl** |
+| **Summe** | | **415, alle grün, 0 hohl** |
 
 ## Was zuletzt dazukam: die Gebühr auf die durchlaufende Fracht
 
