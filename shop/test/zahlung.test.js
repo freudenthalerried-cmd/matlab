@@ -128,3 +128,15 @@ test('Beim Rechnungskauf ist die Konfidenz ausdrücklich niedrig', () => {
   assert.equal(r.konfidenz, 'niedrig');
   assert.match(r.quelle, /nicht veröffentlicht/);
 });
+
+test('Die Monatshochrechnung nimmt die Fracht in die Bemessungsgrundlage', () => {
+  const lage = { umsatzNetto: 24000, bestellungen: 37, zielgewinn: 5374 };
+  const ohne = wirkungAufMonat(lage, 'karte-stripe');
+  const mit = wirkungAufMonat({ ...lage, frachtProBestellungNetto: 30 }, 'karte-stripe');
+  assert.ok(mit.gebuehrProMonat > ohne.gebuehrProMonat);
+  const erwartet = 0.014 * 1.2 * 30 * 37;
+  assert.ok(
+    Math.abs(mit.gebuehrProMonat - ohne.gebuehrProMonat - erwartet) < 0.02,
+    'genau der Prozentsatz auf die Bruttofracht aller Bestellungen',
+  );
+});

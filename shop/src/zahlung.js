@@ -162,14 +162,19 @@ export function wirkungAufBestellung(warenkorb, zahlwegId) {
 /**
  * Hochrechnung auf den Monat.
  *
- * @param {{umsatzNetto: number, bestellungen: number, zielgewinn: number}} lage
+ * Die Bemessungsgrundlage ist der volle Kundenzahlbetrag — Warenumsatz
+ * **plus durchlaufende Fracht**, beides brutto. `wirkungAufBestellung` hat
+ * das immer so gehalten (dort steht `summeBrutto`); diese Hochrechnung ließ
+ * die Fracht aus und widersprach damit der eigenen Erklärung.
+ *
+ * @param {{umsatzNetto: number, bestellungen: number, zielgewinn: number, frachtProBestellungNetto?: number}} lage
  */
 export function wirkungAufMonat(lage, zahlwegId) {
-  const { umsatzNetto, bestellungen, zielgewinn } = lage;
+  const { umsatzNetto, bestellungen, zielgewinn, frachtProBestellungNetto = 0 } = lage;
   if (!(bestellungen > 0)) throw new Error('Die Hochrechnung braucht Bestellungen');
 
   const z = findeZahlweg(zahlwegId);
-  const umsatzBrutto = cent(umsatzNetto * 1.2);
+  const umsatzBrutto = cent((umsatzNetto + frachtProBestellungNetto * bestellungen) * 1.2);
   const betrag = cent(umsatzBrutto * z.prozent + z.fixEuro * bestellungen);
 
   return {

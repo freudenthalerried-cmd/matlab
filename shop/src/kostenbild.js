@@ -25,17 +25,30 @@ import { ZAHLWEGE, findeZahlweg } from './zahlung.js';
 export const UST = 0.20;
 
 /**
- * Anteil der Zahlungsgebühr am **Nettoumsatz**.
+ * Anteil der Zahlungsgebühr am **Nettoumsatz** (Warenwert).
  *
  * Die Gebühr fällt auf brutto an, gerechnet wird die Kaskade netto — der
  * Prozentsatz ist deshalb mit 1,2 zu strecken. Der Fixbetrag hängt an der Zahl
  * der Bestellungen, also am Warenkorb; sein Anteil ist damit unabhängig von der
  * Höhe des Umsatzes.
+ *
+ * **Und die Fracht gehört in die Bemessungsgrundlage.** Der Kundenzahlbetrag
+ * enthält die durchlaufende Fracht; der Prozentsatz des Zahlwegs fällt auch
+ * auf sie an. Genau dieser Effekt stand seit der ersten Fassung als Satz im
+ * Kopf dieser Datei — „man zahlt Gebühr auf durchlaufende Fracht" — und
+ * fehlte trotzdem in der Rechnung. `proBestellung` hatte ihn (dort steht der
+ * volle `summeBrutto`), die Kaskade nicht: dieselbe Gebühr, zwei
+ * Bemessungsgrundlagen, und der Fehler zeigte wie bei der Frachtschwelle und
+ * der Brutto-UVP in die optimistische Richtung.
  */
-export function gebuehrenanteil(zahlwegId, warenkorbNetto) {
+export function gebuehrenanteil(zahlwegId, warenkorbNetto, frachtProBestellungNetto = 0) {
   const z = findeZahlweg(zahlwegId);
   if (!(warenkorbNetto > 0)) throw new Error('Der Gebührenanteil braucht einen Warenkorb');
-  return z.prozent * (1 + UST) + z.fixEuro / warenkorbNetto;
+  if (!(frachtProBestellungNetto >= 0)) throw new Error('Die Fracht je Bestellung darf nicht negativ sein');
+  return (
+    z.prozent * (1 + UST) * (1 + frachtProBestellungNetto / warenkorbNetto) +
+    z.fixEuro / warenkorbNetto
+  );
 }
 
 /**
@@ -50,10 +63,10 @@ export function gebuehrenanteil(zahlwegId, warenkorbNetto) {
  * @param {string} zahlwegId
  */
 export function kaskade(lage, zahlwegId) {
-  const { umsatzNetto, rohmarge, werbeanteil, fixkosten, warenkorbNetto } = lage;
+  const { umsatzNetto, rohmarge, werbeanteil, fixkosten, warenkorbNetto, frachtProBestellungNetto = 0 } = lage;
   if (!(umsatzNetto > 0)) throw new Error('Die Kaskade braucht einen Umsatz');
 
-  const anteilGebuehr = gebuehrenanteil(zahlwegId, warenkorbNetto);
+  const anteilGebuehr = gebuehrenanteil(zahlwegId, warenkorbNetto, frachtProBestellungNetto);
   const rohertrag = cent(umsatzNetto * rohmarge);
   const werbung = cent(umsatzNetto * werbeanteil);
   const gebuehren = cent(umsatzNetto * anteilGebuehr);
@@ -82,9 +95,17 @@ export function kaskade(lage, zahlwegId) {
  * Umsatz, sodass sich sein Anteil herauskürzt.
  */
 export function noetigerUmsatz(ziel, zahlwegId) {
-  const { zielgewinn, fixkosten, rohmarge, werbeanteil, warenkorbNetto, umsatzProSession = null } = ziel;
+  const {
+    zielgewinn,
+    fixkosten,
+    rohmarge,
+    werbeanteil,
+    warenkorbNetto,
+    frachtProBestellungNetto = 0,
+    umsatzProSession = null,
+  } = ziel;
 
-  const rate = rohmarge - werbeanteil - gebuehrenanteil(zahlwegId, warenkorbNetto);
+  const rate = rohmarge - werbeanteil - gebuehrenanteil(zahlwegId, warenkorbNetto, frachtProBestellungNetto);
   if (rate <= 0) {
     return { tragfaehig: false, rate, grund: 'Nach Werbung und Gebühren bleibt nichts übrig' };
   }

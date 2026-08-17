@@ -130,3 +130,38 @@ test('Die Umsatzsteuer steht 20 % und wird nicht als Kosten geführt', () => {
   assert.equal(p.umsatzsteuer, referenz.ust);
   assert.ok(Math.abs(p.bleibt - (p.rohertrag - p.werbung)) < 0.005, 'ohne Gebühr bleibt Rohertrag minus Werbung');
 });
+
+test('Die Gebühr fällt auch auf die durchlaufende Fracht', () => {
+  const ohne = gebuehrenanteil('karte-stripe', 650);
+  const mit = gebuehrenanteil('karte-stripe', 650, 30);
+  assert.ok(mit > ohne, 'Fracht in der Bemessungsgrundlage erhöht den Anteil');
+  assert.ok(Math.abs((mit - ohne) - 0.014 * 1.2 * 30 / 650) < 1e-12, 'genau um Prozentsatz mal Bruttofracht je Warenwert');
+  assert.throws(() => gebuehrenanteil('karte-stripe', 650, -1), /nicht negativ/);
+});
+
+test('Kaskade und Einzelbestellung rechnen jetzt dieselbe Gebühr', () => {
+  // Der Fund dieser Runde: proBestellung nahm den vollen summeBrutto samt
+  // Fracht, die Kaskade nur den Warenumsatz — dieselbe Gebühr, zwei
+  // Bemessungsgrundlagen. Am echten Referenzwarenkorb gegeneinander gehalten:
+  const einzeln = proBestellung(referenz, 'karte-stripe', 0);
+  const k = kaskade(
+    {
+      umsatzNetto: referenz.warenwertNetto,
+      rohmarge: referenz.mischmarge,
+      werbeanteil: 0,
+      fixkosten: 0,
+      warenkorbNetto: referenz.warenwertNetto,
+      frachtProBestellungNetto: referenz.frachtNetto,
+    },
+    'karte-stripe',
+  );
+  assert.ok(referenz.frachtNetto > 0, 'der Referenzkorb trägt tatsächlich Fracht');
+  assert.ok(Math.abs(k.gebuehren - einzeln.gebuehr) < 0.011, `Kaskade ${k.gebuehren} gegen Einzelbestellung ${einzeln.gebuehr}`);
+});
+
+test('Mit Fracht in der Grundlage braucht das Ziel mehr Umsatz — wenig, aber in die ehrliche Richtung', () => {
+  const ohne = noetigerUmsatz(ZIEL, 'karte-stripe');
+  const mit = noetigerUmsatz({ ...ZIEL, frachtProBestellungNetto: 30 }, 'karte-stripe');
+  assert.ok(mit.umsatzNetto > ohne.umsatzNetto);
+  assert.ok(mit.umsatzNetto - ohne.umsatzNetto < ohne.umsatzNetto * 0.01, 'der Effekt bleibt unter einem Prozent');
+});

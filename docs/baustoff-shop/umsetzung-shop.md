@@ -24,8 +24,8 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Trockenlauf des Auftrags | fertig, elf Schritte | 14 |
 | UID-Abfrage beim EU-System | fertig, ungeprüft am Dienst | 17 |
 | Ablage und Nummernkreis | fertig, Felderverzeichnis, ohne Speicherung | 21 |
-| Zahlwege und Gebühren | fertig | 15 |
-| Gesamtkostenbild und Umsatzbedarf | fertig | 13 |
+| Zahlwege und Gebühren | fertig, Fracht in der Grundlage | 16 |
+| Gesamtkostenbild und Umsatzbedarf | fertig, ein Fehler behoben | 16 |
 | Empfindlichkeit der vier Annahmen | fertig | 14 |
 | Auswertungsbogen für die Herstellerantworten | fertig, leer, zwei Antwortwege | 25 |
 | Auswertungsbogen für die Partnerantworten | fertig, leer | 10 |
@@ -41,9 +41,22 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Gedächtnis der Ablage (Journal aus Zeilen) | fertig, Senke wählbar | 14 |
 | Gebietsauskunft über die Negativliste | Zwischenlösung, Vollausbau blockiert | 10 |
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig, Baustelle abgefragt | headless geprüft |
-| **Summe** | | **391, alle grün, 0 hohl** |
+| **Summe** | | **395, alle grün, 0 hohl** |
 
-## Was zuletzt dazukam: der Partner-Auswertungsbogen
+## Was zuletzt dazukam: die Gebühr auf die durchlaufende Fracht
+
+Ausführlich in [`gebuehr-auf-die-fracht.md`](./gebuehr-auf-die-fracht.md).
+Der Kopf von `kostenbild.js` warnte seit der ersten Fassung, dass die
+Zahlungsgebühr auch auf die durchlaufende Fracht anfällt — die Kaskade und
+die Monatshochrechnung rechneten trotzdem ohne sie; nur `proBestellung`
+hatte es richtig. Vierter Zahlenfehler dieser Art, vierter in die
+optimistische Richtung. Korrigiert über `frachtProBestellungNetto` in der
+Bemessungsgrundlage (Standard 0, bestehende Aufrufer unverändert); der
+wichtigste neue Testfall hält Kaskade und Einzelbestellung am echten
+Referenzwarenkorb auf den Cent gegeneinander. Gegenproben: Fracht wieder
+draußen → 3 Testfälle fallen; Monatshochrechnung ohne Fracht → 1.
+
+## Was davor dazukam: der Partner-Auswertungsbogen
 
 Ausführlich in [`partnerauswertung.md`](./partnerauswertung.md). Der dritte
 0-€-Auslöser (drei bis fünf Partneranfragen, Gate 9 und 13) war der einzige
