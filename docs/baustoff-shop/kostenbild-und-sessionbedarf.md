@@ -118,7 +118,7 @@ die die Abbruchquote an der Zahlungsauswahl beantwortet.
 Die Kaskade ist arithmetisch geschlossen und geprüft; unsicher sind ihre
 Eingangsgrößen, und zwar dieselben wie zuvor:
 
-- **Rohmarge 35 %** — unbelegt, entscheidet sich an den zwölf Herstelleranfragen.
+- **Rohmarge 35 %** — unbelegt, entscheidet sich an den dreizehn Anfragen (zwölf Hersteller, ein Großhändler).
 - **Werbekostenanteil 10 %** — Annahme aus Phase 3, nicht gemessen.
 - **Umsatzquote 2 %** — Annahme; im B2B-Fachhandel mit erklärungsbedürftigem
   Produkt eher optimistisch.

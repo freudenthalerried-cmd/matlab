@@ -2,9 +2,9 @@
 
 Stand: 2026-08-15. Gehört zum Bauprotokoll
 [`umsetzung-shop.md`](./umsetzung-shop.md). Quelltext: `shop/src/auswertung.js`,
-18 Testfälle.
+25 Testfälle, seit dem Großhandelsweg mit zwei Antwortwegen.
 
-Sobald die zwölf Anfragen aus
+Sobald die dreizehn Anfragen aus
 [`anschreiben-entwuerfe.md`](./anschreiben-entwuerfe.md) freigegeben sind und
 Antworten eintreffen, entscheiden sich an ihnen Gate 1, 2 und 6 zugleich. Damit
 dann niemand erst überlegen muss, wie zu lesen ist, was da steht, ist die
@@ -140,7 +140,7 @@ Was daraus unmittelbar folgt:
 
 Die Spanne zwischen der besten und der schlechtesten noch zulässigen Antwort
 beträgt **500 Besucher im Monat** — knapp 28 %. Das ist die Größenordnung, um
-die es bei den zwölf Anfragen geht, und sie ist damit erstmals beziffert statt
+die es bei den dreizehn Anfragen geht, und sie ist damit erstmals beziffert statt
 beschrieben.
 
 ## Was der Bogen nicht kann
@@ -158,4 +158,4 @@ in den Rabattsatz einrechnen — sie sind an Bedingungen geknüpft, die im erste
 Jahr niemand erfüllt.
 
 **Es ist nichts versendet.** Der Bogen ist leer und bleibt es, bis die Freigabe
-für die zwölf Anfragen vorliegt.
+für die dreizehn Anfragen vorliegt.

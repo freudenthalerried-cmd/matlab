@@ -60,7 +60,7 @@ Ausgangslage ändert.
 
 | Auslöser | Dann |
 |---|---|
-| Freigabe für die zwölf Herstelleranfragen | Versand vorbereiten, Antworten in `lieferanten.md` erfassen, Gate 1, 2, 6 auswerten |
+| Freigabe für die dreizehn Anfragen (zwölf Hersteller, ein Großhändler) | Versand vorbereiten, Antworten in `lieferanten.md` erfassen, Gate 1, 2, 6 auswerten |
 | Freigabe für das Keyword-Werkzeug | Volumina erheben, Gate 15 auswerten, Inhaltslandkarte gewichten |
 | Netzzugang zu RIS oder data.gv.at | Gemeindeliste nach dem Schema in `phase10-datengrundlage-gebietsabfrage.md` erfassen, Gegenprobe auf 104 Zeilen |
 | Jahresstatistik Baubewilligungen 2026 | `marktrisiko-neubau.md` nachführen, Gate 12 prüfen |

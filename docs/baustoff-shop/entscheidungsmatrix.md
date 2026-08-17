@@ -12,7 +12,7 @@ Kriterien, die erst nach dem Ergebnis formuliert werden, sind keine Kriterien.
 
 | | Prüfung A | Prüfung B |
 |---|---|---|
-| Was | zwölf Herstelleranfragen | Keyword-Werkzeug, ein Monat |
+| Was | dreizehn Anfragen — zwölf Hersteller, ein Großhändler | Keyword-Werkzeug, ein Monat |
 | Kosten | 0 € | 100–200 € |
 | Braucht | Freigabe für E-Mails an Dritte | Freigabe für eine Ausgabe |
 | Dauer | 4 Wochen | 4 Wochen |

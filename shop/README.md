@@ -22,7 +22,7 @@ Gerüst vorhanden und meldet selbst, welche Pflichtangaben ihm fehlen.
 | Messwert-Einordner | Bq/m³ und Messdauer → rechtliche und bautechnische Einordnung |
 | Rechtstexte-Gerüst | Pflichtangaben nach § 5 ECG, Lücken maschinenprüfbar |
 | Angebot und Rechnung | § 11 UStG mit seinen drei Betragsschwellen, Reihengeschäft erkannt |
-| Trockenlauf | zehn Schritte durchgezählt: was liefe von selbst, was nicht |
+| Trockenlauf | elf Schritte durchgezählt: was liefe von selbst, was nicht |
 | UID-Abfrage | drei Zustände; ein Dienstausfall ist keine ungültige UID |
 | Ablage | Nummernkreise, Storno statt Änderung, Aufbewahrungsfrist |
 | Zahlwege | Gebühren je Zahlweg, Wirkung auf Deckungsbeitrag und Monat |
