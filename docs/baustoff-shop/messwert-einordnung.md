@@ -118,7 +118,7 @@ Vorgabe für die Umsetzung. Eingabe ist ein Messwert in Bq/m³ plus die Angabe,
 | Messwert | Ausgabe |
 |---|---|
 | **unter 300 Bq/m³** | Der gesetzliche Referenzwert ist eingehalten. Keine Maßnahme vorgeschrieben. Hinweis: Der Referenzwert ist ein gesetzlicher Bezugswert, keine Grenze zwischen unbedenklich und gefährlich — eine Senkung ist auch darunter möglich und bei einfachen Maßnahmen oft günstig zu erreichen. |
-| **300 bis 1.000 Bq/m³** | Der Referenzwert ist überschritten. Eine bauliche Sanierung wird empfohlen. Übliche Maßnahme: Unterbodenabsaugung nach ÖNORM S 5280-3, ergänzend Abdichtung erdberührter Bauteile. |
+| **über 300 bis 1.000 Bq/m³** | Der Referenzwert ist überschritten. Eine bauliche Sanierung wird empfohlen. Übliche Maßnahme: Unterbodenabsaugung nach ÖNORM S 5280-3, ergänzend Abdichtung erdberührter Bauteile. |
 | **über 1.000 Bq/m³** | Deutliche Überschreitung. Bauliche Sanierung empfohlen, Planung durch einen fachkundigen Betrieb, Wirksamkeitskontrolle durch Nachmessung. |
 
 ### Fall B — Kurzzeitmessung

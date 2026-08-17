@@ -24,9 +24,23 @@ test('Über 1000: zusätzlich Planung und Wirksamkeitskontrolle', () => {
   assert.match(e.massnahme, /Wirksamkeitskontrolle/);
 });
 
-test('Die Bandgrenzen liegen genau bei 300 und 1000', () => {
+test('Die Bandgrenzen: überschritten ist erst, was über 300 liegt', () => {
+  // Genau 300 überschreiten den Referenzwert nicht — sprachlich nicht,
+  // rechtlich nicht, und die qualifizierte Anfrage des Partnerangebots ist
+  // als „Messwert über 300" definiert. Die erste Fassung dieses Testfalls
+  // hatte die falsche Grenze des Codes festgeschrieben statt sie zu finden.
   assert.equal(ordneEin({ wert: 299.9, messdauerMonate: 6 }).stufe, 'unter');
-  assert.equal(ordneEin({ wert: REFERENZWERT, messdauerMonate: 6 }).stufe, 'ueber');
+
+  const genau = ordneEin({ wert: REFERENZWERT, messdauerMonate: 6 });
+  assert.equal(genau.stufe, 'unter');
+  assert.equal(genau.ueberschreitung, false);
+  assert.equal(genau.istQualifizierterAnlass, false, 'genau 300 qualifiziert keinen Lead');
+  assert.doesNotMatch(genau.aussage, /liegen über/);
+
+  const knappDrueber = ordneEin({ wert: 300.1, messdauerMonate: 6 });
+  assert.equal(knappDrueber.stufe, 'ueber');
+  assert.equal(knappDrueber.istQualifizierterAnlass, true);
+
   assert.equal(ordneEin({ wert: 1000, messdauerMonate: 6 }).stufe, 'ueber');
   assert.equal(ordneEin({ wert: 1000.1, messdauerMonate: 6 }).stufe, 'deutlich');
 });

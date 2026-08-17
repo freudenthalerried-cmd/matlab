@@ -1,6 +1,6 @@
 # Status und Einstieg
 
-Stand: 2026-08-16. **Dieses Dokument zuerst lesen.** Siebenundsechzig Arbeitsdateien
+Stand: 2026-08-16. **Dieses Dokument zuerst lesen.** Achtundsechzig Arbeitsdateien
 sind entstanden, mehrere davon korrigieren einander. Hier steht, was gilt.
 
 Veröffentlichter Bericht:
@@ -162,6 +162,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `mehrdeutige-zahlen-im-import.md` | **1.234 kann zweierlei heißen — jetzt wird abgewiesen statt geraten** — ein mehrdeutiger Preis hätte echte Katalogdaten still um den Faktor 1.000 geschrumpft; die Importzeile scheitert jetzt sichtbar |
 | `belegzeile-fremdfelder.md` | **Dieselbe Regel, bisher ein Drittel der Felder** — die UID-Belegzeile entschärfte nur den Namen; jetzt geht die ganze Zeile durch textZeile, egal welches fremde Feld vergiftet ist |
 | `untergrenze-in-der-empfindlichkeit.md` | **Die Elastizität rechnete Betriebspunkte aus, die Gate 1 verbietet** — das nie gelesene Untergrenzen-Feld ist verdrahtet; die Nische fällt an Gate 1 bei 8,6 % Verschlechterung, lange vor dem rechnerischen Kipppunkt |
+| `grenze-bei-genau-300.md` | **Genau 300 überschreiten 300 nicht** — die Leadstrecke qualifizierte einen Anlass ohne Überschreitung und schrieb dem Kunden eine falsche Aussage; Grenze und Testfall korrigiert |
 | `pruefung-der-testfaelle.md` | **Grüne Tests sind eine Aussage über die Testfälle, nicht über den Code** — elf hohle Schleifen gefunden und entschärft |
 | `verhandlungsziel-konditionen.md` | **Zehn Prozent Nachlass kosten 38,8 % Rabatt** — das Verhandlungsziel liegt über der Gate-2-Schwelle |
 | `auswertungsbogen-hersteller.md` | **Genau 35 % Rabatt lassen 4,4 % Preisspielraum** — die Auswertung der zwölf Antworten steht fertig bereit |

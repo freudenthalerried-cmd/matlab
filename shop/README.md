@@ -106,7 +106,7 @@ vor der Bestellung — und er erklärt zugleich, warum der tatsächliche Warenko
 ## Der Messwert-Einordner
 
 Bq/m³ und Messdauer ergeben eine Einordnung — **rechtlich und bautechnisch, nicht
-gesundheitlich**. Drei Bänder: unter 300 eingehalten, 300 bis 1.000 Sanierung
+gesundheitlich**. Drei Bänder: bis 300 eingehalten, über 300 bis 1.000 Sanierung
 nach ÖNORM S 5280-3 empfohlen, darüber zusätzlich Planung und
 Wirksamkeitskontrolle.
 

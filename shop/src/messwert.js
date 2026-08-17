@@ -62,7 +62,13 @@ export function ordneEin({ wert, messdauerMonate } = {}) {
     };
   }
 
-  if (wert < REFERENZWERT) {
+  // Die Grenze ist „überschreitet", nicht „erreicht": Genau 300 Bq/m³
+  // überschreiten den Referenzwert nicht — weder sprachlich noch nach der
+  // Radonschutzverordnung, und das Partnerangebot definiert die qualifizierte
+  // Anfrage ausdrücklich als Messwert ÜBER 300. Die erste Fassung zählte
+  // >= 300 als Überschreitung und schrieb bei genau 300 die falsche Aussage
+  // „liegen über dem Referenzwert von 300" in die Leadstrecke.
+  if (wert <= REFERENZWERT) {
     return {
       wert,
       messdauerMonate,
@@ -73,7 +79,7 @@ export function ordneEin({ wert, messdauerMonate } = {}) {
       istQualifizierterAnlass: false,
       titel: 'Referenzwert eingehalten',
       aussage:
-        `${wert} Bq/m³ liegen unter dem gesetzlichen Referenzwert von ${REFERENZWERT} Bq/m³. ` +
+        `${wert} Bq/m³ überschreiten den gesetzlichen Referenzwert von ${REFERENZWERT} Bq/m³ nicht. ` +
         'Eine Maßnahme ist nicht vorgeschrieben.',
       massnahme:
         'Der Referenzwert ist ein gesetzlicher Bezugswert, keine naturwissenschaftliche ' +

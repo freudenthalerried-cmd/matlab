@@ -18,7 +18,7 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Preislisten-Import | fertig, ein Fehler behoben | 16 |
 | Materialbedarfsrechner | fertig | 11 |
 | Bestellstrecke mit Gate-7-Prüfung | fertig | 11 |
-| Messwert-Einordner | fertig | 10 |
+| Messwert-Einordner | fertig, ein Fehler behoben | 10 |
 | Rechtstexte-Gerüst | fertig, dreizehn AGB-Punkte | 22 |
 | Angebot, Auftragsbestätigung und Rechnung | fertig, Vertragsschluss ergänzt | 24 |
 | Trockenlauf des Auftrags | fertig, elf Schritte | 14 |
