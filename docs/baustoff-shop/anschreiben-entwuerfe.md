@@ -194,10 +194,10 @@ Straßenpreis (~10–11 €/m² brutto) gerechnet, nicht gegen eine Liste.
 **Kandidatenauswahl vor dem Versand** (dieselbe Erhebung wie die
 Ansprechpartner der zwölf Hersteller): ein österreichweit lieferfähiger
 Baustoff- oder Dachbaustoffgroßhändler mit Abdichtungssortiment und
-Streckengeschäft. Naheliegende Kandidaten — BayWa Baustoffe Österreich,
-Quester, Lagerhaus/RWA — sind vor dem Versand darauf zu prüfen, dass sie
-Vedag/BMI tatsächlich führen; die Websuche konnte das für Österreich nicht
-belegen, nur für den deutschen Handel.
+Streckengeschäft. **Diese Prüfung ist seit dem 17. August erledigt**
+(`adressaten-und-zugaenge.md`): Quester ist im Konkurs, BayWa AT verkauft
+ihre Lagerhaus-Mehrheit — Adressat ist das **Lagerhaus**, dessen
+Baustoffkatalog die BMI-Bitumenbahnen samt Vedatect nachweislich führt.
 
 ## Entwurf B — Partnerbetriebe für die Leadvermittlung
 

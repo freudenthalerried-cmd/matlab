@@ -1,6 +1,6 @@
 # Status und Einstieg
 
-Stand: 2026-08-17. **Dieses Dokument zuerst lesen.** Neunundsiebzig Arbeitsdateien
+Stand: 2026-08-17. **Dieses Dokument zuerst lesen.** Achtzig Arbeitsdateien
 sind entstanden, mehrere davon korrigieren einander. Hier steht, was gilt.
 
 Veröffentlichter Bericht:
@@ -174,6 +174,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `tagesstand-17-august.md` | **Alle Schaufenster auf denselben Stand** — Bericht-Artefakt, Funktionsmuster-Artefakt und PR-Beschreibung auf den 17. August gezogen (Lagerhaus, 422 Testfälle, vierzehn Audits); eine nicht mitgezogene Anzeige ist eine stille Falschaussage |
 | `werkzeugwahl-suchvolumen.md` | **Das Messgerät für Prüfung B ist festgelegt** — zweistufig: Mangools-Monat (~50 €), nur bei Grenzbefund Sistrix Start (~119 €); der Keyword Planner misst die 200er-Schwelle nicht und bleibt Gegenprobe; Rahmen 100–200 € unverändert, gekauft ist nichts |
 | `suchauswertung-als-werkzeug.md` | **Prüfung B ist ausführbar** — Matrix-Regeln als Modul (Difficulty-Skala und Drittelgrenze vorab zahlenfest), messfertige Keyword-Liste mit 31 Begriffen in sechs Clustern, `npm run suchvolumen` trägt vor; die fiktive Beispielmessung zeigt absichtlich einen Grenzbefund |
+| `partner-suchweg.md` | **Der Suchweg zu den Partnerbetrieben steht** — WKO Firmen A-Z bezirksscharf (241 Bauwerksabdichter in OÖ), Zielbezirke Mühlviertel zuerst, Vorfilter, zwei Kandidaten je Bezirk; Firmennamen bewusst nicht im Repo, die Liste entsteht am Versandtag lokal |
 | `pruefung-der-testfaelle.md` | **Grüne Tests sind eine Aussage über die Testfälle, nicht über den Code** — elf hohle Schleifen gefunden und entschärft |
 | `verhandlungsziel-konditionen.md` | **Zehn Prozent Nachlass kosten 38,8 % Rabatt** — das Verhandlungsziel liegt über der Gate-2-Schwelle |
 | `auswertungsbogen-hersteller.md` | **Genau 35 % Rabatt lassen 4,4 % Preisspielraum** — die Auswertung der zwölf Antworten steht fertig bereit |
