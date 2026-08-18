@@ -41,6 +41,7 @@ npm run import -- <lieferantId> <datei.csv> [--schreiben]
 npm run auswerten -- <antworten.json>  # trägt die Antworten des Freigabetags vor
 npm run suchvolumen -- <messung.json>  # trägt die Suchvolumen-Messung (Prüfung B) vor
 npm run pruefe-tests  # prüft die Testfälle darauf, ob sie etwas behaupten
+npm run oberflaechenprobe  # fährt demo.html im Headless-Browser durch sieben Szenarien
 ```
 
 `demo.html` lässt sich direkt im Browser öffnen. Der Rechenkern wird beim Bauen
@@ -80,6 +81,7 @@ src/format.js           EUR und Lückenmarkierung — einmal, siehe unten
 src/gebiet.js           Vorsorgegebiets-Auskunft über die Negativliste (Zwischenlösung)
 bin/import.mjs          Kommandozeile dazu, Probelauf als Voreinstellung
 bin/testpruefung.mjs    prüft die Testfälle auf Hohlheit — siehe unten
+bin/oberflaechenprobe.mjs Verhaltensprobe der Oberfläche im Headless-Browser
 beispiel/               Musterpreisliste — erfundene Preise, nicht schreibbar
 test/                   node:test, ohne Fremdpakete
 demo-template.html      Oberfläche mit Platzhaltern für Kern und Daten

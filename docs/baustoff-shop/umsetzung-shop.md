@@ -40,7 +40,7 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Abgleich Versprechen gegen Verhalten | fertig, zwei Befunde | 14 |
 | Gedächtnis der Ablage (Journal aus Zeilen) | fertig, Senke wählbar | 14 |
 | Gebietsauskunft über die Negativliste | Zwischenlösung, Vollausbau blockiert | 10 |
-| Oberfläche als eine Datei ohne Abhängigkeiten | fertig, vier Baufehler behoben | 5, dazu headless geprüft |
+| Oberfläche als eine Datei ohne Abhängigkeiten | fertig, vier Baufehler behoben | 5, dazu 7 Headless-Szenarien |
 | Generalprobe des Freigabetags | fertig, fiktive Antworten | 3 |
 | Auswertung als Kommandozeilenwerkzeug | fertig, drei Fehler behoben | 5 |
 | Auswertung der Suchvolumen-Messung (Prüfung B) | fertig, Beispielmessung fiktiv mit Grenzbefund | 8 |

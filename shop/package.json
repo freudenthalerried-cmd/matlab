@@ -8,6 +8,7 @@
     "import": "node bin/import.mjs",
     "pruefe-tests": "node bin/testpruefung.mjs",
     "auswerten": "node bin/auswerten.mjs",
-    "suchvolumen": "node bin/suchvolumen.mjs"
+    "suchvolumen": "node bin/suchvolumen.mjs",
+    "oberflaechenprobe": "node bin/oberflaechenprobe.mjs"
   }
 }
