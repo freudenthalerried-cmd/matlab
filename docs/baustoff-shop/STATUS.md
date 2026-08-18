@@ -1,6 +1,6 @@
 # Status und Einstieg
 
-Stand: 2026-08-17. **Dieses Dokument zuerst lesen.** Einundachtzig Arbeitsdateien
+Stand: 2026-08-17. **Dieses Dokument zuerst lesen.** Zweiundachtzig Arbeitsdateien
 sind entstanden, mehrere davon korrigieren einander. Hier steht, was gilt.
 
 Veröffentlichter Bericht:
@@ -176,6 +176,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `suchauswertung-als-werkzeug.md` | **Prüfung B ist ausführbar** — Matrix-Regeln als Modul (Difficulty-Skala und Drittelgrenze vorab zahlenfest), messfertige Keyword-Liste mit 31 Begriffen in sechs Clustern, `npm run suchvolumen` trägt vor; die fiktive Beispielmessung zeigt absichtlich einen Grenzbefund |
 | `partner-suchweg.md` | **Der Suchweg zu den Partnerbetrieben steht** — WKO Firmen A-Z bezirksscharf (241 Bauwerksabdichter in OÖ), Zielbezirke Mühlviertel zuerst, Vorfilter, zwei Kandidaten je Bezirk; Firmennamen bewusst nicht im Repo, die Liste entsteht am Versandtag lokal |
 | `oberflaeche-am-verhalten.md` | **Sieben Headless-Szenarien durch die echte Oberfläche** — genau-300, Kurzzeitregel, VIES-Dreizustand, Rollenbindung, Gebietsauskunft, alle grün; der Ertrag lag in der Sonde selbst: stiller No-op-Einbau und Grün durch Quelltext-Kollision, beide behoben mit Selbstnachweis-Marker und Nur-gerendert-Prüfung |
+| `warteordnung.md` | **Was der Loop tut, wenn nichts mehr ansteht** — Blockadenliste, Wartelauf (RIS-Nachprüfung, PR, Schaufenster nur bei Substanzänderung, sonst ehrlich enden); erfundene Runden verwässern die echten |
 | `pruefung-der-testfaelle.md` | **Grüne Tests sind eine Aussage über die Testfälle, nicht über den Code** — elf hohle Schleifen gefunden und entschärft |
 | `verhandlungsziel-konditionen.md` | **Zehn Prozent Nachlass kosten 38,8 % Rabatt** — das Verhandlungsziel liegt über der Gate-2-Schwelle |
 | `auswertungsbogen-hersteller.md` | **Genau 35 % Rabatt lassen 4,4 % Preisspielraum** — die Auswertung der zwölf Antworten steht fertig bereit |
