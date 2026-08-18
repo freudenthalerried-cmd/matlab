@@ -43,7 +43,8 @@ Quelltext unter `shop/`, veröffentlichtes Funktionsmuster:
 | Oberfläche als eine Datei ohne Abhängigkeiten | fertig, vier Baufehler behoben | 5, dazu headless geprüft |
 | Generalprobe des Freigabetags | fertig, fiktive Antworten | 3 |
 | Auswertung als Kommandozeilenwerkzeug | fertig, drei Fehler behoben | 5 |
-| **Summe** | | **422, alle grün, 0 hohl** |
+| Auswertung der Suchvolumen-Messung (Prüfung B) | fertig, Beispielmessung fiktiv mit Grenzbefund | 8 |
+| **Summe** | | **430, alle grün, 0 hohl** |
 
 ## Was zuletzt dazukam: die Gebühr auf die durchlaufende Fracht
 
