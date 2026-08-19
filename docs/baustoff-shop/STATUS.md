@@ -1,6 +1,6 @@
 # Status und Einstieg
 
-Stand: 2026-08-17. **Dieses Dokument zuerst lesen.** Dreiundachtzig Arbeitsdateien
+Stand: 2026-08-17. **Dieses Dokument zuerst lesen.** Vierundachtzig Arbeitsdateien
 sind entstanden, mehrere davon korrigieren einander. Hier steht, was gilt.
 
 Veröffentlichter Bericht:
@@ -24,7 +24,10 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > unter der Untergrenze von 32 %), Gate 5 (Sortiment nicht mehr
 > radonspezifisch) und den Werbeanteil. Wortlaut, Folgenanalyse, offene
 > Fragen und Ablaufplan in [`auftrag-baumeisterpreise.md`](./auftrag-baumeisterpreise.md).
-> **Die Rechnungen liegen noch nicht vor.**
+> **Die Rechnungen liegen noch nicht vor.** Zweite Weisung vom selben Tag:
+> Der Shop soll für **KI-Suchen** optimiert werden — Konzept, Wege,
+> Vertrauensfrage und Reihenfolge in
+> [`ki-sichtbarkeit-konzept.md`](./ki-sichtbarkeit-konzept.md).
 
 ## Wo das Projekt steht
 
@@ -188,6 +191,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `oberflaeche-am-verhalten.md` | **Sieben Headless-Szenarien durch die echte Oberfläche** — genau-300, Kurzzeitregel, VIES-Dreizustand, Rollenbindung, Gebietsauskunft, alle grün; der Ertrag lag in der Sonde selbst: stiller No-op-Einbau und Grün durch Quelltext-Kollision, beide behoben mit Selbstnachweis-Marker und Nur-gerendert-Prüfung |
 | `warteordnung.md` | **Was der Loop tut, wenn nichts mehr ansteht** — Blockadenliste, Wartelauf (RIS-Nachprüfung, PR, Schaufenster nur bei Substanzänderung, sonst ehrlich enden); erfundene Runden verwässern die echten |
 | `auftrag-baumeisterpreise.md` | **Neue Weisung vom 18. August** — eigene Baumeisterpreise +25 % statt unbelegter Platzhalter, Google Shopping, regionales Liefergebiet; Gate 1 und Gate 5 sind damit neu zu entscheiden. Rechnungen fehlen noch, Loop pausiert bis nächste Woche |
+| `ki-sichtbarkeit-konzept.md` | **Genannt werden, wenn eine KI nach Baustoffen gefragt wird** — vier Wege (Feed, KI-Suche, Trainingswissen, Agentenbesuch), Vertrauen entsteht aus Entitätskonsistenz, Drittquellen und Überprüfbarkeit; Empfehlung gegen den Parallelshop, für eine zweite Ausgabeform desselben Shops; das regionale Liefergebiet ist dabei ein Vorteil |
 | `pruefung-der-testfaelle.md` | **Grüne Tests sind eine Aussage über die Testfälle, nicht über den Code** — elf hohle Schleifen gefunden und entschärft |
 | `verhandlungsziel-konditionen.md` | **Zehn Prozent Nachlass kosten 38,8 % Rabatt** — das Verhandlungsziel liegt über der Gate-2-Schwelle |
 | `auswertungsbogen-hersteller.md` | **Genau 35 % Rabatt lassen 4,4 % Preisspielraum** — die Auswertung der zwölf Antworten steht fertig bereit |
