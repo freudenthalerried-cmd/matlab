@@ -1,6 +1,6 @@
 # Die maschinenlesbare Ausgabe — gebaut
 
-Stand: 2026-08-18. Erster ausführbarer Schritt aus
+Stand: 2026-08-22. Erster ausführbarer Schritt aus
 `ki-sichtbarkeit-konzept.md` (Punkte 3, 4 und 6 des dortigen
 Ablaufplans). Was von Rechnungen und Firmendaten abhängt, wartet
 weiter; die Ausgabeschicht selbst hing an nichts.

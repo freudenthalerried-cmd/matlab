@@ -1,6 +1,6 @@
 # Neue Weisung: eigene Baumeisterpreise als Kalkulationsgrundlage
 
-Stand: 2026-08-18. Weisung des Auftraggebers, wörtlich festgehalten,
+Stand: 2026-08-22. Weisung des Auftraggebers, wörtlich festgehalten,
 damit ein späterer Lauf sie unverfälscht vorfindet. **Ausgeführt wird
 sie noch nicht** — der Auftraggeber hat ausdrücklich pausiert, bis das
 Token-Budget wieder voll ist (frühestens nächste Woche).

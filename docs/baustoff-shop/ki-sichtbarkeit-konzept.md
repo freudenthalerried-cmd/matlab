@@ -1,6 +1,6 @@
 # Sichtbarkeit in KI-Antworten: Konzept
 
-Stand: 2026-08-18. Weisung des Auftraggebers: Der Shop — oder ein
+Stand: 2026-08-22. Weisung des Auftraggebers: Der Shop — oder ein
 Parallelshop — soll so gebaut sein, dass er von KI-Assistenten genannt
 wird, wenn jemand nach Baustoffen, Preisen oder einem Lieferanten in
 Österreich fragt. Dieses Dokument ist die Denkarbeit dazu; **gebaut wird
