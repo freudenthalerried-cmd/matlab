@@ -1,0 +1,189 @@
+/**
+ * Maschinenlesbare Ausgabe des Katalogs — für KI-Suche und Produktfeeds.
+ *
+ * Grundlage ist `ki-sichtbarkeit-konzept.md`: Ein Assistent nennt bei einer
+ * Empfehlungsfrage zwei bis drei Anbieter. Wer dort vorkommen will, muss
+ * Preis, Verfügbarkeit, Versandkosten und Liefergebiet in einer Form
+ * hinterlegen, die eine Maschine lesen kann — und die stimmt.
+ *
+ * Drei Regeln tragen dieses Modul, alle drei sind Übernahmen aus dem
+ * bestehenden Bau und nicht neu erfunden:
+ *
+ * 1. **Keine zweite Rechnung.** Die Auszeichnung übernimmt die Zahlen aus
+ *    `kalkuliere()`, sie rechnet nichts nach. Eine zweite Preisrechnung für
+ *    die Maschinen wäre die sicherste Art, Kunden und Assistenten
+ *    unterschiedliche Preise zu zeigen — und ein Widerspruch zwischen
+ *    angezeigtem und ausgezeichnetem Preis ist in diesem Kanal der teuerste
+ *    Fehler, den es gibt.
+ * 2. **Platzhalter gehen nicht hinaus.** `darfAutomatischAusgeloestWerden`
+ *    sperrt die Bestellung, solange ein Artikel keinen bestätigten
+ *    Einkaufspreis trägt. Für die Veröffentlichung gilt dasselbe, aus einem
+ *    schärferen Grund: Eine Bestellung mit Platzhalterpreis schadet einem
+ *    Vorgang, ein veröffentlichter Platzhalterpreis schadet dem Vertrauen
+ *    — und Vertrauen ist der einzige Rohstoff dieses Kanals, den man nicht
+ *    nachkaufen kann.
+ * 3. **Fremdtext wird entschärft.** Artikelbezeichnungen stammen aus
+ *    Herstellerdateien. Sie gehen durch `textZeile`, wie an jedem anderen
+ *    Ausgang auch.
+ */
+
+import { textZeile } from './format.js';
+
+/** Wie lange eine ausgezeichnete Preisangabe als gültig gilt (Tage). */
+export const PREIS_GUELTIG_TAGE = 7;
+
+/**
+ * Darf dieser Artikel maschinenlesbar veröffentlicht werden?
+ *
+ * Liefert Gründe statt eines bloßen Nein — dieselbe Form wie die
+ * Freigabeprüfung der Bestellstrecke, damit die Ausgabe sagen kann, was
+ * fehlt, statt stumm nichts zu tun.
+ */
+export function darfVeroeffentlichtWerden(artikel) {
+  const gruende = [];
+  if (artikel.ekIstPlatzhalter) {
+    gruende.push('Einkaufspreis ist Platzhalter — kein Lieferant hat ihn bestätigt');
+  }
+  if (!(artikel.vkNetto > 0)) {
+    gruende.push('kein Verkaufspreis');
+  }
+  if (!artikel.sku) {
+    gruende.push('keine Artikelnummer');
+  }
+  return { erlaubt: gruende.length === 0, gruende };
+}
+
+/**
+ * Liefergebiet als strukturierte Angabe.
+ *
+ * Die Weisung sieht Lieferung „im umliegenden Bereich" vor, nicht
+ * österreichweit. Für diesen Kanal ist das ein Vorteil — aber nur, wenn das
+ * Gebiet als Liste dasteht und nicht als Satz auf der Versandseite. Ein
+ * Assistent, der „liefert nach Bezirk X" belegen kann, nennt den Shop;
+ * einer, der es raten müsste, nennt ihn nicht.
+ */
+export function liefergebietAngabe(gebiet) {
+  const bezirke = (gebiet?.bezirke ?? []).map(textZeile).filter(Boolean);
+  if (bezirke.length === 0) {
+    return { vollstaendig: false, fehlt: 'Liefergebiet ist nicht beziffert', land: gebiet?.land ?? 'AT', bezirke };
+  }
+  return { vollstaendig: true, land: gebiet.land ?? 'AT', bezirke };
+}
+
+/**
+ * Schema.org-Auszeichnung eines Artikels als einfaches Objekt.
+ *
+ * Bewusst als Objekt und nicht als fertiger Text: So kann der Aufrufer es
+ * einbetten, in einen Feed schreiben oder gegenprüfen, ohne es zu zerlegen.
+ */
+export function produktAuszeichnung(artikel, lage = {}) {
+  const freigabe = darfVeroeffentlichtWerden(artikel);
+  if (!freigabe.erlaubt) {
+    return { veroeffentlichbar: false, gruende: freigabe.gruende, daten: null };
+  }
+
+  const gebiet = liefergebietAngabe(lage.liefergebiet);
+  const angebot = {
+    '@type': 'Offer',
+    priceCurrency: 'EUR',
+    // Der Preis kommt aus kalkuliere(), er wird hier nicht neu gerechnet.
+    price: artikel.vkNetto.toFixed(2),
+    priceValidUntil: lage.preisGueltigBis ?? null,
+    availability: artikel.lieferbar === false
+      ? 'https://schema.org/OutOfStock'
+      : 'https://schema.org/InStock',
+    itemCondition: 'https://schema.org/NewCondition',
+    // Nettopreis für Unternehmer — Gate 7. Die Auszeichnung sagt es
+    // ausdrücklich, weil ein Assistent sonst Netto gegen Brutto vergleicht
+    // und den Shop teurer aussehen lässt, als er ist.
+    priceSpecification: {
+      '@type': 'PriceSpecification',
+      price: artikel.vkNetto.toFixed(2),
+      priceCurrency: 'EUR',
+      valueAddedTaxIncluded: false,
+    },
+  };
+
+  if (lage.versandkostenNetto != null && gebiet.vollstaendig) {
+    angebot.shippingDetails = {
+      '@type': 'OfferShippingDetails',
+      shippingRate: {
+        '@type': 'MonetaryAmount',
+        value: Number(lage.versandkostenNetto).toFixed(2),
+        currency: 'EUR',
+      },
+      shippingDestination: gebiet.bezirke.map((b) => ({
+        '@type': 'DefinedRegion',
+        addressCountry: gebiet.land,
+        addressRegion: b,
+      })),
+    };
+  }
+
+  const daten = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    sku: textZeile(artikel.sku),
+    name: textZeile(artikel.bezeichnung),
+    category: textZeile(artikel.gruppe ?? ''),
+    offers: angebot,
+  };
+  if (artikel.gtin) daten.gtin13 = textZeile(artikel.gtin);
+  if (artikel.hersteller) daten.brand = { '@type': 'Brand', name: textZeile(artikel.hersteller) };
+
+  const fehlend = [];
+  if (!artikel.gtin) fehlend.push('GTIN/EAN — für Produktfeeds verlangt');
+  if (!gebiet.vollstaendig) fehlend.push(gebiet.fehlt);
+  if (lage.versandkostenNetto == null) fehlend.push('Versandkosten');
+
+  return { veroeffentlichbar: true, gruende: [], daten, fehlend };
+}
+
+/**
+ * Der Katalog als Feed-Zeilen — und was dabei zurückbleibt.
+ *
+ * Zurückgehaltene Artikel werden gezählt und begründet, nicht verschwiegen.
+ * Ein Feed, der stillschweigend die Hälfte des Katalogs weglässt, ist genau
+ * die Sorte Schweigen, die dieser Bau an vier anderen Stellen schon einmal
+ * gekostet hat.
+ */
+export function katalogFeed(artikel, lage = {}) {
+  const zeilen = [];
+  const zurueckgehalten = [];
+  for (const a of artikel) {
+    const eintrag = produktAuszeichnung(a, lage);
+    if (eintrag.veroeffentlichbar) zeilen.push(eintrag.daten);
+    else zurueckgehalten.push({ sku: a.sku, gruende: eintrag.gruende });
+  }
+  return {
+    zeilen,
+    zurueckgehalten,
+    vollstaendig: zurueckgehalten.length === 0,
+    anzahl: zeilen.length,
+  };
+}
+
+/**
+ * robots.txt mit bewusster Trennung von Suche und Training.
+ *
+ * Die beiden sind heute getrennte Kennungen. Wer pauschal alles sperrt,
+ * verschwindet auch aus den Antworten — das ist der häufigste
+ * Selbstschaden in diesem Feld. Wer alles erlaubt, gibt auch
+ * Trainingsmaterial her. Deshalb steht die Entscheidung hier als
+ * Schalter und nicht als stille Voreinstellung.
+ */
+export const SUCH_CRAWLER = Object.freeze(['OAI-SearchBot', 'Claude-SearchBot', 'PerplexityBot', 'Applebot']);
+export const TRAININGS_CRAWLER = Object.freeze(['GPTBot', 'ClaudeBot', 'Google-Extended', 'CCBot']);
+
+export function robotsTxt({ suche = true, training = false, sitemap = null } = {}) {
+  const zeilen = ['# Suche und Training sind getrennte Kennungen — siehe ki-sichtbarkeit-konzept.md'];
+  for (const bot of SUCH_CRAWLER) {
+    zeilen.push('', `User-agent: ${bot}`, suche ? 'Allow: /' : 'Disallow: /');
+  }
+  for (const bot of TRAININGS_CRAWLER) {
+    zeilen.push('', `User-agent: ${bot}`, training ? 'Allow: /' : 'Disallow: /');
+  }
+  zeilen.push('', 'User-agent: *', 'Allow: /');
+  if (sitemap) zeilen.push('', `Sitemap: ${textZeile(sitemap)}`);
+  return zeilen.join('\n') + '\n';
+}
