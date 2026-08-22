@@ -53,3 +53,40 @@ Die `robots.txt` und eine `llms.txt` sind erzeugbar, aber noch nirgends
 ausgeliefert — dafür braucht es die Veröffentlichung unter einer
 Domain. Die Artikelseiten mit eingebetteter Auszeichnung folgen, sobald
 echte Preise da sind; heute gäbe es nichts auszuzeichnen.
+
+## Nachtrag: die Auslieferung
+
+`npm run veroeffentlichung` erzeugt die drei Dateien, die im
+Wurzelverzeichnis der Website liegen müssen: `robots.txt` (Such-Crawler
+zugelassen, Trainings-Crawler nicht — bewusst getrennt), `llms.txt`
+(Wegweiser mit Name, Liefergebiet und den Seiten, die die häufigsten
+Fragen beantworten) und `feed.jsonl` (der Produktfeed).
+
+Zwei Sperren, beide nach dem Muster des Preislisten-Imports:
+
+- **Probelauf ist die Voreinstellung.** Ohne `--schreiben` wird nur
+  berichtet. Was ins Wurzelverzeichnis geht, ist nach außen sichtbar.
+- **Fehlende Pflichtangaben brechen ab.** Firmenname und Liefergebiet
+  werden nicht erfunden; solange sie fehlen, entsteht keine Datei. Der
+  Firmenname ist die Entität, unter der KI-Systeme Erwähnungen
+  zusammenführen — eine erfundene Schreibweise wäre schlimmer als keine.
+
+Der heutige Lauf sagt genau das, was er soll:
+
+```
+Katalog: 9 Artikel
+Feed:    0 veröffentlichbar, 9 zurückgehalten
+  · Einkaufspreis ist Platzhalter — kein Lieferant hat ihn bestätigt
+
+Es fehlen Angaben, die nicht erfunden werden:
+  · Firmenname (SHOP_NAME)
+  · Liefergebiet (SHOP_BEZIRKE)
+```
+
+Sechs Testfälle, darunter der wichtigste: **Auch mit vollständigen
+Firmendaten bleibt der Feed leer, solange die Preise Platzhalter sind.**
+Die beiden Sperren sind unabhängig voneinander — das Schließen der
+einen öffnet die andere nicht. Gegenproben: Abbruch bei Lücken entfernt
+→ 1 Testfall fällt; Probelauf schreibt trotzdem → 1 fällt.
+
+Testbestand: **463, alle grün, Prüfer ohne Verdacht.**
