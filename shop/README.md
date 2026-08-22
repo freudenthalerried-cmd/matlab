@@ -35,12 +35,13 @@ Gerüst vorhanden und meldet selbst, welche Pflichtangaben ihm fehlen.
 ## Benutzen
 
 ```
-npm test           # 430 Testfälle
+npm test           # 457 Testfälle
 npm run build      # erzeugt demo.html, eine einzelne Datei ohne Abhängigkeiten
 npm run import -- <lieferantId> <datei.csv> [--schreiben]
 npm run auswerten -- <antworten.json>  # trägt die Antworten des Freigabetags vor
 npm run suchvolumen -- <messung.json>  # trägt die Suchvolumen-Messung (Prüfung B) vor
 npm run pruefe-tests  # prüft die Testfälle darauf, ob sie etwas behaupten
+npm run pruefe-inhalte     # prüft Inhalte gegen die sieben Regeln der Prüfkette
 npm run oberflaechenprobe  # fährt demo.html im Headless-Browser durch sieben Szenarien
 ```
 

@@ -167,3 +167,36 @@ Reihenfolge, wenn die Preise da sind: erst die Produktseiten (sie sind
 die Ware), dann die Anwendungsseiten (sie beantworten die häufigsten
 Fragen), dann die Entscheidungs- und Regelseiten. Nicht umgekehrt —
 Ratgeber ohne Sortiment ist ein Blog, kein Shop.
+
+## Nachtrag vom selben Tag: die Prüfschicht ist gebaut
+
+`npm run pruefe-inhalte` gibt es jetzt (`src/inhaltspruefung.js`,
+`bin/inhaltspruefung.mjs`). Er nimmt Markdown-Dateien und meldet je
+Absatz Verdachtsfälle gegen die sieben Regeln: Zahl ohne Quelle,
+Normbezug ohne Nummer, Gesundheitsaussage, Rechtsauskunft,
+Erfolgszusage, Preis ohne netto/brutto oder Stand, Blockzitat ohne
+Fundstelle. Begründete Ausnahmen werden mit
+`<!-- pruefung: begruendet — Grund -->` aufgeschrieben und geachtet.
+
+Die Ausgabe endet mit einem Satz, der zum Werkzeug gehört: *„Die
+Faktenprüfung gegen die Quelle ersetzt dieses Werkzeug nicht."* Der
+Prüfer findet Muster, nicht Unwahrheiten — er ersetzt den dritten
+Durchgang der Prüfkette nicht, er entlastet ihn nur von den mechanisch
+findbaren Fehlern.
+
+**Ein Befund im eigenen Prüfer, beim ersten Probelauf.** Die Regel
+„Normbezug ohne Nummer" traf nie. Ursache: JavaScripts `\b` beruht auf
+ASCII-Wortzeichen, und „Ö" gehört nicht dazu — `\bÖNORM` findet
+buchstäblich nichts. Ausgerechnet die Regel, deren wichtigster Fall die
+österreichische Norm ist, war blind. Behoben mit einer von Hand
+gesetzten Wortgrenze über Unicode-Eigenschaften; ein Testfall hält die
+Umlaut-Variante ausdrücklich fest.
+
+Elf Testfälle, dazu eine Probedatei im Repo
+(`shop/inhalte/probe/probe.md`) mit absichtlich fehlerhaften Absätzen
+— der Nachweis, dass der Prüfer findet, was er zu finden behauptet,
+läuft bei jedem `npm test` mit. Gegenproben per Mutation:
+Wortgrenze zurück auf `\b` → 3 Testfälle fallen; Quellenprüfung
+ausgehebelt → 3; begründete Ausnahme ignoriert → 1.
+
+Testbestand: **457, alle grün, Prüfer ohne Verdacht.**
