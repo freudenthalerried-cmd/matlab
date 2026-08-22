@@ -133,3 +133,29 @@ Warenkorb im neuen Modell wirklich ist, weiß niemand** — er hängt am
 Sortiment und am Kanal. Sobald die Rechnungen vorliegen, ist der
 tatsächliche Positionswert die erste Zahl, die zu bestimmen ist; ohne
 sie sind alle Bestellzahlen oben nur Umrechnungen.
+
+## Nachtrag: Gate 20 ist ausführbar
+
+Eine Regel, die nur im Dokument steht, wird im Alltag umgangen. Gate 20
+liegt deshalb als Sperre im Rechenkern (`kostenbild.js`):
+
+- **`traegtSichSelbst(warenkorb, { zahlwegId, frachtVerrechnet })`**
+  rechnet Erlös minus Einkauf minus Fracht minus Zahlungsgebühr und
+  sagt, ob etwas übrig bleibt. Der Schalter `frachtVerrechnet` ist die
+  entscheidende Unterscheidung: Zahlt der Kunde die Fracht, ist sie
+  durchlaufend; wird „frei Haus" geworben, geht sie zu unseren Lasten
+  — und derselbe Warenkorb kippt vom Ertrag in den Verlust.
+- **`mindestwarenkorbFreiHaus({ rohmarge, frachtNetto })`** liefert die
+  Schwelle, ab der eine frei-Haus-Bestellung sich trägt: bei 20 %
+  Rohmarge 83,24 € (15 € Fracht), 137,83 € (25 €), 219,71 € (40 €),
+  328,88 € (60 €).
+
+Sieben Testfälle, darunter die Kanten: einen Euro unter der Schwelle
+trägt es nicht, einen darüber schon. **Und genau null trägt nicht** —
+ein Nullgeschäft deckt keine Fixkosten, kostet aber Arbeit. Diese
+Grenze wurde erst durch eine Gegenprobe gefunden: Die Mutation von
+`> 0` auf `>= 0` blieb zunächst unbemerkt, weil kein Testfall den
+Nullpunkt traf. Dieselbe Fehlerklasse wie bei der 300-Bq/m³-Grenze
+(`grenze-bei-genau-300.md`), und derselbe Weg zur Entdeckung.
+
+Testbestand: **447, alle grün, Prüfer ohne Verdacht.**

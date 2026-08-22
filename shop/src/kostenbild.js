@@ -182,3 +182,76 @@ export function proBestellung(warenkorb, zahlwegId, werbeanteil) {
         : 0,
   };
 }
+
+/**
+ * Gate 20 — trägt sich diese eine Bestellung selbst?
+ *
+ * Die Margenuntergrenze (Gate 1) war für den Streckenhandel mit
+ * Herstellerkonditionen gesetzt: 32 % vom Verkauf, sonst fiel die Nische.
+ * Mit eigenen Baumeister-Einkaufspreisen und 25 % Zuschlag (= 20 % Rohmarge)
+ * ist das ein anderes Geschäft — Preisführerschaft statt Margenführerschaft.
+ * An die Stelle einer Prozentschwelle tritt deshalb die härtere und zugleich
+ * ehrlichere Bedingung: **Keine Bestellung ohne positiven Deckungsbeitrag.**
+ *
+ * Der Unterschied zu `deckungsbeitragNetto` im Warenkorb ist Absicht. Der
+ * dortige Wert ist Warenwert minus Einkauf und behandelt die Fracht als
+ * durchlaufend — das stimmt nur, wenn der Kunde sie zahlt. Sobald „frei Haus"
+ * geworben wird, frisst die Fracht den Ertrag, und genau daran scheitern
+ * kleine Warenkörbe: Bei 25 € Fracht und 20 % Rohmarge liegt der
+ * Nulldurchgang bei rund 145 € Warenkorb. Siehe
+ * `docs/baustoff-shop/rechnung-zum-zuschlag.md`.
+ *
+ * @param {object} warenkorb Ergebnis von `berechneWarenkorb`
+ * @param {object} lage `{ zahlwegId, frachtVerrechnet }` — `frachtVerrechnet`
+ *   false bedeutet: Lieferung frei Haus, die Fracht geht zu unseren Lasten.
+ */
+export function traegtSichSelbst(warenkorb, { zahlwegId = 'karte-stripe', frachtVerrechnet = true } = {}) {
+  const z = findeZahlweg(zahlwegId);
+  const warenwertNetto = warenkorb.warenwertNetto ?? 0;
+  const einkaufNetto = warenkorb.einkaufNetto ?? 0;
+  const frachtNetto = warenkorb.frachtNetto ?? 0;
+
+  // Was der Kunde zahlt — die Fracht nur dann, wenn sie ihm verrechnet wird.
+  const erloesNetto = cent(warenwertNetto + (frachtVerrechnet ? frachtNetto : 0));
+  // Die Zahlungsgebühr fällt auf den Bruttobetrag an, den der Kunde zahlt.
+  const gebuehrNetto = cent(erloesNetto * (1 + UST) * z.prozent + z.fixEuro);
+  // Die Fracht schulden wir dem Frachtführer in jedem Fall.
+  const deckungsbeitragNetto = cent(erloesNetto - einkaufNetto - frachtNetto - gebuehrNetto);
+
+  const gruende = [];
+  if (deckungsbeitragNetto <= 0) {
+    gruende.push(
+      `Deckungsbeitrag ${deckungsbeitragNetto.toFixed(2)} € — die Bestellung trägt sich nicht` +
+        (frachtVerrechnet ? '' : ' (Lieferung frei Haus: die Fracht geht zu unseren Lasten)'),
+    );
+  }
+
+  return {
+    traegt: deckungsbeitragNetto > 0,
+    deckungsbeitragNetto,
+    erloesNetto,
+    einkaufNetto,
+    frachtNetto,
+    gebuehrNetto,
+    frachtVerrechnet,
+    gruende,
+  };
+}
+
+/**
+ * Ab welchem Warenkorb trägt eine frei-Haus-Bestellung sich selbst?
+ *
+ * Beantwortet die Frage, die am Mindestbestellwert hängt: Unterhalb dieser
+ * Schwelle ist eine gelieferte Bestellung ein Verlustgeschäft — unabhängig
+ * davon, wie gut der Einkauf war.
+ */
+export function mindestwarenkorbFreiHaus({ rohmarge, frachtNetto, zahlwegId = 'karte-stripe' }) {
+  if (!(rohmarge > 0 && rohmarge < 1)) throw new Error('Die Rohmarge muss zwischen 0 und 1 liegen');
+  if (!(frachtNetto >= 0)) throw new Error('Die Fracht darf nicht negativ sein');
+  const z = findeZahlweg(zahlwegId);
+  // Warenwert w: w·rohmarge − fracht − (w·(1+UST)·prozent + fixEuro) > 0
+  const rate = rohmarge - (1 + UST) * z.prozent;
+  if (rate <= 0) return { erreichbar: false, grund: 'Die Rohmarge deckt nicht einmal die Zahlungsgebühr' };
+  const schwelle = (frachtNetto + z.fixEuro) / rate;
+  return { erreichbar: true, warenkorbNetto: cent(schwelle) };
+}
