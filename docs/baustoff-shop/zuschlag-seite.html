@@ -1,0 +1,322 @@
+<title>Was 25 % Zuschlag kosten</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --ground: #E7E8E3;
+    --surface: #F6F6F3;
+    --surface-2: #DDDFD8;
+    --ink: #191B19;
+    --ink-2: #3F443F;
+    --muted: #6E746C;
+    --line: #C8CBC2;
+    --line-strong: #A9AEA3;
+    --ocker: #8A6A2F;
+    --ocker-soft: #EFE4CC;
+    --moos: #3F6B52;
+    --ziegel: #A33F2A;
+    --ziegel-soft: #F2DCD5;
+    --slab: "Bitter", Georgia, "Iowan Old Style", serif;
+    --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #141614;
+      --surface: #1C1F1C;
+      --surface-2: #262A26;
+      --ink: #E9EBE6;
+      --ink-2: #C2C7BF;
+      --muted: #8D948A;
+      --line: #2E332E;
+      --line-strong: #434941;
+      --ocker: #D3A860;
+      --ocker-soft: #322913;
+      --moos: #86B79A;
+      --ziegel: #DE8C74;
+      --ziegel-soft: #35201A;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #141614;
+    --surface: #1C1F1C;
+    --surface-2: #262A26;
+    --ink: #E9EBE6;
+    --ink-2: #C2C7BF;
+    --muted: #8D948A;
+    --line: #2E332E;
+    --line-strong: #434941;
+    --ocker: #D3A860;
+    --ocker-soft: #322913;
+    --moos: #86B79A;
+    --ziegel: #DE8C74;
+    --ziegel-soft: #35201A;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 60rem;
+    margin: 0 auto;
+    padding: clamp(2rem, 5vw, 4rem) clamp(1.1rem, 4vw, 2.5rem) 5rem;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(2.2rem, 4vw, 3.4rem);
+  }
+  .prose { max-width: 38rem; }
+  p { margin: 0; }
+  h1, h2, h3 { font-family: var(--slab); font-weight: 600; margin: 0; text-wrap: balance; }
+  h1 { font-size: clamp(2rem, 5vw, 2.9rem); line-height: 1.06; letter-spacing: -0.02em; }
+  h2 { font-size: clamp(1.25rem, 2.6vw, 1.5rem); line-height: 1.2; }
+  h3 { font-size: 1rem; font-family: var(--sans); font-weight: 600; }
+
+  header { display: flex; flex-direction: column; gap: 1.1rem; }
+  .eyebrow {
+    font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .lede { font-size: 1.1rem; color: var(--ink-2); }
+  hr.rule { border: 0; height: 2px; background: var(--line-strong); margin: 0; }
+
+  section { display: flex; flex-direction: column; gap: 1.1rem; }
+
+  /* Die Kernaussage: zwei Zahlen, die verwechselt werden */
+  .kern {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    gap: 1px; background: var(--line); border: 2px solid var(--ink);
+  }
+  .kern > div { background: var(--surface); padding: 1.3rem 1.4rem; display: flex; flex-direction: column; gap: 0.35rem; }
+  .kern .zahl { font-family: var(--mono); font-size: 2.4rem; line-height: 1; font-weight: 600; letter-spacing: -0.03em; }
+  .kern .lab { font-size: 0.9rem; color: var(--muted); }
+  .kern .gleich { color: var(--ocker); }
+
+  .scroll { overflow-x: auto; border: 1px solid var(--line); background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 0.94rem; }
+  th, td { text-align: left; padding: 0.7rem 1rem; border-bottom: 1px solid var(--line); }
+  thead th {
+    font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); font-weight: 500; background: var(--surface-2); white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: 0; }
+  td.num, th.num { font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+  tr.hier td { background: var(--ocker-soft); font-weight: 600; }
+  tr.tot td { color: var(--ziegel); }
+
+  /* Der Kipppunkt bei der Werbung */
+  .klippe { display: flex; flex-direction: column; gap: 0.5rem; }
+  .balken { display: grid; grid-template-columns: 7rem 1fr; gap: 0.9rem; align-items: center; }
+  .balken .wert { font-family: var(--mono); font-size: 0.85rem; font-variant-numeric: tabular-nums; color: var(--ink-2); }
+  .balken .spur { background: var(--surface-2); height: 1.9rem; position: relative; overflow: hidden; border: 1px solid var(--line); }
+  .balken .fuell { height: 100%; background: var(--ocker); opacity: 0.85; }
+  .balken .fuell.warn { background: var(--ziegel); }
+  .balken .zahl {
+    position: absolute; top: 50%; transform: translateY(-50%); left: 0.6rem;
+    font-family: var(--mono); font-size: 0.8rem; font-weight: 600; color: var(--ink);
+    font-variant-numeric: tabular-nums; mix-blend-mode: normal;
+  }
+  .balken .zahl.aussen { left: auto; right: 0.6rem; }
+
+  .karten { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  .karte { background: var(--surface); padding: 1.2rem 1.3rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .karte .kopf { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ocker); }
+  .karte p { font-size: 0.92rem; color: var(--ink-2); }
+
+  .merk { border-left: 3px solid var(--ocker); background: var(--surface); padding: 1rem 1.2rem; font-size: 1rem; }
+  .merk.warnung { border-left-color: var(--ziegel); background: var(--ziegel-soft); }
+  .gate { border: 2px solid var(--ink); background: var(--surface); padding: 1.3rem 1.4rem; display: flex; flex-direction: column; gap: 0.6rem; }
+  .gate .nr { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ocker); }
+  .note { font-size: 0.88rem; color: var(--muted); }
+  strong { font-weight: 600; }
+  footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--line); padding-top: 1.1rem; display: flex; flex-direction: column; gap: 0.4rem; }
+  code { font-family: var(--mono); font-size: 0.87em; }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Kalkulation · Stand 22. August 2026</p>
+    <h1>Was 25 % Zuschlag kosten</h1>
+    <p class="lede prose">Der Zuschlag auf den eigenen Baumeister-Einkaufspreis ist vorgegeben.
+      Diese Seite rechnet vor, was er für das Ziel von 3.000 € netto im Monat bedeutet — und
+      unter welchen drei Bedingungen er trägt.</p>
+    <hr class="rule">
+  </header>
+
+  <section>
+    <h2>Zuerst: 25 % Zuschlag sind 20 % Marge</h2>
+    <div class="kern">
+      <div>
+        <span class="zahl">+25 %</span>
+        <span class="lab">Zuschlag auf den Einkauf<br>100 € Einkauf → 125 € Verkauf</span>
+      </div>
+      <div>
+        <span class="zahl gleich">20 %</span>
+        <span class="lab">Rohmarge vom Verkauf<br>25 € von 125 €</span>
+      </div>
+      <div>
+        <span class="zahl">+33 %</span>
+        <span class="lab">wären nötig für 25 % Marge<br>100 € Einkauf → 133 € Verkauf</span>
+      </div>
+    </div>
+    <p class="prose">Das ist keine Wortklauberei. Alle Rechnungen des Vorhabens laufen auf die
+      Rohmarge vom Verkauf, weil Werbung, Zahlungsgebühren und Fracht daran hängen. Wer „25 %"
+      sagt und 25 % Marge meint, braucht einen Zuschlag von 33 %.</p>
+  </section>
+
+  <section>
+    <h2>Der nötige Umsatz verdreifacht sich fast</h2>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Rohmarge</th>
+            <th scope="col" class="num">bleibt nach Werbung und Gebühren</th>
+            <th scope="col" class="num">nötiger Monatsumsatz</th>
+            <th scope="col" class="num">Bestellungen</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>35 % — bisherige Annahme</td><td class="num">23,3 %</td><td class="num">25.875 €</td><td class="num">40</td></tr>
+          <tr><td>32 % — bisherige Untergrenze</td><td class="num">20,3 %</td><td class="num">29.702 €</td><td class="num">46</td></tr>
+          <tr><td>25 %</td><td class="num">13,3 %</td><td class="num">45.356 €</td><td class="num">70</td></tr>
+          <tr class="hier"><td>20 % — der vorgegebene Zuschlag</td><td class="num">8,3 %</td><td class="num">72.740 €</td><td class="num">112</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="prose">112 Bestellungen im Monat sind knapp vier an jedem Tag, ohne Pause —
+      gerechnet mit dem bisherigen Referenzwarenkorb von 650 € netto. Das ist der Preis des
+      niedrigen Aufschlags, und er ist bezahlbar. Der nächste Punkt ist es nicht.</p>
+  </section>
+
+  <section>
+    <h2>Die Werbung ist der Engpass, nicht der Einkauf</h2>
+    <p class="prose">Bei 20 % Rohmarge bleiben nach Werbung und Gebühren nur 8,3 % übrig. Jeder
+      weitere Prozentpunkt Werbung frisst also ein Achtel des Ertrags — nicht ein Fünfzigstel.
+      Nötiger Monatsumsatz, je nach Werbeanteil:</p>
+    <div class="klippe">
+      <div class="balken">
+        <span class="wert">10 % Werbung</span>
+        <span class="spur"><span class="fuell" style="width:4%"></span><span class="zahl aussen">72.740 €</span></span>
+      </div>
+      <div class="balken">
+        <span class="wert">12 % Werbung</span>
+        <span class="spur"><span class="fuell" style="width:5%"></span><span class="zahl aussen">95.900 €</span></span>
+      </div>
+      <div class="balken">
+        <span class="wert">15 % Werbung</span>
+        <span class="spur"><span class="fuell warn" style="width:9%"></span><span class="zahl aussen">183.572 €</span></span>
+      </div>
+      <div class="balken">
+        <span class="wert">18 % Werbung</span>
+        <span class="spur"><span class="fuell warn" style="width:100%"></span><span class="zahl">2.139.672 €</span></span>
+      </div>
+      <div class="balken">
+        <span class="wert">20 % Werbung</span>
+        <span class="spur"><span class="fuell warn" style="width:100%"></span><span class="zahl">rechnerisch unmöglich</span></span>
+      </div>
+    </div>
+    <div class="merk warnung">
+      <strong>Der vorgesehene Vertriebsweg ist Google Shopping</strong> — ein Klickpreis-Kanal.
+      Ein Werbeanteil von 10 % ist dort für einen neuen Anbieter ohne Verkaufshistorie
+      optimistisch. Bei 20 % Rohmarge endet die Tragfähigkeit bei 18 % Werbeanteil. Die
+      eigentliche Wette dieses Modells sind die Klickpreise, nicht der Einkaufsvorteil.
+    </div>
+  </section>
+
+  <section>
+    <h2>Kleine Warenkörbe tragen ihre Fracht nicht</h2>
+    <p class="prose">Was nach Wareneinsatz, Zahlungsgebühr und Fracht übrig bleibt, in Euro
+      je Bestellung — bei 20 % Rohmarge und Lieferung frei Haus:</p>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Fracht je Lieferung</th>
+            <th scope="col" class="num">50 €</th><th scope="col" class="num">100 €</th>
+            <th scope="col" class="num">150 €</th><th scope="col" class="num">250 €</th>
+            <th scope="col" class="num">400 €</th><th scope="col" class="num">650 €</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>15 €</td><td class="num" style="color:var(--ziegel)">−6</td><td class="num">+3</td><td class="num">+12</td><td class="num">+30</td><td class="num">+58</td><td class="num">+104</td></tr>
+          <tr><td>25 €</td><td class="num" style="color:var(--ziegel)">−17</td><td class="num" style="color:var(--ziegel)">−7</td><td class="num">+2</td><td class="num">+20</td><td class="num">+48</td><td class="num">+93</td></tr>
+          <tr><td>40 €</td><td class="num" style="color:var(--ziegel)">−32</td><td class="num" style="color:var(--ziegel)">−23</td><td class="num" style="color:var(--ziegel)">−13</td><td class="num">+5</td><td class="num">+32</td><td class="num">+78</td></tr>
+          <tr><td>60 €</td><td class="num" style="color:var(--ziegel)">−52</td><td class="num" style="color:var(--ziegel)">−43</td><td class="num" style="color:var(--ziegel)">−34</td><td class="num" style="color:var(--ziegel)">−15</td><td class="num">+12</td><td class="num">+58</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="merk">
+      <strong>Ein Sack Spachtelmasse für 25 €, geliefert, ist bei diesem Aufschlag ein
+      Verlustgeschäft</strong> — unabhängig davon, wie gut der Einkauf war. Genau solche
+      Bestellungen bringt Google Shopping. Der Nulldurchgang liegt bei 15 € Fracht bei rund
+      83 € Warenkorb, bei 25 € Fracht bei 138 €, bei 40 € Fracht bei 220 €.
+    </div>
+  </section>
+
+  <section>
+    <h2>Drei Bedingungen, unter denen der Zuschlag trägt</h2>
+    <div class="karten">
+      <div class="karte">
+        <span class="kopf">Fracht</span>
+        <h3>Verrechnen, nicht einpreisen</h3>
+        <p>Läuft die Fracht durch, bleiben schon bei 50 € Warenkorb 8,91 € Deckungsbeitrag,
+          bei 250 € sind es 45,55 €. Frei-Haus-Werbung bei kleinen Körben ist bei 20 % Marge
+          die schnellste Art, Geld zu verlieren.</p>
+      </div>
+      <div class="karte">
+        <span class="kopf">Mindestmenge</span>
+        <h3>Untergrenze oder Abholung</h3>
+        <p>Unter rund 150 € netto trägt eine gelieferte Bestellung sich nicht. Entweder ein
+          Mindestbestellwert — oder kleine Mengen nur zur Selbstabholung, was bei regionalem
+          Zuschnitt ohnehin naheliegt.</p>
+      </div>
+      <div class="karte">
+        <span class="kopf">Aufschlag</span>
+        <h3>Gestaffelt statt einheitlich</h3>
+        <p>So arbeitet der Baustoffhandel tatsächlich: wenig Aufschlag auf schwere,
+          preisverglichene Massenware, mehr auf Kleinteile, wo niemand vergleicht und die
+          Handhabung teuer ist. Ein einheitlicher Satz verschenkt oben und verliert unten.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="gate">
+      <span class="nr">Gate 20 · entschieden</span>
+      <h2>Keine Bestellung ohne positiven Deckungsbeitrag</h2>
+      <p>Die alte Margenuntergrenze von 32 % war für den Streckenhandel mit
+        Herstellerkonditionen gesetzt. Mit eigenem Einkaufsvorteil ist das ein anderes
+        Geschäft — Preisführerschaft statt Margenführerschaft. An die Stelle einer Prozentzahl
+        tritt die härtere Bedingung: <strong>Jede einzelne Bestellung muss nach Wareneinsatz,
+        Gebühren und Fracht über null liegen.</strong></p>
+      <p class="note">Das ist strenger als eine Margenschwelle und zugleich ehrlicher — es
+        lässt 20 % Rohmarge dort zu, wo sie trägt, und verbietet sie dort, wo sie nicht trägt.
+        Die Regel liegt als Sperre im Rechenkern (<code>traegtSichSelbst</code>), nicht nur
+        in diesem Dokument.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Was diese Rechnung nicht beantwortet</h2>
+    <p class="prose">Sie rechnet mit dem bisherigen Referenzwarenkorb von 650 € netto. Wie groß
+      der Warenkorb im neuen Modell wirklich ist, weiß niemand — er hängt am Sortiment und am
+      Kanal. Sobald die Rechnungen des Bürozubaus vorliegen, ist der tatsächliche Positionswert
+      die erste Zahl, die zu bestimmen ist. Bis dahin sind alle Bestellzahlen oben
+      Umrechnungen, keine Prognosen.</p>
+  </section>
+
+  <footer>
+    <p>Gerechnet mit der Kostenkaskade des Projekts (<code>shop/src/kostenbild.js</code>),
+      Zielgewinn 5.374 € vor Steuer, Fixkosten 650 €, Zahlung per Karte. Herleitung in
+      <code>docs/baustoff-shop/rechnung-zum-zuschlag.md</code>.</p>
+    <p>Nichts ist gegründet, verkauft oder eingenommen. Keine Steuer- oder Rechtsberatung.</p>
+  </footer>
+</div>

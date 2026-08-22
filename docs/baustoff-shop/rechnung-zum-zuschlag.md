@@ -1,5 +1,8 @@
 # Was 25 % Zuschlag bedeuten — die Rechnung, vorgelegt
 
+Als lesbare Seite aufbereitet:
+[claude.ai/code/artifact/6e356abb…](https://claude.ai/code/artifact/6e356abb-b5d3-44a9-9b8d-f98a13fb0502)
+
 Stand: 2026-08-22. Der Auftraggeber hat 25 % Zuschlag auf den
 Baumeister-Einkaufspreis vorgegeben (`auftrag-baumeisterpreise.md`).
 Diese Rechnung legt offen, was das für das Ziel von 3.000 € netto

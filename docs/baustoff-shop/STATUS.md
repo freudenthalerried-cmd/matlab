@@ -1,6 +1,6 @@
 # Status und Einstieg
 
-Stand: 2026-08-22. **Dieses Dokument zuerst lesen.** Siebenundachtzig Arbeitsdateien
+Stand: 2026-08-22. **Dieses Dokument zuerst lesen.** Achtundachtzig Arbeitsdateien
 sind entstanden, mehrere davon korrigieren einander. Hier steht, was gilt.
 
 Veröffentlichter Bericht:
@@ -201,7 +201,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `warteordnung.md` | **Was der Loop tut, wenn nichts mehr ansteht** — Blockadenliste, Wartelauf (RIS-Nachprüfung, PR, Schaufenster nur bei Substanzänderung, sonst ehrlich enden); erfundene Runden verwässern die echten |
 | `auftrag-baumeisterpreise.md` | **Neue Weisung vom 22. August** — eigene Baumeisterpreise +25 % statt unbelegter Platzhalter, Google Shopping, regionales Liefergebiet; Gate 1 und Gate 5 sind damit neu zu entscheiden. Rechnungen fehlen noch, Loop pausiert bis nächste Woche |
 | `ki-sichtbarkeit-konzept.md` | **Genannt werden, wenn eine KI nach Baustoffen gefragt wird** — vier Wege (Feed, KI-Suche, Trainingswissen, Agentenbesuch), Vertrauen entsteht aus Entitätskonsistenz, Drittquellen und Überprüfbarkeit; Empfehlung gegen den Parallelshop, für eine zweite Ausgabeform desselben Shops; das regionale Liefergebiet ist dabei ein Vorteil |
-| `rechnung-zum-zuschlag.md` | **Was 25 % Zuschlag kosten** — 20 % Rohmarge, nötiger Umsatz 72.740 € statt 25.875 €; der Werbeanteil ist der Killer (Tragfähigkeit endet bei 18 %); kleine Warenkörbe tragen ihre Fracht nicht. Gate 1 abgelöst durch **Gate 20: keine Bestellung ohne positiven Deckungsbeitrag**, ausführbar im Rechenkern |
+| `rechnung-zum-zuschlag.md` (+ [Seite](https://claude.ai/code/artifact/6e356abb-b5d3-44a9-9b8d-f98a13fb0502)) | **Was 25 % Zuschlag kosten** — 20 % Rohmarge, nötiger Umsatz 72.740 € statt 25.875 €; der Werbeanteil ist der Killer (Tragfähigkeit endet bei 18 %); kleine Warenkörbe tragen ihre Fracht nicht. Gate 1 abgelöst durch **Gate 20: keine Bestellung ohne positiven Deckungsbeitrag**, ausführbar im Rechenkern |
 | `inhalte-und-pruefteam.md` | **Inhalte, Datenblätter, Prüfkette** — fremde YouTube-Transkripte sind unzulässig (§ 42f UrhG), tragfähig ist die Nutzung als Recherchequelle; Datenblätter verlinken statt spiegeln; vier Rollen mit sieben vorab festgelegten Regeln, Prüfschicht als `npm run pruefe-inhalte` gebaut |
 | `maschinenlesbare-ausgabe.md` | **Schema.org, Feed und robots.txt** — Preise werden übernommen statt nachgerechnet, Platzhalter gehen nicht hinaus, Zurückgehaltenes wird begründet |
 | `domainwahl.md` | **Die Domain ist der Name der Entität** — beschreibend statt erfunden, deckungsgleich mit Firmenname und Impressum; Empfehlung Eigenname+Gattung, Verfügbarkeit extern zu prüfen |
