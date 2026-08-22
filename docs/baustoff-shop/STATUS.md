@@ -1,6 +1,6 @@
 # Status und Einstieg
 
-Stand: 2026-08-17. **Dieses Dokument zuerst lesen.** Siebenundachtzig Arbeitsdateien
+Stand: 2026-08-22. **Dieses Dokument zuerst lesen.** Siebenundachtzig Arbeitsdateien
 sind entstanden, mehrere davon korrigieren einander. Hier steht, was gilt.
 
 Veröffentlichter Bericht:
@@ -16,7 +16,7 @@ Lauffähiges Shop-Funktionsmuster:
 Quelltext und 457 Testfälle unter `shop/`, auf Hohlheit geprüft. Alle Preise sind Platzhalter.
 Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 
-> **Neue Weisung vom 22. August — der Loop pausiert bis nächste Woche.**
+> **Kurswechsel vom 22. August — das Modell hat sich geändert.**
 > Der Auftraggeber gibt seine eigenen Baumeister-Einkaufspreise aus den
 > Bürozubau-Rechnungen (Peither) als Kalkulationsgrundlage vor, Zuschlag
 > 25 %, Vertrieb über Google Shopping, Lieferung regional statt
@@ -24,10 +24,19 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > unter der Untergrenze von 32 %), Gate 5 (Sortiment nicht mehr
 > radonspezifisch) und den Werbeanteil. Wortlaut, Folgenanalyse, offene
 > Fragen und Ablaufplan in [`auftrag-baumeisterpreise.md`](./auftrag-baumeisterpreise.md).
-> **Die Rechnungen liegen noch nicht vor.** Zweite Weisung vom selben Tag:
-> Der Shop soll für **KI-Suchen** optimiert werden — Konzept, Wege,
-> Vertrauensfrage und Reihenfolge in
-> [`ki-sichtbarkeit-konzept.md`](./ki-sichtbarkeit-konzept.md).
+> **Die Rechnungen liegen noch nicht vor.** Die Rechnung dazu ist
+> gemacht und liegt vor: [`rechnung-zum-zuschlag.md`](./rechnung-zum-zuschlag.md)
+> — 20 % Rohmarge verdreifachen fast den nötigen Umsatz, und **Gate 1
+> ist durch Gate 20 abgelöst** (keine Bestellung ohne positiven
+> Deckungsbeitrag, ausführbar im Rechenkern).
+>
+> Zwei weitere Weisungen vom selben Tag: Der Shop soll für **KI-Suchen**
+> optimiert werden ([`ki-sichtbarkeit-konzept.md`](./ki-sichtbarkeit-konzept.md),
+> erste Bauteile in [`maschinenlesbare-ausgabe.md`](./maschinenlesbare-ausgabe.md)),
+> und er soll **umfangreiche geprüfte Inhalte** tragen
+> ([`inhalte-und-pruefteam.md`](./inhalte-und-pruefteam.md) — fremde
+> YouTube-Transkripte sind dabei nicht zulässig, die Prüfkette läuft als
+> `npm run pruefe-inhalte`).
 
 ## Wo das Projekt steht
 

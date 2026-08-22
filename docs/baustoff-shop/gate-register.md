@@ -26,7 +26,7 @@ Ebenso überholt: Der master-prompt nennt in Gate 1 eine Margenschwelle von
 **28 %**. Sie stammt aus dem Szenario „3.000 € vor Steuer". Seit der Umstellung
 auf 3.000 € netto gilt die harte Untergrenze von **32 %**.
 
-## Die neunzehn Gates
+## Die zwanzig Gates
 
 ### Lieferantenseite — alle drei hängen an einer einzigen Freigabe
 
@@ -74,6 +74,22 @@ auf 3.000 € netto gilt die harte Untergrenze von **32 %**.
 | **13** | **Gebietseinheit ist der politische Bezirk**, nicht die Radonschutzgemeinde. Die 104 Gemeinden bestimmen nur die Ausbaufolge, beginnend in Oberösterreich. | entschieden | `partnerangebot-leadvermittlung.md` |
 | **16** | **Die heutige Franchisedichte in Österreich ist keine Planungsgrundlage.** ISOTEC gründet ab dem zweiten Halbjahr 2026 in Österreich; die Lücke ist eine Frist, keine Lücke. Wo Gruppe C bespielt wird, dann in Oberösterreich zuerst und mit regulatorischem statt generischem Zuschnitt. | entschieden | `franchise-zeitfenster.md` |
 | **15** | **Die 2 % Lead-Quote in Gruppe C gilt als unbelegt** und wird nicht als Mengenquelle eingeplant, bis Suchvolumen und Wettbewerbsdichte gemessen sind. Grund: vertikal integrierte Franchisesysteme betreiben dieselben Formate und können für denselben Klick ein Vielfaches zahlen. | entschieden | `pruefung-gruppe-c.md` |
+
+### Nachgetragen am 22. August — der Kurswechsel
+
+| Nr. | Entscheidung | Stand | Festgelegt in |
+|---|---|---|---|
+| **20** | **Keine Bestellung ohne positiven Deckungsbeitrag.** Tritt an die Stelle von Gate 1 (32 % Rohmarge), sobald mit eigenen Baumeister-Einkaufspreisen und 25 % Zuschlag (= 20 % Rohmarge) kalkuliert wird. Maßgeblich ist nicht mehr eine Prozentzahl, sondern die einzelne Bestellung nach Wareneinsatz, Zahlungsgebühr **und Fracht**. Ausführbar als `traegtSichSelbst()` im Rechenkern; die Schwelle für frei-Haus-Lieferung liefert `mindestwarenkorbFreiHaus()`. Begründung: Gate 1 stammt aus dem Streckenhandel mit Herstellerkonditionen und würde das neue Modell mechanisch verwerfen, statt es zu prüfen. Gate 20 ist strenger, weil es jede Bestellung einzeln prüft — und lässt 20 % Rohmarge dort zu, wo sie trägt. | entschieden, selbst | `rechnung-zum-zuschlag.md` |
+
+**Gate 1 gilt weiter für das Streckengeschäftsmodell** mit
+Herstellerkonditionen — die dreizehn Anfragen sind unverändert danach
+auszuwerten. Welches Gate greift, hängt daran, aus welcher Quelle der
+Einkaufspreis stammt.
+
+**Gate 5 (Sortiment auf den radonspezifischen Kern) steht zur
+Überprüfung**, sobald das Sortiment aus den Rechnungen feststeht:
+Spachtelmasse ist Allgemeinbaustoff. Noch nicht entschieden, weil die
+Grundlage fehlt.
 
 ## Was die Gates auslöst
 
