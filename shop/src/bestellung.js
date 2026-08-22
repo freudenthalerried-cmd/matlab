@@ -9,6 +9,7 @@
  */
 
 import { EUR, csvFeld, textZeile } from './format.js';
+import { traegtSichSelbst } from './kostenbild.js';
 
 /** Erzeugt je Teillieferung eine Bestellung an den Lieferanten. */
 export function erzeugeBestellungen(warenkorb, auftrag) {
@@ -103,6 +104,22 @@ export function darfAutomatischAusgeloestWerden(warenkorb, auftrag) {
   if (warenkorb.teillieferungen.some((t) => t.positionen.some((p) => p.ekIstPlatzhalter))) {
     gruende.push('Katalog enthält Platzhalterpreise — keine echten Konditionen');
   }
+
+  // Gate 20: Keine Bestellung ohne positiven Deckungsbeitrag. Der Mindest-
+  // bestellwert oben ist eine Kondition des Lieferanten uns gegenüber und sagt
+  // nichts darüber, ob WIR an dieser Bestellung etwas verdienen. Bei 20 %
+  // Rohmarge und frei Haus kippt ein kleiner Warenkorb ins Minus, während
+  // jeder Mindestbestellwert erfüllt ist. Siehe rechnung-zum-zuschlag.md.
+  // Die Prüfung läuft immer, nicht nur wenn der Auftrag die Felder trägt: Eine
+  // Sperre, die sich bei fehlender Angabe selbst überspringt, ist keine Sperre.
+  // Voreinstellung ist die günstigste Annahme (Fracht wird verrechnet) — wer
+  // frei Haus liefert, muss das im Auftrag sagen und bekommt die schärfere
+  // Rechnung.
+  const deckung = traegtSichSelbst(warenkorb, {
+    zahlwegId: auftrag.zahlweg ?? 'karte-stripe',
+    frachtVerrechnet: auftrag.frachtVerrechnet ?? true,
+  });
+  if (!deckung.traegt) gruende.push(`Gate 20 — ${deckung.gruende[0]}`);
 
   return { erlaubt: gruende.length === 0, gruende };
 }

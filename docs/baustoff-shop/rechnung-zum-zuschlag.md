@@ -162,3 +162,27 @@ Nullpunkt traf. Dieselbe Fehlerklasse wie bei der 300-Bq/m³-Grenze
 (`grenze-bei-genau-300.md`), und derselbe Weg zur Entdeckung.
 
 Testbestand: **447, alle grün, Prüfer ohne Verdacht.**
+
+
+## Nachtrag: Gate 20 greift jetzt tatsächlich
+
+Die Sperre war zunächst nur eine Funktion — sie hing an keiner
+Entscheidung. Jetzt läuft sie in `darfAutomatischAusgeloestWerden`
+mit, neben der Platzhalterpreis-Sperre und Gate 7.
+
+Ein Einwand gegen die erste Fassung, aus dem Bau selbst: Sie prüfte
+nur, **wenn** der Auftrag Zahlweg oder Frachtregelung nannte — und
+übersprang sich sonst stillschweigend. Das ist genau das Muster, das
+diesem Projekt schon viermal Geld gekostet hat. Die Prüfung läuft jetzt
+unbedingt; Voreinstellung ist die günstigste Annahme (Fracht wird
+verrechnet), und wer frei Haus liefert, muss das im Auftrag sagen und
+bekommt die schärfere Rechnung.
+
+Fünf Testfälle, darunter der lehrreichste: **Ein erfüllter
+Mindestbestellwert rettet eine Verlustbestellung nicht.** Die beiden
+Prüfungen messen Verschiedenes — der Mindestbestellwert ist eine
+Kondition des Lieferanten uns gegenüber, Gate 20 fragt, ob wir an der
+Bestellung etwas verdienen. Gegenprobe: Sperre entfernt → 3 Testfälle
+fallen.
+
+Testbestand: **468, alle grün, Prüfer ohne Verdacht.**
