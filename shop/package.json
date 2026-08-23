@@ -11,6 +11,7 @@
     "suchvolumen": "node bin/suchvolumen.mjs",
     "oberflaechenprobe": "node bin/oberflaechenprobe.mjs",
     "pruefe-inhalte": "node bin/inhaltspruefung.mjs",
-    "veroeffentlichung": "node bin/veroeffentlichung.mjs"
+    "veroeffentlichung": "node bin/veroeffentlichung.mjs",
+    "pruefe-quellen": "node bin/quellenpruefung.mjs"
   }
 }
