@@ -1,6 +1,6 @@
 # Die Google-Kampagne — fertig geplant, nicht geschaltet
 
-Stand: 2026-08-22. Weisung: *„setze google kampagne auf den fertigen
+Stand: 2026-08-22, Zahlen überarbeitet 2026-08-25. Weisung: *„setze google kampagne auf den fertigen
 shop"*. Dieses Dokument ist die vollständige Kampagne — Struktur,
 Gebote, Ausschlüsse, Budget. **Geschaltet ist sie nicht**, und zwei
 Gründe stehen dem entgegen, die vor jedem Euro geklärt gehören.
@@ -37,12 +37,17 @@ Was ein Klick kosten darf, ergibt sich aus dem Deckungsbeitrag der
 Bestellung mal der Kaufquote. Gerechnet mit den echten Zahlen der
 Bürozubau-Rechnung (Fracht verrechnet, Zahlung per Karte):
 
-| Bestellgröße | Deckungsbeitrag | max. Klickpreis bei 1 % | bei 2 % | bei 3 % |
-|---|---|---|---|---|
-| 1 Sack Kleber | 6,58 € | 0,07 € | 0,13 € | 0,20 € |
-| 4 Sack | 28,36 € | 0,28 € | 0,57 € | 0,85 € |
-| 12 Sack (Gate-20-Schwelle) | 86,40 € | 0,86 € | 1,73 € | 2,59 € |
-| 30 Sack (Baustelle) | 217,02 € | 2,17 € | 4,34 € | 6,51 € |
+| Bestellgröße | Warenkorb netto | Deckungsbeitrag | max. Klick bei 1 % | bei 2 % | bei 3 % |
+|---|---|---|---|---|---|
+| 1 Sack Kleber | 42 € | 9,18 € | 0,09 € | 0,18 € | 0,28 € |
+| 4 Sack | 169 € | 38,74 € | 0,39 € | 0,77 € | 1,16 € |
+| 12 Sack (Gate-20-Schwelle) | 507 € | 116,65 € | 1,17 € | 2,33 € | 3,50 € |
+| 30 Sack (Baustelle) | 1.268 € | 294,01 € | 2,94 € | 5,88 € | 8,82 € |
+
+*Gerechnet mit 25 % Marge nach der Weisung vom 25.08.
+(`marge-25-prozent.md`); die frühere Fassung dieser Tabelle rechnete
+mit 25 % Zuschlag, also 20 % Marge, und lag durchgehend um rund ein
+Drittel niedriger.*
 
 Dem gegenüber die tatsächlichen Klickpreise: In Österreich liegt der
 CPC branchenüblich zwischen **0,50 € und 2,50 €**, lokale Anbieter und
@@ -51,15 +56,19 @@ Handwerk eher bei 0,50–2,00 €.
 Daraus folgt hart und ohne Spielraum:
 
 > **Der Ein-Sack-Kunde ist über Google nicht bezahlbar.** Sein maximaler
-> Klickpreis liegt bei 7 bis 20 Cent, der Markt verlangt das Drei- bis
+> Klickpreis liegt bei 9 bis 28 Cent, der Markt verlangt das Zwei- bis
 > Zehnfache. Jede Anzeige, die ihn anzieht, kostet Geld und bringt
-> keines.
+> keines. Daran hat die bessere Marge nichts geändert — sie hat die
+> Größenordnung verschoben, nicht das Vorzeichen.
 >
-> **Ab etwa zwölf Sack — rund 475 € Warenkorb — trägt die Kampagne
-> sich.** Das ist dieselbe Schwelle, die Gate 20 aus der Fracht
-> abgeleitet hat. Zwei unabhängige Rechnungen kommen auf denselben
-> Punkt, und das ist kein Zufall: Unterhalb dieser Größe ist jede
-> Einzelbestellung zu klein für ihre eigenen Nebenkosten.
+> **Ab etwa zwölf Sack — rund 500 € Warenkorb — trägt die Kampagne
+> sich, und zwar seit der Margenumstellung mit Abstand.** Bei 20 %
+> Marge lag der zulässige Klickpreis dort bei 1,73 € und damit am
+> oberen Rand des Marktpreises; bei 25 % sind es 2,33 €. Es ist
+> dieselbe Schwelle, die Gate 20 aus der Fracht ableitet — zwei
+> unabhängige Rechnungen kommen auf denselben Punkt, weil unterhalb
+> dieser Größe jede Einzelbestellung zu klein für ihre eigenen
+> Nebenkosten ist.
 
 **Die Kampagne muss also Baustellen ansprechen, nicht Heimwerker.** Das
 ist zugleich die Antwort auf den Preisvergleich aus
@@ -147,15 +156,19 @@ Nach Gate-17-Prinzip, damit sie nicht nachträglich verhandelt wird:
 > unter der Werbeausgabe, wird die Kampagne **abgeschaltet**, nicht
 > optimiert. Optimiert wird erst, wenn die Grundrechnung aufgeht.
 
-Der Grund steht in `rechnung-zum-zuschlag.md`: Bei 20 % Rohmarge endet
-die Tragfähigkeit bei 18 % Werbeanteil. Eine Kampagne, die bei 300 €
-nicht trägt, trägt bei 3.000 € auch nicht — sie kostet nur zehnmal so
+Der Grund steht in `marge-25-prozent.md`: Bei 25 % Rohmarge endet die
+Tragfähigkeit bei **23 % Werbeanteil** (bei 20 % waren es 18 %). Das
+ist der Puffer, der die Kampagne überhaupt erst vertretbar macht — es
+ist keine Erlaubnis, ihn auszureizen. Eine Kampagne, die bei 300 €
+nicht trägt, trägt bei 3.000 € auch nicht; sie kostet nur zehnmal so
 viel, bis man es merkt.
 
 ## Was zu tun ist, in dieser Reihenfolge
 
-1. **Firma und Domain** klären (siehe `domainwahl.md`), Repository auf
-   privat stellen.
+1. **Domain klären** (siehe `domainwahl.md`) — die Firma steht bereits:
+   Freudenthaler Bau GmbH, FN 347938z, Baustoffhandel als Gewerbe
+   eingetragen. Empfehlung ist eine Subdomain der bestehenden Domain.
+   Repository auf privat stellen.
 2. **Shop live** mit Impressum, Rechtstexten, Zahlung — der Rechenkern
    steht, die Rechtstexte sind ein Gerüst mit ausgewiesenen Lücken.
 3. **Katalog füllen** aus den Poschacher-Rechnungen, GTIN je Artikel

@@ -124,6 +124,11 @@
   .frage .wirkung { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); text-align: right; white-space: nowrap; }
   .frage .warum { grid-column: 1 / -1; font-size: 0.87rem; color: var(--ink-2); }
   @media (max-width: 34rem) { .frage { grid-template-columns: 1fr; } .frage .wirkung { text-align: left; } }
+  .frage.erledigt { background: var(--moos-soft); }
+  .frage.erledigt .f { color: var(--ink-2); text-decoration: line-through; text-decoration-color: var(--line-strong); text-decoration-thickness: 1px; }
+  .frage.erledigt .wirkung { color: var(--moos); font-weight: 600; }
+  .frage .antwort { grid-column: 1 / -1; font-size: 0.87rem; color: var(--ink); }
+  .frage .antwort strong { color: var(--moos); }
 
   .merk { border-left: 3px solid var(--ocker); background: var(--surface); padding: 1rem 1.2rem; font-size: 1rem; }
   .fertig { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
@@ -209,7 +214,7 @@
             <div class="spur du">
               <span class="spur-wer">Du</span>
               <ul>
-                <li>Domain wählen und registrieren</li>
+                <li>Domain: <code>shop.freudenthaler-bau.at</code> einrichten</li>
                 <li>Firmendaten und UID liefern</li>
                 <li>Liefergebiet beziffern</li>
                 <li>Rechtstexte anwaltlich prüfen lassen</li>
@@ -241,7 +246,7 @@
               <span class="spur-wer">Du</span>
               <ul>
                 <li>Merchant-Konto anlegen</li>
-                <li>Domain bestätigen</li>
+                <li><code>baustoffe-muehlviertel.at</code> prüfen und weiterleiten</li>
               </ul>
             </div>
             <div class="spur ich">
@@ -293,13 +298,15 @@
   </section>
 
   <section>
-    <h2>Vier Fragen, die nur du beantworten kannst</h2>
+    <h2>Zwei Fragen offen, zwei beantwortet</h2>
     <div class="fragen">
-      <div class="frage">
+      <div class="frage erledigt">
         <span class="f">Sind 25 % Zuschlag auf den Einkauf gemeint — oder 25 % Marge?</span>
-        <span class="wirkung">größte Wirkung</span>
-        <span class="warum">Zuschlag heißt 20 % Marge und 72.740 € nötiger Monatsumsatz. Marge hieße 33 % Zuschlag
-          und deutlich entspanntere Zahlen. Beides ist mit deinem Satz vereinbar.</span>
+        <span class="wirkung">beantwortet</span>
+        <span class="antwort"><strong>25 % Marge</strong>, also 33,3 % Zuschlag. Der nötige Monatsumsatz fällt
+          von 72.740 € auf <strong>45.356 €</strong>, die Bestellungen von 112 auf 70 — und der Werbeanteil
+          trägt jetzt bis 23 % statt nur bis 18 %. Das war die Frage mit der größten Wirkung, und sie ist
+          zugunsten des Modells ausgegangen.</span>
       </div>
       <div class="frage">
         <span class="f">Wie weit reicht „umliegender Bereich"?</span>
@@ -307,11 +314,13 @@
         <span class="warum">Als Kilometerradius oder Bezirksliste. Daran hängen die Frachtstaffel, die
           Google-Gebietseinstellung und die maschinenlesbare Liefergebietsangabe.</span>
       </div>
-      <div class="frage">
+      <div class="frage erledigt">
         <span class="f">Läuft der Shop über die bestehende GmbH?</span>
-        <span class="wirkung">Impressum + UID</span>
-        <span class="warum">Oder als eigene Firma. Davon hängen Impressum, UID, Merchant-Konto und der
-          Domainname ab — Firmenname und Domain gehören zusammen entschieden.</span>
+        <span class="wirkung">geklärt genug</span>
+        <span class="antwort">Die <strong>Freudenthaler Bau GmbH</strong> (FN 347938z) hat den
+          <strong>Handel mit Baustoffen bereits als Gewerbe eingetragen</strong> — der Shop wäre also kein
+          neues Unternehmen, sondern ein zweiter Vertriebsweg des bestehenden. Damit sind Impressum, UID und
+          Merchant-Konto keine offene Baustelle mehr. Bestätigen musst du es trotzdem einmal ausdrücklich.</span>
       </div>
       <div class="frage">
         <span class="f">Bleibt Radon im Sortiment?</span>
@@ -325,10 +334,11 @@
   <section>
     <h2>Die Zahl, die alles regiert</h2>
     <div class="merk">
-      <strong>475 € Warenkorb, rund zwölf Sack.</strong> Darunter trägt eine gelieferte
+      <strong>Rund 400 € Warenkorb, gut zehn Sack.</strong> Darunter trägt eine gelieferte
       Bestellung ihre Fracht nicht — und darunter ist auch kein Klick bezahlbar, weil der
       Deckungsbeitrag den Klickpreis nicht deckt. Zwei getrennte Rechnungen, dieselbe
-      Schwelle. Alles, was der Shop tut, muss auf Bestellungen über dieser Größe zielen:
+      Schwelle. Die bessere Marge hat sie von 475 € auf etwa 400 € gedrückt, aber nicht
+      beseitigt. Alles, was der Shop tut, muss auf Bestellungen über dieser Größe zielen:
       Mindestbestellwert, verrechnete Fracht, Anzeigen für Baustellen statt für Heimwerker.
     </div>
   </section>
@@ -349,8 +359,8 @@
 
   <footer>
     <p>Herleitungen im Projektverzeichnis <code>docs/baustoff-shop/</code>: Kalkulation in
-      <code>rechnung-zum-zuschlag.md</code>, Marktvergleich in <code>erste-echte-zahlen.md</code>,
-      Kampagne in <code>google-kampagne.md</code>.</p>
+      <code>marge-25-prozent.md</code>, Marktvergleich in <code>erste-echte-zahlen.md</code>,
+      Kampagne in <code>google-kampagne.md</code>, Domain in <code>domainwahl.md</code>.</p>
     <p>Nichts ist gegründet, verkauft oder eingenommen. Es wurde nichts versendet und nichts
       ausgegeben. Keine Steuer- oder Rechtsberatung.</p>
   </footer>

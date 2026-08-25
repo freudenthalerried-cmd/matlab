@@ -1,70 +1,146 @@
-# Domainwahl — Kriterien, Kandidaten, offener Schritt
+# Domainwahl — Kriterien, Kandidaten, Empfehlung
 
-Stand: 2026-08-22. Recherche auf Wunsch des Auftraggebers.
-**Nichts registriert** — eine Registrierung ist eine Ausgabe und
-braucht seine Freigabe.
+Stand: 2026-08-25 (überarbeitet). Recherche auf Wunsch des
+Auftraggebers. **Nichts registriert** — eine Registrierung ist eine
+Ausgabe und braucht seine Freigabe.
 
-## Warum die Wahl hier mehr wiegt als sonst
+## Die Ausgangslage hat sich geändert: die Firma gibt es schon
 
-Bei einem Shop, der über KI-Antworten gefunden werden soll, ist der
-Domainname zugleich der **Name der Entität**, unter dem die Systeme
-Erwähnungen zusammenführen (siehe `ki-sichtbarkeit-konzept.md`,
-Vertrauenspunkt 1). Drei Folgen:
+Die frühere Fassung dieses Dokuments rechnete mit einer Firma, die noch
+zu gründen wäre. Das war falsch. Öffentlich auffindbar ist:
 
-- **Beschreibend schlägt erfunden.** „baustoffe-innviertel.at" sagt
-  einer Maschine, worum es geht; „Frexo.at" sagt nichts und muss sich
-  seine Bedeutung erst über Jahre verdienen.
-- **Ein Name, überall gleich.** Firmenname, Domain und Impressum
-  sollten dieselbe Zeichenfolge tragen. Wer als „Freudenthaler
-  Baustoffhandel e.U." firmiert und unter „billig-bau.at" verkauft,
-  erzeugt zwei schwache Entitäten statt einer starken.
-- **Der Name sollte das Liefergebiet nicht überdehnen.** „…-oesterreich.at"
-  bei regionaler Lieferung ist eine Aussage, die die Versandseite
-  widerlegt — und Widerspruch ist in diesem Kanal teuer.
+| | |
+|---|---|
+| Firma | **Freudenthaler Bau GmbH** |
+| Sitz | Marwach 5, 4312 Ried in der Riedmark |
+| Firmenbuch | FN 347938z, Landesgericht Linz |
+| Gewerbe | Baumeister, BauKG-Koordination — **und Handel mit Baustoffen als Nebentätigkeit eingetragen** |
+| Domain | **`freudenthaler-bau.at` ist bereits in Betrieb** (Baumeisterseite mit Impressum) |
 
-## Kriterien in Reihenfolge
+Zwei Korrekturen an früheren Annahmen ergeben sich daraus, und beide
+sind erheblich.
+
+**Erstens: Die Region war falsch benannt.** Die alte Kandidatenliste
+führte `baustoffe-innviertel.at` als bestes Muster. Ried in der
+Riedmark liegt aber im **Mühlviertel**, Bezirk Perg, rund 20 km
+nordöstlich von Linz — nicht im Innviertel. Die Verwechslung kommt vom
+Ortsnamen (Ried im Innkreis liegt tatsächlich im Innviertel). Eine
+Domain, die das Liefergebiet falsch benennt, wäre in genau dem Kanal
+teuer, für den sie gedacht ist: KI-Systeme führen Ort, Domain und
+Impressum zusammen, und ein Widerspruch zwischen ihnen kostet Vertrauen.
+
+**Zweitens: Der Entitätswert ist schon aufgebaut.** Das
+Sichtbarkeitskonzept (`ki-sichtbarkeit-konzept.md`, Vertrauenspunkt 1)
+sagt, der Domainname sei zugleich der Name der Entität, unter dem
+Systeme Erwähnungen zusammenführen. Diese Entität existiert bereits:
+Firmenbuch, WKO-Verzeichnis, Herold, Creditreform, eigene Domain — alle
+tragen denselben Namen und dieselbe Adresse. Eine neue, namenlose
+Domain würde bei null anfangen und diesen Bestand nicht erben.
+
+## Empfehlung: eine Subdomain der bestehenden Domain
+
+> **`shop.freudenthaler-bau.at`** als Hauptadresse des Shops,
+> ergänzt um **eine beschreibende `.at`-Domain als Weiterleitung.**
+
+Die Gründe, in der Reihenfolge ihres Gewichts:
+
+1. **Deckungsgleichheit ohne Aufwand.** Firmenbuch, Impressum, UID,
+   Bankverbindung und Domain tragen automatisch denselben Namen. Genau
+   das ist der teuerste Punkt beim Aufbau einer neuen Entität, und hier
+   ist er geschenkt.
+2. **Der Baustoffhandel ist bereits als Gewerbe eingetragen.** Der Shop
+   ist damit keine neue Firma, sondern ein Vertriebsweg einer
+   bestehenden — rechtlich, steuerlich und im Merchant Center der
+   einfachere Weg (siehe `google-kampagne.md`: fehlende Firmendaten
+   sind Ablehnungsgrund Nr. 1).
+3. **Domainalter zählt.** Die bestehende Domain hat Historie; eine
+   frische `.at` hat keine. Für Suchmaschinen wie für KI-Systeme ist
+   das ein Vertrauenssignal, das sich nicht kaufen lässt.
+4. **Der Baumeister ist das Verkaufsargument.** „Baustoffe zum
+   Baumeisterpreis, von einem Baumeister" ist eine Aussage, die eine
+   anonyme Shop-Domain nicht tragen kann — und sie ist der Kern der
+   Positionierung aus `auftrag-baumeisterpreise.md`.
+
+**Der Einwand dagegen**, fair benannt: Eine Subdomain sagt der Maschine
+nichts über die Ware. Wer „Baustoffe Mühlviertel liefern" fragt, findet
+im Namen `shop.freudenthaler-bau.at` keinen Anhaltspunkt. Deshalb die
+Ergänzung.
+
+## Die Weiterleitungsdomain — geprüfte Kandidaten
+
+Geprüft wurde per DNS-Auflösung. **Das ist kein Verfügbarkeitsnachweis:**
+Eine Domain kann registriert sein, ohne aufzulösen. Es ist ein
+Negativfilter — was auflöst, ist sicher vergeben; was nicht auflöst,
+muss beim Registrar geprüft werden.
+
+| Kandidat | DNS | Bewertung |
+|---|---|---|
+| **`baustoffe-muehlviertel.at`** | löst nicht auf | **erste Wahl** — Ware und Gebiet, beides richtig benannt, aussprechbar |
+| `baustoffe-perg.at` | löst nicht auf | enger (Bezirk statt Region), dafür schärfer bei lokalen Suchen |
+| `baustoffe-riedmark.at` | löst nicht auf | sehr eng; „Riedmark" kennt außerhalb der Gegend niemand |
+| `muehlviertler-baustoffe.at` | löst nicht auf | gleichwertig zur ersten Wahl, etwas länger am Telefon |
+| `freudenthaler-baustoffe.at` | löst nicht auf | guter Rückfallplan, falls die Subdomain nicht gewollt ist |
+| `baustoffe-machland.at` | löst nicht auf | Kleinregion südlich Perg, zu eng |
+| `baumeister-baustoffe.at` | löst nicht auf | trifft die Positionierung, sagt aber nichts zum Gebiet |
+| `zum-baumeisterpreis.at` | löst nicht auf | starkes Versprechen — nur nehmen, wenn es dauerhaft gilt |
+
+**Vergeben und damit ausgeschieden:** `baustoffe-direkt.at`,
+`baustoffprofi.at`, `profibaustoffe.at`, `baustoffe24.at`,
+`riedmark.at`.
+
+Ein Hinweis zu `shop.freudenthaler-bau.at`: Die Subdomain löst bereits
+auf, aber auf dieselbe Adresse wie die Hauptdomain — das ist ein
+Platzhalter-Eintrag des Webhosters für alle Subdomains, kein
+bestehender Shop. Die Adresse ist frei belegbar.
+
+## Der Wettbewerb im selben Kanal
+
+Zwei österreichische Baustoff-Onlineshops liefern bundesweit und
+besetzen die generischen Suchbegriffe:
+
+| Anbieter | Zuschnitt |
+|---|---|
+| [bauwolf.at](https://www.bauwolf.at/) | ganz Österreich, breites Sortiment |
+| [baustoff-shop.at](https://www.baustoff-shop.at/) | eigene Lkw, Kran- und Planenfahrzeuge |
+| [benz24.at](https://www.benz24.at/) | Baustoffe und Werkzeug, bundesweit |
+
+Gegen diese drei ist die regionale Lieferung **kein Nachteil, sondern
+das einzige Unterscheidungsmerkmal** — und der Grund, warum der
+Domainname das Gebiet nennen sollte. Ein weiterer Bundesweit-Shop wäre
+der vierte in einer Reihe, in der die anderen drei Jahre Vorsprung
+haben.
+
+## Kriterien, unverändert gültig
 
 1. `.at` — der Markt ist Österreich; die Endung ist selbst ein
    Regionssignal.
-2. Gattungsbegriff + Region, ohne Bindestrichkette (höchstens einer).
+2. Gattungsbegriff + Region, höchstens ein Bindestrich.
 3. Aussprechbar am Telefon, ohne Buchstabieren.
 4. Keine Zahl-Suffixe wie „24", solange kein 24-Stunden-Versprechen
-   dahintersteht — es wäre eine Aussage, die eingelöst werden muss.
+   dahintersteht.
 5. Keine fremde Marke im Namen (weder Hersteller noch Wettbewerber).
+6. **Neu:** Das Gebiet im Namen muss zum tatsächlichen Liefergebiet
+   passen. Kein „-oesterreich", solange regional geliefert wird.
 
-## Kandidatenrichtungen
+## Was zu tun ist
 
-Ohne Verfügbarkeitsprüfung, sortiert nach Eignung für den KI-Kanal:
+1. **Entscheiden:** Subdomain der bestehenden Domain (Empfehlung) oder
+   eigenständige Domain.
+2. **`baustoffe-muehlviertel.at` beim Registrar auf Verfügbarkeit
+   prüfen** — von hier aus nicht möglich, die Umgebung lässt keine
+   WHOIS-Abfragen zu.
+3. Registrieren und auf den Shop weiterleisten (301, nicht Frame —
+   zwei Adressen, ein Shop; zwei Shops wären der Fehler aus dem
+   Sichtbarkeitskonzept).
 
-| Muster | Beispiel | Stärke | Schwäche |
-|---|---|---|---|
-| Gattung + Region | `baustoffe-innviertel.at` | sagt Ware **und** Gebiet — die beiden Angaben, nach denen gefragt wird | eng, falls das Gebiet später wächst |
-| Gattung + Preisargument | `baustoffe-direkt.at` | trifft die Positionierung (Baumeisterpreis) | „direkt" ist häufig belegt |
-| Eigenname + Gattung | `freudenthaler-baustoffe.at` | deckungsgleich mit der künftigen Firma — bester Entitätswert | sagt der Maschine nichts über die Region |
-| Gattung + Leistung | `baustoffe-lieferung.at` | beantwortet die häufigste Frage wörtlich | sperrig |
+Kosten zur Einordnung: `.at`-Neuregistrierung etwa 5 € im ersten Jahr,
+danach rund 19 € jährlich. Die Größenordnung ist kein Hindernis, die
+Entscheidung aber trotzdem eine Ausgabe und damit Sache des
+Auftraggebers.
 
-**Meine Empfehlung**, wenn die Firma auf den Familiennamen läuft: die
-Kombination aus **Eigenname + Gattung** als Hauptdomain (Entität) und
-eine **Gattung + Region**-Domain als Weiterleitung. Zwei Domains, ein
-Shop — nicht zwei Shops, das wäre der Fehler aus dem
-Sichtbarkeitskonzept.
+## Quellen
 
-## Was ich nicht leisten konnte
-
-**Die Verfügbarkeit ist von hier aus nicht prüfbar.** Die Umgebung
-lässt keine WHOIS-Abfragen zu; die Suche zeigt nur, was bereits
-veröffentlicht ist. Was sie gezeigt hat: **`benz24.at` existiert** —
-ein österreichischer Baustoff-Onlineshop, also ein direkter
-Wettbewerber im selben Kanal, den man sich vor der Namenswahl ansehen
-sollte. Zu `baustoffe24.at` und `baustoffprofi.at` kein Befund, was
-weder Verfügbarkeit noch Vergabe belegt.
-
-Kosten zur Einordnung: `.at`-Neuregistrierung liegt bei etwa 5 € im
-ersten Jahr, danach rund 19 € jährlich — die Größenordnung ist also
-kein Hindernis, die Entscheidung aber trotzdem eine Ausgabe und damit
-Sache des Auftraggebers.
-
-**Nächster Schritt:** drei bis fünf Wunschnamen festlegen, bei einem
-Registrar auf Verfügbarkeit prüfen, dann erst registrieren. Sinnvoll
-erst, wenn die Firmenform feststeht — der Name der Firma und der Name
-der Domain sollten zusammen entschieden werden, nicht nacheinander.
+- [Freudenthaler Bau GmbH](https://freudenthaler-bau.at/) — bestehende Firmenseite
+- [evi.gv.at, FN 347938z](https://www.evi.gv.at/f/347938z) — Firmenbuchauszug
+- [WKO Firmen A–Z](https://firmen.wko.at/freudenthaler-bau-gmbh/ober%C3%B6sterreich/?firmaid=521efb94-5394-4493-8c2c-be7abd9543ae)
+- [herold.at](https://www.herold.at/gelbe-seiten/ried-in-der-riedmark/6wmGV/freudenthaler-bau-gmbh/)

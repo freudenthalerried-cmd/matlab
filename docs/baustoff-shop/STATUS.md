@@ -1,6 +1,6 @@
 # Status und Einstieg
 
-Stand: 2026-08-22. **Dieses Dokument zuerst lesen.** Neunundachtzig Arbeitsdateien
+Stand: 2026-08-25. **Dieses Dokument zuerst lesen.** Neunundachtzig Arbeitsdateien
 sind entstanden, mehrere davon korrigieren einander. Hier steht, was gilt.
 
 Veröffentlichter Bericht:
@@ -24,11 +24,20 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > unter der Untergrenze von 32 %), Gate 5 (Sortiment nicht mehr
 > radonspezifisch) und den Werbeanteil. Wortlaut, Folgenanalyse, offene
 > Fragen und Ablaufplan in [`auftrag-baumeisterpreise.md`](./auftrag-baumeisterpreise.md).
-> **Die Rechnungen liegen noch nicht vor.** Die Rechnung dazu ist
-> gemacht und liegt vor: [`rechnung-zum-zuschlag.md`](./rechnung-zum-zuschlag.md)
-> — 20 % Rohmarge verdreifachen fast den nötigen Umsatz, und **Gate 1
-> ist durch Gate 20 abgelöst** (keine Bestellung ohne positiven
-> Deckungsbeitrag, ausführbar im Rechenkern).
+> Die Rechnung dazu ist gemacht: [`rechnung-zum-zuschlag.md`](./rechnung-zum-zuschlag.md)
+> — und **Gate 1 ist durch Gate 20 abgelöst** (keine Bestellung ohne
+> positiven Deckungsbeitrag, ausführbar im Rechenkern).
+>
+> **Nachtrag 25. August — zwei Klärungen, beide erheblich:**
+> „25 %" heißt **Marge**, nicht Zuschlag. Der nötige Monatsumsatz fällt
+> damit von 72.740 € auf **45.356 €**, die Bestellungen von 112 auf 70,
+> und die Tragfähigkeitsgrenze des Werbeanteils steigt von 18 % auf
+> **23 %** — erst damit ist der Klickpreis-Kanal vertretbar. Vollständig
+> in [`marge-25-prozent.md`](./marge-25-prozent.md).
+> Zweitens: **Die Firma existiert bereits** — Freudenthaler Bau GmbH,
+> FN 347938z, Baustoffhandel als Gewerbe eingetragen, Domain
+> `freudenthaler-bau.at` in Betrieb. Die Domainempfehlung hat sich
+> dadurch geändert ([`domainwahl.md`](./domainwahl.md)).
 >
 > Zwei weitere Weisungen vom selben Tag: Der Shop soll für **KI-Suchen**
 > optimiert werden ([`ki-sichtbarkeit-konzept.md`](./ki-sichtbarkeit-konzept.md),
@@ -201,11 +210,12 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `warteordnung.md` | **Was der Loop tut, wenn nichts mehr ansteht** — Blockadenliste, Wartelauf (RIS-Nachprüfung, PR, Schaufenster nur bei Substanzänderung, sonst ehrlich enden); erfundene Runden verwässern die echten |
 | `auftrag-baumeisterpreise.md` | **Neue Weisung vom 22. August** — eigene Baumeisterpreise +25 % statt unbelegter Platzhalter, Google Shopping, regionales Liefergebiet; Gate 1 und Gate 5 sind damit neu zu entscheiden. Rechnungen fehlen noch, Loop pausiert bis nächste Woche |
 | `ki-sichtbarkeit-konzept.md` | **Genannt werden, wenn eine KI nach Baustoffen gefragt wird** — vier Wege (Feed, KI-Suche, Trainingswissen, Agentenbesuch), Vertrauen entsteht aus Entitätskonsistenz, Drittquellen und Überprüfbarkeit; Empfehlung gegen den Parallelshop, für eine zweite Ausgabeform desselben Shops; das regionale Liefergebiet ist dabei ein Vorteil |
-| `rechnung-zum-zuschlag.md` (+ [Seite](https://claude.ai/code/artifact/6e356abb-b5d3-44a9-9b8d-f98a13fb0502)) | **Was 25 % Zuschlag kosten** — 20 % Rohmarge, nötiger Umsatz 72.740 € statt 25.875 €; der Werbeanteil ist der Killer (Tragfähigkeit endet bei 18 %); kleine Warenkörbe tragen ihre Fracht nicht. Gate 1 abgelöst durch **Gate 20: keine Bestellung ohne positiven Deckungsbeitrag**, ausführbar im Rechenkern |
+| `rechnung-zum-zuschlag.md` (+ [Seite](https://claude.ai/code/artifact/6e356abb-b5d3-44a9-9b8d-f98a13fb0502)) | **Was 25 % Zuschlag kosten** — 20 % Rohmarge, nötiger Umsatz 72.740 €; der Werbeanteil ist der Killer (Tragfähigkeit endet bei 18 %); kleine Warenkörbe tragen ihre Fracht nicht. Gate 1 abgelöst durch **Gate 20: keine Bestellung ohne positiven Deckungsbeitrag**, ausführbar im Rechenkern. *Zahlen überholt durch `marge-25-prozent.md`* |
+| `marge-25-prozent.md` | **„25 %" heißt Marge, nicht Zuschlag** — nötiger Umsatz 45.356 € statt 72.740 €, 70 statt 112 Bestellungen, Werbeanteil trägt bis 23 % statt 18 %; frei-Haus-Schwellen fallen um ein Fünftel; der Preisvorteil gegenüber dem Fachhandel schrumpft von 14 % auf 8 %; Vorschlag für gestaffelte Margen liegt bei |
 | `inhalte-und-pruefteam.md` | **Inhalte, Datenblätter, Prüfkette** — fremde YouTube-Transkripte sind unzulässig (§ 42f UrhG), tragfähig ist die Nutzung als Recherchequelle; Datenblätter verlinken statt spiegeln; vier Rollen mit sieben vorab festgelegten Regeln, Prüfschicht als `npm run pruefe-inhalte` gebaut |
 | `videos-als-quelle.md` | **Ein Video ist ein Hinweis, keine Fundstelle** — YouTube ist aus dieser Umgebung gesperrt; die Prüfregel steht trotzdem: eine tragende Quelle genügt, zwei Videos desselben Kanals sind eine Quelle, Kennwerte brauchen Norm oder Datenblatt. Die eigene Berufserfahrung trägt. `npm run pruefe-quellen` |
 | `maschinenlesbare-ausgabe.md` | **Schema.org, Feed und robots.txt** — Preise werden übernommen statt nachgerechnet, Platzhalter gehen nicht hinaus, Zurückgehaltenes wird begründet |
-| `domainwahl.md` | **Die Domain ist der Name der Entität** — beschreibend statt erfunden, deckungsgleich mit Firmenname und Impressum; Empfehlung Eigenname+Gattung, Verfügbarkeit extern zu prüfen |
+| `domainwahl.md` | **Die Firma und ihre Domain gibt es schon** — Freudenthaler Bau GmbH, FN 347938z, Baustoffhandel eingetragen, `freudenthaler-bau.at` in Betrieb; Empfehlung daher `shop.freudenthaler-bau.at` plus `baustoffe-muehlviertel.at` als Weiterleitung. Zwei Korrekturen: Ried in der Riedmark liegt im **Mühlviertel**, nicht im Innviertel; der Entitätswert ist bereits aufgebaut und wäre bei einer neuen Domain verloren |
 | `pruefung-der-testfaelle.md` | **Grüne Tests sind eine Aussage über die Testfälle, nicht über den Code** — elf hohle Schleifen gefunden und entschärft |
 | `verhandlungsziel-konditionen.md` | **Zehn Prozent Nachlass kosten 38,8 % Rabatt** — das Verhandlungsziel liegt über der Gate-2-Schwelle |
 | `auswertungsbogen-hersteller.md` | **Genau 35 % Rabatt lassen 4,4 % Preisspielraum** — die Auswertung der zwölf Antworten steht fertig bereit |

@@ -1,6 +1,6 @@
 # Die ersten echten Zahlen — und was sie über das Modell sagen
 
-Stand: 2026-08-22. **Die Rechnungen sind gefunden.** Nicht im Repository,
+Stand: 2026-08-22, Zahlen überarbeitet 2026-08-25. **Die Rechnungen sind gefunden.** Nicht im Repository,
 sondern dort, wo sie hingehören: in Drive und im Postfach des
 Auftraggebers. Damit ist der Blocker gefallen, an dem alles hing — und
 die erste vollständig ausgelesene Rechnung beantwortet die Kernfrage
@@ -57,10 +57,12 @@ knapp, weil die gesuchte Ware zufällig dabei sein muss.
 
 ## Zweiter Befund — der entscheidende: der Preisvergleich kippt
 
-Für den einen Kleber, dessen Einkaufspreis vorliegt, ergibt der
-vorgegebene Zuschlag von 25 % einen Bruttopreis von rund **47 €** je
+Für den einen Kleber, dessen Einkaufspreis vorliegt, ergibt die
+vorgegebene Marge von 25 % einen Bruttopreis von rund **50,70 €** je
 25-kg-Sack. Der Artikel ist ein **Profi-Flexkleber** eines
-österreichischen Werks.
+österreichischen Werks. (Die erste Fassung dieses Dokuments rechnete
+mit 25 % *Zuschlag* und kam auf 47,54 €; die Weisung vom 25.08. hat das
+auf 25 % *Marge* geklärt, siehe `marge-25-prozent.md`.)
 
 Was ein Kunde sieht, der bei Google Shopping „Flexkleber 25 kg" sucht:
 
@@ -69,7 +71,7 @@ Was ein Kunde sieht, der bei Google Shopping „Flexkleber 25 kg" sucht:
 | BAUHAUS | Eigenmarke Flexkleber 25 kg | rund 10 € |
 | OBI | Fliesenkleber flexibel 25 kg | 10,49 € |
 | HORNBACH | Baumit FlexSteinkleber 25 kg | 54,99 € |
-| **hier** | **Profi-Flexkleber 25 kg** | **rund 47 €** |
+| **hier** | **Profi-Flexkleber 25 kg** | **rund 51 €** |
 
 **Der Einkaufsvorteil trägt gegen den Fachhandel, aber nicht gegen die
 Baumarkt-Eigenmarke.** Das ist keine Frage des Zuschlags: Selbst ohne
@@ -100,15 +102,15 @@ Mit dem realen Kleberpreis und den Frachtsätzen der Rechnung:
 
 | Bestellung | Fracht | frei Haus | Fracht verrechnet |
 |---|---|---|---|
-| 1 Sack | 25 € | **−18,00 €** | +6,58 € |
-| 4 Sack | 25 € | +3,78 € | +28,36 € |
-| 10 Sack | 25 € | +47,31 € | +71,89 € |
-| 20 Sack | 80 € | +64,88 € | +143,54 € |
+| 1 Sack | 25 € | **−15,40 €** | +9,18 € |
+| 4 Sack | 25 € | +14,16 € | +38,74 € |
+| 12 Sack | 80 € | +37,99 € | +116,65 € |
+| 30 Sack | 80 € | +215,35 € | +294,01 € |
 
 Bei der **Transportpauschale von 80 €**, die auf der echten Rechnung
-steht, trägt eine frei-Haus-Bestellung erst ab rund **438 € Warenkorb**
-— das sind zwölf Sack Kleber. Ein einzelner Sack, geliefert, ist ein
-Verlust von 18 €.
+steht, trägt eine frei-Haus-Bestellung erst ab rund **344 € Warenkorb**
+— das sind gut acht Sack Kleber. Ein einzelner Sack, geliefert, ist ein
+Verlust von 15,40 €.
 
 Die Empfehlung aus `rechnung-zum-zuschlag.md` bestätigt sich damit an
 echten Zahlen: **Fracht verrechnen, Mindestbestellwert setzen.** Beides
@@ -119,9 +121,13 @@ ist keine Feinheit, sondern die Bedingung, unter der das Modell
 
 1. **Repository auf privat stellen** oder Preisdaten dauerhaft
    außerhalb halten — vor dem ersten echten Preis.
-2. **Die PDF-Rechnungen auslesen.** Diese Umgebung kann es nicht; der
-   Auftraggeber kann die Anhänge in Drive ablegen, dann sind sie
-   lesbar. Siebzehn Poschacher-Rechnungen sind der eigentliche Katalog.
+2. **Die PDF-Rechnungen auslesen.** Der Weg dorthin ist inzwischen
+   gefunden: Das Gmail-Werkzeug gibt Anhänge zwar nicht als Datei
+   heraus, liefert die Nachricht aber im RAW-Format, aus dem sich der
+   Anhang entpacken lässt — eine Rechnung liegt so bereits vor. Ob der
+   Text darin lesbar ist, hängt daran, ob das PDF ein Scan ist; das
+   wird gerade geprüft. Siebzehn Poschacher-Rechnungen sind der
+   eigentliche Katalog.
 3. **Sortiment nach Vergleichbarkeit ordnen**, nicht nach Warengruppe:
    Was trägt einen Markennamen, unter dem verglichen wird? Das gehört
    in den Shop. Was gegen Baumarkt-Eigenmarken antritt, gehört nicht

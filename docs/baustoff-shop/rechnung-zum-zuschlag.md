@@ -3,6 +3,13 @@
 Als lesbare Seite aufbereitet:
 [claude.ai/code/artifact/6e356abb…](https://claude.ai/code/artifact/6e356abb-b5d3-44a9-9b8d-f98a13fb0502)
 
+> **Überholt seit 25.08.:** Der Auftraggeber hat „25 %" inzwischen als
+> **Marge** geklärt, nicht als Zuschlag. Die 20-%-Zeilen unten sind
+> damit historisch — die gültigen Zahlen stehen in
+> `marge-25-prozent.md`. Der Nachtrag am Ende dieses Dokuments fasst
+> die Änderung zusammen. Alles andere — die Rechenwege, Gate 20, die
+> drei Stellschrauben — gilt unverändert.
+
 Stand: 2026-08-22. Der Auftraggeber hat 25 % Zuschlag auf den
 Baumeister-Einkaufspreis vorgegeben (`auftrag-baumeisterpreise.md`).
 Diese Rechnung legt offen, was das für das Ziel von 3.000 € netto
@@ -186,3 +193,33 @@ Bestellung etwas verdienen. Gegenprobe: Sperre entfernt → 3 Testfälle
 fallen.
 
 Testbestand: **468, alle grün, Prüfer ohne Verdacht.**
+
+
+## Nachtrag vom 25.08.: Die Zweideutigkeit ist aufgelöst
+
+Der Abschnitt „Erstens" dieses Dokuments legte offen, dass „25 %" zwei
+Dinge heißen kann, und rechnete vorsichtshalber mit der ungünstigeren
+Lesart (25 % Zuschlag = 20 % Marge). Der Auftraggeber hat entschieden:
+**25 % Marge**, also 33,33 % Zuschlag.
+
+Damit sind alle Tabellen oberhalb dieses Nachtrags in ihrer
+20-%-Zeile historisch. Maßgeblich ist jetzt die 25-%-Zeile, und die
+vollständige Neurechnung steht in **`marge-25-prozent.md`**. Die drei
+wichtigsten Änderungen:
+
+| | 20 % Marge | 25 % Marge |
+|---|---|---|
+| nötiger Monatsumsatz | 72.740 € | **45.356 €** |
+| Bestellungen im Monat | 112 | **70** |
+| Tragfähigkeitsgrenze Werbeanteil | 18 % | **23 %** |
+
+Der dritte Wert ist der entscheidende: Die Warnung dieses Dokuments —
+„bei 20 % Rohmarge liegt die Grenze der Tragfähigkeit bei 18 %
+Werbeanteil, und Baustoff-Klickpreise dort zu halten ist die
+eigentliche Wette" — ist damit entschärft, aber nicht aufgehoben. Fünf
+Prozentpunkte Puffer machen den Klickpreis-Kanal vertretbar; sie machen
+ihn nicht sicher.
+
+**Gate 20 bleibt unverändert in Kraft.** Es prüft Euro, nicht Prozent,
+und war von der Umstellung nicht berührt — der Rechenkern brauchte
+keine Änderung, nur andere Eingaben. Genau dafür war es so formuliert.
