@@ -41,6 +41,13 @@ Positionsdaten der anderen stecken in PDF-Anhängen im Postfach — **die
 kann diese Umgebung nicht öffnen**; das Gmail-Werkzeug gibt Anhänge
 nicht heraus.
 
+> **Nachtrag 25.08.:** Die fünfzehn Poschacher-Belege sind inzwischen
+> vollständig ausgelesen — 70 Positionen, 46 Handelswaren, jede mit
+> Listenpreis und Rabattsatz. Zwei Aussagen dieses Dokuments sind damit
+> überholt: die Nebenkostenquote (6,6 % statt „ein Fünftel") und die
+> Annahme, der Katalog werde ein bis zwei Dutzend Artikel umfassen.
+> Der vollständige Befund steht in `katalog-aus-rechnungen.md`.
+
 ## Erster Befund: Eine Baustoffrechnung ist kaum ein Katalog
 
 Von den acht Positionen der ausgelesenen Rechnung sind **zwei
@@ -121,13 +128,9 @@ ist keine Feinheit, sondern die Bedingung, unter der das Modell
 
 1. **Repository auf privat stellen** oder Preisdaten dauerhaft
    außerhalb halten — vor dem ersten echten Preis.
-2. **Die PDF-Rechnungen auslesen.** Der Weg dorthin ist inzwischen
-   gefunden: Das Gmail-Werkzeug gibt Anhänge zwar nicht als Datei
-   heraus, liefert die Nachricht aber im RAW-Format, aus dem sich der
-   Anhang entpacken lässt — eine Rechnung liegt so bereits vor. Ob der
-   Text darin lesbar ist, hängt daran, ob das PDF ein Scan ist; das
-   wird gerade geprüft. Siebzehn Poschacher-Rechnungen sind der
-   eigentliche Katalog.
+2. ~~Die PDF-Rechnungen auslesen.~~ **Erledigt am 25.08.** — alle
+   fünfzehn Belege, 70 Positionen, mit Summenprobe je Beleg geprüft.
+   `katalog-aus-rechnungen.md`.
 3. **Sortiment nach Vergleichbarkeit ordnen**, nicht nach Warengruppe:
    Was trägt einen Markennamen, unter dem verglichen wird? Das gehört
    in den Shop. Was gegen Baumarkt-Eigenmarken antritt, gehört nicht

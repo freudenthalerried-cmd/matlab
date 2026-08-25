@@ -1,0 +1,6 @@
+# Einkaufskonditionen gehören nicht in ein öffentliches Verzeichnis.
+# Die Rabattsätze, die ein Lieferant einem Baumeister einräumt, sind
+# dessen Geschäftsgeheimnis und zugleich die Verhandlungsposition des
+# Auftraggebers. Alles unter preise/ bleibt lokal.
+preise/
+*.einkaufspreise.csv
