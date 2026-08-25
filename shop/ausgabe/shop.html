@@ -1,0 +1,748 @@
+<title>Baustoffe zum Baumeisterpreis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+  :root {
+    --grund: #F2F0EC;
+    --flaeche: #FBFAF8;
+    --flaeche-2: #E6E2DA;
+    --tinte: #1B1A17;
+    --tinte-2: #45423B;
+    --gedaempft: #78736A;
+    --linie: #D6D1C6;
+    --linie-stark: #B4AEA0;
+    --ocker: #A8621B;
+    --ocker-weich: #F6E6D2;
+    --gruen: #3E6B45;
+    --gruen-weich: #DEEADF;
+    --ziegel: #9C3521;
+    --ziegel-weich: #F4DCD5;
+    --schmal: "Barlow Condensed", "Arial Narrow", sans-serif;
+    --text: "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --zahl: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --grund: #171614;
+      --flaeche: #201E1B;
+      --flaeche-2: #2B2823;
+      --tinte: #EDEAE3;
+      --tinte-2: #C6C1B7;
+      --gedaempft: #8E887C;
+      --linie: #33302B;
+      --linie-stark: #4A463F;
+      --ocker: #E0964A;
+      --ocker-weich: #362514;
+      --gruen: #8CBE95;
+      --gruen-weich: #1D2A1F;
+      --ziegel: #E08A72;
+      --ziegel-weich: #341913;
+    }
+  }
+  :root[data-theme="dark"] {
+    --grund: #171614;
+    --flaeche: #201E1B;
+    --flaeche-2: #2B2823;
+    --tinte: #EDEAE3;
+    --tinte-2: #C6C1B7;
+    --gedaempft: #8E887C;
+    --linie: #33302B;
+    --linie-stark: #4A463F;
+    --ocker: #E0964A;
+    --ocker-weich: #362514;
+    --gruen: #8CBE95;
+    --gruen-weich: #1D2A1F;
+    --ziegel: #E08A72;
+    --ziegel-weich: #341913;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--grund);
+    color: var(--tinte);
+    font-family: var(--text);
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .huelle { max-width: 68rem; margin: 0 auto; padding: 2rem 1.25rem 5rem; }
+
+  h1, h2, h3 { font-family: var(--schmal); font-weight: 600; margin: 0; text-wrap: balance; letter-spacing: 0.01em; }
+  h1 { font-size: clamp(2.4rem, 6vw, 3.8rem); line-height: 1.02; text-transform: uppercase; }
+  h2 { font-size: clamp(1.5rem, 3vw, 2rem); text-transform: uppercase; }
+  h3 { font-size: 1.02rem; font-family: var(--text); font-weight: 600; line-height: 1.3; }
+  p { margin: 0; }
+
+  header { border-bottom: 3px solid var(--tinte); padding-bottom: 1.5rem; margin-bottom: 2rem; }
+  .marke { font-family: var(--zahl); font-size: 0.74rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ocker); font-weight: 600; }
+  .lede { max-width: 44rem; color: var(--tinte-2); font-size: 1.06rem; margin-top: 0.9rem; }
+
+  .kennzahlen { display: flex; flex-wrap: wrap; gap: 0 2.5rem; margin-top: 1.5rem; }
+  .kennzahl { display: flex; flex-direction: column; }
+  .kennzahl .z { font-family: var(--schmal); font-size: 2rem; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; }
+  .kennzahl .b { font-size: 0.78rem; color: var(--gedaempft); text-transform: uppercase; letter-spacing: 0.07em; }
+
+  .hinweis {
+    border-left: 4px solid var(--ocker);
+    background: var(--ocker-weich);
+    padding: 0.9rem 1.1rem;
+    margin: 1.75rem 0;
+    font-size: 0.93rem;
+    color: var(--tinte-2);
+  }
+  .hinweis strong { color: var(--tinte); }
+
+  nav.gruppen { position: sticky; top: 0; z-index: 5; background: var(--grund); border-bottom: 1px solid var(--linie); padding: 0.7rem 0; margin-bottom: 2rem; display: flex; gap: 0.4rem; overflow-x: auto; }
+  nav.gruppen a {
+    font-family: var(--schmal); font-size: 1rem; text-transform: uppercase; letter-spacing: 0.03em;
+    color: var(--tinte-2); text-decoration: none; white-space: nowrap;
+    padding: 0.25rem 0.7rem; border: 1px solid var(--linie); border-radius: 2px;
+  }
+  nav.gruppen a:hover, nav.gruppen a:focus-visible { background: var(--flaeche-2); color: var(--tinte); border-color: var(--linie-stark); }
+
+  section.gruppe { margin-bottom: 3rem; scroll-margin-top: 4rem; }
+  .gruppenkopf { display: flex; align-items: baseline; gap: 0.9rem; border-bottom: 2px solid var(--linie-stark); padding-bottom: 0.4rem; margin-bottom: 0.5rem; flex-wrap: wrap; }
+  .gruppenkopf .anzahl { font-family: var(--zahl); font-size: 0.8rem; color: var(--gedaempft); font-variant-numeric: tabular-nums; }
+  .gruppentext { color: var(--gedaempft); font-size: 0.93rem; margin-bottom: 1.1rem; }
+
+  .raster { display: grid; grid-template-columns: repeat(auto-fill, minmax(15.5rem, 1fr)); gap: 1px; background: var(--linie); border: 1px solid var(--linie); }
+  .karte { background: var(--flaeche); padding: 1rem 1.1rem 1.1rem; display: flex; flex-direction: column; gap: 0.55rem; }
+  .karte .nr { font-family: var(--zahl); font-size: 0.7rem; color: var(--gedaempft); letter-spacing: 0.04em; }
+  .karte .preis { margin-top: auto; display: flex; align-items: baseline; gap: 0.45rem; font-variant-numeric: tabular-nums; }
+  .karte .netto { font-family: var(--schmal); font-size: 1.85rem; font-weight: 600; line-height: 1; }
+  .karte .eh { font-size: 0.82rem; color: var(--gedaempft); }
+  .karte .brutto { font-family: var(--zahl); font-size: 0.76rem; color: var(--gedaempft); }
+
+  .marker { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.14rem 0.45rem; border-radius: 2px; width: fit-content; }
+  .marker.vorteil { background: var(--gruen-weich); color: var(--gruen); }
+  .marker.beipack { background: var(--ziegel-weich); color: var(--ziegel); }
+  .marker.sperrig { background: var(--flaeche-2); color: var(--tinte-2); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  .scroll { overflow-x: auto; border: 1px solid var(--linie); }
+  th, td { padding: 0.5rem 0.75rem; text-align: left; border-bottom: 1px solid var(--linie); white-space: nowrap; }
+  th { font-family: var(--schmal); text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.04em; background: var(--flaeche-2); }
+  td.n { text-align: right; font-family: var(--zahl); font-variant-numeric: tabular-nums; }
+  tbody tr:last-child td { border-bottom: none; }
+
+  .fracht { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 1px; background: var(--linie); border: 1px solid var(--linie); margin-top: 1rem; }
+  .fracht > div { background: var(--flaeche); padding: 0.9rem 1rem; }
+  .fracht .k { font-family: var(--schmal); text-transform: uppercase; font-size: 0.82rem; letter-spacing: 0.05em; color: var(--ocker); }
+  .fracht .w { font-family: var(--schmal); font-size: 1.5rem; font-weight: 600; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .fracht .e { font-size: 0.84rem; color: var(--gedaempft); }
+
+  footer { margin-top: 3.5rem; padding-top: 1.5rem; border-top: 1px solid var(--linie); font-size: 0.85rem; color: var(--gedaempft); display: flex; flex-direction: column; gap: 0.6rem; }
+  code { font-family: var(--zahl); font-size: 0.86em; }
+  a { color: var(--ocker); }
+  @media (max-width: 34rem) { .kennzahlen { gap: 0 1.4rem; } }
+  </style>
+
+<div class="huelle">
+  <header>
+    <p class="marke">Freudenthaler Bau GmbH · Ried in der Riedmark</p>
+    <h1>Baustoffe zum<br>Baumeisterpreis</h1>
+    <p class="lede">Was ein Baumeister im Einkauf zahlt, zahlen Sie auch — zuzüglich einer
+      Handelsspanne von 25 %. Geliefert wird im Umkreis, nicht in ganz
+      Österreich: Das ist der Grund, warum die Rechnung aufgeht.</p>
+    <div class="kennzahlen">
+      <div class="kennzahl"><span class="z">46</span><span class="b">Artikel</span></div>
+      <div class="kennzahl"><span class="z">39</span><span class="b">unter Listenpreis</span></div>
+      <div class="kennzahl"><span class="z">26.7 %</span><span class="b">im Median darunter</span></div>
+      <div class="kennzahl"><span class="z">25 %</span><span class="b">Handelsspanne</span></div>
+    </div>
+  </header>
+
+  <div class="hinweis">
+    <strong>Dies ist eine Vorschau, kein laufender Shop.</strong> Es kann nichts bestellt
+    werden: Zahlungsanbieter, Impressum und Rechtstexte fehlen noch, und die Preise sind vor
+    der Veröffentlichung beim Lieferanten zu bestätigen. Alle Preise sind
+    <strong>Nettopreise für Unternehmer</strong>; die Umsatzsteuer ist getrennt ausgewiesen.
+  </div>
+
+  <nav class="gruppen" aria-label="Warengruppen">
+    <a href="#wdvs">WDVS</a>
+    <a href="#dmmung">Dämmung</a>
+    <a href="#kamin">Kamin</a>
+    <a href="#kanal">Kanal</a>
+    <a href="#mrtel">Mörtel</a>
+    <a href="#mauerwerk">Mauerwerk</a>
+    <a href="#zubehr">Zubehör</a>
+    <a href="#lieferung">Lieferung</a>
+  </nav>
+
+    <section class="gruppe" id="wdvs">
+      <div class="gruppenkopf">
+        <h2>WDVS</h2>
+        <span class="anzahl">11 Artikel</span>
+      </div>
+      <p class="gruppentext">Kleber, Gewebe, Dübel, Putzgrund und Oberputz — was ein Fassadensystem ausmacht.</p>
+      <div class="raster">
+      <article class="karte">
+        <span class="nr">52058</span>
+        <h3>Baumit TextilglasGitter 1,1x50 m</h3>
+        <span class="marker vorteil">40 % unter Liste</span>
+        <div class="preis">
+          <span class="netto">1,19&nbsp;€</span>
+          <span class="eh">je m², netto</span>
+        </div>
+        <span class="brutto">1,43 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">52124</span>
+        <h3>Capatect Gewebeanschlussleiste 3D Universal Plus 2,55 m</h3>
+        <span class="marker vorteil">13 % unter Liste</span>
+        <div class="preis">
+          <span class="netto">4,91&nbsp;€</span>
+          <span class="eh">je lfm, netto</span>
+        </div>
+        <span class="brutto">5,89 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">50509</span>
+        <h3>Capatect Glasgewebe M, Breite 110cm, orange 55 m2</h3>
+        <span class="marker vorteil">27 % unter Liste</span>
+        <div class="preis">
+          <span class="netto">1,07&nbsp;€</span>
+          <span class="eh">je m², netto</span>
+        </div>
+        <span class="brutto">1,28 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">53402</span>
+        <h3>Capatect Kantenschutz mit Gewebe Carbon 11,5 13,5 cm 2,5 m</h3>
+        <span class="marker vorteil">19 % unter Liste</span>
+        <div class="preis">
+          <span class="netto">0,95&nbsp;€</span>
+          <span class="eh">je lfm, netto</span>
+        </div>
+        <span class="brutto">1,14 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">11283</span>
+        <h3>Capatect Klebe- und Spachtelmasse 186 M 25 kg</h3>
+        <span class="marker vorteil">25 % unter Liste</span>
+        <div class="preis">
+          <span class="netto">0,56&nbsp;€</span>
+          <span class="eh">je kg, netto</span>
+        </div>
+        <span class="brutto">0,67 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">29461</span>
+        <h3>Capatect Klebe- und Spachtelmasse 190 FEIN 25 kg</h3>
+        <span class="marker vorteil">28 % unter Liste</span>
+        <div class="preis">
+          <span class="netto">0,60&nbsp;€</span>
+          <span class="eh">je kg, netto</span>
+        </div>
+        <span class="brutto">0,72 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">29610</span>
+        <h3>Capatect Polystyrol-Rondelle für Capatect Universaldübel Rondelle und Capatect Schraubdübel Holz</h3>
+        <span class="marker vorteil">7 % unter Liste</span>
+        <div class="preis">
+          <span class="netto">13,24&nbsp;€</span>
+          <span class="eh">je Karton, netto</span>
+        </div>
+        <span class="brutto">15,89 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">19333</span>
+        <h3>Capatect PrimaPor K20 weiß 25 kg SH-Reibputz</h3>
+        
+        <div class="preis">
+          <span class="netto">2,27&nbsp;€</span>
+          <span class="eh">je kg, netto</span>
+        </div>
+        <span class="brutto">2,72 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">13728</span>
+        <h3>Capatect Putzgrund weiß 25 kg</h3>
+        <span class="marker vorteil">20 % unter Liste</span>
+        <div class="preis">
+          <span class="netto">2,77&nbsp;€</span>
+          <span class="eh">je kg, netto</span>
+        </div>
+        <span class="brutto">3,32 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">11082</span>
+        <h3>Capatect Universaldübel Schraubdübel 053 115, 100 STK, 1 KAR</h3>
+        <span class="marker vorteil">13 % unter Liste</span>
+        <div class="preis">
+          <span class="netto">66,35&nbsp;€</span>
+          <span class="eh">je Karton, netto</span>
+        </div>
+        <span class="brutto">79,62 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">52537</span>
+        <h3>Drehstiftdübel PK(100) K 6 40 mm</h3>
+        <span class="marker vorteil">26 % unter Liste</span>
+        <div class="preis">
+          <span class="netto">2,87&nbsp;€</span>
+          <span class="eh">je Karton, netto</span>
+        </div>
+        <span class="brutto">3,44 € brutto · inkl. 20 % USt</span>
+      </article>
+      </div>
+    </section>
+
+    <section class="gruppe" id="dmmung">
+      <div class="gruppenkopf">
+        <h2>Dämmung</h2>
+        <span class="anzahl">9 Artikel</span>
+      </div>
+      <p class="gruppentext">XPS und EPS in den gängigen Stärken, palettenweise auf die Baustelle.</p>
+      <div class="raster">
+      <article class="karte">
+        <span class="nr">12566</span>
+        <h3>Fassaden EPS 2 cm 0,5 m2</h3>
+        <span class="marker sperrig">palettiert</span>
+        <div class="preis">
+          <span class="netto">1,93&nbsp;€</span>
+          <span class="eh">je m², netto</span>
+        </div>
+        <span class="brutto">2,32 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">12567</span>
+        <h3>Fassaden EPS 3 cm 0,5 m2</h3>
+        <span class="marker vorteil">33 % unter Liste</span>
+        <span class="marker sperrig">palettiert</span>
+        <div class="preis">
+          <span class="netto">2,81&nbsp;€</span>
+          <span class="eh">je m², netto</span>
+        </div>
+        <span class="brutto">3,37 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">12583</span>
+        <h3>Fassaden EPS 5 cm 0,5 m2</h3>
+        <span class="marker sperrig">palettiert</span>
+        <div class="preis">
+          <span class="netto">4,67&nbsp;€</span>
+          <span class="eh">je m², netto</span>
+        </div>
+        <span class="brutto">5,60 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">28415</span>
+        <h3>Isover TDPT 20 1200 600 mm 8,64 m2</h3>
+        <span class="marker vorteil">40 % unter Liste</span>
+        <span class="marker sperrig">palettiert</span>
+        <div class="preis">
+          <span class="netto">10,69&nbsp;€</span>
+          <span class="eh">je m², netto</span>
+        </div>
+        <span class="brutto">12,83 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">12580</span>
+        <h3>XPS glatt SF 100 mm 0,75 m2</h3>
+        <span class="marker sperrig">palettiert</span>
+        <div class="preis">
+          <span class="netto">16,00&nbsp;€</span>
+          <span class="eh">je m², netto</span>
+        </div>
+        <span class="brutto">19,20 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">12569</span>
+        <h3>XPS glatt SF 30 mm 0,75 m2</h3>
+        <span class="marker vorteil">47 % unter Liste</span>
+        <span class="marker sperrig">palettiert</span>
+        <div class="preis">
+          <span class="netto">5,23&nbsp;€</span>
+          <span class="eh">je m², netto</span>
+        </div>
+        <span class="brutto">6,28 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">12571</span>
+        <h3>XPS glatt SF 50 mm 0,75 m2</h3>
+        <span class="marker vorteil">47 % unter Liste</span>
+        <span class="marker sperrig">palettiert</span>
+        <div class="preis">
+          <span class="netto">8,72&nbsp;€</span>
+          <span class="eh">je m², netto</span>
+        </div>
+        <span class="brutto">10,46 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">12575</span>
+        <h3>XPS glatt SF 80 mm 0,75 m2</h3>
+        <span class="marker vorteil">47 % unter Liste</span>
+        <span class="marker sperrig">palettiert</span>
+        <div class="preis">
+          <span class="netto">13,95&nbsp;€</span>
+          <span class="eh">je m², netto</span>
+        </div>
+        <span class="brutto">16,74 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">12596</span>
+        <h3>XPS rau GK 80 mm 0,75 m2</h3>
+        <span class="marker vorteil">43 % unter Liste</span>
+        <span class="marker sperrig">palettiert</span>
+        <div class="preis">
+          <span class="netto">15,00&nbsp;€</span>
+          <span class="eh">je m², netto</span>
+        </div>
+        <span class="brutto">18,00 € brutto · inkl. 20 % USt</span>
+      </article>
+      </div>
+    </section>
+
+    <section class="gruppe" id="kamin">
+      <div class="gruppenkopf">
+        <h2>Kamin</h2>
+        <span class="anzahl">9 Artikel</span>
+      </div>
+      <p class="gruppentext">Schiedel-Systemteile vom Fertigfuß bis zur Regenhaube.</p>
+      <div class="raster">
+      <article class="karte">
+        <span class="nr">10837</span>
+        <h3>Mantelstein MSTS EZ 16-18 SIKM</h3>
+        <span class="marker vorteil">27 % unter Liste</span>
+        <span class="marker sperrig">palettiert</span>
+        <div class="preis">
+          <span class="netto">23,25&nbsp;€</span>
+          <span class="eh">je Stück, netto</span>
+        </div>
+        <span class="brutto">27,90 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">18110</span>
+        <h3>Mantelsteinkleber RMRTL Dünnbettmörtel</h3>
+        <span class="marker vorteil">12 % unter Liste</span>
+        <span class="marker sperrig">palettiert</span>
+        <div class="preis">
+          <span class="netto">44,00&nbsp;€</span>
+          <span class="eh">je Stück, netto</span>
+        </div>
+        <span class="brutto">52,80 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">51875</span>
+        <h3>Regenhaube mit Sicherungsseil 180 Absolut &amp; SIH</h3>
+        <span class="marker vorteil">12 % unter Liste</span>
+        <span class="marker sperrig">palettiert</span>
+        <div class="preis">
+          <span class="netto">105,25&nbsp;€</span>
+          <span class="eh">je Stück, netto</span>
+        </div>
+        <span class="brutto">126,30 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">16070</span>
+        <h3>Schiedel Fugenmasse FM 1,5 kg</h3>
+        <span class="marker vorteil">12 % unter Liste</span>
+        <span class="marker sperrig">palettiert</span>
+        <div class="preis">
+          <span class="netto">46,29&nbsp;€</span>
+          <span class="eh">je Eimer, netto</span>
+        </div>
+        <span class="brutto">55,55 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">12455</span>
+        <h3>SIK Zuluftplatte EZ 16-18 inkl. Befestigungsset</h3>
+        <span class="marker vorteil">27 % unter Liste</span>
+        <span class="marker sperrig">palettiert</span>
+        <div class="preis">
+          <span class="netto">164,64&nbsp;€</span>
+          <span class="eh">je Stück, netto</span>
+        </div>
+        <span class="brutto">197,57 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">12472</span>
+        <h3>SIKM Fertigfußpaket 18</h3>
+        <span class="marker vorteil">27 % unter Liste</span>
+        <span class="marker sperrig">palettiert</span>
+        <div class="preis">
+          <span class="netto">183,92&nbsp;€</span>
+          <span class="eh">je Stück, netto</span>
+        </div>
+        <span class="brutto">220,70 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">12467</span>
+        <h3>SIKM Putztüranschlusspaket oben 18</h3>
+        <span class="marker vorteil">27 % unter Liste</span>
+        <span class="marker sperrig">palettiert</span>
+        <div class="preis">
+          <span class="netto">458,33&nbsp;€</span>
+          <span class="eh">je Stück, netto</span>
+        </div>
+        <span class="brutto">550,00 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">12476</span>
+        <h3>SIKM Rohr 133cm gedämmt 18</h3>
+        <span class="marker vorteil">27 % unter Liste</span>
+        <span class="marker sperrig">palettiert</span>
+        <div class="preis">
+          <span class="netto">210,99&nbsp;€</span>
+          <span class="eh">je Stück, netto</span>
+        </div>
+        <span class="brutto">253,19 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">51967</span>
+        <h3>Thermo-Trennstein 12-18 EZ Absolut monolithisch weiß</h3>
+        <span class="marker vorteil">12 % unter Liste</span>
+        <span class="marker sperrig">palettiert</span>
+        <div class="preis">
+          <span class="netto">255,91&nbsp;€</span>
+          <span class="eh">je Stück, netto</span>
+        </div>
+        <span class="brutto">307,09 € brutto · inkl. 20 % USt</span>
+      </article>
+      </div>
+    </section>
+
+    <section class="gruppe" id="kanal">
+      <div class="gruppenkopf">
+        <h2>Kanal</h2>
+        <span class="anzahl">6 Artikel</span>
+      </div>
+      <p class="gruppentext">PVC-Kanal DN 100 mit Formteilen, Schacht und Grundmauerschutz.</p>
+      <div class="raster">
+      <article class="karte">
+        <span class="nr">21382</span>
+        <h3>Grundmauerschutz 20 1,5 m</h3>
+        <span class="marker vorteil">69 % unter Liste</span>
+        <span class="marker sperrig">palettiert</span>
+        <div class="preis">
+          <span class="netto">1,36&nbsp;€</span>
+          <span class="eh">je m², netto</span>
+        </div>
+        <span class="brutto">1,63 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">10134</span>
+        <h3>PVC Kanalabzweiger 100 100 45 grad</h3>
+        <span class="marker vorteil">84 % unter Liste</span>
+        <span class="marker sperrig">palettiert</span>
+        <div class="preis">
+          <span class="netto">5,83&nbsp;€</span>
+          <span class="eh">je Stück, netto</span>
+        </div>
+        <span class="brutto">7,00 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">10115</span>
+        <h3>PVC Kanalbogen NW 100 30 grad</h3>
+        <span class="marker vorteil">84 % unter Liste</span>
+        <span class="marker sperrig">palettiert</span>
+        <div class="preis">
+          <span class="netto">2,73&nbsp;€</span>
+          <span class="eh">je Stück, netto</span>
+        </div>
+        <span class="brutto">3,28 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">10116</span>
+        <h3>PVC Kanalbogen NW 100 45 grad</h3>
+        <span class="marker vorteil">84 % unter Liste</span>
+        <span class="marker sperrig">palettiert</span>
+        <div class="preis">
+          <span class="netto">2,72&nbsp;€</span>
+          <span class="eh">je Stück, netto</span>
+        </div>
+        <span class="brutto">3,26 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">10095</span>
+        <h3>PVC Kanalrohr NW 100 1 m</h3>
+        <span class="marker vorteil">81 % unter Liste</span>
+        <span class="marker sperrig">palettiert</span>
+        <div class="preis">
+          <span class="netto">10,81&nbsp;€</span>
+          <span class="eh">je Stück, netto</span>
+        </div>
+        <span class="brutto">12,97 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">11133</span>
+        <h3>Schachtring 800 300 80 mm</h3>
+        <span class="marker vorteil">47 % unter Liste</span>
+        <span class="marker sperrig">palettiert</span>
+        <div class="preis">
+          <span class="netto">74,67&nbsp;€</span>
+          <span class="eh">je Stück, netto</span>
+        </div>
+        <span class="brutto">89,60 € brutto · inkl. 20 % USt</span>
+      </article>
+      </div>
+    </section>
+
+    <section class="gruppe" id="mrtel">
+      <div class="gruppenkopf">
+        <h2>Mörtel</h2>
+        <span class="anzahl">3 Artikel</span>
+      </div>
+      <p class="gruppentext">Mauer-, Thermo- und Vergussmörtel.</p>
+      <div class="raster">
+      <article class="karte">
+        <span class="nr">29108</span>
+        <h3>Baumit KlebeSpachtel 25 kg</h3>
+        <span class="marker vorteil">17 % unter Liste</span>
+        <div class="preis">
+          <span class="netto">14,32&nbsp;€</span>
+          <span class="eh">je Sack, netto</span>
+        </div>
+        <span class="brutto">17,18 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">13550</span>
+        <h3>Baumit ThermoMörtel 50 40 l</h3>
+        <span class="marker vorteil">9 % unter Liste</span>
+        <div class="preis">
+          <span class="netto">10,07&nbsp;€</span>
+          <span class="eh">je Sack, netto</span>
+        </div>
+        <span class="brutto">12,08 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">29754</span>
+        <h3>Ravenit Vergussmörtel 25 kg</h3>
+        <span class="marker vorteil">7 % unter Liste</span>
+        <div class="preis">
+          <span class="netto">1,45&nbsp;€</span>
+          <span class="eh">je kg, netto</span>
+        </div>
+        <span class="brutto">1,74 € brutto · inkl. 20 % USt</span>
+      </article>
+      </div>
+    </section>
+
+    <section class="gruppe" id="mauerwerk">
+      <div class="gruppenkopf">
+        <h2>Mauerwerk</h2>
+        <span class="anzahl">1 Artikel</span>
+      </div>
+      <p class="gruppentext">Planziegel palettenweise.</p>
+      <div class="raster">
+      <article class="karte">
+        <span class="nr">29728</span>
+        <h3>Ökotherm HL N+F 10 50 23,8 cm</h3>
+        <span class="marker vorteil">40 % unter Liste</span>
+        <span class="marker sperrig">palettiert</span>
+        <div class="preis">
+          <span class="netto">3,07&nbsp;€</span>
+          <span class="eh">je Stück, netto</span>
+        </div>
+        <span class="brutto">3,68 € brutto · inkl. 20 % USt</span>
+      </article>
+      </div>
+    </section>
+
+    <section class="gruppe" id="zubehr">
+      <div class="gruppenkopf">
+        <h2>Zubehör</h2>
+        <span class="anzahl">7 Artikel</span>
+      </div>
+      <p class="gruppentext">Schäume, Bänder, Kleinteile. Kein Suchsortiment — Beipack zur Lieferung.</p>
+      <div class="raster">
+      <article class="karte">
+        <span class="nr">29023</span>
+        <h3>PAE-Folie T 100 2 50 m 100 m2</h3>
+        <span class="marker vorteil">73 % unter Liste</span>
+        <div class="preis">
+          <span class="netto">17,12&nbsp;€</span>
+          <span class="eh">je Rolle, netto</span>
+        </div>
+        <span class="brutto">20,54 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">12294</span>
+        <h3>Prima Dosierpistole Metall Lite</h3>
+        <span class="marker beipack">Beipack</span>
+        <div class="preis">
+          <span class="netto">26,88&nbsp;€</span>
+          <span class="eh">je Stück, netto</span>
+        </div>
+        <span class="brutto">32,26 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">53215</span>
+        <h3>Rahmenschraube Zylinderkopf vz 7,5x182 mm lose</h3>
+        <span class="marker beipack">Beipack</span>
+        <div class="preis">
+          <span class="netto">0,67&nbsp;€</span>
+          <span class="eh">je Stück, netto</span>
+        </div>
+        <span class="brutto">0,80 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">29691</span>
+        <h3>Soudal Perimeterkleber B3 750 ml</h3>
+        <span class="marker vorteil">20 % unter Liste</span>
+        <div class="preis">
+          <span class="netto">7,60&nbsp;€</span>
+          <span class="eh">je Dose, netto</span>
+        </div>
+        <span class="brutto">9,12 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">51987</span>
+        <h3>Soudal Profi-Pistolenschaum B3 750 ml</h3>
+        <span class="marker vorteil">13 % unter Liste</span>
+        <div class="preis">
+          <span class="netto">6,51&nbsp;€</span>
+          <span class="eh">je Dose, netto</span>
+        </div>
+        <span class="brutto">7,81 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">31631</span>
+        <h3>Soudal Soudabond Easy B1 Pist. 750 ml</h3>
+        <span class="marker beipack">Beipack</span>
+        <div class="preis">
+          <span class="netto">12,60&nbsp;€</span>
+          <span class="eh">je Stück, netto</span>
+        </div>
+        <span class="brutto">15,12 € brutto · inkl. 20 % USt</span>
+      </article>
+      <article class="karte">
+        <span class="nr">31265</span>
+        <h3>SunCore Pro Abdeckklebeband 48 mm x 50 m bis 100 °C, gelb</h3>
+        <span class="marker vorteil">20 % unter Liste</span>
+        <div class="preis">
+          <span class="netto">8,33&nbsp;€</span>
+          <span class="eh">je Stück, netto</span>
+        </div>
+        <span class="brutto">10,00 € brutto · inkl. 20 % USt</span>
+      </article>
+      </div>
+    </section>
+
+  <section class="gruppe" id="lieferung">
+    <div class="gruppenkopf"><h2>Lieferung</h2></div>
+    <p class="gruppentext">Die Frachtsätze stammen aus den tatsächlichen Lieferantenrechnungen,
+      nicht aus einer Annahme. Sie sind der Grund, warum es einen Mindestbestellwert braucht:
+      Eine kleine Lieferung trägt ihre eigene Fracht nicht.</p>
+    <div class="fracht">
+      <div><span class="k">Pauschale je Lieferung</span><span class="w">75,50 €</span><span class="e">Fracht zuzüglich Energiekostenzuschlag</span></div>
+      <div><span class="k">Palettierte Ware</span><span class="w">+ 7,50 €</span><span class="e">Kranentladung je Hub</span></div>
+      <div><span class="k">Frei Haus ab</span><span class="w">—</span><span class="e">gibt es nicht: Die Pauschale steht auf jedem Beleg</span></div>
+      <div><span class="k">Liefergebiet</span><span class="w">~40 km</span><span class="e">Bezirk Perg, Urfahr-Umgebung, Freistadt, Linz und Linz-Land</span></div>
+    </div>
+  </section>
+
+  <footer>
+    <p><strong>Preisstand:</strong> 2026-08-17.
+      Alle Preise netto in Euro, Umsatzsteuer 20 % getrennt ausgewiesen. Der Vergleich „unter
+      Listenpreis" bezieht sich auf den Listenpreis des Lieferanten, nicht auf einen
+      Marktpreis.</p>
+    <p>Erzeugt aus <code>data/katalog-baustoff.json</code> mit <code>npm run shopseite</code>.
+      Nichts ist gegründet, verkauft oder eingenommen.</p>
+  </footer>
+</div>
