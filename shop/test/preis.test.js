@@ -6,6 +6,7 @@ import {
   verkaufspreis,
   rohmarge,
   kalkuliere,
+  artikelEinkauf,
   fracht,
   mindestbestellwertErfuellt,
   MARGENUNTERGRENZE,
@@ -124,4 +125,115 @@ test('Mindestbestellwert wird am Bestellwert gemessen', () => {
   const drueber = mindestbestellwertErfuellt(250, lieferant);
   assert.equal(drueber.erfuellt, true);
   assert.equal(drueber.fehlbetragNetto, 0);
+});
+
+// --- Artikelgenaue Konditionen -------------------------------------------
+// Der Grund steht in docs/baustoff-shop/katalog-aus-rechnungen.md: Über 46
+// Artikel einer einzigen Lieferbeziehung reichen die Rabatte von 10 bis 88 %.
+
+const LIEFERANT_25 = { id: 'test', haendlerrabattAufUvp: 0.25 };
+
+test('Artikelrabatt schlägt den Rabattsatz des Lieferanten', () => {
+  const mitEigenem = artikelEinkauf(
+    { sku: 'A', uvpNetto: 100, haendlerrabattAufUvp: 0.6 },
+    LIEFERANT_25,
+  );
+  const ohne = artikelEinkauf({ sku: 'B', uvpNetto: 100 }, LIEFERANT_25);
+  assert.equal(mitEigenem, 40);
+  assert.equal(ohne, 75);
+});
+
+test('Ein bestätigter Nettopreis schlägt jeden Rabattsatz', () => {
+  const ek = artikelEinkauf(
+    { sku: 'A', uvpNetto: 100, haendlerrabattAufUvp: 0.6, ekNetto: 12 },
+    LIEFERANT_25,
+  );
+  assert.equal(ek, 12);
+});
+
+test('Ohne Einkaufspreis und ohne Rabattsatz wird abgewiesen, nicht geraten', () => {
+  assert.throws(
+    () => artikelEinkauf({ sku: 'A', uvpNetto: 100 }, { id: 'test' }),
+    /weder Einkaufspreis noch Rabattsatz/,
+  );
+  assert.throws(() => artikelEinkauf({ sku: 'A', ekNetto: 0 }, LIEFERANT_25), /positiv/);
+});
+
+test('Dünner Rabatt: der Listendeckel greift und die Zielmarge fällt aus', () => {
+  // 10 % Rabatt — der reale Fall der Rahmenschraube. 25 % Marge daraus wäre
+  // ein Verkaufspreis über der Liste des Lieferanten.
+  const k = kalkuliere(
+    { sku: 'KLEIN', bezeichnung: 'Kleinteil', uvpNetto: 100, haendlerrabattAufUvp: 0.1, ekQuelle: 'bestaetigt' },
+    LIEFERANT_25,
+    0.25,
+  );
+  assert.equal(k.ekNetto, 90);
+  assert.equal(k.vkNetto, 100, 'nie über die Liste');
+  assert.equal(k.amListendeckel, true);
+  assert.equal(k.zielmargeErreicht, false);
+  assert.ok(Math.abs(k.rohmarge - 0.1) < 1e-9);
+});
+
+test('Genau am Deckel gilt die Zielmarge noch als erreicht', () => {
+  // EK = Liste × (1 − Zielmarge): der Verkaufspreis trifft die Liste exakt.
+  // Diese Kante trennt `>=` von `>` — ohne sie bliebe die Vertauschung
+  // unbemerkt, wie schon bei Gate 20 und der 300-Bq/m³-Grenze.
+  const k = kalkuliere(
+    { sku: 'KANTE', bezeichnung: 'Genau', uvpNetto: 100, haendlerrabattAufUvp: 0.25, ekQuelle: 'bestaetigt' },
+    LIEFERANT_25,
+    0.25,
+  );
+  assert.equal(k.vkNetto, 100);
+  assert.equal(k.amListendeckel, true);
+  assert.equal(k.zielmargeErreicht, true, 'genau getroffen ist erreicht');
+});
+
+test('Ohne Liste gibt es nichts zu deckeln — die Zielmarge trägt voll', () => {
+  const k = kalkuliere(
+    { sku: 'NETTO', bezeichnung: 'Projektpreis', ekNetto: 12, ekQuelle: 'bestaetigt' },
+    LIEFERANT_25,
+    0.25,
+  );
+  assert.equal(k.uvpNetto, null);
+  assert.equal(k.vkNetto, 16);
+  assert.equal(k.amListendeckel, false);
+  assert.equal(k.zielmargeErreicht, true);
+});
+
+test('Tiefer Rabatt: die Zielmarge trägt mit Abstand unter der Liste', () => {
+  // 60 % Rabatt — der reale Fall der XPS-Platten.
+  const k = kalkuliere(
+    { sku: 'XPS', bezeichnung: 'Dämmplatte', uvpNetto: 100, haendlerrabattAufUvp: 0.6, ekQuelle: 'bestaetigt' },
+    LIEFERANT_25,
+    0.25,
+  );
+  assert.equal(k.ekNetto, 40);
+  assert.ok(Math.abs(k.vkNetto - 53.33) < 0.01);
+  assert.equal(k.amListendeckel, false);
+  assert.equal(k.zielmargeErreicht, true);
+});
+
+test('Die Cent-Rundung allein lässt die Zielmarge nicht durchfallen', () => {
+  // 40 € Einkauf, 25 % Ziel → 53,333… €, gerundet 53,33 €. Daraus rechnet
+  // sich eine Marge von 24,995 % — knapp unter dem Ziel. Gemessen wird
+  // deshalb gegen den ungedeckelten Wunschpreis, nicht gegen die Marge.
+  const k = kalkuliere(
+    { sku: 'RUND', bezeichnung: 'Rundungsfall', ekNetto: 40, ekQuelle: 'bestaetigt' },
+    LIEFERANT_25,
+    0.25,
+  );
+  assert.equal(k.vkNetto, 53.33);
+  assert.ok(k.rohmarge < 0.25, 'die gerundete Marge liegt tatsächlich darunter');
+  assert.equal(k.zielmargeErreicht, true, 'trotzdem hat nichts sie beschnitten');
+});
+
+test('Ein zu niedriger Listendeckel lässt die Zielmarge durchfallen', () => {
+  // Gegenprobe zum Rundungsfall: Hier beschneidet der Deckel wirklich.
+  const k = kalkuliere(
+    { sku: 'DECKEL', bezeichnung: 'Gedeckelt', uvpNetto: 45, ekNetto: 40, ekQuelle: 'bestaetigt' },
+    LIEFERANT_25,
+    0.25,
+  );
+  assert.equal(k.vkNetto, 45);
+  assert.equal(k.zielmargeErreicht, false);
 });

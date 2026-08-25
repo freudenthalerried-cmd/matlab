@@ -138,7 +138,11 @@ test('Ein rein österreichischer Warenkorb ist kein Reihengeschäft', () => {
 });
 
 test('Jeder Lieferant trägt ein Land — ohne das ist die Steuerfrage nicht zu stellen', () => {
-  assert.equal(daten.lieferanten.lieferanten.length, 3);
+  // Bewusst keine Anzahl geprüft: Der Testname verspricht „jeder", und eine
+  // feste Zahl bricht, sobald ein Lieferant dazukommt — ohne dass die
+  // zugesicherte Eigenschaft verletzt wäre. Geprüft wird stattdessen, dass
+  // überhaupt Lieferanten da sind und alle die Eigenschaft tragen.
+  assert.ok(daten.lieferanten.lieferanten.length > 0, 'keine Lieferanten geladen');
   for (const l of daten.lieferanten.lieferanten) {
     assert.match(l.land, /^[A-Z]{2}$/, `${l.id} hat kein Land`);
   }

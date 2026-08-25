@@ -52,25 +52,72 @@ export function rohmarge(ekNetto, vkNetto) {
 }
 
 /**
+ * Der Einkaufspreis einer Artikelposition — aus dem, was tatsächlich bekannt ist.
+ *
+ * Drei Lagen, in dieser Reihenfolge. Der Grund für die Reihenfolge steht in
+ * `docs/baustoff-shop/katalog-aus-rechnungen.md`: Die echten Konditionen sind
+ * **artikelgenau**, nicht lieferantengenau. Über sechsundvierzig Artikel einer
+ * einzigen Lieferbeziehung reichen die Rabatte von zehn bis achtundachtzig
+ * Prozent. Ein Satz je Lieferant hätte den Einkauf bei Kleinteilen um mehr als
+ * den Faktor zwei danebengelegt — und zwar nach unten, also in die
+ * optimistische Richtung.
+ *
+ *   1. `ekNetto` am Artikel — ein bestätigter Nettopreis. Manche Positionen
+ *      werden ohne Liste fakturiert (Projekt- oder Aktionspreis); dann gibt es
+ *      keinen Rabattsatz, aus dem sich etwas ableiten ließe.
+ *   2. Rabattsatz am Artikel auf dessen Liste.
+ *   3. Rabattsatz des Lieferanten — die alte Annahme, jetzt nur noch Rückfall.
+ */
+export function artikelEinkauf(artikel, lieferant) {
+  if (typeof artikel.ekNetto === 'number') {
+    if (artikel.ekNetto <= 0) throw new Error(`Einkaufspreis von ${artikel.sku} muss positiv sein`);
+    return cent(artikel.ekNetto);
+  }
+  const rabatt = artikel.haendlerrabattAufUvp ?? lieferant.haendlerrabattAufUvp;
+  if (typeof rabatt !== 'number') {
+    throw new Error(`Für ${artikel.sku} ist weder Einkaufspreis noch Rabattsatz bekannt`);
+  }
+  return einkaufspreis(artikel.uvpNetto, rabatt);
+}
+
+/**
  * Vollständige Kalkulation einer Artikelposition.
  * Liefert alles, was Shop und Prüfung brauchen — inklusive der Gate-1-Ampel.
+ *
+ * Zur Deckelung auf die Liste: `verkaufspreis` setzt den Verkaufspreis nie über
+ * `uvpNetto`. Bei den Artikeln, deren Einkauf nah an der Liste liegt, greift der
+ * Deckel — und die ausgewiesene Rohmarge fällt unter die Zielmarge. Das ist
+ * kein Rechenfehler, sondern der Befund: Auf diesen Artikeln **gibt** es die
+ * Zielmarge nicht. Wer sie trotzdem nimmt, verkauft über dem Listenpreis.
+ * Fehlt eine Liste (Nettopreis), gibt es nichts zu deckeln.
  */
 export function kalkuliere(artikel, lieferant, zielmarge) {
-  const ekNetto = einkaufspreis(artikel.uvpNetto, lieferant.haendlerrabattAufUvp);
-  const vkNetto = verkaufspreis(ekNetto, zielmarge, artikel.uvpNetto);
+  const ekNetto = artikelEinkauf(artikel, lieferant);
+  const deckel = typeof artikel.uvpNetto === 'number' ? artikel.uvpNetto : Infinity;
+  const vkNetto = verkaufspreis(ekNetto, zielmarge, deckel);
   const marge = rohmarge(ekNetto, vkNetto);
+
+  // Gegen den ungedeckelten Wunschpreis messen, nicht gegen die gerundete
+  // Marge. Sonst entscheidet der Cent: 40 € Einkauf und 25 % Ziel ergeben
+  // 53,333… €, gerundet 53,33 € — und daraus rechnet sich eine Marge von
+  // 24,995 %, die eine Prüfung auf `>= 0,25` verfehlt. Die Zielmarge wäre
+  // dann bei jedem zweiten Artikel „nicht erreicht", obwohl nichts sie
+  // beschnitten hat außer der Rundung.
+  const wunschVkNetto = verkaufspreis(ekNetto, zielmarge);
 
   return {
     sku: artikel.sku,
     bezeichnung: artikel.bezeichnung,
     lieferantId: artikel.lieferantId,
-    uvpNetto: cent(artikel.uvpNetto),
+    uvpNetto: Number.isFinite(deckel) ? cent(deckel) : null,
     ekNetto,
     vkNetto,
     vkBrutto: cent(vkNetto * (1 + UST_SATZ)),
     deckungsbeitragNetto: cent(vkNetto - ekNetto),
     rohmarge: marge,
     margeErreicht: marge >= MARGENUNTERGRENZE - 1e-9,
+    zielmargeErreicht: vkNetto >= wunschVkNetto - 1e-9,
+    amListendeckel: Number.isFinite(deckel) && vkNetto >= cent(deckel) - 1e-9,
     ekIstPlatzhalter: artikel.ekQuelle !== 'bestaetigt',
   };
 }
