@@ -12,6 +12,8 @@
     "oberflaechenprobe": "node bin/oberflaechenprobe.mjs",
     "pruefe-inhalte": "node bin/inhaltspruefung.mjs",
     "veroeffentlichung": "node bin/veroeffentlichung.mjs",
-    "pruefe-quellen": "node bin/quellenpruefung.mjs"
+    "pruefe-quellen": "node bin/quellenpruefung.mjs",
+    "katalog": "node bin/katalog-aus-rechnungen.mjs",
+    "kampagne": "node bin/kampagne.mjs"
   }
 }
