@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="de-AT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Untergrund prüfen, bevor geklebt wird — Freudenthaler Bau GmbH</title>
+<meta name="description" content="Mit vier Handproben, die zusammen zehn Minuten dauern: Wisch-, Kratz-, Klebeband- und Netzprobe. Sie kosten nichts und ersparen den einzigen Schaden, der sich später nicht mehr reparieren lässt — eine Dämmfläche, die sich von der Wand löst.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+:root{--grund:#F2F0EC;--flaeche:#FBFAF8;--flaeche-2:#E6E2DA;--tinte:#1B1A17;--tinte-2:#45423B;
+--gedaempft:#78736A;--linie:#D6D1C6;--linie-stark:#B4AEA0;--ocker:#A8621B;--ocker-weich:#F6E6D2;
+--gruen:#3E6B45;--gruen-weich:#DEEADF;--ziegel:#9C3521;--ziegel-weich:#F4DCD5;
+--schmal:"Barlow Condensed","Arial Narrow",sans-serif;--text:"Source Sans 3",system-ui,-apple-system,sans-serif;
+--zahl:"JetBrains Mono",ui-monospace,Menlo,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--grund:#171614;--flaeche:#201E1B;
+--flaeche-2:#2B2823;--tinte:#EDEAE3;--tinte-2:#C6C1B7;--gedaempft:#8E887C;--linie:#33302B;
+--linie-stark:#4A463F;--ocker:#E0964A;--ocker-weich:#362514;--gruen:#8CBE95;--gruen-weich:#1D2A1F;
+--ziegel:#E08A72;--ziegel-weich:#341913}}
+:root[data-theme="dark"]{--grund:#171614;--flaeche:#201E1B;--flaeche-2:#2B2823;--tinte:#EDEAE3;
+--tinte-2:#C6C1B7;--gedaempft:#8E887C;--linie:#33302B;--linie-stark:#4A463F;--ocker:#E0964A;
+--ocker-weich:#362514;--gruen:#8CBE95;--gruen-weich:#1D2A1F;--ziegel:#E08A72;--ziegel-weich:#341913}
+*{box-sizing:border-box}
+body{margin:0;background:var(--grund);color:var(--tinte);font-family:var(--text);font-size:16px;
+line-height:1.6;-webkit-font-smoothing:antialiased}
+.huelle{max-width:64rem;margin:0 auto;padding:1.5rem 1.25rem 4rem}
+h1,h2,h3,h4{font-family:var(--schmal);font-weight:600;margin:2rem 0 .6rem;text-wrap:balance;line-height:1.15}
+h1{font-size:clamp(2rem,5vw,3rem);text-transform:uppercase;margin-top:.5rem}
+h2{font-size:clamp(1.35rem,3vw,1.8rem);text-transform:uppercase;border-bottom:2px solid var(--linie-stark);padding-bottom:.25rem}
+h3{font-size:1.15rem}h4{font-size:1rem;font-family:var(--text)}
+p,ul,ol{margin:0 0 1rem}li{margin-bottom:.3rem}
+a{color:var(--ocker)}
+.kopfleiste{display:flex;flex-wrap:wrap;gap:.4rem 1rem;align-items:baseline;border-bottom:3px solid var(--tinte);padding-bottom:.7rem;margin-bottom:1rem}
+.kopfleiste .logo{font-family:var(--schmal);font-weight:700;text-transform:uppercase;font-size:1.15rem;letter-spacing:.02em;text-decoration:none;color:var(--tinte)}
+.kopfleiste nav{display:flex;gap:.15rem;flex-wrap:wrap;margin-left:auto}
+.kopfleiste nav a{font-family:var(--schmal);text-transform:uppercase;font-size:.95rem;text-decoration:none;color:var(--tinte-2);padding:.15rem .55rem;border:1px solid var(--linie);border-radius:2px}
+.kopfleiste nav a:hover{background:var(--flaeche-2);color:var(--tinte)}
+.krume{font-size:.82rem;color:var(--gedaempft);margin-bottom:.5rem}
+.krume a{color:var(--gedaempft)}
+.lede{font-size:1.08rem;color:var(--tinte-2);max-width:44rem}
+.antwort{border-left:4px solid var(--ocker);background:var(--ocker-weich);padding:.9rem 1.1rem;margin:1.2rem 0;color:var(--tinte-2)}
+.antwort strong{color:var(--tinte)}
+blockquote{border-left:3px solid var(--linie-stark);margin:1.2rem 0;padding:.2rem 0 .2rem 1rem;color:var(--tinte-2)}
+blockquote p:last-child{margin-bottom:0}
+.scroll{overflow-x:auto;border:1px solid var(--linie);margin-bottom:1rem}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+th,td{padding:.45rem .7rem;text-align:left;border-bottom:1px solid var(--linie);vertical-align:top}
+th{font-family:var(--schmal);text-transform:uppercase;font-size:.85rem;background:var(--flaeche-2);white-space:nowrap}
+tbody tr:last-child td{border-bottom:none}
+code{font-family:var(--zahl);font-size:.86em;background:var(--flaeche-2);padding:.05em .3em;border-radius:2px}
+hr{border:none;border-top:1px solid var(--linie);margin:2rem 0}
+.raster{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:1px;background:var(--linie);border:1px solid var(--linie);margin-bottom:1.5rem}
+.karte{background:var(--flaeche);padding:.9rem 1rem;display:flex;flex-direction:column;gap:.4rem;text-decoration:none;color:inherit}
+.karte:hover{background:var(--flaeche-2)}
+.karte .nr{font-family:var(--zahl);font-size:.68rem;color:var(--gedaempft)}
+.karte .t{font-weight:600;line-height:1.3}
+.karte .preis{margin-top:auto;font-family:var(--schmal);font-size:1.55rem;font-weight:600;font-variant-numeric:tabular-nums}
+.karte .eh{font-size:.78rem;color:var(--gedaempft);font-family:var(--text);font-weight:400}
+.marker{display:inline-flex;font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;padding:.1rem .4rem;border-radius:2px;width:fit-content}
+.marker.vorteil{background:var(--gruen-weich);color:var(--gruen)}
+.marker.beipack{background:var(--ziegel-weich);color:var(--ziegel)}
+.marker.sperrig{background:var(--flaeche-2);color:var(--tinte-2)}
+.kacheln{display:grid;grid-template-columns:repeat(auto-fill,minmax(17rem,1fr));gap:1px;background:var(--linie);border:1px solid var(--linie);margin-bottom:1.5rem}
+.kachel{background:var(--flaeche);padding:1rem 1.1rem;text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:.35rem}
+.kachel:hover{background:var(--flaeche-2)}
+.kachel .k{font-family:var(--schmal);text-transform:uppercase;font-size:.78rem;letter-spacing:.06em;color:var(--ocker)}
+.kachel .t{font-family:var(--schmal);font-size:1.25rem;font-weight:600;line-height:1.2}
+.kachel .b{font-size:.88rem;color:var(--gedaempft)}
+.preistafel{display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:1px;background:var(--linie);border:1px solid var(--linie);margin:1.2rem 0}
+.preistafel>div{background:var(--flaeche);padding:.9rem 1rem}
+.preistafel .k{font-family:var(--schmal);text-transform:uppercase;font-size:.78rem;letter-spacing:.05em;color:var(--ocker)}
+.preistafel .w{font-family:var(--schmal);font-size:1.7rem;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
+.preistafel .e{font-size:.82rem;color:var(--gedaempft)}
+footer{margin-top:3rem;padding-top:1.2rem;border-top:1px solid var(--linie);font-size:.85rem;color:var(--gedaempft)}
+footer a{color:var(--gedaempft)}
+.verwandt{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem}
+.verwandt a{font-size:.88rem;text-decoration:none;border:1px solid var(--linie);padding:.2rem .6rem;border-radius:2px;background:var(--flaeche)}
+.verwandt a:hover{background:var(--flaeche-2)}
+@media(max-width:40rem){.kopfleiste nav{margin-left:0;width:100%}}
+</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Untergrund prüfen, bevor geklebt wird","description":"Mit vier Handproben, die zusammen zehn Minuten dauern: Wisch-, Kratz-, Klebeband- und Netzprobe. Sie kosten nichts und ersparen den einzigen Schaden, der sich später nicht mehr reparieren lässt — eine Dämmfläche, die sich von der Wand löst.","inLanguage":"de-AT","dateModified":"2026-08-25","publisher":{"@type":"Organization","name":"Freudenthaler Bau GmbH"},"mainEntity":{"@type":"Question","name":"Wie stelle ich fest, ob eine Wand für ein WDVS tragfähig ist?","acceptedAnswer":{"@type":"Answer","text":"Mit vier Handproben, die zusammen zehn Minuten dauern: Wisch-, Kratz-, Klebeband- und Netzprobe. Sie kosten nichts und ersparen den einzigen Schaden, der sich später nicht mehr reparieren lässt — eine Dämmfläche, die sich von der Wand löst."}}}</script>
+</head>
+<body><div class="huelle">
+<header class="kopfleiste">
+  <a class="logo" href="../index.html">Freudenthaler Bau GmbH</a>
+  <nav><a href="../gruppe/wdvs.html">WDVS</a><a href="../gruppe/daemmung.html">Dämmung</a><a href="../gruppe/kamin.html">Kamin</a><a href="../gruppe/kanal.html">Kanal</a><a href="../wissen/index.html">Wissen</a><a href="../lieferung.html">Lieferung</a></nav>
+</header>
+<p class="krume"><a href="../index.html">Start</a> › Wissen</p>
+<h1>Untergrund prüfen, bevor geklebt wird</h1>
+<p><strong>Die Antwort in zwei Sätzen.</strong> Vier Handproben, die zusammen etwa zehn Minuten dauern, sagen, ob eine Wand tragfähig ist: Wischprobe, Kratzprobe, Klebebandprobe und Netzprobe. Sie kosten nichts und ersparen den einzigen Schaden am WDVS, der sich später nicht mehr reparieren lässt — eine Fläche, die sich von der Wand löst.</p>
+<h2>Die vier Proben</h2>
+<p><strong>Wischprobe — sandet der Untergrund?</strong> Mit der flachen Hand über die Wand fahren. Bleibt Staub oder Sand an der Hand, ist die Oberfläche nicht tragfähig. Abhilfe: abbürsten, dann erneut prüfen; hilft das nicht, grundieren oder abtragen.</p>
+<p><strong>Kratzprobe — ist die Oberfläche fest?</strong> Mit einer Münzkante oder einem Nagel kreuzweise ritzen. Bröckelt der Untergrund aus der Ritze aus oder lässt er sich leicht tief einritzen, trägt er nicht.</p>
+<p><strong>Klebebandprobe — hält, was obenauf liegt?</strong> Ein kräftiges Klebeband andrücken und ruckartig abziehen. Kommt die alte Farbe oder Putzhaut mit, dann trägt nicht der Untergrund, sondern nur seine Beschichtung — und die trägt das Dämmsystem nicht.</p>
+<p><strong>Netzprobe — wie saugfähig ist die Wand?</strong> Wasser aufsprühen. Zieht es sofort ein, ist der Untergrund stark saugend und braucht eine Grundierung. Perlt es ab, ist die Wand hydrophob oder gesintert — dann haftet der Klebemörtel nicht ohne Vorbehandlung.</p>
+<h2>Was außerdem gehört geprüft</h2>
+<ul><li><strong>Ebenheit.</strong> Von der zulässigen Unebenheit hängt ab, ob im Zahnbett oder mit Randwulst und Punkten geklebt werden kann. Mit der Richtlatte prüfen.</li><li><strong>Feuchte.</strong> Eine durchfeuchtete Wand wird nicht gedämmt, sondern zuerst trockengelegt. Die Ursache ist zu klären, nicht zu überdämmen.</li><li><strong>Ausblühungen, Algen, Moos.</strong> Sie zeigen, dass etwas nicht stimmt. Abwaschen genügt nicht, wenn die Ursache bleibt.</li><li><strong>Altbeschichtungen.</strong> Dispersionsfarben und Kunstharzputze sind der klassische Fall für die Klebebandprobe.</li></ul>
+<h2>Was daraus für die Bestellung folgt</h2>
+<p>Je nach Befund kommt etwas dazu, das in keiner Materialliste steht: Grundierung bei saugendem Untergrund, mehr Klebemörtel bei unebener Wand, zusätzliche mechanische Befestigung bei fraglicher Tragfähigkeit.</p>
+<p><strong>Praktisch heißt das:</strong> Prüfen Sie vor der Bestellung, nicht danach. Ein nachbestellter Sack Grundierung kostet eine zweite Anfahrt — und die ist teurer als der Sack. Warum, steht auf <a href="warum-keine-gratislieferung">Warum es keine Gratislieferung gibt</a>.</p>
+<h2>Was diese Seite nicht ist</h2>
+<p>Kein Ersatz für die Beurteilung durch den Verarbeiter oder Planer. Diese Proben sind das Handwerkszeug für den ersten Blick; bei zweifelhaftem Befund gehört ein Sachverständiger an die Wand, nicht ein Sack Kleber.</p>
+<h2>Artikel in dieser Gruppe</h2>
+<div class="raster"><a class="karte" href="../artikel/POS-52058.html">
+  <span class="nr">52058</span>
+  <span class="t">Baumit TextilglasGitter 1,1x50 m</span>
+  <span class="marker vorteil">40 % unter Liste</span>
+  <span class="preis">1,19&nbsp;€ <span class="eh">je m², netto</span></span>
+</a><a class="karte" href="../artikel/POS-52124.html">
+  <span class="nr">52124</span>
+  <span class="t">Capatect Gewebeanschlussleiste 3D Universal Plus 2,55 m</span>
+  <span class="marker vorteil">13 % unter Liste</span>
+  <span class="preis">4,91&nbsp;€ <span class="eh">je lfm, netto</span></span>
+</a><a class="karte" href="../artikel/POS-50509.html">
+  <span class="nr">50509</span>
+  <span class="t">Capatect Glasgewebe M, Breite 110cm, orange 55 m2</span>
+  <span class="marker vorteil">27 % unter Liste</span>
+  <span class="preis">1,07&nbsp;€ <span class="eh">je m², netto</span></span>
+</a><a class="karte" href="../artikel/POS-53402.html">
+  <span class="nr">53402</span>
+  <span class="t">Capatect Kantenschutz mit Gewebe Carbon 11,5 13,5 cm 2,5 m</span>
+  <span class="marker vorteil">19 % unter Liste</span>
+  <span class="preis">0,95&nbsp;€ <span class="eh">je lfm, netto</span></span>
+</a><a class="karte" href="../artikel/POS-11283.html">
+  <span class="nr">11283</span>
+  <span class="t">Capatect Klebe- und Spachtelmasse 186 M 25 kg</span>
+  <span class="marker vorteil">25 % unter Liste</span>
+  <span class="preis">0,56&nbsp;€ <span class="eh">je kg, netto</span></span>
+</a><a class="karte" href="../artikel/POS-29461.html">
+  <span class="nr">29461</span>
+  <span class="t">Capatect Klebe- und Spachtelmasse 190 FEIN 25 kg</span>
+  <span class="marker vorteil">28 % unter Liste</span>
+  <span class="preis">0,60&nbsp;€ <span class="eh">je kg, netto</span></span>
+</a><a class="karte" href="../artikel/POS-29610.html">
+  <span class="nr">29610</span>
+  <span class="t">Capatect Polystyrol-Rondelle für Capatect Universaldübel Rondelle und Capatect Schraubdübel Holz</span>
+  <span class="marker vorteil">7 % unter Liste</span>
+  <span class="preis">13,24&nbsp;€ <span class="eh">je Karton, netto</span></span>
+</a><a class="karte" href="../artikel/POS-19333.html">
+  <span class="nr">19333</span>
+  <span class="t">Capatect PrimaPor K20 weiß 25 kg SH-Reibputz</span>
+  
+  <span class="preis">2,27&nbsp;€ <span class="eh">je kg, netto</span></span>
+</a><a class="karte" href="../artikel/POS-13728.html">
+  <span class="nr">13728</span>
+  <span class="t">Capatect Putzgrund weiß 25 kg</span>
+  <span class="marker vorteil">20 % unter Liste</span>
+  <span class="preis">2,77&nbsp;€ <span class="eh">je kg, netto</span></span>
+</a><a class="karte" href="../artikel/POS-11082.html">
+  <span class="nr">11082</span>
+  <span class="t">Capatect Universaldübel Schraubdübel 053 115, 100 STK, 1 KAR</span>
+  <span class="marker vorteil">13 % unter Liste</span>
+  <span class="preis">66,35&nbsp;€ <span class="eh">je Karton, netto</span></span>
+</a><a class="karte" href="../artikel/POS-52537.html">
+  <span class="nr">52537</span>
+  <span class="t">Drehstiftdübel PK(100) K 6 40 mm</span>
+  <span class="marker vorteil">26 % unter Liste</span>
+  <span class="preis">2,87&nbsp;€ <span class="eh">je Karton, netto</span></span>
+</a></div>
+<h2>Weiterlesen</h2>
+<div class="verwandt"><a href="../wissen/wdvs-systemaufbau.html">Was zu einem Wärmedämmverbundsystem gehört</a><a href="../wissen/verarbeitung-bei-kaelte-und-naesse.html">Verarbeitung bei Kälte und Nässe</a></div>
+<footer>
+  <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
+  ausgewiesen · <a href="../wissen/redaktionsprinzipien.html">Wie wir unsere Angaben prüfen</a></p>
+  <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
+  Keine Steuer- oder Rechtsberatung.</p>
+</footer>
+</div></body>
+</html>

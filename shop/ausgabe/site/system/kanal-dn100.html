@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="de-AT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Grundleitung DN 100 — die Liste — Freudenthaler Bau GmbH</title>
+<meta name="description" content="Rohre nach laufenden Metern, Bögen und Abzweiger nach Winkel, Schächte nach Tiefe, dazu Übergänge und Gleitmittel. Fünf Zahlen aus dem Plan ergeben die vollständige Bestellung — in zehn Minuten ausgezählt.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+:root{--grund:#F2F0EC;--flaeche:#FBFAF8;--flaeche-2:#E6E2DA;--tinte:#1B1A17;--tinte-2:#45423B;
+--gedaempft:#78736A;--linie:#D6D1C6;--linie-stark:#B4AEA0;--ocker:#A8621B;--ocker-weich:#F6E6D2;
+--gruen:#3E6B45;--gruen-weich:#DEEADF;--ziegel:#9C3521;--ziegel-weich:#F4DCD5;
+--schmal:"Barlow Condensed","Arial Narrow",sans-serif;--text:"Source Sans 3",system-ui,-apple-system,sans-serif;
+--zahl:"JetBrains Mono",ui-monospace,Menlo,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--grund:#171614;--flaeche:#201E1B;
+--flaeche-2:#2B2823;--tinte:#EDEAE3;--tinte-2:#C6C1B7;--gedaempft:#8E887C;--linie:#33302B;
+--linie-stark:#4A463F;--ocker:#E0964A;--ocker-weich:#362514;--gruen:#8CBE95;--gruen-weich:#1D2A1F;
+--ziegel:#E08A72;--ziegel-weich:#341913}}
+:root[data-theme="dark"]{--grund:#171614;--flaeche:#201E1B;--flaeche-2:#2B2823;--tinte:#EDEAE3;
+--tinte-2:#C6C1B7;--gedaempft:#8E887C;--linie:#33302B;--linie-stark:#4A463F;--ocker:#E0964A;
+--ocker-weich:#362514;--gruen:#8CBE95;--gruen-weich:#1D2A1F;--ziegel:#E08A72;--ziegel-weich:#341913}
+*{box-sizing:border-box}
+body{margin:0;background:var(--grund);color:var(--tinte);font-family:var(--text);font-size:16px;
+line-height:1.6;-webkit-font-smoothing:antialiased}
+.huelle{max-width:64rem;margin:0 auto;padding:1.5rem 1.25rem 4rem}
+h1,h2,h3,h4{font-family:var(--schmal);font-weight:600;margin:2rem 0 .6rem;text-wrap:balance;line-height:1.15}
+h1{font-size:clamp(2rem,5vw,3rem);text-transform:uppercase;margin-top:.5rem}
+h2{font-size:clamp(1.35rem,3vw,1.8rem);text-transform:uppercase;border-bottom:2px solid var(--linie-stark);padding-bottom:.25rem}
+h3{font-size:1.15rem}h4{font-size:1rem;font-family:var(--text)}
+p,ul,ol{margin:0 0 1rem}li{margin-bottom:.3rem}
+a{color:var(--ocker)}
+.kopfleiste{display:flex;flex-wrap:wrap;gap:.4rem 1rem;align-items:baseline;border-bottom:3px solid var(--tinte);padding-bottom:.7rem;margin-bottom:1rem}
+.kopfleiste .logo{font-family:var(--schmal);font-weight:700;text-transform:uppercase;font-size:1.15rem;letter-spacing:.02em;text-decoration:none;color:var(--tinte)}
+.kopfleiste nav{display:flex;gap:.15rem;flex-wrap:wrap;margin-left:auto}
+.kopfleiste nav a{font-family:var(--schmal);text-transform:uppercase;font-size:.95rem;text-decoration:none;color:var(--tinte-2);padding:.15rem .55rem;border:1px solid var(--linie);border-radius:2px}
+.kopfleiste nav a:hover{background:var(--flaeche-2);color:var(--tinte)}
+.krume{font-size:.82rem;color:var(--gedaempft);margin-bottom:.5rem}
+.krume a{color:var(--gedaempft)}
+.lede{font-size:1.08rem;color:var(--tinte-2);max-width:44rem}
+.antwort{border-left:4px solid var(--ocker);background:var(--ocker-weich);padding:.9rem 1.1rem;margin:1.2rem 0;color:var(--tinte-2)}
+.antwort strong{color:var(--tinte)}
+blockquote{border-left:3px solid var(--linie-stark);margin:1.2rem 0;padding:.2rem 0 .2rem 1rem;color:var(--tinte-2)}
+blockquote p:last-child{margin-bottom:0}
+.scroll{overflow-x:auto;border:1px solid var(--linie);margin-bottom:1rem}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+th,td{padding:.45rem .7rem;text-align:left;border-bottom:1px solid var(--linie);vertical-align:top}
+th{font-family:var(--schmal);text-transform:uppercase;font-size:.85rem;background:var(--flaeche-2);white-space:nowrap}
+tbody tr:last-child td{border-bottom:none}
+code{font-family:var(--zahl);font-size:.86em;background:var(--flaeche-2);padding:.05em .3em;border-radius:2px}
+hr{border:none;border-top:1px solid var(--linie);margin:2rem 0}
+.raster{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:1px;background:var(--linie);border:1px solid var(--linie);margin-bottom:1.5rem}
+.karte{background:var(--flaeche);padding:.9rem 1rem;display:flex;flex-direction:column;gap:.4rem;text-decoration:none;color:inherit}
+.karte:hover{background:var(--flaeche-2)}
+.karte .nr{font-family:var(--zahl);font-size:.68rem;color:var(--gedaempft)}
+.karte .t{font-weight:600;line-height:1.3}
+.karte .preis{margin-top:auto;font-family:var(--schmal);font-size:1.55rem;font-weight:600;font-variant-numeric:tabular-nums}
+.karte .eh{font-size:.78rem;color:var(--gedaempft);font-family:var(--text);font-weight:400}
+.marker{display:inline-flex;font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;padding:.1rem .4rem;border-radius:2px;width:fit-content}
+.marker.vorteil{background:var(--gruen-weich);color:var(--gruen)}
+.marker.beipack{background:var(--ziegel-weich);color:var(--ziegel)}
+.marker.sperrig{background:var(--flaeche-2);color:var(--tinte-2)}
+.kacheln{display:grid;grid-template-columns:repeat(auto-fill,minmax(17rem,1fr));gap:1px;background:var(--linie);border:1px solid var(--linie);margin-bottom:1.5rem}
+.kachel{background:var(--flaeche);padding:1rem 1.1rem;text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:.35rem}
+.kachel:hover{background:var(--flaeche-2)}
+.kachel .k{font-family:var(--schmal);text-transform:uppercase;font-size:.78rem;letter-spacing:.06em;color:var(--ocker)}
+.kachel .t{font-family:var(--schmal);font-size:1.25rem;font-weight:600;line-height:1.2}
+.kachel .b{font-size:.88rem;color:var(--gedaempft)}
+.preistafel{display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:1px;background:var(--linie);border:1px solid var(--linie);margin:1.2rem 0}
+.preistafel>div{background:var(--flaeche);padding:.9rem 1rem}
+.preistafel .k{font-family:var(--schmal);text-transform:uppercase;font-size:.78rem;letter-spacing:.05em;color:var(--ocker)}
+.preistafel .w{font-family:var(--schmal);font-size:1.7rem;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
+.preistafel .e{font-size:.82rem;color:var(--gedaempft)}
+footer{margin-top:3rem;padding-top:1.2rem;border-top:1px solid var(--linie);font-size:.85rem;color:var(--gedaempft)}
+footer a{color:var(--gedaempft)}
+.verwandt{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem}
+.verwandt a{font-size:.88rem;text-decoration:none;border:1px solid var(--linie);padding:.2rem .6rem;border-radius:2px;background:var(--flaeche)}
+.verwandt a:hover{background:var(--flaeche-2)}
+@media(max-width:40rem){.kopfleiste nav{margin-left:0;width:100%}}
+</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","headline":"Grundleitung DN 100 — die Liste","description":"Rohre nach laufenden Metern, Bögen und Abzweiger nach Winkel, Schächte nach Tiefe, dazu Übergänge und Gleitmittel. Fünf Zahlen aus dem Plan ergeben die vollständige Bestellung — in zehn Minuten ausgezählt.","inLanguage":"de-AT","dateModified":"2026-08-25","publisher":{"@type":"Organization","name":"Freudenthaler Bau GmbH"},"mainEntity":{"@type":"Question","name":"Welche Teile brauche ich für eine Grundleitung, und wie zähle ich sie aus dem Plan?","acceptedAnswer":{"@type":"Answer","text":"Rohre nach laufenden Metern, Bögen und Abzweiger nach Winkel, Schächte nach Tiefe, dazu Übergänge und Gleitmittel. Fünf Zahlen aus dem Plan ergeben die vollständige Bestellung — in zehn Minuten ausgezählt."}}}</script>
+</head>
+<body><div class="huelle">
+<header class="kopfleiste">
+  <a class="logo" href="../index.html">Freudenthaler Bau GmbH</a>
+  <nav><a href="../gruppe/wdvs.html">WDVS</a><a href="../gruppe/daemmung.html">Dämmung</a><a href="../gruppe/kamin.html">Kamin</a><a href="../gruppe/kanal.html">Kanal</a><a href="../wissen/index.html">Wissen</a><a href="../lieferung.html">Lieferung</a></nav>
+</header>
+<p class="krume"><a href="../index.html">Start</a> › Systemlisten</p>
+<h1>Grundleitung DN 100 — die Liste</h1>
+<p><strong>Die Antwort in zwei Sätzen.</strong> Rohre nach laufenden Metern, Bögen und Abzweiger nach Winkel, Schächte nach Tiefe, dazu Übergänge und Gleitmittel. Fünf Zahlen aus dem Plan ergeben die vollständige Bestellung, und sie sind in zehn Minuten ausgezählt.</p>
+<h2>Die fünf Zahlen aus dem Plan</h2>
+<ol><li><strong>Laufende Meter je Nennweite</strong> — die Leitungslängen, addiert</li><li><strong>Bögen je Winkel</strong> — jeden Richtungswechsel zählen, den Winkel ablesen</li><li><strong>Abzweiger je Winkel</strong> — jede Einbindung einer Zuleitung</li><li><strong>Schächte</strong> — Anzahl und Tiefe, daraus die Schachtringe</li><li><strong>Übergänge</strong> — jede Stelle, an der Nennweite oder Rohrart wechselt</li></ol>
+<p>Mehr braucht es nicht. Was regelmäßig danebengeht, ist Punkt 2 und Punkt 5: Bögen werden gezählt, aber der Winkel nicht abgelesen, und Übergänge stehen im Plan als Symbol statt als Position.</p>
+<h2>Die Positionsliste</h2>
+<div class="scroll"><table><thead><tr><th>#</th><th>Position</th><th>Menge nach</th><th>wird oft vergessen</th></tr></thead><tbody><tr><td>1</td><td>Kanalrohr</td><td>laufende Meter, aufgerundet auf Stangen</td><td>—</td></tr><tr><td>2</td><td>Bögen</td><td>Anzahl je Winkel</td><td>Winkel falsch</td></tr><tr><td>3</td><td>Abzweiger</td><td>Anzahl je Winkel</td><td>—</td></tr><tr><td>4</td><td>Schachtringe</td><td>Tiefe ÷ Ringhöhe</td><td>—</td></tr><tr><td>5</td><td>Übergangsstücke</td><td>Anzahl Materialwechsel</td><td><strong>ja</strong></td></tr><tr><td>6</td><td>Gleitmittel</td><td>nach Anzahl der Steckverbindungen</td><td><strong>ja</strong></td></tr><tr><td>7</td><td>Grundmauerschutzbahn</td><td>Fläche + Überlappung</td><td>eigenes Gewerk</td></tr><tr><td>8</td><td>Abschlussschiene</td><td>laufende Meter Oberkante</td><td><strong>ja</strong></td></tr></tbody></table></div>
+<p>Positionen 7 und 8 gehören streng genommen zum Bauwerk, nicht zur Leitung — sie werden aber im selben Arbeitsgang verbaut und deshalb hier mitgeführt. Siehe <a href="../wissen/perimeterdaemmung-und-grundmauerschutz">Perimeterdämmung und Grundmauerschutz</a>.</p>
+<h2>Was aus der Planung kommt</h2>
+<p><strong>Nennweite, Gefälle und Materialart.</strong> Sie ergeben sich aus der Entwässerungsplanung und den Vorgaben des Kanalbetreibers, nicht aus dem Sortiment. Eine nachträglich geänderte Nennweite macht die halbe Bestellung wertlos — deshalb: Plan zuerst, Bestellung danach.</p>
+<h2>Warum das Gleitmittel auf der Liste steht</h2>
+<p>Weil Steckmuffen Dichtringe haben und die ohne Gleitmittel beim Stecken verdrückt werden. Der Fehler zeigt sich erst bei der Dichtheitsprüfung — also dann, wenn die Leitung schon liegt. Eine Position, die fast nichts kostet und deren Fehlen einen ganzen Abschnitt kostet.</p>
+<h2>Artikel in dieser Gruppe</h2>
+<div class="raster"><a class="karte" href="../artikel/POS-21382.html">
+  <span class="nr">21382</span>
+  <span class="t">Grundmauerschutz 20 1,5 m</span>
+  <span class="marker vorteil">69 % unter Liste</span>
+  <span class="preis">1,36&nbsp;€ <span class="eh">je m², netto</span></span>
+</a><a class="karte" href="../artikel/POS-10134.html">
+  <span class="nr">10134</span>
+  <span class="t">PVC Kanalabzweiger 100 100 45 grad</span>
+  <span class="marker vorteil">84 % unter Liste</span>
+  <span class="preis">5,83&nbsp;€ <span class="eh">je Stück, netto</span></span>
+</a><a class="karte" href="../artikel/POS-10115.html">
+  <span class="nr">10115</span>
+  <span class="t">PVC Kanalbogen NW 100 30 grad</span>
+  <span class="marker vorteil">84 % unter Liste</span>
+  <span class="preis">2,73&nbsp;€ <span class="eh">je Stück, netto</span></span>
+</a><a class="karte" href="../artikel/POS-10116.html">
+  <span class="nr">10116</span>
+  <span class="t">PVC Kanalbogen NW 100 45 grad</span>
+  <span class="marker vorteil">84 % unter Liste</span>
+  <span class="preis">2,72&nbsp;€ <span class="eh">je Stück, netto</span></span>
+</a><a class="karte" href="../artikel/POS-10095.html">
+  <span class="nr">10095</span>
+  <span class="t">PVC Kanalrohr NW 100 1 m</span>
+  <span class="marker vorteil">81 % unter Liste</span>
+  <span class="preis">10,81&nbsp;€ <span class="eh">je Stück, netto</span></span>
+</a><a class="karte" href="../artikel/POS-11133.html">
+  <span class="nr">11133</span>
+  <span class="t">Schachtring 800 300 80 mm</span>
+  <span class="marker vorteil">47 % unter Liste</span>
+  <span class="preis">74,67&nbsp;€ <span class="eh">je Stück, netto</span></span>
+</a></div>
+<h2>Die Artikel dieser Liste</h2>
+<div class="raster"><a class="karte" href="../artikel/POS-10095.html">
+  <span class="nr">10095</span>
+  <span class="t">PVC Kanalrohr NW 100 1 m</span>
+  <span class="marker vorteil">81 % unter Liste</span>
+  <span class="preis">10,81&nbsp;€ <span class="eh">je Stück, netto</span></span>
+</a><a class="karte" href="../artikel/POS-10115.html">
+  <span class="nr">10115</span>
+  <span class="t">PVC Kanalbogen NW 100 30 grad</span>
+  <span class="marker vorteil">84 % unter Liste</span>
+  <span class="preis">2,73&nbsp;€ <span class="eh">je Stück, netto</span></span>
+</a><a class="karte" href="../artikel/POS-10116.html">
+  <span class="nr">10116</span>
+  <span class="t">PVC Kanalbogen NW 100 45 grad</span>
+  <span class="marker vorteil">84 % unter Liste</span>
+  <span class="preis">2,72&nbsp;€ <span class="eh">je Stück, netto</span></span>
+</a><a class="karte" href="../artikel/POS-10134.html">
+  <span class="nr">10134</span>
+  <span class="t">PVC Kanalabzweiger 100 100 45 grad</span>
+  <span class="marker vorteil">84 % unter Liste</span>
+  <span class="preis">5,83&nbsp;€ <span class="eh">je Stück, netto</span></span>
+</a><a class="karte" href="../artikel/POS-11133.html">
+  <span class="nr">11133</span>
+  <span class="t">Schachtring 800 300 80 mm</span>
+  <span class="marker vorteil">47 % unter Liste</span>
+  <span class="preis">74,67&nbsp;€ <span class="eh">je Stück, netto</span></span>
+</a><a class="karte" href="../artikel/POS-21382.html">
+  <span class="nr">21382</span>
+  <span class="t">Grundmauerschutz 20 1,5 m</span>
+  <span class="marker vorteil">69 % unter Liste</span>
+  <span class="preis">1,36&nbsp;€ <span class="eh">je m², netto</span></span>
+</a><a class="karte" href="../artikel/POS-29023.html">
+  <span class="nr">29023</span>
+  <span class="t">PAE-Folie T 100 2 50 m 100 m2</span>
+  <span class="marker vorteil">73 % unter Liste</span>
+  <span class="preis">17,12&nbsp;€ <span class="eh">je Rolle, netto</span></span>
+</a></div>
+<h2>Weiterlesen</h2>
+<div class="verwandt"><a href="../wissen/kanal-was-zusammengehoert.html">Kanal DN 100 — was zusammengehört</a><a href="../wissen/perimeterdaemmung-und-grundmauerschutz.html">Perimeterdämmung und Grundmauerschutz</a></div>
+<footer>
+  <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
+  ausgewiesen · <a href="../wissen/redaktionsprinzipien.html">Wie wir unsere Angaben prüfen</a></p>
+  <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
+  Keine Steuer- oder Rechtsberatung.</p>
+</footer>
+</div></body>
+</html>

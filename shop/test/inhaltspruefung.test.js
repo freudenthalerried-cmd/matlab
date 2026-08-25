@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { pruefeAbsatz, pruefeInhalt, inAbsaetze, GRENZWOERTER } from '../src/inhaltspruefung.js';
+import { pruefeAbsatz, pruefeInhalt, inAbsaetze, GRENZWOERTER, ohneKopfblock } from '../src/inhaltspruefung.js';
 
 const absatz = (text) => ({ text, zeile: 1 });
 const verdachtVon = (text) => pruefeAbsatz(absatz(text)).join(' | ');
@@ -90,4 +90,36 @@ test('Absätze werden mit brauchbarer Zeilennummer zerlegt', () => {
   assert.equal(teile.length, 3);
   assert.equal(teile[0].zeile, 1);
   assert.ok(teile[1].zeile > teile[0].zeile, 'die Zeilennummer wächst');
+});
+
+// --- Kopfblock ------------------------------------------------------------
+// Metadaten sind keine Behauptungen. Der Prüfer schlug auf jeder Seite an,
+// deren Titel eine Menge nennt („Mengen für 100 m² Fassade") — und ein
+// Prüfer, der überall anschlägt, wird abgeschaltet statt befolgt.
+
+test('Der Kopfblock wird nicht als Aussage geprüft', () => {
+  const text = '---\ntitel: Mengen für 100 m² Fassade\nstand: 2026-08-25\n---\n\nEin harmloser Satz.\n';
+  const e = pruefeInhalt(text, 'probe.md');
+  assert.equal(e.sauber, true, `unerwarteter Verdacht: ${JSON.stringify(e.treffer)}`);
+});
+
+test('Nach dem Kopfblock stimmen die Zeilennummern noch', () => {
+  // Der Kopf wird durch Leerzeilen ersetzt, nicht entfernt — sonst zeigt
+  // jeder Treffer auf die falsche Zeile, und das ist schlimmer als kein
+  // Treffer: Es schickt den Prüfenden an die falsche Stelle.
+  const kopf = '---\ntitel: Probe\nstand: 2026-08-25\n---\n';
+  const mitKopf = pruefeInhalt(`${kopf}\nEine Wand ist 5 m² groß.\n`, 'a.md');
+  const ohne = pruefeInhalt('\n\n\n\n\nEine Wand ist 5 m² groß.\n', 'b.md');
+  assert.equal(mitKopf.sauber, false);
+  assert.equal(mitKopf.treffer[0].zeile, ohne.treffer[0].zeile);
+});
+
+test('Ohne Kopfblock bleibt der Text unverändert', () => {
+  const text = 'Kein Kopf hier.\n\nZweiter Absatz.\n';
+  assert.equal(ohneKopfblock(text), text);
+});
+
+test('Ein Trennstrich mitten im Text ist kein Kopfblock', () => {
+  const text = 'Erster Absatz.\n\n---\nnicht: metadaten\n---\n\nZweiter.\n';
+  assert.equal(ohneKopfblock(text), text);
 });

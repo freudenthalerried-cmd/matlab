@@ -15,6 +15,6 @@
     "pruefe-quellen": "node bin/quellenpruefung.mjs",
     "katalog": "node bin/katalog-aus-rechnungen.mjs",
     "kampagne": "node bin/kampagne.mjs",
-    "shopseite": "node bin/shopseite.mjs"
+    "website": "node bin/website.mjs"
   }
 }

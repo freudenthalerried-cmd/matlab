@@ -1,0 +1,42 @@
+# Freudenthaler Bau GmbH — Baustoffe zum Baumeisterpreis
+
+> Baustoffhandel in Ried in der Riedmark, Oberösterreich. Lieferung regional (Bezirk Perg, Urfahr-Umgebung, Freistadt, Linz, Linz-Land), nicht österreichweit. Preise sind Nettopreise für Unternehmer.
+
+## Wie diese Seiten aufgebaut sind
+
+- Jede Seite beantwortet genau eine Frage; die Antwort steht in den ersten zwei Sätzen.
+- Technische Kennwerte werden nicht abgeschrieben, sondern beim Hersteller verlinkt.
+- Preise tragen einen Preisstand und die Angabe netto oder brutto.
+- Wie geprüft wird: https://shop.freudenthaler-bau.at/wissen/redaktionsprinzipien.html
+
+## Wissen
+
+- [Was „Baumeisterpreis" heißt — und was nicht](https://shop.freudenthaler-bau.at/wissen/baumeisterpreis.html): Warum ist das hier günstiger als im Fachhandel, und wo ist der Haken?
+- [Welche Teile ein Kaminzug braucht](https://shop.freudenthaler-bau.at/wissen/kaminzug-aufbau.html): Aus welchen Bauteilen besteht ein einzügiger Systemkamin, von unten nach oben?
+- [Kanal DN 100 — was zusammengehört](https://shop.freudenthaler-bau.at/wissen/kanal-was-zusammengehoert.html): Welche Teile brauche ich für eine Grundleitung, und welche werden vergessen?
+- [Lagerung von Sackware und Platten](https://shop.freudenthaler-bau.at/wissen/lagerung-von-sackware.html): Wie lagere ich Mörtel, Kleber und Dämmplatten auf der Baustelle richtig?
+- [Mengen für 100 m² Fassade ermitteln](https://shop.freudenthaler-bau.at/wissen/mengen-fuer-100-qm-wdvs.html): Wie viel Material brauche ich für 100 Quadratmeter Wärmedämmverbundsystem?
+- [Perimeterdämmung und Grundmauerschutz](https://shop.freudenthaler-bau.at/wissen/perimeterdaemmung-und-grundmauerschutz.html): Was kommt in welcher Reihenfolge an eine erdberührte Kellerwand?
+- [Wie dieser Shop seine Angaben prüft](https://shop.freudenthaler-bau.at/wissen/redaktionsprinzipien.html): Woher stammen die Angaben auf diesen Seiten, und was passiert, wenn eine falsch ist?
+- [Untergrund prüfen, bevor geklebt wird](https://shop.freudenthaler-bau.at/wissen/untergrund-pruefen.html): Wie stelle ich fest, ob eine Wand für ein WDVS tragfähig ist?
+- [Verarbeitung bei Kälte und Nässe](https://shop.freudenthaler-bau.at/wissen/verarbeitung-bei-kaelte-und-naesse.html): Bis wann im Jahr kann ich noch verputzen und dämmen?
+- [Warum es hier keine Gratislieferung gibt](https://shop.freudenthaler-bau.at/wissen/warum-keine-gratislieferung.html): Andere liefern ab einem bestimmten Bestellwert frei Haus — warum hier nicht?
+- [Was fehlt, hält die Baustelle auf](https://shop.freudenthaler-bau.at/wissen/was-fehlt-haelt-die-baustelle-auf.html): Warum verkauft dieser Shop Systempakete statt Einzelartikel?
+- [Was zu einem Wärmedämmverbundsystem gehört](https://shop.freudenthaler-bau.at/wissen/wdvs-systemaufbau.html): Welche Bestandteile braucht ein WDVS, und in welcher Reihenfolge kommen sie an die Wand?
+- [XPS oder EPS — welche Platte wohin](https://shop.freudenthaler-bau.at/wissen/xps-oder-eps.html): Wann nimmt man XPS und wann EPS, und was passiert, wenn man es vertauscht?
+
+## Systemlisten
+
+- [Fassade dämmen — die Liste für 100 m²](https://shop.freudenthaler-bau.at/system/fassade-100-qm.html): Was muss ich bestellen, um 100 Quadratmeter Fassade zu dämmen?
+- [Kaminzug — die Liste für einen Zug](https://shop.freudenthaler-bau.at/system/kaminzug.html): Welche Teile muss ich für einen einzügigen Systemkamin bestellen?
+- [Grundleitung DN 100 — die Liste](https://shop.freudenthaler-bau.at/system/kanal-dn100.html): Welche Teile brauche ich für eine Grundleitung, und wie zähle ich sie aus dem Plan?
+
+## Sortiment
+
+- [Dämmplatten](https://shop.freudenthaler-bau.at/gruppe/daemmung.html): 9 Artikel
+- [Kaminsystem](https://shop.freudenthaler-bau.at/gruppe/kamin.html): 9 Artikel
+- [Kanal und Erdbau](https://shop.freudenthaler-bau.at/gruppe/kanal.html): 6 Artikel
+- [Mauerwerk](https://shop.freudenthaler-bau.at/gruppe/mauerwerk.html): 1 Artikel
+- [Mörtel und Putze](https://shop.freudenthaler-bau.at/gruppe/moertel.html): 3 Artikel
+- [WDVS-Komponenten](https://shop.freudenthaler-bau.at/gruppe/wdvs.html): 11 Artikel
+- [Zubehör und Kleinteile](https://shop.freudenthaler-bau.at/gruppe/zubehoer.html): 7 Artikel

@@ -51,11 +51,29 @@ const PREIS = /\d+(?:[.,]\d+)?\s*(?:€|EUR)/i;
 const PREIS_EINORDNUNG = /\bnetto\b|\bbrutto\b|\bexkl\.|\binkl\./i;
 const STAND = /Stand:|Preisstand|Stand\s+\d/i;
 
+/**
+ * Trennt einen Kopfblock im Stil `---\n schlüssel: wert \n---` ab.
+ *
+ * Der Kopfblock trägt Metadaten — Titel, Kurzfassung, Verweise —, keine
+ * Behauptungen an den Leser. Ihn mitzuprüfen erzeugte Verdacht auf jeder
+ * Seite, deren Titel eine Menge nennt („Mengen für 100 m² Fassade"), und ein
+ * Prüfer, der bei jeder Datei anschlägt, wird abgeschaltet statt befolgt.
+ *
+ * Die Zeilennummern der übrigen Absätze bleiben richtig: Der Kopf wird nicht
+ * entfernt, sondern durch ebenso viele Leerzeilen ersetzt.
+ */
+export function ohneKopfblock(text) {
+  const treffer = /^---\r?\n[\s\S]*?\r?\n---\r?\n/.exec(text);
+  if (!treffer) return text;
+  const zeilen = treffer[0].split('\n').length - 1;
+  return '\n'.repeat(zeilen) + text.slice(treffer[0].length);
+}
+
 /** Zerlegt einen Text in Absätze mit Zeilennummer. */
 export function inAbsaetze(text) {
   const absaetze = [];
   let zeile = 1;
-  for (const stueck of text.split(/\n\s*\n/)) {
+  for (const stueck of ohneKopfblock(text).split(/\n\s*\n/)) {
     if (stueck.trim()) absaetze.push({ text: stueck, zeile });
     zeile += stueck.split('\n').length + 1;
   }
