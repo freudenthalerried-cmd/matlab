@@ -54,6 +54,14 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > nebenbei gefundene Fehler (falsche Zeilennummern, ungeprüfter Kopfblock)
 > und die daraus entstandene Beschaffungsliste für Datenblätter in
 > [`geltungsaussagen.md`](./geltungsaussagen.md).
+>
+> **Gate 21 ist entschieden** (26.08., abends): EPS und Vorkasse ab Start,
+> Karte als Zusatz, **keine offene Rechnung**, Kundenzahlungsziel null Tage.
+> Dabei berichtigt: Der Rechnungskauf **über einen Anbieter** hält das Gate
+> (er zahlt sofort aus), was es verletzt, ist die **offene Rechnung auf
+> eigenes Risiko** — beide standen bis dahin in einer Zeile. Rechnung,
+> Kippzahlen und Begründung in
+> [`zahlungsziel-entschieden.md`](./zahlungsziel-entschieden.md).
 
 ## Wo das Projekt steht
 

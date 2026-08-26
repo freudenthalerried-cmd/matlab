@@ -185,6 +185,16 @@ Baustoffhandel üblich. Das ist keine Nebenbemerkung: Es heißt, dass der
 im B2B naheliegendste Zahlungsweg der einzige ist, der den größten
 Ertragshebel dieses Modells zerstört.
 
+> **Berichtigt am 26. August.** Der Absatz darüber wirft zwei Dinge
+> zusammen. Der Rechnungskauf **über einen Anbieter** zahlt sofort aus und
+> hält das Gate mühelos; er kostet dafür rund 3 % vom Bruttobetrag. Was das
+> Gate verletzt, ist die **offene Rechnung auf eigenes Risiko**. Beide
+> standen im Modell in einer Zeile, obwohl sie sich gegensätzlich
+> verhalten. Maßgeblich ist nicht das Ziel auf der Kundenrechnung, sondern
+> wann das Geld im eigenen Konto liegt. Die vollständige Rechnung und die
+> daraus getroffene Entscheidung stehen in
+> [`zahlungsziel-entschieden.md`](./zahlungsziel-entschieden.md).
+
 Acht Testfälle, darunter die Kante: zwölf Tage tragen, dreizehn nicht.
 Ohne diesen Fall bliebe eine Vertauschung von `<` und `<=` unbemerkt —
 dieselbe Lücke wie bei Gate 20 und der 300-Bq/m³-Grenze.

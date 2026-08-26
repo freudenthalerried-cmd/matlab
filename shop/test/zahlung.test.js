@@ -93,14 +93,14 @@ test('Rechnungskauf reißt die Kostenschwelle', () => {
   assert.ok(p.verletzt.some((v) => /10 % des Zielgewinns/.test(v)));
 });
 
-test('EPS erfüllt alle drei Anforderungen', () => {
+test('EPS erfüllt alle vier Anforderungen', () => {
   const p = pruefeZahlweg('eps', LAGE);
   assert.equal(p.geeignet, true);
   assert.deepEqual(p.verletzt, []);
 });
 
 test('Jede Anforderung nennt, woher sie kommt', () => {
-  assert.equal(ANFORDERUNGEN.length, 3);
+  assert.equal(ANFORDERUNGEN.length, 4);
   for (const a of ANFORDERUNGEN) {
     assert.ok(a.herkunft && a.herkunft.length > 5, `${a.id} ohne Herkunft`);
   }

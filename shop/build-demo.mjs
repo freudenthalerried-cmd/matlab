@@ -22,6 +22,12 @@ const daten = {
 const entkleide = (quelle) =>
   quelle
     .replace(/^import[^;]+;\s*$/gm, '')
+    // Weitergereichte Namen (`export { a, b };`) fallen ersatzlos weg: Im
+    // zusammengefügten Skript stehen sie ohnehin schon im selben Bereich.
+    // Ohne diese Zeile blieb ein `export` im Nicht-Modul stehen, und der
+    // Bau brach mit einem Parserfehler ab — gefunden, als `kostenbild.js`
+    // zum ersten Mal Namen aus `skonto.js` weiterreichte.
+    .replace(/^export \{[^}]*\};\s*$/gm, '')
     .replace(/^export (const|let|function|class|async function) /gm, '$1 ');
 
 const kern = [
@@ -40,6 +46,7 @@ const kern = [
   entkleide(lies('./src/vies.js')),
   entkleide(lies('./src/ablage.js')),
   entkleide(lies('./src/speicher.js')),
+  entkleide(lies('./src/skonto.js')),
   entkleide(lies('./src/zahlung.js')),
   entkleide(lies('./src/kostenbild.js')),
 ].join('\n');

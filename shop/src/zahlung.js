@@ -19,6 +19,7 @@
  */
 
 import { cent } from './preis.js';
+import { zahlungszielTraegt } from './skonto.js';
 
 /**
  * Zahlwege mit ihren Gebührenmodellen.
@@ -106,6 +107,23 @@ export const ZAHLWEGE = [
     konfidenz: 'niedrig',
     quelle: 'Spanne 2–4 %, hier mit 3 % gerechnet — Händlerkonditionen sind nicht veröffentlicht',
     anmerkung: 'Der Anbieter trägt das Ausfallrisiko und zahlt sofort aus. Das ist der teuerste, aber der einzige Weg, der dem entspricht, was Handwerksbetriebe erwarten.',
+  },
+  {
+    id: 'offene-rechnung',
+    name: 'Offene Rechnung, 30 Tage netto — auf eigenes Risiko',
+    prozent: 0,
+    fixEuro: 0,
+    tageBisEingang: 30,
+    barumsatz: false,
+    zahlungseingangMaschinell: false,
+    b2bUeblich: true,
+    konfidenz: 'hoch',
+    quelle: 'eigene Bedingung; keine Gebühr, weil kein Anbieter dazwischensteht',
+    anmerkung:
+      'Was Handwerksbetriebe tatsächlich erwarten — und der einzige Weg, der ohne Gebühr auskommt. '
+      + 'Dafür kommt das Geld nach der Skontofrist, das Ausfallrisiko bleibt im Haus, und der Eingang '
+      + 'muss vom Konto gelesen werden. Bis zum 26. August war dieser Weg mit dem Rechnungskauf ueber '
+      + 'einen Anbieter in einer Zeile zusammengefasst; die beiden verhalten sich gegensaetzlich.',
   },
   {
     id: 'nachnahme',
@@ -205,6 +223,15 @@ export const ANFORDERUNGEN = [
     text: 'Meldet den Zahlungseingang maschinell zurück',
     herkunft: 'trockenlauf-auftrag.md — sonst bleibt die Kette stehen',
     erfuellt: (z) => z.zahlungseingangMaschinell === true,
+  },
+  {
+    id: 'skontoErreichbar',
+    text: 'Lässt das Lieferantenskonto erreichbar (Gate 21)',
+    herkunft: 'zweiter-lieferant-und-skonto.md — 3 % Skonto wiegen schwerer als jede Zahlungsgebühr',
+    // Maßgeblich ist nicht das Ziel auf der Kundenrechnung, sondern wann das
+    // Geld im eigenen Konto liegt: Ein Anbieter, der sofort auszahlt, darf
+    // dem Kunden dreißig Tage einräumen, ohne das Skonto zu kosten.
+    erfuellt: (z) => zahlungszielTraegt({ kundenzielTage: z.tageBisEingang }).traegt,
   },
   {
     id: 'bezahlbar',
