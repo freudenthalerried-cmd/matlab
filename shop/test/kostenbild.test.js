@@ -10,7 +10,11 @@ import {
   noetigerUmsatz,
   mehrumsatzGegenVorkasse,
   proBestellung,
+  skontoErsparnis,
+  zahlungszielTraegt,
+  traegtSichSelbst,
 } from '../src/kostenbild.js';
+import { cent } from '../src/preis.js';
 
 const lies = (p) => JSON.parse(readFileSync(new URL(p, import.meta.url), 'utf8'));
 const katalog = ladeKatalog(
@@ -183,4 +187,74 @@ test('Am Referenz-Frachtanteil ändern sich Bestellungen und Sessionbedarf nicht
     assert.equal(mit.bestellungen, ohne.bestellungen, `${zw}: Bestellungen unverändert`);
     assert.equal(mit.sessions, ohne.sessions, `${zw}: Sessions unverändert`);
   }
+});
+
+/* ------------------------------------------------------------------ *
+ * Skonto und Gate 21
+ *
+ * Der Hebel aus docs/baustoff-shop/zweiter-lieferant-und-skonto.md:
+ * 3 % Skonto sind mehr wert als die gesamte Zahlungsgebühr.
+ * ------------------------------------------------------------------ */
+
+test('Skonto mindert den Einkauf, nicht die Fracht', () => {
+  // Der entscheidende Punkt. Beide Lieferanten nehmen die Fracht
+  // ausdrücklich vom Skonto aus. Wer den Satz auf die ganze Rechnung
+  // rechnet, setzt den Ertrag systematisch zu hoch an.
+  const warenkorb = { warenwertNetto: 1000, einkaufNetto: 750, frachtNetto: 100 };
+  const ohne = traegtSichSelbst(warenkorb, { skontoSatz: 0 });
+  const mit = traegtSichSelbst(warenkorb, { skontoSatz: 0.03 });
+
+  assert.equal(mit.skontoNetto, 22.5, '3 % von 750 €, nicht von 850 €');
+  assert.equal(mit.einkaufNachSkontoNetto, 727.5);
+  assert.equal(mit.frachtNetto, ohne.frachtNetto, 'die Fracht bleibt unberührt');
+  assert.equal(cent(mit.deckungsbeitragNetto - ohne.deckungsbeitragNetto), 22.5);
+});
+
+test('Ohne Angabe wird kein Skonto eingerechnet', () => {
+  // Voreinstellung null: Wer das Skonto einrechnen will, muss sagen, dass
+  // er es auch zieht. Ein stillschweigend angenommener Skontoabzug wäre
+  // genau die optimistische Annahme, die dieses Vorhaben viermal Geld
+  // gekostet hat.
+  const warenkorb = { warenwertNetto: 1000, einkaufNetto: 750, frachtNetto: 100 };
+  const s = traegtSichSelbst(warenkorb);
+  assert.equal(s.skontoNetto, 0);
+  assert.equal(s.einkaufNachSkontoNetto, 750);
+});
+
+test('Der Skontosatz wird auf Sinn geprüft', () => {
+  assert.throws(() => skontoErsparnis(100, 1), /zwischen 0 und 1/);
+  assert.throws(() => skontoErsparnis(100, -0.01), /zwischen 0 und 1/);
+  assert.equal(skontoErsparnis(-50, 0.03), 0, 'ein negativer Einkauf spart nichts');
+});
+
+test('Gate 21: Vorkasse und Karte erfüllen die Skontofrist von selbst', () => {
+  assert.equal(zahlungszielTraegt({ kundenzielTage: 0 }).traegt, true);
+  assert.equal(zahlungszielTraegt({ kundenzielTage: 7 }).traegt, true);
+});
+
+test('Gate 21: Dreißig Tage Zahlungsziel verfehlen die Skontofrist', () => {
+  const g = zahlungszielTraegt({ kundenzielTage: 30 });
+  assert.equal(g.traegt, false);
+  assert.match(g.gruende[0], /überschreitet die Skontofrist/);
+  assert.match(g.gruende[0], /18 Tage/, 'die Überschreitung wird beziffert');
+});
+
+test('Gate 21: genau auf der Frist trägt noch, ein Tag darüber nicht', () => {
+  // Die Kante, an der > und >= sich unterscheiden. Ohne diesen Fall bliebe
+  // die Vertauschung unbemerkt — dieselbe Lücke wie bei Gate 20 und der
+  // 300-Bq/m³-Grenze.
+  assert.equal(zahlungszielTraegt({ kundenzielTage: 12 }).traegt, true, '12 + 2 = 14, genau die Frist');
+  assert.equal(zahlungszielTraegt({ kundenzielTage: 13 }).traegt, false, '13 + 2 = 15, einen Tag darüber');
+});
+
+test('Gate 21: die Bearbeitungszeit zählt zur Frist, nicht daneben', () => {
+  // Zwischen Zahlungseingang und Überweisung liegt Arbeit. Wer sie
+  // wegrechnet, verpasst das Skonto um genau diese Tage.
+  assert.equal(zahlungszielTraegt({ kundenzielTage: 14, bearbeitungstage: 0 }).traegt, true);
+  assert.equal(zahlungszielTraegt({ kundenzielTage: 14, bearbeitungstage: 1 }).traegt, false);
+});
+
+test('Gate 21 weist unsinnige Zahlungsziele ab, statt sie zu rechnen', () => {
+  assert.throws(() => zahlungszielTraegt({ kundenzielTage: -1 }), /ab null/);
+  assert.throws(() => zahlungszielTraegt({ kundenzielTage: 'dreißig' }), /Zahl/);
 });

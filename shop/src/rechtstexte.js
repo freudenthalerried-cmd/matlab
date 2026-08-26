@@ -141,7 +141,17 @@ export const AGB_GLIEDERUNG = [
       'Der Besteller benennt einen Ansprechpartner vor Ort und trägt dessen Erreichbarkeit.',
   },
   { nr: 8, titel: 'Gefahrübergang und Transportschäden', hinweis: 'Untersuchungs- und Rügepflicht nach § 377 UGB — im B2B eine echte Obliegenheit, und die Frist läuft ab Ablieferung auf der Baustelle.' },
-  { nr: 9, titel: 'Zahlung, Verzug, Eigentumsvorbehalt', hinweis: 'Keine Nachnahme und keine Barzahlung auf der Baustelle — sonst entsteht ein Barumsatz und damit Registrierkassenpflicht.' },
+  {
+    nr: 9,
+    titel: 'Zahlung, Verzug, Eigentumsvorbehalt',
+    hinweis:
+      'Keine Nachnahme und keine Barzahlung auf der Baustelle — sonst entsteht ein Barumsatz ' +
+      'und damit Registrierkassenpflicht. **Das Zahlungsziel darf die Skontofrist des ' +
+      'Lieferanten nicht überschreiten** (Gate 21): Beide Lieferanten geben 3 % Skonto bei ' +
+      '14 Tagen, und diese 3 % heben die Rohmarge von 25 auf 27,25 % — mehr, als die ' +
+      'Zahlungsgebühr kostet. Wer dem Kunden 30 Tage einräumt und dem Lieferanten in 14 ' +
+      'zahlen will, finanziert die Differenz aus eigener Kasse.',
+  },
   { nr: 10, titel: 'Gewährleistung und Haftung', hinweis: 'Im B2B abdingbar, aber nicht grenzenlos.' },
   { nr: 11, titel: 'Rücknahme angebrochener Gebinde und Rollenware', hinweis: 'Ausschluss empfehlenswert; Rollenware ist nicht teilbar.' },
   { nr: 12, titel: 'Lieferorte nur in Österreich', hinweis: 'Lieferung außerhalb Österreichs ist ausgeschlossen — sie wäre nach Art 6, 7 UStG steuerfrei bzw. eine Ausfuhr und damit anders zu verrechnen.' },

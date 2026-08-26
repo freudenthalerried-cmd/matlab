@@ -144,3 +144,56 @@ Fallen, die schon zugeschnappt haben.
    gewünscht ist. Das ist eine E-Mail an Dritte und braucht Freigabe.
 3. **Fenster und Türen als Anfragesortiment** — oder gar nicht. Nicht als
    Warenkorbartikel.
+
+## Nachtrag: Gate 21 ist ausführbar
+
+Stand: 2026-08-26, später am Tag. Der Befund oben stand zunächst nur in
+diesem Dokument — und eine Regel, die nur im Dokument steht, wird im
+Alltag umgangen. Genau das war schon bei Gate 20 die Lehre.
+
+Das Skonto liegt jetzt im Rechenkern (`kostenbild.js`):
+
+- **`skontoErsparnis(einkaufNetto, satz)`** rechnet den Abzug — und zwar
+  **nur auf den Warenwert**. Die Fracht ist bei beiden Lieferanten
+  ausdrücklich nicht skontofähig; bei Pramer als Sternchen an den
+  betroffenen Positionen, bei Poschacher als eigene Skontobasis unter
+  dem Rechnungsbetrag. Wer den Satz auf die ganze Rechnung rechnet,
+  setzt den Ertrag systematisch zu hoch an — also wieder in die
+  optimistische Richtung.
+
+- **`traegtSichSelbst(..., { skontoSatz })`** nimmt das Skonto in die
+  Deckungsbeitragsrechnung auf. **Voreinstellung ist null.** Wer das
+  Skonto einrechnen will, muss sagen, dass er es auch zieht; ein
+  stillschweigend angenommener Abzug wäre genau die Annahme, die diesem
+  Vorhaben schon viermal Geld gekostet hat.
+
+- **`zahlungszielTraegt({ kundenzielTage })`** ist **Gate 21: Das
+  Zahlungsziel des Kunden darf die Skontofrist nicht überschreiten.**
+  Zwischen Zahlungseingang und Überweisung an den Lieferanten liegen
+  zwei Tage Bearbeitung, und die zählen zur Frist, nicht daneben.
+
+| Zahlungsweg | Ziel | Gate 21 |
+|---|---|---|
+| Vorkasse | 0 Tage | trägt |
+| Karte | sofort | trägt |
+| Rechnung, 12 Tage | 12 + 2 = 14 | trägt, genau auf der Frist |
+| Rechnung, 13 Tage | 13 + 2 = 15 | **trägt nicht** |
+| Rechnung, 30 Tage | 30 + 2 = 32 | **trägt nicht**, 18 Tage darüber |
+
+Nur der Rechnungskauf kann das Gate verletzen — und genau der ist im
+Baustoffhandel üblich. Das ist keine Nebenbemerkung: Es heißt, dass der
+im B2B naheliegendste Zahlungsweg der einzige ist, der den größten
+Ertragshebel dieses Modells zerstört.
+
+Acht Testfälle, darunter die Kante: zwölf Tage tragen, dreizehn nicht.
+Ohne diesen Fall bliebe eine Vertauschung von `<` und `<=` unbemerkt —
+dieselbe Lücke wie bei Gate 20 und der 300-Bq/m³-Grenze.
+
+Gegenprobe: vier Mutationen, alle vier gefangen — Skonto auch auf die
+Fracht rechnen, Gate 21 auf `<` statt `<=`, Bearbeitungstage ignorieren,
+Voreinstellung auf 3 % statt null.
+
+Der Hinweis steht außerdem in AGB-Punkt 9 und erscheint damit auf der
+Rechtsseite des Shops, statt nur hier.
+
+Testbestand: **558, alle grün.**

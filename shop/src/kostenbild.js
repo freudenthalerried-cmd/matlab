@@ -205,7 +205,10 @@ export function proBestellung(warenkorb, zahlwegId, werbeanteil) {
  * @param {object} lage `{ zahlwegId, frachtVerrechnet }` — `frachtVerrechnet`
  *   false bedeutet: Lieferung frei Haus, die Fracht geht zu unseren Lasten.
  */
-export function traegtSichSelbst(warenkorb, { zahlwegId = 'karte-stripe', frachtVerrechnet = true } = {}) {
+export function traegtSichSelbst(
+  warenkorb,
+  { zahlwegId = 'karte-stripe', frachtVerrechnet = true, skontoSatz = 0 } = {},
+) {
   const z = findeZahlweg(zahlwegId);
   const warenwertNetto = warenkorb.warenwertNetto ?? 0;
   const einkaufNetto = warenkorb.einkaufNetto ?? 0;
@@ -215,8 +218,13 @@ export function traegtSichSelbst(warenkorb, { zahlwegId = 'karte-stripe', fracht
   const erloesNetto = cent(warenwertNetto + (frachtVerrechnet ? frachtNetto : 0));
   // Die Zahlungsgebühr fällt auf den Bruttobetrag an, den der Kunde zahlt.
   const gebuehrNetto = cent(erloesNetto * (1 + UST) * z.prozent + z.fixEuro);
+  // Skonto mindert den Einkauf, nicht die Fracht — sie ist bei beiden
+  // Lieferanten ausdrücklich nicht skontofähig. Voreinstellung ist null:
+  // Wer das Skonto einrechnen will, muss sagen, dass er es auch zieht.
+  const skontoNetto = skontoErsparnis(einkaufNetto, skontoSatz);
+  const einkaufNachSkontoNetto = cent(einkaufNetto - skontoNetto);
   // Die Fracht schulden wir dem Frachtführer in jedem Fall.
-  const deckungsbeitragNetto = cent(erloesNetto - einkaufNetto - frachtNetto - gebuehrNetto);
+  const deckungsbeitragNetto = cent(erloesNetto - einkaufNachSkontoNetto - frachtNetto - gebuehrNetto);
 
   const gruende = [];
   if (deckungsbeitragNetto <= 0) {
@@ -231,6 +239,8 @@ export function traegtSichSelbst(warenkorb, { zahlwegId = 'karte-stripe', fracht
     deckungsbeitragNetto,
     erloesNetto,
     einkaufNetto,
+    skontoNetto,
+    einkaufNachSkontoNetto,
     frachtNetto,
     gebuehrNetto,
     frachtVerrechnet,
@@ -254,4 +264,72 @@ export function mindestwarenkorbFreiHaus({ rohmarge, frachtNetto, zahlwegId = 'k
   if (rate <= 0) return { erreichbar: false, grund: 'Die Rohmarge deckt nicht einmal die Zahlungsgebühr' };
   const schwelle = (frachtNetto + z.fixEuro) / rate;
   return { erreichbar: true, warenkorbNetto: cent(schwelle) };
+}
+
+/* ------------------------------------------------------------------ *
+ * Skonto — Gate 21
+ * ------------------------------------------------------------------ */
+
+/**
+ * Der Skontosatz, den beide bekannten Lieferanten einräumen.
+ * Belegt aus den Poschacher-Rechnungen und dem Pramer-Angebot,
+ * siehe `docs/baustoff-shop/zweiter-lieferant-und-skonto.md`.
+ */
+export const SKONTO_SATZ = 0.03;
+export const SKONTO_FRIST_TAGE = 14;
+
+/**
+ * Was das Skonto am Einkauf spart.
+ *
+ * **Die Fracht ist nicht skontofähig.** Beide Lieferanten schreiben das
+ * ausdrücklich auf den Beleg — bei Pramer als Sternchen an den betroffenen
+ * Positionen, bei Poschacher als eigene Skontobasis, die unter dem
+ * Rechnungsbetrag liegt. Wer den Satz auf die ganze Rechnung rechnet, hat
+ * den Ertrag zu hoch angesetzt, und zwar systematisch — also in die
+ * optimistische Richtung, wie die anderen vier Fehler dieses Vorhabens auch.
+ *
+ * @param {number} einkaufNetto  Warenwert beim Lieferanten, ohne Fracht
+ * @param {number} satz          Anteil, z. B. 0.03
+ */
+export function skontoErsparnis(einkaufNetto, satz = SKONTO_SATZ) {
+  if (satz < 0 || satz >= 1) throw new Error('Skontosatz muss zwischen 0 und 1 liegen');
+  return cent(Math.max(0, einkaufNetto) * satz);
+}
+
+/**
+ * **Gate 21: Das Zahlungsziel des Kunden darf die Skontofrist nicht
+ * überschreiten.**
+ *
+ * Der Grund ist keine Feinheit, sondern die Rechnung aus
+ * `zweiter-lieferant-und-skonto.md`: Drei Prozent Skonto heben die Rohmarge
+ * von 25 auf 27,25 % und senken den nötigen Monatsumsatz um ein Siebtel —
+ * mehr, als die Zahlungsgebühr kostet. Wer dem Kunden dreißig Tage einräumt
+ * und dem Lieferanten in vierzehn zahlen will, finanziert die Differenz aus
+ * eigener Kasse. Bei diesem Umsatz ist das der Unterschied zwischen sechzig
+ * und siebzig Bestellungen im Monat.
+ *
+ * Vorkasse und Kartenzahlung erfüllen das Gate von selbst: Das Geld ist da,
+ * bevor die Lieferantenrechnung fällig wird. Nur der Rechnungskauf kann es
+ * verletzen — und genau der ist im Baustoffhandel üblich.
+ */
+export function zahlungszielTraegt({ kundenzielTage, skontofristTage = SKONTO_FRIST_TAGE, bearbeitungstage = 2 }) {
+  if (!Number.isFinite(kundenzielTage) || kundenzielTage < 0) {
+    throw new Error('Kundenzahlungsziel muss eine Zahl ab null sein');
+  }
+  // Zwischen Zahlungseingang und Überweisung an den Lieferanten liegt
+  // Bearbeitungszeit. Sie zählt zur Frist, nicht daneben.
+  const spaetesterAusgang = kundenzielTage + bearbeitungstage;
+  const traegt = spaetesterAusgang <= skontofristTage;
+
+  const gruende = [];
+  if (!traegt) {
+    gruende.push(
+      `Zahlungsziel ${kundenzielTage} Tage plus ${bearbeitungstage} Tage Bearbeitung ` +
+        `überschreitet die Skontofrist von ${skontofristTage} Tagen um ` +
+        `${spaetesterAusgang - skontofristTage} Tage — das Skonto ist dann nicht zu holen, ` +
+        'ohne die Differenz vorzufinanzieren.',
+    );
+  }
+
+  return { traegt, kundenzielTage, skontofristTage, bearbeitungstage, spaetesterAusgang, gruende };
 }
