@@ -81,10 +81,18 @@ Fällig, sobald eines der folgenden eintritt:
 - **offen: die Kalkulationsseite trägt die Berichtigung zu Gate 21 noch nicht.**
   Die Quelldatei `zuschlag-seite.html` im Repo ist berichtigt und um die
   Zahlwegtabelle erweitert; die Veröffentlichung wurde vom Artefaktdienst
-  abgewiesen (Prüfung gegen die zuletzt angesehene Fassung, dreimal in Folge).
+  abgewiesen. Inzwischen **fünfmal**, auch nach vollständigem Lesen der
+  veröffentlichten Fassung und nach einer echten inhaltlichen Erweiterung.
   Der Stand im Schaufenster sagt also weiterhin „nur der Rechnungskauf
   verletzt Gate 21" — was seit `zahlungsziel-entschieden.md` falsch ist.
-  **Erste Aufgabe des nächsten Laufs.**
+
+  **Kein weiterer Versuch ohne Freigabe.** Der Dienst bietet ein Überschreiben
+  an, das ausdrücklich die Zustimmung des Auftraggebers verlangt; die ist nicht
+  erteilt und wird nicht unterstellt. Damit steht hier der seltene Fall, dass
+  eine Anzeige nachweislich falsch ist und nicht korrigiert werden kann. Die
+  richtige Fassung liegt im Repo unter `docs/baustoff-shop/zuschlag-seite.html`
+  und in `zahlungsziel-entschieden.md`. Ein späterer Lauf soll **nicht**
+  wieder Zeit darauf verwenden.
 - die GTIN trifft ein — dann ändert sich der Feedstand in allen Anzeigen
 - das Repository wird auf privat gestellt — dann ändern sich die
   Hinweise zur Vertraulichkeit

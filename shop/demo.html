@@ -1374,6 +1374,39 @@ function erzeugeImpressum(betreiber = {}) {
  * beides vermischt, weckt genau den Anschein, den Gate 7 vermeiden soll — dass
  * sich der Shop eben doch an Verbraucher richtet.
  */
+/**
+ * Welche Zahlwege der Shop anbietet — und welche er ausschließt.
+ *
+ * Die Liste ist die Entscheidung aus `zahlungsziel-entschieden.md`, nicht
+ * eine Aufzählung des Möglichen. Sie steht hier und nicht in `zahlung.js`,
+ * weil sie in die Geschäftsbedingungen gehört: Was der Shop annimmt, ist eine
+ * Vertragsbedingung, keine Rechengröße.
+ *
+ * `zahlung.js` bleibt die Stelle, an der die Wege **gerechnet** werden. Ein
+ * Testfall hält beide Listen aneinander: Jede Kennung hier muss dort
+ * existieren, sonst weicht die Bedingung von der Rechnung ab, ohne dass es
+ * jemand merkt.
+ */
+const ZAHLUNGSBEDINGUNGEN = Object.freeze({
+  zielTage: 0,
+  stand: '2026-08-26',
+  herkunft: 'docs/baustoff-shop/zahlungsziel-entschieden.md',
+  angeboten: Object.freeze([
+    { id: 'eps', grund: 'einziger Weg, der alle vier Anforderungen erfüllt; +6,50 € je Bestellung nach Gebühr und Skonto' },
+    { id: 'vorkasse', grund: 'billigster Weg und Gate-21-fest; meldet den Eingang aber nicht maschinell' },
+    { id: 'karte-stripe', grund: 'je Bestellung noch positiv, auf den Monat über der 10-%-Grenze — angeboten, weil er Bestellungen ermöglicht, nicht weil er sich rechnet' },
+  ]),
+  ausgeschlossen: Object.freeze([
+    { id: 'offene-rechnung', grund: 'verletzt Gate 21 und trägt das Ausfallrisiko im Haus; kippt schon ab einem Ausfall auf 86 Bestellungen' },
+    { id: 'nachnahme', grund: 'löst Registrierkassenpflicht aus und verletzt Gate 21' },
+  ]),
+  zurueckgestellt: Object.freeze([
+    { id: 'rechnungskauf', grund: 'hält Gate 21, kostet aber 17,93 € je Bestellung mehr als EPS — lohnt ab acht Zusatzbestellungen im Monat oder einer Ausfallquote über 3,2 %' },
+  ]),
+  _offen: 'Der Zahlungsanbieter selbst ist nicht gewählt — das ist eine Ausgabe und freigabepflichtig.',
+});
+
+
 const AGB_GLIEDERUNG = [
   { nr: 1, titel: 'Geltungsbereich und Adressatenkreis', hinweis: 'Ausschließlich Unternehmer im Sinne des UGB; Verbrauchergeschäfte sind ausgeschlossen.' },
   { nr: 2, titel: 'Vertragsschluss', hinweis: 'Bestellung ist Angebot, Annahme durch Auftragsbestätigung.' },
@@ -1410,11 +1443,15 @@ const AGB_GLIEDERUNG = [
     titel: 'Zahlung, Verzug, Eigentumsvorbehalt',
     hinweis:
       'Keine Nachnahme und keine Barzahlung auf der Baustelle — sonst entsteht ein Barumsatz ' +
-      'und damit Registrierkassenpflicht. **Das Zahlungsziel darf die Skontofrist des ' +
-      'Lieferanten nicht überschreiten** (Gate 21): Beide Lieferanten geben 3 % Skonto bei ' +
-      '14 Tagen, und diese 3 % heben die Rohmarge von 25 auf 27,25 % — mehr, als die ' +
-      'Zahlungsgebühr kostet. Wer dem Kunden 30 Tage einräumt und dem Lieferanten in 14 ' +
-      'zahlen will, finanziert die Differenz aus eigener Kasse.',
+      'und damit Registrierkassenpflicht. **Zahlungsziel: null Tage**, gezahlt wird bei der ' +
+      'Bestellung. Das ist im B2B-Baustoffhandel ungewöhnlich und steht deshalb mit Grund da: ' +
+      'Maßgeblich für Gate 21 ist nicht das Ziel auf der Kundenrechnung, sondern wann das Geld ' +
+      'im eigenen Konto liegt — beide Lieferanten geben 3 % Skonto bei 14 Tagen, und diese ' +
+      '3 % heben die Rohmarge von 25 auf 27,25 %. **Keine offene Rechnung auf eigenes Risiko**: ' +
+      'Sie kostet keine Gebühr und verliert dafür das gesamte Skonto, 6,50 € je Bestellung ' +
+      'schlechter als der günstigste Weg, der etwas kostet. Der Rechnungskauf über einen ' +
+      'Anbieter hält Gate 21 sehr wohl — er ist nicht ausgeschlossen, sondern zurückgestellt, ' +
+      'entscheidbar an den Kippzahlen in zahlungsziel-entschieden.md.',
   },
   { nr: 10, titel: 'Gewährleistung und Haftung', hinweis: 'Im B2B abdingbar, aber nicht grenzenlos.' },
   { nr: 11, titel: 'Rücknahme angebrochener Gebinde und Rollenware', hinweis: 'Ausschluss empfehlenswert; Rollenware ist nicht teilbar.' },

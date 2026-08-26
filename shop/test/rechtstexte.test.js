@@ -5,6 +5,7 @@ import {
   pruefeBetreiberdaten,
   erzeugeImpressum,
   AGB_GLIEDERUNG,
+  ZAHLUNGSBEDINGUNGEN,
   DATENSCHUTZ_GLIEDERUNG,
   B2B_ABGRENZUNG,
   LIEFERHINWEISE,
@@ -212,4 +213,66 @@ test('Jeder Querverweis zwischen AGB-Punkten zeigt auf einen vorhandenen Punkt',
   for (const v of verweise) {
     assert.ok(nummern.has(v.auf), `Punkt ${v.von} verweist auf ${v.auf} — gibt es nicht`);
   }
+});
+
+/* ------------------------------------------------------------------ *
+ * Zahlungsbedingungen — die Entscheidung, nicht die Aufzählung
+ * ------------------------------------------------------------------ */
+
+test('Jede genannte Zahlweg-Kennung gibt es auch im Rechenkern', async () => {
+  // Die Bedingung steht in den Rechtstexten, gerechnet wird sie in
+  // zahlung.js. Weichen die Listen auseinander, verspricht die AGB einen
+  // Weg, den niemand gerechnet hat — oder umgekehrt.
+  const { ZAHLWEGE } = await import('../src/zahlung.js');
+  const bekannt = new Set(ZAHLWEGE.map((z) => z.id));
+  const alle = [
+    ...ZAHLUNGSBEDINGUNGEN.angeboten,
+    ...ZAHLUNGSBEDINGUNGEN.ausgeschlossen,
+    ...ZAHLUNGSBEDINGUNGEN.zurueckgestellt,
+  ];
+  for (const z of alle) assert.ok(bekannt.has(z.id), `unbekannter Zahlweg: ${z.id}`);
+  assert.ok(alle.length >= 6, 'die Entscheidung verschweigt keinen der gerechneten Wege');
+});
+
+test('Kein Zahlweg steht in zwei Töpfen', () => {
+  const alle = [
+    ...ZAHLUNGSBEDINGUNGEN.angeboten,
+    ...ZAHLUNGSBEDINGUNGEN.ausgeschlossen,
+    ...ZAHLUNGSBEDINGUNGEN.zurueckgestellt,
+  ].map((z) => z.id);
+  assert.equal(new Set(alle).size, alle.length);
+});
+
+test('Jeder angebotene Weg hält Gate 21', async () => {
+  const { findeZahlweg } = await import('../src/zahlung.js');
+  const { zahlungszielTraegt } = await import('../src/skonto.js');
+  for (const z of ZAHLUNGSBEDINGUNGEN.angeboten) {
+    const w = findeZahlweg(z.id);
+    assert.ok(
+      zahlungszielTraegt({ kundenzielTage: w.tageBisEingang }).traegt,
+      `${z.id} wird angeboten, verletzt aber Gate 21`,
+    );
+  }
+});
+
+test('Jede Einordnung trägt ihren Grund', () => {
+  for (const topf of ['angeboten', 'ausgeschlossen', 'zurueckgestellt']) {
+    for (const z of ZAHLUNGSBEDINGUNGEN[topf]) {
+      assert.ok(z.grund && z.grund.length > 20, `${z.id} in ${topf} ohne Begründung`);
+    }
+  }
+});
+
+test('Das Zahlungsziel ist null und steht auch in Punkt 9', () => {
+  assert.equal(ZAHLUNGSBEDINGUNGEN.zielTage, 0);
+  const punkt = AGB_GLIEDERUNG.find((a) => /Zahlung, Verzug/.test(a.titel));
+  assert.match(punkt.hinweis, /null Tage/);
+  assert.match(punkt.hinweis, /Keine offene Rechnung/);
+});
+
+test('Der fehlende Zahlungsanbieter bleibt ausgewiesen', () => {
+  // Eine Bedingung ohne Abwicklung ist eine Lücke, keine Zusage. Sie
+  // verschwindet erst, wenn ein Anbieter gewählt ist — und das ist eine
+  // Ausgabe, also freigabepflichtig.
+  assert.match(ZAHLUNGSBEDINGUNGEN._offen, /nicht gewählt/);
 });

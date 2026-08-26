@@ -141,10 +141,19 @@ und hat das Problem, das er lösen wollte, damit vergrößert.
 | vierte Anforderung | `skontoErreichbar`, misst Gate 21 am Geldeingang je Zahlweg |
 | `zahlwegGegenSkonto` | Gebühr gegen Skonto je Bestellung, mit beiden Bemessungsgrundlagen im Ergebnis |
 
-588 Testfälle grün, davon 10 neue. Vier Mutationen gegengeprüft: Skonto
-auch ohne gehaltene Frist (2 Fälle fallen), Gebühr auf den Nettowarenwert
-statt brutto (1), Gate 21 immer erfüllt (1), offene Rechnung wieder
-entfernt (4).
+**594 Testfälle grün, davon 16 neue.** Acht Mutationen gegengeprüft, jede
+einzeln eingespielt und wieder zurückgenommen:
+
+| Mutation | fallende Testfälle |
+|---|---|
+| Skonto auch ohne gehaltene Frist | 2 |
+| Gebühr auf den Nettowarenwert statt brutto | 1 |
+| Gate 21 immer erfüllt | 1 |
+| offene Rechnung wieder entfernt | 4 |
+| unbekannte Zahlweg-Kennung in den Bedingungen | 1 |
+| ein Zahlweg in zwei Töpfen | 1 |
+| Zahlungsziel auf 30 Tage | 1 |
+| Gate-21-Verletzer unter den angebotenen Wegen | 2 |
 
 Ein fünfter Fund nebenbei: Der Bündelbau (`build-demo.mjs`) kannte die
 Zeile `export { a, b };` nicht und ließ sie im zusammengefügten Skript
@@ -157,9 +166,17 @@ gewesen.
 - **Der Zahlungsanbieter selbst** — eine Ausgabe, also freigabepflichtig.
   Diese Entscheidung sagt, *welche Wege* er können muss: EPS, Vorkasse,
   Karte. Kein Rechnungskauf zum Start.
-- **Punkt 9 der Geschäftsbedingungen** trägt das Zahlungsziel noch nicht.
-  Er gehört auf null Tage gesetzt, sobald die Rechtstexte ihre offenen
-  Felder haben (`rechtstexte-stand.md`).
+- ~~**Punkt 9 der Geschäftsbedingungen** trägt das Zahlungsziel noch nicht.~~
+  **Erledigt am selben Tag.** Punkt 9 nennt jetzt das Zahlungsziel von null
+  Tagen, den Ausschluss der offenen Rechnung und die Unterscheidung zum
+  Anbieterweg. Dazu steht die Entscheidung als Liste im Rechenkern
+  (`ZAHLUNGSBEDINGUNGEN` in `src/rechtstexte.js`) und erscheint auf der
+  AGB-Seite als Tabelle mit drei Ständen — angeboten, zurückgestellt,
+  ausgeschlossen — samt Begründung je Zeile. Vier Testfälle halten sie an
+  `zahlung.js`: jede Kennung muss dort existieren, keiner darf in zwei Töpfen
+  stehen, jeder angebotene Weg muss Gate 21 halten, jede Einordnung braucht
+  einen Grund. Die Lücke „Zahlungsanbieter nicht gewählt" steht sichtbar
+  darunter — eine Bedingung ohne Abwicklung ist keine Zusage.
 - **Die Kippzahlen sind zu messen, nicht zu glauben.** Acht
   Zusatzbestellungen und 3,2 % Ausfallquote sind Grenzwerte, keine
   Prognosen.

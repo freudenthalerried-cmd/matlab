@@ -29,7 +29,7 @@ import { dirname, join, resolve } from 'node:path';
 import { ladeBaustoffkatalog, katalogbefund, ZIELMARGE } from '../src/baustoffkatalog.js';
 import { lesKopf, alsHtml, alsText, alsListe, esc } from '../src/markdown.js';
 import {
-  erzeugeImpressum, pruefeBetreiberdaten, AGB_GLIEDERUNG,
+  erzeugeImpressum, pruefeBetreiberdaten, AGB_GLIEDERUNG, ZAHLUNGSBEDINGUNGEN,
   DATENSCHUTZ_GLIEDERUNG, B2B_ABGRENZUNG, LIEFERHINWEISE,
 } from '../src/rechtstexte.js';
 
@@ -567,6 +567,22 @@ sonst mit Rückfragen erhebt. Der verbindliche Wortlaut fehlt und wird nicht erf
 <div class="scroll"><table><thead><tr><th>Nr.</th><th>Punkt</th><th>Warum</th></tr></thead><tbody>
 ${AGB_GLIEDERUNG.map((p) => `<tr><td class="n">${p.nr}</td><td><strong>${esc(p.titel)}</strong></td><td>${p.hinweis ? esc(p.hinweis) : '<span class="marker sperrig">noch zu begründen</span>'}</td></tr>`).join('')}
 </tbody></table></div>
+<h2>Punkt 9 im Wortlaut der Entscheidung</h2>
+<p>Die Zahlungsbedingungen sind als einzige schon entschieden — sie hängen nicht am
+Rechtstexteanbieter, sondern an einer Rechnung. <strong>Zahlungsziel: null Tage.</strong>
+Gezahlt wird bei der Bestellung. Das ist im B2B-Baustoffhandel ungewöhnlich, und der Grund
+steht dabei: Drei Prozent Lieferantenskonto bei vierzehn Tagen wiegen schwerer als jede
+Zahlungsgebühr.</p>
+<div class="scroll"><table><thead><tr><th>Zahlweg</th><th>Stand</th><th>Warum</th></tr></thead><tbody>
+${[
+  ...ZAHLUNGSBEDINGUNGEN.angeboten.map((z) => ({ ...z, stand: 'angeboten' })),
+  ...ZAHLUNGSBEDINGUNGEN.zurueckgestellt.map((z) => ({ ...z, stand: 'zurückgestellt' })),
+  ...ZAHLUNGSBEDINGUNGEN.ausgeschlossen.map((z) => ({ ...z, stand: 'ausgeschlossen' })),
+].map((z) => `<tr><td><strong>${esc(z.id)}</strong></td><td>${esc(z.stand)}</td><td>${esc(z.grund)}</td></tr>`).join('')}
+</tbody></table></div>
+<p><span class="marker sperrig">offen</span> ${esc(ZAHLUNGSBEDINGUNGEN._offen)} Solange steht
+hier eine Bedingung ohne Abwicklung — die Bestellstrecke endet weiterhin vor der Zahlung.</p>
+
 <h2>Der Punkt, der am meisten kostet</h2>
 <p>Punkt 8 — die Rügefrist nach § 377 UGB. Sie läuft ab der Ablieferung <strong>auf der
 Baustelle</strong>, nicht ab dem Tag, an dem der Besteller die Palette zum ersten Mal sieht.
