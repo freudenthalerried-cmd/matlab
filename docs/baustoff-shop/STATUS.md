@@ -80,6 +80,17 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > Vorsorgegebiet; die Folgerung für die regionale Ansprache dreht sich um.
 > Aufgedeckt durch eine Oberflächenprobe, die etwas ganz anderes prüfen
 > sollte — [`zwei-ried.md`](./zwei-ried.md).
+>
+> **Das Repository ist öffentlich, und das wiegt schwerer als gedacht**
+> (26.08.): `.gitignore` hält die Einkaufskonditionen draußen — aber aus
+> den veröffentlichten Verkaufspreisen und der überall dokumentierten
+> Zielmarge von 25 % sind **44 von 46 Einkaufspreisen auf den Cent
+> rekonstruierbar**. Die Sperre lautete nie „keine Einkaufspreise im
+> Verzeichnis", sondern „keine Verkaufspreise, solange die Marge dort
+> steht". `npm run pruefe-geheimnis` misst es;
+> [`rekonstruierbare-einkaufspreise.md`](./rekonstruierbare-einkaufspreise.md)
+> wiegt die drei Möglichkeiten ab. **Empfehlung: Repository privat
+> stellen — das ist eine Einstellung am Konto des Auftraggebers.**
 
 ## Wo das Projekt steht
 
