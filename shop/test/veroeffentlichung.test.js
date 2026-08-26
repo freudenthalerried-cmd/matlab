@@ -40,8 +40,9 @@ test('der Probelauf schreibt nichts und benennt die Lücken', () => {
   // Geprüft wird deshalb die Eigenschaft, nicht der Zählerstand.
   const lauf = spawnSync(process.execPath, [werkzeug], { encoding: 'utf8', env: { ...process.env, SHOP_NAME: '', SHOP_BEZIRKE: '' } });
   assert.equal(lauf.status, 0);
-  assert.match(lauf.stdout, /Einreichbar: nein/, 'ohne Liefergebiet und GTIN ist nichts einreichbar');
-  assert.match(lauf.stdout, /Liefergebiet/);
+  assert.match(lauf.stdout, /Einreichbar: nein/, 'ohne GTIN ist nichts einreichbar');
+  assert.match(lauf.stdout, /Liefergebiet: Perg/, 'das Gebiet kommt aus der Entscheidung, nicht aus der Umgebung');
+  assert.match(lauf.stdout, /Vorbehalt/, 'und trägt den Vorbehalt mit');
   assert.match(lauf.stdout, /Probelauf/);
   assert.equal(existsSync(zielordner), false, 'es entsteht kein Ausgabeordner');
 });
@@ -54,13 +55,18 @@ test('der Firmenname kommt aus den Betreiberdaten, nicht mehr aus der Umgebung',
   assert.ok(!lauf.stdout.includes('Firmenname (SHOP_NAME)'), 'die Firmenlücke ist geschlossen');
 });
 
-test('mit --schreiben bricht es ab, solange Pflichtangaben fehlen', () => {
+test('mit --schreiben bricht es ab, solange der Feed nicht einreichbar ist', () => {
+  // Bis zum 26. August hing der Abbruch allein an den Firmenangaben. Seit die
+  // aus betreiber.json kommen und das Liefergebiet entschieden ist, wäre die
+  // Sperre leergelaufen — und hätte einen Feed geschrieben, den die Plattform
+  // als Ganzes ablehnt.
   const lauf = spawnSync(process.execPath, [werkzeug, '--schreiben'], {
     encoding: 'utf8',
     env: { ...process.env, SHOP_NAME: '', SHOP_BEZIRKE: '' },
   });
   assert.equal(lauf.status, 1, 'Abbruch statt halber Veröffentlichung');
   assert.match(lauf.stderr, /Es wird nichts veröffentlicht/);
+  assert.match(lauf.stderr, /nicht einreichbar/, 'der Grund ist der Feed, nicht mehr die Firmenangabe');
   assert.equal(existsSync(zielordner), false, 'auch hier entsteht nichts');
 });
 
@@ -86,4 +92,18 @@ test('Gate 22 hält die Beipackartikel aus dem Feed', () => {
     env: { ...process.env, SHOP_NAME: 'Muster e.U.', SHOP_BEZIRKE: 'Perg' },
   });
   assert.match(lauf.stdout, /Gate 22/, 'der Grund wird genannt, nicht nur die Zahl');
+});
+
+test('Eine abweichende SHOP_BEZIRKE-Einstellung wird gemeldet, nicht befolgt', () => {
+  // Das Liefergebiet stand an drei Stellen und an keiner verbindlich: als
+  // Zeichenkette in einer Anzeigenzeile, als Umgebungsvariable beim Feedbau,
+  // und im Rechenkern gar nicht. Jetzt gilt die Entscheidung — eine
+  // abweichende Einstellung ist ein Befund, keine Konfiguration.
+  const lauf = spawnSync(process.execPath, [werkzeug], {
+    encoding: 'utf8',
+    env: { ...process.env, SHOP_BEZIRKE: 'Ried im Innkreis, Schärding' },
+  });
+  assert.match(lauf.stdout, /Widerspruch zwischen Einstellung und Entscheidung/);
+  assert.match(lauf.stdout, /Liefergebiet: Perg/, 'ausgerufen wird die Entscheidung');
+  assert.ok(!/Liefergebiet: Ried im Innkreis/.test(lauf.stdout));
 });

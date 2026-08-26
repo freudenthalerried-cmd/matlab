@@ -191,7 +191,19 @@ export const AGB_GLIEDERUNG = [
   },
   { nr: 10, titel: 'Gewährleistung und Haftung', hinweis: 'Im B2B abdingbar, aber nicht grenzenlos.' },
   { nr: 11, titel: 'Rücknahme angebrochener Gebinde und Rollenware', hinweis: 'Ausschluss empfehlenswert; Rollenware ist nicht teilbar.' },
-  { nr: 12, titel: 'Lieferorte nur in Österreich', hinweis: 'Lieferung außerhalb Österreichs ist ausgeschlossen — sie wäre nach Art 6, 7 UStG steuerfrei bzw. eine Ausfuhr und damit anders zu verrechnen.' },
+  {
+    nr: 12,
+    titel: 'Liefergebiet',
+    hinweis:
+      'Geliefert wird in die Bezirke Perg, Urfahr-Umgebung, Freistadt, Linz-Land und Linz — ' +
+      'nicht in ganz Österreich. Die Weisung lautet seit dem 22. August „regional", umgesetzt ' +
+      'war sie bis zum 26. nur in der Kampagne, also in der Werbung und nicht in der Annahme. ' +
+      'Der Bezirk der Baustelle wird gefragt und nicht aus der Postleitzahl erraten: Eine ' +
+      'Postleitzahl beweist keinen Bezirk, so wie sie kein Land beweist. Abholung am ' +
+      'Betriebssitz ist davon unberührt. Lieferung außerhalb Österreichs bleibt zusätzlich ' +
+      'ausgeschlossen — sie wäre nach Art 6, 7 UStG steuerfrei bzw. eine Ausfuhr und damit ' +
+      'anders zu verrechnen.',
+  },
   { nr: 13, titel: 'Gerichtsstand und anwendbares Recht', hinweis: null },
 ];
 

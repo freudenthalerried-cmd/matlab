@@ -133,7 +133,11 @@ test('Die Gliederung regelt die abweichende Lieferanschrift', () => {
 });
 
 test('Die Gliederung nennt die Beschränkung auf Lieferorte in Österreich', () => {
-  const punkt = AGB_GLIEDERUNG.find((a) => /Lieferorte nur in Österreich/.test(a.titel));
+  // Der Punkt hieß bis zum 26. August „Lieferorte nur in Österreich" und war
+  // damit eine Erlaubnis für ganz Österreich — während die Weisung seit dem
+  // 22. August „regional" lautet. Er heißt jetzt „Liefergebiet" und nennt die
+  // Bezirke; die Ausfuhrbegründung bleibt zusätzlich stehen.
+  const punkt = AGB_GLIEDERUNG.find((a) => /Liefergebiet/.test(a.titel));
   assert.ok(punkt, 'Der Punkt fehlt');
   assert.match(punkt.hinweis, /Art 6, 7 UStG|Ausfuhr/);
 });
@@ -183,7 +187,7 @@ test('Die Umsatzsteuerklausel widerspricht der Lieferbeschränkung nicht mehr', 
   // Sie versprach Reverse Charge bei innergemeinschaftlicher Lieferung —
   // während ein anderer Punkt Lieferungen außerhalb Österreichs ausschließt.
   const steuer = AGB_GLIEDERUNG.find((a) => /Preise und Umsatzsteuer/.test(a.titel));
-  const orte = AGB_GLIEDERUNG.find((a) => /Lieferorte nur in Österreich/.test(a.titel));
+  const orte = AGB_GLIEDERUNG.find((a) => /Liefergebiet/.test(a.titel));
   assert.ok(steuer && orte);
 
   assert.match(steuer.hinweis, /Leistungsort ist Österreich/);

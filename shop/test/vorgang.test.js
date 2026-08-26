@@ -271,8 +271,9 @@ test('Mit abweichender Baustelle liest der Vorgang die Annahme aus den Daten', (
     baustelle: {
       name: 'Neubau Familie Berger',
       strasse: 'Feldgasse 27',
-      plz: '4910',
-      ort: 'Ried im Innkreis',
+      plz: '4312',
+      ort: 'Ried in der Riedmark',
+      bezirk: 'Perg',
       land: 'AT',
       telefon: '+43 664 9998877',
     },
@@ -293,15 +294,16 @@ test('Ware zur Baustelle, Rechnung ans Büro — und die Klammer bleibt geschlos
     baustelle: {
       name: 'Neubau Familie Berger',
       strasse: 'Feldgasse 27',
-      plz: '4910',
-      ort: 'Ried im Innkreis',
+      plz: '4312',
+      ort: 'Ried in der Riedmark',
+      bezirk: 'Perg',
       land: 'AT',
       telefon: '+43 664 9998877',
     },
   };
   const v = machVorgang(mitBaustelle);
 
-  for (const b of v.bestellungen) assert.match(b.text, /4910 Ried im Innkreis/);
+  for (const b of v.bestellungen) assert.match(b.text, /4312 Ried in der Riedmark/);
   assert.equal(leseBelegkopf(v.rechnung.text).empfaenger[0], kundeA.firma);
   assert.match(v.rechnung.text, /6020 Innsbruck/);
 
@@ -317,8 +319,9 @@ test('Auch mit Baustelle fällt eine umgelenkte Bestellung auf', () => {
     baustelle: {
       name: 'Neubau Familie Berger',
       strasse: 'Feldgasse 27',
-      plz: '4910',
-      ort: 'Ried im Innkreis',
+      plz: '4312',
+      ort: 'Ried in der Riedmark',
+      bezirk: 'Perg',
       land: 'AT',
       telefon: '+43 664 9998877',
     },
@@ -328,7 +331,7 @@ test('Auch mit Baustelle fällt eine umgelenkte Bestellung auf', () => {
     ...v,
     bestellungen: v.bestellungen.map((b) => ({
       ...b,
-      text: b.text.replace('4910 Ried im Innkreis', '4020 Linz'),
+      text: b.text.replace('4312 Ried in der Riedmark', '4020 Linz'),
     })),
   };
 
@@ -452,8 +455,9 @@ const mitBaustelle = {
   baustelle: {
     name: 'Polier Huber',
     strasse: 'Feldgasse 27',
-    plz: '4910',
-    ort: 'Ried im Innkreis',
+    plz: '4312',
+    ort: 'Ried in der Riedmark',
+    bezirk: 'Perg',
     land: 'AT',
     telefon: NUMMER_DRITTER,
   },

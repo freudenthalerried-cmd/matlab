@@ -62,6 +62,15 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > eigenes Risiko** — beide standen bis dahin in einer Zeile. Rechnung,
 > Kippzahlen und Begründung in
 > [`zahlungsziel-entschieden.md`](./zahlungsziel-entschieden.md).
+>
+> **Gate 23 — das Liefergebiet** (26.08., abends): Die Weisung „regional
+> statt österreichweit" war an genau einer Stelle umgesetzt — als Text in
+> einer Anzeigenzeile der Kampagne. Der Rechenkern nahm jede österreichische
+> Adresse an, AGB Punkt 12 erlaubte ganz Österreich, und der Feed las sein
+> Gebiet aus einer Umgebungsvariablen. Jetzt eine Quelle: Perg,
+> Urfahr-Umgebung, Freistadt, Linz-Land, Linz — der Bezirk wird gefragt,
+> nicht aus der Postleitzahl erraten.
+> [`liefergebiet-entschieden.md`](./liefergebiet-entschieden.md).
 
 ## Wo das Projekt steht
 

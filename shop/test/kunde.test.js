@@ -128,11 +128,17 @@ test('Ohne Unternehmerbestätigung bleibt der Auftrag gesperrt', () => {
 // mitgereicht — ein Testfall, der es vergisst, prüft den falschen Fehler.
 const mitZusicherung = (daten) => ({ ...daten, ansprechpartnerInformiert: true });
 
+// Die Baustelle liegt seit dem 26. August im Liefergebiet — vorher stand hier
+// „4910 Ried im Innkreis", also der andere Ried, gute zwei Stunden entfernt.
+// Der Ort war als Stolperstein gewählt (zwei Orte gleichen Namens) und wurde
+// zum zweiten: Er liegt außerhalb des Gebiets, in das geliefert wird. Als
+// Regelfall taugt er damit nicht mehr; als Gegenprobe steht er weiter unten.
 const baustelle = {
   name: 'Neubau Familie Berger',
   strasse: 'Feldgasse 27',
-  plz: '4910',
-  ort: 'Ried im Innkreis',
+  plz: '4312',
+  ort: 'Ried in der Riedmark',
+  bezirk: 'Perg',
   land: 'AT',
   telefon: '+43 664 9998877',
   hinweis: 'Zufahrt über Baustraße, Kran bis 16 Uhr besetzt',
@@ -141,7 +147,8 @@ const baustelle = {
 test('Eine vollständige Baustelle ist gültig und steht getrennt in den Daten', () => {
   const p = pruefeBestelldaten(mitZusicherung({ ...vollstaendig, baustelle }));
   assert.equal(p.gueltig, true, p.fehler.join(' | '));
-  assert.equal(p.normalisiert.baustelle.ort, 'Ried im Innkreis');
+  assert.equal(p.normalisiert.baustelle.ort, 'Ried in der Riedmark');
+  assert.equal(p.normalisiert.baustelle.bezirk, 'Perg', 'der Bezirk wird mitgeführt');
   assert.equal(p.normalisiert.ort, 'Wels', 'die Rechnungsanschrift bleibt unberührt');
 });
 
@@ -157,7 +164,7 @@ test('Ohne Baustelle bleibt alles wie bisher', () => {
 test('Mit Baustelle geht die Ware dorthin und die Rechnung ans Büro', () => {
   const auftrag = baueAuftrag('A-1', mitZusicherung({ ...vollstaendig, baustelle }));
   assert.equal(auftrag.lieferungAnRechnungsadresse, false);
-  assert.equal(auftrag.lieferadresse.ort, 'Ried im Innkreis');
+  assert.equal(auftrag.lieferadresse.ort, 'Ried in der Riedmark');
   assert.equal(auftrag.lieferadresse.name, 'Neubau Familie Berger');
   assert.equal(auftrag.lieferadresse.telefon, '+43 664 9998877');
 });
@@ -180,7 +187,7 @@ test('Der Zufahrtshinweis steht im Bestelltext unter der Adresse', () => {
   const b = erzeugeBestellungen(wk, baueAuftrag('A-1', mitZusicherung({ ...vollstaendig, baustelle })))[0];
 
   const zeilen = b.text.split('\n');
-  const adresse = zeilen.findIndex((z) => /Ried im Innkreis/.test(z));
+  const adresse = zeilen.findIndex((z) => /Ried in der Riedmark/.test(z));
   const hinweis = zeilen.findIndex((z) => /Hinweis zur Zufahrt/.test(z));
   assert.ok(adresse >= 0 && hinweis > adresse, 'Der Hinweis gehört unter den Adressblock');
   assert.match(b.text, /Kran bis 16 Uhr besetzt/);
@@ -302,4 +309,52 @@ test('Das Feld der Zusicherung ist dasselbe, das die Prüfung liest', () => {
 
   const falschesFeld = { ...vollstaendig, baustelle, irgendeinAnderesFeld: true };
   assert.equal(pruefeBestelldaten(falschesFeld).gueltig, false);
+});
+
+/* ------------------------------------------------------------------ *
+ * Liefergebiet
+ *
+ * Die Weisung vom 22. August lautet „regional statt österreichweit". Bis zum
+ * 26. August stand sie an genau einer Stelle: als Zeichenkette in einer
+ * Anzeigenzeile der Kampagne. Ein Zielgebiet steuert, wem die Anzeige gezeigt
+ * wird — es hält keine Bestellung auf.
+ * ------------------------------------------------------------------ */
+
+test('Der andere Ried liegt außerhalb und wird abgelehnt', () => {
+  // 4910 Ried im Innkreis war bis heute die Standardbaustelle dieser Tests.
+  const p = pruefeBestelldaten(mitZusicherung({
+    ...vollstaendig,
+    baustelle: { ...baustelle, plz: '4910', ort: 'Ried im Innkreis', bezirk: 'Ried im Innkreis' },
+  }));
+  assert.equal(p.gueltig, false);
+  assert.ok(p.fehler.some((f) => /außerhalb des Liefergebiets/.test(f)), p.fehler.join(' | '));
+});
+
+test('Ein fehlender Bezirk ist kein Ja', () => {
+  // Die Postleitzahl beweist keinen Bezirk — dieselbe Regel wie beim Land.
+  // Ihn stillschweigend durchzulassen öffnete die Grenze genau dort, wo sie am
+  // leichtesten zu übersehen ist: beim unvollständigen Formular.
+  const ohneBezirk = { ...baustelle };
+  delete ohneBezirk.bezirk;
+  const p = pruefeBestelldaten(mitZusicherung({ ...vollstaendig, baustelle: ohneBezirk }));
+  assert.equal(p.gueltig, false);
+  assert.ok(p.fehler.some((f) => /Bezirk der Baustelle fehlt/.test(f)), p.fehler.join(' | '));
+});
+
+test('Die Fehlermeldung nennt, wohin geliefert wird', () => {
+  const ohneBezirk = { ...baustelle };
+  delete ohneBezirk.bezirk;
+  const p = pruefeBestelldaten(mitZusicherung({ ...vollstaendig, baustelle: ohneBezirk }));
+  const meldung = p.fehler.find((f) => /Bezirk der Baustelle fehlt/.test(f));
+  assert.match(meldung, /Perg/, 'eine Absage ohne Alternative ist eine halbe Auskunft');
+});
+
+test('Bei falschem Land steht nur eine Meldung, nicht zwei zur selben Ursache', () => {
+  const p = pruefeBestelldaten(mitZusicherung({
+    ...vollstaendig,
+    baustelle: { ...baustelle, land: 'DE', plz: '84359', ort: 'Simbach' },
+  }));
+  assert.equal(p.gueltig, false);
+  assert.ok(p.fehler.some((f) => /nur innerhalb Österreichs/.test(f)));
+  assert.ok(!p.fehler.some((f) => /Liefergebiet|Bezirk der Baustelle/.test(f)), p.fehler.join(' | '));
 });

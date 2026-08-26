@@ -32,6 +32,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
+import { bezirksliste } from '../src/liefergebiet.js';
 import { ladeBaustoffkatalog, katalogbefund, ZIELMARGE } from '../src/baustoffkatalog.js';
 import { cent } from '../src/preis.js';
 import { traegtSichSelbst } from '../src/kostenbild.js';
@@ -490,7 +491,11 @@ function main() {
     Status: 'Pausiert',
     'Tagesbudget EUR': (tagesbudget / gruppen.length).toFixed(2),
     Gebotsstrategie: 'Manueller CPC',
-    Ausrichtung: 'Bezirk Perg, Urfahr-Umgebung, Freistadt, Linz-Land, Linz',
+    // Die Ausrichtung stand hier als Zeichenkette — und war damit die einzige
+    // Stelle im ganzen Vorhaben, an der das regionale Liefergebiet festgelegt
+    // war. Beworben und beliefert muss dieselbe Fläche sein; die Quelle ist
+    // jetzt `LIEFERGEBIET`.
+    Ausrichtung: `Bezirk ${bezirksliste()}`,
     Sprache: 'Deutsch',
     Werbezeit: 'Mo–Fr 06:00–18:00',
   }));

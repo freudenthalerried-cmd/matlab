@@ -9,6 +9,7 @@
  */
 
 import { hatSteuerzeichen } from './format.js';
+import { pruefeLieferort, LIEFERGEBIET } from './liefergebiet.js';
 import { ZUSICHERUNG_DRITTER } from './rechtstexte.js';
 
 const AT_UID = /^ATU\d{8}$/;
@@ -87,6 +88,7 @@ function pruefeBaustelle(baustelle) {
   const telefon = String(baustelle.telefon ?? '').trim();
   const name = String(baustelle.name ?? '').trim();
   const hinweis = String(baustelle.hinweis ?? '').trim();
+  const bezirk = String(baustelle.bezirk ?? '').trim();
   // Hier **ohne** Voreinstellung. Die Baustelle ist der neue, freiwillige Block;
   // ein Land zu verlangen kostet nichts und schließt genau die Lücke, um die es
   // geht. Bei der Rechnungsanschrift bleibt `AT` die Voreinstellung — dort
@@ -124,7 +126,18 @@ function pruefeBaustelle(baustelle) {
     fehler.push('Baustelle: Postleitzahl muss vierstellig und österreichisch sein');
   }
 
-  return { fehler, normalisiert: { name, strasse, plz, ort, land, telefon, hinweis } };
+  // Das Liefergebiet zuletzt, aber nicht nachrangig: Der Shop liefert regional,
+  // und das stand bis zum 26. August nur in der Kampagne. Ein Zielgebiet, das
+  // nur die Anzeige steuert, hält keine Bestellung auf.
+  //
+  // Geprüft wird erst, wenn das Land stimmt — sonst stünden zwei Meldungen zur
+  // selben Ursache, und die zweite lenkt von der ersten ab.
+  if (land === LIEFERGEBIET.land) {
+    const gebiet = pruefeLieferort({ land, bezirk });
+    if (!gebiet.liefern) fehler.push(`Baustelle: ${gebiet.grund}`);
+  }
+
+  return { fehler, normalisiert: { name, strasse, plz, ort, bezirk, land, telefon, hinweis } };
 }
 
 /**

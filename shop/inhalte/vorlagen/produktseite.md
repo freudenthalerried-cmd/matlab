@@ -15,7 +15,7 @@ soll trotzdem die Antwort haben.
 
 - Preis: [[ Preis — FEHLT ]] netto je [[ Einheit ]], Stand: [[ Datum ]]
 - Verfügbarkeit: [[ lagernd / Lieferzeit — FEHLT ]]
-- Liefergebiet: [[ Bezirksliste — FEHLT ]]
+- Liefergebiet: Bezirk Perg, Urfahr-Umgebung, Freistadt, Linz-Land, Linz (entschieden 26.08.)
 - Versandkosten: [[ Betrag — FEHLT ]] netto je Lieferung
 
 ## Kennwerte

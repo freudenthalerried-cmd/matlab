@@ -17,6 +17,7 @@ import { existsSync } from 'node:fs';
 import { robotsTxt, llmsTxt, katalogFeed } from '../src/maschinenlesbar.js';
 import { ladeKatalog } from '../src/warenkorb.js';
 import { ladeBaustoffkatalog, ZIELMARGE } from '../src/baustoffkatalog.js';
+import { LIEFERGEBIET } from '../src/liefergebiet.js';
 
 const hier = dirname(fileURLToPath(import.meta.url));
 const wurzel = join(hier, '..');
@@ -70,9 +71,25 @@ const betreiber = existsSync(join(wurzel, 'data', 'betreiber.json'))
 // Umgebungsvariable hätte damit gegen die Betreiberdaten gewonnen und die
 // Lücke wieder aufgerissen. Leer heißt hier „nicht gesetzt".
 const firmenname = (process.env.SHOP_NAME?.trim() || betreiber.firma?.trim()) || null;
-const bezirke = (process.env.SHOP_BEZIRKE ?? '').split(',').map((b) => b.trim()).filter(Boolean);
+// Das Liefergebiet kam bis zum 26. August aus `SHOP_BEZIRKE` — einer
+// Umgebungsvariablen, also einer Einstellung des Rechners, auf dem der Feed
+// gebaut wird. Damit konnte der Feed ein anderes Gebiet ausrufen, als der
+// Shop annimmt: Der Rechenkern kannte gar keines, die Kampagne nannte fünf
+// Bezirke in einer Anzeigenzeile, und hier stand, was gerade gesetzt war.
+//
+// Jetzt gilt eine Quelle: `LIEFERGEBIET`. Eine gesetzte Umgebungsvariable
+// wird nicht mehr befolgt, sondern **verglichen** — weicht sie ab, ist das
+// ein Befund und keine Einstellung.
+const bezirke = LIEFERGEBIET.bezirke.map((b) => b.name);
+const gesetzt = (process.env.SHOP_BEZIRKE ?? '').split(',').map((b) => b.trim()).filter(Boolean);
+const WIDERSPRUECHE = [];
+if (gesetzt.length && gesetzt.join('|') !== bezirke.join('|')) {
+  WIDERSPRUECHE.push(
+    `SHOP_BEZIRKE nennt „${gesetzt.join(', ')}", das entschiedene Liefergebiet lautet `
+      + `„${bezirke.join(', ')}" — es gilt die Entscheidung (${LIEFERGEBIET.herkunft}).`,
+  );
+}
 if (!firmenname) LUECKEN.push('Firmenname (SHOP_NAME) — die Entität braucht überall dieselbe Schreibweise');
-if (bezirke.length === 0) LUECKEN.push('Liefergebiet (SHOP_BEZIRKE) — als Bezirksliste, nicht als Satz');
 
 const robots = robotsTxt({ suche: true, training: false });
 const llms = llmsTxt({
@@ -83,6 +100,11 @@ const llms = llmsTxt({
   seiten: [],
 });
 const feed = katalogFeed(katalog.artikel, { liefergebiet: { land: 'AT', bezirke } });
+
+if (WIDERSPRUECHE.length) {
+  console.log('\nWiderspruch zwischen Einstellung und Entscheidung:');
+  for (const w of WIDERSPRUECHE) console.log(`  · ${w}`);
+}
 
 console.log(`\nKatalog: ${katalogName}`);
 console.log(`         ${katalog.artikel.length} Artikel`);
@@ -99,6 +121,8 @@ if (feed.mitLuecken.length) {
   console.log('Ein Feed mit lückenhaften Einträgen wird abgelehnt, nicht teilweise angenommen.');
 }
 console.log(`\nEinreichbar: ${feed.einreichbar ? 'ja' : 'nein'}`);
+console.log(`Liefergebiet: ${bezirke.join(', ')} (${LIEFERGEBIET.land}) — Stand ${LIEFERGEBIET.stand}`);
+console.log(`  Vorbehalt: ${LIEFERGEBIET.vorbehalt}`);
 if (LUECKEN.length) {
   console.log('\nEs fehlen Angaben, die nicht erfunden werden:');
   for (const l of LUECKEN) console.log(`  · ${l}`);
@@ -110,6 +134,15 @@ if (!schreiben) {
 }
 if (LUECKEN.length) {
   console.error('\nAbbruch: Es wird nichts veröffentlicht, solange Pflichtangaben fehlen.');
+  process.exit(1);
+}
+// Bis zum 26. August hing der Abbruch allein an den Firmenangaben. Seit die
+// aus `betreiber.json` kommen und das Liefergebiet entschieden ist, wäre die
+// Sperre leergelaufen — und hätte einen Feed geschrieben, den die Plattform
+// als Ganzes ablehnt. Die Sperre gehört an die Eigenschaft, die zählt.
+if (!feed.einreichbar) {
+  console.error('\nAbbruch: Es wird nichts veröffentlicht, solange der Feed nicht einreichbar ist.');
+  console.error('Ein Feed mit lückenhaften Einträgen wird abgelehnt, nicht teilweise angenommen.');
   process.exit(1);
 }
 
