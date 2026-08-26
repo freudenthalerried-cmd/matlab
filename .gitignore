@@ -1,0 +1,4 @@
+# Postfach-Exporte enthalten echte E-Mails und gehören nicht ins Repository
+postfach-*.json
+posteingang-*.json
+*.mailexport.json

@@ -1145,3 +1145,11 @@ html, body {
   .compose__main { flex-direction: column; }
   .compose__assistant { width: auto; border-left: none; border-top: 1px solid var(--border); max-height: 40%; }
 }
+
+/* Anhänge, die nur dem Namen nach übernommen wurden */
+.attachment--placeholder {
+  border-style: dashed;
+  color: var(--muted);
+  cursor: default;
+}
+.attachment--placeholder:hover { border-color: var(--border); }

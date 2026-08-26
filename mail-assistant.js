@@ -31,7 +31,17 @@
      --------------------------------------------------------- */
 
   function emptyLearning() {
-    return { contacts: {}, phrases: {}, stats: { sent: 0, learnedFrom: 0 }, style: {} };
+    return {
+      contacts: {},
+      phrases: {},
+      stats: { sent: 0, learnedFrom: 0 },
+      // Wie der Absender üblicherweise anredet und grüßt – getrennt nach
+      // Kolleginnen und Kollegen im Haus und externen Empfängern.
+      style: {
+        greetings: { internal: {}, external: {} },
+        closings: { internal: {}, external: {} }
+      }
+    };
   }
 
   function store() {
@@ -42,6 +52,9 @@
     if (!a.learning.contacts) a.learning.contacts = {};
     if (!a.learning.phrases) a.learning.phrases = {};
     if (!a.learning.stats) a.learning.stats = { sent: 0, learnedFrom: 0 };
+    if (!a.learning.style || !a.learning.style.greetings) {
+      a.learning.style = emptyLearning().style;
+    }
     if (!a.drafts) a.drafts = {};
     if (!a.chats) a.chats = {};
     return a;
@@ -78,7 +91,10 @@
      Textanalyse
      --------------------------------------------------------- */
 
-  const GREETING_RX = /^\s*((?:sehr geehrte[rs]?[^,\n]*|guten (?:tag|morgen|abend)[^,\n]*|hallo[^,\n]*|liebe[rs]?[^,\n]*|servus[^,\n]*|grüß[^,\n]*|hi[^,\n]*)),/i;
+  // Das Komma nach der Anrede fehlt in der Praxis oft – es darf nicht
+  // Bedingung sein. Stattdessen begrenzt die Zeilenlänge den Treffer.
+  const GREETING_RX = /^\s*(sehr geehrte|guten (?:tag|morgen|abend)|hallo|liebe[rs]?\b|servus|grüß|hi)\b/i;
+  const GREETING_MAX = 70;
   const CLOSING_RX = /^\s*(mit freundlichen grüßen|freundliche grüße|beste grüße|liebe grüße|schöne grüße|mit besten grüßen|lg|mfg|viele grüße)\s*[,!]?\s*$/i;
 
   /**
@@ -105,24 +121,31 @@
 
   function extractGreeting(lines) {
     if (!lines.length) return '';
-    const match = lines[0].match(GREETING_RX);
-    return match ? lines[0].trim() : '';
+    const first = lines[0].trim();
+    return (first.length <= GREETING_MAX && GREETING_RX.test(first)) ? first : '';
+  }
+
+  /**
+   * Die Grußformel steht vor der Signatur, nicht am Textende – es muss
+   * daher der ganze Text von hinten durchsucht werden.
+   */
+  function closingIndex(lines) {
+    for (let i = lines.length - 1; i >= 0; i--) {
+      if (CLOSING_RX.test(lines[i])) return i;
+    }
+    return -1;
   }
 
   function extractClosing(lines) {
-    for (let i = lines.length - 1; i >= 0 && i >= lines.length - 4; i--) {
-      if (CLOSING_RX.test(lines[i])) return lines[i].replace(/[,!]\s*$/, '').trim();
-    }
-    return '';
+    const index = closingIndex(lines);
+    return index >= 0 ? lines[index].replace(/[,!]\s*$/, '').trim() : '';
   }
 
   /** Die inhaltlichen Sätze zwischen Anrede und Grußformel. */
   function extractCore(lines) {
     const start = extractGreeting(lines) ? 1 : 0;
-    let end = lines.length;
-    for (let i = lines.length - 1; i >= start; i--) {
-      if (CLOSING_RX.test(lines[i])) { end = i; break; }
-    }
+    const closing = closingIndex(lines);
+    const end = closing > start ? closing : lines.length;
     return lines.slice(start, end)
       .filter((line) => line.length > 15 && !/^[-–•]/.test(line))
       .slice(0, 4);
@@ -142,6 +165,49 @@
 
   function learnableSentence(core) {
     return core.find((line) => line.length > 25 && !BOILERPLATE_RX.test(line)) || '';
+  }
+
+  /**
+   * Aus „Hallo Armin,“ wird „Hallo {name},“ – nur so lässt sich eine
+   * gelernte Anrede auf andere Empfänger übertragen.
+   */
+  function templatize(text, recipient) {
+    const name = env.displayName(recipient) || '';
+    if (!text || !name || name.includes('@')) return text;
+
+    let result = text;
+    name.split(/\s+/).filter((part) => part.length > 2).forEach((part) => {
+      result = result.replace(new RegExp('\\b' + escapeRegExp(part) + '\\b', 'gi'), '{name}');
+    });
+    return result.replace(/\{name\}(\s+\{name\})+/g, '{name}');
+  }
+
+  function applyTemplate(template, recipient) {
+    if (!template) return '';
+    if (!template.includes('{name}')) return template;
+    const first = firstName(recipient);
+    if (!first) return '';        // ohne Namen ist die Vorlage nicht verwendbar
+    return template.replace(/\{name\}/g, first);
+  }
+
+  function escapeRegExp(value) {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function bump(bucket, key) {
+    if (!key) return;
+    bucket[key] = (bucket[key] || 0) + 1;
+  }
+
+  /** Die häufigste Vorlage einer Gruppe samt Zählerstand. */
+  function mostUsed(bucket) {
+    let best = null;
+    let total = 0;
+    Object.keys(bucket || {}).forEach((key) => {
+      total += bucket[key];
+      if (!best || bucket[key] > bucket[best]) best = key;
+    });
+    return best ? { value: best, count: bucket[best], total: total } : null;
   }
 
   function isFormalGreeting(greeting) {
@@ -269,14 +335,30 @@
         source: 'gelernt aus ' + learned.count + ' gesendeten E-Mail(en) an ' + env.displayName(addr)
       };
     }
+    // Die übliche eigene Anrede für diese Gruppe schlägt jede Annahme.
+    const group = internal ? 'internal' : 'external';
+    const usual = mostUsed(store().learning.style.greetings[group]);
+    if (usual) {
+      const text = applyTemplate(usual.value, addr);
+      if (text) {
+        return {
+          text: text,
+          confidence: CONFIDENCE.likely,
+          source: 'Ihre übliche Anrede an ' + (internal ? 'Kolleginnen und Kollegen' : 'externe Empfänger')
+            + ' (' + usual.count + ' von ' + usual.total + ' E-Mails)'
+        };
+      }
+    }
+
     const name = firstName(addr);
     if (internal && name) {
       return { text: 'Hallo ' + name + ',', confidence: CONFIDENCE.likely, source: 'interne Adresse – persönliche Anrede' };
     }
-    if (name) {
-      return { text: 'Guten Tag ' + name + ',', confidence: CONFIDENCE.likely, source: 'Name bekannt, geschlechtsneutrale Anrede' };
-    }
-    return { text: 'Sehr geehrte Damen und Herren,', confidence: CONFIDENCE.likely, source: 'kein Name bekannt – förmliche Standardanrede' };
+    return {
+      text: 'Sehr geehrte Damen und Herren,',
+      confidence: CONFIDENCE.guess,
+      source: 'noch keine gelernte Anrede – förmliche Standardanrede gewählt'
+    };
   }
 
   function closingFor(addr, internal) {
@@ -284,9 +366,19 @@
     if (learned && learned.closing) {
       return { text: learned.closing, confidence: CONFIDENCE.sure, source: 'gelernte Grußformel für diesen Kontakt' };
     }
+    const group = internal ? 'internal' : 'external';
+    const usual = mostUsed(store().learning.style.closings[group]);
+    if (usual) {
+      return {
+        text: usual.value,
+        confidence: CONFIDENCE.likely,
+        source: 'Ihre übliche Grußformel (' + usual.count + ' von ' + usual.total + ' E-Mails)'
+      };
+    }
+
     return internal
-      ? { text: 'Liebe Grüße', confidence: CONFIDENCE.likely, source: 'interne Adresse' }
-      : { text: 'Mit freundlichen Grüßen', confidence: CONFIDENCE.likely, source: 'Standard für externe Empfänger' };
+      ? { text: 'Liebe Grüße', confidence: CONFIDENCE.guess, source: 'interne Adresse – noch nichts gelernt' }
+      : { text: 'Mit freundlichen Grüßen', confidence: CONFIDENCE.guess, source: 'Standard für externe Empfänger' };
   }
 
   function dateHint(facts) {
@@ -593,10 +685,18 @@
 
     learning.stats.sent = (learning.stats.sent || 0) + 1;
 
+    const me = env.getState().settings.me;
+    const style = learning.style;
+
     (sent.to || []).forEach((addr) => {
       const record = contactRecord(addr.email, true);
       if (!record) return;
       record.count = (record.count || 0) + 1;
+
+      // Stil je Gruppe mitzählen, damit neue Empfänger davon profitieren.
+      const group = sameDomain(addr.email, me.email) ? 'internal' : 'external';
+      bump(style.greetings[group], templatize(greeting, addr));
+      bump(style.closings[group], closing);
 
       if (greeting && record.greeting !== greeting) {
         record.greeting = greeting;

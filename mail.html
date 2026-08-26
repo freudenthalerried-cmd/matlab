@@ -458,6 +458,19 @@
           <button class="btn btn--small btn--ghost" type="button" id="set-forget">Gelerntes zurücksetzen</button>
         </div>
 
+        <div class="learn-box">
+          <strong>Postfach übertragen</strong>
+          <p class="hint">
+            Eine Kopie des Postfachs als Datei sichern oder einen Export einlesen –
+            damit lässt sich ein echter Posteingang in dieses Programm übernehmen.
+          </p>
+          <div class="snippet-editor__foot">
+            <button class="btn btn--small" type="button" id="set-import">Posteingang importieren</button>
+            <button class="btn btn--small" type="button" id="set-export">Postfach exportieren</button>
+          </div>
+          <input type="file" id="import-input" accept="application/json,.json" hidden>
+        </div>
+
         <div class="snippet-editor__foot">
           <button class="btn btn--primary" type="submit">Speichern</button>
           <button class="btn btn--ghost" type="button" id="set-reset">Beispieldaten zurücksetzen</button>

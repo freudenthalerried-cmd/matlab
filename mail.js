@@ -731,24 +731,32 @@
     box.appendChild(label);
 
     files.forEach((file) => {
-      const link = document.createElement('a');
-      link.className = 'attachment';
-      link.href = file.dataUrl;
-      link.download = file.name;
-      link.title = 'Herunterladen: ' + file.name;
-      link.appendChild(svgIcon('i-download'));
+      // Aus einem Import stammende Anhänge sind nur benannt, nicht mitkopiert.
+      const hasData = Boolean(file.dataUrl);
+      const chip = document.createElement(hasData ? 'a' : 'span');
+      chip.className = 'attachment' + (hasData ? '' : ' attachment--placeholder');
+
+      if (hasData) {
+        chip.href = file.dataUrl;
+        chip.download = file.name;
+        chip.title = 'Herunterladen: ' + file.name;
+      } else {
+        chip.title = 'Nur der Dateiname wurde übernommen – die Datei selbst liegt im Ursprungspostfach.';
+      }
+
+      chip.appendChild(svgIcon(hasData ? 'i-download' : 'i-attach'));
 
       const name = document.createElement('span');
       name.className = 'attachment__name';
       name.textContent = file.name;
-      link.appendChild(name);
+      chip.appendChild(name);
 
       const size = document.createElement('span');
       size.className = 'attachment__size';
-      size.textContent = formatBytes(file.size);
-      link.appendChild(size);
+      size.textContent = hasData ? formatBytes(file.size) : 'nicht kopiert';
+      chip.appendChild(size);
 
-      box.appendChild(link);
+      box.appendChild(chip);
     });
   }
 
@@ -1911,6 +1919,170 @@
   }
 
   /* ---------------------------------------------------------
+     Postfach übertragen (Import / Export)
+     --------------------------------------------------------- */
+
+  const IMPORT_FORMAT = 'verwaltung.mail.import.v1';
+
+  function exportMailbox() {
+    const payload = {
+      format: IMPORT_FORMAT,
+      exported: new Date().toISOString(),
+      account: Object.assign({}, state.settings.me),
+      signature: state.settings.signature,
+      folders: state.folders,
+      contacts: state.contacts,
+      messages: state.messages
+    };
+
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'postfach-' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+    toast(state.messages.length + ' Nachricht(en) exportiert');
+  }
+
+  /** Wandelt einen Eintrag aus der Importdatei in eine Nachricht der App. */
+  function normalizeImported(entry) {
+    const address = (value) => {
+      if (!value) return null;
+      if (typeof value === 'string') return parseAddresses(value)[0] || null;
+      return value.email ? { name: value.name || '', email: value.email } : null;
+    };
+    const addressList = (value) => {
+      if (!value) return [];
+      if (typeof value === 'string') return parseAddresses(value);
+      return (Array.isArray(value) ? value : [value]).map(address).filter(Boolean);
+    };
+
+    const from = address(entry.from);
+    if (!from) return null;
+
+    return {
+      id: entry.id || uid('m'),
+      folder: entry.folder || 'inbox',
+      read: entry.read !== undefined ? Boolean(entry.read) : true,
+      flagged: Boolean(entry.flagged),
+      from: from,
+      to: addressList(entry.to),
+      cc: addressList(entry.cc),
+      bcc: addressList(entry.bcc),
+      subject: entry.subject || '',
+      date: entry.date || new Date().toISOString(),
+      // Reintext aus einem Export wird zu Absätzen, HTML wird bereinigt.
+      body: entry.body
+        ? (entry.bodyIsHtml ? sanitizeHtml(entry.body) : plainToHtml(entry.body))
+        : '',
+      truncated: Boolean(entry.truncated),
+      attachments: (entry.attachments || []).map((file) => ({
+        id: uid('a'),
+        name: file.name || 'Anhang',
+        size: file.size || 0,
+        type: file.type || 'application/octet-stream',
+        dataUrl: file.dataUrl || ''
+      }))
+    };
+  }
+
+  /** Reintext eines E-Mail-Exports in Absätze umsetzen. */
+  function plainToHtml(text) {
+    return String(text)
+      .split(/\n{2,}/)
+      .map((block) => '<p>' + textToHtml(block.trim()) + '</p>')
+      .join('');
+  }
+
+  function importMailbox(data) {
+    if (!data || !Array.isArray(data.messages)) {
+      toast('Die Datei enthält kein lesbares Postfach.');
+      return;
+    }
+
+    const replace = confirm(
+      data.messages.length + ' Nachricht(en) gefunden.\n\n'
+      + 'OK: vorhandene Nachrichten ersetzen\n'
+      + 'Abbrechen: importierte Nachrichten zusätzlich aufnehmen');
+
+    const imported = data.messages.map(normalizeImported).filter(Boolean);
+    if (!imported.length) {
+      toast('Keine gültigen Nachrichten in der Datei.');
+      return;
+    }
+
+    if (replace) {
+      state.messages = imported;
+      if (window.MailAssistant) window.MailAssistant.resetLearning();
+    } else {
+      const known = new Set(state.messages.map((m) => m.id));
+      state.messages = state.messages.concat(imported.filter((m) => !known.has(m.id)));
+    }
+
+    if (data.account && data.account.email) state.settings.me = Object.assign({}, data.account);
+    if (data.signature) state.settings.signature = data.signature;
+    if (Array.isArray(data.folders) && data.folders.length) state.folders = data.folders;
+
+    if (Array.isArray(data.contacts)) {
+      const known = new Set(state.contacts.map((c) => c.email.toLowerCase()));
+      data.contacts.forEach((contact) => {
+        if (contact && contact.email && !known.has(contact.email.toLowerCase())) {
+          known.add(contact.email.toLowerCase());
+          state.contacts.push({ name: contact.name || '', email: contact.email });
+        }
+      });
+    }
+
+    // Aus den mitgelieferten gesendeten Nachrichten lernt der Assistent sofort.
+    let learned = 0;
+    if (window.MailAssistant) {
+      imported
+        .filter((m) => m.folder === 'sent')
+        .sort((a, b) => new Date(a.date) - new Date(b.date))
+        .forEach((m) => {
+          window.MailAssistant.learnFromSent(m, null);
+          learned++;
+        });
+    }
+
+    state.ui.folder = 'inbox';
+    state.ui.selectedId = null;
+    save();
+    $('settings-overlay').hidden = true;
+    render();
+    toast(imported.length + ' Nachricht(en) übernommen'
+      + (learned ? ' · aus ' + learned + ' gesendeten gelernt' : ''));
+  }
+
+  function setupTransfer() {
+    const input = $('import-input');
+
+    $('set-export').addEventListener('click', exportMailbox);
+    $('set-import').addEventListener('click', () => input.click());
+
+    input.addEventListener('change', () => {
+      const file = input.files && input.files[0];
+      input.value = '';
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          importMailbox(JSON.parse(reader.result));
+        } catch (err) {
+          toast('Die Datei ist kein gültiges JSON: ' + err.message);
+        }
+      };
+      reader.onerror = () => toast('Die Datei konnte nicht gelesen werden.');
+      reader.readAsText(file);
+    });
+  }
+
+  /* ---------------------------------------------------------
      Verschieben-Dialog
      --------------------------------------------------------- */
 
@@ -2176,6 +2348,7 @@
     setupListControls();
     setupSnippets();
     setupSettings();
+    setupTransfer();
     setupAssistant();
     setupShortcuts();
     setMobileView('list');
