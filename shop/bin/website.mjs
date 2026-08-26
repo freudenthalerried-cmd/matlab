@@ -28,6 +28,10 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { ladeBaustoffkatalog, katalogbefund, ZIELMARGE } from '../src/baustoffkatalog.js';
 import { lesKopf, alsHtml, alsText, alsListe, esc } from '../src/markdown.js';
+import {
+  erzeugeImpressum, pruefeBetreiberdaten, AGB_GLIEDERUNG,
+  DATENSCHUTZ_GLIEDERUNG, B2B_ABGRENZUNG, LIEFERHINWEISE,
+} from '../src/rechtstexte.js';
 
 const HIER = dirname(fileURLToPath(import.meta.url));
 const WURZEL = join(HIER, '..');
@@ -186,6 +190,10 @@ hr{border:none;border-top:1px solid var(--linie);margin:2rem 0}
 .preistafel .k{font-family:var(--schmal);text-transform:uppercase;font-size:.78rem;letter-spacing:.05em;color:var(--ocker)}
 .preistafel .w{font-family:var(--schmal);font-size:1.7rem;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
 .preistafel .e{font-size:.82rem;color:var(--gedaempft)}
+.rechtstext{font-family:var(--zahl);font-size:.86rem;line-height:1.7;white-space:pre-wrap;
+background:var(--flaeche);border:1px solid var(--linie);padding:1.1rem 1.2rem;overflow-x:auto;margin-bottom:1rem}
+mark.luecke{background:var(--ziegel-weich);color:var(--ziegel);font-weight:600;padding:.05em .35em;border-radius:2px}
+td.n{text-align:right;font-family:var(--zahl);font-variant-numeric:tabular-nums}
 footer{margin-top:3rem;padding-top:1.2rem;border-top:1px solid var(--linie);font-size:.85rem;color:var(--gedaempft)}
 footer a{color:var(--gedaempft)}
 .verwandt{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem}
@@ -195,6 +203,18 @@ footer a{color:var(--gedaempft)}
 `;
 }
 
+/**
+ * Die Rechtsseiten.
+ *
+ * Sie sind bewusst als **Gerüst mit sichtbaren Lücken** ausgegeben, nicht als
+ * fertiger Rechtstext. Der Grund steht in `src/rechtstexte.js`: Ein
+ * Rechtstexteanbieter mit Aktualisierungsdienst ist vorgesehen und bleibt es.
+ * Was diese Seiten leisten, ist die Zuarbeit — jede Lücke benannt, damit
+ * niemand mit einem halben Impressum online geht und es für ein ganzes hält.
+ *
+ * Eine erfundene Klausel wäre hier der teuerste Fehler des ganzen Vorhabens:
+ * Sie sieht aus wie Recht, ist keines, und man merkt es erst im Streitfall.
+ */
 const NAV = [
   ['gruppe/wdvs', 'WDVS'],
   ['gruppe/daemmung', 'Dämmung'],
@@ -202,6 +222,7 @@ const NAV = [
   ['gruppe/kanal', 'Kanal'],
   ['wissen/index', 'Wissen'],
   ['lieferung', 'Lieferung'],
+  ['rechtliches/index', 'Rechtliches'],
 ];
 
 /* ------------------------------------------------------------------ *
@@ -457,6 +478,154 @@ Wer weiterliest, will die Begründung; wer nicht weiterliest, soll trotzdem die 
   };
 }
 
+/* ------------------------------------------------------------------ *
+ * Rechtsseiten
+ * ------------------------------------------------------------------ */
+
+/** Wandelt die Lückenmarke `[[ X — FEHLT ]]` in sichtbares Markup. */
+function mitLuecken(text) {
+  return esc(text).replace(
+    /\[\[\s*(.+?)\s*—\s*FEHLT\s*\]\]/g,
+    (_, was) => `<mark class="luecke">${was} — fehlt</mark>`,
+  );
+}
+
+function rechtlichesIndex(betreiber, verweis) {
+  const p = pruefeBetreiberdaten(betreiber);
+  const seiten = [
+    ['rechtliches/impressum', 'Impressum', 'Pflichtangaben nach § 5 ECG und § 14 UGB'],
+    ['rechtliches/agb', 'Geschäftsbedingungen', 'Gliederung in dreizehn Punkten, ausschließlich für Unternehmer'],
+    ['rechtliches/datenschutz', 'Datenschutz', 'Neun Punkte nach DSGVO, samt der Stelle, die im Baustoffhandel wirklich klemmt'],
+    ['rechtliches/abnahme', 'Abnahme und Rügefrist', 'Warum § 377 UGB auf der Baustelle beginnt, nicht im Büro'],
+  ];
+  return {
+    titel: 'Rechtliches',
+    kurz: 'Impressum, Geschäftsbedingungen, Datenschutz und die Rügefrist — als Gerüst mit ausgewiesenen Lücken, nicht als fertiger Rechtstext.',
+    html: `<p class="krume"><a href="${verweis('index')}">Start</a> › Rechtliches</p>
+<h1>Rechtliches</h1>
+<p class="lede">Diese Seiten sind ein <strong>Gerüst mit sichtbaren Lücken</strong>, kein fertiger
+Rechtstext. Jede Lücke ist benannt und farblich markiert, damit niemand mit einem halben Impressum
+online geht und es für ein ganzes hält.</p>
+
+<div class="antwort"><strong>Warum das so gemacht ist.</strong> Eine erfundene Klausel wäre der
+teuerste Fehler dieses Vorhabens: Sie sieht aus wie Recht, ist keines, und man merkt es erst im
+Streitfall. Für den endgültigen Text ist ein Rechtstexteanbieter mit Aktualisierungsdienst
+vorgesehen. Was hier steht, ist die Zuarbeit — jedes Feld, das er ohnehin abfragt, schon
+zusammengetragen.</p>
+
+<div class="preistafel">
+  <div><span class="k">Impressum</span><span class="w">${p.vollstaendig ? 'vollständig' : `${p.fehlend.length} Lücken`}</span><span class="e">${p.vollstaendig ? 'alle Pflichtfelder besetzt' : 'Pflichtfelder nach § 5 ECG'}</span></div>
+  <div><span class="k">Geschäftsbedingungen</span><span class="w">${AGB_GLIEDERUNG.length} Punkte</span><span class="e">Gliederung steht, Wortlaut fehlt</span></div>
+  <div><span class="k">Datenschutz</span><span class="w">${DATENSCHUTZ_GLIEDERUNG.length} Punkte</span><span class="e">Gliederung steht, Wortlaut fehlt</span></div>
+  <div><span class="k">Widerrufsbelehrung</span><span class="w">entfällt</span><span class="e">nur bei Verbrauchergeschäft nötig</span></div>
+</div>
+
+<div class="kacheln">${seiten.map(([id, t, b]) => `<a class="kachel" href="${verweis(id)}">
+  <span class="k">Pflichtangabe</span><span class="t">${esc(t)}</span><span class="b">${esc(b)}</span></a>`).join('')}</div>
+
+<h2>Was ohne Verbrauchergeschäft entfällt</h2>
+<p>Der Shop richtet sich <strong>ausschließlich an Unternehmer</strong>. Das erspart drei Pflichten —
+und das ist keine Sorglosigkeit, sondern eine Bedingung: Wer Verbraucherbestellungen nicht wirksam
+ausschließt, dem gilt Verbraucherrecht trotzdem.</p>
+<ul>${B2B_ABGRENZUNG.entfaellt.map((e) => `<li>${esc(e)}</li>`).join('')}</ul>
+
+<h2>Was trotzdem bleibt</h2>
+<ul>${B2B_ABGRENZUNG.bleibt.map((e) => `<li>${esc(e)}</li>`).join('')}</ul>`,
+    jsonLd: null,
+  };
+}
+
+function impressumSeite(betreiber, verweis) {
+  const i = erzeugeImpressum(betreiber);
+  return {
+    titel: 'Impressum',
+    kurz: 'Pflichtangaben nach § 5 E-Commerce-Gesetz und § 14 Unternehmensgesetzbuch.',
+    html: `<p class="krume"><a href="${verweis('index')}">Start</a> › <a href="${verweis('rechtliches/index')}">Rechtliches</a> › Impressum</p>
+<h1>Impressum</h1>
+${i.vollstaendig ? '' : `<div class="antwort"><strong>Noch nicht vollständig.</strong> ${i.fehlend.length} Pflichtangaben fehlen und sind unten markiert. Solange eine Marke sichtbar ist, darf diese Seite nicht online gehen — ein unvollständiges Impressum ist im Merchant Center der häufigste Ablehnungsgrund und außerhalb davon abmahnfähig.</div>`}
+<pre class="rechtstext">${mitLuecken(i.text)}</pre>
+${i.vollstaendig ? '' : `<h2>Was fehlt</h2><ul>${i.fehlend.map((f) => `<li>${esc(f)}</li>`).join('')}</ul>
+<p>Diese Angaben liegen beim Auftraggeber: Kontaktdaten aus dem laufenden Betrieb, die
+UID-Nummer aus dem Steuerakt, der Gewerbewortlaut aus dem Gewerberegisterauszug. Sie werden
+hier bewusst nicht erraten.</p>`}
+<p>Anwendbare Rechtsvorschriften und der Gewerberegisterauszug sind über das
+<a href="https://www.ris.bka.gv.at/" target="_blank" rel="noopener noreferrer">Rechtsinformationssystem des Bundes</a>
+und das <a href="https://firmen.wko.at/" target="_blank" rel="noopener noreferrer">WKO-Firmenverzeichnis</a> nachprüfbar.</p>`,
+    jsonLd: null,
+  };
+}
+
+function agbSeite(verweis) {
+  return {
+    titel: 'Geschäftsbedingungen — Gliederung',
+    kurz: 'Dreizehn Punkte, ausschließlich für Unternehmer. Die Gliederung steht mit Begründung je Punkt; der verbindliche Wortlaut kommt vom Rechtstexteanbieter.',
+    html: `<p class="krume"><a href="${verweis('index')}">Start</a> › <a href="${verweis('rechtliches/index')}">Rechtliches</a> › Geschäftsbedingungen</p>
+<h1>Geschäftsbedingungen</h1>
+<div class="antwort"><strong>Das hier ist die Gliederung, nicht der Vertrag.</strong> Jeder Punkt
+steht mit dem Grund, warum er nötig ist — das ist genau die Vorarbeit, die ein Rechtstexteanbieter
+sonst mit Rückfragen erhebt. Der verbindliche Wortlaut fehlt und wird nicht erfunden.</div>
+<div class="scroll"><table><thead><tr><th>Nr.</th><th>Punkt</th><th>Warum</th></tr></thead><tbody>
+${AGB_GLIEDERUNG.map((p) => `<tr><td class="n">${p.nr}</td><td><strong>${esc(p.titel)}</strong></td><td>${p.hinweis ? esc(p.hinweis) : '<span class="marker sperrig">noch zu begründen</span>'}</td></tr>`).join('')}
+</tbody></table></div>
+<h2>Der Punkt, der am meisten kostet</h2>
+<p>Punkt 8 — die Rügefrist nach § 377 UGB. Sie läuft ab der Ablieferung <strong>auf der
+Baustelle</strong>, nicht ab dem Tag, an dem der Besteller die Palette zum ersten Mal sieht.
+Ausführlich unter <a href="${verweis('rechtliches/abnahme')}">Abnahme und Rügefrist</a>.</p>`,
+    jsonLd: null,
+  };
+}
+
+function datenschutzSeite(verweis) {
+  return {
+    titel: 'Datenschutz — Gliederung',
+    kurz: 'Neun Punkte nach DSGVO. Der schwierigste ist der Ansprechpartner vor Ort: ein Dritter, den der Shop nie erreicht und über den er trotzdem informieren müsste.',
+    html: `<p class="krume"><a href="${verweis('index')}">Start</a> › <a href="${verweis('rechtliches/index')}">Rechtliches</a> › Datenschutz</p>
+<h1>Datenschutz</h1>
+<div class="antwort"><strong>Gliederung, kein fertiger Text.</strong> Der Wortlaut kommt vom
+Rechtstexteanbieter. Was hier steht, ist die Liste der Punkte, die er abdecken muss — und einer
+davon ist im Baustoffhandel unangenehmer als in den meisten Branchen.</div>
+<ol>${DATENSCHUTZ_GLIEDERUNG.map((d) => `<li>${esc(d)}</li>`).join('')}</ol>
+<h2>Die Stelle, die wirklich klemmt</h2>
+<p>Wer auf der Baustelle die Ware übernimmt, ist ein <strong>Dritter</strong>. Er hat mit dem Shop
+keinen Vertrag, seine Rufnummer stammt vom Besteller, und Artikel 14 DSGVO verlangt, <em>ihn</em>
+zu informieren — eine Person, die der Shop nie erreicht.</p>
+<p>Der einzige offene Weg führt über den, der ihn kennt: Der Besteller sichert im Bestellvorgang
+zu, ihn unterrichtet zu haben, und der Shop hält die Zusicherung fest. <strong>Das ist keine
+Erfüllung der Pflicht durch den Shop</strong>, sondern ihre Verlagerung auf denjenigen, der sie
+erfüllen kann — samt Dokumentation, dass danach gefragt wurde. Ob das genügt, entscheidet der
+Rechtstexteanbieter; hier steht der Wortlaut, über den er dann reden kann.</p>`,
+    jsonLd: null,
+  };
+}
+
+function abnahmeSeite(verweis) {
+  return {
+    titel: 'Abnahme und Rügefrist auf der Baustelle',
+    kurz: 'Nach § 377 UGB beginnt die Untersuchungs- und Rügepflicht mit der Ablieferung auf der Baustelle. Wer erst beim Verlegen hinsieht, ist zu spät — und die Ware gilt als genehmigt.',
+    html: `<p class="krume"><a href="${verweis('index')}">Start</a> › <a href="${verweis('rechtliches/index')}">Rechtliches</a> › Abnahme</p>
+<h1>Abnahme und Rügefrist</h1>
+<p class="lede">Im Geschäft zwischen Unternehmern ist die Untersuchungs- und Rügepflicht nach
+§ 377 UGB eine echte Obliegenheit — keine Formalie. Die Frist läuft ab der Ablieferung
+<strong>auf der Baustelle</strong>.</p>
+<div class="antwort"><strong>Warum das teuer wird.</strong> Ein Transportschaden an einer Rolle
+oder einer Palette fällt oft erst beim Verarbeiten auf, also Wochen später. Dann ist die Rüge
+verspätet, und die Ware gilt als genehmigt. Deshalb ist der Ansprechpartner vor Ort ein
+Pflichtfeld: Er ist nicht für die Spedition da, sondern für diese Frist.</div>
+<h2>Was vor der Anlieferung geklärt sein muss</h2>
+<ul>${LIEFERHINWEISE.map((h) => `<li>${esc(typeof h === 'string' ? h : (h.text ?? h.titel ?? JSON.stringify(h)))}</li>`).join('')}</ul>
+<p>Praktische Folge für die Bestellung: Wer selbst nicht auf der Baustelle ist, benennt jemanden,
+der übernimmt <em>und hinsieht</em>. Das kann ein anderes Gewerk oder der Bauherr sein — wer
+übernimmt, nimmt für den Besteller an.</p>
+<div class="antwort"><strong>Ein Punkt oben trifft heute noch nicht zu.</strong> Der Hinweis auf
+mehrere Sendungen an verschiedenen Tagen stammt aus dem ursprünglichen Zuschnitt mit mehreren
+Herstellern. Das jetzige Sortiment läuft über <em>einen</em> Lieferanten, also kommt eine
+Bestellung in einer Sendung. Der Punkt bleibt trotzdem stehen: Sobald ein zweiter Lieferant
+dazukommt, gilt er wieder — und ein Hinweis, der einmal weggelassen wurde, kommt selten
+zurück.</div>`,
+    jsonLd: null,
+  };
+}
+
 function lieferungSeite(katalog, katalogDatei, verweis) {
   const f = katalog.lieferantenById.get(katalogDatei.lieferantId).fracht;
   return {
@@ -505,7 +674,9 @@ function rahmen(seite, verweis, { eigenstaendig }) {
 </header>`;
   const fuss = `<footer>
   <p>${esc(FIRMA)}, ${esc(ORT)} · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="${verweis('wissen/redaktionsprinzipien')}">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="${verweis('wissen/redaktionsprinzipien')}">Wie wir unsere Angaben prüfen</a>
+  · <a href="${verweis('rechtliches/impressum')}">Impressum</a>
+  · <a href="${verweis('rechtliches/datenschutz')}">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer>`;
@@ -538,6 +709,7 @@ function main() {
   const lies = (p) => JSON.parse(readFileSync(p, 'utf8'));
   const katalogDatei = lies(join(WURZEL, 'data', 'katalog-baustoff.json'));
   const lieferantenDatei = lies(join(WURZEL, 'data', 'lieferanten.json'));
+  const betreiber = lies(join(WURZEL, 'data', 'betreiber.json'));
   const preisPfad = join(REPO, 'preise', 'baustoff-preise.json');
 
   if (!existsSync(preisPfad)) {
@@ -552,6 +724,8 @@ function main() {
   // Verweise in den Inhalten prüfen, bevor irgendetwas ausgegeben wird.
   const kennungen = new Set([
     'index', 'lieferung', 'wissen/index',
+    'rechtliches/index', 'rechtliches/impressum', 'rechtliches/agb',
+    'rechtliches/datenschutz', 'rechtliches/abnahme',
     ...seiten.keys(),
     ...katalog.artikel.map((a) => `artikel/${a.sku}`),
   ]);
@@ -590,6 +764,11 @@ function main() {
     m.set('index', startSeite(katalog, befund, seiten, verweisFabrik('index')));
     m.set('wissen/index', wissenIndex(seiten, verweisFabrik('wissen/index')));
     m.set('lieferung', lieferungSeite(katalog, katalogDatei, verweisFabrik('lieferung')));
+    m.set('rechtliches/index', rechtlichesIndex(betreiber, verweisFabrik('rechtliches/index')));
+    m.set('rechtliches/impressum', impressumSeite(betreiber, verweisFabrik('rechtliches/impressum')));
+    m.set('rechtliches/agb', agbSeite(verweisFabrik('rechtliches/agb')));
+    m.set('rechtliches/datenschutz', datenschutzSeite(verweisFabrik('rechtliches/datenschutz')));
+    m.set('rechtliches/abnahme', abnahmeSeite(verweisFabrik('rechtliches/abnahme')));
     for (const s of seiten.values()) m.set(s.id, inhaltsSeite(s, katalog, befund, seiten, verweisFabrik(s.id)));
     for (const a of katalog.artikel) {
       m.set(`artikel/${a.sku}`, artikelSeite(a, katalog, befund, seiten, verweisFabrik(`artikel/${a.sku}`)));

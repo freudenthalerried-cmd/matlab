@@ -115,3 +115,48 @@ test('Jede Warengruppe des Katalogs hat eine Seite', () => {
     assert.ok(beschrieben.has(g), `Warengruppe „${g}" hat keine Seite in inhalte/gruppen/`);
   }
 });
+
+/* ------------------------------------------------------------------ *
+ * Rechtsseiten
+ *
+ * Sie sind ein Gerüst mit sichtbaren Lücken, kein fertiger Rechtstext.
+ * Die Zusicherung, die hier zählt: Es wird nichts erfunden, und was fehlt,
+ * bleibt sichtbar.
+ * ------------------------------------------------------------------ */
+
+test('Die Betreiberdaten behaupten nur, was belegbar ist', () => {
+  const b = JSON.parse(readFileSync(pfad('../data/betreiber.json'), 'utf8'));
+  // Belegbar aus Firmenbuch und öffentlichen Verzeichnissen:
+  for (const feld of ['firma', 'rechtsform', 'strasse', 'plz', 'ort', 'firmenbuchnummer', 'firmenbuchgericht']) {
+    assert.ok(String(b[feld] ?? '').trim(), `${feld} sollte belegt sein`);
+  }
+  // Nicht belegbar — und deshalb ausdrücklich leer statt geraten:
+  for (const feld of ['email', 'telefon', 'uid', 'gewerbewortlaut']) {
+    assert.equal(String(b[feld] ?? '').trim(), '', `${feld} wurde geraten statt offengelassen`);
+  }
+});
+
+test('Das erzeugte Impressum macht jede Lücke sichtbar', async () => {
+  const { erzeugeImpressum } = await import('../src/rechtstexte.js');
+  const b = JSON.parse(readFileSync(pfad('../data/betreiber.json'), 'utf8'));
+  const i = erzeugeImpressum(b);
+
+  assert.equal(i.vollstaendig, false, 'noch fehlen Pflichtangaben — das darf nicht verschwiegen werden');
+  assert.equal(i.fehlend.length, 4);
+  // Jede Lücke steht als Marke im Text, nicht als Leerzeile.
+  assert.equal((i.text.match(/FEHLT/g) ?? []).length, i.fehlend.length);
+  // Und was belegt ist, steht auch drin.
+  assert.match(i.text, /Freudenthaler Bau GmbH/);
+  assert.match(i.text, /FN 347938z/);
+});
+
+test('Eine vollständige Datenlage erzeugt ein Impressum ohne Marken', async () => {
+  // Gegenprobe: Die Lückenmarken kommen aus den Daten, nicht aus der Vorlage.
+  const { erzeugeImpressum } = await import('../src/rechtstexte.js');
+  const b = JSON.parse(readFileSync(pfad('../data/betreiber.json'), 'utf8'));
+  const voll = { ...b, email: 'a@b.at', telefon: '+43 1 0000000', uid: 'ATU00000000', gewerbewortlaut: 'Baumeister' };
+  const i = erzeugeImpressum(voll);
+
+  assert.equal(i.vollstaendig, true);
+  assert.doesNotMatch(i.text, /FEHLT/);
+});

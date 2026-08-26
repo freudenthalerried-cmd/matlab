@@ -1,0 +1,25 @@
+{
+  "_datenstand": "TEILWEISE BESTAETIGT. Firmenbuchdaten aus oeffentlichen Quellen, Kontaktdaten fehlen.",
+  "_hinweis": "Ein Impressum mit falschen Angaben ist schlimmer als eines mit sichtbaren Luecken: Die Luecke faellt beim Korrekturlesen auf, der Fehler erst bei der Abmahnung. Deshalb steht hier nur, was belegbar ist. Jedes fehlende Feld erzeugt im erzeugten Impressum eine sichtbare Marke; erst wenn keine mehr da ist, darf die Seite online gehen.",
+  "_quellen": "Firmenbuch ueber evi.gv.at (FN 347938z), WKO Firmen A-Z, Firmensitz laut eigener Firmenseite.",
+  "_offen": "E-Mail, Telefon und UID-Nummer sind dem Auftraggeber bekannt und muessen von ihm eingetragen werden. Der Gewerbewortlaut ist im Gewerberegisterauszug nachzulesen und hier bewusst noch nicht behauptet.",
+
+  "firma": "Freudenthaler Bau GmbH",
+  "rechtsform": "Gesellschaft mit beschränkter Haftung",
+  "strasse": "Marwach 5",
+  "plz": "4312",
+  "ort": "Ried in der Riedmark",
+  "land": "AT",
+
+  "imFirmenbuch": true,
+  "firmenbuchnummer": "FN 347938z",
+  "firmenbuchgericht": "Landesgericht Linz",
+
+  "gewerbebehoerde": "Bezirkshauptmannschaft Perg",
+  "kammer": "Wirtschaftskammer Oberösterreich, Fachgruppe Bau",
+
+  "email": "",
+  "telefon": "",
+  "uid": "",
+  "gewerbewortlaut": ""
+}

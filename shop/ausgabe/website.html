@@ -66,6 +66,10 @@ hr{border:none;border-top:1px solid var(--linie);margin:2rem 0}
 .preistafel .k{font-family:var(--schmal);text-transform:uppercase;font-size:.78rem;letter-spacing:.05em;color:var(--ocker)}
 .preistafel .w{font-family:var(--schmal);font-size:1.7rem;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
 .preistafel .e{font-size:.82rem;color:var(--gedaempft)}
+.rechtstext{font-family:var(--zahl);font-size:.86rem;line-height:1.7;white-space:pre-wrap;
+background:var(--flaeche);border:1px solid var(--linie);padding:1.1rem 1.2rem;overflow-x:auto;margin-bottom:1rem}
+mark.luecke{background:var(--ziegel-weich);color:var(--ziegel);font-weight:600;padding:.05em .35em;border-radius:2px}
+td.n{text-align:right;font-family:var(--zahl);font-variant-numeric:tabular-nums}
 footer{margin-top:3rem;padding-top:1.2rem;border-top:1px solid var(--linie);font-size:.85rem;color:var(--gedaempft)}
 footer a{color:var(--gedaempft)}
 .verwandt{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem}
@@ -76,7 +80,7 @@ footer a{color:var(--gedaempft)}
 <div class="huelle" id="inhalt"></div>
 <template data-seite="index" data-titel="Baustoffe zum Baumeisterpreis"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <h1>Baustoffe zum<br>Baumeisterpreis</h1>
 <p class="lede">Was ein Baumeister im Einkauf zahlt, zahlen Sie auch — zuzüglich einer Handelsspanne von
@@ -178,13 +182,15 @@ Frage, und die Antwort steht in den ersten zwei Sätzen.</p>
   <span class="b">EPS geht an die Fassade oberhalb des Sockels, XPS überall dort, wo Wasser und Druck dazukommen — erdberührt, unter der Bodenplatte, im Sockel- und Spritzwasserb…</span></a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="wissen/index" data-titel="Wissen — Fragen vor der Bestellung"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › Wissen</p>
 <h1>Wissen</h1>
@@ -232,13 +238,15 @@ Wer weiterliest, will die Begründung; wer nicht weiterliest, soll trotzdem die 
   <span class="b">Wann nimmt man XPS und wann EPS, und was passiert, wenn man es vertauscht?</span></a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="lieferung" data-titel="Lieferung und Frachtkosten"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › Lieferung</p>
 <h1>Lieferung</h1>
@@ -269,13 +277,186 @@ nächsten Bestellung. Stand: 2026-08-25.</p>
 der ganze Vorteil der getrennten Ausweisung.</p>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
+  <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
+  Keine Steuer- oder Rechtsberatung.</p>
+</footer></template>
+<template data-seite="rechtliches/index" data-titel="Rechtliches"><header class="kopfleiste">
+  <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
+</header>
+<p class="krume"><a href="#index">Start</a> › Rechtliches</p>
+<h1>Rechtliches</h1>
+<p class="lede">Diese Seiten sind ein <strong>Gerüst mit sichtbaren Lücken</strong>, kein fertiger
+Rechtstext. Jede Lücke ist benannt und farblich markiert, damit niemand mit einem halben Impressum
+online geht und es für ein ganzes hält.</p>
+
+<div class="antwort"><strong>Warum das so gemacht ist.</strong> Eine erfundene Klausel wäre der
+teuerste Fehler dieses Vorhabens: Sie sieht aus wie Recht, ist keines, und man merkt es erst im
+Streitfall. Für den endgültigen Text ist ein Rechtstexteanbieter mit Aktualisierungsdienst
+vorgesehen. Was hier steht, ist die Zuarbeit — jedes Feld, das er ohnehin abfragt, schon
+zusammengetragen.</p>
+
+<div class="preistafel">
+  <div><span class="k">Impressum</span><span class="w">4 Lücken</span><span class="e">Pflichtfelder nach § 5 ECG</span></div>
+  <div><span class="k">Geschäftsbedingungen</span><span class="w">13 Punkte</span><span class="e">Gliederung steht, Wortlaut fehlt</span></div>
+  <div><span class="k">Datenschutz</span><span class="w">9 Punkte</span><span class="e">Gliederung steht, Wortlaut fehlt</span></div>
+  <div><span class="k">Widerrufsbelehrung</span><span class="w">entfällt</span><span class="e">nur bei Verbrauchergeschäft nötig</span></div>
+</div>
+
+<div class="kacheln"><a class="kachel" href="#rechtliches/impressum">
+  <span class="k">Pflichtangabe</span><span class="t">Impressum</span><span class="b">Pflichtangaben nach § 5 ECG und § 14 UGB</span></a><a class="kachel" href="#rechtliches/agb">
+  <span class="k">Pflichtangabe</span><span class="t">Geschäftsbedingungen</span><span class="b">Gliederung in dreizehn Punkten, ausschließlich für Unternehmer</span></a><a class="kachel" href="#rechtliches/datenschutz">
+  <span class="k">Pflichtangabe</span><span class="t">Datenschutz</span><span class="b">Neun Punkte nach DSGVO, samt der Stelle, die im Baustoffhandel wirklich klemmt</span></a><a class="kachel" href="#rechtliches/abnahme">
+  <span class="k">Pflichtangabe</span><span class="t">Abnahme und Rügefrist</span><span class="b">Warum § 377 UGB auf der Baustelle beginnt, nicht im Büro</span></a></div>
+
+<h2>Was ohne Verbrauchergeschäft entfällt</h2>
+<p>Der Shop richtet sich <strong>ausschließlich an Unternehmer</strong>. Das erspart drei Pflichten —
+und das ist keine Sorglosigkeit, sondern eine Bedingung: Wer Verbraucherbestellungen nicht wirksam
+ausschließt, dem gilt Verbraucherrecht trotzdem.</p>
+<ul><li>Widerrufsbelehrung und Muster-Widerrufsformular nach FAGG</li><li>Die Verlängerung der Rücktrittsfrist auf zwölf Monate und vierzehn Tage bei fehlerhafter Belehrung</li><li>Hinweis auf die Online-Streitbeilegungsplattform</li></ul>
+
+<h2>Was trotzdem bleibt</h2>
+<ul><li>Impressum nach § 5 ECG — gilt unabhängig vom Adressatenkreis</li><li>Datenschutzerklärung nach DSGVO</li><li>Preisangaben mit gesondert ausgewiesener Umsatzsteuer</li><li>Wirksamer Ausschluss von Verbraucherbestellungen — sonst gilt Verbraucherrecht trotzdem</li></ul>
+<footer>
+  <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
+  <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
+  Keine Steuer- oder Rechtsberatung.</p>
+</footer></template>
+<template data-seite="rechtliches/impressum" data-titel="Impressum"><header class="kopfleiste">
+  <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
+</header>
+<p class="krume"><a href="#index">Start</a> › <a href="#rechtliches/index">Rechtliches</a> › Impressum</p>
+<h1>Impressum</h1>
+<div class="antwort"><strong>Noch nicht vollständig.</strong> 4 Pflichtangaben fehlen und sind unten markiert. Solange eine Marke sichtbar ist, darf diese Seite nicht online gehen — ein unvollständiges Impressum ist im Merchant Center der häufigste Ablehnungsgrund und außerhalb davon abmahnfähig.</div>
+<pre class="rechtstext">Impressum
+Informationen nach § 5 E-Commerce-Gesetz und § 14 Unternehmensgesetzbuch
+
+Freudenthaler Bau GmbH
+Gesellschaft mit beschränkter Haftung
+Marwach 5
+4312 Ried in der Riedmark
+Österreich
+
+E-Mail: <mark class="luecke">E-Mail — fehlt</mark>
+Telefon: <mark class="luecke">Telefon — fehlt</mark>
+
+Firmenbuchnummer: FN 347938z
+Firmenbuchgericht: Landesgericht Linz
+UID-Nummer: <mark class="luecke">UID — fehlt</mark>
+Gewerbe: <mark class="luecke">Gewerbewortlaut — fehlt</mark>
+Gewerbebehörde: Bezirkshauptmannschaft Perg
+Kammerzugehörigkeit: Wirtschaftskammer Oberösterreich, Fachgruppe Bau
+
+Anwendbare Rechtsvorschrift: Gewerbeordnung, abrufbar über das
+Rechtsinformationssystem des Bundes.</pre>
+<h2>Was fehlt</h2><ul><li>E-Mail-Adresse für die rasche Kontaktaufnahme</li><li>Telefonnummer</li><li>UID-Nummer</li><li>Wortlaut des angemeldeten Gewerbes</li></ul>
+<p>Diese Angaben liegen beim Auftraggeber: Kontaktdaten aus dem laufenden Betrieb, die
+UID-Nummer aus dem Steuerakt, der Gewerbewortlaut aus dem Gewerberegisterauszug. Sie werden
+hier bewusst nicht erraten.</p>
+<p>Anwendbare Rechtsvorschriften und der Gewerberegisterauszug sind über das
+<a href="https://www.ris.bka.gv.at/" target="_blank" rel="noopener noreferrer">Rechtsinformationssystem des Bundes</a>
+und das <a href="https://firmen.wko.at/" target="_blank" rel="noopener noreferrer">WKO-Firmenverzeichnis</a> nachprüfbar.</p>
+<footer>
+  <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
+  <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
+  Keine Steuer- oder Rechtsberatung.</p>
+</footer></template>
+<template data-seite="rechtliches/agb" data-titel="Geschäftsbedingungen — Gliederung"><header class="kopfleiste">
+  <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
+</header>
+<p class="krume"><a href="#index">Start</a> › <a href="#rechtliches/index">Rechtliches</a> › Geschäftsbedingungen</p>
+<h1>Geschäftsbedingungen</h1>
+<div class="antwort"><strong>Das hier ist die Gliederung, nicht der Vertrag.</strong> Jeder Punkt
+steht mit dem Grund, warum er nötig ist — das ist genau die Vorarbeit, die ein Rechtstexteanbieter
+sonst mit Rückfragen erhebt. Der verbindliche Wortlaut fehlt und wird nicht erfunden.</div>
+<div class="scroll"><table><thead><tr><th>Nr.</th><th>Punkt</th><th>Warum</th></tr></thead><tbody>
+<tr><td class="n">1</td><td><strong>Geltungsbereich und Adressatenkreis</strong></td><td>Ausschließlich Unternehmer im Sinne des UGB; Verbrauchergeschäfte sind ausgeschlossen.</td></tr><tr><td class="n">2</td><td><strong>Vertragsschluss</strong></td><td>Bestellung ist Angebot, Annahme durch Auftragsbestätigung.</td></tr><tr><td class="n">3</td><td><strong>Preise und Umsatzsteuer</strong></td><td>Nettopreise, Umsatzsteuer gesondert mit 20 %. Leistungsort ist Österreich — für Reverse Charge gegenüber dem Kunden ist kein Raum, weil nur ins Inland geliefert wird (Punkt 12). Das Verfahren betrifft die Eingangsseite: den innergemeinschaftlichen Erwerb bei ausländischen Herstellern im Reihengeschäft.</td></tr><tr><td class="n">4</td><td><strong>Lieferung im Streckengeschäft</strong></td><td>Direktversand durch den Hersteller; Teillieferungen je Lieferant sind der Regelfall.</td></tr><tr><td class="n">5</td><td><strong>Mindestbestellmengen je Hersteller</strong></td><td>Jeder Hersteller setzt eine Mindestbestellmenge. Wird sie für einen Hersteller nicht erreicht, kann die Bestellung insoweit nicht angenommen werden; der Shop weist die fehlende Menge im Warenwert aus. Der Punkt hat gefehlt, obwohl der Shop die Grenze von Anfang an durchgesetzt hat — eine Ablehnung ohne veröffentlichte Grundlage.</td></tr><tr><td class="n">6</td><td><strong>Fracht, Sperrgut und Baustellenanlieferung</strong></td><td>Abladen, Zufahrt und Anwesenheit sind Sache des Bestellers.</td></tr><tr><td class="n">7</td><td><strong>Abweichende Lieferanschrift und Empfangsvollmacht</strong></td><td>Wer auf der Baustelle übernimmt, nimmt für den Besteller an — auch ein anderes Gewerk oder der Bauherr. Der Besteller benennt einen Ansprechpartner vor Ort und trägt dessen Erreichbarkeit.</td></tr><tr><td class="n">8</td><td><strong>Gefahrübergang und Transportschäden</strong></td><td>Untersuchungs- und Rügepflicht nach § 377 UGB — im B2B eine echte Obliegenheit, und die Frist läuft ab Ablieferung auf der Baustelle.</td></tr><tr><td class="n">9</td><td><strong>Zahlung, Verzug, Eigentumsvorbehalt</strong></td><td>Keine Nachnahme und keine Barzahlung auf der Baustelle — sonst entsteht ein Barumsatz und damit Registrierkassenpflicht.</td></tr><tr><td class="n">10</td><td><strong>Gewährleistung und Haftung</strong></td><td>Im B2B abdingbar, aber nicht grenzenlos.</td></tr><tr><td class="n">11</td><td><strong>Rücknahme angebrochener Gebinde und Rollenware</strong></td><td>Ausschluss empfehlenswert; Rollenware ist nicht teilbar.</td></tr><tr><td class="n">12</td><td><strong>Lieferorte nur in Österreich</strong></td><td>Lieferung außerhalb Österreichs ist ausgeschlossen — sie wäre nach Art 6, 7 UStG steuerfrei bzw. eine Ausfuhr und damit anders zu verrechnen.</td></tr><tr><td class="n">13</td><td><strong>Gerichtsstand und anwendbares Recht</strong></td><td><span class="marker sperrig">noch zu begründen</span></td></tr>
+</tbody></table></div>
+<h2>Der Punkt, der am meisten kostet</h2>
+<p>Punkt 8 — die Rügefrist nach § 377 UGB. Sie läuft ab der Ablieferung <strong>auf der
+Baustelle</strong>, nicht ab dem Tag, an dem der Besteller die Palette zum ersten Mal sieht.
+Ausführlich unter <a href="#rechtliches/abnahme">Abnahme und Rügefrist</a>.</p>
+<footer>
+  <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
+  <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
+  Keine Steuer- oder Rechtsberatung.</p>
+</footer></template>
+<template data-seite="rechtliches/datenschutz" data-titel="Datenschutz — Gliederung"><header class="kopfleiste">
+  <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
+</header>
+<p class="krume"><a href="#index">Start</a> › <a href="#rechtliches/index">Rechtliches</a> › Datenschutz</p>
+<h1>Datenschutz</h1>
+<div class="antwort"><strong>Gliederung, kein fertiger Text.</strong> Der Wortlaut kommt vom
+Rechtstexteanbieter. Was hier steht, ist die Liste der Punkte, die er abdecken muss — und einer
+davon ist im Baustoffhandel unangenehmer als in den meisten Branchen.</div>
+<ol><li>Verantwortlicher und Kontakt</li><li>Welche Daten bei der Bestellung verarbeitet werden</li><li>Rechtsgrundlage: Vertragserfüllung nach Art. 6 Abs. 1 lit. b DSGVO</li><li>Weitergabe an Lieferanten zur Direktlieferung — mit Nennung der Empfängerkategorien</li><li>Daten Dritter: Ansprechpartner vor Ort auf der Baustelle — Art. 6 Abs. 1 lit. f, Informationspflicht nach Art. 14</li><li>UID-Abfrage beim EU-Informationsaustauschsystem — Übermittlung und Zweck</li><li>Speicherdauer und steuerliche Aufbewahrungsfristen</li><li>Rechte der betroffenen Person</li><li>Beschwerderecht bei der Datenschutzbehörde</li></ol>
+<h2>Die Stelle, die wirklich klemmt</h2>
+<p>Wer auf der Baustelle die Ware übernimmt, ist ein <strong>Dritter</strong>. Er hat mit dem Shop
+keinen Vertrag, seine Rufnummer stammt vom Besteller, und Artikel 14 DSGVO verlangt, <em>ihn</em>
+zu informieren — eine Person, die der Shop nie erreicht.</p>
+<p>Der einzige offene Weg führt über den, der ihn kennt: Der Besteller sichert im Bestellvorgang
+zu, ihn unterrichtet zu haben, und der Shop hält die Zusicherung fest. <strong>Das ist keine
+Erfüllung der Pflicht durch den Shop</strong>, sondern ihre Verlagerung auf denjenigen, der sie
+erfüllen kann — samt Dokumentation, dass danach gefragt wurde. Ob das genügt, entscheidet der
+Rechtstexteanbieter; hier steht der Wortlaut, über den er dann reden kann.</p>
+<footer>
+  <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
+  <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
+  Keine Steuer- oder Rechtsberatung.</p>
+</footer></template>
+<template data-seite="rechtliches/abnahme" data-titel="Abnahme und Rügefrist auf der Baustelle"><header class="kopfleiste">
+  <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
+</header>
+<p class="krume"><a href="#index">Start</a> › <a href="#rechtliches/index">Rechtliches</a> › Abnahme</p>
+<h1>Abnahme und Rügefrist</h1>
+<p class="lede">Im Geschäft zwischen Unternehmern ist die Untersuchungs- und Rügepflicht nach
+§ 377 UGB eine echte Obliegenheit — keine Formalie. Die Frist läuft ab der Ablieferung
+<strong>auf der Baustelle</strong>.</p>
+<div class="antwort"><strong>Warum das teuer wird.</strong> Ein Transportschaden an einer Rolle
+oder einer Palette fällt oft erst beim Verarbeiten auf, also Wochen später. Dann ist die Rüge
+verspätet, und die Ware gilt als genehmigt. Deshalb ist der Ansprechpartner vor Ort ein
+Pflichtfeld: Er ist nicht für die Spedition da, sondern für diese Frist.</div>
+<h2>Was vor der Anlieferung geklärt sein muss</h2>
+<ul><li>Auf einer Baustelle nimmt an, wer gerade dort ist — ein anderes Gewerk, der Bauherr, der Polier. Die Übernahme wirkt für Sie als Besteller.</li><li>Nach § 377 UGB ist die Ware unverzüglich nach der Ablieferung zu untersuchen und ein Mangel unverzüglich zu rügen. Maßgeblich ist die Ablieferung auf der Baustelle, nicht der Tag, an dem Sie selbst hinkommen.</li><li>Ein Transportschaden an einer Abdichtungsbahn fällt oft erst beim Verlegen auf. Zu diesem Zeitpunkt ist die Rüge in aller Regel verspätet und die Ware gilt als genehmigt.</li><li>Im Streckengeschäft liefert jeder Hersteller selbst. Eine Bestellung erreicht die Baustelle deshalb in mehreren Sendungen an verschiedenen Tagen; jede ist für sich zu prüfen.</li></ul>
+<p>Praktische Folge für die Bestellung: Wer selbst nicht auf der Baustelle ist, benennt jemanden,
+der übernimmt <em>und hinsieht</em>. Das kann ein anderes Gewerk oder der Bauherr sein — wer
+übernimmt, nimmt für den Besteller an.</p>
+<div class="antwort"><strong>Ein Punkt oben trifft heute noch nicht zu.</strong> Der Hinweis auf
+mehrere Sendungen an verschiedenen Tagen stammt aus dem ursprünglichen Zuschnitt mit mehreren
+Herstellern. Das jetzige Sortiment läuft über <em>einen</em> Lieferanten, also kommt eine
+Bestellung in einer Sendung. Der Punkt bleibt trotzdem stehen: Sobald ein zweiter Lieferant
+dazukommt, gilt er wieder — und ein Hinweis, der einmal weggelassen wurde, kommt selten
+zurück.</div>
+<footer>
+  <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="wissen/baumeisterpreis" data-titel="Was „Baumeisterpreis&quot; heißt — und was nicht"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › Wissen</p>
 <h1>Was „Baumeisterpreis&quot; heißt — und was nicht</h1>
@@ -297,13 +478,15 @@ der ganze Vorteil der getrennten Ausweisung.</p>
 <div class="verwandt"><a href="#wissen/redaktionsprinzipien">Wie dieser Shop seine Angaben prüft</a><a href="#wissen/warum-keine-gratislieferung">Warum es hier keine Gratislieferung gibt</a><a href="#wissen/was-fehlt-haelt-die-baustelle-auf">Was fehlt, hält die Baustelle auf</a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="wissen/kaminzug-aufbau" data-titel="Welche Teile ein Kaminzug braucht"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › Wissen</p>
 <h1>Welche Teile ein Kaminzug braucht</h1>
@@ -377,13 +560,15 @@ der ganze Vorteil der getrennten Ausweisung.</p>
 <div class="verwandt"><a href="#wissen/was-fehlt-haelt-die-baustelle-auf">Was fehlt, hält die Baustelle auf</a><a href="#wissen/redaktionsprinzipien">Wie dieser Shop seine Angaben prüft</a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="wissen/kanal-was-zusammengehoert" data-titel="Kanal DN 100 — was zusammengehört"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › Wissen</p>
 <h1>Kanal DN 100 — was zusammengehört</h1>
@@ -437,13 +622,15 @@ der ganze Vorteil der getrennten Ausweisung.</p>
 <div class="verwandt"><a href="#wissen/was-fehlt-haelt-die-baustelle-auf">Was fehlt, hält die Baustelle auf</a><a href="#wissen/perimeterdaemmung-und-grundmauerschutz">Perimeterdämmung und Grundmauerschutz</a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="wissen/lagerung-von-sackware" data-titel="Lagerung von Sackware und Platten"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › Wissen</p>
 <h1>Lagerung von Sackware und Platten</h1>
@@ -467,13 +654,15 @@ der ganze Vorteil der getrennten Ausweisung.</p>
 <div class="verwandt"><a href="#wissen/verarbeitung-bei-kaelte-und-naesse">Verarbeitung bei Kälte und Nässe</a><a href="#wissen/was-fehlt-haelt-die-baustelle-auf">Was fehlt, hält die Baustelle auf</a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="wissen/mengen-fuer-100-qm-wdvs" data-titel="Mengen für 100 m² Fassade ermitteln"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › Wissen</p>
 <h1>Mengen für 100 m² Fassade ermitteln</h1>
@@ -557,13 +746,15 @@ der ganze Vorteil der getrennten Ausweisung.</p>
 <div class="verwandt"><a href="#wissen/wdvs-systemaufbau">Was zu einem Wärmedämmverbundsystem gehört</a><a href="#wissen/untergrund-pruefen">Untergrund prüfen, bevor geklebt wird</a><a href="#wissen/was-fehlt-haelt-die-baustelle-auf">Was fehlt, hält die Baustelle auf</a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="wissen/perimeterdaemmung-und-grundmauerschutz" data-titel="Perimeterdämmung und Grundmauerschutz"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › Wissen</p>
 <h1>Perimeterdämmung und Grundmauerschutz</h1>
@@ -621,13 +812,15 @@ der ganze Vorteil der getrennten Ausweisung.</p>
 <div class="verwandt"><a href="#wissen/xps-oder-eps">XPS oder EPS — welche Platte wohin</a><a href="#wissen/kanal-was-zusammengehoert">Kanal DN 100 — was zusammengehört</a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="wissen/redaktionsprinzipien" data-titel="Wie dieser Shop seine Angaben prüft"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › Wissen</p>
 <h1>Wie dieser Shop seine Angaben prüft</h1>
@@ -651,13 +844,15 @@ der ganze Vorteil der getrennten Ausweisung.</p>
 <div class="verwandt"><a href="#wissen/baumeisterpreis">Was „Baumeisterpreis&quot; heißt — und was nicht</a><a href="#wissen/warum-keine-gratislieferung">Warum es hier keine Gratislieferung gibt</a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="wissen/untergrund-pruefen" data-titel="Untergrund prüfen, bevor geklebt wird"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › Wissen</p>
 <h1>Untergrund prüfen, bevor geklebt wird</h1>
@@ -735,13 +930,15 @@ der ganze Vorteil der getrennten Ausweisung.</p>
 <div class="verwandt"><a href="#wissen/wdvs-systemaufbau">Was zu einem Wärmedämmverbundsystem gehört</a><a href="#wissen/verarbeitung-bei-kaelte-und-naesse">Verarbeitung bei Kälte und Nässe</a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="wissen/verarbeitung-bei-kaelte-und-naesse" data-titel="Verarbeitung bei Kälte und Nässe"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › Wissen</p>
 <h1>Verarbeitung bei Kälte und Nässe</h1>
@@ -763,13 +960,15 @@ der ganze Vorteil der getrennten Ausweisung.</p>
 <div class="verwandt"><a href="#wissen/untergrund-pruefen">Untergrund prüfen, bevor geklebt wird</a><a href="#wissen/lagerung-von-sackware">Lagerung von Sackware und Platten</a><a href="#wissen/wdvs-systemaufbau">Was zu einem Wärmedämmverbundsystem gehört</a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="wissen/warum-keine-gratislieferung" data-titel="Warum es hier keine Gratislieferung gibt"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › Wissen</p>
 <h1>Warum es hier keine Gratislieferung gibt</h1>
@@ -791,13 +990,15 @@ der ganze Vorteil der getrennten Ausweisung.</p>
 <div class="verwandt"><a href="#wissen/baumeisterpreis">Was „Baumeisterpreis&quot; heißt — und was nicht</a><a href="#wissen/was-fehlt-haelt-die-baustelle-auf">Was fehlt, hält die Baustelle auf</a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="wissen/was-fehlt-haelt-die-baustelle-auf" data-titel="Was fehlt, hält die Baustelle auf"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › Wissen</p>
 <h1>Was fehlt, hält die Baustelle auf</h1>
@@ -818,13 +1019,15 @@ der ganze Vorteil der getrennten Ausweisung.</p>
 <div class="verwandt"><a href="#wissen/warum-keine-gratislieferung">Warum es hier keine Gratislieferung gibt</a><a href="#wissen/mengen-fuer-100-qm-wdvs">Mengen für 100 m² Fassade ermitteln</a><a href="#wissen/wdvs-systemaufbau">Was zu einem Wärmedämmverbundsystem gehört</a><a href="#wissen/kanal-was-zusammengehoert">Kanal DN 100 — was zusammengehört</a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="wissen/wdvs-systemaufbau" data-titel="Was zu einem Wärmedämmverbundsystem gehört"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › Wissen</p>
 <h1>Was zu einem Wärmedämmverbundsystem gehört</h1>
@@ -909,13 +1112,15 @@ der ganze Vorteil der getrennten Ausweisung.</p>
 <div class="verwandt"><a href="#wissen/mengen-fuer-100-qm-wdvs">Mengen für 100 m² Fassade ermitteln</a><a href="#wissen/xps-oder-eps">XPS oder EPS — welche Platte wohin</a><a href="#wissen/untergrund-pruefen">Untergrund prüfen, bevor geklebt wird</a><a href="#wissen/redaktionsprinzipien">Wie dieser Shop seine Angaben prüft</a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="wissen/xps-oder-eps" data-titel="XPS oder EPS — welche Platte wohin"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › Wissen</p>
 <h1>XPS oder EPS — welche Platte wohin</h1>
@@ -984,13 +1189,15 @@ der ganze Vorteil der getrennten Ausweisung.</p>
 <div class="verwandt"><a href="#wissen/wdvs-systemaufbau">Was zu einem Wärmedämmverbundsystem gehört</a><a href="#wissen/perimeterdaemmung-und-grundmauerschutz">Perimeterdämmung und Grundmauerschutz</a><a href="#wissen/mengen-fuer-100-qm-wdvs">Mengen für 100 m² Fassade ermitteln</a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="gruppe/daemmung" data-titel="Dämmplatten"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › Sortiment</p>
 <h1>Dämmplatten</h1>
@@ -1054,13 +1261,15 @@ der ganze Vorteil der getrennten Ausweisung.</p>
 <div class="verwandt"><a href="#wissen/xps-oder-eps">XPS oder EPS — welche Platte wohin</a><a href="#wissen/perimeterdaemmung-und-grundmauerschutz">Perimeterdämmung und Grundmauerschutz</a><a href="#wissen/lagerung-von-sackware">Lagerung von Sackware und Platten</a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="gruppe/kamin" data-titel="Kaminsystem"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › Sortiment</p>
 <h1>Kaminsystem</h1>
@@ -1125,13 +1334,15 @@ der ganze Vorteil der getrennten Ausweisung.</p>
 <div class="verwandt"><a href="#wissen/kaminzug-aufbau">Welche Teile ein Kaminzug braucht</a><a href="#wissen/was-fehlt-haelt-die-baustelle-auf">Was fehlt, hält die Baustelle auf</a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="gruppe/kanal" data-titel="Kanal und Erdbau"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › Sortiment</p>
 <h1>Kanal und Erdbau</h1>
@@ -1178,13 +1389,15 @@ der ganze Vorteil der getrennten Ausweisung.</p>
 <div class="verwandt"><a href="#wissen/kanal-was-zusammengehoert">Kanal DN 100 — was zusammengehört</a><a href="#wissen/perimeterdaemmung-und-grundmauerschutz">Perimeterdämmung und Grundmauerschutz</a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="gruppe/mauerwerk" data-titel="Mauerwerk"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › Sortiment</p>
 <h1>Mauerwerk</h1>
@@ -1206,13 +1419,15 @@ der ganze Vorteil der getrennten Ausweisung.</p>
 <div class="verwandt"><a href="#wissen/lagerung-von-sackware">Lagerung von Sackware und Platten</a><a href="#wissen/warum-keine-gratislieferung">Warum es hier keine Gratislieferung gibt</a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="gruppe/moertel" data-titel="Mörtel und Putze"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › Sortiment</p>
 <h1>Mörtel und Putze</h1>
@@ -1249,13 +1464,15 @@ der ganze Vorteil der getrennten Ausweisung.</p>
 <div class="verwandt"><a href="#wissen/lagerung-von-sackware">Lagerung von Sackware und Platten</a><a href="#wissen/verarbeitung-bei-kaelte-und-naesse">Verarbeitung bei Kälte und Nässe</a><a href="#wissen/wdvs-systemaufbau">Was zu einem Wärmedämmverbundsystem gehört</a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="gruppe/wdvs" data-titel="WDVS-Komponenten"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › Sortiment</p>
 <h1>WDVS-Komponenten</h1>
@@ -1331,13 +1548,15 @@ der ganze Vorteil der getrennten Ausweisung.</p>
 <div class="verwandt"><a href="#wissen/wdvs-systemaufbau">Was zu einem Wärmedämmverbundsystem gehört</a><a href="#wissen/mengen-fuer-100-qm-wdvs">Mengen für 100 m² Fassade ermitteln</a><a href="#wissen/untergrund-pruefen">Untergrund prüfen, bevor geklebt wird</a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="gruppe/zubehoer" data-titel="Zubehör und Kleinteile"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › Sortiment</p>
 <h1>Zubehör und Kleinteile</h1>
@@ -1390,13 +1609,15 @@ der ganze Vorteil der getrennten Ausweisung.</p>
 <div class="verwandt"><a href="#wissen/baumeisterpreis">Was „Baumeisterpreis&quot; heißt — und was nicht</a><a href="#wissen/was-fehlt-haelt-die-baustelle-auf">Was fehlt, hält die Baustelle auf</a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="system/fassade-100-qm" data-titel="Fassade dämmen — die Liste für 100 m²"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › Systemlisten</p>
 <h1>Fassade dämmen — die Liste für 100 m²</h1>
@@ -1522,13 +1743,15 @@ der ganze Vorteil der getrennten Ausweisung.</p>
 <div class="verwandt"><a href="#wissen/wdvs-systemaufbau">Was zu einem Wärmedämmverbundsystem gehört</a><a href="#wissen/mengen-fuer-100-qm-wdvs">Mengen für 100 m² Fassade ermitteln</a><a href="#wissen/untergrund-pruefen">Untergrund prüfen, bevor geklebt wird</a><a href="#wissen/xps-oder-eps">XPS oder EPS — welche Platte wohin</a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="system/kaminzug" data-titel="Kaminzug — die Liste für einen Zug"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › Systemlisten</p>
 <h1>Kaminzug — die Liste für einen Zug</h1>
@@ -1643,13 +1866,15 @@ der ganze Vorteil der getrennten Ausweisung.</p>
 <div class="verwandt"><a href="#wissen/kaminzug-aufbau">Welche Teile ein Kaminzug braucht</a><a href="#wissen/was-fehlt-haelt-die-baustelle-auf">Was fehlt, hält die Baustelle auf</a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="system/kanal-dn100" data-titel="Grundleitung DN 100 — die Liste"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › Systemlisten</p>
 <h1>Grundleitung DN 100 — die Liste</h1>
@@ -1737,13 +1962,15 @@ der ganze Vorteil der getrennten Ausweisung.</p>
 <div class="verwandt"><a href="#wissen/kanal-was-zusammengehoert">Kanal DN 100 — was zusammengehört</a><a href="#wissen/perimeterdaemmung-und-grundmauerschutz">Perimeterdämmung und Grundmauerschutz</a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-12566" data-titel="Fassaden EPS 2 cm 0,5 m2 — 1,93 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/daemmung">Dämmung</a></p>
 <h1>Fassaden EPS 2 cm 0,5 m2</h1>
@@ -1807,13 +2034,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-12567" data-titel="Fassaden EPS 3 cm 0,5 m2 — 2,81 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/daemmung">Dämmung</a></p>
 <h1>Fassaden EPS 3 cm 0,5 m2</h1>
@@ -1881,13 +2110,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-12583" data-titel="Fassaden EPS 5 cm 0,5 m2 — 4,67 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/daemmung">Dämmung</a></p>
 <h1>Fassaden EPS 5 cm 0,5 m2</h1>
@@ -1951,13 +2182,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-28415" data-titel="Isover TDPT 20 1200 600 mm 8,64 m2 — 10,69 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/daemmung">Dämmung</a></p>
 <h1>Isover TDPT 20 1200 600 mm 8,64 m2</h1>
@@ -2028,13 +2261,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-12580" data-titel="XPS glatt SF 100 mm 0,75 m2 — 16,00 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/daemmung">Dämmung</a></p>
 <h1>XPS glatt SF 100 mm 0,75 m2</h1>
@@ -2098,13 +2333,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-12569" data-titel="XPS glatt SF 30 mm 0,75 m2 — 5,23 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/daemmung">Dämmung</a></p>
 <h1>XPS glatt SF 30 mm 0,75 m2</h1>
@@ -2172,13 +2409,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-12571" data-titel="XPS glatt SF 50 mm 0,75 m2 — 8,72 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/daemmung">Dämmung</a></p>
 <h1>XPS glatt SF 50 mm 0,75 m2</h1>
@@ -2246,13 +2485,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-12575" data-titel="XPS glatt SF 80 mm 0,75 m2 — 13,95 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/daemmung">Dämmung</a></p>
 <h1>XPS glatt SF 80 mm 0,75 m2</h1>
@@ -2320,13 +2561,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-12596" data-titel="XPS rau GK 80 mm 0,75 m2 — 15,00 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/daemmung">Dämmung</a></p>
 <h1>XPS rau GK 80 mm 0,75 m2</h1>
@@ -2394,13 +2637,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-10837" data-titel="Mantelstein MSTS EZ 16-18 SIKM — 23,25 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/kamin">Kamin</a></p>
 <h1>Mantelstein MSTS EZ 16-18 SIKM</h1>
@@ -2472,13 +2717,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-18110" data-titel="Mantelsteinkleber RMRTL Dünnbettmörtel — 44,00 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/kamin">Kamin</a></p>
 <h1>Mantelsteinkleber RMRTL Dünnbettmörtel</h1>
@@ -2550,13 +2797,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-51875" data-titel="Regenhaube mit Sicherungsseil 180 Absolut &amp; SIH — 105,25 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/kamin">Kamin</a></p>
 <h1>Regenhaube mit Sicherungsseil 180 Absolut &amp; SIH</h1>
@@ -2628,13 +2877,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-16070" data-titel="Schiedel Fugenmasse FM 1,5 kg — 46,29 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/kamin">Kamin</a></p>
 <h1>Schiedel Fugenmasse FM 1,5 kg</h1>
@@ -2709,13 +2960,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-12455" data-titel="SIK Zuluftplatte EZ 16-18 inkl. Befestigungsset — 164,64 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/kamin">Kamin</a></p>
 <h1>SIK Zuluftplatte EZ 16-18 inkl. Befestigungsset</h1>
@@ -2790,13 +3043,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-12472" data-titel="SIKM Fertigfußpaket 18 — 183,92 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/kamin">Kamin</a></p>
 <h1>SIKM Fertigfußpaket 18</h1>
@@ -2871,13 +3126,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-12467" data-titel="SIKM Putztüranschlusspaket oben 18 — 458,33 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/kamin">Kamin</a></p>
 <h1>SIKM Putztüranschlusspaket oben 18</h1>
@@ -2952,13 +3209,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-12476" data-titel="SIKM Rohr 133cm gedämmt 18 — 210,99 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/kamin">Kamin</a></p>
 <h1>SIKM Rohr 133cm gedämmt 18</h1>
@@ -3033,13 +3292,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-51967" data-titel="Thermo-Trennstein 12-18 EZ Absolut monolithisch weiß — 255,91 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/kamin">Kamin</a></p>
 <h1>Thermo-Trennstein 12-18 EZ Absolut monolithisch weiß</h1>
@@ -3111,13 +3372,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-21382" data-titel="Grundmauerschutz 20 1,5 m — 1,36 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/kanal">Kanal</a></p>
 <h1>Grundmauerschutz 20 1,5 m</h1>
@@ -3174,13 +3437,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-10134" data-titel="PVC Kanalabzweiger 100 100 45 grad — 5,83 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/kanal">Kanal</a></p>
 <h1>PVC Kanalabzweiger 100 100 45 grad</h1>
@@ -3237,13 +3502,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-10115" data-titel="PVC Kanalbogen NW 100 30 grad — 2,73 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/kanal">Kanal</a></p>
 <h1>PVC Kanalbogen NW 100 30 grad</h1>
@@ -3300,13 +3567,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-10116" data-titel="PVC Kanalbogen NW 100 45 grad — 2,72 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/kanal">Kanal</a></p>
 <h1>PVC Kanalbogen NW 100 45 grad</h1>
@@ -3363,13 +3632,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-10095" data-titel="PVC Kanalrohr NW 100 1 m — 10,81 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/kanal">Kanal</a></p>
 <h1>PVC Kanalrohr NW 100 1 m</h1>
@@ -3426,13 +3697,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-11133" data-titel="Schachtring 800 300 80 mm — 74,67 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/kanal">Kanal</a></p>
 <h1>Schachtring 800 300 80 mm</h1>
@@ -3489,13 +3762,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-29728" data-titel="Ökotherm HL N+F 10 50 23,8 cm — 3,07 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/mauerwerk">Mauerwerk</a></p>
 <h1>Ökotherm HL N+F 10 50 23,8 cm</h1>
@@ -3521,13 +3796,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 <a href="#wissen/warum-keine-gratislieferung">Warum es keine Gratislieferung gibt</a>.</p>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-29108" data-titel="Baumit KlebeSpachtel 25 kg — 14,32 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/moertel">Mörtel</a></p>
 <h1>Baumit KlebeSpachtel 25 kg</h1>
@@ -3568,13 +3845,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-13550" data-titel="Baumit ThermoMörtel 50 40 l — 10,07 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/moertel">Mörtel</a></p>
 <h1>Baumit ThermoMörtel 50 40 l</h1>
@@ -3615,13 +3894,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-29754" data-titel="Ravenit Vergussmörtel 25 kg — 1,45 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/moertel">Mörtel</a></p>
 <h1>Ravenit Vergussmörtel 25 kg</h1>
@@ -3659,13 +3940,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-52058" data-titel="Baumit TextilglasGitter 1,1x50 m — 1,19 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/wdvs">WDVS</a></p>
 <h1>Baumit TextilglasGitter 1,1x50 m</h1>
@@ -3736,13 +4019,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-52124" data-titel="Capatect Gewebeanschlussleiste 3D Universal Plus 2,55 m — 4,91 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/wdvs">WDVS</a></p>
 <h1>Capatect Gewebeanschlussleiste 3D Universal Plus 2,55 m</h1>
@@ -3817,13 +4102,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-50509" data-titel="Capatect Glasgewebe M, Breite 110cm, orange 55 m2 — 1,07 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/wdvs">WDVS</a></p>
 <h1>Capatect Glasgewebe M, Breite 110cm, orange 55 m2</h1>
@@ -3898,13 +4185,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-53402" data-titel="Capatect Kantenschutz mit Gewebe Carbon 11,5 13,5 cm 2,5 m — 0,95 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/wdvs">WDVS</a></p>
 <h1>Capatect Kantenschutz mit Gewebe Carbon 11,5 13,5 cm 2,5 m</h1>
@@ -3979,13 +4268,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-11283" data-titel="Capatect Klebe- und Spachtelmasse 186 M 25 kg — 0,56 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/wdvs">WDVS</a></p>
 <h1>Capatect Klebe- und Spachtelmasse 186 M 25 kg</h1>
@@ -4060,13 +4351,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-29461" data-titel="Capatect Klebe- und Spachtelmasse 190 FEIN 25 kg — 0,60 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/wdvs">WDVS</a></p>
 <h1>Capatect Klebe- und Spachtelmasse 190 FEIN 25 kg</h1>
@@ -4141,13 +4434,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-29610" data-titel="Capatect Polystyrol-Rondelle für Capatect Universaldübel Rondelle und Capatect Schraubdübel Holz — 13,24 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/wdvs">WDVS</a></p>
 <h1>Capatect Polystyrol-Rondelle für Capatect Universaldübel Rondelle und Capatect Schraubdübel Holz</h1>
@@ -4222,13 +4517,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-19333" data-titel="Capatect PrimaPor K20 weiß 25 kg SH-Reibputz — 2,27 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/wdvs">WDVS</a></p>
 <h1>Capatect PrimaPor K20 weiß 25 kg SH-Reibputz</h1>
@@ -4298,13 +4595,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-13728" data-titel="Capatect Putzgrund weiß 25 kg — 2,77 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/wdvs">WDVS</a></p>
 <h1>Capatect Putzgrund weiß 25 kg</h1>
@@ -4379,13 +4678,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-11082" data-titel="Capatect Universaldübel Schraubdübel 053 115, 100 STK, 1 KAR — 66,35 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/wdvs">WDVS</a></p>
 <h1>Capatect Universaldübel Schraubdübel 053 115, 100 STK, 1 KAR</h1>
@@ -4460,13 +4761,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-52537" data-titel="Drehstiftdübel PK(100) K 6 40 mm — 2,87 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/wdvs">WDVS</a></p>
 <h1>Drehstiftdübel PK(100) K 6 40 mm</h1>
@@ -4534,13 +4837,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-29023" data-titel="PAE-Folie T 100 2 50 m 100 m2 — 17,12 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/zubehoer">Zubehör</a></p>
 <h1>PAE-Folie T 100 2 50 m 100 m2</h1>
@@ -4602,13 +4907,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-12294" data-titel="Prima Dosierpistole Metall Lite — 26,88 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/zubehoer">Zubehör</a></p>
 <h1>Prima Dosierpistole Metall Lite</h1>
@@ -4666,13 +4973,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-53215" data-titel="Rahmenschraube Zylinderkopf vz 7,5x182 mm lose — 0,67 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/zubehoer">Zubehör</a></p>
 <h1>Rahmenschraube Zylinderkopf vz 7,5x182 mm lose</h1>
@@ -4730,13 +5039,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-29691" data-titel="Soudal Perimeterkleber B3 750 ml — 7,60 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/zubehoer">Zubehör</a></p>
 <h1>Soudal Perimeterkleber B3 750 ml</h1>
@@ -4797,13 +5108,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-51987" data-titel="Soudal Profi-Pistolenschaum B3 750 ml — 6,51 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/zubehoer">Zubehör</a></p>
 <h1>Soudal Profi-Pistolenschaum B3 750 ml</h1>
@@ -4864,13 +5177,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-31631" data-titel="Soudal Soudabond Easy B1 Pist. 750 ml — 12,60 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/zubehoer">Zubehör</a></p>
 <h1>Soudal Soudabond Easy B1 Pist. 750 ml</h1>
@@ -4931,13 +5246,15 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
 <template data-seite="artikel/POS-31265" data-titel="SunCore Pro Abdeckklebeband 48 mm x 50 m bis 100 °C, gelb — 8,33 € netto"><header class="kopfleiste">
   <a class="logo" href="#index">Freudenthaler Bau GmbH</a>
-  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a></nav>
+  <nav><a href="#gruppe/wdvs">WDVS</a><a href="#gruppe/daemmung">Dämmung</a><a href="#gruppe/kamin">Kamin</a><a href="#gruppe/kanal">Kanal</a><a href="#wissen/index">Wissen</a><a href="#lieferung">Lieferung</a><a href="#rechtliches/index">Rechtliches</a></nav>
 </header>
 <p class="krume"><a href="#index">Start</a> › <a href="#gruppe/zubehoer">Zubehör</a></p>
 <h1>SunCore Pro Abdeckklebeband 48 mm x 50 m bis 100 °C, gelb</h1>
@@ -4995,7 +5312,9 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 </a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
-  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a></p>
+  ausgewiesen · <a href="#wissen/redaktionsprinzipien">Wie wir unsere Angaben prüfen</a>
+  · <a href="#rechtliches/impressum">Impressum</a>
+  · <a href="#rechtliches/datenschutz">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer></template>
