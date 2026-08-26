@@ -91,6 +91,14 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > [`rekonstruierbare-einkaufspreise.md`](./rekonstruierbare-einkaufspreise.md)
 > wiegt die drei Möglichkeiten ab. **Empfehlung: Repository privat
 > stellen — das ist eine Einstellung am Konto des Auftraggebers.**
+>
+> **Die Normen lagen im eigenen Ablagefach** (26.08., nachts): Die
+> Beschaffungsliste vom Vormittag nannte drei äußere Wege, an die fehlenden
+> Fundstellen zu kommen. Der vierte war, im Drive des Auftraggebers
+> nachzusehen — dort liegen ÖNORM B 6400 (WDVS), B 3346, B 2501 und
+> weitere. WDVS-Systemtreue und Dübeluntergrenze sind damit wieder belegt;
+> die Herstellerunterlagen fehlen weiterhin.
+> [`normen-im-eigenen-bestand.md`](./normen-im-eigenen-bestand.md).
 
 ## Wo das Projekt steht
 

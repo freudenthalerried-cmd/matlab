@@ -141,8 +141,18 @@ Bisher steht in den Inhalten kein einziger Datenblattlink — nur vier
 Herstellerstartseiten. Die umgeschriebenen Sätze sagen jetzt genau,
 welches Dokument fehlt:
 
+> **Nachtrag vom selben Abend: Ein Teil davon war nie zu beschaffen.** Die
+> Normen liegen im Google Drive des Auftraggebers — ÖNORM B 6400 (WDVS),
+> B 3346 (Putzmörtel), B 2501 (Entwässerung) und weitere. Der Betrieb ist
+> ein Baumeisterbetrieb; dass er die Normen seines Fachs im Regal hat, ist
+> so selbstverständlich, dass niemand danach gesucht hat. Die
+> WDVS-Systemtreue und die Dübeluntergrenze haben damit wieder eine
+> Fundstelle: [`normen-im-eigenen-bestand.md`](./normen-im-eigenen-bestand.md).
+> Die Liste unten gilt für die **Herstellerunterlagen** weiter.
+
 | Dokument | wofür | wo es gebraucht wird |
 |---|---|---|
+| ~~Normbezug WDVS-Systemtreue~~ | **erledigt** — ETAG 004, ÖNORM B 6400:2004 | — |
 | Systemunterlagen Schiedel, einzügig | welche Teile die geprüfte Kombination bilden | `kaminzug-aufbau`, `gruppen/kamin` |
 | Systemunterlagen des WDVS (Capatect/Synthesa, Baumit) | dasselbe für die Fassade | `wdvs-systemaufbau`, `gruppen/wdvs` |
 | Verarbeitungsrichtlinie Glasgewebe | Überlappungsbreite | `mengen-fuer-100-qm-wdvs` |

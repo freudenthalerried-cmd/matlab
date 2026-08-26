@@ -62,10 +62,20 @@ Grund dahinter: [Was fehlt, hält die Baustelle auf](was-fehlt-haelt-die-baustel
 ## Systemtreue — warum man nicht mischen sollte
 
 Ein WDVS wird als Kombination geprüft, nicht Bestandteil für Bestandteil.
-Wer den Klebemörtel des einen Herstellers mit dem Gewebe eines anderen
-kombiniert, verlässt die geprüfte Zusammenstellung. Welche Zusammenstellung
-geprüft ist, steht in den Systemunterlagen des Herstellers — wir geben sie
-hier nicht wieder, weil sie sich je System und Ausgabe unterscheidet. Ob das technisch funktioniert, ist eine Frage; ob es im
+Die Prüfgrundlage ist die europäische Zulassungsleitlinie **ETAG 004** für
+außenseitige Wärmedämm-Verbundsysteme mit Putzschicht; die österreichischen
+Anwendungskriterien stehen in **ÖNORM B 6400, Ausgabe 2004-08-01**
+(*Außenwand-Wärmedämm-Verbundsysteme — Anwendung*). Wer den Klebemörtel des
+einen Herstellers mit dem Gewebe eines anderen kombiniert, verlässt die
+geprüfte Zusammenstellung. Welche Zusammenstellung geprüft ist, steht in den
+Systemunterlagen des Herstellers — wir geben sie hier nicht wieder, weil sie
+sich je System unterscheidet.
+
+<!-- pruefung: begruendet — Normbezug mit Nummer und Ausgabejahr, Wortlaut nicht wiedergegeben -->
+Zur Ausgabe: Die Fundstelle bezieht sich auf die Fassung von 2004, die dem
+Betrieb vorliegt. Ob inzwischen eine neuere Ausgabe gilt, ist beim
+Österreichischen Normungsinstitut zu prüfen — eine Norm ohne Ausgabejahr ist
+wertlos, eine mit altem Ausgabejahr ist wenigstens nachprüfbar. Ob das technisch funktioniert, ist eine Frage; ob es im
 Schadensfall trägt, eine andere — und die zweite entscheidet der
 Sachverständige, nicht der Verarbeiter.
 

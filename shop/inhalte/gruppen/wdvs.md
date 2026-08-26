@@ -16,7 +16,9 @@ stand: 2026-08-25
 Glasgewebe, Dübel, Kantenschutz, Putzgrund und Oberputz — die Bestandteile
 eines Fassadensystems. Ausgewählt wird nach dem System, nicht nach dem
 Einzelpreis: Geprüft wird die **Kombination**, nicht der einzelne Sack —
-welche Kombination das ist, steht in den Systemunterlagen des Herstellers.
+Prüfgrundlage ist die Zulassungsleitlinie ETAG 004, die österreichischen
+Anwendungskriterien stehen in ÖNORM B 6400, Ausgabe 2004-08-01. Welche
+Kombination geprüft ist, steht in den Systemunterlagen des Herstellers.
 
 ## Was Sie hier finden
 

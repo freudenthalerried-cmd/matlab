@@ -44,8 +44,13 @@ Erkern und Gauben deutlich mehr. Bestellt wird in Paketeinheiten, siehe
 [XPS oder EPS](xps-oder-eps).
 
 **Dübel.** Anzahl je m² **aus der Bemessung**, nicht aus einer Faustregel.
-Sie hängt an Untergrund, Gebäudehöhe, Gebäudezone und Windlast. Dazu die
-Rondellen, falls versenkt gedübelt wird.
+Sie hängt an Untergrund, Gebäudehöhe, Gebäudezone und Windlast. Einen
+Anhaltspunkt für die Untergrenze gibt es allerdings: **ÖNORM B 6400,
+Ausgabe 2004-08-01** nennt mindestens 6 Dübel je m², in der Randzone je nach
+Gebäudehöhe und Windgeschwindigkeit bis zu 12; die Randzone ist dort
+mindestens 1 m breit. Wer mit 6 je m² rechnet, rechnet also die Fläche
+richtig und die Ränder zu knapp. Dazu die Rondellen, falls versenkt
+gedübelt wird.
 
 **Armierungsmörtel.** Verbrauch je m² aus dem Merkblatt, mal Fläche. Auch
 hier gilt der Wert für die im Merkblatt genannte Schichtdicke.
