@@ -12,7 +12,7 @@ der nächste Lauf nicht raten muss.
 | Anzeige | Zeigt | Stand | gültig? |
 |---|---|---|---|
 | **PR #14, Beschreibung** | den ganzen Vorhabenstand | **26.08.** | ja, heute nachgezogen |
-| [Baustoffe zum Baumeisterpreis](https://claude.ai/code/artifact/fe6d720d-473d-4af5-a26b-6fcfbea929dc) | die Website | **26.08., 77 Seiten** | ja, heute nachgezogen |
+| [Baustoffe zum Baumeisterpreis](https://claude.ai/code/artifact/fe6d720d-473d-4af5-a26b-6fcfbea929dc) | die Website | **26.08., 77 Seiten** | ja, zuletzt nach dem Umschreiben der Geltungsaussagen |
 | [Was 25 % Marge tragen](https://claude.ai/code/artifact/6e356abb-b5d3-44a9-9b8d-f98a13fb0502) | die Kalkulation | **26.08.** | ja, mit Skonto und Gate 21 |
 | [Der Weg zum ersten Klick](https://claude.ai/code/artifact/44ba340b-a126-457c-96d5-64fc34efa3a4) | den Ablaufplan | **26.08.** | ja, mit Rechtsseiten und GTIN-Lage |
 | [Radonvorsorge Österreich](https://claude.ai/code/artifact/3d669d15-b632-41b9-838c-b9369dab8a4c) | den Radon-Bericht | 18.08. | **ja, für sein Modell** |
@@ -76,6 +76,8 @@ Fällig, sobald eines der folgenden eintritt:
 
 - ~~die Kalkulationsseite bekommt das Skonto~~ (erledigt 26.08.)
 - ~~der Ablaufplan bekommt die Rechtsseiten und die GTIN-Lage~~ (erledigt 26.08.)
+- ~~sechs Inhaltsseiten haben ihre Geltungsaussagen umgeschrieben~~
+  (erledigt 26.08., Website neu veröffentlicht — `geltungsaussagen.md`)
 - die GTIN trifft ein — dann ändert sich der Feedstand in allen Anzeigen
 - das Repository wird auf privat gestellt — dann ändern sich die
   Hinweise zur Vertraulichkeit
