@@ -11,7 +11,7 @@ der nächste Lauf nicht raten muss.
 
 | Anzeige | Zeigt | Stand | gültig? |
 |---|---|---|---|
-| **PR #14, Beschreibung** | den ganzen Vorhabenstand | **26.08.** | ja, heute nachgezogen |
+| **PR #14, Beschreibung** | den ganzen Vorhabenstand | **26.08., abends** | ja — mit Gate 21/23, 616 Testfällen und der Rekonstruierbarkeit |
 | [Baustoffe zum Baumeisterpreis](https://claude.ai/code/artifact/fe6d720d-473d-4af5-a26b-6fcfbea929dc) | die Website | **26.08., 77 Seiten** | ja, zuletzt nach dem Umschreiben der Geltungsaussagen |
 | [Was 25 % Marge tragen](https://claude.ai/code/artifact/6e356abb-b5d3-44a9-9b8d-f98a13fb0502) | die Kalkulation | 26.08., **vormittags** | **nein — trägt die berichtigte Gate-21-Aussage noch nicht** |
 | [Der Weg zum ersten Klick](https://claude.ai/code/artifact/44ba340b-a126-457c-96d5-64fc34efa3a4) | den Ablaufplan | **26.08.** | ja, mit Rechtsseiten und GTIN-Lage |
@@ -85,6 +85,10 @@ Fällig, sobald eines der folgenden eintritt:
   veröffentlichten Fassung und nach einer echten inhaltlichen Erweiterung.
   Der Stand im Schaufenster sagt also weiterhin „nur der Rechnungskauf
   verletzt Gate 21" — was seit `zahlungsziel-entschieden.md` falsch ist.
+
+  Die PR-Beschreibung weist die Anzeige seit dem 26.08. abends ausdrücklich
+  als überholt aus und verweist auf die gültige Fassung im Verzeichnis —
+  das ist der einzige Weg, der ohne Freigabe offensteht.
 
   **Kein weiterer Versuch ohne Freigabe.** Der Dienst bietet ein Überschreiben
   an, das ausdrücklich die Zustimmung des Auftraggebers verlangt; die ist nicht
