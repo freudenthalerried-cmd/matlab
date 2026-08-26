@@ -37,14 +37,27 @@ Drei Folgen:
    Aufenthaltsräumen, also am Ein-/Zweifamilienhaus, und dessen Wiener Anteil
    ist vernachlässigbar. Grob gerechnet liegen ~85–90 % des
    EFH-Neubausegments im Pflichtgebiet.
-3. **Die Ironie der Karte: Der Bezirk des Auftraggebers ist ausgenommen.**
-   Ried im Innkreis ist kein Vorsorgegebiet. Ein Handwerksbetrieb aus dem
-   Heimatbezirk unterliegt der Pflicht **im eigenen Bezirk nicht** — wohl aber
-   auf jeder Baustelle in den Nachbarbezirken (Braunau, Schärding, Grieskirchen
-   sind Vorsorgegebiet, Oberösterreich trägt 37 der 104 Schutzgebiete). Für
-   die Inhalte heißt das: Regionale Ansprache darf nicht „bei uns gilt das"
-   erzählen, sondern „auf Ihren Baustellen gilt das" — die Kunden arbeiten
-   über Bezirksgrenzen.
+3. ~~**Die Ironie der Karte: Der Bezirk des Auftraggebers ist ausgenommen.**~~
+   **Berichtigt am 26. August — der Satz war falsch, und zwar in die
+   bequeme Richtung.** Er lautete:
+
+   > Ried im Innkreis ist kein Vorsorgegebiet. Ein Handwerksbetrieb aus dem
+   > Heimatbezirk unterliegt der Pflicht **im eigenen Bezirk nicht** — wohl aber
+   > auf jeder Baustelle in den Nachbarbezirken (Braunau, Schärding, Grieskirchen
+   > sind Vorsorgegebiet, Oberösterreich trägt 37 der 104 Schutzgebiete). Für
+   > die Inhalte heißt das: Regionale Ansprache darf nicht „bei uns gilt das"
+   > erzählen, sondern „auf Ihren Baustellen gilt das".
+
+   Der Betriebssitz liegt in **Ried in der Riedmark, Bezirk Perg** — nicht in
+   Ried im Innkreis, das ein anderer Bezirk rund 150 km weiter westlich ist.
+   Belegt durch die Gewerbebehörde in `shop/data/betreiber.json`:
+   Bezirkshauptmannschaft **Perg**. Perg steht **nicht** auf der Ausnahmeliste.
+
+   **Der Heimatbezirk ist damit Radonvorsorgegebiet, und die Pflicht gilt im
+   eigenen Bezirk sehr wohl.** Für die Inhalte heißt das das Gegenteil: „auch
+   bei uns gilt das" ist richtig, und ein Text, der für den Heimatbezirk eine
+   Ausnahme behauptet, wäre vor genau den Leuten blamiert, die dort bauen.
+   Hergang und Folgen in [`zwei-ried.md`](./zwei-ried.md).
 
 ## Fund 2: Der Kern des Shopmarkts ist kleiner als die Modellzahl — und amtlich
 
@@ -91,9 +104,11 @@ auslösen, nicht Sanierungswillige einsammeln.
 2. **`marktrisiko-neubau.md`, offene Frage „Größe des relevanten
    Gebäudebestands":** beziffert (dieses Dokument trägt die Zahl).
 3. **Inhaltsplanung:** Die regionale Ansprache muss die Gebietskulisse
-   ernst nehmen — inklusive der Auskunft, dass der Heimatbezirk des Betreibers
-   ausgenommen ist. Ein Inhalt, der die Pflicht pauschal behauptet, wäre in
-   Ried schlicht falsch und vor Handwerkern sofort blamiert.
+   ernst nehmen. ~~inklusive der Auskunft, dass der Heimatbezirk des Betreibers
+   ausgenommen ist~~ — **berichtigt 26.08.:** Der Heimatbezirk ist Perg und
+   damit Vorsorgegebiet. Ein Inhalt, der für ihn eine Ausnahme behauptet,
+   wäre falsch; die Pflicht pauschal zu behaupten ist hier richtig.
+   Siehe [`zwei-ried.md`](./zwei-ried.md).
 4. **Die Gebietsabfrage (blockierter Baustein 1) hat jetzt eine
    Zwischenlösung:** Bis RIS/Geoserver erreichbar sind, genügt für die
    Oberfläche die Negativliste (Wien + zehn Bezirke) plus der Hinweis auf die

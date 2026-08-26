@@ -71,6 +71,15 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > Urfahr-Umgebung, Freistadt, Linz-Land, Linz — der Bezirk wird gefragt,
 > nicht aus der Postleitzahl erraten.
 > [`liefergebiet-entschieden.md`](./liefergebiet-entschieden.md).
+>
+> **Berichtigung vom 26. August, abends:** Vier Dokumente behaupteten, der
+> Heimatbezirk des Auftraggebers sei **Ried im Innkreis** und damit von der
+> Radon-Vorsorgepflicht ausgenommen. Der Sitz liegt in **Ried in der
+> Riedmark, Bezirk Perg** — ein anderer Bezirk, rund 150 km entfernt, und
+> Perg steht nicht auf der Ausnahmeliste. Der Heimatbezirk ist
+> Vorsorgegebiet; die Folgerung für die regionale Ansprache dreht sich um.
+> Aufgedeckt durch eine Oberflächenprobe, die etwas ganz anderes prüfen
+> sollte — [`zwei-ried.md`](./zwei-ried.md).
 
 ## Wo das Projekt steht
 
@@ -210,7 +219,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `strassenpreisanker-sortiment.md` | **Das Drainagerohr kostet am Markt die Hälfte unseres Platzhalters** — die Drainagegruppe kann kein Margenträger sein; die Zange aus Commodity und Hersteller-Direktvertrieb ist vollständig benannt |
 | `felder-der-ablage.md` | **Ein eingefrorenes Feld kann nie wahr werden** — das Felderverzeichnis der Ablage; jedes Journalfeld trägt Grundlage oder Beweislast, das tote Feld `storniert` ist entfernt |
 | `gedaechtnis-der-ablage.md` | **Erst das Journal, dann der Speicher** — die Ablage überlebt den Neustart als Anhangdatei; auch die Nummernvergabe wird eine Zeile, sonst vergäbe der Neustart Rechnungsnummern doppelt |
-| `nachfragezahlen-pflichtgebiet-und-bestand.md` | **Das Pflichtgebiet ist fast ganz Österreich — ausgenommen Wien, zehn Bezirke und damit der Heimatbezirk des Betreibers** — EFH-Kern ~8.000–9.000 Häuser/Jahr; Bestand ~240.000 betroffene Wohnungen, Engpass ist die Messquote |
+| `nachfragezahlen-pflichtgebiet-und-bestand.md` | **Das Pflichtgebiet ist fast ganz Österreich — ausgenommen Wien und zehn Bezirke** (nicht darunter: der Heimatbezirk Perg — die frühere Zuschreibung an Ried im Innkreis war eine Verwechslung, [`zwei-ried.md`](./zwei-ried.md)) — EFH-Kern ~8.000–9.000 Häuser/Jahr; Bestand ~240.000 betroffene Wohnungen, Engpass ist die Messquote |
 | `gebietsauskunft-zwischenloesung.md` | **Elf Einträge statt 2.095 Gemeinden** — die Vorsorgegebiets-Auskunft über die Negativliste, als Auskunft mit ausgesprochenen Grenzen statt als Sperre; Schutzgebiets-Stufe bleibt am Verordnungstext blockiert |
 | `vertriebswege-der-hersteller.md` | **Die Zange ist kein Branchengesetz** — Vedagard AL-E läuft im klassischen Händlerkanal zum selben m²-Straßenpreis wie die AlphaBlock; die Anschreiben entscheiden über die Marge, nicht mehr allein über die Lieferfähigkeit; ein Großhändler wird dreizehnter Adressat |
 | `auswertung-grosshandelsweg.md` | **Ein Einkaufspreis ohne Deckel ist keine Kondition** — der Auswertungsbogen liest jetzt beide Antwortwege; nennt eine Antwort beide, gilt der schlechtere; alle dreizehn Antworten sind am Tag ihres Eintreffens auswertbar |

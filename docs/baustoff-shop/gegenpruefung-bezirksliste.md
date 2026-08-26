@@ -26,7 +26,7 @@ unabhängige zweite Quellen.
 **Sieben der zehn Bezirke sind damit aus unabhängiger zweiter Quelle
 ausdrücklich bestätigt, einer davon amtlich durch das Land** — und es ist
 genau der, der im Modul und in der Demo am meisten trägt: Ried im Innkreis,
-der Beispielwert der Gebietsauskunft und der Heimatbezirk des Betreibers.
+der Beispielwert der Gebietsauskunft. ~~und der Heimatbezirk des Betreibers~~ — **berichtigt 26.08.:** Die Bestätigung gilt weiter, die Zuschreibung nicht. Der Heimatbezirk ist Perg und steht nicht auf der Ausnahmeliste ([`zwei-ried.md`](./zwei-ried.md)). Richtig geprüft, falsche Frage.
 Kein einziger Widerspruch zur Liste ist aufgetaucht.
 
 ## Was sich dadurch ändert — und was nicht

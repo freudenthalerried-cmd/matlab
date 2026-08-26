@@ -18,9 +18,18 @@ Eine Frage, die als Positivliste 2.095 Gemeinden bräuchte, braucht als
 `gebiet.js` mit `AUSNAHMEN_VORSORGEGEBIET` (Wien + zehn Bezirke, je mit
 Bundesland) und `vorsorgeauskunft(bezirk)`. Die Demo fragt im
 Baustellen-Block den Bezirk ab und zeigt die Auskunft live an; der
-Beispielwert ist bewusst **Ried im Innkreis** — der Heimatbezirk des
-Betreibers, und der ist ausgenommen. Wer die Demo öffnet, sieht als Erstes,
-dass die Auskunft auch „nein" sagen kann.
+Beispielwert ist **Perg** — der Heimatbezirk des Betreibers, und der ist
+Vorsorgegebiet.
+
+> **Berichtigt am 26. August.** Hier stand: „Beispielwert ist bewusst *Ried
+> im Innkreis* — der Heimatbezirk des Betreibers, und der ist ausgenommen."
+> Beides zusammen war falsch: Der Betriebssitz liegt in **Ried in der
+> Riedmark, Bezirk Perg**, und Perg steht nicht auf der Ausnahmeliste. Zwei
+> Bezirke, deren Namen mit „Ried" beginnen, rund 150 km auseinander —
+> Hergang in [`zwei-ried.md`](./zwei-ried.md).
+
+Dass die Auskunft auch „nein" sagen kann, zeigt seit der Berichtigung ein
+eigenes Oberflächenszenario mit Ried im Innkreis statt der Voreinstellung.
 
 Die Auskunft ist eine **Auskunft, keine Sperre**: Sie hält keine Bestellung
 an. Ob ein Kunde in Güssing Radonbahn kaufen will, ist seine Sache — die

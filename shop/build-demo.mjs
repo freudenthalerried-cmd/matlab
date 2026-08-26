@@ -36,6 +36,7 @@ const kern = [
   entkleide(lies('./src/preis.js')),
   entkleide(lies('./src/warenkorb.js')),
   entkleide(lies('./src/bedarf.js')),
+  entkleide(lies('./src/liefergebiet.js')),
   entkleide(lies('./src/kunde.js')),
   entkleide(lies('./src/messwert.js')),
   entkleide(lies('./src/rechtstexte.js')),

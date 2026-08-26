@@ -177,12 +177,13 @@
         <div class="k-felder" id="k-baustelle-felder" hidden>
           <label>Baustelle — Bezeichnung<input type="text" id="k-b-name" value="Neubau Familie Berger" placeholder="leer = Ihr Firmenname"></label>
           <label>Straße und Hausnummer<input type="text" id="k-b-strasse" value="Feldgasse 27"></label>
-          <label>PLZ<input type="text" id="k-b-plz" value="4910" inputmode="numeric"></label>
-          <label>Ort<input type="text" id="k-b-ort" value="Ried im Innkreis"></label>
+          <label>PLZ<input type="text" id="k-b-plz" value="4312" inputmode="numeric"></label>
+          <label>Ort<input type="text" id="k-b-ort" value="Ried in der Riedmark"></label>
           <label>Land<input type="text" id="k-b-land" value="AT" placeholder="AT"></label>
           <label>Ansprechpartner vor Ort<input type="text" id="k-b-telefon" value="+43 664 9998877"></label>
           <label>Hinweis zur Zufahrt<input type="text" id="k-b-hinweis" value="Zufahrt über Baustraße, Kran bis 16 Uhr besetzt"></label>
-          <label>Bezirk der Baustelle<input type="text" id="k-b-bezirk" value="Ried im Innkreis"></label>
+          <label>Bezirk der Baustelle<input type="text" id="k-b-bezirk" value="Perg"></label>
+          <small id="k-liefer-auskunft" class="k-gebiet"></small>
           <small id="k-gebiet-auskunft" class="k-gebiet"></small>
         </div>
         <label class="k-bestaetigung" id="k-art14-zeile" hidden><input type="checkbox" id="k-art14"> <span id="k-art14-text"></span></label>
@@ -491,6 +492,11 @@ document.getElementById('kasse').addEventListener('submit', (e) => {
       land: document.getElementById('k-b-land').value,
       telefon: document.getElementById('k-b-telefon').value,
       hinweis: document.getElementById('k-b-hinweis').value,
+      // Der Bezirk stand seit der Gebietsauskunft im Formular und ging nicht
+      // in die Bestelldaten — er beantwortete nur die Radonfrage. Seit Gate 23
+      // prüft der Rechenkern damit das Liefergebiet; ohne diese Zeile lehnte
+      // die Kasse jede Bestellung mit Baustelle ab, und zwar zu Recht.
+      bezirk: document.getElementById('k-b-bezirk').value,
     };
     // Art. 14 DSGVO: Der Ansprechpartner vor Ort ist ein Dritter.
     eingabe[ZUSICHERUNG_DRITTER.feld] = document.getElementById('k-art14').checked;
@@ -846,12 +852,22 @@ document.getElementById('k-baustelle-an').addEventListener('change', (e) => {
 // Vorsorgegebiets-Frage aus der Negativliste und nennt ihre eigene Grenze
 // (Schutzgebiete nur über die amtliche Liste). Text ausschließlich über
 // textContent — wie überall.
+//
+// Seit Gate 23 beantwortet dasselbe Eingabefeld **zwei** Fragen zweier
+// verschiedener Modelle: Liegt der Bezirk im Radonvorsorgegebiet (Auskunft),
+// und liefern wir dorthin (Sperre). Sie stehen deshalb als zwei Zeilen
+// untereinander und nicht als ein Satz — ein Satz, der beides zugleich
+// beantwortet, wird für eine Antwort gehalten.
 const zeichneGebiet = () => {
-  document.getElementById('k-gebiet-auskunft').textContent = vorsorgeauskunft(
-    document.getElementById('k-b-bezirk').value,
-  ).text;
+  const bezirk = document.getElementById('k-b-bezirk').value;
+  const liefern = pruefeLieferort({ land: document.getElementById('k-b-land').value, bezirk });
+  document.getElementById('k-liefer-auskunft').textContent = liefern.liefern
+    ? `Liefergebiet: ${bezirk} wird beliefert.`
+    : `Liefergebiet: ${liefern.grund}`;
+  document.getElementById('k-gebiet-auskunft').textContent = vorsorgeauskunft(bezirk).text;
 };
 document.getElementById('k-b-bezirk').addEventListener('input', zeichneGebiet);
+document.getElementById('k-b-land').addEventListener('input', zeichneGebiet);
 zeichneGebiet();
 
 zeichneKatalog();

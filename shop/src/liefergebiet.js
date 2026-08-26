@@ -66,17 +66,17 @@ export const LIEFERGEBIET = Object.freeze({
 });
 
 /** Vergleichsform eines Bezirksnamens: ohne Zierrat, damit „Linz Land" trifft. */
-const schluessel = (name) =>
+const bezirksschluessel = (name) =>
   textZeile(name)
     .toLowerCase()
     .replace(/[\s.\-–—]+/g, '')
     .replace(/bezirk/g, '');
 
-const GEBIETSSCHLUESSEL = new Set(LIEFERGEBIET.bezirke.map((b) => schluessel(b.name)));
+const GEBIETSSCHLUESSEL = new Set(LIEFERGEBIET.bezirke.map((b) => bezirksschluessel(b.name)));
 
 /** Liegt dieser Bezirk im Liefergebiet? */
 export function imLiefergebiet(bezirk) {
-  const s = schluessel(bezirk ?? '');
+  const s = bezirksschluessel(bezirk ?? '');
   return s !== '' && GEBIETSSCHLUESSEL.has(s);
 }
 

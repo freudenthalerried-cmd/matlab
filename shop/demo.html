@@ -177,12 +177,13 @@
         <div class="k-felder" id="k-baustelle-felder" hidden>
           <label>Baustelle — Bezeichnung<input type="text" id="k-b-name" value="Neubau Familie Berger" placeholder="leer = Ihr Firmenname"></label>
           <label>Straße und Hausnummer<input type="text" id="k-b-strasse" value="Feldgasse 27"></label>
-          <label>PLZ<input type="text" id="k-b-plz" value="4910" inputmode="numeric"></label>
-          <label>Ort<input type="text" id="k-b-ort" value="Ried im Innkreis"></label>
+          <label>PLZ<input type="text" id="k-b-plz" value="4312" inputmode="numeric"></label>
+          <label>Ort<input type="text" id="k-b-ort" value="Ried in der Riedmark"></label>
           <label>Land<input type="text" id="k-b-land" value="AT" placeholder="AT"></label>
           <label>Ansprechpartner vor Ort<input type="text" id="k-b-telefon" value="+43 664 9998877"></label>
           <label>Hinweis zur Zufahrt<input type="text" id="k-b-hinweis" value="Zufahrt über Baustraße, Kran bis 16 Uhr besetzt"></label>
-          <label>Bezirk der Baustelle<input type="text" id="k-b-bezirk" value="Ried im Innkreis"></label>
+          <label>Bezirk der Baustelle<input type="text" id="k-b-bezirk" value="Perg"></label>
+          <small id="k-liefer-auskunft" class="k-gebiet"></small>
           <small id="k-gebiet-auskunft" class="k-gebiet"></small>
         </div>
         <label class="k-bestaetigung" id="k-art14-zeile" hidden><input type="checkbox" id="k-art14"> <span id="k-art14-text"></span></label>
@@ -875,6 +876,129 @@ function berechneBedarf(gebaeude, katalog) {
     /** Direkt für berechneWarenkorb() verwendbar. */
     warenkorbzeilen: positionen.map((p) => ({ sku: p.sku, menge: p.menge })),
   };
+}
+
+/**
+ * Das Liefergebiet — und warum der Shop es kennen muss, bevor er annimmt.
+ *
+ * Die Weisung vom 22. August lautet: **regional, nicht österreichweit.**
+ * Umgesetzt war sie an genau einer Stelle — in der Kampagne, als Zeichenkette
+ * in einer Anzeigenzeile. Der Rechenkern nahm bis heute jede österreichische
+ * Adresse an, und Punkt 12 der Geschäftsbedingungen sagte „Lieferorte nur in
+ * Österreich", was eine Erlaubnis ist und keine Grenze.
+ *
+ * **Ein Zielgebiet, das nur in der Werbung steht, ist kein Zielgebiet.** Es
+ * bestimmt, wem die Anzeige gezeigt wird, nicht, wessen Bestellung angenommen
+ * wird. Wer von außerhalb bestellt, bestellt trotzdem.
+ *
+ * ## Warum der Bezirk und nicht die Postleitzahl
+ *
+ * Aus demselben Grund, aus dem `kunde.js` das Land verlangt statt es aus der
+ * Postleitzahl zu erraten: **Eine Postleitzahl beweist keinen Bezirk.** Sie
+ * überschreitet Bezirks- und sogar Landesgrenzen, und die amtliche Zuordnung
+ * ist von hier aus nicht abrufbar — dieselbe Sperre, an der schon die
+ * Gebietsauskunft des Radonmodells endete (`gebiet.js`).
+ *
+ * Eine aus dem Gedächtnis zusammengeschriebene Postleitzahlentabelle wäre der
+ * bequeme Weg und der falsche: Sie sähe amtlich aus und wäre es nicht. Der
+ * Bezirk wird deshalb **gefragt**, nicht abgeleitet.
+ *
+ * ## Warum eng und nicht großzügig
+ *
+ * Der Shop ist ein Streckengeschäft. Was er liefern kann, liefert der
+ * Lieferant — und **wie weit der liefert, steht in keiner der fünfzehn
+ * Rechnungen.** Die Frachtpauschale ist auf jedem Beleg dieselbe, unabhängig
+ * vom Ort; eine Entfernungsgrenze ist daraus weder ablesbar noch
+ * ausschließbar.
+ *
+ * Solange das offen ist, gilt die vorsichtige Richtung: Das Liefergebiet ist
+ * die Fläche, für die die Kampagne wirbt, und keinen Bezirk mehr. Ein
+ * angenommener Auftrag, den der Lieferant nicht fährt, kostet mehr als ein
+ * abgelehnter — er kostet die Zusage.
+ */
+
+
+/**
+ * Die Bezirke, in die geliefert wird.
+ *
+ * Deckungsgleich mit der Ausrichtung der Kampagne (`bin/kampagne.mjs`), und
+ * das ist kein Zufall, sondern die Bedingung: Beworben und beliefert muss
+ * dieselbe Fläche sein. Ein Testfall hält beide Listen aneinander.
+ */
+const LIEFERGEBIET = Object.freeze({
+  stand: '2026-08-26',
+  herkunft: 'docs/baustoff-shop/liefergebiet-entschieden.md',
+  land: 'AT',
+  bezirke: Object.freeze([
+    { name: 'Perg', bundesland: 'Oberösterreich', grund: 'Sitz des Betriebs (Marwach 5, 4312 Ried in der Riedmark)' },
+    { name: 'Urfahr-Umgebung', bundesland: 'Oberösterreich', grund: 'Nachbarbezirk, Mühlviertel' },
+    { name: 'Freistadt', bundesland: 'Oberösterreich', grund: 'Nachbarbezirk, Mühlviertel' },
+    { name: 'Linz-Land', bundesland: 'Oberösterreich', grund: 'Ballungsraum, größte Bautätigkeit im Umkreis' },
+    { name: 'Linz', bundesland: 'Oberösterreich', grund: 'Statutarstadt im selben Ballungsraum' },
+  ]),
+  vorbehalt:
+    'Das tatsächliche Liefergebiet des Lieferanten ist unbekannt — aus fünfzehn Rechnungen '
+    + 'nicht ableitbar, weil die Frachtpauschale nicht nach Entfernung staffelt. Beim '
+    + 'Lieferanten zu erfragen; bis dahin gilt diese Liste als die engere der beiden.',
+  selbstabholung:
+    'Abholung am Betriebssitz ist von der Bezirksgrenze unberührt — sie setzt keine Lieferung voraus.',
+});
+
+/** Vergleichsform eines Bezirksnamens: ohne Zierrat, damit „Linz Land" trifft. */
+const bezirksschluessel = (name) =>
+  textZeile(name)
+    .toLowerCase()
+    .replace(/[\s.\-–—]+/g, '')
+    .replace(/bezirk/g, '');
+
+const GEBIETSSCHLUESSEL = new Set(LIEFERGEBIET.bezirke.map((b) => bezirksschluessel(b.name)));
+
+/** Liegt dieser Bezirk im Liefergebiet? */
+function imLiefergebiet(bezirk) {
+  const s = bezirksschluessel(bezirk ?? '');
+  return s !== '' && GEBIETSSCHLUESSEL.has(s);
+}
+
+/** Die Bezirksnamen als lesbare Aufzählung — für Fehlermeldungen und Seiten. */
+const bezirksliste = () => LIEFERGEBIET.bezirke.map((b) => b.name).join(', ');
+
+/**
+ * Prüft einen Lieferort gegen das Gebiet.
+ *
+ * Drei Ausgänge, und der mittlere ist der wichtige: **Ein fehlender Bezirk
+ * ist kein Ja.** Ihn stillschweigend durchzulassen hieße, die Grenze genau
+ * dort zu öffnen, wo sie am leichtesten zu übersehen ist — beim
+ * unvollständigen Formular.
+ *
+ * @param {{land?: string, bezirk?: string}} ort
+ */
+function pruefeLieferort(ort = {}) {
+  const land = textZeile(ort.land ?? '').toUpperCase();
+  const bezirk = textZeile(ort.bezirk ?? '');
+
+  if (land !== '' && land !== LIEFERGEBIET.land) {
+    return {
+      liefern: false,
+      grund: `Lieferung nur innerhalb Österreichs, angegeben ist ${land}`,
+    };
+  }
+  if (bezirk === '') {
+    return {
+      liefern: false,
+      grund:
+        'Bezirk der Baustelle fehlt — er lässt sich aus der Postleitzahl nicht bestimmen '
+        + `und wird deshalb gefragt. Geliefert wird nach: ${bezirksliste()}.`,
+    };
+  }
+  if (!imLiefergebiet(bezirk)) {
+    return {
+      liefern: false,
+      grund:
+        `Bezirk ${bezirk} liegt außerhalb des Liefergebiets. Geliefert wird nach: `
+        + `${bezirksliste()}. Abholung am Betriebssitz ist davon unberührt.`,
+    };
+  }
+  return { liefern: true, grund: null, bezirk };
 }
 
 /**
@@ -4218,6 +4342,11 @@ document.getElementById('kasse').addEventListener('submit', (e) => {
       land: document.getElementById('k-b-land').value,
       telefon: document.getElementById('k-b-telefon').value,
       hinweis: document.getElementById('k-b-hinweis').value,
+      // Der Bezirk stand seit der Gebietsauskunft im Formular und ging nicht
+      // in die Bestelldaten — er beantwortete nur die Radonfrage. Seit Gate 23
+      // prüft der Rechenkern damit das Liefergebiet; ohne diese Zeile lehnte
+      // die Kasse jede Bestellung mit Baustelle ab, und zwar zu Recht.
+      bezirk: document.getElementById('k-b-bezirk').value,
     };
     // Art. 14 DSGVO: Der Ansprechpartner vor Ort ist ein Dritter.
     eingabe[ZUSICHERUNG_DRITTER.feld] = document.getElementById('k-art14').checked;
@@ -4573,12 +4702,22 @@ document.getElementById('k-baustelle-an').addEventListener('change', (e) => {
 // Vorsorgegebiets-Frage aus der Negativliste und nennt ihre eigene Grenze
 // (Schutzgebiete nur über die amtliche Liste). Text ausschließlich über
 // textContent — wie überall.
+//
+// Seit Gate 23 beantwortet dasselbe Eingabefeld **zwei** Fragen zweier
+// verschiedener Modelle: Liegt der Bezirk im Radonvorsorgegebiet (Auskunft),
+// und liefern wir dorthin (Sperre). Sie stehen deshalb als zwei Zeilen
+// untereinander und nicht als ein Satz — ein Satz, der beides zugleich
+// beantwortet, wird für eine Antwort gehalten.
 const zeichneGebiet = () => {
-  document.getElementById('k-gebiet-auskunft').textContent = vorsorgeauskunft(
-    document.getElementById('k-b-bezirk').value,
-  ).text;
+  const bezirk = document.getElementById('k-b-bezirk').value;
+  const liefern = pruefeLieferort({ land: document.getElementById('k-b-land').value, bezirk });
+  document.getElementById('k-liefer-auskunft').textContent = liefern.liefern
+    ? `Liefergebiet: ${bezirk} wird beliefert.`
+    : `Liefergebiet: ${liefern.grund}`;
+  document.getElementById('k-gebiet-auskunft').textContent = vorsorgeauskunft(bezirk).text;
 };
 document.getElementById('k-b-bezirk').addEventListener('input', zeichneGebiet);
+document.getElementById('k-b-land').addEventListener('input', zeichneGebiet);
 zeichneGebiet();
 
 zeichneKatalog();

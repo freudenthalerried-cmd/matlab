@@ -56,10 +56,24 @@ function findeChromium() {
 
 const SZENARIEN = [
   {
-    name: 'Gebietsauskunft beim Laden (Heimatbezirk ist die Ausnahme)',
+    // Hieß bis zum 26. August „Heimatbezirk ist die Ausnahme" und stand auf
+    // „Ried im Innkreis". Der Betriebssitz liegt in **Ried in der Riedmark**,
+    // Bezirk Perg — zwei verschiedene Bezirke, rund 150 km auseinander. Der
+    // Heimatbezirk ist Radonvorsorgegebiet, nicht Ausnahme; siehe
+    // docs/baustoff-shop/zwei-ried.md.
+    name: 'Gebietsauskunft beim Laden (Heimatbezirk Perg ist Vorsorgegebiet)',
     aktionen: '',
     ziele: ['k-gebiet-auskunft'],
-    erwartet: ['steht auf der Ausnahmeliste und ist kein Radonvorsorgegebiet', 'amtliche Liste auf Gemeindeebene'],
+    erwartet: ['steht nicht auf der Ausnahmeliste', 'gilt damit als Radonvorsorgegebiet', 'amtliche Liste auf Gemeindeebene'],
+  },
+  {
+    name: 'Gebietsauskunft: der andere Ried steht sehr wohl auf der Ausnahmeliste',
+    aktionen: `
+      document.getElementById('k-baustelle-an').click();
+      document.getElementById('k-b-bezirk').value = 'Ried im Innkreis';
+      document.getElementById('k-b-bezirk').dispatchEvent(new Event('input'));`,
+    ziele: ['k-gebiet-auskunft'],
+    erwartet: ['steht auf der Ausnahmeliste und ist kein Radonvorsorgegebiet'],
   },
   {
     name: 'Messwert genau 300 überschreitet 300 nicht',
@@ -103,6 +117,41 @@ const SZENARIEN = [
     ziele: ['kasse-ergebnis'],
     erwartet: ['UID-Abfrage (simuliert)', 'Es geht nichts hinaus'],
     verboten: ['als ungültig'],
+  },
+  {
+    // Der Bezirk stand seit der Gebietsauskunft im Formular und ging nicht in
+    // die Bestelldaten. Seit Gate 23 prüft der Rechenkern damit das
+    // Liefergebiet — die Kasse lehnte jede Bestellung mit Baustelle ab, und
+    // keine Probe bemerkte es, weil keine je eine Baustelle anhakte.
+    name: 'Kasse: eine Baustelle im Liefergebiet geht durch',
+    aktionen: `
+      document.querySelector('#katalog .add').click();
+      document.getElementById('k-baustelle-an').click();
+      document.getElementById('k-art14').click();
+      document.getElementById('kasse').requestSubmit();`,
+    ziele: ['kasse-ergebnis'],
+    erwartet: ['Es geht nichts hinaus'],
+    verboten: ['Liefergebiet', 'Bezirk der Baustelle fehlt'],
+  },
+  {
+    name: 'Kasse: eine Baustelle außerhalb wird abgelehnt und nennt das Gebiet',
+    aktionen: `
+      document.querySelector('#katalog .add').click();
+      document.getElementById('k-baustelle-an').click();
+      document.getElementById('k-art14').click();
+      document.getElementById('k-b-bezirk').value = 'Schärding';
+      document.getElementById('kasse').requestSubmit();`,
+    ziele: ['kasse-ergebnis'],
+    erwartet: ['außerhalb des Liefergebiets', 'Perg'],
+  },
+  {
+    name: 'Die Auskunft trennt Liefergebiet und Radonvorsorge',
+    aktionen: `
+      document.getElementById('k-baustelle-an').click();
+      document.getElementById('k-b-bezirk').value = 'Perg';
+      document.getElementById('k-b-bezirk').dispatchEvent(new Event('input'));`,
+    ziele: ['k-liefer-auskunft', 'k-gebiet-auskunft'],
+    erwartet: ['Liefergebiet: Perg wird beliefert', 'Radonvorsorgegebiet'],
   },
   {
     name: 'Kasse: eine ungültige UID wird als ungültig ausgewiesen',
