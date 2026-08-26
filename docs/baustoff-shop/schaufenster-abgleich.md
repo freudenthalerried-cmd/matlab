@@ -13,8 +13,8 @@ der nächste Lauf nicht raten muss.
 |---|---|---|---|
 | **PR #14, Beschreibung** | den ganzen Vorhabenstand | **26.08.** | ja, heute nachgezogen |
 | [Baustoffe zum Baumeisterpreis](https://claude.ai/code/artifact/fe6d720d-473d-4af5-a26b-6fcfbea929dc) | die Website | **26.08., 77 Seiten** | ja, heute nachgezogen |
-| [Was 25 % Marge tragen](https://claude.ai/code/artifact/6e356abb-b5d3-44a9-9b8d-f98a13fb0502) | die Kalkulation | 25.08. | ja — kennt aber das Skonto nicht |
-| [Der Weg zum ersten Klick](https://claude.ai/code/artifact/44ba340b-a126-457c-96d5-64fc34efa3a4) | den Ablaufplan | 25.08. | ja — kennt die Rechtsseiten nicht |
+| [Was 25 % Marge tragen](https://claude.ai/code/artifact/6e356abb-b5d3-44a9-9b8d-f98a13fb0502) | die Kalkulation | **26.08.** | ja, mit Skonto und Gate 21 |
+| [Der Weg zum ersten Klick](https://claude.ai/code/artifact/44ba340b-a126-457c-96d5-64fc34efa3a4) | den Ablaufplan | **26.08.** | ja, mit Rechtsseiten und GTIN-Lage |
 | [Radonvorsorge Österreich](https://claude.ai/code/artifact/3d669d15-b632-41b9-838c-b9369dab8a4c) | den Radon-Bericht | 18.08. | **ja, für sein Modell** |
 | [Radonvorsorge Fachhandel](https://claude.ai/code/artifact/c40fd35f-56e1-4821-a3b1-a1a885102ec8) | das Radon-Funktionsmuster | 17.08. | **ja, für sein Modell** |
 | `shop/demo.html` | dasselbe Funktionsmuster als Datei | heute neu gebaut | ja |
@@ -32,21 +32,22 @@ Anzeige zu vermischen.
 Nachlässigkeit.** Damit sie nicht doch für den aktuellen Stand gehalten
 werden, führt dieses Dokument sie mit Datum und Modellzuordnung.
 
-## Zwei Anzeigen sind gültig, aber nicht vollständig
+## Zwei Anzeigen waren gültig, aber nicht vollständig — erledigt
 
-**Die Kalkulationsseite** (25.08.) rechnet richtig mit 25 % Marge, kennt
-aber den Skonto-Hebel noch nicht, der am 26. August dazukam. Sie sagt
-nichts Falsches — sie sagt nur nicht alles. Der nötige Monatsumsatz von
-45.356 € stimmt ohne Skonto; mit Skonto sind es 38.786 €.
+Sie standen hier als offen, weil „später" ohne Notiz erfahrungsgemäß
+„nie" heißt. Der Eintrag hat funktioniert: Im Lauf darauf sind beide
+nachgezogen worden.
 
-**Der Ablaufplan** (25.08.) markiert zwei der vier Fragen als
-beantwortet und nennt die Domainschritte. Er kennt die fünf
-Rechtsseiten nicht, die am 26. August entstanden sind, und auch nicht,
-dass die GTIN der letzte verbleibende Arbeitspunkt ist.
+**Die Kalkulationsseite** hat jetzt einen eigenen Abschnitt zum Skonto —
+mit der Gegenüberstellung 45.356 € gegen 38.786 €, dem Vergleich zur
+Zahlungsgebühr und Gate 21 samt der unbequemen Folge, dass ausgerechnet
+der Rechnungskauf das Gate verletzt.
 
-Beide gehören beim nächsten Lauf nachgezogen. Sie stehen hier, damit das
-nicht vergessen wird — und weil „später" ohne Notiz erfahrungsgemäß
-„nie" heißt.
+**Der Ablaufplan** streicht in Stufe 2 durch, was steht (46 Artikelseiten,
+5 Rechtsseiten), benennt die vier fehlenden Impressumsangaben und sagt im
+Abschluss, dass die GTIN der **einzige** verbleibende Punkt ist, der Arbeit
+ist und nicht nur Entscheidung. „Was schon steht" führt jetzt neun Posten
+statt sechs, darunter die Gates 21 und 22.
 
 ## Was `npm run build` heute verändert hat
 
@@ -73,8 +74,8 @@ Lauf. Ein Eintrag in dieser Tabelle kostet zwei Minuten.
 
 Fällig, sobald eines der folgenden eintritt:
 
-- die Kalkulationsseite bekommt das Skonto (offen)
-- der Ablaufplan bekommt die Rechtsseiten und die GTIN-Lage (offen)
+- ~~die Kalkulationsseite bekommt das Skonto~~ (erledigt 26.08.)
+- ~~der Ablaufplan bekommt die Rechtsseiten und die GTIN-Lage~~ (erledigt 26.08.)
 - die GTIN trifft ein — dann ändert sich der Feedstand in allen Anzeigen
 - das Repository wird auf privat gestellt — dann ändern sich die
   Hinweise zur Vertraulichkeit
