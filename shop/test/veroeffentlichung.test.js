@@ -33,13 +33,25 @@ test('Fremdtext im Namen wird auch hier entschärft', () => {
 });
 
 test('der Probelauf schreibt nichts und benennt die Lücken', () => {
+  // Die frühere Fassung prüfte „0 veröffentlichbar, 9 zurückgehalten". Das
+  // war die Zahl des Radon-Platzhalterkatalogs und brach, sobald das
+  // Werkzeug den echten Katalog bekam — obwohl die Zusicherung selbst
+  // („es geht nichts hinaus, was nicht hinausgehen darf") unverletzt war.
+  // Geprüft wird deshalb die Eigenschaft, nicht der Zählerstand.
   const lauf = spawnSync(process.execPath, [werkzeug], { encoding: 'utf8', env: { ...process.env, SHOP_NAME: '', SHOP_BEZIRKE: '' } });
   assert.equal(lauf.status, 0);
-  assert.match(lauf.stdout, /0 veröffentlichbar, 9 zurückgehalten/, 'der Platzhalterkatalog geht nicht hinaus');
-  assert.match(lauf.stdout, /Firmenname/);
+  assert.match(lauf.stdout, /Einreichbar: nein/, 'ohne Liefergebiet und GTIN ist nichts einreichbar');
   assert.match(lauf.stdout, /Liefergebiet/);
   assert.match(lauf.stdout, /Probelauf/);
   assert.equal(existsSync(zielordner), false, 'es entsteht kein Ausgabeordner');
+});
+
+test('der Firmenname kommt aus den Betreiberdaten, nicht mehr aus der Umgebung', () => {
+  // Seit dem 26. August steht er in data/betreiber.json. Zwei Quellen für
+  // denselben Namen sind eine zu viel — die Entität braucht überall
+  // dieselbe Schreibweise.
+  const lauf = spawnSync(process.execPath, [werkzeug], { encoding: 'utf8', env: { ...process.env, SHOP_NAME: '', SHOP_BEZIRKE: '' } });
+  assert.ok(!lauf.stdout.includes('Firmenname (SHOP_NAME)'), 'die Firmenlücke ist geschlossen');
 });
 
 test('mit --schreiben bricht es ab, solange Pflichtangaben fehlen', () => {
@@ -52,12 +64,26 @@ test('mit --schreiben bricht es ab, solange Pflichtangaben fehlen', () => {
   assert.equal(existsSync(zielordner), false, 'auch hier entsteht nichts');
 });
 
-test('auch mit vollständigen Firmendaten bleibt der Feed leer, solange Preise Platzhalter sind', () => {
+test('auch mit vollständigen Firmendaten bleibt der Feed nicht einreichbar', () => {
+  // Die Sperre hängt an den Daten, nicht an den Firmenangaben. Früher war
+  // es die Preissperre (alle Preise Platzhalter); heute sind die Preise
+  // bestätigt, und es ist die fehlende GTIN. Die Zusicherung ist dieselbe:
+  // Vollständige Firmendaten machen einen unvollständigen Feed nicht
+  // einreichbar.
   const lauf = spawnSync(process.execPath, [werkzeug], {
     encoding: 'utf8',
     env: { ...process.env, SHOP_NAME: 'Muster e.U.', SHOP_BEZIRKE: 'Ried im Innkreis, Schärding' },
   });
   assert.equal(lauf.status, 0);
-  assert.match(lauf.stdout, /0 veröffentlichbar/, 'die Preissperre gilt unabhängig von den Firmendaten');
-  assert.ok(!lauf.stdout.includes('Firmenname'), 'die Firmenlücke ist geschlossen');
+  assert.match(lauf.stdout, /GTIN/, 'die fehlende Artikelkennung wird benannt');
+  assert.match(lauf.stdout, /Einreichbar: nein/);
+  assert.ok(!lauf.stdout.includes('Es fehlen Angaben'), 'die Firmenlücken sind geschlossen');
+});
+
+test('Gate 22 hält die Beipackartikel aus dem Feed', () => {
+  const lauf = spawnSync(process.execPath, [werkzeug], {
+    encoding: 'utf8',
+    env: { ...process.env, SHOP_NAME: 'Muster e.U.', SHOP_BEZIRKE: 'Perg' },
+  });
+  assert.match(lauf.stdout, /Gate 22/, 'der Grund wird genannt, nicht nur die Zahl');
 });

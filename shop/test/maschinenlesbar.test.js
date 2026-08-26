@@ -127,3 +127,72 @@ test('robots.txt trennt Suche und Training und sperrt nichts versehentlich pausc
   const suchTeilZu = zu.slice(zu.indexOf('OAI-SearchBot'), zu.indexOf('GPTBot'));
   assert.ok(suchTeilZu.includes('Disallow: /'), 'die Sperre ist möglich, aber ausdrücklich zu wählen');
 });
+
+/* ------------------------------------------------------------------ *
+ * Der Feed verschweigt seine Lücken nicht mehr
+ *
+ * Die erste Fassung von katalogFeed rechnete `fehlend` aus und warf es weg.
+ * Der Bericht meldete „46 veröffentlichbar, 0 zurückgehalten", während bei
+ * allen 46 die GTIN fehlte, die dieselbe Datei verlangt.
+ * ------------------------------------------------------------------ */
+
+const FEEDLAGE = {
+  liefergebiet: { land: 'AT', bezirke: ['Perg'] },
+  versandkostenNetto: 75.5,
+};
+
+const artikelOhneGtin = {
+  sku: 'A-1', bezeichnung: 'Prüfartikel', vkNetto: 10, ekNetto: 7,
+  ekQuelle: 'bestaetigt', ekIstPlatzhalter: false, gtin: null,
+};
+
+test('Ein Eintrag ohne GTIN gilt als veröffentlichbar, aber nicht als einreichbar', () => {
+  const f = katalogFeed([artikelOhneGtin], FEEDLAGE);
+  assert.equal(f.anzahl, 1, 'er kommt in den Feed');
+  assert.equal(f.zurueckgehalten.length, 0, 'er wird nicht zurückgehalten');
+  assert.equal(f.mitLuecken.length, 1, 'aber seine Lücke wird gemeldet');
+  assert.match(f.mitLuecken[0].fehlend.join(' '), /GTIN/);
+  assert.equal(f.einreichbar, false, 'ein lückenhafter Feed wird abgelehnt');
+  assert.equal(f.vollstaendig, false);
+});
+
+test('Mit GTIN ist derselbe Feed einreichbar', () => {
+  // Gegenprobe: Die Lücke kommt aus den Daten, nicht aus der Prüfung.
+  const f = katalogFeed([{ ...artikelOhneGtin, gtin: '9008811000001' }], FEEDLAGE);
+  assert.deepEqual(f.mitLuecken, []);
+  assert.equal(f.einreichbar, true);
+  assert.equal(f.vollstaendig, true);
+});
+
+test('Gate 22: ein Artikel am Listendeckel kommt nicht in den Feed', () => {
+  // Ein Produktfeed ist Werbung. Wer einen Artikel bewirbt, dessen Preis am
+  // Listendeckel klebt, bezahlt für einen Preisvergleich, den er verliert.
+  const f = katalogFeed(
+    [{ ...artikelOhneGtin, gtin: '9008811000001', amListendeckel: true }],
+    FEEDLAGE,
+  );
+  assert.equal(f.anzahl, 0);
+  assert.equal(f.zurueckgehalten.length, 1);
+  assert.match(f.zurueckgehalten[0].gruende.join(' '), /Gate 22/);
+});
+
+test('Gate 22 greift unbedingt, nicht auf Zuruf', () => {
+  // Gate 20 hing anfangs an keiner Entscheidung und lief deshalb nie mit.
+  // Hier wird keine Option übergeben — das Gate muss trotzdem greifen.
+  const f = katalogFeed([{ ...artikelOhneGtin, amListendeckel: true }]);
+  assert.equal(f.anzahl, 0);
+});
+
+test('Artikel ohne das Kennzeichen sind von Gate 22 nicht betroffen', () => {
+  // Der Radonkatalog kennt `amListendeckel` nicht. Ein fehlendes Kennzeichen
+  // darf nicht wie ein gesetztes wirken.
+  const f = katalogFeed([{ ...artikelOhneGtin, gtin: '9008811000001' }], FEEDLAGE);
+  assert.equal(f.anzahl, 1);
+  assert.equal(f.zurueckgehalten.length, 0);
+});
+
+test('Ein leerer Feed ist nicht einreichbar, auch ohne Lücken', () => {
+  const f = katalogFeed([], FEEDLAGE);
+  assert.equal(f.anzahl, 0);
+  assert.equal(f.einreichbar, false, 'nichts einzureichen ist kein einreichbarer Feed');
+});

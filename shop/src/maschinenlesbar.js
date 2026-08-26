@@ -50,6 +50,16 @@ export function darfVeroeffentlichtWerden(artikel) {
   if (!artikel.sku) {
     gruende.push('keine Artikelnummer');
   }
+  // Gate 22: Wer einen Artikel bewirbt, dessen Verkaufspreis am Listendeckel
+  // des Lieferanten klebt, bezahlt für einen Preisvergleich, den er verliert.
+  // Ein Produktfeed ist Werbung — also greift das Gate hier.
+  //
+  // Unbedingt geprüft, nicht als Schalter: Gate 20 hing anfangs an keiner
+  // Entscheidung und lief deshalb nie mit. Artikel ohne dieses Kennzeichen
+  // (etwa aus dem Radonkatalog) sind nicht betroffen.
+  if (artikel.amListendeckel === true) {
+    gruende.push('Verkaufspreis am Listendeckel — Beipack, kein Feedartikel (Gate 22)');
+  }
   return { erlaubt: gruende.length === 0, gruende };
 }
 
@@ -150,15 +160,33 @@ export function produktAuszeichnung(artikel, lage = {}) {
 export function katalogFeed(artikel, lage = {}) {
   const zeilen = [];
   const zurueckgehalten = [];
+  const mitLuecken = [];
+
   for (const a of artikel) {
     const eintrag = produktAuszeichnung(a, lage);
-    if (eintrag.veroeffentlichbar) zeilen.push(eintrag.daten);
-    else zurueckgehalten.push({ sku: a.sku, gruende: eintrag.gruende });
+    if (!eintrag.veroeffentlichbar) {
+      zurueckgehalten.push({ sku: a.sku, gruende: eintrag.gruende });
+      continue;
+    }
+    zeilen.push(eintrag.daten);
+    // Ein veröffentlichbarer Eintrag kann trotzdem unvollständig sein.
+    // `produktAuszeichnung` rechnet das aus — und die erste Fassung dieser
+    // Funktion hat es weggeworfen. Der Bericht meldete dann „46
+    // veröffentlichbar, 0 zurückgehalten", während bei allen 46 die GTIN
+    // fehlte, die dieselbe Datei zwei Zeilen höher verlangt. Genau die
+    // Fehlerklasse, die diesem Vorhaben schon fünfmal Geld gekostet hat:
+    // eine Angabe, die berechnet und dann verschwiegen wird.
+    if (eintrag.fehlend?.length) mitLuecken.push({ sku: a.sku, fehlend: eintrag.fehlend });
   }
+
   return {
     zeilen,
     zurueckgehalten,
-    vollstaendig: zurueckgehalten.length === 0,
+    mitLuecken,
+    // „Vollständig" heißt: nichts zurückgehalten UND bei keinem Eintrag eine
+    // Lücke. Ein Feed mit lückenhaften Einträgen ist nicht einreichbar.
+    vollstaendig: zurueckgehalten.length === 0 && mitLuecken.length === 0,
+    einreichbar: zeilen.length > 0 && mitLuecken.length === 0,
     anzahl: zeilen.length,
   };
 }
