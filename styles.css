@@ -101,3 +101,18 @@ html, body {
   opacity: 0.35;
   cursor: not-allowed;
 }
+
+.page-link {
+  text-align: center;
+  margin: 12px 0 0;
+  font-size: 14px;
+}
+
+.page-link a {
+  color: var(--orange-dark);
+  text-decoration: none;
+}
+
+.page-link a:hover {
+  text-decoration: underline;
+}
