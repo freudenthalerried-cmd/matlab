@@ -196,10 +196,11 @@
 
   function defaultSettings() {
     return {
-      me: { name: 'Verwaltung', email: 'verwaltung@example.at' },
+      me: { name: 'Verwaltung', email: 'office@verwaltung.at' },
       defaultCc: '',
       ccSelf: false,
       replyAllDefault: false,
+      autoDraft: true,
       signature: 'Mit freundlichen Grüßen\n\nVerwaltung'
     };
   }
@@ -268,7 +269,7 @@
   function seedMessages() {
     const now = Date.now();
     const at = (hoursAgo) => new Date(now - hoursAgo * 3600000).toISOString();
-    const me = { name: 'Verwaltung', email: 'verwaltung@example.at' };
+    const me = { name: 'Verwaltung', email: 'office@verwaltung.at' };
 
     return [
       {
@@ -336,6 +337,15 @@
     state.messages = seedMessages();
     state.contacts = seedContacts();
     state.snippets = seedSnippets();
+    state.assistant = null;
+
+    // Der Assistent startet nicht bei null: er wertet die bereits
+    // gesendeten Nachrichten aus, damit Anrede und Grußformel sitzen.
+    if (window.MailAssistant) {
+      state.messages.filter((m) => m.folder === 'sent').forEach((m) => {
+        window.MailAssistant.learnFromSent(m, null);
+      });
+    }
   }
 
   function load() {
@@ -357,6 +367,7 @@
       state.messages = data.messages || [];
       state.contacts = data.contacts || seedContacts();
       state.snippets = data.snippets && data.snippets.length ? data.snippets : seedSnippets();
+      state.assistant = data.assistant || null;
     } catch (err) {
       seedState();
     }
@@ -368,7 +379,8 @@
       folders: state.folders,
       messages: state.messages,
       contacts: state.contacts,
-      snippets: state.snippets
+      snippets: state.snippets,
+      assistant: state.assistant
     };
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
@@ -661,6 +673,7 @@
       reading.hidden = true;
       empty.hidden = false;
       updateCommandState();
+      renderAssistant();
       return;
     }
 
@@ -696,6 +709,7 @@
     $('read-body').innerHTML = sanitizeHtml(message.body);
 
     updateCommandState();
+    renderAssistant();
   }
 
   function strongLabel(text) {
@@ -894,6 +908,21 @@
     let to = [], cc = [], bcc = [], subject = '', body = '';
     const me = state.settings.me;
 
+    // Bezugsnachricht merken – daraus lernt der Assistent beim Senden.
+    ui.replyTo = (mode === 'reply' || mode === 'replyAll' || mode === 'forward' || mode === 'assistant')
+      ? source.id
+      : null;
+
+    if (mode === 'assistant') {
+      const prepared = window.MailAssistant.prepareDraft(source);
+      to = prepared.to;
+      cc = prepared.cc;
+      bcc = prepared.bcc;
+      subject = prepared.subject;
+      body = prepared.body;
+      ui.attachments = prepared.attachments.map((a) => Object.assign({}, a));
+    }
+
     if (mode === 'new') {
       cc = defaultCcAddresses();
       body = signatureHtml();
@@ -941,12 +970,27 @@
 
     const titles = {
       new: 'Neue Nachricht', reply: 'Antworten', replyAll: 'Allen antworten',
-      forward: 'Weiterleiten', draft: 'Entwurf bearbeiten'
+      forward: 'Weiterleiten', draft: 'Entwurf bearbeiten',
+      assistant: 'Vom Assistenten vorbereitet'
     };
     $('compose-title').textContent = titles[mode] || 'Neue Nachricht';
 
     renderComposeAttachments();
-    setComposeHint('');
+    setComposeHint(mode === 'assistant' ? 'Alle Felder sind vorausgefüllt – bitte prüfen und ergänzen.' : '');
+
+    // Der Chat zum Entwurf steht nur bei einer Bezugsnachricht zur Verfügung.
+    const drawerButton = $('btn-compose-assistant');
+    const hasSource = Boolean(ui.replyTo) && assistantAvailable();
+    drawerButton.disabled = !hasSource;
+    drawerButton.title = hasSource
+      ? 'Chat zum Entwurf öffnen'
+      : 'Der Assistent arbeitet mit einer Bezugsnachricht – bei einer Antwort verfügbar';
+    $('compose-assistant').hidden = !(hasSource && mode === 'assistant');
+    drawerButton.setAttribute('aria-pressed', String(hasSource && mode === 'assistant'));
+    if (hasSource && mode === 'assistant') {
+      renderChat($('compose-chat'), window.MailAssistant.chatLog(ui.replyTo));
+    }
+
     compose.overlay.hidden = false;
 
     if (mode === 'new' || mode === 'forward') {
@@ -1041,6 +1085,17 @@
     else state.messages.push(message);
 
     rememberContacts(data.to.concat(data.cc, data.bcc));
+
+    // Aus jeder gesendeten Nachricht lernt der Assistent Anrede,
+    // Grußformel, Kopie-Gewohnheiten und Formulierungen.
+    let learned = [];
+    if (assistantAvailable()) {
+      const origin = state.ui.replyTo
+        ? state.messages.find((m) => m.id === state.ui.replyTo)
+        : null;
+      learned = window.MailAssistant.learnFromSent(message, origin) || [];
+    }
+
     save();
 
     // Anbindung an einen echten Versand: window.MailTransport.send(message)
@@ -1059,6 +1114,7 @@
 
     const ccInfo = data.cc.length ? ' (CC an ' + data.cc.map(displayName).join(', ') + ')' : '';
     toast('Nachricht gesendet' + ccInfo);
+    if (learned.length) setStatus('Dazugelernt: ' + learned.join(' · '));
   }
 
   function saveDraft(silent) {
@@ -1567,7 +1623,15 @@
     $('set-cc').value = state.settings.defaultCc || '';
     $('set-cc-self').checked = Boolean(state.settings.ccSelf);
     $('set-reply-all-default').checked = Boolean(state.settings.replyAllDefault);
+    $('set-autodraft').checked = state.settings.autoDraft !== false;
     $('set-signature').value = state.settings.signature || '';
+
+    const info = assistantAvailable() ? window.MailAssistant.stats() : null;
+    $('set-learning').textContent = info
+      ? info.sent + ' gesendete E-Mail(en) ausgewertet · ' + info.contacts + ' Kontakt(e) mit gelernter Anrede · '
+        + info.phrases + ' gelernte Formulierung(en)'
+      : 'Assistent nicht geladen.';
+
     $('settings-overlay').hidden = false;
     $('set-name').focus();
   }
@@ -1593,11 +1657,21 @@
       state.settings.defaultCc = $('set-cc').value.trim();
       state.settings.ccSelf = $('set-cc-self').checked;
       state.settings.replyAllDefault = $('set-reply-all-default').checked;
+      state.settings.autoDraft = $('set-autodraft').checked;
       state.settings.signature = $('set-signature').value;
       save();
       $('settings-overlay').hidden = true;
       render();
       toast('Einstellungen gespeichert');
+    });
+
+    $('set-forget').addEventListener('click', () => {
+      if (!assistantAvailable()) return;
+      if (!confirm('Alles Gelernte (Anreden, Grußformeln, Kopie-Gewohnheiten, Formulierungen) verwerfen?')) return;
+      window.MailAssistant.resetLearning();
+      openSettings();
+      renderAssistant();
+      toast('Gelerntes zurückgesetzt');
     });
 
     $('set-reset').addEventListener('click', () => {
@@ -1609,6 +1683,230 @@
       state.ui.selectedId = null;
       render();
       toast('Beispieldaten wiederhergestellt');
+    });
+  }
+
+  /* ---------------------------------------------------------
+     Assistent: vorbereiteter Entwurf und Chat je E-Mail
+     --------------------------------------------------------- */
+
+  function assistantBridge() {
+    return {
+      getState: () => state,
+      save: save,
+      parseAddresses: parseAddresses,
+      formatAddress: formatAddress,
+      formatAddresses: formatAddresses,
+      dedupeAddresses: dedupeAddresses,
+      displayName: displayName,
+      escapeHtml: escapeHtml,
+      textToHtml: textToHtml,
+      htmlToText: htmlToText,
+      sanitizeHtml: sanitizeHtml,
+      formatFullDate: formatFullDate
+    };
+  }
+
+  function assistantAvailable() {
+    return Boolean(window.MailAssistant);
+  }
+
+  /** Nachrichten, für die der Assistent einen Entwurf vorbereiten kann. */
+  function canPrepare(message) {
+    return Boolean(message) && message.folder !== 'drafts' && Boolean(message.from);
+  }
+
+  function renderSteps(draft) {
+    const list = $('assistant-steps');
+    list.textContent = '';
+
+    draft.steps.forEach((entry) => {
+      const li = document.createElement('li');
+
+      const label = document.createElement('span');
+      label.className = 'steps__label';
+      label.textContent = entry.label;
+      li.appendChild(label);
+
+      const conf = document.createElement('span');
+      conf.className = 'conf conf--' + entry.confidence;
+      conf.textContent = entry.confidence;
+      li.appendChild(conf);
+
+      const value = document.createElement('span');
+      value.className = 'steps__value';
+      value.textContent = entry.value;
+      li.appendChild(value);
+
+      const source = document.createElement('span');
+      source.className = 'steps__source';
+      source.textContent = entry.source;
+      li.appendChild(source);
+
+      list.appendChild(li);
+    });
+
+    const openBox = $('assistant-open');
+    const openList = $('assistant-open-list');
+    openList.textContent = '';
+    openBox.hidden = draft.open.length === 0;
+    draft.open.forEach((point) => {
+      const li = document.createElement('li');
+      li.textContent = point;
+      openList.appendChild(li);
+    });
+  }
+
+  function renderChat(container, log) {
+    container.textContent = '';
+    log.forEach((entry) => {
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble bubble--' + entry.role;
+      bubble.textContent = entry.text;
+
+      const time = document.createElement('span');
+      time.className = 'bubble__time';
+      time.textContent = new Date(entry.time).toLocaleTimeString('de-AT', { hour: '2-digit', minute: '2-digit' });
+      bubble.appendChild(time);
+
+      container.appendChild(bubble);
+    });
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function renderAssistant() {
+    if (!assistantAvailable()) return;
+
+    const message = selectedMessage();
+    const info = window.MailAssistant.stats();
+    $('assistant-stats').textContent = info.sent
+      ? 'gelernt aus ' + info.sent + ' gesendeten E-Mail(en) · ' + info.contacts + ' Kontakt(e)'
+      : 'lernt mit jeder E-Mail, die Sie senden';
+
+    const prepared = $('assistant-prepared');
+    const idle = $('assistant-idle');
+    const input = $('assistant-input');
+
+    if (!canPrepare(message)) {
+      prepared.hidden = true;
+      idle.hidden = false;
+      idle.textContent = message
+        ? 'Für Entwürfe bereite ich nichts vor – öffnen Sie eine erhaltene Nachricht.'
+        : 'Wählen Sie eine Nachricht – ich bereite die Antwort dann vollständig vor.';
+      $('assistant-chat').textContent = '';
+      input.disabled = true;
+      return;
+    }
+
+    input.disabled = false;
+
+    if (!state.settings.autoDraft) {
+      prepared.hidden = true;
+      idle.hidden = false;
+      idle.textContent = 'Das automatische Vorausfüllen ist in den Einstellungen abgeschaltet.';
+      renderChat($('assistant-chat'), window.MailAssistant.chatLog(message.id));
+      return;
+    }
+
+    idle.hidden = true;
+    const draft = window.MailAssistant.prepareDraft(message);
+    prepared.hidden = false;
+    $('assistant-intent').textContent = draft.intent.label;
+    renderSteps(draft);
+    renderChat($('assistant-chat'), window.MailAssistant.greetChat(message));
+  }
+
+  /** Führt einen Chatbefehl aus und hält Entwurf, Panel und Formular gleich. */
+  function runAssistantChat(text, fromCompose) {
+    const message = fromCompose
+      ? state.messages.find((m) => m.id === state.ui.replyTo)
+      : selectedMessage();
+    if (!message || !text.trim()) return;
+
+    const result = window.MailAssistant.chat(message, text);
+    if (!result) return;
+
+    if (result.changed && fromCompose && !compose.overlay.hidden) {
+      compose.to.value = formatAddresses(result.draft.to);
+      compose.cc.value = formatAddresses(result.draft.cc);
+      compose.subject.value = result.draft.subject;
+      compose.body.innerHTML = sanitizeHtml(result.draft.body);
+      setRowVisible('cc', result.draft.cc.length > 0);
+      setComposeHint('Entwurf vom Assistenten angepasst.');
+    }
+
+    const selected = selectedMessage();
+    if (result.changed && selected && selected.id === message.id) {
+      renderAssistant();          // Nachweisliste und offene Punkte mitziehen
+    } else {
+      renderChat($('assistant-chat'), window.MailAssistant.chatLog(message.id));
+    }
+    renderChat($('compose-chat'), window.MailAssistant.chatLog(message.id));
+  }
+
+  function toggleAssistantPane(force) {
+    const open = typeof force === 'boolean' ? force : document.body.dataset.assistant !== 'on';
+    document.body.dataset.assistant = open ? 'on' : 'off';
+    $('btn-assistant').setAttribute('aria-pressed', String(open));
+    if (open) renderAssistant();
+  }
+
+  function setupAssistant() {
+    if (!assistantAvailable()) {
+      $('btn-assistant').disabled = true;
+      return;
+    }
+
+    $('btn-assistant').addEventListener('click', () => toggleAssistantPane());
+    $('assistant-close').addEventListener('click', () => toggleAssistantPane(false));
+
+    $('assistant-form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      const input = $('assistant-input');
+      const text = input.value;
+      input.value = '';
+      runAssistantChat(text, false);
+    });
+
+    $('assistant-open-draft').addEventListener('click', () => {
+      const message = selectedMessage();
+      if (canPrepare(message)) openCompose('assistant', message);
+    });
+
+    $('assistant-regenerate').addEventListener('click', () => {
+      const message = selectedMessage();
+      if (!canPrepare(message)) return;
+      window.MailAssistant.prepareDraft(message, { force: true });
+      renderAssistant();
+      toast('Entwurf neu vorbereitet');
+    });
+
+    $('btn-compose-assistant').addEventListener('click', () => {
+      const drawer = $('compose-assistant');
+      const open = drawer.hidden;
+      drawer.hidden = !open;
+      $('btn-compose-assistant').setAttribute('aria-pressed', String(open));
+      if (open) {
+        const message = state.messages.find((m) => m.id === state.ui.replyTo);
+        renderChat($('compose-chat'), message ? window.MailAssistant.chatLog(message.id) : []);
+        $('compose-assistant-input').focus();
+      }
+    });
+
+    const composeInput = $('compose-assistant-input');
+
+    function sendComposeChat() {
+      const text = composeInput.value;
+      composeInput.value = '';
+      runAssistantChat(text, true);
+    }
+
+    $('compose-assistant-send').addEventListener('click', sendComposeChat);
+    composeInput.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter') return;
+      event.preventDefault();
+      event.stopPropagation();   // nicht als Senden der E-Mail auslösen
+      sendComposeChat();
     });
   }
 
@@ -1868,14 +2166,20 @@
   }
 
   function init() {
+    // Der Assistent muss vor dem Laden angebunden sein: beim ersten Start
+    // wertet er die Beispiel-Nachrichten im Ordner „Gesendet“ aus.
+    if (window.MailAssistant) window.MailAssistant.attach(assistantBridge());
+
     load();
     setupCompose();
     setupRibbon();
     setupListControls();
     setupSnippets();
     setupSettings();
+    setupAssistant();
     setupShortcuts();
     setMobileView('list');
+    document.body.dataset.assistant = 'on';
     render();
   }
 

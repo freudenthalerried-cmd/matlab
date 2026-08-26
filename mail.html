@@ -29,6 +29,9 @@
     <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
     <symbol id="i-back" viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></symbol>
     <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+    <symbol id="i-assistant" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 1 6 6c0 2.2-1.2 3.6-2.2 4.8-.7.9-1.3 1.6-1.3 2.7v.5h-5v-.5c0-1.1-.6-1.8-1.3-2.7C7.2 12.6 6 11.2 6 9a6 6 0 0 1 6-6z"/><path d="M10 20h4"/></symbol>
+    <symbol id="i-magic" viewBox="0 0 24 24"><path d="m6 18 9-9M14 4l.9 2.1L17 7l-2.1.9L14 10l-.9-2.1L11 7l2.1-.9zM19 13l.6 1.4L21 15l-1.4.6L19 17l-.6-1.4L17 15l1.4-.6z"/><path d="m4 20 3-3"/></symbol>
+    <symbol id="i-send-chat" viewBox="0 0 24 24"><path d="M4 12h14M13 6l6 6-6 6"/></symbol>
     <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
     <symbol id="i-save" viewBox="0 0 24 24"><path d="M5 3h11l3 3v15H5z"/><path d="M8 3v6h7M8 14h8v7H8z"/></symbol>
     <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 9V3h10v6"/><path d="M5 9h14a2 2 0 0 1 2 2v6h-4v4H7v-4H3v-6a2 2 0 0 1 2-2z"/></symbol>
@@ -101,6 +104,9 @@
     <button class="btn" id="btn-snippets" type="button" title="Textbausteine verwalten">
       <svg class="icon"><use href="#i-snippet"></use></svg><span>Textbausteine</span>
     </button>
+    <button class="btn" id="btn-assistant" type="button" aria-pressed="true" title="Assistent ein-/ausblenden">
+      <svg class="icon"><use href="#i-assistant"></use></svg><span>Assistent</span>
+    </button>
   </div>
 
   <!-- ======================= Arbeitsbereich ======================= -->
@@ -146,8 +152,10 @@
       </div>
     </section>
 
-    <!-- Lesebereich -->
+    <!-- Lesebereich + Assistent -->
     <section class="pane pane--reading" aria-label="Lesebereich" id="reading-pane">
+     <div class="reading-split" id="reading-split">
+      <div class="reading-main">
       <div class="reading-empty" id="reading-empty">
         <svg class="icon reading-empty__icon"><use href="#i-read"></use></svg>
         <p>Wählen Sie eine Nachricht aus, um sie zu lesen.</p>
@@ -189,6 +197,62 @@
 
         <div class="reading__body" id="read-body"></div>
       </article>
+      </div>
+
+      <!-- Assistent: vorausgefüllter Entwurf + Chatfenster je E-Mail -->
+      <aside class="assistant" id="assistant" aria-label="Assistent">
+        <header class="assistant__head">
+          <svg class="icon"><use href="#i-assistant"></use></svg>
+          <div class="assistant__headline">
+            <strong>Assistent</strong>
+            <small id="assistant-stats"></small>
+          </div>
+          <button class="icon-btn" id="assistant-close" type="button" aria-label="Assistent ausblenden">
+            <svg class="icon"><use href="#i-close"></use></svg>
+          </button>
+        </header>
+
+        <div class="assistant__scroll" id="assistant-scroll">
+          <div class="assistant__idle" id="assistant-idle">
+            Wählen Sie eine Nachricht – ich bereite die Antwort dann vollständig vor.
+          </div>
+
+          <section class="assistant__block" id="assistant-prepared" hidden>
+            <h3 class="assistant__title">
+              <svg class="icon"><use href="#i-magic"></use></svg>
+              Vorab ausgefüllt
+              <span class="badge" id="assistant-intent"></span>
+            </h3>
+            <ol class="steps" id="assistant-steps"></ol>
+
+            <div class="assistant__open" id="assistant-open" hidden>
+              <strong>Nach bestem Wissen ausgefüllt – bitte noch prüfen:</strong>
+              <ul id="assistant-open-list"></ul>
+            </div>
+
+            <div class="assistant__actions">
+              <button class="btn btn--primary btn--small" id="assistant-open-draft" type="button">
+                Entwurf öffnen
+              </button>
+              <button class="btn btn--small" id="assistant-regenerate" type="button">Neu vorbereiten</button>
+            </div>
+          </section>
+        </div>
+
+        <div class="assistant__chatwrap">
+          <h3 class="assistant__title">Chat zu dieser E-Mail</h3>
+          <div class="chat" id="assistant-chat"></div>
+        </div>
+
+        <form class="chat-input-row" id="assistant-form">
+          <input class="chat-input-row__field" id="assistant-input" type="text" autocomplete="off"
+                 placeholder="z. B. „kürzer“, „setz Armin in Kopie“, „warum?“" aria-label="Nachricht an den Assistenten">
+          <button class="icon-btn chat-input-row__send" type="submit" aria-label="An den Assistenten senden">
+            <svg class="icon"><use href="#i-send-chat"></use></svg>
+          </button>
+        </form>
+      </aside>
+     </div>
     </section>
   </main>
 
@@ -269,13 +333,31 @@
           <svg class="icon"><use href="#i-attach"></use></svg><span>Anhang</span>
         </button>
         <input type="file" id="file-input" multiple hidden>
+
+        <button class="btn btn--small" id="btn-compose-assistant" type="button" aria-pressed="false">
+          <svg class="icon"><use href="#i-assistant"></use></svg><span>Assistent</span>
+        </button>
       </div>
 
       <div class="compose__attachments" id="compose-attachments" hidden></div>
 
-      <div class="compose__body-wrap" id="drop-zone">
-        <div class="compose__body" id="f-body" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Nachrichtentext"></div>
-        <div class="drop-hint" id="drop-hint" hidden>Dateien hier ablegen, um sie anzuhängen</div>
+      <div class="compose__main">
+        <div class="compose__body-wrap" id="drop-zone">
+          <div class="compose__body" id="f-body" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Nachrichtentext"></div>
+          <div class="drop-hint" id="drop-hint" hidden>Dateien hier ablegen, um sie anzuhängen</div>
+        </div>
+
+        <aside class="compose__assistant" id="compose-assistant" hidden aria-label="Assistent zum Entwurf">
+          <div class="chat" id="compose-chat"></div>
+          <!-- Kein <form>: Formulare dürfen im Verfassen-Formular nicht verschachtelt werden. -->
+          <div class="chat-input-row">
+            <input class="chat-input-row__field" id="compose-assistant-input" type="text" autocomplete="off"
+                   placeholder="Was soll ich ändern?" aria-label="Nachricht an den Assistenten">
+            <button class="icon-btn chat-input-row__send" id="compose-assistant-send" type="button" aria-label="An den Assistenten senden">
+              <svg class="icon"><use href="#i-send-chat"></use></svg>
+            </button>
+          </div>
+        </aside>
       </div>
 
       <footer class="compose__foot">
@@ -365,6 +447,17 @@
           <span>Signatur</span>
           <textarea id="set-signature" rows="5" placeholder="Mit freundlichen Grüßen&#10;…"></textarea>
         </label>
+        <label class="check">
+          <input type="checkbox" id="set-autodraft">
+          <span>Antworten automatisch vorab ausfüllen (Assistent)</span>
+        </label>
+
+        <div class="learn-box">
+          <strong>Gelerntes Wissen</strong>
+          <p class="hint" id="set-learning"></p>
+          <button class="btn btn--small btn--ghost" type="button" id="set-forget">Gelerntes zurücksetzen</button>
+        </div>
+
         <div class="snippet-editor__foot">
           <button class="btn btn--primary" type="submit">Speichern</button>
           <button class="btn btn--ghost" type="button" id="set-reset">Beispieldaten zurücksetzen</button>
@@ -390,6 +483,7 @@
 
   <div class="toast" id="toast" hidden></div>
 
+  <script src="mail-assistant.js"></script>
   <script src="mail.js"></script>
 </body>
 </html>
