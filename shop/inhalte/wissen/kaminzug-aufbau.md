@@ -59,8 +59,9 @@ Dachdecker kommt und nicht aus dem Kaminsortiment.
 
 ## Warum das Mischen von Systemen ein Problem ist
 
-Ein Systemkamin wird als Gesamtsystem geprüft und zugelassen; die Zulassung
-gilt für die Kombination, nicht für die Einzelteile. Das betrifft auch die
+Ein Systemkamin wird als Gesamtsystem geprüft, nicht Teil für Teil. Welche
+Teile die geprüfte Kombination bilden, steht in den Systemunterlagen des
+jeweiligen Kamins. Das betrifft auch die
 Abnahme: Der Rauchfangkehrer prüft den Kamin gegen die Systemunterlagen.
 Passen die verbauten Teile nicht zusammen, ist das kein technisches Detail,
 sondern ein Abnahmeproblem.

@@ -34,6 +34,27 @@ const QUELLE = /\[[^\]]*\]\([^)]+\)|Quelle:|laut\s+\p{Lu}|Stand:|siehe\s+\p{Lu}|
 const NORM_OHNE_NUMMER = /(?<![\p{L}\d])(?:ÖNORM|DIN|EN|OIB[- ]Richtlinie)(?![\p{L}\d])(?!\s*(?:[A-Z]\s*)?\d)/gu;
 
 /**
+ * Geltungsaussagen — Behauptungen darüber, was zugelassen, vorgeschrieben
+ * oder verboten ist.
+ *
+ * Sie sind der blinde Fleck der übrigen Regeln: Alle anderen hängen an einer
+ * Zahl, einer Normnummer oder einem Grenzwort. Ein Satz wie „Ein WDVS wird
+ * als System geprüft und zugelassen" enthält nichts davon und kam deshalb
+ * durch — obwohl er die tragende Verkaufsaussage der Systemlisten ist. Eine
+ * Behauptung ohne Zahl ist nicht weniger eine Behauptung.
+ *
+ * **Was bewusst nicht in dieser Liste steht:** „haftet" und „Haftung". Im
+ * Baustofftext sind das physikalische Wörter — der Putzgrund stellt die
+ * Haftung her, die Abdichtung haftet an der Wand. Beide Wörter meldeten im
+ * Probelauf ausschließlich Fehltreffer. Der juristische Fall ist ohnehin
+ * über das Grenzwort „Rechtsauskunft" abgedeckt. Ebenfalls draußen:
+ * „zulässig". Es steht in diesen Texten fast immer dort, wo die Seite eine
+ * Frage korrekt an die Bauordnung weiterreicht, statt sie zu beantworten —
+ * und genau das soll die Regel nicht bestrafen.
+ */
+const GELTUNGSAUSSAGE = /(?<![\p{L}\d])(?:Zulassung|zugelassen|bauaufsichtlich|vorgeschrieben|genormt|Pflicht|verpflichtet|unzulässig)(?![\p{L}\d])/giu;
+
+/**
  * Wörter, die eine Grenze verletzen. Nicht der Wahrheit wegen, sondern der
  * Zulässigkeit: Gesundheitsaussagen, Rechtsauskünfte und Erfolgszusagen
  * gehören einem Baustoffhändler nicht.
@@ -69,13 +90,41 @@ export function ohneKopfblock(text) {
   return '\n'.repeat(zeilen) + text.slice(treffer[0].length);
 }
 
-/** Zerlegt einen Text in Absätze mit Zeilennummer. */
+/**
+ * Zerlegt einen Text in Absätze mit Zeilennummer.
+ *
+ * Die Zeilennummer wird aus der **Position im Text** berechnet, nicht durch
+ * Mitzählen beim Zerlegen. Der Unterschied ist kein Feinschliff: Die erste
+ * Fassung zählte je Absatz „Zeilen plus eins" weiter und unterstellte damit
+ * genau eine Leerzeile zwischen zwei Absätzen. Der Kopfblock wird aber durch
+ * *mehrere* Leerzeilen ersetzt, und `split(/\n\s*\n/)` fasst einen ganzen
+ * Block Leerzeilen zu einem Trenner zusammen. Ab dem ersten Absatz nach dem
+ * Kopf zeigte der Prüfer deshalb um genau die Kopflänge daneben — bei
+ * `kaminzug-aufbau.md` auf Zeile 53 statt 62.
+ *
+ * Aufgefallen ist das erst, als eine neue Regel anschlug und die gemeldete
+ * Zeile nachgeschlagen wurde. Ein Prüfer, der nichts findet, verrät auch
+ * nicht, dass sein Fingerzeig falsch ist — der Fehler saß von Anfang an
+ * darin und war so lange unsichtbar, wie der Bestand sauber war.
+ */
 export function inAbsaetze(text) {
+  const bereinigt = ohneKopfblock(text);
   const absaetze = [];
-  let zeile = 1;
-  for (const stueck of ohneKopfblock(text).split(/\n\s*\n/)) {
-    if (stueck.trim()) absaetze.push({ text: stueck, zeile });
-    zeile += stueck.split('\n').length + 1;
+  const trenner = /\n\s*\n/g;
+  const stuecke = [];
+  let start = 0;
+  let treffer;
+  while ((treffer = trenner.exec(bereinigt)) !== null) {
+    stuecke.push([start, bereinigt.slice(start, treffer.index)]);
+    start = treffer.index + treffer[0].length;
+  }
+  stuecke.push([start, bereinigt.slice(start)]);
+
+  for (const [pos, stueck] of stuecke) {
+    if (!stueck.trim()) continue;
+    const versatz = stueck.length - stueck.trimStart().length;
+    const zeile = bereinigt.slice(0, pos + versatz).split('\n').length;
+    absaetze.push({ text: stueck.trim(), zeile });
   }
   return absaetze;
 }
@@ -98,6 +147,19 @@ export function pruefeAbsatz(absatz) {
     verdacht.push(`„${treffer[0]}" ohne Nummer — Normen ändern sich, die Fundstelle gehört dazu`);
   }
 
+  // Nach Kleinschreibung entdoppelt: „Zugelassen … zugelassen" ist ein Wort,
+  // nicht zwei. Gemeldet wird die zuerst gefundene Schreibweise.
+  // `Map` behält bei doppeltem Schlüssel den letzten Wert — hier soll der
+  // erste stehen bleiben, damit die Meldung auf das erste Vorkommen zeigt.
+  const geltung = [...[...t.matchAll(GELTUNGSAUSSAGE)]
+    .reduce((m, treffer) => (m.has(treffer[0].toLowerCase()) ? m : m.set(treffer[0].toLowerCase(), treffer[0])), new Map())
+    .values()];
+  if (geltung.length > 0 && !QUELLE.test(t)) {
+    verdacht.push(
+      `Geltungsaussage ohne Fundstelle: ${geltung.join(', ')} — wer sagt, was zugelassen oder vorgeschrieben ist, muss sagen, wo es steht`,
+    );
+  }
+
   for (const { wort, grenze } of GRENZWOERTER) {
     const treffer = t.match(wort);
     if (treffer) verdacht.push(`${grenze}: „${treffer[0]}" — diese Aussage steht einem Baustoffhändler nicht zu`);
@@ -116,12 +178,49 @@ export function pruefeAbsatz(absatz) {
   return verdacht;
 }
 
+/**
+ * Felder des Kopfblocks, die **Fließtext an den Leser** sind.
+ *
+ * Der Kopfblock als Ganzes bleibt von der Prüfung ausgenommen — er trägt
+ * Titel, Kennungen und Verweise, und ein Prüfer, der bei jedem Titel mit
+ * einer Mengenangabe anschlägt, wird abgeschaltet statt befolgt. Diese zwei
+ * Felder sind aber keine Metadaten: `kurz` wird als Beschreibung der Seite
+ * ausgegeben — in die Kachel, in die Meta-Beschreibung, ins JSON-LD und in
+ * die `llms.txt` —, `frage` als Frage im FAQ-Baustein.
+ *
+ * Damit stand die Aussage „die Komponenten sind als System geprüft und
+ * zugelassen" ausgerechnet dort ungeprüft, wo maschinelle Leser sie
+ * abholen: im Kopfblock. Der Prüfer meldete sie im Fließtext und schwieg
+ * zur wörtlich gleichen Zeile drei Zeilen darüber.
+ */
+const GEPRUEFTE_KOPFFELDER = Object.freeze(['kurz', 'frage']);
+
+/** Liest die prüfbaren Kopffelder mit ihrer Zeilennummer. */
+export function kopffelder(text) {
+  const treffer = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/.exec(text);
+  if (!treffer) return [];
+  const felder = [];
+  treffer[1].split(/\r?\n/).forEach((zeile, i) => {
+    const m = /^([a-zA-ZäöüÄÖÜ_][\w-]*)\s*:\s*(.*)$/.exec(zeile);
+    if (m && GEPRUEFTE_KOPFFELDER.includes(m[1]) && m[2].trim()) {
+      felder.push({ feld: m[1], text: m[2].trim(), zeile: i + 2 });
+    }
+  });
+  return felder;
+}
+
 /** Prüft einen ganzen Text und liefert die Verdachtsfälle je Absatz. */
 export function pruefeInhalt(text, name = '') {
   const absaetze = inAbsaetze(text);
-  const treffer = absaetze
-    .map((a) => ({ zeile: a.zeile, auszug: a.text.slice(0, 60).replace(/\s+/g, ' '), verdacht: pruefeAbsatz(a) }))
-    .filter((a) => a.verdacht.length > 0);
+  const ausKopf = kopffelder(text).map((f) => ({
+    zeile: f.zeile,
+    auszug: `${f.feld}: ${f.text.slice(0, 50).replace(/\s+/g, ' ')}`,
+    verdacht: pruefeAbsatz({ text: f.text }),
+  }));
+  const treffer = [...ausKopf, ...absaetze
+    .map((a) => ({ zeile: a.zeile, auszug: a.text.slice(0, 60).replace(/\s+/g, ' '), verdacht: pruefeAbsatz(a) }))]
+    .filter((a) => a.verdacht.length > 0)
+    .sort((a, b) => a.zeile - b.zeile);
   return {
     name,
     absaetze: absaetze.length,

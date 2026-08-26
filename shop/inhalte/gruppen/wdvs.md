@@ -4,7 +4,7 @@ art: gruppe
 slug: wdvs
 gruppe: WDVS
 frage: Welche WDVS-Komponenten führen wir, und wonach wählt man sie aus?
-kurz: Klebe- und Spachtelmassen, Glasgewebe, Dübel, Kantenschutz, Putzgrund und Oberputz — die Bestandteile eines Fassadensystems. Ausgewählt wird nach dem System, nicht nach dem Einzelpreis: Die Komponenten sind als System geprüft und zugelassen.
+kurz: Klebe- und Spachtelmassen, Glasgewebe, Dübel, Kantenschutz, Putzgrund und Oberputz — die Bestandteile eines Fassadensystems. Ausgewählt wird nach dem System, nicht nach dem Einzelpreis: Geprüft wird die Kombination, nicht der einzelne Sack.
 verwandt: wdvs-systemaufbau, mengen-fuer-100-qm-wdvs, untergrund-pruefen
 system: fassade-100-qm
 stand: 2026-08-25
@@ -15,7 +15,8 @@ stand: 2026-08-25
 **Die Antwort in zwei Sätzen.** Wir führen Klebe- und Spachtelmassen,
 Glasgewebe, Dübel, Kantenschutz, Putzgrund und Oberputz — die Bestandteile
 eines Fassadensystems. Ausgewählt wird nach dem System, nicht nach dem
-Einzelpreis: Die Komponenten sind **als System** geprüft und zugelassen.
+Einzelpreis: Geprüft wird die **Kombination**, nicht der einzelne Sack —
+welche Kombination das ist, steht in den Systemunterlagen des Herstellers.
 
 ## Was Sie hier finden
 
@@ -28,7 +29,8 @@ vollständigen technischen Unterlagen:
 
 **Zuerst das System, dann die Position.** Wenn das Bauvorhaben ein bestimmtes
 System vorschreibt — aus dem Wärmeschutznachweis oder der Ausschreibung —,
-dann ist die Auswahl damit getroffen. Mischen verlässt die Zulassung.
+dann ist die Auswahl damit getroffen. Mischen verlässt die geprüfte
+Kombination.
 
 **Dann die Auftragsart.** Ob eine Klebe- und Spachtelmasse fein oder mittel
 gewählt wird, hängt an der Aufgabe: Kleben, Armieren oder beides. Die

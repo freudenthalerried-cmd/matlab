@@ -53,7 +53,8 @@ hier gilt der Wert für die im Merkblatt genannte Schichtdicke.
 **Glasgewebe.** Fläche **plus Überlappung**. Das ist der Posten, bei dem am
 häufigsten zu knapp bestellt wird: Die Bahnen überlappen an jeder Naht, und
 an Ecken und Öffnungen kommt Diagonalgewebe dazu. Ein Zuschlag auf die reine
-Fläche ist hier keine Sicherheitsreserve, sondern Pflicht.
+Fläche ist hier keine Sicherheitsreserve — wie breit die Bahnen überlappen
+müssen, steht in der Verarbeitungsrichtlinie des gewählten Systems.
 
 **Kantenschutz und Anschlussleisten.** Nach laufenden Metern: alle Außenecken,
 alle Laibungskanten, alle Fenster- und Türanschlüsse. Diese Position wird auf

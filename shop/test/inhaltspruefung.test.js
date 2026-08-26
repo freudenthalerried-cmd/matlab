@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { pruefeAbsatz, pruefeInhalt, inAbsaetze, GRENZWOERTER, ohneKopfblock } from '../src/inhaltspruefung.js';
+import { pruefeAbsatz, pruefeInhalt, inAbsaetze, GRENZWOERTER, ohneKopfblock, kopffelder } from '../src/inhaltspruefung.js';
 
 const absatz = (text) => ({ text, zeile: 1 });
 const verdachtVon = (text) => pruefeAbsatz(absatz(text)).join(' | ');
@@ -61,9 +61,9 @@ test('die Probedatei im Repo löst genau die erwarteten Verdachtsfälle aus', ()
   const pfad = fileURLToPath(new URL('../inhalte/probe/probe.md', import.meta.url));
   const ergebnis = pruefeInhalt(readFileSync(pfad, 'utf8'), 'probe.md');
   assert.ok(ergebnis.absaetze >= 10, 'die Probedatei ist gefüllt');
-  assert.equal(ergebnis.treffer.length, 6, 'sechs fehlerhafte Absätze, die sauberen bleiben stumm');
+  assert.equal(ergebnis.treffer.length, 7, 'sieben fehlerhafte Absätze, die sauberen bleiben stumm');
   const alle = ergebnis.treffer.flatMap((t) => t.verdacht).join(' | ');
-  for (const muster of [/Zahl ohne Quelle/, /ohne Nummer/, /Gesundheitsaussage/, /Erfolgszusage/, /netto\/brutto/, /Zitat ohne Quellenangabe/]) {
+  for (const muster of [/Zahl ohne Quelle/, /ohne Nummer/, /Gesundheitsaussage/, /Erfolgszusage/, /netto\/brutto/, /Zitat ohne Quellenangabe/, /Geltungsaussage/]) {
     assert.match(alle, muster);
   }
 });
@@ -72,7 +72,7 @@ test('das Werkzeug läuft über die Probedatei und meldet, ohne zu urteilen', ()
   const werkzeug = fileURLToPath(new URL('../bin/inhaltspruefung.mjs', import.meta.url));
   const lauf = spawnSync(process.execPath, [werkzeug], { encoding: 'utf8' });
   assert.equal(lauf.status, 0);
-  assert.match(lauf.stdout, /6 mit Verdacht/);
+  assert.match(lauf.stdout, /7 mit Verdacht/);
   assert.match(lauf.stdout, /nicht automatisch zu beheben/);
   assert.match(lauf.stdout, /ersetzt dieses Werkzeug nicht/, 'das Werkzeug benennt seine eigene Grenze');
 });
@@ -107,11 +107,46 @@ test('Nach dem Kopfblock stimmen die Zeilennummern noch', () => {
   // Der Kopf wird durch Leerzeilen ersetzt, nicht entfernt — sonst zeigt
   // jeder Treffer auf die falsche Zeile, und das ist schlimmer als kein
   // Treffer: Es schickt den Prüfenden an die falsche Stelle.
+  //
+  // Geprüft wird gegen die **abgezählte** Zeile, nicht gegen einen zweiten
+  // Lauf desselben Codes. Die frühere Fassung dieses Testfalls verglich mit
+  // einem von Hand nachgebauten Text — beide Seiten liefen durch dieselbe
+  // fehlerhafte Zählung und waren deshalb einig, obwohl beide danebenlagen.
   const kopf = '---\ntitel: Probe\nstand: 2026-08-25\n---\n';
-  const mitKopf = pruefeInhalt(`${kopf}\nEine Wand ist 5 m² groß.\n`, 'a.md');
-  const ohne = pruefeInhalt('\n\n\n\n\nEine Wand ist 5 m² groß.\n', 'b.md');
-  assert.equal(mitKopf.sauber, false);
-  assert.equal(mitKopf.treffer[0].zeile, ohne.treffer[0].zeile);
+  const text = `${kopf}\nEine Wand ist 5 m² groß.\n`;
+  const erwartet = text.split('\n').indexOf('Eine Wand ist 5 m² groß.') + 1;
+  const e = pruefeInhalt(text, 'a.md');
+  assert.equal(e.sauber, false);
+  assert.equal(e.treffer[0].zeile, erwartet, `erwartet Zeile ${erwartet}`);
+});
+
+test('Auch ein langer Kopfblock verschiebt die Zeilennummer nicht', () => {
+  // Der Fehler, der das ausgelöst hat: `split(/\n\s*\n/)` fasst mehrere
+  // Leerzeilen zu einem Trenner zusammen, das Weiterzählen unterstellte
+  // aber genau eine. Je länger der Kopf, desto größer der Versatz — bei
+  // einer echten Inhaltsdatei neun Zeilen.
+  const kopf = `---\n${Array.from({ length: 9 }, (_, i) => `feld${i}: wert`).join('\n')}\n---\n`;
+  const text = `${kopf}\n# Überschrift\n\nEin harmloser Satz.\n\nEine Wand ist 5 m² groß.\n`;
+  const erwartet = text.split('\n').indexOf('Eine Wand ist 5 m² groß.') + 1;
+  const e = pruefeInhalt(text, 'a.md');
+  assert.equal(e.treffer[0].zeile, erwartet, `erwartet Zeile ${erwartet}`);
+});
+
+test('Die gemeldete Zeile trifft die echte Datei', () => {
+  // Die Gegenprobe am Bestand: Was der Prüfer meldet, muss man aufschlagen
+  // können. Gefunden wurde der Zählfehler genau so — eine neue Regel schlug
+  // an, die Zeile wurde nachgeschlagen, und dort stand etwas anderes.
+  const pfad = fileURLToPath(new URL('../inhalte/wissen/kaminzug-aufbau.md', import.meta.url));
+  const text = readFileSync(pfad, 'utf8');
+  const zeilen = text.split('\n');
+  for (const t of pruefeInhalt(text, 'kaminzug-aufbau.md').treffer) {
+    const dort = zeilen[t.zeile - 1] ?? '';
+    assert.ok(dort.trim().length > 0, `Zeile ${t.zeile} ist leer, der Treffer zeigt ins Nichts`);
+    assert.ok(
+      t.auszug.startsWith(dort.trim().slice(0, 20)),
+      `Zeile ${t.zeile} lautet „${dort.trim().slice(0, 40)}", gemeldet wurde „${t.auszug.slice(0, 40)}"`,
+    );
+  }
 });
 
 test('Ohne Kopfblock bleibt der Text unverändert', () => {
@@ -122,4 +157,98 @@ test('Ohne Kopfblock bleibt der Text unverändert', () => {
 test('Ein Trennstrich mitten im Text ist kein Kopfblock', () => {
   const text = 'Erster Absatz.\n\n---\nnicht: metadaten\n---\n\nZweiter.\n';
   assert.equal(ohneKopfblock(text), text);
+});
+
+// --- Geltungsaussagen -----------------------------------------------------
+// Der blinde Fleck aller übrigen Regeln: Sie hängen an einer Zahl, einer
+// Normnummer oder einem Grenzwort. „Ein WDVS wird als System zugelassen"
+// hat nichts davon — und ist die tragende Verkaufsaussage der Systemlisten.
+
+test('Eine Aussage über Zulassung ohne Fundstelle wird gemeldet', () => {
+  const e = pruefeAbsatz({ text: 'Ein WDVS wird als System geprüft und zugelassen.' });
+  assert.equal(e.length, 1);
+  assert.match(e[0], /Geltungsaussage/);
+  assert.match(e[0], /zugelassen/);
+});
+
+test('Mit Fundstelle schweigt die Regel', () => {
+  const e = pruefeAbsatz({
+    text: 'Ein WDVS wird als System zugelassen — siehe [Systemunterlagen](https://example.at/s.pdf).',
+  });
+  assert.deepEqual(e, []);
+});
+
+test('Jedes Geltungswort wird einmal gemeldet, nicht je Vorkommen', () => {
+  // „zugelassen … die Zulassung …" ist ein Verdacht, nicht drei. Ein Prüfer,
+  // der denselben Absatz mehrfach anzeigt, wird überblättert.
+  const e = pruefeAbsatz({ text: 'Zugelassen ist das System; die Zulassung gilt, weil zugelassen wurde.' });
+  assert.equal(e.length, 1);
+  const gemeldet = /Fundstelle: ([^—]+)—/.exec(e[0])[1].trim();
+  assert.equal(gemeldet, 'Zugelassen, Zulassung', 'zwei verschiedene Wörter, jedes einmal');
+});
+
+test('„haftet" und „Haftung" sind im Baustofftext physikalisch', () => {
+  // Beide Wörter standen im ersten Entwurf der Regel und meldeten am echten
+  // Bestand ausschließlich Fehltreffer: Der Putzgrund stellt die Haftung
+  // her, die Abdichtung haftet an der Wand. Ein Prüfer, der bei jeder
+  // Verarbeitungsbeschreibung anschlägt, wird abgeschaltet statt befolgt.
+  assert.deepEqual(pruefeAbsatz({ text: 'Der Putzgrund stellt die Haftung her, damit der Oberputz haftet.' }), []);
+});
+
+test('„zulässig" allein löst nichts aus', () => {
+  // Es steht in diesen Texten fast immer dort, wo die Seite eine Frage
+  // korrekt an die Bauordnung weiterreicht, statt sie selbst zu beantworten.
+  assert.deepEqual(pruefeAbsatz({ text: 'Was im konkreten Fall zulässig ist, regelt die Bauordnung des Landes.' }), []);
+});
+
+// --- Kopfblock: zwei Felder sind Fließtext ---------------------------------
+// `kurz` und `frage` sind keine Metadaten. Sie werden als Beschreibung der
+// Seite ausgegeben — Kachel, Meta-Beschreibung, JSON-LD, llms.txt. Die
+// Aussage stand damit ausgerechnet dort ungeprüft, wo maschinelle Leser sie
+// abholen.
+
+test('Fließtextfelder des Kopfblocks werden geprüft', () => {
+  const text = '---\ntitel: Probe\nkurz: Die Komponenten sind als System geprüft und zugelassen.\n---\n\nEin harmloser Satz.\n';
+  const e = pruefeInhalt(text, 'a.md');
+  assert.equal(e.sauber, false, 'die Aussage im Kopf wird gefunden');
+  assert.match(e.treffer[0].verdacht.join(' '), /Geltungsaussage/);
+  assert.match(e.treffer[0].auszug, /^kurz: /, 'die Meldung sagt, in welchem Feld es steht');
+  assert.equal(e.treffer[0].zeile, 3, 'und in welcher Zeile');
+});
+
+test('Titel und Kennungen bleiben ungeprüft', () => {
+  // Der Grund für die Ausnahme des Kopfblocks gilt weiter: Ein Prüfer, der
+  // bei „Mengen für 100 m² Fassade" anschlägt, wird abgeschaltet.
+  const text = '---\ntitel: Mengen für 100 m² Fassade\nslug: mengen\nstand: 2026-08-26\n---\n\nEin harmloser Satz.\n';
+  assert.equal(pruefeInhalt(text, 'a.md').sauber, true);
+});
+
+test('Kopffelder werden mit ihrer echten Zeile gelesen', () => {
+  const felder = kopffelder('---\ntitel: T\nfrage: Ist das so?\nslug: s\nkurz: Kurz.\n---\n\nText.\n');
+  assert.deepEqual(felder.map((f) => f.feld), ['frage', 'kurz']);
+  assert.deepEqual(felder.map((f) => f.zeile), [3, 5]);
+});
+
+test('Treffer aus Kopf und Körper stehen in einer Reihenfolge', () => {
+  const text = '---\ntitel: T\nkurz: Der Sack kostet 12,90 €.\n---\n\nWir garantieren einen dauerhaft trockenen Keller.\n';
+  const e = pruefeInhalt(text, 'a.md');
+  assert.equal(e.treffer.length, 2);
+  assert.ok(e.treffer[0].zeile < e.treffer[1].zeile, 'aufsteigend, damit man die Datei einmal durchgeht');
+});
+
+test('Der Bestand ist auch im Kopfblock sauber', () => {
+  // Die Gegenprobe, die den Fund überhaupt ausgelöst hat: Nach dem
+  // Umschreiben der Fließtexte stand die alte Aussage noch in drei
+  // Kopfblöcken — und genau die werden veröffentlicht.
+  const wurzel = fileURLToPath(new URL('../inhalte/', import.meta.url));
+  const offen = [];
+  for (const art of ['wissen', 'gruppen', 'system']) {
+    for (const datei of readdirSync(`${wurzel}${art}`).filter((d) => d.endsWith('.md'))) {
+      const e = pruefeInhalt(readFileSync(`${wurzel}${art}/${datei}`, 'utf8'), datei);
+      for (const t of e.treffer) if (t.auszug.startsWith('kurz:') || t.auszug.startsWith('frage:')) {
+        offen.push(`${art}/${datei}:${t.zeile} ${t.verdacht.join('; ')}`);
+      }
+    }
+  }
+  assert.deepEqual(offen, []);
 });

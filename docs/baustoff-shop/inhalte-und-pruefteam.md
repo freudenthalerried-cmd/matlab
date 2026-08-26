@@ -172,7 +172,7 @@ Ratgeber ohne Sortiment ist ein Blog, kein Shop.
 
 `npm run pruefe-inhalte` gibt es jetzt (`src/inhaltspruefung.js`,
 `bin/inhaltspruefung.mjs`). Er nimmt Markdown-Dateien und meldet je
-Absatz Verdachtsfälle gegen die sieben Regeln: Zahl ohne Quelle,
+Absatz Verdachtsfälle gegen inzwischen acht Regeln: Zahl ohne Quelle,
 Normbezug ohne Nummer, Gesundheitsaussage, Rechtsauskunft,
 Erfolgszusage, Preis ohne netto/brutto oder Stand, Blockzitat ohne
 Fundstelle. Begründete Ausnahmen werden mit
@@ -200,3 +200,15 @@ Wortgrenze zurück auf `\b` → 3 Testfälle fallen; Quellenprüfung
 ausgehebelt → 3; begründete Ausnahme ignoriert → 1.
 
 Testbestand: **457, alle grün, Prüfer ohne Verdacht.**
+
+## Nachtrag vom 26. August: die achte Regel
+
+Alle sieben Regeln hingen an etwas Zählbarem — einer Zahl mit Einheit,
+einer Normnummer, einem Grenzwort, einem Eurobetrag, einem Blockzitat.
+Ein Satz wie „Ein WDVS wird als System geprüft und zugelassen" hat nichts
+davon und kam deshalb durch, obwohl er die tragende Verkaufsaussage der
+Systemlisten ist. Die achte Regel meldet Geltungsaussagen ohne Fundstelle;
+zwei nebenbei gefundene Fehler im Prüfer selbst — falsche Zeilennummern
+nach jedem Kopfblock und ein ungeprüfter, aber veröffentlichter Kopfblock
+— stehen mitsamt der daraus entstandenen Beschaffungsliste für
+Datenblätter in [`geltungsaussagen.md`](./geltungsaussagen.md).

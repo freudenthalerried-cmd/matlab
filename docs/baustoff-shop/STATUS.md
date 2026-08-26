@@ -46,6 +46,14 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > ([`inhalte-und-pruefteam.md`](./inhalte-und-pruefteam.md) — fremde
 > YouTube-Transkripte sind dabei nicht zulässig, die Prüfkette läuft als
 > `npm run pruefe-inhalte`).
+>
+> **Nachtrag 26. August:** Die Inhaltsprüfung hatte einen blinden Fleck —
+> alle Regeln hingen an einer Zahl, einer Normnummer oder einem Grenzwort.
+> Sätze wie „als System geprüft und zugelassen" kamen durch, obwohl sie die
+> tragende Verkaufsaussage der Systemlisten sind. Achte Regel, zwei
+> nebenbei gefundene Fehler (falsche Zeilennummern, ungeprüfter Kopfblock)
+> und die daraus entstandene Beschaffungsliste für Datenblätter in
+> [`geltungsaussagen.md`](./geltungsaussagen.md).
 
 ## Wo das Projekt steht
 

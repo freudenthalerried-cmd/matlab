@@ -3,7 +3,7 @@ titel: Was zu einem Wärmedämmverbundsystem gehört
 art: wissen
 slug: wdvs-systemaufbau
 frage: Welche Bestandteile braucht ein WDVS, und in welcher Reihenfolge kommen sie an die Wand?
-kurz: Ein WDVS besteht aus sechs Schichten, die aufeinander abgestimmt sind: Klebemörtel, Dämmplatte, Dübel, Armierungsmörtel mit eingebettetem Gewebe, Putzgrund und Oberputz. Entscheidend ist die Systemtreue — die Komponenten sind als System geprüft, nicht einzeln.
+kurz: Ein WDVS besteht aus sechs Schichten, die aufeinander abgestimmt sind: Klebemörtel, Dämmplatte, Dübel, Armierungsmörtel mit eingebettetem Gewebe, Putzgrund und Oberputz. Entscheidend ist die Systemtreue — geprüft wird die Kombination, nicht der einzelne Bestandteil.
 gruppe: WDVS
 verwandt: mengen-fuer-100-qm-wdvs, xps-oder-eps, untergrund-pruefen, redaktionsprinzipien
 stand: 2026-08-25
@@ -14,8 +14,8 @@ stand: 2026-08-25
 **Die Antwort in zwei Sätzen.** Ein WDVS besteht aus sechs aufeinander
 abgestimmten Schichten: Klebemörtel, Dämmplatte, Dübel, Armierungsmörtel mit
 eingebettetem Gewebe, Putzgrund und Oberputz. Entscheidend ist die
-Systemtreue — die Bestandteile sind **als System** geprüft und zugelassen,
-nicht einzeln.
+Systemtreue — geprüft wird die **Kombination**, nicht der einzelne
+Bestandteil.
 
 ## Die Schichten von innen nach außen
 
@@ -61,9 +61,11 @@ Grund dahinter: [Was fehlt, hält die Baustelle auf](was-fehlt-haelt-die-baustel
 
 ## Systemtreue — warum man nicht mischen sollte
 
-Ein WDVS wird als System geprüft und zugelassen. Wer den Klebemörtel des
-einen Herstellers mit dem Gewebe eines anderen kombiniert, verlässt diese
-Zulassung. Ob das technisch funktioniert, ist eine Frage; ob es im
+Ein WDVS wird als Kombination geprüft, nicht Bestandteil für Bestandteil.
+Wer den Klebemörtel des einen Herstellers mit dem Gewebe eines anderen
+kombiniert, verlässt die geprüfte Zusammenstellung. Welche Zusammenstellung
+geprüft ist, steht in den Systemunterlagen des Herstellers — wir geben sie
+hier nicht wieder, weil sie sich je System und Ausgabe unterscheidet. Ob das technisch funktioniert, ist eine Frage; ob es im
 Schadensfall trägt, eine andere — und die zweite entscheidet der
 Sachverständige, nicht der Verarbeiter.
 
