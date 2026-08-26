@@ -460,25 +460,72 @@ function rohmarge(ekNetto, vkNetto) {
 }
 
 /**
+ * Der Einkaufspreis einer Artikelposition — aus dem, was tatsächlich bekannt ist.
+ *
+ * Drei Lagen, in dieser Reihenfolge. Der Grund für die Reihenfolge steht in
+ * `docs/baustoff-shop/katalog-aus-rechnungen.md`: Die echten Konditionen sind
+ * **artikelgenau**, nicht lieferantengenau. Über sechsundvierzig Artikel einer
+ * einzigen Lieferbeziehung reichen die Rabatte von zehn bis achtundachtzig
+ * Prozent. Ein Satz je Lieferant hätte den Einkauf bei Kleinteilen um mehr als
+ * den Faktor zwei danebengelegt — und zwar nach unten, also in die
+ * optimistische Richtung.
+ *
+ *   1. `ekNetto` am Artikel — ein bestätigter Nettopreis. Manche Positionen
+ *      werden ohne Liste fakturiert (Projekt- oder Aktionspreis); dann gibt es
+ *      keinen Rabattsatz, aus dem sich etwas ableiten ließe.
+ *   2. Rabattsatz am Artikel auf dessen Liste.
+ *   3. Rabattsatz des Lieferanten — die alte Annahme, jetzt nur noch Rückfall.
+ */
+function artikelEinkauf(artikel, lieferant) {
+  if (typeof artikel.ekNetto === 'number') {
+    if (artikel.ekNetto <= 0) throw new Error(`Einkaufspreis von ${artikel.sku} muss positiv sein`);
+    return cent(artikel.ekNetto);
+  }
+  const rabatt = artikel.haendlerrabattAufUvp ?? lieferant.haendlerrabattAufUvp;
+  if (typeof rabatt !== 'number') {
+    throw new Error(`Für ${artikel.sku} ist weder Einkaufspreis noch Rabattsatz bekannt`);
+  }
+  return einkaufspreis(artikel.uvpNetto, rabatt);
+}
+
+/**
  * Vollständige Kalkulation einer Artikelposition.
  * Liefert alles, was Shop und Prüfung brauchen — inklusive der Gate-1-Ampel.
+ *
+ * Zur Deckelung auf die Liste: `verkaufspreis` setzt den Verkaufspreis nie über
+ * `uvpNetto`. Bei den Artikeln, deren Einkauf nah an der Liste liegt, greift der
+ * Deckel — und die ausgewiesene Rohmarge fällt unter die Zielmarge. Das ist
+ * kein Rechenfehler, sondern der Befund: Auf diesen Artikeln **gibt** es die
+ * Zielmarge nicht. Wer sie trotzdem nimmt, verkauft über dem Listenpreis.
+ * Fehlt eine Liste (Nettopreis), gibt es nichts zu deckeln.
  */
 function kalkuliere(artikel, lieferant, zielmarge) {
-  const ekNetto = einkaufspreis(artikel.uvpNetto, lieferant.haendlerrabattAufUvp);
-  const vkNetto = verkaufspreis(ekNetto, zielmarge, artikel.uvpNetto);
+  const ekNetto = artikelEinkauf(artikel, lieferant);
+  const deckel = typeof artikel.uvpNetto === 'number' ? artikel.uvpNetto : Infinity;
+  const vkNetto = verkaufspreis(ekNetto, zielmarge, deckel);
   const marge = rohmarge(ekNetto, vkNetto);
+
+  // Gegen den ungedeckelten Wunschpreis messen, nicht gegen die gerundete
+  // Marge. Sonst entscheidet der Cent: 40 € Einkauf und 25 % Ziel ergeben
+  // 53,333… €, gerundet 53,33 € — und daraus rechnet sich eine Marge von
+  // 24,995 %, die eine Prüfung auf `>= 0,25` verfehlt. Die Zielmarge wäre
+  // dann bei jedem zweiten Artikel „nicht erreicht", obwohl nichts sie
+  // beschnitten hat außer der Rundung.
+  const wunschVkNetto = verkaufspreis(ekNetto, zielmarge);
 
   return {
     sku: artikel.sku,
     bezeichnung: artikel.bezeichnung,
     lieferantId: artikel.lieferantId,
-    uvpNetto: cent(artikel.uvpNetto),
+    uvpNetto: Number.isFinite(deckel) ? cent(deckel) : null,
     ekNetto,
     vkNetto,
     vkBrutto: cent(vkNetto * (1 + UST_SATZ)),
     deckungsbeitragNetto: cent(vkNetto - ekNetto),
     rohmarge: marge,
     margeErreicht: marge >= MARGENUNTERGRENZE - 1e-9,
+    zielmargeErreicht: vkNetto >= wunschVkNetto - 1e-9,
+    amListendeckel: Number.isFinite(deckel) && vkNetto >= cent(deckel) - 1e-9,
     ekIstPlatzhalter: artikel.ekQuelle !== 'bestaetigt',
   };
 }
@@ -1358,7 +1405,17 @@ const AGB_GLIEDERUNG = [
       'Der Besteller benennt einen Ansprechpartner vor Ort und trägt dessen Erreichbarkeit.',
   },
   { nr: 8, titel: 'Gefahrübergang und Transportschäden', hinweis: 'Untersuchungs- und Rügepflicht nach § 377 UGB — im B2B eine echte Obliegenheit, und die Frist läuft ab Ablieferung auf der Baustelle.' },
-  { nr: 9, titel: 'Zahlung, Verzug, Eigentumsvorbehalt', hinweis: 'Keine Nachnahme und keine Barzahlung auf der Baustelle — sonst entsteht ein Barumsatz und damit Registrierkassenpflicht.' },
+  {
+    nr: 9,
+    titel: 'Zahlung, Verzug, Eigentumsvorbehalt',
+    hinweis:
+      'Keine Nachnahme und keine Barzahlung auf der Baustelle — sonst entsteht ein Barumsatz ' +
+      'und damit Registrierkassenpflicht. **Das Zahlungsziel darf die Skontofrist des ' +
+      'Lieferanten nicht überschreiten** (Gate 21): Beide Lieferanten geben 3 % Skonto bei ' +
+      '14 Tagen, und diese 3 % heben die Rohmarge von 25 auf 27,25 % — mehr, als die ' +
+      'Zahlungsgebühr kostet. Wer dem Kunden 30 Tage einräumt und dem Lieferanten in 14 ' +
+      'zahlen will, finanziert die Differenz aus eigener Kasse.',
+  },
   { nr: 10, titel: 'Gewährleistung und Haftung', hinweis: 'Im B2B abdingbar, aber nicht grenzenlos.' },
   { nr: 11, titel: 'Rücknahme angebrochener Gebinde und Rollenware', hinweis: 'Ausschluss empfehlenswert; Rollenware ist nicht teilbar.' },
   { nr: 12, titel: 'Lieferorte nur in Österreich', hinweis: 'Lieferung außerhalb Österreichs ist ausgeschlossen — sie wäre nach Art 6, 7 UStG steuerfrei bzw. eine Ausfuhr und damit anders zu verrechnen.' },
@@ -3586,7 +3643,10 @@ function proBestellung(warenkorb, zahlwegId, werbeanteil) {
  * @param {object} lage `{ zahlwegId, frachtVerrechnet }` — `frachtVerrechnet`
  *   false bedeutet: Lieferung frei Haus, die Fracht geht zu unseren Lasten.
  */
-function traegtSichSelbst(warenkorb, { zahlwegId = 'karte-stripe', frachtVerrechnet = true } = {}) {
+function traegtSichSelbst(
+  warenkorb,
+  { zahlwegId = 'karte-stripe', frachtVerrechnet = true, skontoSatz = 0 } = {},
+) {
   const z = findeZahlweg(zahlwegId);
   const warenwertNetto = warenkorb.warenwertNetto ?? 0;
   const einkaufNetto = warenkorb.einkaufNetto ?? 0;
@@ -3596,8 +3656,13 @@ function traegtSichSelbst(warenkorb, { zahlwegId = 'karte-stripe', frachtVerrech
   const erloesNetto = cent(warenwertNetto + (frachtVerrechnet ? frachtNetto : 0));
   // Die Zahlungsgebühr fällt auf den Bruttobetrag an, den der Kunde zahlt.
   const gebuehrNetto = cent(erloesNetto * (1 + UST) * z.prozent + z.fixEuro);
+  // Skonto mindert den Einkauf, nicht die Fracht — sie ist bei beiden
+  // Lieferanten ausdrücklich nicht skontofähig. Voreinstellung ist null:
+  // Wer das Skonto einrechnen will, muss sagen, dass er es auch zieht.
+  const skontoNetto = skontoErsparnis(einkaufNetto, skontoSatz);
+  const einkaufNachSkontoNetto = cent(einkaufNetto - skontoNetto);
   // Die Fracht schulden wir dem Frachtführer in jedem Fall.
-  const deckungsbeitragNetto = cent(erloesNetto - einkaufNetto - frachtNetto - gebuehrNetto);
+  const deckungsbeitragNetto = cent(erloesNetto - einkaufNachSkontoNetto - frachtNetto - gebuehrNetto);
 
   const gruende = [];
   if (deckungsbeitragNetto <= 0) {
@@ -3612,6 +3677,8 @@ function traegtSichSelbst(warenkorb, { zahlwegId = 'karte-stripe', frachtVerrech
     deckungsbeitragNetto,
     erloesNetto,
     einkaufNetto,
+    skontoNetto,
+    einkaufNachSkontoNetto,
     frachtNetto,
     gebuehrNetto,
     frachtVerrechnet,
@@ -3637,8 +3704,76 @@ function mindestwarenkorbFreiHaus({ rohmarge, frachtNetto, zahlwegId = 'karte-st
   return { erreichbar: true, warenkorbNetto: cent(schwelle) };
 }
 
+/* ------------------------------------------------------------------ *
+ * Skonto — Gate 21
+ * ------------------------------------------------------------------ */
 
-const daten = {"lieferanten":{"_datenstand":"PLATZHALTER — keine dieser Konditionen ist von einem Lieferanten bestätigt.","_hinweis":"Echte Werte entstehen erst aus den Antworten auf Anschreiben A, siehe docs/baustoff-shop/anschreiben-entwuerfe.md. Bis dahin dienen die Zahlen ausschliesslich dazu, die Rechenwege zu prüfen.","lieferanten":[{"id":"rohr-at","land":"AT","name":"Rohrhersteller Österreich","konditionenStand":"platzhalter","streckengeschaeft":true,"haendlerrabattAufUvp":0.3,"mindestbestellwertNetto":250,"fracht":{"modell":"pauschale","freiHausAbNetto":1500,"pauschaleNetto":75,"sperrgutZuschlagNetto":25},"produktdaten":"csv","lieferzeitWerktage":5},{"id":"bahnen-de","land":"DE","name":"Abdichtungsbahnen-Hersteller","konditionenStand":"platzhalter","streckengeschaeft":true,"haendlerrabattAufUvp":0.42,"mindestbestellwertNetto":400,"fracht":{"modell":"pauschale","freiHausAbNetto":1200,"pauschaleNetto":95,"sperrgutZuschlagNetto":40},"produktdaten":"csv","lieferzeitWerktage":8},{"id":"zubehoer-de","land":"DE","name":"Zubehör- und Dichtsysteme","konditionenStand":"platzhalter","streckengeschaeft":true,"haendlerrabattAufUvp":0.38,"mindestbestellwertNetto":150,"fracht":{"modell":"pauschale","freiHausAbNetto":600,"pauschaleNetto":12,"sperrgutZuschlagNetto":0},"produktdaten":"katalog","lieferzeitWerktage":4}]},"artikel":{"_datenstand":"PLATZHALTER — keine Preise sind von einem Lieferanten bestätigt.","_hinweis":"UVP-Spannen stammen aus der Stückliste in docs/baustoff-shop/phase4-sortiment-und-materialwert.md und sind öffentliche Listenpreisniveaus, keine Einkaufspreise. Der Einkaufspreis ergibt sich hier rechnerisch aus UVP × (1 − Händlerrabatt) und ist damit ebenfalls Platzhalter.","sortiment":"Radonvorsorge, mittlerer Warenkorb nach Gate 5","artikel":[{"sku":"DR-100-050","bezeichnung":"Drainagerohr perforiert DN100, Ringbund 50 m","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Ringbund","menge":"50 m","uvpNetto":165,"gewichtKg":22,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"DR-FT-SET","bezeichnung":"Formteilset Radondrainage: Bögen, Muffen, Anschlüsse","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Set","menge":"1 Gebäude","uvpNetto":145,"gewichtKg":6.5,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"DR-KS-100","bezeichnung":"Kontroll- und Sammelschacht DN100","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Stück","menge":"1","uvpNetto":118,"gewichtKg":9,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"DR-SL-100","bezeichnung":"Steigleitung DN100 inkl. Halterungen, 3 m","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Stück","menge":"3 m","uvpNetto":42,"gewichtKg":4,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"AB-RD-375","bezeichnung":"Radondichte Abdichtungsbahn, Rolle 37,5 m²","gruppe":"Abdichtung","lieferantId":"bahnen-de","einheit":"Rolle","menge":"37,5 m²","uvpNetto":398,"gewichtKg":20,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"AB-PR-010","bezeichnung":"Voranstrich / Primer, 10 l","gruppe":"Abdichtung","lieferantId":"bahnen-de","einheit":"Gebinde","menge":"10 l","uvpNetto":96,"gewichtKg":11,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"ZB-DB-150","bezeichnung":"Dichtband gasdicht, 150 mm × 25 m","gruppe":"Zubehör","lieferantId":"zubehoer-de","einheit":"Rolle","menge":"25 m","uvpNetto":78,"gewichtKg":2.2,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"ZB-MA-SET","bezeichnung":"Manschettenset Innen- und Außenecken","gruppe":"Zubehör","lieferantId":"zubehoer-de","einheit":"Set","menge":"1 Gebäude","uvpNetto":112,"gewichtKg":1.8,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"ZB-RR-125","bezeichnung":"Ringraumdichtung DN125 für Einzelleitung","gruppe":"Zubehör","lieferantId":"zubehoer-de","einheit":"Stück","menge":"1","uvpNetto":64,"gewichtKg":0.9,"sperrgut":false,"ekQuelle":"platzhalter"}]}};
+/**
+ * Der Skontosatz, den beide bekannten Lieferanten einräumen.
+ * Belegt aus den Poschacher-Rechnungen und dem Pramer-Angebot,
+ * siehe `docs/baustoff-shop/zweiter-lieferant-und-skonto.md`.
+ */
+const SKONTO_SATZ = 0.03;
+const SKONTO_FRIST_TAGE = 14;
+
+/**
+ * Was das Skonto am Einkauf spart.
+ *
+ * **Die Fracht ist nicht skontofähig.** Beide Lieferanten schreiben das
+ * ausdrücklich auf den Beleg — bei Pramer als Sternchen an den betroffenen
+ * Positionen, bei Poschacher als eigene Skontobasis, die unter dem
+ * Rechnungsbetrag liegt. Wer den Satz auf die ganze Rechnung rechnet, hat
+ * den Ertrag zu hoch angesetzt, und zwar systematisch — also in die
+ * optimistische Richtung, wie die anderen vier Fehler dieses Vorhabens auch.
+ *
+ * @param {number} einkaufNetto  Warenwert beim Lieferanten, ohne Fracht
+ * @param {number} satz          Anteil, z. B. 0.03
+ */
+function skontoErsparnis(einkaufNetto, satz = SKONTO_SATZ) {
+  if (satz < 0 || satz >= 1) throw new Error('Skontosatz muss zwischen 0 und 1 liegen');
+  return cent(Math.max(0, einkaufNetto) * satz);
+}
+
+/**
+ * **Gate 21: Das Zahlungsziel des Kunden darf die Skontofrist nicht
+ * überschreiten.**
+ *
+ * Der Grund ist keine Feinheit, sondern die Rechnung aus
+ * `zweiter-lieferant-und-skonto.md`: Drei Prozent Skonto heben die Rohmarge
+ * von 25 auf 27,25 % und senken den nötigen Monatsumsatz um ein Siebtel —
+ * mehr, als die Zahlungsgebühr kostet. Wer dem Kunden dreißig Tage einräumt
+ * und dem Lieferanten in vierzehn zahlen will, finanziert die Differenz aus
+ * eigener Kasse. Bei diesem Umsatz ist das der Unterschied zwischen sechzig
+ * und siebzig Bestellungen im Monat.
+ *
+ * Vorkasse und Kartenzahlung erfüllen das Gate von selbst: Das Geld ist da,
+ * bevor die Lieferantenrechnung fällig wird. Nur der Rechnungskauf kann es
+ * verletzen — und genau der ist im Baustoffhandel üblich.
+ */
+function zahlungszielTraegt({ kundenzielTage, skontofristTage = SKONTO_FRIST_TAGE, bearbeitungstage = 2 }) {
+  if (!Number.isFinite(kundenzielTage) || kundenzielTage < 0) {
+    throw new Error('Kundenzahlungsziel muss eine Zahl ab null sein');
+  }
+  // Zwischen Zahlungseingang und Überweisung an den Lieferanten liegt
+  // Bearbeitungszeit. Sie zählt zur Frist, nicht daneben.
+  const spaetesterAusgang = kundenzielTage + bearbeitungstage;
+  const traegt = spaetesterAusgang <= skontofristTage;
+
+  const gruende = [];
+  if (!traegt) {
+    gruende.push(
+      `Zahlungsziel ${kundenzielTage} Tage plus ${bearbeitungstage} Tage Bearbeitung ` +
+        `überschreitet die Skontofrist von ${skontofristTage} Tagen um ` +
+        `${spaetesterAusgang - skontofristTage} Tage — das Skonto ist dann nicht zu holen, ` +
+        'ohne die Differenz vorzufinanzieren.',
+    );
+  }
+
+  return { traegt, kundenzielTage, skontofristTage, bearbeitungstage, spaetesterAusgang, gruende };
+}
+
+
+const daten = {"lieferanten":{"_datenstand":"GEMISCHT — die drei Radon-Lieferanten sind Platzhalter, \"poschacher\" ist aus echten Rechnungen bestätigt. Das Feld konditionenStand je Lieferant sagt, was gilt.","_hinweis":"Echte Werte entstehen erst aus den Antworten auf Anschreiben A, siehe docs/baustoff-shop/anschreiben-entwuerfe.md. Bis dahin dienen die Zahlen ausschliesslich dazu, die Rechenwege zu prüfen.","lieferanten":[{"id":"rohr-at","land":"AT","name":"Rohrhersteller Österreich","konditionenStand":"platzhalter","streckengeschaeft":true,"haendlerrabattAufUvp":0.3,"mindestbestellwertNetto":250,"fracht":{"modell":"pauschale","freiHausAbNetto":1500,"pauschaleNetto":75,"sperrgutZuschlagNetto":25},"produktdaten":"csv","lieferzeitWerktage":5},{"id":"bahnen-de","land":"DE","name":"Abdichtungsbahnen-Hersteller","konditionenStand":"platzhalter","streckengeschaeft":true,"haendlerrabattAufUvp":0.42,"mindestbestellwertNetto":400,"fracht":{"modell":"pauschale","freiHausAbNetto":1200,"pauschaleNetto":95,"sperrgutZuschlagNetto":40},"produktdaten":"csv","lieferzeitWerktage":8},{"id":"zubehoer-de","land":"DE","name":"Zubehör- und Dichtsysteme","konditionenStand":"platzhalter","streckengeschaeft":true,"haendlerrabattAufUvp":0.38,"mindestbestellwertNetto":150,"fracht":{"modell":"pauschale","freiHausAbNetto":600,"pauschaleNetto":12,"sperrgutZuschlagNetto":0},"produktdaten":"katalog","lieferzeitWerktage":4},{"id":"poschacher","land":"AT","name":"Poschacher Baustoffhandel","konditionenStand":"bestaetigt","_konditionenHinweis":"Aus fuenfzehn eigenen Lieferantenrechnungen, April bis August 2026. Der Haendlerrabatt steht bewusst NICHT hier: Er ist artikelgenau und reicht ueber das Sortiment von zehn bis achtundachtzig Prozent. Die Saetze liegen in preise/baustoff-preise.json, die von .gitignore gedeckt ist.","streckengeschaeft":true,"haendlerrabattAufUvp":null,"mindestbestellwertNetto":null,"_mindestbestellwertHinweis":"Kein Mindestbestellwert erkennbar — der kleinste Beleg lautet ueber 18,74 Euro netto und wurde ohne Beanstandung geliefert.","fracht":{"modell":"pauschale","freiHausAbNetto":null,"_freiHausHinweis":"Es gibt keine Frei-Haus-Schwelle. Die Frachtpauschale steht auf jedem Beleg, auch auf dem ueber 1.934 Euro. Das ist keine Annahme, sondern der Befund aus allen fuenfzehn Rechnungen — und der Grund, warum Gate 20 fuer dieses Modell keine akademische Regel ist.","pauschaleNetto":75.5,"_pauschaleHinweis":"Frachtpauschale 66,00 zuzueglich Energiekostenzuschlag 9,50 — beides faellt je Lieferung an.","sperrgutZuschlagNetto":7.5,"_sperrgutHinweis":"Kranentladung je Hub. Faellt bei palettierter Ware an, nicht bei Paketware."},"produktdaten":"keine","preisrhythmus":null,"lieferzeitWerktage":null,"_lieferzeitHinweis":"Aus den Rechnungen nicht ableitbar — der Abstand zwischen Lieferschein und Rechnung ist Abrechnungsfrist, keine Lieferzeit. Beim Lieferanten zu erfragen."}]},"artikel":{"_datenstand":"PLATZHALTER — keine Preise sind von einem Lieferanten bestätigt.","_hinweis":"UVP-Spannen stammen aus der Stückliste in docs/baustoff-shop/phase4-sortiment-und-materialwert.md und sind öffentliche Listenpreisniveaus, keine Einkaufspreise. Der Einkaufspreis ergibt sich hier rechnerisch aus UVP × (1 − Händlerrabatt) und ist damit ebenfalls Platzhalter.","sortiment":"Radonvorsorge, mittlerer Warenkorb nach Gate 5","artikel":[{"sku":"DR-100-050","bezeichnung":"Drainagerohr perforiert DN100, Ringbund 50 m","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Ringbund","menge":"50 m","uvpNetto":165,"gewichtKg":22,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"DR-FT-SET","bezeichnung":"Formteilset Radondrainage: Bögen, Muffen, Anschlüsse","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Set","menge":"1 Gebäude","uvpNetto":145,"gewichtKg":6.5,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"DR-KS-100","bezeichnung":"Kontroll- und Sammelschacht DN100","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Stück","menge":"1","uvpNetto":118,"gewichtKg":9,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"DR-SL-100","bezeichnung":"Steigleitung DN100 inkl. Halterungen, 3 m","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Stück","menge":"3 m","uvpNetto":42,"gewichtKg":4,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"AB-RD-375","bezeichnung":"Radondichte Abdichtungsbahn, Rolle 37,5 m²","gruppe":"Abdichtung","lieferantId":"bahnen-de","einheit":"Rolle","menge":"37,5 m²","uvpNetto":398,"gewichtKg":20,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"AB-PR-010","bezeichnung":"Voranstrich / Primer, 10 l","gruppe":"Abdichtung","lieferantId":"bahnen-de","einheit":"Gebinde","menge":"10 l","uvpNetto":96,"gewichtKg":11,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"ZB-DB-150","bezeichnung":"Dichtband gasdicht, 150 mm × 25 m","gruppe":"Zubehör","lieferantId":"zubehoer-de","einheit":"Rolle","menge":"25 m","uvpNetto":78,"gewichtKg":2.2,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"ZB-MA-SET","bezeichnung":"Manschettenset Innen- und Außenecken","gruppe":"Zubehör","lieferantId":"zubehoer-de","einheit":"Set","menge":"1 Gebäude","uvpNetto":112,"gewichtKg":1.8,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"ZB-RR-125","bezeichnung":"Ringraumdichtung DN125 für Einzelleitung","gruppe":"Zubehör","lieferantId":"zubehoer-de","einheit":"Stück","menge":"1","uvpNetto":64,"gewichtKg":0.9,"sperrgut":false,"ekQuelle":"platzhalter"}]}};
 const ZIELMARGE = 0.35;
 const katalog = ladeKatalog(daten, ZIELMARGE);
 const korb = new Map();

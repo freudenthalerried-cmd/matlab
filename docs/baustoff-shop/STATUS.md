@@ -163,6 +163,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `PARAMETER.md` | Festgelegte Vorgaben, Umrechnung netto → vor Steuer, Margenschwelle |
 | `README.md` | Ursprüngliche Denkgrundlage. Teilweise überholt, Grundrechnungen gültig |
 | `master-prompt.md` | Die ursprüngliche Auftragsfassung. Als Handlungsanweisung überholt |
+| `schaufenster-abgleich.md` | **Sieben Anzeigen, drei Stände** — PR-Beschreibung und Website-Vorschau heute nachgezogen; Kalkulationsseite und Ablaufplan sind gültig, aber unvollständig (kennen Skonto bzw. Rechtsseiten nicht); die beiden Radon-Anzeigen stehen **bewusst** still, weil sie zu einem anderen Modell gehören. Die Regel: Wer eine Zahl in einem Schaufenster ändert, ändert sie in allen — oder trägt dort ein, warum nicht |
 | `produktfeed-stand.md` | **„46 veröffentlichbar" war die optimistischste Falschaussage des Vorhabens** — `katalogFeed()` rechnete die fehlende GTIN aus und warf sie weg, und Gate 22 lief nicht mit. Jetzt: 43 im Feed, 3 als Beipack zurückgehalten, **einreichbar: nein**, weil bei allen 43 die GTIN fehlt. Der echte Katalog ist angeschlossen; ohne Preisdatei fällt das Werkzeug auf den Radonkatalog zurück und sagt welchen es benutzt |
 | `gate-register.md` | **Alle neunzehn Gates an einer Stelle.** Maßgeblich bei Widerspruch |
 | `entscheidungsmatrix.md` | **Wie die zwei ausstehenden Prüfungen zu lesen sind.** Vier Ausgänge, vorab festgelegt |
