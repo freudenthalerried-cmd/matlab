@@ -13,7 +13,7 @@ Vorlage für eine Such-Kampagne (Responsive Search Ad), die auf die Unterseite
 | Sprache | Deutsch |
 | Tagesbudget | 10 € (Startwert, nach 2 Wochen anpassen) |
 | Gebotsstrategie | Klicks maximieren, später Conversions |
-| Finale URL | https://<domain>/lager-enns-lkw-parken.html |
+| Finale URL | https://lager-enns.at/lager-enns-lkw-parken.html |
 
 ## Keywords
 
