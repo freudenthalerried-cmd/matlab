@@ -1,10 +1,13 @@
 # Gate-Register
 
-Stand: 2026-08-16. **Maßgeblich für alle Gate-Fragen.** Neunzehn Entscheidungen
-sind über die Phasen verteilt gefallen. Wer wissen will, was gilt, musste bisher
-alles lesen. Hier steht es an einer Stelle. Nachgeführt am 16. August um die
-Befunde der Straßenpreis-, Vertriebswege- und Nachfragerunden sowie den
-dreizehnten Adressaten.
+Stand: 2026-08-26. **Maßgeblich für alle Gate-Fragen.** Zweiundzwanzig
+Entscheidungen sind über die Phasen verteilt gefallen. Wer wissen will, was
+gilt, musste bisher alles lesen. Hier steht es an einer Stelle.
+
+Nachgeführt am 26. August: Gate 20 in der berichtigten Lesart (25 % **Marge**,
+nicht 25 % Zuschlag), das neue **Gate 21** zur Skontofrist, das neue **Gate 22**
+zur Sortimentsaufnahme — und die **Entscheidung zu Gate 5**, die seit dem
+22. August auf das Sortiment aus den Rechnungen wartete. Es steht jetzt fest.
 
 Bei Widerspruch zwischen diesem Register und einem Phasendokument gilt das
 Register, weil es die spätere Fassung ist. Bei Widerspruch zwischen Register und
@@ -26,7 +29,7 @@ Ebenso überholt: Der master-prompt nennt in Gate 1 eine Margenschwelle von
 **28 %**. Sie stammt aus dem Szenario „3.000 € vor Steuer". Seit der Umstellung
 auf 3.000 € netto gilt die harte Untergrenze von **32 %**.
 
-## Die zwanzig Gates
+## Die zweiundzwanzig Gates
 
 ### Lieferantenseite — alle drei hängen an einer einzigen Freigabe
 
@@ -79,17 +82,30 @@ auf 3.000 € netto gilt die harte Untergrenze von **32 %**.
 
 | Nr. | Entscheidung | Stand | Festgelegt in |
 |---|---|---|---|
-| **20** | **Keine Bestellung ohne positiven Deckungsbeitrag.** Tritt an die Stelle von Gate 1 (32 % Rohmarge), sobald mit eigenen Baumeister-Einkaufspreisen und 25 % Zuschlag (= 20 % Rohmarge) kalkuliert wird. Maßgeblich ist nicht mehr eine Prozentzahl, sondern die einzelne Bestellung nach Wareneinsatz, Zahlungsgebühr **und Fracht**. Ausführbar als `traegtSichSelbst()` im Rechenkern; die Schwelle für frei-Haus-Lieferung liefert `mindestwarenkorbFreiHaus()`. Begründung: Gate 1 stammt aus dem Streckenhandel mit Herstellerkonditionen und würde das neue Modell mechanisch verwerfen, statt es zu prüfen. Gate 20 ist strenger, weil es jede Bestellung einzeln prüft — und lässt 20 % Rohmarge dort zu, wo sie trägt. | entschieden, selbst | `rechnung-zum-zuschlag.md` |
+| **20** | **Keine Bestellung ohne positiven Deckungsbeitrag.** Tritt an die Stelle von Gate 1 (32 % Rohmarge), sobald mit eigenen Baumeister-Einkaufspreisen kalkuliert wird. **Berichtigt am 26. August:** Die erste Fassung rechnete mit 25 % *Zuschlag* (= 20 % Rohmarge); der Auftraggeber hat „25 %" inzwischen als **Marge** geklärt, also 33,3 % Zuschlag. Am Gate ändert das nichts — es prüft Euro, nicht Prozent. Maßgeblich ist nicht mehr eine Prozentzahl, sondern die einzelne Bestellung nach Wareneinsatz, Zahlungsgebühr **und Fracht**. Ausführbar als `traegtSichSelbst()` im Rechenkern; die Schwelle für frei-Haus-Lieferung liefert `mindestwarenkorbFreiHaus()`. Begründung: Gate 1 stammt aus dem Streckenhandel mit Herstellerkonditionen und würde das neue Modell mechanisch verwerfen, statt es zu prüfen. Gate 20 ist strenger, weil es jede Bestellung einzeln prüft — und lässt 20 % Rohmarge dort zu, wo sie trägt. | entschieden, selbst | `rechnung-zum-zuschlag.md` |
+
+### Nachgetragen am 26. August
+
+| Nr. | Entscheidung | Stand | Festgelegt in |
+|---|---|---|---|
+| **21** | **Das Zahlungsziel des Kunden darf die Skontofrist des Lieferanten nicht überschreiten.** Beide bekannten Lieferanten geben 3 % Skonto bei 14 Tagen, Fracht ausdrücklich ausgenommen. Diese 3 % heben die Rohmarge von 25 auf 27,25 % und senken den nötigen Monatsumsatz von 45.356 auf 38.786 € — ein Siebtel, und mehr als die Zahlungsgebühr kostet. Zwischen Zahlungseingang und Überweisung liegen zwei Tage Bearbeitung, die zur Frist zählen. Ausführbar als `zahlungszielTraegt()`. **Vorkasse und Karte erfüllen das Gate von selbst; nur der Rechnungskauf kann es verletzen — und genau der ist im Baustoffhandel üblich.** Begründung für die Selbstentscheidung: Der Hebel ist gerechnet und belegt, und ohne Gate bliebe er eine Empfehlung, die im Alltag umgangen wird. | entschieden, selbst | `zweiter-lieferant-und-skonto.md` |
+| **22** | **In den Shop kommt nur, was unter dem Listenpreis des Lieferanten bleibt.** Der Einkaufsvorteil ist artikelgenau und reicht über 46 Artikel von 10 bis 88 % — tief bei Dämmung, Kanal und Systemware, dünn bei Kleinteilen. Wo die Zielmarge den Verkaufspreis über die Liste heben würde, gibt es keinen Preisvorteil zu bewerben: Diese Artikel sind **Beipack**, bestellbar, aber ohne Keyword, ohne Anzeige und ohne Feed. Ausführbar als `katalogbefund()`; der Kampagnenbau folgt ihm. Begründung: Wer einen Artikel bewirbt, dessen Preis am Listendeckel klebt, bezahlt Klicks für einen Preisvergleich, den er verliert. | entschieden, selbst | `katalog-aus-rechnungen.md`, `kampagne-gerechnet.md` |
+
+**Gate 5 ist entschieden — und zwar gegenstandslos für dieses Modell.** Es
+verlangte ein radonspezifisches Kernsortiment. Das Sortiment aus den
+Rechnungen ist ein **Fassaden-, Kamin- und Kanalsortiment**; kein einziger der
+46 Artikel ist radonspezifisch. Gate 5 beschreibt damit ein anderes Geschäft.
+
+An seine Stelle tritt für das Baumeisterpreis-Modell **Gate 22**: Nicht die
+Nische entscheidet über die Aufnahme, sondern der Einkaufsvorteil. Die
+Begründung ist dieselbe wie bei Gate 1 → Gate 20: Ein Kriterium aus dem alten
+Modell würde das neue mechanisch verwerfen, statt es zu prüfen. **Für das
+Radon-Streckenmodell gilt Gate 5 unverändert weiter.**
 
 **Gate 1 gilt weiter für das Streckengeschäftsmodell** mit
 Herstellerkonditionen — die dreizehn Anfragen sind unverändert danach
 auszuwerten. Welches Gate greift, hängt daran, aus welcher Quelle der
 Einkaufspreis stammt.
-
-**Gate 5 (Sortiment auf den radonspezifischen Kern) steht zur
-Überprüfung**, sobald das Sortiment aus den Rechnungen feststeht:
-Spachtelmasse ist Allgemeinbaustoff. Noch nicht entschieden, weil die
-Grundlage fehlt.
 
 ## Was die Gates auslöst
 
@@ -98,6 +114,8 @@ Grundlage fehlt.
 | Dreizehn Anfragen (zwölf Hersteller, ein Großhändler) | Gate 1, 2, 6 — und damit Gate 3 | 0 € |
 | Keyword-Werkzeug, ein Monat | Gate 15 — und damit, ob das Leadmodell eine Mengenquelle hat | 100–200 €; Werkzeugwahl festgelegt in `werkzeugwahl-suchvolumen.md` |
 | Drei bis fünf Partneranfragen | Preisniveau und Machbarkeit von Gate 9 und 13 | 0 € |
+| Entscheidung über das Kundenzahlungsziel | Gate 21 — und damit 6.571 € Umsatz im Monat | 0 € |
+| Vier Impressumsangaben des Auftraggebers | ob der Shop überhaupt online gehen darf | 0 € |
 | Betrieb ab Stufe 2 | Gate 4 | ab 2.500 € |
 
 Bemerkenswert daran: **Zwei der drei wirksamsten Auslöser kosten nichts.** Was
@@ -121,6 +139,8 @@ Kein Gate ist unumstößlich; drei sind erkennbar anfällig:
 | **14** | Wenn die Lead-Quote in Gruppe C unter 2 % liegt, fehlt dem Leadmodell die Mengenquelle — und eine Ersatzquelle ist nicht in Sicht |
 | **15** | Wenn die Messung zeigt, dass die Feuchtebegriffe in Österreich schwächer besetzt sind als in Deutschland, kehrt Gruppe C als Mengenquelle zurück — die Chance darauf sinkt allerdings mit jedem ISOTEC-Standort |
 | **12** | Wenn die Neubauzahlen 2026 drehen, verschiebt sich das Gewicht zurück zum Shop — belastbar erst im Frühjahr 2027 |
+| **21** | Wenn der Baustoffhandel im B2B ohne Zahlungsziel von 30 Tagen nicht verkäuflich ist, muss das Skonto abgeschrieben und der nötige Monatsumsatz wieder mit 45.356 € gerechnet werden. Das ist keine Randmöglichkeit, sondern der Regelfall der Branche |
+| **22** | Wenn ein zweiter Lieferant dieselbe Ware günstiger führt, verschiebt sich der Listenabstand je Artikel — die Einteilung in Suchartikel und Beipack ist an die Konditionen gebunden und nicht dauerhaft |
 
 ## Überholte Fassungen, die im Bestand stehen bleiben
 
