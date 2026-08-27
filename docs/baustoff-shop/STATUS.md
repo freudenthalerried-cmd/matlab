@@ -130,13 +130,15 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > 15–45 % — die vorab gestellte Bedingung („zwei von sechs Gruppen reichen
 > heran") ist erfüllt. **Aber Dämmung und Fertigteile stehen auf
 > „ANFRAGE"**, und das sind die Gruppen mit den höchsten Kampagnengeboten.
-> **Berichtigt nach fünf weiteren Seiten:** Die Trennlinie verläuft nicht
-> entlang der Warengruppen, sondern entlang des Rohstoffs. **Polystyrol**
-> (EPS, XPS, Styrodur) und **Betonfertigteile** stehen auf Anfrage — alles
-> andere ist fest gestaffelt, auch Schiedel-Kamin (30–35 %) und
-> Isover-Mineralwolle (52–53 %). **Fünf von sechs Warengruppen sind ganz
-> oder überwiegend kalkulierbar**, die mit dem höchsten Kampagnengebot
-> vollständig.
+> **Zweimal berichtigt, zehn Seiten gelesen.** Es gibt kein einfaches
+> Prinzip: Weder „Regal gegen Baustelle" noch „Rohstoff" hält, seit die
+> Ziegelseite zeigt, dass N+F-Ziegel 60 % haben und **Planziegel auf
+> Anfrage stehen** — derselbe Ton, nur geschliffen. Was bleibt, ist eine
+> Liste. **Alle sechs Warengruppen sind ganz oder teilweise kalkulierbar**,
+> Kamin (30–35 %) vollständig; auf Anfrage stehen Polystyrol,
+> Betonfertigteile, Planziegel, Edelstahlkamine und Öfen. Der
+> Referenzwarenkorb „eine Palette Planziegel" ist damit ausgerechnet nicht
+> kalkulierbar.
 > [`lagerhaus-rabatte-gelesen.md`](./lagerhaus-rabatte-gelesen.md).
 
 ## Wo das Projekt steht

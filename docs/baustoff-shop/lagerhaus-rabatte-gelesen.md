@@ -28,6 +28,8 @@ Die vorab festgelegte Frage lautete:
 | **Dämmung Mineralwolle** (53) — Isover Uniroll, WDF, Trennwandfilz | **8 bis 53 %, überwiegend 52–53 %** |
 | **WDVS-Komponenten** (57) — Klebespachtel, Gewebe, Putz, Farbe | **15 bis 50 %** |
 | Dämmung **Polystyrol** (51, 57) — EPS-W, EPS-F, Styrodur/XPS, Trittschall | **„ANFRAGE"** |
+| **Mauerwerk** (14) — Porotherm N+F 60 %, Klimabloc 42–60 %, Klinker 15 % | **15 bis 60 %** |
+| Mauerwerk **Planziegel** (14) — Wienerberger und Pichler | **„ANFRAGE"** |
 | Kamin **Edelstahl und Öfen** (18) — Kerastar, ICS, Kingfire | **„ANFRAGE"** |
 | **Decken und Fertigteile** (17) — Pichler, Oberndorfer | **„ANFRAGE"** |
 
@@ -36,10 +38,11 @@ artikelgenau aus fünfzehn Rechnungen zurückgerechnet, **10 bis 88 %,
 Median 27 % unter Liste** — tief bei Dämmung, Kanal und Systemware, dünn
 bei Kleinteilen.
 
-**Fünf der sechs Warengruppen reichen heran, drei davon deutlich darüber
-hinaus** (Kanal bis 80 %, Mineralwolle 52–53 %, Putzgewebe 50 %). Die
-Bedingung ist erfüllt, und deutlicher als der erste Anlauf ergab: Der
-zweite Bezugsweg ist wirtschaftlich, nicht nur strategisch.
+**Alle sechs Warengruppen reichen ganz oder teilweise heran, vier davon
+deutlich darüber hinaus** (Kanal bis 80 %, Ziegel bis 60 %, Mineralwolle
+52–53 %, Putzgewebe 50 %). Die Bedingung ist erfüllt, und deutlicher als
+der erste Anlauf ergab: Der zweite Bezugsweg ist wirtschaftlich, nicht
+nur strategisch.
 
 ## Der eigentliche Befund ist aber die Struktur
 
@@ -65,17 +68,29 @@ Seiten widerlegen es:
 - **Polystyrol steht auf Anfrage** — EPS-W, EPS-F, Styrodur, XPS,
   Trittschall, quer über zwei verschiedene Warengruppenseiten.
 
-**Die Trennlinie ist nicht die Lieferform, sondern der Rohstoff.**
-Polystyrol ist erdölbasiert und im Preis volatil; Betonfertigteile hängen
-an Zement und Stahl. Auf genau diese beiden Warenklassen bindet sich der
-Händler nicht ein Jahr im Voraus. Steinwolle, Ziegel, Säcke, Rohre und
-Schamotte staffelt er fest.
+Der naheliegende zweite Schluss lautete: **die Trennlinie sei der
+Rohstoff** — Polystyrol erdölbasiert und volatil, Betonfertigteile an
+Zement und Stahl gebunden, und auf genau diese Klassen bindet sich der
+Händler nicht ein Jahr im Voraus.
 
-> **Vier Stichproben, drei Warengruppen behauptet, eine davon falsch.**
-> Die Seiten, die ich zuerst gelesen habe, waren nicht repräsentativ —
-> und ich habe aus ihnen auf Gruppen geschlossen, statt die Gruppen zu
-> lesen. Dass die Fehlaussage auf der pessimistischen Seite lag, ist ein
-> Zufall und kein Trost.
+**Auch das hält nicht.** Die zehnte gelesene Seite zeigt bei Ziegeln:
+Porotherm N+F 60 %, Klimabloc 42–60 %, Klinker 15 % — aber
+**„PLANZIEGEL usw." auf Anfrage**, bei beiden Ziegelwerken. Planziegel
+sind derselbe gebrannte Ton wie die N+F-Steine; sie sind nur geschliffen
+und werden im Dünnbett verlegt.
+
+> **Es gibt kein einfaches Prinzip, und der Versuch, eines zu finden, war
+> selbst der Fehler.** Zweimal habe ich aus einer Stichprobe eine Regel
+> abgeleitet, und beide Male hat die nächste Seite sie widerlegt. Was
+> bleibt, ist eine **Liste**, keine These.
+
+Auf Anfrage stehen: Polystyrol (EPS, XPS, Styrodur, Trittschall),
+Betonfertigteile und -decken, **Planziegel**, Edelstahlkamine, Öfen,
+Rigofill-Sickerblöcke.
+
+Fest gestaffelt sind: Säcke aller Art, Putze, Spachtel, Gewebe, Farben,
+Rohre und Formteile, Steinwolle, Schamottkamine, Standard- und
+Klinkerziegel.
 
 > **Ein Shop, der Preise veröffentlicht, kann keine Ware führen, deren
 > Preis „auf Anfrage" ist.** Ein tagesaktuelles Angebot ist keine
@@ -90,11 +105,16 @@ Was das für die Anzeigengruppen bedeutet, aus `kampagne-gerechnet.md`:
 | **WDVS** | **4,19 €** | **geteilt** — alle Komponenten ja (15–50 %), Dämmplatte nein |
 | **Kanal** | **1,95 €** | **ja, 25–80 %** |
 | **Mörtel** | **1,85 €** | **ja, 15–45 %** |
-| Mauerwerk | 1,81 € | Ziegel: sechs eigene Seiten, nicht geprüft |
+| **Mauerwerk** | **1,81 €** | **geteilt** — Ziegel ja (15–60 %), **Planziegel nein** |
 
-**Fünf von sechs Gruppen sind ganz oder überwiegend kalkulierbar** — und
-die Gruppe mit dem höchsten Gebot ist es vollständig. Das ist das
-Gegenteil dessen, was die erste Fassung behauptet hat.
+**Alle sechs Gruppen sind ganz oder teilweise kalkulierbar** — und die
+Gruppe mit dem höchsten Gebot ist es vollständig. Das ist das Gegenteil
+dessen, was die erste Fassung behauptet hat.
+
+**Ein Detail wiegt dabei schwer:** Der Referenzwarenkorb der
+Mauerwerksgruppe lautet in `kampagne-gerechnet.md` *„eine Palette
+Planziegel"* (392,96 €). Genau der steht beim Lagerhaus auf Anfrage. Die
+gestoßenen N+F-Ziegel daneben haben 60 %.
 
 ## Was der zweite Bezugsweg damit ist — und was nicht
 
@@ -143,15 +163,15 @@ gehört erst entschieden, wenn dieser Weg entschieden ist.
 | | |
 |---|---|
 | **Werkspreislisten** | die Bezugsgröße jedes Rabattsatzes — liegen nicht vor |
-| Seiten für Ziegel (6 Stück), Quarzolith, Schachtringe | nicht gelesen; das Bild ist aus **neun** Seiten gezogen, nicht aus 72 |
+| Quarzolith, Schachtringe, fünf weitere Ziegelseiten | nicht gelesen; das Bild ist aus **zehn** Seiten gezogen, nicht aus 72 |
 | Konditionen 2026 | im Postfach nicht auffindbar |
 | Streckenkonditionen | „lt. Industriepreisliste" — liegt nicht vor |
 
-**Die neun gelesenen Seiten sind eine Stichprobe.** Sie reichen für die
+**Die zehn gelesenen Seiten sind eine Stichprobe.** Sie reichen für die
 vorab gestellte Frage und nicht für eine Sortimentsentscheidung — was
-schon der erste Anlauf gezeigt hat, als vier Seiten für einen falschen
-Schluss genügten. Wer daraus einen Katalog baut, baut ihn auf neun von
-zweiundsiebzig Seiten.
+dieser Bericht zweimal am eigenen Leib gezeigt hat: Vier Seiten
+genügten für einen falschen Schluss, neun für einen zweiten. Wer daraus
+einen Katalog baut, baut ihn auf zehn von zweiundsiebzig Seiten.
 
 Die gerenderten Seiten liegen in `preise/lagerhaus-seiten/`, der
 ausgelesene Text in `preise/lagerhaus-konditionen-2025.txt` — beides von
