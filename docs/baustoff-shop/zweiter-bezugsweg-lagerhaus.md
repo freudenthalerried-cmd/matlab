@@ -46,11 +46,13 @@ Pramer-Angebote wiederhergestellt — die Zusicherung von
 ## Was lesbar ist — und was nicht
 
 **14 von 72 Seiten tragen Text.** Die übrigen 58 sind Bilder: Die
-Rabattstaffel selbst liegt als Grafik vor, und ein Renderer steht in
-dieser Umgebung nicht zur Verfügung (`pdftoppm` fehlt).
+Rabattstaffel selbst liegt als Grafik vor.
 
-**Die Rabattsätze sind damit weiterhin nicht ausgewertet.** Was
-auszuwerten war, steht unten; was fehlt, fehlt sichtbar.
+> **Nachtrag vom Lauf darauf:** `pdftoppm` fehlte, ließ sich aber
+> nachinstallieren — `apt-get update` zuerst, sonst antwortet der
+> Paketserver mit 404. Vier Seiten sind daraufhin gelesen worden;
+> Befund in [`lagerhaus-rabatte-gelesen.md`](./lagerhaus-rabatte-gelesen.md).
+> Die übrigen 68 Seiten sind weiterhin ungelesen.
 
 ## Befund 1: Das Lagerhaus ist im Liefergebiet
 
@@ -150,9 +152,11 @@ zurückschickt, steht jetzt fest.
    Genossenschaft. Der Shop ist ein Streckengeschäft; für die Strecke
    verweist das Blatt auf die Industriepreisliste, also auf etwas, das
    hier nicht vorliegt.
-3. **Die Rabattsätze selbst sind nicht ausgewertet** (Bilder, kein
-   Renderer). Ohne sie ist offen, ob der Einkaufsvorteil beim Lagerhaus
-   überhaupt an Poschacher heranreicht.
+3. ~~**Die Rabattsätze selbst sind nicht ausgewertet.**~~ Vier von 72
+   Seiten sind inzwischen gelesen: Kanal 25–80 %, Mörtel/Putz 15–45 %,
+   **Dämmung und Fertigteile „ANFRAGE"**. Eine Stichprobe, keine
+   Sortimentsübersicht — und ein Rabatt ohne die Werkspreisliste, auf die
+   er sich bezieht, ist noch keine Zahl.
 4. **Es sind fremde Konditionen.** Der ausgelesene Text liegt in
    `preise/lagerhaus-konditionen-2025.txt` und ist von `.gitignore`
    gedeckt — mit derselben Einschränkung wie bei Poschacher
@@ -181,9 +185,14 @@ liest ein Dokument, das im Postfach des Auftraggebers liegt.
 
 ## Offen für den nächsten Lauf
 
-- **Die Rabattstaffel.** Ohne Renderer nicht auszulesen. Zwei Wege: ein
-  Lauf mit `poppler-utils`, oder der Auftraggeber liest die sechs
-  Warengruppen-Seiten ab (Seiten 4–8, 18, 26–28, 50–54, 57–59).
+- ~~**Die Rabattstaffel.** Ohne Renderer nicht auszulesen.~~ **Erledigt im
+  Lauf darauf:** `poppler-utils` ließ sich nachinstallieren (`apt-get
+  update` zuerst). Vier Seiten gelesen, Befund in
+  [`lagerhaus-rabatte-gelesen.md`](./lagerhaus-rabatte-gelesen.md) — die
+  vorab gestellte Bedingung ist erfüllt, aber die Trennlinie verläuft
+  anders als erwartet: Kanal und Mörtel sind fest gestaffelt, **Dämmung und
+  Fertigteile stehen auf „ANFRAGE"**. Die übrigen 68 Seiten sind weiterhin
+  ungelesen.
 - **Die Industriepreisliste** für Streckenlieferung — liegt nicht vor.
 - **Ob die Konditionen 2026 fortgeschrieben wurden.** Eine Nachricht
   gleichen Betreffs aus 2026 findet sich im Postfach nicht; das kann

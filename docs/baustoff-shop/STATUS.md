@@ -125,6 +125,14 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > Katalogs. Die Rabattsätze selbst liegen als Bilder vor und sind ohne
 > Renderer nicht auszulesen.
 > [`zweiter-bezugsweg-lagerhaus.md`](./zweiter-bezugsweg-lagerhaus.md).
+>
+> **Die Rabattstaffel ist gelesen** (27.08.): Kanal 25–80 %, Mörtel/Putz
+> 15–45 % — die vorab gestellte Bedingung („zwei von sechs Gruppen reichen
+> heran") ist erfüllt. **Aber Dämmung und Fertigteile stehen auf
+> „ANFRAGE"**, und das sind die Gruppen mit den höchsten Kampagnengeboten.
+> Der zweite Bezugsweg repariert nicht die Spitze des Sortiments, sondern
+> dessen Fuß — dort, wo Gate 22 heute Beipack ausweist.
+> [`lagerhaus-rabatte-gelesen.md`](./lagerhaus-rabatte-gelesen.md).
 
 ## Wo das Projekt steht
 
