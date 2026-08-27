@@ -89,9 +89,43 @@ const PRUEFER = [
   },
 ];
 
+/**
+ * Die beiden Browserproben.
+ *
+ * Sie bleiben aus dem Regellauf heraus, weil jede einen Chromium-Start je
+ * Szenario kostet — zusammen gut eine Minute. Mit `--mit-browser` kommen sie
+ * dazu. Geprüft wird auch hier nur der **Umfang**: Eine gelöschte Datei mit
+ * Szenarien fiele sonst niemandem auf.
+ *
+ * Für die Frage, ob ein einzelnes Szenario etwas gesehen hat, ist dieses
+ * Werkzeug der falsche Ort. Das muss jedes Szenario selbst beweisen — durch
+ * eine Erwartung, die auf einer leeren Seite nicht erfüllbar ist (die
+ * Überschrift, die Zahl der gefundenen Elemente, der Zustand **vor** der
+ * geprüften Handlung).
+ */
+const BROWSERPRUEFER = [
+  {
+    name: 'oberflaechenprobe',
+    werkzeug: 'oberflaechenprobe.mjs',
+    muster: /(\d+) Szenarien/,
+    einheit: 'Szenarien',
+    mindestens: 9,
+  },
+  {
+    name: 'shopprobe',
+    werkzeug: 'shopprobe.mjs',
+    muster: /(\d+) Szenarien/,
+    einheit: 'Szenarien',
+    mindestens: 18,
+  },
+];
+
+const mitBrowser = process.argv.includes('--mit-browser');
+const liste = mitBrowser ? [...PRUEFER, ...BROWSERPRUEFER] : PRUEFER;
+
 let gescheitert = 0;
 
-for (const p of PRUEFER) {
+for (const p of liste) {
   let ausgabe = '';
   let lief = true;
   try {
@@ -125,7 +159,11 @@ for (const p of PRUEFER) {
   console.log(`✓ ${p.name} — ${zahl} ${p.einheit}`);
 }
 
-console.log(`\n${PRUEFER.length} Prüfer befragt, ${gescheitert} ohne belastbaren Umfang.`);
+console.log(`\n${liste.length} Prüfer befragt, ${gescheitert} ohne belastbaren Umfang.`);
+if (!mitBrowser) {
+  console.log('Die beiden Browserproben sind nicht dabei — sie kosten je Szenario einen');
+  console.log('Chromium-Start. Mit `--mit-browser` laufen sie mit.');
+}
 console.log('Geprüft ist damit der Umfang, nicht der Befund: Was die Prüfer melden,');
 console.log('steht in ihrer eigenen Ausgabe und gehört einzeln angesehen.');
 process.exit(gescheitert ? 1 : 0);

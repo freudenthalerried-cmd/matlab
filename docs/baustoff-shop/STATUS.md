@@ -354,6 +354,18 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > Aussagen. 687 Testfälle grün.
 > [`pruefer-die-nichts-angesehen-haben.md`](./pruefer-die-nichts-angesehen-haben.md).
 >
+> **Die Prüfkette ist geschlossen** (27.08. abends): `pruefe-pruefer
+> --mit-browser` befragt auch die beiden Browserproben nach ihrem Umfang;
+> ein schwaches Szenario ist nachgeschärft (die Escape-Probe zählte nur
+> hinterher — **der Beweis gehört vor die Handlung**). Damit trägt jedes der
+> 34 Browserszenarien eine Erwartung, die auf einer leeren Seite nicht
+> erfüllbar ist. **Weitere Arbeit an der Prüfkette wäre Selbstzweck.** Was
+> den Shop weiterbringt, steht im Bericht in zwei Spalten: was beim
+> Auftraggeber liegt (Preisliste, Zahlungsanbieter, Impressum, Domain,
+> Rechtstexte, Repository privat) und was ohne Rückfrage geht (Gewichte,
+> Gate 20 mit Nebenkosten, 12 relevante Lagerhaus-Seiten).
+> [`pruefkette-geschlossen.md`](./pruefkette-geschlossen.md).
+>
 > **Herstellerverweise: drei Artikel zurückgewonnen** (27.08.): `marke()`
 > prüfte `startsWith`, die Marke musste ganz vorn stehen. Drei
 > Schiedel-Artikel trugen deshalb „kein Herstellermerkblatt vorhanden",
@@ -541,6 +553,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `domainwahl.md` | **Die Firma und ihre Domain gibt es schon** — Freudenthaler Bau GmbH, FN 347938z, Baustoffhandel eingetragen, `freudenthaler-bau.at` in Betrieb; Empfehlung daher `shop.freudenthaler-bau.at` plus `baustoffe-muehlviertel.at` als Weiterleitung. Zwei Korrekturen: Ried in der Riedmark liegt im **Mühlviertel**, nicht im Innviertel; der Entitätswert ist bereits aufgebaut und wäre bei einer neuen Domain verloren |
 | `pruefung-der-testfaelle.md` | **Grüne Tests sind eine Aussage über die Testfälle, nicht über den Code** — elf hohle Schleifen gefunden und entschärft |
 | `shop-mit-warenkorb.md` | **Was an einem Shop hochwertig ist, sind vier Dinge, die ein Kunde tut** — Suche, Filter, Warenkorb, Kasse; die Suche musste Deutsch lernen (Kompositum-Treffer), der Warenkorb sagt selbst, wenn die Fracht die Ware übersteigt, und die neue Shopprobe fand die fehlende Zeichensatzangabe |
+| `pruefkette-geschlossen.md` | **Ein Werkzeug, das Fehler findet, ist kein Ort, an dem keine Fehler wohnen** — Abschluss des Werkzeugtags mit Bilanz: acht Prüfer, neun Funde, und die Liste dessen, was jetzt wirklich offen ist |
 | `pruefer-die-nichts-angesehen-haben.md` | **Ein Prüfer, der nichts angesehen hat, ist nicht still — er ist zustimmend** — fünf Fälle an einem Tag, neue Stufe `pruefe-pruefer` fragt nach dem Umfang statt nach dem Befund. Dazu das erste echte Quellenregister: 4 Normen, 6 belegte Aussagen |
 | `pruefer-zeigte-auf-die-probe.md` | **Ein Prüfer, dessen Voreinstellung nicht auf den Bestand zeigt, wird mit der Voreinstellung aufgerufen** — und die Hälfte des Shoptextes stand nie unter den Inhaltsregeln. Zwei echte Funde: Handelsspanne ohne Stand, Pflicht ohne Fundstelle im eigenen Absatz |
 | `rahmen-ohne-javascript.md` | **Ein Prüfer, der nicht durchfallen kann, ist schlimmer als kein Prüfer** — zwei Szenarien gebaut, beide hohl, beide entfernt. Dabei gemessen: Eingebettete Dokumente führen in dieser Prüfumgebung keine Skripte aus |

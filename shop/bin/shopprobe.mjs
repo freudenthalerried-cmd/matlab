@@ -264,11 +264,15 @@ const SZENARIEN = [
       const feld = document.getElementById('suchfeld');
       feld.value = 'kanal';
       feld.dispatchEvent(new Event('input'));
+      // Vorher zählen: „eintraege=0" nach Escape beweist nichts, wenn die
+      // Liste nie Einträge hatte. Der Beweis gehört vor die Handlung.
+      const vorher = document.querySelectorAll('#suchvorschlag .vorschlag').length;
       feld.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
-      out = 'versteckt=' + document.getElementById('suchvorschlag').hidden
+      out = 'vorher=' + vorher
+        + ' versteckt=' + document.getElementById('suchvorschlag').hidden
         + ' offen=' + feld.getAttribute('aria-expanded')
-        + ' eintraege=' + document.querySelectorAll('#suchvorschlag .vorschlag').length;`,
-    erwartet: ['versteckt=true', 'offen=false', 'eintraege=0'],
+        + ' nachher=' + document.querySelectorAll('#suchvorschlag .vorschlag').length;`,
+    erwartet: ['vorher=8', 'versteckt=true', 'offen=false', 'nachher=0'],
   },
   {
     name: 'Der Vorschlag unter dem Suchfeld zeigt Preis und Gruppe',
