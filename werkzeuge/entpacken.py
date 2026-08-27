@@ -18,7 +18,17 @@ QUELLE = os.environ.get('GMAIL_ROHDATEN', '.')
 ZIEL = os.environ.get('PDF_ZIEL', './rechnungen')
 
 anzahl = 0
-for pfad in sorted(glob.glob(os.path.join(QUELLE, 'mcp-Gmail-get_message-*.txt'))):
+# Das Gmail-Werkzeug legt grosse Antworten unter dem Namen
+# 'mcp-Gmail-get_message-<zeit>.txt' ab. Wer eine Datei von Hand
+# dazulegt, benennt sie erfahrungsgemaess anders -- und bekam dann
+# kommentarlos 'neue PDFs: 0'. Deshalb wird jetzt jede .txt- und
+# .json-Datei im Ordner probiert; was kein passendes JSON ist, meldet
+# sich selbst.
+kandidaten = sorted(set(glob.glob(os.path.join(QUELLE, '*.txt')))
+                    | set(glob.glob(os.path.join(QUELLE, '*.json'))))
+if not kandidaten:
+    print('keine Rohdateien in', QUELLE)
+for pfad in kandidaten:
     try:
         daten = json.load(open(pfad))
     except Exception as e:

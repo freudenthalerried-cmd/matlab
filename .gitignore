@@ -4,3 +4,6 @@
 # Auftraggebers. Alles unter preise/ bleibt lokal.
 preise/
 *.einkaufspreise.csv
+
+# Python-Bytecode der Auslesewerkzeuge
+__pycache__/

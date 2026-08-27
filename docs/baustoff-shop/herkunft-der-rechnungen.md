@@ -116,6 +116,26 @@ Ein zweiter belegter Lieferant wäre auch der erste Schritt heraus aus
 einer Abhängigkeit, die bisher nirgends als Risiko geführt wird: **Der
 gesamte Katalog hängt an einem einzigen Bezugsweg.**
 
+## Nachtrag 27.08.: die Kennungen der übrigen Belege
+
+Damit ein späterer Lauf nicht wieder suchen muss, stehen die
+Nachrichtenkennungen hier — sie nennen keine Konditionen, nur Fundorte:
+
+| Beleg | Kennung |
+|---|---|
+| Konditionenblatt Lagerhaus Eferding 2025 | `195472d3f5406188` |
+| Rechnung Schachermayer 9116667544 (11.08.2026) | `19ff445f3435d98c` |
+
+Die Poschacher-Rechnungen findet man weiterhin über den Suchausdruck oben;
+**heute erneut nachgezählt: genau fünfzehn**, keine mehr. Der Katalog
+schöpft sie vollständig aus (53 Artikelnummern, davon 7 Nebenkosten, 46
+Artikel).
+
+Die Schachermayer-Rechnung ist ausgewertet und für den Katalog ergebnislos
+— eine Position, Aluminium-Flachstangen, kein Baustoff. Was sie stattdessen
+hergegeben hat, steht in
+[`dritter-lieferant-schachermayer.md`](./dritter-lieferant-schachermayer.md).
+
 ## Was sonst noch im Postfach steht
 
 Die Suche hat außerdem gezeigt, dass es **Angebote** von Poschacher gibt

@@ -180,6 +180,20 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > was belegbar ist. Der Hebel wäre eine Artikelpreisliste von Poschacher und
 > damit eine E-Mail, also freigabepflichtig.
 > [`shop-auf-die-ware-gedreht.md`](./shop-auf-die-ware-gedreht.md).
+>
+> **Dritter Lieferant ausgelesen, für den Katalog ergebnislos** (27.08.):
+> Die Schachermayer-Rechnung 9116667544 enthält **eine** Position —
+> Aluminium-Flachstangen für den Bürozubau, kein Baustoff. Der Katalog
+> bleibt bei 46. Drei Nebenbefunde wiegen mehr: **2 % Skonto bei 14 Tagen**
+> (die 3 % sind eine Eigenschaft der beiden Baustofflieferanten, keine
+> Branchenkonstante — Gate 21 gilt unverändert, seine Begründung ist
+> präzisiert), **17,90 € Fracht** als dritter Beleg dafür, dass Fracht eine
+> Eigenschaft der Ware ist, und die Rechnungsanschrift **4312 Ried in der
+> Riedmark** als unabhängige Bestätigung des Perg-Befunds. Die Auslesekette
+> ist zu zwei Dritteln allgemein: `entpacken.py` und `pdftext.py` lesen das
+> fremde Layout, `positionen.py` nicht. Stiller Nullfund in `entpacken.py`
+> behoben.
+> [`dritter-lieferant-schachermayer.md`](./dritter-lieferant-schachermayer.md).
 
 ## Wo das Projekt steht
 
@@ -360,6 +374,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `maschinenlesbare-ausgabe.md` | **Schema.org, Feed und robots.txt** — Preise werden übernommen statt nachgerechnet, Platzhalter gehen nicht hinaus, Zurückgehaltenes wird begründet |
 | `domainwahl.md` | **Die Firma und ihre Domain gibt es schon** — Freudenthaler Bau GmbH, FN 347938z, Baustoffhandel eingetragen, `freudenthaler-bau.at` in Betrieb; Empfehlung daher `shop.freudenthaler-bau.at` plus `baustoffe-muehlviertel.at` als Weiterleitung. Zwei Korrekturen: Ried in der Riedmark liegt im **Mühlviertel**, nicht im Innviertel; der Entitätswert ist bereits aufgebaut und wäre bei einer neuen Domain verloren |
 | `pruefung-der-testfaelle.md` | **Grüne Tests sind eine Aussage über die Testfälle, nicht über den Code** — elf hohle Schleifen gefunden und entschärft |
+| `dritter-lieferant-schachermayer.md` | **Ein Lieferant ist nicht dasselbe wie ein Sortiment** — eine Rechnung, eine Position, kein Baustoff. Der negative Befund ist die Antwort; wertvoller sind 2 % statt 3 % Skonto (dritter Lieferant), 17,90 € Fracht und die Anschrift, die Perg unabhängig bestätigt |
 | `shop-auf-die-ware-gedreht.md` | **Eine Prüfung, die das Modell liest statt die Ausgabe, prüft die eigene Absicht** — 41 tote Verweise trotz grüner Verweisprüfung; dazu selbstgezeichnete Artikelschemata statt fremder Fotos, produktzuerst-Aufbau und die belegte Obergrenze des Katalogs (46 von 53 Artikelnummern, Rest sind Nebenkosten) |
 | `interna-auf-der-kundenseite.md` | **Gehört das überhaupt auf diese Seite?** — die fünfte Frage der Prüfkette, die keinem der vier Prüfer gehörte. Rohmarge, Lieferantenskonto und Gate-Nummern standen auf der AGB-Kundenseite. `src/interna.js` prüft im Bau, Ausnahmen kosten einen begründeten Satz und lassen sich auf einzelne Muster eingrenzen |
 | `widerrufe-maschinell.md` | **Ein Widerruf deckt nur seine eigene Aussage** — Register der fünf zurückgenommenen Thesen, `npm run pruefe-widerrufe` meldet jede Fundstelle ohne ihren eigenen Widerruf in Sichtweite (±8 Zeilen oder Kopfvermerk). Drei echte Funde, darunter der vierte Innkreis-Überlebende und eine seit dem 25.08. beantwortete Frage, die noch offen aussah |
