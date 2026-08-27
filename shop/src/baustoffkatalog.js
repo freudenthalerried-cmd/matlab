@@ -41,10 +41,35 @@ export function ladeBaustoffkatalog(katalogDatei, preisDatei, lieferantenDatei, 
 
   const artikel = [];
   const ohnePreis = [];
+  const nurAnfrage = [];
 
   for (const a of katalogDatei.artikel) {
     const lieferant = lieferantenById.get(a.lieferantId);
     if (!lieferant) throw new Error(`Unbekannter Lieferant: ${a.lieferantId} (${a.sku})`);
+
+    // Gate 24: Was nur „auf Anfrage" einzukaufen ist, kann der Shop nicht
+    // rechnen und deshalb nicht führen. Die Sperre steht **vor** dem Blick in
+    // die Preisdatei, und das ist der ganze Punkt: Läge dort aus irgendeinem
+    // Grund eine Zahl — ein Angebot von vorgestern, ein Telefonat —, würde sie
+    // den Artikel sonst verkäuflich machen. Ein tagesaktueller Preis ist keine
+    // Kalkulationsgrundlage, auch wenn er einmal aufgeschrieben wurde.
+    if (a.ekQuelle === 'anfrage') {
+      nurAnfrage.push(a.sku);
+      artikel.push({
+        ...a,
+        ekQuelle: 'anfrage',
+        ekIstPlatzhalter: true,
+        vkNetto: null,
+        vkBrutto: null,
+        ekNetto: null,
+        deckungsbeitragNetto: null,
+        rohmarge: null,
+        zielmargeErreicht: false,
+        amListendeckel: false,
+        grund: 'Einkaufspreis nur auf Anfrage — Gate 24: was der Shop nicht rechnen kann, kann er nicht anbieten.',
+      });
+      continue;
+    }
 
     const preis = preise?.[a.sku] ?? null;
     if (!preis) {
@@ -75,6 +100,7 @@ export function ladeBaustoffkatalog(katalogDatei, preisDatei, lieferantenDatei, 
     zielmarge,
     preiseGeladen: preise !== null,
     ohnePreis,
+    nurAnfrage,
     vollstaendig: preise !== null && ohnePreis.length === 0,
   };
 }
@@ -94,6 +120,7 @@ export function ladeBaustoffkatalog(katalogDatei, preisDatei, lieferantenDatei, 
  *                  Vergleichsmaßstab.
  */
 export function katalogbefund(katalog) {
+  const nurAnfrage = katalog.artikel.filter((a) => a.ekQuelle === 'anfrage');
   const mitPreis = katalog.artikel.filter((a) => a.vkNetto !== null);
   const amDeckel = mitPreis.filter((a) => a.amListendeckel);
   const ohneListe = mitPreis.filter((a) => a.uvpNetto === null);
@@ -118,6 +145,7 @@ export function katalogbefund(katalog) {
 
   return {
     artikelGesamt: katalog.artikel.length,
+    verkaeuflich: katalog.artikel.length - nurAnfrage.length,
     mitPreis: mitPreis.length,
     unterListe: unterListe.length,
     amDeckel: amDeckel.length,
@@ -126,5 +154,9 @@ export function katalogbefund(katalog) {
     jeGruppe: Object.fromEntries(jeGruppe),
     suchtauglicheSkus: unterListe.map((a) => a.sku),
     nurBeipackSkus: amDeckel.map((a) => a.sku),
+    // Gate 24. Getrennt von `ohneListe` und `nurBeipack`, weil es ein anderer
+    // Fall ist: Dort fehlt ein Vergleichsmaßstab oder ein Vorteil, hier fehlt
+    // der Einkaufspreis selbst.
+    nurAnfrageSkus: nurAnfrage.map((a) => a.sku),
   };
 }

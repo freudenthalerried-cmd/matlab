@@ -211,6 +211,17 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > selben Produkt im anderen Gebinde.
 > [`lagerhaus-drei-seiten-mehr.md`](./lagerhaus-drei-seiten-mehr.md).
 >
+> **Gate 24 ist ausführbar — bevor es einen Fall gibt** (27.08.): Der
+> Entscheidungstext sagte „umzusetzen ist vorerst nichts". Das ist die
+> häufigste Art, wie eine Regel verschwindet; Gate 23 hat fünf Tage lang
+> gezeigt, was mit einer beschlossenen und nicht gebauten Regel geschieht.
+> `ekQuelle: 'anfrage'` sperrt jetzt im Rechenkern — **vor** dem Blick in die
+> Preisdatei, sonst machte eine dort notierte Zahl den Artikel doch
+> verkäuflich —, `katalogbefund()` weist `verkaeuflich` und `nurAnfrageSkus`
+> aus, und `npm run website` lässt die Artikel weg **und nennt sie**. Still
+> verschwinden darf nichts. Gegenprobe mit Katalogkopie in beide Richtungen.
+> [`gate24-ausfuehrbar.md`](./gate24-ausfuehrbar.md).
+>
 > **Herstellerverweise: drei Artikel zurückgewonnen** (27.08.): `marke()`
 > prüfte `startsWith`, die Marke musste ganz vorn stehen. Drei
 > Schiedel-Artikel trugen deshalb „kein Herstellermerkblatt vorhanden",
@@ -397,6 +408,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `maschinenlesbare-ausgabe.md` | **Schema.org, Feed und robots.txt** — Preise werden übernommen statt nachgerechnet, Platzhalter gehen nicht hinaus, Zurückgehaltenes wird begründet |
 | `domainwahl.md` | **Die Firma und ihre Domain gibt es schon** — Freudenthaler Bau GmbH, FN 347938z, Baustoffhandel eingetragen, `freudenthaler-bau.at` in Betrieb; Empfehlung daher `shop.freudenthaler-bau.at` plus `baustoffe-muehlviertel.at` als Weiterleitung. Zwei Korrekturen: Ried in der Riedmark liegt im **Mühlviertel**, nicht im Innviertel; der Entitätswert ist bereits aufgebaut und wäre bei einer neuen Domain verloren |
 | `pruefung-der-testfaelle.md` | **Grüne Tests sind eine Aussage über die Testfälle, nicht über den Code** — elf hohle Schleifen gefunden und entschärft |
+| `gate24-ausfuehrbar.md` | **„Umzusetzen ist vorerst nichts" ist die häufigste Art, wie eine Regel verschwindet** — Gate 24 im Rechenkern, die Sperre vor dem Preisabgleich, weggelassene Artikel werden beim Bauen genannt |
 | `lagerhaus-drei-seiten-mehr.md` | **Der dritte falsche Schluss wurde nicht gezogen** — Quarzolith zeigt dasselbe Produkt als Sackware mit 20 % und lose auf Anfrage, was nach einem Prinzip aussieht und an den Schachtringen scheitert. Kanal 82 %, Schachtringe 53 %. **Gate 24 entschieden.** Dazu: das Inhaltsverzeichnis war immer lesbar — nur 21 der 72 Seiten betreffen den Shop |
 | `dritter-lieferant-schachermayer.md` | **Ein Lieferant ist nicht dasselbe wie ein Sortiment** — eine Rechnung, eine Position, kein Baustoff. Der negative Befund ist die Antwort; wertvoller sind 2 % statt 3 % Skonto (dritter Lieferant), 17,90 € Fracht und die Anschrift, die Perg unabhängig bestätigt |
 | `shop-auf-die-ware-gedreht.md` | **Eine Prüfung, die das Modell liest statt die Ausgabe, prüft die eigene Absicht** — 41 tote Verweise trotz grüner Verweisprüfung; dazu selbstgezeichnete Artikelschemata statt fremder Fotos, produktzuerst-Aufbau und die belegte Obergrenze des Katalogs (46 von 53 Artikelnummern, Rest sind Nebenkosten) |

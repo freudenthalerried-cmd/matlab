@@ -839,8 +839,20 @@ function main() {
     process.exit(2);
   }
 
-  const katalog = ladeBaustoffkatalog(katalogDatei, lies(preisPfad), lieferantenDatei, ZIELMARGE);
+  let katalog = ladeBaustoffkatalog(katalogDatei, lies(preisPfad), lieferantenDatei, ZIELMARGE);
   const befund = katalogbefund(katalog);
+
+  // Gate 24: Artikel, deren Einkaufspreis nur auf Anfrage zu haben ist,
+  // bekommen keine Seite. Gemeldet wird das trotzdem — **still verschwinden
+  // darf nichts**. Eine Ware, die aus dem Katalog fällt, ohne dass es jemand
+  // sieht, ist derselbe Fehler wie eine Zahl, die berechnet und verschwiegen
+  // wird; nur in die andere Richtung.
+  if (befund.nurAnfrageSkus.length) {
+    console.log(`Gate 24 — ${befund.nurAnfrageSkus.length} Artikel ohne Seite `
+      + `(Einkaufspreis nur auf Anfrage): ${befund.nurAnfrageSkus.join(', ')}`);
+    console.log('');
+    katalog = { ...katalog, artikel: katalog.artikel.filter((a) => a.ekQuelle !== 'anfrage') };
+  }
   const seiten = lesInhalte();
 
   // Verweise in den Inhalten prüfen, bevor irgendetwas ausgegeben wird.

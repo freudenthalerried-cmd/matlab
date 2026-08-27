@@ -141,10 +141,12 @@ mit, weil die Anfrage-Zeilen mitten in der Gruppe stehen — beim selben
 Produkt, nur im anderen Gebinde. Artikelweise ist die einzige Ebene, auf
 der sich das entscheiden lässt.
 
-Umzusetzen ist vorerst nichts: Kein Artikel im Katalog stammt vom
-Lagerhaus. Ausführbar wäre es als Feld `ekQuelle: 'anfrage'`, das
-`katalogbefund()` verwirft — dieselbe Bauart wie die Beipack-Markierung
-aus Gate 22.
+~~Umzusetzen ist vorerst nichts: Kein Artikel im Katalog stammt vom
+Lagerhaus.~~ **Noch am selben Tag umgesetzt** — und der durchgestrichene
+Satz ist die häufigste Art, wie eine Regel verschwindet. `ekQuelle:
+'anfrage'` sperrt den Artikel im Rechenkern, **vor** dem Blick in die
+Preisdatei; der Shop lässt ihn weg und nennt ihn beim Bauen.
+[`gate24-ausfuehrbar.md`](./gate24-ausfuehrbar.md).
 
 ## Stand des Blatts
 

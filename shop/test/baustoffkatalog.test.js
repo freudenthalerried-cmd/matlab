@@ -130,3 +130,66 @@ test('Der Befund trennt Suchartikel von Beipack', { skip: PREISE === null && 'pr
   const doppelt = b.suchtauglicheSkus.filter((s) => b.nurBeipackSkus.includes(s));
   assert.deepEqual(doppelt, []);
 });
+
+/* ------------------------------------------------------------------ *
+ * Gate 24 — Einkaufspreis nur auf Anfrage
+ * ------------------------------------------------------------------ */
+
+const anfrageArtikel = {
+  sku: 'LGH-1', lieferantenArtikelnummer: '30486', bezeichnung: 'QUAR GK30 Glättputz lose',
+  gruppe: 'Mörtel', lieferantId: 'poschacher', einheit: 'TO', sperrgut: true,
+  gtin: null, preisStand: '2026-08-27', ekQuelle: 'anfrage',
+};
+
+const lieferantenProbe = { lieferanten: [{ id: 'poschacher', name: 'Probe', ustSatz: 0.2 }] };
+
+test('Gate 24: ein Artikel auf Anfrage bekommt keinen Preis', () => {
+  const k = ladeBaustoffkatalog({ artikel: [anfrageArtikel] }, { preise: {} }, lieferantenProbe);
+  const a = k.artikel[0];
+  assert.equal(a.vkNetto, null);
+  assert.equal(a.ekNetto, null);
+  assert.equal(a.ekQuelle, 'anfrage');
+  assert.match(a.grund, /Gate 24/);
+  assert.deepEqual(k.nurAnfrage, ['LGH-1']);
+});
+
+test('Gate 24 greift auch, wenn in der Preisdatei doch eine Zahl steht', () => {
+  // Der eigentliche Prüfpunkt. Ein tagesaktueller Preis ist keine
+  // Kalkulationsgrundlage, auch wenn ihn jemand einmal aufgeschrieben hat —
+  // die Sperre steht deshalb vor dem Blick in die Preisdatei.
+  const k = ladeBaustoffkatalog(
+    { artikel: [anfrageArtikel] },
+    { preise: { 'LGH-1': { ekNetto: 100, uvpNetto: 250 } } },
+    lieferantenProbe,
+  );
+  assert.equal(k.artikel[0].vkNetto, null, 'ein Angebot von vorgestern macht keinen Katalogartikel');
+  assert.equal(k.artikel[0].ekNetto, null);
+});
+
+test('Gate 24: der Befund weist die Artikel getrennt aus', () => {
+  const gewoehnlich = { ...anfrageArtikel, sku: 'LGH-2', ekQuelle: 'bestaetigt' };
+  const k = ladeBaustoffkatalog(
+    { artikel: [anfrageArtikel, gewoehnlich] },
+    { preise: { 'LGH-2': { ekNetto: 100, uvpNetto: 250 } } },
+    lieferantenProbe,
+  );
+  const b = katalogbefund(k);
+  assert.equal(b.artikelGesamt, 2);
+  assert.equal(b.verkaeuflich, 1, 'der Anfrageartikel zählt nicht als verkäuflich');
+  assert.deepEqual(b.nurAnfrageSkus, ['LGH-1']);
+  assert.ok(!b.suchtauglicheSkus.includes('LGH-1'));
+  assert.ok(!b.nurBeipackSkus.includes('LGH-1'), 'Beipack ist ein anderer Fall als Anfrage');
+});
+
+test('ohne Anfrageartikel ändert sich nichts', () => {
+  // Damit die Sperre nicht stillschweigend etwas anderes mitnimmt.
+  const k = ladeBaustoffkatalog(
+    { artikel: [{ ...anfrageArtikel, ekQuelle: 'bestaetigt' }] },
+    { preise: { 'LGH-1': { ekNetto: 100, uvpNetto: 250 } } },
+    lieferantenProbe,
+  );
+  assert.deepEqual(k.nurAnfrage, []);
+  assert.deepEqual(katalogbefund(k).nurAnfrageSkus, []);
+  assert.equal(katalogbefund(k).verkaeuflich, 1);
+  assert.ok(k.artikel[0].vkNetto > 0);
+});
