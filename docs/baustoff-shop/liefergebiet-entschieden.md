@@ -69,9 +69,17 @@ wird. Eine Absage ohne Alternative ist eine halbe Auskunft.
 
 Der Shop ist ein Streckengeschäft. Was er liefern kann, liefert der
 Lieferant — und **wie weit der fährt, steht in keiner der fünfzehn
-Rechnungen.** Die Frachtpauschale ist auf jedem Beleg dieselbe, ob der
-Beleg über 18,74 € oder über 1.934 € lautet; eine Entfernungsstaffel ist
-daraus weder ablesbar noch ausschließbar.
+Rechnungen.**
+
+> ⚠️ **Berichtigt am 27.08.** Hier stand: *„Die Frachtpauschale ist auf
+> jedem Beleg dieselbe, ob der Beleg über 18,74 € oder über 1.934 €
+> lautet."* Das ist falsch. **Fracht steht auf drei von fünfzehn
+> Rechnungen**; elf lauten „Abholung Kunde". Richtig ist: Auf den beiden
+> zugestellten Belegen ist die Pauschale dieselbe, bei 614 € wie bei
+> 1.934 € netto — die Aussage gilt, steht aber auf zwei Belegen statt auf
+> fünfzehn ([`fracht-nur-bei-zustellung.md`](./fracht-nur-bei-zustellung.md)).
+
+Eine Entfernungsstaffel ist daraus weder ablesbar noch ausschließbar.
 
 Solange das offen ist, gilt die vorsichtige Richtung. **Ein
 angenommener Auftrag, den der Lieferant nicht fährt, kostet mehr als ein

@@ -129,6 +129,16 @@ export const WIDERRUFE = Object.freeze([
     beispiel: 'Die Trennlinie verläuft nicht entlang der Warengruppen, sondern entlang des Rohstoffs.',
   },
   {
+    id: 'fracht-auf-jedem-beleg',
+    these: 'Die Frachtpauschale stehe auf jedem der fünfzehn Belege.',
+    statt: 'Fracht steht auf drei von fünfzehn Rechnungen. Elf lauten „Abholung Kunde", eine „Retour durch Kunde" — der Auftraggeber holt meistens selbst am Lager Mauthausen ab.',
+    widerrufenAm: '2026-08-27',
+    belegt: 'fracht-nur-bei-zustellung.md',
+    muster: /Frachtpauschale[\s\S]{0,60}auf jedem Beleg|auf jedem Beleg[\s\S]{0,60}Frachtpauschale|Befund aus allen f(?:ue|ü)nfzehn Rechnungen/g,
+    merkmal: /drei von f(?:ue|ü)nfzehn|Abholung Kunde|fracht-nur-bei-zustellung|BERICHTIGT|Berichtigt/i,
+    beispiel: 'Die Frachtpauschale steht auf jedem Beleg, auch auf dem über 1.934 Euro.',
+  },
+  {
     id: 'marge-als-zuschlag',
     these: '„25 %" seien 25 % Zuschlag auf den Einkauf (= 20 % Rohmarge).',
     statt: 'Der Auftraggeber hat „25 %" als Marge geklärt: 33,33 % Zuschlag, nötiger Monatsumsatz 45.356 € statt 72.740 €.',

@@ -66,16 +66,24 @@
    "fracht": {
     "modell": "pauschale",
     "freiHausAbNetto": null,
-    "_freiHausHinweis": "Es gibt keine Frei-Haus-Schwelle. Die Frachtpauschale steht auf jedem Beleg, auch auf dem ueber 1.934 Euro. Das ist keine Annahme, sondern der Befund aus allen fuenfzehn Rechnungen — und der Grund, warum Gate 20 fuer dieses Modell keine akademische Regel ist.",
+    "_freiHausHinweis": "Es gibt keine erkennbare Frei-Haus-Schwelle: Der Beleg ueber 1.934 Euro netto traegt dieselbe Pauschale wie der ueber 614 Euro. BERICHTIGT 27.08.: Die fruehere Fassung sagte, die Pauschale stehe 'auf jedem Beleg ... der Befund aus allen fuenfzehn Rechnungen'. Das ist falsch. Fracht steht auf DREI von fuenfzehn Rechnungen; elf lauten 'Abholung Kunde', eine 'Retour durch Kunde'. Der Auftraggeber holt meistens selbst am Lager Mauthausen ab. Die Aussage zur Frei-Haus-Schwelle stuetzt sich damit auf zwei zugestellte Belege, nicht auf fuenfzehn — sie gilt weiter, steht aber auf duennerem Grund. Siehe docs/baustoff-shop/fracht-nur-bei-zustellung.md.",
     "pauschaleNetto": 75.5,
-    "_pauschaleHinweis": "Frachtpauschale 66,00 zuzueglich Energiekostenzuschlag 9,50 — beides faellt je Lieferung an.",
+    "_pauschaleHinweis": "Listenpreis 110,00 abzueglich 40 % = 66,00, zuzueglich Energiekostenzuschlag 9,50 — beides je Lieferung. Zwei Artikelnummern mit gleichem Preis: 53265 'Frachtpauschale Mauthausen Lager' und 30667 'Frachtpauschale Mauthausen Baustelle'. Eine Retourfahrt kostet 80,26.",
     "sperrgutZuschlagNetto": 7.5,
     "_sperrgutHinweis": "Kranentladung je Hub. Faellt bei palettierter Ware an, nicht bei Paketware."
    },
    "produktdaten": "keine",
    "preisrhythmus": null,
    "lieferzeitWerktage": null,
-   "_lieferzeitHinweis": "Aus den Rechnungen nicht ableitbar — der Abstand zwischen Lieferschein und Rechnung ist Abrechnungsfrist, keine Lieferzeit. Beim Lieferanten zu erfragen."
+   "_lieferzeitHinweis": "Aus den Rechnungen nicht ableitbar — der Abstand zwischen Lieferschein und Rechnung ist Abrechnungsfrist, keine Lieferzeit. Beim Lieferanten zu erfragen.",
+   "nebenkosten": {
+    "_hinweis": "Kostenpositionen, die auf den Belegen stehen und im Rechenkern NICHT gerechnet werden. Belegt aus Rechnung 262021644 vom 16.06.2026. Die Stueckpreise sind bekannt, die Stueckzahl je Lieferung ist es nicht — sie haengt an Gewicht und Packmass, und der Katalog fuehrt kein Gewicht.",
+    "paletteOebbNetto": 22.0,
+    "paletteRueckgabeNetto": 20.0,
+    "folierungNetto": 6.5,
+    "kranentladungJeHubNetto": 7.5,
+    "_gewicht": "Auf dem Beleg ueber 1.934 Euro netto: 6 Paletten (132,00) minus eine Rueckgabe (-20,00) plus Folierung (6,50) = 118,50 nicht gerechnete Nebenkosten — mehr als die Frachtpauschale selbst."
+   }
   }
  ]
 }
