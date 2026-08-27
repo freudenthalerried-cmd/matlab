@@ -6,8 +6,8 @@ frage: Welche Teile brauche ich für eine Grundleitung, und wie zähle ich sie a
 kurz: Rohre nach laufenden Metern, Bögen und Abzweiger nach Winkel, Schächte nach Tiefe, dazu Übergänge und Gleitmittel. Fünf Zahlen aus dem Plan ergeben die vollständige Bestellung — in zehn Minuten ausgezählt.
 gruppe: Kanal
 skus: POS-10095, POS-10115, POS-10116, POS-10134, POS-11133, POS-21382, POS-29023
-verwandt: kanal-was-zusammengehoert, perimeterdaemmung-und-grundmauerschutz
-stand: 2026-08-25
+verwandt: kanal-was-zusammengehoert, perimeterdaemmung-und-grundmauerschutz, system/kellerwand-perimeter
+stand: 2026-08-27
 ---
 
 # Grundleitung DN 100 — die Liste
@@ -46,6 +46,8 @@ Positionen 7 und 8 gehören streng genommen zum Bauwerk, nicht zur Leitung —
 sie werden aber im selben Arbeitsgang verbaut und deshalb hier
 mitgeführt. Siehe
 [Perimeterdämmung und Grundmauerschutz](../wissen/perimeterdaemmung-und-grundmauerschutz).
+Wird die Wand im selben Zug gedämmt, gehören sie zur vollständigen Liste
+[Kellerwand außen dämmen](kellerwand-perimeter).
 
 ## Was aus der Planung kommt
 

@@ -5,7 +5,7 @@ slug: perimeterdaemmung-und-grundmauerschutz
 frage: Was kommt in welcher Reihenfolge an eine erdberührte Kellerwand?
 kurz: Von innen nach außen: Wand, Abdichtung, Perimeterdämmung, Schutz- und Drainschicht, Verfüllung. Die Noppenbahn ist Schutzschicht, nicht Abdichtung — diese Verwechslung ist der häufigste Fehler am Bauteil.
 gruppe: Kanal
-verwandt: xps-oder-eps, kanal-was-zusammengehoert
+verwandt: xps-oder-eps, kanal-was-zusammengehoert, system/kellerwand-perimeter
 stand: 2026-08-25
 ---
 
