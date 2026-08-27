@@ -13,11 +13,22 @@ Die vorab festgelegte Frage lautete:
 
 ## Die Antwort: erfüllt — aber die Trennlinie liegt woanders
 
+> ⚠️ **Die erste Fassung dieses Dokuments stützte sich auf vier Seiten und
+> war in einem tragenden Punkt falsch.** Sie schloss aus vier Stichproben
+> auf ganze Warengruppen. Fünf weitere Seiten zeigen: Die Trennlinie
+> verläuft **nicht entlang der Warengruppen, sondern entlang der Ware
+> selbst.** Der berichtigte Befund steht unten; der alte Wortlaut bleibt
+> als Zitat stehen.
+
 | Warengruppe (Lagerhaus-Seite) | Rabatt auf Werkspreisliste |
 |---|---|
 | **Kanal- und Rohrware** (25) — Pipelife, Fränkische, Agrosil | **25 bis 80 %** |
 | **Mörtel, Putz, Spachtel** (5) — Baumit | **15 bis 45 %, überwiegend 25 %** |
-| **Dämmung** (51) — EPS-W25, Trittschall, Styrodur/XPS | **„ANFRAGE"** |
+| **Kamin** (18) — Schiedel Absolut, SIH, Kaminköpfe | **30 bis 35 %** |
+| **Dämmung Mineralwolle** (53) — Isover Uniroll, WDF, Trennwandfilz | **8 bis 53 %, überwiegend 52–53 %** |
+| **WDVS-Komponenten** (57) — Klebespachtel, Gewebe, Putz, Farbe | **15 bis 50 %** |
+| Dämmung **Polystyrol** (51, 57) — EPS-W, EPS-F, Styrodur/XPS, Trittschall | **„ANFRAGE"** |
+| Kamin **Edelstahl und Öfen** (18) — Kerastar, ICS, Kingfire | **„ANFRAGE"** |
 | **Decken und Fertigteile** (17) — Pichler, Oberndorfer | **„ANFRAGE"** |
 
 Zum Vergleich der Befund aus `katalog-aus-rechnungen.md`: Poschacher,
@@ -25,9 +36,10 @@ artikelgenau aus fünfzehn Rechnungen zurückgerechnet, **10 bis 88 %,
 Median 27 % unter Liste** — tief bei Dämmung, Kanal und Systemware, dünn
 bei Kleinteilen.
 
-**Zwei Gruppen reichen heran, eine davon deutlich darüber hinaus.** Die
-Bedingung ist erfüllt: Der zweite Bezugsweg ist wirtschaftlich, nicht nur
-strategisch.
+**Fünf der sechs Warengruppen reichen heran, drei davon deutlich darüber
+hinaus** (Kanal bis 80 %, Mineralwolle 52–53 %, Putzgewebe 50 %). Die
+Bedingung ist erfüllt, und deutlicher als der erste Anlauf ergab: Der
+zweite Bezugsweg ist wirtschaftlich, nicht nur strategisch.
 
 ## Der eigentliche Befund ist aber die Struktur
 
@@ -36,34 +48,60 @@ Die interessante Zeile ist nicht ein Prozentsatz, sondern das Wort
 gekennzeichnete Sortiment erstellen wir Ihnen gerne ein tagesaktuelles
 Angebot."*
 
-Das Lagerhaus staffelt fest, **was im Regal liegt** — Säcke, Rohre,
-Formteile, Kleinteile. Es verhandelt einzeln, **was auf die Baustelle
-gefahren wird** — Dämmung palettenweise, Decken, Fertigteile.
+**Die erste Fassung dieses Dokuments zog daraus den falschen Schluss.**
+Sie schrieb:
+
+> Das Lagerhaus staffelt fest, was im Regal liegt — Säcke, Rohre,
+> Formteile, Kleinteile. Es verhandelt einzeln, was auf die Baustelle
+> gefahren wird — Dämmung palettenweise, Decken, Fertigteile.
+
+Das klang plausibel und war aus vier Seiten geschlossen. Fünf weitere
+Seiten widerlegen es:
+
+- **Schiedel-Kaminsysteme sind fest gestaffelt** (30–35 %) — und die
+  fahren palettenweise auf die Baustelle.
+- **Isover-Mineralwolle ist fest gestaffelt** (52–53 %) — Dämmung, ebenso
+  palettenweise.
+- **Polystyrol steht auf Anfrage** — EPS-W, EPS-F, Styrodur, XPS,
+  Trittschall, quer über zwei verschiedene Warengruppenseiten.
+
+**Die Trennlinie ist nicht die Lieferform, sondern der Rohstoff.**
+Polystyrol ist erdölbasiert und im Preis volatil; Betonfertigteile hängen
+an Zement und Stahl. Auf genau diese beiden Warenklassen bindet sich der
+Händler nicht ein Jahr im Voraus. Steinwolle, Ziegel, Säcke, Rohre und
+Schamotte staffelt er fest.
+
+> **Vier Stichproben, drei Warengruppen behauptet, eine davon falsch.**
+> Die Seiten, die ich zuerst gelesen habe, waren nicht repräsentativ —
+> und ich habe aus ihnen auf Gruppen geschlossen, statt die Gruppen zu
+> lesen. Dass die Fehlaussage auf der pessimistischen Seite lag, ist ein
+> Zufall und kein Trost.
 
 > **Ein Shop, der Preise veröffentlicht, kann keine Ware führen, deren
 > Preis „auf Anfrage" ist.** Ein tagesaktuelles Angebot ist keine
 > Kalkulationsgrundlage; es ist ein Telefonat.
 
-Und das trifft genau die falschen Gruppen. Aus `kampagne-gerechnet.md`:
+Was das für die Anzeigengruppen bedeutet, aus `kampagne-gerechnet.md`:
 
 | Anzeigengruppe | max. Klickpreis | beim Lagerhaus kalkulierbar? |
 |---|---|---|
-| Kamin | 8,79 € | Systemware — vermutlich Anfrage |
-| **Dämmung** | **6,48 €** | **nein — ANFRAGE** |
-| WDVS | 4,19 € | teilweise (Baumit/Capatect ja, Platten nein) |
+| **Kamin** | **8,79 €** | **ja — 30–35 % auf Schiedel Absolut und SIH** |
+| **Dämmung** | **6,48 €** | **geteilt** — Mineralwolle ja (52–53 %), Polystyrol nein |
+| **WDVS** | **4,19 €** | **geteilt** — alle Komponenten ja (15–50 %), Dämmplatte nein |
 | **Kanal** | **1,95 €** | **ja, 25–80 %** |
 | **Mörtel** | **1,85 €** | **ja, 15–45 %** |
-| Mauerwerk | 1,81 € | Ziegel: eigene Seiten, nicht geprüft |
+| Mauerwerk | 1,81 € | Ziegel: sechs eigene Seiten, nicht geprüft |
 
-**Die beiden Gruppen mit den höchsten Geboten sind beim Lagerhaus nicht
-listenkalkulierbar; die beiden mit den niedrigsten sind es.** Genau
-umgekehrt zu dem, was ein zweiter Bezugsweg leisten sollte.
+**Fünf von sechs Gruppen sind ganz oder überwiegend kalkulierbar** — und
+die Gruppe mit dem höchsten Gebot ist es vollständig. Das ist das
+Gegenteil dessen, was die erste Fassung behauptet hat.
 
 ## Was der zweite Bezugsweg damit ist — und was nicht
 
-**Er ist kein Ersatz für Poschacher.** Bei Dämmung und Systemware, wo der
-Deckungsbeitrag je Bestellung entsteht, liefert er keine planbare
-Kondition.
+**Er ist kein vollständiger Ersatz für Poschacher** — bei Polystyrol und
+Fertigteilen liefert er keine planbare Kondition, und das sind bei einer
+Fassade die Positionen mit dem größten Flächenanteil. Bei allem übrigen
+liefert er sie sehr wohl.
 
 **Er ist ein sehr guter Ergänzungsweg für alles Kleinteilige.** Und dort
 trifft er auf einen zweiten Vorteil, der aus dem Lauf davor stammt: das
@@ -105,13 +143,15 @@ gehört erst entschieden, wenn dieser Weg entschieden ist.
 | | |
 |---|---|
 | **Werkspreislisten** | die Bezugsgröße jedes Rabattsatzes — liegen nicht vor |
-| Seiten für Ziegel, Schiedel, Vollwärmeschutz | nicht gelesen; das Bild ist aus vier Seiten gezogen, nicht aus 72 |
+| Seiten für Ziegel (6 Stück), Quarzolith, Schachtringe | nicht gelesen; das Bild ist aus **neun** Seiten gezogen, nicht aus 72 |
 | Konditionen 2026 | im Postfach nicht auffindbar |
 | Streckenkonditionen | „lt. Industriepreisliste" — liegt nicht vor |
 
-**Die vier gelesenen Seiten sind eine Stichprobe.** Sie reichen für die
-vorab gestellte Frage und nicht für eine Sortimentsentscheidung. Wer
-daraus einen Katalog baut, baut ihn auf vier von zweiundsiebzig Seiten.
+**Die neun gelesenen Seiten sind eine Stichprobe.** Sie reichen für die
+vorab gestellte Frage und nicht für eine Sortimentsentscheidung — was
+schon der erste Anlauf gezeigt hat, als vier Seiten für einen falschen
+Schluss genügten. Wer daraus einen Katalog baut, baut ihn auf neun von
+zweiundsiebzig Seiten.
 
 Die gerenderten Seiten liegen in `preise/lagerhaus-seiten/`, der
 ausgelesene Text in `preise/lagerhaus-konditionen-2025.txt` — beides von

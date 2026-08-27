@@ -130,8 +130,13 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > 15–45 % — die vorab gestellte Bedingung („zwei von sechs Gruppen reichen
 > heran") ist erfüllt. **Aber Dämmung und Fertigteile stehen auf
 > „ANFRAGE"**, und das sind die Gruppen mit den höchsten Kampagnengeboten.
-> Der zweite Bezugsweg repariert nicht die Spitze des Sortiments, sondern
-> dessen Fuß — dort, wo Gate 22 heute Beipack ausweist.
+> **Berichtigt nach fünf weiteren Seiten:** Die Trennlinie verläuft nicht
+> entlang der Warengruppen, sondern entlang des Rohstoffs. **Polystyrol**
+> (EPS, XPS, Styrodur) und **Betonfertigteile** stehen auf Anfrage — alles
+> andere ist fest gestaffelt, auch Schiedel-Kamin (30–35 %) und
+> Isover-Mineralwolle (52–53 %). **Fünf von sechs Warengruppen sind ganz
+> oder überwiegend kalkulierbar**, die mit dem höchsten Kampagnengebot
+> vollständig.
 > [`lagerhaus-rabatte-gelesen.md`](./lagerhaus-rabatte-gelesen.md).
 
 ## Wo das Projekt steht
