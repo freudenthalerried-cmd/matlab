@@ -2,7 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { artikelBild, gruppenBild, bauform, dickeMm, gradzahl, BAUFORM_TEXT } from '../src/bilder.js';
+import { artikelBild, gruppenBild, bauform, dickeMm, gradzahl, schichten, schichtbild, BAUFORM_TEXT } from '../src/bilder.js';
+import { readdirSync } from 'node:fs';
+import { join } from 'node:path';
+import { lesKopf } from '../src/markdown.js';
 
 const katalog = JSON.parse(readFileSync(fileURLToPath(new URL('../data/katalog-baustoff.json', import.meta.url)), 'utf8'));
 
@@ -138,4 +141,56 @@ test('Bindestrich und Ziffer beenden ein Wort, ein Buchstabe nicht', () => {
   assert.equal(f('PAE-Folie T 100 2 50 m'), 'rolle');
   assert.equal(f('PVC Kanalbogen NW 100 45 grad'), 'bogen');
   assert.equal(f('Thermo-Trennstein 12-18 EZ'), 'stein');
+});
+
+/* ------------------------------------------------------------------ *
+ * Der Schichtenschnitt
+ * ------------------------------------------------------------------ */
+
+test('die Kopfzeile wird in Lagen zerlegt, „(fremd)" markiert die fremde Lage', () => {
+  const l = schichten('Wand (fremd) | Abdichtung (fremd) | Perimeterplatte XPS | Bahn');
+  assert.deepEqual(l.map((x) => x.name), ['Wand', 'Abdichtung', 'Perimeterplatte XPS', 'Bahn']);
+  assert.deepEqual(l.map((x) => x.gefuehrt), [false, false, true, true]);
+  assert.deepEqual(schichten(''), []);
+  assert.deepEqual(schichten(undefined), []);
+  assert.deepEqual(schichten('  Eine  |  '), [{ name: 'Eine', gefuehrt: true }]);
+});
+
+test('jede Lage bekommt ein Band, jede fremde Lage die Schraffur', () => {
+  const svg = schichtbild('A (fremd) | B | C');
+  assert.equal((svg.match(/<rect /g) ?? []).length, 3, 'ein Band je Lage');
+  assert.equal((svg.match(/url\(#fremdraster\)/g) ?? []).length, 1, 'nur die fremde Lage schraffiert');
+  assert.equal((svg.match(/nicht von uns/g) ?? []).length, 1);
+  assert.equal(schichtbild(''), '', 'ohne Lagen kein Bild');
+});
+
+test('wer das Bild nicht sieht, erfährt dasselbe', () => {
+  // Ein Schema, dessen Aussage nur in der Zeichnung steht, ist für einen Teil
+  // der Leser gar nicht da — und für jedes Sprachmodell, das die Seite liest,
+  // ebenso wenig.
+  const svg = schichtbild('Wand (fremd) | Platte');
+  const label = /aria-label="([^"]+)"/.exec(svg)[1];
+  assert.match(label, /von innen nach außen/);
+  assert.match(label, /Wand — nicht aus diesem Shop/);
+  assert.match(label, /Platte/);
+  assert.doesNotMatch(label.replace('Wand — nicht aus diesem Shop', ''), /nicht aus diesem Shop/);
+});
+
+test('Bild und Text einer Systemliste nennen dieselben fremden Lagen', () => {
+  // Die Zeichnung darf nichts behaupten, was auf der Seite nicht steht — und
+  // umgekehrt darf die Seite die Lücke nicht nur im Bild zugeben.
+  const ordner = fileURLToPath(new URL('../inhalte/system', import.meta.url));
+  let geprueft = 0;
+  for (const datei of readdirSync(ordner).filter((d) => d.endsWith('.md'))) {
+    const roh = readFileSync(join(ordner, datei), 'utf8');
+    const { kopf, koerper } = lesKopf(roh);
+    const lagen = schichten(kopf.schichten);
+    if (!lagen.length) continue;
+    geprueft++;
+    for (const lage of lagen.filter((l) => !l.gefuehrt)) {
+      assert.ok(koerper.includes(lage.name),
+        `${datei}: „${lage.name}" ist im Bild als fremd markiert, kommt im Text aber nicht vor`);
+    }
+  }
+  assert.ok(geprueft >= 2, `nur ${geprueft} Systemlisten mit Schichtenbild`);
 });

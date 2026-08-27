@@ -358,6 +358,10 @@ const RAHMENSZENARIEN = [
   // (dreizehn Karten). Wenn ein Kartenraster den Rahmen sprengt, dann dieses.
   { name: 'Artikelseite: kein Seitwärtsrollen, Bedienelemente daumengroß', kennung: 'artikel/POS-21382' },
   { name: 'Gruppenseite: kein Seitwärtsrollen, Bedienelemente daumengroß', kennung: 'gruppe/wdvs' },
+  // Die Systemliste trägt seit dem 27. den Schichtenschnitt — ein SVG mit
+  // rechtsbündigen Beschriftungen außerhalb der Bänder. Genau so eine
+  // Zeichnung sprengt einen schmalen Rahmen, wenn überhaupt etwas es tut.
+  { name: 'Systemliste mit Schichtenschnitt scrollt bei 390 px nicht seitwärts', kennung: 'system/kellerwand-perimeter' },
   {
     name: 'Wissensseite mit langem Titel scrollt bei 390 px nicht seitwärts',
     kennung: 'wissen/perimeterdaemmung-und-grundmauerschutz',

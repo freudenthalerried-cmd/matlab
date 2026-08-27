@@ -326,3 +326,85 @@ export function gruppenBild(gruppe) {
   }[gruppe] ?? { bezeichnung: gruppe, gruppe, einheit: 'STK' };
   return artikelBild(muster, { klasse: 'schema gruppe' });
 }
+
+/* ------------------------------------------------------------------ *
+ * Der Schichtenschnitt einer Systemliste
+ * ------------------------------------------------------------------ */
+
+/**
+ * Maskiert Text für die Zeichnung. Bewusst hier und nicht aus `markdown.js`
+ * geholt: Dieses Modul kommt ohne einen einzigen Import aus, und das soll so
+ * bleiben — es wird sowohl beim Bauen als auch im Testlauf geladen.
+ */
+function escText(s) {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/**
+ * Zerlegt die Kopfzeile `schichten:` in die einzelnen Lagen.
+ *
+ * Schreibweise: `Wand (fremd) | Abdichtung (fremd) | Perimeterplatte XPS`.
+ * Die Lagen stehen **in Einbaureihenfolge**, von innen nach außen; „(fremd)"
+ * markiert eine Lage, die der Shop nicht führt.
+ *
+ * Warum die Markierung überhaupt in die Zeichnung gehört: Ein Schichtbild,
+ * das nur die eigenen Lagen zeigt, sieht aus wie ein vollständiges Bauteil
+ * und ist keines. Genau dieser Fehler stand bis gestern in der Fassadenliste
+ * — Position 2 in der Tabelle, kein Artikel dahinter. Was auf der Liste
+ * fehlt, fehlt jetzt auch sichtbar.
+ */
+export function schichten(text) {
+  return String(text ?? '')
+    .split('|')
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((s) => {
+      const fremd = /\(fremd\)\s*$/i.test(s);
+      return { name: s.replace(/\s*\(fremd\)\s*$/i, '').trim(), gefuehrt: !fremd };
+    });
+}
+
+/**
+ * Zeichnet den Schichtenaufbau als Schnitt.
+ *
+ * Bewusst **kein** maßstäblicher Aufbau: Die Lagendicken eines Bauteils
+ * hängen an der Planung, nicht am Sortiment, und eine Zeichnung, die 8 cm
+ * Dämmung zeigt, behauptet 8 cm. Alle Lagen sind deshalb gleich breit — das
+ * Bild zeigt die **Reihenfolge**, und die ist die Aussage.
+ *
+ * Fremde Lagen bekommen eine Schraffur und keinen Farbkörper. Wer das Bild
+ * ansieht, sieht sofort, welcher Teil des Bauteils nicht aus diesem Shop
+ * kommt.
+ */
+export function schichtbild(lagen, { klasse = 'schichten' } = {}) {
+  const l = Array.isArray(lagen) ? lagen : schichten(lagen);
+  if (!l.length) return '';
+  const breite = 300;
+  const hoehe = 30 + l.length * 26;
+  const x = 96;
+  const bandBreite = breite - x - 12;
+
+  const teile = [`<defs><pattern id="fremdraster" width="6" height="6" patternUnits="userSpaceOnUse"
+ patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="var(--linie-stark)" stroke-width="1.2"/></pattern></defs>`];
+  l.forEach((lage, i) => {
+    const y = 20 + i * 26;
+    const fuellung = lage.gefuehrt ? 'var(--flaeche-2)' : 'url(#fremdraster)';
+    teile.push(`<rect x="${x}" y="${y}" width="${bandBreite}" height="20" fill="${fuellung}"
+ stroke="var(--linie-stark)" stroke-width="1.5"/>`);
+    teile.push(`<text x="${x - 8}" y="${y + 14}" text-anchor="end" ${SCHRIFT}>${escText(lage.name)}</text>`);
+    if (!lage.gefuehrt) {
+      teile.push(`<text x="${x + bandBreite - 6}" y="${y + 14}" text-anchor="end"
+ fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="8">nicht von uns</text>`);
+    }
+  });
+  teile.push(`<text x="${x}" y="12" ${SCHRIFT}>innen</text>`);
+  teile.push(`<text x="${x + bandBreite}" y="${hoehe - 4}" text-anchor="end" ${SCHRIFT}>außen</text>`);
+
+  const beschreibung = `Schichtenschnitt von innen nach außen: ${l
+    .map((s) => (s.gefuehrt ? s.name : `${s.name} — nicht aus diesem Shop`))
+    .join(', ')}`;
+  return `<svg class="${klasse}" viewBox="0 0 ${breite} ${hoehe}" role="img" aria-label="${escText(beschreibung)}"
+ xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">${teile.join('')}</svg>`;
+}

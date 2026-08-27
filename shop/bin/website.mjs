@@ -28,7 +28,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { ladeBaustoffkatalog, katalogbefund, ZIELMARGE } from '../src/baustoffkatalog.js';
 import { pruefeSeiten } from '../src/interna.js';
-import { artikelBild, gruppenBild } from '../src/bilder.js';
+import { artikelBild, gruppenBild, schichten, schichtbild } from '../src/bilder.js';
 import { baueKern, KERNMODULE, SHOPMODULE } from '../src/buendel.js';
 import { oeffentlicherArtikel, oeffentlicherLieferant } from '../src/shopkern.js';
 import { LIEFERGEBIET } from '../src/liefergebiet.js';
@@ -219,6 +219,8 @@ svg.schema.gruppe{max-height:5.5rem}
 .kachel .bild{display:block;background:var(--flaeche-2);margin:-1rem -1.1rem .6rem;padding:.6rem;border-bottom:1px solid var(--linie)}
 .artikelbild{background:var(--grund);border:1px solid var(--linie);padding:1.4rem;margin:0 0 1.5rem;display:flex;justify-content:center}
 .artikelbild svg.schema{max-height:12rem;max-width:22rem}
+.schichtbild{background:var(--grund);border:1px solid var(--linie);padding:1.2rem .8rem;margin:0 0 1rem}
+.schichtbild svg{display:block;width:100%;height:auto;max-width:32rem;margin:0 auto}
 .mehr{font-family:var(--schmal);text-transform:uppercase;letter-spacing:.06em;font-size:.82rem}
 
 /* --- Kopfleiste mit Suche und Warenkorb --- */
@@ -605,6 +607,22 @@ function inhaltsSeite(seite, katalog, befund, seiten, verweis) {
   } else {
     teile.push(koerper);
     if (warenraster) teile.push(warenraster);
+  }
+
+  // Der Schichtenschnitt: Er steht **vor** der Artikelliste, weil er die
+  // Reihenfolge zeigt, in der die Artikel verbaut werden — und weil er die
+  // Lagen mitzeichnet, die der Shop nicht führt. Eine Liste ohne dieses Bild
+  // sieht vollständig aus; das Bild sagt, wo sie es nicht ist.
+  const lagen = schichten(seite.kopf.schichten);
+  if (lagen.length) {
+    const fremd = lagen.filter((l) => !l.gefuehrt);
+    teile.push('<h2>Der Aufbau im Schnitt</h2>');
+    teile.push(`<div class="schichtbild">${schichtbild(lagen)}</div>`);
+    teile.push(`<p>Die Lagen stehen in Einbaureihenfolge, von innen nach außen. Die Zeichnung ist
+<strong>nicht maßstäblich</strong>: Welche Stärke jede Lage braucht, entscheidet die Planung, nicht das
+Sortiment.${fremd.length ? ` Schraffiert und mit „nicht von uns" beschriftet sind die
+${fremd.length === 1 ? 'Lage' : `${fremd.length} Lagen`}, die dieser Shop nicht führt —
+${fremd.map((l) => esc(l.name)).join(', ')}.` : ''}</p>`);
   }
 
   const skus = alsListe(seite.kopf.skus);

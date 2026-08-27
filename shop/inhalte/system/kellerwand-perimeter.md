@@ -5,6 +5,7 @@ slug: kellerwand-perimeter
 frage: Was brauche ich, um eine erdberührte Kellerwand zu dämmen und zu schützen?
 kurz: Perimeterplatte, Kleber, Noppenbahn und der obere Abschluss — vier Positionen, dazu die Abdichtung, die vor allem anderen fertig sein muss. Drei Maße vom Bauwerk ergeben die Mengen, und die Reihenfolge der Schichten entscheidet, ob die Bestellung überhaupt etwas nützt.
 gruppe: Dämmung
+schichten: Wand (fremd) | Abdichtung (fremd) | Perimeterplatte XPS | Grundmauerschutzbahn | Verfüllung (fremd)
 skus: POS-12569, POS-12571, POS-12575, POS-12580, POS-12596, POS-29691, POS-12294, POS-21382
 verwandt: perimeterdaemmung-und-grundmauerschutz, xps-oder-eps, system/kanal-dn100, was-fehlt-haelt-die-baustelle-auf
 stand: 2026-08-27
