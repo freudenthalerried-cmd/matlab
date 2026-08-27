@@ -76,6 +76,20 @@ Fehlermeldung** — schlimmer als ein Absturz. Der Seitenfinder arbeitet
 deshalb mit `/Type\s*/Page(?![a-zA-Z])`; der Lookahead hält den
 Seitenbaum `/Type/Pages` heraus.
 
+## Woher die Belege kommen
+
+Die fünfzehn Poschacher-Rechnungen, aus denen der Katalog entstanden ist,
+findet man im Postfach mit:
+
+```
+from:fakturierung@poschacher.at subject:Rechnung
+```
+
+Genau fünfzehn Treffer, 22.04. bis 17.08.2026, je eine PDF im Anhang.
+Diese Zeile stand bis zum 27. August nirgends — das Werkzeug war
+gesichert, die Anleitung auch, und die Bezugsquelle nicht. Hergang in
+`docs/baustoff-shop/herkunft-der-rechnungen.md`.
+
 ## Vertraulichkeit
 
 Die Skripte sind harmlos, ihre Ausgabe ist es nicht. Positionstabellen

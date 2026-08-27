@@ -107,6 +107,15 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > ist eine Werkvertragsnorm für Bauleistungen, der Shop verkauft Waren. AGB
 > Punkt 10 bleibt bewusst ohne Fundstelle.
 > [`norm-b2501-und-die-falsche-norm.md`](./norm-b2501-und-die-falsche-norm.md).
+>
+> **Die Bezugsquelle der Zahlen war nicht gesichert** (27.08.): Der ganze
+> Katalog hängt an `preise/baustoff-preise.json`, die nur örtlich existiert.
+> Werkzeug und Verfahren lagen im Verzeichnis, **welche fünfzehn Nachrichten**
+> nirgends. Der Suchausdruck steht jetzt in `werkzeuge/README.md` und liefert
+> nachgeprüft genau fünfzehn Treffer. **Nebenbei gefunden: ein
+> Konditionenblatt des Lagerhaus Eferding von 2025** — die erste
+> Original-Rabattstaffel des Vorhabens und ein möglicher zweiter Bezugsweg.
+> [`herkunft-der-rechnungen.md`](./herkunft-der-rechnungen.md).
 
 ## Wo das Projekt steht
 
