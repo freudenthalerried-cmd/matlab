@@ -20,7 +20,8 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > Der Auftraggeber gibt seine eigenen Baumeister-Einkaufspreise aus den
 > Bürozubau-Rechnungen (Peither) als Kalkulationsgrundlage vor, Zuschlag
 > 25 %, Vertrieb über Google Shopping, Lieferung regional statt
-> österreichweit. Das berührt Gate 1 (25 % Zuschlag = 20 % Rohmarge,
+> österreichweit. Das berührt Gate 1 (25 % Zuschlag = 20 % Rohmarge —
+> **diese Lesart ist seit 25.08. überholt, siehe Nachtrag unten**,
 > unter der Untergrenze von 32 %), Gate 5 (Sortiment nicht mehr
 > radonspezifisch) und den Werbeanteil. Wortlaut, Folgenanalyse, offene
 > Fragen und Ablaufplan in [`auftrag-baumeisterpreise.md`](./auftrag-baumeisterpreise.md).
@@ -140,6 +141,18 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > Referenzwarenkorb „eine Palette Planziegel" ist damit ausgerechnet nicht
 > kalkulierbar.
 > [`lagerhaus-rabatte-gelesen.md`](./lagerhaus-rabatte-gelesen.md).
+>
+> **Widerrufe sind jetzt maschinell geprüft** (27.08.): Dreimal in vier Tagen
+> hat eine zurückgenommene Aussage in einem Nachbardokument überlebt. `npm run
+> pruefe-widerrufe` führt ein Register der fünf bekannten Widerrufe und meldet
+> jede Fundstelle, neben der **kein eigener** Widerruf steht — ein beliebiges
+> Berichtigungswort in der Nähe genügt ausdrücklich nicht. Drei echte Funde:
+> der **vierte** Innkreis-Überlebende in `umsetzung-shop.md`, eine
+> **beantwortete Frage, die offen aussah** (die 25-%-Zweideutigkeit in
+> `auftrag-baumeisterpreise.md`, Unterschied 27.384 € Monatsumsatz), und eine
+> Zahl in diesem Dokument, deren Berichtigung neun Zeilen entfernt stand.
+> Alle drei berichtigt; 32 Fundstellen, keine Meldung.
+> [`widerrufe-maschinell.md`](./widerrufe-maschinell.md).
 
 ## Wo das Projekt steht
 
@@ -320,6 +333,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `maschinenlesbare-ausgabe.md` | **Schema.org, Feed und robots.txt** — Preise werden übernommen statt nachgerechnet, Platzhalter gehen nicht hinaus, Zurückgehaltenes wird begründet |
 | `domainwahl.md` | **Die Firma und ihre Domain gibt es schon** — Freudenthaler Bau GmbH, FN 347938z, Baustoffhandel eingetragen, `freudenthaler-bau.at` in Betrieb; Empfehlung daher `shop.freudenthaler-bau.at` plus `baustoffe-muehlviertel.at` als Weiterleitung. Zwei Korrekturen: Ried in der Riedmark liegt im **Mühlviertel**, nicht im Innviertel; der Entitätswert ist bereits aufgebaut und wäre bei einer neuen Domain verloren |
 | `pruefung-der-testfaelle.md` | **Grüne Tests sind eine Aussage über die Testfälle, nicht über den Code** — elf hohle Schleifen gefunden und entschärft |
+| `widerrufe-maschinell.md` | **Ein Widerruf deckt nur seine eigene Aussage** — Register der fünf zurückgenommenen Thesen, `npm run pruefe-widerrufe` meldet jede Fundstelle ohne ihren eigenen Widerruf in Sichtweite (±8 Zeilen oder Kopfvermerk). Drei echte Funde, darunter der vierte Innkreis-Überlebende und eine seit dem 25.08. beantwortete Frage, die noch offen aussah |
 | `verhandlungsziel-konditionen.md` | **Zehn Prozent Nachlass kosten 38,8 % Rabatt** — das Verhandlungsziel liegt über der Gate-2-Schwelle |
 | `auswertungsbogen-hersteller.md` | **Genau 35 % Rabatt lassen 4,4 % Preisspielraum** — die Auswertung der zwölf Antworten steht fertig bereit |
 | `empfindlichkeit-der-annahmen.md` | **Welche Annahme zuerst gemessen gehört** — die Rohmarge, Elastizität 1,75, als einzige mit Kipppunkt |

@@ -1,5 +1,13 @@
 # Neue Weisung: eigene Baumeisterpreise als Kalkulationsgrundlage
 
+> **Berichtigt am 25.08.:** Dieses Dokument liest „+25 %" als **Zuschlag
+> auf den Einkauf** (= 20 % Rohmarge) und stellt genau das unten als offene
+> Frage. Der Auftraggeber hat sie beantwortet: gemeint ist **25 % Marge**,
+> also 33,33 % Zuschlag. Alle 20-%-Zahlen unten sind damit historisch; die
+> gültige Rechnung steht in [`marge-25-prozent.md`](./marge-25-prozent.md).
+> Der Wortlaut der Weisung bleibt unverändert stehen — er war zweideutig,
+> und das ist Teil des Befunds.
+
 Stand: 2026-08-22. Weisung des Auftraggebers, wörtlich festgehalten,
 damit ein späterer Lauf sie unverfälscht vorfindet. **Ausgeführt wird
 sie noch nicht** — der Auftraggeber hat ausdrücklich pausiert, bis das
@@ -69,9 +77,12 @@ Offene Fragen, die der Auftraggeber beantworten sollte (gebündelt, nicht
 einzeln nachgefragt):
 
 - Wo liegen die Peither-Rechnungen, oder werden sie hochgeladen?
-- Ist „+25 %" als Zuschlag auf den Einkauf gemeint (→ 20 % Rohmarge)
+- ~~Ist „+25 %" als Zuschlag auf den Einkauf gemeint (→ 20 % Rohmarge)
   oder als Rohmarge von 25 %? Beides ist mit dem Satz vereinbar, die
-  Zahlen unterscheiden sich deutlich.
+  Zahlen unterscheiden sich deutlich.~~ **Am 25.08. beantwortet: 25 %
+  Marge.** Der nötige Monatsumsatz fällt damit von 72.740 € auf
+  45.356 € — die Zweideutigkeit war ein Drittel des Geschäftsmodells
+  wert.
 - Wie weit reicht „umliegender Bereich" — Umkreis in Kilometern, oder
   eine Liste von Bezirken?
 - Bleibt Radon Teil des Sortiments, oder wird daraus ein allgemeiner

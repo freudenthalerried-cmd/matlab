@@ -52,9 +52,10 @@ Rabattstaffel selbst liegt als Grafik vor.
 > nachinstallieren — `apt-get update` zuerst, sonst antwortet der
 > Paketserver mit 404. Neun Seiten sind daraufhin gelesen worden; Befund
 > in [`lagerhaus-rabatte-gelesen.md`](./lagerhaus-rabatte-gelesen.md).
-> **Die ersten vier führten zu einem falschen Schluss** — die Trennlinie
-> verläuft nicht entlang der Warengruppen, sondern entlang des Rohstoffs.
-> Die übrigen 63 Seiten sind weiterhin ungelesen.
+> **Die ersten vier führten zu einem falschen Schluss, die ersten neun zu
+> einem zweiten.** Es gibt kein einfaches Prinzip dafür, was fest
+> gestaffelt ist und was auf Anfrage — was bleibt, ist eine Liste. Die
+> übrigen 62 Seiten sind weiterhin ungelesen.
 
 ## Befund 1: Das Lagerhaus ist im Liefergebiet
 
@@ -154,10 +155,12 @@ zurückschickt, steht jetzt fest.
    Genossenschaft. Der Shop ist ein Streckengeschäft; für die Strecke
    verweist das Blatt auf die Industriepreisliste, also auf etwas, das
    hier nicht vorliegt.
-3. ~~**Die Rabattsätze selbst sind nicht ausgewertet.**~~ Neun von 72
+3. ~~**Die Rabattsätze selbst sind nicht ausgewertet.**~~ Zehn von 72
    Seiten sind inzwischen gelesen: Kanal 25–80 %, Mörtel/Putz 15–45 %,
-   Kamin 30–35 %, Mineralwolle 52–53 %, WDVS-Komponenten 15–50 %;
-   **„ANFRAGE" nur bei Polystyrol und Betonfertigteilen**. Eine
+   Kamin 30–35 %, Mineralwolle 52–53 %, WDVS-Komponenten 15–50 %,
+   Ziegel 15–60 %;
+   **„ANFRAGE" bei Polystyrol, Betonfertigteilen, Planziegeln,
+   Edelstahlkaminen und Öfen**. Eine
    Stichprobe, keine Sortimentsübersicht — und ein Rabatt ohne die
    Werkspreisliste, auf die er sich bezieht, ist noch keine Zahl.
 4. **Es sind fremde Konditionen.** Der ausgelesene Text liegt in

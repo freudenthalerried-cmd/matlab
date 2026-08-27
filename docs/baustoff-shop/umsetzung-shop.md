@@ -92,8 +92,11 @@ Ausführlich in
 `gebiet.js` beantwortet die erste Frage jedes Baumeisters — „Gilt das bei
 mir?" — für die Vorsorgegebiets-Ebene aus der Negativliste (Wien + zehn
 Bezirke, elf Einträge statt 2.095 Gemeinden). Die Demo fragt den Bezirk der
-Baustelle ab; Beispielwert ist Ried im Innkreis, der ausgenommene
-Heimatbezirk des Betreibers. Die Auskunft ist eine Auskunft, keine Sperre;
+Baustelle ab; Beispielwert ist seit dem 26.08. **Ried in der Riedmark,
+Bezirk Perg** — Vorsorgegebiet. Vorher stand dort Ried im Innkreis, weil
+der Heimatbezirk mit dem gleichnamigen Innviertler Bezirk verwechselt
+worden war ([`zwei-ried.md`](./zwei-ried.md)); der Betriebssitz liegt in
+Perg und ist **nicht** ausgenommen. Die Auskunft ist eine Auskunft, keine Sperre;
 sie nennt in jedem Ergebnis ihre eigene Grenze (Schutzgebiete nur über die
 amtliche Liste, Gate 11), trägt Stand, Quelle und den Vorbehalt der
 Gegenprüfung am Verordnungstext, und formuliert unbekannte Bezirke als
