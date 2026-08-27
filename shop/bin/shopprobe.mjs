@@ -284,6 +284,32 @@ const SZENARIEN = [
       out = text('#suchvorschlag .vorschlag');`,
     erwartet: ['Kanalbogen', 'netto', 'Kanal'],
   },
+  {
+    // Das Kundenwort muss im **Browser** wirken, nicht nur im Testlauf. Das
+    // Register wird beim Bauen in die Seitendaten gelegt; wer es dort
+    // vergisst, bekommt einen grünen Testlauf und eine stumme Suche.
+    name: 'Wer „Rauchfang" tippt, findet den Kamin',
+    aktionen: `
+      await geheZu('index');
+      const feld = document.getElementById('suchfeld');
+      feld.value = 'rauchfang';
+      feld.dispatchEvent(new Event('input'));
+      out = 'treffer=' + document.querySelectorAll('#suchvorschlag .vorschlag').length
+        + ' ' + text('#suchvorschlag .vorschlag');`,
+    erwartet: ['treffer=8', 'Mantelstein', 'Kamin'],
+  },
+  {
+    name: 'Ein Wort ohne Ware im Sortiment findet keine Ware',
+    aktionen: `
+      await geheZu('index');
+      const feld = document.getElementById('suchfeld');
+      feld.value = 'drainage';
+      feld.dispatchEvent(new Event('input'));
+      const zeilen = [...document.querySelectorAll('#suchvorschlag .vorschlag')];
+      out = 'vorschlaege=' + zeilen.length
+        + ' mitpreis=' + zeilen.filter((z) => /netto/.test(z.textContent)).length;`,
+    erwartet: ['mitpreis=0'],
+  },
 ];
 
 /**

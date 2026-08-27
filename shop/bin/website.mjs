@@ -1024,7 +1024,7 @@ der ganze Vorteil der getrennten Ausweisung.</p>`,
  * `shopkern.js` schneiden zu; der Interna-Prüfer sieht die fertige Seite und
  * würde melden, was durchrutscht.
  */
-function shopdaten(katalog, befund, seiten, lieferantenDatei) {
+function shopdaten(katalog, befund, seiten, lieferantenDatei, suchwoerterDatei) {
   const verwendet = new Set(katalog.artikel.map((a) => a.lieferantId));
   const bilder = {};
   for (const a of katalog.artikel) bilder[a.sku] = artikelBild(a);
@@ -1045,6 +1045,14 @@ function shopdaten(katalog, befund, seiten, lieferantenDatei) {
       // Bestellen. Gesucht wird in Titel, Frage und Kurzfassung.
     })),
     bilder,
+    // Nur Wort und Ziel: Die Begründung je Eintrag steht in
+    // data/suchwoerter.json und gehört ins Repository, nicht in jede
+    // ausgelieferte Seite.
+    suchwoerter: (suchwoerterDatei?.woerter ?? []).map((w) => ({
+      wort: w.wort,
+      ...(w.skus ? { skus: w.skus } : {}),
+      ...(w.gruppe ? { gruppe: w.gruppe } : {}),
+    })),
     einheiten: EINHEITEN,
     bezirke: LIEFERGEBIET.bezirke.map((b) => b.name),
     zahlwege: ZAHLUNGSBEDINGUNGEN.angeboten.map((z) => ({
@@ -1115,6 +1123,7 @@ function main() {
   const lies = (p) => JSON.parse(readFileSync(p, 'utf8'));
   const katalogDatei = lies(join(WURZEL, 'data', 'katalog-baustoff.json'));
   const lieferantenDatei = lies(join(WURZEL, 'data', 'lieferanten.json'));
+  const suchwoerterDatei = lies(join(WURZEL, 'data', 'suchwoerter.json'));
   const betreiber = lies(join(WURZEL, 'data', 'betreiber.json'));
   const preisPfad = join(REPO, 'preise', 'baustoff-preise.json');
 
@@ -1295,7 +1304,7 @@ function main() {
   rmSync(site, { recursive: true, force: true });
   mkdirSync(site, { recursive: true });
   const dateiSeiten = bauen(pfadVerweis);
-  const nutzdaten = shopdaten(katalog, befund, seiten, lieferantenDatei);
+  const nutzdaten = shopdaten(katalog, befund, seiten, lieferantenDatei, suchwoerterDatei);
   const shopskriptQuelle = `window.__SHOP__=${JSON.stringify(nutzdaten)};\n`
     + `window.__SHOP__.adressform=window.__SHOP_ADRESSFORM__||'datei';\n`
     + `window.__SHOP__.tiefe=!!window.__SHOP_TIEFE__;\n`

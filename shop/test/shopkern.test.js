@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import {
   wortstaemme, baueSuchindex, suche, sortiere, filtere, filterwerte, vorteil,
   ladeKorb, speichereKorb, legeInKorb, setzeMenge, korbAnzahl, bereinige,
-  kundenWarenkorb, oeffentlicherArtikel, oeffentlicherLieferant, KORBSCHLUESSEL,
+  kundenWarenkorb, oeffentlicherArtikel, oeffentlicherLieferant, kundenwoerter, KORBSCHLUESSEL,
 } from '../src/shopkern.js';
 import { berechneWarenkorb } from '../src/warenkorb.js';
 import { kalkuliere } from '../src/preis.js';
@@ -318,4 +318,128 @@ test('der Katalog trägt Gewichte nur mit Quellenangabe', () => {
   const ohne = katalogDatei.artikel.filter((a) => a.gewichtKg === undefined);
   assert.ok(ohne.every((a) => a.gewichtQuelle === undefined),
     'ein Artikel ohne Gewicht darf auch keine Gewichtsquelle tragen');
+});
+
+/* ------------------------------------------------------------------ *
+ * Kundenwörter — die Sprache der Baustelle statt der des Lieferanten
+ * ------------------------------------------------------------------ */
+
+const suchwoerterDatei = JSON.parse(readFileSync(pfad('../data/suchwoerter.json'), 'utf8'));
+const bestandsindex = () => baueSuchindex({
+  artikel: katalogDatei.artikel,
+  suchwoerter: suchwoerterDatei.woerter,
+});
+
+test('jedes Kundenwort findet genau die Artikel, für die es eingetragen ist', () => {
+  const index = bestandsindex();
+  assert.ok(suchwoerterDatei.woerter.length >= 30, 'ohne Register prüft diese Schleife nichts');
+  for (const e of suchwoerterDatei.woerter) {
+    const treffer = suche(index, e.wort).filter((x) => x.art === 'artikel');
+    assert.ok(treffer.length > 0, `„${e.wort}" findet nichts`);
+    for (const sku of e.skus ?? []) {
+      assert.ok(treffer.some((x) => x.sku === sku), `„${e.wort}" findet ${sku} nicht`);
+    }
+    if (e.gruppe) {
+      assert.equal(treffer[0].gruppe, e.gruppe,
+        `„${e.wort}" führt nicht zuerst in die Gruppe ${e.gruppe}`);
+    }
+  }
+});
+
+/**
+ * Eine Begründung ist entweder ausgeschrieben oder ein Verweis auf einen
+ * anderen Eintrag, der sie ausschreibt („wie Noppenbahn"). Der Verweis muss
+ * ins Register zeigen — sonst wäre „wie oben" eine Begründung, die auf nichts
+ * zeigt, und genau davon hat dieses Projekt schon genug gesehen.
+ */
+const begruendet = (e, alleWorte) => {
+  const text = String(e.warum ?? '').trim();
+  if (text.length > 20) return true;
+  const verweis = /^wie ([\p{L}-]+)$/iu.exec(text);
+  return !!verweis && alleWorte.has(verweis[1].toLowerCase());
+};
+
+test('jeder Eintrag des Registers zeigt auf vorhandene Ware und trägt eine Begründung', () => {
+  const skus = new Set(katalogDatei.artikel.map((a) => a.sku));
+  const gruppen = new Set(katalogDatei.artikel.map((a) => a.gruppe));
+  const alleWorte = new Set(suchwoerterDatei.woerter.map((w) => w.wort.toLowerCase()));
+  for (const e of suchwoerterDatei.woerter) {
+    assert.ok(begruendet(e, alleWorte), `„${e.wort}": keine Begründung`);
+    assert.ok(e.skus?.length || e.gruppe, `„${e.wort}": kein Ziel`);
+    for (const s of e.skus ?? []) assert.ok(skus.has(s), `„${e.wort}": ${s} gibt es nicht`);
+    if (e.gruppe) assert.ok(gruppen.has(e.gruppe), `„${e.wort}": Gruppe ${e.gruppe} gibt es nicht`);
+  }
+});
+
+test('was der Shop nicht führt, bleibt unauffindbar', () => {
+  // Die Gegenzusage zum Register, und die wichtigere von beiden. „Drainage"
+  // darf nicht die Noppenbahn finden — das ist genau die Verwechslung, vor
+  // der die Wissensseite warnt. Ein Suchwort, das ersatzweise auf etwas
+  // Ähnliches zeigt, verkauft das Falsche.
+  const index = bestandsindex();
+  assert.ok(suchwoerterDatei._nichtAufgenommen.length >= 4);
+  const abgelehnt = new Set(suchwoerterDatei._nichtAufgenommen.map((w) => w.wort.toLowerCase()));
+  for (const e of suchwoerterDatei._nichtAufgenommen) {
+    assert.ok(begruendet(e, abgelehnt), `„${e.wort}": Ablehnung ohne Begründung`);
+    const treffer = suche(index, e.wort).filter((x) => x.art === 'artikel');
+    assert.deepEqual(treffer.map((x) => x.titel), [], `„${e.wort}" findet Ware, obwohl abgelehnt`);
+  }
+});
+
+test('der eigene Name schlägt das Kundenwort', () => {
+  // Sonst steht der Ersatz vor dem Gemeinten: Wer „Spachtel" sucht, will den
+  // Spachtel und nicht das, was wir zusätzlich darunter eingetragen haben.
+  // Der kürzere Titel gewinnt bei Gleichstand — deshalb trägt hier
+  // ausgerechnet der Artikel mit dem Kundenwort den kürzeren Namen. Sonst
+  // ginge der Test auch dann durch, wenn Kundenwörter so schwer wögen wie
+  // der eigene Name, und bewiese nichts.
+  const artikel = [
+    { sku: 'N-1', bezeichnung: 'Baumit KlebeSpachtel 25 kg', gruppe: 'Mörtel', einheit: 'SCK', vkNetto: 30 },
+    { sku: 'N-2', bezeichnung: 'Putzgrund 25 kg', gruppe: 'WDVS', einheit: 'KG', vkNetto: 40 },
+  ];
+  const index = baueSuchindex({ artikel, suchwoerter: [{ wort: 'klebespachtel', skus: ['N-2'] }] });
+  const treffer = suche(index, 'klebespachtel');
+  assert.equal(treffer.length, 2, 'beide werden gefunden');
+  assert.equal(treffer[0].sku, 'N-1', 'der Artikel mit dem Wort im Namen steht vorn');
+});
+
+test('kundenwoerter liefert nur die Wörter des jeweiligen Artikels', () => {
+  const register = [
+    { wort: 'noppenbahn', skus: ['X-1'] },
+    { wort: 'rauchfang', gruppe: 'Kamin' },
+  ];
+  assert.deepEqual(kundenwoerter({ sku: 'X-1', gruppe: 'Kanal' }, register), ['noppenbahn']);
+  assert.deepEqual(kundenwoerter({ sku: 'X-2', gruppe: 'Kamin' }, register), ['rauchfang']);
+  assert.deepEqual(kundenwoerter({ sku: 'X-3', gruppe: 'Mörtel' }, register), []);
+});
+
+test('achtzehn Wörter, die vorher nichts fanden, finden jetzt Ware', () => {
+  // Die Messung vom 27. August, festgehalten als Probe: ohne Register null
+  // Treffer, mit Register Ware. Ein Vorher-Nachher, das ohne diesen Test nur
+  // in einem Dokument stünde.
+  const vorher = baueSuchindex({ artikel: katalogDatei.artikel });
+  const nachher = bestandsindex();
+  const stumm = [
+    'noppenbahn', 'dämmplatte', 'styropor', 'armierungsmörtel', 'klebemörtel', 'bauschaum',
+    'montageschaum', 'baufolie', 'pe-folie', 'schornstein', 'rauchfang', 'sockeldämmung',
+    'perimeterdämmung', 'vollwärmeschutz', 'trittschalldämmung', 'ziegel', 'tellerdübel',
+    'anputzleiste',
+  ];
+  assert.equal(stumm.length, 18);
+  for (const w of stumm) {
+    assert.equal(suche(vorher, w).length, 0, `„${w}" fand vorher schon etwas — die Messung stimmt nicht`);
+    assert.ok(suche(nachher, w).some((x) => x.art === 'artikel'), `„${w}" findet weiterhin nichts`);
+  }
+});
+
+test('ein zusammengesetztes Kundenwort trägt sein Grundwort mit', () => {
+  // „Dämmplattenkleber" enthält „Dämmplatte". Wer die Platte sucht, sieht
+  // deshalb am Ende der Liste auch den Kleber dafür — hinter allen neun
+  // Platten. Das ist gewollt und hier festgehalten, damit es niemand für
+  // einen Fehler hält und „aufräumt".
+  const index = bestandsindex();
+  const treffer = suche(index, 'dämmplatte').filter((x) => x.art === 'artikel');
+  assert.equal(treffer[0].gruppe, 'Dämmung', 'die Platten zuerst');
+  const kleber = treffer.findIndex((x) => x.sku === 'POS-31631');
+  assert.ok(kleber > 8, `der Dämmplattenkleber steht an Stelle ${kleber + 1}, nicht hinter den Platten`);
 });

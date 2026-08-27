@@ -36,6 +36,44 @@ export function wortstaemme(text) {
 }
 
 /**
+ * Die Kundenwörter zu einem Artikel.
+ *
+ * Der Katalog spricht die Sprache des Lieferanten. Ein Kunde tippt das Wort,
+ * das er auf der Baustelle sagt — und trifft damit nichts:
+ *
+ * > „Noppenbahn" fand nichts, weil der Artikel *Grundmauerschutz* heißt.
+ * > „Rauchfang" fand nichts, weil kein Kaminartikel das Wort im Namen trägt.
+ * > „Styropor", „Bauschaum", „Anputzleiste", „Vollwärmeschutz": nichts.
+ *
+ * Gemessen am 27. August: **18 von 33** geläufigen Kundenwörtern lieferten
+ * null Treffer. Eine Suche, die nur die Artikelnummer und den
+ * Lieferantennamen kennt, ist eine Suche für den, der das Sortiment schon
+ * auswendig kann.
+ *
+ * Das Register steht in `data/suchwoerter.json` und ist von Hand entschieden,
+ * Wort für Wort, mit einer Begründung je Eintrag. Es ist bewusst **keine**
+ * automatische Ähnlichkeitssuche: Ein Suchwort ist ein Versprechen, dass der
+ * gefundene Artikel die gemeinte Aufgabe erfüllt.
+ *
+ * Deshalb führt die Datei auch, was **nicht** aufgenommen wurde — „Drainage",
+ * „Abdichtung", „Bitumen", „Gleitmittel". Für all das gibt es keine Ware im
+ * Sortiment, und ein Suchwort, das ersatzweise auf etwas Ähnliches zeigt,
+ * erzeugt genau den Fehler, vor dem die Wissensseiten warnen. **Was wir nicht
+ * haben, bleibt unauffindbar.**
+ *
+ * Kundenwörter landen in `schwach` und wiegen damit am wenigsten: Ein Artikel,
+ * der das Wort im eigenen Namen trägt, steht immer davor.
+ */
+export function kundenwoerter(artikel, suchwoerter = []) {
+  const raus = [];
+  for (const e of suchwoerter) {
+    const passt = (e.skus ?? []).includes(artikel.sku) || (e.gruppe && e.gruppe === artikel.gruppe);
+    if (passt) raus.push(...wortstaemme(e.wort));
+  }
+  return raus;
+}
+
+/**
  * Baut den Suchindex.
  *
  * Jeder Eintrag trägt sein Gewicht mit: Ein Treffer in der Bezeichnung wiegt
@@ -43,7 +81,7 @@ export function wortstaemme(text) {
  * die Wissensseite, die das Wort vierzigmal enthält, und erst danach das
  * Gewebe, das man kaufen kann.
  */
-export function baueSuchindex({ artikel = [], seiten = [] } = {}) {
+export function baueSuchindex({ artikel = [], seiten = [], suchwoerter = [] } = {}) {
   const eintraege = [];
 
   for (const a of artikel) {
@@ -57,7 +95,10 @@ export function baueSuchindex({ artikel = [], seiten = [] } = {}) {
       vkNetto: a.vkNetto ?? null,
       einheit: a.einheit,
       stark: wortstaemme(a.bezeichnung),
-      schwach: wortstaemme(`${a.gruppe} ${a.lieferantenArtikelnummer ?? ''}`),
+      schwach: [...new Set([
+        ...wortstaemme(`${a.gruppe} ${a.lieferantenArtikelnummer ?? ''}`),
+        ...kundenwoerter(a, suchwoerter),
+      ])],
     });
   }
 

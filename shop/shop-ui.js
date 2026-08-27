@@ -19,7 +19,7 @@
   })();
 
   var korb = ladeKorb(speicher);
-  var index = baueSuchindex({ artikel: D.artikel, seiten: D.seiten });
+  var index = baueSuchindex({ artikel: D.artikel, seiten: D.seiten, suchwoerter: D.suchwoerter || [] });
   var artikelNach = {};
   D.artikel.forEach(function (a) { artikelNach[a.sku] = a; });
 
