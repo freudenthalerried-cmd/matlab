@@ -309,6 +309,20 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > vorletzten statt der letzten Zeile. 22 Szenarien.
 > [`bedienbar-mit-daumen-und-tastatur.md`](./bedienbar-mit-daumen-und-tastatur.md).
 >
+> **Der Rahmen misst ohne JavaScript** (27.08.): Beim Versuch, Warenkorb und
+> Kasse im 390-px-Rahmen zu messen, kam eine Eigenschaft der Prüfumgebung
+> heraus: **Ein eingebettetes Dokument führt hier seine Skripte nicht aus** —
+> beide `<script>`-Elemente vorhanden, `window.__SHOP__` undefiniert. Damit
+> messen die fünf bestehenden Rahmenszenarien die Seite **ohne JavaScript**;
+> für Seitwärtsrollen und statische Elementgrößen gültig, für skriptgebaute
+> Inhalte wertlos. Nebengewinn: Die Seiten halten ihr Layout auch ohne Skript.
+> **Zwei neue Szenarien waren hohl** — eine leere Seite hat null zu kleine
+> Bedienelemente, und die eingebaute Absicherung dagegen zählte auch die
+> Kopfleiste mit. Beide entfernt; die Warenkorb-Bedienelemente misst jetzt
+> ein Szenario der Einzeldateifassung (Gegenprobe: Mengenfeld 40 px).
+> Rahmenproben laufen jetzt über HTTP statt `file://`.
+> [`rahmen-ohne-javascript.md`](./rahmen-ohne-javascript.md).
+>
 > **Herstellerverweise: drei Artikel zurückgewonnen** (27.08.): `marke()`
 > prüfte `startsWith`, die Marke musste ganz vorn stehen. Drei
 > Schiedel-Artikel trugen deshalb „kein Herstellermerkblatt vorhanden",
@@ -496,6 +510,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `domainwahl.md` | **Die Firma und ihre Domain gibt es schon** — Freudenthaler Bau GmbH, FN 347938z, Baustoffhandel eingetragen, `freudenthaler-bau.at` in Betrieb; Empfehlung daher `shop.freudenthaler-bau.at` plus `baustoffe-muehlviertel.at` als Weiterleitung. Zwei Korrekturen: Ried in der Riedmark liegt im **Mühlviertel**, nicht im Innviertel; der Entitätswert ist bereits aufgebaut und wäre bei einer neuen Domain verloren |
 | `pruefung-der-testfaelle.md` | **Grüne Tests sind eine Aussage über die Testfälle, nicht über den Code** — elf hohle Schleifen gefunden und entschärft |
 | `shop-mit-warenkorb.md` | **Was an einem Shop hochwertig ist, sind vier Dinge, die ein Kunde tut** — Suche, Filter, Warenkorb, Kasse; die Suche musste Deutsch lernen (Kompositum-Treffer), der Warenkorb sagt selbst, wenn die Fracht die Ware übersteigt, und die neue Shopprobe fand die fehlende Zeichensatzangabe |
+| `rahmen-ohne-javascript.md` | **Ein Prüfer, der nicht durchfallen kann, ist schlimmer als kein Prüfer** — zwei Szenarien gebaut, beide hohl, beide entfernt. Dabei gemessen: Eingebettete Dokumente führen in dieser Prüfumgebung keine Skripte aus |
 | `bedienbar-mit-daumen-und-tastatur.md` | **Wer einen Suchvorschlag nur mit der Maus erreicht, für den ist die Liste eine Zierde** — Tastaturbedienung samt ARIA nachgerüstet, alle Bedienelemente auf 44 px gebracht. Die Zahl im Fehlertext ist der Unterschied zwischen einem Hinweis und einer Diagnose |
 | `shop-am-telefon.md` | **Ob eine Seite seitwärts scrollt, beantwortet man, indem man sie seitwärts scrollt** — Bildschirmfoto und scrollWidth führten beide auf falsche Fährten, und der erste Prüfer maß eine leere Seite. Der echte Fehler war ein deutsches Kompositum in einer Überschrift |
 | `gewichte-mit-summenprobe.md` | **Keine Zahl ohne bestandene Summenprobe** — 7 Artikelgewichte aus vier resterfreien Belegen, null Widersprüche. Die Kanalgruppe wiegt so wenig, dass sie ins Paket passt, und hat zugleich den größten Preisvorteil |
