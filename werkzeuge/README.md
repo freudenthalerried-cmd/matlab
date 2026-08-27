@@ -69,6 +69,14 @@ Einheiten aus. Wer das übersieht, rechnet den Stückpreis um drei
 Zehnerpotenzen falsch — und die Summenprobe merkt es **nicht**, weil der
 ausgewiesene Betrag stimmt. Nur der Stückpreis ist daneben.
 
+**Ein Byte oder zwei.** `entschluesseln` las bis zum 27. August ausnahmslos
+zwei Bytes je Zeichen. Für die Lieferantenrechnungen stimmt das — sie
+verwenden zusammengesetzte Fonts (`/Subtype /Type0`, Identity-H). Ein
+Konditionenblatt mit einfachen Fonts (`/WinAnsiEncoding`) hat **ein** Byte je
+Zeichen; paarweise gelesen ergab es 72 Seiten Ersatzzeichen, und die sahen
+aus wie ein Font ohne Zuordnung statt wie ein Lesefehler. Die Codebreite
+hängt jetzt am Font; ohne `/ToUnicode` gilt die deklarierte Kodierung.
+
 **Leerraum im Seitenobjekt.** Ein Erzeuger schreibt `/Type/Page`, ein
 anderer `/Type /Page`. Eine Suche nach der Zeichenfolge ohne Leerzeichen
 fand bei Pramer null Seiten und schrieb eine **leere Datei ohne

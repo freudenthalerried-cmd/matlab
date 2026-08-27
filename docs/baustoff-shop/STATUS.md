@@ -116,6 +116,15 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > Konditionenblatt des Lagerhaus Eferding von 2025** — die erste
 > Original-Rabattstaffel des Vorhabens und ein möglicher zweiter Bezugsweg.
 > [`herkunft-der-rechnungen.md`](./herkunft-der-rechnungen.md).
+>
+> **Das Konditionenblatt ist ausgelesen** (27.08.): Lagerhaus Eferding hat
+> **Filialen in Münzbach und Perg**, also im Liefergebiet, und ein
+> **gestaffeltes Frachtmodell** — Kleintransporter 41,66 € gegen Poschachers
+> 75,50 € Pauschale je Lieferung. Damit halbiert sich die Frachtschwelle von
+> 332 auf 167 € Warenwert. Das Sortiment deckt alle sechs Warengruppen des
+> Katalogs. Die Rabattsätze selbst liegen als Bilder vor und sind ohne
+> Renderer nicht auszulesen.
+> [`zweiter-bezugsweg-lagerhaus.md`](./zweiter-bezugsweg-lagerhaus.md).
 
 ## Wo das Projekt steht
 

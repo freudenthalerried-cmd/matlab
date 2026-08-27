@@ -221,9 +221,41 @@ def tokens(buf):
             i = j
 
 
-def entschluesseln(roh, tab):
-    """Bytefolge eines Textstuecks -> lesbarer Text (2-Byte-Codes, Identity-H)."""
+def entschluesseln(roh, font):
+    """Bytefolge eines Textstuecks -> lesbarer Text.
+
+    Die Codebreite haengt am Font und ist NICHT immer zwei.
+
+    Bis zum 27. August las diese Funktion ausnahmslos zwei Bytes je Zeichen.
+    Fuer die Lieferantenrechnungen stimmte das - sie verwenden zusammengesetzte
+    Fonts (/Subtype /Type0) mit Identity-H, dort ist ein Code zwei Bytes breit.
+    Ein Konditionenblatt mit einfachen Fonts (/Subtype /TrueType, Encoding
+    /WinAnsiEncoding) hat **ein** Byte je Zeichen; paarweise gelesen ergibt es
+    72 Seiten Ersatzzeichen - und die sahen aus wie ein Font ohne Zuordnung,
+    nicht wie ein Lesefehler.
+
+    Ein Werkzeug, das nur eine Sorte PDF gesehen hat, haelt deren Eigenart fuer
+    die Regel.
+    """
+    tab = font.get('tab') if isinstance(font, dict) else font
+    breit = font.get('breit', 2) if isinstance(font, dict) else 2
     aus = []
+    if breit == 1:
+        for b in roh:
+            if tab and b in tab:
+                z = tab[b]
+            else:
+                # Ohne ToUnicode gilt die deklarierte Kodierung. WinAnsi ist
+                # cp1252; die wenigen undefinierten Plaetze fallen auf U+FFFD.
+                try:
+                    z = bytes([b]).decode('cp1252')
+                except UnicodeDecodeError:
+                    z = '\ufffd'
+            if z and 0xE000 <= ord(z[0]) <= 0xF8FF:
+                z = '\ufffd'
+            aus.append(z)
+        return ''.join(aus)
+
     for i in range(0, len(roh) - 1, 2):
         code = (roh[i] << 8) | roh[i + 1]
         z = tab.get(code) if tab else chr(code)
@@ -341,7 +373,7 @@ def stuecke_sammeln(inhalt, fonts):
             if op == 'BT':
                 tm = tlm = [1, 0, 0, 1, 0, 0]
             elif op == 'Tf' and len(ops) >= 2:
-                tab = fonts.get(ops[-2])
+                tab = fonts.get(ops[-2], {'tab': None, 'breit': 2})
                 groesse = float(ops[-1])
             elif op == 'Tm' and len(ops) >= 6:
                 tm = tlm = zahl(6)
@@ -462,7 +494,11 @@ def pdf_zu_text(pfad):
                 fobj = objs.get(int(onum), b'')
                 tu = ref(fobj, 'ToUnicode')
                 tab = cmap_lesen(stream_daten(tu, objs, streams)) if tu in streams else None
-                fonts['/' + name.decode('latin1')] = tab
+                # Zusammengesetzte Fonts (/Type0, Identity-H) haben zwei Bytes
+                # je Code, einfache Fonts eines. Wer das nicht unterscheidet,
+                # liest die Haelfte der PDFs als Ersatzzeichen.
+                breit = 2 if re.search(rb'/Subtype\s*/Type0', fobj) else 1
+                fonts['/' + name.decode('latin1')] = {'tab': tab, 'breit': breit}
         # Inhalt
         teile = []
         cm = re.search(rb'/Contents\s+(\d+)\s+\d+\s+R', seite)
