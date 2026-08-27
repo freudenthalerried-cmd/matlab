@@ -60,7 +60,7 @@ export function alsListe(wert) {
 }
 
 /** Fettdruck, Code und Links — in dieser Reihenfolge, damit sie sich nicht beißen. */
-export function inline(text) {
+export function inline(text, opt = {}) {
   let s = esc(text);
   // Code zuerst: Was in Backticks steht, soll nicht als Markup gelesen werden.
   // Der Platzhalter braucht ein Zeichen, das in echtem Text nicht vorkommt.
@@ -79,7 +79,14 @@ export function inline(text) {
   s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, t, u) => {
     const extern = /^https?:/i.test(u);
     const ziel = extern ? ' target="_blank" rel="noopener noreferrer"' : '';
-    return `<a href="${u}"${ziel}>${t}</a>`;
+    // Innere Verweise stehen im Quelltext als logische Kennung („../lieferung",
+    // „xps-oder-eps") und müssen in die Adressform der jeweiligen Ausgabe
+    // übersetzt werden — Datei mit .html, Einzelseite mit Raute. Ohne diese
+    // Übersetzung ging in der Mehrseitenfassung **jeder** Verweis aus einem
+    // Seitenkörper ins Leere: 41 Stück, und die Bauprüfung hat sie nicht
+    // gesehen, weil sie die Kennung geprüft hat und nicht die Adresse.
+    const adresse = extern || !opt.verweisAuf ? u : (opt.verweisAuf(u) ?? u);
+    return `<a href="${adresse}"${ziel}>${t}</a>`;
   });
   s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   s = s.replace(/(?<![\w*])\*([^*\n]+)\*(?![\w*])/g, '<em>$1</em>');
@@ -105,7 +112,7 @@ export function alsHtml(text, opt = {}) {
   let i = 0;
 
   const absatz = (puffer) => {
-    if (puffer.length) aus.push(`<p>${inline(puffer.join(' '))}</p>`);
+    if (puffer.length) aus.push(`<p>${inline(puffer.join(' '), opt)}</p>`);
   };
 
   while (i < zeilen.length) {
@@ -117,7 +124,7 @@ export function alsHtml(text, opt = {}) {
     const h = /^(#{1,6})\s+(.*)$/.exec(z);
     if (h) {
       const stufe = Math.min(6, h[1].length + versatz);
-      aus.push(`<h${stufe}>${inline(h[2].trim())}</h${stufe}>`);
+      aus.push(`<h${stufe}>${inline(h[2].trim(), opt)}</h${stufe}>`);
       i += 1;
       continue;
     }
@@ -136,10 +143,10 @@ export function alsHtml(text, opt = {}) {
       }
       aus.push(
         '<div class="scroll"><table><thead><tr>' +
-          kopf.map((c) => `<th>${inline(c)}</th>`).join('') +
+          kopf.map((c) => `<th>${inline(c, opt)}</th>`).join('') +
           '</tr></thead><tbody>' +
           koerper
-            .map((r) => `<tr>${r.map((c) => `<td>${inline(c)}</td>`).join('')}</tr>`)
+            .map((r) => `<tr>${r.map((c) => `<td>${inline(c, opt)}</td>`).join('')}</tr>`)
             .join('') +
           '</tbody></table></div>',
       );
@@ -174,7 +181,7 @@ export function alsHtml(text, opt = {}) {
         break;
       }
       const tag = geordnet ? 'ol' : 'ul';
-      aus.push(`<${tag}>${punkte.map((p) => `<li>${inline(p)}</li>`).join('')}</${tag}>`);
+      aus.push(`<${tag}>${punkte.map((p) => `<li>${inline(p, opt)}</li>`).join('')}</${tag}>`);
       continue;
     }
 

@@ -362,7 +362,12 @@ function inhaltsSeite(seite, katalog, befund, seiten, verweis) {
 
   // Der Titel steht im Kopfblock; der Körper beginnt mit derselben Überschrift.
   // Ausgegeben wird sie einmal — aus dem Körper, damit der Text die Quelle bleibt.
-  const koerper = alsHtml(seite.koerper);
+  const koerper = alsHtml(seite.koerper, {
+    verweisAuf: (u) => {
+      const id = loeseVerweis(u, seite.art);
+      return id ? verweis(id) : null;
+    },
+  });
   teile.push(koerper);
 
   if (gruppenArtikel.length) {
@@ -850,6 +855,59 @@ function main() {
       console.log(`  ${a.kennung}${a.nur ? ` (nur ${a.nur.join(', ')})` : ''} — ${a.grund}`);
     }
     console.log('');
+  }
+
+  // --- Die Adressen prüfen, nicht die Kennungen ---
+  //
+  // Die Prüfung oben liest den Markdown-Quelltext und löst jeden Verweis zu
+  // einer logischen Kennung auf. Sie war grün, während in der
+  // Mehrseitenfassung **41 Verweise** ins Leere gingen: Die Kennung stimmte,
+  // die ausgegebene Adresse hatte kein `.html`. Gemeldet hat es der
+  // Auftraggeber, nicht der Bau.
+  //
+  // > **Eine Prüfung, die das Modell liest statt die Ausgabe, prüft die
+  // > eigene Absicht.** Diese hier liest die fertigen `href`-Werte.
+  const adressPruefung = (seitenMap, zurueck, name) => {
+    const gueltig = new Set(seitenMap.keys());
+    const tot = [];
+    for (const [id, seite] of seitenMap) {
+      for (const m of String(seite.html ?? '').matchAll(/href="([^"]+)"/g)) {
+        const h = m[1];
+        if (/^(?:https?:|mailto:|tel:)/i.test(h)) continue;
+        const kennung = zurueck(h, id);
+        if (kennung === null || !gueltig.has(kennung)) tot.push(`${name}  ${id} → „${h}"`);
+      }
+    }
+    return tot;
+  };
+
+  // Die Adresse zurück in eine Kennung rechnen — aus der Sicht der Seite, auf
+  // der sie steht. „../artikel/X.html" bedeutet auf einer Wissensseite etwas
+  // anderes als auf der Startseite, und genau dieser Unterschied war der
+  // Fehler.
+  const dateiZurueck = (h, von) => {
+    if (!h.endsWith('.html')) return null;
+    const ordner = von.includes('/') ? von.slice(0, von.lastIndexOf('/')) : '';
+    const teile = [...ordner.split('/').filter(Boolean), ...h.slice(0, -5).split('/')];
+    const weg = [];
+    for (const t of teile) {
+      if (t === '.') continue;
+      if (t === '..') { if (!weg.length) return null; weg.pop(); continue; }
+      weg.push(t);
+    }
+    return weg.join('/');
+  };
+
+  const tote = [
+    ...adressPruefung(bauen(pfadVerweis), dateiZurueck, 'Datei '),
+    ...adressPruefung(bauen(rautenVerweis), (h) => (h.startsWith('#') ? h.slice(1) : null), 'Raute'),
+  ];
+  if (tote.length) {
+    console.error(`Ausgegebene Adressen, die ins Leere gehen (${tote.length}):\n`);
+    for (const t of tote.slice(0, 40)) console.error(`  ${t}`);
+    if (tote.length > 40) console.error(`  … und ${tote.length - 40} weitere`);
+    console.error('\nNichts ausgegeben.');
+    process.exit(1);
   }
 
   // --- Mehrseitenfassung ---
