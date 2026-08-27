@@ -323,6 +323,22 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > Rahmenproben laufen jetzt über HTTP statt `file://`.
 > [`rahmen-ohne-javascript.md`](./rahmen-ohne-javascript.md).
 >
+> **Der Inhaltsprüfer zeigte auf die Probedatei** (27.08.): `npm run
+> pruefe-inhalte` meldete „1 Dateien, 15 Absätze" — das war der
+> Selbstnachweis an einer Datei mit absichtlich falschen Absätzen, nicht der
+> Bestand. Voreinstellung jetzt auf alle drei Inhaltsordner (**23 Seiten, 334
+> Absätze, 0 Verdacht**), der Selbstnachweis heißt `--probe`. Dabei fiel auf:
+> **Die Hälfte des Shoptextes stand nie unter den Regeln** — Startseite,
+> Rechtstexte, Artikelseiten, Warenkorb kommen aus dem Seitenbauwerkzeug.
+> Neu `npm run pruefe-seiten` (54 Seiten, 136 Absätze). Drei Kalibrierungen
+> waren nötig (Artikelnamen sind keine Aussagen; ein gerenderter Verweis
+> verliert seine Quelle; Seiten aus `inhalte/` sind an der Quelle geprüft),
+> dazu ein Fehler im Prüfer selbst: `<p([^>]*)>` trifft auch `<path …>`.
+> **Zwei echte Funde:** Die Startseite nannte die Handelsspanne ohne Stand,
+> und die Datenschutzseite verwies auf „die Pflicht", deren Fundstelle einen
+> Absatz höher stand. Beide behoben.
+> [`pruefer-zeigte-auf-die-probe.md`](./pruefer-zeigte-auf-die-probe.md).
+>
 > **Herstellerverweise: drei Artikel zurückgewonnen** (27.08.): `marke()`
 > prüfte `startsWith`, die Marke musste ganz vorn stehen. Drei
 > Schiedel-Artikel trugen deshalb „kein Herstellermerkblatt vorhanden",
@@ -510,6 +526,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `domainwahl.md` | **Die Firma und ihre Domain gibt es schon** — Freudenthaler Bau GmbH, FN 347938z, Baustoffhandel eingetragen, `freudenthaler-bau.at` in Betrieb; Empfehlung daher `shop.freudenthaler-bau.at` plus `baustoffe-muehlviertel.at` als Weiterleitung. Zwei Korrekturen: Ried in der Riedmark liegt im **Mühlviertel**, nicht im Innviertel; der Entitätswert ist bereits aufgebaut und wäre bei einer neuen Domain verloren |
 | `pruefung-der-testfaelle.md` | **Grüne Tests sind eine Aussage über die Testfälle, nicht über den Code** — elf hohle Schleifen gefunden und entschärft |
 | `shop-mit-warenkorb.md` | **Was an einem Shop hochwertig ist, sind vier Dinge, die ein Kunde tut** — Suche, Filter, Warenkorb, Kasse; die Suche musste Deutsch lernen (Kompositum-Treffer), der Warenkorb sagt selbst, wenn die Fracht die Ware übersteigt, und die neue Shopprobe fand die fehlende Zeichensatzangabe |
+| `pruefer-zeigte-auf-die-probe.md` | **Ein Prüfer, dessen Voreinstellung nicht auf den Bestand zeigt, wird mit der Voreinstellung aufgerufen** — und die Hälfte des Shoptextes stand nie unter den Inhaltsregeln. Zwei echte Funde: Handelsspanne ohne Stand, Pflicht ohne Fundstelle im eigenen Absatz |
 | `rahmen-ohne-javascript.md` | **Ein Prüfer, der nicht durchfallen kann, ist schlimmer als kein Prüfer** — zwei Szenarien gebaut, beide hohl, beide entfernt. Dabei gemessen: Eingebettete Dokumente führen in dieser Prüfumgebung keine Skripte aus |
 | `bedienbar-mit-daumen-und-tastatur.md` | **Wer einen Suchvorschlag nur mit der Maus erreicht, für den ist die Liste eine Zierde** — Tastaturbedienung samt ARIA nachgerüstet, alle Bedienelemente auf 44 px gebracht. Die Zahl im Fehlertext ist der Unterschied zwischen einem Hinweis und einer Diagnose |
 | `shop-am-telefon.md` | **Ob eine Seite seitwärts scrollt, beantwortet man, indem man sie seitwärts scrollt** — Bildschirmfoto und scrollWidth führten beide auf falsche Fährten, und der erste Prüfer maß eine leere Seite. Der echte Fehler war ein deutsches Kompositum in einer Überschrift |

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { pruefeAbsatz, pruefeInhalt, inAbsaetze, GRENZWOERTER, ohneKopfblock, kopffelder } from '../src/inhaltspruefung.js';
 
@@ -68,13 +68,39 @@ test('die Probedatei im Repo löst genau die erwarteten Verdachtsfälle aus', ()
   }
 });
 
-test('das Werkzeug läuft über die Probedatei und meldet, ohne zu urteilen', () => {
+test('mit --probe läuft das Werkzeug über die Probedatei und meldet, ohne zu urteilen', () => {
   const werkzeug = fileURLToPath(new URL('../bin/inhaltspruefung.mjs', import.meta.url));
-  const lauf = spawnSync(process.execPath, [werkzeug], { encoding: 'utf8' });
+  const lauf = spawnSync(process.execPath, [werkzeug, '--probe'], { encoding: 'utf8' });
   assert.equal(lauf.status, 0);
   assert.match(lauf.stdout, /7 mit Verdacht/);
   assert.match(lauf.stdout, /nicht automatisch zu beheben/);
   assert.match(lauf.stdout, /ersetzt dieses Werkzeug nicht/, 'das Werkzeug benennt seine eigene Grenze');
+});
+
+test('ohne Argument prüft das Werkzeug den Bestand, nicht die Probedatei', () => {
+  // Bis zum 27.08. zeigte die Voreinstellung auf die Probedatei. `npm run
+  // pruefe-inhalte` meldete „1 Dateien, 15 Absätze" und sah aus wie ein
+  // Durchlauf über den Shop. Ein Prüfer, dessen Voreinstellung nicht auf den
+  // Bestand zeigt, wird mit der Voreinstellung aufgerufen.
+  const werkzeug = fileURLToPath(new URL('../bin/inhaltspruefung.mjs', import.meta.url));
+  const lauf = spawnSync(process.execPath, [werkzeug], { encoding: 'utf8' });
+  assert.equal(lauf.status, 0);
+  const zahl = Number((lauf.stdout.match(/(\d+) Dateien/) ?? [])[1] ?? 0);
+  assert.ok(zahl >= 20, `nur ${zahl} Dateien geprüft — die Voreinstellung zeigt nicht auf den Bestand`);
+  assert.match(lauf.stdout, /0 mit Verdacht/, 'der eigene Bestand ist sauber');
+});
+
+test('mit --seiten prüft das Werkzeug die gebauten Seiten', () => {
+  // Rund die Hälfte des Textes im Shop steht im Seitenbauwerkzeug, nicht in
+  // inhalte/, und war nie durch die Regeln gelaufen.
+  const werkzeug = fileURLToPath(new URL('../bin/inhaltspruefung.mjs', import.meta.url));
+  const gebaut = fileURLToPath(new URL('../ausgabe/site', import.meta.url));
+  if (!existsSync(gebaut)) return; // ohne Bau nichts zu prüfen
+  const lauf = spawnSync(process.execPath, [werkzeug, '--seiten'], { encoding: 'utf8' });
+  assert.equal(lauf.status, 0);
+  const absaetze = Number((lauf.stdout.match(/(\d+) Fließtextabsätze/) ?? [])[1] ?? 0);
+  assert.ok(absaetze >= 100, `nur ${absaetze} Absätze — die Seitenprüfung greift nicht`);
+  assert.match(lauf.stdout, /0 mit Verdacht/);
 });
 
 test('ein unlesbarer Ordner gibt eine Meldung, keinen Stacktrace', () => {

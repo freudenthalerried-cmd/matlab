@@ -586,7 +586,21 @@ function inhaltsSeite(seite, katalog, befund, seiten, verweis) {
   return { titel: seite.kopf.titel, kurz: alsText(kurz), html: teile.join('\n'), jsonLd, intern: seite.kopf.intern };
 }
 
-function startSeite(katalog, befund, seiten, verweis) {
+/**
+ * Der jüngste Preisstand im Katalog.
+ *
+ * Die Startseite nennt die Handelsspanne — eine Zahl, und jede Zahl braucht
+ * nach den eigenen Regeln Herkunft und Stand. Die Herkunft ist der Satz
+ * selbst („was ein Baumeister im Einkauf zahlt"), der Stand kommt von hier.
+ * Gefunden hat die fehlende Angabe der Inhaltsprüfer, als er zum ersten Mal
+ * über die gebauten Seiten lief.
+ */
+function preisStand(katalog) {
+  const staende = katalog.artikel.map((a) => a.preisStand).filter(Boolean).sort();
+  return staende.length ? staende[staende.length - 1] : 'siehe Artikelseiten';
+}
+
+function startSeite(katalog, befund, seiten, verweis, katalogDatei) {
   const gruppen = [...seiten.values()].filter((s) => s.art === 'gruppen');
   const systeme = [...seiten.values()].filter((s) => s.art === 'system');
   const wissen = [...seiten.values()].filter((s) => s.art === 'wissen');
@@ -610,8 +624,8 @@ function startSeite(katalog, befund, seiten, verweis) {
     kurz: `Baustoffe zum Baumeisterpreis, geliefert im Umkreis von ${ORT}. ${befund.artikelGesamt} Artikel, ${befund.unterListe} davon unter dem Listenpreis des Lieferanten.`,
     html: `<h1>Baustoffe zum<br>Baumeisterpreis</h1>
 <p class="lede">Was ein Baumeister im Einkauf zahlt, zahlen Sie auch — zuzüglich einer Handelsspanne von
-${Math.round(katalog.zielmarge * 100)} %. Geliefert wird im Umkreis, nicht in ganz Österreich: Das ist der
-Grund, warum die Rechnung aufgeht.</p>
+${Math.round(katalog.zielmarge * 100)} %. Alle Preise Stand: ${esc(preisStand(katalog))}.
+Geliefert wird im Umkreis, nicht in ganz Österreich: Das ist der Grund, warum die Rechnung aufgeht.</p>
 
 <div class="preistafel">
   <div><span class="k">Artikel</span><span class="w">${befund.artikelGesamt}</span><span class="e">aus dem laufenden Einkauf</span></div>
@@ -866,8 +880,8 @@ keinen Vertrag, seine Rufnummer stammt vom Besteller, und Artikel 14 DSGVO verla
 zu informieren — eine Person, die der Shop nie erreicht.</p>
 <p>Der einzige offene Weg führt über den, der ihn kennt: Der Besteller sichert im Bestellvorgang
 zu, ihn unterrichtet zu haben, und der Shop hält die Zusicherung fest. <strong>Das ist keine
-Erfüllung der Pflicht durch den Shop</strong>, sondern ihre Verlagerung auf denjenigen, der sie
-erfüllen kann — samt Dokumentation, dass danach gefragt wurde. Ob das genügt, entscheidet der
+Erfüllung der Informationspflicht aus Artikel 14 DSGVO durch den Shop</strong>, sondern ihre
+Verlagerung auf denjenigen, der sie erfüllen kann — samt Dokumentation, dass danach gefragt wurde. Ob das genügt, entscheidet der
 Rechtstexteanbieter; hier steht der Wortlaut, über den er dann reden kann.</p>`,
     jsonLd: null,
   };
@@ -1106,7 +1120,7 @@ function main() {
 
   const bauen = (verweisFabrik) => {
     const m = new Map();
-    m.set('index', startSeite(katalog, befund, seiten, verweisFabrik('index')));
+    m.set('index', startSeite(katalog, befund, seiten, verweisFabrik('index'), katalogDatei));
     m.set('wissen/index', wissenIndex(seiten, verweisFabrik('wissen/index')));
     m.set('lieferung', lieferungSeite(katalog, katalogDatei, verweisFabrik('lieferung')));
     m.set('suche', sucheSeite(verweisFabrik('suche')));
