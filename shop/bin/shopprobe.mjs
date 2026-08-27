@@ -151,6 +151,19 @@ const SZENARIEN = [
     verboten: ['Bestellung ausgelöst'],
   },
   {
+    name: 'Der Warenkorb nennt das Gewicht und sagt, wo es fehlt',
+    // POS-10095 (Kanalrohr) hat ein belegtes Gewicht, POS-12566 (EPS) nicht.
+    aktionen: `
+      await geheZu('artikel/POS-10095');
+      document.getElementById('menge-POS-10095').value = '10';
+      document.querySelector('[data-legen="POS-10095"]').click();
+      await geheZu('artikel/POS-12566');
+      document.querySelector('[data-legen="POS-12566"]').click();
+      await geheZu('warenkorb');
+      out = text('#warenkorb-ziel .preistafel');`,
+    erwartet: ['17,33 kg', '1 Position ohne belegtes Gewicht'],
+  },
+  {
     name: 'Der Warenkorb sagt es, wenn die Fracht die Ware übersteigt',
     // Dieselbe Haltung wie bei der Zahlungsgebühr, die im Angebot gefehlt
     // hat: Die unangenehme Zahl steht auf der Seite, nicht erst auf der

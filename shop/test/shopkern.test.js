@@ -276,3 +276,46 @@ test('die Nutzdaten des ganzen Katalogs enthalten keine Interna', () => {
   });
   assert.deepEqual(findeInterna(nutzdaten).map((f) => `${f.id}: ${f.fund}`), []);
 });
+
+/* ------------------------------------------------------------------ *
+ * Gewicht
+ * ------------------------------------------------------------------ */
+
+test('das Gewicht summiert nur, was belegt ist, und nennt den Rest', () => {
+  // Eine Summe über Artikel mit unbekanntem Gewicht wäre eine Untergrenze,
+  // die wie eine Summe aussieht.
+  const artikel = [
+    { ...beispiel[0], sku: 'G1', gewichtKg: 2.5 },
+    { ...beispiel[1], sku: 'G2', gewichtKg: null },
+  ];
+  const r = kundenWarenkorb([{ sku: 'G1', menge: 4 }, { sku: 'G2', menge: 1 }],
+    { artikel, lieferanten: [oeffentlicherLieferant(lieferantProbe)] });
+  assert.equal(r.gewichtKg, 10);
+  assert.equal(r.positionenOhneGewicht, 1);
+});
+
+test('ohne jede Gewichtsangabe bleibt die Summe null und die Lücke sichtbar', () => {
+  const artikel = [{ ...beispiel[0], sku: 'G1', gewichtKg: null }];
+  const r = kundenWarenkorb([{ sku: 'G1', menge: 3 }],
+    { artikel, lieferanten: [oeffentlicherLieferant(lieferantProbe)] });
+  assert.equal(r.gewichtKg, 0);
+  assert.equal(r.positionenOhneGewicht, 1, 'null Kilo darf nicht wie ein Messwert aussehen');
+});
+
+test('ein unbelegtes Gewicht wird nicht zu null gemacht', () => {
+  assert.equal(oeffentlicherArtikel({ sku: 'X' }).gewichtKg, null);
+  assert.equal(oeffentlicherArtikel({ sku: 'X', gewichtKg: 'schwer' }).gewichtKg, null);
+  assert.equal(oeffentlicherArtikel({ sku: 'X', gewichtKg: 2.5 }).gewichtKg, 2.5);
+});
+
+test('der Katalog trägt Gewichte nur mit Quellenangabe', () => {
+  const mitGewicht = katalogDatei.artikel.filter((a) => typeof a.gewichtKg === 'number');
+  assert.ok(mitGewicht.length >= 5, 'ohne Gewichte prüft diese Schleife nichts');
+  for (const a of mitGewicht) {
+    assert.equal(a.gewichtQuelle, 'rechnung', `${a.sku}: Gewicht ohne Quelle`);
+    assert.ok(a.gewichtKg > 0, `${a.sku}: Gewicht muss positiv sein`);
+  }
+  const ohne = katalogDatei.artikel.filter((a) => a.gewichtKg === undefined);
+  assert.ok(ohne.every((a) => a.gewichtQuelle === undefined),
+    'ein Artikel ohne Gewicht darf auch keine Gewichtsquelle tragen');
+});

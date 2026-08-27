@@ -387,6 +387,11 @@ function artikelSeite(a, katalog, befund, seiten, verweis) {
   <div><span class="k">Brutto</span><span class="w">${euro(a.vkBrutto)} €</span><span class="e">inkl. 20 % USt</span></div>
   <div><span class="k">Artikelnummer</span><span class="w">${esc(a.lieferantenArtikelnummer)}</span><span class="e">Lieferantennummer</span></div>
   <div><span class="k">Preisstand</span><span class="w">${esc(a.preisStand)}</span><span class="e">gültig bis zur nächsten Liste</span></div>
+  <div><span class="k">Gewicht</span><span class="w">${typeof a.gewichtKg === 'number'
+    ? `${String(a.gewichtKg).replace('.', ',')} kg`
+    : '—'}</span><span class="e">${typeof a.gewichtKg === 'number'
+    ? `je ${esc(EINHEITEN[a.einheit] ?? a.einheit)}, aus dem Lieferschein`
+    : 'liegt uns nicht belegt vor'}</span></div>
 </div>`);
 
   if (a.vkNetto !== null) {

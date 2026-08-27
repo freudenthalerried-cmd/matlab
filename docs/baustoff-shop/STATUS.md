@@ -264,6 +264,19 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > `lieferanten.json`.
 > [`fracht-nur-bei-zustellung.md`](./fracht-nur-bei-zustellung.md).
 >
+> **Sieben Gewichte mit bestandener Summenprobe** (27.08.):
+> `werkzeuge/gewichte.py` liest die Positionsgewichte und **verwendet nur
+> Belege ohne Rest** — vier von vierzehn. Ergebnis: 7 Artikel mit Gewicht,
+> **null Widersprüche** zwischen Belegen. Der Befund darin ist größer als die
+> Zahl: **Die ganze Kanalgruppe ist leicht** (Rohr 1,73 kg/m, Bogen 0,285 kg)
+> — eine typische Kanalbestellung wiegt rund 40 kg und passt in zwei Pakete.
+> Und Kanal ist die Gruppe mit dem größten Preisvorteil (81–84 % unter
+> Liste). Im Shop stehen Gewicht je Artikel und Gesamtgewicht im Warenkorb,
+> **samt Zahl der Positionen ohne belegtes Gewicht**. Zehn Belege tragen
+> einen ungeklärten Rest; zwei davon entsprechen genau dem Gewicht der ersten
+> Position — als Beobachtung notiert, **nicht** als Regel.
+> [`gewichte-mit-summenprobe.md`](./gewichte-mit-summenprobe.md).
+>
 > **Herstellerverweise: drei Artikel zurückgewonnen** (27.08.): `marke()`
 > prüfte `startsWith`, die Marke musste ganz vorn stehen. Drei
 > Schiedel-Artikel trugen deshalb „kein Herstellermerkblatt vorhanden",
@@ -451,6 +464,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `domainwahl.md` | **Die Firma und ihre Domain gibt es schon** — Freudenthaler Bau GmbH, FN 347938z, Baustoffhandel eingetragen, `freudenthaler-bau.at` in Betrieb; Empfehlung daher `shop.freudenthaler-bau.at` plus `baustoffe-muehlviertel.at` als Weiterleitung. Zwei Korrekturen: Ried in der Riedmark liegt im **Mühlviertel**, nicht im Innviertel; der Entitätswert ist bereits aufgebaut und wäre bei einer neuen Domain verloren |
 | `pruefung-der-testfaelle.md` | **Grüne Tests sind eine Aussage über die Testfälle, nicht über den Code** — elf hohle Schleifen gefunden und entschärft |
 | `shop-mit-warenkorb.md` | **Was an einem Shop hochwertig ist, sind vier Dinge, die ein Kunde tut** — Suche, Filter, Warenkorb, Kasse; die Suche musste Deutsch lernen (Kompositum-Treffer), der Warenkorb sagt selbst, wenn die Fracht die Ware übersteigt, und die neue Shopprobe fand die fehlende Zeichensatzangabe |
+| `gewichte-mit-summenprobe.md` | **Keine Zahl ohne bestandene Summenprobe** — 7 Artikelgewichte aus vier resterfreien Belegen, null Widersprüche. Die Kanalgruppe wiegt so wenig, dass sie ins Paket passt, und hat zugleich den größten Preisvorteil |
 | `fracht-nur-bei-zustellung.md` | **Elf von fünfzehn Belegen lauten „Abholung Kunde"** — die Aussage „Fracht auf jedem Beleg" ist widerrufen. Dazu: Das Gewicht stand die ganze Zeit auf den Rechnungen (Auslesung noch fehlerhaft), und 118,50 € Paletten- und Folierungskosten fehlen im Rechenkern — mehr als die Fracht selbst |
 | `paketversand-kleine-einheiten.md` | **Ein 25-kg-Sack ginge für rund 21 € statt 75,50 €** — die Frachtschwelle fiele von 332 auf rund 95 €. Drei Vorbehalte: Zahlen nur als Hinweis, kein Gewicht im Katalog, und im Streckengeschäft hat niemand das Paket in der Hand |
 | `gate24-ausfuehrbar.md` | **„Umzusetzen ist vorerst nichts" ist die häufigste Art, wie eine Regel verschwindet** — Gate 24 im Rechenkern, die Sperre vor dem Preisabgleich, weggelassene Artikel werden beim Bauen genannt |

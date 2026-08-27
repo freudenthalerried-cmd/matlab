@@ -344,6 +344,9 @@ export function oeffentlicherArtikel(a) {
     amListendeckel: !!a.amListendeckel,
     preisStand: a.preisStand ?? null,
     lieferantenArtikelnummer: a.lieferantenArtikelnummer ?? null,
+    // Das Gewicht steht nur dort, wo es aus einem Beleg mit bestandener
+    // Gewichtssumme stammt. `null` heißt **unbekannt**, nicht „leicht".
+    gewichtKg: typeof a.gewichtKg === 'number' ? a.gewichtKg : null,
   };
 }
 
@@ -407,6 +410,18 @@ export function kundenWarenkorb(zeilen, { artikel, lieferanten }, ust = 0.2) {
     });
   }
 
+  // Das Gewicht der Bestellung, soweit es bekannt ist — und wie viele
+  // Positionen es nicht sind. Eine Summe über Artikel mit unbekanntem
+  // Gewicht wäre eine Untergrenze, die wie eine Summe aussieht.
+  let gewichtKg = 0;
+  let ohneGewicht = 0;
+  for (const t of teillieferungen) {
+    for (const p of t.positionen) {
+      if (typeof p.gewichtKg === 'number') gewichtKg += p.gewichtKg * p.menge;
+      else ohneGewicht += 1;
+    }
+  }
+
   const warenwertNetto = runde(teillieferungen.reduce((s, t) => s + t.warenwertNetto, 0));
   const frachtNetto = runde(teillieferungen.reduce((s, t) => s + t.frachtNetto, 0));
   const nettoGesamt = runde(warenwertNetto + frachtNetto);
@@ -418,6 +433,8 @@ export function kundenWarenkorb(zeilen, { artikel, lieferanten }, ust = 0.2) {
     stueck: korbAnzahl(zeilen),
     warenwertNetto,
     frachtNetto,
+    gewichtKg: runde(gewichtKg),
+    positionenOhneGewicht: ohneGewicht,
     nettoGesamt,
     ustBetrag,
     bruttoGesamt: runde(nettoGesamt + ustBetrag),

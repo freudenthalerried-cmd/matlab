@@ -263,7 +263,9 @@
       "sperrgutQuelle": "eingeschaetzt",
       "gtin": null,
       "preisStand": "2026-06-09",
-      "ekQuelle": "bestaetigt"
+      "ekQuelle": "bestaetigt",
+      "gewichtKg": 0.6433,
+      "gewichtQuelle": "rechnung"
     },
     {
       "sku": "POS-10115",
@@ -276,7 +278,9 @@
       "sperrgutQuelle": "eingeschaetzt",
       "gtin": null,
       "preisStand": "2026-06-09",
-      "ekQuelle": "bestaetigt"
+      "ekQuelle": "bestaetigt",
+      "gewichtKg": 0.285,
+      "gewichtQuelle": "rechnung"
     },
     {
       "sku": "POS-10116",
@@ -289,7 +293,9 @@
       "sperrgutQuelle": "eingeschaetzt",
       "gtin": null,
       "preisStand": "2026-06-09",
-      "ekQuelle": "bestaetigt"
+      "ekQuelle": "bestaetigt",
+      "gewichtKg": 0.285,
+      "gewichtQuelle": "rechnung"
     },
     {
       "sku": "POS-10095",
@@ -302,7 +308,9 @@
       "sperrgutQuelle": "eingeschaetzt",
       "gtin": null,
       "preisStand": "2026-06-09",
-      "ekQuelle": "bestaetigt"
+      "ekQuelle": "bestaetigt",
+      "gewichtKg": 1.7333,
+      "gewichtQuelle": "rechnung"
     },
     {
       "sku": "POS-11133",
@@ -354,7 +362,9 @@
       "sperrgutQuelle": "eingeschaetzt",
       "gtin": null,
       "preisStand": "2026-07-13",
-      "ekQuelle": "bestaetigt"
+      "ekQuelle": "bestaetigt",
+      "gewichtKg": 24.0,
+      "gewichtQuelle": "rechnung"
     },
     {
       "sku": "POS-29754",
@@ -471,7 +481,9 @@
       "sperrgutQuelle": "eingeschaetzt",
       "gtin": null,
       "preisStand": "2026-08-12",
-      "ekQuelle": "bestaetigt"
+      "ekQuelle": "bestaetigt",
+      "gewichtKg": 1.0,
+      "gewichtQuelle": "rechnung"
     },
     {
       "sku": "POS-13728",
@@ -484,7 +496,9 @@
       "sperrgutQuelle": "eingeschaetzt",
       "gtin": null,
       "preisStand": "2026-08-12",
-      "ekQuelle": "bestaetigt"
+      "ekQuelle": "bestaetigt",
+      "gewichtKg": 1.0,
+      "gewichtQuelle": "rechnung"
     },
     {
       "sku": "POS-11082",
@@ -603,5 +617,6 @@
       "preisStand": "2026-08-12",
       "ekQuelle": "bestaetigt"
     }
-  ]
+  ],
+  "_gewichtHinweis": "gewichtKg steht bei den Artikeln, deren Positionsgewicht aus einer Rechnung stammt, deren Gewichtssumme gegen das ausgewiesene Gesamtgewicht aufgeht (werkzeuge/gewichte.py). Wo das Feld fehlt, ist das Gewicht UNBEKANNT und wird nicht geschaetzt: Vier von vierzehn Belegen gehen ohne Rest auf, die uebrigen tragen einen ungeklaerten Rest. Siehe docs/baustoff-shop/gewichte-mit-summenprobe.md."
 }

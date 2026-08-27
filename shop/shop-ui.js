@@ -311,8 +311,17 @@
       });
 
       var tafel = el('div', 'preistafel');
+      // Das Gewicht steht dabei, weil es entscheidet, wie geliefert wird —
+      // und weil ein Kunde wissen muss, was auf seine Baustelle kommt. Wo es
+      // fehlt, steht das dort, statt eine Untergrenze als Summe auszugeben.
+      var gewichtText = rechnung.positionenOhneGewicht
+        ? (rechnung.gewichtKg > 0 ? 'mindestens, ' : '')
+          + rechnung.positionenOhneGewicht + ' Position'
+          + (rechnung.positionenOhneGewicht === 1 ? '' : 'en') + ' ohne belegtes Gewicht'
+        : 'aus den Lieferscheinen';
       [['Warenwert', eur(rechnung.warenwertNetto), 'netto'],
        ['Fracht', eur(rechnung.frachtNetto), rechnung.teillieferungen[0].frachtGrund],
+       ['Gewicht', String(rechnung.gewichtKg).replace('.', ',') + ' kg', gewichtText],
        ['Netto gesamt', eur(rechnung.nettoGesamt), 'zuzüglich 20 % USt'],
        ['Brutto', eur(rechnung.bruttoGesamt), 'inkl. ' + eur(rechnung.ustBetrag) + ' USt']
       ].forEach(function (r) {
