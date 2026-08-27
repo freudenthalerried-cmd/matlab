@@ -66,9 +66,31 @@ const HERSTELLER = {
   SIK: { name: 'Schiedel Österreich', url: 'https://www.schiedel.at/' },
   Isover: { name: 'Isover Österreich', url: 'https://www.isover.at/' },
   Soudal: { name: 'Soudal', url: 'https://www.soudal.com/' },
+  // Produktlinien statt Firmennamen. Beleg dafür, dass „Absolut" und „SIH"
+  // Schiedel-Linien sind: das Konditionenblatt des Lagerhauses führt sie
+  // unter „Schiedel Absolut, SIH" (`lagerhaus-rabatte-gelesen.md`, Seite 18).
+  Absolut: { name: 'Schiedel Österreich', url: 'https://www.schiedel.at/' },
+  SIH: { name: 'Schiedel Österreich', url: 'https://www.schiedel.at/' },
 };
 
-const marke = (bez) => Object.keys(HERSTELLER).find((m) => bez.startsWith(m)) ?? null;
+/**
+ * Die Marke aus der Artikelbezeichnung.
+ *
+ * Der erste Wurf prüfte `bez.startsWith(m)` — die Marke musste ganz vorn
+ * stehen. Bei Lieferantenbezeichnungen steht sie das oft nicht:
+ * „Mantelstein MSTS EZ 16-18 **SIKM**", „Regenhaube mit Sicherungsseil 180
+ * **Absolut & SIH**", „Thermo-Trennstein 12-18 EZ **Absolut**". Drei
+ * Schiedel-Artikel trugen deshalb den Satz „Für diesen Artikel liegt uns
+ * kein Herstellermerkblatt vor", obwohl der Hersteller in der Bezeichnung
+ * steht.
+ *
+ * Gesucht wird jetzt überall im Text, aber nur als **ganzes Wort** — sonst
+ * fände „SIK" das Wort „Sikkativ" und „Absolut" das Adverb. Die längste
+ * Marke gewinnt, damit „SIKM" nicht von „SIK" verdeckt wird.
+ */
+const marke = (bez) => Object.keys(HERSTELLER)
+  .sort((a, b) => b.length - a.length)
+  .find((m) => new RegExp(`(?<![\\p{L}\\d])${m}(?![\\p{L}\\d])`, 'u').test(bez)) ?? null;
 
 /* ------------------------------------------------------------------ *
  * Inhalte einlesen
@@ -1057,4 +1079,4 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   main();
 }
 
-export { loeseVerweis, loeseVerwandt, lesInhalte };
+export { loeseVerweis, loeseVerwandt, lesInhalte, marke, HERSTELLER };

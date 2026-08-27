@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
-import { loeseVerweis, loeseVerwandt } from '../bin/website.mjs';
+import { loeseVerweis, loeseVerwandt, marke, HERSTELLER } from '../bin/website.mjs';
 import { lesKopf } from '../src/markdown.js';
 
 const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
@@ -159,4 +159,42 @@ test('Eine vollständige Datenlage erzeugt ein Impressum ohne Marken', async () 
 
   assert.equal(i.vollstaendig, true);
   assert.doesNotMatch(i.text, /FEHLT/);
+});
+
+/* ------------------------------------------------------------------ *
+ * Herstellerzuordnung
+ * ------------------------------------------------------------------ */
+
+test('die Marke wird überall in der Bezeichnung gefunden, nicht nur am Anfang', () => {
+  // Der erste Wurf prüfte startsWith. Drei Schiedel-Artikel trugen deshalb
+  // „kein Herstellermerkblatt vorhanden", obwohl der Hersteller dasteht.
+  assert.equal(marke('Capatect Putzgrund weiß 25 kg'), 'Capatect');
+  assert.equal(marke('Mantelstein MSTS EZ 16-18 SIKM'), 'SIKM');
+  assert.equal(marke('Thermo-Trennstein 12-18 EZ Absolut monolithisch weiß'), 'Absolut');
+  assert.equal(marke('Regenhaube mit Sicherungsseil 180 Absolut & SIH'), 'Absolut');
+});
+
+test('die längste Marke gewinnt, sonst verdeckt SIK das SIKM', () => {
+  assert.equal(marke('SIKM Rohr 133cm gedämmt 18'), 'SIKM');
+  assert.equal(marke('SIK Zuluftplatte EZ 16-18 inkl. Befestigungsset'), 'SIK');
+  assert.equal(HERSTELLER[marke('SIKM Rohr 133cm gedämmt 18')].url, HERSTELLER.SIK.url,
+    'beide zeigen ohnehin auf Schiedel — die Zuordnung muss trotzdem stimmen');
+});
+
+test('eine Marke wird nur als ganzes Wort erkannt', () => {
+  // Ohne Wortgrenze fände „SIK" das Wort „Sikkativ" und „Absolut" das Adverb.
+  assert.equal(marke('Sikkativ für Ölfarben'), null);
+  assert.equal(marke('absolut dichtes Klebeband'), null, 'klein geschrieben ist es ein Adverb');
+  assert.equal(marke('Baumithaltiger Ersatz'), null, 'kein Treffer mitten im Wort');
+});
+
+test('jeder Artikel mit Marke bekommt einen Herstellerverweis', () => {
+  const katalog = JSON.parse(readFileSync(pfad('../data/katalog-baustoff.json'), 'utf8'));
+  assert.ok(katalog.artikel.length >= 40);
+  const mitMarke = katalog.artikel.filter((a) => marke(a.bezeichnung));
+  assert.ok(mitMarke.length >= 24, `nur ${mitMarke.length} Artikel mit erkannter Marke`);
+  for (const a of mitMarke) {
+    const h = HERSTELLER[marke(a.bezeichnung)];
+    assert.ok(h?.url?.startsWith('https://'), `${a.sku}: Hersteller ohne Adresse`);
+  }
 });

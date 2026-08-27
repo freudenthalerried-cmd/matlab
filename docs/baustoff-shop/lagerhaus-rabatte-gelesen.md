@@ -151,27 +151,43 @@ Kein neues Gate, aber ein Kandidat, aufgeschrieben statt entschieden:
 > was der Shop nicht rechnen kann, kann er nicht anbieten, und ein Preis,
 > der ein Telefonat voraussetzt, ist im Streckenhandel kein Preis.
 
-Er wird **nicht** jetzt entschieden, weil er eine Folge hätte, die noch
-nicht abschätzbar ist: Führte Poschacher dieselbe Ware ebenfalls nur auf
-Anfrage, fiele die halbe Dämmgruppe aus dem Sortiment. Bei Poschacher
-stehen aber Einkaufspreise auf den Rechnungen — die Frage stellt sich
-dort nicht. Der Kandidat betrifft also nur den möglichen zweiten Weg und
-gehört erst entschieden, wenn dieser Weg entschieden ist.
+~~Er wird **nicht** jetzt entschieden, weil er eine Folge hätte, die noch
+nicht abschätzbar ist.~~ **Am selben Tag entschieden**, nachdem drei
+weitere Seiten gelesen waren: Der Vorbehalt lautete, die Folge sei
+unabsehbar, falls Poschacher dieselbe Ware ebenfalls nur auf Anfrage
+führte — bei Poschacher stehen aber Einkaufspreise auf den Rechnungen,
+dort stellt sich die Frage nicht. Nötig macht die Regel ein Befund von
+Seite 4: Bei Quarzolith fällt **dasselbe Produkt** auf beide Seiten, je
+nach Gebinde (Sackware 20 %, dieselbe Ware lose „ANFRAGE"). Wer eine
+Warengruppe pauschal übernimmt, übernimmt unkalkulierbare Artikel mit.
+Jetzt **Gate 24**, siehe
+[`lagerhaus-drei-seiten-mehr.md`](./lagerhaus-drei-seiten-mehr.md).
 
 ## Was fehlt
 
 | | |
 |---|---|
-| **Werkspreislisten** | die Bezugsgröße jedes Rabattsatzes — liegen nicht vor |
-| Quarzolith, Schachtringe, fünf weitere Ziegelseiten | nicht gelesen; das Bild ist aus **zehn** Seiten gezogen, nicht aus 72 |
+| **Werkspreislisten** | die Bezugsgröße jedes Rabattsatzes — liegen nicht vor; auf Seite 22 ausdrücklich bestätigt („Preise laut Werkspreisliste") |
+| ~~Quarzolith, Schachtringe~~ | **am 27.08. gelesen** — Quarzolith Sackware 20 %, Siloware ANFRAGE; Schachtringe 53 %; Kanalrohre 82 % durchgehend |
+| fünf weitere Ziegelseiten | nicht gelesen; das Bild ist jetzt aus **dreizehn** Seiten gezogen, nicht aus 72 |
 | Konditionen 2026 | im Postfach nicht auffindbar |
 | Streckenkonditionen | „lt. Industriepreisliste" — liegt nicht vor |
 
-**Die zehn gelesenen Seiten sind eine Stichprobe.** Sie reichen für die
-vorab gestellte Frage und nicht für eine Sortimentsentscheidung — was
-dieser Bericht zweimal am eigenen Leib gezeigt hat: Vier Seiten
-genügten für einen falschen Schluss, neun für einen zweiten. Wer daraus
-einen Katalog baut, baut ihn auf zehn von zweiundsiebzig Seiten.
+**Die inzwischen dreizehn gelesenen Seiten sind eine Stichprobe** — aber
+keine blinde mehr: Das Inhaltsverzeichnis auf Seite 2 war von Anfang an
+als Text lesbar und nennt für die sieben Warengruppen des Shops **21 von
+72 Seiten**. Der Rest ist Küche, Tür, Fenster und Garten.
+Ursprünglich stand hier:
+
+> **Die zehn gelesenen Seiten sind eine Stichprobe.** Sie reichen für die
+> vorab gestellte Frage und nicht für eine Sortimentsentscheidung — was
+> dieser Bericht zweimal am eigenen Leib gezeigt hat: Vier Seiten
+> genügten für einen falschen Schluss, neun für einen zweiten. Wer daraus
+> einen Katalog baut, baut ihn auf zehn von zweiundsiebzig Seiten.
+
+Das gilt unverändert, nur mit dreizehn statt zehn — und mit dem Zusatz,
+dass die dreizehnte Seite einen dritten falschen Schluss hergegeben
+hätte, wenn ihn jemand gezogen hätte.
 
 Die gerenderten Seiten liegen in `preise/lagerhaus-seiten/`, der
 ausgelesene Text in `preise/lagerhaus-konditionen-2025.txt` — beides von
