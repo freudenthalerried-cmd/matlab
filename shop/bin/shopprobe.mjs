@@ -35,6 +35,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const hier = fileURLToPath(new URL('.', import.meta.url));
 const shopDatei = join(hier, '..', 'ausgabe', 'website.html');
+const siteOrdner = join(hier, '..', 'ausgabe', 'site');
 const ANFANG = 'SHOPPROBE-ANFANG';
 const ENDE = 'SHOPPROBE-ENDE';
 
@@ -209,14 +210,43 @@ const SZENARIEN = [
   },
 ];
 
+/**
+ * Szenarien, die die Seite in einem **schmalen Rahmen** messen.
+ *
+ * Warum eigens: Headless-Chromium erzwingt in dieser Umgebung eine
+ * Fensterbreite von mindestens 500 px. Ein Bildschirmfoto mit
+ * `--window-size=390` zeigt deshalb einen 500 px breiten Aufbau, von dem
+ * 390 px abgeschnitten sind — es sieht aus wie ein Umbruchfehler und ist
+ * keiner, und einen echten Umbruchfehler zeigt es nicht.
+ *
+ * Ein `<iframe width="390">` dagegen hat einen echten eigenen Viewport.
+ * Darin gemessen wird, was zählt: **ob die Seite seitwärts scrollt.**
+ * `scrollTo(9999, 0)` und danach `scrollX` ist der einzige Test, der nicht
+ * lügt — `scrollWidth` allein zählt auch Inhalt, der in einem eigenen
+ * Scrollkasten liegt und dort hingehört (Tabellen in `.scroll`).
+ *
+ * Gefunden hat diese Probe einen echten Fehler: „Geschäftsbedingungen" ist
+ * als Überschrift 437 px breit; die AGB-Seite scrollte 82 px seitwärts.
+ */
+const RAHMENSZENARIEN = [
+  { name: 'Startseite scrollt bei 390 px nicht seitwärts', kennung: 'index' },
+  { name: 'AGB-Seite scrollt bei 390 px nicht seitwärts', kennung: 'rechtliches/agb' },
+  { name: 'Artikelseite scrollt bei 390 px nicht seitwärts', kennung: 'artikel/POS-11082' },
+  { name: 'Gruppenseite scrollt bei 390 px nicht seitwärts', kennung: 'gruppe/wdvs' },
+  {
+    name: 'Wissensseite mit langem Titel scrollt bei 390 px nicht seitwärts',
+    kennung: 'wissen/perimeterdaemmung-und-grundmauerschutz',
+  },
+];
+
 const chromium = findeChromium();
 if (!chromium) {
   console.error('Kein Chromium gefunden (PLAYWRIGHT_BROWSERS_PATH oder /opt/pw-browsers).');
   console.error('Die Shopprobe ist damit NICHT gelaufen.');
   process.exit(2);
 }
-if (!existsSync(shopDatei)) {
-  console.error('ausgabe/website.html fehlt — zuerst npm run website.');
+if (!existsSync(shopDatei) || !existsSync(siteOrdner)) {
+  console.error('ausgabe/website.html oder ausgabe/site/ fehlt — zuerst npm run website.');
   process.exit(2);
 }
 
@@ -287,12 +317,66 @@ async function laufe(s, i) {
   return { s, probleme, gerendert };
 }
 
+/** Misst eine Seite in einem 390-px-Rahmen. */
+async function laufeRahmen(r, i) {
+  const wrapper = join(ablage, `rahmen-${i}.html`);
+  writeFileSync(wrapper, `<!doctype html><meta charset="utf-8">
+<style>html,body{margin:0}iframe{width:390px;height:2600px;border:0;display:block}</style>
+<iframe id="f" src="${pathToFileURL(join(siteOrdner, r.kennung + '.html')).href}"></iframe>
+<script>
+setTimeout(function () {
+  var f = document.getElementById('f'), aus;
+  try {
+    var d = f.contentDocument, w = f.contentWindow;
+    w.scrollTo(9999, 0);
+    // Die Überschrift wird mitgemeldet: Eine Messung an einer leeren Seite
+    // ergibt immer „scrollX=0" und sähe wie ein bestandener Test aus. Genau
+    // das ist beim ersten Anlauf passiert — der Rahmen zeigte die
+    // Einzeldateifassung, deren Inhalt im iframe nicht aufgebaut wurde.
+    var h1 = d.querySelector('h1');
+    aus = 'scrollX=' + Math.round(w.scrollX) + ' breite=' + d.documentElement.scrollWidth
+        + '/' + d.documentElement.clientWidth + ' h1=' + (h1 ? h1.textContent.trim().slice(0, 40) : 'KEINE');
+  } catch (e) { aus = 'ZUGRIFF ' + e.message; }
+  var o = document.createElement('div');
+  o.textContent = '${ANFANG.slice(0, 5)}' + '${ANFANG.slice(5)}' + aus + '${ENDE.slice(0, 5)}' + '${ENDE.slice(5)}';
+  document.documentElement.append(o);
+}, 1200);
+</script>`, 'utf8');
+
+  let dom = '';
+  try {
+    const { stdout } = await fuehreAus(chromium, [
+      '--no-sandbox', '--headless', '--disable-gpu', '--allow-file-access-from-files',
+      '--virtual-time-budget=5000', '--dump-dom', pathToFileURL(wrapper).href,
+    ], { encoding: 'utf8', maxBuffer: 128 * 1024 * 1024, timeout: 90_000 });
+    dom = stdout ?? '';
+  } catch (e) { dom = e.stdout ?? ''; }
+
+  const von = dom.indexOf(ANFANG);
+  const bis = dom.indexOf(ENDE, von);
+  const gerendert = von >= 0 && bis > von ? dom.slice(von + ANFANG.length, bis) : null;
+
+  const probleme = [];
+  if (gerendert === null) probleme.push('die Messung ist nicht gelaufen — kein Marker in der Seite');
+  else if (gerendert.startsWith('ZUGRIFF')) probleme.push(gerendert);
+  else {
+    if (/h1=KEINE/.test(gerendert)) probleme.push(`die Seite war leer: ${gerendert}`);
+    else if (!/scrollX=0\b/.test(gerendert)) probleme.push(`die Seite scrollt seitwärts: ${gerendert}`);
+  }
+  return { s: r, probleme, gerendert };
+}
+
 try {
   const ergebnisse = [];
   for (let start = 0; start < SZENARIEN.length; start += GLEICHZEITIG) {
     const teil = SZENARIEN.slice(start, start + GLEICHZEITIG);
     ergebnisse.push(...await Promise.all(teil.map((s, k) => laufe(s, start + k))));
   }
+  for (let start = 0; start < RAHMENSZENARIEN.length; start += GLEICHZEITIG) {
+    const teil = RAHMENSZENARIEN.slice(start, start + GLEICHZEITIG);
+    ergebnisse.push(...await Promise.all(teil.map((r, k) => laufeRahmen(r, start + k))));
+  }
+
   for (const { s, probleme, gerendert } of ergebnisse) {
     if (probleme.length) {
       fehlgeschlagen++;
@@ -307,5 +391,5 @@ try {
   rmSync(ablage, { recursive: true, force: true });
 }
 
-console.log(`\n${SZENARIEN.length} Szenarien, ${fehlgeschlagen} fehlgeschlagen.`);
+console.log(`\n${SZENARIEN.length + RAHMENSZENARIEN.length} Szenarien (davon ${RAHMENSZENARIEN.length} im 390-px-Rahmen), ${fehlgeschlagen} fehlgeschlagen.`);
 process.exit(fehlgeschlagen ? 1 : 0);

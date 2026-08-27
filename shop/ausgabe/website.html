@@ -21,6 +21,21 @@
 body{margin:0;background:var(--grund);color:var(--tinte);font-family:var(--text);font-size:16px;
 line-height:1.6;-webkit-font-smoothing:antialiased}
 .huelle{max-width:64rem;margin:0 auto;padding:1.5rem 1.25rem 4rem}
+/* Deutsche Komposita in großen Überschriften sprengen schmale Anzeigen:
+   „Geschäftsbedingungen" ist bei 390 px Breite 437 px breit, und die
+   AGB-Seite scrollte deshalb 82 px seitwärts. Die Seiten tragen
+   lang="de-AT", ein Browser mit deutschem Trennwörterbuch trennt also
+   sauber. Was den Fehler tatsächlich behebt, ist die zweite Regel:
+   overflow-wrap auf body. Die Gegenprobe zeigt es — nur die
+   Überschriftenregel zu entfernen ändert nichts, beide zu entfernen bringt
+   die 82 px zurück. hyphens:auto bleibt trotzdem stehen, weil es auf einem
+   echten Telefon den schöneren Umbruch macht; im Prüf-Chromium fehlt das
+   Wörterbuch und es tut nichts.
+   Gefunden durch Messung in einem 390-px-Rahmen, nicht durch Hinsehen —
+   Headless-Chromium erzwingt 500 px Fensterbreite und schneidet das
+   Bildschirmfoto einfach ab. */
+h1,h2,h3,.kachel .t,.karte .t,.kz-t{overflow-wrap:break-word;hyphens:auto}
+body{overflow-wrap:break-word}
 h1,h2,h3,h4{font-family:var(--schmal);font-weight:600;margin:2rem 0 .6rem;text-wrap:balance;line-height:1.15}
 h1{font-size:clamp(2rem,5vw,3rem);text-transform:uppercase;margin-top:.5rem}
 h2{font-size:clamp(1.35rem,3vw,1.8rem);text-transform:uppercase;border-bottom:2px solid var(--linie-stark);padding-bottom:.25rem}
