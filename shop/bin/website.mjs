@@ -29,6 +29,7 @@ import { dirname, join, resolve } from 'node:path';
 import { ladeBaustoffkatalog, katalogbefund, ZIELMARGE } from '../src/baustoffkatalog.js';
 import { ZAHLWEGE } from '../src/zahlung.js';
 import { pruefeSeiten } from '../src/interna.js';
+import { artikelBild, gruppenBild } from '../src/bilder.js';
 import { lesKopf, alsHtml, alsText, alsListe, esc } from '../src/markdown.js';
 import {
   erzeugeImpressum, pruefeBetreiberdaten, AGB_GLIEDERUNG, ZAHLUNGSBEDINGUNGEN,
@@ -170,7 +171,16 @@ th{font-family:var(--schmal);text-transform:uppercase;font-size:.85rem;backgroun
 tbody tr:last-child td{border-bottom:none}
 code{font-family:var(--zahl);font-size:.86em;background:var(--flaeche-2);padding:.05em .3em;border-radius:2px}
 hr{border:none;border-top:1px solid var(--linie);margin:2rem 0}
-.raster{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:1px;background:var(--linie);border:1px solid var(--linie);margin-bottom:1.5rem}
+.raster{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:1px;background:var(--flaeche);border:1px solid var(--linie);margin-bottom:1.5rem}
+.raster>*{outline:1px solid var(--linie)}
+.karte .bild{display:block;background:var(--flaeche-2);margin:-1rem -1.1rem .7rem;padding:.7rem .6rem;border-bottom:1px solid var(--linie)}
+svg.schema{display:block;width:100%;height:auto;max-height:7.5rem}
+svg.schema.gruppe{max-height:5.5rem}
+.kachel .bild{display:block;background:var(--flaeche-2);margin:-1rem -1.1rem .6rem;padding:.6rem;border-bottom:1px solid var(--linie)}
+.artikelbild{background:var(--grund);border:1px solid var(--linie);padding:1.4rem;margin:0 0 1.5rem;display:flex;justify-content:center}
+.artikelbild svg.schema{max-height:12rem;max-width:22rem}
+.mehr{font-family:var(--schmal);text-transform:uppercase;letter-spacing:.06em;font-size:.82rem}
+
 .karte{background:var(--flaeche);padding:.9rem 1rem;display:flex;flex-direction:column;gap:.4rem;text-decoration:none;color:inherit}
 .karte:hover{background:var(--flaeche-2)}
 .karte .nr{font-family:var(--zahl);font-size:.68rem;color:var(--gedaempft)}
@@ -181,7 +191,8 @@ hr{border:none;border-top:1px solid var(--linie);margin:2rem 0}
 .marker.vorteil{background:var(--gruen-weich);color:var(--gruen)}
 .marker.beipack{background:var(--ziegel-weich);color:var(--ziegel)}
 .marker.sperrig{background:var(--flaeche-2);color:var(--tinte-2)}
-.kacheln{display:grid;grid-template-columns:repeat(auto-fill,minmax(17rem,1fr));gap:1px;background:var(--linie);border:1px solid var(--linie);margin-bottom:1.5rem}
+.kacheln{display:grid;grid-template-columns:repeat(auto-fill,minmax(17rem,1fr));gap:1px;background:var(--flaeche);border:1px solid var(--linie);margin-bottom:1.5rem}
+.kacheln>*{outline:1px solid var(--linie)}
 .kachel{background:var(--flaeche);padding:1rem 1.1rem;text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:.35rem}
 .kachel:hover{background:var(--flaeche-2)}
 .kachel .k{font-family:var(--schmal);text-transform:uppercase;font-size:.78rem;letter-spacing:.06em;color:var(--ocker)}
@@ -189,6 +200,7 @@ hr{border:none;border-top:1px solid var(--linie);margin:2rem 0}
 .kachel .b{font-size:.88rem;color:var(--gedaempft)}
 .preistafel{display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:1px;background:var(--linie);border:1px solid var(--linie);margin:1.2rem 0}
 .preistafel>div{background:var(--flaeche);padding:.9rem 1rem}
+.preistafel .k,.preistafel .w,.preistafel .e{display:block}
 .preistafel .k{font-family:var(--schmal);text-transform:uppercase;font-size:.78rem;letter-spacing:.05em;color:var(--ocker)}
 .preistafel .w{font-family:var(--schmal);font-size:1.7rem;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
 .preistafel .e{font-size:.82rem;color:var(--gedaempft)}
@@ -217,14 +229,24 @@ footer a{color:var(--gedaempft)}
  * Eine erfundene Klausel wäre hier der teuerste Fehler des ganzen Vorhabens:
  * Sie sieht aus wie Recht, ist keines, und man merkt es erst im Streitfall.
  */
+/**
+ * Die Kopfleiste führt das Sortiment, sonst nichts.
+ *
+ * Vorher standen dort vier von sieben Warengruppen, dazwischen „Wissen"
+ * und am Ende „Rechtliches". Ein Baustoffhändler, dessen Hauptnavigation
+ * zu einem Drittel aus Aufsätzen besteht, sieht aus wie ein Blog mit
+ * Preisliste. Wissen und Rechtliches stehen im Fuß und auf der Startseite
+ * — erreichbar, aber nicht im Weg.
+ */
 const NAV = [
   ['gruppe/wdvs', 'WDVS'],
   ['gruppe/daemmung', 'Dämmung'],
+  ['gruppe/mauerwerk', 'Mauerwerk'],
+  ['gruppe/moertel', 'Mörtel'],
   ['gruppe/kamin', 'Kamin'],
   ['gruppe/kanal', 'Kanal'],
-  ['wissen/index', 'Wissen'],
+  ['gruppe/zubehoer', 'Zubehör'],
   ['lieferung', 'Lieferung'],
-  ['rechtliches/index', 'Rechtliches'],
 ];
 
 /* ------------------------------------------------------------------ *
@@ -240,6 +262,7 @@ function artikelKarte(a, befund, verweis) {
   if (abstand !== null && abstand >= 5) marker.push(`<span class="marker vorteil">${abstand} % unter Liste</span>`);
   if (beipack) marker.push('<span class="marker beipack">Beipack</span>');
   return `<a class="karte" href="${verweis(`artikel/${a.sku}`)}">
+  <span class="bild">${artikelBild(a)}</span>
   <span class="nr">${esc(a.lieferantenArtikelnummer)}</span>
   <span class="t">${esc(a.bezeichnung)}</span>
   ${marker.join('')}
@@ -261,6 +284,9 @@ function artikelSeite(a, katalog, befund, seiten, verweis) {
   const teile = [];
   teile.push(`<p class="krume"><a href="${verweis('index')}">Start</a> › <a href="${verweis(gruppenSeite ? gruppenSeite.id : 'index')}">${esc(a.gruppe)}</a></p>`);
   teile.push(`<h1>${esc(a.bezeichnung)}</h1>`);
+  // Die Zeichnung steht vor den Zahlen: Wer auf einer Artikelseite landet,
+  // will zuerst wissen, ob er beim richtigen Bauteil ist.
+  teile.push(`<div class="artikelbild">${artikelBild(a)}</div>`);
 
   const marker = [];
   if (abstand !== null && abstand >= 5) marker.push(`<span class="marker vorteil">${abstand} % unter Listenpreis</span>`);
@@ -368,13 +394,26 @@ function inhaltsSeite(seite, katalog, befund, seiten, verweis) {
       return id ? verweis(id) : null;
     },
   });
-  teile.push(koerper);
+  const warenraster = gruppenArtikel.length
+    ? `<h2>${gruppenArtikel.length} Artikel in dieser Gruppe</h2>\n<div class="raster">${gruppenArtikel
+        .sort((a, b) => a.bezeichnung.localeCompare(b.bezeichnung, 'de'))
+        .map((a) => artikelKarte(a, befund, verweis)).join('')}</div>`
+    : '';
 
-  if (gruppenArtikel.length) {
-    teile.push(`<h2>Artikel in dieser Gruppe</h2>`);
-    teile.push(`<div class="raster">${gruppenArtikel
-      .sort((a, b) => a.bezeichnung.localeCompare(b.bezeichnung, 'de'))
-      .map((a) => artikelKarte(a, befund, verweis)).join('')}</div>`);
+  if (seite.art === 'gruppen' && warenraster) {
+    // Auf einer Sortimentsseite kommt die Ware zuerst. Der Fachtext stand
+    // vorher davor — wer eine Warengruppe anklickt, sucht aber Artikel und
+    // nicht einen Aufsatz. Eingesetzt wird nach dem einleitenden Absatz,
+    // damit die Seite trotzdem sagt, worum es geht.
+    const schnitt = koerper.indexOf('</p>');
+    if (schnitt === -1) {
+      teile.push(warenraster, koerper);
+    } else {
+      teile.push(koerper.slice(0, schnitt + 4), warenraster, koerper.slice(schnitt + 4));
+    }
+  } else {
+    teile.push(koerper);
+    if (warenraster) teile.push(warenraster);
   }
 
   const skus = alsListe(seite.kopf.skus);
@@ -420,7 +459,8 @@ function startSeite(katalog, befund, seiten, verweis) {
   const systeme = [...seiten.values()].filter((s) => s.art === 'system');
   const wissen = [...seiten.values()].filter((s) => s.art === 'wissen');
 
-  const kachel = (s, marke_) => `<a class="kachel" href="${verweis(s.id)}">
+  const kachel = (s, marke_, bild) => `<a class="kachel" href="${verweis(s.id)}">
+  ${bild ? `<span class="bild">${bild}</span>` : ''}
   <span class="k">${esc(marke_)}</span>
   <span class="t">${esc(s.kopf.titel)}</span>
   <span class="b">${esc(alsText(String(s.kopf.kurz ?? '')).slice(0, 160))}…</span></a>`;
@@ -452,19 +492,29 @@ Grund, warum die Rechnung aufgeht.</p>
 werden: Zahlungsanbieter, Impressum und Rechtstexte fehlen noch, und jeder Preis ist vor der
 Veröffentlichung beim Lieferanten zu bestätigen. Alle Preise sind Nettopreise für Unternehmer.</div>
 
+<h2>Sortiment</h2>
+<div class="kacheln">${gruppen
+  .sort((a, b) => (befund.jeGruppe[b.kopf.gruppe]?.gesamt ?? 0) - (befund.jeGruppe[a.kopf.gruppe]?.gesamt ?? 0))
+  .map((s) => kachel(s, `${(befund.jeGruppe[s.kopf.gruppe]?.gesamt ?? 0)} Artikel`, gruppenBild(s.kopf.gruppe)))
+  .join('')}</div>
+
+<h2>Alle ${befund.artikelGesamt} Artikel</h2>
+<p>Vollständig, mit Nettopreis und Preisstand. Jede Zeichnung ist ein Schema aus den Maßen des
+Artikels — kein Herstellerfoto: Was gezeigt wird, steht auch im Datensatz.</p>
+<div class="raster">${[...katalog.artikel]
+  .sort((a, b) => a.gruppe.localeCompare(b.gruppe, 'de') || a.bezeichnung.localeCompare(b.bezeichnung, 'de'))
+  .map((a) => artikelKarte(a, befund, verweis)).join('')}</div>
+
 <h2>Systemlisten — was zusammengehört</h2>
 <p>Die häufigste Ursache für einen Baustellenstillstand ist nicht die fehlende Palette, sondern das
 fehlende Kantenschutzprofil. Diese Listen führen auf, was zu einer Aufgabe gehört — vollständig, damit
 Sie streichen können statt nachzubestellen.</p>
 <div class="kacheln">${systeme.map((s) => kachel(s, 'Systemliste')).join('')}</div>
 
-<h2>Sortiment</h2>
-<div class="kacheln">${gruppen.map((s) => kachel(s, `${(befund.jeGruppe[s.kopf.gruppe]?.gesamt ?? 0)} Artikel`)).join('')}</div>
-
-<h2>Wissen</h2>
-<p>Fachliche Seiten zu den Fragen, die vor einer Bestellung zu klären sind. Jede beantwortet genau eine
-Frage, und die Antwort steht in den ersten zwei Sätzen.</p>
-<div class="kacheln">${wissen.map((s) => kachel(s, 'Wissen')).join('')}</div>`,
+<h2>Vor der Bestellung</h2>
+<p class="mehr"><a href="${verweis('wissen/index')}">${wissen.length} fachliche Seiten</a> zu den Fragen,
+die vor einer Baustoffbestellung zu klären sind — Untergrund, Mengen, Lagerung, Verarbeitung bei Kälte.
+Jede beantwortet genau eine Frage, und die Antwort steht in den ersten zwei Sätzen.</p>`,
     jsonLd: {
       '@context': 'https://schema.org',
       '@type': 'Organization',
@@ -723,6 +773,8 @@ function rahmen(seite, verweis, { eigenstaendig }) {
   const fuss = `<footer>
   <p>${esc(FIRMA)}, ${esc(ORT)} · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
   ausgewiesen · <a href="${verweis('wissen/redaktionsprinzipien')}">Wie wir unsere Angaben prüfen</a>
+  · <a href="${verweis('wissen/index')}">Wissen</a>
+  · <a href="${verweis('rechtliches/index')}">Rechtliches</a>
   · <a href="${verweis('rechtliches/impressum')}">Impressum</a>
   · <a href="${verweis('rechtliches/datenschutz')}">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.

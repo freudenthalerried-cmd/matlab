@@ -50,7 +50,16 @@ th{font-family:var(--schmal);text-transform:uppercase;font-size:.85rem;backgroun
 tbody tr:last-child td{border-bottom:none}
 code{font-family:var(--zahl);font-size:.86em;background:var(--flaeche-2);padding:.05em .3em;border-radius:2px}
 hr{border:none;border-top:1px solid var(--linie);margin:2rem 0}
-.raster{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:1px;background:var(--linie);border:1px solid var(--linie);margin-bottom:1.5rem}
+.raster{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:1px;background:var(--flaeche);border:1px solid var(--linie);margin-bottom:1.5rem}
+.raster>*{outline:1px solid var(--linie)}
+.karte .bild{display:block;background:var(--flaeche-2);margin:-1rem -1.1rem .7rem;padding:.7rem .6rem;border-bottom:1px solid var(--linie)}
+svg.schema{display:block;width:100%;height:auto;max-height:7.5rem}
+svg.schema.gruppe{max-height:5.5rem}
+.kachel .bild{display:block;background:var(--flaeche-2);margin:-1rem -1.1rem .6rem;padding:.6rem;border-bottom:1px solid var(--linie)}
+.artikelbild{background:var(--grund);border:1px solid var(--linie);padding:1.4rem;margin:0 0 1.5rem;display:flex;justify-content:center}
+.artikelbild svg.schema{max-height:12rem;max-width:22rem}
+.mehr{font-family:var(--schmal);text-transform:uppercase;letter-spacing:.06em;font-size:.82rem}
+
 .karte{background:var(--flaeche);padding:.9rem 1rem;display:flex;flex-direction:column;gap:.4rem;text-decoration:none;color:inherit}
 .karte:hover{background:var(--flaeche-2)}
 .karte .nr{font-family:var(--zahl);font-size:.68rem;color:var(--gedaempft)}
@@ -61,7 +70,8 @@ hr{border:none;border-top:1px solid var(--linie);margin:2rem 0}
 .marker.vorteil{background:var(--gruen-weich);color:var(--gruen)}
 .marker.beipack{background:var(--ziegel-weich);color:var(--ziegel)}
 .marker.sperrig{background:var(--flaeche-2);color:var(--tinte-2)}
-.kacheln{display:grid;grid-template-columns:repeat(auto-fill,minmax(17rem,1fr));gap:1px;background:var(--linie);border:1px solid var(--linie);margin-bottom:1.5rem}
+.kacheln{display:grid;grid-template-columns:repeat(auto-fill,minmax(17rem,1fr));gap:1px;background:var(--flaeche);border:1px solid var(--linie);margin-bottom:1.5rem}
+.kacheln>*{outline:1px solid var(--linie)}
 .kachel{background:var(--flaeche);padding:1rem 1.1rem;text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:.35rem}
 .kachel:hover{background:var(--flaeche-2)}
 .kachel .k{font-family:var(--schmal);text-transform:uppercase;font-size:.78rem;letter-spacing:.06em;color:var(--ocker)}
@@ -69,6 +79,7 @@ hr{border:none;border-top:1px solid var(--linie);margin:2rem 0}
 .kachel .b{font-size:.88rem;color:var(--gedaempft)}
 .preistafel{display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:1px;background:var(--linie);border:1px solid var(--linie);margin:1.2rem 0}
 .preistafel>div{background:var(--flaeche);padding:.9rem 1rem}
+.preistafel .k,.preistafel .w,.preistafel .e{display:block}
 .preistafel .k{font-family:var(--schmal);text-transform:uppercase;font-size:.78rem;letter-spacing:.05em;color:var(--ocker)}
 .preistafel .w{font-family:var(--schmal);font-size:1.7rem;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
 .preistafel .e{font-size:.82rem;color:var(--gedaempft)}
@@ -88,11 +99,93 @@ footer a{color:var(--gedaempft)}
 <body><div class="huelle">
 <header class="kopfleiste">
   <a class="logo" href="../index.html">Freudenthaler Bau GmbH</a>
-  <nav><a href="../gruppe/wdvs.html">WDVS</a><a href="../gruppe/daemmung.html">Dämmung</a><a href="../gruppe/kamin.html">Kamin</a><a href="../gruppe/kanal.html">Kanal</a><a href="../wissen/index.html">Wissen</a><a href="../lieferung.html">Lieferung</a><a href="../rechtliches/index.html">Rechtliches</a></nav>
+  <nav><a href="../gruppe/wdvs.html">WDVS</a><a href="../gruppe/daemmung.html">Dämmung</a><a href="../gruppe/mauerwerk.html">Mauerwerk</a><a href="../gruppe/moertel.html">Mörtel</a><a href="../gruppe/kamin.html">Kamin</a><a href="../gruppe/kanal.html">Kanal</a><a href="../gruppe/zubehoer.html">Zubehör</a><a href="../lieferung.html">Lieferung</a></nav>
 </header>
 <p class="krume"><a href="../index.html">Start</a> › Sortiment</p>
 <h1>Zubehör und Kleinteile</h1>
 <p><strong>Die Antwort in zwei Sätzen.</strong> Wir führen Schäume, Klebebänder, Schrauben und Dübel, weil sie zur Lieferung gehören und eine zweite Anfahrt teurer ist als jede Preisdifferenz. Bei diesen Artikeln liegt unser Einkauf nah am Listenpreis — wir sagen das dazu, statt einen Vorteil zu behaupten, den es nicht gibt.</p>
+<h2>7 Artikel in dieser Gruppe</h2>
+<div class="raster"><a class="karte" href="../artikel/POS-29023.html">
+  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Rollenware"
+ xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><rect x="30" y="26" width="60" height="40" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<ellipse cx="30" cy="46" rx="9" ry="20" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<ellipse cx="30" cy="46" rx="3" ry="7" fill="var(--grund)" stroke="var(--linie-stark)" stroke-width="1.2"/>
+<path d="M90 30 L104 36 L104 72 L90 66 Z" fill="var(--ocker-weich)" stroke="var(--ocker)" stroke-width="1.2"/>
+<path d="M30 72 L90 72 M30 69 L30 75 M90 69 L90 75" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
+<text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">2 × 50 m</text></svg></span>
+  <span class="nr">29023</span>
+  <span class="t">PAE-Folie T 100 2 50 m 100 m2</span>
+  <span class="marker vorteil">73 % unter Liste</span>
+  <span class="preis">17,12&nbsp;€ <span class="eh">je Rolle, netto</span></span>
+</a><a class="karte" href="../artikel/POS-12294.html">
+  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Werkzeug"
+ xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="M18 40 L84 40 L84 54 L18 54 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<path d="M84 44 L104 44 L104 50 L84 50 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<path d="M40 54 L36 76 L48 76 L46 54" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<path d="M58 54 L66 72" stroke="var(--linie-stark)" fill="none" stroke-width="1.5"/>
+<text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">Werkzeug</text></svg></span>
+  <span class="nr">12294</span>
+  <span class="t">Prima Dosierpistole Metall Lite</span>
+  <span class="marker beipack">Beipack</span>
+  <span class="preis">26,88&nbsp;€ <span class="eh">je Stück, netto</span></span>
+</a><a class="karte" href="../artikel/POS-53215.html">
+  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Dübel mit Teller"
+ xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><rect x="20" y="40" width="14" height="14" rx="2" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<rect x="34" y="43" width="56" height="8" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<path d="M90 47 L104 43 L104 51 Z" fill="var(--ocker-weich)" stroke="var(--ocker)" stroke-width="1.2"/>
+<path d="M44 43 L44 51 M54 43 L54 51 M64 43 L64 51 M74 43 L74 51" stroke="var(--linie-stark)" stroke-width="1" opacity=".6"/>
+<text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">182 mm</text></svg></span>
+  <span class="nr">53215</span>
+  <span class="t">Rahmenschraube Zylinderkopf vz 7,5x182 mm lose</span>
+  <span class="marker beipack">Beipack</span>
+  <span class="preis">0,67&nbsp;€ <span class="eh">je Stück, netto</span></span>
+</a><a class="karte" href="../artikel/POS-29691.html">
+  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Kartusche"
+ xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><rect x="42" y="30" width="36" height="46" rx="3" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<rect x="52" y="18" width="16" height="12" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<path d="M56 18 L56 8 L64 8 L64 18" stroke="var(--linie-stark)" fill="none" stroke-width="1.5"/>
+<rect x="46" y="46" width="28" height="12" rx="1" fill="var(--ocker-weich)" stroke="var(--ocker)" stroke-width="1.2"/>
+<text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">750 ml</text></svg></span>
+  <span class="nr">29691</span>
+  <span class="t">Soudal Perimeterkleber B3 750 ml</span>
+  <span class="marker vorteil">20 % unter Liste</span>
+  <span class="preis">7,60&nbsp;€ <span class="eh">je Dose, netto</span></span>
+</a><a class="karte" href="../artikel/POS-51987.html">
+  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Werkzeug"
+ xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="M18 40 L84 40 L84 54 L18 54 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<path d="M84 44 L104 44 L104 50 L84 50 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<path d="M40 54 L36 76 L48 76 L46 54" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<path d="M58 54 L66 72" stroke="var(--linie-stark)" fill="none" stroke-width="1.5"/>
+<text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">Werkzeug</text></svg></span>
+  <span class="nr">51987</span>
+  <span class="t">Soudal Profi-Pistolenschaum B3 750 ml</span>
+  <span class="marker vorteil">13 % unter Liste</span>
+  <span class="preis">6,51&nbsp;€ <span class="eh">je Dose, netto</span></span>
+</a><a class="karte" href="../artikel/POS-31631.html">
+  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Kartusche"
+ xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><rect x="42" y="30" width="36" height="46" rx="3" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<rect x="52" y="18" width="16" height="12" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<path d="M56 18 L56 8 L64 8 L64 18" stroke="var(--linie-stark)" fill="none" stroke-width="1.5"/>
+<rect x="46" y="46" width="28" height="12" rx="1" fill="var(--ocker-weich)" stroke="var(--ocker)" stroke-width="1.2"/>
+<text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">750 ml</text></svg></span>
+  <span class="nr">31631</span>
+  <span class="t">Soudal Soudabond Easy B1 Pist. 750 ml</span>
+  <span class="marker beipack">Beipack</span>
+  <span class="preis">12,60&nbsp;€ <span class="eh">je Stück, netto</span></span>
+</a><a class="karte" href="../artikel/POS-31265.html">
+  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Rollenware"
+ xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><rect x="30" y="26" width="60" height="40" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<ellipse cx="30" cy="46" rx="9" ry="20" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<ellipse cx="30" cy="46" rx="3" ry="7" fill="var(--grund)" stroke="var(--linie-stark)" stroke-width="1.2"/>
+<path d="M90 30 L104 36 L104 72 L90 66 Z" fill="var(--ocker-weich)" stroke="var(--ocker)" stroke-width="1.2"/>
+<path d="M30 72 L90 72 M30 69 L30 75 M90 69 L90 75" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
+<text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">Rollenware</text></svg></span>
+  <span class="nr">31265</span>
+  <span class="t">SunCore Pro Abdeckklebeband 48 mm x 50 m bis 100 °C, gelb</span>
+  <span class="marker vorteil">20 % unter Liste</span>
+  <span class="preis">8,33&nbsp;€ <span class="eh">je Stück, netto</span></span>
+</a></div>
+
 <h2>Die Kennzeichnung „Beipack&quot;</h2>
 <p>Einige Artikel dieser Gruppe tragen den Hinweis <strong>Beipack</strong>. Er bedeutet: Dieser Artikel ist bestellbar, aber er ist kein Grund, hier zu bestellen. Wenn Sie nur ihn brauchen, kaufen Sie ihn günstiger im Fachhandel um die Ecke.</p>
 <p>Warum das so ist, steht offen auf <a href="../wissen/baumeisterpreis.html">Was „Baumeisterpreis&quot; heißt</a>: Der Rabatt eines Baumeisterbetriebs ist bei Systemware und Paletten tief und bei Kleinteilen dünn. Das ist die Struktur des Baustoffhandels, nicht unsere Entscheidung.</p>
@@ -100,48 +193,13 @@ footer a{color:var(--gedaempft)}
 <p>Weil die Positionen, die eine Baustelle aufhalten, fast immer die kleinen sind. Ein fehlendes Klebeband kostet eine Fahrt; eine Fahrt kostet mehr als ein Karton Klebeband. Der Gedanke dahinter steht auf <a href="../wissen/was-fehlt-haelt-die-baustelle-auf.html">Was fehlt, hält die Baustelle auf</a>.</p>
 <h2>Was das für Sie heißt</h2>
 <p>Legen Sie das Zubehör zur Hauptbestellung dazu, nicht separat. Als Einzelbestellung lohnt sich diese Gruppe für keine der beiden Seiten.</p>
-<h2>Artikel in dieser Gruppe</h2>
-<div class="raster"><a class="karte" href="../artikel/POS-29023.html">
-  <span class="nr">29023</span>
-  <span class="t">PAE-Folie T 100 2 50 m 100 m2</span>
-  <span class="marker vorteil">73 % unter Liste</span>
-  <span class="preis">17,12&nbsp;€ <span class="eh">je Rolle, netto</span></span>
-</a><a class="karte" href="../artikel/POS-12294.html">
-  <span class="nr">12294</span>
-  <span class="t">Prima Dosierpistole Metall Lite</span>
-  <span class="marker beipack">Beipack</span>
-  <span class="preis">26,88&nbsp;€ <span class="eh">je Stück, netto</span></span>
-</a><a class="karte" href="../artikel/POS-53215.html">
-  <span class="nr">53215</span>
-  <span class="t">Rahmenschraube Zylinderkopf vz 7,5x182 mm lose</span>
-  <span class="marker beipack">Beipack</span>
-  <span class="preis">0,67&nbsp;€ <span class="eh">je Stück, netto</span></span>
-</a><a class="karte" href="../artikel/POS-29691.html">
-  <span class="nr">29691</span>
-  <span class="t">Soudal Perimeterkleber B3 750 ml</span>
-  <span class="marker vorteil">20 % unter Liste</span>
-  <span class="preis">7,60&nbsp;€ <span class="eh">je Dose, netto</span></span>
-</a><a class="karte" href="../artikel/POS-51987.html">
-  <span class="nr">51987</span>
-  <span class="t">Soudal Profi-Pistolenschaum B3 750 ml</span>
-  <span class="marker vorteil">13 % unter Liste</span>
-  <span class="preis">6,51&nbsp;€ <span class="eh">je Dose, netto</span></span>
-</a><a class="karte" href="../artikel/POS-31631.html">
-  <span class="nr">31631</span>
-  <span class="t">Soudal Soudabond Easy B1 Pist. 750 ml</span>
-  <span class="marker beipack">Beipack</span>
-  <span class="preis">12,60&nbsp;€ <span class="eh">je Stück, netto</span></span>
-</a><a class="karte" href="../artikel/POS-31265.html">
-  <span class="nr">31265</span>
-  <span class="t">SunCore Pro Abdeckklebeband 48 mm x 50 m bis 100 °C, gelb</span>
-  <span class="marker vorteil">20 % unter Liste</span>
-  <span class="preis">8,33&nbsp;€ <span class="eh">je Stück, netto</span></span>
-</a></div>
 <h2>Weiterlesen</h2>
 <div class="verwandt"><a href="../wissen/baumeisterpreis.html">Was „Baumeisterpreis&quot; heißt — und was nicht</a><a href="../wissen/was-fehlt-haelt-die-baustelle-auf.html">Was fehlt, hält die Baustelle auf</a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
   ausgewiesen · <a href="../wissen/redaktionsprinzipien.html">Wie wir unsere Angaben prüfen</a>
+  · <a href="../wissen/index.html">Wissen</a>
+  · <a href="../rechtliches/index.html">Rechtliches</a>
   · <a href="../rechtliches/impressum.html">Impressum</a>
   · <a href="../rechtliches/datenschutz.html">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.

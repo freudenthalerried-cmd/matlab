@@ -50,7 +50,16 @@ th{font-family:var(--schmal);text-transform:uppercase;font-size:.85rem;backgroun
 tbody tr:last-child td{border-bottom:none}
 code{font-family:var(--zahl);font-size:.86em;background:var(--flaeche-2);padding:.05em .3em;border-radius:2px}
 hr{border:none;border-top:1px solid var(--linie);margin:2rem 0}
-.raster{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:1px;background:var(--linie);border:1px solid var(--linie);margin-bottom:1.5rem}
+.raster{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:1px;background:var(--flaeche);border:1px solid var(--linie);margin-bottom:1.5rem}
+.raster>*{outline:1px solid var(--linie)}
+.karte .bild{display:block;background:var(--flaeche-2);margin:-1rem -1.1rem .7rem;padding:.7rem .6rem;border-bottom:1px solid var(--linie)}
+svg.schema{display:block;width:100%;height:auto;max-height:7.5rem}
+svg.schema.gruppe{max-height:5.5rem}
+.kachel .bild{display:block;background:var(--flaeche-2);margin:-1rem -1.1rem .6rem;padding:.6rem;border-bottom:1px solid var(--linie)}
+.artikelbild{background:var(--grund);border:1px solid var(--linie);padding:1.4rem;margin:0 0 1.5rem;display:flex;justify-content:center}
+.artikelbild svg.schema{max-height:12rem;max-width:22rem}
+.mehr{font-family:var(--schmal);text-transform:uppercase;letter-spacing:.06em;font-size:.82rem}
+
 .karte{background:var(--flaeche);padding:.9rem 1rem;display:flex;flex-direction:column;gap:.4rem;text-decoration:none;color:inherit}
 .karte:hover{background:var(--flaeche-2)}
 .karte .nr{font-family:var(--zahl);font-size:.68rem;color:var(--gedaempft)}
@@ -61,7 +70,8 @@ hr{border:none;border-top:1px solid var(--linie);margin:2rem 0}
 .marker.vorteil{background:var(--gruen-weich);color:var(--gruen)}
 .marker.beipack{background:var(--ziegel-weich);color:var(--ziegel)}
 .marker.sperrig{background:var(--flaeche-2);color:var(--tinte-2)}
-.kacheln{display:grid;grid-template-columns:repeat(auto-fill,minmax(17rem,1fr));gap:1px;background:var(--linie);border:1px solid var(--linie);margin-bottom:1.5rem}
+.kacheln{display:grid;grid-template-columns:repeat(auto-fill,minmax(17rem,1fr));gap:1px;background:var(--flaeche);border:1px solid var(--linie);margin-bottom:1.5rem}
+.kacheln>*{outline:1px solid var(--linie)}
 .kachel{background:var(--flaeche);padding:1rem 1.1rem;text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:.35rem}
 .kachel:hover{background:var(--flaeche-2)}
 .kachel .k{font-family:var(--schmal);text-transform:uppercase;font-size:.78rem;letter-spacing:.06em;color:var(--ocker)}
@@ -69,6 +79,7 @@ hr{border:none;border-top:1px solid var(--linie);margin:2rem 0}
 .kachel .b{font-size:.88rem;color:var(--gedaempft)}
 .preistafel{display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:1px;background:var(--linie);border:1px solid var(--linie);margin:1.2rem 0}
 .preistafel>div{background:var(--flaeche);padding:.9rem 1rem}
+.preistafel .k,.preistafel .w,.preistafel .e{display:block}
 .preistafel .k{font-family:var(--schmal);text-transform:uppercase;font-size:.78rem;letter-spacing:.05em;color:var(--ocker)}
 .preistafel .w{font-family:var(--schmal);font-size:1.7rem;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
 .preistafel .e{font-size:.82rem;color:var(--gedaempft)}
@@ -88,11 +99,44 @@ footer a{color:var(--gedaempft)}
 <body><div class="huelle">
 <header class="kopfleiste">
   <a class="logo" href="../index.html">Freudenthaler Bau GmbH</a>
-  <nav><a href="../gruppe/wdvs.html">WDVS</a><a href="../gruppe/daemmung.html">Dämmung</a><a href="../gruppe/kamin.html">Kamin</a><a href="../gruppe/kanal.html">Kanal</a><a href="../wissen/index.html">Wissen</a><a href="../lieferung.html">Lieferung</a><a href="../rechtliches/index.html">Rechtliches</a></nav>
+  <nav><a href="../gruppe/wdvs.html">WDVS</a><a href="../gruppe/daemmung.html">Dämmung</a><a href="../gruppe/mauerwerk.html">Mauerwerk</a><a href="../gruppe/moertel.html">Mörtel</a><a href="../gruppe/kamin.html">Kamin</a><a href="../gruppe/kanal.html">Kanal</a><a href="../gruppe/zubehoer.html">Zubehör</a><a href="../lieferung.html">Lieferung</a></nav>
 </header>
 <p class="krume"><a href="../index.html">Start</a> › Sortiment</p>
 <h1>Mörtel und Putze</h1>
 <p><strong>Die Antwort in zwei Sätzen.</strong> Wir führen Thermo- und Mauermörtel, Klebespachtel und Vergussmörtel, überwiegend von Baumit. Bei Sackware entscheidet neben dem Produkt die Lagerung: Bodenfeuchte macht zementgebundene Ware unbrauchbar, lange bevor man es sieht.</p>
+<h2>3 Artikel in dieser Gruppe</h2>
+<div class="raster"><a class="karte" href="../artikel/POS-29108.html">
+  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Sackware"
+ xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="M34 30 Q34 24 40 24 L80 24 Q86 24 86 30 L88 70 Q88 76 82 76 L38 76 Q32 76 32 70 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<path d="M40 24 Q60 30 80 24" stroke="var(--linie-stark)" fill="none" stroke-width="1.5"/>
+<rect x="44" y="42" width="32" height="14" rx="2" fill="var(--ocker-weich)" stroke="var(--ocker)" stroke-width="1.2"/>
+<text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">25 kg</text></svg></span>
+  <span class="nr">29108</span>
+  <span class="t">Baumit KlebeSpachtel 25 kg</span>
+  <span class="marker vorteil">17 % unter Liste</span>
+  <span class="preis">14,32&nbsp;€ <span class="eh">je Sack, netto</span></span>
+</a><a class="karte" href="../artikel/POS-13550.html">
+  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Sackware"
+ xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="M34 30 Q34 24 40 24 L80 24 Q86 24 86 30 L88 70 Q88 76 82 76 L38 76 Q32 76 32 70 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<path d="M40 24 Q60 30 80 24" stroke="var(--linie-stark)" fill="none" stroke-width="1.5"/>
+<rect x="44" y="42" width="32" height="14" rx="2" fill="var(--ocker-weich)" stroke="var(--ocker)" stroke-width="1.2"/>
+<text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">40 l</text></svg></span>
+  <span class="nr">13550</span>
+  <span class="t">Baumit ThermoMörtel 50 40 l</span>
+  <span class="marker vorteil">9 % unter Liste</span>
+  <span class="preis">10,07&nbsp;€ <span class="eh">je Sack, netto</span></span>
+</a><a class="karte" href="../artikel/POS-29754.html">
+  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Sackware"
+ xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="M34 30 Q34 24 40 24 L80 24 Q86 24 86 30 L88 70 Q88 76 82 76 L38 76 Q32 76 32 70 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<path d="M40 24 Q60 30 80 24" stroke="var(--linie-stark)" fill="none" stroke-width="1.5"/>
+<rect x="44" y="42" width="32" height="14" rx="2" fill="var(--ocker-weich)" stroke="var(--ocker)" stroke-width="1.2"/>
+<text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">25 kg</text></svg></span>
+  <span class="nr">29754</span>
+  <span class="t">Ravenit Vergussmörtel 25 kg</span>
+  <span class="marker vorteil">7 % unter Liste</span>
+  <span class="preis">1,45&nbsp;€ <span class="eh">je kg, netto</span></span>
+</a></div>
+
 <h2>Ausgewählt wird nach der Aufgabe</h2>
 <p>Mauern, Kleben, Armieren, Vergießen — das sind vier verschiedene Aufgaben mit vier verschiedenen Produkten. Welches Produkt wofür freigegeben ist, steht im Merkblatt: <a href="https://www.baumit.at/" target="_blank" rel="noopener noreferrer">baumit.at</a>.</p>
 <p>Beim Mauerwerk kommt dazu: Ein Systemstein braucht den Mörtel seines Systems, und beim Kaminschacht ist es der Dünnbettmörtel des Kaminsystems — nicht der Mauermörtel, der gerade dasteht.</p>
@@ -104,28 +148,13 @@ footer a{color:var(--gedaempft)}
 <p>Mineralische Mörtel brauchen Temperatur zum Abbinden, und zwar auch in der Nacht nach der Verarbeitung. Was zu beachten ist, steht auf <a href="../wissen/verarbeitung-bei-kaelte-und-naesse.html">Verarbeitung bei Kälte und Nässe</a>.</p>
 <h2>Bestellhinweis</h2>
 <p>Mörtel wird palettenweise geliefert. Eine angebrochene Palette ist kein Vorteil: Der Rest steht über den Winter und ist im Frühjahr oft nicht mehr brauchbar. Lieber knapper bestellen und nachbestellen — sofern die Anfahrt ohnehin ansteht.</p>
-<h2>Artikel in dieser Gruppe</h2>
-<div class="raster"><a class="karte" href="../artikel/POS-29108.html">
-  <span class="nr">29108</span>
-  <span class="t">Baumit KlebeSpachtel 25 kg</span>
-  <span class="marker vorteil">17 % unter Liste</span>
-  <span class="preis">14,32&nbsp;€ <span class="eh">je Sack, netto</span></span>
-</a><a class="karte" href="../artikel/POS-13550.html">
-  <span class="nr">13550</span>
-  <span class="t">Baumit ThermoMörtel 50 40 l</span>
-  <span class="marker vorteil">9 % unter Liste</span>
-  <span class="preis">10,07&nbsp;€ <span class="eh">je Sack, netto</span></span>
-</a><a class="karte" href="../artikel/POS-29754.html">
-  <span class="nr">29754</span>
-  <span class="t">Ravenit Vergussmörtel 25 kg</span>
-  <span class="marker vorteil">7 % unter Liste</span>
-  <span class="preis">1,45&nbsp;€ <span class="eh">je kg, netto</span></span>
-</a></div>
 <h2>Weiterlesen</h2>
 <div class="verwandt"><a href="../wissen/lagerung-von-sackware.html">Lagerung von Sackware und Platten</a><a href="../wissen/verarbeitung-bei-kaelte-und-naesse.html">Verarbeitung bei Kälte und Nässe</a><a href="../wissen/wdvs-systemaufbau.html">Was zu einem Wärmedämmverbundsystem gehört</a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
   ausgewiesen · <a href="../wissen/redaktionsprinzipien.html">Wie wir unsere Angaben prüfen</a>
+  · <a href="../wissen/index.html">Wissen</a>
+  · <a href="../rechtliches/index.html">Rechtliches</a>
   · <a href="../rechtliches/impressum.html">Impressum</a>
   · <a href="../rechtliches/datenschutz.html">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.

@@ -50,7 +50,16 @@ th{font-family:var(--schmal);text-transform:uppercase;font-size:.85rem;backgroun
 tbody tr:last-child td{border-bottom:none}
 code{font-family:var(--zahl);font-size:.86em;background:var(--flaeche-2);padding:.05em .3em;border-radius:2px}
 hr{border:none;border-top:1px solid var(--linie);margin:2rem 0}
-.raster{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:1px;background:var(--linie);border:1px solid var(--linie);margin-bottom:1.5rem}
+.raster{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:1px;background:var(--flaeche);border:1px solid var(--linie);margin-bottom:1.5rem}
+.raster>*{outline:1px solid var(--linie)}
+.karte .bild{display:block;background:var(--flaeche-2);margin:-1rem -1.1rem .7rem;padding:.7rem .6rem;border-bottom:1px solid var(--linie)}
+svg.schema{display:block;width:100%;height:auto;max-height:7.5rem}
+svg.schema.gruppe{max-height:5.5rem}
+.kachel .bild{display:block;background:var(--flaeche-2);margin:-1rem -1.1rem .6rem;padding:.6rem;border-bottom:1px solid var(--linie)}
+.artikelbild{background:var(--grund);border:1px solid var(--linie);padding:1.4rem;margin:0 0 1.5rem;display:flex;justify-content:center}
+.artikelbild svg.schema{max-height:12rem;max-width:22rem}
+.mehr{font-family:var(--schmal);text-transform:uppercase;letter-spacing:.06em;font-size:.82rem}
+
 .karte{background:var(--flaeche);padding:.9rem 1rem;display:flex;flex-direction:column;gap:.4rem;text-decoration:none;color:inherit}
 .karte:hover{background:var(--flaeche-2)}
 .karte .nr{font-family:var(--zahl);font-size:.68rem;color:var(--gedaempft)}
@@ -61,7 +70,8 @@ hr{border:none;border-top:1px solid var(--linie);margin:2rem 0}
 .marker.vorteil{background:var(--gruen-weich);color:var(--gruen)}
 .marker.beipack{background:var(--ziegel-weich);color:var(--ziegel)}
 .marker.sperrig{background:var(--flaeche-2);color:var(--tinte-2)}
-.kacheln{display:grid;grid-template-columns:repeat(auto-fill,minmax(17rem,1fr));gap:1px;background:var(--linie);border:1px solid var(--linie);margin-bottom:1.5rem}
+.kacheln{display:grid;grid-template-columns:repeat(auto-fill,minmax(17rem,1fr));gap:1px;background:var(--flaeche);border:1px solid var(--linie);margin-bottom:1.5rem}
+.kacheln>*{outline:1px solid var(--linie)}
 .kachel{background:var(--flaeche);padding:1rem 1.1rem;text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:.35rem}
 .kachel:hover{background:var(--flaeche-2)}
 .kachel .k{font-family:var(--schmal);text-transform:uppercase;font-size:.78rem;letter-spacing:.06em;color:var(--ocker)}
@@ -69,6 +79,7 @@ hr{border:none;border-top:1px solid var(--linie);margin:2rem 0}
 .kachel .b{font-size:.88rem;color:var(--gedaempft)}
 .preistafel{display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:1px;background:var(--linie);border:1px solid var(--linie);margin:1.2rem 0}
 .preistafel>div{background:var(--flaeche);padding:.9rem 1rem}
+.preistafel .k,.preistafel .w,.preistafel .e{display:block}
 .preistafel .k{font-family:var(--schmal);text-transform:uppercase;font-size:.78rem;letter-spacing:.05em;color:var(--ocker)}
 .preistafel .w{font-family:var(--schmal);font-size:1.7rem;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
 .preistafel .e{font-size:.82rem;color:var(--gedaempft)}
@@ -88,11 +99,133 @@ footer a{color:var(--gedaempft)}
 <body><div class="huelle">
 <header class="kopfleiste">
   <a class="logo" href="../index.html">Freudenthaler Bau GmbH</a>
-  <nav><a href="../gruppe/wdvs.html">WDVS</a><a href="../gruppe/daemmung.html">Dämmung</a><a href="../gruppe/kamin.html">Kamin</a><a href="../gruppe/kanal.html">Kanal</a><a href="../wissen/index.html">Wissen</a><a href="../lieferung.html">Lieferung</a><a href="../rechtliches/index.html">Rechtliches</a></nav>
+  <nav><a href="../gruppe/wdvs.html">WDVS</a><a href="../gruppe/daemmung.html">Dämmung</a><a href="../gruppe/mauerwerk.html">Mauerwerk</a><a href="../gruppe/moertel.html">Mörtel</a><a href="../gruppe/kamin.html">Kamin</a><a href="../gruppe/kanal.html">Kanal</a><a href="../gruppe/zubehoer.html">Zubehör</a><a href="../lieferung.html">Lieferung</a></nav>
 </header>
 <p class="krume"><a href="../index.html">Start</a> › Sortiment</p>
 <h1>WDVS-Komponenten</h1>
 <p><strong>Die Antwort in zwei Sätzen.</strong> Wir führen Klebe- und Spachtelmassen, Glasgewebe, Dübel, Kantenschutz, Putzgrund und Oberputz — die Bestandteile eines Fassadensystems. Ausgewählt wird nach dem System, nicht nach dem Einzelpreis: Geprüft wird die <strong>Kombination</strong>, nicht der einzelne Sack — Prüfgrundlage ist die Zulassungsleitlinie ETAG 004, die österreichischen Anwendungskriterien stehen in ÖNORM B 6400, Ausgabe 2004-08-01. Welche Kombination geprüft ist, steht in den Systemunterlagen des Herstellers.</p>
+<h2>11 Artikel in dieser Gruppe</h2>
+<div class="raster"><a class="karte" href="../artikel/POS-52058.html">
+  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Rollenware"
+ xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><rect x="30" y="26" width="60" height="40" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<ellipse cx="30" cy="46" rx="9" ry="20" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<ellipse cx="30" cy="46" rx="3" ry="7" fill="var(--grund)" stroke="var(--linie-stark)" stroke-width="1.2"/>
+<path d="M90 30 L104 36 L104 72 L90 66 Z" fill="var(--ocker-weich)" stroke="var(--ocker)" stroke-width="1.2"/>
+<path d="M30 72 L90 72 M30 69 L30 75 M90 69 L90 75" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
+<text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">1,1 × 50 m</text></svg></span>
+  <span class="nr">52058</span>
+  <span class="t">Baumit TextilglasGitter 1,1x50 m</span>
+  <span class="marker vorteil">40 % unter Liste</span>
+  <span class="preis">1,19&nbsp;€ <span class="eh">je m², netto</span></span>
+</a><a class="karte" href="../artikel/POS-52124.html">
+  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Profil im Schnitt"
+ xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="M30 24 L38 24 L38 62 L96 62 L96 70 L30 70 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<path d="M38 62 L96 62" stroke="var(--ocker)" fill="none" stroke-width="1.5" stroke-dasharray="4 3"/>
+<path d="M96 66 L110 66" stroke="var(--ocker)" stroke-width="1.2" stroke-dasharray="2 2"/>
+<path d="M22 24 L22 70 M19 24 L25 24 M19 70 L25 70" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
+<text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">55 m</text></svg></span>
+  <span class="nr">52124</span>
+  <span class="t">Capatect Gewebeanschlussleiste 3D Universal Plus 2,55 m</span>
+  <span class="marker vorteil">13 % unter Liste</span>
+  <span class="preis">4,91&nbsp;€ <span class="eh">je lfm, netto</span></span>
+</a><a class="karte" href="../artikel/POS-50509.html">
+  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Rollenware"
+ xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><rect x="30" y="26" width="60" height="40" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<ellipse cx="30" cy="46" rx="9" ry="20" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<ellipse cx="30" cy="46" rx="3" ry="7" fill="var(--grund)" stroke="var(--linie-stark)" stroke-width="1.2"/>
+<path d="M90 30 L104 36 L104 72 L90 66 Z" fill="var(--ocker-weich)" stroke="var(--ocker)" stroke-width="1.2"/>
+<path d="M30 72 L90 72 M30 69 L30 75 M90 69 L90 75" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
+<text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">Breite 110 cm</text></svg></span>
+  <span class="nr">50509</span>
+  <span class="t">Capatect Glasgewebe M, Breite 110cm, orange 55 m2</span>
+  <span class="marker vorteil">27 % unter Liste</span>
+  <span class="preis">1,07&nbsp;€ <span class="eh">je m², netto</span></span>
+</a><a class="karte" href="../artikel/POS-53402.html">
+  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Profil im Schnitt"
+ xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="M30 24 L38 24 L38 62 L96 62 L96 70 L30 70 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<path d="M38 62 L96 62" stroke="var(--ocker)" fill="none" stroke-width="1.5" stroke-dasharray="4 3"/>
+<path d="M96 66 L110 66" stroke="var(--ocker)" stroke-width="1.2" stroke-dasharray="2 2"/>
+<path d="M22 24 L22 70 M19 24 L25 24 M19 70 L25 70" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
+<text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">2,5 m</text></svg></span>
+  <span class="nr">53402</span>
+  <span class="t">Capatect Kantenschutz mit Gewebe Carbon 11,5 13,5 cm 2,5 m</span>
+  <span class="marker vorteil">19 % unter Liste</span>
+  <span class="preis">0,95&nbsp;€ <span class="eh">je lfm, netto</span></span>
+</a><a class="karte" href="../artikel/POS-11283.html">
+  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Sackware"
+ xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="M34 30 Q34 24 40 24 L80 24 Q86 24 86 30 L88 70 Q88 76 82 76 L38 76 Q32 76 32 70 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<path d="M40 24 Q60 30 80 24" stroke="var(--linie-stark)" fill="none" stroke-width="1.5"/>
+<rect x="44" y="42" width="32" height="14" rx="2" fill="var(--ocker-weich)" stroke="var(--ocker)" stroke-width="1.2"/>
+<text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">25 kg</text></svg></span>
+  <span class="nr">11283</span>
+  <span class="t">Capatect Klebe- und Spachtelmasse 186 M 25 kg</span>
+  <span class="marker vorteil">25 % unter Liste</span>
+  <span class="preis">0,56&nbsp;€ <span class="eh">je kg, netto</span></span>
+</a><a class="karte" href="../artikel/POS-29461.html">
+  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Sackware"
+ xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="M34 30 Q34 24 40 24 L80 24 Q86 24 86 30 L88 70 Q88 76 82 76 L38 76 Q32 76 32 70 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<path d="M40 24 Q60 30 80 24" stroke="var(--linie-stark)" fill="none" stroke-width="1.5"/>
+<rect x="44" y="42" width="32" height="14" rx="2" fill="var(--ocker-weich)" stroke="var(--ocker)" stroke-width="1.2"/>
+<text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">25 kg</text></svg></span>
+  <span class="nr">29461</span>
+  <span class="t">Capatect Klebe- und Spachtelmasse 190 FEIN 25 kg</span>
+  <span class="marker vorteil">28 % unter Liste</span>
+  <span class="preis">0,60&nbsp;€ <span class="eh">je kg, netto</span></span>
+</a><a class="karte" href="../artikel/POS-29610.html">
+  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Dübel mit Teller"
+ xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><rect x="20" y="40" width="14" height="14" rx="2" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<rect x="34" y="43" width="56" height="8" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<path d="M90 47 L104 43 L104 51 Z" fill="var(--ocker-weich)" stroke="var(--ocker)" stroke-width="1.2"/>
+<path d="M44 43 L44 51 M54 43 L54 51 M64 43 L64 51 M74 43 L74 51" stroke="var(--linie-stark)" stroke-width="1" opacity=".6"/>
+<text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">Dübel</text></svg></span>
+  <span class="nr">29610</span>
+  <span class="t">Capatect Polystyrol-Rondelle für Capatect Universaldübel Rondelle und Capatect Schraubdübel Holz</span>
+  <span class="marker vorteil">7 % unter Liste</span>
+  <span class="preis">13,24&nbsp;€ <span class="eh">je Karton, netto</span></span>
+</a><a class="karte" href="../artikel/POS-19333.html">
+  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Sackware"
+ xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="M34 30 Q34 24 40 24 L80 24 Q86 24 86 30 L88 70 Q88 76 82 76 L38 76 Q32 76 32 70 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<path d="M40 24 Q60 30 80 24" stroke="var(--linie-stark)" fill="none" stroke-width="1.5"/>
+<rect x="44" y="42" width="32" height="14" rx="2" fill="var(--ocker-weich)" stroke="var(--ocker)" stroke-width="1.2"/>
+<text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">25 kg</text></svg></span>
+  <span class="nr">19333</span>
+  <span class="t">Capatect PrimaPor K20 weiß 25 kg SH-Reibputz</span>
+  
+  <span class="preis">2,27&nbsp;€ <span class="eh">je kg, netto</span></span>
+</a><a class="karte" href="../artikel/POS-13728.html">
+  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Sackware"
+ xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="M34 30 Q34 24 40 24 L80 24 Q86 24 86 30 L88 70 Q88 76 82 76 L38 76 Q32 76 32 70 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<path d="M40 24 Q60 30 80 24" stroke="var(--linie-stark)" fill="none" stroke-width="1.5"/>
+<rect x="44" y="42" width="32" height="14" rx="2" fill="var(--ocker-weich)" stroke="var(--ocker)" stroke-width="1.2"/>
+<text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">25 kg</text></svg></span>
+  <span class="nr">13728</span>
+  <span class="t">Capatect Putzgrund weiß 25 kg</span>
+  <span class="marker vorteil">20 % unter Liste</span>
+  <span class="preis">2,77&nbsp;€ <span class="eh">je kg, netto</span></span>
+</a><a class="karte" href="../artikel/POS-11082.html">
+  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Dübel mit Teller"
+ xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><rect x="20" y="40" width="14" height="14" rx="2" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<rect x="34" y="43" width="56" height="8" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<path d="M90 47 L104 43 L104 51 Z" fill="var(--ocker-weich)" stroke="var(--ocker)" stroke-width="1.2"/>
+<path d="M44 43 L44 51 M54 43 L54 51 M64 43 L64 51 M74 43 L74 51" stroke="var(--linie-stark)" stroke-width="1" opacity=".6"/>
+<text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">053 115</text></svg></span>
+  <span class="nr">11082</span>
+  <span class="t">Capatect Universaldübel Schraubdübel 053 115, 100 STK, 1 KAR</span>
+  <span class="marker vorteil">13 % unter Liste</span>
+  <span class="preis">66,35&nbsp;€ <span class="eh">je Karton, netto</span></span>
+</a><a class="karte" href="../artikel/POS-52537.html">
+  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Dübel mit Teller"
+ xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><rect x="20" y="40" width="14" height="14" rx="2" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<rect x="34" y="43" width="56" height="8" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<path d="M90 47 L104 43 L104 51 Z" fill="var(--ocker-weich)" stroke="var(--ocker)" stroke-width="1.2"/>
+<path d="M44 43 L44 51 M54 43 L54 51 M64 43 L64 51 M74 43 L74 51" stroke="var(--linie-stark)" stroke-width="1" opacity=".6"/>
+<text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">40 mm</text></svg></span>
+  <span class="nr">52537</span>
+  <span class="t">Drehstiftdübel PK(100) K 6 40 mm</span>
+  <span class="marker vorteil">26 % unter Liste</span>
+  <span class="preis">2,87&nbsp;€ <span class="eh">je Karton, netto</span></span>
+</a></div>
+
 <h2>Was Sie hier finden</h2>
 <p>Die Komponenten stammen überwiegend aus dem Capatect-Programm von Synthesa, ergänzt um Baumit-Produkte. Beides sind österreichische Systemanbieter mit vollständigen technischen Unterlagen: <a href="https://www.synthesa.at/" target="_blank" rel="noopener noreferrer">synthesa.at</a>, <a href="https://www.baumit.at/" target="_blank" rel="noopener noreferrer">baumit.at</a>.</p>
 <h2>Wonach Sie auswählen</h2>
@@ -103,68 +236,13 @@ footer a{color:var(--gedaempft)}
 <p>Kantenschutzprofile, Gewebeanschlussleisten und Rondellen sind die Positionen, die in Materiallisten fehlen und auf der Baustelle gebraucht werden. Sie stehen deshalb auf unserer Systemliste <a href="../system/fassade-100-qm.html">Fassade 100 m²</a>, auch wenn sie klein sind.</p>
 <h2>Was hier nicht steht</h2>
 <p>Verarbeitungsanweisungen. Die verbindlichen Angaben stehen in der Verarbeitungsrichtlinie des Systemherstellers, und dorthin verlinken wir. Wir geben die Kennwerte wieder — wir schreiben die Richtlinie nicht ab.</p>
-<h2>Artikel in dieser Gruppe</h2>
-<div class="raster"><a class="karte" href="../artikel/POS-52058.html">
-  <span class="nr">52058</span>
-  <span class="t">Baumit TextilglasGitter 1,1x50 m</span>
-  <span class="marker vorteil">40 % unter Liste</span>
-  <span class="preis">1,19&nbsp;€ <span class="eh">je m², netto</span></span>
-</a><a class="karte" href="../artikel/POS-52124.html">
-  <span class="nr">52124</span>
-  <span class="t">Capatect Gewebeanschlussleiste 3D Universal Plus 2,55 m</span>
-  <span class="marker vorteil">13 % unter Liste</span>
-  <span class="preis">4,91&nbsp;€ <span class="eh">je lfm, netto</span></span>
-</a><a class="karte" href="../artikel/POS-50509.html">
-  <span class="nr">50509</span>
-  <span class="t">Capatect Glasgewebe M, Breite 110cm, orange 55 m2</span>
-  <span class="marker vorteil">27 % unter Liste</span>
-  <span class="preis">1,07&nbsp;€ <span class="eh">je m², netto</span></span>
-</a><a class="karte" href="../artikel/POS-53402.html">
-  <span class="nr">53402</span>
-  <span class="t">Capatect Kantenschutz mit Gewebe Carbon 11,5 13,5 cm 2,5 m</span>
-  <span class="marker vorteil">19 % unter Liste</span>
-  <span class="preis">0,95&nbsp;€ <span class="eh">je lfm, netto</span></span>
-</a><a class="karte" href="../artikel/POS-11283.html">
-  <span class="nr">11283</span>
-  <span class="t">Capatect Klebe- und Spachtelmasse 186 M 25 kg</span>
-  <span class="marker vorteil">25 % unter Liste</span>
-  <span class="preis">0,56&nbsp;€ <span class="eh">je kg, netto</span></span>
-</a><a class="karte" href="../artikel/POS-29461.html">
-  <span class="nr">29461</span>
-  <span class="t">Capatect Klebe- und Spachtelmasse 190 FEIN 25 kg</span>
-  <span class="marker vorteil">28 % unter Liste</span>
-  <span class="preis">0,60&nbsp;€ <span class="eh">je kg, netto</span></span>
-</a><a class="karte" href="../artikel/POS-29610.html">
-  <span class="nr">29610</span>
-  <span class="t">Capatect Polystyrol-Rondelle für Capatect Universaldübel Rondelle und Capatect Schraubdübel Holz</span>
-  <span class="marker vorteil">7 % unter Liste</span>
-  <span class="preis">13,24&nbsp;€ <span class="eh">je Karton, netto</span></span>
-</a><a class="karte" href="../artikel/POS-19333.html">
-  <span class="nr">19333</span>
-  <span class="t">Capatect PrimaPor K20 weiß 25 kg SH-Reibputz</span>
-  
-  <span class="preis">2,27&nbsp;€ <span class="eh">je kg, netto</span></span>
-</a><a class="karte" href="../artikel/POS-13728.html">
-  <span class="nr">13728</span>
-  <span class="t">Capatect Putzgrund weiß 25 kg</span>
-  <span class="marker vorteil">20 % unter Liste</span>
-  <span class="preis">2,77&nbsp;€ <span class="eh">je kg, netto</span></span>
-</a><a class="karte" href="../artikel/POS-11082.html">
-  <span class="nr">11082</span>
-  <span class="t">Capatect Universaldübel Schraubdübel 053 115, 100 STK, 1 KAR</span>
-  <span class="marker vorteil">13 % unter Liste</span>
-  <span class="preis">66,35&nbsp;€ <span class="eh">je Karton, netto</span></span>
-</a><a class="karte" href="../artikel/POS-52537.html">
-  <span class="nr">52537</span>
-  <span class="t">Drehstiftdübel PK(100) K 6 40 mm</span>
-  <span class="marker vorteil">26 % unter Liste</span>
-  <span class="preis">2,87&nbsp;€ <span class="eh">je Karton, netto</span></span>
-</a></div>
 <h2>Weiterlesen</h2>
 <div class="verwandt"><a href="../wissen/wdvs-systemaufbau.html">Was zu einem Wärmedämmverbundsystem gehört</a><a href="../wissen/mengen-fuer-100-qm-wdvs.html">Mengen für 100 m² Fassade ermitteln</a><a href="../wissen/untergrund-pruefen.html">Untergrund prüfen, bevor geklebt wird</a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
   ausgewiesen · <a href="../wissen/redaktionsprinzipien.html">Wie wir unsere Angaben prüfen</a>
+  · <a href="../wissen/index.html">Wissen</a>
+  · <a href="../rechtliches/index.html">Rechtliches</a>
   · <a href="../rechtliches/impressum.html">Impressum</a>
   · <a href="../rechtliches/datenschutz.html">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.

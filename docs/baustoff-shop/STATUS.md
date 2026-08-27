@@ -166,6 +166,20 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > Auftraggeber vorgelegt:** ob die Handelsspanne von 25 % öffentlich genannt
 > bleibt — sie steht auf drei Seiten als Verkaufsargument.
 > [`interna-auf-der-kundenseite.md`](./interna-auf-der-kundenseite.md).
+>
+> **Der Shop ist auf die Ware gedreht** (27.08.): Vier Rückmeldungen des
+> Auftraggebers. **41 tote Verweise** — jeder Verweis aus einem Seitenkörper
+> ging in der Mehrseitenfassung ins Leere, während der Bau „kein toter Link"
+> meldete: Die Prüfung las den Quelltext statt der ausgegebenen Adresse.
+> Behoben plus zweite Prüfung an der Adresse. **Bilder**: `src/bilder.js`
+> zeichnet 14 Bauformen aus den Artikeldaten — Maße werden gezeichnet, nicht
+> nur beschriftet; ein Herstellerfoto wäre ein fremdes Werk. **Struktur**:
+> Kopfleiste nur noch Sortiment, alle 46 Artikel auf der Startseite, Wissen
+> auf eine Zeile. **„Viel mehr" hat eine Grenze**: 15 Rechnungen, 70
+> Positionen, 53 Artikelnummern, davon 7 Nebenkosten — die 46 sind alles,
+> was belegbar ist. Der Hebel wäre eine Artikelpreisliste von Poschacher und
+> damit eine E-Mail, also freigabepflichtig.
+> [`shop-auf-die-ware-gedreht.md`](./shop-auf-die-ware-gedreht.md).
 
 ## Wo das Projekt steht
 
@@ -346,6 +360,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `maschinenlesbare-ausgabe.md` | **Schema.org, Feed und robots.txt** — Preise werden übernommen statt nachgerechnet, Platzhalter gehen nicht hinaus, Zurückgehaltenes wird begründet |
 | `domainwahl.md` | **Die Firma und ihre Domain gibt es schon** — Freudenthaler Bau GmbH, FN 347938z, Baustoffhandel eingetragen, `freudenthaler-bau.at` in Betrieb; Empfehlung daher `shop.freudenthaler-bau.at` plus `baustoffe-muehlviertel.at` als Weiterleitung. Zwei Korrekturen: Ried in der Riedmark liegt im **Mühlviertel**, nicht im Innviertel; der Entitätswert ist bereits aufgebaut und wäre bei einer neuen Domain verloren |
 | `pruefung-der-testfaelle.md` | **Grüne Tests sind eine Aussage über die Testfälle, nicht über den Code** — elf hohle Schleifen gefunden und entschärft |
+| `shop-auf-die-ware-gedreht.md` | **Eine Prüfung, die das Modell liest statt die Ausgabe, prüft die eigene Absicht** — 41 tote Verweise trotz grüner Verweisprüfung; dazu selbstgezeichnete Artikelschemata statt fremder Fotos, produktzuerst-Aufbau und die belegte Obergrenze des Katalogs (46 von 53 Artikelnummern, Rest sind Nebenkosten) |
 | `interna-auf-der-kundenseite.md` | **Gehört das überhaupt auf diese Seite?** — die fünfte Frage der Prüfkette, die keinem der vier Prüfer gehörte. Rohmarge, Lieferantenskonto und Gate-Nummern standen auf der AGB-Kundenseite. `src/interna.js` prüft im Bau, Ausnahmen kosten einen begründeten Satz und lassen sich auf einzelne Muster eingrenzen |
 | `widerrufe-maschinell.md` | **Ein Widerruf deckt nur seine eigene Aussage** — Register der fünf zurückgenommenen Thesen, `npm run pruefe-widerrufe` meldet jede Fundstelle ohne ihren eigenen Widerruf in Sichtweite (±8 Zeilen oder Kopfvermerk). Drei echte Funde, darunter der vierte Innkreis-Überlebende und eine seit dem 25.08. beantwortete Frage, die noch offen aussah |
 | `verhandlungsziel-konditionen.md` | **Zehn Prozent Nachlass kosten 38,8 % Rabatt** — das Verhandlungsziel liegt über der Gate-2-Schwelle |

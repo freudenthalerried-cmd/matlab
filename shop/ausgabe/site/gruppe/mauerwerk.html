@@ -50,7 +50,16 @@ th{font-family:var(--schmal);text-transform:uppercase;font-size:.85rem;backgroun
 tbody tr:last-child td{border-bottom:none}
 code{font-family:var(--zahl);font-size:.86em;background:var(--flaeche-2);padding:.05em .3em;border-radius:2px}
 hr{border:none;border-top:1px solid var(--linie);margin:2rem 0}
-.raster{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:1px;background:var(--linie);border:1px solid var(--linie);margin-bottom:1.5rem}
+.raster{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:1px;background:var(--flaeche);border:1px solid var(--linie);margin-bottom:1.5rem}
+.raster>*{outline:1px solid var(--linie)}
+.karte .bild{display:block;background:var(--flaeche-2);margin:-1rem -1.1rem .7rem;padding:.7rem .6rem;border-bottom:1px solid var(--linie)}
+svg.schema{display:block;width:100%;height:auto;max-height:7.5rem}
+svg.schema.gruppe{max-height:5.5rem}
+.kachel .bild{display:block;background:var(--flaeche-2);margin:-1rem -1.1rem .6rem;padding:.6rem;border-bottom:1px solid var(--linie)}
+.artikelbild{background:var(--grund);border:1px solid var(--linie);padding:1.4rem;margin:0 0 1.5rem;display:flex;justify-content:center}
+.artikelbild svg.schema{max-height:12rem;max-width:22rem}
+.mehr{font-family:var(--schmal);text-transform:uppercase;letter-spacing:.06em;font-size:.82rem}
+
 .karte{background:var(--flaeche);padding:.9rem 1rem;display:flex;flex-direction:column;gap:.4rem;text-decoration:none;color:inherit}
 .karte:hover{background:var(--flaeche-2)}
 .karte .nr{font-family:var(--zahl);font-size:.68rem;color:var(--gedaempft)}
@@ -61,7 +70,8 @@ hr{border:none;border-top:1px solid var(--linie);margin:2rem 0}
 .marker.vorteil{background:var(--gruen-weich);color:var(--gruen)}
 .marker.beipack{background:var(--ziegel-weich);color:var(--ziegel)}
 .marker.sperrig{background:var(--flaeche-2);color:var(--tinte-2)}
-.kacheln{display:grid;grid-template-columns:repeat(auto-fill,minmax(17rem,1fr));gap:1px;background:var(--linie);border:1px solid var(--linie);margin-bottom:1.5rem}
+.kacheln{display:grid;grid-template-columns:repeat(auto-fill,minmax(17rem,1fr));gap:1px;background:var(--flaeche);border:1px solid var(--linie);margin-bottom:1.5rem}
+.kacheln>*{outline:1px solid var(--linie)}
 .kachel{background:var(--flaeche);padding:1rem 1.1rem;text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:.35rem}
 .kachel:hover{background:var(--flaeche-2)}
 .kachel .k{font-family:var(--schmal);text-transform:uppercase;font-size:.78rem;letter-spacing:.06em;color:var(--ocker)}
@@ -69,6 +79,7 @@ hr{border:none;border-top:1px solid var(--linie);margin:2rem 0}
 .kachel .b{font-size:.88rem;color:var(--gedaempft)}
 .preistafel{display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:1px;background:var(--linie);border:1px solid var(--linie);margin:1.2rem 0}
 .preistafel>div{background:var(--flaeche);padding:.9rem 1rem}
+.preistafel .k,.preistafel .w,.preistafel .e{display:block}
 .preistafel .k{font-family:var(--schmal);text-transform:uppercase;font-size:.78rem;letter-spacing:.05em;color:var(--ocker)}
 .preistafel .w{font-family:var(--schmal);font-size:1.7rem;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
 .preistafel .e{font-size:.82rem;color:var(--gedaempft)}
@@ -88,29 +99,38 @@ footer a{color:var(--gedaempft)}
 <body><div class="huelle">
 <header class="kopfleiste">
   <a class="logo" href="../index.html">Freudenthaler Bau GmbH</a>
-  <nav><a href="../gruppe/wdvs.html">WDVS</a><a href="../gruppe/daemmung.html">Dämmung</a><a href="../gruppe/kamin.html">Kamin</a><a href="../gruppe/kanal.html">Kanal</a><a href="../wissen/index.html">Wissen</a><a href="../lieferung.html">Lieferung</a><a href="../rechtliches/index.html">Rechtliches</a></nav>
+  <nav><a href="../gruppe/wdvs.html">WDVS</a><a href="../gruppe/daemmung.html">Dämmung</a><a href="../gruppe/mauerwerk.html">Mauerwerk</a><a href="../gruppe/moertel.html">Mörtel</a><a href="../gruppe/kamin.html">Kamin</a><a href="../gruppe/kanal.html">Kanal</a><a href="../gruppe/zubehoer.html">Zubehör</a><a href="../lieferung.html">Lieferung</a></nav>
 </header>
 <p class="krume"><a href="../index.html">Start</a> › Sortiment</p>
 <h1>Mauerwerk</h1>
 <p><strong>Die Antwort in zwei Sätzen.</strong> Wir führen Planziegel für den Hochbau, palettenweise geliefert und mit Kran entladen. Steinformat und Wandstärke kommen aus der Planung; der zugehörige Mörtel gehört zum selben System wie der Stein.</p>
+<h2>1 Artikel in dieser Gruppe</h2>
+<div class="raster"><a class="karte" href="../artikel/POS-29728.html">
+  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Mauer- oder Mantelstein"
+ xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="M20 34 L84 22 L104 30 L40 42 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<path d="M20 34 L20 66 L40 74 L40 42 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
+<path d="M40 42 L40 74 L104 62 L104 30 Z" fill="var(--ziegel-weich)" stroke="var(--linie-stark)" stroke-width="1.5"/>
+<path d="M52 46 L52 70 M64 44 L64 68 M76 42 L76 66 M88 40 L88 64" stroke="var(--linie-stark)" stroke-width="1" opacity=".55"/>
+<text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">23,8 cm</text></svg></span>
+  <span class="nr">29728</span>
+  <span class="t">Ökotherm HL N+F 10 50 23,8 cm</span>
+  <span class="marker vorteil">40 % unter Liste</span>
+  <span class="preis">3,07&nbsp;€ <span class="eh">je Stück, netto</span></span>
+</a></div>
+
 <h2>Was bei der Bestellung zählt</h2>
 <p><strong>Steine je Quadratmeter.</strong> Ergibt sich aus dem Steinformat und ist auf dem Datenblatt des Steins angegeben. Daraus mal der Wandfläche kommt die Stückzahl, aufgerundet auf volle Paletten.</p>
 <p><strong>Kranentladung.</strong> Eine Palette Ziegel wird nicht von Hand abgeladen. Der Kranhub ist eine eigene Position und fällt je Hub an — was das für die Lieferkosten heißt, steht auf <a href="../wissen/warum-keine-gratislieferung.html">Warum es keine Gratislieferung gibt</a>.</p>
 <p><strong>Standfläche auf der Baustelle.</strong> Paletten brauchen tragfähigen, einigermaßen ebenen Untergrund. Eine gekippte Ziegelpalette ist ein Arbeitsunfall, kein Materialschaden.</p>
 <h2>Was hier nicht steht</h2>
 <p>Statik und Wandaufbau. Welcher Stein in welcher Stärke zulässig ist, gehört zur Planung. Wir liefern das Format, das dort steht.</p>
-<h2>Artikel in dieser Gruppe</h2>
-<div class="raster"><a class="karte" href="../artikel/POS-29728.html">
-  <span class="nr">29728</span>
-  <span class="t">Ökotherm HL N+F 10 50 23,8 cm</span>
-  <span class="marker vorteil">40 % unter Liste</span>
-  <span class="preis">3,07&nbsp;€ <span class="eh">je Stück, netto</span></span>
-</a></div>
 <h2>Weiterlesen</h2>
 <div class="verwandt"><a href="../wissen/lagerung-von-sackware.html">Lagerung von Sackware und Platten</a><a href="../wissen/warum-keine-gratislieferung.html">Warum es hier keine Gratislieferung gibt</a></div>
 <footer>
   <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
   ausgewiesen · <a href="../wissen/redaktionsprinzipien.html">Wie wir unsere Angaben prüfen</a>
+  · <a href="../wissen/index.html">Wissen</a>
+  · <a href="../rechtliches/index.html">Rechtliches</a>
   · <a href="../rechtliches/impressum.html">Impressum</a>
   · <a href="../rechtliches/datenschutz.html">Datenschutz</a></p>
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
