@@ -123,21 +123,69 @@ export function erzeugeImpressum(betreiber = {}) {
  * existieren, sonst weicht die Bedingung von der Rechnung ab, ohne dass es
  * jemand merkt.
  */
+/**
+ * Jeder Zahlweg trägt **zwei** Begründungen, und das ist der Kern dieser
+ * Datei.
+ *
+ * `grund` ist die Entscheidungsbegründung: Gate-Nummern, Gebühren je
+ * Bestellung, Kippzahlen, Lieferantenskonto. Sie gehört ins Verzeichnis und
+ * in die Nachvollziehbarkeit — und **nicht** auf eine Kundenseite.
+ *
+ * `kunde` ist der Satz, der veröffentlicht werden darf: was gilt, ohne die
+ * eigene Kalkulation offenzulegen.
+ *
+ * Der Anlass ist ein Fehler dieser Reihe. Die erste Fassung kannte nur
+ * `grund`, und `bin/website.mjs` hat ihn in die AGB-Seite gerendert. Damit
+ * standen auf einer Kundenseite: die eigene Rohmarge, das Skonto beider
+ * Lieferanten, die Mehrkosten je Zahlweg, die Ausfallquote, ab der sich das
+ * Bild dreht — und die internen Gate-Nummern dazu. Gefunden hat es niemand
+ * beim Schreiben, sondern eine Frage des Auftraggebers: *„ist das schon die
+ * öffentliche Seite oder nur ein Dashboard für mich?"*
+ *
+ * > **Eine Begründung, die überzeugt, überzeugt auch die Konkurrenz.** Der
+ * > Grund, warum eine Bedingung gilt, ist nicht automatisch der Grund, den
+ * > man dem Kunden nennt — und der Unterschied ist keine Unehrlichkeit,
+ * > sondern die Grenze zwischen Auskunft und Kalkulation.
+ */
 export const ZAHLUNGSBEDINGUNGEN = Object.freeze({
   zielTage: 0,
-  stand: '2026-08-26',
+  stand: '2026-08-27',
   herkunft: 'docs/baustoff-shop/zahlungsziel-entschieden.md',
   angeboten: Object.freeze([
-    { id: 'eps', grund: 'einziger Weg, der alle vier Anforderungen erfüllt; +6,50 € je Bestellung nach Gebühr und Skonto' },
-    { id: 'vorkasse', grund: 'billigster Weg und Gate-21-fest; meldet den Eingang aber nicht maschinell' },
-    { id: 'karte-stripe', grund: 'je Bestellung noch positiv, auf den Monat über der 10-%-Grenze — angeboten, weil er Bestellungen ermöglicht, nicht weil er sich rechnet' },
+    {
+      id: 'eps',
+      grund: 'einziger Weg, der alle vier Anforderungen erfüllt; +6,50 € je Bestellung nach Gebühr und Skonto',
+      kunde: 'Der empfohlene Weg: Freigabe im eigenen Bankkonto, Zahlung sofort bestätigt, keine Kartendaten im Spiel.',
+    },
+    {
+      id: 'vorkasse',
+      grund: 'billigster Weg und Gate-21-fest; meldet den Eingang aber nicht maschinell',
+      kunde: 'Überweisung nach Auftragsbestätigung. Die Ware geht auf den Weg, sobald der Betrag eingelangt ist — das dauert je nach Bank ein bis zwei Werktage länger.',
+    },
+    {
+      id: 'karte-stripe',
+      grund: 'je Bestellung noch positiv, auf den Monat über der 10-%-Grenze — angeboten, weil er Bestellungen ermöglicht, nicht weil er sich rechnet',
+      kunde: 'Für Bestellungen, die aus der Firmenkarte laufen sollen. Zahlung sofort bestätigt.',
+    },
   ]),
   ausgeschlossen: Object.freeze([
-    { id: 'offene-rechnung', grund: 'verletzt Gate 21 und trägt das Ausfallrisiko im Haus; kippt schon ab einem Ausfall auf 86 Bestellungen' },
-    { id: 'nachnahme', grund: 'löst Registrierkassenpflicht aus und verletzt Gate 21' },
+    {
+      id: 'offene-rechnung',
+      grund: 'verletzt Gate 21 und trägt das Ausfallrisiko im Haus; kippt schon ab einem Ausfall auf 86 Bestellungen',
+      kunde: 'Wird nicht angeboten. Ein Zahlungsziel würde in die Preise wandern — dieser Shop rechnet stattdessen ohne.',
+    },
+    {
+      id: 'nachnahme',
+      grund: 'löst Registrierkassenpflicht aus und verletzt Gate 21',
+      kunde: 'Wird nicht angeboten. Im Streckengeschäft kassiert der Frächter, nicht der Händler.',
+    },
   ]),
   zurueckgestellt: Object.freeze([
-    { id: 'rechnungskauf', grund: 'hält Gate 21, kostet aber 17,93 € je Bestellung mehr als EPS — lohnt ab acht Zusatzbestellungen im Monat oder einer Ausfallquote über 3,2 %' },
+    {
+      id: 'rechnungskauf',
+      grund: 'hält Gate 21, kostet aber 17,93 € je Bestellung mehr als EPS — lohnt ab acht Zusatzbestellungen im Monat oder einer Ausfallquote über 3,2 %',
+      kunde: 'Noch nicht verfügbar. Für Stammkunden mit laufendem Bedarf ist ein Rechnungskauf über einen Anbieter vorgesehen; wer ihn braucht, meldet sich.',
+    },
   ]),
   _offen: 'Der Zahlungsanbieter selbst ist nicht gewählt — das ist eine Ausgabe und freigabepflichtig.',
 });
@@ -180,14 +228,11 @@ export const AGB_GLIEDERUNG = [
     hinweis:
       'Keine Nachnahme und keine Barzahlung auf der Baustelle — sonst entsteht ein Barumsatz ' +
       'und damit Registrierkassenpflicht. **Zahlungsziel: null Tage**, gezahlt wird bei der ' +
-      'Bestellung. Das ist im B2B-Baustoffhandel ungewöhnlich und steht deshalb mit Grund da: ' +
-      'Maßgeblich für Gate 21 ist nicht das Ziel auf der Kundenrechnung, sondern wann das Geld ' +
-      'im eigenen Konto liegt — beide Lieferanten geben 3 % Skonto bei 14 Tagen, und diese ' +
-      '3 % heben die Rohmarge von 25 auf 27,25 %. **Keine offene Rechnung auf eigenes Risiko**: ' +
-      'Sie kostet keine Gebühr und verliert dafür das gesamte Skonto, 6,50 € je Bestellung ' +
-      'schlechter als der günstigste Weg, der etwas kostet. Der Rechnungskauf über einen ' +
-      'Anbieter hält Gate 21 sehr wohl — er ist nicht ausgeschlossen, sondern zurückgestellt, ' +
-      'entscheidbar an den Kippzahlen in zahlungsziel-entschieden.md.',
+      'Bestellung; maßgeblich ist der Zahlungseingang, nicht das Datum der Bestellung. ' +
+      'Keine offene Rechnung auf eigenes Risiko. Der Eigentumsvorbehalt reicht bis zur ' +
+      'vollständigen Zahlung und muss den Weiterverkauf und den Einbau in fremdes Eigentum ' +
+      'ausdrücklich regeln — im Baustoffhandel ist die Ware regelmäßig verbaut, bevor sie ' +
+      'bezahlt ist. Verzugszinsen und Mahnspesen nach UGB, Höhe vom Anbieter zu setzen.',
   },
   { nr: 10, titel: 'Gewährleistung und Haftung', hinweis: 'Im B2B abdingbar, aber nicht grenzenlos.' },
   { nr: 11, titel: 'Rücknahme angebrochener Gebinde und Rollenware', hinweis: 'Ausschluss empfehlenswert; Rollenware ist nicht teilbar.' },

@@ -6,6 +6,7 @@ frage: Warum ist das hier günstiger als im Fachhandel, und wo ist der Haken?
 kurz: Die Preise entstehen aus den Einkaufskonditionen eines Baumeisterbetriebs plus einer Handelsspanne von 25 Prozent. Der Haken ist die Menge: Der Vorteil trägt bei Systemware und Paletten, bei Kleinteilen trägt er nicht.
 verwandt: redaktionsprinzipien, warum-keine-gratislieferung, was-fehlt-haelt-die-baustelle-auf
 stand: 2026-08-25
+intern: begruendet — die Handelsspanne von 25 % ist hier kein Versehen, sondern das Verkaufsargument der Seite. Die Entscheidung, sie zu nennen, gehört dem Auftraggeber und ist offen (siehe interna-auf-der-kundenseite.md).
 ---
 
 # Was „Baumeisterpreis" heißt — und was nicht

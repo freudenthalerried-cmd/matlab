@@ -6,6 +6,7 @@ frage: Andere liefern ab einem bestimmten Bestellwert frei Haus — warum hier n
 kurz: Weil die Fracht bei unserem Lieferanten auf jedem Beleg steht, auch auf großen. Wer sie trotzdem einpreist, verteuert entweder die Ware oder verliert bei jeder kleinen Bestellung Geld.
 verwandt: baumeisterpreis, was-fehlt-haelt-die-baustelle-auf
 stand: 2026-08-25
+intern: begruendet — dieselbe Spanne und die eigene Deckungsbeitragsrechnung als Quellenangabe; die Seite begründet damit, warum es keine Frei-Haus-Schwelle gibt.
 ---
 
 # Warum es hier keine Gratislieferung gibt

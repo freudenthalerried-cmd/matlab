@@ -27,6 +27,8 @@ import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync, rmSync
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { ladeBaustoffkatalog, katalogbefund, ZIELMARGE } from '../src/baustoffkatalog.js';
+import { ZAHLWEGE } from '../src/zahlung.js';
+import { pruefeSeiten } from '../src/interna.js';
 import { lesKopf, alsHtml, alsText, alsListe, esc } from '../src/markdown.js';
 import {
   erzeugeImpressum, pruefeBetreiberdaten, AGB_GLIEDERUNG, ZAHLUNGSBEDINGUNGEN,
@@ -405,7 +407,7 @@ function inhaltsSeite(seite, katalog, befund, seiten, verweis) {
       : {}),
   };
 
-  return { titel: seite.kopf.titel, kurz: alsText(kurz), html: teile.join('\n'), jsonLd };
+  return { titel: seite.kopf.titel, kurz: alsText(kurz), html: teile.join('\n'), jsonLd, intern: seite.kopf.intern };
 }
 
 function startSeite(katalog, befund, seiten, verweis) {
@@ -420,6 +422,14 @@ function startSeite(katalog, befund, seiten, verweis) {
 
   return {
     titel: 'Baustoffe zum Baumeisterpreis',
+    // Die Startseite nennt die Handelsspanne im ersten Satz — das ist das
+    // Verkaufsargument, nicht ein Ausrutscher. Die Ausnahme ist deshalb
+    // eingegrenzt: Gate-Nummern, Lieferantennamen, Betriebsrechnung und
+    // Programmkennungen bleiben auch hier gemeldet.
+    intern: 'begruendet — die Handelsspanne ist die Kernaussage der Startseite; '
+      + 'die Kachel der Wissensseite „Baumeisterpreis" trägt sie mit. Ob sie öffentlich '
+      + 'genannt bleibt, ist eine offene Entscheidung des Auftraggebers.',
+    internNur: ['eigene-marge', 'lieferantenkondition'],
     kurz: `Baustoffe zum Baumeisterpreis, geliefert im Umkreis von ${ORT}. ${befund.artikelGesamt} Artikel, ${befund.unterListe} davon unter dem Listenpreis des Lieferanten.`,
     html: `<h1>Baustoffe zum<br>Baumeisterpreis</h1>
 <p class="lede">Was ein Baumeister im Einkauf zahlt, zahlen Sie auch — zuzüglich einer Handelsspanne von
@@ -567,21 +577,23 @@ sonst mit Rückfragen erhebt. Der verbindliche Wortlaut fehlt und wird nicht erf
 <div class="scroll"><table><thead><tr><th>Nr.</th><th>Punkt</th><th>Warum</th></tr></thead><tbody>
 ${AGB_GLIEDERUNG.map((p) => `<tr><td class="n">${p.nr}</td><td><strong>${esc(p.titel)}</strong></td><td>${p.hinweis ? esc(p.hinweis) : '<span class="marker sperrig">noch zu begründen</span>'}</td></tr>`).join('')}
 </tbody></table></div>
-<h2>Punkt 9 im Wortlaut der Entscheidung</h2>
-<p>Die Zahlungsbedingungen sind als einzige schon entschieden — sie hängen nicht am
-Rechtstexteanbieter, sondern an einer Rechnung. <strong>Zahlungsziel: null Tage.</strong>
-Gezahlt wird bei der Bestellung. Das ist im B2B-Baustoffhandel ungewöhnlich, und der Grund
-steht dabei: Drei Prozent Lieferantenskonto bei vierzehn Tagen wiegen schwerer als jede
-Zahlungsgebühr.</p>
-<div class="scroll"><table><thead><tr><th>Zahlweg</th><th>Stand</th><th>Warum</th></tr></thead><tbody>
+<h2>Punkt 9: Zahlung</h2>
+<p>Die Zahlungsbedingungen sind als einzige schon entschieden.
+<strong>Zahlungsziel: null Tage.</strong> Gezahlt wird bei der Bestellung. Das ist im
+B2B-Baustoffhandel ungewöhnlich, und der Grund steht dabei: Dieser Shop verkauft zum
+Baumeister-Einkaufspreis plus Handelsspanne. Ein Zahlungsziel müsste in diese Spanne
+eingerechnet werden und läge damit auf jedem Preis — auch auf dem des Kunden, der sofort
+zahlt. <strong>Wer nicht auf Ziel kauft, zahlt hier nicht für den, der es tut.</strong></p>
+<div class="scroll"><table><thead><tr><th>Zahlweg</th><th>Stand</th><th>Was das heißt</th></tr></thead><tbody>
 ${[
   ...ZAHLUNGSBEDINGUNGEN.angeboten.map((z) => ({ ...z, stand: 'angeboten' })),
-  ...ZAHLUNGSBEDINGUNGEN.zurueckgestellt.map((z) => ({ ...z, stand: 'zurückgestellt' })),
-  ...ZAHLUNGSBEDINGUNGEN.ausgeschlossen.map((z) => ({ ...z, stand: 'ausgeschlossen' })),
-].map((z) => `<tr><td><strong>${esc(z.id)}</strong></td><td>${esc(z.stand)}</td><td>${esc(z.grund)}</td></tr>`).join('')}
+  ...ZAHLUNGSBEDINGUNGEN.zurueckgestellt.map((z) => ({ ...z, stand: 'noch nicht' })),
+  ...ZAHLUNGSBEDINGUNGEN.ausgeschlossen.map((z) => ({ ...z, stand: 'nicht angeboten' })),
+].map((z) => `<tr><td><strong>${esc(zahlwegName(z.id))}</strong></td><td>${esc(z.stand)}</td><td>${esc(z.kunde)}</td></tr>`).join('')}
 </tbody></table></div>
-<p><span class="marker sperrig">offen</span> ${esc(ZAHLUNGSBEDINGUNGEN._offen)} Solange steht
-hier eine Bedingung ohne Abwicklung — die Bestellstrecke endet weiterhin vor der Zahlung.</p>
+<p><span class="marker sperrig">offen</span> Der Zahlungsanbieter ist noch nicht gewählt.
+Solange steht hier eine Bedingung ohne Abwicklung — die Bestellstrecke endet vor der
+Zahlung.</p>
 
 <h2>Der Punkt, der am meisten kostet</h2>
 <p>Punkt 8 — die Rügefrist nach § 377 UGB. Sie läuft ab der Ablieferung <strong>auf der
@@ -589,6 +601,21 @@ Baustelle</strong>, nicht ab dem Tag, an dem der Besteller die Palette zum erste
 Ausführlich unter <a href="${verweis('rechtliches/abnahme')}">Abnahme und Rügefrist</a>.</p>`,
     jsonLd: null,
   };
+}
+
+/**
+ * Die Kennung eines Zahlwegs ist eine Programmkennung, kein Kundenwort.
+ *
+ * `eps`, `karte-stripe`, `offene-rechnung` standen wörtlich in der
+ * AGB-Tabelle. Sie verraten für sich genommen wenig — aber sie sind der
+ * sichtbare Teil derselben Nachlässigkeit, die daneben die Rohmarge
+ * ausgestellt hat: Die Seite hat ausgegeben, was im Datensatz stand,
+ * statt das, was der Leser braucht.
+ */
+function zahlwegName(id) {
+  const z = ZAHLWEGE.find((w) => w.id === id);
+  if (!z) throw new Error(`Zahlweg ohne Entsprechung in zahlung.js: ${id}`);
+  return z.name;
 }
 
 function datenschutzSeite(verweis) {
@@ -791,6 +818,39 @@ function main() {
     }
     return m;
   };
+
+  // --- Interna prüfen, bevor irgendetwas ausgegeben wird ---
+  //
+  // Dieselbe Stelle und derselbe Grundsatz wie bei den toten Verweisen:
+  // Nichts wird geschrieben, was den Prüfer nicht passiert hat. Ein Prüfer,
+  // den man nach dem Bauen aufrufen muss, wird irgendwann nicht aufgerufen —
+  // und genau so ist die Rohmarge auf die AGB-Seite gekommen.
+  const proben = [...bauen(rautenVerweis)].map(([kennung, seite]) => ({
+    kennung,
+    html: `${seite.titel ?? ''}\n${seite.kurz ?? ''}\n${seite.frage ?? ''}\n${seite.html ?? ''}`,
+    ausnahme: seite.intern,
+    nur: seite.internNur,
+  }));
+  const innen = pruefeSeiten(proben);
+  if (!innen.sauber) {
+    console.error('Interna auf Kundenseiten — nichts ausgegeben:\n');
+    for (const m of innen.meldungen) {
+      console.error(`  ${m.kennung}  [${m.id}] „${m.fund}"`);
+      console.error(`      … ${m.umfeld} …`);
+      console.error(`      → ${m.warum}`);
+    }
+    console.error('\nEntweder gehört die Angabe umformuliert, oder die Seite trägt');
+    console.error('`intern: begruendet — Grund` im Kopf. Das Muster zu entschärfen ist');
+    console.error('der falsche Ausweg.');
+    process.exit(1);
+  }
+  if (innen.ausnahmen.length) {
+    console.log('Begründete Ausnahmen von der Interna-Prüfung:');
+    for (const a of innen.ausnahmen) {
+      console.log(`  ${a.kennung}${a.nur ? ` (nur ${a.nur.join(', ')})` : ''} — ${a.grund}`);
+    }
+    console.log('');
+  }
 
   // --- Mehrseitenfassung ---
   const site = join(AUSGABE, 'site');
