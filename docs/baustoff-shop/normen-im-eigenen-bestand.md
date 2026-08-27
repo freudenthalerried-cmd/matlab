@@ -107,10 +107,13 @@ Fundstelle wegzulassen.
 nicht.** Das ist die richtige Trennung: Normen sind allgemein und liegen
 im Betrieb; Merkblätter sind produktgenau und liegen beim Hersteller.
 
-Zwei weitere Fundstellen sind vorhanden und noch nicht eingearbeitet:
-**ÖNORM B 2501:2009** für die Kanalseiten und der **B-2110-Auszug zur
-Gewährleistung** für AGB Punkt 10. Beides ist Arbeit für einen späteren
-Lauf und braucht niemanden zu fragen.
+~~Zwei weitere Fundstellen sind vorhanden und noch nicht eingearbeitet.~~
+**Am 27. August erledigt — mit einem geteilten Ergebnis:** ÖNORM B 2501:2009
+hat die Kanalseite deutlich verbessert (Bögen bis 45°, Doppelabzweiger
+unzulässig, Mindestgefälle und -nennweite). Der B-2110-Auszug dagegen
+**passt nicht**: B 2110 ist eine Werkvertragsnorm für Bauleistungen, der
+Shop verkauft Waren. AGB Punkt 10 bleibt ohne Fundstelle.
+[`norm-b2501-und-die-falsche-norm.md`](./norm-b2501-und-die-falsche-norm.md).
 
 ## Was der Nebenbefund lehrt
 

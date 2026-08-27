@@ -99,6 +99,14 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > weitere. WDVS-Systemtreue und Dübeluntergrenze sind damit wieder belegt;
 > die Herstellerunterlagen fehlen weiterhin.
 > [`normen-im-eigenen-bestand.md`](./normen-im-eigenen-bestand.md).
+>
+> **Nachtrag 27. August:** Beide vorliegenden Fundstellen eingearbeitet.
+> ÖNORM B 2501:2009 gibt der Kanalseite die Regeln, die sie bisher an die
+> Planung weiterreichte — Bögen bis 45°, Doppelabzweiger unzulässig,
+> Mindestgefälle 2 % bei DN 100. **ÖNORM B 2110 dagegen passt nicht:** Sie
+> ist eine Werkvertragsnorm für Bauleistungen, der Shop verkauft Waren. AGB
+> Punkt 10 bleibt bewusst ohne Fundstelle.
+> [`norm-b2501-und-die-falsche-norm.md`](./norm-b2501-und-die-falsche-norm.md).
 
 ## Wo das Projekt steht
 
