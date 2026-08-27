@@ -29,9 +29,17 @@ Zwei Dinge musste es lernen, die der erste Anlauf falsch hatte:
 | | |
 |---|---|
 | Belege mit Gesamtgewicht | 14 |
-| **davon ohne Rest** | **4** (262018401, 262024862, 262029541, 262029542) |
+| **davon vollständig sauber** | **3** (262018401, 262024862, 262029541) |
 | Artikel mit eindeutigem Gewicht je Einheit | **7** |
 | Widersprüche zwischen Belegen | **0** |
+
+> ⚠️ **Nachgeschärft am selben Tag.** Die erste Fassung zählte **vier**
+> saubere Belege. Einer davon (262029542) ging nur deshalb auf, weil eine
+> Position **gar keine Gewichtszeile** trägt und deshalb in beiden Summen
+> fehlt. Die Prüfung verlangt jetzt beides: keinen Rest **und** keine
+> Position ohne Gewichtszeile. Die sieben Gewichte sind dieselben geblieben
+> — der vierte Beleg hatte keines beigesteuert. Unten steht, was das
+> geändert hat.
 
 Null Widersprüche ist die eigentlich gute Nachricht: Wo zwei saubere
 Belege denselben Artikel führen, nennen sie dasselbe Gewicht. Die Daten
@@ -77,7 +85,53 @@ Belegt ist damit noch nichts über die Kosten: Die Pakettarife stammen aus
 Suchauszügen und sind weiterhin **Hinweis, keine Fundstelle**. Belegt ist,
 dass die Ware ins Paket passt.
 
-## Die zehn Reste, und warum hier keine Regel steht
+## Die zweite Runde: eine Übereinstimmung ist kein Beweis
+
+Der gefährlichere Fall als ein Rest ist eine **Position ohne
+Gewichtszeile**. Sie fehlt in der Summe — und wenn die Summe trotzdem
+aufgeht, sieht Zufall wie ein Beweis aus.
+
+> Genau das war bei 262029542 der Fall. Der Beleg ging auf den Cent auf
+> und hatte eine Position ohne Gewicht. **Eine Prüfung, die eine
+> unvollständige Summe bestätigt, prüft nichts.**
+
+Mit der schärferen Regel sortiert sich das ganze Bild:
+
+| Fall | Belege | Ursache |
+|---|---|---|
+| sauber | 3 | alle Positionen gewogen, Summe stimmt |
+| Rest, **weil** Positionen keine Gewichtszeile haben | 6 | erklärt — dort stehen Fracht, Energiekostenzuschlag, Folierung, Kranentladung: **Leistungen wiegen nichts** |
+| Rest **ohne** solche Position | 2 (262016265, 262024863) | **ungeklärt** |
+| Retourbelege | 2 | negative Mengen, Positionserkennung greift nicht |
+
+**Damit ist die Hälfte der Reste erklärt**, und zwar harmlos: Auf den
+großen Belegen fehlen die Gewichtszeilen genau bei den Dienstleistungen.
+
+### Drei Gewichte aus der Differenz — als Kandidaten, nicht als Daten
+
+Wo genau **eine Warenposition** keine Gewichtszeile hat, ist ihr Gewicht
+der Rest. Das ist Arithmetik mit eindeutiger Lösung, kein Raten:
+
+| Artikel | aus der Differenz | Beleg |
+|---|---|---|
+| SIK Zuluftplatte EZ 16-18 | 1,110 kg je Stück | 262021645 |
+| Capatect Polystyrol-Rondelle | 0,300 kg je Karton | 262029540 |
+| Capatect Gewebeanschlussleiste 3D | 1,131 kg je Laufmeter | 262030087 |
+
+**Sie stehen nicht im Katalog.** Die Rechnung setzt voraus, dass
+Gesamtgewicht gleich der Summe der Positionsgewichte ist — und genau das
+ist bei zwei Belegen nachweislich **nicht** so. Ein aus der Differenz
+gewonnener Wert würde einen unerklärten Rest stillschweigend einem Artikel
+zuschreiben.
+
+Der dritte Wert zeigt, warum das keine Formsache ist: **1,131 kg je
+Laufmeter** für eine Anschlussleiste ist für ein Kunststoffprofil mit
+Gewebe reichlich viel. Vielleicht stimmt es, vielleicht steckt der Rest
+des Belegs darin. Ein zweiter Beleg mit demselben Artikel entscheidet das;
+bis dahin liegen die drei Werte in
+`preise/gewichte-aus-rechnungen.json` unter `differenz` und warten.
+
+## Die verbleibenden zwei Reste, und warum hier keine Regel steht
 
 | Beleg | Rest |
 |---|---|
@@ -100,7 +154,17 @@ Zwei Beobachtungen, ausdrücklich als Beobachtungen:
 - Bei den Retourbelegen ist der Rest groß; dort stehen negative Mengen,
   die die Positionserkennung nicht sauber trifft.
 
-**Daraus wird hier keine Regel.** Zwei Stichproben, ein einleuchtendes
+**Die naheliegende Erklärung ist bereits widerlegt.** Sie hätte gelautet:
+Eine Position mit zweiter Mengenzeile wird doppelt gezählt. Beleg 262029540
+hat **drei** solche Positionen und einen Rest von 0,30 kg — der vollständig
+aus einer Position ohne Gewichtszeile stammt. Wäre die Doppelzählung die
+Regel, müsste dieser Beleg um Hunderte Kilogramm danebenliegen.
+
+> Das ist der Unterschied zu den beiden falschen Thesen der letzten Tage:
+> Diesmal wurde die naheliegende Erklärung **geprüft, bevor** sie
+> aufgeschrieben wurde — und sie hat die Prüfung nicht überstanden.
+
+**Eine Regel steht hier deshalb nicht.** Zwei Stichproben, ein einleuchtendes
 Muster — das ist genau die Konstellation, die diese Woche schon zweimal zu
 einer falschen These geführt hat (`lagerhaus-rabatte-gelesen.md`) und beim
 dritten Mal bewusst nicht mehr aufgeschrieben wurde. Die Reste stehen als
@@ -129,7 +193,8 @@ Quellenangabe trägt.
 | Gewicht im Katalog | **7 von 46 Artikeln**, alle mit `gewichtQuelle: "rechnung"` |
 | Werkzeug | `werkzeuge/gewichte.py`, Summenprobe eingebaut |
 | Rohdaten | `preise/gewichte-aus-rechnungen.json` (gitignore-gedeckt) |
-| offen | zehn Belege mit Rest; Positionserkennung auf Retourbelegen |
+| Kandidaten aus der Differenz | 3, in `preise/gewichte-aus-rechnungen.json`, nicht im Katalog |
+| offen | **zwei** ungeklärte Reste (262016265, 262024863); Positionserkennung auf Retourbelegen |
 | Gate 20 | weiterhin ohne Paletten- und Folierungskosten — die Palettenzahl hängt am Gewicht |
 
 Der nächste Schritt ist die Positionserkennung auf den Belegen mit Rest.

@@ -275,6 +275,15 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > **samt Zahl der Positionen ohne belegtes Gewicht**. Zehn Belege tragen
 > einen ungeklärten Rest; zwei davon entsprechen genau dem Gewicht der ersten
 > Position — als Beobachtung notiert, **nicht** als Regel.
+> **Nachgeschärft:** Ein vierter Beleg galt zunächst als sauber und ging nur
+> deshalb auf, weil eine Position **gar keine Gewichtszeile** trägt — die
+> Prüfung verlangt jetzt beides, keinen Rest und keine ungewogene Position.
+> Damit sind **sechs der zehn Reste erklärt**: Auf den großen Belegen fehlen
+> die Gewichtszeilen genau bei den Leistungen (Fracht, Kranentladung,
+> Folierung), und Leistungen wiegen nichts. Übrig bleiben **zwei** ungeklärte
+> Reste. Die naheliegende Erklärung dafür wurde **geprüft und widerlegt**,
+> bevor sie aufgeschrieben wurde. Drei weitere Gewichte ergeben sich aus der
+> Differenz und liegen als **Kandidaten** bereit, nicht im Katalog.
 > [`gewichte-mit-summenprobe.md`](./gewichte-mit-summenprobe.md).
 >
 > **Herstellerverweise: drei Artikel zurückgewonnen** (27.08.): `marke()`

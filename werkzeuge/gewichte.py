@@ -107,6 +107,12 @@ def lies_beleg(pfad):
         gesehen.setdefault(p['pos'], p)
     positionen = [gesehen[k] for k in sorted(gesehen)]
 
+    # Positionen ohne Gewichtszeile sind der gefaehrlichere Fall als ein Rest:
+    # Sie fehlen in der Summe, und wenn die Summe trotzdem aufgeht, ist das
+    # Zufall und sieht wie ein Beweis aus. Beleg 262016266 hat zwei solche
+    # Positionen (Rahmenschraube, Kartusche).
+    ohne_gewicht = [p for p in positionen if p['gewichtKg'] is None]
+
     gm = GESAMT.search(text)
     nm = BELEGNR.search(text)
     summe = sum(p['gewichtKg'] or 0.0 for p in positionen)
@@ -115,6 +121,7 @@ def lies_beleg(pfad):
         'datei': os.path.basename(pfad),
         'nummer': nm.group(1) if nm else None,
         'positionen': positionen,
+        'ohneGewicht': [p['artnr'] for p in ohne_gewicht],
         'summe': round(summe, 2),
         'gesamt': gesamt,
         'rest': None if gesamt is None else round(gesamt - summe, 2),
@@ -128,13 +135,21 @@ def main(ziel=None):
     belege = [lies_beleg(p) for p in sorted(glob.glob(os.path.join(QUELLE, '*.pdf')))]
     belege = [b for b in belege if b['gesamt'] is not None]
 
-    sauber = [b for b in belege if abs(b['rest']) < 0.005]
-    print(f'{len(belege)} Belege mit Gesamtgewicht, davon {len(sauber)} ohne Rest.')
+    # Ein Beleg gilt nur dann als sauber, wenn BEIDES stimmt: kein Rest und
+    # keine Position ohne Gewichtszeile.
+    sauber = [b for b in belege if abs(b['rest']) < 0.005 and not b['ohneGewicht']]
+    knapp = [b for b in belege if abs(b['rest']) < 0.005 and b['ohneGewicht']]
+    print(f'{len(belege)} Belege mit Gesamtgewicht, davon {len(sauber)} vollstaendig sauber.')
+    if knapp:
+        print(f'{len(knapp)} Beleg(e) gehen auf, haben aber Positionen ohne Gewichtszeile — '
+              'die Uebereinstimmung ist dort kein Beweis:')
+        for b in knapp:
+            print(f"  {b['nummer']}  ohne Gewichtszeile: {', '.join(b['ohneGewicht'])}")
     for b in belege:
         if abs(b['rest']) >= 0.005:
             print(f"  Rest {b['rest']:>10.2f} kg  {b['nummer']}  "
-                  f"({len(b['positionen'])} Positionen, Summe {b['summe']:.2f}, "
-                  f"ausgewiesen {b['gesamt']:.2f})")
+                  f"({len(b['positionen'])} Positionen, davon {len(b['ohneGewicht'])} ohne "
+                  f"Gewichtszeile, Summe {b['summe']:.2f}, ausgewiesen {b['gesamt']:.2f})")
 
     # Artikelgewichte nur aus den sauberen Belegen.
     je_artikel = {}
@@ -162,7 +177,40 @@ def main(ziel=None):
             strittig[artnr] = {'bezeichnung': e['bezeichnung'], 'werte': werte,
                                'belege': [w['beleg'] for w in e['werte']]}
 
+    # Wo genau EINE Warenposition keine Gewichtszeile hat, ist ihr Gewicht der
+    # Rest — Arithmetik mit eindeutiger Loesung, kein Raten. Der Haken: Sie
+    # setzt voraus, dass Gesamtgewicht = Summe der Positionsgewichte gilt, und
+    # zwei Belege zeigen, dass das nicht immer stimmt (262016265, 262024863,
+    # beide ohne Position ohne Gewichtszeile und trotzdem mit Rest).
+    #
+    # Deshalb landen diese Werte NICHT beim Rest, sondern getrennt als
+    # 'differenz'. Sie sind Kandidaten fuer den naechsten Beleg, nicht
+    # Katalogdaten.
+    differenz = {}
+    for b in belege:
+        ware_ohne = [p for p in b['positionen']
+                     if p['gewichtKg'] is None and p['artnr'] not in KEINE_WARE]
+        if len(ware_ohne) != 1 or b['rest'] is None or b['rest'] <= 0:
+            continue
+        p1 = ware_ohne[0]
+        if not p1['menge']:
+            continue
+        differenz.setdefault(p1['artnr'], []).append({
+            'beleg': b['nummer'],
+            'bezeichnung': p1['bezeichnung'],
+            'menge': p1['menge'],
+            'einheit': p1['einheit'],
+            'gewichtKg': b['rest'],
+            'jeEinheitKg': round(b['rest'] / p1['menge'], 4),
+        })
+
     print(f'\n{len(fest)} Artikel mit eindeutigem Gewicht je Einheit, {len(strittig)} widerspruechlich.')
+    if differenz:
+        print(f'{len(differenz)} Artikel mit Gewicht aus der Differenz — Kandidaten, keine Katalogdaten:')
+        for artnr, w in sorted(differenz.items()):
+            e = w[0]
+            print(f"  {artnr}  {e['jeEinheitKg']:>8.3f} kg je {e['einheit']:<4} "
+                  f"{e['bezeichnung'][:38]:<38} (Beleg {e['beleg']})")
     for artnr, e in sorted(strittig.items()):
         print(f"  {artnr}  {e['bezeichnung'][:40]:<40} {e['werte']}")
 
@@ -170,8 +218,9 @@ def main(ziel=None):
         with open(ziel, 'w', encoding='utf-8') as f:
             json.dump({'_hinweis': 'Nur aus Belegen ohne Gewichtsrest. Quelle: Positionsgewicht auf den '
                                    'Lieferantenrechnungen.',
-                       'fest': fest, 'strittig': strittig,
-                       'belege': [{'nummer': b['nummer'], 'rest': b['rest']} for b in belege]},
+                       'fest': fest, 'strittig': strittig, 'differenz': differenz,
+                       'belege': [{'nummer': b['nummer'], 'rest': b['rest'],
+                                   'ohneGewicht': b['ohneGewicht']} for b in belege]},
                       f, ensure_ascii=False, indent=1)
         print(f'\ngeschrieben: {ziel}')
     return 0
