@@ -327,7 +327,10 @@ const SZENARIEN = [
 const RAHMENSZENARIEN = [
   { name: 'Startseite: kein Seitwärtsrollen, Bedienelemente daumengroß', kennung: 'index' },
   { name: 'AGB-Seite: kein Seitwärtsrollen, Bedienelemente daumengroß', kennung: 'rechtliches/agb' },
-  { name: 'Artikelseite: kein Seitwärtsrollen, Bedienelemente daumengroß', kennung: 'artikel/POS-11082' },
+  // Bewusst POS-21382: Diese Bahn steht in zwei Systemlisten und trägt
+  // deshalb das längste „Wird damit zusammen verbaut"-Raster des Bestands
+  // (dreizehn Karten). Wenn ein Kartenraster den Rahmen sprengt, dann dieses.
+  { name: 'Artikelseite: kein Seitwärtsrollen, Bedienelemente daumengroß', kennung: 'artikel/POS-21382' },
   { name: 'Gruppenseite: kein Seitwärtsrollen, Bedienelemente daumengroß', kennung: 'gruppe/wdvs' },
   {
     name: 'Wissensseite mit langem Titel scrollt bei 390 px nicht seitwärts',

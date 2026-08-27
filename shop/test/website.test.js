@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
-import { loeseVerweis, loeseVerwandt, marke, HERSTELLER } from '../bin/website.mjs';
+import { loeseVerweis, loeseVerwandt, marke, mitverbaut, HERSTELLER } from '../bin/website.mjs';
 import { lesKopf } from '../src/markdown.js';
 
 const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
@@ -197,4 +197,117 @@ test('jeder Artikel mit Marke bekommt einen Herstellerverweis', () => {
     const h = HERSTELLER[marke(a.bezeichnung)];
     assert.ok(h?.url?.startsWith('https://'), `${a.sku}: Hersteller ohne Adresse`);
   }
+});
+
+/* ------------------------------------------------------------------ *
+ * „Wird damit zusammen verbaut"
+ * ------------------------------------------------------------------ */
+
+const katalogProbe = {
+  artikel: [
+    { sku: 'A-1', gruppe: 'Dämmung' },
+    { sku: 'A-2', gruppe: 'Dämmung' },
+    { sku: 'A-3', gruppe: 'Zubehör' },
+    { sku: 'B-1', gruppe: 'Kanal' },
+    { sku: 'X-9', gruppe: 'Mörtel' },
+  ],
+};
+const listeEins = { id: 'system/eins', art: 'system', kopf: { titel: 'Eins', skus: 'A-1, A-2, A-3' } };
+const listeZwei = { id: 'system/zwei', art: 'system', kopf: { titel: 'Zwei', skus: 'A-3, B-1' } };
+
+test('Mitverbaut kommt aus der Systemliste, nicht aus erfundenem Kaufverhalten', () => {
+  const { artikel } = mitverbaut({ sku: 'A-1' }, katalogProbe, [listeEins]);
+  assert.deepEqual(artikel.map((a) => a.sku), ['A-2', 'A-3'], 'Reihenfolge der Liste, ohne sich selbst');
+});
+
+test('Ein Artikel ohne Systemliste bekommt keinen Vorschlag', () => {
+  // Der ganze Unterschied zur Vorlage: Hier wird nicht ersatzweise die
+  // Gruppe, der Umsatz oder „Ähnliches" vorgeschlagen. Nichts ist richtig.
+  const { artikel } = mitverbaut({ sku: 'X-9' }, katalogProbe, []);
+  assert.equal(artikel.length, 0);
+});
+
+test('Steht ein Artikel in zwei Listen, werden beide vollständig gezeigt', () => {
+  const { artikel, listen } = mitverbaut({ sku: 'A-3' }, katalogProbe, [listeEins, listeZwei]);
+  assert.deepEqual(artikel.map((a) => a.sku), ['A-1', 'A-2', 'B-1'], 'ohne Doppelte, ohne Kappung');
+  assert.equal(listen.length, 2, 'beide Listen werden auch benannt');
+});
+
+test('Eine SKU, die es im Katalog nicht gibt, erzeugt keine leere Karte', () => {
+  const liste = { id: 'system/drei', art: 'system', kopf: { titel: 'Drei', skus: 'A-1, GIBT-ES-NICHT' } };
+  const { artikel } = mitverbaut({ sku: 'A-2' }, katalogProbe, [liste]);
+  assert.deepEqual(artikel.map((a) => a.sku), ['A-1']);
+});
+
+test('Jede Systemliste des Bestands erzeugt für jeden ihrer Artikel Mitverbautes', () => {
+  // Gegenprobe am echten Bestand: Wäre die Verknüpfung nur im Kopf richtig
+  // und in den Dateien nicht, meldete dieser Test nichts — deshalb zählt er
+  // die Artikel, die tatsächlich in einer Liste stehen.
+  const katalog = JSON.parse(readFileSync(pfad('../data/katalog-baustoff.json'), 'utf8'));
+  const ordner = pfad('../inhalte/system');
+  const listen = readdirSync(ordner)
+    .filter((n) => n.endsWith('.md'))
+    .map((n) => ({ id: `system/${n.replace('.md', '')}`, art: 'system', kopf: lesKopf(readFileSync(join(ordner, n), 'utf8')).kopf }));
+  assert.ok(listen.length >= 4, `nur ${listen.length} Systemlisten`);
+  let mitVorschlag = 0;
+  for (const a of katalog.artikel) {
+    const eigene = listen.filter((s) => String(s.kopf.skus).split(',').map((x) => x.trim()).includes(a.sku));
+    const { artikel } = mitverbaut(a, katalog, eigene);
+    if (eigene.length === 0) {
+      assert.equal(artikel.length, 0, `${a.sku}: Vorschlag ohne Systemliste`);
+    } else {
+      assert.ok(artikel.length > 0, `${a.sku}: in einer Liste, aber ohne Mitverbautes`);
+      assert.ok(!artikel.some((x) => x.sku === a.sku), `${a.sku}: schlägt sich selbst vor`);
+      mitVorschlag++;
+    }
+  }
+  assert.equal(mitVorschlag, 32, 'so viele Artikel stehen in mindestens einer Systemliste');
+});
+
+test('Keine stille Kappung: eine lange Liste wird vollständig gezeigt', () => {
+  // Die Gegenprobe zu dieser Behauptung fehlte zuerst. Eine eingebaute
+  // Kappung auf vier Artikel lief durch die gesamte übrige Testdatei —
+  // alle Fälle dort waren kürzer als vier. Eine Zusage, die keine Probe
+  // widerlegen kann, ist keine Zusage, sondern ein Kommentar.
+  const katalog = { artikel: Array.from({ length: 9 }, (_, i) => ({ sku: `L-${i}`, gruppe: 'Probe' })) };
+  const lang = { id: 'system/lang', art: 'system', kopf: { titel: 'Lang', skus: katalog.artikel.map((a) => a.sku).join(', ') } };
+  const { artikel } = mitverbaut({ sku: 'L-0' }, katalog, [lang]);
+  assert.equal(artikel.length, 8, 'alle acht übrigen Positionen, nicht die ersten vier');
+});
+
+test('Der Artikel in zwei Listen zeigt am Bestand beide vollständig', () => {
+  const katalog = JSON.parse(readFileSync(pfad('../data/katalog-baustoff.json'), 'utf8'));
+  const ordner = pfad('../inhalte/system');
+  const listen = readdirSync(ordner)
+    .filter((n) => n.endsWith('.md'))
+    .map((n) => ({ id: `system/${n.replace('.md', '')}`, art: 'system', kopf: lesKopf(readFileSync(join(ordner, n), 'utf8')).kopf }));
+  const doppelt = listen.filter((s) => String(s.kopf.skus).includes('POS-21382'));
+  assert.equal(doppelt.length, 2, 'die Grundmauerschutzbahn steht in Grundleitung und Kellerwand');
+  const a = katalog.artikel.find((x) => x.sku === 'POS-21382');
+  const { artikel } = mitverbaut(a, katalog, doppelt);
+  const erwartet = new Set(doppelt.flatMap((s) => String(s.kopf.skus).split(',').map((x) => x.trim())));
+  erwartet.delete('POS-21382');
+  assert.equal(artikel.length, erwartet.size, `${artikel.length} statt ${erwartet.size} Positionen aus beiden Listen`);
+});
+
+test('Die gebaute Artikelseite zeigt den Block nur, wenn eine Systemliste dahintersteht', () => {
+  const ordner = pfad('../ausgabe/site/artikel');
+  if (!existsSync(ordner)) return; // ohne Bau keine Aussage — und keine falsche
+  const katalog = JSON.parse(readFileSync(pfad('../data/katalog-baustoff.json'), 'utf8'));
+  const listenOrdner = pfad('../inhalte/system');
+  const inListe = new Set(
+    readdirSync(listenOrdner).filter((n) => n.endsWith('.md'))
+      .flatMap((n) => String(lesKopf(readFileSync(join(listenOrdner, n), 'utf8')).kopf.skus ?? '').split(',').map((x) => x.trim()))
+      .filter(Boolean),
+  );
+  let mit = 0;
+  let ohne = 0;
+  for (const a of katalog.artikel) {
+    const datei = join(ordner, `${a.sku}.html`);
+    if (!existsSync(datei)) continue;
+    const hat = readFileSync(datei, 'utf8').includes('Wird damit zusammen verbaut');
+    assert.equal(hat, inListe.has(a.sku), `${a.sku}: Block ${hat ? 'steht da' : 'fehlt'}, Systemliste ${inListe.has(a.sku) ? 'vorhanden' : 'keine'}`);
+    if (hat) mit++; else ohne++;
+  }
+  assert.ok(mit >= 30 && ohne >= 10, `${mit} mit Block, ${ohne} ohne — beide Fälle müssen im Bestand vorkommen`);
 });

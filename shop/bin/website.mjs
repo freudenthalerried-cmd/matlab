@@ -387,6 +387,51 @@ function artikelKarte(a, befund, verweis) {
 </a>`;
 }
 
+/**
+ * Die Artikel, die mit diesem zusammen verbaut werden.
+ *
+ * Das Vorbild ist die Zeile „Wird oft zusammen gekauft" der großen Shops —
+ * nur ohne deren Grundlage. Wir haben kein Kaufverhalten: Der Shop hat noch
+ * keine Bestellung gesehen, und eine erfundene Statistik wäre genau die Art
+ * Angabe, die dieses Projekt sonst überall verweigert.
+ *
+ * Was wir stattdessen haben, ist besser begründet als eine Statistik: die
+ * **Systemlisten**. Dort steht von Hand aufgeschrieben, welche Positionen ein
+ * Bauteil ausmachen — geprüft, mit Quelle, mit den Positionen, die der Shop
+ * gar nicht führt. Wer den Perimeterkleber ansieht, braucht die Platte und die
+ * Pistole, weil sie in derselben Liste stehen, nicht weil jemand sie zufällig
+ * mitbestellt hat.
+ *
+ * Deshalb die Regel, und sie ist der ganze Unterschied zur Vorlage:
+ *
+ * > **Ein Artikel ohne Systemliste bekommt hier keinen Vorschlag.**
+ *
+ * Nicht die meistverkauften, nicht die aus derselben Gruppe, nicht „ähnliche
+ * Artikel". Die Gruppengeschwister stehen weiter unten auf der Seite und sind
+ * als das gekennzeichnet, was sie sind: dasselbe Regal, nicht dasselbe
+ * Bauteil.
+ *
+ * Keine Kappung: Steht ein Artikel in zwei Listen, werden beide vollständig
+ * gezeigt. Eine stillschweigend abgeschnittene Liste sähe aus wie ein
+ * vollständiges Bauteil und wäre keines.
+ *
+ * @returns {{artikel: object[], listen: object[]}} in Listenreihenfolge, ohne
+ *   den Artikel selbst und ohne Doppelte
+ */
+export function mitverbaut(a, katalog, systemSeiten) {
+  const gesehen = new Set([a.sku]);
+  const artikel = [];
+  for (const s of systemSeiten) {
+    for (const sku of alsListe(s.kopf.skus)) {
+      if (gesehen.has(sku)) continue;
+      gesehen.add(sku);
+      const gefunden = katalog.artikel.find((x) => x.sku === sku);
+      if (gefunden) artikel.push(gefunden);
+    }
+  }
+  return { artikel, listen: systemSeiten };
+}
+
 function artikelSeite(a, katalog, befund, seiten, verweis) {
   const m = marke(a.bezeichnung);
   const h = m ? HERSTELLER[m] : null;
@@ -472,8 +517,22 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
       <span class="b">${esc(alsText(String(s.kopf.kurz ?? '')).slice(0, 150))}</span></a>`).join('')}</div>`);
   }
 
+  const zusammen = mitverbaut(a, katalog, systemSeiten);
+  if (zusammen.artikel.length) {
+    teile.push('<h2>Wird damit zusammen verbaut</h2>');
+    teile.push(`<p>Nicht „andere Kunden kauften auch" — dieser Shop hat noch keine Bestellung gesehen und
+rechnet Ihnen keine erfundene Statistik vor. Die Artikel unten stehen mit diesem zusammen in
+${zusammen.listen.length === 1 ? 'der Systemliste' : 'den Systemlisten'}
+${zusammen.listen.map((s) => `<a href="${verweis(s.id)}">${esc(s.kopf.titel)}</a>`).join(' und ')},
+weil sie zum selben Bauteil gehören. Was dort zusätzlich auf der Liste steht und wir <em>nicht</em> führen,
+sagt die Liste ebenfalls.</p>`);
+    teile.push(`<div class="raster">${zusammen.artikel.map((g) => artikelKarte(g, befund, verweis)).join('')}</div>`);
+  }
+
   if (geschwister.length) {
     teile.push(`<h2>Weitere Artikel aus ${esc(a.gruppe)}</h2>`);
+    teile.push(`<p>Dasselbe Regal, nicht dasselbe Bauteil: Diese Artikel gehören zur Gruppe
+${esc(a.gruppe)}. Ob einer davon der richtige ist, entscheidet die Planung.</p>`);
     teile.push(`<div class="raster">${geschwister.map((g) => artikelKarte(g, befund, verweis)).join('')}</div>`);
   }
 
