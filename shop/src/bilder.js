@@ -57,28 +57,57 @@ export function gradzahl(bezeichnung) {
 /**
  * Welche Bauform gezeichnet wird.
  *
- * Die Reihenfolge ist Absicht: Das Besondere vor dem Allgemeinen. „PVC
- * Kanalbogen NW 100 45 grad" ist ein Bogen und erst danach ein Rohr.
+ * Zwei Regeln, und die zweite ist die, die anfangs fehlte.
+ *
+ * **Erstens: das Besondere vor dem Allgemeinen.** „PVC Kanalbogen NW 100
+ * 45 grad" ist ein Bogen und erst danach ein Rohr.
+ *
+ * **Zweitens: der Kopf eines deutschen Kompositums steht hinten.** Die
+ * erste Fassung suchte das Formwort irgendwo in der Bezeichnung, und das
+ * ging bei drei von 46 Artikeln schief:
+ *
+ * | Bezeichnung | gezeichnet wurde | richtig ist |
+ * |---|---|---|
+ * | Soudal Profi-Pistolen**schaum** | eine Kartuschenpistole | eine Dose |
+ * | Mantelstein**kleber** Dünnbettmörtel | ein Mauerstein | ein Sack |
+ * | Putztüranschluss**paket** | ein Sack (wegen „Putz") | ein Formteil |
+ *
+ * Es ist derselbe Fehler wie bei `marke()` in `bin/website.mjs`, wo „SIK"
+ * das Wort „Sikkativ" fand — nur andersherum: Dort war jeder Treffer mitten
+ * im Wort falsch, hier ist er es nur, wenn hinter dem Formwort noch ein
+ * Wortteil folgt. Ein Mantel**stein** ist ein Stein, ein Mantelstein**kleber**
+ * ist keiner.
+ *
+ * Deshalb prüft `kopf()` auf ein Wortende: hinter dem Formwort darf kein
+ * weiterer Buchstabe stehen. Ziffern und Bindestriche sind erlaubt, sonst
+ * fiele „Kanalbogen 45" oder „PAE-Folie" heraus. `\b` genügt dafür nicht —
+ * JavaScripts Wortgrenze ist ASCII und kennt kein „ö".
+ *
+ * Was bewusst weiter irgendwo im Text gesucht wird, steht in `hat()`:
+ * Produktkürzel wie EPS, XPS oder N+F sind keine Kompositumsköpfe, sondern
+ * Typenbezeichnungen.
  */
 export function bauform(artikel) {
   const b = String(artikel?.bezeichnung ?? '');
   const g = String(artikel?.gruppe ?? '');
   const e = String(artikel?.einheit ?? '');
   const hat = (re) => re.test(b);
+  /** Formwort am Wortende — „Mantelstein" ja, „Mantelsteinkleber" nein. */
+  const kopf = (quelle) => new RegExp(`(?:${quelle})(?![\\p{L}])`, 'iu').test(b);
 
-  if (hat(/abzweig/i)) return 'abzweig';
-  if (hat(/bogen/i)) return 'bogen';
-  if (hat(/schachtring|ring\b/i)) return 'ring';
-  if (hat(/rohr/i)) return 'rohr';
-  if (hat(/dübel|duebel|rondelle|schraube/i)) return 'duebel';
-  if (hat(/kantenschutz|anschlussleiste|leiste|profil/i)) return 'leiste';
-  if (hat(/gewebe|gitter|folie|band|grundmauerschutz/i) || e === 'RLL') return 'rolle';
-  if (hat(/pistole/i)) return 'werkzeug';
-  if (e === 'DOS' || hat(/schaum|kleber\s+b3|750\s*ml/i)) return 'dose';
-  if (hat(/haube/i)) return 'haube';
-  if (hat(/stein|ziegel|N\+F/i)) return 'stein';
-  if (e === 'KG' || e === 'SCK' || e === 'EIM' || hat(/mörtel|putz|spachtel|masse/i)) return 'sack';
-  if (g === 'Dämmung' || hat(/EPS|XPS|TDPT|dämm/i)) return 'platte';
+  if (kopf('abzweiger?')) return 'abzweig';
+  if (kopf('bogen')) return 'bogen';
+  if (kopf('schachtring|ring')) return 'ring';
+  if (kopf('rohr')) return 'rohr';
+  if (kopf('dübel|duebel|rondelle|schraube')) return 'duebel';
+  if (kopf('kantenschutz|anschlussleiste|leiste|profil')) return 'leiste';
+  if (kopf('gewebe|gitter|folie|band|grundmauerschutz') || e === 'RLL') return 'rolle';
+  if (kopf('pistole')) return 'werkzeug';
+  if (e === 'DOS' || kopf('schaum') || hat(/kleber\s+b3|750\s*ml/i)) return 'dose';
+  if (kopf('haube')) return 'haube';
+  if (kopf('stein|ziegel') || hat(/N\+F/i)) return 'stein';
+  if (e === 'KG' || e === 'SCK' || e === 'EIM' || kopf('mörtel|putz|spachtel|masse|kleber')) return 'sack';
+  if (g === 'Dämmung' || hat(/EPS|XPS|TDPT/i) || kopf('dämmung')) return 'platte';
   return 'teil';
 }
 
