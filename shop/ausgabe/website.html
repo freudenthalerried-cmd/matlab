@@ -80,6 +80,7 @@ svg.schema.gruppe{max-height:5.5rem}
 .vorschlag{display:flex;flex-direction:column;gap:.1rem;padding:.5rem .7rem;text-decoration:none;color:inherit;border-bottom:1px solid var(--linie)}
 .vorschlag:last-child{border-bottom:0}
 .vorschlag:hover,.vorschlag:focus-visible{background:var(--flaeche-2)}
+.vorschlag.gewaehlt{background:var(--ocker-weich);outline:2px solid var(--ocker);outline-offset:-2px}
 .vorschlag .v-t{font-family:var(--schmal);font-size:1.05rem;font-weight:600;line-height:1.2}
 .vorschlag .v-a{font-size:.8rem;color:var(--gedaempft);font-variant-numeric:tabular-nums}
 .korb{position:relative;font-family:var(--schmal);text-transform:uppercase;letter-spacing:.05em;font-size:.85rem;text-decoration:none;color:inherit;border:1px solid var(--linie-stark);padding:.45rem .8rem;white-space:nowrap}
@@ -167,6 +168,19 @@ footer a{color:var(--gedaempft)}
 .verwandt a{font-size:.88rem;text-decoration:none;border:1px solid var(--linie);padding:.2rem .6rem;border-radius:2px;background:var(--flaeche)}
 .verwandt a:hover{background:var(--flaeche-2)}
 @media(max-width:40rem){.kopfleiste nav{margin-left:0;width:100%}}
+/* Bedienbarkeit mit dem Daumen. Gemessen im 390-px-Rahmen: Die
+   Navigationsknöpfe waren 31 px hoch, der Warenkorb 38, das Suchfeld 42.
+   WCAG 2.5.8 verlangt mindestens 24 px, Apple empfiehlt 44, Google 48 —
+   und ein Baustoffhändler bedient die Seite mit Arbeitshandschuhen oder
+   staubigen Fingern, nicht mit der Mausspitze.
+   Fließtextverweise bleiben ausgenommen: Sie stehen im Satz, und WCAG
+   nimmt sie ausdrücklich aus. Ein Absatz mit aufgeblasenen Zeilenabständen
+   wäre schlechter lesbar und nicht barrierefreier. */
+.kopfleiste nav a,.korb,.knopf,.kz-weg{min-height:44px;display:inline-flex;align-items:center}
+.kopfleiste nav a{padding:.15rem .7rem}
+#suchfeld{min-height:44px}
+.filterleiste select,.kasse select,.kz-menge,.legen input{min-height:44px}
+.zw{min-height:44px}
 </style>
 <div class="huelle" id="inhalt"></div>
 <template data-seite="index" data-titel="Baustoffe zum Baumeisterpreis"><header class="kopfleiste">
@@ -14597,22 +14611,82 @@ function kundenWarenkorb(zeilen, { artikel, lieferanten }, ust = 0.2) {
     });
   }
 
+  /**
+   * Suchfeld mit Vorschlägen.
+   *
+   * Mit Tastatur bedienbar, und das ist keine Kür: Wer einen Suchvorschlag
+   * nur mit der Maus erreichen kann, für den ist die Liste eine Zierde. Pfeil
+   * ab und auf wählen, Eingabe folgt der Auswahl, Esc schließt. Ohne Auswahl
+   * führt die Eingabetaste auf die Suchseite — das bleibt der Weg für den,
+   * der einfach tippt und drückt.
+   *
+   * Die ARIA-Rollen sind nicht dekorativ: Ohne `role="listbox"` und
+   * `aria-activedescendant` liest ein Vorleseprogramm die Vorschläge gar
+   * nicht vor, weil sie nach dem Tippen einfach im Dokument erscheinen.
+   */
   function baueSuchfeld() {
     var feld = ziel('suchfeld');
     if (!feld) return;
     var liste = ziel('suchvorschlag');
     var offen = false;
+    var wahl = -1;
 
-    function schliesse() { if (liste) { leere(liste); liste.hidden = true; } offen = false; }
+    feld.setAttribute('role', 'combobox');
+    feld.setAttribute('aria-expanded', 'false');
+    feld.setAttribute('aria-autocomplete', 'list');
+    if (liste) {
+      liste.setAttribute('role', 'listbox');
+      liste.setAttribute('aria-label', 'Suchvorschläge');
+      feld.setAttribute('aria-controls', liste.id);
+    }
+
+    function eintraege() {
+      return liste ? [].slice.call(liste.querySelectorAll('.vorschlag')) : [];
+    }
+
+    function schliesse() {
+      if (liste) { leere(liste); liste.hidden = true; }
+      offen = false;
+      wahl = -1;
+      feld.setAttribute('aria-expanded', 'false');
+      feld.removeAttribute('aria-activedescendant');
+    }
+
+    function markiere(neu) {
+      var e = eintraege();
+      if (!e.length) return;
+      // Umlaufend: Von der letzten Zeile eine weiter landet wieder oben.
+      // Am Ende steckenzubleiben ist die häufigste Art, eine Tastaturliste
+      // unbrauchbar zu machen.
+      wahl = (neu + e.length) % e.length;
+      e.forEach(function (n, i) {
+        var aktiv = i === wahl;
+        n.classList.toggle('gewaehlt', aktiv);
+        n.setAttribute('aria-selected', aktiv ? 'true' : 'false');
+        if (aktiv) {
+          feld.setAttribute('aria-activedescendant', n.id);
+          if (n.scrollIntoView) n.scrollIntoView({ block: 'nearest' });
+        }
+      });
+    }
+
+    function zurSuchseite() {
+      location.href = pfad('suche') + '?q=' + encodeURIComponent(feld.value);
+    }
 
     feld.addEventListener('input', function () {
       if (!liste) return;
       var t = suche(index, feld.value, { grenze: 8 });
       leere(liste);
+      wahl = -1;
+      feld.removeAttribute('aria-activedescendant');
       if (!feld.value.trim() || !t.length) { schliesse(); return; }
-      t.forEach(function (e) {
+      t.forEach(function (e, i) {
         var a = el('a', 'vorschlag');
         a.href = pfad(e.id);
+        a.id = 'vorschlag-' + i;
+        a.setAttribute('role', 'option');
+        a.setAttribute('aria-selected', 'false');
         a.appendChild(el('span', 'v-t', e.titel));
         a.appendChild(el('span', 'v-a', e.art === 'artikel'
           ? (e.vkNetto !== null ? eur(e.vkNetto) + ' netto · ' + e.gruppe : e.gruppe)
@@ -14621,16 +14695,31 @@ function kundenWarenkorb(zeilen, { artikel, lieferanten }, ust = 0.2) {
       });
       liste.hidden = false;
       offen = true;
+      feld.setAttribute('aria-expanded', 'true');
     });
 
     feld.addEventListener('keydown', function (ev) {
-      if (ev.key === 'Escape') schliesse();
+      if (ev.key === 'Escape') { schliesse(); return; }
+      if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') {
+        var e = eintraege();
+        if (!offen || !e.length) return;
+        ev.preventDefault();
+        // Aus dem Zustand „nichts gewählt" führt Pfeil ab auf die erste und
+        // Pfeil auf auf die **letzte** Zeile. Ohne diesen Sonderfall rechnet
+        // -1 minus 1 modulo Länge auf die vorletzte — ein Versatz um eins,
+        // den die Probe gefunden hat und das Auge nicht.
+        if (wahl === -1) markiere(ev.key === 'ArrowDown' ? 0 : e.length - 1);
+        else markiere(wahl + (ev.key === 'ArrowDown' ? 1 : -1));
+        return;
+      }
       if (ev.key === 'Enter') {
         ev.preventDefault();
-        var wohin = pfad('suche');
-        location.href = wohin + (D.adressform === 'raute' ? '' : '') + '?q=' + encodeURIComponent(feld.value);
+        var e = eintraege();
+        if (offen && wahl >= 0 && e[wahl]) location.href = e[wahl].href;
+        else zurSuchseite();
       }
     });
+
     document.addEventListener('click', function (ev) {
       if (offen && !feld.contains(ev.target) && liste && !liste.contains(ev.target)) schliesse();
     });

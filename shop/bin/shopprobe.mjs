@@ -199,6 +199,54 @@ const SZENARIEN = [
     erwartet: ['von 46 Artikeln'],
   },
   {
+    name: 'Die Vorschlagsliste lässt sich mit der Tastatur bedienen',
+    // Wer einen Suchvorschlag nur mit der Maus erreichen kann, für den ist
+    // die Liste eine Zierde.
+    aktionen: `
+      await geheZu('index');
+      const feld = document.getElementById('suchfeld');
+      const taste = (k) => feld.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }));
+      feld.value = 'kanal';
+      feld.dispatchEvent(new Event('input'));
+      taste('ArrowDown');
+      taste('ArrowDown');
+      const gewaehlt = document.querySelector('#suchvorschlag .gewaehlt');
+      out = 'zweite=' + (gewaehlt ? gewaehlt.textContent : 'KEINE')
+        + ' | aktiv=' + feld.getAttribute('aria-activedescendant')
+        + ' | offen=' + feld.getAttribute('aria-expanded')
+        + ' | rolle=' + document.getElementById('suchvorschlag').getAttribute('role');`,
+    erwartet: ['aktiv=vorschlag-1', 'offen=true', 'rolle=listbox'],
+    verboten: ['zweite=KEINE'],
+  },
+  {
+    name: 'Pfeil nach oben läuft von der ersten Zeile ans Ende um',
+    // Am Ende steckenzubleiben ist die häufigste Art, eine Tastaturliste
+    // unbrauchbar zu machen.
+    aktionen: `
+      await geheZu('index');
+      const feld = document.getElementById('suchfeld');
+      const taste = (k) => feld.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }));
+      feld.value = 'kanal';
+      feld.dispatchEvent(new Event('input'));
+      const anzahl = document.querySelectorAll('#suchvorschlag .vorschlag').length;
+      taste('ArrowUp');
+      out = 'anzahl=' + anzahl + ' aktiv=' + feld.getAttribute('aria-activedescendant');`,
+    erwartet: ['anzahl=8', 'aktiv=vorschlag-7'],
+  },
+  {
+    name: 'Escape schließt die Vorschlagsliste',
+    aktionen: `
+      await geheZu('index');
+      const feld = document.getElementById('suchfeld');
+      feld.value = 'kanal';
+      feld.dispatchEvent(new Event('input'));
+      feld.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+      out = 'versteckt=' + document.getElementById('suchvorschlag').hidden
+        + ' offen=' + feld.getAttribute('aria-expanded')
+        + ' eintraege=' + document.querySelectorAll('#suchvorschlag .vorschlag').length;`,
+    erwartet: ['versteckt=true', 'offen=false', 'eintraege=0'],
+  },
+  {
     name: 'Der Vorschlag unter dem Suchfeld zeigt Preis und Gruppe',
     aktionen: `
       await geheZu('index');
@@ -229,10 +277,10 @@ const SZENARIEN = [
  * als Überschrift 437 px breit; die AGB-Seite scrollte 82 px seitwärts.
  */
 const RAHMENSZENARIEN = [
-  { name: 'Startseite scrollt bei 390 px nicht seitwärts', kennung: 'index' },
-  { name: 'AGB-Seite scrollt bei 390 px nicht seitwärts', kennung: 'rechtliches/agb' },
-  { name: 'Artikelseite scrollt bei 390 px nicht seitwärts', kennung: 'artikel/POS-11082' },
-  { name: 'Gruppenseite scrollt bei 390 px nicht seitwärts', kennung: 'gruppe/wdvs' },
+  { name: 'Startseite: kein Seitwärtsrollen, Bedienelemente daumengroß', kennung: 'index' },
+  { name: 'AGB-Seite: kein Seitwärtsrollen, Bedienelemente daumengroß', kennung: 'rechtliches/agb' },
+  { name: 'Artikelseite: kein Seitwärtsrollen, Bedienelemente daumengroß', kennung: 'artikel/POS-11082' },
+  { name: 'Gruppenseite: kein Seitwärtsrollen, Bedienelemente daumengroß', kennung: 'gruppe/wdvs' },
   {
     name: 'Wissensseite mit langem Titel scrollt bei 390 px nicht seitwärts',
     kennung: 'wissen/perimeterdaemmung-und-grundmauerschutz',
@@ -334,8 +382,22 @@ setTimeout(function () {
     // das ist beim ersten Anlauf passiert — der Rahmen zeigte die
     // Einzeldateifassung, deren Inhalt im iframe nicht aufgebaut wurde.
     var h1 = d.querySelector('h1');
+    // Zweite Messung im selben Rahmen: Wie groß sind die Bedienelemente?
+    // Fließtextverweise sind ausgenommen — sie stehen im Satz, und WCAG
+    // 2.5.8 nimmt sie ausdrücklich aus. Geprüft wird, was ein Knopf ist.
+    var klein = [];
+    d.querySelectorAll('.kopfleiste nav a,.korb,.knopf,.kz-weg,#suchfeld,button,select,'
+      + 'input[type=number],input[type=search]').forEach(function (n) {
+      var r = n.getBoundingClientRect();
+      if (r.width && r.height && r.height < 44) {
+        klein.push(n.tagName + '.' + String(n.className || '').slice(0, 14)
+          + ' ' + Math.round(r.width) + 'x' + Math.round(r.height));
+      }
+    });
     aus = 'scrollX=' + Math.round(w.scrollX) + ' breite=' + d.documentElement.scrollWidth
-        + '/' + d.documentElement.clientWidth + ' h1=' + (h1 ? h1.textContent.trim().slice(0, 40) : 'KEINE');
+        + '/' + d.documentElement.clientWidth + ' zuklein=' + klein.length
+        + (klein.length ? ' [' + klein.slice(0, 6).join(', ') + ']' : '')
+        + ' h1=' + (h1 ? h1.textContent.trim().slice(0, 40) : 'KEINE');
   } catch (e) { aus = 'ZUGRIFF ' + e.message; }
   var o = document.createElement('div');
   o.textContent = '${ANFANG.slice(0, 5)}' + '${ANFANG.slice(5)}' + aus + '${ENDE.slice(0, 5)}' + '${ENDE.slice(5)}';
@@ -361,7 +423,12 @@ setTimeout(function () {
   else if (gerendert.startsWith('ZUGRIFF')) probleme.push(gerendert);
   else {
     if (/h1=KEINE/.test(gerendert)) probleme.push(`die Seite war leer: ${gerendert}`);
-    else if (!/scrollX=0\b/.test(gerendert)) probleme.push(`die Seite scrollt seitwärts: ${gerendert}`);
+    else {
+      if (!/scrollX=0\b/.test(gerendert)) probleme.push(`die Seite scrollt seitwärts: ${gerendert}`);
+      if (!/zuklein=0\b/.test(gerendert)) {
+        probleme.push(`Bedienelemente unter 44 px hoch: ${gerendert.replace(/^.*zuklein=/, 'zuklein=')}`);
+      }
+    }
   }
   return { s: r, probleme, gerendert };
 }

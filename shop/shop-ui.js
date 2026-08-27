@@ -75,22 +75,82 @@
     });
   }
 
+  /**
+   * Suchfeld mit Vorschlägen.
+   *
+   * Mit Tastatur bedienbar, und das ist keine Kür: Wer einen Suchvorschlag
+   * nur mit der Maus erreichen kann, für den ist die Liste eine Zierde. Pfeil
+   * ab und auf wählen, Eingabe folgt der Auswahl, Esc schließt. Ohne Auswahl
+   * führt die Eingabetaste auf die Suchseite — das bleibt der Weg für den,
+   * der einfach tippt und drückt.
+   *
+   * Die ARIA-Rollen sind nicht dekorativ: Ohne `role="listbox"` und
+   * `aria-activedescendant` liest ein Vorleseprogramm die Vorschläge gar
+   * nicht vor, weil sie nach dem Tippen einfach im Dokument erscheinen.
+   */
   function baueSuchfeld() {
     var feld = ziel('suchfeld');
     if (!feld) return;
     var liste = ziel('suchvorschlag');
     var offen = false;
+    var wahl = -1;
 
-    function schliesse() { if (liste) { leere(liste); liste.hidden = true; } offen = false; }
+    feld.setAttribute('role', 'combobox');
+    feld.setAttribute('aria-expanded', 'false');
+    feld.setAttribute('aria-autocomplete', 'list');
+    if (liste) {
+      liste.setAttribute('role', 'listbox');
+      liste.setAttribute('aria-label', 'Suchvorschläge');
+      feld.setAttribute('aria-controls', liste.id);
+    }
+
+    function eintraege() {
+      return liste ? [].slice.call(liste.querySelectorAll('.vorschlag')) : [];
+    }
+
+    function schliesse() {
+      if (liste) { leere(liste); liste.hidden = true; }
+      offen = false;
+      wahl = -1;
+      feld.setAttribute('aria-expanded', 'false');
+      feld.removeAttribute('aria-activedescendant');
+    }
+
+    function markiere(neu) {
+      var e = eintraege();
+      if (!e.length) return;
+      // Umlaufend: Von der letzten Zeile eine weiter landet wieder oben.
+      // Am Ende steckenzubleiben ist die häufigste Art, eine Tastaturliste
+      // unbrauchbar zu machen.
+      wahl = (neu + e.length) % e.length;
+      e.forEach(function (n, i) {
+        var aktiv = i === wahl;
+        n.classList.toggle('gewaehlt', aktiv);
+        n.setAttribute('aria-selected', aktiv ? 'true' : 'false');
+        if (aktiv) {
+          feld.setAttribute('aria-activedescendant', n.id);
+          if (n.scrollIntoView) n.scrollIntoView({ block: 'nearest' });
+        }
+      });
+    }
+
+    function zurSuchseite() {
+      location.href = pfad('suche') + '?q=' + encodeURIComponent(feld.value);
+    }
 
     feld.addEventListener('input', function () {
       if (!liste) return;
       var t = suche(index, feld.value, { grenze: 8 });
       leere(liste);
+      wahl = -1;
+      feld.removeAttribute('aria-activedescendant');
       if (!feld.value.trim() || !t.length) { schliesse(); return; }
-      t.forEach(function (e) {
+      t.forEach(function (e, i) {
         var a = el('a', 'vorschlag');
         a.href = pfad(e.id);
+        a.id = 'vorschlag-' + i;
+        a.setAttribute('role', 'option');
+        a.setAttribute('aria-selected', 'false');
         a.appendChild(el('span', 'v-t', e.titel));
         a.appendChild(el('span', 'v-a', e.art === 'artikel'
           ? (e.vkNetto !== null ? eur(e.vkNetto) + ' netto · ' + e.gruppe : e.gruppe)
@@ -99,16 +159,31 @@
       });
       liste.hidden = false;
       offen = true;
+      feld.setAttribute('aria-expanded', 'true');
     });
 
     feld.addEventListener('keydown', function (ev) {
-      if (ev.key === 'Escape') schliesse();
+      if (ev.key === 'Escape') { schliesse(); return; }
+      if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') {
+        var e = eintraege();
+        if (!offen || !e.length) return;
+        ev.preventDefault();
+        // Aus dem Zustand „nichts gewählt" führt Pfeil ab auf die erste und
+        // Pfeil auf auf die **letzte** Zeile. Ohne diesen Sonderfall rechnet
+        // -1 minus 1 modulo Länge auf die vorletzte — ein Versatz um eins,
+        // den die Probe gefunden hat und das Auge nicht.
+        if (wahl === -1) markiere(ev.key === 'ArrowDown' ? 0 : e.length - 1);
+        else markiere(wahl + (ev.key === 'ArrowDown' ? 1 : -1));
+        return;
+      }
       if (ev.key === 'Enter') {
         ev.preventDefault();
-        var wohin = pfad('suche');
-        location.href = wohin + (D.adressform === 'raute' ? '' : '') + '?q=' + encodeURIComponent(feld.value);
+        var e = eintraege();
+        if (offen && wahl >= 0 && e[wahl]) location.href = e[wahl].href;
+        else zurSuchseite();
       }
     });
+
     document.addEventListener('click', function (ev) {
       if (offen && !feld.contains(ev.target) && liste && !liste.contains(ev.target)) schliesse();
     });
