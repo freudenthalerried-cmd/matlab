@@ -339,6 +339,21 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > Absatz höher stand. Beide behoben.
 > [`pruefer-zeigte-auf-die-probe.md`](./pruefer-zeigte-auf-die-probe.md).
 >
+> **Fünfmal an einem Tag: der Prüfer, der nichts angesehen hat** (27.08.):
+> Derselbe Fehler in fünf Werkzeugen — Inhaltsprüfer auf der Probedatei,
+> Quellenprüfer auf einer Vorlage mit erfundenen Quellen, Rahmenprobe auf
+> einer Seite ohne ausgeführtes Skript, Warenkorbprobe auf einer leeren
+> Seite, und deren Absicherung zählte die Kopfleiste mit. **Keiner war
+> kaputt; jeder sah das Falsche an, und alle meldeten grün.** Neu
+> `npm run pruefe-pruefer`: fragt jeden Prüfer nach seinem Umfang und meldet,
+> wer unter dem Mindestmaß bleibt — Gegenprobe mit den alten
+> Voreinstellungen zeigt beide Fehler in einem Aufruf. **Zweiter Fund: Es gab
+> kein Quellenregister.** Der Quellenprüfer stand seit dem 25.08. bereit und
+> hatte nie echte Eingabe. Jetzt `inhalte/quellen.json` mit 4 Normen, 5
+> Herstellerseiten (als Hinweis, tragen keine Aussage) und 6 belegten
+> Aussagen. 687 Testfälle grün.
+> [`pruefer-die-nichts-angesehen-haben.md`](./pruefer-die-nichts-angesehen-haben.md).
+>
 > **Herstellerverweise: drei Artikel zurückgewonnen** (27.08.): `marke()`
 > prüfte `startsWith`, die Marke musste ganz vorn stehen. Drei
 > Schiedel-Artikel trugen deshalb „kein Herstellermerkblatt vorhanden",
@@ -526,6 +541,7 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `domainwahl.md` | **Die Firma und ihre Domain gibt es schon** — Freudenthaler Bau GmbH, FN 347938z, Baustoffhandel eingetragen, `freudenthaler-bau.at` in Betrieb; Empfehlung daher `shop.freudenthaler-bau.at` plus `baustoffe-muehlviertel.at` als Weiterleitung. Zwei Korrekturen: Ried in der Riedmark liegt im **Mühlviertel**, nicht im Innviertel; der Entitätswert ist bereits aufgebaut und wäre bei einer neuen Domain verloren |
 | `pruefung-der-testfaelle.md` | **Grüne Tests sind eine Aussage über die Testfälle, nicht über den Code** — elf hohle Schleifen gefunden und entschärft |
 | `shop-mit-warenkorb.md` | **Was an einem Shop hochwertig ist, sind vier Dinge, die ein Kunde tut** — Suche, Filter, Warenkorb, Kasse; die Suche musste Deutsch lernen (Kompositum-Treffer), der Warenkorb sagt selbst, wenn die Fracht die Ware übersteigt, und die neue Shopprobe fand die fehlende Zeichensatzangabe |
+| `pruefer-die-nichts-angesehen-haben.md` | **Ein Prüfer, der nichts angesehen hat, ist nicht still — er ist zustimmend** — fünf Fälle an einem Tag, neue Stufe `pruefe-pruefer` fragt nach dem Umfang statt nach dem Befund. Dazu das erste echte Quellenregister: 4 Normen, 6 belegte Aussagen |
 | `pruefer-zeigte-auf-die-probe.md` | **Ein Prüfer, dessen Voreinstellung nicht auf den Bestand zeigt, wird mit der Voreinstellung aufgerufen** — und die Hälfte des Shoptextes stand nie unter den Inhaltsregeln. Zwei echte Funde: Handelsspanne ohne Stand, Pflicht ohne Fundstelle im eigenen Absatz |
 | `rahmen-ohne-javascript.md` | **Ein Prüfer, der nicht durchfallen kann, ist schlimmer als kein Prüfer** — zwei Szenarien gebaut, beide hohl, beide entfernt. Dabei gemessen: Eingebettete Dokumente führen in dieser Prüfumgebung keine Skripte aus |
 | `bedienbar-mit-daumen-und-tastatur.md` | **Wer einen Suchvorschlag nur mit der Maus erreicht, für den ist die Liste eine Zierde** — Tastaturbedienung samt ARIA nachgerüstet, alle Bedienelemente auf 44 px gebracht. Die Zahl im Fehlertext ist der Unterschied zwischen einem Hinweis und einer Diagnose |

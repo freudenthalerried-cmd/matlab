@@ -13,7 +13,22 @@
 import { readFileSync } from 'node:fs';
 import { werteRechercheAus, QUELLENARTEN } from '../src/quellen.js';
 
-const datei = process.argv[2] ?? new URL('../beispiel/recherche-beispiel.json', import.meta.url);
+/**
+ * **Berichtigt am 27.08.:** Ohne Argument las das Werkzeug bis dahin die
+ * Vorlage mit erfundenen Quellen und meldete „Aussagen: 3 von 3 belegt".
+ * Dieselbe Falle wie beim Inhaltsprüfer — und schlimmer, weil es das
+ * Quellenregister des Bestands gar nicht gab: Das Werkzeug stand seit dem
+ * 25. August bereit und hatte nie echte Eingabe gesehen.
+ *
+ * > **Ein Werkzeug ohne Bestand prüft die Vorlage und meldet Grün.**
+ *
+ * Jetzt liest es ohne Argument `inhalte/quellen.json` — die Fundstellen,
+ * auf die sich die Inhaltsseiten wirklich berufen. Die Vorlage bleibt als
+ * Selbstnachweis erreichbar: `--probe`.
+ */
+const datei = process.argv[2] === '--probe'
+  ? new URL('../beispiel/recherche-beispiel.json', import.meta.url)
+  : (process.argv[2] ?? new URL('../inhalte/quellen.json', import.meta.url));
 let recherche;
 try {
   recherche = JSON.parse(readFileSync(datei, 'utf8'));

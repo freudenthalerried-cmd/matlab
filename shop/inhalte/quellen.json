@@ -1,0 +1,126 @@
+{
+  "_hinweis": "Das Quellenregister des Bestands — keine Vorlage. Verzeichnet sind die Fundstellen, auf die sich die Inhaltsseiten berufen, und die Aussagen, die daran hängen. Geprüft mit `npm run pruefe-quellen`. Die Vorlage mit erfundenen Quellen liegt weiterhin in beispiel/recherche-beispiel.json und wird mit --probe aufgerufen.",
+  "_grenze": "Preise und Einkaufskonditionen stehen NICHT hier. Sie tragen ihren Preisstand am Artikel und stammen aus Lieferantenbelegen; eine Rechnung ist kein Beleg im Sinn dieses Registers, sondern ein Geschäftsvorfall.",
+  "thema": "Fundstellen der Inhaltsseiten",
+  "stand": "2026-08-27",
+  "quellen": [
+    {
+      "id": "oenorm-b6400",
+      "art": "norm",
+      "titel": "ÖNORM B 6400, Ausgabe 2004-08-01 — Außenwand-Wärmedämm-Verbundsysteme, Anwendung",
+      "urheber": "Austrian Standards",
+      "stand": "2004-08-01",
+      "notiz": "Liegt im Bestand des Auftraggebers (Google Drive). Der Wortlaut wird nicht wiedergegeben — geschütztes Werk; genannt wird die Fundstelle. Ob eine neuere Ausgabe gilt, ist von hier aus nicht prüfbar und steht als Vorbehalt auf den Seiten."
+    },
+    {
+      "id": "etag-004",
+      "art": "norm",
+      "titel": "ETAG 004 — Leitlinie für die europäische technische Zulassung von außenseitigen Wärmedämm-Verbundsystemen mit Putzschicht",
+      "urheber": "EOTA",
+      "stand": "2013",
+      "notiz": "Prüfgrundlage für WDVS. In ÖNORM B 6400 als Bezugsgrundlage genannt; nicht selbst eingesehen, sondern über B 6400 zitiert. Das steht so auch auf der Seite."
+    },
+    {
+      "id": "oenorm-b2501",
+      "art": "norm",
+      "titel": "ÖNORM B 2501, Ausgabe 2009-09-01 — Entwässerungsanlagen für Gebäude, Abschnitt 5.7.1",
+      "urheber": "Austrian Standards",
+      "stand": "2009-09-01",
+      "notiz": "Liegt im Bestand des Auftraggebers. Ergänzt EN 12056 um österreichische Festlegungen; ersetzt B 2501:2002-07."
+    },
+    {
+      "id": "en-12056",
+      "art": "norm",
+      "titel": "EN 12056 — Schwerkraftentwässerungsanlagen innerhalb von Gebäuden",
+      "urheber": "CEN",
+      "stand": "2000",
+      "notiz": "Nur als Bezugsrahmen genannt, den ÖNORM B 2501 ergänzt. Keine Aussage des Bestands hängt allein daran — sie ist deshalb hier ohne Aussage verzeichnet."
+    },
+    {
+      "id": "synthesa",
+      "art": "haendler",
+      "titel": "Herstellerseite Synthesa (Capatect)",
+      "urheber": "Synthesa Chemie GmbH",
+      "url": "https://www.synthesa.at/",
+      "stand": "2026-08",
+      "notiz": "Verlinkt, nicht wiedergegeben. Trägt keine Aussage des Bestands: Die Merkblätter sind von dieser Umgebung nicht abrufbar, und eine abgeschriebene Kennwerttabelle wäre in dem Moment falsch, in dem der Hersteller sie ändert."
+    },
+    {
+      "id": "baumit",
+      "art": "haendler",
+      "titel": "Herstellerseite Baumit Österreich",
+      "urheber": "Baumit GmbH",
+      "url": "https://www.baumit.at/",
+      "stand": "2026-08",
+      "notiz": "Wie Synthesa: verlinkt, trägt keine Aussage."
+    },
+    {
+      "id": "schiedel",
+      "art": "haendler",
+      "titel": "Herstellerseite Schiedel Österreich",
+      "urheber": "Schiedel GmbH",
+      "url": "https://www.schiedel.at/",
+      "stand": "2026-08",
+      "notiz": "Wie Synthesa: verlinkt, trägt keine Aussage."
+    },
+    {
+      "id": "isover",
+      "art": "haendler",
+      "titel": "Herstellerseite Isover Österreich",
+      "urheber": "Saint-Gobain Isover Austria GmbH",
+      "url": "https://www.isover.at/",
+      "stand": "2026-08",
+      "notiz": "Wie Synthesa: verlinkt, trägt keine Aussage."
+    },
+    {
+      "id": "soudal",
+      "art": "haendler",
+      "titel": "Herstellerseite Soudal",
+      "urheber": "Soudal N.V.",
+      "url": "https://www.soudal.com/",
+      "stand": "2026-08",
+      "notiz": "Wie Synthesa: verlinkt, trägt keine Aussage."
+    }
+  ],
+  "aussagen": [
+    {
+      "id": "a-wdvs-system",
+      "text": "Ein WDVS wird als Kombination geprüft, nicht Bestandteil für Bestandteil.",
+      "quellen": ["etag-004", "oenorm-b6400"],
+      "notiz": "Steht auf wissen/wdvs-systemaufbau.md und gruppen/wdvs.md. Wiedergabe des Anwendungsbereichs, keine Auslegung."
+    },
+    {
+      "id": "a-duebel-untergrenze",
+      "text": "ÖNORM B 6400 nennt mindestens 6 Dübel je m², in der Randzone je nach Gebäudehöhe und Windgeschwindigkeit bis zu 12; die Randzone ist mindestens 1 m breit.",
+      "kennwert": true,
+      "quellen": ["oenorm-b6400"],
+      "notiz": "Steht auf wissen/mengen-fuer-100-qm-wdvs.md, ausdrücklich als Untergrenze und nicht als Ersatz für die Bemessung."
+    },
+    {
+      "id": "a-kanal-bogen",
+      "text": "In Grund- und Sammelleitungen sind Richtungsänderungen nur mit Einzelbögen bis 45° zulässig; Doppelabzweiger sind unzulässig.",
+      "quellen": ["oenorm-b2501"],
+      "notiz": "Steht auf wissen/kanal-was-zusammengehoert.md. Für den Shop die wichtigste Zeile: Ein 87er-Bogen ist bestellbar und dort nicht einbaubar."
+    },
+    {
+      "id": "a-kanal-nennweite",
+      "text": "Die Mindestnennweite für Grund- und Sammelleitungen beträgt DN 100.",
+      "kennwert": true,
+      "quellen": ["oenorm-b2501"],
+      "notiz": "Abschnitt 5.7.1."
+    },
+    {
+      "id": "a-kanal-gefaelle",
+      "text": "Das Mindestgefälle beträgt bei Schmutz- und Mischwasser DN 100 2 %, ab DN 125 1,5 %, bei Regenwasser 1 %; das Maximalgefälle beträgt 5 %.",
+      "kennwert": true,
+      "quellen": ["oenorm-b2501"],
+      "notiz": "Abschnitt 5.7.1. Die Fundstelle steht auf der Seite in der Tabellenkopfzeile UND im Absatz darunter — eine Zahl darf ihre Herkunft nicht verlieren, wenn jemand die Tabelle herauskopiert."
+    },
+    {
+      "id": "a-kanal-verjuengung",
+      "text": "Verjüngungen in Fließrichtung sind nicht zulässig.",
+      "quellen": ["oenorm-b2501"],
+      "notiz": "Abschnitt 5.7.1."
+    }
+  ]
+}
