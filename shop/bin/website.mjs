@@ -27,9 +27,12 @@ import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync, rmSync
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { ladeBaustoffkatalog, katalogbefund, ZIELMARGE } from '../src/baustoffkatalog.js';
-import { ZAHLWEGE } from '../src/zahlung.js';
 import { pruefeSeiten } from '../src/interna.js';
 import { artikelBild, gruppenBild } from '../src/bilder.js';
+import { baueKern, KERNMODULE, SHOPMODULE } from '../src/buendel.js';
+import { oeffentlicherArtikel, oeffentlicherLieferant } from '../src/shopkern.js';
+import { LIEFERGEBIET } from '../src/liefergebiet.js';
+import { ZAHLWEGE } from '../src/zahlung.js';
 import { lesKopf, alsHtml, alsText, alsListe, esc } from '../src/markdown.js';
 import {
   erzeugeImpressum, pruefeBetreiberdaten, AGB_GLIEDERUNG, ZAHLUNGSBEDINGUNGEN,
@@ -203,6 +206,69 @@ svg.schema.gruppe{max-height:5.5rem}
 .artikelbild svg.schema{max-height:12rem;max-width:22rem}
 .mehr{font-family:var(--schmal);text-transform:uppercase;letter-spacing:.06em;font-size:.82rem}
 
+/* --- Kopfleiste mit Suche und Warenkorb --- */
+.kopfleiste{flex-wrap:wrap;gap:.6rem 1rem}
+.suche{position:relative;flex:1 1 18rem;min-width:12rem}
+#suchfeld{width:100%;font:inherit;font-size:.95rem;padding:.5rem .7rem;border:1px solid var(--linie-stark);background:var(--flaeche);color:var(--tinte);border-radius:0}
+#suchfeld:focus-visible{outline:2px solid var(--ocker);outline-offset:1px}
+.vorschlaege{position:absolute;z-index:20;left:0;right:0;top:calc(100% + 2px);background:var(--flaeche);border:1px solid var(--linie-stark);max-height:22rem;overflow-y:auto;box-shadow:0 6px 24px rgba(0,0,0,.14)}
+.vorschlag{display:flex;flex-direction:column;gap:.1rem;padding:.5rem .7rem;text-decoration:none;color:inherit;border-bottom:1px solid var(--linie)}
+.vorschlag:last-child{border-bottom:0}
+.vorschlag:hover,.vorschlag:focus-visible{background:var(--flaeche-2)}
+.vorschlag .v-t{font-family:var(--schmal);font-size:1.05rem;font-weight:600;line-height:1.2}
+.vorschlag .v-a{font-size:.8rem;color:var(--gedaempft);font-variant-numeric:tabular-nums}
+.korb{position:relative;font-family:var(--schmal);text-transform:uppercase;letter-spacing:.05em;font-size:.85rem;text-decoration:none;color:inherit;border:1px solid var(--linie-stark);padding:.45rem .8rem;white-space:nowrap}
+.korb:hover{background:var(--flaeche-2)}
+.korb .zahl{display:inline-block;margin-left:.45rem;min-width:1.35rem;padding:0 .3rem;text-align:center;background:var(--ocker);color:var(--grund);font-family:var(--zahl);font-size:.78rem;border-radius:999px}
+
+/* --- Filterleiste --- */
+.filterleiste{display:flex;flex-wrap:wrap;gap:.8rem 1.2rem;align-items:flex-end;padding:.9rem 1rem;background:var(--flaeche);border:1px solid var(--linie);margin-bottom:1rem}
+.filterleiste .f{display:flex;flex-direction:column;gap:.2rem}
+.filterleiste .f-b{font-family:var(--schmal);text-transform:uppercase;font-size:.75rem;letter-spacing:.06em;color:var(--ocker)}
+.filterleiste select{font:inherit;font-size:.9rem;padding:.35rem .5rem;border:1px solid var(--linie-stark);background:var(--grund);color:var(--tinte)}
+.filterleiste .f-schalter{flex-direction:row;align-items:center;gap:.4rem;font-size:.9rem}
+.filterleiste .f-zahl{margin-left:auto;font-family:var(--zahl);font-size:.85rem;color:var(--gedaempft)}
+
+/* --- In den Warenkorb --- */
+.legen{display:flex;flex-wrap:wrap;gap:.7rem;align-items:flex-end;margin:0 0 1.5rem}
+.legen .f-b{display:block;font-family:var(--schmal);text-transform:uppercase;font-size:.75rem;letter-spacing:.06em;color:var(--ocker);margin-bottom:.2rem}
+.legen input{font:inherit;width:5.5rem;padding:.5rem;border:1px solid var(--linie-stark);background:var(--flaeche);color:var(--tinte);font-variant-numeric:tabular-nums}
+.knopf{display:inline-block;font-family:var(--schmal);text-transform:uppercase;letter-spacing:.06em;font-size:.9rem;padding:.62rem 1.2rem;background:var(--ocker);color:var(--grund);border:1px solid var(--ocker);text-decoration:none;cursor:pointer}
+.knopf:hover{filter:brightness(1.08)}
+.knopf.getan{background:var(--gruen);border-color:var(--gruen)}
+.knopf.gross{font-size:1rem;padding:.8rem 1.6rem;margin-top:1rem}
+
+/* --- Warenkorbseite --- */
+.korbblock{border:1px solid var(--linie);background:var(--flaeche);padding:1rem 1.1rem;margin-bottom:1.2rem}
+.korbblock h2{margin-top:0}
+.korbzeile{display:grid;grid-template-columns:5.5rem 1fr 5rem 6rem auto;gap:.8rem;align-items:center;padding:.7rem 0;border-top:1px solid var(--linie)}
+.korbzeile:first-of-type{border-top:0}
+.kz-bild{background:var(--flaeche-2);padding:.3rem;border:1px solid var(--linie)}
+.kz-bild svg{max-height:3.4rem}
+.kz-mitte{display:flex;flex-direction:column;gap:.15rem;min-width:0}
+.kz-t{font-family:var(--schmal);font-size:1.1rem;font-weight:600;line-height:1.2;color:inherit}
+.kz-e{font-size:.82rem;color:var(--gedaempft)}
+.kz-menge{font:inherit;width:100%;padding:.4rem;border:1px solid var(--linie-stark);background:var(--grund);color:var(--tinte);font-variant-numeric:tabular-nums;text-align:right}
+.kz-summe{font-family:var(--schmal);font-size:1.15rem;font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+.kz-weg{font:inherit;font-size:.82rem;background:none;border:0;color:var(--gedaempft);text-decoration:underline;cursor:pointer;padding:.2rem}
+.kz-weg:hover{color:var(--ziegel)}
+@media(max-width:38rem){.korbzeile{grid-template-columns:1fr 4.5rem 5.5rem;grid-template-areas:"m m m" "t menge summe"}.kz-bild{display:none}}
+
+/* --- Kasse --- */
+.kasse{background:var(--flaeche);border:1px solid var(--linie);padding:1rem 1.1rem;margin-bottom:1.2rem}
+.kasse h2:first-child{margin-top:0}
+.kasse .f{display:flex;flex-direction:column;gap:.25rem;max-width:26rem}
+.kasse select{font:inherit;padding:.5rem;border:1px solid var(--linie-stark);background:var(--grund);color:var(--tinte)}
+.gebiet{font-size:.92rem;margin:.6rem 0 0;padding:.55rem .8rem;border-left:3px solid var(--linie-stark);background:var(--grund)}
+.gebiet:empty{display:none}
+.gebiet.ja{border-left-color:var(--gruen);background:var(--gruen-weich)}
+.gebiet.nein{border-left-color:var(--ziegel);background:var(--ziegel-weich)}
+.zahlwege{display:flex;flex-direction:column;gap:1px;background:var(--linie);border:1px solid var(--linie)}
+.zw{display:flex;gap:.7rem;align-items:flex-start;padding:.7rem .9rem;background:var(--grund);cursor:pointer}
+.zw:hover{background:var(--flaeche-2)}
+.zw-t{display:flex;flex-direction:column;gap:.2rem}
+.zw-g{font-size:.85rem;color:var(--gedaempft)}
+
 .karte{background:var(--flaeche);padding:.9rem 1rem;display:flex;flex-direction:column;gap:.4rem;text-decoration:none;color:inherit}
 .karte:hover{background:var(--flaeche-2)}
 .karte .nr{font-family:var(--zahl);font-size:.68rem;color:var(--gedaempft)}
@@ -323,6 +389,14 @@ function artikelSeite(a, katalog, befund, seiten, verweis) {
   <div><span class="k">Preisstand</span><span class="w">${esc(a.preisStand)}</span><span class="e">gültig bis zur nächsten Liste</span></div>
 </div>`);
 
+  if (a.vkNetto !== null) {
+    teile.push(`<div class="legen">
+  <label><span class="f-b">Menge in ${esc(EINHEITEN[a.einheit] ?? a.einheit)}</span>
+    <input id="menge-${esc(a.sku)}" type="number" min="1" max="999" value="1" inputmode="numeric"></label>
+  <button class="knopf" type="button" data-legen="${esc(a.sku)}" data-menge="menge-${esc(a.sku)}">In den Warenkorb</button>
+</div>`);
+  }
+
   if (beipack) {
     teile.push(`<div class="antwort"><strong>Dieser Artikel ist Beipack.</strong> Unser Einkauf liegt hier nah
 am Listenpreis des Lieferanten — es gibt keinen Preisvorteil zu bewerben. Der Artikel ist bestellbar, weil er
@@ -417,7 +491,9 @@ function inhaltsSeite(seite, katalog, befund, seiten, verweis) {
     },
   });
   const warenraster = gruppenArtikel.length
-    ? `<h2>${gruppenArtikel.length} Artikel in dieser Gruppe</h2>\n<div class="raster">${gruppenArtikel
+    ? `<h2>${gruppenArtikel.length} Artikel in dieser Gruppe</h2>
+<div class="filterleiste" id="filterleiste"></div>
+<div class="raster" id="warenraster" data-gruppe="${esc(seite.kopf.gruppe ?? '')}">${gruppenArtikel
         .sort((a, b) => a.bezeichnung.localeCompare(b.bezeichnung, 'de'))
         .map((a) => artikelKarte(a, befund, verweis)).join('')}</div>`
     : '';
@@ -523,7 +599,8 @@ Veröffentlichung beim Lieferanten zu bestätigen. Alle Preise sind Nettopreise 
 <h2>Alle ${befund.artikelGesamt} Artikel</h2>
 <p>Vollständig, mit Nettopreis und Preisstand. Jede Zeichnung ist ein Schema aus den Maßen des
 Artikels — kein Herstellerfoto: Was gezeigt wird, steht auch im Datensatz.</p>
-<div class="raster">${[...katalog.artikel]
+<div class="filterleiste" id="filterleiste"></div>
+<div class="raster" id="warenraster">${[...katalog.artikel]
   .sort((a, b) => a.gruppe.localeCompare(b.gruppe, 'de') || a.bezeichnung.localeCompare(b.bezeichnung, 'de'))
   .map((a) => artikelKarte(a, befund, verweis)).join('')}</div>
 
@@ -545,6 +622,50 @@ Jede beantwortet genau eine Frage, und die Antwort steht in den ersten zwei Sät
       areaServed: 'Bezirk Perg, Urfahr-Umgebung, Freistadt, Linz, Linz-Land',
       url: BASIS,
     },
+  };
+}
+
+/* ------------------------------------------------------------------ *
+ * Die drei Seiten, die aus dem Schaufenster einen Laden machen
+ * ------------------------------------------------------------------ */
+
+function sucheSeite(verweis) {
+  return {
+    titel: 'Suche',
+    kurz: 'Suche im Sortiment und in den Fachseiten.',
+    html: `<p class="krume"><a href="${verweis('index')}">Start</a> › Suche</p>
+<h1>Suche</h1>
+<p class="lede" id="suche-kopf">Geben Sie oben einen Suchbegriff ein.</p>
+<noscript><p class="antwort">Die Suche braucht JavaScript. Ohne das führen
+<a href="${verweis('index')}">die Startseite</a> und die Warengruppen in der Kopfleiste
+zum vollständigen Sortiment — es sind keine versteckten Artikel dabei.</p></noscript>
+<div id="suche-ziel"></div>`,
+    jsonLd: null,
+  };
+}
+
+function warenkorbSeite(verweis) {
+  return {
+    titel: 'Warenkorb',
+    kurz: 'Der Warenkorb mit Warenwert, Fracht und Umsatzsteuer, getrennt ausgewiesen.',
+    html: `<p class="krume"><a href="${verweis('index')}">Start</a> › Warenkorb</p>
+<h1>Warenkorb</h1>
+<noscript><p class="antwort">Der Warenkorb braucht JavaScript.</p></noscript>
+<div id="warenkorb-ziel"></div>`,
+    jsonLd: null,
+  };
+}
+
+function kasseSeite(verweis) {
+  return {
+    titel: 'Lieferadresse und Zahlung',
+    kurz: 'Lieferbezirk und Zahlweg — die Bestellung wird durchgerechnet, aber nicht ausgelöst.',
+    html: `<p class="krume"><a href="${verweis('index')}">Start</a> ›
+<a href="${verweis('warenkorb')}">Warenkorb</a> › Lieferung und Zahlung</p>
+<h1>Lieferung und Zahlung</h1>
+<noscript><p class="antwort">Diese Seite braucht JavaScript.</p></noscript>
+<div id="kasse-ziel"></div>`,
+    jsonLd: null,
   };
 }
 
@@ -786,10 +907,58 @@ der ganze Vorteil der getrennten Ausweisung.</p>`,
  * Ausgabe
  * ------------------------------------------------------------------ */
 
-function rahmen(seite, verweis, { eigenstaendig }) {
+/**
+ * Die Daten, die der Shop im Browser braucht.
+ *
+ * **Was hier nicht hineinkommt, ist der eigentliche Punkt.** Nicht der
+ * Lieferantensatz als Ganzes (er führt bei den Platzhalterlieferanten
+ * Händlerrabatt und Mindestbestellwert), nicht der Einkaufspreis, nicht die
+ * Kalkulation. `oeffentlicherArtikel()` und `oeffentlicherLieferant()` in
+ * `shopkern.js` schneiden zu; der Interna-Prüfer sieht die fertige Seite und
+ * würde melden, was durchrutscht.
+ */
+function shopdaten(katalog, befund, seiten, lieferantenDatei) {
+  const verwendet = new Set(katalog.artikel.map((a) => a.lieferantId));
+  const bilder = {};
+  for (const a of katalog.artikel) bilder[a.sku] = artikelBild(a);
+  return {
+    artikel: katalog.artikel.map(oeffentlicherArtikel),
+    lieferanten: lieferantenDatei.lieferanten
+      .filter((l) => verwendet.has(l.id))
+      .map(oeffentlicherLieferant),
+    seiten: [...seiten.values()].map((s) => ({
+      id: s.id,
+      art: s.art,
+      titel: s.kopf.titel,
+      kurz: alsText(String(s.kopf.kurz ?? '')),
+      frage: String(s.kopf.frage ?? ''),
+      gruppe: s.kopf.gruppe ?? null,
+      // Der Fließtext geht bewusst **nicht** mit: Er wiegt 300 KB, und ein
+      // Treffer im vierzigsten Absatz einer Wissensseite hilft niemandem beim
+      // Bestellen. Gesucht wird in Titel, Frage und Kurzfassung.
+    })),
+    bilder,
+    einheiten: EINHEITEN,
+    bezirke: LIEFERGEBIET.bezirke.map((b) => b.name),
+    zahlwege: ZAHLUNGSBEDINGUNGEN.angeboten.map((z) => ({
+      id: z.id,
+      name: (ZAHLWEGE.find((w) => w.id === z.id) ?? {}).name ?? z.id,
+      kunde: z.kunde,
+    })),
+  };
+}
+
+function rahmen(seite, verweis, { eigenstaendig, skriptDatei, tiefe = false, daten = null }) {
   const nav = NAV.map(([id, t]) => `<a href="${verweis(id)}">${esc(t)}</a>`).join('');
   const kopf = `<header class="kopfleiste">
   <a class="logo" href="${verweis('index')}">${esc(FIRMA)}</a>
+  <div class="suche">
+    <input id="suchfeld" type="search" autocomplete="off" placeholder="Artikel suchen — z. B. Spachtel, XPS 50, Kanalbogen"
+      aria-label="Im Sortiment suchen">
+    <div id="suchvorschlag" class="vorschlaege" hidden></div>
+  </div>
+  <a class="korb" href="${verweis('warenkorb')}" aria-label="Warenkorb">Warenkorb<span
+    class="zahl" data-korbzaehler hidden></span></a>
   <nav>${nav}</nav>
 </header>`;
   const fuss = `<footer>
@@ -802,6 +971,12 @@ function rahmen(seite, verweis, { eigenstaendig }) {
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer>`;
+  const shopskript = skriptDatei
+    ? `<script>window.__SHOP_TIEFE__=${tiefe ? 'true' : 'false'};</script>\n`
+      + `<script src="${skriptDatei}" defer></script>`
+    : daten
+      ? `<script>${daten}</script>`
+      : '';
   const koerper = `${kopf}\n${seite.html}\n${fuss}`;
   if (!eigenstaendig) return koerper;
 
@@ -822,7 +997,9 @@ function rahmen(seite, verweis, { eigenstaendig }) {
 </head>
 <body><div class="huelle">
 ${koerper}
-</div></body>
+</div>
+${shopskript}
+</body>
 </html>
 `;
 }
@@ -857,7 +1034,7 @@ function main() {
 
   // Verweise in den Inhalten prüfen, bevor irgendetwas ausgegeben wird.
   const kennungen = new Set([
-    'index', 'lieferung', 'wissen/index',
+    'index', 'lieferung', 'wissen/index', 'suche', 'warenkorb', 'kasse',
     'rechtliches/index', 'rechtliches/impressum', 'rechtliches/agb',
     'rechtliches/datenschutz', 'rechtliches/abnahme',
     ...seiten.keys(),
@@ -898,6 +1075,9 @@ function main() {
     m.set('index', startSeite(katalog, befund, seiten, verweisFabrik('index')));
     m.set('wissen/index', wissenIndex(seiten, verweisFabrik('wissen/index')));
     m.set('lieferung', lieferungSeite(katalog, katalogDatei, verweisFabrik('lieferung')));
+    m.set('suche', sucheSeite(verweisFabrik('suche')));
+    m.set('warenkorb', warenkorbSeite(verweisFabrik('warenkorb')));
+    m.set('kasse', kasseSeite(verweisFabrik('kasse')));
     m.set('rechtliches/index', rechtlichesIndex(betreiber, verweisFabrik('rechtliches/index')));
     m.set('rechtliches/impressum', impressumSeite(betreiber, verweisFabrik('rechtliches/impressum')));
     m.set('rechtliches/agb', agbSeite(verweisFabrik('rechtliches/agb')));
@@ -996,15 +1176,33 @@ function main() {
     process.exit(1);
   }
 
+  // Rechenkern und Oberfläche einmal bauen — beide Ausgabefassungen teilen sie.
+  const kernBuendel = baueKern(
+    (name) => readFileSync(join(WURZEL, 'src', name), 'utf8'),
+    [...KERNMODULE, ...SHOPMODULE],
+  );
+  const shopOberflaeche = readFileSync(join(WURZEL, 'shop-ui.js'), 'utf8');
+
   // --- Mehrseitenfassung ---
   const site = join(AUSGABE, 'site');
   rmSync(site, { recursive: true, force: true });
   mkdirSync(site, { recursive: true });
   const dateiSeiten = bauen(pfadVerweis);
+  const nutzdaten = shopdaten(katalog, befund, seiten, lieferantenDatei);
+  const shopskriptQuelle = `window.__SHOP__=${JSON.stringify(nutzdaten)};\n`
+    + `window.__SHOP__.adressform=window.__SHOP_ADRESSFORM__||'datei';\n`
+    + `window.__SHOP__.tiefe=!!window.__SHOP_TIEFE__;\n`
+    + kernBuendel + '\n' + shopOberflaeche;
+  writeFileSync(join(site, 'shop.js'), shopskriptQuelle, 'utf8');
   for (const [id, seite] of dateiSeiten) {
     const pfad = join(site, `${id}.html`);
+    const tiefe = id.includes('/');
     mkdirSync(dirname(pfad), { recursive: true });
-    writeFileSync(pfad, rahmen(seite, pfadVerweis(id), { eigenstaendig: true }), 'utf8');
+    writeFileSync(pfad, rahmen(seite, pfadVerweis(id), {
+      eigenstaendig: true,
+      skriptDatei: `${tiefe ? '../' : ''}shop.js`,
+      tiefe,
+    }), 'utf8');
   }
 
   // robots.txt, llms.txt, sitemap.xml
@@ -1040,18 +1238,36 @@ ${[...dateiSeiten.keys()].map((id) => `  <url><loc>${BASIS}/${id}.html</loc></ur
   writeFileSync(join(site, 'sitemap.xml'), sitemap, 'utf8');
 
   // --- Einzeldateifassung ---
+  const shopskriptRoh = `window.__SHOP__=${JSON.stringify(nutzdaten)};\n`
+    + `window.__SHOP__.adressform=window.__SHOP_ADRESSFORM__||'datei';\n`
+    + `window.__SHOP__.tiefe=!!window.__SHOP_TIEFE__;\n`
+    + kernBuendel + '\n' + shopOberflaeche;
   const rautenSeiten = bauen(rautenVerweis);
   const eingebettet = [...rautenSeiten].map(([id, seite]) =>
     `<template data-seite="${esc(id)}" data-titel="${esc(seite.titel)}">${rahmen(seite, rautenVerweis(id), { eigenstaendig: false })}</template>`,
   ).join('\n');
 
-  const einzeln = `<title>Baustoffe zum Baumeisterpreis</title>
+  // Die Zeichensatzangabe steht **zuerst**. Sie hat in der Einzeldatei
+  // vollständig gefehlt: Die Mehrseitenfassung bekommt ihr `<meta charset>`
+  // aus dem HTML-Gerüst, die Einzeldatei hat kein Gerüst und hatte deshalb
+  // keine Angabe. Ein Browser, der nicht rät, zeigt dann „fÃ¼r" statt „für"
+  // — auf jeder Seite, in jedem Preis, in jedem Bezirksnamen.
+  //
+  // Gefunden hat es die Shopprobe, nicht das Auge: Die Erwartungstexte der
+  // Szenarien enthielten Umlaute, und drei Szenarien schlugen fehl, obwohl
+  // der Inhalt stimmte. **Ein Testfall, der über Umlaute stolpert, ist kein
+  // schlechter Testfall.**
+  const einzeln = `<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Baustoffe zum Baumeisterpreis</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500&family=Source+Sans+3:wght@400;600&display=swap">
 <style>${stil()}</style>
 <div class="huelle" id="inhalt"></div>
 ${eingebettet}
+<script>window.__SHOP_ADRESSFORM__='raute';</script>
+<script>${shopskriptRoh}</script>
 <script>
 (function () {
   var seiten = {};
@@ -1060,11 +1276,15 @@ ${eingebettet}
   });
   var ziel = document.getElementById('inhalt');
   function zeige() {
-    var id = decodeURIComponent(location.hash.replace(/^#/, '')) || 'index';
+    var roh = decodeURIComponent(location.hash.replace(/^#/, ''));
+    // Die Suche hängt „?q=…" an die Raute. Für die Seitenwahl zählt nur der
+    // Teil davor; den Rest liest die Suchseite selbst aus dem Hash.
+    var id = roh.split('?')[0] || 'index';
     var s = seiten[id] || seiten['index'];
     ziel.innerHTML = s.html;
     document.title = s.titel + ' — ${FIRMA}';
     window.scrollTo(0, 0);
+    if (window.__SHOP_START__) window.__SHOP_START__();
   }
   window.addEventListener('hashchange', zeige);
   zeige();

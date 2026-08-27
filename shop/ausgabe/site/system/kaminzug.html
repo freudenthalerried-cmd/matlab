@@ -60,6 +60,69 @@ svg.schema.gruppe{max-height:5.5rem}
 .artikelbild svg.schema{max-height:12rem;max-width:22rem}
 .mehr{font-family:var(--schmal);text-transform:uppercase;letter-spacing:.06em;font-size:.82rem}
 
+/* --- Kopfleiste mit Suche und Warenkorb --- */
+.kopfleiste{flex-wrap:wrap;gap:.6rem 1rem}
+.suche{position:relative;flex:1 1 18rem;min-width:12rem}
+#suchfeld{width:100%;font:inherit;font-size:.95rem;padding:.5rem .7rem;border:1px solid var(--linie-stark);background:var(--flaeche);color:var(--tinte);border-radius:0}
+#suchfeld:focus-visible{outline:2px solid var(--ocker);outline-offset:1px}
+.vorschlaege{position:absolute;z-index:20;left:0;right:0;top:calc(100% + 2px);background:var(--flaeche);border:1px solid var(--linie-stark);max-height:22rem;overflow-y:auto;box-shadow:0 6px 24px rgba(0,0,0,.14)}
+.vorschlag{display:flex;flex-direction:column;gap:.1rem;padding:.5rem .7rem;text-decoration:none;color:inherit;border-bottom:1px solid var(--linie)}
+.vorschlag:last-child{border-bottom:0}
+.vorschlag:hover,.vorschlag:focus-visible{background:var(--flaeche-2)}
+.vorschlag .v-t{font-family:var(--schmal);font-size:1.05rem;font-weight:600;line-height:1.2}
+.vorschlag .v-a{font-size:.8rem;color:var(--gedaempft);font-variant-numeric:tabular-nums}
+.korb{position:relative;font-family:var(--schmal);text-transform:uppercase;letter-spacing:.05em;font-size:.85rem;text-decoration:none;color:inherit;border:1px solid var(--linie-stark);padding:.45rem .8rem;white-space:nowrap}
+.korb:hover{background:var(--flaeche-2)}
+.korb .zahl{display:inline-block;margin-left:.45rem;min-width:1.35rem;padding:0 .3rem;text-align:center;background:var(--ocker);color:var(--grund);font-family:var(--zahl);font-size:.78rem;border-radius:999px}
+
+/* --- Filterleiste --- */
+.filterleiste{display:flex;flex-wrap:wrap;gap:.8rem 1.2rem;align-items:flex-end;padding:.9rem 1rem;background:var(--flaeche);border:1px solid var(--linie);margin-bottom:1rem}
+.filterleiste .f{display:flex;flex-direction:column;gap:.2rem}
+.filterleiste .f-b{font-family:var(--schmal);text-transform:uppercase;font-size:.75rem;letter-spacing:.06em;color:var(--ocker)}
+.filterleiste select{font:inherit;font-size:.9rem;padding:.35rem .5rem;border:1px solid var(--linie-stark);background:var(--grund);color:var(--tinte)}
+.filterleiste .f-schalter{flex-direction:row;align-items:center;gap:.4rem;font-size:.9rem}
+.filterleiste .f-zahl{margin-left:auto;font-family:var(--zahl);font-size:.85rem;color:var(--gedaempft)}
+
+/* --- In den Warenkorb --- */
+.legen{display:flex;flex-wrap:wrap;gap:.7rem;align-items:flex-end;margin:0 0 1.5rem}
+.legen .f-b{display:block;font-family:var(--schmal);text-transform:uppercase;font-size:.75rem;letter-spacing:.06em;color:var(--ocker);margin-bottom:.2rem}
+.legen input{font:inherit;width:5.5rem;padding:.5rem;border:1px solid var(--linie-stark);background:var(--flaeche);color:var(--tinte);font-variant-numeric:tabular-nums}
+.knopf{display:inline-block;font-family:var(--schmal);text-transform:uppercase;letter-spacing:.06em;font-size:.9rem;padding:.62rem 1.2rem;background:var(--ocker);color:var(--grund);border:1px solid var(--ocker);text-decoration:none;cursor:pointer}
+.knopf:hover{filter:brightness(1.08)}
+.knopf.getan{background:var(--gruen);border-color:var(--gruen)}
+.knopf.gross{font-size:1rem;padding:.8rem 1.6rem;margin-top:1rem}
+
+/* --- Warenkorbseite --- */
+.korbblock{border:1px solid var(--linie);background:var(--flaeche);padding:1rem 1.1rem;margin-bottom:1.2rem}
+.korbblock h2{margin-top:0}
+.korbzeile{display:grid;grid-template-columns:5.5rem 1fr 5rem 6rem auto;gap:.8rem;align-items:center;padding:.7rem 0;border-top:1px solid var(--linie)}
+.korbzeile:first-of-type{border-top:0}
+.kz-bild{background:var(--flaeche-2);padding:.3rem;border:1px solid var(--linie)}
+.kz-bild svg{max-height:3.4rem}
+.kz-mitte{display:flex;flex-direction:column;gap:.15rem;min-width:0}
+.kz-t{font-family:var(--schmal);font-size:1.1rem;font-weight:600;line-height:1.2;color:inherit}
+.kz-e{font-size:.82rem;color:var(--gedaempft)}
+.kz-menge{font:inherit;width:100%;padding:.4rem;border:1px solid var(--linie-stark);background:var(--grund);color:var(--tinte);font-variant-numeric:tabular-nums;text-align:right}
+.kz-summe{font-family:var(--schmal);font-size:1.15rem;font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+.kz-weg{font:inherit;font-size:.82rem;background:none;border:0;color:var(--gedaempft);text-decoration:underline;cursor:pointer;padding:.2rem}
+.kz-weg:hover{color:var(--ziegel)}
+@media(max-width:38rem){.korbzeile{grid-template-columns:1fr 4.5rem 5.5rem;grid-template-areas:"m m m" "t menge summe"}.kz-bild{display:none}}
+
+/* --- Kasse --- */
+.kasse{background:var(--flaeche);border:1px solid var(--linie);padding:1rem 1.1rem;margin-bottom:1.2rem}
+.kasse h2:first-child{margin-top:0}
+.kasse .f{display:flex;flex-direction:column;gap:.25rem;max-width:26rem}
+.kasse select{font:inherit;padding:.5rem;border:1px solid var(--linie-stark);background:var(--grund);color:var(--tinte)}
+.gebiet{font-size:.92rem;margin:.6rem 0 0;padding:.55rem .8rem;border-left:3px solid var(--linie-stark);background:var(--grund)}
+.gebiet:empty{display:none}
+.gebiet.ja{border-left-color:var(--gruen);background:var(--gruen-weich)}
+.gebiet.nein{border-left-color:var(--ziegel);background:var(--ziegel-weich)}
+.zahlwege{display:flex;flex-direction:column;gap:1px;background:var(--linie);border:1px solid var(--linie)}
+.zw{display:flex;gap:.7rem;align-items:flex-start;padding:.7rem .9rem;background:var(--grund);cursor:pointer}
+.zw:hover{background:var(--flaeche-2)}
+.zw-t{display:flex;flex-direction:column;gap:.2rem}
+.zw-g{font-size:.85rem;color:var(--gedaempft)}
+
 .karte{background:var(--flaeche);padding:.9rem 1rem;display:flex;flex-direction:column;gap:.4rem;text-decoration:none;color:inherit}
 .karte:hover{background:var(--flaeche-2)}
 .karte .nr{font-family:var(--zahl);font-size:.68rem;color:var(--gedaempft)}
@@ -99,6 +162,13 @@ footer a{color:var(--gedaempft)}
 <body><div class="huelle">
 <header class="kopfleiste">
   <a class="logo" href="../index.html">Freudenthaler Bau GmbH</a>
+  <div class="suche">
+    <input id="suchfeld" type="search" autocomplete="off" placeholder="Artikel suchen — z. B. Spachtel, XPS 50, Kanalbogen"
+      aria-label="Im Sortiment suchen">
+    <div id="suchvorschlag" class="vorschlaege" hidden></div>
+  </div>
+  <a class="korb" href="../warenkorb.html" aria-label="Warenkorb">Warenkorb<span
+    class="zahl" data-korbzaehler hidden></span></a>
   <nav><a href="../gruppe/wdvs.html">WDVS</a><a href="../gruppe/daemmung.html">Dämmung</a><a href="../gruppe/mauerwerk.html">Mauerwerk</a><a href="../gruppe/moertel.html">Mörtel</a><a href="../gruppe/kamin.html">Kamin</a><a href="../gruppe/kanal.html">Kanal</a><a href="../gruppe/zubehoer.html">Zubehör</a><a href="../lieferung.html">Lieferung</a></nav>
 </header>
 <p class="krume"><a href="../index.html">Start</a> › Systemlisten</p>
@@ -117,7 +187,8 @@ footer a{color:var(--gedaempft)}
 <h2>Bevor Sie bestellen</h2>
 <p>Halten Sie die drei Angaben bereit und die Systembezeichnung. Ohne sie ist jede Stückliste geraten, und eine geratene Kaminstückliste ist die teuerste Art, Material zu bestellen.</p>
 <h2>9 Artikel in dieser Gruppe</h2>
-<div class="raster"><a class="karte" href="../artikel/POS-10837.html">
+<div class="filterleiste" id="filterleiste"></div>
+<div class="raster" id="warenraster" data-gruppe="Kamin"><a class="karte" href="../artikel/POS-10837.html">
   <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Mauer- oder Mantelstein"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="M20 34 L84 22 L104 30 L40 42 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <path d="M20 34 L20 66 L40 74 L40 42 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
@@ -326,5 +397,8 @@ footer a{color:var(--gedaempft)}
   <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
   Keine Steuer- oder Rechtsberatung.</p>
 </footer>
-</div></body>
+</div>
+<script>window.__SHOP_TIEFE__=true;</script>
+<script src="../shop.js" defer></script>
+</body>
 </html>

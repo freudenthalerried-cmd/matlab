@@ -222,6 +222,31 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > verschwinden darf nichts. Gegenprobe mit Katalogkopie in beide Richtungen.
 > [`gate24-ausfuehrbar.md`](./gate24-ausfuehrbar.md).
 >
+> **Aus dem Schaufenster wird ein Laden** (27.08.): Weisung „baue einen
+> richtig hochwertigen Shop wie Amazon". Gebaut sind die vier Dinge, die ein
+> Kunde tut — **Suche** (mit Vorschlägen, Kompositum-Treffer ab vier Zeichen,
+> Umlautfaltung), **Filter und Sortierung**, **Warenkorb** mit Zähler und
+> Mengen, **Kasse** mit Gate 23 und ehrlichem Ende. Drei neue Seiten, neuer
+> `src/shopkern.js`, neue `npm run shopprobe` mit 13 Headless-Szenarien.
+> Der Warenkorb sagt selbst, wenn die Fracht die Ware übersteigt (im
+> Probekorb: 6,39 € Ware, 83,00 € Fracht). Der Interna-Riegel hat den
+> Lieferantennamen in den Nutzdaten gemeldet — entfernt, weil die Oberfläche
+> ihn nicht braucht. **Die Probe hat einen echten Fehler gefunden:** Die
+> Einzeldatei hatte **keine Zeichensatzangabe**, alle Umlaute standen auf der
+> Ratewilligkeit des Browsers. 677 Testfälle grün.
+> [`shop-mit-warenkorb.md`](./shop-mit-warenkorb.md).
+>
+> **Paketdienste für kleine Einheiten geprüft** (27.08.): Post
+> Geschäftskunden 6,32 € bis 20,78 € (bis 31,5 kg), GLS bis 40 kg, DPD bis
+> 31,5 kg. Ein 25-kg-Sack ginge für rund 21 € statt 75,50 € Frachtpauschale —
+> die Schwelle, ab der eine Bestellung trägt, fiele von 332 auf rund 95 €.
+> **Drei Vorbehalte**: Die Zahlen stammen aus Suchauszügen (post.at und
+> wko.at sind gesperrt) und sind damit Hinweis, keine Fundstelle; der Katalog
+> **kennt kein Gewicht** und `sperrgut` ist bei allen 46 Artikeln geschätzt;
+> und im Streckengeschäft hat niemand das Paket in der Hand — es braucht eine
+> Vereinbarung mit dem Lieferanten oder Abholung (Lagerhaus Münzbach/Perg).
+> [`paketversand-kleine-einheiten.md`](./paketversand-kleine-einheiten.md).
+>
 > **Herstellerverweise: drei Artikel zurückgewonnen** (27.08.): `marke()`
 > prüfte `startsWith`, die Marke musste ganz vorn stehen. Drei
 > Schiedel-Artikel trugen deshalb „kein Herstellermerkblatt vorhanden",
@@ -408,6 +433,8 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `maschinenlesbare-ausgabe.md` | **Schema.org, Feed und robots.txt** — Preise werden übernommen statt nachgerechnet, Platzhalter gehen nicht hinaus, Zurückgehaltenes wird begründet |
 | `domainwahl.md` | **Die Firma und ihre Domain gibt es schon** — Freudenthaler Bau GmbH, FN 347938z, Baustoffhandel eingetragen, `freudenthaler-bau.at` in Betrieb; Empfehlung daher `shop.freudenthaler-bau.at` plus `baustoffe-muehlviertel.at` als Weiterleitung. Zwei Korrekturen: Ried in der Riedmark liegt im **Mühlviertel**, nicht im Innviertel; der Entitätswert ist bereits aufgebaut und wäre bei einer neuen Domain verloren |
 | `pruefung-der-testfaelle.md` | **Grüne Tests sind eine Aussage über die Testfälle, nicht über den Code** — elf hohle Schleifen gefunden und entschärft |
+| `shop-mit-warenkorb.md` | **Was an einem Shop hochwertig ist, sind vier Dinge, die ein Kunde tut** — Suche, Filter, Warenkorb, Kasse; die Suche musste Deutsch lernen (Kompositum-Treffer), der Warenkorb sagt selbst, wenn die Fracht die Ware übersteigt, und die neue Shopprobe fand die fehlende Zeichensatzangabe |
+| `paketversand-kleine-einheiten.md` | **Ein 25-kg-Sack ginge für rund 21 € statt 75,50 €** — die Frachtschwelle fiele von 332 auf rund 95 €. Drei Vorbehalte: Zahlen nur als Hinweis, kein Gewicht im Katalog, und im Streckengeschäft hat niemand das Paket in der Hand |
 | `gate24-ausfuehrbar.md` | **„Umzusetzen ist vorerst nichts" ist die häufigste Art, wie eine Regel verschwindet** — Gate 24 im Rechenkern, die Sperre vor dem Preisabgleich, weggelassene Artikel werden beim Bauen genannt |
 | `lagerhaus-drei-seiten-mehr.md` | **Der dritte falsche Schluss wurde nicht gezogen** — Quarzolith zeigt dasselbe Produkt als Sackware mit 20 % und lose auf Anfrage, was nach einem Prinzip aussieht und an den Schachtringen scheitert. Kanal 82 %, Schachtringe 53 %. **Gate 24 entschieden.** Dazu: das Inhaltsverzeichnis war immer lesbar — nur 21 der 72 Seiten betreffen den Shop |
 | `dritter-lieferant-schachermayer.md` | **Ein Lieferant ist nicht dasselbe wie ein Sortiment** — eine Rechnung, eine Position, kein Baustoff. Der negative Befund ist die Antwort; wertvoller sind 2 % statt 3 % Skonto (dritter Lieferant), 17,90 € Fracht und die Anschrift, die Perg unabhängig bestätigt |

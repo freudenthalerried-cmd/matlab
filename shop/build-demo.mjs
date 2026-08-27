@@ -10,6 +10,7 @@ import { readFileSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { baueKern, KERNMODULE, SHOPMODULE } from './src/buendel.js';
 
 const lies = (p) => readFileSync(new URL(p, import.meta.url), 'utf8');
 
@@ -18,66 +19,8 @@ const daten = {
   artikel: JSON.parse(lies('./data/artikel.json')),
 };
 
-// Module zu einem Inline-Skript verbinden: Import-Zeile entfernen, Exporte entkleiden.
-const entkleide = (quelle) =>
-  quelle
-    .replace(/^import[^;]+;\s*$/gm, '')
-    // Weitergereichte Namen (`export { a, b };`) fallen ersatzlos weg: Im
-    // zusammengefügten Skript stehen sie ohnehin schon im selben Bereich.
-    // Ohne diese Zeile blieb ein `export` im Nicht-Modul stehen, und der
-    // Bau brach mit einem Parserfehler ab — gefunden, als `kostenbild.js`
-    // zum ersten Mal Namen aus `skonto.js` weiterreichte.
-    .replace(/^export \{[^}]*\};\s*$/gm, '')
-    .replace(/^export (const|let|function|class|async function) /gm, '$1 ');
-
-const kern = [
-  entkleide(lies('./src/format.js')),
-  entkleide(lies('./src/gebiet.js')),
-  entkleide(lies('./src/preis.js')),
-  entkleide(lies('./src/warenkorb.js')),
-  entkleide(lies('./src/bedarf.js')),
-  entkleide(lies('./src/liefergebiet.js')),
-  entkleide(lies('./src/kunde.js')),
-  entkleide(lies('./src/messwert.js')),
-  entkleide(lies('./src/rechtstexte.js')),
-  entkleide(lies('./src/bestellung.js')),
-  entkleide(lies('./src/beleg.js')),
-  entkleide(lies('./src/vorgang.js')),
-  entkleide(lies('./src/auftragslauf.js')),
-  entkleide(lies('./src/vies.js')),
-  entkleide(lies('./src/ablage.js')),
-  entkleide(lies('./src/speicher.js')),
-  entkleide(lies('./src/skonto.js')),
-  entkleide(lies('./src/zahlung.js')),
-  entkleide(lies('./src/kostenbild.js')),
-].join('\n');
-
-/**
- * Namenskollisionen im Bündel finden.
- *
- * Getrennte Module dürfen denselben Namen tragen; im zusammengefügten Skript
- * ist das ein SyntaxError, und dann läuft die ganze Seite nicht. Genau das ist
- * mit einer Hilfsfunktion namens `EUR` passiert — die Tests blieben grün, weil
- * sie die Module einzeln laden. Der Bauschritt muss es deshalb selbst merken.
- */
-function pruefeNamenskollisionen(quelle) {
-  const gesehen = new Map();
-  const doppelt = [];
-  const muster = /^(?:const|let|var|class|async\s+function|function)\s+([A-Za-z_$][\w$]*)/gm;
-  for (const treffer of quelle.matchAll(muster)) {
-    const name = treffer[1];
-    if (gesehen.has(name)) doppelt.push(name);
-    else gesehen.set(name, true);
-  }
-  if (doppelt.length) {
-    throw new Error(
-      'Doppelt deklariert im Bündel: ' + [...new Set(doppelt)].join(', ') +
-        '\nIm Modul harmlos, im zusammengefügten Skript ein SyntaxError.',
-    );
-  }
-}
-
-pruefeNamenskollisionen(kern);
+// Der Zusammenbau liegt in src/buendel.js — der Shop braucht denselben Kern.
+const kern = baueKern((name) => lies('./src/' + name), [...KERNMODULE, ...SHOPMODULE]);
 
 // Ersetzt wird über Funktionen, nicht über Ersatztexte: In String.replace hat
 // „$&" (und Verwandte) im Ersatztext Sonderbedeutung. Ein Artikelname mit

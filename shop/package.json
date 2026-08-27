@@ -10,6 +10,7 @@
     "auswerten": "node bin/auswerten.mjs",
     "suchvolumen": "node bin/suchvolumen.mjs",
     "oberflaechenprobe": "node bin/oberflaechenprobe.mjs",
+    "shopprobe": "node bin/shopprobe.mjs",
     "pruefe-inhalte": "node bin/inhaltspruefung.mjs",
     "veroeffentlichung": "node bin/veroeffentlichung.mjs",
     "pruefe-quellen": "node bin/quellenpruefung.mjs",
