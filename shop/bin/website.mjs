@@ -34,6 +34,7 @@ import { baueKern, KERNMODULE, SHOPMODULE } from '../src/buendel.js';
 import { oeffentlicherArtikel, oeffentlicherLieferant } from '../src/shopkern.js';
 import { LIEFERGEBIET } from '../src/liefergebiet.js';
 import { ZAHLWEGE } from '../src/zahlung.js';
+import { fracht } from '../src/preis.js';
 import { lesKopf, alsHtml, alsText, alsListe, esc } from '../src/markdown.js';
 import {
   erzeugeImpressum, pruefeBetreiberdaten, AGB_GLIEDERUNG, ZAHLUNGSBEDINGUNGEN,
@@ -512,6 +513,44 @@ wäre schlimmer als eine leere.</p>`);
 Die Frachtsätze stehen unter <a href="${verweis('lieferung')}">Lieferung</a>. Warum die Fracht getrennt
 ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 <a href="${verweis('wissen/warum-keine-gratislieferung')}">Warum es keine Gratislieferung gibt</a>.</p>`);
+
+  // **Die Zustellung dieses einen Artikels, in Euro.**
+  //
+  // Der Produktfeed nennt sie seit dem 28. August je Artikel; die
+  // Artikelseite verwies bis dahin nur auf die Frachtseite. Ein Kunde, der
+  // eine Dämmplatte für 1,93 € ansieht, soll nicht erst im Warenkorb
+  // erfahren, dass die Zustellung 83 € kostet — dieselbe Haltung wie überall
+  // sonst hier: **die unangenehme Zahl steht vorne.**
+  //
+  // Gerechnet mit `fracht()`, also mit derselben Funktion wie Warenkorb und
+  // Feed. Genannt wird der Fall, den die Zahl trifft: eine Bestellung mit
+  // genau diesem Artikel. Bei mehreren Positionen fällt die Pauschale nur
+  // einmal an, und das steht dabei.
+  const lieferant = katalog.lieferantenById.get(a.lieferantId);
+  if (lieferant?.fracht?.pauschaleNetto != null && a.vkNetto !== null) {
+    const zustellung = fracht([{ ...a, menge: 1 }], lieferant).betragNetto;
+    // **Nicht „teurer als die Ware" — das wäre eine irreführende Rechnung.**
+    //
+    // Der erste Entwurf verglich die Zustellung mit dem Preis **je Einheit**
+    // und meldete deshalb bei fast jedem Artikel, die Fracht koste mehr als
+    // die Ware. Bei 1,93 € je m² stimmt das für einen Quadratmeter und für
+    // nichts sonst; wer 100 m² bestellt, hat 193 € Warenwert.
+    //
+    // Gesagt wird deshalb die Zahl, die der Kunde wirklich braucht: **ab
+    // welcher Menge der Warenwert die Zustellung übersteigt.** Sie ist aus
+    // denselben zwei Zahlen gerechnet und beantwortet die Frage, die er sich
+    // ohnehin stellt — lohnt eine eigene Fahrt?
+    const menge = a.vkNetto > 0 ? Math.ceil(zustellung / a.vkNetto) : null;
+    const eh = esc(EINHEITEN[a.einheit] ?? a.einheit);
+    teile.push(`<div class="preistafel">
+  <div><span class="k">Zustellung</span><span class="w">${euro(zustellung)} €</span><span class="e">netto je Lieferung${a.sperrgut ? ', inkl. Kranentladung' : ''}</span></div>
+  <div><span class="k">Ware</span><span class="w">${euro(a.vkNetto)} €</span><span class="e">je ${eh}, netto</span></div>
+  ${menge ? `<div><span class="k">gleich viel wert</span><span class="w">${menge} ${eh}</span><span class="e">ab hier übersteigt die Ware die Zustellung</span></div>` : ''}
+</div>`);
+    teile.push(`<p>Die Pauschale fällt <strong>je Lieferung</strong> an, nicht je Position: Wer diesen Artikel
+mit der übrigen Bestellung sammelt, zahlt sie einmal. Die Fahrt kostet dasselbe, ob ein Sack draufsteht
+oder eine Palette — das ist der ganze Grund, warum es hier kein „frei Haus" gibt.</p>`);
+  }
 
   if (systemSeiten.length) {
     teile.push('<h2>Gehört zu diesen Systemen</h2>');

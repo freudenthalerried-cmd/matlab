@@ -442,3 +442,42 @@ test('der Preisvorteil steht weiterhin da', () => {
   assert.match(html, /unter dem Listenpreis des Lieferanten/);
   assert.match(html, /im Median/);
 });
+
+/* ------------------------------------------------------------------ *
+ * Die Zustellung dieses einen Artikels
+ * ------------------------------------------------------------------ */
+
+test('jede Artikelseite nennt die Zustellung in Euro und die Menge, ab der sie sich lohnt', () => {
+  const ordner = pfad('../ausgabe/site/artikel');
+  if (!existsSync(ordner)) return; // ohne Bau keine Aussage — und keine falsche
+  const seiten = readdirSync(ordner).filter((d) => d.endsWith('.html'));
+  assert.ok(seiten.length >= 46, `nur ${seiten.length} Artikelseiten`);
+  for (const datei of seiten) {
+    const html = readFileSync(join(ordner, datei), 'utf8');
+    assert.match(html, /<span class="k">Zustellung<\/span>/, `${datei}: keine Zustellungsangabe`);
+    assert.match(html, /ab hier übersteigt die Ware die Zustellung/, `${datei}: keine Mengenschwelle`);
+  }
+});
+
+test('die Schwelle wird gerechnet, nicht behauptet', () => {
+  // 83,00 € Zustellung bei 1,93 € je m² sind 44 m² — aufgerundet, weil 43
+  // noch darunter lägen. Von Hand nachgerechnet, damit die Probe die Zahl
+  // prüft und nicht nur ihr Vorhandensein.
+  const datei = pfad('../ausgabe/site/artikel/POS-12566.html');
+  if (!existsSync(datei)) return;
+  const html = readFileSync(datei, 'utf8');
+  assert.match(html, /83,00 €/);
+  assert.match(html, /<span class="w">44 m²<\/span>/);
+});
+
+test('die Zustellung wird nicht mit dem Einheitenpreis verglichen', () => {
+  // Der erste Entwurf meldete bei fast jedem Artikel „die Fracht kostet mehr
+  // als die Ware" — richtig für einen Quadratmeter, falsch für jede echte
+  // Bestellung. Der Satz darf nicht zurückkommen.
+  const ordner = pfad('../ausgabe/site/artikel');
+  if (!existsSync(ordner)) return;
+  for (const datei of readdirSync(ordner).filter((d) => d.endsWith('.html'))) {
+    assert.doesNotMatch(readFileSync(join(ordner, datei), 'utf8'),
+      /Zustellung mehr als die Ware/, `${datei}: der irreführende Vergleich ist zurück`);
+  }
+});

@@ -1,8 +1,20 @@
 # Phase 1 — Nischenanalyse Österreich
 
-Stand: 2026-08-09, laufend. Bewertung gegen die harten Gates aus
-[`PARAMETER.md`](./PARAMETER.md): **≥ 32 % Rohmarge** und **Lieferanten mit
-Streckengeschäft + ≥ 35 % Händlerrabatt + baumarktfernes Segment**.
+> **Historisch, seit 22. August 2026.** Diese Analyse sucht eine Nische für
+> das **Radon-Streckenmodell** — Bezug über Hersteller, Bewertung gegen eine
+> Margenschwelle. Der Auftraggeber hat am 22. August auf **eigene
+> Baumeister-Einkaufspreise und regionale Lieferung** umgestellt; damit sind
+> Gate 1 und Gate 2 gegenstandslos, und die Nischenfrage ist beantwortet: Es
+> ist das Sortiment, das er ohnehin einkauft.
+>
+> Was hier steht, bleibt als Begründung stehen, **warum** andere Nischen
+> verworfen wurden — das ist weiterhin brauchbar. Als Handlungsanweisung ist
+> es überholt; der aktuelle Stand steht in
+> [`PARAMETER.md`](./PARAMETER.md) und [`STATUS.md`](./STATUS.md).
+
+Stand: 2026-08-09, laufend. Bewertung gegen die damals harten Gates aus
+`PARAMETER.md`: **≥ 32 % Rohmarge** und **Lieferanten mit Streckengeschäft +
+≥ 35 % Händlerrabatt + baumarktfernes Segment**.
 
 ## Recherchestand
 
