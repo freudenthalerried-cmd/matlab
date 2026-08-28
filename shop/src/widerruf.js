@@ -148,6 +148,16 @@ export const WIDERRUFE = Object.freeze([
     merkmal: /25\s*%\s*\**\s*Marge|33,3+\s*%\s*Zuschlag|jetzt gültig|marge-25-prozent/i,
     beispiel: '25 % Zuschlag auf den Einkauf sind eine Rohmarge von 20 % vom Verkauf.',
   },
+  {
+    id: 'rahmen-ohne-javascript',
+    these: 'Ein eingebettetes Dokument führe in diesem Headless-Chromium seine Skripte nicht aus.',
+    statt: 'Es führt sie aus. Angehalten hat der Parser am Stylesheet von fonts.googleapis.com, das hinter dem Ausgangsproxy hängt statt zu scheitern. Ohne Proxy: shop=object, ready=complete — mit: shop=undefined, ready=loading.',
+    widerrufenAm: '2026-08-28',
+    belegt: 'rahmen-lief-doch.md',
+    muster: /Skripte? nicht aus|misst (?:die Seite )?(?:also )?\*{0,2}ohne JavaScript/g,
+    merkmal: /Proxy|proxy-server|rahmen-lief-doch|Widerrufen|widerrufen|BERICHTIGT|Berichtigt/i,
+    beispiel: 'Der Rahmen misst die Seite also ohne JavaScript.',
+  },
 ]);
 
 /**

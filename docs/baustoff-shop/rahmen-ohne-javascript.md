@@ -1,5 +1,14 @@
 # Der Rahmen misst ohne JavaScript — und ich hätte es fast nicht gemerkt
 
+> **Überholt seit 28.08.2026 — die Ursache war falsch zugeordnet.** Der
+> Rahmen führt seine Skripte sehr wohl aus. Angehalten hat der Parser am
+> Stylesheet von `fonts.googleapis.com`, das hinter dem Ausgangsproxy dieser
+> Umgebung **hängt** statt zu scheitern; ein hängendes Stylesheet hält den
+> Parser an, und das nachfolgende `<script src>` wird nie geparst. Ohne
+> Proxyvariablen liefert derselbe Aufbau `shop=object, ready=complete`.
+> Alles Weitere in [`rahmen-lief-doch.md`](./rahmen-lief-doch.md). Was unten
+> steht, bleibt als Fehlergeschichte stehen — mit diesem Vorzeichen.
+
 Stand: 2026-08-27. Der Lauf davor endete mit einer offenen Zeile:
 
 > **Warenkorb- und Kassenseite im Rahmen:** Sie werden mit leerem Korb

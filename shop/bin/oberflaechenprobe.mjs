@@ -195,7 +195,12 @@ ${s.aktionen}
 </script>`;
     const variante = join(ablage, `szenario-${i}.html`);
     writeFileSync(variante, seite + sonde);
-    const lauf = spawnSync(chromium, ['--no-sandbox', '--dump-dom', pathToFileURL(variante).href], {
+    // Kein Weg nach außen — dieselbe Vorsichtsmaßnahme wie in `shopprobe`.
+    // `demo.html` bindet zwar keine fremden Schriften ein; eine Probe, deren
+    // Ergebnis davon abhängt, ob ein fremder Server antwortet, ist trotzdem
+    // keine Probe. Siehe `rahmen-lief-doch.md`.
+    const lauf = spawnSync(chromium, ['--no-sandbox', '--proxy-server=127.0.0.1:9',
+      '--proxy-bypass-list=127.0.0.1', '--dump-dom', pathToFileURL(variante).href], {
       encoding: 'utf8',
       maxBuffer: 64 * 1024 * 1024,
     });

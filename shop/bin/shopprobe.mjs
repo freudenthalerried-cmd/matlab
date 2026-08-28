@@ -330,25 +330,23 @@ const SZENARIEN = [
  * Gefunden hat diese Probe einen echten Fehler: „Geschäftsbedingungen" ist
  * als Überschrift 437 px breit; die AGB-Seite scrollte 82 px seitwärts.
  *
- * **Wichtige Grenze, gemessen und nicht vermutet:** In diesem
- * Headless-Chromium führt ein eingebettetes Dokument **seine Skripte nicht
- * aus** — weder das eingebundene `shop.js` noch eine einzeilige
- * Inline-Zeile. Nachgewiesen: Im Rahmen sind beide `<script>`-Elemente
- * vorhanden (`skripte=2`), und trotzdem sind `window.__SHOP__` und
- * `window.__SHOP_TIEFE__` undefiniert.
+ * **Berichtigt am 28.08.** Hier stand: „In diesem Headless-Chromium führt
+ * ein eingebettetes Dokument seine Skripte nicht aus." Die Beobachtung war
+ * echt — `skripte=2`, `window.__SHOP__` undefiniert —, die Ursache falsch
+ * zugeordnet:
  *
- * Der Rahmen misst die Seite also **ohne JavaScript**. Für Seitwärtsrollen
- * und Elementgrößen ist das gültig — beides entsteht aus CSS. Für alles,
- * was das Skript erst erzeugt (Filterleiste, Warenkorb, Kasse), ist es
- * wertlos: Dort gäbe es nichts zu messen, und „null zu kleine von null"
- * sähe wie ein bestandener Test aus.
+ * > **Widerrufen:** Nicht der Rahmen verhindert das Skript, sondern das
+ * > Stylesheet von `fonts.googleapis.com`, das hinter dem Ausgangsproxy
+ * > hängt statt zu scheitern. Ein hängendes Stylesheet hält den Parser an;
+ * > das nachfolgende `<script src>` wird nie geparst. Ohne Proxyvariablen
+ * > liefert derselbe Aufbau `shop=object, ready=complete`.
  *
- * Ein erster Anlauf hatte genau diese Falle gebaut — zwei Szenarien für
- * Warenkorb und Kasse, die den Korb über `localStorage` füllten. Der
- * Speicher wurde nachweislich beschrieben, die Seite blieb leer, und die
- * Größenprüfung meldete grün. Sie sind entfernt; die Bedienelemente dieser
- * Seiten misst stattdessen ein Szenario der Einzeldateifassung, in der das
- * Skript nachweislich läuft.
+ * Deshalb starten alle Chromium-Läufe jetzt mit `GRUNDFLAGGEN` und ohne
+ * Proxy (siehe dort), und die zwei damals als „hohl" entfernten Szenarien —
+ * Warenkorb und Kasse im Rahmen — sind wieder da. Sie waren nicht hohl,
+ * weil der Rahmen kein Skript könnte, sondern weil die Seite leer blieb.
+ * Die Absicherung dagegen (`mindestens`) bleibt und ist gegengeprobt: mit
+ * leerem Korb fällt das Szenario um.
  */
 const RAHMENSZENARIEN = [
   { name: 'Startseite: kein Seitwärtsrollen, Bedienelemente daumengroß', kennung: 'index' },
@@ -365,6 +363,27 @@ const RAHMENSZENARIEN = [
   {
     name: 'Wissensseite mit langem Titel scrollt bei 390 px nicht seitwärts',
     kennung: 'wissen/perimeterdaemmung-und-grundmauerschutz',
+  },
+  // Die beiden Seiten, die es am nötigsten haben und am längsten gefehlt
+  // haben: Ihre Bedienelemente entstehen erst mit Inhalt. Der Korb wird über
+  // den gemeinsamen Ursprung gefüllt, bevor der Rahmen lädt. `mindestens`
+  // ist der Beweis, dass die Seite nicht leer war — sonst bestünde ein
+  // leerer Warenkorb die Größenprüfung mühelos.
+  {
+    name: 'Warenkorb mit drei Positionen bei 390 px',
+    kennung: 'warenkorb',
+    korb: [
+      { sku: 'POS-12566', menge: 12 },
+      { sku: 'POS-10095', menge: 40 },
+      { sku: 'POS-19333', menge: 3 },
+    ],
+    mindestens: 6,
+  },
+  {
+    name: 'Kasse mit gefülltem Korb bei 390 px',
+    kennung: 'kasse',
+    korb: [{ sku: 'POS-12566', menge: 12 }, { sku: 'POS-10095', menge: 40 }],
+    mindestens: 1,
   },
 ];
 
@@ -484,6 +503,51 @@ if (!existsSync(shopDatei) || !existsSync(siteOrdner)) {
 const fuehreAus = promisify(execFile);
 
 /**
+ * Flaggen und Umgebung für jeden Chromium-Start.
+ *
+ * **Warum der Ausgangsproxy abgeschaltet wird — und was das berichtigt.**
+ * Die Seiten binden Schriften von `fonts.googleapis.com` ein. In dieser
+ * Umgebung läuft jeder ausgehende Aufruf über einen Proxy, und dieser
+ * Aufruf **hängt** dort, statt zu scheitern. Ein hängendes Stylesheet im
+ * Kopf hält den Parser an: Das nachfolgende `<script src="shop.js">` wird
+ * nicht mehr geparst, `document.readyState` bleibt auf „loading", und die
+ * Seite hat kein Skript.
+ *
+ * Genau das hat am 27. August zu einer falschen Schlussfolgerung geführt,
+ * die hier bis zum 28. als gemessene Tatsache stand:
+ *
+ * > **Widerrufen:** „In diesem Headless-Chromium führt ein eingebettetes
+ * > Dokument seine Skripte nicht aus." Das stimmt nicht. Der Rahmen führt
+ * > sie aus, sobald der Proxy aus dem Weg ist — nachgewiesen mit demselben
+ * > Aufbau, einmal mit und einmal ohne Proxyvariablen: `shop=undefined,
+ * > ready=loading` gegen `shop=object, ready=complete`.
+ *
+ * Die Beobachtung war richtig, die Ursache falsch zugeordnet: nicht der
+ * Rahmen, sondern das hängende Stylesheet. Zwei Szenarien — Warenkorb und
+ * Kasse im 390-px-Rahmen — waren deshalb aus einem falschen Grund entfernt
+ * worden und sind wieder da.
+ *
+ * **Was die Probe damit nicht misst:** die Webschrift. Sie lädt hier ohnehin
+ * nie; jetzt scheitert sie sofort statt langsam. Gemessen wird der Umbruch
+ * mit den Ersatzschriften der Maschine. Ein Umbruchfehler, der erst mit
+ * „Barlow Condensed" entsteht, fällt hier nicht auf — das ist die Grenze
+ * dieser Probe und kein Nebensatz.
+ */
+const GRUNDFLAGGEN = Object.freeze([
+  '--no-sandbox', '--headless', '--disable-gpu',
+  // Kein Weg nach außen: Was die Seite an fremden Adressen einbindet, soll
+  // sofort scheitern statt zu hängen. Der eigene Dateiserver läuft auf
+  // 127.0.0.1 und ist ausgenommen.
+  '--proxy-server=127.0.0.1:9', '--proxy-bypass-list=127.0.0.1',
+]);
+const OHNE_PROXY = Object.freeze({
+  ...process.env,
+  HTTPS_PROXY: '', HTTP_PROXY: '', https_proxy: '', http_proxy: '',
+  NO_PROXY: '*', no_proxy: '*',
+});
+const START = { encoding: 'utf8', maxBuffer: 128 * 1024 * 1024, timeout: 90_000, env: OHNE_PROXY };
+
+/**
  * Die Szenarien laufen **nebeneinander**.
  *
  * Ein Chromium-Start mit dieser Seite kostet rund dreizehn Sekunden — fast
@@ -520,9 +584,8 @@ async function laufe(s, i) {
   let fehler = null;
   try {
     const { stdout } = await fuehreAus(chromium, [
-      '--no-sandbox', '--headless', '--disable-gpu',
-      '--virtual-time-budget=2500', '--dump-dom', pathToFileURL(variante).href,
-    ], { encoding: 'utf8', maxBuffer: 128 * 1024 * 1024, timeout: 90_000 });
+      ...GRUNDFLAGGEN, '--virtual-time-budget=2500', '--dump-dom', pathToFileURL(variante).href,
+    ], START);
     dom = stdout ?? '';
   } catch (e) {
     fehler = e;
@@ -557,9 +620,8 @@ async function laufeRahmen(r, i, adresse) {
   let dom = '';
   try {
     const { stdout } = await fuehreAus(chromium, [
-      '--no-sandbox', '--headless', '--disable-gpu',
-      '--virtual-time-budget=5000', '--dump-dom', url.href,
-    ], { encoding: 'utf8', maxBuffer: 128 * 1024 * 1024, timeout: 90_000 });
+      ...GRUNDFLAGGEN, '--virtual-time-budget=5000', '--dump-dom', url.href,
+    ], START);
     dom = stdout ?? '';
   } catch (e) { dom = e.stdout ?? ''; }
 

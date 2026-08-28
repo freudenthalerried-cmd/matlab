@@ -309,18 +309,22 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > vorletzten statt der letzten Zeile. 22 Szenarien.
 > [`bedienbar-mit-daumen-und-tastatur.md`](./bedienbar-mit-daumen-und-tastatur.md).
 >
-> **Der Rahmen misst ohne JavaScript** (27.08.): Beim Versuch, Warenkorb und
-> Kasse im 390-px-Rahmen zu messen, kam eine Eigenschaft der Prüfumgebung
-> heraus: **Ein eingebettetes Dokument führt hier seine Skripte nicht aus** —
-> beide `<script>`-Elemente vorhanden, `window.__SHOP__` undefiniert. Damit
-> messen die fünf bestehenden Rahmenszenarien die Seite **ohne JavaScript**;
-> für Seitwärtsrollen und statische Elementgrößen gültig, für skriptgebaute
-> Inhalte wertlos. Nebengewinn: Die Seiten halten ihr Layout auch ohne Skript.
+> **Der Rahmen misst ohne JavaScript** (27.08.) — **widerrufen am 28.08.,
+> siehe [`rahmen-lief-doch.md`](./rahmen-lief-doch.md).** Beim Versuch,
+> Warenkorb und Kasse im 390-px-Rahmen zu messen, hieß es: **Ein
+> eingebettetes Dokument führt hier seine Skripte nicht aus** — beide
+> `<script>`-Elemente vorhanden, `window.__SHOP__` undefiniert. Die
+> Beobachtung stimmte, die Ursache war falsch zugeordnet: Angehalten hat der
+> Parser am Stylesheet von `fonts.googleapis.com`, das hinter dem
+> Ausgangsproxy **hängt** statt zu scheitern. Ohne Proxyvariablen führt
+> derselbe Rahmen seine Skripte aus. Nebengewinn bleibt: Die Seiten halten
+> ihr Layout auch ohne Skript.
 > **Zwei neue Szenarien waren hohl** — eine leere Seite hat null zu kleine
 > Bedienelemente, und die eingebaute Absicherung dagegen zählte auch die
-> Kopfleiste mit. Beide entfernt; die Warenkorb-Bedienelemente misst jetzt
-> ein Szenario der Einzeldateifassung (Gegenprobe: Mengenfeld 40 px).
-> Rahmenproben laufen jetzt über HTTP statt `file://`.
+> Kopfleiste mit. Beide entfernt — **aus einem Grund, der sich am 28.08. als
+> falsch herausstellte**; sie sind wieder da und messen jetzt tatsächlich
+> (28 Szenarien, davon 8 im Rahmen). Rahmenproben laufen über HTTP statt
+> `file://`, und Chromium startet ohne Weg nach außen.
 > [`rahmen-ohne-javascript.md`](./rahmen-ohne-javascript.md).
 >
 > **Der Inhaltsprüfer zeigte auf die Probedatei** (27.08.): `npm run
