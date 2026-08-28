@@ -27,9 +27,22 @@ Entscheidungen einschließlich der Gates selbst getroffen und begründet werden*
 
 Ebenso überholt: Der master-prompt nennt in Gate 1 eine Margenschwelle von
 **28 %**. Sie stammt aus dem Szenario „3.000 € vor Steuer". Seit der Umstellung
-auf 3.000 € netto gilt die harte Untergrenze von **32 %**.
+auf 3.000 € netto galt die harte Untergrenze von **32 %**.
 
-## Die zweiundzwanzig Gates
+> **Auch das ist überholt, seit 22. August.** Mit der Kalkulation auf eigene
+> Baumeister-Einkaufspreise gibt es keine Herstellermarge mehr, an der eine
+> Prozentschwelle hinge. An die Stelle von Gate 1 tritt **Gate 20** — keine
+> Bestellung ohne positiven Deckungsbeitrag, geprüft in Euro je Bestellung.
+> Damit sind in diesem Register drei Fassungen derselben Schwelle
+> nachvollziehbar: 28 % (master-prompt), 32 % (Nettoziel), und keine
+> (Baumeisterpreise). Die jeweils jüngere gilt.
+
+## Die vierundzwanzig Gates
+
+*Die Überschrift lautete bis zum 28. August „zweiundzwanzig" — Gate 23
+(Liefergebiet) und Gate 24 (kein Artikel ohne rechenbaren Einkaufspreis)
+waren am 26. und 27. dazugekommen, und die Zeile darüber war nicht
+mitgezählt worden. Eine Zahl in einer Überschrift ist auch eine Angabe.*
 
 ### Lieferantenseite — alle drei hängen an einer einzigen Freigabe
 

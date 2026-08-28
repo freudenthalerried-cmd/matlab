@@ -1,7 +1,44 @@
 # Festgelegte Projektparameter
 
-Stand: 2026-08-09. Diese Werte sind vom Auftraggeber entschieden und nicht mehr
-zur Diskussion gestellt. Änderungen nur mit ausdrücklicher Freigabe.
+Stand: **2026-08-28**. Diese Werte sind vom Auftraggeber entschieden und nicht
+mehr zur Diskussion gestellt. Änderungen nur mit ausdrücklicher Freigabe.
+
+> **Diese Datei rangiert über dem Gate-Register.** Was hier steht, gilt —
+> und deshalb ist es teuer, wenn hier etwas Überholtes steht. Am 28. August
+> stand hier noch die harte Untergrenze von 32 % Rohmarge aus dem
+> Radon-Modell, während der Auftraggeber seit dem 22. August mit eigenen
+> Baumeisterpreisen und 25 % Marge kalkuliert. Ein späterer Lauf hätte das
+> laufende Modell nach der eigenen obersten Regel verwerfen müssen.
+
+## Weisungen seit dem 9. August — was jetzt gilt
+
+| Datum | Weisung | Folge |
+|---|---|---|
+| 22.08. | Eigene **Baumeister-Einkaufspreise** aus den Lieferantenrechnungen als Kalkulationsgrundlage, nicht mehr Herstellerkonditionen | Gate 1 und Gate 2 sind gegenstandslos, siehe unten |
+| 22.08. | Vertrieb über **Google Shopping**, Lieferung **regional** statt österreichweit | Liefergebiet: Perg, Urfahr-Umgebung, Freistadt, Linz, Linz-Land (Gate 23) |
+| 25.08. | „25 %" heißt **Marge vom Verkauf**, nicht Zuschlag auf den Einkauf | nötiger Monatsumsatz 45.356 € statt 72.740 €; `marge-25-prozent.md` |
+| 26.08. | Die Firma **existiert bereits**: Freudenthaler Bau GmbH, FN 347938z, Baustoffhandel als Gewerbe | keine Gründung nötig; Domain `freudenthaler-bau.at` in Betrieb |
+| 28.08. | **Keine Spanne ausgeben** — die Handelsspanne erscheint nicht auf Kundenseiten | genannt wird stattdessen der Abstand zum Listenpreis; `spanne-nicht-mehr-ausgeben.md` |
+| 28.08. | **Sortiment auf mindestens 100 Artikel** erweitern | 46 sind das Maximum aus den Rechnungen; es braucht eine Artikelliste, `hundert-artikel-was-fehlt.md` |
+
+### Was davon die Zahlen weiter unten außer Kraft setzt
+
+- **Die Margenuntergrenze von 32 % gilt nicht mehr.** An ihre Stelle tritt
+  **Gate 20**: keine Bestellung ohne positiven Deckungsbeitrag, geprüft in
+  Euro je Bestellung statt in Prozent. Gate 1 stammt aus dem Streckenhandel
+  mit Herstellerkonditionen und würde das laufende Modell mechanisch
+  verwerfen, statt es zu prüfen. Siehe `gate-register.md` und
+  `rechnung-zum-zuschlag.md`.
+- **Gate 2 (mindestens 35 % Händlerrabatt auf UVP)** ist damit ebenfalls
+  gegenstandslos: Es gibt keinen Hersteller im Bezugsweg, sondern einen
+  Händler, bei dem der Auftraggeber Kunde ist.
+- **Die Umsatzkaskade weiter unten** ist mit 30–45 % Rohmarge gerechnet und
+  beschreibt das Radon-Modell. Für das laufende Modell gilt die Rechnung in
+  `marge-25-prozent.md`.
+
+Unverändert gültig sind: Zielmarkt, Zielgröße, Zeithorizont, Startbudget,
+Logistik ohne eigenes Lager, Zielgruppe B2B, die Freigaberegeln — und die
+Feststellung, dass fundiertes Fachwissen die Nischenwahl positiv gewichtet.
 
 | Parameter | Wert |
 |---|---|
@@ -64,6 +101,11 @@ konservativere Kapitalgesellschaftsweg unterstellt.
 
 ### Neue Umsatzkaskade
 
+> **Für das laufende Modell überholt.** Die Tabelle rechnet mit 30–45 %
+> Rohmarge im Radon-Streckenhandel. Mit 25 % Marge auf Baumeisterpreise
+> lautet die Zahl **45.356 € Monatsumsatz** — `marge-25-prozent.md`. Die
+> Kaskade bleibt als Rechenweg stehen.
+
 Fixkosten 650 €/Monat, benötigter Deckungsbeitrag nach Werbung 6.050 €.
 
 > **Rechnerisch wären es 6.024 €** (5.374 + 650). Die Kaskade unten ist
@@ -89,10 +131,16 @@ wären 33.600 € Umsatz im Monat nötig, im reinen Streckengeschäft ohne Lager
 und ohne Bestandskundenstamm im ersten Jahr unrealistisch.
 
 > **Neue harte Untergrenze: 32 % Rohmarge.** Nischen darunter werden verworfen.
+>
+> **Überholt seit 22. August.** Diese Schwelle gehört zum Radon-Modell mit
+> Herstellerkonditionen. Für die Kalkulation auf eigene Baumeisterpreise
+> gilt **Gate 20** — keine Bestellung ohne positiven Deckungsbeitrag,
+> geprüft in Euro statt in Prozent. Siehe oben und `gate-register.md`.
 
 Das verschärft zugleich Gate 2: Gesucht sind Hersteller, die Streckengeschäft
 anbieten **und** mindestens 35 % Händlerrabatt auf UVP gewähren, damit nach
-Frachtanteil und Zahlungsgebühren noch 32 % übrig bleiben.
+Frachtanteil und Zahlungsgebühren noch 32 % übrig bleiben. (Auch dieser Satz
+gehört zum Radon-Modell; der laufende Bezugsweg führt über einen Händler.)
 
 ### Was das Fachwissen ändert
 
