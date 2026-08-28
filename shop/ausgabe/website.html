@@ -18684,7 +18684,36 @@ function kundenWarenkorb(zeilen, { artikel, lieferanten }, ust = 0.2) {
       leere(liste);
       wahl = -1;
       feld.removeAttribute('aria-activedescendant');
-      if (!feld.value.trim() || !t.length) { schliesse(); return; }
+      if (!feld.value.trim()) { schliesse(); return; }
+
+      // **Auch die Vorschlagsliste antwortet auf einen Vertipper.**
+      //
+      // Die Suchseite tut das seit heute; die meisten Kunden kommen aber gar
+      // nicht dorthin — sie tippen ins Feld und sehen nichts. Ein leeres
+      // Fenster sagt „gibt es nicht", und das ist bei „kanalror" falsch.
+      //
+      // Die Zeile ist als Vorschlag gekennzeichnet und führt zur **Suche
+      // nach dem vorgeschlagenen Wort**, nicht zu einem Artikel: Der Shop
+      // behauptet nicht, das Getippte zu führen.
+      if (!t.length) {
+        var nahe = meintenSie(index, feld.value);
+        if (!nahe.length) { schliesse(); return; }
+        nahe.forEach(function (w, i) {
+          var a = el('a', 'vorschlag');
+          a.href = pfad('suche') + '?q=' + encodeURIComponent(w);
+          a.id = 'vorschlag-' + i;
+          a.setAttribute('role', 'option');
+          a.setAttribute('aria-selected', 'false');
+          a.appendChild(el('span', 'v-t', w));
+          a.appendChild(el('span', 'v-a', 'Meinten Sie das?'));
+          liste.appendChild(a);
+        });
+        liste.hidden = false;
+        offen = true;
+        feld.setAttribute('aria-expanded', 'true');
+        return;
+      }
+
       t.forEach(function (e, i) {
         var a = el('a', 'vorschlag');
         a.href = pfad(e.id);

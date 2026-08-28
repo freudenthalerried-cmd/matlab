@@ -100,6 +100,33 @@ const SZENARIEN = [
     erwartet: ['Kein Treffer für „kanalror"', 'hatVorschlag=true', 'wort=kanalrohr', 'fuehrtZurSuche=true'],
   },
   {
+    // Die meisten Kunden kommen gar nicht auf die Suchseite — sie tippen ins
+    // Feld. Ein leeres Vorschlagsfenster sagt „gibt es nicht", und das ist
+    // bei einem Vertipper falsch.
+    name: 'Auch die Vorschlagsliste antwortet auf einen Vertipper',
+    aktionen: `
+      await geheZu('index');
+      const feld = document.getElementById('suchfeld');
+      feld.value = 'kanalror';
+      feld.dispatchEvent(new Event('input'));
+      const zeilen = [...document.querySelectorAll('#suchvorschlag .vorschlag')];
+      out = 'zeilen=' + zeilen.length + ' ' + text('#suchvorschlag .vorschlag')
+        + ' fuehrtZurSuche=' + (zeilen.length ? /suche.*q=kanalrohr/.test(zeilen[0].getAttribute('href')) : false);`,
+    erwartet: ['kanalrohr', 'Meinten Sie das?', 'fuehrtZurSuche=true'],
+  },
+  {
+    name: 'Ohne nahes Wort bleibt die Vorschlagsliste zu',
+    aktionen: `
+      await geheZu('index');
+      const feld = document.getElementById('suchfeld');
+      feld.value = 'dachziegel';
+      feld.dispatchEvent(new Event('input'));
+      const liste = document.getElementById('suchvorschlag');
+      out = 'zeilen=' + document.querySelectorAll('#suchvorschlag .vorschlag').length
+        + ' versteckt=' + liste.hidden;`,
+    erwartet: ['zeilen=0', 'versteckt=true'],
+  },
+  {
     name: 'Wo nichts nah genug ist, schweigt der Vorschlag',
     aktionen: `
       await geheZu('suche?q=dachziegel');
