@@ -38,13 +38,44 @@ function mass(text, muster) {
   return m ? m[0].replace(/\s+/g, ' ').trim() : null;
 }
 
-/** Plattendicke in Millimetern — für die gezeichnete Stärke. */
+/**
+ * Plattendicke in Millimetern — für die gezeichnete Stärke und die
+ * Beschriftung.
+ *
+ * **Berichtigt am 28.08.** „Isover TDPT 20 1200 600 mm 8,64 m2" wurde als
+ * Platte mit **600 mm Stärke** gezeichnet und so beschriftet. Die 600 sind
+ * die Plattenbreite; die Stärke steht als Typkennung „TDPT 20" weiter vorn
+ * und ist als Maß nicht erkennbar. Ein Kunde sah eine 60 cm dicke
+ * Trittschalldämmung — und das Bild behauptete dazu „Stärke maßstäblich".
+ *
+ * > **Die erste Zahl mit „mm" ist nicht die Stärke, sondern die erste Zahl
+ * > mit „mm".**
+ *
+ * Deshalb eine Plausibilitätsgrenze: Über 300 mm ist keine Plattenstärke,
+ * die dieses Sortiment führt — die Zahl meint dann etwas anderes, und
+ * *welches* etwas, kann diese Funktion nicht wissen. Sie gibt `null` zurück,
+ * und die Zeichnung beschriftet sich mit „Platte" statt mit einem falschen
+ * Maß. Lieber keine Angabe als eine erfundene; das ist dieselbe Regel wie
+ * beim fehlenden Gewicht und beim fehlenden Merkblatt.
+ *
+ * Die tatsächliche Stärke des Isover-Typs steht im Merkblatt des
+ * Herstellers. `isover.at` ist aus dieser Umgebung gesperrt (403 am
+ * Ausgangsproxy, am 28.08. nachgesehen), also bleibt sie offen.
+ */
+export const HOECHSTE_PLATTENSTAERKE_MM = 300;
+
 export function dickeMm(bezeichnung) {
   const t = String(bezeichnung ?? '');
   const mm = t.match(/(\d{1,3})\s*mm(?![\p{L}])/u);
-  if (mm) return Number(mm[1]);
+  if (mm) {
+    const wert = Number(mm[1]);
+    return wert <= HOECHSTE_PLATTENSTAERKE_MM ? wert : null;
+  }
   const cm = t.match(/(\d{1,2})\s*cm(?![\p{L}])/u);
-  if (cm) return Number(cm[1]) * 10;
+  if (cm) {
+    const wert = Number(cm[1]) * 10;
+    return wert <= HOECHSTE_PLATTENSTAERKE_MM ? wert : null;
+  }
   return null;
 }
 
@@ -118,16 +149,21 @@ export function bauform(artikel) {
 const formen = {
   /** Dämmplatte in Schrägansicht; die Stärke wird maßstäblich gezeichnet. */
   platte(a) {
-    const mm = dickeMm(a.bezeichnung) ?? 40;
+    // Zwei Werte, ein Ursprung: Was gezeichnet wird, ist auch das, was
+    // darunter steht. Vorher las die Beschriftung mit einem **zweiten**
+    // Ausdruck aus derselben Bezeichnung — und schrieb „600 mm" unter eine
+    // Platte, die mit der Voreinstellung gezeichnet war.
+    const mm = dickeMm(a.bezeichnung);
+    const gezeichnet = mm ?? 40;
     // 20 mm → 6 px, 100 mm → 22 px. Gedeckelt, damit die Platte Platte bleibt.
-    const d = Math.max(5, Math.min(24, 4 + mm * 0.19));
+    const d = Math.max(5, Math.min(24, 4 + gezeichnet * 0.19));
     const y = 58 - d;
     return `<path d="M18 ${y} L84 ${y - 16} L104 ${y - 8} L38 ${y + 8} Z" ${RAHMEN}/>
 <path d="M18 ${y} L18 ${y + d} L38 ${y + 8 + d} L38 ${y + 8} Z" ${RAHMEN}/>
 <path d="M38 ${y + 8} L38 ${y + 8 + d} L104 ${y - 8 + d} L104 ${y - 8} Z" fill="var(--ocker-weich)" stroke="var(--linie-stark)" stroke-width="1.5"/>
 <path d="M110 ${y - 8} L110 ${y - 8 + d}" ${AKZENT}/>
 <path d="M107 ${y - 8} L113 ${y - 8} M107 ${y - 8 + d} L113 ${y - 8 + d}" ${AKZENT}/>
-${beschriftung(mass(a.bezeichnung, /\d{1,3}\s*(?:mm|cm)(?![\p{L}])/u) ?? 'Platte')}`;
+${beschriftung(mm === null ? 'Platte' : `${mm} mm`)}`;
   },
 
   /** Sackware — die Silhouette, die auf jeder Palette steht. */
@@ -290,7 +326,12 @@ function beschriftung(text) {
 export function artikelBild(artikel, { klasse = 'schema' } = {}) {
   const form = bauform(artikel);
   const zeichnung = (formen[form] ?? formen.teil)(artikel ?? {});
-  const beschreibung = `Schemazeichnung: ${BAUFORM_TEXT[form] ?? 'Bauteil'}`;
+  // „Stärke maßstäblich" ist eine Zusage. Sie gilt nur, wenn die Stärke aus
+  // der Bezeichnung ablesbar war — sonst zeichnet die Voreinstellung, und
+  // die Bildbeschreibung darf das nicht als Maß ausgeben.
+  const beschreibung = form === 'platte' && dickeMm(artikel?.bezeichnung) === null
+    ? 'Schemazeichnung: Dämmplatte, Stärke nicht aus der Bezeichnung ablesbar'
+    : `Schemazeichnung: ${BAUFORM_TEXT[form] ?? 'Bauteil'}`;
   return `<svg class="${klasse}" viewBox="0 0 120 90" role="img" aria-label="${beschreibung}"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">${zeichnung}</svg>`;
 }

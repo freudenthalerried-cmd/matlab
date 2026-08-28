@@ -356,6 +356,10 @@ const RAHMENSZENARIEN = [
   // (dreizehn Karten). Wenn ein Kartenraster den Rahmen sprengt, dann dieses.
   { name: 'Artikelseite: kein Seitwärtsrollen, Bedienelemente daumengroß', kennung: 'artikel/POS-21382' },
   { name: 'Gruppenseite: kein Seitwärtsrollen, Bedienelemente daumengroß', kennung: 'gruppe/wdvs' },
+  // Die Dämmgruppe trägt seit dem 28. eine vierspaltige Vergleichstafel. Eine
+  // Tabelle ist das, was einen 390-px-Rahmen am ehesten sprengt — sie steht
+  // deshalb in einem eigenen Scrollkasten, und genau das wird hier gemessen.
+  { name: 'Gruppenseite mit Vergleichstafel scrollt bei 390 px nicht seitwärts', kennung: 'gruppe/daemmung' },
   // Die Systemliste trägt seit dem 27. den Schichtenschnitt — ein SVG mit
   // rechtsbündigen Beschriftungen außerhalb der Bänder. Genau so eine
   // Zeichnung sprengt einen schmalen Rahmen, wenn überhaupt etwas es tut.

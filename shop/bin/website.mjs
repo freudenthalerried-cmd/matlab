@@ -28,7 +28,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { ladeBaustoffkatalog, katalogbefund, ZIELMARGE } from '../src/baustoffkatalog.js';
 import { pruefeSeiten } from '../src/interna.js';
-import { artikelBild, gruppenBild, schichten, schichtbild } from '../src/bilder.js';
+import { artikelBild, gruppenBild, schichten, schichtbild, dickeMm } from '../src/bilder.js';
 import { VERFUEGBARKEIT } from '../src/maschinenlesbar.js';
 import { baueKern, KERNMODULE, SHOPMODULE } from '../src/buendel.js';
 import { oeffentlicherArtikel, oeffentlicherLieferant } from '../src/shopkern.js';
@@ -631,6 +631,46 @@ function inhaltsSeite(seite, katalog, befund, seiten, verweis) {
 Sortiment.${fremd.length ? ` Schraffiert und mit „nicht von uns" beschriftet sind die
 ${fremd.length === 1 ? 'Lage' : `${fremd.length} Lagen`}, die dieser Shop nicht führt —
 ${fremd.map((l) => esc(l.name)).join(', ')}.` : ''}</p>`);
+  }
+
+  // --- Stärkenvergleich, nur wo er etwas bedeutet ---------------------
+  //
+  // Der Kunde vergleicht Dämmplatten nicht nach dem Quadratmeterpreis,
+  // sondern danach, was ihn ein Zentimeter Stärke kostet: Eine 3-cm-Platte
+  // für 2,81 € ist nicht „billiger" als eine 5-cm-Platte für 4,67 €.
+  //
+  // Zwei Zusagen macht diese Tafel **nicht**, und beide stehen darunter:
+  // Sie vergleicht nicht die Dämmwirkung (die steht im Nachweis, nicht im
+  // Preis), und sie vergleicht nicht über die Plattenart hinweg — EPS und
+  // XPS gehören an verschiedene Stellen des Bauwerks.
+  //
+  // Wo die Stärke nicht aus der Bezeichnung ablesbar ist, steht ein
+  // Gedankenstrich. Eine geschätzte Stärke wäre hier besonders teuer: Sie
+  // ginge unmittelbar in einen Preisvergleich ein.
+  const vergleich = seite.kopf.vergleich === 'staerke'
+    ? gruppenArtikel
+        .filter((a) => a.vkNetto !== null)
+        .map((a) => ({ a, mm: dickeMm(a.bezeichnung) }))
+        .sort((x, y) => (y.mm ?? -1) - (x.mm ?? -1) || x.a.bezeichnung.localeCompare(y.a.bezeichnung, 'de'))
+    : [];
+  if (vergleich.length) {
+    const ohneStaerke = vergleich.filter((v) => v.mm === null).length;
+    teile.push('<h2>Was ein Zentimeter Stärke kostet</h2>');
+    teile.push(`<div class="scroll"><table>
+<thead><tr><th>Platte</th><th>Stärke</th><th>je ${esc(EINHEITEN.M2 ?? 'm²')}, netto</th><th>je ${esc(EINHEITEN.M2 ?? 'm²')} und cm</th></tr></thead>
+<tbody>${vergleich.map(({ a, mm }) => `<tr>
+<td><a href="${verweis(`artikel/${a.sku}`)}">${esc(a.bezeichnung)}</a></td>
+<td>${mm === null ? '—' : `${mm} mm`}</td>
+<td>${euro(a.vkNetto)} €</td>
+<td>${mm === null ? '—' : `${euro(a.vkNetto / (mm / 10))} €`}</td>
+</tr>`).join('')}</tbody></table></div>`);
+    teile.push(`<p>Die letzte Spalte ist ein <strong>Preisvergleich, keine Bauteilempfehlung</strong>.
+Welche Stärke Ihr Bauteil braucht, steht im Wärmeschutznachweis, und ob EPS oder XPS hingehört, entscheidet
+der Einbauort — beides sagt der Preis nicht: <a href="${verweis('wissen/xps-oder-eps')}">XPS oder EPS</a>.
+Verglichen werden darf nur innerhalb derselben Plattenart.${ohneStaerke
+      ? ` Bei ${ohneStaerke === 1 ? 'einer Platte' : `${ohneStaerke} Platten`} steht ein Gedankenstrich:
+Die Stärke ist aus der Bezeichnung nicht ablesbar, und geschätzt wird sie nicht.`
+      : ''}</p>`);
   }
 
   const skus = alsListe(seite.kopf.skus);

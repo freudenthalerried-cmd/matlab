@@ -203,3 +203,31 @@ test('Bild und Text einer Systemliste nennen dieselben fremden Lagen', () => {
   }
   assert.ok(geprueft >= 2, `nur ${geprueft} Systemlisten mit Schichtenbild`);
 });
+
+/* ------------------------------------------------------------------ *
+ * Die Stärke, die keine ist
+ * ------------------------------------------------------------------ */
+
+test('eine Zahl über der Plattenstärke ist keine Plattenstärke', () => {
+  // „Isover TDPT 20 1200 600 mm 8,64 m2": Die 600 sind die Plattenbreite.
+  // Gezeichnet und beschriftet wurde eine 60 cm dicke Trittschalldämmung.
+  assert.equal(dickeMm('Isover TDPT 20 1200 600 mm 8,64 m2'), null);
+  assert.equal(dickeMm('XPS glatt SF 100 mm 0,75 m2'), 100);
+  assert.equal(dickeMm('Platte 300 mm'), 300, 'die Grenze selbst gilt noch');
+  assert.equal(dickeMm('Platte 301 mm'), null);
+});
+
+test('ohne ablesbare Stärke beschriftet sich die Zeichnung mit „Platte"', () => {
+  const svg = artikelBild({ bezeichnung: 'Isover TDPT 20 1200 600 mm 8,64 m2', gruppe: 'Dämmung', einheit: 'M2' });
+  assert.match(svg, />Platte</, 'die Beschriftung nennt kein Maß');
+  assert.doesNotMatch(svg, />600 mm</);
+});
+
+test('die Bildbeschreibung verspricht nur, was gezeichnet ist', () => {
+  // „Stärke maßstäblich" ist eine Zusage — für ein Vorleseprogramm und für
+  // jedes Modell, das die Seite liest, ist sie die einzige Angabe zum Bild.
+  const ohne = artikelBild({ bezeichnung: 'Isover TDPT 20 1200 600 mm', gruppe: 'Dämmung', einheit: 'M2' });
+  assert.match(ohne, /Stärke nicht aus der Bezeichnung ablesbar/);
+  const mit = artikelBild({ bezeichnung: 'XPS glatt SF 80 mm', gruppe: 'Dämmung', einheit: 'M2' });
+  assert.match(mit, /Stärke maßstäblich/);
+});

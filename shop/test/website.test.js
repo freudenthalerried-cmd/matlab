@@ -358,3 +358,46 @@ test('llms.txt sagt, was es verschweigt', () => {
     'die Liste sagt nicht, ob sie vollständig ist');
   assert.match(txt, /Frei-Haus-Schwelle/, 'die Fracht gehört in denselben Absatz wie der Preis');
 });
+
+/* ------------------------------------------------------------------ *
+ * Der Stärkenvergleich
+ * ------------------------------------------------------------------ */
+
+test('die Vergleichstafel rechnet den Zentimeterpreis, ohne die Stärke zu erfinden', () => {
+  const datei = pfad('../ausgabe/site/gruppe/daemmung.html');
+  if (!existsSync(datei)) return; // ohne Bau keine Aussage — und keine falsche
+  const html = readFileSync(datei, 'utf8');
+  assert.match(html, /Was ein Zentimeter Stärke kostet/);
+
+  // Zwei Stichproben aus dem Bestand, von Hand nachgerechnet:
+  // 16,00 € je m² bei 100 mm = 1,60 € je cm; 2,81 € bei 30 mm = 0,94 €.
+  assert.match(html, /100 mm<\/td>\s*<td>16,00 €<\/td>\s*<td>1,60 €<\/td>/);
+  assert.match(html, /30 mm<\/td>\s*<td>2,81 €<\/td>\s*<td>0,94 €<\/td>/);
+
+  // Und die Platte ohne ablesbare Stärke bekommt keinen gerechneten Preis.
+  assert.match(html, /Isover[^<]*<\/a><\/td>\s*<td>—<\/td>\s*<td>10,69 €<\/td>\s*<td>—<\/td>/);
+});
+
+test('die Tafel sagt, was sie nicht vergleicht', () => {
+  const datei = pfad('../ausgabe/site/gruppe/daemmung.html');
+  if (!existsSync(datei)) return;
+  const html = readFileSync(datei, 'utf8');
+  // Ein Preisvergleich ohne diesen Satz liest sich als Empfehlung — und
+  // führte genau zu dem Fehler, vor dem die Wissensseite warnt: EPS bis zum
+  // Boden durchgezogen, weil es billiger war.
+  assert.match(html, /Preisvergleich, keine Bauteilempfehlung/);
+  assert.match(html, /nur innerhalb derselben Plattenart/);
+  assert.match(html, /geschätzt wird sie nicht/);
+});
+
+test('nur Gruppenseiten mit ausdrücklichem Vermerk bekommen die Tafel', () => {
+  // Sie ist für Platten gebaut. Auf Rohren oder Sackware wäre „je cm" eine
+  // Zahl ohne Bedeutung — und eine Zahl ohne Bedeutung wird trotzdem
+  // verglichen.
+  const ordner = pfad('../ausgabe/site/gruppe');
+  if (!existsSync(ordner)) return;
+  const mitTafel = readdirSync(ordner).filter(
+    (d) => d.endsWith('.html') && readFileSync(join(ordner, d), 'utf8').includes('Was ein Zentimeter Stärke kostet'),
+  );
+  assert.deepEqual(mitTafel, ['daemmung.html']);
+});

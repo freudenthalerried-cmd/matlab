@@ -7,7 +7,8 @@ frage: Welche Dämmplatten führen wir, und wie wähle ich die richtige aus?
 kurz: XPS in mehreren Stärken für den erdberührten und den Sockelbereich, EPS als Fassadenplatte, dazu Trittschall- und Trennlagen. Die Auswahl folgt dem Einbauort und dem Wärmeschutznachweis — nicht dem Preis je Quadratmeter.
 verwandt: xps-oder-eps, perimeterdaemmung-und-grundmauerschutz, lagerung-von-sackware
 system: fassade-100-qm
-stand: 2026-08-25
+vergleich: staerke
+stand: 2026-08-28
 ---
 
 # Dämmplatten
