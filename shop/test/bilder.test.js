@@ -115,6 +115,8 @@ const SOLLFORM = {
 };
 
 test('jeder Artikel bekommt die Form, die er hat', () => {
+  assert.equal(katalog.artikel.length, Object.keys(SOLLFORM).length,
+    'für jeden Artikel eine Sollform und umgekehrt');
   for (const a of katalog.artikel) {
     const soll = SOLLFORM[a.sku];
     assert.ok(soll, `${a.sku} „${a.bezeichnung}": keine Sollform hinterlegt — von Hand entscheiden`);
@@ -179,9 +181,16 @@ test('wer das Bild nicht sieht, erfährt dasselbe', () => {
 test('Bild und Text einer Systemliste nennen dieselben fremden Lagen', () => {
   // Die Zeichnung darf nichts behaupten, was auf der Seite nicht steht — und
   // umgekehrt darf die Seite die Lücke nicht nur im Bild zugeben.
+  //
+  // pruefung: begruendet — die **innere** Schleife läuft über die fremden
+  // Lagen, und ein Bauteil ganz ohne fremde Lage ist erlaubt (dann gibt es
+  // nichts abzugleichen). Dass überhaupt Listen geprüft wurden, sichert
+  // `dateien.length >= 4` und der Zähler `geprueft` am Ende zu.
   const ordner = fileURLToPath(new URL('../inhalte/system', import.meta.url));
+  const dateien = readdirSync(ordner).filter((d) => d.endsWith('.md'));
+  assert.ok(dateien.length >= 4, `nur ${dateien.length} Systemlisten gefunden`);
   let geprueft = 0;
-  for (const datei of readdirSync(ordner).filter((d) => d.endsWith('.md'))) {
+  for (const datei of dateien) {
     const roh = readFileSync(join(ordner, datei), 'utf8');
     const { kopf, koerper } = lesKopf(roh);
     const lagen = schichten(kopf.schichten);

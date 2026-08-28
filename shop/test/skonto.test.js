@@ -45,6 +45,7 @@ test('Der Rechnungskauf über einen Anbieter hält die Frist — und kostet trot
 });
 
 test('Gate 21 misst den Geldeingang, nicht das Ziel auf der Rechnung', () => {
+  assert.ok(ZAHLWEGE.length >= 5, `nur ${ZAHLWEGE.length} Zahlwege — dann prüft die Schleife fast nichts`);
   for (const z of ZAHLWEGE) {
     const erwartet = z.tageBisEingang + 2 <= 14;
     const gate = ANFORDERUNGEN.find((a) => a.id === 'skontoErreichbar');

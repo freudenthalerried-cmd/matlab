@@ -363,6 +363,7 @@ test('jeder Eintrag des Registers zeigt auf vorhandene Ware und trägt eine Begr
   const skus = new Set(katalogDatei.artikel.map((a) => a.sku));
   const gruppen = new Set(katalogDatei.artikel.map((a) => a.gruppe));
   const alleWorte = new Set(suchwoerterDatei.woerter.map((w) => w.wort.toLowerCase()));
+  assert.ok(suchwoerterDatei.woerter.length >= 30, `nur ${suchwoerterDatei.woerter.length} Kundenwörter im Register`);
   for (const e of suchwoerterDatei.woerter) {
     assert.ok(begruendet(e, alleWorte), `„${e.wort}": keine Begründung`);
     assert.ok(e.skus?.length || e.gruppe, `„${e.wort}": kein Ziel`);

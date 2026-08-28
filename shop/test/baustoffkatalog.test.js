@@ -35,6 +35,9 @@ test('Ohne Preisdatei liefert der Katalog keine Preise — und erfindet auch kei
 
 test('Ohne Preisdatei bleibt die Bezeichnung erhalten — gesperrt ist der Preis, nicht der Katalog', () => {
   const k = ladeBaustoffkatalog(KATALOG, null, LIEFERANTEN);
+  // Der Bestand ist die Zusicherung: 46 Artikel aus fünfzehn Rechnungen.
+  // Ohne diese Zeile prüfte die Schleife darunter bei leerem Katalog nichts.
+  assert.ok(k.artikel.length >= 46, `nur ${k.artikel.length} Artikel im Katalog`);
   for (const a of k.artikel) {
     assert.ok(a.bezeichnung.length > 0);
     assert.ok(a.gruppe.length > 0);
@@ -75,6 +78,7 @@ test('Der öffentliche Lieferantensatz trägt keinen Rabattsatz', () => {
 
 test('Jeder Katalogartikel kennt seinen Lieferanten', () => {
   const ids = new Set(LIEFERANTEN.lieferanten.map((l) => l.id));
+  assert.ok(KATALOG.artikel.length >= 46, `nur ${KATALOG.artikel.length} Artikel im Katalog`);
   for (const a of KATALOG.artikel) {
     assert.ok(ids.has(a.lieferantId), `${a.sku} verweist auf unbekannten Lieferanten ${a.lieferantId}`);
   }
@@ -86,6 +90,7 @@ test('Ein unbekannter Lieferant wird abgewiesen, nicht übergangen', () => {
 });
 
 test('Sperrgut ist als Einschätzung gekennzeichnet, nicht als Lieferantenangabe', () => {
+  assert.ok(KATALOG.artikel.length >= 46, `nur ${KATALOG.artikel.length} Artikel im Katalog`);
   for (const a of KATALOG.artikel) {
     assert.equal(a.sperrgutQuelle, 'eingeschaetzt');
   }
@@ -94,6 +99,7 @@ test('Sperrgut ist als Einschätzung gekennzeichnet, nicht als Lieferantenangabe
 test('Keinem Artikel ist eine GTIN angedichtet', () => {
   // Ohne GTIN kein Google-Shopping-Feed. Eine erfundene wäre schlimmer als
   // keine: Sie führte zur Ablehnung des Kontos, nicht nur des Artikels.
+  assert.ok(KATALOG.artikel.length >= 46, `nur ${KATALOG.artikel.length} Artikel im Katalog`);
   for (const a of KATALOG.artikel) {
     assert.equal(a.gtin, null, `${a.sku} trägt eine GTIN, die niemand bestätigt hat`);
   }
@@ -108,6 +114,7 @@ test('Die Zielmarge des Modells ist 25 % vom Verkauf', () => {
 test('Mit Preisdatei rechnet jeder Artikel durch', { skip: PREISE === null && 'preise/baustoff-preise.json fehlt' }, () => {
   const k = ladeBaustoffkatalog(KATALOG, PREISE, LIEFERANTEN);
   assert.equal(k.vollstaendig, true);
+  assert.ok(k.artikel.length >= 46, `nur ${k.artikel.length} Artikel im Katalog`);
 
   for (const a of k.artikel) {
     assert.ok(a.vkNetto > 0, `${a.sku} ohne Verkaufspreis`);

@@ -250,6 +250,8 @@ test('Kein Zahlweg steht in zwei Töpfen', () => {
 test('Jeder angebotene Weg hält Gate 21', async () => {
   const { findeZahlweg } = await import('../src/zahlung.js');
   const { zahlungszielTraegt } = await import('../src/skonto.js');
+  assert.ok(ZAHLUNGSBEDINGUNGEN.angeboten.length >= 2,
+    `nur ${ZAHLUNGSBEDINGUNGEN.angeboten.length} angebotene Wege — dann prüft die Schleife fast nichts`);
   for (const z of ZAHLUNGSBEDINGUNGEN.angeboten) {
     const w = findeZahlweg(z.id);
     assert.ok(
@@ -260,6 +262,13 @@ test('Jeder angebotene Weg hält Gate 21', async () => {
 });
 
 test('Jede Einordnung trägt ihren Grund', () => {
+  // pruefung: begruendet — geprüft wird über drei Töpfe hinweg, und ein
+  // einzelner Topf darf leer sein (heute ist keiner es). Die Gesamtzahl der
+  // eingeordneten Zahlwege ist unten zugesichert; sie ist die Angabe, auf die
+  // es ankommt.
+  const zahl = ['angeboten', 'ausgeschlossen', 'zurueckgestellt']
+    .reduce((s, topf) => s + ZAHLUNGSBEDINGUNGEN[topf].length, 0);
+  assert.ok(zahl >= 6, `nur ${zahl} eingeordnete Zahlwege`);
   for (const topf of ['angeboten', 'ausgeschlossen', 'zurueckgestellt']) {
     for (const z of ZAHLUNGSBEDINGUNGEN[topf]) {
       assert.ok(z.grund && z.grund.length > 20, `${z.id} in ${topf} ohne Begründung`);

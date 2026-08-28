@@ -61,6 +61,7 @@ test('Kampagne und Liefergebiet nennen dieselben Bezirke', () => {
 test('Punkt 12 der Geschäftsbedingungen nennt das Gebiet, nicht nur das Land', () => {
   const punkt = AGB_GLIEDERUNG.find((a) => a.nr === 12);
   assert.match(punkt.titel, /Liefergebiet/);
+  assert.equal(LIEFERGEBIET.bezirke.length, 5, 'fünf Bezirke — sonst prüft die Schleife nichts');
   for (const b of LIEFERGEBIET.bezirke) {
     assert.ok(punkt.hinweis.includes(b.name), `${b.name} fehlt in Punkt 12`);
   }

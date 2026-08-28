@@ -73,7 +73,9 @@ test('Jede Inhaltsseite trägt Titel, Frage, Kurzfassung und Stand', () => {
 });
 
 test('Die Kurzfassung beantwortet die Frage in zwei Sätzen, nicht in zehn', () => {
-  for (const s of alleInhalte()) {
+  const seiten = alleInhalte();
+  assert.ok(seiten.length >= 24, `nur ${seiten.length} Inhaltsseiten gefunden`);
+  for (const s of seiten) {
     const saetze = String(s.kopf.kurz).split(/(?<=[.!?])\s+/).filter(Boolean);
     assert.ok(saetze.length <= 3, `${s.datei}: Kurzfassung hat ${saetze.length} Sätze`);
     assert.ok(String(s.kopf.kurz).length >= 80, `${s.datei}: Kurzfassung zu knapp`);
@@ -82,7 +84,9 @@ test('Die Kurzfassung beantwortet die Frage in zwei Sätzen, nicht in zehn', () 
 
 test('Fragen und Kurzfassungen bleiben Fließtext, keine Listen', () => {
   // Der Fehler, der zuerst nur in der llms.txt sichtbar wurde.
-  for (const s of alleInhalte()) {
+  const seiten = alleInhalte();
+  assert.ok(seiten.length >= 24, `nur ${seiten.length} Inhaltsseiten gefunden`);
+  for (const s of seiten) {
     for (const feld of ['frage', 'kurz', 'titel']) {
       assert.equal(typeof s.kopf[feld], 'string', `${s.datei}: „${feld}" ist keine Zeichenkette`);
     }
@@ -91,7 +95,9 @@ test('Fragen und Kurzfassungen bleiben Fließtext, keine Listen', () => {
 });
 
 test('Jede Frage ist als Frage formuliert', () => {
-  for (const s of alleInhalte()) {
+  const seiten = alleInhalte();
+  assert.ok(seiten.length >= 24, `nur ${seiten.length} Inhaltsseiten gefunden`);
+  for (const s of seiten) {
     assert.match(String(s.kopf.frage), /\?$/, `${s.datei}: „frage" endet nicht auf ein Fragezeichen`);
   }
 });
@@ -100,7 +106,9 @@ test('Kein Kopfblock verspricht eine Gattung, die es nicht gibt', () => {
   const gruppen = new Set(
     JSON.parse(readFileSync(pfad('../data/katalog-baustoff.json'), 'utf8')).artikel.map((a) => a.gruppe),
   );
-  for (const s of alleInhalte()) {
+  const seiten = alleInhalte();
+  assert.ok(seiten.length >= 24, `nur ${seiten.length} Inhaltsseiten gefunden`);
+  for (const s of seiten) {
     if (!s.kopf.gruppe) continue;
     assert.ok(gruppen.has(s.kopf.gruppe), `${s.datei}: Warengruppe „${s.kopf.gruppe}" gibt es im Katalog nicht`);
   }
@@ -111,6 +119,7 @@ test('Jede Warengruppe des Katalogs hat eine Seite', () => {
     JSON.parse(readFileSync(pfad('../data/katalog-baustoff.json'), 'utf8')).artikel.map((a) => a.gruppe),
   );
   const beschrieben = new Set(alleInhalte().filter((s) => s.art === 'gruppen').map((s) => s.kopf.gruppe));
+  assert.equal(gruppen.size, 7, 'sieben Warengruppen — sonst prüft die Schleife nichts');
   for (const g of gruppen) {
     assert.ok(beschrieben.has(g), `Warengruppe „${g}" hat keine Seite in inhalte/gruppen/`);
   }
@@ -249,6 +258,7 @@ test('Jede Systemliste des Bestands erzeugt für jeden ihrer Artikel Mitverbaute
     .filter((n) => n.endsWith('.md'))
     .map((n) => ({ id: `system/${n.replace('.md', '')}`, art: 'system', kopf: lesKopf(readFileSync(join(ordner, n), 'utf8')).kopf }));
   assert.ok(listen.length >= 4, `nur ${listen.length} Systemlisten`);
+  assert.ok(katalog.artikel.length >= 46, `nur ${katalog.artikel.length} Artikel im Katalog`);
   let mitVorschlag = 0;
   for (const a of katalog.artikel) {
     const eigene = listen.filter((s) => String(s.kopf.skus).split(',').map((x) => x.trim()).includes(a.sku));
@@ -300,6 +310,7 @@ test('Die gebaute Artikelseite zeigt den Block nur, wenn eine Systemliste dahint
       .flatMap((n) => String(lesKopf(readFileSync(join(listenOrdner, n), 'utf8')).kopf.skus ?? '').split(',').map((x) => x.trim()))
       .filter(Boolean),
   );
+  assert.ok(katalog.artikel.length >= 46, `nur ${katalog.artikel.length} Artikel im Katalog`);
   let mit = 0;
   let ohne = 0;
   for (const a of katalog.artikel) {

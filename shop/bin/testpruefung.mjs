@@ -56,7 +56,25 @@ function zerlege(quelle) {
 
   for (const treffer of quelle.matchAll(muster)) {
     const titel = treffer[2];
-    const klammerAuf = quelle.indexOf('{', treffer.index + treffer[0].length);
+    // `node:test` erlaubt drei Formen: test(name, fn), test(name, options, fn)
+    // und test(name, options). Die zweite hat dieser Prüfer bis zum 28.08.
+    // falsch gelesen: Er nahm die **erste** geschweifte Klammer nach dem Namen
+    // als Rumpf — und das ist bei `test('…', { skip: … }, () => { … })` das
+    // Optionsobjekt. Zwei Testfälle in `baustoffkatalog.test.js` galten
+    // deshalb als „behauptet nichts", obwohl sie zusammen zwölf
+    // Zusicherungen tragen.
+    //
+    // > **Ein Prüfer, der eine gültige Schreibweise nicht kennt, meldet
+    // > nicht zu wenig, sondern das Falsche** — und wer den Fehlalarm
+    // > abhakt, hakt beim nächsten Mal auch den echten Treffer ab.
+    let stelle = treffer.index + treffer[0].length;
+    const versatz = quelle.slice(stelle).search(/\S/);
+    if (versatz !== -1 && quelle[stelle + versatz] === '{') {
+      const optionenZu = bisSchliessend(quelle, stelle + versatz);
+      if (optionenZu === -1) continue;
+      stelle = optionenZu + 1;
+    }
+    const klammerAuf = quelle.indexOf('{', stelle);
     if (klammerAuf === -1) continue;
     const klammerZu = bisSchliessend(quelle, klammerAuf);
     if (klammerZu === -1) continue;

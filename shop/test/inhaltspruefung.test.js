@@ -162,10 +162,19 @@ test('Die gemeldete Zeile trifft die echte Datei', () => {
   // Die Gegenprobe am Bestand: Was der Prüfer meldet, muss man aufschlagen
   // können. Gefunden wurde der Zählfehler genau so — eine neue Regel schlug
   // an, die Zeile wurde nachgeschlagen, und dort stand etwas anderes.
-  const pfad = fileURLToPath(new URL('../inhalte/wissen/kaminzug-aufbau.md', import.meta.url));
+  //
+  // **Geprüft wird an der Probedatei, nicht an einer Wissensseite.** Bis zum
+  // 28.08. stand hier `kaminzug-aufbau.md` — eine Seite, die keinen einzigen
+  // Treffer erzeugt. Die Schleife lief nie, und der Test bestand seit Tagen,
+  // ohne je eine Zeilennummer nachgeschlagen zu haben: genau die Hohlheit,
+  // gegen die er geschrieben wurde. Die Probedatei trägt absichtlich
+  // fehlerhafte Absätze; an ihr ist die Zusage überhaupt prüfbar.
+  const pfad = fileURLToPath(new URL('../inhalte/probe/probe.md', import.meta.url));
   const text = readFileSync(pfad, 'utf8');
   const zeilen = text.split('\n');
-  for (const t of pruefeInhalt(text, 'kaminzug-aufbau.md').treffer) {
+  const treffer = pruefeInhalt(text, 'probe.md').treffer;
+  assert.ok(treffer.length >= 3, `nur ${treffer.length} Treffer — dann prüft die Schleife nichts`);
+  for (const t of treffer) {
     const dort = zeilen[t.zeile - 1] ?? '';
     assert.ok(dort.trim().length > 0, `Zeile ${t.zeile} ist leer, der Treffer zeigt ins Nichts`);
     assert.ok(

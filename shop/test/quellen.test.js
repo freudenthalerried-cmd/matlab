@@ -155,6 +155,7 @@ test('das Register des Bestands ist verwendbar und keine Vorlage', () => {
   assert.ok(e.aussagen >= 5, `nur ${e.aussagen} Aussagen — zeigt das Register auf den Bestand?`);
   assert.equal(e.belegt, e.aussagen, e.offen.map((o) => `${o.id}: ${o.gruende.join(', ')}`).join(' | '));
   assert.equal(e.verwendbar, true);
+  assert.ok(register.quellen.length >= 8, `nur ${register.quellen.length} Quellen im Register`);
   for (const q of register.quellen) {
     assert.ok(!/FIKTIV/i.test(JSON.stringify(q)), `${q.id}: erfundene Quelle im Bestandsregister`);
     assert.equal(pruefeQuelle(q).vollstaendig, true, `${q.id}: ${pruefeQuelle(q).fehlt.join(', ')}`);
@@ -180,6 +181,7 @@ test('eine Herstellerseite trägt keine Aussage', () => {
     fileURLToPath(new URL('../inhalte/quellen.json', import.meta.url)), 'utf8'));
   const haendler = new Set(register.quellen.filter((q) => q.art === 'haendler').map((q) => q.id));
   assert.ok(haendler.size >= 3);
+  assert.ok(register.aussagen.length >= 5, `nur ${register.aussagen.length} Aussagen im Register`);
   for (const a of register.aussagen) {
     assert.ok(!a.quellen.every((q) => haendler.has(q)),
       `${a.id}: hängt nur an Herstellerseiten`);

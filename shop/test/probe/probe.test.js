@@ -52,3 +52,9 @@ test('sauber: eigene Laenge zugesichert, dann geschleift', () => {
     assert.ok(e > 10);
   }
 });
+
+test('mit Optionsobjekt: das ist ein Rumpf, kein leerer Test', { concurrency: 1 }, () => {
+  // Bis zum 28.08. las der Prüfer das Optionsobjekt als Rumpf und meldete
+  // „behauptet nichts". Dieser Fall hält die Schreibweise fest.
+  assert.equal(1 + 1, 2);
+});

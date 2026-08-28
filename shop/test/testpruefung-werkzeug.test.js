@@ -9,13 +9,15 @@ const probeOrdner = fileURLToPath(new URL('./probe', import.meta.url));
 test('der Prüfer findet in der Probedatei jedes Muster und schweigt beim sauberen Fall', () => {
   const lauf = spawnSync(process.execPath, [pruefer, probeOrdner], { encoding: 'utf8' });
   assert.equal(lauf.status, 0, lauf.stderr);
-  assert.ok(lauf.stdout.includes('6 Testfälle geprüft, 4 mit Verdacht'), lauf.stdout);
+  assert.ok(lauf.stdout.includes('7 Testfälle geprüft, 4 mit Verdacht'), lauf.stdout);
   assert.ok(lauf.stdout.includes('behauptet nichts — kein einziges assert'), 'Muster 1 wird gefunden');
   assert.ok(lauf.stdout.includes('stehen in einem if'), 'Muster 2 wird gefunden');
   assert.ok(lauf.stdout.includes('Schleife über `liste`'), 'Muster 3 wird gefunden');
   assert.ok(lauf.stdout.includes('Schleife über `leereListe`'), 'die fremde Längenzusicherung schirmt nicht mehr ab');
   assert.ok(!lauf.stdout.includes('begruendet abgelehnt'), 'die begründete Ablehnung bleibt stumm');
   assert.ok(!lauf.stdout.includes('sauber:'), 'der saubere Fall löst keinen Verdacht aus');
+  assert.ok(!lauf.stdout.includes('mit Optionsobjekt'),
+    'test(name, options, fn) ist eine gültige Schreibweise — ihr Rumpf ist die Funktion, nicht das Optionsobjekt');
 });
 
 test('ein unlesbarer Testordner gibt eine Meldung, keinen Stacktrace', () => {
