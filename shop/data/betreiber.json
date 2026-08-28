@@ -21,5 +21,11 @@
   "email": "",
   "telefon": "",
   "uid": "",
-  "gewerbewortlaut": ""
+  "gewerbewortlaut": "",
+
+  "_betriebshinweis": "Die vier folgenden Angaben entscheiden mit darueber, ob der Shop online gehen darf (npm run startklar). null heisst NICHT 'nein', sondern 'niemand hat geantwortet' — und ein unbeantworteter Punkt zaehlt dort nicht als erfuellt. Wer eine Frage verneint, traegt false ein; das ist eine Antwort und wird als solche gezaehlt.",
+  "zahlungsanbieter": null,
+  "rechtstexteFundstelle": null,
+  "domainZeigtAufShop": null,
+  "repositoryPrivat": null
 }

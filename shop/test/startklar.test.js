@@ -81,3 +81,34 @@ test('das Werkzeug läuft am Bestand und sagt, dass der Shop nicht startklar ist
   // Und die zwei Punkte, die heute stehen, stehen auch da.
   assert.match(ausgabe, /46 von 46 Artikeln/);
 });
+
+test('die Antworten kommen aus der Datei, nicht aus dem Werkzeug', async () => {
+  // Die erste Fassung setzte die vier offenen Angaben im Werkzeug hart auf
+  // null und schrieb daneben, sie gehörten in data/betreiber.json — dann
+  // werde von selbst gemeldet. Das war eine Zusage, die der Code nicht
+  // gehalten hätte. Diese Probe hält sie fest.
+  const { mkdtempSync, writeFileSync, readFileSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
+  const echt = JSON.parse(readFileSync(
+    fileURLToPath(new URL('../data/betreiber.json', import.meta.url)), 'utf8'));
+
+  const ordner = mkdtempSync(join(tmpdir(), 'startklar-'));
+  const pfad = join(ordner, 'betreiber.json');
+  writeFileSync(pfad, JSON.stringify({
+    ...echt,
+    zahlungsanbieter: 'Anbieter aus der Probe',
+    repositoryPrivat: true,
+    domainZeigtAufShop: false,
+  }));
+
+  const ausgabe = execFileSync(process.execPath, [werkzeug], {
+    encoding: 'utf8',
+    env: { ...process.env, STARTKLAR_BETREIBER: pfad },
+  });
+  assert.match(ausgabe, /angebunden: Anbieter aus der Probe/);
+  assert.match(ausgabe, /Repository ist privat\n\s+bestätigt/);
+  // Ein ausdrückliches „nein" ist eine Antwort, kein Fragezeichen.
+  assert.match(ausgabe, /ausdrücklich verneint/);
+  assert.match(ausgabe, /0 von hier aus nicht feststellbar/);
+});

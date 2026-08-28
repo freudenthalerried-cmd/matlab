@@ -23,7 +23,9 @@ const lies = (p) => JSON.parse(readFileSync(p, 'utf8'));
 
 const preisPfad = join(REPO, 'preise', 'baustoff-preise.json');
 const preisdateiVorhanden = existsSync(preisPfad);
-const betreiberPfad = join(WURZEL, 'data', 'betreiber.json');
+// Über die Umgebung überschreibbar, damit eine Probe das Werkzeug wirklich
+// ausführen kann — mit anderen Antworten als denen des Bestands.
+const betreiberPfad = process.env.STARTKLAR_BETREIBER || join(WURZEL, 'data', 'betreiber.json');
 
 const katalog = ladeBaustoffkatalog(
   lies(join(WURZEL, 'data', 'katalog-baustoff.json')),
@@ -32,18 +34,34 @@ const katalog = ladeBaustoffkatalog(
   ZIELMARGE,
 );
 
+const betreiber = existsSync(betreiberPfad) ? lies(betreiberPfad) : {};
+
+/**
+ * Die vier Angaben, die es noch nicht gibt, kommen **aus der Datei** — nicht
+ * aus dieser Zeile.
+ *
+ * Die erste Fassung dieses Werkzeugs setzte sie hier hart auf `null` und
+ * schrieb daneben, sie gehörten in `data/betreiber.json`, dann werde von
+ * selbst gemeldet. Das war eine Zusage, die der Code nicht gehalten hätte:
+ * Wer sie eingetragen hätte, hätte weiter „nicht feststellbar" gelesen.
+ *
+ * > **Ein Kommentar, der etwas verspricht, was der Code daneben nicht tut,
+ * > ist schlimmer als kein Kommentar** — er verhindert, dass jemand
+ * > nachsieht.
+ *
+ * `?? null` und nicht `|| null`: Ein ausdrückliches `false` („nein, das
+ * Repository ist nicht privat") ist eine **Antwort** und muss als solche
+ * durchkommen. `||` hätte sie in „unbeantwortet" verwandelt.
+ */
 const befund = startklar({
-  betreiber: existsSync(betreiberPfad) ? lies(betreiberPfad) : {},
+  betreiber,
   impressumsfelder: IMPRESSUMSFELDER,
   katalog,
   preisdateiVorhanden,
-  // Diese drei stehen nirgends in den Daten, weil es sie noch nicht gibt.
-  // Sobald sie da sind, gehören sie in `data/betreiber.json` — dann meldet
-  // dieses Werkzeug sie von selbst.
-  zahlungsanbieter: null,
-  rechtstexteFundstelle: null,
-  domainZeigtAufShop: null,
-  repositoryPrivat: null,
+  zahlungsanbieter: betreiber.zahlungsanbieter ?? null,
+  rechtstexteFundstelle: betreiber.rechtstexteFundstelle ?? null,
+  domainZeigtAufShop: betreiber.domainZeigtAufShop ?? null,
+  repositoryPrivat: betreiber.repositoryPrivat ?? null,
 });
 
 const zeichen = { erfuellt: '✓', offen: '✗', unpruefbar: '?' };
