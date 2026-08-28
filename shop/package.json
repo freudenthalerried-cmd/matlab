@@ -20,6 +20,7 @@
     "pruefe-geheimnis": "node bin/geheimnispruefung.mjs",
     "katalog": "node bin/katalog-aus-rechnungen.mjs",
     "kampagne": "node bin/kampagne.mjs",
-    "website": "node bin/website.mjs"
+    "website": "node bin/website.mjs",
+    "preisliste": "node bin/preisliste.mjs"
   }
 }
