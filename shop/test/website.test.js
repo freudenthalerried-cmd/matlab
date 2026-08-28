@@ -476,7 +476,9 @@ test('die Zustellung wird nicht mit dem Einheitenpreis verglichen', () => {
   // Bestellung. Der Satz darf nicht zurückkommen.
   const ordner = pfad('../ausgabe/site/artikel');
   if (!existsSync(ordner)) return;
-  for (const datei of readdirSync(ordner).filter((d) => d.endsWith('.html'))) {
+  const seiten = readdirSync(ordner).filter((d) => d.endsWith('.html'));
+  assert.ok(seiten.length >= 46, `nur ${seiten.length} Artikelseiten`);
+  for (const datei of seiten) {
     assert.doesNotMatch(readFileSync(join(ordner, datei), 'utf8'),
       /Zustellung mehr als die Ware/, `${datei}: der irreführende Vergleich ist zurück`);
   }
