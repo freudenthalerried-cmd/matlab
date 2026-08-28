@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { ladeKatalog, berechneWarenkorb } from '../src/warenkorb.js';
+import { ladeKatalog, berechneWarenkorb, nebenkostenUntergrenze } from '../src/warenkorb.js';
 import { erzeugeBestellungen, darfAutomatischAusgeloestWerden } from '../src/bestellung.js';
 
 const daten = {
@@ -236,4 +236,40 @@ test('Am Referenzgebäude ändert die Schwellenkorrektur nichts', () => {
   assert.equal(korb.frachtNetto, 162);
   assert.equal(korb.einkaufNetto, 2030.8);
   assert.equal(korb.bestellbar, true);
+});
+
+/* ------------------------------------------------------------------ *
+ * Palette und Folierung — die Kosten, die niemand weiterverrechnet
+ * ------------------------------------------------------------------ */
+
+const mitNebenkosten = {
+  nebenkosten: { paletteOebbNetto: 22, paletteRueckgabeNetto: 20, folierungNetto: 6.5, kranentladungJeHubNetto: 7.5 },
+};
+
+test('palettierte Ware bringt mindestens eine Palette und eine Folierung mit', () => {
+  const r = nebenkostenUntergrenze([{ sperrgut: true }, { sperrgut: false }], mitNebenkosten);
+  assert.equal(r.nebenkostenUntergrenzeNetto, 28.5, '22,00 Palette plus 6,50 Folierung');
+  assert.match(r.nebenkostenGrund, /Stückzahl unbekannt/);
+});
+
+test('die Rückgabegutschrift wird nicht gegengerechnet', () => {
+  // Sie fällt nur an, wenn die Palette zurückgeht. Elf von fünfzehn
+  // Rechnungen lauten „Abholung Kunde"; was dabei mit der Palette geschieht,
+  // steht auf keinem Beleg. Die vorsichtige Zahl ist hier die ehrliche.
+  const r = nebenkostenUntergrenze([{ sperrgut: true }], mitNebenkosten);
+  assert.notEqual(r.nebenkostenUntergrenzeNetto, 8.5, 'die Gutschrift wurde abgezogen');
+});
+
+test('die Kranentladung steht nicht in dieser Summe', () => {
+  // Sie wird als Sperrgutzuschlag weiterverrechnet und steckt schon in der
+  // Fracht. Ein zweites Mal abgezogen wäre sie doppelt bezahlt.
+  const r = nebenkostenUntergrenze([{ sperrgut: true }], mitNebenkosten);
+  assert.equal(r.nebenkostenUntergrenzeNetto, 28.5);
+  assert.ok(!String(r.nebenkostenGrund).includes('7,50'));
+});
+
+test('ohne palettierte Ware und ohne Sätze bleibt es bei null', () => {
+  assert.equal(nebenkostenUntergrenze([{ sperrgut: false }], mitNebenkosten).nebenkostenUntergrenzeNetto, 0);
+  assert.equal(nebenkostenUntergrenze([{ sperrgut: true }], {}).nebenkostenUntergrenzeNetto, 0);
+  assert.equal(nebenkostenUntergrenze([], mitNebenkosten).nebenkostenUntergrenzeNetto, 0);
 });

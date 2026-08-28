@@ -1,6 +1,6 @@
 # Status und Einstieg
 
-Stand: 2026-08-26. **Dieses Dokument zuerst lesen.** Neunundachtzig Arbeitsdateien
+Stand: 2026-08-28. **Dieses Dokument zuerst lesen.** Neunundachtzig Arbeitsdateien
 sind entstanden, mehrere davon korrigieren einander. Hier steht, was gilt.
 
 Veröffentlichter Bericht:
@@ -376,6 +376,72 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > obwohl der Hersteller in der Bezeichnung steht („… EZ **Absolut**", „…
 > **SIKM**"). Jetzt Ganzwortsuche im ganzen Text, längste Marke gewinnt;
 > 24 statt 21 von 46 Artikeln mit Merkblattverweis.
+>
+> ---
+>
+> **28. August — sieben Läufe, in Kurzform.** Ausführlich je ein Dokument.
+>
+> **Vierte Systemliste** „Kellerwand außen dämmen" (8 Artikel). Damit stehen
+> 32 von 46 Artikeln in mindestens einer Liste. Beim Auszählen fiel auf, dass
+> die **Fassadenliste zehn Positionen und neun Artikel** führt — es fehlt die
+> Dämmplatte, die teuerste Position; die Seite sagte es nirgends. Jetzt sagt
+> sie es vor dem Rechenweg.
+> [`systemliste-kellerwand.md`](./systemliste-kellerwand.md).
+>
+> **„Wird damit zusammen verbaut"** auf 32 Artikelseiten — die Amazon-Zeile
+> ohne Amazon-Daten. Grundlage sind die Systemlisten, nicht erfundenes
+> Kaufverhalten; **ein Artikel ohne Systemliste bekommt keinen Vorschlag.**
+> Die Zusage „keine Kappung" war zuerst ungeprüft: Eine eingebaute Kappung
+> auf vier lief durch alle fünf neuen Tests.
+> [`mitverbaut-statt-kaufverhalten.md`](./mitverbaut-statt-kaufverhalten.md).
+>
+> **Drei Artikel trugen das falsche Bild** — Pistolen*schaum* als Pistole,
+> Mantelstein*kleber* als Stein, Putztüranschluss*paket* als Sack. Der Kopf
+> eines Kompositums steht hinten. Der eigentliche Befund war die Prüfung:
+> Sie fragte „ist es ein Bild?", nicht „ist es das richtige Bild?". Jetzt
+> hält `SOLLFORM` die Antwort für alle 46 Artikel.
+> [`drei-falsche-bilder.md`](./drei-falsche-bilder.md).
+>
+> **18 von 33 Suchbegriffen fanden nichts** — „Rauchfang", „Noppenbahn",
+> „Styropor", „Vollwärmeschutz". Neu: `data/suchwoerter.json`, 36 Einträge
+> mit Begründung, dazu eine Ablehnungsliste (drainage, abdichtung, bitumen,
+> gleitmittel, estrichfolie): **Was der Shop nicht führt, bleibt
+> unauffindbar.** [`kundenwoerter.md`](./kundenwoerter.md).
+>
+> **Schichtenschnitt** auf zwei Systemlisten; die fremden Lagen sind
+> schraffiert und beschriftet. Eine Probe hält Bild und Text gegeneinander.
+> [`schichtenschnitt.md`](./schichtenschnitt.md).
+>
+> **Prüfgrenze vom Dokument auf den Absatz:** `pruefe-seiten` übersprang
+> ganze Seiten und damit auch den Text, den das Seitenbauwerkzeug selbst auf
+> sie schreibt. Jetzt 57 Seiten/216 Absätze statt 54/213 — und der erste
+> Blick in den blinden Fleck fand einen Fehler **im Prüfer**: „3 Lagen" las
+> er als „3 Liter".
+> [`grenze-vom-dokument-auf-den-absatz.md`](./grenze-vom-dokument-auf-den-absatz.md).
+>
+> **Widerrufen:** Der Rahmen führt seine Skripte doch aus — der Proxy war es.
+> Beide Browserproben starten jetzt ohne Weg nach außen, und die zwei aus
+> falschem Grund entfernten Szenarien (Warenkorb, Kasse bei 390 px) sind
+> zurück. **28 Szenarien, davon 8 im Rahmen.**
+> [`rahmen-lief-doch.md`](./rahmen-lief-doch.md).
+>
+> **Maschinenkanal:** Versandkosten je Artikel im Feed (nur noch die GTIN
+> fehlt), eine Verfügbarkeitsangabe für beide Ausgänge statt `PreOrder` gegen
+> `InStock`, und `llms.txt` nennt jetzt alle 46 Artikel mit Preis statt nur
+> die Gruppen.
+> [`maschinenkanal-geschlossen.md`](./maschinenkanal-geschlossen.md).
+>
+> **Gate 20 rechnet mit der Palette** (28,50 € je Lieferung mit palettierter
+> Ware, Untergrenze). Folge: **Eine palettierte Bestellung unter rund 114 €
+> Warenwert trägt sich nicht — auch wenn der Kunde die volle Fracht zahlt.**
+> Gate 20 hält sie jetzt an. Offen für den Auftraggeber: Mindestbestellwert,
+> Palettenzuschlag oder bewusst hinnehmen.
+> [`gate20-mit-palette.md`](./gate20-mit-palette.md).
+>
+> **Stand der Prüfmittel:** 729 Tests, `pruefe-inhalte` 24/355/0,
+> `pruefe-seiten` 57/216/0, `pruefe-widerrufe` 131 Dateien/48 Fundstellen,
+> `pruefe-quellen` 6/6, `shopprobe` 28, `oberflaechenprobe` 11, Website 81
+> Seiten ohne toten Verweis.
 
 ## Wo das Projekt steht
 

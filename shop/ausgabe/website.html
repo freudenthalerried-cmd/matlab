@@ -13952,6 +13952,7 @@ function berechneWarenkorb(zeilen, katalog) {
       frachtNetto: f.betragNetto,
       frachtGrund: f.grund,
       mindestbestellwert: mbw,
+      ...nebenkostenUntergrenze(positionen, lieferant),
     });
   }
 
@@ -13960,6 +13961,9 @@ function berechneWarenkorb(zeilen, katalog) {
   const warenwertNetto = cent(teillieferungen.reduce((s, t) => s + t.warenwertNetto, 0));
   const frachtNetto = cent(teillieferungen.reduce((s, t) => s + t.frachtNetto, 0));
   const einkaufNetto = cent(teillieferungen.reduce((s, t) => s + t.einkaufNetto, 0));
+  const nebenkostenUntergrenzeNetto = cent(
+    teillieferungen.reduce((s, t) => s + (t.nebenkostenUntergrenzeNetto ?? 0), 0),
+  );
   const summeNetto = cent(warenwertNetto + frachtNetto);
   const ust = cent(summeNetto * UST_SATZ);
 
@@ -13972,6 +13976,8 @@ function berechneWarenkorb(zeilen, katalog) {
     warenwertNetto,
     frachtNetto,
     einkaufNetto,
+    nebenkostenUntergrenzeNetto,
+    nebenkostenGrund: teillieferungen.map((t) => t.nebenkostenGrund).filter(Boolean),
     summeNetto,
     ust,
     summeBrutto: cent(summeNetto + ust),
@@ -14011,6 +14017,52 @@ function berechneWarenkorb(zeilen, katalog) {
           `erreicht sind ${t.mindestbestellwert.bestellwertNetto} €, es fehlen ` +
           `${t.mindestbestellwert.fehlbetragNetto} €.`,
       ),
+  };
+}
+
+/**
+ * Die **Untergrenze** der Kosten, die auf den Belegen stehen und bisher in
+ * keiner Rechnung dieses Baus vorkommen.
+ *
+ * Auf der Rechnung über 1.934 € netto standen neben der Frachtpauschale:
+ * sechs ÖBB-Paletten zu 22,00 €, eine Rückgabe mit −20,00 € und eine
+ * Folierung zu 6,50 € — **118,50 € nicht gerechnete Nebenkosten, mehr als
+ * die Frachtpauschale selbst.** Der Rechenkern kannte davon bis zum 28.
+ * August nichts.
+ *
+ * Warum nur eine Untergrenze und keine Rechnung: Die **Stückzahl** der
+ * Paletten hängt an Gewicht und Packmaß, und der Katalog führt Gewichte für
+ * sieben von 46 Artikeln. Was sich aus den Belegen ohne Annahme ableiten
+ * lässt, ist der Boden:
+ *
+ * > **Eine Lieferung mit palettierter Ware kostet mindestens eine Palette
+ * > plus Folierung.**
+ *
+ * Die Rückgabegutschrift von 20,00 € wird **nicht** gegengerechnet. Sie fällt
+ * nur an, wenn die Palette tatsächlich zurückgeht; elf der fünfzehn
+ * Rechnungen lauten „Abholung Kunde", und was der Auftraggeber dabei mit der
+ * Palette macht, steht auf keinem Beleg. Die vorsichtige Zahl ist hier die
+ * ehrliche.
+ *
+ * Die Kranentladung (7,50 € je Hub) steht bewusst **nicht** in dieser Summe:
+ * Sie wird dem Kunden als Sperrgutzuschlag weiterverrechnet und ist damit
+ * durchlaufend. Sie hier noch einmal abzuziehen, hieße sie doppelt zu zahlen.
+ *
+ * @returns {{nebenkostenUntergrenzeNetto: number, nebenkostenGrund?: string}}
+ */
+function nebenkostenUntergrenze(positionen, lieferant) {
+  const n = lieferant?.nebenkosten;
+  if (!n) return { nebenkostenUntergrenzeNetto: 0 };
+  if (!positionen.some((p) => p.sperrgut)) return { nebenkostenUntergrenzeNetto: 0 };
+  const palette = Number(n.paletteOebbNetto ?? 0);
+  const folierung = Number(n.folierungNetto ?? 0);
+  const summe = cent(palette + folierung);
+  if (summe <= 0) return { nebenkostenUntergrenzeNetto: 0 };
+  return {
+    nebenkostenUntergrenzeNetto: summe,
+    nebenkostenGrund: `mindestens eine Palette (${palette.toFixed(2)} €) und Folierung `
+      + `(${folierung.toFixed(2)} €) je Lieferung mit palettierter Ware — Stückzahl unbekannt, `
+      + 'Rückgabegutschrift nicht gegengerechnet',
   };
 }
 
@@ -17362,14 +17414,29 @@ function traegtSichSelbst(
   // Wer das Skonto einrechnen will, muss sagen, dass er es auch zieht.
   const skontoNetto = skontoErsparnis(einkaufNetto, skontoSatz);
   const einkaufNachSkontoNetto = cent(einkaufNetto - skontoNetto);
+  // Palette und Folierung — die Kosten, die auf den Belegen stehen und bis
+  // zum 28. August in keiner Rechnung dieses Baus vorkamen. Sie werden dem
+  // Kunden nicht verrechnet, also mindern sie den Deckungsbeitrag.
+  //
+  // Genommen wird die **Untergrenze** aus dem Warenkorb (`warenkorb.js`) und
+  // nicht eine Schätzung: Die Stückzahl der Paletten hängt an Gewichten, die
+  // für 39 von 46 Artikeln fehlen. Ein zu niedriger, aber belegter Abzug ist
+  // brauchbar; ein geratener wäre es nicht. Gate 20 bleibt damit optimistisch
+  // — aber nachweislich weniger als vorher, und es steht dabei, um wie viel.
+  const nebenkostenNetto = cent(warenkorb.nebenkostenUntergrenzeNetto ?? 0);
   // Die Fracht schulden wir dem Frachtführer in jedem Fall.
-  const deckungsbeitragNetto = cent(erloesNetto - einkaufNachSkontoNetto - frachtNetto - gebuehrNetto);
+  const deckungsbeitragNetto = cent(
+    erloesNetto - einkaufNachSkontoNetto - frachtNetto - gebuehrNetto - nebenkostenNetto,
+  );
 
   const gruende = [];
   if (deckungsbeitragNetto <= 0) {
     gruende.push(
       `Deckungsbeitrag ${deckungsbeitragNetto.toFixed(2)} € — die Bestellung trägt sich nicht` +
-        (frachtVerrechnet ? '' : ' (Lieferung frei Haus: die Fracht geht zu unseren Lasten)'),
+        (frachtVerrechnet ? '' : ' (Lieferung frei Haus: die Fracht geht zu unseren Lasten)') +
+        (nebenkostenNetto > 0
+          ? ` (davon ${nebenkostenNetto.toFixed(2)} € Palette und Folierung, die niemand weiterverrechnet)`
+          : ''),
     );
   }
 
@@ -17382,6 +17449,7 @@ function traegtSichSelbst(
     einkaufNachSkontoNetto,
     frachtNetto,
     gebuehrNetto,
+    nebenkostenNetto,
     frachtVerrechnet,
     gruende,
   };

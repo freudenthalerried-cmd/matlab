@@ -84,3 +84,33 @@ test('genau null trägt nicht — ein Nullgeschäft deckt keine Fixkosten', () =
   );
   assert.ok(nullgeschaeft.gruende.length > 0, 'und der Grund wird genannt');
 });
+
+/* ------------------------------------------------------------------ *
+ * Palette und Folierung in Gate 20
+ * ------------------------------------------------------------------ */
+
+test('nicht weiterverrechnete Nebenkosten mindern den Deckungsbeitrag', () => {
+  const ohne = traegtSichSelbst({ warenwertNetto: 100, einkaufNetto: 80, frachtNetto: 25 });
+  const mit = traegtSichSelbst({
+    warenwertNetto: 100, einkaufNetto: 80, frachtNetto: 25, nebenkostenUntergrenzeNetto: 28.5,
+  });
+  assert.equal(mit.nebenkostenNetto, 28.5);
+  assert.ok(mit.deckungsbeitragNetto < ohne.deckungsbeitragNetto - 28,
+    `${mit.deckungsbeitragNetto} gegen ${ohne.deckungsbeitragNetto}`);
+});
+
+test('kippt die Bestellung daran, sagt der Grund es', () => {
+  // Sonst steht dort eine Zahl, die niemand erklären kann — und die
+  // naheliegende Erklärung wäre die falsche (die Fracht).
+  const k = traegtSichSelbst({
+    warenwertNetto: 100, einkaufNetto: 80, frachtNetto: 25, nebenkostenUntergrenzeNetto: 28.5,
+  });
+  assert.equal(k.traegt, false);
+  assert.match(k.gruende[0], /Palette und Folierung/);
+});
+
+test('ohne palettierte Ware ändert sich nichts an der alten Rechnung', () => {
+  const k = traegtSichSelbst({ warenwertNetto: 100, einkaufNetto: 80, frachtNetto: 25 });
+  assert.equal(k.nebenkostenNetto, 0);
+  assert.equal(k.traegt, true);
+});

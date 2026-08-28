@@ -242,14 +242,29 @@ export function traegtSichSelbst(
   // Wer das Skonto einrechnen will, muss sagen, dass er es auch zieht.
   const skontoNetto = skontoErsparnis(einkaufNetto, skontoSatz);
   const einkaufNachSkontoNetto = cent(einkaufNetto - skontoNetto);
+  // Palette und Folierung — die Kosten, die auf den Belegen stehen und bis
+  // zum 28. August in keiner Rechnung dieses Baus vorkamen. Sie werden dem
+  // Kunden nicht verrechnet, also mindern sie den Deckungsbeitrag.
+  //
+  // Genommen wird die **Untergrenze** aus dem Warenkorb (`warenkorb.js`) und
+  // nicht eine Schätzung: Die Stückzahl der Paletten hängt an Gewichten, die
+  // für 39 von 46 Artikeln fehlen. Ein zu niedriger, aber belegter Abzug ist
+  // brauchbar; ein geratener wäre es nicht. Gate 20 bleibt damit optimistisch
+  // — aber nachweislich weniger als vorher, und es steht dabei, um wie viel.
+  const nebenkostenNetto = cent(warenkorb.nebenkostenUntergrenzeNetto ?? 0);
   // Die Fracht schulden wir dem Frachtführer in jedem Fall.
-  const deckungsbeitragNetto = cent(erloesNetto - einkaufNachSkontoNetto - frachtNetto - gebuehrNetto);
+  const deckungsbeitragNetto = cent(
+    erloesNetto - einkaufNachSkontoNetto - frachtNetto - gebuehrNetto - nebenkostenNetto,
+  );
 
   const gruende = [];
   if (deckungsbeitragNetto <= 0) {
     gruende.push(
       `Deckungsbeitrag ${deckungsbeitragNetto.toFixed(2)} € — die Bestellung trägt sich nicht` +
-        (frachtVerrechnet ? '' : ' (Lieferung frei Haus: die Fracht geht zu unseren Lasten)'),
+        (frachtVerrechnet ? '' : ' (Lieferung frei Haus: die Fracht geht zu unseren Lasten)') +
+        (nebenkostenNetto > 0
+          ? ` (davon ${nebenkostenNetto.toFixed(2)} € Palette und Folierung, die niemand weiterverrechnet)`
+          : ''),
     );
   }
 
@@ -262,6 +277,7 @@ export function traegtSichSelbst(
     einkaufNachSkontoNetto,
     frachtNetto,
     gebuehrNetto,
+    nebenkostenNetto,
     frachtVerrechnet,
     gruende,
   };

@@ -57,3 +57,39 @@ test('eine gesunde Bestellung passiert alle Sperren', () => {
   assert.equal(freigabe.erlaubt, true, freigabe.gruende.join('; '));
   assert.equal(freigabe.gruende.length, 0);
 });
+
+/* ------------------------------------------------------------------ *
+ * Am echten Katalog: wo die Schwelle jetzt liegt
+ * ------------------------------------------------------------------ */
+
+test('eine kleine Palettenbestellung trägt sich nicht mehr, auch mit verrechneter Fracht', async () => {
+  // Der Befund vom 28.08., als Probe festgehalten. 50 m² Fassaden-EPS sind
+  // 96,50 € Warenwert; die Fracht zahlt der Kunde. Vor dem Einbau von Palette
+  // und Folierung stand hier ein Deckungsbeitrag von +24,00 €, jetzt −4,50 €.
+  //
+  // Ohne Preisdatei ist dieser Test still: Er prüft eine Zahl, die es dann
+  // nicht gibt — und ein Test, der ohne Daten grün meldet, wäre schlimmer als
+  // keiner.
+  const { existsSync, readFileSync } = await import('node:fs');
+  const { fileURLToPath } = await import('node:url');
+  const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
+  const preise = pfad('../../preise/baustoff-preise.json');
+  if (!existsSync(preise)) return;
+
+  const { ladeBaustoffkatalog } = await import('../src/baustoffkatalog.js');
+  const { berechneWarenkorb } = await import('../src/warenkorb.js');
+  const { traegtSichSelbst } = await import('../src/kostenbild.js');
+  const lies = (p) => JSON.parse(readFileSync(p, 'utf8'));
+  const lieferanten = lies(pfad('../data/lieferanten.json'));
+  const k = ladeBaustoffkatalog(lies(pfad('../data/katalog-baustoff.json')), lies(preise), lieferanten);
+  const katalog = { artikel: k.artikel, lieferantenById: new Map(lieferanten.lieferanten.map((l) => [l.id, l])) };
+
+  const klein = berechneWarenkorb([{ sku: 'POS-12566', menge: 50 }], katalog);
+  assert.equal(klein.nebenkostenUntergrenzeNetto, 28.5, 'Palette und Folierung stehen im Warenkorb');
+  const kleinDeckung = traegtSichSelbst(klein, { frachtVerrechnet: true, zahlwegId: 'vorkasse' });
+  assert.equal(kleinDeckung.traegt, false, 'die kleine Palettenbestellung trägt sich nicht');
+
+  const gross = berechneWarenkorb([{ sku: 'POS-12566', menge: 300 }], katalog);
+  const grossDeckung = traegtSichSelbst(gross, { frachtVerrechnet: true, zahlwegId: 'vorkasse' });
+  assert.equal(grossDeckung.traegt, true, 'die große trägt sich weiterhin');
+});
