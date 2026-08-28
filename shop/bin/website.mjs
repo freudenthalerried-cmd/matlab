@@ -1520,7 +1520,32 @@ ${eingebettet}
     console.log(`  ${k.padEnd(10)} ${String(n).padStart(3)}`);
   }
   console.log(`\nMehrseitenfassung: ausgabe/site/ (plus robots.txt, llms.txt, sitemap.xml)`);
-  console.log(`Einzeldatei:       ausgabe/website.html (${(Buffer.byteLength(einzeln) / 1024).toFixed(0)} KB)`);
+  /**
+   * Die Einzeldateifassung ist die Vorschau zum Doppelklicken: eine Datei,
+   * kein Server, alle Seiten als Vorlagen eingebettet. Genau das macht sie
+   * mit dem Sortiment größer — und irgendwann unbrauchbar.
+   *
+   * Gemessen im Lastlauf vom 28.08.: 46 Artikel → 1,5 MB, 141 → 3,3 MB.
+   * Das sind rund 19 KB je Artikel; bei fünfhundert Artikeln wären es etwa
+   * zehn Megabyte, und das lädt niemand mehr zur Ansicht herunter.
+   *
+   * **Die Grenze steht hier als Zahl, nicht als Gefühl.** Ab 6 MB meldet
+   * der Bau es; die Mehrseitenfassung ist davon nicht betroffen, sie lädt
+   * je Seite. Der Ausweg wäre dann, die Vorschau auf die Stammseiten und
+   * eine Auswahl zu beschränken — und das ist eine Entscheidung, keine
+   * Optimierung: Eine Vorschau, die nur einen Teil des Sortiments zeigt,
+   * muss sagen, dass sie es tut.
+   */
+  const EINZELDATEI_GRENZE_MB = 6;
+  const einzelnMb = Buffer.byteLength(einzeln) / 1024 / 1024;
+  console.log(`Einzeldatei:       ausgabe/website.html (${(einzelnMb * 1024).toFixed(0)} KB, `
+    + `${(einzelnMb * 1024 / Math.max(1, katalog.artikel.length)).toFixed(0)} KB je Artikel)`);
+  if (einzelnMb > EINZELDATEI_GRENZE_MB) {
+    console.log(`\nHinweis: Die Einzeldatei überschreitet ${EINZELDATEI_GRENZE_MB} MB.`);
+    console.log('Als Vorschau zum Doppelklicken ist sie damit am Ende ihrer Nutzbarkeit.');
+    console.log('Die Mehrseitenfassung in ausgabe/site/ ist davon nicht betroffen.');
+    console.log('Siehe docs/baustoff-shop/lastlauf-hundert-artikel.md.');
+  }
   console.log(`\nAlle Verweise geprüft: ${kennungen.size} Kennungen, kein toter Link.`);
 }
 

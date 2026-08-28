@@ -490,6 +490,35 @@ offene Blockade mehr.
 
 ## Was als Nächstes gebraucht wird
 
+**Stand 28. August 2026 — für den Baustoff-Shop.** Der Abschnitt darunter
+(„Zwei Freigaben") gehört zum Radon-Stufenmodell und ist seit dem Kurswechsel
+vom 22. August **überholt**; er bleibt als Fehlergeschichte stehen.
+
+Nichts davon kann der Arbeitsloop selbst auslösen. Sortiert danach, was den
+Shop am weitesten bringt:
+
+| Nächster Schritt | Braucht | Ergebnis |
+|---|---|---|
+| **Artikelliste** aus dem Poschacher-Webshop (Kundenkonto → Export als CSV) | eine Ausleitung durch den Auftraggeber | aus 46 Artikeln werden hunderte; der Importweg steht (`npm run preisliste`) |
+| **Impressum vervollständigen** — E-Mail, Telefon, UID, Gewerbewortlaut | vier Angaben aus dem laufenden Betrieb | die Seite darf online; unvollständig ist sie abmahnfähig |
+| **Zahlungsanbieter wählen** | eine Entscheidung, dann ein Vertrag | die Kasse löst tatsächlich Bestellungen aus |
+| **Domain und Hosting** | eine Entscheidung | die Seite existiert im Netz statt nur im Repository |
+| **Rechtstexte** (AGB, Widerruf, Datenschutz) | ein Rechtstexteanbieter | verbindlicher Wortlaut statt Gerüst mit Begründungen |
+| **Repository privat schalten** | einen Klick | 44 von 46 Einkaufspreisen sind heute aus zwei veröffentlichten Zahlen rekonstruierbar |
+| **Mindestbestellwert entscheiden** | eine Entscheidung | palettierte Bestellungen unter ~114 € Warenwert tragen sich nicht (Gate 20) |
+
+Zwei Entscheidungen sind am 28. August **getroffen** worden und hier nur noch
+der Vollständigkeit halber vermerkt: Die Handelsspanne wird auf der
+Kundenseite **nicht** mehr genannt, und das Sortiment soll auf mindestens
+hundert Artikel wachsen.
+
+---
+
+> **Überholt seit 22. August — Radon-Stufenmodell.** Was folgt, beschreibt
+> die Freigaben des früheren Modells (Herstelleranfragen, Keyword-Werkzeug).
+> Es gilt nicht mehr; der Auftraggeber hat auf eigene Baumeisterpreise und
+> regionale Lieferung umgestellt. Siehe `auftrag-baumeisterpreise.md`.
+
 Zwei Freigaben. Der Arbeitsloop kann keine davon selbst auslösen, zusammen
 kosten sie unter 200 €.
 
