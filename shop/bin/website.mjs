@@ -714,11 +714,11 @@ Die Stärke ist aus der Bezeichnung nicht ablesbar, und geschätzt wird sie nich
 /**
  * Der jüngste Preisstand im Katalog.
  *
- * Die Startseite nennt die Handelsspanne — eine Zahl, und jede Zahl braucht
- * nach den eigenen Regeln Herkunft und Stand. Die Herkunft ist der Satz
- * selbst („was ein Baumeister im Einkauf zahlt"), der Stand kommt von hier.
- * Gefunden hat die fehlende Angabe der Inhaltsprüfer, als er zum ersten Mal
- * über die gebauten Seiten lief.
+ * Die Startseite nennt den Abstand zum Listenpreis — eine Zahl, und jede
+ * Zahl braucht nach den eigenen Regeln Herkunft und Stand. Die Herkunft ist
+ * der Vergleich mit der Lieferantenliste, der Stand kommt von hier. Gefunden
+ * hat die fehlende Angabe der Inhaltsprüfer, als er zum ersten Mal über die
+ * gebauten Seiten lief.
  */
 function preisStand(katalog) {
   const staende = katalog.artikel.map((a) => a.preisStand).filter(Boolean).sort();
@@ -738,25 +738,29 @@ function startSeite(katalog, befund, seiten, verweis, katalogDatei) {
 
   return {
     titel: 'Baustoffe zum Baumeisterpreis',
-    // Die Startseite nennt die Handelsspanne im ersten Satz — das ist das
-    // Verkaufsargument, nicht ein Ausrutscher. Die Ausnahme ist deshalb
-    // eingegrenzt: Gate-Nummern, Lieferantennamen, Betriebsrechnung und
-    // Programmkennungen bleiben auch hier gemeldet.
-    intern: 'begruendet — die Handelsspanne ist die Kernaussage der Startseite; '
-      + 'die Kachel der Wissensseite „Baumeisterpreis" trägt sie mit. Ob sie öffentlich '
-      + 'genannt bleibt, ist eine offene Entscheidung des Auftraggebers.',
-    internNur: ['eigene-marge', 'lieferantenkondition'],
+    // **Weisung vom 28. August: keine Spanne ausgeben.** Bis dahin stand die
+    // Handelsspanne im ersten Satz der Startseite und in der Preistafel —
+    // als Verkaufsargument, mit einer begründeten Ausnahme vom
+    // Interna-Prüfer. Die Ausnahme ist weg, und damit meldet der Prüfer jede
+    // Rückkehr der Zahl von selbst.
+    //
+    // An ihre Stelle tritt die Angabe, die dem Kunden ohnehin mehr sagt:
+    // **wie weit der Preis unter der Liste des Lieferanten liegt.** Sie ist
+    // aus seiner Sicht die Ersparnis; die Spanne war aus unserer Sicht der
+    // Ertrag. Beide Zahlen beschreiben dieselbe Kalkulation von zwei Seiten
+    // — nur verrät die eine die Einkaufskondition und die andere nicht.
     kurz: `Baustoffe zum Baumeisterpreis, geliefert im Umkreis von ${ORT}. ${befund.artikelGesamt} Artikel, ${befund.unterListe} davon unter dem Listenpreis des Lieferanten.`,
     html: `<h1>Baustoffe zum<br>Baumeisterpreis</h1>
-<p class="lede">Was ein Baumeister im Einkauf zahlt, zahlen Sie auch — zuzüglich einer Handelsspanne von
-${Math.round(katalog.zielmarge * 100)} %. Alle Preise Stand: ${esc(preisStand(katalog))}.
+<p class="lede">Was ein Baumeister im Einkauf zahlt, zahlen Sie auch — deshalb liegen
+${befund.unterListe} von ${befund.mitPreis} Artikeln unter dem Listenpreis des Lieferanten, im Median um
+${String(befund.medianAbstandZurListe).replace('.', ',')} %. Alle Preise Stand: ${esc(preisStand(katalog))}.
 Geliefert wird im Umkreis, nicht in ganz Österreich: Das ist der Grund, warum die Rechnung aufgeht.</p>
 
 <div class="preistafel">
   <div><span class="k">Artikel</span><span class="w">${befund.artikelGesamt}</span><span class="e">aus dem laufenden Einkauf</span></div>
   <div><span class="k">unter Liste</span><span class="w">${befund.unterListe}</span><span class="e">von ${befund.mitPreis} mit Preisvergleich</span></div>
-  <div><span class="k">im Median</span><span class="w">${befund.medianAbstandZurListe} %</span><span class="e">unter dem Listenpreis</span></div>
-  <div><span class="k">Handelsspanne</span><span class="w">${Math.round(katalog.zielmarge * 100)} %</span><span class="e">offen ausgewiesen</span></div>
+  <div><span class="k">im Median</span><span class="w">${String(befund.medianAbstandZurListe).replace('.', ',')} %</span><span class="e">unter dem Listenpreis</span></div>
+  <div><span class="k">Lieferung</span><span class="w">${LIEFERGEBIET.bezirke.length} Bezirke</span><span class="e">regional, nicht österreichweit</span></div>
 </div>
 
 <div class="antwort"><strong>Dies ist eine Vorschau, kein laufender Shop.</strong> Es kann nichts bestellt
@@ -951,10 +955,9 @@ ${AGB_GLIEDERUNG.map((p) => `<tr><td class="n">${p.nr}</td><td><strong>${esc(p.t
 <h2>Punkt 9: Zahlung</h2>
 <p>Die Zahlungsbedingungen sind als einzige schon entschieden.
 <strong>Zahlungsziel: null Tage.</strong> Gezahlt wird bei der Bestellung. Das ist im
-B2B-Baustoffhandel ungewöhnlich, und der Grund steht dabei: Dieser Shop verkauft zum
-Baumeister-Einkaufspreis plus Handelsspanne. Ein Zahlungsziel müsste in diese Spanne
-eingerechnet werden und läge damit auf jedem Preis — auch auf dem des Kunden, der sofort
-zahlt. <strong>Wer nicht auf Ziel kauft, zahlt hier nicht für den, der es tut.</strong></p>
+B2B-Baustoffhandel ungewöhnlich, und der Grund steht dabei: Dieser Shop rechnet knapp. Ein
+Zahlungsziel kostet Geld — Zinsen, Ausfälle, Mahnaufwand — und dieses Geld müsste auf jeden
+Preis aufgeschlagen werden, auch auf den des Kunden, der sofort zahlt. <strong>Wer nicht auf Ziel kauft, zahlt hier nicht für den, der es tut.</strong></p>
 <div class="scroll"><table><thead><tr><th>Zahlweg</th><th>Stand</th><th>Was das heißt</th></tr></thead><tbody>
 ${[
   ...ZAHLUNGSBEDINGUNGEN.angeboten.map((z) => ({ ...z, stand: 'angeboten' })),

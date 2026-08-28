@@ -3,17 +3,16 @@ titel: Was „Baumeisterpreis" heißt — und was nicht
 art: wissen
 slug: baumeisterpreis
 frage: Warum ist das hier günstiger als im Fachhandel, und wo ist der Haken?
-kurz: Die Preise entstehen aus den Einkaufskonditionen eines Baumeisterbetriebs plus einer Handelsspanne von 25 Prozent. Der Haken ist die Menge: Der Vorteil trägt bei Systemware und Paletten, bei Kleinteilen trägt er nicht.
+kurz: Die Preise entstehen aus dem Einkauf eines Baumeisterbetriebs, zuzüglich eines Aufschlags für den Betrieb dieses Shops. Der Haken ist die Menge: Der Vorteil trägt bei Systemware und Paletten, bei Kleinteilen trägt er nicht.
 verwandt: redaktionsprinzipien, warum-keine-gratislieferung, was-fehlt-haelt-die-baustelle-auf
-stand: 2026-08-25
-intern: begruendet — die Handelsspanne von 25 % ist hier kein Versehen, sondern das Verkaufsargument der Seite. Die Entscheidung, sie zu nennen, gehört dem Auftraggeber und ist offen (siehe interna-auf-der-kundenseite.md).
+stand: 2026-08-28
 ---
 
 # Was „Baumeisterpreis" heißt — und was nicht
 
-**Die Antwort in zwei Sätzen.** Die Preise hier entstehen aus den
-Einkaufskonditionen eines Baumeisterbetriebs, auf die eine Handelsspanne von
-25 Prozent aufgeschlagen wird. Der Haken ist die Menge: Bei Systemware und
+**Die Antwort in zwei Sätzen.** Die Preise hier entstehen aus dem Einkauf
+eines Baumeisterbetriebs, zuzüglich eines Aufschlags, aus dem dieser Shop
+betrieben wird. Der Haken ist die Menge: Bei Systemware und
 Paletten trägt der Vorteil deutlich, bei Kleinteilen trägt er nicht — und wir
 schreiben dazu, wo er nicht trägt.
 
@@ -45,16 +44,18 @@ Schaum, Klebeband, Schrauben. Sie sind aber kein Grund, hier zu bestellen.
 Wer nur sie braucht, kauft sie günstiger im Fachhandel um die Ecke, und das
 sagen wir lieber vorher als nachher.
 
-## Warum 25 Prozent und nicht weniger
+## Warum überhaupt ein Aufschlag
 
-Aus der Handelsspanne müssen die Fixkosten, die Zahlungsgebühren und die
-Werbung bezahlt werden, bevor etwas übrig bleibt. Bei einer dünneren Spanne
-reicht der Rest nicht, um einen Kunden überhaupt zu erreichen — und ein Shop,
-den niemand findet, hilft niemandem.
+Aus ihm werden die Fixkosten, die Zahlungsgebühren und die Werbung bezahlt,
+bevor etwas übrig bleibt. Ohne ihn gäbe es diesen Shop nicht — und ein
+Einkaufspreis, den niemand anbietet, nützt niemandem.
 
-Was übrig bleibt, ist offen gerechnet: Nach Werbung und Zahlungsgebühren
-bleiben von 25 Prozent Spanne rund 13 Prozent. Der Rest der Rechnung steht in
-der Kalkulation dieses Vorhabens.
+**Wie hoch er ist, steht hier nicht.** Das ist kein Versteckspiel: Die Zahl,
+die Sie tatsächlich betrifft, ist eine andere — **wie weit der Preis unter der
+Liste des Lieferanten liegt.** Sie steht auf jeder Artikelkarte, artikelweise
+und nachrechenbar, denn nur sie sagt etwas über Ihre Ersparnis. Der Aufschlag
+sagt etwas über das Verhältnis zwischen uns und dem Lieferanten, und das ist
+zwischen uns und dem Lieferanten.
 
 ## Was der Preis nicht enthält
 

@@ -5,8 +5,7 @@ slug: warum-keine-gratislieferung
 frage: Andere liefern ab einem bestimmten Bestellwert frei Haus — warum hier nicht?
 kurz: Weil die Fracht bei unserem Lieferanten auf jedem Beleg steht, auch auf großen. Wer sie trotzdem einpreist, verteuert entweder die Ware oder verliert bei jeder kleinen Bestellung Geld.
 verwandt: baumeisterpreis, was-fehlt-haelt-die-baustelle-auf
-stand: 2026-08-25
-intern: begruendet — dieselbe Spanne und die eigene Deckungsbeitragsrechnung als Quellenangabe; die Seite begründet damit, warum es keine Frei-Haus-Schwelle gibt.
+stand: 2026-08-28
 ---
 
 # Warum es hier keine Gratislieferung gibt
@@ -31,7 +30,7 @@ ein Sack draufsteht oder eine Palette.
 
 Rechnen Sie es mit: Eine gelieferte Kleinbestellung trägt ihre eigene Fracht
 nicht. Der Warenwert müsste die Fracht, die Zahlungsgebühr und den
-Wareneinsatz decken — bei einer Handelsspanne von 25 Prozent reicht dafür ein
+Wareneinsatz decken — bei einem knapp kalkulierten Preis reicht dafür ein
 kleiner Warenkorb nicht aus.
 
 Daraus folgt kein Trick, sondern eine offene Ansage:
@@ -40,7 +39,7 @@ Daraus folgt kein Trick, sondern eine offene Ansage:
 > beiden Seiten.** Darunter ist Selbstabholung der bessere Weg — oder das
 > Zusammenlegen mit der nächsten Bestellung.
 >
-> Quelle: eigene Deckungsbeitragsrechnung auf Grundlage der Frachtsätze aus
+> Quelle: eigene Kostenrechnung auf Grundlage der Frachtsätze aus
 > den Lieferantenrechnungen, Stand: 2026-08-25.
 
 Die Schwelle ist gerechnet, nicht gesetzt — sie ist der Punkt, ab dem nach

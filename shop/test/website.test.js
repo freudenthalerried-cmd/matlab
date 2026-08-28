@@ -401,3 +401,44 @@ test('nur Gruppenseiten mit ausdrücklichem Vermerk bekommen die Tafel', () => {
   );
   assert.deepEqual(mitTafel, ['daemmung.html']);
 });
+
+/* ------------------------------------------------------------------ *
+ * Keine Spanne auf der Kundenseite
+ * ------------------------------------------------------------------ */
+
+test('keine gebaute Seite nennt die Handelsspanne', () => {
+  // Weisung des Auftraggebers vom 28. August: keine Spanne ausgeben. Bis
+  // dahin stand sie im ersten Satz der Startseite, in der Preistafel und auf
+  // zwei Wissensseiten — jeweils mit begründeter Ausnahme vom Interna-Prüfer.
+  // Die Ausnahmen sind weg; diese Probe hält den Zustand fest, damit die Zahl
+  // nicht über einen neuen Absatz zurückkommt.
+  //
+  // Was ausdrücklich erlaubt bleibt: der Abstand zum Listenpreis („25 % unter
+  // dem Listenpreis des Lieferanten"). Das ist die Ersparnis des Kunden und
+  // nicht unser Ertrag — dieselbe Kalkulation von der anderen Seite.
+  const wurzel = pfad('../ausgabe/site');
+  if (!existsSync(wurzel)) return; // ohne Bau keine Aussage — und keine falsche
+  const verboten = /Handelsspanne|Rohmarge|Zielmarge|Gewinnspanne|Spanne von \d/;
+  const gefunden = [];
+  const gehe = (ordner) => {
+    for (const eintrag of readdirSync(ordner, { withFileTypes: true })) {
+      const p = join(ordner, eintrag.name);
+      if (eintrag.isDirectory()) { gehe(p); continue; }
+      if (!eintrag.name.endsWith('.html')) continue;
+      const treffer = verboten.exec(readFileSync(p, 'utf8'));
+      if (treffer) gefunden.push(`${eintrag.name}: „${treffer[0]}"`);
+    }
+  };
+  gehe(wurzel);
+  assert.deepEqual(gefunden, [], 'die Spanne steht wieder auf einer Kundenseite');
+});
+
+test('der Preisvorteil steht weiterhin da', () => {
+  // Die Gegenprobe: Wer die Spanne entfernt und dabei die Ersparnis mit
+  // entfernt, hat die Seite nicht diskret gemacht, sondern stumm.
+  const index = pfad('../ausgabe/site/index.html');
+  if (!existsSync(index)) return;
+  const html = readFileSync(index, 'utf8');
+  assert.match(html, /unter dem Listenpreis des Lieferanten/);
+  assert.match(html, /im Median/);
+});
