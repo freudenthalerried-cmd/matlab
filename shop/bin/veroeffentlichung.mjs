@@ -99,7 +99,32 @@ const llms = llmsTxt({
   hinweise: ['Alle Preise verstehen sich netto für Unternehmer.'],
   seiten: [],
 });
-const feed = katalogFeed(katalog.artikel, { liefergebiet: { land: 'AT', bezirke } });
+/**
+ * Die Zustellkosten je Artikel — aus derselben Datei wie der Warenkorb.
+ *
+ * Ausgewiesen wird, was die Zustellung **einer Bestellung mit genau diesem
+ * Artikel** kostet: die Pauschale je Lieferung, bei palettierter Ware plus
+ * den Zuschlag je Hub. Für eine Bestellung mit mehreren Positionen ist das
+ * zu hoch — die Pauschale fällt nur einmal an.
+ *
+ * Trotzdem ist es die richtige Zahl für diesen Kanal, und zwar aus dem
+ * Grund, der dem Shop ohnehin überall zugrunde liegt: **Die unangenehme
+ * Zahl steht vorne.** Wer über einen Assistenten auf einen Artikel stößt,
+ * bekommt nicht den Preis ohne die Fracht zu sehen. Dass eine
+ * 1,93-€-Dämmplatte 83 € Zustellung kostet, ist keine Panne der Ausgabe,
+ * sondern der Grund, warum dieser Shop keine Frei-Haus-Schwelle hat.
+ */
+const lieferantenById = new Map(lieferantenDatei.lieferanten.map((l) => [l.id, l]));
+const versandkostenNetto = (a) => {
+  const f = lieferantenById.get(a.lieferantId)?.fracht;
+  if (!f || f.pauschaleNetto == null) return null;
+  return Number(f.pauschaleNetto) + (a.sperrgut ? Number(f.sperrgutZuschlagNetto ?? 0) : 0);
+};
+
+const feed = katalogFeed(katalog.artikel, {
+  liefergebiet: { land: 'AT', bezirke },
+  versandkostenNetto,
+});
 
 if (WIDERSPRUECHE.length) {
   console.log('\nWiderspruch zwischen Einstellung und Entscheidung:');

@@ -33,6 +33,25 @@ import { textZeile } from './format.js';
 export const PREIS_GUELTIG_TAGE = 7;
 
 /**
+ * Was der Shop über die Verfügbarkeit sagt — an **allen** Ausgängen dieselbe
+ * Angabe.
+ *
+ * Bis zum 28. August standen zwei verschiedene Antworten im Bau: Die
+ * Artikelseite zeichnete `PreOrder` aus, dieser Feed `InStock`. Beide aus
+ * derselben Datenlage, beide ohne Absicht — und die gefährlichere stand im
+ * Maschinenkanal: Ein Assistent, der `InStock` liest, sagt einem Kunden, er
+ * könne das jetzt kaufen. Kaufen kann er nichts; die Kasse löst nichts aus,
+ * weil kein Zahlungsanbieter gewählt ist.
+ *
+ * > **Zwei Ausgänge mit zwei Wahrheiten sind schlimmer als ein falscher
+ * > Ausgang** — der falsche fällt auf, der Widerspruch erst beim Kunden.
+ *
+ * Deshalb eine Konstante statt zweier Zeichenketten. Sobald die Kasse
+ * Bestellungen auslöst, ändert sich hier ein Wort, und beide Ausgänge folgen.
+ */
+export const VERFUEGBARKEIT = 'https://schema.org/PreOrder';
+
+/**
  * Darf dieser Artikel maschinenlesbar veröffentlicht werden?
  *
  * Liefert Gründe statt eines bloßen Nein — dieselbe Form wie die
@@ -101,7 +120,7 @@ export function produktAuszeichnung(artikel, lage = {}) {
     priceValidUntil: lage.preisGueltigBis ?? null,
     availability: artikel.lieferbar === false
       ? 'https://schema.org/OutOfStock'
-      : 'https://schema.org/InStock',
+      : VERFUEGBARKEIT,
     itemCondition: 'https://schema.org/NewCondition',
     // Nettopreis für Unternehmer — Gate 7. Die Auszeichnung sagt es
     // ausdrücklich, weil ein Assistent sonst Netto gegen Brutto vergleicht
@@ -163,7 +182,23 @@ export function katalogFeed(artikel, lage = {}) {
   const mitLuecken = [];
 
   for (const a of artikel) {
-    const eintrag = produktAuszeichnung(a, lage);
+    // `versandkostenNetto` darf eine Zahl **oder** eine Funktion sein.
+    //
+    // Der Grund ist die Ware, nicht die Bequemlichkeit: Die Fracht dieses
+    // Lieferanten ist eine Pauschale je Lieferung plus einen Zuschlag je
+    // Hub für palettierte Ware. Damit hängt der Betrag am Artikel — eine
+    // Palette Dämmplatten kostet mehr Zustellung als ein Karton Dübel —,
+    // und eine einzige Zahl für den ganzen Katalog wäre für die eine Hälfte
+    // zu hoch und für die andere zu niedrig.
+    //
+    // Gerechnet wird auch hier nichts nach: Die Funktion liest dieselben
+    // Sätze aus `data/lieferanten.json`, die der Warenkorb liest.
+    const eintrag = produktAuszeichnung(a, {
+      ...lage,
+      versandkostenNetto: typeof lage.versandkostenNetto === 'function'
+        ? lage.versandkostenNetto(a)
+        : lage.versandkostenNetto,
+    });
     if (!eintrag.veroeffentlichbar) {
       zurueckgehalten.push({ sku: a.sku, gruende: eintrag.gruende });
       continue;

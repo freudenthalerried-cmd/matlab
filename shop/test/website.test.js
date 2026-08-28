@@ -311,3 +311,39 @@ test('Die gebaute Artikelseite zeigt den Block nur, wenn eine Systemliste dahint
   }
   assert.ok(mit >= 30 && ohne >= 10, `${mit} mit Block, ${ohne} ohne — beide Fälle müssen im Bestand vorkommen`);
 });
+
+/* ------------------------------------------------------------------ *
+ * llms.txt — der Kanal, für den der Shop gebaut ist
+ * ------------------------------------------------------------------ */
+
+test('llms.txt nennt jeden bepreisten Artikel, nicht nur die Gruppen', () => {
+  const datei = pfad('../ausgabe/site/llms.txt');
+  if (!existsSync(datei)) return; // ohne Bau keine Aussage — und keine falsche
+  const txt = readFileSync(datei, 'utf8');
+  const katalog = JSON.parse(readFileSync(pfad('../data/katalog-baustoff.json'), 'utf8'));
+
+  assert.match(txt, /^## Artikel$/m, 'ohne Artikelabschnitt ist die Datei für diesen Kanal wertlos');
+  const fehlend = katalog.artikel.filter((a) => !txt.includes(`/artikel/${a.sku}.html`));
+  assert.deepEqual(fehlend.map((a) => a.sku), [], 'Artikel ohne Zeile in llms.txt');
+
+  // Jede Artikelzeile trägt den Preis mit Einheit und die Angabe netto —
+  // ein Preis ohne beides ist in diesem Kanal eine Falle: Der Assistent
+  // vergleicht ihn mit einem Bruttopreis und lässt den Shop teurer aussehen.
+  const zeilen = txt.split('\n').filter((z) => z.includes('/artikel/'));
+  assert.equal(zeilen.length, katalog.artikel.length);
+  for (const z of zeilen) {
+    assert.match(z, /\d+,\d{2} € je .+, netto/, `Zeile ohne vollständige Preisangabe: ${z.slice(0, 70)}`);
+  }
+});
+
+test('llms.txt sagt, was es verschweigt', () => {
+  const datei = pfad('../ausgabe/site/llms.txt');
+  if (!existsSync(datei)) return;
+  const txt = readFileSync(datei, 'utf8');
+  // Entweder es fehlt nichts — dann steht das da — oder die Zahl der
+  // fehlenden Artikel steht da. Eine Liste, die schweigend kürzt, ist die
+  // Fehlerklasse, die dieses Vorhaben am häufigsten gemacht hat.
+  assert.ok(/Jeder geführte Artikel steht in dieser Liste\.|Nicht in dieser Liste: \d+ Artikel/.test(txt),
+    'die Liste sagt nicht, ob sie vollständig ist');
+  assert.match(txt, /Frei-Haus-Schwelle/, 'die Fracht gehört in denselben Absatz wie der Preis');
+});

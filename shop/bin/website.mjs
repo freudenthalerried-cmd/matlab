@@ -29,6 +29,7 @@ import { dirname, join, resolve } from 'node:path';
 import { ladeBaustoffkatalog, katalogbefund, ZIELMARGE } from '../src/baustoffkatalog.js';
 import { pruefeSeiten } from '../src/interna.js';
 import { artikelBild, gruppenBild, schichten, schichtbild } from '../src/bilder.js';
+import { VERFUEGBARKEIT } from '../src/maschinenlesbar.js';
 import { baueKern, KERNMODULE, SHOPMODULE } from '../src/buendel.js';
 import { oeffentlicherArtikel, oeffentlicherLieferant } from '../src/shopkern.js';
 import { LIEFERGEBIET } from '../src/liefergebiet.js';
@@ -553,7 +554,7 @@ ${esc(a.gruppe)}. Ob einer davon der richtige ist, entscheidet die Planung.</p>`
       // hängt an der nächsten Liste des Lieferanten. Ein erfundenes Datum
       // wäre eine Zusage, und `null` weisen die Prüfwerkzeuge zurecht ab.
       valueAddedTaxIncluded: false,
-      availability: 'https://schema.org/PreOrder',
+      availability: VERFUEGBARKEIT,
       areaServed: 'Bezirk Perg, Urfahr-Umgebung, Freistadt, Linz, Linz-Land',
       seller: { '@type': 'Organization', name: FIRMA },
     },
@@ -1368,6 +1369,38 @@ Sitemap: ${BASIS}/sitemap.xml
     '', '## Sortiment', '',
     ...[...seiten.values()].filter((s) => s.art === 'gruppen')
       .map((s) => `- [${s.kopf.titel}](${BASIS}/${s.id}.html): ${befund.jeGruppe[s.kopf.gruppe]?.gesamt ?? 0} Artikel`),
+    // Bis zum 28. August endete diese Datei hier — mit Wissensseiten,
+    // Systemlisten und sieben Gruppenseiten, **ohne einen einzigen Artikel**.
+    // Für den Kanal, für den sie gemacht ist, war das die falsche Auslassung:
+    // Wer einen Assistenten fragt, wo er in Oberösterreich XPS in 80 mm
+    // bekommt, wird über den Artikel gefunden oder gar nicht.
+    //
+    // Genannt wird, was der Shop verkaufen kann. Artikel ohne kalkulierbaren
+    // Einkaufspreis (Gate 24) stehen nicht in der Liste — und die Zeile
+    // darunter sagt, wie viele das sind. Eine Auslassung, die sich selbst
+    // beziffert, ist keine Lücke mehr.
+    '', '## Artikel', '',
+    `> Alle Preise netto je Einheit, Preisstand ${preisStand(katalog) ?? 'unbekannt'}. `
+      + 'Die Zustellung kostet eine Pauschale je Lieferung, bei palettierter Ware zuzüglich '
+      + 'Kranentladung je Hub; sie steht auf der Seite ' + `${BASIS}/lieferung.html. `
+      + 'Es gibt keine Frei-Haus-Schwelle.',
+    '',
+    ...katalog.artikel
+      .filter((a) => a.vkNetto !== null)
+      .sort((a, b) => a.gruppe.localeCompare(b.gruppe, 'de') || a.bezeichnung.localeCompare(b.bezeichnung, 'de'))
+      .map((a) => `- [${a.bezeichnung}](${BASIS}/artikel/${a.sku}.html): `
+        + `${euro(a.vkNetto)} € je ${EINHEITEN[a.einheit] ?? a.einheit}, netto`
+        + ` · ${a.gruppe}`
+        + (typeof a.gewichtKg === 'number' ? ` · ${String(a.gewichtKg).replace('.', ',')} kg je Einheit` : '')
+        + (a.sperrgut ? ' · palettiert' : '')),
+    '',
+    (() => {
+      const ohne = katalog.artikel.filter((a) => a.vkNetto === null);
+      return ohne.length
+        ? `Nicht in dieser Liste: ${ohne.length} Artikel ohne kalkulierbaren Einkaufspreis. `
+          + 'Sie sind im Shop sichtbar, aber nicht bepreist — was nicht gerechnet werden kann, wird nicht angeboten.'
+        : 'Jeder geführte Artikel steht in dieser Liste.';
+    })(),
     ''].join('\n');
   writeFileSync(join(site, 'llms.txt'), llms, 'utf8');
 

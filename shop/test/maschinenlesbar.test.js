@@ -10,7 +10,9 @@ import {
   robotsTxt,
   SUCH_CRAWLER,
   TRAININGS_CRAWLER,
+  VERFUEGBARKEIT,
 } from '../src/maschinenlesbar.js';
+import { existsSync } from 'node:fs';
 import { ladeKatalog } from '../src/warenkorb.js';
 
 const echterArtikel = {
@@ -195,4 +197,69 @@ test('Ein leerer Feed ist nicht einreichbar, auch ohne Lücken', () => {
   const f = katalogFeed([], FEEDLAGE);
   assert.equal(f.anzahl, 0);
   assert.equal(f.einreichbar, false, 'nichts einzureichen ist kein einreichbarer Feed');
+});
+
+/* ------------------------------------------------------------------ *
+ * Zustellkosten je Artikel
+ * ------------------------------------------------------------------ */
+
+const zweiArtikel = [
+  { sku: 'P-1', bezeichnung: 'Palettenware', gruppe: 'Dämmung', vkNetto: 10, sperrgut: true, lieferantId: 'x' },
+  { sku: 'P-2', bezeichnung: 'Kartonware', gruppe: 'Zubehör', vkNetto: 10, sperrgut: false, lieferantId: 'x' },
+];
+
+test('die Zustellkosten dürfen je Artikel verschieden sein', () => {
+  // Eine einzige Zahl für den ganzen Katalog wäre für die palettierte Ware
+  // zu niedrig und für den Karton zu hoch. Beides sind falsche Angaben in
+  // einem Kanal, in dem der Preis das Erste ist, was gelesen wird.
+  const feed = katalogFeed(zweiArtikel, {
+    liefergebiet: { land: 'AT', bezirke: ['Perg'] },
+    versandkostenNetto: (a) => (a.sperrgut ? 83 : 75.5),
+  });
+  const [palette, karton] = feed.zeilen;
+  assert.equal(palette.offers.shippingDetails.shippingRate.value, '83.00');
+  assert.equal(karton.offers.shippingDetails.shippingRate.value, '75.50');
+  assert.deepEqual(feed.mitLuecken.flatMap((l) => l.fehlend).filter((f) => /Versand/.test(f)), [],
+    'mit Satz je Artikel fehlt nichts mehr');
+});
+
+test('eine feste Zahl geht weiterhin', () => {
+  const feed = katalogFeed(zweiArtikel, { liefergebiet: { land: 'AT', bezirke: ['Perg'] }, versandkostenNetto: 75.5 });
+  assert.equal(feed.zeilen[0].offers.shippingDetails.shippingRate.value, '75.50');
+  assert.equal(feed.zeilen[1].offers.shippingDetails.shippingRate.value, '75.50');
+});
+
+test('ohne Frachtsatz bleibt die Lücke stehen, statt eine Null zu erfinden', () => {
+  const feed = katalogFeed(zweiArtikel, {
+    liefergebiet: { land: 'AT', bezirke: ['Perg'] },
+    versandkostenNetto: () => null,
+  });
+  assert.equal(feed.zeilen[0].offers.shippingDetails, undefined);
+  assert.ok(feed.mitLuecken.every((l) => l.fehlend.includes('Versandkosten')));
+});
+
+/* ------------------------------------------------------------------ *
+ * Eine Verfügbarkeit für alle Ausgänge
+ * ------------------------------------------------------------------ */
+
+test('Feed und Artikelseite sagen dasselbe über die Verfügbarkeit', () => {
+  // Bis zum 28.08. sagte die Seite „PreOrder" und der Feed „InStock" —
+  // beide aus derselben Datenlage. Der Widerspruch fiel niemandem auf, weil
+  // niemand beide Ausgänge nebeneinander gelesen hat. Dieser Test tut es.
+  const a = produktAuszeichnung(echterArtikel, lage);
+  assert.equal(a.daten.offers.availability, VERFUEGBARKEIT);
+
+  const seite = fileURLToPath(new URL('../ausgabe/site/artikel/POS-12566.html', import.meta.url));
+  if (!existsSync(seite)) return; // ohne Bau keine Aussage — und keine falsche
+  const html = readFileSync(seite, 'utf8');
+  const ld = JSON.parse(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(html)[1]);
+  assert.equal(ld.offers.availability, VERFUEGBARKEIT,
+    'die gebaute Artikelseite weicht vom Feed ab');
+});
+
+test('die Verfügbarkeit behauptet nichts Kaufbares, solange die Kasse nichts auslöst', () => {
+  // Der Shop nimmt keine Bestellung an: Es ist kein Zahlungsanbieter
+  // gewählt, und die Kasse sagt das. „InStock" wäre in einem Kanal, den ein
+  // Assistent liest, die gefährlichere Angabe von beiden.
+  assert.equal(VERFUEGBARKEIT, 'https://schema.org/PreOrder');
 });
