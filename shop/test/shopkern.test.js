@@ -5,7 +5,8 @@ import { fileURLToPath } from 'node:url';
 import {
   wortstaemme, baueSuchindex, suche, sortiere, filtere, filterwerte, vorteil,
   ladeKorb, speichereKorb, legeInKorb, setzeMenge, korbAnzahl, bereinige,
-  kundenWarenkorb, oeffentlicherArtikel, oeffentlicherLieferant, kundenwoerter, KORBSCHLUESSEL,
+  kundenWarenkorb, oeffentlicherArtikel, oeffentlicherLieferant, kundenwoerter,
+  abstand, erlaubterAbstand, meintenSie, KORBSCHLUESSEL,
 } from '../src/shopkern.js';
 import { berechneWarenkorb } from '../src/warenkorb.js';
 import { kalkuliere } from '../src/preis.js';
@@ -462,4 +463,67 @@ test('ein zusammengesetztes Kundenwort trägt sein Grundwort mit', () => {
   assert.equal(treffer.length, 3, 'der Kleber wird mitgefunden');
   assert.equal(treffer[0].gruppe, 'Dämmung', 'die Platten zuerst');
   assert.equal(treffer[treffer.length - 1].sku, 'K-1', 'der Kleber zuletzt');
+});
+
+/* ------------------------------------------------------------------ *
+ * „Meinten Sie …?"
+ * ------------------------------------------------------------------ */
+
+test('die Editierdistanz zählt Einfügen, Löschen und Ersetzen', () => {
+  assert.equal(abstand('rohr', 'rohr'), 0);
+  assert.equal(abstand('kanalror', 'kanalrohr'), 1, 'ein fehlender Buchstabe');
+  assert.equal(abstand('gewbe', 'gewebe'), 1);
+  assert.equal(abstand('haus', 'maus'), 1, 'ein ersetzter Buchstabe');
+  assert.ok(abstand('rohr', 'schachtring', 2) > 2, 'die Obergrenze bricht früh ab');
+});
+
+test('kurze Wörter dürfen sich nicht vertippen', () => {
+  // Bei drei Buchstaben ist jeder „Vertipper" ein anderes Wort.
+  assert.equal(erlaubterAbstand('dn'), 0);
+  assert.equal(erlaubterAbstand('rohr'), 1);
+  assert.equal(erlaubterAbstand('spachtel'), 2);
+});
+
+test('acht Vertipper, die vorher nichts fanden, bekommen einen Vorschlag', () => {
+  // Die Messung vom 28. August, als Probe festgehalten.
+  const index = bestandsindex();
+  const vertipper = {
+    kanalror: 'kanalrohr',
+    'dämmplate': 'dämmplatte',
+    rauchfng: 'rauchfang',
+    styropr: 'styropor',
+    kantenschuz: 'kantenschutz',
+    schachtrng: 'schachtring',
+    gewbe: 'gewebe',
+    spachtl: 'spachtelmasse',
+  };
+  assert.equal(Object.keys(vertipper).length, 8);
+  for (const [falsch, erwartet] of Object.entries(vertipper)) {
+    assert.equal(suche(index, falsch).length, 0, `„${falsch}" findet auf einmal etwas — die Messung stimmt nicht`);
+    const vorschlaege = meintenSie(index, falsch);
+    assert.equal(vorschlaege[0], erwartet, `„${falsch}" → ${JSON.stringify(vorschlaege)}`);
+  }
+});
+
+test('was der Shop nicht führt, bekommt keinen Ersatzvorschlag', () => {
+  // Dieselbe Zusage wie im Kundenwörter-Register, an der zweiten Stelle, an
+  // der sie brechen könnte. „dachziegel" lag im ersten Entwurf zwei
+  // Buchstaben neben „hochlochziegel" — und ein Kunde, der Dachziegel sucht,
+  // hätte einen Mauerziegel vorgeschlagen bekommen.
+  const index = bestandsindex();
+  for (const wort of ['dachziegel', 'zement', 'fliesen', 'estrich', 'xyzabc']) {
+    assert.deepEqual(meintenSie(index, wort), [], `„${wort}" bekommt einen Ersatzvorschlag`);
+  }
+});
+
+test('derselbe Vorschlag erscheint nicht zweimal in zwei Schreibweisen', () => {
+  // Der Index legt jedes Wort mit und ohne Umlaut ab. Als Vorschlag sind sie
+  // ein Wort — zwei Zeilen mit demselben Wort sehen aus wie ein Fehler.
+  const index = bestandsindex();
+  const mit = meintenSie(index, 'dämmplate');
+  assert.equal(mit[0], 'dämmplatte', 'wer Umlaute tippt, bekommt Umlaute');
+  assert.ok(!mit.includes('daemmplatte'));
+  const ohne = meintenSie(index, 'daemmplate');
+  assert.equal(ohne[0], 'daemmplatte');
+  assert.ok(!ohne.includes('dämmplatte'));
 });

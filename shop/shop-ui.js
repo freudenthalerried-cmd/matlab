@@ -347,6 +347,23 @@
       z.appendChild(k);
     }
     if (frage && !t.length) {
+      // „Meinten Sie …?" — ein Vorschlag, keine stille Ersetzung. Der Shop
+      // sucht nicht heimlich nach etwas anderem; er fragt, und der Kunde
+      // klickt. Ist nichts nah genug, schweigt er.
+      var vorschlaege = meintenSie(index, frage);
+      if (vorschlaege.length) {
+        var p = el('p', 'antwort');
+        p.appendChild(document.createTextNode('Meinten Sie: '));
+        vorschlaege.forEach(function (w, i) {
+          if (i) p.appendChild(document.createTextNode(i === vorschlaege.length - 1 ? ' oder ' : ', '));
+          var a = el('a', null, w);
+          a.href = pfad('suche') + '?q=' + encodeURIComponent(w);
+          a.addEventListener('click', function () { setTimeout(baueSuchseite, 0); });
+          p.appendChild(a);
+        });
+        p.appendChild(document.createTextNode('?'));
+        z.appendChild(p);
+      }
       z.appendChild(el('p', 'antwort', 'Der Katalog umfasst ' + D.artikel.length
         + ' Artikel aus dem laufenden Einkauf. Was nicht darin steht, führen wir nicht — '
         + 'wir zeigen lieber nichts als etwas Erfundenes.'));

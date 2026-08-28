@@ -84,6 +84,30 @@ const SZENARIEN = [
     verboten: ['100 mm', '30 mm'],
   },
   {
+    // Gemessen am 28.08.: acht von neun plausiblen Vertippern fanden nichts.
+    // Wer auf der Baustelle mit einer Hand tippt, bekommt eine leere Seite.
+    name: 'Ein Vertipper bekommt einen Vorschlag, keine stille Ersetzung',
+    aktionen: `
+      await geheZu('suche?q=kanalror');
+      const kopf = text('#suche-kopf');
+      const antwort = text('#suche-ziel .antwort');
+      const verweis = document.querySelector('#suche-ziel .antwort a');
+      out = 'kopf=[' + kopf + '] hatVorschlag=' + /Meinten Sie/.test(antwort)
+        + ' wort=' + (verweis ? verweis.textContent : 'KEINER')
+        + ' fuehrtZurSuche=' + (verweis ? /q=kanalrohr/.test(verweis.getAttribute('href')) : false);`,
+    // Der Kopf nennt weiterhin die **eingegebene** Anfrage — es wird nichts
+    // heimlich ersetzt.
+    erwartet: ['Kein Treffer für „kanalror"', 'hatVorschlag=true', 'wort=kanalrohr', 'fuehrtZurSuche=true'],
+  },
+  {
+    name: 'Wo nichts nah genug ist, schweigt der Vorschlag',
+    aktionen: `
+      await geheZu('suche?q=dachziegel');
+      out = 'antwort=[' + text('#suche-ziel .antwort') + ']';`,
+    erwartet: ['Was nicht darin steht, führen wir nicht'],
+    verboten: ['Meinten Sie'],
+  },
+  {
     name: 'Suche schweigt lieber, als etwas zu erfinden',
     aktionen: `
       await geheZu('suche?q=dachziegel');

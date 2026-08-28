@@ -18072,6 +18072,163 @@ function suche(index, frage, { grenze = 40 } = {}) {
     .slice(0, grenze);
 }
 
+/**
+ * „Meinten Sie …?" — wenn die Suche nichts findet.
+ *
+ * **Gemessen am 28. August:** Von neun plausiblen Vertippern fanden **acht**
+ * nichts — „spachtl", „kanalror", „dämmplate", „rauchfng", „styropr",
+ * „kantenschuz", „schachtrng", „gewbe". Wer auf der Baustelle mit einer Hand
+ * tippt, bekommt eine leere Seite und geht.
+ *
+ * Die Regel dieses Vorschlags ist dieselbe wie überall hier:
+ *
+ * > **Es wird nichts stillschweigend ersetzt.** Der Shop sucht nicht heimlich
+ * > nach etwas anderem, sondern fragt. Wer „spachtl" eingegeben hat, sieht
+ * > „Kein Treffer für „spachtl". Meinten Sie: Spachtel?" — und entscheidet
+ * > selbst.
+ *
+ * Und: **Lieber schweigen als raten.** Vorgeschlagen wird nur, was nah genug
+ * ist — ein Tippfehler bei kurzen Wörtern (bis sechs Zeichen) darf einen
+ * Buchstaben ausmachen, bei längeren zwei. Alles darüber ist ein anderes
+ * Wort, kein Vertipper.
+ *
+ * Der Abstand ist die klassische Editierdistanz (Levenshtein): wie viele
+ * Buchstaben eingefügt, gelöscht oder ersetzt werden müssen. Verglichen wird
+ * nur mit Wörtern ähnlicher Länge — das spart den Großteil der Arbeit und
+ * ändert am Ergebnis nichts, weil ein Längenunterschied von drei Zeichen
+ * schon einen Abstand von drei bedeutet.
+ */
+function abstand(a, b, hoechstens = 2) {
+  if (a === b) return 0;
+  if (Math.abs(a.length - b.length) > hoechstens) return hoechstens + 1;
+  let vorige = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    const aktuelle = [i];
+    let bestesInZeile = i;
+    for (let j = 1; j <= b.length; j++) {
+      const kosten = a[i - 1] === b[j - 1] ? 0 : 1;
+      const wert = Math.min(vorige[j] + 1, aktuelle[j - 1] + 1, vorige[j - 1] + kosten);
+      aktuelle.push(wert);
+      if (wert < bestesInZeile) bestesInZeile = wert;
+    }
+    // Frühzeitig abbrechen: Ist die ganze Zeile schon zu weit weg, kann es
+    // nur noch schlechter werden.
+    if (bestesInZeile > hoechstens) return hoechstens + 1;
+    vorige = aktuelle;
+  }
+  return vorige[b.length];
+}
+
+/** Wie weit ein Wort danebenliegen darf, um noch als Vertipper zu gelten. */
+function erlaubterAbstand(wort) {
+  if (wort.length <= 3) return 0;
+  return wort.length <= 6 ? 1 : 2;
+}
+
+/**
+ * Vorschläge zu einer Anfrage, die nichts gefunden hat.
+ *
+ * @returns {string[]} höchstens `wieviele` Wörter aus dem Bestand, nach
+ *   Abstand und dann nach Häufigkeit sortiert. Leer, wenn nichts nah genug
+ *   ist — dann schweigt der Shop, statt zu raten.
+ */
+function meintenSie(index, frage, { wieviele = 3 } = {}) {
+  const woerter = wortstaemme(frage).filter((w) => w.length >= 4);
+  if (!woerter.length) return [];
+
+  // Der Wortschatz kommt aus dem, was der Shop **führt** — Bezeichnungen und
+  // Kundenwörter. Wissensseiten bleiben draußen: Ein Vorschlag soll zu Ware
+  // führen, nicht zu einem Aufsatz.
+  const haeufigkeit = new Map();
+  for (const e of index) {
+    if (e.art !== 'artikel') continue;
+    for (const s of [...e.stark, ...e.schwach]) {
+      if (s.length < 4) continue;
+      haeufigkeit.set(s, (haeufigkeit.get(s) ?? 0) + 1);
+    }
+  }
+
+  const gefunden = new Map();
+  const merke = (kandidat, d, wieOft) => {
+    const bisher = gefunden.get(kandidat);
+    if (!bisher || d < bisher.d) gefunden.set(kandidat, { d, wieOft });
+  };
+
+  for (const w of woerter) {
+    const grenze = erlaubterAbstand(w);
+    if (grenze === 0) continue;
+    for (const [kandidat, wieOft] of haeufigkeit) {
+      if (kandidat === w) continue;
+      const d = abstand(w, kandidat, grenze);
+      if (d <= grenze) { merke(kandidat, d, wieOft); continue; }
+
+      // **Zweiter Anlauf: der Vertipper steckt in einem Kompositum.**
+      //
+      // „spachtl" fand zuerst nichts, obwohl der Shop drei Artikel mit
+      // „Spachtel" führt — als *Wortteil*: KlebeSpachtel, Spachtelmasse. Die
+      // Suche selbst kann das (sie sucht ab vier Zeichen auch in Wortmitten),
+      // der Vorschlag konnte es nicht. Deutsch setzt zusammen; ein
+      // Vorschlagswerk, das nur ganze Wörter vergleicht, ist hier taub.
+      //
+      // Verglichen wird das Suchwort mit jedem Ausschnitt passender Länge —
+      // und vorgeschlagen wird das **ganze** Wort des Bestands. Der Kunde
+      // sieht „KlebeSpachtel" und erkennt selbst, ob er das meinte.
+      //
+      // **Im Wortinneren darf der Vertipper nur einen Buchstaben kosten.**
+      // Mit zwei erlaubten Buchstaben schlug „dachziegel" den
+      // *Hochlochziegel* vor — d→l, a→o, und schon führt eine Suche nach
+      // Dachziegeln zu einem Mauerziegel. Das ist genau der Fehler, den das
+      // Kundenwörter-Register ausdrücklich vermeidet: **ersatzweise auf
+      // etwas Ähnliches zeigen.** Wer Dachziegel sucht, bekommt hier
+      // weiterhin nichts — wir führen keine.
+      if (w.length < 5) continue;
+      const innenGrenze = 1;
+      let bestes = innenGrenze + 1;
+      for (const laenge of [w.length - 1, w.length, w.length + 1]) {
+        if (laenge < 4 || laenge > kandidat.length) continue;
+        for (let i = 0; i + laenge <= kandidat.length; i++) {
+          const d2 = abstand(w, kandidat.slice(i, i + laenge), innenGrenze);
+          if (d2 < bestes) bestes = d2;
+        }
+      }
+      // Ein Treffer im Wortinneren wiegt weniger als einer am ganzen Wort —
+      // dieselbe Rangordnung wie in der Suche.
+      if (bestes <= innenGrenze) merke(kandidat, bestes + 0.5, wieOft);
+    }
+  }
+
+  /**
+   * Umlautdoppel entfernen.
+   *
+   * Der Index legt jedes Wort zweimal ab — „dämmplatte" und „daemmplatte" —,
+   * damit beide Schreibweisen finden. Als **Vorschlag** sind sie ein Wort,
+   * und zwei Zeilen mit demselben Wort in zwei Schreibweisen sehen aus wie
+   * ein Fehler des Shops. Behalten wird die Schreibweise, die der Kunde
+   * selbst benutzt hat: Wer Umlaute tippt, bekommt Umlaute.
+   */
+  const falte = (s) => s.replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss');
+  const kundeTipptUmlaute = /[äöüß]/.test(String(frage).toLowerCase());
+  const jeFaltung = new Map();
+  for (const [wort, wert] of [...gefunden.entries()].sort(
+    (a, b) => a[1].d - b[1].d || b[1].wieOft - a[1].wieOft || a[0].localeCompare(b[0], 'de'),
+  )) {
+    const schluessel = falte(wort);
+    const bisher = jeFaltung.get(schluessel);
+    if (!bisher) { jeFaltung.set(schluessel, { wort, wert }); continue; }
+    const hatUmlaut = /[äöüß]/.test(wort);
+    const bisherUmlaut = /[äöüß]/.test(bisher.wort);
+    if (hatUmlaut !== bisherUmlaut && hatUmlaut === kundeTipptUmlaute) {
+      jeFaltung.set(schluessel, { wort, wert });
+    }
+  }
+
+  return [...jeFaltung.values()]
+    .sort((a, b) => a.wert.d - b.wert.d || b.wert.wieOft - a.wert.wieOft
+      || a.wort.localeCompare(b.wort, 'de'))
+    .slice(0, wieviele)
+    .map((e) => e.wort);
+}
+
 /* ------------------------------------------------------------------ *
  * Filtern und Sortieren
  * ------------------------------------------------------------------ */
@@ -18730,6 +18887,23 @@ function kundenWarenkorb(zeilen, { artikel, lieferanten }, ust = 0.2) {
       z.appendChild(k);
     }
     if (frage && !t.length) {
+      // „Meinten Sie …?" — ein Vorschlag, keine stille Ersetzung. Der Shop
+      // sucht nicht heimlich nach etwas anderem; er fragt, und der Kunde
+      // klickt. Ist nichts nah genug, schweigt er.
+      var vorschlaege = meintenSie(index, frage);
+      if (vorschlaege.length) {
+        var p = el('p', 'antwort');
+        p.appendChild(document.createTextNode('Meinten Sie: '));
+        vorschlaege.forEach(function (w, i) {
+          if (i) p.appendChild(document.createTextNode(i === vorschlaege.length - 1 ? ' oder ' : ', '));
+          var a = el('a', null, w);
+          a.href = pfad('suche') + '?q=' + encodeURIComponent(w);
+          a.addEventListener('click', function () { setTimeout(baueSuchseite, 0); });
+          p.appendChild(a);
+        });
+        p.appendChild(document.createTextNode('?'));
+        z.appendChild(p);
+      }
       z.appendChild(el('p', 'antwort', 'Der Katalog umfasst ' + D.artikel.length
         + ' Artikel aus dem laufenden Einkauf. Was nicht darin steht, führen wir nicht — '
         + 'wir zeigen lieber nichts als etwas Erfundenes.'));
