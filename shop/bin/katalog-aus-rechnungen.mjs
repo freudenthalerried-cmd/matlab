@@ -32,9 +32,37 @@ const HIER = dirname(fileURLToPath(import.meta.url));
 const WURZEL = join(HIER, '..');
 const REPO = join(WURZEL, '..');
 
-const QUELLE = join(REPO, 'preise', 'poschacher-positionen.csv');
-const KATALOG_ZIEL = join(WURZEL, 'data', 'katalog-baustoff.json');
-const PREISE_ZIEL = join(REPO, 'preise', 'baustoff-preise.json');
+/**
+ * Quelle und Ziele sind über die Umgebung überschreibbar — damit eine Probe
+ * das Werkzeug **wirklich laufen lassen** kann, statt seine Logik nachzubauen.
+ * Ein Test, der den Erzeuger nachbaut, prüft den Nachbau.
+ */
+const QUELLE = process.env.KATALOG_QUELLE || join(REPO, 'preise', 'poschacher-positionen.csv');
+const KATALOG_ZIEL = process.env.KATALOG_ZIEL || join(WURZEL, 'data', 'katalog-baustoff.json');
+/**
+ * Die Gewichte aus den Belegen — dieselbe Quelle, ein anderes Werkzeug.
+ *
+ * **Berichtigt am 28.08.** Dieses Werkzeug schrieb den Katalog jedes Mal neu
+ * und **löschte dabei die sieben belegten Gewichte**, die `werkzeuge/
+ * gewichte.py` am 27. eingetragen hatte. Aufgefallen ist es nur, weil der
+ * Lauf zufällig kontrolliert wurde: Die Datei sah danach vollständig aus,
+ * der Verlust stand in keiner Zeile Ausgabe.
+ *
+ * > **Ein Erzeuger, der eine Datei neu schreibt, löscht alles, was ein
+ * > anderes Werkzeug hineingeschrieben hat** — schweigend, weil er von dem
+ * > anderen nichts weiß.
+ *
+ * Zwei Vorkehrungen statt einer:
+ *
+ * 1. Die Gewichte werden **hier mitgeschrieben**, aus derselben Datei, aus
+ *    der `gewichte.py` sie erzeugt. Damit ist der Lauf wiederholbar und das
+ *    Ergebnis unabhängig davon, was vorher in der Zieldatei stand.
+ * 2. Vor dem Schreiben wird der **Bestand verglichen**. Ginge dabei eine
+ *    belegte Angabe verloren, bricht das Werkzeug ab, statt sie zu
+ *    überschreiben.
+ */
+const GEWICHTE_QUELLE = process.env.KATALOG_GEWICHTE || join(REPO, 'preise', 'gewichte-aus-rechnungen.json');
+const PREISE_ZIEL = process.env.KATALOG_PREISE_ZIEL || join(REPO, 'preise', 'baustoff-preise.json');
 
 const LIEFERANT_ID = 'poschacher';
 
@@ -166,6 +194,17 @@ function main() {
     });
   }
 
+  // Die belegten Gewichte, wenn die Datei zur Hand ist. Fehlt sie, bleibt die
+  // Karte leer — und die Bestandsprüfung weiter unten schlägt an, sobald der
+  // vorhandene Katalog Gewichte trägt, die dann verlorengingen.
+  const gewichtJeNummer = new Map();
+  if (existsSync(GEWICHTE_QUELLE)) {
+    const roh = JSON.parse(readFileSync(GEWICHTE_QUELLE, 'utf8'));
+    for (const [nr, eintrag] of Object.entries(roh.fest ?? {})) {
+      if (typeof eintrag.jeEinheitKg === 'number') gewichtJeNummer.set(String(nr), eintrag.jeEinheitKg);
+    }
+  }
+
   const sortiert = [...artikel.values()].sort(
     (a, b) => a.gruppe.localeCompare(b.gruppe, 'de') || a.bezeichnung.localeCompare(b.bezeichnung, 'de'),
   );
@@ -176,6 +215,8 @@ function main() {
       'Diese Datei enthält bewusst KEINE Preise. Listenpreise und Rabattsätze stehen in preise/baustoff-preise.json, die von .gitignore gedeckt ist. Ohne diese Datei liefert der Katalog keine Verkaufspreise — und das ist die Absicht, nicht ein Mangel.',
     _sperrgutHinweis:
       'Die Kennzeichnung als Sperrgut ist eine fachliche Einschätzung nach Warengruppe, keine Angabe des Lieferanten. Sie steuert den Frachtzuschlag.',
+    _gewichtHinweis:
+      'gewichtKg steht bei den Artikeln, deren Positionsgewicht aus einer Rechnung stammt, deren Gewichtssumme gegen das ausgewiesene Gesamtgewicht aufgeht (werkzeuge/gewichte.py). Wo das Feld fehlt, ist das Gewicht UNBEKANNT und wird nicht geschaetzt: Vier von vierzehn Belegen gehen ohne Rest auf, die uebrigen tragen einen ungeklaerten Rest. Siehe docs/baustoff-shop/gewichte-mit-summenprobe.md.',
     sortiment: 'Fassade, Dämmung, Kamin, Kanal — aus dem Bürozubau',
     lieferantId: LIEFERANT_ID,
     artikel: sortiert.map((a) => ({
@@ -190,6 +231,9 @@ function main() {
       gtin: null,
       preisStand: a.stand,
       ekQuelle: 'bestaetigt',
+      ...(gewichtJeNummer.get(String(a.nr)) != null
+        ? { gewichtKg: gewichtJeNummer.get(String(a.nr)), gewichtQuelle: 'rechnung' }
+        : {}),
     })),
   };
 
@@ -232,8 +276,26 @@ function main() {
   }
 
   mkdirSync(dirname(PREISE_ZIEL), { recursive: true });
+  // Kein Schreiben, das etwas Belegtes verliert.
+  if (existsSync(KATALOG_ZIEL)) {
+    const alt = JSON.parse(readFileSync(KATALOG_ZIEL, 'utf8'));
+    const neuJeSku = new Map(katalog.artikel.map((a) => [a.sku, a]));
+    const verloren = (alt.artikel ?? []).filter(
+      (a) => a.gewichtKg != null && neuJeSku.get(a.sku)?.gewichtKg == null,
+    );
+    if (verloren.length) {
+      console.error(`\nAbbruch: ${verloren.length} belegte Gewichte gingen verloren.`);
+      for (const a of verloren) console.error(`  ${a.sku}: ${a.gewichtKg} kg`);
+      console.error('\nDie Quelle dafür ist preise/gewichte-aus-rechnungen.json.');
+      console.error('Fehlt sie, erzeugt werkzeuge/gewichte.py sie neu — nichts wird überschrieben.');
+      process.exit(2);
+    }
+  }
+
   writeFileSync(KATALOG_ZIEL, JSON.stringify(katalog, null, 2) + '\n', 'utf8');
   writeFileSync(PREISE_ZIEL, JSON.stringify(preise, null, 2) + '\n', 'utf8');
+  const mitGewicht = katalog.artikel.filter((a) => a.gewichtKg != null).length;
+  console.log(`\nGewichte aus Belegen:      ${mitGewicht} von ${katalog.artikel.length}`);
   console.log(`\ngeschrieben: ${KATALOG_ZIEL}`);
   console.log(`geschrieben: ${PREISE_ZIEL}  (vertraulich, gitignoriert)`);
 }
