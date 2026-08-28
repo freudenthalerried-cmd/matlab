@@ -194,7 +194,11 @@ test('mit --schreiben stehen die Artikel im Katalog und die Preise daneben', () 
   assert.equal(e.status, 0, e.stderr);
   const k = JSON.parse(readFileSync(katalog, 'utf8'));
   const p = JSON.parse(readFileSync(preise, 'utf8'));
-  assert.equal(k.artikel.length, 48, '46 aus den Rechnungen plus zwei neue');
+  // Relativ gezählt, nicht absolut: Eine Probe, die „48" erwartet, fällt an
+  // dem Tag um, an dem der Katalog wächst — und dann sieht es aus, als wäre
+  // der Import kaputt. Aufgefallen im Lastlauf vom 28.08.
+  const vorher = JSON.parse(readFileSync(pfad('../data/katalog-baustoff.json'), 'utf8')).artikel.length;
+  assert.equal(k.artikel.length, vorher + 2, 'der Bestand plus zwei neue');
   assert.ok(k.artikel.some((a) => a.sku === 'X-1'));
   assert.ok(!k.artikel.some((a) => a.sku === 'X-3'), 'der Artikel ohne Preis ist draußen');
   assert.equal(p.preise['X-1'].ekNetto, 10);

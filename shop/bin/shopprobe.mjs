@@ -180,26 +180,57 @@ const SZENARIEN = [
     erwartet: ['Die Fracht kostet hier mehr als die Ware', 'lieber hier als auf der Rechnung'],
   },
   {
+    // **Die Erwartung nennt keine Bestandszahl.**
+    //
+    // Bis zum 28.08. stand hier „9 Artikel" und beim Szenario darunter „von
+    // 46 Artikeln". Ein Lastlauf mit 100 eingespielten Artikeln ließ beide
+    // umfallen — obwohl der Filter tadellos arbeitete. Eine Probe, die die
+    // Größe des Sortiments festschreibt, meldet beim Wachsen einen Fehler,
+    // den es nicht gibt, und lädt dazu ein, sie „anzupassen" statt sie zu
+    // lesen.
+    //
+    // Geprüft wird deshalb das **Verhalten**: Die Sortierung steigt, und die
+    // Zahl im Filter stimmt mit der Zahl der gezeigten Karten überein. Beides
+    // rechnet die Seite selbst aus; hier steht nur noch das Urteil.
     name: 'Der Filter grenzt ein und sagt, wie viel übrig bleibt',
     aktionen: `
       await geheZu('gruppe/daemmung');
       const s = document.querySelector('#filterleiste select');
       s.value = 'preis-auf';
       s.dispatchEvent(new Event('change'));
-      const preise = [...document.querySelectorAll('#warenraster .karte .preis')]
-        .map((n) => n.textContent.split(' €')[0]);
-      out = 'erste:' + preise[0] + ' letzte:' + preise[preise.length - 1]
-        + ' | ' + text('#filterleiste .f-zahl');`,
-    erwartet: ['9 Artikel'],
+      // Ziffernklassen als [0-9] statt \\d: Dieses Stück Code wandert als
+      // Zeichenkette durch zwei Schichten Vorlage in eine HTML-Datei, und
+      // ein Backslash, der dabei verlorengeht, macht aus einer Ziffernklasse
+      // stillschweigend etwas anderes. Die längere Schreibweise übersteht
+      // jede Schicht.
+      const zahl = (n) => Number(String(n).replace(/[^0-9,.]/g, '').replace(',', '.'));
+      const preise = [...document.querySelectorAll('#warenraster .karte .preis')].map((n) => zahl(n.textContent));
+      const karten = preise.length;
+      const roh = text('#filterleiste .f-zahl');
+      const gefunden = roh.match(/[0-9]+/);
+      const gemeldet = gefunden ? zahl(gefunden[0]) : -1;
+      let steigend = true;
+      for (let i = 1; i < preise.length; i++) if (preise[i] < preise[i - 1]) steigend = false;
+      out = 'karten=' + karten + ' gemeldet=' + gemeldet
+        + ' steigend=' + steigend + ' zahlPasst=' + (karten === gemeldet)
+        + ' mehrAlsEine=' + (karten > 1);`,
+    erwartet: ['steigend=true', 'zahlPasst=true', 'mehrAlsEine=true'],
   },
   {
     name: 'Preisvorteil-Filter wirft die Artikel ohne Vergleichspreis heraus',
     aktionen: `
       await geheZu('index');
+      const zahlen = () => (text('#filterleiste .f-zahl').match(/[0-9]+/g) || []).map(Number);
+      const vorher = zahlen();
       const schalter = [...document.querySelectorAll('#filterleiste input[type=checkbox]')][0];
       schalter.click();
-      out = text('#filterleiste .f-zahl');`,
-    erwartet: ['von 46 Artikeln'],
+      const nachher = zahlen();
+      const gezeigt = document.querySelectorAll('#warenraster .karte').length;
+      out = 'vorher=' + vorher.join('/') + ' nachher=' + nachher.join('/')
+        + ' gezeigt=' + gezeigt
+        + ' grenztEin=' + (nachher[0] < nachher[1])
+        + ' zahlPasst=' + (gezeigt === nachher[0]);`,
+    erwartet: ['grenztEin=true', 'zahlPasst=true'],
   },
   {
     name: 'Die Bedienelemente im Warenkorb sind daumengroß',

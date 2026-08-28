@@ -114,16 +114,53 @@ const SOLLFORM = {
   'POS-12596': 'platte',
 };
 
-test('jeder Artikel bekommt die Form, die er hat', () => {
-  assert.equal(katalog.artikel.length, Object.keys(SOLLFORM).length,
-    'für jeden Artikel eine Sollform und umgekehrt');
-  for (const a of katalog.artikel) {
+/**
+ * **Wofür der Schlüssel gilt — und wofür nicht.**
+ *
+ * Er deckt die Artikel aus den Lieferantenrechnungen: 46 Stück, von Hand
+ * entschieden, mit dem Beleg daneben. Ein Lastlauf mit 100 eingespielten
+ * Artikeln hat am 28.08. gezeigt, dass diese Zusage nicht mitwächst — bei
+ * fünfhundert Artikeln aus einer Preisliste kann niemand jede Zeichnung von
+ * Hand nachsehen, und ein Schlüssel, den man nicht pflegen kann, wird
+ * gelöscht statt gepflegt.
+ *
+ * Deshalb zwei Zusagen statt einer:
+ *
+ * 1. **Handgeprüft**, wo Handprüfung möglich ist — für die Artikel aus den
+ *    Rechnungen bleibt jede Form einzeln festgehalten.
+ * 2. **Nichts behaupten**, wo sie es nicht ist — ein eingespielter Artikel
+ *    bekommt eine gültige Form, und seine Zeichnung darf kein Maß nennen,
+ *    das sie nicht gelesen hat. Das ist dieselbe Regel wie bei der Platte
+ *    mit den erfundenen 600 mm.
+ */
+const ausRechnungen = (a) => a.ekHerkunft === undefined;
+
+test('jeder Artikel aus den Rechnungen bekommt die Form, die er hat', () => {
+  const eigene = katalog.artikel.filter(ausRechnungen);
+  assert.equal(eigene.length, Object.keys(SOLLFORM).length,
+    'für jeden Rechnungsartikel eine Sollform und umgekehrt');
+  for (const a of eigene) {
     const soll = SOLLFORM[a.sku];
     assert.ok(soll, `${a.sku} „${a.bezeichnung}": keine Sollform hinterlegt — von Hand entscheiden`);
     assert.equal(bauform(a), soll, `${a.sku} „${a.bezeichnung}"`);
   }
   const ueberzaehlig = Object.keys(SOLLFORM).filter((s) => !katalog.artikel.some((a) => a.sku === s));
   assert.deepEqual(ueberzaehlig, [], 'Sollformen für Artikel, die es nicht mehr gibt');
+});
+
+test('ein eingespielter Artikel bekommt eine gültige Form und behauptet kein Maß', () => {
+  const eingespielt = katalog.artikel.filter((a) => !ausRechnungen(a));
+  // pruefung: begruendet — heute ist kein Artikel eingespielt; die Schleife
+  // ist die Zusage für den Tag, an dem die Artikelliste kommt.
+  for (const a of eingespielt) {
+    const form = bauform(a);
+    assert.ok(BAUFORM_TEXT[form], `${a.sku}: Bauform ohne Klartext`);
+    const svg = artikelBild(a);
+    if (/maßstäblich/.test(svg)) {
+      assert.notEqual(dickeMm(a.bezeichnung), null,
+        `${a.sku}: nennt „maßstäblich", ohne ein Maß gelesen zu haben`);
+    }
+  }
 });
 
 test('der Kopf des Kompositums entscheidet, nicht der Wortteil', () => {

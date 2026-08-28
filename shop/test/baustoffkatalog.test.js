@@ -89,11 +89,37 @@ test('Ein unbekannter Lieferant wird abgewiesen, nicht übergangen', () => {
   assert.throws(() => ladeBaustoffkatalog(kaputt, null, LIEFERANTEN), /Unbekannter Lieferant/);
 });
 
-test('Sperrgut ist als Einschätzung gekennzeichnet, nicht als Lieferantenangabe', () => {
+/**
+ * Woher eine Angabe stammen darf.
+ *
+ * **Erweitert am 28.08.** Vorher stand hier `=== 'eingeschaetzt'`, weil es
+ * nur eine Quelle gab: die eigene fachliche Einschätzung nach Warengruppe.
+ * Seit dem Importweg gibt es eine zweite — die Artikelliste des Lieferanten,
+ * die „palettiert" selbst mitbringt. Aufgefallen ist das in einem Lastlauf
+ * mit 100 eingespielten Artikeln, nicht im Betrieb.
+ *
+ * > **Eine Prüfung auf genau einen erlaubten Wert ist eine Prüfung auf den
+ * > heutigen Bestand.** Die Zusage lautet nicht „es ist eine Einschätzung",
+ * > sondern „jede Angabe sagt, woher sie kommt".
+ *
+ * Neue Quellen gehören deshalb hier eingetragen — und damit einmal bedacht.
+ */
+const SPERRGUTQUELLEN = ['eingeschaetzt', 'liste'];
+const GEWICHTSQUELLEN = ['rechnung', 'liste'];
+
+test('jede Sperrgutangabe nennt ihre Quelle, und die Quelle ist eine bekannte', () => {
   assert.ok(KATALOG.artikel.length >= 46, `nur ${KATALOG.artikel.length} Artikel im Katalog`);
   for (const a of KATALOG.artikel) {
-    assert.equal(a.sperrgutQuelle, 'eingeschaetzt');
+    assert.ok(SPERRGUTQUELLEN.includes(a.sperrgutQuelle),
+      `${a.sku}: Sperrgutquelle „${a.sperrgutQuelle}" ist keine der bekannten (${SPERRGUTQUELLEN.join(', ')})`);
   }
+});
+
+test('was aus den Rechnungen kommt, ist eine Einschätzung — keine Lieferantenangabe', () => {
+  // Die ursprüngliche Zusage, jetzt auf die Artikel bezogen, für die sie gilt.
+  const ausRechnungen = KATALOG.artikel.filter((a) => a.ekHerkunft === undefined);
+  assert.ok(ausRechnungen.length >= 46, `nur ${ausRechnungen.length} Artikel aus Rechnungen`);
+  for (const a of ausRechnungen) assert.equal(a.sperrgutQuelle, 'eingeschaetzt');
 });
 
 test('Keinem Artikel ist eine GTIN angedichtet', () => {

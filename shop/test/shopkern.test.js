@@ -311,8 +311,10 @@ test('ein unbelegtes Gewicht wird nicht zu null gemacht', () => {
 test('der Katalog trägt Gewichte nur mit Quellenangabe', () => {
   const mitGewicht = katalogDatei.artikel.filter((a) => typeof a.gewichtKg === 'number');
   assert.ok(mitGewicht.length >= 5, 'ohne Gewichte prüft diese Schleife nichts');
+  // „rechnung" oder „liste" — mehr Quellen gibt es nicht, und jede Angabe
+  // nennt ihre. Ein Gewicht ohne Herkunft ist eine Behauptung.
   for (const a of mitGewicht) {
-    assert.equal(a.gewichtQuelle, 'rechnung', `${a.sku}: Gewicht ohne Quelle`);
+    assert.ok(['rechnung', 'liste'].includes(a.gewichtQuelle), `${a.sku}: Gewichtsquelle „${a.gewichtQuelle}"`);
     assert.ok(a.gewichtKg > 0, `${a.sku}: Gewicht muss positiv sein`);
   }
   const ohne = katalogDatei.artikel.filter((a) => a.gewichtKg === undefined);
@@ -435,12 +437,29 @@ test('achtzehn Wörter, die vorher nichts fanden, finden jetzt Ware', () => {
 
 test('ein zusammengesetztes Kundenwort trägt sein Grundwort mit', () => {
   // „Dämmplattenkleber" enthält „Dämmplatte". Wer die Platte sucht, sieht
-  // deshalb am Ende der Liste auch den Kleber dafür — hinter allen neun
-  // Platten. Das ist gewollt und hier festgehalten, damit es niemand für
-  // einen Fehler hält und „aufräumt".
-  const index = bestandsindex();
-  const treffer = suche(index, 'dämmplatte').filter((x) => x.art === 'artikel');
+  // deshalb auch den Kleber dafür — aber hinter den Platten. Das ist gewollt
+  // und hier festgehalten, damit es niemand für einen Fehler hält.
+  //
+  // **Gemessen an einem festen Satz Artikel, nicht am Bestand.** Die erste
+  // Fassung suchte im ganzen Katalog und verlangte „mindestens Platz 10".
+  // Im Lastlauf mit 100 eingespielten Artikeln fiel sie um: Der Kleber
+  // rutschte aus den ersten vierzig Treffern heraus und war gar nicht mehr
+  // zu finden — die Zusage war unverändert wahr, die Probe nur nicht mehr in
+  // der Lage, sie zu sehen.
+  const artikel = [
+    { sku: 'P-1', bezeichnung: 'XPS glatt SF 30 mm', gruppe: 'Dämmung', einheit: 'M2', vkNetto: 5 },
+    { sku: 'P-2', bezeichnung: 'XPS glatt SF 50 mm', gruppe: 'Dämmung', einheit: 'M2', vkNetto: 8 },
+    { sku: 'K-1', bezeichnung: 'Soudabond Easy 750 ml', gruppe: 'Zubehör', einheit: 'DOS', vkNetto: 12 },
+  ];
+  const index = baueSuchindex({
+    artikel,
+    suchwoerter: [
+      { wort: 'dämmplatte', gruppe: 'Dämmung' },
+      { wort: 'dämmplattenkleber', skus: ['K-1'] },
+    ],
+  });
+  const treffer = suche(index, 'dämmplatte');
+  assert.equal(treffer.length, 3, 'der Kleber wird mitgefunden');
   assert.equal(treffer[0].gruppe, 'Dämmung', 'die Platten zuerst');
-  const kleber = treffer.findIndex((x) => x.sku === 'POS-31631');
-  assert.ok(kleber > 8, `der Dämmplattenkleber steht an Stelle ${kleber + 1}, nicht hinter den Platten`);
+  assert.equal(treffer[treffer.length - 1].sku, 'K-1', 'der Kleber zuletzt');
 });
