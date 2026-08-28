@@ -92,12 +92,21 @@ const SZENARIEN = [
       const kopf = text('#suche-kopf');
       const antwort = text('#suche-ziel .antwort');
       const verweis = document.querySelector('#suche-ziel .antwort a');
+      // Nicht nur die Adresse lesen, sondern ihr folgen: Was zählt, ist die
+      // Seite danach.
+      let danach = 'NICHT GEFOLGT';
+      if (verweis) {
+        await geheZu(verweis.getAttribute('href').replace(/^.*#/, ''));
+        danach = text('#suche-kopf');
+      }
       out = 'kopf=[' + kopf + '] hatVorschlag=' + /Meinten Sie/.test(antwort)
         + ' wort=' + (verweis ? verweis.textContent : 'KEINER')
-        + ' fuehrtZurSuche=' + (verweis ? /q=kanalrohr/.test(verweis.getAttribute('href')) : false);`,
+        + ' danach=[' + danach + ']';`,
+
     // Der Kopf nennt weiterhin die **eingegebene** Anfrage — es wird nichts
     // heimlich ersetzt.
-    erwartet: ['Kein Treffer für „kanalror"', 'hatVorschlag=true', 'wort=kanalrohr', 'fuehrtZurSuche=true'],
+    erwartet: ['Kein Treffer für „kanalror"', 'hatVorschlag=true', 'wort=kanalrohr',
+      'danach=[2 Treffer für „kanalrohr"]'],
   },
   {
     // Die meisten Kunden kommen gar nicht auf die Suchseite — sie tippen ins
@@ -113,6 +122,30 @@ const SZENARIEN = [
       out = 'zeilen=' + zeilen.length + ' ' + text('#suchvorschlag .vorschlag')
         + ' fuehrtZurSuche=' + (zeilen.length ? /suche.*q=kanalrohr/.test(zeilen[0].getAttribute('href')) : false);`,
     erwartet: ['kanalrohr', 'Meinten Sie das?', 'fuehrtZurSuche=true'],
+  },
+  {
+    // **Dem Verweis folgen, nicht nur seine Adresse lesen.**
+    //
+    // Die Probe darüber prüft, wohin die Vorschlagszeile zeigt. Das ist die
+    // Sorte Prüfung, die dieses Vorhaben schon zweimal in die Irre geführt
+    // hat: Sie liest die Absicht statt das Ergebnis. Hier wird geklickt und
+    // nachgesehen, was danach auf der Seite steht.
+    name: 'Der Vorschlag führt geklickt zu echten Treffern',
+    aktionen: `
+      await geheZu('index');
+      const feld = document.getElementById('suchfeld');
+      feld.value = 'kanalror';
+      feld.dispatchEvent(new Event('input'));
+      const zeile = document.querySelector('#suchvorschlag .vorschlag');
+      const wohin = zeile.getAttribute('href');
+      // In der Einzeldatei ist der Verweis eine Raute; ihr folgen heißt, den
+      // Rautenteil zu setzen und die Seite neu zeichnen zu lassen.
+      await geheZu(wohin.replace(/^.*#/, ''));
+      const karten = [...document.querySelectorAll('#suche-ziel .karte .t')].map((n) => n.textContent);
+      out = 'kopf=[' + text('#suche-kopf') + '] karten=' + karten.length
+        + ' erste=[' + (karten[0] || 'KEINE') + ']';`,
+    erwartet: ['Treffer für „kanalrohr"', 'Kanalrohr'],
+    verboten: ['Kein Treffer'],
   },
   {
     name: 'Ohne nahes Wort bleibt die Vorschlagsliste zu',
