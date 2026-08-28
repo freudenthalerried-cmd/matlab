@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { pruefeAbsatz, pruefeInhalt, inAbsaetze, GRENZWOERTER, ohneKopfblock, kopffelder } from '../src/inhaltspruefung.js';
+import { pruefeAbsatz, pruefeInhalt, inAbsaetze, GRENZWOERTER, ohneKopfblock, kopffelder, schneideQuelltext } from '../src/inhaltspruefung.js';
 
 const absatz = (text) => ({ text, zeile: 1 });
 const verdachtVon = (text) => pruefeAbsatz(absatz(text)).join(' | ');
@@ -277,4 +277,60 @@ test('Der Bestand ist auch im Kopfblock sauber', () => {
     }
   }
   assert.deepEqual(offen, []);
+});
+
+/* ------------------------------------------------------------------ *
+ * Die Einheit endet, wo das Wort weitergeht
+ * ------------------------------------------------------------------ */
+
+test('eine Zahl vor einem Wort ist keine Zahl mit Einheit', () => {
+  // „3 Lagen" ist kein Maß, „3 l" schon. Ohne Wortgrenze las die Regel das
+  // erste als das zweite und verlangte eine Quelle für eine Aufzählung.
+  assert.equal(verdachtVon('Schraffiert sind die 3 Lagen, die wir nicht führen.'), '');
+  assert.equal(verdachtVon('Das Haus hat 5 Hauswände.'), '');
+  assert.equal(verdachtVon('Wir haben 12 Monteure im Einsatz.'), '');
+  assert.equal(verdachtVon('Die Liste nennt 7 Stück in 4 Schritten.'), '');
+});
+
+test('die echte Einheit wird weiterhin verlangt', () => {
+  // Die Gegenprobe zur Wortgrenze: Sie darf die Regel nicht stumm machen.
+  for (const satz of [
+    'Der Sack wiegt 25 kg.',
+    'Die Dose fasst 750 l.',
+    'Der Verbrauch liegt bei 5 kg je Fläche.',
+    'Das kostet 30 €.',
+    'Die Verarbeitung braucht 5 °C.',
+    'Die Bahn ist 50 cm breit.',
+  ]) {
+    assert.match(verdachtVon(satz), /Zahl ohne Quelle/, `„${satz}" wird nicht mehr bemängelt`);
+  }
+});
+
+/* ------------------------------------------------------------------ *
+ * Quelltextmarken
+ * ------------------------------------------------------------------ */
+
+test('der Text aus der Quelle wird herausgeschnitten, der eigene bleibt', () => {
+  const { text, fehler } = schneideQuelltext(
+    '<p>eigen A</p><!--quelltext--><p>aus der Quelle</p><!--/quelltext--><p>eigen B</p>',
+  );
+  assert.equal(fehler, null);
+  assert.equal(text, '<p>eigen A</p><p>eigen B</p>');
+});
+
+test('mehrere Klammern auf einer Seite werden alle entfernt', () => {
+  const { text } = schneideQuelltext(
+    '<!--quelltext-->A<!--/quelltext-->M<!--quelltext-->B<!--/quelltext-->E',
+  );
+  assert.equal(text, 'ME');
+});
+
+test('eine unpaarige Marke ist ein Fehler und kein Sonderfall', () => {
+  // Sonst liest der Prüfer stillschweigend zu viel oder zu wenig — und ein
+  // Prüfer, der falsch liest, meldet nichts und wirkt dabei ruhig.
+  const auf = schneideQuelltext('<!--quelltext-->A');
+  assert.match(auf.fehler, /1 öffnende, 0 schließende/);
+  const zu = schneideQuelltext('A<!--/quelltext-->');
+  assert.match(zu.fehler, /0 öffnende, 1 schließende/);
+  assert.equal(schneideQuelltext('<p>ohne Marken</p>').fehler, null);
 });

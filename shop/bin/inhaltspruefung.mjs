@@ -26,7 +26,7 @@
 import { readdirSync, readFileSync, statSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { pruefeInhalt, pruefeAbsatz } from '../src/inhaltspruefung.js';
+import { pruefeInhalt, pruefeAbsatz, schneideQuelltext } from '../src/inhaltspruefung.js';
 
 const hier = dirname(fileURLToPath(import.meta.url));
 const INHALTSORDNER = ['wissen', 'gruppen', 'system'];
@@ -58,8 +58,38 @@ const INHALTSORDNER = ['wissen', 'gruppen', 'system'];
  *    ihre Quelle allein dadurch, dass sie gerendert wurde — der Verweis
  *    *ist* die Fundstelle, und die Regeln erkennen ihn in Markdown-Form.
  */
-/** Seiten, deren Text aus `inhalte/` stammt und dort schon geprüft wird. */
-const AUS_INHALTEN = /^(wissen|gruppe|system)\//;
+/**
+ * Schneidet den Text heraus, der aus `inhalte/` stammt.
+ *
+ * **Berichtigt am 28.08.** Vorher übersprang der Prüfer ganze *Seiten*:
+ * alles unter `wissen/`, `gruppe/` und `system/`. Die Begründung war richtig
+ * — dieser Text ist an der Quelle geprüft, und dort stehen auch die
+ * begründeten Ausnahmen, die das Rendern nicht überleben. Die Umsetzung war
+ * zu grob:
+ *
+ * > **Auf einer übersprungenen Seite steht auch Text, den das
+ * > Seitenbauwerkzeug selbst schreibt** — und der lief durch keine der
+ * > beiden Prüfungen. Nicht in `inhalte/`, also nicht in `pruefe-inhalte`;
+ * > auf einer ausgenommenen Seite, also nicht in `pruefe-seiten`.
+ *
+ * Aufgefallen beim Einbau des Schichtenschnitts, der genau so einen Absatz
+ * erzeugt. Der Ausweg ist kein neuer Prüfer, sondern eine schärfere Grenze:
+ * Das Seitenbauwerkzeug klammert den Text aus der Quelle in
+ * `<!--quelltext-->…<!--/quelltext-->`, und hier wird genau dieser Bereich
+ * entfernt. Übrig bleibt, was das Werkzeug selbst geschrieben hat.
+ *
+ * Fehlt eine Klammer oder steht sie falsch herum, bricht die Prüfung ab
+ * statt stillschweigend zu viel oder zu wenig zu lesen — ein Marker, der
+ * unbemerkt verrutscht, wäre dieselbe Falle noch einmal.
+ */
+function ohneQuelltext(html, datei) {
+  const { text, fehler } = schneideQuelltext(html);
+  if (fehler) {
+    console.error(`${datei}: ${fehler} — die Prüfung wäre wertlos.`);
+    process.exit(2);
+  }
+  return text;
+}
 function seitenAbsaetze(wurzel) {
   const gefunden = [];
   const gehe = (ordner) => {
@@ -71,7 +101,8 @@ function seitenAbsaetze(wurzel) {
       const anfang = roh.indexOf('<div class="huelle">');
       const ende = roh.indexOf('<footer>');
       if (anfang < 0 || ende < 0) continue;
-      const koerper = roh.slice(anfang, ende);
+      const name0 = pfad.slice(wurzel.length + 1);
+      const koerper = ohneQuelltext(roh.slice(anfang, ende), name0);
       const absaetze = [];
       let nummer = 0;
       // `<p([^>]*)>` trifft auch `<path …>` in den SVG-Zeichnungen — und
@@ -97,9 +128,7 @@ function seitenAbsaetze(wurzel) {
         if (text.length < 40) continue;
         absaetze.push({ text, zeile: nummer });
       }
-      const name = pfad.slice(wurzel.length + 1);
-      if (AUS_INHALTEN.test(name)) continue;
-      if (absaetze.length) gefunden.push({ datei: name, absaetze });
+      if (absaetze.length) gefunden.push({ datei: name0, absaetze });
     }
   };
   gehe(wurzel);

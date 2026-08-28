@@ -17,8 +17,22 @@
  * aus Bequemlichkeit gemacht als eine, die man wegkonfiguriert.
  */
 
-/** Zahlen mit Maßeinheit — sie sind Behauptungen und brauchen eine Quelle. */
-const ZAHL_MIT_EINHEIT = /\d+(?:[.,]\d+)?\s*(?:€|EUR|m²|m³|mm|cm|kg|g\/m²|l|%|Bq\/m³|°C|min|h|Std|Jahre?|Monate?)/gi;
+/**
+ * Zahlen mit Maßeinheit — sie sind Behauptungen und brauchen eine Quelle.
+ *
+ * **Die Wortgrenze am Ende ist nicht Feinschliff.** Ohne sie las die Regel
+ * „3 Lagen" als *3 Liter* und „5 Häuser" als *5 Stunden*: Einheiten wie `l`,
+ * `h` und `min` sind ein bis drei Zeichen lang und stehen damit am Anfang
+ * unzähliger deutscher Wörter. Gefunden am 28.08., als der Seitenprüfer
+ * erstmals auch die Absätze des Seitenbauwerkzeugs las und zwei Fehltreffer
+ * meldete — beide auf demselben Satz „die 3 Lagen, die dieser Shop nicht
+ * führt".
+ *
+ * Wieder `(?![\p{L}])` statt `\b`: Dieselbe ASCII-Falle wie bei `ÖNORM`
+ * weiter unten und bei der Bauformerkennung in `bilder.js`. Das ist die
+ * dritte Stelle im Projekt mit demselben Fehler.
+ */
+const ZAHL_MIT_EINHEIT = /\d+(?:[.,]\d+)?\s*(?:€|EUR|m²|m³|mm|cm|kg|g\/m²|l|%|Bq\/m³|°C|min|h|Std|Jahre?|Monate?)(?![\p{L}])/giu;
 
 /** Belegformen, die als Quelle gelten. */
 const QUELLE = /\[[^\]]*\]\([^)]+\)|Quelle:|laut\s+\p{Lu}|Stand:|siehe\s+\p{Lu}|ÖNORM\s+[A-Z]|DIN\s*(?:EN\s*)?\d|EN\s*\d/u;
@@ -227,4 +241,49 @@ export function pruefeInhalt(text, name = '') {
     treffer,
     sauber: treffer.length === 0,
   };
+}
+
+/**
+ * Schneidet den Text heraus, der aus `inhalte/` stammt.
+ *
+ * Das Seitenbauwerkzeug klammert ihn in `<!--quelltext-->…<!--/quelltext-->`.
+ * Was übrig bleibt, hat das Werkzeug selbst geschrieben — und genau das
+ * gehört auf den gebauten Seiten geprüft.
+ *
+ * **Warum es diese Funktion gibt.** Der Seitenprüfer übersprang bis zum
+ * 28.08. ganze Seiten: alles unter `wissen/`, `gruppe/` und `system/`. Die
+ * Begründung war richtig — dieser Text ist an der Quelle geprüft, samt seiner
+ * begründeten Ausnahmen, die das Rendern nicht überleben. Die Grenze lag nur
+ * am falschen Ort:
+ *
+ * > **Auf einer übersprungenen Seite steht auch Text, den das Werkzeug selbst
+ * > schreibt** — und der lief durch keine der beiden Prüfungen. Nicht in
+ * > `inhalte/`, also nicht in `pruefe-inhalte`; auf einer ausgenommenen
+ * > Seite, also nicht in `pruefe-seiten`.
+ *
+ * Eine unpaarige Marke ist ein Fehler, kein Sonderfall: Wer sie stillschweigend
+ * behandelt, liest zu viel oder zu wenig und merkt es nie.
+ *
+ * @returns {{text: string, fehler: string|null}}
+ */
+export function schneideQuelltext(html) {
+  const roh = String(html ?? '');
+  const AUF = '<!--quelltext-->';
+  const ZU = '<!--/quelltext-->';
+  const auf = (roh.match(/<!--quelltext-->/g) ?? []).length;
+  const zu = (roh.match(/<!--\/quelltext-->/g) ?? []).length;
+  if (auf !== zu) {
+    return { text: roh, fehler: `${auf} öffnende, ${zu} schließende Quelltextmarken` };
+  }
+  let raus = '';
+  let rest = roh;
+  for (;;) {
+    const a = rest.indexOf(AUF);
+    if (a < 0) { raus += rest; break; }
+    const e = rest.indexOf(ZU, a);
+    if (e < 0) return { text: roh, fehler: 'Quelltextmarke ohne Ende' };
+    raus += rest.slice(0, a);
+    rest = rest.slice(e + ZU.length);
+  }
+  return { text: raus, fehler: null };
 }

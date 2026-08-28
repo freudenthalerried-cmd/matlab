@@ -593,6 +593,13 @@ function inhaltsSeite(seite, katalog, befund, seiten, verweis) {
         .map((a) => artikelKarte(a, befund, verweis)).join('')}</div>`
     : '';
 
+  // Marker um den Text aus `inhalte/`. Er ist an der Quelle geprüft, samt
+  // seiner begründeten Ausnahmen; der Seitenprüfer soll ihn überspringen.
+  // Bisher übersprang er dafür die **ganze Seite** — und damit auch die
+  // Absätze, die dieses Werkzeug selbst auf dieselbe Seite schreibt. Der
+  // Marker verlegt die Grenze vom Dokument auf den Absatz.
+  const ausQuelle = (html) => `<!--quelltext-->${html}<!--/quelltext-->`;
+
   if (seite.art === 'gruppen' && warenraster) {
     // Auf einer Sortimentsseite kommt die Ware zuerst. Der Fachtext stand
     // vorher davor — wer eine Warengruppe anklickt, sucht aber Artikel und
@@ -600,12 +607,12 @@ function inhaltsSeite(seite, katalog, befund, seiten, verweis) {
     // damit die Seite trotzdem sagt, worum es geht.
     const schnitt = koerper.indexOf('</p>');
     if (schnitt === -1) {
-      teile.push(warenraster, koerper);
+      teile.push(warenraster, ausQuelle(koerper));
     } else {
-      teile.push(koerper.slice(0, schnitt + 4), warenraster, koerper.slice(schnitt + 4));
+      teile.push(ausQuelle(koerper.slice(0, schnitt + 4)), warenraster, ausQuelle(koerper.slice(schnitt + 4)));
     }
   } else {
-    teile.push(koerper);
+    teile.push(ausQuelle(koerper));
     if (warenraster) teile.push(warenraster);
   }
 
