@@ -18,6 +18,7 @@ import { robotsTxt, llmsTxt, katalogFeed } from '../src/maschinenlesbar.js';
 import { ladeKatalog } from '../src/warenkorb.js';
 import { ladeBaustoffkatalog, ZIELMARGE } from '../src/baustoffkatalog.js';
 import { LIEFERGEBIET } from '../src/liefergebiet.js';
+import { fracht } from '../src/preis.js';
 
 const hier = dirname(fileURLToPath(import.meta.url));
 const wurzel = join(hier, '..');
@@ -116,9 +117,14 @@ const llms = llmsTxt({
  */
 const lieferantenById = new Map(lieferantenDatei.lieferanten.map((l) => [l.id, l]));
 const versandkostenNetto = (a) => {
-  const f = lieferantenById.get(a.lieferantId)?.fracht;
-  if (!f || f.pauschaleNetto == null) return null;
-  return Number(f.pauschaleNetto) + (a.sperrgut ? Number(f.sperrgutZuschlagNetto ?? 0) : 0);
+  const lieferant = lieferantenById.get(a.lieferantId);
+  if (!lieferant?.fracht || lieferant.fracht.pauschaleNetto == null) return null;
+  // **Gerechnet wird mit `fracht()`, nicht mit einer zweiten Regel.**
+  // Die erste Fassung dieser Zeilen legte Pauschale und Sperrgutzuschlag
+  // selbst zusammen — dieselbe Rechnung, noch einmal aufgeschrieben. Am
+  // 28.08. hat genau das im Kampagnenwerkzeug 28,50 € je Gruppe verschluckt.
+  // Ein Warenkorb aus einer Position ist ein Warenkorb.
+  return fracht([{ ...a, menge: 1 }], lieferant).betragNetto;
 };
 
 const feed = katalogFeed(katalog.artikel, {

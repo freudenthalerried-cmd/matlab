@@ -36,7 +36,7 @@ import { bezirksliste } from '../src/liefergebiet.js';
 import { ladeBaustoffkatalog, katalogbefund, ZIELMARGE } from '../src/baustoffkatalog.js';
 import { cent } from '../src/preis.js';
 import { traegtSichSelbst } from '../src/kostenbild.js';
-import { nebenkostenUntergrenze } from '../src/warenkorb.js';
+import { berechneWarenkorb } from '../src/warenkorb.js';
 
 const HIER = dirname(fileURLToPath(import.meta.url));
 const WURZEL = join(HIER, '..');
@@ -310,7 +310,6 @@ function main() {
   const befund = katalogbefund(katalog);
   const suchtauglich = new Set(befund.suchtauglicheSkus);
   const artikelBySku = new Map(katalog.artikel.map((a) => [a.sku, a]));
-  const lieferant = katalog.lieferantenById.get(katalogDatei.lieferantId);
 
   console.log(`Katalog: ${befund.artikelGesamt} Artikel, davon ${befund.unterListe} unter Liste`);
   console.log(`Kaufquote ${(kaufquote * 100).toFixed(1)} %, Tagesbudget ${tagesbudget} €\n`);
@@ -330,30 +329,24 @@ function main() {
     }
     const nichtTauglich = positionen.filter((p) => !suchtauglich.has(p.sku));
 
-    const warenwertNetto = cent(positionen.reduce((s, p) => s + p.artikel.vkNetto * p.menge, 0));
-    const einkaufNetto = cent(positionen.reduce((s, p) => s + p.artikel.ekNetto * p.menge, 0));
-    const sperrgut = positionen.filter((p) => p.artikel.sperrgut).length;
-    const frachtNetto = cent(lieferant.fracht.pauschaleNetto + sperrgut * (lieferant.fracht.sperrgutZuschlagNetto ?? 0));
-
-    // Palette und Folierung gehören in dieselbe Rechnung wie im Warenkorb.
+    // **Ein Weg zur Zahl, nicht zwei.**
     //
-    // Dieses Werkzeug baut sich sein Kostenbild von Hand zusammen, statt
-    // `berechneWarenkorb` zu rufen — und hat deshalb am 28. August die neue
-    // Untergrenze **nicht** mitbekommen. Die Höchstgebote hingen damit an
-    // einem Deckungsbeitrag, der je Gruppe um 28,50 € zu hoch war.
+    // Bis zum 28. August rechnete dieses Werkzeug Warenwert, Einkauf und
+    // Fracht selbst aus — dieselbe Rechnung wie `berechneWarenkorb`, nur
+    // noch einmal aufgeschrieben. Am selben Tag kam im Warenkorb die
+    // Untergrenze für Palette und Folierung dazu, und hier fehlte sie: Die
+    // Höchstgebote hingen an einem Deckungsbeitrag, der je Gruppe um
+    // 28,50 € zu hoch war.
     //
     // > **Zwei Wege zu derselben Zahl bedeuten, dass einer davon irgendwann
     // > alt ist** — und es ist immer der, den man beim Ändern vergisst.
     //
-    // Solange dieses Werkzeug seinen eigenen Weg geht, ruft es wenigstens
-    // dieselbe Funktion für die Untergrenze auf.
-    const { nebenkostenUntergrenzeNetto } = nebenkostenUntergrenze(
-      positionen.map((p) => p.artikel), lieferant,
-    );
-    const traegt = traegtSichSelbst(
-      { warenwertNetto, einkaufNetto, frachtNetto, nebenkostenUntergrenzeNetto },
-      { frachtVerrechnet: true },
-    );
+    // Der Nachbau ist deshalb weg. Was hier steht, ist derselbe Warenkorb,
+    // den auch der Shop rechnet; kommt dort eine Kostenart dazu, ist sie
+    // hier ohne Zutun drin.
+    const warenkorb = berechneWarenkorb(korb.positionen, katalog);
+    const { warenwertNetto, frachtNetto } = warenkorb;
+    const traegt = traegtSichSelbst(warenkorb, { frachtVerrechnet: true });
     const maxCpc = cent(traegt.deckungsbeitragNetto * kaufquote);
 
     const zeile = {
