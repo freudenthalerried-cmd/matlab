@@ -60,3 +60,26 @@ test('eine fehlende oder kaputte Datei gibt eine Meldung, keinen Stacktrace', ()
   assert.equal(kaputt.status, 1, 'kaputtes JSON beendet mit Exit 1');
   assert.ok(kaputt.stderr.includes('antworten-beispiel.json'), 'die Meldung verweist auf das Muster');
 });
+
+test('ein Urteil über erfundene Daten sagt, dass es erfunden ist', () => {
+  // Die Ausgabe endete bis zum 28.08. mit „Prüfung A: BESTANDEN" und einer
+  // Umsatzfolge auf zwei Nachkommastellen — an Antworten, die es nie gegeben
+  // hat. Der Hinweis stand oben; die Urteilszeile trug ihn nicht, und die
+  // liest man zuerst.
+  const ausgabe = execFileSync(process.execPath, [werkzeug], { encoding: 'utf8' });
+  assert.match(ausgabe, /PROBELAUF\. Alle Eingaben sind erfunden\./);
+  assert.match(ausgabe, /Prüfung A: BESTANDEN — an erfundenen Daten/);
+  assert.match(ausgabe, /Partnerrunde: MACHBAR — an erfundenen Daten/);
+});
+
+test('sobald eine echte Antwort dabei ist, verschwindet der Hinweis', () => {
+  // Abgeleitet statt hart gesetzt: Ein Schalter, den jemand umlegen müsste,
+  // bliebe liegen — und dann stünde der Probelaufhinweis über echten Zahlen.
+  const daten = JSON.parse(readFileSync(beispiel, 'utf8'));
+  daten.lieferanten[0] = { ...daten.lieferanten[0], hersteller: 'Poschacher Baustoffe' };
+  const pfad = join(ablage, 'mit-echter-antwort.json');
+  writeFileSync(pfad, JSON.stringify(daten));
+  const ausgabe = execFileSync(process.execPath, [werkzeug, pfad], { encoding: 'utf8' });
+  assert.doesNotMatch(ausgabe, /PROBELAUF/);
+  assert.doesNotMatch(ausgabe, /an erfundenen Daten/);
+});

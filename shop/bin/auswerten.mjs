@@ -31,6 +31,33 @@ const eur = (n) => Number(n).toFixed(2).replace('.', ',') + ' €';
 console.log(`\nAntwortdatei: ${datei}`);
 if (daten._hinweis) console.log(`Hinweis: ${daten._hinweis}\n`);
 
+/**
+ * Läuft das Werkzeug auf erfundenen Daten?
+ *
+ * **Ergänzt am 28.08.** Die Ausgabe endete bis dahin mit „Prüfung A:
+ * BESTANDEN" und einer Umsatzfolge auf zwei Nachkommastellen — an
+ * Antworten, die es nie gegeben hat. Jeder einzelne Eintrag trug „FIKTIV"
+ * im Namen; die **Urteilszeilen** trugen es nicht, und die liest man zuerst.
+ *
+ * > **Ein Urteil, das nicht sagt, worüber es urteilt, wird über den Markt
+ * > gelesen** — auch wenn jede Zeile darüber „FIKTIV" heißt.
+ *
+ * Abgeleitet statt hart gesetzt: Sobald eine einzige echte Antwort in der
+ * Datei steht, verschwindet der Hinweis von selbst. Ein Schalter, den man
+ * umlegen muss, bliebe liegen.
+ */
+const eintraege = [...(daten.lieferanten ?? []), ...(daten.partner ?? [])];
+const alleErfunden = eintraege.length > 0
+  && eintraege.every((e) => /FIKTIV/i.test(JSON.stringify(e)));
+const ANHANG = alleErfunden ? ' — an erfundenen Daten' : '';
+if (alleErfunden) {
+  console.log('════════════════════════════════════════════════════════════');
+  console.log('PROBELAUF. Alle Eingaben sind erfunden.');
+  console.log('Es liegt keine einzige echte Antwort vor — keine Anfrage ist');
+  console.log('versendet. Was unten steht, prüft das Werkzeug, nicht den Markt.');
+  console.log('════════════════════════════════════════════════════════════\n');
+}
+
 // --- Lieferanten -----------------------------------------------------------
 const lieferanten = daten.lieferanten ?? [];
 console.log(`Lieferantenantworten: ${lieferanten.length}`);
@@ -45,7 +72,7 @@ for (const a of lieferanten) {
 }
 
 const runde = werteRundeAus(lieferanten, daten.lage ?? null);
-console.log(`\nPrüfung A: ${runde.pruefungA ? 'BESTANDEN' : 'NICHT BESTANDEN'}`);
+console.log(`\nPrüfung A: ${runde.pruefungA ? 'BESTANDEN' : 'NICHT BESTANDEN'}${ANHANG}`);
 console.log(`  beziffert: ${runde.beziffert}, bestanden: ${runde.bestanden} von ${runde.antworten}`);
 if (!runde.pruefungA) {
   console.log(`  Grund: ${runde.grund}`);
@@ -75,7 +102,7 @@ if (partner.length > 0) {
   }
 
   const p = wertePartnerrundeAus(partner);
-  console.log(`\nPartnerrunde: ${p.machbar ? 'MACHBAR' : 'NICHT MACHBAR'}`);
+  console.log(`\nPartnerrunde: ${p.machbar ? 'MACHBAR' : 'NICHT MACHBAR'}${ANHANG}`);
   console.log(`  bestanden: ${p.bestanden} von ${p.antworten}, Nennungen: ${p.nennungen}, mit Feuchtearbeiten: ${p.mitFeuchteArbeiten}`);
   if (p.machbar) {
     const band = `${PREISBAND_STUFE_A.von}–${PREISBAND_STUFE_A.bis} €`;

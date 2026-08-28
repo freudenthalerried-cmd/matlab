@@ -36,6 +36,7 @@ import { bezirksliste } from '../src/liefergebiet.js';
 import { ladeBaustoffkatalog, katalogbefund, ZIELMARGE } from '../src/baustoffkatalog.js';
 import { cent } from '../src/preis.js';
 import { traegtSichSelbst } from '../src/kostenbild.js';
+import { nebenkostenUntergrenze } from '../src/warenkorb.js';
 
 const HIER = dirname(fileURLToPath(import.meta.url));
 const WURZEL = join(HIER, '..');
@@ -43,7 +44,7 @@ const REPO = join(WURZEL, '..');
 const AUSGABE = join(WURZEL, 'ausgabe', 'kampagne');
 
 /** Marktübliche Klickpreise in Österreich, Bau und Handwerk. */
-const MARKT_CPC = { unten: 0.5, oben: 2.5 };
+export const MARKT_CPC = { unten: 0.5, oben: 2.5 };
 
 /** Grenzen des Anzeigenformats. Zu lange Texte weist Google beim Import ab. */
 const MAX_UEBERSCHRIFT = 30;
@@ -60,7 +61,7 @@ const MAX_PFADTEIL = 15;
  * Gerechnet wird deshalb auf die Bestellung, die eine Suche tatsächlich
  * auslöst.
  */
-const WARENKOERBE = {
+export const WARENKOERBE = {
   WDVS: {
     text: '100 m² Wärmedämmverbundsystem: Kleber, Gewebe, Dübel, Putzgrund, Oberputz',
     positionen: [
@@ -334,7 +335,25 @@ function main() {
     const sperrgut = positionen.filter((p) => p.artikel.sperrgut).length;
     const frachtNetto = cent(lieferant.fracht.pauschaleNetto + sperrgut * (lieferant.fracht.sperrgutZuschlagNetto ?? 0));
 
-    const traegt = traegtSichSelbst({ warenwertNetto, einkaufNetto, frachtNetto }, { frachtVerrechnet: true });
+    // Palette und Folierung gehören in dieselbe Rechnung wie im Warenkorb.
+    //
+    // Dieses Werkzeug baut sich sein Kostenbild von Hand zusammen, statt
+    // `berechneWarenkorb` zu rufen — und hat deshalb am 28. August die neue
+    // Untergrenze **nicht** mitbekommen. Die Höchstgebote hingen damit an
+    // einem Deckungsbeitrag, der je Gruppe um 28,50 € zu hoch war.
+    //
+    // > **Zwei Wege zu derselben Zahl bedeuten, dass einer davon irgendwann
+    // > alt ist** — und es ist immer der, den man beim Ändern vergisst.
+    //
+    // Solange dieses Werkzeug seinen eigenen Weg geht, ruft es wenigstens
+    // dieselbe Funktion für die Untergrenze auf.
+    const { nebenkostenUntergrenzeNetto } = nebenkostenUntergrenze(
+      positionen.map((p) => p.artikel), lieferant,
+    );
+    const traegt = traegtSichSelbst(
+      { warenwertNetto, einkaufNetto, frachtNetto, nebenkostenUntergrenzeNetto },
+      { frachtVerrechnet: true },
+    );
     const maxCpc = cent(traegt.deckungsbeitragNetto * kaufquote);
 
     const zeile = {
@@ -343,6 +362,7 @@ function main() {
       warenwertNetto,
       frachtNetto,
       deckungsbeitragNetto: traegt.deckungsbeitragNetto,
+      nebenkostenNetto: traegt.nebenkostenNetto,
       maxCpc,
       wirtschaftlich: maxCpc >= MARKT_CPC.unten,
       knapp: maxCpc >= MARKT_CPC.unten && maxCpc < MARKT_CPC.oben,
