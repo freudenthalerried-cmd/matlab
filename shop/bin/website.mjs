@@ -23,7 +23,9 @@
  * Aufruf:  node bin/website.mjs
  */
 
-import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync, rmSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync, rmSync, mkdtempSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { ladeBaustoffkatalog, katalogbefund, ZIELMARGE } from '../src/baustoffkatalog.js';
@@ -32,6 +34,7 @@ import { artikelBild, gruppenBild, schichten, schichtbild, dickeMm } from '../sr
 import { VERFUEGBARKEIT } from '../src/maschinenlesbar.js';
 import { baueKern, KERNMODULE, SHOPMODULE } from '../src/buendel.js';
 import { startklar } from '../src/startklar.js';
+import { ohneKommentare } from '../src/entkommentieren.js';
 import { oeffentlicherArtikel, oeffentlicherLieferant } from '../src/shopkern.js';
 import { LIEFERGEBIET } from '../src/liefergebiet.js';
 import { ZAHLWEGE } from '../src/zahlung.js';
@@ -44,6 +47,30 @@ import {
 
 const HIER = dirname(fileURLToPath(import.meta.url));
 const WURZEL = join(HIER, '..');
+
+/**
+ * Ein Skript vor dem Schreiben parsen lassen.
+ *
+ * `node --check` in einem eigenen Prozess, wie es `build-demo.mjs` seit dem
+ * EUR-Vorfall tut. Der Aufwand ist ein Prozessstart je Ausgabefassung; der
+ * Ertrag ist, dass ein Fehler des Kommentarentferners den **Bau** anhält
+ * statt die Seite.
+ */
+function pruefeSkript(quelle, name) {
+  const ordner = mkdtempSync(join(tmpdir(), 'skriptpruefung-'));
+  try {
+    const datei = join(ordner, 'skript.mjs');
+    writeFileSync(datei, quelle, 'utf8');
+    const lauf = spawnSync(process.execPath, ['--check', datei], { encoding: 'utf8' });
+    if (lauf.status !== 0) {
+      console.error(`${name} parst nicht — der Bau wird abgebrochen.`);
+      console.error(lauf.stderr);
+      process.exit(2);
+    }
+  } finally {
+    rmSync(ordner, { recursive: true, force: true });
+  }
+}
 const REPO = join(WURZEL, '..');
 // Beides über die Umgebung überschreibbar — damit eine Probe den **echten**
 // Bau mit anderen Antworten laufen lassen kann, ohne den Bestand anzufassen.
@@ -1490,11 +1517,23 @@ function main() {
   }
 
   // Rechenkern und Oberfläche einmal bauen — beide Ausgabefassungen teilen sie.
-  const kernBuendel = baueKern(
+  //
+  // **Ohne Kommentare.** Bis zum 29. August ging der Quelltext samt seiner
+  // Kommentare an jeden Besucher — 293 KB, darin die Erklärung der
+  // Kalkulation („40 € Einkauf und 25 % Ziel ergeben 53,333… €"). Damit war
+  // die Weisung „keine Spanne ausgeben" auf der Kundenseite unterlaufen, und
+  // der offene Punkt „Repository privat schalten" wäre wirkungslos gewesen:
+  // Zum Rekonstruieren der Einkaufspreise hätte die ausgelieferte Seite
+  // gereicht. Siehe `docs/baustoff-shop/kommentare-im-schaufenster.md`.
+  const kernRoh = baueKern(
     (name) => readFileSync(join(WURZEL, 'src', name), 'utf8'),
     [...KERNMODULE, ...SHOPMODULE],
   );
-  const shopOberflaeche = readFileSync(join(WURZEL, 'shop-ui.js'), 'utf8');
+  const oberflaecheRoh = readFileSync(join(WURZEL, 'shop-ui.js'), 'utf8');
+  const kernBuendel = ohneKommentare(kernRoh).text;
+  const shopOberflaeche = ohneKommentare(oberflaecheRoh).text;
+  const gespart = (kernRoh.length + oberflaecheRoh.length)
+    - (kernBuendel.length + shopOberflaeche.length);
 
   // --- Mehrseitenfassung ---
   const site = join(AUSGABE, 'site');
@@ -1506,6 +1545,11 @@ function main() {
     + `window.__SHOP__.adressform=window.__SHOP_ADRESSFORM__||'datei';\n`
     + `window.__SHOP__.tiefe=!!window.__SHOP_TIEFE__;\n`
     + kernBuendel + '\n' + shopOberflaeche;
+  // Erst parsen lassen, dann schreiben. Der Kommentarentferner ist ein
+  // Scanner ohne Parser; ein Sonderfall, den er falsch liest, macht aus
+  // gültigem Code Bruch. Ein Bau, der abbricht, ist harmlos — eine
+  // ausgelieferte Seite ohne Skript ist es nicht.
+  pruefeSkript(shopskriptQuelle, 'ausgabe/site/shop.js');
   writeFileSync(join(site, 'shop.js'), shopskriptQuelle, 'utf8');
   for (const [id, seite] of dateiSeiten) {
     const pfad = join(site, `${id}.html`);

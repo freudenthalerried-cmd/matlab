@@ -11,6 +11,7 @@ import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { baueKern, KERNMODULE, SHOPMODULE } from './src/buendel.js';
+import { ohneKommentare } from './src/entkommentieren.js';
 
 const lies = (p) => readFileSync(new URL(p, import.meta.url), 'utf8');
 
@@ -20,7 +21,15 @@ const daten = {
 };
 
 // Der Zusammenbau liegt in src/buendel.js — der Shop braucht denselben Kern.
-const kern = baueKern((name) => lies('./src/' + name), [...KERNMODULE, ...SHOPMODULE]);
+//
+// **Ohne Kommentare**, aus demselben Grund wie in bin/website.mjs: Die
+// Kommentare des Rechenkerns erklären die Kalkulation samt Zielmarge, und
+// diese Datei wird als Funktionsmuster weitergegeben. Dass die Preise darin
+// Platzhalter sind, schützt die Kalkulationsregel nicht.
+// Siehe docs/baustoff-shop/kommentare-im-schaufenster.md.
+const kern = ohneKommentare(
+  baueKern((name) => lies('./src/' + name), [...KERNMODULE, ...SHOPMODULE]),
+).text;
 
 // Ersetzt wird über Funktionen, nicht über Ersatztexte: In String.replace hat
 // „$&" (und Verwandte) im Ersatztext Sonderbedeutung. Ein Artikelname mit

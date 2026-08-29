@@ -113,6 +113,88 @@ if (!existsSync(preisDatei)) {
   }
 }
 
+/* ------------------------------------------------------------------ *
+ * 3. Der Schlüssel selbst — liefern wir die Zielmarge mit aus?
+ * ------------------------------------------------------------------ */
+
+/*
+ * Durchgang 2 rechnet vor, dass 44 von 46 Einkaufspreisen aus Verkaufspreis
+ * und Zielmarge folgen — und **setzt dabei voraus, dass jemand die Zielmarge
+ * kennt**. Bis zum 29. August hat niemand gefragt, ob wir sie ihm geben.
+ *
+ * Wir gaben sie ihm. `ausgabe/site/shop.js` enthielt den Quelltext der
+ * Rechenmodule samt Kommentaren, darunter „40 € Einkauf und 25 % Ziel ergeben
+ * 53,333… €". Damit war der offene Punkt „Repository privat schalten"
+ * wirkungslos: Die ausgelieferte Seite allein genügte.
+ *
+ * Dieser Durchgang sieht in den **Ausgabedateien** nach, nicht im
+ * Repository — er prüft, was der Besucher lädt.
+ */
+
+const AUSGABEN = [
+  join(wurzel, 'ausgabe', 'site', 'shop.js'),
+  join(wurzel, 'ausgabe', 'website.html'),
+  // Das Funktionsmuster wird weitergegeben, und dass seine Preise
+  // Platzhalter sind, schützt die Kalkulationsregel nicht.
+  join(wurzel, 'demo.html'),
+];
+
+/*
+ * Die Zielmarge in den Schreibweisen, in denen sie auftauchen kann — aber
+ * **nie als nackte Zahl.** Der erste Wurf suchte `0.25` und fand `fixEuro:
+ * 0.25`, die Kartengebühr von 25 Cent. Ein Prüfer, der die Kartengebühr für
+ * ein Geschäftsgeheimnis hält, wird nach dem zweiten Mal abgeschaltet, und
+ * dann meldet er auch den echten Fall nicht mehr. Gesucht wird deshalb die
+ * Zahl **in Gesellschaft eines Margenworts** oder das Wort allein.
+ */
+const nahe = (zahl) => new RegExp(
+  `(Marge|Rohmarge|Zielmarge|Aufschlag|Spanne|Ziel)\\W{0,20}${zahl}`
+  + `|${zahl}\\W{0,20}(Marge|Rohmarge|Zielmarge|Aufschlag|Spanne|Ziel)`, 'i');
+
+const SCHLUESSEL = [
+  { name: `Zielmarge als Zahl neben einem Margenwort (${ZIELMARGE})`, muster: nahe(String(ZIELMARGE)) },
+  // Nur **unsere** Zielmarge. Das Funktionsmuster `demo.html` rechnet noch
+  // mit 0.35 aus dem abgelösten Radon-Modell und mit Platzhalterpreisen —
+  // eine fremde Zahl neben erfundenen Preisen verrät nichts. Ein Prüfer, der
+  // sie meldet, meldet Rauschen.
+  { name: `Zuweisung der Zielmarge (${ZIELMARGE})`,
+    muster: new RegExp(`zielmarge\\s*[=:]\\s*0?${String(ZIELMARGE).replace('0', '')}([^0-9]|$)`, 'i') },
+  { name: `Zielmarge in Prozent (${(ZIELMARGE * 100).toFixed(0)} %)`,
+    muster: new RegExp(`${(ZIELMARGE * 100).toFixed(0)}\\s?%\\s*(Ziel|Marge|Rohmarge|Aufschlag|Spanne)`, 'i') },
+  { name: 'Wort „Zielmarge" im Fließtext', muster: /Zielmarge (ist|beträgt|von)/i },
+  { name: 'Rechenbeispiel mit Einkauf und Ziel', muster: /Einkauf und [0-9]+\s?% Ziel/i },
+];
+
+console.log('\nDurchgang 3 — steht der Schlüssel in der Ausgabe?');
+let schluesselTreffer = 0;
+let geprueft = 0;
+for (const datei of AUSGABEN) {
+  if (!existsSync(datei)) {
+    console.log(`  ${relative(repo, datei)} fehlt — nicht gebaut, keine Aussage.`);
+    continue;
+  }
+  geprueft++;
+  const inhalt = readFileSync(datei, 'utf8');
+  for (const s of SCHLUESSEL) {
+    const treffer = inhalt.match(s.muster);
+    if (!treffer) continue;
+    schluesselTreffer++;
+    const stelle = inhalt.slice(Math.max(0, treffer.index - 60), treffer.index + 80).replace(/\s+/g, ' ');
+    console.log(`  ✗ ${relative(repo, datei)}: ${s.name}`);
+    console.log(`      …${stelle}…`);
+  }
+}
+if (geprueft === 0) {
+  console.log('  Keine Ausgabedatei gefunden — zuerst npm run website.');
+} else if (schluesselTreffer === 0) {
+  console.log(`  ${geprueft} Ausgabedatei(en) geprüft, die Zielmarge steht in keiner.`);
+  console.log('  Ohne sie führt Durchgang 2 zu nichts: Die Rechnung braucht beide Zahlen.');
+}
+
 console.log('\nEine Regel, die eine Datei ausschließt, schützt keine Angabe,');
 console.log('die sich aus zwei veröffentlichten Zahlen ergibt.');
 console.log('Bewertung und Handlungsmöglichkeiten: docs/baustoff-shop/rekonstruierbare-einkaufspreise.md\n');
+
+// Durchgang 3 ist der einzige, der ein Urteil fällt: Steht der Schlüssel in
+// der Ausgabe, ist das kein Hinweis, sondern ein Fehler.
+if (schluesselTreffer) process.exit(1);

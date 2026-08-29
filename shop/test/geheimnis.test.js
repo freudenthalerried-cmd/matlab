@@ -80,12 +80,18 @@ test('Die Zeilennummer zeigt auf die Fundstelle', () => {
  * Das Werkzeug selbst
  * ------------------------------------------------------------------ */
 
-test('Das Werkzeug läuft und benennt beide Durchgänge', () => {
+test('Das Werkzeug läuft und benennt alle drei Durchgänge', () => {
   const werkzeug = fileURLToPath(new URL('../bin/geheimnispruefung.mjs', import.meta.url));
   const lauf = spawnSync(process.execPath, [werkzeug], { encoding: 'utf8' });
-  assert.equal(lauf.status, 0);
+  // Durchgang 3 fällt ein Urteil: Steht die Zielmarge in einer Ausgabedatei,
+  // endet das Werkzeug mit 1. Am Bestand darf das nicht sein.
+  assert.equal(lauf.status, 0, lauf.stdout.slice(-1200));
   assert.match(lauf.stdout, /Durchgang 1 — Abfluss/);
   assert.match(lauf.stdout, /Durchgang 2 — Rekonstruktion/);
+  assert.match(lauf.stdout, /Durchgang 3 — steht der Schlüssel in der Ausgabe/);
   assert.match(lauf.stdout, /übergangen/, 'was nicht angesehen wurde, steht dabei');
   assert.match(lauf.stdout, /schützt keine Angabe/, 'das Werkzeug benennt seine eigene Aussage');
+  // Der Durchgang muss etwas angesehen haben. „Keine Ausgabedatei gefunden"
+  // sähe sonst genauso still aus wie ein sauberer Befund.
+  assert.match(lauf.stdout, /[0-9]+ Ausgabedatei\(en\) geprüft, die Zielmarge steht in keiner/);
 });

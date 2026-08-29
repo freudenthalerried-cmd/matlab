@@ -223,115 +223,115 @@
 </div>
 
 <script type="module">
-/**
- * Gemeinsame Darstellungshilfen.
- *
- * Sie stehen hier und nicht dreimal verstreut, aus einem Grund, der beim Bauen
- * aufgefallen ist: Beim Zusammenfügen zu `demo.html` teilen sich alle Module
- * einen Gültigkeitsbereich. Zwei gleichnamige Hilfsfunktionen ergeben dort
- * einen SyntaxError — und der legt die ganze Seite still, während die Tests
- * grün bleiben, weil sie die Module einzeln laden.
- */
 
-/** Betrag in österreichischer Schreibweise. */
+
+
+
+
+
+
+
+
+
+
 const EUR = (n) => n.toFixed(2).replace('.', ',') + ' €';
 
-/*
- * Alle Zeichen, die in einem einzeiligen Feld nichts verloren haben:
- * Steuerzeichen U+0000–U+001F samt Tabulator, U+007F, dazu die drei Zeichen,
- * die Unicode ausdrücklich als Zeilentrenner führt — U+0085 (NEL), U+2028
- * (Line Separator), U+2029 (Paragraph Separator).
- *
- * Der Tabulator ist bewusst dabei. Er bricht zwar keine Zeile, verschiebt aber
- * die mit `padStart`/`padEnd` gesetzten Spalten der Belege und bei manchen
- * Lesern die Feldgrenzen einer CSV.
- */
+
+
+
+
+
+
+
+
+
+
 const STEUERZEICHEN = /[\u0000-\u001F\u007F\u0085\u2028\u2029]/;
 const STEUERZEICHEN_FOLGE = /[\u0000-\u001F\u007F\u0085\u2028\u2029]+/g;
 
-/**
- * Zwingt fremden Text in **eine** Zeile.
- *
- * Alle Belege dieses Shops sind zeilenorientiert: Eine Position ist eine Zeile,
- * eine Summe ist eine Zeile, eine CSV-Position ist eine Zeile. Wer einen
- * Zeilenumbruch in ein Feld unterbringt, das in so einen Beleg wandert,
- * schreibt dort eine zusätzliche Zeile — und eine zusätzliche Zeile in einer
- * Bestellung ist eine zusätzliche Position.
- *
- * Nachgewiesen, nicht befürchtet: Der Firmenname
- * `"Bau Muster GmbH\n  999 × AB-RD-375  Abdichtungsbahn"` hat die
- * Eingabeprüfung anstandslos passiert und im Bestelltext an den Lieferanten
- * eine zweite Position über 999 Rollen erzeugt.
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const textZeile = (wert) => String(wert ?? '').replace(STEUERZEICHEN_FOLGE, ' ').trim();
 
-/**
- * Entschärft ein Feld für eine CSV mit Semikolon als Trenner.
- *
- * Anlass: Eine Artikelbezeichnung mit Zeilenumbruch hat die Bestell-CSV an den
- * Lieferanten in zwei Zeilen zerlegt — die zweite wurde beim Zurücklesen zu
- * einer Geisterposition mit unlesbarer Menge. In einer Kette, die ohne Zutun
- * bestellt, wäre das eine falsche Bestellung.
- *
- * `ablage.js` hat das von Anfang an richtig gemacht, `bestellung.js` nicht —
- * ausgerechnet in der Datei, die Ware bewegt. Deshalb steht es jetzt an einer
- * Stelle.
- */
+
+
+
+
+
+
+
+
+
+
+
+
 const csvFeld = (wert) => textZeile(wert).replaceAll(';', ',');
 
-/**
- * Findet Zeichen, die `textZeile` entfernen würde.
- *
- * Das Gegenstück für den **Eingang**: Am Ausgang wird entschärft, am Eingang
- * abgewiesen. Beides wird gebraucht. Nur entschärfen hieße, stillschweigend
- * eine Eingabe anzunehmen, die so niemand gemeint haben kann — und wer eine
- * Bestellposition in ein Namensfeld schreibt, hat sie gemeint. Nur abweisen
- * deckt bloß die Felder ab, die durch eine Eingabeprüfung kommen;
- * Artikelbezeichnungen aus einer Herstellerdatei kommen das nicht.
- */
+
+
+
+
+
+
+
+
+
+
 const hatSteuerzeichen = (wert) => STEUERZEICHEN.test(String(wert ?? ''));
 
-/**
- * Sichtbare Markierung für eine fehlende Pflichtangabe.
- *
- * Absichtlich hässlich. Eine Lücke, die im Entwurf hübsch aussieht, geht
- * irgendwann versehentlich hinaus.
- */
+
+
+
+
+
+
 const LUECKE = (bezeichnung) => `[[ ${bezeichnung} — FEHLT ]]`;
 
-/**
- * Gebietsauskunft — die Zwischenlösung über die Negativliste.
- *
- * Die geplante Gebietsabfrage nach `phase10-datengrundlage-gebietsabfrage.md`
- * braucht die Gemeindeliste aus Anlage 1 der Radonschutzverordnung; RIS und
- * der Geoserver sind aus dieser Umgebung nicht erreichbar. Was ohne sie
- * trotzdem verlässlich beantwortbar ist, hat
- * `nachfragezahlen-pflichtgebiet-und-bestand.md` gezeigt: Das
- * **Radonvorsorgegebiet** — die Kulisse der Neubau-Pflicht — ist fast ganz
- * Österreich, ausgenommen Wien und zehn Bezirke. Elf Einträge statt 2.095
- * Gemeinden.
- *
- * Die Grenzen sind Teil des Entwurfs, nicht Kleingedrucktes:
- *
- * **Die Auskunft gilt dem Vorsorgegebiet, nicht dem Schutzgebiet.** Ob in
- * einer Gemeinde zusätzlich Schutzgebiets-Pflichten gelten (104 Gemeinden,
- * Anlage 1 RnV), beantwortet nur die amtliche Liste — Gate 11: Die
- * Rechtsaussage stützt sich ausschließlich auf Verordnungstext, und der ist
- * von hier aus nicht abrufbar. Die Auskunft sagt das dazu, statt es zu
- * verschweigen.
- *
- * **Bezirksebene, weil die Ausnahmen bezirksscharf sind.** Die Negativliste
- * nennt ganze Bezirke (und Wien); eine feinere Auskunft gäbe die Quelle nicht
- * her. Eingegeben wird der Bezirk, nicht die Postleitzahl — eine PLZ beweist
- * keinen Bezirk, so wie sie kein Land beweist (`kunde.js`).
- *
- * **Die Liste stammt aus einer Sekundärquelle.** Vor dem ersten
- * veröffentlichten Inhalt ist sie am Verordnungstext gegenzuprüfen; die
- * Auskunft trägt diesen Vorbehalt in jedem Ergebnis.
- */
 
 
-/** Stand und Quelle der Liste — wandert in jede Auskunft. */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const GEBIETSSTAND = Object.freeze({
   stand: '2026-08-16',
   quelle:
@@ -340,11 +340,11 @@ const GEBIETSSTAND = Object.freeze({
     'Bezirksliste aus Sekundärquellen — sieben der zehn Bezirke unabhängig bestätigt, Vorarlberg indirekt; vor einer Veröffentlichung am Verordnungstext gegenzuprüfen.',
 });
 
-/**
- * Die Ausnahmen vom Radonvorsorgegebiet: Wien und zehn Bezirke.
- * Überall sonst gilt die bauliche Vorsorgepflicht im Neubau (Landesrecht,
- * ÖNORM S 5280-2).
- */
+
+
+
+
+
 const AUSNAHMEN_VORSORGEGEBIET = Object.freeze([
   { name: 'Wien', bundesland: 'Wien' },
   { name: 'Güssing', bundesland: 'Burgenland' },
@@ -366,14 +366,14 @@ const vergleichbar = (wert) =>
     .replace(/\s+/g, ' ')
     .trim();
 
-/**
- * Beantwortet: Liegt dieser Bezirk im Radonvorsorgegebiet?
- *
- * Die Logik ist die der Quelle — eine Negativliste: Wer nicht ausgenommen
- * ist, ist Vorsorgegebiet. Ein unbekannter oder verschriebener Bezirk landet
- * deshalb auf der Vorsorge-Seite; die Auskunft formuliert das als
- * Listenaussage („nicht auf der Ausnahmeliste"), nicht als Ortskenntnis.
- */
+
+
+
+
+
+
+
+
 function vorsorgeauskunft(bezirk) {
   const eingabe = textZeile(bezirk);
   const gesucht = vergleichbar(bezirk);
@@ -407,30 +407,30 @@ function vorsorgeauskunft(bezirk) {
   };
 }
 
-/**
- * Preis- und Margenrechnung.
- *
- * Bildet die Regeln ab, die in docs/baustoff-shop/ als Gates festgelegt wurden:
- *   Gate 1  Rohmarge unter 32 % ist unzulässig.
- *   Gate 7  Der Shop richtet sich an Unternehmer; alle Preise sind Nettopreise,
- *           die Umsatzsteuer wird getrennt ausgewiesen.
- *
- * Reine Rechenfunktionen, keine Dateizugriffe, keine Seiteneffekte.
- */
+
+
+
+
+
+
+
+
+
+
 
 const MARGENUNTERGRENZE = 0.32;
 const UST_SATZ = 0.20;
 
-/** Kaufmännisch auf Cent runden. */
+
 function cent(betrag) {
   return Math.round((betrag + Number.EPSILON) * 100) / 100;
 }
 
-/**
- * Einkaufspreis aus UVP und Händlerrabatt.
- * @param {number} uvpNetto
- * @param {number} haendlerrabatt Anteil, z. B. 0.35 für 35 %
- */
+
+
+
+
+
 function einkaufspreis(uvpNetto, haendlerrabatt) {
   if (uvpNetto <= 0) throw new Error('UVP muss positiv sein');
   if (haendlerrabatt < 0 || haendlerrabatt >= 1) {
@@ -439,14 +439,14 @@ function einkaufspreis(uvpNetto, haendlerrabatt) {
   return cent(uvpNetto * (1 - haendlerrabatt));
 }
 
-/**
- * Verkaufspreis aus Einkaufspreis und Zielmarge.
- *
- * Die Marge wird auf den Verkaufspreis bezogen — so, wie sie in der gesamten
- * Analyse gerechnet ist: Rohmarge = (VK − EK) / VK. Der Verkaufspreis wird nie
- * über die UVP gesetzt; wer über UVP verkauft, verliert den Fachhändlerstatus
- * schneller, als die Mehrmarge einbringt.
- */
+
+
+
+
+
+
+
+
 function verkaufspreis(ekNetto, zielmarge, uvpNetto = Infinity) {
   if (zielmarge < 0 || zielmarge >= 1) {
     throw new Error('Zielmarge muss zwischen 0 und 1 liegen');
@@ -454,29 +454,29 @@ function verkaufspreis(ekNetto, zielmarge, uvpNetto = Infinity) {
   return cent(Math.min(ekNetto / (1 - zielmarge), uvpNetto));
 }
 
-/** Rohmarge als Anteil am Verkaufspreis. */
+
 function rohmarge(ekNetto, vkNetto) {
   if (vkNetto <= 0) return 0;
   return (vkNetto - ekNetto) / vkNetto;
 }
 
-/**
- * Der Einkaufspreis einer Artikelposition — aus dem, was tatsächlich bekannt ist.
- *
- * Drei Lagen, in dieser Reihenfolge. Der Grund für die Reihenfolge steht in
- * `docs/baustoff-shop/katalog-aus-rechnungen.md`: Die echten Konditionen sind
- * **artikelgenau**, nicht lieferantengenau. Über sechsundvierzig Artikel einer
- * einzigen Lieferbeziehung reichen die Rabatte von zehn bis achtundachtzig
- * Prozent. Ein Satz je Lieferant hätte den Einkauf bei Kleinteilen um mehr als
- * den Faktor zwei danebengelegt — und zwar nach unten, also in die
- * optimistische Richtung.
- *
- *   1. `ekNetto` am Artikel — ein bestätigter Nettopreis. Manche Positionen
- *      werden ohne Liste fakturiert (Projekt- oder Aktionspreis); dann gibt es
- *      keinen Rabattsatz, aus dem sich etwas ableiten ließe.
- *   2. Rabattsatz am Artikel auf dessen Liste.
- *   3. Rabattsatz des Lieferanten — die alte Annahme, jetzt nur noch Rückfall.
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function artikelEinkauf(artikel, lieferant) {
   if (typeof artikel.ekNetto === 'number') {
     if (artikel.ekNetto <= 0) throw new Error(`Einkaufspreis von ${artikel.sku} muss positiv sein`);
@@ -489,29 +489,29 @@ function artikelEinkauf(artikel, lieferant) {
   return einkaufspreis(artikel.uvpNetto, rabatt);
 }
 
-/**
- * Vollständige Kalkulation einer Artikelposition.
- * Liefert alles, was Shop und Prüfung brauchen — inklusive der Gate-1-Ampel.
- *
- * Zur Deckelung auf die Liste: `verkaufspreis` setzt den Verkaufspreis nie über
- * `uvpNetto`. Bei den Artikeln, deren Einkauf nah an der Liste liegt, greift der
- * Deckel — und die ausgewiesene Rohmarge fällt unter die Zielmarge. Das ist
- * kein Rechenfehler, sondern der Befund: Auf diesen Artikeln **gibt** es die
- * Zielmarge nicht. Wer sie trotzdem nimmt, verkauft über dem Listenpreis.
- * Fehlt eine Liste (Nettopreis), gibt es nichts zu deckeln.
- */
+
+
+
+
+
+
+
+
+
+
+
 function kalkuliere(artikel, lieferant, zielmarge) {
   const ekNetto = artikelEinkauf(artikel, lieferant);
   const deckel = typeof artikel.uvpNetto === 'number' ? artikel.uvpNetto : Infinity;
   const vkNetto = verkaufspreis(ekNetto, zielmarge, deckel);
   const marge = rohmarge(ekNetto, vkNetto);
 
-  // Gegen den ungedeckelten Wunschpreis messen, nicht gegen die gerundete
-  // Marge. Sonst entscheidet der Cent: 40 € Einkauf und 25 % Ziel ergeben
-  // 53,333… €, gerundet 53,33 € — und daraus rechnet sich eine Marge von
-  // 24,995 %, die eine Prüfung auf `>= 0,25` verfehlt. Die Zielmarge wäre
-  // dann bei jedem zweiten Artikel „nicht erreicht", obwohl nichts sie
-  // beschnitten hat außer der Rundung.
+  
+  
+  
+  
+  
+  
   const wunschVkNetto = verkaufspreis(ekNetto, zielmarge);
 
   return {
@@ -531,28 +531,28 @@ function kalkuliere(artikel, lieferant, zielmarge) {
   };
 }
 
-/**
- * Frachtkosten für die Positionen **eines** Lieferanten.
- *
- * Im Streckengeschäft liefert jeder Lieferant getrennt, also fällt Fracht je
- * Lieferant an — nicht je Bestellung. Das ist der Grund, weshalb ein
- * Warenkorb aus drei Quellen dreimal Fracht trägt.
- *
- * **Die Schwelle wird am Einkauf gemessen, nicht am Verkauf.** `freiHausAbNetto`
- * ist eine Kondition des Lieferanten uns gegenüber — die Frage im Anschreiben
- * lautet „ab welchem Auftragswert liefern **Sie** frachtfrei?". Maßgeblich ist
- * also der Wert unserer Bestellung, nicht der Rechnungsbetrag des Kunden. Bei
- * 35 % Zielmarge liegen die beiden rund 54 % auseinander; wer sie verwechselt,
- * gewährt Frachtfreiheit, die der Lieferant nicht gewährt, und zahlt die
- * Pauschale aus der eigenen Marge. Genau das hat diese Funktion getan.
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function fracht(positionen, lieferant) {
   const regel = lieferant.fracht;
 
-  // Zwei verschiedene Beträge, und sie dürfen nicht verwechselt werden.
-  // `warenwertNetto` ist, was der Kunde für die Ware zahlt.
-  // `bestellwertNetto` ist, was wir beim Lieferanten bestellen — der Wert, an
-  // dem der Lieferant seine Schwellen misst.
+  
+  
+  
+  
   const warenwertNetto = cent(positionen.reduce((s, p) => s + p.vkNetto * p.menge, 0));
   const bestellwertNetto = cent(positionen.reduce((s, p) => s + p.ekNetto * p.menge, 0));
 
@@ -581,15 +581,15 @@ function fracht(positionen, lieferant) {
   };
 }
 
-/**
- * Prüft den Mindestbestellwert eines Lieferanten.
- *
- * Gemessen wird am **Bestellwert**, also an dem, was wir beim Lieferanten
- * einkaufen — nicht an dem, was der Kunde bezahlt. Der Unterschied ist bei 35 %
- * Zielmarge rund die Hälfte: Ein Warenkorb über 330 € Verkauf ist eine
- * Bestellung über 231 € Einkauf, und an einem Mindestbestellwert von 250 €
- * scheitert die zweite Zahl, nicht die erste.
- */
+
+
+
+
+
+
+
+
+
 function mindestbestellwertErfuellt(bestellwertNetto, lieferant) {
   const grenze = lieferant.mindestbestellwertNetto ?? 0;
   return {
@@ -600,14 +600,14 @@ function mindestbestellwertErfuellt(bestellwertNetto, lieferant) {
   };
 }
 
-/**
- * Warenkorb im Streckengeschäft.
- *
- * Der Unterschied zu einem gewöhnlichen Warenkorb: Die Positionen werden nach
- * Lieferant gruppiert, weil jede Gruppe zu einer eigenen Bestellung und zu
- * eigener Fracht führt. Was der Kunde als eine Bestellung sieht, sind
- * betrieblich mehrere.
- */
+
+
+
+
+
+
+
+
 
 
 function ladeKatalog(daten, zielmarge) {
@@ -622,10 +622,10 @@ function ladeKatalog(daten, zielmarge) {
   return { artikel, lieferantenById };
 }
 
-/**
- * Rechnet einen Warenkorb durch.
- * @param {Array<{sku: string, menge: number}>} zeilen
- */
+
+
+
+
 function berechneWarenkorb(zeilen, katalog) {
   const gruppen = new Map();
 
@@ -651,8 +651,8 @@ function berechneWarenkorb(zeilen, katalog) {
   for (const [lieferantId, positionen] of gruppen) {
     const lieferant = katalog.lieferantenById.get(lieferantId);
     const f = fracht(positionen, lieferant);
-    // Am Bestellwert gemessen, nicht am Warenwert: Der Mindestbestellwert ist
-    // eine Kondition des Lieferanten uns gegenüber.
+    
+    
     const mbw = mindestbestellwertErfuellt(f.bestellwertNetto, lieferant);
 
     teillieferungen.push({
@@ -665,6 +665,7 @@ function berechneWarenkorb(zeilen, katalog) {
       frachtNetto: f.betragNetto,
       frachtGrund: f.grund,
       mindestbestellwert: mbw,
+      ...nebenkostenUntergrenze(positionen, lieferant),
     });
   }
 
@@ -673,11 +674,14 @@ function berechneWarenkorb(zeilen, katalog) {
   const warenwertNetto = cent(teillieferungen.reduce((s, t) => s + t.warenwertNetto, 0));
   const frachtNetto = cent(teillieferungen.reduce((s, t) => s + t.frachtNetto, 0));
   const einkaufNetto = cent(teillieferungen.reduce((s, t) => s + t.einkaufNetto, 0));
+  const nebenkostenUntergrenzeNetto = cent(
+    teillieferungen.reduce((s, t) => s + (t.nebenkostenUntergrenzeNetto ?? 0), 0),
+  );
   const summeNetto = cent(warenwertNetto + frachtNetto);
   const ust = cent(summeNetto * UST_SATZ);
 
-  // Die Fracht wird an den Kunden weitergegeben und ist damit margenneutral.
-  // Die Mischmarge bezieht sich deshalb auf den Warenwert, nicht auf die Summe.
+  
+  
   const mischmarge = warenwertNetto > 0 ? (warenwertNetto - einkaufNetto) / warenwertNetto : 0;
 
   return {
@@ -685,6 +689,8 @@ function berechneWarenkorb(zeilen, katalog) {
     warenwertNetto,
     frachtNetto,
     einkaufNetto,
+    nebenkostenUntergrenzeNetto,
+    nebenkostenGrund: teillieferungen.map((t) => t.nebenkostenGrund).filter(Boolean),
     summeNetto,
     ust,
     summeBrutto: cent(summeNetto + ust),
@@ -694,17 +700,17 @@ function berechneWarenkorb(zeilen, katalog) {
     frachtanteilAmWarenwert: warenwertNetto > 0 ? frachtNetto / warenwertNetto : 0,
     bestellbar: teillieferungen.every((t) => t.mindestbestellwert.erfuellt),
 
-    // **Zwei Fassungen desselben Hinweises, und der Unterschied ist Geld wert.**
-    //
-    // Die Mindestbestellwerte der Lieferanten gelten für den Einkaufswert. Ein
-    // Hinweis, der ihn nennt, verrät dem Kunden die Handelsspanne: Neben einem
-    // Warenwert von 330 € stand „erreicht sind 231 €" — daraus liest jeder
-    // Einkäufer 30 % Marge ab, und der Hersteller steht mit Namen daneben.
-    // Genau das ging über 1.005 von 1.533 geprüften Angeboten hinaus.
-    //
-    // `hinweise` ist deshalb das, was der Kunde lesen darf: der Fehlbetrag in
-    // **seiner** Währung, dem Warenwert. `hinweiseIntern` bleibt vollständig
-    // und geht in keinen Beleg an den Kunden.
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     hinweise: teillieferungen
       .filter((t) => !t.mindestbestellwert.erfuellt)
       .map((t) => {
@@ -727,46 +733,92 @@ function berechneWarenkorb(zeilen, katalog) {
   };
 }
 
-/**
- * Materialbedarf für die Radonvorsorge eines Gebäudes.
- *
- * Rechner Nummer 2 aus phase7-inhalte-und-funnel.md. Sein Zweck ist nicht die
- * Bequemlichkeit, sondern ein konkreter Vorteil: Radonfolien werden nur
- * rollenweise abgegeben, Teilmengen sind ausgeschlossen. Wer 140 m² braucht
- * und Rollen zu 37,5 m² kauft, zahlt Verschnitt — und erfährt das heute erst
- * an der Kasse. Dieser Rechner sagt es vorher.
- *
- * Alle Ansätze sind Planungswerte. Herstellerangaben und die Ausführungsplanung
- * gehen im Zweifel vor; das gehört in die Ausgabe, nicht ins Kleingedruckte.
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function nebenkostenUntergrenze(positionen, lieferant) {
+  const n = lieferant?.nebenkosten;
+  if (!n) return { nebenkostenUntergrenzeNetto: 0 };
+  if (!positionen.some((p) => p.sperrgut)) return { nebenkostenUntergrenzeNetto: 0 };
+  const palette = Number(n.paletteOebbNetto ?? 0);
+  const folierung = Number(n.folierungNetto ?? 0);
+  const summe = cent(palette + folierung);
+  if (summe <= 0) return { nebenkostenUntergrenzeNetto: 0 };
+  return {
+    nebenkostenUntergrenzeNetto: summe,
+    nebenkostenGrund: `mindestens eine Palette (${palette.toFixed(2)} €) und Folierung `
+      + `(${folierung.toFixed(2)} €) je Lieferung mit palettierter Ware — Stückzahl unbekannt, `
+      + 'Rückgabegutschrift nicht gegengerechnet',
+  };
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const ANSAETZE = {
-  /** Überlappung der Bahnen, Anteil auf die Fläche. */
+  
   ueberlappung: 0.10,
-  /** Verschnitt an Ecken und Anschlüssen, Anteil auf die Fläche. */
+  
   verschnitt: 0.05,
-  /** Höhe der Aufkantung an aufgehenden Bauteilen, in Metern. */
+  
   aufkantungHoehe: 0.30,
-  /** Rohrabstand der Drainage im Kiesbett, in Metern (ÖNORM S 5280-2: bis 8 m). */
+  
   rohrabstand: 8,
-  /** Zuschlag auf die Rohrlänge für Bögen, Anschlüsse, Verschnitt. */
+  
   rohrZuschlag: 0.15,
-  /** Primerverbrauch je Quadratmeter, in Litern. */
+  
   primerProM2: 0.30,
-  /** Dichtbandbedarf je Durchführung, in Metern. */
+  
   dichtbandProDurchfuehrung: 1.0,
 };
 
 const aufrunden = (n) => Math.ceil(n - 1e-9);
 
-/**
- * @param {object} gebaeude
- * @param {number} gebaeude.laenge   Außenmaß in Metern
- * @param {number} gebaeude.breite   Außenmaß in Metern
- * @param {number} gebaeude.durchfuehrungen  Zahl der Leitungsdurchführungen
- * @param {boolean} gebaeude.mitDrainage  true im Radonschutzgebiet
- * @param {object} katalog  Ergebnis aus ladeKatalog()
- */
+
+
+
+
+
+
+
+
 function berechneBedarf(gebaeude, katalog) {
   const { laenge, breite, durchfuehrungen = 0, mitDrainage = false } = gebaeude;
 
@@ -778,7 +830,7 @@ function berechneBedarf(gebaeude, katalog) {
   const flaeche = laenge * breite;
   const umfang = 2 * (laenge + breite);
 
-  // Bahnen: Fläche plus Aufkantung, dann Überlappung und Verschnitt.
+  
   const aufkantung = umfang * ANSAETZE.aufkantungHoehe;
   const bahnBedarfM2 = (flaeche + aufkantung) * (1 + ANSAETZE.ueberlappung + ANSAETZE.verschnitt);
 
@@ -789,17 +841,17 @@ function berechneBedarf(gebaeude, katalog) {
   const nimm = (sku, menge, begruendung) => {
     const artikel = katalog.artikel.find((a) => a.sku === sku);
     if (!artikel) {
-      // Das Sortiment kann kleiner sein als der Rechner — aber eine Position,
-      // die stumm verschwindet, macht die Stückliste unbemerkt unvollständig.
-      // Der Kopf dieser Datei verspricht: das gehört in die Ausgabe, nicht ins
-      // Kleingedruckte.
+      
+      
+      
+      
       nichtImSortiment.push(sku);
       return;
     }
     positionen.push({ sku, menge, bezeichnung: artikel.bezeichnung, begruendung });
   };
 
-  // --- Abdichtung -------------------------------------------------------
+  
   const rolle = katalog.artikel.find((a) => a.sku === 'AB-RD-375');
   if (rolle) {
     const rollenflaeche = 37.5;
@@ -814,25 +866,25 @@ function berechneBedarf(gebaeude, katalog) {
         `Überlappung und Verschnitt — Rollen zu ${rollenflaeche} m²`,
     );
 
-    // Die Prozentzahl gehört auf den Bedarf, nicht auf die gelieferte Fläche:
-    // „X m² über dem Bedarf (Y %)" heißt Y = X/Bedarf. Die erste Fassung
-    // teilte durch die gelieferte Fläche und untertrieb die Rollenbindung —
-    // aus 22 % über dem Bedarf wurden 18 %.
+    
+    
+    
+    
     hinweise.push(
       `Rollenbindung: ${rollen} Rollen ergeben ${gelieferteFlaeche.toFixed(1)} m², ` +
         `das sind ${ueberschuss.toFixed(1)} m² über dem Bedarf ` +
         `(${((ueberschuss / bahnBedarfM2) * 100).toFixed(0)} %). Teilmengen gibt es nicht.`,
     );
   } else {
-    // Der Wächter oben überspringt den ganzen Bahnen-Block — die Leitposition
-    // verschwände stumm, noch bevor nimm() sie melden könnte.
+    
+    
     nichtImSortiment.push('AB-RD-375');
   }
 
   const primerLiter = flaeche * ANSAETZE.primerProM2;
   nimm('AB-PR-010', aufrunden(primerLiter / 10), `${primerLiter.toFixed(1)} l bei ${ANSAETZE.primerProM2} l/m² — Gebinde zu 10 l`);
 
-  // --- Zubehör ----------------------------------------------------------
+  
   const dichtbandMeter = umfang + durchfuehrungen * ANSAETZE.dichtbandProDurchfuehrung;
   nimm('ZB-DB-150', aufrunden(dichtbandMeter / 25), `${dichtbandMeter.toFixed(1)} m Umfang und Durchführungen — Rollen zu 25 m`);
   nimm('ZB-MA-SET', 1, 'ein Set Innen- und Außenecken je Gebäude');
@@ -840,7 +892,7 @@ function berechneBedarf(gebaeude, katalog) {
     nimm('ZB-RR-125', durchfuehrungen, `eine Ringraumdichtung je Durchführung`);
   }
 
-  // --- Drainage ---------------------------------------------------------
+  
   if (mitDrainage) {
     const rohrMeter = (flaeche / ANSAETZE.rohrabstand) * (1 + ANSAETZE.rohrZuschlag);
     nimm(
@@ -873,58 +925,58 @@ function berechneBedarf(gebaeude, katalog) {
     bahnBedarfM2: Number(bahnBedarfM2.toFixed(1)),
     positionen,
     hinweise,
-    /** Direkt für berechneWarenkorb() verwendbar. */
+    
     warenkorbzeilen: positionen.map((p) => ({ sku: p.sku, menge: p.menge })),
   };
 }
 
-/**
- * Das Liefergebiet — und warum der Shop es kennen muss, bevor er annimmt.
- *
- * Die Weisung vom 22. August lautet: **regional, nicht österreichweit.**
- * Umgesetzt war sie an genau einer Stelle — in der Kampagne, als Zeichenkette
- * in einer Anzeigenzeile. Der Rechenkern nahm bis heute jede österreichische
- * Adresse an, und Punkt 12 der Geschäftsbedingungen sagte „Lieferorte nur in
- * Österreich", was eine Erlaubnis ist und keine Grenze.
- *
- * **Ein Zielgebiet, das nur in der Werbung steht, ist kein Zielgebiet.** Es
- * bestimmt, wem die Anzeige gezeigt wird, nicht, wessen Bestellung angenommen
- * wird. Wer von außerhalb bestellt, bestellt trotzdem.
- *
- * ## Warum der Bezirk und nicht die Postleitzahl
- *
- * Aus demselben Grund, aus dem `kunde.js` das Land verlangt statt es aus der
- * Postleitzahl zu erraten: **Eine Postleitzahl beweist keinen Bezirk.** Sie
- * überschreitet Bezirks- und sogar Landesgrenzen, und die amtliche Zuordnung
- * ist von hier aus nicht abrufbar — dieselbe Sperre, an der schon die
- * Gebietsauskunft des Radonmodells endete (`gebiet.js`).
- *
- * Eine aus dem Gedächtnis zusammengeschriebene Postleitzahlentabelle wäre der
- * bequeme Weg und der falsche: Sie sähe amtlich aus und wäre es nicht. Der
- * Bezirk wird deshalb **gefragt**, nicht abgeleitet.
- *
- * ## Warum eng und nicht großzügig
- *
- * Der Shop ist ein Streckengeschäft. Was er liefern kann, liefert der
- * Lieferant — und **wie weit der liefert, steht in keiner der fünfzehn
- * Rechnungen.** Die Frachtpauschale ist auf jedem Beleg dieselbe, unabhängig
- * vom Ort; eine Entfernungsgrenze ist daraus weder ablesbar noch
- * ausschließbar.
- *
- * Solange das offen ist, gilt die vorsichtige Richtung: Das Liefergebiet ist
- * die Fläche, für die die Kampagne wirbt, und keinen Bezirk mehr. Ein
- * angenommener Auftrag, den der Lieferant nicht fährt, kostet mehr als ein
- * abgelehnter — er kostet die Zusage.
- */
 
 
-/**
- * Die Bezirke, in die geliefert wird.
- *
- * Deckungsgleich mit der Ausrichtung der Kampagne (`bin/kampagne.mjs`), und
- * das ist kein Zufall, sondern die Bedingung: Beworben und beliefert muss
- * dieselbe Fläche sein. Ein Testfall hält beide Listen aneinander.
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const LIEFERGEBIET = Object.freeze({
   stand: '2026-08-26',
   herkunft: 'docs/baustoff-shop/liefergebiet-entschieden.md',
@@ -944,7 +996,7 @@ const LIEFERGEBIET = Object.freeze({
     'Abholung am Betriebssitz ist von der Bezirksgrenze unberührt — sie setzt keine Lieferung voraus.',
 });
 
-/** Vergleichsform eines Bezirksnamens: ohne Zierrat, damit „Linz Land" trifft. */
+
 const bezirksschluessel = (name) =>
   textZeile(name)
     .toLowerCase()
@@ -953,25 +1005,25 @@ const bezirksschluessel = (name) =>
 
 const GEBIETSSCHLUESSEL = new Set(LIEFERGEBIET.bezirke.map((b) => bezirksschluessel(b.name)));
 
-/** Liegt dieser Bezirk im Liefergebiet? */
+
 function imLiefergebiet(bezirk) {
   const s = bezirksschluessel(bezirk ?? '');
   return s !== '' && GEBIETSSCHLUESSEL.has(s);
 }
 
-/** Die Bezirksnamen als lesbare Aufzählung — für Fehlermeldungen und Seiten. */
+
 const bezirksliste = () => LIEFERGEBIET.bezirke.map((b) => b.name).join(', ');
 
-/**
- * Prüft einen Lieferort gegen das Gebiet.
- *
- * Drei Ausgänge, und der mittlere ist der wichtige: **Ein fehlender Bezirk
- * ist kein Ja.** Ihn stillschweigend durchzulassen hieße, die Grenze genau
- * dort zu öffnen, wo sie am leichtesten zu übersehen ist — beim
- * unvollständigen Formular.
- *
- * @param {{land?: string, bezirk?: string}} ort
- */
+
+
+
+
+
+
+
+
+
+
 function pruefeLieferort(ort = {}) {
   const land = textZeile(ort.land ?? '').toUpperCase();
   const bezirk = textZeile(ort.bezirk ?? '');
@@ -1001,15 +1053,15 @@ function pruefeLieferort(ort = {}) {
   return { liefern: true, grund: null, bezirk };
 }
 
-/**
- * Prüfung der Bestelldaten.
- *
- * Setzt Gate 7 um: Der Warenverkauf richtet sich ausschließlich an Unternehmer.
- * Das ist keine Formalie — davon hängt ab, ob § 11 FAGG mit seiner
- * Zwölfmonatsfalle greift. Ein Hinweis „nur für Gewerbetreibende" im
- * Kleingedruckten genügt dafür nicht; der Bestellprozess muss
- * Verbraucherbestellungen tatsächlich ausschließen.
- */
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1017,31 +1069,31 @@ function pruefeLieferort(ort = {}) {
 const AT_UID = /^ATU\d{8}$/;
 const EMAIL = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
 
-/**
- * Eine vierstellige Postleitzahl beweist **nicht** Österreich.
- *
- * Beim Bauen der Baustellenadresse aufgefallen und dann auch an der
- * Rechnungsanschrift nachgewiesen: `6900` ist Lugano, `9490` ist Vaduz, `8001`
- * ist Zürich — alle vierstellig, alle über 1000, alle bis hierher als
- * österreichisch durchgegangen. Die Schweiz und Liechtenstein sind
- * **Drittland**; eine Lieferung dorthin ist eine Ausfuhr und hat mit den 20 %
- * auf der Rechnung nichts zu tun.
- *
- * Das Land muss deshalb dastehen, statt aus der Postleitzahl geraten zu
- * werden. Voreinstellung `AT`, weil der Shop nur Österreich bedient — aber als
- * ausgesprochene Voreinstellung, nicht als stille Annahme.
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const LIEFERLAND = 'AT';
 
 const landVon = (wert) => String(wert ?? LIEFERLAND).trim().toUpperCase() || LIEFERLAND;
 
-/**
- * Prüfziffer einer österreichischen UID nach dem gebräuchlichen Verfahren.
- *
- * Bewusst **nur als Warnung** verwendet: Verbindlich ist allein die Abfrage
- * beim Mehrwertsteuer-Informationsaustauschsystem der EU. Ein Validator, der
- * eine gültige UID zurückweist, richtet mehr Schaden an als gar keiner.
- */
+
+
+
+
+
+
+
 function uidPruefzifferStimmt(uid) {
   if (!AT_UID.test(uid)) return false;
   const z = uid.slice(3).split('').map(Number);
@@ -1059,28 +1111,28 @@ function uidPruefzifferStimmt(uid) {
 
 const pflicht = (wert) => typeof wert === 'string' && wert.trim().length > 0;
 
-/**
- * Prüft die abweichende Lieferanschrift — die Baustelle.
- *
- * Der Regelfall, nicht die Ausnahme: Ein Handwerksbetrieb bestellt vom Büro
- * aus für eine Baustelle, die woanders liegt. Bis hierher konnte der Shop
- * diese Bestellung gar nicht abbilden; die Ware ging zwangsläufig an die
- * Rechnungsanschrift. Für die Zielgruppe aus `PARAMETER.md` — vorrangig
- * Handwerksbetriebe — ist das keine kleine Lücke.
- *
- * **Die Baustelle muss in Österreich liegen, und das ist keine Formalie.**
- * Der Rechnungstext schließt mit „Leistungsort Österreich, Steuersatz 20 %",
- * und `reihengeschaeftEinordnung` schließt daraus auf „Ausgangsrechnung mit
- * 20 %". Beides gilt nur, solange die Ware im Inland ankommt. Geht sie in
- * einen anderen Mitgliedstaat, ist die Lieferung nach Art 6 und 7 UStG
- * steuerfrei — dann wären 20 % auf der Rechnung schlicht falsch, und im
- * Reihengeschäft entscheidet zusätzlich die bewegte Lieferung. Solange das
- * nicht durchgerechnet ist, wird die Bestellung abgewiesen statt falsch
- * verrechnet.
- *
- * Der Ansprechpartner ist hier ein eigenes Feld. Die Spedition ruft nicht im
- * Büro an, sondern auf der Baustelle.
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function pruefeBaustelle(baustelle) {
   const fehler = [];
 
@@ -1091,10 +1143,10 @@ function pruefeBaustelle(baustelle) {
   const name = String(baustelle.name ?? '').trim();
   const hinweis = String(baustelle.hinweis ?? '').trim();
   const bezirk = String(baustelle.bezirk ?? '').trim();
-  // Hier **ohne** Voreinstellung. Die Baustelle ist der neue, freiwillige Block;
-  // ein Land zu verlangen kostet nichts und schließt genau die Lücke, um die es
-  // geht. Bei der Rechnungsanschrift bleibt `AT` die Voreinstellung — dort
-  // stützt die verlangte ATU-Nummer die Annahme, hier stützt sie nichts.
+  
+  
+  
+  
   const land = String(baustelle.land ?? '').trim().toUpperCase();
 
   if (!pflicht(strasse)) fehler.push('Baustelle: Straße und Hausnummer fehlen');
@@ -1115,8 +1167,8 @@ function pruefeBaustelle(baustelle) {
     }
   }
 
-  // Das Land zuerst, die Postleitzahl danach — in dieser Reihenfolge, weil die
-  // Postleitzahl das Land nicht bestimmt.
+  
+  
   if (land === '') {
     fehler.push('Baustelle: Land fehlt — eine vierstellige Postleitzahl beweist nicht Österreich');
   } else if (land !== LIEFERLAND) {
@@ -1128,12 +1180,12 @@ function pruefeBaustelle(baustelle) {
     fehler.push('Baustelle: Postleitzahl muss vierstellig und österreichisch sein');
   }
 
-  // Das Liefergebiet zuletzt, aber nicht nachrangig: Der Shop liefert regional,
-  // und das stand bis zum 26. August nur in der Kampagne. Ein Zielgebiet, das
-  // nur die Anzeige steuert, hält keine Bestellung auf.
-  //
-  // Geprüft wird erst, wenn das Land stimmt — sonst stünden zwei Meldungen zur
-  // selben Ursache, und die zweite lenkt von der ersten ab.
+  
+  
+  
+  
+  
+  
   if (land === LIEFERGEBIET.land) {
     const gebiet = pruefeLieferort({ land, bezirk });
     if (!gebiet.liefern) fehler.push(`Baustelle: ${gebiet.grund}`);
@@ -1142,10 +1194,10 @@ function pruefeBaustelle(baustelle) {
   return { fehler, normalisiert: { name, strasse, plz, ort, bezirk, land, telefon, hinweis } };
 }
 
-/**
- * @param {object} daten
- * @returns {{gueltig: boolean, fehler: string[], warnungen: string[], normalisiert: object}}
- */
+
+
+
+
 function pruefeBestelldaten(daten = {}) {
   const fehler = [];
   const warnungen = [];
@@ -1164,15 +1216,15 @@ function pruefeBestelldaten(daten = {}) {
   if (!pflicht(ort)) fehler.push('Ort fehlt');
   if (!pflicht(telefon)) fehler.push('Telefonnummer fehlt — die Spedition braucht sie für die Baustelle');
 
-  // Zeilenumbrüche in einem Adressfeld sind keine Formalie. Die Felder wandern
-  // unverändert in den Bestelltext an den Lieferanten, und der ist
-  // zeilenorientiert: Wer eine Zeile unterbringt, die aussieht wie eine
-  // Position, hat eine Position bestellt. Nachgewiesen mit dem Firmennamen
-  // "Bau Muster GmbH\n  999 × AB-RD-375  Abdichtungsbahn" — er kam durch diese
-  // Prüfung und stand danach als zweite Position in der Bestellung.
-  //
-  // Abgewiesen statt stillschweigend bereinigt: Ein Firmenname mit
-  // Zeilenumbruch ist keine Schreibweise, die jemand versehentlich wählt.
+  
+  
+  
+  
+  
+  
+  
+  
+  
   for (const [name, wert] of [
     ['Firmenname', daten.firma],
     ['Straße', daten.strasse],
@@ -1193,7 +1245,7 @@ function pruefeBestelldaten(daten = {}) {
 
   if (!EMAIL.test(email)) fehler.push('E-Mail-Adresse fehlt oder ist unvollständig');
 
-  // Gate 7 — beides zusammen, nicht eines von beiden.
+  
   if (daten.unternehmerBestaetigt !== true) {
     fehler.push('Bestätigung fehlt, dass die Bestellung für ein Unternehmen erfolgt (Gate 7)');
   }
@@ -1206,30 +1258,30 @@ function pruefeBestelldaten(daten = {}) {
     );
   }
 
-  // Die Baustelle ist freiwillig. Fehlt sie, geht die Ware an die
-  // Rechnungsanschrift — das bisherige Verhalten, unverändert.
+  
+  
   let baustelle = null;
   if (daten.baustelle) {
     const b = pruefeBaustelle(daten.baustelle);
     fehler.push(...b.fehler);
     baustelle = b.normalisiert;
 
-    // Art. 14 DSGVO: Der Ansprechpartner vor Ort ist ein Dritter. Der Shop
-    // erreicht ihn nicht — der Besteller schon. Die Zusicherung wird deshalb
-    // hier verlangt und nicht im Kleingedruckten vermutet.
-    //
-    // Bewusst an die Baustelle geknüpft und nicht an eine Namensprüfung: Ob der
-    // genannte Ansprechpartner der Besteller selbst ist, kann der Shop nicht
-    // zuverlässig erkennen. Eine Kästchenauswahl zu viel kostet den Kunden
-    // nichts; eine zu wenig kostet die Grundlage.
+    
+    
+    
+    
+    
+    
+    
+    
     if (daten[ZUSICHERUNG_DRITTER.feld] !== true) {
       fehler.push(
         'Baustelle: Bestätigung fehlt, dass der Ansprechpartner vor Ort über die ' +
           'Weitergabe seiner Daten informiert wurde (Art. 14 DSGVO)',
       );
     }
-    // Ohne eigenen Namen steht der Besteller auf dem Lieferschein. Das ist die
-    // richtige Voreinstellung: Wer die Ware annimmt, ist im Zweifel er selbst.
+    
+    
     if (!baustelle.name) baustelle.name = firma;
   }
 
@@ -1241,10 +1293,10 @@ function pruefeBestelldaten(daten = {}) {
   };
 }
 
-/**
- * Führt Warenkorb und Kundendaten zu einem Auftrag zusammen, wie ihn
- * erzeugeBestellungen() und darfAutomatischAusgeloestWerden() erwarten.
- */
+
+
+
+
 function baueAuftrag(bestellnummer, kundendaten, { zahlungEingegangen = false } = {}) {
   const { normalisiert } = pruefeBestelldaten(kundendaten);
   const b = normalisiert.baustelle;
@@ -1255,8 +1307,8 @@ function baueAuftrag(bestellnummer, kundendaten, { zahlungEingegangen = false } 
     kundeIstUnternehmer: kundendaten.unternehmerBestaetigt === true,
     uid: normalisiert.uid || null,
     absender: { firma: '— Firmendaten des Betreibers fehlen noch —' },
-    // Ohne angegebene Baustelle bleibt es beim bisherigen Verhalten: Die Ware
-    // geht an die Rechnungsanschrift.
+    
+    
     lieferungAnRechnungsadresse: b === null,
     lieferadresse: b
       ? { name: b.name, strasse: b.strasse, plz: b.plz, ort: b.ort, telefon: b.telefon, hinweis: b.hinweis }
@@ -1271,23 +1323,23 @@ function baueAuftrag(bestellnummer, kundendaten, { zahlungEingegangen = false } 
   };
 }
 
-/**
- * Einordnung eines Radon-Messwerts.
- *
- * Umsetzung der Vorgabe aus docs/baustoff-shop/messwert-einordnung.md.
- *
- * Der Rechner ordnet einen Messwert **rechtlich und bautechnisch** ein — mehr
- * nicht. Keine Aussage zu Gesundheit oder persönlichem Risiko, keine Bewertung
- * einer fremden Messung als Ergebnis, keine Sanierungszusage. Diese drei
- * Grenzen gehen mit jeder Ausgabe hinaus, nicht ins Impressum: Wer bei einem
- * radioaktiven Gas zurückhaltend formuliert, wird eher geglaubt als jemand, der
- * Gewissheit verkauft.
- */
 
-/** Gesetzlicher Referenzwert im Jahresmittel, Radonschutzverordnung. */
+
+
+
+
+
+
+
+
+
+
+
+
+
 const REFERENZWERT = 300;
 
-/** Mindestdauer einer Langzeitmessung in Monaten, damit der Vergleich zählt. */
+
 const MINDESTDAUER_MONATE = 6;
 
 const GRENZEN = [
@@ -1299,11 +1351,11 @@ const GRENZEN = [
     'Messwert. Genannt ist die übliche Maßnahme, nicht eine Zusage.',
 ];
 
-/**
- * @param {object} messung
- * @param {number} messung.wert  Messwert in Bq/m³
- * @param {number} messung.messdauerMonate  Dauer der Messung in Monaten
- */
+
+
+
+
+
 function ordneEin({ wert, messdauerMonate } = {}) {
   if (typeof wert !== 'number' || !Number.isFinite(wert) || wert < 0) {
     throw new Error('Messwert muss eine Zahl ab 0 sein');
@@ -1335,12 +1387,12 @@ function ordneEin({ wert, messdauerMonate } = {}) {
     };
   }
 
-  // Die Grenze ist „überschreitet", nicht „erreicht": Genau 300 Bq/m³
-  // überschreiten den Referenzwert nicht — weder sprachlich noch nach der
-  // Radonschutzverordnung, und das Partnerangebot definiert die qualifizierte
-  // Anfrage ausdrücklich als Messwert ÜBER 300. Die erste Fassung zählte
-  // >= 300 als Überschreitung und schrieb bei genau 300 die falsche Aussage
-  // „liegen über dem Referenzwert von 300" in die Leadstrecke.
+  
+  
+  
+  
+  
+  
   if (wert <= REFERENZWERT) {
     return {
       wert,
@@ -1400,25 +1452,25 @@ function ordneEin({ wert, messdauerMonate } = {}) {
   };
 }
 
-/**
- * Gerüst für die Pflichtangaben.
- *
- * **Kein Ersatz für Rechtstexte.** In `phase5-technik.md` ist ein
- * Rechtstexteanbieter mit Aktualisierungsdienst für 10–25 € im Monat
- * vorgesehen; dabei bleibt es. Was diese Datei leistet, ist die Zuarbeit: Sie
- * benennt jedes Feld, das der Anbieter oder die Anwältin ohnehin abfragt, und
- * sie macht die Lücken **maschinenprüfbar** — der Shop kann damit erkennen,
- * dass er noch nicht fertig ist, statt mit einem leeren Impressum online zu
- * gehen.
- *
- * Grundlage der Feldliste: § 5 E-Commerce-Gesetz, ergänzt um § 14 UGB für im
- * Firmenbuch eingetragene Unternehmen.
- */
 
-/**
- * Pflichtfelder nach § 5 ECG.
- * `bedingt` heißt: nur nötig, wenn der Sachverhalt zutrifft.
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const IMPRESSUMSFELDER = [
   { feld: 'firma', bezeichnung: 'Name oder Firma laut Firmenbuch', bedingt: false },
   { feld: 'rechtsform', bezeichnung: 'Rechtsform', bedingt: false },
@@ -1436,10 +1488,10 @@ const IMPRESSUMSFELDER = [
 ];
 
 
-/**
- * Prüft die Betreiberdaten und benennt jede Lücke einzeln.
- * @param {object} betreiber
- */
+
+
+
+
 function pruefeBetreiberdaten(betreiber = {}) {
   const imFirmenbuch = betreiber.imFirmenbuch === true;
   const fehlend = [];
@@ -1463,7 +1515,7 @@ const zeile = (betreiber, feld, bezeichnung) => {
   return typeof wert === 'string' && wert.trim() !== '' ? textZeile(wert) : LUECKE(bezeichnung);
 };
 
-/** Erzeugt den Impressumstext; Lücken bleiben sichtbar stehen. */
+
 function erzeugeImpressum(betreiber = {}) {
   const p = pruefeBetreiberdaten(betreiber);
   const zeilen = [
@@ -1503,42 +1555,90 @@ function erzeugeImpressum(betreiber = {}) {
   return { text: zeilen.join('\n'), vollstaendig: p.vollstaendig, fehlend: p.fehlend };
 }
 
-/**
- * Gliederung der AGB für den reinen B2B-Verkauf nach Gate 7.
- *
- * Der wichtigste Punkt ist eine **Auslassung**: Es gibt keine
- * Widerrufsbelehrung. Sie gehört ins Verbrauchergeschäft, und eine AGB, die
- * beides vermischt, weckt genau den Anschein, den Gate 7 vermeiden soll — dass
- * sich der Shop eben doch an Verbraucher richtet.
- */
-/**
- * Welche Zahlwege der Shop anbietet — und welche er ausschließt.
- *
- * Die Liste ist die Entscheidung aus `zahlungsziel-entschieden.md`, nicht
- * eine Aufzählung des Möglichen. Sie steht hier und nicht in `zahlung.js`,
- * weil sie in die Geschäftsbedingungen gehört: Was der Shop annimmt, ist eine
- * Vertragsbedingung, keine Rechengröße.
- *
- * `zahlung.js` bleibt die Stelle, an der die Wege **gerechnet** werden. Ein
- * Testfall hält beide Listen aneinander: Jede Kennung hier muss dort
- * existieren, sonst weicht die Bedingung von der Rechnung ab, ohne dass es
- * jemand merkt.
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const ZAHLUNGSBEDINGUNGEN = Object.freeze({
   zielTage: 0,
-  stand: '2026-08-26',
+  stand: '2026-08-27',
   herkunft: 'docs/baustoff-shop/zahlungsziel-entschieden.md',
   angeboten: Object.freeze([
-    { id: 'eps', grund: 'einziger Weg, der alle vier Anforderungen erfüllt; +6,50 € je Bestellung nach Gebühr und Skonto' },
-    { id: 'vorkasse', grund: 'billigster Weg und Gate-21-fest; meldet den Eingang aber nicht maschinell' },
-    { id: 'karte-stripe', grund: 'je Bestellung noch positiv, auf den Monat über der 10-%-Grenze — angeboten, weil er Bestellungen ermöglicht, nicht weil er sich rechnet' },
+    {
+      id: 'eps',
+      grund: 'einziger Weg, der alle vier Anforderungen erfüllt; +6,50 € je Bestellung nach Gebühr und Skonto',
+      kunde: 'Der empfohlene Weg: Freigabe im eigenen Bankkonto, Zahlung sofort bestätigt, keine Kartendaten im Spiel.',
+    },
+    {
+      id: 'vorkasse',
+      grund: 'billigster Weg und Gate-21-fest; meldet den Eingang aber nicht maschinell',
+      kunde: 'Überweisung nach Auftragsbestätigung. Die Ware geht auf den Weg, sobald der Betrag eingelangt ist — das dauert je nach Bank ein bis zwei Werktage länger.',
+    },
+    {
+      id: 'karte-stripe',
+      grund: 'je Bestellung noch positiv, auf den Monat über der 10-%-Grenze — angeboten, weil er Bestellungen ermöglicht, nicht weil er sich rechnet',
+      kunde: 'Für Bestellungen, die aus der Firmenkarte laufen sollen. Zahlung sofort bestätigt.',
+    },
   ]),
   ausgeschlossen: Object.freeze([
-    { id: 'offene-rechnung', grund: 'verletzt Gate 21 und trägt das Ausfallrisiko im Haus; kippt schon ab einem Ausfall auf 86 Bestellungen' },
-    { id: 'nachnahme', grund: 'löst Registrierkassenpflicht aus und verletzt Gate 21' },
+    {
+      id: 'offene-rechnung',
+      grund: 'verletzt Gate 21 und trägt das Ausfallrisiko im Haus; kippt schon ab einem Ausfall auf 86 Bestellungen',
+      kunde: 'Wird nicht angeboten. Ein Zahlungsziel würde in die Preise wandern — dieser Shop rechnet stattdessen ohne.',
+    },
+    {
+      id: 'nachnahme',
+      grund: 'löst Registrierkassenpflicht aus und verletzt Gate 21',
+      kunde: 'Wird nicht angeboten. Im Streckengeschäft kassiert der Frächter, nicht der Händler.',
+    },
   ]),
   zurueckgestellt: Object.freeze([
-    { id: 'rechnungskauf', grund: 'hält Gate 21, kostet aber 17,93 € je Bestellung mehr als EPS — lohnt ab acht Zusatzbestellungen im Monat oder einer Ausfallquote über 3,2 %' },
+    {
+      id: 'rechnungskauf',
+      grund: 'hält Gate 21, kostet aber 17,93 € je Bestellung mehr als EPS — lohnt ab acht Zusatzbestellungen im Monat oder einer Ausfallquote über 3,2 %',
+      kunde: 'Noch nicht verfügbar. Für Stammkunden mit laufendem Bedarf ist ein Rechnungskauf über einen Anbieter vorgesehen; wer ihn braucht, meldet sich.',
+    },
   ]),
   _offen: 'Der Zahlungsanbieter selbst ist nicht gewählt — das ist eine Ausgabe und freigabepflichtig.',
 });
@@ -1581,14 +1681,11 @@ const AGB_GLIEDERUNG = [
     hinweis:
       'Keine Nachnahme und keine Barzahlung auf der Baustelle — sonst entsteht ein Barumsatz ' +
       'und damit Registrierkassenpflicht. **Zahlungsziel: null Tage**, gezahlt wird bei der ' +
-      'Bestellung. Das ist im B2B-Baustoffhandel ungewöhnlich und steht deshalb mit Grund da: ' +
-      'Maßgeblich für Gate 21 ist nicht das Ziel auf der Kundenrechnung, sondern wann das Geld ' +
-      'im eigenen Konto liegt — beide Lieferanten geben 3 % Skonto bei 14 Tagen, und diese ' +
-      '3 % heben die Rohmarge von 25 auf 27,25 %. **Keine offene Rechnung auf eigenes Risiko**: ' +
-      'Sie kostet keine Gebühr und verliert dafür das gesamte Skonto, 6,50 € je Bestellung ' +
-      'schlechter als der günstigste Weg, der etwas kostet. Der Rechnungskauf über einen ' +
-      'Anbieter hält Gate 21 sehr wohl — er ist nicht ausgeschlossen, sondern zurückgestellt, ' +
-      'entscheidbar an den Kippzahlen in zahlungsziel-entschieden.md.',
+      'Bestellung; maßgeblich ist der Zahlungseingang, nicht das Datum der Bestellung. ' +
+      'Keine offene Rechnung auf eigenes Risiko. Der Eigentumsvorbehalt reicht bis zur ' +
+      'vollständigen Zahlung und muss den Weiterverkauf und den Einbau in fremdes Eigentum ' +
+      'ausdrücklich regeln — im Baustoffhandel ist die Ware regelmäßig verbaut, bevor sie ' +
+      'bezahlt ist. Verzugszinsen und Mahnspesen nach UGB, Höhe vom Anbieter zu setzen.',
   },
   { nr: 10, titel: 'Gewährleistung und Haftung', hinweis: 'Im B2B abdingbar, aber nicht grenzenlos.' },
   { nr: 11, titel: 'Rücknahme angebrochener Gebinde und Rollenware', hinweis: 'Ausschluss empfehlenswert; Rollenware ist nicht teilbar.' },
@@ -1608,24 +1705,24 @@ const AGB_GLIEDERUNG = [
   { nr: 13, titel: 'Gerichtsstand und anwendbares Recht', hinweis: null },
 ];
 
-/**
- * Der Wortlaut der Zusicherung nach Art. 14 DSGVO.
- *
- * Der Befund der Vorrunde: Der **Ansprechpartner vor Ort** ist ein Dritter. Er
- * hat mit dem Shop keinen Vertrag, seine Rufnummer stammt vom Besteller, und
- * Art. 14 verlangt, **ihn** zu informieren — eine Person, die der Shop nie
- * erreicht.
- *
- * Der einzige Weg, der offensteht, führt über den, der ihn kennt. Der Besteller
- * sichert zu, ihn unterrichtet zu haben; der Shop hält die Zusicherung fest.
- * Das ist **keine Erfüllung der Pflicht durch den Shop**, sondern die
- * Verlagerung auf denjenigen, der sie erfüllen kann — und die
- * Dokumentation, dass danach gefragt wurde.
- *
- * Ob das genügt, entscheidet der Rechtstexteanbieter aus `phase5-technik.md`.
- * Was hier steht, ist der Wortlaut, über den er dann reden kann: an einer
- * Stelle, prüfbar, und im Bestellprozess sichtbar statt im Kleingedruckten.
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const ZUSICHERUNG_DRITTER = {
   feld: 'ansprechpartnerInformiert',
   text:
@@ -1638,25 +1735,25 @@ const ZUSICHERUNG_DRITTER = {
     'es keinen Dritten, dessen Daten weitergereicht würden.',
 };
 
-/**
- * Die Hinweise, die ein Besteller sehen muss, **bevor** er eine abweichende
- * Lieferanschrift angibt.
- *
- * Nicht Kleingedrucktes, sondern der Punkt, an dem im B2B-Baustoffhandel
- * wirklich Geld verlorengeht. § 377 UGB verlangt, die Ware **unverzüglich nach
- * der Ablieferung** zu untersuchen und Mängel unverzüglich zu rügen. Die Frist
- * läuft ab der Ablieferung auf der Baustelle — nicht ab dem Tag, an dem der
- * Besteller die Palette zum ersten Mal sieht.
- *
- * Für das Sortiment aus `phase4-sortiment-und-materialwert.md` ist das keine
- * Spitzfindigkeit: Eine Abdichtungsbahn kostet rund 355 € netto die Rolle, und
- * ein Transportschaden an der Rolle fällt oft erst beim Verlegen auf — Wochen
- * später. Dann ist die Rüge verspätet und die Ware gilt als genehmigt.
- *
- * Daraus folgt auch, warum der Ansprechpartner vor Ort seit
- * `baustelle-als-lieferort.md` ein Pflichtfeld ist: Er ist nicht für die
- * Spedition da, sondern für diese Frist.
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const LIEFERHINWEISE = [
   {
     titel: 'Wer übernimmt, übernimmt für Sie',
@@ -1689,39 +1786,39 @@ const LIEFERHINWEISE = [
   },
 ];
 
-/**
- * Liefert die Hinweise, die zu diesem Auftrag tatsächlich passen.
- *
- * Ohne abweichende Baustelle geht die Ware an die Rechnungsanschrift; dann ist
- * der Hinweis zur Empfangsvollmacht überflüssig und würde nur die anderen
- * verwässern. Ein Hinweistext, den alle immer sehen, wird von niemandem
- * gelesen.
- */
+
+
+
+
+
+
+
+
 function lieferhinweise(auftrag = {}) {
   const abweichend = auftrag.lieferungAnRechnungsadresse === false;
   return LIEFERHINWEISE.filter((h) => abweichend || h.grundlage !== 'AGB Punkt 6');
 }
 
-/**
- * Gliederung der Datenschutzerklärung.
- *
- * Die beiden letzten Punkte sind beim Abgleich der Datenflüsse dazugekommen und
- * betreffen **Menschen, die mit dem Shop keinen Vertrag haben**:
- *
- *   * Der **Ansprechpartner vor Ort** auf der Baustelle. Seine Telefonnummer
- *     geht an die Spedition des Lieferanten. Art. 6 Abs. 1 lit. b trägt das
- *     nicht — er ist nicht Vertragspartner; in Betracht kommt lit. f. Und
- *     Art. 14 verlangt, **ihn** zu informieren, obwohl der Shop ihn nie zu
- *     Gesicht bekommt. Die Angabe stammt vom Besteller.
- *   * Die **UID-Abfrage** beim EU-Informationsaustauschsystem. Bei einem
- *     Einzelunternehmer ist die UID ein personenbezogenes Datum, und die
- *     Abfrage ist eine Übermittlung an eine Stelle außerhalb des Betriebs.
- *
- * Beides gehört benannt, nicht gelöst: Diese Datei ist Zuarbeit für den
- * Rechtstexteanbieter aus `phase5-technik.md`, keine Rechtsberatung. Was sie
- * leisten kann, ist die Frage auf den Tisch zu legen, bevor jemand sie im
- * Echtbetrieb stellt.
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const DATENSCHUTZ_GLIEDERUNG = [
   'Verantwortlicher und Kontakt',
   'Welche Daten bei der Bestellung verarbeitet werden',
@@ -1734,10 +1831,10 @@ const DATENSCHUTZ_GLIEDERUNG = [
   'Beschwerderecht bei der Datenschutzbehörde',
 ];
 
-/**
- * Was ohne Verbrauchergeschäft entfällt — und was trotzdem bleibt.
- * Beides gehört benannt, damit die Ersparnis nicht mit Sorglosigkeit verwechselt wird.
- */
+
+
+
+
 const B2B_ABGRENZUNG = {
   entfaellt: [
     'Widerrufsbelehrung und Muster-Widerrufsformular nach FAGG',
@@ -1752,19 +1849,19 @@ const B2B_ABGRENZUNG = {
   ],
 };
 
-/**
- * Bestellübergabe an die Lieferanten.
- *
- * Nach Gate 6 ist dies der Bruchpunkt des ganzen Modells: Ohne automatische
- * Übergabe ist der Shop nach einem Tag Abwesenheit ein Betrieb, der Geld
- * genommen und nichts bestellt hat. Deshalb erzeugt diese Datei aus einem
- * bezahlten Warenkorb ohne weitere Eingabe je Lieferant eine fertige
- * Bestellung — als Text zum Versenden und als CSV für Schnittstellen.
- */
 
 
 
-/** Erzeugt je Teillieferung eine Bestellung an den Lieferanten. */
+
+
+
+
+
+
+
+
+
+
 function erzeugeBestellungen(warenkorb, auftrag) {
   return warenkorb.teillieferungen.map((teil, index) => {
     const nummer = `${auftrag.bestellnummer}-${String(index + 1).padStart(2, '0')}`;
@@ -1781,22 +1878,22 @@ function erzeugeBestellungen(warenkorb, auftrag) {
   });
 }
 
-/**
- * Der Text ist so zeilenorientiert wie die CSV, nur merkt man es ihm nicht an.
- * Deshalb geht jedes fremde Feld durch `textZeile` — Artikelbezeichnungen aus
- * einer Herstellerdatei ebenso wie die Adresse, die der Kunde selbst eingibt.
- * Die Eingabeprüfung in `kunde.js` weist Zeilenumbrüche bereits ab; hier steht
- * die zweite Sperre, weil nicht jeder Weg in diese Funktion über eine
- * Eingabeprüfung führt.
- */
+
+
+
+
+
+
+
+
 function bestelltext(nummer, teil, auftrag) {
   const zeilen = teil.positionen.map(
     (p) => `  ${String(p.menge).padStart(3)} × ${textZeile(p.sku).padEnd(12)} ${textZeile(p.bezeichnung)}`,
   );
 
-  // Ein Hinweis zur Zufahrt steht direkt unter der Adresse und nicht am Ende:
-  // Wer die Bestellung an die Spedition weiterreicht, kopiert den Adressblock,
-  // nicht den ganzen Brief.
+  
+  
+  
   const zufahrt = textZeile(auftrag.lieferadresse.hinweis);
 
   return [
@@ -1843,10 +1940,10 @@ function bestellCsv(nummer, teil, auftrag) {
   return [kopf, ...zeilen].join('\n');
 }
 
-/**
- * Prüft, ob eine Bestellung ohne menschliches Zutun ausgelöst werden darf.
- * Alles, was hier false liefert, muss liegen bleiben statt falsch zu laufen.
- */
+
+
+
+
 function darfAutomatischAusgeloestWerden(warenkorb, auftrag) {
   const gruende = [];
 
@@ -1858,16 +1955,16 @@ function darfAutomatischAusgeloestWerden(warenkorb, auftrag) {
     gruende.push('Katalog enthält Platzhalterpreise — keine echten Konditionen');
   }
 
-  // Gate 20: Keine Bestellung ohne positiven Deckungsbeitrag. Der Mindest-
-  // bestellwert oben ist eine Kondition des Lieferanten uns gegenüber und sagt
-  // nichts darüber, ob WIR an dieser Bestellung etwas verdienen. Bei 20 %
-  // Rohmarge und frei Haus kippt ein kleiner Warenkorb ins Minus, während
-  // jeder Mindestbestellwert erfüllt ist. Siehe rechnung-zum-zuschlag.md.
-  // Die Prüfung läuft immer, nicht nur wenn der Auftrag die Felder trägt: Eine
-  // Sperre, die sich bei fehlender Angabe selbst überspringt, ist keine Sperre.
-  // Voreinstellung ist die günstigste Annahme (Fracht wird verrechnet) — wer
-  // frei Haus liefert, muss das im Auftrag sagen und bekommt die schärfere
-  // Rechnung.
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   const deckung = traegtSichSelbst(warenkorb, {
     zahlwegId: auftrag.zahlweg ?? 'karte-stripe',
     frachtVerrechnet: auftrag.frachtVerrechnet ?? true,
@@ -1877,34 +1974,34 @@ function darfAutomatischAusgeloestWerden(warenkorb, auftrag) {
   return { erlaubt: gruende.length === 0, gruende };
 }
 
-/**
- * Belege an den Kunden: Angebot und Rechnung.
- *
- * Bis hierher erzeugt der Shop Bestellungen an die Lieferanten. Was fehlte, ist
- * die Gegenrichtung — das Dokument, das der Kunde bekommt. Es entsteht aus
- * demselben Warenkorb, damit es gar nicht erst von den Lieferantenbestellungen
- * abweichen kann.
- *
- * Grundlage der Pflichtangaben: § 11 UStG. Zwei Schwellen sind darin
- * eingebaut, und beide hängen am **Bruttobetrag**:
- *
- *   bis 400 €      Kleinbetragsrechnung, sechs Angaben genügen (§ 11 Abs 6)
- *   über 400 €     die vollen Merkmale
- *   über 10.000 €  zusätzlich die UID des Leistungsempfängers (§ 11 Abs 1 Z 2)
- *
- * Für diesen Shop ist die dritte Schwelle keine Hürde: Gate 7 verlangt die UID
- * ohnehin bei jeder Bestellung. Eine Auflage, die zum Ausschluss von
- * Verbrauchern eingeführt wurde, erfüllt hier nebenbei eine Steuerpflicht.
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 const KLEINBETRAG_GRENZE_BRUTTO = 400;
 const UID_EMPFAENGER_GRENZE_BRUTTO = 10000;
 
-/**
- * Pflichtangaben nach § 11 UStG.
- * `ab` sagt, ab welcher Schwelle die Angabe verlangt wird.
- */
+
+
+
+
 const RECHNUNGSMERKMALE = [
   { feld: 'ausstellerName', bezeichnung: 'Name und Anschrift des liefernden Unternehmers', ab: 0 },
   { feld: 'leistung', bezeichnung: 'Menge und handelsübliche Bezeichnung der Gegenstände', ab: 0 },
@@ -1919,7 +2016,7 @@ const RECHNUNGSMERKMALE = [
   { feld: 'empfaengerUid', bezeichnung: 'UID-Nummer des Leistungsempfängers', ab: UID_EMPFAENGER_GRENZE_BRUTTO },
 ];
 
-/** Welche Merkmale ein Beleg über diesen Bruttobetrag tragen muss. */
+
 function erforderlicheMerkmale(bruttobetrag) {
   return RECHNUNGSMERKMALE.filter((m) => bruttobetrag > m.ab || m.ab === 0);
 }
@@ -1927,10 +2024,10 @@ function erforderlicheMerkmale(bruttobetrag) {
 const gefuellt = (wert) =>
   (typeof wert === 'string' && wert.trim() !== '') || (typeof wert === 'number' && Number.isFinite(wert));
 
-/**
- * Prüft einen Belegentwurf gegen § 11 UStG und benennt jede Lücke einzeln.
- * @param {object} beleg Felder wie in RECHNUNGSMERKMALE benannt
- */
+
+
+
+
 function pruefeRechnungsmerkmale(beleg = {}) {
   const brutto = Number(beleg.bruttobetrag) || 0;
   const noetig = erforderlicheMerkmale(brutto);
@@ -1945,16 +2042,16 @@ function pruefeRechnungsmerkmale(beleg = {}) {
   };
 }
 
-/**
- * Ein Feld für eine Belegzeile: entweder der Inhalt, auf eine Zeile gezwungen,
- * oder die sichtbare Lückenmarkierung.
- *
- * `textZeile` statt `trim`, weil `trim` nur an den Enden räumt. Ein Umbruch in
- * der Mitte eines Firmennamens überlebt ihn — und schreibt dann eine Zeile in
- * einen Beleg, dessen Summenzeilen zeilenweise gelesen werden. Ein
- * untergeschobenes „Gesamtbetrag …" wäre ein Rechnungsmangel nach § 11 UStG,
- * und der Beleg landet unveränderbar in der Ablage.
- */
+
+
+
+
+
+
+
+
+
+
 const wert = (v, bezeichnung) => (gefuellt(v) ? textZeile(v) : LUECKE(bezeichnung));
 
 function positionszeilen(warenkorb) {
@@ -1984,14 +2081,14 @@ function summenblock(warenkorb) {
   ];
 }
 
-/**
- * Angebot an den Kunden.
- *
- * Kein Beleg im Sinne des § 11 UStG, deshalb ohne Rechnungsnummer — aber mit
- * Bindefrist. Ein Angebot ohne Bindefrist bindet nach § 862 ABGB für eine
- * angemessene Zeit, und „angemessen" entscheidet im Streitfall jemand anderer.
- * Bei Streckengeschäft mit Herstellerpreisen ist das keine gute Idee.
- */
+
+
+
+
+
+
+
+
 function erzeugeAngebot(warenkorb, { nummer, datum, bindefristTage = 14, kunde = {}, betreiber = {} }) {
   const zeilen = [
     `Angebot ${wert(nummer, 'Angebotsnummer')}`,
@@ -2022,28 +2119,28 @@ function erzeugeAngebot(warenkorb, { nummer, datum, bindefristTage = 14, kunde =
   return { text: zeilen.join('\n'), bruttobetrag: warenkorb.summeBrutto, bindefristTage };
 }
 
-/**
- * Auftragsbestätigung an den Kunden — das Papier, mit dem der Vertrag zustande
- * kommt.
- *
- * **Es hat bis hierher gefehlt, und das war kein Schönheitsfehler.** Punkt 2
- * der eigenen AGB lautet: „Bestellung ist Angebot, Annahme durch
- * Auftragsbestätigung." Der Ablauf in `auftragslauf.js` kannte diesen Schritt
- * nicht — er ging vom Zahlungseingang direkt zur Lieferantenbestellung. Der
- * Shop hätte also **Geld genommen, bevor nach seinen eigenen Bedingungen ein
- * Vertrag bestand**, und die einzige „Auftragsbestätigung" im Ablauf war die
- * des Lieferanten an uns, nicht unsere an den Kunden.
- *
- * Zwei Dinge stehen deshalb hier, die in keinem anderen Beleg stehen:
- *
- *   1. **Wann der Vertrag zustande kommt** — ausdrücklich, mit Verweis auf die
- *      AGB, damit die beiden Texte dasselbe sagen.
- *   2. **Wann die Baustelle vollständig beliefert ist.** Im Streckengeschäft
- *      liefert jeder Hersteller selbst, und der Kunde kann erst arbeiten, wenn
- *      das **letzte** Teil da ist. Angebot und Rechnung nennen die Lieferzeit
- *      je Lieferant; keiner von beiden nennt die längste. Genau die braucht der
- *      Bauleiter für seinen Terminplan.
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function erzeugeAuftragsbestaetigung(
   warenkorb,
   { nummer, datum, kunde = {}, betreiber = {}, auftrag = {}, hinweise = [] },
@@ -2084,8 +2181,8 @@ function erzeugeAuftragsbestaetigung(
 
   zeilen.push(...positionszeilen(warenkorb), ...summenblock(warenkorb), '');
 
-  // Die Lieferzeiten einzeln — und die längste ausdrücklich. Ein Kunde, der
-  // drei Zahlen liest und selbst das Maximum bilden soll, bildet es nicht.
+  
+  
   zeilen.push('Lieferzeiten je Hersteller, ab Bestellauslösung:');
   for (const t of warenkorb.teillieferungen) {
     zeilen.push(`  ${textZeile(t.lieferantName)}: ${t.lieferzeitWerktage} Werktage`);
@@ -2111,18 +2208,18 @@ function erzeugeAuftragsbestaetigung(
   };
 }
 
-/**
- * Darf dieser Auftrag überhaupt angenommen werden?
- *
- * Die Annahme ist die Stelle, an der der Shop sich bindet. Sie gehört deshalb
- * **vor** die Zahlung und nicht danach — und sie darf nur erklärt werden, wenn
- * die Bestellung beim Lieferanten auch platzierbar ist.
- *
- * Der Fall aus `frachtschwelle-und-bestellwert.md` ist genau dieser: Ein
- * Warenkorb unter dem Mindestbestellwert des Lieferanten wurde als bestellbar
- * gemeldet. Wer so etwas bestätigt, hat einen Vertrag geschlossen, den er nicht
- * erfüllen kann — schlimmer als eine abgelehnte Bestellung.
- */
+
+
+
+
+
+
+
+
+
+
+
+
 function darfBestaetigtWerden(warenkorb, auftrag = {}) {
   const gruende = [];
 
@@ -2139,13 +2236,13 @@ function darfBestaetigtWerden(warenkorb, auftrag = {}) {
   return { erlaubt: gruende.length === 0, gruende };
 }
 
-/**
- * Rechnung an den Kunden.
- *
- * Erzeugt wird sie immer — geprüft wird getrennt. Ein Entwurf mit sichtbaren
- * Lücken ist besser als gar keiner: Er zeigt, welche Angabe fehlt, statt die
- * Rechnung zu verweigern und den Grund für sich zu behalten.
- */
+
+
+
+
+
+
+
 function erzeugeRechnung(warenkorb, { nummer, datum, lieferdatum, kunde = {}, betreiber = {} }) {
   const pruefung = pruefeRechnungsmerkmale({
     ausstellerName: betreiber.firma,
@@ -2197,13 +2294,13 @@ function erzeugeRechnung(warenkorb, { nummer, datum, lieferdatum, kunde = {}, be
   };
 }
 
-/**
- * Prüft, ob eine Rechnung gestellt werden darf.
- *
- * Dieselbe Haltung wie bei der Bestellsperre: Solange ein Platzhalterpreis im
- * Warenkorb liegt, ist der ausgewiesene Betrag erfunden. Eine erfundene
- * Rechnung ist schlimmer als eine fehlende — sie wird bezahlt.
- */
+
+
+
+
+
+
+
 function darfRechnungGestelltWerden(warenkorb, rechnung, auftrag = {}) {
   const gruende = [];
 
@@ -2220,24 +2317,24 @@ function darfRechnungGestelltWerden(warenkorb, rechnung, auftrag = {}) {
   return { erlaubt: gruende.length === 0, gruende };
 }
 
-/**
- * Umsatzsteuerliche Einordnung des Streckengeschäfts.
- *
- * Sitzt der Lieferant im Ausland und liefert direkt an die österreichische
- * Baustelle, ist das ein **Reihengeschäft**: drei Beteiligte, ein
- * Warenbewegung. Der Lieferant befördert, also ist die bewegte Lieferung seine
- * — steuerfreie innergemeinschaftliche Lieferung an uns, gegen unsere UID. Was
- * wir dem Kunden liefern, ist die ruhende Lieferung am Ende der Beförderung:
- * steuerbar in Österreich, 20 % Umsatzsteuer.
- *
- * Die praktische Folge steht in zwei Sätzen: Die Eingangsrechnung aus
- * Deutschland kommt **ohne Umsatzsteuer** und ist als innergemeinschaftlicher
- * Erwerb zu erklären. Die Ausgangsrechnung trägt trotzdem 20 %.
- *
- * Das ist keine Steuerberatung und ersetzt keine. Es ist die Angabe, welche
- * Frage der Steuerberaterin zu stellen ist — und das ist bei zwei von drei
- * Lieferanten eine.
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function reihengeschaeftEinordnung(warenkorb, katalog) {
   const auslaendisch = warenkorb.teillieferungen.filter((t) => {
     const l = katalog.lieferantenById.get(t.lieferantId);
@@ -2259,54 +2356,54 @@ function reihengeschaeftEinordnung(warenkorb, katalog) {
   };
 }
 
-/**
- * Der Vorgang als Klammer.
- *
- * Bis hierher entstehen die Papiere eines Geschäfts nebeneinander: `baueAuftrag`
- * macht den Auftrag, `erzeugeBestellungen` die Lieferantenpapiere,
- * `erzeugeRechnung` den Beleg an den Kunden. Jede Funktion für sich ist geprüft.
- * **Was sie zusammenhält, ist bisher nur die Sorgfalt des Aufrufers.**
- *
- * Nachgewiesen, nicht befürchtet: Werden `erzeugeBestellungen` und
- * `erzeugeRechnung` mit den Daten zweier verschiedener Kunden aufgerufen — zwei
- * Aufrufe, zwei Objekte, ein Vertipper —, dann geht die Ware nach Innsbruck und
- * die Rechnung nach Linz. Beide Papiere sind für sich tadellos:
- * `pruefeRechnungsmerkmale` meldet `vollstaendig: true`, die Gegenprobe an der
- * Bestellung meldet `deckungsgleich: true`, weil sie nur gegen den Warenkorb
- * vergleicht. Keine bestehende Sperre sieht etwas.
- *
- * Dass es heute nicht passiert, liegt allein an der Platzhaltersperre — und die
- * fällt, sobald der erste Hersteller echte Konditionen nennt. Sie ist keine
- * Sicherung gegen Verwechslung, sie ist eine gegen erfundene Preise.
- *
- * Diese Datei macht die Verwechslung **strukturell unmöglich**: Ein Vorgang wird
- * aus **einem** Satz Kundendaten gebaut, und alle Papiere gehen aus ihm hervor.
- * Wer zwei Kunden mischen will, muss zwei Vorgänge bauen — und die haben
- * verschiedene Nummern.
- */
 
 
 
 
 
-/**
- * Baut den vollständigen Vorgang.
- *
- * Zeitpunkte und Nummern werden hereingereicht, nicht hier erzeugt — ein
- * Vorgang, der selbst auf die Uhr sieht oder selbst Nummern zieht, lässt sich
- * nicht prüfen und nicht wiederholen. Die Rechnungsnummer vergibt weiterhin die
- * Ablage, und zwar erst bei der Ausstellung.
- *
- * @param {object} eingabe
- * @param {string} eingabe.vorgangsnummer  Klammer über alle Papiere
- * @param {object} eingabe.kundendaten     **Ein** Satz Kundendaten für alles
- * @param {object} eingabe.warenkorb
- * @param {object} [eingabe.betreiber]
- * @param {string} [eingabe.datum]
- * @param {string} [eingabe.lieferdatum]
- * @param {string} [eingabe.rechnungsnummer]
- * @param {boolean} [eingabe.zahlungEingegangen]
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function baueVorgang({
   vorgangsnummer,
   kundendaten,
@@ -2323,8 +2420,8 @@ function baueVorgang({
   const auftrag = baueAuftrag(vorgangsnummer, kundendaten, { zahlungEingegangen });
   auftrag.absender = { ...auftrag.absender, ...(betreiber.firma ? { firma: betreiber.firma } : {}) };
 
-  // Derselbe normalisierte Datensatz für beide Richtungen. Das ist der ganze
-  // Punkt dieser Datei: Es gibt nur einen, also kann nur einer verwendet werden.
+  
+  
   const kunde = { ...kundenpruefung.normalisiert };
 
   const bestellungen = erzeugeBestellungen(warenkorb, auftrag);
@@ -2334,9 +2431,9 @@ function baueVorgang({
     kunde,
     betreiber,
   });
-  // Die Auftragsbestätigung trägt dieselben Hinweise, die der Kunde vor der
-  // Bestellung gesehen hat. Ein Hinweis, der nur auf dem Bildschirm stand und
-  // in keinem Papier steht, ist später nicht mehr auffindbar.
+  
+  
+  
   const bestaetigung = erzeugeAuftragsbestaetigung(warenkorb, {
     nummer: `AB-${vorgangsnummer}`,
     datum,
@@ -2356,11 +2453,11 @@ function baueVorgang({
   return {
     vorgangsnummer,
     kunde,
-    // Nicht mehr fest verdrahtet: Seit der Vorgang eine eigene Baustelle
-    // führen kann, hängt die Annahme an den Daten. Die Klammer liest hier ab,
-    // ob ihr Vergleich „Ware und Rechnung an dieselbe Firma" noch gilt — bei
-    // abweichender Baustelle gilt er nicht, und genau dann würde er falsche
-    // Alarme schlagen statt Fehler zu finden.
+    
+    
+    
+    
+    
     lieferungAnRechnungsempfaenger: auftrag.lieferungAnRechnungsadresse,
     kundenpruefung,
     auftrag,
@@ -2371,8 +2468,8 @@ function baueVorgang({
     rechnung,
     freigabe: {
       kundendaten: kundenpruefung.gueltig,
-      // Die Annahme steht bewusst vor der Bestellung: Erst binden, dann Geld
-      // nehmen, dann auslösen. Vgl. AGB Punkt 2.
+      
+      
       annahme: darfBestaetigtWerden(warenkorb, auftrag),
       bestellung: darfAutomatischAusgeloestWerden(warenkorb, auftrag),
       rechnung: darfRechnungGestelltWerden(warenkorb, rechnung, auftrag),
@@ -2380,13 +2477,13 @@ function baueVorgang({
   };
 }
 
-/**
- * Darf dieser Vorgang als Ganzes laufen?
- *
- * Bewusst additiv über die bestehenden Sperren gelegt, nicht an ihre Stelle
- * gesetzt: Sie prüfen jede ihre eigene Sache, diese Funktion prüft, dass der
- * Vorgang zusammenhält. Beides wird gebraucht.
- */
+
+
+
+
+
+
+
 function darfVorgangLaufen(vorgang) {
   const gruende = [];
 
@@ -2414,14 +2511,14 @@ function darfVorgangLaufen(vorgang) {
   return { erlaubt: gruende.length === 0, gruende };
 }
 
-/**
- * Die Einträge, die dieser Vorgang in der Ablage hinterlässt.
- *
- * Alle tragen dieselbe Vorgangsnummer. Das ist die Voraussetzung dafür, dass
- * `vorgangsakte()` später die vollständige Akte liefert — und die braucht man
- * nicht erst bei einer Prüfung, sondern beim ersten Kunden, der anruft und
- * fragt, wo seine Ware bleibt.
- */
+
+
+
+
+
+
+
+
 function ablageEintraege(vorgang, zeitpunkt) {
   const eintraege = vorgang.bestellungen.map((b) => ({
     art: 'lieferantenbestellung',
@@ -2452,31 +2549,31 @@ function ablageEintraege(vorgang, zeitpunkt) {
   return eintraege;
 }
 
-/**
- * Der Auftrag von der Bestellung bis zur Buchung — als Trockenlauf.
- *
- * Die Vorgabe des Auftraggebers lautet, das Geschäft solle ohne laufendes Zutun
- * bestehen. `phase6-automatisierung.md` beziffert den Restaufwand mit 6,5 bis
- * 12 Stunden im Monat. Beide Aussagen waren bisher Behauptungen: Niemand ist
- * die Kette einmal Schritt für Schritt durchgegangen und hat gezählt, wo sie
- * stehen bleibt.
- *
- * Diese Datei tut genau das. Sie führt keinen einzigen Schritt aus — sie prüft
- * für jeden, ob er unter den gegebenen Umständen von selbst liefe, und
- * protokolliert das Ergebnis. Wer die Kette hier durchlaufen lässt, bekommt
- * eine Zahl statt einer Hoffnung.
- *
- * Die Zeitansätze stammen aus `phase6-automatisierung.md` und sind
- * ausdrücklich Schätzungen. Was hier neu ist, ist nicht ihre Höhe, sondern
- * ihre Zuordnung: welcher Schritt sie verursacht und welche fehlende
- * Voraussetzung ihn erzwingt.
- */
 
-/**
- * Was die Umgebung bereitstellt. Alles `false` heißt: heutiger Stand.
- * Jede Fähigkeit ist ein Vertrag, ein Konto oder eine Schnittstelle —
- * nichts davon entsteht durch Programmieren.
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const WELT_HEUTE = {
   zahlungsanbieter: false,
   produktdatenSchnittstelle: false,
@@ -2486,7 +2583,7 @@ const WELT_HEUTE = {
   betreiberdaten: false,
 };
 
-/** Der Ausbauzustand, den die Planung für Stufe 3 unterstellt. */
+
 const WELT_AUSGEBAUT = {
   zahlungsanbieter: true,
   produktdatenSchnittstelle: true,
@@ -2496,14 +2593,14 @@ const WELT_AUSGEBAUT = {
   betreiberdaten: true,
 };
 
-/**
- * Die Schritte in ihrer tatsächlichen Reihenfolge.
- *
- * `braucht` nennt die Voraussetzungen aus der Welt. Fehlt eine, fällt der
- * Schritt auf `minutenOhne` Minuten Handarbeit zurück — oder er blockiert,
- * wenn `blockiert` gesetzt ist. Der Unterschied ist wesentlich: Handarbeit
- * kostet Zeit, eine Blockade kostet den Auftrag.
- */
+
+
+
+
+
+
+
+
 const SCHRITTE = [
   {
     id: 'eingang',
@@ -2598,12 +2695,12 @@ const SCHRITTE = [
   },
 ];
 
-/**
- * Führt die Kette einmal durch, ohne irgendetwas auszulösen.
- *
- * @param {object} welt Fähigkeiten der Umgebung
- * @returns Protokoll je Schritt sowie die Summe der Handarbeit
- */
+
+
+
+
+
+
 function trockenlauf(welt = WELT_HEUTE) {
   const protokoll = [];
   let minutenMensch = 0;
@@ -2650,13 +2747,13 @@ function trockenlauf(welt = WELT_HEUTE) {
   };
 }
 
-/**
- * Was eine einzelne fehlende Fähigkeit kostet.
- *
- * Berechnet nicht die Differenz zum heutigen Stand, sondern zum Vollausbau:
- * Was ändert sich, wenn genau diese eine Fähigkeit fehlt und sonst nichts?
- * Nur so ist der Beitrag einer Fähigkeit von den anderen zu trennen.
- */
+
+
+
+
+
+
+
 function engpaesse() {
   const voll = trockenlauf(WELT_AUSGEBAUT);
   const namen = Object.keys(WELT_AUSGEBAUT);
@@ -2675,13 +2772,13 @@ function engpaesse() {
     .sort((a, b) => b.blockiert.length - a.blockiert.length || b.zusatzminuten - a.zusatzminuten);
 }
 
-/**
- * Rechnet die Minuten je Bestellung auf den Monat hoch.
- *
- * Wichtig für den Vergleich mit `phase6-automatisierung.md`: Erfasst sind hier
- * **nur die Vorgänge je Bestellung**. Inhaltspflege, Normenänderungen und
- * Transportschäden hängen nicht an der Bestellmenge und stehen nicht darin.
- */
+
+
+
+
+
+
+
 function aufwandProMonat(welt, bestellungenProMonat) {
   const lauf = trockenlauf(welt);
   const minuten = lauf.minutenMensch * bestellungenProMonat;
@@ -2693,27 +2790,27 @@ function aufwandProMonat(welt, bestellungenProMonat) {
   };
 }
 
-/**
- * UID-Abfrage beim Mehrwertsteuer-Informationsaustauschsystem der EU.
- *
- * `kunde.js` prüft heute nur Format und Prüfziffer und sagt ausdrücklich, dass
- * die verbindliche Abfrage aussteht. Der Trockenlauf in
- * `docs/baustoff-shop/trockenlauf-auftrag.md` beziffert diese Lücke: zwei
- * Minuten Handarbeit je Bestellung, 1,2 Stunden im Monat — und sie ist der
- * einzige der sechs Engpässe, der ohne Freigabe und ohne Ausgabe lösbar wäre.
- *
- * **Was hier fehlt und warum.** Der Dienst ist aus dieser Umgebung nicht
- * erreichbar; der Proxy beantwortet den Verbindungsaufbau mit 403. Die
- * Antwortstruktur ist deshalb aus der Dokumentation nachgebildet, **nicht an
- * der echten Schnittstelle geprüft**. Die Auswertung ist entsprechend
- * misstrauisch gebaut: Was sie nicht sicher als gültig oder ungültig erkennt,
- * gilt als unbestätigt — nie als in Ordnung.
- *
- * Die drei Zustände sind der eigentliche Inhalt dieser Datei. Ein Dienst, der
- * nicht antwortet, sagt nichts über die UID. Wer daraus „ungültig" macht,
- * weist Kunden ab, weil ein fremder Server gerade neu startet; wer daraus
- * „gültig" macht, hat die Prüfung nicht.
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 const VIES_ENDPUNKT = 'https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number';
@@ -2724,7 +2821,7 @@ const STAND = {
   UNBESTAETIGT: 'unbestaetigt',
 };
 
-/** Fehlerkennungen, bei denen ein weiterer Versuch sinnvoll ist. */
+
 const VORUEBERGEHEND = new Set([
   'MS_UNAVAILABLE',
   'MS_MAX_CONCURRENT_REQ',
@@ -2734,27 +2831,27 @@ const VORUEBERGEHEND = new Set([
   'GLOBAL_MAX_CONCURRENT_REQ',
 ]);
 
-/**
- * Länderkürzel, die der Dienst kennt.
- *
- * Zwei Fallen stecken darin. Griechenland führt seine UID unter **EL**, nicht
- * unter GR — wer die ISO-Liste nimmt, weist griechische Kunden ab. Und **XI**
- * steht für Nordirland, das nach dem Austritt für Warenlieferungen im
- * Mehrwertsteuersystem der Union geblieben ist; GB steht nicht darin.
- */
+
+
+
+
+
+
+
+
 const LAENDER = new Set([
   'AT', 'BE', 'BG', 'CY', 'CZ', 'DE', 'DK', 'EE', 'EL', 'ES', 'FI', 'FR', 'HR',
   'HU', 'IE', 'IT', 'LT', 'LU', 'LV', 'MT', 'NL', 'PL', 'PT', 'RO', 'SE', 'SI',
   'SK', 'XI',
 ]);
 
-/**
- * Zerlegt eine UID in Länderkürzel und Nummer. Gibt null zurück, wenn das nicht geht.
- *
- * Das Länderkürzel wird gegen die Liste geprüft, nicht bloß gegen „zwei
- * Buchstaben". Sonst wird aus jedem Tippfehler eine Anfrage an einen Dienst,
- * der sie nicht beantworten kann — und aus „keine uid" ein Land namens KE.
- */
+
+
+
+
+
+
+
 function zerlegeUid(uid) {
   const roh = String(uid ?? '').toUpperCase().replace(/[\s.-]/g, '');
   const treffer = /^([A-Z]{2})([0-9A-Z+*]{2,13})$/.exec(roh);
@@ -2762,14 +2859,14 @@ function zerlegeUid(uid) {
   return { land: treffer[1], nummer: treffer[2] };
 }
 
-/**
- * Baut die Anfrage.
- *
- * Mit `eigeneUid` wird daraus eine **qualifizierte Bestätigungsanfrage**: Der
- * Dienst gibt dann eine Abfrage-Identifikation zurück, und genau die ist der
- * Nachweis, dass geprüft wurde. Ohne sie bleibt von der Prüfung nichts übrig,
- * was man später vorlegen könnte — und der Nachweis ist der ganze Zweck.
- */
+
+
+
+
+
+
+
+
 function baueAnfrage(uid, { eigeneUid = null } = {}) {
   const teil = zerlegeUid(uid);
   if (!teil) throw new Error(`Keine auswertbare UID: ${uid}`);
@@ -2786,13 +2883,13 @@ function baueAnfrage(uid, { eigeneUid = null } = {}) {
   return { url: VIES_ENDPUNKT, methode: 'POST', koerper, qualifiziert: Boolean(eigeneUid) };
 }
 
-/**
- * Wertet eine Antwort aus.
- *
- * Alles, was nicht eindeutig ist, wird `unbestaetigt`. Das gilt ausdrücklich
- * auch für eine Antwort, deren Struktur nicht zu dieser Erwartung passt — die
- * Struktur ist hier aus der Dokumentation nachgebaut, nicht gemessen.
- */
+
+
+
+
+
+
+
 function werteAntwortAus(antwort) {
   if (!antwort || typeof antwort !== 'object') {
     return { stand: STAND.UNBESTAETIGT, grund: 'Keine auswertbare Antwort', wiederholbar: true };
@@ -2827,14 +2924,14 @@ function werteAntwortAus(antwort) {
   };
 }
 
-/**
- * Führt die Abfrage aus. Der Abruf wird hereingereicht, damit die Testfälle
- * ohne Netz auskommen — und damit später ein anderer Weg eingesetzt werden
- * kann, ohne diese Datei zu ändern.
- *
- * @param {string} uid
- * @param {{abruf: Function, eigeneUid?: string, versuche?: number}} optionen
- */
+
+
+
+
+
+
+
+
 async function pruefeUid(uid, { abruf, eigeneUid = null, versuche = 3 } = {}) {
   if (typeof abruf !== 'function') throw new Error('pruefeUid braucht einen Abruf');
 
@@ -2856,13 +2953,13 @@ async function pruefeUid(uid, { abruf, eigeneUid = null, versuche = 3 } = {}) {
   return letzte;
 }
 
-/**
- * Die Zeile, die in die Ablage gehört.
- *
- * Eine Prüfung, die niemand belegen kann, ist keine Prüfung. Bei der
- * qualifizierten Anfrage steht die Abfrage-Identifikation darin; fehlt sie,
- * sagt die Zeile das ausdrücklich, statt es zu verschweigen.
- */
+
+
+
+
+
+
+
 function belegzeile(auswertung, uid) {
   const teile = [
     `UID ${uid}`,
@@ -2871,23 +2968,23 @@ function belegzeile(auswertung, uid) {
     auswertung.abfrageId ? `Abfrage-ID ${auswertung.abfrageId}` : 'ohne Abfrage-ID — nicht als Nachweis geeignet',
   ];
   if (auswertung.name) teile.push(auswertung.name);
-  // Name, Abfrage-Identifikation und Datum kommen alle aus der Antwort eines
-  // fremden Dienstes und landen in der Ablage. Die erste Fassung entschärfte
-  // nur den Namen — dieselbe Regel, ein Drittel der Felder. Deshalb geht jetzt
-  // die ganze Zeile durch textZeile: Egal welches Feld vergiftet ist, die
-  // Belegzeile bleibt eine Zeile.
+  
+  
+  
+  
+  
   return textZeile(teile.join(' · '));
 }
 
-/**
- * Ergänzt eine bestehende Freigabeprüfung um das Abfrageergebnis.
- *
- * Bewusst additiv: `darfAutomatischAusgeloestWerden` bleibt unverändert, diese
- * Funktion legt einen Grund oben drauf. Eine unbestätigte UID hält die
- * **automatische Auslösung** an — sie weist die Bestellung nicht zurück. Der
- * Unterschied ist der ganze Punkt: Der Dienst fällt regelmäßig aus, und ein
- * Ausfall in Brüssel darf keinen Auftrag in Wels kosten.
- */
+
+
+
+
+
+
+
+
+
 function ergaenzeFreigabe(freigabe, auswertung) {
   const gruende = [...freigabe.gruende];
 
@@ -2902,35 +2999,35 @@ function ergaenzeFreigabe(freigabe, auswertung) {
   return { erlaubt: gruende.length === 0, gruende, uidStand: auswertung.stand };
 }
 
-/**
- * Ablage der Vorgänge.
- *
- * Bisher entsteht alles und verschwindet wieder: Die UID-Abfrage erzeugt eine
- * Belegzeile, der Warenkorb drei Bestellentwürfe, die Kasse eine Rechnung —
- * und mit dem nächsten Seitenaufruf ist nichts davon mehr da. Für ein
- * Funktionsmuster geht das. Für ein Geschäft nicht: Die Rechnungsnummer muss
- * nach § 11 Abs 1 Z 5 UStG fortlaufend und **einmalig** sein, und § 132 BAO
- * verlangt sieben Jahre Aufbewahrung.
- *
- * Zwei Entwurfsentscheidungen tragen diese Datei.
- *
- * **Erstens: Die Rechnungsnummer wird erst bei der Ausstellung vergeben**, nicht
- * beim Anlegen des Vorgangs. Das ist der Fehler, den man sonst einmal macht:
- * Wer die Nummer schon im Warenkorb zieht, verbrennt für jeden abgebrochenen
- * Kauf eine — und erklärt dem Prüfer später, warum zwischen 0007 und 0034
- * nichts liegt.
- *
- * **Zweitens: Die Ablage wird nur ergänzt, nie geändert.** § 131 BAO verlangt,
- * dass der ursprüngliche Inhalt feststellbar bleibt. Eine Korrektur ist
- * deshalb ein neuer Eintrag, der auf den alten zeigt, und keine Änderung am
- * alten. Ein Testfall besteht darauf.
- *
- * Zeitpunkte werden hereingereicht, nicht hier gelesen. Eine Ablage, die selbst
- * auf die Uhr sieht, lässt sich nicht prüfen.
- */
 
 
-/** Aufbewahrungsfrist nach § 132 BAO: sieben Jahre nach Ablauf des Kalenderjahres. */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const AUFBEWAHRUNG_JAHRE = 7;
 
 const ARTEN = {
@@ -2942,20 +3039,20 @@ const ARTEN = {
   vermerk: { kuerzel: 'VM', nummernkreis: false },
 };
 
-/**
- * Das Verzeichnis der Journalfelder.
- *
- * Die Regel dazu steht in `zusicherung-und-ablage.md`: Was in die Ablage geht,
- * geht für sieben Jahre hinein — eine Löschung nach Art. 17 DSGVO läuft dort
- * ins Leere (Abs. 3 lit. b). Deshalb braucht jedes Feld seine Begründung,
- * **bevor** es hineinkommt, nicht hinterher. Ein Feld ohne Eintrag hier kommt
- * nicht durch `pruefeAblagefelder`.
- *
- * `verlangt` trennt zwei Klassen: Felder, die eine Vorschrift fordert, und
- * Felder, die nur dem Betrieb dienen. Die zweite Klasse ist nicht verboten —
- * aber sie trägt die Beweislast, und bei ihr beginnt jede künftige Diskussion
- * über ein neues Feld.
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const FELDER_DER_ABLAGE = Object.freeze({
   lfd: {
     verlangt: true,
@@ -3004,29 +3101,29 @@ const FELDER_DER_ABLAGE = Object.freeze({
   },
 });
 
-/**
- * Legt eine leere Ablage an. `zaehler` kann einen Bestand fortschreiben.
- *
- * `schreibe` ist das Gedächtnis: Wird es übergeben, ruft die Ablage es für
- * jedes Ereignis auf — jede Nummernvergabe, jeden Eintrag — **bevor** sie
- * ihren eigenen Zustand ändert. Wirft die Senke, bleibt der Speicher
- * unverändert; eine Nummer, die das Journal nie gesehen hat, gilt als nie
- * vergeben. Ohne `schreibe` arbeitet die Ablage wie bisher im Arbeitsspeicher.
- */
+
+
+
+
+
+
+
+
+
 function neueAblage({ zaehler = {}, schreibe = null } = {}) {
   return { eintraege: [], zaehler: { ...zaehler }, schreibe };
 }
 
 const schluessel = (art, jahr) => `${art}:${jahr}`;
 
-/**
- * Vergibt die nächste Nummer eines Kreises.
- *
- * Der Zähler läuft je Art **und je Jahr**. Die Jahreszahl steht in der Nummer,
- * deshalb bleibt sie über den Jahreswechsel hinweg einmalig, obwohl der Zähler
- * wieder bei eins beginnt — genau die „eine oder mehrere Zahlenreihen", die
- * § 11 zulässt.
- */
+
+
+
+
+
+
+
+
 function naechsteNummer(ablage, art, jahr) {
   const beschreibung = ARTEN[art];
   if (!beschreibung) throw new Error(`Unbekannte Vorgangsart: ${art}`);
@@ -3037,18 +3134,18 @@ function naechsteNummer(ablage, art, jahr) {
   const naechste = (ablage.zaehler[k] ?? 0) + 1;
   const nummer = `${beschreibung.kuerzel}-${jahr}-${String(naechste).padStart(4, '0')}`;
 
-  // Erst das Journal, dann der Zähler: Eine Nummer, die nur im Arbeitsspeicher
-  // gezogen wurde, wäre nach einem Neustart wieder frei — und § 11 verlangt
-  // Einmaligkeit über den Neustart hinweg.
+  
+  
+  
   ablage.schreibe?.({ typ: 'nummernvergabe', art, jahr, nummer });
   ablage.zaehler[k] = naechste;
   return nummer;
 }
 
-/**
- * Hängt einen Eintrag an. Der Eintrag wird eingefroren — was einmal in der
- * Ablage steht, ändert sich nicht mehr.
- */
+
+
+
+
 function haltefest(ablage, eintrag) {
   if (!ARTEN[eintrag.art]) throw new Error(`Unbekannte Vorgangsart: ${eintrag.art}`);
   if (!eintrag.zeitpunkt) throw new Error('Jeder Eintrag braucht einen Zeitpunkt');
@@ -3070,13 +3167,13 @@ function haltefest(ablage, eintrag) {
   return fertig;
 }
 
-/**
- * Stellt eine Rechnung aus — und **erst hier** entsteht die Nummer.
- *
- * Der Beleg muss vollständig sein. Eine Rechnung mit fehlenden Pflichtangaben
- * bekommt keine Nummer, weil eine vergebene Nummer nicht zurückgenommen werden
- * kann; sie wäre dann für immer eine Lücke ohne Beleg.
- */
+
+
+
+
+
+
+
 function stelleRechnungAus(ablage, rechnung, { zeitpunkt, jahr, vorgang }) {
   if (!rechnung.vollstaendig) {
     return {
@@ -3099,14 +3196,14 @@ function stelleRechnungAus(ablage, rechnung, { zeitpunkt, jahr, vorgang }) {
   return { ausgestellt: true, nummer, eintrag };
 }
 
-/**
- * Storniert einen Eintrag.
- *
- * Der ursprüngliche Eintrag bleibt unangetastet; es entsteht eine Gutschrift
- * mit eigener Nummer, die auf ihn zeigt. Die Nummer der stornierten Rechnung
- * wird **nicht** wiederverwendet — eine wiederverwendete Rechnungsnummer ist
- * genau das, was § 11 mit „einmalig" ausschließt.
- */
+
+
+
+
+
+
+
+
 function storniere(ablage, nummer, { grund, zeitpunkt, jahr }) {
   const ziel = ablage.eintraege.find((e) => e.nummer === nummer);
   if (!ziel) throw new Error(`Kein Eintrag mit der Nummer ${nummer}`);
@@ -3127,17 +3224,17 @@ function storniere(ablage, nummer, { grund, zeitpunkt, jahr }) {
   });
 }
 
-/** Alle Einträge eines Vorgangs, in der Reihenfolge ihrer Entstehung. */
+
 function vorgangsakte(ablage, vorgang) {
   return ablage.eintraege.filter((e) => e.vorgang === vorgang);
 }
 
-/**
- * Prüft einen Nummernkreis auf Lücken.
- *
- * Eine Lücke ist nicht von vornherein ein Fehler — sie ist erklärungsbedürftig.
- * Diese Funktion liefert deshalb die fehlenden Nummern, nicht ein Urteil.
- */
+
+
+
+
+
+
 function pruefeNummernkreis(ablage, art, jahr) {
   const kuerzel = ARTEN[art]?.kuerzel;
   if (!kuerzel) throw new Error(`Unbekannte Vorgangsart: ${art}`);
@@ -3157,39 +3254,39 @@ function pruefeNummernkreis(ablage, art, jahr) {
   return { anzahl: vergeben.length, hoechste, fehlend, lueckenlos: fehlend.length === 0 };
 }
 
-/**
- * Bis wann aufzubewahren ist: sieben Jahre nach Ablauf des Kalenderjahres.
- * Für einen Beleg aus 2026 endet die Frist also mit 31.12.2033.
- */
+
+
+
+
 function aufbewahrungBis(jahr) {
   if (!Number.isInteger(jahr)) throw new Error('Die Frist braucht ein Jahr');
   return { jahr: jahr + AUFBEWAHRUNG_JAHRE, hinweis: `31.12.${jahr + AUFBEWAHRUNG_JAHRE} (§ 132 BAO)` };
 }
 
-/**
- * Ob eine Nummer storniert ist, steht in keiner Zelle — es folgt aus der
- * Gutschriftkette. Ein Feld im eingefrorenen Eintrag könnte den Wechsel auf
- * „storniert" nie vollziehen; genau so ein Feld (`storniert`, immer `false`)
- * stand bis zum Felderverzeichnis in jedem Eintrag.
- */
+
+
+
+
+
+
 function istStorniert(ablage, nummer) {
   return ablage.eintraege.some((e) => e.art === 'gutschrift' && e.bezugAuf === nummer);
 }
 
-/**
- * Hält jedes Feld jedes Eintrags gegen das Verzeichnis — in beide Richtungen.
- *
- * Richtung eins: Ein Feld ohne Verzeichniseintrag ist ein Befund, auch wenn es
- * leer ist. So fiel beim Aufstellen des Verzeichnisses `storniert` auf: seit
- * der ersten Fassung in jedem Eintrag, immer `false`, von niemandem gelesen —
- * und strukturell unwahr, denn ein eingefrorener Eintrag kann den Wechsel auf
- * `true` nie vollziehen. Der Storno steht in der Gutschriftkette
- * (`istStorniert`), nicht im Eintrag.
- *
- * Richtung zwei: Ein Eintrag, dem ein Verzeichnisfeld fehlt, ist ebenso ein
- * Befund. `haltefest` schreibt alle Felder; fehlt eines, kam der Eintrag an
- * `haltefest` vorbei ins Journal.
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function pruefeAblagefelder(ablage) {
   const bekannt = Object.keys(FELDER_DER_ABLAGE);
   const funde = [];
@@ -3211,7 +3308,7 @@ function pruefeAblagefelder(ablage) {
   return { dicht: funde.length === 0, funde, geprueft: ablage.eintraege.length };
 }
 
-/** Das Journal als CSV — die Form, in der es die Buchhaltung übernimmt. */
+
 function alsCsv(ablage) {
   const kopf = 'lfd;art;nummer;zeitpunkt;vorgang;netto;brutto;bezug;text';
   const zeilen = ablage.eintraege.map((e) =>
@@ -3230,56 +3327,56 @@ function alsCsv(ablage) {
   return [kopf, ...zeilen].join('\n');
 }
 
-/**
- * Das Gedächtnis der Ablage.
- *
- * `ablage.js` führt Nummernkreis und Journal sauber — aber im Arbeitsspeicher.
- * Nach einem Neuladen beginnt die Rechnungsnummer wieder bei eins, und § 11
- * UStG verlangt Einmaligkeit. Diese Datei gibt der Ablage ihr Gedächtnis: ein
- * **Journal aus Zeilen, das nur wächst** — dieselbe Eigenschaft, die § 131 BAO
- * vom Inhalt verlangt, hier auf die Form übertragen. Eine Datei, an die nur
- * angehängt wird, kennt kein Ändern und kein Löschen; genau deshalb ist sie
- * der richtige Speicherort.
- *
- * Drei Entscheidungen tragen diese Datei:
- *
- * **Erstens: Jedes Ereignis wird eine Zeile, auch die Nummernvergabe.** Das
- * Journal der Einträge allein wäre kein Gedächtnis für den Zähler: Eine
- * gezogene, aber nie festgehaltene Nummer stünde in keinem Eintrag — nach dem
- * Neuladen würde derselbe Zähler dieselbe Nummer noch einmal vergeben, und
- * zwei Papiere trügen dieselbe Rechnungsnummer. Die Vergabezeile macht die
- * Lücke stattdessen dauerhaft sichtbar: `pruefeNummernkreis` meldet sie als
- * erklärungsbedürftig, so wie es sein soll.
- *
- * **Zweitens: Die Senke wird nicht hier gewählt.** `journalzeile` erzeugt die
- * Zeile, `ausJournal` liest sie zurück; ob die Zeilen in einer Datei, einem
- * Browser-Speicher oder einem Testfall landen, entscheidet der Aufrufer. Der
- * Betrieb hängt an eine Datei je Geschäftsjahr an (`journal-2026.jsonl`,
- * aufzubewahren nach § 132 BAO). Das Funktionsmuster speichert bewusst
- * **nicht**: Es baut bei jeder Eingabe den ganzen Ablauf neu, ein dauerhaftes
- * Journal würde dort bei jedem Tastendruck erfundene Geschäftsfälle sammeln.
- *
- * **Drittens: Beim Zurücklesen gilt das Felderverzeichnis.** Ein Journal, das
- * ein Feld trägt, das `FELDER_DER_ABLAGE` nicht kennt — oder eines vermissen
- * lässt —, wird nicht geladen, sondern abgewiesen: Ab dem ersten persistierten
- * Eintrag ist jede Feldänderung eine Migrationsfrage, und eine Migration
- * beginnt nicht damit, dass das Laden sie stillschweigend überspielt.
- */
 
 
-/**
- * Serialisiert ein Ereignis der Ablage als eine Journalzeile.
- *
- * JSON hält den ursprünglichen Inhalt zeichengenau fest — ein Zeilenumbruch im
- * Betreff wird zu `\n` in der Zeile und beim Zurücklesen wieder zum Umbruch.
- * Das ist der Unterschied zur CSV an die Buchhaltung: Dort wird entschärft,
- * hier wird bewahrt (§ 131 BAO), ohne dass die Zeile je bricht.
- *
- * `U+2028` und seine Verwandten sind in JSON-Zeichenketten erlaubt und blieben
- * roh stehen — genug Anzeigeprogramme brechen an ihnen um. Sie werden deshalb
- * zusätzlich als `\uXXXX` maskiert; `JSON.parse` stellt sie originalgetreu
- * wieder her.
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function journalzeile(ereignis) {
   if (ereignis?.typ !== 'nummernvergabe' && ereignis?.typ !== 'eintrag') {
     throw new Error(`Unbekannter Zeilentyp für das Journal: ${ereignis?.typ}`);
@@ -3291,7 +3388,7 @@ function journalzeile(ereignis) {
 
 const kreis = (art, jahr) => `${art}:${jahr}`;
 
-/** Hebt einen Zähler auf mindestens die laufende Nummer einer Belegnummer. */
+
 function hebeZaehler(ablage, art, nummer, zeilennummer) {
   const teile = String(nummer).split('-');
   const laufend = Number(teile.at(-1));
@@ -3303,18 +3400,18 @@ function hebeZaehler(ablage, art, nummer, zeilennummer) {
   ablage.zaehler[k] = Math.max(ablage.zaehler[k] ?? 0, laufend);
 }
 
-/**
- * Baut die Ablage aus einem Journal wieder auf.
- *
- * Streng, nicht nachsichtig: Eine Zeile, die nicht lesbar ist, ein Feld ohne
- * Verzeichniseintrag, eine gerissene Zeitfolge — jedes davon bricht das Laden
- * mit einer Zeilennummer ab. Ein Journal, das nicht sauber zurückliest, darf
- * nicht stillschweigend zu einer arbeitenden Ablage werden; mit ihm arbeiten
- * hieße, auf einem Belegbestand zu buchen, dessen Zustand niemand kennt.
- *
- * `schreibe` gibt der wiederaufgebauten Ablage gleich wieder ein Gedächtnis —
- * typischerweise dieselbe Datei, an die weiter angehängt wird.
- */
+
+
+
+
+
+
+
+
+
+
+
+
 function ausJournal(journal, { schreibe = null } = {}) {
   const ablage = neueAblage({ schreibe });
   const bekannt = Object.keys(FELDER_DER_ABLAGE);
@@ -3367,8 +3464,8 @@ function ausJournal(journal, { schreibe = null } = {}) {
       }
 
       ablage.eintraege.push(Object.freeze({ ...eintrag }));
-      // Auch ohne Vergabezeile darf ein Journal keine Nummer doppelt vergeben —
-      // der Zähler steigt zusätzlich mit jeder Nummer, die in einem Eintrag steht.
+      
+      
       if (eintrag.nummer) hebeZaehler(ablage, eintrag.art, eintrag.nummer, nr);
       continue;
     }
@@ -3379,81 +3476,81 @@ function ausJournal(journal, { schreibe = null } = {}) {
   return ablage;
 }
 
-/**
- * Skonto und Gate 21 — der Ertragshebel, der an einer Frist hängt.
- *
- * Eigenes Modul, weil zwei Seiten ihn brauchen und sie sonst im Kreis
- * verwiesen: `kostenbild.js` rechnet mit dem Skonto den Deckungsbeitrag,
- * `zahlung.js` prüft die Zahlwege gegen die Frist — und `kostenbild.js`
- * liest bereits die Zahlwege. Ein Ringschluss lässt sich in ESM zwar
- * auflösen, aber nur so lange, wie niemand die Reihenfolge der Importe
- * ändert. Ein drittes Modul, das nichts von beiden weiß, ist billiger.
- *
- * `kostenbild.js` gibt die Namen unverändert weiter, damit bestehende
- * Importe gültig bleiben.
- */
 
 
-/**
- * Der Skontosatz, den beide bekannten Lieferanten einräumen.
- * Belegt aus den Poschacher-Rechnungen und dem Pramer-Angebot,
- * siehe `docs/baustoff-shop/zweiter-lieferant-und-skonto.md`.
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const SKONTO_SATZ = 0.03;
 const SKONTO_FRIST_TAGE = 14;
 
-/**
- * Was das Skonto am Einkauf spart.
- *
- * **Die Fracht ist nicht skontofähig.** Beide Lieferanten schreiben das
- * ausdrücklich auf den Beleg — bei Pramer als Sternchen an den betroffenen
- * Positionen, bei Poschacher als eigene Skontobasis, die unter dem
- * Rechnungsbetrag liegt. Wer den Satz auf die ganze Rechnung rechnet, hat
- * den Ertrag zu hoch angesetzt, und zwar systematisch — also in die
- * optimistische Richtung, wie die anderen vier Fehler dieses Vorhabens auch.
- *
- * @param {number} einkaufNetto  Warenwert beim Lieferanten, ohne Fracht
- * @param {number} satz          Anteil, z. B. 0.03
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
 function skontoErsparnis(einkaufNetto, satz = SKONTO_SATZ) {
   if (satz < 0 || satz >= 1) throw new Error('Skontosatz muss zwischen 0 und 1 liegen');
   return cent(Math.max(0, einkaufNetto) * satz);
 }
 
-/**
- * **Gate 21: Das Zahlungsziel des Kunden darf die Skontofrist nicht
- * überschreiten.**
- *
- * Der Grund ist keine Feinheit, sondern die Rechnung aus
- * `zweiter-lieferant-und-skonto.md`: Drei Prozent Skonto heben die Rohmarge
- * von 25 auf 27,25 % und senken den nötigen Monatsumsatz um ein Siebtel —
- * mehr, als die Zahlungsgebühr kostet. Wer dem Kunden dreißig Tage einräumt
- * und dem Lieferanten in vierzehn zahlen will, finanziert die Differenz aus
- * eigener Kasse. Bei diesem Umsatz ist das der Unterschied zwischen sechzig
- * und siebzig Bestellungen im Monat.
- *
- * Vorkasse und Kartenzahlung erfüllen das Gate von selbst: Das Geld ist da,
- * bevor die Lieferantenrechnung fällig wird.
- *
- * **Berichtigung vom 26. August.** Hier stand: „Nur der Rechnungskauf kann
- * es verletzen — und genau der ist im Baustoffhandel üblich." Das wirft zwei
- * verschiedene Dinge zusammen. Der Rechnungskauf **über einen Anbieter**
- * zahlt sofort aus und hält die Frist mühelos; er kostet dafür eine Gebühr.
- * Was das Gate verletzt, ist die **offene Rechnung auf eigenes Risiko** —
- * dreißig Tage Ziel, keine Gebühr, das Geld kommt nach der Skontofrist.
- * Die beiden zu trennen ändert die Entscheidung, siehe
- * `docs/baustoff-shop/zahlungsziel-entschieden.md`.
- *
- * Maßgeblich ist deshalb nicht, was auf der Kundenrechnung als Ziel steht,
- * sondern **wann das Geld im eigenen Konto liegt**. Das ist bei jedem
- * Zahlweg das Feld `tageBisEingang`.
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function zahlungszielTraegt({ kundenzielTage, skontofristTage = SKONTO_FRIST_TAGE, bearbeitungstage = 2 }) {
   if (!Number.isFinite(kundenzielTage) || kundenzielTage < 0) {
     throw new Error('Kundenzahlungsziel muss eine Zahl ab null sein');
   }
-  // Zwischen Zahlungseingang und Überweisung an den Lieferanten liegt
-  // Bearbeitungszeit. Sie zählt zur Frist, nicht daneben.
+  
+  
   const spaetesterAusgang = kundenzielTage + bearbeitungstage;
   const traegt = spaetesterAusgang <= skontofristTage;
 
@@ -3470,29 +3567,29 @@ function zahlungszielTraegt({ kundenzielTage, skontofristTage = SKONTO_FRIST_TAG
   return { traegt, kundenzielTage, skontofristTage, bearbeitungstage, spaetesterAusgang, gruende };
 }
 
-/**
- * Was ein Zahlweg je Bestellung kostet — und was er am Skonto rettet.
- *
- * Die Frage, an der die Wahl des Zahlwegs hängt, ist nicht „welche Gebühr
- * ist die niedrigste". Sie lautet: **Rettet die Gebühr mehr, als sie
- * kostet?** Ein Anbieter, der sofort auszahlt, hält die Skontofrist und
- * bringt damit 3 % des Einkaufs; er nimmt dafür einen Satz auf den
- * Bruttobetrag. Die beiden Prozentsätze sehen gleich aus und sind es nicht:
- *
- *   - Das Skonto rechnet auf den **Einkauf netto** — bei 25 % Marge sind
- *     das drei Viertel des Warenwerts, und die Fracht ist ausgenommen.
- *   - Die Gebühr rechnet auf den **Bruttobetrag** — Warenwert plus Fracht,
- *     plus 20 % Umsatzsteuer, die dem Finanzamt gehört und trotzdem
- *     mitverzinst wird.
- *
- * Die Bemessungsgrundlage der Gebühr ist damit **60 % größer** als die des
- * Skontos, wenn die Fracht wegfällt (1,2 W gegen 0,75 W), und bei der
- * Referenzbestellung mit 75,50 € Fracht **79 %** (865,80 € gegen 484,50 €).
- * Gleicher Prozentsatz heißt hier: deutliches Minus.
- *
- * @param {{warenwertNetto: number, frachtNetto?: number, einkaufNetto: number}} bestellung
- * @param {string} zahlwegId
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function skontoGegenGebuehr(bestellung, zahlwegId, opt = {}) {
   const { warenwertNetto, frachtNetto = 0, einkaufNetto } = bestellung;
   const { skontoSatz = SKONTO_SATZ, ust = 0.2, bearbeitungstage = 2 } = opt;
@@ -3500,8 +3597,8 @@ function skontoGegenGebuehr(bestellung, zahlwegId, opt = {}) {
   if (!z) throw new Error('skontoGegenGebuehr braucht den Zahlweg als opt.zahlweg');
 
   const frist = zahlungszielTraegt({ kundenzielTage: z.tageBisEingang, bearbeitungstage });
-  // Ohne gehaltene Frist gibt es das Skonto nicht — nicht zum halben Satz,
-  // nicht anteilig. Es ist eine Ja-Nein-Grösse.
+  
+  
   const skontoNetto = frist.traegt ? skontoErsparnis(einkaufNetto, skontoSatz) : 0;
   const bruttobetrag = cent((warenwertNetto + frachtNetto) * (1 + ust));
   const gebuehrBrutto = cent(bruttobetrag * z.prozent + z.fixEuro);
@@ -3512,43 +3609,43 @@ function skontoGegenGebuehr(bestellung, zahlwegId, opt = {}) {
     haeltFrist: frist.traegt,
     skontoNetto,
     gebuehrBrutto,
-    // Positiv heisst: Der Weg bringt mehr, als er kostet.
+    
     netto: cent(skontoNetto - gebuehrBrutto),
     bemessungSkonto: cent(einkaufNetto),
     bemessungGebuehr: bruttobetrag,
   };
 }
 
-/**
- * Zahlwege, ihre Gebühren und was sie den Deckungsbeitrag kosten.
- *
- * **Anlass.** In der gesamten Wirtschaftlichkeitsrechnung kommen
- * Zahlungsgebühren nicht vor — weder in `phase3-unit-economics.md` noch in
- * `phase4-sortiment-und-materialwert.md` noch in `phase5-technik.md`. Bei einem
- * Warenkorb von 650 € netto ist das keine Rundungsgröße: Ein Prozentsatz auf
- * den Bruttobetrag trifft eine Rohmarge von 32 % härter, als er aussieht.
- *
- * Der Trockenlauf hat den Zahlungseingang als eine der beiden harten Blockaden
- * benannt. Bevor dafür ein Anbieter gewählt wird — und das ist eine Ausgabe,
- * also freigabepflichtig — gehören die Bedingungen an einer Stelle
- * zusammengetragen und die Kosten gerechnet. Genau das tut diese Datei.
- *
- * Die Gebührensätze sind **öffentlich veröffentlichte Listenpreise**, kein
- * Angebot. Jeder trägt seine Quelle und seine Konfidenz mit; beim
- * B2B-Rechnungskauf ist sie niedrig, weil die Anbieter ihre Händlerkonditionen
- * nicht veröffentlichen.
- */
 
 
 
-/**
- * Zahlwege mit ihren Gebührenmodellen.
- *
- * `barumsatz` ist der Punkt aus `ablage-und-nummernkreis.md`: Zahlung vor Ort
- * löst die Registrierkassenpflicht aus, sobald 7.500 € im Jahr zusammenkommen.
- * `zahlungseingangMaschinell` entscheidet, ob die Kette aus dem Trockenlauf
- * überhaupt automatisch weiterlaufen kann.
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const ZAHLWEGE = [
   {
     id: 'vorkasse',
@@ -3660,27 +3757,27 @@ const ZAHLWEGE = [
   },
 ];
 
-/** Nachschlagen mit klarer Fehlermeldung. Einmal hier, damit es im Bündel nicht kollidiert. */
+
 const findeZahlweg = (id) => {
   const z = ZAHLWEGE.find((w) => w.id === id);
   if (!z) throw new Error(`Unbekannter Zahlweg: ${id}`);
   return z;
 };
 
-/** Gebühr für einen einzelnen Zahlungsvorgang über diesen Bruttobetrag. */
+
 function gebuehr(bruttobetrag, zahlwegId) {
   const z = findeZahlweg(zahlwegId);
   if (!(bruttobetrag > 0)) throw new Error('Die Gebühr braucht einen positiven Bruttobetrag');
   return cent(bruttobetrag * z.prozent + z.fixEuro);
 }
 
-/**
- * Was die Gebühr vom Deckungsbeitrag einer Bestellung wegnimmt.
- *
- * Die Gebühr fällt auf den **Bruttobetrag** an, der Deckungsbeitrag entsteht
- * aber nur auf dem Warenwert netto. Genau diese Schere macht den Unterschied
- * zwischen „1,4 %" und dem, was es wirklich kostet.
- */
+
+
+
+
+
+
+
 function wirkungAufBestellung(warenkorb, zahlwegId) {
   const betrag = gebuehr(warenkorb.summeBrutto, zahlwegId);
   const db = warenkorb.deckungsbeitragNetto;
@@ -3692,21 +3789,21 @@ function wirkungAufBestellung(warenkorb, zahlwegId) {
     deckungsbeitragVorher: db,
     deckungsbeitragNachher: cent(db - betrag),
     anteilAmDeckungsbeitrag: db > 0 ? betrag / db : 0,
-    // Was der Prozentsatz auf den Bruttobetrag am Warenwert netto wirklich ausmacht.
+    
     effektivAufWarenwert: warenkorb.warenwertNetto > 0 ? betrag / warenkorb.warenwertNetto : 0,
   };
 }
 
-/**
- * Hochrechnung auf den Monat.
- *
- * Die Bemessungsgrundlage ist der volle Kundenzahlbetrag — Warenumsatz
- * **plus durchlaufende Fracht**, beides brutto. `wirkungAufBestellung` hat
- * das immer so gehalten (dort steht `summeBrutto`); diese Hochrechnung ließ
- * die Fracht aus und widersprach damit der eigenen Erklärung.
- *
- * @param {{umsatzNetto: number, bestellungen: number, zielgewinn: number, frachtProBestellungNetto?: number}} lage
- */
+
+
+
+
+
+
+
+
+
+
 function wirkungAufMonat(lage, zahlwegId) {
   const { umsatzNetto, bestellungen, zielgewinn, frachtProBestellungNetto = 0 } = lage;
   if (!(bestellungen > 0)) throw new Error('Die Hochrechnung braucht Bestellungen');
@@ -3725,12 +3822,12 @@ function wirkungAufMonat(lage, zahlwegId) {
   };
 }
 
-/**
- * Die Bedingungen, die sich aus den bisherigen Bausteinen ergeben haben.
- *
- * Sie standen bisher in fünf verschiedenen Dokumenten. Hier stehen sie als
- * prüfbare Liste, damit die Auswahl später nicht wieder von vorn beginnt.
- */
+
+
+
+
+
+
 const ANFORDERUNGEN = [
   {
     id: 'keinBarumsatz',
@@ -3748,9 +3845,9 @@ const ANFORDERUNGEN = [
     id: 'skontoErreichbar',
     text: 'Lässt das Lieferantenskonto erreichbar (Gate 21)',
     herkunft: 'zweiter-lieferant-und-skonto.md — 3 % Skonto wiegen schwerer als jede Zahlungsgebühr',
-    // Maßgeblich ist nicht das Ziel auf der Kundenrechnung, sondern wann das
-    // Geld im eigenen Konto liegt: Ein Anbieter, der sofort auszahlt, darf
-    // dem Kunden dreißig Tage einräumen, ohne das Skonto zu kosten.
+    
+    
+    
     erfuellt: (z) => zahlungszielTraegt({ kundenzielTage: z.tageBisEingang }).traegt,
   },
   {
@@ -3761,7 +3858,7 @@ const ANFORDERUNGEN = [
   },
 ];
 
-/** Prüft einen Zahlweg gegen alle Anforderungen. */
+
 function pruefeZahlweg(zahlwegId, lage) {
   const z = findeZahlweg(zahlwegId);
   const ergebnisse = ANFORDERUNGEN.map((a) => ({
@@ -3780,7 +3877,7 @@ function pruefeZahlweg(zahlwegId, lage) {
   };
 }
 
-/** Alle Zahlwege gegen die Anforderungen, nach Monatskosten aufsteigend. */
+
 function vergleiche(lage) {
   return ZAHLWEGE.map((z) => ({
     ...pruefeZahlweg(z.id, lage),
@@ -3790,64 +3887,64 @@ function vergleiche(lage) {
   })).sort((a, b) => a.gebuehrProMonat - b.gebuehrProMonat);
 }
 
-/**
- * Was von der Rohmarge übrig bleibt — und was das für den nötigen Umsatz heißt.
- *
- * Wareneinkauf, Fracht und Zahlungsgebühr sind einzeln gerechnet, aber nie
- * zusammengeführt worden. `phase3-unit-economics.md` bildet die Kaskade
- * Rohmarge → Werbung → Deckungsbeitrag ab; Zahlungsgebühren fehlen darin, wie
- * `zahlwege-und-gebuehren.md` gezeigt hat.
- *
- * Diese Datei zieht die Kaskade einmal vollständig durch und dreht sie dann
- * um: Nicht „wie viel bleibt bei 24.200 € Umsatz", sondern „wie viel Umsatz
- * braucht es, damit am Ende die Zielgröße steht". Das ist die Frage, an der
- * die Planung hängt, denn aus dem Umsatz folgen Bestellungen und aus den
- * Bestellungen der Besucherbedarf.
- *
- * Ein Hinweis zur Fracht: Sie wird im Streckengeschäft eins zu eins an den
- * Kunden weitergegeben und ist deshalb **margenneutral**. Sie taucht in der
- * Kaskade nicht als Kostenposten auf, sondern nur im Bruttobetrag — und damit
- * in der Bemessungsgrundlage der Zahlungsgebühr. Auch das ist ein Effekt, den
- * man leicht übersieht: Man zahlt Gebühr auf durchlaufende Fracht.
- */
 
 
 
-// Skonto und Gate 21 liegen in einem eigenen Modul, weil `zahlung.js` sie
-// ebenfalls braucht und dieses Modul die Zahlwege liest — die Namen werden
-// hier weitergereicht, damit bestehende Importe gültig bleiben.
 
 
-/**
- * `skontoGegenGebuehr` mit nachgeschlagenem Zahlweg.
- *
- * Die Rechnung selbst steht in `skonto.js` und kennt die Zahlwege nicht —
- * sonst verwiesen die beiden Module im Kreis. Hier, wo beide Seiten bekannt
- * sind, wird der Weg nachgeschlagen und durchgereicht.
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function zahlwegGegenSkonto(bestellung, zahlwegId, opt = {}) {
   return skontoGegenGebuehr(bestellung, zahlwegId, { ...opt, zahlweg: findeZahlweg(zahlwegId) });
 }
 
 const UST = 0.20;
 
-/**
- * Anteil der Zahlungsgebühr am **Nettoumsatz** (Warenwert).
- *
- * Die Gebühr fällt auf brutto an, gerechnet wird die Kaskade netto — der
- * Prozentsatz ist deshalb mit 1,2 zu strecken. Der Fixbetrag hängt an der Zahl
- * der Bestellungen, also am Warenkorb; sein Anteil ist damit unabhängig von der
- * Höhe des Umsatzes.
- *
- * **Und die Fracht gehört in die Bemessungsgrundlage.** Der Kundenzahlbetrag
- * enthält die durchlaufende Fracht; der Prozentsatz des Zahlwegs fällt auch
- * auf sie an. Genau dieser Effekt stand seit der ersten Fassung als Satz im
- * Kopf dieser Datei — „man zahlt Gebühr auf durchlaufende Fracht" — und
- * fehlte trotzdem in der Rechnung. `proBestellung` hatte ihn (dort steht der
- * volle `summeBrutto`), die Kaskade nicht: dieselbe Gebühr, zwei
- * Bemessungsgrundlagen, und der Fehler zeigte wie bei der Frachtschwelle und
- * der Brutto-UVP in die optimistische Richtung.
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function gebuehrenanteil(zahlwegId, warenkorbNetto, frachtProBestellungNetto = 0) {
   const z = findeZahlweg(zahlwegId);
   if (!(warenkorbNetto > 0)) throw new Error('Der Gebührenanteil braucht einen Warenkorb');
@@ -3858,17 +3955,17 @@ function gebuehrenanteil(zahlwegId, warenkorbNetto, frachtProBestellungNetto = 0
   );
 }
 
-/**
- * Die Kaskade für einen gegebenen Umsatz.
- *
- * @param {object} lage
- * @param {number} lage.umsatzNetto
- * @param {number} lage.rohmarge      Anteil, z. B. 0.35
- * @param {number} lage.werbeanteil   Anteil am Nettoumsatz, z. B. 0.10
- * @param {number} lage.fixkosten     € im Monat
- * @param {number} lage.warenkorbNetto
- * @param {string} zahlwegId
- */
+
+
+
+
+
+
+
+
+
+
+
 function kaskade(lage, zahlwegId) {
   const { umsatzNetto, rohmarge, werbeanteil, fixkosten, warenkorbNetto, frachtProBestellungNetto = 0 } = lage;
   if (!(umsatzNetto > 0)) throw new Error('Die Kaskade braucht einen Umsatz');
@@ -3894,13 +3991,13 @@ function kaskade(lage, zahlwegId) {
   };
 }
 
-/**
- * Dreht die Kaskade um: Welcher Umsatz trägt die Zielgröße?
- *
- * Geschlossen lösbar, weil alle drei Abzüge Anteile am Nettoumsatz sind — der
- * Fixbetrag der Zahlungsgebühr hängt an der Bestellzahl und die wiederum am
- * Umsatz, sodass sich sein Anteil herauskürzt.
- */
+
+
+
+
+
+
+
 function noetigerUmsatz(ziel, zahlwegId) {
   const {
     zielgewinn,
@@ -3932,13 +4029,13 @@ function noetigerUmsatz(ziel, zahlwegId) {
   };
 }
 
-/**
- * Vergleicht die Zahlwege daran, was sie an zusätzlichem Umsatz kosten.
- *
- * Der Bezugspunkt ist Vorkasse — der Weg ohne Gebühr. Was darüber liegt, ist
- * der Preis des jeweiligen Zahlwegs, ausgedrückt nicht in Euro Gebühr, sondern
- * in Umsatz, den man dafür zusätzlich machen muss.
- */
+
+
+
+
+
+
+
 function mehrumsatzGegenVorkasse(ziel) {
   const grund = noetigerUmsatz(ziel, 'vorkasse');
 
@@ -3959,13 +4056,13 @@ function mehrumsatzGegenVorkasse(ziel) {
     .sort((a, b) => (a.umsatzNetto ?? Infinity) - (b.umsatzNetto ?? Infinity));
 }
 
-/**
- * Was von einer einzelnen Bestellung übrig bleibt.
- *
- * Nimmt den gerechneten Warenkorb, nicht die Durchschnittsannahme — damit die
- * Rollenbindung aus `bedarf.js` und die Fracht je Lieferant tatsächlich
- * drinstehen.
- */
+
+
+
+
+
+
+
 function proBestellung(warenkorb, zahlwegId, werbeanteil) {
   const z = findeZahlweg(zahlwegId);
   const gebuehr = cent(warenkorb.summeBrutto * z.prozent + z.fixEuro);
@@ -3982,7 +4079,7 @@ function proBestellung(warenkorb, zahlwegId, werbeanteil) {
     werbung,
     gebuehr,
     bleibt: cent(warenkorb.deckungsbeitragNetto - werbung - gebuehr),
-    // Was von der ausgewiesenen Rohmarge nach allem übrig ist.
+    
     margeNachAllem:
       warenkorb.warenwertNetto > 0
         ? cent(warenkorb.deckungsbeitragNetto - werbung - gebuehr) / warenkorb.warenwertNetto
@@ -3990,28 +4087,28 @@ function proBestellung(warenkorb, zahlwegId, werbeanteil) {
   };
 }
 
-/**
- * Gate 20 — trägt sich diese eine Bestellung selbst?
- *
- * Die Margenuntergrenze (Gate 1) war für den Streckenhandel mit
- * Herstellerkonditionen gesetzt: 32 % vom Verkauf, sonst fiel die Nische.
- * Mit eigenen Baumeister-Einkaufspreisen und 25 % Zuschlag (= 20 % Rohmarge)
- * ist das ein anderes Geschäft — Preisführerschaft statt Margenführerschaft.
- * An die Stelle einer Prozentschwelle tritt deshalb die härtere und zugleich
- * ehrlichere Bedingung: **Keine Bestellung ohne positiven Deckungsbeitrag.**
- *
- * Der Unterschied zu `deckungsbeitragNetto` im Warenkorb ist Absicht. Der
- * dortige Wert ist Warenwert minus Einkauf und behandelt die Fracht als
- * durchlaufend — das stimmt nur, wenn der Kunde sie zahlt. Sobald „frei Haus"
- * geworben wird, frisst die Fracht den Ertrag, und genau daran scheitern
- * kleine Warenkörbe: Bei 25 € Fracht und 20 % Rohmarge liegt der
- * Nulldurchgang bei rund 145 € Warenkorb. Siehe
- * `docs/baustoff-shop/rechnung-zum-zuschlag.md`.
- *
- * @param {object} warenkorb Ergebnis von `berechneWarenkorb`
- * @param {object} lage `{ zahlwegId, frachtVerrechnet }` — `frachtVerrechnet`
- *   false bedeutet: Lieferung frei Haus, die Fracht geht zu unseren Lasten.
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function traegtSichSelbst(
   warenkorb,
   { zahlwegId = 'karte-stripe', frachtVerrechnet = true, skontoSatz = 0 } = {},
@@ -4021,23 +4118,38 @@ function traegtSichSelbst(
   const einkaufNetto = warenkorb.einkaufNetto ?? 0;
   const frachtNetto = warenkorb.frachtNetto ?? 0;
 
-  // Was der Kunde zahlt — die Fracht nur dann, wenn sie ihm verrechnet wird.
+  
   const erloesNetto = cent(warenwertNetto + (frachtVerrechnet ? frachtNetto : 0));
-  // Die Zahlungsgebühr fällt auf den Bruttobetrag an, den der Kunde zahlt.
+  
   const gebuehrNetto = cent(erloesNetto * (1 + UST) * z.prozent + z.fixEuro);
-  // Skonto mindert den Einkauf, nicht die Fracht — sie ist bei beiden
-  // Lieferanten ausdrücklich nicht skontofähig. Voreinstellung ist null:
-  // Wer das Skonto einrechnen will, muss sagen, dass er es auch zieht.
+  
+  
+  
   const skontoNetto = skontoErsparnis(einkaufNetto, skontoSatz);
   const einkaufNachSkontoNetto = cent(einkaufNetto - skontoNetto);
-  // Die Fracht schulden wir dem Frachtführer in jedem Fall.
-  const deckungsbeitragNetto = cent(erloesNetto - einkaufNachSkontoNetto - frachtNetto - gebuehrNetto);
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  const nebenkostenNetto = cent(warenkorb.nebenkostenUntergrenzeNetto ?? 0);
+  
+  const deckungsbeitragNetto = cent(
+    erloesNetto - einkaufNachSkontoNetto - frachtNetto - gebuehrNetto - nebenkostenNetto,
+  );
 
   const gruende = [];
   if (deckungsbeitragNetto <= 0) {
     gruende.push(
       `Deckungsbeitrag ${deckungsbeitragNetto.toFixed(2)} € — die Bestellung trägt sich nicht` +
-        (frachtVerrechnet ? '' : ' (Lieferung frei Haus: die Fracht geht zu unseren Lasten)'),
+        (frachtVerrechnet ? '' : ' (Lieferung frei Haus: die Fracht geht zu unseren Lasten)') +
+        (nebenkostenNetto > 0
+          ? ` (davon ${nebenkostenNetto.toFixed(2)} € Palette und Folierung, die niemand weiterverrechnet)`
+          : ''),
     );
   }
 
@@ -4050,23 +4162,24 @@ function traegtSichSelbst(
     einkaufNachSkontoNetto,
     frachtNetto,
     gebuehrNetto,
+    nebenkostenNetto,
     frachtVerrechnet,
     gruende,
   };
 }
 
-/**
- * Ab welchem Warenkorb trägt eine frei-Haus-Bestellung sich selbst?
- *
- * Beantwortet die Frage, die am Mindestbestellwert hängt: Unterhalb dieser
- * Schwelle ist eine gelieferte Bestellung ein Verlustgeschäft — unabhängig
- * davon, wie gut der Einkauf war.
- */
+
+
+
+
+
+
+
 function mindestwarenkorbFreiHaus({ rohmarge, frachtNetto, zahlwegId = 'karte-stripe' }) {
   if (!(rohmarge > 0 && rohmarge < 1)) throw new Error('Die Rohmarge muss zwischen 0 und 1 liegen');
   if (!(frachtNetto >= 0)) throw new Error('Die Fracht darf nicht negativ sein');
   const z = findeZahlweg(zahlwegId);
-  // Warenwert w: w·rohmarge − fracht − (w·(1+UST)·prozent + fixEuro) > 0
+  
   const rate = rohmarge - (1 + UST) * z.prozent;
   if (rate <= 0) return { erreichbar: false, grund: 'Die Rohmarge deckt nicht einmal die Zahlungsgebühr' };
   const schwelle = (frachtNetto + z.fixEuro) / rate;
@@ -4075,7 +4188,865 @@ function mindestwarenkorbFreiHaus({ rohmarge, frachtNetto, zahlwegId = 'karte-st
 
 
 
-const daten = {"lieferanten":{"_datenstand":"GEMISCHT — die drei Radon-Lieferanten sind Platzhalter, \"poschacher\" ist aus echten Rechnungen bestätigt. Das Feld konditionenStand je Lieferant sagt, was gilt.","_hinweis":"Echte Werte entstehen erst aus den Antworten auf Anschreiben A, siehe docs/baustoff-shop/anschreiben-entwuerfe.md. Bis dahin dienen die Zahlen ausschliesslich dazu, die Rechenwege zu prüfen.","lieferanten":[{"id":"rohr-at","land":"AT","name":"Rohrhersteller Österreich","konditionenStand":"platzhalter","streckengeschaeft":true,"haendlerrabattAufUvp":0.3,"mindestbestellwertNetto":250,"fracht":{"modell":"pauschale","freiHausAbNetto":1500,"pauschaleNetto":75,"sperrgutZuschlagNetto":25},"produktdaten":"csv","lieferzeitWerktage":5},{"id":"bahnen-de","land":"DE","name":"Abdichtungsbahnen-Hersteller","konditionenStand":"platzhalter","streckengeschaeft":true,"haendlerrabattAufUvp":0.42,"mindestbestellwertNetto":400,"fracht":{"modell":"pauschale","freiHausAbNetto":1200,"pauschaleNetto":95,"sperrgutZuschlagNetto":40},"produktdaten":"csv","lieferzeitWerktage":8},{"id":"zubehoer-de","land":"DE","name":"Zubehör- und Dichtsysteme","konditionenStand":"platzhalter","streckengeschaeft":true,"haendlerrabattAufUvp":0.38,"mindestbestellwertNetto":150,"fracht":{"modell":"pauschale","freiHausAbNetto":600,"pauschaleNetto":12,"sperrgutZuschlagNetto":0},"produktdaten":"katalog","lieferzeitWerktage":4},{"id":"poschacher","land":"AT","name":"Poschacher Baustoffhandel","konditionenStand":"bestaetigt","_konditionenHinweis":"Aus fuenfzehn eigenen Lieferantenrechnungen, April bis August 2026. Der Haendlerrabatt steht bewusst NICHT hier: Er ist artikelgenau und reicht ueber das Sortiment von zehn bis achtundachtzig Prozent. Die Saetze liegen in preise/baustoff-preise.json, die von .gitignore gedeckt ist.","streckengeschaeft":true,"haendlerrabattAufUvp":null,"mindestbestellwertNetto":null,"_mindestbestellwertHinweis":"Kein Mindestbestellwert erkennbar — der kleinste Beleg lautet ueber 18,74 Euro netto und wurde ohne Beanstandung geliefert.","fracht":{"modell":"pauschale","freiHausAbNetto":null,"_freiHausHinweis":"Es gibt keine Frei-Haus-Schwelle. Die Frachtpauschale steht auf jedem Beleg, auch auf dem ueber 1.934 Euro. Das ist keine Annahme, sondern der Befund aus allen fuenfzehn Rechnungen — und der Grund, warum Gate 20 fuer dieses Modell keine akademische Regel ist.","pauschaleNetto":75.5,"_pauschaleHinweis":"Frachtpauschale 66,00 zuzueglich Energiekostenzuschlag 9,50 — beides faellt je Lieferung an.","sperrgutZuschlagNetto":7.5,"_sperrgutHinweis":"Kranentladung je Hub. Faellt bei palettierter Ware an, nicht bei Paketware."},"produktdaten":"keine","preisrhythmus":null,"lieferzeitWerktage":null,"_lieferzeitHinweis":"Aus den Rechnungen nicht ableitbar — der Abstand zwischen Lieferschein und Rechnung ist Abrechnungsfrist, keine Lieferzeit. Beim Lieferanten zu erfragen."}]},"artikel":{"_datenstand":"PLATZHALTER — keine Preise sind von einem Lieferanten bestätigt.","_hinweis":"UVP-Spannen stammen aus der Stückliste in docs/baustoff-shop/phase4-sortiment-und-materialwert.md und sind öffentliche Listenpreisniveaus, keine Einkaufspreise. Der Einkaufspreis ergibt sich hier rechnerisch aus UVP × (1 − Händlerrabatt) und ist damit ebenfalls Platzhalter.","sortiment":"Radonvorsorge, mittlerer Warenkorb nach Gate 5","artikel":[{"sku":"DR-100-050","bezeichnung":"Drainagerohr perforiert DN100, Ringbund 50 m","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Ringbund","menge":"50 m","uvpNetto":165,"gewichtKg":22,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"DR-FT-SET","bezeichnung":"Formteilset Radondrainage: Bögen, Muffen, Anschlüsse","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Set","menge":"1 Gebäude","uvpNetto":145,"gewichtKg":6.5,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"DR-KS-100","bezeichnung":"Kontroll- und Sammelschacht DN100","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Stück","menge":"1","uvpNetto":118,"gewichtKg":9,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"DR-SL-100","bezeichnung":"Steigleitung DN100 inkl. Halterungen, 3 m","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Stück","menge":"3 m","uvpNetto":42,"gewichtKg":4,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"AB-RD-375","bezeichnung":"Radondichte Abdichtungsbahn, Rolle 37,5 m²","gruppe":"Abdichtung","lieferantId":"bahnen-de","einheit":"Rolle","menge":"37,5 m²","uvpNetto":398,"gewichtKg":20,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"AB-PR-010","bezeichnung":"Voranstrich / Primer, 10 l","gruppe":"Abdichtung","lieferantId":"bahnen-de","einheit":"Gebinde","menge":"10 l","uvpNetto":96,"gewichtKg":11,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"ZB-DB-150","bezeichnung":"Dichtband gasdicht, 150 mm × 25 m","gruppe":"Zubehör","lieferantId":"zubehoer-de","einheit":"Rolle","menge":"25 m","uvpNetto":78,"gewichtKg":2.2,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"ZB-MA-SET","bezeichnung":"Manschettenset Innen- und Außenecken","gruppe":"Zubehör","lieferantId":"zubehoer-de","einheit":"Set","menge":"1 Gebäude","uvpNetto":112,"gewichtKg":1.8,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"ZB-RR-125","bezeichnung":"Ringraumdichtung DN125 für Einzelleitung","gruppe":"Zubehör","lieferantId":"zubehoer-de","einheit":"Stück","menge":"1","uvpNetto":64,"gewichtKg":0.9,"sperrgut":false,"ekQuelle":"platzhalter"}]}};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function wortstaemme(text) {
+  const roh = String(text ?? '').toLowerCase();
+  const ersetzt = roh
+    .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss');
+  const teile = [...roh.split(/[^\p{L}\d]+/u), ...ersetzt.split(/[^\p{L}\d]+/u)];
+  return [...new Set(teile.filter((t) => t.length >= 2))];
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function kundenwoerter(artikel, suchwoerter = []) {
+  const raus = [];
+  for (const e of suchwoerter) {
+    const passt = (e.skus ?? []).includes(artikel.sku) || (e.gruppe && e.gruppe === artikel.gruppe);
+    if (passt) raus.push(...wortstaemme(e.wort));
+  }
+  return raus;
+}
+
+
+
+
+
+
+
+
+
+function baueSuchindex({ artikel = [], seiten = [], suchwoerter = [] } = {}) {
+  const eintraege = [];
+
+  for (const a of artikel) {
+    eintraege.push({
+      art: 'artikel',
+      id: `artikel/${a.sku}`,
+      titel: a.bezeichnung,
+      zusatz: `${a.gruppe} ${a.lieferantenArtikelnummer ?? ''}`,
+      gruppe: a.gruppe,
+      sku: a.sku,
+      vkNetto: a.vkNetto ?? null,
+      einheit: a.einheit,
+      stark: wortstaemme(a.bezeichnung),
+      schwach: [...new Set([
+        ...wortstaemme(`${a.gruppe} ${a.lieferantenArtikelnummer ?? ''}`),
+        ...kundenwoerter(a, suchwoerter),
+      ])],
+    });
+  }
+
+  for (const s of seiten) {
+    eintraege.push({
+      art: s.art === 'gruppen' ? 'gruppe' : s.art,
+      id: s.id,
+      titel: s.titel,
+      zusatz: s.kurz ?? '',
+      gruppe: s.gruppe ?? null,
+      stark: wortstaemme(`${s.titel} ${s.frage ?? ''}`),
+      schwach: wortstaemme(`${s.kurz ?? ''} ${s.text ?? ''}`),
+    });
+  }
+
+  return eintraege;
+}
+
+
+const GEWICHT = Object.freeze({ artikel: 3, gruppe: 2, system: 2, wissen: 1 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function suche(index, frage, { grenze = 40 } = {}) {
+  const woerter = wortstaemme(frage);
+  if (!woerter.length) return [];
+
+  const treffer = [];
+  for (const e of index) {
+    let punkte = 0;
+    let alleGetroffen = true;
+
+    for (const w of woerter) {
+      const innen = w.length >= 4;
+      const genau = e.stark.includes(w);
+      const anfang = !genau && e.stark.some((s) => s.startsWith(w));
+      const mitte = !genau && !anfang && innen && e.stark.some((s) => s.includes(w));
+      const schwach = !genau && !anfang && !mitte
+        && e.schwach.some((s) => s.startsWith(w) || (innen && s.includes(w)));
+      if (!genau && !anfang && !mitte && !schwach) { alleGetroffen = false; break; }
+      punkte += genau ? 12 : anfang ? 8 : mitte ? 6 : 3;
+    }
+    if (!alleGetroffen) continue;
+
+    punkte *= GEWICHT[e.art] ?? 1;
+    
+    
+    punkte -= Math.min(6, e.titel.length / 20);
+    treffer.push({ ...e, punkte });
+  }
+
+  return treffer.sort((a, b) => b.punkte - a.punkte || a.titel.localeCompare(b.titel, 'de'))
+    .slice(0, grenze);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function abstand(a, b, hoechstens = 2) {
+  if (a === b) return 0;
+  if (Math.abs(a.length - b.length) > hoechstens) return hoechstens + 1;
+  let vorige = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    const aktuelle = [i];
+    let bestesInZeile = i;
+    for (let j = 1; j <= b.length; j++) {
+      const kosten = a[i - 1] === b[j - 1] ? 0 : 1;
+      const wert = Math.min(vorige[j] + 1, aktuelle[j - 1] + 1, vorige[j - 1] + kosten);
+      aktuelle.push(wert);
+      if (wert < bestesInZeile) bestesInZeile = wert;
+    }
+    
+    
+    if (bestesInZeile > hoechstens) return hoechstens + 1;
+    vorige = aktuelle;
+  }
+  return vorige[b.length];
+}
+
+
+function erlaubterAbstand(wort) {
+  if (wort.length <= 3) return 0;
+  return wort.length <= 6 ? 1 : 2;
+}
+
+
+
+
+
+
+
+
+function meintenSie(index, frage, { wieviele = 3 } = {}) {
+  const woerter = wortstaemme(frage).filter((w) => w.length >= 4);
+  if (!woerter.length) return [];
+
+  
+  
+  
+  const haeufigkeit = new Map();
+  for (const e of index) {
+    if (e.art !== 'artikel') continue;
+    for (const s of [...e.stark, ...e.schwach]) {
+      if (s.length < 4) continue;
+      haeufigkeit.set(s, (haeufigkeit.get(s) ?? 0) + 1);
+    }
+  }
+
+  const gefunden = new Map();
+  const merke = (kandidat, d, wieOft) => {
+    const bisher = gefunden.get(kandidat);
+    if (!bisher || d < bisher.d) gefunden.set(kandidat, { d, wieOft });
+  };
+
+  for (const w of woerter) {
+    const grenze = erlaubterAbstand(w);
+    if (grenze === 0) continue;
+    for (const [kandidat, wieOft] of haeufigkeit) {
+      if (kandidat === w) continue;
+      const d = abstand(w, kandidat, grenze);
+      if (d <= grenze) { merke(kandidat, d, wieOft); continue; }
+
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      if (w.length < 5) continue;
+      const innenGrenze = 1;
+      let bestes = innenGrenze + 1;
+      for (const laenge of [w.length - 1, w.length, w.length + 1]) {
+        if (laenge < 4 || laenge > kandidat.length) continue;
+        for (let i = 0; i + laenge <= kandidat.length; i++) {
+          const d2 = abstand(w, kandidat.slice(i, i + laenge), innenGrenze);
+          if (d2 < bestes) bestes = d2;
+        }
+      }
+      
+      
+      if (bestes <= innenGrenze) merke(kandidat, bestes + 0.5, wieOft);
+    }
+  }
+
+  
+
+
+
+
+
+
+
+
+  const falte = (s) => s.replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss');
+  const kundeTipptUmlaute = /[äöüß]/.test(String(frage).toLowerCase());
+  const jeFaltung = new Map();
+  for (const [wort, wert] of [...gefunden.entries()].sort(
+    (a, b) => a[1].d - b[1].d || b[1].wieOft - a[1].wieOft || a[0].localeCompare(b[0], 'de'),
+  )) {
+    const schluessel = falte(wort);
+    const bisher = jeFaltung.get(schluessel);
+    if (!bisher) { jeFaltung.set(schluessel, { wort, wert }); continue; }
+    const hatUmlaut = /[äöüß]/.test(wort);
+    const bisherUmlaut = /[äöüß]/.test(bisher.wort);
+    if (hatUmlaut !== bisherUmlaut && hatUmlaut === kundeTipptUmlaute) {
+      jeFaltung.set(schluessel, { wort, wert });
+    }
+  }
+
+  return [...jeFaltung.values()]
+    .sort((a, b) => a.wert.d - b.wert.d || b.wert.wieOft - a.wert.wieOft
+      || a.wort.localeCompare(b.wort, 'de'))
+    .slice(0, wieviele)
+    .map((e) => e.wort);
+}
+
+
+
+
+
+const SORTIERUNGEN = Object.freeze([
+  { id: 'name', text: 'Bezeichnung A–Z' },
+  { id: 'preis-auf', text: 'Preis aufsteigend' },
+  { id: 'preis-ab', text: 'Preis absteigend' },
+  { id: 'vorteil', text: 'Preisvorteil zuerst' },
+]);
+
+
+
+
+
+
+
+
+
+function sortiere(artikel, wie = 'name') {
+  const liste = [...artikel];
+  const ohnePreis = (a) => a.vkNetto === null || a.vkNetto === undefined;
+  const nachName = (a, b) => String(a.bezeichnung).localeCompare(String(b.bezeichnung), 'de');
+
+  liste.sort((a, b) => {
+    if (ohnePreis(a) !== ohnePreis(b)) return ohnePreis(a) ? 1 : -1;
+    if (ohnePreis(a)) return nachName(a, b);
+    switch (wie) {
+      case 'preis-auf': return a.vkNetto - b.vkNetto || nachName(a, b);
+      case 'preis-ab': return b.vkNetto - a.vkNetto || nachName(a, b);
+      case 'vorteil': return (vorteil(b) ?? -1) - (vorteil(a) ?? -1) || nachName(a, b);
+      default: return nachName(a, b);
+    }
+  });
+  return liste;
+}
+
+
+function vorteil(a) {
+  if (!a?.uvpNetto || !a?.vkNetto || a.amListendeckel) return null;
+  return Math.round((1 - a.vkNetto / a.uvpNetto) * 100);
+}
+
+
+
+
+
+
+
+
+function filtere(artikel, f = {}) {
+  return artikel.filter((a) => {
+    if (f.gruppe && a.gruppe !== f.gruppe) return false;
+    if (f.suchtauglich && vorteil(a) === null) return false;
+    if (f.ohneSperrgut && a.sperrgut) return false;
+    if (typeof f.preisBis === 'number' && (a.vkNetto === null || a.vkNetto > f.preisBis)) return false;
+    if (typeof f.preisAb === 'number' && (a.vkNetto === null || a.vkNetto < f.preisAb)) return false;
+    return true;
+  });
+}
+
+
+function filterwerte(artikel) {
+  const preise = artikel.map((a) => a.vkNetto).filter((p) => typeof p === 'number');
+  return {
+    gruppen: [...new Set(artikel.map((a) => a.gruppe))].sort((a, b) => a.localeCompare(b, 'de')),
+    preisMin: preise.length ? Math.min(...preise) : null,
+    preisMax: preise.length ? Math.max(...preise) : null,
+    mitSperrgut: artikel.some((a) => a.sperrgut),
+  };
+}
+
+
+
+
+
+const KORBSCHLUESSEL = 'freudenthaler-shop-warenkorb-v1';
+
+
+
+
+
+
+
+
+
+
+
+
+
+function ladeKorb(speicher) {
+  try {
+    const roh = speicher?.getItem(KORBSCHLUESSEL);
+    if (!roh) return [];
+    const daten = JSON.parse(roh);
+    if (!Array.isArray(daten)) return [];
+    return daten
+      .filter((z) => z && typeof z.sku === 'string' && Number.isInteger(z.menge) && z.menge >= 1)
+      .map((z) => ({ sku: z.sku, menge: Math.min(z.menge, 999) }));
+  } catch {
+    return [];
+  }
+}
+
+
+function speichereKorb(speicher, zeilen) {
+  try {
+    speicher?.setItem(KORBSCHLUESSEL, JSON.stringify(zeilen));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+
+
+
+
+
+
+function legeInKorb(zeilen, sku, menge = 1) {
+  if (typeof sku !== 'string' || !sku) throw new Error('Artikelnummer fehlt');
+  if (!Number.isInteger(menge) || menge < 1) throw new Error(`Ungültige Menge: ${menge}`);
+  const neu = zeilen.map((z) => ({ ...z }));
+  const treffer = neu.find((z) => z.sku === sku);
+  if (treffer) treffer.menge = Math.min(treffer.menge + menge, 999);
+  else neu.push({ sku, menge: Math.min(menge, 999) });
+  return neu;
+}
+
+
+function setzeMenge(zeilen, sku, menge) {
+  if (!Number.isInteger(menge) || menge < 0) throw new Error(`Ungültige Menge: ${menge}`);
+  if (menge === 0) return zeilen.filter((z) => z.sku !== sku);
+  return zeilen.map((z) => (z.sku === sku ? { ...z, menge: Math.min(menge, 999) } : { ...z }));
+}
+
+
+const korbAnzahl = (zeilen) => zeilen.reduce((n, z) => n + z.menge, 0);
+
+
+
+
+
+
+
+
+
+function bereinige(zeilen, katalogArtikel) {
+  const bekannt = new Set(katalogArtikel.map((a) => a.sku));
+  const gueltig = zeilen.filter((z) => bekannt.has(z.sku));
+  const entfallen = zeilen.filter((z) => !bekannt.has(z.sku)).map((z) => z.sku);
+  return { zeilen: gueltig, entfallen };
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function oeffentlicherLieferant(l) {
+  return {
+    id: l.id,
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    lieferzeitWerktage: l.lieferzeitWerktage ?? null,
+    fracht: {
+      pauschaleNetto: l.fracht?.pauschaleNetto ?? 0,
+      sperrgutZuschlagNetto: l.fracht?.sperrgutZuschlagNetto ?? 0,
+      
+      
+      
+      freiHausAbNetto: l.fracht?.freiHausAbNetto ?? null,
+    },
+  };
+}
+
+
+function oeffentlicherArtikel(a) {
+  return {
+    sku: a.sku,
+    bezeichnung: a.bezeichnung,
+    gruppe: a.gruppe,
+    einheit: a.einheit,
+    lieferantId: a.lieferantId,
+    sperrgut: !!a.sperrgut,
+    vkNetto: a.vkNetto ?? null,
+    vkBrutto: a.vkBrutto ?? null,
+    uvpNetto: a.uvpNetto ?? null,
+    amListendeckel: !!a.amListendeckel,
+    preisStand: a.preisStand ?? null,
+    lieferantenArtikelnummer: a.lieferantenArtikelnummer ?? null,
+    
+    
+    gewichtKg: typeof a.gewichtKg === 'number' ? a.gewichtKg : null,
+  };
+}
+
+const runde = (n) => Math.round(n * 100) / 100;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function kundenWarenkorb(zeilen, { artikel, lieferanten }, ust = 0.2) {
+  const nachId = new Map(artikel.map((a) => [a.sku, a]));
+  const lieferantById = new Map(lieferanten.map((l) => [l.id, l]));
+  const gruppen = new Map();
+  const offen = [];
+
+  for (const z of zeilen) {
+    const a = nachId.get(z.sku);
+    if (!a) throw new Error(`Unbekannte Artikelnummer: ${z.sku}`);
+    if (a.vkNetto === null) throw new Error(`Artikel ohne Preis: ${z.sku}`);
+    if (!Number.isInteger(z.menge) || z.menge < 1) throw new Error(`Ungültige Menge für ${z.sku}`);
+    if (!gruppen.has(a.lieferantId)) gruppen.set(a.lieferantId, []);
+    gruppen.get(a.lieferantId).push({ ...a, menge: z.menge, zeilensummeNetto: runde(a.vkNetto * z.menge) });
+  }
+
+  const teillieferungen = [];
+  for (const [lieferantId, positionen] of [...gruppen].sort((a, b) => a[0].localeCompare(b[0]))) {
+    const l = lieferantById.get(lieferantId);
+    if (!l) throw new Error(`Unbekannter Lieferant: ${lieferantId}`);
+    const warenwertNetto = runde(positionen.reduce((s, p) => s + p.zeilensummeNetto, 0));
+    const sperrgutPositionen = positionen.filter((p) => p.sperrgut).length;
+    const frachtNetto = runde(l.fracht.pauschaleNetto + sperrgutPositionen * l.fracht.sperrgutZuschlagNetto);
+
+    if (l.fracht.freiHausAbNetto !== null) {
+      offen.push(`Eine Frei-Haus-Schwelle ab ${l.fracht.freiHausAbNetto} € misst am Bestellwert `
+        + 'und lässt sich hier nicht prüfen — die Fracht kann entfallen.');
+    }
+
+    teillieferungen.push({
+      lieferantId,
+      lieferzeitWerktage: l.lieferzeitWerktage,
+      positionen,
+      warenwertNetto,
+      frachtNetto,
+      frachtGrund: sperrgutPositionen > 0
+        ? `Pauschale plus ${sperrgutPositionen}× Sperrgutzuschlag`
+        : 'Pauschale',
+      sperrgutPositionen,
+    });
+  }
+
+  
+  
+  
+  let gewichtKg = 0;
+  let ohneGewicht = 0;
+  for (const t of teillieferungen) {
+    for (const p of t.positionen) {
+      if (typeof p.gewichtKg === 'number') gewichtKg += p.gewichtKg * p.menge;
+      else ohneGewicht += 1;
+    }
+  }
+
+  const warenwertNetto = runde(teillieferungen.reduce((s, t) => s + t.warenwertNetto, 0));
+  const frachtNetto = runde(teillieferungen.reduce((s, t) => s + t.frachtNetto, 0));
+  const nettoGesamt = runde(warenwertNetto + frachtNetto);
+  const ustBetrag = runde(nettoGesamt * ust);
+
+  return {
+    teillieferungen,
+    positionen: teillieferungen.reduce((n, t) => n + t.positionen.length, 0),
+    stueck: korbAnzahl(zeilen),
+    warenwertNetto,
+    frachtNetto,
+    gewichtKg: runde(gewichtKg),
+    positionenOhneGewicht: ohneGewicht,
+    nettoGesamt,
+    ustBetrag,
+    bruttoGesamt: runde(nettoGesamt + ustBetrag),
+    offen,
+  };
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const anfrageEuro = (n) => `${n.toFixed(2).replace('.', ',')} €`;
+
+
+function anfrageSpalte(text, breite) {
+  const t = String(text);
+  return t.length >= breite ? t : t + ' '.repeat(breite - t.length);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = null }) {
+  const leer = { betreff: '', text: '', hinweise: [] };
+
+  if (!rechnung || !rechnung.teillieferungen || rechnung.positionen === 0) {
+    return { moeglich: false, hindernis: 'Der Warenkorb ist leer.', ...leer };
+  }
+  if (!bezirk) {
+    return { moeglich: false, hindernis: 'Der Bezirk der Baustelle fehlt.', ...leer };
+  }
+
+  
+  
+  
+  const gebiet = pruefeLieferort({ land: 'AT', bezirk });
+  if (!gebiet.liefern) {
+    return { moeglich: false, hindernis: gebiet.grund, ...leer };
+  }
+
+  const tag = datum ?? new Date().toISOString().slice(0, 10);
+  const zeilen = [];
+  const hinweise = [];
+
+  zeilen.push('UNVERBINDLICHE ANFRAGE — keine Bestellung.');
+  zeilen.push('');
+  zeilen.push(`Baustelle im Bezirk: ${bezirk}`);
+  zeilen.push(`Erstellt am: ${tag}`);
+  zeilen.push('');
+  zeilen.push('Positionen');
+  zeilen.push('----------');
+
+  const preisstaende = new Set();
+  for (const teil of rechnung.teillieferungen) {
+    for (const p of teil.positionen) {
+      if (p.preisStand) preisstaende.add(p.preisStand);
+      zeilen.push(`${anfrageSpalte(`${p.menge} ${p.einheit ?? 'Stk'}`, 12)}`
+        + `${anfrageSpalte(p.bezeichnung, 46)}`
+        + `${anfrageSpalte(p.sku, 12)}`
+        + `${anfrageSpalte(anfrageEuro(p.vkNetto), 11)}`
+        + anfrageEuro(p.zeilensummeNetto));
+    }
+  }
+
+  zeilen.push('');
+  zeilen.push('Summen (netto, Preise für Unternehmer)');
+  zeilen.push('-------------------------------------');
+  zeilen.push(`${anfrageSpalte('Warenwert', 22)}${anfrageEuro(rechnung.warenwertNetto)}`);
+  zeilen.push(`${anfrageSpalte('Zustellung', 22)}${anfrageEuro(rechnung.frachtNetto)}`);
+  zeilen.push(`${anfrageSpalte('Netto gesamt', 22)}${anfrageEuro(rechnung.nettoGesamt)}`);
+  zeilen.push(`${anfrageSpalte('USt', 22)}${anfrageEuro(rechnung.ustBetrag)}`);
+  zeilen.push(`${anfrageSpalte('Brutto gesamt', 22)}${anfrageEuro(rechnung.bruttoGesamt)}`);
+
+  
+  
+  
+  
+  if (rechnung.gewichtKg > 0) {
+    const offen = rechnung.positionenOhneGewicht;
+    zeilen.push(`${anfrageSpalte('Gewicht', 22)}${rechnung.gewichtKg.toFixed(1).replace('.', ',')} kg`
+      + (offen ? `  (für ${offen} Position${offen === 1 ? '' : 'en'} nicht hinterlegt)` : ''));
+  }
+
+  zeilen.push('');
+  zeilen.push('Was diese Anfrage ist und was nicht');
+  zeilen.push('-----------------------------------');
+  zeilen.push('Diese Liste ist eine Anfrage, keine Bestellung. Sie verpflichtet');
+  zeilen.push('keine der beiden Seiten. Verbindlich wird ein Preis erst mit');
+  zeilen.push('unserer Bestätigung.');
+
+  if (preisstaende.size) {
+    const sortiert = [...preisstaende].sort();
+    const spanne = sortiert.length === 1
+      ? sortiert[0]
+      : `${sortiert[0]} bis ${sortiert[sortiert.length - 1]}`;
+    zeilen.push(`Preisstand der Positionen: ${spanne}. Preise freibleibend.`);
+  } else {
+    hinweise.push('Zu keiner Position ist ein Preisstand hinterlegt — der Text nennt deshalb keinen.');
+  }
+
+  for (const o of rechnung.offen ?? []) {
+    zeilen.push(`Offen: ${o}`);
+    hinweise.push(o);
+  }
+
+  zeilen.push('');
+  zeilen.push('Bitte um Rückmeldung zu Preis, Verfügbarkeit und Liefertermin.');
+
+  const firma = betreiber.firma ?? '';
+  const betreff = `Anfrage ${tag} — ${rechnung.positionen} Position`
+    + `${rechnung.positionen === 1 ? '' : 'en'}, Bezirk ${bezirk}`;
+
+  if (!betreiber.email) {
+    hinweise.push('Keine E-Mail-Adresse hinterlegt — der Text kann nur kopiert, nicht gesendet werden.');
+  }
+
+  return {
+    moeglich: true,
+    hindernis: null,
+    betreff,
+    text: zeilen.join('\n'),
+    empfaenger: betreiber.email || null,
+    firma,
+    hinweise,
+  };
+}
+
+
+
+
+
+
+
+
+
+
+
+const MAILTO_HOECHSTLAENGE = 1800;
+
+function mailtoAdresse(anfrage) {
+  if (!anfrage.moeglich || !anfrage.empfaenger) return null;
+  const adresse = `mailto:${encodeURIComponent(anfrage.empfaenger)}`
+    + `?subject=${encodeURIComponent(anfrage.betreff)}`
+    + `&body=${encodeURIComponent(anfrage.text)}`;
+  return adresse.length > MAILTO_HOECHSTLAENGE ? null : adresse;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function pruefeAnfrageAufGeheimnis(text, artikelMitEk = []) {
+  const treffer = [];
+  const zahl = (n) => n.toFixed(2).replace('.', ',');
+  for (const a of artikelMitEk) {
+    if (typeof a.ekNetto === 'number' && text.includes(zahl(a.ekNetto))) {
+      treffer.push(`${a.sku}: die Zahl ${zahl(a.ekNetto)} ist sein Einkaufspreis und steht im Text`);
+    }
+  }
+  for (const wort of ['Spanne', 'Marge', 'Rohertrag', 'Deckungsbeitrag', 'Einkaufspreis']) {
+    if (new RegExp(wort, 'i').test(text)) treffer.push(`Das Wort „${wort}" steht im Text`);
+  }
+  return treffer;
+}
+
+
+const daten = {"lieferanten":{"_datenstand":"GEMISCHT — die drei Radon-Lieferanten sind Platzhalter, \"poschacher\" ist aus echten Rechnungen bestätigt. Das Feld konditionenStand je Lieferant sagt, was gilt.","_hinweis":"Echte Werte entstehen erst aus den Antworten auf Anschreiben A, siehe docs/baustoff-shop/anschreiben-entwuerfe.md. Bis dahin dienen die Zahlen ausschliesslich dazu, die Rechenwege zu prüfen.","lieferanten":[{"id":"rohr-at","land":"AT","name":"Rohrhersteller Österreich","konditionenStand":"platzhalter","streckengeschaeft":true,"haendlerrabattAufUvp":0.3,"mindestbestellwertNetto":250,"fracht":{"modell":"pauschale","freiHausAbNetto":1500,"pauschaleNetto":75,"sperrgutZuschlagNetto":25},"produktdaten":"csv","lieferzeitWerktage":5},{"id":"bahnen-de","land":"DE","name":"Abdichtungsbahnen-Hersteller","konditionenStand":"platzhalter","streckengeschaeft":true,"haendlerrabattAufUvp":0.42,"mindestbestellwertNetto":400,"fracht":{"modell":"pauschale","freiHausAbNetto":1200,"pauschaleNetto":95,"sperrgutZuschlagNetto":40},"produktdaten":"csv","lieferzeitWerktage":8},{"id":"zubehoer-de","land":"DE","name":"Zubehör- und Dichtsysteme","konditionenStand":"platzhalter","streckengeschaeft":true,"haendlerrabattAufUvp":0.38,"mindestbestellwertNetto":150,"fracht":{"modell":"pauschale","freiHausAbNetto":600,"pauschaleNetto":12,"sperrgutZuschlagNetto":0},"produktdaten":"katalog","lieferzeitWerktage":4},{"id":"poschacher","land":"AT","name":"Poschacher Baustoffhandel","konditionenStand":"bestaetigt","_konditionenHinweis":"Aus fuenfzehn eigenen Lieferantenrechnungen, April bis August 2026. Der Haendlerrabatt steht bewusst NICHT hier: Er ist artikelgenau und reicht ueber das Sortiment von zehn bis achtundachtzig Prozent. Die Saetze liegen in preise/baustoff-preise.json, die von .gitignore gedeckt ist.","streckengeschaeft":true,"haendlerrabattAufUvp":null,"mindestbestellwertNetto":null,"_mindestbestellwertHinweis":"Kein Mindestbestellwert erkennbar — der kleinste Beleg lautet ueber 18,74 Euro netto und wurde ohne Beanstandung geliefert.","fracht":{"modell":"pauschale","freiHausAbNetto":null,"_freiHausHinweis":"Es gibt keine erkennbare Frei-Haus-Schwelle: Der Beleg ueber 1.934 Euro netto traegt dieselbe Pauschale wie der ueber 614 Euro. BERICHTIGT 27.08.: Die fruehere Fassung sagte, die Pauschale stehe 'auf jedem Beleg ... der Befund aus allen fuenfzehn Rechnungen'. Das ist falsch. Fracht steht auf DREI von fuenfzehn Rechnungen; elf lauten 'Abholung Kunde', eine 'Retour durch Kunde'. Der Auftraggeber holt meistens selbst am Lager Mauthausen ab. Die Aussage zur Frei-Haus-Schwelle stuetzt sich damit auf zwei zugestellte Belege, nicht auf fuenfzehn — sie gilt weiter, steht aber auf duennerem Grund. Siehe docs/baustoff-shop/fracht-nur-bei-zustellung.md.","pauschaleNetto":75.5,"_pauschaleHinweis":"Listenpreis 110,00 abzueglich 40 % = 66,00, zuzueglich Energiekostenzuschlag 9,50 — beides je Lieferung. Zwei Artikelnummern mit gleichem Preis: 53265 'Frachtpauschale Mauthausen Lager' und 30667 'Frachtpauschale Mauthausen Baustelle'. Eine Retourfahrt kostet 80,26.","sperrgutZuschlagNetto":7.5,"_sperrgutHinweis":"Kranentladung je Hub. Faellt bei palettierter Ware an, nicht bei Paketware."},"produktdaten":"keine","preisrhythmus":null,"lieferzeitWerktage":null,"_lieferzeitHinweis":"Aus den Rechnungen nicht ableitbar — der Abstand zwischen Lieferschein und Rechnung ist Abrechnungsfrist, keine Lieferzeit. Beim Lieferanten zu erfragen.","nebenkosten":{"_hinweis":"Kostenpositionen, die auf den Belegen stehen und im Rechenkern NICHT gerechnet werden. Belegt aus Rechnung 262021644 vom 16.06.2026. Die Stueckpreise sind bekannt, die Stueckzahl je Lieferung ist es nicht — sie haengt an Gewicht und Packmass, und der Katalog fuehrt kein Gewicht.","paletteOebbNetto":22,"paletteRueckgabeNetto":20,"folierungNetto":6.5,"kranentladungJeHubNetto":7.5,"_gewicht":"Auf dem Beleg ueber 1.934 Euro netto: 6 Paletten (132,00) minus eine Rueckgabe (-20,00) plus Folierung (6,50) = 118,50 nicht gerechnete Nebenkosten — mehr als die Frachtpauschale selbst."}}]},"artikel":{"_datenstand":"PLATZHALTER — keine Preise sind von einem Lieferanten bestätigt.","_hinweis":"UVP-Spannen stammen aus der Stückliste in docs/baustoff-shop/phase4-sortiment-und-materialwert.md und sind öffentliche Listenpreisniveaus, keine Einkaufspreise. Der Einkaufspreis ergibt sich hier rechnerisch aus UVP × (1 − Händlerrabatt) und ist damit ebenfalls Platzhalter.","sortiment":"Radonvorsorge, mittlerer Warenkorb nach Gate 5","artikel":[{"sku":"DR-100-050","bezeichnung":"Drainagerohr perforiert DN100, Ringbund 50 m","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Ringbund","menge":"50 m","uvpNetto":165,"gewichtKg":22,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"DR-FT-SET","bezeichnung":"Formteilset Radondrainage: Bögen, Muffen, Anschlüsse","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Set","menge":"1 Gebäude","uvpNetto":145,"gewichtKg":6.5,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"DR-KS-100","bezeichnung":"Kontroll- und Sammelschacht DN100","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Stück","menge":"1","uvpNetto":118,"gewichtKg":9,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"DR-SL-100","bezeichnung":"Steigleitung DN100 inkl. Halterungen, 3 m","gruppe":"Drainage","lieferantId":"rohr-at","einheit":"Stück","menge":"3 m","uvpNetto":42,"gewichtKg":4,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"AB-RD-375","bezeichnung":"Radondichte Abdichtungsbahn, Rolle 37,5 m²","gruppe":"Abdichtung","lieferantId":"bahnen-de","einheit":"Rolle","menge":"37,5 m²","uvpNetto":398,"gewichtKg":20,"sperrgut":true,"ekQuelle":"platzhalter"},{"sku":"AB-PR-010","bezeichnung":"Voranstrich / Primer, 10 l","gruppe":"Abdichtung","lieferantId":"bahnen-de","einheit":"Gebinde","menge":"10 l","uvpNetto":96,"gewichtKg":11,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"ZB-DB-150","bezeichnung":"Dichtband gasdicht, 150 mm × 25 m","gruppe":"Zubehör","lieferantId":"zubehoer-de","einheit":"Rolle","menge":"25 m","uvpNetto":78,"gewichtKg":2.2,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"ZB-MA-SET","bezeichnung":"Manschettenset Innen- und Außenecken","gruppe":"Zubehör","lieferantId":"zubehoer-de","einheit":"Set","menge":"1 Gebäude","uvpNetto":112,"gewichtKg":1.8,"sperrgut":false,"ekQuelle":"platzhalter"},{"sku":"ZB-RR-125","bezeichnung":"Ringraumdichtung DN125 für Einzelleitung","gruppe":"Zubehör","lieferantId":"zubehoer-de","einheit":"Stück","menge":"1","uvpNetto":64,"gewichtKg":0.9,"sperrgut":false,"ekQuelle":"platzhalter"}]}};
 const ZIELMARGE = 0.35;
 const katalog = ladeKatalog(daten, ZIELMARGE);
 const korb = new Map();

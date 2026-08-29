@@ -451,7 +451,7 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > `pruefe-quellen` 6/6, `shopprobe` 28, `oberflaechenprobe` 11, Website 81
 > Seiten ohne toten Verweis.
 
-> **29. August — vier Läufe.** Ausführlich je ein Dokument.
+> **29. August — sechs Läufe.** Ausführlich je ein Dokument.
 >
 > **Der Gruppenvorschlag wurde gemessen und verworfen.** Ein Regelwerk, das
 > aus der Artikelbezeichnung eine Warengruppe rät, trifft am eigenen Bestand
@@ -492,11 +492,21 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > Bau zweimal laufen und verlangt, dass die Auskunft kippt.
 > [`was-hier-moeglich-ist.md`](./was-hier-moeglich-ist.md).
 >
-> **Stand der Prüfmittel:** 792 Tests, `pruefe-tests` 791/0, `pruefe-inhalte`
+> **Der ausgelieferte Quelltext trug die Kalkulationsregel.** `shop.js` ging
+> mit 293 KB samt aller Kommentare an jeden Besucher, darunter „40 € Einkauf
+> und 25 % Ziel ergeben 53,333… €". Damit wäre der offene Punkt „Repository
+> privat schalten" **wirkungslos** gewesen — zum Rekonstruieren der
+> Einkaufspreise hätte die veröffentlichte Seite genügt. Jetzt wird
+> entkommentiert (293 → 202 KB), abgesichert durch `node --check` vor dem
+> Schreiben und durch dieselbe Testsuite auf entkommentiertem Quelltext:
+> 787 vergleichbare Tests, kein Unterschied.
+> [`kommentare-im-schaufenster.md`](./kommentare-im-schaufenster.md).
+>
+> **Stand der Prüfmittel:** 799 Tests, `pruefe-tests` 798/0, `pruefe-inhalte`
 > 24/355/0, `pruefe-seiten` 58 von 81 gebauten Seiten (die übrigen 23 tragen
-> nur Text aus `inhalte/`, dort geprüft), `pruefe-widerrufe` 155 Dateien/48
+> nur Text aus `inhalte/`, dort geprüft), `pruefe-widerrufe` 157 Dateien/48
 > Fundstellen, `pruefe-quellen` 6/6, `shopprobe` 39 (davon 10 im Rahmen),
-> `oberflaechenprobe` 11, `rahmenzensus` 81/81, `pruefe-stand` 155/155,
+> `oberflaechenprobe` 11, `rahmenzensus` 81/81, `pruefe-stand` 156/156,
 > `pruefe-pruefer` 10 Prüfer ohne Leerlauf, Website 81 Seiten ohne toten
 > Verweis.
 
@@ -826,7 +836,7 @@ zusammengefasst und im Verzeichnis nicht auffindbar:
 | `erste-echte-zahlen.md` | Die Lieferantenrechnungen sind gefunden — die Grundlage der ganzen Kalkulation (22.08.) |
 | `google-kampagne.md` | Die Kampagne ist vollständig geplant und **nicht geschaltet** (22.08.) |
 
-**Läufe vom 29. August** — die vier Dokumente dieses Tages:
+**Läufe vom 29. August** — die sechs Dokumente dieses Tages:
 
 | Datei | Kernaussage |
 |---|---|
@@ -835,6 +845,7 @@ zusammengefasst und im Verzeichnis nicht auffindbar:
 | `anfrage-statt-wand.md` | Die Kasse erzeugt nach der Bezirkswahl die gerechnete, unverbindliche Anfrage zum Kopieren — der Weg, der ohne Zahlungsanbieter funktioniert |
 | `was-hier-moeglich-ist.md` | Startseite, Kasse und `llms.txt` sagen aus den Daten, ob bestellt werden kann — der Satz kippt, wenn die Betreiberdatei vollständig wird |
 | `status-hatte-eine-woche-verspaetung.md` | Dieses Dokument stellte noch Radon-Shop und Leadvermittlung gegenüber; 20 Arbeitsdateien waren hier nie genannt. `npm run pruefe-stand` hält den Abgleich |
+| `kommentare-im-schaufenster.md` | Das ausgelieferte `shop.js` enthielt den Quelltext samt Kommentaren und darin die Kalkulationsregel; „Repository privat schalten" wäre wirkungslos gewesen. Jetzt entkommentiert, mit drittem Durchgang in `pruefe-geheimnis` |
 | `segment-arbeitsplatzmessung.md` | Nebenstrecke, kein eigenes Segment |
 | `strategie-modellvergleich.md` | Kapitalweg braucht ~900.000 €; enthält überholte Empfehlung |
 | `anschreiben-entwuerfe.md` | Drei Anschreiben (Hersteller, Großhändler, Partnerbetriebe), versandfertig, nicht versendet |
