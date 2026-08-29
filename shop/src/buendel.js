@@ -63,7 +63,7 @@ export const KERNMODULE = Object.freeze([
 ]);
 
 /** Die Module des Shops, die zusätzlich in die Seiten wandern. */
-export const SHOPMODULE = Object.freeze(['shopkern.js']);
+export const SHOPMODULE = Object.freeze(['shopkern.js', 'kundenanfrage.js']);
 
 /**
  * @param {(name: string) => string} lies  liest `src/<name>` als Text

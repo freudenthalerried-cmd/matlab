@@ -612,6 +612,107 @@
       + 'die Bestellung durch, sie löst keine aus.'));
     z.appendChild(abschluss);
 
+    // Der Weg, der auch ohne Zahlungsanbieter funktioniert: die fertige,
+    // gerechnete Liste zum Kopieren. Sie erscheint erst, wenn ein Bezirk
+    // gewählt ist — ohne Bezirk ist weder Gate 23 geprüft noch der Text
+    // vollständig. Gesendet wird hier nichts; das entscheidet der Kunde in
+    // seinem eigenen Programm.
+    var anfrageKasten = el('div', 'kasse anfrage');
+    z.appendChild(anfrageKasten);
+
+    function zeichneAnfrage(wahl) {
+      leere(anfrageKasten);
+      anfrageKasten.appendChild(el('h2', null, 'Anfrage stellen'));
+      if (!wahl) {
+        anfrageKasten.appendChild(el('p', 'lede',
+          'Wählen Sie oben den Bezirk der Baustelle — danach steht hier die '
+          + 'fertige Liste zum Kopieren.'));
+        return;
+      }
+      if (wahl === '__anderer__') {
+        // Nicht die allgemeine Aufforderung: Wer „ein anderer Bezirk" gewählt
+        // hat, hat gewählt. Ihm zu sagen, er solle wählen, sähe aus, als hätte
+        // die Seite die Eingabe verloren. Hier steht der Grund.
+        anfrageKasten.appendChild(el('p', 'gebiet nein',
+          'Außerhalb des Liefergebiets — dorthin können wir keine Anfrage '
+          + 'annehmen. Wir liefern nach ' + D.bezirke.join(', ') + '.'));
+        return;
+      }
+      var a = baueKundenanfrage({
+        rechnung: rechnung,
+        bezirk: wahl,
+        betreiber: D.betreiber || {},
+      });
+      if (!a.moeglich) {
+        anfrageKasten.appendChild(el('p', 'gebiet nein', a.hindernis));
+        return;
+      }
+      anfrageKasten.appendChild(el('p', 'lede',
+        'Diese Liste ist eine Anfrage, keine Bestellung. Kopieren Sie sie in '
+        + 'eine Mail — wir melden uns mit Preis, Verfügbarkeit und Termin zurück.'));
+
+      var feld = document.createElement('textarea');
+      feld.readOnly = true;
+      feld.rows = 14;
+      feld.className = 'anfragetext';
+      feld.value = a.text;
+      anfrageKasten.appendChild(feld);
+
+      var reihe = el('div', 'anfrage-knoepfe');
+      var kopieren = el('button', 'knopf', 'Text kopieren');
+      kopieren.type = 'button';
+      var rueckmeldung = el('span', 'anfrage-echo');
+      kopieren.addEventListener('click', function () {
+        // `select()` und `execCommand` sind der Weg, der ohne Berechtigung
+        // und ohne sicheren Ursprung funktioniert. Die Zwischenablage-API
+        // ist der bessere Weg, wo es sie gibt — und sie fehlt genau dort,
+        // wo jemand die Datei lokal öffnet.
+        var geschafft = false;
+        try {
+          feld.focus();
+          feld.select();
+          geschafft = document.execCommand('copy');
+        } catch (e) { geschafft = false; }
+        if (!geschafft && navigator.clipboard) {
+          navigator.clipboard.writeText(a.text).then(function () {
+            rueckmeldung.textContent = 'Kopiert.';
+          }, function () {
+            rueckmeldung.textContent = 'Kopieren ging nicht — der Text ist markiert, bitte mit Strg+C.';
+          });
+          return;
+        }
+        rueckmeldung.textContent = geschafft
+          ? 'Kopiert.'
+          : 'Kopieren ging nicht — der Text ist markiert, bitte mit Strg+C.';
+      });
+      reihe.appendChild(kopieren);
+
+      var mail = mailtoAdresse(a);
+      if (mail) {
+        var link = document.createElement('a');
+        link.className = 'knopf';
+        link.href = mail;
+        link.textContent = 'Als Mail öffnen';
+        reihe.appendChild(link);
+      }
+      reihe.appendChild(rueckmeldung);
+      anfrageKasten.appendChild(reihe);
+
+      // Warum kein Mailknopf da ist, steht dabei. Ein fehlender Knopf ohne
+      // Begründung sieht aus wie ein Fehler; mit Begründung ist er ein
+      // offener Punkt, den jemand schließen kann.
+      for (var i = 0; i < a.hinweise.length; i++) {
+        anfrageKasten.appendChild(el('p', 'anfrage-hinweis', a.hinweise[i]));
+      }
+      if (!mail && a.empfaenger) {
+        anfrageKasten.appendChild(el('p', 'anfrage-hinweis',
+          'Für den Mailknopf ist die Liste zu lang — Mailprogramme kürzen sie '
+          + 'stillschweigend. Bitte den Text kopieren.'));
+      }
+    }
+
+    zeichneAnfrage('');
+
     function pruefe() {
       var wahl = sel.value;
       leere(gebietsantwort);
@@ -632,7 +733,7 @@
         ? 'Wir liefern nach ' + wahl + '.'
         : ergebnis.grund;
     }
-    sel.addEventListener('change', pruefe);
+    sel.addEventListener('change', function () { pruefe(); zeichneAnfrage(sel.value); });
   }
 
   /* ---------------- Start ---------------- */

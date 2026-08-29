@@ -288,6 +288,13 @@ svg.schema.gruppe{max-height:5.5rem}
 .zw:hover{background:var(--flaeche-2)}
 .zw-t{display:flex;flex-direction:column;gap:.2rem}
 .zw-g{font-size:.85rem;color:var(--gedaempft)}
+/* Der Anfragetext: volle Breite mit border-box. Ein Textfeld mit cols
+   sprengt sonst jeden schmalen Rahmen. Die Liste ist auf feste Spalten
+   ausgerichtet und soll im Feld waagrecht rollen, nicht die Seite. */
+.anfragetext{display:block;width:100%;box-sizing:border-box;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.82rem;line-height:1.45;padding:.7rem;border:1px solid var(--linie-stark);background:var(--grund);color:var(--tinte);white-space:pre;overflow:auto;min-height:44px}
+.anfrage-knoepfe{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin-top:.7rem}
+.anfrage-echo{font-size:.9rem;color:var(--gedaempft)}
+.anfrage-hinweis{font-size:.88rem;color:var(--gedaempft);margin:.6rem 0 0}
 
 .karte{background:var(--flaeche);padding:.9rem 1rem;display:flex;flex-direction:column;gap:.4rem;text-decoration:none;color:inherit}
 .karte:hover{background:var(--flaeche-2)}
@@ -1132,7 +1139,7 @@ der ganze Vorteil der getrennten Ausweisung.</p>`,
  * `shopkern.js` schneiden zu; der Interna-Prüfer sieht die fertige Seite und
  * würde melden, was durchrutscht.
  */
-function shopdaten(katalog, befund, seiten, lieferantenDatei, suchwoerterDatei) {
+function shopdaten(katalog, befund, seiten, lieferantenDatei, suchwoerterDatei, betreiber = {}) {
   const verwendet = new Set(katalog.artikel.map((a) => a.lieferantId));
   const bilder = {};
   for (const a of katalog.artikel) bilder[a.sku] = artikelBild(a);
@@ -1168,6 +1175,16 @@ function shopdaten(katalog, befund, seiten, lieferantenDatei, suchwoerterDatei) 
       name: (ZAHLWEGE.find((w) => w.id === z.id) ?? {}).name ?? z.id,
       kunde: z.kunde,
     })),
+    // Nur die Angaben, die ohnehin im Impressum stehen. Sie gehen mit, weil
+    // der Anfragetext den Empfänger nennen muss — und weil ein leeres
+    // `email` der Oberfläche erlaubt zu sagen, **warum** kein Mailknopf da
+    // ist, statt ihn stillschweigend wegzulassen.
+    betreiber: {
+      firma: betreiber.firma ?? '',
+      ort: betreiber.ort ?? '',
+      email: betreiber.email ?? '',
+      telefon: betreiber.telefon ?? '',
+    },
   };
 }
 
@@ -1451,7 +1468,7 @@ function main() {
   rmSync(site, { recursive: true, force: true });
   mkdirSync(site, { recursive: true });
   const dateiSeiten = bauen(pfadVerweis);
-  const nutzdaten = shopdaten(katalog, befund, seiten, lieferantenDatei, suchwoerterDatei);
+  const nutzdaten = shopdaten(katalog, befund, seiten, lieferantenDatei, suchwoerterDatei, betreiber);
   const shopskriptQuelle = `window.__SHOP__=${JSON.stringify(nutzdaten)};\n`
     + `window.__SHOP__.adressform=window.__SHOP_ADRESSFORM__||'datei';\n`
     + `window.__SHOP__.tiefe=!!window.__SHOP_TIEFE__;\n`

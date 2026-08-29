@@ -239,6 +239,66 @@ const SZENARIEN = [
     verboten: ['Bestellung ausgelöst'],
   },
   {
+    name: 'Ohne Bezirk steht kein Anfragetext da, sondern die Aufforderung',
+    // Der Anfragetext ohne Bezirk wäre unvollständig und Gate 23 ungeprüft.
+    // Geprüft wird deshalb auch, dass das Textfeld noch **nicht** existiert.
+    aktionen: `
+      await geheZu('artikel/POS-12566');
+      document.querySelector('[data-legen="POS-12566"]').click();
+      await geheZu('kasse');
+      out = text('.anfrage') + ' [felder=' + document.querySelectorAll('.anfragetext').length + ']';`,
+    erwartet: ['Anfrage stellen', 'Wählen Sie oben den Bezirk', '[felder=0]'],
+  },
+  {
+    name: 'Mit Bezirk steht die gerechnete Anfrage im Textfeld',
+    // `.value` und nicht `.textContent`: Der Inhalt eines <textarea> steht im
+    // Wert. Die erste Fassung dieser Probe las den Text und bekam den leeren
+    // Anfangszustand — grün, ohne etwas gesehen zu haben.
+    aktionen: `
+      await geheZu('artikel/POS-12566');
+      document.querySelector('[data-legen="POS-12566"]').click();
+      await geheZu('kasse');
+      const sel = document.querySelector('#kasse-ziel select');
+      sel.value = 'Perg';
+      sel.dispatchEvent(new Event('change'));
+      const feld = document.querySelector('.anfragetext');
+      out = feld ? feld.value : 'KEIN FELD';`,
+    erwartet: ['UNVERBINDLICHE ANFRAGE', 'Baustelle im Bezirk: Perg', 'POS-12566',
+      'Brutto gesamt', 'freibleibend'],
+    verboten: ['Spanne', 'Marge', 'Einkaufspreis'],
+  },
+  {
+    name: 'Ein Bezirk außerhalb des Liefergebiets erzeugt keinen Anfragetext',
+    aktionen: `
+      await geheZu('artikel/POS-12566');
+      document.querySelector('[data-legen="POS-12566"]').click();
+      await geheZu('kasse');
+      const sel = document.querySelector('#kasse-ziel select');
+      sel.value = '__anderer__';
+      sel.dispatchEvent(new Event('change'));
+      out = text('.anfrage') + ' [felder=' + document.querySelectorAll('.anfragetext').length + ']';`,
+    // „Kein Textfeld" allein ist keine Zusicherung: Das trifft auch zu, wenn
+    // der ganze Abschnitt fehlt. Gegengeprobt — mit abgeschaltetem Abschnitt
+    // war dieses Szenario als einziges der vier weiter grün. Deshalb steht
+    // hier zusätzlich, was nur bei gezeichnetem Abschnitt dasteht.
+    erwartet: ['Anfrage stellen', 'Außerhalb des Liefergebiets', '[felder=0]'],
+    verboten: ['UNVERBINDLICHE ANFRAGE'],
+  },
+  {
+    name: 'Ohne hinterlegte Adresse gibt es keinen Mailknopf, aber den Grund dafür',
+    aktionen: `
+      await geheZu('artikel/POS-12566');
+      document.querySelector('[data-legen="POS-12566"]').click();
+      await geheZu('kasse');
+      const sel = document.querySelector('#kasse-ziel select');
+      sel.value = 'Perg';
+      sel.dispatchEvent(new Event('change'));
+      const mail = [].filter.call(document.querySelectorAll('.anfrage-knoepfe a'),
+        (a) => a.href.indexOf('mailto:') === 0).length;
+      out = text('.anfrage-hinweis') + ' [mailknoepfe=' + mail + ']';`,
+    erwartet: ['E-Mail-Adresse', '[mailknoepfe=0]'],
+  },
+  {
     name: 'Der Warenkorb nennt das Gewicht und sagt, wo es fehlt',
     // POS-10095 (Kanalrohr) hat ein belegtes Gewicht, POS-12566 (EPS) nicht.
     aktionen: `
@@ -504,6 +564,19 @@ const RAHMENSZENARIEN = [
     korb: [{ sku: 'POS-12566', menge: 12 }, { sku: 'POS-10095', menge: 40 }],
     mindestens: 1,
   },
+  // Der Anfragetext ist ein Textfeld mit fester Spaltenbreite — das ist das
+  // eine Bedienelement, das einen 390-px-Rahmen sprengen kann, ohne dass es
+  // jemand bemerkt. Es entsteht erst nach der Bezirkswahl; deshalb wählt der
+  // Rahmen den Bezirk, bevor er misst. `mindestens` beweist, dass er da war:
+  // ohne gezeichneten Abschnitt fällt das Szenario um.
+  {
+    name: 'Kasse mit Anfragetext bei 390 px',
+    kennung: 'kasse',
+    korb: [{ sku: 'POS-12566', menge: 12 }, { sku: 'POS-10095', menge: 40 }],
+    imRahmen: "var s = d.querySelector('#kasse-ziel select');"
+      + "if (s) { s.value = 'Perg'; s.dispatchEvent(new w.Event('change')); }",
+    mindestens: 3,
+  },
 ];
 
 /**
@@ -531,7 +604,16 @@ const TYPEN = {
   '.txt': 'text/plain; charset=utf-8',
 };
 
-function rahmenSeite(kennung, korb) {
+/**
+ * @param {string} kennung  die zu messende Seite
+ * @param {object[]|null} korb  Warenkorb, vor dem Laden abgelegt
+ * @param {string|null} imRahmen  JS, das **im Rahmen** läuft, bevor gemessen
+ *   wird. Für Bedienelemente, die erst nach einer Eingabe entstehen: Der
+ *   Anfragetext auf der Kasse steht erst da, wenn ein Bezirk gewählt ist.
+ *   Ohne diesen Haken misst der Rahmen die Seite vor der Eingabe — und
+ *   bescheinigt einem Textfeld, dass es passt, das es gar nicht gab.
+ */
+function rahmenSeite(kennung, korb, imRahmen = null) {
   const vorbereitung = korb
     ? `try { localStorage.setItem(${JSON.stringify(KORBSCHLUESSEL)}, ${JSON.stringify(JSON.stringify(korb))}); } catch (e) {}`
     : 'try { localStorage.clear(); } catch (e) {}';
@@ -544,13 +626,16 @@ setTimeout(function () {
   var f = document.getElementById('f'), aus;
   try {
     var d = f.contentDocument, w = f.contentWindow;
+    ${imRahmen ? `(function () { ${imRahmen} })();` : ''}
     w.scrollTo(9999, 0);
     var h1 = d.querySelector('h1');
     // Zweite Messung im selben Rahmen: Wie groß sind die Bedienelemente?
     // Fließtextverweise sind ausgenommen — sie stehen im Satz, und WCAG
     // 2.5.8 nimmt sie ausdrücklich aus. Geprüft wird, was ein Knopf ist.
     var klein = [];
-    d.querySelectorAll('.kopfleiste nav a,.korb,.knopf,.kz-weg,#suchfeld,button,select,'
+    // textarea steht mit in der Liste: Der Anfragetext auf der Kasse ist
+    // ein Bedienelement wie jedes andere und muss daumengroß sein.
+    d.querySelectorAll('.kopfleiste nav a,.korb,.knopf,.kz-weg,#suchfeld,button,select,textarea,'
       + 'input[type=number],input[type=search]').forEach(function (n) {
       var r = n.getBoundingClientRect();
       if (r.width && r.height && r.height < 44) {
@@ -568,7 +653,7 @@ setTimeout(function () {
         // hohl. Dieselbe Falle wie überall heute: eine Zahl, die immer
         // stimmt, prüft nichts.
         + ' imZiel=' + [].filter.call(
-            d.querySelectorAll('.knopf,.kz-weg,.kz-menge,button,select,input[type=number]'),
+            d.querySelectorAll('.knopf,.kz-weg,.kz-menge,button,select,textarea,input[type=number]'),
             function (n) { return !n.closest('.kopfleiste'); }
           ).length
         + ' h1=' + (h1 ? h1.textContent.trim().slice(0, 40) : 'KEINE');
@@ -588,7 +673,8 @@ function starteServer() {
         if (url.pathname === '/__rahmen') {
           const korb = url.searchParams.get('korb');
           antwort.writeHead(200, { 'content-type': TYPEN['.html'] });
-          antwort.end(rahmenSeite(url.searchParams.get('ziel') ?? 'index', korb ? JSON.parse(korb) : null));
+          antwort.end(rahmenSeite(url.searchParams.get('ziel') ?? 'index', korb ? JSON.parse(korb) : null,
+            url.searchParams.get('imrahmen')));
           return;
         }
         // Kein Pfad darf aus dem Ausgabeordner herausführen.
@@ -735,6 +821,7 @@ async function laufeRahmen(r, i, adresse) {
   const url = new URL('/__rahmen', adresse);
   url.searchParams.set('ziel', r.kennung);
   if (r.korb) url.searchParams.set('korb', JSON.stringify(r.korb));
+  if (r.imRahmen) url.searchParams.set('imrahmen', r.imRahmen);
 
   let dom = '';
   try {
