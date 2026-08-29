@@ -29,11 +29,44 @@ import { istMenge } from './gebinde.js';
  * eines Baustellenhandys benutzt, tippt oft das zweite. Ein Suchindex, der
  * nur eine Schreibweise kennt, findet die halbe Warengruppe nicht.
  */
+/**
+ * Längenmaße auf Millimeter vereinheitlichen.
+ *
+ * **Gemessen am 29.08.:** „xps 8 cm" fand nichts. Der Shop führt „XPS glatt
+ * SF **80 mm**" und „XPS rau GK 80 mm" — ein Bauleiter sagt aber acht
+ * Zentimeter. Dass „eps 5 cm" funktionierte, war Zufall: Die EPS-Platten
+ * heißen im Katalog „2 cm", „3 cm", „5 cm", die XPS-Platten „30 mm",
+ * „50 mm", „80 mm". Dieselbe Frage traf die eine Warengruppe und die andere
+ * nicht.
+ *
+ * Beide Schreibweisen werden deshalb auf **einen** Stamm gebracht:
+ * `8 cm` und `80 mm` werden beide zu `80mm`. Die nackte Zahl bleibt
+ * zusätzlich erhalten, damit „xps 80" weiter trifft.
+ *
+ * Nur Zentimeter und Millimeter. Meter und Quadratmeter bleiben unberührt:
+ * „1,1x50 m" ist ein Rollenmaß und „0,5 m2" eine Fläche — daraus eine Länge
+ * zu machen hieße, eine Kante zu erfinden.
+ */
+const MASS = /(\d+(?:[.,]\d+)?)\s*(cm|mm)(?![\p{L}\d])/giu;
+
+function vereinheitlicheMasse(text) {
+  const zahlen = [];
+  const ersetzt = text.replace(MASS, (_, zahl, einheit) => {
+    const wert = Number(String(zahl).replace(',', '.'));
+    if (!Number.isFinite(wert) || wert <= 0) return ` ${zahl} ${einheit} `;
+    const mm = einheit.toLowerCase() === 'cm' ? wert * 10 : wert;
+    zahlen.push(String(zahl).replace(',', '.'));
+    return ` ${Math.round(mm)}mm `;
+  });
+  return { ersetzt, zahlen };
+}
+
 export function wortstaemme(text) {
   const roh = String(text ?? '').toLowerCase();
-  const ersetzt = roh
+  const { ersetzt: mitMass, zahlen } = vereinheitlicheMasse(roh);
+  const ersetzt = mitMass
     .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss');
-  const teile = [...roh.split(/[^\p{L}\d]+/u), ...ersetzt.split(/[^\p{L}\d]+/u)];
+  const teile = [...mitMass.split(/[^\p{L}\d]+/u), ...ersetzt.split(/[^\p{L}\d]+/u), ...zahlen];
   return [...new Set(teile.filter((t) => t.length >= 2))];
 }
 
@@ -326,8 +359,27 @@ export function meintenSie(index, frage, { wieviele = 3 } = {}) {
     }
   }
 
+  /**
+   * **Bei gleichem Abstand gewinnt die ähnlichere Länge.**
+   *
+   * Gefunden am 29.08.: Nach der Aufnahme des Kundenworts
+   * „klebespachtelmasse" schlug der Vertipper „spachtl" nicht mehr
+   * *spachtelmasse* vor, sondern das neue, doppelt so lange Wort — beide mit
+   * demselben Abstand, und die Häufigkeit entschied zugunsten des längeren.
+   *
+   * Ein sehr langes Kompositum ist für einen kurzen Vertipper der
+   * schlechtere Rat: Wer sieben Buchstaben tippt, meint eher ein kurzes Wort
+   * mit einem Fehler als ein achtzehn Buchstaben langes. Die Häufigkeit
+   * entscheidet erst danach.
+   */
+  const laengenAbstand = (wort) => Math.min(
+    ...wortstaemme(frage).filter((w) => w.length >= 4).map((w) => Math.abs(wort.length - w.length)),
+  );
+
   return [...jeFaltung.values()]
-    .sort((a, b) => a.wert.d - b.wert.d || b.wert.wieOft - a.wert.wieOft
+    .sort((a, b) => a.wert.d - b.wert.d
+      || laengenAbstand(a.wort) - laengenAbstand(b.wort)
+      || b.wert.wieOft - a.wert.wieOft
       || a.wort.localeCompare(b.wort, 'de'))
     .slice(0, wieviele)
     .map((e) => e.wort);

@@ -389,7 +389,11 @@ test('jedes Kundenwort findet genau die Artikel, für die es eingetragen ist', (
 const begruendet = (e, alleWorte) => {
   const text = String(e.warum ?? '').trim();
   if (text.length > 20) return true;
-  const verweis = /^wie ([\p{L}-]+)$/iu.exec(text);
+  // „Wie X" und „Siehe X." sind derselbe Verweis in zwei Schreibweisen —
+  // beide gelten nur, wenn X wirklich in derselben Liste steht. Der zweite
+  // ist am 29.08. dazugekommen, als die Ablehnungen „Siehe silikatputz."
+  // trugen; das ist keine Lockerung der Regel, sondern dieselbe Regel.
+  const verweis = /^(?:wie|siehe) ([\p{L}-]+)\.?$/iu.exec(text);
   return !!verweis && alleWorte.has(verweis[1].toLowerCase());
 };
 
@@ -557,4 +561,53 @@ test('derselbe Vorschlag erscheint nicht zweimal in zwei Schreibweisen', () => {
   const ohne = meintenSie(index, 'daemmplate');
   assert.equal(ohne[0], 'daemmplatte');
   assert.ok(!ohne.includes('dämmplatte'));
+});
+
+
+/* ------------------------------------------------------------------ *
+ * Zentimeter und Millimeter sind dasselbe Maß
+ * ------------------------------------------------------------------ */
+
+test('cm und mm finden einander', () => {
+  // Gemessen am 29.08.: „xps 8 cm" fand nichts, obwohl der Shop XPS in
+  // 80 mm führt. Dass „eps 5 cm" ging, war Zufall — die EPS-Platten heißen
+  // im Katalog in Zentimetern, die XPS-Platten in Millimetern.
+  const index = bestandsindex();
+  const namen = (frage) => suche(index, frage).filter((t) => t.art === 'artikel').map((t) => t.titel);
+
+  const achtCm = namen('xps 8 cm');
+  assert.ok(achtCm.length >= 2, `„xps 8 cm" findet ${achtCm.length} Artikel`);
+  for (const n of achtCm) assert.match(n, /80 mm/);
+  assert.deepEqual(namen('xps 80 mm').sort(), achtCm.sort());
+
+  // Und die Gegenrichtung: Der Katalog schreibt Zentimeter, der Kunde tippt
+  // Millimeter.
+  const fuenfzigMm = namen('eps 50 mm');
+  assert.ok(fuenfzigMm.length >= 1);
+  for (const n of fuenfzigMm) assert.match(n, /5 cm/);
+});
+
+test('Meter und Quadratmeter bleiben unberührt', () => {
+  // Aus „1,1x50 m" eine Länge in Millimetern zu machen hieße, eine Kante zu
+  // erfinden — dieselbe Regel wie bei der Plattenstärke.
+  assert.ok(wortstaemme('Baumit TextilglasGitter 1,1x50 m').every((w) => !w.endsWith('mm')));
+  assert.ok(wortstaemme('Fassaden EPS 2 cm 0,5 m2').includes('20mm'));
+  assert.ok(!wortstaemme('Isover TDPT 20 1200 600 mm 8,64 m2').includes('200mm'),
+    'die 20 ist eine Typkennung, kein Maß');
+});
+
+test('die neuen Kundenwörter führen zu genau der gemeinten Ware', () => {
+  // Die Messung vom 29.08., als Probe festgehalten: 78 Baustellenwörter
+  // gegen den Bestand, elf davon fanden nichts und meinten trotzdem Ware.
+  const index = bestandsindex();
+  const erstes = (frage) => (suche(index, frage).filter((t) => t.art === 'artikel')[0] ?? {}).titel;
+  assert.match(erstes('kaminrohr'), /SIKM Rohr/);
+  assert.match(erstes('styrodur'), /XPS/);
+  assert.match(erstes('dübelteller'), /Rondelle/);
+  assert.match(erstes('rondellen'), /Rondelle/);
+  assert.match(erstes('abdeckband'), /Abdeckklebeband/);
+  assert.match(erstes('malerband'), /Abdeckklebeband/);
+  assert.match(erstes('fensteranschluss'), /Gewebeanschlussleiste/);
+  assert.match(erstes('laibung'), /Gewebeanschlussleiste/);
+  assert.match(erstes('klebespachtelmasse'), /Spachtel/i);
 });
