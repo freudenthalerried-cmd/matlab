@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { loeseVerweis, loeseVerwandt, marke, mitverbaut, HERSTELLER } from '../bin/website.mjs';
 import { lesKopf } from '../src/markdown.js';
+import { KORBSCHLUESSEL } from '../src/shopkern.js';
 
 const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
 
@@ -646,4 +647,76 @@ test('llms.txt sagt auch, was der Shop nicht führt', () => {
       assert.ok(!txt.includes(w.warum), `die Begründung zu „${w.wort}" steht im Kundenkanal`);
     }
   }
+});
+
+
+/* ------------------------------------------------------------------ *
+ * Nichts wird von einem fremden Server geladen
+ * ------------------------------------------------------------------ */
+
+test('keine gebaute Seite lädt eine Datei von einem fremden Server', () => {
+  // Bis zum 29.08. lud jede Seite drei Schriften von fonts.googleapis.com
+  // und fonts.gstatic.com. Der Browser des Besuchers baut diese Verbindung
+  // auf, bevor er irgendetwas gefragt wurde, und übermittelt dabei seine
+  // IP-Adresse an einen Dritten (LG München I, 20.01.2022, 3 O 17493/20).
+  //
+  // Geprüft wird die **Einbindung**, nicht der Verweis: Ein <a href> auf das
+  // Merkblatt des Herstellers wird erst auf Klick geladen und ist gewollt.
+  const ordner = pfad('../ausgabe/site');
+  if (!existsSync(ordner)) return; // ohne Bau keine Aussage — und keine falsche
+
+  const seiten = [];
+  const gehe = (o) => {
+    for (const e of readdirSync(o, { withFileTypes: true })) {
+      if (e.isDirectory()) gehe(join(o, e.name));
+      else if (e.name.endsWith('.html')) seiten.push(join(o, e.name));
+    }
+  };
+  gehe(ordner);
+  assert.ok(seiten.length >= 40, `nur ${seiten.length} Seiten gefunden`);
+
+  // Was der Browser **von sich aus** holt.
+  const einbindungen = [
+    /<link\b[^>]*\brel=["']?(?:stylesheet|preconnect|preload|dns-prefetch)[^>]*\bhref=["']https?:\/\/([^"'/]+)/gi,
+    /<script\b[^>]*\bsrc=["']https?:\/\/([^"'/]+)/gi,
+    /<(?:img|iframe|video|audio|source|embed)\b[^>]*\bsrc=["']https?:\/\/([^"'/]+)/gi,
+    /@import\s+(?:url\()?["']https?:\/\/([^"'/)]+)/gi,
+    /url\(\s*["']?https?:\/\/([^"')]+)/gi,
+  ];
+  const fremd = [];
+  for (const datei of seiten) {
+    const html = readFileSync(datei, 'utf8');
+    for (const muster of einbindungen) {
+      for (const treffer of html.matchAll(muster)) {
+        fremd.push(`${datei.slice(ordner.length + 1)} → ${treffer[1]}`);
+      }
+    }
+  }
+  assert.deepEqual(fremd, [], 'fremde Einbindungen in gebauten Seiten');
+});
+
+test('die Herstellerverweise sind weiterhin da — der Test prüft nicht eine leere Seite', () => {
+  // Gegenrichtung: Der Test oben wäre auch grün, wenn gar keine fremde
+  // Adresse mehr vorkäme. Die Merkblattverweise sollen bleiben.
+  const datei = pfad('../ausgabe/site/artikel/POS-13728.html');
+  if (!existsSync(datei)) return;
+  const html = readFileSync(datei, 'utf8');
+  assert.match(html, /<a[^>]+href="https:\/\/www\.synthesa\.at/,
+    'der Verweis auf das Merkblatt des Herstellers fehlt');
+});
+
+
+test('die Datenschutzseite nennt den echten Speicherschlüssel, nicht einen erfundenen', () => {
+  // Der erste Wurf schrieb „fb.warenkorb" — frei erfunden, in einer
+  // Rechtsseite. Der Schlüssel kommt jetzt aus dem Code.
+  const datei = pfad('../ausgabe/site/rechtliches/datenschutz.html');
+  if (!existsSync(datei)) return; // ohne Bau keine Aussage — und keine falsche
+  const html = readFileSync(datei, 'utf8');
+  assert.ok(html.includes(KORBSCHLUESSEL), `der Schlüssel ${KORBSCHLUESSEL} steht nicht auf der Seite`);
+  assert.match(html, /Was beim bloßen Besuch dieser Seite geschieht/);
+  assert.match(html, /Keine Cookies/);
+  assert.match(html, /keine Datei von einem fremden Server|Seit 29\.08\. lädt keine Seite/);
+  // Und der offene Punkt bleibt sichtbar, statt beruhigend zu fehlen.
+  assert.match(html, /Serverprotokoll/);
+  assert.match(html, /noch nicht entschieden/);
 });

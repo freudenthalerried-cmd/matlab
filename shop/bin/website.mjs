@@ -44,11 +44,43 @@ import { fracht } from '../src/preis.js';
 import { lesKopf, alsHtml, alsText, alsListe, esc } from '../src/markdown.js';
 import {
   erzeugeImpressum, pruefeBetreiberdaten, AGB_GLIEDERUNG, ZAHLUNGSBEDINGUNGEN,
-  DATENSCHUTZ_GLIEDERUNG, B2B_ABGRENZUNG, LIEFERHINWEISE, IMPRESSUMSFELDER,
+  DATENSCHUTZ_GLIEDERUNG, WEBSITE_VERARBEITUNG, B2B_ABGRENZUNG, LIEFERHINWEISE, IMPRESSUMSFELDER,
 } from '../src/rechtstexte.js';
 
 const HIER = dirname(fileURLToPath(import.meta.url));
 const WURZEL = join(HIER, '..');
+
+/**
+ * **Keine Schrift von einem fremden Server.**
+ *
+ * Bis zum 29.08. lud jede Seite drei Schriften über
+ * `fonts.googleapis.com` und `fonts.gstatic.com`. Das ist bequem und in
+ * Österreich ein Rechtsmangel: Der Browser des Besuchers baut die
+ * Verbindung auf, **bevor** er irgendetwas gefragt wurde, und übermittelt
+ * dabei seine IP-Adresse an einen Dritten. Das Landgericht München I hat am
+ * 20.01.2022 (3 O 17493/20) genau dafür Schadenersatz zugesprochen, und die
+ * Rechtsgrundlage fehlt hier wie dort: Eine Schriftart ist kein berechtigtes
+ * Interesse, wenn dieselbe Schrift auch vom eigenen Server kommen kann.
+ *
+ * Aufgefallen ist es nicht beim Lesen der Rechtsseiten, sondern beim
+ * Nachsehen, welche fremden Adressen die gebauten Seiten überhaupt
+ * enthalten: 162 Vorkommen von `fonts.googleapis.com` in 81 Seiten.
+ *
+ * **Der Ausweg wäre das Selbsthosten** — die Dateien neben die Seite legen
+ * und per `@font-face` einbinden. Aus dieser Umgebung ist er versperrt:
+ * `fonts.googleapis.com` hängt am Ausgangsproxy, die Dateien lassen sich
+ * nicht holen. Bis dahin gilt die Ersatzkette, die ohnehin in jeder
+ * Schriftangabe steht — „Arial Narrow", `system-ui`, `ui-monospace`. Sie war
+ * bisher nur nie zu sehen: In dieser Umgebung ist **jede** Messung und jedes
+ * Bildschirmfoto dieses Shops mit den Ersatzschriften entstanden, weil die
+ * Webschriften hier nie geladen haben. Der Shop sieht also aus, wie er
+ * gemessen wurde.
+ *
+ * Wenn der Auftraggeber die Schriftdateien beilegt, wird aus dieser
+ * Konstante ein `<style>` mit `@font-face` — eine Zeile, kein Umbau.
+ */
+const SCHRIFTEINBINDUNG = '';
+
 
 /**
  * Ein Skript vor dem Schreiben parsen lassen.
@@ -1189,13 +1221,20 @@ function zahlwegName(id) {
 function datenschutzSeite(verweis) {
   return {
     titel: 'Datenschutz — Gliederung',
-    kurz: 'Neun Punkte nach DSGVO. Der schwierigste ist der Ansprechpartner vor Ort: ein Dritter, den der Shop nie erreicht und über den er trotzdem informieren müsste.',
+    kurz: `${DATENSCHUTZ_GLIEDERUNG.length} Punkte nach DSGVO, dazu der technische Befund zur Website selbst. Der schwierigste Punkt ist der Ansprechpartner vor Ort: ein Dritter, den der Shop nie erreicht und über den er trotzdem informieren müsste.`,
     html: `<p class="krume"><a href="${verweis('index')}">Start</a> › <a href="${verweis('rechtliches/index')}">Rechtliches</a> › Datenschutz</p>
 <h1>Datenschutz</h1>
 <div class="antwort"><strong>Gliederung, kein fertiger Text.</strong> Der Wortlaut kommt vom
 Rechtstexteanbieter. Was hier steht, ist die Liste der Punkte, die er abdecken muss — und einer
 davon ist im Baustoffhandel unangenehmer als in den meisten Branchen.</div>
 <ol>${DATENSCHUTZ_GLIEDERUNG.map((d) => `<li>${esc(d)}</li>`).join('')}</ol>
+<h2>Was beim bloßen Besuch dieser Seite geschieht</h2>
+<p>Der technische Befund, aus dem Quelltext gelesen und nicht aus einer Vorlage. Er ist kein
+Rechtstext — er ist das, was der Rechtstexteanbieter wissen muss und außer dem Bau niemand kennt.</p>
+<div class="scroll"><table>
+<thead><tr><th>Punkt</th><th>Befund</th></tr></thead>
+<tbody>${WEBSITE_VERARBEITUNG.map((v) => `<tr><td>${esc(v.was)}</td><td>${esc(v.befund)}</td></tr>`).join('')}</tbody>
+</table></div>
 <h2>Die Stelle, die wirklich klemmt</h2>
 <p>Wer auf der Baustelle die Ware übernimmt, ist ein <strong>Dritter</strong>. Er hat mit dem Shop
 keinen Vertrag, seine Rufnummer stammt vom Besteller, und Artikel 14 DSGVO verlangt, <em>ihn</em>
@@ -1401,10 +1440,7 @@ function rahmen(seite, verweis, { eigenstaendig, skriptDatei, tiefe = false, dat
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(seite.titel)} — ${esc(FIRMA)}</title>
 <meta name="description" content="${esc(seite.kurz.slice(0, 300))}">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500&family=Source+Sans+3:wght@400;600&display=swap">
-<style>${stil()}</style>${ld}
+${SCHRIFTEINBINDUNG}<style>${stil()}</style>${ld}
 </head>
 <body><div class="huelle">
 ${koerper}
@@ -1818,10 +1854,7 @@ ${[...dateiSeiten.keys()].map((id) => `  <url><loc>${BASIS}/${id}.html</loc></ur
   const einzeln = `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Baustoffe zum Baumeisterpreis</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500&family=Source+Sans+3:wght@400;600&display=swap">
-<style>${stil()}</style>
+${SCHRIFTEINBINDUNG}<style>${stil()}</style>
 <div class="huelle" id="inhalt"></div>
 ${eingebettet}
 <script>window.__SHOP_ADRESSFORM__='raute';</script>

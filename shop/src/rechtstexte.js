@@ -17,6 +17,8 @@
  * Pflichtfelder nach § 5 ECG.
  * `bedingt` heißt: nur nötig, wenn der Sachverhalt zutrifft.
  */
+import { KORBSCHLUESSEL } from './shopkern.js';
+
 export const IMPRESSUMSFELDER = [
   { feld: 'firma', bezeichnung: 'Name oder Firma laut Firmenbuch', bedingt: false },
   { feld: 'rechtsform', bezeichnung: 'Rechtsform', bedingt: false },
@@ -366,8 +368,55 @@ export function lieferhinweise(auftrag = {}) {
  * leisten kann, ist die Frage auf den Tisch zu legen, bevor jemand sie im
  * Echtbetrieb stellt.
  */
+/**
+ * Was die **Website selbst** tut — Stand 29.08.2026, aus dem Code gelesen.
+ *
+ * Die Gliederung darunter beschrieb den Bestellvorgang und schwieg über den
+ * Besuch der Seite. Das ist die falsche Reihenfolge: Die Verarbeitung beginnt
+ * beim ersten Seitenaufruf, nicht beim Absenden.
+ *
+ * Diese Liste ist **kein Rechtstext**, sondern der technische Befund, den der
+ * Rechtstexteanbieter braucht — und den außer dem Bau niemand kennt. Er
+ * ändert sich mit dem Code und gehört deshalb hierher und nicht in eine
+ * Kanzleivorlage.
+ */
+export const WEBSITE_VERARBEITUNG = [
+  {
+    was: 'Keine Cookies',
+    befund: 'Die Seiten setzen keine Cookies — weder eigene noch fremde. Ein Einwilligungsbanner ist deshalb gegenstandslos.',
+  },
+  {
+    was: 'Warenkorb im Browser',
+    // Der Schlüssel kommt aus dem Code, nicht aus dem Gedächtnis. Der erste
+    // Wurf schrieb „fb.warenkorb" — frei erfunden, in einer Rechtsseite.
+    // Genau die Sorte Angabe, die niemand nachprüft und die im Ernstfall
+    // beweist, dass der Text nicht zum Shop gehört.
+    befund: `Der Warenkorb liegt in localStorage des Besuchers (Schlüssel ${KORBSCHLUESSEL}) und wird nicht an den Server übertragen. `
+      + 'Er verlässt das Gerät erst, wenn der Besucher den Anfragetext selbst kopiert und versendet.',
+  },
+  {
+    was: 'Keine Zählpixel, keine Analyse',
+    befund: 'Kein Analysewerkzeug, kein Zählpixel, kein Werbenetzwerk auf den Seiten.',
+  },
+  {
+    was: 'Keine fremden Einbindungen',
+    befund: 'Seit 29.08. lädt keine Seite eine Datei von einem fremden Server. Bis dahin kamen drei Schriften von '
+      + 'fonts.googleapis.com und fonts.gstatic.com; damit ging die IP-Adresse jedes Besuchers ungefragt an einen Dritten.',
+  },
+  {
+    was: 'Verweise auf Herstellerseiten',
+    befund: 'Merkblätter und Sicherheitsdatenblätter sind verlinkt, nicht eingebettet. Sie werden erst geladen, wenn der Besucher klickt — '
+      + 'dann gilt die Datenschutzerklärung des Herstellers.',
+  },
+  {
+    was: 'Serverprotokoll',
+    befund: 'Was der Webserver protokolliert, hängt am Hoster und ist noch nicht entschieden. Diese Angabe ist offen und muss vor dem Start ausgefüllt werden.',
+  },
+];
+
 export const DATENSCHUTZ_GLIEDERUNG = [
   'Verantwortlicher und Kontakt',
+  'Was beim bloßen Besuch der Seite geschieht — siehe den technischen Befund darunter',
   'Welche Daten bei der Bestellung verarbeitet werden',
   'Rechtsgrundlage: Vertragserfüllung nach Art. 6 Abs. 1 lit. b DSGVO',
   'Weitergabe an Lieferanten zur Direktlieferung — mit Nennung der Empfängerkategorien',
