@@ -90,10 +90,11 @@ const PRUEFER = [
 ];
 
 /**
- * Die beiden Browserproben.
+ * Die Browserproben.
  *
  * Sie bleiben aus dem Regellauf heraus, weil jede einen Chromium-Start je
- * Szenario kostet — zusammen gut eine Minute. Mit `--mit-browser` kommen sie
+ * Einheit kostet — je Szenario bei den Proben, je gebauter Seite beim
+ * Zensus; zusammen gut eine Minute. Mit `--mit-browser` kommen sie
  * dazu. Geprüft wird auch hier nur der **Umfang**: Eine gelöschte Datei mit
  * Szenarien fiele sonst niemandem auf.
  *
@@ -117,6 +118,17 @@ const BROWSERPRUEFER = [
     muster: /(\d+) Szenarien/,
     einheit: 'Szenarien',
     mindestens: 18,
+  },
+  // Der Zensus zählt keine Szenarien, sondern gebaute Seiten. Genau deshalb
+  // steht er hier: Zeigt er eines Tages auf einen leeren Ausgabeordner,
+  // meldet er „0 von 0 Seiten" — und das sähe ohne Mindestmaß wie Grün aus.
+  {
+    name: 'rahmenzensus',
+    werkzeug: 'rahmenzensus.mjs',
+    muster: /(\d+) von (\d+) Seiten rollen/,
+    einheit: 'gebaute Seiten im 390-px-Rahmen',
+    mindestens: 40,
+    zweite: true,
   },
 ];
 
@@ -161,8 +173,8 @@ for (const p of liste) {
 
 console.log(`\n${liste.length} Prüfer befragt, ${gescheitert} ohne belastbaren Umfang.`);
 if (!mitBrowser) {
-  console.log('Die beiden Browserproben sind nicht dabei — sie kosten je Szenario einen');
-  console.log('Chromium-Start. Mit `--mit-browser` laufen sie mit.');
+  console.log(`Die ${BROWSERPRUEFER.length} Browserproben sind nicht dabei — sie kosten einen Chromium-Start`);
+  console.log('je Szenario bzw. je gebauter Seite. Mit `--mit-browser` laufen sie mit.');
 }
 console.log('Geprüft ist damit der Umfang, nicht der Befund: Was die Prüfer melden,');
 console.log('steht in ihrer eigenen Ausgabe und gehört einzeln angesehen.');

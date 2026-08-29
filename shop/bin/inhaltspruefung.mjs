@@ -90,6 +90,18 @@ function ohneQuelltext(html, datei) {
   }
   return text;
 }
+/** Alle gebauten Seiten — der Bestand, gegen den die geprüfte Zahl steht. */
+function zaehleSeiten(wurzel) {
+  let n = 0;
+  const gehe = (ordner) => {
+    for (const eintrag of readdirSync(ordner, { withFileTypes: true })) {
+      if (eintrag.isDirectory()) gehe(join(ordner, eintrag.name));
+      else if (eintrag.name.endsWith('.html')) n++;
+    }
+  };
+  gehe(wurzel);
+  return n;
+}
 function seitenAbsaetze(wurzel) {
   const gefunden = [];
   const gehe = (ordner) => {
@@ -142,6 +154,7 @@ if (process.argv[2] === '--seiten') {
     process.exit(2);
   }
   const seiten = seitenAbsaetze(wurzel);
+  const gebaut = zaehleSeiten(wurzel);
   let absaetze = 0;
   let treffer = 0;
   for (const seite of seiten) {
@@ -160,6 +173,15 @@ if (process.argv[2] === '--seiten') {
   console.log(`\n${seiten.length} Seiten, ${absaetze} Fließtextabsätze geprüft, ${treffer} mit Verdacht.`);
   console.log('Diese Texte stehen im Seitenbauwerkzeug, nicht in inhalte/ — sie unterliegen');
   console.log('trotzdem denselben Regeln.');
+  // Die Zahl oben ist die Zahl der Seiten mit **eigenem** Text und nicht die
+  // Zahl der gebauten Seiten. Ohne diesen Satz liest sich „58 Seiten geprüft"
+  // wie eine Abdeckung von 58 aus 81 — und die fehlenden 23 sähen aus wie
+  // eine Lücke. Sie sind keine: Sie tragen ausschließlich Text aus
+  // `inhalte/`, der zwischen den Quelltextmarken steht und an der Quelle
+  // geprüft wird. Was hier fehlt, muss trotzdem sichtbar sein, sonst prüft
+  // niemand nach.
+  console.log(`\nGebaut sind ${gebaut} Seiten. Die übrigen ${gebaut - seiten.length} tragen keinen eigenen`);
+  console.log('Absatz — ihr Text steht in inhalte/ und wird dort von `npm run pruefe-inhalte` geprüft.');
   process.exit(0);
 }
 
