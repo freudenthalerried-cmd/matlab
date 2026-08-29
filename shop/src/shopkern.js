@@ -471,7 +471,16 @@ export function setzeMenge(zeilen, sku, menge) {
 }
 
 /** Stückzahl im Korb — die Zahl neben dem Korbsymbol. */
-export const korbAnzahl = (zeilen) => zeilen.reduce((n, z) => n + z.menge, 0);
+/**
+ * Die Zahl der **Positionen** im Korb — das, was ein Zähler anzeigen darf.
+ *
+ * **Berichtigt am 29.08.** Hier stand `korbAnzahl`, die Summe aller Mengen.
+ * Sie addierte Stück, Quadratmeter und Kilogramm zu einer Zahl, die es nicht
+ * gibt; mit ganzen Mengen sah das nach einer Stückzahl aus, seit
+ * Gebindemengen zeigte der Zähler in der Kopfleiste „30.25". Eine Summe über
+ * verschiedene Einheiten ist keine Menge.
+ */
+export const korbPositionen = (zeilen) => zeilen.length;
 
 /**
  * Wirft Zeilen weg, die es im Katalog nicht mehr gibt.
@@ -630,7 +639,6 @@ export function kundenWarenkorb(zeilen, { artikel, lieferanten }, ust = 0.2) {
   return {
     teillieferungen,
     positionen: teillieferungen.reduce((n, t) => n + t.positionen.length, 0),
-    stueck: korbAnzahl(zeilen),
     warenwertNetto,
     frachtNetto,
     gewichtKg: runde(gewichtKg),

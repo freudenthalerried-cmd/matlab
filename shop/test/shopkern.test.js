@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import {
   wortstaemme, baueSuchindex, suche, sortiere, filtere, filterwerte, vorteil,
-  ladeKorb, speichereKorb, legeInKorb, setzeMenge, korbAnzahl, bereinige,
+  ladeKorb, speichereKorb, legeInKorb, setzeMenge, korbPositionen, bereinige,
   kundenWarenkorb, oeffentlicherArtikel, oeffentlicherLieferant, kundenwoerter,
   abstand, erlaubterAbstand, meintenSie, KORBSCHLUESSEL,
 } from '../src/shopkern.js';
@@ -172,7 +172,7 @@ test('legeInKorb zählt zusammen und ändert die Vorlage nicht', () => {
   const zwei = legeInKorb(eins, 'A', 3);
   assert.deepEqual(eins, [{ sku: 'A', menge: 2 }], 'die erste Liste bleibt, wie sie war');
   assert.deepEqual(zwei, [{ sku: 'A', menge: 5 }]);
-  assert.equal(korbAnzahl(zwei), 5);
+  assert.equal(korbPositionen(zwei), 1, 'zwei Klicks auf denselben Artikel sind eine Position');
 });
 
 test('unsinnige Mengen werden abgewiesen, nicht stillschweigend geglättet', () => {
@@ -227,7 +227,10 @@ test('der Warenkorb rechnet Fracht und Sperrgutzuschlag', () => {
   assert.equal(r.frachtNetto, 83, '75,50 Pauschale plus einmal 7,50 für die palettierte Position');
   assert.equal(r.nettoGesamt, 183);
   assert.equal(r.bruttoGesamt, 219.6);
-  assert.equal(r.stueck, 3);
+  assert.equal(r.positionen, 2);
+  // `stueck` gibt es seit dem 29.08. nicht mehr: Eine Summe über Stück,
+  // Quadratmeter und Kilogramm ist keine Menge.
+  assert.equal(r.stueck, undefined);
 });
 
 test('dieselbe Rechnung wie im Rechenkern — nur mit weniger Wissen', () => {

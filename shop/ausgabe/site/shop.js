@@ -4457,7 +4457,16 @@ function setzeMenge(zeilen, sku, menge) {
 }
 
 
-const korbAnzahl = (zeilen) => zeilen.reduce((n, z) => n + z.menge, 0);
+
+
+
+
+
+
+
+
+
+const korbPositionen = (zeilen) => zeilen.length;
 
 
 
@@ -4616,7 +4625,6 @@ function kundenWarenkorb(zeilen, { artikel, lieferanten }, ust = 0.2) {
   return {
     teillieferungen,
     positionen: teillieferungen.reduce((n, t) => n + t.positionen.length, 0),
-    stueck: korbAnzahl(zeilen),
     warenwertNetto,
     frachtNetto,
     gewichtKg: runde(gewichtKg),
@@ -4891,7 +4899,7 @@ function anfrageSpalte(text, breite) {
 
 
 
-function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = null }) {
+function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = null, einheiten = {} }) {
   const leer = { betreff: '', text: '', hinweise: [] };
 
   if (!rechnung || !rechnung.teillieferungen || rechnung.positionen === 0) {
@@ -4925,8 +4933,13 @@ function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = null }) {
   for (const teil of rechnung.teillieferungen) {
     for (const p of teil.positionen) {
       if (p.preisStand) preisstaende.add(p.preisStand);
-      zeilen.push(`${anfrageSpalte(`${p.menge} ${p.einheit ?? 'Stk'}`, 12)}`
-        + `${anfrageSpalte(p.bezeichnung, 46)}`
+      
+      
+      
+      
+      const mengeText = String(p.menge).replace('.', ',');
+      zeilen.push(`${anfrageSpalte(`${mengeText} ${einheiten[p.einheit] ?? p.einheit ?? 'Stk'}`, 14)}`
+        + `${anfrageSpalte(p.bezeichnung, 44)}`
         + `${anfrageSpalte(p.sku, 12)}`
         + `${anfrageSpalte(anfrageEuro(p.vkNetto), 11)}`
         + anfrageEuro(p.zeilensummeNetto));
@@ -5120,7 +5133,7 @@ function pruefeAnfrageAufGeheimnis(text, artikelMitEk = []) {
   
 
   function zeichneZaehler() {
-    var n = korbAnzahl(korb);
+    var n = korbPositionen(korb);
     [].forEach.call(document.querySelectorAll('[data-korbzaehler]'), function (z) {
       z.textContent = n ? String(n) : '';
       z.hidden = !n;
@@ -5672,7 +5685,7 @@ function pruefeAnfrageAufGeheimnis(text, artikelMitEk = []) {
     z.appendChild(form);
 
     var tafel = el('div', 'preistafel');
-    [['Positionen', String(rechnung.positionen), rechnung.stueck + ' Stück'],
+    [['Positionen', String(rechnung.positionen), rechnung.positionen === 1 ? 'im Warenkorb' : 'verschiedene Artikel'],
      ['Warenwert', eur(rechnung.warenwertNetto), 'netto'],
      ['Fracht', eur(rechnung.frachtNetto), rechnung.teillieferungen[0].frachtGrund],
      ['Brutto gesamt', eur(rechnung.bruttoGesamt), 'inkl. ' + eur(rechnung.ustBetrag) + ' USt']
@@ -5735,6 +5748,7 @@ function pruefeAnfrageAufGeheimnis(text, artikelMitEk = []) {
         rechnung: rechnung,
         bezirk: wahl,
         betreiber: D.betreiber || {},
+        einheiten: D.einheiten || {},
       });
       if (!a.moeglich) {
         anfrageKasten.appendChild(el('p', 'gebiet nein', a.hindernis));

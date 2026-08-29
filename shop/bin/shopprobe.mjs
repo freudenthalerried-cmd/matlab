@@ -175,13 +175,22 @@ const SZENARIEN = [
     erwartet: ['Kein Treffer', 'Was nicht darin steht, führen wir nicht'],
   },
   {
-    name: 'Artikel in den Warenkorb legen zählt hoch',
+    name: 'Artikel in den Warenkorb legen: eine Position, vier Einheiten',
+    // Bis zum 29.08. prüfte dieses Szenario „Zaehler:4" — der Zähler zeigte
+    // die Summe der Mengen. Seit sie über Einheiten hinweg keine Zahl mehr
+    // ergibt, zeigt er Positionen. Geprüft wird deshalb **beides**: der
+    // Zähler und die tatsächlich angekommene Menge. Nur der Zähler allein
+    // wäre schwächer als vorher.
     aktionen: `
       await geheZu('artikel/POS-12566');
       document.getElementById('menge-POS-12566').value = '4';
       document.querySelector('[data-legen="POS-12566"]').click();
-      out = 'Zaehler:' + document.querySelector('[data-korbzaehler]').textContent;`,
-    erwartet: ['Zaehler:4'],
+      const zaehler = document.querySelector('[data-korbzaehler]').textContent;
+      await geheZu('warenkorb');
+      out = 'Zaehler:' + zaehler
+        + ' Menge:' + document.querySelector('#warenkorb-ziel .kz-menge').value
+        + ' Summe:' + text('#warenkorb-ziel .kz-summe');`,
+    erwartet: ['Zaehler:1', 'Menge:4', '7,72'],
   },
   {
     name: 'Der Warenkorb rechnet Fracht und Sperrgutzuschlag getrennt aus',
@@ -362,6 +371,36 @@ const SZENARIEN = [
         + ' | summe=' + text('#warenkorb-ziel .kz-summe');`,
     erwartet: ['menge=5.25', '7 Einheiten zu 0,75 m²'],
     verboten: ['menge=5 ', '6 Einheiten'],
+  },
+  {
+    name: 'Der Korbzähler zählt Positionen, nicht die Summe der Mengen',
+    // Vor dem 29.08. addierte er Stück, Quadratmeter und Kilogramm zu einer
+    // Zahl, die es nicht gibt — bei 5,25 m² plus 25 kg stand „30.25" in der
+    // Kopfleiste.
+    aktionen: `
+      await geheZu('artikel/POS-12569');
+      document.querySelector('[data-legen="POS-12569"]').click();
+      await geheZu('artikel/POS-13728');
+      document.querySelector('[data-legen="POS-13728"]').click();
+      out = 'zaehler=' + text('[data-korbzaehler]');`,
+    erwartet: ['zaehler=2'],
+    verboten: ['.', '25.75'],
+  },
+  {
+    name: 'Der Anfragetext schreibt Mengen mit Komma und lesbarer Einheit',
+    aktionen: `
+      await geheZu('artikel/POS-12569');
+      const feld = document.querySelector('#menge-POS-12569');
+      feld.value = '5';
+      document.querySelector('[data-legen="POS-12569"]').click();
+      await geheZu('kasse');
+      const sel = document.querySelector('#kasse-ziel select');
+      sel.value = 'Perg';
+      sel.dispatchEvent(new Event('change'));
+      const feldText = document.querySelector('.anfragetext');
+      out = feldText ? feldText.value : 'KEIN FELD';`,
+    erwartet: ['5,25 m²'],
+    verboten: ['5.25', ' M2'],
   },
   {
     name: 'Der Warenkorb nennt das Gewicht und sagt, wo es fehlt',

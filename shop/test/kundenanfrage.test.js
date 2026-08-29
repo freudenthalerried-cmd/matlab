@@ -65,7 +65,8 @@ test('jede Position steht mit Menge, Einheit, Artikelnummer und Zeilensumme im T
       gezaehlt++;
       assert.ok(a.text.includes(p.sku), `${p.sku} fehlt im Text`);
       assert.ok(a.text.includes(p.bezeichnung), `${p.bezeichnung} fehlt im Text`);
-      assert.ok(a.text.includes(`${p.menge} ${p.einheit}`), `Menge von ${p.sku} fehlt`);
+      assert.ok(a.text.includes(`${String(p.menge).replace('.', ',')} ${p.einheit}`),
+        `Menge von ${p.sku} fehlt`);
       assert.ok(a.text.includes(p.zeilensummeNetto.toFixed(2).replace('.', ',')),
         `Zeilensumme von ${p.sku} fehlt`);
     }
@@ -165,4 +166,24 @@ test('das Gewicht steht im Text und sagt dazu, für wie viele Positionen es fehl
   assert.ok(rechnung.positionenOhneGewicht > 0, 'und eine Position ohne Gewicht');
   assert.match(a.text, /Gewicht/);
   assert.match(a.text, /nicht hinterlegt/);
+});
+
+test('Mengen stehen mit Komma und lesbarer Einheit im Anfragetext', () => {
+  // Bis zum 29.08. stand hier „5.25 M2": der Punkt aus JavaScript und das
+  // Kürzel aus dem Katalog. Ein Text, der an einen Kunden geht, schreibt
+  // nicht in Datenbankschreibweise.
+  const rechnung = kundenWarenkorb([{ sku: artikel[0].sku, menge: 5.25 }], daten);
+  const a = baueKundenanfrage({
+    rechnung, bezirk: 'Perg', betreiber, datum: '2026-08-29',
+    einheiten: { [artikel[0].einheit]: 'm²' },
+  });
+  assert.match(a.text, /5,25 m²/);
+  assert.ok(!a.text.includes('5.25'), 'kein Dezimalpunkt im Kundentext');
+});
+
+test('ohne Einheitentabelle bleibt das Kürzel stehen, statt zu verschwinden', () => {
+  const rechnung = kundenWarenkorb([{ sku: artikel[0].sku, menge: 2 }], daten);
+  const a = baueKundenanfrage({ rechnung, bezirk: 'Perg', betreiber, datum: '2026-08-29' });
+  assert.ok(a.text.includes(`2 ${artikel[0].einheit}`),
+    'lieber das Kürzel als gar keine Einheit');
 });

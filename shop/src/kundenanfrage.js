@@ -56,7 +56,7 @@ function anfrageSpalte(text, breite) {
  * @param {string} [eingabe.datum]    ISO-Datum, Vorgabe: heute
  * @returns {{moeglich: boolean, hindernis: string|null, betreff: string, text: string, hinweise: string[]}}
  */
-export function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = null }) {
+export function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = null, einheiten = {} }) {
   const leer = { betreff: '', text: '', hinweise: [] };
 
   if (!rechnung || !rechnung.teillieferungen || rechnung.positionen === 0) {
@@ -90,8 +90,13 @@ export function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = nu
   for (const teil of rechnung.teillieferungen) {
     for (const p of teil.positionen) {
       if (p.preisStand) preisstaende.add(p.preisStand);
-      zeilen.push(`${anfrageSpalte(`${p.menge} ${p.einheit ?? 'Stk'}`, 12)}`
-        + `${anfrageSpalte(p.bezeichnung, 46)}`
+      // Menge mit Komma und die lesbare Einheit. Bis zum 29.08. stand hier
+      // `5.25 M2` — der Punkt aus JavaScript und das Kürzel aus dem Katalog.
+      // Ein Text, der an einen Kunden geht, schreibt nicht in Datenbank-
+      // schreibweise.
+      const mengeText = String(p.menge).replace('.', ',');
+      zeilen.push(`${anfrageSpalte(`${mengeText} ${einheiten[p.einheit] ?? p.einheit ?? 'Stk'}`, 14)}`
+        + `${anfrageSpalte(p.bezeichnung, 44)}`
         + `${anfrageSpalte(p.sku, 12)}`
         + `${anfrageSpalte(anfrageEuro(p.vkNetto), 11)}`
         + anfrageEuro(p.zeilensummeNetto));

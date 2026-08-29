@@ -68,7 +68,7 @@
   /* ---------------- Kopfleiste ---------------- */
 
   function zeichneZaehler() {
-    var n = korbAnzahl(korb);
+    var n = korbPositionen(korb);
     [].forEach.call(document.querySelectorAll('[data-korbzaehler]'), function (z) {
       z.textContent = n ? String(n) : '';
       z.hidden = !n;
@@ -620,7 +620,7 @@
     z.appendChild(form);
 
     var tafel = el('div', 'preistafel');
-    [['Positionen', String(rechnung.positionen), rechnung.stueck + ' Stück'],
+    [['Positionen', String(rechnung.positionen), rechnung.positionen === 1 ? 'im Warenkorb' : 'verschiedene Artikel'],
      ['Warenwert', eur(rechnung.warenwertNetto), 'netto'],
      ['Fracht', eur(rechnung.frachtNetto), rechnung.teillieferungen[0].frachtGrund],
      ['Brutto gesamt', eur(rechnung.bruttoGesamt), 'inkl. ' + eur(rechnung.ustBetrag) + ' USt']
@@ -683,6 +683,7 @@
         rechnung: rechnung,
         bezirk: wahl,
         betreiber: D.betreiber || {},
+        einheiten: D.einheiten || {},
       });
       if (!a.moeglich) {
         anfrageKasten.appendChild(el('p', 'gebiet nein', a.hindernis));

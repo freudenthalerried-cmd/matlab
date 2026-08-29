@@ -451,7 +451,7 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > `pruefe-quellen` 6/6, `shopprobe` 28, `oberflaechenprobe` 11, Website 81
 > Seiten ohne toten Verweis.
 
-> **29. August — neun Läufe.** Ausführlich je ein Dokument.
+> **29. August — zehn Läufe.** Ausführlich je ein Dokument.
 >
 > **Der Gruppenvorschlag wurde gemessen und verworfen.** Ein Regelwerk, das
 > aus der Artikelbezeichnung eine Warengruppe rät, trifft am eigenen Bestand
@@ -502,11 +502,11 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > 787 vergleichbare Tests, kein Unterschied.
 > [`kommentare-im-schaufenster.md`](./kommentare-im-schaufenster.md).
 >
-> **Stand der Prüfmittel:** 818 Tests, `pruefe-tests` 817/0, `pruefe-inhalte`
+> **Stand der Prüfmittel:** 820 Tests, `pruefe-tests` 819/0, `pruefe-inhalte`
 > 24/355/0, `pruefe-seiten` 60 von 81 gebauten Seiten (die übrigen 23 tragen
-> nur Text aus `inhalte/`, dort geprüft), `pruefe-widerrufe` 160 Dateien/48
-> Fundstellen, `pruefe-quellen` 6/6, `shopprobe` 43 (davon 10 im Rahmen),
-> `oberflaechenprobe` 11, `rahmenzensus` 81/81, `pruefe-stand` 159/159,
+> nur Text aus `inhalte/`, dort geprüft), `pruefe-widerrufe` 161 Dateien/48
+> Fundstellen, `pruefe-quellen` 6/6, `shopprobe` 45 (davon 10 im Rahmen),
+> `oberflaechenprobe` 11, `rahmenzensus` 81/81, `pruefe-stand` 160/160,
 > `pruefe-pruefer` 10 Prüfer ohne Leerlauf, Website 81 Seiten ohne toten
 > Verweis.
 
@@ -836,7 +836,7 @@ zusammengefasst und im Verzeichnis nicht auffindbar:
 | `erste-echte-zahlen.md` | Die Lieferantenrechnungen sind gefunden — die Grundlage der ganzen Kalkulation (22.08.) |
 | `google-kampagne.md` | Die Kampagne ist vollständig geplant und **nicht geschaltet** (22.08.) |
 
-**Läufe vom 29. August** — die neun Dokumente dieses Tages:
+**Läufe vom 29. August** — die zehn Dokumente dieses Tages:
 
 | Datei | Kernaussage |
 |---|---|
@@ -849,6 +849,7 @@ zusammengefasst und im Verzeichnis nicht auffindbar:
 | `dreimal-richtig-beschriftet.md` | „25 kg" je Kilogramm gegen „25 kg" je Sack: 2,77 € gegen 14,32 €, der teurere sah fünfmal billiger aus. Beide Preise stehen jetzt nebeneinander, dazu die Tafel „Was ein Kilogramm kostet" |
 | `ein-kilogramm-von-einem-sack.md` | Der Knopf legte **ein Kilogramm** eines 25-kg-Gebindes in den Korb — eine Menge, die es nicht gibt. Mengenfeld und Warenkorb zählen jetzt in Gebinden und runden auf |
 | `ganze-quadratmeter-gibt-es-nicht.md` | Der Korb ließ nur ganze Mengen zu — bei einer Platte zu 0,75 m² sind das ausschließlich die unlieferbaren. `istMenge()` erlaubt jetzt zwei Nachkommastellen; 15 von 46 Artikeln haben einen Gebindeschritt |
+| `dreissig-komma-zwei-fuenf-stueck.md` | Wer sonst nahm ganze Mengen an? Der Korbzähler summierte Stück, m² und kg zu „30.25", der Anfragetext schrieb „5.25 M2". Beides war älter als die Gebindemengen und nur unauffällig |
 | `segment-arbeitsplatzmessung.md` | Nebenstrecke, kein eigenes Segment |
 | `strategie-modellvergleich.md` | Kapitalweg braucht ~900.000 €; enthält überholte Empfehlung |
 | `anschreiben-entwuerfe.md` | Drei Anschreiben (Hersteller, Großhändler, Partnerbetriebe), versandfertig, nicht versendet |
