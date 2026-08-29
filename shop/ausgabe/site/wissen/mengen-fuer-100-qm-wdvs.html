@@ -78,6 +78,26 @@ svg.schema.gruppe{max-height:5.5rem}
 .kopfleiste{flex-wrap:wrap;gap:.6rem 1rem}
 .suche{position:relative;flex:1 1 18rem;min-width:12rem}
 #suchfeld{width:100%;font:inherit;font-size:.95rem;padding:.5rem .7rem;border:1px solid var(--linie-stark);background:var(--flaeche);color:var(--tinte);border-radius:0}
+/* **Ein sichtbarer Fokus für alles, was bedienbar ist.**
+   Gemessen am 29.08. im Browser: Die Artikelkarte hatte mit und ohne Fokus
+   denselben Umriss — die Zierlinie auf .raster > * überschrieb den
+   Fokusring des Browsers. Ein Kunde, der mit der
+   Tastatur durch 46 Karten geht, sah nichts wandern. Die beiden zweiten
+   zweite Regel ist **nicht** aus Vorrangsgründen nötig — das stand hier
+   zuerst und war falsch: Der Universalselektor zählt für die Genauigkeit
+   nicht, beide Regeln sind gleich genau, und die spätere gewinnt.
+   Nachgemessen: Ohne die Zweitregel wandert der Ring trotzdem. Sie steht
+   da, weil ein Raster ohne Zwischenraum baut — ein Ring mit Abstand nach
+   außen liefe in die Nachbarkarte hinein, deshalb dort drei Pixel nach
+   innen. */
+:focus-visible{outline:2px solid var(--ocker);outline-offset:2px}
+.raster>*:focus-visible,.kacheln>*:focus-visible{outline:3px solid var(--ocker);outline-offset:-3px}
+/* Zum Inhalt springen — die Kopfleiste trägt neun Verweise, und ohne diesen
+   einen muss ein Tastaturkunde sie auf jeder Seite durchlaufen. Sichtbar
+   wird er erst, wenn er den Fokus hat. */
+.springen{position:absolute;left:-9999px;top:0;background:var(--ocker);color:var(--grund);
+padding:.6rem 1rem;z-index:10;text-decoration:none}
+.springen:focus{left:0}
 #suchfeld:focus-visible{outline:2px solid var(--ocker);outline-offset:1px}
 .vorschlaege{position:absolute;z-index:20;left:0;right:0;top:calc(100% + 2px);background:var(--flaeche);border:1px solid var(--linie-stark);max-height:22rem;overflow-y:auto;box-shadow:0 6px 24px rgba(0,0,0,.14)}
 .vorschlag{display:flex;flex-direction:column;gap:.1rem;padding:.5rem .7rem;text-decoration:none;color:inherit;border-bottom:1px solid var(--linie)}
@@ -197,6 +217,7 @@ footer a{color:var(--gedaempft)}
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Mengen für 100 m² Fassade ermitteln","description":"Die Menge ergibt sich aus dem Verbrauchswert jedes Produkts mal der Fläche, plus Zuschlägen für Verschnitt und Untergrund. Die Verbrauchswerte stehen im Merkblatt des Herstellers und schwanken je nach Auftragsart erheblich — deshalb rechnet diese Seite den Weg vor, nicht das Ergebnis.","inLanguage":"de-AT","dateModified":"2026-08-25","publisher":{"@type":"Organization","name":"Freudenthaler Bau GmbH"},"mainEntity":{"@type":"Question","name":"Wie viel Material brauche ich für 100 Quadratmeter Wärmedämmverbundsystem?","acceptedAnswer":{"@type":"Answer","text":"Die Menge ergibt sich aus dem Verbrauchswert jedes Produkts mal der Fläche, plus Zuschlägen für Verschnitt und Untergrund. Die Verbrauchswerte stehen im Merkblatt des Herstellers und schwanken je nach Auftragsart erheblich — deshalb rechnet diese Seite den Weg vor, nicht das Ergebnis."}}}</script>
 </head>
 <body><div class="huelle">
+<a class="springen" href="#inhalt">Zum Inhalt springen</a>
 <header class="kopfleiste">
   <a class="logo" href="../index.html">Freudenthaler Bau GmbH</a>
   <div class="suche">
@@ -208,7 +229,7 @@ footer a{color:var(--gedaempft)}
     class="zahl" data-korbzaehler hidden></span></a>
   <nav><a href="../gruppe/wdvs.html">WDVS</a><a href="../gruppe/daemmung.html">Dämmung</a><a href="../gruppe/mauerwerk.html">Mauerwerk</a><a href="../gruppe/moertel.html">Mörtel</a><a href="../gruppe/kamin.html">Kamin</a><a href="../gruppe/kanal.html">Kanal</a><a href="../gruppe/zubehoer.html">Zubehör</a><a href="../lieferung.html">Lieferung</a></nav>
 </header>
-<p class="krume"><a href="../index.html">Start</a> › Wissen</p>
+<div id="inhalt" tabindex="-1"></div><p class="krume"><a href="../index.html">Start</a> › Wissen</p>
 <!--quelltext--><h1>Mengen für 100 m² Fassade ermitteln</h1>
 <p><strong>Die Antwort in zwei Sätzen.</strong> Die Menge ergibt sich aus dem Verbrauchswert jedes Produkts mal der Fläche, zuzüglich Zuschlägen für Verschnitt und Untergrund. Weil die Verbrauchswerte je nach Auftragsart erheblich schwanken, rechnet diese Seite <strong>den Weg</strong> vor und nicht das Ergebnis.</p>
 <h2>Warum hier keine fertige Stückliste steht</h2>

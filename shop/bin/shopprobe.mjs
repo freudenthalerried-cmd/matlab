@@ -578,6 +578,45 @@ const SZENARIEN = [
     erwartet: ['treffer=8', 'Mantelstein', 'Kamin'],
   },
   {
+    name: 'Jedes Bedienelement zeigt, dass es den Fokus hat',
+    // Gemessen am 29.08.: Die Artikelkarte trug mit und ohne Fokus denselben
+    // Umriss — die Zierlinie des Rasters überschrieb den Fokusring des
+    // Browsers. Wer mit der Tastatur durch 46 Karten geht, sah nichts
+    // wandern. Geprüft wird der **berechnete** Stil vorher und nachher, nicht
+    // das Vorhandensein einer Regel.
+    aktionen: `
+      await geheZu('artikel/POS-12569');
+      const proben = [['karte', '.karte'], ['nav', '.kopfleiste nav a'],
+        ['knopf', '.knopf'], ['verweis', 'p a'], ['feld', 'input[type=number]']];
+      const teile = [];
+      for (const [name, wahl] of proben) {
+        const n = document.querySelector(wahl);
+        if (!n) { teile.push(name + '=FEHLT'); continue; }
+        const vor = getComputedStyle(n).outline;
+        n.focus();
+        const nach = getComputedStyle(n).outline;
+        teile.push(name + '=' + (vor === nach ? 'GLEICH' : 'sichtbar'));
+      }
+      out = teile.join(' ');`,
+    erwartet: ['karte=sichtbar', 'nav=sichtbar', 'knopf=sichtbar',
+      'verweis=sichtbar', 'feld=sichtbar'],
+    verboten: ['GLEICH', 'FEHLT'],
+  },
+  {
+    name: 'Der Sprungverweis führt an der Kopfleiste vorbei',
+    // Neun Verweise stehen vor dem Inhalt. Ohne diesen einen läuft ein
+    // Tastaturkunde sie auf jeder Seite durch.
+    aktionen: `
+      await geheZu('gruppe/daemmung');
+      const sprung = document.querySelector('.springen');
+      const versteckt = sprung ? getComputedStyle(sprung).left : 'KEINER';
+      if (sprung) sprung.focus();
+      const sichtbar = sprung ? getComputedStyle(sprung).left : 'KEINER';
+      out = 'ziel=' + (document.querySelector(sprung ? sprung.getAttribute('href') : '#x') ? 'da' : 'fehlt')
+        + ' ruhend=' + versteckt + ' fokussiert=' + sichtbar;`,
+    erwartet: ['ziel=da', 'ruhend=-9999px', 'fokussiert=0px'],
+  },
+  {
     name: 'Ein bekanntes Nicht-Sortiment bekommt eine eigene Antwort',
     // Die Suchseite sagte bei jedem Fehlschlag denselben allgemeinen Satz.
     // Für 23 Wörter steht im Register, was wir nicht führen und was daneben
