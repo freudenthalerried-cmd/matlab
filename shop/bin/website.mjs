@@ -31,7 +31,7 @@ import { dirname, join, resolve } from 'node:path';
 import { ladeBaustoffkatalog, katalogbefund, ZIELMARGE } from '../src/baustoffkatalog.js';
 import { pruefeSeiten } from '../src/interna.js';
 import { artikelBild, gruppenBild, schichten, schichtbild, dickeMm } from '../src/bilder.js';
-import { VERFUEGBARKEIT, produktAuszeichnung } from '../src/maschinenlesbar.js';
+import { VERFUEGBARKEIT, angebotsAuszeichnung } from '../src/maschinenlesbar.js';
 import { baueKern, KERNMODULE, SHOPMODULE } from '../src/buendel.js';
 import { startklar } from '../src/startklar.js';
 import { ohneKommentare } from '../src/entkommentieren.js';
@@ -675,10 +675,14 @@ ${esc(a.gruppe)}. Ob einer davon der richtige ist, entscheidet die Planung.</p>`
   //
   // Was die Seite darüber hinaus trägt, steht darunter und nicht anstelle:
   // Liefergebiet, Verkäufer und die Marke.
-  const auszeichnung = produktAuszeichnung(a, {
+  // `angebotsAuszeichnung` und nicht `produktAuszeichnung`: Die Freigabefrage
+  // gehört zum Feed. Ein Artikel, den Gate 22 nicht bewirbt, hat trotzdem
+  // eine Produktseite — und eine Produktseite ohne strukturierte Daten ist
+  // für den Kanal, für den dieser Shop gebaut ist, eine leere Seite.
+  const auszeichnung = angebotsAuszeichnung(a, {
     liefergebiet: { land: LIEFERGEBIET.land, bezirke: LIEFERGEBIET.bezirke },
   });
-  const jsonLd = auszeichnung.veroeffentlichbar
+  const jsonLd = auszeichnung.daten
     ? {
         ...auszeichnung.daten,
         ...(h ? { brand: { '@type': 'Brand', name: m } } : {}),

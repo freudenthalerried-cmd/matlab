@@ -24,6 +24,7 @@
     "preisliste": "node bin/preisliste.mjs",
     "startklar": "node bin/startklar.mjs",
     "rahmenzensus": "node bin/rahmenzensus.mjs",
-    "pruefe-stand": "node bin/standpruefung.mjs"
+    "pruefe-stand": "node bin/standpruefung.mjs",
+    "pruefe-preise": "node bin/preisabgleich.mjs"
   }
 }

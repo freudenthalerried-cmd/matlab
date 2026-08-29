@@ -87,6 +87,16 @@ const PRUEFER = [
     einheit: 'Testfälle',
     mindestens: 500,
   },
+  // Der Preisabgleich zählt Artikel über vier Ausgaben. Zeigt er eines Tages
+  // auf einen leeren Katalog, meldet er „0 Artikel geprüft" — ohne
+  // Mindestmaß sähe das wie Grün aus.
+  {
+    name: 'pruefe-preise',
+    werkzeug: 'preisabgleich.mjs',
+    muster: /(\d+) Artikel geprüft/,
+    einheit: 'Artikel über vier Ausgaben',
+    mindestens: 30,
+  },
   {
     name: 'pruefe-stand',
     werkzeug: 'standpruefung.mjs',

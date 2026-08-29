@@ -1,10 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import {
   darfVeroeffentlichtWerden,
   produktAuszeichnung,
+  angebotsAuszeichnung,
   katalogFeed,
   liefergebietAngabe,
   robotsTxt,
@@ -323,4 +325,40 @@ test('Seite und Feed zeichnen dasselbe Angebot aus, nicht zwei', () => {
   assert.equal(daten.offers.seller['@type'], 'Organization');
   assert.equal(daten.offers.priceValidUntil, undefined,
     'ein erfundenes Gültigkeitsdatum wäre eine Zusage');
+});
+
+
+test('ein vom Feed zurückgehaltener Artikel behält seine Auszeichnung auf der Seite', () => {
+  // Gate 22 hält Beipackartikel am Listendeckel aus dem Feed. Das ist eine
+  // Feedentscheidung. Als die Artikelseite ihr JSON-LD aus
+  // produktAuszeichnung() bezog, verlor sie es bei genau diesen drei
+  // Artikeln — gefunden von `npm run pruefe-preise` beim ersten Lauf.
+  const beipack = {
+    sku: 'B', bezeichnung: 'Beipack 1 Stück', gruppe: 'Zubehör', einheit: 'STK',
+    vkNetto: 2.87, uvpNetto: 2.87, amListendeckel: true,
+    ekQuelle: 'rechnung', preisStand: '2026-08-17',
+  };
+  const lage = { liefergebiet: { land: 'AT', bezirke: [{ name: 'Perg' }] } };
+
+  const fuerDenFeed = produktAuszeichnung(beipack, lage);
+  assert.equal(fuerDenFeed.veroeffentlichbar, false, 'der Feed muss ihn zurückhalten');
+  assert.equal(fuerDenFeed.daten, null);
+
+  const fuerDieSeite = angebotsAuszeichnung(beipack, lage);
+  assert.equal(fuerDieSeite.daten['@type'], 'Product');
+  assert.equal(fuerDieSeite.daten.offers.price, '2.87');
+});
+
+test('jede gebaute Artikelseite trägt ein Produkt-JSON-LD', () => {
+  const ordner = pfad('../ausgabe/site/artikel');
+  if (!existsSync(ordner)) return; // ohne Bau keine Aussage — und keine falsche
+  const seiten = readdirSync(ordner).filter((d) => d.endsWith('.html'));
+  assert.ok(seiten.length >= 40, `nur ${seiten.length} Artikelseiten gefunden`);
+  const ohne = seiten.filter((d) => {
+    const html = readFileSync(join(ordner, d), 'utf8');
+    const treffer = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
+    if (!treffer) return true;
+    try { return JSON.parse(treffer[1])['@type'] !== 'Product'; } catch { return true; }
+  });
+  assert.deepEqual(ohne, [], 'Artikelseiten ohne Produktauszeichnung');
 });

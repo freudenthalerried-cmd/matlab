@@ -451,7 +451,7 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > `pruefe-quellen` 6/6, `shopprobe` 28, `oberflaechenprobe` 11, Website 81
 > Seiten ohne toten Verweis.
 
-> **29. August — zwölf Läufe.** Ausführlich je ein Dokument.
+> **29. August — dreizehn Läufe.** Ausführlich je ein Dokument.
 >
 > **Der Gruppenvorschlag wurde gemessen und verworfen.** Ein Regelwerk, das
 > aus der Artikelbezeichnung eine Warengruppe rät, trifft am eigenen Bestand
@@ -502,12 +502,12 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > 787 vergleichbare Tests, kein Unterschied.
 > [`kommentare-im-schaufenster.md`](./kommentare-im-schaufenster.md).
 >
-> **Stand der Prüfmittel:** 826 Tests, `pruefe-tests` 825/0, `pruefe-inhalte`
+> **Stand der Prüfmittel:** 828 Tests, `pruefe-tests` 827/0, `pruefe-preise` 46/0, `pruefe-inhalte`
 > 24/355/0, `pruefe-seiten` 60 von 81 gebauten Seiten (die übrigen 23 tragen
-> nur Text aus `inhalte/`, dort geprüft), `pruefe-widerrufe` 163 Dateien/48
+> nur Text aus `inhalte/`, dort geprüft), `pruefe-widerrufe` 164 Dateien/48
 > Fundstellen, `pruefe-quellen` 6/6, `shopprobe` 45 (davon 10 im Rahmen),
-> `oberflaechenprobe` 11, `rahmenzensus` 81/81, `pruefe-stand` 162/162,
-> `pruefe-pruefer` 10 Prüfer ohne Leerlauf, Website 81 Seiten ohne toten
+> `oberflaechenprobe` 11, `rahmenzensus` 81/81, `pruefe-stand` 163/163,
+> `pruefe-pruefer` 11 Prüfer ohne Leerlauf, Website 81 Seiten ohne toten
 > Verweis.
 
 ## Wo das Projekt steht
@@ -836,7 +836,7 @@ zusammengefasst und im Verzeichnis nicht auffindbar:
 | `erste-echte-zahlen.md` | Die Lieferantenrechnungen sind gefunden — die Grundlage der ganzen Kalkulation (22.08.) |
 | `google-kampagne.md` | Die Kampagne ist vollständig geplant und **nicht geschaltet** (22.08.) |
 
-**Läufe vom 29. August** — die zwölf Dokumente dieses Tages:
+**Läufe vom 29. August** — die dreizehn Dokumente dieses Tages:
 
 | Datei | Kernaussage |
 |---|---|
@@ -852,6 +852,7 @@ zusammengefasst und im Verzeichnis nicht auffindbar:
 | `dreissig-komma-zwei-fuenf-stueck.md` | Wer sonst nahm ganze Mengen an? Der Korbzähler summierte Stück, m² und kg zu „30.25", der Anfragetext schrieb „5.25 M2". Beides war älter als die Gebindemengen und nur unauffällig |
 | `ein-preis-fuer-nichts.md` | Der Feed nannte 5,23 € je m² für eine Platte, die es nur zu 0,75 m² gibt. Jetzt mit Bezugsgröße und Mindestmenge nach schema.org — und die Artikelseite zeichnet nicht mehr getrennt aus |
 | `dieselbe-halbe-auskunft-an-drei-stellen.md` | Dieselbe Lücke stand noch in `llms.txt` und auf der Artikelkarte. Ein Assistent hätte „10,69 €" geantwortet, die Rechnung lautet über 92,36 € |
+| `vier-ausgaben-ein-preis.md` | `npm run pruefe-preise` hält Preistafel, JSON-LD, Karte und `llms.txt` gegeneinander — und fand im ersten Lauf drei Artikelseiten, denen ich eine Stunde zuvor das JSON-LD genommen hatte |
 | `segment-arbeitsplatzmessung.md` | Nebenstrecke, kein eigenes Segment |
 | `strategie-modellvergleich.md` | Kapitalweg braucht ~900.000 €; enthält überholte Empfehlung |
 | `anschreiben-entwuerfe.md` | Drei Anschreiben (Hersteller, Großhändler, Partnerbetriebe), versandfertig, nicht versendet |

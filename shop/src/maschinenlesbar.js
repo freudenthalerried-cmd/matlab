@@ -141,12 +141,22 @@ export const EINHEITSCODES = Object.freeze({
   PAK: 'C62',
 });
 
-export function produktAuszeichnung(artikel, lage = {}) {
-  const freigabe = darfVeroeffentlichtWerden(artikel);
-  if (!freigabe.erlaubt) {
-    return { veroeffentlichbar: false, gruende: freigabe.gruende, daten: null };
-  }
-
+/**
+ * Die Auszeichnung **ohne** die Veröffentlichungsfrage.
+ *
+ * **Getrennt am 29.08., und der Anlass war eine selbst gebaute Regression.**
+ * Seit die Artikelseite ihr JSON-LD aus `produktAuszeichnung()` bezieht,
+ * verlor sie es bei jedem Artikel, den der **Feed** zurückhält — drei
+ * Beipackartikel am Listendeckel (Gate 22) standen plötzlich ohne
+ * strukturierte Daten da. Gefunden hat es `npm run pruefe-preise` beim
+ * allerersten Lauf.
+ *
+ * Der Denkfehler war, zwei Fragen in eine Funktion zu legen: *Wie sieht die
+ * Auszeichnung aus?* und *Gehört der Artikel in den Feed?* Die zweite ist
+ * eine Feedfrage. Eine Artikelseite ist eine Produktseite, auch wenn ihr
+ * Artikel nicht beworben wird.
+ */
+export function angebotsAuszeichnung(artikel, lage = {}) {
   const gebiet = liefergebietAngabe(lage.liefergebiet);
   const angebot = {
     '@type': 'Offer',
@@ -219,6 +229,23 @@ export function produktAuszeichnung(artikel, lage = {}) {
   if (!gebiet.vollstaendig) fehlend.push(gebiet.fehlt);
   if (lage.versandkostenNetto == null) fehlend.push('Versandkosten');
 
+  return { daten, fehlend };
+}
+
+/**
+ * Auszeichnung **für den Feed** — mit der Freigabefrage davor.
+ *
+ * Gate 22 hält Artikel am Listendeckel zurück: Wer einen Beipackartikel
+ * bewirbt, auf dem nichts verdient wird, zahlt für den Klick und verliert an
+ * der Bestellung. Das ist eine Entscheidung über den **Feed**, nicht über die
+ * Auszeichnung — die Artikelseite behält ihre strukturierten Daten.
+ */
+export function produktAuszeichnung(artikel, lage = {}) {
+  const freigabe = darfVeroeffentlichtWerden(artikel);
+  if (!freigabe.erlaubt) {
+    return { veroeffentlichbar: false, gruende: freigabe.gruende, daten: null };
+  }
+  const { daten, fehlend } = angebotsAuszeichnung(artikel, lage);
   return { veroeffentlichbar: true, gruende: [], daten, fehlend };
 }
 
