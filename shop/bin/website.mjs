@@ -223,18 +223,43 @@ function loeseVerwandt(eintrag) {
  * ------------------------------------------------------------------ */
 
 function stil() {
+  /*
+   * **Die Farbwerte sind gerechnet, nicht gewählt.**
+   *
+   * Gemessen am 29.08. gegen WCAG 2.1: 4,5:1 für Fließtext, 3:1 für die
+   * Umrandung von Bedienelementen. Vier Paare lagen im hellen Anstrich
+   * darunter — und der helle ist der, den die meisten sehen:
+   *
+   * | Paar | vorher | jetzt |
+   * |---|---|---|
+   * | Gedämpft auf Grund | 4,14 | 5,24 |
+   * | Gedämpft auf Fläche-2 | 3,65 | 4,62 |
+   * | Ocker auf Grund (Verweise) | 4,17 | 4,92 |
+   * | Knopfschrift auf Ocker | 4,17 | 4,92 |
+   * | Feldumrandung auf Grund | 1,94 | 3,02 |
+   *
+   * Verschoben wurde so wenig wie nötig: `--gedaempft`, `--ocker` und
+   * `--linie-stark` sind abgedunkelt, bis die Schwelle erreicht ist, nicht
+   * weiter. Die Farbfamilie bleibt dieselbe.
+   *
+   * Im dunklen Anstrich lagen nur zwei Paare darunter; auch dort ist
+   * nachgezogen. `--linie` bleibt, wie es war: Es zeichnet Trennlinien und
+   * Kartenränder, die keine Bedienelemente sind — für sie verlangt WCAG
+   * 1.4.11 nichts, und ein Kontrast, den niemand braucht, macht die Seite
+   * nur unruhiger.
+   */
   return `
 :root{--grund:#F2F0EC;--flaeche:#FBFAF8;--flaeche-2:#E6E2DA;--tinte:#1B1A17;--tinte-2:#45423B;
---gedaempft:#78736A;--linie:#D6D1C6;--linie-stark:#B4AEA0;--ocker:#A8621B;--ocker-weich:#F6E6D2;
+--gedaempft:#68635A;--linie:#D6D1C6;--linie-stark:#908A7C;--ocker:#9C560F;--ocker-weich:#F6E6D2;
 --gruen:#3E6B45;--gruen-weich:#DEEADF;--ziegel:#9C3521;--ziegel-weich:#F4DCD5;
 --schmal:"Barlow Condensed","Arial Narrow",sans-serif;--text:"Source Sans 3",system-ui,-apple-system,sans-serif;
 --zahl:"JetBrains Mono",ui-monospace,Menlo,monospace}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--grund:#171614;--flaeche:#201E1B;
---flaeche-2:#2B2823;--tinte:#EDEAE3;--tinte-2:#C6C1B7;--gedaempft:#8E887C;--linie:#33302B;
---linie-stark:#4A463F;--ocker:#E0964A;--ocker-weich:#362514;--gruen:#8CBE95;--gruen-weich:#1D2A1F;
+--flaeche-2:#2B2823;--tinte:#EDEAE3;--tinte-2:#C6C1B7;--gedaempft:#9A9488;--linie:#33302B;
+--linie-stark:#787266;--ocker:#E0964A;--ocker-weich:#362514;--gruen:#8CBE95;--gruen-weich:#1D2A1F;
 --ziegel:#E08A72;--ziegel-weich:#341913}}
 :root[data-theme="dark"]{--grund:#171614;--flaeche:#201E1B;--flaeche-2:#2B2823;--tinte:#EDEAE3;
---tinte-2:#C6C1B7;--gedaempft:#8E887C;--linie:#33302B;--linie-stark:#4A463F;--ocker:#E0964A;
+--tinte-2:#C6C1B7;--gedaempft:#9A9488;--linie:#33302B;--linie-stark:#787266;--ocker:#E0964A;
 --ocker-weich:#362514;--gruen:#8CBE95;--gruen-weich:#1D2A1F;--ziegel:#E08A72;--ziegel-weich:#341913}
 *{box-sizing:border-box}
 body{margin:0;background:var(--grund);color:var(--tinte);font-family:var(--text);font-size:16px;
