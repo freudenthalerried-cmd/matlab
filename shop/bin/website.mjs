@@ -330,6 +330,7 @@ svg.schema.gruppe{max-height:5.5rem}
 .anfrage-echo{font-size:.9rem;color:var(--gedaempft)}
 .anfrage-hinweis{font-size:.88rem;color:var(--gedaempft);margin:.6rem 0 0}
 .gebindehinweis{font-size:.9rem;color:var(--gedaempft);margin:.5rem 0 1.2rem}
+.karte .ab{display:block;font-size:.82rem;color:var(--gedaempft);margin-top:.15rem}
 
 .karte{background:var(--flaeche);padding:.9rem 1rem;display:flex;flex-direction:column;gap:.4rem;text-decoration:none;color:inherit}
 .karte:hover{background:var(--flaeche-2)}
@@ -430,6 +431,16 @@ function artikelKarte(a, befund, verweis) {
   <span class="t">${esc(a.bezeichnung)}</span>
   ${marker.join('')}
   <span class="preis">${euro(a.vkNetto)}&nbsp;€ <span class="eh">je ${esc(EINHEITEN[a.einheit] ?? a.einheit)}, netto</span></span>
+  ${(() => {
+    // Die Karte ist oft das Einzige, was ein Kunde von einem Artikel sieht.
+    // „5,23 € je m²" ohne den Zusatz, dass es die Platte nur zu 0,75 m² gibt,
+    // ist dieselbe halbe Auskunft wie im Feed und in llms.txt.
+    const schritt = mengenschritt(a);
+    return schritt
+      ? `<span class="ab">ab ${esc(String(schritt).replace('.', ','))} ${
+          esc(EINHEITEN[a.einheit] ?? a.einheit)} · ${euro(a.vkNetto * schritt)}&nbsp;€</span>`
+      : '';
+  })()}
 </a>`;
 }
 
@@ -1698,11 +1709,22 @@ Sitemap: ${BASIS}/sitemap.xml
     ...katalog.artikel
       .filter((a) => a.vkNetto !== null)
       .sort((a, b) => a.gruppe.localeCompare(b.gruppe, 'de') || a.bezeichnung.localeCompare(b.bezeichnung, 'de'))
-      .map((a) => `- [${a.bezeichnung}](${BASIS}/artikel/${a.sku}.html): `
-        + `${euro(a.vkNetto)} € je ${EINHEITEN[a.einheit] ?? a.einheit}, netto`
+      // Der Preis je Einheit **und** die kleinste bestellbare Menge. Ohne die
+      // zweite Angabe antwortet ein Assistent auf „was kostet die
+      // Isover-Platte?" mit „10,69 €" — und der Kunde, der eine bestellt,
+      // bekommt eine Rechnung über 92,36 €. Derselbe Fehler wie im
+      // Produktfeed, im Kanal, für den diese Datei gemacht ist.
+      .map((a) => {
+        const schritt = mengenschritt(a);
+        const eh = EINHEITEN[a.einheit] ?? a.einheit;
+        return `- [${a.bezeichnung}](${BASIS}/artikel/${a.sku}.html): `
+        + `${euro(a.vkNetto)} € je ${eh}, netto`
+        + (schritt ? ` · Abgabe ab ${String(schritt).replace('.', ',')} ${eh}`
+            + ` (${euro(a.vkNetto * schritt)} €)` : '')
         + ` · ${a.gruppe}`
         + (typeof a.gewichtKg === 'number' ? ` · ${String(a.gewichtKg).replace('.', ',')} kg je Einheit` : '')
-        + (a.sperrgut ? ' · palettiert' : '')),
+        + (a.sperrgut ? ' · palettiert' : '');
+      }),
     '',
     (() => {
       const ohne = katalog.artikel.filter((a) => a.vkNetto === null);

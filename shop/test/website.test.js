@@ -528,3 +528,46 @@ test('Startseite und llms.txt sagen aus den Daten, ob bestellt werden kann', () 
   assert.match(llmsJetzt, /ein Zahlungsanbieter/);
   rmSync(ablage, { recursive: true, force: true });
 });
+
+
+/* ------------------------------------------------------------------ *
+ * Die kleinste bestellbare Menge steht überall, wo der Preis steht
+ * ------------------------------------------------------------------ */
+
+test('llms.txt nennt bei Gebindeware die kleinste bestellbare Menge', () => {
+  const datei = pfad('../ausgabe/site/llms.txt');
+  if (!existsSync(datei)) return; // ohne Bau keine Aussage — und keine falsche
+  const txt = readFileSync(datei, 'utf8');
+  const katalog = JSON.parse(readFileSync(pfad('../data/katalog-baustoff.json'), 'utf8'));
+
+  // Ohne die Mindestmenge antwortet ein Assistent auf „was kostet die
+  // Isover-Platte?" mit 10,69 € — der Kunde, der eine bestellt, bekommt eine
+  // Rechnung über 92,36 €.
+  assert.match(txt, /Isover TDPT[^\n]*Abgabe ab 8,64 m² \(92,36 €\)/);
+  assert.match(txt, /XPS glatt SF 30[^\n]*Abgabe ab 0,75 m² \(3,92 €\)/);
+
+  // Und die Gegenrichtung: Stückgut bekommt keine erfundene Mindestmenge.
+  const rohr = txt.split('\n').find((z) => z.includes('PVC Kanalrohr NW 100'));
+  assert.ok(rohr, 'die Zeile fehlt');
+  assert.ok(!rohr.includes('Abgabe ab'), rohr);
+
+  // Nicht jede Zeile trägt sie — sonst stimmte die Erkennung nicht.
+  const mitAbgabe = txt.split('\n').filter((z) => z.includes('/artikel/') && z.includes('Abgabe ab'));
+  assert.ok(mitAbgabe.length >= 12 && mitAbgabe.length < katalog.artikel.length,
+    `${mitAbgabe.length} von ${katalog.artikel.length} Zeilen mit Mindestmenge`);
+});
+
+test('die Artikelkarte nennt die kleinste bestellbare Menge und ihren Preis', () => {
+  const datei = pfad('../ausgabe/site/gruppe/daemmung.html');
+  if (!existsSync(datei)) return;
+  const html = readFileSync(datei, 'utf8');
+  assert.match(html, /<span class="ab">ab 0,75 m² · 3,92&nbsp;€<\/span>/);
+  assert.match(html, /<span class="ab">ab 0,5 m² · 0,97&nbsp;€<\/span>/);
+
+  // Auf einer Seite ohne Gebindeware steht keine solche Zeile.
+  const kanal = pfad('../ausgabe/site/gruppe/kanal.html');
+  if (existsSync(kanal)) {
+    assert.ok(!readFileSync(kanal, 'utf8').includes('class="ab"'),
+      'Stückgut bekommt keine erfundene Mindestmenge');
+  }
+});
