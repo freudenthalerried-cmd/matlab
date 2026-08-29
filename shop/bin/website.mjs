@@ -626,12 +626,25 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
     // welcher Menge der Warenwert die Zustellung übersteigt.** Sie ist aus
     // denselben zwei Zahlen gerechnet und beantwortet die Frage, die er sich
     // ohnehin stellt — lohnt eine eigene Fahrt?
-    const menge = a.vkNetto > 0 ? Math.ceil(zustellung / a.vkNetto) : null;
+    // **Und die Menge muss lieferbar sein.** Der erste Entwurf rundete auf
+    // ganze Einheiten: 83,00 € ÷ 5,23 € ergab 16 m². Diese Platte wird in
+    // Einheiten zu 0,75 m² abgegeben — 16 m² gibt es nicht, die nächste
+    // lieferbare Menge sind 16,5 m². Eine Schwelle, die der Kunde nicht
+    // bestellen kann, ist dieselbe Sorte Zahl wie ein Preis, den er für
+    // nichts bekommt.
+    const schrittHier = mengenschritt(a);
+    let menge = null;
+    if (a.vkNetto > 0) {
+      const roh = zustellung / a.vkNetto;
+      menge = schrittHier
+        ? Math.round(Math.ceil(roh / schrittHier - 1e-9) * schrittHier * 100) / 100
+        : Math.ceil(roh);
+    }
     const eh = esc(EINHEITEN[a.einheit] ?? a.einheit);
     teile.push(`<div class="preistafel">
   <div><span class="k">Zustellung</span><span class="w">${euro(zustellung)} €</span><span class="e">netto je Lieferung${a.sperrgut ? ', inkl. Kranentladung' : ''}</span></div>
   <div><span class="k">Ware</span><span class="w">${euro(a.vkNetto)} €</span><span class="e">je ${eh}, netto</span></div>
-  ${menge ? `<div><span class="k">gleich viel wert</span><span class="w">${menge} ${eh}</span><span class="e">ab hier übersteigt die Ware die Zustellung</span></div>` : ''}
+  ${menge ? `<div><span class="k">gleich viel wert</span><span class="w">${esc(String(menge).replace('.', ','))} ${eh}</span><span class="e">ab hier übersteigt die Ware die Zustellung</span></div>` : ''}
 </div>`);
     teile.push(`<p>Die Pauschale fällt <strong>je Lieferung</strong> an, nicht je Position: Wer diesen Artikel
 mit der übrigen Bestellung sammelt, zahlt sie einmal. Die Fahrt kostet dasselbe, ob ein Sack draufsteht

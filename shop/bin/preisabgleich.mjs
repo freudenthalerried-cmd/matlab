@@ -167,6 +167,20 @@ for (const a of artikel) {
     if (zeile && !zeile.includes(`Abgabe ab ${alsText}`)) {
       befunde.push(`${a.sku}: llms.txt nennt die Mindestmenge nicht`);
     }
+
+    // **Jede genannte Menge muss lieferbar sein.** Die Schwelle „ab hier
+    // übersteigt die Ware die Zustellung" wurde auf ganze Einheiten
+    // gerundet: 83,00 € ÷ 5,23 € ergab 16 m² — eine Menge, die es bei einer
+    // Platte zu 0,75 m² nicht gibt. Dieselbe Sorte Zahl wie ein Preis, den
+    // man für nichts bekommt, nur in der anderen Spalte.
+    const schwelle = html.match(/gleich viel wert<\/span><span class="w">([\d.,]+)\s/);
+    if (schwelle) {
+      const wert = alsZahl(schwelle[1]);
+      const teiler = Math.round((wert / schritt) * 1e6) / 1e6;
+      if (!Number.isInteger(teiler)) {
+        befunde.push(`${a.sku}: die Schwelle ${schwelle[1]} ist kein Vielfaches von ${alsText} — nicht lieferbar`);
+      }
+    }
   }
 }
 

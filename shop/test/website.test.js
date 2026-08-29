@@ -462,14 +462,20 @@ test('jede Artikelseite nennt die Zustellung in Euro und die Menge, ab der sie s
 });
 
 test('die Schwelle wird gerechnet, nicht behauptet', () => {
-  // 83,00 € Zustellung bei 1,93 € je m² sind 44 m² — aufgerundet, weil 43
-  // noch darunter lägen. Von Hand nachgerechnet, damit die Probe die Zahl
-  // prüft und nicht nur ihr Vorhandensein.
+  // 83,00 € Zustellung bei 1,93 € je m² sind 43,005 m². Von Hand
+  // nachgerechnet, damit die Probe die Zahl prüft und nicht nur ihr
+  // Vorhandensein.
+  //
+  // **Berichtigt am 29.08.:** Hier stand 44 m² — auf ganze Quadratmeter
+  // aufgerundet. Die Platte wird in Einheiten zu 0,5 m² abgegeben; die
+  // nächste lieferbare Menge ist 43,5 m², also 87 Platten. 44 war zwar
+  // lieferbar, aber eine halbe Platte zu hoch: eine Schwelle, die niemand
+  // nachrechnen kann, weil sie zweimal gerundet ist.
   const datei = pfad('../ausgabe/site/artikel/POS-12566.html');
   if (!existsSync(datei)) return;
   const html = readFileSync(datei, 'utf8');
   assert.match(html, /83,00 €/);
-  assert.match(html, /<span class="w">44 m²<\/span>/);
+  assert.match(html, /<span class="w">43,5 m²<\/span>/);
 });
 
 test('die Zustellung wird nicht mit dem Einheitenpreis verglichen', () => {
@@ -569,5 +575,30 @@ test('die Artikelkarte nennt die kleinste bestellbare Menge und ihren Preis', ()
   if (existsSync(kanal)) {
     assert.ok(!readFileSync(kanal, 'utf8').includes('class="ab"'),
       'Stückgut bekommt keine erfundene Mindestmenge');
+  }
+});
+
+
+test('die Zustellschwelle nennt eine lieferbare Menge, keine gerundete', () => {
+  const datei = pfad('../ausgabe/site/artikel/POS-12569.html');
+  if (!existsSync(datei)) return; // ohne Bau keine Aussage — und keine falsche
+  const html = readFileSync(datei, 'utf8');
+  // 83,00 € Zustellung ÷ 5,23 € je m² sind 15,87 m². Auf ganze Einheiten
+  // gerundet wären das 16 m² — eine Menge, die es bei einer Platte zu
+  // 0,75 m² nicht gibt. Lieferbar sind 16,5 m², also 22 Platten.
+  assert.match(html, /gleich viel wert<\/span><span class="w">16,5 m²/);
+  assert.ok(!html.includes('>16 m²<'), 'die gerundete, nicht lieferbare Menge');
+
+  // Sackware ebenso: 75,50 € ÷ 2,77 € je kg sind 27,26 kg, lieferbar sind
+  // zwei Gebinde zu 25 kg.
+  const sack = pfad('../ausgabe/site/artikel/POS-13728.html');
+  if (existsSync(sack)) {
+    assert.match(readFileSync(sack, 'utf8'), /gleich viel wert<\/span><span class="w">50 kg/);
+  }
+
+  // Und Stückgut ohne Gebindebindung bleibt bei der ganzen Zahl.
+  const rohr = pfad('../ausgabe/site/artikel/POS-10095.html');
+  if (existsSync(rohr)) {
+    assert.match(readFileSync(rohr, 'utf8'), /gleich viel wert<\/span><span class="w">8 Stück/);
   }
 });
