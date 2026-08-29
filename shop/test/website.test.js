@@ -602,3 +602,22 @@ test('die Zustellschwelle nennt eine lieferbare Menge, keine gerundete', () => {
     assert.match(readFileSync(rohr, 'utf8'), /gleich viel wert<\/span><span class="w">8 Stück/);
   }
 });
+
+
+test('der Bauschritt nennt die übertragene Größe, nicht nur die rohe', () => {
+  // Am 29.08. wäre beinahe eine Optimierung auf der falschen Zahl passiert:
+  // Die Zeichnungen sind 39 KB roh und 2,4 KB gezippt. Wer nur die Rohgröße
+  // sieht, wirft sie hinaus und spart nichts.
+  const lauf = spawnSync(process.execPath, [pfad('../bin/website.mjs')], {
+    encoding: 'utf8',
+    env: { ...process.env, WEBSITE_AUSGABE: mkdtempSync(join(tmpdir(), 'bau-groesse-')) },
+  });
+  assert.equal(lauf.status, 0, lauf.stderr);
+  assert.match(lauf.stdout, /shop\.js:\s+\d+ KB roh, [\d.]+ KB gezippt/);
+  assert.match(lauf.stdout, /website\.html \(\d+ KB roh, [\d.]+ KB gezippt/);
+
+  // Und die gezippte Zahl muss kleiner sein als die rohe — sonst misst der
+  // Bericht etwas anderes, als er behauptet.
+  const [, roh, zip] = lauf.stdout.match(/shop\.js:\s+(\d+) KB roh, ([\d.]+) KB gezippt/);
+  assert.ok(Number(zip) < Number(roh) / 2, `${zip} KB gezippt gegen ${roh} KB roh`);
+});

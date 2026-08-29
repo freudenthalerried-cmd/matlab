@@ -25,6 +25,7 @@
 
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync, rmSync, mkdtempSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
+import { gzipSync } from 'node:zlib';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
@@ -1825,7 +1826,23 @@ ${eingebettet}
   for (const [k, n] of Object.entries(jeArt).sort((a, b) => b[1] - a[1])) {
     console.log(`  ${k.padEnd(10)} ${String(n).padStart(3)}`);
   }
+  /**
+   * **Roh und gezippt, und die zweite Zahl ist die, die zählt.**
+   *
+   * Am 29.08. wäre beinahe eine Optimierung auf der falschen Zahl passiert:
+   * Die Zeichnungen im Nutzdatenblock sind 39 KB roh — ein Drittel von
+   * `shop.js` — und sahen nach dem nächsten großen Posten aus. Gezippt sind
+   * sie **2,4 KB**: Sie bestehen aus denselben Pfaden mit anderen Maßen und
+   * lassen sich außergewöhnlich gut packen. Wer sie herauswirft, verliert
+   * die Bilder im Warenkorb und spart nichts.
+   *
+   * Jeder Server liefert diese Dateien komprimiert aus. Ein Bericht, der nur
+   * die Rohgröße nennt, lädt zur nächsten Fehlmessung ein.
+   */
+  const gezippt = (text) => (gzipSync(Buffer.from(text), { level: 9 }).length / 1024).toFixed(1);
   console.log(`\nMehrseitenfassung: ausgabe/site/ (plus robots.txt, llms.txt, sitemap.xml)`);
+  console.log(`  shop.js:         ${(Buffer.byteLength(shopskriptQuelle) / 1024).toFixed(0)} KB roh, `
+    + `${gezippt(shopskriptQuelle)} KB gezippt — je Besucher einmal, danach im Zwischenspeicher`);
   /**
    * Die Einzeldateifassung ist die Vorschau zum Doppelklicken: eine Datei,
    * kein Server, alle Seiten als Vorlagen eingebettet. Genau das macht sie
@@ -1844,7 +1861,8 @@ ${eingebettet}
    */
   const EINZELDATEI_GRENZE_MB = 6;
   const einzelnMb = Buffer.byteLength(einzeln) / 1024 / 1024;
-  console.log(`Einzeldatei:       ausgabe/website.html (${(einzelnMb * 1024).toFixed(0)} KB, `
+  console.log(`Einzeldatei:       ausgabe/website.html (${(einzelnMb * 1024).toFixed(0)} KB roh, `
+    + `${gezippt(einzeln)} KB gezippt, `
     + `${(einzelnMb * 1024 / Math.max(1, katalog.artikel.length)).toFixed(0)} KB je Artikel)`);
   if (einzelnMb > EINZELDATEI_GRENZE_MB) {
     console.log(`\nHinweis: Die Einzeldatei überschreitet ${EINZELDATEI_GRENZE_MB} MB.`);
