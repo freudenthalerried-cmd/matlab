@@ -101,3 +101,31 @@
 - [SunCore Pro Abdeckklebeband 48 mm x 50 m bis 100 °C, gelb](https://shop.freudenthaler-bau.at/artikel/POS-31265.html): 8,33 € je Stück, netto · Zubehör
 
 Jeder geführte Artikel steht in dieser Liste.
+
+## Was wir nicht führen
+
+Danach wird gefragt, und wir haben es nicht. Genannt ist jeweils, was stattdessen im Sortiment steht — als Abgrenzung, nicht als Ersatz.
+
+- **drainage**: Drainagerohre führen wir nicht. Die Noppenbahn schützt die Kellerwand und leitet Wasser ab, sie ersetzt aber keine Drainageleitung.
+- **abdichtung**: Abdichtungsbahnen führen wir nicht. Gedämmt wird über der Abdichtung, nicht statt ihrer — welche Bahn Ihr Aufbau braucht, steht in der Planung.
+- **bitumen**: Bitumenbahnen und -anstriche führen wir nicht.
+- **gleitmittel**: Gleitmittel für Steckmuffen führen wir nicht. Es steht auf unserer Kanalliste als Position, die Sie anderswo besorgen.
+- **estrichfolie**: Eine eigene Estrichfolie führen wir nicht. Die PAE-Folie kann als Trennlage dienen; ob sie für Ihren Estrichaufbau zugelassen ist, sagt das Merkblatt des Herstellers.
+- **rauchrohr**: Ofenrohre vom Ofen zum Kamin führen wir nicht. Unser gedämmtes Innenrohr ist ein Teil des Systemkamins und kein Ersatz dafür.
+- **schamotterohr**: Schamottezüge führen wir nicht. Unser Systemkamin ist keramisch und gedämmt.
+- **kaminkopf**: Eine Kaminkopfverkleidung führen wir nicht. Regenhaube und Thermo-Trennstein haben wir.
+- **sockelschiene**: Sockelprofile führen wir nicht. Kantenschutz und Gewebeanschlussleiste sind andere Teile des Systems.
+- **abschlussprofil**: Abschluss- und Sockelprofile führen wir nicht.
+- **silikatputz**: Silikatputz führen wir nicht. Unser Oberputz ist ein Reibputz (Capatect PrimaPor K20); Silikat-, Silikon- und Mineralputze sind eigene Systeme und nicht gegeneinander austauschbar.
+- **silikonputz**: Silikonputz führen wir nicht. Unser Oberputz ist ein Reibputz (Capatect PrimaPor K20); die Putzsysteme sind nicht gegeneinander austauschbar.
+- **mineralputz**: Mineralputz führen wir nicht. Unser Oberputz ist ein Reibputz (Capatect PrimaPor K20); die Putzsysteme sind nicht gegeneinander austauschbar.
+- **kratzputz**: Kratzputz führen wir nicht. Unser Oberputz wird gerieben, nicht gekratzt — das ist eine andere Auftragsart.
+- **flexkleber**: Fliesenkleber führen wir nicht. Unser Klebespachtel ist für Dämmplatten.
+- **fugenmörtel**: Fugenmörtel für Fliesen führen wir nicht. Die Schiedel Fugenmasse ist für Kaminformteile.
+- **muffe**: Lose Muffen führen wir nicht. An unseren PVC-Kanalrohren ist die Steckmuffe angeformt.
+- **übergangsstück**: Übergangsstücke führen wir nicht. In DN 100 haben wir Rohr, Bogen und Abzweiger.
+- **dichtring**: Einzelne Dichtringe führen wir nicht.
+- **schachtabdeckung**: Schachtabdeckungen führen wir nicht. Den Schachtring haben wir.
+- **kanalgrundrohr**: Grundrohre in anderen Nennweiten führen wir nicht. Unsere Kanalrohre sind PVC NW 100.
+- **gewebeecke**: Eck- und Diagonalgewebe führen wir nicht. Der Kantenschutz mit Gewebe ist ein anderes Teil.
+- **diagonalgewebe**: Diagonal- und Eckgewebe führen wir nicht. Der Kantenschutz mit Gewebe ist ein anderes Teil.

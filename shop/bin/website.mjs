@@ -1766,6 +1766,25 @@ Sitemap: ${BASIS}/sitemap.xml
           + 'Sie sind im Shop sichtbar, aber nicht bepreist — was nicht gerechnet werden kann, wird nicht angeboten.'
         : 'Jeder geführte Artikel steht in dieser Liste.';
     })(),
+    // **Was wir ausdrücklich nicht führen.**
+    //
+    // Dieselbe Frage erreicht den Shop über zwei Wege: Der Kunde tippt sie
+    // ins Suchfeld, ein Assistent liest diese Datei. Seit heute beantwortet
+    // die Suchseite 23 solcher Fragen mit einem eigenen Satz; hier stand
+    // weiterhin nichts.
+    //
+    // Für diesen Kanal wiegt die Lücke schwerer: Wer einen Assistenten
+    // fragt, ob dieser Händler Estrich führt, bekommt ohne Angabe die
+    // wahrscheinlichste Ersatzantwort — und die lautet bei einem
+    // Baustoffhändler „ja". Eine Auskunft, die nur an einer Stelle steht,
+    // ist die Fehlerklasse dieses Tages.
+    ...((suchwoerterDatei?._nichtAufgenommen ?? []).filter((w) => w.antwort).length
+      ? ['', '## Was wir nicht führen', '',
+          'Danach wird gefragt, und wir haben es nicht. Genannt ist jeweils, was stattdessen im Sortiment steht — als Abgrenzung, nicht als Ersatz.', '',
+          ...(suchwoerterDatei?._nichtAufgenommen ?? [])
+            .filter((w) => w.antwort)
+            .map((w) => `- **${w.wort}**: ${String(w.antwort).trim()}`)]
+      : []),
     ''].join('\n');
   writeFileSync(join(site, 'llms.txt'), llms, 'utf8');
 

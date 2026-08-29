@@ -621,3 +621,29 @@ test('der Bauschritt nennt die übertragene Größe, nicht nur die rohe', () => 
   const [, roh, zip] = lauf.stdout.match(/shop\.js:\s+(\d+) KB roh, ([\d.]+) KB gezippt/);
   assert.ok(Number(zip) < Number(roh) / 2, `${zip} KB gezippt gegen ${roh} KB roh`);
 });
+
+
+test('llms.txt sagt auch, was der Shop nicht führt', () => {
+  const datei = pfad('../ausgabe/site/llms.txt');
+  if (!existsSync(datei)) return; // ohne Bau keine Aussage — und keine falsche
+  const txt = readFileSync(datei, 'utf8');
+  const register = JSON.parse(readFileSync(pfad('../data/suchwoerter.json'), 'utf8'));
+  const abgelehnt = register._nichtAufgenommen.filter((w) => w.antwort);
+  assert.ok(abgelehnt.length >= 20, `nur ${abgelehnt.length} begründete Ablehnungen`);
+
+  assert.match(txt, /^## Was wir nicht führen$/m,
+    'ein Assistent ohne diese Angabe antwortet bei einem Baustoffhändler wahrscheinlich „ja"');
+  for (const w of abgelehnt) {
+    assert.ok(txt.includes(`**${w.wort}**`), `„${w.wort}" fehlt in llms.txt`);
+  }
+
+  // Und der Kundentext steht dort, nicht die redaktionelle Begründung.
+  assert.ok(txt.includes('Drainagerohre führen wir nicht'));
+  assert.ok(register._nichtAufgenommen.length >= 20,
+    `nur ${register._nichtAufgenommen.length} Ablehnungen — die Schleife darunter prüfte fast nichts`);
+  for (const w of register._nichtAufgenommen) {
+    if (w.warum && w.warum.length > 40 && w.warum !== w.antwort) {
+      assert.ok(!txt.includes(w.warum), `die Begründung zu „${w.wort}" steht im Kundenkanal`);
+    }
+  }
+});
