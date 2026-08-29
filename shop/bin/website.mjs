@@ -1286,6 +1286,45 @@ function main() {
     process.exit(1);
   }
 
+  /**
+   * Jede Warengruppe des Katalogs braucht eine Seite.
+   *
+   * **Neu am 29.08.**, gefunden beim Probeimport einer Artikelliste **ohne
+   * Spalte `gruppe`**: Die Artikel landeten in einer Gruppe „Ohne Gruppe",
+   * die es als Seite nicht gibt. Der Bau meldete nichts — es entstand kein
+   * toter Verweis, weil die Krume solcher Artikel auf die Startseite
+   * ausweicht.
+   *
+   * > **Ein Artikel in einer Gruppe ohne Seite ist nicht kaputt, sondern
+   * > unauffindbar** — er steht in keiner Sortimentsliste und in keiner
+   * > Kachel. Nur die Suche kennt ihn.
+   *
+   * Das ist schlimmer als ein toter Verweis, weil es niemandem auffällt.
+   * Deshalb bricht der Bau jetzt auch hier ab und sagt, was zu tun ist:
+   * entweder die Artikel einer vorhandenen Gruppe zuordnen oder eine
+   * Gruppenseite anlegen.
+   */
+  const gruppenMitSeite = new Set(
+    [...seiten.values()].filter((s) => s.art === 'gruppen').map((s) => s.kopf.gruppe),
+  );
+  const ohneSeite = new Map();
+  for (const a of katalog.artikel) {
+    if (gruppenMitSeite.has(a.gruppe)) continue;
+    if (!ohneSeite.has(a.gruppe)) ohneSeite.set(a.gruppe, []);
+    ohneSeite.get(a.gruppe).push(a.sku);
+  }
+  if (ohneSeite.size) {
+    console.error('Warengruppen ohne Seite:\n');
+    for (const [gruppe, skus] of ohneSeite) {
+      console.error(`  „${gruppe}" — ${skus.length} Artikel: ${skus.slice(0, 5).join(', ')}`
+        + (skus.length > 5 ? ` … und ${skus.length - 5} weitere` : ''));
+    }
+    console.error('\nNichts ausgegeben. Diese Artikel stünden in keiner Sortimentsliste und in');
+    console.error('keiner Kachel — nur die Suche kennt sie. Entweder einer vorhandenen Gruppe');
+    console.error('zuordnen oder eine Seite in inhalte/gruppen/ anlegen.');
+    process.exit(1);
+  }
+
   // --- alle Seiten aufbauen ---
   const alle = new Map();
   const pfadVerweis = (von) => (ziel) => {

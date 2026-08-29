@@ -101,6 +101,19 @@ if (gelesen.abgelehnt.length) {
   console.log('\nGate 24: Was der Shop nicht rechnen kann, kann er nicht anbieten.');
 }
 
+// Artikel ohne Warengruppe sind nach dem Import zwar da, aber nicht
+// auffindbar — und der Seitenbau verweigert deshalb den Dienst. Besser hier
+// sagen als dort scheitern.
+const ohneGruppe = gelesen.artikel.filter((a) => a.gruppe === 'Ohne Gruppe');
+if (ohneGruppe.length) {
+  console.log(`\n${ohneGruppe.length} Artikel ohne Warengruppe:`);
+  for (const a of ohneGruppe.slice(0, 5)) console.log(`  ${a.sku}  ${a.bezeichnung.slice(0, 46)}`);
+  if (ohneGruppe.length > 5) console.log(`  … und ${ohneGruppe.length - 5} weitere`);
+  console.log('\nSie wären im Shop nur über die Suche erreichbar, und `npm run website`');
+  console.log('bricht deshalb ab. Entweder die Spalte `gruppe` in der Liste ergänzen');
+  console.log('oder für die neue Gruppe eine Seite in inhalte/gruppen/ anlegen.');
+}
+
 if (zusammen.ergaenzt.length) {
   console.log('\nVorhandene Artikel ergänzt (der Bestand bleibt, es kommt nur hinzu):');
   for (const e of zusammen.ergaenzt.slice(0, 10)) console.log(`  ${e.sku}: ${e.felder.join(', ')}`);

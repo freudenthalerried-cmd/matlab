@@ -221,3 +221,15 @@ test('eine Datei ohne Pflichtspalten bricht ab und sagt, was fehlt', () => {
   assert.match(e.stderr, /Pflichtspalte fehlt: einheit/);
   assert.match(e.stderr, /sku;bezeichnung;einheit;ek_netto/);
 });
+
+test('Artikel ohne Warengruppe werden gemeldet, nicht stillschweigend eingeordnet', () => {
+  // Gefunden beim Probeimport einer Liste ohne Spalte `gruppe`: Die Artikel
+  // landeten in „Ohne Gruppe", der Seitenbau lief durch, und sie waren im
+  // Shop nur über die Suche erreichbar — in keiner Sortimentsliste, in keiner
+  // Kachel. Ein Artikel, den niemand findet, ist kein Sortiment.
+  const { e } = lauf([kopfzeile.split(';').filter((s) => s !== 'gruppe').join(';'),
+    'OG-1;Ohne Warengruppe;STK;10,00;20,00;;nein'].join('\n'));
+  assert.equal(e.status, 0, e.stderr);
+  assert.match(e.stdout, /1 Artikel ohne Warengruppe/);
+  assert.match(e.stdout, /bricht deshalb ab/);
+});

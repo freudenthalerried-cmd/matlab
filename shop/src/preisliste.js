@@ -126,6 +126,11 @@ export function lesePreisliste(text, { lieferantId, stand } = {}) {
       sku,
       lieferantenArtikelnummer: sku,
       bezeichnung,
+      // **Ohne Warengruppe ist ein Artikel im Shop unauffindbar** — er steht
+      // in keiner Sortimentsliste und in keiner Kachel; nur die Suche kennt
+      // ihn. Der Bau bricht deshalb ab, wenn eine Gruppe keine Seite hat.
+      // Der Name „Ohne Gruppe" ist absichtlich sperrig: Er soll auffallen,
+      // nicht sich einfügen.
       gruppe: String(satz.gruppe ?? '').trim() || 'Ohne Gruppe',
       lieferantId,
       einheit: String(satz.einheit ?? '').trim().toUpperCase(),

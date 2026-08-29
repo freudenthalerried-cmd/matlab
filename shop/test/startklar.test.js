@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { startklar } from '../src/startklar.js';
 import { IMPRESSUMSFELDER } from '../src/rechtstexte.js';
@@ -78,8 +79,13 @@ test('das Werkzeug läuft am Bestand und sagt, dass der Shop nicht startklar ist
   assert.match(ausgabe, /Impressum vollständig/);
   assert.match(ausgabe, /Zahlungsanbieter/);
   assert.match(ausgabe, /von hier aus nicht feststellbar/);
-  // Und die zwei Punkte, die heute stehen, stehen auch da.
-  assert.match(ausgabe, /46 von 46 Artikeln/);
+  // Und der Punkt, der heute steht, steht auch da — relativ gezählt, nicht
+  // absolut: Eine Probe, die „46" erwartet, fällt an dem Tag um, an dem der
+  // Katalog wächst, und sieht dann aus, als wäre das Werkzeug kaputt.
+  const katalog = JSON.parse(readFileSync(
+    fileURLToPath(new URL('../data/katalog-baustoff.json', import.meta.url)), 'utf8'));
+  const n = katalog.artikel.length;
+  assert.match(ausgabe, new RegExp(`${n} von ${n} Artikeln`));
 });
 
 test('die Antworten kommen aus der Datei, nicht aus dem Werkzeug', async () => {
