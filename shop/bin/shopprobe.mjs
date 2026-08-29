@@ -304,6 +304,37 @@ const SZENARIEN = [
     erwartet: ['E-Mail-Adresse', '[mailknoepfe=0]'],
   },
   {
+    name: 'Ein Gebindeartikel kommt als ganzes Gebinde in den Korb',
+    // POS-13728 kostet je Kilogramm und wird in Gebinden zu 25 kg abgegeben.
+    // Vor dem 29.08. legte der Knopf **ein Kilogramm** in den Korb — eine
+    // Menge, die es nicht gibt.
+    aktionen: `
+      await geheZu('artikel/POS-13728');
+      document.querySelector('[data-legen="POS-13728"]').click();
+      await geheZu('warenkorb');
+      const feld = document.querySelector('#warenkorb-ziel .kz-menge');
+      out = 'menge=' + (feld ? feld.value : 'KEIN FELD')
+        + ' schritt=' + (feld ? feld.step : '-')
+        + ' summe=' + text('#warenkorb-ziel .kz-summe');`,
+    erwartet: ['menge=25', 'schritt=25', '69,25'],
+  },
+  {
+    name: 'Im Warenkorb wird eine Teilmenge auf das nächste Gebinde aufgerundet',
+    // Aufgerundet, nicht ab: Wer 30 kg eintippt, braucht mehr als ein
+    // Gebinde. Ihm 25 zu geben wäre stillschweigend zu wenig.
+    aktionen: `
+      await geheZu('artikel/POS-13728');
+      document.querySelector('[data-legen="POS-13728"]').click();
+      await geheZu('warenkorb');
+      const feld = document.querySelector('#warenkorb-ziel .kz-menge');
+      feld.value = '30';
+      feld.dispatchEvent(new Event('change'));
+      const neu = document.querySelector('#warenkorb-ziel .kz-menge');
+      out = 'menge=' + neu.value + ' summe=' + text('#warenkorb-ziel .kz-summe');`,
+    erwartet: ['menge=50', '138,50'],
+    verboten: ['menge=30', 'menge=25'],
+  },
+  {
     name: 'Der Warenkorb nennt das Gewicht und sagt, wo es fehlt',
     // POS-10095 (Kanalrohr) hat ein belegtes Gewicht, POS-12566 (EPS) nicht.
     aktionen: `

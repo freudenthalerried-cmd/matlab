@@ -4640,6 +4640,170 @@ function kundenWarenkorb(zeilen, { artikel, lieferanten }, ust = 0.2) {
 
 
 
+
+
+
+
+const KLEINSTES_GEBINDE_KG = 0.1;
+const GROESSTES_GEBINDE_KG = 50;
+
+const zahl = (roh) => Number(String(roh).replace(',', '.'));
+
+
+
+
+
+
+
+function gebindeKg(bezeichnung) {
+  const t = String(bezeichnung ?? '');
+  
+  
+  const treffer = [...t.matchAll(/(\d+(?:[.,]\d+)?)\s*kg(?![\p{L}\d])/giu)];
+  if (treffer.length !== 1) return null;
+  const kg = zahl(treffer[0][1]);
+  if (!Number.isFinite(kg)) return null;
+  if (kg < KLEINSTES_GEBINDE_KG || kg > GROESSTES_GEBINDE_KG) return null;
+  return kg;
+}
+
+
+const STUECKEINHEITEN = new Set(['SCK', 'STK', 'PAK', 'EIM', 'KAR', 'ROL']);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function preisJeKilo(artikel) {
+  if (!artikel || typeof artikel.vkNetto !== 'number' || !(artikel.vkNetto > 0)) return null;
+  const kg = gebindeKg(artikel.bezeichnung);
+  if (kg === null) return null;
+
+  const einheit = String(artikel.einheit ?? '').toUpperCase();
+  const runde = (n) => Math.round(n * 100) / 100;
+
+  if (einheit === 'KG') {
+    return {
+      gebindeKg: kg,
+      jeKgNetto: runde(artikel.vkNetto),
+      jeGebindeNetto: runde(artikel.vkNetto * kg),
+      grundlage: 'kilopreis',
+    };
+  }
+  if (STUECKEINHEITEN.has(einheit)) {
+    return {
+      gebindeKg: kg,
+      jeKgNetto: runde(artikel.vkNetto / kg),
+      jeGebindeNetto: runde(artikel.vkNetto),
+      grundlage: 'gebindepreis',
+    };
+  }
+  
+  
+  return null;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function mengenschritt(artikel) {
+  if (!artikel) return null;
+  if (String(artikel.einheit ?? '').toUpperCase() !== 'KG') return null;
+  const kg = gebindeKg(artikel.bezeichnung);
+  if (kg === null) return null;
+  
+  
+  
+  if (!Number.isInteger(kg)) return null;
+  return kg;
+}
+
+
+
+
+
+
+
+
+
+function kilotafel(artikel = []) {
+  const zeilen = [];
+  let ohne = 0;
+  for (const a of artikel) {
+    const p = preisJeKilo(a);
+    if (p) zeilen.push({ ...a, ...p });
+    else ohne++;
+  }
+  zeilen.sort((x, y) => x.jeKgNetto - y.jeKgNetto);
+  return { zeilen, ohne, gesamt: artikel.length };
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const anfrageEuro = (n) => `${n.toFixed(2).replace('.', ',')} €`;
 
 
@@ -5324,16 +5488,27 @@ function pruefeAnfrageAufGeheimnis(text, artikelMitEk = []) {
         + (p.sperrgut ? ' · palettiert, Kranentladung je Hub' : '')));
       zeile.appendChild(mitte);
 
+      
+      
+      
+      
+      var schritt = mengenschritt(p) || 1;
       var menge = document.createElement('input');
       menge.type = 'number';
-      menge.min = '1';
+      menge.min = String(schritt);
       menge.max = '999';
+      if (schritt > 1) menge.step = String(schritt);
       menge.value = String(p.menge);
       menge.className = 'kz-menge';
-      menge.setAttribute('aria-label', 'Menge ' + p.bezeichnung);
+      menge.setAttribute('aria-label', 'Menge ' + p.bezeichnung
+        + (schritt > 1 ? ', ganze Gebinde zu ' + schritt + ' kg' : ''));
       menge.addEventListener('change', function () {
         var m = parseInt(menge.value, 10);
-        if (!Number.isInteger(m) || m < 1) m = 1;
+        if (!Number.isInteger(m) || m < schritt) m = schritt;
+        
+        
+        
+        if (schritt > 1) m = Math.ceil(m / schritt) * schritt;
         korb = setzeMenge(korb, p.sku, m);
         sichern();
         neu();

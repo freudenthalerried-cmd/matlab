@@ -105,6 +105,44 @@ export function preisJeKilo(artikel) {
 }
 
 /**
+ * Der Mengenschritt eines Artikels — in welchen Portionen er abgegeben wird.
+ *
+ * **Der Anlass.** Das Mengenfeld stand auf jedem Artikel gleich: `min="1"`,
+ * `value="1"`. Bei `Capatect Putzgrund weiß 25 kg`, Einheit `KG`, heißt das:
+ * Der Kunde legt **ein Kilogramm** in den Korb. Ein Kilogramm eines
+ * 25-kg-Gebindes gibt es nicht; die Bestellung wäre nicht lieferbar, und
+ * gemerkt hätte es niemand vor dem Kommissionieren.
+ *
+ * Dasselbe Muster wie beim Materialbedarf der Radonfolien: „Wer 140 m²
+ * braucht und Rollen zu 37,5 m² kauft, zahlt Verschnitt — und erfährt das
+ * heute erst an der Kasse." Hier ist es kein Verschnitt, sondern eine Menge,
+ * die es gar nicht gibt.
+ *
+ * **Nur wo die Gebindegröße im Namen steht und der Preis je Kilogramm gilt.**
+ * Ist die Einheit bereits das Gebinde (`SCK`, `STK`), ist der Schritt
+ * ohnehin eins. Steht keine Gebindegröße im Namen, wird keine erfunden — das
+ * Feld bleibt, wie es war.
+ *
+ * **Was hier eine Annahme ist, und welche.** Dass ein als „25 kg" benanntes
+ * Gebinde nur ganz abgegeben wird, steht auf keiner Rechnung — der
+ * Lieferant fakturiert je Kilogramm. Die Annahme ist trotzdem die
+ * vorsichtigere: Eine Bestellung über 7 kg, die niemand kommissionieren
+ * kann, kostet mehr als eine, die der Kunde auf 25 kg aufrundet. Verkauft
+ * der Lieferant doch lose, fällt diese Funktion weg und sonst nichts.
+ */
+export function mengenschritt(artikel) {
+  if (!artikel) return null;
+  if (String(artikel.einheit ?? '').toUpperCase() !== 'KG') return null;
+  const kg = gebindeKg(artikel.bezeichnung);
+  if (kg === null) return null;
+  // Ein gebrochener Schritt wäre im Mengenfeld nicht ganzzahlig, und der
+  // Warenkorb rechnet nur mit ganzen Mengen. 1,5 kg Fugenmasse wird je Stück
+  // verkauft und kommt hier ohnehin nicht an.
+  if (!Number.isInteger(kg)) return null;
+  return kg;
+}
+
+/**
  * Die Vergleichstafel für eine Warengruppe: nur die Artikel, für die beide
  * Preise bekannt sind, sortiert nach dem Kilopreis.
  *

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { gebindeKg, preisJeKilo, kilotafel, GROESSTES_GEBINDE_KG } from '../src/gebinde.js';
+import { gebindeKg, preisJeKilo, kilotafel, mengenschritt, GROESSTES_GEBINDE_KG } from '../src/gebinde.js';
 
 const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
 
@@ -111,4 +111,54 @@ test('die Artikelseite nennt beide Preise, und zwar den jeweils gerechneten', ()
   const jeSack = readFileSync(gebindeSeite, 'utf8');
   assert.match(jeSack, /Je Kilogramm/);
   assert.match(jeSack, /0,57/, 'der Kilopreis fehlt');
+});
+
+test('der Mengenschritt gilt nur für Kilopreise mit ganzer Gebindegröße', () => {
+  assert.equal(mengenschritt({ bezeichnung: 'Putzgrund 25 kg', einheit: 'KG' }), 25);
+  assert.equal(mengenschritt({ bezeichnung: 'Sack 25 kg', einheit: 'SCK' }), null,
+    'wer je Sack verkauft, verkauft schon in Gebinden');
+  assert.equal(mengenschritt({ bezeichnung: 'Platte 0,5 m2', einheit: 'M2' }), null);
+  assert.equal(mengenschritt({ bezeichnung: 'Fugenmasse 1,5 kg', einheit: 'KG' }), null,
+    'ein gebrochener Schritt passt nicht in ein ganzzahliges Mengenfeld');
+  assert.equal(mengenschritt({ bezeichnung: 'ohne Angabe', einheit: 'KG' }), null);
+  assert.equal(mengenschritt(null), null);
+});
+
+test('am Bestand bekommt jeder Kilopreis-Gebindeartikel einen Schritt — und sonst keiner', () => {
+  const datei = pfad('../ausgabe/site/shop.js');
+  if (!existsSync(datei)) return;
+  const artikel = JSON.parse(readFileSync(datei, 'utf8').match(/^window\.__SHOP__=(.*?);$/m)[1]).artikel;
+  const mit = artikel.filter((a) => mengenschritt(a) !== null);
+  assert.ok(mit.length >= 4, `nur ${mit.length} Artikel mit Gebindeschritt`);
+  for (const a of mit) {
+    assert.equal(a.einheit, 'KG');
+    assert.equal(mengenschritt(a), gebindeKg(a.bezeichnung));
+  }
+  // Und die Gegenrichtung: Nicht jeder Artikel bekommt einen — sonst wäre
+  // die Erkennung wirkungslos.
+  assert.ok(mit.length < artikel.length, 'jeder Artikel hat einen Schritt — das kann nicht stimmen');
+});
+
+test('die Artikelseite beginnt bei einem Gebinde und zählt in Gebinden weiter', () => {
+  const datei = pfad('../ausgabe/site/artikel/POS-13728.html');
+  if (!existsSync(datei)) return;
+  const html = readFileSync(datei, 'utf8');
+  const feld = html.match(/<input id="menge-POS-13728"[^>]*>/);
+  assert.ok(feld, 'kein Mengenfeld gefunden');
+  assert.match(feld[0], /min="25"/);
+  assert.match(feld[0], /value="25"/);
+  assert.match(feld[0], /step="25"/);
+  assert.match(html, /Abgabe in ganzen Gebinden zu 25 kg/);
+  assert.match(html, /69,25 € netto/, 'der Gebindepreis gehört in den Satz');
+});
+
+test('ein Artikel ohne Gebinde behält das freie Mengenfeld', () => {
+  const datei = pfad('../ausgabe/site/artikel/POS-12566.html');
+  if (!existsSync(datei)) return;
+  const html = readFileSync(datei, 'utf8');
+  const feld = html.match(/<input id="menge-POS-12566"[^>]*>/);
+  assert.ok(feld);
+  assert.match(feld[0], /min="1"/);
+  assert.ok(!feld[0].includes('step='), 'ohne bekannte Gebindegröße wird keine erfunden');
+  assert.ok(!html.includes('Abgabe in ganzen Gebinden'));
 });

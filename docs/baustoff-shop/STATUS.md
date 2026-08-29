@@ -451,7 +451,7 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > `pruefe-quellen` 6/6, `shopprobe` 28, `oberflaechenprobe` 11, Website 81
 > Seiten ohne toten Verweis.
 
-> **29. August — sieben Läufe.** Ausführlich je ein Dokument.
+> **29. August — acht Läufe.** Ausführlich je ein Dokument.
 >
 > **Der Gruppenvorschlag wurde gemessen und verworfen.** Ein Regelwerk, das
 > aus der Artikelbezeichnung eine Warengruppe rät, trifft am eigenen Bestand
@@ -502,11 +502,11 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > 787 vergleichbare Tests, kein Unterschied.
 > [`kommentare-im-schaufenster.md`](./kommentare-im-schaufenster.md).
 >
-> **Stand der Prüfmittel:** 809 Tests, `pruefe-tests` 808/0, `pruefe-inhalte`
+> **Stand der Prüfmittel:** 813 Tests, `pruefe-tests` 812/0, `pruefe-inhalte`
 > 24/355/0, `pruefe-seiten` 60 von 81 gebauten Seiten (die übrigen 23 tragen
-> nur Text aus `inhalte/`, dort geprüft), `pruefe-widerrufe` 158 Dateien/48
-> Fundstellen, `pruefe-quellen` 6/6, `shopprobe` 39 (davon 10 im Rahmen),
-> `oberflaechenprobe` 11, `rahmenzensus` 81/81, `pruefe-stand` 157/157,
+> nur Text aus `inhalte/`, dort geprüft), `pruefe-widerrufe` 159 Dateien/48
+> Fundstellen, `pruefe-quellen` 6/6, `shopprobe` 41 (davon 10 im Rahmen),
+> `oberflaechenprobe` 11, `rahmenzensus` 81/81, `pruefe-stand` 158/158,
 > `pruefe-pruefer` 10 Prüfer ohne Leerlauf, Website 81 Seiten ohne toten
 > Verweis.
 
@@ -836,7 +836,7 @@ zusammengefasst und im Verzeichnis nicht auffindbar:
 | `erste-echte-zahlen.md` | Die Lieferantenrechnungen sind gefunden — die Grundlage der ganzen Kalkulation (22.08.) |
 | `google-kampagne.md` | Die Kampagne ist vollständig geplant und **nicht geschaltet** (22.08.) |
 
-**Läufe vom 29. August** — die sieben Dokumente dieses Tages:
+**Läufe vom 29. August** — die acht Dokumente dieses Tages:
 
 | Datei | Kernaussage |
 |---|---|
@@ -847,6 +847,7 @@ zusammengefasst und im Verzeichnis nicht auffindbar:
 | `status-hatte-eine-woche-verspaetung.md` | Dieses Dokument stellte noch Radon-Shop und Leadvermittlung gegenüber; 20 Arbeitsdateien waren hier nie genannt. `npm run pruefe-stand` hält den Abgleich |
 | `kommentare-im-schaufenster.md` | Das ausgelieferte `shop.js` enthielt den Quelltext samt Kommentaren und darin die Kalkulationsregel; „Repository privat schalten" wäre wirkungslos gewesen. Jetzt entkommentiert, mit drittem Durchgang in `pruefe-geheimnis` |
 | `dreimal-richtig-beschriftet.md` | „25 kg" je Kilogramm gegen „25 kg" je Sack: 2,77 € gegen 14,32 €, der teurere sah fünfmal billiger aus. Beide Preise stehen jetzt nebeneinander, dazu die Tafel „Was ein Kilogramm kostet" |
+| `ein-kilogramm-von-einem-sack.md` | Der Knopf legte **ein Kilogramm** eines 25-kg-Gebindes in den Korb — eine Menge, die es nicht gibt. Mengenfeld und Warenkorb zählen jetzt in Gebinden und runden auf |
 | `segment-arbeitsplatzmessung.md` | Nebenstrecke, kein eigenes Segment |
 | `strategie-modellvergleich.md` | Kapitalweg braucht ~900.000 €; enthält überholte Empfehlung |
 | `anschreiben-entwuerfe.md` | Drei Anschreiben (Hersteller, Großhändler, Partnerbetriebe), versandfertig, nicht versendet |

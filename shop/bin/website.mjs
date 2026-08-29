@@ -35,7 +35,7 @@ import { VERFUEGBARKEIT } from '../src/maschinenlesbar.js';
 import { baueKern, KERNMODULE, SHOPMODULE } from '../src/buendel.js';
 import { startklar } from '../src/startklar.js';
 import { ohneKommentare } from '../src/entkommentieren.js';
-import { preisJeKilo, kilotafel } from '../src/gebinde.js';
+import { preisJeKilo, kilotafel, mengenschritt } from '../src/gebinde.js';
 import { oeffentlicherArtikel, oeffentlicherLieferant } from '../src/shopkern.js';
 import { LIEFERGEBIET } from '../src/liefergebiet.js';
 import { ZAHLWEGE } from '../src/zahlung.js';
@@ -329,6 +329,7 @@ svg.schema.gruppe{max-height:5.5rem}
 .anfrage-knoepfe{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin-top:.7rem}
 .anfrage-echo{font-size:.9rem;color:var(--gedaempft)}
 .anfrage-hinweis{font-size:.88rem;color:var(--gedaempft);margin:.6rem 0 0}
+.gebindehinweis{font-size:.9rem;color:var(--gedaempft);margin:.5rem 0 1.2rem}
 
 .karte{background:var(--flaeche);padding:.9rem 1rem;display:flex;flex-direction:column;gap:.4rem;text-decoration:none;color:inherit}
 .karte:hover{background:var(--flaeche-2)}
@@ -525,11 +526,27 @@ function artikelSeite(a, katalog, befund, seiten, verweis) {
 </div>`);
 
   if (a.vkNetto !== null) {
+    // Das Mengenfeld stand bis zum 29.08. auf jedem Artikel gleich: min 1,
+    // Vorgabe 1. Bei einem Gebindeartikel, der je Kilogramm kostet, hieß das
+    // „ein Kilogramm" — eine Menge, die es nicht gibt und die niemand
+    // kommissionieren kann. Wo die Gebindegröße im Namen steht, beginnt das
+    // Feld jetzt bei einem Gebinde und zählt in Gebinden weiter.
+    const schritt = mengenschritt(a);
     teile.push(`<div class="legen">
   <label><span class="f-b">Menge in ${esc(EINHEITEN[a.einheit] ?? a.einheit)}</span>
-    <input id="menge-${esc(a.sku)}" type="number" min="1" max="999" value="1" inputmode="numeric"></label>
+    <input id="menge-${esc(a.sku)}" type="number" min="${schritt ?? 1}" max="999" value="${schritt ?? 1}"${
+      schritt ? ` step="${schritt}"` : ''} inputmode="numeric"></label>
   <button class="knopf" type="button" data-legen="${esc(a.sku)}" data-menge="menge-${esc(a.sku)}">In den Warenkorb</button>
 </div>`);
+    if (schritt) {
+      // Der Inhaltsprüfer hat diesen Satz beim ersten Wurf beanstandet, und
+      // zu Recht: „25 kg" und „69,25 €" standen darin ohne Herkunft und ohne
+      // Stand. Dass beides eine Zeile höher in der Preistafel steht, half
+      // nicht — der Satz wird für sich gelesen. Jetzt trägt er beides.
+      teile.push(`<p class="gebindehinweis">Abgabe in ganzen Gebinden zu ${
+        esc(String(schritt))} kg laut Artikelbezeichnung. Der Preis gilt je Kilogramm; ein Gebinde
+kostet danach ${euro(a.vkNetto * schritt)} € netto, Stand: ${esc(a.preisStand)}.</p>`);
+    }
   }
 
   if (beipack) {

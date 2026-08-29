@@ -499,16 +499,27 @@
         + (p.sperrgut ? ' · palettiert, Kranentladung je Hub' : '')));
       zeile.appendChild(mitte);
 
+      // Der Gebindeschritt gilt auch hier. Ihn nur auf der Artikelseite zu
+      // setzen hieße: Der Kunde legt ein Gebinde in den Korb und schreibt es
+      // im Korb auf 7 kg herunter — dieselbe unlieferbare Menge, einen
+      // Klick später. Die Regel steht in gebinde.js, nicht zweimal.
+      var schritt = mengenschritt(p) || 1;
       var menge = document.createElement('input');
       menge.type = 'number';
-      menge.min = '1';
+      menge.min = String(schritt);
       menge.max = '999';
+      if (schritt > 1) menge.step = String(schritt);
       menge.value = String(p.menge);
       menge.className = 'kz-menge';
-      menge.setAttribute('aria-label', 'Menge ' + p.bezeichnung);
+      menge.setAttribute('aria-label', 'Menge ' + p.bezeichnung
+        + (schritt > 1 ? ', ganze Gebinde zu ' + schritt + ' kg' : ''));
       menge.addEventListener('change', function () {
         var m = parseInt(menge.value, 10);
-        if (!Number.isInteger(m) || m < 1) m = 1;
+        if (!Number.isInteger(m) || m < schritt) m = schritt;
+        // Auf das nächste ganze Gebinde aufrunden — nicht ab. Wer 30 kg
+        // eintippt, braucht mehr als ein Gebinde; ihm 25 zu geben wäre
+        // stillschweigend zu wenig.
+        if (schritt > 1) m = Math.ceil(m / schritt) * schritt;
         korb = setzeMenge(korb, p.sku, m);
         sichern();
         neu();
