@@ -87,6 +87,14 @@ const PRUEFER = [
     einheit: 'Testfälle',
     mindestens: 500,
   },
+  {
+    name: 'pruefe-stand',
+    werkzeug: 'standpruefung.mjs',
+    muster: /(\d+) von (\d+) Dateien sind in STATUS\.md genannt/,
+    einheit: 'Arbeitsdateien',
+    mindestens: 100,
+    zweite: true,
+  },
 ];
 
 /**

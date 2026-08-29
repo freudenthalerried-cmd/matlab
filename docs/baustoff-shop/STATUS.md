@@ -1,7 +1,15 @@
 # Status und Einstieg
 
-Stand: 2026-08-28. **Dieses Dokument zuerst lesen.** Neunundachtzig Arbeitsdateien
+Stand: 2026-08-29. **Dieses Dokument zuerst lesen.** 155 Arbeitsdateien
 sind entstanden, mehrere davon korrigieren einander. Hier steht, was gilt.
+
+> **Vorsicht bei diesem Dokument selbst.** Am 29. August stand weiter unten
+> noch „Die Modellwahl ist vertagt" mit einer Tabelle, die Radon-Shop und
+> Leadvermittlung gegeneinanderstellt — eine Woche nach dem Kurswechsel vom
+> 22. August, der beide Modelle abgelöst hat. Ein späterer Lauf hätte an der
+> falschen Weggabelung gestanden. Genau dieselbe Sorte Fehler wie in
+> `PARAMETER.md` am 28. August. Der Abschnitt trägt jetzt eine Kopfnotiz;
+> **wer hier liest, prüft zuerst das Datum über dem Absatz.**
 
 Veröffentlichter Bericht:
 [claude.ai/code/artifact/3d669d15…](https://claude.ai/code/artifact/3d669d15-b632-41b9-838c-b9369dab8a4c)
@@ -443,10 +451,91 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > `pruefe-quellen` 6/6, `shopprobe` 28, `oberflaechenprobe` 11, Website 81
 > Seiten ohne toten Verweis.
 
+> **29. August — vier Läufe.** Ausführlich je ein Dokument.
+>
+> **Der Gruppenvorschlag wurde gemessen und verworfen.** Ein Regelwerk, das
+> aus der Artikelbezeichnung eine Warengruppe rät, trifft am eigenen Bestand
+> 40 von 46 — und das zählt nicht, weil die Regeln an genau diesen Zeilen
+> geschrieben wurden. An zurückgehaltenen Daten 25 von 41, und aufgeschlüsselt
+> bricht die Zahl auseinander: **25 von 25** auf der Isover-Seite, wo das
+> Herstellerkürzel zufällig die Gruppe ist, **0 von 16** auf der
+> Vollwärmeschutz-Seite. Die Gruppe ist keine Eigenschaft des Artikels,
+> sondern eine Entscheidung dieses Shops — derselbe Baumit KlebeSpachtel ist
+> bei uns `Mörtel` und steht beim Lieferanten unter „Vollwärmeschutz". Am
+> Liefertag wird stattdessen einmal die Gliederung des Lieferanten auf unsere
+> sieben Gruppen abgebildet: rund zwanzig Zeilen statt hundert Entscheidungen.
+> [`gruppenvorschlag-nicht-gebaut.md`](./gruppenvorschlag-nicht-gebaut.md).
+>
+> **Der 390-px-Rahmen gilt jetzt für jede gebaute Seite** statt für neun
+> ausgesuchte. `npm run rahmenzensus` liest den Bestand: 81 von 81 Seiten
+> rollen nicht seitwärts, die acht Tabellen bis 667 px stehen alle in ihrem
+> Scrollkasten. Neun Sekunden. Zwei Messungen, weil `overflow-x: hidden` die
+> erste für immer zum Schweigen brächte und den Inhalt dabei abschneidet.
+> Die Gegenprobe hat einen Fehler im Prüfer selbst gefunden: erst rollen,
+> dann Kanten messen verschiebt jede Kante um genau den Betrag, den es
+> aufzudecken gilt. [`rahmen-fuer-jede-seite.md`](./rahmen-fuer-jede-seite.md).
+>
+> **Die Kasse hat einen Ausgang bekommen.** Sie rechnete den Korb durch und
+> sagte dann, dass sie nichts auslöst — richtig für den Betrieb, eine Wand
+> für den Besucher, der am weitesten gekommen ist. Nach der Bezirkswahl steht
+> jetzt die fertig gerechnete Positionsliste zum Kopieren da: Positionen,
+> Fracht, USt, Gewicht, Preisstand, „unverbindliche Anfrage, keine
+> Bestellung". Es wird **nichts gesendet** — damit entsteht kein
+> Verarbeitungsvorgang, den eine noch fehlende Datenschutzerklärung tragen
+> müsste. Gate 23 wird aufgerufen statt nachgebaut.
+> [`anfrage-statt-wand.md`](./anfrage-statt-wand.md).
+>
+> **Und dieser Weg stand danach auf keiner Seite.** Startseite, Kasse und
+> `llms.txt` sagen es jetzt — und leiten es aus derselben Rechnung ab wie
+> `npm run startklar`, statt aus einem festen Satz, der stehenbliebe, wenn
+> der Auftraggeber einen der drei Punkte schließt. Ein Test lässt den echten
+> Bau zweimal laufen und verlangt, dass die Auskunft kippt.
+> [`was-hier-moeglich-ist.md`](./was-hier-moeglich-ist.md).
+>
+> **Stand der Prüfmittel:** 792 Tests, `pruefe-tests` 791/0, `pruefe-inhalte`
+> 24/355/0, `pruefe-seiten` 58 von 81 gebauten Seiten (die übrigen 23 tragen
+> nur Text aus `inhalte/`, dort geprüft), `pruefe-widerrufe` 155 Dateien/48
+> Fundstellen, `pruefe-quellen` 6/6, `shopprobe` 39 (davon 10 im Rahmen),
+> `oberflaechenprobe` 11, `rahmenzensus` 81/81, `pruefe-stand` 155/155,
+> `pruefe-pruefer` 10 Prüfer ohne Leerlauf, Website 81 Seiten ohne toten
+> Verweis.
+
 ## Wo das Projekt steht
 
-**Nichts ist gegründet, verkauft oder eingenommen.** Es gibt keinen Umsatz und
-keinen Gewinn. Was existiert, ist eine Machbarkeitsanalyse.
+**Stand 29. August 2026.** Nichts ist verkauft oder eingenommen — es gibt
+keinen Umsatz und keinen Gewinn. Was existiert:
+
+- **Die Firma** — Freudenthaler Bau GmbH, FN 347938z, Baustoffhandel als
+  Gewerbe eingetragen. Nichts zu gründen.
+- **46 Artikel** mit belegtem Einkaufspreis aus den eigenen
+  Lieferantenrechnungen, alle gerechnet, keiner mit Platzhalter. Das ist das
+  Maximum aus den vorliegenden Belegen; für die geforderten hundert braucht es
+  die Artikelliste des Lieferanten.
+- **Eine gebaute Website** — 81 Seiten, 46 Artikelseiten, 14 Wissensseiten, 4
+  Systemlisten, 7 Gruppenseiten, Warenkorb und Kasse, dazu `robots.txt`,
+  `llms.txt`, `sitemap.xml` und JSON-LD.
+- **Ein Anfrageweg**, der ohne Zahlungsanbieter funktioniert.
+- **Neun Prüfer**, die den Bestand messen und nicht eine Probe.
+
+**Was fehlt, entscheidet der Auftraggeber**, nicht dieser Loop:
+`npm run startklar` nennt es in einem Satz — drei Punkte offen, zwei von hier
+aus nicht feststellbar. Die Tabelle unter „Was als Nächstes gebraucht wird"
+führt sie einzeln auf.
+
+---
+
+> **Überholt seit 22. August — die Modellfrage ist entschieden.** Was ab
+> hier folgt und bis zum 29. August unmarkiert dastand, ist die
+> Gegenüberstellung von **Radon-Shop und Leadvermittlung** aus der Zeit vor
+> dem Kurswechsel. Beide Modelle sind abgelöst: Der Auftraggeber kalkuliert
+> seit dem 22. August mit **eigenen Baumeisterpreisen**, 25 % Marge,
+> Vertrieb über Google Shopping, Lieferung **regional**. Es gibt keine
+> Modellwahl mehr zu treffen.
+>
+> Der Abschnitt bleibt als Fehlergeschichte stehen — **er beschreibt nicht,
+> woran gearbeitet wird.** Ein Lauf, der ihn für aktuell hält, arbeitet an
+> der falschen Sache. Dieselbe Sorte Fehler wie die überholte
+> 32-%-Untergrenze in `PARAMETER.md`, und sie stand hier eine Woche länger.
 
 Aus zehn geprüften Baustoffnischen und vier Geschäftsmodellen sind **zwei
 Kandidaten** übrig, die beide auf derselben inhaltlichen Grundlage aufbauen —
@@ -469,6 +558,9 @@ Beide erreichen 3.000 € netto nur, wenn die Annahmen halten. Die schwächsten
 sind unten benannt.
 
 ## Die Modellwahl ist vertagt — begründet
+
+> **Überholt seit 22. August.** Auch dieser Abschnitt gehört zum abgelösten
+> Radon-Stufenmodell. Die Wahl ist nicht mehr vertagt, sie ist gegenstandslos.
 
 Drei Bedingungen stehen gegeneinander und sind nicht gleichzeitig zu haben:
 
@@ -501,7 +593,7 @@ Shop am weitesten bringt:
 |---|---|---|
 | **Artikelliste** aus dem Poschacher-Webshop (Kundenkonto → Export als CSV) | eine Ausleitung durch den Auftraggeber | aus 46 Artikeln werden hunderte; der Importweg steht (`npm run preisliste`) |
 | **Impressum vervollständigen** — E-Mail, Telefon, UID, Gewerbewortlaut | vier Angaben aus dem laufenden Betrieb | die Seite darf online; unvollständig ist sie abmahnfähig |
-| **Zahlungsanbieter wählen** | eine Entscheidung, dann ein Vertrag | die Kasse löst tatsächlich Bestellungen aus |
+| **Zahlungsanbieter wählen** | eine Entscheidung, dann ein Vertrag | die Kasse löst tatsächlich Bestellungen aus — bis dahin erzeugt sie die gerechnete Anfrage zum Kopieren |
 | **Domain und Hosting** | eine Entscheidung | die Seite existiert im Netz statt nur im Repository |
 | **Rechtstexte** (AGB, Widerruf, Datenschutz) | ein Rechtstexteanbieter | verbindlicher Wortlaut statt Gerüst mit Begründungen |
 | **Repository privat schalten** | einen Klick | 44 von 46 Einkaufspreisen sind heute aus zwei veröffentlichten Zahlen rekonstruierbar |
@@ -511,6 +603,13 @@ Zwei Entscheidungen sind am 28. August **getroffen** worden und hier nur noch
 der Vollständigkeit halber vermerkt: Die Handelsspanne wird auf der
 Kundenseite **nicht** mehr genannt, und das Sortiment soll auf mindestens
 hundert Artikel wachsen.
+
+**Was sich am 29. August daran geändert hat:** Nichts an der Liste — aber der
+erste Punkt ist billiger geworden, als er aussieht. Für die E-Mail-Adresse im
+Impressum spricht seit heute ein zweiter Grund: Ohne sie hat der Anfragetext
+auf der Kasse keinen Mailknopf, sondern nur den Hinweis, dass die Adresse
+fehlt. Eine Angabe, vier Minuten Aufwand, und der einzige heute begehbare Weg
+wird vom Kopieren zum Klicken.
 
 ---
 
@@ -700,6 +799,42 @@ Das Kapitalrisiko bis zur ersten belegten Einnahme liegt im Stufenmodell bei
 | `franchise-zeitfenster.md` | Gate 16 — ISOTEC gründet ab H2 2026 in Österreich; die Lücke ist eine Frist |
 | `content-und-leadgen.md` | Displaywerbung und Affiliate scheitern an der Reichweite |
 | `skalierung-und-passivitaet.md` | Bestandseffekt; digitale Vorlagen fallen durch |
+
+**Läufe vom 28. August** — bis zum 29. waren diese Dateien nur im Fließtext
+zusammengefasst und im Verzeichnis nicht auffindbar:
+
+| Datei | Kernaussage |
+|---|---|
+| `spanne-nicht-mehr-ausgeben.md` | Weisung „keine spanne ausgeben" umgesetzt; alle drei Ausnahmen des Interna-Prüfers gelöscht, der Bau bricht bei Rückkehr der Zahl ab |
+| `hundert-artikel-was-fehlt.md` | 46 sind das Maximum aus den Rechnungen; über hundert Artikel liegen bereit, es fehlen die Preise |
+| `importweg-artikelliste.md` | `npm run preisliste` — der Weg vom Lieferantenexport in den Katalog, gebaut bevor die Liste da ist |
+| `lastlauf-hundert-artikel.md` | 141 Artikel eingespielt: fünf Unit-Tests und zwei Proben schrieben den 46er-Bestand fest |
+| `artikel-ohne-gruppe-sind-unauffindbar.md` | Ein Artikel ohne Warengruppe steht auf keiner Seite; der Bau bricht deshalb ab |
+| `startklar-pruefung.md` | `npm run startklar` beantwortet „shop fertig?" aus den Daten, mit dem dritten Zustand „von hier aus nicht feststellbar" |
+| `zusage-die-der-code-nicht-hielt.md` | Der Kommentar versprach, `betreiber.json` zu lesen; der Code setzte `null`. Jetzt liest er wirklich, mit `??` statt `\|\|` |
+| `oberste-regel-war-ueberholt.md` | `PARAMETER.md` forderte noch 32 % Rohmarge und hätte das laufende Modell verworfen |
+| `statusseite-zeigte-den-falschen-plan.md` | `STATUS.md` nannte noch die Freigaben des Radon-Modells |
+| `dreiundzwanzig-hohle-stellen.md` | `pruefe-tests` meldete seit Tagen 23 Verdachtsfälle und lief als „grün" mit; sein eigener Parser las `test(name, options, fn)` falsch |
+| `zwei-wege-zur-selben-zahl.md` | Kampagne und Veröffentlichung bauten Fracht und Deckungsbeitrag nach, statt den Rechenkern zu rufen |
+| `ein-weg-zur-zahl.md` | Die Nachbauten sind weg — ein Weg zur Zahl |
+| `erzeuger-loeschte-die-gewichte.md` | `npm run katalog` löschte die sieben belegten Gewichte, still, bei jedem Lauf |
+| `eine-platte-mit-sechzig-zentimetern.md` | 600 mm Plattenbreite als Stärke gelesen; Plausibilitätsgrenze 300 mm, eine Quelle für Etikett und Zeichnung |
+| `zustellung-steht-auf-der-artikelseite.md` | Zustellkosten auf der Artikelseite; der erste Entwurf verglich die Fracht mit dem Stückpreis und log damit |
+| `meinten-sie.md` | Acht von neun Vertippern fanden nichts; Abstandsmaß statt Wortliste |
+| `vorschlag-auch-im-suchfeld.md` | Der Vorschlag steht jetzt dort, wo getippt wird, nicht nur auf der Suchseite |
+| `dem-verweis-folgen.md` | Die Proben lasen die Adresse des Verweises statt ihm zu folgen |
+| `erste-echte-zahlen.md` | Die Lieferantenrechnungen sind gefunden — die Grundlage der ganzen Kalkulation (22.08.) |
+| `google-kampagne.md` | Die Kampagne ist vollständig geplant und **nicht geschaltet** (22.08.) |
+
+**Läufe vom 29. August** — die vier Dokumente dieses Tages:
+
+| Datei | Kernaussage |
+|---|---|
+| `gruppenvorschlag-nicht-gebaut.md` | Warengruppe aus der Bezeichnung raten: 0 von 16 auf zurückgehaltenen Daten. Nicht gebaut; am Liefertag die Gliederung des Lieferanten abbilden |
+| `rahmen-fuer-jede-seite.md` | `npm run rahmenzensus` misst alle 81 gebauten Seiten im 390-px-Rahmen statt neun ausgesuchte; 81/81 in Ordnung |
+| `anfrage-statt-wand.md` | Die Kasse erzeugt nach der Bezirkswahl die gerechnete, unverbindliche Anfrage zum Kopieren — der Weg, der ohne Zahlungsanbieter funktioniert |
+| `was-hier-moeglich-ist.md` | Startseite, Kasse und `llms.txt` sagen aus den Daten, ob bestellt werden kann — der Satz kippt, wenn die Betreiberdatei vollständig wird |
+| `status-hatte-eine-woche-verspaetung.md` | Dieses Dokument stellte noch Radon-Shop und Leadvermittlung gegenüber; 20 Arbeitsdateien waren hier nie genannt. `npm run pruefe-stand` hält den Abgleich |
 | `segment-arbeitsplatzmessung.md` | Nebenstrecke, kein eigenes Segment |
 | `strategie-modellvergleich.md` | Kapitalweg braucht ~900.000 €; enthält überholte Empfehlung |
 | `anschreiben-entwuerfe.md` | Drei Anschreiben (Hersteller, Großhändler, Partnerbetriebe), versandfertig, nicht versendet |
@@ -719,6 +854,10 @@ Damit niemand einer überholten Aussage folgt:
 | Arbeitsplatz-Messpflicht österreichweit | Nur für spezielle Arbeitsplätze; Frist lief 2022 ab |
 | Anlaufverlust 8.000–12.000 € vorab | Gilt nur für „Shop zuerst"; gestuft sind es 2.700 € bis zur ersten Einnahme |
 | Modellwahl als offene Blockade | Vertagt auf Ende Stufe 2, weil Stufe 0–2 für beide Modelle gleich sind |
+| Modellwahl überhaupt | **Gegenstandslos seit 22.08.**: eigene Baumeisterpreise, 25 % Marge, regional. Die Zeile darüber und die ganze Radon-Rechnung beschreiben ein abgelöstes Vorhaben |
+| „32 % Rohmarge sind die Untergrenze" (`PARAMETER.md`) | Abgelöst durch Gate 20: positiver Deckungsbeitrag je Bestellung, in Euro geprüft |
+| „Es kann nichts bestellt werden" als letztes Wort der Startseite | Stimmt weiter, war aber unvollständig: Eine gerechnete Anfrage ist möglich, und die Seiten sagen es jetzt (29.08.) |
+| Ein Regelwerk kann die Warengruppe aus der Bezeichnung raten | 0 von 16 auf zurückgehaltenen Daten; die Gruppe ist eine Entscheidung dieses Shops, keine Eigenschaft des Artikels (29.08.) |
 | Ø Warenkorb 450 €, 54 Bestellungen | 650 € und 37 Bestellungen — die Stückliste liegt deutlich höher |
 | Materialwert je Gebäude reine Schätzung | Aus Stückliste hergeleitet, amtlich gegengeprüft |
 | FAGG-Rücktritt als Hauptrisiko des Shops | Entfällt im reinen B2B-Geschäft; dafür Auflage, Verbraucher wirksam auszuschließen |
@@ -750,12 +889,29 @@ Damit niemand einer überholten Aussage folgt:
 
 ## Zum Arbeitsloop
 
-Der stündliche Arbeitsloop arbeitet ab, was ohne Entscheidung, Freigabe oder
-Geld möglich ist — zuletzt das Stufenmodell in
-`phase9-meilensteine-und-abbruch.md`, die Stückliste in
-`phase4-sortiment-und-materialwert.md`, die Automatisierungsprüfung, die
-Lieferantenlandkarte und die Durchrechnung des Leadmodells. Findet ein
-Durchlauf keine solche
-Aufgabe mehr, prüft er nur den Stand und endet ohne neue Datei, statt Dokumente
-ohne Adressaten zu erzeugen. Sobald eine der beiden Freigaben vorliegt, nimmt er
-die eigentliche Arbeit auf.
+**Neu gefasst am 29. August.** Hier stand bis dahin, der Loop arbeite am
+Stufenmodell und der Lieferantenlandkarte und nehme „die eigentliche Arbeit"
+auf, „sobald eine der beiden Freigaben vorliegt". Beides gehört zum
+abgelösten Radon-Modell; die zwei Freigaben gibt es nicht mehr. Ein Lauf, der
+diesen Absatz für aktuell hielt, hätte auf etwas gewartet, das nie kommt.
+
+**Was der Loop tut.** Er arbeitet ab, was ohne Entscheidung, Freigabe oder
+Geld möglich ist, und das ist am Shop derzeit reichlich. Der Reihe nach
+brauchbare Einstiege:
+
+1. `npm run startklar` — sagt aus den Daten, was zwischen hier und „online"
+   steht. Was dort bei „Auftraggeber" steht, kann der Loop **nicht**
+   schließen; er kann es nur vorbereiten, damit es am Tag der Antwort läuft.
+2. Die neun Prüfer laufen lassen und **einem Befund nachgehen**, statt einen
+   neuen Prüfer zu bauen. `npm run pruefe-pruefer -- --mit-browser` sagt
+   zuerst, ob überhaupt jeder etwas angesehen hat.
+3. Eine Zusage suchen, die keine Probe widerlegen kann — und die Probe
+   nachziehen. Die Gegenprobe steht dabei **vor** der Zusage: Wer eine neue
+   Prüfung schreibt, schaltet erst das Geprüfte ab und sieht nach, ob sie
+   umfällt.
+
+**Was der Loop nicht tut:** Dokumente ohne Adressaten erzeugen. Findet ein
+Durchlauf keine Aufgabe, prüft er den Stand und endet ohne neue Datei.
+
+**Wo die offenen Fäden liegen:** in „Was als Nächstes gebraucht wird" weiter
+oben. Alle sieben Zeilen dort brauchen den Auftraggeber.
