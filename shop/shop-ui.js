@@ -225,11 +225,17 @@
       knopf.addEventListener('click', function () {
         var sku = knopf.getAttribute('data-legen');
         var mengenfeld = document.getElementById(knopf.getAttribute('data-menge') || '');
-        var menge = mengenfeld ? parseInt(mengenfeld.value, 10) : 1;
-        if (!Number.isInteger(menge) || menge < 1) menge = 1;
+        // `parseInt` hat hier bis zum 29.08. gestanden und aus „0,75 m²" eine
+        // 0 gemacht, die dann auf 1 gehoben wurde: Der Knopf legte einen
+        // ganzen Quadratmeter in den Korb, den es als Platte nicht gibt.
+        var artikel = (D.artikel || []).filter(function (x) { return x.sku === sku; })[0];
+        var schritt = mengenschritt(artikel) || 1;
+        var menge = mengenfeld ? parseFloat(String(mengenfeld.value).replace(',', '.')) : schritt;
+        if (!Number.isFinite(menge) || menge <= 0) menge = schritt;
+        menge = Math.round(Math.ceil(Math.round((menge / schritt) * 1e6) / 1e6) * schritt * 100) / 100;
         korb = legeInKorb(korb, sku, menge);
         sichern();
-        knopf.textContent = menge + '× im Warenkorb';
+        knopf.textContent = String(menge).replace('.', ',') + '× im Warenkorb';
         knopf.classList.add('getan');
         window.setTimeout(function () {
           knopf.textContent = 'In den Warenkorb';
@@ -494,8 +500,16 @@
       var link = el('a', 'kz-t', p.bezeichnung);
       link.href = pfad('artikel/' + p.sku);
       mitte.appendChild(link);
+      var schritt = mengenschritt(p);
+      // Was hinter der Zahl steckt: Bei Gebindeware sagt „5,25" allein nicht,
+      // dass es sieben Platten sind. Der Kunde bestellt Platten, nicht
+      // Quadratmeter — die Rechnung führt Quadratmeter.
+      var zahlwerk = gebindezahl(p.menge, schritt);
       mitte.appendChild(el('span', 'kz-e', eur(p.vkNetto) + ' je '
         + (D.einheiten[p.einheit] || p.einheit) + ', netto'
+        + (zahlwerk ? ' · ' + zahlwerk.stueck + ' Einheit' + (zahlwerk.stueck === 1 ? '' : 'en')
+            + ' zu ' + String(schritt).replace('.', ',')
+            + ' ' + (p.einheit === 'KG' ? 'kg' : 'm²') : '')
         + (p.sperrgut ? ' · palettiert, Kranentladung je Hub' : '')));
       zeile.appendChild(mitte);
 
@@ -503,23 +517,27 @@
       // setzen hieße: Der Kunde legt ein Gebinde in den Korb und schreibt es
       // im Korb auf 7 kg herunter — dieselbe unlieferbare Menge, einen
       // Klick später. Die Regel steht in gebinde.js, nicht zweimal.
-      var schritt = mengenschritt(p) || 1;
       var menge = document.createElement('input');
       menge.type = 'number';
-      menge.min = String(schritt);
+      menge.min = String(schritt || 1);
       menge.max = '999';
-      if (schritt > 1) menge.step = String(schritt);
+      if (schritt) menge.step = String(schritt);
       menge.value = String(p.menge);
       menge.className = 'kz-menge';
       menge.setAttribute('aria-label', 'Menge ' + p.bezeichnung
-        + (schritt > 1 ? ', ganze Gebinde zu ' + schritt + ' kg' : ''));
+        + (schritt ? ', ganze Einheiten zu ' + schritt + ' ' + (p.einheit === 'KG' ? 'kg' : 'm²') : ''));
       menge.addEventListener('change', function () {
-        var m = parseInt(menge.value, 10);
-        if (!Number.isInteger(m) || m < schritt) m = schritt;
-        // Auf das nächste ganze Gebinde aufrunden — nicht ab. Wer 30 kg
-        // eintippt, braucht mehr als ein Gebinde; ihm 25 zu geben wäre
-        // stillschweigend zu wenig.
-        if (schritt > 1) m = Math.ceil(m / schritt) * schritt;
+        var m = parseFloat(String(menge.value).replace(',', '.'));
+        if (!Number.isFinite(m) || m <= 0) m = schritt || 1;
+        if (schritt) {
+          // Auf die nächste ganze Einheit aufrunden — nicht ab. Wer 5 m²
+          // eintippt und Platten zu 0,75 m² kauft, braucht sieben Platten;
+          // ihm sechs zu geben wäre stillschweigend zu wenig.
+          m = Math.ceil(Math.round((m / schritt) * 1e6) / 1e6) * schritt;
+        } else {
+          m = Math.ceil(m);
+        }
+        m = Math.round(m * 100) / 100;
         korb = setzeMenge(korb, p.sku, m);
         sichern();
         neu();

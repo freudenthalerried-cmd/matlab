@@ -58,6 +58,32 @@ export function gebindeKg(bezeichnung) {
   return kg;
 }
 
+/** Was als Flächengebinde in Frage kommt, in Quadratmetern. */
+export const KLEINSTES_GEBINDE_M2 = 0.1;
+export const GROESSTES_GEBINDE_M2 = 200;
+
+/**
+ * Die Gebindegröße in Quadratmetern, oder `null`.
+ *
+ * Dieselbe Vorsicht wie bei `gebindeKg`, und eine zusätzliche: Gesucht wird
+ * ausschließlich ein ausdrückliches `m2`/`m²`. „Grundmauerschutz 20 **1,5 m**"
+ * und „Baumit TextilglasGitter **1,1x50 m**" tragen Meter, keine
+ * Quadratmeter — die eine Zahl ist eine Bahnbreite, die andere ein
+ * Rollenmaß. Aus ihnen eine Fläche zu rechnen hieße, die zweite Kante zu
+ * erfinden. Beide bekommen deshalb nichts, obwohl gerade die 1,1 × 50 m
+ * rechnerisch 55 m² wären: **Was die Bezeichnung nicht sagt, sagt sie
+ * nicht.**
+ */
+export function gebindeM2(bezeichnung) {
+  const t = String(bezeichnung ?? '');
+  const treffer = [...t.matchAll(/(\d+(?:[.,]\d+)?)\s*m[2²](?![\p{L}\d])/giu)];
+  if (treffer.length !== 1) return null;
+  const m2 = zahl(treffer[0][1]);
+  if (!Number.isFinite(m2)) return null;
+  if (m2 < KLEINSTES_GEBINDE_M2 || m2 > GROESSTES_GEBINDE_M2) return null;
+  return m2;
+}
+
 /** Einheiten, die eine Stückzahl meinen — bei ihnen ist der Preis der Gebindepreis. */
 const STUECKEINHEITEN = new Set(['SCK', 'STK', 'PAK', 'EIM', 'KAR', 'ROL']);
 
@@ -132,14 +158,30 @@ export function preisJeKilo(artikel) {
  */
 export function mengenschritt(artikel) {
   if (!artikel) return null;
-  if (String(artikel.einheit ?? '').toUpperCase() !== 'KG') return null;
-  const kg = gebindeKg(artikel.bezeichnung);
-  if (kg === null) return null;
-  // Ein gebrochener Schritt wäre im Mengenfeld nicht ganzzahlig, und der
-  // Warenkorb rechnet nur mit ganzen Mengen. 1,5 kg Fugenmasse wird je Stück
-  // verkauft und kommt hier ohnehin nicht an.
-  if (!Number.isInteger(kg)) return null;
-  return kg;
+  const einheit = String(artikel.einheit ?? '').toUpperCase();
+  if (einheit === 'KG') return gebindeKg(artikel.bezeichnung);
+  // **Erweitert am 29.08. auf Flächenware.** Hier stand vorher, ein
+  // gebrochener Schritt passe nicht ins Mengenfeld, „der Warenkorb rechnet
+  // nur mit ganzen Mengen". Das war der eigentliche Fehler: Bei einer Platte
+  // zu 0,75 m² sind ganze Quadratmeter gerade *nicht* lieferbar. Seit
+  // `istMenge()` sind zwei Nachkommastellen zugelassen, und der Schritt darf
+  // die Gebindegröße sein.
+  if (einheit === 'M2') return gebindeM2(artikel.bezeichnung);
+  return null;
+}
+
+/**
+ * Wie viele ganze Gebinde eine Menge ergibt — und wie viel dabei herauskommt.
+ *
+ * Für die Anzeige gedacht, nicht für die Rechnung: Der Warenkorb führt die
+ * Menge in der Einheit des Artikels, nicht in Stück. Diese Funktion sagt dem
+ * Kunden, was hinter seiner Zahl steckt.
+ */
+export function gebindezahl(menge, schritt) {
+  if (!(schritt > 0) || !(menge > 0)) return null;
+  const stueck = Math.ceil(Math.round((menge / schritt) * 1e6) / 1e6);
+  const gedeckteMenge = Math.round(stueck * schritt * 100) / 100;
+  return { stueck, gedeckteMenge, gehtAuf: Math.abs(gedeckteMenge - menge) < 0.005 };
 }
 
 /**

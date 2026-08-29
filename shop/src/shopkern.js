@@ -19,6 +19,8 @@
  * Suche
  * ------------------------------------------------------------------ */
 
+import { istMenge } from './warenkorb.js';
+
 /**
  * Zerlegt Text in vergleichbare Wortstämme.
  *
@@ -428,7 +430,7 @@ export function ladeKorb(speicher) {
     const daten = JSON.parse(roh);
     if (!Array.isArray(daten)) return [];
     return daten
-      .filter((z) => z && typeof z.sku === 'string' && Number.isInteger(z.menge) && z.menge >= 1)
+      .filter((z) => z && typeof z.sku === 'string' && istMenge(z.menge))
       .map((z) => ({ sku: z.sku, menge: Math.min(z.menge, 999) }));
   } catch {
     return [];
@@ -453,17 +455,17 @@ export function speichereKorb(speicher, zeilen) {
  */
 export function legeInKorb(zeilen, sku, menge = 1) {
   if (typeof sku !== 'string' || !sku) throw new Error('Artikelnummer fehlt');
-  if (!Number.isInteger(menge) || menge < 1) throw new Error(`Ungültige Menge: ${menge}`);
+  if (!istMenge(menge)) throw new Error(`Ungültige Menge: ${menge}`);
   const neu = zeilen.map((z) => ({ ...z }));
   const treffer = neu.find((z) => z.sku === sku);
-  if (treffer) treffer.menge = Math.min(treffer.menge + menge, 999);
+  if (treffer) treffer.menge = Math.min(Math.round((treffer.menge + menge) * 100) / 100, 999);
   else neu.push({ sku, menge: Math.min(menge, 999) });
   return neu;
 }
 
 /** Setzt eine Menge. Menge 0 entfernt die Zeile. */
 export function setzeMenge(zeilen, sku, menge) {
-  if (!Number.isInteger(menge) || menge < 0) throw new Error(`Ungültige Menge: ${menge}`);
+  if (menge !== 0 && !istMenge(menge)) throw new Error(`Ungültige Menge: ${menge}`);
   if (menge === 0) return zeilen.filter((z) => z.sku !== sku);
   return zeilen.map((z) => (z.sku === sku ? { ...z, menge: Math.min(menge, 999) } : { ...z }));
 }
@@ -577,7 +579,7 @@ export function kundenWarenkorb(zeilen, { artikel, lieferanten }, ust = 0.2) {
     const a = nachId.get(z.sku);
     if (!a) throw new Error(`Unbekannte Artikelnummer: ${z.sku}`);
     if (a.vkNetto === null) throw new Error(`Artikel ohne Preis: ${z.sku}`);
-    if (!Number.isInteger(z.menge) || z.menge < 1) throw new Error(`Ungültige Menge für ${z.sku}`);
+    if (!istMenge(z.menge)) throw new Error(`Ungültige Menge für ${z.sku}`);
     if (!gruppen.has(a.lieferantId)) gruppen.set(a.lieferantId, []);
     gruppen.get(a.lieferantId).push({ ...a, menge: z.menge, zeilensummeNetto: runde(a.vkNetto * z.menge) });
   }

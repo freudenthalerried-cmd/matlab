@@ -532,10 +532,13 @@ function artikelSeite(a, katalog, befund, seiten, verweis) {
     // kommissionieren kann. Wo die Gebindegröße im Namen steht, beginnt das
     // Feld jetzt bei einem Gebinde und zählt in Gebinden weiter.
     const schritt = mengenschritt(a);
+    // Der Punkt bleibt im Attribut — `step="0,75"` ist für den Browser kein
+    // Wert. Im Satz darunter steht das Komma.
+    const wert = schritt === null ? '1' : String(schritt);
     teile.push(`<div class="legen">
   <label><span class="f-b">Menge in ${esc(EINHEITEN[a.einheit] ?? a.einheit)}</span>
-    <input id="menge-${esc(a.sku)}" type="number" min="${schritt ?? 1}" max="999" value="${schritt ?? 1}"${
-      schritt ? ` step="${schritt}"` : ''} inputmode="numeric"></label>
+    <input id="menge-${esc(a.sku)}" type="number" min="${wert}" max="999" value="${wert}"${
+      schritt ? ` step="${wert}"` : ''} inputmode="decimal"></label>
   <button class="knopf" type="button" data-legen="${esc(a.sku)}" data-menge="menge-${esc(a.sku)}">In den Warenkorb</button>
 </div>`);
     if (schritt) {
@@ -543,9 +546,12 @@ function artikelSeite(a, katalog, befund, seiten, verweis) {
       // zu Recht: „25 kg" und „69,25 €" standen darin ohne Herkunft und ohne
       // Stand. Dass beides eine Zeile höher in der Preistafel steht, half
       // nicht — der Satz wird für sich gelesen. Jetzt trägt er beides.
-      teile.push(`<p class="gebindehinweis">Abgabe in ganzen Gebinden zu ${
-        esc(String(schritt))} kg laut Artikelbezeichnung. Der Preis gilt je Kilogramm; ein Gebinde
-kostet danach ${euro(a.vkNetto * schritt)} € netto, Stand: ${esc(a.preisStand)}.</p>`);
+      const einheitKurz = a.einheit === 'KG' ? 'kg' : 'm²';
+      const wortEinheit = a.einheit === 'KG' ? 'ganzen Gebinden' : 'ganzen Einheiten';
+      teile.push(`<p class="gebindehinweis">Abgabe in ${wortEinheit} zu ${
+        esc(String(schritt).replace('.', ','))} ${einheitKurz} laut Artikelbezeichnung. Der Preis gilt je ${
+        esc(EINHEITEN[a.einheit] ?? a.einheit)}; eine Einheit kostet danach ${
+        euro(a.vkNetto * schritt)} € netto, Stand: ${esc(a.preisStand)}.</p>`);
     }
   }
 

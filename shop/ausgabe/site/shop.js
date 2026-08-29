@@ -404,11 +404,31 @@ function ladeKatalog(daten, zielmarge) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function istMenge(menge) {
+  if (typeof menge !== 'number' || !Number.isFinite(menge) || menge <= 0) return false;
+  return Math.abs(Math.round(menge * 100) - menge * 100) < 1e-9;
+}
+
 function berechneWarenkorb(zeilen, katalog) {
   const gruppen = new Map();
 
   for (const zeile of zeilen) {
-    if (!Number.isInteger(zeile.menge) || zeile.menge < 1) {
+    if (!istMenge(zeile.menge)) {
       throw new Error(`Ungültige Menge für ${zeile.sku}`);
     }
     const artikel = katalog.artikel.find((a) => a.sku === zeile.sku);
@@ -3994,6 +4014,7 @@ function mindestwarenkorbFreiHaus({ rohmarge, frachtNetto, zahlwegId = 'karte-st
 
 
 
+
 function wortstaemme(text) {
   const roh = String(text ?? '').toLowerCase();
   const ersetzt = roh
@@ -4395,7 +4416,7 @@ function ladeKorb(speicher) {
     const daten = JSON.parse(roh);
     if (!Array.isArray(daten)) return [];
     return daten
-      .filter((z) => z && typeof z.sku === 'string' && Number.isInteger(z.menge) && z.menge >= 1)
+      .filter((z) => z && typeof z.sku === 'string' && istMenge(z.menge))
       .map((z) => ({ sku: z.sku, menge: Math.min(z.menge, 999) }));
   } catch {
     return [];
@@ -4420,17 +4441,17 @@ function speichereKorb(speicher, zeilen) {
 
 function legeInKorb(zeilen, sku, menge = 1) {
   if (typeof sku !== 'string' || !sku) throw new Error('Artikelnummer fehlt');
-  if (!Number.isInteger(menge) || menge < 1) throw new Error(`Ungültige Menge: ${menge}`);
+  if (!istMenge(menge)) throw new Error(`Ungültige Menge: ${menge}`);
   const neu = zeilen.map((z) => ({ ...z }));
   const treffer = neu.find((z) => z.sku === sku);
-  if (treffer) treffer.menge = Math.min(treffer.menge + menge, 999);
+  if (treffer) treffer.menge = Math.min(Math.round((treffer.menge + menge) * 100) / 100, 999);
   else neu.push({ sku, menge: Math.min(menge, 999) });
   return neu;
 }
 
 
 function setzeMenge(zeilen, sku, menge) {
-  if (!Number.isInteger(menge) || menge < 0) throw new Error(`Ungültige Menge: ${menge}`);
+  if (menge !== 0 && !istMenge(menge)) throw new Error(`Ungültige Menge: ${menge}`);
   if (menge === 0) return zeilen.filter((z) => z.sku !== sku);
   return zeilen.map((z) => (z.sku === sku ? { ...z, menge: Math.min(menge, 999) } : { ...z }));
 }
@@ -4544,7 +4565,7 @@ function kundenWarenkorb(zeilen, { artikel, lieferanten }, ust = 0.2) {
     const a = nachId.get(z.sku);
     if (!a) throw new Error(`Unbekannte Artikelnummer: ${z.sku}`);
     if (a.vkNetto === null) throw new Error(`Artikel ohne Preis: ${z.sku}`);
-    if (!Number.isInteger(z.menge) || z.menge < 1) throw new Error(`Ungültige Menge für ${z.sku}`);
+    if (!istMenge(z.menge)) throw new Error(`Ungültige Menge für ${z.sku}`);
     if (!gruppen.has(a.lieferantId)) gruppen.set(a.lieferantId, []);
     gruppen.get(a.lieferantId).push({ ...a, menge: z.menge, zeilensummeNetto: runde(a.vkNetto * z.menge) });
   }
@@ -4668,6 +4689,32 @@ function gebindeKg(bezeichnung) {
 }
 
 
+const KLEINSTES_GEBINDE_M2 = 0.1;
+const GROESSTES_GEBINDE_M2 = 200;
+
+
+
+
+
+
+
+
+
+
+
+
+
+function gebindeM2(bezeichnung) {
+  const t = String(bezeichnung ?? '');
+  const treffer = [...t.matchAll(/(\d+(?:[.,]\d+)?)\s*m[2²](?![\p{L}\d])/giu)];
+  if (treffer.length !== 1) return null;
+  const m2 = zahl(treffer[0][1]);
+  if (!Number.isFinite(m2)) return null;
+  if (m2 < KLEINSTES_GEBINDE_M2 || m2 > GROESSTES_GEBINDE_M2) return null;
+  return m2;
+}
+
+
 const STUECKEINHEITEN = new Set(['SCK', 'STK', 'PAK', 'EIM', 'KAR', 'ROL']);
 
 
@@ -4741,14 +4788,30 @@ function preisJeKilo(artikel) {
 
 function mengenschritt(artikel) {
   if (!artikel) return null;
-  if (String(artikel.einheit ?? '').toUpperCase() !== 'KG') return null;
-  const kg = gebindeKg(artikel.bezeichnung);
-  if (kg === null) return null;
+  const einheit = String(artikel.einheit ?? '').toUpperCase();
+  if (einheit === 'KG') return gebindeKg(artikel.bezeichnung);
   
   
   
-  if (!Number.isInteger(kg)) return null;
-  return kg;
+  
+  
+  
+  if (einheit === 'M2') return gebindeM2(artikel.bezeichnung);
+  return null;
+}
+
+
+
+
+
+
+
+
+function gebindezahl(menge, schritt) {
+  if (!(schritt > 0) || !(menge > 0)) return null;
+  const stueck = Math.ceil(Math.round((menge / schritt) * 1e6) / 1e6);
+  const gedeckteMenge = Math.round(stueck * schritt * 100) / 100;
+  return { stueck, gedeckteMenge, gehtAuf: Math.abs(gedeckteMenge - menge) < 0.005 };
 }
 
 
@@ -5214,11 +5277,17 @@ function pruefeAnfrageAufGeheimnis(text, artikelMitEk = []) {
       knopf.addEventListener('click', function () {
         var sku = knopf.getAttribute('data-legen');
         var mengenfeld = document.getElementById(knopf.getAttribute('data-menge') || '');
-        var menge = mengenfeld ? parseInt(mengenfeld.value, 10) : 1;
-        if (!Number.isInteger(menge) || menge < 1) menge = 1;
+        
+        
+        
+        var artikel = (D.artikel || []).filter(function (x) { return x.sku === sku; })[0];
+        var schritt = mengenschritt(artikel) || 1;
+        var menge = mengenfeld ? parseFloat(String(mengenfeld.value).replace(',', '.')) : schritt;
+        if (!Number.isFinite(menge) || menge <= 0) menge = schritt;
+        menge = Math.round(Math.ceil(Math.round((menge / schritt) * 1e6) / 1e6) * schritt * 100) / 100;
         korb = legeInKorb(korb, sku, menge);
         sichern();
-        knopf.textContent = menge + '× im Warenkorb';
+        knopf.textContent = String(menge).replace('.', ',') + '× im Warenkorb';
         knopf.classList.add('getan');
         window.setTimeout(function () {
           knopf.textContent = 'In den Warenkorb';
@@ -5483,8 +5552,16 @@ function pruefeAnfrageAufGeheimnis(text, artikelMitEk = []) {
       var link = el('a', 'kz-t', p.bezeichnung);
       link.href = pfad('artikel/' + p.sku);
       mitte.appendChild(link);
+      var schritt = mengenschritt(p);
+      
+      
+      
+      var zahlwerk = gebindezahl(p.menge, schritt);
       mitte.appendChild(el('span', 'kz-e', eur(p.vkNetto) + ' je '
         + (D.einheiten[p.einheit] || p.einheit) + ', netto'
+        + (zahlwerk ? ' · ' + zahlwerk.stueck + ' Einheit' + (zahlwerk.stueck === 1 ? '' : 'en')
+            + ' zu ' + String(schritt).replace('.', ',')
+            + ' ' + (p.einheit === 'KG' ? 'kg' : 'm²') : '')
         + (p.sperrgut ? ' · palettiert, Kranentladung je Hub' : '')));
       zeile.appendChild(mitte);
 
@@ -5492,23 +5569,27 @@ function pruefeAnfrageAufGeheimnis(text, artikelMitEk = []) {
       
       
       
-      var schritt = mengenschritt(p) || 1;
       var menge = document.createElement('input');
       menge.type = 'number';
-      menge.min = String(schritt);
+      menge.min = String(schritt || 1);
       menge.max = '999';
-      if (schritt > 1) menge.step = String(schritt);
+      if (schritt) menge.step = String(schritt);
       menge.value = String(p.menge);
       menge.className = 'kz-menge';
       menge.setAttribute('aria-label', 'Menge ' + p.bezeichnung
-        + (schritt > 1 ? ', ganze Gebinde zu ' + schritt + ' kg' : ''));
+        + (schritt ? ', ganze Einheiten zu ' + schritt + ' ' + (p.einheit === 'KG' ? 'kg' : 'm²') : ''));
       menge.addEventListener('change', function () {
-        var m = parseInt(menge.value, 10);
-        if (!Number.isInteger(m) || m < schritt) m = schritt;
-        
-        
-        
-        if (schritt > 1) m = Math.ceil(m / schritt) * schritt;
+        var m = parseFloat(String(menge.value).replace(',', '.'));
+        if (!Number.isFinite(m) || m <= 0) m = schritt || 1;
+        if (schritt) {
+          
+          
+          
+          m = Math.ceil(Math.round((m / schritt) * 1e6) / 1e6) * schritt;
+        } else {
+          m = Math.ceil(m);
+        }
+        m = Math.round(m * 100) / 100;
         korb = setzeMenge(korb, p.sku, m);
         sichern();
         neu();

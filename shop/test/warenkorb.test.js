@@ -81,7 +81,19 @@ test('Unterschrittener Mindestbestellwert blockiert die Bestellung', () => {
 test('Unbekannte Artikelnummer und unsinnige Mengen werden abgewiesen', () => {
   assert.throws(() => berechneWarenkorb([{ sku: 'GIBTSNICHT', menge: 1 }], katalog));
   assert.throws(() => berechneWarenkorb([{ sku: 'DR-100-050', menge: 0 }], katalog));
-  assert.throws(() => berechneWarenkorb([{ sku: 'DR-100-050', menge: 1.5 }], katalog));
+  assert.throws(() => berechneWarenkorb([{ sku: 'DR-100-050', menge: -1 }], katalog));
+  assert.throws(() => berechneWarenkorb([{ sku: 'DR-100-050', menge: 1.005 }], katalog));
+});
+
+test('Gebindemengen mit zwei Nachkommastellen rechnen durch', () => {
+  // Seit dem 29.08.: Flächenware wird in Platten abgegeben, und vier Platten
+  // zu 0,75 m² sind 3,00 m², fünf sind 3,75 m². Ganze Quadratmeter sind bei
+  // dieser Platte gerade nicht lieferbar.
+  const wk = berechneWarenkorb([{ sku: 'DR-100-050', menge: 3.75 }], katalog);
+  assert.equal(wk.teillieferungen.length, 1);
+  const eins = berechneWarenkorb([{ sku: 'DR-100-050', menge: 1 }], katalog);
+  assert.ok(Math.abs(wk.warenwertNetto - eins.warenwertNetto * 3.75) < 0.02,
+    `${wk.warenwertNetto} ist nicht das 3,75-fache von ${eins.warenwertNetto}`);
 });
 
 test('Je Lieferant entsteht genau eine Bestellung mit Lieferadresse', () => {

@@ -142,8 +142,20 @@ test('beschädigter Inhalt wird verworfen, nicht repariert', () => {
   // nicht bestellt hat.
   assert.deepEqual(ladeKorb(speicherAttrappe('kein json')), []);
   assert.deepEqual(ladeKorb(speicherAttrappe('{"sku":"A"}')), []);
+  // 2,5 ist seit dem 29.08. eine gültige Menge — Flächenware wird in
+  // Platten zu 0,75 m² abgegeben, ganze Quadratmeter gibt es dort nicht.
+  // Verworfen wird, was keine Menge ist: mehr als zwei Nachkommastellen,
+  // null, negativ.
   assert.deepEqual(
     ladeKorb(speicherAttrappe(JSON.stringify([{ sku: 'A', menge: 2.5 }, { sku: 'B', menge: 3 }]))),
+    [{ sku: 'A', menge: 2.5 }, { sku: 'B', menge: 3 }],
+  );
+  assert.deepEqual(
+    ladeKorb(speicherAttrappe(JSON.stringify([{ sku: 'A', menge: 2.5001 }, { sku: 'B', menge: 3 }]))),
+    [{ sku: 'B', menge: 3 }],
+  );
+  assert.deepEqual(
+    ladeKorb(speicherAttrappe(JSON.stringify([{ sku: 'A', menge: 0 }, { sku: 'B', menge: 3 }]))),
     [{ sku: 'B', menge: 3 }],
   );
 });
@@ -165,9 +177,25 @@ test('legeInKorb zählt zusammen und ändert die Vorlage nicht', () => {
 
 test('unsinnige Mengen werden abgewiesen, nicht stillschweigend geglättet', () => {
   assert.throws(() => legeInKorb([], 'A', 0), /Ungültige Menge/);
-  assert.throws(() => legeInKorb([], 'A', 1.5), /Ungültige Menge/);
+  assert.throws(() => legeInKorb([], 'A', -2), /Ungültige Menge/);
+  // Zwei Nachkommastellen sind die Grenze: In ihnen gehen Gebinde auf
+  // (0,5 · 0,75 · 8,64) und in ihnen ist eine Rechnung stellbar. Was
+  // darunter liegt, ist keine Menge, sondern ein Tippfehler.
+  assert.throws(() => legeInKorb([], 'A', 1.005), /Ungültige Menge/);
+  assert.throws(() => legeInKorb([], 'A', Number.NaN), /Ungültige Menge/);
   assert.throws(() => legeInKorb([], '', 1), /Artikelnummer fehlt/);
   assert.throws(() => setzeMenge([], 'A', -1), /Ungültige Menge/);
+});
+
+test('Gebindemengen mit Nachkommastellen sind gültig', () => {
+  // Vier Platten zu 0,75 m² sind 3,00 m², fünf sind 3,75 m². Vor dem 29.08.
+  // hat der Korb genau diese Mengen abgewiesen und ausschließlich die
+  // unlieferbaren ganzen Quadratmeter zugelassen.
+  assert.deepEqual(legeInKorb([], 'A', 0.75), [{ sku: 'A', menge: 0.75 }]);
+  assert.deepEqual(legeInKorb([{ sku: 'A', menge: 0.75 }], 'A', 0.75), [{ sku: 'A', menge: 1.5 }]);
+  assert.deepEqual(setzeMenge([{ sku: 'A', menge: 1.5 }], 'A', 3.75), [{ sku: 'A', menge: 3.75 }]);
+  // Und die Summe rutscht nicht in Gleitkommastaub ab.
+  assert.equal(legeInKorb([{ sku: 'A', menge: 8.64 }], 'A', 8.64)[0].menge, 17.28);
 });
 
 test('Menge 0 entfernt die Zeile', () => {

@@ -335,6 +335,35 @@ const SZENARIEN = [
     verboten: ['menge=30', 'menge=25'],
   },
   {
+    name: 'Flächenware kommt als ganze Platte in den Korb, nicht als Quadratmeter',
+    // POS-12569 (XPS 30 mm) wird in Platten zu 0,75 m² abgegeben. Ganze
+    // Quadratmeter sind bei dieser Platte gerade nicht lieferbar — vor dem
+    // 29.08. ließ der Korb ausschließlich sie zu.
+    aktionen: `
+      await geheZu('artikel/POS-12569');
+      document.querySelector('[data-legen="POS-12569"]').click();
+      await geheZu('warenkorb');
+      const feld = document.querySelector('#warenkorb-ziel .kz-menge');
+      out = 'menge=' + feld.value + ' schritt=' + feld.step
+        + ' | ' + text('#warenkorb-ziel .kz-e');`,
+    erwartet: ['menge=0.75', 'schritt=0.75', '1 Einheit zu 0,75 m²'],
+  },
+  {
+    name: 'Fünf Quadratmeter werden auf sieben Platten aufgerundet',
+    aktionen: `
+      await geheZu('artikel/POS-12569');
+      document.querySelector('[data-legen="POS-12569"]').click();
+      await geheZu('warenkorb');
+      const feld = document.querySelector('#warenkorb-ziel .kz-menge');
+      feld.value = '5';
+      feld.dispatchEvent(new Event('change'));
+      out = 'menge=' + document.querySelector('#warenkorb-ziel .kz-menge').value
+        + ' | ' + text('#warenkorb-ziel .kz-e')
+        + ' | summe=' + text('#warenkorb-ziel .kz-summe');`,
+    erwartet: ['menge=5.25', '7 Einheiten zu 0,75 m²'],
+    verboten: ['menge=5 ', '6 Einheiten'],
+  },
+  {
     name: 'Der Warenkorb nennt das Gewicht und sagt, wo es fehlt',
     // POS-10095 (Kanalrohr) hat ein belegtes Gewicht, POS-12566 (EPS) nicht.
     aktionen: `

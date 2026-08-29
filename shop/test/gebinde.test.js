@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { gebindeKg, preisJeKilo, kilotafel, mengenschritt, GROESSTES_GEBINDE_KG } from '../src/gebinde.js';
+import { gebindeKg, gebindeM2, gebindezahl, preisJeKilo, kilotafel, mengenschritt, GROESSTES_GEBINDE_KG } from '../src/gebinde.js';
 
 const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
 
@@ -113,26 +113,48 @@ test('die Artikelseite nennt beide Preise, und zwar den jeweils gerechneten', ()
   assert.match(jeSack, /0,57/, 'der Kilopreis fehlt');
 });
 
-test('der Mengenschritt gilt nur für Kilopreise mit ganzer Gebindegröße', () => {
+test('der Mengenschritt gilt für Kilo- und für Flächenware', () => {
   assert.equal(mengenschritt({ bezeichnung: 'Putzgrund 25 kg', einheit: 'KG' }), 25);
+  assert.equal(mengenschritt({ bezeichnung: 'XPS glatt SF 30 mm 0,75 m2', einheit: 'M2' }), 0.75);
+  assert.equal(mengenschritt({ bezeichnung: 'Fugenmasse 1,5 kg', einheit: 'KG' }), 1.5,
+    'gebrochene Schritte sind seit istMenge() zugelassen');
   assert.equal(mengenschritt({ bezeichnung: 'Sack 25 kg', einheit: 'SCK' }), null,
     'wer je Sack verkauft, verkauft schon in Gebinden');
-  assert.equal(mengenschritt({ bezeichnung: 'Platte 0,5 m2', einheit: 'M2' }), null);
-  assert.equal(mengenschritt({ bezeichnung: 'Fugenmasse 1,5 kg', einheit: 'KG' }), null,
-    'ein gebrochener Schritt passt nicht in ein ganzzahliges Mengenfeld');
   assert.equal(mengenschritt({ bezeichnung: 'ohne Angabe', einheit: 'KG' }), null);
+  assert.equal(mengenschritt({ bezeichnung: 'Bahn 1,1x50 m', einheit: 'M2' }), null,
+    'Meter sind keine Quadratmeter — die zweite Kante wird nicht erfunden');
+  assert.equal(mengenschritt({ bezeichnung: 'Grundmauerschutz 20 1,5 m', einheit: 'M2' }), null);
   assert.equal(mengenschritt(null), null);
 });
 
-test('am Bestand bekommt jeder Kilopreis-Gebindeartikel einen Schritt — und sonst keiner', () => {
+test('gebindeM2 liest nur ausdrückliche Quadratmeter', () => {
+  assert.equal(gebindeM2('Isover TDPT 20 1200 600 mm 8,64 m2'), 8.64);
+  assert.equal(gebindeM2('Capatect Glasgewebe M, Breite 110cm, orange 55 m2'), 55);
+  assert.equal(gebindeM2('Fassaden EPS 2 cm 0,5 m2'), 0.5);
+  assert.equal(gebindeM2('Baumit TextilglasGitter 1,1x50 m'), null);
+  assert.equal(gebindeM2('Rolle 100 m2 auf 50 m2 Träger'), null, 'zwei Angaben — welche ist es?');
+});
+
+test('gebindezahl rundet auf ganze Einheiten auf und sagt, ob es aufgeht', () => {
+  assert.deepEqual(gebindezahl(5, 0.75), { stueck: 7, gedeckteMenge: 5.25, gehtAuf: false });
+  assert.deepEqual(gebindezahl(3, 0.75), { stueck: 4, gedeckteMenge: 3, gehtAuf: true });
+  assert.deepEqual(gebindezahl(25, 25), { stueck: 1, gedeckteMenge: 25, gehtAuf: true });
+  assert.equal(gebindezahl(5, 0), null);
+  assert.equal(gebindezahl(0, 0.75), null);
+});
+
+test('am Bestand bekommt jeder Gebindeartikel einen Schritt — und nicht jeder Artikel', () => {
   const datei = pfad('../ausgabe/site/shop.js');
   if (!existsSync(datei)) return;
   const artikel = JSON.parse(readFileSync(datei, 'utf8').match(/^window\.__SHOP__=(.*?);$/m)[1]).artikel;
   const mit = artikel.filter((a) => mengenschritt(a) !== null);
-  assert.ok(mit.length >= 4, `nur ${mit.length} Artikel mit Gebindeschritt`);
+  assert.ok(mit.length >= 12, `nur ${mit.length} Artikel mit Gebindeschritt`);
+  const einheiten = new Set(mit.map((a) => a.einheit));
+  assert.deepEqual([...einheiten].sort(), ['KG', 'M2'],
+    'beide Fälle müssen im Bestand vorkommen, sonst prüft der Test nur einen');
   for (const a of mit) {
-    assert.equal(a.einheit, 'KG');
-    assert.equal(mengenschritt(a), gebindeKg(a.bezeichnung));
+    const erwartet = a.einheit === 'KG' ? gebindeKg(a.bezeichnung) : gebindeM2(a.bezeichnung);
+    assert.equal(mengenschritt(a), erwartet, a.sku);
   }
   // Und die Gegenrichtung: Nicht jeder Artikel bekommt einen — sonst wäre
   // die Erkennung wirkungslos.
@@ -153,12 +175,24 @@ test('die Artikelseite beginnt bei einem Gebinde und zählt in Gebinden weiter',
 });
 
 test('ein Artikel ohne Gebinde behält das freie Mengenfeld', () => {
-  const datei = pfad('../ausgabe/site/artikel/POS-12566.html');
+  // POS-10095 (PVC Kanalrohr, je Stück) trägt keine Gebindegröße im Namen.
+  const datei = pfad('../ausgabe/site/artikel/POS-10095.html');
   if (!existsSync(datei)) return;
   const html = readFileSync(datei, 'utf8');
-  const feld = html.match(/<input id="menge-POS-12566"[^>]*>/);
+  const feld = html.match(/<input id="menge-POS-10095"[^>]*>/);
   assert.ok(feld);
   assert.match(feld[0], /min="1"/);
   assert.ok(!feld[0].includes('step='), 'ohne bekannte Gebindegröße wird keine erfunden');
-  assert.ok(!html.includes('Abgabe in ganzen Gebinden'));
+  assert.ok(!html.includes('Abgabe in ganzen'));
+});
+
+test('eine Dämmplatte beginnt bei einer Platte, nicht bei einem Quadratmeter', () => {
+  const datei = pfad('../ausgabe/site/artikel/POS-12569.html');
+  if (!existsSync(datei)) return;
+  const html = readFileSync(datei, 'utf8');
+  const feld = html.match(/<input id="menge-POS-12569"[^>]*>/);
+  assert.ok(feld, 'kein Mengenfeld gefunden');
+  assert.match(feld[0], /min="0.75"/);
+  assert.match(feld[0], /step="0.75"/);
+  assert.match(html, /Abgabe in ganzen Einheiten zu 0,75 m²/);
 });
