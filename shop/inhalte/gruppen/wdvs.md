@@ -2,6 +2,7 @@
 titel: WDVS-Komponenten
 art: gruppe
 slug: wdvs
+vergleich: gebinde
 gruppe: WDVS
 frage: Welche WDVS-Komponenten führen wir, und wonach wählt man sie aus?
 kurz: Klebe- und Spachtelmassen, Glasgewebe, Dübel, Kantenschutz, Putzgrund und Oberputz — die Bestandteile eines Fassadensystems. Ausgewählt wird nach dem System, nicht nach dem Einzelpreis: Geprüft wird die Kombination, nicht der einzelne Sack.

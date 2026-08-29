@@ -2,6 +2,7 @@
 titel: Mörtel und Putze
 art: gruppe
 slug: moertel
+vergleich: gebinde
 gruppe: Mörtel
 frage: Welche Mörtel führen wir, und worauf ist bei Sackware zu achten?
 kurz: Thermo- und Mauermörtel, Klebespachtel und Vergussmörtel, überwiegend von Baumit. Bei Sackware entscheidet neben dem Produkt die Lagerung: Bodenfeuchte macht zementgebundene Ware unbrauchbar, lange bevor man es sieht.

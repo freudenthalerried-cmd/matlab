@@ -35,6 +35,7 @@ import { VERFUEGBARKEIT } from '../src/maschinenlesbar.js';
 import { baueKern, KERNMODULE, SHOPMODULE } from '../src/buendel.js';
 import { startklar } from '../src/startklar.js';
 import { ohneKommentare } from '../src/entkommentieren.js';
+import { preisJeKilo, kilotafel } from '../src/gebinde.js';
 import { oeffentlicherArtikel, oeffentlicherLieferant } from '../src/shopkern.js';
 import { LIEFERGEBIET } from '../src/liefergebiet.js';
 import { ZAHLWEGE } from '../src/zahlung.js';
@@ -500,8 +501,19 @@ function artikelSeite(a, katalog, befund, seiten, verweis) {
   if (a.sperrgut) marker.push('<span class="marker sperrig">palettiert, Kranentladung</span>');
   if (marker.length) teile.push(`<p class="verwandt">${marker.join('')}</p>`);
 
+  // Der zweite Preis, wo er sich aus der Bezeichnung ergibt. Ein Artikel, der
+  // „25 kg" heißt und je Kilogramm kostet, sieht neben einem, der „25 kg"
+  // heißt und je Sack kostet, fünfmal billiger aus. Beide Zahlen stehen jetzt
+  // nebeneinander; welche im Katalog steht, sagt `grundlage`.
+  const kilo = preisJeKilo(a);
+
   teile.push(`<div class="preistafel">
   <div><span class="k">Netto</span><span class="w">${euro(a.vkNetto)} €</span><span class="e">je ${esc(EINHEITEN[a.einheit] ?? a.einheit)}, für Unternehmer</span></div>
+  ${kilo ? `<div><span class="k">${kilo.grundlage === 'kilopreis' ? 'Je Gebinde' : 'Je Kilogramm'}</span><span class="w">${
+    euro(kilo.grundlage === 'kilopreis' ? kilo.jeGebindeNetto : kilo.jeKgNetto)} €</span><span class="e">${
+    kilo.grundlage === 'kilopreis'
+      ? `netto, für ${esc(String(kilo.gebindeKg).replace('.', ','))} kg aus der Bezeichnung`
+      : `netto, aus ${esc(String(kilo.gebindeKg).replace('.', ','))} kg je Gebinde gerechnet`}</span></div>` : ''}
   <div><span class="k">Brutto</span><span class="w">${euro(a.vkBrutto)} €</span><span class="e">inkl. 20 % USt</span></div>
   <div><span class="k">Artikelnummer</span><span class="w">${esc(a.lieferantenArtikelnummer)}</span><span class="e">Lieferantennummer</span></div>
   <div><span class="k">Preisstand</span><span class="w">${esc(a.preisStand)}</span><span class="e">gültig bis zur nächsten Liste</span></div>
@@ -750,6 +762,43 @@ Verglichen werden darf nur innerhalb derselben Plattenart.${ohneStaerke
       ? ` Bei ${ohneStaerke === 1 ? 'einer Platte' : `${ohneStaerke} Platten`} steht ein Gedankenstrich:
 Die Stärke ist aus der Bezeichnung nicht ablesbar, und geschätzt wird sie nicht.`
       : ''}</p>`);
+  }
+
+  // --- Kilovergleich, wo Gebinde im Spiel sind -----------------------
+  //
+  // Zwei Artikel desselben Sortiments, beide „25 kg" im Namen: Capatect
+  // Putzgrund 2,77 € **je kg**, Baumit KlebeSpachtel 14,32 € **je Sack**.
+  // Beide Angaben sind überall sauber beschriftet — auf der Karte, auf der
+  // Artikelseite, im Mengenfeld — und trotzdem nicht vergleichbar. Der eine
+  // Sack kostet 69,25 €, der andere 14,32 €, und das stand nirgends.
+  //
+  // > **Wer eine Zahl dreimal richtig beschriftet, hat noch keine
+  // > vergleichbare Zahl geliefert.**
+  //
+  // Die Tafel nennt beide Preise. Artikel ohne ablesbare Gebindegröße
+  // (Quadratmeterware, Liter, Stückgut) stehen nicht darin, und die Zeile
+  // darunter sagt, wie viele das sind.
+  if (seite.kopf.vergleich === 'gebinde') {
+    const tafel = kilotafel(gruppenArtikel.filter((a) => a.vkNetto !== null));
+    if (tafel.zeilen.length) {
+      teile.push('<h2>Was ein Kilogramm kostet</h2>');
+      teile.push(`<div class="scroll"><table>
+<thead><tr><th>Artikel</th><th>Gebinde</th><th>je Gebinde, netto</th><th>je kg, netto</th></tr></thead>
+<tbody>${tafel.zeilen.map((z) => `<tr>
+<td><a href="${verweis(`artikel/${z.sku}`)}">${esc(z.bezeichnung)}</a></td>
+<td>${esc(String(z.gebindeKg).replace('.', ','))} kg</td>
+<td>${euro(z.jeGebindeNetto)} €</td>
+<td>${euro(z.jeKgNetto)} €</td>
+</tr>`).join('')}</tbody></table></div>`);
+      teile.push(`<p>Die Gebindegröße ist aus der Artikelbezeichnung gelesen, der zweite Preis daraus
+gerechnet — je nachdem, welcher der beiden im Katalog steht. <strong>Verglichen werden darf nur, was
+denselben Zweck hat</strong>: Ein Klebespachtel und ein Oberputz stehen hier nebeneinander und gehören
+an verschiedene Stellen der Wand.${tafel.ohne
+        ? ` ${tafel.ohne === 1 ? 'Ein Artikel steht' : `${tafel.ohne} Artikel stehen`} nicht in der Tafel:
+Bei ${tafel.ohne === 1 ? 'ihm' : 'ihnen'} ist keine Gebindegröße aus der Bezeichnung ablesbar, oder der
+Preis bezieht sich auf Fläche, Länge oder Volumen. Geschätzt wird nichts.`
+        : ''}</p>`);
+    }
   }
 
   const skus = alsListe(seite.kopf.skus);
