@@ -32,7 +32,7 @@ import { ladeBaustoffkatalog, katalogbefund, ZIELMARGE } from '../src/baustoffka
 import { pruefeSeiten } from '../src/interna.js';
 import { artikelBild, gruppenBild, schichten, schichtbild, dickeMm } from '../src/bilder.js';
 import { VERFUEGBARKEIT, angebotsAuszeichnung } from '../src/maschinenlesbar.js';
-import { baueKern, KERNMODULE, SHOPMODULE } from '../src/buendel.js';
+import { baueKern, BROWSERMODULE } from '../src/buendel.js';
 import { startklar } from '../src/startklar.js';
 import { ohneKommentare } from '../src/entkommentieren.js';
 import { preisJeKilo, kilotafel, mengenschritt } from '../src/gebinde.js';
@@ -1637,7 +1637,7 @@ function main() {
   // gereicht. Siehe `docs/baustoff-shop/kommentare-im-schaufenster.md`.
   const kernRoh = baueKern(
     (name) => readFileSync(join(WURZEL, 'src', name), 'utf8'),
-    [...KERNMODULE, ...SHOPMODULE],
+    BROWSERMODULE,
   );
   const oberflaecheRoh = readFileSync(join(WURZEL, 'shop-ui.js'), 'utf8');
   const kernBuendel = ohneKommentare(kernRoh).text;

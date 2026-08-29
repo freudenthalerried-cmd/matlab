@@ -451,7 +451,7 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > `pruefe-quellen` 6/6, `shopprobe` 28, `oberflaechenprobe` 11, Website 81
 > Seiten ohne toten Verweis.
 
-> **29. August — vierzehn Läufe.** Ausführlich je ein Dokument.
+> **29. August — fünfzehn Läufe.** Ausführlich je ein Dokument.
 >
 > **Der Gruppenvorschlag wurde gemessen und verworfen.** Ein Regelwerk, das
 > aus der Artikelbezeichnung eine Warengruppe rät, trifft am eigenen Bestand
@@ -502,11 +502,11 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > 787 vergleichbare Tests, kein Unterschied.
 > [`kommentare-im-schaufenster.md`](./kommentare-im-schaufenster.md).
 >
-> **Stand der Prüfmittel:** 829 Tests, `pruefe-tests` 828/0, `pruefe-preise` 46/0, `pruefe-inhalte`
+> **Stand der Prüfmittel:** 832 Tests, `pruefe-tests` 831/0, `pruefe-preise` 46/0, `pruefe-inhalte`
 > 24/355/0, `pruefe-seiten` 60 von 81 gebauten Seiten (die übrigen 23 tragen
-> nur Text aus `inhalte/`, dort geprüft), `pruefe-widerrufe` 165 Dateien/48
+> nur Text aus `inhalte/`, dort geprüft), `pruefe-widerrufe` 166 Dateien/48
 > Fundstellen, `pruefe-quellen` 6/6, `shopprobe` 45 (davon 10 im Rahmen),
-> `oberflaechenprobe` 11, `rahmenzensus` 81/81, `pruefe-stand` 164/164,
+> `oberflaechenprobe` 11, `rahmenzensus` 81/81, `pruefe-stand` 165/165,
 > `pruefe-pruefer` 11 Prüfer ohne Leerlauf, Website 81 Seiten ohne toten
 > Verweis.
 
@@ -836,7 +836,7 @@ zusammengefasst und im Verzeichnis nicht auffindbar:
 | `erste-echte-zahlen.md` | Die Lieferantenrechnungen sind gefunden — die Grundlage der ganzen Kalkulation (22.08.) |
 | `google-kampagne.md` | Die Kampagne ist vollständig geplant und **nicht geschaltet** (22.08.) |
 
-**Läufe vom 29. August** — die vierzehn Dokumente dieses Tages:
+**Läufe vom 29. August** — die fünfzehn Dokumente dieses Tages:
 
 | Datei | Kernaussage |
 |---|---|
@@ -854,6 +854,7 @@ zusammengefasst und im Verzeichnis nicht auffindbar:
 | `dieselbe-halbe-auskunft-an-drei-stellen.md` | Dieselbe Lücke stand noch in `llms.txt` und auf der Artikelkarte. Ein Assistent hätte „10,69 €" geantwortet, die Rechnung lautet über 92,36 € |
 | `vier-ausgaben-ein-preis.md` | `npm run pruefe-preise` hält Preistafel, JSON-LD, Karte und `llms.txt` gegeneinander — und fand im ersten Lauf drei Artikelseiten, denen ich eine Stunde zuvor das JSON-LD genommen hatte |
 | `eine-schwelle-die-niemand-bestellen-kann.md` | „Ab 16 m² übersteigt die Ware die Zustellung" — bei einer Platte zu 0,75 m². Jede genannte Menge ist jetzt ein Vielfaches der Gebindegröße, und der Preisabgleich prüft es |
+| `siebzehn-module-fuhren-mit.md` | Das ausgelieferte `shop.js` trug alle 22 Kernmodule; die Oberfläche benutzt fünf. 202 → 117 KB, und Kostenbild, Skonto und Margenregel bleiben im Betrieb |
 | `segment-arbeitsplatzmessung.md` | Nebenstrecke, kein eigenes Segment |
 | `strategie-modellvergleich.md` | Kapitalweg braucht ~900.000 €; enthält überholte Empfehlung |
 | `anschreiben-entwuerfe.md` | Drei Anschreiben (Hersteller, Großhändler, Partnerbetriebe), versandfertig, nicht versendet |

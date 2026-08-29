@@ -7,6 +7,7 @@
  * betrieblich mehrere.
  */
 
+import { istMenge } from './gebinde.js';
 import { cent, fracht, kalkuliere, mindestbestellwertErfuellt, UST_SATZ, MARGENUNTERGRENZE } from './preis.js';
 
 export function ladeKatalog(daten, zielmarge) {
@@ -25,26 +26,6 @@ export function ladeKatalog(daten, zielmarge) {
  * Rechnet einen Warenkorb durch.
  * @param {Array<{sku: string, menge: number}>} zeilen
  */
-/**
- * Ist das eine bestellbare Menge?
- *
- * **Berichtigt am 29.08.** Hier stand `Number.isInteger`. Für Stückgut ist
- * das richtig — für Flächenware nicht: `XPS glatt SF 30 mm 0,75 m2` wird in
- * Platten zu 0,75 m² abgegeben, und eine Bestellung über vier Platten sind
- * **3,00 m²**, über fünf **3,75 m²**. Ganzzahlige Quadratmeter sind bei
- * dieser Platte gerade *nicht* lieferbar; die alte Regel erlaubte
- * ausschließlich unlieferbare Mengen.
- *
- * Zugelassen ist deshalb jede positive Zahl mit höchstens zwei
- * Nachkommastellen. Zwei, weil das die Genauigkeit ist, in der Gebinde
- * aufgehen (0,5 · 0,75 · 8,64 · 25) und in der eine Rechnung stellbar ist.
- * Was darüber hinausgeht, ist keine Menge, sondern ein Tippfehler.
- */
-export function istMenge(menge) {
-  if (typeof menge !== 'number' || !Number.isFinite(menge) || menge <= 0) return false;
-  return Math.abs(Math.round(menge * 100) - menge * 100) < 1e-9;
-}
-
 export function berechneWarenkorb(zeilen, katalog) {
   const gruppen = new Map();
 

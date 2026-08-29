@@ -66,6 +66,53 @@ export const KERNMODULE = Object.freeze([
 export const SHOPMODULE = Object.freeze(['shopkern.js', 'gebinde.js', 'kundenanfrage.js']);
 
 /**
+ * Was der **Browser** braucht — und nur das.
+ *
+ * **Gemessen am 29.08.** Das ausgelieferte `shop.js` trug alle 22 Module des
+ * Kerns. Die Oberfläche benutzt Exporte aus fünf davon; die übrigen
+ * siebzehn — Rechnungsstellung, UID-Abfrage beim EU-Register, Mahnwesen,
+ * Aktenablage, Skonto, Zahlwege, Kostenbild, der Radon-Materialbedarf des
+ * abgelösten Modells — fuhren bei jedem Seitenaufruf mit.
+ *
+ * Zwei Gründe, das zu ändern, und der zweite wiegt schwerer:
+ *
+ * 1. **Gewicht.** Ein Bauleiter lädt die Seite auf der Baustelle, nicht im
+ *    Büro.
+ * 2. **Was im Browser steht, ist veröffentlicht.** `kostenbild.js` rechnet
+ *    den Deckungsbeitrag, `skonto.js` die Zahlungsbedingungen, `preis.js`
+ *    trägt die Margenregel. Keine dieser Dateien enthält eine
+ *    Einkaufszahl — aber sie enthalten die **Methode**, und die gehört dem
+ *    Betrieb. Der Kommentarentferner hat heute früh die Erklärung entfernt;
+ *    hier verschwindet die Rechnung selbst.
+ *
+ * Die Liste ist **von Hand geführt und maschinell geprüft**: `test/buendel`
+ * rechnet die Importhülle aus und verlangt, dass sie genau diese Liste ist.
+ * Ein Modul, das eines Tages etwas Neues importiert, fällt damit auf, statt
+ * still wieder mitzufahren.
+ */
+export const BROWSERMODULE = Object.freeze([
+  'format.js', 'gebinde.js', 'liefergebiet.js', 'shopkern.js', 'kundenanfrage.js',
+]);
+
+/**
+ * Die Importhülle einer Modulliste — alles, was sie mitzieht.
+ *
+ * @param {(name: string) => string} lies
+ * @param {string[]} anfang
+ */
+export function importhuelle(lies, anfang) {
+  const drin = new Set(anfang);
+  const rand = [...anfang];
+  while (rand.length) {
+    const modul = rand.pop();
+    for (const treffer of lies(modul).matchAll(/from '\.\/([a-z.]+\.js)'/g)) {
+      if (!drin.has(treffer[1])) { drin.add(treffer[1]); rand.push(treffer[1]); }
+    }
+  }
+  return [...drin].sort();
+}
+
+/**
  * @param {(name: string) => string} lies  liest `src/<name>` als Text
  * @param {string[]} module
  */

@@ -58,6 +58,29 @@ export function gebindeKg(bezeichnung) {
   return kg;
 }
 
+/**
+ * Ist das eine bestellbare Menge?
+ *
+ * **Berichtigt am 29.08.**, und am selben Tag hierher gezogen: Die Regel stand
+ * in `warenkorb.js` und zwang damit das ganze Modul samt `preis.js` ins
+ * Browserbündel — für eine Funktion von vier Zeilen. Sie gehört ohnehin
+ * hierher, zu den Gebindegrößen. Hier stand `Number.isInteger`. Für Stückgut ist
+ * das richtig — für Flächenware nicht: `XPS glatt SF 30 mm 0,75 m2` wird in
+ * Platten zu 0,75 m² abgegeben, und eine Bestellung über vier Platten sind
+ * **3,00 m²**, über fünf **3,75 m²**. Ganzzahlige Quadratmeter sind bei
+ * dieser Platte gerade *nicht* lieferbar; die alte Regel erlaubte
+ * ausschließlich unlieferbare Mengen.
+ *
+ * Zugelassen ist deshalb jede positive Zahl mit höchstens zwei
+ * Nachkommastellen. Zwei, weil das die Genauigkeit ist, in der Gebinde
+ * aufgehen (0,5 · 0,75 · 8,64 · 25) und in der eine Rechnung stellbar ist.
+ * Was darüber hinausgeht, ist keine Menge, sondern ein Tippfehler.
+ */
+export function istMenge(menge) {
+  if (typeof menge !== 'number' || !Number.isFinite(menge) || menge <= 0) return false;
+  return Math.abs(Math.round(menge * 100) - menge * 100) < 1e-9;
+}
+
 /** Was als Flächengebinde in Frage kommt, in Quadratmetern. */
 export const KLEINSTES_GEBINDE_M2 = 0.1;
 export const GROESSTES_GEBINDE_M2 = 200;

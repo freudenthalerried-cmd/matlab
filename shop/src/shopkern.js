@@ -19,7 +19,7 @@
  * Suche
  * ------------------------------------------------------------------ */
 
-import { istMenge } from './warenkorb.js';
+import { istMenge } from './gebinde.js';
 
 /**
  * Zerlegt Text in vergleichbare Wortstämme.

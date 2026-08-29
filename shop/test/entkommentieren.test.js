@@ -82,6 +82,9 @@ test('jedes Modul in src/ übersteht das Entfernen und parst danach', () => {
 });
 
 test('das ausgelieferte Bündel trägt danach keine Erklärung der Kalkulation mehr', () => {
+  // Der volle Kern, nicht das Browserbündel: Das Rechenbeispiel steht in
+  // `preis.js`, und die Datei fährt seit dem 29.08. nicht mehr mit. Geprüft
+  // wird hier der Kommentarentferner, nicht die Auswahl der Module.
   const roh = baueKern((name) => readFileSync(join(src, name), 'utf8'),
     [...KERNMODULE, ...SHOPMODULE]);
   const ohne = ohneKommentare(roh).text;
