@@ -1445,7 +1445,22 @@ function shopdaten(katalog, befund, seiten, lieferantenDatei, suchwoerterDatei, 
 
 function rahmen(seite, verweis, { eigenstaendig, skriptDatei, tiefe = false, daten = null }) {
   const nav = NAV.map(([id, t]) => `<a href="${verweis(id)}">${esc(t)}</a>`).join('');
+  // **Was ohne JavaScript nicht geht — auf jeder Seite, nicht nur auf dreien.**
+  //
+  // Gemessen am 29.08.: Warenkorb, Kasse und Suchseite erklären sich seit
+  // jeher selbst. Das Suchfeld in der Kopfleiste steht aber auf **allen 81
+  // Seiten**, und der Knopf „In den Warenkorb" auf allen 46 Artikelseiten —
+  // beide ohne ein Wort dazu. Ein Bedienelement, das aussieht wie ein
+  // Bedienelement und nichts tut, ist eine Zusage, die der Shop nicht hält.
+  //
+  // Der Inhalt selbst braucht kein JavaScript: Eine Artikelseite trägt rund
+  // 4.000 Zeichen Text, eine Gruppenseite 3.300, die Startseite 8.500 — alles
+  // im ausgelieferten HTML. Gesagt wird deshalb, was **nicht** geht, und
+  // wohin es stattdessen geht.
   const kopf = `<a class="springen" href="#inhalt">Zum Inhalt springen</a>
+<noscript><p class="antwort"><strong>Ohne JavaScript</strong> arbeiten Suchfeld und Warenkorb nicht.
+Alle Artikel-, Wissens- und Gruppenseiten sind vollständig lesbar; das Sortiment steht über die
+Warengruppen in der Kopfleiste.</p></noscript>
 <header class="kopfleiste">
   <a class="logo" href="${verweis('index')}">${esc(FIRMA)}</a>
   <div class="suche">

@@ -180,8 +180,19 @@ if (process.argv[2] === '--seiten') {
   // `inhalte/`, der zwischen den Quelltextmarken steht und an der Quelle
   // geprüft wird. Was hier fehlt, muss trotzdem sichtbar sein, sonst prüft
   // niemand nach.
-  console.log(`\nGebaut sind ${gebaut} Seiten. Die übrigen ${gebaut - seiten.length} tragen keinen eigenen`);
-  console.log('Absatz — ihr Text steht in inhalte/ und wird dort von `npm run pruefe-inhalte` geprüft.');
+  // **Berichtigt am 29.08.:** Der Satz lautete „Die übrigen N tragen keinen
+  // eigenen Absatz". Seit jede Seite einen Hinweis für Besucher ohne
+  // JavaScript trägt, ist N null — und „die übrigen 0" ist kein Satz. Ein
+  // Bericht, der bei einer runden Zahl sinnlos wird, hat den Fall nicht
+  // vorgesehen.
+  const ohneEigenen = gebaut - seiten.length;
+  if (ohneEigenen > 0) {
+    console.log(`\nGebaut sind ${gebaut} Seiten. Die übrigen ${ohneEigenen} tragen keinen eigenen`);
+    console.log('Absatz — ihr Text steht in inhalte/ und wird dort von `npm run pruefe-inhalte` geprüft.');
+  } else {
+    console.log(`\nGebaut sind ${gebaut} Seiten, und jede trägt mindestens einen eigenen Absatz.`);
+    console.log('Der Text aus inhalte/ steht zusätzlich darauf und wird dort geprüft.');
+  }
   process.exit(0);
 }
 

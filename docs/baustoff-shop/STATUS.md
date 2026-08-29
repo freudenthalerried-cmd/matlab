@@ -451,7 +451,7 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > `pruefe-quellen` 6/6, `shopprobe` 28, `oberflaechenprobe` 11, Website 81
 > Seiten ohne toten Verweis.
 
-> **29. August — zweiundzwanzig Läufe.** Ausführlich je ein Dokument.
+> **29. August — dreiundzwanzig Läufe.** Ausführlich je ein Dokument.
 >
 > **Der Gruppenvorschlag wurde gemessen und verworfen.** Ein Regelwerk, das
 > aus der Artikelbezeichnung eine Warengruppe rät, trifft am eigenen Bestand
@@ -502,11 +502,10 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > 787 vergleichbare Tests, kein Unterschied.
 > [`kommentare-im-schaufenster.md`](./kommentare-im-schaufenster.md).
 >
-> **Stand der Prüfmittel:** 844 Tests, `pruefe-tests` 842/0, `pruefe-preise` 46/0, `pruefe-inhalte`
-> 24/355/0, `pruefe-seiten` 60 von 81 gebauten Seiten (die übrigen 23 tragen
-> nur Text aus `inhalte/`, dort geprüft), `pruefe-widerrufe` 173 Dateien/48
+> **Stand der Prüfmittel:** 845 Tests, `pruefe-tests` 843/0, `pruefe-preise` 46/0, `pruefe-inhalte`
+> 24/355/0, `pruefe-seiten` 81 von 81 gebauten Seiten, `pruefe-widerrufe` 174 Dateien/48
 > Fundstellen, `pruefe-quellen` 6/6, `shopprobe` 49 (davon 10 im Rahmen),
-> `oberflaechenprobe` 11, `rahmenzensus` 81/81, `pruefe-stand` 172/172,
+> `oberflaechenprobe` 11, `rahmenzensus` 81/81, `pruefe-stand` 173/173,
 > `pruefe-pruefer` 11 Prüfer ohne Leerlauf, Website 81 Seiten ohne toten
 > Verweis.
 
@@ -836,7 +835,7 @@ zusammengefasst und im Verzeichnis nicht auffindbar:
 | `erste-echte-zahlen.md` | Die Lieferantenrechnungen sind gefunden — die Grundlage der ganzen Kalkulation (22.08.) |
 | `google-kampagne.md` | Die Kampagne ist vollständig geplant und **nicht geschaltet** (22.08.) |
 
-**Läufe vom 29. August** — die zweiundzwanzig Dokumente dieses Tages:
+**Läufe vom 29. August** — die dreiundzwanzig Dokumente dieses Tages:
 
 | Datei | Kernaussage |
 |---|---|
@@ -862,6 +861,7 @@ zusammengefasst und im Verzeichnis nicht auffindbar:
 | `die-schrift-kam-von-google.md` | Jede Seite lud drei Schriften von `fonts.googleapis.com` und gab dabei die IP jedes Besuchers weiter (LG München I, 3 O 17493/20). Einbindung entfernt, Wächter gebaut, Datenschutzseite um den technischen Befund ergänzt |
 | `vier-farbpaare-zu-schwach.md` | Zensus über 81 Seiten: `lang`, Überschriftenfolge, `alt`, Beschriftungen — null Befunde. Der Kontrast dagegen lag bei fünf Paaren des hellen Anstrichs unter WCAG 2.1, darunter Verweisfarbe und Knopfschrift |
 | `der-fokus-blieb-stehen.md` | Die Artikelkarte sah mit Fokus aus wie ohne — die Zierlinie des Rasters überschrieb den Fokusring. Dazu ein Sprungverweis an der Kopfleiste vorbei |
+| `ohne-javascript-ein-totes-suchfeld.md` | Der Inhalt braucht kein Skript (Artikelseite 4.000 Zeichen ohne), aber 79 Seiten trugen ein totes Bedienelement ohne ein Wort dazu. Nebenwirkung: `pruefe-seiten` deckt jetzt 81 von 81 Seiten |
 | `segment-arbeitsplatzmessung.md` | Nebenstrecke, kein eigenes Segment |
 | `strategie-modellvergleich.md` | Kapitalweg braucht ~900.000 €; enthält überholte Empfehlung |
 | `anschreiben-entwuerfe.md` | Drei Anschreiben (Hersteller, Großhändler, Partnerbetriebe), versandfertig, nicht versendet |

@@ -720,3 +720,40 @@ test('die Datenschutzseite nennt den echten Speicherschlüssel, nicht einen erfu
   assert.match(html, /Serverprotokoll/);
   assert.match(html, /noch nicht entschieden/);
 });
+
+
+test('jede Seite sagt, was ohne JavaScript nicht geht — und der Inhalt steht trotzdem da', () => {
+  const wurzel = pfad('../ausgabe/site');
+  if (!existsSync(wurzel)) return; // ohne Bau keine Aussage — und keine falsche
+  const seiten = [];
+  const gehe = (o) => {
+    for (const e of readdirSync(o, { withFileTypes: true })) {
+      if (e.isDirectory()) gehe(join(o, e.name));
+      else if (e.name.endsWith('.html')) seiten.push(join(o, e.name));
+    }
+  };
+  gehe(wurzel);
+  assert.ok(seiten.length >= 40, `nur ${seiten.length} Seiten`);
+
+  const ohneHinweis = [];
+  const zuWenigText = [];
+  for (const datei of seiten) {
+    const html = readFileSync(datei, 'utf8');
+    const name = datei.slice(wurzel.length + 1);
+    if (!html.includes('<noscript')) ohneHinweis.push(name);
+
+    // Und der Inhalt muss **ohne** das Skript dastehen. Gemessen wird an
+    // einer Fassung ohne <script>: Was dann noch als Text übrig ist, ist
+    // das, was ein Besucher ohne JavaScript liest.
+    const stumm = html.replace(/<script\b[\s\S]*?<\/script>/g, '');
+    const von = stumm.indexOf('<div class="huelle"');
+    const bis = stumm.indexOf('<footer');
+    const text = stumm.slice(von, bis).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    // Warenkorb, Kasse und Suche entstehen erst mit dem Skript — sie sagen
+    // das selbst und sind hier ausgenommen.
+    if (/^(warenkorb|kasse|suche)\.html$/.test(name)) continue;
+    if (text.length < 800) zuWenigText.push(`${name}: ${text.length} Zeichen`);
+  }
+  assert.deepEqual(ohneHinweis, [], 'Seiten ohne Hinweis auf die Grenzen ohne JavaScript');
+  assert.deepEqual(zuWenigText, [], 'Seiten, deren Inhalt erst das Skript erzeugt');
+});
