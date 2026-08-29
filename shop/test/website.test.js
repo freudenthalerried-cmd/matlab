@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { loeseVerweis, loeseVerwandt, marke, mitverbaut, HERSTELLER } from '../bin/website.mjs';
@@ -482,4 +484,47 @@ test('die Zustellung wird nicht mit dem Einheitenpreis verglichen', () => {
     assert.doesNotMatch(readFileSync(join(ordner, datei), 'utf8'),
       /Zustellung mehr als die Ware/, `${datei}: der irreführende Vergleich ist zurück`);
   }
+});
+
+/* ------------------------------------------------------------------ *
+ * Die Auskunft „was hier möglich ist" kommt aus den Daten
+ * ------------------------------------------------------------------ */
+
+test('Startseite und llms.txt sagen aus den Daten, ob bestellt werden kann', () => {
+  // Der teure Fehler wäre nicht der falsche Satz, sondern der **eingefrorene**:
+  // ein „Bestellen ist noch nicht möglich", das stehenbleibt, wenn der
+  // Auftraggeber die drei Punkte geschlossen hat. Diese Probe lässt den
+  // echten Bau zweimal laufen — einmal auf dem Bestand, einmal mit einer
+  // vollständig beantworteten Betreiberdatei — und verlangt, dass die
+  // Auskunft kippt.
+  const ablage = mkdtempSync(join(tmpdir(), 'bau-bereit-'));
+  const betreiberVoll = join(ablage, 'betreiber.json');
+  const echt = JSON.parse(readFileSync(pfad('../data/betreiber.json'), 'utf8'));
+  writeFileSync(betreiberVoll, JSON.stringify({
+    ...echt,
+    email: 'office@example.at', telefon: '+43 1 234', uid: 'ATU12345678',
+    gewerbewortlaut: 'Handelsgewerbe',
+    zahlungsanbieter: 'Beispiel', rechtstexteFundstelle: 'Kanzlei',
+    domainZeigtAufShop: true, repositoryPrivat: true,
+  }, null, 2));
+
+  const lauf = spawnSync(process.execPath, [pfad('../bin/website.mjs')], {
+    encoding: 'utf8',
+    env: { ...process.env, WEBSITE_AUSGABE: ablage, STARTKLAR_BETREIBER: betreiberVoll },
+  });
+  assert.equal(lauf.status, 0, lauf.stderr);
+
+  const llmsBereit = readFileSync(join(ablage, 'site', 'llms.txt'), 'utf8');
+  const startBereit = readFileSync(join(ablage, 'site', 'index.html'), 'utf8');
+  assert.match(llmsBereit, /Bestellen ist möglich/);
+  assert.ok(!llmsBereit.includes('Bestellen ist noch nicht möglich'));
+  assert.ok(!startBereit.includes('kein laufender Shop'),
+    'die Vorschauwarnung gehört weg, sobald nichts mehr offen ist');
+
+  // Und die Gegenrichtung am Bestand: Solange die drei Punkte offen sind,
+  // steht die Absage da — samt dem, was fehlt.
+  const llmsJetzt = readFileSync(pfad('../ausgabe/site/llms.txt'), 'utf8');
+  assert.match(llmsJetzt, /Bestellen ist noch nicht möglich/);
+  assert.match(llmsJetzt, /ein Zahlungsanbieter/);
+  rmSync(ablage, { recursive: true, force: true });
 });

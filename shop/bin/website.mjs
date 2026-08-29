@@ -31,6 +31,7 @@ import { pruefeSeiten } from '../src/interna.js';
 import { artikelBild, gruppenBild, schichten, schichtbild, dickeMm } from '../src/bilder.js';
 import { VERFUEGBARKEIT } from '../src/maschinenlesbar.js';
 import { baueKern, KERNMODULE, SHOPMODULE } from '../src/buendel.js';
+import { startklar } from '../src/startklar.js';
 import { oeffentlicherArtikel, oeffentlicherLieferant } from '../src/shopkern.js';
 import { LIEFERGEBIET } from '../src/liefergebiet.js';
 import { ZAHLWEGE } from '../src/zahlung.js';
@@ -38,13 +39,18 @@ import { fracht } from '../src/preis.js';
 import { lesKopf, alsHtml, alsText, alsListe, esc } from '../src/markdown.js';
 import {
   erzeugeImpressum, pruefeBetreiberdaten, AGB_GLIEDERUNG, ZAHLUNGSBEDINGUNGEN,
-  DATENSCHUTZ_GLIEDERUNG, B2B_ABGRENZUNG, LIEFERHINWEISE,
+  DATENSCHUTZ_GLIEDERUNG, B2B_ABGRENZUNG, LIEFERHINWEISE, IMPRESSUMSFELDER,
 } from '../src/rechtstexte.js';
 
 const HIER = dirname(fileURLToPath(import.meta.url));
 const WURZEL = join(HIER, '..');
 const REPO = join(WURZEL, '..');
-const AUSGABE = join(WURZEL, 'ausgabe');
+// Beides über die Umgebung überschreibbar — damit eine Probe den **echten**
+// Bau mit anderen Antworten laufen lassen kann, ohne den Bestand anzufassen.
+// Ohne das wäre die Zusage „der Text kommt aus den Daten" nur eine Zusage:
+// Niemand könnte zeigen, dass er sich ändert, wenn die Daten sich ändern.
+const AUSGABE = process.env.WEBSITE_AUSGABE || join(WURZEL, 'ausgabe');
+const BETREIBERDATEI = process.env.STARTKLAR_BETREIBER || join(WURZEL, 'data', 'betreiber.json');
 
 const FIRMA = 'Freudenthaler Bau GmbH';
 const ORT = 'Ried in der Riedmark';
@@ -771,7 +777,7 @@ function preisStand(katalog) {
   return staende.length ? staende[staende.length - 1] : 'siehe Artikelseiten';
 }
 
-function startSeite(katalog, befund, seiten, verweis, katalogDatei) {
+function startSeite(katalog, befund, seiten, verweis, katalogDatei, bereitschaft) {
   const gruppen = [...seiten.values()].filter((s) => s.art === 'gruppen');
   const systeme = [...seiten.values()].filter((s) => s.art === 'system');
   const wissen = [...seiten.values()].filter((s) => s.art === 'wissen');
@@ -809,9 +815,13 @@ Geliefert wird im Umkreis, nicht in ganz Österreich: Das ist der Grund, warum d
   <div><span class="k">Lieferung</span><span class="w">${LIEFERGEBIET.bezirke.length} Bezirke</span><span class="e">regional, nicht österreichweit</span></div>
 </div>
 
-<div class="antwort"><strong>Dies ist eine Vorschau, kein laufender Shop.</strong> Es kann nichts bestellt
-werden: Zahlungsanbieter, Impressum und Rechtstexte fehlen noch, und jeder Preis ist vor der
-Veröffentlichung beim Lieferanten zu bestätigen. Alle Preise sind Nettopreise für Unternehmer.</div>
+${bereitschaft.startklar ? `<div class="antwort">Alle Preise sind Nettopreise für Unternehmer und tragen einen Preisstand.</div>`
+  : `<div class="antwort"><strong>Dies ist eine Vorschau, kein laufender Shop.</strong> Bestellen können Sie
+hier noch nicht — es ${bereitschaft.kassenhinweise.length === 1 ? 'fehlt' : 'fehlen'}
+${bereitschaft.kassenhinweise.map((h) => esc(h.wort)).join(', ')}. Jeder Preis ist vor der
+Veröffentlichung beim Lieferanten zu bestätigen. <strong>Was schon geht:</strong> Warenkorb füllen,
+Bezirk wählen — und in der <a href="${verweis('kasse')}">Kasse</a> die fertig gerechnete Anfrage
+mitnehmen, mit Positionen, Fracht und Preisstand. Alle Preise sind Nettopreise für Unternehmer.</div>`}
 
 <h2>Sortiment</h2>
 <div class="kacheln">${gruppen
@@ -1139,7 +1149,7 @@ der ganze Vorteil der getrennten Ausweisung.</p>`,
  * `shopkern.js` schneiden zu; der Interna-Prüfer sieht die fertige Seite und
  * würde melden, was durchrutscht.
  */
-function shopdaten(katalog, befund, seiten, lieferantenDatei, suchwoerterDatei, betreiber = {}) {
+function shopdaten(katalog, befund, seiten, lieferantenDatei, suchwoerterDatei, betreiber = {}, bereitschaft = { startklar: false, kassenhinweise: [] }) {
   const verwendet = new Set(katalog.artikel.map((a) => a.lieferantId));
   const bilder = {};
   for (const a of katalog.artikel) bilder[a.sku] = artikelBild(a);
@@ -1184,6 +1194,14 @@ function shopdaten(katalog, befund, seiten, lieferantenDatei, suchwoerterDatei, 
       ort: betreiber.ort ?? '',
       email: betreiber.email ?? '',
       telefon: betreiber.telefon ?? '',
+    },
+    // Der Bereitschaftsstand, wie ihn `npm run startklar` rechnet. Die Kasse
+    // sagt damit aus den Daten, warum nichts bestellt werden kann — statt
+    // aus einem festen Satz, der stehenbliebe, wenn einer der drei Punkte
+    // geschlossen wird.
+    bestellung: {
+      moeglich: bereitschaft.startklar,
+      fehlt: bereitschaft.kassenhinweise.map((h) => h.wort),
     },
   };
 }
@@ -1249,7 +1267,7 @@ function main() {
   const katalogDatei = lies(join(WURZEL, 'data', 'katalog-baustoff.json'));
   const lieferantenDatei = lies(join(WURZEL, 'data', 'lieferanten.json'));
   const suchwoerterDatei = lies(join(WURZEL, 'data', 'suchwoerter.json'));
-  const betreiber = lies(join(WURZEL, 'data', 'betreiber.json'));
+  const betreiber = lies(BETREIBERDATEI);
   const preisPfad = join(REPO, 'preise', 'baustoff-preise.json');
 
   if (!existsSync(preisPfad)) {
@@ -1259,6 +1277,21 @@ function main() {
 
   let katalog = ladeBaustoffkatalog(katalogDatei, lies(preisPfad), lieferantenDatei, ZIELMARGE);
   const befund = katalogbefund(katalog);
+
+  // Dieselbe Rechnung wie `npm run startklar`, nicht eine zweite. Die Seiten
+  // sagen dem Besucher, was hier möglich ist — und das darf nicht auf einem
+  // festen Satz stehen, der eines Tages falsch wird, ohne dass jemand ihn
+  // ändert. Fehlerklasse „zwei Wege zur selben Zahl", nur mit Wörtern.
+  const bereitschaft = startklar({
+    betreiber,
+    impressumsfelder: IMPRESSUMSFELDER,
+    katalog,
+    preisdateiVorhanden: true,
+    zahlungsanbieter: betreiber.zahlungsanbieter ?? null,
+    rechtstexteFundstelle: betreiber.rechtstexteFundstelle ?? null,
+    domainZeigtAufShop: betreiber.domainZeigtAufShop ?? null,
+    repositoryPrivat: betreiber.repositoryPrivat ?? null,
+  });
 
   // Gate 24: Artikel, deren Einkaufspreis nur auf Anfrage zu haben ist,
   // bekommen keine Seite. Gemeldet wird das trotzdem — **still verschwinden
@@ -1352,7 +1385,7 @@ function main() {
 
   const bauen = (verweisFabrik) => {
     const m = new Map();
-    m.set('index', startSeite(katalog, befund, seiten, verweisFabrik('index'), katalogDatei));
+    m.set('index', startSeite(katalog, befund, seiten, verweisFabrik('index'), katalogDatei, bereitschaft));
     m.set('wissen/index', wissenIndex(seiten, verweisFabrik('wissen/index')));
     m.set('lieferung', lieferungSeite(katalog, katalogDatei, verweisFabrik('lieferung')));
     m.set('suche', sucheSeite(verweisFabrik('suche')));
@@ -1468,7 +1501,7 @@ function main() {
   rmSync(site, { recursive: true, force: true });
   mkdirSync(site, { recursive: true });
   const dateiSeiten = bauen(pfadVerweis);
-  const nutzdaten = shopdaten(katalog, befund, seiten, lieferantenDatei, suchwoerterDatei, betreiber);
+  const nutzdaten = shopdaten(katalog, befund, seiten, lieferantenDatei, suchwoerterDatei, betreiber, bereitschaft);
   const shopskriptQuelle = `window.__SHOP__=${JSON.stringify(nutzdaten)};\n`
     + `window.__SHOP__.adressform=window.__SHOP_ADRESSFORM__||'datei';\n`
     + `window.__SHOP__.tiefe=!!window.__SHOP_TIEFE__;\n`
@@ -1493,6 +1526,19 @@ Sitemap: ${BASIS}/sitemap.xml
 
   const llms = [`# ${FIRMA} — Baustoffe zum Baumeisterpreis`, '',
     `> Baustoffhandel in ${ORT}, Oberösterreich. Lieferung regional (Bezirk Perg, Urfahr-Umgebung, Freistadt, Linz, Linz-Land), nicht österreichweit. Preise sind Nettopreise für Unternehmer.`,
+    // Was ein Besucher hier **tun** kann, stand bis zum 29.08. nirgends in
+    // dieser Datei. Ein Assistent, den jemand fragt „kann ich dort
+    // bestellen?", hätte darauf keine Antwort gefunden — und die
+    // wahrscheinlichste Ersatzantwort eines Sprachmodells auf einer
+    // Shop-artigen Seite ist „ja". Die Auskunft steht deshalb oben und nennt
+    // beides: die Absage und den Weg, der offen ist.
+    '', '## Was hier möglich ist', '',
+    bereitschaft.startklar
+      ? '- **Bestellen ist möglich.** Warenkorb füllen, Bezirk der Baustelle wählen, Zahlweg wählen.'
+      : `- **Bestellen ist noch nicht möglich.** Es fehlen: ${bereitschaft.kassenhinweise.map((h) => h.wort).join(', ')}.`,
+    `- **Möglich ist eine Anfrage.** Warenkorb füllen, Bezirk der Baustelle wählen, und die Kasse (${BASIS}/kasse.html) erzeugt eine fertig gerechnete Positionsliste mit Fracht, Umsatzsteuer und Preisstand zum Kopieren. Sie ist unverbindlich und wird nicht automatisch versendet.`,
+    '- **Nur im Liefergebiet.** Anfragen aus anderen Bezirken werden nicht angenommen; die Fracht trägt sie nicht.',
+    `- **Fracht fällt je Lieferung an, es gibt keine Frei-Haus-Schwelle.** Die Sätze und die Begründung stehen unter ${BASIS}/lieferung.html.`,
     '', '## Wie diese Seiten aufgebaut sind', '',
     '- Jede Seite beantwortet genau eine Frage; die Antwort steht in den ersten zwei Sätzen.',
     '- Technische Kennwerte werden nicht abgeschrieben, sondern beim Hersteller verlinkt.',

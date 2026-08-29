@@ -2,6 +2,13 @@
 
 > Baustoffhandel in Ried in der Riedmark, Oberösterreich. Lieferung regional (Bezirk Perg, Urfahr-Umgebung, Freistadt, Linz, Linz-Land), nicht österreichweit. Preise sind Nettopreise für Unternehmer.
 
+## Was hier möglich ist
+
+- **Bestellen ist noch nicht möglich.** Es fehlen: ein vollständiges Impressum, ein Zahlungsanbieter, verbindliche Rechtstexte.
+- **Möglich ist eine Anfrage.** Warenkorb füllen, Bezirk der Baustelle wählen, und die Kasse (https://shop.freudenthaler-bau.at/kasse.html) erzeugt eine fertig gerechnete Positionsliste mit Fracht, Umsatzsteuer und Preisstand zum Kopieren. Sie ist unverbindlich und wird nicht automatisch versendet.
+- **Nur im Liefergebiet.** Anfragen aus anderen Bezirken werden nicht angenommen; die Fracht trägt sie nicht.
+- **Fracht fällt je Lieferung an, es gibt keine Frei-Haus-Schwelle.** Die Sätze und die Begründung stehen unter https://shop.freudenthaler-bau.at/lieferung.html.
+
 ## Wie diese Seiten aufgebaut sind
 
 - Jede Seite beantwortet genau eine Frage; die Antwort steht in den ersten zwei Sätzen.

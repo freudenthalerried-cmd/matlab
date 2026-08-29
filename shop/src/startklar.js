@@ -24,6 +24,27 @@
  * optimistischen Annahme gefüllt.
  */
 
+/**
+ * Welche offenen Punkte der **Kunde** auf der Kasse zu hören bekommt.
+ *
+ * Nicht alle. Dass das Repository noch öffentlich ist oder die Domain nicht
+ * zeigt, sind Betriebsfragen — sie gehören in `npm run startklar` und nicht
+ * in einen Kasten, den ein Bauleiter liest. Genannt wird, was **ihn**
+ * betrifft: dass niemand zahlen kann, dass die Rechtstexte nicht verbindlich
+ * sind, dass das Impressum unvollständig ist.
+ *
+ * Die Liste steht hier und nicht in der Oberfläche, damit die Kasse ihre
+ * Begründung aus den Daten nimmt statt aus einem festen Satz. Der feste Satz
+ * war bis zum 29.08. das Problem: Er zählte Zahlungsanbieter, Impressum und
+ * Rechtstexte auf, und er hätte das auch noch getan, wenn der Auftraggeber
+ * das Impressum längst vervollständigt hätte.
+ */
+const AUF_DER_KASSE = new Map([
+  ['impressum', 'ein vollständiges Impressum'],
+  ['zahlungsanbieter', 'ein Zahlungsanbieter'],
+  ['rechtstexte', 'verbindliche Rechtstexte'],
+]);
+
 /** Die Punkte, die über „online" entscheiden — in der Reihenfolge ihrer Härte. */
 export function startklar(lage = {}) {
   const {
@@ -38,7 +59,8 @@ export function startklar(lage = {}) {
   } = lage;
 
   const punkte = [];
-  const p = (id, titel, zustand, befund, wer) => punkte.push({ id, titel, zustand, befund, wer });
+  const p = (id, titel, zustand, befund, wer) => punkte.push({ id, titel, zustand, befund, wer,
+    aufDerKasse: AUF_DER_KASSE.get(id) ?? null });
 
   // --- Was aus den Daten kommt ---------------------------------------
   const fehlendeFelder = impressumsfelder.filter(
@@ -104,5 +126,15 @@ export function startklar(lage = {}) {
     // den niemand bestätigt hat, zählt nicht als erfüllt — sonst ginge der
     // Shop online, weil das Werkzeug nicht hinsehen konnte.
     startklar: zaehle('offen') === 0 && zaehle('unpruefbar') === 0,
+    // Was die Kasse dem Kunden sagen muss: die offenen Punkte, die ihn
+    // betreffen. Leer heißt, dass der Kasten wegfällt — nicht, dass er
+    // trotzdem stehenbleibt und Falsches behauptet.
+    kassenhinweise: punkte
+      .filter((x) => x.aufDerKasse && x.zustand !== 'erfuellt')
+      // `wort` ist die kundentaugliche Fassung: „ein Zahlungsanbieter" statt
+      // „Zahlungsanbieter gewählt und angebunden". Die Prüflisten-Überschrift
+      // in einen Satz zu setzen las sich wie ein Formular, nicht wie eine
+      // Auskunft.
+      .map((x) => ({ id: x.id, titel: x.titel, wort: x.aufDerKasse, befund: x.befund })),
   };
 }

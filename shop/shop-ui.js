@@ -479,7 +479,7 @@
 
       var weiter = el('a', 'knopf gross');
       weiter.href = pfad('kasse');
-      weiter.textContent = 'Weiter zur Lieferadresse';
+      weiter.textContent = 'Weiter zu Lieferadresse und Anfrage';
       z.appendChild(weiter);
     }
 
@@ -604,13 +604,25 @@
     });
     z.appendChild(tafel);
 
-    var abschluss = el('div', 'antwort');
-    abschluss.appendChild(el('strong', null, 'Hier endet die Vorschau. '));
-    abschluss.appendChild(document.createTextNode(
-      'Es kann nichts bestellt werden: Der Zahlungsanbieter ist nicht gewählt, '
-      + 'und Impressum und Rechtstexte sind unvollständig. Diese Seite rechnet '
-      + 'die Bestellung durch, sie löst keine aus.'));
-    z.appendChild(abschluss);
+    // Bis zum 29.08. begann dieser Kasten mit „Hier endet die Vorschau." und
+    // zählte danach fest auf, was fehlt. Beides war zu ändern: Der Satz
+    // kündigt ein Ende über dem einzigen Weg an, der weiterführt — und die
+    // Aufzählung stand im Quelltext, nicht in den Daten. Sie hätte auch dann
+    // noch „Impressum unvollständig" behauptet, wenn der Auftraggeber es
+    // längst vervollständigt hat. Jetzt kommt sie aus derselben Rechnung wie
+    // `npm run startklar`.
+    var stand = D.bestellung || { moeglich: false, fehlt: [] };
+    if (!stand.moeglich) {
+      var abschluss = el('div', 'antwort');
+      abschluss.appendChild(el('strong', null, 'Bestellen können Sie hier nicht. '));
+      abschluss.appendChild(document.createTextNode(
+        (stand.fehlt.length
+          ? 'Es fehlt ' + stand.fehlt.join(', ') + '. '
+          : '')
+        + 'Diese Seite rechnet die Bestellung durch, sie löst keine aus. '
+        + 'Mitnehmen können Sie die fertige Anfrage darunter.'));
+      z.appendChild(abschluss);
+    }
 
     // Der Weg, der auch ohne Zahlungsanbieter funktioniert: die fertige,
     // gerechnete Liste zum Kopieren. Sie erscheint erst, wenn ein Bezirk

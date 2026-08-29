@@ -235,7 +235,12 @@ const SZENARIEN = [
       document.querySelector('[data-legen="POS-12566"]').click();
       await geheZu('kasse');
       out = text('#kasse-ziel .antwort');`,
-    erwartet: ['Hier endet die Vorschau', 'Zahlungsanbieter ist nicht gewählt'],
+    // Die Aufzählung dessen, was fehlt, kommt seit dem 29.08. aus derselben
+    // Rechnung wie `npm run startklar` und steht nicht mehr im Quelltext der
+    // Oberfläche. Erwartet wird deshalb der Zahlungsanbieter als **eines**
+    // der genannten Stücke — verschwindet die Aufzählung, fällt das Szenario.
+    erwartet: ['Bestellen können Sie hier nicht', 'ein Zahlungsanbieter',
+      'sie löst keine aus'],
     verboten: ['Bestellung ausgelöst'],
   },
   {
