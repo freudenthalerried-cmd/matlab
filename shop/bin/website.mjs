@@ -31,7 +31,7 @@ import { dirname, join, resolve } from 'node:path';
 import { ladeBaustoffkatalog, katalogbefund, ZIELMARGE } from '../src/baustoffkatalog.js';
 import { pruefeSeiten } from '../src/interna.js';
 import { artikelBild, gruppenBild, schichten, schichtbild, dickeMm } from '../src/bilder.js';
-import { VERFUEGBARKEIT } from '../src/maschinenlesbar.js';
+import { VERFUEGBARKEIT, produktAuszeichnung } from '../src/maschinenlesbar.js';
 import { baueKern, KERNMODULE, SHOPMODULE } from '../src/buendel.js';
 import { startklar } from '../src/startklar.js';
 import { ohneKommentare } from '../src/entkommentieren.js';
@@ -653,26 +653,36 @@ ${esc(a.gruppe)}. Ob einer davon der richtige ist, entscheidet die Planung.</p>`
     teile.push(`<div class="raster">${geschwister.map((g) => artikelKarte(g, befund, verweis)).join('')}</div>`);
   }
 
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Product',
-    name: a.bezeichnung,
-    sku: a.sku,
-    category: a.gruppe,
-    ...(h ? { brand: { '@type': 'Brand', name: m } } : {}),
-    offers: {
-      '@type': 'Offer',
-      priceCurrency: 'EUR',
-      price: a.vkNetto.toFixed(2),
-      // Kein priceValidUntil: Wir wissen nicht, bis wann der Preis gilt — das
-      // hängt an der nächsten Liste des Lieferanten. Ein erfundenes Datum
-      // wäre eine Zusage, und `null` weisen die Prüfwerkzeuge zurecht ab.
-      valueAddedTaxIncluded: false,
-      availability: VERFUEGBARKEIT,
-      areaServed: 'Bezirk Perg, Urfahr-Umgebung, Freistadt, Linz, Linz-Land',
-      seller: { '@type': 'Organization', name: FIRMA },
-    },
-  };
+  // **Eine Auszeichnung, nicht zwei.** Bis zum 29.08. baute diese Stelle das
+  // JSON-LD der Artikelseite von Hand, und `produktAuszeichnung()` baute das
+  // des Feeds. Beide beschreiben dasselbe Angebot, und sie sind
+  // auseinandergelaufen: Der Feed nennt seit heute die Bezugsgröße („je
+  // 1 m²") und die kleinste bestellbare Menge (0,75 m²), die Seite nannte
+  // beides nicht. Dieselbe Fehlerklasse wie bei der Verfügbarkeit im August,
+  // die als PreOrder im Feed und als InStock auf der Seite stand — damals mit
+  // einer Konstante geheilt, hier mit der gemeinsamen Funktion.
+  //
+  // Was die Seite darüber hinaus trägt, steht darunter und nicht anstelle:
+  // Liefergebiet, Verkäufer und die Marke.
+  const auszeichnung = produktAuszeichnung(a, {
+    liefergebiet: { land: LIEFERGEBIET.land, bezirke: LIEFERGEBIET.bezirke },
+  });
+  const jsonLd = auszeichnung.veroeffentlichbar
+    ? {
+        ...auszeichnung.daten,
+        ...(h ? { brand: { '@type': 'Brand', name: m } } : {}),
+        offers: {
+          ...auszeichnung.daten.offers,
+          // Kein priceValidUntil: Wir wissen nicht, bis wann der Preis gilt —
+          // das hängt an der nächsten Liste des Lieferanten. Ein erfundenes
+          // Datum wäre eine Zusage, und `null` weisen die Prüfwerkzeuge
+          // zurecht ab.
+          priceValidUntil: undefined,
+          areaServed: `Bezirk ${LIEFERGEBIET.bezirke.map((b) => b.name).join(', ')}`,
+          seller: { '@type': 'Organization', name: FIRMA },
+        },
+      }
+    : null;
 
   return {
     titel: `${a.bezeichnung} — ${euro(a.vkNetto)} € netto`,

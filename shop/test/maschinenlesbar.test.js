@@ -15,6 +15,8 @@ import {
 import { existsSync } from 'node:fs';
 import { ladeKatalog } from '../src/warenkorb.js';
 
+const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
+
 const echterArtikel = {
   sku: 'AB-RD-375',
   bezeichnung: 'Radonabdichtungsbahn',
@@ -262,4 +264,63 @@ test('die Verfügbarkeit behauptet nichts Kaufbares, solange die Kasse nichts au
   // gewählt, und die Kasse sagt das. „InStock" wäre in einem Kanal, den ein
   // Assistent liest, die gefährlichere Angabe von beiden.
   assert.equal(VERFUEGBARKEIT, 'https://schema.org/PreOrder');
+});
+
+/* ------------------------------------------------------------------ *
+ * Bezugsgröße und Mindestmenge — der Preis gilt wofür?
+ * ------------------------------------------------------------------ */
+
+test('der Preis nennt seine Bezugsgröße als UN/CEFACT-Code', () => {
+  const e = produktAuszeichnung(
+    { sku: 'X', bezeichnung: 'XPS glatt SF 30 mm 0,75 m2', gruppe: 'Dämmung',
+      einheit: 'M2', vkNetto: 5.23, ekQuelle: 'rechnung', preisStand: '2026-08-17' },
+    { liefergebiet: { land: 'AT', bezirke: [{ name: 'Perg' }] } },
+  );
+  assert.equal(e.veroeffentlichbar, true, JSON.stringify(e.gruende));
+  const p = e.daten.offers.priceSpecification;
+  assert.equal(p['@type'], 'UnitPriceSpecification');
+  assert.deepEqual(p.referenceQuantity, { '@type': 'QuantitativeValue', value: 1, unitCode: 'MTK' });
+  // Und die kleinste bestellbare Menge: eine Platte, nicht ein Quadratmeter.
+  assert.deepEqual(e.daten.offers.eligibleQuantity,
+    { '@type': 'QuantitativeValue', minValue: 0.75, unitCode: 'MTK' });
+});
+
+test('Stückgut bekommt eine Bezugsgröße, aber keine Mindestmenge', () => {
+  const e = produktAuszeichnung(
+    { sku: 'Y', bezeichnung: 'PVC Kanalrohr NW 100 1 m', gruppe: 'Kanal',
+      einheit: 'STK', vkNetto: 10.81, ekQuelle: 'rechnung', preisStand: '2026-08-17' },
+    { liefergebiet: { land: 'AT', bezirke: [{ name: 'Perg' }] } },
+  );
+  assert.equal(e.daten.offers.priceSpecification.referenceQuantity.unitCode, 'C62');
+  assert.equal(e.daten.offers.eligibleQuantity, undefined,
+    'wer je Stück verkauft, hat keine Gebindebindung');
+});
+
+test('eine nicht abgebildete Einheit bekommt keinen geratenen Code', () => {
+  const e = produktAuszeichnung(
+    { sku: 'Z', bezeichnung: 'Sonderware', gruppe: 'Zubehör',
+      einheit: 'XYZ', vkNetto: 1, ekQuelle: 'rechnung', preisStand: '2026-08-17' },
+    { liefergebiet: { land: 'AT', bezirke: [{ name: 'Perg' }] } },
+  );
+  assert.equal(e.daten.offers.priceSpecification.referenceQuantity, undefined);
+  assert.equal(e.daten.offers.eligibleQuantity, undefined);
+});
+
+test('Seite und Feed zeichnen dasselbe Angebot aus, nicht zwei', () => {
+  // Bis zum 29.08. baute die Artikelseite ihr JSON-LD von Hand. Sie nannte
+  // weder Bezugsgröße noch Mindestmenge, der Feed beides — dieselbe
+  // Fehlerklasse wie PreOrder gegen InStock im August.
+  const seite = pfad('../ausgabe/site/artikel/POS-12569.html');
+  if (!existsSync(seite)) return; // ohne Bau keine Aussage — und keine falsche
+  const html = readFileSync(seite, 'utf8');
+  const treffer = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
+  assert.ok(treffer, 'kein JSON-LD auf der Artikelseite');
+  const daten = JSON.parse(treffer[1]);
+  assert.equal(daten.offers.priceSpecification.referenceQuantity.unitCode, 'MTK');
+  assert.equal(daten.offers.eligibleQuantity.minValue, 0.75);
+  // Was die Seite darüber hinaus trägt, ersetzt nichts.
+  assert.ok(daten.offers.areaServed);
+  assert.equal(daten.offers.seller['@type'], 'Organization');
+  assert.equal(daten.offers.priceValidUntil, undefined,
+    'ein erfundenes Gültigkeitsdatum wäre eine Zusage');
 });

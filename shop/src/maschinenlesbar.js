@@ -28,6 +28,7 @@
  */
 
 import { textZeile } from './format.js';
+import { mengenschritt } from './gebinde.js';
 
 /** Wie lange eine ausgezeichnete Preisangabe als gültig gilt (Tage). */
 export const PREIS_GUELTIG_TAGE = 7;
@@ -105,6 +106,41 @@ export function liefergebietAngabe(gebiet) {
  * Bewusst als Objekt und nicht als fertiger Text: So kann der Aufrufer es
  * einbetten, in einen Feed schreiben oder gegenprüfen, ohne es zu zerlegen.
  */
+/**
+ * Die Einheiten des Katalogs in UN/CEFACT-Codes, wie schema.org sie erwartet.
+ *
+ * **Warum das nötig wurde.** Der Feed nannte bis zum 29.08. nur
+ * `price: 5.23` — den Quadratmeterpreis der XPS-Platte. Was ein Käufer
+ * tatsächlich zahlt, ist ein anderer Betrag: Die Platte wird in Einheiten zu
+ * 0,75 m² abgegeben, die kleinste Bestellung kostet 3,92 €. Ein Angebot, das
+ * einen Preis nennt, den man für nichts bekommt, ist in diesem Kanal kein
+ * Detail — es ist der Preis, mit dem der Shop im Vergleich steht.
+ *
+ * schema.org hat dafür genau zwei Felder, und beide werden jetzt gesetzt:
+ * `priceSpecification.referenceQuantity` sagt, **worauf** der Preis sich
+ * bezieht (je 1 m²), und `eligibleQuantity.minValue` sagt, **wie wenig** man
+ * kaufen kann (0,75 m²).
+ *
+ * Nicht abgebildete Einheiten bekommen keinen Code. Einen zu raten hieße,
+ * einem Preisvergleich eine Bezugsgröße unterzuschieben, die niemand geprüft
+ * hat.
+ */
+export const EINHEITSCODES = Object.freeze({
+  M2: 'MTK',   // Quadratmeter
+  KG: 'KGM',   // Kilogramm
+  LFM: 'MTR',  // laufender Meter
+  LTR: 'LTR',  // Liter
+  // Alles, was stückweise abgegeben wird — Sack, Dose, Eimer, Karton,
+  // Rolle, Stück —, ist für UN/CEFACT dasselbe: ein Stück.
+  STK: 'C62',
+  SCK: 'C62',
+  DOS: 'C62',
+  EIM: 'C62',
+  KRT: 'C62',
+  RLL: 'C62',
+  PAK: 'C62',
+});
+
 export function produktAuszeichnung(artikel, lage = {}) {
   const freigabe = darfVeroeffentlichtWerden(artikel);
   if (!freigabe.erlaubt) {
@@ -126,12 +162,30 @@ export function produktAuszeichnung(artikel, lage = {}) {
     // ausdrücklich, weil ein Assistent sonst Netto gegen Brutto vergleicht
     // und den Shop teurer aussehen lässt, als er ist.
     priceSpecification: {
-      '@type': 'PriceSpecification',
+      '@type': 'UnitPriceSpecification',
       price: artikel.vkNetto.toFixed(2),
       priceCurrency: 'EUR',
       valueAddedTaxIncluded: false,
     },
   };
+
+  // Worauf der Preis sich bezieht und wie wenig man kaufen kann.
+  const code = EINHEITSCODES[String(artikel.einheit ?? '').toUpperCase()];
+  if (code) {
+    angebot.priceSpecification.referenceQuantity = {
+      '@type': 'QuantitativeValue',
+      value: 1,
+      unitCode: code,
+    };
+    const schritt = mengenschritt(artikel);
+    if (schritt) {
+      angebot.eligibleQuantity = {
+        '@type': 'QuantitativeValue',
+        minValue: schritt,
+        unitCode: code,
+      };
+    }
+  }
 
   if (lage.versandkostenNetto != null && gebiet.vollstaendig) {
     angebot.shippingDetails = {

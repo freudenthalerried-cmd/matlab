@@ -151,6 +151,21 @@ if (feed.mitLuecken.length) {
   for (const [was, wieoft] of luecken) console.log(`  · ${was} — bei ${wieoft} Artikeln`);
   console.log('Ein Feed mit lückenhaften Einträgen wird abgelehnt, nicht teilweise angenommen.');
 }
+// Worauf sich der Preis bezieht und wie wenig man kaufen kann — seit dem
+// 29.08. im Feed. Ohne diese Zeilen wäre es eine Änderung, die niemand
+// nachzählt: Ein fehlender Einheitscode fällt sonst erst dem Preisvergleich
+// auf, und dort ist er ein falscher Preis.
+const mitBezug = feed.zeilen.filter((z) => z.offers?.priceSpecification?.referenceQuantity).length;
+const mitMindestmenge = feed.zeilen.filter((z) => z.offers?.eligibleQuantity).length;
+console.log(`\nBezugsgröße: ${mitBezug} von ${feed.zeilen.length} Einträgen nennen, worauf der Preis sich bezieht`);
+if (mitBezug < feed.zeilen.length) {
+  const ohne = feed.zeilen.filter((z) => !z.offers?.priceSpecification?.referenceQuantity);
+  const einheiten = [...new Set(ohne.map((z) => katalog.artikel.find((a) => a.sku === z.sku)?.einheit))];
+  console.log(`  ${ohne.length} ohne — nicht abgebildete Einheiten: ${einheiten.join(', ')}`);
+  console.log('  Ein geratener Einheitscode wäre eine Bezugsgröße, die niemand geprüft hat.');
+}
+console.log(`Mindestmenge: ${mitMindestmenge} Einträge geben ein Gebinde an (kleinste bestellbare Menge)`);
+
 console.log(`\nEinreichbar: ${feed.einreichbar ? 'ja' : 'nein'}`);
 console.log(`Liefergebiet: ${bezirke.join(', ')} (${LIEFERGEBIET.land}) — Stand ${LIEFERGEBIET.stand}`);
 console.log(`  Vorbehalt: ${LIEFERGEBIET.vorbehalt}`);
