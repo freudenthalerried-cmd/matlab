@@ -451,7 +451,7 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > `pruefe-quellen` 6/6, `shopprobe` 28, `oberflaechenprobe` 11, Website 81
 > Seiten ohne toten Verweis.
 
-> **29. August — siebzehn Läufe.** Ausführlich je ein Dokument.
+> **29. August — achtzehn Läufe.** Ausführlich je ein Dokument.
 >
 > **Der Gruppenvorschlag wurde gemessen und verworfen.** Ein Regelwerk, das
 > aus der Artikelbezeichnung eine Warengruppe rät, trifft am eigenen Bestand
@@ -502,11 +502,11 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > 787 vergleichbare Tests, kein Unterschied.
 > [`kommentare-im-schaufenster.md`](./kommentare-im-schaufenster.md).
 >
-> **Stand der Prüfmittel:** 836 Tests, `pruefe-tests` 835/0, `pruefe-preise` 46/0, `pruefe-inhalte`
+> **Stand der Prüfmittel:** 837 Tests, `pruefe-tests` 836/0, `pruefe-preise` 46/0, `pruefe-inhalte`
 > 24/355/0, `pruefe-seiten` 60 von 81 gebauten Seiten (die übrigen 23 tragen
-> nur Text aus `inhalte/`, dort geprüft), `pruefe-widerrufe` 168 Dateien/48
-> Fundstellen, `pruefe-quellen` 6/6, `shopprobe` 45 (davon 10 im Rahmen),
-> `oberflaechenprobe` 11, `rahmenzensus` 81/81, `pruefe-stand` 167/167,
+> nur Text aus `inhalte/`, dort geprüft), `pruefe-widerrufe` 169 Dateien/48
+> Fundstellen, `pruefe-quellen` 6/6, `shopprobe` 47 (davon 10 im Rahmen),
+> `oberflaechenprobe` 11, `rahmenzensus` 81/81, `pruefe-stand` 168/168,
 > `pruefe-pruefer` 11 Prüfer ohne Leerlauf, Website 81 Seiten ohne toten
 > Verweis.
 
@@ -836,7 +836,7 @@ zusammengefasst und im Verzeichnis nicht auffindbar:
 | `erste-echte-zahlen.md` | Die Lieferantenrechnungen sind gefunden — die Grundlage der ganzen Kalkulation (22.08.) |
 | `google-kampagne.md` | Die Kampagne ist vollständig geplant und **nicht geschaltet** (22.08.) |
 
-**Läufe vom 29. August** — die siebzehn Dokumente dieses Tages:
+**Läufe vom 29. August** — die achtzehn Dokumente dieses Tages:
 
 | Datei | Kernaussage |
 |---|---|
@@ -857,6 +857,7 @@ zusammengefasst und im Verzeichnis nicht auffindbar:
 | `siebzehn-module-fuhren-mit.md` | Das ausgelieferte `shop.js` trug alle 22 Kernmodule; die Oberfläche benutzt fünf. 202 → 117 KB, und Kostenbild, Skonto und Margenregel bleiben im Betrieb |
 | `die-falsche-zahl-fast-optimiert.md` | Die Zeichnungen sind 39 KB roh und **2,4 KB gezippt** — der Eingriff unterbleibt. Nebenbei: Die Bündelverschlankung brachte 72 % statt der notierten 60 % |
 | `acht-zentimeter-sind-achtzig-millimeter.md` | „xps 8 cm" fand nichts, „eps 5 cm" schon — der Katalog schreibt die eine Gruppe in cm, die andere in mm. Beide Maße jetzt auf einen Stamm; 78 Baustellenwörter gemessen, 11 aufgenommen, 18 begründet abgelehnt |
+| `was-wir-nicht-fuehren-steht-jetzt-da.md` | Die 23 begründeten Ablehnungen lagen ungenutzt im Repository. Jede trägt jetzt zwei Texte — `warum` für den nächsten Lauf, `antwort` für den Kunden auf der Suchseite |
 | `segment-arbeitsplatzmessung.md` | Nebenstrecke, kein eigenes Segment |
 | `strategie-modellvergleich.md` | Kapitalweg braucht ~900.000 €; enthält überholte Empfehlung |
 | `anschreiben-entwuerfe.md` | Drei Anschreiben (Hersteller, Großhändler, Partnerbetriebe), versandfertig, nicht versendet |

@@ -611,3 +611,24 @@ test('die neuen Kundenwörter führen zu genau der gemeinten Ware', () => {
   assert.match(erstes('laibung'), /Gewebeanschlussleiste/);
   assert.match(erstes('klebespachtelmasse'), /Spachtel/i);
 });
+
+
+test('jede Ablehnung trägt zwei Texte: eine Begründung und eine Antwort', () => {
+  // Zwei Fragen, zwei Texte. `warum` erklärt dem nächsten Lauf die
+  // redaktionelle Entscheidung, `antwort` beantwortet die Frage des Kunden.
+  // Den einen für den anderen zu halten wäre derselbe Fehler wie eine
+  // Funktion, die zwei Fragen auf einmal beantwortet — und der Kunde läse
+  // Sätze über den Suchindex statt über die Ware.
+  assert.ok(suchwoerterDatei._nichtAufgenommen.length >= 20);
+  for (const e of suchwoerterDatei._nichtAufgenommen) {
+    assert.ok(String(e.antwort ?? '').trim().length > 25, `„${e.wort}": keine Kundenantwort`);
+    // Die Antwort spricht über Ware, nicht über die Mechanik des Shops.
+    for (const wort of ['Suchwort', 'Suchindex', 'Treffer wäre', 'Register', 'Wissensseite']) {
+      assert.ok(!e.antwort.includes(wort),
+        `„${e.wort}": die Antwort spricht über den Shop statt über die Ware („${wort}")`);
+    }
+    // Und sie steht für sich — ein Verweis auf einen anderen Eintrag wäre
+    // auf der Seite unlesbar.
+    assert.doesNotMatch(e.antwort, /^(siehe|wie) /i, `„${e.wort}": Verweis statt Antwort`);
+  }
+});

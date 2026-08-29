@@ -1,6 +1,6 @@
 {
   "_datenstand": "Stand 2026-08-29. Erweitert nach einer Messung von 78 Baustellenwörtern gegen den Bestand; die Begründung steht je Wort.",
-  "_hinweis": "Kundenwörter, die im Sortiment nicht vorkommen. Von Hand entschieden, Wort für Wort. Ein Suchwort ist kein Werbeversprechen: Es darf nur dorthin führen, wo der Artikel die Aufgabe tatsächlich erfüllt — was der Shop nicht führt, bleibt unauffindbar und wird nicht auf ein Ersatzprodukt umgeleitet.",
+  "_hinweis": "Kundenwörter, die im Sortiment nicht vorkommen. Von Hand entschieden, Wort für Wort. Ein Suchwort ist kein Werbeversprechen: Es darf nur dorthin führen, wo der Artikel die Aufgabe tatsächlich erfüllt — was der Shop nicht führt, bleibt unauffindbar und wird nicht auf ein Ersatzprodukt umgeleitet. — Seit 29.08. trägt jede Ablehnung zwei Texte: `warum` begründet die redaktionelle Entscheidung gegenüber dem nächsten Lauf, `antwort` ist der Satz, den der Kunde auf der Suchseite liest. Zwei Fragen, zwei Texte.",
   "_gewicht": "Suchwörter zählen im Index als schwacher Treffer. Ein Artikel, der das Wort im eigenen Namen trägt, steht immer davor.",
   "woerter": [
     {
@@ -355,95 +355,118 @@
   "_nichtAufgenommen": [
     {
       "wort": "drainage",
-      "warum": "Wir führen kein Drainagerohr. Die Noppenbahn ist Schutz- und Drainschicht, aber keine Drainage — sie hier zu finden, wäre die Verwechslung, vor der die Wissensseite warnt."
+      "warum": "Wir führen kein Drainagerohr. Die Noppenbahn ist Schutz- und Drainschicht, aber keine Drainage — sie hier zu finden, wäre die Verwechslung, vor der die Wissensseite warnt.",
+      "antwort": "Drainagerohre führen wir nicht. Die Noppenbahn schützt die Kellerwand und leitet Wasser ab, sie ersetzt aber keine Drainageleitung."
     },
     {
       "wort": "abdichtung",
-      "warum": "Wir führen keine. Ein Suchwort, das auf die Dämmplatte zeigt, würde genau den Fehler erzeugen, den die Systemliste verhindert: dämmen ohne abzudichten."
+      "warum": "Wir führen keine. Ein Suchwort, das auf die Dämmplatte zeigt, würde genau den Fehler erzeugen, den die Systemliste verhindert: dämmen ohne abzudichten.",
+      "antwort": "Abdichtungsbahnen führen wir nicht. Gedämmt wird über der Abdichtung, nicht statt ihrer — welche Bahn Ihr Aufbau braucht, steht in der Planung."
     },
     {
       "wort": "bitumen",
-      "warum": "wie Abdichtung"
+      "warum": "wie Abdichtung",
+      "antwort": "Bitumenbahnen und -anstriche führen wir nicht."
     },
     {
       "wort": "gleitmittel",
-      "warum": "steht als Position auf der Kanalliste, ist aber kein Artikel des Sortiments. Ein Suchwort ohne Ware findet nichts und soll nichts vortäuschen."
+      "warum": "steht als Position auf der Kanalliste, ist aber kein Artikel des Sortiments. Ein Suchwort ohne Ware findet nichts und soll nichts vortäuschen.",
+      "antwort": "Gleitmittel für Steckmuffen führen wir nicht. Es steht auf unserer Kanalliste als Position, die Sie anderswo besorgen."
     },
     {
       "wort": "estrichfolie",
-      "warum": "Die PAE-Folie kann als Trennlage dienen; ob sie für einen konkreten Estrichaufbau taugt, sagt das Merkblatt, nicht die Suche."
+      "warum": "Die PAE-Folie kann als Trennlage dienen; ob sie für einen konkreten Estrichaufbau taugt, sagt das Merkblatt, nicht die Suche.",
+      "antwort": "Eine eigene Estrichfolie führen wir nicht. Die PAE-Folie kann als Trennlage dienen; ob sie für Ihren Estrichaufbau zugelassen ist, sagt das Merkblatt des Herstellers."
     },
     {
       "wort": "rauchrohr",
-      "warum": "Das Ofenrohr vom Ofen zum Kamin führen wir nicht. Es auf das gedämmte Innenrohr zu lenken wäre die Verwechslung, die einen Kaminbrand nach sich zieht."
+      "warum": "Das Ofenrohr vom Ofen zum Kamin führen wir nicht. Es auf das gedämmte Innenrohr zu lenken wäre die Verwechslung, die einen Kaminbrand nach sich zieht.",
+      "antwort": "Ofenrohre vom Ofen zum Kamin führen wir nicht. Unser gedämmtes Innenrohr ist ein Teil des Systemkamins und kein Ersatz dafür."
     },
     {
       "wort": "schamotterohr",
-      "warum": "Unser Systemkamin ist keramisch und gedämmt, kein Schamottezug. Ein Treffer wäre ein anderes Bauteil."
+      "warum": "Unser Systemkamin ist keramisch und gedämmt, kein Schamottezug. Ein Treffer wäre ein anderes Bauteil.",
+      "antwort": "Schamottezüge führen wir nicht. Unser Systemkamin ist keramisch und gedämmt."
     },
     {
       "wort": "kaminkopf",
-      "warum": "Die Verkleidung über Dach führen wir nicht; wir haben Regenhaube und Trennstein, aber keinen Kaminkopf."
+      "warum": "Die Verkleidung über Dach führen wir nicht; wir haben Regenhaube und Trennstein, aber keinen Kaminkopf.",
+      "antwort": "Eine Kaminkopfverkleidung führen wir nicht. Regenhaube und Thermo-Trennstein haben wir."
     },
     {
       "wort": "sockelschiene",
-      "warum": "Das Sockelprofil des WDVS führen wir nicht. Kantenschutz und Anschlussleiste sind andere Teile."
+      "warum": "Das Sockelprofil des WDVS führen wir nicht. Kantenschutz und Anschlussleiste sind andere Teile.",
+      "antwort": "Sockelprofile führen wir nicht. Kantenschutz und Gewebeanschlussleiste sind andere Teile des Systems."
     },
     {
       "wort": "abschlussprofil",
-      "warum": "Wie Sockelschiene — nicht im Sortiment."
+      "warum": "Wie Sockelschiene — nicht im Sortiment.",
+      "antwort": "Abschluss- und Sockelprofile führen wir nicht."
     },
     {
       "wort": "silikatputz",
-      "warum": "Wir führen einen Oberputz (PrimaPor K20, Reibputz). Silikat-, Silikon- und Mineralputze sind eigene Systeme; jemanden auf den vorhandenen zu lenken wäre eine Empfehlung, keine Suche."
+      "warum": "Wir führen einen Oberputz (PrimaPor K20, Reibputz). Silikat-, Silikon- und Mineralputze sind eigene Systeme; jemanden auf den vorhandenen zu lenken wäre eine Empfehlung, keine Suche.",
+      "antwort": "Silikatputz führen wir nicht. Unser Oberputz ist ein Reibputz (Capatect PrimaPor K20); Silikat-, Silikon- und Mineralputze sind eigene Systeme und nicht gegeneinander austauschbar."
     },
     {
       "wort": "silikonputz",
-      "warum": "Siehe silikatputz."
+      "warum": "Siehe silikatputz.",
+      "antwort": "Silikonputz führen wir nicht. Unser Oberputz ist ein Reibputz (Capatect PrimaPor K20); die Putzsysteme sind nicht gegeneinander austauschbar."
     },
     {
       "wort": "mineralputz",
-      "warum": "Siehe silikatputz."
+      "warum": "Siehe silikatputz.",
+      "antwort": "Mineralputz führen wir nicht. Unser Oberputz ist ein Reibputz (Capatect PrimaPor K20); die Putzsysteme sind nicht gegeneinander austauschbar."
     },
     {
       "wort": "kratzputz",
-      "warum": "Andere Auftragsart als der geführte Reibputz."
+      "warum": "Andere Auftragsart als der geführte Reibputz.",
+      "antwort": "Kratzputz führen wir nicht. Unser Oberputz wird gerieben, nicht gekratzt — das ist eine andere Auftragsart."
     },
     {
       "wort": "flexkleber",
-      "warum": "Fliesenkleber führen wir nicht. Der Klebespachtel ist für Dämmplatten."
+      "warum": "Fliesenkleber führen wir nicht. Der Klebespachtel ist für Dämmplatten.",
+      "antwort": "Fliesenkleber führen wir nicht. Unser Klebespachtel ist für Dämmplatten."
     },
     {
       "wort": "fugenmörtel",
-      "warum": "Die geführte Schiedel Fugenmasse ist für Kaminformteile, nicht für Fliesenfugen. Ein Treffer wäre irreführend."
+      "warum": "Die geführte Schiedel Fugenmasse ist für Kaminformteile, nicht für Fliesenfugen. Ein Treffer wäre irreführend.",
+      "antwort": "Fugenmörtel für Fliesen führen wir nicht. Die Schiedel Fugenmasse ist für Kaminformteile."
     },
     {
       "wort": "muffe",
-      "warum": "Steckmuffen sind an unseren Kanalrohren angeformt; eine lose Muffe führen wir nicht."
+      "warum": "Steckmuffen sind an unseren Kanalrohren angeformt; eine lose Muffe führen wir nicht.",
+      "antwort": "Lose Muffen führen wir nicht. An unseren PVC-Kanalrohren ist die Steckmuffe angeformt."
     },
     {
       "wort": "übergangsstück",
-      "warum": "Nicht im Sortiment. Wir führen Rohr, Bogen und Abzweiger in DN 100."
+      "warum": "Nicht im Sortiment. Wir führen Rohr, Bogen und Abzweiger in DN 100.",
+      "antwort": "Übergangsstücke führen wir nicht. In DN 100 haben wir Rohr, Bogen und Abzweiger."
     },
     {
       "wort": "dichtring",
-      "warum": "Nicht einzeln im Sortiment."
+      "warum": "Nicht einzeln im Sortiment.",
+      "antwort": "Einzelne Dichtringe führen wir nicht."
     },
     {
       "wort": "schachtabdeckung",
-      "warum": "Wir führen den Schachtring, nicht die Abdeckung."
+      "warum": "Wir führen den Schachtring, nicht die Abdeckung.",
+      "antwort": "Schachtabdeckungen führen wir nicht. Den Schachtring haben wir."
     },
     {
       "wort": "kanalgrundrohr",
-      "warum": "Nicht im Sortiment; unsere Kanalrohre sind PVC NW 100."
+      "warum": "Nicht im Sortiment; unsere Kanalrohre sind PVC NW 100.",
+      "antwort": "Grundrohre in anderen Nennweiten führen wir nicht. Unsere Kanalrohre sind PVC NW 100."
     },
     {
       "wort": "gewebeecke",
-      "warum": "Diagonal- und Eckgewebe führen wir nicht; der Kantenschutz mit Gewebe ist ein anderes Teil."
+      "warum": "Diagonal- und Eckgewebe führen wir nicht; der Kantenschutz mit Gewebe ist ein anderes Teil.",
+      "antwort": "Eck- und Diagonalgewebe führen wir nicht. Der Kantenschutz mit Gewebe ist ein anderes Teil."
     },
     {
       "wort": "diagonalgewebe",
-      "warum": "Siehe gewebeecke."
+      "warum": "Siehe gewebeecke.",
+      "antwort": "Diagonal- und Eckgewebe führen wir nicht. Der Kantenschutz mit Gewebe ist ein anderes Teil."
     }
   ]
 }

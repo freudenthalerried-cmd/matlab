@@ -1316,6 +1316,21 @@ function shopdaten(katalog, befund, seiten, lieferantenDatei, suchwoerterDatei, 
       ...(w.skus ? { skus: w.skus } : {}),
       ...(w.gruppe ? { gruppe: w.gruppe } : {}),
     })),
+    // **Was wir nicht führen — und warum, in einem Satz für den Kunden.**
+    //
+    // Die Suchseite sagte bei jedem Fehlschlag denselben allgemeinen Satz.
+    // Für 23 Wörter wissen wir es genauer: Die redaktionelle Entscheidung ist
+    // begründet aufgeschrieben, und der Kunde bekam davon nichts zu sehen.
+    //
+    // Mitgeliefert wird nur `antwort`, nicht `warum`. Das sind zwei Texte für
+    // zwei Fragen: `warum` erklärt dem nächsten Lauf die Entscheidung („ein
+    // Treffer wäre irreführend"), `antwort` beantwortet die Frage des Kunden
+    // („Fugenmörtel für Fliesen führen wir nicht"). Einen davon für den
+    // anderen zu halten, ist derselbe Fehler wie eine Funktion, die zwei
+    // Fragen auf einmal beantwortet.
+    nichtGefuehrt: (suchwoerterDatei?._nichtAufgenommen ?? [])
+      .filter((w) => typeof w.antwort === 'string' && w.antwort.trim())
+      .map((w) => ({ wort: w.wort, antwort: w.antwort.trim() })),
     einheiten: EINHEITEN,
     bezirke: LIEFERGEBIET.bezirke.map((b) => b.name),
     zahlwege: ZAHLUNGSBEDINGUNGEN.angeboten.map((z) => ({

@@ -399,6 +399,22 @@
         p.appendChild(document.createTextNode('?'));
         z.appendChild(p);
       }
+      // Wo wir es genauer wissen, sagen wir es genauer. Für 23 Wörter steht
+      // im Register, was wir nicht führen und was daneben steht — das ist
+      // eine bessere Auskunft als der allgemeine Satz darunter, und sie
+      // stammt aus einer redaktionellen Entscheidung, nicht aus einer
+      // Ähnlichkeitsrechnung.
+      var gesucht = wortstaemme(frage);
+      var bekannt = (D.nichtGefuehrt || []).filter(function (n) {
+        return gesucht.indexOf(n.wort.toLowerCase()) >= 0
+          || wortstaemme(n.wort).some(function (w) { return gesucht.indexOf(w) >= 0; });
+      });
+      if (bekannt.length) {
+        var wir = el('p', 'antwort');
+        wir.appendChild(el('strong', null, 'Das führen wir nicht. '));
+        wir.appendChild(document.createTextNode(bekannt[0].antwort));
+        z.appendChild(wir);
+      }
       z.appendChild(el('p', 'antwort', 'Der Katalog umfasst ' + D.artikel.length
         + ' Artikel aus dem laufenden Einkauf. Was nicht darin steht, führen wir nicht — '
         + 'wir zeigen lieber nichts als etwas Erfundenes.'));

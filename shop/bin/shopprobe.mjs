@@ -578,6 +578,26 @@ const SZENARIEN = [
     erwartet: ['treffer=8', 'Mantelstein', 'Kamin'],
   },
   {
+    name: 'Ein bekanntes Nicht-Sortiment bekommt eine eigene Antwort',
+    // Die Suchseite sagte bei jedem Fehlschlag denselben allgemeinen Satz.
+    // Für 23 Wörter steht im Register, was wir nicht führen und was daneben
+    // steht.
+    aktionen: `
+      await geheZu('suche?q=drainage');
+      out = text('#suche-ziel');`,
+    erwartet: ['Das führen wir nicht', 'Drainagerohre führen wir nicht',
+      'Noppenbahn', 'ersetzt aber keine Drainageleitung'],
+  },
+  {
+    name: 'Ein unbekanntes Wort bekommt weiterhin nur den allgemeinen Satz',
+    // Die Gegenrichtung: Ohne Eintrag wird nichts erfunden.
+    aktionen: `
+      await geheZu('suche?q=zementmischer');
+      out = text('#suche-ziel');`,
+    erwartet: ['Was nicht darin steht, führen wir nicht'],
+    verboten: ['Das führen wir nicht.'],
+  },
+  {
     name: 'Ein Wort ohne Ware im Sortiment findet keine Ware',
     aktionen: `
       await geheZu('index');
