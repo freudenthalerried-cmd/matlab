@@ -1414,7 +1414,20 @@ function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = null, ein
   zeilen.push('----------');
 
   const preisstaende = new Set();
-  for (const teil of rechnung.teillieferungen) {
+  const mehrere = rechnung.teillieferungen.length > 1;
+  for (const [nr, teil] of rechnung.teillieferungen.entries()) {
+    
+    
+    
+    
+    
+    
+    
+    
+    if (mehrere) {
+      zeilen.push('');
+      zeilen.push(`Lieferung ${nr + 1} von ${rechnung.teillieferungen.length}`);
+    }
     for (const p of teil.positionen) {
       if (p.preisStand) preisstaende.add(p.preisStand);
       
@@ -1445,7 +1458,15 @@ function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = null, ein
   zeilen.push('Summen (netto, Preise für Unternehmer)');
   zeilen.push('-------------------------------------');
   zeilen.push(`${anfrageSpalte('Warenwert', 22)}${anfrageEuro(rechnung.warenwertNetto)}`);
-  zeilen.push(`${anfrageSpalte('Zustellung', 22)}${anfrageEuro(rechnung.frachtNetto)}`);
+  if (mehrere) {
+    
+    
+    for (const [nr, teil] of rechnung.teillieferungen.entries()) {
+      zeilen.push(`${anfrageSpalte(`Zustellung ${nr + 1}`, 22)}${anfrageEuro(teil.frachtNetto)}`
+        + `   ${teil.frachtGrund ?? ''}`.trimEnd());
+    }
+  }
+  zeilen.push(`${anfrageSpalte(mehrere ? 'Zustellung gesamt' : 'Zustellung', 22)}${anfrageEuro(rechnung.frachtNetto)}`);
   zeilen.push(`${anfrageSpalte('Netto gesamt', 22)}${anfrageEuro(rechnung.nettoGesamt)}`);
   zeilen.push(`${anfrageSpalte('USt', 22)}${anfrageEuro(rechnung.ustBetrag)}`);
   zeilen.push(`${anfrageSpalte('Brutto gesamt', 22)}${anfrageEuro(rechnung.bruttoGesamt)}`);
@@ -1466,6 +1487,12 @@ function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = null, ein
   zeilen.push('Diese Liste ist eine Anfrage, keine Bestellung. Sie verpflichtet');
   zeilen.push('keine der beiden Seiten. Verbindlich wird ein Preis erst mit');
   zeilen.push('unserer Bestätigung.');
+  if (mehrere) {
+    
+    
+    zeilen.push(`Die Ware kommt in ${rechnung.teillieferungen.length} getrennten Lieferungen —`);
+    zeilen.push('je Lieferung eine Anfahrt, und die Termine können auseinanderliegen.');
+  }
 
   if (preisstaende.size) {
     const sortiert = [...preisstaende].sort();
@@ -1600,6 +1627,23 @@ function pruefeAnfrageAufGeheimnis(text, artikelMitEk = []) {
   function leere(n) { while (n.firstChild) n.removeChild(n.firstChild); }
   function eur(n) { return EUR(n); }
   function ziel(id) { return document.getElementById(id); }
+
+  
+
+
+
+
+
+
+
+
+  function frachtGrundText(rechnung) {
+    var teile = rechnung.teillieferungen;
+    if (teile.length === 1) return teile[0].frachtGrund;
+    var stuecke = [];
+    for (var i = 0; i < teile.length; i++) stuecke.push(eur(teile[i].frachtNetto));
+    return teile.length + ' getrennte Lieferungen: ' + stuecke.join(' + ');
+  }
   function pfad(kennung) {
     
     if (D.adressform === 'raute') return '#' + kennung;
@@ -2023,7 +2067,7 @@ function pruefeAnfrageAufGeheimnis(text, artikelMitEk = []) {
           + (rechnung.positionenOhneGewicht === 1 ? '' : 'en') + ' ohne belegtes Gewicht'
         : 'aus den Lieferscheinen';
       [['Warenwert', eur(rechnung.warenwertNetto), 'netto'],
-       ['Fracht', eur(rechnung.frachtNetto), rechnung.teillieferungen[0].frachtGrund],
+       ['Fracht', eur(rechnung.frachtNetto), frachtGrundText(rechnung)],
        ['Gewicht', String(rechnung.gewichtKg).replace('.', ',') + ' kg', gewichtText],
        ['Netto gesamt', eur(rechnung.nettoGesamt), 'zuzüglich ' + ustText() + ' USt'],
        ['Brutto', eur(rechnung.bruttoGesamt), 'inkl. ' + eur(rechnung.ustBetrag) + ' USt']
@@ -2198,7 +2242,7 @@ function pruefeAnfrageAufGeheimnis(text, artikelMitEk = []) {
     var tafel = el('div', 'preistafel');
     [['Positionen', String(rechnung.positionen), rechnung.positionen === 1 ? 'im Warenkorb' : 'verschiedene Artikel'],
      ['Warenwert', eur(rechnung.warenwertNetto), 'netto'],
-     ['Fracht', eur(rechnung.frachtNetto), rechnung.teillieferungen[0].frachtGrund],
+     ['Fracht', eur(rechnung.frachtNetto), frachtGrundText(rechnung)],
      ['Brutto gesamt', eur(rechnung.bruttoGesamt), 'inkl. ' + eur(rechnung.ustBetrag) + ' USt']
     ].forEach(function (r) {
       var d = el('div');

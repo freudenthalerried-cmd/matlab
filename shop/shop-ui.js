@@ -40,6 +40,23 @@
   function leere(n) { while (n.firstChild) n.removeChild(n.firstChild); }
   function eur(n) { return EUR(n); }
   function ziel(id) { return document.getElementById(id); }
+
+  /**
+   * Der Erläuterungstext der Frachtzeile.
+   *
+   * **Berichtigt am 30.08.** Hier stand `teillieferungen[0].frachtGrund` —
+   * der Grund der **ersten** Teillieferung neben der **Summe aller**. Bei
+   * einem Korb aus zwei Sortimenten stand damit eine Begründung an einer
+   * Zahl, die sie nicht erklärt. Heute führt der Katalog einen Lieferanten;
+   * mit der Artikelliste des Auftraggebers kommt der zweite.
+   */
+  function frachtGrundText(rechnung) {
+    var teile = rechnung.teillieferungen;
+    if (teile.length === 1) return teile[0].frachtGrund;
+    var stuecke = [];
+    for (var i = 0; i < teile.length; i++) stuecke.push(eur(teile[i].frachtNetto));
+    return teile.length + ' getrennte Lieferungen: ' + stuecke.join(' + ');
+  }
   function pfad(kennung) {
     // Zwei Ausgabefassungen: Dateien mit .html, Einzeldatei mit Raute.
     if (D.adressform === 'raute') return '#' + kennung;
@@ -463,7 +480,7 @@
           + (rechnung.positionenOhneGewicht === 1 ? '' : 'en') + ' ohne belegtes Gewicht'
         : 'aus den Lieferscheinen';
       [['Warenwert', eur(rechnung.warenwertNetto), 'netto'],
-       ['Fracht', eur(rechnung.frachtNetto), rechnung.teillieferungen[0].frachtGrund],
+       ['Fracht', eur(rechnung.frachtNetto), frachtGrundText(rechnung)],
        ['Gewicht', String(rechnung.gewichtKg).replace('.', ',') + ' kg', gewichtText],
        ['Netto gesamt', eur(rechnung.nettoGesamt), 'zuzüglich ' + ustText() + ' USt'],
        ['Brutto', eur(rechnung.bruttoGesamt), 'inkl. ' + eur(rechnung.ustBetrag) + ' USt']
@@ -638,7 +655,7 @@
     var tafel = el('div', 'preistafel');
     [['Positionen', String(rechnung.positionen), rechnung.positionen === 1 ? 'im Warenkorb' : 'verschiedene Artikel'],
      ['Warenwert', eur(rechnung.warenwertNetto), 'netto'],
-     ['Fracht', eur(rechnung.frachtNetto), rechnung.teillieferungen[0].frachtGrund],
+     ['Fracht', eur(rechnung.frachtNetto), frachtGrundText(rechnung)],
      ['Brutto gesamt', eur(rechnung.bruttoGesamt), 'inkl. ' + eur(rechnung.ustBetrag) + ' USt']
     ].forEach(function (r) {
       var d = el('div');

@@ -5450,7 +5450,20 @@ function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = null, ein
   zeilen.push('----------');
 
   const preisstaende = new Set();
-  for (const teil of rechnung.teillieferungen) {
+  const mehrere = rechnung.teillieferungen.length > 1;
+  for (const [nr, teil] of rechnung.teillieferungen.entries()) {
+    
+    
+    
+    
+    
+    
+    
+    
+    if (mehrere) {
+      zeilen.push('');
+      zeilen.push(`Lieferung ${nr + 1} von ${rechnung.teillieferungen.length}`);
+    }
     for (const p of teil.positionen) {
       if (p.preisStand) preisstaende.add(p.preisStand);
       
@@ -5481,7 +5494,15 @@ function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = null, ein
   zeilen.push('Summen (netto, Preise für Unternehmer)');
   zeilen.push('-------------------------------------');
   zeilen.push(`${anfrageSpalte('Warenwert', 22)}${anfrageEuro(rechnung.warenwertNetto)}`);
-  zeilen.push(`${anfrageSpalte('Zustellung', 22)}${anfrageEuro(rechnung.frachtNetto)}`);
+  if (mehrere) {
+    
+    
+    for (const [nr, teil] of rechnung.teillieferungen.entries()) {
+      zeilen.push(`${anfrageSpalte(`Zustellung ${nr + 1}`, 22)}${anfrageEuro(teil.frachtNetto)}`
+        + `   ${teil.frachtGrund ?? ''}`.trimEnd());
+    }
+  }
+  zeilen.push(`${anfrageSpalte(mehrere ? 'Zustellung gesamt' : 'Zustellung', 22)}${anfrageEuro(rechnung.frachtNetto)}`);
   zeilen.push(`${anfrageSpalte('Netto gesamt', 22)}${anfrageEuro(rechnung.nettoGesamt)}`);
   zeilen.push(`${anfrageSpalte('USt', 22)}${anfrageEuro(rechnung.ustBetrag)}`);
   zeilen.push(`${anfrageSpalte('Brutto gesamt', 22)}${anfrageEuro(rechnung.bruttoGesamt)}`);
@@ -5502,6 +5523,12 @@ function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = null, ein
   zeilen.push('Diese Liste ist eine Anfrage, keine Bestellung. Sie verpflichtet');
   zeilen.push('keine der beiden Seiten. Verbindlich wird ein Preis erst mit');
   zeilen.push('unserer Bestätigung.');
+  if (mehrere) {
+    
+    
+    zeilen.push(`Die Ware kommt in ${rechnung.teillieferungen.length} getrennten Lieferungen —`);
+    zeilen.push('je Lieferung eine Anfahrt, und die Termine können auseinanderliegen.');
+  }
 
   if (preisstaende.size) {
     const sortiert = [...preisstaende].sort();

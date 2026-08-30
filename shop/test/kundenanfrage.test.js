@@ -240,3 +240,67 @@ test('die Beträge stehen in allen Zeilen an derselben Stelle', () => {
   const spalten = positionszeilen.map((z) => z.indexOf(z.trim().match(/\S+$/)[0]));
   assert.equal(new Set(spalten).size, 1, `die Summenspalte steht bei ${[...new Set(spalten)].join(' und ')}`);
 });
+
+
+/* ------------------------------------------------------------------ *
+ * Zwei Lieferanten sind zwei Anfahrten
+ * ------------------------------------------------------------------ */
+
+/** Ein Korb, dessen Positionen aus zwei Sortimenten kommen. */
+function zweiLieferanten() {
+  const umgehaengt = artikel.map((a, i) => (i === 1 ? { ...a, lieferantId: 'zubehoer-de' } : a));
+  const rechnung = kundenWarenkorb(
+    [{ sku: umgehaengt[0].sku, menge: 2 }, { sku: umgehaengt[1].sku, menge: 3 }],
+    { artikel: umgehaengt, lieferanten: lieferanten.lieferanten },
+  );
+  return { rechnung, text: baueKundenanfrage({ rechnung, bezirk: 'Perg', betreiber, datum: '2026-08-30' }).text };
+}
+
+test('zwei Teillieferungen stehen als zwei Lieferungen im Text', () => {
+  // **Gemessen am 30.08.:** Ein Korb aus zwei Sortimenten ergibt zwei
+  // Teillieferungen — zwei Anfahrten, zwei Termine —, und der Text nannte
+  // eine einzige Zeile „Zustellung 95,00 €". Der Rechenkern wusste es, der
+  // Text verschwieg es.
+  //
+  // Heute führt der Katalog einen Lieferanten. Der Fall kommt mit der
+  // Artikelliste des Auftraggebers, und dann soll er richtig sein.
+  const { rechnung, text } = zweiLieferanten();
+  assert.equal(rechnung.teillieferungen.length, 2, 'die Probe erzwingt zwei Teillieferungen');
+  assert.match(text, /Lieferung 1 von 2/);
+  assert.match(text, /Lieferung 2 von 2/);
+  assert.match(text, /Zustellung 1\s+[\d.,]+ €/);
+  assert.match(text, /Zustellung 2\s+[\d.,]+ €/);
+  assert.match(text, /Zustellung gesamt/);
+  assert.match(text, /in 2 getrennten Lieferungen/);
+});
+
+test('die Teilfrachten ergeben zusammen die Gesamtfracht', () => {
+  // Sonst stünde eine Aufteilung da, die nicht aufgeht — schlimmer als gar
+  // keine.
+  const { rechnung, text } = zweiLieferanten();
+  const summe = rechnung.teillieferungen.reduce((s, t) => s + t.frachtNetto, 0);
+  assert.equal(Math.round(summe * 100), Math.round(rechnung.frachtNetto * 100));
+  const genannt = [...text.matchAll(/Zustellung \d\s+([\d.,]+) €/g)].map((m) => Number(m[1].replace('.', '').replace(',', '.')));
+  assert.equal(genannt.length, 2, `${genannt.length} Teilfrachten im Text`);
+  assert.equal(Math.round(genannt.reduce((a, b) => a + b, 0) * 100), Math.round(rechnung.frachtNetto * 100));
+});
+
+test('bei einem Lieferanten bleibt der Text wie er war', () => {
+  // Die Aufteilung ist die Ausnahme, nicht die Regel. Ein Korb aus einem
+  // Sortiment darf keine Lieferungsnummern tragen.
+  const text = anfrageFuer(zwei).text;
+  assert.ok(!text.includes('Lieferung 1 von'), 'einzelne Lieferung wird durchnummeriert');
+  assert.ok(!text.includes('Zustellung gesamt'), 'eine Fracht braucht kein „gesamt"');
+  assert.match(text, /Zustellung\s+[\d.,]+ €/);
+});
+
+test('kein Lieferantenname steht im Text', () => {
+  // Geheim ist nicht die Geschäftsbeziehung, geheim sind die Konditionen —
+  // dieselbe Grenze wie in `oeffentlicherLieferant`. Die Aufteilung nennt
+  // deshalb Nummern, keine Namen.
+  const { text } = zweiLieferanten();
+  const namen = lieferanten.lieferanten.map((l) => l.name).filter(Boolean);
+  assert.ok(namen.length >= 3, `nur ${namen.length} Lieferantennamen zu prüfen`);
+  for (const name of namen) assert.ok(!text.includes(name), `„${name}" steht im Anfragetext`);
+  for (const l of lieferanten.lieferanten) assert.ok(!text.includes(l.id), `„${l.id}" steht im Anfragetext`);
+});

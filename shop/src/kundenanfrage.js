@@ -113,7 +113,20 @@ export function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = nu
   zeilen.push('----------');
 
   const preisstaende = new Set();
-  for (const teil of rechnung.teillieferungen) {
+  const mehrere = rechnung.teillieferungen.length > 1;
+  for (const [nr, teil] of rechnung.teillieferungen.entries()) {
+    // **Gemessen am 30.08.:** Ein Korb aus zwei Lieferantensortimenten ergibt
+    // zwei Teillieferungen — zwei Anfahrten, zwei Termine — und der Text
+    // nannte nur eine Summe „Zustellung". Heute führt der Katalog nur einen
+    // Lieferanten; mit der Artikelliste des Auftraggebers kommt der zweite.
+    //
+    // Genannt wird die Nummer, nicht der Lieferant: Geheim ist nicht die
+    // Geschäftsbeziehung, geheim sind die Konditionen — dieselbe Grenze wie
+    // in `oeffentlicherLieferant`.
+    if (mehrere) {
+      zeilen.push('');
+      zeilen.push(`Lieferung ${nr + 1} von ${rechnung.teillieferungen.length}`);
+    }
     for (const p of teil.positionen) {
       if (p.preisStand) preisstaende.add(p.preisStand);
       // Menge mit Komma und die lesbare Einheit. Bis zum 29.08. stand hier
@@ -144,7 +157,15 @@ export function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = nu
   zeilen.push('Summen (netto, Preise für Unternehmer)');
   zeilen.push('-------------------------------------');
   zeilen.push(`${anfrageSpalte('Warenwert', 22)}${anfrageEuro(rechnung.warenwertNetto)}`);
-  zeilen.push(`${anfrageSpalte('Zustellung', 22)}${anfrageEuro(rechnung.frachtNetto)}`);
+  if (mehrere) {
+    // Jede Anfahrt einzeln, dann die Summe. Eine Frachtsumme ohne die
+    // Aufteilung sieht aus wie ein Preis für eine Lieferung.
+    for (const [nr, teil] of rechnung.teillieferungen.entries()) {
+      zeilen.push(`${anfrageSpalte(`Zustellung ${nr + 1}`, 22)}${anfrageEuro(teil.frachtNetto)}`
+        + `   ${teil.frachtGrund ?? ''}`.trimEnd());
+    }
+  }
+  zeilen.push(`${anfrageSpalte(mehrere ? 'Zustellung gesamt' : 'Zustellung', 22)}${anfrageEuro(rechnung.frachtNetto)}`);
   zeilen.push(`${anfrageSpalte('Netto gesamt', 22)}${anfrageEuro(rechnung.nettoGesamt)}`);
   zeilen.push(`${anfrageSpalte('USt', 22)}${anfrageEuro(rechnung.ustBetrag)}`);
   zeilen.push(`${anfrageSpalte('Brutto gesamt', 22)}${anfrageEuro(rechnung.bruttoGesamt)}`);
@@ -165,6 +186,12 @@ export function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = nu
   zeilen.push('Diese Liste ist eine Anfrage, keine Bestellung. Sie verpflichtet');
   zeilen.push('keine der beiden Seiten. Verbindlich wird ein Preis erst mit');
   zeilen.push('unserer Bestätigung.');
+  if (mehrere) {
+    // Der Satz gehört zur Anfrage und nicht in die Hinweise: Er sagt dem
+    // Kunden etwas über seine Baustelle, nicht über eine Lücke im Werkzeug.
+    zeilen.push(`Die Ware kommt in ${rechnung.teillieferungen.length} getrennten Lieferungen —`);
+    zeilen.push('je Lieferung eine Anfahrt, und die Termine können auseinanderliegen.');
+  }
 
   if (preisstaende.size) {
     const sortiert = [...preisstaende].sort();

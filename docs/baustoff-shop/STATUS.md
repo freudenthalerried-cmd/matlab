@@ -502,10 +502,10 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > 787 vergleichbare Tests, kein Unterschied.
 > [`kommentare-im-schaufenster.md`](./kommentare-im-schaufenster.md).
 >
-> **Stand der Prüfmittel (30.08.):** 880 Tests, `pruefe-tests` 878/0, `pruefe-preise` 46/0, `pruefe-inhalte`
-> 24/357/0, `pruefe-seiten` 81 von 81 gebauten Seiten, `pruefe-widerrufe` 187 Dateien/48
+> **Stand der Prüfmittel (30.08.):** 884 Tests, `pruefe-tests` 882/0, `pruefe-preise` 46/0, `pruefe-inhalte`
+> 24/357/0, `pruefe-seiten` 81 von 81 gebauten Seiten, `pruefe-widerrufe` 188 Dateien/48
 > Fundstellen, `pruefe-quellen` 6/6, `shopprobe` 49 (davon 10 im Rahmen),
-> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 186/186,
+> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 187/187,
 > `pruefe-pruefer` 11 Prüfer ohne Leerlauf, Website 81 Seiten ohne toten
 > Verweis.
 
@@ -880,6 +880,7 @@ zusammengefasst und im Verzeichnis nicht auffindbar:
 | `vierzig-prozent-waren-neununddreissig.md` | „40 % unter Listenpreis" bei gerechneten 39,80 %: `Math.round` rundete den Preisvorteil auf, bei 21 von 39 Artikeln mit Marker. Ein Werbeversprechen wird abgerundet. Die Zahl entstand an drei Stellen — jetzt ruft der Seitenbau `vorteil()` |
 | `drei-steuersaetze-und-ein-abgleich.md` | Der Steuersatz steht an drei Stellen — und zwei davon mit Grund: Das Kontrollwerkzeug darf seine Vergleichsgröße nicht vom Geprüften holen. Der erste Griff (Import) war falsch und ist zurückgenommen; was fehlte, war nicht die Vereinheitlichung, sondern der Abgleich. Dazu „20 % USt" als Zeichenkette neben einer Zahl, die niemand danebenhielt |
 | `der-name-klebte-an-der-nummer.md` | Im Anfragetext — dem einzigen Weg, auf dem heute eine Bestellung zustande kommt — lief bei 12 der 46 Artikel der Name ohne Leerzeichen in die Artikelnummer. Die Spalte füllte nur kurzen Text auf. Jetzt Mindestabstand plus Umbruch an Wortgrenzen, damit die Summenspalte gerade bleibt |
+| `zwei-lieferungen-eine-zeile.md` | Ein Korb aus zwei Lieferantensortimenten ergibt zwei Anfahrten — der Anfragetext nannte eine Zeile „Zustellung", die Oberfläche den Frachtgrund der **ersten** Teillieferung neben der Summe aller. Heute unauffällig, scharf am Tag der Artikelliste. Jetzt je Lieferung ein Block, mit Nummer statt Lieferantenname |
 | `segment-arbeitsplatzmessung.md` | Nebenstrecke, kein eigenes Segment |
 | `strategie-modellvergleich.md` | Kapitalweg braucht ~900.000 €; enthält überholte Empfehlung |
 | `anschreiben-entwuerfe.md` | Drei Anschreiben (Hersteller, Großhändler, Partnerbetriebe), versandfertig, nicht versendet |
