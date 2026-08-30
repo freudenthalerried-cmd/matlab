@@ -254,6 +254,36 @@ html, body {
 
 .detail-button:disabled { opacity: 0.3; cursor: default; }
 
+/* Standort-Erkennung */
+.standort-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  background: #e8f0fa;
+  border: 1px solid #b9d2ee;
+  color: #004f9e;
+  border-radius: 10px;
+  padding: 8px 10px;
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.standort-aktionen {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.standort-banner .chip { text-decoration: none; }
+
+.position-knopf {
+  margin-top: 8px;
+  font-size: 12px;
+}
+
 /* Eintragstyp Hinweis / Mangel */
 .typ-schalter {
   display: inline-flex;

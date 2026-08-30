@@ -186,6 +186,24 @@
       });
       li.appendChild(pListe);
 
+      const posKnopf = document.createElement('button');
+      posKnopf.type = 'button';
+      posKnopf.className = 'chip chip-kategorie position-knopf';
+      posKnopf.textContent = standorte[bs.id]
+        ? 'Position gespeichert – neu setzen'
+        : (typeof bs.lat === 'number' ? 'Aktuelle Position speichern' : 'Aktuelle Position speichern (noch keine hinterlegt)');
+      posKnopf.addEventListener('click', function () {
+        if (!navigator.geolocation) return;
+        navigator.geolocation.getCurrentPosition(function (pos) {
+          standorte[bs.id] = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          speichereJson('bp_standorte', standorte);
+          posKnopf.textContent = 'Position gespeichert – neu setzen';
+        }, function () {
+          posKnopf.textContent = 'Standort nicht verfügbar – GPS-Freigabe prüfen';
+        }, { enableHighAccuracy: true, timeout: 8000 });
+      });
+      li.appendChild(posKnopf);
+
       baustellenListe.appendChild(li);
     });
   }
@@ -206,6 +224,102 @@
   baustellenClose.addEventListener('click', function () {
     baustellenPanel.hidden = true;
   });
+
+  // ---------- GPS: Baustelle automatisch erkennen ----------
+  // Ortet den Benutzer und schlägt die nächstgelegene Baustelle samt
+  // Drive-Ordner vor. Gespeicherte exakte Positionen (bp_standorte) haben
+  // Vorrang vor den ungefähren Ortskoordinaten aus baustellen.js.
+
+  const ortungButton = document.getElementById('ortung-button');
+  const standortBanner = document.getElementById('standort-banner');
+  const standortText = document.getElementById('standort-text');
+  const standortUebernehmen = document.getElementById('standort-uebernehmen');
+  const standortOrdner = document.getElementById('standort-ordner');
+  const standortSchliessen = document.getElementById('standort-schliessen');
+
+  let standorte = ladeJson('bp_standorte', {}); // Baustellen-ID -> {lat, lng}
+  let erkannteBaustelle = null;
+  let letztePosition = null;
+
+  function distanzKm(lat1, lng1, lat2, lng2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  function koordinatenFuer(bs) {
+    if (standorte[bs.id]) return standorte[bs.id];
+    if (typeof bs.lat === 'number') return { lat: bs.lat, lng: bs.lng };
+    return null;
+  }
+
+  function naechsteBaustelle(lat, lng) {
+    let beste = null;
+    BAUSTELLEN.forEach(function (bs) {
+      const k = koordinatenFuer(bs);
+      if (!k) return;
+      const d = distanzKm(lat, lng, k.lat, k.lng);
+      if (!beste || d < beste.distanz) beste = { baustelle: bs, distanz: d };
+    });
+    return beste && beste.distanz <= 5 ? beste : null; // max. 5 km
+  }
+
+  function zeigeStandort(treffer) {
+    if (!treffer) {
+      standortBanner.hidden = true;
+      return;
+    }
+    erkannteBaustelle = treffer.baustelle;
+    const dist = treffer.distanz < 1
+      ? Math.round(treffer.distanz * 1000) + ' m'
+      : treffer.distanz.toFixed(1).replace('.', ',') + ' km';
+    standortText.textContent = 'Baustelle erkannt: ' + treffer.baustelle.name + ' (' + dist + ')';
+    standortOrdner.href = treffer.baustelle.ordnerUrl;
+    standortBanner.hidden = false;
+  }
+
+  function ermittleStandort(leise) {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      letztePosition = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      const treffer = naechsteBaustelle(letztePosition.lat, letztePosition.lng);
+      zeigeStandort(treffer);
+      if (!treffer && !leise) {
+        standortText.textContent = 'Keine Baustelle in der Nähe (max. 5 km) gefunden.';
+        standortOrdner.removeAttribute('href');
+        standortBanner.hidden = false;
+        erkannteBaustelle = null;
+      }
+    }, function () {
+      if (!leise) {
+        standortText.textContent = 'Standort nicht verfügbar – GPS-Freigabe prüfen.';
+        standortBanner.hidden = false;
+        erkannteBaustelle = null;
+      }
+    }, { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 });
+  }
+
+  standortUebernehmen.addEventListener('click', function () {
+    if (erkannteBaustelle) {
+      ortInput.value = erkannteBaustelle.name;
+      speichereJson('bp_ort', erkannteBaustelle.name);
+    }
+    standortBanner.hidden = true;
+    input.focus();
+  });
+
+  standortSchliessen.addEventListener('click', function () {
+    standortBanner.hidden = true;
+  });
+
+  ortungButton.addEventListener('click', function () { ermittleStandort(false); });
+
+  // Beim Start leise versuchen (Browser fragt einmal nach der GPS-Freigabe)
+  ermittleStandort(true);
 
   // ---------- Eintragstyp: Hinweis / Mangel ----------
   // Beim Umstellen wird der Text im Eingabefeld in die passende Fassung umformuliert.

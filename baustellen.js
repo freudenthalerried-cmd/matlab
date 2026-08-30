@@ -13,9 +13,14 @@ const MAIL_TEXT = 'Anbei das Baustellenbesuchsprotokoll - BauKG.\n\n' +
   'Freudenthaler Bau GmbH\n' +
   'Mobil: 0664 5103676';
 
+// lat/lng: ungefähre Lage (Ortszentrum) für die GPS-Erkennung; die exakte
+// Position kann in der App je Baustelle gespeichert werden (bp_standorte).
+// Hangar 3 und WFL haben noch keine Koordinaten – vor Ort einmal 'Position
+// speichern' drücken.
 const BAUSTELLEN = [
   {
     id: 'vorchdorf',
+    lat: 47.9906, lng: 13.9236,
     name: 'Vorchdorf Messenbachstraße',
     ordnerUrl: 'https://drive.google.com/drive/folders/1-FocuAWFuEkDgVpBvV2ZtrKgVlRvJcNR',
     protokolle: [
@@ -26,6 +31,7 @@ const BAUSTELLEN = [
   },
   {
     id: 'pinsdorf',
+    lat: 47.9247, lng: 13.7695,
     name: 'Ppz Pinsdorf Zentrum',
     ordnerUrl: 'https://drive.google.com/drive/folders/1Ko0vUYLzZJnb9F0wN3dAHAd3lSYgws2j',
     protokolle: [
@@ -36,6 +42,7 @@ const BAUSTELLEN = [
   },
   {
     id: 'wels',
+    lat: 48.1487, lng: 14.0304,
     name: 'Wels Neustadt',
     ordnerUrl: 'https://drive.google.com/drive/folders/1db5nUCXjXJUazJwJq2mML16b1-Uws--A',
     protokolle: [
@@ -56,6 +63,7 @@ const BAUSTELLEN = [
   },
   {
     id: 'brauunion',
+    lat: 48.1266, lng: 15.1354,
     name: 'Brauunion Wieselburg',
     ordnerUrl: 'https://drive.google.com/drive/folders/1wGH0rdK0WSxmg5lXakqkdXueLZZs6EXu',
     protokolle: [
@@ -66,6 +74,7 @@ const BAUSTELLEN = [
   },
   {
     id: 'niederzirking',
+    lat: 48.2606, lng: 14.5231,
     name: 'Kirche Niederzirking',
     ordnerUrl: 'https://drive.google.com/drive/folders/1h7w3KiciT5_EARmEkBgLswLNtkaxjQ5N',
     protokolle: [
@@ -76,6 +85,7 @@ const BAUSTELLEN = [
   },
   {
     id: 'niederneukirchen',
+    lat: 48.1861, lng: 14.3894,
     name: 'Niederneukirchen NMS',
     ordnerUrl: 'https://drive.google.com/drive/folders/1aVe_lun_XMvRfGGwu1l7AnArfZ4J7sz0',
     protokolle: [
