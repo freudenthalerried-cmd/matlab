@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { pruefeAbsatz, pruefeInhalt, inAbsaetze, GRENZWOERTER, ohneKopfblock, kopffelder, schneideQuelltext } from '../src/inhaltspruefung.js';
+import { join } from 'node:path';
+import { pruefeAbsatz, pruefeInhalt, inAbsaetze, GRENZWOERTER, ohneKopfblock, kopffelder, schneideQuelltext, pruefeZaehlung } from '../src/inhaltspruefung.js';
 
 const absatz = (text) => ({ text, zeile: 1 });
 const verdachtVon = (text) => pruefeAbsatz(absatz(text)).join(' | ');
@@ -342,4 +343,58 @@ test('eine unpaarige Marke ist ein Fehler und kein Sonderfall', () => {
   const zu = schneideQuelltext('A<!--/quelltext-->');
   assert.match(zu.fehler, /0 öffnende, 1 schließende/);
   assert.equal(schneideQuelltext('<p>ohne Marken</p>').fehler, null);
+});
+
+
+/* ------------------------------------------------------------------ *
+ * Die Antwort zählt anders als die Liste
+ * ------------------------------------------------------------------ */
+
+const MIT_TABELLE = (satz, zeilen) => `${satz}\n\n| # | Position |\n|---|---|\n`
+  + Array.from({ length: zeilen }, (_, i) => `| ${i + 1} | Etwas |`).join('\n') + '\n';
+
+test('eine genannte Positionszahl muss zur Liste passen', () => {
+  // **Der Befund vom 30.08.:** „Sieben Positionen bilden das vollständige
+  // System" stand über einer Tabelle mit zehn Zeilen — im Kopffeld `kurz`,
+  // das zur Meta-Beschreibung wird und in `llms.txt` steht, und wörtlich
+  // noch einmal im Antwortabsatz.
+  const falsch = pruefeZaehlung(MIT_TABELLE('Sieben Positionen bilden das System.', 10));
+  assert.equal(falsch.length, 1);
+  assert.match(falsch[0].verdacht[0], /nennt 7 Positionen, die Liste hat 10/);
+  assert.deepEqual(pruefeZaehlung(MIT_TABELLE('Zehn Positionen bilden das System.', 10)), []);
+});
+
+test('Zahlwort und Ziffer zählen gleich', () => {
+  assert.equal(pruefeZaehlung(MIT_TABELLE('Es sind 7 Positionen.', 10)).length, 1);
+  assert.equal(pruefeZaehlung(MIT_TABELLE('Es sind 10 Positionen.', 10)).length, 0);
+});
+
+test('eine eingebettete Zahl wird mitgeprüft, eine Positionsnummer nicht', () => {
+  // „Vier von zehn Positionen sind die typischen Vergessenen" — geprüft wird
+  // die Zahl vor dem Wort, also zehn. Und „Positionen 7 und 8 gehören zum
+  // Bauwerk" nennt Nummern, keine Anzahl; das darf nicht anschlagen.
+  assert.deepEqual(pruefeZaehlung(MIT_TABELLE('Vier von zehn Positionen fehlen oft.', 10)), []);
+  assert.equal(pruefeZaehlung(MIT_TABELLE('Vier von sieben Positionen fehlen oft.', 10)).length, 1);
+  assert.deepEqual(pruefeZaehlung(MIT_TABELLE('Positionen 7 und 8 gehören zum Bauwerk.', 10)), []);
+});
+
+test('ohne Positionsliste wird nichts gezählt', () => {
+  // Eine Wissensseite darf „vier Positionen" sagen, ohne eine Tabelle zu
+  // führen — dann gibt es nichts zu vergleichen, und eine Meldung wäre
+  // geraten.
+  assert.deepEqual(pruefeZaehlung('Vier Positionen bilden das System.'), []);
+  assert.deepEqual(pruefeZaehlung(MIT_TABELLE('Vier Positionen.', 2)), [],
+    'zwei Zeilen sind noch keine Positionsliste');
+});
+
+test('die vier Systemseiten zählen richtig', () => {
+  // Der Bestand, nicht das Beispiel: Auf diesen Seiten ist der Fehler
+  // aufgetreten, und hier muss er wegbleiben.
+  const ordner = fileURLToPath(new URL('../inhalte/system', import.meta.url));
+  const dateien = readdirSync(ordner).filter((d) => d.endsWith('.md'));
+  assert.ok(dateien.length >= 4, `nur ${dateien.length} Systemseiten`);
+  for (const d of dateien) {
+    const befunde = pruefeZaehlung(readFileSync(join(ordner, d), 'utf8'));
+    assert.deepEqual(befunde.map((b) => b.verdacht[0]), [], `${d}: ${JSON.stringify(befunde)}`);
+  }
 });

@@ -3,20 +3,22 @@ titel: Kellerwand außen dämmen — die Liste
 art: system
 slug: kellerwand-perimeter
 frage: Was brauche ich, um eine erdberührte Kellerwand zu dämmen und zu schützen?
-kurz: Perimeterplatte, Kleber, Noppenbahn und der obere Abschluss — vier Positionen, dazu die Abdichtung, die vor allem anderen fertig sein muss. Drei Maße vom Bauwerk ergeben die Mengen, und die Reihenfolge der Schichten entscheidet, ob die Bestellung überhaupt etwas nützt.
+kurz: Sieben Positionen bilden das Bauteil, fünf davon aus dem Sortiment: Perimeterplatte, Kleber, Dosierpistole, Schutz- und Drainbahn und der obere Abschluss. Die beiden anderen sind fremde Gewerke — die Abdichtung davor, die Verfüllung danach. Drei Maße vom Bauwerk ergeben die Mengen, und die Reihenfolge der Schichten entscheidet, ob die Bestellung überhaupt etwas nützt.
 gruppe: Dämmung
 schichten: Wand (fremd) | Abdichtung (fremd) | Perimeterplatte XPS | Grundmauerschutzbahn | Verfüllung (fremd)
 skus: POS-12569, POS-12571, POS-12575, POS-12580, POS-12596, POS-29691, POS-12294, POS-21382
 verwandt: perimeterdaemmung-und-grundmauerschutz, xps-oder-eps, system/kanal-dn100, was-fehlt-haelt-die-baustelle-auf
-stand: 2026-08-27
+stand: 2026-08-30
 ---
 
 # Kellerwand außen dämmen — die Liste
 
-**Die Antwort in zwei Sätzen.** Vier Positionen bilden das Bauteil:
-Perimeterplatte, Kleber, Schutz- und Drainbahn und der obere Abschluss. Davor
-liegt die Abdichtung — sie ist nicht Teil dieser Liste, und ohne sie ist alles
-Weitere wertlos.
+**Die Antwort in zwei Sätzen.** Sieben Positionen bilden das Bauteil, fünf
+davon aus unserem Sortiment: Perimeterplatte, Kleber, Dosierpistole, Schutz-
+und Drainbahn und der obere Abschluss. Die beiden anderen sind fremde
+Gewerke — die Abdichtung davor und die Verfüllung danach; sie stehen in der
+Liste, damit sie in der Reihenfolge nicht untergehen, und ohne die Abdichtung
+ist alles Weitere wertlos.
 
 ## Die Reihenfolge, die vor der Bestellung steht
 

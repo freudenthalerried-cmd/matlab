@@ -3,21 +3,21 @@ titel: Fassade dämmen — die Liste für 100 m²
 art: system
 slug: fassade-100-qm
 frage: Was muss ich bestellen, um 100 Quadratmeter Fassade zu dämmen?
-kurz: Sieben Positionen bilden das vollständige System: Klebemörtel, Dämmplatten, Dübel, Armierungsmörtel, Glasgewebe, Kantenschutz und Putzgrund mit Oberputz. Die Mengen ergeben sich aus den Verbrauchswerten der gewählten Produkte — der Rechenweg steht dabei, das Ergebnis rechnen Sie mit Ihren Werten.
+kurz: Zehn Positionen bilden das vollständige System — vier davon werden regelmäßig vergessen: Rondellen, die Überlappung des Glasgewebes, Kantenschutz und Gewebeanschlussleisten. Die Mengen ergeben sich aus den Verbrauchswerten der gewählten Produkte; der Rechenweg steht dabei, das Ergebnis rechnen Sie mit Ihren Werten.
 gruppe: WDVS
 schichten: Untergrund (fremd) | Klebemörtel | Dämmplatte (fremd) | Armierungsmörtel mit Glasgewebe | Putzgrund | Oberputz
 skus: POS-11283, POS-29461, POS-50509, POS-11082, POS-29610, POS-13728, POS-53402, POS-52124, POS-19333
 verwandt: wdvs-systemaufbau, mengen-fuer-100-qm-wdvs, untergrund-pruefen, xps-oder-eps, system/kellerwand-perimeter
-stand: 2026-08-27
+stand: 2026-08-30
 ---
 
 # Fassade dämmen — die Liste für 100 m²
 
-**Die Antwort in zwei Sätzen.** Sieben Positionen bilden das vollständige
-System: Klebemörtel, Dämmplatten, Dübel, Armierungsmörtel, Glasgewebe,
-Kantenschutz und Putzgrund mit Oberputz. Die Mengen ergeben sich aus den
-Verbrauchswerten der gewählten Produkte — der Rechenweg steht dabei, das
-Ergebnis rechnen Sie mit Ihren Werten.
+**Die Antwort in zwei Sätzen.** Zehn Positionen bilden das vollständige
+System — vier davon werden regelmäßig vergessen: Rondellen, die Überlappung
+des Glasgewebes, Kantenschutz und Gewebeanschlussleisten. Die Mengen ergeben
+sich aus den Verbrauchswerten der gewählten Produkte; der Rechenweg steht
+dabei, das Ergebnis rechnen Sie mit Ihren Werten.
 
 ## Die vollständige Positionsliste
 

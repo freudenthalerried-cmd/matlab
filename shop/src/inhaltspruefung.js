@@ -223,6 +223,55 @@ export function kopffelder(text) {
   return felder;
 }
 
+/**
+ * Zahlwörter, wie sie in diesen Texten vorkommen.
+ */
+const ZAHLWORT = new Map([
+  ['zwei', 2], ['drei', 3], ['vier', 4], ['fünf', 5], ['sechs', 6], ['sieben', 7],
+  ['acht', 8], ['neun', 9], ['zehn', 10], ['elf', 11], ['zwölf', 12],
+]);
+
+const POSITIONSZAHL = /(?<![\p{L}\d])(\d{1,2}|zwei|drei|vier|fünf|sechs|sieben|acht|neun|zehn|elf|zwölf)\s+Positionen(?![\p{L}])/giu;
+const TABELLENZEILE = /^\|\s*(\d{1,2})\s*\|/gm;
+
+/**
+ * Zählt der Text so viele Positionen, wie die Liste hat?
+ *
+ * **Gemessen am 30.08.** Die Systemseite „Fassade dämmen" sagte im Kopfblock
+ * und im Antwortabsatz **„Sieben Positionen bilden das vollständige
+ * System"** — die Tabelle darunter hatte **zehn** Zeilen, und drei Absätze
+ * weiter stand „Vier von zehn Positionen sind die, die typischerweise
+ * fehlen". Bei der Kellerwand hieß es „vier Positionen", die Tabelle hatte
+ * sieben, und weiter unten stand „Zwei der sieben Positionen".
+ *
+ * Das Wiegende daran ist nicht die Zahl, sondern **welche** Positionen
+ * fehlten: Rondellen, Kantenschutz, Gewebeanschlussleisten, Dosierpistole —
+ * ausgerechnet die, die in der Tabelle mit „wird oft vergessen: **ja**"
+ * stehen. Eine Seite, die verspricht, die vergessenen Positionen zu nennen,
+ * vergaß sie in dem einen Satz, den ein Sprachmodell zitiert: `kurz` wird zur
+ * Meta-Beschreibung, steht in `llms.txt` und als Antwortabsatz auf der Seite.
+ *
+ * Geprüft wird deshalb die Zusammenzählung selbst — nicht eine Formulierung.
+ */
+export function pruefeZaehlung(text) {
+  const zeilen = [...text.matchAll(TABELLENZEILE)].map((m) => Number(m[1]));
+  if (zeilen.length < 3) return [];
+  const anzahl = zeilen.length;
+  const verdacht = [];
+  for (const m of text.matchAll(POSITIONSZAHL)) {
+    const roh = m[1].toLowerCase();
+    const genannt = ZAHLWORT.get(roh) ?? Number(roh);
+    if (!Number.isFinite(genannt) || genannt === anzahl) continue;
+    const bis = text.slice(0, m.index).split(/\n/).length;
+    verdacht.push({
+      zeile: bis,
+      auszug: text.slice(m.index, m.index + 60).replace(/\s+/g, ' '),
+      verdacht: [`Der Text nennt ${genannt} Positionen, die Liste hat ${anzahl} Zeilen`],
+    });
+  }
+  return verdacht;
+}
+
 /** Prüft einen ganzen Text und liefert die Verdachtsfälle je Absatz. */
 export function pruefeInhalt(text, name = '') {
   const absaetze = inAbsaetze(text);
@@ -231,7 +280,7 @@ export function pruefeInhalt(text, name = '') {
     auszug: `${f.feld}: ${f.text.slice(0, 50).replace(/\s+/g, ' ')}`,
     verdacht: pruefeAbsatz({ text: f.text }),
   }));
-  const treffer = [...ausKopf, ...absaetze
+  const treffer = [...ausKopf, ...pruefeZaehlung(text), ...absaetze
     .map((a) => ({ zeile: a.zeile, auszug: a.text.slice(0, 60).replace(/\s+/g, ' '), verdacht: pruefeAbsatz(a) }))]
     .filter((a) => a.verdacht.length > 0)
     .sort((a, b) => a.zeile - b.zeile);
