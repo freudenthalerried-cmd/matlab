@@ -3,31 +3,127 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chat</title>
+  <title>Baustelle Protokoll</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <main class="chat">
+    <header class="app-header">
+      <div class="app-title">Sicherheit am Bau – Protokoll</div>
+      <div class="header-row">
+        <input id="ort-input" class="ort-input" type="text" placeholder="Ort / Baustelle" aria-label="Ort">
+      </div>
+      <nav class="menu-row" aria-label="Menü">
+        <button id="baustellen-button" class="menu-button menu-blau" type="button" title="Baustellen, Verteiler und letzte Protokolle">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V9l7-5 7 5v12"/><path d="M9 21v-6h6v6"/></svg>
+          <span>Baustellen</span>
+        </button>
+        <button id="allgemein-button" class="menu-button menu-gruen" type="button" title="Allgemeine Punkte einfügen">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l2 2 3.5-3.5"/><path d="M4 13l2 2 3.5-3.5"/><path d="M13 7h8M13 14h8M13 20h8"/><path d="M4 20l2 2 3.5-3.5" transform="translate(0,-1.5)"/></svg>
+          <span>Allg. Punkte</span>
+        </button>
+        <button id="bausteine-button" class="menu-button menu-orange" type="button" title="Textbausteine">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="8" height="7" rx="1"/><rect x="13" y="4" width="8" height="7" rx="1"/><rect x="8" y="13" width="8" height="7" rx="1"/></svg>
+          <span>Bausteine</span>
+        </button>
+        <button id="print-button" class="menu-button menu-grau" type="button" title="Bericht drucken">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8V3h10v5"/><rect x="4" y="8" width="16" height="9" rx="2"/><path d="M7 14h10v7H7z"/></svg>
+          <span>Drucken</span>
+        </button>
+        <button id="mail-button" class="menu-button menu-violett" type="button" title="Protokoll per E-Mail versenden">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+          <span>Mail</span>
+        </button>
+      </nav>
+    </header>
+
     <ul id="messages" class="messages" aria-live="polite"></ul>
 
+    <div id="foto-kategorien" class="foto-kategorien" hidden>
+      <div class="panel-hint">Was ist am Foto zu sehen?</div>
+      <div id="foto-kategorien-chips" class="chips"></div>
+    </div>
+
+    <div id="allgemein-panel" class="allgemein-panel" hidden>
+      <div class="panel-hint">Allgemeine Punkte für den Bericht auswählen:</div>
+      <div id="allgemein-liste" class="allgemein-liste"></div>
+      <div class="allgemein-aktionen">
+        <button id="allgemein-einfuegen" class="chip" type="button">Ausgewählte einfügen</button>
+        <button id="allgemein-abbrechen" class="chip chip-kategorie" type="button">Abbrechen</button>
+      </div>
+    </div>
+
+    <div id="ki-vorschlaege" class="ki-vorschlaege" hidden>
+      <div class="panel-hint ki-kopf">
+        <span>KI-Vorschlag (nur Sicherheit) – tippen zum Einfügen:</span>
+        <span class="detail-regler">
+          <button id="detail-minus" class="detail-button" type="button" title="Kürzere Antwort">&minus;</button>
+          <span id="detail-label">Normal</span>
+          <button id="detail-plus" class="detail-button" type="button" title="Längere Antwort mit Gesetzestext">+</button>
+        </span>
+      </div>
+      <div id="ki-chips" class="chips"></div>
+    </div>
+
+    <div class="typ-schalter" role="group" aria-label="Eintragstyp">
+      <button id="typ-hinweis" class="typ-knopf typ-aktiv" type="button">Hinweis</button>
+      <button id="typ-mangel" class="typ-knopf" type="button">Mangel</button>
+    </div>
+
+    <div id="bearbeiten-hinweis" class="bearbeiten-hinweis" hidden>
+      Eintrag wird bearbeitet – Senden speichert die Änderung.
+      <button id="bearbeiten-abbrechen" type="button">Abbrechen</button>
+    </div>
+
+    <div id="foto-preview" class="foto-preview" hidden>
+      <img id="foto-preview-img" alt="Foto-Vorschau">
+      <button id="foto-remove" class="foto-remove" type="button" aria-label="Foto entfernen">&times;</button>
+    </div>
+
     <form id="chat-form" class="chat-form" autocomplete="off">
-      <input
+      <label class="foto-button" for="foto-input" title="Foto hinzufügen">&#128247;</label>
+      <input id="foto-input" type="file" accept="image/*" capture="environment" hidden>
+      <textarea
         id="chat-input"
         class="chat-input"
-        type="text"
-        placeholder="Nachricht eingeben…"
-        aria-label="Nachricht"
-      >
+        rows="1"
+        placeholder="Eintrag eingeben… (Kürzel: helm, gas, wehren, wege …)"
+        aria-label="Eintrag"
+      ></textarea>
       <button
         id="send-button"
         class="send-button"
         type="submit"
-        aria-label="Senden"
+        aria-label="Eintrag speichern"
         disabled
       >&#10148;</button>
     </form>
+
+    <div id="baustellen-panel" class="bausteine-panel" hidden>
+      <div class="panel-header">
+        <span>Baustellen</span>
+        <button id="baustellen-close" class="tool-button" type="button" aria-label="Schließen">&times;</button>
+      </div>
+      <div class="baustellen-inhalt">
+        <div class="verteiler-standard">
+          <div class="panel-hint">Standard-Verteiler (gilt für alle Baustellen):</div>
+          <input id="verteiler-standard-input" class="verteiler-input" type="text" aria-label="Standard-Verteiler">
+        </div>
+        <ul id="baustellen-liste" class="baustellen-liste"></ul>
+      </div>
+    </div>
+
+    <div id="bausteine-panel" class="bausteine-panel" hidden>
+      <div class="panel-header">
+        <span>Textbausteine (nach Häufigkeit)</span>
+        <button id="bausteine-close" class="tool-button" type="button" aria-label="Schließen">&times;</button>
+      </div>
+      <ul id="bausteine-liste" class="bausteine-liste"></ul>
+    </div>
   </main>
 
+  <script src="textbausteine.js"></script>
+  <script src="baustellen.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
