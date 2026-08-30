@@ -483,6 +483,70 @@
     zeigeVorschlaege(vorschlaegeFuer(input.value));
   });
 
+  // ---------- Intelligente Satz-Markierung ----------
+  // Klick auf ein Wort markiert den ganzen Satz; ein zweiter Klick in den
+  // markierten Satz setzt den Cursor normal. Abkürzungen wie "z. B.", "Abs.",
+  // "Fa." oder "§ 4 Abs. 7" beenden keinen Satz.
+
+  const ABKUERZUNGEN = ['z.b', 'b', 'bzw', 'usw', 'ca', 'inkl', 'gem', 'abs', 'fa', 'ing', 'bmst', 'dipl', 'nr', 'max', 'min', 'evtl', 'ggf', 'lt', 'og', 'ug', 'eg'];
+
+  function istSatzEnde(text, i) {
+    const c = text[i];
+    if (c === '\n') return true;
+    if (c !== '.' && c !== '!' && c !== '?') return false;
+    // Wort vor dem Punkt bestimmen
+    let w = i - 1;
+    while (w >= 0 && /[A-Za-zÄÖÜäöüß0-9§]/.test(text[w])) w--;
+    const wort = text.slice(w + 1, i).toLowerCase();
+    if (ABKUERZUNGEN.indexOf(wort) !== -1) return false;
+    if (/^\d+$/.test(wort) && /[§0-9]/.test(text.slice(Math.max(0, w - 3), w + 1))) return false; // "§ 4." / "4.7"
+    // Nach dem Punkt: Satz endet nur vor Leerraum/Zeilenende
+    const nach = text[i + 1];
+    return nach === undefined || /\s/.test(nach);
+  }
+
+  function satzGrenzen(text, pos) {
+    let start = 0;
+    for (let i = Math.min(pos, text.length) - 1; i >= 0; i--) {
+      if (istSatzEnde(text, i)) { start = i + 1; break; }
+    }
+    let ende = text.length;
+    for (let i = Math.min(pos, text.length); i < text.length; i++) {
+      if (istSatzEnde(text, i)) { ende = text[i] === '\n' ? i : i + 1; break; }
+    }
+    while (start < ende && /\s/.test(text[start])) start++;
+    return { start: start, ende: ende };
+  }
+
+  let vorherigeMarkierung = null; // {start, ende} der zuletzt markierten Satzauswahl
+
+  input.addEventListener('mousedown', function () {
+    const aktiv = input.selectionStart !== input.selectionEnd &&
+      vorherigeMarkierung &&
+      input.selectionStart === vorherigeMarkierung.start &&
+      input.selectionEnd === vorherigeMarkierung.ende;
+    input.dataset.satzAktiv = aktiv ? '1' : '';
+  });
+
+  input.addEventListener('click', function () {
+    const pos = input.selectionStart;
+    if (input.selectionStart !== input.selectionEnd) return; // Nutzer zieht selbst eine Auswahl
+    const text = input.value;
+    if (!text || pos > text.length) return;
+    const zeichen = text[pos] || text[pos - 1];
+    if (!zeichen || /\s/.test(zeichen)) { vorherigeMarkierung = null; return; }
+    const g = satzGrenzen(text, pos);
+    if (g.ende <= g.start) return;
+    // Zweiter Klick in den bereits markierten Satz: Cursor normal setzen
+    if (input.dataset.satzAktiv === '1' && vorherigeMarkierung &&
+        pos >= vorherigeMarkierung.start && pos <= vorherigeMarkierung.ende) {
+      vorherigeMarkierung = null;
+      return;
+    }
+    input.setSelectionRange(g.start, g.ende);
+    vorherigeMarkierung = g;
+  });
+
   input.addEventListener('keydown', function (event) {
     if (event.key === ' ') {
       const ersetzt = expandiereKuerzel(input.value, true);
