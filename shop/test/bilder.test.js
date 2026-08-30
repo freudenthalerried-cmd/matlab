@@ -268,3 +268,76 @@ test('die Bildbeschreibung verspricht nur, was gezeichnet ist', () => {
   const mit = artikelBild({ bezeichnung: 'XPS glatt SF 80 mm', gruppe: 'Dämmung', einheit: 'M2' });
   assert.match(mit, /Stärke maßstäblich/);
 });
+
+
+/* ------------------------------------------------------------------ *
+ * Was nach „mit" steht, und was die Einheit weiß
+ * ------------------------------------------------------------------ */
+
+const form = (bezeichnung, gruppe = '', einheit = 'STK') => bauform({ bezeichnung, gruppe, einheit });
+
+test('was nach „mit" steht, bestimmt die Form nicht', () => {
+  // **Gemessen am 30.08.** an vierzig Namen, wie sie bei einem
+  // Baustoffhändler vorkommen: „Capatect Eckwinkel mit Gewebe 2,5 m" wurde
+  // als Rolle gezeichnet. Das Erzeugnis ist ein Winkel; die Rolle ist das
+  // Zubehör daran.
+  //
+  // „X mit Y" ist ein X — dieselbe Regel wie beim Kompositum, nur
+  // andersherum: Dort steht der Kopf hinten, hier vorn.
+  assert.equal(form('Capatect Eckwinkel mit Gewebe 2,5 m', 'WDVS'), 'teil');
+  // Und die beiden Bestandsartikel mit „mit" behalten ihre Form:
+  assert.equal(form('Regenhaube mit Sicherungsseil 180 Absolut & SIH', 'Kamin'), 'haube');
+  assert.equal(form('Capatect Kantenschutz mit Gewebe Carbon 11,5 13,5 cm 2,5 m', 'WDVS', 'LFM'), 'leiste');
+});
+
+test('die Einheit schlägt den Namen, wo sie eindeutig ist', () => {
+  // „Drainagerohr DN 100 gelocht 50 m" mit Einheit RLL wurde als Rohr
+  // gezeichnet — fünfzig Meter Rohr kommen als Ring, nicht als Stange. Die
+  // Einheit steht im Beleg des Lieferanten, der Name ist Prosa.
+  assert.equal(form('Drainagerohr DN 100 gelocht 50 m', 'Kanal', 'RLL'), 'rolle');
+  assert.equal(form('PVC Kanalrohr NW 100 1 m', 'Kanal', 'STK'), 'rohr', 'die Stange bleibt eine Stange');
+  assert.equal(form('Irgendein Kleber 750 ml', 'Zubehör', 'DOS'), 'dose');
+  // SCK und EIM entscheiden **nicht** zuerst: Ein Sack kann auch ein Ziegel
+  // sein, der auf Paletten in Säcken kommt.
+  assert.equal(form('Hochlochziegel N+F 25', 'Mauerwerk', 'SCK'), 'stein');
+});
+
+test('eine Sockelschiene ist eine Leiste', () => {
+  assert.equal(form('Capatect Sockelschiene 2,5 m', 'WDVS'), 'leiste');
+  assert.equal(form('Anputzleiste 6 mm 2,4 m', 'WDVS'), 'leiste');
+});
+
+test('vierzig Namen eines Baustoffhändlers ergeben keine falsche Zeichnung', () => {
+  // Die Messung selbst, als Probe festgehalten. „Generisch" ist kein Fehler:
+  // Ein Formteil ohne Formwort **soll** als Teil gezeichnet werden. Falsch
+  // ist eine Zeichnung, die etwas anderes zeigt, als der Artikel ist — das
+  // verstößt gegen die eigene Regel „Was gezeigt wird, steht auch im
+  // Datensatz".
+  const proben = [
+    ['Baumit MauerMörtel M5 25 kg', 'Mörtel', 'SCK', 'sack'],
+    ['Wienerberger Porotherm 25 Plan', 'Mauerwerk', 'STK', null],
+    ['Austrotherm EPS F-Plus 12 cm', 'Dämmung', 'M2', 'platte'],
+    ['PVC Kanalrohr DN 125 2 m', 'Kanal', 'STK', 'rohr'],
+    ['PVC Kanalbogen DN 125 87 grad', 'Kanal', 'STK', 'bogen'],
+    ['PVC Abzweiger DN 125 45 grad', 'Kanal', 'STK', 'abzweig'],
+    ['Schachtring 1000 500 90 mm', 'Kanal', 'STK', 'ring'],
+    ['Drainagerohr DN 100 gelocht 50 m', 'Kanal', 'RLL', 'rolle'],
+    ['Capatect Sockelschiene 2,5 m', 'WDVS', 'STK', 'leiste'],
+    ['Capatect Eckwinkel mit Gewebe 2,5 m', 'WDVS', 'STK', null],
+    ['Tellerdübel STR U 2G 115 mm', 'WDVS', 'KRT', 'duebel'],
+    ['Soudal Fensterschaum B2 500 ml', 'Zubehör', 'DOS', 'dose'],
+    ['Malerkrepp 30 mm x 50 m', 'Zubehör', 'RLL', 'rolle'],
+    ['Schiedel Mantelstein 36 cm', 'Kamin', 'STK', 'stein'],
+    ['Schiedel Innenrohr 33 cm gedämmt', 'Kamin', 'STK', 'rohr'],
+    ['Schiedel Regenhaube 200', 'Kamin', 'STK', 'haube'],
+    ['Dosierpistole Metall', 'Zubehör', 'STK', 'werkzeug'],
+  ];
+  assert.ok(proben.length >= 15, `nur ${proben.length} Namen in der Probe`);
+  const falsch = [];
+  for (const [bezeichnung, gruppe, einheit, erwartet] of proben) {
+    const ist = form(bezeichnung, gruppe, einheit);
+    if (erwartet === null) continue; // ohne Formwort ist „teil" richtig
+    if (ist !== erwartet) falsch.push(`${bezeichnung} → ${ist} statt ${erwartet}`);
+  }
+  assert.deepEqual(falsch, []);
+});

@@ -123,18 +123,53 @@ export function bauform(artikel) {
   const g = String(artikel?.gruppe ?? '');
   const e = String(artikel?.einheit ?? '');
   const hat = (re) => re.test(b);
+
+  /**
+   * **Was nach „mit" steht, bestimmt die Form nicht.**
+   *
+   * Gemessen am 30.08. an vierzig Namen, wie sie bei einem Baustoffhändler
+   * vorkommen: „Capatect Eckwinkel **mit Gewebe** 2,5 m" wurde als **Rolle**
+   * gezeichnet. Das Erzeugnis ist ein Winkel von 2,5 m Länge; die Rolle ist
+   * das Zubehör daran.
+   *
+   * Im Deutschen steht der Kopf des Ausdrucks vorn — beim Kompositum
+   * („Mantelstein**kleber**" ist ein Kleber, deshalb prüft `kopf()` auf
+   * Wortende) und bei der Beifügung genauso, nur andersherum: „X mit Y" ist
+   * ein X. Was hinter „mit" steht, ist Beiwerk und wird für die Formsuche
+   * abgeschnitten.
+   *
+   * Auf den 46 Artikeln des Bestands ändert das nichts: „Regenhaube mit
+   * Sicherungsseil" bleibt eine Haube, „Kantenschutz mit Gewebe" bleibt eine
+   * Leiste. Es hält den Fehler von morgen ab, nicht einen von heute.
+   */
+  const kern = b.split(/\s+mit\s+/i)[0];
   /** Formwort am Wortende — „Mantelstein" ja, „Mantelsteinkleber" nein. */
-  const kopf = (quelle) => new RegExp(`(?:${quelle})(?![\\p{L}])`, 'iu').test(b);
+  const kopf = (quelle) => new RegExp(`(?:${quelle})(?![\\p{L}])`, 'iu').test(kern);
+
+  /**
+   * **Die Einheit schlägt den Namen, wo sie eindeutig ist.**
+   *
+   * „Drainagerohr DN 100 gelocht 50 m" mit Einheit `RLL` wurde als Rohr
+   * gezeichnet — fünfzig Meter Rohr kommen als Ring, nicht als Stange. Die
+   * Einheit steht im Beleg des Lieferanten; der Name ist Prosa. Wo die
+   * Einheit die Form festlegt, entscheidet sie zuerst.
+   *
+   * Nur `RLL` und `DOS`: Sie lassen keine zweite Lesart zu. `SCK`, `KG` und
+   * `EIM` stehen weiter unten in der Kette, weil ein Sack auch ein Ziegel
+   * sein kann, der auf Paletten in Säcken kommt.
+   */
+  if (e === 'RLL') return 'rolle';
+  if (e === 'DOS') return 'dose';
 
   if (kopf('abzweiger?')) return 'abzweig';
   if (kopf('bogen')) return 'bogen';
   if (kopf('schachtring|ring')) return 'ring';
   if (kopf('rohr')) return 'rohr';
   if (kopf('dübel|duebel|rondelle|schraube')) return 'duebel';
-  if (kopf('kantenschutz|anschlussleiste|leiste|profil')) return 'leiste';
-  if (kopf('gewebe|gitter|folie|band|grundmauerschutz') || e === 'RLL') return 'rolle';
+  if (kopf('kantenschutz|anschlussleiste|leiste|profil|schiene')) return 'leiste';
+  if (kopf('gewebe|gitter|folie|band|grundmauerschutz')) return 'rolle';
   if (kopf('pistole')) return 'werkzeug';
-  if (e === 'DOS' || kopf('schaum') || hat(/kleber\s+b3|750\s*ml/i)) return 'dose';
+  if (kopf('schaum') || hat(/kleber\s+b3|750\s*ml/i)) return 'dose';
   if (kopf('haube')) return 'haube';
   if (kopf('stein|ziegel') || hat(/N\+F/i)) return 'stein';
   if (e === 'KG' || e === 'SCK' || e === 'EIM' || kopf('mörtel|putz|spachtel|masse|kleber')) return 'sack';

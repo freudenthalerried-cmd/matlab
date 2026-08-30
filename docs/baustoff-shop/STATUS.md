@@ -502,10 +502,10 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > 787 vergleichbare Tests, kein Unterschied.
 > [`kommentare-im-schaufenster.md`](./kommentare-im-schaufenster.md).
 >
-> **Stand der Prüfmittel (30.08.):** 916 Tests, `pruefe-tests` 914/0, `pruefe-preise` 46/0, `pruefe-inhalte`
-> 24/357/0, `pruefe-seiten` 81 von 81 gebauten Seiten, `pruefe-widerrufe` 193 Dateien/48
+> **Stand der Prüfmittel (30.08.):** 920 Tests, `pruefe-tests` 918/0, `pruefe-preise` 46/0, `pruefe-inhalte`
+> 24/357/0, `pruefe-seiten` 81 von 81 gebauten Seiten, `pruefe-widerrufe` 194 Dateien/48
 > Fundstellen, `pruefe-quellen` 6/6, `shopprobe` 49 (davon 10 im Rahmen),
-> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 192/192,
+> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 193/193,
 > `pruefe-pruefer` 11 Prüfer ohne Leerlauf, Website 81 Seiten ohne toten
 > Verweis.
 
@@ -886,6 +886,7 @@ zusammengefasst und im Verzeichnis nicht auffindbar:
 | `das-netz-unter-den-gepflegten-dateien.md` | Der offene Punkt umgesetzt: `src/sicherung.js` legt vor jedem Überschreiben eine datierte Kopie an, `npm run sicherung` sichert alle sieben Dateien unter `preise/`. Zehn Stände je Datei; der Aufräumer fasst nur an, was er selbst angelegt hat. Der eigene Test fand dabei zwei Begriffe für „Stand dieser Datei" |
 | `die-liste-die-noch-nicht-da-ist.md` | `npm run artikelliste` liest die Artikelliste im angeforderten Format und schreibt Katalog und Konditionen getrennt. Es entscheidet nichts, was eine Entscheidung ist: Warengruppe, Preisstand und Einheit werden verlangt, nicht geraten; Wegfall wird gemeldet, nicht vollzogen |
 | `zwanzig-zeilen-statt-dreihundert.md` | Die Liste des Lieferanten wird seine Sparten tragen, nicht unsere sieben Gruppen. `data/sparten.json` ordnet sie einmal zu; unzugeordnete Sparten meldet das Werkzeug gebündelt und nach Artikelzahl geordnet, in der Form, in der sie in die Tabelle gehören |
+| `die-rolle-die-ein-rohr-war.md` | Formerkennung der Artikelzeichnungen an 40 fremden Namen gemessen: 2 falsche Zeichnungen. „X mit Y" ist ein X (der Eckwinkel war eine Rolle), und die Einheit schlägt den Namen, wo sie eindeutig ist (50 m Drainagerohr sind ein Ring). Danach 0 falsche, Bestandsverteilung unverändert |
 | `segment-arbeitsplatzmessung.md` | Nebenstrecke, kein eigenes Segment |
 | `strategie-modellvergleich.md` | Kapitalweg braucht ~900.000 €; enthält überholte Empfehlung |
 | `anschreiben-entwuerfe.md` | Drei Anschreiben (Hersteller, Großhändler, Partnerbetriebe), versandfertig, nicht versendet |
