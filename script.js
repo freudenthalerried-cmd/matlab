@@ -108,6 +108,105 @@
     return basis;
   }
 
+  // ---------- Baustellen: Verteiler + letzte 3 Protokolle ----------
+
+  const baustellenButton = document.getElementById('baustellen-button');
+  const baustellenPanel = document.getElementById('baustellen-panel');
+  const baustellenClose = document.getElementById('baustellen-close');
+  const baustellenListe = document.getElementById('baustellen-liste');
+  const verteilerStandardInput = document.getElementById('verteiler-standard-input');
+
+  let verteiler = ladeJson('bp_verteiler', {}); // Baustellen-ID -> eigener Verteiler; '_standard' -> Standard
+
+  function standardVerteiler() {
+    return verteiler._standard || VERTEILER_STANDARD.join(', ');
+  }
+
+  function renderBaustellen() {
+    verteilerStandardInput.value = standardVerteiler();
+    baustellenListe.innerHTML = '';
+    BAUSTELLEN.forEach(function (bs) {
+      const li = document.createElement('li');
+      li.className = 'baustelle';
+
+      const kopf = document.createElement('div');
+      kopf.className = 'baustelle-kopf';
+      const name = document.createElement('button');
+      name.type = 'button';
+      name.className = 'baustelle-name';
+      name.textContent = bs.name;
+      name.title = 'Als Ort übernehmen';
+      name.addEventListener('click', function () {
+        ortInput.value = bs.name;
+        speichereJson('bp_ort', bs.name);
+        baustellenPanel.hidden = true;
+        input.focus();
+      });
+      kopf.appendChild(name);
+      const ordner = document.createElement('a');
+      ordner.className = 'baustelle-ordner';
+      ordner.href = bs.ordnerUrl;
+      ordner.target = '_blank';
+      ordner.rel = 'noopener';
+      ordner.textContent = 'Ordner';
+      kopf.appendChild(ordner);
+      li.appendChild(kopf);
+
+      const vLabel = document.createElement('div');
+      vLabel.className = 'panel-hint';
+      vLabel.textContent = 'Verteiler:';
+      li.appendChild(vLabel);
+      const vInput = document.createElement('input');
+      vInput.type = 'text';
+      vInput.className = 'verteiler-input';
+      vInput.value = verteiler[bs.id] || standardVerteiler();
+      vInput.addEventListener('change', function () {
+        if (vInput.value.trim() === standardVerteiler()) {
+          delete verteiler[bs.id];
+        } else {
+          verteiler[bs.id] = vInput.value.trim();
+        }
+        speichereJson('bp_verteiler', verteiler);
+      });
+      li.appendChild(vInput);
+
+      const pLabel = document.createElement('div');
+      pLabel.className = 'panel-hint';
+      pLabel.textContent = 'Letzte Protokolle:';
+      li.appendChild(pLabel);
+      const pListe = document.createElement('div');
+      pListe.className = 'protokoll-links';
+      bs.protokolle.forEach(function (p) {
+        const a = document.createElement('a');
+        a.href = p.url;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.textContent = p.titel;
+        pListe.appendChild(a);
+      });
+      li.appendChild(pListe);
+
+      baustellenListe.appendChild(li);
+    });
+  }
+
+  verteilerStandardInput.addEventListener('change', function () {
+    verteiler._standard = verteilerStandardInput.value.trim();
+    speichereJson('bp_verteiler', verteiler);
+    renderBaustellen(); // Baustellen ohne eigenen Verteiler übernehmen den neuen Standard
+  });
+
+  baustellenButton.addEventListener('click', function () {
+    baustellenPanel.hidden = !baustellenPanel.hidden;
+    if (!baustellenPanel.hidden) {
+      bausteinePanel.hidden = true;
+      renderBaustellen();
+    }
+  });
+  baustellenClose.addEventListener('click', function () {
+    baustellenPanel.hidden = true;
+  });
+
   // ---------- Eintragstyp: Hinweis / Mangel ----------
   // Beim Umstellen wird der Text im Eingabefeld in die passende Fassung umformuliert.
 
