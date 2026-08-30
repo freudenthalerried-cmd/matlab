@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bauprotokoll – Freudenthaler Bau</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="protokoll.css">
+</head>
+<body class="protokoll-page">
+  <header class="site-header">
+    <a class="brand" href="index.html">Freudenthaler <span>Bau</span></a>
+    <nav class="site-nav">
+      <a href="index.html">Chat</a>
+      <a href="protokoll.html" class="active">Protokoll</a>
+    </nav>
+  </header>
+
+  <main class="protokoll">
+    <h1>Bauprotokoll</h1>
+    <p class="intro">Baustellenprotokolle erfassen, speichern und ausdrucken. Die Einträge bleiben lokal in diesem Browser gespeichert.</p>
+
+    <form id="protokoll-form" class="protokoll-form" autocomplete="off">
+      <div class="form-row">
+        <label for="p-datum">Datum</label>
+        <input id="p-datum" name="datum" type="date" required>
+      </div>
+
+      <div class="form-row">
+        <label for="p-baustelle">Baustelle / Projekt</label>
+        <input id="p-baustelle" name="baustelle" type="text" placeholder="z. B. EFH Müller, Ried" required>
+      </div>
+
+      <div class="form-row">
+        <label for="p-wetter">Wetter</label>
+        <select id="p-wetter" name="wetter">
+          <option value="Sonnig">Sonnig</option>
+          <option value="Bewölkt">Bewölkt</option>
+          <option value="Regen">Regen</option>
+          <option value="Schnee">Schnee</option>
+          <option value="Frost">Frost</option>
+          <option value="Wind/Sturm">Wind/Sturm</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <label for="p-anwesende">Anwesende</label>
+        <input id="p-anwesende" name="anwesende" type="text" placeholder="Namen, Firmen …">
+      </div>
+
+      <div class="form-row">
+        <label for="p-arbeiten">Ausgeführte Arbeiten</label>
+        <textarea id="p-arbeiten" name="arbeiten" rows="4" placeholder="Was wurde heute gemacht?" required></textarea>
+      </div>
+
+      <div class="form-row">
+        <label for="p-vorkommnisse">Besondere Vorkommnisse / Mängel</label>
+        <textarea id="p-vorkommnisse" name="vorkommnisse" rows="3" placeholder="Verzögerungen, Mängel, Anweisungen … (optional)"></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Protokoll speichern</button>
+        <button type="reset" class="btn btn-ghost">Zurücksetzen</button>
+      </div>
+    </form>
+
+    <section class="eintraege-section" aria-live="polite">
+      <div class="eintraege-header">
+        <h2>Gespeicherte Protokolle</h2>
+        <button id="print-all" class="btn btn-ghost" type="button" hidden>Drucken / PDF</button>
+      </div>
+      <p id="keine-eintraege" class="empty-hint">Noch keine Protokolle vorhanden.</p>
+      <ul id="eintraege" class="eintraege"></ul>
+    </section>
+  </main>
+
+  <script src="protokoll.js"></script>
+</body>
+</html>
