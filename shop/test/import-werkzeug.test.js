@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { readFileSync, copyFileSync, mkdtempSync } from 'node:fs';
+import { readFileSync, copyFileSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -60,4 +60,38 @@ test('eine fehlende Preisliste gibt eine Meldung, keinen Stacktrace', () => {
   assert.equal(lauf.status, 2, 'fehlende Datei beendet mit Exit 2 wie die übrigen Aufruffehler');
   assert.ok(lauf.stderr.includes('Preisliste nicht lesbar'), 'die Meldung benennt das Problem');
   assert.ok(!lauf.stderr.includes('at '), 'kein Stacktrace in der Meldung');
+});
+
+
+test('das Werkzeug schreibt nicht mehr — auch nicht mit einer echten Liste', () => {
+  // **Der Befund vom 30.08.:** `--schreiben` hätte den Import nach
+  // `data/artikel.json` geschrieben — dem Platzhalterbestand des abgelösten
+  // Radon-Modells, den der Shop gar nicht liest — und dabei `ekNetto` und
+  // `uvpNetto` in ein **versioniertes, öffentliches** Verzeichnis getragen.
+  //
+  // Der Musterriegel oben greift nur bei Dateinamen mit „muster", „beispiel"
+  // oder „demo". Eine echte Liste wäre durchgekommen.
+  const verzeichnis = mkdtempSync(join(tmpdir(), 'liste-'));
+  const liste = join(verzeichnis, 'artikelliste.csv');
+  writeFileSync(liste, 'sku;bezeichnung;uvp_netto;ek_netto\nZ-1;Ware;100;60\n');
+  const vorher = readFileSync(artikelDatei, 'utf8');
+  const lauf = spawnSync(process.execPath, [werkzeug, 'bahnen-de', liste, '--schreiben'], { encoding: 'utf8' });
+  assert.equal(lauf.status, 3, 'Abbruch statt Schreiben');
+  assert.match(lauf.stderr, /schreibt nicht mehr/);
+  assert.match(lauf.stderr, /katalog-aus-rechnungen/, 'der richtige Weg wird genannt');
+  assert.equal(readFileSync(artikelDatei, 'utf8'), vorher, 'die Datei bleibt unangetastet');
+});
+
+test('der Probelauf bleibt und rechnet die Liste durch', () => {
+  // Was am Tag der Lieferantenliste zuerst gebraucht wird: eine Liste
+  // einlesen und die Befunde lesen. Das bleibt, gesperrt ist nur das
+  // Schreiben.
+  const verzeichnis = mkdtempSync(join(tmpdir(), 'liste-'));
+  const liste = join(verzeichnis, 'artikelliste.csv');
+  writeFileSync(liste, 'sku;bezeichnung;uvp_netto;ek_netto\nZ-1;Ware;100;60\nZ-2;Ware zwei;20;18\n');
+  const lauf = spawnSync(process.execPath, [werkzeug, 'bahnen-de', liste], { encoding: 'utf8' });
+  assert.equal(lauf.status, 0);
+  assert.match(lauf.stdout, /Gelesen: 2 Artikel/);
+  assert.match(lauf.stdout, /Gate 22/, 'der gedeckelte Artikel wird gemeldet');
+  assert.match(lauf.stdout, /Probelauf/);
 });

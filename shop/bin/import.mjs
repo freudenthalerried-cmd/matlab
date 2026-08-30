@@ -9,7 +9,7 @@
  * Fehlerquelle mit Ansage.
  */
 
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { importierePreisliste, vergleiche } from '../src/import.js';
 
@@ -102,13 +102,37 @@ if (/muster|beispiel|demo/i.test(resolve(datei))) {
   process.exit(3);
 }
 
-const fremd = artikelDaten.artikel.filter((a) => a.lieferantId !== lieferantId);
-artikelDaten.artikel = [...fremd, ...artikel];
-const allePlatzhalter = artikelDaten.artikel.every((a) => a.ekQuelle !== 'bestaetigt');
-artikelDaten._datenstand = allePlatzhalter
-  ? 'PLATZHALTER — keine Preise sind von einem Lieferanten bestätigt.'
-  : 'GEMISCHT — einzelne Artikel tragen bestätigte Einkaufspreise, andere nicht. Siehe ekQuelle je Artikel.';
+/**
+ * **Das Schreiben ist seit dem 30.08. gesperrt.** Drei Gründe, und der
+ * dritte allein genügt:
+ *
+ * 1. **Ziel ist eine tote Datei.** `data/artikel.json` trägt neun
+ *    Platzhalterartikel des abgelösten Radon-Modells — Drainagerohr,
+ *    Warengruppe „Drainage", die dieser Shop ausdrücklich nicht führt. Der
+ *    Shop liest sie nicht; er liest `data/katalog-baustoff.json`. Ein
+ *    Import hierher hätte ordentlich berichtet und nichts bewirkt.
+ * 2. **Falsche Marge in der Warnschwelle.** Der Aufruf ließ die Zielmarge
+ *    offen, und der Vorgabewert war der des alten Modells (35 % statt 25 %).
+ *    Der Verkaufspreis wird nicht gespeichert, also waren die Warnungen
+ *    falsch, nicht die Preise. Behoben.
+ * 3. **Einkaufspreise in eine öffentliche Datei.** Der erzeugte Datensatz
+ *    trägt `ekNetto` und `uvpNetto`. `data/` ist versioniert und öffentlich;
+ *    die Konditionen gehören nach `preise/`, das `.gitignore` deckt. Genau
+ *    dafür wurde `bin/katalog-aus-rechnungen.mjs` am 22.08. gebaut.
+ *
+ * Der **Probelauf bleibt** — eine Liste durchrechnen und die Befunde lesen
+ * ist genau das, was am Tag der Lieferantenliste zuerst gebraucht wird.
+ */
+if (schreiben) {
+  console.error('\nAbbruch: Dieses Werkzeug schreibt nicht mehr.');
+  console.error('  · Ziel wäre data/artikel.json — der Platzhalterbestand des abgelösten Modells.');
+  console.error('  · Der Shop liest data/katalog-baustoff.json.');
+  console.error('  · Der Datensatz trüge Einkaufspreise in ein öffentliches Verzeichnis.');
+  console.error('\nDer Weg in den Katalog führt über bin/katalog-aus-rechnungen.mjs (npm run katalog):');
+  console.error('  data/katalog-baustoff.json  öffentlich, ohne Preise');
+  console.error('  preise/baustoff-preise.json lokal, gitignoriert');
+  console.error('\nDieser Probelauf hat die Liste geprüft — die Befunde oben gelten.');
+  process.exit(3);
+}
 
-writeFileSync(artikelDatei, JSON.stringify(artikelDaten, null, 2) + '\n');
-console.log(`\nGeschrieben: data/artikel.json (${artikelDaten.artikel.length} Artikel insgesamt)`);
-console.log('Danach: npm run build');
+

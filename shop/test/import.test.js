@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { zahl, jaNein, leseCsv, importierePreisliste, vergleiche } from '../src/import.js';
+import { ZIELMARGE } from '../src/baustoffkatalog.js';
 
 const lieferant = { id: 'bahnen-de', name: 'Test', haendlerrabattAufUvp: 0.42 };
 
@@ -88,12 +89,29 @@ test('Einkaufspreis über UVP ist ein Fehler, keine Warnung', () => {
   assert.ok(fehler.some((f) => /nicht kleiner als UVP/.test(f)));
 });
 
-test('Gate 1: zu dünne Marge erzeugt eine Warnung, blockiert aber nicht', () => {
-  // EK 70 bei UVP 100 lässt höchstens 30 % Marge zu.
-  const csv = 'sku;bezeichnung;uvp_netto;ek_netto\nA-1;Bahn;100;70';
+test('Gate 22: ein deckelnder Listenpreis erzeugt eine Warnung, blockiert aber nicht', () => {
+  // **Neu gefasst am 30.08.** Hier stand „Gate 1: zu dünne Marge" und
+  // erwartete eine Warnung gegen die Untergrenze von 32 % — die Regel des
+  // abgelösten Modells. Mit der heutigen Zielmarge von 25 % hätte sie bei
+  // **jedem** Artikel jeder Liste angeschlagen.
+  //
+  // Gemeldet wird jetzt der Fall, den es wirklich gibt: EK 70 bei UVP 90
+  // ergäbe 93,33 € Verkaufspreis, der Listendeckel lässt nur 90 € zu.
+  const csv = 'sku;bezeichnung;uvp_netto;ek_netto\nA-1;Bahn;90;70';
   const { artikel, warnungen } = importierePreisliste(csv, lieferant);
   assert.equal(artikel.length, 1);
-  assert.ok(warnungen.some((w) => /Gate 1/.test(w)));
+  assert.ok(warnungen.some((w) => /Gate 22/.test(w)), warnungen.join(' | '));
+});
+
+test('ein Artikel, der die Zielmarge erreicht, wird nicht gemeldet', () => {
+  // Die Gegenrichtung — und der eigentliche Befund vom 30.08.: Ein Werkzeug,
+  // das jede Zeile meldet, meldet nichts. Der Rundungsrest eines auf Cent
+  // gerundeten Preises ist kein Befund; verglichen wird deshalb der Preis
+  // gegen den ungedeckelten Preis, nicht die Marge gegen die Zielmarge.
+  const csv = 'sku;bezeichnung;uvp_netto;ek_netto\nA-1;Bahn;200;70\nA-2;Platte;20;10';
+  const { artikel, warnungen } = importierePreisliste(csv, lieferant);
+  assert.equal(artikel.length, 2);
+  assert.deepEqual(warnungen.filter((w) => /Gate 22/.test(w)), []);
 });
 
 test('Vergleich meldet Neuzugänge, Wegfall und Preisänderungen', () => {
@@ -142,4 +160,40 @@ test('Ein mehrdeutiger Preis lässt die Zeile am Import scheitern, nicht schrump
   assert.equal(e.artikel.length, 0);
   assert.equal(e.fehler.length, 1);
   assert.match(e.fehler[0], /Zahl nicht lesbar/);
+});
+
+
+test('die Warnschwelle folgt der geltenden Zielmarge', () => {
+  // **Die Lücke, die am 30.08. auffiel:** Der Vorgabewert der Zielmarge war
+  // 0,35 — die Zahl des abgelösten Modells —, und **kein** Testfall hätte es
+  // gemerkt. Der alte Testfall verlangte sogar eine Warnung, die es nur mit
+  // der alten Zahl gibt.
+  //
+  // EK 70 bei UVP 100: Mit 25 % Zielmarge sind 93,33 € nötig, der Deckel
+  // liegt bei 100 — kein Befund. Mit den alten 35 % wären es 107,69 €, und
+  // der Deckel griffe. Dieselbe Zeile, zwei Urteile.
+  assert.equal(ZIELMARGE, 0.25, 'die Probe hängt an dieser Entscheidung');
+  const csv = 'sku;bezeichnung;uvp_netto;ek_netto\nA-1;Bahn;100;70';
+  const jetzt = importierePreisliste(csv, lieferant);
+  assert.deepEqual(jetzt.warnungen.filter((w) => /Gate 22/.test(w)), [],
+    'mit der geltenden Zielmarge deckelt der Listenpreis hier nicht');
+  const alt = importierePreisliste(csv, lieferant, 0.35);
+  assert.equal(alt.warnungen.filter((w) => /Gate 22/.test(w)).length, 1,
+    'mit der alten Zielmarge deckelte er');
+});
+
+test('der Datensatz trägt keinen Verkaufspreis — und das ist der Grund für die Sperre', () => {
+  // Nachgemessen, weil ich es zuerst falsch angenommen hatte: Der
+  // Verkaufspreis wird für die Warnung gerechnet und **nicht gespeichert**.
+  // Die falsche Zielmarge hätte also falsche Warnungen erzeugt, keine
+  // falschen Preise.
+  //
+  // Was der Datensatz trägt, ist `ekNetto` und `uvpNetto` — die Konditionen.
+  // Deshalb schreibt `bin/import.mjs` seit dem 30.08. nicht mehr: `data/` ist
+  // versioniert und öffentlich.
+  const csv = 'sku;bezeichnung;uvp_netto;ek_netto\nA-1;Bahn;500;75';
+  const { artikel } = importierePreisliste(csv, lieferant);
+  assert.equal(artikel[0].vkNetto, undefined, 'ein Verkaufspreis wird nicht mitgeschrieben');
+  assert.equal(artikel[0].ekNetto, 75, 'der Einkaufspreis dagegen schon');
+  assert.equal(artikel[0].uvpNetto, 500);
 });

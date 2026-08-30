@@ -12,7 +12,8 @@
  * Jahresabrechnung auf.
  */
 
-import { MARGENUNTERGRENZE, cent, einkaufspreis, verkaufspreis, rohmarge } from './preis.js';
+import { cent, einkaufspreis, verkaufspreis, rohmarge } from './preis.js';
+import { ZIELMARGE } from './baustoffkatalog.js';
 
 const PFLICHTSPALTEN = ['sku', 'bezeichnung'];
 
@@ -72,7 +73,19 @@ export function leseCsv(text) {
  * @param {object} lieferant  Lieferantensatz aus lieferanten.json
  * @returns {{artikel: Array, fehler: Array, warnungen: Array}}
  */
-export function importierePreisliste(csvText, lieferant, zielmarge = 0.35) {
+/**
+ * **Berichtigt am 30.08.** Der Vorgabewert war `0.35` — die Zielmarge des
+ * abgelösten Radon-Modells. Seit dem 22.08. gilt `ZIELMARGE = 0.25`.
+ *
+ * Der Verkaufspreis wird hier nur für die Warnung gerechnet und **nicht**
+ * gespeichert; die falsche Zahl hätte also falsche Warnungen erzeugt, keine
+ * falschen Preise. Das ist der Unterschied zwischen einem teuren und einem
+ * lästigen Fehler — und keiner von beiden gehört stehen gelassen.
+ *
+ * Eine Zahl in einem Vorgabewert ist der stillste Ort, an dem eine abgelöste
+ * Entscheidung weiterleben kann.
+ */
+export function importierePreisliste(csvText, lieferant, zielmarge = ZIELMARGE) {
   const { kopf, zeilen } = leseCsv(csvText);
   const fehler = [];
   const warnungen = [];
@@ -128,9 +141,33 @@ export function importierePreisliste(csvText, lieferant, zielmarge = 0.35) {
 
     const vkNetto = verkaufspreis(ekNetto, zielmarge, uvpNetto);
     const marge = rohmarge(ekNetto, vkNetto);
-    if (marge < MARGENUNTERGRENZE - 1e-9) {
+    /**
+     * **Berichtigt am 30.08.** Hier stand die Untergrenze von 32 % aus
+     * `MARGENUNTERGRENZE` — die Regel des abgelösten Modells, seit dem
+     * 22.08. durch Gate 20 ersetzt (positiver Deckungsbeitrag je Bestellung,
+     * in Euro geprüft). Mit der heutigen Zielmarge von 25 % hätte **jeder
+     * Artikel jeder Liste** diese Warnung ausgelöst.
+     *
+     * Ein Werkzeug, das alles meldet, meldet nichts: Am Tag der
+     * Lieferantenliste wäre die Warnung überblättert worden — samt der
+     * Zeilen, bei denen sie stimmt.
+     *
+     * Gemeldet wird jetzt der Fall, den es wirklich gibt: Der Listenpreis
+     * deckelt den Verkaufspreis, die Zielmarge wird nicht erreicht
+     * (Gate 22). `MARGENUNTERGRENZE` bleibt, wo sie hingehört — in der
+     * Bewertung von Lieferantenkonditionen (`auswertung.js`).
+     *
+     * Verglichen wird der **Preis**, nicht die Marge. Der erste Wurf prüfte
+     * `marge < zielmarge` mit einem Epsilon von 1e-9 und meldete deshalb
+     * auch ungedeckelte Artikel: Der auf Cent gerundete Verkaufspreis
+     * erreicht die Zielmarge um Bruchteile eines Prozentpunkts nicht. Ein
+     * Rundungsrest ist kein Befund.
+     */
+    const ungedeckelt = cent(ekNetto / (1 - zielmarge));
+    if (vkNetto < ungedeckelt - 0.005) {
       warnungen.push(
-        `${ort}: ${sku} erreicht nur ${(marge * 100).toFixed(1)} % Marge — unter der Untergrenze von 32 % (Gate 1)`,
+        `${ort}: ${sku} erreicht nur ${(marge * 100).toFixed(1)} % statt ${(zielmarge * 100).toFixed(0)} % Marge`
+        + ' — der Listenpreis deckelt den Verkaufspreis (Gate 22)',
       );
     }
 
