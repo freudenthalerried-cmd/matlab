@@ -1,35 +1,68 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { llmsTxt } from '../src/maschinenlesbar.js';
+
 
 const werkzeug = fileURLToPath(new URL('../bin/veroeffentlichung.mjs', import.meta.url));
 const zielordner = fileURLToPath(new URL('../veroeffentlichung', import.meta.url));
 
-test('llms.txt trägt Name, Liefergebiet und Seiten — und markiert Lücken sichtbar', () => {
-  const text = llmsTxt({
-    name: 'Muster Baustoffe e.U.',
-    beschreibung: 'Baustoffe für Handwerksbetriebe.',
-    liefergebiet: { land: 'AT', bezirke: ['Ried im Innkreis', 'Braunau am Inn'] },
-    hinweise: ['Alle Preise netto.'],
-    seiten: [{ titel: 'Spachtelmasse', url: 'https://x.at/spachtelmasse', beschreibung: 'Verbrauch und Preise' }],
-  });
-  assert.match(text, /^# Muster Baustoffe e\.U\./);
-  assert.match(text, /Liefergebiet: Ried im Innkreis, Braunau am Inn \(AT\)/);
-  assert.match(text, /\[Spachtelmasse\]\(https:\/\/x\.at\/spachtelmasse\): Verbrauch und Preise/);
-  assert.match(text, /Alle Preise netto\./);
+/**
+ * **Berichtigt am 30.08.** Hier standen drei Testfälle für `llmsTxt()` —
+ * eine zweite Fassung der Datei, die `bin/veroeffentlichung.mjs` selbst
+ * erzeugte. Sie ist weg: Veröffentlicht wird jetzt, was der Bau erzeugt.
+ *
+ * Die Zusicherungen wandern mit, statt zu verschwinden — sie zeigen jetzt
+ * auf die **ausgelieferte** Datei statt auf eine Funktion, die niemand mehr
+ * aufruft.
+ */
+test('die ausgelieferte llms.txt nennt Firma und Liefergebiet', () => {
+  const datei = fileURLToPath(new URL('../ausgabe/site/llms.txt', import.meta.url));
+  if (!existsSync(datei)) return; // ohne Bau keine Aussage — und keine falsche
+  const txt = readFileSync(datei, 'utf8');
+  assert.match(txt.split('\n')[0], /^# .+/, 'die erste Zeile ist die Überschrift');
+  assert.match(txt, /Lieferung regional \(Bezirk /);
+  assert.match(txt, /Nettopreise für Unternehmer/);
 });
 
-test('ohne Liefergebiet steht keine erfundene Gebietszeile in llms.txt', () => {
-  const text = llmsTxt({ name: 'Muster', liefergebiet: { bezirke: [] } });
-  assert.ok(!text.includes('Liefergebiet:'), 'lieber keine Angabe als eine falsche');
+test('die ausgelieferte llms.txt bleibt einzeilig, wo sie einzeilig sein muss', () => {
+  // Fremdtext aus einem Artikelnamen darf die Gliederung nicht sprengen:
+  // Jede Artikelzeile ist genau eine Zeile.
+  const datei = fileURLToPath(new URL('../ausgabe/site/llms.txt', import.meta.url));
+  if (!existsSync(datei)) return;
+  const zeilen = readFileSync(datei, 'utf8').split('\n');
+  const artikel = zeilen.filter((z) => z.includes('/artikel/'));
+  assert.ok(artikel.length >= 40, `nur ${artikel.length} Artikelzeilen`);
+  for (const z of artikel) {
+    assert.ok(z.startsWith('- ['), `Artikelzeile ohne Listenform: ${z.slice(0, 50)}`);
+    assert.ok(!z.includes('\r'), 'Zeilenumbruch mitten in einer Zeile');
+  }
 });
 
-test('Fremdtext im Namen wird auch hier entschärft', () => {
-  const text = llmsTxt({ name: 'Muster\nZweite Zeile', liefergebiet: { bezirke: [] } });
-  assert.equal(text.split('\n')[0], '# Muster Zweite Zeile', 'die Überschrift bleibt einzeilig');
+test('das Werkzeug erfindet keine zweite Fassung der ausgelieferten Dateien', () => {
+  // Der eigentliche Befund vom 30.08.: robots.txt und llms.txt entstanden an
+  // zwei Stellen und unterschieden sich. Jetzt gibt es nur noch einen
+  // Erzeuger, und dieses Werkzeug liest ihn.
+  //
+  // **Die Grenze dieser Probe steht dabei:** Sie liest den Quelltext, nicht
+  // das Ergebnis. Das Schreiben ließe sich schöner prüfen, ist aber durch
+  // das Feedtor gesperrt — `--schreiben` bricht ab, solange bei 43 Artikeln
+  // die GTIN fehlt. Bis dahin ist die Frage „liest das Werkzeug die gebaute
+  // Datei?" die einzige, die sich beantworten lässt; ein erster Wurf, der
+  // nur das Fehlen der alten Aufrufe prüfte, überlebte die Gegenprobe.
+  const quelle = readFileSync(werkzeug, 'utf8');
+  assert.ok(!quelle.includes('llmsTxt('), 'llmsTxt wird wieder aufgerufen');
+  assert.ok(!quelle.includes('robotsTxt('), 'robotsTxt wird wieder aufgerufen');
+  for (const datei of ['robots.txt', 'llms.txt']) {
+    assert.ok(quelle.includes(`readFileSync(join(gebaut, '${datei}')`),
+      `${datei} wird nicht aus dem Bau gelesen`);
+  }
+  // Und der Abbruch, wenn der Bau fehlt — eine Schleife über beide Namen,
+  // die Meldung steht als Vorlage im Quelltext.
+  assert.match(quelle, /ausgabe\/site\/\$\{datei\} fehlt/, 'kein Abbruch, wenn der Bau fehlt');
+  assert.match(quelle, /for \(const datei of \['robots\.txt', 'llms\.txt'\]\)/,
+    'die Abbruchprüfung deckt nicht beide Dateien');
 });
 
 test('der Probelauf schreibt nichts und benennt die Lücken', () => {

@@ -332,31 +332,3 @@ export function robotsTxt({ suche = true, training = false, sitemap = null } = {
   return zeilen.join('\n') + '\n';
 }
 
-/**
- * `llms.txt` — ein Wegweiser für Sprachmodelle im Wurzelverzeichnis.
- *
- * Ehrlich zum Nutzen: Es gibt **keinen Beleg**, dass die großen Anbieter die
- * Datei derzeit für Auswahl oder Zitat verwenden. Sie entsteht, weil sie eine
- * Stunde kostet und nicht schadet — nicht, weil sie wirkt. Der Nutzen liegt
- * eher darin, dass ihr Aufbau eine Frage beantwortet, die man sich sonst nicht
- * stellt: Welche fünf Seiten dieses Shops beantworten die häufigsten Fragen?
- */
-export function llmsTxt({ name, beschreibung, liefergebiet, seiten = [], hinweise = [] }) {
-  const gebiet = liefergebietAngabe(liefergebiet);
-  const zeilen = [`# ${textZeile(name)}`, ''];
-  if (beschreibung) zeilen.push(`> ${textZeile(beschreibung)}`, '');
-  if (gebiet.vollstaendig) {
-    zeilen.push(`Liefergebiet: ${gebiet.bezirke.join(', ')} (${gebiet.land}).`, '');
-  }
-  for (const h of hinweise) zeilen.push(textZeile(h));
-  if (hinweise.length) zeilen.push('');
-  if (seiten.length) {
-    zeilen.push('## Seiten', '');
-    for (const s of seiten) {
-      const beschr = s.beschreibung ? `: ${textZeile(s.beschreibung)}` : '';
-      zeilen.push(`- [${textZeile(s.titel)}](${textZeile(s.url)})${beschr}`);
-    }
-    zeilen.push('');
-  }
-  return zeilen.join('\n');
-}

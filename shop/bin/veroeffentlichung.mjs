@@ -14,7 +14,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { existsSync } from 'node:fs';
-import { robotsTxt, llmsTxt, katalogFeed } from '../src/maschinenlesbar.js';
+import { katalogFeed } from '../src/maschinenlesbar.js';
 import { ladeKatalog } from '../src/warenkorb.js';
 import { ladeBaustoffkatalog, ZIELMARGE } from '../src/baustoffkatalog.js';
 import { LIEFERGEBIET } from '../src/liefergebiet.js';
@@ -92,14 +92,31 @@ if (gesetzt.length && gesetzt.join('|') !== bezirke.join('|')) {
 }
 if (!firmenname) LUECKEN.push('Firmenname (SHOP_NAME) — die Entität braucht überall dieselbe Schreibweise');
 
-const robots = robotsTxt({ suche: true, training: false });
-const llms = llmsTxt({
-  name: firmenname ?? '[[ FIRMENNAME — FEHLT ]]',
-  beschreibung: 'Baustoffe für Handwerksbetriebe, Lieferung regional.',
-  liefergebiet: { land: 'AT', bezirke },
-  hinweise: ['Alle Preise verstehen sich netto für Unternehmer.'],
-  seiten: [],
-});
+/**
+ * **`robots.txt` und `llms.txt` kommen aus dem Bau, nicht von hier.**
+ *
+ * Bis zum 30.08. erzeugte dieses Werkzeug beide Dateien selbst — und beide
+ * anders als der Bau. Bei `robots.txt` war die hiesige Fassung die richtige
+ * und die ausgelieferte die falsche; bei `llms.txt` ist es umgekehrt: Hier
+ * stand `seiten: []`, also eine Datei ohne Artikelliste, ohne „Was hier
+ * möglich ist" und ohne „Was wir nicht führen" — genau die Abschnitte, für
+ * die dieser Shop gebaut ist.
+ *
+ * Zwei Fassungen derselben Datei sind der Fehler, unabhängig davon, welche
+ * gerade besser ist. Veröffentlicht wird deshalb, **was der Bau erzeugt und
+ * was alle Prüfer gemessen haben.** Fehlt es, bricht dieses Werkzeug ab,
+ * statt eine zweite Fassung zu erfinden.
+ */
+const gebaut = join(hier, '..', 'ausgabe', 'site');
+for (const datei of ['robots.txt', 'llms.txt']) {
+  if (!existsSync(join(gebaut, datei))) {
+    console.error(`\nAbbruch: ausgabe/site/${datei} fehlt — zuerst npm run website.`);
+    console.error('Veröffentlicht wird, was der Bau erzeugt, nicht eine zweite Fassung davon.');
+    process.exit(2);
+  }
+}
+const robots = readFileSync(join(gebaut, 'robots.txt'), 'utf8');
+const llms = readFileSync(join(gebaut, 'llms.txt'), 'utf8');
 /**
  * Die Zustellkosten je Artikel — aus derselben Datei wie der Warenkorb.
  *
