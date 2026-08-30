@@ -19,6 +19,7 @@
     "pruefe-widerrufe": "node bin/widerrufpruefung.mjs",
     "pruefe-geheimnis": "node bin/geheimnispruefung.mjs",
     "katalog": "node bin/katalog-aus-rechnungen.mjs",
+    "artikelliste": "node bin/artikelliste.mjs",
     "sicherung": "node bin/sicherung.mjs",
     "kampagne": "node bin/kampagne.mjs",
     "website": "node bin/website.mjs",

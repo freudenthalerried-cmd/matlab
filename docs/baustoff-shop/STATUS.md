@@ -502,10 +502,10 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > 787 vergleichbare Tests, kein Unterschied.
 > [`kommentare-im-schaufenster.md`](./kommentare-im-schaufenster.md).
 >
-> **Stand der Prüfmittel (30.08.):** 899 Tests, `pruefe-tests` 897/0, `pruefe-preise` 46/0, `pruefe-inhalte`
-> 24/357/0, `pruefe-seiten` 81 von 81 gebauten Seiten, `pruefe-widerrufe` 191 Dateien/48
+> **Stand der Prüfmittel (30.08.):** 911 Tests, `pruefe-tests` 909/0, `pruefe-preise` 46/0, `pruefe-inhalte`
+> 24/357/0, `pruefe-seiten` 81 von 81 gebauten Seiten, `pruefe-widerrufe` 192 Dateien/48
 > Fundstellen, `pruefe-quellen` 6/6, `shopprobe` 49 (davon 10 im Rahmen),
-> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 190/190,
+> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 191/191,
 > `pruefe-pruefer` 11 Prüfer ohne Leerlauf, Website 81 Seiten ohne toten
 > Verweis.
 
@@ -884,6 +884,7 @@ zusammengefasst und im Verzeichnis nicht auffindbar:
 | `das-werkzeug-fuer-den-tag-danach.md` | `npm run import` — das Werkzeug für den Tag der Artikelliste — schrieb in den Platzhalterbestand des abgelösten Modells, warnte gegen eine abgelöste Margenregel bei **jeder** Zeile und hätte Einkaufspreise in ein öffentliches Verzeichnis getragen. Schreiben gesperrt, Probelauf bleibt |
 | `eine-haelfte-umgelenkt.md` | `npm run katalog` las eine Artikelliste als „0 Artikel" mit Ausgang 0; der Gewichtswächter rettete den Katalog aus dem falschen Grund. Beim Gegenproben habe ich mit einem falschen Umgebungsnamen die vertrauliche Preisdatei geleert — wiederhergestellt in einem Befehl, weil sie abgeleitet und nicht gepflegt wird. Drei neue Sperren |
 | `das-netz-unter-den-gepflegten-dateien.md` | Der offene Punkt umgesetzt: `src/sicherung.js` legt vor jedem Überschreiben eine datierte Kopie an, `npm run sicherung` sichert alle sieben Dateien unter `preise/`. Zehn Stände je Datei; der Aufräumer fasst nur an, was er selbst angelegt hat. Der eigene Test fand dabei zwei Begriffe für „Stand dieser Datei" |
+| `die-liste-die-noch-nicht-da-ist.md` | `npm run artikelliste` liest die Artikelliste im angeforderten Format und schreibt Katalog und Konditionen getrennt. Es entscheidet nichts, was eine Entscheidung ist: Warengruppe, Preisstand und Einheit werden verlangt, nicht geraten; Wegfall wird gemeldet, nicht vollzogen |
 | `segment-arbeitsplatzmessung.md` | Nebenstrecke, kein eigenes Segment |
 | `strategie-modellvergleich.md` | Kapitalweg braucht ~900.000 €; enthält überholte Empfehlung |
 | `anschreiben-entwuerfe.md` | Drei Anschreiben (Hersteller, Großhändler, Partnerbetriebe), versandfertig, nicht versendet |
