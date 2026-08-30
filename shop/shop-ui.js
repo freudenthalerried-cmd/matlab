@@ -465,7 +465,7 @@
       [['Warenwert', eur(rechnung.warenwertNetto), 'netto'],
        ['Fracht', eur(rechnung.frachtNetto), rechnung.teillieferungen[0].frachtGrund],
        ['Gewicht', String(rechnung.gewichtKg).replace('.', ',') + ' kg', gewichtText],
-       ['Netto gesamt', eur(rechnung.nettoGesamt), 'zuzüglich 20 % USt'],
+       ['Netto gesamt', eur(rechnung.nettoGesamt), 'zuzüglich ' + ustText() + ' USt'],
        ['Brutto', eur(rechnung.bruttoGesamt), 'inkl. ' + eur(rechnung.ustBetrag) + ' USt']
       ].forEach(function (r) {
         var d = el('div');

@@ -1189,6 +1189,26 @@ function oeffentlicherArtikel(a) {
   };
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const UST_SATZ_KUNDE = 0.2;
+
+
+const ustText = (satz = UST_SATZ_KUNDE) =>
+  `${String(Math.round(satz * 1000) / 10).replace('.', ',')} %`;
+
 const runde = (n) => Math.round(n * 100) / 100;
 
 
@@ -1208,7 +1228,7 @@ const runde = (n) => Math.round(n * 100) / 100;
 
 
 
-function kundenWarenkorb(zeilen, { artikel, lieferanten }, ust = 0.2) {
+function kundenWarenkorb(zeilen, { artikel, lieferanten }, ust = UST_SATZ_KUNDE) {
   const nachId = new Map(artikel.map((a) => [a.sku, a]));
   const lieferantById = new Map(lieferanten.map((l) => [l.id, l]));
   const gruppen = new Map();
@@ -1968,7 +1988,7 @@ function pruefeAnfrageAufGeheimnis(text, artikelMitEk = []) {
       [['Warenwert', eur(rechnung.warenwertNetto), 'netto'],
        ['Fracht', eur(rechnung.frachtNetto), rechnung.teillieferungen[0].frachtGrund],
        ['Gewicht', String(rechnung.gewichtKg).replace('.', ',') + ' kg', gewichtText],
-       ['Netto gesamt', eur(rechnung.nettoGesamt), 'zuzüglich 20 % USt'],
+       ['Netto gesamt', eur(rechnung.nettoGesamt), 'zuzüglich ' + ustText() + ' USt'],
        ['Brutto', eur(rechnung.bruttoGesamt), 'inkl. ' + eur(rechnung.ustBetrag) + ' USt']
       ].forEach(function (r) {
         var d = el('div');

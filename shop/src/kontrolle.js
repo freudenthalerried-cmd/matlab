@@ -22,6 +22,20 @@
  * trotzdem auf. Dafür ist der Abgleich mit dem Warenkorb da.
  */
 
+/**
+ * Der Steuersatz steht hier **noch einmal** — und das ist Absicht.
+ *
+ * `preis.js` exportiert ihn auch. Ihn von dort zu holen wäre die Regel
+ * „eine Quelle für jede Zahl", und sie ist hier falsch: Diese Datei ist die
+ * zweite Rechnung, die gegen die erste prüft. Ein Kontrollwerkzeug, das
+ * seine Vergleichsgröße von dem holt, was es prüft, kontrolliert nichts —
+ * es bestätigt.
+ *
+ * **Am 30.08. geprüft und stehen gelassen.** Damit die Doppelung nicht
+ * eines Tages still auseinanderläuft, hält ein Testfall beide Zahlen
+ * aneinander: `test/kontrolle.test.js` verlangt, dass sie übereinstimmen —
+ * das ist der Abgleich, den ein Import erschlagen hätte, ohne ihn zu leisten.
+ */
 const UST_SATZ = 0.20;
 
 /** Liest einen Betrag in österreichischer Schreibweise: `1.234,56 €`. */

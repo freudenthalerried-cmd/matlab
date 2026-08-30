@@ -37,7 +37,7 @@ import { baueKern, BROWSERMODULE } from '../src/buendel.js';
 import { startklar } from '../src/startklar.js';
 import { ohneKommentare } from '../src/entkommentieren.js';
 import { preisJeKilo, kilotafel, mengenschritt } from '../src/gebinde.js';
-import { oeffentlicherArtikel, oeffentlicherLieferant, vorteil } from '../src/shopkern.js';
+import { oeffentlicherArtikel, oeffentlicherLieferant, vorteil, ustText } from '../src/shopkern.js';
 import { LIEFERGEBIET } from '../src/liefergebiet.js';
 import { ZAHLWEGE } from '../src/zahlung.js';
 import { fracht } from '../src/preis.js';
@@ -606,7 +606,7 @@ function artikelSeite(a, katalog, befund, seiten, verweis) {
     kilo.grundlage === 'kilopreis'
       ? `netto, für ${esc(String(kilo.gebindeKg).replace('.', ','))} kg aus der Bezeichnung`
       : `netto, aus ${esc(String(kilo.gebindeKg).replace('.', ','))} kg je Gebinde gerechnet`}</span></div>` : ''}
-  <div><span class="k">Brutto</span><span class="w">${euro(a.vkBrutto)} €</span><span class="e">inkl. 20 % USt</span></div>
+  <div><span class="k">Brutto</span><span class="w">${euro(a.vkBrutto)} €</span><span class="e">inkl. ${ustText()} USt</span></div>
   <div><span class="k">Artikelnummer</span><span class="w">${esc(a.lieferantenArtikelnummer)}</span><span class="e">Lieferantennummer</span></div>
   <div><span class="k">Preisstand</span><span class="w">${esc(a.preisStand)}</span><span class="e">gültig bis zur nächsten Liste</span></div>
   <div><span class="k">Gewicht</span><span class="w">${typeof a.gewichtKg === 'number'
@@ -1532,7 +1532,7 @@ Warengruppen in der Kopfleiste.</p></noscript>
   <nav>${nav}</nav>
 </header>`;
   const fuss = `<footer>
-  <p>${esc(FIRMA)}, ${esc(ORT)} · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
+  <p>${esc(FIRMA)}, ${esc(ORT)} · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer ${ustText()} getrennt
   ausgewiesen · <a href="${verweis('wissen/redaktionsprinzipien')}">Wie wir unsere Angaben prüfen</a>
   · <a href="${verweis('wissen/index')}">Wissen</a>
   · <a href="${verweis('rechtliches/index')}">Rechtliches</a>

@@ -502,10 +502,10 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > 787 vergleichbare Tests, kein Unterschied.
 > [`kommentare-im-schaufenster.md`](./kommentare-im-schaufenster.md).
 >
-> **Stand der Prüfmittel (30.08.):** 875 Tests, `pruefe-tests` 873/0, `pruefe-preise` 46/0, `pruefe-inhalte`
-> 24/357/0, `pruefe-seiten` 81 von 81 gebauten Seiten, `pruefe-widerrufe` 185 Dateien/48
+> **Stand der Prüfmittel (30.08.):** 877 Tests, `pruefe-tests` 875/0, `pruefe-preise` 46/0, `pruefe-inhalte`
+> 24/357/0, `pruefe-seiten` 81 von 81 gebauten Seiten, `pruefe-widerrufe` 186 Dateien/48
 > Fundstellen, `pruefe-quellen` 6/6, `shopprobe` 49 (davon 10 im Rahmen),
-> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 184/184,
+> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 185/185,
 > `pruefe-pruefer` 11 Prüfer ohne Leerlauf, Website 81 Seiten ohne toten
 > Verweis.
 
@@ -878,6 +878,7 @@ zusammengefasst und im Verzeichnis nicht auffindbar:
 | `eine-anleitung-ohne-schritte.md` | Die vier Systemseiten trugen `HowTo` ohne einen einzigen `step`, und alle 24 Inhaltsseiten hängten ihre Frage als `mainEntity` an ein `Article` — eine Form, die kein Leser als Frage-Antwort erkennt. Jetzt `FAQPage` mit Fragenliste, und die Positionslisten stehen als `ItemList` samt Vermerk „nicht im Sortiment" |
 | `das-liefergebiet-war-ein-satz.md` | `areaServed` stand fest im Quelltext der Startseite — neben der Entscheidung in `LIEFERGEBIET`, und schon in abweichender Reihenfolge. Dazu als Zeichenkette statt als Ort. Jetzt benannte `AdministrativeArea`-Knoten aus der Entscheidung, geprüft an 47 Auszeichnungen |
 | `vierzig-prozent-waren-neununddreissig.md` | „40 % unter Listenpreis" bei gerechneten 39,80 %: `Math.round` rundete den Preisvorteil auf, bei 21 von 39 Artikeln mit Marker. Ein Werbeversprechen wird abgerundet. Die Zahl entstand an drei Stellen — jetzt ruft der Seitenbau `vorteil()` |
+| `drei-steuersaetze-und-ein-abgleich.md` | Der Steuersatz steht an drei Stellen — und zwei davon mit Grund: Das Kontrollwerkzeug darf seine Vergleichsgröße nicht vom Geprüften holen. Der erste Griff (Import) war falsch und ist zurückgenommen; was fehlte, war nicht die Vereinheitlichung, sondern der Abgleich. Dazu „20 % USt" als Zeichenkette neben einer Zahl, die niemand danebenhielt |
 | `segment-arbeitsplatzmessung.md` | Nebenstrecke, kein eigenes Segment |
 | `strategie-modellvergleich.md` | Kapitalweg braucht ~900.000 €; enthält überholte Empfehlung |
 | `anschreiben-entwuerfe.md` | Drei Anschreiben (Hersteller, Großhändler, Partnerbetriebe), versandfertig, nicht versendet |

@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { UST_SATZ } from '../src/preis.js';
+import { UST_SATZ_KUNDE, ustText } from '../src/shopkern.js';
 import { ladeKatalog, berechneWarenkorb } from '../src/warenkorb.js';
 import { berechneBedarf } from '../src/bedarf.js';
 import { erzeugeAngebot, erzeugeRechnung } from '../src/beleg.js';
@@ -301,4 +304,38 @@ test('Ohne Warenwert im Bestelltext urteilt die Frachtdeckung nicht', () => {
   assert.equal(d.gedeckt, false);
   assert.equal(d.bestellwert, null);
   assert.match(d.grund, /kein Warenwert/);
+});
+
+
+/* ------------------------------------------------------------------ *
+ * Zwei bewusste Doppelungen — und die Probe, die sie zusammenhält
+ * ------------------------------------------------------------------ */
+
+/**
+ * Der Steuersatz steht an drei Stellen, und keine davon ist ein Versehen:
+ *
+ * | Ort | Grund |
+ * |---|---|
+ * | `preis.js` | der Rechenkern, die Quelle |
+ * | `kontrolle.js` | die **zweite Rechnung** — ein Prüfer, der seine Vergleichsgröße vom Geprüften holt, bestätigt nur |
+ * | `shopkern.js` | die Kundenseite — `preis.js` trägt die Margenregel und darf nicht in den Browser |
+ *
+ * Was eine Doppelung mit Grund von einer ohne unterscheidet, ist nicht die
+ * Absicht, sondern der Abgleich. Hier steht er.
+ */
+test('alle drei Steuersätze sind dieselbe Zahl', () => {
+  assert.equal(UST_SATZ_KUNDE, UST_SATZ, 'Kundenseite und Rechenkern rechnen verschieden');
+  const quelle = readFileSync(fileURLToPath(new URL('../src/kontrolle.js', import.meta.url)), 'utf8');
+  const treffer = /const UST_SATZ = ([\d.]+);/.exec(quelle);
+  assert.ok(treffer, 'die Kontrolle führt keinen eigenen Steuersatz mehr — dann ist sie keine zweite Rechnung');
+  assert.equal(Number(treffer[1]), UST_SATZ, 'die Kontrolle prüft gegen einen anderen Satz');
+});
+
+test('der ausgewiesene Satz ist derselbe wie der gerechnete', () => {
+  // Bis zum 30.08. stand „20 % USt" als Zeichenkette an drei Stellen neben
+  // einer Zahl, die niemand daneben hielt. Ein geänderter Satz hätte richtige
+  // Beträge unter falscher Beschriftung ergeben.
+  assert.equal(ustText(), '20 %');
+  assert.equal(ustText(0.13), '13 %', 'ein anderer Satz ergibt einen anderen Text');
+  assert.equal(ustText(0.075), '7,5 %', 'und ein halber Punkt geht nicht verloren');
 });

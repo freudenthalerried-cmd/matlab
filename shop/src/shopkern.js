@@ -759,6 +759,26 @@ export function oeffentlicherArtikel(a) {
   };
 }
 
+/**
+ * Der Umsatzsteuersatz, den die Kundenseite kennt.
+ *
+ * Er steht hier **noch einmal**, obwohl `preis.js` ihn exportiert — und aus
+ * demselben Grund wie `kundenWarenkorb` selbst: `preis.js` trägt die
+ * Margenregel und darf nicht in den Browser. Es ist keine zweite Wahrheit,
+ * sondern dieselbe Zahl mit weniger Wissen drumherum.
+ *
+ * **Am 30.08. abgesichert.** Bis dahin stand die Zahl als `0.2` im
+ * Vorgabewert einer Parameterliste — nicht falsch, aber unauffindbar, und
+ * der Text „20 % USt" stand an drei weiteren Stellen als Zeichenkette
+ * daneben. Jetzt hängt beides an dieser Konstante, und ein Testfall hält sie
+ * gegen `UST_SATZ` aus dem Rechenkern.
+ */
+export const UST_SATZ_KUNDE = 0.2;
+
+/** „20 %" — der Satz, wie er auf der Seite steht, aus derselben Zahl. */
+export const ustText = (satz = UST_SATZ_KUNDE) =>
+  `${String(Math.round(satz * 1000) / 10).replace('.', ',')} %`;
+
 const runde = (n) => Math.round(n * 100) / 100;
 
 /**
@@ -778,7 +798,7 @@ const runde = (n) => Math.round(n * 100) / 100;
  *
  * Was diese Funktion **nicht** kann, sagt sie im Feld `offen`.
  */
-export function kundenWarenkorb(zeilen, { artikel, lieferanten }, ust = 0.2) {
+export function kundenWarenkorb(zeilen, { artikel, lieferanten }, ust = UST_SATZ_KUNDE) {
   const nachId = new Map(artikel.map((a) => [a.sku, a]));
   const lieferantById = new Map(lieferanten.map((l) => [l.id, l]));
   const gruppen = new Map();
