@@ -54,7 +54,20 @@ export function pruefeNamenskollisionen(quelle) {
   }
 }
 
-/** Reihenfolge der Module — Abhängigkeiten stehen vor ihren Nutzern. */
+/**
+ * Die Module des Kerns.
+ *
+ * **Berichtigt am 30.08.** Hier stand „Reihenfolge der Module —
+ * Abhängigkeiten stehen vor ihren Nutzern", und die Reihenfolge war von Hand
+ * geführt. Sie ist am 29.08. still falsch geworden: `rechtstexte.js` nennt
+ * seit der Datenschutzseite den Warenkorbschlüssel aus `shopkern.js`, steht
+ * aber neun Plätze davor. Im Modulbetrieb ist das gleichgültig, im
+ * zusammengefügten Skript nicht — `Cannot access 'KORBSCHLUESSEL' before
+ * initialization`, und damit war das gesamte Skript der Demoseite tot.
+ *
+ * Die Reihenfolge wird jetzt **gerechnet** (`reihenfolge`); diese Liste sagt
+ * nur noch, *welche* Module gebraucht werden.
+ */
 export const KERNMODULE = Object.freeze([
   'format.js', 'gebiet.js', 'preis.js', 'warenkorb.js', 'bedarf.js',
   'liefergebiet.js', 'kunde.js', 'messwert.js', 'rechtstexte.js',
@@ -113,11 +126,69 @@ export function importhuelle(lies, anfang) {
 }
 
 /**
+ * Die Module in einer Reihenfolge, in der jede Abhängigkeit vor ihrem Nutzer
+ * steht — aus den `import`-Zeilen gerechnet, nicht aus einer gepflegten
+ * Liste gelesen.
+ *
+ * Eine Liste von Hand kann still falsch werden, und genau das ist am 29.08.
+ * geschehen. Was hier herauskommt, kann es nicht: Wer eine Abhängigkeit
+ * hinzufügt, verschiebt damit die Reihenfolge.
+ *
+ * Ein Ringschluss ist kein Sonderfall, den man sortieren könnte — er wird
+ * gemeldet.
+ *
+ * @param {(name: string) => string} lies
+ * @param {string[]} module
+ */
+export function reihenfolge(lies, module) {
+  const fertig = [];
+  const fertigSet = new Set();
+  const imGang = new Set();
+  const gehe = (modul, pfad) => {
+    if (fertigSet.has(modul)) return;
+    if (imGang.has(modul)) {
+      throw new Error(`Ringschluss im Bündel: ${[...pfad, modul].join(' → ')}`);
+    }
+    imGang.add(modul);
+    for (const treffer of lies(modul).matchAll(/from '\.\/([a-z.]+\.js)'/g)) {
+      gehe(treffer[1], [...pfad, modul]);
+    }
+    imGang.delete(modul);
+    fertigSet.add(modul);
+    fertig.push(modul);
+  };
+  for (const modul of module) gehe(modul, []);
+  return fertig;
+}
+
+/**
  * @param {(name: string) => string} lies  liest `src/<name>` als Text
  * @param {string[]} module
  */
 export function baueKern(lies, module = KERNMODULE) {
-  const kern = module.map((m) => entkleide(lies(m))).join('\n');
+  const kern = reihenfolge(lies, module).map((m) => entkleide(lies(m))).join('\n');
   pruefeNamenskollisionen(kern);
   return kern;
+}
+
+
+/**
+ * Welche Quellen sind jünger als das Erzeugnis?
+ *
+ * **Warum es das gibt.** Am 29.08. bekam `rechtstexte.js` eine Abhängigkeit,
+ * die das Bündel zerriss — und niemand merkte es, weil `demo.html` seit dem
+ * 28.08. nicht neu gebaut worden war. Die Oberflächenprobe lief grün gegen
+ * eine Datei, die zu ihrem Quelltext nicht mehr passte.
+ *
+ * > **Eine Probe gegen ein veraltetes Erzeugnis prüft die Vergangenheit.**
+ *
+ * Bewusst ohne Dateizugriff: Diese Funktion bekommt Zeitstempel und gibt
+ * Namen zurück. Damit lässt sie sich prüfen, ohne Dateien anzulegen.
+ *
+ * @param {number} zielZeit  Änderungszeit des Erzeugnisses
+ * @param {{name: string, zeit: number}[]} quellen
+ * @returns {string[]} die Namen der jüngeren Quellen, leer wenn frisch
+ */
+export function juengereQuellen(zielZeit, quellen) {
+  return quellen.filter((q) => q.zeit > zielZeit).map((q) => q.name);
 }

@@ -29,11 +29,12 @@
  * Browserinstallation abhängen.
  */
 
-import { readFileSync, writeFileSync, mkdtempSync, rmSync, readdirSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdtempSync, rmSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { juengereQuellen } from '../src/buendel.js';
 
 const hier = fileURLToPath(new URL('.', import.meta.url));
 const demoDatei = join(hier, '..', 'demo.html');
@@ -173,6 +174,30 @@ if (!chromium) {
 if (!existsSync(demoDatei)) {
   console.error('demo.html fehlt — zuerst npm run build.');
   process.exit(2);
+}
+
+/**
+ * Ist die geprüfte Datei jünger als alles, woraus sie entsteht?
+ *
+ * Am 30.08. stellte sich heraus, dass diese Probe einen Tag lang gegen eine
+ * `demo.html` gelaufen war, die zu ihrem Quelltext nicht mehr passte — und
+ * grün meldete, während das Skript der neu gebauten Seite beim Laden starb.
+ * Ein Prüfer, der ein veraltetes Erzeugnis misst, prüft die Vergangenheit.
+ */
+{
+  const wurzel = join(hier, '..');
+  const quellen = [
+    ...readdirSync(join(wurzel, 'src')).filter((d) => d.endsWith('.js')).map((d) => join('src', d)),
+    ...readdirSync(join(wurzel, 'data')).filter((d) => d.endsWith('.json')).map((d) => join('data', d)),
+    'demo-template.html', 'build-demo.mjs',
+  ].map((name) => ({ name, zeit: statSync(join(wurzel, name)).mtimeMs }));
+  const juenger = juengereQuellen(statSync(demoDatei).mtimeMs, quellen);
+  if (juenger.length) {
+    console.error(`\nAbbruch: demo.html ist älter als ${juenger.length} Quelldatei(en) — zuerst npm run build.`);
+    console.error(`  ${juenger.slice(0, 5).join(', ')}${juenger.length > 5 ? ' …' : ''}`);
+    console.error('Eine Probe gegen ein veraltetes Erzeugnis prüft die Vergangenheit.');
+    process.exit(2);
+  }
 }
 
 const seite = readFileSync(demoDatei, 'utf8');

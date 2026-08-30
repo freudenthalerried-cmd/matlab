@@ -107,8 +107,14 @@ führt zu **genau der gemeinten Ware** — nicht irgendwohin.
 
 ## Was offen bleibt
 
-Die deutsche Mehrzahl kennt der Index weiterhin nicht; `rondellen` steht
-jetzt als eigenes Wort im Register. Eine allgemeine Endungsregel wäre
-verlockend und gefährlich: Sie träfe auch dort, wo zwei Wörter nur zufällig
-gleich enden. Bis dahin gilt der Weg, den dieses Register ohnehin geht —
-jedes Wort einzeln, mit Begründung.
+**Widerrufen am 30.08.** Hier stand: „Die deutsche Mehrzahl kennt der Index
+weiterhin nicht; `rondellen` steht jetzt als eigenes Wort im Register. Eine
+allgemeine Endungsregel wäre verlockend und gefährlich."
+
+Die Warnung war richtig, das Urteil zu vorsichtig. Nachgemessen verloren
+**31 von 35 Wortpaaren** beim Wechsel in die Mehrzahl jeden Treffer — das
+Register hätte diese Lücke Wort für Wort nie geschlossen. Die Endungsregel
+gibt es seit dem 30.08.; die befürchteten Zufallstreffer sind an den 23
+begründeten Ablehnungen gemessen und ausgeblieben. `rondellen` ist als
+eigener Eintrag wieder entfallen. Siehe
+[`der-kunde-tippt-den-plural.md`](./der-kunde-tippt-den-plural.md).

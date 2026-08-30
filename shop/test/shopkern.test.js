@@ -6,7 +6,7 @@ import {
   wortstaemme, baueSuchindex, suche, sortiere, filtere, filterwerte, vorteil,
   ladeKorb, speichereKorb, legeInKorb, setzeMenge, korbPositionen, bereinige,
   kundenWarenkorb, oeffentlicherArtikel, oeffentlicherLieferant, kundenwoerter,
-  abstand, erlaubterAbstand, meintenSie, KORBSCHLUESSEL,
+  abstand, erlaubterAbstand, meintenSie, KORBSCHLUESSEL, stamm,
 } from '../src/shopkern.js';
 import { berechneWarenkorb } from '../src/warenkorb.js';
 import { kalkuliere } from '../src/preis.js';
@@ -519,8 +519,14 @@ test('kurze Wörter dürfen sich nicht vertippen', () => {
   assert.equal(erlaubterAbstand('spachtel'), 2);
 });
 
-test('acht Vertipper, die vorher nichts fanden, bekommen einen Vorschlag', () => {
+test('acht Vertipper kommen an — sieben über den Vorschlag, einer direkt', () => {
   // Die Messung vom 28. August, als Probe festgehalten.
+  //
+  // **Berichtigt am 30.08.** Hier stand zusätzlich, jeder der acht finde
+  // direkt nichts. Das war die Lage vor dem Wortstamm: Seit „dämmplate" auf
+  // `dammplat` gestutzt wird, steckt es in `dammplatt` und findet die zehn
+  // Dämmplatten von selbst. Zugesichert ist nicht die Null, sondern das
+  // Ergebnis — der Kunde kommt an der Ware an.
   const index = bestandsindex();
   const vertipper = {
     kanalror: 'kanalrohr',
@@ -533,11 +539,13 @@ test('acht Vertipper, die vorher nichts fanden, bekommen einen Vorschlag', () =>
     spachtl: 'spachtelmasse',
   };
   assert.equal(Object.keys(vertipper).length, 8);
+  let direkt = 0;
   for (const [falsch, erwartet] of Object.entries(vertipper)) {
-    assert.equal(suche(index, falsch).length, 0, `„${falsch}" findet auf einmal etwas — die Messung stimmt nicht`);
     const vorschlaege = meintenSie(index, falsch);
     assert.equal(vorschlaege[0], erwartet, `„${falsch}" → ${JSON.stringify(vorschlaege)}`);
+    if (suche(index, falsch).length) direkt++;
   }
+  assert.equal(direkt, 1, 'die Zahl der direkt findenden Vertipper hat sich verschoben — nachmessen');
 });
 
 test('was der Shop nicht führt, bekommt keinen Ersatzvorschlag', () => {
@@ -551,18 +559,136 @@ test('was der Shop nicht führt, bekommt keinen Ersatzvorschlag', () => {
   }
 });
 
-test('derselbe Vorschlag erscheint nicht zweimal in zwei Schreibweisen', () => {
-  // Der Index legt jedes Wort mit und ohne Umlaut ab. Als Vorschlag sind sie
-  // ein Wort — zwei Zeilen mit demselben Wort sehen aus wie ein Fehler.
+test('der Vorschlag ist die Schreibweise des Katalogs, egal wie getippt wurde', () => {
+  // Bis zum 30.08. legte der Index jedes Umlautwort doppelt ab, und dieser
+  // Test verlangte, der Vorschlag folge der Tastatur des Kunden: „daemmplate"
+  // → „daemmplatte". Das war eine Schreibweise, unter der die Ware nirgends
+  // steht. Jetzt gibt es je Wort eine Normalform und daran genau einen Namen.
   const index = bestandsindex();
-  const mit = meintenSie(index, 'dämmplate');
-  assert.equal(mit[0], 'dämmplatte', 'wer Umlaute tippt, bekommt Umlaute');
-  assert.ok(!mit.includes('daemmplatte'));
-  const ohne = meintenSie(index, 'daemmplate');
-  assert.equal(ohne[0], 'daemmplatte');
-  assert.ok(!ohne.includes('dämmplatte'));
+  for (const getippt of ['dämmplate', 'daemmplate']) {
+    const vorschlaege = meintenSie(index, getippt);
+    assert.equal(vorschlaege[0], 'dämmplatte', `„${getippt}" → ${JSON.stringify(vorschlaege)}`);
+    assert.ok(!vorschlaege.includes('daemmplatte'), 'die Ersatzschreibweise ist kein eigener Vorschlag');
+  }
 });
 
+test('kein Vorschlag ist ein Wortstamm', () => {
+  // Der erste Wurf des Stemmers bot „dammplatt", „geweb" und „spachtelmass"
+  // an. Gesucht wird über Stämme, vorgeschlagen wird über Wörter — und ein
+  // Wort, das so in keinem Katalog steht, ist kein Rat, sondern ein Fehler
+  // des Shops.
+  const index = bestandsindex();
+  const bestand = new Set();
+  for (const e of index) for (const f of e.formen ?? []) bestand.add(f);
+  assert.ok(bestand.size >= 100, `nur ${bestand.size} Wörter im Bestand — die Schleife prüft zu wenig`);
+  const vertipper = ['kanalror', 'dämmplate', 'rauchfng', 'styropr', 'kantenschuz', 'schachtrng', 'gewbe', 'spachtl'];
+  const vorschlaege = vertipper.flatMap((falsch) => meintenSie(index, falsch));
+  assert.ok(vorschlaege.length >= 8, `nur ${vorschlaege.length} Vorschläge — die Schleife prüft zu wenig`);
+  for (const v of vorschlaege) {
+    assert.ok(bestand.has(v), `„${v}" steht in keiner Bezeichnung und in keinem Kundenwort`);
+  }
+});
+
+
+/* ------------------------------------------------------------------ *
+ * Der Kunde tippt den Plural
+ * ------------------------------------------------------------------ */
+
+/**
+ * 35 Paare aus der Sprache der Baustelle — Einzahl und Mehrzahl desselben
+ * Worts, von Hand aus dem Wortschatz dieses Katalogs und des
+ * Kundenwörter-Registers gezogen. Kein Generator: „abdeckbandn" und
+ * „armierungsgewebeen" sind keine deutschen Wörter, und eine Messung, die
+ * solche Formen mitzählt, misst den Generator statt die Suche.
+ *
+ * Vier Paare sind absichtlich formgleich (Ziegel, Dübel, Gewebe): Der
+ * deutsche Plural ist nicht immer länger, und eine Probe, die nur die
+ * schwierigen Fälle enthält, übersieht, wenn die leichten kaputtgehen.
+ */
+const NUMERUSPAARE = [
+  ['dämmplatte', 'dämmplatten'], ['noppenbahn', 'noppenbahnen'], ['noppenfolie', 'noppenfolien'],
+  ['abflussrohr', 'abflussrohre'], ['abflussrohr', 'abflussrohren'], ['kaminrohr', 'kaminrohre'],
+  ['kanalrohr', 'kanalrohre'], ['eckschiene', 'eckschienen'], ['anputzleiste', 'anputzleisten'],
+  ['rondelle', 'rondellen'], ['schornstein', 'schornsteine'], ['kamin', 'kamine'],
+  ['grundierung', 'grundierungen'], ['mantelstein', 'mantelsteine'], ['schachtring', 'schachtringe'],
+  ['trennstein', 'trennsteine'], ['rahmenschraube', 'rahmenschrauben'], ['spachtelmasse', 'spachtelmassen'],
+  ['fugenmasse', 'fugenmassen'], ['zuluftplatte', 'zuluftplatten'], ['regenhaube', 'regenhauben'],
+  ['folie', 'folien'], ['baufolie', 'baufolien'], ['dosierpistole', 'dosierpistolen'],
+  ['sicherungsseil', 'sicherungsseile'], ['laibung', 'laibungen'],
+  // Mit Umlaut im Plural — die Stelle, an der eine reine Endungsregel scheitert.
+  ['kanalbogen', 'kanalbögen'], ['kreppband', 'kreppbänder'], ['abdeckband', 'abdeckbänder'],
+  ['malerband', 'malerbänder'], ['putzgrund', 'putzgründe'], ['fensteranschluss', 'fensteranschlüsse'],
+  // Formgleich.
+  ['tellerdübel', 'tellerdübel'], ['ziegel', 'ziegel'], ['gewebe', 'gewebe'],
+];
+
+test('wer den Plural tippt, findet dieselben Artikel wie mit der Einzahl', () => {
+  // **Gemessen am 30.08.:** 31 der 35 Paare verloren beim Wechsel in den
+  // Plural **jeden** Treffer. „dämmplatte" fand zehn Artikel, „dämmplatten"
+  // einen; „schornsteine", „abflussrohre", „spachtelmassen": null.
+  //
+  // Der Grund lag in der Trefferregel: Sie kennt Wortanfang und Wortmitte,
+  // also findet ein kürzeres Suchwort das längere Indexwort — und der
+  // deutsche Plural ist fast immer die längere Form.
+  const index = bestandsindex();
+  assert.equal(NUMERUSPAARE.length, 35, 'die Messung hängt an dieser Liste');
+  const skus = (frage) => suche(index, frage).filter((t) => t.art === 'artikel').map((t) => t.sku).sort();
+  for (const [einzahl, mehrzahl] of NUMERUSPAARE) {
+    const eins = skus(einzahl);
+    assert.ok(eins.length > 0, `„${einzahl}" findet selbst nichts — das Paar misst nichts`);
+    assert.deepEqual(skus(mehrzahl), eins, `„${mehrzahl}" findet nicht dasselbe wie „${einzahl}"`);
+  }
+});
+
+test('zwei Registereinträge sind entfallen — der Wortstamm deckt sie ab', () => {
+  // „dübelteller" stand neben „duebelteller", „rondellen" neben der
+  // Artikelbezeichnung *Rondelle*. Beide Einträge waren Handarbeit gegen
+  // eine fehlende Regel; seit es die Regel gibt, sind sie zwei Stellen, die
+  // auseinanderlaufen können. Was zählt, ist nicht der Eintrag, sondern dass
+  // der Kunde ankommt.
+  const index = bestandsindex();
+  const gefuehrt = new Set(suchwoerterDatei.woerter.map((e) => e.wort));
+  for (const wort of ['dübelteller', 'rondellen']) {
+    assert.ok(!gefuehrt.has(wort), `„${wort}" steht wieder im Register`);
+    const treffer = suche(index, wort).filter((t) => t.art === 'artikel');
+    assert.deepEqual(treffer.map((t) => t.sku), ['POS-29610'], `„${wort}" findet die Rondelle nicht mehr`);
+  }
+  assert.equal(suchwoerterDatei._entfallen.length, 2, 'die Streichung ist nicht begründet');
+});
+
+test('der Wortstamm schneidet keine Wortstämme an', () => {
+  // Zwei Längensperren halten den Stamm zusammen: Unter fünf Zeichen wird gar
+  // nicht gestutzt, und was übrig bleibt, behält mindestens vier. Ohne die
+  // zweite wird aus „Boden" ein „bod".
+  assert.equal(stamm('boden'), 'boden', 'der Reststamm wäre zu kurz');
+  assert.equal(stamm('ziegel'), 'ziegel', 'el ist keine Endung dieser Stufe');
+  assert.equal(stamm('kamin'), 'kamin', 'zu kurz für jede Endung');
+  assert.equal(stamm('haus'), 'haus', 'das s gehört zum Wort');
+  assert.equal(stamm('hause'), 'haus', 'die Endung dagegen fällt');
+  // „mauer" verliert sein e nicht an die Endungsregel, sondern an die
+  // Normalform: ue wird zu u, damit „duebel" den Dübel findet. Ein
+  // hingenommener Preis, kein Versehen — er trifft Index und Frage gleich,
+  // und „grundmauerschutz" findet sich deshalb weiterhin selbst.
+  assert.equal(stamm('mauer'), 'maur');
+  // Und die Beugung fällt wirklich zusammen:
+  assert.equal(stamm('dämmplatten'), stamm('dämmplatte'));
+  assert.equal(stamm('kanalbögen'), stamm('kanalbogen'));
+  assert.equal(stamm('moertel'), stamm('mörtel'));
+});
+
+test('was der Shop nicht führt, bleibt auch mit Wortstamm unauffindbar', () => {
+  // Die Gegenrichtung zur Pluralprobe: Ein Stemmer, der zu viel abschneidet,
+  // macht aus zwei Wörtern eines. Geprüft an genau der Liste, die das
+  // Register begründet **nicht** aufgenommen hat — dort wäre ein
+  // Zufallstreffer am teuersten, weil er auf Ersatzware zeigt.
+  const index = bestandsindex();
+  const abgelehnt = (suchwoerterDatei._nichtAufgenommen ?? []).map((e) => e.wort);
+  assert.ok(abgelehnt.length >= 20, `nur ${abgelehnt.length} Ablehnungen — die Schleife prüft zu wenig`);
+  for (const wort of abgelehnt) {
+    const treffer = suche(index, wort).filter((t) => t.art === 'artikel');
+    assert.equal(treffer.length, 0, `„${wort}" findet auf einmal ${treffer.map((t) => t.titel).join(', ')}`);
+  }
+});
 
 /* ------------------------------------------------------------------ *
  * Zentimeter und Millimeter sind dasselbe Maß

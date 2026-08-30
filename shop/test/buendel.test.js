@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
-import { BROWSERMODULE, KERNMODULE, SHOPMODULE, importhuelle, baueKern } from '../src/buendel.js';
+import { BROWSERMODULE, KERNMODULE, SHOPMODULE, importhuelle, baueKern, reihenfolge } from '../src/buendel.js';
 
 const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
 const src = pfad('../src');
@@ -48,4 +48,58 @@ test('das gebaute shop.js enthält keine ausgeschlossene Funktion', () => {
   // Und was drin sein muss, ist drin — sonst prüft der Test eine leere Datei.
   assert.match(js, /function kundenWarenkorb\(/);
   assert.match(js, /function baueKundenanfrage\(/);
+});
+
+
+/* ------------------------------------------------------------------ *
+ * Die Reihenfolge wird gerechnet, nicht gepflegt
+ * ------------------------------------------------------------------ */
+
+test('jede Abhängigkeit steht im Bündel vor ihrem Nutzer', () => {
+  // **Der Befund vom 30.08.:** `rechtstexte.js` nennt seit der
+  // Datenschutzseite den Warenkorbschlüssel aus `shopkern.js`, stand in der
+  // handgeführten Liste aber neun Plätze davor. Im Modulbetrieb gleichgültig,
+  // im zusammengefügten Skript tödlich: „Cannot access 'KORBSCHLUESSEL'
+  // before initialization" — und damit war das ganze Skript der Demoseite
+  // tot, ohne dass ein Test etwas bemerkte.
+  //
+  // Geprüft wird die Eigenschaft an **allen** Modulen, nicht am aufgefallenen
+  // Paar.
+  const lies = (name) => readFileSync(join(src, name), 'utf8');
+  const sortiert = reihenfolge(lies, [...KERNMODULE, ...SHOPMODULE]);
+  assert.equal(sortiert.length, KERNMODULE.length + SHOPMODULE.length);
+  const kanten = sortiert.flatMap((modul) => [...lies(modul).matchAll(/from '\.\/([a-z.]+\.js)'/g)]
+    .map((treffer) => ({ nutzer: modul, gebraucht: treffer[1] })));
+  assert.ok(kanten.length >= 20, `nur ${kanten.length} Abhängigkeiten gefunden — die Schleife prüft zu wenig`);
+  for (const { nutzer, gebraucht } of kanten) {
+    assert.ok(sortiert.indexOf(gebraucht) < sortiert.indexOf(nutzer),
+      `${nutzer} braucht ${gebraucht}, steht aber davor`);
+  }
+  // Und die Stelle, an der es schiefging, namentlich:
+  assert.ok(sortiert.indexOf('shopkern.js') < sortiert.indexOf('rechtstexte.js'),
+    'rechtstexte.js liest KORBSCHLUESSEL aus shopkern.js');
+});
+
+test('ein Ringschluss wird gemeldet, nicht sortiert', () => {
+  // Zwei Module, die einander brauchen, haben keine Reihenfolge. Das ist
+  // kein Sonderfall, den man wegsortieren kann — es ist ein Befund.
+  const erfunden = {
+    'a.js': "import { b } from './b.js';",
+    'b.js': "import { a } from './a.js';",
+  };
+  assert.throws(() => reihenfolge((n) => erfunden[n], ['a.js']), /Ringschluss/);
+});
+
+test('das gebaute demo.html führt sein Skript wirklich aus', () => {
+  // Die Gegenprobe zur Reihenfolge, an der ausgelieferten Datei: Steht die
+  // Deklaration des Warenkorbschlüssels vor seiner ersten Verwendung?
+  const datei = pfad('../demo.html');
+  if (!existsSync(datei)) return; // ohne Bau keine Aussage — und keine falsche
+  const html = readFileSync(datei, 'utf8');
+  const deklaration = html.indexOf('const KORBSCHLUESSEL =');
+  assert.ok(deklaration > 0, 'der Warenkorbschlüssel steht nicht im Bündel');
+  const ersteNutzung = html.indexOf('${KORBSCHLUESSEL}');
+  assert.ok(ersteNutzung > 0, 'die Datenschutzseite nennt den Schlüssel nicht mehr — Probe nachziehen');
+  assert.ok(deklaration < ersteNutzung,
+    'der Schlüssel wird vor seiner Deklaration gelesen — das Skript stirbt beim Laden');
 });

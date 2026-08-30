@@ -26,7 +26,7 @@
  * (`shopkern.test.js`), nicht hier.
  */
 
-import { readFileSync, writeFileSync, mkdtempSync, rmSync, existsSync, readdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdtempSync, rmSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { tmpdir } from 'node:os';
@@ -34,6 +34,7 @@ import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createServer } from 'node:http';
 import { KORBSCHLUESSEL } from '../src/shopkern.js';
+import { juengereQuellen } from '../src/buendel.js';
 import { extname } from 'node:path';
 
 const hier = fileURLToPath(new URL('.', import.meta.url));
@@ -866,6 +867,24 @@ if (!chromium) {
 if (!existsSync(shopDatei) || !existsSync(siteOrdner)) {
   console.error('ausgabe/website.html oder ausgabe/site/ fehlt — zuerst npm run website.');
   process.exit(2);
+}
+
+// Dieselbe Sperre wie in der Oberflächenprobe, aus demselben Grund: Ein
+// Prüfer, der ein veraltetes Erzeugnis misst, prüft die Vergangenheit.
+{
+  const wurzel = join(hier, '..');
+  const quellen = [
+    ...readdirSync(join(wurzel, 'src')).filter((d) => d.endsWith('.js')).map((d) => join('src', d)),
+    ...readdirSync(join(wurzel, 'data')).filter((d) => d.endsWith('.json')).map((d) => join('data', d)),
+    join('bin', 'website.mjs'),
+  ].map((name) => ({ name, zeit: statSync(join(wurzel, name)).mtimeMs }));
+  const juenger = juengereQuellen(statSync(shopDatei).mtimeMs, quellen);
+  if (juenger.length) {
+    console.error(`\nAbbruch: ausgabe/website.html ist älter als ${juenger.length} Quelldatei(en) — zuerst npm run website.`);
+    console.error(`  ${juenger.slice(0, 5).join(', ')}${juenger.length > 5 ? ' …' : ''}`);
+    console.error('Eine Probe gegen ein veraltetes Erzeugnis prüft die Vergangenheit.');
+    process.exit(2);
+  }
 }
 
 const fuehreAus = promisify(execFile);

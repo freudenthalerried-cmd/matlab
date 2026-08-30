@@ -1,7 +1,17 @@
 {
-  "_datenstand": "Stand 2026-08-29. Erweitert nach einer Messung von 78 Baustellenwörtern gegen den Bestand; die Begründung steht je Wort.",
+  "_datenstand": "Stand 2026-08-30. Erweitert nach einer Messung von 78 Baustellenwörtern gegen den Bestand; die Begründung steht je Wort. Am 30.08. sind zwei Einträge entfallen, die nur Schreibweise und Mehrzahl abdeckten — das erledigt jetzt der Wortstamm; siehe _entfallen.",
   "_hinweis": "Kundenwörter, die im Sortiment nicht vorkommen. Von Hand entschieden, Wort für Wort. Ein Suchwort ist kein Werbeversprechen: Es darf nur dorthin führen, wo der Artikel die Aufgabe tatsächlich erfüllt — was der Shop nicht führt, bleibt unauffindbar und wird nicht auf ein Ersatzprodukt umgeleitet. — Seit 29.08. trägt jede Ablehnung zwei Texte: `warum` begründet die redaktionelle Entscheidung gegenüber dem nächsten Lauf, `antwort` ist der Satz, den der Kunde auf der Suchseite liest. Zwei Fragen, zwei Texte.",
   "_gewicht": "Suchwörter zählen im Index als schwacher Treffer. Ein Artikel, der das Wort im eigenen Namen trägt, steht immer davor.",
+  "_entfallen": [
+    {
+      "wort": "dübelteller",
+      "warum": "Reine Umlautschreibweise von duebelteller. Seit 30.08. fallen beide auf dieselbe Normalform; zwei Einträge für ein Wort sind zwei Stellen, die auseinanderlaufen können."
+    },
+    {
+      "wort": "rondellen",
+      "warum": "Reine Mehrzahl von Rondelle, und Rondelle steht in der Artikelbezeichnung. Die Begründung des Eintrags lautete „Der Suchindex kennt keine deutsche Mehrzahlbildung\" — seit 30.08. kennt er sie."
+    }
+  ],
   "woerter": [
     {
       "wort": "noppenbahn",
@@ -299,20 +309,6 @@
         "POS-29610"
       ],
       "warum": "Anderer Name für die Rondelle bei versenkter Dübelsetzung. Unsere Bezeichnung nennt nur die Rondelle."
-    },
-    {
-      "wort": "dübelteller",
-      "skus": [
-        "POS-29610"
-      ],
-      "warum": "Schreibweise mit Umlaut; siehe duebelteller."
-    },
-    {
-      "wort": "rondellen",
-      "skus": [
-        "POS-29610"
-      ],
-      "warum": "Mehrzahl von Rondelle. Der Suchindex kennt keine deutsche Mehrzahlbildung; die Vertipperhilfe schlug bisher rondelle vor, aber eine Mehrzahl ist kein Vertipper."
     },
     {
       "wort": "abdeckband",
