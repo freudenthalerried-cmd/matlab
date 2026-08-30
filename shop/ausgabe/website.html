@@ -16515,9 +16515,35 @@ function kundenWarenkorb(zeilen, { artikel, lieferanten }, ust = UST_SATZ_KUNDE)
 const anfrageEuro = (n) => `${n.toFixed(2).replace('.', ',')} €`;
 
 
+
+
+
+
+
+
+
 function anfrageSpalte(text, breite) {
   const t = String(text);
-  return t.length >= breite ? t : t + ' '.repeat(breite - t.length);
+  return t + ' '.repeat(Math.max(1, breite - t.length));
+}
+
+
+
+
+
+
+
+
+function anfrageUmbruch(text, breite) {
+  const zeilen = [];
+  let laufend = '';
+  for (const wort of String(text).split(/\s+/).filter(Boolean)) {
+    if (laufend === '') laufend = wort;
+    else if (`${laufend} ${wort}`.length <= breite) laufend += ` ${wort}`;
+    else { zeilen.push(laufend); laufend = wort; }
+  }
+  if (laufend !== '') zeilen.push(laufend);
+  return zeilen.length ? zeilen : [''];
 }
 
 
@@ -16575,11 +16601,22 @@ function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = null, ein
       
       
       const mengeText = String(p.menge).replace('.', ',');
-      zeilen.push(`${anfrageSpalte(`${mengeText} ${einheiten[p.einheit] ?? p.einheit ?? 'Stk'}`, 14)}`
-        + `${anfrageSpalte(p.bezeichnung, 44)}`
-        + `${anfrageSpalte(p.sku, 12)}`
-        + `${anfrageSpalte(anfrageEuro(p.vkNetto), 11)}`
-        + anfrageEuro(p.zeilensummeNetto));
+      
+      
+      
+      
+      
+      const namenszeilen = anfrageUmbruch(p.bezeichnung, 44);
+      const menge = anfrageSpalte(`${mengeText} ${einheiten[p.einheit] ?? p.einheit ?? 'Stk'}`, 14);
+      
+      
+      
+      namenszeilen.forEach((zeile, i) => {
+        const vorne = i === 0 ? menge : anfrageSpalte('', 14);
+        if (i < namenszeilen.length - 1) { zeilen.push(vorne + zeile); return; }
+        zeilen.push(`${vorne}${anfrageSpalte(zeile, 44)}${anfrageSpalte(p.sku, 12)}`
+          + `${anfrageSpalte(anfrageEuro(p.vkNetto), 11)}${anfrageEuro(p.zeilensummeNetto)}`);
+      });
     }
   }
 

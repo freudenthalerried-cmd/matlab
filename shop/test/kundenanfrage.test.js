@@ -187,3 +187,56 @@ test('ohne Einheitentabelle bleibt das Kürzel stehen, statt zu verschwinden', (
   assert.ok(a.text.includes(`2 ${artikel[0].einheit}`),
     'lieber das Kürzel als gar keine Einheit');
 });
+
+
+/* ------------------------------------------------------------------ *
+ * Kein Name klebt an der Artikelnummer
+ * ------------------------------------------------------------------ */
+
+test('ein langer Artikelname läuft nicht in die Artikelnummer', () => {
+  // **Der Befund vom 30.08.:** 12 der 46 Artikel tragen einen Namen, der
+  // länger ist als die Namensspalte — der längste hat 96 Zeichen. Die Spalte
+  // gab bei Überlänge den Text ohne ein einziges Leerzeichen zurück, und die
+  // Nummer klebte daran: `…186 M 25 kgPOS-11283`.
+  //
+  // Dieser Text ist der einzige Weg, auf dem heute eine Bestellung zustande
+  // kommt: Der Kunde kopiert ihn und schickt ihn. Die Artikelnummer ist das
+  // Feld, an dem wir die Ware erkennen.
+  const lang = { ...artikel[0], bezeichnung: 'Capatect Polystyrol-Rondelle für Capatect Universaldübel Rondelle und Capatect Schraubdübel Holz' };
+  const rechnung = kundenWarenkorb([{ sku: lang.sku, menge: 2 }],
+    { artikel: [lang, ...artikel.slice(1)], lieferanten: lieferanten.lieferanten });
+  const text = baueKundenanfrage({ rechnung, bezirk: 'Perg', betreiber, datum: '2026-08-30' }).text;
+  assert.match(text, new RegExp(`\\s${lang.sku}\\s`), 'die Artikelnummer steht ohne Leerzeichen davor');
+  // Und der Name ist vollständig wiederherstellbar, Wort für Wort.
+  const woerter = lang.bezeichnung.split(' ');
+  assert.ok(woerter.length >= 10, `nur ${woerter.length} Wörter im Probenamen`);
+  for (const wort of woerter) {
+    assert.ok(text.includes(wort), `„${wort}" fehlt im Anfragetext`);
+  }
+});
+
+test('jede Artikelnummer des ganzen Bestands steht frei', () => {
+  // Nicht an einem ausgesuchten Artikel, sondern an allen: Ein Korb mit dem
+  // vollständigen Sortiment, und keine Nummer darf an Text kleben.
+  const alle = artikel.map((a) => ({ sku: a.sku, menge: 1 }));
+  assert.ok(alle.length >= 40, `nur ${alle.length} Artikel im Korb`);
+  const rechnung = kundenWarenkorb(alle, daten);
+  const text = baueKundenanfrage({ rechnung, bezirk: 'Perg', betreiber, datum: '2026-08-30' }).text;
+  assert.ok(artikel.length >= 40, `nur ${artikel.length} Artikel zu prüfen`);
+  for (const a of artikel) {
+    assert.match(text, new RegExp(`\\s${a.sku}\\s`), `${a.sku} klebt an einem Nachbarn`);
+  }
+});
+
+test('die Beträge stehen in allen Zeilen an derselben Stelle', () => {
+  // Der Grund für die feste Spaltenbreite: Ein Bauleiter überfliegt die
+  // rechte Kante. Läuft eine Zeile aus, ist die Summenspalte wertlos.
+  const lang = { ...artikel[0], bezeichnung: 'Ein sehr langer Name mit vielen Wörtern, der die Spalte deutlich überschreitet und umbrechen muss' };
+  const rechnung = kundenWarenkorb([{ sku: lang.sku, menge: 2 }, { sku: artikel[1].sku, menge: 1 }],
+    { artikel: [lang, ...artikel.slice(1)], lieferanten: lieferanten.lieferanten });
+  const text = baueKundenanfrage({ rechnung, bezirk: 'Perg', betreiber, datum: '2026-08-30' }).text;
+  const positionszeilen = text.split('\n').filter((z) => /POS-|A-\d/.test(z) && z.includes('€'));
+  assert.ok(positionszeilen.length >= 2, `nur ${positionszeilen.length} Positionszeilen`);
+  const spalten = positionszeilen.map((z) => z.indexOf(z.trim().match(/\S+$/)[0]));
+  assert.equal(new Set(spalten).size, 1, `die Summenspalte steht bei ${[...new Set(spalten)].join(' und ')}`);
+});

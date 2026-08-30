@@ -34,10 +34,36 @@ import { pruefeLieferort } from './liefergebiet.js';
 // Skript ist er ein SyntaxError, der die ganze Seite lahmlegt.
 const anfrageEuro = (n) => `${n.toFixed(2).replace('.', ',')} €`;
 
-/** Zeilen so ausrichten, dass Mengen und Beträge unter einander stehen. */
+/**
+ * Zeilen so ausrichten, dass Mengen und Beträge unter einander stehen.
+ *
+ * **Berichtigt am 30.08.** Der Rückgabewert war bei zu langem Text der Text
+ * selbst — ohne ein einziges Leerzeichen dahinter. Die nächste Spalte klebte
+ * dann daran: `…186 M 25 kgPOS-11283`. Eine Spalte, die nicht trennt, ist
+ * keine Spalte. Mindestens ein Leerzeichen steht immer.
+ */
 function anfrageSpalte(text, breite) {
   const t = String(text);
-  return t.length >= breite ? t : t + ' '.repeat(breite - t.length);
+  return t + ' '.repeat(Math.max(1, breite - t.length));
+}
+
+/**
+ * Einen langen Namen auf Zeilen der Spaltenbreite umbrechen.
+ *
+ * An Wortgrenzen, und wenn ein einzelnes Wort länger ist als die Spalte,
+ * bleibt es ungeteilt stehen — ein zerschnittener Artikelname ist schlimmer
+ * als eine zu lange Zeile.
+ */
+function anfrageUmbruch(text, breite) {
+  const zeilen = [];
+  let laufend = '';
+  for (const wort of String(text).split(/\s+/).filter(Boolean)) {
+    if (laufend === '') laufend = wort;
+    else if (`${laufend} ${wort}`.length <= breite) laufend += ` ${wort}`;
+    else { zeilen.push(laufend); laufend = wort; }
+  }
+  if (laufend !== '') zeilen.push(laufend);
+  return zeilen.length ? zeilen : [''];
 }
 
 /**
@@ -95,11 +121,22 @@ export function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = nu
       // Ein Text, der an einen Kunden geht, schreibt nicht in Datenbank-
       // schreibweise.
       const mengeText = String(p.menge).replace('.', ',');
-      zeilen.push(`${anfrageSpalte(`${mengeText} ${einheiten[p.einheit] ?? p.einheit ?? 'Stk'}`, 14)}`
-        + `${anfrageSpalte(p.bezeichnung, 44)}`
-        + `${anfrageSpalte(p.sku, 12)}`
-        + `${anfrageSpalte(anfrageEuro(p.vkNetto), 11)}`
-        + anfrageEuro(p.zeilensummeNetto));
+      // **Gemessen am 30.08.:** 12 der 46 Artikel tragen einen Namen, der
+      // länger ist als die Namensspalte — der längste hat 96 Zeichen. Bis
+      // dahin lief er in die Artikelnummer hinein. Jetzt bricht der Name um;
+      // Nummer und Beträge stehen auf der **letzten** seiner Zeilen, damit
+      // die Spalten unter einander bleiben.
+      const namenszeilen = anfrageUmbruch(p.bezeichnung, 44);
+      const menge = anfrageSpalte(`${mengeText} ${einheiten[p.einheit] ?? p.einheit ?? 'Stk'}`, 14);
+      // Menge zuerst, dann der Name; Nummer und Beträge stehen am Ende des
+      // Blocks. So liest sich jede Position in der Reihenfolge, in der ein
+      // Bauleiter sie prüft — wie viel, wovon, welche Nummer, was kostet es.
+      namenszeilen.forEach((zeile, i) => {
+        const vorne = i === 0 ? menge : anfrageSpalte('', 14);
+        if (i < namenszeilen.length - 1) { zeilen.push(vorne + zeile); return; }
+        zeilen.push(`${vorne}${anfrageSpalte(zeile, 44)}${anfrageSpalte(p.sku, 12)}`
+          + `${anfrageSpalte(anfrageEuro(p.vkNetto), 11)}${anfrageEuro(p.zeilensummeNetto)}`);
+      });
     }
   }
 
