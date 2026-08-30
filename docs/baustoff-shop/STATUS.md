@@ -502,10 +502,10 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > 787 vergleichbare Tests, kein Unterschied.
 > [`kommentare-im-schaufenster.md`](./kommentare-im-schaufenster.md).
 >
-> **Stand der Prüfmittel (30.08.):** 944 Tests, `pruefe-tests` 942/0, `pruefe-preise` 46/0, `pruefe-inhalte`
+> **Stand der Prüfmittel (30.08.):** 951 Tests, `pruefe-tests` 949/0, `pruefe-preise` 46/0, `pruefe-inhalte`
 > 24/357/0, `pruefe-seiten` 81 von 81 gebauten Seiten, `pruefe-widerrufe` 197 Dateien/48
 > Fundstellen, `pruefe-quellen` 6/6, `shopprobe` 49 (davon 10 im Rahmen),
-> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 197/197,
+> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 198/198,
 > `pruefe-pruefer` 11 Prüfer ohne Leerlauf (unterscheidet jetzt Abbruch von Leerlauf), Website 81 Seiten ohne toten
 > Verweis.
 
@@ -892,6 +892,7 @@ zusammengefasst und im Verzeichnis nicht auffindbar:
 | `zwei-margen-ein-wort.md` | `MARGENUNTERGRENZE = 0,32` sah nach einer abgelösten Regel aus: kein einziger der 46 Artikel erreicht sie. Gemessen — der Median liegt auf genau 25,00 %, weil der Shop mit 25 % kalkuliert, und die Konditionen des Lieferanten liegen im Median bei 45 %. Verdacht zurückgezogen; falsch war der Dateikopf, der noch „Gate 1“ behauptete |
 | `der-pruefer-der-sich-weigerte.md` | `pruefe-pruefer` meldete eine abgebrochene Probe als „keine Mengenangabe" und verdeckte damit die Antwort, die vier Zeilen höher stand. Der Abbruchgrund stand auf stderr, das an das Terminal vererbt statt gereicht wurde. Urteil nach `src/prueferurteil.js` herausgezogen — das Werkzeug, das die Prüfer prüft, hatte selbst keine Probe |
 | `null-werktage.md` | Die Auftragsbestätigung sagte für jede echte Bestellung „Vollständig auf der Baustelle: nach 0 Werktagen" zu — `?? 0` machte aus der unbekannten Lieferzeit des einzigen liefernden Lieferanten den optimistischsten Wert, auf dem Dokument, mit dem der Vertrag zustande kommt. Keine Probe konnte es sehen: Sie rechnen auf dem Altkatalog, dessen Lieferanten alle eine Zahl tragen |
+| `vier-meter-leiste.md` | Nachgang zum Befund über die Proben: Zwei Artikel werden je laufendem Meter fakturiert und kommen nur in Stangen zu 2,55 m — das Mengenfeld bot beliebige Meter an. Stehen geblieben, weil der Altkatalog, auf dem dreizehn Testdateien rechnen, keine Einheit `LFM` kennt. `GEBINDELESER` löst das Literal `['KG','M2']` in der Probe ab |
 | `segment-arbeitsplatzmessung.md` | Nebenstrecke, kein eigenes Segment |
 | `strategie-modellvergleich.md` | Kapitalweg braucht ~900.000 €; enthält überholte Empfehlung |
 | `anschreiben-entwuerfe.md` | Drei Anschreiben (Hersteller, Großhändler, Partnerbetriebe), versandfertig, nicht versendet |

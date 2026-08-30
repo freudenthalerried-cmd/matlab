@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { gebindeKg, gebindeM2, gebindezahl, preisJeKilo, kilotafel, mengenschritt, GROESSTES_GEBINDE_KG } from '../src/gebinde.js';
+import { gebindeKg, gebindeM2, gebindezahl, preisJeKilo, kilotafel, mengenschritt, GROESSTES_GEBINDE_KG, gebindeLfm, GEBINDELESER } from '../src/gebinde.js';
 
 const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
 
@@ -149,12 +149,25 @@ test('am Bestand bekommt jeder Gebindeartikel einen Schritt — und nicht jeder 
   const artikel = JSON.parse(readFileSync(datei, 'utf8').match(/^window\.__SHOP__=(.*?);$/m)[1]).artikel;
   const mit = artikel.filter((a) => mengenschritt(a) !== null);
   assert.ok(mit.length >= 12, `nur ${mit.length} Artikel mit Gebindeschritt`);
+  // **Nicht mehr `['KG', 'M2']`.** Hier stand der Bestand von gestern als
+  // Literal, und als die laufenden Meter dazukamen, fiel diese Probe um,
+  // obwohl nichts kaputt war. Geprüft gehört die Regel: Ein Schritt entsteht
+  // nur für Einheiten, für die es einen Leser gibt — und jeder Leser findet
+  // im Bestand seinen Fall, sonst prüft die Schleife darunter ihn nicht.
   const einheiten = new Set(mit.map((a) => a.einheit));
-  assert.deepEqual([...einheiten].sort(), ['KG', 'M2'],
-    'beide Fälle müssen im Bestand vorkommen, sonst prüft der Test nur einen');
+  const bekannt = Object.keys(GEBINDELESER);
+  // Beide Schleifen darunter prüfen bei leerer Liste nichts. Eine geleerte
+  // Zuordnung wäre sonst der grünste Zustand dieser Probe.
+  assert.ok(einheiten.size >= 2, `nur ${einheiten.size} Einheit(en) mit Schritt im Bestand`);
+  assert.ok(bekannt.length >= 3, `nur ${bekannt.length} Einheiten in GEBINDELESER`);
+  for (const e of einheiten) {
+    assert.ok(bekannt.includes(e), `${e} bekommt einen Schritt, hat aber keinen Leser`);
+  }
+  for (const e of bekannt) {
+    assert.ok(einheiten.has(e), `kein Artikel mit Einheit ${e} im Bestand — der Leser läuft nie`);
+  }
   for (const a of mit) {
-    const erwartet = a.einheit === 'KG' ? gebindeKg(a.bezeichnung) : gebindeM2(a.bezeichnung);
-    assert.equal(mengenschritt(a), erwartet, a.sku);
+    assert.equal(mengenschritt(a), GEBINDELESER[a.einheit](a.bezeichnung), a.sku);
   }
   // Und die Gegenrichtung: Nicht jeder Artikel bekommt einen — sonst wäre
   // die Erkennung wirkungslos.
@@ -195,4 +208,79 @@ test('eine Dämmplatte beginnt bei einer Platte, nicht bei einem Quadratmeter', 
   assert.match(feld[0], /min="0.75"/);
   assert.match(feld[0], /step="0.75"/);
   assert.match(html, /Abgabe in ganzen Einheiten zu 0,75 m²/);
+});
+
+/* ------------------------------------------------------------------ *
+ * Längenware: laufende Meter, die es nur in ganzen Stangen gibt
+ * ------------------------------------------------------------------ */
+
+test('gebindeLfm liest die Länge aus der Bezeichnung', () => {
+  assert.equal(gebindeLfm('Capatect Gewebeanschlussleiste 3D Universal Plus 2,55 m'), 2.55);
+  assert.equal(gebindeLfm('Kantenschutz mit Gewebe Carbon 11,5 13,5 cm 2,5 m'), 2.5);
+  assert.equal(gebindeLfm('Sockelleiste 3 m'), 3);
+});
+
+test('gebindeLfm verwechselt Millimeter, Zentimeter und Quadratmeter nicht mit Metern', () => {
+  // Der Kantenschutz oben trägt „13,5 cm" unmittelbar vor „2,5 m". Fiele die
+  // Abgrenzung, wäre der Schritt 13,5 statt 2,5 — der Kunde bekäme das
+  // Fünffache angeboten und die Karte den fünffachen Preis.
+  assert.equal(gebindeLfm('Klebeband 48 mm breit'), null);
+  assert.equal(gebindeLfm('Profil 30 cm'), null);
+  assert.equal(gebindeLfm('PAE-Folie 100 m2'), null);
+  assert.equal(gebindeLfm('Platte 0,75 m²'), null);
+});
+
+test('Zwei Längenangaben sind ein Maß, keine Gebindelänge', () => {
+  // „Was die Bezeichnung nicht sagt, sagt sie nicht" — dieselbe Regel wie bei
+  // der Fläche. Aus 1,1 × 50 die 50 zu nehmen hieße raten, welche Kante die
+  // Stangenlänge ist.
+  assert.equal(gebindeLfm('Gitter 1,1 m x 50 m'), null);
+  assert.equal(gebindeLfm('ohne jede Zahl'), null);
+});
+
+test('Unsinnige Längen werden verworfen, nicht durchgereicht', () => {
+  assert.equal(gebindeLfm('Faden 0,05 m'), null);
+  assert.equal(gebindeLfm('Trasse 5000 m'), null);
+});
+
+test('Nur bei Einheit LFM wird die Länge zum Mengenschritt', () => {
+  // Gegenrichtung: Ein Rohr „NW 100 1 m", das je Stück verkauft wird, hat
+  // schon den Schritt eins. Aus seinem Namen eine Länge zu ziehen, machte aus
+  // einem Stück einen Meter.
+  const leiste = { einheit: 'LFM', bezeichnung: 'Anschlussleiste 2,55 m' };
+  assert.equal(mengenschritt(leiste), 2.55);
+  assert.equal(mengenschritt({ einheit: 'STK', bezeichnung: 'PVC Kanalrohr NW 100 1 m' }), null);
+  assert.equal(mengenschritt({ einheit: 'RLL', bezeichnung: 'PAE-Folie T 100 2 50 m 100 m2' }), null);
+});
+
+test('Vier laufende Meter Leiste sind zwei Stangen, nicht vier Meter', () => {
+  // Der ganze Anlass in einer Zeile: Die Menge, die es nicht gibt.
+  const schritt = gebindeLfm('Anschlussleiste 2,55 m');
+  const z = gebindezahl(4, schritt);
+  assert.equal(z.stueck, 2);
+  assert.equal(z.gedeckteMenge, 5.1);
+  assert.equal(z.gehtAuf, false);
+});
+
+test('Jede Einheit in GEBINDELESER wird von mengenschritt auch bedient', () => {
+  // Die Zuordnung ist die Zusicherung. Wer sie erweitert und die Kette in
+  // `mengenschritt` vergisst, bekommt hier den Befund — und nicht erst,
+  // wenn ein Kunde eine unlieferbare Menge bestellt.
+  const proben = {
+    KG: 'Putzgrund 25 kg',
+    M2: 'Dämmplatte 0,75 m2',
+    LFM: 'Anschlussleiste 2,55 m',
+  };
+  const bekannt = Object.keys(GEBINDELESER);
+  assert.ok(bekannt.length >= 3, `nur ${bekannt.length} Einheiten — die Schleife prüft zu wenig`);
+  for (const einheit of bekannt) {
+    const bezeichnung = proben[einheit];
+    assert.ok(bezeichnung, `für ${einheit} fehlt in dieser Probe ein Beispielname`);
+    assert.equal(
+      mengenschritt({ einheit, bezeichnung }),
+      GEBINDELESER[einheit](bezeichnung),
+      `${einheit}: mengenschritt und GEBINDELESER sind auseinandergelaufen`,
+    );
+    assert.ok(mengenschritt({ einheit, bezeichnung }) > 0, `${einheit} liefert keinen Schritt`);
+  }
 });

@@ -107,6 +107,39 @@ export function gebindeM2(bezeichnung) {
   return m2;
 }
 
+export const KLEINSTES_GEBINDE_LFM = 0.1;
+export const GROESSTES_GEBINDE_LFM = 100;
+
+/**
+ * Die Gebindelänge in laufenden Metern, oder `null`.
+ *
+ * **Der Anlass, 30.08.** Zwei Artikel im Bestand werden je laufendem Meter
+ * fakturiert und kommen doch nur in fester Länge:
+ *
+ *   `Capatect Gewebeanschlussleiste 3D Universal Plus 2,55 m`  (LFM)
+ *   `Capatect Kantenschutz mit Gewebe Carbon 11,5 13,5 cm 2,5 m`  (LFM)
+ *
+ * Das Mengenfeld bot beliebige Meter an. Vier laufende Meter Leiste gibt es
+ * nicht — es gibt zwei Stangen zu 2,55 m. Dieselbe Bestellung, die niemand
+ * kommissionieren kann, wie beim 25-kg-Sack; nur eine Einheit weiter.
+ *
+ * Dieselbe Vorsicht wie bei `gebindeM2`, und dieselbe Grenze: Gesucht wird ein
+ * blankes `m` — nicht `m2`, nicht `m²`, nicht `mm`, nicht `cm`. Der
+ * Kantenschutz führt „11,5 13,5 **cm** 2,5 **m**" und darf nur die zweite
+ * Zahl hergeben; das Klebeband „48 **mm** x 50 m" gehört gar nicht hierher,
+ * weil es je Stück verkauft wird. Mehr als ein Treffer heißt: Die Bezeichnung
+ * nennt ein Maß, keine Länge. Dann gibt es nichts.
+ */
+export function gebindeLfm(bezeichnung) {
+  const t = String(bezeichnung ?? '');
+  const treffer = [...t.matchAll(/(\d+(?:[.,]\d+)?)\s*m(?![\p{L}\d²])/giu)];
+  if (treffer.length !== 1) return null;
+  const m = zahl(treffer[0][1]);
+  if (!Number.isFinite(m)) return null;
+  if (m < KLEINSTES_GEBINDE_LFM || m > GROESSTES_GEBINDE_LFM) return null;
+  return m;
+}
+
 /** Einheiten, die eine Stückzahl meinen — bei ihnen ist der Preis der Gebindepreis. */
 const STUECKEINHEITEN = new Set(['SCK', 'STK', 'PAK', 'EIM', 'KAR', 'ROL']);
 
@@ -179,6 +212,21 @@ export function preisJeKilo(artikel) {
  * kann, kostet mehr als eine, die der Kunde auf 25 kg aufrundet. Verkauft
  * der Lieferant doch lose, fällt diese Funktion weg und sonst nichts.
  */
+/**
+ * Welche Einheit von welchem Leser gelesen wird — die **eine** Zuordnung.
+ *
+ * Sie stand bis zum 30.08. als Kette von `if`-Zeilen hier und ein zweites Mal
+ * als Literal `['KG', 'M2']` in `test/gebinde.test.js`. Als die laufenden
+ * Meter dazukamen, fiel die Probe um — nicht weil die Erkennung falsch war,
+ * sondern weil sie den Bestand von gestern festhielt. Wer eine Einheit
+ * ergänzt, ergänzt sie jetzt hier, und beide Seiten wissen davon.
+ */
+export const GEBINDELESER = Object.freeze({
+  KG: gebindeKg,
+  M2: gebindeM2,
+  LFM: gebindeLfm,
+});
+
 export function mengenschritt(artikel) {
   if (!artikel) return null;
   const einheit = String(artikel.einheit ?? '').toUpperCase();
@@ -190,7 +238,15 @@ export function mengenschritt(artikel) {
   // `istMenge()` sind zwei Nachkommastellen zugelassen, und der Schritt darf
   // die Gebindegröße sein.
   if (einheit === 'M2') return gebindeM2(artikel.bezeichnung);
+  // **Erweitert am 30.08. auf Längenware**, aus demselben Grund wie damals
+  // die Fläche: Bei einer Leiste zu 2,55 m sind ganze laufende Meter gerade
+  // *nicht* lieferbar.
+  if (einheit === 'LFM') return gebindeLfm(artikel.bezeichnung);
   return null;
+  // Absichtlich als Kette und nicht über `GEBINDELESER` aufgelöst: Die
+  // Zuordnung ist die Zusicherung, die Kette ihre Ausführung. Liefe beides
+  // über dieselbe Tabelle, prüfte die Probe darunter nur noch, dass eine
+  // Tabelle sich selbst gleicht.
 }
 
 /**

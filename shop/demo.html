@@ -736,6 +736,39 @@ function gebindeM2(bezeichnung) {
   return m2;
 }
 
+const KLEINSTES_GEBINDE_LFM = 0.1;
+const GROESSTES_GEBINDE_LFM = 100;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function gebindeLfm(bezeichnung) {
+  const t = String(bezeichnung ?? '');
+  const treffer = [...t.matchAll(/(\d+(?:[.,]\d+)?)\s*m(?![\p{L}\d²])/giu)];
+  if (treffer.length !== 1) return null;
+  const m = zahl(treffer[0][1]);
+  if (!Number.isFinite(m)) return null;
+  if (m < KLEINSTES_GEBINDE_LFM || m > GROESSTES_GEBINDE_LFM) return null;
+  return m;
+}
+
 
 const STUECKEINHEITEN = new Set(['SCK', 'STK', 'PAK', 'EIM', 'KAR', 'ROL']);
 
@@ -808,6 +841,21 @@ function preisJeKilo(artikel) {
 
 
 
+
+
+
+
+
+
+
+
+
+const GEBINDELESER = Object.freeze({
+  KG: gebindeKg,
+  M2: gebindeM2,
+  LFM: gebindeLfm,
+});
+
 function mengenschritt(artikel) {
   if (!artikel) return null;
   const einheit = String(artikel.einheit ?? '').toUpperCase();
@@ -819,7 +867,15 @@ function mengenschritt(artikel) {
   
   
   if (einheit === 'M2') return gebindeM2(artikel.bezeichnung);
+  
+  
+  
+  if (einheit === 'LFM') return gebindeLfm(artikel.bezeichnung);
   return null;
+  
+  
+  
+  
 }
 
 
