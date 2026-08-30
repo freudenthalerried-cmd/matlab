@@ -502,11 +502,11 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > 787 vergleichbare Tests, kein Unterschied.
 > [`kommentare-im-schaufenster.md`](./kommentare-im-schaufenster.md).
 >
-> **Stand der Prüfmittel (30.08.):** 921 Tests, `pruefe-tests` 919/0, `pruefe-preise` 46/0, `pruefe-inhalte`
-> 24/357/0, `pruefe-seiten` 81 von 81 gebauten Seiten, `pruefe-widerrufe` 195 Dateien/48
+> **Stand der Prüfmittel (30.08.):** 933 Tests, `pruefe-tests` 931/0, `pruefe-preise` 46/0, `pruefe-inhalte`
+> 24/357/0, `pruefe-seiten` 81 von 81 gebauten Seiten, `pruefe-widerrufe` 197 Dateien/48
 > Fundstellen, `pruefe-quellen` 6/6, `shopprobe` 49 (davon 10 im Rahmen),
-> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 194/194,
-> `pruefe-pruefer` 11 Prüfer ohne Leerlauf, Website 81 Seiten ohne toten
+> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 196/196,
+> `pruefe-pruefer` 11 Prüfer ohne Leerlauf (unterscheidet jetzt Abbruch von Leerlauf), Website 81 Seiten ohne toten
 > Verweis.
 
 ## Wo das Projekt steht
@@ -889,6 +889,7 @@ zusammengefasst und im Verzeichnis nicht auffindbar:
 | `die-rolle-die-ein-rohr-war.md` | Formerkennung der Artikelzeichnungen an 40 fremden Namen gemessen: 2 falsche Zeichnungen. „X mit Y" ist ein X (der Eckwinkel war eine Rolle), und die Einheit schlägt den Namen, wo sie eindeutig ist (50 m Drainagerohr sind ein Ring). Danach 0 falsche, Bestandsverteilung unverändert |
 | `generalprobe-mit-hundertzweiundsiebzig.md` | Der ganze Liefertag im Sandkasten durchgespielt: 126 erfundene Zeilen eingelesen, 172 Artikel, 207 Seiten, alle Prüfer grün — und drei Tests, die am Bestand von 46 hingen und am Liefertag gefeuert hätten. Eine Probe, die den Bestand misst, ist eine Zeitbombe mit bekanntem Zünddatum |
 | `zwei-margen-ein-wort.md` | `MARGENUNTERGRENZE = 0,32` sah nach einer abgelösten Regel aus: kein einziger der 46 Artikel erreicht sie. Gemessen — der Median liegt auf genau 25,00 %, weil der Shop mit 25 % kalkuliert, und die Konditionen des Lieferanten liegen im Median bei 45 %. Verdacht zurückgezogen; falsch war der Dateikopf, der noch „Gate 1“ behauptete |
+| `der-pruefer-der-sich-weigerte.md` | `pruefe-pruefer` meldete eine abgebrochene Probe als „keine Mengenangabe" und verdeckte damit die Antwort, die vier Zeilen höher stand. Der Abbruchgrund stand auf stderr, das an das Terminal vererbt statt gereicht wurde. Urteil nach `src/prueferurteil.js` herausgezogen — das Werkzeug, das die Prüfer prüft, hatte selbst keine Probe |
 | `segment-arbeitsplatzmessung.md` | Nebenstrecke, kein eigenes Segment |
 | `strategie-modellvergleich.md` | Kapitalweg braucht ~900.000 €; enthält überholte Empfehlung |
 | `anschreiben-entwuerfe.md` | Drei Anschreiben (Hersteller, Großhändler, Partnerbetriebe), versandfertig, nicht versendet |
