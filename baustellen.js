@@ -23,6 +23,7 @@ const MAIL_TEXT = 'Anbei das Baustellenbesuchsprotokoll - BauKG.\n\n' +
 const BAUSTELLEN = [
   {
     id: 'vorchdorf',
+    aktiv: false,
     ort: 'Vorchdorf', gruppe: 'SEENTOUR Gmunden',
     lat: 47.9906, lng: 13.9236,
     name: 'Vorchdorf Messenbachstraße',
@@ -35,6 +36,7 @@ const BAUSTELLEN = [
   },
   {
     id: 'pinsdorf',
+    aktiv: false,
     ort: 'Pinsdorf', gruppe: 'SEENTOUR Gmunden',
     lat: 47.9247, lng: 13.7695,
     name: 'Ppz Pinsdorf Zentrum',
@@ -47,6 +49,7 @@ const BAUSTELLEN = [
   },
   {
     id: 'wels',
+    aktiv: false,
     ort: 'Wels', gruppe: 'Diverse Baustellen',
     lat: 48.1487, lng: 14.0304,
     name: 'Wels Neustadt',
@@ -59,6 +62,7 @@ const BAUSTELLEN = [
   },
   {
     id: 'hangar3',
+    aktiv: false,
     ort: '', gruppe: 'Linz, Traun, Umgebung',
     name: 'Hangar 3',
     ordnerUrl: 'https://drive.google.com/drive/folders/1iyh3n4RucvE3glCTg8FTE-k0f3698nSp',
@@ -70,6 +74,7 @@ const BAUSTELLEN = [
   },
   {
     id: 'brauunion',
+    aktiv: false,
     ort: 'Wieselburg', gruppe: 'Diverse Baustellen',
     lat: 48.1266, lng: 15.1354,
     name: 'Brauunion Wieselburg',
@@ -82,6 +87,7 @@ const BAUSTELLEN = [
   },
   {
     id: 'niederzirking',
+    aktiv: false,
     ort: 'Ried in der Riedmark', gruppe: 'Linz, Traun, Umgebung',
     lat: 48.2606, lng: 14.5231,
     name: 'Kirche Niederzirking',
@@ -94,6 +100,7 @@ const BAUSTELLEN = [
   },
   {
     id: 'niederneukirchen',
+    aktiv: false,
     ort: 'Niederneukirchen', gruppe: 'Linz, Traun, Umgebung',
     lat: 48.1861, lng: 14.3894,
     name: 'Niederneukirchen NMS',
@@ -128,18 +135,67 @@ const BAUSTELLEN = [
     id: 'strass_attergau',
     ort: 'Straß im Attergau', gruppe: 'SEENTOUR Gmunden',
     name: 'Straß im Attergau VS+KIGA',
+    verteilerN: 9,
     protokolle: []
   },
   {
     id: 'hamburgerstrasse',
     ort: 'Vöcklabruck', gruppe: 'SEENTOUR Gmunden',
     name: 'OJ 12+13 Hamburgerstraße 1-21',
+    verteilerN: 10,
     protokolle: []
   },
   {
     id: 'oebb_riedau',
     ort: '', gruppe: 'SEENTOUR Gmunden',
     name: 'ÖBB Riedau-Attnang',
+    protokolle: []
+  }
+,
+  {
+    id: 'baumgartenberg',
+    ort: '', gruppe: 'Diverse Baustellen',
+    name: 'Baumgartenberg',
+    verteilerN: 9,
+    protokolle: []
+  },
+  {
+    id: 'oebb_bahnstrom',
+    ort: '', gruppe: 'Diverse Baustellen',
+    name: 'ÖBB Bahnstromleitung',
+    verteilerN: 8,
+    protokolle: []
+  },
+  {
+    id: 'habau_ortner',
+    ort: '', gruppe: 'Diverse Baustellen',
+    name: 'Habau Ortner',
+    protokolle: []
+  },
+  {
+    id: 'ortner_wartberg',
+    ort: 'Wartberg', gruppe: 'Diverse Baustellen',
+    name: 'Ortner Wartberg',
+    protokolle: []
+  },
+  {
+    id: 'grein_nms',
+    ort: 'Grein', gruppe: 'Diverse Baustellen',
+    name: 'Grein NMS',
+    verteilerN: 4,
+    protokolle: []
+  },
+  {
+    id: 'altenhaus6',
+    ort: '', gruppe: 'Diverse Baustellen',
+    name: 'Altenhaus 6',
+    protokolle: []
+  },
+  {
+    id: 'perg_habau',
+    ort: 'Perg', gruppe: 'Diverse Baustellen',
+    name: 'Perg Habau Bürozubau',
+    verteilerN: 4,
     protokolle: []
   }
 ];

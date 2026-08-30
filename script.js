@@ -29,6 +29,14 @@
   const kiPanel = document.getElementById('ki-vorschlaege');
   const kiChips = document.getElementById('ki-chips');
   const fotoInput = document.getElementById('foto-input');
+  const galerieInput = document.getElementById('galerie-input');
+  const fotoHinweis = document.getElementById('foto-hinweis');
+  const kopfDatum = document.getElementById('kopf-datum');
+  const kopfUhrzeit = document.getElementById('kopf-uhrzeit');
+  const kopfNr = document.getElementById('kopf-nr');
+  const kopfAnwesend = document.getElementById('kopf-anwesend');
+  const kopfWetter = document.getElementById('kopf-wetter');
+  const kopfAllgemein = document.getElementById('kopf-allgemein');
   const fotoPreview = document.getElementById('foto-preview');
   const fotoPreviewImg = document.getElementById('foto-preview-img');
   const fotoRemove = document.getElementById('foto-remove');
@@ -92,6 +100,8 @@
   let standorte = ladeJson('bp_standorte', {});      // Baustellen-ID -> {lat, lng}
   let eigene = ladeJson('bp_baustellen_eigene', []); // selbst angelegte Baustellen
   let gruppenOffen = ladeJson('bp_gruppen_offen', { 'SEENTOUR Gmunden': true });
+  let koepfe = ladeJson('bp_koepfe', {}); // "<BaustellenID>:<Nr>" -> Kopfdaten
+  let aktuelleNr = 1;
 
   function merkeNutzung(id) {
     nutzung[id] = (nutzung[id] || 0) + 1;
@@ -120,8 +130,19 @@
 
   function verteilerAnzahl(bs) {
     const v = verteiler[bs.id];
-    if (!v) return 0;
+    if (!v) return bs.verteilerN || 0;
     return v.split(',').map(function (e) { return e.trim(); }).filter(Boolean).length;
+  }
+
+  // Badge wie in der ursprünglichen App: wann war der letzte Eintrag?
+  function tageBadge(bs) {
+    let neuester = 0;
+    eintraege.forEach(function (e) {
+      if ((e.bs === bs.id || (!e.bs && e.ort === bs.name)) && e.ts && e.ts > neuester) neuester = e.ts;
+    });
+    if (!neuester) return null;
+    const tage = Math.floor((Date.now() - neuester) / 86400000);
+    return tage <= 0 ? 'heute' : tage + ' Tg.';
   }
 
   // ---------- Ansicht 1: Baustellen-Liste ----------
@@ -130,7 +151,9 @@
     const filter = sucheInput.value.trim().toLowerCase();
     gruppenContainer.innerHTML = '';
     GRUPPEN.forEach(function (gruppe) {
-      const inGruppe = alleBaustellen().filter(function (bs) { return (bs.gruppe || GRUPPEN[0]) === gruppe; });
+      const inGruppe = alleBaustellen().filter(function (bs) {
+        return bs.aktiv !== false && (bs.gruppe || GRUPPEN[0]) === gruppe;
+      });
       const treffer = filter
         ? inGruppe.filter(function (bs) { return (bs.name + ' ' + (bs.ort || '')).toLowerCase().indexOf(filter) !== -1; })
         : inGruppe;
@@ -157,11 +180,14 @@
           karte.type = 'button';
           karte.className = 'baustelle-karte';
           const anzahl = verteilerAnzahl(bs);
-          const unterzeile = (bs.ort ? bs.ort + ' · ' : '') +
+          const unterzeile = (bs.ort ? bs.ort + ' · ' : '· ') +
             (anzahl ? 'Verteiler: ' + anzahl : '⚠️ kein Verteiler');
-          karte.innerHTML = '<span class="karte-text"><span class="karte-name"></span>' +
-            '<span class="karte-unterzeile"></span></span><span class="karte-pfeil">&#8250;</span>';
+          const badge = tageBadge(bs);
+          karte.innerHTML = '<span class="karte-text"><span class="karte-titelzeile">' +
+            '<span class="karte-name"></span>' + (badge ? '<span class="karte-badge"></span>' : '') +
+            '</span><span class="karte-unterzeile"></span></span><span class="karte-pfeil">&#8250;</span>';
           karte.querySelector('.karte-name').textContent = bs.name;
+          if (badge) karte.querySelector('.karte-badge').textContent = badge;
           karte.querySelector('.karte-unterzeile').textContent = unterzeile;
           karte.addEventListener('click', function () { oeffneBaustelle(bs); });
           gruppenContainer.appendChild(karte);
@@ -218,19 +244,70 @@
 
   // ---------- Ansicht 2: Protokoll ----------
 
+  function hoechsteNr(bsId) {
+    let n = 0;
+    Object.keys(koepfe).forEach(function (k) {
+      if (k.indexOf(bsId + ':') === 0) n = Math.max(n, parseInt(k.split(':')[1], 10) || 0);
+    });
+    eintraege.forEach(function (e) {
+      if (e.bs === bsId) n = Math.max(n, e.pn || 1);
+    });
+    return n;
+  }
+
+  function kopfKey() {
+    return aktuelleBaustelle.id + ':' + aktuelleNr;
+  }
+
+  function ladeKopf() {
+    const d = new Date();
+    function p(n) { return (n < 10 ? '0' : '') + n; }
+    const k = koepfe[kopfKey()] || {};
+    kopfDatum.value = k.datum || (d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()));
+    kopfUhrzeit.value = k.uhrzeit || (p(d.getHours()) + ':' + p(d.getMinutes()));
+    kopfAnwesend.value = k.anwesend || 'Bmst. Ing. Stefan Freudenthaler';
+    kopfWetter.value = k.wetter || '';
+    kopfAllgemein.value = k.allgemein || '';
+    kopfNr.value = aktuelleNr;
+    protokollTitel.textContent = 'Protokoll Nr. ' + aktuelleNr;
+  }
+
+  function speichereKopf() {
+    koepfe[kopfKey()] = {
+      datum: kopfDatum.value,
+      uhrzeit: kopfUhrzeit.value,
+      anwesend: kopfAnwesend.value.trim(),
+      wetter: kopfWetter.value.trim(),
+      allgemein: kopfAllgemein.value.trim()
+    };
+    speichereJson('bp_koepfe', koepfe);
+  }
+
+  [kopfDatum, kopfUhrzeit, kopfAnwesend, kopfWetter, kopfAllgemein].forEach(function (el) {
+    el.addEventListener('change', speichereKopf);
+  });
+
+  kopfNr.addEventListener('change', function () {
+    const n = Math.max(1, parseInt(kopfNr.value, 10) || 1);
+    aktuelleNr = n;
+    ladeKopf();
+    renderAlleEintraege();
+  });
+
   function oeffneBaustelle(bs) {
     aktuelleBaustelle = bs;
     ortInput.value = bs.name;
-    protokollTitel.textContent = bs.name;
+    aktuelleNr = Math.max(1, hoechsteNr(bs.id));
+    ladeKopf();
     viewListe.hidden = true;
     viewProtokoll.hidden = false;
     infoPanel.hidden = true;
     standortBanner.hidden = true;
     renderAlleEintraege();
-    input.focus();
   }
 
   function zurueckZurListe() {
+    if (aktuelleBaustelle) speichereKopf();
     aktuelleBaustelle = null;
     viewProtokoll.hidden = true;
     viewListe.hidden = false;
@@ -531,6 +608,8 @@
     if (gewaehlt.length) {
       eintraege.push({
         zeit: zeitstempel(),
+        ts: Date.now(),
+        pn: aktuelleNr,
         bs: aktuelleBaustelle ? aktuelleBaustelle.id : null,
         ort: ortInput.value.trim(),
         titel: 'Allgemeine Punkte',
@@ -545,8 +624,8 @@
 
   // ---------- Foto ----------
 
-  fotoInput.addEventListener('change', function () {
-    const file = fotoInput.files && fotoInput.files[0];
+  function verarbeiteFoto(quelle) {
+    const file = quelle.files && quelle.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = function () {
@@ -556,9 +635,13 @@
       renderFotoKategorien();
       fotoKategorien.hidden = false;
       updateSendState();
+      fotoHinweis.hidden = true;
     };
     reader.readAsDataURL(file);
-  });
+  }
+
+  fotoInput.addEventListener('change', function () { verarbeiteFoto(fotoInput); });
+  galerieInput.addEventListener('change', function () { verarbeiteFoto(galerieInput); });
 
   fotoRemove.addEventListener('click', function () {
     aktuellesFoto = null;
@@ -642,7 +725,8 @@
   function eintraegeAktuell() {
     if (!aktuelleBaustelle) return [];
     return eintraege.filter(function (e) {
-      return e.bs === aktuelleBaustelle.id || (!e.bs && e.ort === aktuelleBaustelle.name);
+      const gleicheBs = e.bs === aktuelleBaustelle.id || (!e.bs && e.ort === aktuelleBaustelle.name);
+      return gleicheBs && (e.pn || 1) === aktuelleNr;
     });
   }
 
@@ -751,8 +835,10 @@
 
   function renderAlleEintraege() {
     messages.innerHTML = '';
-    eintraegeAktuell().forEach(renderEintrag);
-    messages.scrollTop = messages.scrollHeight;
+    const aktuelle = eintraegeAktuell();
+    aktuelle.forEach(renderEintrag);
+    const hatFoto = aktuelle.some(function (e) { return e.foto; }) || !!aktuellesFoto;
+    fotoHinweis.hidden = hatFoto || aktuelle.length > 0;
   }
 
   // ---------- Eingabe ----------
@@ -883,6 +969,8 @@
     } else {
       eintraege.push({
         zeit: zeitstempel(),
+        ts: Date.now(),
+        pn: aktuelleNr,
         bs: aktuelleBaustelle ? aktuelleBaustelle.id : null,
         ort: ortInput.value.trim(),
         text: text,
@@ -896,6 +984,7 @@
     eingefuegt = [];
     aktuellesFoto = null;
     fotoInput.value = '';
+    galerieInput.value = '';
     fotoPreview.hidden = true;
     fotoKategorien.hidden = true;
     kiPanel.hidden = true;
@@ -954,6 +1043,7 @@
   function naechsteBaustelle(lat, lng) {
     let beste = null;
     alleBaustellen().forEach(function (bs) {
+      if (bs.aktiv === false) return;
       const k = koordinatenFuer(bs);
       if (!k) return;
       const d = distanzKm(lat, lng, k.lat, k.lng);

@@ -23,12 +23,18 @@ html, body {
 .chat {
   max-width: 640px;
   margin: 0 auto;
-  padding: 16px;
-  height: 100vh;
-  height: 100dvh;
+  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  position: relative;
+  background: var(--bg);
+}
+
+.protokoll-scroll {
+  padding: 14px 12px 28px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .app-header {
@@ -394,9 +400,7 @@ html, body {
 .messages {
   list-style: none;
   padding: 0;
-  margin: 0 0 12px 0;
-  flex: 1;
-  overflow-y: auto;
+  margin: 0;
 }
 
 /* Protokoll-Eintrag im Stil der "Sicherheit am Bau"-Berichte */
@@ -646,22 +650,7 @@ html, body {
   overflow: hidden;
 }
 
-/* Druck: nur der Bericht */
-@media print {
-  .app-header .header-row,
-  .chat-form,
-  .ki-vorschlaege,
-  .foto-kategorien,
-  .foto-preview,
-  .bausteine-panel,
-  .eintrag-loeschen {
-    display: none !important;
-  }
-  body { background: #fff; }
-  .chat { height: auto; max-width: none; }
-  .messages { overflow: visible; }
-  .eintrag { break-inside: avoid; }
-}
+
 
 
 /* ===== Grüner Kopfbalken (beide Ansichten) ===== */
@@ -672,10 +661,6 @@ html, body {
   align-items: center;
   gap: 10px;
   padding: 14px 16px;
-}
-
-.chat .gruen-kopf {
-  margin: -16px -16px 12px -16px;
 }
 
 .gruen-kopf h1 {
@@ -862,4 +847,151 @@ html, body {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+/* ===== Protokoll-Kopf (Datum/Uhrzeit/Nr., Anwesend, Wetter, Baustand) ===== */
+.kopf-karte {
+  background: var(--bubble);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.feld {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #444a52;
+}
+
+.feld input, .feld textarea {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 18px;
+  font-weight: 400;
+  font-family: inherit;
+  background: var(--bubble);
+  color: var(--text);
+  width: 100%;
+}
+
+.feld textarea { resize: vertical; }
+
+.feld-reihe {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 4fr) 64px;
+  gap: 10px;
+}
+
+.feld-nr input { text-align: center; }
+
+/* Große Foto-Knöpfe */
+.foto-knoepfe {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.gross-knopf {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: 16px;
+  padding: 16px 10px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: center;
+}
+
+.gross-gruen { background: #14532d; color: #ffffff; }
+.gross-gruen:hover { background: #1e7a3c; }
+.gross-grau { background: #e8eaee; color: var(--text); }
+.gross-grau:hover { background: #dde0e5; }
+.gross-knopf.breit { width: 100%; }
+
+.foto-hinweis {
+  text-align: center;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.5;
+  padding: 24px 8px;
+}
+
+/* PDF-Karte */
+.pdf-karte {
+  background: var(--bubble);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pdf-neben {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.typ-reihe {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.typ-reihe .typ-schalter { margin-bottom: 0; }
+
+/* Badge auf der Baustellen-Karte (heute / N Tg.) */
+.karte-titelzeile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.karte-badge {
+  background: #e8eaee;
+  color: #444a52;
+  border-radius: 999px;
+  padding: 3px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Druck: nur der Bericht */
+@media print {
+  #view-liste,
+  .gruen-kopf .kopf-knoepfe,
+  #zurueck-button,
+  .foto-knoepfe,
+  .foto-hinweis,
+  .foto-preview,
+  .chat-form,
+  .ki-vorschlaege,
+  .foto-kategorien,
+  .allgemein-panel,
+  .typ-reihe,
+  .bearbeiten-hinweis,
+  .pdf-karte,
+  .info-panel,
+  .bausteine-panel,
+  .eintrag-aktionen {
+    display: none !important;
+  }
+  body { background: #fff; }
+  .chat { min-height: auto; max-width: none; }
+  .gruen-kopf { background: #fff; color: #1c1c1c; border-bottom: 2px solid #14532d; }
+  .eintrag { break-inside: avoid; }
 }

@@ -13,9 +13,10 @@
     <header class="gruen-kopf">
       <h1>Baustellen</h1>
       <div class="kopf-knoepfe">
-        <button id="liste-drucken" class="kopf-knopf" type="button" title="Bericht drucken">&#128424;&#65039;</button>
+        <button id="liste-drucken" class="kopf-knopf" type="button" title="Drucken">&#128424;&#65039;</button>
         <button id="liste-bausteine" class="kopf-knopf" type="button" title="Textbausteine">&#128218;</button>
         <button id="neu-button" class="kopf-knopf kopf-knopf-text" type="button" title="Neue Baustelle">+ Neu</button>
+        <button id="ortung-button" class="kopf-knopf" type="button" title="Baustelle per GPS erkennen">&#128205;</button>
       </div>
     </header>
 
@@ -23,6 +24,15 @@
       <div class="suche-feld">
         <span>&#128269;</span>
         <input id="suche-input" type="search" placeholder="Baustelle suchen&hellip;" aria-label="Baustelle suchen">
+      </div>
+
+      <div id="standort-banner" class="standort-banner" hidden>
+        <span id="standort-text"></span>
+        <span class="standort-aktionen">
+          <button id="standort-uebernehmen" type="button" class="chip">Öffnen</button>
+          <a id="standort-ordner" href="#" target="_blank" rel="noopener" class="chip chip-kategorie">Ordner</a>
+          <button id="standort-schliessen" type="button" class="eintrag-knopf" aria-label="Schließen">&times;</button>
+        </span>
       </div>
 
       <form id="neu-form" class="neu-form" hidden>
@@ -43,109 +53,129 @@
   <main id="view-protokoll" class="chat" hidden>
     <header class="gruen-kopf">
       <button id="zurueck-button" class="kopf-knopf" type="button" aria-label="Zurück">&#8249;</button>
-      <h1 id="protokoll-titel">Protokoll</h1>
+      <h1 id="protokoll-titel">Protokoll Nr. 1</h1>
       <div class="kopf-knoepfe">
-        <button id="info-button" class="kopf-knopf" type="button" title="Verteiler und letzte Protokolle">&#8505;&#65039;</button>
-        <button id="print-button" class="kopf-knopf" type="button" title="Bericht drucken">&#128424;&#65039;</button>
-        <button id="mail-button" class="kopf-knopf" type="button" title="Per E-Mail versenden">&#9993;&#65039;</button>
+        <button id="bausteine-button" class="kopf-knopf" type="button" title="Textbausteine">&#128218;</button>
       </div>
     </header>
 
-    <input id="ort-input" type="hidden">
+    <div class="protokoll-scroll">
 
-    <div id="info-panel" class="info-panel" hidden>
-      <div class="panel-hint">Verteiler dieser Baustelle:</div>
-      <input id="info-verteiler" class="verteiler-input" type="text" placeholder="z. B. Bauleitung, polier@baufirma.at">
-      <div id="info-protokolle"></div>
-      <button id="info-position" class="chip chip-kategorie position-knopf" type="button">Aktuelle Position speichern</button>
-    </div>
-
-    <nav class="menu-row" aria-label="Menü">
-      <button id="ortung-button" class="menu-button menu-blau" type="button" title="Baustelle per GPS erkennen">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.5-6.1-6.5-10.5a6.5 6.5 0 0 1 13 0C18.5 14.9 12 21 12 21z"/><circle cx="12" cy="10.5" r="2.3"/></svg>
-        <span>Ortung</span>
-      </button>
-      <button id="allgemein-button" class="menu-button menu-gruen" type="button" title="Allgemeine Punkte einfügen">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l2 2 3.5-3.5"/><path d="M4 13l2 2 3.5-3.5"/><path d="M13 7h8M13 14h8M13 20h8"/></svg>
-        <span>Allg. Punkte</span>
-      </button>
-      <button id="bausteine-button" class="menu-button menu-orange" type="button" title="Textbausteine">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="8" height="7" rx="1"/><rect x="13" y="4" width="8" height="7" rx="1"/><rect x="8" y="13" width="8" height="7" rx="1"/></svg>
-        <span>Bausteine</span>
-      </button>
-    </nav>
-
-    <div id="standort-banner" class="standort-banner" hidden>
-      <span id="standort-text"></span>
-      <span class="standort-aktionen">
-        <button id="standort-uebernehmen" type="button" class="chip">Öffnen</button>
-        <a id="standort-ordner" href="#" target="_blank" rel="noopener" class="chip chip-kategorie">Ordner</a>
-        <button id="standort-schliessen" type="button" class="eintrag-knopf" aria-label="Schließen">&times;</button>
-      </span>
-    </div>
-
-    <ul id="messages" class="messages" aria-live="polite"></ul>
-
-    <div id="foto-kategorien" class="foto-kategorien" hidden>
-      <div class="panel-hint">Was ist am Foto zu sehen?</div>
-      <div id="foto-kategorien-chips" class="chips"></div>
-    </div>
-
-    <div id="allgemein-panel" class="allgemein-panel" hidden>
-      <div class="panel-hint">Allgemeine Punkte für den Bericht auswählen:</div>
-      <div id="allgemein-liste" class="allgemein-liste"></div>
-      <div class="allgemein-aktionen">
-        <button id="allgemein-einfuegen" class="chip" type="button">Ausgewählte einfügen</button>
-        <button id="allgemein-abbrechen" class="chip chip-kategorie" type="button">Abbrechen</button>
+      <div class="kopf-karte">
+        <div class="feld-reihe">
+          <label class="feld feld-datum">Datum
+            <input id="kopf-datum" type="date">
+          </label>
+          <label class="feld feld-zeit">Uhrzeit
+            <input id="kopf-uhrzeit" type="time">
+          </label>
+          <label class="feld feld-nr">Nr.
+            <input id="kopf-nr" type="number" min="1" inputmode="numeric">
+          </label>
+        </div>
+        <label class="feld">Anwesend
+          <input id="kopf-anwesend" type="text">
+        </label>
+        <label class="feld">Wetter
+          <input id="kopf-wetter" type="text" placeholder="z. B. sonnig, 24 &deg;C">
+        </label>
+        <label class="feld">Allgemeines / Baustand
+          <textarea id="kopf-allgemein" rows="3"></textarea>
+        </label>
       </div>
-    </div>
 
-    <div id="ki-vorschlaege" class="ki-vorschlaege" hidden>
-      <div class="panel-hint ki-kopf">
-        <span>KI-Vorschlag (nur Sicherheit) – tippen zum Einfügen:</span>
-        <span class="detail-regler">
-          <button id="detail-minus" class="detail-button" type="button" title="Kürzere Antwort">&minus;</button>
-          <span id="detail-label">Normal</span>
-          <button id="detail-plus" class="detail-button" type="button" title="Längere Antwort mit Gesetzestext">+</button>
-        </span>
+      <div class="foto-knoepfe">
+        <label class="gross-knopf gross-gruen" for="foto-input">&#128247; Foto aufnehmen</label>
+        <label class="gross-knopf gross-grau" for="galerie-input">&#128444;&#65039; Galerie</label>
       </div>
-      <div id="ki-chips" class="chips"></div>
-    </div>
-
-    <div class="typ-schalter" role="group" aria-label="Eintragstyp">
-      <button id="typ-hinweis" class="typ-knopf typ-aktiv" type="button">Hinweis</button>
-      <button id="typ-mangel" class="typ-knopf" type="button">Mangel</button>
-    </div>
-
-    <div id="bearbeiten-hinweis" class="bearbeiten-hinweis" hidden>
-      Eintrag wird bearbeitet – Senden speichert die Änderung.
-      <button id="bearbeiten-abbrechen" type="button">Abbrechen</button>
-    </div>
-
-    <div id="foto-preview" class="foto-preview" hidden>
-      <img id="foto-preview-img" alt="Foto-Vorschau">
-      <button id="foto-remove" class="foto-remove" type="button" aria-label="Foto entfernen">&times;</button>
-    </div>
-
-    <form id="chat-form" class="chat-form" autocomplete="off">
-      <label class="foto-button" for="foto-input" title="Foto hinzufügen">&#128247;</label>
       <input id="foto-input" type="file" accept="image/*" capture="environment" hidden>
-      <textarea
-        id="chat-input"
-        class="chat-input"
-        rows="1"
-        placeholder="Eintrag eingeben&hellip; (Kürzel: helm, gas, wehren, wege &hellip;)"
-        aria-label="Eintrag"
-      ></textarea>
-      <button
-        id="send-button"
-        class="send-button"
-        type="submit"
-        aria-label="Eintrag speichern"
-        disabled
-      >&#10148;</button>
-    </form>
+      <input id="galerie-input" type="file" accept="image/*" hidden>
 
+      <div id="foto-hinweis" class="foto-hinweis">
+        Noch keine Fotos.<br>Mit &bdquo;&#128247; Foto aufnehmen&ldquo; geht die Kamera direkt auf.
+      </div>
+
+      <div id="foto-preview" class="foto-preview" hidden>
+        <img id="foto-preview-img" alt="Foto-Vorschau">
+        <button id="foto-remove" class="foto-remove" type="button" aria-label="Foto entfernen">&times;</button>
+      </div>
+
+      <ul id="messages" class="messages" aria-live="polite"></ul>
+
+      <div id="foto-kategorien" class="foto-kategorien" hidden>
+        <div class="panel-hint">Was ist am Foto zu sehen?</div>
+        <div id="foto-kategorien-chips" class="chips"></div>
+      </div>
+
+      <div id="allgemein-panel" class="allgemein-panel" hidden>
+        <div class="panel-hint">Allgemeine Punkte für den Bericht auswählen:</div>
+        <div id="allgemein-liste" class="allgemein-liste"></div>
+        <div class="allgemein-aktionen">
+          <button id="allgemein-einfuegen" class="chip" type="button">Ausgewählte einfügen</button>
+          <button id="allgemein-abbrechen" class="chip chip-kategorie" type="button">Abbrechen</button>
+        </div>
+      </div>
+
+      <div id="ki-vorschlaege" class="ki-vorschlaege" hidden>
+        <div class="panel-hint ki-kopf">
+          <span>KI-Vorschlag (nur Sicherheit) – tippen zum Einfügen:</span>
+          <span class="detail-regler">
+            <button id="detail-minus" class="detail-button" type="button" title="Kürzere Antwort">&minus;</button>
+            <span id="detail-label">Normal</span>
+            <button id="detail-plus" class="detail-button" type="button" title="Längere Antwort mit Gesetzestext">+</button>
+          </span>
+        </div>
+        <div id="ki-chips" class="chips"></div>
+      </div>
+
+      <div class="typ-reihe">
+        <div class="typ-schalter" role="group" aria-label="Eintragstyp">
+          <button id="typ-hinweis" class="typ-knopf typ-aktiv" type="button">Hinweis</button>
+          <button id="typ-mangel" class="typ-knopf" type="button">Mangel</button>
+        </div>
+        <button id="allgemein-button" class="chip chip-kategorie" type="button">Allg. Punkte</button>
+      </div>
+
+      <div id="bearbeiten-hinweis" class="bearbeiten-hinweis" hidden>
+        Eintrag wird bearbeitet – Senden speichert die Änderung.
+        <button id="bearbeiten-abbrechen" type="button">Abbrechen</button>
+      </div>
+
+      <form id="chat-form" class="chat-form" autocomplete="off">
+        <textarea
+          id="chat-input"
+          class="chat-input"
+          rows="1"
+          placeholder="Feststellung eingeben&hellip; (Kürzel: helm, gas, wehren &hellip;)"
+          aria-label="Feststellung"
+        ></textarea>
+        <button
+          id="send-button"
+          class="send-button"
+          type="submit"
+          aria-label="Eintrag speichern"
+          disabled
+        >&#10148;</button>
+      </form>
+
+      <div class="pdf-karte">
+        <button id="print-button" class="gross-knopf gross-grau breit" type="button">&#128196; PDF ansehen</button>
+        <div class="pdf-neben">
+          <button id="mail-button" class="chip chip-kategorie" type="button">&#9993;&#65039; Mail senden</button>
+          <button id="info-button" class="chip chip-kategorie" type="button">&#8505;&#65039; Verteiler / Protokolle</button>
+        </div>
+      </div>
+
+      <div id="info-panel" class="info-panel" hidden>
+        <div class="panel-hint">Verteiler dieser Baustelle:</div>
+        <input id="info-verteiler" class="verteiler-input" type="text" placeholder="z. B. Bauleitung, polier@baufirma.at">
+        <div id="info-protokolle"></div>
+        <button id="info-position" class="chip chip-kategorie position-knopf" type="button">Aktuelle Position speichern</button>
+      </div>
+
+    </div>
+
+    <input id="ort-input" type="hidden">
   </main>
 
   <div id="bausteine-panel" class="bausteine-panel" hidden>
