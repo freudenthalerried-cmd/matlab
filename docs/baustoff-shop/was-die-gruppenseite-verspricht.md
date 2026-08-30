@@ -114,3 +114,8 @@ sagt es seit heute, die Systemliste noch nicht. Bei Kanal und Kellerwand
 betrifft es Positionen fremder Gewerke (Abdichtung, Verfüllung, Gleitmittel),
 die im Text begründet sind. Ein Zensus „jede Position hat einen Artikel oder
 einen Hinweis" wäre der nächste Schritt.
+
+**Nachgetragen im nächsten Lauf:** Der Zensus ist gelaufen und hat fünf
+ungekennzeichnete Positionen gefunden — mehr als hier vermutet, und bei
+Gleitmittel und Übergangsstücken stand die Entscheidung längst im Register.
+Siehe [`fuenf-positionen-ohne-hinweis.md`](./fuenf-positionen-ohne-hinweis.md).

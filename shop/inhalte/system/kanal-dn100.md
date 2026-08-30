@@ -7,7 +7,7 @@ kurz: Rohre nach laufenden Metern, Bögen und Abzweiger nach Winkel, Schächte n
 gruppe: Kanal
 skus: POS-10095, POS-10115, POS-10116, POS-10134, POS-11133, POS-21382, POS-29023
 verwandt: kanal-was-zusammengehoert, perimeterdaemmung-und-grundmauerschutz, system/kellerwand-perimeter
-stand: 2026-08-27
+stand: 2026-08-30
 ---
 
 # Grundleitung DN 100 — die Liste
@@ -37,10 +37,16 @@ im Plan als Symbol statt als Position.
 | 2 | Bögen | Anzahl je Winkel | Winkel falsch |
 | 3 | Abzweiger | Anzahl je Winkel | — |
 | 4 | Schachtringe | Tiefe ÷ Ringhöhe | — |
-| 5 | Übergangsstücke | Anzahl Materialwechsel | **ja** |
-| 6 | Gleitmittel | nach Anzahl der Steckverbindungen | **ja** |
+| 5 | Übergangsstücke *(nicht im Sortiment)* | Anzahl Materialwechsel | **ja** |
+| 6 | Gleitmittel *(nicht im Sortiment)* | nach Anzahl der Steckverbindungen | **ja** |
 | 7 | Grundmauerschutzbahn | Fläche + Überlappung | eigenes Gewerk |
-| 8 | Abschlussschiene | laufende Meter Oberkante | **ja** |
+| 8 | Abschlussschiene *(nicht im Sortiment)* | laufende Meter Oberkante | **ja** |
+
+Drei der acht Positionen führen wir nicht: Übergangsstücke, Gleitmittel und
+die Abschlussschiene. Sie stehen trotzdem auf der Liste und sind in der
+Tabelle gekennzeichnet — wer sie beim Auszählen übergeht, merkt es am
+Verlegetag. Zwei davon gehören zu den vier, die am häufigsten vergessen
+werden.
 
 Positionen 7 und 8 gehören streng genommen zum Bauwerk, nicht zur Leitung —
 sie werden aber im selben Arbeitsgang verbaut und deshalb hier

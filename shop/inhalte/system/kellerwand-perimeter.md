@@ -54,12 +54,13 @@ bestellt wird — bei der Bahn genauso wie beim Glasgewebe an der Fassade.
 | 3 | Perimeterkleber | Fläche ÷ Reichweite je Dose | — |
 | 4 | Dosierpistole | eine je Baustelle | **ja** |
 | 5 | Grundmauerschutzbahn | Fläche **+ Überlappung** | — |
-| 6 | Abschlussschiene | laufende Meter Oberkante | **ja** |
+| 6 | Abschlussschiene *(nicht im Sortiment)* | laufende Meter Oberkante | **ja** |
 | 7 | Verfüllmaterial | Kubatur des Arbeitsraums | eigenes Gewerk |
 
-Zwei der sieben Positionen führen wir nicht, und beide stehen trotzdem auf
-der Liste: die Abdichtung und die Abschlussschiene. Eine Liste, die nur zeigt,
-was im Regal liegt, ist keine Positionsliste, sondern ein Angebot. Warum die
+Drei der sieben Positionen führen wir nicht, und alle drei stehen trotzdem auf
+der Liste: die Abdichtung, die Abschlussschiene und das Verfüllmaterial. Sie
+sind in der Tabelle als solche gekennzeichnet. Eine Liste, die nur zeigt, was
+im Regal liegt, ist keine Positionsliste, sondern ein Angebot. Warum die
 kleinen Positionen die teuren sind, steht auf
 [Was fehlt, hält die Baustelle auf](../wissen/was-fehlt-haelt-die-baustelle-auf).
 

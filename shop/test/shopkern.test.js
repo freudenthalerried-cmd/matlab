@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   wortstaemme, baueSuchindex, suche, sortiere, filtere, filterwerte, vorteil,
@@ -727,6 +728,51 @@ test('was der Antwortsatz einer Gruppenseite nennt, führt die Gruppe auch', () 
     assert.ok(treffer.some((t) => t.gruppe === soll),
       `„${wort}" findet nur ${[...new Set(treffer.map((t) => t.gruppe))].join('/')}, erwartet ${soll}`);
   }
+});
+
+test('jede Position der Systemlisten hat einen Artikel oder eine Kennzeichnung', () => {
+  // **Gemessen am 30.08.** über alle 35 Positionen der vier Systemlisten:
+  // Sieben fanden keinen Artikel. Zwei davon waren als fremdes Gewerk
+  // gekennzeichnet (Abdichtung, Verfüllmaterial), **fünf nicht** —
+  // Anschlussformteil Feuerstätte, Übergangsstücke, Gleitmittel und zweimal
+  // die Abschlussschiene.
+  //
+  // Für Übergangsstücke und Gleitmittel stand die Entscheidung sogar schon
+  // im Kundenwörter-Register unter „nicht aufgenommen": Der Shop wusste, dass
+  // er sie nicht führt, und schrieb sie trotzdem ungekennzeichnet auf die
+  // Bestellliste. Wer danach auszählt, bestellt sie hier — und bekommt sie
+  // nicht.
+  //
+  // Die Liste soll vollständig bleiben: Eine Positionsliste, die nur zeigt,
+  // was im Regal liegt, ist ein Angebot. Gekennzeichnet muss sie sein.
+  const index = bestandsindex();
+  const ordner = fileURLToPath(new URL('../inhalte/system', import.meta.url));
+  const dateien = readdirSync(ordner).filter((d) => d.endsWith('.md'));
+  assert.ok(dateien.length >= 4, `nur ${dateien.length} Systemlisten`);
+  let positionen = 0;
+  for (const datei of dateien) {
+    const text = readFileSync(join(ordner, datei), 'utf8');
+    const zeilen = [...text.matchAll(/^\|\s*(\d{1,2})\s*\|\s*([^|]+?)\s*\|([^|]*)\|([^|]*)\|/gm)];
+    assert.ok(zeilen.length >= 7, `${datei}: nur ${zeilen.length} Positionen`);
+    for (const [, nummer, benennung, , vermerk] of zeilen) {
+      positionen++;
+      const woerter = benennung.split(/[^\p{L}]+/u).filter((w) => w.length >= 4);
+      const gefunden = woerter.some((w) => suche(index, w).some((t) => t.art === 'artikel'));
+      if (/nicht im Sortiment/.test(benennung + vermerk)) {
+        // **Die Gegenrichtung, und die gefährlichere.** Eine Kennzeichnung an
+        // einer Ware, die es sehr wohl gibt, schickt den Kunden woandershin —
+        // still, ohne Fehlermeldung. Der erste Wurf dieser Probe ließ genau
+        // das durch: „Armierungsmörtel *(nicht im Sortiment)*" fiel nicht auf.
+        assert.equal(gefunden, false,
+          `${datei} Position ${nummer} „${benennung}": als nicht geführt gekennzeichnet, aber im Katalog`);
+        continue;
+      }
+      if (/eigenes Gewerk/.test(benennung + vermerk)) continue;
+      assert.ok(gefunden,
+        `${datei} Position ${nummer} „${benennung}": kein Artikel und keine Kennzeichnung`);
+    }
+  }
+  assert.ok(positionen >= 30, `nur ${positionen} Positionen geprüft`);
 });
 
 test('die Versprechensliste steht wirklich auf den Seiten', () => {
