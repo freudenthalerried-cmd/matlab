@@ -1,6 +1,6 @@
 # Status und Einstieg
 
-Stand: 2026-08-29. **Dieses Dokument zuerst lesen.** 155 Arbeitsdateien
+Stand: 2026-08-30. **Dieses Dokument zuerst lesen.** 155 Arbeitsdateien
 sind entstanden, mehrere davon korrigieren einander. Hier steht, was gilt.
 
 > **Vorsicht bei diesem Dokument selbst.** Am 29. August stand weiter unten
@@ -502,10 +502,10 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > 787 vergleichbare Tests, kein Unterschied.
 > [`kommentare-im-schaufenster.md`](./kommentare-im-schaufenster.md).
 >
-> **Stand der Prüfmittel:** 845 Tests, `pruefe-tests` 843/0, `pruefe-preise` 46/0, `pruefe-inhalte`
-> 24/355/0, `pruefe-seiten` 81 von 81 gebauten Seiten, `pruefe-widerrufe` 174 Dateien/48
+> **Stand der Prüfmittel (30.08.):** 847 Tests, `pruefe-tests` 845/0, `pruefe-preise` 46/0, `pruefe-inhalte`
+> 24/355/0, `pruefe-seiten` 81 von 81 gebauten Seiten, `pruefe-widerrufe` 175 Dateien/48
 > Fundstellen, `pruefe-quellen` 6/6, `shopprobe` 49 (davon 10 im Rahmen),
-> `oberflaechenprobe` 11, `rahmenzensus` 81/81, `pruefe-stand` 173/173,
+> `oberflaechenprobe` 11, `rahmenzensus` 81/81, `pruefe-stand` 174/174,
 > `pruefe-pruefer` 11 Prüfer ohne Leerlauf, Website 81 Seiten ohne toten
 > Verweis.
 
@@ -862,6 +862,12 @@ zusammengefasst und im Verzeichnis nicht auffindbar:
 | `vier-farbpaare-zu-schwach.md` | Zensus über 81 Seiten: `lang`, Überschriftenfolge, `alt`, Beschriftungen — null Befunde. Der Kontrast dagegen lag bei fünf Paaren des hellen Anstrichs unter WCAG 2.1, darunter Verweisfarbe und Knopfschrift |
 | `der-fokus-blieb-stehen.md` | Die Artikelkarte sah mit Fokus aus wie ohne — die Zierlinie des Rasters überschrieb den Fokusring. Dazu ein Sprungverweis an der Kopfleiste vorbei |
 | `ohne-javascript-ein-totes-suchfeld.md` | Der Inhalt braucht kein Skript (Artikelseite 4.000 Zeichen ohne), aber 79 Seiten trugen ein totes Bedienelement ohne ein Wort dazu. Nebenwirkung: `pruefe-seiten` deckt jetzt 81 von 81 Seiten |
+
+**Lauf vom 30. August:**
+
+| Datei | Kernaussage |
+|---|---|
+| `robots-erlaubte-das-gegenteil.md` | Die ausgelieferte `robots.txt` erlaubte GPTBot, ClaudeBot und CCBot genau das, was die Entscheidung ausschließt — zwei Wege zur selben Datei, und der kürzere gewann |
 | `segment-arbeitsplatzmessung.md` | Nebenstrecke, kein eigenes Segment |
 | `strategie-modellvergleich.md` | Kapitalweg braucht ~900.000 €; enthält überholte Empfehlung |
 | `anschreiben-entwuerfe.md` | Drei Anschreiben (Hersteller, Großhändler, Partnerbetriebe), versandfertig, nicht versendet |

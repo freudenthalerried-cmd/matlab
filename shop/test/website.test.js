@@ -8,6 +8,7 @@ import { join } from 'node:path';
 import { loeseVerweis, loeseVerwandt, marke, mitverbaut, HERSTELLER } from '../bin/website.mjs';
 import { lesKopf } from '../src/markdown.js';
 import { KORBSCHLUESSEL } from '../src/shopkern.js';
+import { SUCH_CRAWLER, TRAININGS_CRAWLER } from '../src/maschinenlesbar.js';
 
 const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
 
@@ -756,4 +757,55 @@ test('jede Seite sagt, was ohne JavaScript nicht geht — und der Inhalt steht t
   }
   assert.deepEqual(ohneHinweis, [], 'Seiten ohne Hinweis auf die Grenzen ohne JavaScript');
   assert.deepEqual(zuWenigText, [], 'Seiten, deren Inhalt erst das Skript erzeugt');
+});
+
+
+test('die ausgelieferte robots.txt trägt die entschiedene Krawlerregel', () => {
+  // Bis zum 30.08. schrieb der Bau drei eigene Zeilen, während
+  // npm run veroeffentlichung dieselbe Datei aus robotsTxt() erzeugte. Die
+  // ausgelieferte Fassung erlaubte damit genau das Gegenteil der
+  // Entscheidung aus ki-sichtbarkeit-konzept.md.
+  const datei = pfad('../ausgabe/site/robots.txt');
+  if (!existsSync(datei)) return; // ohne Bau keine Aussage — und keine falsche
+  const txt = readFileSync(datei, 'utf8');
+
+  // Die Zusicherung steht **vor** den Schleifen: Wären die Listen leer,
+  // liefen sie durch und meldeten Grün. `pruefe-tests` hat genau das
+  // angemahnt, als sie hier unten stand.
+  assert.ok(SUCH_CRAWLER.length >= 3 && TRAININGS_CRAWLER.length >= 3,
+    'zu wenige Kennungen — die Schleifen prüften fast nichts');
+
+  // Gefunden werden: ja.
+  for (const bot of SUCH_CRAWLER) {
+    const block = new RegExp(`User-agent: ${bot}\\nAllow: /`);
+    assert.match(txt, block, `${bot} darf suchen dürfen`);
+  }
+  // Trainingsmaterial: nein.
+  for (const bot of TRAININGS_CRAWLER) {
+    const block = new RegExp(`User-agent: ${bot}\\nDisallow: /`);
+    assert.match(txt, block, `${bot} ist nicht ausgeschlossen`);
+  }
+  assert.match(txt, /^Sitemap: https:\/\/[^\s]+\/sitemap\.xml$/m);
+  // Und der allgemeine Eintrag bleibt: Wer nicht genannt ist, darf lesen.
+  assert.match(txt, /User-agent: \*\nAllow: \//);
+});
+
+test('die sitemap.xml nennt jede gebaute Seite und keine, die es nicht gibt', () => {
+  const sitemap = pfad('../ausgabe/site/sitemap.xml');
+  const wurzel = pfad('../ausgabe/site');
+  if (!existsSync(sitemap)) return;
+  const xml = readFileSync(sitemap, 'utf8');
+  const genannt = new Set([...xml.matchAll(/<loc>https:\/\/[^/]+\/(.*?)\.html<\/loc>/g)].map((m) => m[1]));
+
+  const gebaut = new Set();
+  const gehe = (o, vor = '') => {
+    for (const e of readdirSync(o, { withFileTypes: true })) {
+      if (e.isDirectory()) gehe(join(o, e.name), `${vor}${e.name}/`);
+      else if (e.name.endsWith('.html')) gebaut.add(vor + e.name.slice(0, -5));
+    }
+  };
+  gehe(wurzel);
+  assert.ok(gebaut.size >= 40, `nur ${gebaut.size} Seiten gebaut`);
+  assert.deepEqual([...gebaut].filter((k) => !genannt.has(k)).sort(), [], 'gebaut, aber nicht in der sitemap');
+  assert.deepEqual([...genannt].filter((k) => !gebaut.has(k)).sort(), [], 'in der sitemap, aber nicht gebaut');
 });

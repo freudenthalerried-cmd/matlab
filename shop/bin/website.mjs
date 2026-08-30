@@ -32,7 +32,7 @@ import { dirname, join, resolve } from 'node:path';
 import { ladeBaustoffkatalog, katalogbefund, ZIELMARGE } from '../src/baustoffkatalog.js';
 import { pruefeSeiten } from '../src/interna.js';
 import { artikelBild, gruppenBild, schichten, schichtbild, dickeMm } from '../src/bilder.js';
-import { VERFUEGBARKEIT, angebotsAuszeichnung } from '../src/maschinenlesbar.js';
+import { VERFUEGBARKEIT, angebotsAuszeichnung, robotsTxt } from '../src/maschinenlesbar.js';
 import { baueKern, BROWSERMODULE } from '../src/buendel.js';
 import { startklar } from '../src/startklar.js';
 import { ohneKommentare } from '../src/entkommentieren.js';
@@ -1786,10 +1786,20 @@ function main() {
   }
 
   // robots.txt, llms.txt, sitemap.xml
-  writeFileSync(join(site, 'robots.txt'), `User-agent: *
-Allow: /
-Sitemap: ${BASIS}/sitemap.xml
-`, 'utf8');
+  // **Eine robots.txt, nicht zwei.**
+  //
+  // Bis zum 30.08. schrieb dieser Bau drei eigene Zeilen — „User-agent: *,
+  // Allow: /" —, während `npm run veroeffentlichung` dieselbe Datei aus
+  // `robotsTxt({ suche: true, training: false })` erzeugte. Die zweite
+  // Fassung trägt die Entscheidung aus `ki-sichtbarkeit-konzept.md`:
+  // **gefunden werden ja, Trainingsmaterial nein.** Ausgeliefert wurde die
+  // erste, und die erlaubt GPTBot, ClaudeBot, CCBot und Google-Extended
+  // genau das, was die Entscheidung ausschließt.
+  //
+  // Die Fehlerklasse ist die des ganzen Vortags: zwei Wege zur selben
+  // Ausgabe, und der kürzere gewinnt, weil er näher am Schreibaufruf steht.
+  writeFileSync(join(site, 'robots.txt'),
+    robotsTxt({ suche: true, training: false, sitemap: `${BASIS}/sitemap.xml` }), 'utf8');
 
   const llms = [`# ${FIRMA} — Baustoffe zum Baumeisterpreis`, '',
     `> Baustoffhandel in ${ORT}, Oberösterreich. Lieferung regional (Bezirk Perg, Urfahr-Umgebung, Freistadt, Linz, Linz-Land), nicht österreichweit. Preise sind Nettopreise für Unternehmer.`,
