@@ -502,10 +502,10 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > 787 vergleichbare Tests, kein Unterschied.
 > [`kommentare-im-schaufenster.md`](./kommentare-im-schaufenster.md).
 >
-> **Stand der Prüfmittel (30.08.):** 889 Tests, `pruefe-tests` 887/0, `pruefe-preise` 46/0, `pruefe-inhalte`
-> 24/357/0, `pruefe-seiten` 81 von 81 gebauten Seiten, `pruefe-widerrufe` 189 Dateien/48
+> **Stand der Prüfmittel (30.08.):** 892 Tests, `pruefe-tests` 890/0, `pruefe-preise` 46/0, `pruefe-inhalte`
+> 24/357/0, `pruefe-seiten` 81 von 81 gebauten Seiten, `pruefe-widerrufe` 190 Dateien/48
 > Fundstellen, `pruefe-quellen` 6/6, `shopprobe` 49 (davon 10 im Rahmen),
-> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 188/188,
+> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 189/189,
 > `pruefe-pruefer` 11 Prüfer ohne Leerlauf, Website 81 Seiten ohne toten
 > Verweis.
 
@@ -882,6 +882,7 @@ zusammengefasst und im Verzeichnis nicht auffindbar:
 | `der-name-klebte-an-der-nummer.md` | Im Anfragetext — dem einzigen Weg, auf dem heute eine Bestellung zustande kommt — lief bei 12 der 46 Artikel der Name ohne Leerzeichen in die Artikelnummer. Die Spalte füllte nur kurzen Text auf. Jetzt Mindestabstand plus Umbruch an Wortgrenzen, damit die Summenspalte gerade bleibt |
 | `zwei-lieferungen-eine-zeile.md` | Ein Korb aus zwei Lieferantensortimenten ergibt zwei Anfahrten — der Anfragetext nannte eine Zeile „Zustellung", die Oberfläche den Frachtgrund der **ersten** Teillieferung neben der Summe aller. Heute unauffällig, scharf am Tag der Artikelliste. Jetzt je Lieferung ein Block, mit Nummer statt Lieferantenname |
 | `das-werkzeug-fuer-den-tag-danach.md` | `npm run import` — das Werkzeug für den Tag der Artikelliste — schrieb in den Platzhalterbestand des abgelösten Modells, warnte gegen eine abgelöste Margenregel bei **jeder** Zeile und hätte Einkaufspreise in ein öffentliches Verzeichnis getragen. Schreiben gesperrt, Probelauf bleibt |
+| `eine-haelfte-umgelenkt.md` | `npm run katalog` las eine Artikelliste als „0 Artikel" mit Ausgang 0; der Gewichtswächter rettete den Katalog aus dem falschen Grund. Beim Gegenproben habe ich mit einem falschen Umgebungsnamen die vertrauliche Preisdatei geleert — wiederhergestellt in einem Befehl, weil sie abgeleitet und nicht gepflegt wird. Drei neue Sperren |
 | `segment-arbeitsplatzmessung.md` | Nebenstrecke, kein eigenes Segment |
 | `strategie-modellvergleich.md` | Kapitalweg braucht ~900.000 €; enthält überholte Empfehlung |
 | `anschreiben-entwuerfe.md` | Drei Anschreiben (Hersteller, Großhändler, Partnerbetriebe), versandfertig, nicht versendet |

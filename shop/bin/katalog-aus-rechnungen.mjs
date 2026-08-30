@@ -64,6 +64,33 @@ const KATALOG_ZIEL = process.env.KATALOG_ZIEL || join(WURZEL, 'data', 'katalog-b
 const GEWICHTE_QUELLE = process.env.KATALOG_GEWICHTE || join(REPO, 'preise', 'gewichte-aus-rechnungen.json');
 const PREISE_ZIEL = process.env.KATALOG_PREISE_ZIEL || join(REPO, 'preise', 'baustoff-preise.json');
 
+/**
+ * **Die beiden Ziele gehören zusammen.**
+ *
+ * Am 30.08. hat eine Gegenprobe `KATALOG_ZIEL` umgelenkt und beim Preisziel
+ * den falschen Namen benutzt (`PREISE_ZIEL` statt `KATALOG_PREISE_ZIEL`).
+ * Der Katalog ging in den Testordner, die **Preisdatei in den Bestand** —
+ * und weil der Lauf keinen Artikel las, stand dort danach eine leere Liste.
+ *
+ * Die Datei ist gitignoriert; ein `git checkout` holt sie nicht zurück. Sie
+ * ließ sich aus `preise/poschacher-positionen.csv` neu erzeugen, mit einem
+ * Befehl — das ist der Verdienst der Entscheidung, sie **abzuleiten** statt
+ * sie zu pflegen. Ohne diese Entscheidung wären 46 Konditionen weg gewesen.
+ *
+ * Ein Werkzeug, das eine seiner beiden Ausgaben umlenken lässt und die
+ * andere in den Bestand schreibt, ist eine Falle. Wer eine umlenkt, lenkt
+ * beide um.
+ */
+if (Boolean(process.env.KATALOG_ZIEL) !== Boolean(process.env.KATALOG_PREISE_ZIEL)) {
+  console.error('\nAbbruch: Nur eines der beiden Ziele ist umgelenkt.');
+  console.error(`  KATALOG_ZIEL:        ${process.env.KATALOG_ZIEL ?? '(nicht gesetzt)'}`);
+  console.error(`  KATALOG_PREISE_ZIEL: ${process.env.KATALOG_PREISE_ZIEL ?? '(nicht gesetzt)'}`);
+  console.error('\nDie beiden Ausgaben gehören zusammen. Ein Lauf, der den Katalog');
+  console.error('umlenkt und die Preisdatei in den Bestand schreibt, überschreibt');
+  console.error('vertrauliche Daten, die kein git zurückholt.');
+  process.exit(2);
+}
+
 const LIEFERANT_ID = 'poschacher';
 
 /**
@@ -114,9 +141,39 @@ const GRUPPEN = {
  */
 const SPERRGUT_GRUPPEN = new Set(['Dämmung', 'Kamin', 'Kanal', 'Mauerwerk']);
 
+/**
+ * Die Spalten, die dieses Werkzeug braucht.
+ *
+ * **Gemessen am 30.08.** mit einer Artikelliste im Format, um das der
+ * Auftraggeber gebeten wurde (`sku;bezeichnung;einheit;ek_netto;…`). Das
+ * Werkzeug las die Datei, fand kein einziges `ArtNr` — und meldete:
+ *
+ *     Positionen gelesen:       2
+ *     Artikel im Katalog:       0
+ *
+ * Ausgang 0. Kein Fehler, keine Warnung. Am Tag der Lieferantenliste liest
+ * sich das wie „die Liste enthält keine brauchbare Ware" und nicht wie „ich
+ * kann dieses Format nicht lesen".
+ *
+ * Eingabe ist und bleibt die **Positionstabelle aus Rechnungen**. Eine
+ * Artikelliste ist ein anderes Format und braucht ein anderes Werkzeug — was
+ * dieses hier jetzt sagt, statt still nichts zu tun.
+ */
+const PFLICHTSPALTEN = ['ArtNr', 'Bezeichnung', 'Einheit', 'Einzelpreis', 'Datum'];
+
 function leseCsv(text) {
   const zeilen = text.replace(/^﻿/, '').trim().split(/\r?\n/);
-  const kopf = zeilen[0].split(';');
+  const kopf = zeilen[0].split(';').map((k) => k.trim());
+  const fehlend = PFLICHTSPALTEN.filter((sp) => !kopf.includes(sp));
+  if (fehlend.length) {
+    console.error(`\nAbbruch: ${QUELLE}`);
+    console.error(`Es fehlen die Spalten: ${fehlend.join(', ')}`);
+    console.error(`Gefunden wurden: ${kopf.join(', ')}`);
+    console.error('\nDieses Werkzeug liest die Positionstabelle aus Lieferantenrechnungen.');
+    console.error('Eine Artikelliste (sku;bezeichnung;einheit;ek_netto;…) ist ein anderes');
+    console.error('Format — für einen Probelauf darüber: node bin/import.mjs <lieferantId> <datei>.');
+    process.exit(2);
+  }
   return zeilen.slice(1).map((z) => {
     const f = z.split(';');
     return Object.fromEntries(kopf.map((k, i) => [k, (f[i] ?? '').trim()]));
@@ -273,6 +330,23 @@ function main() {
   if (nurPruefen) {
     console.log('\n--pruefen: nichts geschrieben.');
     return;
+  }
+
+  /**
+   * **Kein Schreiben ohne Ware.**
+   *
+   * Der Gewichtswächter unten hat den Katalog am 30.08. gerettet — aber aus
+   * dem falschen Grund: Er meldete „7 belegte Gewichte gingen verloren", wo
+   * in Wahrheit **kein einziger Artikel** gelesen worden war. Trüge der
+   * Bestand keine belegten Gewichte, hätte das Werkzeug einen leeren Katalog
+   * über den vollen geschrieben und dabei „geschrieben:" gemeldet.
+   *
+   * Ein Erzeuger, dessen Ausgabe leer ist, hat nicht gearbeitet.
+   */
+  if (sortiert.length === 0) {
+    console.error('\nAbbruch: kein einziger Artikel gelesen — es wird nichts geschrieben.');
+    console.error(`Quelle: ${QUELLE}`);
+    process.exit(2);
   }
 
   mkdirSync(dirname(PREISE_ZIEL), { recursive: true });
