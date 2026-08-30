@@ -94,6 +94,12 @@
   });
 
   function bausteinText(b) {
+    if (eintragTyp === 'mangel' && b.mangel) {
+      if (detailStufe === 2 && b.gesetz) {
+        return b.mangel + '\n' + b.gesetz.text + ' (' + b.gesetz.ref + ')';
+      }
+      return b.mangel;
+    }
     const basis = varianten[b.id] || b.text;
     if (detailStufe === 0) return b.kurz || basis;
     if (detailStufe === 2 && b.gesetz) {
@@ -101,6 +107,57 @@
     }
     return basis;
   }
+
+  // ---------- Eintragstyp: Hinweis / Mangel ----------
+  // Beim Umstellen wird der Text im Eingabefeld in die passende Fassung umformuliert.
+
+  const typHinweisKnopf = document.getElementById('typ-hinweis');
+  const typMangelKnopf = document.getElementById('typ-mangel');
+  let eintragTyp = 'hinweis';
+
+  function zeigeTyp() {
+    typHinweisKnopf.classList.toggle('typ-aktiv', eintragTyp === 'hinweis');
+    typMangelKnopf.classList.toggle('typ-aktiv', eintragTyp === 'hinweis' ? false : true);
+    typMangelKnopf.classList.toggle('typ-aktiv-mangel', eintragTyp === 'mangel');
+  }
+
+  // Tauscht die bekannten Baustein-Fassungen im Text gegen die des Zieltyps.
+  function wechsleFassung(text, zielTyp) {
+    let neu = text;
+    BAUSTEINE.forEach(function (b) {
+      if (!b.mangel) return;
+      if (zielTyp === 'mangel') {
+        [varianten[b.id], b.text, b.kurz].filter(Boolean).forEach(function (f) {
+          if (neu.indexOf(f) !== -1) neu = neu.split(f).join(b.mangel);
+        });
+      } else {
+        if (neu.indexOf(b.mangel) !== -1) {
+          neu = neu.split(b.mangel).join(detailStufe === 0 && b.kurz ? b.kurz : (varianten[b.id] || b.text));
+        }
+      }
+    });
+    return neu;
+  }
+
+  function setzeTyp(typ) {
+    if (typ === eintragTyp) return;
+    eintragTyp = typ;
+    zeigeTyp();
+    if (input.value.trim()) {
+      input.value = wechsleFassung(input.value, typ);
+      // Auch die Merkliste der eingefügten Bausteine auf die neue Fassung umstellen
+      eingefuegt = eingefuegt.map(function (e) {
+        const b = BAUSTEINE.find(function (x) { return x.id === e.id; });
+        return b ? { id: e.id, text: bausteinText(b) } : e;
+      });
+      autoGrow();
+      updateSendState();
+    }
+    zeigeVorschlaege(vorschlaegeFuer(input.value));
+  }
+
+  typHinweisKnopf.addEventListener('click', function () { setzeTyp('hinweis'); });
+  typMangelKnopf.addEventListener('click', function () { setzeTyp('mangel'); });
 
   // ---------- Kürzel-Expansion (wie Tastatur-Shortcuts) ----------
 
@@ -369,6 +426,8 @@
   function starteBearbeitung(index) {
     const e = eintraege[index];
     bearbeitetIndex = index;
+    eintragTyp = e.typ === 'mangel' ? 'mangel' : 'hinweis';
+    zeigeTyp();
     input.value = e.text;
     bearbeitenHinweis.hidden = false;
     input.classList.add('bearbeitet');
@@ -397,6 +456,13 @@
     const kopfText = document.createElement('span');
     kopfText.textContent = 'Erstellt: ' + e.zeit + (e.ort ? ' – ' + e.ort : '');
     kopf.appendChild(kopfText);
+
+    if (e.typ === 'mangel') {
+      const badge = document.createElement('span');
+      badge.className = 'mangel-badge';
+      badge.textContent = 'MANGEL';
+      kopf.appendChild(badge);
+    }
 
     const aktionen = document.createElement('span');
     aktionen.className = 'eintrag-aktionen';
@@ -599,6 +665,7 @@
       const alt = eintraege[bearbeitetIndex];
       if (alt.text !== text) merkeAenderung(null, alt.text, text);
       alt.text = text;
+      alt.typ = eintragTyp;
       alt.icons = iconsFuerText(text);
       speichereJson('bp_eintraege', eintraege);
       beendeBearbeitung();
@@ -607,6 +674,7 @@
         zeit: zeitstempel(),
         ort: ortInput.value.trim(),
         text: text,
+        typ: eintragTyp,
         foto: aktuellesFoto,
         icons: iconsFuerText(text)
       });
@@ -620,6 +688,7 @@
     fotoKategorien.hidden = true;
     kiPanel.hidden = true;
     input.value = '';
+    setzeTyp('hinweis');
     updateSendState();
     autoGrow();
     renderAlleEintraege();

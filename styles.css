@@ -140,6 +140,47 @@ html, body {
 
 .detail-button:disabled { opacity: 0.3; cursor: default; }
 
+/* Eintragstyp Hinweis / Mangel */
+.typ-schalter {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 8px;
+  align-self: flex-start;
+}
+
+.typ-knopf {
+  border: none;
+  background: var(--bubble);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 16px;
+  cursor: pointer;
+}
+
+.typ-knopf.typ-aktiv {
+  background: rgba(255, 140, 0, 0.12);
+  color: var(--orange-dark);
+}
+
+.typ-knopf.typ-aktiv-mangel {
+  background: rgba(179, 38, 30, 0.1);
+  color: #b3261e;
+}
+
+.mangel-badge {
+  border: 1.5px solid #b3261e;
+  color: #b3261e;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 1px 8px;
+  border-radius: 4px;
+  margin-left: 8px;
+}
+
 /* Bearbeiten-Modus */
 .bearbeiten-hinweis {
   font-size: 12px;
