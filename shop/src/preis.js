@@ -2,13 +2,40 @@
  * Preis- und Margenrechnung.
  *
  * Bildet die Regeln ab, die in docs/baustoff-shop/ als Gates festgelegt wurden:
- *   Gate 1  Rohmarge unter 32 % ist unzulässig.
  *   Gate 7  Der Shop richtet sich an Unternehmer; alle Preise sind Nettopreise,
  *           die Umsatzsteuer wird getrennt ausgewiesen.
+ *   Gate 20 Jede Bestellung muss einen positiven Deckungsbeitrag tragen,
+ *           in Euro geprüft.
+ *   Gate 22 Kein Verkaufspreis über dem Listenpreis des Lieferanten.
+ *
+ * **Berichtigt am 30.08.** Hier stand als erste Zeile „Gate 1 Rohmarge unter
+ * 32 % ist unzulässig". Diese Regel ist seit dem 22. August abgelöst — Gate 20
+ * prüft den Deckungsbeitrag je Bestellung in Euro, nicht die Marge je Artikel
+ * in Prozent. `STATUS.md` führt die Ablösung; dieser Dateikopf tat es nicht
+ * und behauptete eine Regel, die das Modul nicht mehr durchsetzt.
  *
  * Reine Rechenfunktionen, keine Dateizugriffe, keine Seiteneffekte.
  */
 
+/**
+ * **Zwei Margen, die nicht dasselbe messen** — und die zu verwechseln kostet
+ * eine Fehlentscheidung.
+ *
+ * | | misst | Wert im Bestand |
+ * |---|---|---|
+ * | `ZIELMARGE` (`baustoffkatalog.js`) | was dieser Shop **nimmt**: die Spanne, mit der er kalkuliert | 25 %, Weisung vom 25.08. |
+ * | `MARGENUNTERGRENZE` (hier) | was eine Lieferantenkondition **hergäbe**, verkauft man zur vollen Liste | Median 45 % Händlerrabatt |
+ *
+ * Gemessen am 30.08.: **kein einziger** der 46 Artikel erreicht 32 % erzielte
+ * Rohmarge — sie liegen bei 25 %, weil der Shop mit 25 % kalkuliert. Wer das
+ * für ein Reißen der Untergrenze hält, hält die Preisentscheidung für ein
+ * Konditionenproblem. Die Konditionen sind gut: 37 der 42 Rabattsätze liegen
+ * über 32 %.
+ *
+ * `MARGENUNTERGRENZE` ist deshalb **keine Verkaufsregel**, sondern der Maßstab
+ * für die Antworten auf die dreizehn Anfragen (`auswertung.js`): Unter dieser
+ * Kondition lohnt kein zweiter Lieferant.
+ */
 export const MARGENUNTERGRENZE = 0.32;
 export const UST_SATZ = 0.20;
 

@@ -11,6 +11,18 @@ import {
   mindestbestellwertErfuellt,
   MARGENUNTERGRENZE,
 } from '../src/preis.js';
+import { readFileSync, existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { ladeBaustoffkatalog, ZIELMARGE } from '../src/baustoffkatalog.js';
+
+const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
+const lies = (p) => JSON.parse(readFileSync(p, 'utf8'));
+
+// Die Preisdatei liegt außerhalb des Repositories und fehlt in einer frischen
+// Arbeitskopie. Die Probe darunter misst den echten Bestand; ohne ihn hat sie
+// nichts zu messen und sagt das, statt still durchzulaufen.
+const PREIS_PFAD = pfad('../../preise/baustoff-preise.json');
+const PREISDATEI = existsSync(PREIS_PFAD) ? lies(PREIS_PFAD) : null;
 
 test('Einkaufspreis ist UVP abzüglich Händlerrabatt', () => {
   assert.equal(einkaufspreis(100, 0.35), 65);
@@ -236,4 +248,58 @@ test('Ein zu niedriger Listendeckel lässt die Zielmarge durchfallen', () => {
   );
   assert.equal(k.vkNetto, 45);
   assert.equal(k.zielmargeErreicht, false);
+});
+
+
+/* ------------------------------------------------------------------ *
+ * Zwei Margen, die nicht dasselbe messen
+ * ------------------------------------------------------------------ */
+
+test('die erzielte Marge des Bestands ist die Zielmarge, nicht die Untergrenze', {
+  skip: PREISDATEI === null && 'preise/baustoff-preise.json fehlt',
+}, () => {
+  // **Beinahe-Fehlgriff vom 30.08.**, hier festgehalten, damit ihn niemand
+  // wiederholt: Kein einziger der 46 Artikel erreicht 32 % Rohmarge. Das
+  // sieht aus, als risse der ganze Bestand die Untergrenze — und ist doch nur
+  // die Preisentscheidung: Der Shop kalkuliert mit 25 %.
+  //
+  // `MARGENUNTERGRENZE` misst etwas anderes, nämlich was eine
+  // Lieferantenkondition hergäbe. Die Konditionen sind gut; die Marge ist
+  // gewählt.
+  //
+  // Was diese Probe **nicht** leistet: Setzt man `ZIELMARGE` auf 0,32, bleibt
+  // sie grün — die erzielte Marge folgt der Zielmarge, welche das auch sei.
+  // Dass 0,25 die richtige Zahl ist, hängt an der Weisung vom 25.08. und ist
+  // in `baustoffkatalog.test.js` und `import.test.js` festgenagelt. Hier geht
+  // es um das Verhältnis der beiden Zahlen zueinander.
+  const katalog = ladeBaustoffkatalog(
+    lies(pfad('../data/katalog-baustoff.json')),
+    PREISDATEI,
+    lies(pfad('../data/lieferanten.json')),
+    // Ohne vierten Parameter — gemessen wird der Weg, den der Shop selbst
+    // geht, nicht einer, den diese Probe sich aussucht.
+  );
+  const margen = katalog.artikel
+    .filter((a) => a.vkNetto && a.ekNetto)
+    .map((a) => rohmarge(a.ekNetto, a.vkNetto))
+    .sort((a, b) => a - b);
+  assert.ok(margen.length >= 40, `nur ${margen.length} Artikel mit Marge`);
+  const median = margen[Math.floor(margen.length / 2)];
+  assert.ok(Math.abs(median - ZIELMARGE) < 0.01,
+    `Median-Rohmarge ${(median * 100).toFixed(1)} % statt der Zielmarge ${(ZIELMARGE * 100).toFixed(0)} %`);
+  assert.ok(margen.at(-1) <= ZIELMARGE + 0.01,
+    'ein Artikel nimmt mehr als die Zielmarge — dann stimmt die Kalkulation nicht');
+  assert.ok(median < MARGENUNTERGRENZE,
+    'die erzielte Marge liegt über der Untergrenze — dann ist diese Probe gegenstandslos geworden');
+
+  // Und die Gegenrichtung: Die Konditionen des Lieferanten sind es, die an
+  // der Untergrenze gemessen werden — und sie bestehen.
+  const rabatte = Object.values(PREISDATEI.preise)
+    .map((p) => p.haendlerrabattAufUvp)
+    .filter((r) => typeof r === 'number')
+    .sort((a, b) => a - b);
+  assert.ok(rabatte.length >= 30, `nur ${rabatte.length} Rabattsätze`);
+  const medianRabatt = rabatte[Math.floor(rabatte.length / 2)];
+  assert.ok(medianRabatt >= MARGENUNTERGRENZE,
+    `Median-Rabatt ${(medianRabatt * 100).toFixed(1)} % — unter der Untergrenze wäre der Lieferant das Problem`);
 });

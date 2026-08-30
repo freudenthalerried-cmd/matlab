@@ -24,7 +24,15 @@
 
 import { kalkuliere } from './preis.js';
 
-/** Zielmarge des Modells. Weisung vom 25. August 2026: 25 % vom Verkauf. */
+/**
+ * Zielmarge des Modells. Weisung vom 25. August 2026: 25 % vom Verkauf.
+ *
+ * **Nicht zu verwechseln mit `MARGENUNTERGRENZE` in `preis.js`.** Diese Zahl
+ * sagt, was der Shop nimmt; jene, was eine Lieferantenkondition hergeben
+ * müsste, damit ein zweiter Lieferant sich lohnt. Dass die erzielten Margen
+ * im Bestand bei 25 % und nicht bei 32 % liegen, ist deshalb kein Befund,
+ * sondern diese Entscheidung.
+ */
 export const ZIELMARGE = 0.25;
 
 /**
