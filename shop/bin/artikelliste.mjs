@@ -23,7 +23,7 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { leseArtikelliste, fuehreZusammen } from '../src/artikelliste.js';
+import { leseArtikelliste, fuehreZusammen, WARENGRUPPEN } from '../src/artikelliste.js';
 import { sichere } from '../src/sicherung.js';
 
 const HIER = dirname(fileURLToPath(import.meta.url));
@@ -65,12 +65,30 @@ if (!existsSync(datei)) {
   process.exit(2);
 }
 
-const { artikel, preise, fehler, warnungen } = leseArtikelliste(readFileSync(datei, 'utf8'), lieferant, stand);
+/**
+ * Die Zuordnung der Lieferantensparten auf die sieben Warengruppen.
+ *
+ * Sie wird **einmal** gefüllt, nicht je Artikel: Der Lieferant gliedert nach
+ * seinem Sortiment, dieser Shop nach der Aufgabe auf der Baustelle. Fehlt die
+ * Datei, läuft alles wie bisher — dann muss die Liste die Gruppen selbst
+ * tragen.
+ */
+const SPARTEN_DATEI = process.env.SPARTEN_DATEI || join(WURZEL, 'data', 'sparten.json');
+const sparten = existsSync(SPARTEN_DATEI)
+  ? (JSON.parse(readFileSync(SPARTEN_DATEI, 'utf8')).sparten ?? {})
+  : {};
+
+const { artikel, preise, fehler, warnungen, offeneSparten } = leseArtikelliste(
+  readFileSync(datei, 'utf8'), lieferant, stand, sparten,
+);
 
 console.log(`\nArtikelliste ${datei}`);
 console.log(`Lieferant: ${lieferant.name} (${lieferant.id})`);
 console.log(`Stand:     ${stand || '(fehlt)'}`);
-console.log(`Gelesen:   ${artikel.length} Artikel, ${fehler.length} Fehler, ${warnungen.length} Warnungen\n`);
+const ohneSparte = [...offeneSparten.values()].reduce((a, b) => a + b, 0);
+console.log(`Gelesen:   ${artikel.length} Artikel, ${fehler.length} Fehler, ${warnungen.length} Warnungen`);
+if (ohneSparte) console.log(`           ${ohneSparte} Zeilen warten auf eine Spartenzuordnung`);
+console.log('');
 
 if (fehler.length) {
   console.log('Fehler — diese Zeilen wurden nicht übernommen:');
@@ -86,8 +104,25 @@ if (warnungen.length) {
   console.log('');
 }
 
+/**
+ * Offene Sparten gebündelt — und zwar so, dass man sie **abarbeiten** kann.
+ *
+ * Ohne diesen Block stünden bei einer Liste mit dreihundert Artikeln
+ * dreihundert Fehlerzeilen da, und die Arbeit bestünde darin, sie zu
+ * sortieren. Mit ihm stehen zwanzig Zeilen da, nach Artikelzahl geordnet, in
+ * der Form, in der sie in `data/sparten.json` gehören. Das ist der
+ * Unterschied zwischen einem Tag und zehn Minuten.
+ */
+if (offeneSparten.size) {
+  console.log(`\nOffene Sparten (${offeneSparten.size}) — nach data/sparten.json unter "sparten":\n`);
+  for (const [name, anzahl] of [...offeneSparten].sort((a, b) => b[1] - a[1])) {
+    console.log(`  ${JSON.stringify(name)}: "",${' '.repeat(Math.max(1, 34 - name.length))}${String(anzahl).padStart(4)} Artikel`);
+  }
+  console.log(`\n  Erlaubt sind: ${WARENGRUPPEN.join(', ')}`);
+}
+
 if (artikel.length === 0) {
-  console.error('Abbruch: kein einziger Artikel gelesen — es wird nichts geschrieben.');
+  console.error('\nAbbruch: kein einziger Artikel gelesen — es wird nichts geschrieben.');
   process.exit(2);
 }
 

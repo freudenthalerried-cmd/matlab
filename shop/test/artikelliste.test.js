@@ -7,6 +7,8 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { leseArtikelliste, fuehreZusammen, istStand, WARENGRUPPEN } from '../src/artikelliste.js';
 
+const KOPF_SPARTE = 'sku;bezeichnung;einheit;ek_netto;uvp_netto;sparte';
+
 /**
  * **Das Werkzeug für den Tag, auf den dieses Vorhaben wartet.** Am 30.08.
  * stellte sich heraus, dass keines der vorhandenen eine Artikelliste
@@ -30,14 +32,20 @@ test('ein Stand ist Pflicht und muss sortierbar sein', () => {
   assert.match(ohne.fehler[0], /Kein brauchbarer Stand/);
 });
 
-test('eine unbekannte Warengruppe ist ein Fehler, kein „Sonstiges"', () => {
+test('ein unbekannter Gruppenname wird nicht zu „Sonstiges"', () => {
   // **Gemessen am 29.08.:** Ein Regelwerk erkannte 0 von 16 Gruppen aus der
   // Bezeichnung. Die Gruppe ist eine Entscheidung dieses Shops — und ein
   // Artikel ohne gültige Gruppe steht auf keiner Seite.
+  //
+  // **Ergänzt am 30.08.:** Ob in der Spalte eine falsche Gruppe oder die
+  // Sparte des Lieferanten steht, lässt sich nicht unterscheiden — und muss
+  // es nicht: Beides landet in der Liste der offenen Zuordnungen. Was zählt,
+  // ist, dass der Artikel nicht durchrutscht.
   const e = lies('1;Fliesenkleber;SCK;10,00;20,00;Fliesen;;');
   assert.equal(e.artikel.length, 0);
-  assert.match(e.fehler[0], /Gruppe „Fliesen"/);
+  assert.equal(e.offeneSparten.get('Fliesen'), 1);
   assert.ok(WARENGRUPPEN.length === 7, `${WARENGRUPPEN.length} Warengruppen`);
+  assert.ok(!WARENGRUPPEN.includes('Sonstiges'));
 });
 
 test('eine unbekannte Einheit ist ein Fehler', () => {
@@ -169,4 +177,71 @@ test('mit --schreiben entstehen zwei Dateien, und die Preise stehen nur in einer
   const p = JSON.parse(readFileSync(preise, 'utf8'));
   assert.equal(p.preise['POS-90001'].ekNetto, 0.42);
   assert.match(p._warnung, /VERTRAULICH/);
+});
+
+
+/* ------------------------------------------------------------------ *
+ * Die Sparten des Lieferanten
+ * ------------------------------------------------------------------ */
+
+const mitSparten = (tabelle, ...zeilen) =>
+  leseArtikelliste([KOPF_SPARTE, ...zeilen].join('\n'), lieferant, '2026-08-30', tabelle);
+
+test('eine zugeordnete Sparte wird zur Warengruppe', () => {
+  // Der Lieferant gliedert nach seinem Sortiment, dieser Shop nach der
+  // Aufgabe auf der Baustelle. Die Zuordnung wird **einmal** getroffen, nicht
+  // je Artikel — für ~20 Sparten eine Tabelle statt hunderter Entscheidungen.
+  const e = mitSparten({ Kaminsysteme: 'Kamin' }, '1;Mantelstein;STK;1,00;2,00;Kaminsysteme');
+  assert.deepEqual(e.fehler, []);
+  assert.equal(e.artikel[0].gruppe, 'Kamin');
+});
+
+test('eine unzugeordnete Sparte erzeugt keine Fehlerzeile je Artikel', () => {
+  // **Der Punkt der Bündelung.** Bei dreihundert Artikeln aus zwanzig Sparten
+  // stünden sonst dreihundert Zeilen mit derselben Aussage da, und die Arbeit
+  // bestünde darin, sie zu sortieren.
+  const e = mitSparten({}, ...Array.from({ length: 12 }, (_, i) =>
+    `${i + 1};Ware ${i};STK;1,00;2,00;${i < 9 ? 'Trockenbau' : 'Fliesen'}`));
+  assert.equal(e.artikel.length, 0);
+  assert.deepEqual(e.fehler, [], 'die Sparten stehen gebündelt, nicht je Zeile');
+  assert.equal(e.offeneSparten.get('Trockenbau'), 9);
+  assert.equal(e.offeneSparten.get('Fliesen'), 3);
+});
+
+test('eine Zuordnung auf eine Gruppe, die es nicht gibt, wird abgewiesen', () => {
+  // Die Tabelle ist von Hand geführt; ein Tippfehler darin darf nicht
+  // durchrutschen und Artikel auf eine leere Seite schicken.
+  const e = mitSparten({ Trockenbau: 'Trockenbau' }, '1;Ware;STK;1,00;2,00;Trockenbau');
+  assert.equal(e.artikel.length, 0);
+  assert.equal(e.offeneSparten.size, 0, 'die Sparte ist zugeordnet, nur falsch');
+  assert.match(e.fehler[0], /bekannt sind/);
+});
+
+test('eine Liste mit gültiger Gruppenspalte braucht keine Tabelle', () => {
+  // Der einfache Fall bleibt einfach.
+  const e = lies('1;Ware;STK;1,00;2,00;WDVS;;');
+  assert.deepEqual(e.fehler, []);
+  assert.equal(e.artikel[0].gruppe, 'WDVS');
+  assert.equal(e.offeneSparten.size, 0);
+});
+
+test('das Werkzeug führt die offenen Sparten nach Gewicht auf', () => {
+  const o = mkdtempSync(join(tmpdir(), 'sparten-'));
+  const datei = join(o, 'liste.csv');
+  writeFileSync(datei, [KOPF_SPARTE,
+    ...Array.from({ length: 7 }, (_, i) => `${i + 1};Ware;STK;1,00;2,00;Waermedaemmverbund`),
+    '90;Ware;STK;1,00;2,00;Trockenbau'].join('\n'));
+  const lauf = spawnSync(process.execPath, [werkzeug, 'poschacher', datei, '--stand=2026-08-30'], {
+    encoding: 'utf8',
+    env: { ...process.env, SPARTEN_DATEI: join(o, 'gibtsnicht.json') },
+  });
+  assert.equal(lauf.status, 2, 'ohne Zuordnung kein Artikel');
+  assert.match(lauf.stdout, /Offene Sparten \(2\)/);
+  assert.match(lauf.stdout, /8 Zeilen warten auf eine Spartenzuordnung/);
+  // Nach Gewicht: die häufigere Sparte zuerst, damit die Entscheidung dort
+  // beginnt, wo sie am meisten bewegt.
+  const wdvs = lauf.stdout.indexOf('Waermedaemmverbund');
+  const trocken = lauf.stdout.indexOf('Trockenbau');
+  assert.ok(wdvs > 0 && trocken > wdvs, 'die häufigere Sparte steht nicht oben');
+  assert.match(lauf.stdout, /Erlaubt sind: Dämmung/);
 });

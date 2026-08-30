@@ -53,23 +53,28 @@ export function istStand(text) {
  * @param {string} stand  Datum der Liste, `YYYY-MM-DD`
  * @returns {{artikel: Array, preise: object, fehler: string[], warnungen: string[]}}
  */
-export function leseArtikelliste(csvText, lieferant, stand) {
+export function leseArtikelliste(csvText, lieferant, stand, sparten = {}) {
   const fehler = [];
   const warnungen = [];
+  /** Sparten, die keine Zuordnung haben — je Name die Zahl der Artikel. */
+  const offeneSparten = new Map();
 
   if (!istStand(stand)) {
     fehler.push(`Kein brauchbarer Stand: „${stand ?? ''}" — erwartet wird YYYY-MM-DD`);
-    return { artikel: [], preise: {}, fehler, warnungen };
+    return { artikel: [], preise: {}, fehler, warnungen, offeneSparten: new Map() };
   }
 
   const { kopf, zeilen } = leseCsv(csvText);
+  const hatGruppe = kopf.includes('gruppe') || kopf.includes('sparte');
   for (const pflicht of PFLICHTSPALTEN) {
-    if (!kopf.includes(pflicht)) fehler.push(`Pflichtspalte fehlt: ${pflicht}`);
+    if (pflicht === 'gruppe' ? !hatGruppe : !kopf.includes(pflicht)) {
+      fehler.push(`Pflichtspalte fehlt: ${pflicht === 'gruppe' ? 'gruppe oder sparte' : pflicht}`);
+    }
   }
   if (!kopf.includes('ek_netto') && !kopf.includes('uvp_netto')) {
     fehler.push('Es fehlt eine Preisspalte: ek_netto oder uvp_netto');
   }
-  if (fehler.length) return { artikel: [], preise: {}, fehler, warnungen };
+  if (fehler.length) return { artikel: [], preise: {}, fehler, warnungen, offeneSparten };
 
   const artikel = [];
   const preise = {};
@@ -84,14 +89,32 @@ export function leseArtikelliste(csvText, lieferant, stand) {
 
     if (!satz.bezeichnung) { fehler.push(`${ort}: Bezeichnung fehlt für ${nummer}`); continue; }
 
-    // **Die Warengruppe wird nicht geraten.** Am 29.08. gemessen: Ein
-    // Regelwerk erkannte 0 von 16 Gruppen aus der Bezeichnung. Die Gruppe ist
-    // eine Entscheidung dieses Shops, keine Eigenschaft des Artikels — und
-    // ein Artikel ohne gültige Gruppe steht auf keiner Seite, weshalb der
-    // Seitenbau abbricht.
-    const gruppe = satz.gruppe;
+    /**
+     * **Die Warengruppe wird nicht geraten.** Am 29.08. gemessen: Ein
+     * Regelwerk erkannte 0 von 16 Gruppen aus der Bezeichnung. Die Gruppe ist
+     * eine Entscheidung dieses Shops, keine Eigenschaft des Artikels — und
+     * ein Artikel ohne gültige Gruppe steht auf keiner Seite, weshalb der
+     * Seitenbau abbricht.
+     *
+     * **Zwei Wege dorthin, seit dem 30.08.** Nennt die Liste eine unserer
+     * sieben Gruppen, gilt sie. Nennt sie die Sparte des Lieferanten — und
+     * das ist der wahrscheinliche Fall, denn er gliedert nach seinem eigenen
+     * Sortiment —, entscheidet die Zuordnungstabelle. Sie wird einmal von
+     * Hand gefüllt, nicht je Artikel.
+     */
+    const roh = satz.gruppe || satz.sparte || '';
+    const gruppe = WARENGRUPPEN.includes(roh) ? roh : sparten[roh];
     if (!WARENGRUPPEN.includes(gruppe)) {
-      fehler.push(`${ort}: ${nummer} trägt die Gruppe „${gruppe}" — bekannt sind ${WARENGRUPPEN.join(', ')}`);
+      if (roh && !gruppe) {
+        // **Keine Fehlerzeile je Artikel.** Bei dreihundert Artikeln aus
+        // zwanzig Sparten stünden hier dreihundert Zeilen mit derselben
+        // Aussage, und die Arbeit bestünde darin, sie zu sortieren. Gezählt
+        // wird nach Sparte; der Bericht führt sie gebündelt und in der Form,
+        // in der sie in die Zuordnungstabelle gehören.
+        offeneSparten.set(roh, (offeneSparten.get(roh) ?? 0) + 1);
+      } else {
+        fehler.push(`${ort}: ${nummer} trägt die Gruppe „${roh}" — bekannt sind ${WARENGRUPPEN.join(', ')}`);
+      }
       continue;
     }
 
@@ -155,7 +178,7 @@ export function leseArtikelliste(csvText, lieferant, stand) {
     if (!eintrag.gtin) warnungen.push(`${ort}: ${nummer} ohne GTIN — für den Produktfeed verlangt`);
   }
 
-  return { artikel, preise, fehler, warnungen };
+  return { artikel, preise, fehler, warnungen, offeneSparten };
 }
 
 /**
