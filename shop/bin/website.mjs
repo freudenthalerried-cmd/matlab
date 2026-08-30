@@ -32,7 +32,7 @@ import { dirname, join, resolve } from 'node:path';
 import { ladeBaustoffkatalog, katalogbefund, ZIELMARGE } from '../src/baustoffkatalog.js';
 import { pruefeSeiten } from '../src/interna.js';
 import { artikelBild, gruppenBild, schichten, schichtbild, dickeMm } from '../src/bilder.js';
-import { VERFUEGBARKEIT, angebotsAuszeichnung, robotsTxt } from '../src/maschinenlesbar.js';
+import { VERFUEGBARKEIT, angebotsAuszeichnung, robotsTxt, liefergebietOrte } from '../src/maschinenlesbar.js';
 import { baueKern, BROWSERMODULE } from '../src/buendel.js';
 import { startklar } from '../src/startklar.js';
 import { ohneKommentare } from '../src/entkommentieren.js';
@@ -784,7 +784,7 @@ ${esc(a.gruppe)}. Ob einer davon der richtige ist, entscheidet die Planung.</p>`
           // Datum wäre eine Zusage, und `null` weisen die Prüfwerkzeuge
           // zurecht ab.
           priceValidUntil: undefined,
-          areaServed: `Bezirk ${LIEFERGEBIET.bezirke.map((b) => b.name).join(', ')}`,
+          areaServed: liefergebietOrte({ land: LIEFERGEBIET.land, bezirke: LIEFERGEBIET.bezirke.map((b) => b.name) }),
           seller: { '@type': 'Organization', name: FIRMA },
         },
       }
@@ -1121,7 +1121,7 @@ Jede beantwortet genau eine Frage, und die Antwort steht in den ersten zwei Sät
       '@type': 'Organization',
       name: FIRMA,
       address: { '@type': 'PostalAddress', addressLocality: ORT, addressCountry: 'AT' },
-      areaServed: 'Bezirk Perg, Urfahr-Umgebung, Freistadt, Linz, Linz-Land',
+      areaServed: liefergebietOrte({ land: LIEFERGEBIET.land, bezirke: LIEFERGEBIET.bezirke.map((b) => b.name) }),
       url: BASIS,
     },
   };

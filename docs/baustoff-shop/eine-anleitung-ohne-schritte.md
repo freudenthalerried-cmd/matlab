@@ -94,6 +94,11 @@ sondern dass sie vorher falsch war.
 
 ## Offen
 
+**Erledigt im nächsten Lauf:** siehe
+[`das-liefergebiet-war-ein-satz.md`](./das-liefergebiet-war-ein-satz.md) —
+und es war schlimmer als hier vermutet: Die Zeichenkette stand nicht nur in
+der falschen Form da, sondern fest im Quelltext, neben der Entscheidung.
+
 `areaServed` der Organisation steht als Zeichenkette da
 (`"Bezirk Perg, Urfahr-Umgebung, …"`). Sauber wären benannte
 `AdministrativeArea`-Knoten. Das ist die nächste Stelle, an der die

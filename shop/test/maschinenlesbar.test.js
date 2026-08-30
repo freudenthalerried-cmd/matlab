@@ -13,6 +13,7 @@ import {
   SUCH_CRAWLER,
   TRAININGS_CRAWLER,
   VERFUEGBARKEIT,
+  liefergebietOrte,
 } from '../src/maschinenlesbar.js';
 import { existsSync } from 'node:fs';
 import { ladeKatalog } from '../src/warenkorb.js';
@@ -361,4 +362,29 @@ test('jede gebaute Artikelseite trägt ein Produkt-JSON-LD', () => {
     try { return JSON.parse(treffer[1])['@type'] !== 'Product'; } catch { return true; }
   });
   assert.deepEqual(ohne, [], 'Artikelseiten ohne Produktauszeichnung');
+});
+
+
+/* ------------------------------------------------------------------ *
+ * Das Liefergebiet als Ort, nicht als Satz
+ * ------------------------------------------------------------------ */
+
+test('jeder Bezirk wird ein eigener Ort', () => {
+  // Bis zum 30.08. stand das Gebiet als Zeichenkette da: „Bezirk Perg,
+  // Urfahr-Umgebung, Freistadt, Linz, Linz-Land". Für einen maschinellen
+  // Leser ist das ein Satz und keine Liste — und es liest sich, als sei nur
+  // das erste ein Bezirk.
+  const orte = liefergebietOrte({ land: 'AT', bezirke: ['Perg', 'Freistadt'] });
+  assert.equal(orte.length, 2);
+  assert.deepEqual(orte.map((o) => o['@type']), ['AdministrativeArea', 'AdministrativeArea']);
+  assert.deepEqual(orte.map((o) => o.name), ['Perg', 'Freistadt']);
+  assert.equal(orte[0].address.addressRegion, 'Perg');
+  assert.equal(orte[0].address.addressCountry, 'AT');
+});
+
+test('ohne beziffertes Gebiet entsteht kein Ort', () => {
+  // Lieber keine Angabe als eine leere Liste, die „wir liefern nirgends"
+  // heißt — die Lücke meldet `liefergebietAngabe` an anderer Stelle.
+  assert.equal(liefergebietOrte({ land: 'AT', bezirke: [] }), null);
+  assert.equal(liefergebietOrte(undefined), null);
 });

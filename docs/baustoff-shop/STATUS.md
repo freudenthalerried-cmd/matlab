@@ -502,10 +502,10 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > 787 vergleichbare Tests, kein Unterschied.
 > [`kommentare-im-schaufenster.md`](./kommentare-im-schaufenster.md).
 >
-> **Stand der Prüfmittel (30.08.):** 870 Tests, `pruefe-tests` 868/0, `pruefe-preise` 46/0, `pruefe-inhalte`
-> 24/357/0, `pruefe-seiten` 81 von 81 gebauten Seiten, `pruefe-widerrufe` 183 Dateien/48
+> **Stand der Prüfmittel (30.08.):** 873 Tests, `pruefe-tests` 871/0, `pruefe-preise` 46/0, `pruefe-inhalte`
+> 24/357/0, `pruefe-seiten` 81 von 81 gebauten Seiten, `pruefe-widerrufe` 184 Dateien/48
 > Fundstellen, `pruefe-quellen` 6/6, `shopprobe` 49 (davon 10 im Rahmen),
-> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 182/182,
+> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 183/183,
 > `pruefe-pruefer` 11 Prüfer ohne Leerlauf, Website 81 Seiten ohne toten
 > Verweis.
 
@@ -876,6 +876,7 @@ zusammengefasst und im Verzeichnis nicht auffindbar:
 | `was-die-gruppenseite-verspricht.md` | „bogen" fand nichts, obwohl der Shop zwei Kanalbögen führt — der Wortstamm vom Vortag stutzte das Kompositum, nicht die Frage. Dazu: Fünf Gruppenseiten versprachen Ware, die die Gruppe nicht führt (Mauermörtel, Planziegel, Anschlussformteil, Dübel, Trennlage), und acht Wörter der eigenen Positionslisten fanden im eigenen Katalog nichts |
 | `fuenf-positionen-ohne-hinweis.md` | Zensus über alle 35 Positionen der vier Systemlisten: sieben ohne Artikel, fünf davon ohne Hinweis — vier mit der Markierung „wird oft vergessen". Bei Übergangsstücken und Gleitmittel stand die Entscheidung längst im Register unter „nicht aufgenommen". Alle gekennzeichnet; die Probe prüft jetzt beide Richtungen |
 | `eine-anleitung-ohne-schritte.md` | Die vier Systemseiten trugen `HowTo` ohne einen einzigen `step`, und alle 24 Inhaltsseiten hängten ihre Frage als `mainEntity` an ein `Article` — eine Form, die kein Leser als Frage-Antwort erkennt. Jetzt `FAQPage` mit Fragenliste, und die Positionslisten stehen als `ItemList` samt Vermerk „nicht im Sortiment" |
+| `das-liefergebiet-war-ein-satz.md` | `areaServed` stand fest im Quelltext der Startseite — neben der Entscheidung in `LIEFERGEBIET`, und schon in abweichender Reihenfolge. Dazu als Zeichenkette statt als Ort. Jetzt benannte `AdministrativeArea`-Knoten aus der Entscheidung, geprüft an 47 Auszeichnungen |
 | `segment-arbeitsplatzmessung.md` | Nebenstrecke, kein eigenes Segment |
 | `strategie-modellvergleich.md` | Kapitalweg braucht ~900.000 €; enthält überholte Empfehlung |
 | `anschreiben-entwuerfe.md` | Drei Anschreiben (Hersteller, Großhändler, Partnerbetriebe), versandfertig, nicht versendet |

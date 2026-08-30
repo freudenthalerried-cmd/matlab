@@ -9,6 +9,7 @@ import { loeseVerweis, loeseVerwandt, marke, mitverbaut, HERSTELLER, positionsli
 import { lesKopf } from '../src/markdown.js';
 import { KORBSCHLUESSEL } from '../src/shopkern.js';
 import { SUCH_CRAWLER, TRAININGS_CRAWLER } from '../src/maschinenlesbar.js';
+import { LIEFERGEBIET } from '../src/liefergebiet.js';
 
 const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
 
@@ -960,4 +961,45 @@ test('keine Seite behauptet eine Anleitung, die sie nicht hat', () => {
   }
   assert.equal(mitListe, 4, `${mitListe} Seiten mit Positionsliste, erwartet sind die vier Systemseiten`);
   assert.ok(mitFrage >= 20, `nur ${mitFrage} Seiten mit Frage-Antwort`);
+});
+
+
+test('das Liefergebiet steht in der Auszeichnung als Orte — aus der Entscheidung', () => {
+  // **Der Befund vom 30.08.:** Die Startseite trug die Bezirke fest im
+  // Quelltext, neben der Entscheidung in LIEFERGEBIET — zwei Wege zur selben
+  // Angabe, und die Reihenfolge wich schon voneinander ab.
+  //
+  // Geprüft wird an allen gebauten Seiten: Wo ein Liefergebiet ausgezeichnet
+  // ist, sind es benannte Orte, und die Namen sind genau die der Entscheidung.
+  const wurzel = pfad('../ausgabe/site');
+  if (!existsSync(wurzel)) return;
+  const erwartet = LIEFERGEBIET.bezirke.map((b) => b.name);
+  assert.ok(erwartet.length >= 3, `nur ${erwartet.length} Bezirke entschieden`);
+  const seiten = [];
+  const gehe = (o, vor = '') => {
+    for (const e of readdirSync(o, { withFileTypes: true })) {
+      if (e.isDirectory()) gehe(join(o, e.name), `${vor}${e.name}/`);
+      else if (e.name.endsWith('.html')) seiten.push({ id: vor + e.name.slice(0, -5), html: readFileSync(join(o, e.name), 'utf8') });
+    }
+  };
+  gehe(wurzel);
+  let gesehen = 0;
+  for (const { id, html } of seiten) {
+    const treffer = /<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(html);
+    if (!treffer) continue;
+    const daten = JSON.parse(treffer[1]);
+    for (const gebiet of [daten.areaServed, daten.offers?.areaServed]) {
+      if (gebiet === undefined) continue;
+      gesehen++;
+      assert.ok(Array.isArray(gebiet), `${id}: areaServed ist keine Liste von Orten`);
+      assert.deepEqual(gebiet.map((o) => o['@type']), erwartet.map(() => 'AdministrativeArea'));
+      assert.deepEqual(gebiet.map((o) => o.name), erwartet,
+        `${id}: die Bezirke weichen von der Entscheidung ab`);
+      assert.equal(gebiet.length, erwartet.length, `${id}: ${gebiet.length} Orte statt ${erwartet.length}`);
+      for (const ort of gebiet) {
+        assert.equal(ort.address.addressCountry, LIEFERGEBIET.land);
+      }
+    }
+  }
+  assert.ok(gesehen >= 40, `nur ${gesehen} Auszeichnungen mit Liefergebiet`);
 });

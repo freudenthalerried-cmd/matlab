@@ -101,6 +101,38 @@ export function liefergebietAngabe(gebiet) {
 }
 
 /**
+ * Das Liefergebiet als benannte Orte statt als Zeichenkette.
+ *
+ * **Gemessen am 30.08.** Die Startseite trug
+ * `areaServed: 'Bezirk Perg, Urfahr-Umgebung, Freistadt, Linz, Linz-Land'` —
+ * fest im Quelltext, neben der Entscheidung in `LIEFERGEBIET`. Zwei Wege zur
+ * selben Angabe, und die Reihenfolge wich schon voneinander ab.
+ *
+ * Zweitens ist eine Aufzählung in einem Textfeld für einen maschinellen Leser
+ * ein Satz, keine Liste: „Bezirk Perg, Urfahr-Umgebung, …" liest sich, als sei
+ * nur das erste ein Bezirk. Der Shop weiß es genauer — jeder Bezirk steht mit
+ * Namen, Bundesland und Begründung in der Entscheidung.
+ *
+ * `AdministrativeArea` mit `addressRegion` und `addressCountry`: dieselbe
+ * Form, die `shippingDestination` im Angebot längst benutzt.
+ *
+ * @returns {object[]|null} die Orte, oder null wenn das Gebiet unbeziffert ist
+ */
+export function liefergebietOrte(gebiet) {
+  const angabe = liefergebietAngabe(gebiet);
+  if (!angabe.vollstaendig) return null;
+  return angabe.bezirke.map((name) => ({
+    '@type': 'AdministrativeArea',
+    name,
+    address: {
+      '@type': 'PostalAddress',
+      addressRegion: name,
+      addressCountry: angabe.land,
+    },
+  }));
+}
+
+/**
  * Schema.org-Auszeichnung eines Artikels als einfaches Objekt.
  *
  * Bewusst als Objekt und nicht als fertiger Text: So kann der Aufrufer es
