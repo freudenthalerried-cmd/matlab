@@ -65,3 +65,32 @@ Jeder Bericht besteht aus Einträgen mit **Foto + Zeitstempel + Text**.
   die Kategorie liefert die passenden Bausteine (gelernt aus obiger Tabelle).
 - **Lernen aus Nutzung**: jede Verwendung eines Bausteins erhöht dessen Rang
   (localStorage), die Liste sortiert sich mit der Zeit nach dem eigenen Gebrauch.
+
+## Erweiterung: Blaue Mappe als Quelle
+
+Zusätzlich ausgewertet: **„Blaue Mappe – Sicherheit am Bau"** (Bundesinnung
+Bau / AUVA / BUAK, Ausgabe 2010, aus Google Drive). Daraus übernommen:
+
+- **Gesetzestexte pro Baustein** (Plus-Stufe im KI-Vorschlag), u. a.:
+  Zugänge und Wege BauV §§ 6–9, 48 (Blatt B 6) · Flüssiggas BauV § 127
+  (B 14, max. Tagesbedarf, Propan schwerer als Luft) · Sanitär BauV §§ 33–37
+  (B 8) · Erste Hilfe BauV §§ 31, 32, 41 und Brandschutz §§ 42–47 (B 9/B 10) ·
+  Arbeiten im Freien/Winter BauV §§ 27–29, 34–38 (B 12) · Unterweisung
+  ASchG § 14 · PSA-Benutzung ASchG § 69 f. (C 1).
+- **Allgemeine Punkte** (optional einfügbar, damit ein kurzer Bericht nicht
+  leer wirkt): PSA, Erste Hilfe/Feuerlöscher, Verkehrswege, Bauzaun,
+  Aushänge, Sanitäreinrichtungen.
+- **Symbolbilder** für komplexere Sicherheitsthemen (Absturz, Gasflaschen,
+  Leiter, Kran, Dach, KMF, Winterbau, Gerüst) als Inline-SVG.
+
+## Bedienung der neuen Funktionen
+
+- **− / + beim KI-Vorschlag**: Kurzfassung / Normal / mit Gesetzestext.
+- Der KI-Vorschlag zeigt **immer 3 Vorschläge** und beschränkt sich auf
+  **sicherheitsrelevante** Bausteine.
+- **✎ am Eintrag**: bearbeiten (das Textfeld vergrößert sich dabei).
+- **„Allg."-Knopf**: allgemeine Punkte auswählen und als Sammel-Eintrag einfügen.
+- **Datenbank-Gedächtnis**: Wird ein eingefügter Baustein-Text verändert,
+  merkt sich die App die eigene Formulierung (`bp_varianten`) und verwendet
+  sie künftig; alle Änderungen landen zusätzlich im Log `bp_aenderungen`
+  (Basis für eine spätere echte Datenbank).

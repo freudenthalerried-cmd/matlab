@@ -12,6 +12,7 @@
       <div class="app-title">Sicherheit am Bau – Protokoll</div>
       <div class="header-row">
         <input id="ort-input" class="ort-input" type="text" placeholder="Ort / Baustelle" aria-label="Ort">
+        <button id="allgemein-button" class="tool-button tool-button-text" type="button" title="Allgemeine Punkte einfügen">Allg.</button>
         <button id="print-button" class="tool-button" type="button" title="Bericht drucken">&#128424;</button>
         <button id="bausteine-button" class="tool-button" type="button" title="Textbausteine">&#9776;</button>
       </div>
@@ -24,9 +25,30 @@
       <div id="foto-kategorien-chips" class="chips"></div>
     </div>
 
+    <div id="allgemein-panel" class="allgemein-panel" hidden>
+      <div class="panel-hint">Allgemeine Punkte für den Bericht auswählen:</div>
+      <div id="allgemein-liste" class="allgemein-liste"></div>
+      <div class="allgemein-aktionen">
+        <button id="allgemein-einfuegen" class="chip" type="button">Ausgewählte einfügen</button>
+        <button id="allgemein-abbrechen" class="chip chip-kategorie" type="button">Abbrechen</button>
+      </div>
+    </div>
+
     <div id="ki-vorschlaege" class="ki-vorschlaege" hidden>
-      <div class="panel-hint">KI-Vorschlag – tippen zum Einfügen:</div>
+      <div class="panel-hint ki-kopf">
+        <span>KI-Vorschlag (nur Sicherheit) – tippen zum Einfügen:</span>
+        <span class="detail-regler">
+          <button id="detail-minus" class="detail-button" type="button" title="Kürzere Antwort">&minus;</button>
+          <span id="detail-label">Normal</span>
+          <button id="detail-plus" class="detail-button" type="button" title="Längere Antwort mit Gesetzestext">+</button>
+        </span>
+      </div>
       <div id="ki-chips" class="chips"></div>
+    </div>
+
+    <div id="bearbeiten-hinweis" class="bearbeiten-hinweis" hidden>
+      Eintrag wird bearbeitet – Senden speichert die Änderung.
+      <button id="bearbeiten-abbrechen" type="button">Abbrechen</button>
     </div>
 
     <div id="foto-preview" class="foto-preview" hidden>

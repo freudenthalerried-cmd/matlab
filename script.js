@@ -17,8 +17,20 @@
   const bausteineClose = document.getElementById('bausteine-close');
   const bausteineListe = document.getElementById('bausteine-liste');
   const printButton = document.getElementById('print-button');
+  const allgemeinButton = document.getElementById('allgemein-button');
+  const allgemeinPanel = document.getElementById('allgemein-panel');
+  const allgemeinListe = document.getElementById('allgemein-liste');
+  const allgemeinEinfuegen = document.getElementById('allgemein-einfuegen');
+  const allgemeinAbbrechen = document.getElementById('allgemein-abbrechen');
+  const detailMinus = document.getElementById('detail-minus');
+  const detailPlus = document.getElementById('detail-plus');
+  const detailLabel = document.getElementById('detail-label');
+  const bearbeitenHinweis = document.getElementById('bearbeiten-hinweis');
+  const bearbeitenAbbrechen = document.getElementById('bearbeiten-abbrechen');
 
-  let aktuellesFoto = null; // dataURL
+  let aktuellesFoto = null;      // dataURL
+  let bearbeitetIndex = null;    // Index des Eintrags, der gerade bearbeitet wird
+  let eingefuegt = [];           // im aktuellen Eintrag eingefügte Bausteine [{id, text}]
 
   // ---------- Speicher (lernt aus der Verwendung) ----------
 
@@ -37,8 +49,11 @@
     } catch (e) { /* Speicher voll oder blockiert – App funktioniert weiter */ }
   }
 
-  let nutzung = ladeJson('bp_nutzung', {});   // Baustein-ID -> wie oft verwendet
+  let nutzung = ladeJson('bp_nutzung', {});       // Baustein-ID -> wie oft verwendet
   let eintraege = ladeJson('bp_eintraege', []);
+  let varianten = ladeJson('bp_varianten', {});   // Baustein-ID -> vom Benutzer geänderte Fassung
+  let aenderungen = ladeJson('bp_aenderungen', []); // Änderungs-Log für die Datenbank
+  let detailStufe = ladeJson('bp_detail', 1);     // 0 = kurz, 1 = normal, 2 = + Gesetzestext
   ortInput.value = ladeJson('bp_ort', '');
 
   function merkeNutzung(id) {
@@ -46,8 +61,45 @@
     speichereJson('bp_nutzung', nutzung);
   }
 
+  // Merkt geänderte Baustein-Texte: die eigene Formulierung wird künftig bevorzugt.
+  function merkeAenderung(bausteinId, original, geaendert) {
+    aenderungen.push({ zeit: new Date().toISOString(), baustein: bausteinId, original: original, geaendert: geaendert });
+    if (aenderungen.length > 500) aenderungen = aenderungen.slice(-500);
+    speichereJson('bp_aenderungen', aenderungen);
+    if (bausteinId) {
+      varianten[bausteinId] = geaendert;
+      speichereJson('bp_varianten', varianten);
+    }
+  }
+
   function score(b) {
     return b.freq + (nutzung[b.id] || 0) * 2;
+  }
+
+  // ---------- Detailstufe (– kürzer / + länger mit Gesetzestext) ----------
+
+  const stufenNamen = ['Kurz', 'Normal', '+ Gesetzestext'];
+
+  function zeigeDetailStufe() {
+    detailLabel.textContent = stufenNamen[detailStufe];
+    detailMinus.disabled = detailStufe === 0;
+    detailPlus.disabled = detailStufe === 2;
+  }
+
+  detailMinus.addEventListener('click', function () {
+    if (detailStufe > 0) { detailStufe--; speichereJson('bp_detail', detailStufe); zeigeDetailStufe(); }
+  });
+  detailPlus.addEventListener('click', function () {
+    if (detailStufe < 2) { detailStufe++; speichereJson('bp_detail', detailStufe); zeigeDetailStufe(); }
+  });
+
+  function bausteinText(b) {
+    const basis = varianten[b.id] || b.text;
+    if (detailStufe === 0) return b.kurz || basis;
+    if (detailStufe === 2 && b.gesetz) {
+      return basis + '\n' + b.gesetz.text + ' (' + b.gesetz.ref + ')';
+    }
+    return basis;
   }
 
   // ---------- Kürzel-Expansion (wie Tastatur-Shortcuts) ----------
@@ -57,7 +109,6 @@
     b.kuerzel.forEach(function (k) { kuerzelMap[k.toLowerCase()] = b; });
   });
 
-  // Ersetzt ein alleinstehendes Kürzel am Wortende durch den vollen Textbaustein.
   function expandiereKuerzel(text, nurLetztesWort) {
     const regex = /(^|[\s.,;:!?()])([A-Za-zÄÖÜäöüß]+)$/;
     if (nurLetztesWort) {
@@ -66,53 +117,89 @@
         const b = kuerzelMap[m[2].toLowerCase()];
         if (b) {
           merkeNutzung(b.id);
-          return text.slice(0, m.index + m[1].length) + b.text;
+          const t = bausteinText(b);
+          eingefuegt.push({ id: b.id, text: t });
+          return text.slice(0, m.index + m[1].length) + t;
         }
       }
       return null;
     }
-    // Beim Senden: alle Wörter prüfen
     return text.split(/\s+/).map(function (wort) {
       const kern = wort.replace(/[.,;:!?]+$/, '');
       const b = kuerzelMap[kern.toLowerCase()];
       if (b && kern === wort) {
         merkeNutzung(b.id);
-        return b.text;
+        const t = bausteinText(b);
+        eingefuegt.push({ id: b.id, text: t });
+        return t;
       }
       return wort;
     }).join(' ');
   }
 
-  // ---------- KI-Vorschlag ----------
+  // ---------- KI-Vorschlag (nur sicherheitsrelevante Bausteine) ----------
+
+  function sicherheitsBausteine() {
+    return BAUSTEINE.filter(function (b) { return b.sicherheit !== false; });
+  }
 
   function vorschlaegeFuer(text) {
     const t = text.toLowerCase();
     if (t.trim().length < 3) return [];
     const treffer = [];
-    BAUSTEINE.forEach(function (b) {
+    sicherheitsBausteine().forEach(function (b) {
       let punkte = 0;
       b.keywords.forEach(function (kw) {
         if (t.indexOf(kw) !== -1) punkte += 10;
       });
-      if (punkte > 0 && t.indexOf(b.text.toLowerCase().slice(0, 40)) === -1) {
+      if (punkte > 0 && t.indexOf((varianten[b.id] || b.text).toLowerCase().slice(0, 40)) === -1) {
         treffer.push({ baustein: b, punkte: punkte + score(b) });
       }
     });
-    // Zusammenhänge: was in den Berichten oft gemeinsam vorkam, mitvorschlagen
-    const direkt = treffer.map(function (x) { return x.baustein.id; });
+    // Zusammenhänge aus den Berichten: verwandte Bausteine mitvorschlagen
+    const dabei = treffer.map(function (x) { return x.baustein.id; });
     treffer.slice().forEach(function (x) {
       (x.baustein.related || []).forEach(function (rid) {
-        if (direkt.indexOf(rid) === -1) {
-          const rb = BAUSTEINE.find(function (b) { return b.id === rid; });
-          if (rb && t.indexOf(rb.text.toLowerCase().slice(0, 40)) === -1) {
+        if (dabei.indexOf(rid) === -1) {
+          const rb = BAUSTEINE.find(function (b) { return b.id === rid && b.sicherheit !== false; });
+          if (rb && t.indexOf((varianten[rb.id] || rb.text).toLowerCase().slice(0, 40)) === -1) {
             treffer.push({ baustein: rb, punkte: score(rb) });
-            direkt.push(rid);
+            dabei.push(rid);
           }
         }
       });
     });
     treffer.sort(function (a, b) { return b.punkte - a.punkte; });
+    // Immer 3 Vorschläge: mit den meistgenutzten Sicherheits-Bausteinen auffüllen
+    if (treffer.length < 3) {
+      sicherheitsBausteine()
+        .slice()
+        .sort(function (a, b) { return score(b) - score(a); })
+        .forEach(function (b) {
+          if (treffer.length < 3 && dabei.indexOf(b.id) === -1 &&
+              t.indexOf((varianten[b.id] || b.text).toLowerCase().slice(0, 40)) === -1) {
+            treffer.push({ baustein: b, punkte: 0 });
+            dabei.push(b.id);
+          }
+        });
+    }
     return treffer.slice(0, 3).map(function (x) { return x.baustein; });
+  }
+
+  function chipFuer(b, onClick) {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'chip';
+    if (b.icon && ICONS[b.icon]) {
+      const span = document.createElement('span');
+      span.className = 'chip-icon';
+      span.innerHTML = ICONS[b.icon];
+      chip.appendChild(span);
+    }
+    chip.appendChild(document.createTextNode(b.titel));
+    chip.title = varianten[b.id] || b.text;
+    chip.addEventListener('click', onClick);
+    return chip;
   }
 
   function zeigeVorschlaege(liste) {
@@ -122,29 +209,68 @@
       return;
     }
     liste.forEach(function (b) {
-      const chip = document.createElement('button');
-      chip.type = 'button';
-      chip.className = 'chip';
-      chip.textContent = b.titel;
-      chip.title = b.text;
-      chip.addEventListener('click', function () {
-        fuegeTextEin(b);
-      });
-      kiChips.appendChild(chip);
+      kiChips.appendChild(chipFuer(b, function () { fuegeTextEin(b); }));
     });
+    zeigeDetailStufe();
     kiPanel.hidden = false;
   }
 
   function fuegeTextEin(b) {
     merkeNutzung(b.id);
+    const t = bausteinText(b);
+    eingefuegt.push({ id: b.id, text: t });
     const bisher = input.value.trim();
-    input.value = bisher ? bisher + '\n' + b.text : b.text;
+    input.value = bisher ? bisher + '\n' + t : t;
     updateSendState();
     autoGrow();
     input.focus();
     zeigeVorschlaege(vorschlaegeFuer(input.value));
     renderBausteine();
   }
+
+  // ---------- Allgemeine Punkte ----------
+
+  function renderAllgemein() {
+    allgemeinListe.innerHTML = '';
+    ALLGEMEINE_PUNKTE.forEach(function (p) {
+      const label = document.createElement('label');
+      label.className = 'allgemein-punkt';
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = true;
+      cb.value = p.id;
+      label.appendChild(cb);
+      label.appendChild(document.createTextNode(' ' + p.text));
+      allgemeinListe.appendChild(label);
+    });
+  }
+
+  allgemeinButton.addEventListener('click', function () {
+    allgemeinPanel.hidden = !allgemeinPanel.hidden;
+    if (!allgemeinPanel.hidden) renderAllgemein();
+  });
+
+  allgemeinAbbrechen.addEventListener('click', function () {
+    allgemeinPanel.hidden = true;
+  });
+
+  allgemeinEinfuegen.addEventListener('click', function () {
+    const gewaehlt = Array.prototype.slice.call(allgemeinListe.querySelectorAll('input:checked'))
+      .map(function (cb) { return ALLGEMEINE_PUNKTE.find(function (p) { return p.id === cb.value; }); })
+      .filter(Boolean);
+    if (gewaehlt.length) {
+      eintraege.push({
+        zeit: zeitstempel(),
+        ort: ortInput.value.trim(),
+        titel: 'Allgemeine Punkte',
+        text: gewaehlt.map(function (p) { return '• ' + p.text; }).join('\n'),
+        foto: null
+      });
+      speichereJson('bp_eintraege', eintraege);
+      renderAlleEintraege();
+    }
+    allgemeinPanel.hidden = true;
+  });
 
   // ---------- Foto ----------
 
@@ -197,14 +323,20 @@
       const li = document.createElement('li');
       const kopf = document.createElement('div');
       kopf.className = 'baustein-kopf';
-      kopf.textContent = b.titel;
+      if (b.icon && ICONS[b.icon]) {
+        const span = document.createElement('span');
+        span.className = 'chip-icon';
+        span.innerHTML = ICONS[b.icon];
+        kopf.appendChild(span);
+      }
+      kopf.appendChild(document.createTextNode(b.titel));
       const kuerzel = document.createElement('span');
       kuerzel.className = 'baustein-kuerzel';
       kuerzel.textContent = b.kuerzel.join(', ');
       kopf.appendChild(kuerzel);
       const text = document.createElement('div');
       text.className = 'baustein-text';
-      text.textContent = b.text;
+      text.textContent = (varianten[b.id] || b.text) + (varianten[b.id] ? '  (eigene Fassung)' : '');
       li.appendChild(kopf);
       li.appendChild(text);
       li.addEventListener('click', function () {
@@ -234,26 +366,70 @@
       p(d.getHours()) + ':' + p(d.getMinutes()) + ' ' + d.getFullYear();
   }
 
+  function starteBearbeitung(index) {
+    const e = eintraege[index];
+    bearbeitetIndex = index;
+    input.value = e.text;
+    bearbeitenHinweis.hidden = false;
+    input.classList.add('bearbeitet');
+    updateSendState();
+    autoGrow();
+    input.focus();
+  }
+
+  function beendeBearbeitung() {
+    bearbeitetIndex = null;
+    bearbeitenHinweis.hidden = true;
+    input.classList.remove('bearbeitet');
+    input.value = '';
+    updateSendState();
+    autoGrow();
+  }
+
+  bearbeitenAbbrechen.addEventListener('click', beendeBearbeitung);
+
   function renderEintrag(e, index) {
     const li = document.createElement('li');
     li.className = 'eintrag';
 
     const kopf = document.createElement('div');
     kopf.className = 'eintrag-kopf';
-    kopf.textContent = 'Erstellt: ' + e.zeit + (e.ort ? ' – ' + e.ort : '');
+    const kopfText = document.createElement('span');
+    kopfText.textContent = 'Erstellt: ' + e.zeit + (e.ort ? ' – ' + e.ort : '');
+    kopf.appendChild(kopfText);
+
+    const aktionen = document.createElement('span');
+    aktionen.className = 'eintrag-aktionen';
+
+    const bearbeiten = document.createElement('button');
+    bearbeiten.type = 'button';
+    bearbeiten.className = 'eintrag-knopf';
+    bearbeiten.textContent = '✎';
+    bearbeiten.title = 'Eintrag bearbeiten';
+    bearbeiten.addEventListener('click', function () { starteBearbeitung(index); });
+    aktionen.appendChild(bearbeiten);
 
     const loeschen = document.createElement('button');
     loeschen.type = 'button';
-    loeschen.className = 'eintrag-loeschen';
+    loeschen.className = 'eintrag-knopf eintrag-loeschen';
     loeschen.textContent = '×';
     loeschen.title = 'Eintrag löschen';
     loeschen.addEventListener('click', function () {
       eintraege.splice(index, 1);
       speichereJson('bp_eintraege', eintraege);
+      if (bearbeitetIndex === index) beendeBearbeitung();
       renderAlleEintraege();
     });
-    kopf.appendChild(loeschen);
+    aktionen.appendChild(loeschen);
+    kopf.appendChild(aktionen);
     li.appendChild(kopf);
+
+    if (e.titel) {
+      const titel = document.createElement('div');
+      titel.className = 'eintrag-titel';
+      titel.textContent = e.titel;
+      li.appendChild(titel);
+    }
 
     if (e.foto) {
       const img = document.createElement('img');
@@ -267,6 +443,19 @@
     text.className = 'eintrag-text';
     text.textContent = e.text;
     li.appendChild(text);
+
+    if (e.icons && e.icons.length) {
+      const icons = document.createElement('div');
+      icons.className = 'eintrag-icons';
+      e.icons.forEach(function (name) {
+        if (ICONS[name]) {
+          const s = document.createElement('span');
+          s.innerHTML = ICONS[name];
+          icons.appendChild(s);
+        }
+      });
+      li.appendChild(icons);
+    }
 
     messages.appendChild(li);
   }
@@ -285,7 +474,7 @@
 
   function autoGrow() {
     input.style.height = 'auto';
-    input.style.height = Math.min(input.scrollHeight, 160) + 'px';
+    input.style.height = Math.min(input.scrollHeight, 320) + 'px';
   }
 
   input.addEventListener('input', function () {
@@ -294,7 +483,6 @@
     zeigeVorschlaege(vorschlaegeFuer(input.value));
   });
 
-  // Leertaste nach einem Kürzel → sofort expandieren (wie Tastatur-Shortcut)
   input.addEventListener('keydown', function (event) {
     if (event.key === ' ') {
       const ersetzt = expandiereKuerzel(input.value, true);
@@ -315,20 +503,53 @@
     speichereJson('bp_ort', ortInput.value);
   });
 
+  // Symbole der im Text enthaltenen komplexeren Themen ermitteln
+  function iconsFuerText(text) {
+    const t = text.toLowerCase();
+    const icons = [];
+    BAUSTEINE.forEach(function (b) {
+      if (b.icon && icons.indexOf(b.icon) === -1) {
+        const basis = (varianten[b.id] || b.text).toLowerCase().slice(0, 40);
+        if (t.indexOf(basis) !== -1 || b.keywords.some(function (kw) { return t.indexOf(kw) !== -1; })) {
+          icons.push(b.icon);
+        }
+      }
+    });
+    return icons.slice(0, 4);
+  }
+
   form.addEventListener('submit', function (event) {
     event.preventDefault();
     let text = input.value.trim();
     if (!text && !aktuellesFoto) return;
     if (text) text = expandiereKuerzel(text, false);
 
-    eintraege.push({
-      zeit: zeitstempel(),
-      ort: ortInput.value.trim(),
-      text: text,
-      foto: aktuellesFoto
+    // Für die Datenbank merken: wurde ein eingefügter Baustein-Text verändert?
+    eingefuegt.forEach(function (e) {
+      if (text.indexOf(e.text) === -1) {
+        merkeAenderung(eingefuegt.length === 1 ? e.id : null, e.text, text);
+      }
     });
-    speichereJson('bp_eintraege', eintraege);
 
+    if (bearbeitetIndex !== null) {
+      const alt = eintraege[bearbeitetIndex];
+      if (alt.text !== text) merkeAenderung(null, alt.text, text);
+      alt.text = text;
+      alt.icons = iconsFuerText(text);
+      speichereJson('bp_eintraege', eintraege);
+      beendeBearbeitung();
+    } else {
+      eintraege.push({
+        zeit: zeitstempel(),
+        ort: ortInput.value.trim(),
+        text: text,
+        foto: aktuellesFoto,
+        icons: iconsFuerText(text)
+      });
+      speichereJson('bp_eintraege', eintraege);
+    }
+
+    eingefuegt = [];
     aktuellesFoto = null;
     fotoInput.value = '';
     fotoPreview.hidden = true;
@@ -347,6 +568,7 @@
 
   // ---------- Start ----------
 
+  zeigeDetailStufe();
   renderAlleEintraege();
   updateSendState();
   input.focus();
