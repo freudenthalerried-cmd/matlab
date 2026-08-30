@@ -7,3 +7,10 @@ preise/
 
 # Python-Bytecode der Auslesewerkzeuge
 __pycache__/
+
+# Datierte Kopien, die src/sicherung.js vor jedem Überschreiben anlegt.
+# Sie liegen neben dem Original — bei preise/ also im ohnehin
+# ausgeschlossenen Bereich, bei data/ im versionierten. Getrackt gehören
+# sie nirgends: Wofür es git gibt, braucht es keine Kopie, und wofür es
+# keine gibt, darf sie nicht ins Repository.
+.sicherung/

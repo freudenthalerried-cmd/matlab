@@ -25,6 +25,7 @@
  */
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
+import { sichere } from '../src/sicherung.js';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -366,12 +367,17 @@ function main() {
     }
   }
 
+  // Vor dem Überschreiben eine datierte Kopie — der Grund steht in
+  // src/sicherung.js und ist der Vorfall vom 30.08.
+  const gesichert = [sichere(KATALOG_ZIEL), sichere(PREISE_ZIEL)].filter(Boolean);
+
   writeFileSync(KATALOG_ZIEL, JSON.stringify(katalog, null, 2) + '\n', 'utf8');
   writeFileSync(PREISE_ZIEL, JSON.stringify(preise, null, 2) + '\n', 'utf8');
   const mitGewicht = katalog.artikel.filter((a) => a.gewichtKg != null).length;
   console.log(`\nGewichte aus Belegen:      ${mitGewicht} von ${katalog.artikel.length}`);
   console.log(`\ngeschrieben: ${KATALOG_ZIEL}`);
   console.log(`geschrieben: ${PREISE_ZIEL}  (vertraulich, gitignoriert)`);
+  for (const k of gesichert) console.log(`gesichert:   ${k}`);
 }
 
 main();
