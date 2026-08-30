@@ -798,6 +798,41 @@ ${esc(a.gruppe)}. Ob einer davon der richtige ist, entscheidet die Planung.</p>`
   };
 }
 
+/**
+ * Die Positionsliste einer Systemseite, maschinenlesbar.
+ *
+ * Die vier Systemseiten sind das, wofür dieser Shop gebaut wird: Sie sagen,
+ * **was zu einem Bauteil zusammengehört**. Genau das stand bisher nirgends in
+ * maschinenlesbarer Form — die Seite trug ein `HowTo` ohne einen einzigen
+ * Arbeitsschritt, und die zehn Positionen lagen nur als Tabelle im Fließtext.
+ *
+ * Eine `ItemList` sagt es richtig: nummerierte Positionen, in der Reihenfolge
+ * der Liste. Was nicht im Sortiment steht, bleibt drin und trägt den Vermerk
+ * mit — dieselbe Entscheidung wie auf der Seite selbst. Eine Liste, die nur
+ * zeigt, was im Regal liegt, ist ein Angebot.
+ *
+ * @param {string} markdown  der Seitenkörper
+ * @returns {object|null} die Liste, oder null ohne Positionstabelle
+ */
+export function positionsliste(markdown) {
+  const zeilen = [...String(markdown ?? '').matchAll(/^\|\s*(\d{1,2})\s*\|\s*([^|]+?)\s*\|/gm)];
+  if (zeilen.length < 3) return null;
+  return {
+    '@type': 'ItemList',
+    numberOfItems: zeilen.length,
+    itemListElement: zeilen.map(([, nummer, roh]) => {
+      const fehlt = /nicht im Sortiment/.test(roh);
+      const name = roh.replace(/\*\(nicht im Sortiment\)\*/, '').replace(/\*\*/g, '').replace(/\s+/g, ' ').trim();
+      return {
+        '@type': 'ListItem',
+        position: Number(nummer),
+        name,
+        ...(fehlt ? { disambiguatingDescription: 'nicht im Sortiment' } : {}),
+      };
+    }),
+  };
+}
+
 function inhaltsSeite(seite, katalog, befund, seiten, verweis) {
   const teile = [];
   const kurz = String(seite.kopf.kurz ?? '');
@@ -956,9 +991,27 @@ Preis bezieht sich auf Fläche, Länge oder Volumen. Geschätzt wird nichts.`
     teile.push(`<div class="verwandt">${verwandt.map((v) => `<a href="${verweis(v.id)}">${esc(v.kopf.titel)}</a>`).join('')}</div>`);
   }
 
+  const liste = positionsliste(seite.koerper);
   const jsonLd = {
     '@context': 'https://schema.org',
-    '@type': seite.art === 'system' ? 'HowTo' : 'Article',
+    /**
+     * **Berichtigt am 30.08.** Hier stand `seite.art === 'system' ? 'HowTo'
+     * : 'Article'`, und die Frage hing als einzelnes `mainEntity` an einem
+     * `Article`. Beides war eine Auszeichnung, die der Inhalt nicht deckt:
+     *
+     * - Ein `HowTo` ohne `step` ist keine Anleitung, sondern eine
+     *   Typbehauptung. Die Systemseiten führen keine Arbeitsschritte,
+     *   sondern eine **Positionsliste** — das ist eine `ItemList`.
+     * - Eine `Question` mit `acceptedAnswer` wird in zwei Seitenarten
+     *   gelesen: `FAQPage` (die Antwort schreibt der Betreiber) und
+     *   `QAPage` (die Antwort schreiben Leser). Ein `Article` mit
+     *   `mainEntity: Question` ist keines von beiden — die Auszeichnung
+     *   stand da und wurde von niemandem als Frage-Antwort verstanden.
+     *
+     * Der Betreiber schreibt hier die Antwort selbst, also `FAQPage`, und
+     * `mainEntity` ist dort eine **Liste** von Fragen.
+     */
+    '@type': seite.kopf.frage ? ['Article', 'FAQPage'] : 'Article',
     headline: seite.kopf.titel,
     description: alsText(kurz),
     inLanguage: 'de-AT',
@@ -966,13 +1019,14 @@ Preis bezieht sich auf Fläche, Länge oder Volumen. Geschätzt wird nichts.`
     publisher: { '@type': 'Organization', name: FIRMA },
     ...(seite.kopf.frage
       ? {
-          mainEntity: {
+          mainEntity: [{
             '@type': 'Question',
             name: seite.kopf.frage,
             acceptedAnswer: { '@type': 'Answer', text: alsText(kurz) },
-          },
+          }],
         }
       : {}),
+    ...(liste ? { about: liste } : {}),
   };
 
   return { titel: seite.kopf.titel, kurz: alsText(kurz), html: teile.join('\n'), jsonLd, intern: seite.kopf.intern };

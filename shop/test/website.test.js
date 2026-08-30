@@ -5,7 +5,7 @@ import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
-import { loeseVerweis, loeseVerwandt, marke, mitverbaut, HERSTELLER } from '../bin/website.mjs';
+import { loeseVerweis, loeseVerwandt, marke, mitverbaut, HERSTELLER, positionsliste } from '../bin/website.mjs';
 import { lesKopf } from '../src/markdown.js';
 import { KORBSCHLUESSEL } from '../src/shopkern.js';
 import { SUCH_CRAWLER, TRAININGS_CRAWLER } from '../src/maschinenlesbar.js';
@@ -885,4 +885,79 @@ test('der Sprungverweis hat auf jeder Seite ein Ziel hinter der Kopfleiste', () 
     assert.ok(ziel > kopfEnde && kopfEnde > verweis,
       `${id}: das Ziel liegt nicht hinter der Kopfleiste`);
   }
+});
+
+
+/* ------------------------------------------------------------------ *
+ * Auszeichnung, die der Inhalt deckt
+ * ------------------------------------------------------------------ */
+
+const TABELLE = (zeilen) => '| # | Position |\n|---|---|\n'
+  + zeilen.map((z, i) => `| ${i + 1} | ${z} |`).join('\n') + '\n';
+
+test('die Positionsliste wird zur ItemList, in der Reihenfolge der Tabelle', () => {
+  const liste = positionsliste(TABELLE(['Kanalrohr', 'Bögen', 'Abzweiger', 'Schachtringe']));
+  assert.equal(liste['@type'], 'ItemList');
+  assert.equal(liste.numberOfItems, 4);
+  assert.deepEqual(liste.itemListElement.map((e) => e.position), [1, 2, 3, 4]);
+  assert.deepEqual(liste.itemListElement.map((e) => e.name),
+    ['Kanalrohr', 'Bögen', 'Abzweiger', 'Schachtringe']);
+});
+
+test('was nicht im Sortiment steht, bleibt in der Liste und trägt den Vermerk', () => {
+  // Dieselbe Entscheidung wie auf der Seite: Eine Liste, die nur zeigt, was
+  // im Regal liegt, ist ein Angebot und keine Positionsliste. Der Vermerk
+  // gehört mit in die Auszeichnung, sonst liest eine Maschine „bestellbar".
+  const liste = positionsliste(TABELLE(['Kanalrohr', 'Gleitmittel *(nicht im Sortiment)*', 'Bögen']));
+  assert.equal(liste.itemListElement[1].name, 'Gleitmittel', 'die Klammer gehört nicht in den Namen');
+  assert.equal(liste.itemListElement[1].disambiguatingDescription, 'nicht im Sortiment');
+  assert.equal(liste.itemListElement[0].disambiguatingDescription, undefined);
+});
+
+test('ohne Positionstabelle entsteht keine Liste', () => {
+  // Sonst trüge jede Seite mit irgendeiner Tabelle eine Positionsliste.
+  assert.equal(positionsliste('Ein Absatz ohne Tabelle.'), null);
+  assert.equal(positionsliste(TABELLE(['Eins', 'Zwei'])), null, 'zwei Zeilen sind keine Liste');
+  assert.equal(positionsliste(undefined), null);
+});
+
+test('keine Seite behauptet eine Anleitung, die sie nicht hat', () => {
+  // **Der Befund vom 30.08.:** Die vier Systemseiten trugen `HowTo` — ohne
+  // einen einzigen `step`. Ein HowTo ohne Schritte ist eine Typbehauptung,
+  // keine Anleitung. Was die Seiten wirklich führen, ist eine Positionsliste.
+  const wurzel = pfad('../ausgabe/site');
+  if (!existsSync(wurzel)) return;
+  const seiten = [];
+  const gehe = (o, vor = '') => {
+    for (const e of readdirSync(o, { withFileTypes: true })) {
+      if (e.isDirectory()) gehe(join(o, e.name), `${vor}${e.name}/`);
+      else if (e.name.endsWith('.html')) seiten.push({ id: vor + e.name.slice(0, -5), html: readFileSync(join(o, e.name), 'utf8') });
+    }
+  };
+  gehe(wurzel);
+  assert.ok(seiten.length >= 40, `nur ${seiten.length} Seiten`);
+  let mitListe = 0;
+  let mitFrage = 0;
+  for (const { id, html } of seiten) {
+    const treffer = /<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(html);
+    if (!treffer) continue;
+    const daten = JSON.parse(treffer[1]);
+    const typen = [daten['@type']].flat();
+    assert.ok(!typen.includes('HowTo'), `${id} behauptet HowTo`);
+    if (daten.mainEntity) {
+      mitFrage++;
+      assert.ok(Array.isArray(daten.mainEntity), `${id}: mainEntity einer FAQPage ist eine Liste`);
+      assert.equal(daten.mainEntity[0]['@type'], 'Question');
+      assert.ok(typen.includes('FAQPage'),
+        `${id} trägt eine Frage-Antwort, ist aber keine FAQPage — dann liest sie niemand als solche`);
+    }
+    if (daten.about?.['@type'] === 'ItemList') {
+      mitListe++;
+      assert.equal(daten.about.numberOfItems, daten.about.itemListElement.length);
+      assert.ok(daten.about.itemListElement.every((e) => e.name && e.position),
+        `${id}: eine Position ohne Namen oder Nummer`);
+    }
+  }
+  assert.equal(mitListe, 4, `${mitListe} Seiten mit Positionsliste, erwartet sind die vier Systemseiten`);
+  assert.ok(mitFrage >= 20, `nur ${mitFrage} Seiten mit Frage-Antwort`);
 });
