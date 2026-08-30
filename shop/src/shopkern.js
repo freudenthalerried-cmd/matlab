@@ -552,7 +552,28 @@ export function sortiere(artikel, wie = 'name') {
 /** Abstand zum Listenpreis des Lieferanten in Prozent, oder null. */
 export function vorteil(a) {
   if (!a?.uvpNetto || !a?.vkNetto || a.amListendeckel) return null;
-  return Math.round((1 - a.vkNetto / a.uvpNetto) * 100);
+  return abgerundet((1 - a.vkNetto / a.uvpNetto) * 100);
+}
+
+/**
+ * Ein Preisvorteil wird **abgerundet**, nie aufgerundet.
+ *
+ * **Gemessen am 30.08.:** `Math.round` machte aus 39,80 % ein „40 % unter
+ * Listenpreis", aus 11,996 % ein „12 %". Bei **21 von 39** Artikeln mit
+ * Marker stand so bis zu ein voller Prozentpunkt zu viel auf der Seite.
+ *
+ * Kaufmännisch runden ist bei einer Messgröße richtig und bei einem
+ * Werbeversprechen falsch: Wer 39,8 % nachlässt und „40 %" schreibt, hat 0,2
+ * Prozentpunkte behauptet, die er nicht gibt. Die Richtung der Rundung ist
+ * hier keine Genauigkeitsfrage, sondern eine Frage, zu wessen Gunsten der
+ * Rest fällt.
+ *
+ * Das Epsilon fängt die Binärdarstellung ab: `(1 - 0,8) * 100` ergibt in
+ * Gleitkomma nicht immer genau 20, und ein echtes 20 soll nicht zu 19 werden.
+ * Es ist klein genug, dass 19,999 % weiterhin 19 ergibt — geprüft.
+ */
+function abgerundet(prozent) {
+  return Math.floor(prozent + 1e-9);
 }
 
 /**

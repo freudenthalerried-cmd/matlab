@@ -37,7 +37,7 @@ import { baueKern, BROWSERMODULE } from '../src/buendel.js';
 import { startklar } from '../src/startklar.js';
 import { ohneKommentare } from '../src/entkommentieren.js';
 import { preisJeKilo, kilotafel, mengenschritt } from '../src/gebinde.js';
-import { oeffentlicherArtikel, oeffentlicherLieferant } from '../src/shopkern.js';
+import { oeffentlicherArtikel, oeffentlicherLieferant, vorteil } from '../src/shopkern.js';
 import { LIEFERGEBIET } from '../src/liefergebiet.js';
 import { ZAHLWEGE } from '../src/zahlung.js';
 import { fracht } from '../src/preis.js';
@@ -499,7 +499,8 @@ const euro = (n) => n.toLocaleString('de-AT', { minimumFractionDigits: 2, maximu
 
 function artikelKarte(a, befund, verweis) {
   const beipack = befund.nurBeipackSkus.includes(a.sku);
-  const abstand = a.uvpNetto && !a.amListendeckel ? Math.round((1 - a.vkNetto / a.uvpNetto) * 100) : null;
+  // Eine Quelle für den Vorteil — `vorteil()` rundet ab, siehe dort.
+  const abstand = vorteil(a);
   const marker = [];
   if (abstand !== null && abstand >= 5) marker.push(`<span class="marker vorteil">${abstand} % unter Liste</span>`);
   if (beipack) marker.push('<span class="marker beipack">Beipack</span>');
@@ -570,7 +571,8 @@ export function mitverbaut(a, katalog, systemSeiten) {
 function artikelSeite(a, katalog, befund, seiten, verweis) {
   const m = marke(a.bezeichnung);
   const h = m ? HERSTELLER[m] : null;
-  const abstand = a.uvpNetto && !a.amListendeckel ? Math.round((1 - a.vkNetto / a.uvpNetto) * 100) : null;
+  // Eine Quelle für den Vorteil — `vorteil()` rundet ab, siehe dort.
+  const abstand = vorteil(a);
   const beipack = befund.nurBeipackSkus.includes(a.sku);
   const gruppenSeite = [...seiten.values()].find((s) => s.art === 'gruppen' && s.kopf.gruppe === a.gruppe);
   const systemSeiten = [...seiten.values()].filter(

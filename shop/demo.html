@@ -1836,7 +1836,28 @@ function sortiere(artikel, wie = 'name') {
 
 function vorteil(a) {
   if (!a?.uvpNetto || !a?.vkNetto || a.amListendeckel) return null;
-  return Math.round((1 - a.vkNetto / a.uvpNetto) * 100);
+  return abgerundet((1 - a.vkNetto / a.uvpNetto) * 100);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function abgerundet(prozent) {
+  return Math.floor(prozent + 1e-9);
 }
 
 

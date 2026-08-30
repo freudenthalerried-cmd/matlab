@@ -10,6 +10,7 @@ import { lesKopf } from '../src/markdown.js';
 import { KORBSCHLUESSEL } from '../src/shopkern.js';
 import { SUCH_CRAWLER, TRAININGS_CRAWLER } from '../src/maschinenlesbar.js';
 import { LIEFERGEBIET } from '../src/liefergebiet.js';
+import { ladeBaustoffkatalog, ZIELMARGE } from '../src/baustoffkatalog.js';
 
 const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
 
@@ -1002,4 +1003,43 @@ test('das Liefergebiet steht in der Auszeichnung als Orte — aus der Entscheidu
     }
   }
   assert.ok(gesehen >= 40, `nur ${gesehen} Auszeichnungen mit Liefergebiet`);
+});
+
+
+test('keine Seite behauptet einen größeren Preisvorteil, als der Artikel gibt', () => {
+  // **Der Befund vom 30.08.:** Der Prozentsatz entstand an drei Stellen —
+  // in `vorteil()` für die Browseroberfläche und zweimal als Formel im
+  // Seitenbauwerkzeug, alle drei mit `Math.round`. Geprüft wird jetzt an der
+  // gebauten Seite gegen den gerechneten Katalog: Was dort steht, darf den
+  // wahren Wert nie überschreiten.
+  const wurzel = pfad('../ausgabe/site/artikel');
+  const preise = pfad('../../preise/baustoff-preise.json');
+  if (!existsSync(wurzel) || !existsSync(preise)) return;
+  const lies = (pf) => JSON.parse(readFileSync(pf, 'utf8'));
+  const katalog = ladeBaustoffkatalog(
+    lies(pfad('../data/katalog-baustoff.json')),
+    lies(preise),
+    lies(pfad('../data/lieferanten.json')),
+    ZIELMARGE,
+  );
+  const dateien = readdirSync(wurzel).filter((d) => d.endsWith('.html'));
+  assert.ok(dateien.length >= 40, `nur ${dateien.length} Artikelseiten`);
+  let geprueft = 0;
+  for (const datei of dateien) {
+    const sku = datei.slice(0, -5);
+    const artikel = katalog.artikel.find((a) => a.sku === sku);
+    assert.ok(artikel, `${sku} steht nicht im Katalog`);
+    const html = readFileSync(join(wurzel, datei), 'utf8');
+    const genannt = [...html.matchAll(/(\d+) % unter (?:dem )?Listenpreis/g)].map((m) => Number(m[1]));
+    if (!genannt.length) continue;
+    geprueft++;
+    assert.ok(genannt.length >= 1, `${sku}: keine Zahl zu prüfen`);
+    const wahr = (1 - artikel.vkNetto / artikel.uvpNetto) * 100;
+    for (const zahl of genannt) {
+      assert.ok(zahl <= wahr + 1e-9,
+        `${sku}: die Seite nennt ${zahl} %, tatsächlich sind es ${wahr.toFixed(2)} %`);
+      assert.ok(zahl > wahr - 1, `${sku}: ${zahl} % ist mehr als einen Punkt zu wenig`);
+    }
+  }
+  assert.ok(geprueft >= 20, `nur ${geprueft} Seiten mit Vorteilsangabe`);
 });

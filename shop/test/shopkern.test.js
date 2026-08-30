@@ -730,6 +730,23 @@ test('was der Antwortsatz einer Gruppenseite nennt, führt die Gruppe auch', () 
   }
 });
 
+test('ein Preisvorteil wird abgerundet, nie aufgerundet', () => {
+  // **Gemessen am 30.08.:** `Math.round` machte aus 39,80 % ein „40 % unter
+  // Listenpreis". Bei 21 von 39 Artikeln mit Marker stand bis zu ein voller
+  // Prozentpunkt zu viel auf der Seite.
+  //
+  // Kaufmännisch runden ist bei einer Messgröße richtig und bei einem
+  // Werbeversprechen falsch: Wer 39,8 % nachlässt und „40 %" schreibt,
+  // behauptet 0,2 Punkte, die er nicht gibt.
+  assert.equal(vorteil({ uvpNetto: 100, vkNetto: 60.2 }), 39, '39,8 % sind 39, nicht 40');
+  assert.equal(vorteil({ uvpNetto: 100, vkNetto: 88.01 }), 11, '11,99 % sind 11');
+  assert.equal(vorteil({ uvpNetto: 100, vkNetto: 60 }), 40, 'genau 40 bleibt 40');
+  assert.equal(vorteil({ uvpNetto: 100, vkNetto: 80 }), 20, 'und genau 20 bleibt 20');
+  // Gate 22: Wer am Listendeckel steht, hat keinen Vorteil zu zeigen.
+  assert.equal(vorteil({ uvpNetto: 100, vkNetto: 100, amListendeckel: true }), null);
+  assert.equal(vorteil({ vkNetto: 10 }), null, 'ohne Listenpreis kein Vorteil');
+});
+
 test('jede Position der Systemlisten hat einen Artikel oder eine Kennzeichnung', () => {
   // **Gemessen am 30.08.** über alle 35 Positionen der vier Systemlisten:
   // Sieben fanden keinen Artikel. Zwei davon waren als fremdes Gewerk
