@@ -798,6 +798,33 @@
     window.print();
   });
 
+  // ---------- Protokoll per E-Mail ----------
+  // Öffnet das Mailprogramm mit Standardtext; Verteiler-Einträge mit
+  // E-Mail-Adresse werden als Empfänger übernommen.
+
+  const mailButton = document.getElementById('mail-button');
+
+  function baueMailto() {
+    const ort = ortInput.value.trim();
+    const bs = BAUSTELLEN.find(function (b) { return b.name === ort; });
+    const verteilerText = (bs && verteiler[bs.id]) || standardVerteiler();
+    const empfaenger = verteilerText.split(',')
+      .map(function (e) { return e.trim(); })
+      .filter(function (e) { return e.indexOf('@') !== -1; });
+    const d = new Date();
+    function p(n) { return (n < 10 ? '0' : '') + n; }
+    const datum = p(d.getDate()) + '.' + p(d.getMonth() + 1) + '.' + d.getFullYear();
+    const betreff = 'Baustellenbesuchsprotokoll - BauKG' + (ort ? ' – ' + ort : '') + ' – ' + datum;
+    const body = MAIL_TEXT + '\n\nVerteiler: ' + verteilerText;
+    return 'mailto:' + encodeURIComponent(empfaenger.join(',')) +
+      '?subject=' + encodeURIComponent(betreff) +
+      '&body=' + encodeURIComponent(body);
+  }
+
+  mailButton.addEventListener('click', function () {
+    window.location.href = baueMailto();
+  });
+
   // ---------- Start ----------
 
   zeigeDetailStufe();

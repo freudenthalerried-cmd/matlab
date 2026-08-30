@@ -80,8 +80,8 @@ html, body {
 /* Farbiges Menü mit Symbolen */
 .menu-row {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
   margin-top: 8px;
 }
 
@@ -109,6 +109,8 @@ html, body {
 .menu-orange:hover { background: #fae5cb; }
 .menu-grau   { background: #eef1f4; border-color: #d0d7de; color: #444a52; }
 .menu-grau:hover   { background: #e2e7ec; }
+.menu-violett { background: #f0ecf9; border-color: #d4c8ee; color: #5b3ea8; }
+.menu-violett:hover { background: #e5ddf4; }
 
 /* Baustellen-Panel */
 .baustellen-inhalt {

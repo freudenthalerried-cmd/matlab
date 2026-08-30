@@ -5,6 +5,14 @@
 
 const VERTEILER_STANDARD = ['Baukoordinator', 'Bauleitung', 'Baufirma / Polier', 'Auftraggeber'];
 
+// Standardtext für den E-Mail-Versand des Protokolls.
+const MAIL_TEXT = 'Anbei das Baustellenbesuchsprotokoll - BauKG.\n\n' +
+  'Bitte um Kenntnisnahme und Umsetzung der jeweils relevanten Punkte.\n\n' +
+  'Mit freundlichen Grüßen\n' +
+  'Bmst Ing Stefan Freudenthaler\n' +
+  'Freudenthaler Bau GmbH\n' +
+  'Mobil: 0664 5103676';
+
 const BAUSTELLEN = [
   {
     id: 'vorchdorf',
