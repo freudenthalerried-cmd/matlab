@@ -3941,10 +3941,30 @@ function pruefeRechnungsmerkmale(beleg = {}) {
 
 const wert = (v, bezeichnung) => (gefuellt(v) ? textZeile(v) : LUECKE(bezeichnung));
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function lieferzeitText(teil) {
+  return gefuellt(teil.lieferzeitWerktage)
+    ? `${teil.lieferzeitWerktage} Werktage`
+    : LUECKE(`Lieferzeit ${teil.lieferantName}`);
+}
+
 function positionszeilen(warenkorb) {
   const zeilen = [];
   for (const teil of warenkorb.teillieferungen) {
-    zeilen.push(`${textZeile(teil.lieferantName)} — Direktlieferung, ${teil.lieferzeitWerktage} Werktage`);
+    zeilen.push(`${textZeile(teil.lieferantName)} — Direktlieferung, ${lieferzeitText(teil)}`);
     for (const p of teil.positionen) {
       zeilen.push(
         `  ${String(p.menge).padStart(3)} ${textZeile(p.einheit ?? 'Stk').padEnd(4)} ` +
@@ -4032,8 +4052,17 @@ function erzeugeAuftragsbestaetigung(
   warenkorb,
   { nummer, datum, kunde = {}, betreiber = {}, auftrag = {}, hinweise = [] },
 ) {
-  const werktage = warenkorb.teillieferungen.map((t) => t.lieferzeitWerktage ?? 0);
-  const laengste = werktage.length ? Math.max(...werktage) : 0;
+  
+  
+  
+  
+  
+  
+  
+  
+  const werktage = warenkorb.teillieferungen.map((t) => t.lieferzeitWerktage);
+  const alleBekannt = werktage.length > 0 && werktage.every((w) => gefuellt(w));
+  const laengste = alleBekannt ? Math.max(...werktage) : null;
   const lieferadresse = auftrag.lieferadresse ?? null;
 
   const zeilen = [
@@ -4072,11 +4101,14 @@ function erzeugeAuftragsbestaetigung(
   
   zeilen.push('Lieferzeiten je Hersteller, ab Bestellauslösung:');
   for (const t of warenkorb.teillieferungen) {
-    zeilen.push(`  ${textZeile(t.lieferantName)}: ${t.lieferzeitWerktage} Werktage`);
+    zeilen.push(`  ${textZeile(t.lieferantName)}: ${lieferzeitText(t)}`);
   }
   zeilen.push(
     '',
-    `Vollständig auf der Baustelle: nach ${laengste} Werktagen.`,
+    alleBekannt
+      ? `Vollständig auf der Baustelle: nach ${laengste} Werktagen.`
+      : `Vollständig auf der Baustelle: ${LUECKE('Gesamtlieferzeit')} — solange eine `
+        + 'Lieferzeit oben fehlt, gibt es keinen Termin, den wir zusagen können.',
     'Bis dahin treffen die Teillieferungen einzeln ein; jede ist für sich zu prüfen.',
   );
 
@@ -4118,6 +4150,17 @@ function darfBestaetigtWerden(warenkorb, auftrag = {}) {
   }
   if (warenkorb.teillieferungen.some((t) => t.positionen.some((p) => p.ekIstPlatzhalter))) {
     gruende.push('Katalog enthält Platzhalterpreise — der bestätigte Betrag wäre erfunden');
+  }
+  
+  
+  
+  
+  
+  const ohneLieferzeit = warenkorb.teillieferungen
+    .filter((t) => !gefuellt(t.lieferzeitWerktage))
+    .map((t) => t.lieferantName ?? t.lieferantId);
+  if (ohneLieferzeit.length) {
+    gruende.push(`Lieferzeit unbekannt (${ohneLieferzeit.join(', ')}) — der zugesagte Termin wäre erfunden`);
   }
 
   return { erlaubt: gruende.length === 0, gruende };
@@ -5733,7 +5776,14 @@ function zeichneKorb() {
 
     const h = document.createElement('div');
     h.className = 'teil-h';
-    h.textContent = teil.lieferantName + ' · ' + teil.lieferzeitWerktage + ' Werktage';
+    // Eine unbekannte Lieferzeit stand hier als „null Werktage" — im
+    // Demokatalog nicht erreichbar, weil dessen drei Lieferanten alle eine
+    // Zahl tragen, im echten Katalog dagegen bei jedem der 46 Artikel. Ein
+    // Fehler mit bekanntem Auslösetag ist kein latenter, sondern ein
+    // terminierter.
+    h.textContent = teil.lieferantName + ' · ' + (Number.isFinite(teil.lieferzeitWerktage)
+      ? teil.lieferzeitWerktage + ' Werktage'
+      : 'Lieferzeit auf Anfrage');
     box.append(h);
 
     for (const p of teil.positionen) {

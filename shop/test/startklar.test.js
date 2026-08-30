@@ -9,7 +9,7 @@ import { IMPRESSUMSFELDER } from '../src/rechtstexte.js';
 const werkzeug = fileURLToPath(new URL('../bin/startklar.mjs', import.meta.url));
 
 const vollstaendig = Object.fromEntries(IMPRESSUMSFELDER.map((f) => [f.feld, 'steht']));
-const katalogVoll = { artikel: [{ sku: 'A', vkNetto: 10, ekIstPlatzhalter: false }] };
+const katalogVoll = { artikel: [{ sku: 'A', vkNetto: 10, ekIstPlatzhalter: false, lieferantId: 'l1' }] };
 const alles = {
   betreiber: vollstaendig,
   impressumsfelder: IMPRESSUMSFELDER,
@@ -19,6 +19,7 @@ const alles = {
   rechtstexteFundstelle: 'Kanzlei X, Fassung vom …',
   domainZeigtAufShop: true,
   repositoryPrivat: true,
+  lieferanten: [{ id: 'l1', name: 'Lieferant Eins', lieferzeitWerktage: 5 }],
 };
 
 test('mit allem, was gebraucht wird, ist der Shop startklar', () => {
@@ -117,4 +118,59 @@ test('die Antworten kommen aus der Datei, nicht aus dem Werkzeug', async () => {
   // Ein ausdrückliches „nein" ist eine Antwort, kein Fragezeichen.
   assert.match(ausgabe, /ausdrücklich verneint/);
   assert.match(ausgabe, /0 von hier aus nicht feststellbar/);
+});
+
+
+/* ------------------------------------------------------------------ *
+ * Die Lieferzeit — der Punkt, ohne den keine Bestätigung hinausdarf
+ * ------------------------------------------------------------------ */
+
+test('Ein liefernder Lieferant ohne Lieferzeit hält den Shop auf', () => {
+  const b = startklar({
+    ...alles,
+    lieferanten: [{ id: 'l1', name: 'Lieferant Eins', lieferzeitWerktage: null }],
+  });
+  assert.equal(b.startklar, false);
+  const punkt = b.punkte.find((p) => p.id === 'lieferzeit');
+  assert.equal(punkt.zustand, 'offen');
+  assert.match(punkt.befund, /Lieferant Eins/);
+  assert.match(punkt.befund, /Auftragsbestätigung/);
+  assert.equal(punkt.wer, 'Auftraggeber');
+});
+
+test('Ein Lieferant ohne geführte Ware blockiert nichts', () => {
+  // Der Bestand trägt drei Lieferanten aus dem abgelösten Radon-Modell mit,
+  // die keinen einzigen Artikel liefern. Ihre Lieferzeit zu verlangen, hieße
+  // eine Angabe einzufordern, die niemand je braucht — und den Punkt
+  // dauerhaft rot zu halten, bis jemand sie erfindet.
+  const b = startklar({
+    ...alles,
+    lieferanten: [
+      { id: 'l1', name: 'Lieferant Eins', lieferzeitWerktage: 5 },
+      { id: 'alt', name: 'Alter Hersteller ohne Ware', lieferzeitWerktage: null },
+    ],
+  });
+  assert.equal(b.punkte.find((p) => p.id === 'lieferzeit').zustand, 'erfuellt');
+  assert.equal(b.startklar, true);
+});
+
+test('Ohne geladene Lieferanten bleibt der Punkt offen, nicht erfüllt', () => {
+  // Dieselbe Regel wie beim Rest des Werkzeugs: Was niemand bestätigt hat,
+  // zählt nicht als erfüllt. Ein Aufrufer, der die Liste vergisst, bekommt
+  // keinen grünen Haken geschenkt.
+  const b = startklar({ ...alles, lieferanten: [] });
+  assert.equal(b.punkte.find((p) => p.id === 'lieferzeit').zustand, 'offen');
+  assert.equal(b.startklar, false);
+});
+
+test('Eine Lieferzeit von 0 Werktagen ist eine Zahl, keine Lücke', () => {
+  // `Number.isFinite` und nicht `!!`: Eine Selbstabholung am selben Tag wäre
+  // eine gültige Angabe. Wer hier auf Wahrheitswert prüft, erklärt sie zur
+  // fehlenden Angabe — derselbe Griff, der die Null erst zum Problem gemacht
+  // hat, nur in die andere Richtung.
+  const b = startklar({
+    ...alles,
+    lieferanten: [{ id: 'l1', name: 'Lieferant Eins', lieferzeitWerktage: 0 }],
+  });
+  assert.equal(b.punkte.find((p) => p.id === 'lieferzeit').zustand, 'erfuellt');
 });

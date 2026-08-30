@@ -238,3 +238,102 @@ test('Platzhalterpreise halten auch die Annahme an', () => {
   assert.equal(f.erlaubt, false);
   assert.ok(f.gruende.some((g) => /Platzhalterpreise/.test(g)), f.gruende.join(' | '));
 });
+
+/* ------------------------------------------------------------------ *
+ * Eine unbekannte Lieferzeit ist keine Lieferzeit von null
+ * ------------------------------------------------------------------ */
+
+// Der Warenkorb des Bestands trägt Lieferzeiten, weil er aus `artikel.json`
+// stammt — dem Katalog des abgelösten Modells. Der echte Katalog liefert
+// sechsundvierzig Artikel eines einzigen Lieferanten, dessen Lieferzeit
+// niemand kennt. Genau deshalb fiel es keiner Probe auf.
+const korbOhneLieferzeit = {
+  ...korb,
+  teillieferungen: korb.teillieferungen.map((t, i) => (
+    i === 0 ? { ...t, lieferzeitWerktage: null } : t
+  )),
+};
+
+test('Eine unbekannte Lieferzeit steht als Lücke da, nicht als „null Werktage"', () => {
+  const b = erzeugeAuftragsbestaetigung(korbOhneLieferzeit, {
+    nummer: 'AB-1', datum: '2026-08-30', kunde, betreiber,
+  });
+  assert.ok(!b.text.includes('null Werktage'),
+    'die rohe Einsetzung ist zurück — auf einem Beleg an den Kunden');
+  assert.ok(!b.text.includes('undefined'));
+  const name = korbOhneLieferzeit.teillieferungen[0].lieferantName;
+  assert.ok(b.text.includes(`[[ Lieferzeit ${name} — FEHLT ]]`),
+    'die Lücke nennt nicht, wessen Lieferzeit fehlt');
+});
+
+test('Ohne alle Lieferzeiten gibt es keinen Gesamttermin, auch keinen von null', () => {
+  // **Der teuerste Griff des Moduls**, hier festgenagelt: `?? 0` machte aus
+  // „unbekannt" den optimistischsten aller Werte — und zwar auf dem Dokument,
+  // mit dem der Vertrag zustande kommt.
+  const b = erzeugeAuftragsbestaetigung(korbOhneLieferzeit, {
+    nummer: 'AB-1', datum: '2026-08-30', kunde, betreiber,
+  });
+  assert.equal(b.lieferzeitLaengsteWerktage, null);
+  assert.ok(!b.text.includes('nach 0 Werktagen'), 'der Termin ist wieder erfunden');
+  assert.match(b.text, /Vollständig auf der Baustelle: \[\[ Gesamtlieferzeit — FEHLT \]\]/);
+});
+
+test('Sind alle Lieferzeiten bekannt, steht der Termin wie bisher da', () => {
+  // Gegenprobe: Die Lücke darf nicht der neue Normalfall werden.
+  const b = erzeugeAuftragsbestaetigung(korb, {
+    nummer: 'AB-1', datum: '2026-08-30', kunde, betreiber,
+  });
+  const laengste = Math.max(...korb.teillieferungen.map((t) => t.lieferzeitWerktage));
+  assert.equal(b.lieferzeitLaengsteWerktage, laengste);
+  assert.ok(!b.text.includes('FEHLT ]]'), 'eine Lücke, wo nichts fehlt');
+});
+
+test('Auch Angebot und Rechnung setzen die fehlende Lieferzeit nicht roh ein', () => {
+  // Dieselbe Zeile bedient drei Belege. Ohne diesen Fall bliebe zwei Drittel
+  // des Fundorts ungeprüft.
+  const a = erzeugeAngebot(korbOhneLieferzeit, {
+    nummer: 'AN-1', datum: '2026-08-30', kunde, betreiber,
+  });
+  const r = erzeugeRechnung(korbOhneLieferzeit, {
+    nummer: 'RE-1', datum: '2026-08-30', lieferdatum: '2026-08-30', kunde, betreiber,
+  });
+  for (const [name, beleg] of [['Angebot', a], ['Rechnung', r]]) {
+    assert.ok(!beleg.text.includes('null Werktage'), `${name} setzt roh ein`);
+    assert.match(beleg.text, /FEHLT \]\]/, `${name} macht die Lücke nicht sichtbar`);
+  }
+});
+
+test('Ohne bekannte Lieferzeit darf keine Auftragsbestätigung hinaus', () => {
+  // **Gate-Entscheidung vom 30.08.** Die Bestätigung ist die Annahme; mit ihr
+  // kommt der Vertrag zustande, und sie nennt den Termin. Ein Termin, den
+  // niemand kennt, ist erfunden — dieselbe Regel wie beim Platzhalterpreis,
+  // nur auf die Zeit angewandt. Das Angebot darf die Lücke tragen, weil es
+  // unverbindlich ist; die Bestätigung nicht.
+  const auftrag = { kundeIstUnternehmer: true, uid: 'ATU12345675' };
+  const gesperrt = darfBestaetigtWerden(korbOhneLieferzeit, auftrag);
+  assert.equal(gesperrt.erlaubt, false);
+  assert.ok(gesperrt.gruende.some((g) => /Lieferzeit unbekannt/.test(g)), gesperrt.gruende.join(' | '));
+  assert.ok(gesperrt.gruende.some((g) => g.includes(korbOhneLieferzeit.teillieferungen[0].lieferantName)),
+    'der Grund nennt nicht, wessen Lieferzeit fehlt');
+
+  const erlaubt = darfBestaetigtWerden(korb, auftrag);
+  assert.ok(!erlaubt.gruende.some((g) => /Lieferzeit/.test(g)),
+    'mit bekannten Lieferzeiten darf die Lieferzeit kein Hindernis sein');
+});
+
+test('Eine Lieferzeit von 0 Werktagen ist eine Zusage, keine Lücke', () => {
+  // Selbstabholung am selben Tag. Wer hier auf Wahrheitswert statt auf Zahl
+  // prüft, erklärt die gültigste aller Lieferzeiten zur fehlenden Angabe.
+  const sofort = {
+    ...korb,
+    teillieferungen: korb.teillieferungen.map((t) => ({ ...t, lieferzeitWerktage: 0 })),
+  };
+  const b = erzeugeAuftragsbestaetigung(sofort, {
+    nummer: 'AB-1', datum: '2026-08-30', kunde, betreiber,
+  });
+  assert.equal(b.lieferzeitLaengsteWerktage, 0);
+  assert.match(b.text, /Vollständig auf der Baustelle: nach 0 Werktagen/);
+  assert.ok(!b.text.includes('FEHLT ]]'));
+  assert.ok(!darfBestaetigtWerden(sofort, { kundeIstUnternehmer: true, uid: 'ATU12345675' })
+    .gruende.some((g) => /Lieferzeit/.test(g)));
+});

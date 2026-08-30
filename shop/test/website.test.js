@@ -500,6 +500,52 @@ test('die Zustellung wird nicht mit dem Einheitenpreis verglichen', () => {
  * Die Auskunft „was hier möglich ist" kommt aus den Daten
  * ------------------------------------------------------------------ */
 
+test('Ein offener Punkt ohne Kundenbezug erzeugt keine leere Aufzählung', () => {
+  // „Es fehlen: ." — der Satz kündigt eine Aufzählung an und liefert keine.
+  // Erreichbar, sobald der einzige offene Punkt den Kunden nichts angeht:
+  // Hier ist alles beantwortet außer der Frage, ob das Repository privat ist,
+  // und die steht auf keiner Kundenseite. Der Bau muss dann einen Satz
+  // schreiben, der ohne Liste trägt.
+  const ablage = mkdtempSync(join(tmpdir(), 'bau-leer-'));
+  const betreiberDatei = join(ablage, 'betreiber.json');
+  const echt = JSON.parse(readFileSync(pfad('../data/betreiber.json'), 'utf8'));
+  writeFileSync(betreiberDatei, JSON.stringify({
+    ...echt,
+    email: 'office@example.at', telefon: '+43 1 234', uid: 'ATU12345678',
+    gewerbewortlaut: 'Handelsgewerbe',
+    zahlungsanbieter: 'Beispiel', rechtstexteFundstelle: 'Kanzlei',
+    domainZeigtAufShop: true,
+    repositoryPrivat: null, // die eine offene Frage — und sie geht den Kunden nichts an
+  }, null, 2));
+
+  const lieferantenDatei = join(ablage, 'lieferanten.json');
+  const echteLieferanten = JSON.parse(readFileSync(pfad('../data/lieferanten.json'), 'utf8'));
+  writeFileSync(lieferantenDatei, JSON.stringify({
+    ...echteLieferanten,
+    lieferanten: echteLieferanten.lieferanten.map((l) => ({
+      ...l, lieferzeitWerktage: l.lieferzeitWerktage ?? 6,
+    })),
+  }, null, 2));
+
+  const lauf = spawnSync(process.execPath, [pfad('../bin/website.mjs')], {
+    encoding: 'utf8',
+    env: {
+      ...process.env, WEBSITE_AUSGABE: ablage,
+      STARTKLAR_BETREIBER: betreiberDatei, WEBSITE_LIEFERANTEN: lieferantenDatei,
+    },
+  });
+  assert.equal(lauf.status, 0, lauf.stderr);
+
+  const llms = readFileSync(join(ablage, 'site', 'llms.txt'), 'utf8');
+  const start = readFileSync(join(ablage, 'site', 'index.html'), 'utf8');
+  assert.match(llms, /Bestellen ist noch nicht möglich/, 'sonst prüft dieser Fall nichts');
+  for (const [name, text] of [['llms.txt', llms], ['Startseite', start]]) {
+    assert.ok(!/Es fehlen: \./.test(text), `${name}: leere Aufzählung nach „Es fehlen:"`);
+    assert.ok(!/es fehlen\s*\./.test(text), `${name}: leere Aufzählung nach „es fehlen"`);
+    assert.ok(!/fehlt\s*\./.test(text), `${name}: leere Aufzählung nach „es fehlt"`);
+  }
+});
+
 test('Startseite und llms.txt sagen aus den Daten, ob bestellt werden kann', () => {
   // Der teure Fehler wäre nicht der falsche Satz, sondern der **eingefrorene**:
   // ein „Bestellen ist noch nicht möglich", das stehenbleibt, wenn der
@@ -518,9 +564,25 @@ test('Startseite und llms.txt sagen aus den Daten, ob bestellt werden kann', () 
     domainZeigtAufShop: true, repositoryPrivat: true,
   }, null, 2));
 
+  // Auch die Lieferzeit gehört beantwortet — sie steht in der
+  // Lieferantendatei, nicht in der Betreiberdatei, und ohne sie bliebe der
+  // Satz „noch nicht möglich" aus einem Grund stehen, den diese Probe gar
+  // nicht meint.
+  const lieferantenVoll = join(ablage, 'lieferanten.json');
+  const echteLieferanten = JSON.parse(readFileSync(pfad('../data/lieferanten.json'), 'utf8'));
+  writeFileSync(lieferantenVoll, JSON.stringify({
+    ...echteLieferanten,
+    lieferanten: echteLieferanten.lieferanten.map((l) => ({
+      ...l, lieferzeitWerktage: l.lieferzeitWerktage ?? 6,
+    })),
+  }, null, 2));
+
   const lauf = spawnSync(process.execPath, [pfad('../bin/website.mjs')], {
     encoding: 'utf8',
-    env: { ...process.env, WEBSITE_AUSGABE: ablage, STARTKLAR_BETREIBER: betreiberVoll },
+    env: {
+      ...process.env, WEBSITE_AUSGABE: ablage,
+      STARTKLAR_BETREIBER: betreiberVoll, WEBSITE_LIEFERANTEN: lieferantenVoll,
+    },
   });
   assert.equal(lauf.status, 0, lauf.stderr);
 

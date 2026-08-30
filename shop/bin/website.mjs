@@ -112,6 +112,11 @@ const REPO = join(WURZEL, '..');
 // Niemand könnte zeigen, dass er sich ändert, wenn die Daten sich ändern.
 const AUSGABE = process.env.WEBSITE_AUSGABE || join(WURZEL, 'ausgabe');
 const BETREIBERDATEI = process.env.STARTKLAR_BETREIBER || join(WURZEL, 'data', 'betreiber.json');
+// Dieselbe Überschreibbarkeit wie bei der Betreiberdatei, aus demselben Grund:
+// Die Lieferzeit entscheidet mit über „Bestellen ist möglich", steht aber in
+// der Lieferantendatei. Ohne diesen Griff könnte eine Probe den Satz nie
+// kippen sehen — sie könnte nur die halbe Lage beantworten.
+const LIEFERANTENDATEI = process.env.WEBSITE_LIEFERANTEN || join(WURZEL, 'data', 'lieferanten.json');
 
 const FIRMA = 'Freudenthaler Bau GmbH';
 const ORT = 'Ried in der Riedmark';
@@ -1088,8 +1093,10 @@ Geliefert wird im Umkreis, nicht in ganz Österreich: Das ist der Grund, warum d
 
 ${bereitschaft.startklar ? `<div class="antwort">Alle Preise sind Nettopreise für Unternehmer und tragen einen Preisstand.</div>`
   : `<div class="antwort"><strong>Dies ist eine Vorschau, kein laufender Shop.</strong> Bestellen können Sie
-hier noch nicht — es ${bereitschaft.kassenhinweise.length === 1 ? 'fehlt' : 'fehlen'}
-${bereitschaft.kassenhinweise.map((h) => esc(h.wort)).join(', ')}. Jeder Preis ist vor der
+hier noch nicht${bereitschaft.kassenhinweise.length
+  ? ` — es ${bereitschaft.kassenhinweise.length === 1 ? 'fehlt' : 'fehlen'} ${
+      bereitschaft.kassenhinweise.map((h) => esc(h.wort)).join(', ')}`
+  : ''}. Jeder Preis ist vor der
 Veröffentlichung beim Lieferanten zu bestätigen. <strong>Was schon geht:</strong> Warenkorb füllen,
 Bezirk wählen — und in der <a href="${verweis('kasse')}">Kasse</a> die fertig gerechnete Anfrage
 mitnehmen, mit Positionen, Fracht und Preisstand. Alle Preise sind Nettopreise für Unternehmer.</div>`}
@@ -1627,7 +1634,7 @@ ${shopskript}
 function main() {
   const lies = (p) => JSON.parse(readFileSync(p, 'utf8'));
   const katalogDatei = lies(join(WURZEL, 'data', 'katalog-baustoff.json'));
-  const lieferantenDatei = lies(join(WURZEL, 'data', 'lieferanten.json'));
+  const lieferantenDatei = lies(LIEFERANTENDATEI);
   const suchwoerterDatei = lies(join(WURZEL, 'data', 'suchwoerter.json'));
   const betreiber = lies(BETREIBERDATEI);
   const preisPfad = join(REPO, 'preise', 'baustoff-preise.json');
@@ -1653,6 +1660,7 @@ function main() {
     rechtstexteFundstelle: betreiber.rechtstexteFundstelle ?? null,
     domainZeigtAufShop: betreiber.domainZeigtAufShop ?? null,
     repositoryPrivat: betreiber.repositoryPrivat ?? null,
+    lieferanten: lieferantenDatei.lieferanten,
   });
 
   // Gate 24: Artikel, deren Einkaufspreis nur auf Anfrage zu haben ist,
@@ -1924,7 +1932,13 @@ function main() {
     '', '## Was hier möglich ist', '',
     bereitschaft.startklar
       ? '- **Bestellen ist möglich.** Warenkorb füllen, Bezirk der Baustelle wählen, Zahlweg wählen.'
-      : `- **Bestellen ist noch nicht möglich.** Es fehlen: ${bereitschaft.kassenhinweise.map((h) => h.wort).join(', ')}.`,
+      // **Ein Satz, der eine Aufzählung ankündigt, muss eine haben.** Steht
+      // ein offener Punkt auf der Liste, der den Kunden nichts angeht, wäre
+      // hier sonst „Es fehlen: ." gestanden — eine Ankündigung ohne Inhalt,
+      // die wie ein Anzeigefehler aussieht und den Grund verschweigt.
+      : bereitschaft.kassenhinweise.length
+        ? `- **Bestellen ist noch nicht möglich.** Es fehlen: ${bereitschaft.kassenhinweise.map((h) => h.wort).join(', ')}.`
+        : '- **Bestellen ist noch nicht möglich.** Was fehlt, betrifft den Betrieb, nicht Ihre Bestellung.',
     `- **Möglich ist eine Anfrage.** Warenkorb füllen, Bezirk der Baustelle wählen, und die Kasse (${BASIS}/kasse.html) erzeugt eine fertig gerechnete Positionsliste mit Fracht, Umsatzsteuer und Preisstand zum Kopieren. Sie ist unverbindlich und wird nicht automatisch versendet.`,
     '- **Nur im Liefergebiet.** Anfragen aus anderen Bezirken werden nicht angenommen; die Fracht trägt sie nicht.',
     `- **Fracht fällt je Lieferung an, es gibt keine Frei-Haus-Schwelle.** Die Sätze und die Begründung stehen unter ${BASIS}/lieferung.html.`,

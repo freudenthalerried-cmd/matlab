@@ -27,10 +27,12 @@ const preisdateiVorhanden = existsSync(preisPfad);
 // ausführen kann — mit anderen Antworten als denen des Bestands.
 const betreiberPfad = process.env.STARTKLAR_BETREIBER || join(WURZEL, 'data', 'betreiber.json');
 
+const lieferantenDatei = lies(join(WURZEL, 'data', 'lieferanten.json'));
+
 const katalog = ladeBaustoffkatalog(
   lies(join(WURZEL, 'data', 'katalog-baustoff.json')),
   preisdateiVorhanden ? lies(preisPfad) : null,
-  lies(join(WURZEL, 'data', 'lieferanten.json')),
+  lieferantenDatei,
   ZIELMARGE,
 );
 
@@ -62,6 +64,7 @@ const befund = startklar({
   rechtstexteFundstelle: betreiber.rechtstexteFundstelle ?? null,
   domainZeigtAufShop: betreiber.domainZeigtAufShop ?? null,
   repositoryPrivat: betreiber.repositoryPrivat ?? null,
+  lieferanten: lieferantenDatei.lieferanten,
 });
 
 const zeichen = { erfuellt: '✓', offen: '✗', unpruefbar: '?' };

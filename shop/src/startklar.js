@@ -43,6 +43,7 @@ const AUF_DER_KASSE = new Map([
   ['impressum', 'ein vollständiges Impressum'],
   ['zahlungsanbieter', 'ein Zahlungsanbieter'],
   ['rechtstexte', 'verbindliche Rechtstexte'],
+  ['lieferzeit', 'die Lieferzeit des Lieferanten'],
 ]);
 
 /** Die Punkte, die über „online" entscheiden — in der Reihenfolge ihrer Härte. */
@@ -56,6 +57,7 @@ export function startklar(lage = {}) {
     domainZeigtAufShop = null,
     repositoryPrivat = null,
     impressumsfelder = [],
+    lieferanten = [],
   } = lage;
 
   const punkte = [];
@@ -89,6 +91,28 @@ export function startklar(lage = {}) {
       ? 'jeder Einkaufspreis ist bestätigt'
       : `${platzhalter.length} Artikel mit Platzhalterpreis`,
     'Werkzeug');
+
+  // **Aufgenommen am 30.08.** Die Lieferzeit ist keine Nebensache, sondern
+  // die Angabe, mit der die Auftragsbestätigung einen Termin zusagt. Fehlt
+  // sie, verweigert `darfBestaetigtWerden` die Bestätigung — der Shop könnte
+  // also Bestellungen entgegennehmen und keine einzige annehmen. Das gehört
+  // auf diese Liste, nicht in eine Fehlermeldung am Bestelltag.
+  //
+  // Nur Lieferanten mit geführten Artikeln zählen. Ein Lieferant ohne Ware im
+  // Katalog kann nichts liefern und blockiert deshalb auch nichts.
+  const gefuehrt = new Set(katalog.artikel.map((a) => a.lieferantId));
+  const ohneLieferzeit = lieferanten.filter(
+    (l) => gefuehrt.has(l.id) && !Number.isFinite(l.lieferzeitWerktage),
+  );
+  p('lieferzeit', 'Lieferzeit je liefernden Lieferanten bekannt',
+    lieferanten.length > 0 && ohneLieferzeit.length === 0 ? 'erfuellt' : 'offen',
+    lieferanten.length === 0
+      ? 'keine Lieferanten geladen — dann sagt dieser Punkt nichts aus'
+      : ohneLieferzeit.length === 0
+        ? `alle ${gefuehrt.size} liefernden Lieferanten mit Lieferzeit`
+        : `${ohneLieferzeit.length} ohne Lieferzeit: ${ohneLieferzeit.map((l) => l.name ?? l.id).join(', ')}`
+          + ' — ohne sie darf keine Auftragsbestätigung hinaus',
+    'Auftraggeber');
 
   p('zahlungsanbieter', 'Zahlungsanbieter gewählt und angebunden',
     zahlungsanbieter ? 'erfuellt' : 'offen',

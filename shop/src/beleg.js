@@ -79,10 +79,30 @@ export function pruefeRechnungsmerkmale(beleg = {}) {
  */
 const wert = (v, bezeichnung) => (gefuellt(v) ? textZeile(v) : LUECKE(bezeichnung));
 
+/**
+ * Die Lieferzeit einer Teillieferung als Text — oder als sichtbare Lücke.
+ *
+ * **Befund vom 30. August.** Hier stand `${teil.lieferzeitWerktage} Werktage`,
+ * roh eingesetzt. Für den einzigen Lieferanten, der die sechsundvierzig
+ * geführten Artikel liefert, ist die Lieferzeit nicht bekannt — also stand auf
+ * Angebot, Auftragsbestätigung und Rechnung jeder echten Bestellung wörtlich
+ * `null Werktage`.
+ *
+ * Jede andere fehlende Angabe in diesem Modul geht durch `wert()` und wird zu
+ * `[[ … — FEHLT ]]`. Die Lieferzeit war die eine, die daran vorbeilief. Sie
+ * geht jetzt denselben Weg: Was nicht bekannt ist, sieht auch nicht bekannt
+ * aus.
+ */
+function lieferzeitText(teil) {
+  return gefuellt(teil.lieferzeitWerktage)
+    ? `${teil.lieferzeitWerktage} Werktage`
+    : LUECKE(`Lieferzeit ${teil.lieferantName}`);
+}
+
 function positionszeilen(warenkorb) {
   const zeilen = [];
   for (const teil of warenkorb.teillieferungen) {
-    zeilen.push(`${textZeile(teil.lieferantName)} — Direktlieferung, ${teil.lieferzeitWerktage} Werktage`);
+    zeilen.push(`${textZeile(teil.lieferantName)} — Direktlieferung, ${lieferzeitText(teil)}`);
     for (const p of teil.positionen) {
       zeilen.push(
         `  ${String(p.menge).padStart(3)} ${textZeile(p.einheit ?? 'Stk').padEnd(4)} ` +
@@ -170,8 +190,17 @@ export function erzeugeAuftragsbestaetigung(
   warenkorb,
   { nummer, datum, kunde = {}, betreiber = {}, auftrag = {}, hinweise = [] },
 ) {
-  const werktage = warenkorb.teillieferungen.map((t) => t.lieferzeitWerktage ?? 0);
-  const laengste = werktage.length ? Math.max(...werktage) : 0;
+  // **`?? 0` stand hier bis zum 30. August**, und das war die teuerste
+  // Zeile des Moduls: Eine unbekannte Lieferzeit wurde zu null Werktagen und
+  // damit zum optimistischsten aller möglichen Werte. Auf einem Dokument, das
+  // drei Zeilen weiter oben schreibt „Mit dieser Bestätigung kommt der Vertrag
+  // zustande", stand danach „Vollständig auf der Baustelle: nach 0 Werktagen".
+  //
+  // Unbekannt plus bekannt ergibt unbekannt. Das Maximum gibt es nur, wenn
+  // jede Teillieferung ihre Zahl kennt.
+  const werktage = warenkorb.teillieferungen.map((t) => t.lieferzeitWerktage);
+  const alleBekannt = werktage.length > 0 && werktage.every((w) => gefuellt(w));
+  const laengste = alleBekannt ? Math.max(...werktage) : null;
   const lieferadresse = auftrag.lieferadresse ?? null;
 
   const zeilen = [
@@ -210,11 +239,14 @@ export function erzeugeAuftragsbestaetigung(
   // drei Zahlen liest und selbst das Maximum bilden soll, bildet es nicht.
   zeilen.push('Lieferzeiten je Hersteller, ab Bestellauslösung:');
   for (const t of warenkorb.teillieferungen) {
-    zeilen.push(`  ${textZeile(t.lieferantName)}: ${t.lieferzeitWerktage} Werktage`);
+    zeilen.push(`  ${textZeile(t.lieferantName)}: ${lieferzeitText(t)}`);
   }
   zeilen.push(
     '',
-    `Vollständig auf der Baustelle: nach ${laengste} Werktagen.`,
+    alleBekannt
+      ? `Vollständig auf der Baustelle: nach ${laengste} Werktagen.`
+      : `Vollständig auf der Baustelle: ${LUECKE('Gesamtlieferzeit')} — solange eine `
+        + 'Lieferzeit oben fehlt, gibt es keinen Termin, den wir zusagen können.',
     'Bis dahin treffen die Teillieferungen einzeln ein; jede ist für sich zu prüfen.',
   );
 
@@ -256,6 +288,17 @@ export function darfBestaetigtWerden(warenkorb, auftrag = {}) {
   }
   if (warenkorb.teillieferungen.some((t) => t.positionen.some((p) => p.ekIstPlatzhalter))) {
     gruende.push('Katalog enthält Platzhalterpreise — der bestätigte Betrag wäre erfunden');
+  }
+  // Dieselbe Regel, andere Größe. Die Auftragsbestätigung ist die Annahme:
+  // Mit ihr kommt der Vertrag zustande, und sie nennt den Termin. Wer einen
+  // Termin zusagt, den er nicht kennt, hat ihn erfunden — genauso wie einen
+  // Betrag aus einem Platzhalterpreis. **Entschieden am 30.08.**: Das Angebot
+  // darf die Lücke tragen und sichtbar machen, die Bestätigung nicht.
+  const ohneLieferzeit = warenkorb.teillieferungen
+    .filter((t) => !gefuellt(t.lieferzeitWerktage))
+    .map((t) => t.lieferantName ?? t.lieferantId);
+  if (ohneLieferzeit.length) {
+    gruende.push(`Lieferzeit unbekannt (${ohneLieferzeit.join(', ')}) — der zugesagte Termin wäre erfunden`);
   }
 
   return { erlaubt: gruende.length === 0, gruende };

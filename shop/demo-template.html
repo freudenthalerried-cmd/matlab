@@ -309,7 +309,14 @@ function zeichneKorb() {
 
     const h = document.createElement('div');
     h.className = 'teil-h';
-    h.textContent = teil.lieferantName + ' · ' + teil.lieferzeitWerktage + ' Werktage';
+    // Eine unbekannte Lieferzeit stand hier als „null Werktage" — im
+    // Demokatalog nicht erreichbar, weil dessen drei Lieferanten alle eine
+    // Zahl tragen, im echten Katalog dagegen bei jedem der 46 Artikel. Ein
+    // Fehler mit bekanntem Auslösetag ist kein latenter, sondern ein
+    // terminierter.
+    h.textContent = teil.lieferantName + ' · ' + (Number.isFinite(teil.lieferzeitWerktage)
+      ? teil.lieferzeitWerktage + ' Werktage'
+      : 'Lieferzeit auf Anfrage');
     box.append(h);
 
     for (const p of teil.positionen) {
