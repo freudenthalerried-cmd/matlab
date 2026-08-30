@@ -457,6 +457,18 @@ test('achtzehn Wörter, die vorher nichts fanden, finden jetzt Ware', () => {
   // Die Messung vom 27. August, festgehalten als Probe: ohne Register null
   // Treffer, mit Register Ware. Ein Vorher-Nachher, das ohne diesen Test nur
   // in einem Dokument stünde.
+  //
+  // **Neu gefasst am 30.08.** Die erste Fassung verlangte, dass **jedes** der
+  // achtzehn Wörter ohne Register stumm bleibt. Das war am 27. August wahr
+  // und ist eine Aussage über einen Katalog mit 46 Artikeln — in der
+  // Generalprobe mit 172 fiel sie um, weil „dämmplatte" dann in einer
+  // Bezeichnung vorkommt.
+  //
+  // Sie wäre also ausgerechnet am Tag der Lieferantenliste fehlgeschlagen,
+  // zwischen echten Befunden, und jemand hätte unter Zeitdruck entscheiden
+  // müssen, ob das schlimm ist. Geprüft wird deshalb die **Zusage** — das
+  // Register macht stumme Wörter hörbar und nimmt keinem Wort etwas weg —
+  // und die historische Zahl steht als Nachricht dabei.
   const vorher = baueSuchindex({ artikel: katalogDatei.artikel });
   const nachher = bestandsindex();
   const stumm = [
@@ -466,9 +478,20 @@ test('achtzehn Wörter, die vorher nichts fanden, finden jetzt Ware', () => {
     'anputzleiste',
   ];
   assert.equal(stumm.length, 18);
+  const stummGeblieben = stumm.filter((w) => suche(vorher, w).length === 0);
+  assert.ok(stummGeblieben.length >= 1,
+    `Am 27.08. waren alle 18 ohne Register stumm; heute keines mehr. `
+    + `Der Katalog ist gewachsen — die Messung gehört nachgezogen, das Register nicht abgeschafft.`);
   for (const w of stumm) {
-    assert.equal(suche(vorher, w).length, 0, `„${w}" fand vorher schon etwas — die Messung stimmt nicht`);
-    assert.ok(suche(nachher, w).some((x) => x.art === 'artikel'), `„${w}" findet weiterhin nichts`);
+    const ohne = suche(vorher, w).map((x) => x.id);
+    const mit = suche(nachher, w).map((x) => x.id);
+    assert.ok(mit.length >= 1, `„${w}" findet weiterhin nichts`);
+    assert.ok(mit.some((id) => id.startsWith('artikel/')), `„${w}" findet keine Ware`);
+    // Kein Schleifenkörper: `ohne` ist bei einem stummen Wort leer, und das
+    // ist der Regelfall. Eine Längenzusicherung wäre hier falsch — geprüft
+    // wird, dass nichts wegfällt, nicht dass etwas da war.
+    assert.ok(ohne.every((id) => mit.includes(id)),
+      `„${w}": das Register nimmt Treffer weg, statt welche hinzuzufügen`);
   }
 });
 
@@ -537,13 +560,20 @@ test('acht Vertipper kommen an — sieben über den Vorschlag, einer direkt', ()
     kantenschuz: 'kantenschutz',
     schachtrng: 'schachtring',
     gewbe: 'gewebe',
-    spachtl: 'spachtelmasse',
+    // **Neu gefasst am 30.08.** Hier stand `spachtl: 'spachtelmasse'`. In der
+    // Generalprobe mit 172 Artikeln schlug die Suche „klebespachtel" zuerst
+    // vor — dieselbe Ware, ein anderes Wort, weil die Häufigkeiten sich mit
+    // dem Katalog verschieben. Die Zusage lautet „der Kunde kommt an", nicht
+    // „das Wort lautet so"; wo mehrere Wörter dieselbe Ware nennen, stehen
+    // sie alle da.
+    spachtl: ['spachtelmasse', 'klebespachtel', 'klebespachtelmasse'],
   };
   assert.equal(Object.keys(vertipper).length, 8);
   let direkt = 0;
   for (const [falsch, erwartet] of Object.entries(vertipper)) {
     const vorschlaege = meintenSie(index, falsch);
-    assert.equal(vorschlaege[0], erwartet, `„${falsch}" → ${JSON.stringify(vorschlaege)}`);
+    const zulaessig = Array.isArray(erwartet) ? erwartet : [erwartet];
+    assert.ok(zulaessig.includes(vorschlaege[0]), `„${falsch}" → ${JSON.stringify(vorschlaege)}`);
     if (suche(index, falsch).length) direkt++;
   }
   assert.equal(direkt, 1, 'die Zahl der direkt findenden Vertipper hat sich verschoben — nachmessen');

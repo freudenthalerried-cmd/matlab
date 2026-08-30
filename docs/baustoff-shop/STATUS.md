@@ -503,9 +503,9 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > [`kommentare-im-schaufenster.md`](./kommentare-im-schaufenster.md).
 >
 > **Stand der Prüfmittel (30.08.):** 920 Tests, `pruefe-tests` 918/0, `pruefe-preise` 46/0, `pruefe-inhalte`
-> 24/357/0, `pruefe-seiten` 81 von 81 gebauten Seiten, `pruefe-widerrufe` 194 Dateien/48
+> 24/357/0, `pruefe-seiten` 81 von 81 gebauten Seiten, `pruefe-widerrufe` 195 Dateien/48
 > Fundstellen, `pruefe-quellen` 6/6, `shopprobe` 49 (davon 10 im Rahmen),
-> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 193/193,
+> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 194/194,
 > `pruefe-pruefer` 11 Prüfer ohne Leerlauf, Website 81 Seiten ohne toten
 > Verweis.
 
@@ -887,6 +887,7 @@ zusammengefasst und im Verzeichnis nicht auffindbar:
 | `die-liste-die-noch-nicht-da-ist.md` | `npm run artikelliste` liest die Artikelliste im angeforderten Format und schreibt Katalog und Konditionen getrennt. Es entscheidet nichts, was eine Entscheidung ist: Warengruppe, Preisstand und Einheit werden verlangt, nicht geraten; Wegfall wird gemeldet, nicht vollzogen |
 | `zwanzig-zeilen-statt-dreihundert.md` | Die Liste des Lieferanten wird seine Sparten tragen, nicht unsere sieben Gruppen. `data/sparten.json` ordnet sie einmal zu; unzugeordnete Sparten meldet das Werkzeug gebündelt und nach Artikelzahl geordnet, in der Form, in der sie in die Tabelle gehören |
 | `die-rolle-die-ein-rohr-war.md` | Formerkennung der Artikelzeichnungen an 40 fremden Namen gemessen: 2 falsche Zeichnungen. „X mit Y" ist ein X (der Eckwinkel war eine Rolle), und die Einheit schlägt den Namen, wo sie eindeutig ist (50 m Drainagerohr sind ein Ring). Danach 0 falsche, Bestandsverteilung unverändert |
+| `generalprobe-mit-hundertzweiundsiebzig.md` | Der ganze Liefertag im Sandkasten durchgespielt: 126 erfundene Zeilen eingelesen, 172 Artikel, 207 Seiten, alle Prüfer grün — und drei Tests, die am Bestand von 46 hingen und am Liefertag gefeuert hätten. Eine Probe, die den Bestand misst, ist eine Zeitbombe mit bekanntem Zünddatum |
 | `segment-arbeitsplatzmessung.md` | Nebenstrecke, kein eigenes Segment |
 | `strategie-modellvergleich.md` | Kapitalweg braucht ~900.000 €; enthält überholte Empfehlung |
 | `anschreiben-entwuerfe.md` | Drei Anschreiben (Hersteller, Großhändler, Partnerbetriebe), versandfertig, nicht versendet |
