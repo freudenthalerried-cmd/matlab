@@ -1,6 +1,6 @@
 :root {
-  --orange: #ff8c00;
-  --orange-dark: #e67e00;
+  --orange: #1e7a3c;
+  --orange-dark: #14532d;
   --border: #d0d7de;
   --bg: #f6f8fa;
   --bubble: #ffffff;
@@ -246,7 +246,7 @@ html, body {
   height: 24px;
   border-radius: 50%;
   border: 1px solid var(--orange);
-  background: rgba(255, 140, 0, 0.08);
+  background: rgba(30, 122, 60, 0.08);
   color: var(--orange-dark);
   font-size: 15px;
   line-height: 1;
@@ -306,7 +306,7 @@ html, body {
 }
 
 .typ-knopf.typ-aktiv {
-  background: rgba(255, 140, 0, 0.12);
+  background: rgba(30, 122, 60, 0.12);
   color: var(--orange-dark);
 }
 
@@ -330,7 +330,7 @@ html, body {
 .bearbeiten-hinweis {
   font-size: 12px;
   color: var(--orange-dark);
-  background: rgba(255, 140, 0, 0.08);
+  background: rgba(30, 122, 60, 0.08);
   border: 1px solid var(--orange);
   border-radius: 8px;
   padding: 6px 10px;
@@ -460,7 +460,7 @@ html, body {
 
 .chip {
   border: 1px solid var(--orange);
-  background: rgba(255, 140, 0, 0.08);
+  background: rgba(30, 122, 60, 0.08);
   color: var(--orange-dark);
   border-radius: 999px;
   padding: 6px 12px;
@@ -468,7 +468,7 @@ html, body {
   cursor: pointer;
 }
 
-.chip:hover { background: rgba(255, 140, 0, 0.2); }
+.chip:hover { background: rgba(30, 122, 60, 0.2); }
 
 .chip-kategorie {
   border-color: var(--border);
@@ -525,7 +525,7 @@ html, body {
   border-radius: 8px;
 }
 
-.foto-button:hover { background: rgba(255, 140, 0, 0.1); }
+.foto-button:hover { background: rgba(30, 122, 60, 0.1); }
 
 .chat-input {
   flex: 1;
@@ -560,7 +560,7 @@ html, body {
 .send-button:hover:not(:disabled),
 .send-button:focus-visible:not(:disabled) {
   color: var(--orange-dark);
-  background: rgba(255, 140, 0, 0.1);
+  background: rgba(30, 122, 60, 0.1);
 }
 
 .send-button:focus-visible {
@@ -580,8 +580,11 @@ html, body {
 
 /* Textbaustein-Panel */
 .bausteine-panel {
-  position: absolute;
-  inset: 60px 16px 16px 16px;
+  position: fixed;
+  inset: 70px 16px 16px 16px;
+  max-width: 608px;
+  margin: 0 auto;
+  z-index: 30;
   background: var(--bubble);
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -613,7 +616,7 @@ html, body {
   cursor: pointer;
 }
 
-.bausteine-liste li:hover { background: rgba(255, 140, 0, 0.08); }
+.bausteine-liste li:hover { background: rgba(30, 122, 60, 0.08); }
 
 .baustein-kopf {
   font-weight: 600;
@@ -627,7 +630,7 @@ html, body {
   font-weight: 400;
   font-size: 12px;
   color: var(--orange-dark);
-  background: rgba(255, 140, 0, 0.1);
+  background: rgba(30, 122, 60, 0.1);
   border-radius: 6px;
   padding: 1px 6px;
   white-space: nowrap;
@@ -658,4 +661,205 @@ html, body {
   .chat { height: auto; max-width: none; }
   .messages { overflow: visible; }
   .eintrag { break-inside: avoid; }
+}
+
+
+/* ===== Grüner Kopfbalken (beide Ansichten) ===== */
+.gruen-kopf {
+  background: #14532d;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+}
+
+.chat .gruen-kopf {
+  margin: -16px -16px 12px -16px;
+}
+
+.gruen-kopf h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kopf-knoepfe {
+  display: flex;
+  gap: 8px;
+}
+
+.kopf-knopf {
+  background: rgba(255, 255, 255, 0.14);
+  border: none;
+  border-radius: 10px;
+  color: #ffffff;
+  min-width: 44px;
+  height: 44px;
+  font-size: 20px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kopf-knopf:hover { background: rgba(255, 255, 255, 0.24); }
+
+.kopf-knopf-text {
+  font-size: 16px;
+  font-weight: 700;
+  padding: 0 14px;
+}
+
+/* ===== Ansicht 1: Baustellen-Liste ===== */
+.liste {
+  max-width: 640px;
+  margin: 0 auto;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+
+.liste-inhalt {
+  padding: 14px 12px 24px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.suche-feld {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bubble);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-size: 17px;
+}
+
+.suche-feld input {
+  border: none;
+  outline: none;
+  flex: 1;
+  font-size: 17px;
+  background: transparent;
+  color: var(--text);
+}
+
+#gruppen {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gruppe-kopf {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #14532d;
+  color: #ffffff;
+  border: none;
+  border-radius: 16px;
+  padding: 14px 18px;
+  font-size: 18px;
+  font-weight: 800;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.gruppe-pfeil { font-size: 14px; }
+.gruppe-name { flex: 1; }
+
+.gruppe-anzahl {
+  background: rgba(255, 255, 255, 0.85);
+  color: #14532d;
+  border-radius: 999px;
+  min-width: 40px;
+  text-align: center;
+  padding: 2px 10px;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.baustelle-karte {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bubble);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 14px 16px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  width: 100%;
+}
+
+.baustelle-karte:hover { border-color: #14532d; }
+
+.karte-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.karte-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.karte-unterzeile {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.karte-pfeil {
+  font-size: 22px;
+  color: var(--muted);
+}
+
+/* Neue Baustelle anlegen */
+.neu-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--bubble);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.neu-form input, .neu-form select {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 15px;
+  font-family: inherit;
+  background: var(--bubble);
+  color: var(--text);
+}
+
+.neu-aktionen { display: flex; gap: 8px; }
+
+/* Info-Panel im Protokoll (Verteiler + letzte Protokolle) */
+.info-panel {
+  background: var(--bubble);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }

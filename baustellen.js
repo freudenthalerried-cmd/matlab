@@ -5,6 +5,9 @@
 
 const VERTEILER_STANDARD = ['Baukoordinator', 'Bauleitung', 'Baufirma / Polier', 'Auftraggeber'];
 
+// Gruppen (Touren) für die Baustellen-Liste.
+const GRUPPEN = ['Diverse Baustellen', 'Linz, Traun, Umgebung', 'Rohrbach RUNDE', 'SEENTOUR Gmunden'];
+
 // Standardtext für den E-Mail-Versand des Protokolls.
 const MAIL_TEXT = 'Anbei das Baustellenbesuchsprotokoll - BauKG.\n\n' +
   'Bitte um Kenntnisnahme und Umsetzung der jeweils relevanten Punkte.\n\n' +
@@ -20,6 +23,7 @@ const MAIL_TEXT = 'Anbei das Baustellenbesuchsprotokoll - BauKG.\n\n' +
 const BAUSTELLEN = [
   {
     id: 'vorchdorf',
+    ort: 'Vorchdorf', gruppe: 'SEENTOUR Gmunden',
     lat: 47.9906, lng: 13.9236,
     name: 'Vorchdorf Messenbachstraße',
     ordnerUrl: 'https://drive.google.com/drive/folders/1-FocuAWFuEkDgVpBvV2ZtrKgVlRvJcNR',
@@ -31,6 +35,7 @@ const BAUSTELLEN = [
   },
   {
     id: 'pinsdorf',
+    ort: 'Pinsdorf', gruppe: 'SEENTOUR Gmunden',
     lat: 47.9247, lng: 13.7695,
     name: 'Ppz Pinsdorf Zentrum',
     ordnerUrl: 'https://drive.google.com/drive/folders/1Ko0vUYLzZJnb9F0wN3dAHAd3lSYgws2j',
@@ -42,6 +47,7 @@ const BAUSTELLEN = [
   },
   {
     id: 'wels',
+    ort: 'Wels', gruppe: 'Diverse Baustellen',
     lat: 48.1487, lng: 14.0304,
     name: 'Wels Neustadt',
     ordnerUrl: 'https://drive.google.com/drive/folders/1db5nUCXjXJUazJwJq2mML16b1-Uws--A',
@@ -53,6 +59,7 @@ const BAUSTELLEN = [
   },
   {
     id: 'hangar3',
+    ort: '', gruppe: 'Linz, Traun, Umgebung',
     name: 'Hangar 3',
     ordnerUrl: 'https://drive.google.com/drive/folders/1iyh3n4RucvE3glCTg8FTE-k0f3698nSp',
     protokolle: [
@@ -63,6 +70,7 @@ const BAUSTELLEN = [
   },
   {
     id: 'brauunion',
+    ort: 'Wieselburg', gruppe: 'Diverse Baustellen',
     lat: 48.1266, lng: 15.1354,
     name: 'Brauunion Wieselburg',
     ordnerUrl: 'https://drive.google.com/drive/folders/1wGH0rdK0WSxmg5lXakqkdXueLZZs6EXu',
@@ -74,6 +82,7 @@ const BAUSTELLEN = [
   },
   {
     id: 'niederzirking',
+    ort: 'Ried in der Riedmark', gruppe: 'Linz, Traun, Umgebung',
     lat: 48.2606, lng: 14.5231,
     name: 'Kirche Niederzirking',
     ordnerUrl: 'https://drive.google.com/drive/folders/1h7w3KiciT5_EARmEkBgLswLNtkaxjQ5N',
@@ -85,6 +94,7 @@ const BAUSTELLEN = [
   },
   {
     id: 'niederneukirchen',
+    ort: 'Niederneukirchen', gruppe: 'Linz, Traun, Umgebung',
     lat: 48.1861, lng: 14.3894,
     name: 'Niederneukirchen NMS',
     ordnerUrl: 'https://drive.google.com/drive/folders/1aVe_lun_XMvRfGGwu1l7AnArfZ4J7sz0',
@@ -94,10 +104,42 @@ const BAUSTELLEN = [
   },
   {
     id: 'wfl',
+    ort: 'Linz', gruppe: 'Linz, Traun, Umgebung',
     name: 'WFL Versandhalle Süd',
     ordnerUrl: 'https://drive.google.com/drive/folders/1OzQ_0tyxIQjct4bGLTky4q0iKVTtSrO9',
     protokolle: [
       { titel: '24.04.25 13:23 – Bericht', url: 'https://drive.google.com/file/d/1ZEyf5xTM_glUFkwt02pjWo1oQm9etIp9/view' }
     ]
+  }
+,
+  {
+    id: 'mittendorfer',
+    ort: 'Traunkirchen', gruppe: 'SEENTOUR Gmunden',
+    name: 'Mittendorfer Traunkirchen',
+    protokolle: []
+  },
+  {
+    id: 'kiga_voecklabruck',
+    ort: 'Vöcklabruck', gruppe: 'SEENTOUR Gmunden',
+    name: 'OÖ Wohnbau KIGA Vöcklabruck',
+    protokolle: []
+  },
+  {
+    id: 'strass_attergau',
+    ort: 'Straß im Attergau', gruppe: 'SEENTOUR Gmunden',
+    name: 'Straß im Attergau VS+KIGA',
+    protokolle: []
+  },
+  {
+    id: 'hamburgerstrasse',
+    ort: 'Vöcklabruck', gruppe: 'SEENTOUR Gmunden',
+    name: 'OJ 12+13 Hamburgerstraße 1-21',
+    protokolle: []
+  },
+  {
+    id: 'oebb_riedau',
+    ort: '', gruppe: 'SEENTOUR Gmunden',
+    name: 'ÖBB Riedau-Attnang',
+    protokolle: []
   }
 ];

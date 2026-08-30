@@ -1,4 +1,26 @@
 (function () {
+  // ---------- Elemente ----------
+  const viewListe = document.getElementById('view-liste');
+  const viewProtokoll = document.getElementById('view-protokoll');
+  const gruppenContainer = document.getElementById('gruppen');
+  const sucheInput = document.getElementById('suche-input');
+  const neuButton = document.getElementById('neu-button');
+  const neuForm = document.getElementById('neu-form');
+  const neuName = document.getElementById('neu-name');
+  const neuOrt = document.getElementById('neu-ort');
+  const neuGruppe = document.getElementById('neu-gruppe');
+  const neuAbbrechen = document.getElementById('neu-abbrechen');
+  const listeDrucken = document.getElementById('liste-drucken');
+  const listeBausteine = document.getElementById('liste-bausteine');
+
+  const zurueckButton = document.getElementById('zurueck-button');
+  const protokollTitel = document.getElementById('protokoll-titel');
+  const infoButton = document.getElementById('info-button');
+  const infoPanel = document.getElementById('info-panel');
+  const infoVerteiler = document.getElementById('info-verteiler');
+  const infoProtokolle = document.getElementById('info-protokolle');
+  const infoPosition = document.getElementById('info-position');
+
   const form = document.getElementById('chat-form');
   const input = document.getElementById('chat-input');
   const sendButton = document.getElementById('send-button');
@@ -17,6 +39,7 @@
   const bausteineClose = document.getElementById('bausteine-close');
   const bausteineListe = document.getElementById('bausteine-liste');
   const printButton = document.getElementById('print-button');
+  const mailButton = document.getElementById('mail-button');
   const allgemeinButton = document.getElementById('allgemein-button');
   const allgemeinPanel = document.getElementById('allgemein-panel');
   const allgemeinListe = document.getElementById('allgemein-liste');
@@ -27,12 +50,23 @@
   const detailLabel = document.getElementById('detail-label');
   const bearbeitenHinweis = document.getElementById('bearbeiten-hinweis');
   const bearbeitenAbbrechen = document.getElementById('bearbeiten-abbrechen');
+  const typHinweisKnopf = document.getElementById('typ-hinweis');
+  const typMangelKnopf = document.getElementById('typ-mangel');
+  const ortungButton = document.getElementById('ortung-button');
+  const standortBanner = document.getElementById('standort-banner');
+  const standortText = document.getElementById('standort-text');
+  const standortUebernehmen = document.getElementById('standort-uebernehmen');
+  const standortOrdner = document.getElementById('standort-ordner');
+  const standortSchliessen = document.getElementById('standort-schliessen');
 
-  let aktuellesFoto = null;      // dataURL
-  let bearbeitetIndex = null;    // Index des Eintrags, der gerade bearbeitet wird
-  let eingefuegt = [];           // im aktuellen Eintrag eingefügte Bausteine [{id, text}]
+  let aktuellesFoto = null;
+  let bearbeitetIndex = null;   // Index im gefilterten Eintrags-Array
+  let eingefuegt = [];
+  let eintragTyp = 'hinweis';
+  let aktuelleBaustelle = null;
+  let erkannteBaustelle = null;
 
-  // ---------- Speicher (lernt aus der Verwendung) ----------
+  // ---------- Speicher ----------
 
   function ladeJson(key, fallback) {
     try {
@@ -49,19 +83,21 @@
     } catch (e) { /* Speicher voll oder blockiert – App funktioniert weiter */ }
   }
 
-  let nutzung = ladeJson('bp_nutzung', {});       // Baustein-ID -> wie oft verwendet
+  let nutzung = ladeJson('bp_nutzung', {});
   let eintraege = ladeJson('bp_eintraege', []);
-  let varianten = ladeJson('bp_varianten', {});   // Baustein-ID -> vom Benutzer geänderte Fassung
-  let aenderungen = ladeJson('bp_aenderungen', []); // Änderungs-Log für die Datenbank
-  let detailStufe = ladeJson('bp_detail', 1);     // 0 = kurz, 1 = normal, 2 = + Gesetzestext
-  ortInput.value = ladeJson('bp_ort', '');
+  let varianten = ladeJson('bp_varianten', {});
+  let aenderungen = ladeJson('bp_aenderungen', []);
+  let detailStufe = ladeJson('bp_detail', 1);
+  let verteiler = ladeJson('bp_verteiler', {});      // Baustellen-ID -> Verteiler-Text
+  let standorte = ladeJson('bp_standorte', {});      // Baustellen-ID -> {lat, lng}
+  let eigene = ladeJson('bp_baustellen_eigene', []); // selbst angelegte Baustellen
+  let gruppenOffen = ladeJson('bp_gruppen_offen', { 'SEENTOUR Gmunden': true });
 
   function merkeNutzung(id) {
     nutzung[id] = (nutzung[id] || 0) + 1;
     speichereJson('bp_nutzung', nutzung);
   }
 
-  // Merkt geänderte Baustein-Texte: die eigene Formulierung wird künftig bevorzugt.
   function merkeAenderung(bausteinId, original, geaendert) {
     aenderungen.push({ zeit: new Date().toISOString(), baustein: bausteinId, original: original, geaendert: geaendert });
     if (aenderungen.length > 500) aenderungen = aenderungen.slice(-500);
@@ -75,6 +111,192 @@
   function score(b) {
     return b.freq + (nutzung[b.id] || 0) * 2;
   }
+
+  // ---------- Baustellen-Daten ----------
+
+  function alleBaustellen() {
+    return BAUSTELLEN.concat(eigene);
+  }
+
+  function verteilerAnzahl(bs) {
+    const v = verteiler[bs.id];
+    if (!v) return 0;
+    return v.split(',').map(function (e) { return e.trim(); }).filter(Boolean).length;
+  }
+
+  // ---------- Ansicht 1: Baustellen-Liste ----------
+
+  function renderGruppen() {
+    const filter = sucheInput.value.trim().toLowerCase();
+    gruppenContainer.innerHTML = '';
+    GRUPPEN.forEach(function (gruppe) {
+      const inGruppe = alleBaustellen().filter(function (bs) { return (bs.gruppe || GRUPPEN[0]) === gruppe; });
+      const treffer = filter
+        ? inGruppe.filter(function (bs) { return (bs.name + ' ' + (bs.ort || '')).toLowerCase().indexOf(filter) !== -1; })
+        : inGruppe;
+      if (filter && !treffer.length) return;
+
+      const kopf = document.createElement('button');
+      kopf.type = 'button';
+      kopf.className = 'gruppe-kopf';
+      const offen = filter ? true : !!gruppenOffen[gruppe];
+      kopf.innerHTML = '<span class="gruppe-pfeil">' + (offen ? '&#9662;' : '&#9656;') + '</span>' +
+        '<span class="gruppe-name"></span><span class="gruppe-anzahl"></span>';
+      kopf.querySelector('.gruppe-name').textContent = gruppe;
+      kopf.querySelector('.gruppe-anzahl').textContent = inGruppe.length;
+      kopf.addEventListener('click', function () {
+        gruppenOffen[gruppe] = !gruppenOffen[gruppe];
+        speichereJson('bp_gruppen_offen', gruppenOffen);
+        renderGruppen();
+      });
+      gruppenContainer.appendChild(kopf);
+
+      if (offen) {
+        treffer.forEach(function (bs) {
+          const karte = document.createElement('button');
+          karte.type = 'button';
+          karte.className = 'baustelle-karte';
+          const anzahl = verteilerAnzahl(bs);
+          const unterzeile = (bs.ort ? bs.ort + ' · ' : '') +
+            (anzahl ? 'Verteiler: ' + anzahl : '⚠️ kein Verteiler');
+          karte.innerHTML = '<span class="karte-text"><span class="karte-name"></span>' +
+            '<span class="karte-unterzeile"></span></span><span class="karte-pfeil">&#8250;</span>';
+          karte.querySelector('.karte-name').textContent = bs.name;
+          karte.querySelector('.karte-unterzeile').textContent = unterzeile;
+          karte.addEventListener('click', function () { oeffneBaustelle(bs); });
+          gruppenContainer.appendChild(karte);
+        });
+      }
+    });
+  }
+
+  sucheInput.addEventListener('input', renderGruppen);
+
+  // Neue Baustelle anlegen
+  neuButton.addEventListener('click', function () {
+    neuForm.hidden = !neuForm.hidden;
+    if (!neuForm.hidden) {
+      neuGruppe.innerHTML = '';
+      GRUPPEN.forEach(function (g) {
+        const o = document.createElement('option');
+        o.value = g;
+        o.textContent = g;
+        neuGruppe.appendChild(o);
+      });
+      neuName.focus();
+    }
+  });
+
+  neuAbbrechen.addEventListener('click', function () { neuForm.hidden = true; });
+
+  neuForm.addEventListener('submit', function (event) {
+    event.preventDefault();
+    const name = neuName.value.trim();
+    if (!name) return;
+    const bs = {
+      id: 'eigene_' + Date.now(),
+      name: name,
+      ort: neuOrt.value.trim(),
+      gruppe: neuGruppe.value,
+      protokolle: []
+    };
+    eigene.push(bs);
+    speichereJson('bp_baustellen_eigene', eigene);
+    gruppenOffen[bs.gruppe] = true;
+    speichereJson('bp_gruppen_offen', gruppenOffen);
+    neuName.value = '';
+    neuOrt.value = '';
+    neuForm.hidden = true;
+    renderGruppen();
+  });
+
+  listeDrucken.addEventListener('click', function () { window.print(); });
+  listeBausteine.addEventListener('click', function () {
+    bausteinePanel.hidden = false;
+    renderBausteine();
+  });
+
+  // ---------- Ansicht 2: Protokoll ----------
+
+  function oeffneBaustelle(bs) {
+    aktuelleBaustelle = bs;
+    ortInput.value = bs.name;
+    protokollTitel.textContent = bs.name;
+    viewListe.hidden = true;
+    viewProtokoll.hidden = false;
+    infoPanel.hidden = true;
+    standortBanner.hidden = true;
+    renderAlleEintraege();
+    input.focus();
+  }
+
+  function zurueckZurListe() {
+    aktuelleBaustelle = null;
+    viewProtokoll.hidden = true;
+    viewListe.hidden = false;
+    bausteinePanel.hidden = true;
+    renderGruppen();
+  }
+
+  zurueckButton.addEventListener('click', zurueckZurListe);
+
+  infoButton.addEventListener('click', function () {
+    infoPanel.hidden = !infoPanel.hidden;
+    if (!infoPanel.hidden) renderInfo();
+  });
+
+  function renderInfo() {
+    const bs = aktuelleBaustelle;
+    infoVerteiler.value = verteiler[bs.id] || '';
+    infoProtokolle.innerHTML = '';
+    if (bs.protokolle && bs.protokolle.length) {
+      const hint = document.createElement('div');
+      hint.className = 'panel-hint';
+      hint.textContent = 'Letzte Protokolle:';
+      infoProtokolle.appendChild(hint);
+      const liste = document.createElement('div');
+      liste.className = 'protokoll-links';
+      bs.protokolle.forEach(function (p) {
+        const a = document.createElement('a');
+        a.href = p.url;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.textContent = p.titel;
+        liste.appendChild(a);
+      });
+      if (bs.ordnerUrl) {
+        const a = document.createElement('a');
+        a.href = bs.ordnerUrl;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.textContent = 'Drive-Ordner öffnen';
+        liste.appendChild(a);
+      }
+      infoProtokolle.appendChild(liste);
+    }
+    infoPosition.textContent = standorte[bs.id]
+      ? 'Position gespeichert – neu setzen'
+      : 'Aktuelle Position speichern';
+  }
+
+  infoVerteiler.addEventListener('change', function () {
+    const v = infoVerteiler.value.trim();
+    if (v) verteiler[aktuelleBaustelle.id] = v;
+    else delete verteiler[aktuelleBaustelle.id];
+    speichereJson('bp_verteiler', verteiler);
+  });
+
+  infoPosition.addEventListener('click', function () {
+    if (!navigator.geolocation || !aktuelleBaustelle) return;
+    const bs = aktuelleBaustelle;
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      standorte[bs.id] = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      speichereJson('bp_standorte', standorte);
+      infoPosition.textContent = 'Position gespeichert – neu setzen';
+    }, function () {
+      infoPosition.textContent = 'Standort nicht verfügbar – GPS-Freigabe prüfen';
+    }, { enableHighAccuracy: true, timeout: 8000 });
+  });
 
   // ---------- Detailstufe (– kürzer / + länger mit Gesetzestext) ----------
 
@@ -108,233 +330,14 @@
     return basis;
   }
 
-  // ---------- Baustellen: Verteiler + letzte 3 Protokolle ----------
-
-  const baustellenButton = document.getElementById('baustellen-button');
-  const baustellenPanel = document.getElementById('baustellen-panel');
-  const baustellenClose = document.getElementById('baustellen-close');
-  const baustellenListe = document.getElementById('baustellen-liste');
-  const verteilerStandardInput = document.getElementById('verteiler-standard-input');
-
-  let verteiler = ladeJson('bp_verteiler', {}); // Baustellen-ID -> eigener Verteiler; '_standard' -> Standard
-
-  function standardVerteiler() {
-    return verteiler._standard || VERTEILER_STANDARD.join(', ');
-  }
-
-  function renderBaustellen() {
-    verteilerStandardInput.value = standardVerteiler();
-    baustellenListe.innerHTML = '';
-    BAUSTELLEN.forEach(function (bs) {
-      const li = document.createElement('li');
-      li.className = 'baustelle';
-
-      const kopf = document.createElement('div');
-      kopf.className = 'baustelle-kopf';
-      const name = document.createElement('button');
-      name.type = 'button';
-      name.className = 'baustelle-name';
-      name.textContent = bs.name;
-      name.title = 'Als Ort übernehmen';
-      name.addEventListener('click', function () {
-        ortInput.value = bs.name;
-        speichereJson('bp_ort', bs.name);
-        baustellenPanel.hidden = true;
-        input.focus();
-      });
-      kopf.appendChild(name);
-      const ordner = document.createElement('a');
-      ordner.className = 'baustelle-ordner';
-      ordner.href = bs.ordnerUrl;
-      ordner.target = '_blank';
-      ordner.rel = 'noopener';
-      ordner.textContent = 'Ordner';
-      kopf.appendChild(ordner);
-      li.appendChild(kopf);
-
-      const vLabel = document.createElement('div');
-      vLabel.className = 'panel-hint';
-      vLabel.textContent = 'Verteiler:';
-      li.appendChild(vLabel);
-      const vInput = document.createElement('input');
-      vInput.type = 'text';
-      vInput.className = 'verteiler-input';
-      vInput.value = verteiler[bs.id] || standardVerteiler();
-      vInput.addEventListener('change', function () {
-        if (vInput.value.trim() === standardVerteiler()) {
-          delete verteiler[bs.id];
-        } else {
-          verteiler[bs.id] = vInput.value.trim();
-        }
-        speichereJson('bp_verteiler', verteiler);
-      });
-      li.appendChild(vInput);
-
-      const pLabel = document.createElement('div');
-      pLabel.className = 'panel-hint';
-      pLabel.textContent = 'Letzte Protokolle:';
-      li.appendChild(pLabel);
-      const pListe = document.createElement('div');
-      pListe.className = 'protokoll-links';
-      bs.protokolle.forEach(function (p) {
-        const a = document.createElement('a');
-        a.href = p.url;
-        a.target = '_blank';
-        a.rel = 'noopener';
-        a.textContent = p.titel;
-        pListe.appendChild(a);
-      });
-      li.appendChild(pListe);
-
-      const posKnopf = document.createElement('button');
-      posKnopf.type = 'button';
-      posKnopf.className = 'chip chip-kategorie position-knopf';
-      posKnopf.textContent = standorte[bs.id]
-        ? 'Position gespeichert – neu setzen'
-        : (typeof bs.lat === 'number' ? 'Aktuelle Position speichern' : 'Aktuelle Position speichern (noch keine hinterlegt)');
-      posKnopf.addEventListener('click', function () {
-        if (!navigator.geolocation) return;
-        navigator.geolocation.getCurrentPosition(function (pos) {
-          standorte[bs.id] = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-          speichereJson('bp_standorte', standorte);
-          posKnopf.textContent = 'Position gespeichert – neu setzen';
-        }, function () {
-          posKnopf.textContent = 'Standort nicht verfügbar – GPS-Freigabe prüfen';
-        }, { enableHighAccuracy: true, timeout: 8000 });
-      });
-      li.appendChild(posKnopf);
-
-      baustellenListe.appendChild(li);
-    });
-  }
-
-  verteilerStandardInput.addEventListener('change', function () {
-    verteiler._standard = verteilerStandardInput.value.trim();
-    speichereJson('bp_verteiler', verteiler);
-    renderBaustellen(); // Baustellen ohne eigenen Verteiler übernehmen den neuen Standard
-  });
-
-  baustellenButton.addEventListener('click', function () {
-    baustellenPanel.hidden = !baustellenPanel.hidden;
-    if (!baustellenPanel.hidden) {
-      bausteinePanel.hidden = true;
-      renderBaustellen();
-    }
-  });
-  baustellenClose.addEventListener('click', function () {
-    baustellenPanel.hidden = true;
-  });
-
-  // ---------- GPS: Baustelle automatisch erkennen ----------
-  // Ortet den Benutzer und schlägt die nächstgelegene Baustelle samt
-  // Drive-Ordner vor. Gespeicherte exakte Positionen (bp_standorte) haben
-  // Vorrang vor den ungefähren Ortskoordinaten aus baustellen.js.
-
-  const ortungButton = document.getElementById('ortung-button');
-  const standortBanner = document.getElementById('standort-banner');
-  const standortText = document.getElementById('standort-text');
-  const standortUebernehmen = document.getElementById('standort-uebernehmen');
-  const standortOrdner = document.getElementById('standort-ordner');
-  const standortSchliessen = document.getElementById('standort-schliessen');
-
-  let standorte = ladeJson('bp_standorte', {}); // Baustellen-ID -> {lat, lng}
-  let erkannteBaustelle = null;
-  let letztePosition = null;
-
-  function distanzKm(lat1, lng1, lat2, lng2) {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLng = (lng2 - lng1) * Math.PI / 180;
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-      Math.sin(dLng / 2) * Math.sin(dLng / 2);
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  }
-
-  function koordinatenFuer(bs) {
-    if (standorte[bs.id]) return standorte[bs.id];
-    if (typeof bs.lat === 'number') return { lat: bs.lat, lng: bs.lng };
-    return null;
-  }
-
-  function naechsteBaustelle(lat, lng) {
-    let beste = null;
-    BAUSTELLEN.forEach(function (bs) {
-      const k = koordinatenFuer(bs);
-      if (!k) return;
-      const d = distanzKm(lat, lng, k.lat, k.lng);
-      if (!beste || d < beste.distanz) beste = { baustelle: bs, distanz: d };
-    });
-    return beste && beste.distanz <= 5 ? beste : null; // max. 5 km
-  }
-
-  function zeigeStandort(treffer) {
-    if (!treffer) {
-      standortBanner.hidden = true;
-      return;
-    }
-    erkannteBaustelle = treffer.baustelle;
-    const dist = treffer.distanz < 1
-      ? Math.round(treffer.distanz * 1000) + ' m'
-      : treffer.distanz.toFixed(1).replace('.', ',') + ' km';
-    standortText.textContent = 'Baustelle erkannt: ' + treffer.baustelle.name + ' (' + dist + ')';
-    standortOrdner.href = treffer.baustelle.ordnerUrl;
-    standortBanner.hidden = false;
-  }
-
-  function ermittleStandort(leise) {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(function (pos) {
-      letztePosition = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      const treffer = naechsteBaustelle(letztePosition.lat, letztePosition.lng);
-      zeigeStandort(treffer);
-      if (!treffer && !leise) {
-        standortText.textContent = 'Keine Baustelle in der Nähe (max. 5 km) gefunden.';
-        standortOrdner.removeAttribute('href');
-        standortBanner.hidden = false;
-        erkannteBaustelle = null;
-      }
-    }, function () {
-      if (!leise) {
-        standortText.textContent = 'Standort nicht verfügbar – GPS-Freigabe prüfen.';
-        standortBanner.hidden = false;
-        erkannteBaustelle = null;
-      }
-    }, { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 });
-  }
-
-  standortUebernehmen.addEventListener('click', function () {
-    if (erkannteBaustelle) {
-      ortInput.value = erkannteBaustelle.name;
-      speichereJson('bp_ort', erkannteBaustelle.name);
-    }
-    standortBanner.hidden = true;
-    input.focus();
-  });
-
-  standortSchliessen.addEventListener('click', function () {
-    standortBanner.hidden = true;
-  });
-
-  ortungButton.addEventListener('click', function () { ermittleStandort(false); });
-
-  // Beim Start leise versuchen (Browser fragt einmal nach der GPS-Freigabe)
-  ermittleStandort(true);
-
   // ---------- Eintragstyp: Hinweis / Mangel ----------
-  // Beim Umstellen wird der Text im Eingabefeld in die passende Fassung umformuliert.
-
-  const typHinweisKnopf = document.getElementById('typ-hinweis');
-  const typMangelKnopf = document.getElementById('typ-mangel');
-  let eintragTyp = 'hinweis';
 
   function zeigeTyp() {
     typHinweisKnopf.classList.toggle('typ-aktiv', eintragTyp === 'hinweis');
-    typMangelKnopf.classList.toggle('typ-aktiv', eintragTyp === 'hinweis' ? false : true);
+    typMangelKnopf.classList.toggle('typ-aktiv', false);
     typMangelKnopf.classList.toggle('typ-aktiv-mangel', eintragTyp === 'mangel');
   }
 
-  // Tauscht die bekannten Baustein-Fassungen im Text gegen die des Zieltyps.
   function wechsleFassung(text, zielTyp) {
     let neu = text;
     BAUSTEINE.forEach(function (b) {
@@ -358,7 +361,6 @@
     zeigeTyp();
     if (input.value.trim()) {
       input.value = wechsleFassung(input.value, typ);
-      // Auch die Merkliste der eingefügten Bausteine auf die neue Fassung umstellen
       eingefuegt = eingefuegt.map(function (e) {
         const b = BAUSTEINE.find(function (x) { return x.id === e.id; });
         return b ? { id: e.id, text: bausteinText(b) } : e;
@@ -372,7 +374,7 @@
   typHinweisKnopf.addEventListener('click', function () { setzeTyp('hinweis'); });
   typMangelKnopf.addEventListener('click', function () { setzeTyp('mangel'); });
 
-  // ---------- Kürzel-Expansion (wie Tastatur-Shortcuts) ----------
+  // ---------- Kürzel-Expansion ----------
 
   const kuerzelMap = {};
   BAUSTEINE.forEach(function (b) {
@@ -426,7 +428,6 @@
         treffer.push({ baustein: b, punkte: punkte + score(b) });
       }
     });
-    // Zusammenhänge aus den Berichten: verwandte Bausteine mitvorschlagen
     const dabei = treffer.map(function (x) { return x.baustein.id; });
     treffer.slice().forEach(function (x) {
       (x.baustein.related || []).forEach(function (rid) {
@@ -440,7 +441,6 @@
       });
     });
     treffer.sort(function (a, b) { return b.punkte - a.punkte; });
-    // Immer 3 Vorschläge: mit den meistgenutzten Sicherheits-Bausteinen auffüllen
     if (treffer.length < 3) {
       sicherheitsBausteine()
         .slice()
@@ -531,6 +531,7 @@
     if (gewaehlt.length) {
       eintraege.push({
         zeit: zeitstempel(),
+        bs: aktuelleBaustelle ? aktuelleBaustelle.id : null,
         ort: ortInput.value.trim(),
         titel: 'Allgemeine Punkte',
         text: gewaehlt.map(function (p) { return '• ' + p.text; }).join('\n'),
@@ -610,6 +611,7 @@
       li.appendChild(kopf);
       li.appendChild(text);
       li.addEventListener('click', function () {
+        if (viewProtokoll.hidden) return; // aus der Liste heraus nur ansehen
         fuegeTextEin(b);
         bausteinePanel.hidden = true;
       });
@@ -636,12 +638,19 @@
       p(d.getHours()) + ':' + p(d.getMinutes()) + ' ' + d.getFullYear();
   }
 
-  function starteBearbeitung(index) {
-    const e = eintraege[index];
-    bearbeitetIndex = index;
-    eintragTyp = e.typ === 'mangel' ? 'mangel' : 'hinweis';
+  // Einträge der aktuellen Baustelle (ältere Einträge über den Ort zugeordnet)
+  function eintraegeAktuell() {
+    if (!aktuelleBaustelle) return [];
+    return eintraege.filter(function (e) {
+      return e.bs === aktuelleBaustelle.id || (!e.bs && e.ort === aktuelleBaustelle.name);
+    });
+  }
+
+  function starteBearbeitung(eintrag) {
+    bearbeitetIndex = eintraege.indexOf(eintrag);
+    eintragTyp = eintrag.typ === 'mangel' ? 'mangel' : 'hinweis';
     zeigeTyp();
-    input.value = e.text;
+    input.value = eintrag.text;
     bearbeitenHinweis.hidden = false;
     input.classList.add('bearbeitet');
     updateSendState();
@@ -660,14 +669,14 @@
 
   bearbeitenAbbrechen.addEventListener('click', beendeBearbeitung);
 
-  function renderEintrag(e, index) {
+  function renderEintrag(e) {
     const li = document.createElement('li');
     li.className = 'eintrag';
 
     const kopf = document.createElement('div');
     kopf.className = 'eintrag-kopf';
     const kopfText = document.createElement('span');
-    kopfText.textContent = 'Erstellt: ' + e.zeit + (e.ort ? ' – ' + e.ort : '');
+    kopfText.textContent = 'Erstellt: ' + e.zeit;
     kopf.appendChild(kopfText);
 
     if (e.typ === 'mangel') {
@@ -685,7 +694,7 @@
     bearbeiten.className = 'eintrag-knopf';
     bearbeiten.textContent = '✎';
     bearbeiten.title = 'Eintrag bearbeiten';
-    bearbeiten.addEventListener('click', function () { starteBearbeitung(index); });
+    bearbeiten.addEventListener('click', function () { starteBearbeitung(e); });
     aktionen.appendChild(bearbeiten);
 
     const loeschen = document.createElement('button');
@@ -694,9 +703,10 @@
     loeschen.textContent = '×';
     loeschen.title = 'Eintrag löschen';
     loeschen.addEventListener('click', function () {
-      eintraege.splice(index, 1);
+      const idx = eintraege.indexOf(e);
+      if (idx !== -1) eintraege.splice(idx, 1);
       speichereJson('bp_eintraege', eintraege);
-      if (bearbeitetIndex === index) beendeBearbeitung();
+      if (bearbeitetIndex === idx) beendeBearbeitung();
       renderAlleEintraege();
     });
     aktionen.appendChild(loeschen);
@@ -741,7 +751,7 @@
 
   function renderAlleEintraege() {
     messages.innerHTML = '';
-    eintraege.forEach(renderEintrag);
+    eintraegeAktuell().forEach(renderEintrag);
     messages.scrollTop = messages.scrollHeight;
   }
 
@@ -763,9 +773,6 @@
   });
 
   // ---------- Intelligente Satz-Markierung ----------
-  // Klick auf ein Wort markiert den ganzen Satz; ein zweiter Klick in den
-  // markierten Satz setzt den Cursor normal. Abkürzungen wie "z. B.", "Abs.",
-  // "Fa." oder "§ 4 Abs. 7" beenden keinen Satz.
 
   const ABKUERZUNGEN = ['z.b', 'b', 'bzw', 'usw', 'ca', 'inkl', 'gem', 'abs', 'fa', 'ing', 'bmst', 'dipl', 'nr', 'max', 'min', 'evtl', 'ggf', 'lt', 'og', 'ug', 'eg'];
 
@@ -773,13 +780,11 @@
     const c = text[i];
     if (c === '\n') return true;
     if (c !== '.' && c !== '!' && c !== '?') return false;
-    // Wort vor dem Punkt bestimmen
     let w = i - 1;
     while (w >= 0 && /[A-Za-zÄÖÜäöüß0-9§]/.test(text[w])) w--;
     const wort = text.slice(w + 1, i).toLowerCase();
     if (ABKUERZUNGEN.indexOf(wort) !== -1) return false;
-    if (/^\d+$/.test(wort) && /[§0-9]/.test(text.slice(Math.max(0, w - 3), w + 1))) return false; // "§ 4." / "4.7"
-    // Nach dem Punkt: Satz endet nur vor Leerraum/Zeilenende
+    if (/^\d+$/.test(wort) && /[§0-9]/.test(text.slice(Math.max(0, w - 3), w + 1))) return false;
     const nach = text[i + 1];
     return nach === undefined || /\s/.test(nach);
   }
@@ -797,7 +802,7 @@
     return { start: start, ende: ende };
   }
 
-  let vorherigeMarkierung = null; // {start, ende} der zuletzt markierten Satzauswahl
+  let vorherigeMarkierung = null;
 
   input.addEventListener('mousedown', function () {
     const aktiv = input.selectionStart !== input.selectionEnd &&
@@ -809,14 +814,13 @@
 
   input.addEventListener('click', function () {
     const pos = input.selectionStart;
-    if (input.selectionStart !== input.selectionEnd) return; // Nutzer zieht selbst eine Auswahl
+    if (input.selectionStart !== input.selectionEnd) return;
     const text = input.value;
     if (!text || pos > text.length) return;
     const zeichen = text[pos] || text[pos - 1];
     if (!zeichen || /\s/.test(zeichen)) { vorherigeMarkierung = null; return; }
     const g = satzGrenzen(text, pos);
     if (g.ende <= g.start) return;
-    // Zweiter Klick in den bereits markierten Satz: Cursor normal setzen
     if (input.dataset.satzAktiv === '1' && vorherigeMarkierung &&
         pos >= vorherigeMarkierung.start && pos <= vorherigeMarkierung.ende) {
       vorherigeMarkierung = null;
@@ -842,11 +846,6 @@
     }
   });
 
-  ortInput.addEventListener('change', function () {
-    speichereJson('bp_ort', ortInput.value);
-  });
-
-  // Symbole der im Text enthaltenen komplexeren Themen ermitteln
   function iconsFuerText(text) {
     const t = text.toLowerCase();
     const icons = [];
@@ -867,14 +866,13 @@
     if (!text && !aktuellesFoto) return;
     if (text) text = expandiereKuerzel(text, false);
 
-    // Für die Datenbank merken: wurde ein eingefügter Baustein-Text verändert?
     eingefuegt.forEach(function (e) {
       if (text.indexOf(e.text) === -1) {
         merkeAenderung(eingefuegt.length === 1 ? e.id : null, e.text, text);
       }
     });
 
-    if (bearbeitetIndex !== null) {
+    if (bearbeitetIndex !== null && eintraege[bearbeitetIndex]) {
       const alt = eintraege[bearbeitetIndex];
       if (alt.text !== text) merkeAenderung(null, alt.text, text);
       alt.text = text;
@@ -885,6 +883,7 @@
     } else {
       eintraege.push({
         zeit: zeitstempel(),
+        bs: aktuelleBaustelle ? aktuelleBaustelle.id : null,
         ort: ortInput.value.trim(),
         text: text,
         typ: eintragTyp,
@@ -913,23 +912,18 @@
   });
 
   // ---------- Protokoll per E-Mail ----------
-  // Öffnet das Mailprogramm mit Standardtext; Verteiler-Einträge mit
-  // E-Mail-Adresse werden als Empfänger übernommen.
-
-  const mailButton = document.getElementById('mail-button');
 
   function baueMailto() {
-    const ort = ortInput.value.trim();
-    const bs = BAUSTELLEN.find(function (b) { return b.name === ort; });
-    const verteilerText = (bs && verteiler[bs.id]) || standardVerteiler();
+    const bs = aktuelleBaustelle;
+    const verteilerText = (bs && verteiler[bs.id]) || '';
     const empfaenger = verteilerText.split(',')
       .map(function (e) { return e.trim(); })
       .filter(function (e) { return e.indexOf('@') !== -1; });
     const d = new Date();
     function p(n) { return (n < 10 ? '0' : '') + n; }
     const datum = p(d.getDate()) + '.' + p(d.getMonth() + 1) + '.' + d.getFullYear();
-    const betreff = 'Baustellenbesuchsprotokoll - BauKG' + (ort ? ' – ' + ort : '') + ' – ' + datum;
-    const body = MAIL_TEXT + '\n\nVerteiler: ' + verteilerText;
+    const betreff = 'Baustellenbesuchsprotokoll - BauKG' + (bs ? ' – ' + bs.name : '') + ' – ' + datum;
+    const body = MAIL_TEXT + (verteilerText ? '\n\nVerteiler: ' + verteilerText : '');
     return 'mailto:' + encodeURIComponent(empfaenger.join(',')) +
       '?subject=' + encodeURIComponent(betreff) +
       '&body=' + encodeURIComponent(body);
@@ -939,10 +933,91 @@
     window.location.href = baueMailto();
   });
 
+  // ---------- GPS: Baustelle automatisch erkennen ----------
+
+  function distanzKm(lat1, lng1, lat2, lng2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  function koordinatenFuer(bs) {
+    if (standorte[bs.id]) return standorte[bs.id];
+    if (typeof bs.lat === 'number') return { lat: bs.lat, lng: bs.lng };
+    return null;
+  }
+
+  function naechsteBaustelle(lat, lng) {
+    let beste = null;
+    alleBaustellen().forEach(function (bs) {
+      const k = koordinatenFuer(bs);
+      if (!k) return;
+      const d = distanzKm(lat, lng, k.lat, k.lng);
+      if (!beste || d < beste.distanz) beste = { baustelle: bs, distanz: d };
+    });
+    return beste && beste.distanz <= 5 ? beste : null;
+  }
+
+  function zeigeStandort(treffer) {
+    if (!treffer) {
+      standortBanner.hidden = true;
+      return;
+    }
+    erkannteBaustelle = treffer.baustelle;
+    const dist = treffer.distanz < 1
+      ? Math.round(treffer.distanz * 1000) + ' m'
+      : treffer.distanz.toFixed(1).replace('.', ',') + ' km';
+    standortText.textContent = 'Baustelle erkannt: ' + treffer.baustelle.name + ' (' + dist + ')';
+    if (treffer.baustelle.ordnerUrl) standortOrdner.href = treffer.baustelle.ordnerUrl;
+    else standortOrdner.removeAttribute('href');
+    standortBanner.hidden = false;
+  }
+
+  function ermittleStandort(leise) {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      const treffer = naechsteBaustelle(pos.coords.latitude, pos.coords.longitude);
+      if (treffer && viewProtokoll.hidden) {
+        // Aus der Liste heraus die erkannte Baustelle direkt öffnen
+        oeffneBaustelle(treffer.baustelle);
+        zeigeStandort(treffer);
+        return;
+      }
+      zeigeStandort(treffer);
+      if (!treffer && !leise) {
+        standortText.textContent = 'Keine Baustelle in der Nähe (max. 5 km) gefunden.';
+        standortOrdner.removeAttribute('href');
+        standortBanner.hidden = false;
+        erkannteBaustelle = null;
+      }
+    }, function () {
+      if (!leise) {
+        standortText.textContent = 'Standort nicht verfügbar – GPS-Freigabe prüfen.';
+        standortBanner.hidden = false;
+        erkannteBaustelle = null;
+      }
+    }, { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 });
+  }
+
+  standortUebernehmen.addEventListener('click', function () {
+    if (erkannteBaustelle) oeffneBaustelle(erkannteBaustelle);
+    standortBanner.hidden = true;
+  });
+
+  standortSchliessen.addEventListener('click', function () {
+    standortBanner.hidden = true;
+  });
+
+  ortungButton.addEventListener('click', function () { ermittleStandort(false); });
+
   // ---------- Start ----------
 
   zeigeDetailStufe();
-  renderAlleEintraege();
-  updateSendState();
-  input.focus();
+  zeigeTyp();
+  renderGruppen();
+  ermittleStandort(true);
 })();
