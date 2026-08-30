@@ -1,5 +1,5 @@
 {
-  "_datenstand": "Stand 2026-08-30. Erweitert nach einer Messung von 78 Baustellenwörtern gegen den Bestand; die Begründung steht je Wort. Am 30.08. sind zwei Einträge entfallen, die nur Schreibweise und Mehrzahl abdeckten — das erledigt jetzt der Wortstamm; siehe _entfallen.",
+  "_datenstand": "Stand 2026-08-30. Erweitert nach einer Messung von 78 Baustellenwörtern gegen den Bestand; die Begründung steht je Wort. Am 30.08. sind zwei Einträge entfallen, die nur Schreibweise und Mehrzahl abdeckten — das erledigt jetzt der Wortstamm; siehe _entfallen. Ebenfalls am 30.08. sind sieben Wörter dazugekommen, die auf den eigenen Gruppen- und Systemseiten stehen und im Katalog anders heißen.",
   "_hinweis": "Kundenwörter, die im Sortiment nicht vorkommen. Von Hand entschieden, Wort für Wort. Ein Suchwort ist kein Werbeversprechen: Es darf nur dorthin führen, wo der Artikel die Aufgabe tatsächlich erfüllt — was der Shop nicht führt, bleibt unauffindbar und wird nicht auf ein Ersatzprodukt umgeleitet. — Seit 29.08. trägt jede Ablehnung zwei Texte: `warum` begründet die redaktionelle Entscheidung gegenüber dem nächsten Lauf, `antwort` ist der Satz, den der Kunde auf der Suchseite liest. Zwei Fragen, zwei Texte.",
   "_gewicht": "Suchwörter zählen im Index als schwacher Treffer. Ein Artikel, der das Wort im eigenen Namen trägt, steht immer davor.",
   "_entfallen": [
@@ -346,6 +346,68 @@
         "POS-29461"
       ],
       "warum": "Langform von Klebespachtel. Der Suchindex trifft Wortmitten ab vier Zeichen, aber nicht über eine angehängte Endung hinweg."
+    },
+    {
+      "wort": "fassadenplatte",
+      "skus": [
+        "POS-12566",
+        "POS-12567",
+        "POS-12583"
+      ],
+      "warum": "Die Gruppenseite verspricht „EPS als Fassadenplatte\"; der Katalog schreibt „Fassaden EPS 2 cm\". Das längere Kundenwort findet das kürzere Katalogwort nicht — die Trefferregel geht nur vom kurzen zum langen."
+    },
+    {
+      "wort": "perimeterplatte",
+      "skus": [
+        "POS-12569",
+        "POS-12571",
+        "POS-12575",
+        "POS-12580"
+      ],
+      "warum": "Die Systemliste Kellerwand führt Position 2 als „Perimeterplatte XPS\". Geführt wird sie als „XPS glatt SF\" — dasselbe Erzeugnis, anderer Name."
+    },
+    {
+      "wort": "innenrohr",
+      "skus": [
+        "POS-12476"
+      ],
+      "warum": "Kaminseite und Systemliste sagen „Innenrohre mit Dämmung\"; der Katalog sagt „SIKM Rohr 133cm gedämmt 18\"."
+    },
+    {
+      "wort": "putztüranschluss",
+      "skus": [
+        "POS-12467"
+      ],
+      "warum": "Schreibweise ohne Paketzusatz. Der Katalog nennt es „Putztüranschlusspaket\"."
+    },
+    {
+      "wort": "putztürformteil",
+      "skus": [
+        "POS-12467"
+      ],
+      "warum": "So heißt es auf der Kaminseite. Ein Formteil ist es, ein Paket auch — der Kunde sucht nach dem Bauteil, nicht nach der Verpackung."
+    },
+    {
+      "wort": "klebemasse",
+      "skus": [
+        "POS-11283",
+        "POS-29461"
+      ],
+      "warum": "Der Katalog schreibt „Klebe- und Spachtelmasse\". Der Bindestrich trennt das Wort so, dass „Klebemasse\" nichts findet, obwohl es genau das ist."
+    },
+    {
+      "wort": "grundmauerschutzbahn",
+      "skus": [
+        "POS-21382"
+      ],
+      "warum": "Zwei Systemlisten nennen die Bahn so; der Katalog nennt sie „Grundmauerschutz 20 1,5 m\". Ohne dieses Wort findet die eigene Positionsliste den eigenen Artikel nicht."
+    },
+    {
+      "wort": "trittschalldämmplatte",
+      "skus": [
+        "POS-28415"
+      ],
+      "warum": "So nennt die Gruppenseite die Ware seit dem 30.08. Der Katalog schreibt „Isover TDPT\" — vier Buchstaben, die niemand tippt."
     }
   ],
   "_nichtAufgenommen": [

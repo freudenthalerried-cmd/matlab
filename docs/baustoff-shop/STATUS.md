@@ -502,10 +502,10 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > 787 vergleichbare Tests, kein Unterschied.
 > [`kommentare-im-schaufenster.md`](./kommentare-im-schaufenster.md).
 >
-> **Stand der Prüfmittel (30.08.):** 862 Tests, `pruefe-tests` 860/0, `pruefe-preise` 46/0, `pruefe-inhalte`
+> **Stand der Prüfmittel (30.08.):** 865 Tests, `pruefe-tests` 863/0, `pruefe-preise` 46/0, `pruefe-inhalte`
 > 24/355/0, `pruefe-seiten` 81 von 81 gebauten Seiten, `pruefe-widerrufe` 175 Dateien/48
 > Fundstellen, `pruefe-quellen` 6/6, `shopprobe` 49 (davon 10 im Rahmen),
-> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 179/179,
+> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 180/180,
 > `pruefe-pruefer` 11 Prüfer ohne Leerlauf, Website 81 Seiten ohne toten
 > Verweis.
 
@@ -873,6 +873,7 @@ zusammengefasst und im Verzeichnis nicht auffindbar:
 | `das-skript-starb-beim-laden.md` | Beim Nachmessen aufgefallen: Das Skript der Demoseite starb beim Laden — `rechtstexte.js` liest seit dem 29.08. den Warenkorbschlüssel aus `shopkern.js`, stand im Bündel aber elf Plätze davor. Niemand merkte es, weil die Probe eine `demo.html` vom 28.08. las. Reihenfolge wird jetzt gerechnet, beide Browserproben lehnen veraltete Erzeugnisse ab |
 | `die-startseite-sprang-ins-leere.md` | Der gestern eingebaute Sprungverweis hatte auf 80 von 81 Seiten ein Ziel — nicht auf der Startseite, weil der Anker an die Brotkrume gehängt war. Derselbe Zensus: `warenkorb`, `kasse` und `suche` tragen 43, 53 und 214 Zeichen eigenen Inhalt und standen in der Sitemap; sie tragen jetzt `noindex,follow` |
 | `sieben-positionen-von-zehn.md` | Zwei Systemseiten zählten im eigenen Antwortsatz falsch — „Sieben Positionen" über einer Tabelle mit zehn Zeilen, „vier" über sieben. Die fehlenden waren fast genau die, die in der Tabelle als „wird oft vergessen" markiert sind, und der Satz steht in Meta-Beschreibung, JSON-LD-Antwort und `llms.txt`. `pruefe-inhalte` zählt jetzt mit |
+| `was-die-gruppenseite-verspricht.md` | „bogen" fand nichts, obwohl der Shop zwei Kanalbögen führt — der Wortstamm vom Vortag stutzte das Kompositum, nicht die Frage. Dazu: Fünf Gruppenseiten versprachen Ware, die die Gruppe nicht führt (Mauermörtel, Planziegel, Anschlussformteil, Dübel, Trennlage), und acht Wörter der eigenen Positionslisten fanden im eigenen Katalog nichts |
 | `segment-arbeitsplatzmessung.md` | Nebenstrecke, kein eigenes Segment |
 | `strategie-modellvergleich.md` | Kapitalweg braucht ~900.000 €; enthält überholte Empfehlung |
 | `anschreiben-entwuerfe.md` | Drei Anschreiben (Hersteller, Großhändler, Partnerbetriebe), versandfertig, nicht versendet |

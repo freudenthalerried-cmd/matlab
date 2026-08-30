@@ -4,17 +4,17 @@ art: gruppe
 slug: mauerwerk
 gruppe: Mauerwerk
 frage: Welche Mauersteine führen wir?
-kurz: Planziegel für den Hochbau, palettenweise geliefert und mit Kran entladen. Steinformat und Wandstärke kommen aus der Planung, der zugehörige Mörtel aus demselben System wie der Stein.
+kurz: Hochlochziegel mit Nut und Feder für den Hochbau, derzeit ein Format, palettenweise geliefert und mit Kran entladen. Steinformat und Wandstärke kommen aus der Planung, der zugehörige Mörtel aus demselben System wie der Stein.
 verwandt: lagerung-von-sackware, warum-keine-gratislieferung
-stand: 2026-08-25
+stand: 2026-08-30
 ---
 
 # Mauerwerk
 
-**Die Antwort in zwei Sätzen.** Wir führen Planziegel für den Hochbau,
-palettenweise geliefert und mit Kran entladen. Steinformat und Wandstärke
-kommen aus der Planung; der zugehörige Mörtel gehört zum selben System wie
-der Stein.
+**Die Antwort in zwei Sätzen.** Wir führen Hochlochziegel mit Nut und Feder
+für den Hochbau — derzeit **ein** Format —, palettenweise geliefert und mit
+Kran entladen. Steinformat und Wandstärke kommen aus der Planung; der
+zugehörige Mörtel gehört zum selben System wie der Stein.
 
 ## Was bei der Bestellung zählt
 

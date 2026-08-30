@@ -1505,6 +1505,29 @@ function kundenformen(artikel, suchwoerter = []) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+function indexwoerter(text) {
+  return [...new Set([...wortstaemme(text), ...wortformen(text).map(normalisiere)])];
+}
+
+
+
+
+
+
+
+
+
 function baueSuchindex({ artikel = [], seiten = [], suchwoerter = [] } = {}) {
   const eintraege = [];
 
@@ -1518,9 +1541,9 @@ function baueSuchindex({ artikel = [], seiten = [], suchwoerter = [] } = {}) {
       sku: a.sku,
       vkNetto: a.vkNetto ?? null,
       einheit: a.einheit,
-      stark: wortstaemme(a.bezeichnung),
+      stark: indexwoerter(a.bezeichnung),
       schwach: [...new Set([
-        ...wortstaemme(`${a.gruppe} ${a.lieferantenArtikelnummer ?? ''}`),
+        ...indexwoerter(`${a.gruppe} ${a.lieferantenArtikelnummer ?? ''}`),
         ...kundenwoerter(a, suchwoerter),
       ])],
       
@@ -1538,8 +1561,8 @@ function baueSuchindex({ artikel = [], seiten = [], suchwoerter = [] } = {}) {
       titel: s.titel,
       zusatz: s.kurz ?? '',
       gruppe: s.gruppe ?? null,
-      stark: wortstaemme(`${s.titel} ${s.frage ?? ''}`),
-      schwach: wortstaemme(`${s.kurz ?? ''} ${s.text ?? ''}`),
+      stark: indexwoerter(`${s.titel} ${s.frage ?? ''}`),
+      schwach: indexwoerter(`${s.kurz ?? ''} ${s.text ?? ''}`),
     });
   }
 

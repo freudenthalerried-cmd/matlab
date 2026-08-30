@@ -5,15 +5,16 @@ slug: moertel
 vergleich: gebinde
 gruppe: Mörtel
 frage: Welche Mörtel führen wir, und worauf ist bei Sackware zu achten?
-kurz: Thermo- und Mauermörtel, Klebespachtel und Vergussmörtel, überwiegend von Baumit. Bei Sackware entscheidet neben dem Produkt die Lagerung: Bodenfeuchte macht zementgebundene Ware unbrauchbar, lange bevor man es sieht.
+kurz: Thermomörtel für das Mauerwerk, Klebespachtel und Vergussmörtel, überwiegend von Baumit; der Dünnbettmörtel für den Kamin steht bei den Kaminteilen. Bei Sackware entscheidet neben dem Produkt die Lagerung: Bodenfeuchte macht zementgebundene Ware unbrauchbar, lange bevor man es sieht.
 verwandt: lagerung-von-sackware, verarbeitung-bei-kaelte-und-naesse, wdvs-systemaufbau
-stand: 2026-08-25
+stand: 2026-08-30
 ---
 
 # Mörtel und Putze
 
-**Die Antwort in zwei Sätzen.** Wir führen Thermo- und Mauermörtel,
-Klebespachtel und Vergussmörtel, überwiegend von Baumit. Bei Sackware
+**Die Antwort in zwei Sätzen.** Wir führen Thermomörtel für das Mauerwerk,
+Klebespachtel und Vergussmörtel, überwiegend von Baumit; der Dünnbettmörtel
+für den Kamin steht bei den Kaminteilen. Bei Sackware
 entscheidet neben dem Produkt die Lagerung: Bodenfeuchte macht zementgebundene
 Ware unbrauchbar, lange bevor man es sieht.
 

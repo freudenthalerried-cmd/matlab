@@ -73,7 +73,7 @@ function vereinheitlicheMasse(text) {
  * Jetzt gibt es eine Normalform: Umlaut und Digraph fallen auf denselben
  * Vokal. „mörtel", „moertel" und „mortel" werden zu `mortel`.
  */
-function normalisiere(wort) {
+export function normalisiere(wort) {
   return wort
     .replace(/ä/g, 'a').replace(/ö/g, 'o').replace(/ü/g, 'u').replace(/ß/g, 'ss')
     .replace(/ae/g, 'a').replace(/oe/g, 'o').replace(/ue/g, 'u');
@@ -214,6 +214,29 @@ export function kundenformen(artikel, suchwoerter = []) {
 }
 
 /**
+ * Die Wörter **des Index** — Stamm und ungestutzte Normalform.
+ *
+ * **Gemessen am 30.08.**, einen Tag nach dem Wortstamm: „bogen" fand nichts,
+ * obwohl der Shop zwei *PVC Kanalbögen* führt. Vorher fand es beide.
+ *
+ * Der Grund ist eine Unsymmetrie der Mindeststammlänge. Sie gilt für das
+ * ganze Wort: `kanalbogen` verliert sein `-en` (es bleiben acht Zeichen),
+ * das alleinstehende `bogen` behält es (`bog` wäre zu kurz). Die Suche findet
+ * ein kürzeres Wort in einem längeren — aber `kanalbog` enthält `bogen` nicht
+ * mehr.
+ *
+ * > **Der Stamm hilft der Beugung und schadet dem Wortteil.**
+ *
+ * Deshalb trägt der **Index** beides: den Stamm für die Beugung und die
+ * ungestutzte Normalform für den Wortteil. Die **Frage** trägt weiterhin nur
+ * den Stamm — dort müssen alle Wörter treffen, und zwei Formen desselben
+ * Wortes wären zwei Bedingungen statt einer.
+ */
+export function indexwoerter(text) {
+  return [...new Set([...wortstaemme(text), ...wortformen(text).map(normalisiere)])];
+}
+
+/**
  * Baut den Suchindex.
  *
  * Jeder Eintrag trägt sein Gewicht mit: Ein Treffer in der Bezeichnung wiegt
@@ -234,9 +257,9 @@ export function baueSuchindex({ artikel = [], seiten = [], suchwoerter = [] } = 
       sku: a.sku,
       vkNetto: a.vkNetto ?? null,
       einheit: a.einheit,
-      stark: wortstaemme(a.bezeichnung),
+      stark: indexwoerter(a.bezeichnung),
       schwach: [...new Set([
-        ...wortstaemme(`${a.gruppe} ${a.lieferantenArtikelnummer ?? ''}`),
+        ...indexwoerter(`${a.gruppe} ${a.lieferantenArtikelnummer ?? ''}`),
         ...kundenwoerter(a, suchwoerter),
       ])],
       // Ungestutzt, allein für „Meinten Sie" — siehe `wortformen`.
@@ -254,8 +277,8 @@ export function baueSuchindex({ artikel = [], seiten = [], suchwoerter = [] } = 
       titel: s.titel,
       zusatz: s.kurz ?? '',
       gruppe: s.gruppe ?? null,
-      stark: wortstaemme(`${s.titel} ${s.frage ?? ''}`),
-      schwach: wortstaemme(`${s.kurz ?? ''} ${s.text ?? ''}`),
+      stark: indexwoerter(`${s.titel} ${s.frage ?? ''}`),
+      schwach: indexwoerter(`${s.kurz ?? ''} ${s.text ?? ''}`),
     });
   }
 

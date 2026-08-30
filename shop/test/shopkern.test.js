@@ -6,7 +6,7 @@ import {
   wortstaemme, baueSuchindex, suche, sortiere, filtere, filterwerte, vorteil,
   ladeKorb, speichereKorb, legeInKorb, setzeMenge, korbPositionen, bereinige,
   kundenWarenkorb, oeffentlicherArtikel, oeffentlicherLieferant, kundenwoerter,
-  abstand, erlaubterAbstand, meintenSie, KORBSCHLUESSEL, stamm,
+  abstand, erlaubterAbstand, meintenSie, KORBSCHLUESSEL, stamm, indexwoerter,
 } from '../src/shopkern.js';
 import { berechneWarenkorb } from '../src/warenkorb.js';
 import { kalkuliere } from '../src/preis.js';
@@ -654,6 +654,124 @@ test('zwei Registereinträge sind entfallen — der Wortstamm deckt sie ab', () 
     assert.deepEqual(treffer.map((t) => t.sku), ['POS-29610'], `„${wort}" findet die Rondelle nicht mehr`);
   }
   assert.equal(suchwoerterDatei._entfallen.length, 2, 'die Streichung ist nicht begründet');
+});
+
+/**
+ * Was der Antwortsatz einer Gruppenseite verspricht — Wort für Wort, von
+ * Hand, wie das Kundenwörter-Register.
+ *
+ * Eine maschinelle Auslese scheitert hier: „Auswahl", „Einbauort" und
+ * „Wärmeschutznachweis" stehen in denselben Sätzen und sind keine Ware. Was
+ * ein Warenwort ist, entscheidet ein Mensch; dass es einlösbar ist, prüft
+ * diese Liste.
+ *
+ * Steht eine zweite Gruppe dabei, sagt der Satz das ausdrücklich — die Ware
+ * gehört dann in die andere Gruppe, und die Seite verweist dorthin.
+ */
+const GRUPPENDATEI = new Map([
+  ['Dämmung', 'daemmung'], ['Kamin', 'kamin'], ['Kanal', 'kanal'], ['Mauerwerk', 'mauerwerk'],
+  ['Mörtel', 'moertel'], ['WDVS', 'wdvs'], ['Zubehör', 'zubehoer'],
+]);
+
+const GRUPPENVERSPRECHEN = [
+  { gruppe: 'Dämmung', wort: 'XPS' },
+  { gruppe: 'Dämmung', wort: 'Fassadenplatte' },
+  { gruppe: 'Dämmung', wort: 'Trittschalldämmplatte' },
+  { gruppe: 'Dämmung', wort: 'Folie', findetIn: 'Zubehör' },
+  { gruppe: 'Kamin', wort: 'Fertigfuß' },
+  { gruppe: 'Kamin', wort: 'Mantelstein' },
+  { gruppe: 'Kamin', wort: 'Innenrohr' },
+  { gruppe: 'Kamin', wort: 'Putztüranschluss' },
+  { gruppe: 'Kamin', wort: 'Zuluft' },
+  { gruppe: 'Kamin', wort: 'Trennstein' },
+  { gruppe: 'Kamin', wort: 'Regenhaube' },
+  { gruppe: 'Kanal', wort: 'Kanalrohr' },
+  { gruppe: 'Kanal', wort: 'Bogen' },
+  { gruppe: 'Kanal', wort: 'Abzweiger' },
+  { gruppe: 'Kanal', wort: 'Schachtring' },
+  { gruppe: 'Kanal', wort: 'Grundmauerschutz' },
+  { gruppe: 'Mauerwerk', wort: 'Hochlochziegel' },
+  { gruppe: 'Mörtel', wort: 'Thermomörtel' },
+  { gruppe: 'Mörtel', wort: 'Klebespachtel' },
+  { gruppe: 'Mörtel', wort: 'Vergussmörtel' },
+  { gruppe: 'Mörtel', wort: 'Dünnbettmörtel', findetIn: 'Kamin' },
+  { gruppe: 'WDVS', wort: 'Klebemasse', nichtWoertlich: 'Die Seite schreibt „Klebe- und Spachtelmassen"; ein Kunde tippt das Wort ganz.' },
+  { gruppe: 'WDVS', wort: 'Spachtelmasse' },
+  { gruppe: 'WDVS', wort: 'Glasgewebe' },
+  { gruppe: 'WDVS', wort: 'Dübel' },
+  { gruppe: 'WDVS', wort: 'Kantenschutz' },
+  { gruppe: 'WDVS', wort: 'Putzgrund' },
+  { gruppe: 'WDVS', wort: 'Oberputz' },
+  { gruppe: 'Zubehör', wort: 'Schaum' },
+  { gruppe: 'Zubehör', wort: 'Klebeband' },
+  { gruppe: 'Zubehör', wort: 'Schraube' },
+  { gruppe: 'Zubehör', wort: 'Folie' },
+];
+
+test('was der Antwortsatz einer Gruppenseite nennt, führt die Gruppe auch', () => {
+  // **Gemessen am 30.08.** Fünf der sieben Gruppenseiten versprachen Ware,
+  // die dort nicht steht: „Planziegel" (geführt wird ein Hochlochziegel),
+  // „Mauermörtel" (nicht im Sortiment), „Anschlussformteile" für den Kamin
+  // (nicht im Sortiment), „Dübel" beim Zubehör (stehen unter WDVS),
+  // „Trennlagen" bei der Dämmung (steht als Folie beim Zubehör).
+  //
+  // Diese Sätze stehen als Meta-Beschreibung, als JSON-LD-Antwort und in
+  // `llms.txt`. Ein Kunde, der auf „Mörtel" klickt und Mauermörtel sucht,
+  // bekam ein Versprechen, das die Gruppe nicht hält.
+  const index = bestandsindex();
+  assert.ok(GRUPPENVERSPRECHEN.length >= 30, `nur ${GRUPPENVERSPRECHEN.length} Versprechen geprüft`);
+  for (const { gruppe, wort, findetIn } of GRUPPENVERSPRECHEN) {
+    const treffer = suche(index, wort).filter((t) => t.art === 'artikel');
+    assert.ok(treffer.length > 0, `„${wort}" (${gruppe}) findet keinen Artikel`);
+    const soll = findetIn ?? gruppe;
+    assert.ok(treffer.some((t) => t.gruppe === soll),
+      `„${wort}" findet nur ${[...new Set(treffer.map((t) => t.gruppe))].join('/')}, erwartet ${soll}`);
+  }
+});
+
+test('die Versprechensliste steht wirklich auf den Seiten', () => {
+  // **Die Grenze der Probe darüber**, benannt und so weit wie möglich
+  // geschlossen: Sie prüft eine von Hand geführte Liste, nicht den Satz auf
+  // der Seite. Schriebe jemand „Mauermörtel" zurück in den Antwortsatz, ohne
+  // die Liste anzufassen, bliebe sie stumm.
+  //
+  // Dagegen hilft die Gegenrichtung: Jedes Wort der Liste muss im
+  // Antwortsatz seiner Seite wirklich vorkommen. Damit kann die Liste nicht
+  // zur Erzählung werden, die neben den Seiten herläuft. Was sie **nicht**
+  // leistet: neue Wörter im Satz bemerken. Dafür bräuchte es ein Wörterbuch,
+  // das Ware von Nichtware trennt — „Auswahl", „Einbauort" und
+  // „Wärmeschutznachweis" stehen in denselben Sätzen.
+  for (const { gruppe, wort, nichtWoertlich } of GRUPPENVERSPRECHEN) {
+    if (nichtWoertlich) continue;
+    const datei = pfad(`../inhalte/gruppen/${GRUPPENDATEI.get(gruppe)}.md`);
+    const text = readFileSync(datei, 'utf8');
+    const anfang = text.indexOf('Die Antwort in zwei Sätzen');
+    assert.ok(anfang > 0, `${gruppe}: kein Antwortabsatz`);
+    const staemme = new Set(wortstaemme(text.slice(anfang, text.indexOf('\n\n', anfang))));
+    assert.ok(staemme.has(stamm(wort.toLowerCase())),
+      `„${wort}" steht nicht im Antwortsatz der Gruppe ${gruppe}`);
+  }
+});
+
+test('ein Wortteil findet das Kompositum auch nach dem Stutzen', () => {
+  // **Der Befund vom 30.08.**, einen Tag nach dem Wortstamm: „bogen" fand
+  // nichts, obwohl der Shop zwei PVC Kanalbögen führt — vorher fand es beide.
+  //
+  // Die Mindeststammlänge gilt für das ganze Wort: `kanalbogen` verliert sein
+  // `-en`, das alleinstehende `bogen` behält es, weil `bog` zu kurz wäre. Und
+  // `kanalbog` enthält `bogen` nicht mehr. Der Stamm half der Beugung und
+  // schadete dem Wortteil.
+  const index = bestandsindex();
+  const skus = (frage) => suche(index, frage).filter((t) => t.art === 'artikel').map((t) => t.sku).sort();
+  const bogen = skus('bogen');
+  assert.ok(bogen.length >= 2, `„bogen" findet ${bogen.length} Artikel`);
+  assert.deepEqual(skus('kanalbogen'), bogen, 'das ganze Wort findet dasselbe');
+  assert.deepEqual(skus('kanalbögen'), bogen, 'und die Mehrzahl auch');
+  // Der Index trägt beides, die Frage nur den Stamm:
+  const drin = indexwoerter('PVC Kanalbogen NW 100 45 grad');
+  assert.ok(drin.includes('kanalbog'), 'der Stamm fehlt im Index');
+  assert.ok(drin.includes('kanalbogen'), 'die ungestutzte Form fehlt im Index');
+  assert.deepEqual(wortstaemme('kanalbogen'), ['kanalbog'], 'die Frage trägt nur den Stamm');
 });
 
 test('der Wortstamm schneidet keine Wortstämme an', () => {

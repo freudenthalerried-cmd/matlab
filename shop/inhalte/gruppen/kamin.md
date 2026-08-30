@@ -4,17 +4,18 @@ art: gruppe
 slug: kamin
 gruppe: Kamin
 frage: Welche Kaminbauteile führen wir, und was gehört zu einem vollständigen Zug?
-kurz: Systemteile für einzügige Schiedel-Kamine: Fertigfuß, Mantelsteine, gedämmte Innenrohre, Anschluss- und Putztürformteile, Zuluft, Trennstein und Regenhaube. Teile eines Systems werden nicht mit denen eines anderen gemischt: Geprüft wird die Kombination, nicht das Einzelteil.
+kurz: Systemteile für einzügige Schiedel-Kamine: Fertigfuß, Mantelsteine, gedämmte Innenrohre, Putztüranschluss, Zuluft, Trennstein und Regenhaube — das Anschlussformteil der Feuerstätte steht auf der Stückliste, aber nicht im Regal. Teile eines Systems werden nicht mit denen eines anderen gemischt: Geprüft wird die Kombination, nicht das Einzelteil.
 verwandt: kaminzug-aufbau, was-fehlt-haelt-die-baustelle-auf
 system: kaminzug
-stand: 2026-08-25
+stand: 2026-08-30
 ---
 
 # Kaminsystem
 
 **Die Antwort in zwei Sätzen.** Wir führen Systemteile für einzügige
-Schiedel-Kamine: Fertigfuß, Mantelsteine, gedämmte Innenrohre, Anschluss- und
-Putztürformteile, Zuluft, Trennstein und Regenhaube. Teile eines Systems
+Schiedel-Kamine: Fertigfuß, Mantelsteine, gedämmte Innenrohre,
+Putztüranschluss, Zuluft, Trennstein und Regenhaube — das Anschlussformteil
+der Feuerstätte steht auf der Stückliste, aber nicht im Regal. Teile eines Systems
 werden nicht mit denen eines anderen gemischt: Geprüft wird die Kombination,
 nicht das Einzelteil — welche Kombination das ist, steht in den
 Systemunterlagen des jeweiligen Kamins.

@@ -103,6 +103,11 @@ Er wird hier genannt, damit ihn niemand später als Fehler meldet:
 - **`ue` fällt mit `ü` zusammen.** Aus „Mauer" wird `maur`, aus „Feuer"
   `feur`. Das ist der Preis dafür, dass „duebel" den Dübel findet — und er
   trifft Index und Frage gleich, verliert also keinen Treffer.
+- **Ein Wortteil am Ende eines Kompositums.** Nachgetragen am selben Tag:
+  „bogen" fand die *Kanalbögen* nicht mehr, weil der Index sie auf `kanalbog`
+  stutzte und die kurze Frage ihr `-en` behielt. Der Index trägt seither
+  beides, Stamm und ungestutzte Normalform; siehe
+  [`was-die-gruppenseite-verspricht.md`](./was-die-gruppenseite-verspricht.md).
 - **Die bloße `-n`-Endung fällt nicht.** „mit Dübeln" bleibt ungefunden.
   Snowball kennt sie nicht, und sie einzeln nachzurüsten hieße, eine Regel
   ohne Messung einzubauen — siehe die Tabelle oben.
