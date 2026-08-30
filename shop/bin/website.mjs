@@ -1081,6 +1081,7 @@ function sucheSeite(verweis) {
   return {
     titel: 'Suche',
     kurz: 'Suche im Sortiment und in den Fachseiten.',
+    nurBedienung: true,
     html: `<p class="krume"><a href="${verweis('index')}">Start</a> › Suche</p>
 <h1>Suche</h1>
 <p class="lede" id="suche-kopf">Geben Sie oben einen Suchbegriff ein.</p>
@@ -1096,6 +1097,7 @@ function warenkorbSeite(verweis) {
   return {
     titel: 'Warenkorb',
     kurz: 'Der Warenkorb mit Warenwert, Fracht und Umsatzsteuer, getrennt ausgewiesen.',
+    nurBedienung: true,
     html: `<p class="krume"><a href="${verweis('index')}">Start</a> › Warenkorb</p>
 <h1>Warenkorb</h1>
 <noscript><p class="antwort">Der Warenkorb braucht JavaScript.</p></noscript>
@@ -1108,6 +1110,7 @@ function kasseSeite(verweis) {
   return {
     titel: 'Lieferadresse und Zahlung',
     kurz: 'Lieferbezirk und Zahlweg — die Bestellung wird durchgerechnet, aber nicht ausgelöst.',
+    nurBedienung: true,
     html: `<p class="krume"><a href="${verweis('index')}">Start</a> ›
 <a href="${verweis('warenkorb')}">Warenkorb</a> › Lieferung und Zahlung</p>
 <h1>Lieferung und Zahlung</h1>
@@ -1494,17 +1497,70 @@ Warengruppen in der Kopfleiste.</p></noscript>
   const ld = seite.jsonLd
     ? `\n<script type="application/ld+json">${JSON.stringify(seite.jsonLd, null, 0)}</script>`
     : '';
+/**
+ * Drei Seiten, die nichts zu sagen haben — und es jetzt auch sagen.
+ *
+ * **Gemessen am 30.08.** an allen 81 gebauten Seiten: eigener Inhalt ohne
+ * Kopfleiste, Brotkrume und Fußzeile. `warenkorb.html` trägt **43 Zeichen**
+ * („Warenkorb. Der Warenkorb braucht JavaScript."), `kasse.html` 53,
+ * `suche.html` 214. Die nächstdünnere Seite hat 1.173 — dazwischen liegt
+ * kein Übergang, sondern eine Kante.
+ *
+ * Alle drei standen in der `sitemap.xml`. Eine Sitemap ist aber eine
+ * Behauptung: *Diese Seiten lohnen die Aufnahme.* Für einen Warenkorb, der
+ * je Besucher anders aussieht und ohne Skript leer ist, stimmt sie nicht —
+ * weder für eine Suchmaschine noch für das Sprachmodell, für dessen
+ * Auffindbarkeit dieser Shop gebaut wird.
+ *
+ * `noindex,follow` statt `noindex`: Die Verweise auf diesen Seiten sollen
+ * weiterverfolgt werden, nur die Seite selbst gehört nicht in den Index.
+ */
+function bedienhinweis(seite) {
+  return seite.nurBedienung ? '\n<meta name="robots" content="noindex,follow">' : '';
+}
+
+/**
+ * Das Ziel des Sprungverweises — vor dem ersten eigenen Inhalt der Seite.
+ *
+ * **Berichtigt am 30.08.** Hier stand
+ * `koerper.replace('<p class="krume">', …)`: Der Anker wurde vor die
+ * Brotkrume gesetzt. Das traf 80 von 81 Seiten — und ausgerechnet die
+ * Startseite nicht, denn die trägt keine Brotkrume. Ihr Sprungverweis
+ * „Zum Inhalt springen" zeigte auf ein `#inhalt`, das es dort nicht gibt.
+ *
+ * Die erste Seite, die ein Besucher sieht, war die einzige ohne Ziel. Genau
+ * die Sorte Befund, die eine Stichprobe nicht findet: Neun ausgesuchte
+ * Seiten hätten neunmal grün gemeldet.
+ *
+ * Der erste Anlauf setzte den Anker bei fehlender Brotkrume an den Anfang
+ * des Körpers — also **vor** den Sprungverweis selbst. Damit gab es zwar ein
+ * Ziel, aber der Sprung übersprang nichts: Kopfleiste, Suchfeld und Menü
+ * blieben dahinter. Ein Sprungverweis, der auf den Punkt vor sich selbst
+ * zeigt, ist schlimmer als keiner, weil er behauptet, etwas zu tun.
+ *
+ * Der Anker gehört hinter die Kopfleiste — dort, wo der eigene Inhalt der
+ * Seite beginnt. Das ist auf allen 81 Seiten dieselbe Stelle, mit und ohne
+ * Brotkrume, und braucht keine Fallunterscheidung mehr.
+ */
+function sprungziel(koerper) {
+  const anker = '<div id="inhalt" tabindex="-1"></div>';
+  if (!koerper.includes('</header>')) {
+    throw new Error('Seite ohne Kopfleiste — das Ziel des Sprungverweises ist unbestimmt.');
+  }
+  return koerper.replace('</header>', `</header>${anker}`);
+}
+
   return `<!doctype html>
 <html lang="de-AT">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(seite.titel)} — ${esc(FIRMA)}</title>
-<meta name="description" content="${esc(seite.kurz.slice(0, 300))}">
+<meta name="description" content="${esc(seite.kurz.slice(0, 300))}">${bedienhinweis(seite)}
 ${SCHRIFTEINBINDUNG}<style>${stil()}</style>${ld}
 </head>
 <body><div class="huelle">
-${koerper.replace('<p class="krume">', '<div id="inhalt" tabindex="-1"></div><p class="krume">')}
+${sprungziel(koerper)}
 </div>
 ${shopskript}
 </body>
@@ -1897,7 +1953,8 @@ function main() {
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${[...dateiSeiten.keys()].map((id) => `  <url><loc>${BASIS}/${id}.html</loc></url>`).join('\n')}
+${[...dateiSeiten.entries()].filter(([, seite]) => !seite.nurBedienung)
+    .map(([id]) => `  <url><loc>${BASIS}/${id}.html</loc></url>`).join('\n')}
 </urlset>
 `;
   writeFileSync(join(site, 'sitemap.xml'), sitemap, 'utf8');

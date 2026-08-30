@@ -502,10 +502,10 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > 787 vergleichbare Tests, kein Unterschied.
 > [`kommentare-im-schaufenster.md`](./kommentare-im-schaufenster.md).
 >
-> **Stand der Prüfmittel (30.08.):** 855 Tests, `pruefe-tests` 853/0, `pruefe-preise` 46/0, `pruefe-inhalte`
+> **Stand der Prüfmittel (30.08.):** 857 Tests, `pruefe-tests` 855/0, `pruefe-preise` 46/0, `pruefe-inhalte`
 > 24/355/0, `pruefe-seiten` 81 von 81 gebauten Seiten, `pruefe-widerrufe` 175 Dateien/48
 > Fundstellen, `pruefe-quellen` 6/6, `shopprobe` 49 (davon 10 im Rahmen),
-> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 177/177,
+> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 178/178,
 > `pruefe-pruefer` 11 Prüfer ohne Leerlauf, Website 81 Seiten ohne toten
 > Verweis.
 
@@ -871,6 +871,7 @@ zusammengefasst und im Verzeichnis nicht auffindbar:
 | `eine-llms-txt-nicht-zwei.md` | Dieselbe Frage an die Nachbardatei: Die `llms.txt` des Veröffentlichungswerkzeugs war 149 Bytes lang, die gebaute 15.687 — `seiten: []` ließ genau die Abschnitte weg, für die der Shop gebaut ist. Veröffentlicht wird jetzt, was der Bau erzeugt; fehlt er, bricht das Werkzeug ab |
 | `der-kunde-tippt-den-plural.md` | 31 von 35 Wortpaaren verloren beim Wechsel in die Mehrzahl **jeden** Treffer — „schornsteine", „abflussrohre", „spachtelmassen": null. Ein Wortstamm je Wort behebt es; von drei eingebauten Sperren hat die Gegenprobe zwei widerlegt, und zwei Registereinträge sind dadurch entfallen |
 | `das-skript-starb-beim-laden.md` | Beim Nachmessen aufgefallen: Das Skript der Demoseite starb beim Laden — `rechtstexte.js` liest seit dem 29.08. den Warenkorbschlüssel aus `shopkern.js`, stand im Bündel aber elf Plätze davor. Niemand merkte es, weil die Probe eine `demo.html` vom 28.08. las. Reihenfolge wird jetzt gerechnet, beide Browserproben lehnen veraltete Erzeugnisse ab |
+| `die-startseite-sprang-ins-leere.md` | Der gestern eingebaute Sprungverweis hatte auf 80 von 81 Seiten ein Ziel — nicht auf der Startseite, weil der Anker an die Brotkrume gehängt war. Derselbe Zensus: `warenkorb`, `kasse` und `suche` tragen 43, 53 und 214 Zeichen eigenen Inhalt und standen in der Sitemap; sie tragen jetzt `noindex,follow` |
 | `segment-arbeitsplatzmessung.md` | Nebenstrecke, kein eigenes Segment |
 | `strategie-modellvergleich.md` | Kapitalweg braucht ~900.000 €; enthält überholte Empfehlung |
 | `anschreiben-entwuerfe.md` | Drei Anschreiben (Hersteller, Großhändler, Partnerbetriebe), versandfertig, nicht versendet |

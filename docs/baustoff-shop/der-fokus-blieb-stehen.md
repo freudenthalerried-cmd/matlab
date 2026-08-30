@@ -37,6 +37,13 @@ Seite. Vor dem Inhalt stehen Logo, Suchfeld, Warenkorb und neun
 Navigationsverweise; ohne diesen einen läuft ein Tastaturkunde sie auf jeder
 Seite durch. Sichtbar wird er erst, wenn er den Fokus hat.
 
+> **Berichtigt am 30.08.:** „auf jeder Seite" stimmte für den Verweis, nicht
+> für sein Ziel. Der Anker hing an der Brotkrume, und die Startseite hat
+> keine — dort sprang der Verweis ins Leere. 80 von 81. Das Szenario prüfte
+> eine Seite mit Brotkrume und meldete grün. Behoben und als Zensus über alle
+> 81 Seiten festgehalten:
+> [`die-startseite-sprang-ins-leere.md`](./die-startseite-sprang-ins-leere.md).
+
 ## Zwei Berichtigungen an mir selbst
 
 **Erstens ein falscher Kommentar.** Ich hatte geschrieben, die Zweitregel für
@@ -67,6 +74,11 @@ Zwei Browserszenarien, 49 insgesamt:
 | Sprungverweis | Ziel vorhanden, ruhend bei −9999 px, fokussiert bei 0 px |
 
 Gegengeprobt durch Entfernen des Sprungverweises: Das Szenario fällt.
+
+**Nachtrag vom 30.08.:** „Ziel vorhanden" prüfte dieses Szenario an *einer*
+Seite. Genau darin lag der Fehler — auf der Startseite gab es keines. Die
+Reihenfolge Verweis → Kopfleiste → Ziel wird jetzt auf allen 81 gebauten
+Seiten geprüft, nicht mehr an einem Beispiel.
 
 ## Was nicht nötig war
 

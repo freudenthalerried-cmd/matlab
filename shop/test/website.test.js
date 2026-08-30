@@ -790,7 +790,7 @@ test('die ausgelieferte robots.txt trägt die entschiedene Krawlerregel', () => 
   assert.match(txt, /User-agent: \*\nAllow: \//);
 });
 
-test('die sitemap.xml nennt jede gebaute Seite und keine, die es nicht gibt', () => {
+test('jede gebaute Seite steht in der sitemap — oder trägt noindex', () => {
   const sitemap = pfad('../ausgabe/site/sitemap.xml');
   const wurzel = pfad('../ausgabe/site');
   if (!existsSync(sitemap)) return;
@@ -806,6 +806,83 @@ test('die sitemap.xml nennt jede gebaute Seite und keine, die es nicht gibt', ()
   };
   gehe(wurzel);
   assert.ok(gebaut.size >= 40, `nur ${gebaut.size} Seiten gebaut`);
-  assert.deepEqual([...gebaut].filter((k) => !genannt.has(k)).sort(), [], 'gebaut, aber nicht in der sitemap');
   assert.deepEqual([...genannt].filter((k) => !gebaut.has(k)).sort(), [], 'in der sitemap, aber nicht gebaut');
+
+  // **Ergänzt am 30.08.** Bis dahin verlangte dieser Test, dass *jede*
+  // gebaute Seite in der Sitemap steht. Gemessen an allen 81 Seiten trugen
+  // drei davon 43, 53 und 214 Zeichen eigenen Inhalt — Warenkorb, Kasse,
+  // Suche, also Bedienoberflächen, die ohne Skript leer sind. Eine Sitemap
+  // ist eine Behauptung: Diese Seiten lohnen die Aufnahme.
+  //
+  // Die Lücke bleibt trotzdem verboten. Wer nicht in der Sitemap steht, muss
+  // ausdrücklich `noindex` tragen — Vergessen sieht sonst aus wie Absicht.
+  const fehlend = [...gebaut].filter((k) => !genannt.has(k)).sort();
+  assert.equal(fehlend.length, 3, `${fehlend.length} Seiten fehlen in der sitemap, erwartet sind drei`);
+  assert.deepEqual(fehlend, ['kasse', 'suche', 'warenkorb'],
+    'die Liste der ausgenommenen Seiten hat sich geändert — nachmessen');
+  for (const id of fehlend) {
+    const html = readFileSync(join(wurzel, `${id}.html`), 'utf8');
+    assert.match(html, /<meta name="robots" content="noindex,follow">/,
+      `${id} steht weder in der sitemap noch trägt es noindex`);
+  }
+});
+
+test('keine Seite mit eigenem Inhalt trägt noindex', () => {
+  // Die Gegenrichtung, und die gefährlichere: Ein `noindex` an der falschen
+  // Seite nimmt sie aus jeder Suche — still, ohne Fehlermeldung.
+  const wurzel = pfad('../ausgabe/site');
+  if (!existsSync(wurzel)) return;
+  const gemessen = [];
+  const gehe = (o, vor = '') => {
+    for (const e of readdirSync(o, { withFileTypes: true })) {
+      if (e.isDirectory()) gehe(join(o, e.name), `${vor}${e.name}/`);
+      else if (e.name.endsWith('.html')) {
+        const html = readFileSync(join(o, e.name), 'utf8');
+        const a = html.indexOf('<div id="inhalt"');
+        const b = html.indexOf('<footer');
+        assert.ok(a > 0 && b > a, `${vor}${e.name}: ohne Anker und Fußzeile ist der eigene Inhalt nicht abgrenzbar`);
+        const eigen = html.slice(a, b)
+          .replace(/<script[\s\S]*?<\/script>/g, '')
+          .replace(/<p class="krume">[\s\S]*?<\/p>/, '')
+          .replace(/<[^>]+>/g, ' ').replace(/&[a-z]+;/g, ' ').replace(/\s+/g, ' ').trim();
+        gemessen.push({ id: vor + e.name.slice(0, -5), laenge: eigen.length, noindex: html.includes('noindex') });
+      }
+    }
+  };
+  gehe(wurzel);
+  assert.ok(gemessen.length >= 40, `nur ${gemessen.length} Seiten gemessen`);
+  for (const s of gemessen) {
+    if (s.noindex) assert.ok(s.laenge < 500, `${s.id} trägt noindex, hat aber ${s.laenge} Zeichen eigenen Inhalt`);
+    else assert.ok(s.laenge >= 500, `${s.id} steht im Index, trägt aber nur ${s.laenge} Zeichen`);
+  }
+});
+
+test('der Sprungverweis hat auf jeder Seite ein Ziel hinter der Kopfleiste', () => {
+  // **Der Befund vom 30.08.:** Der Anker wurde vor die Brotkrume gesetzt —
+  // das traf 80 von 81 Seiten. Die Startseite hat keine Brotkrume, also kein
+  // Ziel; „Zum Inhalt springen" führte dort ins Leere. Die eine Seite, die
+  // jeder Besucher zuerst sieht.
+  //
+  // Der zweite Anlauf setzte den Anker bei fehlender Brotkrume an den Anfang
+  // und damit vor den Sprungverweis selbst: ein Ziel, das nichts
+  // überspringt. Geprüft wird deshalb die Reihenfolge, nicht die Existenz.
+  const wurzel = pfad('../ausgabe/site');
+  if (!existsSync(wurzel)) return;
+  const seiten = [];
+  const gehe = (o, vor = '') => {
+    for (const e of readdirSync(o, { withFileTypes: true })) {
+      if (e.isDirectory()) gehe(join(o, e.name), `${vor}${e.name}/`);
+      else if (e.name.endsWith('.html')) seiten.push({ id: vor + e.name.slice(0, -5), html: readFileSync(join(o, e.name), 'utf8') });
+    }
+  };
+  gehe(wurzel);
+  assert.ok(seiten.length >= 40, `nur ${seiten.length} Seiten`);
+  for (const { id, html } of seiten) {
+    const verweis = html.indexOf('href="#inhalt"');
+    const kopfEnde = html.indexOf('</header>');
+    const ziel = html.indexOf('id="inhalt"');
+    assert.ok(verweis >= 0, `${id} hat keinen Sprungverweis`);
+    assert.ok(ziel > kopfEnde && kopfEnde > verweis,
+      `${id}: das Ziel liegt nicht hinter der Kopfleiste`);
+  }
 });
