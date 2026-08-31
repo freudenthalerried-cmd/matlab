@@ -102,6 +102,43 @@ Jede Gegenprobe in diesem Vorhaben läuft ab jetzt über dieses Werkzeug oder
 nennt ausdrücklich, warum nicht. Der Aufwand ist dieselbe eine Zeile; der
 Unterschied ist, dass ein misslungener Versuch **laut** ist statt grün.
 
+## Nachgeprüft: Halten die Zusicherungen von heute?
+
+Das Werkzeug zu bauen war die halbe Antwort. Die andere Hälfte ist die Frage,
+die es aufwirft: **Welche der heutigen Zusicherungen ruhen auf Gegenproben,
+die vielleicht nie angekommen sind?** Drei sind mir aufgefallen; ob es nur
+drei waren, wusste ich nicht.
+
+Sechs der wichtigsten noch einmal gelaufen, diesmal über `gegenprobe`:
+
+| Zusicherung | Mutation | Ergebnis |
+|---|---|---|
+| Gebindeschritt für Längenware | `LFM` aus `mengenschritt` entfernt | **bestanden** |
+| GTIN-Prüfziffer | Prüfziffer falsch gerechnet | **bestanden** |
+| Vorratszusagen auf den Seiten | Regel abgeschaltet | **bestanden** |
+| Ziel-URL der Anzeigen | Anzeigepfad wieder als Ziel | **bestanden** |
+| Budgetkonzentration | Budget wieder auf sechs Gruppen | **bestanden** |
+| Ortsangabe aus dem Liefergebiet | wieder Landschaftsname | **bestanden** |
+
+Alle sechs halten. Das Verzeichnis ist danach unverändert — geprüft, nicht
+angenommen.
+
+### Ein Nutzungsdetail, das nicht offensichtlich ist
+
+Die drei Kampagnenproben brauchen einen **Bauschritt** zwischen Mutation und
+Test: Die CSV-Dateien müssen mit dem veränderten Code neu erzeugt werden,
+sonst prüft der Test die Ausgabe von vorhin.
+
+```
+npm run gegenprobe -- bin/kampagne.mjs such.txt ersatz.txt \
+  -- sh -c "npm run kampagne >/dev/null 2>&1; node --test test/kampagne.test.js"
+```
+
+Das Werkzeug führt einen beliebigen Befehl aus, also darf der Bauschritt darin
+stehen. Wer ihn vergisst, bekommt eine Gegenprobe, die **grün** meldet, weil
+der Test eine unveränderte Datei liest — dieselbe Fehlerfamilie, eine Stufe
+weiter außen.
+
 ## Stand
 
 1031 Testfälle grün (vorher 1024), `pruefe-tests` 1029/0, `pruefe-preise`
