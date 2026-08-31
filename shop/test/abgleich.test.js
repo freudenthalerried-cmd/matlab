@@ -175,3 +175,159 @@ test('Ein Datenfluss ohne deckenden Punkt fällt auf', () => {
   }
   assert.ok(!punkte.has('Ein Punkt, den es nicht gibt'), 'Die Prüfung wäre sonst wertlos');
 });
+
+/* ------------------------------------------------------------------ *
+ * Sieben Mängel, die dieser Abgleich noch nie gemeldet hat
+ * ------------------------------------------------------------------ *
+ *
+ * Der Dateikopf von `abgleich.js` warnt vor dem Fehler, „eine Prüfung
+ * vergleicht eine Erklärung mit sich selbst und geht immer auf". Für die
+ * **Ziele** war das gelöst: Die Module kommen als Parameter herein, und ein
+ * weggelassenes Modul lässt die Prüfung durchfallen — zwei Testfälle weiter
+ * oben zeigen es.
+ *
+ * Für die **Tafeln** war es nicht gelöst. `ZUORDNUNG`, `AGB_GLIEDERUNG`,
+ * `SCHRITTE` und `SCHRITTE_OHNE_AGB` las die Funktion unmittelbar aus dem
+ * Modul, und weil sie im Bestand zueinander passen, meldete sie immer
+ * „vollständig". Der Deckungslauf vom 31.08. nennt sieben Mängelzweige, die
+ * kein Testfall betritt.
+ *
+ * Seit heute sind die Tafeln hereinreichbar; der Bestand bleibt der
+ * Vorgabewert. Ab hier bekommt jeder Mangel seinen Fall.
+ */
+
+const NUR_KLAUSEL = { nr: 1, art: 'klausel', wie: 'steht so in den AGB' };
+
+test('Eine Zuordnung auf einen AGB-Punkt, den es nicht gibt, fällt auf', () => {
+  const p = pruefeAbgleich(MODULE, {
+    zuordnung: [{ ...NUR_KLAUSEL, nr: 99 }],
+    gliederung: [{ nr: 1, titel: 'Geltung' }],
+    schritte: [], ohneAgb: {},
+  });
+  assert.equal(p.vollstaendig, false);
+  assert.ok(p.maengel.some((m) => /Punkt 99 — den Punkt gibt es nicht/.test(m)), p.maengel.join(' | '));
+});
+
+test('Ein doppelt zugeordneter Punkt fällt auf', () => {
+  const p = pruefeAbgleich(MODULE, {
+    zuordnung: [NUR_KLAUSEL, { ...NUR_KLAUSEL }],
+    gliederung: [{ nr: 1, titel: 'Geltung' }],
+    schritte: [], ohneAgb: {},
+  });
+  assert.ok(p.maengel.some((m) => /Punkt 1 ist doppelt zugeordnet/.test(m)), p.maengel.join(' | '));
+});
+
+test('Eine unbekannte Art der Umsetzung fällt auf', () => {
+  // `ARTEN_DER_UMSETZUNG` ist die abschließende Liste. Eine Zuordnung, die
+  // sich eine fünfte Art ausdenkt, würde sonst stillschweigend übersprungen —
+  // und der Punkt gälte als umgesetzt, ohne dass irgendetwas nachgeschlagen
+  // worden wäre.
+  const p = pruefeAbgleich(MODULE, {
+    zuordnung: [{ nr: 1, art: 'handschlag', wie: 'wird schon' }],
+    gliederung: [{ nr: 1, titel: 'Geltung' }],
+    schritte: [], ohneAgb: {},
+  });
+  assert.ok(p.maengel.some((m) => /unbekannte Art der Umsetzung „handschlag"/.test(m)), p.maengel.join(' | '));
+  assert.ok(ARTEN_DER_UMSETZUNG.length >= 4, 'die Liste ist leer geworden — dann prüft dieser Fall nichts');
+});
+
+test('Eine Zuordnung ohne Begründung fällt auf', () => {
+  const p = pruefeAbgleich(MODULE, {
+    zuordnung: [{ nr: 1, art: 'klausel', wie: '   ' }],
+    gliederung: [{ nr: 1, titel: 'Geltung' }],
+    schritte: [], ohneAgb: {},
+  });
+  assert.ok(p.maengel.some((m) => /Punkt 1: ohne Begründung/.test(m)), p.maengel.join(' | '));
+});
+
+test('Eine Zuordnung mit Art, aber ohne Ziel fällt auf', () => {
+  const p = pruefeAbgleich(MODULE, {
+    zuordnung: [{ nr: 1, art: 'code', modul: 'kunde.js', wie: 'im Code', ziel: [] }],
+    gliederung: [{ nr: 1, titel: 'Geltung' }],
+    schritte: [], ohneAgb: {},
+  });
+  assert.ok(p.maengel.some((m) => /Punkt 1: code, aber ohne Ziel/.test(m)), p.maengel.join(' | '));
+});
+
+test('Ein AGB-Punkt ohne jede Zuordnung fällt auf — Versprechen ohne Umsetzung', () => {
+  // Der Befund, für den dieses Modul überhaupt gebaut wurde.
+  const p = pruefeAbgleich(MODULE, {
+    zuordnung: [NUR_KLAUSEL],
+    gliederung: [{ nr: 1, titel: 'Geltung' }, { nr: 2, titel: 'Gewährleistung' }],
+    schritte: [], ohneAgb: {},
+  });
+  assert.ok(p.maengel.some((m) => /AGB-Punkt 2 \(„Gewährleistung"\) hat keine Zuordnung/.test(m)),
+    p.maengel.join(' | '));
+});
+
+test('Ein Ablaufschritt ohne AGB-Grundlage und ohne Begründung fällt auf', () => {
+  // Die Gegenrichtung des Moduls: nicht ein Versprechen ohne Umsetzung,
+  // sondern Verhalten ohne veröffentlichte Grundlage.
+  const p = pruefeAbgleich(MODULE, {
+    zuordnung: [NUR_KLAUSEL],
+    gliederung: [{ nr: 1, titel: 'Geltung' }],
+    schritte: [{ id: 'heimlich' }], ohneAgb: {},
+  });
+  assert.ok(p.maengel.some((m) => /Ablaufschritt „heimlich" steht in keinem AGB-Punkt/.test(m)),
+    p.maengel.join(' | '));
+
+  // Und mit Begründung ist derselbe Schritt in Ordnung.
+  const mitGrund = pruefeAbgleich(MODULE, {
+    zuordnung: [NUR_KLAUSEL],
+    gliederung: [{ nr: 1, titel: 'Geltung' }],
+    schritte: [{ id: 'heimlich' }], ohneAgb: { heimlich: 'gesetzlich geboten' },
+  });
+  assert.ok(!mitGrund.maengel.some((m) => /heimlich/.test(m)), mitGrund.maengel.join(' | '));
+});
+
+test('Eine Klausel, die trotzdem ein Ziel nennt, fällt auf', () => {
+  const p = pruefeAbgleich(MODULE, {
+    zuordnung: [{ nr: 1, art: 'klausel', wie: 'nur Text', ziel: ['irgendwas'] }],
+    gliederung: [{ nr: 1, titel: 'Geltung' }],
+    schritte: [], ohneAgb: {},
+  });
+  assert.ok(p.maengel.some((m) => /als Klausel eingeordnet, nennt aber ein Ziel/.test(m)),
+    p.maengel.join(' | '));
+});
+
+test('Ohne zweites Argument prüft der Abgleich weiterhin den Bestand', () => {
+  // **Die wichtigste Gegenrichtung.** Die Tafeln hereinreichbar zu machen
+  // wäre wertlos, wenn der Bestand dabei aus dem Blick geriete: Der Aufruf
+  // ohne zweites Argument muss dieselbe Antwort geben wie zuvor.
+  const bestand = pruefeAbgleich(MODULE);
+  assert.equal(bestand.vollstaendig, true, bestand.maengel.join(' | '));
+  assert.deepEqual(bestand, pruefeAbgleich(MODULE, {}));
+  assert.deepEqual(bestand, pruefeAbgleich(MODULE, {
+    zuordnung: ZUORDNUNG, gliederung: AGB_GLIEDERUNG,
+    schritte: SCHRITTE, ohneAgb: SCHRITTE_OHNE_AGB,
+  }));
+});
+
+test('Ein Datenfluss, den kein Punkt der Datenschutzerklärung deckt, fällt auf', () => {
+  // Der letzte unerreichte Mängelzweig des Moduls — und bei einer Auskunft
+  // nach Art. 13 DSGVO der teure Fall: Wer Daten weitergibt, muss den
+  // Empfänger und die Grundlage in der Erklärung genannt haben. Ein Fluss,
+  // den kein Punkt deckt, ist eine Übermittlung ohne Auskunft.
+  const p = pruefeDatenfluesse({
+    fluesse: [{
+      datum: 'Telefonnummer der Baustelle', grundlage: 'Vertragserfüllung',
+      empfaenger: ['Lieferant'], traegtPunkt: 'Ein Punkt, den es nicht gibt',
+    }],
+    gliederung: ['Welche Daten wir verarbeiten'],
+  });
+  assert.equal(p.vollstaendig, false);
+  assert.ok(p.maengel.some((m) => /kein Punkt der Datenschutzerklärung deckt das ab/.test(m)),
+    p.maengel.join(' | '));
+
+  // Gegenrichtung, zweifach: mit deckendem Punkt kein Mangel — und der
+  // Bestand ohne Argument bleibt, was er war.
+  const gedeckt = pruefeDatenfluesse({
+    fluesse: [{
+      datum: 'Telefonnummer der Baustelle', grundlage: 'Vertragserfüllung',
+      empfaenger: ['Lieferant'], traegtPunkt: 'Welche Daten wir verarbeiten',
+    }],
+    gliederung: ['Welche Daten wir verarbeiten'],
+  });
+  assert.equal(gedeckt.vollstaendig, true, gedeckt.maengel.join(' | '));
+  assert.deepEqual(pruefeDatenfluesse(), pruefeDatenfluesse({}));
+});

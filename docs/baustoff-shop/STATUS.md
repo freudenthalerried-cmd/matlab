@@ -502,10 +502,10 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > 787 vergleichbare Tests, kein Unterschied.
 > [`kommentare-im-schaufenster.md`](./kommentare-im-schaufenster.md).
 >
-> **Stand der Prüfmittel (31.08.):** 992 Tests, `pruefe-tests` 990/0, `pruefe-preise` 46/0, `pruefe-inhalte`
+> **Stand der Prüfmittel (31.08.):** 1002 Tests, `pruefe-tests` 1000/0, `pruefe-preise` 46/0, `pruefe-inhalte`
 > 24/357/0, `pruefe-seiten` 81 von 81 gebauten Seiten, `pruefe-widerrufe` 197 Dateien/48
 > Fundstellen, `pruefe-quellen` 6/6, `shopprobe` 50 (davon 10 im Rahmen),
-> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 206/206,
+> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 207/207,
 > `pruefe-pruefer` 11 Prüfer ohne Leerlauf (unterscheidet jetzt Abbruch von Leerlauf), Website 81 Seiten ohne toten
 > Verweis.
 
@@ -901,6 +901,7 @@ zusammengefasst und im Verzeichnis nicht auffindbar:
 | `wachen-ohne-probe.md` | Zweimal hintereinander war eine Wache nicht auslösbar, also einmal durchgezählt. Der Griff über die Fehlertexte meldete 70 von 76 ungeprüft und maß das Falsche; der Deckungslauf nennt **fünf**. Vier davon sind das ungeprüfte Geschwister einer längst geprüften Wache — darunter die Namenskollision im Bündel, die schon einmal zugeschlagen hat |
 | `drei-zusagen-ohne-fall.md` | Der Deckungslauf weiter benutzt, aber nicht auf die Prozentzahl gerichtet: In den Lücken standen drei Zusagen ohne Fall — die Stückliste, die stumm kürzt (zwei Stellen, die Leitposition eigens), die Lieferung ins Ausland und zwei Sperren vor der Rechnung. Eine davon hatte ich beim ersten Anlauf verwechselt: Der Deckungslauf nennt die Zeile, nicht den Grund |
 | `der-pruefer-der-nie-etwas-fand.md` | Eine der Deckungslücken aufgeschlagen statt abgearbeitet: In `kontrolle.js` — der zweiten, absichtlich anders gebauten Rechnung — waren sieben Zweige unerreicht, und **alle sieben sind Fundmeldungen**. Bei vieren war jeweils die auffälligere Schwester geprüft und die leisere nicht: umgelenkte Adresse ja, fehlende nein |
+| `pruefung-die-sich-selbst-recht-gibt.md` | Zweiter Prüfer, dieselbe Frage: `abgleich.js` warnt im eigenen Dateikopf davor, dass „eine Prüfung eine Erklärung mit sich selbst vergleicht und immer aufgeht" — und tat genau das. Für die Ziele war vorgesorgt, für die Tafeln nicht; acht Mängelmeldungen plus eine DSGVO-Deckungslücke waren unerreichbar. Die halbe Vorkehrung ist die gefährlichere |
 | `segment-arbeitsplatzmessung.md` | Nebenstrecke, kein eigenes Segment |
 | `strategie-modellvergleich.md` | Kapitalweg braucht ~900.000 €; enthält überholte Empfehlung |
 | `anschreiben-entwuerfe.md` | Drei Anschreiben (Hersteller, Großhändler, Partnerbetriebe), versandfertig, nicht versendet |

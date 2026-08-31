@@ -141,14 +141,36 @@ export const SCHRITTE_OHNE_AGB = {
  *
  * @param {object} module  Abbildung Dateiname → Modul, für das Nachschlagen der Ziele
  */
-export function pruefeAbgleich(module = {}) {
+export function pruefeAbgleich(module = {}, tafeln = {}) {
+  // **Ergänzt am 31.08.: die Tafeln sind hereinreichbar.**
+  //
+  // Bis dahin las diese Funktion `ZUORDNUNG`, `AGB_GLIEDERUNG`, `SCHRITTE` und
+  // `SCHRITTE_OHNE_AGB` unmittelbar aus dem Modul. Weil diese vier Tafeln im
+  // Bestand zueinander passen, meldete sie **immer** „vollständig" — und
+  // sieben ihrer Mängelzweige waren von keinem Testfall erreichbar.
+  //
+  // Der Dateikopf oben warnt genau davor: „Eine Prüfung vergleicht eine
+  // Erklärung mit sich selbst und geht immer auf." Für die Ziele war das
+  // längst gelöst — die Module kommen als Parameter herein, und ein
+  // weggelassenes Modul lässt die Prüfung durchfallen. Für die Tafeln selbst
+  // war es nicht gelöst.
+  //
+  // Die Vorgabewerte sind der Bestand; jeder Aufruf ohne zweites Argument
+  // verhält sich wie zuvor.
+  const {
+    zuordnung = ZUORDNUNG,
+    gliederung = AGB_GLIEDERUNG,
+    schritte = SCHRITTE,
+    ohneAgb = SCHRITTE_OHNE_AGB,
+  } = tafeln;
+
   const maengel = [];
 
-  const punkte = new Map(AGB_GLIEDERUNG.map((a) => [a.nr, a]));
-  const schrittIds = new Set(SCHRITTE.map((s) => s.id));
+  const punkte = new Map(gliederung.map((a) => [a.nr, a]));
+  const schrittIds = new Set(schritte.map((s) => s.id));
   const zugeordnet = new Set();
 
-  for (const z of ZUORDNUNG) {
+  for (const z of zuordnung) {
     if (!punkte.has(z.nr)) {
       maengel.push(`Zuordnung für Punkt ${z.nr} — den Punkt gibt es nicht`);
       continue;
@@ -189,7 +211,7 @@ export function pruefeAbgleich(module = {}) {
     }
   }
 
-  for (const a of AGB_GLIEDERUNG) {
+  for (const a of gliederung) {
     if (!zugeordnet.has(a.nr)) {
       maengel.push(`AGB-Punkt ${a.nr} („${a.titel}") hat keine Zuordnung — Versprechen ohne Umsetzung`);
     }
@@ -197,14 +219,14 @@ export function pruefeAbgleich(module = {}) {
 
   // Die Gegenrichtung: ein Ablaufschritt, den weder eine Zuordnung noch eine
   // Begründung nennt, ist Verhalten ohne veröffentlichte Grundlage.
-  const ausAgb = new Set(ZUORDNUNG.filter((z) => z.art === 'ablauf').flatMap((z) => z.ziel ?? []));
-  for (const s of SCHRITTE) {
+  const ausAgb = new Set(zuordnung.filter((z) => z.art === 'ablauf').flatMap((z) => z.ziel ?? []));
+  for (const s of schritte) {
     if (ausAgb.has(s.id)) continue;
-    if (!SCHRITTE_OHNE_AGB[s.id]) {
+    if (!ohneAgb[s.id]) {
       maengel.push(`Ablaufschritt „${s.id}" steht in keinem AGB-Punkt und ist nicht begründet`);
     }
   }
-  for (const id of Object.keys(SCHRITTE_OHNE_AGB)) {
+  for (const id of Object.keys(ohneAgb)) {
     if (!schrittIds.has(id)) maengel.push(`Begründung für Schritt „${id}" — den Schritt gibt es nicht`);
   }
 
@@ -294,11 +316,18 @@ export const DATENFLUESSE = [
  * Bewusst über den **Wortlaut** des Gliederungspunkts und nicht über einen
  * Index: Ein Index bleibt gültig, wenn jemand den Punkt inhaltlich austauscht.
  */
-export function pruefeDatenfluesse() {
-  const maengel = [];
-  const punkte = new Set(DATENSCHUTZ_GLIEDERUNG);
+export function pruefeDatenfluesse(tafeln = {}) {
+  // Dieselbe Hereinreichbarkeit wie bei `pruefeAbgleich` und aus demselben
+  // Grund: Die beiden Tafeln passen im Bestand zueinander, also meldete diese
+  // Prüfung immer „vollständig" — der Zweig, der einen Datenfluss ohne
+  // deckenden Punkt der Datenschutzerklärung meldet, war unerreichbar. Bei
+  // einer Auskunft nach Art. 13 DSGVO ist gerade das der teure Fall.
+  const { fluesse = DATENFLUESSE, gliederung = DATENSCHUTZ_GLIEDERUNG } = tafeln;
 
-  for (const f of DATENFLUESSE) {
+  const maengel = [];
+  const punkte = new Set(gliederung);
+
+  for (const f of fluesse) {
     if (!f.grundlage) maengel.push(`${f.datum}: ohne Rechtsgrundlage`);
     if (!f.empfaenger || f.empfaenger.length === 0) maengel.push(`${f.datum}: ohne Empfänger`);
     if (!punkte.has(f.traegtPunkt)) {
@@ -306,6 +335,6 @@ export function pruefeDatenfluesse() {
     }
   }
 
-  const offen = DATENFLUESSE.filter((f) => f.offen).map((f) => `${f.datum}: ${f.offen}`);
+  const offen = fluesse.filter((f) => f.offen).map((f) => `${f.datum}: ${f.offen}`);
   return { vollstaendig: maengel.length === 0, maengel, offen };
 }
