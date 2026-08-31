@@ -35,6 +35,24 @@ test('Einkaufspreis weist unsinnige Rabatte zurück', () => {
   assert.throws(() => einkaufspreis(0, 0.3));
 });
 
+test('Verkaufspreis weist unsinnige Zielmargen zurück', () => {
+  // Die Schwesterprobe zu „Einkaufspreis weist unsinnige Rabatte zurück"
+  // darüber. Bis zum 31.08. gab es sie nicht: Ein Deckungslauf über die
+  // Testsuite hat diese Wache als die einzige unerreichte in `preis.js`
+  // benannt.
+  //
+  // Sie ist keine Formsache. Eine Marge von 1 hieße Division durch null und
+  // damit ein `Infinity` als Verkaufspreis; eine negative Marge hieße, unter
+  // dem Einkauf zu verkaufen. Beides gehört abgewiesen, bevor es in einen
+  // Preis gerät.
+  assert.throws(() => verkaufspreis(65, 1), /Zielmarge/);
+  assert.throws(() => verkaufspreis(65, 1.5), /Zielmarge/);
+  assert.throws(() => verkaufspreis(65, -0.1), /Zielmarge/);
+  // Die Gegenrichtung: Null Marge ist eine gültige Angabe — Verkauf zum
+  // Einkaufspreis. Wer hier auf Wahrheitswert prüft, verbietet sie.
+  assert.equal(verkaufspreis(65, 0), 65);
+});
+
 test('Verkaufspreis erreicht die Zielmarge', () => {
   const vk = verkaufspreis(65, 0.35);
   assert.equal(vk, 100);

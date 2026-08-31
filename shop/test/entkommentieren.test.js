@@ -100,3 +100,38 @@ test('das ausgelieferte Bündel trägt danach keine Erklärung der Kalkulation m
   assert.match(ohne, /function kalkuliere\(/);
   assert.match(ohne, /function berechneWarenkorb\(/);
 });
+
+/* ------------------------------------------------------------------ *
+ * Was der Scanner nicht zu Ende lesen kann, bricht ab statt zu raten
+ * ------------------------------------------------------------------ */
+
+test('Ein regulärer Ausdruck ohne Ende bricht ab, statt weiterzuscannen', () => {
+  // **Die Wache, die der Deckungslauf am 31.08. als unerreicht gemeldet hat.**
+  //
+  // Sie ist die heikelste der vier: Ein Schrägstrich ist mal Division, mal der
+  // Anfang eines regulären Ausdrucks. Verliest sich der Scanner hier, hält er
+  // den halben Rest der Datei für einen Ausdruck — und entfernt als
+  // „Kommentar", was Code war. Das Erzeugnis wäre lauffähig aussehender
+  // Unsinn. Deshalb Abbruch statt Annahme.
+  assert.throws(() => ohneKommentare('const r = /abc\nconst x = 1;'),
+    /Regulärer Ausdruck ohne Ende in Zeile 1/);
+  assert.throws(() => ohneKommentare('let a = 1;\nif (a) return /unfertig'),
+    /Regulärer Ausdruck ohne Ende in Zeile 2/);
+});
+
+test('Eine Division ist kein regulärer Ausdruck', () => {
+  // Die Gegenrichtung, und ohne sie wäre die Probe darüber gefährlich: Wenn
+  // jeder Schrägstrich als Ausdrucksanfang gälte, bräche der Scanner bei
+  // jeder Rechnung ab.
+  const { text } = ohneKommentare('const anteil = summe / anzahl; // Kommentar weg\n');
+  assert.match(text, /summe \/ anzahl/);
+  assert.ok(!text.includes('Kommentar weg'));
+});
+
+test('Auch Zeichenketten und Vorlagenliterale ohne Ende brechen ab', () => {
+  // Dieselbe Familie, dieselbe Begründung. Sie standen bis heute ebenfalls
+  // ohne eigenen Fall da.
+  assert.throws(() => ohneKommentare("const s = 'unfertig\n"), /Zeichenkette ohne Ende/);
+  assert.throws(() => ohneKommentare('const s = `unfertig'), /Vorlagenliteral ohne Ende/);
+  assert.throws(() => ohneKommentare('/* Blockkommentar ohne Ende'), /Blockkommentar ohne Ende/);
+});

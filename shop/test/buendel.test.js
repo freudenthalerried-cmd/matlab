@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
-import { BROWSERMODULE, KERNMODULE, SHOPMODULE, importhuelle, baueKern, reihenfolge } from '../src/buendel.js';
+import { BROWSERMODULE, KERNMODULE, SHOPMODULE, importhuelle, baueKern, reihenfolge, pruefeNamenskollisionen } from '../src/buendel.js';
 
 const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
 const src = pfad('../src');
@@ -102,4 +102,34 @@ test('das gebaute demo.html führt sein Skript wirklich aus', () => {
   assert.ok(ersteNutzung > 0, 'die Datenschutzseite nennt den Schlüssel nicht mehr — Probe nachziehen');
   assert.ok(deklaration < ersteNutzung,
     'der Schlüssel wird vor seiner Deklaration gelesen — das Skript stirbt beim Laden');
+});
+
+test('Ein doppelt vergebener Name im Bündel wird gemeldet, nicht gebündelt', () => {
+  // **Der Fehler, den diese Wache verhindert, ist schon passiert:** Zwei
+  // Module trugen je eine Hilfsfunktion `EUR`. Einzeln geladen ist das
+  // harmlos, im zusammengefügten Skript ein SyntaxError — und dann läuft die
+  // ganze Seite nicht, während die Tests grün bleiben, weil sie die Module
+  // einzeln laden.
+  //
+  // Bis zum 31.08. war ausgerechnet diese Wache die einzige in `buendel.js`
+  // ohne Probe; der Ringschluss darüber hatte längst eine. Gefunden mit einem
+  // Deckungslauf über die Testsuite, nicht durch Lesen.
+  assert.throws(
+    () => pruefeNamenskollisionen('const EUR = 1;\nfunction f() {}\nconst EUR = 2;'),
+    /Doppelt deklariert im Bündel: EUR/,
+  );
+  assert.throws(
+    () => pruefeNamenskollisionen('function kopf() {}\nasync function kopf() {}'),
+    /SyntaxError/,
+  );
+});
+
+test('Gleichnamige Namen in verschiedenen Modulen sind erlaubt, solange sie es bleiben', () => {
+  // Die Gegenrichtung: Die Wache darf nicht bei jedem wiederholten Wort
+  // anschlagen. Geprüft wird die **Deklaration** am Zeilenanfang, nicht jedes
+  // Vorkommen des Namens.
+  assert.doesNotThrow(() => pruefeNamenskollisionen(
+    'const EUR = 1;\nfunction zeige() { return EUR + EUR; }\n  const EUR = 2;',
+  ));
+  assert.doesNotThrow(() => pruefeNamenskollisionen('const a = 1;\nconst b = 2;\nlet c;'));
 });

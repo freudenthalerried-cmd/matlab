@@ -159,3 +159,40 @@ test('Die wiederaufgebaute Ablage schreibt weiter ins Journal', () => {
   assert.equal(zeilenDanach.length, 2, 'Vergabe und Eintrag der zweiten Rechnung');
   assert.match(zeilenDanach[0], /RE-2026-0002/);
 });
+
+/* ------------------------------------------------------------------ *
+ * Wachen am Journal, die der Testlauf bis zum 31.08. nie erreicht hat
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Gemessen, nicht vermutet.** Ein Deckungslauf über die ganze Testsuite
+ * (`node --test --experimental-test-coverage`) hat fünf `throw`-Wachen in
+ * `src/` benannt, die kein Testfall je auslöst. Zwei davon stehen hier.
+ *
+ * Sie sind keine Formsache: Das Journal ist die unveränderbare Aufzeichnung
+ * der Vorgänge. Eine kaputte Zeile darf beim Laden **auffallen**, nicht
+ * übersprungen werden — ein Journal, das sich stillschweigend lückenhaft
+ * lädt, ist schlimmer als eines, das sich weigert.
+ */
+const journalZeile = (eintrag) => JSON.stringify({ typ: 'eintrag', eintrag: {
+  lfd: 1, art: 'uidabfrage', nummer: null, zeitpunkt: '2026-08-16T09:00',
+  vorgang: 'V-1', betragNetto: null, betragBrutto: null, text: 'x', bezugAuf: null,
+  ...eintrag,
+} });
+
+test('Eine unlesbare Belegnummer im Journal wird gemeldet, nicht überlesen', () => {
+  // `hebeZaehler` liest Jahr und laufende Nummer aus der Belegnummer, um den
+  // Zähler nachzuziehen. Steht dort etwas anderes, wäre der Zähler still
+  // falsch — und die **nächste** vergebene Nummer eine bereits vergebene.
+  const kaputt = journalZeile({ art: 'rechnung', nummer: 'RE-zweitausend-x' });
+  assert.throws(() => ausJournal(kaputt), /keine lesbare Belegnummer/);
+  assert.throws(() => ausJournal(kaputt), /Zeile 1/);
+});
+
+test('Eine unbekannte Vorgangsart im Journal wird gemeldet, nicht überlesen', () => {
+  // Die Gegenrichtung steht darunter: Eine bekannte Art muss durchkommen,
+  // sonst prüfte dieser Fall nur, dass überhaupt etwas fliegt.
+  assert.throws(() => ausJournal(journalZeile({ art: 'quittung' })),
+    /unbekannte Vorgangsart quittung/);
+  assert.doesNotThrow(() => ausJournal(journalZeile({ art: 'uidabfrage' })));
+});
