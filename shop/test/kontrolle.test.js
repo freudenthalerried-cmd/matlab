@@ -339,3 +339,106 @@ test('der ausgewiesene Satz ist derselbe wie der gerechnete', () => {
   assert.equal(ustText(0.13), '13 %', 'ein anderer Satz ergibt einen anderen Text');
   assert.equal(ustText(0.075), '7,5 %', 'und ein halber Punkt geht nicht verloren');
 });
+
+/* ------------------------------------------------------------------ *
+ * Befunde, die dieser Prüfer noch nie gemeldet hat
+ * ------------------------------------------------------------------ *
+ *
+ * Der Deckungslauf vom 31.08. nennt sieben Zweige in dieser Datei, die kein
+ * Testfall betritt — alle sieben sind **Fundmeldungen**. Die meisten
+ * Abweichungsarten sind geprüft (verfälschte Summe, unterschlagene Position,
+ * falsch gerundete Steuer, vertauschte Menge, fehlende CSV-Zeile). Diese
+ * sieben nicht.
+ *
+ * Das ist der wunde Punkt gerade dieses Moduls: Es ist die **zweite**
+ * Rechnung, gebaut gegen einen Fehler, der in beide Richtungen gleich falsch
+ * ist. Ein Prüfer, der einen Befund noch nie ausgesprochen hat, hat nur
+ * bewiesen, dass er schweigen kann.
+ */
+
+test('Eine verrutschte CSV-Zeile fällt auf, nicht erst beim Lieferanten', () => {
+  // Ein zusätzliches Semikolon schiebt alle Felder um eins. Die Menge steht
+  // dann in der Spalte daneben — beim Lesen unauffällig, beim Kommissionieren
+  // die falsche Zahl.
+  const b = erzeugeBestellungen(referenz, auftrag)[0];
+  const zeilen = b.csv.split('\n');
+  assert.ok(zeilen.length >= 2, 'zu wenig Zeilen für diese Prüfung');
+  const gefaelscht = { ...b, csv: [zeilen[0], `${zeilen[1]};zuviel`, ...zeilen.slice(2)].join('\n') };
+
+  const p = pruefeBestellung(gefaelscht, referenz.teillieferungen[0]);
+  assert.equal(p.deckungsgleich, false);
+  assert.ok(p.abweichungen.some((a) => /verrutscht/.test(a)), p.abweichungen.join(' | '));
+});
+
+test('Eine CSV-Zeile ohne lesbare Menge fällt auf', () => {
+  const b = erzeugeBestellungen(referenz, auftrag)[0];
+  const zeilen = b.csv.split('\n');
+  const felder = zeilen[1].split(';');
+  const mengenSpalte = felder.findIndex((f) => /^\d+([.,]\d+)?$/.test(f.trim()));
+  assert.ok(mengenSpalte >= 0, `keine Mengenspalte gefunden in: ${zeilen[1]}`);
+  felder[mengenSpalte] = 'viele';
+  const gefaelscht = { ...b, csv: [zeilen[0], felder.join(';'), ...zeilen.slice(2)].join('\n') };
+
+  const p = pruefeBestellung(gefaelscht, referenz.teillieferungen[0]);
+  assert.equal(p.deckungsgleich, false);
+  assert.ok(p.abweichungen.some((a) => /ohne lesbare Menge/.test(a)), p.abweichungen.join(' | '));
+});
+
+test('Stimmen Text und CSV, meldet der Prüfer keine der beiden CSV-Auffälligkeiten', () => {
+  // Die Gegenrichtung zu beiden Fällen oben. Ein Prüfer, der immer meldet,
+  // ist so wertlos wie einer, der nie meldet.
+  const b = erzeugeBestellungen(referenz, auftrag)[0];
+  const p = pruefeBestellung(b, referenz.teillieferungen[0]);
+  assert.ok(!p.abweichungen.some((a) => /verrutscht|ohne lesbare Menge/.test(a)),
+    p.abweichungen.join(' | '));
+});
+
+test('Fehlt ein Betrag im Text ganz, meldet der Vergleich ihn als fehlend', () => {
+  // Nicht dasselbe wie „im Text steht eine andere Zahl": Dort ist etwas
+  // falsch, hier fehlt etwas. Der Prüfer unterscheidet beides — geprüft war
+  // bisher nur der zweite Fall. Eine Zeile, die gar nicht hinausgeht, ist die
+  // stillere der beiden Fehlerarten.
+  const ohneFracht = rechnung.text.split('\n').filter((z) => !/^Fracht/.test(z)).join('\n');
+  assert.notEqual(ohneFracht, rechnung.text, 'die Fälschung muss greifen');
+
+  const v = vergleicheMitWarenkorb(ohneFracht, referenz);
+  assert.equal(v.deckungsgleich, false);
+  assert.ok(v.abweichungen.some((a) => /Fracht netto: steht nicht im Text/.test(a)),
+    v.abweichungen.join(' | '));
+  // Und die Gegenrichtung: Der vollständige Text meldet nichts als fehlend.
+  const heil = vergleicheMitWarenkorb(rechnung.text, referenz);
+  assert.ok(!heil.abweichungen.some((a) => /steht nicht im Text/.test(a)),
+    heil.abweichungen.join(' | '));
+});
+
+test('Frachtzeilen, die nicht zur ausgewiesenen Fracht summieren, fallen auf', () => {
+  // Der Beleg führt die Fracht je Teillieferung **und** als Summe. Weichen
+  // sie voneinander ab, ist der Beleg in sich widersprüchlich — unabhängig
+  // davon, ob der Warenkorb recht hat.
+  const zeilen = rechnung.text.split('\n');
+  const i = zeilen.findIndex((z) => /^\s+Fracht /.test(z));
+  assert.ok(i >= 0, `keine Frachtzeile gefunden in:\n${rechnung.text}`);
+  zeilen[i] = zeilen[i].replace(/[\d.,]+ €/, '1,00 €');
+  const gefaelscht = zeilen.join('\n');
+  assert.notEqual(gefaelscht, rechnung.text, 'die Fälschung muss greifen');
+
+  const p = pruefeBelegRechnerisch(gefaelscht);
+  assert.equal(p.stimmig, false);
+  assert.ok(p.fehler.some((f) => /Frachtzeilen ergeben/.test(f)), p.fehler.join(' | '));
+});
+
+test('Ein verfälschter Warenwert fällt an der Nettosumme auf', () => {
+  // Der letzte der sieben. Er unterscheidet sich von den geprüften Fällen
+  // darin, **welche** der drei Nettozeilen nicht passt: Frachtzeilen und
+  // Frachtsumme stimmen weiterhin überein, und die Steuer passt zur
+  // ausgewiesenen Summe — nur Warenwert plus Fracht ergibt sie nicht.
+  //
+  // Ohne diesen Fall bliebe genau die Zeile ungeprüft, die eine
+  // Positionssumme gegen die Belegsumme hält.
+  const gefaelscht = rechnung.text.replace(/^(Warenwert netto\s+)[\d.,]+ €/m, '$11,00 €');
+  assert.notEqual(gefaelscht, rechnung.text, 'die Fälschung muss greifen');
+
+  const p = pruefeBelegRechnerisch(gefaelscht);
+  assert.equal(p.stimmig, false);
+  assert.ok(p.fehler.some((f) => /Warenwert plus Fracht ergibt/.test(f)), p.fehler.join(' | '));
+});

@@ -504,3 +504,53 @@ test('Ohne abweichende Baustelle ist niemand Dritter und die Prüfung sagt das',
   assert.equal(p.dicht, true);
   assert.match(p.hinweis, /kein Dritter/);
 });
+
+/* ------------------------------------------------------------------ *
+ * Zwei Befunde der Vorgangsklammer, die sie noch nie ausgesprochen hat
+ * ------------------------------------------------------------------ */
+
+test('Eine Bestellung ganz ohne Lieferadresse fällt auf', () => {
+  // Geprüft war die **umgelenkte** Adresse (andere Stadt) — nicht die
+  // fehlende. Der Unterschied zählt: Bei der umgelenkten geht die Ware
+  // woandershin, bei der fehlenden weiß der Lieferant gar nicht wohin, und
+  // die Klammer muss beides melden statt nur das Auffälligere.
+  const v = machVorgang();
+  const ohneAdresse = {
+    ...v,
+    bestellungen: v.bestellungen.map((b) => ({
+      ...b,
+      text: b.text.split('\n').filter((z) => !/Innsbruck|Lieferanschrift|Baustelle/i.test(z)).join('\n'),
+    })),
+  };
+  const p = pruefeVorgangsklammer(ohneAdresse);
+  assert.equal(p.geschlossen, false);
+  assert.ok(p.abweichungen.some((a) => /keine Lieferadresse im Bestelltext/.test(a)),
+    p.abweichungen.join(' | '));
+});
+
+test('Ein Beleg ganz ohne Empfänger fällt auf', () => {
+  // Dieselbe Unterscheidung beim Kundenbeleg: „geht an den Falschen" war
+  // geprüft, „nennt niemanden" nicht. Ein Beleg ohne Empfänger ist über
+  // 400 € brutto zudem ein Rechnungsmangel nach § 11 UStG.
+  const v = machVorgang();
+  const ohneEmpfaenger = {
+    ...v,
+    // Den Empfängerblock entfernen — der Kopfleser sucht die Zeilen unter
+    // „Rechnungsempfänger:". Ohne sie hat der Beleg keinen Adressaten.
+    rechnung: {
+      ...v.rechnung,
+      text: v.rechnung.text.replace(/^Rechnungsempfänger:\n(?:  .*\n)+/m, 'Rechnungsempfänger:\n'),
+    },
+  };
+  const p = pruefeVorgangsklammer(ohneEmpfaenger);
+  assert.equal(p.geschlossen, false);
+  assert.ok(p.abweichungen.some((a) => /kein Empfänger im Text/.test(a)),
+    p.abweichungen.join(' | '));
+});
+
+test('Der unversehrte Vorgang meldet keinen der beiden Befunde', () => {
+  // Gegenrichtung zu beiden: Ein Prüfer, der immer meldet, sagt nichts.
+  const p = pruefeVorgangsklammer(machVorgang());
+  assert.ok(!p.abweichungen.some((a) => /keine Lieferadresse|kein Empfänger/.test(a)),
+    p.abweichungen.join(' | '));
+});
