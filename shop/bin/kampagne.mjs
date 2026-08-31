@@ -32,7 +32,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
-import { bezirksliste } from '../src/liefergebiet.js';
+import { bezirksliste, LIEFERGEBIET } from '../src/liefergebiet.js';
 import { ladeBaustoffkatalog, katalogbefund, ZIELMARGE } from '../src/baustoffkatalog.js';
 import { cent } from '../src/preis.js';
 import { traegtSichSelbst } from '../src/kostenbild.js';
@@ -444,13 +444,13 @@ function main() {
   // --- Anzeigen -----------------------------------------------------------
   const ANZEIGENTEXTE = {
     WDVS: {
-      k: ['WDVS zum Baumeisterpreis', 'Capatect und Baumit', 'Fassade komplett liefern', 'Kleber, Gewebe, Dübel', 'Vom Baumeister, nicht vom', 'Systemware auf Palette', 'Lieferung ins Mühlviertel'],
-      b: ['Das komplette Fassadensystem aus einer Hand — geliefert auf die Baustelle.', 'Kleber, Gewebe, Dübel, Putzgrund. Was zusammengehört, kommt zusammen.', 'Ein Baumeister kauft ein, Sie zahlen seinen Preis. Regionale Lieferung.'],
+      k: ['WDVS zum Baumeisterpreis', 'Capatect und Baumit', 'Fassade komplett liefern', 'Kleber, Gewebe, Dübel', 'Vom Baumeister, nicht vom', 'Systemware auf Palette'],
+      b: ['Das komplette Fassadensystem aus einer Hand — geliefert auf die Baustelle.', 'Kleber, Gewebe, Dübel, Putzgrund. Was zusammengehört, kommt zusammen.', 'Ein Baumeister kauft ein, Sie zahlen seinen Preis.'],
       pfad: ['fassade', 'wdvs'],
     },
     'Dämmung': {
       k: ['XPS und EPS ab Lager', 'Perimeterdämmung 80 mm', 'Dämmplatten palettenweise', 'Baumeisterpreis auf XPS', 'Dämmung auf die Baustelle', 'Kein Baumarktpreis', 'XPS 30 bis 100 mm'],
-      b: ['XPS und EPS in allen gängigen Stärken, palettenweise auf die Baustelle.', 'Perimeter- und Fassadendämmung zum Preis, den ein Baumeister zahlt.', 'Ganze Paletten statt Einzelplatten. Lieferung im Umkreis von Linz.'],
+      b: ['XPS und EPS in allen gängigen Stärken, palettenweise auf die Baustelle.', 'Perimeter- und Fassadendämmung zum Preis, den ein Baumeister zahlt.', 'Ganze Paletten statt Einzelplatten, direkt auf die Baustelle.'],
       pfad: ['daemmung', 'xps'],
     },
     Kamin: {
@@ -459,18 +459,18 @@ function main() {
       pfad: ['kamin', 'schiedel'],
     },
     Kanal: {
-      k: ['Kanalrohr DN 100', 'Rohr, Bogen, Abzweig', 'Kanal komplett liefern', 'PVC Kanal ab Lager', 'Schacht und Formteile', 'Kanal zum Baumeisterpreis', 'Erdbau im Mühlviertel'],
+      k: ['Kanalrohr DN 100', 'Rohr, Bogen, Abzweig', 'Kanal komplett liefern', 'PVC Kanal ab Lager', 'Schacht und Formteile', 'Kanal zum Baumeisterpreis'],
       b: ['Kanalrohr, Bögen, Abzweiger und Schacht — abgestimmt und komplett.', 'PVC-Kanal DN 100 mit allen Formteilen. Lieferung auf die Baustelle.', 'Ein Bogen zu wenig kostet einen halben Tag. Deshalb liefern wir das Set.'],
       pfad: ['kanal', 'dn100'],
     },
     'Mörtel': {
-      k: ['Mörtel palettenweise', 'Baumit ThermoMörtel', 'Mörtel auf die Baustelle', 'Baumeisterpreis auf Mörtel', 'Ganze Paletten', 'Mörtel im Mühlviertel', 'Kein Sackverkauf'],
+      k: ['Mörtel palettenweise', 'Baumit ThermoMörtel', 'Mörtel auf die Baustelle', 'Baumeisterpreis auf Mörtel', 'Ganze Paletten', 'Kein Sackverkauf'],
       b: ['Baumit-Mörtel palettenweise, geliefert auf die Baustelle.', 'Wir liefern Paletten, keine Einzelsäcke — das ist der ganze Preisvorteil.', 'Mörtel zum Preis, den ein Baumeister im Einkauf zahlt.'],
       pfad: ['moertel', 'palette'],
     },
     Mauerwerk: {
-      k: ['Planziegel ab Palette', 'Ökotherm Hochlochziegel', 'Ziegel auf die Baustelle', 'Baumeisterpreis auf Ziegel', 'Mauerwerk komplett', 'Ziegel im Mühlviertel', 'Palettenweise liefern'],
-      b: ['Planziegel palettenweise, geliefert und mit Kran entladen.', 'Mauerwerk zum Baumeisterpreis. Regionale Lieferung, keine Kleinmengen.', 'Ganze Paletten auf die Baustelle statt Stückware aus dem Baumarkt.'],
+      k: ['Planziegel ab Palette', 'Ökotherm Hochlochziegel', 'Ziegel auf die Baustelle', 'Baumeisterpreis auf Ziegel', 'Mauerwerk komplett', 'Palettenweise liefern'],
+      b: ['Planziegel palettenweise, geliefert und mit Kran entladen.', 'Mauerwerk zum Baumeisterpreis, keine Kleinmengen.', 'Ganze Paletten auf die Baustelle statt Stückware aus dem Baumarkt.'],
       pfad: ['ziegel', 'mauerwerk'],
     },
   };
@@ -488,13 +488,46 @@ function main() {
     process.exit(2);
   }
 
+  /**
+   * Die Ortsangabe jeder Anzeige — aus `LIEFERGEBIET`, nicht von Hand.
+   *
+   * **Befund vom 31.08.** In den Anzeigentexten stand viermal „im
+   * Mühlviertel" und einmal „im Umkreis von Linz". Beides ist nicht das
+   * Liefergebiet:
+   *
+   *   Mühlviertel      = Perg, Urfahr-Umgebung, Freistadt **und Rohrbach**
+   *   Liefergebiet     = Perg, Urfahr-Umgebung, Freistadt, Linz-Land, Linz
+   *
+   * Die Anzeigen versprachen also einen Bezirk zu viel — Rohrbach, wo nicht
+   * geliefert wird — und ließen zwei aus, Linz und Linz-Land, die zum
+   * Liefergebiet gehören und nicht zum Mühlviertel. Dasselbe wie eine tote
+   * Ziel-URL, nur subtiler: **Man bezahlt für Klicks, die in der Kasse
+   * abgelehnt werden, und verschenkt die beiden größten Bezirke.**
+   *
+   * Die Gruppe Kamin trug gar keine Ortsangabe — ausgerechnet die mit dem
+   * höchsten Deckungsbeitrag, in die der erste Euro Werbebudget fließen soll.
+   *
+   * Erzeugt statt geschrieben: Ändert sich das Liefergebiet, ändern sich die
+   * Anzeigen mit. Die Kurzform hält die 30 Zeichen einer Überschrift ein, die
+   * Langform nennt in der Beschreibung alle Bezirke.
+   */
+  const ORT_KURZ = `Lieferung ${LIEFERGEBIET.bezirke[0].name} bis ${LIEFERGEBIET.bezirke.at(-1).name}`;
+  const ORT_LANG = `Geliefert wird in die Bezirke ${bezirksliste()}.`;
+  if (ORT_KURZ.length > MAX_UEBERSCHRIFT) {
+    console.error(`Abbruch: Die Ortsüberschrift „${ORT_KURZ}" hat ${ORT_KURZ.length} Zeichen `
+      + `(max ${MAX_UEBERSCHRIFT}). Ein gekürztes Liefergebiet wäre ein falsches.`);
+    process.exit(2);
+  }
+
   const anzeigen = [];
   for (const g of gruppen) {
     const t = ANZEIGENTEXTE[g.gruppe];
     if (!t) continue;
     const satz = { Kampagne: `Baustoffe ${g.gruppe}`, Anzeigengruppe: g.gruppe, Anzeigentyp: 'Responsive Suchanzeige', 'Finale URL': `${basis}/${t.pfad[0]}` };
-    t.k.forEach((k, i) => { satz[`Überschrift ${i + 1}`] = k; });
-    t.b.forEach((b, i) => { satz[`Beschreibung ${i + 1}`] = b; });
+    // Die Ortsangabe steht in **jeder** Anzeige, an letzter Stelle, damit sie
+    // keine der beworbenen Eigenschaften verdrängt.
+    [...t.k, ORT_KURZ].forEach((k, i) => { satz[`Überschrift ${i + 1}`] = k; });
+    [...t.b, ORT_LANG].forEach((b, i) => { satz[`Beschreibung ${i + 1}`] = b; });
     satz['Pfad 1'] = t.pfad[0];
     satz['Pfad 2'] = t.pfad[1];
     anzeigen.push(satz);

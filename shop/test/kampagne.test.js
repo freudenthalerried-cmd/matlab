@@ -1,6 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync, existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { suchname, taugtAlsKeyword, kurzform } from '../bin/kampagne.mjs';
+import { LIEFERGEBIET, bezirksliste } from '../src/liefergebiet.js';
+
+const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
 
 /* ------------------------------------------------------------------ *
  * Aus einer Katalogbezeichnung einen Suchbegriff machen
@@ -167,4 +172,64 @@ test('eine Gruppe mit palettierter Ware trägt die Nebenkosten', async () => {
   assert.ok(artikel.length >= 1);
   assert.equal(nebenkostenUntergrenze(artikel, lieferant).nebenkostenUntergrenzeNetto, 28.5,
     'die Dämmplatte kommt auf der Palette — Palette und Folierung gehören in die Rechnung');
+});
+
+/* ------------------------------------------------------------------ *
+ * Jede Anzeige sagt, wohin geliefert wird
+ * ------------------------------------------------------------------ */
+
+test('Keine Anzeige nennt eine Region außerhalb des Liefergebiets', () => {
+  // **Befund vom 31.08.** Vier der sechs Anzeigen warben „im Mühlviertel",
+  // eine „im Umkreis von Linz". Beides ist nicht das Liefergebiet:
+  //
+  //   Mühlviertel   = Perg, Urfahr-Umgebung, Freistadt **und Rohrbach**
+  //   Liefergebiet  = Perg, Urfahr-Umgebung, Freistadt, Linz-Land, Linz
+  //
+  // Die Anzeigen versprachen einen Bezirk zu viel und ließen die beiden
+  // größten aus. Dasselbe wie eine tote Ziel-URL, nur subtiler: Man bezahlt
+  // für Klicks, die in der Kasse abgelehnt werden.
+  const datei = pfad('../ausgabe/kampagne/anzeigen.csv');
+  if (!existsSync(datei)) return;
+  const zeilen = readFileSync(datei, 'utf8').trim().split('\n');
+  assert.ok(zeilen.length >= 4, `nur ${zeilen.length - 1} Anzeigen — prüft zu wenig`);
+
+  // Landschaftsnamen, die nicht deckungsgleich mit dem Liefergebiet sind.
+  const verboten = ['Mühlviertel', 'Innviertel', 'Hausruckviertel', 'Traunviertel',
+    'Oberösterreich', 'österreichweit', 'Umkreis'];
+  assert.ok(verboten.length >= 5, 'die Liste ist leer geworden — dann prüft die Schleife nichts');
+  for (const zeile of zeilen.slice(1)) {
+    for (const wort of verboten) {
+      assert.ok(!zeile.includes(wort),
+        `Eine Anzeige wirbt mit „${wort}" — das deckt sich nicht mit dem Liefergebiet`);
+    }
+  }
+});
+
+test('Jede Anzeige nennt das Liefergebiet, auch die mit dem höchsten Ertrag', () => {
+  // Kamin trug gar keine Ortsangabe — ausgerechnet die Gruppe mit dem größten
+  // Deckungsbeitrag, in die der erste Euro Werbebudget fließen soll.
+  const datei = pfad('../ausgabe/kampagne/anzeigen.csv');
+  if (!existsSync(datei)) return;
+  const zeilen = readFileSync(datei, 'utf8').trim().split('\n').slice(1);
+  assert.ok(zeilen.length >= 4, `nur ${zeilen.length} Anzeigen`);
+
+  const bezirke = LIEFERGEBIET.bezirke.map((b) => b.name);
+  assert.ok(bezirke.length >= 3, `nur ${bezirke.length} Bezirke — dann prüft die Schleife zu wenig`);
+  for (const zeile of zeilen) {
+    const gruppe = zeile.split(',')[1];
+    for (const bezirk of bezirke) {
+      assert.ok(zeile.includes(bezirk),
+        `Anzeige „${gruppe}" nennt den Bezirk ${bezirk} nicht`);
+    }
+  }
+});
+
+test('Die Ortsangaben halten die Zeichengrenzen ein', () => {
+  // Ein gekürztes Liefergebiet wäre ein falsches — deshalb bricht das
+  // Werkzeug ab, statt die Überschrift zu beschneiden. Diese Probe hält
+  // fest, dass die erzeugte Angabe hineinpasst.
+  const kurz = `Lieferung ${LIEFERGEBIET.bezirke[0].name} bis ${LIEFERGEBIET.bezirke.at(-1).name}`;
+  const lang = `Geliefert wird in die Bezirke ${bezirksliste()}.`;
+  assert.ok(kurz.length <= 30, `Überschrift ${kurz.length} Zeichen: „${kurz}"`);
+  assert.ok(lang.length <= 90, `Beschreibung ${lang.length} Zeichen: „${lang}"`);
 });
