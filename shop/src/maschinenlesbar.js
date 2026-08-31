@@ -28,6 +28,7 @@
  */
 
 import { textZeile } from './format.js';
+import { istGtin } from './artikelliste.js';
 import { mengenschritt } from './gebinde.js';
 
 /** Wie lange eine ausgezeichnete Preisangabe als gültig gilt (Tage). */
@@ -268,11 +269,20 @@ export function angebotsAuszeichnung(artikel, lage = {}) {
     category: textZeile(artikel.gruppe ?? ''),
     offers: angebot,
   };
-  if (artikel.gtin) daten.gtin13 = textZeile(artikel.gtin);
+  // **Nur eine gültige Kennung geht hinaus.** `artikelliste.js` weist eine
+  // GTIN mit falscher Prüfziffer schon beim Einlesen zurück; hier steht die
+  // zweite Sperre, weil der Katalog auch aus älteren Quellen stammen kann und
+  // eine falsche Kennung im Feed schlimmer ist als gar keine — sie kann eine
+  // andere Ware bezeichnen.
+  if (istGtin(artikel.gtin)) daten.gtin13 = textZeile(artikel.gtin);
   if (artikel.hersteller) daten.brand = { '@type': 'Brand', name: textZeile(artikel.hersteller) };
 
   const fehlend = [];
-  if (!artikel.gtin) fehlend.push('GTIN/EAN — für Produktfeeds verlangt');
+  if (!istGtin(artikel.gtin)) {
+    fehlend.push(artikel.gtin
+      ? `GTIN/EAN „${textZeile(artikel.gtin)}" — die Prüfziffer geht nicht auf`
+      : 'GTIN/EAN — für Produktfeeds verlangt');
+  }
   if (!gebiet.vollstaendig) fehlend.push(gebiet.fehlt);
   if (lage.versandkostenNetto == null) fehlend.push('Versandkosten');
 

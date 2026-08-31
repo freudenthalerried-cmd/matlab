@@ -502,10 +502,10 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > 787 vergleichbare Tests, kein Unterschied.
 > [`kommentare-im-schaufenster.md`](./kommentare-im-schaufenster.md).
 >
-> **Stand der Prüfmittel (31.08.):** 1002 Tests, `pruefe-tests` 1000/0, `pruefe-preise` 46/0, `pruefe-inhalte`
+> **Stand der Prüfmittel (31.08.):** 1008 Tests, `pruefe-tests` 1006/0, `pruefe-preise` 46/0, `pruefe-inhalte`
 > 24/357/0, `pruefe-seiten` 81 von 81 gebauten Seiten, `pruefe-widerrufe` 197 Dateien/48
 > Fundstellen, `pruefe-quellen` 6/6, `shopprobe` 50 (davon 10 im Rahmen),
-> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 207/207,
+> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 209/209,
 > `pruefe-pruefer` 11 Prüfer ohne Leerlauf (unterscheidet jetzt Abbruch von Leerlauf), Website 81 Seiten ohne toten
 > Verweis.
 
@@ -903,6 +903,7 @@ zusammengefasst und im Verzeichnis nicht auffindbar:
 | `der-pruefer-der-nie-etwas-fand.md` | Eine der Deckungslücken aufgeschlagen statt abgearbeitet: In `kontrolle.js` — der zweiten, absichtlich anders gebauten Rechnung — waren sieben Zweige unerreicht, und **alle sieben sind Fundmeldungen**. Bei vieren war jeweils die auffälligere Schwester geprüft und die leisere nicht: umgelenkte Adresse ja, fehlende nein |
 | `pruefung-die-sich-selbst-recht-gibt.md` | Zweiter Prüfer, dieselbe Frage: `abgleich.js` warnt im eigenen Dateikopf davor, dass „eine Prüfung eine Erklärung mit sich selbst vergleicht und immer aufgeht" — und tat genau das. Für die Ziele war vorgesorgt, für die Tafeln nicht; acht Mängelmeldungen plus eine DSGVO-Deckungslücke waren unerreichbar. Die halbe Vorkehrung ist die gefährlichere |
 | `weg-zum-ersten-verkauf.md` | **Weisung 31.08.: erster Verkauf mit 25 % Marge, über Shop und Werbung.** Die Marge hält (drei Warenkörbe durchgerechnet, alle 25,0 %); was fehlt, ist der Weg zum Kunden. Sieben Glieder bis zur ersten Anzeige, davon drei kostenlos. Neues Glied: 43 Artikel ohne GTIN — ohne Kennungen kein Feed, ohne Feed keine Shopping-Anzeigen. Entschieden: erster Anlauf nur auf Kamin und Dämmung |
+| `kennung-die-niemand-nachgerechnet-hat.md` | Am kritischen Pfad zum Werbeweg: `istGtin()` prüft die Prüfziffer beim Einlesen, eine falsche Kennung hält die Zeile an statt zu warnen — sie kann eine andere Ware bezeichnen. Gegen 3000 erzeugte Fälle geprüft; dabei fielen zwei **erfundene** Platzhalter der eigenen Testdatei durch. Beim Gegenproben zeigte sich, dass `Number(' ')` null ist: Eine Kennung mit Leerstelle ginge ohne Ziffernprüfung durch |
 | `segment-arbeitsplatzmessung.md` | Nebenstrecke, kein eigenes Segment |
 | `strategie-modellvergleich.md` | Kapitalweg braucht ~900.000 €; enthält überholte Empfehlung |
 | `anschreiben-entwuerfe.md` | Drei Anschreiben (Hersteller, Großhändler, Partnerbetriebe), versandfertig, nicht versendet |

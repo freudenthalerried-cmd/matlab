@@ -5,7 +5,7 @@ import { mkdtempSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { leseArtikelliste, fuehreZusammen, istStand, WARENGRUPPEN } from '../src/artikelliste.js';
+import { leseArtikelliste, fuehreZusammen, istStand, WARENGRUPPEN, istGtin } from '../src/artikelliste.js';
 
 const KOPF_SPARTE = 'sku;bezeichnung;einheit;ek_netto;uvp_netto;sparte';
 
@@ -244,4 +244,77 @@ test('das Werkzeug führt die offenen Sparten nach Gewicht auf', () => {
   const trocken = lauf.stdout.indexOf('Trockenbau');
   assert.ok(wdvs > 0 && trocken > wdvs, 'die häufigere Sparte steht nicht oben');
   assert.match(lauf.stdout, /Erlaubt sind: Dämmung/);
+});
+
+/* ------------------------------------------------------------------ *
+ * Artikelkennungen — geprüft statt bloß vorhanden
+ * ------------------------------------------------------------------ */
+
+test('istGtin rechnet die Prüfziffer nach', () => {
+  // Gegengerechnet an 3000 erzeugten Fällen: Zu jedem Präfix akzeptiert die
+  // Funktion genau eine der zehn möglichen Endziffern. Hier stehen die
+  // Längen, die vorkommen dürfen, und die Fehlerarten, die auftreten.
+  assert.equal(istGtin('96385074'), true, 'GTIN-8');
+  assert.equal(istGtin('9008811000005'), true, 'EAN-13');
+  assert.equal(istGtin('4007817327005'), true, 'EAN-13');
+
+  // Ein Zahlendreher ergibt keine „ungefähr richtige" Kennung.
+  assert.equal(istGtin('4007817327006'), false, 'falsche Prüfziffer');
+  assert.equal(istGtin('4007813727005'), false, 'Zahlendreher im Präfix');
+  // Abgeschnitten, zu lang, keine Ziffern, leer.
+  assert.equal(istGtin('400781732700'), false);
+  assert.equal(istGtin('400781732700512'), false);
+  assert.equal(istGtin('400781732700X'), false);
+  // **Leerzeichen sind die tückische Fehlerart, nicht Buchstaben.** `Number(' ')`
+  // ist null — ohne die ausdrückliche Ziffernprüfung ginge eine Kennung mit
+  // Leerstelle als gültig durch, weil sie sich wie eine Null verrechnet. Ein
+  // Buchstabe fällt schon an der Arithmetik durch (NaN), ein Leerzeichen nicht.
+  // Gemessen am 31.08.: Ohne die Zeile meldet `9 08811000005` „gültig".
+  assert.equal(istGtin('9 08811000005'), false, 'Leerzeichen an Ziffernstelle');
+  assert.equal(istGtin('90088110000 5'), false, 'Leerzeichen vor der Prüfziffer');
+  assert.equal(istGtin(''), false);
+  assert.equal(istGtin(null), false);
+  assert.equal(istGtin(undefined), false);
+});
+
+test('Führende Nullen bleiben erhalten', () => {
+  // Auf der Zeichenkette gerechnet, nicht auf einer Zahl: `00000000` wäre als
+  // Zahl die Null und ginge durch jede Längenprüfung.
+  assert.equal(istGtin('00000000'), true, 'acht Nullen sind rechnerisch gültig');
+  assert.equal(istGtin(0), false, 'eine Zahl ist keine Kennung');
+});
+
+test('Eine GTIN mit falscher Prüfziffer wird zurückgewiesen, nicht gewarnt', () => {
+  // **Eine falsche Kennung ist schlimmer als keine.** Sie kann eine andere
+  // Ware bezeichnen — dann bewirbt der Shop einen Artikel und liefert einen
+  // anderen. Deshalb ein Fehler, der die Zeile anhält, und keine Warnung, die
+  // sie durchlässt.
+  const csv = [
+    'sku;bezeichnung;einheit;gruppe;ek_netto;uvp_netto;gtin',
+    'P-1;Rohr NW 100;STK;Kanal;10,00;20,00;4007817327006',
+  ].join('\n');
+  const { artikel, fehler } = leseArtikelliste(csv, 'poschacher', '2026-08-31', {});
+  assert.equal(artikel.length, 0, 'die Zeile darf nicht durchkommen');
+  assert.ok(fehler.some((f) => /Prüfziffer geht nicht auf/.test(f)), fehler.join(' | '));
+  assert.ok(fehler.some((f) => /4007817327006/.test(f)), 'der Fehler nennt die Kennung nicht');
+});
+
+test('Eine gültige GTIN kommt durch, eine leere Spalte warnt nur', () => {
+  // Beide Gegenrichtungen: Die Prüfung darf weder Gültiges abweisen noch aus
+  // einer fehlenden Angabe einen Fehler machen — ohne GTIN ist der Artikel
+  // verkäuflich, nur nicht bewerbbar.
+  const mit = leseArtikelliste([
+    'sku;bezeichnung;einheit;gruppe;ek_netto;uvp_netto;gtin',
+    'P-1;Rohr NW 100;STK;Kanal;10,00;20,00;9008811000005',
+  ].join('\n'), 'poschacher', '2026-08-31', {});
+  assert.deepEqual(mit.fehler, []);
+  assert.equal(mit.artikel[0].gtin, '9008811000005');
+
+  const ohne = leseArtikelliste([
+    'sku;bezeichnung;einheit;gruppe;ek_netto;uvp_netto;gtin',
+    'P-1;Rohr NW 100;STK;Kanal;10,00;20,00;',
+  ].join('\n'), 'poschacher', '2026-08-31', {});
+  assert.deepEqual(ohne.fehler, []);
+  assert.equal(ohne.artikel[0].gtin, null);
+  assert.ok(ohne.warnungen.some((w) => /ohne GTIN/.test(w)), ohne.warnungen.join(' | '));
 });

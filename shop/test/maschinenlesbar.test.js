@@ -17,6 +17,7 @@ import {
 } from '../src/maschinenlesbar.js';
 import { existsSync } from 'node:fs';
 import { ladeKatalog } from '../src/warenkorb.js';
+import { istGtin } from '../src/artikelliste.js';
 
 const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
 
@@ -80,8 +81,8 @@ test('ohne beziffertes Liefergebiet gibt es keine Versandangabe, aber einen Hinw
 test('die fehlende GTIN wird gemeldet, weil Produktfeeds sie verlangen', () => {
   const ohne = produktAuszeichnung(echterArtikel, lage);
   assert.ok(ohne.fehlend.some((f) => f.includes('GTIN')));
-  const mit = produktAuszeichnung({ ...echterArtikel, gtin: '9001234567890' }, lage);
-  assert.equal(mit.daten.gtin13, '9001234567890');
+  const mit = produktAuszeichnung({ ...echterArtikel, gtin: '9001234567896' }, lage);
+  assert.equal(mit.daten.gtin13, '9001234567896');
   assert.ok(!mit.fehlend.some((f) => f.includes('GTIN')));
 });
 
@@ -165,7 +166,13 @@ test('Ein Eintrag ohne GTIN gilt als veröffentlichbar, aber nicht als einreichb
 
 test('Mit GTIN ist derselbe Feed einreichbar', () => {
   // Gegenprobe: Die Lücke kommt aus den Daten, nicht aus der Prüfung.
-  const f = katalogFeed([{ ...artikelOhneGtin, gtin: '9008811000001' }], FEEDLAGE);
+  //
+  // **Die Kennung hier war bis zum 31.08. `9008811000001` — erfunden und
+  // ungültig.** Sie sah aus wie eine EAN, ihre Prüfziffer ging aber nicht
+  // auf; Google hätte den Feed damit abgelehnt. Der Fall in klein, gegen den
+  // `istGtin` gebaut wurde: Eine Kennung, die niemand nachgerechnet hat, ist
+  // keine Kennung.
+  const f = katalogFeed([{ ...artikelOhneGtin, gtin: '9008811000005' }], FEEDLAGE);
   assert.deepEqual(f.mitLuecken, []);
   assert.equal(f.einreichbar, true);
   assert.equal(f.vollstaendig, true);
@@ -175,7 +182,7 @@ test('Gate 22: ein Artikel am Listendeckel kommt nicht in den Feed', () => {
   // Ein Produktfeed ist Werbung. Wer einen Artikel bewirbt, dessen Preis am
   // Listendeckel klebt, bezahlt für einen Preisvergleich, den er verliert.
   const f = katalogFeed(
-    [{ ...artikelOhneGtin, gtin: '9008811000001', amListendeckel: true }],
+    [{ ...artikelOhneGtin, gtin: '9008811000005', amListendeckel: true }],
     FEEDLAGE,
   );
   assert.equal(f.anzahl, 0);
@@ -193,7 +200,7 @@ test('Gate 22 greift unbedingt, nicht auf Zuruf', () => {
 test('Artikel ohne das Kennzeichen sind von Gate 22 nicht betroffen', () => {
   // Der Radonkatalog kennt `amListendeckel` nicht. Ein fehlendes Kennzeichen
   // darf nicht wie ein gesetztes wirken.
-  const f = katalogFeed([{ ...artikelOhneGtin, gtin: '9008811000001' }], FEEDLAGE);
+  const f = katalogFeed([{ ...artikelOhneGtin, gtin: '9008811000005' }], FEEDLAGE);
   assert.equal(f.anzahl, 1);
   assert.equal(f.zurueckgehalten.length, 0);
 });
@@ -423,4 +430,35 @@ test('Der Feed trägt an keiner Stelle einen ausdrücklichen Nullwert', () => {
   const nullFelder = roh.match(/"[A-Za-z0-9@]+":null/g) ?? [];
   assert.deepEqual([...new Set(nullFelder)], [], `Nullwerte im Feed: ${nullFelder.join(', ')}`);
   assert.ok(roh.length > 200, 'der Feed ist zu klein, um etwas zu zeigen');
+});
+
+test('Eine ungültige GTIN kommt nicht in den Feed, sondern in die Mängelliste', () => {
+  // Die zweite Sperre. `artikelliste.js` weist eine falsche Kennung schon beim
+  // Einlesen zurück; hier steht sie noch einmal, weil der Katalog auch aus
+  // älteren Quellen stammen kann. Eine falsche Kennung im Feed ist schlimmer
+  // als gar keine — sie kann eine andere Ware bezeichnen.
+  const falsch = produktAuszeichnung({ ...echterArtikel, gtin: '4007817327006' }, lage);
+  assert.equal(falsch.daten.gtin13, undefined, 'die falsche Kennung steht im Feed');
+  assert.ok(falsch.fehlend.some((f) => /Prüfziffer geht nicht auf/.test(f)), falsch.fehlend.join(' | '));
+  assert.ok(falsch.fehlend.some((f) => /4007817327006/.test(f)), 'der Mangel nennt die Kennung nicht');
+
+  const feed = katalogFeed([{ ...echterArtikel, gtin: '4007817327006' }], FEEDLAGE);
+  assert.equal(feed.einreichbar, false);
+});
+
+test('Keine Probe dieser Datei trägt eine erfundene Artikelkennung', () => {
+  // **Zwei Platzhalter dieser Datei waren am 31.08. ungültig** —
+  // `9008811000001` und `9001234567890`, beide erfunden statt gerechnet. Sie
+  // sahen aus wie EANs, und Google hätte den Feed damit abgelehnt.
+  //
+  // Diese Probe liest den eigenen Quelltext: Jede dreizehnstellige Zahl darin
+  // muss eine gültige Kennung sein. Eine Zusicherung, die auf einer erfundenen
+  // Kennung ruht, prüft den Feed nicht — sie prüft eine Zeichenkette.
+  const quelle = readFileSync(fileURLToPath(import.meta.url), 'utf8');
+  const kandidaten = [...new Set(quelle.match(/'\d{13}'/g) ?? [])].map((t) => t.slice(1, -1));
+  assert.ok(kandidaten.length >= 2, `nur ${kandidaten.length} Kennungen im Quelltext — prüft zu wenig`);
+  for (const k of kandidaten) {
+    if (k === '4007817327006') continue; // ausdrücklich als ungültig geprüft
+    assert.ok(istGtin(k), `${k} sieht aus wie eine EAN, ist aber keine`);
+  }
 });

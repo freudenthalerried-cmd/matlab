@@ -38,6 +38,47 @@ export const EINHEITEN = Object.freeze([
   'STK', 'M2', 'KG', 'SCK', 'KRT', 'KAR', 'LFM', 'DOS', 'EIM', 'RLL', 'ROL', 'PAK', 'M3', 'LTR',
 ]);
 
+/**
+ * Erlaubte Längen einer Artikelkennung: GTIN-8, -12 (UPC), -13 (EAN) und -14.
+ * Der Baustoffhandel führt fast ausschließlich EAN-13.
+ */
+const GTIN_LAENGEN = Object.freeze([8, 12, 13, 14]);
+
+/**
+ * Ist das eine gültige Artikelkennung?
+ *
+ * **Warum das geprüft gehört und nicht nur das Vorhandensein.** Eine GTIN
+ * trägt eine Prüfziffer: Die Ziffern werden von rechts abwechselnd mit 3 und 1
+ * gewichtet, und die Summe muss auf null aufgehen. Ein Zahlendreher oder eine
+ * abgeschnittene Stelle ergibt deshalb keine „ungefähr richtige" Kennung,
+ * sondern eine falsche — und eine falsche Kennung ist schlimmer als gar
+ * keine:
+ *
+ *   - Der Produktfeed wird abgelehnt, und zwar mit einem Fehler, der nach
+ *     einem Tippfehler beim Hochladen aussieht statt nach einem in den Daten.
+ *   - Schlimmer: Sie kann eine **andere** Ware bezeichnen. Dann bewirbt der
+ *     Shop einen Artikel und liefert einen anderen.
+ *
+ * Der Aufwand ist eine Zeile Arithmetik, der Nutzen ist, dass der Fehler am
+ * Tag des Einlesens auffällt statt beim Ablehnungsbescheid.
+ *
+ * Führende Nullen sind bedeutungstragend, deshalb wird auf der Zeichenkette
+ * gerechnet und nicht auf einer Zahl.
+ */
+export function istGtin(wert) {
+  const ziffern = String(wert ?? '').trim();
+  if (!GTIN_LAENGEN.includes(ziffern.length)) return false;
+  if (!/^\d+$/.test(ziffern)) return false;
+
+  let summe = 0;
+  // Von rechts, die Prüfziffer selbst ausgenommen: 3, 1, 3, 1 …
+  for (let i = ziffern.length - 2, gewicht = 3; i >= 0; i -= 1, gewicht = gewicht === 3 ? 1 : 3) {
+    summe += Number(ziffern[i]) * gewicht;
+  }
+  const pruefziffer = (10 - (summe % 10)) % 10;
+  return pruefziffer === Number(ziffern.at(-1));
+}
+
 const PFLICHTSPALTEN = ['sku', 'bezeichnung', 'einheit', 'gruppe'];
 
 /** `2026-08-30` und nichts anderes — ein Stand, der sich nicht sortieren lässt, ist keiner. */
@@ -128,6 +169,19 @@ export function leseArtikelliste(csvText, lieferant, stand, sparten = {}) {
     const uvp = zahl(satz.uvp_netto);
     const rabatt = zahl(satz.rabatt_prozent);
     const gewicht = zahl(satz.gewicht_kg);
+
+    // **Eine falsche Kennung ist schlimmer als keine** — deshalb ein Fehler
+    // und keine Warnung. Eine Warnung ließe die Zeile durch, und die falsche
+    // Ziffer stünde im Feed.
+    const rohGtin = String(satz.gtin ?? '').trim();
+    let gtin = null;
+    if (rohGtin !== '') {
+      if (!istGtin(rohGtin)) {
+        fehler.push(`${ort}: ${nummer} trägt „${rohGtin}" als GTIN — die Prüfziffer geht nicht auf`);
+        continue;
+      }
+      gtin = rohGtin;
+    }
     if ([ek, uvp, rabatt, gewicht].some((w) => Number.isNaN(w))) {
       fehler.push(`${ort}: Zahl nicht lesbar bei ${nummer}`);
       continue;
@@ -157,7 +211,7 @@ export function leseArtikelliste(csvText, lieferant, stand, sparten = {}) {
       einheit,
       sperrgut,
       sperrgutQuelle: ausListe ? 'liste' : 'eingeschaetzt',
-      gtin: satz.gtin || null,
+      gtin: gtin,
       preisStand: stand,
       ekQuelle: ek != null ? 'bestaetigt' : 'ausListe',
     };
