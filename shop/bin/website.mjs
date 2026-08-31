@@ -38,6 +38,7 @@ import { startklar } from '../src/startklar.js';
 import { ohneKommentare } from '../src/entkommentieren.js';
 import { preisJeKilo, kilotafel, mengenschritt } from '../src/gebinde.js';
 import { EINHEITEN } from '../src/format.js';
+import { GRUPPENSEITE } from '../src/artikelliste.js';
 import { oeffentlicherArtikel, oeffentlicherLieferant, vorteil, ustText } from '../src/shopkern.js';
 import { LIEFERGEBIET } from '../src/liefergebiet.js';
 import { ZAHLWEGE } from '../src/zahlung.js';
@@ -512,14 +513,14 @@ footer a{color:var(--gedaempft)}
  * Preisliste. Wissen und Rechtliches stehen im Fuß und auf der Startseite
  * — erreichbar, aber nicht im Weg.
  */
+// Die Reihenfolge ist eine Gestaltungsfrage und steht deshalb hier; die
+// **Kennungen** kommen seit dem 31.08. aus `GRUPPENSEITE`, damit das
+// Kampagnenwerkzeug dieselben Adressen bildet wie der Bau. Vorher hatte es
+// keine und nahm den Google-Anzeigepfad — dann zeigten die Anzeigen auf
+// Seiten, die es nicht gibt.
+const NAV_REIHENFOLGE = ['WDVS', 'Dämmung', 'Mauerwerk', 'Mörtel', 'Kamin', 'Kanal', 'Zubehör'];
 const NAV = [
-  ['gruppe/wdvs', 'WDVS'],
-  ['gruppe/daemmung', 'Dämmung'],
-  ['gruppe/mauerwerk', 'Mauerwerk'],
-  ['gruppe/moertel', 'Mörtel'],
-  ['gruppe/kamin', 'Kamin'],
-  ['gruppe/kanal', 'Kanal'],
-  ['gruppe/zubehoer', 'Zubehör'],
+  ...NAV_REIHENFOLGE.map((g) => [`gruppe/${GRUPPENSEITE[g]}`, g]),
   ['lieferung', 'Lieferung'],
 ];
 

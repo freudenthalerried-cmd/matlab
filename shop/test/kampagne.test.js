@@ -4,6 +4,8 @@ import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { suchname, taugtAlsKeyword, kurzform } from '../bin/kampagne.mjs';
 import { LIEFERGEBIET, bezirksliste } from '../src/liefergebiet.js';
+import { WARENGRUPPEN, GRUPPENSEITE } from '../src/artikelliste.js';
+import { join } from 'node:path';
 
 const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
 
@@ -304,5 +306,52 @@ test('Anzeigen und Keywords folgen dem ersten Anlauf', () => {
     for (const g of zurueck) {
       assert.ok(!gruppenDrin.has(g), `${datei} führt die zurückgestellte Gruppe ${g}`);
     }
+  }
+});
+
+test('Jede Anzeige zeigt auf eine Seite, die wirklich gebaut ist', () => {
+  // **Der teuerste Fund des Tages.** Die Ziel-URL war der Google-*Anzeigepfad*
+  // — das Zierwerk, das unter der Adresse eingeblendet wird. Alle drei
+  // Anzeigen des ersten Anlaufs zeigten damit auf Seiten, die es nicht gibt:
+  //
+  //   bauversand.com/fassade    →  gebaut ist gruppe/wdvs.html
+  //   bauversand.com/daemmung   →  gebaut ist gruppe/daemmung.html
+  //   bauversand.com/kamin      →  gebaut ist gruppe/kamin.html
+  //
+  // Jeder Klick wäre bezahlt und auf einer Fehlerseite gelandet. Diese Probe
+  // schlägt die Adresse im gebauten Ordner nach, statt sie zu lesen.
+  const anzeigenDatei = pfad('../ausgabe/kampagne/anzeigen.csv');
+  const siteOrdner = pfad('../ausgabe/site');
+  if (!existsSync(anzeigenDatei) || !existsSync(siteOrdner)) return;
+
+  const kopf = readFileSync(anzeigenDatei, 'utf8').trim().split('\n')[0].split(',');
+  const spalte = kopf.indexOf('Finale URL');
+  assert.ok(spalte >= 0, 'keine Spalte „Finale URL"');
+  const zeilen = readFileSync(anzeigenDatei, 'utf8').trim().split('\n').slice(1);
+  assert.ok(zeilen.length >= 1, 'keine Anzeige — dann prüft diese Probe nichts');
+
+  for (const zeile of zeilen) {
+    const url = zeile.split(',')[spalte];
+    const pfadTeil = new URL(url).pathname.replace(/^\/+/, '');
+    assert.ok(pfadTeil.endsWith('.html'), `${url} zeigt nicht auf eine Seite`);
+    assert.ok(existsSync(join(siteOrdner, pfadTeil)),
+      `${url} zeigt ins Leere — ${pfadTeil} ist nicht gebaut`);
+  }
+});
+
+test('Jede Warengruppe hat eine Seitenkennung, und jede Kennung eine Gruppe', () => {
+  // Die Zuordnung ist die Zusicherung. Wer eine Warengruppe ergänzt und die
+  // Kennung vergisst, bekommt hier den Befund — und nicht erst, wenn eine
+  // Anzeige für sie ins Leere zeigt.
+  assert.ok(WARENGRUPPEN.length >= 5, `nur ${WARENGRUPPEN.length} Warengruppen`);
+  for (const g of WARENGRUPPEN) {
+    assert.ok(GRUPPENSEITE[g], `die Warengruppe „${g}" hat keine Seitenkennung`);
+    assert.match(GRUPPENSEITE[g], /^[a-z]+$/, `„${GRUPPENSEITE[g]}" taugt nicht als Adresse`);
+  }
+  const kennungen = Object.keys(GRUPPENSEITE);
+  assert.equal(kennungen.length, WARENGRUPPEN.length,
+    'so viele Kennungen wie Warengruppen, sonst prüft die Schleife nicht alle');
+  for (const kennung of kennungen) {
+    assert.ok(WARENGRUPPEN.includes(kennung), `Kennung für „${kennung}" ohne Warengruppe`);
   }
 });

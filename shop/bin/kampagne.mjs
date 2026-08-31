@@ -33,6 +33,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { bezirksliste, LIEFERGEBIET } from '../src/liefergebiet.js';
+import { GRUPPENSEITE } from '../src/artikelliste.js';
 import { ladeBaustoffkatalog, katalogbefund, ZIELMARGE } from '../src/baustoffkatalog.js';
 import { cent } from '../src/preis.js';
 import { traegtSichSelbst } from '../src/kostenbild.js';
@@ -560,7 +561,19 @@ function main() {
   for (const g of ersterAnlauf) {
     const t = ANZEIGENTEXTE[g.gruppe];
     if (!t) continue;
-    const satz = { Kampagne: `Baustoffe ${g.gruppe}`, Anzeigengruppe: g.gruppe, Anzeigentyp: 'Responsive Suchanzeige', 'Finale URL': `${basis}/${t.pfad[0]}` };
+    // **Berichtigt am 31.08.** Hier stand `${basis}/${t.pfad[0]}` — der
+    // Google-**Anzeigepfad** als Ziel-URL. Der Anzeigepfad ist Zierwerk, das
+    // unter der Adresse eingeblendet wird („bauversand.com/fassade/wdvs"); die
+    // Seite heißt `gruppe/wdvs.html`. Alle drei Anzeigen des ersten Anlaufs
+    // zeigten damit auf Seiten, die es nicht gibt — jeder Klick bezahlt und
+    // auf einer Fehlerseite gelandet.
+    const seite = GRUPPENSEITE[g.gruppe];
+    if (!seite) {
+      console.error(`Abbruch: Für die Gruppe „${g.gruppe}" gibt es keine Seitenkennung.`);
+      console.error('Eine Anzeige ohne Ziel ist teurer als keine Anzeige.');
+      process.exit(2);
+    }
+    const satz = { Kampagne: `Baustoffe ${g.gruppe}`, Anzeigengruppe: g.gruppe, Anzeigentyp: 'Responsive Suchanzeige', 'Finale URL': `${basis}/gruppe/${seite}.html` };
     // Die Ortsangabe steht in **jeder** Anzeige, an letzter Stelle, damit sie
     // keine der beworbenen Eigenschaften verdrängt.
     [...t.k, ORT_KURZ].forEach((k, i) => { satz[`Überschrift ${i + 1}`] = k; });

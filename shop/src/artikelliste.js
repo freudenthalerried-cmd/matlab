@@ -27,6 +27,40 @@ export const WARENGRUPPEN = Object.freeze([
 ]);
 
 /**
+ * Die Seitenkennung jeder Warengruppe — `gruppe/<kennung>.html`.
+ *
+ * **Warum das hierher gehört und nicht ins Bauwerkzeug.** Die Zuordnung stand
+ * in `bin/website.mjs` als Navigationsliste. `bin/kampagne.mjs` brauchte sie
+ * auch — für die Ziel-URL der Anzeigen — und hatte sie nicht; es nahm
+ * stattdessen den **Anzeigepfad**, also das Zierwerk, das Google unter der
+ * Adresse einblendet.
+ *
+ * Ergebnis am 31.08.: Alle drei Anzeigen des ersten Anlaufs zeigten auf
+ * Seiten, die es nicht gibt.
+ *
+ *   Anzeige                          gebaut ist
+ *   bauversand.com/fassade           gruppe/wdvs.html
+ *   bauversand.com/daemmung          gruppe/daemmung.html
+ *   bauversand.com/kamin             gruppe/kamin.html
+ *
+ * Jeder Klick wäre auf einer Fehlerseite gelandet — bezahlt und weggeschickt.
+ *
+ * Die Umlaute sind ausgeschrieben und **nicht** gerechnet: `Mörtel` wird zu
+ * `moertel`, nicht zu `mortel`. Eine Regel dafür gäbe es (`normalisiere()` in
+ * `shopkern.js` faltet Umlaute für die Suche), aber Adressen dürfen sich nicht
+ * ändern, wenn jemand eine Suchregel verbessert.
+ */
+export const GRUPPENSEITE = Object.freeze({
+  'Dämmung': 'daemmung',
+  Kamin: 'kamin',
+  Kanal: 'kanal',
+  Mauerwerk: 'mauerwerk',
+  'Mörtel': 'moertel',
+  WDVS: 'wdvs',
+  'Zubehör': 'zubehoer',
+});
+
+/**
  * Gruppen, deren Ware palettiert kommt und einen Kranhub braucht.
  * Dieselbe Einschätzung wie in `bin/katalog-aus-rechnungen.mjs` — sie steuert
  * den Frachtzuschlag und ist **keine** Angabe des Lieferanten.
