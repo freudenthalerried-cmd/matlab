@@ -502,10 +502,10 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > 787 vergleichbare Tests, kein Unterschied.
 > [`kommentare-im-schaufenster.md`](./kommentare-im-schaufenster.md).
 >
-> **Stand der Prüfmittel (31.08.):** 967 Tests, `pruefe-tests` 965/0, `pruefe-preise` 46/0, `pruefe-inhalte`
+> **Stand der Prüfmittel (31.08.):** 969 Tests, `pruefe-tests` 967/0, `pruefe-preise` 46/0, `pruefe-inhalte`
 > 24/357/0, `pruefe-seiten` 81 von 81 gebauten Seiten, `pruefe-widerrufe` 197 Dateien/48
 > Fundstellen, `pruefe-quellen` 6/6, `shopprobe` 50 (davon 10 im Rahmen),
-> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 202/202,
+> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 203/203,
 > `pruefe-pruefer` 11 Prüfer ohne Leerlauf (unterscheidet jetzt Abbruch von Leerlauf), Website 81 Seiten ohne toten
 > Verweis.
 
@@ -897,6 +897,7 @@ zusammengefasst und im Verzeichnis nicht auffindbar:
 | `null-kilo.md` | Dritter Fund derselben Form in drei Tagen: `gewichtKg: gewicht ?? 0` machte aus „unbekannt" null Kilogramm — und weil 0 eine Zahl ist, galt die Position als belegt, der Warenkorb sagte „aus den Lieferscheinen" statt „ohne belegtes Gewicht". Danach alle 22 Nullen in `src/` durchgesehen: eine Fundstelle, der Rest begründet in Ordnung |
 | `durchsicht-mit-einem-fund.md` | Statt auf einen vierten Einzelbefund zu warten: alle 46 Artikel durch jeden Erzeuger geschickt und die Ausgabe auf Spuren unbehandelter Lücken abgesucht. Belege, Anfragetext und 81 Seiten sauber; `katalogFeed` trug 43-mal `priceValidUntil: null`. `bin/website.mjs` wusste das und berichtigte es beim Abnehmer — bei einem von zweien. Jetzt an der Quelle |
 | `der-zweig-den-niemand-betrat.md` | `bin/veroeffentlichung.mjs` fällt ohne Preisdatei auf den Platzhalterkatalog zurück — der Zustand **jeder frischen Arbeitskopie**, weil `preise/` außerhalb des Repositories liegt, und trotzdem der einzige ungeprüfte Zweig: Alle zehn Testfälle liefen in der einen Lage, in der er nicht greift. Zusage hält; nebenbei rechnete der Rückfall noch mit der abgelösten Marge von 35 % |
+| `ein-anker-ist-kein-bereich.md` | Acht bauliche Zusicherungen über alle 81 Seiten gemessen; sieben erfüllt, eine auf keiner Seite: Es gab kein `<main>`. Das Sprungziel war ein leeres `div` — ein Punkt statt eines Bereichs, ohne Landmarkennavigation und ohne Abgrenzung für die Textauszieher, für die dieser Shop gebaut ist. Dabei kam heraus, dass beide Wachen in `sprungziel` von keiner Probe auslösbar waren |
 | `segment-arbeitsplatzmessung.md` | Nebenstrecke, kein eigenes Segment |
 | `strategie-modellvergleich.md` | Kapitalweg braucht ~900.000 €; enthält überholte Empfehlung |
 | `anschreiben-entwuerfe.md` | Drei Anschreiben (Hersteller, Großhändler, Partnerbetriebe), versandfertig, nicht versendet |

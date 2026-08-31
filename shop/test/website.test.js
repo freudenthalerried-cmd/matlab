@@ -5,7 +5,7 @@ import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
-import { loeseVerweis, loeseVerwandt, marke, mitverbaut, HERSTELLER, positionsliste } from '../bin/website.mjs';
+import { loeseVerweis, loeseVerwandt, marke, mitverbaut, HERSTELLER, positionsliste, sprungziel } from '../bin/website.mjs';
 import { lesKopf } from '../src/markdown.js';
 import { KORBSCHLUESSEL } from '../src/shopkern.js';
 import { SUCH_CRAWLER, TRAININGS_CRAWLER } from '../src/maschinenlesbar.js';
@@ -902,9 +902,13 @@ test('keine Seite mit eigenem Inhalt trägt noindex', () => {
       if (e.isDirectory()) gehe(join(o, e.name), `${vor}${e.name}/`);
       else if (e.name.endsWith('.html')) {
         const html = readFileSync(join(o, e.name), 'utf8');
-        const a = html.indexOf('<div id="inhalt"');
-        const b = html.indexOf('<footer');
-        assert.ok(a > 0 && b > a, `${vor}${e.name}: ohne Anker und Fußzeile ist der eigene Inhalt nicht abgrenzbar`);
+        // Der eigene Inhalt ist seit dem 31.08. der `<main>`-Bereich — vorher
+        // die Strecke zwischen einem leeren Anker und der Fußzeile. Dieselbe
+        // Menge Text, aber jetzt vom Erzeugnis selbst abgegrenzt statt von
+        // zwei Suchbegriffen dieser Probe.
+        const a = html.indexOf('<main id="inhalt"');
+        const b = html.indexOf('</main>');
+        assert.ok(a > 0 && b > a, `${vor}${e.name}: ohne <main> ist der eigene Inhalt nicht abgrenzbar`);
         const eigen = html.slice(a, b)
           .replace(/<script[\s\S]*?<\/script>/g, '')
           .replace(/<p class="krume">[\s\S]*?<\/p>/, '')
@@ -948,6 +952,44 @@ test('der Sprungverweis hat auf jeder Seite ein Ziel hinter der Kopfleiste', () 
     assert.ok(verweis >= 0, `${id} hat keinen Sprungverweis`);
     assert.ok(ziel > kopfEnde && kopfEnde > verweis,
       `${id}: das Ziel liegt nicht hinter der Kopfleiste`);
+  }
+});
+
+test('Der Sprung führt in einen Bereich, nicht auf eine Stelle', () => {
+  // **Erweitert am 31.08.** Das Ziel war ein leeres `<div>`: Der Fokus saß
+  // danach an der richtigen Stelle, aber es gab keine Hauptbereichs-Landmarke
+  // — weder zum Anspringen im Vorleseprogramm noch als Abgrenzung für die
+  // Textauszieher, für die dieser Shop gebaut ist. Eine Landmarke hat einen
+  // Anfang **und** ein Ende.
+  const wurzel = pfad('../ausgabe/site');
+  if (!existsSync(wurzel)) return;
+  const seiten = [];
+  const gehe = (o, vor = '') => {
+    for (const e of readdirSync(o, { withFileTypes: true })) {
+      if (e.isDirectory()) gehe(join(o, e.name), `${vor}${e.name}/`);
+      else if (e.name.endsWith('.html')) {
+        seiten.push({ id: vor + e.name.slice(0, -5), html: readFileSync(join(o, e.name), 'utf8') });
+      }
+    }
+  };
+  gehe(wurzel);
+  assert.ok(seiten.length >= 40, `nur ${seiten.length} Seiten`);
+  for (const { id, html } of seiten) {
+    assert.equal((html.match(/<main\b/g) ?? []).length, 1, `${id}: nicht genau ein <main>`);
+    assert.equal((html.match(/<\/main>/g) ?? []).length, 1, `${id}: <main> nicht genau einmal geschlossen`);
+    // Das Sprungziel **ist** der Hauptbereich, nicht ein Punkt davor.
+    assert.match(html, /<main id="inhalt" tabindex="-1">/, `${id}: das Sprungziel ist kein <main>`);
+    // Die drei Landmarken in ihrer Reihenfolge — und der eigene Inhalt
+    // dazwischen, nicht die Kopfleiste und nicht die Fußzeile.
+    const kopf = html.indexOf('</header>');
+    const auf = html.indexOf('<main');
+    const zu = html.indexOf('</main>');
+    const fuss = html.indexOf('<footer');
+    assert.ok(kopf < auf && auf < zu && zu < fuss,
+      `${id}: header/main/footer stehen nicht in dieser Reihenfolge`);
+    assert.ok(html.slice(auf, zu).includes('<h1'), `${id}: die Überschrift steht außerhalb von <main>`);
+    assert.ok(!html.slice(auf, zu).includes('kopfleiste'),
+      `${id}: die Kopfleiste steht im Hauptbereich`);
   }
 });
 
@@ -1104,4 +1146,24 @@ test('keine Seite behauptet einen größeren Preisvorteil, als der Artikel gibt'
     }
   }
   assert.ok(geprueft >= 20, `nur ${geprueft} Seiten mit Vorteilsangabe`);
+});
+
+
+test('Ohne eindeutige Grenzen wird kein Hauptbereich gesetzt, sondern abgebrochen', () => {
+  // Die beiden Wachen in `sprungziel` sind über die gebauten Seiten nicht
+  // erreichbar — alle 81 tragen Kopfleiste und Fußzeile. Genau deshalb hier:
+  // Eine Wache, die keine Probe auslösen kann, ist eine Vermutung. Gemessen am
+  // 31.08.: Das Entfernen der Fußzeilenwache ließ die ganze Datei grün.
+  //
+  // Das Ende des Hauptbereichs zu raten wäre schlimmer als kein `<main>`:
+  // Eine Landmarke, die zu früh oder zu spät schließt, führt Vorleseprogramm
+  // und Textauszieher in die Irre, statt ihnen nichts zu sagen.
+  assert.throws(() => sprungziel('<p>ohne alles</p>'), /Kopfleiste/);
+  assert.throws(() => sprungziel('<header>x</header><p>ohne Fußzeile</p>'), /Fußzeile/);
+
+  const gut = sprungziel('<header>Kopf</header><h1>Titel</h1><footer>Fuß</footer>');
+  assert.match(gut, /<\/header>\s*<main id="inhalt" tabindex="-1">/);
+  assert.match(gut, /<\/main>\s*<footer>/);
+  assert.ok(gut.indexOf('<h1>') > gut.indexOf('<main'), 'die Überschrift steht außerhalb');
+  assert.ok(gut.indexOf('<h1>') < gut.indexOf('</main>'), 'die Überschrift steht außerhalb');
 });

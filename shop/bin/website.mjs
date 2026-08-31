@@ -1510,6 +1510,66 @@ function shopdaten(katalog, befund, seiten, lieferantenDatei, suchwoerterDatei, 
   };
 }
 
+/**
+ * Das Ziel des Sprungverweises — vor dem ersten eigenen Inhalt der Seite.
+ *
+ * **Berichtigt am 30.08.** Hier stand
+ * `koerper.replace('<p class="krume">', …)`: Der Anker wurde vor die
+ * Brotkrume gesetzt. Das traf 80 von 81 Seiten — und ausgerechnet die
+ * Startseite nicht, denn die trägt keine Brotkrume. Ihr Sprungverweis
+ * „Zum Inhalt springen" zeigte auf ein `#inhalt`, das es dort nicht gibt.
+ *
+ * Die erste Seite, die ein Besucher sieht, war die einzige ohne Ziel. Genau
+ * die Sorte Befund, die eine Stichprobe nicht findet: Neun ausgesuchte
+ * Seiten hätten neunmal grün gemeldet.
+ *
+ * Der erste Anlauf setzte den Anker bei fehlender Brotkrume an den Anfang
+ * des Körpers — also **vor** den Sprungverweis selbst. Damit gab es zwar ein
+ * Ziel, aber der Sprung übersprang nichts: Kopfleiste, Suchfeld und Menü
+ * blieben dahinter. Ein Sprungverweis, der auf den Punkt vor sich selbst
+ * zeigt, ist schlimmer als keiner, weil er behauptet, etwas zu tun.
+ *
+ * Der Anker gehört hinter die Kopfleiste — dort, wo der eigene Inhalt der
+ * Seite beginnt. Das ist auf allen 81 Seiten dieselbe Stelle, mit und ohne
+ * Brotkrume, und braucht keine Fallunterscheidung mehr.
+ */
+/**
+ * **Erweitert am 31.08.: aus dem Anker wird ein `<main>`.**
+ *
+ * Der Anker war ein leeres `<div id="inhalt" tabindex="-1">`. Er tat, was er
+ * sollte — der Sprungverweis setzte den Fokus hinter die Kopfleiste —, und
+ * doch fehlte allen 81 Seiten damit die Hauptbereichs-Landmarke.
+ *
+ * Der Unterschied ist nicht formal:
+ *
+ * 1. **Der Sprung landete an einer Stelle, nicht in einem Bereich.** Wer per
+ *    Vorleseprogramm „zum Inhalt" springt, erfährt anschließend nicht, wo der
+ *    Inhalt wieder aufhört. Eine Landmarke hat einen Anfang **und** ein Ende.
+ * 2. **Landmarkennavigation gab es gar nicht.** Ein Vorleseprogramm listet
+ *    `banner`, `main` und `contentinfo` zum Anspringen auf; `main` fehlte in
+ *    dieser Liste auf jeder Seite.
+ * 3. **Der Kanal, für den dieser Shop gebaut ist, liest mit.** Textauszieher
+ *    und Sprachmodelle gewichten `<main>` als das stärkste Signal dafür, wo
+ *    der eigene Inhalt einer Seite steht und wo Kopfleiste, Menü und Fußzeile
+ *    aufhören. Eine Seite ohne `main` überlässt diese Abgrenzung der Heuristik.
+ *
+ * Die Grenzen sind auf allen 81 Seiten eindeutig: genau ein `</header>` und
+ * genau ein `<footer>`. Fehlt eine der beiden, bricht der Bau ab, statt eine
+ * Landmarke zu setzen, deren Ende geraten wäre — dieselbe Haltung wie beim
+ * Anker zuvor.
+ */
+function sprungziel(koerper) {
+  if (!koerper.includes('</header>')) {
+    throw new Error('Seite ohne Kopfleiste — das Ziel des Sprungverweises ist unbestimmt.');
+  }
+  if (!koerper.includes('<footer>')) {
+    throw new Error('Seite ohne Fußzeile — das Ende des Hauptbereichs wäre geraten.');
+  }
+  return koerper
+    .replace('</header>', '</header>\n<main id="inhalt" tabindex="-1">')
+    .replace('<footer>', '</main>\n<footer>');
+}
+
 function rahmen(seite, verweis, { eigenstaendig, skriptDatei, tiefe = false, daten = null }) {
   const nav = NAV.map(([id, t]) => `<a href="${verweis(id)}">${esc(t)}</a>`).join('');
   // **Was ohne JavaScript nicht geht — auf jeder Seite, nicht nur auf dreien.**
@@ -1583,36 +1643,6 @@ function bedienhinweis(seite) {
   return seite.nurBedienung ? '\n<meta name="robots" content="noindex,follow">' : '';
 }
 
-/**
- * Das Ziel des Sprungverweises — vor dem ersten eigenen Inhalt der Seite.
- *
- * **Berichtigt am 30.08.** Hier stand
- * `koerper.replace('<p class="krume">', …)`: Der Anker wurde vor die
- * Brotkrume gesetzt. Das traf 80 von 81 Seiten — und ausgerechnet die
- * Startseite nicht, denn die trägt keine Brotkrume. Ihr Sprungverweis
- * „Zum Inhalt springen" zeigte auf ein `#inhalt`, das es dort nicht gibt.
- *
- * Die erste Seite, die ein Besucher sieht, war die einzige ohne Ziel. Genau
- * die Sorte Befund, die eine Stichprobe nicht findet: Neun ausgesuchte
- * Seiten hätten neunmal grün gemeldet.
- *
- * Der erste Anlauf setzte den Anker bei fehlender Brotkrume an den Anfang
- * des Körpers — also **vor** den Sprungverweis selbst. Damit gab es zwar ein
- * Ziel, aber der Sprung übersprang nichts: Kopfleiste, Suchfeld und Menü
- * blieben dahinter. Ein Sprungverweis, der auf den Punkt vor sich selbst
- * zeigt, ist schlimmer als keiner, weil er behauptet, etwas zu tun.
- *
- * Der Anker gehört hinter die Kopfleiste — dort, wo der eigene Inhalt der
- * Seite beginnt. Das ist auf allen 81 Seiten dieselbe Stelle, mit und ohne
- * Brotkrume, und braucht keine Fallunterscheidung mehr.
- */
-function sprungziel(koerper) {
-  const anker = '<div id="inhalt" tabindex="-1"></div>';
-  if (!koerper.includes('</header>')) {
-    throw new Error('Seite ohne Kopfleiste — das Ziel des Sprungverweises ist unbestimmt.');
-  }
-  return koerper.replace('</header>', `</header>${anker}`);
-}
 
   return `<!doctype html>
 <html lang="de-AT">
@@ -2143,4 +2173,4 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   main();
 }
 
-export { loeseVerweis, loeseVerwandt, lesInhalte, marke, HERSTELLER };
+export { loeseVerweis, loeseVerwandt, lesInhalte, marke, HERSTELLER, sprungziel };
