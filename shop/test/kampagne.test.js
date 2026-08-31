@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { suchname, taugtAlsKeyword, kurzform } from '../bin/kampagne.mjs';
+import { suchname, taugtAlsKeyword, kurzform, alleAnzeigentexte, pruefeTexte, ANZEIGENTEXTE } from '../bin/kampagne.mjs';
 import { LIEFERGEBIET, bezirksliste } from '../src/liefergebiet.js';
 import { WARENGRUPPEN, GRUPPENSEITE } from '../src/artikelliste.js';
 import { join } from 'node:path';
@@ -413,4 +413,47 @@ test('Keine Überschrift endet mitten im Satz', () => {
         `${k} endet auf „${letztes}": „${text}" — abgeschnitten statt umformuliert`);
     }
   }
+});
+
+test('Auch die zurückgestellten Anzeigentexte werden geprüft', () => {
+  // **Befund vom 31.08., abends.** Seit das Budget mittags auf die tragenden
+  // Gruppen konzentriert wurde, gingen nur noch drei Anzeigen durch
+  // `pruefeTexte`. In der zurückgestellten Gruppe Kanal stand weiterhin „PVC
+  // Kanal ab Lager" — dieselbe unwahre Vorratszusage, die am Nachmittag aus
+  // der Dämmung entfernt worden war.
+  //
+  // Sie wäre am Tag der Aktivierung hinausgegangen: ein Fehler mit bekanntem
+  // Auslösetag, kein latenter. Und die Blindstelle war die Folge meiner
+  // eigenen Änderung — wer den Ausgabeumfang verkleinert, verkleinert die
+  // Prüfung mit, wenn beide an derselben Liste hängen.
+  //
+  // Geprüft wird deshalb, dass das Werkzeug **abbricht**, wenn irgendein Text
+  // im Vorrat eine Vorratszusage trägt — auch einer, der heute nicht
+  // ausgegeben wird.
+  // **Der erste Anlauf dieser Probe war zu schwach**, und das Werkzeug hat es
+  // gezeigt: Sie las den Quelltext und verlangte, dass `Object.entries(
+  // ANZEIGENTEXTE)` **dasteht**. Eine Mutation, die den Ausdruck stehen ließ
+  // und nur die Verwendung zurücknahm, blieb unbemerkt. Geprüft wird jetzt
+  // das Verhalten, nicht die Schreibweise.
+
+  // 1. Die Prüfmenge deckt jede Warengruppe des Vorrats — auch die
+  //    zurückgestellten, die heute keine Anzeige bekommen.
+  const vorrat = alleAnzeigentexte();
+  const imVorrat = vorrat.map((a) => a.Anzeigengruppe);
+  assert.deepEqual([...imVorrat].sort(), Object.keys(ANZEIGENTEXTE).sort(),
+    'die Prüfmenge deckt nicht alle Gruppen');
+  const zurueck = zeilenVon(spaeterDatei).map((z) => z.split(',')[0]);
+  assert.ok(zurueck.length >= 1, 'keine zurückgestellte Gruppe zum Vergleich');
+  for (const g of zurueck) {
+    assert.ok(imVorrat.includes(g), `die zurückgestellte Gruppe ${g} wird nicht geprüft`);
+  }
+
+  // 2. Und die Prüfung findet in dieser Menge tatsächlich etwas.
+  const mitZusage = [...vorrat, { Anzeigengruppe: 'Probe', 'Überschrift 1': 'Alles ab Lager' }];
+  const gefunden = pruefeTexte(mitZusage);
+  assert.ok(gefunden.some((f) => /behauptet Vorrat/.test(f)),
+    `die Vorratszusage wurde nicht gefunden: ${gefunden.join(' | ')}`);
+
+  // 3. Der echte Vorrat ist sauber.
+  assert.deepEqual(pruefeTexte(vorrat), [], 'ein Anzeigentext im Vorrat ist zu beanstanden');
 });

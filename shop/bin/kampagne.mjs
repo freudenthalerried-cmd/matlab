@@ -295,7 +295,65 @@ const VORRATSWORTE = ['ab Lager', 'auf Lager', 'lagernd', 'sofort verfügbar', '
 const ENDET_NICHT_AUF = ['vom', 'von', 'am', 'im', 'zum', 'zur', 'mit', 'für', 'und', 'oder',
   'der', 'die', 'das', 'den', 'dem', 'ein', 'eine', 'auf', 'aus', 'bei', 'nach', 'ohne', 'bis'];
 
-function pruefeTexte(anzeigen) {
+/**
+ * Die Anzeigentexte je Warengruppe — **alle**, auch die zurückgestellten.
+ *
+ * Auf Modulebene und exportiert, seit am 31.08. auffiel, dass die
+ * Textprüfung nur noch die ausgegebenen Anzeigen sah: In der
+ * zurückgestellten Gruppe Kanal stand weiterhin „PVC Kanal ab Lager",
+ * dieselbe unwahre Vorratszusage, die mittags aus der Dämmung entfernt
+ * worden war. Sie wäre am Tag der Aktivierung hinausgegangen.
+ */
+export const ANZEIGENTEXTE = {
+  WDVS: {
+    k: ['WDVS zum Baumeisterpreis', 'Capatect und Baumit', 'Fassade komplett liefern', 'Kleber, Gewebe, Dübel', 'Baumeisterpreis, nicht Liste', 'Systemware auf Palette'],
+    b: ['Das komplette Fassadensystem aus einer Hand — geliefert auf die Baustelle.', 'Kleber, Gewebe, Dübel, Putzgrund. Was zusammengehört, kommt zusammen.', 'Ein Baumeister kauft ein, Sie zahlen seinen Preis.'],
+    pfad: ['fassade', 'wdvs'],
+  },
+  'Dämmung': {
+    k: ['XPS und EPS vom Baumeister', 'Perimeterdämmung 80 mm', 'Dämmplatten palettenweise', 'Baumeisterpreis auf XPS', 'Dämmung auf die Baustelle', 'Kein Baumarktpreis', 'XPS 30 bis 100 mm'],
+    b: ['XPS und EPS in allen gängigen Stärken, palettenweise auf die Baustelle.', 'Perimeter- und Fassadendämmung zum Preis, den ein Baumeister zahlt.', 'Ganze Paletten statt Einzelplatten, direkt auf die Baustelle.'],
+    pfad: ['daemmung', 'xps'],
+  },
+  Kamin: {
+    k: ['Schiedel Kaminsystem', 'Kaminzug komplett', 'Mantelstein und Rohr', 'Vom Fertigfuß zur Haube', 'Kamin auf die Baustelle', 'SIKM Systemteile', 'Kamin zum Baumeisterpreis'],
+    b: ['Der ganze Zug: Fertigfuß, Mantelsteine, gedämmtes Rohr, Putztür, Haube.', 'Schiedel-Systemteile aus einer Bestellung, geliefert statt abgeholt.', 'Was beim Kamin fehlt, hält die Baustelle auf. Deshalb komplett.'],
+    pfad: ['kamin', 'schiedel'],
+  },
+  Kanal: {
+    k: ['Kanalrohr DN 100', 'Rohr, Bogen, Abzweig', 'Kanal komplett liefern', 'PVC Kanal vom Baumeister', 'Schacht und Formteile', 'Kanal zum Baumeisterpreis'],
+    b: ['Kanalrohr, Bögen, Abzweiger und Schacht — abgestimmt und komplett.', 'PVC-Kanal DN 100 mit allen Formteilen. Lieferung auf die Baustelle.', 'Ein Bogen zu wenig kostet einen halben Tag. Deshalb liefern wir das Set.'],
+    pfad: ['kanal', 'dn100'],
+  },
+  'Mörtel': {
+    k: ['Mörtel palettenweise', 'Baumit ThermoMörtel', 'Mörtel auf die Baustelle', 'Baumeisterpreis auf Mörtel', 'Ganze Paletten', 'Kein Sackverkauf'],
+    b: ['Baumit-Mörtel palettenweise, geliefert auf die Baustelle.', 'Wir liefern Paletten, keine Einzelsäcke — das ist der ganze Preisvorteil.', 'Mörtel zum Preis, den ein Baumeister im Einkauf zahlt.'],
+    pfad: ['moertel', 'palette'],
+  },
+  Mauerwerk: {
+    k: ['Planziegel ab Palette', 'Ökotherm Hochlochziegel', 'Ziegel auf die Baustelle', 'Baumeisterpreis auf Ziegel', 'Mauerwerk komplett', 'Palettenweise liefern'],
+    b: ['Planziegel palettenweise, geliefert und mit Kran entladen.', 'Mauerwerk zum Baumeisterpreis, keine Kleinmengen.', 'Ganze Paletten auf die Baustelle statt Stückware aus dem Baumarkt.'],
+    pfad: ['ziegel', 'mauerwerk'],
+  },
+};
+
+/**
+ * Der ganze Textvorrat als Prüfmenge — eine Zeile je Warengruppe.
+ *
+ * Getrennt von der Ausgabe und exportiert, damit eine Probe sie befragen kann.
+ * **Wer den Ausgabeumfang verkleinert, verkleinert die Prüfung mit, wenn beide
+ * an derselben Liste hängen** — genau das ist am 31.08. passiert.
+ */
+export function alleAnzeigentexte() {
+  return Object.entries(ANZEIGENTEXTE).map(([gruppe, t]) => {
+    const satz = { Anzeigengruppe: gruppe };
+    t.k.forEach((k, i) => { satz[`Überschrift ${i + 1}`] = k; });
+    t.b.forEach((b, i) => { satz[`Beschreibung ${i + 1}`] = b; });
+    return satz;
+  });
+}
+
+export function pruefeTexte(anzeigen) {
   const fehler = [];
   for (const a of anzeigen) {
     for (const [k, v] of Object.entries(a)) {
@@ -488,38 +546,6 @@ function main() {
   });
 
   // --- Anzeigen -----------------------------------------------------------
-  const ANZEIGENTEXTE = {
-    WDVS: {
-      k: ['WDVS zum Baumeisterpreis', 'Capatect und Baumit', 'Fassade komplett liefern', 'Kleber, Gewebe, Dübel', 'Baumeisterpreis, nicht Liste', 'Systemware auf Palette'],
-      b: ['Das komplette Fassadensystem aus einer Hand — geliefert auf die Baustelle.', 'Kleber, Gewebe, Dübel, Putzgrund. Was zusammengehört, kommt zusammen.', 'Ein Baumeister kauft ein, Sie zahlen seinen Preis.'],
-      pfad: ['fassade', 'wdvs'],
-    },
-    'Dämmung': {
-      k: ['XPS und EPS vom Baumeister', 'Perimeterdämmung 80 mm', 'Dämmplatten palettenweise', 'Baumeisterpreis auf XPS', 'Dämmung auf die Baustelle', 'Kein Baumarktpreis', 'XPS 30 bis 100 mm'],
-      b: ['XPS und EPS in allen gängigen Stärken, palettenweise auf die Baustelle.', 'Perimeter- und Fassadendämmung zum Preis, den ein Baumeister zahlt.', 'Ganze Paletten statt Einzelplatten, direkt auf die Baustelle.'],
-      pfad: ['daemmung', 'xps'],
-    },
-    Kamin: {
-      k: ['Schiedel Kaminsystem', 'Kaminzug komplett', 'Mantelstein und Rohr', 'Vom Fertigfuß zur Haube', 'Kamin auf die Baustelle', 'SIKM Systemteile', 'Kamin zum Baumeisterpreis'],
-      b: ['Der ganze Zug: Fertigfuß, Mantelsteine, gedämmtes Rohr, Putztür, Haube.', 'Schiedel-Systemteile aus einer Bestellung, geliefert statt abgeholt.', 'Was beim Kamin fehlt, hält die Baustelle auf. Deshalb komplett.'],
-      pfad: ['kamin', 'schiedel'],
-    },
-    Kanal: {
-      k: ['Kanalrohr DN 100', 'Rohr, Bogen, Abzweig', 'Kanal komplett liefern', 'PVC Kanal ab Lager', 'Schacht und Formteile', 'Kanal zum Baumeisterpreis'],
-      b: ['Kanalrohr, Bögen, Abzweiger und Schacht — abgestimmt und komplett.', 'PVC-Kanal DN 100 mit allen Formteilen. Lieferung auf die Baustelle.', 'Ein Bogen zu wenig kostet einen halben Tag. Deshalb liefern wir das Set.'],
-      pfad: ['kanal', 'dn100'],
-    },
-    'Mörtel': {
-      k: ['Mörtel palettenweise', 'Baumit ThermoMörtel', 'Mörtel auf die Baustelle', 'Baumeisterpreis auf Mörtel', 'Ganze Paletten', 'Kein Sackverkauf'],
-      b: ['Baumit-Mörtel palettenweise, geliefert auf die Baustelle.', 'Wir liefern Paletten, keine Einzelsäcke — das ist der ganze Preisvorteil.', 'Mörtel zum Preis, den ein Baumeister im Einkauf zahlt.'],
-      pfad: ['moertel', 'palette'],
-    },
-    Mauerwerk: {
-      k: ['Planziegel ab Palette', 'Ökotherm Hochlochziegel', 'Ziegel auf die Baustelle', 'Baumeisterpreis auf Ziegel', 'Mauerwerk komplett', 'Palettenweise liefern'],
-      b: ['Planziegel palettenweise, geliefert und mit Kran entladen.', 'Mauerwerk zum Baumeisterpreis, keine Kleinmengen.', 'Ganze Paletten auf die Baustelle statt Stückware aus dem Baumarkt.'],
-      pfad: ['ziegel', 'mauerwerk'],
-    },
-  };
 
   // **Berichtigt am 31.08.** Hier stand die Adresse fest verdrahtet — ein
   // zweites Mal neben `bin/website.mjs`. Eine Anzeige mit veralteter Ziel-URL
@@ -628,7 +654,19 @@ function main() {
     anzeigen.push(satz);
   }
 
-  const textfehler = pruefeTexte(anzeigen);
+  // **Geprüft wird der ganze Vorrat an Texten, nicht nur der ausgegebene.**
+  //
+  // Befund vom 31.08., abends: Seit das Budget mittags auf die tragenden
+  // Gruppen konzentriert wurde, laufen nur noch drei Anzeigen durch diese
+  // Prüfung. In der zurückgestellten Gruppe Kanal stand weiterhin „PVC Kanal
+  // ab Lager" — dieselbe unwahre Vorratszusage, die am Nachmittag aus der
+  // Dämmung entfernt wurde.
+  //
+  // Sie wäre nicht aufgefallen und am Tag der Aktivierung hinausgegangen: ein
+  // Fehler mit bekanntem Auslösetag, kein latenter. Und die Blindstelle war
+  // die Folge meiner eigenen Änderung — wer den Ausgabeumfang verkleinert,
+  // verkleinert die Prüfung mit, wenn beide an derselben Liste hängen.
+  const textfehler = [...pruefeTexte(alleAnzeigentexte()), ...pruefeTexte(anzeigen)];
   if (textfehler.length) {
     // **Berichtigt am 31.08.** Hier stand „überschreiten die Längengrenzen" —
     // seit die Prüfung auch Vorratsbehauptungen und abgeschnittene Sätze
