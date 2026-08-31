@@ -318,6 +318,33 @@ const LUECKE = (bezeichnung) => `[[ ${bezeichnung} — FEHLT ]]`;
 
 
 
+const EINHEITEN = Object.freeze({
+  STK: 'Stück', M2: 'm²', KG: 'kg', SCK: 'Sack', KRT: 'Karton',
+  LFM: 'lfm', DOS: 'Dose', EIM: 'Eimer', RLL: 'Rolle',
+});
+
+
+const einheitText = (kuerzel) => EINHEITEN[kuerzel] ?? kuerzel ?? 'Stk';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -4023,7 +4050,10 @@ function positionszeilen(warenkorb) {
     zeilen.push(`${textZeile(teil.lieferantName)} — Direktlieferung, ${lieferzeitText(teil)}`);
     for (const p of teil.positionen) {
       zeilen.push(
-        `  ${String(p.menge).padStart(3)} ${textZeile(p.einheit ?? 'Stk').padEnd(4)} ` +
+        
+        
+        
+        `  ${String(p.menge).padStart(3)} ${textZeile(einheitText(p.einheit)).padEnd(6)} ` +
           `${textZeile(p.sku).padEnd(12)} ${textZeile(p.bezeichnung)}`,
       );
       zeilen.push(`      à ${EUR(p.vkNetto)} netto = ${EUR(p.zeilensummeNetto)}`);

@@ -359,6 +359,27 @@ const SZENARIEN = [
     erwartet: ['menge=0.75', 'schritt=0.75', '1 Einheit zu 0,75 m²'],
   },
   {
+    name: 'Längenware nennt Meter, nicht Quadratmeter',
+    // POS-52124: Anschlussleiste, je laufendem Meter fakturiert, in Stangen zu
+    // 2,55 m. Seit die Längenware einen Gebindeschritt hat, war die
+    // Einheitenangabe im Korb fest verdrahtet auf „kg oder m²" — die Leiste
+    // stand als „2 Einheiten zu 2,55 m²" da. Diese Probe verlangt die Einheit
+    // des Artikels und verbietet ausdrücklich die falsche.
+    aktionen: `
+      await geheZu('artikel/POS-52124');
+      document.querySelector('[data-legen="POS-52124"]').click();
+      await geheZu('warenkorb');
+      const feld = document.querySelector('#warenkorb-ziel .kz-menge');
+      feld.value = '4';
+      feld.dispatchEvent(new Event('change'));
+      const neu = document.querySelector('#warenkorb-ziel .kz-menge');
+      out = 'menge=' + neu.value + ' | ' + text('#warenkorb-ziel .kz-e')
+        + ' | aria=' + neu.getAttribute('aria-label');`,
+    // Vier laufende Meter gibt es nicht: zwei Stangen zu 2,55 m sind 5,10 m.
+    erwartet: ['menge=5.1', '2 Einheiten zu 2,55 lfm', 'ganze Einheiten zu 2,55 lfm'],
+    verboten: ['2,55 m²', '2,55 kg', 'menge=4'],
+  },
+  {
     name: 'Fünf Quadratmeter werden auf sieben Platten aufgerundet',
     aktionen: `
       await geheZu('artikel/POS-12569');

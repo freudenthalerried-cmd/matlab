@@ -538,11 +538,21 @@
       // dass es sieben Platten sind. Der Kunde bestellt Platten, nicht
       // Quadratmeter — die Rechnung führt Quadratmeter.
       var zahlwerk = gebindezahl(p.menge, schritt);
+      // **Berichtigt am 31.08.** Hier stand `p.einheit === 'KG' ? 'kg' : 'm²'`
+      // — zweimal, drei Zeilen unter der Zeile, die dieselbe Auskunft bereits
+      // aus `D.einheiten` nimmt. Solange nur Kilogramm und Quadratmeter einen
+      // Gebindeschritt hatten, war die Fallunterscheidung vollständig. Mit den
+      // laufenden Metern seit dem 30.08. behauptete der Korb „2 Einheiten zu
+      // 2,55 m²" für eine Leiste, die in Metern verkauft wird.
+      //
+      // Zwei Wege zur selben Auskunft, und der kürzere gewinnt — hier sogar
+      // drei Zeilen unter dem Kommentar, der genau das verbietet.
+      var einheitText = D.einheiten[p.einheit] || p.einheit;
       mitte.appendChild(el('span', 'kz-e', eur(p.vkNetto) + ' je '
-        + (D.einheiten[p.einheit] || p.einheit) + ', netto'
+        + einheitText + ', netto'
         + (zahlwerk ? ' · ' + zahlwerk.stueck + ' Einheit' + (zahlwerk.stueck === 1 ? '' : 'en')
             + ' zu ' + String(schritt).replace('.', ',')
-            + ' ' + (p.einheit === 'KG' ? 'kg' : 'm²') : '')
+            + ' ' + einheitText : '')
         + (p.sperrgut ? ' · palettiert, Kranentladung je Hub' : '')));
       zeile.appendChild(mitte);
 
@@ -558,7 +568,7 @@
       menge.value = String(p.menge);
       menge.className = 'kz-menge';
       menge.setAttribute('aria-label', 'Menge ' + p.bezeichnung
-        + (schritt ? ', ganze Einheiten zu ' + schritt + ' ' + (p.einheit === 'KG' ? 'kg' : 'm²') : ''));
+        + (schritt ? ', ganze Einheiten zu ' + String(schritt).replace('.', ',') + ' ' + einheitText : ''));
       menge.addEventListener('change', function () {
         var m = parseFloat(String(menge.value).replace(',', '.'));
         if (!Number.isFinite(m) || m <= 0) m = schritt || 1;

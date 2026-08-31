@@ -1,7 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
+import { EINHEITEN, einheitText } from '../src/format.js';
 import { gebindeKg, gebindeM2, gebindezahl, preisJeKilo, kilotafel, mengenschritt, GROESSTES_GEBINDE_KG, gebindeLfm, GEBINDELESER } from '../src/gebinde.js';
 
 const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
@@ -283,4 +285,56 @@ test('Jede Einheit in GEBINDELESER wird von mengenschritt auch bedient', () => {
     );
     assert.ok(mengenschritt({ einheit, bezeichnung }) > 0, `${einheit} liefert keinen Schritt`);
   }
+});
+
+/* ------------------------------------------------------------------ *
+ * Eine Einheit, ein Wort — überall dasselbe
+ * ------------------------------------------------------------------ */
+
+test('Der Gebindehinweis nennt dieselbe Einheit wie der Preis daneben', () => {
+  // **Der Satz widersprach sich selbst**: „Abgabe in ganzen Einheiten zu
+  // 2,55 m² … Der Preis gilt je lfm." Zwei Wege zu derselben Auskunft, und
+  // der kürzere — ein fest verdrahtetes `KG ? 'kg' : 'm²'` — gewann.
+  //
+  // Geprüft wird die Regel, nicht der Bestand: In **jedem** gebauten
+  // Gebindehinweis müssen beide Einheiten übereinstimmen.
+  const ordner = pfad('../ausgabe/site/artikel');
+  if (!existsSync(ordner)) return;
+  const dateien = readdirSync(ordner).filter((d) => d.endsWith('.html'));
+  assert.ok(dateien.length >= 20, `nur ${dateien.length} Artikelseiten gebaut`);
+
+  let geprueft = 0;
+  for (const datei of dateien) {
+    const html = readFileSync(join(ordner, datei), 'utf8');
+    const hinweis = html.match(
+      /Abgabe in ganzen (?:Gebinden|Einheiten) zu [\d,]+ (\S+) laut Artikelbezeichnung\. Der Preis gilt je ([^;]+);/,
+    );
+    if (!hinweis) continue;
+    geprueft++;
+    assert.equal(hinweis[1], hinweis[2].trim(),
+      `${datei}: Abgabe in „${hinweis[1]}", Preis je „${hinweis[2].trim()}"`);
+  }
+  assert.ok(geprueft >= 5, `nur ${geprueft} Seiten mit Gebindehinweis — die Schleife prüft zu wenig`);
+});
+
+test('Jede Einheit des Bestands hat ein lesbares Wort', () => {
+  // Ein Kürzel, das niemand übersetzt, steht roh auf der Karte, im Korb und
+  // auf dem Angebot. Erfunden wird trotzdem nichts: `einheitText` reicht
+  // Unbekanntes durch, statt zu raten — diese Probe sagt nur, dass der
+  // Bestand nichts Unbekanntes enthält.
+  const datei = pfad('../data/katalog-baustoff.json');
+  const artikel = JSON.parse(readFileSync(datei, 'utf8')).artikel;
+  assert.ok(artikel.length >= 40, `nur ${artikel.length} Artikel`);
+  const ohne = [...new Set(artikel.map((a) => a.einheit))].filter((e) => !EINHEITEN[e]);
+  assert.deepEqual(ohne, [], `ohne lesbares Wort: ${ohne.join(', ')}`);
+});
+
+test('einheitText erfindet nichts und lässt nichts leer', () => {
+  assert.equal(einheitText('LFM'), 'lfm');
+  assert.equal(einheitText('SCK'), 'Sack');
+  // Unbekanntes wird durchgereicht, nicht geraten: „PAK" als „Paket" zu lesen
+  // wäre eine Vermutung, und sie stünde auf einer Rechnung.
+  assert.equal(einheitText('PAK'), 'PAK');
+  assert.equal(einheitText(null), 'Stk');
+  assert.equal(einheitText(undefined), 'Stk');
 });

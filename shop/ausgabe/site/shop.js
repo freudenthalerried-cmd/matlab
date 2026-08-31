@@ -96,6 +96,33 @@ const LUECKE = (bezeichnung) => `[[ ${bezeichnung} — FEHLT ]]`;
 
 
 
+const EINHEITEN = Object.freeze({
+  STK: 'Stück', M2: 'm²', KG: 'kg', SCK: 'Sack', KRT: 'Karton',
+  LFM: 'lfm', DOS: 'Dose', EIM: 'Eimer', RLL: 'Rolle',
+});
+
+
+const einheitText = (kuerzel) => EINHEITEN[kuerzel] ?? kuerzel ?? 'Stk';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2181,11 +2208,21 @@ function pruefeAnfrageAufGeheimnis(text, artikelMitEk = []) {
       
       
       var zahlwerk = gebindezahl(p.menge, schritt);
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      var einheitText = D.einheiten[p.einheit] || p.einheit;
       mitte.appendChild(el('span', 'kz-e', eur(p.vkNetto) + ' je '
-        + (D.einheiten[p.einheit] || p.einheit) + ', netto'
+        + einheitText + ', netto'
         + (zahlwerk ? ' · ' + zahlwerk.stueck + ' Einheit' + (zahlwerk.stueck === 1 ? '' : 'en')
             + ' zu ' + String(schritt).replace('.', ',')
-            + ' ' + (p.einheit === 'KG' ? 'kg' : 'm²') : '')
+            + ' ' + einheitText : '')
         + (p.sperrgut ? ' · palettiert, Kranentladung je Hub' : '')));
       zeile.appendChild(mitte);
 
@@ -2201,7 +2238,7 @@ function pruefeAnfrageAufGeheimnis(text, artikelMitEk = []) {
       menge.value = String(p.menge);
       menge.className = 'kz-menge';
       menge.setAttribute('aria-label', 'Menge ' + p.bezeichnung
-        + (schritt ? ', ganze Einheiten zu ' + schritt + ' ' + (p.einheit === 'KG' ? 'kg' : 'm²') : ''));
+        + (schritt ? ', ganze Einheiten zu ' + String(schritt).replace('.', ',') + ' ' + einheitText : ''));
       menge.addEventListener('change', function () {
         var m = parseFloat(String(menge.value).replace(',', '.'));
         if (!Number.isFinite(m) || m <= 0) m = schritt || 1;

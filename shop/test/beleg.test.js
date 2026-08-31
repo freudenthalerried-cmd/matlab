@@ -337,3 +337,42 @@ test('Eine Lieferzeit von 0 Werktagen ist eine Zusage, keine Lücke', () => {
   assert.ok(!darfBestaetigtWerden(sofort, { kundeIstUnternehmer: true, uid: 'ATU12345675' })
     .gruende.some((g) => /Lieferzeit/.test(g)));
 });
+
+test('Angebot und Rechnung schreiben die Einheit aus, nicht das Kürzel', () => {
+  // **Derselbe Kunde, dieselbe Position, zwei Schreibweisen.** Der
+  // Anfragetext auf der Kasse übersetzt „SCK" seit jeher zu „Sack"; Angebot
+  // und Rechnung setzten das Kürzel des Lieferanten roh. Der echte Katalog
+  // führt ausschließlich solche Kürzel — im Altkatalog dieser Datei stehen
+  // deutsche Wörter, deshalb fiel es hier nie auf.
+  const mitKuerzel = {
+    ...korb,
+    teillieferungen: korb.teillieferungen.map((t, i) => (i === 0 ? {
+      ...t,
+      positionen: t.positionen.map((p) => ({ ...p, einheit: 'SCK' })),
+    } : t)),
+  };
+  const a = erzeugeAngebot(mitKuerzel, { nummer: 'AN-1', datum: '2026-08-31', kunde, betreiber });
+  const r = erzeugeRechnung(mitKuerzel, {
+    nummer: 'RE-1', datum: '2026-08-31', lieferdatum: '2026-08-31', kunde, betreiber,
+  });
+  for (const [name, beleg] of [['Angebot', a], ['Rechnung', r]]) {
+    assert.match(beleg.text, /\bSack\b/, `${name} schreibt die Einheit nicht aus`);
+    assert.ok(!/\bSCK\b/.test(beleg.text), `${name} zeigt dem Kunden das Kürzel des Lieferanten`);
+  }
+});
+
+test('Ein unbekanntes Kürzel steht als Kürzel da, nicht als Vermutung', () => {
+  // Die Gegenrichtung zum Ausschreiben: Erfinden wäre schlimmer. „PAK" als
+  // „Paket" zu lesen ist geraten — und die Vermutung stünde auf einer
+  // Rechnung.
+  const fremd = {
+    ...korb,
+    teillieferungen: korb.teillieferungen.map((t, i) => (i === 0 ? {
+      ...t,
+      positionen: t.positionen.map((p) => ({ ...p, einheit: 'PAK' })),
+    } : t)),
+  };
+  const a = erzeugeAngebot(fremd, { nummer: 'AN-1', datum: '2026-08-31', kunde, betreiber });
+  assert.match(a.text, /\bPAK\b/);
+  assert.ok(!/Paket/.test(a.text));
+});

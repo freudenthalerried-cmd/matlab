@@ -18,7 +18,7 @@
  * Verbrauchern eingeführt wurde, erfüllt hier nebenbei eine Steuerpflicht.
  */
 
-import { EUR, LUECKE, textZeile } from './format.js';
+import { EUR, LUECKE, textZeile, einheitText } from './format.js';
 
 export const KLEINBETRAG_GRENZE_BRUTTO = 400;
 export const UID_EMPFAENGER_GRENZE_BRUTTO = 10000;
@@ -105,7 +105,10 @@ function positionszeilen(warenkorb) {
     zeilen.push(`${textZeile(teil.lieferantName)} — Direktlieferung, ${lieferzeitText(teil)}`);
     for (const p of teil.positionen) {
       zeilen.push(
-        `  ${String(p.menge).padStart(3)} ${textZeile(p.einheit ?? 'Stk').padEnd(4)} ` +
+        // Das lesbare Wort, nicht das Kürzel des Lieferanten: Derselbe Kunde
+        // bekommt zur selben Position einen Anfragetext mit „Sack“ und
+        // hätte auf dem Angebot „SCK“ gelesen.
+        `  ${String(p.menge).padStart(3)} ${textZeile(einheitText(p.einheit)).padEnd(6)} ` +
           `${textZeile(p.sku).padEnd(12)} ${textZeile(p.bezeichnung)}`,
       );
       zeilen.push(`      à ${EUR(p.vkNetto)} netto = ${EUR(p.zeilensummeNetto)}`);

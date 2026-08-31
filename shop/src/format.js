@@ -73,3 +73,30 @@ export const hatSteuerzeichen = (wert) => STEUERZEICHEN.test(String(wert ?? ''))
  * irgendwann versehentlich hinaus.
  */
 export const LUECKE = (bezeichnung) => `[[ ${bezeichnung} — FEHLT ]]`;
+
+/**
+ * Die Einheitenkürzel des Lieferanten in lesbaren Text.
+ *
+ * **Hierher verlegt am 31.08.** Die Zuordnung stand in `bin/website.mjs`, also
+ * in einem Bauwerkzeug — erreichbar nur für die Seiten. Wer sie anderswo
+ * brauchte, half sich selbst, und das dreimal mit derselben Zeile:
+ * `einheit === 'KG' ? 'kg' : 'm²'`. Solange nur diese beiden Einheiten einen
+ * Gebindeschritt hatten, war die Fallunterscheidung vollständig; mit den
+ * laufenden Metern stand danach „2,55 m²" auf einer Leiste, im Warenkorb, im
+ * Vorlesetext und in einem Satz, der sich selbst widersprach.
+ *
+ * `beleg.js` half sich anders und gar nicht: Angebot und Rechnung setzten das
+ * Kürzel roh, während der Anfragetext derselben Bestellung „Sack" schrieb —
+ * derselbe Kunde, dieselbe Position, zwei Schreibweisen.
+ *
+ * Ein unbekanntes Kürzel wird **nicht** übersetzt, sondern durchgereicht.
+ * Erfinden wäre schlimmer als stehenlassen: „PAK" als „Paket" zu lesen ist
+ * eine Vermutung, und sie stünde dann auf einer Rechnung.
+ */
+export const EINHEITEN = Object.freeze({
+  STK: 'Stück', M2: 'm²', KG: 'kg', SCK: 'Sack', KRT: 'Karton',
+  LFM: 'lfm', DOS: 'Dose', EIM: 'Eimer', RLL: 'Rolle',
+});
+
+/** Das lesbare Wort zu einem Einheitenkürzel — oder das Kürzel selbst. */
+export const einheitText = (kuerzel) => EINHEITEN[kuerzel] ?? kuerzel ?? 'Stk';

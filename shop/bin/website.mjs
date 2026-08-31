@@ -37,6 +37,7 @@ import { baueKern, BROWSERMODULE } from '../src/buendel.js';
 import { startklar } from '../src/startklar.js';
 import { ohneKommentare } from '../src/entkommentieren.js';
 import { preisJeKilo, kilotafel, mengenschritt } from '../src/gebinde.js';
+import { EINHEITEN } from '../src/format.js';
 import { oeffentlicherArtikel, oeffentlicherLieferant, vorteil, ustText } from '../src/shopkern.js';
 import { LIEFERGEBIET } from '../src/liefergebiet.js';
 import { ZAHLWEGE } from '../src/zahlung.js';
@@ -122,10 +123,6 @@ const FIRMA = 'Freudenthaler Bau GmbH';
 const ORT = 'Ried in der Riedmark';
 const BASIS = 'https://shop.freudenthaler-bau.at';
 
-const EINHEITEN = {
-  STK: 'Stück', M2: 'm²', KG: 'kg', SCK: 'Sack', KRT: 'Karton',
-  LFM: 'lfm', DOS: 'Dose', EIM: 'Eimer', RLL: 'Rolle',
-};
 
 /**
  * Wo das technische Merkblatt zu finden ist.
@@ -642,10 +639,15 @@ function artikelSeite(a, katalog, befund, seiten, verweis) {
       // zu Recht: „25 kg" und „69,25 €" standen darin ohne Herkunft und ohne
       // Stand. Dass beides eine Zeile höher in der Preistafel steht, half
       // nicht — der Satz wird für sich gelesen. Jetzt trägt er beides.
-      const einheitKurz = a.einheit === 'KG' ? 'kg' : 'm²';
+      // **Berichtigt am 31.08.** `a.einheit === 'KG' ? 'kg' : 'm²'` stand hier —
+      // eine Zeile über der Stelle, die dieselbe Auskunft schon aus
+      // `EINHEITEN` nimmt. Für die Anschlussleiste ergab das einen Satz, der
+      // sich selbst widerspricht: „Abgabe in ganzen Einheiten zu 2,55 **m²** …
+      // Der Preis gilt je **lfm**".
+      const einheitKurz = EINHEITEN[a.einheit] ?? a.einheit;
       const wortEinheit = a.einheit === 'KG' ? 'ganzen Gebinden' : 'ganzen Einheiten';
       teile.push(`<p class="gebindehinweis">Abgabe in ${wortEinheit} zu ${
-        esc(String(schritt).replace('.', ','))} ${einheitKurz} laut Artikelbezeichnung. Der Preis gilt je ${
+        esc(String(schritt).replace('.', ','))} ${esc(einheitKurz)} laut Artikelbezeichnung. Der Preis gilt je ${
         esc(EINHEITEN[a.einheit] ?? a.einheit)}; eine Einheit kostet danach ${
         euro(a.vkNetto * schritt)} € netto, Stand: ${esc(a.preisStand)}.</p>`);
     }
