@@ -244,3 +244,58 @@ export function pruefeBestand(dateien, optionen = {}) {
     sauber: meldungen.length === 0,
   };
 }
+
+/* ------------------------------------------------------------------ *
+ * Wo gesucht wird
+ * ------------------------------------------------------------------ */
+
+/**
+ * Die Bestände, in denen eine widerrufene Aussage überleben kann.
+ *
+ * **Steht hier und nicht im Werkzeug**, seit dem 31.08. — vorher stand die
+ * Reichweite des Prüfers in `bin/widerrufpruefung.mjs` und war damit von
+ * keiner Probe erreichbar. Eine Wache, deren Sichtfeld niemand nachmessen
+ * kann, ist eine Vermutung: Der Prüfer las bis dahin nur `docs/`, meldete
+ * grün — und der Shop trug an drei Stellen den Satz, der am 27.08.
+ * zurückgenommen worden war.
+ *
+ * Nicht gelesen wird `ausgabe/` — das ist Erzeugnis, kein Bestand. Wer den
+ * Satz dort trifft, hat ihn hier schon getroffen; wer ihn **nur** dort
+ * trifft, hat eine alte Ausgabe vor sich und keinen Fehler im Text.
+ */
+export const BESTAENDE = Object.freeze([
+  Object.freeze({ ordner: ['docs', 'baustoff-shop'], endung: '.md', was: 'Akte' }),
+  Object.freeze({ ordner: ['shop', 'inhalte'], endung: '.md', was: 'Shoptexte' }),
+  Object.freeze({ ordner: ['shop', 'bin'], endung: '.mjs', was: 'Werkzeuge' }),
+  Object.freeze({ ordner: ['shop', 'src'], endung: '.js', was: 'Rechenkern' }),
+]);
+
+/**
+ * Das Register selbst muss den widerrufenen Satz wörtlich führen — sonst
+ * könnte es ihn nicht suchen. Es ist der eine Ort, an dem die Aussage stehen
+ * darf, ohne dass etwas faul ist, und deshalb der eine ausgenommene.
+ */
+export const AUSGENOMMEN = Object.freeze([['shop', 'src', 'widerruf.js']]);
+
+/**
+ * Alle Dateien der Bestände, als Pfade relativ zur Projektwurzel.
+ *
+ * Der Sortierschlüssel ist der Pfad, damit die Reihenfolge der Meldungen
+ * nicht von der Reihenfolge im Dateisystem abhängt.
+ *
+ * @param {(ordner: string) => {name: string, verzeichnis: boolean}[]} lies
+ *   Verzeichnisleser — hereingereicht, damit die Probe ihn ersetzen kann.
+ */
+export function bestandsdateien(lies, bestaende = BESTAENDE, ausgenommen = AUSGENOMMEN) {
+  const gesperrt = new Set(ausgenommen.map((t) => t.join('/')));
+  const treffer = [];
+  const gehe = (teile, endung) => {
+    for (const eintrag of lies(teile.join('/'))) {
+      const pfad = [...teile, eintrag.name];
+      if (eintrag.verzeichnis) gehe(pfad, endung);
+      else if (eintrag.name.endsWith(endung) && !gesperrt.has(pfad.join('/'))) treffer.push(pfad.join('/'));
+    }
+  };
+  for (const b of bestaende) gehe([...b.ordner], b.endung);
+  return treffer.sort((a, b) => a.localeCompare(b));
+}

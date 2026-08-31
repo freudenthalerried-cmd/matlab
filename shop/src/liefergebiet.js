@@ -27,9 +27,12 @@
  *
  * Der Shop ist ein Streckengeschäft. Was er liefern kann, liefert der
  * Lieferant — und **wie weit der liefert, steht in keiner der fünfzehn
- * Rechnungen.** Die Frachtpauschale ist auf jedem Beleg dieselbe, unabhängig
- * vom Ort; eine Entfernungsgrenze ist daraus weder ablesbar noch
- * ausschließbar.
+ * Rechnungen.** Zugestellt wurde auf dreien von fünfzehn — elf lauten
+ * „Abholung Kunde", eine „Retour durch Kunde" (berichtigt am 27.08., siehe
+ * `fracht-nur-bei-zustellung.md`). Auf diesen dreien ist die Pauschale
+ * dieselbe, unabhängig vom Ort; eine Entfernungsgrenze ist daraus weder
+ * ablesbar noch ausschließbar — und drei Fahrten sind ohnehin zu wenige, um
+ * eine auszuschließen.
  *
  * Solange das offen ist, gilt die vorsichtige Richtung: Das Liefergebiet ist
  * die Fläche, für die die Kampagne wirbt, und keinen Bezirk mehr. Ein

@@ -55,12 +55,19 @@ Urfahr-Umgebung, Freistadt, Linz und Linz-Land — und nicht österreichweit
 
 Das ist kein Widerspruch, den man abstellen müsste, aber einer, den die Seite
 tragen muss: Wer über eine Anzeige mit „Bauversand" kommt und in Salzburg
-sitzt, darf das nicht erst in der Kasse erfahren. Der Bestand ist an dieser
-Stelle in Ordnung — das Liefergebiet steht in der Kopfzeile jeder Seite, in
-`llms.txt`, in den strukturierten Daten (`areaServed`) und in der Kasse, die
-einen Bezirk außerhalb des Gebiets mit Begründung ablehnt. Beim Schreiben der
-Anzeigentexte gehört es ausdrücklich hinein; das ist beim nächsten Blick auf
-`kampagne.mjs` zu prüfen.
+sitzt, darf das nicht erst in der Kasse erfahren.
+
+> **BERICHTIGT 31.08.** Hier stand: „Der Bestand ist an dieser Stelle in
+> Ordnung — das Liefergebiet steht in der Kopfzeile jeder Seite." Das ist
+> falsch, und zwar messbar falsch. Von 81 gebauten Seiten nannten **drei** das
+> Liefergebiet; die drei Gruppenseiten, auf die der erste Anlauf der Anzeigen
+> zeigt, gehörten nicht dazu. Was stimmte, war die Aufzählung dahinter:
+> `llms.txt`, `areaServed` und die Kasse. Also die drei Orte, an denen eine
+> **Maschine** liest — und keiner, an dem der Besucher liest. Berichtigt und
+> abgestellt in `liefergebiet-auf-der-seite.md`.
+
+Beim Schreiben der Anzeigentexte gehört es ausdrücklich hinein; das ist beim
+nächsten Blick auf `kampagne.mjs` zu prüfen.
 
 Zur `.com`-Endung: Für einen regional liefernden österreichischen B2B-Shop
 signalisiert `.at` die Nähe deutlicher. Das ist eine Abwägung, keine

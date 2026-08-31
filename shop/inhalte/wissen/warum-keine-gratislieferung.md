@@ -3,17 +3,28 @@ titel: Warum es hier keine Gratislieferung gibt
 art: wissen
 slug: warum-keine-gratislieferung
 frage: Andere liefern ab einem bestimmten Bestellwert frei Haus — warum hier nicht?
-kurz: Weil die Fracht bei unserem Lieferanten auf jedem Beleg steht, auch auf großen. Wer sie trotzdem einpreist, verteuert entweder die Ware oder verliert bei jeder kleinen Bestellung Geld.
+kurz: Weil die Fracht an der Fahrt hängt und nicht am Warenwert — die große Lieferung trägt dieselbe Pauschale wie die kleine. Wer sie trotzdem einpreist, verteuert die Ware für alle, auch für den, der selbst abholt.
 verwandt: baumeisterpreis, was-fehlt-haelt-die-baustelle-auf
-stand: 2026-08-28
+stand: 2026-08-31
 ---
 
 # Warum es hier keine Gratislieferung gibt
 
-**Die Antwort in zwei Sätzen.** Bei unserem Lieferanten steht die
-Frachtpauschale auf jedem Beleg — auch auf den großen. Wer sie trotzdem als
-„frei Haus" bewirbt, hat sie entweder in die Warenpreise eingerechnet oder
-verliert bei jeder kleinen Bestellung Geld.
+**Die Antwort in zwei Sätzen.** Bei unserem Lieferanten hängt die
+Frachtpauschale an der Fahrt und nicht am Warenwert: Der zugestellte Beleg
+über 1.934 € netto trägt dieselbe Pauschale wie der über 614 € netto.
+Quelle: eigene Lieferantenrechnungen, Stand: 2026-08-31. Wer die Fracht
+trotzdem als „frei Haus" bewirbt, hat sie entweder in die Warenpreise
+eingerechnet oder verliert bei jeder kleinen Bestellung Geld.
+
+## Woher wir das wissen
+
+Aus fünfzehn eigenen Lieferantenrechnungen, April bis August 2026. Fracht
+steht auf drei von fünfzehn — die übrigen sind Abholungen durch den Kunden.
+Die Aussage, dass es keine Frei-Haus-Schwelle gibt, stützt sich damit auf
+wenige zugestellte Belege. Sie ist die beste Auskunft, die wir haben, und
+ausdrücklich keine Statistik; wir schreiben sie hierher, damit Sie wissen,
+worauf sie steht. Quelle: eigene Lieferantenrechnungen, Stand: 2026-08-31.
 
 ## Was tatsächlich anfällt
 

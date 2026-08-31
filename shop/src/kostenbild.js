@@ -207,8 +207,10 @@ export function proBestellung(warenkorb, zahlwegId, werbeanteil) {
  *
  * Die Margenuntergrenze (Gate 1) war für den Streckenhandel mit
  * Herstellerkonditionen gesetzt: 32 % vom Verkauf, sonst fiel die Nische.
- * Mit eigenen Baumeister-Einkaufspreisen und 25 % Zuschlag (= 20 % Rohmarge)
- * ist das ein anderes Geschäft — Preisführerschaft statt Margenführerschaft.
+ * Mit eigenen Baumeister-Einkaufspreisen und 25 % **Marge** (= 33,33 %
+ * Zuschlag auf den Einkauf; Klärung des Auftraggebers vom 26.08., siehe
+ * `marge-25-prozent.md`) ist das ein anderes Geschäft — Preisführerschaft
+ * statt Margenführerschaft.
  * An die Stelle einer Prozentschwelle tritt deshalb die härtere und zugleich
  * ehrlichere Bedingung: **Keine Bestellung ohne positiven Deckungsbeitrag.**
  *

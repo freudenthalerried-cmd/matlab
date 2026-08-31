@@ -4,12 +4,13 @@ import { readFileSync, readdirSync, existsSync, mkdtempSync, writeFileSync, rmSy
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 import { loeseVerweis, loeseVerwandt, marke, mitverbaut, HERSTELLER, positionsliste, sprungziel } from '../bin/website.mjs';
 import { lesKopf } from '../src/markdown.js';
 import { KORBSCHLUESSEL } from '../src/shopkern.js';
 import { SUCH_CRAWLER, TRAININGS_CRAWLER } from '../src/maschinenlesbar.js';
 import { LIEFERGEBIET } from '../src/liefergebiet.js';
+import { GRUPPENSEITE } from '../src/artikelliste.js';
 import { ladeBaustoffkatalog, ZIELMARGE } from '../src/baustoffkatalog.js';
 
 const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
@@ -1209,4 +1210,81 @@ test('Die gebauten Seiten tragen die Adresse aus den Betreiberdaten', () => {
   assert.ok(llms.includes(`${domain}/kasse.html`), `llms.txt nennt nicht ${domain}`);
   // Und die alte Adresse steht nirgends mehr.
   assert.ok(!llms.includes('shop.freudenthaler-bau.at'), 'die alte Adresse ist zurück');
+});
+
+/* ------------------------------------------------------------------ *
+ * Was ein Anzeigenbesucher liest
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Gemessen am 31.08.:** Von 81 gebauten Seiten nannten **drei** das
+ * Liefergebiet — keine davon eine der drei Gruppenseiten, auf die der erste
+ * Anlauf der Anzeigen zeigt. Ich hatte in der Akte das Gegenteil behauptet
+ * („steht in der Kopfzeile jeder Seite"); es stand in `llms.txt`, in
+ * `areaServed` und in der Kasse. Also überall dort, wo eine Maschine liest.
+ *
+ * Diese Probe misst nicht den damaligen Bestand — sie misst die Regel, und
+ * zwar gegen `LIEFERGEBIET` als Quelle. Wer einen Bezirk hinzunimmt und die
+ * Seiten nicht neu baut, fällt hier auf.
+ */
+test('Jede gebaute Seite nennt das Liefergebiet', () => {
+  const wurzel = pfad('../ausgabe/site');
+  if (!existsSync(wurzel)) return;
+
+  assert.ok(LIEFERGEBIET.bezirke.length > 0, 'ohne Bezirke prüfen die Schleifen darunter nichts');
+
+  const seiten = [];
+  const gehe = (ordner) => {
+    for (const e of readdirSync(ordner, { withFileTypes: true })) {
+      const p = join(ordner, e.name);
+      if (e.isDirectory()) gehe(p);
+      else if (e.name.endsWith('.html')) seiten.push(p);
+    }
+  };
+  gehe(wurzel);
+  assert.ok(seiten.length > 50, `nur ${seiten.length} gebaute Seiten gefunden — der Bau ist unvollständig`);
+
+  const ohne = seiten.filter((p) => {
+    const html = readFileSync(p, 'utf8');
+    return !LIEFERGEBIET.bezirke.every((b) => html.includes(b.name));
+  });
+  assert.deepEqual(ohne.map((p) => relative(wurzel, p)), [],
+    'diese Seiten nennen nicht alle Bezirke des Liefergebiets');
+});
+
+/**
+ * Die Gruppenseiten sind die **Landeseiten der Anzeigen**. Der Fuß allein
+ * genügt dort nicht: Wer auf ein Preisraster klickt, liest die Zahlen und
+ * nicht das Kleingedruckte darunter. Geprüft wird deshalb die Reihenfolge —
+ * Liefergebiet und Frachthinweis stehen **vor** dem Warenraster.
+ */
+test('Auf den Gruppenseiten steht der Liefer- und Frachthinweis über dem Warenraster', () => {
+  const ordner = pfad('../ausgabe/site/gruppe');
+  if (!existsSync(ordner)) return;
+
+  const seiten = readdirSync(ordner).filter((n) => n.endsWith('.html'));
+  assert.equal(seiten.length, Object.keys(GRUPPENSEITE).length,
+    'nicht jede Warengruppe hat eine gebaute Seite');
+  assert.ok(LIEFERGEBIET.bezirke.length > 0, 'ohne Bezirke prüft die Schleife darunter nichts');
+
+  for (const name of seiten) {
+    const html = readFileSync(join(ordner, name), 'utf8');
+    const haupt = html.match(/<main[^>]*>([\s\S]*?)<\/main>/);
+    assert.ok(haupt, `${name} hat keinen Hauptbereich`);
+    const inhalt = haupt[1];
+
+    const raster = inhalt.indexOf('id="warenraster"');
+    assert.ok(raster > -1, `${name} hat kein Warenraster`);
+
+    for (const b of LIEFERGEBIET.bezirke) {
+      const stelle = inhalt.indexOf(b.name);
+      assert.ok(stelle > -1, `${name} nennt den Bezirk ${b.name} nicht im Hauptbereich`);
+      assert.ok(stelle < raster, `${name} nennt ${b.name} erst nach dem Warenraster`);
+    }
+    for (const wort of ['netto', 'Umsatzsteuer', 'Fracht']) {
+      const stelle = inhalt.indexOf(wort);
+      assert.ok(stelle > -1 && stelle < raster,
+        `${name} sagt „${wort}" nicht vor dem Warenraster`);
+    }
+  }
 });

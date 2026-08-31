@@ -100,3 +100,23 @@ export const EINHEITEN = Object.freeze({
 
 /** Das lesbare Wort zu einem Einheitenkürzel — oder das Kürzel selbst. */
 export const einheitText = (kuerzel) => EINHEITEN[kuerzel] ?? kuerzel ?? 'Stk';
+
+/**
+ * Eine Aufzählung, wie man sie spricht: „Perg, Linz und Freistadt".
+ *
+ * Steht hier und nicht an der Verwendungsstelle, weil die Liste, die sie
+ * aufzählt, an mehreren Stellen ausgegeben wird — im Seitenfuß, auf der
+ * Lieferseite, in den Anzeigentexten. Drei handgeschriebene Fassungen
+ * derselben fünf Bezirke wären drei Gelegenheiten, sie auseinanderlaufen zu
+ * lassen; die vierte wäre die, die niemand nachzieht.
+ *
+ * Leere Liste ergibt leeren Text — nicht „und", nicht „—". Wer eine leere
+ * Aufzählung ausgibt, hat ein Datenproblem und keinen Satzbaufehler, und ein
+ * eingesetztes Füllwort würde es verstecken.
+ */
+export function aufzaehlung(teile, bindewort = 'und') {
+  const w = [...teile].map((t) => textZeile(t)).filter((t) => t !== '');
+  if (w.length === 0) return '';
+  if (w.length === 1) return w[0];
+  return `${w.slice(0, -1).join(', ')} ${bindewort} ${w[w.length - 1]}`;
+}

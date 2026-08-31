@@ -37,7 +37,7 @@ import { baueKern, BROWSERMODULE } from '../src/buendel.js';
 import { startklar } from '../src/startklar.js';
 import { ohneKommentare } from '../src/entkommentieren.js';
 import { preisJeKilo, kilotafel, mengenschritt } from '../src/gebinde.js';
-import { EINHEITEN } from '../src/format.js';
+import { EINHEITEN, aufzaehlung } from '../src/format.js';
 import { GRUPPENSEITE } from '../src/artikelliste.js';
 import { oeffentlicherArtikel, oeffentlicherLieferant, vorteil, ustText } from '../src/shopkern.js';
 import { LIEFERGEBIET } from '../src/liefergebiet.js';
@@ -328,6 +328,8 @@ a{color:var(--ocker)}
 .krume a{color:var(--gedaempft)}
 .lede{font-size:1.08rem;color:var(--tinte-2);max-width:44rem}
 .antwort{border-left:4px solid var(--ocker);background:var(--ocker-weich);padding:.9rem 1.1rem;margin:1.2rem 0;color:var(--tinte-2)}
+.liefernotiz{border:1px solid var(--linie);border-left:4px solid var(--linie);background:var(--flaeche-2);padding:.65rem .9rem;margin:1rem 0;font-size:.9rem;color:var(--tinte-2);max-width:52rem}
+.liefernotiz strong{color:var(--tinte)}
 .antwort strong{color:var(--tinte)}
 blockquote{border-left:3px solid var(--linie-stark);margin:1.2rem 0;padding:.2rem 0 .2rem 1rem;color:var(--tinte-2)}
 blockquote p:last-child{margin-bottom:0}
@@ -519,6 +521,25 @@ footer a{color:var(--gedaempft)}
 // keine und nahm den Google-Anzeigepfad — dann zeigten die Anzeigen auf
 // Seiten, die es nicht gibt.
 const NAV_REIHENFOLGE = ['WDVS', 'Dämmung', 'Mauerwerk', 'Mörtel', 'Kamin', 'Kanal', 'Zubehör'];
+
+/**
+ * Die Bezirke als Satz — einmal gebildet, überall dieselben.
+ *
+ * **Gemessen am 31.08.** an allen 81 gebauten Seiten: **drei** nannten das
+ * Liefergebiet, 78 nicht. Darunter alle drei Seiten, auf die der erste
+ * Anlauf der Anzeigen zeigt (`gruppe/wdvs`, `gruppe/daemmung`,
+ * `gruppe/kamin`). Ich hatte vorher in die Akte geschrieben, es stehe „in der
+ * Kopfzeile jeder Seite". Es stand in der Kasse, in `llms.txt` und in den
+ * strukturierten Daten — also überall dort, wo es eine **Maschine** liest,
+ * und nirgends dort, wo der Besucher es liest.
+ *
+ * Das ist die teuerste Fassung des Fehlers: Die Anzeige verspricht
+ * „Lieferung Perg bis Linz", der Klick kostet Geld, und die Seite, auf der
+ * er landet, sagt weder, wohin geliefert wird, noch dass zu den gezeigten
+ * Nettopreisen Fracht kommt. Wer in Salzburg sitzt, erfährt es in der Kasse
+ * — nach dem bezahlten Klick.
+ */
+const LIEFERBEZIRKE = aufzaehlung(LIEFERGEBIET.bezirke.map((b) => b.name));
 const NAV = [
   ...NAV_REIHENFOLGE.map((g) => [`gruppe/${GRUPPENSEITE[g]}`, g]),
   ['lieferung', 'Lieferung'],
@@ -905,6 +926,20 @@ function inhaltsSeite(seite, katalog, befund, seiten, verweis) {
   // Marker verlegt die Grenze vom Dokument auf den Absatz.
   const ausQuelle = (html) => `<!--quelltext-->${html}<!--/quelltext-->`;
 
+  // **Was ein Anzeigenbesucher zuerst wissen muss.**
+  //
+  // Eine Gruppenseite ist die Landeseite der Anzeigen. Wer hier ankommt,
+  // sieht ein Preisraster und hat drei Fragen, die keine der Zahlen
+  // beantwortet: Sind das Netto- oder Bruttopreise? Liefert ihr zu mir?
+  // Kommt Fracht dazu? Alle drei standen bisher im Fuß oder gar nicht.
+  //
+  // Der Kasten steht deshalb **über** dem Raster, nicht darunter: Er ist
+  // die Bedingung, unter der die Zahlen darunter gelten.
+  const liefernotiz = `<p class="liefernotiz"><strong>Preise netto für Unternehmer</strong> —
+Umsatzsteuer ${ustText()} kommt dazu. <strong>Geliefert wird in ${esc(LIEFERBEZIRKE)}</strong>,
+nicht österreichweit. Fracht fällt je Lieferung an und wird getrennt ausgewiesen
+(<a href="${verweis('lieferung')}">Sätze</a>); Selbstabholung ist vorgesehen.</p>`;
+
   if (seite.art === 'gruppen' && warenraster) {
     // Auf einer Sortimentsseite kommt die Ware zuerst. Der Fachtext stand
     // vorher davor — wer eine Warengruppe anklickt, sucht aber Artikel und
@@ -912,9 +947,14 @@ function inhaltsSeite(seite, katalog, befund, seiten, verweis) {
     // damit die Seite trotzdem sagt, worum es geht.
     const schnitt = koerper.indexOf('</p>');
     if (schnitt === -1) {
-      teile.push(warenraster, ausQuelle(koerper));
+      teile.push(liefernotiz, warenraster, ausQuelle(koerper));
     } else {
-      teile.push(ausQuelle(koerper.slice(0, schnitt + 4)), warenraster, ausQuelle(koerper.slice(schnitt + 4)));
+      teile.push(
+        ausQuelle(koerper.slice(0, schnitt + 4)),
+        liefernotiz,
+        warenraster,
+        ausQuelle(koerper.slice(schnitt + 4)),
+      );
     }
   } else {
     teile.push(ausQuelle(koerper));
@@ -1433,13 +1473,18 @@ Annahme. Sie werden getrennt ausgewiesen, weil sie je Lieferung anfallen und nic
   <div><span class="k">Pauschale je Lieferung</span><span class="w">${euro(f.pauschaleNetto)} €</span><span class="e">netto, Fracht plus Energiekostenzuschlag</span></div>
   <div><span class="k">Palettierte Ware</span><span class="w">+ ${euro(f.sperrgutZuschlagNetto)} €</span><span class="e">netto, Kranentladung je Hub</span></div>
   <div><span class="k">Frei Haus ab</span><span class="w">—</span><span class="e">gibt es nicht</span></div>
-  <div><span class="k">Liefergebiet</span><span class="w">~40 km</span><span class="e">Perg, Urfahr-Umgebung, Freistadt, Linz, Linz-Land</span></div>
+  <div><span class="k">Liefergebiet</span><span class="w">${LIEFERGEBIET.bezirke.length} Bezirke</span><span class="e">${esc(LIEFERBEZIRKE)}</span></div>
 </div>
 
 <h2>Warum es kein „frei Haus" gibt</h2>
-<p>Weil die Frachtpauschale bei unserem Lieferanten auf jedem Beleg steht — auch auf den großen. Wer sie
-trotzdem als „frei Haus" bewirbt, hat sie in die Warenpreise eingerechnet, und zwar in alle. Auch in die
-des Kunden, der selbst abholt.</p>
+<p>Weil die Frachtpauschale bei unserem Lieferanten an der Fahrt hängt und nicht am Warenwert: Der
+zugestellte Beleg über 1.934 € netto trägt dieselbe Pauschale wie der über 614 € netto (Quelle: eigene
+Lieferantenrechnungen, Stand: 2026-08-31). Wer sie trotzdem als
+„frei Haus" bewirbt, hat sie in die Warenpreise eingerechnet, und zwar in alle. Auch in die des Kunden,
+der selbst abholt.</p>
+<p>Woher wir das wissen: aus fünfzehn eigenen Lieferantenrechnungen, April bis August 2026. Fracht steht
+auf drei von fünfzehn — die übrigen sind Abholungen durch den Kunden. Wenige Belege, offen gesagt statt
+hoch gerechnet. Stand: 2026-08-31.</p>
 <p>Die ausführliche Begründung samt Rechnung steht unter
 <a href="${verweis('wissen/warum-keine-gratislieferung')}">Warum es keine Gratislieferung gibt</a>.</p>
 
@@ -1631,6 +1676,9 @@ Warengruppen in der Kopfleiste.</p></noscript>
   <nav>${nav}</nav>
 </header>`;
   const fuss = `<footer>
+  <p><strong>Liefergebiet:</strong> ${esc(LIEFERBEZIRKE)} — regional, nicht österreichweit.
+  Fracht fällt je Lieferung an und wird getrennt ausgewiesen; kein Frei-Haus-Versand.
+  <a href="${verweis('lieferung')}">Frachtsätze und Gebiet</a></p>
   <p>${esc(FIRMA)}, ${esc(ORT)} · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer ${ustText()} getrennt
   ausgewiesen · <a href="${verweis('wissen/redaktionsprinzipien')}">Wie wir unsere Angaben prüfen</a>
   · <a href="${verweis('wissen/index')}">Wissen</a>
