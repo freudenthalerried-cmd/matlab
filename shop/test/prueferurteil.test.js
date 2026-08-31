@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { beurteile, abbruchgrund, GELAUFEN } from '../src/prueferurteil.js';
 
@@ -108,9 +109,52 @@ test('Das Werkzeug fällt sein Urteil nicht selbst', () => {
   const quelle = readFileSync(
     fileURLToPath(new URL('../bin/prueferpruefung.mjs', import.meta.url)), 'utf8',
   );
-  assert.match(quelle, /beurteile\(\{ code, ausgabe, fehlerstrom \}, p\)/);
+  // **Nicht mehr `assert.match(quelle, /beurteile\(…\)/)`.** Am 31.08. abends
+  // mit `npm run gegenprobe` nachgemessen: Diese Zeile passiert auch dann,
+  // wenn der Aufruf zwar dasteht, sein **Ergebnis aber weggeworfen** und
+  // durch ein festes `{ art: 'grün', zahl: 99 }` ersetzt wird. Das Werkzeug
+  // meldete dann jeden Prüfer als grün mit 99 Einheiten — der zustimmende
+  // Prüfer, gegen den dieses ganze Modul gebaut ist.
+  //
+  // Eine Probe, die die Schreibweise prüft, prüft nicht das Verhalten. Das
+  // Verhalten prüft der Testfall darunter, indem er die gemeldeten Zahlen
+  // gegen die Prüfer selbst hält.
   const zeilen = quelle.split('\n').filter((z) => !z.trimStart().startsWith('//'));
   const eigenerVergleich = zeilen.filter((z) => /zahl\s*<\s*p\.mindestens|code !== 0/.test(z));
   assert.deepEqual(eigenerVergleich, [],
     'das Werkzeug urteilt wieder selbst — dann prüft prueferurteil.test.js nur noch die halbe Wahrheit');
+});
+
+
+test('Die gemeldeten Zahlen stammen von den Prüfern, nicht aus dem Werkzeug', () => {
+  // **Die Verhaltensprobe.** Ein festverdrahtetes Urteil — „grün, 99
+  // Einheiten" — käme durch jede Prüfung der Schreibweise. Es käme nicht
+  // durch diese: Sie lässt zwei Prüfer **selbst** laufen und verlangt, dass
+  // `pruefe-pruefer` genau deren Zahlen nennt.
+  //
+  // Damit ist die Zusicherung an das gebunden, worum es geht: dass das
+  // Werkzeug wiedergibt, was die Prüfer sagen, statt sich etwas auszudenken.
+  const lauf = (datei, argumente = []) => spawnSync(
+    process.execPath, [fileURLToPath(new URL(`../bin/${datei}`, import.meta.url)), ...argumente],
+    { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 },
+  ).stdout ?? '';
+
+  const bericht = lauf('prueferpruefung.mjs');
+  assert.match(bericht, /Prüfer befragt/, 'das Werkzeug hat nicht berichtet');
+
+  // Zwei Prüfer, die ohne Browser laufen und ihre Menge selbst nennen.
+  const eigen = [
+    ['pruefe-tests', lauf('testpruefung.mjs'), /(\d+) Testfälle geprüft/, 'Testfälle'],
+    ['pruefe-stand', lauf('standpruefung.mjs'), /\d+ von (\d+) Dateien sind in STATUS/, 'Arbeitsdateien'],
+  ];
+  assert.equal(eigen.length, 2, 'ohne Vergleichsprüfer sagt diese Probe nichts');
+
+  for (const [name, ausgabe, muster, einheit] of eigen) {
+    const selbst = ausgabe.match(muster);
+    assert.ok(selbst, `${name} nennt seine Menge nicht`);
+    const gemeldet = bericht.match(new RegExp(`✓ ${name} — (\\d+) ${einheit}`));
+    assert.ok(gemeldet, `pruefe-pruefer meldet ${name} nicht: ${bericht}`);
+    assert.equal(gemeldet[1], selbst[1],
+      `${name}: gemeldet ${gemeldet[1]}, selbst gezählt ${selbst[1]} — das Werkzeug denkt sich Zahlen aus`);
+  }
 });

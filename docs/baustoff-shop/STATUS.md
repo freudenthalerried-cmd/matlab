@@ -502,10 +502,10 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > 787 vergleichbare Tests, kein Unterschied.
 > [`kommentare-im-schaufenster.md`](./kommentare-im-schaufenster.md).
 >
-> **Stand der Prüfmittel (31.08.):** 1032 Tests, `pruefe-tests` 1030/0, `pruefe-preise` 46/0, `pruefe-inhalte`
+> **Stand der Prüfmittel (31.08.):** 1033 Tests, `pruefe-tests` 1031/0, `pruefe-preise` 46/0, `pruefe-inhalte`
 > 24/357/0, `pruefe-seiten` 81 von 81 gebauten Seiten, `pruefe-widerrufe` 197 Dateien/48
 > Fundstellen, `pruefe-quellen` 6/6, `shopprobe` 50 (davon 10 im Rahmen),
-> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 216/216,
+> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 217/217,
 > `pruefe-pruefer` 11 Prüfer ohne Leerlauf (unterscheidet jetzt Abbruch von Leerlauf), Website 81 Seiten ohne toten
 > Verweis.
 
@@ -911,6 +911,7 @@ zusammengefasst und im Verzeichnis nicht auffindbar:
 | `ab-lager-ohne-lager.md` | Nicht mehr wohin die Anzeige führt, sondern was sie behauptet: „XPS und EPS **ab Lager**" — bei einem Betrieb, dessen tragende Entscheidung „reines Streckengeschäft, kein eigenes Warenlager" ist. Im Baustoffhandel eine Terminzusage, nach der ein Bauleiter plant. Dazu eine abgeschnittene Überschrift („Vom Baumeister, nicht vom") — derselbe Fehler, den das Werkzeug bei Keywords längst verhindert. Nachtrag: Die 81 Seiten sind sauber, und `BETRIEBSAUSSAGEN` in `inhaltspruefung.js` hält sie es — getrennt von den `GRENZWOERTER`, weil „ab Lager“ für einen Händler **mit** Lager wahr ist; Verneinungen schlagen nicht an |
 | `gegenprobe-die-nicht-ankam.md` | Dreimal an einem Tag kam meine eigene Mutation nicht an — zerlegte Maskierung, `\n` als echter Zeilenumbruch — und der Testlauf über den unveränderten Code meldete Grün. Eine Gegenprobe, die nicht ankommt, sieht aus wie eine bestandene. `npm run gegenprobe` nimmt die Texte aus Dateien, prüft **zuerst**, ob die Mutation ankommt, und kehrt den Ausgangscode um: bestanden heißt, der Test ist rot geworden. Danach sechs der heutigen Zusicherungen damit nachgeprüft — alle halten |
 | `blindstelle-die-ich-selbst-gemacht-habe.md` | Erste Aufgabe für das Gegenprobenwerkzeug: Seit der Budgetkonzentration sah `pruefeTexte` nur noch die drei ausgegebenen Anzeigen — in der zurückgestellten Gruppe Kanal stand weiter „PVC Kanal ab Lager". Ein Fehler mit bekanntem Auslösetag, und die Blindstelle war Folge meiner eigenen Änderung. Das Werkzeug fand zudem, dass mein erster Testfall die **Schreibweise** prüfte statt des Verhaltens |
+| `schreibweise-statt-verhalten.md` | Die Fehlerklasse vom Abend nachgezählt: Zwölf Testdateien lesen Quelltext, die meisten prüfen damit Ausgaben. Eine prüfte die **Schreibweise** — `assert.match(quelle, /beurteile\(…\)/)` blieb grün, als die Mutation den Aufruf stehen ließ und sein Ergebnis wegwarf. Das Werkzeug hätte jeden Prüfer als grün mit 99 Einheiten gemeldet: der zustimmende Prüfer, gegen den das Modul gebaut ist. Ersetzt durch einen Abgleich der gemeldeten Zahlen mit den Prüfern selbst |
 | `segment-arbeitsplatzmessung.md` | Nebenstrecke, kein eigenes Segment |
 | `strategie-modellvergleich.md` | Kapitalweg braucht ~900.000 €; enthält überholte Empfehlung |
 | `anschreiben-entwuerfe.md` | Drei Anschreiben (Hersteller, Großhändler, Partnerbetriebe), versandfertig, nicht versendet |
