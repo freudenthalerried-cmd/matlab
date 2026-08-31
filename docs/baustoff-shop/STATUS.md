@@ -502,10 +502,10 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > 787 vergleichbare Tests, kein Unterschied.
 > [`kommentare-im-schaufenster.md`](./kommentare-im-schaufenster.md).
 >
-> **Stand der Prüfmittel (31.08.):** 1024 Tests, `pruefe-tests` 1022/0, `pruefe-preise` 46/0, `pruefe-inhalte`
+> **Stand der Prüfmittel (31.08.):** 1031 Tests, `pruefe-tests` 1029/0, `pruefe-preise` 46/0, `pruefe-inhalte`
 > 24/357/0, `pruefe-seiten` 81 von 81 gebauten Seiten, `pruefe-widerrufe` 197 Dateien/48
 > Fundstellen, `pruefe-quellen` 6/6, `shopprobe` 50 (davon 10 im Rahmen),
-> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 214/214,
+> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 215/215,
 > `pruefe-pruefer` 11 Prüfer ohne Leerlauf (unterscheidet jetzt Abbruch von Leerlauf), Website 81 Seiten ohne toten
 > Verweis.
 
@@ -909,6 +909,7 @@ zusammengefasst und im Verzeichnis nicht auffindbar:
 | `zehn-euro-durch-sechs.md` | Das Werkzeug streute zehn Euro Tagesbudget über sechs Gruppen — 1,67 € je Gruppe, bei 1 € Klickpreis 50 Klicks im Monat, also 0,5 Bestellungen bei 1 % Kaufquote. Im erwarteten Fall bringt **keine einzige Gruppe** einen Verkauf, und aus 50 Klicks ohne Bestellung lässt sich die Quote auch nicht schätzen. Konzentriert auf die drei tragenden Gruppen; die aus den Parametern abgeleitete Schwelle korrigiert dabei meine eigene Vorabfestlegung von zwei auf drei |
 | `anzeigen-die-ins-leere-zeigten.md` | Alle drei Anzeigen des ersten Anlaufs zeigten auf Seiten, die es nicht gibt: Die Ziel-URL war der Google-**Anzeigepfad** — Zierwerk, das unter der Adresse eingeblendet wird. Jeder bezahlte Klick wäre auf einer Fehlerseite gelandet. Dritter Fund derselben Familie an einem Tag; `GRUPPENSEITE` liegt jetzt bei den Warengruppen, und die Probe **schlägt die Datei nach**, statt Zeichenketten zu vergleichen |
 | `ab-lager-ohne-lager.md` | Nicht mehr wohin die Anzeige führt, sondern was sie behauptet: „XPS und EPS **ab Lager**" — bei einem Betrieb, dessen tragende Entscheidung „reines Streckengeschäft, kein eigenes Warenlager" ist. Im Baustoffhandel eine Terminzusage, nach der ein Bauleiter plant. Dazu eine abgeschnittene Überschrift („Vom Baumeister, nicht vom") — derselbe Fehler, den das Werkzeug bei Keywords längst verhindert. Nachtrag: Die 81 Seiten sind sauber, und `BETRIEBSAUSSAGEN` in `inhaltspruefung.js` hält sie es — getrennt von den `GRENZWOERTER`, weil „ab Lager“ für einen Händler **mit** Lager wahr ist; Verneinungen schlagen nicht an |
+| `gegenprobe-die-nicht-ankam.md` | Dreimal an einem Tag kam meine eigene Mutation nicht an — zerlegte Maskierung, `\n` als echter Zeilenumbruch — und der Testlauf über den unveränderten Code meldete Grün. Eine Gegenprobe, die nicht ankommt, sieht aus wie eine bestandene. `npm run gegenprobe` nimmt die Texte aus Dateien, prüft **zuerst**, ob die Mutation ankommt, und kehrt den Ausgangscode um: bestanden heißt, der Test ist rot geworden |
 | `segment-arbeitsplatzmessung.md` | Nebenstrecke, kein eigenes Segment |
 | `strategie-modellvergleich.md` | Kapitalweg braucht ~900.000 €; enthält überholte Empfehlung |
 | `anschreiben-entwuerfe.md` | Drei Anschreiben (Hersteller, Großhändler, Partnerbetriebe), versandfertig, nicht versendet |
