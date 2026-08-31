@@ -121,7 +121,37 @@ const LIEFERANTENDATEI = process.env.WEBSITE_LIEFERANTEN || join(WURZEL, 'data',
 
 const FIRMA = 'Freudenthaler Bau GmbH';
 const ORT = 'Ried in der Riedmark';
-const BASIS = 'https://shop.freudenthaler-bau.at';
+/**
+ * Die Adresse, unter der der Shop steht.
+ *
+ * **Weisung vom 31.08.2026: `bauversand.com`, gehostet bei All-Inkl.**
+ *
+ * Sie kommt aus `data/betreiber.json` und nicht mehr aus dieser Zeile. Bis
+ * heute stand sie hier **und** ein zweites Mal fest verdrahtet in
+ * `bin/kampagne.mjs`, wo sie die finalen URLs der Anzeigen bildet — zwei Wege
+ * zu derselben Adresse, und der zweite wäre beim Wechsel alt geblieben. Dann
+ * hätten die Anzeigen auf eine Adresse gezeigt, unter der nichts steht.
+ *
+ * **Kein Rückfall auf eine andere Adresse.** Der erste Entwurf fiel auf die
+ * alte zurück, damit ein Bau ohne Betreiberdatei nicht scheitert. Das ist
+ * genau die falsche Richtung: Die Seiten trügen dann still eine Adresse, unter
+ * der nichts steht — Verweise, Sitemap und `llms.txt` inklusive. Ein Abbruch
+ * ist sichtbar, eine tote Adresse in achtzig Seiten nicht.
+ */
+function basisAdresse(betreiber) {
+  const roh = String(betreiber?.domain ?? '').trim().replace(/\/+$/, '');
+  if (roh === '') {
+    console.error('Abbruch: data/betreiber.json nennt keine `domain`.');
+    console.error('Ohne sie bekämen Verweise, Sitemap und llms.txt eine Adresse,');
+    console.error('unter der nichts steht — das fällt erst dem Besucher auf.');
+    process.exit(2);
+  }
+  return roh;
+}
+
+const BASIS = basisAdresse(existsSync(BETREIBERDATEI)
+  ? JSON.parse(readFileSync(BETREIBERDATEI, 'utf8'))
+  : {});
 
 
 /**

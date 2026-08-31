@@ -3,26 +3,23 @@
   "_hinweis": "Ein Impressum mit falschen Angaben ist schlimmer als eines mit sichtbaren Luecken: Die Luecke faellt beim Korrekturlesen auf, der Fehler erst bei der Abmahnung. Deshalb steht hier nur, was belegbar ist. Jedes fehlende Feld erzeugt im erzeugten Impressum eine sichtbare Marke; erst wenn keine mehr da ist, darf die Seite online gehen.",
   "_quellen": "Firmenbuch ueber evi.gv.at (FN 347938z), WKO Firmen A-Z, Firmensitz laut eigener Firmenseite.",
   "_offen": "E-Mail, Telefon und UID-Nummer sind dem Auftraggeber bekannt und muessen von ihm eingetragen werden. Der Gewerbewortlaut ist im Gewerberegisterauszug nachzulesen und hier bewusst noch nicht behauptet.",
-
   "firma": "Freudenthaler Bau GmbH",
   "rechtsform": "Gesellschaft mit beschränkter Haftung",
   "strasse": "Marwach 5",
   "plz": "4312",
   "ort": "Ried in der Riedmark",
   "land": "AT",
-
+  "domain": "https://bauversand.com",
+  "_domainHinweis": "Weisung vom 31.08.2026: bauversand.com, gehostet bei All-Inkl. Steht hier und nicht als Konstante im Bauwerkzeug, weil sie eine Angabe des Betreibers ist wie Firma und UID — und weil sie bis dahin an zwei Stellen fest verdrahtet war (website.mjs und kampagne.mjs). Zwei Wege zu derselben Adresse bedeuten, dass einer davon beim naechsten Wechsel alt ist. `domainZeigtAufShop` bleibt davon unberuehrt: Die Domain zu besitzen heisst nicht, dass die Seite dort liegt.",
   "imFirmenbuch": true,
   "firmenbuchnummer": "FN 347938z",
   "firmenbuchgericht": "Landesgericht Linz",
-
   "gewerbebehoerde": "Bezirkshauptmannschaft Perg",
   "kammer": "Wirtschaftskammer Oberösterreich, Fachgruppe Bau",
-
   "email": "",
   "telefon": "",
   "uid": "",
   "gewerbewortlaut": "",
-
   "_betriebshinweis": "Die vier folgenden Angaben entscheiden mit darueber, ob der Shop online gehen darf (npm run startklar). null heisst NICHT 'nein', sondern 'niemand hat geantwortet' — und ein unbeantworteter Punkt zaehlt dort nicht als erfuellt. Wer eine Frage verneint, traegt false ein; das ist eine Antwort und wird als solche gezaehlt.",
   "zahlungsanbieter": null,
   "rechtstexteFundstelle": null,

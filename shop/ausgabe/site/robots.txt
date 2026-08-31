@@ -27,4 +27,4 @@ Disallow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://shop.freudenthaler-bau.at/sitemap.xml
+Sitemap: https://bauversand.com/sitemap.xml

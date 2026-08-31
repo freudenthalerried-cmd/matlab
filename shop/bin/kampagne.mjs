@@ -475,11 +475,24 @@ function main() {
     },
   };
 
+  // **Berichtigt am 31.08.** Hier stand die Adresse fest verdrahtet — ein
+  // zweites Mal neben `bin/website.mjs`. Eine Anzeige mit veralteter Ziel-URL
+  // ist der teuerste Tippfehler von allen: Sie kostet den Klick und liefert
+  // eine Fehlerseite. Die Adresse kommt jetzt aus den Betreiberdaten.
+  const betreiberPfad = join(WURZEL, 'data', 'betreiber.json');
+  const basis = String((existsSync(betreiberPfad) ? lies(betreiberPfad) : {}).domain ?? '')
+    .trim().replace(/\/+$/, '');
+  if (basis === '') {
+    console.error('Abbruch: data/betreiber.json nennt keine `domain` — ohne sie hätten die');
+    console.error('Anzeigen keine Ziel-URL, und eine erfundene wäre teurer als keine Anzeige.');
+    process.exit(2);
+  }
+
   const anzeigen = [];
   for (const g of gruppen) {
     const t = ANZEIGENTEXTE[g.gruppe];
     if (!t) continue;
-    const satz = { Kampagne: `Baustoffe ${g.gruppe}`, Anzeigengruppe: g.gruppe, Anzeigentyp: 'Responsive Suchanzeige', 'Finale URL': `https://shop.freudenthaler-bau.at/${t.pfad[0]}` };
+    const satz = { Kampagne: `Baustoffe ${g.gruppe}`, Anzeigengruppe: g.gruppe, Anzeigentyp: 'Responsive Suchanzeige', 'Finale URL': `${basis}/${t.pfad[0]}` };
     t.k.forEach((k, i) => { satz[`Überschrift ${i + 1}`] = k; });
     t.b.forEach((b, i) => { satz[`Beschreibung ${i + 1}`] = b; });
     satz['Pfad 1'] = t.pfad[0];

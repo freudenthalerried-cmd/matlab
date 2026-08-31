@@ -1167,3 +1167,46 @@ test('Ohne eindeutige Grenzen wird kein Hauptbereich gesetzt, sondern abgebroche
   assert.ok(gut.indexOf('<h1>') > gut.indexOf('<main'), 'die Überschrift steht außerhalb');
   assert.ok(gut.indexOf('<h1>') < gut.indexOf('</main>'), 'die Überschrift steht außerhalb');
 });
+
+/* ------------------------------------------------------------------ *
+ * Die Adresse des Shops steht an einer Stelle
+ * ------------------------------------------------------------------ */
+
+test('Die Adresse kommt aus den Betreiberdaten, nicht aus dem Bauwerkzeug', () => {
+  // **Weisung vom 31.08.: bauversand.com bei All-Inkl.** Bis dahin stand die
+  // Adresse als Konstante in `bin/website.mjs` — und ein zweites Mal fest
+  // verdrahtet in `bin/kampagne.mjs`, wo sie die finalen URLs der Anzeigen
+  // bildet.
+  //
+  // Zwei Wege zu derselben Adresse, und der zweite wäre beim Wechsel alt
+  // geblieben. Eine Anzeige mit veralteter Ziel-URL ist der teuerste Tippfehler
+  // von allen: Sie kostet den Klick **und** liefert eine Fehlerseite.
+  const betreiber = JSON.parse(readFileSync(pfad('../data/betreiber.json'), 'utf8'));
+  assert.ok(betreiber.domain, 'die Betreiberdaten nennen keine Domain');
+
+  // Geprüft wird die **eigene** Adresse, nicht jeder Verweis: Ein Link auf das
+  // WKO-Firmenverzeichnis gehört in den Seitentext und ist kein Duplikat.
+  const eigene = [new URL(betreiber.domain).host, 'shop.freudenthaler-bau.at'];
+  assert.equal(eigene.length, 2, 'ohne Hostnamen prüft die Schleife darunter nichts');
+  for (const werkzeug of ['../bin/website.mjs', '../bin/kampagne.mjs']) {
+    const quelle = readFileSync(pfad(werkzeug), 'utf8');
+    const zeilen = quelle.split('\n')
+      .filter((z) => !z.trimStart().startsWith('//') && !z.trimStart().startsWith('*'));
+    for (const host of eigene) {
+      const fest = zeilen.filter((z) => z.includes(host));
+      assert.deepEqual(fest, [],
+        `${werkzeug} verdrahtet „${host}" wieder fest: ${fest.join(' | ')}`);
+    }
+  }
+});
+
+test('Die gebauten Seiten tragen die Adresse aus den Betreiberdaten', () => {
+  const wurzel = pfad('../ausgabe/site');
+  if (!existsSync(wurzel)) return;
+  const betreiber = JSON.parse(readFileSync(pfad('../data/betreiber.json'), 'utf8'));
+  const domain = betreiber.domain.replace(/\/+$/, '');
+  const llms = readFileSync(join(wurzel, 'llms.txt'), 'utf8');
+  assert.ok(llms.includes(`${domain}/kasse.html`), `llms.txt nennt nicht ${domain}`);
+  // Und die alte Adresse steht nirgends mehr.
+  assert.ok(!llms.includes('shop.freudenthaler-bau.at'), 'die alte Adresse ist zurück');
+});
