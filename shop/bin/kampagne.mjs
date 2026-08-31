@@ -519,8 +519,45 @@ function main() {
     process.exit(2);
   }
 
+  /**
+   * **Der erste Anlauf bekommt das Budget, nicht alle sechs Gruppen.**
+   *
+   * Bis zum 31.08. teilte diese Zeile `tagesbudget / gruppen.length` — zehn
+   * Euro durch sechs, also 1,67 € je Gruppe und Tag. Nachgerechnet:
+   *
+   * |  | sechs Gruppen | konzentriert |
+   * |---|---|---|
+   * | Klicks/Tag je Gruppe bei 1,00 € | 1,7 | 5,0 |
+   * | Klicks/Monat je Gruppe | 50 | 150 |
+   * | Bestellungen bei 1 % Kaufquote | **0,5** | **1,5** |
+   *
+   * Bei gestreutem Budget bringt im erwarteten Fall **keine einzige Gruppe**
+   * eine Bestellung im ersten Monat — und aus fünfzig Klicks ohne Bestellung
+   * lässt sich die Kaufquote auch nicht schätzen. Man bezahlt für Rauschen.
+   * Dasselbe Geld auf die tragenden Gruppen gelegt macht den ersten Verkauf
+   * im ersten Monat rechnerisch wahrscheinlich.
+   *
+   * **Das Kriterium kommt aus den Parametern, nicht aus einer Meinung:** Eine
+   * Gruppe gehört in den ersten Anlauf, wenn ihr Deckungsbeitrag die
+   * Werbekosten auch beim **oberen** Marktklickpreis trägt — also
+   * `MARKT_CPC.oben / kaufquote` je Verkauf.
+   *
+   * Berichtigung an mich selbst: `weg-zum-ersten-verkauf.md` hatte am selben
+   * Tag „nur Kamin und Dämmung" festgelegt. Die Regel ergibt **drei** Gruppen,
+   * weil WDVS bei der angenommenen Kaufquote ebenfalls trägt. Der gerechneten
+   * Schwelle gebührt der Vorrang vor meiner Vorabfestlegung.
+   */
+  const kostenJeVerkauf = MARKT_CPC.oben / kaufquote;
+  const ersterAnlauf = gruppen.filter((g) => g.deckungsbeitragNetto >= kostenJeVerkauf);
+  const spaeter = gruppen.filter((g) => g.deckungsbeitragNetto < kostenJeVerkauf);
+  if (ersterAnlauf.length === 0) {
+    console.error(`Abbruch: Keine Gruppe trägt ${kostenJeVerkauf.toFixed(0)} € Werbekosten je Verkauf.`);
+    console.error('Ein Budget auf alle zu verteilen hieße, es gleichmäßig zu verlieren.');
+    process.exit(2);
+  }
+
   const anzeigen = [];
-  for (const g of gruppen) {
+  for (const g of ersterAnlauf) {
     const t = ANZEIGENTEXTE[g.gruppe];
     if (!t) continue;
     const satz = { Kampagne: `Baustoffe ${g.gruppe}`, Anzeigengruppe: g.gruppe, Anzeigentyp: 'Responsive Suchanzeige', 'Finale URL': `${basis}/${t.pfad[0]}` };
@@ -544,11 +581,11 @@ function main() {
   // --- Ausgabe ------------------------------------------------------------
   mkdirSync(AUSGABE, { recursive: true });
 
-  const kampagnen = gruppen.map((g) => ({
+  const kampagnen = ersterAnlauf.map((g) => ({
     Kampagne: `Baustoffe ${g.gruppe}`,
     Kampagnentyp: 'Suchnetzwerk',
     Status: 'Pausiert',
-    'Tagesbudget EUR': (tagesbudget / gruppen.length).toFixed(2),
+    'Tagesbudget EUR': (tagesbudget / ersterAnlauf.length).toFixed(2),
     Gebotsstrategie: 'Manueller CPC',
     // Die Ausrichtung stand hier als Zeichenkette — und war damit die einzige
     // Stelle im ganzen Vorhaben, an der das regionale Liefergebiet festgelegt
@@ -559,7 +596,7 @@ function main() {
     Werbezeit: 'Mo–Fr 06:00–18:00',
   }));
 
-  const anzeigengruppen = gruppen.map((g) => ({
+  const anzeigengruppen = ersterAnlauf.map((g) => ({
     Kampagne: `Baustoffe ${g.gruppe}`,
     Anzeigengruppe: g.gruppe,
     Status: 'Pausiert',
@@ -582,8 +619,29 @@ function main() {
   console.log('Geschrieben nach shop/ausgabe/kampagne/:');
   schreibe('kampagnen.csv', csv(Object.keys(kampagnen[0]), kampagnen));
   schreibe('anzeigengruppen.csv', csv(Object.keys(anzeigengruppen[0]), anzeigengruppen));
-  schreibe('keywords.csv', csv(['Kampagne', 'Anzeigengruppe', 'Keyword', 'Übereinstimmungstyp', 'Herkunft', 'Marke'], keywordsEindeutig));
+  // Auch die Keywords folgen dem ersten Anlauf: Ein Keyword ohne Anzeigengruppe
+  // lädt nicht, und eines für eine Gruppe ohne Budget wirbt nicht.
+  const imAnlauf = new Set(ersterAnlauf.map((g) => g.gruppe));
+  const keywordsAnlauf = keywordsEindeutig.filter((k) => imAnlauf.has(k.Anzeigengruppe));
+  schreibe('keywords.csv', csv(['Kampagne', 'Anzeigengruppe', 'Keyword', 'Übereinstimmungstyp', 'Herkunft', 'Marke'], keywordsAnlauf));
   schreibe('negative-keywords.csv', csv(['Liste', 'Thema', 'Keyword', 'Übereinstimmungstyp'], negative));
+
+  // **Zurückgestellt, nicht verworfen.** Die schwachen Gruppen kommen dazu,
+  // sobald eine gemessene Kaufquote vorliegt — dann verschiebt sich die
+  // Schwelle, und die Rechnung entscheidet neu. Sie stehen in einer eigenen
+  // Datei, damit niemand sie versehentlich mit hochlädt und das Budget wieder
+  // streut.
+  schreibe('spaeter-pruefen.csv', csv(
+    ['Gruppe', 'Deckungsbeitrag EUR', 'max. Klick EUR', 'Werbekosten je Verkauf EUR', 'Grund'],
+    spaeter.map((g) => ({
+      Gruppe: g.gruppe,
+      'Deckungsbeitrag EUR': g.deckungsbeitragNetto.toFixed(2),
+      'max. Klick EUR': g.maxCpc.toFixed(2),
+      'Werbekosten je Verkauf EUR': kostenJeVerkauf.toFixed(2),
+      Grund: `Deckungsbeitrag trägt die Werbekosten beim oberen Marktklickpreis nicht — `
+        + `wartet auf eine gemessene Kaufquote (angenommen: ${(kaufquote * 100).toFixed(1)} %)`,
+    })),
+  ));
   const anzeigenKopf = [...new Set(anzeigen.flatMap((a) => Object.keys(a)))];
   schreibe('anzeigen.csv', csv(anzeigenKopf, anzeigen));
 
@@ -595,6 +653,14 @@ function main() {
     console.log(
       `  ${g.gruppe.padEnd(12)} ${g.warenwertNetto.toFixed(2).padStart(9)} € ${g.deckungsbeitragNetto.toFixed(2).padStart(8)} € ${g.maxCpc.toFixed(2).padStart(8)} €   ${lage}`,
     );
+  }
+
+  console.log(`\nErster Anlauf — diese Gruppen bekommen das Budget (${(tagesbudget / ersterAnlauf.length).toFixed(2)} € je Gruppe und Tag):`);
+  for (const g of ersterAnlauf) console.log(`  ${g.gruppe}`);
+  if (spaeter.length) {
+    console.log(`\nZurückgestellt in spaeter-pruefen.csv — tragen ${kostenJeVerkauf.toFixed(0)} € Werbekosten je Verkauf nicht:`);
+    for (const g of spaeter) console.log(`  ${g.gruppe.padEnd(12)} Deckungsbeitrag ${g.deckungsbeitragNetto.toFixed(2)} €`);
+    console.log('  Das Budget zu streuen hieße, es gleichmäßig zu verlieren.');
   }
 
   if (uebersprungen.length) {

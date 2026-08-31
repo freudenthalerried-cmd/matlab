@@ -191,7 +191,7 @@ test('Keine Anzeige nennt eine Region außerhalb des Liefergebiets', () => {
   const datei = pfad('../ausgabe/kampagne/anzeigen.csv');
   if (!existsSync(datei)) return;
   const zeilen = readFileSync(datei, 'utf8').trim().split('\n');
-  assert.ok(zeilen.length >= 4, `nur ${zeilen.length - 1} Anzeigen — prüft zu wenig`);
+  assert.ok(zeilen.length >= 2, `nur ${zeilen.length - 1} Anzeigen — prüft zu wenig`);
 
   // Landschaftsnamen, die nicht deckungsgleich mit dem Liefergebiet sind.
   const verboten = ['Mühlviertel', 'Innviertel', 'Hausruckviertel', 'Traunviertel',
@@ -211,7 +211,15 @@ test('Jede Anzeige nennt das Liefergebiet, auch die mit dem höchsten Ertrag', (
   const datei = pfad('../ausgabe/kampagne/anzeigen.csv');
   if (!existsSync(datei)) return;
   const zeilen = readFileSync(datei, 'utf8').trim().split('\n').slice(1);
-  assert.ok(zeilen.length >= 4, `nur ${zeilen.length} Anzeigen`);
+  // **Nicht `>= 4`.** Dort stand der Bestand von gestern als Literal, und als
+  // das Budget am 31.08. auf die tragenden Gruppen konzentriert wurde, fiel
+  // diese Probe um, obwohl nichts kaputt war — zum fünften Mal dieselbe
+  // Falle. Geprüft gehört die Regel: **je Kampagne genau eine Anzeige.**
+  const kampagnen = readFileSync(pfad('../ausgabe/kampagne/kampagnen.csv'), 'utf8')
+    .trim().split('\n').slice(1);
+  assert.ok(kampagnen.length >= 1, 'keine Kampagne ausgegeben');
+  assert.equal(zeilen.length, kampagnen.length,
+    `${zeilen.length} Anzeigen für ${kampagnen.length} Kampagnen`);
 
   const bezirke = LIEFERGEBIET.bezirke.map((b) => b.name);
   assert.ok(bezirke.length >= 3, `nur ${bezirke.length} Bezirke — dann prüft die Schleife zu wenig`);
@@ -232,4 +240,69 @@ test('Die Ortsangaben halten die Zeichengrenzen ein', () => {
   const lang = `Geliefert wird in die Bezirke ${bezirksliste()}.`;
   assert.ok(kurz.length <= 30, `Überschrift ${kurz.length} Zeichen: „${kurz}"`);
   assert.ok(lang.length <= 90, `Beschreibung ${lang.length} Zeichen: „${lang}"`);
+});
+
+/* ------------------------------------------------------------------ *
+ * Das Budget geht an die Gruppen, die es tragen
+ * ------------------------------------------------------------------ */
+
+const kampagnenDatei = pfad('../ausgabe/kampagne/kampagnen.csv');
+const spaeterDatei = pfad('../ausgabe/kampagne/spaeter-pruefen.csv');
+const zeilenVon = (datei) => readFileSync(datei, 'utf8').trim().split('\n').slice(1);
+
+test('Das Tagesbudget wird konzentriert, nicht über alle Gruppen gestreut', () => {
+  // **Befund vom 31.08.** Zehn Euro durch sechs Gruppen sind 1,67 € je Gruppe
+  // und Tag. Nachgerechnet bei 1,00 € Klickpreis: 50 Klicks im Monat je
+  // Gruppe, also 0,5 Bestellungen bei 1 % Kaufquote — im erwarteten Fall
+  // bringt **keine einzige Gruppe** eine Bestellung im ersten Monat. Und aus
+  // fünfzig Klicks ohne Bestellung lässt sich die Kaufquote nicht schätzen.
+  // Man bezahlt für Rauschen.
+  if (!existsSync(kampagnenDatei)) return;
+  const zeilen = zeilenVon(kampagnenDatei);
+  assert.ok(zeilen.length >= 1, 'keine Kampagne ausgegeben');
+
+  const budgets = zeilen.map((z) => Number(z.split(',')[3]));
+  assert.equal(budgets.length, zeilen.length, 'jede Kampagne braucht ein Budget');
+  const summe = budgets.reduce((s, b) => s + b, 0);
+  // Das gesamte Budget wird vergeben, nur eben auf weniger Gruppen.
+  assert.ok(Math.abs(summe - 10) < 0.05, `Budgetsumme ${summe.toFixed(2)} € statt 10 €`);
+  for (const b of budgets) {
+    assert.ok(b >= 3, `${b} € je Tag kauft bei Marktpreisen keinen belastbaren Klickstrom`);
+  }
+});
+
+test('Zurückgestellte Gruppen stehen in einer eigenen Datei, mit Grund', () => {
+  // Zurückgestellt, nicht verworfen: Sie kommen dazu, sobald eine gemessene
+  // Kaufquote vorliegt. Getrennt, damit niemand sie versehentlich mit
+  // hochlädt und das Budget wieder streut.
+  if (!existsSync(spaeterDatei)) return;
+  const zeilen = zeilenVon(spaeterDatei);
+  assert.ok(zeilen.length >= 1, 'keine zurückgestellte Gruppe — dann prüft dieser Fall nichts');
+  for (const z of zeilen) {
+    assert.match(z, /wartet auf eine gemessene Kaufquote/, `ohne Grund: ${z}`);
+  }
+
+  // Und keine davon steht zugleich in den Kampagnen.
+  const imAnlauf = zeilenVon(kampagnenDatei).map((z) => z.split(',')[0]);
+  for (const z of zeilen) {
+    const gruppe = z.split(',')[0];
+    assert.ok(!imAnlauf.includes(`Baustoffe ${gruppe}`),
+      `${gruppe} steht in beiden Dateien`);
+  }
+});
+
+test('Anzeigen und Keywords folgen dem ersten Anlauf', () => {
+  // Ein Keyword ohne Anzeigengruppe lädt nicht, und eine Anzeige für eine
+  // Gruppe ohne Budget wirbt nicht. Alle drei Dateien müssen dieselbe Menge
+  // Gruppen führen — sonst ist der Import halb.
+  for (const datei of ['anzeigen.csv', 'keywords.csv']) {
+    const voll = pfad(`../ausgabe/kampagne/${datei}`);
+    if (!existsSync(voll)) continue;
+    const gruppenDrin = new Set(zeilenVon(voll).map((z) => z.split(',')[1]));
+    const zurueck = zeilenVon(spaeterDatei).map((z) => z.split(',')[0]);
+    assert.ok(zurueck.length >= 1, 'keine zurückgestellte Gruppe zum Vergleich');
+    for (const g of zurueck) {
+      assert.ok(!gruppenDrin.has(g), `${datei} führt die zurückgestellte Gruppe ${g}`);
+    }
+  }
 });

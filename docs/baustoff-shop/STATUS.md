@@ -502,10 +502,10 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > 787 vergleichbare Tests, kein Unterschied.
 > [`kommentare-im-schaufenster.md`](./kommentare-im-schaufenster.md).
 >
-> **Stand der Prüfmittel (31.08.):** 1013 Tests, `pruefe-tests` 1011/0, `pruefe-preise` 46/0, `pruefe-inhalte`
+> **Stand der Prüfmittel (31.08.):** 1016 Tests, `pruefe-tests` 1014/0, `pruefe-preise` 46/0, `pruefe-inhalte`
 > 24/357/0, `pruefe-seiten` 81 von 81 gebauten Seiten, `pruefe-widerrufe` 197 Dateien/48
 > Fundstellen, `pruefe-quellen` 6/6, `shopprobe` 50 (davon 10 im Rahmen),
-> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 211/211,
+> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 212/212,
 > `pruefe-pruefer` 11 Prüfer ohne Leerlauf (unterscheidet jetzt Abbruch von Leerlauf), Website 81 Seiten ohne toten
 > Verweis.
 
@@ -906,6 +906,7 @@ zusammengefasst und im Verzeichnis nicht auffindbar:
 | `kennung-die-niemand-nachgerechnet-hat.md` | Am kritischen Pfad zum Werbeweg: `istGtin()` prüft die Prüfziffer beim Einlesen, eine falsche Kennung hält die Zeile an statt zu warnen — sie kann eine andere Ware bezeichnen. Gegen 3000 erzeugte Fälle geprüft; dabei fielen zwei **erfundene** Platzhalter der eigenen Testdatei durch. Beim Gegenproben zeigte sich, dass `Number(' ')` null ist: Eine Kennung mit Leerstelle ginge ohne Ziffernprüfung durch |
 | `bauversand-com.md` | **Weisung 31.08.: Domain `bauversand.com` bei All-Inkl.** Eingetragen in `data/betreiber.json`, wo Firma und Anschrift stehen. Dabei kam heraus, dass die Adresse doppelt verdrahtet war — auch in `kampagne.mjs` als finale URL der Anzeigen, das teuerste aller Duplikate: eine Anzeige mit toter Ziel-URL kostet den Klick und liefert eine Fehlerseite |
 | `muehlviertel-ist-nicht-das-liefergebiet.md` | Vier von sechs Anzeigen warben „im Mühlviertel" — das umfasst Rohrbach, wo nicht geliefert wird, und lässt Linz und Linz-Land aus, die dazugehören. Kamin, die ertragreichste Gruppe, trug gar keine Ortsangabe. Bezahlte Klicks, die in der Kasse abgelehnt werden: dieselbe Verschwendung wie eine tote Ziel-URL. Ortsangabe wird jetzt aus `LIEFERGEBIET` erzeugt |
+| `zehn-euro-durch-sechs.md` | Das Werkzeug streute zehn Euro Tagesbudget über sechs Gruppen — 1,67 € je Gruppe, bei 1 € Klickpreis 50 Klicks im Monat, also 0,5 Bestellungen bei 1 % Kaufquote. Im erwarteten Fall bringt **keine einzige Gruppe** einen Verkauf, und aus 50 Klicks ohne Bestellung lässt sich die Quote auch nicht schätzen. Konzentriert auf die drei tragenden Gruppen; die aus den Parametern abgeleitete Schwelle korrigiert dabei meine eigene Vorabfestlegung von zwei auf drei |
 | `segment-arbeitsplatzmessung.md` | Nebenstrecke, kein eigenes Segment |
 | `strategie-modellvergleich.md` | Kapitalweg braucht ~900.000 €; enthält überholte Empfehlung |
 | `anschreiben-entwuerfe.md` | Drei Anschreiben (Hersteller, Großhändler, Partnerbetriebe), versandfertig, nicht versendet |
