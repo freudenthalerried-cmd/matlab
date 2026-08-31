@@ -42,7 +42,13 @@ const lieferantenDatei = lies(wurzel, 'data', 'lieferanten.json');
  * Sperre in `katalogFeed` hält sie zurück. Aber es soll niemand glauben, er
  * habe den echten Katalog vor sich.
  */
-const preisPfad = join(wurzel, '..', 'preise', 'baustoff-preise.json');
+// Über die Umgebung überschreibbar — aus demselben Grund wie
+// `STARTKLAR_BETREIBER` und `WEBSITE_LIEFERANTEN`: Der Rückfall unten ist der
+// **Normalzustand einer frischen Arbeitskopie**, denn `preise/` liegt außerhalb
+// des Repositories. Ohne diesen Griff könnte keine Probe ihn je auslösen; sie
+// liefe immer in der einen Lage, in der er nicht greift. Ein Zweig, den keine
+// Probe betritt, ist kein Zweig, sondern eine Vermutung.
+const preisPfad = process.env.VEROEFFENTLICHUNG_PREISE || join(wurzel, '..', 'preise', 'baustoff-preise.json');
 const baustoffVerfuegbar = existsSync(preisPfad) && existsSync(join(wurzel, 'data', 'katalog-baustoff.json'));
 
 const katalog = baustoffVerfuegbar
@@ -52,7 +58,14 @@ const katalog = baustoffVerfuegbar
       lieferantenDatei,
       ZIELMARGE,
     )
-  : ladeKatalog({ lieferanten: lieferantenDatei, artikel: lies(wurzel, 'data', 'artikel.json') }, 0.35);
+  // **`0.35` stand hier bis zum 31.08.** — die Zielmarge des abgelösten
+  // Modells. Die Preise dieses Rückfallkatalogs erreichen zwar keinen Kunden
+  // (`katalogFeed` hält Platzhalter zurück), aber der Bericht auf dem
+  // Bildschirm nennt Beträge, und die wären mit einer Marge gerechnet, die
+  // seit dem 25. August nicht mehr gilt. Genau die Sorte stehengebliebener
+  // Zahl, die in `PARAMETER.md` schon einmal einen Lauf in die Irre geführt
+  // hat.
+  : ladeKatalog({ lieferanten: lieferantenDatei, artikel: lies(wurzel, 'data', 'artikel.json') }, ZIELMARGE);
 
 const katalogName = baustoffVerfuegbar
   ? 'Baustoffkatalog aus den Lieferantenrechnungen'

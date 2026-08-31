@@ -140,3 +140,73 @@ test('Eine abweichende SHOP_BEZIRKE-Einstellung wird gemeldet, nicht befolgt', (
   assert.match(lauf.stdout, /Liefergebiet: Perg/, 'ausgerufen wird die Entscheidung');
   assert.ok(!/Liefergebiet: Ried im Innkreis/.test(lauf.stdout));
 });
+
+/* ------------------------------------------------------------------ *
+ * Der Rückfall auf den Platzhalterkatalog — der Zustand einer frischen
+ * Arbeitskopie, und bis zum 31.08. der einzige ungeprüfte Zweig
+ * ------------------------------------------------------------------ */
+
+/**
+ * `preise/` liegt außerhalb des Repositories. Wer klont, hat die Datei
+ * **nicht** — der Rückfall auf `data/artikel.json` ist damit nicht der
+ * Ausnahmefall, sondern der Normalfall jeder frischen Arbeitskopie. Geprüft
+ * war er trotzdem nie: Jede bisherige Probe lief in der einen Lage, in der er
+ * nicht greift.
+ *
+ * Der Dateikopf verspricht ausdrücklich, das Werkzeug „meldet das" und tue
+ * „nichts Falsches". Beides steht ab hier unter Probe.
+ */
+const ohnePreise = (...argumente) => spawnSync(
+  process.execPath, [werkzeug, ...argumente],
+  {
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      VEROEFFENTLICHUNG_PREISE: '/nicht/vorhanden/baustoff-preise.json',
+      SHOP_NAME: '', SHOP_BEZIRKE: '',
+    },
+  },
+);
+
+test('Ohne Preisdatei sagt das Werkzeug, dass es den Platzhalterkatalog vor sich hat', () => {
+  const lauf = ohnePreise();
+  assert.equal(lauf.status, 0, lauf.stderr);
+  assert.match(lauf.stdout, /Radon-Platzhalterkatalog/);
+  assert.match(lauf.stdout, /die Preisdatei des Baustoffkatalogs fehlt/);
+  // Und es gibt sich nicht als der echte aus.
+  assert.ok(!/Baustoffkatalog aus den Lieferantenrechnungen/.test(lauf.stdout),
+    'das Werkzeug nennt den Rückfall wie den echten Katalog');
+});
+
+test('Aus dem Platzhalterkatalog wird kein einziger Eintrag veröffentlichbar', () => {
+  // Die Sperre, auf die sich der Dateikopf beruft: Platzhalterpreise werden
+  // zurückgehalten. Ohne diesen Fall stünde die Behauptung „es tut dann
+  // nichts Falsches" ungeprüft da.
+  const lauf = ohnePreise();
+  assert.match(lauf.stdout, /Feed:\s+0 veröffentlichbar, \d+ zurückgehalten/);
+  assert.match(lauf.stdout, /Einkaufspreis ist Platzhalter/);
+  assert.match(lauf.stdout, /Einreichbar: nein/);
+});
+
+test('Auch im Rückfall wird mit --schreiben nichts geschrieben', () => {
+  const lauf = ohnePreise('--schreiben');
+  assert.equal(lauf.status, 1, 'der Abbruch muss sich auch im Ausgangscode zeigen');
+  // Auf **stderr**, nicht auf stdout. Dieselbe Unterscheidung, die zwei Tage
+  // zuvor `pruefe-pruefer` in die Irre geführt hat: Der Bericht geht nach
+  // stdout, die Weigerung nach stderr. Wer nur einen Strom liest, sieht
+  // entweder den Grund nicht oder den Bericht nicht.
+  assert.match(lauf.stderr, /Abbruch: Es wird nichts veröffentlicht/);
+  assert.ok(!/Abbruch/.test(lauf.stdout), 'der Abbruch steht doppelt da');
+});
+
+test('Mit Preisdatei bleibt es beim echten Katalog', () => {
+  // Gegenrichtung: Der Rückfall darf nicht der neue Normalfall werden. Ohne
+  // die Preisdatei sagt diese Probe nichts — dann prüft sie es auch nicht.
+  const preisPfad = fileURLToPath(new URL('../../preise/baustoff-preise.json', import.meta.url));
+  if (!existsSync(preisPfad)) return;
+  const lauf = spawnSync(process.execPath, [werkzeug], {
+    encoding: 'utf8', env: { ...process.env, SHOP_NAME: '', SHOP_BEZIRKE: '' },
+  });
+  assert.match(lauf.stdout, /Baustoffkatalog aus den Lieferantenrechnungen/);
+  assert.ok(!/Radon-Platzhalterkatalog/.test(lauf.stdout));
+});
