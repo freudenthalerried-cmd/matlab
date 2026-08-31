@@ -502,10 +502,10 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > 787 vergleichbare Tests, kein Unterschied.
 > [`kommentare-im-schaufenster.md`](./kommentare-im-schaufenster.md).
 >
-> **Stand der Prüfmittel (31.08.):** 1033 Tests, `pruefe-tests` 1031/0, `pruefe-preise` 46/0, `pruefe-inhalte`
+> **Stand der Prüfmittel (31.08.):** 1039 Tests, `pruefe-tests` 1037/0, `pruefe-preise` 46/0, `pruefe-inhalte`
 > 24/357/0, `pruefe-seiten` 81 von 81 gebauten Seiten, `pruefe-widerrufe` 197 Dateien/48
 > Fundstellen, `pruefe-quellen` 6/6, `shopprobe` 50 (davon 10 im Rahmen),
-> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 217/217,
+> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 218/218,
 > `pruefe-pruefer` 11 Prüfer ohne Leerlauf (unterscheidet jetzt Abbruch von Leerlauf), Website 81 Seiten ohne toten
 > Verweis.
 
@@ -912,6 +912,7 @@ zusammengefasst und im Verzeichnis nicht auffindbar:
 | `gegenprobe-die-nicht-ankam.md` | Dreimal an einem Tag kam meine eigene Mutation nicht an — zerlegte Maskierung, `\n` als echter Zeilenumbruch — und der Testlauf über den unveränderten Code meldete Grün. Eine Gegenprobe, die nicht ankommt, sieht aus wie eine bestandene. `npm run gegenprobe` nimmt die Texte aus Dateien, prüft **zuerst**, ob die Mutation ankommt, und kehrt den Ausgangscode um: bestanden heißt, der Test ist rot geworden. Danach sechs der heutigen Zusicherungen damit nachgeprüft — alle halten |
 | `blindstelle-die-ich-selbst-gemacht-habe.md` | Erste Aufgabe für das Gegenprobenwerkzeug: Seit der Budgetkonzentration sah `pruefeTexte` nur noch die drei ausgegebenen Anzeigen — in der zurückgestellten Gruppe Kanal stand weiter „PVC Kanal ab Lager". Ein Fehler mit bekanntem Auslösetag, und die Blindstelle war Folge meiner eigenen Änderung. Das Werkzeug fand zudem, dass mein erster Testfall die **Schreibweise** prüfte statt des Verhaltens |
 | `schreibweise-statt-verhalten.md` | Die Fehlerklasse vom Abend nachgezählt: Zwölf Testdateien lesen Quelltext, die meisten prüfen damit Ausgaben. Eine prüfte die **Schreibweise** — `assert.match(quelle, /beurteile\(…\)/)` blieb grün, als die Mutation den Aufruf stehen ließ und sein Ergebnis wegwarf. Das Werkzeug hätte jeden Prüfer als grün mit 99 Einheiten gemeldet: der zustimmende Prüfer, gegen den das Modul gebaut ist. Ersetzt durch einen Abgleich der gemeldeten Zahlen mit den Prüfern selbst |
+| `fuenf-kilo-die-anderthalb-waren.md` | Die Landeseite gelesen, wie ein Kunde sie liest: Zwei Artikelkarten trugen ein **falsches Maß** — „5 kg" auf einem 1,5-kg-Eimer, „55 m" auf einer 2,55-m-Leiste. Das Muster griff den Rest einer Dezimalzahl; derselbe Fehler war am 28.08. schon einmal fallweise behoben worden. Regel jetzt in `mass()`. Die Gegenprobe zeigte, dass eine grün bleibende Mutation eine Frage ist, keine Entwarnung |
 | `segment-arbeitsplatzmessung.md` | Nebenstrecke, kein eigenes Segment |
 | `strategie-modellvergleich.md` | Kapitalweg braucht ~900.000 €; enthält überholte Empfehlung |
 | `anschreiben-entwuerfe.md` | Drei Anschreiben (Hersteller, Großhändler, Partnerbetriebe), versandfertig, nicht versendet |

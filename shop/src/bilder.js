@@ -26,16 +26,56 @@
  * dunklen Anstrich mit, ohne dass eine zweite Fassung nötig wäre.
  */
 
+import { einheitText } from './format.js';
+
 const RAHMEN = 'stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"';
 const KANTE = 'stroke="var(--linie-stark)" fill="none" stroke-width="1.5"';
 const AKZENT = 'stroke="var(--ocker)" fill="none" stroke-width="1.5"';
 const SCHRIFT = 'fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9"';
 
-/** Die erste Zahl mit Einheit, die zu einem Maß passt. */
+/**
+ * Die erste Zahl mit Einheit, die zu einem Maß passt.
+ *
+ * **Berichtigt am 31.08.: eine Zahl, die nach links weitergeht, ist nicht die
+ * ganze Zahl.** Zwei Artikelkarten trugen ein falsches Maß:
+ *
+ *   „Schiedel Fugenmasse FM **1,5 kg**"                 beschriftet „5 kg"
+ *   „Capatect Gewebeanschlussleiste … **2,55 m**"        beschriftet „55 m"
+ *
+ * Beide Male hatte das Muster den **Rest einer Dezimalzahl** gegriffen: Es
+ * verlangte nur Ziffern vor der Einheit, und `5 kg` steht nun einmal in
+ * `1,5 kg`. Auf der Karte stand damit das Dreifache beziehungsweise das
+ * Zweiundzwanzigfache — und die Karte ist oft alles, was ein Kunde sieht.
+ *
+ * Am 28. August ist derselbe Fehler schon einmal aufgetreten (die 600 mm
+ * Plattenbreite als Stärke) und **fallweise** behoben worden. Deshalb steht
+ * die Regel jetzt hier, wo alle Muster durchkommen: Steht links vom Treffer
+ * eine Ziffer, ein Komma oder ein Punkt, ist der Treffer ein Bruchstück und
+ * gilt nicht.
+ *
+ * Was die Bezeichnung nicht als ganze Zahl hergibt, wird nicht beschriftet —
+ * dann greift der Ersatztext der jeweiligen Bauform.
+ */
 function mass(text, muster) {
   const t = String(text ?? '');
   const m = t.match(muster);
-  return m ? m[0].replace(/\s+/g, ' ').trim() : null;
+  if (!m) return null;
+  const davor = m.index > 0 ? t[m.index - 1] : '';
+  if (/[\d.,]/.test(davor)) return null;
+  return m[0].replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * Der Durchmesser einer Regenhaube, mit Zeichen.
+ *
+ * **Berichtigt am 31.08.** Hier stand `mass(a.bezeichnung, /\d{3}/)`, und die
+ * Karte trug daraufhin eine nackte „180". Eine Zahl ohne Einheit ist keine
+ * Angabe — der Schachtring nebenan schreibt seit jeher „⌀ 800". Dieselbe
+ * Ware, dieselbe Schreibweise.
+ */
+function hauberndurchmesser(bezeichnung) {
+  const m = mass(bezeichnung, /\d{3}(?![\d.,])/);
+  return m === null ? null : `⌀ ${m}`;
 }
 
 /**
@@ -206,7 +246,7 @@ ${beschriftung(mm === null ? 'Platte' : `${mm} mm`)}`;
     return `<path d="M34 30 Q34 24 40 24 L80 24 Q86 24 86 30 L88 70 Q88 76 82 76 L38 76 Q32 76 32 70 Z" ${RAHMEN}/>
 <path d="M40 24 Q60 30 80 24" ${KANTE}/>
 <rect x="44" y="42" width="32" height="14" rx="2" fill="var(--ocker-weich)" stroke="var(--ocker)" stroke-width="1.2"/>
-${beschriftung(mass(a.bezeichnung, /\d{1,3}\s*(?:kg|l)(?![\p{L}])/iu) ?? 'Sack')}`;
+${beschriftung(mass(a.bezeichnung, /\d{1,3}(?:[.,]\d{1,2})?\s*(?:kg|l)(?![\p{L}])/iu) ?? 'Sack')}`;
   },
 
   /** Rohr in Achsansicht, mit Muffe. */
@@ -274,7 +314,7 @@ ${beschriftung(rollenmass(a.bezeichnung) ?? 'Rollenware')}`;
 <path d="M38 62 L96 62" ${AKZENT} stroke-dasharray="4 3"/>
 <path d="M96 66 L110 66" stroke="var(--ocker)" stroke-width="1.2" stroke-dasharray="2 2"/>
 <path d="M22 24 L22 70 M19 24 L25 24 M19 70 L25 70" ${AKZENT}/>
-${beschriftung(mass(a.bezeichnung, /\d{1,2}(?:[.,]\d)?\s*m(?![\p{L}2])/u) ?? 'Profil')}`;
+${beschriftung(mass(a.bezeichnung, /\d{1,2}(?:[.,]\d{1,2})?\s*m(?![\p{L}2])/u) ?? 'Profil')}`;
   },
 
   /** Dübel mit Teller. */
@@ -302,7 +342,7 @@ ${beschriftung(mass(a.bezeichnung, /\d{3}\s*ml/i) ?? 'Dose')}`;
 <path d="M44 48 L44 74 M76 48 L76 74" ${KANTE}/>
 <path d="M44 74 L76 74" ${KANTE}/>
 <circle cx="60" cy="30" r="3" fill="var(--ocker)"/>
-${beschriftung(mass(a.bezeichnung, /\d{3}/) ?? 'Haube')}`;
+${beschriftung(hauberndurchmesser(a.bezeichnung) ?? 'Haube')}`;
   },
 
   /** Werkzeug — bewusst grob, es ist Beipack. */
@@ -319,7 +359,7 @@ ${beschriftung('Werkzeug')}`;
     return `<path d="M28 34 L80 24 L98 32 L46 42 Z" ${RAHMEN}/>
 <path d="M28 34 L28 62 L46 70 L46 42 Z" ${RAHMEN}/>
 <path d="M46 42 L46 70 L98 60 L98 32 Z" fill="var(--flaeche)" stroke="var(--linie-stark)" stroke-width="1.5"/>
-${beschriftung(a.einheit ?? 'Stück')}`;
+${beschriftung(einheitText(a.einheit))}`;
   },
 };
 

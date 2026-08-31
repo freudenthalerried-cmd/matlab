@@ -366,3 +366,101 @@ test('vierzig Namen eines Baustoffhändlers ergeben keine falsche Zeichnung', ()
   }
   assert.deepEqual(falsch, []);
 });
+
+/* ------------------------------------------------------------------ *
+ * Eine Zahl, die nach links weitergeht, ist nicht die ganze Zahl
+ * ------------------------------------------------------------------ */
+
+test('Ein Bruchstück einer Dezimalzahl wird nicht beschriftet', () => {
+  // **Befund vom 31.08.** Zwei Artikelkarten trugen ein falsches Maß:
+  //
+  //   „Schiedel Fugenmasse FM 1,5 kg"                 →  „5 kg"
+  //   „Capatect Gewebeanschlussleiste … 2,55 m"        →  „55 m"
+  //
+  // Das Dreifache und das Zweiundzwanzigfache — auf der Karte, die oft alles
+  // ist, was ein Kunde sieht. Beide Male hatte das Muster den Rest einer
+  // Dezimalzahl gegriffen.
+  //
+  // Am 28. August ist derselbe Fehler schon einmal aufgetreten und fallweise
+  // behoben worden; jetzt steht die Regel in `mass()`, wo alle Muster
+  // durchkommen.
+  const kg = artikelBild({ bezeichnung: 'Schiedel Fugenmasse FM 1,5 kg', einheit: 'EIM', gruppe: 'Kamin' });
+  assert.match(kg, />1,5 kg</, 'die Beschriftung nennt nicht das ganze Maß');
+  assert.ok(!/>5 kg</.test(kg), 'das Bruchstück ist zurück');
+
+  const m = artikelBild({ bezeichnung: 'Capatect Anschlussleiste 2,55 m', einheit: 'LFM', gruppe: 'WDVS' });
+  assert.match(m, />2,55 m</);
+  assert.ok(!/>55 m</.test(m), 'das Bruchstück ist zurück');
+});
+
+test('Auch Muster ohne Dezimalstellen greifen kein Bruchstück', () => {
+  // **Das eigentliche Werk der Regel in `mass()`.** Die Muster für Kilogramm
+  // und Meter lassen seit heute Dezimalstellen zu; die für Millimeter und für
+  // dreistellige Durchmesser nicht — und sollen es auch nicht, denn dort sind
+  // Nachkommastellen unüblich.
+  //
+  // Gemessen mit `npm run gegenprobe`: Ohne die Linksgrenze bliebe die erste
+  // Probe grün, weil die erweiterten Muster sie mit abdecken. Diese hier ist
+  // der Fall, den nur die Regel selbst rettet.
+  const duebel = artikelBild({ bezeichnung: 'Drehstiftdübel PK K 6 8,40 mm', einheit: 'STK', gruppe: 'WDVS' });
+  assert.ok(!/>40 mm</.test(duebel), '„40 mm" aus „8,40 mm" gegriffen');
+
+  const haube = artikelBild({ bezeichnung: 'Regenhaube 1180 Absolut', einheit: 'STK', gruppe: 'Kamin' });
+  assert.ok(!/>⌀ 180</.test(haube), '„180" aus „1180" gegriffen');
+
+  // Und die Gegenrichtung: Ein „x" links der Zahl ist keine Ziffer.
+  const schraube = artikelBild({ bezeichnung: 'Rahmenschraube 7,5x182 mm', einheit: 'STK', gruppe: 'Zubehör' });
+  assert.match(schraube, />182 mm</, 'ein gültiges Maß wurde verworfen');
+});
+
+test('Ein ganzes Maß wird weiterhin beschriftet', () => {
+  // Die Gegenrichtung: Die Regel darf nicht jedes Maß verwerfen.
+  const sack = artikelBild({ bezeichnung: 'Baumit KlebeSpachtel 25 kg', einheit: 'SCK', gruppe: 'WDVS' });
+  assert.match(sack, />25 kg</);
+});
+
+test('Eine nackte Zahl ist keine Angabe', () => {
+  // „Regenhaube … 180" trug die Beschriftung „180" — eine Zahl ohne Einheit.
+  // Der Schachtring nebenan schreibt seit jeher „⌀ 800"; dieselbe Ware,
+  // dieselbe Schreibweise.
+  const haube = artikelBild({ bezeichnung: 'Regenhaube mit Sicherungsseil 180 Absolut', einheit: 'STK', gruppe: 'Kamin' });
+  assert.match(haube, />⌀ 180</, 'der Durchmesser steht ohne Zeichen da');
+});
+
+test('Das Einheitenkürzel des Lieferanten steht nicht auf der Karte', () => {
+  // Drei Artikel trugen „STK" als Beschriftung — das rohe Kürzel, dasselbe,
+  // das am selben Tag aus dem Warenkorb und von den Belegen entfernt wurde.
+  // Ein Kunde liest „Stück".
+  const teil = artikelBild({ bezeichnung: 'SIKM Fertigfußpaket 18', einheit: 'STK', gruppe: 'Kamin' });
+  assert.match(teil, />Stück</);
+  assert.ok(!/>STK</.test(teil), 'das Kürzel steht wieder da');
+
+  // Unbekanntes wird durchgereicht statt geraten — dieselbe Haltung wie
+  // überall sonst.
+  const fremd = artikelBild({ bezeichnung: 'Sonderposten ohne Maß', einheit: 'PAK', gruppe: 'Zubehör' });
+  assert.match(fremd, />PAK</);
+});
+
+test('Keine Beschriftung im Bestand nennt ein Bruchstück', () => {
+  // Die Regel über den ganzen Bestand: Steht die Zahl der Beschriftung in der
+  // Bezeichnung, darf links davon keine Ziffer und kein Komma stehen.
+  const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
+  const katalogDatei = pfad('../data/katalog-baustoff.json');
+  const artikel = JSON.parse(readFileSync(katalogDatei, 'utf8')).artikel;
+  assert.ok(artikel.length >= 40, `nur ${artikel.length} Artikel`);
+
+  let geprueft = 0;
+  for (const a of artikel) {
+    const treffer = (artikelBild(a) || '').match(/>([^<]{1,16})<\/text>/);
+    if (!treffer) continue;
+    const zahl = treffer[1].match(/[\d,]+/);
+    if (!zahl) continue;
+    const i = a.bezeichnung.indexOf(zahl[0]);
+    if (i < 0) continue;
+    geprueft += 1;
+    const davor = i > 0 ? a.bezeichnung[i - 1] : '';
+    assert.ok(!/[\d.,]/.test(davor),
+      `${a.sku}: Beschriftung „${treffer[1]}" ist ein Bruchstück aus „${a.bezeichnung}"`);
+  }
+  assert.ok(geprueft >= 15, `nur ${geprueft} Beschriftungen mit Zahl geprüft`);
+});
