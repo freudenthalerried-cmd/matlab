@@ -355,3 +355,62 @@ test('Jede Warengruppe hat eine Seitenkennung, und jede Kennung eine Gruppe', ()
     assert.ok(WARENGRUPPEN.includes(kennung), `Kennung für „${kennung}" ohne Warengruppe`);
   }
 });
+
+/* ------------------------------------------------------------------ *
+ * Was eine Anzeige behauptet, muss wahr sein
+ * ------------------------------------------------------------------ */
+
+test('Keine Anzeige behauptet einen Vorrat, den es nicht gibt', () => {
+  // **Befund vom 31.08.** Eine Überschrift lautete „XPS und EPS ab Lager".
+  // PARAMETER.md legt fest: reines Streckengeschäft, kein eigenes Warenlager —
+  // die Ware geht vom Lieferanten direkt auf die Baustelle.
+  //
+  // Im B2B-Baustoffhandel ist „ab Lager" keine Floskel, sondern eine
+  // Terminzusage: Der Bauleiter plant danach und stellt die Kolonne darauf
+  // ein. Sie zu machen, ohne ein Lager zu haben, kostet ihn einen Tag.
+  const datei = pfad('../ausgabe/kampagne/anzeigen.csv');
+  if (!existsSync(datei)) return;
+  const zeilen = readFileSync(datei, 'utf8').trim().split('\n').slice(1);
+  assert.ok(zeilen.length >= 1, 'keine Anzeige — prüft nichts');
+
+  const vorrat = ['ab lager', 'auf lager', 'lagernd', 'sofort verfügbar', 'vorrätig', 'lagerware'];
+  assert.ok(vorrat.length >= 4, 'die Liste ist leer geworden');
+  for (const zeile of zeilen) {
+    for (const wort of vorrat) {
+      assert.ok(!zeile.toLowerCase().includes(wort),
+        `Eine Anzeige wirbt mit „${wort}" — der Shop führt kein Lager`);
+    }
+  }
+});
+
+test('Keine Überschrift endet mitten im Satz', () => {
+  // „Vom Baumeister, nicht vom" — fünfundzwanzig Zeichen, also innerhalb der
+  // dreißig, und trotzdem ein Fragment. Jemand hat „…nicht vom Baumarkt"
+  // gekürzt statt umformuliert.
+  //
+  // Genau der Fehler, den dieses Werkzeug bei den Keywords längst verhindert
+  // („Baumit TextilglasGitter 1,1x" — schlimmer als gar kein Keyword). Für die
+  // Anzeigentexte galt die Regel nicht, obwohl sie dort ein Mensch liest.
+  const datei = pfad('../ausgabe/kampagne/anzeigen.csv');
+  if (!existsSync(datei)) return;
+  const kopf = readFileSync(datei, 'utf8').trim().split('\n')[0].split(',');
+  const zeilen = readFileSync(datei, 'utf8').trim().split('\n').slice(1);
+  assert.ok(zeilen.length >= 1, 'keine Anzeige — prüft nichts');
+  const spalten = kopf
+    .map((k, i) => ({ k, i }))
+    .filter(({ k }) => /^(Überschrift|Beschreibung)/.test(k));
+  assert.ok(spalten.length >= 5, `nur ${spalten.length} Textspalten`);
+
+  const halbsatz = ['vom', 'von', 'am', 'im', 'zum', 'zur', 'mit', 'für', 'und', 'oder',
+    'der', 'die', 'das', 'den', 'dem', 'ein', 'eine', 'auf', 'aus', 'bei', 'nach', 'ohne', 'bis'];
+  for (const zeile of zeilen) {
+    const felder = zeile.split(',');
+    for (const { k, i } of spalten) {
+      const text = (felder[i] ?? '').replace(/^"|"$/g, '').trim();
+      if (!text) continue;
+      const letztes = text.replace(/[.,;:!?]+$/, '').split(/\s+/).at(-1).toLowerCase();
+      assert.ok(!halbsatz.includes(letztes),
+        `${k} endet auf „${letztes}": „${text}" — abgeschnitten statt umformuliert`);
+    }
+  }
+});

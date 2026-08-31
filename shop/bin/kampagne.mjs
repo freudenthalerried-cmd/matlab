@@ -266,9 +266,54 @@ function csv(kopf, zeilen) {
  * abgeschnittener Anzeigentext liest sich wie ein Fehler und wirbt trotzdem.
  * Wer eine Überschrift zu lang schreibt, soll sie selbst kürzen.
  */
+/**
+ * Wörter, die ein Vorrat behaupten, den es nicht gibt.
+ *
+ * **Befund vom 31.08.** Eine Überschrift lautete „XPS und EPS **ab Lager**".
+ * `PARAMETER.md` legt fest: *Reines Streckengeschäft, kein eigenes
+ * Warenlager.* Die Ware geht vom Lieferanten direkt auf die Baustelle.
+ *
+ * Im B2B-Baustoffhandel ist „ab Lager" keine Floskel, sondern eine
+ * **Terminzusage** — der Bauleiter plant danach und stellt die Kolonne
+ * darauf ein. Sie zu machen, ohne ein Lager zu haben, ist nicht bloß
+ * ungenau; sie kostet den Kunden einen Tag.
+ */
+const VORRATSWORTE = ['ab Lager', 'auf Lager', 'lagernd', 'sofort verfügbar', 'vorrätig', 'Lagerware'];
+
+/**
+ * Wörter, mit denen eine Überschrift nicht enden darf.
+ *
+ * **Zweiter Befund vom 31.08.** „Vom Baumeister, nicht vom" — fünfundzwanzig
+ * Zeichen, also innerhalb der dreißig, und trotzdem ein Satzfragment. Jemand
+ * hat „…nicht vom Baumarkt" gekürzt, statt es umzuformulieren.
+ *
+ * Genau der Fehler, den dieses Werkzeug bei den **Keywords** längst
+ * verhindert: „Der erste Wurf schnitt einfach ab und erzeugte Fragmente wie
+ * ‚Baumit TextilglasGitter 1,1x' — schlimmer als gar kein Keyword." Für die
+ * Anzeigentexte galt die Regel nicht, obwohl sie dort ein Mensch liest.
+ */
+const ENDET_NICHT_AUF = ['vom', 'von', 'am', 'im', 'zum', 'zur', 'mit', 'für', 'und', 'oder',
+  'der', 'die', 'das', 'den', 'dem', 'ein', 'eine', 'auf', 'aus', 'bei', 'nach', 'ohne', 'bis'];
+
 function pruefeTexte(anzeigen) {
   const fehler = [];
   for (const a of anzeigen) {
+    for (const [k, v] of Object.entries(a)) {
+      if (!/^(Überschrift|Beschreibung)/.test(k) || !v) continue;
+
+      for (const wort of VORRATSWORTE) {
+        if (v.toLowerCase().includes(wort.toLowerCase())) {
+          fehler.push(`${a.Anzeigengruppe} · ${k}: „${v}" behauptet Vorrat — `
+            + 'der Shop führt kein eigenes Lager (PARAMETER.md, Streckengeschäft)');
+        }
+      }
+
+      const letztes = v.replace(/[.,;:!?]+$/, '').split(/\s+/).at(-1)?.toLowerCase() ?? '';
+      if (ENDET_NICHT_AUF.includes(letztes)) {
+        fehler.push(`${a.Anzeigengruppe} · ${k}: „${v}" endet auf „${letztes}" — `
+          + 'abgeschnitten statt umformuliert');
+      }
+    }
     for (const [k, v] of Object.entries(a)) {
       if (/^Überschrift/.test(k) && v && v.length > MAX_UEBERSCHRIFT) {
         fehler.push(`${a.Anzeigengruppe} · ${k}: ${v.length} Zeichen (max ${MAX_UEBERSCHRIFT}) — „${v}"`);
@@ -445,12 +490,12 @@ function main() {
   // --- Anzeigen -----------------------------------------------------------
   const ANZEIGENTEXTE = {
     WDVS: {
-      k: ['WDVS zum Baumeisterpreis', 'Capatect und Baumit', 'Fassade komplett liefern', 'Kleber, Gewebe, Dübel', 'Vom Baumeister, nicht vom', 'Systemware auf Palette'],
+      k: ['WDVS zum Baumeisterpreis', 'Capatect und Baumit', 'Fassade komplett liefern', 'Kleber, Gewebe, Dübel', 'Baumeisterpreis, nicht Liste', 'Systemware auf Palette'],
       b: ['Das komplette Fassadensystem aus einer Hand — geliefert auf die Baustelle.', 'Kleber, Gewebe, Dübel, Putzgrund. Was zusammengehört, kommt zusammen.', 'Ein Baumeister kauft ein, Sie zahlen seinen Preis.'],
       pfad: ['fassade', 'wdvs'],
     },
     'Dämmung': {
-      k: ['XPS und EPS ab Lager', 'Perimeterdämmung 80 mm', 'Dämmplatten palettenweise', 'Baumeisterpreis auf XPS', 'Dämmung auf die Baustelle', 'Kein Baumarktpreis', 'XPS 30 bis 100 mm'],
+      k: ['XPS und EPS vom Baumeister', 'Perimeterdämmung 80 mm', 'Dämmplatten palettenweise', 'Baumeisterpreis auf XPS', 'Dämmung auf die Baustelle', 'Kein Baumarktpreis', 'XPS 30 bis 100 mm'],
       b: ['XPS und EPS in allen gängigen Stärken, palettenweise auf die Baustelle.', 'Perimeter- und Fassadendämmung zum Preis, den ein Baumeister zahlt.', 'Ganze Paletten statt Einzelplatten, direkt auf die Baustelle.'],
       pfad: ['daemmung', 'xps'],
     },
@@ -585,9 +630,13 @@ function main() {
 
   const textfehler = pruefeTexte(anzeigen);
   if (textfehler.length) {
-    console.error('Anzeigentexte überschreiten die Längengrenzen von Google Ads:\n');
+    // **Berichtigt am 31.08.** Hier stand „überschreiten die Längengrenzen" —
+    // seit die Prüfung auch Vorratsbehauptungen und abgeschnittene Sätze
+    // findet, wäre das eine falsche Überschrift über einer richtigen Liste.
+    console.error('Anzeigentexte, die so nicht hinausgehen:\n');
     for (const f of textfehler) console.error(`  ${f}`);
-    console.error('\nGekürzt wird hier nichts — ein abgeschnittener Anzeigentext wirbt trotzdem.');
+    console.error('\nGekürzt wird hier nichts — ein abgeschnittener Anzeigentext wirbt trotzdem,');
+    console.error('und eine unwahre Zusage wirbt am besten.');
     process.exit(1);
   }
 
