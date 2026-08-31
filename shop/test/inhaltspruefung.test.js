@@ -4,7 +4,7 @@ import { spawnSync } from 'node:child_process';
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
-import { pruefeAbsatz, pruefeInhalt, inAbsaetze, GRENZWOERTER, ohneKopfblock, kopffelder, schneideQuelltext, pruefeZaehlung } from '../src/inhaltspruefung.js';
+import { pruefeAbsatz, pruefeInhalt, inAbsaetze, GRENZWOERTER, ohneKopfblock, kopffelder, schneideQuelltext, pruefeZaehlung, BETRIEBSAUSSAGEN} from '../src/inhaltspruefung.js';
 
 const absatz = (text) => ({ text, zeile: 1 });
 const verdachtVon = (text) => pruefeAbsatz(absatz(text)).join(' | ');
@@ -396,5 +396,77 @@ test('die vier Systemseiten zählen richtig', () => {
   for (const d of dateien) {
     const befunde = pruefeZaehlung(readFileSync(join(ordner, d), 'utf8'));
     assert.deepEqual(befunde.map((b) => b.verdacht[0]), [], `${d}: ${JSON.stringify(befunde)}`);
+  }
+});
+
+/* ------------------------------------------------------------------ *
+ * Aussagen, die diesem Betrieb nicht zustehen
+ * ------------------------------------------------------------------ */
+
+test('Eine Vorratszusage wird gemeldet — dieser Betrieb hat kein Lager', () => {
+  // **Anlass, 31.08.** Eine Anzeigenüberschrift lautete „XPS und EPS ab
+  // Lager". PARAMETER.md, Zeile 49: reines Streckengeschäft, kein eigenes
+  // Warenlager. Im Baustoffhandel ist das keine Floskel, sondern eine
+  // Terminzusage — der Bauleiter plant danach.
+  //
+  // Die Anzeigen sind berichtigt und `kampagne.mjs` weist solche Texte zurück;
+  // die 81 Seiten waren beim Nachsehen sauber. Diese Regel hält sie es.
+  for (const satz of [
+    'XPS und EPS ab Lager, sofort auf die Baustelle.',
+    'Alle Platten lagernd.',
+    'Die Ware ist vorrätig.',
+    'Lagerware zum Baumeisterpreis.',
+    'Dämmplatten sofort verfügbar.',
+  ]) {
+    const v = pruefeAbsatz({ text: satz });
+    assert.ok(v.some((x) => /Betriebsaussage/.test(x)), `nicht gemeldet: „${satz}"`);
+    assert.ok(v.some((x) => /kein eigenes Warenlager/.test(x)), 'ohne Begründung gemeldet');
+  }
+});
+
+test('Eine verneinte Vorratsaussage schlägt nicht an', () => {
+  // **Die Fundstelle, die es im Bestand wirklich gibt.** `wissen/xps-oder-eps`
+  // rät: Die Stärke ergibt sich aus dem Wärmeschutznachweis, „nicht aus dem,
+  // was vorrätig ist". Das ist die richtige Auskunft und das Gegenteil einer
+  // Zusage.
+  //
+  // Ein Prüfer, der sie meldet, wird abgeschaltet statt befolgt — dieselbe
+  // Sorge, die schon den Kopfblock von der Prüfung ausgenommen hat.
+  for (const satz of [
+    'Die Stärke ergibt sich aus dem Wärmeschutznachweis — nicht aus dem, was vorrätig ist.',
+    'Wir führen kein Lager; geliefert wird direkt vom Hersteller.',
+    'Ohne eigenes Lager gibt es keine Lagerware.',
+  ]) {
+    const v = pruefeAbsatz({ text: satz });
+    assert.ok(!v.some((x) => /Betriebsaussage/.test(x)),
+      `fälschlich gemeldet: „${satz}" → ${v.join(' | ')}`);
+  }
+});
+
+test('Die Verneinung wirkt nur nach links und nur im selben Satz', () => {
+  // „ab Lager, nicht auf Bestellung" ist trotzdem eine Zusage — die
+  // Verneinung steht rechts und verneint etwas anderes. Und ein „nicht" im
+  // vorigen Satz geht diesen nichts an.
+  const rechts = pruefeAbsatz({ text: 'Alles ab Lager, nicht auf Bestellung.' });
+  assert.ok(rechts.some((x) => /Betriebsaussage/.test(x)), 'Verneinung rechts hat entschärft');
+
+  const vorigerSatz = pruefeAbsatz({ text: 'Wir raten nicht dazu. Die Ware ist vorrätig.' });
+  assert.ok(vorigerSatz.some((x) => /Betriebsaussage/.test(x)),
+    'ein „nicht" im vorigen Satz hat entschärft');
+});
+
+test('Betriebsaussagen und Grenzwörter sind zwei verschiedene Listen', () => {
+  // Der Unterschied ist der Grund: `GRENZWOERTER` sammelt, was **kein**
+  // Baustoffhändler behaupten darf; `BETRIEBSAUSSAGEN`, was **dieser** nicht
+  // darf. „ab Lager" ist für einen Händler mit Lager eine wahre Aussage.
+  assert.ok(BETRIEBSAUSSAGEN.length >= 1, 'die Liste ist leer');
+  for (const eintrag of BETRIEBSAUSSAGEN) {
+    assert.ok(eintrag.wort instanceof RegExp, 'kein Muster');
+    assert.match(eintrag.grund, /PARAMETER\.md/, 'die Begründung nennt ihre Grundlage nicht');
+  }
+  const grenzworte = GRENZWOERTER.map((g) => String(g.wort));
+  for (const eintrag of BETRIEBSAUSSAGEN) {
+    assert.ok(!grenzworte.includes(String(eintrag.wort)),
+      'dieselbe Regel steht in beiden Listen');
   }
 });

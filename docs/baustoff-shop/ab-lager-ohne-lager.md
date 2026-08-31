@@ -112,8 +112,64 @@ verdienen:
   Kranentladung bezahlt. Wahr, solange der Zuschlag im Warenkorb landet, und
   das prüft `pruefe-preise`.
 
+## Nachtrag: Dieselbe Frage an die 81 Seiten
+
+Wenn eine Anzeige einen Vorrat behauptet, den es nicht gibt, liegt die Frage
+nahe, ob die Seiten dasselbe tun. Beide Durchsichten sind gelaufen:
+
+| gesucht | Fundstellen |
+|---|---|
+| Vorratszusagen („ab Lager", „lagernd", „vorrätig", „sofort verfügbar", …) | **1**, und die ist richtig |
+| Terminzusagen (Tagesangaben, „kurzfristig", „umgehend", „Lieferzeit") | **3**, alle richtig |
+
+Die eine Vorratsfundstelle steht in `wissen/xps-oder-eps` und rät vom
+Gegenteil ab:
+
+> Die Stärke ergibt sich aus dem Wärmeschutznachweis des Bauvorhabens — nicht
+> aus dem Preis und **nicht aus dem, was vorrätig ist**.
+
+Die drei Terminfundstellen nennen die fehlende Lieferzeit als **Grund**, warum
+noch nicht bestellt werden kann (Startseite, `llms.txt`), und die dritte ist
+die Absage an das Zahlungsziel in den AGB. Keine Seite verspricht einen
+Termin.
+
+**Die Seiten sind sauber.** Damit sie es bleiben, prüft
+`src/inhaltspruefung.js` sie jetzt darauf — und zwar in einer **eigenen
+Liste**, getrennt von den `GRENZWOERTER`:
+
+| Liste | sammelt |
+|---|---|
+| `GRENZWOERTER` | was **kein** Baustoffhändler behaupten darf — Gesundheitswirkung, Rechtsauskunft, Erfolgszusage |
+| `BETRIEBSAUSSAGEN` | was **dieser** nicht darf, weil seine eigenen Festlegungen dagegen stehen |
+
+Der Unterschied ist nicht kosmetisch: „ab Lager" ist für einen Händler mit
+Lager eine wahre Aussage. Die Begründung jeder Betriebsaussage muss ihre
+Grundlage nennen — die Probe verlangt, dass `PARAMETER.md` darin vorkommt.
+
+### Verneinungen schlagen nicht an
+
+Das war der heikle Teil. Ein Prüfer, der die Zeile aus `xps-oder-eps` meldet,
+meldet die **richtige** Auskunft — und wird abgeschaltet statt befolgt. Genau
+diese Sorge hat schon den Kopfblock von der Prüfung ausgenommen.
+
+Die Verneinung wirkt deshalb **nur nach links und nur im selben Satz**:
+
+- „nicht aus dem, was vorrätig ist" — still, die Verneinung steht davor.
+- „ab Lager, nicht auf Bestellung" — **meldet**, die Verneinung steht danach
+  und verneint etwas anderes.
+- „Wir raten nicht dazu. Die Ware ist vorrätig." — **meldet**, ein „nicht" im
+  vorigen Satz geht diesen nichts an.
+
+Vier Mutationen dazu, alle erkannt: Regel abgeschaltet, Verneinung ignoriert,
+Verneinung auf den ganzen Absatz ausgedehnt, Satzgrenze entfernt.
+
+Die vierte kam im ersten Anlauf gar nicht an — meine Ersetzung zerlegte die
+Maskierung des regulären Ausdrucks, und die Datei blieb unverändert. **Zum
+dritten Mal an einem Tag dieselbe Falle**, und sie meldet jedes Mal Grün.
+Sauber wiederholt, dann erkannt.
+
 ## Stand
 
-1020 Testfälle grün (vorher 1018), `pruefe-tests` 1018/0, elf Prüfer mit
+1024 Testfälle grün (vorher 1018), `pruefe-tests` 1022/0, elf Prüfer mit
 `--mit-browser` ohne Beanstandung, `pruefe-stand` 214/214. Kampagnen
 unverändert pausiert.

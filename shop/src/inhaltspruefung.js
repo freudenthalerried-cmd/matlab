@@ -81,6 +81,43 @@ export const GRENZWOERTER = Object.freeze([
   { wort: /\bdauerhaft trocken\b|\bfür immer\b/i, grenze: 'Erfolgszusage' },
 ]);
 
+/**
+ * Aussagen, die **diesem** Betrieb nicht zustehen — anders als `GRENZWOERTER`.
+ *
+ * Der Unterschied ist wesentlich: `GRENZWOERTER` sammelt, was **kein**
+ * Baustoffhändler behaupten darf (Gesundheitswirkung, Rechtsauskunft,
+ * Erfolgszusage). Hier steht, was dieser Händler nicht behaupten darf, weil
+ * seine eigenen Festlegungen dagegen stehen.
+ *
+ * **Anlass, 31.08.** Eine Anzeigenüberschrift lautete „XPS und EPS ab Lager".
+ * `PARAMETER.md`, Zeile 49: *Reines Streckengeschäft, kein eigenes
+ * Warenlager.* Im Baustoffhandel ist das keine Floskel, sondern eine
+ * Terminzusage — der Bauleiter plant danach. Die Anzeigen sind berichtigt und
+ * `bin/kampagne.mjs` weist solche Texte jetzt zurück; die 81 Seiten waren beim
+ * Nachsehen sauber. Diese Regel hält sie es.
+ *
+ * **Verneinungen schlagen nicht an.** `wissen/xps-oder-eps.html` rät: die
+ * Stärke ergibt sich aus dem Wärmeschutznachweis, „nicht aus dem, was vorrätig
+ * ist". Das ist die richtige Auskunft und das Gegenteil einer Zusage. Ein
+ * Prüfer, der sie meldet, wird abgeschaltet statt befolgt — dieselbe Sorge,
+ * die schon den Kopfblock von der Prüfung ausgenommen hat.
+ */
+export const BETRIEBSAUSSAGEN = Object.freeze([
+  {
+    wort: /\b(?:ab|auf|am)\s+Lager\b|\blagernd\b|\bvorr(?:ä|ae)tig\b|\bLagerware\b|\bsofort\s+(?:verf(?:ü|ue)gbar|lieferbar)\b/i,
+    grund: 'behauptet Vorrat — dieser Betrieb führt kein eigenes Warenlager (PARAMETER.md, Streckengeschäft)',
+  },
+]);
+
+/**
+ * Verneinungen im Umfeld einer Fundstelle.
+ *
+ * Gesucht wird links vom Treffer, im selben Satz: „nicht aus dem, was vorrätig
+ * ist" ist keine Zusage. Rechts zu suchen wäre falsch — „ab Lager, nicht auf
+ * Bestellung" wäre trotzdem eine.
+ */
+const VERNEINT = /\b(?:nicht|kein|keine|keinen|keinem|keiner|weder|ohne)\b[^.!?]{0,60}$/i;
+
 /** Ein Preis ohne Stand und ohne netto/brutto ist in vier Wochen falsch. */
 const PREIS = /\d+(?:[.,]\d+)?\s*(?:€|EUR)/i;
 const PREIS_EINORDNUNG = /\bnetto\b|\bbrutto\b|\bexkl\.|\binkl\./i;
@@ -177,6 +214,14 @@ export function pruefeAbsatz(absatz) {
   for (const { wort, grenze } of GRENZWOERTER) {
     const treffer = t.match(wort);
     if (treffer) verdacht.push(`${grenze}: „${treffer[0]}" — diese Aussage steht einem Baustoffhändler nicht zu`);
+  }
+
+  for (const { wort, grund } of BETRIEBSAUSSAGEN) {
+    const treffer = wort.exec(t);
+    if (!treffer) continue;
+    // Nur der Text **vor** dem Treffer, und nur bis zum Satzanfang.
+    if (VERNEINT.test(t.slice(0, treffer.index))) continue;
+    verdacht.push(`Betriebsaussage: „${treffer[0]}" ${grund}`);
   }
 
   if (PREIS.test(t)) {
