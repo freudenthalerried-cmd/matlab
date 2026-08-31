@@ -388,3 +388,39 @@ test('ohne beziffertes Gebiet entsteht kein Ort', () => {
   assert.equal(liefergebietOrte({ land: 'AT', bezirke: [] }), null);
   assert.equal(liefergebietOrte(undefined), null);
 });
+
+/* ------------------------------------------------------------------ *
+ * Was nicht bekannt ist, bekommt keinen Schlüssel
+ * ------------------------------------------------------------------ */
+
+test('Ohne bekannte Preisgültigkeit fehlt der Schlüssel, statt null zu tragen', () => {
+  // **Befund vom 31.08.** `angebotsAuszeichnung` schrieb `priceValidUntil:
+  // lage.preisGueltigBis ?? null`. `bin/website.mjs` wusste, dass das falsch
+  // ist, und setzte den Wert beim Bauen der Artikelseite zurück — mit genau
+  // dieser Begründung im Kommentar. Der Feed-Erzeuger wusste es nicht.
+  //
+  // Ein fehlender Schlüssel behauptet nichts; ein `null` behauptet eine
+  // ungültige Antwort.
+  const { daten } = angebotsAuszeichnung(echterArtikel, {});
+  assert.ok(!('priceValidUntil' in daten.offers),
+    `priceValidUntil steht als ${JSON.stringify(daten.offers.priceValidUntil)} da`);
+});
+
+test('Mit bekannter Preisgültigkeit steht sie da', () => {
+  // Gegenrichtung: Die Auslassung darf nicht der einzige Zustand werden.
+  const { daten } = angebotsAuszeichnung(echterArtikel, { preisGueltigBis: '2026-12-31' });
+  assert.equal(daten.offers.priceValidUntil, '2026-12-31');
+});
+
+test('Der Feed trägt an keiner Stelle einen ausdrücklichen Nullwert', () => {
+  // Die Regel des Moduls, hier als Ganzes geprüft: `gtin13`,
+  // `versandkostenNetto` und die Preisgültigkeit werden weggelassen, wenn sie
+  // fehlen. Ein einzelner `?? null` reicht, um diese Haltung zu unterlaufen —
+  // und in strukturierten Daten ist ein Nullwert kein Schweigen, sondern eine
+  // Angabe, die kein Prüfwerkzeug annimmt.
+  const feed = katalogFeed([echterArtikel, { ...echterArtikel, sku: 'B-2', gtin: null }], {});
+  const roh = JSON.stringify(feed);
+  const nullFelder = roh.match(/"[A-Za-z0-9@]+":null/g) ?? [];
+  assert.deepEqual([...new Set(nullFelder)], [], `Nullwerte im Feed: ${nullFelder.join(', ')}`);
+  assert.ok(roh.length > 200, 'der Feed ist zu klein, um etwas zu zeigen');
+});

@@ -788,11 +788,10 @@ ${esc(a.gruppe)}. Ob einer davon der richtige ist, entscheidet die Planung.</p>`
         ...(h ? { brand: { '@type': 'Brand', name: m } } : {}),
         offers: {
           ...auszeichnung.daten.offers,
-          // Kein priceValidUntil: Wir wissen nicht, bis wann der Preis gilt —
-          // das hängt an der nächsten Liste des Lieferanten. Ein erfundenes
-          // Datum wäre eine Zusage, und `null` weisen die Prüfwerkzeuge
-          // zurecht ab.
-          priceValidUntil: undefined,
+          // Kein `priceValidUntil` mehr zurückzusetzen: `angebotsAuszeichnung`
+          // setzt den Schlüssel seit dem 31.08. gar nicht erst, wenn die
+          // Preisgültigkeit unbekannt ist. Die Begründung steht dort — an der
+          // Quelle, wo auch der Feed sie mitbekommt.
           areaServed: liefergebietOrte({ land: LIEFERGEBIET.land, bezirke: LIEFERGEBIET.bezirke.map((b) => b.name) }),
           seller: { '@type': 'Organization', name: FIRMA },
         },

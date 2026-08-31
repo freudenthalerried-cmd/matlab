@@ -195,7 +195,22 @@ export function angebotsAuszeichnung(artikel, lage = {}) {
     priceCurrency: 'EUR',
     // Der Preis kommt aus kalkuliere(), er wird hier nicht neu gerechnet.
     price: artikel.vkNetto.toFixed(2),
-    priceValidUntil: lage.preisGueltigBis ?? null,
+    // **Kein `?? null`, sondern gar kein Schlüssel.** Bis wann ein Preis gilt,
+    // hängt an der nächsten Liste des Lieferanten und ist nicht bekannt; ein
+    // erfundenes Datum wäre eine Zusage. Ein ausdrückliches `null` ist aber
+    // auch keine Antwort, sondern eine ungültige — die Prüfwerkzeuge für
+    // strukturierte Daten weisen es zurück, während ein fehlender Schlüssel
+    // schlicht nichts behauptet.
+    //
+    // **Berichtigt am 31.08.** `bin/website.mjs` wusste das und setzte den
+    // Wert beim Zusammenbauen der Artikelseite auf `undefined` zurück, mit
+    // genau dieser Begründung im Kommentar. `katalogFeed` — der Erzeuger des
+    // Google-Shopping-Feeds — wusste es nicht: Dort standen 43 Nullen. Die
+    // Berichtigung gehört an die Quelle, nicht an einen von zwei Abnehmern.
+    //
+    // Dieselbe Form wie `gtin13` und `versandkostenNetto` weiter unten: Was
+    // nicht bekannt ist, bekommt keinen Schlüssel.
+    ...(lage.preisGueltigBis ? { priceValidUntil: lage.preisGueltigBis } : {}),
     availability: artikel.lieferbar === false
       ? 'https://schema.org/OutOfStock'
       : VERFUEGBARKEIT,
