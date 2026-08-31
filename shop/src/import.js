@@ -180,7 +180,18 @@ export function importierePreisliste(csvText, lieferant, zielmarge = ZIELMARGE) 
       menge: satz.menge || '1',
       uvpNetto,
       ekNetto: ekQuelle === 'bestaetigt' ? ekNetto : undefined,
-      gewichtKg: gewicht ?? 0,
+      // **Berichtigt am 31.08.** Hier stand `gewicht ?? 0`. Ein unbekanntes
+      // Gewicht wurde damit zu null Kilogramm — nicht zu irgendeinem Wert,
+      // sondern zum leichtestmöglichen. Und weil `0` eine Zahl ist, zählte
+      // der Warenkorb die Position als **belegt**: Statt „0 kg · 1 Position
+      // ohne belegtes Gewicht" stand dort „0 kg · aus den Lieferscheinen",
+      // also eine Behauptung statt einer Lücke. Das Gewicht entscheidet, wie
+      // geliefert wird — Palette, Kranhub, Sperrgutzuschlag.
+      //
+      // Die drei anderen Einleser (`artikelliste.js`, `preisliste.js`,
+      // `katalog-aus-rechnungen.mjs`) lassen das Feld weg, wenn sie nichts
+      // wissen. Dieser war der letzte, der eine Null einsetzte.
+      ...(gewicht != null && gewicht > 0 ? { gewichtKg: gewicht } : {}),
       sperrgut: jaNein(satz.sperrgut),
       ekQuelle,
     });

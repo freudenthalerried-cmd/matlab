@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { zahl, jaNein, leseCsv, importierePreisliste, vergleiche } from '../src/import.js';
+import { kundenWarenkorb } from '../src/shopkern.js';
 import { ZIELMARGE } from '../src/baustoffkatalog.js';
 
 const lieferant = { id: 'bahnen-de', name: 'Test', haendlerrabattAufUvp: 0.42 };
@@ -196,4 +197,56 @@ test('der Datensatz trägt keinen Verkaufspreis — und das ist der Grund für d
   assert.equal(artikel[0].vkNetto, undefined, 'ein Verkaufspreis wird nicht mitgeschrieben');
   assert.equal(artikel[0].ekNetto, 75, 'der Einkaufspreis dagegen schon');
   assert.equal(artikel[0].uvpNetto, 500);
+});
+
+/* ------------------------------------------------------------------ *
+ * Ein unbekanntes Gewicht ist kein Gewicht von null
+ * ------------------------------------------------------------------ */
+
+const KOPF = 'sku;bezeichnung;uvp_netto;ek_netto;gewicht_kg;sperrgut';
+
+test('Fehlt die Gewichtsspalte, bleibt das Feld weg — es wird keine Null gesetzt', () => {
+  // **Der Befund vom 31.08.** `gewicht ?? 0` machte aus „unbekannt" nicht
+  // irgendeinen Wert, sondern den leichtestmöglichen — und weil `0` eine Zahl
+  // ist, galt die Position im Warenkorb als **belegt**. Der Kunde las „0 kg ·
+  // aus den Lieferscheinen" statt „0 kg · 1 Position ohne belegtes Gewicht".
+  const { artikel, fehler } = importierePreisliste(`${KOPF}\nA-1;Ware;398,00;230,84;;ja`, lieferant);
+  assert.deepEqual(fehler, []);
+  assert.equal(artikel.length, 1);
+  assert.ok(!('gewichtKg' in artikel[0]),
+    `gewichtKg steht mit ${artikel[0].gewichtKg} da, obwohl die Spalte leer war`);
+});
+
+test('Ein angegebenes Gewicht kommt unverändert durch', () => {
+  // Gegenrichtung: Die Lücke darf nicht der neue Normalfall werden.
+  const { artikel } = importierePreisliste(`${KOPF}\nA-1;Ware;398,00;230,84;20,5;ja`, lieferant);
+  assert.equal(artikel[0].gewichtKg, 20.5);
+});
+
+test('Kein Einleser gibt jemals ein Gewicht von null aus', () => {
+  // Die Regel, nicht der Einzelfall: Eine ausdrückliche Null in der Spalte ist
+  // genauso wenig ein Gewicht wie eine leere Spalte. Wer „0" schreibt, hat
+  // nicht gewogen — Ware ohne Masse gibt es nicht.
+  for (const wert of ['', '0', '0,0', '  ']) {
+    const { artikel } = importierePreisliste(`${KOPF}\nA-1;Ware;398,00;230,84;${wert};ja`, lieferant);
+    assert.ok(!('gewichtKg' in artikel[0]),
+      `bei Spaltenwert „${wert}" steht gewichtKg=${artikel[0].gewichtKg}`);
+  }
+});
+
+test('Ohne Gewicht zählt der Warenkorb die Position als unbelegt', () => {
+  // Die Wirkung, nicht nur die Absicht: Was der Einleser weglässt, muss den
+  // Kunden erreichen. Ohne diesen Fall prüfte die Probe oben nur eine
+  // Feldform, nicht die Auskunft, um die es geht.
+  const { artikel } = importierePreisliste(`${KOPF}\nA-1;Ware;398,00;230,84;;nein`, lieferant);
+  const lieferanten = [{
+    id: lieferant.id, name: lieferant.name, lieferzeitWerktage: 3,
+    fracht: { pauschaleNetto: 20, sperrgutZuschlagNetto: 0 },
+  }];
+  const korb = kundenWarenkorb(
+    [{ sku: 'A-1', menge: 3 }],
+    { artikel: [{ ...artikel[0], vkNetto: 80 }], lieferanten },
+  );
+  assert.equal(korb.positionenOhneGewicht, 1,
+    'der Warenkorb hält das unbekannte Gewicht für belegt');
 });
