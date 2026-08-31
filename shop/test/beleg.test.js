@@ -376,3 +376,66 @@ test('Ein unbekanntes Kürzel steht als Kürzel da, nicht als Vermutung', () => 
   assert.match(a.text, /\bPAK\b/);
   assert.ok(!/Paket/.test(a.text));
 });
+
+test('Mit Platzhalterpreisen wird keine Rechnung gestellt', () => {
+  // Dieselbe Regel wie bei der Auftragsbestätigung, hier für die Rechnung —
+  // und bis zum 31.08. der einzige unerreichte Zweig in `beleg.js`. Ein
+  // ausgewiesener Betrag aus einem Platzhalterpreis ist erfunden, und er
+  // stünde auf einem Beleg, der unveränderbar in die Ablage geht.
+  const platzhalter = {
+    ...korb,
+    teillieferungen: korb.teillieferungen.map((t, i) => (i === 0 ? {
+      ...t, positionen: t.positionen.map((p) => ({ ...p, ekIstPlatzhalter: true })),
+    } : t)),
+  };
+  const r = erzeugeRechnung(platzhalter, {
+    nummer: 'RE-1', datum: '2026-08-31', lieferdatum: '2026-08-31', kunde, betreiber,
+  });
+  const f = darfRechnungGestelltWerden(platzhalter, r, { geliefert: true });
+  assert.equal(f.erlaubt, false);
+  assert.ok(f.gruende.some((g) => /Platzhalterpreise/.test(g)), f.gruende.join(' | '));
+  assert.ok(f.gruende.some((g) => /erfunden/.test(g)));
+
+  // Gegenrichtung — und sie musste ausdrücklich gebaut werden: Der Warenkorb
+  // dieser Datei stammt aus `data/artikel.json`, dem Katalog des abgelösten
+  // Modells, und **dessen Preise sind Platzhalter**. Wer hier den Bestand als
+  // sauberen Fall nimmt, prüft nichts — der Grund stünde ohnehin da.
+  const bestaetigt = {
+    ...korb,
+    teillieferungen: korb.teillieferungen.map((t) => ({
+      ...t, positionen: t.positionen.map((p) => ({ ...p, ekIstPlatzhalter: false })),
+    })),
+  };
+  const sauber = darfRechnungGestelltWerden(bestaetigt, erzeugeRechnung(bestaetigt, {
+    nummer: 'RE-2', datum: '2026-08-31', lieferdatum: '2026-08-31', kunde, betreiber,
+  }), { geliefert: true });
+  assert.ok(!sauber.gruende.some((g) => /Platzhalterpreise/.test(g)), sauber.gruende.join(' | '));
+});
+
+test('Eine Rechnung mit fehlenden Pflichtangaben wird nicht gestellt', () => {
+  // Der letzte unerreichte Zweig in `beleg.js`. Beim ersten Anlauf hatte ich
+  // ihn mit der Platzhaltersperre daneben verwechselt — der Deckungslauf
+  // nannte die Zeile, ich las die falsche Bedingung. Nachgesehen: Es ist die
+  // Vollständigkeit nach § 11 UStG.
+  //
+  // `pruefeRechnungsmerkmale` benennt die Lücken einzeln; diese Sperre sorgt
+  // dafür, dass der Entwurf ein Entwurf bleibt. Ein Beleg mit fehlender UID
+  // des Ausstellers ist über 400 € brutto ein Rechnungsmangel.
+  const ohneUid = erzeugeRechnung(korb, {
+    nummer: 'RE-1', datum: '2026-08-31', lieferdatum: '2026-08-31',
+    kunde, betreiber: { firma: betreiber.firma },
+  });
+  assert.equal(ohneUid.vollstaendig, false, 'ohne UID müsste der Beleg unvollständig sein');
+  const f = darfRechnungGestelltWerden(korb, ohneUid, { geliefert: true });
+  assert.equal(f.erlaubt, false);
+  assert.ok(f.gruende.some((g) => /§ 11 UStG/.test(g)), f.gruende.join(' | '));
+  assert.ok(f.gruende.some((g) => /UID/.test(g)), 'der Grund nennt nicht, welche Angabe fehlt');
+
+  // Gegenrichtung: Mit vollständigen Angaben darf dieser Grund nicht kommen.
+  const vollstaendigerBeleg = erzeugeRechnung(korb, {
+    nummer: 'RE-2', datum: '2026-08-31', lieferdatum: '2026-08-31', kunde, betreiber,
+  });
+  assert.equal(vollstaendigerBeleg.vollstaendig, true);
+  assert.ok(!darfRechnungGestelltWerden(korb, vollstaendigerBeleg, { geliefert: true })
+    .gruende.some((g) => /§ 11 UStG/.test(g)));
+});

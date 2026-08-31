@@ -124,3 +124,50 @@ test('Eine Position, die das Sortiment nicht führt, verschwindet nicht stumm', 
   assert.match(hinweis, /AB-RD-375/);
   assert.match(hinweis, /unvollständig/);
 });
+
+/* ------------------------------------------------------------------ *
+ * Was das Sortiment nicht führt, verschwindet nicht stumm
+ * ------------------------------------------------------------------ */
+
+test('Eine Position ohne Artikel im Katalog steht in den Hinweisen, nicht im Nichts', () => {
+  // **Die Zusage aus dem Dateikopf**, bis zum 31.08. ohne Probe: „das gehört
+  // in die Ausgabe, nicht ins Kleingedruckte." Der Deckungslauf hat den Zweig
+  // als unerreicht gemeldet — eine Stückliste, die stumm kürzt, sieht
+  // vollständig aus und ist es nicht.
+  //
+  // Der Rechner kennt mehr Positionen als das Sortiment; das ist erlaubt. Was
+  // nicht erlaubt ist, ist zu schweigen.
+  const luecke = ladeKatalog({
+    lieferanten: daten.lieferanten,
+    artikel: { artikel: daten.artikel.artikel.filter((a) => a.sku !== 'AB-PR-010') },
+  }, 0.35);
+  const b = berechneBedarf({ laenge: 12, breite: 10 }, luecke);
+
+  assert.equal(menge(b, 'AB-PR-010'), undefined, 'die Position kann nicht enthalten sein');
+  const hinweis = b.hinweise.find((h) => h.includes('Nicht im Sortiment'));
+  assert.ok(hinweis, `kein Hinweis auf die fehlende Position: ${b.hinweise.join(' | ')}`);
+  assert.match(hinweis, /AB-PR-010/);
+  assert.match(hinweis, /unvollständig/);
+});
+
+test('Fehlt die Leitposition, meldet es der Rechner ebenfalls', () => {
+  // Die Bahn ist der Sonderfall: Ihr Wächter überspringt den ganzen Block,
+  // bevor `nimm()` überhaupt gefragt wird. Ohne die eigene Meldung an dieser
+  // Stelle verschwände ausgerechnet die Hauptposition am leisesten.
+  const ohneBahn = ladeKatalog({
+    lieferanten: daten.lieferanten,
+    artikel: { artikel: daten.artikel.artikel.filter((a) => a.sku !== 'AB-RD-375') },
+  }, 0.35);
+  const b = berechneBedarf({ laenge: 12, breite: 10 }, ohneBahn);
+  const hinweis = b.hinweise.find((h) => h.includes('Nicht im Sortiment'));
+  assert.ok(hinweis, `kein Hinweis auf die fehlende Bahn: ${b.hinweise.join(' | ')}`);
+  assert.match(hinweis, /AB-RD-375/);
+});
+
+test('Bei vollständigem Sortiment steht kein Hinweis auf Lücken', () => {
+  // Die Gegenrichtung: Der Hinweis darf nicht immer dastehen, sonst sagt er
+  // nichts mehr.
+  const b = berechneBedarf({ laenge: 12, breite: 10 }, katalog);
+  assert.ok(!b.hinweise.some((h) => h.includes('Nicht im Sortiment')),
+    'ein Lückenhinweis ohne Lücke');
+});

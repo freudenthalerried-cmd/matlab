@@ -67,3 +67,22 @@ test('Punkt 12 der Geschäftsbedingungen nennt das Gebiet, nicht nur das Land', 
   }
   assert.match(punkt.hinweis, /Postleitzahl beweist keinen Bezirk/);
 });
+
+test('Eine Adresse außerhalb Österreichs wird abgelehnt, mit dem Land im Grund', () => {
+  // Gate 23, und bis zum 31.08. der einzige unerreichte Zweig dieser Datei:
+  // Geprüft war der fehlende Bezirk und der falsche Bezirk, nie das falsche
+  // **Land**. Der Grund nennt das angegebene Land, damit der Kunde nicht rät,
+  // woran es lag.
+  const de = pruefeLieferort({ land: 'DE', bezirk: 'Passau' });
+  assert.equal(de.liefern, false);
+  assert.match(de.grund, /nur innerhalb Österreichs/);
+  assert.match(de.grund, /DE/);
+
+  // Kleinschreibung ist dieselbe Angabe, nicht eine andere.
+  assert.equal(pruefeLieferort({ land: 'de', bezirk: 'Passau' }).liefern, false);
+
+  // Gegenrichtung: Ohne Landangabe wird nicht abgelehnt — sonst scheiterte
+  // jedes Formular, das das Feld gar nicht führt, am Land statt am Bezirk.
+  assert.ok(!/innerhalb Österreichs/.test(pruefeLieferort({ bezirk: 'Perg' }).grund ?? ''));
+  assert.equal(pruefeLieferort({ land: 'AT', bezirk: 'Perg' }).liefern, true);
+});

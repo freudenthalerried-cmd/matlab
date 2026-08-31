@@ -502,10 +502,10 @@ Baustand in [`umsetzung-shop.md`](./umsetzung-shop.md).
 > 787 vergleichbare Tests, kein Unterschied.
 > [`kommentare-im-schaufenster.md`](./kommentare-im-schaufenster.md).
 >
-> **Stand der Prüfmittel (31.08.):** 977 Tests, `pruefe-tests` 975/0, `pruefe-preise` 46/0, `pruefe-inhalte`
+> **Stand der Prüfmittel (31.08.):** 983 Tests, `pruefe-tests` 981/0, `pruefe-preise` 46/0, `pruefe-inhalte`
 > 24/357/0, `pruefe-seiten` 81 von 81 gebauten Seiten, `pruefe-widerrufe` 197 Dateien/48
 > Fundstellen, `pruefe-quellen` 6/6, `shopprobe` 50 (davon 10 im Rahmen),
-> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 204/204,
+> `oberflaechenprobe` 11 (bricht jetzt bei veraltetem Bau ab), `rahmenzensus` 81/81, `pruefe-stand` 205/205,
 > `pruefe-pruefer` 11 Prüfer ohne Leerlauf (unterscheidet jetzt Abbruch von Leerlauf), Website 81 Seiten ohne toten
 > Verweis.
 
@@ -899,6 +899,7 @@ zusammengefasst und im Verzeichnis nicht auffindbar:
 | `der-zweig-den-niemand-betrat.md` | `bin/veroeffentlichung.mjs` fällt ohne Preisdatei auf den Platzhalterkatalog zurück — der Zustand **jeder frischen Arbeitskopie**, weil `preise/` außerhalb des Repositories liegt, und trotzdem der einzige ungeprüfte Zweig: Alle zehn Testfälle liefen in der einen Lage, in der er nicht greift. Zusage hält; nebenbei rechnete der Rückfall noch mit der abgelösten Marge von 35 % |
 | `ein-anker-ist-kein-bereich.md` | Acht bauliche Zusicherungen über alle 81 Seiten gemessen; sieben erfüllt, eine auf keiner Seite: Es gab kein `<main>`. Das Sprungziel war ein leeres `div` — ein Punkt statt eines Bereichs, ohne Landmarkennavigation und ohne Abgrenzung für die Textauszieher, für die dieser Shop gebaut ist. Dabei kam heraus, dass beide Wachen in `sprungziel` von keiner Probe auslösbar waren |
 | `wachen-ohne-probe.md` | Zweimal hintereinander war eine Wache nicht auslösbar, also einmal durchgezählt. Der Griff über die Fehlertexte meldete 70 von 76 ungeprüft und maß das Falsche; der Deckungslauf nennt **fünf**. Vier davon sind das ungeprüfte Geschwister einer längst geprüften Wache — darunter die Namenskollision im Bündel, die schon einmal zugeschlagen hat |
+| `drei-zusagen-ohne-fall.md` | Der Deckungslauf weiter benutzt, aber nicht auf die Prozentzahl gerichtet: In den Lücken standen drei Zusagen ohne Fall — die Stückliste, die stumm kürzt (zwei Stellen, die Leitposition eigens), die Lieferung ins Ausland und zwei Sperren vor der Rechnung. Eine davon hatte ich beim ersten Anlauf verwechselt: Der Deckungslauf nennt die Zeile, nicht den Grund |
 | `segment-arbeitsplatzmessung.md` | Nebenstrecke, kein eigenes Segment |
 | `strategie-modellvergleich.md` | Kapitalweg braucht ~900.000 €; enthält überholte Empfehlung |
 | `anschreiben-entwuerfe.md` | Drei Anschreiben (Hersteller, Großhändler, Partnerbetriebe), versandfertig, nicht versendet |
