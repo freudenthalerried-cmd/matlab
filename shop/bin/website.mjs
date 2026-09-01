@@ -39,6 +39,7 @@ import { ohneKommentare } from '../src/entkommentieren.js';
 import { preisJeKilo, kilotafel, mengenschritt } from '../src/gebinde.js';
 import { EINHEITEN, aufzaehlung } from '../src/format.js';
 import { GRUPPENSEITE } from '../src/artikelliste.js';
+import { HERSTELLER, marke } from '../src/hersteller.js';
 import { oeffentlicherArtikel, oeffentlicherLieferant, vorteil, ustText } from '../src/shopkern.js';
 import { LIEFERGEBIET } from '../src/liefergebiet.js';
 import { ZAHLWEGE } from '../src/zahlung.js';
@@ -154,48 +155,6 @@ const BASIS = basisAdresse(existsSync(BETREIBERDATEI)
   ? JSON.parse(readFileSync(BETREIBERDATEI, 'utf8'))
   : {});
 
-
-/**
- * Wo das technische Merkblatt zu finden ist.
- *
- * Bewusst nur die Herstellerseite, kein tiefer Link auf ein konkretes PDF:
- * Ein erfundener Dokumentpfad sieht aus wie ein Beleg und ist keiner, und
- * echte Merkblattlinks ändern sich mit jeder Überarbeitung. Der Weg über die
- * Herstellersuche ist einen Klick länger und bleibt richtig.
- */
-const HERSTELLER = {
-  Capatect: { name: 'Synthesa (Capatect)', url: 'https://www.synthesa.at/' },
-  Baumit: { name: 'Baumit Österreich', url: 'https://www.baumit.at/' },
-  Schiedel: { name: 'Schiedel Österreich', url: 'https://www.schiedel.at/' },
-  SIKM: { name: 'Schiedel Österreich', url: 'https://www.schiedel.at/' },
-  SIK: { name: 'Schiedel Österreich', url: 'https://www.schiedel.at/' },
-  Isover: { name: 'Isover Österreich', url: 'https://www.isover.at/' },
-  Soudal: { name: 'Soudal', url: 'https://www.soudal.com/' },
-  // Produktlinien statt Firmennamen. Beleg dafür, dass „Absolut" und „SIH"
-  // Schiedel-Linien sind: das Konditionenblatt des Lagerhauses führt sie
-  // unter „Schiedel Absolut, SIH" (`lagerhaus-rabatte-gelesen.md`, Seite 18).
-  Absolut: { name: 'Schiedel Österreich', url: 'https://www.schiedel.at/' },
-  SIH: { name: 'Schiedel Österreich', url: 'https://www.schiedel.at/' },
-};
-
-/**
- * Die Marke aus der Artikelbezeichnung.
- *
- * Der erste Wurf prüfte `bez.startsWith(m)` — die Marke musste ganz vorn
- * stehen. Bei Lieferantenbezeichnungen steht sie das oft nicht:
- * „Mantelstein MSTS EZ 16-18 **SIKM**", „Regenhaube mit Sicherungsseil 180
- * **Absolut & SIH**", „Thermo-Trennstein 12-18 EZ **Absolut**". Drei
- * Schiedel-Artikel trugen deshalb den Satz „Für diesen Artikel liegt uns
- * kein Herstellermerkblatt vor", obwohl der Hersteller in der Bezeichnung
- * steht.
- *
- * Gesucht wird jetzt überall im Text, aber nur als **ganzes Wort** — sonst
- * fände „SIK" das Wort „Sikkativ" und „Absolut" das Adverb. Die längste
- * Marke gewinnt, damit „SIKM" nicht von „SIK" verdeckt wird.
- */
-const marke = (bez) => Object.keys(HERSTELLER)
-  .sort((a, b) => b.length - a.length)
-  .find((m) => new RegExp(`(?<![\\p{L}\\d])${m}(?![\\p{L}\\d])`, 'u').test(bez)) ?? null;
 
 /* ------------------------------------------------------------------ *
  * Inhalte einlesen

@@ -27,8 +27,9 @@
  *    Ausgang auch.
  */
 
-import { textZeile } from './format.js';
+import { textZeile, EINHEITEN } from './format.js';
 import { istGtin } from './artikelliste.js';
+import { HERSTELLER, marke } from './hersteller.js';
 import { mengenschritt } from './gebinde.js';
 
 /** Wie lange eine ausgezeichnete Preisangabe als gültig gilt (Tage). */
@@ -197,6 +198,38 @@ export const EINHEITSCODES = Object.freeze({
  * sich beziehen könnte. Was nicht mit http beginnt, gilt als nicht vorhanden
  * und wird gemeldet.
  */
+/**
+ * Der Herstellername aus der Artikelbezeichnung.
+ *
+ * Die Zuordnung liegt in `hersteller.js`, damit Seite und Feed dieselbe
+ * benutzen. Gefunden wird nur als ganzes Wort und die längste Marke zuerst —
+ * die Begründung steht dort.
+ */
+export function herstellerNameAus(bezeichnung) {
+  const kuerzel = marke(String(bezeichnung ?? ''));
+  return kuerzel ? textZeile(HERSTELLER[kuerzel].name) : null;
+}
+
+/**
+ * Die Feedbeschreibung — aus Katalogfeldern, nicht aus Fantasie.
+ *
+ * Was hier steht, steht auch auf der Artikelseite. Was dort nicht steht,
+ * steht hier nicht: keine Verbrauchsangaben, keine Schichtdicken, keine
+ * Verarbeitungshinweise. Die gehören ins Merkblatt des Herstellers und ändern
+ * sich dort — dieselbe Regel wie auf der Seite.
+ */
+export function feedbeschreibung(artikel, einheiten = EINHEITEN) {
+  const name = textZeile(artikel.bezeichnung ?? '');
+  if (!name) return null;
+  const teile = [name];
+  const gruppe = textZeile(artikel.gruppe ?? '');
+  if (gruppe) teile.push(`Warengruppe ${gruppe}`);
+  const einheit = einheiten[String(artikel.einheit ?? '').toUpperCase()] ?? null;
+  if (einheit) teile.push(`Verkaufseinheit ${einheit}`);
+  teile.push('Preis netto für Unternehmer, Umsatzsteuer wird getrennt ausgewiesen');
+  return `${teile.join('. ')}.`;
+}
+
 export function adresseVon(quelle, artikel) {
   const roh = typeof quelle === 'function' ? quelle(artikel) : quelle;
   const text = textZeile(roh ?? '');
@@ -313,7 +346,25 @@ export function angebotsAuszeichnung(artikel, lage = {}) {
   // eine falsche Kennung im Feed schlimmer ist als gar keine — sie kann eine
   // andere Ware bezeichnen.
   if (istGtin(artikel.gtin)) daten.gtin13 = textZeile(artikel.gtin);
-  if (artikel.hersteller) daten.brand = { '@type': 'Brand', name: textZeile(artikel.hersteller) };
+
+  // **Die Marke — und woher sie kommt.** `artikel.hersteller` steht in
+  // **keinem** der 46 Katalogartikel; die Marke steckt in der
+  // Lieferantenbezeichnung („Mantelstein MSTS EZ 16-18 SIKM"). Bis zum 01.09.
+  // las diese Zeile nur das Feld, das es nicht gibt — jede Artikelseite trug
+  // ihre Marke, jede der 43 Feedzeilen trug keine, weil die Zuordnung im
+  // Bauwerkzeug lag statt hier.
+  const markenname = artikel.hersteller
+    ? textZeile(artikel.hersteller)
+    : herstellerNameAus(artikel.bezeichnung);
+  if (markenname) daten.brand = { '@type': 'Brand', name: markenname };
+
+  // **Beschreibung — Pflichtangabe im Produktfeed.** Zusammengesetzt aus dem,
+  // was der Katalog führt, und aus nichts sonst: Bezeichnung, Warengruppe,
+  // Verkaufseinheit, Preisbezug. Ein Werbetext wäre hier erfunden, und
+  // erfundene Eigenschaften sind bei Baustoffen der teuerste Fehler — sie
+  // lesen sich wie eine Zusicherung.
+  const beschreibung = feedbeschreibung(artikel);
+  if (beschreibung) daten.description = beschreibung;
 
   const fehlend = [];
   if (!istGtin(artikel.gtin)) {
@@ -328,6 +379,22 @@ export function angebotsAuszeichnung(artikel, lage = {}) {
       ? 'Adresse der Artikelseite — keine absolute Adresse (http…)'
       : 'Adresse der Artikelseite — für Produktfeeds verlangt');
   }
+  // **Kein Ratespiel.** 20 der 43 Bezeichnungen tragen keine Marke, die
+  // `hersteller.js` belegen kann — teils weil die Ware keine hat ("PVC
+  // Kanalbogen NW 100"), teils weil der Name da ist und die Zuordnung fehlt
+  // ("Ravenit", "Ökotherm", "SunCore"). Welcher Fall vorliegt, ist aus der
+  // Bezeichnung nicht entscheidbar, und einen Hersteller zu erraten wäre bei
+  // Baustoffen der teuerste Fehler: Er stünde als Zusicherung im Feed.
+  // Gemeldet wird deshalb, was zutrifft — nicht bestimmbar.
+  if (!markenname) fehlend.push('Marke — aus der Bezeichnung nicht bestimmbar; für Markenware verlangt');
+  // **Das Bild ist die dritte Pflichtangabe, und die einzige, die hier
+  // niemand schließen kann.** Der Shop führt Zeichnungen als eingebettetes
+  // SVG, keine Produktfotos. Ein Platzhalter im Feed wäre keine Lösung,
+  // sondern ein Grund mehr für die Ablehnung: Das Bild muss die Ware zeigen.
+  // Gemeldet statt gefüllt — wie die GTIN eine Beschaffungsaufgabe.
+  const bild = adresseVon(lage.bildadresse, artikel);
+  if (bild) daten.image = bild;
+  else fehlend.push('Produktbild — für Produktfeeds verlangt, muss die Ware zeigen');
 
   return { daten, fehlend };
 }

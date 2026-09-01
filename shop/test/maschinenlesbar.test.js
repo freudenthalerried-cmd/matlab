@@ -152,11 +152,18 @@ const FEEDLAGE = {
   // Vorrichtung führte sie nicht — und damit meldete die Probe „einreichbar"
   // für einen Feed, den Google zurückgewiesen hätte.
   seitenadresse: (a) => `https://beispiel.test/artikel/${a.sku}.html`,
+  // **Ergänzt am 01.09.** Bild und Marke sind für einen Produktfeed ebenso
+  // Pflicht wie Adresse und Kennung. Die Vorrichtung führte beide nicht — und
+  // meldete „einreichbar" für einen Feed, den Google zurückgewiesen hätte.
+  bildadresse: (a) => `https://beispiel.test/bild/${a.sku}.jpg`,
 };
 
 const artikelOhneGtin = {
   sku: 'A-1', bezeichnung: 'Prüfartikel', vkNetto: 10, ekNetto: 7,
   ekQuelle: 'bestaetigt', ekIstPlatzhalter: false, gtin: null,
+  // Ausdrücklich gesetzt statt aus der Bezeichnung geraten: Die Vorrichtung
+  // soll die Auszeichnung prüfen und nicht die Markentabelle.
+  hersteller: 'Prüfmarke',
 };
 
 test('Ein Eintrag ohne GTIN gilt als veröffentlichbar, aber nicht als einreichbar', () => {
@@ -507,4 +514,77 @@ test('Nur eine absolute Adresse zählt', () => {
     assert.equal(e.daten['@id'], undefined, `„${schlecht}" kam als @id durch`);
     assert.match(e.fehlend.join(' '), /Adresse der Artikelseite/, `„${schlecht}" wurde nicht gemeldet`);
   }
+});
+
+/**
+ * **Gefunden am 01.09.:** Jede Artikelseite trug ihre Marke im JSON-LD,
+ * **jede der 43 Feedzeilen trug keine.** `angebotsAuszeichnung` las
+ * `artikel.hersteller` — ein Feld, das in 0 von 46 Katalogartikeln gesetzt
+ * ist. Die Zuordnung steckte in `bin/website.mjs`, also im Bauwerkzeug, das
+ * den Feed nicht baut. Dieselbe Bauart wie die fehlende Produktadresse.
+ */
+test('Die Marke kommt aus dem Feld oder aus der Bezeichnung — und sonst als Meldung', async () => {
+  const { herstellerNameAus } = await import('../src/maschinenlesbar.js');
+  const { HERSTELLER } = await import('../src/hersteller.js');
+  assert.ok(Object.keys(HERSTELLER).length > 0, 'leere Markentabelle — die Prüfungen darunter prüfen nichts');
+
+  // Aus der Bezeichnung, auch wenn die Marke nicht vorn steht.
+  assert.equal(herstellerNameAus('Mantelstein MSTS EZ 16-18 SIKM'), HERSTELLER.SIKM.name);
+  assert.equal(herstellerNameAus('Capatect Putzgrund weiß 25 kg'), HERSTELLER.Capatect.name);
+  // Und nicht geraten, wo nichts steht.
+  assert.equal(herstellerNameAus('PVC Kanalbogen NW 100 45 grad'), null);
+
+  // **Der Fall, um den es geht:** kein `hersteller`-Feld — so steht jeder der
+  // 46 Katalogartikel da —, aber die Marke in der Bezeichnung. Vorher blieb
+  // die Feedzeile hier ohne Marke, während die Artikelseite eine trug.
+  const ausName = angebotsAuszeichnung(
+    { ...artikelOhneGtin, bezeichnung: 'Mantelstein MSTS EZ 16-18 SIKM', hersteller: undefined, gtin: '9008811000005' },
+    FEEDLAGE,
+  );
+  assert.equal(ausName.daten.brand?.name, HERSTELLER.SIKM.name,
+    'die Marke aus der Bezeichnung kommt nicht in die Auszeichnung');
+  assert.deepEqual(ausName.fehlend, [], 'mit Marke aus der Bezeichnung fehlt nichts mehr');
+
+  // Das ausdrückliche Feld schlägt die Ableitung.
+  const mitFeld = angebotsAuszeichnung(
+    { ...artikelOhneGtin, bezeichnung: 'Capatect Putzgrund', hersteller: 'Eigene Angabe' },
+    FEEDLAGE,
+  );
+  assert.equal(mitFeld.daten.brand.name, 'Eigene Angabe');
+
+  // Ohne beides: keine erfundene Marke, sondern eine Meldung.
+  const ohne = angebotsAuszeichnung(
+    { ...artikelOhneGtin, bezeichnung: 'PVC Kanalbogen NW 100', hersteller: null, gtin: '9008811000005' },
+    FEEDLAGE,
+  );
+  assert.equal(ohne.daten.brand, undefined);
+  assert.match(ohne.fehlend.join(' '), /Marke/);
+});
+
+test('Beschreibung und Bild sind Pflichtangaben — die eine gebaut, die andere gemeldet', async () => {
+  const { feedbeschreibung } = await import('../src/maschinenlesbar.js');
+
+  // Die Beschreibung setzt sich aus Katalogfeldern zusammen und erfindet
+  // nichts: keine Verbrauchsangabe, keine Schichtdicke.
+  const t = feedbeschreibung({ bezeichnung: 'XPS glatt SF 50 mm', gruppe: 'Dämmung', einheit: 'M2' });
+  assert.match(t, /XPS glatt SF 50 mm/);
+  assert.match(t, /Warengruppe Dämmung/);
+  assert.match(t, /Verkaufseinheit m²/);
+  assert.match(t, /netto für Unternehmer/);
+  // Ohne Bezeichnung gibt es keine Beschreibung — kein Satz aus lauter Kommas.
+  assert.equal(feedbeschreibung({ gruppe: 'Dämmung' }), null);
+
+  // Das Bild: vorhanden, wenn eine absolute Adresse gegeben ist …
+  const mit = angebotsAuszeichnung({ ...artikelOhneGtin, gtin: '9008811000005' }, FEEDLAGE);
+  assert.equal(mit.daten.image, 'https://beispiel.test/bild/A-1.jpg');
+  assert.deepEqual(mit.fehlend, []);
+
+  // … und sonst gemeldet statt gefüllt. Ein Platzhalter wäre ein
+  // Ablehnungsgrund mehr: Das Bild muss die Ware zeigen.
+  const ohne = angebotsAuszeichnung(
+    { ...artikelOhneGtin, gtin: '9008811000005' },
+    { ...FEEDLAGE, bildadresse: null },
+  );
+  assert.equal(ohne.daten.image, undefined);
+  assert.match(ohne.fehlend.join(' '), /Produktbild/);
 });
