@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { join, relative } from 'node:path';
 import { loeseVerweis, loeseVerwandt, marke, mitverbaut, HERSTELLER, positionsliste, sprungziel,
-  betriebshinweis } from '../bin/website.mjs';
+  betriebshinweis, kanonisch } from '../bin/website.mjs';
 import { lesKopf } from '../src/markdown.js';
 import { KORBSCHLUESSEL } from '../src/shopkern.js';
 import { SUCH_CRAWLER, TRAININGS_CRAWLER } from '../src/maschinenlesbar.js';
@@ -1356,4 +1356,49 @@ test('Jede gebaute Seite trägt den Betriebshinweis aus derselben Rechnung', () 
   const abweichend = seiten.filter((p) => !readFileSync(p, 'utf8').includes(erwartet));
   assert.deepEqual(abweichend.map((p) => relative(wurzel, p)), [],
     `diese Seiten sagen etwas anderes als „${erwartet}"`);
+});
+
+/**
+ * **Gefunden am 01.09.:** Keine der 81 gebauten Seiten trug ein
+ * `rel="canonical"`. Für einen Shop, der über Suche und maschinelle Auskunft
+ * gefunden werden soll, sind `bauversand.com/`, `/index.html` und
+ * `www.bauversand.com/…` drei Adressen mit demselben Inhalt — und die Signale
+ * verteilen sich darauf, statt sich zu bündeln.
+ */
+test('Jede gebaute Seite nennt ihre kanonische Adresse — und zwar ihre eigene', () => {
+  const wurzel = pfad('../ausgabe/site');
+  if (!existsSync(wurzel)) return;
+  const betreiber = JSON.parse(readFileSync(pfad('../data/betreiber.json'), 'utf8'));
+  const basis = String(betreiber.domain).replace(/\/+$/, '');
+
+  const seiten = [];
+  const gehe = (ordner) => {
+    for (const e of readdirSync(ordner, { withFileTypes: true })) {
+      const p = join(ordner, e.name);
+      if (e.isDirectory()) gehe(p);
+      else if (e.name.endsWith('.html')) seiten.push(p);
+    }
+  };
+  gehe(wurzel);
+  assert.ok(seiten.length > 50, `nur ${seiten.length} Seiten — der Bau ist unvollständig`);
+
+  const falsch = [];
+  for (const p of seiten) {
+    const id = relative(wurzel, p).replace(/\.html$/, '').replaceAll('\\', '/');
+    const erwartet = kanonisch(basis, id);
+    const treffer = readFileSync(p, 'utf8').match(/<link rel="canonical" href="([^"]+)">/);
+    if (!treffer) falsch.push(`${id}: keine kanonische Adresse`);
+    else if (treffer[1] !== erwartet) falsch.push(`${id}: ${treffer[1]} statt ${erwartet}`);
+  }
+  assert.deepEqual(falsch, []);
+});
+
+test('Die Startseite kanonisiert auf die Wurzel, nicht auf index.html', () => {
+  // Die Adresse, die jemand tippt und die in einer Anzeige steht.
+  assert.equal(kanonisch('https://beispiel.test', 'index'), 'https://beispiel.test/');
+  assert.equal(kanonisch('https://beispiel.test/', 'index'), 'https://beispiel.test/');
+  assert.equal(kanonisch('https://beispiel.test', 'gruppe/kamin'), 'https://beispiel.test/gruppe/kamin.html');
+  // Ohne Basis wird nichts erfunden — dann trägt die Seite gar keine.
+  assert.equal(kanonisch('', 'index'), null);
+  assert.equal(kanonisch(null, 'index'), null);
 });

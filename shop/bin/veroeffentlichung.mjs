@@ -157,9 +157,16 @@ const versandkostenNetto = (a) => {
   return fracht([{ ...a, menge: 1 }], lieferant).betragNetto;
 };
 
+// **Dieselbe Adresse wie im Bauwerkzeug, aus derselben Quelle.** Sie fehlte
+// im Feed bis zum 01.09. — und `link` ist für Google Merchant eine
+// Pflichtangabe. Fehlt die Domain in den Betreiberdaten, wird hier nichts
+// erfunden: `angebotsAuszeichnung` meldet die Lücke, und der Feed bleibt
+// nicht einreichbar. Das ist die richtige Reihenfolge.
+const basis = String(betreiber.domain ?? '').trim().replace(/\/+$/, '');
 const feed = katalogFeed(katalog.artikel, {
   liefergebiet: { land: 'AT', bezirke },
   versandkostenNetto,
+  seitenadresse: basis ? (a) => `${basis}/artikel/${a.sku}.html` : null,
 });
 
 if (WIDERSPRUECHE.length) {

@@ -833,6 +833,10 @@ ${esc(a.gruppe)}. Ob einer davon der richtige ist, entscheidet die Planung.</p>`
   // für den Kanal, für den dieser Shop gebaut ist, eine leere Seite.
   const auszeichnung = angebotsAuszeichnung(a, {
     liefergebiet: { land: LIEFERGEBIET.land, bezirke: LIEFERGEBIET.bezirke },
+    // Die Adresse, unter der diese Seite ausgeliefert wird. `BASIS` kommt aus
+    // den Betreiberdaten und bricht ab, wenn dort keine Domain steht — eine
+    // erfundene Produktadresse wäre schlimmer als keine.
+    seitenadresse: (art) => `${BASIS}/artikel/${art.sku}.html`,
   });
   const jsonLd = auszeichnung.daten
     ? {
@@ -1677,7 +1681,27 @@ export function betriebshinweis(bereitschaft) {
     + 'Keine Steuer- oder Rechtsberatung.';
 }
 
-function rahmen(seite, verweis, { eigenstaendig, skriptDatei, tiefe = false, daten = null, bereitschaft }) {
+/**
+ * Die kanonische Adresse einer Seite.
+ *
+ * **Gefunden am 01.09.:** Keine der 81 Seiten trug ein `rel="canonical"`.
+ * Für einen Shop, der über Suche und maschinelle Auskunft gefunden werden
+ * soll, ist das eine Lücke mit drei Ausgängen: `bauversand.com/`,
+ * `bauversand.com/index.html` und `www.bauversand.com/…` sind für einen
+ * Indexer drei Adressen mit demselben Inhalt. Welche davon zählt, entscheidet
+ * dann er — und zerlegt die Signale auf drei Seiten statt sie zu bündeln.
+ *
+ * Die Startseite ist der Sonderfall: Ihre kanonische Adresse ist die Wurzel
+ * und nicht `/index.html`. Das ist die Adresse, die jemand tippt und die in
+ * einer Anzeige steht.
+ */
+export function kanonisch(basis, id) {
+  const wurzel = String(basis ?? '').replace(/\/+$/, '');
+  if (!wurzel) return null;
+  return id === 'index' ? `${wurzel}/` : `${wurzel}/${id}.html`;
+}
+
+function rahmen(seite, verweis, { eigenstaendig, skriptDatei, tiefe = false, daten = null, bereitschaft, id = null }) {
   const nav = NAV.map(([id, t]) => `<a href="${verweis(id)}">${esc(t)}</a>`).join('');
   // **Was ohne JavaScript nicht geht — auf jeder Seite, nicht nur auf dreien.**
   //
@@ -1759,7 +1783,8 @@ function bedienhinweis(seite) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(seite.titel)} — ${esc(FIRMA)}</title>
-<meta name="description" content="${esc(seite.kurz.slice(0, 300))}">${bedienhinweis(seite)}
+<meta name="description" content="${esc(seite.kurz.slice(0, 300))}">${bedienhinweis(seite)}${
+  kanonisch(BASIS, id) ? `\n<link rel="canonical" href="${esc(kanonisch(BASIS, id))}">` : ''}
 ${SCHRIFTEINBINDUNG}<style>${stil()}</style>${ld}
 </head>
 <body><div class="huelle">
@@ -2043,6 +2068,7 @@ function main() {
       skriptDatei: `${tiefe ? '../' : ''}shop.js`,
       tiefe,
       bereitschaft,
+      id,
     }), 'utf8');
   }
 

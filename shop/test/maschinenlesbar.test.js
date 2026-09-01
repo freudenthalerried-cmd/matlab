@@ -147,6 +147,11 @@ test('robots.txt trennt Suche und Training und sperrt nichts versehentlich pausc
 const FEEDLAGE = {
   liefergebiet: { land: 'AT', bezirke: ['Perg'] },
   versandkostenNetto: 75.5,
+  // **Ergänzt am 01.09.** `link` ist für einen Produktfeed eine
+  // Pflichtangabe; ohne sie wird er abgelehnt, genau wie ohne GTIN. Die
+  // Vorrichtung führte sie nicht — und damit meldete die Probe „einreichbar"
+  // für einen Feed, den Google zurückgewiesen hätte.
+  seitenadresse: (a) => `https://beispiel.test/artikel/${a.sku}.html`,
 };
 
 const artikelOhneGtin = {
@@ -460,5 +465,46 @@ test('Keine Probe dieser Datei trägt eine erfundene Artikelkennung', () => {
   for (const k of kandidaten) {
     if (k === '4007817327006') continue; // ausdrücklich als ungültig geprüft
     assert.ok(istGtin(k), `${k} sieht aus wie eine EAN, ist aber keine`);
+  }
+});
+
+/* ------------------------------------------------------------------ *
+ * Die Adresse der Artikelseite
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Gefunden am 01.09.** Die Auszeichnung trug keine Produktadresse — weder
+ * im JSON-LD der Seite noch im Feed —, und die Lückenliste kannte das Feld
+ * nicht. Der Feed hätte an dem Tag, an dem die Kennungen eintreffen, als
+ * vollständig gegolten und wäre trotzdem abgelehnt worden.
+ */
+test('Ohne Produktadresse ist der Feed nicht einreichbar', () => {
+  const ohne = { ...FEEDLAGE, seitenadresse: null };
+  const f = katalogFeed([{ ...artikelOhneGtin, gtin: '9008811000005' }], ohne);
+  assert.equal(f.anzahl, 1, 'zurückgehalten wird er nicht — die Seite gibt es ja');
+  assert.equal(f.einreichbar, false);
+  assert.match(f.mitLuecken[0].fehlend.join(' '), /Adresse der Artikelseite/);
+});
+
+test('Nur eine absolute Adresse zählt', () => {
+  const eintrag = (adresse) => angebotsAuszeichnung(
+    { ...artikelOhneGtin, gtin: '9008811000005' },
+    { ...FEEDLAGE, seitenadresse: adresse },
+  );
+
+  // Absolut: übernommen, und zwar an beiden Stellen.
+  const gut = eintrag('https://beispiel.test/artikel/A-1.html');
+  assert.equal(gut.daten.offers.url, 'https://beispiel.test/artikel/A-1.html');
+  assert.equal(gut.daten['@id'], 'https://beispiel.test/artikel/A-1.html');
+  assert.deepEqual(gut.fehlend, []);
+
+  // Relativ, leer, unbrauchbar: kein Schlüssel, sondern eine Meldung. Eine
+  // relative Adresse ist in einem Feed wertlos — dort steht kein Dokument,
+  // auf das sie sich beziehen könnte.
+  for (const schlecht of ['/artikel/A-1.html', 'artikel/A-1.html', '', '   ', null, undefined]) {
+    const e = eintrag(schlecht);
+    assert.equal(e.daten.offers.url, undefined, `„${schlecht}" kam durch`);
+    assert.equal(e.daten['@id'], undefined, `„${schlecht}" kam als @id durch`);
+    assert.match(e.fehlend.join(' '), /Adresse der Artikelseite/, `„${schlecht}" wurde nicht gemeldet`);
   }
 });

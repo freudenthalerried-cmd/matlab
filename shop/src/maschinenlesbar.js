@@ -189,8 +189,27 @@ export const EINHEITSCODES = Object.freeze({
  * eine Feedfrage. Eine Artikelseite ist eine Produktseite, auch wenn ihr
  * Artikel nicht beworben wird.
  */
+/**
+ * Die absolute Adresse einer Artikelseite — aus dem, was der Aufrufer gibt.
+ *
+ * Nur absolute Adressen: Eine relative Adresse ist in einem Feed und in einer
+ * maschinellen Auskunft wertlos, weil dort kein Dokument steht, auf das sie
+ * sich beziehen könnte. Was nicht mit http beginnt, gilt als nicht vorhanden
+ * und wird gemeldet.
+ */
+export function adresseVon(quelle, artikel) {
+  const roh = typeof quelle === 'function' ? quelle(artikel) : quelle;
+  const text = textZeile(roh ?? '');
+  return /^https?:\/\/\S+$/.test(text) ? text : null;
+}
+
 export function angebotsAuszeichnung(artikel, lage = {}) {
   const gebiet = liefergebietAngabe(lage.liefergebiet);
+  // `seitenadresse` darf eine Zeichenkette **oder** eine Funktion sein —
+  // dieselbe Form wie `versandkostenNetto` weiter unten und aus demselben
+  // Grund: Die Adresse hängt am Artikel, und der Aufrufer kennt den Aufbau
+  // seiner Seiten. Erfunden wird sie hier nicht.
+  const seitenadresse = adresseVon(lage.seitenadresse, artikel);
   const angebot = {
     '@type': 'Offer',
     priceCurrency: 'EUR',
@@ -216,6 +235,21 @@ export function angebotsAuszeichnung(artikel, lage = {}) {
       ? 'https://schema.org/OutOfStock'
       : VERFUEGBARKEIT,
     itemCondition: 'https://schema.org/NewCondition',
+    // **Die Adresse der Artikelseite.** Sie fehlte bis zum 01.09. überall:
+    // im JSON-LD der Seite, im Feed und in der Lückenliste. Für einen
+    // Produktfeed ist `link` eine **Pflichtangabe** — ein Feed ohne sie wird
+    // abgelehnt, genau wie einer ohne GTIN. Die Lückenliste kannte das Feld
+    // nicht und hätte den Feed an dem Tag, an dem die Kennungen eintreffen,
+    // als vollständig gemeldet und die Ablehnung dem Auftraggeber überlassen.
+    //
+    // Für den zweiten Kanal wiegt es ebenso schwer: Ein Sprachmodell, das
+    // diese Auszeichnung liest, hat ohne `url` keinen Verweis, den es
+    // zurückgeben könnte. Ein Produkt, auf das man nicht zeigen kann, ist für
+    // eine Auskunft nicht da.
+    //
+    // Wie bei `gtin13` und `priceValidUntil`: Was nicht bekannt ist, bekommt
+    // keinen Schlüssel — und wird stattdessen gemeldet.
+    ...(seitenadresse ? { url: seitenadresse } : {}),
     // Nettopreis für Unternehmer — Gate 7. Die Auszeichnung sagt es
     // ausdrücklich, weil ein Assistent sonst Netto gegen Brutto vergleicht
     // und den Shop teurer aussehen lässt, als er ist.
@@ -264,6 +298,10 @@ export function angebotsAuszeichnung(artikel, lage = {}) {
   const daten = {
     '@context': 'https://schema.org',
     '@type': 'Product',
+    // Der Knoten bekommt seine eigene Kennung, damit ein Leser ihn wieder
+    // findet und zwei Auszeichnungen desselben Artikels nicht als zwei
+    // Produkte zählen.
+    ...(seitenadresse ? { '@id': seitenadresse } : {}),
     sku: textZeile(artikel.sku),
     name: textZeile(artikel.bezeichnung),
     category: textZeile(artikel.gruppe ?? ''),
@@ -285,6 +323,11 @@ export function angebotsAuszeichnung(artikel, lage = {}) {
   }
   if (!gebiet.vollstaendig) fehlend.push(gebiet.fehlt);
   if (lage.versandkostenNetto == null) fehlend.push('Versandkosten');
+  if (!seitenadresse) {
+    fehlend.push(lage.seitenadresse
+      ? 'Adresse der Artikelseite — keine absolute Adresse (http…)'
+      : 'Adresse der Artikelseite — für Produktfeeds verlangt');
+  }
 
   return { daten, fehlend };
 }
