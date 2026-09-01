@@ -28,6 +28,7 @@
     "rahmenzensus": "node bin/rahmenzensus.mjs",
     "pruefe-stand": "node bin/standpruefung.mjs",
     "pruefe-preise": "node bin/preisabgleich.mjs",
-    "gegenprobe": "node bin/gegenprobe.mjs"
+    "gegenprobe": "node bin/gegenprobe.mjs",
+    "pruefe-preisalter": "node bin/preisalterpruefung.mjs"
   }
 }

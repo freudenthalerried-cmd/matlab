@@ -158,3 +158,50 @@ test('Die gemeldeten Zahlen stammen von den Prüfern, nicht aus dem Werkzeug', (
       `${name}: gemeldet ${gemeldet[1]}, selbst gezählt ${selbst[1]} — das Werkzeug denkt sich Zahlen aus`);
   }
 });
+
+/* ------------------------------------------------------------------ *
+ * Kennt der Prüfer der Prüfer alle Prüfer?
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Der Fund vom 01.09.** `pruefe-preisalter` kam als neuntes Werkzeug dazu.
+ * Das Register in `bin/prueferpruefung.mjs` kannte es nicht, und der Prüfer
+ * der Prüfer meldete weiter „8 Prüfer befragt, 0 ohne belastbaren Umfang" —
+ * ein vollständiges Ergebnis über eine unvollständige Liste.
+ *
+ * Genau die Fehlerfamilie, die dieses Werkzeug verhindern soll: nicht das
+ * Urteil war falsch, sondern die Menge, über die geurteilt wurde. Und
+ * abfangen konnte es niemand, weil das Register in einem Skript stand, das
+ * beim Laden losläuft.
+ *
+ * Diese Probe hängt an `package.json` und nicht an einer zweiten Liste: Wer
+ * einen `pruefe-*`-Befehl anlegt, wird hier daran erinnert, ihn eintragen zu
+ * lassen.
+ */
+test('Jeder pruefe-Befehl steht im Register des Prüferprüfers', async () => {
+  const { PRUEFER, BROWSERPRUEFER } = await import('../src/pruefregister.js');
+  const paket = JSON.parse(
+    readFileSync(fileURLToPath(new URL('../package.json', import.meta.url)), 'utf8'),
+  );
+
+  const befehle = Object.keys(paket.scripts).filter((n) => n.startsWith('pruefe-'));
+  assert.ok(befehle.length >= 5, `nur ${befehle.length} pruefe-Befehle — die Schleife prüft zu wenig`);
+
+  const registriert = new Set([...PRUEFER, ...BROWSERPRUEFER].map((p) => p.name));
+  assert.ok(registriert.size > 0, 'leeres Register — die Schleife darunter prüft nichts');
+
+  // Der Prüfer der Prüfer prüft sich nicht selbst: Er würde sich beim Lauf
+  // rekursiv aufrufen. Das ist die eine begründete Ausnahme, und sie steht
+  // hier namentlich statt als Muster.
+  const AUSGENOMMEN = new Set(['pruefe-pruefer']);
+
+  const fehlend = befehle.filter((n) => !registriert.has(n) && !AUSGENOMMEN.has(n));
+  assert.deepEqual(fehlend, [],
+    'diese Prüfer laufen, werden aber vom Prüfer der Prüfer nicht befragt');
+
+  // Und die Gegenrichtung: ein Registereintrag ohne Befehl liefe ins Leere.
+  const ohneBefehl = [...registriert].filter(
+    (n) => !befehle.includes(n) && !Object.keys(paket.scripts).includes(n),
+  );
+  assert.deepEqual(ohneBefehl, [], 'diese Registereinträge haben keinen npm-Befehl');
+});

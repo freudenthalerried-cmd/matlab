@@ -146,12 +146,18 @@ export const WARENKOERBE = {
       { sku: 'POS-11133', menge: 1 },
     ],
   },
+  // **Berichtigt am 01.09.** Hier stand „Eine Palette Mörtel" und „Eine
+  // Palette Planziegel" — derselbe Satz, den die Anzeigentexte gestern
+  // verloren haben, nur eine Datei weiter. Der Text geht als
+  // `Referenzwarenkorb` nach Google und beschreibt dort ein Gebinde, das kein
+  // Artikel dieses Katalogs hat. Jetzt steht die Menge da, die tatsächlich
+  // gerechnet wird.
   'Mörtel': {
-    text: 'Eine Palette Mörtel',
+    text: '40 Sack Mörtel',
     positionen: [{ sku: 'POS-13550', menge: 40 }],
   },
   Mauerwerk: {
-    text: 'Eine Palette Planziegel',
+    text: '128 Planziegel',
     positionen: [{ sku: 'POS-29728', menge: 128 }],
   },
 };

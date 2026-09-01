@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { suchname, taugtAlsKeyword, kurzform, alleAnzeigentexte, pruefeTexte, ANZEIGENTEXTE,
-  GEBINDEAUSSAGEN, keywordWoerter, hauptbereichText, ungedeckteWoerter } from '../bin/kampagne.mjs';
+  GEBINDEAUSSAGEN, keywordWoerter, hauptbereichText, ungedeckteWoerter, WARENKOERBE } from '../bin/kampagne.mjs';
 import { LIEFERGEBIET, bezirksliste } from '../src/liefergebiet.js';
 import { WARENGRUPPEN, GRUPPENSEITE } from '../src/artikelliste.js';
 import { join } from 'node:path';
@@ -630,4 +630,26 @@ test('Kein Keyword wird stillschweigend zurückgehalten', () => {
   const zeilen = zeilenVon(datei).filter((z) => z.trim() !== '');
   assert.deepEqual(zeilen, [],
     'diese Keywords wurden zurückgehalten — entscheiden, nicht liegen lassen');
+});
+
+/**
+ * **Der Palettensatz, eine Datei weiter.** Die Anzeigentexte haben ihn am
+ * 01.09. verloren; `WARENKOERBE` trug ihn noch: „Eine Palette Mörtel", „Eine
+ * Palette Planziegel". Dieser Text geht als Spalte `Referenzwarenkorb` nach
+ * Google und beschreibt dort ein Gebinde, das kein Artikel dieses Katalogs
+ * hat.
+ *
+ * Geprüft wird mit derselben Regel wie die Anzeigen — nicht mit einer
+ * zweiten, die dasselbe meint und irgendwann etwas anderes tut.
+ */
+test('Auch der Referenzwarenkorb behauptet kein Gebinde, das es nicht gibt', () => {
+  const gruppen = Object.keys(WARENKOERBE);
+  assert.ok(gruppen.length > 0, 'keine Warenkörbe — die Schleife darunter prüft nichts');
+  assert.ok(GEBINDEAUSSAGEN.length > 0, 'ohne Gebinderegeln prüft die Schleife darunter nichts');
+
+  const alsAnzeige = gruppen.map((g) => ({
+    Anzeigengruppe: g,
+    'Beschreibung 1': WARENKOERBE[g].text,
+  }));
+  assert.deepEqual(pruefeTexte(alsAnzeige, EINHEITEN_IM_KATALOG), []);
 });

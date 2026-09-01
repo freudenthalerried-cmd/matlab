@@ -1646,7 +1646,38 @@ function sprungziel(koerper) {
     .replace('<footer>', '</main>\n<footer>');
 }
 
-function rahmen(seite, verweis, { eigenstaendig, skriptDatei, tiefe = false, daten = null }) {
+/**
+ * Der Satz im Seitenfuß, der sagt, was der Shop heute kann.
+ *
+ * **Befund vom 01.09.** Im Fuß aller 81 Seiten stand fest verdrahtet:
+ * „Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder
+ * eingenommen." Der Satz stimmt heute. Er stimmt an dem Tag nicht mehr, an
+ * dem der Auftraggeber Zahlungsanbieter, Rechtstexte und Impressum
+ * geschlossen hat — und dann steht er trotzdem noch da, auf jeder Seite, und
+ * sagt dem Kunden, dass er hier nicht bestellen kann.
+ *
+ * Die Kasse hat genau diesen Fehler schon hinter sich: Sie zählte früher fest
+ * auf, was fehlt, und rechnet es seither aus `startklar()`. Die Startseite
+ * ebenso. **Der Fuß war der dritte Weg zur selben Aussage — und der einzige
+ * ohne Quelle.** Dass er auf achtzig Seiten steht statt auf einer, macht ihn
+ * zum teuersten der drei.
+ *
+ * Ein Fehler mit bekanntem Auslösetag ist kein latenter, sondern ein
+ * terminierter.
+ */
+export function betriebshinweis(bereitschaft) {
+  const offen = bereitschaft?.kassenhinweise ?? [];
+  if (bereitschaft?.startklar && offen.length === 0) {
+    return 'Alle Preise netto für Unternehmer. Keine Steuer- oder Rechtsberatung.';
+  }
+  const was = offen.length
+    ? ` — es ${offen.length === 1 ? 'fehlt' : 'fehlen'} ${offen.map((h) => h.wort).join(', ')}`
+    : '';
+  return `Vorschau ohne Bestellmöglichkeit${was}. Nichts ist gegründet, verkauft oder eingenommen. `
+    + 'Keine Steuer- oder Rechtsberatung.';
+}
+
+function rahmen(seite, verweis, { eigenstaendig, skriptDatei, tiefe = false, daten = null, bereitschaft }) {
   const nav = NAV.map(([id, t]) => `<a href="${verweis(id)}">${esc(t)}</a>`).join('');
   // **Was ohne JavaScript nicht geht — auf jeder Seite, nicht nur auf dreien.**
   //
@@ -1685,8 +1716,7 @@ Warengruppen in der Kopfleiste.</p></noscript>
   · <a href="${verweis('rechtliches/index')}">Rechtliches</a>
   · <a href="${verweis('rechtliches/impressum')}">Impressum</a>
   · <a href="${verweis('rechtliches/datenschutz')}">Datenschutz</a></p>
-  <p>Vorschau ohne Bestellmöglichkeit. Nichts ist gegründet, verkauft oder eingenommen.
-  Keine Steuer- oder Rechtsberatung.</p>
+  <p>${esc(betriebshinweis(bereitschaft))}</p>
 </footer>`;
   const shopskript = skriptDatei
     ? `<script>window.__SHOP_TIEFE__=${tiefe ? 'true' : 'false'};</script>\n`
@@ -2012,6 +2042,7 @@ function main() {
       eigenstaendig: true,
       skriptDatei: `${tiefe ? '../' : ''}shop.js`,
       tiefe,
+      bereitschaft,
     }), 'utf8');
   }
 
@@ -2146,7 +2177,8 @@ ${[...dateiSeiten.entries()].filter(([, seite]) => !seite.nurBedienung)
     + kernBuendel + '\n' + shopOberflaeche;
   const rautenSeiten = bauen(rautenVerweis);
   const eingebettet = [...rautenSeiten].map(([id, seite]) =>
-    `<template data-seite="${esc(id)}" data-titel="${esc(seite.titel)}">${rahmen(seite, rautenVerweis(id), { eigenstaendig: false })}</template>`,
+    `<template data-seite="${esc(id)}" data-titel="${esc(seite.titel)}">${
+      rahmen(seite, rautenVerweis(id), { eigenstaendig: false, bereitschaft })}</template>`,
   ).join('\n');
 
   // Die Zeichensatzangabe steht **zuerst**. Sie hat in der Einzeldatei

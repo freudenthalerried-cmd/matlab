@@ -5,7 +5,8 @@ import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { join, relative } from 'node:path';
-import { loeseVerweis, loeseVerwandt, marke, mitverbaut, HERSTELLER, positionsliste, sprungziel } from '../bin/website.mjs';
+import { loeseVerweis, loeseVerwandt, marke, mitverbaut, HERSTELLER, positionsliste, sprungziel,
+  betriebshinweis } from '../bin/website.mjs';
 import { lesKopf } from '../src/markdown.js';
 import { KORBSCHLUESSEL } from '../src/shopkern.js';
 import { SUCH_CRAWLER, TRAININGS_CRAWLER } from '../src/maschinenlesbar.js';
@@ -1287,4 +1288,72 @@ test('Auf den Gruppenseiten steht der Liefer- und Frachthinweis über dem Warenr
         `${name} sagt „${wort}" nicht vor dem Warenraster`);
     }
   }
+});
+
+/* ------------------------------------------------------------------ *
+ * Was der Seitenfuß über den Betrieb sagt
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Befund vom 01.09.** Der Satz „Vorschau ohne Bestellmöglichkeit" stand
+ * fest verdrahtet im Fuß aller 81 Seiten. Kasse und Startseite rechnen
+ * denselben Stand längst aus `startklar()`; der Fuß war der dritte Weg zur
+ * selben Aussage und der einzige ohne Quelle — und der mit der größten
+ * Reichweite.
+ *
+ * Geprüft werden **beide** Zustände. Der zweite tritt heute nicht ein; ohne
+ * eine Probe dafür wäre er ein Zweig, den nie jemand ausgeführt hat, und der
+ * Tag seines ersten Laufs wäre der Tag, an dem der Shop online geht.
+ */
+test('Der Betriebshinweis kommt aus dem Bereitschaftsstand', () => {
+  const offen = betriebshinweis({
+    startklar: false,
+    kassenhinweise: [{ wort: 'ein Zahlungsanbieter' }, { wort: 'verbindliche Rechtstexte' }],
+  });
+  assert.match(offen, /Vorschau ohne Bestellmöglichkeit/);
+  assert.match(offen, /es fehlen ein Zahlungsanbieter, verbindliche Rechtstexte/);
+
+  // Einzahl, wenn nur ein Punkt offen ist — „es fehlen ein Zahlungsanbieter"
+  // liest sich wie ein Textbaustein und nicht wie eine Auskunft.
+  assert.match(betriebshinweis({ startklar: false, kassenhinweise: [{ wort: 'ein Zahlungsanbieter' }] }),
+    /es fehlt ein Zahlungsanbieter/);
+
+  // Der Zustand, der heute nicht eintritt: alles geschlossen.
+  const fertig = betriebshinweis({ startklar: true, kassenhinweise: [] });
+  assert.doesNotMatch(fertig, /Vorschau/);
+  assert.doesNotMatch(fertig, /nicht gegründet|Nichts ist gegründet/);
+  assert.match(fertig, /Keine Steuer- oder Rechtsberatung/);
+
+  // Und ohne Angabe bleibt es bei der vorsichtigen Fassung: Ein fehlender
+  // Stand ist kein erfüllter.
+  assert.match(betriebshinweis(undefined), /Vorschau ohne Bestellmöglichkeit/);
+});
+
+test('Jede gebaute Seite trägt den Betriebshinweis aus derselben Rechnung', () => {
+  const wurzel = pfad('../ausgabe/site');
+  if (!existsSync(wurzel)) return;
+
+  const seiten = [];
+  const gehe = (ordner) => {
+    for (const e of readdirSync(ordner, { withFileTypes: true })) {
+      const p = join(ordner, e.name);
+      if (e.isDirectory()) gehe(p);
+      else if (e.name.endsWith('.html')) seiten.push(p);
+    }
+  };
+  gehe(wurzel);
+  assert.ok(seiten.length > 50, `nur ${seiten.length} gebaute Seiten — der Bau ist unvollständig`);
+
+  // Der Stand des gebauten Shops, aus derselben Quelle wie das Bauwerkzeug.
+  const daten = JSON.parse(
+    readFileSync(join(wurzel, 'shop.js'), 'utf8').match(/^window\.__SHOP__=(.*);$/m)[1],
+  );
+  const erwartet = betriebshinweis({
+    startklar: daten.bestellung.moeglich,
+    kassenhinweise: daten.bestellung.fehlt.map((wort) => ({ wort })),
+  });
+
+  const abweichend = seiten.filter((p) => !readFileSync(p, 'utf8').includes(erwartet));
+  assert.deepEqual(abweichend.map((p) => relative(wurzel, p)), [],
+    `diese Seiten sagen etwas anderes als „${erwartet}"`);
 });
