@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Kennzahlen — Baustoffhandel</title>
+<style>
+:root{--grund:#fbfaf8;--text:#1c1a17;--matt:#6b6660;--linie:#e0dcd5;--karte:#fff;
+--haelt:#2f6b3d;--reisst:#a6382c;--offen:#8a7f6d;--akzent:#1f4e6b;}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--grund:#161513;--text:#eceae6;
+--matt:#9a948b;--linie:#33302b;--karte:#1e1c1a;--haelt:#7fbf8d;--reisst:#e0897c;--offen:#a89b85;--akzent:#7fb3d0;}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--grund);color:var(--text);
+font:16px/1.55 "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;}
+main{max-width:64rem;margin:0 auto;padding:2.5rem 1.25rem 5rem}
+h1{font-size:1.9rem;line-height:1.2;margin:0 0 .3rem;text-wrap:balance}
+h2{font-size:1.15rem;margin:2.6rem 0 .2rem;letter-spacing:.01em}
+.unter{color:var(--matt);margin:0 0 2rem}
+.warn{border-left:3px solid var(--reisst);background:var(--karte);padding:.8rem 1rem;margin:1.5rem 0}
+.frage{color:var(--matt);font-style:italic;margin:.1rem 0 .8rem}
+.rahmen{overflow-x:auto;border:1px solid var(--linie);border-radius:6px;background:var(--karte)}
+table{border-collapse:collapse;width:100%;min-width:44rem}
+th,td{text-align:left;padding:.6rem .7rem;border-bottom:1px solid var(--linie);vertical-align:top}
+th{font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:var(--matt);font-weight:600}
+tr:last-child td{border-bottom:0}
+td.n{width:1.6rem;text-align:center;font-weight:700}
+td.z{white-space:nowrap;font-variant-numeric:tabular-nums;
+font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:.88rem}
+.klein{font-size:.82rem;color:var(--matt);line-height:1.4;margin-top:.15rem}
+.strich{color:var(--offen);font-style:italic}
+tr.haelt td.n{color:var(--haelt)} tr.reisst td.n{color:var(--reisst)}
+.summe{margin-top:2.5rem;padding-top:1.2rem;border-top:2px solid var(--linie)}
+blockquote{margin:1.6rem 0;padding-left:1rem;border-left:3px solid var(--akzent);color:var(--text)}
+footer{margin-top:3rem;color:var(--matt);font-size:.85rem}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.85em}
+</style></head><body><main>
+
+<h1>Kennzahlen des Baustoffhandels</h1>
+<p class="unter">Was gemessen wird, gegen welche Schwelle — und welche Entscheidung daran hängt.
+Stand 2026-09-01.</p>
+
+<div class="warn"><strong>Interne Seite.</strong> Sie nennt Zielgewinn, Rohmarge und Werbebudget.
+Diese Zahlen gehören auf keine Kundenseite.<br>
+<strong>Kein realisierter Umsatz.</strong> Der Shop hat keine Bestellung, keinen Klick und keinen
+Besucher gesehen. 9 der 10 Kennzahlen sind deshalb ohne Wert.</div>
+
+<blockquote><strong>Neun Striche sind kein Mangel dieser Seite, sondern ihr Zweck.</strong>
+Die Schwellen stehen fest, bevor die Zahlen da sind. Danach ließen sie sich verschieben —
+und man wüsste nicht mehr, ob man sie verschoben hat, weil sie falsch waren oder weil das
+Ergebnis nicht gefiel.</blockquote>
+
+<h2>Vor dem Start <span class="klein">— jetzt</span></h2>
+<p class="frage">Was fehlt noch, bevor irgendetwas laufen kann?</p>
+<div class="rahmen"><table>
+<thead><tr><th></th><th>Kennzahl und Entscheidung</th><th>Ist</th><th>Schwelle</th><th>Herkunft der Schwelle</th></tr></thead>
+<tbody><tr class="reisst">
+<td class="n">✗</td>
+<td><strong>Offene Punkte, die nur der Auftraggeber schließen kann</strong><div class="klein">Solange einer offen ist, kann der Versuch nicht starten.</div></td>
+<td class="z">15 Punkte</td>
+<td class="z">hoechstens 0 Punkte</td>
+<td class="klein">npm run offenepunkte — Zuständigkeiten anfrage, ausgabe, entscheidung, eintragen</td>
+</tr><tr class="offen">
+<td class="n"></td>
+<td><strong>Keywords mit gemessenem Suchvolumen</strong><div class="klein">Reicht das Volumen das Budget nicht aus, dauert der Versuch ein Vielfaches — oder er findet nicht statt.</div></td>
+<td class="z"><span class="strich">noch nicht gemessen</span></td>
+<td class="z">mindestens 33 von 33</td>
+<td class="klein">npm run messliste — die Liste steht, die Messung ist kostenlos</td>
+</tr></tbody></table></div><h2>Der Versuch <span class="klein">— ab dem Schalten der Anzeigen</span></h2>
+<p class="frage">Gibt es die Kaufquote, für die gerechnet wurde?</p>
+<div class="rahmen"><table>
+<thead><tr><th></th><th>Kennzahl und Entscheidung</th><th>Ist</th><th>Schwelle</th><th>Herkunft der Schwelle</th></tr></thead>
+<tbody><tr class="offen">
+<td class="n"></td>
+<td><strong>Klicks ohne Bestellung</strong><div class="klein">Bei 299 Klicks ohne Bestellung ist eine Kaufquote von 1,00 % ausgeschlossen. Vorab festgelegt — nicht nachträglich verschiebbar.</div></td>
+<td class="z"><span class="strich">noch nicht gemessen</span></td>
+<td class="z">genau 299 Klicks</td>
+<td class="klein">abbruchschwelle(1,00 %) = ln(0,05)/ln(1−q), 95 % Sicherheit</td>
+</tr><tr class="offen">
+<td class="n"></td>
+<td><strong>Ausgegeben bis zur Schwelle</strong><div class="klein">Was der Versuch kostet, steht vorher fest. Wird er teurer, ist der Klickpreis höher als angenommen und die Frist länger.</div></td>
+<td class="z"><span class="strich">noch nicht gemessen</span></td>
+<td class="z">hoechstens 448,50 €</td>
+<td class="klein">299 Klicks × 1.50 € — der gerechnete Preis des Wissens</td>
+</tr><tr class="offen">
+<td class="n"></td>
+<td><strong>Gemessene Kaufquote</strong><div class="klein">Unter 0,77 % trägt das Modell nicht einmal den billigsten Marktklick. Dann ist der Klickkanal kein Kanal.</div></td>
+<td class="z"><span class="strich">noch nicht gemessen</span></td>
+<td class="z">mindestens 0,77 %</td>
+<td class="klein">leistbarerKlickpreis() gegen den unteren Marktpreis von 0,50 €</td>
+</tr></tbody></table></div><h2>Der Betrieb <span class="klein">— ab dem ersten Verkauf</span></h2>
+<p class="frage">Trägt das Modell die Zielgröße?</p>
+<div class="rahmen"><table>
+<thead><tr><th></th><th>Kennzahl und Entscheidung</th><th>Ist</th><th>Schwelle</th><th>Herkunft der Schwelle</th></tr></thead>
+<tbody><tr class="offen">
+<td class="n"></td>
+<td><strong>Monatsumsatz netto</strong><div class="klein">Darunter wird der Zielgewinn nicht erreicht.</div></td>
+<td class="z"><span class="strich">noch nicht gemessen</span></td>
+<td class="z">mindestens 43 395,77 €</td>
+<td class="klein">noetigerUmsatz() aus Zielgewinn 5374 €, Fixkosten 650 €, Rohmarge 25,00 %, Zahlweg eps</td>
+</tr><tr class="offen">
+<td class="n"></td>
+<td><strong>Bestellungen im Monat</strong><div class="klein">Die Zahl, die der Betrieb von Hand schaffen muss, solange keine Schnittstelle da ist.</div></td>
+<td class="z"><span class="strich">noch nicht gemessen</span></td>
+<td class="z">mindestens 67</td>
+<td class="klein">Monatsumsatz ÷ Warenkorb 650 €</td>
+</tr><tr class="offen">
+<td class="n"></td>
+<td><strong>Werbeanteil am Umsatz</strong><div class="klein">Darüber frisst die Werbung den Deckungsbeitrag auf.</div></td>
+<td class="z"><span class="strich">noch nicht gemessen</span></td>
+<td class="z">hoechstens 23,00 %</td>
+<td class="klein">Tragfähigkeitsgrenze bei 25 % Rohmarge — empfindlichkeit.js</td>
+</tr><tr class="offen">
+<td class="n"></td>
+<td><strong>Werbebudget im Monat</strong><div class="klein">Der Rahmen, in dem sich der leistbare Klickpreis bewegt.</div></td>
+<td class="z"><span class="strich">noch nicht gemessen</span></td>
+<td class="z">genau 4 339,58 €</td>
+<td class="klein">Monatsumsatz × geplanter Werbeanteil 10,00 %</td>
+</tr><tr class="offen">
+<td class="n"></td>
+<td><strong>Leistbarer Klickpreis bei gemessener Quote</strong><div class="klein">Liegt er unter dem Marktpreis, ist bei dieser Quote kein Gebot tragfähig.</div></td>
+<td class="z"><span class="strich">noch nicht gemessen</span></td>
+<td class="z">mindestens 1,30 €</td>
+<td class="klein">leistbarerKlickpreis() bei der geplanten Quote 2,00 %</td>
+</tr></tbody></table></div>
+
+<div class="summe">
+<p><strong>1 von 10 gemessen.</strong>
+Reißend: <code>freigaben-offen</code>.</p>
+<p>Jede Schwelle stammt aus dem Modul, das sie verantwortet — <code>kostenbild.js</code>,
+<code>werbewirkung.js</code>, <code>empfindlichkeit.js</code>. Keine ist hier noch einmal
+gerechnet: Eine zweite Rechnung wäre eine zweite Wahrheit.</p>
+</div>
+
+<footer>Erzeugt mit <code>npm run kennzahlen</code> aus <code>src/kennzahlen.js</code>.
+Nicht von Hand ändern — die nächste Ausgabe überschreibt sie.</footer>
+</main></body></html>

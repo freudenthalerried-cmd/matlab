@@ -89,9 +89,14 @@
     "begruendung": "Kanaele, Budget und Kennzahlen — vorhanden, aber fuer den ersten Anlauf statt fuer zwoelf Monate. Eine Zwoelfmonatsplanung ohne gemessene Kaufquote waere eine Hochrechnung auf eine Annahme; werbewirkung.js sagt stattdessen, ab wann die Annahme ueberpruefbar ist."
   },
   "11": {
-    "zustand": "offen",
-    "belege": [],
-    "begruendung": "Ein KPI-Dashboard gibt es nicht. Es waere heute auch leer: Der Shop hat keine Bestellung, keinen Klick und keinen Besucher gesehen. Ein Dashboard ohne Daten ist ein Rahmen, der Betrieb vortaeuscht. Sinnvoll ab dem ersten geschalteten Anlauf."
+    "zustand": "erfuellt",
+    "belege": [
+      "docs/baustoff-shop/neun-striche-und-ein-kreuz.md",
+      "shop/src/kennzahlen.js",
+      "shop/bin/kennzahlen.mjs",
+      "shop/ausgabe/kennzahlen.html"
+    ],
+    "begruendung": "Teilbare Seite mit zehn Kennzahlen in drei Abschnitten (vor dem Start, der Versuch, der Betrieb). npm run kennzahlen erzeugt ausgabe/kennzahlen.html als Einzeldatei. Jede Kennzahl traegt Ist, Schwelle, Herkunft der Schwelle und die Entscheidung, die daran haengt; keine Schwelle ist hier gerechnet, jede kommt aus dem Modul, das sie verantwortet. Der frueher genannte Einwand — ein Dashboard ohne Daten taeusche Betrieb vor — trifft die vorgetaeuschte Fassung mit Kurven bei null, nicht die Sache: Was eine solche Seite VOR dem Start leisten kann, ist das Festlegen der Schwellen, bevor man die Zahlen kennt. Heute: 1 von 10 gemessen, neun Striche, ein Kreuz (15 offene Punkte gegen eine Schwelle von 0). Nicht Erhobenes ist null und wird als Strich ausgegeben, nie als Nullwert. Die Seite ist intern und liegt ausserhalb von ausgabe/site/, weil sie Zielgewinn und Rohmarge nennt."
   },
   "12": {
     "zustand": "erfuellt",

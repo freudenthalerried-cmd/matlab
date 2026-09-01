@@ -11,7 +11,7 @@
  */
 
 import { readFileSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { offenePunkte } from '../src/offenepunkte.js';
 import { startklar } from '../src/startklar.js';
@@ -114,10 +114,25 @@ if (alter.verdacht.length) {
   });
 }
 
-// --- Ausgabe ----------------------------------------------------------------
-const gruppen = offenePunkte(ausWerkzeugen);
-const gesamt = gruppen.reduce((s, g) => s + g.punkte.length, 0);
+// --- Ergebnis ---------------------------------------------------------------
+//
+// Ausgeführt **und** ausführbar. `npm run kennzahlen` braucht dieselbe Zahl,
+// und die Alternative wäre gewesen, sie dort ein zweites Mal zusammenzusetzen.
+// Ein erster Anlauf hat genau das getan und meldete **2** statt 15 — er zählte
+// die Gruppen und nicht die Punkte darin. Zwei Zusammenstellungen derselben
+// Liste sind zwei Stände, und der falsche fällt nicht auf, weil er plausibel
+// aussieht.
+//
+// Das Muster steht schon zweimal im Haus: `kampagne.mjs` und `website.mjs`
+// drucken nur, wenn sie selbst aufgerufen wurden.
+export const gruppen = offenePunkte(ausWerkzeugen);
+export const gesamt = gruppen.reduce((s, g) => s + g.punkte.length, 0);
 
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  zeige();
+}
+
+function zeige() {
 console.log(`\nOffene Punkte — ${gesamt} in ${gruppen.length} Gruppen, Stand ${new Date().toISOString().slice(0, 10)}`);
 console.log('Gezogen aus startklar, veroeffentlichung und pruefe-preisalter; der Rest steht');
 console.log('in src/offenepunkte.js, jeder mit dem Grund, warum ihn kein Werkzeug kennt.\n');
@@ -135,3 +150,4 @@ for (const g of gruppen) {
 
 console.log('Diese Aufstellung löst keine Ausgaben aus. Das Versenden einer Anfrage an Dritte,');
 console.log('der Kauf von Ware und jede Ausgabe bleiben Sache des Auftraggebers.');
+}
