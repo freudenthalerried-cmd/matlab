@@ -304,3 +304,63 @@ test('kein Lieferantenname steht im Text', () => {
   for (const name of namen) assert.ok(!text.includes(name), `„${name}" steht im Anfragetext`);
   for (const l of lieferanten.lieferanten) assert.ok(!text.includes(l.id), `„${l.id}" steht im Anfragetext`);
 });
+
+/* ------------------------------------------------------------------ *
+ * Der Mailknopf, gemessen — Befund vom 1. September
+ *
+ * `MAILTO_HOECHSTLAENGE` gab es seit Beginn, die Begründung dazu auch. Was
+ * es nie gab, ist die Zahl daneben: **ab welcher Position verschwindet der
+ * Knopf?** Gemessen am echten Katalog (46 Artikel, bestätigte Preise) ist die
+ * Antwort **drei**. Der Bezugswarenkorb der Wirtschaftlichkeitsrechnung liegt
+ * bei 650 € netto und damit bei rund elf Positionen.
+ *
+ * > **Der Mailknopf trägt keine Bestellung, für die dieser Handel gebaut
+ * > ist.** Er trägt die Nachbestellung von ein, zwei vergessenen Positionen —
+ * > und das ist ein echter Fall, nur nicht der Regelfall.
+ *
+ * Diese Proben halten die Schwelle fest. Wer `MAILTO_HOECHSTLAENGE` erhöht,
+ * um „den Knopf endlich sichtbar zu machen", verschiebt sie nicht, sondern
+ * schaltet die stillschweigende Kürzung im Mailprogramm frei — der Kunde
+ * verschickt dann eine halbe Positionsliste und merkt nichts.
+ * ------------------------------------------------------------------ */
+
+// Mit Empfängeradresse. Ohne sie fällt der Knopf ohnehin weg — die
+// E-Mail-Adresse ist bis heute einer der vier offenen Impressumspunkte, und
+// der erste Anlauf dieser Probe ist genau darüber gestolpert. Gemessen werden
+// soll die **Länge**, nicht die fehlende Adresse.
+const mailKorb = (n) =>
+  anfrageFuer(artikel.slice(0, n).map((a) => ({ sku: a.sku, menge: 3 })), {
+    betreiber: { ...betreiber, email: 'bestellung@bauversand.com' },
+  });
+
+test('Ohne hinterlegte Adresse gibt es den Knopf gar nicht', () => {
+  assert.equal(betreiber.email, '', 'die Vorlage dieser Proben hat bewusst keine Adresse');
+  assert.equal(mailtoAdresse(anfrageFuer([{ sku: artikel[0].sku, menge: 3 }])), null);
+});
+
+test('Bis zwei Positionen gibt es den Mailknopf', () => {
+  assert.ok(mailtoAdresse(mailKorb(1)), 'eine Position');
+  assert.ok(mailtoAdresse(mailKorb(2)), 'zwei Positionen');
+});
+
+test('Ab drei Positionen gibt es ihn nicht mehr', () => {
+  for (const n of [3, 5, 8]) {
+    assert.equal(mailtoAdresse(mailKorb(n)), null, `${n} Positionen`);
+  }
+});
+
+test('Der Kopiertext bleibt in jeder Größe da — er ist der Weg, nicht die Abkürzung', () => {
+  for (const n of [1, 3, 8]) {
+    const a = mailKorb(n);
+    assert.equal(a.moeglich, true);
+    assert.ok(a.text.length > 200, `${n} Positionen: ${a.text.length} Zeichen`);
+  }
+});
+
+test('Die Grenze liegt unter dem, was Mailprogramme stillschweigend kürzen', () => {
+  // Kein Selbstzweck: Die Zahl ist eine Vorsichtsentscheidung, keine Messung
+  // an einem Mailprogramm. Sie gehört nach oben begrenzt, damit sie nicht
+  // eines Tages „zur Sicherheit" auf 4000 wandert.
+  assert.ok(MAILTO_HOECHSTLAENGE <= 2000, `${MAILTO_HOECHSTLAENGE} ist über dem, was Outlook verlässlich trägt`);
+  assert.ok(MAILTO_HOECHSTLAENGE >= 1000, 'unter 1000 trägt der Knopf gar nichts mehr');
+});

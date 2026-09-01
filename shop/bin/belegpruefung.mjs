@@ -15,13 +15,13 @@
  * Prüfobjekt herstellt und niemand die Regeln einzeln testen kann.
  */
 
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { ladeKatalog, berechneWarenkorb } from '../src/warenkorb.js';
-import { ZIELMARGE } from '../src/baustoffkatalog.js';
+import { ZIELMARGE, ladeBaustoffkatalog } from '../src/baustoffkatalog.js';
 import { erzeugeAngebot, erzeugeAuftragsbestaetigung, erzeugeRechnung } from '../src/beleg.js';
-import { erzeugeBestellungen } from '../src/bestellung.js';
+import { erzeugeBestellungen, darfAutomatischAusgeloestWerden } from '../src/bestellung.js';
 import { kundenWarenkorb } from '../src/shopkern.js';
 import { baueKundenanfrage } from '../src/kundenanfrage.js';
 import { pruefeBelege } from '../src/belegpruefung.js';
@@ -30,20 +30,92 @@ const wurzel = dirname(dirname(fileURLToPath(import.meta.url)));
 const lies = (name) => JSON.parse(readFileSync(join(wurzel, 'data', name), 'utf8'));
 
 const lieferantenDatei = lies('lieferanten.json');
-const katalog = ladeKatalog({ lieferanten: lieferantenDatei, artikel: lies('artikel.json') }, ZIELMARGE);
+
+/**
+ * **Welchen Katalog liest dieser Prüfer?**
+ *
+ * Die erste Fassung von heute Vormittag las `data/artikel.json` — den
+ * Radonkatalog mit neun Platzhalterartikeln — und schrieb „Belege gepruft: 4"
+ * darunter, ohne zu sagen, aus welchem Bestand die Belege stammen. Der aktuelle
+ * Handel hat sechsundvierzig Artikel mit bestaetigten Preisen.
+ *
+ * > **Ein Prüfer, der nicht sagt, was er gelesen hat, wird für etwas gehalten,
+ * > was er nicht ist.** Genau die Familie, die dieser Prüfer finden soll.
+ *
+ * `preise/` liegt ausserhalb des Repositories, deshalb ist der Rueckfall der
+ * Normalzustand einer frischen Arbeitskopie. Er ist nicht falsch — er ist nur
+ * etwas anderes, und das steht jetzt in der Ausgabe. Der Griff ueber die
+ * Umgebung ist derselbe wie in `veroeffentlichung.mjs`: Ein Zweig, den keine
+ * Probe betreten kann, ist kein Zweig, sondern eine Vermutung.
+ */
+const preisPfad = process.env.VEROEFFENTLICHUNG_PREISE
+  || join(wurzel, '..', 'preise', 'baustoff-preise.json');
+const baustoffVerfuegbar = existsSync(preisPfad) && existsSync(join(wurzel, 'data', 'katalog-baustoff.json'));
+
+const katalog = baustoffVerfuegbar
+  ? ladeBaustoffkatalog(
+      lies('katalog-baustoff.json'),
+      JSON.parse(readFileSync(preisPfad, 'utf8')),
+      lieferantenDatei,
+      ZIELMARGE,
+    )
+  : ladeKatalog({ lieferanten: lieferantenDatei, artikel: lies('artikel.json') }, ZIELMARGE);
+
+const katalogName = baustoffVerfuegbar
+  ? `Baustoffkatalog aus den Lieferantenrechnungen (${katalog.artikel.length} Artikel)`
+  : `Radon-Platzhalterkatalog (${katalog.artikel.length} Artikel) — die Preisdatei des Baustoffkatalogs fehlt`;
+
+// Der Warenkorb braucht zwei Positionen mit gerechnetem Preis. Im
+// Baustoffkatalog tragen Artikel nach Gate 24 teils `vkNetto: null`; die
+// fallen hier heraus, statt eine Bestellung ueber einen fehlenden Preis zu
+// bauen.
+/**
+ * **Welcher Warenkorb?** Nicht der erstbeste.
+ *
+ * Die ersten beiden Artikel des Baustoffkatalogs sind Zuschnitte
+ * Fassadendämmung zu 1,93 € und 2,81 €. Daraus wurde ein Beleg über 43,37 €
+ * Ware und 90,50 € Fracht — genau die Bestellung, die Gate 20 sperrt und die
+ * nie hinausgeht. Nach Preis absteigend sortiert kippte es ins Gegenteil:
+ * 5.362 € Ware, das Achtfache des Bezugswarenkorbs.
+ *
+ * > **Ein Prüfer, der ein Dokument liest, das der Betrieb nie erzeugt, prüft
+ * > eine Möglichkeit statt eines Falls.**
+ *
+ * Gebaut wird deshalb auf `warenkorbNetto` aus `data/zielgroessen.json` — die
+ * Zahl, mit der die ganze Wirtschaftlichkeitsrechnung arbeitet. Zwei
+ * Positionen zu je einer Hälfte, Mengen ganzzahlig aufgerundet.
+ */
+const ZIELKORB_NETTO = lies('zielgroessen.json').warenkorbNetto;
+const verkaeuflich = katalog.artikel.filter((a) => typeof a.vkNetto === 'number' && a.vkNetto > 0);
+if (verkaeuflich.length < 2) {
+  console.error(`Zu wenige verkäufliche Artikel im ${katalogName} — kein Beleg baubar.`);
+  process.exit(1);
+}
+const haelfte = ZIELKORB_NETTO / 2;
+// Die zwei Artikel, deren Preis der halben Zielsumme am nächsten liegt: Sie
+// ergeben mit kleinen, im Baustoffhandel plausiblen Stückzahlen einen Korb in
+// der Größenordnung, für die dieses Modell gerechnet ist.
+const gewaehlt = [...verkaeuflich]
+  .sort((a, b) => Math.abs(a.vkNetto - haelfte) - Math.abs(b.vkNetto - haelfte))
+  .slice(0, 2);
+const positionen = gewaehlt.map((a) => ({
+  sku: a.sku,
+  menge: Math.max(1, Math.round(haelfte / a.vkNetto)),
+}));
 
 // Zwei Positionen, damit Positionszeilen, Fracht und Summenblock alle
 // vorkommen. Der Warenkorb ist erfunden — die Preise und Konditionen darin
 // sind es nicht.
-const korb = berechneWarenkorb(
-  [
-    { sku: katalog.artikel[0].sku, menge: 5 },
-    { sku: katalog.artikel[3].sku, menge: 12 },
-  ],
-  katalog,
-);
+const korb = berechneWarenkorb(positionen, katalog);
 
-const betreiber = { firma: '[[ Firma des Betreibers ]]', uid: '[[ UID ]]' };
+// Die echten Betreiberdaten, nicht erfundene: Vier Pflichtangaben sind dort
+// offen, und der Prüfer soll genau die Belege sehen, die heute entstehen
+// würden — samt ihrer Lücken.
+const betreiberDatei = lies('betreiber.json');
+const betreiber = {
+  firma: betreiberDatei.firma ?? betreiberDatei.name ?? '',
+  uid: betreiberDatei.uid ?? '',
+};
 const kunde = { firma: 'Musterbau GmbH', strasse: 'Baustellenweg 7', plz: '4600', ort: 'Wels', uid: 'ATU12345675' };
 const gemeinsam = { datum: '01.09.2026', kunde, betreiber };
 
@@ -67,13 +139,10 @@ const belege = [
 // Durchlauf: Was der Kunde in einem Zug liest, muss ein Prüfer in einem Zug
 // gelesen haben.
 const anfrage = baueKundenanfrage({
-  rechnung: kundenWarenkorb(
-    [
-      { sku: katalog.artikel[0].sku, menge: 5 },
-      { sku: katalog.artikel[3].sku, menge: 12 },
-    ],
-    { artikel: katalog.artikel, lieferanten: lieferantenDatei.lieferanten ?? lieferantenDatei },
-  ),
+  rechnung: kundenWarenkorb(positionen, {
+    artikel: katalog.artikel,
+    lieferanten: lieferantenDatei.lieferanten ?? lieferantenDatei,
+  }),
   bezirk: 'Perg',
   betreiber: { firma: betreiber.firma, ort: 'Ried in der Riedmark', email: '' },
   datum: '2026-09-01',
@@ -87,7 +156,7 @@ belege.push({ art: 'Kundenanfrage', text: anfrage.text });
 // Der fünfte Außentext geht nicht an den Kunden, sondern an den Lieferanten.
 // Er stand am 1. September vormittags noch außerhalb jeder Prüfung — und trug
 // genau deshalb eine leere Zeile „Ansprechpartner vor Ort:".
-for (const b of erzeugeBestellungen(korb, {
+const bestellauftrag = {
   bestellnummer: 'B-2026-0001',
   absender: { firma: betreiber.firma },
   lieferadresse: {
@@ -98,9 +167,23 @@ for (const b of erzeugeBestellungen(korb, {
     telefon: '+43 660 1234567',
     hinweis: 'Zufahrt über die Nordseite, Wendeplatz vorhanden',
   },
-})) {
+};
+for (const b of erzeugeBestellungen(korb, bestellauftrag)) {
   belege.push({ art: 'Lieferantenbestellung', text: b.text });
 }
+
+// Würde diese Bestellung überhaupt hinausgehen? Die Antwort gehört neben die
+// Belege: Ein sauber geprüfter Text über einen gesperrten Auftrag ist kein
+// Freibrief. Keine Meldung, sondern Auskunft — die Lücken, die hier
+// auftauchen, sind die offenen Punkte beim Auftraggeber und beim Lieferanten.
+const freigabe = darfAutomatischAusgeloestWerden(korb, {
+  ...bestellauftrag,
+  zahlungEingegangen: true,
+  kundeIstUnternehmer: true,
+  uid: kunde.uid,
+  zahlweg: 'eps',
+  frachtVerrechnet: true,
+});
 
 const befund = pruefeBelege(belege);
 const zeigeTexte = process.argv.includes('--zeigen');
@@ -113,6 +196,9 @@ if (zeigeTexte) {
 }
 
 console.log(`Belege geprüft: ${befund.geprueft} (${belege.map((b) => b.art).join(', ')})`);
+console.log(`Gelesener Katalog: ${katalogName}`);
+console.log(`Warenkorb: ${positionen.map((p) => `${p.menge}× ${p.sku}`).join(', ')} = `
+  + `${korb.warenwertNetto.toFixed(2)} € netto (Zielgröße ${ZIELKORB_NETTO} €)`);
 console.log(`Zahlungsziel laut Geschäftsbedingungen: ${befund.zielTage} Tage\n`);
 
 for (const b of befund.befunde) {
@@ -124,6 +210,14 @@ for (const b of befund.befunde) {
     console.log(`  ✗ ${b.art}${m.zeile ? `:${m.zeile}` : ''} [${m.regel}]`);
     console.log(`      ${m.text}`);
   }
+}
+
+console.log('');
+if (freigabe.erlaubt) {
+  console.log('Diese Bestellung dürfte ausgelöst werden.');
+} else {
+  console.log('Auslösbar wäre sie nicht — offene Punkte, keine Textfehler:');
+  for (const g of freigabe.gruende) console.log(`    · ${g}`);
 }
 
 console.log('');
