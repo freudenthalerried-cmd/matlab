@@ -9,7 +9,7 @@
       "docs/baustoff-shop/STATUS.md",
       "docs/baustoff-shop/die-drei-groessten-risiken.md"
     ],
-    "begruendung": "Der Name stimmt, die Sache in Teilen. README.md ist die Denkgrundlage vom Projektbeginn und traegt selbst den Vermerk 'teilweise ueberholt' — dort steht die Margenschwelle 32 %, die seit dem 22.08. gegenstandslos ist (Gate 1). Der laufende Stand steht in STATUS.md und in der PR-Beschreibung. Die ausdruecklich verlangte Liste der DREI GROESSTEN RISIKEN ist am 01.09. nachgetragen worden (die-drei-groessten-risiken.md): Kaufquote, Marktgroesse, Alterung der Preisbasis — jede mit gemessenen Zahlen und der Angabe, was sie abzuklaeren kostet. Offen bleibt, README.md selbst nachzuziehen."
+    "begruendung": "README.md traegt seit 01.09. einen berichtigten Kopf: Es ist ausdruecklich die Denkgrundlage vom Projektbeginn und beschreibt das am 22.08. verlassene Modell; der vorige Vermerk nannte 32 % als gueltige Margenschwelle, was selbst ueberholt war. Der Kopf verweist jetzt auf PARAMETER.md, STATUS.md, das Gate-Register, npm run offenepunkte, die Risikoliste und den Weg zum ersten Verkauf. Die verlangte Liste der DREI GROESSTEN RISIKEN steht in die-drei-groessten-risiken.md, jede mit gemessenen Zahlen. Der Rumpf des Dokuments bleibt unveraendert — er gehoert zum abgeloesten Modell und wird nicht nachgezogen."
   },
   "2": {
     "zustand": "anders",

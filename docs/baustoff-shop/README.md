@@ -1,10 +1,33 @@
 # Baustoff-Shop — Brainstorming & Entscheidungsgrundlage
 
-> **Teilweise überholt.** Die Margenschwelle liegt bei **32 %** statt 28 %, und
-> die Zielgröße ist **3.000 € netto** statt 3.000 € vor Steuer. Die
-> Grundrechnungen und die Denkgrundlage bleiben gültig. Einstieg über
-> [`STATUS.md`](./STATUS.md), Gate-Stände im
-> [`gate-register.md`](./gate-register.md).
+> **Dies ist die Denkgrundlage vom Projektbeginn, kein Stand.** Sie beschreibt
+> das Modell, das der Auftraggeber am **22. August 2026 verlassen hat**:
+> Streckenhandel mit Herstellerkonditionen und einer Margenuntergrenze. Seither
+> gilt die Kalkulation auf **eigene Baumeister-Einkaufspreise mit 25 % Marge**,
+> regionale Lieferung in fünf Bezirke, und an die Stelle einer Prozentschwelle
+> ist **Gate 20** getreten: keine Bestellung ohne positiven Deckungsbeitrag,
+> geprüft in Euro.
+>
+> Der vorige Vermerk an dieser Stelle nannte „32 % statt 28 %" als gültige
+> Margenschwelle. **Auch das ist überholt** — 32 % war Gate 1 und ist seit dem
+> 22. August gegenstandslos (`PARAMETER.md`). Berichtigt am 01.09.2026.
+>
+> **Wo der aktuelle Stand steht:**
+>
+> | Frage | Datei |
+> |---|---|
+> | Was gilt? | [`PARAMETER.md`](./PARAMETER.md) — rangiert über allem |
+> | Wo steht das Vorhaben? | [`STATUS.md`](./STATUS.md) |
+> | Welche Gates? | [`gate-register.md`](./gate-register.md) |
+> | Was ist noch offen? | `npm run offenepunkte` |
+> | Was kann schiefgehen? | [`die-drei-groessten-risiken.md`](./die-drei-groessten-risiken.md) |
+> | Wie geht es weiter? | [`weg-zum-ersten-verkauf-nachgerechnet.md`](./weg-zum-ersten-verkauf-nachgerechnet.md) |
+>
+> Was in diesem Dokument gültig bleibt, ist die **Denkweise**: die Rechnung
+> rückwärts vom Gewinnziel, die Frage nach der Unabhängigkeit von der eigenen
+> Person, und die Aufstellung dessen, was sich automatisieren lässt. Die Zahlen
+> darin gehören zum abgelösten Modell und werden **nicht nachgezogen** — ein
+> Dokument, das man nachträglich glattzieht, ist keine Akte mehr.
 
 Ziel des Projekts: ein eigenständiger, weitgehend automatisierter Online-Shop für
 Baustoffe, der **mindestens 3.000 € pro Monat** abwirft und operativ ohne den
