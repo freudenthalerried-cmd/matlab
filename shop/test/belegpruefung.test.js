@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { pruefeBeleg, pruefeBelege, SUMMENZEILE, ZUSTANDSAUSSAGE } from '../src/belegpruefung.js';
+import { pruefeBeleg, pruefeBelege, leereAngaben, SUMMENZEILE, ZUSTANDSAUSSAGE } from '../src/belegpruefung.js';
 
 const mitSumme = (rest) => `Rechnung RE-0001\n\nGesamtbetrag            1638,48 €\n\n${rest}`;
 
@@ -65,4 +65,35 @@ test('Die Gesamtzahl der Meldungen stimmt mit den einzelnen überein', () => {
   assert.equal(b.geprueft, 2);
   assert.equal(b.meldungen, 1);
   assert.equal(b.sauber, false);
+});
+
+// ---------------------------------------------------------------------------
+// Die leere Angabe — Befund vom 1. September, zweiter Teil
+// ---------------------------------------------------------------------------
+
+test('Eine Beschriftung ohne Wert wird gemeldet', () => {
+  const t = 'Lieferadresse:\n  Bau Muster GmbH\n  Ansprechpartner vor Ort: \n\nMit freundlichen Grüßen';
+  const l = leereAngaben(t);
+  assert.equal(l.length, 1);
+  assert.equal(l[0].beschriftung, 'Ansprechpartner vor Ort');
+  assert.equal(l[0].zeile, 3);
+});
+
+test('Eine Blocküberschrift ist keine leere Angabe', () => {
+  assert.deepEqual(leereAngaben('Lieferadresse (Baustelle):\n  Bau Muster GmbH\n  4600 Wels'), []);
+});
+
+test('Leerzeilen zwischen Beschriftung und Aufzählung zählen nicht als Ende', () => {
+  // Der Fehlalarm des ersten Laufs: ein Satz, dessen Liste erst nach einer
+  // Leerzeile beginnt.
+  assert.deepEqual(leereAngaben('… an den unten\ngenannten Endkunden:\n\n    5 × DR-100-050 Rohr'), []);
+});
+
+test('Eine Beschriftung am Textende hat keinen Wert mehr', () => {
+  assert.equal(leereAngaben('Summe: 12 €\nAnsprechpartner:').length, 1);
+});
+
+test('Die Belegprüfung meldet die leere Angabe als eigene Regel', () => {
+  const b = pruefeBeleg({ art: 'Lieferantenbestellung', text: 'Gewünschte Lieferzeit: 5 Werktage.\nTelefon: ' });
+  assert.ok(b.meldungen.some((m) => m.regel === 'leere-angabe'));
 });

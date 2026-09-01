@@ -9,12 +9,23 @@ const korb = (warenwertNetto, einkaufNetto, frachtNetto) => ({
   warenwertNetto,
   einkaufNetto,
   frachtNetto,
-  teillieferungen: [{ positionen: [{ ekIstPlatzhalter: false }] }],
+  teillieferungen: [{ lieferantName: 'Testlieferant', lieferzeitWerktage: 5, positionen: [{ ekIstPlatzhalter: false }] }],
 });
+// Seit dem 1. September gehören Lieferadresse, Ansprechpartner und
+// Absenderfirma zu einem auslösbaren Auftrag. Der Fixture-Auftrag trug sie
+// nicht — er war nie „gesund", nur nie danach gefragt worden.
 const auftrag = (zusatz = {}) => ({
   zahlungEingegangen: true,
   kundeIstUnternehmer: true,
   uid: 'ATU12345675',
+  absender: { firma: 'Musterfirma GmbH' },
+  lieferadresse: {
+    name: 'Bau Muster GmbH',
+    strasse: 'Baustellenweg 7',
+    plz: '4600',
+    ort: 'Wels',
+    telefon: '+43 660 1234567',
+  },
   ...zusatz,
 });
 
@@ -92,4 +103,42 @@ test('eine kleine Palettenbestellung trägt sich nicht mehr, auch mit verrechnet
   const gross = berechneWarenkorb([{ sku: 'POS-12566', menge: 300 }], katalog);
   const grossDeckung = traegtSichSelbst(gross, { frachtVerrechnet: true, zahlwegId: 'vorkasse' });
   assert.equal(grossDeckung.traegt, true, 'die große trägt sich weiterhin');
+});
+
+/* ------------------------------------------------------------------ *
+ * Die Zustellung, nicht das Geld — Befund vom 1. September
+ *
+ * Alle Sperren davor schützen das Geld: Zahlung, Konditionen, Marge. Der
+ * erzeugte Bestelltext zeigte, was ungeschützt war.
+ * ------------------------------------------------------------------ */
+
+const gesund = () => korb(650, 520, 25);
+
+test('Ohne Telefon des Ansprechpartners wird nicht ausgelöst', () => {
+  const f = darfAutomatischAusgeloestWerden(gesund(), auftrag({
+    lieferadresse: { name: 'B', strasse: 'S 1', plz: '4600', ort: 'Wels' },
+    frachtVerrechnet: false,
+  }));
+  assert.equal(f.erlaubt, false);
+  assert.ok(f.gruende.some((g) => g.includes('Telefon')));
+});
+
+test('Ohne Absenderfirma wird nicht ausgelöst — der Lieferant kann sie nicht zuordnen', () => {
+  const f = darfAutomatischAusgeloestWerden(gesund(), auftrag({ absender: {}, frachtVerrechnet: false }));
+  assert.equal(f.erlaubt, false);
+  assert.ok(f.gruende.some((g) => g.includes('Firma des Bestellers')));
+});
+
+test('Ohne bekannte Lieferzeit wird kein Termin unbestellt zugesagt', () => {
+  const k = gesund();
+  k.teillieferungen = [{ lieferantName: 'Testlieferant', positionen: [{ ekIstPlatzhalter: false }] }];
+  const f = darfAutomatischAusgeloestWerden(k, auftrag({ frachtVerrechnet: false }));
+  assert.equal(f.erlaubt, false);
+  assert.ok(f.gruende.some((g) => g.includes('Lieferzeit unbekannt')));
+});
+
+test('Eine fehlende Lieferadresse meldet jedes Feld einzeln, nicht pauschal', () => {
+  const f = darfAutomatischAusgeloestWerden(gesund(), auftrag({ lieferadresse: {}, frachtVerrechnet: false }));
+  assert.equal(f.erlaubt, false);
+  assert.equal(f.gruende.filter((g) => g.startsWith('Bestelltext unvollständig')).length, 5);
 });

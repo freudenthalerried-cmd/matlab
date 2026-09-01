@@ -21,6 +21,7 @@ import { dirname, join } from 'node:path';
 import { ladeKatalog, berechneWarenkorb } from '../src/warenkorb.js';
 import { ZIELMARGE } from '../src/baustoffkatalog.js';
 import { erzeugeAngebot, erzeugeAuftragsbestaetigung, erzeugeRechnung } from '../src/beleg.js';
+import { erzeugeBestellungen } from '../src/bestellung.js';
 import { kundenWarenkorb } from '../src/shopkern.js';
 import { baueKundenanfrage } from '../src/kundenanfrage.js';
 import { pruefeBelege } from '../src/belegpruefung.js';
@@ -82,6 +83,24 @@ if (!anfrage.moeglich) {
   process.exit(1);
 }
 belege.push({ art: 'Kundenanfrage', text: anfrage.text });
+
+// Der fünfte Außentext geht nicht an den Kunden, sondern an den Lieferanten.
+// Er stand am 1. September vormittags noch außerhalb jeder Prüfung — und trug
+// genau deshalb eine leere Zeile „Ansprechpartner vor Ort:".
+for (const b of erzeugeBestellungen(korb, {
+  bestellnummer: 'B-2026-0001',
+  absender: { firma: betreiber.firma },
+  lieferadresse: {
+    name: kunde.firma,
+    strasse: kunde.strasse,
+    plz: kunde.plz,
+    ort: kunde.ort,
+    telefon: '+43 660 1234567',
+    hinweis: 'Zufahrt über die Nordseite, Wendeplatz vorhanden',
+  },
+})) {
+  belege.push({ art: 'Lieferantenbestellung', text: b.text });
+}
 
 const befund = pruefeBelege(belege);
 const zeigeTexte = process.argv.includes('--zeigen');

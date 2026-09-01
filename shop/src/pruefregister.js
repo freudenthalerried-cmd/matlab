@@ -47,14 +47,14 @@ export const PRUEFER = [
     mindestens: 90,
   },
   {
-    // Vier Belege, ein Durchlauf. `mindestens: 4`, damit ein stillgelegter
+    // Fünf Außentexte, ein Durchlauf. `mindestens: 5`, damit ein stillgelegter
     // Beleg auffällt: Der Prüfer, dem sein Prüfobjekt abhandenkommt, meldet
     // sonst „keine Meldung" und meint „nichts angesehen".
     name: 'pruefe-belege',
     werkzeug: 'belegpruefung.mjs',
     muster: /Belege geprüft: (\d+)/,
-    einheit: 'Kundenbelege',
-    mindestens: 4,
+    einheit: 'Außentexte',
+    mindestens: 5,
   },
   {
     name: 'pruefe-geheimnis',

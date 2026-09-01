@@ -3955,6 +3955,35 @@ function erzeugeBestellungen(warenkorb, auftrag) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const feld = (v, bezeichnung) =>
+  (typeof v === 'string' && v.trim() !== '') || (typeof v === 'number' && Number.isFinite(v))
+    ? textZeile(v)
+    : LUECKE(bezeichnung);
+
 function bestelltext(nummer, teil, auftrag) {
   const zeilen = teil.positionen.map(
     (p) => `  ${String(p.menge).padStart(3)} × ${textZeile(p.sku).padEnd(12)} ${textZeile(p.bezeichnung)}`,
@@ -3963,7 +3992,16 @@ function bestelltext(nummer, teil, auftrag) {
   
   
   
-  const zufahrt = textZeile(auftrag.lieferadresse.hinweis);
+  const zufahrt = textZeile(auftrag.lieferadresse.hinweis ?? '');
+
+  
+  
+  
+  
+  const termin = feld(
+    teil.lieferzeitWerktage != null ? `${teil.lieferzeitWerktage} Werktage ab heute` : null,
+    `Lieferzeit ${teil.lieferantName ?? teil.lieferantId}`,
+  );
 
   return [
     `Bestellung ${nummer}`,
@@ -3976,11 +4014,14 @@ function bestelltext(nummer, teil, auftrag) {
     ...zeilen,
     ``,
     `Lieferadresse (Baustelle):`,
-    `  ${textZeile(auftrag.lieferadresse.name)}`,
-    `  ${textZeile(auftrag.lieferadresse.strasse)}`,
-    `  ${textZeile(auftrag.lieferadresse.plz)} ${textZeile(auftrag.lieferadresse.ort)}`,
-    `  Ansprechpartner vor Ort: ${textZeile(auftrag.lieferadresse.telefon)}`,
+    `  ${feld(auftrag.lieferadresse.name, 'Name des Empfängers')}`,
+    `  ${feld(auftrag.lieferadresse.strasse, 'Straße der Baustelle')}`,
+    `  ${feld(auftrag.lieferadresse.plz, 'PLZ')} ${feld(auftrag.lieferadresse.ort, 'Ort')}`,
+    `  Ansprechpartner vor Ort: ${feld(auftrag.lieferadresse.telefon, 'Telefon des Ansprechpartners')}`,
     ...(zufahrt ? [`  Hinweis zur Zufahrt: ${zufahrt}`] : []),
+    ``,
+    `Gewünschte Lieferzeit: ${termin}. Bitte den Termin bestätigen — wir haben`,
+    `ihn dem Endkunden gegenüber zugesagt.`,
     ``,
     `Bitte neutral verpackt und ohne Preisangaben liefern.`,
     `Rechnung an den Auftraggeber laut hinterlegten Stammdaten.`,
@@ -3988,12 +4029,17 @@ function bestelltext(nummer, teil, auftrag) {
     `Warenwert netto laut meiner Kalkulation: ${EUR(teil.einkaufNetto)}`,
     ``,
     `Mit freundlichen Grüßen`,
-    textZeile(auftrag.absender.firma),
+    feld(auftrag.absender?.firma, 'Firma des Bestellers'),
   ].join('\n');
 }
 
 function bestellCsv(nummer, teil, auftrag) {
-  const kopf = 'bestellnummer;sku;menge;bezeichnung;liefername;lieferstrasse;lieferplz;lieferort';
+  
+  
+  
+  
+  const kopf =
+    'bestellnummer;sku;menge;bezeichnung;liefername;lieferstrasse;lieferplz;lieferort;liefertelefon';
   const zeilen = teil.positionen.map((p) =>
     [
       nummer,
@@ -4004,6 +4050,7 @@ function bestellCsv(nummer, teil, auftrag) {
       csvFeld(auftrag.lieferadresse.strasse),
       csvFeld(auftrag.lieferadresse.plz),
       csvFeld(auftrag.lieferadresse.ort),
+      csvFeld(auftrag.lieferadresse.telefon ?? ''),
     ].join(';'),
   );
   return [kopf, ...zeilen].join('\n');
@@ -4022,6 +4069,31 @@ function darfAutomatischAusgeloestWerden(warenkorb, auftrag) {
   if (!auftrag.uid) gruende.push('UID fehlt');
   if (warenkorb.teillieferungen.some((t) => t.positionen.some((p) => p.ekIstPlatzhalter))) {
     gruende.push('Katalog enthält Platzhalterpreise — keine echten Konditionen');
+  }
+
+  
+  
+  
+  
+  
+  
+  const adresse = auftrag.lieferadresse ?? {};
+  const pflicht = [
+    [adresse.name, 'Name des Empfängers'],
+    [adresse.strasse, 'Straße der Baustelle'],
+    [adresse.plz, 'PLZ'],
+    [adresse.ort, 'Ort'],
+    [adresse.telefon, 'Telefon des Ansprechpartners — ohne ihn fährt die Spedition ins Blinde'],
+    [auftrag.absender?.firma, 'Firma des Bestellers — der Lieferant kann die Bestellung sonst nicht zuordnen'],
+  ];
+  for (const [wert, bezeichnung] of pflicht) {
+    if (typeof wert !== 'string' || wert.trim() === '') gruende.push(`Bestelltext unvollständig: ${bezeichnung}`);
+  }
+  const ohneLieferzeit = warenkorb.teillieferungen
+    .filter((t) => t.lieferzeitWerktage == null)
+    .map((t) => t.lieferantName ?? t.lieferantId);
+  if (ohneLieferzeit.length) {
+    gruende.push(`Lieferzeit unbekannt (${ohneLieferzeit.join(', ')}) — der Termin wäre unbestellt zugesagt`);
   }
 
   

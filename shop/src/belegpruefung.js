@@ -52,7 +52,48 @@ export const ZUSTANDSAUSSAGE = Object.freeze({
   // Sie steht hier trotzdem, weil sie beim Kunden landet und damit unter die
   // zweite Regel fällt — und weil eine Belegart ohne Eintrag gemeldet wird.
   Kundenanfrage: /UNVERBINDLICHE ANFRAGE|keine Bestellung/,
+  // Der Bestelltext geht an den Lieferanten, nicht an den Kunden. Er steht
+  // hier trotzdem: Ein Außentext ist ein Außentext, und die zweite und dritte
+  // Regel gelten für ihn wortgleich. Die Endsumme darauf ist der Einkauf und
+  // keine Forderung an den Empfänger — die Zustandsaussage bezieht sich
+  // deshalb auf den **Termin**, der bestellt sein muss.
+  Lieferantenbestellung: /Gewünschte Lieferzeit:/,
 });
+
+/**
+ * Eine Zeile, die nur aus einer Beschriftung und einem Doppelpunkt besteht.
+ *
+ * **Befund vom 1. September, zweiter Teil.** Der Bestelltext an den
+ * Lieferanten ging ohne Telefonnummer hinaus mit der Zeile
+ * `Ansprechpartner vor Ort:` — leer. Eine leere Angabe liest sich nicht als
+ * Lücke, sondern als **Auskunft**: es gibt keinen. Die Spedition fährt
+ * daraufhin trotzdem, findet eine verschlossene Baustelle, und die Ware geht
+ * auf Kosten des Bestellers retour.
+ *
+ * Nicht jede solche Zeile ist falsch: `Lieferadresse (Baustelle):` ist eine
+ * **Blocküberschrift**, ihr Wert steht eingerückt darunter. Der Unterschied
+ * ist die Einrückung der nächsten Zeile mit Inhalt, und genau daran wird er
+ * festgemacht — nicht an einer Liste erlaubter Beschriftungen, die niemand
+ * pflegt.
+ *
+ * *Berichtigt beim ersten Lauf:* Die erste Fassung sah nur auf die unmittelbar
+ * folgende Zeile und meldete deshalb „…an den unten genannten Endkunden:" —
+ * einen Satz, dessen Aufzählung nach einer Leerzeile beginnt. Leerzeilen
+ * werden jetzt übersprungen. Ein Prüfer, der bei der ersten Leerzeile aufgibt,
+ * meldet die Absatzgestaltung als Fehler.
+ */
+export function leereAngaben(text) {
+  const zeilen = text.split('\n');
+  const treffer = [];
+  for (const [i, zeile] of zeilen.entries()) {
+    const m = /^(\s*)(\S.*?):[ \t]*$/.exec(zeile);
+    if (!m) continue;
+    const naechste = zeilen.slice(i + 1).find((z) => z.trim() !== '') ?? '';
+    const tieferEingerueckt = naechste !== '' && /^\s*/.exec(naechste)[0].length > m[1].length;
+    if (!tieferEingerueckt) treffer.push({ zeile: i + 1, beschriftung: m[2].trim() });
+  }
+  return treffer;
+}
 
 /**
  * Ein einzelner Beleg.
@@ -73,6 +114,14 @@ export function pruefeBeleg({ art, text }) {
     meldungen.push({
       regel: 'betrag-ohne-zustand',
       text: 'Nennt eine Endsumme, sagt aber nicht, ob sie zu zahlen oder bezahlt ist',
+    });
+  }
+
+  for (const l of leereAngaben(text)) {
+    meldungen.push({
+      regel: 'leere-angabe',
+      zeile: l.zeile,
+      text: `„${l.beschriftung}:" steht ohne Wert da — das liest sich als Auskunft, nicht als Lücke`,
     });
   }
 
