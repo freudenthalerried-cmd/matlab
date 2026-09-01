@@ -8,6 +8,7 @@ import {
 const ziel = JSON.parse(readFileSync(new URL('../data/zielgroessen.json', import.meta.url), 'utf8'));
 
 test('Jede Leitzahl rechnet ihren gültigen Wert, statt ihn einzutragen', () => {
+  assert.ok(LEITZAHLEN.length >= 3, `nur ${LEITZAHLEN.length} Leitzahlen im Register`);
   for (const lz of LEITZAHLEN) {
     assert.equal(typeof lz.jetzt, 'function', lz.id);
     const wert = lz.jetzt(ziel);
@@ -17,6 +18,9 @@ test('Jede Leitzahl rechnet ihren gültigen Wert, statt ihn einzutragen', () => 
 });
 
 test('Jeder abgelöste Wert nennt Grund und eigene Bedingung', () => {
+  const abgeloest = LEITZAHLEN.flatMap((lz) => lz.abgeloest);
+  assert.ok(abgeloest.length >= 3, `nur ${abgeloest.length} abgelöste Werte — die Schleife prüfte zu wenig`);
+  assert.ok(LEITZAHLEN.length >= 3, 'zu wenige Leitzahlen');
   for (const lz of LEITZAHLEN) {
     for (const a of lz.abgeloest) {
       assert.ok(a.weil && a.weil.length > 10, `${lz.id}/${a.wert}: der Grund fehlt`);
@@ -31,6 +35,7 @@ test('Die Bedingungen sind eng — eine, die überall gilt, ist keine', () => {
   // 103 Fundstellen. Diese Probe hält fest, dass keine Bedingung auf einen
   // gewöhnlichen Satz der Akte anspricht.
   const harmlos = 'Der Shop führt 46 Artikel und liefert in fünf Bezirke. Stand August, alte Fassung, damals.';
+  assert.ok(LEITZAHLEN.flatMap((lz) => lz.abgeloest).length >= 3, 'zu wenige abgelöste Werte');
   for (const lz of LEITZAHLEN) {
     for (const a of lz.abgeloest) {
       assert.ok(!a.bedingung.test(harmlos), `${lz.id}/${a.wert}: die Bedingung trifft einen harmlosen Satz`);

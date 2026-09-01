@@ -30,6 +30,7 @@
     "pruefe-stand": "node bin/standpruefung.mjs",
     "pruefe-preise": "node bin/preisabgleich.mjs",
     "gegenprobe": "node bin/gegenprobe.mjs",
+    "gegenproben": "node bin/gegenprobenlauf.mjs",
     "pruefe-preisalter": "node bin/preisalterpruefung.mjs",
     "pruefe-schaufenster": "node bin/schaufensterpruefung.mjs",
     "pruefe-leitzahlen": "node bin/leitzahlpruefung.mjs",

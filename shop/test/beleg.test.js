@@ -461,6 +461,7 @@ test('Eine Rechnung mit fehlenden Pflichtangaben wird nicht gestellt', () => {
 const gezahlt = { weg: 'eps', datum: '30.08.2026', kennzeichen: 'AB-0001' };
 
 test('Alle angebotenen Zahlwege sind Vorkasse — sonst stimmt der Vermerk nicht mehr', () => {
+  assert.ok(angeboteneZahlwege().length >= 2, 'zu wenige angebotene Zahlwege — die Schleife prüfte nichts');
   for (const id of angeboteneZahlwege()) {
     assert.equal(zahlwegIstVorkasse(id), true, `${id} müsste Vorkasse sein`);
   }

@@ -6,6 +6,7 @@ import { abbruchschwelle } from '../src/werbewirkung.js';
 const HAUPT = { tagesbudget: 9.99, klickpreis: 1.5, quote: 0.01 };
 
 test('Jede Etappe in brauchtVor gibt es auch', () => {
+  assert.ok(ETAPPEN.length >= 5, `nur ${ETAPPEN.length} Etappen — die Schleife prüfte zu wenig`);
   const ids = new Set(ETAPPEN.map((e) => e.id));
   for (const e of ETAPPEN) {
     for (const v of e.brauchtVor) assert.ok(ids.has(v), `${e.id} braucht „${v}", das es nicht gibt`);
@@ -13,6 +14,7 @@ test('Jede Etappe in brauchtVor gibt es auch', () => {
 });
 
 test('Jede Etappe sagt, woher ihre Dauer kommt', () => {
+  assert.ok(ETAPPEN.length >= 5, 'zu wenige Etappen');
   for (const e of ETAPPEN) {
     assert.ok(['gerechnet', 'gesetzt', 'fremdbestimmt'].includes(e.art), e.id);
     assert.ok(e.woher && e.woher.length > 30, `${e.id}: die Begründung der Dauer fehlt oder ist zu knapp`);
@@ -24,6 +26,7 @@ test('Die gerechnete Etappe trägt keine eigene Zahl', () => {
   // Sonst stünde eine Dauer im Verzeichnis, die von Budget und Klickpreis
   // abhängt — dieselbe Sorte stehengebliebene Zahl wie die 0.35 in
   // veroeffentlichung.mjs.
+  assert.ok(ETAPPEN.length >= 5, 'zu wenige Etappen');
   for (const e of ETAPPEN) {
     if (e.art === 'gerechnet') assert.equal(e.tage, null, e.id);
     else assert.equal(typeof e.tage, 'number', e.id);
@@ -46,6 +49,8 @@ test('Versuch, Warten und Arbeit im Strang ergeben zusammen die Kettenlänge', (
 test('Eine Etappe beginnt nie vor ihrer Vorbedingung', () => {
   const r = rolloutplan(HAUPT);
   const nach = new Map(r.plan.map((e) => [e.id, e]));
+  assert.ok(r.plan.length >= 5, 'zu wenige Etappen im Plan');
+  assert.ok(r.plan.some((e) => e.brauchtVor.length > 0), 'keine einzige Abhängigkeit — die Schleife prüfte nichts');
   for (const e of r.plan) {
     for (const v of e.brauchtVor) {
       assert.ok(e.beginntTag >= nach.get(v).fertigTag, `${e.id} beginnt vor ${v}`);

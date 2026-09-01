@@ -64,6 +64,7 @@ test('Jede Anforderung des Auftrags ist beantwortet und belegt', () => {
   const zuordnung = JSON.parse(readFileSync(fileURLToPath(new URL('../data/auftragszuordnung.json', import.meta.url)), 'utf8'));
   const liste = ergebnisliste(auftrag());
   const e = pruefeErgebnisse(liste, zuordnung, (b) => existsSync(join(REPO, b)));
+  assert.ok(e.befunde.length >= 12, `nur ${e.befunde.length} Befunde — der Auftrag nennt zwölf Ergebnisse`);
 
   const ohneAntwort = e.befunde.filter((b) => b.zustand === 'ohne-zuordnung');
   assert.deepEqual(ohneAntwort.map((b) => b.nr), [], 'diese Anforderungen hat niemand beantwortet');

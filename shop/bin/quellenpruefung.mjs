@@ -62,3 +62,25 @@ console.log(`\n${e.verwendbar ? 'VERWENDBAR' : 'NOCH NICHT VERWENDBAR'} — ${e.
   ? 'jede Aussage trägt ihre Quelle.'
   : 'offene Aussagen gehören belegt oder gestrichen, nicht abgeschwächt.'}`);
 console.log('\nEin Video ist ein Hinweis, keine Fundstelle. Zusammenfassen ja, abschreiben nein.');
+
+/**
+ * **Ergänzt am 1. September.** Hier endete der Lauf ohne Rückgabewert, also
+ * mit 0 — auch mit „NOCH NICHT VERWENDBAR". Der einzige exit(1) oben gilt
+ * einer unlesbaren Datei.
+ *
+ * Gefunden hat es das Gegenprobenregister: Es strich einer Aussage ihre
+ * Quellen, der Prüfer **meldete den Fund vollständig** und endete grün. Damit
+ * stand er in jeder Prüferschleife auf „OK" — der zweite Prüfer an einem Tag
+ * mit demselben Muster, nach `inhaltspruefung.mjs`.
+ *
+ * > **„Noch nicht verwendbar" mit Rückgabewert 0 heißt für jede Maschine:
+ * > verwendbar.**
+ */
+// `--probe` ist der Selbstnachweis über eine absichtlich fehlerhafte Datei.
+// Er soll finden und melden, nicht sperren — sonst kann das Werkzeug seine
+// eigenen Muster nicht mehr vorführen.
+if (!e.verwendbar && !process.argv.includes('--bericht') && !process.argv.includes('--probe')) {
+  console.log('\nUnbelegte Aussagen lassen diesen Lauf rot enden. Mit --bericht nicht.');
+  process.exit(1);
+}
+process.exit(0);

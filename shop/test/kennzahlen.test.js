@@ -7,6 +7,7 @@ const ziel = JSON.parse(readFileSync(new URL('../data/zielgroessen.json', import
 const liste = () => kennzahlen({ ziel });
 
 test('Jede Kennzahl nennt Schwelle, Herkunft und Entscheidung', () => {
+  assert.ok(liste().length >= 8, `nur ${liste().length} Kennzahlen — die Schleife prüfte zu wenig`);
   for (const k of liste()) {
     assert.equal(typeof k.schwelle, 'number', k.id);
     assert.ok(Number.isFinite(k.schwelle), k.id);
@@ -20,6 +21,7 @@ test('Jede Kennzahl nennt Schwelle, Herkunft und Entscheidung', () => {
 test('Was nicht gemessen ist, ist null — nie null Euro', () => {
   // Der ganze Einwand gegen ein leeres Dashboard hängt hieran: Eine Null ist
   // ein Messergebnis, ein Strich ist keines.
+  assert.ok(liste().filter((k) => k.id !== 'freigaben-offen').length >= 8, 'zu wenige Kennzahlen');
   for (const k of liste()) {
     if (k.id === 'freigaben-offen') continue;
     assert.equal(k.ist, null, k.id);
@@ -81,7 +83,9 @@ test('Der Befund zählt Gemessenes und Reißendes getrennt', () => {
 });
 
 test('Jeder Abschnitt trägt mindestens eine Kennzahl', () => {
-  for (const a of kennzahlbefund(liste()).jeAbschnitt) {
+  const abschnitte = kennzahlbefund(liste()).jeAbschnitt;
+  assert.ok(abschnitte.length >= 3, `nur ${abschnitte.length} Abschnitte`);
+  for (const a of abschnitte) {
     assert.ok(a.kennzahlen.length > 0, `${a.id} ist leer — ein Abschnitt ohne Kennzahl ist eine Überschrift`);
   }
 });

@@ -50,11 +50,17 @@ test('Der Lauf zieht die Befunde aus den Werkzeugen', () => {
   const lauf = spawnSync('node', ['bin/offenepunkte.mjs'], { cwd: SHOP, encoding: 'utf8' });
   assert.equal(lauf.status, 0, `${lauf.stdout}${lauf.stderr}`);
 
+  const zustaendigkeiten = Object.values(ZUSTAENDIGKEITEN);
+  assert.ok(zustaendigkeiten.length >= 4, `nur ${zustaendigkeiten.length} Zuständigkeiten`);
   for (const quelle of ['npm run startklar', 'npm run veroeffentlichung', 'von Hand geführt']) {
     assert.ok(lauf.stdout.includes(`[${quelle}]`), `keine Position aus „${quelle}"`);
   }
-  // Und jede Gruppe, die Positionen hat, steht mit ihrem Titel da.
-  for (const z of Object.values(ZUSTAENDIGKEITEN)) {
+  // Und jede Gruppe, die Positionen hat, steht mit ihrem Titel da. Die
+  // `continue`-Zeile darunter macht die Schleife im leeren Fall wirkungslos —
+  // deshalb steht davor die Zusicherung, dass überhaupt Titel vorkommen.
+  const sichtbar = zustaendigkeiten.filter((z) => lauf.stdout.includes(z.titel));
+  assert.ok(sichtbar.length >= 3, `nur ${sichtbar.length} Gruppen in der Ausgabe`);
+  for (const z of zustaendigkeiten) {
     if (!lauf.stdout.includes(z.titel)) continue;
     assert.match(lauf.stdout, new RegExp(`${z.titel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s+\\(\\d+\\)`));
   }

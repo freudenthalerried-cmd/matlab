@@ -205,4 +205,24 @@ for (const datei of dateien) {
 
 console.log(`\n${faelleGesamt} Testfälle geprüft, ${verdaechtig} mit Verdacht.`);
 console.log('Jeder Treffer ist anzusehen, nicht automatisch zu beheben.');
+
+/**
+ * **Ergänzt am 1. September**, aus demselben Grund wie in
+ * `inhaltspruefung.mjs` und `quellenpruefung.mjs`: Hier stand `exit(0)`, auch
+ * mit Funden. Drei Prüfer, dasselbe Muster, an einem Tag entdeckt — und alle
+ * drei aus derselben gut gemeinten Überlegung: Ein Verdacht ist kein Urteil,
+ * also soll er nicht blockieren.
+ *
+ * > **Ein Verdacht, den niemand ansieht, ist ein grünes Licht.** Der Vorbehalt
+ * > gehört in die Ausgabe, nicht in den Rückgabewert.
+ *
+ * Ausgerechnet dieser Prüfer hat elf Schleifen gefunden, die grün liefen und
+ * nichts prüften. Er selbst lief grün und meldete nichts weiter.
+ */
+// `--probe` ist der Selbstnachweis über eine absichtlich fehlerhafte Datei.
+// Er soll finden und melden, nicht sperren.
+if (verdaechtig > 0 && !process.argv.includes('--bericht') && !process.argv.includes('--probe')) {
+  console.log('\nMit Verdacht endet dieser Lauf rot. Mit --bericht nicht.');
+  process.exit(1);
+}
 process.exit(0);

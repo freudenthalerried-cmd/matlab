@@ -8,7 +8,14 @@ const probeOrdner = fileURLToPath(new URL('./probe', import.meta.url));
 
 test('der Prüfer findet in der Probedatei jedes Muster und schweigt beim sauberen Fall', () => {
   const lauf = spawnSync(process.execPath, [pruefer, probeOrdner], { encoding: 'utf8' });
-  assert.equal(lauf.status, 0, lauf.stderr);
+  // **Seit dem 1. September Rückgabewert 1.** Bis dahin endete dieser Prüfer
+  // immer mit 0, auch mit Funden — er stand damit in jeder Prüferschleife auf
+  // „OK", ganz gleich was er meldete. Ein Verdacht, den niemand ansieht, ist
+  // ein grünes Licht. Der Selbstnachweis mit `--probe` bleibt grün, dieser
+  // Lauf über einen Ordner nicht.
+  assert.equal(lauf.status, 1, lauf.stderr);
+  const bericht = spawnSync(process.execPath, [pruefer, probeOrdner, '--bericht'], { encoding: 'utf8' });
+  assert.equal(bericht.status, 0, 'mit --bericht bleibt der alte Weg offen');
   assert.ok(lauf.stdout.includes('7 Testfälle geprüft, 4 mit Verdacht'), lauf.stdout);
   assert.ok(lauf.stdout.includes('behauptet nichts — kein einziges assert'), 'Muster 1 wird gefunden');
   assert.ok(lauf.stdout.includes('stehen in einem if'), 'Muster 2 wird gefunden');

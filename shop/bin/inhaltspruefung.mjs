@@ -236,4 +236,35 @@ for (const { ordner, datei } of dateien) {
 console.log(`\n${dateien.length} Dateien, ${absaetzeGesamt} Absätze geprüft, ${trefferGesamt} mit Verdacht.`);
 console.log('Jeder Treffer ist anzusehen, nicht automatisch zu beheben.');
 console.log('Die Faktenprüfung gegen die Quelle ersetzt dieses Werkzeug nicht.');
+
+/**
+ * **Berichtigt am 1. September.** Hier stand `process.exit(0)` — immer, auch
+ * mit Funden. Entdeckt hat es das neue Gegenprobenregister: Es hängte
+ * „Wir sind garantiert der günstigste Anbieter" an eine Wissensseite, der
+ * Prüfer **fand die Erfolgszusage und meldete sie** — und endete mit
+ * Rückgabewert 0.
+ *
+ * Damit stand er in jeder Prüferschleife auf „OK", ganz gleich was er fand.
+ * Tagelang habe ich diese Schleife als Statusbericht gelesen.
+ *
+ * > **Ein Prüfer, der jeden Fund als Verdacht meldet und immer grün endet,
+ * > ist ein Bericht, keine Wache.**
+ *
+ * Der Vorbehalt war richtig gemeint: Ein Treffer ist ein Verdacht und kein
+ * Urteil, die Faktenprüfung bleibt Handarbeit. Nur folgt daraus nicht
+ * Rückgabewert 0, sondern das Gegenteil — **ein Verdacht, den niemand ansieht,
+ * ist ein grünes Licht.** Wer ihn angesehen hat und ihn für unbegründet hält,
+ * hat zwei ehrliche Wege: den Satz ändern oder die Regel begründen. Beide
+ * hinterlassen etwas; ein stiller Rückgabewert 0 nicht.
+ *
+ * `--bericht` behält das alte Verhalten für den Fall, dass jemand die Liste
+ * nur ansehen will.
+ */
+// `--probe` ist der Selbstnachweis über eine absichtlich fehlerhafte Datei.
+// Er soll finden und melden, nicht sperren — sonst kann das Werkzeug seine
+// eigenen Muster nicht mehr vorführen.
+if (trefferGesamt > 0 && !process.argv.includes('--bericht') && !process.argv.includes('--probe')) {
+  console.log('\nMit Verdacht endet dieser Lauf rot. Mit --bericht nicht.');
+  process.exit(1);
+}
 process.exit(0);
