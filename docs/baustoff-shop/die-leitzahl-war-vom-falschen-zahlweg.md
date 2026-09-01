@@ -91,7 +91,7 @@ von vorgestern, und das gehört danebengeschrieben statt wegradiert.
 
 ## Was das über die Prüfer sagt
 
-Elf Prüfer, dreizehn seit heute, über tausend Testfälle. Und die eine Zahl, an
+Zwölf Prüfer, über tausend Testfälle. Und die eine Zahl, an
 der das ganze Vorhaben hängt, stand vier Tage lang ungemessen in dem Dokument,
 das der Auftraggeber zuerst liest.
 
