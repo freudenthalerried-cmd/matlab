@@ -13,10 +13,10 @@
  * Modells.
  *
  * Zwei Dinge sind dabei zu beachten. Erstens ist die Wirkung **nicht linear**:
- * Die Rohmarge steht im Nenner, ihre Elastizität wächst, je näher man der
- * Untergrenze aus Gate 1 kommt. Zweitens gibt es einen Punkt, an dem das Modell
- * gar nicht mehr trägt — Werbung und Gebühren fressen die Rohmarge auf. Beides
- * wird ausgewiesen statt geglättet.
+ * Die Rohmarge steht im Nenner, ihre Elastizität wächst, je weiter sie fällt.
+ * Zweitens gibt es einen Punkt, an dem das Modell gar nicht mehr trägt —
+ * Werbung und Gebühren fressen die Rohmarge auf. Beides wird ausgewiesen statt
+ * geglättet.
  */
 
 import { noetigerUmsatz } from './kostenbild.js';
@@ -32,17 +32,35 @@ export const ANNAHMEN = [
   {
     id: 'rohmarge',
     name: 'Rohmarge',
-    basis: 0.35,
-    untergrenze: 0.32,
+    // **Berichtigt am 01.09.** Hier stand 0,35 mit „Gate 1 setzt die
+    // Untergrenze bei 32 %". Beides gehört zum Radonmodell mit
+    // Herstellerkonditionen, das der Auftraggeber am 22. August verlassen hat;
+    // Gate 1 ist seither gegenstandslos (PARAMETER.md). Eine Annahmenliste,
+    // die eine überholte Annahme führt, misst die Empfindlichkeit des
+    // falschen Plans — und zwar zu günstig: 35 % statt 25 % ist ein Drittel
+    // mehr Luft, als es gibt.
+    basis: 0.25,
+    // **Keine eigene Grenze mehr.** An die Stelle von Gate 1 tritt Gate 20:
+    // keine Bestellung ohne positiven Deckungsbeitrag. Das ist keine
+    // Prozentschwelle, sondern genau der Punkt, an dem `noetigerUmsatz`
+    // ohnehin `tragfaehig: false` meldet und die Elastizität ihn als
+    // `traegtNicht` ausweist. Eine zweite Schwelle daneben wäre ein zweiter
+    // Weg zur selben Aussage.
+    grenze: null,
     schlechterIst: 'kleiner',
-    konfidenz: 'unbelegt',
-    herkunft: 'phase3-unit-economics.md; Gate 1 setzt die Untergrenze bei 32 %',
-    klaertDurch: 'Die dreizehn Anfragen (zwölf Hersteller, ein Großhändler) — kostenlos, freigabepflichtig',
+    konfidenz: 'Weisung des Auftraggebers vom 25.08.',
+    herkunft: 'PARAMETER.md und marge-25-prozent.md; deckungsgleich mit ZIELMARGE in baustoffkatalog.js',
+    klaertDurch: 'Ist entschieden. Was offen bleibt, ist die Einkaufsseite — der Preisrhythmus des Lieferanten',
   },
   {
     id: 'werbeanteil',
     name: 'Werbekostenanteil',
     basis: 0.10,
+    // Die dokumentierte Tragfähigkeitsgrenze des laufenden Modells: Ab 23 %
+    // Werbeanteil bleibt bei 25 % Rohmarge praktisch nichts mehr übrig
+    // (marge-25-prozent.md: „24 % — rechnerisch unmöglich"). Die Grenze
+    // gehört zu **dieser** Annahme, seit die der Rohmarge weggefallen ist.
+    grenze: 0.23,
     schlechterIst: 'groesser',
     konfidenz: 'Annahme',
     herkunft: 'phase3-unit-economics.md, realistisches Szenario',
@@ -54,8 +72,10 @@ export const ANNAHMEN = [
     basis: 0.02,
     schlechterIst: 'kleiner',
     konfidenz: 'Annahme',
-    herkunft: 'phase3-unit-economics.md; im erklärungsbedürftigen B2B eher optimistisch',
-    klaertDurch: 'Erst der laufende Betrieb — kein Werkzeug misst sie vorab',
+    herkunft: 'phase3-unit-economics.md; im erklärungsbedürftigen B2B eher optimistisch. '
+      + 'DIESELBE GRÖSSE wie die Kaufquote der Kampagne (bin/kampagne.mjs) — zwei Namen für eine Zahl',
+    klaertDurch: 'Erst der laufende Betrieb. Ab wann ein Ausbleiben von Bestellungen sie ausschließt, '
+      + 'rechnet src/werbewirkung.js: 299 Klicks für 1 %, 598 für 0,5 %',
   },
   {
     id: 'warenkorbNetto',
@@ -107,16 +127,25 @@ export function elastizitaet(lage, annahmeId, zahlwegId, umAnteil = 0.10) {
   const geprueft = verschlechtere(lage, annahmeId, umAnteil);
   const schlechter = sessionbedarf(geprueft, zahlwegId);
 
-  // `untergrenze` stand seit der ersten Fassung in den ANNAHMEN — gelesen hat
-  // es niemand. Die Folge war inhaltlich: Für die Rohmarge bei −10 % (31,5 %)
-  // wurde brav ein Besucherbedarf ausgewiesen, obwohl Gate 1 diesen
-  // Betriebspunkt verbietet. Die Nische fiele dort, bevor die Besucherzahl
-  // irgendetwas bedeutet — das gehört in die Ausgabe, nicht ins Wissen des
-  // Lesers.
-  const unterUntergrenze = a.untergrenze != null && geprueft[annahmeId] < a.untergrenze - 1e-12;
-  const gateHinweis = unterUntergrenze
-    ? { unterUntergrenze: true, untergrenze: a.untergrenze, hinweisGate: 'Der geprüfte Wert liegt unter der Untergrenze aus Gate 1 — die Nische fiele dort, bevor der Besucherbedarf relevant wird' }
-    : { unterUntergrenze: false };
+  // **Berichtigt am 01.09.** Der Vergleich war fest auf „kleiner als" gestellt
+  // und hieß `untergrenze` — richtig für die Rohmarge, deren Grenze aus Gate 1
+  // stammte. Gate 1 ist seit dem 22.08. gegenstandslos; die Grenze, die es im
+  // laufenden Modell gibt, gehört zum **Werbekostenanteil**, und der wird
+  // schlechter, wenn er *steigt*. Ein fest auf „kleiner" gestellter Vergleich
+  // hätte sie nie ausgelöst — eine Wache, die in die falsche Richtung sieht.
+  const grenze = a.grenze ?? null;
+  const wert = geprueft[annahmeId];
+  const grenzeGerissen = grenze != null && (a.schlechterIst === 'kleiner'
+    ? wert < grenze - 1e-12
+    : wert > grenze + 1e-12);
+  const gateHinweis = grenzeGerissen
+    ? {
+      grenzeGerissen: true,
+      grenze,
+      hinweisGrenze: `Der geprüfte Wert ${wert} reißt die dokumentierte Grenze von ${grenze} — `
+        + 'dahinter trägt das Modell nicht mehr, unabhängig von der Besucherzahl',
+    }
+    : { grenzeGerissen: false };
 
   if (schlechter === null) {
     return {
@@ -160,22 +189,24 @@ export function rangfolge(lage, zahlwegId, umAnteil = 0.10) {
  * steigt der Besucherbedarf nur immer weiter.
  */
 export function kipppunkt(lage, annahmeId, zahlwegId, schritt = 0.01, maxAnteil = 0.9) {
-  // Wo Gate 1 fällt, steht fest, bevor irgendetwas gerechnet wird: bei einer
-  // Annahme mit Untergrenze ist es der Anteil, ab dem der Wert sie reißt.
-  // Für die Rohmarge (Basis 35 %, Untergrenze 32 %) sind das ~8,6 % — deutlich
-  // vor dem rechnerischen Kipppunkt des Modells. Beides gehört nebeneinander.
+  // Wo die dokumentierte Grenze fällt, steht fest, bevor irgendetwas gerechnet
+  // wird: der Anteil, ab dem der Wert sie reißt — in der Richtung, in der die
+  // Annahme schlechter wird. Beim Werbekostenanteil (Basis 10 %, Grenze 23 %)
+  // sind das +130 %; er müsste sich also mehr als verdoppeln.
   const a = findeAnnahme(annahmeId);
   const alt = lage[annahmeId];
-  const untergrenzeBeiAnteil =
-    a.untergrenze != null && a.schlechterIst === 'kleiner' && typeof alt === 'number' && alt > a.untergrenze
-      ? Math.round((1 - a.untergrenze / alt) * 1000) / 1000
-      : null;
+  const grenze = a.grenze ?? null;
+  const richtungPasst = grenze != null && typeof alt === 'number'
+    && (a.schlechterIst === 'kleiner' ? alt > grenze : alt < grenze);
+  const grenzeBeiAnteil = richtungPasst
+    ? Math.round(Math.abs(1 - grenze / alt) * 1000) / 1000
+    : null;
 
   for (let anteil = schritt; anteil <= maxAnteil + 1e-9; anteil += schritt) {
     const geprueft = verschlechtere(lage, annahmeId, anteil);
     if (sessionbedarf(geprueft, zahlwegId) === null) {
-      return { kippt: true, beiAnteil: Math.round(anteil * 1000) / 1000, wert: geprueft[annahmeId], untergrenzeBeiAnteil };
+      return { kippt: true, beiAnteil: Math.round(anteil * 1000) / 1000, wert: geprueft[annahmeId], grenzeBeiAnteil };
     }
   }
-  return { kippt: false, geprueftBis: maxAnteil, untergrenzeBeiAnteil };
+  return { kippt: false, geprueftBis: maxAnteil, grenzeBeiAnteil };
 }
