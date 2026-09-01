@@ -1,5 +1,17 @@
 # Der Weg zum ersten Verkauf — über Shop und Werbung
 
+> **ÜBERHOLT am 01.09.2026.** Die Kette der sieben Glieder weiter unten ist
+> einen Tag später nicht mehr der Stand: Domain und Hosting sind entschieden
+> (bauversand.com bei All-Inkl), und drei Punkte sind dazugekommen, die dieses
+> Dokument nicht kennt — Marke und Produktbild im Feed sowie der Preisrhythmus
+> des Lieferanten. Die Höchstgebote haben sich verschoben (Kamin 8,22 € statt
+> 8,79 €).
+>
+> **Die aktuelle Aufzählung kommt aus `npm run offenepunkte`**, die aktuelle
+> Begründung aus `weg-zum-ersten-verkauf-nachgerechnet.md`. Dieses Dokument
+> bleibt als Stand vom 31. August stehen — es zu überschreiben hieße, die
+> Akte glattzuziehen.
+
 **31. August 2026.** Weisung des Auftraggebers: *Ziel ist der erste Verkauf
 mit 25 % Marge, und er soll über den Shop und über Werbung zustande kommen* —
 nicht über einen Anruf.

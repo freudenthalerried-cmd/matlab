@@ -1,0 +1,66 @@
+{
+  "_hinweis": "Zuordnung der zwoelf Ergebnisse aus master-prompt.md zu dem, was tatsaechlich im Verzeichnis liegt. Geprueft mit `npm run pruefe-auftrag`. Die Anforderungen werden aus dem Auftrag GELESEN, nicht hier abgeschrieben — diese Datei antwortet nur.",
+  "_zustaende": "erfuellt = es gibt es unter dem verlangten Namen und in der verlangten Sache. anders = die Sache gibt es unter anderem Namen oder in anderer Form. offen = es gibt sie nicht. Jede Antwort braucht eine Begruendung und Belege, die existieren.",
+  "_stand": "2026-09-01. Erste Aufstellung ueberhaupt: Bis heute hat niemand geprueft, ob das Gelieferte dem Bestellten entspricht.",
+
+  "1": {
+    "zustand": "anders",
+    "belege": ["docs/baustoff-shop/README.md", "docs/baustoff-shop/STATUS.md"],
+    "begruendung": "Der Name stimmt, die Sache nur halb. README.md ist die Denkgrundlage vom Projektbeginn und traegt selbst den Vermerk 'teilweise ueberholt' — dort steht die Margenschwelle 32 %, die seit dem 22.08. gegenstandslos ist (Gate 1). Eine Zusammenfassung mit Empfehlung und den DREI GROESSTEN RISIKEN steht darin nicht; der laufende Stand steht in STATUS.md und in der PR-Beschreibung. Offen bleibt die ausdrueckliche Risikoliste."
+  },
+  "2": {
+    "zustand": "anders",
+    "belege": ["docs/baustoff-shop/empfindlichkeit-der-annahmen.md", "shop/src/empfindlichkeit.js", "shop/data/zielgroessen.json", "docs/baustoff-shop/PARAMETER.md"],
+    "begruendung": "Statt einer Datei ANNAHMEN.md fuehren ANNAHMEN in empfindlichkeit.js jede Annahme mit Basis, Herkunft, Konfidenz und Klaerungsweg — und rechnen zusaetzlich ihre Elastizitaet. zielgroessen.json traegt je Zahl eine Herkunftsnotiz. Das ist mehr als die Anforderung verlangt, aber unter anderem Namen."
+  },
+  "3": {
+    "zustand": "anders",
+    "belege": ["docs/baustoff-shop/phase1-nischen.md"],
+    "begruendung": "Die Bewertungsmatrix steht als Tabelle im Phasendokument, nicht als Tabellenkalkulation. Seit dem 22.08. ist sie ausserdem historisch: Der Auftraggeber hat die Nische gewechselt. Eine xlsx-Datei existiert nirgends im Verzeichnis."
+  },
+  "4": {
+    "zustand": "offen",
+    "belege": ["docs/baustoff-shop/phase1-nischen.md"],
+    "begruendung": "Rohdaten von WETTBEWERBSPREISEN gibt es nicht. Was es gibt, sind die eigenen Einkaufspreise aus fuenfzehn Lieferantenrechnungen und die Listenpreise desselben Lieferanten — der Abstand dazu ist gemessen (39 von 46 darunter, Median 26,7 %). Ein Vergleich mit anderen Anbietern wurde nie erhoben; die Herstellerseiten sind aus dieser Umgebung gesperrt."
+  },
+  "5": {
+    "zustand": "anders",
+    "belege": ["docs/baustoff-shop/phase3-unit-economics.md", "docs/baustoff-shop/marge-25-prozent.md", "shop/src/kostenbild.js", "shop/src/empfindlichkeit.js"],
+    "begruendung": "Zahlenmodell mit Szenarien und Sensitivitaet — vorhanden, aber als lauffaehiger Code statt als Tabelle: kostenbild.js rechnet die Kaskade und ihre Umkehrung, empfindlichkeit.js Elastizitaeten und Kipppunkte, npm run empfindlichkeit gibt beides aus."
+  },
+  "6": {
+    "zustand": "anders",
+    "belege": ["docs/baustoff-shop/phase2-lieferantenlandkarte.md", "shop/data/lieferanten.json"],
+    "begruendung": "Bewertung im Phasendokument, Konditionen in lieferanten.json mit Frachtmodell, Sperrgutzuschlag und Belegstand. Kein Tabellenblatt. Die Bewertung ist Schreibtischstand — es wurde bewusst kein Lieferant kontaktiert (freigabepflichtig)."
+  },
+  "7": {
+    "zustand": "offen",
+    "belege": [],
+    "begruendung": "Eine bankfaehige Fassung existiert nicht, in keiner Form. Sie waere auch verfrueht: Ein Businessplan behauptet eine Planung, und die tragende Annahme dieses Modells — die Kaufquote — ist bis heute nicht gemessen. Zu entscheiden, sobald der erste Verkauf die Quote liefert."
+  },
+  "8": {
+    "zustand": "anders",
+    "belege": ["docs/baustoff-shop/phase8-compliance.md", "docs/baustoff-shop/phase8-rechtsform-steuer.md", "shop/src/rechtstexte.js", "docs/baustoff-shop/gate-register.md"],
+    "begruendung": "Rechtsthemen mit Fundstellen: im Phasendokument und in rechtstexte.js, wo IMPRESSUMSFELDER auf § 5 ECG und § 14 UGB verweisen und die Luecken maschinenpruefbar sind. Freigabebedarf steht im Gate-Register und in npm run offenepunkte."
+  },
+  "9": {
+    "zustand": "anders",
+    "belege": ["docs/baustoff-shop/phase6-automatisierung.md", "shop/src/auftragslauf.js", "shop/src/kontrolle.js"],
+    "begruendung": "Architektur und Strecken im Phasendokument, Fehlerfaelle und Eskalation im Code: auftragslauf.js fuehrt den Vorgang, kontrolle.js prueft jeden Beleg gegen die Rechnung, darfBestaetigtWerden verweigert die Bestaetigung bei unbekannter Lieferzeit."
+  },
+  "10": {
+    "zustand": "anders",
+    "belege": ["docs/baustoff-shop/phase7-inhalte-und-funnel.md", "docs/baustoff-shop/weg-zum-ersten-verkauf-nachgerechnet.md", "shop/bin/kampagne.mjs", "shop/src/werbewirkung.js", "shop/src/suchbedarf.js"],
+    "begruendung": "Kanaele, Budget und Kennzahlen — vorhanden, aber fuer den ersten Anlauf statt fuer zwoelf Monate. Eine Zwoelfmonatsplanung ohne gemessene Kaufquote waere eine Hochrechnung auf eine Annahme; werbewirkung.js sagt stattdessen, ab wann die Annahme ueberpruefbar ist."
+  },
+  "11": {
+    "zustand": "offen",
+    "belege": [],
+    "begruendung": "Ein KPI-Dashboard gibt es nicht. Es waere heute auch leer: Der Shop hat keine Bestellung, keinen Klick und keinen Besucher gesehen. Ein Dashboard ohne Daten ist ein Rahmen, der Betrieb vortaeuscht. Sinnvoll ab dem ersten geschalteten Anlauf."
+  },
+  "12": {
+    "zustand": "offen",
+    "belege": ["docs/baustoff-shop/weg-zum-ersten-verkauf-nachgerechnet.md", "shop/src/werbewirkung.js"],
+    "begruendung": "Ein Wochenplan ueber 90 Tage existiert nicht. Vorhanden ist der Teil, der ihn traegt: die Reihenfolge der offenen Punkte und die vorab festgelegten Abbruchkriterien (299 Klicks schliessen 1 % aus, 598 Klicks 0,5 %). Was fehlt, ist die Zeitachse — und sie liesse sich heute nicht ehrlich schreiben, weil sie am Datum des ersten Uploads haengt, das der Auftraggeber setzt."
+  }
+}

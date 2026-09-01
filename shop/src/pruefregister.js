@@ -87,6 +87,13 @@ export const PRUEFER = [
     mindestens: 40,
   },
   {
+    name: 'pruefe-auftrag',
+    werkzeug: 'auftragspruefung.mjs',
+    muster: /Auftragsabgleich — (\d+) Ergebnisse/,
+    einheit: 'Ergebnisse des Ursprungsauftrags',
+    mindestens: 8,
+  },
+  {
     name: 'pruefe-schaufenster',
     werkzeug: 'schaufensterpruefung.mjs',
     muster: /Schaufensterabgleich: (\d+) Kennzahlen/,
