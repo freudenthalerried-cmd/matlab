@@ -2236,7 +2236,16 @@ function pruefeAnfrageAufGeheimnis(text, artikelMitEk = []) {
       var hinweis = el('p', 'antwort');
       hinweis.appendChild(el('strong', null, 'Die Fracht fällt je Lieferung an, ohne Frei-Haus-Schwelle. '));
       hinweis.appendChild(document.createTextNode(
-        'Das steht auf jedem unserer Lieferantenbelege, auch auf den großen. '
+        
+        
+        
+        
+        
+        
+        
+        
+        'Der zugestellte Beleg über 1.934 € netto trägt dieselbe Pauschale wie der über 614 € — '
+        + 'die Fracht hängt an der Fahrt, nicht am Warenwert. '
         + 'Deshalb weisen wir sie getrennt aus, statt sie in die Preise zu rechnen.'));
       z.appendChild(hinweis);
 

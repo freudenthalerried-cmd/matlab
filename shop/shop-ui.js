@@ -512,7 +512,16 @@
       var hinweis = el('p', 'antwort');
       hinweis.appendChild(el('strong', null, 'Die Fracht fällt je Lieferung an, ohne Frei-Haus-Schwelle. '));
       hinweis.appendChild(document.createTextNode(
-        'Das steht auf jedem unserer Lieferantenbelege, auch auf den großen. '
+        // **Berichtigt am 01.09.** Hier stand: „Das steht auf jedem unserer
+        // Lieferantenbelege, auch auf den großen." Diese Aussage ist am
+        // 27. August zurückgenommen worden — Fracht steht auf drei von
+        // fünfzehn Rechnungen, elf lauten „Abholung Kunde". Der Satz hat
+        // sechs Tage länger überlebt als in den übrigen Texten, weil diese
+        // Datei im Wurzelverzeichnis liegt und durch alle vier Bestände des
+        // Widerrufsprüfers fiel. Ausgerechnet die Datei, die im Browser des
+        // Kunden läuft.
+        'Der zugestellte Beleg über 1.934 € netto trägt dieselbe Pauschale wie der über 614 € — '
+        + 'die Fracht hängt an der Fahrt, nicht am Warenwert. '
         + 'Deshalb weisen wir sie getrennt aus, statt sie in die Preise zu rechnen.'));
       z.appendChild(hinweis);
 

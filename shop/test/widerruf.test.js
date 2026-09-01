@@ -224,3 +224,45 @@ test('Die gemeldete Dateizahl entspricht dem abgezählten Bestand', () => {
     `das Werkzeug meldet ${treffer[1]} Dateien, abgezählt sind es ${erwartet}`);
   assert.equal(lauf.status, 0, `der Prüfer meldet etwas:\n${lauf.stdout}`);
 });
+
+/**
+ * **Der Fund vom 01.09.:** `shop/shop-ui.js` liegt im Wurzelverzeichnis des
+ * Shops und fiel durch alle vier Bestände — ausgerechnet die Datei, die im
+ * Browser des Kunden läuft. Im Warenkorb stand dort seit dem 27. August der
+ * zurückgenommene Satz über die Fracht auf jedem Beleg.
+ *
+ * Und selbst nach der Aufnahme meldete der Prüfer nichts: Das Muster kannte
+ * nur die Formulierung „auf jedem **Beleg**", die Oberfläche sagte „auf jedem
+ * unserer **Lieferantenbelege**".
+ */
+test('Die Oberfläche gehört zum Bestand, und das Muster kennt die Aussage', async () => {
+  const wurzel = fileURLToPath(new URL('../../', import.meta.url));
+  const lies = (ordner) => readdirSync(join(wurzel, ordner), { withFileTypes: true })
+    .map((e) => ({ name: e.name, verzeichnis: e.isDirectory() }));
+  const dateien = bestandsdateien(lies);
+
+  assert.ok(dateien.includes('shop/shop-ui.js'),
+    'die Oberfläche steht nicht im Bestand — sie läuft im Browser des Kunden');
+  // Und der Wurzelbestand bleibt flach: node_modules und ausgabe gehören nicht
+  // dazu, sonst misst der Prüfer fremden Code.
+  assert.ok(!dateien.some((d) => d.includes('node_modules')), 'node_modules ist im Bestand');
+  assert.ok(!dateien.some((d) => d.startsWith('shop/ausgabe/')), 'das Erzeugnis ist im Bestand');
+
+  // Das Muster muss die **Aussage** finden, nicht eine Schreibweise.
+  const fracht = WIDERRUFE.find((w) => w.id === 'fracht-auf-jedem-beleg');
+  assert.ok(fracht, 'der Widerruf zur Fracht fehlt im Register');
+  for (const satz of [
+    'Das steht auf jedem unserer Lieferantenbelege, auch auf den großen.',
+    'Die Frachtpauschale steht auf jedem Beleg.',
+    'Sie steht auf allen fünfzehn Rechnungen.',
+    'Der Betrag steht auf jeder Rechnung.',
+  ]) {
+    const muster = new RegExp(fracht.muster.source, fracht.muster.flags.replace('g', ''));
+    assert.match(satz, muster, `nicht gefunden: „${satz}"`);
+  }
+  // Was die Aussage nicht ist, bleibt unbehelligt.
+  for (const satz of ['Die Artikelnummer finden Sie oben rechts.', 'Auf jeden Fall geliefert.']) {
+    const muster = new RegExp(fracht.muster.source, fracht.muster.flags.replace('g', ''));
+    assert.doesNotMatch(satz, muster, `falscher Treffer: „${satz}"`);
+  }
+});

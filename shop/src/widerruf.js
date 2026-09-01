@@ -134,7 +134,19 @@ export const WIDERRUFE = Object.freeze([
     statt: 'Fracht steht auf drei von fünfzehn Rechnungen. Elf lauten „Abholung Kunde", eine „Retour durch Kunde" — der Auftraggeber holt meistens selbst am Lager Mauthausen ab.',
     widerrufenAm: '2026-08-27',
     belegt: 'fracht-nur-bei-zustellung.md',
-    muster: /Frachtpauschale[\s\S]{0,60}auf jedem Beleg|auf jedem Beleg[\s\S]{0,60}Frachtpauschale|Befund aus allen f(?:ue|ü)nfzehn Rechnungen/g,
+    // **Erweitert am 01.09.** Das alte Muster verlangte das Wort
+    // „Frachtpauschale" in der Nähe von „auf jedem Beleg". Im Warenkorb stand
+    // seit dem 27. August: „Das steht auf jedem unserer **Lieferantenbelege**,
+    // auch auf den großen." Dieselbe zurückgenommene Aussage, andere Worte —
+    // und deshalb ungefunden, obwohl der Satz jedem Kunden angezeigt wurde,
+    // der etwas in den Warenkorb legte.
+    //
+    // **Ein Muster, das eine Formulierung kennt, prüft die Formulierung und
+    // nicht die Aussage.** Gesucht wird jetzt die Behauptung selbst: Fracht
+    // auf jedem/allen Beleg(en) oder jeder Rechnung, mit oder ohne Zusatz.
+    // Ein Treffer bleibt ein Verdacht und gehört angesehen — genau dafür ist
+    // dieses Werkzeug da.
+    muster: /auf jede[mnr]\s+(?:\S+\s+){0,2}?(?:Lieferanten)?[Bb]eleg\w*|auf allen (?:\S+\s+){0,2}?(?:Lieferanten)?[Bb]elegen|auf jeder Rechnung|(?:Befund aus )?allen f(?:ue|ü)nfzehn Rechnungen/g,
     merkmal: /drei von f(?:ue|ü)nfzehn|Abholung Kunde|fracht-nur-bei-zustellung|BERICHTIGT|Berichtigt/i,
     beispiel: 'Die Frachtpauschale steht auf jedem Beleg, auch auf dem über 1.934 Euro.',
   },
@@ -268,6 +280,20 @@ export const BESTAENDE = Object.freeze([
   Object.freeze({ ordner: ['shop', 'inhalte'], endung: '.md', was: 'Shoptexte' }),
   Object.freeze({ ordner: ['shop', 'bin'], endung: '.mjs', was: 'Werkzeuge' }),
   Object.freeze({ ordner: ['shop', 'src'], endung: '.js', was: 'Rechenkern' }),
+  // **Aufgenommen am 01.09.** `shop-ui.js` liegt im Wurzelverzeichnis des
+  // Shops, nicht in `src/` — und fiel deshalb durch alle vier Bestände.
+  // Gefunden hat es niemand, sondern ein Durchlesen der Oberfläche: Im
+  // Warenkorb stand seit dem 27. August der zurückgenommene Satz „Das steht
+  // auf jedem unserer Lieferantenbelege, auch auf den großen."
+  //
+  // Ausgerechnet die Datei, die im Browser des Kunden läuft. Am 31. August
+  // habe ich den Bestand von der Akte auf den Shop ausgeweitet und dabei
+  // dieselbe Lücke wieder gelassen — eine Ebene kleiner.
+  //
+  // Der Bestand liest deshalb jetzt auch die Dateien **im Wurzelverzeichnis**
+  // des Shops. `tief: false` heißt: nur diese Ebene, keine Unterordner —
+  // `node_modules` und `ausgabe` haben hier nichts zu suchen.
+  Object.freeze({ ordner: ['shop'], endung: '.js', was: 'Oberfläche', tief: false }),
 ]);
 
 /**
@@ -289,13 +315,13 @@ export const AUSGENOMMEN = Object.freeze([['shop', 'src', 'widerruf.js']]);
 export function bestandsdateien(lies, bestaende = BESTAENDE, ausgenommen = AUSGENOMMEN) {
   const gesperrt = new Set(ausgenommen.map((t) => t.join('/')));
   const treffer = [];
-  const gehe = (teile, endung) => {
+  const gehe = (teile, endung, tief) => {
     for (const eintrag of lies(teile.join('/'))) {
       const pfad = [...teile, eintrag.name];
-      if (eintrag.verzeichnis) gehe(pfad, endung);
-      else if (eintrag.name.endsWith(endung) && !gesperrt.has(pfad.join('/'))) treffer.push(pfad.join('/'));
+      if (eintrag.verzeichnis) { if (tief) gehe(pfad, endung, tief); continue; }
+      if (eintrag.name.endsWith(endung) && !gesperrt.has(pfad.join('/'))) treffer.push(pfad.join('/'));
     }
   };
-  for (const b of bestaende) gehe([...b.ordner], b.endung);
+  for (const b of bestaende) gehe([...b.ordner], b.endung, b.tief !== false);
   return treffer.sort((a, b) => a.localeCompare(b));
 }

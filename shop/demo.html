@@ -1727,8 +1727,39 @@ const GEWICHT = Object.freeze({ artikel: 3, gruppe: 2, system: 2, wissen: 1 });
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const ABSICHTSWOERTER = Object.freeze([
+  'kaufen', 'bestellen', 'preis', 'preise', 'kosten', 'guenstig', 'billig', 'online', 'shop',
+]);
+
+const ABSICHTSSTAEMME = new Set(ABSICHTSWOERTER.map((w) => stamm(normalisiere(w))));
+
 function suche(index, frage, { grenze = 40 } = {}) {
-  const woerter = wortstaemme(frage);
+  const alle = wortstaemme(frage);
+  
+  
+  const woerter = alle.filter((w) => !ABSICHTSSTAEMME.has(w));
   if (!woerter.length) return [];
 
   const treffer = [];
