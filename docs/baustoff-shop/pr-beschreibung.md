@@ -108,6 +108,7 @@ Die fünf Rechtsseiten sind ein **Gerüst mit sichtbaren Lücken**, kein fertige
 | Anzeigentext | sechs von sechs Anzeigengruppen warben mit **Paletten**; kein einziger Artikel wird palettenweise verkauft |
 | Preisbasis | nie gemessen: ältester Einkaufspreis 132 Tage, Median 50 — ein alter Einstand ist die Marge von gestern, ausgewiesen als die von heute |
 | Prüfer der Prüfer | meldete „8 Prüfer befragt", während neun liefen — ein vollständiges Ergebnis über eine unvollständige Liste |
+| Kundenbeleg | die Rechnung nannte **1.638,48 € Gesamtbetrag** und schwieg darüber, ob das Geld noch zu zahlen ist — bei Zahlungsziel null Tage und Vorkasse auf allen Wegen. Kein Prüfer las je einen **fertigen** Beleg |
 | Diese Beschreibung | an neun Stellen überholt: 616 Testfälle statt über 1.000, 77 Seiten statt 81, 23 Gates statt 24 |
 
 Der gemeinsame Nenner: **eine Angabe, die berechnet und dann verschwiegen wird.** Immer meldet sich etwas *nicht*, und immer sieht das Ergebnis besser aus als es ist.
