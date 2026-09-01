@@ -135,7 +135,11 @@ test('Ein liefernder Lieferant ohne Lieferzeit hält den Shop auf', () => {
   assert.equal(punkt.zustand, 'offen');
   assert.match(punkt.befund, /Lieferant Eins/);
   assert.match(punkt.befund, /Auftragsbestätigung/);
-  assert.equal(punkt.wer, 'Auftraggeber');
+  // **Berichtigt am 01.09.:** „Auftraggeber (Anfrage)" statt „Auftraggeber".
+  // Die Impressumsangaben liegen ihm vor, die Lieferzeit muss er beim
+  // Lieferanten erfragen — und eine Anfrage an Dritte ist freigabepflichtig.
+  // Die Aufstellung der offenen Punkte gruppiert danach.
+  assert.equal(punkt.wer, 'Auftraggeber (Anfrage)');
 });
 
 test('Ein Lieferant ohne geführte Ware blockiert nichts', () => {

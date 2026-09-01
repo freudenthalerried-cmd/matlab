@@ -33,6 +33,7 @@
     "pruefe-schaufenster": "node bin/schaufensterpruefung.mjs",
     "werbeprobe": "node bin/werbeprobe.mjs",
     "messliste": "node bin/messliste.mjs",
-    "empfindlichkeit": "node bin/empfindlichkeitspruefung.mjs"
+    "empfindlichkeit": "node bin/empfindlichkeitspruefung.mjs",
+    "offenepunkte": "node bin/offenepunkte.mjs"
   }
 }

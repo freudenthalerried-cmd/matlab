@@ -112,7 +112,13 @@ export function startklar(lage = {}) {
         ? `alle ${gefuehrt.size} liefernden Lieferanten mit Lieferzeit`
         : `${ohneLieferzeit.length} ohne Lieferzeit: ${ohneLieferzeit.map((l) => l.name ?? l.id).join(', ')}`
           + ' — ohne sie darf keine Auftragsbestätigung hinaus',
-    'Auftraggeber');
+    // **Berichtigt am 01.09.** Hier stand „Auftraggeber", wie beim Impressum.
+    // Das trifft es nicht: Die Impressumsangaben **liegen** ihm vor, die
+    // Lieferzeit muss er beim Lieferanten **erfragen**. Für die Aufstellung
+    // der offenen Punkte ist das der Unterschied zwischen „eintragen" und
+    // „eine Anfrage stellen, die freigabepflichtig ist" — und damit zwischen
+    // fünf Minuten und einem Anruf, den jemand führen muss.
+    'Auftraggeber (Anfrage)');
 
   p('zahlungsanbieter', 'Zahlungsanbieter gewählt und angebunden',
     zahlungsanbieter ? 'erfuellt' : 'offen',
