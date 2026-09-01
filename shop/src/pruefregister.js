@@ -47,6 +47,16 @@ export const PRUEFER = [
     mindestens: 90,
   },
   {
+    // Drei Leitzahlen, 274 Dateien. `mindestens: 3`, damit ein leeres Register
+    // auffällt — ein Prüfer ohne Einträge meldet „keine Meldung" und meint
+    // „nichts im Register".
+    name: 'pruefe-leitzahlen',
+    werkzeug: 'leitzahlpruefung.mjs',
+    muster: /Leitzahlen — (\d+) im Register/,
+    einheit: 'Leitzahlen',
+    mindestens: 3,
+  },
+  {
     // Fünf Außentexte, ein Durchlauf. `mindestens: 5`, damit ein stillgelegter
     // Beleg auffällt: Der Prüfer, dem sein Prüfobjekt abhandenkommt, meldet
     // sonst „keine Meldung" und meint „nichts angesehen".

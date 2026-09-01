@@ -213,6 +213,10 @@ wichtigsten Änderungen:
 | Bestellungen im Monat | 112 | **70** |
 | Tragfähigkeitsgrenze Werbeanteil | 18 % | **23 %** |
 
+*Beide Umsatzspalten bei **Kartenzahlung**. Mit dem am 27.08. entschiedenen
+Zahlweg EPS sind es 67.826 € / 105 und 43.396 € / 67 —
+[`die-leitzahl-war-vom-falschen-zahlweg.md`](./die-leitzahl-war-vom-falschen-zahlweg.md).*
+
 Der dritte Wert ist der entscheidende: Die Warnung dieses Dokuments —
 „bei 20 % Rohmarge liegt die Grenze der Tragfähigkeit bei 18 %
 Werbeanteil, und Baustoff-Klickpreise dort zu halten ist die

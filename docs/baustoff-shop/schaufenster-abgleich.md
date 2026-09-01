@@ -39,7 +39,7 @@ Sie standen hier als offen, weil „später" ohne Notiz erfahrungsgemäß
 nachgezogen worden.
 
 **Die Kalkulationsseite** hat jetzt einen eigenen Abschnitt zum Skonto —
-mit der Gegenüberstellung 45.356 € gegen 38.786 €, dem Vergleich zur
+mit der Gegenüberstellung 45.356 € gegen 38.786 € (beide bei Kartenzahlung), dem Vergleich zur
 Zahlungsgebühr und Gate 21 samt der unbequemen Folge, dass ausgerechnet
 der Rechnungskauf das Gate verletzt.
 

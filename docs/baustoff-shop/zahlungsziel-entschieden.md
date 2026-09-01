@@ -127,7 +127,9 @@ darf zurückkommen, sobald er acht Bestellungen im Monat mitbringt.
 
 Was die Entscheidung **nicht** tut: den Ertragshebel aus der Hand geben,
 bevor der erste Euro Umsatz da ist. 3 % Skonto sind 2,25 Prozentpunkte
-Marge und senken den nötigen Monatsumsatz von 45.356 auf 38.786 €. Wer
+Marge und senken den nötigen Monatsumsatz von 45.356 auf 38.786 € — beides bei
+Kartenzahlung gerechnet; mit dem entschiedenen Zahlweg EPS sind es 43.396 und
+37.343 €. Wer
 zum Start die bequeme Zahlungsbedingung anbietet und dabei das Skonto
 verliert, braucht ein Siebtel mehr Umsatz, um dasselbe zu verdienen —
 und hat das Problem, das er lösen wollte, damit vergrößert.

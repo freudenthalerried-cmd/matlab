@@ -4,7 +4,7 @@
 rechnete den nötigen Monatsumsatz aus `zielgroessen.json` und schrieb
 **43.395,77 €** hin. In der PR-Beschreibung, in `PARAMETER.md`, im
 Gate-Register und in vier weiteren Dokumenten steht seit dem 25. August
-**45.356 €**.
+**45.356 €** — die Zahl für **Kreditkarte**.
 
 Zwei Zahlen für dieselbe Sache. Beide gerechnet, beide aus derselben Funktion,
 beide richtig — für verschiedene Zahlwege.
@@ -32,8 +32,8 @@ aufschlägt.
 
 Drei Gründe, und der dritte ist der unangenehme.
 
-**Erstens: Die Zahl war plausibel.** 45.356 € und 70 Bestellungen sind keine
-absurden Größen. Nichts an ihnen sieht falsch aus.
+**Erstens: Die Zahl war plausibel.** 45.356 € und 70 Bestellungen — die Werte
+für Kreditkarte — sind keine absurden Größen. Nichts an ihnen sieht falsch aus.
 
 **Zweitens: Sie ging in die vorsichtige Richtung.** Der wahre Bedarf liegt
 **1.960 € im Monat niedriger** und bei **drei Bestellungen weniger**. Wer

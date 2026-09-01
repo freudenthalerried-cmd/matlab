@@ -43,6 +43,8 @@ Warenkorb 650 € netto, Zahlung per Karte:
 | **25 % (jetzt gültig)** | **13,3 %** | **45.356 €** | **70** | **3.500** |
 | 20 % (= 25 % Zuschlag) | 8,3 % | 72.740 € | 112 | 5.600 |
 
+*Alle Zeilen bei Kartenzahlung — siehe den Nachtrag oben.*
+
 **112 Bestellungen im Monat werden zu 70.** Von knapp vier am Tag auf
 gut zwei. Das ist der Unterschied zwischen einem Vollzeitbetrieb und
 etwas, das neben dem Baugeschäft laufen kann.
@@ -53,7 +55,7 @@ Das war der gefährlichste Punkt der alten Rechnung. Bei 20 % Rohmarge
 lag die Grenze der Tragfähigkeit bei **18 % Werbeanteil**; darüber war
 das Modell rechnerisch unmöglich. Bei 25 %:
 
-| Werbeanteil | bleibt übrig | nötiger Monatsumsatz |
+| Werbeanteil | bleibt übrig | nötiger Monatsumsatz (Karte) |
 |---|---|---|
 | 10 % | 13,3 % | 45.356 € |
 | 12 % | 11,3 % | 53.397 € |

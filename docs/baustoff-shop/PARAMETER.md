@@ -106,6 +106,11 @@ konservativere Kapitalgesellschaftsweg unterstellt.
 > lautet die Zahl **43.396 € Monatsumsatz** — `marge-25-prozent.md`. Die
 > Kaskade bleibt als Rechenweg stehen.
 >
+> **Die Zahl darunter, an der alles hängt:** Unter einer Kaufquote von
+> **0,77 %** trägt das Modell nicht einmal den billigsten Marktklick von
+> 0,50 €. Gerechnet wird mit 2 %. Gemessen ist keine der beiden —
+> `die-drei-groessten-risiken.md`.
+>
 > **Berichtigt am 01.09.:** Hier stand 45.356 €. Das ist die Zahl für
 > **Kreditkarte**, gerechnet am 25.08. — zwei Tage bevor Gate 21 EPS und
 > Vorkasse entschied. Mit dem entschiedenen Zahlweg sind es 43.396 € und

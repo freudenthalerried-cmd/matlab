@@ -32,6 +32,7 @@
     "gegenprobe": "node bin/gegenprobe.mjs",
     "pruefe-preisalter": "node bin/preisalterpruefung.mjs",
     "pruefe-schaufenster": "node bin/schaufensterpruefung.mjs",
+    "pruefe-leitzahlen": "node bin/leitzahlpruefung.mjs",
     "werbeprobe": "node bin/werbeprobe.mjs",
     "messliste": "node bin/messliste.mjs",
     "empfindlichkeit": "node bin/empfindlichkeitspruefung.mjs",

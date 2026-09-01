@@ -42,7 +42,7 @@ Ursprünglich ein Streckenhandel für Radonvorsorge auf **unbelegten** Platzhalt
 | Kampagne | 6 Suchkampagnen gerechnet, **3 im ersten Anlauf**, alle **pausiert** |
 | Produktfeed | 43 Einträge — **nicht einreichbar**, GTIN fehlt bei allen 46 Artikeln |
 | Testbestand | **über 1.000 Testfälle**, alle grün, dazu 11 Oberflächenszenarien und 50 Shopszenarien im Browser |
-| Prüfwerkzeuge | **12 Prüfer** ohne Browser, 3 Browserproben zusätzlich |
+| Prüfwerkzeuge | **13 Prüfer** ohne Browser, 3 Browserproben zusätzlich |
 
 ## Die Zahlen, die das Modell tragen
 
@@ -62,6 +62,8 @@ und weil sie in die vorsichtige Richtung falsch waren, hat sie niemand
 nachgerechnet. Seit heute misst `npm run pruefe-schaufenster` auch sie.
 
 **Der Engpass ist die Werbung, nicht der Einkauf.** Fünf Prozentpunkte Puffer machen den Klickpreis-Kanal überhaupt erst vertretbar.
+
+**Und darunter hört der Kanal auf zu existieren:** Unter einer Kaufquote von **0,77 %** trägt das Modell nicht einmal den billigsten Marktklick (0,50 €). Gerechnet wird mit 2 % — Faktor 2,6 dazwischen, und gemessen ist keine der beiden Zahlen. Das ist das erste der drei größten Risiken (`die-drei-groessten-risiken.md`).
 
 ## Befunde aus den echten Daten
 
