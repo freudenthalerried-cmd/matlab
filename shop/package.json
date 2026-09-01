@@ -36,6 +36,7 @@
     "messliste": "node bin/messliste.mjs",
     "empfindlichkeit": "node bin/empfindlichkeitspruefung.mjs",
     "offenepunkte": "node bin/offenepunkte.mjs",
+    "rollout": "node bin/rollout.mjs",
     "pruefe-auftrag": "node bin/auftragspruefung.mjs"
   }
 }

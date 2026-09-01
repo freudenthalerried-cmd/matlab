@@ -1,7 +1,7 @@
 {
   "_hinweis": "Zuordnung der zwoelf Ergebnisse aus master-prompt.md zu dem, was tatsaechlich im Verzeichnis liegt. Geprueft mit `npm run pruefe-auftrag`. Die Anforderungen werden aus dem Auftrag GELESEN, nicht hier abgeschrieben — diese Datei antwortet nur.",
   "_zustaende": "erfuellt = es gibt es unter dem verlangten Namen und in der verlangten Sache. anders = die Sache gibt es unter anderem Namen oder in anderer Form. offen = es gibt sie nicht. Jede Antwort braucht eine Begruendung und Belege, die existieren.",
-  "_stand": "2026-09-01. Erste Aufstellung ueberhaupt: Bis heute hat niemand geprueft, ob das Gelieferte dem Bestellten entspricht.",
+  "_stand": "2026-09-01",
   "1": {
     "zustand": "anders",
     "belege": [
@@ -94,11 +94,13 @@
     "begruendung": "Ein KPI-Dashboard gibt es nicht. Es waere heute auch leer: Der Shop hat keine Bestellung, keinen Klick und keinen Besucher gesehen. Ein Dashboard ohne Daten ist ein Rahmen, der Betrieb vortaeuscht. Sinnvoll ab dem ersten geschalteten Anlauf."
   },
   "12": {
-    "zustand": "offen",
+    "zustand": "erfuellt",
     "belege": [
-      "docs/baustoff-shop/weg-zum-ersten-verkauf-nachgerechnet.md",
+      "docs/baustoff-shop/rollout-90-tage.md",
+      "shop/src/rollout.js",
+      "shop/bin/rollout.mjs",
       "shop/src/werbewirkung.js"
     ],
-    "begruendung": "Ein Wochenplan ueber 90 Tage existiert nicht. Vorhanden ist der Teil, der ihn traegt: die Reihenfolge der offenen Punkte und die vorab festgelegten Abbruchkriterien (299 Klicks schliessen 1 % aus, 598 Klicks 0,5 %). Was fehlt, ist die Zeitachse — und sie liesse sich heute nicht ehrlich schreiben, weil sie am Datum des ersten Uploads haengt, das der Auftraggeber setzt."
+    "begruendung": "Wochenplan mit Gates unter dem verlangten Namen. Elf Etappen mit Abhaengigkeiten, Dauern und Gate-Bezug; npm run rollout rechnet die Kette aus statt sie zu behaupten. Ergebnis im Hauptfall (9,99 EUR Tagesbudget, 1,50 EUR je Klick, 1 % auszuschliessen): 57 Tage bis zur Entscheidung, davon 45 der Versuch, 10 Warten auf Dritte und nur 2 Tage eigene Arbeit im bestimmenden Strang. Die frueher genannte Huerde ist ausgeraeumt, ohne die Datenlage zu beschoenigen: Der Plan haengt an Ereignissen statt an Kalenderdaten, deshalb braucht er die Messung nicht, die er erst herbeifuehren soll. Er sagt zugleich, wo die Frist nicht traegt — eine Kaufquote von 0,5 % ist in 90 Tagen nur am unteren Marktrand ausschliessbar."
   }
 }
