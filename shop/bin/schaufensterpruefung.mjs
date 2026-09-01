@@ -17,6 +17,7 @@ import { pruefeSchaufenster } from '../src/schaufenster.js';
 import { PRUEFER, BROWSERPRUEFER } from '../src/pruefregister.js';
 import { ladeBaustoffkatalog } from '../src/baustoffkatalog.js';
 import { katalogbefund } from '../src/baustoffkatalog.js';
+import { noetigerUmsatz } from '../src/kostenbild.js';
 
 const SHOP = fileURLToPath(new URL('..', import.meta.url));
 const REPO = join(SHOP, '..');
@@ -100,6 +101,13 @@ const geheimTreffer = geheimnis.stdout.match(/(\d+) von (\d+) Einkaufspreisen/);
 const feed = spawnSync('node', ['bin/veroeffentlichung.mjs'], { cwd: SHOP, encoding: 'utf8' });
 const feedTreffer = feed.stdout.match(/(\d+) veröffentlichbar/);
 
+// Die Leitzahl kommt aus derselben Rechnung wie überall — und mit dem
+// Zahlweg, der entschieden ist, nicht mit dem, für den sie einmal gerechnet
+// wurde.
+const zielgroessen = JSON.parse(readFileSync(join(SHOP, 'data', 'zielgroessen.json'), 'utf8'));
+const leitzahl = noetigerUmsatz(zielgroessen, zielgroessen.zahlweg);
+if (!leitzahl.tragfaehig) throw new Error(`Die Zielgrößen tragen sich nicht: ${leitzahl.grund}`);
+
 const messwerte = {
   artikel: katalog.artikel.length,
   seiten: zaehleHtml(site, true),
@@ -123,6 +131,12 @@ const messwerte = {
   cpcDaemmung: cpc('Dämmung'),
   cpcWdvs: cpc('WDVS'),
   rekonstruierbar: geheimTreffer ? Number(geheimTreffer[1]) : null,
+  // Auf ganze Euro, weil die Beschreibung ganze Euro nennt. Dieselbe Lehre wie
+  // beim Medianabstand: Gemessen wird so, wie die Aussage gemacht wird —
+  // sonst meldet der Prüfer 43.395,77 gegen 43.396 und hat recht, ohne dass
+  // jemand etwas davon hat.
+  noetigerUmsatz: Math.round(leitzahl.umsatzNetto),
+  bestellungen: leitzahl.bestellungen,
 };
 
 const e = pruefeSchaufenster(readFileSync(beschreibung, 'utf8'), messwerte);

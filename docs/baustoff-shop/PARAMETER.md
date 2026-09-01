@@ -16,7 +16,7 @@ mehr zur Diskussion gestellt. Änderungen nur mit ausdrücklicher Freigabe.
 |---|---|---|
 | 22.08. | Eigene **Baumeister-Einkaufspreise** aus den Lieferantenrechnungen als Kalkulationsgrundlage, nicht mehr Herstellerkonditionen | Gate 1 und Gate 2 sind gegenstandslos, siehe unten |
 | 22.08. | Vertrieb über **Google Shopping**, Lieferung **regional** statt österreichweit | Liefergebiet: Perg, Urfahr-Umgebung, Freistadt, Linz, Linz-Land (Gate 23) |
-| 25.08. | „25 %" heißt **Marge vom Verkauf**, nicht Zuschlag auf den Einkauf | nötiger Monatsumsatz 45.356 € statt 72.740 €; `marge-25-prozent.md` |
+| 25.08. | „25 %" heißt **Marge vom Verkauf**, nicht Zuschlag auf den Einkauf | nötiger Monatsumsatz **43.396 €** statt 67.826 € (Zahlweg EPS; **berichtigt 01.09.**, davor standen hier die Kartenzahlen 45.356 / 72.740 €); `marge-25-prozent.md`, `die-leitzahl-war-vom-falschen-zahlweg.md` |
 | 26.08. | Die Firma **existiert bereits**: Freudenthaler Bau GmbH, FN 347938z, Baustoffhandel als Gewerbe | keine Gründung nötig; Domain `freudenthaler-bau.at` in Betrieb |
 | 28.08. | **Keine Spanne ausgeben** — die Handelsspanne erscheint nicht auf Kundenseiten | genannt wird stattdessen der Abstand zum Listenpreis; `spanne-nicht-mehr-ausgeben.md` |
 | 28.08. | **Sortiment auf mindestens 100 Artikel** erweitern | 46 sind das Maximum aus den Rechnungen; es braucht eine Artikelliste, `hundert-artikel-was-fehlt.md` |
@@ -103,8 +103,15 @@ konservativere Kapitalgesellschaftsweg unterstellt.
 
 > **Für das laufende Modell überholt.** Die Tabelle rechnet mit 30–45 %
 > Rohmarge im Radon-Streckenhandel. Mit 25 % Marge auf Baumeisterpreise
-> lautet die Zahl **45.356 € Monatsumsatz** — `marge-25-prozent.md`. Die
+> lautet die Zahl **43.396 € Monatsumsatz** — `marge-25-prozent.md`. Die
 > Kaskade bleibt als Rechenweg stehen.
+>
+> **Berichtigt am 01.09.:** Hier stand 45.356 €. Das ist die Zahl für
+> **Kreditkarte**, gerechnet am 25.08. — zwei Tage bevor Gate 21 EPS und
+> Vorkasse entschied. Mit dem entschiedenen Zahlweg sind es 43.396 € und
+> 67 statt 70 Bestellungen. Gemessen wird die Leitzahl jetzt von
+> `npm run pruefe-schaufenster`; wie sie durchrutschen konnte, steht in
+> `die-leitzahl-war-vom-falschen-zahlweg.md`.
 
 Fixkosten 650 €/Monat, benötigter Deckungsbeitrag nach Werbung 6.050 €.
 

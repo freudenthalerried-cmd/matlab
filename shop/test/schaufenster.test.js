@@ -128,3 +128,39 @@ test('Beschreibung und Startseite nennen denselben Listenpreisabstand', () => {
   assert.ok(nBeschreibung && nSeite, 'die Artikelzahlen stehen nicht mehr in beiden Texten');
   assert.deepEqual(nBeschreibung.slice(1, 3), nSeite.slice(1, 3));
 });
+
+/* ------------------------------------------------------------------ *
+ * Die Leitzahl — Befund vom 1. September
+ *
+ * Vierundzwanzig Kennzahlen maßen Seiten, Testfälle, Gebote und GTIN-Lücken.
+ * Der nötige Monatsumsatz war keine davon — und stand vier Tage lang mit der
+ * Kartenzahl in der Beschreibung, obwohl Gate 21 EPS entschieden hat.
+ * ------------------------------------------------------------------ */
+
+test('Der nötige Monatsumsatz und die Bestellungen werden gemessen', () => {
+  const namen = kennzahlen({}).map((k) => k.name);
+  assert.ok(namen.includes('Nötiger Monatsumsatz'), 'die Leitzahl fehlt in der Messung');
+  assert.ok(namen.includes('Bestellungen im Monat'));
+});
+
+test('Die Leitzahl wird mit dem Zahlweg aus den Zielgrößen gerechnet, nicht mit einem beliebigen', async () => {
+  // Der ganze Befund hängt hieran: 45.356 € ist die Karte, 43.396 € ist EPS.
+  const { noetigerUmsatz } = await import('../src/kostenbild.js');
+  const ziel = JSON.parse(readFileSync(new URL('../data/zielgroessen.json', import.meta.url), 'utf8'));
+  const mitZielweg = noetigerUmsatz(ziel, ziel.zahlweg);
+  const mitKarte = noetigerUmsatz(ziel, 'karte-stripe');
+  assert.ok(mitZielweg.tragfaehig && mitKarte.tragfaehig);
+  assert.notEqual(
+    Math.round(mitZielweg.umsatzNetto),
+    Math.round(mitKarte.umsatzNetto),
+    'unterschieden sich die beiden nicht, wäre der Befund gegenstandslos — dann gehört dieser Test weg',
+  );
+});
+
+test('Das Muster der Leitzahl trifft die Zeile der Beschreibung', () => {
+  const zeile = '| nötiger Monatsumsatz | 67.826 € | **43.396 €** | **37.343 €** |';
+  const k = kennzahlen({}).find((x) => x.name === 'Nötiger Monatsumsatz');
+  const treffer = zeile.match(k.muster);
+  assert.ok(treffer, 'das Muster findet die Zeile nicht');
+  assert.equal(zahlAus(treffer[1]), 43396);
+});

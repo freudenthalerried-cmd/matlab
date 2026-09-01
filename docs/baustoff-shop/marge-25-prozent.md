@@ -28,6 +28,14 @@ alles, was danach kommt, an der Marge hängt und nicht am Preis.
 Zielgewinn 5.374 € vor Steuer, Fixkosten 650 €, Werbeanteil 10 %,
 Warenkorb 650 € netto, Zahlung per Karte:
 
+> **Nachtrag vom 01.09.** Diese Tabelle rechnet mit **Kreditkarte** — so stand
+> es am 25. August, und so ist sie richtig. Zwei Tage später hat Gate 21 **EPS
+> und Vorkasse** entschieden, und niemand hat sie nachgerechnet. Mit EPS lauten
+> die drei Zeilen **67.826 € / 43.396 € / 37.343 €** und 105 / 67 / 58
+> Bestellungen. Die Reihenfolge und der Befund bleiben; nur die Leitzahl war
+> zwei Tage älter als die Entscheidung, die sie bestimmt —
+> `die-leitzahl-war-vom-falschen-zahlweg.md`.
+
 | Rohmarge | bleibt nach Werbung und Gebühren | nötiger Monatsumsatz | Bestellungen | Sessions |
 |---|---|---|---|---|
 | 35 % (alte Annahme) | 23,3 % | 25.875 € | 40 | 2.000 |

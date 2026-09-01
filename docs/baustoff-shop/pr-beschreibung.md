@@ -46,13 +46,20 @@ Ursprünglich ein Streckenhandel für Radonvorsorge auf **unbelegten** Platzhalt
 
 ## Die Zahlen, die das Modell tragen
 
-Zielgewinn 5.374 € vor Steuer, Fixkosten 650 €, Warenkorb 650 € netto:
+Zielgewinn 5.374 € vor Steuer, Fixkosten 650 €, Warenkorb 650 € netto,
+**Zahlweg EPS** — der nach Gate 21 entschiedene:
 
 | | 20 % Marge | **25 % Marge** | mit 3 % Skonto |
 |---|---|---|---|
-| nötiger Monatsumsatz | 72.740 € | **45.356 €** | **38.786 €** |
-| Bestellungen im Monat | 112 | 70 | 60 |
+| nötiger Monatsumsatz | 67.826 € | **43.396 €** | **37.343 €** |
+| Bestellungen im Monat | 105 | 67 | 58 |
 | Tragfähigkeitsgrenze Werbeanteil | 18 % | 23 % | — |
+
+**Berichtigt am 1. September.** Diese Zeile stand seit dem 25. August mit
+72.740 / 45.356 / 38.786 € da — gerechnet mit **Kreditkarte**, zwei Tage bevor
+Gate 21 EPS und Vorkasse entschied. Die Zahlen waren nie falsch, sie wurden es;
+und weil sie in die vorsichtige Richtung falsch waren, hat sie niemand
+nachgerechnet. Seit heute misst `npm run pruefe-schaufenster` auch sie.
 
 **Der Engpass ist die Werbung, nicht der Einkauf.** Fünf Prozentpunkte Puffer machen den Klickpreis-Kanal überhaupt erst vertretbar.
 

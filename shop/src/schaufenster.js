@@ -121,6 +121,22 @@ export function kennzahlen(messwerte) {
     { name: 'Höchstgebot Dämmung', wie: 'ausgabe/kampagne/anzeigengruppen.csv', muster: /Dämmung ([\d,]+) €, WDVS/, soll: m.cpcDaemmung },
     { name: 'Höchstgebot WDVS', wie: 'ausgabe/kampagne/anzeigengruppen.csv', muster: /WDVS ([\d,]+) € gegen einen Markt/, soll: m.cpcWdvs },
     { name: 'Rekonstruierbare Einkaufspreise', wie: 'npm run pruefe-geheimnis', muster: /\*\*(\d+) von \d+ Einkaufspreisen\*\*/, soll: m.rekonstruierbar },
+    // **Aufgenommen am 1. September.** Die vierundzwanzig Kennzahlen davor
+    // messen Seitenzahlen, Testfälle, Gebote und GTIN-Lücken — und **nicht die
+    // Zahl, um die es geht.** Der nötige Monatsumsatz stand in der Tabelle der
+    // Beschreibung, ungemessen, seit es diese Beschreibung gibt.
+    //
+    // > Ein Prüfer, der alles misst außer der Leitzahl, meldet grün über ein
+    // > Geschäftsmodell, das er nie angesehen hat.
+    //
+    // Gefunden hat es die Kennzahlenseite: Sie rechnete 43.395,77 € aus
+    // `zielgroessen.json` (Zahlweg `eps`), während überall 45.356 € steht —
+    // die Karte-Rechnung vom 25.08., zwei Tage älter als Gate 21, das EPS und
+    // Vorkasse entschieden hat.
+    { name: 'Nötiger Monatsumsatz', wie: 'noetigerUmsatz(zielgroessen, ziel.zahlweg), auf ganze Euro',
+      muster: /nötiger Monatsumsatz \| [\d.]+ € \| \*\*([\d.]+) €\*\*/, soll: m.noetigerUmsatz },
+    { name: 'Bestellungen im Monat', wie: 'noetigerUmsatz(zielgroessen, ziel.zahlweg)',
+      muster: /Bestellungen im Monat \| \d+ \| (\d+) \|/, soll: m.bestellungen },
   ];
 }
 
