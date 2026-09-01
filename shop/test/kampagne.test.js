@@ -653,3 +653,39 @@ test('Auch der Referenzwarenkorb behauptet kein Gebinde, das es nicht gibt', () 
   }));
   assert.deepEqual(pruefeTexte(alsAnzeige, EINHEITEN_IM_KATALOG), []);
 });
+
+/* ------------------------------------------------------------------ *
+ * Findet die eigene Suche, wofür bezahlt wird?
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Gemessen am 01.09.:** Sechs von 33 Keywords des ersten Anlaufs fanden in
+ * der Suche des eigenen Shops **nichts**. Ein Besucher, der über eine bezahlte
+ * Anzeige kommt und den Begriff eintippt, mit dem er gesucht hat, liest
+ * „nichts gefunden" — auf der Seite, für deren Besuch gerade bezahlt wurde.
+ *
+ * Die Landeseite muss das Wort sagen (`ungedeckteWoerter`), und die Suche muss
+ * es beantworten. Das sind zwei verschiedene Wege, und beide führen zu einem
+ * bezahlten Klick ins Leere.
+ */
+test('Jedes Keyword findet in der Shopsuche mindestens einen Treffer', async () => {
+  const keywordDatei = pfad('../ausgabe/kampagne/keywords.csv');
+  const shopSkript = pfad('../ausgabe/site/shop.js');
+  if (!existsSync(keywordDatei) || !existsSync(shopSkript)) return;
+
+  const { suche, baueSuchindex } = await import('../src/shopkern.js');
+  const daten = JSON.parse(readFileSync(shopSkript, 'utf8').match(/^window\.__SHOP__=(.*);$/m)[1]);
+  const index = baueSuchindex({
+    artikel: daten.artikel,
+    seiten: daten.seiten,
+    suchwoerter: daten.suchwoerter ?? [],
+  });
+  assert.ok(index.length > 0, 'leerer Suchindex — die Schleife darunter prüft nichts');
+
+  const keywords = [...new Set(zeilenVon(keywordDatei).map((z) => csvFelder(z)[2]))];
+  assert.ok(keywords.length > 0, 'keine Keywords — die Schleife darunter prüft nichts');
+
+  const leer = keywords.filter((k) => suche(index, k, { grenze: 8 }).length === 0);
+  assert.deepEqual(leer, [],
+    'diese Keywords bezahlen einen Klick auf eine leere Trefferliste');
+});

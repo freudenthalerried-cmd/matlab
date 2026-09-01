@@ -969,3 +969,44 @@ test('jede Ablehnung trägt zwei Texte: eine Begründung und eine Antwort', () =
     assert.doesNotMatch(e.antwort, /^(siehe|wie) /i, `„${e.wort}": Verweis statt Antwort`);
   }
 });
+
+/**
+ * **Gemessen am 01.09.:** „XPS Platten kaufen" und „WDVS System kaufen" —
+ * zwei Keywords des ersten Anzeigenanlaufs — fanden nichts. Nicht weil das
+ * Sortiment fehlt, sondern weil **alle** Suchwörter treffen müssen und
+ * „kaufen" in keinem Artikelnamen steht. Der Shop verkauft; dass jemand
+ * kaufen will, schränkt das Sortiment nicht ein.
+ */
+test('Absichtswörter machen eine Suche nicht leer — allein sind sie aber keine', async () => {
+  const { ABSICHTSWOERTER } = await import('../src/shopkern.js');
+  assert.ok(ABSICHTSWOERTER.length > 0, 'keine Absichtswörter — die Schleifen darunter prüfen nichts');
+
+  const index = baueSuchindex({
+    artikel: [
+      { sku: 'A-1', bezeichnung: 'XPS glatt SF 50 mm', gruppe: 'Dämmung' },
+      { sku: 'A-2', bezeichnung: 'Capatect Putzgrund weiß', gruppe: 'WDVS' },
+    ],
+    seiten: [],
+    suchwoerter: [],
+  });
+
+  const ohne = suche(index, 'XPS', { grenze: 5 }).map((t) => t.sku);
+  assert.deepEqual(ohne, ['A-1'], 'die Ausgangssuche findet den Artikel nicht');
+
+  // Jedes Absichtswort einzeln darf das Ergebnis nicht kippen.
+  for (const w of ABSICHTSWOERTER) {
+    const mit = suche(index, `XPS ${w}`, { grenze: 5 }).map((t) => t.sku);
+    assert.deepEqual(mit, ohne, `„XPS ${w}" findet etwas anderes als „XPS"`);
+  }
+
+  // Eine Frage aus lauter Absicht bleibt leer. Eine Suche, die auf „kaufen"
+  // das ganze Sortiment ausschüttet, hat nicht verstanden, was gefragt war.
+  assert.deepEqual(suche(index, ABSICHTSWOERTER.join(' '), { grenze: 5 }), []);
+  for (const w of ABSICHTSWOERTER) {
+    assert.deepEqual(suche(index, w, { grenze: 5 }), [], `„${w}" allein liefert Treffer`);
+  }
+
+  // Und ein Wort, das die Suche nicht kennt, schränkt weiterhin ein — sonst
+  // wäre aus dem Ausnahmefall eine allgemeine Aufweichung geworden.
+  assert.deepEqual(suche(index, 'XPS Regenrinne', { grenze: 5 }), []);
+});

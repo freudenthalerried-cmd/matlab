@@ -293,7 +293,12 @@ const GATTUNGSBEGRIFFE = {
   ],
   Kamin: [
     'Schiedel Kamin', 'Kaminsystem einzügig', 'Mantelstein Kamin', 'Kaminrohr gedämmt',
-    'Kamin Fertigfuß', 'Kaminkopf Regenhaube',
+    // „Kaminkopf Regenhaube“ ist am 01.09. entfallen. Der Shop führt die
+    // Kaminkopfverkleidung ausdrücklich nicht — `suchwoerter.json` lehnt das Wort
+    // mit Begründung ab, und die eigene Suche findet dazu nichts. Auf ein Wort zu
+    // bieten, das die eigene Suche nicht beantwortet, ist ein bezahlter Klick auf
+    // eine leere Trefferliste.
+    'Kamin Fertigfuß',
   ],
   Kanal: [
     'Kanalrohr DN 100', 'PVC Kanalrohr', 'Kanalbogen DN 100', 'Kanalabzweiger 45 Grad',

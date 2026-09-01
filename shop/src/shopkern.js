@@ -310,8 +310,39 @@ const GEWICHT = Object.freeze({ artikel: 3, gruppe: 2, system: 2, wissen: 1 });
  * Mehrere Suchwörter müssen **alle** treffen. Wer „xps 50" eingibt, will
  * nicht alles, was XPS heißt, und auch nicht alles mit einer 50 darin.
  */
+/**
+ * Wörter, die eine **Absicht** benennen und keine Ware.
+ *
+ * **Gemessen am 01.09.:** Von 33 Keywords des ersten Anzeigenanlaufs fanden
+ * sechs in der eigenen Suche nichts. Zwei davon scheiterten allein an einem
+ * Wort: „XPS Platten **kaufen**" und „WDVS System **kaufen**". Der Shop
+ * verkauft; dass jemand kaufen will, ist keine Einschränkung des Sortiments.
+ *
+ * Da alle Suchwörter treffen müssen — richtig, damit „xps 50" nicht alles mit
+ * einer 50 findet —, macht ein einziges solches Wort die Suche leer. Ein
+ * Besucher, der über eine bezahlte Anzeige kommt, tippt genau diesen Satz und
+ * liest „nichts gefunden".
+ *
+ * Ausgelassen werden deshalb Wörter, die den **Vorgang** meinen. Nicht
+ * ausgelassen wird irgendein Wort, das gerade stört: Die Liste ist kurz,
+ * steht hier und trägt ihre Begründung. Eine Suche, die stillschweigend
+ * beliebige Wörter fallen lässt, findet immer etwas — und das ist schlimmer
+ * als nichts zu finden.
+ *
+ * Besteht die Frage **nur** aus solchen Wörtern, bleibt sie leer: „kaufen"
+ * allein ist keine Suche.
+ */
+export const ABSICHTSWOERTER = Object.freeze([
+  'kaufen', 'bestellen', 'preis', 'preise', 'kosten', 'guenstig', 'billig', 'online', 'shop',
+]);
+
+const ABSICHTSSTAEMME = new Set(ABSICHTSWOERTER.map((w) => stamm(normalisiere(w))));
+
 export function suche(index, frage, { grenze = 40 } = {}) {
-  const woerter = wortstaemme(frage);
+  const alle = wortstaemme(frage);
+  // Erst ohne die Absichtswörter suchen. Bleibt dann nichts übrig, war die
+  // Frage nur eine Absicht — und darauf gibt es keine Antwort im Sortiment.
+  const woerter = alle.filter((w) => !ABSICHTSSTAEMME.has(w));
   if (!woerter.length) return [];
 
   const treffer = [];
