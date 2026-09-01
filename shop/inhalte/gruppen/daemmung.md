@@ -8,7 +8,7 @@ kurz: XPS in mehreren Stärken für den erdberührten und den Sockelbereich, EPS
 verwandt: xps-oder-eps, perimeterdaemmung-und-grundmauerschutz, lagerung-von-sackware
 system: fassade-100-qm
 vergleich: staerke
-stand: 2026-08-30
+stand: 2026-09-01
 ---
 
 # Dämmplatten
@@ -17,6 +17,26 @@ stand: 2026-08-30
 erdberührten und den Sockelbereich, EPS als Fassadenplatte und eine
 Trittschalldämmplatte; die Trennlage dazu steht als Folie beim Zubehör. Die Auswahl folgt dem Einbauort und dem Wärmeschutznachweis —
 nicht dem Preis je Quadratmeter.
+
+## Wie diese Platten sonst noch heißen
+
+| Bei uns | Auch gesucht als |
+|---|---|
+| Fassaden EPS | **EPS-Fassadenplatten**, **Fassadendämmung**, Styropor-Fassadenplatte |
+| XPS glatt / rau | Perimeterplatte, Sockelplatte, **druckfeste** Dämmplatte |
+| Isover TDPT | Trittschalldämmplatte |
+
+„Druckfest" ist dabei eine Materialklasse und keine Bemessung: XPS nimmt
+höhere Druckbelastung auf als EPS, welchen Kennwert ein konkretes Bauteil
+braucht, sagt der Wärmeschutznachweis. Die Gegenüberstellung steht unter
+[XPS oder EPS](../wissen/xps-oder-eps).
+
+## So bestellen Sie hier
+
+Jede Karte unten führt auf die Artikelseite mit Gebinde, Preis je m² und dem
+Knopf in den Warenkorb. Wer Fassadendämmung samt Kleber, Gewebe und Dübeln
+kaufen will, findet die vollständige Zusammenstellung unter
+[Fassade 100 m²](../system/fassade-100-qm).
 
 ## Die Entscheidung in einem Satz
 

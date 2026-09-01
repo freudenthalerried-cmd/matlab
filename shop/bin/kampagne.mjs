@@ -41,6 +41,56 @@ import { berechneWarenkorb } from '../src/warenkorb.js';
 
 const HIER = dirname(fileURLToPath(import.meta.url));
 const WURZEL = join(HIER, '..');
+
+/**
+ * Die Wörter eines Keywords, die auf der Landeseite vorkommen müssen.
+ *
+ * Zerlegt an Leerzeichen und Beistrichen; Wörter mit weniger als drei Zeichen
+ * bleiben außen vor („und", „mm", „m2"), weil sie überall vorkommen und
+ * deshalb nichts belegen.
+ */
+export function keywordWoerter(keyword) {
+  return String(keyword ?? '').toLowerCase().split(/[\s,]+/).filter((w) => w.length > 2);
+}
+
+/**
+ * Der sichtbare Text im Hauptbereich einer gebauten Seite.
+ *
+ * Nur `<main>`: Kopfleiste und Fußzeile stehen auf **jeder** Seite und würden
+ * jedes Wort decken, das dort zufällig auftaucht. Was zählt, ist der eigene
+ * Inhalt der Landeseite.
+ */
+export function hauptbereichText(html) {
+  const treffer = String(html ?? '').match(/<main[^>]*>([\s\S]*?)<\/main>/);
+  if (!treffer) return null;
+  return treffer[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').toLowerCase();
+}
+
+/**
+ * Welche Wörter eines Keywords die Landeseite **nicht** sagt.
+ *
+ * ## Warum das eine Abbruchbedingung wert ist
+ *
+ * **Gemessen am 01.09.:** 14 von 36 Keywords des ersten Anlaufs enthielten ein
+ * Wort, das auf ihrer Landeseite nirgends steht. Wer „Armierungsgewebe" sucht,
+ * bezahlt den Klick und landet auf einer Seite, die durchgehend
+ * „Glasgewebe" sagt — dieselbe Ware, ein anderes Wort. Wer „Schornstein
+ * Bausatz" sucht, landet auf einer Seite, die das Wort „Schornstein" nicht
+ * kennt.
+ *
+ * Das kostet zweimal: den bezahlten Klick, der sofort zurückspringt, und die
+ * Anzeigenrelevanz, die Google aus genau diesem Abgleich bildet.
+ *
+ * **Kein Ausnahmenverzeichnis für „Absichtswörter" wie „kaufen".** Die Regel
+ * lautet: *Wir bieten nur auf Wörter, die wir auch sagen.* Ein Shop, dessen
+ * Seite nirgends „kaufen" sagt, hat ein Seitenproblem und kein Regelproblem —
+ * und ein Ausnahmenverzeichnis wäre die Stelle, an der später jedes
+ * unbequeme Wort landet.
+ */
+export function ungedeckteWoerter(keyword, seitentext) {
+  const t = String(seitentext ?? '');
+  return keywordWoerter(keyword).filter((w) => !t.includes(w));
+}
 const REPO = join(WURZEL, '..');
 const AUSGABE = join(WURZEL, 'ausgabe', 'kampagne');
 
@@ -229,15 +279,15 @@ export function taugtAlsKeyword(s) {
 const GATTUNGSBEGRIFFE = {
   WDVS: [
     'WDVS Kleber', 'Klebe und Spachtelmasse', 'Armierungsmörtel', 'Armierungsgewebe',
-    'Fassadendübel', 'Putzgrund Fassade', 'WDVS System kaufen', 'Fassadendämmung Material',
+    'Fassadendübel', 'Putzgrund Fassade', 'WDVS System kaufen',
   ],
   'Dämmung': [
     'XPS Platten kaufen', 'XPS 80 mm', 'XPS 100 mm', 'Perimeterdämmung XPS',
-    'EPS Fassadenplatten', 'Dämmplatten palettenweise', 'XPS Palette', 'Perimeterdämmung druckfest',
+    'EPS Fassadenplatten', 'Fassadendämmung EPS', 'Perimeterdämmung druckfest',
   ],
   Kamin: [
     'Schiedel Kamin', 'Kaminsystem einzügig', 'Mantelstein Kamin', 'Kaminrohr gedämmt',
-    'Kamin Fertigfuß', 'Kaminkopf Regenhaube', 'Schornstein Bausatz',
+    'Kamin Fertigfuß', 'Kaminkopf Regenhaube',
   ],
   Kanal: [
     'Kanalrohr DN 100', 'PVC Kanalrohr', 'Kanalbogen DN 100', 'Kanalabzweiger 45 Grad',
@@ -306,13 +356,13 @@ const ENDET_NICHT_AUF = ['vom', 'von', 'am', 'im', 'zum', 'zur', 'mit', 'für', 
  */
 export const ANZEIGENTEXTE = {
   WDVS: {
-    k: ['WDVS zum Baumeisterpreis', 'Capatect und Baumit', 'Fassade komplett liefern', 'Kleber, Gewebe, Dübel', 'Baumeisterpreis, nicht Liste', 'Systemware auf Palette'],
+    k: ['WDVS zum Baumeisterpreis', 'Capatect und Baumit', 'Fassade komplett liefern', 'Kleber, Gewebe, Dübel', 'Baumeisterpreis, nicht Liste', 'Fassade aus einer Bestellung'],
     b: ['Das komplette Fassadensystem aus einer Hand — geliefert auf die Baustelle.', 'Kleber, Gewebe, Dübel, Putzgrund. Was zusammengehört, kommt zusammen.', 'Ein Baumeister kauft ein, Sie zahlen seinen Preis.'],
     pfad: ['fassade', 'wdvs'],
   },
   'Dämmung': {
-    k: ['XPS und EPS vom Baumeister', 'Perimeterdämmung 80 mm', 'Dämmplatten palettenweise', 'Baumeisterpreis auf XPS', 'Dämmung auf die Baustelle', 'Kein Baumarktpreis', 'XPS 30 bis 100 mm'],
-    b: ['XPS und EPS in allen gängigen Stärken, palettenweise auf die Baustelle.', 'Perimeter- und Fassadendämmung zum Preis, den ein Baumeister zahlt.', 'Ganze Paletten statt Einzelplatten, direkt auf die Baustelle.'],
+    k: ['XPS und EPS vom Baumeister', 'Perimeterdämmung 80 mm', 'Dämmplatten auf die Baustelle', 'Baumeisterpreis auf XPS', 'Druckfestes XPS im Sockel', 'Kein Baumarktpreis', 'XPS 30 bis 100 mm'],
+    b: ['XPS und EPS in allen gängigen Stärken, geliefert auf die Baustelle.', 'Perimeter- und Fassadendämmung zum Preis, den ein Baumeister zahlt.', 'In Paketeinheiten gerechnet, damit kein Rest übrig bleibt.'],
     pfad: ['daemmung', 'xps'],
   },
   Kamin: {
@@ -326,13 +376,13 @@ export const ANZEIGENTEXTE = {
     pfad: ['kanal', 'dn100'],
   },
   'Mörtel': {
-    k: ['Mörtel palettenweise', 'Baumit ThermoMörtel', 'Mörtel auf die Baustelle', 'Baumeisterpreis auf Mörtel', 'Ganze Paletten', 'Kein Sackverkauf'],
-    b: ['Baumit-Mörtel palettenweise, geliefert auf die Baustelle.', 'Wir liefern Paletten, keine Einzelsäcke — das ist der ganze Preisvorteil.', 'Mörtel zum Preis, den ein Baumeister im Einkauf zahlt.'],
-    pfad: ['moertel', 'palette'],
+    k: ['Baumit ThermoMörtel', 'Mörtel auf die Baustelle', 'Baumeisterpreis auf Mörtel', 'Fracht getrennt ausgewiesen', 'Mauer- und Vergussmörtel'],
+    b: ['Baumit-Mörtel geliefert auf die Baustelle, Fracht getrennt ausgewiesen.', 'Der Preisvorteil kommt aus dem Einkauf, nicht aus der Bestellmenge.', 'Mörtel zum Preis, den ein Baumeister im Einkauf zahlt.'],
+    pfad: ['moertel', 'baumit'],
   },
   Mauerwerk: {
-    k: ['Planziegel ab Palette', 'Ökotherm Hochlochziegel', 'Ziegel auf die Baustelle', 'Baumeisterpreis auf Ziegel', 'Mauerwerk komplett', 'Palettenweise liefern'],
-    b: ['Planziegel palettenweise, geliefert und mit Kran entladen.', 'Mauerwerk zum Baumeisterpreis, keine Kleinmengen.', 'Ganze Paletten auf die Baustelle statt Stückware aus dem Baumarkt.'],
+    k: ['Planziegel vom Baumeister', 'Ökotherm Hochlochziegel', 'Ziegel auf die Baustelle', 'Baumeisterpreis auf Ziegel', 'Mauerwerk komplett', 'Geliefert statt abgeholt'],
+    b: ['Planziegel geliefert und mit Kran entladen, Fracht getrennt ausgewiesen.', 'Mauerwerk zum Preis, den ein Baumeister im Einkauf zahlt.', 'Auf die Baustelle geliefert statt im Baumarkt abgeholt.'],
     pfad: ['ziegel', 'mauerwerk'],
   },
 };
@@ -353,8 +403,57 @@ export function alleAnzeigentexte() {
   });
 }
 
-export function pruefeTexte(anzeigen) {
+/**
+ * Gebindeaussagen — was eine Anzeige über die **Verkaufseinheit** behauptet.
+ *
+ * ## Der Befund vom 01.09.
+ *
+ * Sechs von sechs Anzeigengruppen warben mit Paletten: „Dämmplatten
+ * palettenweise", „Ganze Paletten statt Einzelplatten", „Wir liefern
+ * Paletten, keine Einzelsäcke — das ist der ganze Preisvorteil."
+ *
+ * **Kein einziger der 46 Artikel hat eine Palette.** Die Einheiten des
+ * Katalogs sind STK, M2, KG, KRT, SCK, LFM, DOS, EIM und RLL; das Wort
+ * „Palette" kommt in `data/` genau einmal vor, und zwar als *Kostenposition*
+ * des Lieferanten (132,00 € für sechs Paletten auf einem Beleg) — als
+ * Nebenkosten, nicht als Verkaufseinheit.
+ *
+ * Die Anzeigen beschrieben also einen anderen Shop als den, der dahinter
+ * steht. Dieselbe Familie wie „ab Lager" bei einem Betrieb ohne Lager, nur
+ * eine Ebene tiefer: nicht die Verfügbarkeit war erfunden, sondern das
+ * Gebinde.
+ *
+ * Zwei Richtungen, und beide sind derselbe Fehler:
+ *
+ * - **behauptet** — die Anzeige wirbt mit einem Gebinde, das kein Artikel
+ *   führt. „Ganze Paletten" bei lauter Quadratmeter- und Stückpreisen.
+ * - **schliesstAus** — die Anzeige schließt ein Gebinde aus, das der Shop
+ *   sehr wohl verkauft. „Kein Sackverkauf" bei zwei Artikeln in Sack, und
+ *   „statt Stückware" bei achtzehn in Stück.
+ *
+ * Geprüft wird gegen die Einheiten des Katalogs, nicht gegen eine Liste.
+ * Nimmt der Shop einmal Palettenware auf, hört die Regel von selbst auf zu
+ * schlagen — und niemand muss daran denken.
+ */
+export const GEBINDEAUSSAGEN = Object.freeze([
+  Object.freeze({ muster: /palett/i, behauptet: 'PAL', was: 'Palettenware' }),
+  Object.freeze({ muster: /kein\w* sackverkauf|keine Einzelsäcke/i, schliesstAus: 'SCK', was: 'Sackware' }),
+  Object.freeze({ muster: /statt Stückware|keine Kleinmengen/i, schliesstAus: 'STK', was: 'Stückware' }),
+]);
+
+/**
+ * @param {object[]} anzeigen
+ * @param {Iterable<string>} gefuehrteEinheiten Einheitenkürzel, die im
+ *   Katalog tatsächlich vorkommen. **Pflichtangabe** — eine Voreinstellung
+ *   wäre die Stelle, an der ein Aufrufer die Gebindeprüfung stillschweigend
+ *   überspringt, und dann prüfte sie nichts und meldete es als bestanden.
+ */
+export function pruefeTexte(anzeigen, gefuehrteEinheiten) {
   const fehler = [];
+  if (gefuehrteEinheiten === undefined) {
+    throw new Error('pruefeTexte braucht die geführten Einheiten — ohne sie prüft die Gebinderegel nichts.');
+  }
+  const einheiten = new Set(gefuehrteEinheiten);
   for (const a of anzeigen) {
     for (const [k, v] of Object.entries(a)) {
       if (!/^(Überschrift|Beschreibung)/.test(k) || !v) continue;
@@ -363,6 +462,18 @@ export function pruefeTexte(anzeigen) {
         if (v.toLowerCase().includes(wort.toLowerCase())) {
           fehler.push(`${a.Anzeigengruppe} · ${k}: „${v}" behauptet Vorrat — `
             + 'der Shop führt kein eigenes Lager (PARAMETER.md, Streckengeschäft)');
+        }
+      }
+
+      for (const g of GEBINDEAUSSAGEN) {
+        if (!g.muster.test(v)) continue;
+        if (g.behauptet && !einheiten.has(g.behauptet)) {
+          fehler.push(`${a.Anzeigengruppe} · ${k}: „${v}" wirbt mit ${g.was} — `
+            + 'kein Artikel des Katalogs wird so verkauft');
+        }
+        if (g.schliesstAus && einheiten.has(g.schliesstAus)) {
+          fehler.push(`${a.Anzeigengruppe} · ${k}: „${v}" schließt ${g.was} aus — `
+            + 'der Katalog führt sie sehr wohl');
         }
       }
 
@@ -666,7 +777,13 @@ function main() {
   // Fehler mit bekanntem Auslösetag, kein latenter. Und die Blindstelle war
   // die Folge meiner eigenen Änderung — wer den Ausgabeumfang verkleinert,
   // verkleinert die Prüfung mit, wenn beide an derselben Liste hängen.
-  const textfehler = [...pruefeTexte(alleAnzeigentexte()), ...pruefeTexte(anzeigen)];
+  // Die geführten Einheiten kommen aus dem Katalog, nicht aus einer Liste —
+  // siehe `GEBINDEAUSSAGEN`. Damit prüft die Regel den Shop, den es gibt.
+  const gefuehrteEinheiten = new Set(katalog.artikel.map((a) => a.einheit));
+  const textfehler = [
+    ...pruefeTexte(alleAnzeigentexte(), gefuehrteEinheiten),
+    ...pruefeTexte(anzeigen, gefuehrteEinheiten),
+  ];
   if (textfehler.length) {
     // **Berichtigt am 31.08.** Hier stand „überschreiten die Längengrenzen" —
     // seit die Prüfung auch Vorratsbehauptungen und abgeschnittene Sätze
@@ -723,7 +840,44 @@ function main() {
   // lädt nicht, und eines für eine Gruppe ohne Budget wirbt nicht.
   const imAnlauf = new Set(ersterAnlauf.map((g) => g.gruppe));
   const keywordsAnlauf = keywordsEindeutig.filter((k) => imAnlauf.has(k.Anzeigengruppe));
-  schreibe('keywords.csv', csv(['Kampagne', 'Anzeigengruppe', 'Keyword', 'Übereinstimmungstyp', 'Herkunft', 'Marke'], keywordsAnlauf));
+
+  // **Jedes Keyword gegen seine eigene Landeseite.** Siehe `ungedeckteWoerter`.
+  // Fehlt die gebaute Seite, wird nicht geraten, sondern abgebrochen: Eine
+  // Deckungsprüfung ohne Seite prüft nichts und meldete es als bestanden.
+  const seitentexte = new Map();
+  for (const g of ersterAnlauf) {
+    const datei = join(WURZEL, 'ausgabe', 'site', 'gruppe', `${GRUPPENSEITE[g.gruppe]}.html`);
+    if (!existsSync(datei)) {
+      console.error(`Abbruch: Die Landeseite ${datei} ist nicht gebaut.`);
+      console.error('Ohne sie lässt sich nicht prüfen, ob die Anzeige verspricht, was die Seite sagt.');
+      console.error('Erst `npm run website`, dann `npm run kampagne`.');
+      process.exit(2);
+    }
+    const text = hauptbereichText(readFileSync(datei, 'utf8'));
+    if (text === null) {
+      console.error(`Abbruch: ${datei} hat keinen Hauptbereich — die Seite ist unvollständig gebaut.`);
+      process.exit(2);
+    }
+    seitentexte.set(g.gruppe, text);
+  }
+
+  const ohneDeckung = [];
+  const keywordsGedeckt = keywordsAnlauf.filter((k) => {
+    const fehlt = ungedeckteWoerter(k.Keyword, seitentexte.get(k.Anzeigengruppe));
+    if (fehlt.length === 0) return true;
+    ohneDeckung.push({
+      Anzeigengruppe: k.Anzeigengruppe,
+      Keyword: k.Keyword,
+      Herkunft: k.Herkunft,
+      Landeseite: `gruppe/${GRUPPENSEITE[k.Anzeigengruppe]}.html`,
+      'Fehlende Wörter': fehlt.join(' '),
+    });
+    return false;
+  });
+
+  schreibe('keywords.csv', csv(['Kampagne', 'Anzeigengruppe', 'Keyword', 'Übereinstimmungstyp', 'Herkunft', 'Marke'], keywordsGedeckt));
+  schreibe('keywords-ohne-deckung.csv', csv(
+    ['Anzeigengruppe', 'Keyword', 'Herkunft', 'Landeseite', 'Fehlende Wörter'], ohneDeckung));
   schreibe('negative-keywords.csv', csv(['Liste', 'Thema', 'Keyword', 'Übereinstimmungstyp'], negative));
 
   // **Zurückgestellt, nicht verworfen.** Die schwachen Gruppen kommen dazu,
@@ -783,6 +937,18 @@ function main() {
 
   const jeHerkunft = keywordsEindeutig.reduce((m, k) => ({ ...m, [k.Herkunft]: (m[k.Herkunft] ?? 0) + 1 }), {});
   console.log(`\nKeywords: ${keywordsEindeutig.length} (${Object.entries(jeHerkunft).map(([h, n]) => `${n} ${h}`).join(', ')})`);
+  if (ohneDeckung.length) {
+    const versch = new Set(ohneDeckung.map((k) => `${k.Anzeigengruppe}|${k.Keyword}`)).size;
+    console.log(`\nZurückgehalten — die Landeseite sagt das Wort nicht (keywords-ohne-deckung.csv): ${versch}`);
+    const gezeigt = new Set();
+    for (const k of ohneDeckung) {
+      const s = `${k.Anzeigengruppe}|${k.Keyword}`;
+      if (gezeigt.has(s)) continue;
+      gezeigt.add(s);
+      console.log(`  ${k.Anzeigengruppe.padEnd(10)} „${k.Keyword}" — fehlt: ${k['Fehlende Wörter']}`);
+    }
+    console.log('  Zwei richtige Auswege: das Wort gehört auf die Seite, oder das Keyword gehört weg.');
+  }
   console.log(`Ausschlüsse: ${negative.length} | Anzeigen: ${anzeigen.length}`);
   console.log('\nAlle Kampagnen stehen auf PAUSIERT. Das Schalten löst Ausgaben aus');
   console.log('und ist Sache des Auftraggebers.');

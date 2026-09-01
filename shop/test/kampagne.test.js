@@ -2,10 +2,24 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { suchname, taugtAlsKeyword, kurzform, alleAnzeigentexte, pruefeTexte, ANZEIGENTEXTE } from '../bin/kampagne.mjs';
+import { suchname, taugtAlsKeyword, kurzform, alleAnzeigentexte, pruefeTexte, ANZEIGENTEXTE,
+  GEBINDEAUSSAGEN, keywordWoerter, hauptbereichText, ungedeckteWoerter } from '../bin/kampagne.mjs';
 import { LIEFERGEBIET, bezirksliste } from '../src/liefergebiet.js';
 import { WARENGRUPPEN, GRUPPENSEITE } from '../src/artikelliste.js';
 import { join } from 'node:path';
+
+/**
+ * Die Einheiten, die der Katalog tatsächlich führt.
+ *
+ * Aus der Katalogdatei gelesen und nicht aufgeschrieben: Eine hier
+ * hingeschriebene Liste wäre eine Momentaufnahme des Bestandes und damit eine
+ * Zeitbombe mit bekanntem Zünddatum — sie ginge in dem Augenblick still
+ * daneben, in dem der erste Artikel mit neuer Einheit dazukommt.
+ */
+const EINHEITEN_IM_KATALOG = new Set(
+  JSON.parse(readFileSync(fileURLToPath(new URL('../data/katalog-baustoff.json', import.meta.url)), 'utf8'))
+    .artikel.map((a) => a.einheit),
+);
 
 const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
 
@@ -252,6 +266,34 @@ const kampagnenDatei = pfad('../ausgabe/kampagne/kampagnen.csv');
 const spaeterDatei = pfad('../ausgabe/kampagne/spaeter-pruefen.csv');
 const zeilenVon = (datei) => readFileSync(datei, 'utf8').trim().split('\n').slice(1);
 
+/**
+ * Eine CSV-Zeile in Felder, mit Anführungszeichen.
+ *
+ * `z.split(',')` reichte, solange kein Feld ein Beistrich enthielt. Der
+ * Artikel „Capatect Kantenschutz mit Gewebe Carbon 11,5 13,5 cm" enthält
+ * zwei — die naive Zerlegung machte daraus das Keyword `"Capatect 11` und
+ * meldete es als ungedeckt. Ein Prüfer, der an der eigenen Zerlegung
+ * scheitert, meldet einen Fehler, den es nicht gibt; das ist genauso teuer
+ * wie einer, den er übersieht.
+ */
+function csvFelder(zeile) {
+  const felder = [];
+  let feld = '';
+  let inAnfuehrung = false;
+  for (let i = 0; i < zeile.length; i++) {
+    const z = zeile[i];
+    if (inAnfuehrung) {
+      if (z === '"' && zeile[i + 1] === '"') { feld += '"'; i++; }
+      else if (z === '"') inAnfuehrung = false;
+      else feld += z;
+    } else if (z === '"') inAnfuehrung = true;
+    else if (z === ',') { felder.push(feld); feld = ''; }
+    else feld += z;
+  }
+  felder.push(feld);
+  return felder;
+}
+
 test('Das Tagesbudget wird konzentriert, nicht über alle Gruppen gestreut', () => {
   // **Befund vom 31.08.** Zehn Euro durch sechs Gruppen sind 1,67 € je Gruppe
   // und Tag. Nachgerechnet bei 1,00 € Klickpreis: 50 Klicks im Monat je
@@ -450,10 +492,142 @@ test('Auch die zurückgestellten Anzeigentexte werden geprüft', () => {
 
   // 2. Und die Prüfung findet in dieser Menge tatsächlich etwas.
   const mitZusage = [...vorrat, { Anzeigengruppe: 'Probe', 'Überschrift 1': 'Alles ab Lager' }];
-  const gefunden = pruefeTexte(mitZusage);
+  const gefunden = pruefeTexte(mitZusage, EINHEITEN_IM_KATALOG);
   assert.ok(gefunden.some((f) => /behauptet Vorrat/.test(f)),
     `die Vorratszusage wurde nicht gefunden: ${gefunden.join(' | ')}`);
 
   // 3. Der echte Vorrat ist sauber.
-  assert.deepEqual(pruefeTexte(vorrat), [], 'ein Anzeigentext im Vorrat ist zu beanstanden');
+  assert.deepEqual(pruefeTexte(vorrat, EINHEITEN_IM_KATALOG), [],
+    'ein Anzeigentext im Vorrat ist zu beanstanden');
+});
+
+/* ------------------------------------------------------------------ *
+ * Deckt die Landeseite das Wort, für das bezahlt wird?
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Gemessen am 01.09.:** 14 von 36 Keywords des ersten Anlaufs enthielten
+ * ein Wort, das auf ihrer Landeseite nirgends steht — „Armierungsgewebe" auf
+ * einer Seite, die durchgehend „Glasgewebe" sagt. Bezahlter Klick, fremdes
+ * Wort, sofortiger Rücksprung.
+ */
+test('ungedeckteWoerter nennt genau die Wörter, die der Seitentext nicht sagt', () => {
+  const seite = 'wir führen glasgewebe, klebespachtel und dübel für die fassade.';
+  assert.deepEqual(ungedeckteWoerter('Glasgewebe', seite), []);
+  assert.deepEqual(ungedeckteWoerter('Armierungsgewebe', seite), ['armierungsgewebe']);
+  assert.deepEqual(ungedeckteWoerter('Schornstein Bausatz', seite), ['schornstein', 'bausatz']);
+
+  // Kurze Wörter belegen nichts und werden deshalb nicht verlangt.
+  assert.deepEqual(keywordWoerter('XPS 80 mm'), ['xps']);
+
+  // Ein zusammengesetztes Wort ist ein anderes Wort — „Fassadenplatten" ist
+  // nicht gedeckt, nur weil „Fassaden" vorkommt. Genau darauf sieht Google.
+  assert.deepEqual(ungedeckteWoerter('EPS Fassadenplatten', 'fassaden eps 5 cm'), ['fassadenplatten']);
+});
+
+test('hauptbereichText liest nur den eigenen Inhalt der Seite', () => {
+  const html = '<body><header>Perg</header><main id="inhalt"><h1>Kamin</h1>'
+    + '<p>Mantelstein und <b>Rohr</b></p></main><footer>Liefergebiet</footer></body>';
+  const t = hauptbereichText(html);
+  assert.match(t, /kamin/);
+  assert.match(t, /mantelstein und rohr/);
+  // Kopf und Fuß stehen auf jeder Seite und dürfen kein Wort decken.
+  assert.doesNotMatch(t, /perg/);
+  assert.doesNotMatch(t, /liefergebiet/);
+  // Eine Seite ohne Hauptbereich ergibt null, nicht den leeren Text: Leerer
+  // Text deckte kein Wort und sähe aus wie eine Seite ohne Deckung.
+  assert.equal(hauptbereichText('<body><p>ohne main</p></body>'), null);
+});
+
+/**
+ * Die Probe misst nicht die 102 Keywords von heute, sondern die Regel: Was in
+ * `keywords.csv` steht, muss auf seiner Landeseite vorkommen.
+ */
+test('Jedes ausgelieferte Keyword findet seine Wörter auf der Landeseite', () => {
+  const keywordDatei = pfad('../ausgabe/kampagne/keywords.csv');
+  const siteOrdner = pfad('../ausgabe/site/gruppe');
+  if (!existsSync(keywordDatei) || !existsSync(siteOrdner)) return;
+
+  const zeilen = zeilenVon(keywordDatei);
+  assert.ok(zeilen.length > 0, 'keywords.csv ist leer — die Schleife darunter prüft nichts');
+
+  const texte = new Map();
+  const ungedeckt = [];
+  for (const z of zeilen) {
+    const [, gruppe, keyword] = csvFelder(z);
+    if (!texte.has(gruppe)) {
+      const datei = join(siteOrdner, `${GRUPPENSEITE[gruppe]}.html`);
+      assert.ok(existsSync(datei), `die Landeseite ${datei} fehlt`);
+      texte.set(gruppe, hauptbereichText(readFileSync(datei, 'utf8')));
+    }
+    const fehlt = ungedeckteWoerter(keyword, texte.get(gruppe));
+    if (fehlt.length) ungedeckt.push(`${gruppe} „${keyword}" — fehlt: ${fehlt.join(' ')}`);
+  }
+  assert.deepEqual(ungedeckt, [], 'diese Keywords zahlen für Wörter, die ihre Landeseite nicht sagt');
+});
+
+/* ------------------------------------------------------------------ *
+ * Gebinde: wirbt die Anzeige mit einer Verkaufseinheit, die es gibt?
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Gemessen am 01.09.:** Sechs von sechs Anzeigengruppen warben mit
+ * Paletten — „Ganze Paletten statt Einzelplatten", „Wir liefern Paletten,
+ * keine Einzelsäcke". Kein einziger der 46 Artikel wird palettenweise
+ * verkauft; „Palette" steht in `data/` nur als Kostenposition des
+ * Lieferanten.
+ */
+test('Eine Anzeige darf kein Gebinde bewerben, das der Katalog nicht führt', () => {
+  assert.ok(GEBINDEAUSSAGEN.length > 0, 'ohne Gebinderegeln prüft die Schleife darunter nichts');
+  assert.ok(EINHEITEN_IM_KATALOG.size > 0, 'ohne Einheiten prüft die Regel nichts');
+  assert.ok(!EINHEITEN_IM_KATALOG.has('PAL'), 'der Katalog führt jetzt Palettenware — die Probe gehört nachgezogen');
+
+  const erfunden = pruefeTexte(
+    [{ Anzeigengruppe: 'Probe', 'Beschreibung 1': 'Ganze Paletten statt Einzelplatten.' }],
+    EINHEITEN_IM_KATALOG,
+  );
+  assert.ok(erfunden.some((f) => /wirbt mit Palettenware/.test(f)),
+    `die Palettenzusage wurde nicht gefunden: ${erfunden.join(' | ')}`);
+
+  // Und die Gegenrichtung: ein Gebinde ausschließen, das es sehr wohl gibt.
+  assert.ok(EINHEITEN_IM_KATALOG.has('SCK'), 'ohne Sackware prüft die Gegenrichtung nichts');
+  const verleugnet = pruefeTexte(
+    [{ Anzeigengruppe: 'Probe', 'Überschrift 1': 'Kein Sackverkauf' }],
+    EINHEITEN_IM_KATALOG,
+  );
+  assert.ok(verleugnet.some((f) => /schließt Sackware aus/.test(f)),
+    `der Ausschluss wurde nicht gefunden: ${verleugnet.join(' | ')}`);
+
+  // Der echte Textvorrat hält beide Richtungen ein — alle Gruppen, auch die
+  // zurückgestellten, die heute keine Anzeige bekommen.
+  assert.deepEqual(pruefeTexte(alleAnzeigentexte(), EINHEITEN_IM_KATALOG), []);
+});
+
+/**
+ * Ohne Einheiten prüft die Gebinderegel nichts — und eine Voreinstellung wäre
+ * die Stelle, an der ein Aufrufer sie stillschweigend überspringt. Deshalb
+ * wirft der Aufruf, statt grün zu melden.
+ */
+test('pruefeTexte ohne Einheiten wirft, statt die Gebinderegel zu überspringen', () => {
+  assert.throws(() => pruefeTexte([{ Anzeigengruppe: 'Probe' }]), /geführten Einheiten/);
+});
+
+/**
+ * **Zurückhalten ist die Notbremse, nicht der Normalzustand.**
+ *
+ * Das Werkzeug lässt ein ungedecktes Keyword nicht hinaus — gut. Aber es tut
+ * das still, und die Kampagne schrumpft dann, ohne dass jemand entschieden
+ * hätte. Wer ein Wort von einer Landeseite nimmt, verliert damit lautlos das
+ * Keyword, das darauf gezielt hat.
+ *
+ * Diese Probe verlangt deshalb die leere Datei: Jedes ungedeckte Keyword ist
+ * eine offene Entscheidung — das Wort gehört auf die Seite, oder das Keyword
+ * gehört aus `GATTUNGSBEGRIFFE`. Beides ist zu tun, keines auszusitzen.
+ */
+test('Kein Keyword wird stillschweigend zurückgehalten', () => {
+  const datei = pfad('../ausgabe/kampagne/keywords-ohne-deckung.csv');
+  if (!existsSync(datei)) return;
+  const zeilen = zeilenVon(datei).filter((z) => z.trim() !== '');
+  assert.deepEqual(zeilen, [],
+    'diese Keywords wurden zurückgehalten — entscheiden, nicht liegen lassen');
 });

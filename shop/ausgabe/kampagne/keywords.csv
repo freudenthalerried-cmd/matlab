@@ -13,8 +13,6 @@ Baustoffe WDVS,WDVS,Putzgrund Fassade,Phrase,Gattung,
 Baustoffe WDVS,WDVS,Putzgrund Fassade,Exakt,Gattung,
 Baustoffe WDVS,WDVS,WDVS System kaufen,Phrase,Gattung,
 Baustoffe WDVS,WDVS,WDVS System kaufen,Exakt,Gattung,
-Baustoffe WDVS,WDVS,Fassadendämmung Material,Phrase,Gattung,
-Baustoffe WDVS,WDVS,Fassadendämmung Material,Exakt,Gattung,
 Baustoffe WDVS,WDVS,Baumit TextilglasGitter,Phrase,Marke,Baumit
 Baustoffe WDVS,WDVS,Baumit TextilglasGitter,Exakt,Marke,Baumit
 Baustoffe WDVS,WDVS,Capatect Gewebeanschlussleiste 3D Universal Plus,Phrase,Marke,Capatect
@@ -39,10 +37,8 @@ Baustoffe Dämmung,Dämmung,Perimeterdämmung XPS,Phrase,Gattung,
 Baustoffe Dämmung,Dämmung,Perimeterdämmung XPS,Exakt,Gattung,
 Baustoffe Dämmung,Dämmung,EPS Fassadenplatten,Phrase,Gattung,
 Baustoffe Dämmung,Dämmung,EPS Fassadenplatten,Exakt,Gattung,
-Baustoffe Dämmung,Dämmung,Dämmplatten palettenweise,Phrase,Gattung,
-Baustoffe Dämmung,Dämmung,Dämmplatten palettenweise,Exakt,Gattung,
-Baustoffe Dämmung,Dämmung,XPS Palette,Phrase,Gattung,
-Baustoffe Dämmung,Dämmung,XPS Palette,Exakt,Gattung,
+Baustoffe Dämmung,Dämmung,Fassadendämmung EPS,Phrase,Gattung,
+Baustoffe Dämmung,Dämmung,Fassadendämmung EPS,Exakt,Gattung,
 Baustoffe Dämmung,Dämmung,Perimeterdämmung druckfest,Phrase,Gattung,
 Baustoffe Dämmung,Dämmung,Perimeterdämmung druckfest,Exakt,Gattung,
 Baustoffe Dämmung,Dämmung,Isover TDPT 20,Phrase,Typkennung,Isover
@@ -59,8 +55,6 @@ Baustoffe Kamin,Kamin,Kamin Fertigfuß,Phrase,Gattung,
 Baustoffe Kamin,Kamin,Kamin Fertigfuß,Exakt,Gattung,
 Baustoffe Kamin,Kamin,Kaminkopf Regenhaube,Phrase,Gattung,
 Baustoffe Kamin,Kamin,Kaminkopf Regenhaube,Exakt,Gattung,
-Baustoffe Kamin,Kamin,Schornstein Bausatz,Phrase,Gattung,
-Baustoffe Kamin,Kamin,Schornstein Bausatz,Exakt,Gattung,
 Baustoffe Kamin,Kamin,Schiedel Fugenmasse FM,Phrase,Marke,Schiedel
 Baustoffe Kamin,Kamin,Schiedel Fugenmasse FM,Exakt,Marke,Schiedel
 Baustoffe Kamin,Kamin,SIK Zuluftplatte EZ 16-18,Phrase,Marke,SIK

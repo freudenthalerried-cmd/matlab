@@ -8,7 +8,7 @@ frage: Welche WDVS-Komponenten führen wir, und wonach wählt man sie aus?
 kurz: Klebe- und Spachtelmassen, Glasgewebe, Dübel, Kantenschutz, Putzgrund und Oberputz — die Bestandteile eines Fassadensystems. Ausgewählt wird nach dem System, nicht nach dem Einzelpreis: Geprüft wird die Kombination, nicht der einzelne Sack.
 verwandt: wdvs-systemaufbau, mengen-fuer-100-qm-wdvs, untergrund-pruefen
 system: fassade-100-qm
-stand: 2026-08-25
+stand: 2026-09-01
 ---
 
 # WDVS-Komponenten
@@ -20,6 +20,30 @@ Einzelpreis: Geprüft wird die **Kombination**, nicht der einzelne Sack —
 Prüfgrundlage ist die Zulassungsleitlinie ETAG 004, die österreichischen
 Anwendungskriterien stehen in ÖNORM B 6400, Ausgabe 2004-08-01. Welche
 Kombination geprüft ist, steht in den Systemunterlagen des Herstellers.
+
+## Wie diese Positionen in der Ausschreibung heißen
+
+Dieselbe Ware trägt am Bau zwei Namen — den des Herstellers und den des
+Leistungsverzeichnisses. Damit niemand suchen muss:
+
+| Bei uns | In Ausschreibung und Bestellung auch |
+|---|---|
+| Klebe- und Spachtelmasse | **Armierungsmörtel**, Klebespachtel, WDVS-**Kleber** |
+| Glasgewebe, TextilglasGitter | **Armierungsgewebe**, Armierungsgitter |
+| Universal- und Schraubdübel | **Fassadendübel**, Dämmstoffdübel, Tellerdübel |
+| Putzgrund | Grundierung, Haftgrund |
+
+Die rechte Spalte ist Sprachgebrauch, keine Produktzuordnung: Welches
+konkrete Produkt für welche Aufgabe freigegeben ist, steht im Merkblatt des
+Herstellers und nicht in dieser Tabelle.
+
+## So bestellen Sie hier
+
+Jede Karte unten führt auf die Artikelseite. Dort stehen Gebinde, Preis je
+Einheit und der Knopf, mit dem der Artikel in den Warenkorb wandert. Wer das
+ganze System kaufen will, geht über die Systemliste
+[Fassade 100 m²](../system/fassade-100-qm) — sie führt auch die Positionen
+mit, die wir nicht führen, damit die Liste vollständig bleibt.
 
 ## Was Sie hier finden
 
