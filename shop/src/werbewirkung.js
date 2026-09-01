@@ -125,3 +125,58 @@ export function versuchsplan({ tagesbudget, klickpreis, quote, deckungsbeitragJe
     ueberschussJeVerkauf: deckungsbeitragJeVerkauf - werbekostenJeVerkauf,
   };
 }
+
+/* ------------------------------------------------------------------ *
+ * Was der Plan sich leisten kann
+ * ------------------------------------------------------------------ */
+
+/**
+ * Der Klickpreis, den das Modell bei einer gegebenen Kaufquote **tragen**
+ * kann — und der Punkt, an dem er unter den Marktpreis fällt.
+ *
+ * ## Warum das die schärfste Fassung der offenen Frage ist
+ *
+ * Das Modell legt zwei Größen fest: den Werbeanteil am Umsatz (10 %) und die
+ * Zahl der Bestellungen, die den Zielgewinn tragen (67). Daraus folgt das
+ * Werbebudget. Wie viele **Besucher** man dafür braucht, hängt allein an der
+ * Kaufquote — und damit auch, was ein einzelner Klick kosten darf:
+ *
+ *     leistbarer Klickpreis = Werbebudget ÷ (Bestellungen ÷ Kaufquote)
+ *
+ * Gerechnet am Stand vom 01.09. (4.340 € Budget, 67 Bestellungen):
+ *
+ * | Kaufquote | Besucher nötig | leistbarer Klick |
+ * |---|---|---|
+ * | 2,0 % | 3.350 | 1,30 € |
+ * | 1,0 % | 6.700 | 0,65 € |
+ * | **0,75 %** | 8.933 | **0,49 €** |
+ * | 0,5 % | 13.400 | 0,32 € |
+ *
+ * Der Markt kostet 0,50 bis 2,50 € je Klick. **Unter etwa 0,75 % Kaufquote
+ * kann sich das Modell den billigsten Klick nicht mehr leisten** — nicht
+ * knapp, sondern grundsätzlich: Dann trägt der Klickkanal die Zielgröße bei
+ * keinem Gebot mehr.
+ *
+ * Das ist keine Prognose. Es ist die Umrechnung der einen Zahl, die niemand
+ * gemessen hat, in die Frage, die sie entscheidet.
+ */
+export function leistbarerKlickpreis({ werbebudgetJeMonat, bestellungen, quote }) {
+  for (const [name, wert] of Object.entries({ werbebudgetJeMonat, bestellungen })) {
+    if (!(wert > 0)) throw new Error(`${name} muss größer als null sein, ist ${wert}`);
+  }
+  if (!(quote > 0 && quote < 1)) throw new Error(`Kaufquote außerhalb (0,1): ${quote}`);
+  const besucher = bestellungen / quote;
+  return { besucher, klickpreis: werbebudgetJeMonat / besucher };
+}
+
+/**
+ * Die Kaufquote, unter der das Modell den **günstigsten** Marktklick nicht
+ * mehr trägt. Gelöst statt gesucht — die Beziehung ist linear in der Quote.
+ */
+export function quoteAmMarktboden({ werbebudgetJeMonat, bestellungen, marktUnten }) {
+  if (!(marktUnten > 0)) throw new Error(`Der untere Marktklickpreis muss positiv sein, ist ${marktUnten}`);
+  const { klickpreis } = leistbarerKlickpreis({ werbebudgetJeMonat, bestellungen, quote: 0.5 });
+  // klickpreis(q) = Budget · q / Bestellungen — also linear; aus einem
+  // Stützpunkt lässt sich die Nullstelle direkt bestimmen.
+  return marktUnten * 0.5 / klickpreis;
+}

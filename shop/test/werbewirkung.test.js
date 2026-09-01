@@ -85,3 +85,45 @@ test('Unbrauchbare Eingaben werfen, statt eine Zahl zu erfinden', () => {
     assert.throws(() => versuchsplan(p), new RegExp(feld), `${feld}=0 kam durch`);
   }
 });
+
+/* ------------------------------------------------------------------ *
+ * Was der Plan sich leisten kann
+ * ------------------------------------------------------------------ */
+
+test('Der leistbare Klickpreis ist linear in der Kaufquote', async () => {
+  const { leistbarerKlickpreis, quoteAmMarktboden } = await import('../src/werbewirkung.js');
+  const lage = { werbebudgetJeMonat: 4340, bestellungen: 67 };
+
+  // Halbe Quote, doppelt so viele Besucher, halber leistbarer Klickpreis.
+  const zwei = leistbarerKlickpreis({ ...lage, quote: 0.02 });
+  const eins = leistbarerKlickpreis({ ...lage, quote: 0.01 });
+  nah(eins.besucher, zwei.besucher * 2, 1e-6);
+  nah(eins.klickpreis, zwei.klickpreis / 2, 1e-9);
+
+  // Und die Zahlen, um die es geht.
+  nah(zwei.besucher, 3350, 1);
+  assert.ok(zwei.klickpreis > 1.29 && zwei.klickpreis < 1.31, `${zwei.klickpreis}`);
+
+  // Der Kipppunkt: Unter dieser Quote trägt das Modell nicht einmal den
+  // billigsten Marktklick. Geprüft wird nicht die Formel mit sich selbst,
+  // sondern dass an der gefundenen Quote der leistbare Preis genau dem
+  // Marktboden entspricht.
+  const marktUnten = 0.5;
+  const q = quoteAmMarktboden({ ...lage, marktUnten });
+  nah(leistbarerKlickpreis({ ...lage, quote: q }).klickpreis, marktUnten, 1e-9);
+  assert.ok(q > 0.007 && q < 0.008, `Kipppunkt bei ${q}`);
+
+  // Knapp darüber trägt es, knapp darunter nicht.
+  assert.ok(leistbarerKlickpreis({ ...lage, quote: q * 1.01 }).klickpreis > marktUnten);
+  assert.ok(leistbarerKlickpreis({ ...lage, quote: q * 0.99 }).klickpreis < marktUnten);
+});
+
+test('Unbrauchbare Eingaben werfen auch hier', async () => {
+  const { leistbarerKlickpreis, quoteAmMarktboden } = await import('../src/werbewirkung.js');
+  const lage = { werbebudgetJeMonat: 4340, bestellungen: 67, quote: 0.02 };
+  for (const feld of ['werbebudgetJeMonat', 'bestellungen']) {
+    assert.throws(() => leistbarerKlickpreis({ ...lage, [feld]: 0 }), new RegExp(feld));
+  }
+  for (const q of [0, 1, -0.1]) assert.throws(() => leistbarerKlickpreis({ ...lage, quote: q }), /Kaufquote/);
+  assert.throws(() => quoteAmMarktboden({ ...lage, marktUnten: 0 }), /Marktklickpreis/);
+});

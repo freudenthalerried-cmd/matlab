@@ -12,7 +12,9 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { versuchsplan, nochPlausibleQuote, TAGE_JE_MONAT, SICHERHEIT } from '../src/werbewirkung.js';
+import { versuchsplan, nochPlausibleQuote, TAGE_JE_MONAT, SICHERHEIT,
+  leistbarerKlickpreis, quoteAmMarktboden } from '../src/werbewirkung.js';
+import { noetigerUmsatz } from '../src/kostenbild.js';
 import { MARKT_CPC } from './kampagne.mjs';
 
 const SHOP = fileURLToPath(new URL('..', import.meta.url));
@@ -88,6 +90,27 @@ console.log('\nWas ein Fehlversuch zeigt — die größte Quote, die danach noch
 for (const n of [50, 100, 200, 300, 600]) {
   console.log(`  ${String(n).padStart(4)} Klicks ohne Bestellung  →  Quote über `
     + `${(nochPlausibleQuote(n, sicherheit) * 100).toFixed(2)} % ausgeschlossen`);
+}
+
+// **Der Kipppunkt des ganzen Modells**, ausgedrückt in der einen Zahl, die
+// niemand gemessen hat. Gerechnet aus den Zielgrößen, nicht aus dem
+// Versuchsbudget: Hier geht es um den Betrieb, nicht um den ersten Anlauf.
+const lage = JSON.parse(readFileSync(join(SHOP, 'data', 'zielgroessen.json'), 'utf8'));
+const ziel = noetigerUmsatz(lage, lage.zahlweg);
+if (ziel.tragfaehig) {
+  const werbebudgetJeMonat = ziel.umsatzNetto * lage.werbeanteil;
+  const kipp = quoteAmMarktboden({ werbebudgetJeMonat, bestellungen: ziel.bestellungen, marktUnten: MARKT_CPC.unten });
+  console.log('\nWas der Betrieb sich je Klick leisten kann (Zielgröße, nicht erster Anlauf):\n');
+  console.log(`  Werbebudget ${eur(werbebudgetJeMonat)} € im Monat für ${ziel.bestellungen} Bestellungen.\n`);
+  console.log('   Quote   Besucher nötig   leistbarer Klick');
+  for (const q of [0.03, 0.02, 0.015, 0.01, 0.0075, 0.005]) {
+    const r = leistbarerKlickpreis({ werbebudgetJeMonat, bestellungen: ziel.bestellungen, quote: q });
+    const unterMarkt = r.klickpreis < MARKT_CPC.unten ? '  ← unter dem Marktpreis' : '';
+    console.log(`  ${(q * 100).toFixed(2).padStart(5)} %   ${String(Math.round(r.besucher)).padStart(12)}   `
+      + `${eur(r.klickpreis).padStart(13)} €${unterMarkt}`);
+  }
+  console.log(`\n  Unter ${(kipp * 100).toFixed(2)} % Kaufquote trägt das Modell nicht einmal den billigsten`);
+  console.log('  Marktklick — dann trägt der Klickkanal die Zielgröße bei keinem Gebot mehr.');
 }
 
 console.log('\nWas diese Rechnung nicht kann:');
