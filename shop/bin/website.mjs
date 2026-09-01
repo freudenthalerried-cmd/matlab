@@ -39,6 +39,7 @@ import { ohneKommentare } from '../src/entkommentieren.js';
 import { preisJeKilo, kilotafel, mengenschritt } from '../src/gebinde.js';
 import { EINHEITEN, aufzaehlung } from '../src/format.js';
 import { GRUPPENSEITE } from '../src/artikelliste.js';
+import { preisstandSpanne } from '../src/preisalter.js';
 import { HERSTELLER, marke } from '../src/hersteller.js';
 import { oeffentlicherArtikel, oeffentlicherLieferant, vorteil, ustText } from '../src/shopkern.js';
 import { LIEFERGEBIET } from '../src/liefergebiet.js';
@@ -1083,9 +1084,18 @@ Preis bezieht sich auf Fläche, Länge oder Volumen. Geschätzt wird nichts.`
  * hat die fehlende Angabe der Inhaltsprüfer, als er zum ersten Mal über die
  * gebauten Seiten lief.
  */
+/**
+ * **Berichtigt am 01.09.** Hier stand das **Maximum** aller Preisstände, und
+ * die Startseite schrieb „Alle Preise Stand: …" davor. Der älteste
+ * Einkaufspreis ist vom 22. April, der jüngste vom 17. August — der Satz
+ * behauptete für einunddreißig Artikel eine Frische, die sie nicht haben.
+ *
+ * Der Anfragetext konnte es die ganze Zeit richtig („Preisstand der
+ * Positionen: X bis Y"). Die Spanne kommt jetzt aus `preisstandSpanne()` in
+ * `src/preisalter.js`, damit alle drei Ausgaben dieselbe benutzen.
+ */
 function preisStand(katalog) {
-  const staende = katalog.artikel.map((a) => a.preisStand).filter(Boolean).sort();
-  return staende.length ? staende[staende.length - 1] : 'siehe Artikelseiten';
+  return preisstandSpanne(katalog.artikel)?.text ?? 'siehe Artikelseiten';
 }
 
 function startSeite(katalog, befund, seiten, verweis, katalogDatei, bereitschaft) {
@@ -1116,7 +1126,7 @@ function startSeite(katalog, befund, seiten, verweis, katalogDatei, bereitschaft
     html: `<h1>Baustoffe zum<br>Baumeisterpreis</h1>
 <p class="lede">Was ein Baumeister im Einkauf zahlt, zahlen Sie auch — deshalb liegen
 ${befund.unterListe} von ${befund.mitPreis} Artikeln unter dem Listenpreis des Lieferanten, im Median um
-${String(befund.medianAbstandZurListe).replace('.', ',')} %. Alle Preise Stand: ${esc(preisStand(katalog))}.
+${String(befund.medianAbstandZurListe).replace('.', ',')} %. Preise der ${befund.artikelGesamt} Artikel, Stand: ${esc(preisStand(katalog))}.
 Geliefert wird im Umkreis, nicht in ganz Österreich: Das ist der Grund, warum die Rechnung aufgeht.</p>
 
 <div class="preistafel">
@@ -2093,7 +2103,7 @@ function main() {
     // darunter sagt, wie viele das sind. Eine Auslassung, die sich selbst
     // beziffert, ist keine Lücke mehr.
     '', '## Artikel', '',
-    `> Alle Preise netto je Einheit, Preisstand ${preisStand(katalog) ?? 'unbekannt'}. `
+    `> Alle Preise netto je Einheit, Preisstand ${preisStand(katalog)}; je Artikel steht er auf der Artikelseite. `
       + 'Die Zustellung kostet eine Pauschale je Lieferung, bei palettierter Ware zuzüglich '
       + 'Kranentladung je Hub; sie steht auf der Seite ' + `${BASIS}/lieferung.html. `
       + 'Es gibt keine Frei-Haus-Schwelle.',

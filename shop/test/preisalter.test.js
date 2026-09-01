@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { preisalterTage, preisalterBefund, GRENZE_TAGE, GRENZE_HERKUNFT } from '../src/preisalter.js';
 import { WARENKOERBE } from '../bin/kampagne.mjs';
@@ -111,4 +111,65 @@ test('Jede Position der Referenzwarenkörbe steht im Katalog', () => {
     }
   }
   assert.deepEqual(fehlend, [], 'diese Korbpositionen gibt es im Katalog nicht');
+});
+
+/* ------------------------------------------------------------------ *
+ * Der ausgewiesene Preisstand
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Gefunden am 01.09.:** Auf der Startseite und in `llms.txt` stand „Alle
+ * Preise Stand: 2026-08-17" — das **Maximum** aller Preisstände. Der älteste
+ * Einkaufspreis ist vom 22. April, 117 Tage davor. Der Satz behauptete für
+ * einunddreißig Artikel eine Frische, die sie nicht haben, und zwar in der
+ * Richtung, die den Shop besser aussehen lässt.
+ */
+test('Der ausgewiesene Preisstand ist die Spanne, nicht der jüngste Wert', async () => {
+  const { preisstandSpanne } = await import('../src/preisalter.js');
+
+  const s = preisstandSpanne([
+    { preisStand: '2026-08-17' }, { preisStand: '2026-04-22' }, { preisStand: '2026-06-25' },
+  ]);
+  assert.equal(s.von, '2026-04-22');
+  assert.equal(s.bis, '2026-08-17');
+  assert.equal(s.einheitlich, false);
+  assert.equal(s.text, '2026-04-22 bis 2026-08-17');
+
+  // Ein einziges Datum wird nicht zu „X bis X" aufgeblasen.
+  const eins = preisstandSpanne([{ preisStand: '2026-08-17' }, { preisStand: '2026-08-17' }]);
+  assert.equal(eins.einheitlich, true);
+  assert.equal(eins.text, '2026-08-17');
+
+  // Unbrauchbares zählt nicht mit — und wenn nichts übrig bleibt, gibt es
+  // keine Spanne statt einer erfundenen.
+  const mitMuell = preisstandSpanne([
+    { preisStand: '2026-08-17' }, { preisStand: null }, { preisStand: 'Juni' }, {},
+  ]);
+  assert.equal(mitMuell.text, '2026-08-17');
+  assert.equal(preisstandSpanne([{ preisStand: null }, {}]), null);
+  assert.equal(preisstandSpanne([]), null);
+});
+
+/**
+ * Und die gebauten Seiten sagen es auch so. Geprüft wird gegen den Katalog,
+ * nicht gegen ein abgeschriebenes Datum.
+ */
+test('Startseite und llms.txt nennen dieselbe Spanne wie der Katalog', async () => {
+  const { preisstandSpanne } = await import('../src/preisalter.js');
+  const start = pfad('../ausgabe/site/index.html');
+  const llms = pfad('../ausgabe/site/llms.txt');
+  if (!existsSync(start) || !existsSync(llms)) return;
+
+  const katalog = JSON.parse(readFileSync(pfad('../data/katalog-baustoff.json'), 'utf8'));
+  const spanne = preisstandSpanne(katalog.artikel);
+  assert.ok(spanne, 'kein Preisstand im Katalog — die Prüfungen darunter prüfen nichts');
+  assert.equal(spanne.einheitlich, false,
+    'alle Artikel tragen denselben Preisstand — dann prüft der Vergleich unten nichts mehr');
+
+  for (const datei of [start, llms]) {
+    const text = readFileSync(datei, 'utf8');
+    assert.ok(text.includes(spanne.text), `${datei} nennt nicht „${spanne.text}"`);
+    // Und nicht mehr den jüngsten Wert als Aussage über alle.
+    assert.ok(!/Alle Preise Stand/.test(text), `${datei} behauptet wieder einen Stand für alle`);
+  }
 });

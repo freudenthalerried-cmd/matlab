@@ -147,3 +147,47 @@ export function preisalterBefund({ artikel, heute, beworbeneSkus, grenzeTage = G
     sauber: fehler.length === 0,
   };
 }
+
+/* ------------------------------------------------------------------ *
+ * Wie ein Preisstand für viele Artikel ausgewiesen wird
+ * ------------------------------------------------------------------ */
+
+/**
+ * Die Preisstandsspanne einer Artikelmenge — nicht ihr jüngster Wert.
+ *
+ * ## Der Befund vom 01.09.
+ *
+ * Auf der Startseite stand: **„Alle Preise Stand: 2026-08-17."** Dasselbe in
+ * `llms.txt`. Gerechnet wurde dafür das **Maximum** aller Preisstände.
+ *
+ * Der älteste Einkaufspreis im Katalog ist vom **22. April** — 117 Tage vor
+ * dem genannten Datum. Der Satz behauptete also für einunddreißig Artikel
+ * eine Frische, die sie nicht haben, und zwar in der Richtung, die den Shop
+ * besser aussehen lässt.
+ *
+ * Ein Preisstand ist keine Zierde. Er ist die Angabe, auf die sich ein Kunde
+ * verlässt, wenn er einen Preis übernimmt — und er widerspricht den eigenen
+ * Redaktionsprinzipien („jede Zahl mit Herkunft und Stand"), wenn er das
+ * Beste aus einer Menge nennt und es „alle" darüberschreibt.
+ *
+ * **Der Anfragetext konnte es die ganze Zeit richtig.** `kundenanfrage.js`
+ * schreibt seit jeher „Preisstand der Positionen: X bis Y". Zwei Wege zur
+ * selben Aussage, und der kürzere — das Maximum — stand auf der meistbesuchten
+ * Seite und im maschinenlesbaren Kanal.
+ *
+ * @returns {{von: string, bis: string, text: string, einheitlich: boolean}|null}
+ */
+export function preisstandSpanne(artikel) {
+  const staende = [...new Set(
+    (artikel ?? []).map((a) => String(a?.preisStand ?? '').trim()).filter((s) => /^\d{4}-\d{2}-\d{2}$/.test(s)),
+  )].sort();
+  if (staende.length === 0) return null;
+  const von = staende[0];
+  const bis = staende.at(-1);
+  return {
+    von,
+    bis,
+    einheitlich: von === bis,
+    text: von === bis ? von : `${von} bis ${bis}`,
+  };
+}
