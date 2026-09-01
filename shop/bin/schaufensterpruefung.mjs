@@ -16,7 +16,7 @@ import { spawnSync } from 'node:child_process';
 import { pruefeSchaufenster } from '../src/schaufenster.js';
 import { PRUEFER, BROWSERPRUEFER } from '../src/pruefregister.js';
 import { ladeBaustoffkatalog } from '../src/baustoffkatalog.js';
-import { vorteil } from '../src/shopkern.js';
+import { katalogbefund } from '../src/baustoffkatalog.js';
 
 const SHOP = fileURLToPath(new URL('..', import.meta.url));
 const REPO = join(SHOP, '..');
@@ -48,7 +48,16 @@ const katalog = ladeBaustoffkatalog(
   lies(join(REPO, 'preise', 'baustoff-preise.json')),
   lies(join(SHOP, 'data', 'lieferanten.json')),
 );
-const vorteile = katalog.artikel.map((a) => vorteil(a)).filter((x) => x !== null && x > 0).sort((a, b) => a - b);
+// **Berichtigt am 01.09.** Hier stand ein Nachbau: `vorteil()` je Artikel,
+// sortiert, Median gezogen. Er lieferte **26**, während die Startseite und die
+// Preistafel **26,7** ausweisen — `vorteil()` rundet je Artikel auf ganze
+// Prozent, `katalogbefund` bildet den Median des Verhältnisses und rundet
+// einmal am Ende. Zwei Rechnungen für dieselbe Aussage, und der Prüfer segnete
+// die ab, die niemand sieht.
+//
+// **Ein Prüfer, der mit einer eigenen Rechnung misst, prüft seine Rechnung.**
+// Gemessen wird jetzt an derselben Quelle, aus der die Seite schöpft.
+const befund = katalogbefund(katalog);
 
 const gateText = readFileSync(join(REPO, 'docs', 'baustoff-shop', 'gate-register.md'), 'utf8');
 const gates = Math.max(...[...gateText.matchAll(/Gate (\d+)/g)].map((t) => Number(t[1])));
@@ -107,8 +116,8 @@ const messwerte = {
   browserpruefer: BROWSERPRUEFER.length,
   feed: feedTreffer ? Number(feedTreffer[1]) : null,
   ohneGtin: katalogDatei.artikel.filter((a) => !a.gtin).length,
-  unterListe: vorteile.length,
-  medianVorteil: vorteile[Math.floor(vorteile.length / 2)],
+  unterListe: befund.unterListe,
+  medianVorteil: befund.medianAbstandZurListe,
   anlauf: readFileSync(join(kampagne, 'kampagnen.csv'), 'utf8').trim().split('\n').length - 1,
   cpcKamin: cpc('Kamin'),
   cpcDaemmung: cpc('Dämmung'),

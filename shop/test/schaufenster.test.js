@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { zahlAus, kennzahlen, pruefeSchaufenster } from '../src/schaufenster.js';
 
@@ -95,4 +95,36 @@ test('Eine Untergrenze gilt, solange sie stimmt und noch etwas sagt', () => {
   assert.match(meldung(satz('1.000'), 2000).grund, /nichtssagend/);
   // Knapp darunter noch nicht.
   assert.equal(meldung(satz('1.000'), 1999), undefined);
+});
+
+/**
+ * **Der Fund vom 01.09.:** Der Prüfer rechnete den Median des
+ * Listenpreisabstands selbst nach und erhielt **26**, während Startseite und
+ * Preistafel **26,7** ausweisen — zwei Rundungswege für dieselbe Aussage. Er
+ * bestätigte damit die Zahl, die niemand sieht.
+ *
+ * Geprüft wird deshalb die Eigenschaft, um die es geht: Was die Beschreibung
+ * über den Katalog sagt, muss dasselbe sein, was die **gebaute Seite** sagt.
+ * Beide schöpfen dann aus `katalogbefund()`.
+ */
+test('Beschreibung und Startseite nennen denselben Listenpreisabstand', () => {
+  const start = pfad('../ausgabe/site/index.html');
+  if (!existsSync(start)) return;
+
+  const beschreibung = readFileSync(pfad('../../docs/baustoff-shop/pr-beschreibung.md'), 'utf8');
+  const ausBeschreibung = beschreibung.match(/im Median ([\d,]+) % darunter/);
+  assert.ok(ausBeschreibung, 'die Beschreibung nennt keinen Median mehr');
+
+  const seite = readFileSync(start, 'utf8');
+  const ausSeite = seite.match(/im Median<\/span><span class="w">([\d,]+) %/);
+  assert.ok(ausSeite, 'die Startseite nennt keinen Median mehr');
+
+  assert.equal(zahlAus(ausBeschreibung[1]), zahlAus(ausSeite[1]),
+    `Beschreibung sagt ${ausBeschreibung[1]}, die Seite sagt ${ausSeite[1]}`);
+
+  // Und dieselbe Zahl steht in beiden Sätzen über die Artikelzahl.
+  const nBeschreibung = beschreibung.match(/(\d+) von (\d+) Artikeln liegen unter dem Listenpreis/);
+  const nSeite = seite.match(/liegen\s*(\d+) von (\d+) Artikeln unter dem Listenpreis/);
+  assert.ok(nBeschreibung && nSeite, 'die Artikelzahlen stehen nicht mehr in beiden Texten');
+  assert.deepEqual(nBeschreibung.slice(1, 3), nSeite.slice(1, 3));
 });

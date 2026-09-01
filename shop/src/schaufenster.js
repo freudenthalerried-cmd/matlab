@@ -55,6 +55,21 @@
  * Die Prosa. Der Prüfer hält die aufgezählten Kennzahlen fest, sonst nichts;
  * eine überholte Einschätzung findet er nicht. Das steht hier, damit ein
  * grüner Lauf nicht für mehr genommen wird, als er ist.
+ *
+ * ## Und eine Regel für die Messung selbst
+ *
+ * **Gemessen wird an der Quelle, aus der die Aussage stammt — nicht mit einer
+ * eigenen Rechnung.** Am 01.09. hat dieser Prüfer den Median des
+ * Listenpreisabstands selbst nachgerechnet (`vorteil()` je Artikel, sortiert,
+ * Median) und **26** erhalten, während Startseite und Preistafel **26,7**
+ * ausweisen: `vorteil()` rundet je Artikel auf ganze Prozent,
+ * `katalogbefund()` rundet einmal am Ende. Der Prüfer bestätigte damit die
+ * Zahl, die niemand sieht, und ließ die falsche in der Beschreibung stehen.
+ *
+ * > Ein Prüfer, der mit einer eigenen Rechnung misst, prüft seine Rechnung.
+ *
+ * Wo eine Messung nicht an der Quelle genommen werden kann, sagt `wie` es
+ * ausdrücklich — siehe die beiden Browserproben unten.
  */
 
 /** Eine Zahl aus dem Text — mit Beistrich als Dezimaltrennzeichen. */
@@ -83,15 +98,24 @@ export function kennzahlen(messwerte) {
     { name: 'Gates', wie: 'gate-register.md', muster: /\((\d+) Gates, Stand/, soll: m.gates },
     { name: 'Testfälle', wie: 'node --test', muster: /\*\*über ([\d.]+) Testfälle\*\*/,
       soll: m.tests, art: 'mindestens' },
-    { name: 'Oberflächenszenarien', wie: 'bin/oberflaechenprobe.mjs', muster: /(\d+) Oberflächenszenarien/, soll: m.oberflaeche },
-    { name: 'Shopszenarien', wie: 'bin/shopprobe.mjs', muster: /(\d+) Shopszenarien/, soll: m.shop },
+    // **Gezählt in der Quelle, nicht aus dem Lauf gelesen.** Beide Proben
+    // melden ihre Szenarienzahl selbst, aber jeder Lauf kostet einen
+    // Chromium-Start je Szenario. Der Umfang wird deshalb hier abgezählt und
+    // vom Prüfer der Prüfer gegen den echten Lauf gehalten (`--mit-browser`).
+    // Die Grenze steht hier, damit niemand einen grünen Lauf für mehr nimmt,
+    // als er ist.
+    { name: 'Oberflächenszenarien', wie: 'Szenariennamen in bin/oberflaechenprobe.mjs (gezählt, nicht gelaufen)',
+      muster: /(\d+) Oberflächenszenarien/, soll: m.oberflaeche },
+    { name: 'Shopszenarien', wie: 'Szenariennamen in bin/shopprobe.mjs (gezählt, nicht gelaufen)',
+      muster: /(\d+) Shopszenarien/, soll: m.shop },
     { name: 'Prüfer ohne Browser', wie: 'src/pruefregister.js', muster: /\*\*(\d+) Prüfer\*\* ohne Browser/, soll: m.pruefer },
     { name: 'Browserproben', wie: 'src/pruefregister.js', muster: /ohne Browser, (\d+) Browserproben/, soll: m.browserpruefer },
     { name: 'Feedeinträge', wie: 'npm run veroeffentlichung', muster: /\| (\d+) Einträge — \*\*nicht einreichbar/, soll: m.feed },
     { name: 'Artikel ohne GTIN (Tabelle)', wie: 'data/katalog-baustoff.json', muster: /GTIN fehlt bei allen (\d+) Artikeln/, soll: m.ohneGtin },
     { name: 'Artikel ohne GTIN (Liste)', wie: 'data/katalog-baustoff.json', muster: /\*\*GTIN je Artikel\*\* — bei allen (\d+) offen/, soll: m.ohneGtin },
-    { name: 'Artikel unter Listenpreis', wie: 'vorteil() über den Katalog', muster: /(\d+) von \d+ Artikeln liegen unter dem Listenpreis/, soll: m.unterListe },
-    { name: 'Median unter Liste', wie: 'vorteil() über den Katalog', muster: /im Median (\d+) % darunter/, soll: m.medianVorteil },
+    { name: 'Artikel unter Listenpreis', wie: 'katalogbefund().unterListe', muster: /(\d+) von \d+ Artikeln liegen unter dem Listenpreis/, soll: m.unterListe },
+    { name: 'Median unter Liste', wie: 'katalogbefund().medianAbstandZurListe',
+      muster: /im Median ([\d,]+) % darunter/, soll: m.medianVorteil },
     { name: 'Kampagnen im ersten Anlauf', wie: 'ausgabe/kampagne/kampagnen.csv', muster: /\*\*(\d+) im ersten Anlauf\*\*/, soll: m.anlauf },
     { name: 'Höchstgebot Kamin', wie: 'ausgabe/kampagne/anzeigengruppen.csv', muster: /Kamin ([\d,]+) €, Dämmung/, soll: m.cpcKamin },
     { name: 'Höchstgebot Dämmung', wie: 'ausgabe/kampagne/anzeigengruppen.csv', muster: /Dämmung ([\d,]+) €, WDVS/, soll: m.cpcDaemmung },

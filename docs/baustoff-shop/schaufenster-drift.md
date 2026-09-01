@@ -9,7 +9,7 @@ Auftraggeber liest. Nachgemessen:
 | 77 Seiten | 81 |
 | 23 Gates, Stand 26. August | 24 Gates, Stand 27. August |
 | 3 Systemlisten | 4 |
-| Median 27 % unter Liste | 26 % |
+| Median 27 % unter Liste | 26,7 % — nachträglich berichtigt, siehe `zwei-rechnungen-ein-median.md` |
 | Kamin 8,79 € / Dämmung 6,48 € | 8,22 € / 5,91 € |
 | „6 Suchkampagnen, importfertig" | 3 im ersten Anlauf, drei zurückgestellt |
 | „Domain und Hosting" offen | bauversand.com bei All-Inkl, seit dem 31.08. entschieden |

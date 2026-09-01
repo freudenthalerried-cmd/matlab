@@ -58,7 +58,7 @@ Zielgewinn 5.374 € vor Steuer, Fixkosten 650 €, Warenkorb 650 € netto:
 
 ## Befunde aus den echten Daten
 
-**Der Einkaufsvorteil ist extrem ungleich verteilt.** 39 von 46 Artikeln liegen unter dem Listenpreis des Lieferanten, im Median 26 % darunter, die Spanne reicht von 6 bis 84 %. Daraus **Gate 22**: Kleinteile gehören nicht als Suchartikel in den Shop, sondern als Beipack. Das dreht die Lehrbuchregel um, die vorher im Bestand stand.
+**Der Einkaufsvorteil ist extrem ungleich verteilt.** 39 von 46 Artikeln liegen unter dem Listenpreis des Lieferanten, im Median 26,7 % darunter. Daraus **Gate 22**: Kleinteile gehören nicht als Suchartikel in den Shop, sondern als Beipack. Das dreht die Lehrbuchregel um, die vorher im Bestand stand.
 
 **3 % Skonto sind mehr wert als die gesamte Zahlungsgebühr** — sie heben die Rohmarge von 25 auf 27,25 % und senken den nötigen Monatsumsatz um ein Siebtel. Daraus **Gate 21**: Maßgeblich ist nicht das Zahlungsziel auf der Kundenrechnung, sondern **wann das Geld im eigenen Konto liegt.**
 
