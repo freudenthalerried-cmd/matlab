@@ -29,6 +29,32 @@ import { zahlungszielTraegt } from './skonto.js';
  * `zahlungseingangMaschinell` entscheidet, ob die Kette aus dem Trockenlauf
  * überhaupt automatisch weiterlaufen kann.
  */
+/**
+ * Der lesbare Name eines Zahlwegs.
+ *
+ * **Die Kennung eines Zahlwegs ist eine Programmkennung, kein Kundenwort.**
+ * `eps`, `karte-stripe`, `offene-rechnung` standen einmal wörtlich in der
+ * AGB-Tabelle der Website. Sie verraten für sich genommen wenig — aber sie
+ * waren der sichtbare Teil derselben Nachlässigkeit, die daneben die
+ * Rohmarge ausgestellt hat: Die Seite gab aus, was im Datensatz stand,
+ * statt das, was der Leser braucht.
+ *
+ * Stand bis zum 1. September als lokale Hilfsfunktion in `bin/website.mjs`
+ * und war damit nur für die AGB-Seite zu haben. Der Zahlungsvermerk auf der
+ * Rechnung braucht denselben Namen — und ein Beleg, der „eps" schreibt, wo
+ * die Seite „eps-Überweisung im Online-Banking" sagt, ist derselbe Fehler
+ * wie das Lieferantenkürzel in der Belegzeile: **Derselbe Kunde bekommt zur
+ * selben Sache zwei Wörter.**
+ *
+ * Wirft bei unbekannter `id`, statt sie durchzureichen. Ein Zahlweg ohne
+ * Eintrag hier ist ein Zahlweg, dessen Kosten niemand gerechnet hat.
+ */
+export function zahlwegName(id) {
+  const z = ZAHLWEGE.find((w) => w.id === id);
+  if (!z) throw new Error(`Zahlweg ohne Entsprechung in zahlung.js: ${id}`);
+  return z.name;
+}
+
 export const ZAHLWEGE = [
   {
     id: 'vorkasse',

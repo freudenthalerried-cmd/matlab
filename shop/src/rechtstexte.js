@@ -148,6 +148,17 @@ export function erzeugeImpressum(betreiber = {}) {
  * > Grund, warum eine Bedingung gilt, ist nicht automatisch der Grund, den
  * > man dem Kunden nennt — und der Unterschied ist keine Unehrlichkeit,
  * > sondern die Grenze zwischen Auskunft und Kalkulation.
+ *
+ * **`vorkasse` kam am 1. September dazu**, und der Anlass steht in
+ * `docs/baustoff-shop/rechnung-ueber-bereits-gezahltes-geld.md`. Alle drei
+ * angebotenen Zahlwege verlangen das Geld **vor** der Bestellauslösung; die
+ * Rechnung entsteht im Ablauf erst nach der Lieferung. Sie ist damit immer
+ * eine Rechnung über bereits bezahltes Geld — und muss das sagen, sonst
+ * überweist die Buchhaltung des Kunden ein zweites Mal.
+ *
+ * Das Feld steht hier und nicht in `beleg.js`, weil sonst zwei Stellen
+ * wüssten, welche Zahlwege es gibt. Wird eines Tages `offene-rechnung`
+ * freigegeben, kippt der Vermerk auf der Rechnung von allein mit.
  */
 export const ZAHLUNGSBEDINGUNGEN = Object.freeze({
   zielTage: 0,
@@ -156,16 +167,19 @@ export const ZAHLUNGSBEDINGUNGEN = Object.freeze({
   angeboten: Object.freeze([
     {
       id: 'eps',
+      vorkasse: true,
       grund: 'einziger Weg, der alle vier Anforderungen erfüllt; +6,50 € je Bestellung nach Gebühr und Skonto',
       kunde: 'Der empfohlene Weg: Freigabe im eigenen Bankkonto, Zahlung sofort bestätigt, keine Kartendaten im Spiel.',
     },
     {
       id: 'vorkasse',
+      vorkasse: true,
       grund: 'billigster Weg und Gate-21-fest; meldet den Eingang aber nicht maschinell',
       kunde: 'Überweisung nach Auftragsbestätigung. Die Ware geht auf den Weg, sobald der Betrag eingelangt ist — das dauert je nach Bank ein bis zwei Werktage länger.',
     },
     {
       id: 'karte-stripe',
+      vorkasse: true,
       grund: 'je Bestellung noch positiv, auf den Monat über der 10-%-Grenze — angeboten, weil er Bestellungen ermöglicht, nicht weil er sich rechnet',
       kunde: 'Für Bestellungen, die aus der Firmenkarte laufen sollen. Zahlung sofort bestätigt.',
     },
@@ -173,11 +187,13 @@ export const ZAHLUNGSBEDINGUNGEN = Object.freeze({
   ausgeschlossen: Object.freeze([
     {
       id: 'offene-rechnung',
+      vorkasse: false,
       grund: 'verletzt Gate 21 und trägt das Ausfallrisiko im Haus; kippt schon ab einem Ausfall auf 86 Bestellungen',
       kunde: 'Wird nicht angeboten. Ein Zahlungsziel würde in die Preise wandern — dieser Shop rechnet stattdessen ohne.',
     },
     {
       id: 'nachnahme',
+      vorkasse: false,
       grund: 'löst Registrierkassenpflicht aus und verletzt Gate 21',
       kunde: 'Wird nicht angeboten. Im Streckengeschäft kassiert der Frächter, nicht der Händler.',
     },
@@ -185,6 +201,7 @@ export const ZAHLUNGSBEDINGUNGEN = Object.freeze({
   zurueckgestellt: Object.freeze([
     {
       id: 'rechnungskauf',
+      vorkasse: false,
       grund: 'hält Gate 21, kostet aber 17,93 € je Bestellung mehr als EPS — lohnt ab acht Zusatzbestellungen im Monat oder einer Ausfallquote über 3,2 %',
       kunde: 'Noch nicht verfügbar. Für Stammkunden mit laufendem Bedarf ist ein Rechnungskauf über einen Anbieter vorgesehen; wer ihn braucht, meldet sich.',
     },

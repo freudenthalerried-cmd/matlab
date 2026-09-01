@@ -19,6 +19,8 @@
  */
 
 import { EUR, LUECKE, textZeile, einheitText } from './format.js';
+import { ZAHLUNGSBEDINGUNGEN } from './rechtstexte.js';
+import { zahlwegName } from './zahlung.js';
 
 export const KLEINBETRAG_GRENZE_BRUTTO = 400;
 export const UID_EMPFAENGER_GRENZE_BRUTTO = 10000;
@@ -119,6 +121,108 @@ function positionszeilen(warenkorb) {
   return zeilen;
 }
 
+/**
+ * Alle Zahlungsbedingungen dieses Shops, nach `id` greifbar.
+ * Quelle bleibt `rechtstexte.js` — hier steht nur der Zugriff.
+ *
+ * Der sperrige Name ist Absicht: `ZAHLWEGE` heißt schon die Kostentabelle in
+ * `zahlung.js`. Im Modul wäre die Doppelung harmlos, im zusammengefügten
+ * `shop.js` ein SyntaxError — und genau das hat `buendel.js` gemeldet, als
+ * hier zwei Minuten lang `ZAHLWEGE` stand.
+ */
+const ZAHLUNGSBEDINGUNG_JE_ID = new Map(
+  [
+    ...ZAHLUNGSBEDINGUNGEN.angeboten,
+    ...ZAHLUNGSBEDINGUNGEN.zurueckgestellt,
+    ...ZAHLUNGSBEDINGUNGEN.ausgeschlossen,
+  ].map((z) => [z.id, z]),
+);
+
+/** Angebotene Zahlwege — nur die dürfen auf einem Beleg stehen. */
+export function angeboteneZahlwege() {
+  return ZAHLUNGSBEDINGUNGEN.angeboten.map((z) => z.id);
+}
+
+/**
+ * Verlangt dieser Zahlweg das Geld vor der Lieferung?
+ * `null` heißt: Zahlweg unbekannt — und ein unbekannter Zahlweg gehört auf
+ * keinen Beleg.
+ */
+export function zahlwegIstVorkasse(id) {
+  const z = ZAHLUNGSBEDINGUNG_JE_ID.get(id);
+  return z ? z.vorkasse === true : null;
+}
+
+/**
+ * Der Zahlungsvermerk auf der Rechnung.
+ *
+ * **Befund vom 1. September, gefunden beim Lesen einer erzeugten Rechnung.**
+ * Der Beleg endete mit `Gesamtbetrag 1.638,48 €` und zwei Rechtssätzen. Kein
+ * Wort darüber, ob dieses Geld noch zu zahlen ist. Nach Punkt 9 der eigenen
+ * AGB ist es das nie: Das Zahlungsziel ist null Tage, gezahlt wird bei der
+ * Bestellung, und im Ablauf (`auftragslauf.js`) steht die Rechnung an
+ * Position zehn — nach der Lieferung, also lange nach dem Geldeingang.
+ *
+ * > **Eine Rechnung, die einen Betrag nennt und über seinen Zustand
+ * > schweigt, ist eine Zahlungsaufforderung.** Die Buchhaltung des Kunden
+ * > liest sie als solche und überweist. Merken muss es dann der Händler,
+ * > denn der Kunde hat keinen Anlass dazu.
+ *
+ * Deshalb trägt jede Rechnung dieses Shops den Vermerk — und wenn die
+ * Angaben dazu fehlen, trägt sie die sichtbare Lücke und darf nach
+ * `darfRechnungGestelltWerden` nicht hinaus.
+ *
+ * @param {{weg?: string, datum?: string, kennzeichen?: string}} zahlung
+ */
+export function zahlungsvermerk(zahlung = {}) {
+  const vorkasse = zahlwegIstVorkasse(zahlung.weg);
+
+  if (vorkasse === null) {
+    return {
+      vollstaendig: false,
+      grund: gefuellt(zahlung.weg)
+        ? `Unbekannter Zahlweg „${textZeile(zahlung.weg)}" — angeboten sind: ${angeboteneZahlwege().join(', ')}`
+        : 'Kein Zahlweg angegeben',
+      zeilen: [wert(null, 'Zahlweg und Zahlungsdatum')],
+    };
+  }
+
+  if (!vorkasse) {
+    // Heute unerreichbar: alle angebotenen Wege sind Vorkasse. Der Zweig
+    // steht da, damit die Rechnung nicht stillschweigend falsch wird, falls
+    // je ein Zahlungsziel freigegeben wird.
+    return {
+      vollstaendig: false,
+      grund: `Zahlweg „${textZeile(zahlung.weg)}" ist keine Vorkasse — offene Rechnung braucht Bankverbindung und Frist`,
+      zeilen: [
+        `Zahlbar innerhalb von ${ZAHLUNGSBEDINGUNGEN.zielTage} Tagen ohne Abzug auf`,
+        `  ${wert(null, 'Bankverbindung des Ausstellers')}`,
+      ],
+    };
+  }
+
+  if (!gefuellt(zahlung.datum)) {
+    return {
+      vollstaendig: false,
+      grund: 'Zahlungsdatum fehlt — ohne Datum ist der Vermerk keine Quittung',
+      zeilen: [
+        `Bereits bezahlt über ${textZeile(zahlwegName(zahlung.weg))}, ${wert(null, 'Zahlungsdatum')}.`,
+        'Bitte nicht überweisen.',
+      ],
+    };
+  }
+
+  const zeilen = [
+    `Bereits bezahlt am ${textZeile(zahlung.datum)} über ${textZeile(zahlwegName(zahlung.weg))}.`,
+  ];
+  if (gefuellt(zahlung.kennzeichen)) {
+    zeilen.push(`Zahlungsreferenz: ${textZeile(zahlung.kennzeichen)}`);
+  }
+  zeilen.push('Dieser Beleg dient dem Vorsteuerabzug. Bitte nicht noch einmal überweisen.');
+
+  return { vollstaendig: true, grund: null, zeilen };
+}
+
 function summenblock(warenkorb) {
   return [
     `Warenwert netto      ${EUR(warenkorb.warenwertNetto).padStart(12)}`,
@@ -155,6 +259,13 @@ export function erzeugeAngebot(warenkorb, { nummer, datum, bindefristTage = 14, 
     ...summenblock(warenkorb),
     '',
     `Bindefrist: ${bindefristTage} Tage ab Angebotsdatum.`,
+    // Ohne diesen Satz gilt im B2B die Verkehrssitte, und die ist ein
+    // Zahlungsziel. Der Shop bietet keines an (Punkt 9 der AGB) — dann muss
+    // die Bedingung auf dem Angebot stehen und nicht erst im Warenkorb.
+    `Zahlungsbedingung: ${ZAHLUNGSBEDINGUNGEN.zielTage === 0
+      ? 'Zahlung bei Bestellung, kein Zahlungsziel'
+      : `${ZAHLUNGSBEDINGUNGEN.zielTage} Tage netto`}`
+      + ` (${angeboteneZahlwege().map((id) => zahlwegName(id)).join(', ')}).`,
     'Lieferung im Streckengeschäft ab Werk der Hersteller; Teillieferungen je',
     'Lieferant sind der Regelfall und werden nicht gesondert berechnet.',
     'Abladen, Zufahrt und Anwesenheit auf der Baustelle obliegen dem Besteller.',
@@ -219,6 +330,16 @@ export function erzeugeAuftragsbestaetigung(
     '',
     'Wir nehmen Ihre Bestellung hiermit an. Mit dieser Bestätigung kommt der',
     'Vertrag zustande (Punkt 2 unserer Allgemeinen Geschäftsbedingungen).',
+    '',
+    // Die Bestätigung ist im Ablauf der Schritt **vor** der Zahlung. Sie ist
+    // damit das Dokument, auf das hin der Kunde zahlt — und der einzige Ort,
+    // an dem stehen kann, dass bis dahin nichts bestellt wird. Ohne den Satz
+    // wartet der Kunde auf Ware und der Shop auf Geld.
+    ZAHLUNGSBEDINGUNGEN.zielTage === 0
+      ? 'Zahlbar sofort, ohne Zahlungsziel (Punkt 9 der Geschäftsbedingungen). Die'
+      : `Zahlbar innerhalb von ${ZAHLUNGSBEDINGUNGEN.zielTage} Tagen. Die`,
+    'Bestellungen bei den Herstellern lösen wir nach Zahlungseingang aus; die',
+    'Lieferzeiten unten laufen ab diesem Zeitpunkt.',
     '',
   ];
 
@@ -314,7 +435,8 @@ export function darfBestaetigtWerden(warenkorb, auftrag = {}) {
  * Lücken ist besser als gar keiner: Er zeigt, welche Angabe fehlt, statt die
  * Rechnung zu verweigern und den Grund für sich zu behalten.
  */
-export function erzeugeRechnung(warenkorb, { nummer, datum, lieferdatum, kunde = {}, betreiber = {} }) {
+export function erzeugeRechnung(warenkorb, { nummer, datum, lieferdatum, kunde = {}, betreiber = {}, zahlung = {} }) {
+  const vermerk = zahlungsvermerk(zahlung);
   const pruefung = pruefeRechnungsmerkmale({
     ausstellerName: betreiber.firma,
     ausstellerUid: betreiber.uid,
@@ -346,6 +468,8 @@ export function erzeugeRechnung(warenkorb, { nummer, datum, lieferdatum, kunde =
     ...positionszeilen(warenkorb),
     ...summenblock(warenkorb),
     '',
+    ...vermerk.zeilen,
+    '',
     'Leistungsort Österreich, Steuersatz 20 %.',
     'Untersuchungs- und Rügepflicht nach § 377 UGB wird ausdrücklich vereinbart.',
   ];
@@ -362,6 +486,7 @@ export function erzeugeRechnung(warenkorb, { nummer, datum, lieferdatum, kunde =
     text: zeilen.join('\n'),
     ...pruefung,
     bruttobetrag: warenkorb.summeBrutto,
+    zahlungsvermerk: vermerk,
   };
 }
 
@@ -383,6 +508,13 @@ export function darfRechnungGestelltWerden(warenkorb, rechnung, auftrag = {}) {
   }
   if (auftrag.geliefert === false) {
     gruende.push('Lieferung noch nicht erfolgt — Lieferdatum wäre unzutreffend');
+  }
+  // Der Zahlungsvermerk ist keine Pflichtangabe nach § 11 UStG — er steht in
+  // Punkt 9 der eigenen AGB. Deshalb sperrt er hier und nicht in
+  // `pruefeRechnungsmerkmale`: Das Gesetz verlangt ihn nicht, dieser Shop
+  // schon, weil bei ihm das Geld vor der Rechnung da ist.
+  if (rechnung.zahlungsvermerk && !rechnung.zahlungsvermerk.vollstaendig) {
+    gruende.push(`Zahlungsvermerk unbrauchbar — ${rechnung.zahlungsvermerk.grund}`);
   }
 
   return { erlaubt: gruende.length === 0, gruende };

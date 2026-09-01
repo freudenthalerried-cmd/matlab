@@ -47,6 +47,16 @@ export const PRUEFER = [
     mindestens: 90,
   },
   {
+    // Vier Belege, ein Durchlauf. `mindestens: 4`, damit ein stillgelegter
+    // Beleg auffällt: Der Prüfer, dem sein Prüfobjekt abhandenkommt, meldet
+    // sonst „keine Meldung" und meint „nichts angesehen".
+    name: 'pruefe-belege',
+    werkzeug: 'belegpruefung.mjs',
+    muster: /Belege geprüft: (\d+)/,
+    einheit: 'Kundenbelege',
+    mindestens: 4,
+  },
+  {
     name: 'pruefe-geheimnis',
     werkzeug: 'geheimnispruefung.mjs',
     muster: /(\d+) von (\d+) Einkaufspreisen/,

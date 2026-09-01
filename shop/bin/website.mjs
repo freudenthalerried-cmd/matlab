@@ -43,7 +43,7 @@ import { preisstandSpanne } from '../src/preisalter.js';
 import { HERSTELLER, marke } from '../src/hersteller.js';
 import { oeffentlicherArtikel, oeffentlicherLieferant, vorteil, ustText } from '../src/shopkern.js';
 import { LIEFERGEBIET } from '../src/liefergebiet.js';
-import { ZAHLWEGE } from '../src/zahlung.js';
+import { ZAHLWEGE, zahlwegName } from '../src/zahlung.js';
 import { fracht } from '../src/preis.js';
 import { lesKopf, alsHtml, alsText, alsListe, esc } from '../src/markdown.js';
 import {
@@ -1357,21 +1357,6 @@ Baustelle</strong>, nicht ab dem Tag, an dem der Besteller die Palette zum erste
 Ausführlich unter <a href="${verweis('rechtliches/abnahme')}">Abnahme und Rügefrist</a>.</p>`,
     jsonLd: null,
   };
-}
-
-/**
- * Die Kennung eines Zahlwegs ist eine Programmkennung, kein Kundenwort.
- *
- * `eps`, `karte-stripe`, `offene-rechnung` standen wörtlich in der
- * AGB-Tabelle. Sie verraten für sich genommen wenig — aber sie sind der
- * sichtbare Teil derselben Nachlässigkeit, die daneben die Rohmarge
- * ausgestellt hat: Die Seite hat ausgegeben, was im Datensatz stand,
- * statt das, was der Leser braucht.
- */
-function zahlwegName(id) {
-  const z = ZAHLWEGE.find((w) => w.id === id);
-  if (!z) throw new Error(`Zahlweg ohne Entsprechung in zahlung.js: ${id}`);
-  return z.name;
 }
 
 function datenschutzSeite(verweis) {

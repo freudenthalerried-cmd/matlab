@@ -13,7 +13,11 @@ import {
   reihengeschaeftEinordnung,
   erzeugeAuftragsbestaetigung,
   darfBestaetigtWerden,
+  zahlungsvermerk,
+  zahlwegIstVorkasse,
+  angeboteneZahlwege,
 } from '../src/beleg.js';
+import { zahlwegName } from '../src/zahlung.js';
 
 const lies = (p) => JSON.parse(readFileSync(new URL(p, import.meta.url), 'utf8'));
 const daten = { lieferanten: lies('../data/lieferanten.json'), artikel: lies('../data/artikel.json') };
@@ -95,8 +99,14 @@ test('Angebot und Rechnung stimmen im Betrag mit dem Warenkorb überein', () => 
   assert.ok(a.text.includes(gerundet) && r.text.includes(gerundet));
 });
 
+// Seit dem 1. September gehört die Zahlungsangabe dazu. Der Test hat den
+// Wechsel angezeigt: Er lief vorher grün über einen Beleg, dem der
+// Zahlungsvermerk fehlte — weil „vollständig" bis dahin nur § 11 UStG meinte.
 test('Eine vollständige Rechnung enthält keine Lückenmarkierung', () => {
-  const r = erzeugeRechnung(korb, { nummer: 'RE-0001', datum: '15.08.2026', lieferdatum: '22.08.2026', kunde, betreiber });
+  const r = erzeugeRechnung(korb, {
+    nummer: 'RE-0001', datum: '15.08.2026', lieferdatum: '22.08.2026', kunde, betreiber,
+    zahlung: { weg: 'eps', datum: '20.08.2026', kennzeichen: 'AB-0001' },
+  });
   assert.equal(r.vollstaendig, true);
   assert.ok(!r.text.includes('FEHLT'));
   assert.match(r.text, /§ 377 UGB/);
@@ -438,4 +448,82 @@ test('Eine Rechnung mit fehlenden Pflichtangaben wird nicht gestellt', () => {
   assert.equal(vollstaendigerBeleg.vollstaendig, true);
   assert.ok(!darfRechnungGestelltWerden(korb, vollstaendigerBeleg, { geliefert: true })
     .gruende.some((g) => /§ 11 UStG/.test(g)));
+});
+
+// ---------------------------------------------------------------------------
+// Der Zahlungsvermerk — Befund vom 1. September
+//
+// Gefunden nicht durch eine Prüfung, sondern durch das Lesen einer erzeugten
+// Rechnung: Sie nannte 1.638,48 € Gesamtbetrag und schwieg darüber, ob dieses
+// Geld noch zu zahlen ist. Nach Punkt 9 der eigenen AGB ist es das nie.
+// ---------------------------------------------------------------------------
+
+const gezahlt = { weg: 'eps', datum: '30.08.2026', kennzeichen: 'AB-0001' };
+
+test('Alle angebotenen Zahlwege sind Vorkasse — sonst stimmt der Vermerk nicht mehr', () => {
+  for (const id of angeboteneZahlwege()) {
+    assert.equal(zahlwegIstVorkasse(id), true, `${id} müsste Vorkasse sein`);
+  }
+  assert.equal(zahlwegIstVorkasse('offene-rechnung'), false);
+  assert.equal(zahlwegIstVorkasse('gibtesnicht'), null);
+});
+
+test('Die Rechnung sagt, dass der Betrag bereits bezahlt ist', () => {
+  const r = erzeugeRechnung(korb, {
+    nummer: 'RE-0001', datum: '15.08.2026', lieferdatum: '22.08.2026', kunde, betreiber, zahlung: gezahlt,
+  });
+  assert.ok(r.zahlungsvermerk.vollstaendig);
+  assert.match(r.text, /Bereits bezahlt am 30\.08\.2026/);
+  assert.match(r.text, /nicht noch einmal überweisen/);
+  assert.match(r.text, /Zahlungsreferenz: AB-0001/);
+});
+
+test('Der Vermerk nennt den Zahlweg mit dem Wort der Website, nicht mit der Kennung', () => {
+  const r = erzeugeRechnung(korb, {
+    nummer: 'RE-0001', datum: '15.08.2026', lieferdatum: '22.08.2026', kunde, betreiber, zahlung: gezahlt,
+  });
+  assert.match(r.text, new RegExp(zahlwegName('eps').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  assert.ok(!/über eps\b/.test(r.text));
+});
+
+test('Ohne Zahlungsangabe trägt die Rechnung die sichtbare Lücke und darf nicht hinaus', () => {
+  const r = erzeugeRechnung(korb, {
+    nummer: 'RE-0001', datum: '15.08.2026', lieferdatum: '22.08.2026', kunde, betreiber,
+  });
+  assert.equal(r.zahlungsvermerk.vollstaendig, false);
+  assert.match(r.text, /\[\[ Zahlweg und Zahlungsdatum — FEHLT \]\]/);
+  const f = darfRechnungGestelltWerden(korb, r, { geliefert: true });
+  assert.equal(f.erlaubt, false);
+  assert.ok(f.gruende.some((g) => g.includes('Zahlungsvermerk')));
+});
+
+test('Ein Zahlweg ohne Datum ist keine Quittung', () => {
+  const r = erzeugeRechnung(korb, {
+    nummer: 'RE-0001', datum: '15.08.2026', lieferdatum: '22.08.2026', kunde, betreiber,
+    zahlung: { weg: 'eps' },
+  });
+  assert.equal(r.zahlungsvermerk.vollstaendig, false);
+  assert.match(r.zahlungsvermerk.grund, /Zahlungsdatum fehlt/);
+  assert.match(r.text, /\[\[ Zahlungsdatum — FEHLT \]\]/);
+});
+
+test('Ein nicht angebotener Zahlweg wird benannt, nicht durchgereicht', () => {
+  const r = erzeugeRechnung(korb, {
+    nummer: 'RE-0001', datum: '15.08.2026', lieferdatum: '22.08.2026', kunde, betreiber,
+    zahlung: { weg: 'nachnahme', datum: '30.08.2026' },
+  });
+  assert.equal(r.zahlungsvermerk.vollstaendig, false);
+  assert.match(r.zahlungsvermerk.grund, /keine Vorkasse/);
+});
+
+test('Das Angebot nennt die Zahlungsbedingung, damit nicht die Verkehrssitte gilt', () => {
+  const a = erzeugeAngebot(korb, { nummer: 'AN-0001', datum: '15.08.2026', kunde, betreiber });
+  assert.match(a.text, /Zahlung bei Bestellung, kein Zahlungsziel/);
+  for (const id of angeboteneZahlwege()) assert.ok(a.text.includes(zahlwegName(id)), id);
+});
+
+test('Die Auftragsbestätigung sagt, dass vor dem Geld nichts bestellt wird', () => {
+  const b = erzeugeAuftragsbestaetigung(korb, { nummer: 'AB-0001', datum: '15.08.2026', kunde, betreiber });
+  assert.match(b.text, /Zahlbar sofort, ohne Zahlungsziel/);
+  assert.match(b.text, /nach Zahlungseingang aus/);
 });

@@ -2467,6 +2467,17 @@ function erzeugeImpressum(betreiber = {}) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 const ZAHLUNGSBEDINGUNGEN = Object.freeze({
   zielTage: 0,
   stand: '2026-08-27',
@@ -2474,16 +2485,19 @@ const ZAHLUNGSBEDINGUNGEN = Object.freeze({
   angeboten: Object.freeze([
     {
       id: 'eps',
+      vorkasse: true,
       grund: 'einziger Weg, der alle vier Anforderungen erfüllt; +6,50 € je Bestellung nach Gebühr und Skonto',
       kunde: 'Der empfohlene Weg: Freigabe im eigenen Bankkonto, Zahlung sofort bestätigt, keine Kartendaten im Spiel.',
     },
     {
       id: 'vorkasse',
+      vorkasse: true,
       grund: 'billigster Weg und Gate-21-fest; meldet den Eingang aber nicht maschinell',
       kunde: 'Überweisung nach Auftragsbestätigung. Die Ware geht auf den Weg, sobald der Betrag eingelangt ist — das dauert je nach Bank ein bis zwei Werktage länger.',
     },
     {
       id: 'karte-stripe',
+      vorkasse: true,
       grund: 'je Bestellung noch positiv, auf den Monat über der 10-%-Grenze — angeboten, weil er Bestellungen ermöglicht, nicht weil er sich rechnet',
       kunde: 'Für Bestellungen, die aus der Firmenkarte laufen sollen. Zahlung sofort bestätigt.',
     },
@@ -2491,11 +2505,13 @@ const ZAHLUNGSBEDINGUNGEN = Object.freeze({
   ausgeschlossen: Object.freeze([
     {
       id: 'offene-rechnung',
+      vorkasse: false,
       grund: 'verletzt Gate 21 und trägt das Ausfallrisiko im Haus; kippt schon ab einem Ausfall auf 86 Bestellungen',
       kunde: 'Wird nicht angeboten. Ein Zahlungsziel würde in die Preise wandern — dieser Shop rechnet stattdessen ohne.',
     },
     {
       id: 'nachnahme',
+      vorkasse: false,
       grund: 'löst Registrierkassenpflicht aus und verletzt Gate 21',
       kunde: 'Wird nicht angeboten. Im Streckengeschäft kassiert der Frächter, nicht der Händler.',
     },
@@ -2503,6 +2519,7 @@ const ZAHLUNGSBEDINGUNGEN = Object.freeze({
   zurueckgestellt: Object.freeze([
     {
       id: 'rechnungskauf',
+      vorkasse: false,
       grund: 'hält Gate 21, kostet aber 17,93 € je Bestellung mehr als EPS — lohnt ab acht Zusatzbestellungen im Monat oder einer Ausfallquote über 3,2 %',
       kunde: 'Noch nicht verfügbar. Für Stammkunden mit laufendem Bedarf ist ein Rechnungskauf über einen Anbieter vorgesehen; wer ihn braucht, meldet sich.',
     },
@@ -3332,6 +3349,32 @@ function skontoGegenGebuehr(bestellung, zahlwegId, opt = {}) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function zahlwegName(id) {
+  const z = ZAHLWEGE.find((w) => w.id === id);
+  if (!z) throw new Error(`Zahlweg ohne Entsprechung in zahlung.js: ${id}`);
+  return z.name;
+}
+
 const ZAHLWEGE = [
   {
     id: 'vorkasse',
@@ -4021,6 +4064,8 @@ function darfAutomatischAusgeloestWerden(warenkorb, auftrag) {
 
 
 
+
+
 const KLEINBETRAG_GRENZE_BRUTTO = 400;
 const UID_EMPFAENGER_GRENZE_BRUTTO = 10000;
 
@@ -4120,6 +4165,108 @@ function positionszeilen(warenkorb) {
   return zeilen;
 }
 
+
+
+
+
+
+
+
+
+
+const ZAHLUNGSBEDINGUNG_JE_ID = new Map(
+  [
+    ...ZAHLUNGSBEDINGUNGEN.angeboten,
+    ...ZAHLUNGSBEDINGUNGEN.zurueckgestellt,
+    ...ZAHLUNGSBEDINGUNGEN.ausgeschlossen,
+  ].map((z) => [z.id, z]),
+);
+
+
+function angeboteneZahlwege() {
+  return ZAHLUNGSBEDINGUNGEN.angeboten.map((z) => z.id);
+}
+
+
+
+
+
+
+function zahlwegIstVorkasse(id) {
+  const z = ZAHLUNGSBEDINGUNG_JE_ID.get(id);
+  return z ? z.vorkasse === true : null;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function zahlungsvermerk(zahlung = {}) {
+  const vorkasse = zahlwegIstVorkasse(zahlung.weg);
+
+  if (vorkasse === null) {
+    return {
+      vollstaendig: false,
+      grund: gefuellt(zahlung.weg)
+        ? `Unbekannter Zahlweg „${textZeile(zahlung.weg)}" — angeboten sind: ${angeboteneZahlwege().join(', ')}`
+        : 'Kein Zahlweg angegeben',
+      zeilen: [wert(null, 'Zahlweg und Zahlungsdatum')],
+    };
+  }
+
+  if (!vorkasse) {
+    
+    
+    
+    return {
+      vollstaendig: false,
+      grund: `Zahlweg „${textZeile(zahlung.weg)}" ist keine Vorkasse — offene Rechnung braucht Bankverbindung und Frist`,
+      zeilen: [
+        `Zahlbar innerhalb von ${ZAHLUNGSBEDINGUNGEN.zielTage} Tagen ohne Abzug auf`,
+        `  ${wert(null, 'Bankverbindung des Ausstellers')}`,
+      ],
+    };
+  }
+
+  if (!gefuellt(zahlung.datum)) {
+    return {
+      vollstaendig: false,
+      grund: 'Zahlungsdatum fehlt — ohne Datum ist der Vermerk keine Quittung',
+      zeilen: [
+        `Bereits bezahlt über ${textZeile(zahlwegName(zahlung.weg))}, ${wert(null, 'Zahlungsdatum')}.`,
+        'Bitte nicht überweisen.',
+      ],
+    };
+  }
+
+  const zeilen = [
+    `Bereits bezahlt am ${textZeile(zahlung.datum)} über ${textZeile(zahlwegName(zahlung.weg))}.`,
+  ];
+  if (gefuellt(zahlung.kennzeichen)) {
+    zeilen.push(`Zahlungsreferenz: ${textZeile(zahlung.kennzeichen)}`);
+  }
+  zeilen.push('Dieser Beleg dient dem Vorsteuerabzug. Bitte nicht noch einmal überweisen.');
+
+  return { vollstaendig: true, grund: null, zeilen };
+}
+
 function summenblock(warenkorb) {
   return [
     `Warenwert netto      ${EUR(warenkorb.warenwertNetto).padStart(12)}`,
@@ -4156,6 +4303,13 @@ function erzeugeAngebot(warenkorb, { nummer, datum, bindefristTage = 14, kunde =
     ...summenblock(warenkorb),
     '',
     `Bindefrist: ${bindefristTage} Tage ab Angebotsdatum.`,
+    
+    
+    
+    `Zahlungsbedingung: ${ZAHLUNGSBEDINGUNGEN.zielTage === 0
+      ? 'Zahlung bei Bestellung, kein Zahlungsziel'
+      : `${ZAHLUNGSBEDINGUNGEN.zielTage} Tage netto`}`
+      + ` (${angeboteneZahlwege().map((id) => zahlwegName(id)).join(', ')}).`,
     'Lieferung im Streckengeschäft ab Werk der Hersteller; Teillieferungen je',
     'Lieferant sind der Regelfall und werden nicht gesondert berechnet.',
     'Abladen, Zufahrt und Anwesenheit auf der Baustelle obliegen dem Besteller.',
@@ -4220,6 +4374,16 @@ function erzeugeAuftragsbestaetigung(
     '',
     'Wir nehmen Ihre Bestellung hiermit an. Mit dieser Bestätigung kommt der',
     'Vertrag zustande (Punkt 2 unserer Allgemeinen Geschäftsbedingungen).',
+    '',
+    
+    
+    
+    
+    ZAHLUNGSBEDINGUNGEN.zielTage === 0
+      ? 'Zahlbar sofort, ohne Zahlungsziel (Punkt 9 der Geschäftsbedingungen). Die'
+      : `Zahlbar innerhalb von ${ZAHLUNGSBEDINGUNGEN.zielTage} Tagen. Die`,
+    'Bestellungen bei den Herstellern lösen wir nach Zahlungseingang aus; die',
+    'Lieferzeiten unten laufen ab diesem Zeitpunkt.',
     '',
   ];
 
@@ -4315,7 +4479,8 @@ function darfBestaetigtWerden(warenkorb, auftrag = {}) {
 
 
 
-function erzeugeRechnung(warenkorb, { nummer, datum, lieferdatum, kunde = {}, betreiber = {} }) {
+function erzeugeRechnung(warenkorb, { nummer, datum, lieferdatum, kunde = {}, betreiber = {}, zahlung = {} }) {
+  const vermerk = zahlungsvermerk(zahlung);
   const pruefung = pruefeRechnungsmerkmale({
     ausstellerName: betreiber.firma,
     ausstellerUid: betreiber.uid,
@@ -4347,6 +4512,8 @@ function erzeugeRechnung(warenkorb, { nummer, datum, lieferdatum, kunde = {}, be
     ...positionszeilen(warenkorb),
     ...summenblock(warenkorb),
     '',
+    ...vermerk.zeilen,
+    '',
     'Leistungsort Österreich, Steuersatz 20 %.',
     'Untersuchungs- und Rügepflicht nach § 377 UGB wird ausdrücklich vereinbart.',
   ];
@@ -4363,6 +4530,7 @@ function erzeugeRechnung(warenkorb, { nummer, datum, lieferdatum, kunde = {}, be
     text: zeilen.join('\n'),
     ...pruefung,
     bruttobetrag: warenkorb.summeBrutto,
+    zahlungsvermerk: vermerk,
   };
 }
 
@@ -4384,6 +4552,13 @@ function darfRechnungGestelltWerden(warenkorb, rechnung, auftrag = {}) {
   }
   if (auftrag.geliefert === false) {
     gruende.push('Lieferung noch nicht erfolgt — Lieferdatum wäre unzutreffend');
+  }
+  
+  
+  
+  
+  if (rechnung.zahlungsvermerk && !rechnung.zahlungsvermerk.vollstaendig) {
+    gruende.push(`Zahlungsvermerk unbrauchbar — ${rechnung.zahlungsvermerk.grund}`);
   }
 
   return { erlaubt: gruende.length === 0, gruende };

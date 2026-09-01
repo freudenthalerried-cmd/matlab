@@ -50,6 +50,11 @@ jedem unserer **Lieferantenbelege**".
 > **Ein Muster, das eine Formulierung kennt, prüft die Formulierung und nicht
 > die Aussage.**
 
+Zur Sache selbst, damit sie in diesem Text nicht ohne ihren Widerruf steht:
+Die Aussage ist am 27. August **zurückgenommen** worden. Fracht steht auf drei
+von fünfzehn Rechnungen; elf lauten „Abholung Kunde". Belegt in
+[fracht-nur-bei-zustellung.md](fracht-nur-bei-zustellung.md).
+
 Dieselbe Familie wie „eine Probe, die die Schreibweise prüft, prüft nicht das
 Verhalten" — nur diesmal beim Prüfer selbst. Gesucht wird jetzt die
 Behauptung: Fracht auf jedem oder allen Beleg(en), auf jeder Rechnung, mit
