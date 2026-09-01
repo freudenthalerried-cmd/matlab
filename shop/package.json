@@ -30,6 +30,7 @@
     "pruefe-preise": "node bin/preisabgleich.mjs",
     "gegenprobe": "node bin/gegenprobe.mjs",
     "pruefe-preisalter": "node bin/preisalterpruefung.mjs",
-    "pruefe-schaufenster": "node bin/schaufensterpruefung.mjs"
+    "pruefe-schaufenster": "node bin/schaufensterpruefung.mjs",
+    "werbeprobe": "node bin/werbeprobe.mjs"
   }
 }
