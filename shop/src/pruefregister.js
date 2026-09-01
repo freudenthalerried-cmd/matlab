@@ -86,6 +86,13 @@ export const PRUEFER = [
     einheit: 'Artikel mit Preisstand',
     mindestens: 40,
   },
+  {
+    name: 'pruefe-schaufenster',
+    werkzeug: 'schaufensterpruefung.mjs',
+    muster: /Schaufensterabgleich: (\d+) Kennzahlen/,
+    einheit: 'Kennzahlen der PR-Beschreibung',
+    mindestens: 12,
+  },
 ];
 
 /**

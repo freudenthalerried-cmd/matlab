@@ -339,6 +339,26 @@ const einheitText = (kuerzel) => EINHEITEN[kuerzel] ?? kuerzel ?? 'Stk';
 
 
 
+function aufzaehlung(teile, bindewort = 'und') {
+  const w = [...teile].map((t) => textZeile(t)).filter((t) => t !== '');
+  if (w.length === 0) return '';
+  if (w.length === 1) return w[0];
+  return `${w.slice(0, -1).join(', ')} ${bindewort} ${w[w.length - 1]}`;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1269,6 +1289,9 @@ function berechneBedarf(gebaeude, katalog) {
     warenkorbzeilen: positionen.map((p) => ({ sku: p.sku, menge: p.menge })),
   };
 }
+
+
+
 
 
 
@@ -3718,6 +3741,8 @@ function proBestellung(warenkorb, zahlwegId, werbeanteil) {
         : 0,
   };
 }
+
+
 
 
 

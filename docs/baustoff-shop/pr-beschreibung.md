@@ -1,0 +1,126 @@
+<!--
+  Die Quelle der PR-Beschreibung von #14.
+
+  Sie steht hier und nicht nur auf GitHub, aus dem Grund, aus dem in diesem
+  Vorhaben nichts zweimal steht: Die Beschreibung war am 01.09. an neun
+  Stellen überholt — 616 Testfälle bei 1.059, 77 Seiten bei 81, 23 Gates bei
+  24, „Domain und Hosting" als offener Punkt, obwohl bauversand.com entschieden
+  ist. Sie ist das Erste, was der Auftraggeber liest.
+
+  `npm run pruefe-schaufenster` misst die Kennzahlen dieser Datei gegen das
+  Verzeichnis. Was der Prüfer nicht kennt, prüft er nicht — er sagt selbst,
+  welche Sätze er festhält.
+-->
+
+Machbarkeitsanalyse, Shop und Website für einen Baustoffhandel, der 3.000 € netto monatlich abwerfen soll. Markt Österreich, Lieferung regional.
+
+**Kein realisierter Umsatz und kein realisierter Gewinn.** Nichts ist gegründet, verkauft oder eingenommen. Alle Wirtschaftlichkeitszahlen sind Modellrechnung.
+
+## Einstieg
+
+👉 **`docs/baustoff-shop/STATUS.md`** — Stand, offene Weisungen, Dokumentenverzeichnis und eine Tabelle aller Korrekturen, die im Verlauf nötig waren. Diese Datei zuerst lesen. Bei Gate-Fragen gilt **`gate-register.md`** (24 Gates, Stand 27. August).
+
+Diese Beschreibung hat seit dem 1. September eine Quelle im Verzeichnis: `docs/baustoff-shop/pr-beschreibung.md`. `npm run pruefe-schaufenster` misst ihre 24 Kennzahlen gegen den Bestand — sie war zuvor an neun Stellen überholt.
+
+### Veröffentlichte Momentaufnahmen
+
+Drei früher veröffentlichte Seiten. **Es sind Momentaufnahmen, kein Stand:** Der
+aktuelle Shop entsteht mit `npm run website` aus dem Verzeichnis.
+
+- [Baustoffe zum Baumeisterpreis](https://claude.ai/code/artifact/fe6d720d-473d-4af5-a26b-6fcfbea929dc) — die Website, Stand August
+- [Der Weg zum ersten Klick](https://claude.ai/code/artifact/44ba340b-a126-457c-96d5-64fc34efa3a4) — der Ablaufplan
+- [Was 25 % Marge tragen](https://claude.ai/code/artifact/6e356abb-b5d3-44a9-9b8d-f98a13fb0502) — die Kalkulation. ⚠️ **Überholt und nicht mehr veröffentlichbar** (fünf abgewiesene Versuche, siehe `schaufenster-abgleich.md`); sie behauptet zu Gate 21 das Gegenteil des heutigen Stands. Gültig ist `docs/baustoff-shop/zuschlag-seite.html` im Verzeichnis.
+
+## Wo das Vorhaben steht
+
+Ursprünglich ein Streckenhandel für Radonvorsorge auf **unbelegten** Platzhalterpreisen. Der Auftraggeber hat die Grundlage gewechselt: **eigene Baumeister-Einkaufspreise aus den Lieferantenrechnungen, 25 % Marge, Google Shopping, regionale Lieferung.** Beide Modelle liegen nebeneinander im Bestand und sind nach Gate 12 gleichrangig.
+
+| | Stand |
+|---|---|
+| Katalog | **46 echte Artikel** aus 15 Lieferantenbelegen, Preise bestätigt |
+| Website | **81 Seiten** — 46 Artikel, 14 Wissensseiten, 4 Systemlisten, 7 Gruppen, 5 Rechtsseiten, 5 im Wurzelverzeichnis |
+| Kampagne | 6 Suchkampagnen gerechnet, **3 im ersten Anlauf**, alle **pausiert** |
+| Produktfeed | 43 Einträge — **nicht einreichbar**, GTIN fehlt bei allen 46 Artikeln |
+| Testbestand | **über 1.000 Testfälle**, alle grün, dazu 11 Oberflächenszenarien und 50 Shopszenarien im Browser |
+| Prüfwerkzeuge | **10 Prüfer** ohne Browser, 3 Browserproben zusätzlich |
+
+## Die Zahlen, die das Modell tragen
+
+Zielgewinn 5.374 € vor Steuer, Fixkosten 650 €, Warenkorb 650 € netto:
+
+| | 20 % Marge | **25 % Marge** | mit 3 % Skonto |
+|---|---|---|---|
+| nötiger Monatsumsatz | 72.740 € | **45.356 €** | **38.786 €** |
+| Bestellungen im Monat | 112 | 70 | 60 |
+| Tragfähigkeitsgrenze Werbeanteil | 18 % | 23 % | — |
+
+**Der Engpass ist die Werbung, nicht der Einkauf.** Fünf Prozentpunkte Puffer machen den Klickpreis-Kanal überhaupt erst vertretbar.
+
+## Befunde aus den echten Daten
+
+**Der Einkaufsvorteil ist extrem ungleich verteilt.** 39 von 46 Artikeln liegen unter dem Listenpreis des Lieferanten, im Median 26 % darunter, die Spanne reicht von 6 bis 84 %. Daraus **Gate 22**: Kleinteile gehören nicht als Suchartikel in den Shop, sondern als Beipack. Das dreht die Lehrbuchregel um, die vorher im Bestand stand.
+
+**3 % Skonto sind mehr wert als die gesamte Zahlungsgebühr** — sie heben die Rohmarge von 25 auf 27,25 % und senken den nötigen Monatsumsatz um ein Siebtel. Daraus **Gate 21**: Maßgeblich ist nicht das Zahlungsziel auf der Kundenrechnung, sondern **wann das Geld im eigenen Konto liegt.**
+
+**Der Weg ohne Gebühr ist nicht der günstigste.** Bei der Referenzbestellung (646 € Ware netto, 75,50 € Fracht, Einkauf 484,50 €):
+
+| Zahlweg | Gebühr | Skonto | netto | Gate 21 |
+|---|---|---|---|---|
+| Vorkasse | 0,00 € | 14,54 € | **+14,54 €** | hält |
+| **EPS** | 8,04 € | 14,54 € | **+6,50 €** | hält |
+| Karte (Stripe) | 12,37 € | 14,54 € | +2,17 € | hält |
+| offene Rechnung, 30 Tage | 0,00 € | **0,00 €** | 0,00 € | **reißt** |
+| Rechnungskauf (Anbieter) | 25,97 € | 14,54 € | **−11,43 €** | hält |
+
+Grund: Das Skonto rechnet auf den Einkauf netto (484,50 €), die Gebühr auf den Bruttobetrag samt Fracht und Umsatzsteuer (865,80 €). Gleicher Prozentsatz, 79 % größere Grundlage. **Entschieden:** EPS und Vorkasse ab Start, Karte als Zusatz, keine offene Rechnung, Kundenzahlungsziel null Tage.
+
+**Gebote gehören auf die Bestellung gerechnet, nicht auf den Artikel.** Die großen Belege bestehen aus acht bis zwölf Positionen. Zulässiger Klickpreis: Kamin 8,22 €, Dämmung 5,91 €, WDVS 4,19 € gegen einen Markt von 0,50–2,50 €. Kanal 1,38 €, Mörtel 1,85 € und Mauerwerk 1,24 € tragen den Klick nicht verlässlich und sind **zurückgestellt**, bis eine gemessene Kaufquote vorliegt — das Budget zu streuen hieße, es gleichmäßig zu verlieren.
+
+**Auf generische Suchbegriffe ist dieser Shop nicht konkurrenzfähig** und wird es nie sein — dort gewinnen Baumarkt-Eigenmarken. Konkurrenzfähig ist er auf Produktnamen und Fachanforderungen.
+
+## Die Website
+
+81 Seiten aus `npm run website`, zwei Ausgaben aus einer Quelle: `ausgabe/site/` zum Hochladen (robots.txt, llms.txt, sitemap.xml, JSON-LD je Seite) und `ausgabe/website.html` als Einzeldatei zum Ansehen ohne Server. Zieladresse ist **bauversand.com** bei All-Inkl; sie steht in `data/betreiber.json` und wird von dort in Seiten *und* Anzeigen eingesetzt.
+
+Die Inhaltsseiten sind nach den eigenen Redaktionsprinzipien gebaut, die selbst eine Seite sind: **eine Frage je Seite, Antwort in den ersten zwei Sätzen, jede Zahl mit Herkunft.**
+
+**Technische Kennwerte stehen bewusst nicht auf den Artikelseiten.** Sie gehören ins Herstellermerkblatt und ändern sich dort; verlinkt wird die Herstellerseite, kein erfundener PDF-Pfad.
+
+Die fünf Rechtsseiten sind ein **Gerüst mit sichtbaren Lücken**, kein fertiger Rechtstext. Das Impressum trägt, was aus dem Firmenbuch belegbar ist; vier Pflichtangaben bleiben als farbige Marken offen, und die Seite sagt selbst, dass sie so nicht online gehen darf.
+
+## Was das Bauen an sich selbst gefunden hat
+
+Über zwanzig Verhaltensaudits, über vierzig behobene Widersprüche zwischen Erklärung und Verhalten — nahezu alle in die optimistische Richtung. Eine Auswahl:
+
+| Ebene | Befund |
+|---|---|
+| Bündel | 155 grüne Testfälle, während `demo.html` gar nicht startete |
+| Testfall | elf Schleifen, die grün liefen und nichts prüften |
+| Zahlenbasis | Frachtschwelle, Brutto-UVP, Gebührenbasis, Verschnitt — alle vier nach oben verzerrt |
+| Oberfläche | die Prüfsonde meldete Grün für nie gelaufene Szenarien |
+| Inhaltsprüfung | die ÖNORM-Regel traf nie — `\b` kennt „Ö" nicht als Wortzeichen |
+| Rechnungsauslese | ein stiller Nullfund: `/Type/Page` gegen `/Type /Page`, Ergebnis eine leere Datei ohne Fehler |
+| Produktfeed | „46 veröffentlichbar, 0 zurückgehalten" — während bei allen 46 die GTIN fehlte |
+| Liefergebiet | „regional" war an genau einer Stelle umgesetzt: als Zeichenkette in einer Anzeigenzeile. Der Rechenkern nahm jede österreichische Adresse an |
+| Ortsangabe | vier Dokumente hielten **Ried im Innkreis** für den Heimatbezirk. Der Sitz liegt in **Ried in der Riedmark, Bezirk Perg** |
+| Anzeigenziel | alle drei Anzeigen des ersten Anlaufs zeigten auf Seiten, die es nicht gibt — die Ziel-URL war der Google-**Anzeigepfad** |
+| Landeseite | **3 von 81 Seiten** nannten das Liefergebiet, keine davon eine Landeseite der Anzeigen. Es stand in `llms.txt`, `areaServed` und der Kasse — überall dort, wo eine Maschine liest |
+| Anzeigentext | sechs von sechs Anzeigengruppen warben mit **Paletten**; kein einziger Artikel wird palettenweise verkauft |
+| Preisbasis | nie gemessen: ältester Einkaufspreis 132 Tage, Median 50 — ein alter Einstand ist die Marge von gestern, ausgewiesen als die von heute |
+| Prüfer der Prüfer | meldete „8 Prüfer befragt", während neun liefen — ein vollständiges Ergebnis über eine unvollständige Liste |
+| Diese Beschreibung | an neun Stellen überholt: 616 Testfälle statt über 1.000, 77 Seiten statt 81, 23 Gates statt 24 |
+
+Der gemeinsame Nenner: **eine Angabe, die berechnet und dann verschwiegen wird.** Immer meldet sich etwas *nicht*, und immer sieht das Ergebnis besser aus als es ist.
+
+## Was fehlt — und was der Auftraggeber entscheiden muss
+
+- **Das Repository ist öffentlich, und das wiegt schwerer als bisher notiert.** `.gitignore` hält die Einkaufskonditionen draußen, aber aus den veröffentlichten Verkaufspreisen und der überall dokumentierten Zielmarge sind **44 von 46 Einkaufspreisen** auf den Cent rekonstruierbar (`npm run pruefe-geheimnis`). **Empfehlung: privat stellen.**
+- **GTIN je Artikel** — bei allen 46 offen. Ohne sie läuft Google Shopping nicht. Eine erfundene GTIN führt nicht zur Ablehnung des Artikels, sondern zur Sperre des Kontos. Die Beschaffung ist eine Anfrage an Dritte und damit freigabepflichtig.
+- **Vier Impressumsangaben** — E-Mail, Telefon, UID, Gewerbewortlaut. Ohne E-Mail hat die fertig gerechnete Kundenanfrage am Ende der Kasse keinen Empfänger.
+- **Rechtstexte und Zahlungsanbieter** — Ausgaben, also freigabepflichtig. Welche Wege der Anbieter können muss, steht fest: EPS, Vorkasse, Karte.
+- **Drei Fragen an den Lieferanten**, alle drei freigabepflichtig, weil sie eine Anfrage an Dritte sind: die **Lieferzeit in Werktagen**, sein **Liefergebiet** (aus fünfzehn Rechnungen nicht ableitbar, weil die Frachtpauschale nicht nach Entfernung staffelt) und sein **Preisrhythmus** (er entscheidet, ob die 90-Tage-Grenze der Preisalterprüfung die richtige ist). Eine Artikelliste mit EAN-Spalte aus dem Kundenkonto löst zugleich die GTIN-Frage und die Weisung, das Sortiment auf mindestens 100 Artikel zu erweitern.
+- **Datenblätter der Hersteller.** Sieben Inhaltsseiten verweisen darauf, keine verlinkt eines: `baumit.at`, `schiedel.at`, `synthesa.at`, `isover.at` und `ris.bka.gv.at` sind aus der Arbeitsumgebung gesperrt.
+
+Erledigt seit der letzten Fassung dieser Beschreibung: Domain und Hosting (bauversand.com bei All-Inkl), Liefergebiet als Bezirksliste (Gate 23), Kundenzahlungsziel (Gate 21).
+
+https://claude.ai/code/session_01NUkcuRkCJDZFDntY4wU3xy
