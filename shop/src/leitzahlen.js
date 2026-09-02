@@ -32,7 +32,9 @@ import { WIDERRUFSMERKMAL, sichtfeld, SICHTWEITE } from './widerruf.js';
 /**
  * Die Register-Einträge.
  *
- * `jetzt(ziel)` rechnet den heute gültigen Wert — nie eine eingetragene Zahl,
+ * `jetzt(ziel, umfeld)` rechnet den heute gültigen Wert — nie eine eingetragene Zahl,
+ * wobei `umfeld` trägt, was nicht aus den Zielgrößen folgt (die Zahl der
+ * Begriffe etwa steht in der erzeugten Messliste und nirgends sonst),
  * sonst hätte das Register dasselbe Problem wie die Dokumente.
  * `abgeloest` sind die Werte, die einmal gegolten haben, jeder mit dem Grund
  * **und seiner eigenen `bedingung`**.
@@ -80,6 +82,34 @@ export const LEITZAHLEN = Object.freeze([
     // meldet der Prüfer Seitenzahlen und Artikelmengen. Deshalb nur, wo das
     // Wort „Bestellungen" in derselben Zeile steht — siehe `zeilenmuster`.
     zeilenmuster: /Bestellungen/i,
+  }),
+  Object.freeze({
+    id: 'keyword-anzahl',
+    name: 'Begriffe der Messliste',
+    traegt: 'Was der Auftraggeber im Keyword-Planer eintippt, und woran der '
+      + 'Bedarf von 2.500 bis 6.700 Suchanfragen je Monat hängt.',
+    // **Warum diese Zahl hier steht.** Am 1. September ist „Kaminkopf
+    // Regenhaube" aus der Kampagne genommen worden — die Kaminkopfverkleidung
+    // führt der Shop nicht, und ein Suchwort ist kein Werbeversprechen. Aus 33
+    // wurden 32. Die neue Zahl stand danach in **einer** Datei, die alte in
+    // **elf**: zwei Quelltexten und neun Dokumenten. Genau der Fall, für den
+    // dieses Register gebaut ist — und die Zahl stand nicht darin.
+    jetzt: (ziel, umfeld) => umfeld?.keywordAnzahl ?? null,
+    abgeloest: Object.freeze([
+      Object.freeze({
+        wert: 33,
+        weil: 'vor dem 01.09., als „Kaminkopf Regenhaube" noch in der Kampagne stand',
+        // Eng gefasst: „1. September" und „zurückgenommen" stehen in dieser Akte
+        // auf zu vielen Zeilen. Eine Bedingung, die überall zutrifft, deckt alles
+        // und prüft nichts — beim ersten Lauf blieb genau deshalb eine Fundstelle
+        // in STATUS.md unbemerkt.
+        bedingung: /Kaminkopf|erste[nrs]? An(?:lauf|zeigenanlauf)|01\.09\./i,
+      }),
+    ]),
+    // Kleine Zahlen stehen überall. Ohne diese Fassung meldet der Prüfer jede
+    // Seitenzahl und jede Artikelmenge — dieselbe Vorsicht wie bei den
+    // Bestellungen.
+    zeilenmuster: /Keyword|Begriff|Suchbegriff|Suchwort/i,
   }),
   Object.freeze({
     id: 'quote-am-marktboden',
@@ -194,14 +224,14 @@ export const LEITDOKUMENTE = Object.freeze([
  * @param {string} name
  * @param {object} ziel  die Zielgrößen
  */
-export function pruefeLeitzahlen(text, name, ziel, register = LEITZAHLEN) {
+export function pruefeLeitzahlen(text, name, ziel, register = LEITZAHLEN, umfeld = {}) {
   const meldungen = [];
   const gefunden = [];
 
   const istLeitdokument = LEITDOKUMENTE.some((d) => name.endsWith(d) || d.endsWith(name));
 
   for (const lz of register) {
-    const gueltig = lz.jetzt(ziel);
+    const gueltig = lz.jetzt(ziel, umfeld);
     const aktuelle = fundstellen(text, gueltig, lz);
     for (const f of aktuelle) {
       gefunden.push({ leitzahl: lz.id, wert: gueltig, aktuell: true, ...f });

@@ -56,7 +56,7 @@ Gezählt werden **Klicks, nicht Tage**. Ein Tageszähler misst die Geduld.
 ### 3. Wahrscheinlich bindet der Markt, nicht das Geld
 
 Die Zeiten oben gelten nur, wenn das Budget **ausgegeben werden kann**. Dafür
-müssen die 33 Keywords im Liefergebiet zusammen 2.500 bis 6.700 Suchanfragen
+müssen die 32 Keywords im Liefergebiet zusammen 2.500 bis 6.700 Suchanfragen
 im Monat tragen. Bei 1.000 werden aus 45 Tagen bis zur ersten belastbaren
 Aussage **sechs Monate**, und 225 € im Monat bleiben liegen.
 
@@ -84,7 +84,7 @@ Ohne sie kauft das Klickbudget Klicks und keine Erkenntnis.
 
 **Drittens: die Suchvolumenmessung.** Kostenlos, ohne Freigabe, und sie
 entscheidet, ob der Klickkanal überhaupt tragfähig ist. Liste:
-`npm run messliste`, 33 Begriffe, Ort = Liefergebiet und nicht Österreich.
+`npm run messliste`, 32 Begriffe, Ort = Liefergebiet und nicht Österreich.
 
 **Viertens, und erst dann Geld:** Rechtstexte und Zahlungsanbieter. Ohne
 Rechtstexte darf die Seite nicht online, ohne Seite nützt der

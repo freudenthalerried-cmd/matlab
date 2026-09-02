@@ -121,7 +121,8 @@ statt in verschachtelten Anführungszeichen.
 ## Stand
 
 - 1.084 Tests, 0 rot; alle Prüfer grün
-- 33 Keywords, 0 ohne Treffer in der eigenen Suche
+- 33 Keywords, 0 ohne Treffer in der eigenen Suche (Stand 01.09.; „Kaminkopf
+  Regenhaube“ ist am selben Tag herausgenommen worden, seither sind es 32)
 - `suchwoerter.json`: 59 Wörter, 23 begründete Ablehnungen
 - Kampagnen weiterhin **PAUSIERT**
 

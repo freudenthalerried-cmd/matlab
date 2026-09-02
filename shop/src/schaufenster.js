@@ -110,6 +110,11 @@ export function kennzahlen(messwerte) {
       muster: /(\d+) Shopszenarien/, soll: m.shop },
     { name: 'Prüfer ohne Browser', wie: 'src/pruefregister.js', muster: /\*\*(\d+) Prüfer\*\* ohne Browser/, soll: m.pruefer },
     { name: 'Browserproben', wie: 'src/pruefregister.js', muster: /ohne Browser, (\d+) Browserproben/, soll: m.browserpruefer },
+    // Die Zahl der Begriffe ist seit dem 2. September Leitzahl. Sie stand in
+    // elf Stellen und wurde in keiner gepflegt: Am 1. September fiel „Kaminkopf
+    // Regenhaube" aus der Kampagne, und aus 33 wurden 32 — in einer Datei.
+    { name: 'Begriffe der Messliste', wie: 'ausgabe/messliste-baustoff.json',
+      muster: /\*\*(\d+) Begriffe\*\* in 3 Anzeigengruppen/, soll: m.keywords },
     { name: 'Feedeinträge', wie: 'npm run veroeffentlichung', muster: /\| (\d+) Einträge — \*\*nicht einreichbar/, soll: m.feed },
     { name: 'Artikel ohne GTIN (Tabelle)', wie: 'data/katalog-baustoff.json', muster: /GTIN fehlt bei allen (\d+) Artikeln/, soll: m.ohneGtin },
     { name: 'Artikel ohne GTIN (Liste)', wie: 'data/katalog-baustoff.json', muster: /\*\*GTIN je Artikel\*\* — bei allen (\d+) offen/, soll: m.ohneGtin },

@@ -79,7 +79,7 @@ weiter.
 den Begriffen, auf die tatsächlich geboten würde:
 
 ```
-33 Begriffe in 3 Anzeigengruppen
+33 Begriffe in 3 Anzeigengruppen      (Stand 01.09. — heute 32)
   WDVS       14
   Dämmung     8
   Kamin      11
@@ -136,7 +136,7 @@ anderes Modell zu zwingen, hieße, eine fremde Frage zu beantworten.
 - neu: `npm run messliste`, `src/suchbedarf.js`
 - Kampagnen weiterhin **PAUSIERT**
 
-Der nächste Schritt gehört dem Auftraggeber und kostet nichts: die 33 Begriffe
+Der nächste Schritt gehört dem Auftraggeber und kostet nichts: die 32 Begriffe
 im Keyword-Planer mit dem Liefergebiet als Ort messen. Darunter steht, ob der
 Klickkanal 200 Klicks im Monat hergibt oder ein Vielfaches der geplanten Zeit
 braucht.

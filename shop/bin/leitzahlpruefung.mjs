@@ -16,7 +16,7 @@
  * Angabe meldet, wird abgeschaltet.
  */
 
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, relative } from 'node:path';
 import { LEITZAHLEN, pruefeLeitzahlen } from '../src/leitzahlen.js';
@@ -24,6 +24,25 @@ import { LEITZAHLEN, pruefeLeitzahlen } from '../src/leitzahlen.js';
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const REPO = dirname(SHOP);
 const ziel = JSON.parse(readFileSync(join(SHOP, 'data', 'zielgroessen.json'), 'utf8'));
+
+/**
+ * Was nicht aus den Zielgrößen folgt.
+ *
+ * Die Zahl der Begriffe steht in der **erzeugten** Messliste und wird hier
+ * nicht ein zweites Mal aus `keywords.csv` zusammengezählt — `messliste.mjs`
+ * fasst Phrase und Exakt zu einem Begriff zusammen, und eine zweite
+ * Zusammenfassung wäre ein zweiter Stand.
+ */
+const messliste = join(SHOP, 'ausgabe', 'messliste-baustoff.json');
+if (!existsSync(messliste)) {
+  console.error('Abbruch: ausgabe/messliste-baustoff.json fehlt — zuerst `npm run messliste`.');
+  console.error('Ohne sie ist eine Leitzahl ungemessen, und der Lauf sähe trotzdem grün aus.');
+  process.exit(2);
+}
+const umfeld = {
+  keywordAnzahl: JSON.parse(readFileSync(messliste, 'utf8'))
+    .gruppen.reduce((n, g) => n + g.keywords.length, 0),
+};
 
 /**
  * Wo gesucht wird. Die Akte und die Shoptexte — nicht der Quelltext: Dort
@@ -46,7 +65,7 @@ const sammle = (teile, endungen, was) => {
 for (const b of BESTAENDE) sammle(b.ordner, b.endungen, b.was);
 
 const befunde = dateien.map((d) =>
-  pruefeLeitzahlen(readFileSync(d.pfad, 'utf8'), relative(REPO, d.pfad), ziel));
+  pruefeLeitzahlen(readFileSync(d.pfad, 'utf8'), relative(REPO, d.pfad), ziel, LEITZAHLEN, umfeld));
 
 const fundstellen = befunde.reduce((n, b) => n + b.gefunden.length, 0);
 const meldungen = befunde.flatMap((b) => b.meldungen);
@@ -56,7 +75,7 @@ console.log(`Leitzahlen — ${LEITZAHLEN.length} im Register, ${dateien.length} 
 console.log(`${fundstellen} Fundstellen, davon ${gedeckt} gültig oder mit Bedingung in Sichtweite.\n`);
 
 for (const lz of LEITZAHLEN) {
-  const wert = lz.jetzt(ziel);
+  const wert = lz.jetzt(ziel, umfeld);
   const n = befunde.reduce((s, b) => s + b.gefunden.filter((f) => f.leitzahl === lz.id).length, 0);
   console.log(`  ${lz.name}: gültig ${wert} — ${n} Fundstellen in der Akte`);
   console.log(`      ${lz.traegt}`);

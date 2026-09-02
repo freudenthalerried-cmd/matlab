@@ -43,6 +43,7 @@ Ursprünglich ein Streckenhandel für Radonvorsorge auf **unbelegten** Platzhalt
 | Produktfeed | 43 Einträge — **nicht einreichbar**, GTIN fehlt bei allen 46 Artikeln |
 | Testbestand | **über 1.000 Testfälle**, alle grün, dazu 11 Oberflächenszenarien und 50 Shopszenarien im Browser |
 | Prüfwerkzeuge | **17 Prüfer** ohne Browser, 3 Browserproben zusätzlich |
+| Messliste für Gate 15 | **32 Begriffe** in 3 Anzeigengruppen, Ort = Liefergebiet |
 
 ## Die Zahlen, die das Modell tragen
 

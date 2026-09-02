@@ -72,7 +72,7 @@ export const OHNE_WERKZEUG = Object.freeze([
   },
   {
     id: 'suchvolumen',
-    titel: 'Suchvolumen der 33 Keywords im Liefergebiet messen',
+    titel: 'Suchvolumen der 32 Keywords im Liefergebiet messen',
     zustaendig: 'entscheidung',
     warumKeinWerkzeug: 'Die Zahlen liegen bei Google. Der Keyword-Planer ist kostenlos, ein Ads-Konto '
       + 'ohne geschaltete Kampagne kostet nichts.',

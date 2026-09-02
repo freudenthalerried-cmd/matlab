@@ -61,7 +61,7 @@ können an Tag 0 beginnen. `›` markiert den bestimmenden Strang.
 | --- | --- | --- | --- | --- | --- |
 | | 1 | 0 | Repository privat stellen | sofort | — |
 | | 1 | 0–1 | Vier Impressumsangaben eintragen | 1 (gesetzt) | — (§ 5 ECG) |
-| | 1 | 0–1 | Suchvolumen der 33 Keywords messen | 1 (gesetzt) | **15** |
+| | 1 | 0–1 | Suchvolumen der 32 Keywords messen | 1 (gesetzt) | **15** |
 | | 1–2 | 1–8 | Ein Gespräch mit dem Lieferanten | 7 (Wartezeit) | **6, 23** |
 | **›** | 1–2 | 0–10 | Rechtstexte beauftragen | 10 (Wartezeit) | — |
 | | 1–2 | 1–11 | Zahlungsanbieter wählen und anbinden | 10 (Wartezeit) | **21** |

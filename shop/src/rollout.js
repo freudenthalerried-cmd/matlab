@@ -134,7 +134,7 @@ export const ETAPPEN = Object.freeze([
   }),
   Object.freeze({
     id: 'keywordmessung',
-    titel: 'Suchvolumen der 33 Keywords im Liefergebiet messen',
+    titel: 'Suchvolumen der 32 Keywords im Liefergebiet messen',
     zustaendig: 'entscheidung',
     brauchtVor: [],
     warumOhneVoraussetzung: 'Ein kostenloses Ads-Konto ohne geschaltete Kampagne. Es hängt an '

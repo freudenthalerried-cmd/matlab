@@ -7,11 +7,22 @@ import {
 
 const ziel = JSON.parse(readFileSync(new URL('../data/zielgroessen.json', import.meta.url), 'utf8'));
 
+/**
+ * Was nicht aus den Zielgrößen folgt — dieselbe Zusammenstellung, die
+ * `bin/leitzahlpruefung.mjs` macht. Die Probe muss die Leitzahlen so aufrufen
+ * wie das Werkzeug; ein Aufruf ohne Umfeld meldete `null` und wäre rot
+ * gewesen, ohne dass etwas kaputt ist.
+ */
+const umfeld = {
+  keywordAnzahl: JSON.parse(readFileSync(new URL('../ausgabe/messliste-baustoff.json', import.meta.url), 'utf8'))
+    .gruppen.reduce((k, g) => k + g.keywords.length, 0),
+};
+
 test('Jede Leitzahl rechnet ihren gültigen Wert, statt ihn einzutragen', () => {
   assert.ok(LEITZAHLEN.length >= 3, `nur ${LEITZAHLEN.length} Leitzahlen im Register`);
   for (const lz of LEITZAHLEN) {
     assert.equal(typeof lz.jetzt, 'function', lz.id);
-    const wert = lz.jetzt(ziel);
+    const wert = lz.jetzt(ziel, umfeld);
     assert.ok(Number.isFinite(wert) && wert > 0, `${lz.id}: ${wert}`);
     assert.ok(lz.traegt && lz.traegt.length > 30, `${lz.id}: wofür sie steht, fehlt`);
   }
@@ -25,7 +36,7 @@ test('Jeder abgelöste Wert nennt Grund und eigene Bedingung', () => {
     for (const a of lz.abgeloest) {
       assert.ok(a.weil && a.weil.length > 10, `${lz.id}/${a.wert}: der Grund fehlt`);
       assert.ok(a.bedingung instanceof RegExp, `${lz.id}/${a.wert}: die Bedingung fehlt`);
-      assert.notEqual(a.wert, lz.jetzt(ziel), `${lz.id}: ${a.wert} ist der gültige Wert`);
+      assert.notEqual(a.wert, lz.jetzt(ziel, umfeld), `${lz.id}: ${a.wert} ist der gültige Wert`);
     }
   }
 });
@@ -83,7 +94,7 @@ test('Ein führendes Dokument, das die Leitzahl gar nicht nennt, fällt auf', ()
 test('Im führenden Dokument darf die abgelöste Zahl nicht vor der gültigen stehen', () => {
   // Zwei Gegenproben liefen ins Leere, bevor diese Regel da war: Die
   // Bedingung in Sichtweite deckte auch die wieder eingesetzte alte Zahl.
-  const gueltig = LEITZAHLEN.map((lz) => lz.jetzt(ziel));
+  const gueltig = LEITZAHLEN.map((lz) => lz.jetzt(ziel, umfeld));
   const vorne = `Umsatz 45.356 € bei Karte.\n\n${gueltig.join(' und ')} und 67 Bestellungen.`;
   const b = pruefeLeitzahlen(vorne, LEITDOKUMENTE[0], ziel);
   assert.ok(b.meldungen.some((m) => m.text.includes('liest die erste Zahl')));

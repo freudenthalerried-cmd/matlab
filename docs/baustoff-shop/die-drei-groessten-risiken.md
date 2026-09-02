@@ -73,7 +73,7 @@ Versuch, der sich hinzieht — und in dieser Zeit wirkt Risiko 3.
 **Dieses Risiko ist das einzige der drei, das sich heute und kostenlos
 abklären lässt.** Der Keyword-Planer ist gratis, ein Ads-Konto ohne
 geschaltete Kampagne kostet nichts, und die Messliste liegt fertig:
-`npm run messliste`, 33 Begriffe, Ort = Liefergebiet.
+`npm run messliste`, 32 Begriffe, Ort = Liefergebiet.
 
 Dass es nicht abgeklärt ist, ist der eigentliche Befund. Der Plan rechnet seit
 drei Wochen mit einem Kanal, dessen Größe niemand nachgesehen hat.

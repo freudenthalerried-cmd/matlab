@@ -121,6 +121,11 @@ const messwerte = {
   oberflaeche: zaehleSzenarien('oberflaechenprobe.mjs'),
   shop: zaehleSzenarien('shopprobe.mjs'),
   pruefer: PRUEFER.length,
+  // Aus der erzeugten Messliste, nicht aus keywords.csv: Phrase und Exakt sind
+  // ein Begriff, und diese Zusammenfassung macht `messliste.mjs`. Eine zweite
+  // wäre ein zweiter Stand.
+  keywords: JSON.parse(readFileSync(join(SHOP, 'ausgabe', 'messliste-baustoff.json'), 'utf8'))
+    .gruppen.reduce((n, g) => n + g.keywords.length, 0),
   browserpruefer: BROWSERPRUEFER.length,
   feed: feedTreffer ? Number(feedTreffer[1]) : null,
   ohneGtin: katalogDatei.artikel.filter((a) => !a.gtin).length,

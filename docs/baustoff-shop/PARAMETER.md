@@ -111,6 +111,13 @@ konservativere Kapitalgesellschaftsweg unterstellt.
 > 0,50 €. Gerechnet wird mit 2 %. Gemessen ist keine der beiden —
 > `die-drei-groessten-risiken.md`.
 >
+> **Und die Zahl, mit der gemessen wird:** Die Messliste führt
+> **32 Begriffe** in drei Anzeigengruppen (`npm run messliste`). Sie müssen im
+> Liefergebiet zusammen 2.500 bis 6.700 Suchanfragen je Monat tragen, sonst
+> bindet der Markt und nicht das Budget. Bis zum 01.09. waren es 33; dann
+> fiel „Kaminkopf Regenhaube“ weg, weil der Shop die Kaminkopfverkleidung
+> nicht führt und ein Suchwort kein Werbeversprechen ist.
+>
 > **Berichtigt am 01.09.:** Hier stand 45.356 €. Das ist die Zahl für
 > **Kreditkarte**, gerechnet am 25.08. — zwei Tage bevor Gate 21 EPS und
 > Vorkasse entschied. Mit dem entschiedenen Zahlweg sind es 43.396 € und
