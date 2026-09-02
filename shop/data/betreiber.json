@@ -23,6 +23,8 @@
   "_betriebshinweis": "Die vier folgenden Angaben entscheiden mit darueber, ob der Shop online gehen darf (npm run startklar). null heisst NICHT 'nein', sondern 'niemand hat geantwortet' — und ein unbeantworteter Punkt zaehlt dort nicht als erfuellt. Wer eine Frage verneint, traegt false ein; das ist eine Antwort und wird als solche gezaehlt.",
   "zahlungsanbieter": null,
   "rechtstexteFundstelle": null,
+  "antwortzeitWerktage": null,
+  "_antwortzeitHinweis": "Wie schnell der Auftraggeber auf eine Anfrage antwortet. Bewusst null: Der Shop erzeugt keine Bestellungen, sondern Anfragen — die Antwortzeit ist damit die einzige Zusage, die ueber den Auftrag entscheidet, und sie ist bisher nirgends entschieden. Im Baustoffhandel kauft, wer am Nachmittag anfragt und am uebernaechsten Tag ein Angebot bekommt, laengst woanders. Solange hier null steht, nennt die Kasse keine Zeit — erfunden wird sie nicht.",
   "domainZeigtAufShop": null,
   "repositoryPrivat": null
 }

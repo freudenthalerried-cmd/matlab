@@ -741,9 +741,23 @@
         anfrageKasten.appendChild(el('p', 'gebiet nein', a.hindernis));
         return;
       }
+      // **Berichtigt am 2. September.** Hier stand „wir melden uns mit Preis,
+      // Verfügbarkeit und Termin zurück". Der Preis steht auf derselben Seite
+      // und im Text darunter — ihn als offen anzukündigen nimmt der ganzen
+      // Preistransparenz den Boden, mit der dieser Shop wirbt. Bestätigt wird
+      // er, genannt ist er längst.
+      //
+      // Die Zeitangabe fehlt und wird nicht erfunden: `antwortzeitWerktage`
+      // steht in den Betreiberdaten auf `null`, und `npm run startklar` führt
+      // sie als offenen Punkt. Sobald sie entschieden ist, steht sie hier.
+      var zeit = (D.betreiber || {}).antwortzeitWerktage;
+      var rueckmeldung = typeof zeit === 'number' && zeit > 0
+        ? ' — wir bestätigen Preis, Verfügbarkeit und Termin innerhalb von '
+          + zeit + (zeit === 1 ? ' Werktag.' : ' Werktagen.')
+        : ' — wir bestätigen Preis, Verfügbarkeit und Termin.';
       anfrageKasten.appendChild(el('p', 'lede',
         'Diese Liste ist eine Anfrage, keine Bestellung. Kopieren Sie sie in '
-        + 'eine Mail — wir melden uns mit Preis, Verfügbarkeit und Termin zurück.'));
+        + 'eine Mail' + rueckmeldung));
 
       var feld = document.createElement('textarea');
       feld.readOnly = true;

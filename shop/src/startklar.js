@@ -44,6 +44,7 @@ const AUF_DER_KASSE = new Map([
   ['zahlungsanbieter', 'ein Zahlungsanbieter'],
   ['rechtstexte', 'verbindliche Rechtstexte'],
   ['lieferzeit', 'die Lieferzeit des Lieferanten'],
+  ['antwortzeit', 'eine zugesagte Antwortzeit'],
 ]);
 
 /** Die Punkte, die über „online" entscheiden — in der Reihenfolge ihrer Härte. */
@@ -73,6 +74,29 @@ export function startklar(lage = {}) {
     fehlendeFelder.length === 0
       ? 'alle Pflichtangaben nach § 5 ECG und § 14 UGB stehen'
       : `${fehlendeFelder.length} Pflichtangaben fehlen: ${fehlendeFelder.map((f) => f.bezeichnung).join(', ')}`,
+    'Auftraggeber');
+
+  /**
+   * **Aufgenommen am 2. September.** Die Antwortzeit ist der einzige Termin,
+   * den dieser Shop selbst zusagt — alle anderen kommen vom Lieferanten. Er
+   * erzeugt keine Bestellungen, sondern Anfragen; zwischen der Anfrage und dem
+   * Angebot liegt ein Postfach und ein Mensch.
+   *
+   * > **Im Baustoffhandel entscheidet die Antwortzeit über den Auftrag.** Wer
+   * > am Nachmittag anfragt und am übernächsten Tag ein Angebot bekommt, hat
+   * > längst woanders gekauft.
+   *
+   * Sie steht in keinem Schritt von `auftragslauf.js`, weil sie **zwischen**
+   * den Schritten liegt: Die elf Schritte zählen Bearbeitungsminuten, nicht
+   * Wartezeit. Deshalb ist sie beiden Rechnungen entgangen — der Wegprobe des
+   * Besuchers wie dem Aufwand des Betreibers.
+   */
+  const antwortzeit = betreiber.antwortzeitWerktage;
+  p('antwortzeit', 'Eine Antwortzeit ist zugesagt',
+    Number.isFinite(antwortzeit) && antwortzeit > 0 ? 'erfuellt' : 'offen',
+    Number.isFinite(antwortzeit) && antwortzeit > 0
+      ? `Antwort innerhalb von ${antwortzeit} Werktag(en)`
+      : 'keine zugesagt — die Kasse verspricht eine Rückmeldung ohne Zeitangabe',
     'Auftraggeber');
 
   const mitPreis = katalog.artikel.filter((a) => a.vkNetto !== null && a.vkNetto !== undefined);

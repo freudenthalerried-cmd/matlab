@@ -564,6 +564,11 @@ test('Startseite und llms.txt sagen aus den Daten, ob bestellt werden kann', () 
     gewerbewortlaut: 'Handelsgewerbe',
     zahlungsanbieter: 'Beispiel', rechtstexteFundstelle: 'Kanzlei',
     domainZeigtAufShop: true, repositoryPrivat: true,
+    // **Seit dem 2. September.** Die zugesagte Antwortzeit ist der einzige
+    // Termin, den dieser Shop selbst nennt; ohne sie bliebe „noch nicht
+    // möglich" aus einem Grund stehen, den diese Probe nicht meint — genau
+    // wie bei der Lieferzeit darunter.
+    antwortzeitWerktage: 1,
   }, null, 2));
 
   // Auch die Lieferzeit gehört beantwortet — sie steht in der

@@ -1532,6 +1532,10 @@ function shopdaten(katalog, befund, seiten, lieferantenDatei, suchwoerterDatei, 
       ort: betreiber.ort ?? '',
       email: betreiber.email ?? '',
       telefon: betreiber.telefon ?? '',
+      // Die einzige Zusage, die dieser Shop selbst gibt. `null`, solange sie
+      // niemand entschieden hat — die Kasse nennt dann keine Zeit, statt eine
+      // zu erfinden.
+      antwortzeitWerktage: betreiber.antwortzeitWerktage ?? null,
     },
     // Der Bereitschaftsstand, wie ihn `npm run startklar` rechnet. Die Kasse
     // sagt damit aus den Daten, warum nichts bestellt werden kann — statt

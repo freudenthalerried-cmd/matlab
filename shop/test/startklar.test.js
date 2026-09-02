@@ -11,7 +11,9 @@ const werkzeug = fileURLToPath(new URL('../bin/startklar.mjs', import.meta.url))
 const vollstaendig = Object.fromEntries(IMPRESSUMSFELDER.map((f) => [f.feld, 'steht']));
 const katalogVoll = { artikel: [{ sku: 'A', vkNetto: 10, ekIstPlatzhalter: false, lieferantId: 'l1' }] };
 const alles = {
-  betreiber: vollstaendig,
+  // Seit dem 2. September gehört die zugesagte Antwortzeit dazu — sie ist der
+  // einzige Termin, den dieser Shop selbst nennt.
+  betreiber: { ...vollstaendig, antwortzeitWerktage: 1 },
   impressumsfelder: IMPRESSUMSFELDER,
   katalog: katalogVoll,
   preisdateiVorhanden: true,
@@ -177,4 +179,49 @@ test('Eine Lieferzeit von 0 Werktagen ist eine Zahl, keine Lücke', () => {
     lieferanten: [{ id: 'l1', name: 'Lieferant Eins', lieferzeitWerktage: 0 }],
   });
   assert.equal(b.punkte.find((p) => p.id === 'lieferzeit').zustand, 'erfuellt');
+});
+
+/* ------------------------------------------------------------------ *
+ * Die Antwortzeit — aufgenommen am 2. September
+ *
+ * Der einzige Termin, den dieser Shop selbst zusagt. Alle anderen kommen
+ * vom Lieferanten. Sie steht in keinem Schritt von auftragslauf.js, weil
+ * sie zwischen den Schritten liegt — und ist deshalb beiden Rechnungen
+ * entgangen, der Wegprobe wie dem Aufwand.
+ * ------------------------------------------------------------------ */
+
+test('Ohne zugesagte Antwortzeit ist der Punkt offen', () => {
+  const e = startklar({ ...alles, betreiber: { ...alles.betreiber, antwortzeitWerktage: null } });
+  const p = e.punkte.find((x) => x.id === 'antwortzeit');
+  assert.ok(p, 'der Punkt fehlt ganz');
+  assert.equal(p.zustand, 'offen');
+  assert.equal(p.wer, 'Auftraggeber');
+  assert.match(p.befund, /ohne Zeitangabe/);
+});
+
+test('Mit zugesagter Antwortzeit ist er erfüllt und nennt die Zahl', () => {
+  const e = startklar({ ...alles, betreiber: { ...alles.betreiber, antwortzeitWerktage: 2 } });
+  const p = e.punkte.find((x) => x.id === 'antwortzeit');
+  assert.equal(p.zustand, 'erfuellt');
+  assert.match(p.befund, /2 Werktag/);
+});
+
+test('Null Werktage sind keine Zusage, sondern ein Fehler', () => {
+  for (const wert of [0, -1, '2', NaN]) {
+    const e = startklar({ ...alles, betreiber: { ...alles.betreiber, antwortzeitWerktage: wert } });
+    assert.equal(e.punkte.find((x) => x.id === 'antwortzeit').zustand, 'offen', String(wert));
+  }
+});
+
+test('Die Antwortzeit steht auf der Kassenliste der fehlenden Dinge', () => {
+  const e = startklar({ ...alles, betreiber: { ...alles.betreiber, antwortzeitWerktage: null } });
+  const p = e.punkte.find((x) => x.id === 'antwortzeit');
+  assert.ok(p.aufDerKasse, 'ohne Kassenwort bleibt der Punkt für den Kunden unsichtbar');
+});
+
+test('Die Betreiberdaten führen das Feld mit seiner Begründung', () => {
+  const daten = JSON.parse(readFileSync(new URL('../data/betreiber.json', import.meta.url), 'utf8'));
+  assert.ok('antwortzeitWerktage' in daten, 'das Feld fehlt in den Daten');
+  assert.equal(daten.antwortzeitWerktage, null, 'heute ist keine Zeit entschieden');
+  assert.ok((daten._antwortzeitHinweis ?? '').length > 80, 'ohne Begründung ist null nur eine Lücke');
 });

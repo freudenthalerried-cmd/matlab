@@ -240,6 +240,14 @@ export const OHNE_GEGENPROBE = Object.freeze([
       + 'wartet, bis ich eine Mutation habe, die ankommt.',
   }),
   Object.freeze({
+    pruefer: 'oberflaechenprobe',
+    warumKeine: 'Ein Versuch am 2. September ist zurückgezogen: Die Zusage der Kasse — der '
+      + 'einzige Termin, den dieser Shop selbst nennt — entsteht erst im Browser aus '
+      + '`shop-ui.js`. Kein Inhaltsprüfer sieht sie, weil sie in keiner gebauten Datei '
+      + 'steht; `pruefe-seiten` meldete zu Recht grün. Der Satz gehört in ein Szenario '
+      + 'der Oberflächenprobe, und dann braucht diese eine eigene Gegenprobe.',
+  }),
+  Object.freeze({
     pruefer: 'pruefe-preisalter',
     warumKeine: 'Seine Grundlage ist `preise/` — außerhalb des Verzeichnisses und die eine '
       + 'Datei, die diese Arbeit nicht anfasst. Eine Mutation im Katalog änderte den '
