@@ -139,7 +139,11 @@ test('ohne hinterlegte E-Mail-Adresse gibt es keine mailto-Adresse, aber einen H
 });
 
 test('mit Adresse entsteht eine mailto-Adresse, die Betreff und Text trägt', () => {
-  const a = anfrageFuer(zwei, { betreiber: { ...betreiber, email: 'office@example.at' } });
+  // **Eine Position statt zwei, seit dem 02.09.** Der Anfragetext trägt jetzt
+  // den Satz „Die Fracht kostet hier mehr als die Ware", sobald das zutrifft —
+  // und in dieser Probe trifft es zu, weil die Prüfpreise klein sind. Der Satz
+  // kostet rund zweihundert Zeichen in der Adresse.
+  const a = anfrageFuer([zwei[0]], { betreiber: { ...betreiber, email: 'office@example.at' } });
   const adresse = mailtoAdresse(a);
   assert.ok(adresse.startsWith('mailto:office%40example.at?subject='));
   assert.ok(adresse.includes(encodeURIComponent('UNVERBINDLICHE ANFRAGE')));
@@ -338,15 +342,36 @@ test('Ohne hinterlegte Adresse gibt es den Knopf gar nicht', () => {
   assert.equal(mailtoAdresse(anfrageFuer([{ sku: artikel[0].sku, menge: 3 }])), null);
 });
 
-test('Bis zwei Positionen gibt es den Mailknopf', () => {
+/*
+ * **Verschoben am 02.09.** Vorher: bis zwei Positionen mit Knopf, ab drei
+ * ohne. Der Anfragetext trägt seither den Kleinmengensatz, sobald die Fracht
+ * die Ware übersteigt — in diesen Körben ist das so, und der Satz kostet
+ * rund zweihundert Zeichen in der Adresse.
+ *
+ * Das ist der bewusst gezahlte Preis: **Der Hinweis wiegt schwerer als die
+ * Abkürzung.** Er entfällt genau dort, wo der Shop dem Kunden ohnehin sagt,
+ * dass sich diese Lieferung für ihn nicht lohnt; der kopierbare Text bleibt
+ * in jedem Fall. Bei einem Korb, der die Fracht trägt, ändert sich nichts —
+ * dann steht der Satz gar nicht im Text.
+ */
+test('Bei einer Position gibt es den Mailknopf', () => {
   assert.ok(mailtoAdresse(mailKorb(1)), 'eine Position');
-  assert.ok(mailtoAdresse(mailKorb(2)), 'zwei Positionen');
 });
 
-test('Ab drei Positionen gibt es ihn nicht mehr', () => {
-  for (const n of [3, 5, 8]) {
+test('Ab zwei Positionen gibt es ihn nicht mehr', () => {
+  for (const n of [2, 3, 5, 8]) {
     assert.equal(mailtoAdresse(mailKorb(n)), null, `${n} Positionen`);
   }
+});
+
+test('Ein Korb, der die Fracht trägt, verliert den Knopf nicht', () => {
+  // Die Gegenrichtung, und sie ist die wichtigere: Der Kleinmengensatz darf
+  // nur dort Platz kosten, wo er etwas sagt.
+  const gross = anfrageFuer([{ sku: artikel[0].sku, menge: 60 }], {
+    betreiber: { ...betreiber, email: 'bestellung@bauversand.com' },
+  });
+  assert.ok(!/mehr als die Ware/.test(gross.text), 'der Satz steht zu Unrecht im Text');
+  assert.ok(mailtoAdresse(gross), 'der Knopf fehlt, obwohl der Korb die Fracht trägt');
 });
 
 test('Der Kopiertext bleibt in jeder Größe da — er ist der Weg, nicht die Abkürzung', () => {

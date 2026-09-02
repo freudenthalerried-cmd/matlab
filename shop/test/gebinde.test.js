@@ -4,7 +4,7 @@ import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { EINHEITEN, einheitText } from '../src/format.js';
-import { gebindeKg, gebindeM2, gebindezahl, preisJeKilo, kilotafel, mengenschritt, GROESSTES_GEBINDE_KG, gebindeLfm, GEBINDELESER } from '../src/gebinde.js';
+import { gebindeKg, gebindeM2, gebindezahl, preisJeKilo, kilotafel, mengenschritt, GROESSTES_GEBINDE_KG, gebindeLfm, GEBINDELESER, rollenmass } from '../src/gebinde.js';
 
 const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
 
@@ -123,18 +123,46 @@ test('der Mengenschritt gilt für Kilo- und für Flächenware', () => {
   assert.equal(mengenschritt({ bezeichnung: 'Sack 25 kg', einheit: 'SCK' }), null,
     'wer je Sack verkauft, verkauft schon in Gebinden');
   assert.equal(mengenschritt({ bezeichnung: 'ohne Angabe', einheit: 'KG' }), null);
-  assert.equal(mengenschritt({ bezeichnung: 'Bahn 1,1x50 m', einheit: 'M2' }), null,
-    'Meter sind keine Quadratmeter — die zweite Kante wird nicht erfunden');
+  // **Umgekehrt am 02.09.** Hier stand `null` mit der Begründung „Meter sind
+  // keine Quadratmeter — die zweite Kante wird nicht erfunden". Der Satz
+  // stimmt für eine einzelne Länge und nicht für ein ausgeschriebenes Maß:
+  // Zwischen 1,1 und 50 steht ein Malzeichen, beide tragen dieselbe Einheit,
+  // und die zweite Kante ist damit nicht erfunden, sondern genannt.
+  //
+  // Der Anlass ist kein Argument, sondern ein Beleg: Die Wegprobe hat den
+  // ersten Knopf der WDVS-Gruppenseite gedrückt, und im fertigen Anfragetext
+  // stand „1 m² Baumit TextilglasGitter 1,1x50 m — 1,19 €". Ein Quadratmeter
+  // von einer Rolle, dazu 75,50 € Zustellung.
+  assert.equal(mengenschritt({ bezeichnung: 'Bahn 1,1x50 m', einheit: 'M2' }), 55,
+    'zwei Kanten mit Malzeichen sind ein Maß, keine Erfindung');
+  // Und der Satz von damals gilt weiter, wo er hingehört: Hier stehen zwei
+  // Zahlen **ohne** Malzeichen nebeneinander. Was das heißt, weiß der Name
+  // nicht — es ist eine Frage an den Lieferanten, keine Rechnung.
   assert.equal(mengenschritt({ bezeichnung: 'Grundmauerschutz 20 1,5 m', einheit: 'M2' }), null);
+  assert.equal(mengenschritt({ bezeichnung: 'Bahn 50 m', einheit: 'M2' }), null,
+    'eine einzelne Länge bleibt eine Länge');
   assert.equal(mengenschritt(null), null);
 });
 
-test('gebindeM2 liest nur ausdrückliche Quadratmeter', () => {
+test('gebindeM2 liest ausdrückliche Quadratmeter und ausgeschriebene Maße', () => {
   assert.equal(gebindeM2('Isover TDPT 20 1200 600 mm 8,64 m2'), 8.64);
   assert.equal(gebindeM2('Capatect Glasgewebe M, Breite 110cm, orange 55 m2'), 55);
   assert.equal(gebindeM2('Fassaden EPS 2 cm 0,5 m2'), 0.5);
-  assert.equal(gebindeM2('Baumit TextilglasGitter 1,1x50 m'), null);
+  assert.equal(gebindeM2('Baumit TextilglasGitter 1,1x50 m'), 55);
   assert.equal(gebindeM2('Rolle 100 m2 auf 50 m2 Träger'), null, 'zwei Angaben — welche ist es?');
+});
+
+test('das Rollenmaß rechnet nur, wo ein Malzeichen steht', () => {
+  assert.equal(rollenmass('Baumit TextilglasGitter 1,1x50 m'), 55);
+  assert.equal(rollenmass('Bahn 2 × 25 m'), 50, 'auch das echte Malzeichen');
+  assert.equal(rollenmass('Grundmauerschutz 20 1,5 m'), null, 'ohne Malzeichen zwei Zahlen');
+  assert.equal(rollenmass('SunCore Pro Abdeckklebeband 48 mm x 50 m'), null,
+    'gemischte Einheiten sind kein Flächenmaß');
+  assert.equal(rollenmass('Bahn 1x2 m und 3x4 m'), null, 'zwei Maße — welches ist es?');
+  // Die Plausibilitätsgrenzen gelten hier wie überall: Was größer ist als
+  // jedes Gebinde dieses Sortiments, meint etwas anderes.
+  assert.equal(rollenmass('Riesenbahn 50x50 m'), null);
+  assert.equal(rollenmass(null), null);
 });
 
 test('gebindezahl rundet auf ganze Einheiten auf und sagt, ob es aufgeht', () => {

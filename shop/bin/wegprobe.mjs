@@ -122,6 +122,23 @@ const SONDE = `
     merkmale.anfragezeichen = feld ? (feld.value || feld.textContent).length : 0;
     merkmale.knoepfe = kasten
       ? [...kasten.querySelectorAll('button, a')].map((n) => n.textContent.trim()).filter(Boolean) : [];
+    // Trägt das Papier, das der Kunde verschickt, dieselbe unangenehme Zahl
+    // wie die Seite? Gelesen wird aus dem Text selbst, nicht aus dem Korb —
+    // geprüft wird das Erzeugnis und nicht die Absicht.
+    //
+    // **Ohne Backslash geschrieben, und das ist kein Stil.** Diese Zeilen
+    // wandern als Zeichenkette durch eine Schablone in eine HTML-Datei; dort
+    // schluckt die Schablone jeden Backslash, und aus einer Leerzeichenklasse
+    // wird ein Buchstabe s. Der erste Lauf meldete deshalb „Fracht über
+    // Warenwert: nein" bei 65,45 € Ware und 75,50 € Fracht. Dieselbe Falle
+    // steht in shopprobe.mjs schon aufgeschrieben, und ich bin trotzdem
+    // hineingelaufen.
+    const zahl = (t) => Number(String(t).split('.').join('').replace(',', '.'));
+    const anfragetext = feld ? (feld.value || feld.textContent) : '';
+    const ware = anfragetext.match(/Warenwert[ ]+([0-9.,]+)/);
+    const fracht = anfragetext.match(/Zustellung[ ]+([0-9.,]+)/);
+    merkmale.frachtUeberWare = Boolean(ware && fracht && zahl(fracht[1]) > zahl(ware[1]));
+    merkmale.kleinmengensatz = /mehr als die Ware/.test(anfragetext);
     // Der zweite gemessene Weg: drei Positionen aus derselben Anzeige. Bis zum
     // 2. September kostete jede zusätzliche vier Schritte — Artikel öffnen,
     // legen, zurück zur Gruppe. Gezählt werden nur die Handlungen **auf** der
@@ -192,6 +209,8 @@ console.log(`\n${schritte.length} Schritte, höchstens ${HOECHSTENS_SCHRITTE} vo
 console.log(`Textfelder auszufüllen: ${merkmale.textfelder} · Auswahlfelder: ${merkmale.auswahlfelder} · `
   + `Zahlweg vorbelegt: ${merkmale.vorbelegteZahlwege === 1 ? 'ja' : 'nein'}`);
 console.log(`Am Ende: ${merkmale.anfragezeichen} Zeichen Anfragetext, Knöpfe: ${merkmale.knoepfe.join(' / ')}`);
+console.log(`Fracht über Warenwert: ${merkmale.frachtUeberWare ? 'ja' : 'nein'} · `
+  + `Kleinmengensatz im Anfragetext: ${merkmale.kleinmengensatz ? 'ja' : 'nein'}`);
 console.log(`\nAuf der Gruppenseite: ${merkmale.artikelAufGruppenseite} Artikel, `
   + `${merkmale.legenAufGruppenseite} davon direkt legbar, `
   + `${merkmale.kartenMitVerweis} mit Verweis auf die Artikelseite.`);
@@ -218,6 +237,16 @@ if (merkmale.knopfImVerweis > 0) {
 }
 if (merkmale.kartenMitVerweis !== merkmale.artikelAufGruppenseite) {
   probleme.push('Nicht jede Kachel führt zur Artikelseite — der Umbau hat einen Verweis verloren');
+}
+// **Ergänzt am 02.09.** Der Warenkorb sagt seit jeher „Das lohnt sich für Sie
+// nicht", wenn die Fracht die Ware übersteigt. Im Anfragetext — dem einzigen
+// Papier, das den Shop verlässt — stand der Satz nicht. Ein Hinweis, der nur
+// auf der Seite steht, fehlt in dem Papier, das der Kunde verschickt.
+if (merkmale.frachtUeberWare && !merkmale.kleinmengensatz) {
+  probleme.push('Die Fracht übersteigt die Ware, und der Anfragetext sagt es nicht');
+}
+if (!merkmale.frachtUeberWare && merkmale.kleinmengensatz) {
+  probleme.push('Der Kleinmengensatz steht im Anfragetext, obwohl der Korb die Fracht trägt');
 }
 if (merkmale.dreiPositionen > HOECHSTENS_SCHRITTE + 2) {
   probleme.push(`Drei Positionen kosten ${merkmale.dreiPositionen} Schritte`);

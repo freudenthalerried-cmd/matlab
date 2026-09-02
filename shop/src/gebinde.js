@@ -100,9 +100,56 @@ export const GROESSTES_GEBINDE_M2 = 200;
 export function gebindeM2(bezeichnung) {
   const t = String(bezeichnung ?? '');
   const treffer = [...t.matchAll(/(\d+(?:[.,]\d+)?)\s*m[2²](?![\p{L}\d])/giu)];
+  if (treffer.length === 1) {
+    const m2 = zahl(treffer[0][1]);
+    if (!Number.isFinite(m2)) return null;
+    if (m2 < KLEINSTES_GEBINDE_M2 || m2 > GROESSTES_GEBINDE_M2) return null;
+    return m2;
+  }
+  if (treffer.length > 1) return null;
+  return rollenmass(t);
+}
+
+/**
+ * Die Rollenfläche aus einem ausgeschriebenen Maß — „1,1x50 m".
+ *
+ * **Der Anlass, 2. September 2026.** Die Wegprobe hat den ersten Knopf der
+ * WDVS-Gruppenseite gedrückt und im fertigen Anfragetext stand:
+ *
+ * ```
+ * 1 m²   Baumit TextilglasGitter 1,1x50 m   POS-52058   1,19 €   1,19 €
+ * ```
+ *
+ * Ein Quadratmeter von einer Rolle, die 1,1 mal 50 Meter misst. Der Kunde
+ * hätte 1,19 € Ware und 75,50 € Zustellung angefragt; der Deckungsbeitrag
+ * einer solchen Position trägt nichts, und kommissionieren lässt sie sich
+ * auch nicht — man schneidet keinen Quadratmeter aus einer Rolle.
+ *
+ * **Das ist keine Schätzung, sondern eine Multiplikation zweier genannter
+ * Zahlen.** Genau darin unterscheidet sich dieser Fall von „Grundmauerschutz
+ * 20 1,5 m": Dort stehen zwei Zahlen **ohne** Malzeichen nebeneinander, und
+ * ob das 20 Meter mal 1,5 Meter heißt oder etwas anderes, weiß der Name
+ * nicht. Diese Funktion rechnet nur, wo ein `x` oder `×` zwischen den Zahlen
+ * steht. Was ohne Malzeichen dasteht, bleibt offen und ist eine Frage an den
+ * Lieferanten — sie ist in der Artikelliste mit Verpackungseinheit schon
+ * gestellt.
+ *
+ * > **Zwei Zahlen mit einem Malzeichen sind ein Maß. Zwei Zahlen ohne eines
+ * > sind zwei Zahlen.**
+ *
+ * Gerundet wird auf zwei Nachkommastellen — `1,1 * 50` ergibt in
+ * Gleitkommaarithmetik 55,00000000000001, und diese Zahl wäre als
+ * Mengenschritt weder eine Menge im Sinn von `istMenge()` noch eine, die
+ * jemand liest.
+ */
+export function rollenmass(bezeichnung) {
+  const t = String(bezeichnung ?? '');
+  const treffer = [...t.matchAll(/(\d+(?:[.,]\d+)?)\s*[x×]\s*(\d+(?:[.,]\d+)?)\s*m(?![\p{L}\d²2])/giu)];
   if (treffer.length !== 1) return null;
-  const m2 = zahl(treffer[0][1]);
-  if (!Number.isFinite(m2)) return null;
+  const breite = zahl(treffer[0][1]);
+  const laenge = zahl(treffer[0][2]);
+  if (!Number.isFinite(breite) || !Number.isFinite(laenge)) return null;
+  const m2 = Math.round(breite * laenge * 100) / 100;
   if (m2 < KLEINSTES_GEBINDE_M2 || m2 > GROESSTES_GEBINDE_M2) return null;
   return m2;
 }

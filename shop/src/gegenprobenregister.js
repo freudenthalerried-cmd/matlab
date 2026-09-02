@@ -204,6 +204,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'spürbar — die Probe hält fest, dass es auffällt.',
   }),
   Object.freeze({
+    id: 'anfragetext-ohne-kleinmengensatz',
+    pruefer: 'wegprobe',
+    was: 'Ein Anfragetext, der die Fracht über der Ware verschweigt',
+    datei: 'shop/src/kundenanfrage.js',
+    art: 'ersetzen',
+    suchen: "  if (rechnung.frachtNetto > rechnung.warenwertNetto) {\n    zeilen.push('Die Fracht kostet hier mehr als die Ware — das lohnt sich für Sie nicht.');",
+    ersetzen: "  if (false && rechnung.frachtNetto > rechnung.warenwertNetto) {\n    zeilen.push('Die Fracht kostet hier mehr als die Ware — das lohnt sich für Sie nicht.');",
+    erwartet: /Anfragetext sagt es nicht/,
+    // Die Wegprobe geht durch den **gebauten** Shop. Eine Änderung an einer
+    // Quelldatei erreicht sie erst nach `build` und `website`.
+    baueVorher: true,
+    warum: 'Der Befund vom 2. September: Der Warenkorb sagte „Das lohnt sich für Sie nicht", '
+      + 'und das eine Papier, das den Shop verlässt, sagte es nicht. Ein Hinweis, der nur auf '
+      + 'der Seite steht, fehlt in dem Papier, das der Kunde verschickt.',
+  }),
+  Object.freeze({
     id: 'weg-zahlweg-nicht-vorbelegt',
     pruefer: 'wegprobe',
     was: 'Ein Klick mehr auf dem Weg zur Anfrage',

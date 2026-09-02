@@ -193,6 +193,23 @@ export function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = nu
     zeilen.push('je Lieferung eine Anfahrt, und die Termine können auseinanderliegen.');
   }
 
+  // **Ergänzt am 2. September.** Die unangenehme Zahl stand im Warenkorb und
+  // fehlte in dem einen Papier, das den Shop verlässt. Die Wegprobe hat einen
+  // fertigen Anfragetext über 1,19 € Ware und 75,50 € Zustellung gedruckt,
+  // ohne ein Wort dazu — während dieselbe Rechnung auf der Warenkorbseite
+  // ausdrücklich sagt: „Das lohnt sich für Sie nicht."
+  //
+  // > **Ein Hinweis, der nur auf der Seite steht, fehlt in dem Papier, das
+  // > der Kunde verschickt.**
+  //
+  // Er steht hier absichtlich **vor** dem Preisstand und nicht unter den
+  // Hinweisen: Was den Kunden Geld kostet, gehört in die Anfrage und nicht in
+  // eine Fußnote über das Werkzeug.
+  if (rechnung.frachtNetto > rechnung.warenwertNetto) {
+    zeilen.push('Die Fracht kostet hier mehr als die Ware — das lohnt sich für Sie nicht.');
+    zeilen.push('Bitte zusammenlegen oder die Kleinmenge vor Ort holen.');
+  }
+
   if (preisstaende.size) {
     const sortiert = [...preisstaende].sort();
     const spanne = sortiert.length === 1

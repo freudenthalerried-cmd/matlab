@@ -226,9 +226,56 @@ const GROESSTES_GEBINDE_M2 = 200;
 function gebindeM2(bezeichnung) {
   const t = String(bezeichnung ?? '');
   const treffer = [...t.matchAll(/(\d+(?:[.,]\d+)?)\s*m[2²](?![\p{L}\d])/giu)];
+  if (treffer.length === 1) {
+    const m2 = zahl(treffer[0][1]);
+    if (!Number.isFinite(m2)) return null;
+    if (m2 < KLEINSTES_GEBINDE_M2 || m2 > GROESSTES_GEBINDE_M2) return null;
+    return m2;
+  }
+  if (treffer.length > 1) return null;
+  return rollenmass(t);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function rollenmass(bezeichnung) {
+  const t = String(bezeichnung ?? '');
+  const treffer = [...t.matchAll(/(\d+(?:[.,]\d+)?)\s*[x×]\s*(\d+(?:[.,]\d+)?)\s*m(?![\p{L}\d²2])/giu)];
   if (treffer.length !== 1) return null;
-  const m2 = zahl(treffer[0][1]);
-  if (!Number.isFinite(m2)) return null;
+  const breite = zahl(treffer[0][1]);
+  const laenge = zahl(treffer[0][2]);
+  if (!Number.isFinite(breite) || !Number.isFinite(laenge)) return null;
+  const m2 = Math.round(breite * laenge * 100) / 100;
   if (m2 < KLEINSTES_GEBINDE_M2 || m2 > GROESSTES_GEBINDE_M2) return null;
   return m2;
 }
@@ -1629,6 +1676,23 @@ function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = null, ein
     
     zeilen.push(`Die Ware kommt in ${rechnung.teillieferungen.length} getrennten Lieferungen —`);
     zeilen.push('je Lieferung eine Anfahrt, und die Termine können auseinanderliegen.');
+  }
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  if (rechnung.frachtNetto > rechnung.warenwertNetto) {
+    zeilen.push('Die Fracht kostet hier mehr als die Ware — das lohnt sich für Sie nicht.');
+    zeilen.push('Bitte zusammenlegen oder die Kleinmenge vor Ort holen.');
   }
 
   if (preisstaende.size) {
