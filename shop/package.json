@@ -39,6 +39,7 @@
     "werbeprobe": "node bin/werbeprobe.mjs",
     "messliste": "node bin/messliste.mjs",
     "empfindlichkeit": "node bin/empfindlichkeitspruefung.mjs",
+    "aufwand": "node bin/aufwand.mjs",
     "offenepunkte": "node bin/offenepunkte.mjs",
     "rollout": "node bin/rollout.mjs",
     "kennzahlen": "node bin/kennzahlen.mjs",

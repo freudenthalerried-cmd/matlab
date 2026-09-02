@@ -121,6 +121,19 @@ export const GEGENPROBEN = Object.freeze([
       + 'eigene Behauptung über sich selbst — dieselbe Lage wie beim Auftragsabgleich.',
   }),
   Object.freeze({
+    id: 'aufwand-ueber-der-grenze',
+    pruefer: 'aufwand',
+    was: 'Ein Betrieb, der nicht mehr nebenbei läuft',
+    datei: 'shop/src/auftragslauf.js',
+    art: 'ersetzen',
+    suchen: "    id: 'terminauskunft',\n    name: 'Liefertermin an den Kunden weitergeben',\n    braucht: ['produktdatenSchnittstelle'],\n    minutenOhne: 2,",
+    ersetzen: "    id: 'terminauskunft',\n    name: 'Liefertermin an den Kunden weitergeben',\n    braucht: ['produktdatenSchnittstelle'],\n    minutenOhne: 20,",
+    erwartet: /geht nicht nebenbei|Die Grenze reißt/,
+    warum: 'Die Zielgröße von 67 Bestellungen liegt bei 73 % der Zahl, ab der die Handarbeit '
+      + 'die gesetzte Grenze reißt. Eine Minute mehr je Schritt verschiebt diesen Abstand '
+      + 'spürbar — die Probe hält fest, dass es auffällt.',
+  }),
+  Object.freeze({
     id: 'weg-zahlweg-nicht-vorbelegt',
     pruefer: 'wegprobe',
     was: 'Ein Klick mehr auf dem Weg zur Anfrage',
