@@ -166,7 +166,7 @@ Hinweis: Die Pauschale staffelt nicht nach Ziel.
 
 | | |
 |---|---|
-| Gewichtsdaten | **vorhanden** auf allen Belegen, Auslesung fehlerhaft, nicht übernommen |
+| Gewichtsdaten | **vorhanden** auf allen Belegen (Gewichte, nicht Fracht — die steht auf drei von fünfzehn), Auslesung fehlerhaft, nicht übernommen |
 | Frachtaussage | **berichtigt** an der Quelle und im Widerrufsregister |
 | Nebenkosten | Stückpreise erfasst, Stückzahl offen, Gate 20 zu optimistisch |
 | Gate 20 | bleibt gültig, rechnet aber zu günstig — die Richtung des Fehlers ist bekannt |

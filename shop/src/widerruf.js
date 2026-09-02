@@ -203,12 +203,62 @@ function zeileVon(text, stelle) {
   return zeile;
 }
 
-/** Der Textausschnitt, der als „in Sichtweite" gilt. */
+/**
+ * Eine Zeile einer Markdown-Tabelle.
+ *
+ * Absichtlich am Balken am Zeilenanfang erkannt und nicht an einer
+ * Tabellenstruktur: Gebraucht wird nicht, ob es eine gültige Tabelle ist,
+ * sondern ob der Leser diese Zeile als **eigenen Eintrag** liest.
+ */
+const TABELLENZEILE = /^\s*\|/;
+
+/**
+ * Der Textausschnitt, der als „in Sichtweite" gilt.
+ *
+ * **Berichtigt am 2. September.** Bisher: acht Zeilen nach oben und unten,
+ * ohne Ansehen dessen, was dort steht. In Fließtext ist das ein brauchbares
+ * Maß — ein Leser, der die Zahl sieht, sieht auch den Absatz um sie herum.
+ *
+ * In einer **Tabelle** ist es falsch. `STATUS.md` ist eine einzige lange
+ * Tabelle aus Einträgen über verschiedene Dokumente; acht Zeilen weiter steht
+ * ein fremder Eintrag über ein fremdes Thema. Genau das ist eingetreten: Eine
+ * überholte Zahl blieb ungemeldet, weil im **Nachbareintrag** zufällig die
+ * Worte standen, die als Bedingung gelten. Der Nachbar hat die Zeile gedeckt.
+ *
+ * > **Was der Leser als eigenen Eintrag liest, ist sein eigenes Sichtfeld.**
+ *
+ * Deshalb: Eine Tabellenzeile steht für sich allein. Und für eine Fundstelle
+ * im Fließtext bleiben Tabellenzeilen aus dem Fenster — sie gehören zu ihren
+ * eigenen Einträgen und nicht zum Absatz daneben.
+ */
 export function sichtfeld(text, zeile, sichtweite = SICHTWEITE) {
   const zeilen = text.split('\n');
-  const von = Math.max(0, zeile - 1 - sichtweite);
+  const i = zeile - 1;
+  if (TABELLENZEILE.test(zeilen[i] ?? '')) return tabellensichtfeld(zeilen, i, sichtweite);
+  const von = Math.max(0, i - sichtweite);
   const bis = Math.min(zeilen.length, zeile + sichtweite);
-  return zeilen.slice(von, bis).join('\n');
+  return zeilen.slice(von, bis).filter((z) => !TABELLENZEILE.test(z)).join('\n');
+}
+
+/**
+ * Das Sichtfeld einer Tabellenzeile: ihre eigene Zeile, der **Kopf** der
+ * Tabelle und der Text **vor** der Tabelle — nicht die Nachbarzeilen.
+ *
+ * Die Zeile allein wäre zu streng. Wer eine Tabellenzeile liest, liest den
+ * Kopf mit und den Satz, der die Tabelle einführt; in einer Rechentabelle
+ * steht die Bedingung genau dort („bei Kartenzahlung", „vor dem 25.08."). Was
+ * er **nicht** mitliest, ist der Nachbareintrag — und der war es, der am
+ * 2. September eine überholte Zahl in `STATUS.md` gedeckt hat.
+ */
+function tabellensichtfeld(zeilen, i, sichtweite) {
+  let anfang = i;
+  while (anfang > 0 && TABELLENZEILE.test(zeilen[anfang - 1])) anfang -= 1;
+  // Kopfzeile und Trennzeile — höchstens zwei, und nie die Zeile selbst.
+  const kopf = zeilen.slice(anfang, Math.min(anfang + 2, i));
+  const davor = zeilen
+    .slice(Math.max(0, anfang - sichtweite), anfang)
+    .filter((z) => !TABELLENZEILE.test(z));
+  return [...davor, ...kopf, zeilen[i]].join('\n');
 }
 
 /**

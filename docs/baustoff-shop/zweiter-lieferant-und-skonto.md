@@ -17,7 +17,7 @@ Was das im Modell bedeutet, gerechnet mit der bestehenden Kostenkaskade:
 
 | | Rohmarge | bleibt nach Werbung und Gebühren | nötiger Monatsumsatz | Bestellungen |
 |---|---|---|---|---|
-| ohne Skonto | 25,00 % | 13,28 % | 45.356 € | 70 |
+| ohne Skonto (Karte, Stand 25.08.) | 25,00 % | 13,28 % | 45.356 € | 70 |
 | **mit 3 % Skonto** | **27,25 %** | **15,53 %** | **38.786 €** | **60** |
 
 > **6.571 € weniger Umsatz im Monat für dasselbe Ergebnis** — ein Siebtel

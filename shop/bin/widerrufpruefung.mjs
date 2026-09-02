@@ -63,7 +63,9 @@ for (const w of WIDERRUFE) {
   console.log(`  · ${w.id} — widerrufen ${w.widerrufenAm}, belegt in ${w.belegt}`);
 }
 console.log(`\nBestände: ${bestaende.map((b) => b.was).join(', ')}`);
-console.log(`\n${e.dateien} Dateien, ${e.funde} Fundstellen, davon ${e.gedeckt} mit Widerruf in Sichtweite (±${SICHTWEITE} Zeilen).`);
+console.log(`\n${e.dateien} Dateien, ${e.funde} Fundstellen, davon ${e.gedeckt} mit Widerruf in Sichtweite.`);
+console.log(`Sichtweite: ±${SICHTWEITE} Zeilen im Fließtext — eine Tabellenzeile dagegen sieht nur`);
+console.log('sich selbst, den Kopf ihrer Tabelle und den Text davor. Der Nachbareintrag deckt nichts.');
 
 if (e.sauber) {
   console.log('\nKeine Meldung — jede widerrufene Aussage trägt ihren Widerruf mit.');

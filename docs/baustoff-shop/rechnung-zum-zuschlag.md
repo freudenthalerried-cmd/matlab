@@ -209,8 +209,8 @@ wichtigsten Änderungen:
 
 | | 20 % Marge | 25 % Marge |
 |---|---|---|
-| nötiger Monatsumsatz | 72.740 € | **45.356 €** |
-| Bestellungen im Monat | 112 | **70** |
+| nötiger Monatsumsatz (Karte, 25.08.; 20 % Rohmarge links) | 72.740 € | **45.356 €** |
+| Bestellungen im Monat (Karte, 25.08.; 20 % Rohmarge links) | 112 | **70** |
 | Tragfähigkeitsgrenze Werbeanteil | 18 % | **23 %** |
 
 *Beide Umsatzspalten bei **Kartenzahlung**. Mit dem am 27.08. entschiedenen

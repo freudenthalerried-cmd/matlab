@@ -16,7 +16,7 @@ Dokument rechnet die Umstellung durch und ersetzt die 20-%-Zahlen
 
 | Lesart | Rechnung | Ergebnis |
 |---|---|---|
-| 25 % **Zuschlag** (bisher gerechnet) | 100 → 125 | 20 % Marge vom Verkauf |
+| 25 % **Zuschlag** (bisher gerechnet, am 25.08. zurückgenommen) | 100 → 125 | 20 % Marge vom Verkauf |
 | 25 % **Marge** (jetzt gültig) | 100 → 133,33 | **33,33 % Zuschlag** |
 
 Der Aufschlag steigt also um ein Drittel. Das klingt nach einer
@@ -41,7 +41,7 @@ Warenkorb 650 € netto, Zahlung per Karte:
 | 35 % (alte Annahme) | 23,3 % | 25.875 € | 40 | 2.000 |
 | 32 % (altes Gate 1) | 20,3 % | 29.702 € | 46 | 2.300 |
 | **25 % (jetzt gültig)** | **13,3 %** | **45.356 €** | **70** | **3.500** |
-| 20 % (= 25 % Zuschlag) | 8,3 % | 72.740 € | 112 | 5.600 |
+| 20 % (= 25 % Zuschlag, zurückgenommen) | 8,3 % | 72.740 € | 112 | 5.600 |
 
 *Alle Zeilen bei Kartenzahlung — siehe den Nachtrag oben.*
 
@@ -99,7 +99,7 @@ Für den Profi-Flexkleber, dessen Einkauf vorliegt:
 
 | Kalkulation | netto je 25-kg-Sack | brutto |
 |---|---|---|
-| 25 % Zuschlag (bisher) | 39,61 € | 47,54 € |
+| 25 % Zuschlag (bisher, zurückgenommen) | 39,61 € | 47,54 € |
 | **25 % Marge (jetzt)** | **42,25 €** | **50,70 €** |
 
 Zum Vergleich der Marktbefund aus `erste-echte-zahlen.md`: HORNBACH

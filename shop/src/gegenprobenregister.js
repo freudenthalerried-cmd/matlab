@@ -51,6 +51,20 @@ export const GEGENPROBEN = Object.freeze([
       + 'Zwei frühere Fassungen des Prüfers haben ihn nicht gemeldet.',
   }),
   Object.freeze({
+    id: 'leitzahl-vom-nachbareintrag-gedeckt',
+    pruefer: 'pruefe-leitzahlen',
+    was: 'Eine abgelöste Zahl in einer Tabellenzeile, deren Bedingung nur nebenan steht',
+    datei: 'docs/baustoff-shop/weg-zum-ersten-verkauf-nachgerechnet.md',
+    art: 'anhaengen',
+    text: '\n\n| Eintrag | Befund |\n|---|---|\n| erster | berichtigt am 25.08., '
+      + 'gerechnet bei Kartenzahlung |\n| zweiter | Der nötige Monatsumsatz liegt bei 45.356 €. |\n',
+    erwartet: /noetiger-monatsumsatz/,
+    warum: 'Bis zum 2. September hätte die Bedingung im **Nachbareintrag** diese Zeile gedeckt — '
+      + 'genau so blieb an dem Tag eine überholte Zahl in STATUS.md unbemerkt. Die Probe hält '
+      + 'fest, dass eine Tabellenzeile nur sich selbst, ihren Kopf und den Text vor der Tabelle '
+      + 'sieht.',
+  }),
+  Object.freeze({
     id: 'widerruf-ohne-widerruf',
     pruefer: 'pruefe-widerrufe',
     was: 'Eine zurückgenommene Aussage ohne ihre Rücknahme',

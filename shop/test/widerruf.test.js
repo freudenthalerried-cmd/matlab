@@ -266,3 +266,53 @@ test('Die Oberfläche gehört zum Bestand, und das Muster kennt die Aussage', as
     assert.doesNotMatch(satz, muster, `falscher Treffer: „${satz}"`);
   }
 });
+
+
+/* ------------------------------------------------------------------ *
+ * Der Nachbareintrag deckt nichts
+ *
+ * Befund vom 2. September: In `STATUS.md` — einer einzigen langen Tabelle aus
+ * Einträgen über verschiedene Dokumente — blieb eine überholte Zahl
+ * ungemeldet, weil acht Zeilen weiter in einem **fremden** Eintrag zufällig
+ * die Worte standen, die als Bedingung gelten.
+ * ------------------------------------------------------------------ */
+
+test('Eine Tabellenzeile sieht ihre Nachbarzeilen nicht', () => {
+  const text = [
+    'Ein Satz vor der Tabelle.',
+    '',
+    '| Datei | Befund |',
+    '|---|---|',
+    '| a.md | hier steht die Zahl |',
+    '| b.md | hier steht das Wort berichtigt |',
+  ].join('\n');
+  const feld = sichtfeld(text, 5, 8);
+  assert.ok(feld.includes('hier steht die Zahl'), 'die eigene Zeile fehlt');
+  assert.ok(!feld.includes('b.md'), 'der Nachbareintrag deckt die Zeile');
+});
+
+test('Eine Tabellenzeile sieht Kopf und Einleitung ihrer Tabelle', () => {
+  // Die Zeile allein wäre zu streng: In einer Rechentabelle steht die
+  // Bedingung im Kopf oder im Satz davor („bei Kartenzahlung").
+  const text = [
+    'Gerechnet bei Kartenzahlung, Stand 25.08.',
+    '',
+    '| Marge | Umsatz |',
+    '|---|---|',
+    '| 20 % | 72.740 € |',
+  ].join('\n');
+  const feld = sichtfeld(text, 5, 8);
+  assert.ok(feld.includes('Kartenzahlung'), 'die Einleitung der Tabelle fehlt');
+  assert.ok(feld.includes('| Marge | Umsatz |'), 'der Tabellenkopf fehlt');
+});
+
+test('Fließtext sieht keine fremden Tabellenzeilen', () => {
+  const text = [
+    '| x | hier steht das Wort berichtigt |',
+    '',
+    'Hier steht die Zahl im Fließtext.',
+  ].join('\n');
+  const feld = sichtfeld(text, 3, 8);
+  assert.ok(feld.includes('Zahl im Fließtext'));
+  assert.ok(!feld.includes('berichtigt'), 'eine fremde Tabellenzeile deckt den Absatz');
+});
