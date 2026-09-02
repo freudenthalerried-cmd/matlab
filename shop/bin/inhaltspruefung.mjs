@@ -199,6 +199,20 @@ if (process.argv[2] === '--oberflaeche') {
   process.exit(0);
 }
 
+/** Alle gebauten HTML-Dateien — auch die ohne eigenen Fließtext. */
+function alleSeitendateien(wurzel) {
+  const gefunden = [];
+  const gehe = (ordner) => {
+    for (const e of readdirSync(ordner, { withFileTypes: true })) {
+      const pfad = join(ordner, e.name);
+      if (e.isDirectory()) gehe(pfad);
+      else if (e.name.endsWith('.html')) gefunden.push(pfad);
+    }
+  };
+  gehe(wurzel);
+  return gefunden;
+}
+
 if (process.argv[2] === '--seiten') {
   const wurzel = join(hier, '..', 'ausgabe', 'site');
   if (!existsSync(wurzel)) {
@@ -222,7 +236,58 @@ if (process.argv[2] === '--seiten') {
       for (const v of m.verdacht) console.log(`    → ${v}`);
     }
   }
+  /**
+   * **Und was die Maschine liest.**
+   *
+   * Befund vom 2. September: Die Lieferseite trug als einzige keine
+   * maschinenlesbare Auszeichnung — ausgerechnet die Seite mit den
+   * Frachtsätzen. Beim Nachtragen die zweite Frage: Wer bewacht, dass eine
+   * ausgezeichnete Antwort dasselbe sagt wie die Seite?
+   *
+   * > **Eine Auszeichnung, die mehr sagt als die Seite, ist eine Behauptung
+   * > an eine Maschine** — sie wird zitiert und nicht gelesen.
+   *
+   * Geprüft werden die **Zahlen mit Einheit**; sie sind die nachprüfbare
+   * Substanz einer Antwort. Der Wortlaut darf abweichen, die Sätze sind für
+   * verschiedene Leser geschrieben. Blanke Zahlen bleiben außen vor: „2"
+   * steht auf jeder Seite, „7,50 €" nicht.
+   */
+  const zahlMitEinheit = /\d+(?:[.,]\d+)?\s*(?:€|%|m²|mm|cm|kg|Bezirke|Werktage?)/g;
+  let antworten = 0;
+  for (const datei of alleSeitendateien(wurzel)) {
+    const html = readFileSync(datei, 'utf8');
+    const text = html
+      .replace(/<script[\s\S]*?<\/script>/g, ' ')
+      .replace(/<style[\s\S]*?<\/style>/g, ' ')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&nbsp;|&#8239;|&thinsp;/g, ' ')
+      .replace(/\s+/g, ' ');
+    for (const m of html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)) {
+      let daten;
+      try {
+        daten = JSON.parse(m[1]);
+      } catch (e) {
+        treffer += 1;
+        console.log(`\n${datei.split('/site/')[1] ?? datei}`);
+        console.log(`    → unlesbares JSON-LD: ${e.message}`);
+        continue;
+      }
+      for (const frage of [].concat(daten.mainEntity ?? [])) {
+        const antwort = frage?.acceptedAnswer?.text;
+        if (!antwort) continue;
+        antworten += 1;
+        for (const zahl of antwort.match(zahlMitEinheit) ?? []) {
+          if (text.includes(zahl.replace(/\s+/g, ' '))) continue;
+          treffer += 1;
+          console.log(`\n${datei.split('/site/')[1] ?? datei}`);
+          console.log(`    → „${zahl}" steht nur in der Auszeichnung, nicht auf der Seite`);
+        }
+      }
+    }
+  }
+
   console.log(`\n${seiten.length} Seiten, ${absaetze} Fließtextabsätze geprüft, ${treffer} mit Verdacht.`);
+  console.log(`${antworten} maschinenlesbare Antworten gegen den sichtbaren Text gehalten.`);
   console.log('Diese Texte stehen im Seitenbauwerkzeug, nicht in inhalte/ — sie unterliegen');
   console.log('trotzdem denselben Regeln.');
   // Die Zahl oben ist die Zahl der Seiten mit **eigenem** Text und nicht die
@@ -244,6 +309,24 @@ if (process.argv[2] === '--seiten') {
   } else {
     console.log(`\nGebaut sind ${gebaut} Seiten, und jede trägt mindestens einen eigenen Absatz.`);
     console.log('Der Text aus inhalte/ steht zusätzlich darauf und wird dort geprüft.');
+  }
+  /**
+   * **Berichtigt am 2. September.** Hier stand `process.exit(0)` — ohne
+   * Bedingung. Dieser Modus liest 81 gebaute Seiten, zählt die Absätze mit
+   * Verdacht, druckt die Zahl und endete **immer grün**. Ein Prüfer, der nicht
+   * rot werden kann, ist ein Bericht.
+   *
+   * Aufgefallen ist es nicht beim Lesen, sondern weil eine Gegenprobe nicht
+   * anschlug: Die Mutation kam an, der Prüfer meldete sie, und der Lauf blieb
+   * grün. Dieselbe Familie wie `pruefe-inhalte`, `pruefe-quellen` und
+   * `pruefe-tests`, bei denen am 1. September derselbe Fehler stand — dieser
+   * Modus war übersehen worden.
+   *
+   * `--bericht` unterdrückt den roten Ausgang, wie in den anderen Modi auch.
+   */
+  if (treffer > 0 && !process.argv.includes('--bericht')) {
+    console.log('\nMit Verdacht endet dieser Lauf rot. Mit --bericht nicht.');
+    process.exit(1);
   }
   process.exit(0);
 }

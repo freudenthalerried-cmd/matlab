@@ -1444,6 +1444,45 @@ zurück.</div>`,
   };
 }
 
+/**
+ * Die Lieferseite maschinenlesbar — die Fragen, die ein Assistent bekommt.
+ *
+ * **Der Befund vom 2. September.** Jede Artikelseite trägt `Product`, jede
+ * Wissens- und Gruppenseite `Article` und `FAQPage`, die Startseite
+ * `Organization`. Die **Lieferseite** trug nichts — ausgerechnet die Seite mit
+ * den Frachtsätzen und dem Liefergebiet, also den beiden Auskünften, nach
+ * denen ein Kaufinteressent zuerst fragt.
+ *
+ * Die Antworten entstehen aus **denselben Werten** wie die Preistafel darüber;
+ * eine zweite Fassung wäre eine zweite Wahrheit. Was die Daten nicht hergeben,
+ * steht nicht da: Nach der **Lieferzeit** wird hier nichts gefragt, weil sie
+ * unbekannt ist — eine erfundene Frist in der maschinenlesbaren Auszeichnung
+ * wäre schlimmer als in der Prosa, denn sie wird zitiert und nicht gelesen.
+ */
+function lieferungFragen(f, verweis) {
+  const bezirke = LIEFERGEBIET.bezirke.map((b) => b.name).join(', ');
+  return [
+    ['Was kostet die Zustellung?',
+      `${euro(f.pauschaleNetto)} € netto Pauschale je Lieferung, bei palettierter Ware zuzüglich `
+      + `${euro(f.sperrgutZuschlagNetto)} € netto Kranentladung je Hub. Die Fracht fällt je Lieferung `
+      + 'an und nicht je Artikel.'],
+    ['Gibt es eine Frei-Haus-Schwelle?',
+      'Nein. Die Frachtpauschale hängt an der Fahrt und nicht am Warenwert; wer sie trotzdem als '
+      + '„frei Haus" bewirbt, hat sie in alle Warenpreise eingerechnet.'],
+    ['Wohin wird geliefert?',
+      `In die Bezirke ${bezirke} — regional, nicht österreichweit.`],
+    ['Kann ich selbst abholen?',
+      'Ja, ausdrücklich vorgesehen. Wer selbst abholt, zahlt keine Fracht.'],
+    ['Ab welchem Warenwert lohnt sich eine Lieferung?',
+      'Unter etwa 400 € netto Warenwert trägt eine gelieferte Bestellung ihre eigenen Nebenkosten '
+      + 'nicht — für keine der beiden Seiten. Stand: 2026-08-25.'],
+  ].map(([frage, antwort]) => ({
+    '@type': 'Question',
+    name: frage,
+    acceptedAnswer: { '@type': 'Answer', text: antwort },
+  }));
+}
+
 function lieferungSeite(katalog, katalogDatei, verweis) {
   const f = katalog.lieferantenById.get(katalogDatei.lieferantId).fracht;
   return {
@@ -1481,7 +1520,11 @@ nächsten Bestellung. Stand: 2026-08-25.</p>
 <h2>Selbstabholung</h2>
 <p>Ausdrücklich vorgesehen und nicht schlechter gestellt. Wer selbst abholt, zahlt keine Fracht — das ist
 der ganze Vorteil der getrennten Ausweisung.</p>`,
-    jsonLd: null,
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: lieferungFragen(f, verweis),
+    },
   };
 }
 

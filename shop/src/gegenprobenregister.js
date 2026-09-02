@@ -123,6 +123,20 @@ export const GEGENPROBEN = Object.freeze([
       + 'zweites Mal überwiesen.',
   }),
   Object.freeze({
+    id: 'auszeichnung-sagt-mehr-als-die-seite',
+    pruefer: 'pruefe-seiten',
+    was: 'Eine maschinenlesbare Antwort mit einer Zahl, die auf der Seite nicht steht',
+    datei: 'shop/bin/website.mjs',
+    art: 'ersetzen',
+    suchen: "      'Ja, ausdrücklich vorgesehen. Wer selbst abholt, zahlt keine Fracht.'],",
+    ersetzen: "      'Ja, ausdrücklich vorgesehen. Wer selbst abholt, zahlt keine Fracht und bekommt 3 % Nachlass.'],",
+    erwartet: /3 %/,
+    baueVorher: true,
+    warum: 'Eine Auszeichnung, die mehr sagt als die Seite, ist eine Behauptung an eine '
+      + 'Maschine — sie wird zitiert und nicht gelesen. Dieselbe Familie wie `PreOrder` gegen '
+      + '`InStock`: Beide Seiten stimmen für sich, und der Widerspruch fällt beim Kunden auf.',
+  }),
+  Object.freeze({
     id: 'agb-punkt-verschoben',
     pruefer: 'pruefe-belege',
     was: 'Ein Beleg, der auf eine Klausel zeigt, die etwas anderes regelt',
@@ -378,14 +392,6 @@ export const OHNE_GEGENPROBE = Object.freeze([
     warumKeine: 'Seine Mutation wäre, einen Einkaufspreis in eine öffentliche Datei zu '
       + 'schreiben. Auch nur für Sekunden und auch nur lokal — das ist die eine Datei, '
       + 'die diese Arbeit nicht anfassen darf.',
-  }),
-  Object.freeze({
-    pruefer: 'pruefe-seiten',
-    warumKeine: 'Drei Versuche, keiner ist angekommen. Er liest die **gebauten** Seiten; '
-      + 'ein Absatz in `inhalte/` erreicht ihn erst nach einem Bau, und auch mit Bau '
-      + 'dazwischen blieb er stumm. Der Eintrag ist zurückgezogen, weil ein Prüfer, dem '
-      + 'eine untaugliche Gegenprobe „schlägt nicht an" bescheinigt, zu Unrecht '
-      + 'beschuldigt wird — was fehlt, ist meine Kenntnis seiner Regeln, nicht seine Wachsamkeit.',
   }),
   Object.freeze({
     pruefer: 'pruefe-preise',
