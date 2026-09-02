@@ -26,7 +26,9 @@ import { textZeile, csvFeld, hatSteuerzeichen } from '../src/format.js';
 import { ladeKatalog, berechneWarenkorb } from '../src/warenkorb.js';
 import { pruefeBestelldaten, baueAuftrag } from '../src/kunde.js';
 import { erzeugeBestellungen } from '../src/bestellung.js';
-import { erzeugeAngebot, erzeugeRechnung } from '../src/beleg.js';
+import { erzeugeAngebot, erzeugeRechnung, erzeugeAuftragsbestaetigung } from '../src/beleg.js';
+import { kundenWarenkorb } from '../src/shopkern.js';
+import { baueKundenanfrage, mailtoAdresse } from '../src/kundenanfrage.js';
 import { erzeugeImpressum } from '../src/rechtstexte.js';
 import { belegzeile } from '../src/vies.js';
 import { neueAblage, haltefest, alsCsv } from '../src/ablage.js';
@@ -242,6 +244,66 @@ test('Ausgang Rechnung: die untergeschobene Summenzeile verdrängt die echte nic
   const gesamt = (text) => text.split('\n').filter((z) => z.startsWith('Gesamtbetrag'));
   assert.equal(gesamt(giftig.text).length, 1, 'Zwei Gesamtbetragszeilen auf einer Rechnung');
   assert.deepEqual(gesamt(giftig.text), gesamt(harmlos.text));
+});
+
+/* ------------------------------------------------------------------ *
+ * Nachgetragen am 2. September: drei Ausgänge, die im Verzeichnis fehlten
+ *
+ * Diese Datei nennt sich selbst ein Verzeichnis und sagt: „Was hier nicht
+ * steht, ist ungeprüft." Genau das war der Fall. Angebot und Rechnung standen
+ * hier, die **Auftragsbestätigung** nicht — das Dokument, mit dem nach Punkt 2
+ * der AGB der Vertrag zustande kommt. Und der Anfragetext samt seiner
+ * mailto-Adresse fehlte ganz, obwohl er der einzige Text ist, den der Kunde
+ * selbst verschickt.
+ *
+ * > **Eine Regel gilt nur dort, wo jemand sie hingeschrieben hat.** Angebot
+ * > und Rechnung waren geprüft, weil sie an dem Tag im Blick waren; die
+ * > Bestätigung dazwischen nicht, weil sie es nicht war.
+ * ------------------------------------------------------------------ */
+
+test('Ausgang Auftragsbestätigung: Gift erzeugt keine zusätzliche Zeile', () => {
+  const [harmlos, giftig] = belegPaar(erzeugeAuftragsbestaetigung);
+  assert.equal(zeilen(giftig.text), zeilen(harmlos.text));
+});
+
+test('Ausgang Auftragsbestätigung: die untergeschobene Summenzeile verdrängt die echte nicht', () => {
+  const [harmlos, giftig] = belegPaar(erzeugeAuftragsbestaetigung);
+  const gesamt = (text) => text.split('\n').filter((z) => z.startsWith('Gesamtbetrag'));
+  assert.equal(gesamt(giftig.text).length, 1, 'Zwei Gesamtbetragszeilen auf einer Auftragsbestätigung');
+  assert.deepEqual(gesamt(giftig.text), gesamt(harmlos.text));
+});
+
+const anfragePaar = () => {
+  const daten = { artikel: katalog.artikel, lieferanten: lies('../data/lieferanten.json').lieferanten };
+  const rechnung = kundenWarenkorb([{ sku: 'AB-RD-375', menge: 1 }, { sku: 'ZB-DB-150', menge: 2 }], daten);
+  const bau = (b) => baueKundenanfrage({
+    rechnung, bezirk: 'Perg', betreiber: b, datum: '2026-09-02',
+  });
+  return [bau({ ...betreiber, ort: 'Ried in der Riedmark' }),
+    bau({ ...betreiber, ort: 'Ried in der Riedmark', firma: betreiber.firma + GIFT })];
+};
+
+test('Ausgang Kundenanfrage: Gift in den Betreiberdaten erzeugt keine zusätzliche Zeile', () => {
+  const [harmlos, giftig] = anfragePaar();
+  assert.equal(harmlos.moeglich, true, harmlos.hindernis);
+  assert.equal(zeilen(giftig.text), zeilen(harmlos.text));
+});
+
+test('Ausgang Kundenanfrage: die untergeschobene Summenzeile verdrängt die echte nicht', () => {
+  const [harmlos, giftig] = anfragePaar();
+  const summe = (t) => t.split('\n').filter((z) => z.trim().startsWith('Brutto gesamt'));
+  assert.equal(summe(giftig.text).length, 1);
+  assert.deepEqual(summe(giftig.text), summe(harmlos.text));
+});
+
+test('Ausgang mailto-Adresse: Gift bleibt eine Adresse ohne zusätzliche Kopfzeile', () => {
+  // Ein Umbruch in einem mailto-Rumpf kann im Mailprogramm einen zweiten
+  // Kopfeintrag erzeugen. Die Adresse muss vollständig kodiert sein.
+  const [, giftig] = anfragePaar();
+  const adresse = mailtoAdresse({ ...giftig, empfaenger: 'bestellung@example.at' });
+  if (adresse === null) return; // zu lang — dann gibt es keinen Knopf, siehe kundenanfrage.test.js
+  assert.equal(zeilen(adresse), 1);
+  assert.ok(!/[\r\n\u2028\u2029]/.test(adresse), 'roher Umbruch in der Adresse');
 });
 
 /* ------------------------------------------------------------------ *
