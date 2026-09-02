@@ -67,6 +67,57 @@ const csvFeld = (wert) => textZeile(wert).replaceAll(';', ',');
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const keineZahl = (wert) => wert === null || wert === undefined || wert === ''
+  || !Number.isFinite(Number(wert));
+
+const zahlText = (wert) => {
+  
+  
+  
+  if (keineZahl(wert)) return '';
+  const n = Number(wert);
+  return Number.isInteger(n) ? String(n) : String(Math.round(n * 100) / 100).replace('.', ',');
+};
+
+
+const csvBetrag = (wert) => (keineZahl(wert) ? '' : Number(wert).toFixed(2).replace('.', ','));
+
+
+
+
+
+
+
+
+const zahlAusText = (wert) => {
+  const roh = String(wert ?? '').trim().replace(',', '.');
+  return roh === '' ? NaN : Number(roh);
+};
+
+
+
+
+
+
+
+
+
+
+
 const hatSteuerzeichen = (wert) => STEUERZEICHEN.test(String(wert ?? ''));
 
 

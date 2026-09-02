@@ -8,7 +8,7 @@
  * Bestellung — als Text zum Versenden und als CSV für Schnittstellen.
  */
 
-import { EUR, LUECKE, csvFeld, textZeile } from './format.js';
+import { EUR, LUECKE, csvFeld, textZeile, zahlText } from './format.js';
 import { traegtSichSelbst } from './kostenbild.js';
 
 /** Erzeugt je Teillieferung eine Bestellung an den Lieferanten. */
@@ -93,8 +93,11 @@ function kranzeile(teil) {
 }
 
 function bestelltext(nummer, teil, auftrag) {
+  // Die Menge in hiesiger Schreibweise: „0,75", nicht „0.75". Der Shop gibt
+  // Platten zu 0,75 m² und Rollen zu 55 m² ab; ein Lieferant, der „0.75" liest,
+  // liest im Zweifel 75.
   const zeilen = teil.positionen.map(
-    (p) => `  ${String(p.menge).padStart(3)} × ${textZeile(p.sku).padEnd(12)} ${textZeile(p.bezeichnung)}`,
+    (p) => `  ${zahlText(p.menge).padStart(4)} × ${textZeile(p.sku).padEnd(12)} ${textZeile(p.bezeichnung)}`,
   );
 
   // Ein Hinweis zur Zufahrt steht direkt unter der Adresse und nicht am Ende:
@@ -158,7 +161,7 @@ function bestellCsv(nummer, teil, auftrag) {
     [
       nummer,
       csvFeld(p.sku),
-      p.menge,
+      zahlText(p.menge),
       csvFeld(p.bezeichnung),
       csvFeld(auftrag.lieferadresse.name),
       csvFeld(auftrag.lieferadresse.strasse),

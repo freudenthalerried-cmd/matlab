@@ -23,6 +23,25 @@
  */
 
 /**
+ * Eine Zahl aus einem Beleg — auch hier **noch einmal**, aus demselben Grund
+ * wie der Steuersatz unten.
+ *
+ * `format.js` hat seit dem 2. September `zahlAusText`. Sie von dort zu holen
+ * wäre die Regel „eine Quelle für jede Zahl" — und sie ist hier falsch: Diese
+ * Datei liest zurück, was `format.js` geschrieben hat. Ein Leser, der die
+ * Schreibweise vom Schreiber bezieht, bestätigt jede Schreibweise, auch eine
+ * falsche.
+ *
+ * Gelesen wird Komma **und** Punkt: Ältere Dateien tragen den Punkt, und ein
+ * Leser, der sie ab heute nicht mehr versteht, macht aus einem Formatfehler
+ * einen Datenverlust.
+ */
+const zahlAusText = (wert) => {
+  const roh = String(wert ?? '').trim().replace(',', '.');
+  return roh === '' ? NaN : Number(roh);
+};
+
+/**
  * Der Steuersatz steht hier **noch einmal** — und das ist Absicht.
  *
  * `preis.js` exportiert ihn auch. Ihn von dort zu holen wäre die Regel
@@ -143,9 +162,14 @@ export function leseBestellung(text) {
   for (let i = 0; i < zeilen.length; i++) {
     // Die Menge ist mit padStart(3) eingerückt, die Artikelnummer mit padEnd(12)
     // aufgefüllt — das Muster muss beides vertragen.
-    const p = /^\s+(\d+)\s+×\s+(\S+)\s+(.+)$/.exec(zeilen[i]);
+    // **Berichtigt am 2. September.** Hier stand `(\d+)` — nur ganze Zahlen.
+    // Der Shop gibt Platten zu 0,75 m² und Rollen zu 55 m² ab; eine Zeile mit
+    // gebrochener Menge traf das Muster nicht und **verschwand still**. Die
+    // Gegenprobe verglich dann eine Position weniger und beschuldigte den
+    // Bestelltext, in dem die Position sehr wohl stand.
+    const p = /^\s*([\d.,]+)\s+×\s+(\S+)\s+(.+)$/.exec(zeilen[i]);
     if (p) {
-      positionen.push({ menge: Number(p[1]), sku: p[2], bezeichnung: p[3].trim() });
+      positionen.push({ menge: zahlAusText(p[1]), sku: p[2], bezeichnung: p[3].trim() });
       continue;
     }
     if (/^Lieferadresse/.test(zeilen[i])) {
@@ -179,7 +203,7 @@ export function leseBestellCsv(csv) {
     return {
       spalten: f.length,
       sku: spalte(f, 'sku'),
-      menge: Number(spalte(f, 'menge')),
+      menge: zahlAusText(spalte(f, 'menge')),
       bezeichnung: spalte(f, 'bezeichnung'),
       liefername: spalte(f, 'liefername'),
       lieferort: spalte(f, 'lieferort'),

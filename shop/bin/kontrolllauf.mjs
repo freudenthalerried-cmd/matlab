@@ -30,6 +30,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { ladeKatalog, berechneWarenkorb } from '../src/warenkorb.js';
+import { mengenschritt } from '../src/gebinde.js';
 import { ZIELMARGE, ladeBaustoffkatalog } from '../src/baustoffkatalog.js';
 import { baueVorgang, darfVorgangLaufen } from '../src/vorgang.js';
 import {
@@ -68,10 +69,31 @@ if (verkaeuflich.length < 2) {
 const gewaehlt = [...verkaeuflich]
   .sort((a, b) => Math.abs(a.vkNetto - haelfte) - Math.abs(b.vkNetto - haelfte))
   .slice(0, 2);
-const warenkorb = berechneWarenkorb(
-  gewaehlt.map((a) => ({ sku: a.sku, menge: Math.max(1, Math.round(haelfte / a.vkNetto)) })),
-  katalog,
-);
+
+/**
+ * **Eine gebrochene Menge gehört dazu, seit dem 2. September.**
+ *
+ * Der Korb bestand aus zwei Stückgutpositionen mit ganzen Mengen — und damit
+ * hat dieser Lauf nie geprüft, was der Shop tatsächlich verkauft: Platten zu
+ * 0,75 m², Rollen zu 55 m², Säcke zu 25 kg. Der Rückleser des Bestelltextes
+ * verlangte ganze Zahlen und ließ jede gebrochene Position still fallen; die
+ * Kontrolle sah es nicht, weil in ihrem Korb keine vorkam.
+ *
+ * > **Ein Prüfkorb ohne die schwierigen Fälle prüft die leichten.**
+ *
+ * Genommen wird der erste Artikel mit einem Gebindeschritt, der keine ganze
+ * Zahl ist. Gibt es keinen, bleibt es bei den zwei — dann sagt der Lauf das,
+ * statt eine Menge zu erfinden.
+ */
+const gebrochen = verkaeuflich.find((a) => {
+  const schritt = mengenschritt(a);
+  return schritt !== null && !Number.isInteger(schritt) && !gewaehlt.includes(a);
+});
+const positionen = [
+  ...gewaehlt.map((a) => ({ sku: a.sku, menge: Math.max(1, Math.round(haelfte / a.vkNetto)) })),
+  ...(gebrochen ? [{ sku: gebrochen.sku, menge: mengenschritt(gebrochen) }] : []),
+];
+const warenkorb = berechneWarenkorb(positionen, katalog);
 
 const betreiberDatei = lies(join(SHOP, 'data', 'betreiber.json'));
 const vorgang = baueVorgang({
@@ -87,7 +109,16 @@ const vorgang = baueVorgang({
     unternehmerBestaetigt: true,
   },
   warenkorb,
-  betreiber: { firma: betreiberDatei.firma, uid: betreiberDatei.uid ?? '' },
+  // Anschrift seit dem 2. September dabei: § 11 verlangt Name **und**
+  // Anschrift, und dieser Lauf hat sie — wie der Belegprüflauf — nicht
+  // weitergereicht und danach über eine unvollständige Rechnung geurteilt.
+  betreiber: {
+    firma: betreiberDatei.firma,
+    strasse: betreiberDatei.strasse ?? '',
+    plz: betreiberDatei.plz ?? '',
+    ort: betreiberDatei.ort ?? '',
+    uid: betreiberDatei.uid ?? '',
+  },
   datum: '02.09.2026',
   lieferdatum: '05.09.2026',
   rechnungsnummer: 'RE-2026-0001',
@@ -160,6 +191,9 @@ const freigabe = darfVorgangLaufen(vorgang);
 
 console.log(`Kontrolle — die zweite Rechnung über Vorgang ${vorgang.vorgangsnummer}`);
 console.log(`Katalog: ${katalogName}`);
+console.log(gebrochen
+  ? `Im Korb: eine gebrochene Menge (${gebrochen.sku}, ${mengenschritt(gebrochen)}) — die schwierige Sorte.`
+  : 'Im Korb: keine gebrochene Menge — dieser Lauf prüft nur ganze Mengen.');
 console.log(`Warenkorb: ${warenkorb.warenwertNetto.toFixed(2)} € netto (Zielgröße ${ZIELKORB} €), `
   + `${vorgang.bestellungen.length} Lieferantenbestellung(en)\n`);
 

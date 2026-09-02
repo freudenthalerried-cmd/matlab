@@ -123,6 +123,19 @@ export const GEGENPROBEN = Object.freeze([
       + 'zweites Mal überwiesen.',
   }),
   Object.freeze({
+    id: 'bestelltext-verliert-gebrochene-menge',
+    pruefer: 'pruefe-kontrolle',
+    was: 'Eine gebrochene Menge, die der Rückleser des Bestelltextes nicht sieht',
+    datei: 'shop/src/kontrolle.js',
+    art: 'ersetzen',
+    suchen: "    const p = /^\\s*([\\d.,]+)\\s+×\\s+(\\S+)\\s+(.+)$/.exec(zeilen[i]);",
+    ersetzen: "    const p = /^\\s+(\\d+)\\s+×\\s+(\\S+)\\s+(.+)$/.exec(zeilen[i]);",
+    erwartet: /Position|Bestellung|Abweichung/i,
+    warum: 'Der Befund vom 2. September: Der Rückleser verlangte ganze Zahlen, und der Shop '
+      + 'gibt Platten zu 0,75 m² ab. Die Zeile verschwand still, und die Gegenprobe '
+      + 'beschuldigte den Bestelltext, in dem die Position sehr wohl stand.',
+  }),
+  Object.freeze({
     id: 'rechnung-ohne-anschrift',
     pruefer: 'pruefe-belege',
     was: 'Eine Rechnung, die nur den Namen des Ausstellers trägt',

@@ -55,6 +55,57 @@ export const textZeile = (wert) => String(wert ?? '').replace(STEUERZEICHEN_FOLG
 export const csvFeld = (wert) => textZeile(wert).replaceAll(';', ',');
 
 /**
+ * Eine Zahl, wie sie hierzulande geschrieben wird.
+ *
+ * **Der Befund vom 2. September.** Die Buchhaltungs-CSV geht mit Semikolon
+ * als Trenner hinaus — das ist die hiesige Schreibweise — und trug die
+ * Beträge mit **Punkt**:
+ *
+ * ```
+ * 1;rechnung;RE-2026-0001;2026-09-02;V-1;768.39;922.07;;…
+ * ```
+ *
+ * In einer Tabellenkalkulation mit deutscher Ländereinstellung ist der Punkt
+ * das **Tausendertrennzeichen**. Aus 768,39 € werden 76.839 €, und zwar
+ * lautlos: Die Zahl sieht nach dem Import wie eine Zahl aus. Dieselbe Datei
+ * geht zum Steuerberater.
+ *
+ * > **Eine Datei, die zur Hälfte deutsch formatiert ist, ist falsch
+ * > formatiert.**
+ *
+ * `zahlText` schreibt ganze Zahlen ohne Nachkomma („55") und gebrochene mit
+ * Komma und höchstens zwei Stellen („0,75") — die Genauigkeit, in der Gebinde
+ * aufgehen und eine Rechnung stellbar ist. `csvBetrag` schreibt Geld immer
+ * mit zwei Stellen: „1234,5" ist in einer Buchhaltung kein Betrag.
+ */
+const keineZahl = (wert) => wert === null || wert === undefined || wert === ''
+  || !Number.isFinite(Number(wert));
+
+export const zahlText = (wert) => {
+  // `Number(null)` ist 0, und `null` heißt hier „keine Angabe". Ohne diese
+  // Wache stünde in der Buchhaltungszeile eines Vermerks ohne Betrag ein
+  // sauberes „0,00 €" — eine erfundene Null sieht aus wie eine gebuchte.
+  if (keineZahl(wert)) return '';
+  const n = Number(wert);
+  return Number.isInteger(n) ? String(n) : String(Math.round(n * 100) / 100).replace('.', ',');
+};
+
+/** Geldbeträge — immer zwei Nachkommastellen, Komma. Leer, wenn es keine Zahl ist. */
+export const csvBetrag = (wert) => (keineZahl(wert) ? '' : Number(wert).toFixed(2).replace('.', ','));
+
+/**
+ * Zurück aus beiden Schreibweisen.
+ *
+ * Liest „0,75" und „0.75". Absichtlich beides: Die alten Dateien im Umlauf
+ * tragen den Punkt, und ein Leser, der sie ab heute nicht mehr versteht,
+ * macht aus einem Formatfehler einen Datenverlust.
+ */
+export const zahlAusText = (wert) => {
+  const roh = String(wert ?? '').trim().replace(',', '.');
+  return roh === '' ? NaN : Number(roh);
+};
+
+/**
  * Findet Zeichen, die `textZeile` entfernen würde.
  *
  * Das Gegenstück für den **Eingang**: Am Ausgang wird entschärft, am Eingang

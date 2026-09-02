@@ -25,7 +25,7 @@
  * auf die Uhr sieht, lässt sich nicht prüfen.
  */
 
-import { csvFeld } from './format.js';
+import { csvFeld, csvBetrag } from './format.js';
 
 /** Aufbewahrungsfrist nach § 132 BAO: sieben Jahre nach Ablauf des Kalenderjahres. */
 export const AUFBEWAHRUNG_JAHRE = 7;
@@ -318,8 +318,13 @@ export function alsCsv(ablage) {
       e.nummer ?? '',
       e.zeitpunkt,
       e.vorgang ?? '',
-      e.betragNetto ?? '',
-      e.betragBrutto ?? '',
+      // **Berichtigt am 2. September.** Hier stand der rohe Zahlenwert:
+      // `768.39` bei Semikolon als Trenner. In einer Tabellenkalkulation mit
+      // deutscher Ländereinstellung ist der Punkt das Tausendertrennzeichen —
+      // aus 768,39 € werden lautlos 76.839 €. Diese Datei geht zum
+      // Steuerberater.
+      csvBetrag(e.betragNetto),
+      csvBetrag(e.betragBrutto),
       e.bezugAuf ?? '',
       csvFeld(e.text).slice(0, 200),
     ].join(';'),

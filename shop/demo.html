@@ -289,6 +289,57 @@ const csvFeld = (wert) => textZeile(wert).replaceAll(';', ',');
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const keineZahl = (wert) => wert === null || wert === undefined || wert === ''
+  || !Number.isFinite(Number(wert));
+
+const zahlText = (wert) => {
+  
+  
+  
+  if (keineZahl(wert)) return '';
+  const n = Number(wert);
+  return Number.isInteger(n) ? String(n) : String(Math.round(n * 100) / 100).replace('.', ',');
+};
+
+
+const csvBetrag = (wert) => (keineZahl(wert) ? '' : Number(wert).toFixed(2).replace('.', ','));
+
+
+
+
+
+
+
+
+const zahlAusText = (wert) => {
+  const roh = String(wert ?? '').trim().replace(',', '.');
+  return roh === '' ? NaN : Number(roh);
+};
+
+
+
+
+
+
+
+
+
+
+
 const hatSteuerzeichen = (wert) => STEUERZEICHEN.test(String(wert ?? ''));
 
 
@@ -4069,8 +4120,11 @@ function kranzeile(teil) {
 }
 
 function bestelltext(nummer, teil, auftrag) {
+  
+  
+  
   const zeilen = teil.positionen.map(
-    (p) => `  ${String(p.menge).padStart(3)} × ${textZeile(p.sku).padEnd(12)} ${textZeile(p.bezeichnung)}`,
+    (p) => `  ${zahlText(p.menge).padStart(4)} × ${textZeile(p.sku).padEnd(12)} ${textZeile(p.bezeichnung)}`,
   );
 
   
@@ -4134,7 +4188,7 @@ function bestellCsv(nummer, teil, auftrag) {
     [
       nummer,
       csvFeld(p.sku),
-      p.menge,
+      zahlText(p.menge),
       csvFeld(p.bezeichnung),
       csvFeld(auftrag.lieferadresse.name),
       csvFeld(auftrag.lieferadresse.strasse),
@@ -5792,8 +5846,13 @@ function alsCsv(ablage) {
       e.nummer ?? '',
       e.zeitpunkt,
       e.vorgang ?? '',
-      e.betragNetto ?? '',
-      e.betragBrutto ?? '',
+      
+      
+      
+      
+      
+      csvBetrag(e.betragNetto),
+      csvBetrag(e.betragBrutto),
       e.bezugAuf ?? '',
       csvFeld(e.text).slice(0, 200),
     ].join(';'),
