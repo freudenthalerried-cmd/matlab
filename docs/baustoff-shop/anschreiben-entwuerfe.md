@@ -1,5 +1,24 @@
 # Anschreiben-Entwürfe
 
+> **ÜBERHOLT SEIT DEM 22. AUGUST — wer hier liest, arbeitet am falschen
+> Modell.** Alle Entwürfe unten richten sich an dreizehn **Radon**-Hersteller
+> und sollen Gate 3 eines Geschäftsmodells belegen, das der Kurswechsel vom
+> 22. August abgelöst hat. Der Shop kalkuliert seither mit eigenen
+> Baumeisterpreisen und bezieht bei **einem** Lieferanten, aus dessen
+> Rechnungen der ganze Katalog stammt.
+>
+> **Der gültige Entwurf steht woanders:** vier Fragen an Poschacher
+> Baustoffhandel, erzeugt aus `src/lieferantenanfrage.js`, ausgegeben von
+> `npm run pruefe-anfrage`, hergeleitet in
+> [`eine-anfrage-fuer-acht-punkte.md`](./eine-anfrage-fuer-acht-punkte.md).
+>
+> Dieses Dokument bleibt als Fehlergeschichte stehen. Es hat vierundzwanzig
+> Tage ohne Kopfnotiz dagestanden, und `data/lieferanten.json` hat bis zum
+> 2. September mit `_hinweis` hierher gezeigt und es „die Quelle der echten
+> Werte" genannt. Dieselbe Sorte Fehler wie die überholte Modelltabelle in
+> `STATUS.md` und die 32-%-Untergrenze in `PARAMETER.md` — beide von diesem
+> Vorhaben schon einmal teuer bezahlt.
+
 Stand: 2026-08-09. Zugesagt, aber bislang nicht geliefert — hiermit nachgeholt.
 
 > **Nichts davon wurde versendet.** Der Versand an Dritte ist

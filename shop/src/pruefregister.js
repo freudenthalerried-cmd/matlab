@@ -67,6 +67,16 @@ export const PRUEFER = [
     mindestens: 8,
   },
   {
+    // Vier Fragen für acht offene Punkte. `mindestens: 3`, weil eine leere
+    // Fragenliste „keine Meldung" meldete: Ohne Frage bleibt kein Punkt
+    // ungefragt, und der Prüfer wäre grün und nutzlos.
+    name: 'pruefe-anfrage',
+    werkzeug: 'anfragepruefung.mjs',
+    muster: /Lieferantenanfrage — (\d+) Fragen/,
+    einheit: 'Fragen an den Lieferanten',
+    mindestens: 3,
+  },
+  {
     // Sieben Kontrollen an einem gebauten Vorgang. `mindestens: 7`, weil eine
     // fehlende Kontrolle sonst als „alle bestanden" durchliefe — der Prüfer
     // meldete dann sechs von sechs.

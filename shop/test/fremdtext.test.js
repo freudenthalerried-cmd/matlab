@@ -31,6 +31,7 @@ import { kundenWarenkorb } from '../src/shopkern.js';
 import { baueKundenanfrage, mailtoAdresse } from '../src/kundenanfrage.js';
 import { erzeugeImpressum } from '../src/rechtstexte.js';
 import { robotsTxt } from '../src/maschinenlesbar.js';
+import { erzeugeLieferantenanfrage } from '../src/lieferantenanfrage.js';
 import { belegzeile } from '../src/vies.js';
 import { neueAblage, haltefest, alsCsv } from '../src/ablage.js';
 import { journalzeile, ausJournal } from '../src/speicher.js';
@@ -382,7 +383,25 @@ test('Ausgang Impressum: Gift in den Betreiberdaten erzeugt keine zusätzliche Z
 });
 
 /* ------------------------------------------------------------------ *
- * Ausgang 8: die robots.txt
+ * Ausgang 8: die Lieferantenanfrage
+ * ------------------------------------------------------------------ */
+
+test('Ausgang Lieferantenanfrage: Gift in den Betreiberdaten erzeugt keine zusätzliche Zeile', () => {
+  const gut = { ...betreiber, email: 'buero@example.at', telefon: '+43 1 2345678' };
+  const harmlos = erzeugeLieferantenanfrage({ betreiber: gut, lieferant: { name: 'Muster Baustoffe' } });
+  const giftig = erzeugeLieferantenanfrage({
+    betreiber: { ...gut, firma: gut.firma + GIFT },
+    lieferant: { name: `Muster Baustoffe${GIFT}` },
+  });
+  assert.equal(zeilen(giftig.text), zeilen(harmlos.text));
+  // Und keine erfundene fünfte Frage: Der Brief ist nummeriert, und eine Zeile,
+  // die mit einer Ziffer und einem Punkt beginnt, liest der Empfänger als Frage.
+  assert.equal((giftig.text.match(/^\d+\. /gm) ?? []).length,
+    (harmlos.text.match(/^\d+\. /gm) ?? []).length);
+});
+
+/* ------------------------------------------------------------------ *
+ * Ausgang 9: die robots.txt
  *
  * Am 2. September nachgetragen. Sie stand in keinem Verzeichnis, weil das
  * Namensmuster `Text` kannte und `Txt` nicht — dabei liest sie jeder Crawler,
@@ -406,7 +425,7 @@ test('Ausgang robots.txt: Gift in der Sitemap-Adresse erzeugt keine zusätzliche
 });
 
 /* ------------------------------------------------------------------ *
- * Ausgang 9: die Oberfläche
+ * Ausgang 10: die Oberfläche
  * ------------------------------------------------------------------ */
 
 test('Ausgang Oberfläche: kein Quelltext schreibt fremden Text als HTML', () => {

@@ -1,6 +1,6 @@
 {
  "_datenstand": "GEMISCHT — die drei Radon-Lieferanten sind Platzhalter, \"poschacher\" ist aus echten Rechnungen bestätigt. Das Feld konditionenStand je Lieferant sagt, was gilt.",
- "_hinweis": "Echte Werte entstehen erst aus den Antworten auf Anschreiben A, siehe docs/baustoff-shop/anschreiben-entwuerfe.md. Bis dahin dienen die Zahlen ausschliesslich dazu, die Rechenwege zu prüfen.",
+ "_hinweis": "Die drei Radon-Lieferanten sind Platzhalter; ihre Zahlen dienen ausschliesslich dazu, die Rechenwege zu pruefen. Echte Werte fuer den einen tatsaechlichen Lieferanten entstehen aus den Antworten auf die vier Fragen in src/lieferantenanfrage.js, ausgegeben von `npm run pruefe-anfrage` und hergeleitet in docs/baustoff-shop/eine-anfrage-fuer-acht-punkte.md. BERICHTIGT am 02.09.: Hier stand bis dahin ein Verweis auf docs/baustoff-shop/anschreiben-entwuerfe.md — die Radon-Anschreiben vom 9. August, ueberholt seit dem Kurswechsel vom 22. August.",
  "lieferanten": [
   {
    "id": "rohr-at",

@@ -137,6 +137,19 @@ export const GEGENPROBEN = Object.freeze([
       + 'fest eingetragene Zeitspannen im Quelltext macht sie scharf.',
   }),
   Object.freeze({
+    id: 'anfrage-punkt-ohne-frage',
+    pruefer: 'pruefe-anfrage',
+    was: 'Ein offener Punkt, den keine Frage des Briefes schließt',
+    datei: 'shop/src/lieferantenanfrage.js',
+    art: 'ersetzen',
+    suchen: "    schliesst: Object.freeze(['liefergebiet-lieferant']),",
+    ersetzen: "    schliesst: Object.freeze(['liefergebiet-anderswo']),",
+    erwartet: /liefergebiet-lieferant: offener Punkt, den keine Frage schließt/,
+    warum: 'Der Brief geht einmal hinaus. Bleibt ein Punkt ungefragt, merkt es niemand — '
+      + 'das Gespräch hat ja stattgefunden. Genau dagegen ist die Zuordnung gebaut, und '
+      + 'ohne Probe ist sie nur eine Behauptung über sich selbst.',
+  }),
+  Object.freeze({
     id: 'crawler-sperre-ohne-ausweg',
     pruefer: 'pruefe-crawler',
     was: 'Eine Sperre, die den Anbieter ausschließt statt sein Training',
