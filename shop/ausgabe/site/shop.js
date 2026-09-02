@@ -1446,8 +1446,11 @@ function kundenWarenkorb(zeilen, { artikel, lieferanten }, ust = UST_SATZ_KUNDE)
       positionen,
       warenwertNetto,
       frachtNetto,
+      
+      
+      
       frachtGrund: sperrgutPositionen > 0
-        ? `Pauschale plus ${sperrgutPositionen}× Sperrgutzuschlag`
+        ? `Pauschale plus ${sperrgutPositionen}× Kranentladung`
         : 'Pauschale',
       sperrgutPositionen,
     });

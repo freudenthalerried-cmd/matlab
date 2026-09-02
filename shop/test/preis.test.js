@@ -105,7 +105,7 @@ const lieferant = {
   fracht: { modell: 'pauschale', freiHausAbNetto: 1500, pauschaleNetto: 75, sperrgutZuschlagNetto: 25 },
 };
 
-test('Fracht: Pauschale plus Sperrgutzuschlag je Sperrgutposition', () => {
+test('Fracht: Pauschale plus Kranentladung je palettierter Position', () => {
   const positionen = [
     { vkNetto: 100, ekNetto: 65, menge: 2, sperrgut: true },
     { vkNetto: 50, ekNetto: 32.5, menge: 1, sperrgut: false },
@@ -114,7 +114,11 @@ test('Fracht: Pauschale plus Sperrgutzuschlag je Sperrgutposition', () => {
   assert.equal(f.warenwertNetto, 250);
   assert.equal(f.bestellwertNetto, 162.5);
   assert.equal(f.betragNetto, 100); // 75 + 1 × 25
-  assert.match(f.grund, /Sperrgut/);
+  // **Geändert am 02.09.** Hier stand `/Sperrgut/`. Der Beleg nennt die
+  // Leistung jetzt so, wie die Lieferseite sie nennt: Kranentladung. Ein
+  // Zuschlag ist ein Aufpreis, eine Kranentladung ist etwas, das jemand tut.
+  assert.match(f.grund, /Kranentladung/);
+  assert.doesNotMatch(f.grund, /Sperrgutzuschlag/, 'zwei Namen für dieselbe Zahl');
 });
 
 test('Fracht entfällt ab der Frei-Haus-Grenze — gemessen am Bestellwert', () => {

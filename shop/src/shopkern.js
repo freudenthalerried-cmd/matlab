@@ -863,8 +863,11 @@ export function kundenWarenkorb(zeilen, { artikel, lieferanten }, ust = UST_SATZ
       positionen,
       warenwertNetto,
       frachtNetto,
+      // Derselbe Wortlaut wie in `preis.js` — und dieselbe Umbenennung vom
+      // 2. September: Der Kunde liest auf der Lieferseite „Kranentladung je
+      // Hub" und soll auf dem Beleg nicht etwas anderes lesen.
       frachtGrund: sperrgutPositionen > 0
-        ? `Pauschale plus ${sperrgutPositionen}× Sperrgutzuschlag`
+        ? `Pauschale plus ${sperrgutPositionen}× Kranentladung`
         : 'Pauschale',
       sperrgutPositionen,
     });

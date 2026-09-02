@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { pruefeBeleg, pruefeBelege, leereAngaben, SUMMENZEILE, ZUSTANDSAUSSAGE } from '../src/belegpruefung.js';
+import { pruefeBeleg, pruefeBelege, leereAngaben, SUMMENZEILE, ZUSTANDSAUSSAGE , pruefeVerrechnetUndBestellt, VERRECHNET_UND_BESTELLT } from '../src/belegpruefung.js';
 
 const mitSumme = (rest) => `Rechnung RE-0001\n\nGesamtbetrag            1638,48 €\n\n${rest}`;
 
@@ -96,4 +96,62 @@ test('Eine Beschriftung am Textende hat keinen Wert mehr', () => {
 test('Die Belegprüfung meldet die leere Angabe als eigene Regel', () => {
   const b = pruefeBeleg({ art: 'Lieferantenbestellung', text: 'Gewünschte Lieferzeit: 5 Werktage.\nTelefon: ' });
   assert.ok(b.meldungen.some((m) => m.regel === 'leere-angabe'));
+});
+
+
+/* ------------------------------------------------------------------ *
+ * Was verrechnet wird, muss bestellt sein
+ *
+ * Befund vom 2. September: Der Warenkorb rechnete je palettierter Position
+ * 7,50 € Kranentladung und wies sie dem Kunden aus; die Bestellung an den
+ * Lieferanten sagte davon nichts. Jeder Beleg für sich war in Ordnung — der
+ * Fehler lag zwischen ihnen.
+ * ------------------------------------------------------------------ */
+
+const kunde = (n) => ({ art: 'Angebot', text: `Fracht: 90,50 € (Pauschale plus ${n}× Kranentladung)` });
+const lieferant = (n) => ({
+  art: 'Lieferantenbestellung',
+  text: `Bitte mit Kranentladung zustellen — ${n} palettierte Positionen.`,
+});
+
+test('verrechnet und bestellt: gleiche Zahl, keine Meldung', () => {
+  assert.deepEqual(pruefeVerrechnetUndBestellt([kunde(2), lieferant(2)]), []);
+});
+
+test('verrechnet, aber nicht bestellt', () => {
+  const m = pruefeVerrechnetUndBestellt([
+    kunde(2),
+    { art: 'Lieferantenbestellung', text: 'Bitte neutral verpackt liefern.' },
+  ]);
+  assert.equal(m.length, 1);
+  assert.equal(m[0].regel, 'verrechnet-nicht-bestellt');
+  assert.match(m[0].text, /2×/);
+});
+
+test('verrechnet und anders bestellt', () => {
+  const m = pruefeVerrechnetUndBestellt([kunde(2), lieferant(1)]);
+  assert.equal(m.length, 1);
+  assert.equal(m[0].regel, 'verrechnet-anders-bestellt');
+});
+
+test('nichts verrechnet, nichts gemeldet', () => {
+  assert.deepEqual(pruefeVerrechnetUndBestellt([
+    { art: 'Angebot', text: 'Fracht: 75,50 € (Pauschale)' },
+    { art: 'Lieferantenbestellung', text: 'Bitte neutral verpackt liefern.' },
+  ]), []);
+});
+
+test('fehlt der Zielbeleg, wird das gesagt statt verschwiegen', () => {
+  // Ein halber Lauf soll nicht aussehen wie ein ganzer.
+  const m = pruefeVerrechnetUndBestellt([kunde(2)]);
+  assert.equal(m.length, 1);
+  assert.equal(m[0].regel, 'verrechnet-ohne-beleg');
+});
+
+test('jeder Eintrag des Registers nennt seinen Grund', () => {
+  assert.ok(VERRECHNET_UND_BESTELLT.length >= 1, 'das Register ist leer');
+  for (const e of VERRECHNET_UND_BESTELLT) {
+    assert.ok(e.warum && e.warum.length >= 40, `${e.id}: ohne belastbaren Grund`);
+    assert.ok(e.verrechnet instanceof RegExp && e.bestellt instanceof RegExp, e.id);
+  }
 });

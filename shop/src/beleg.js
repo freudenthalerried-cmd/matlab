@@ -268,7 +268,14 @@ export function erzeugeAngebot(warenkorb, { nummer, datum, bindefristTage = 14, 
       + ` (${angeboteneZahlwege().map((id) => zahlwegName(id)).join(', ')}).`,
     'Lieferung im Streckengeschäft ab Werk der Hersteller; Teillieferungen je',
     'Lieferant sind der Regelfall und werden nicht gesondert berechnet.',
-    'Abladen, Zufahrt und Anwesenheit auf der Baustelle obliegen dem Besteller.',
+    // **Berichtigt am 2. September.** Hier stand nur „Abladen, Zufahrt und
+    // Anwesenheit obliegen dem Besteller" — daneben eine berechnete
+    // Kranentladung. Wer beides liest, weiß nicht, wofür er die 7,50 € je Hub
+    // zahlt. Der Satz sagt jetzt, wo die bezahlte Leistung aufhört und die
+    // eigene beginnt.
+    'Zufahrt und Anwesenheit auf der Baustelle obliegen dem Besteller. Die',
+    'Kranentladung setzt die Palette am Fahrzeug ab; alles weitere auf der',
+    'Baustelle ist Sache des Bestellers.',
   ];
 
   if (warenkorb.hinweise.length) {

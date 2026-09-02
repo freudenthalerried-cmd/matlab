@@ -646,9 +646,16 @@ function fracht(positionen, lieferant) {
 
   return {
     betragNetto,
+    
+    
+    
+    
+    
+    
+    
     grund:
       sperrgutPositionen > 0
-        ? `Pauschale plus ${sperrgutPositionen}× Sperrgutzuschlag`
+        ? `Pauschale plus ${sperrgutPositionen}× Kranentladung`
         : 'Pauschale',
     warenwertNetto,
     bestellwertNetto,
@@ -2327,8 +2334,11 @@ function kundenWarenkorb(zeilen, { artikel, lieferanten }, ust = UST_SATZ_KUNDE)
       positionen,
       warenwertNetto,
       frachtNetto,
+      
+      
+      
       frachtGrund: sperrgutPositionen > 0
-        ? `Pauschale plus ${sperrgutPositionen}× Sperrgutzuschlag`
+        ? `Pauschale plus ${sperrgutPositionen}× Kranentladung`
         : 'Pauschale',
       sperrgutPositionen,
     });
@@ -4031,6 +4041,33 @@ const feld = (v, bezeichnung) =>
     ? textZeile(v)
     : LUECKE(bezeichnung);
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function kranzeile(teil) {
+  const hübe = teil.positionen.filter((p) => p.sperrgut).length;
+  if (hübe === 0) return [];
+  return [
+    `Bitte mit Kranentladung zustellen — ${hübe} palettierte Position${hübe === 1 ? '' : 'en'}.`,
+    `Sie ist dem Endkunden als Kranentladung je Hub verrechnet.`,
+    ``,
+  ];
+}
+
 function bestelltext(nummer, teil, auftrag) {
   const zeilen = teil.positionen.map(
     (p) => `  ${String(p.menge).padStart(3)} × ${textZeile(p.sku).padEnd(12)} ${textZeile(p.bezeichnung)}`,
@@ -4064,12 +4101,18 @@ function bestelltext(nummer, teil, auftrag) {
     `  ${feld(auftrag.lieferadresse.name, 'Name des Empfängers')}`,
     `  ${feld(auftrag.lieferadresse.strasse, 'Straße der Baustelle')}`,
     `  ${feld(auftrag.lieferadresse.plz, 'PLZ')} ${feld(auftrag.lieferadresse.ort, 'Ort')}`,
-    `  Ansprechpartner vor Ort: ${feld(auftrag.lieferadresse.telefon, 'Telefon des Ansprechpartners')}`,
+    
+    
+    
+    
+    
+    `  Telefon vor Ort: ${feld(auftrag.lieferadresse.telefon, 'Telefon für die Baustelle')}`,
     ...(zufahrt ? [`  Hinweis zur Zufahrt: ${zufahrt}`] : []),
     ``,
     `Gewünschte Lieferzeit: ${termin}. Bitte den Termin bestätigen — wir haben`,
     `ihn dem Endkunden gegenüber zugesagt.`,
     ``,
+    ...kranzeile(teil),
     `Bitte neutral verpackt und ohne Preisangaben liefern.`,
     `Rechnung an den Auftraggeber laut hinterlegten Stammdaten.`,
     ``,
@@ -4431,7 +4474,14 @@ function erzeugeAngebot(warenkorb, { nummer, datum, bindefristTage = 14, kunde =
       + ` (${angeboteneZahlwege().map((id) => zahlwegName(id)).join(', ')}).`,
     'Lieferung im Streckengeschäft ab Werk der Hersteller; Teillieferungen je',
     'Lieferant sind der Regelfall und werden nicht gesondert berechnet.',
-    'Abladen, Zufahrt und Anwesenheit auf der Baustelle obliegen dem Besteller.',
+    
+    
+    
+    
+    
+    'Zufahrt und Anwesenheit auf der Baustelle obliegen dem Besteller. Die',
+    'Kranentladung setzt die Palette am Fahrzeug ab; alles weitere auf der',
+    'Baustelle ist Sache des Bestellers.',
   ];
 
   if (warenkorb.hinweise.length) {

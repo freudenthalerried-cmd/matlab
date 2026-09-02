@@ -190,9 +190,16 @@ export function fracht(positionen, lieferant) {
 
   return {
     betragNetto,
+    // **Umbenannt am 2. September.** Hier stand „Sperrgutzuschlag". Die
+    // Seiten des Shops nennen dieselben 7,50 € durchgehend **Kranentladung
+    // je Hub** — und das ist die Leistung, für die das Geld verlangt wird.
+    // Ein Zuschlag ist ein Aufpreis, eine Kranentladung ist etwas, das
+    // jemand tut. Zwei Namen für dieselbe Zahl sind dieselbe Familie wie
+    // `PreOrder` gegen `InStock` am 28. August: Der Widerspruch fällt nicht
+    // auf, weil beide Seiten für sich stimmen.
     grund:
       sperrgutPositionen > 0
-        ? `Pauschale plus ${sperrgutPositionen}× Sperrgutzuschlag`
+        ? `Pauschale plus ${sperrgutPositionen}× Kranentladung`
         : 'Pauschale',
     warenwertNetto,
     bestellwertNetto,

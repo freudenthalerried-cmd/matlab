@@ -123,6 +123,19 @@ export const GEGENPROBEN = Object.freeze([
       + 'zweites Mal überwiesen.',
   }),
   Object.freeze({
+    id: 'kranentladung-verrechnet-nicht-bestellt',
+    pruefer: 'pruefe-belege',
+    was: 'Eine Kranentladung, die dem Kunden verrechnet und beim Lieferanten nicht bestellt wird',
+    datei: 'shop/src/bestellung.js',
+    art: 'ersetzen',
+    suchen: '    ...kranzeile(teil),\n',
+    ersetzen: '',
+    erwartet: /verrechnet-nicht-bestellt|nicht bestellt/,
+    warum: 'Der Befund vom 2. September: Der Warenkorb rechnete je palettierter Position '
+      + '7,50 € und die Bestellung sagte davon nichts. Jeder Beleg für sich war in Ordnung — '
+      + 'der Fehler lag zwischen ihnen, und genau dort sieht niemand hin.',
+  }),
+  Object.freeze({
     id: 'quellen-aussage-ohne-beleg',
     pruefer: 'pruefe-quellen',
     was: 'Eine belegpflichtige Aussage ohne Fundstelle',

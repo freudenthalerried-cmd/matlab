@@ -139,6 +139,89 @@ export function pruefeBeleg({ art, text }) {
 }
 
 /**
+ * Was dem Kunden verrechnet wird, muss beim Lieferanten bestellt sein.
+ *
+ * **Der Befund vom 2. September.** Der Warenkorb rechnete je palettierter
+ * Position 7,50 € Kranentladung und wies sie dem Kunden aus. Die Bestellung
+ * an den Lieferanten sagte davon nichts. Der Lastwagen wäre ohne Kran
+ * gekommen, und der Kunde hätte für zwei Hübe bezahlt, die niemand bestellt
+ * hat.
+ *
+ * > **Verrechnet und nicht bestellt ist eine Rechnung über nichts.**
+ *
+ * Dieselbe Familie wie der Liefertermin, der bis zum 1. September nur auf der
+ * Auftragsbestätigung stand und beim Lieferanten nie angefordert wurde. Der
+ * Unterschied: Ein Termin, den niemand bestellt hat, ist eine Hoffnung — eine
+ * Leistung, die niemand bestellt hat, ist bezahlt und kommt nicht.
+ *
+ * Geprüft wird über **beide** Belege hinweg, weil der Fehler zwischen ihnen
+ * liegt. Jeder für sich war in Ordnung.
+ */
+export const VERRECHNET_UND_BESTELLT = Object.freeze([
+  Object.freeze({
+    id: 'kranentladung',
+    was: 'Kranentladung je Hub',
+    // Auf dem Kundenbeleg: „Pauschale plus 2× Kranentladung".
+    verrechnet: /(\d+)×\s*Kranentladung/,
+    bestellt: /mit Kranentladung zustellen\s+—\s+(\d+)\s+palettierte/,
+    beiWem: 'Lieferantenbestellung',
+    warum: 'Der Kunde zahlt je Hub. Ohne Anforderung kommt der Lastwagen ohne Kran, '
+      + 'und die Palette steht auf der Ladefläche.',
+  }),
+]);
+
+/** Die Belegart, die eine verrechnete Leistung bestellen muss. */
+function findeBeleg(belege, art) {
+  return belege.find((b) => b.art === art);
+}
+
+/**
+ * Hält die Kundenbelege gegen die Lieferantenbestellung.
+ *
+ * @param {{art: string, text: string}[]} belege
+ * @returns {{regel: string, text: string}[]}
+ */
+export function pruefeVerrechnetUndBestellt(belege, register = VERRECHNET_UND_BESTELLT) {
+  const meldungen = [];
+  for (const eintrag of register) {
+    const ziel = findeBeleg(belege, eintrag.beiWem);
+    // Kein Zielbeleg im Durchlauf heißt: Diese Regel ist hier nicht prüfbar.
+    // Das wird gesagt und nicht verschwiegen — sonst sieht ein halber Lauf
+    // aus wie ein ganzer.
+    let hoechste = 0;
+    let quelle = null;
+    for (const b of belege) {
+      if (b.art === eintrag.beiWem) continue;
+      const t = eintrag.verrechnet.exec(b.text);
+      if (t && Number(t[1]) > hoechste) { hoechste = Number(t[1]); quelle = b.art; }
+    }
+    if (hoechste === 0) continue;
+    if (!ziel) {
+      meldungen.push({
+        regel: 'verrechnet-ohne-beleg',
+        text: `${eintrag.was} steht auf ${quelle}, aber in diesem Durchlauf gibt es keine `
+          + `${eintrag.beiWem} — die Regel ist hier nicht prüfbar`,
+      });
+      continue;
+    }
+    const b = eintrag.bestellt.exec(ziel.text);
+    if (!b) {
+      meldungen.push({
+        regel: 'verrechnet-nicht-bestellt',
+        text: `${eintrag.was} ist auf ${quelle} verrechnet (${hoechste}×), aber in der `
+          + `${eintrag.beiWem} nicht bestellt — ${eintrag.warum}`,
+      });
+    } else if (Number(b[1]) !== hoechste) {
+      meldungen.push({
+        regel: 'verrechnet-anders-bestellt',
+        text: `${eintrag.was}: ${hoechste}× verrechnet, ${Number(b[1])}× bestellt`,
+      });
+    }
+  }
+  return meldungen;
+}
+
+/**
  * Alle Belege eines Durchlaufs.
  * @param {{art: string, text: string}[]} belege
  */
@@ -147,6 +230,15 @@ export function pruefeBelege(belege) {
     throw new Error('Ohne Belege gibt es nichts zu prüfen — ein leerer Durchlauf ist kein grüner.');
   }
   const befunde = belege.map(pruefeBeleg);
+  // Der Fehler zwischen zwei Belegen gehört dem Durchlauf, nicht einem
+  // einzelnen Beleg. Er wird deshalb dem Zielbeleg zugeschlagen, damit er in
+  // derselben Liste erscheint wie alles andere.
+  const uebergreifend = pruefeVerrechnetUndBestellt(belege);
+  if (uebergreifend.length) {
+    const ziel = befunde.find((f) => f.art === 'Lieferantenbestellung') ?? befunde[0];
+    ziel.meldungen.push(...uebergreifend);
+    ziel.sauber = ziel.meldungen.length === 0;
+  }
   return {
     befunde,
     geprueft: befunde.length,

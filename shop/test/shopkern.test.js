@@ -219,7 +219,7 @@ const lieferantProbe = {
   fracht: { modell: 'pauschale', freiHausAbNetto: null, pauschaleNetto: 75.5, sperrgutZuschlagNetto: 7.5 },
 };
 
-test('der Warenkorb rechnet Fracht und Sperrgutzuschlag', () => {
+test('der Warenkorb rechnet Fracht und Kranentladung', () => {
   const r = kundenWarenkorb(
     [{ sku: 'A', menge: 2 }, { sku: 'B', menge: 1 }],
     { artikel: beispiel, lieferanten: [oeffentlicherLieferant(lieferantProbe)] },

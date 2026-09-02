@@ -245,14 +245,17 @@ const SZENARIEN = [
     erwartet: ['karten=11', 'knoepfe=11', 'imVerweis=0', 'mitVerweis=11', 'ohneMarke=0'],
   },
   {
-    name: 'Der Warenkorb rechnet Fracht und Sperrgutzuschlag getrennt aus',
+    name: 'Der Warenkorb rechnet Fracht und Kranentladung getrennt aus',
     aktionen: `
       await geheZu('artikel/POS-12566');
       document.querySelector('[data-legen="POS-12566"]').click();
       await geheZu('warenkorb');
       out = text('#warenkorb-ziel .preistafel');`,
     // POS-12566 ist palettiert: 75,50 Pauschale plus 7,50 Kranentladung.
-    erwartet: ['83,00 €', 'Pauschale plus 1× Sperrgutzuschlag', '20 % USt'],
+    // **Umbenannt am 02.09.** Hier stand „Sperrgutzuschlag" — die Lieferseite
+    // nennt dieselben 7,50 € seit jeher Kranentladung je Hub, der Beleg tat es
+    // nicht. Zwei Namen für dieselbe Zahl.
+    erwartet: ['83,00 €', 'Pauschale plus 1× Kranentladung', '20 % USt'],
   },
   {
     name: 'Der Warenkorb überlebt den Seitenwechsel',

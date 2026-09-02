@@ -65,6 +65,33 @@ const feld = (v, bezeichnung) =>
     ? textZeile(v)
     : LUECKE(bezeichnung);
 
+/**
+ * Die Kranentladung, die dem Kunden verrechnet wurde — beim Lieferanten
+ * bestellt.
+ *
+ * **Der Befund vom 2. September.** Der Warenkorb rechnet je palettierter
+ * Position 7,50 € Kranentladung und weist sie dem Kunden aus. Die Bestellung
+ * an den Lieferanten sagte davon nichts. Der Lastwagen wäre ohne Kran
+ * gekommen, und der Kunde hätte für zwei Hübe bezahlt, die niemand bestellt
+ * hat.
+ *
+ * > **Was dem Kunden verrechnet wird, muss beim Lieferanten bestellt sein.**
+ *
+ * Dieselbe Familie wie der Termin, der bis zum 1. September nur auf der
+ * Auftragsbestätigung stand und nie angefordert wurde. Zugesagt und nicht
+ * bestellt ist eine Hoffnung; verrechnet und nicht bestellt ist eine
+ * Rechnung über nichts.
+ */
+function kranzeile(teil) {
+  const hübe = teil.positionen.filter((p) => p.sperrgut).length;
+  if (hübe === 0) return [];
+  return [
+    `Bitte mit Kranentladung zustellen — ${hübe} palettierte Position${hübe === 1 ? '' : 'en'}.`,
+    `Sie ist dem Endkunden als Kranentladung je Hub verrechnet.`,
+    ``,
+  ];
+}
+
 function bestelltext(nummer, teil, auftrag) {
   const zeilen = teil.positionen.map(
     (p) => `  ${String(p.menge).padStart(3)} × ${textZeile(p.sku).padEnd(12)} ${textZeile(p.bezeichnung)}`,
@@ -98,12 +125,18 @@ function bestelltext(nummer, teil, auftrag) {
     `  ${feld(auftrag.lieferadresse.name, 'Name des Empfängers')}`,
     `  ${feld(auftrag.lieferadresse.strasse, 'Straße der Baustelle')}`,
     `  ${feld(auftrag.lieferadresse.plz, 'PLZ')} ${feld(auftrag.lieferadresse.ort, 'Ort')}`,
-    `  Ansprechpartner vor Ort: ${feld(auftrag.lieferadresse.telefon, 'Telefon des Ansprechpartners')}`,
+    // **Umbenannt am 2. September.** Die Beschriftung lautete
+    // „Ansprechpartner vor Ort“, und darunter stand eine Telefonnummer. Ein
+    // Fahrer, der einen Namen sucht, findet eine Nummer; die Beschriftung
+    // verspricht eine Auskunft, die der Wert nicht gibt. Denselben Fehler hatte
+    // am 1. September das leere Feld — diesmal ist es gefüllt und passt nicht.
+    `  Telefon vor Ort: ${feld(auftrag.lieferadresse.telefon, 'Telefon für die Baustelle')}`,
     ...(zufahrt ? [`  Hinweis zur Zufahrt: ${zufahrt}`] : []),
     ``,
     `Gewünschte Lieferzeit: ${termin}. Bitte den Termin bestätigen — wir haben`,
     `ihn dem Endkunden gegenüber zugesagt.`,
     ``,
+    ...kranzeile(teil),
     `Bitte neutral verpackt und ohne Preisangaben liefern.`,
     `Rechnung an den Auftraggeber laut hinterlegten Stammdaten.`,
     ``,
