@@ -49,8 +49,17 @@ export const OHNE_WERKZEUG = Object.freeze([
     id: 'preisrhythmus',
     titel: 'Preisrhythmus des Lieferanten',
     zustaendig: 'anfrage',
-    warumKeinWerkzeug: 'Aus fünfzehn Rechnungen nicht ableitbar — sie zeigen, wann wir gekauft haben, '
-      + 'nicht, wann er die Liste ändert.',
+    // **Grund berichtigt am 3. September.** Er lautete: „Aus fünfzehn
+    // Rechnungen nicht ableitbar — sie zeigen, wann wir gekauft haben, nicht,
+    // wann er die Liste ändert." Das stimmt für den **Rhythmus** und nicht für
+    // die **Beobachtung**: Wo derselbe Artikel an zwei Tagen auf einer
+    // Rechnung steht, ist ablesbar, ob sich sein Preis bewegt hat.
+    // `npm run preiswechsel` misst es.
+    warumKeinWerkzeug: 'Der Rhythmus steht in keiner Rechnung — sie zeigen, wann wir gekauft '
+      + 'haben. Gemessen ist immerhin das Gegenstück: `npm run preiswechsel` findet in acht '
+      + 'mehrfach gekauften Artikeln über bis zu 32 Tage keinen einzigen Preiswechsel. Das '
+      + 'beziffert die Beobachtung und ersetzt die Auskunft nicht — beobachtet sind 32 Tage, '
+      + 'gesetzt ist eine Grenze von 90.',
     loest: 'Entscheidet, ob die 90-Tage-Grenze der Preisalterprüfung die richtige ist (gesetzt, nicht gemessen).',
   },
   {

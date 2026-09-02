@@ -62,7 +62,13 @@ export const FRAGEN = Object.freeze([
     id: 'preisrhythmus',
     titel: 'Rhythmus der Preisänderungen',
     schliesst: Object.freeze(['preisrhythmus']),
-    frage: 'In welchem Rhythmus ändern sich Ihre Preise, und gibt es feste Termine dafür?',
+    // **Geschärft am 3. September.** Die Frage lautete nur „In welchem Rhythmus
+    // ändern sich Ihre Preise?". Wer eine Frage stellt und dazusagt, was er
+    // schon gesehen hat, bekommt eine genauere Antwort — und zeigt, dass er
+    // nachgesehen hat.
+    frage: 'In welchem Rhythmus ändern sich Ihre Preise, und gibt es feste Termine dafür? '
+      + 'Über unsere Belege von April bis August sehen wir bei acht mehrfach gekauften '
+      + 'Artikeln keine Änderung; die längste Spanne dazwischen sind 32 Tage.',
     warum: 'Aus fünfzehn Rechnungen nicht ableitbar — sie zeigen, wann wir gekauft haben, nicht, '
       + 'wann die Liste sich ändert. Die 90-Tage-Grenze der Preisalterprüfung ist bis dahin '
       + 'gesetzt und nicht gemessen.',

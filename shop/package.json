@@ -31,6 +31,7 @@
     "kampagne": "node bin/kampagne.mjs",
     "website": "node bin/website.mjs",
     "preisliste": "node bin/preisliste.mjs",
+    "preiswechsel": "node bin/preiswechsel.mjs",
     "startklar": "node bin/startklar.mjs",
     "rahmenzensus": "node bin/rahmenzensus.mjs",
     "pruefe-stand": "node bin/standpruefung.mjs",
