@@ -82,6 +82,51 @@ export function pruefeRechnungsmerkmale(beleg = {}) {
 const wert = (v, bezeichnung) => (gefuellt(v) ? textZeile(v) : LUECKE(bezeichnung));
 
 /**
+ * Der Absenderblock — Firma **und Anschrift**.
+ *
+ * **Der Befund vom 2. September.** Auf der Rechnung stand:
+ *
+ * ```
+ * Freudenthaler Bau GmbH
+ * UID: [[ UID des Ausstellers — FEHLT ]]
+ * ```
+ *
+ * Nur der Name. § 11 Abs 1 Z 3 UStG verlangt „Name **und Anschrift** des
+ * liefernden Unternehmers", und das Register `RECHNUNGSMERKMALE` schreibt
+ * genau das auch hin. Gefüttert wurde die Prüfung aber mit `betreiber.firma`,
+ * und gedruckt wurde ebenfalls nur die Firma. Beschriftung, Prüfung und
+ * Ausdruck sagten drei verschiedene Dinge, und alle drei sahen richtig aus.
+ *
+ * > **Eine Prüfung, die ein Feld prüft statt der Angabe, prüft den Namen des
+ * > Feldes.**
+ *
+ * Der Empfängerblock zwei Zeilen tiefer hat die Anschrift immer gedruckt.
+ * Genau deshalb ist es niemandem aufgefallen: Die Rechnung *sah* vollständig
+ * aus.
+ *
+ * Die Anschrift des Betreibers liegt in `betreiber.json` und ist gefüllt —
+ * das hier ist kein neuer offener Punkt, sondern eine ausgelassene Angabe.
+ */
+export function absenderzeilen(betreiber = {}) {
+  return [
+    wert(betreiber.firma, 'Firma des Ausstellers'),
+    wert(betreiber.strasse, 'Straße des Ausstellers'),
+    `${wert(betreiber.plz, 'PLZ des Ausstellers')} ${wert(betreiber.ort, 'Ort des Ausstellers')}`,
+  ];
+}
+
+/**
+ * Dieselbe Angabe in einer Zeile — für die Prüfung nach § 11.
+ *
+ * Leer, sobald ein Teil fehlt: Eine halbe Anschrift ist keine, und die
+ * Prüfung soll dann melden und nicht durchwinken.
+ */
+export function anschriftEinzeilig(daten = {}) {
+  const teile = [daten.firma, daten.strasse, daten.plz, daten.ort];
+  return teile.every((t) => gefuellt(t)) ? teile.map((t) => textZeile(t)).join(', ') : '';
+}
+
+/**
  * Die Lieferzeit einer Teillieferung als Text — oder als sichtbare Lücke.
  *
  * **Befund vom 30. August.** Hier stand `${teil.lieferzeitWerktage} Werktage`,
@@ -246,7 +291,7 @@ export function erzeugeAngebot(warenkorb, { nummer, datum, bindefristTage = 14, 
     `Angebot ${wert(nummer, 'Angebotsnummer')}`,
     `Datum: ${wert(datum, 'Datum')}`,
     '',
-    wert(betreiber.firma, 'Firma des Betreibers'),
+    ...absenderzeilen(betreiber),
     '',
     'An:',
     `  ${wert(kunde.firma, 'Firma des Kunden')}`,
@@ -328,7 +373,7 @@ export function erzeugeAuftragsbestaetigung(
     `Auftragsbestätigung ${wert(nummer, 'Auftragsnummer')}`,
     `Datum: ${wert(datum, 'Datum')}`,
     '',
-    wert(betreiber.firma, 'Firma des Betreibers'),
+    ...absenderzeilen(betreiber),
     '',
     'Auftraggeber:',
     `  ${wert(kunde.firma, 'Firma des Kunden')}`,
@@ -445,9 +490,11 @@ export function darfBestaetigtWerden(warenkorb, auftrag = {}) {
 export function erzeugeRechnung(warenkorb, { nummer, datum, lieferdatum, kunde = {}, betreiber = {}, zahlung = {} }) {
   const vermerk = zahlungsvermerk(zahlung);
   const pruefung = pruefeRechnungsmerkmale({
-    ausstellerName: betreiber.firma,
+    // Geprüft wird die **Angabe**, nicht das Feld: „Name und Anschrift" ist
+    // erst vollständig, wenn Straße, PLZ und Ort dabei sind.
+    ausstellerName: anschriftEinzeilig(betreiber),
     ausstellerUid: betreiber.uid,
-    empfaengerName: kunde.firma,
+    empfaengerName: anschriftEinzeilig(kunde),
     empfaengerUid: kunde.uid,
     rechnungsnummer: nummer,
     ausstellungsdatum: datum,
@@ -463,7 +510,7 @@ export function erzeugeRechnung(warenkorb, { nummer, datum, lieferdatum, kunde =
     `Ausstellungsdatum: ${wert(datum, 'Ausstellungsdatum')}`,
     `Lieferdatum: ${wert(lieferdatum, 'Lieferdatum')}`,
     '',
-    wert(betreiber.firma, 'Firma und Anschrift des Ausstellers'),
+    ...absenderzeilen(betreiber),
     `UID: ${wert(betreiber.uid, 'UID des Ausstellers')}`,
     '',
     'Rechnungsempfänger:',

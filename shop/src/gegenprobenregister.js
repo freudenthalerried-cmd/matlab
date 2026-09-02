@@ -123,6 +123,19 @@ export const GEGENPROBEN = Object.freeze([
       + 'zweites Mal überwiesen.',
   }),
   Object.freeze({
+    id: 'rechnung-ohne-anschrift',
+    pruefer: 'pruefe-belege',
+    was: 'Eine Rechnung, die nur den Namen des Ausstellers trägt',
+    datei: 'shop/src/beleg.js',
+    art: 'ersetzen',
+    suchen: "    wert(betreiber.strasse, 'Straße des Ausstellers'),\n",
+    ersetzen: '',
+    erwartet: /geprueft-aber-nicht-gedruckt|steht aber nicht im Beleg/,
+    warum: 'Der Befund vom 2. September: Die Rechnung galt als vollständig nach § 11 UStG, '
+      + 'während die Anschrift des Ausstellers im gedruckten Beleg fehlte. Die eine Prüfung '
+      + 'las die Eingaben, die andere den Text, und niemand hielt beides gegeneinander.',
+  }),
+  Object.freeze({
     id: 'kranentladung-verrechnet-nicht-bestellt',
     pruefer: 'pruefe-belege',
     was: 'Eine Kranentladung, die dem Kunden verrechnet und beim Lieferanten nicht bestellt wird',

@@ -31,7 +31,18 @@ const korb = berechneWarenkorb(
   katalog,
 );
 
-const betreiber = { firma: 'Musterfirma GmbH, Musterweg 1, 4600 Wels', uid: 'ATU12345675' };
+// **Zerlegt am 02.09.** Hier stand die ganze Anschrift in einem Feld:
+// `firma: 'Musterfirma GmbH, Musterweg 1, 4600 Wels'`. Das war der Beleg
+// dafür, dass die Anschrift dorthin gehört — und zugleich der Grund, weshalb
+// niemand gemerkt hat, dass der echte Betreiber nur seinen Namen druckt:
+// Die Probe füllte ein Feld, das der Bau gar nicht als Anschrift ausgibt.
+const betreiber = {
+  firma: 'Musterfirma GmbH',
+  strasse: 'Musterweg 1',
+  plz: '4600',
+  ort: 'Wels',
+  uid: 'ATU12345675',
+};
 const kunde = {
   firma: 'Bau Muster GmbH',
   strasse: 'Baustellenweg 7',
@@ -527,4 +538,43 @@ test('Die Auftragsbestätigung sagt, dass vor dem Geld nichts bestellt wird', ()
   const b = erzeugeAuftragsbestaetigung(korb, { nummer: 'AB-0001', datum: '15.08.2026', kunde, betreiber });
   assert.match(b.text, /Zahlbar sofort, ohne Zahlungsziel/);
   assert.match(b.text, /nach Zahlungseingang aus/);
+});
+
+
+/* ------------------------------------------------------------------ *
+ * Name UND Anschrift
+ *
+ * § 11 Abs 1 Z 3 UStG verlangt „Name und Anschrift des liefernden
+ * Unternehmers". Das Register schrieb das hin, die Prüfung bekam nur die
+ * Firma, und gedruckt wurde nur die Firma. Drei Stellen, drei Aussagen, alle
+ * für sich plausibel.
+ * ------------------------------------------------------------------ */
+
+test('Die Rechnung druckt Straße, PLZ und Ort des Ausstellers', () => {
+  const r = erzeugeRechnung(korb, {
+    nummer: 'RE-0001', datum: '15.08.2026', lieferdatum: '22.08.2026', kunde, betreiber,
+  });
+  assert.match(r.text, /Musterweg 1/);
+  assert.match(r.text, /4600 Wels/);
+  assert.equal(r.vollstaendig, true);
+});
+
+test('Eine halbe Anschrift ist keine — die Rechnung gilt als unvollständig', () => {
+  const ohneStrasse = { ...betreiber, strasse: '' };
+  const r = erzeugeRechnung(korb, {
+    nummer: 'RE-0001', datum: '15.08.2026', lieferdatum: '22.08.2026', kunde, betreiber: ohneStrasse,
+  });
+  assert.equal(r.vollstaendig, false, 'ohne Straße gilt die Rechnung als vollständig');
+  assert.ok(r.fehlend.some((f) => /Anschrift des liefernden/.test(f)), r.fehlend.join(' | '));
+  // Und die Lücke steht sichtbar im Text, statt still zu fehlen.
+  assert.match(r.text, /Straße des Ausstellers — FEHLT/);
+});
+
+test('Angebot und Auftragsbestätigung tragen dieselbe Absenderanschrift', () => {
+  const a = erzeugeAngebot(korb, { nummer: 'AN-1', datum: '15.08.2026', kunde, betreiber });
+  const b = erzeugeAuftragsbestaetigung(korb, { nummer: 'AB-1', datum: '15.08.2026', kunde, betreiber });
+  for (const t of [a.text, b.text]) {
+    assert.match(t, /Musterweg 1/);
+    assert.match(t, /4600 Wels/);
+  }
 });

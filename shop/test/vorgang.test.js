@@ -42,7 +42,15 @@ const kundeA = {
 
 const kundeB = { ...kundeA, firma: 'Bau Donau e.U.', strasse: 'Donaustraße 9', plz: '4020', ort: 'Linz' };
 
-const betreiber = { firma: 'Testbetrieb e.U., Hauptstraße 2, 4910 Ried', uid: 'ATU98765432' };
+// Anschrift in eigenen Feldern seit dem 02.09. — die einzeilige Fassung war
+// der Notbehelf, mit dem die Anschrift in ein Feld für den Namen kam.
+const betreiber = {
+  firma: 'Testbetrieb e.U.',
+  strasse: 'Hauptstraße 2',
+  plz: '4910',
+  ort: 'Ried',
+  uid: 'ATU98765432',
+};
 
 const warenkorb = berechneWarenkorb(
   [{ sku: 'AB-RD-375', menge: 5 }, { sku: 'ZB-DB-150', menge: 2 }],

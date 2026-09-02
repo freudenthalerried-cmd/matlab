@@ -114,14 +114,41 @@ const korb = berechneWarenkorb(positionen, katalog);
 const betreiberDatei = lies('betreiber.json');
 const betreiber = {
   firma: betreiberDatei.firma ?? betreiberDatei.name ?? '',
+  // **Nachgetragen am 2. September.** Hier standen nur Firma und UID. Die
+  // Anschrift ist Pflichtangabe nach § 11 UStG und stand in betreiber.json
+  // längst da — der Prüflauf hat sie nur nicht weitergereicht und danach eine
+  // Rechnung ohne Anschrift für vollständig gehalten.
+  strasse: betreiberDatei.strasse ?? '',
+  plz: betreiberDatei.plz ?? '',
+  ort: betreiberDatei.ort ?? '',
   uid: betreiberDatei.uid ?? '',
 };
 const kunde = { firma: 'Musterbau GmbH', strasse: 'Baustellenweg 7', plz: '4600', ort: 'Wels', uid: 'ATU12345675' };
 const gemeinsam = { datum: '01.09.2026', kunde, betreiber };
 
+/**
+ * Angaben, die geprüft **und** gedruckt sein müssen.
+ *
+ * Die Anschrift des Ausstellers ist Pflichtangabe nach § 11 Abs 1 Z 3 UStG.
+ * Sie wurde geprüft und nicht gedruckt — beide Prüfungen waren grün und
+ * meinten verschiedene Dinge.
+ */
+const pflichtangaben = [
+  { was: 'Straße des Ausstellers', wert: betreiber.strasse },
+  { was: 'Ort des Ausstellers', wert: `${betreiber.plz} ${betreiber.ort}`.trim() },
+];
+
 const belege = [
-  { art: 'Angebot', text: erzeugeAngebot(korb, { nummer: 'AN-0001', ...gemeinsam }).text },
-  { art: 'Auftragsbestätigung', text: erzeugeAuftragsbestaetigung(korb, { nummer: 'AB-0001', ...gemeinsam }).text },
+  {
+    art: 'Angebot',
+    text: erzeugeAngebot(korb, { nummer: 'AN-0001', ...gemeinsam }).text,
+    mussEnthalten: pflichtangaben,
+  },
+  {
+    art: 'Auftragsbestätigung',
+    text: erzeugeAuftragsbestaetigung(korb, { nummer: 'AB-0001', ...gemeinsam }).text,
+    mussEnthalten: pflichtangaben,
+  },
   {
     art: 'Rechnung',
     text: erzeugeRechnung(korb, {
@@ -130,6 +157,7 @@ const belege = [
       zahlung: { weg: 'eps', datum: '30.08.2026', kennzeichen: 'AB-0001' },
       ...gemeinsam,
     }).text,
+    mussEnthalten: pflichtangaben,
   },
 ];
 

@@ -99,8 +99,29 @@ export function leereAngaben(text) {
  * Ein einzelner Beleg.
  * @param {{art: string, text: string}} beleg
  */
-export function pruefeBeleg({ art, text }) {
+export function pruefeBeleg({ art, text, mussEnthalten = [] }) {
   const meldungen = [];
+
+  // **Was geprüft wurde, muss auch dastehen.**
+  //
+  // Der Befund vom 2. September: `pruefeRechnungsmerkmale` prüft die
+  // **Eingaben** eines Belegs, `pruefeBeleg` den **Text** — und niemand hielt
+  // beides gegeneinander. Die Rechnung galt als vollständig nach § 11 UStG,
+  // während im gedruckten Beleg die Anschrift des Ausstellers fehlte. Beide
+  // Prüfungen waren grün und meinten verschiedene Dinge.
+  //
+  // Leere Werte stehen hier nicht: Eine fehlende Angabe ist im Text schon als
+  // sichtbare Lücke markiert, und zweimal dasselbe zu melden macht keine
+  // Meldung besser.
+  for (const { was, wert } of mussEnthalten) {
+    if (!wert || String(wert).trim() === '') continue;
+    if (!text.includes(String(wert).trim())) {
+      meldungen.push({
+        regel: 'geprueft-aber-nicht-gedruckt',
+        text: `${was} ist geprüft, steht aber nicht im Beleg: „${String(wert).trim()}"`,
+      });
+    }
+  }
   const musterFuerArt = ZUSTANDSAUSSAGE[art];
 
   if (musterFuerArt === undefined) {

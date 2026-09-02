@@ -4301,6 +4301,51 @@ const wert = (v, bezeichnung) => (gefuellt(v) ? textZeile(v) : LUECKE(bezeichnun
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+function absenderzeilen(betreiber = {}) {
+  return [
+    wert(betreiber.firma, 'Firma des Ausstellers'),
+    wert(betreiber.strasse, 'Straße des Ausstellers'),
+    `${wert(betreiber.plz, 'PLZ des Ausstellers')} ${wert(betreiber.ort, 'Ort des Ausstellers')}`,
+  ];
+}
+
+
+
+
+
+
+
+function anschriftEinzeilig(daten = {}) {
+  const teile = [daten.firma, daten.strasse, daten.plz, daten.ort];
+  return teile.every((t) => gefuellt(t)) ? teile.map((t) => textZeile(t)).join(', ') : '';
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function lieferzeitText(teil) {
   return gefuellt(teil.lieferzeitWerktage)
     ? `${teil.lieferzeitWerktage} Werktage`
@@ -4452,7 +4497,7 @@ function erzeugeAngebot(warenkorb, { nummer, datum, bindefristTage = 14, kunde =
     `Angebot ${wert(nummer, 'Angebotsnummer')}`,
     `Datum: ${wert(datum, 'Datum')}`,
     '',
-    wert(betreiber.firma, 'Firma des Betreibers'),
+    ...absenderzeilen(betreiber),
     '',
     'An:',
     `  ${wert(kunde.firma, 'Firma des Kunden')}`,
@@ -4534,7 +4579,7 @@ function erzeugeAuftragsbestaetigung(
     `Auftragsbestätigung ${wert(nummer, 'Auftragsnummer')}`,
     `Datum: ${wert(datum, 'Datum')}`,
     '',
-    wert(betreiber.firma, 'Firma des Betreibers'),
+    ...absenderzeilen(betreiber),
     '',
     'Auftraggeber:',
     `  ${wert(kunde.firma, 'Firma des Kunden')}`,
@@ -4651,9 +4696,11 @@ function darfBestaetigtWerden(warenkorb, auftrag = {}) {
 function erzeugeRechnung(warenkorb, { nummer, datum, lieferdatum, kunde = {}, betreiber = {}, zahlung = {} }) {
   const vermerk = zahlungsvermerk(zahlung);
   const pruefung = pruefeRechnungsmerkmale({
-    ausstellerName: betreiber.firma,
+    
+    
+    ausstellerName: anschriftEinzeilig(betreiber),
     ausstellerUid: betreiber.uid,
-    empfaengerName: kunde.firma,
+    empfaengerName: anschriftEinzeilig(kunde),
     empfaengerUid: kunde.uid,
     rechnungsnummer: nummer,
     ausstellungsdatum: datum,
@@ -4669,7 +4716,7 @@ function erzeugeRechnung(warenkorb, { nummer, datum, lieferdatum, kunde = {}, be
     `Ausstellungsdatum: ${wert(datum, 'Ausstellungsdatum')}`,
     `Lieferdatum: ${wert(lieferdatum, 'Lieferdatum')}`,
     '',
-    wert(betreiber.firma, 'Firma und Anschrift des Ausstellers'),
+    ...absenderzeilen(betreiber),
     `UID: ${wert(betreiber.uid, 'UID des Ausstellers')}`,
     '',
     'Rechnungsempfänger:',
