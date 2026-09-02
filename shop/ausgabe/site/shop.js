@@ -1961,28 +1961,55 @@ function pruefeAnfrageAufGeheimnis(text, artikelMitEk = []) {
 
   
 
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  var korbknoepfeVerdrahtet = false;
+
   function baueKorbknoepfe() {
-    [].forEach.call(document.querySelectorAll('[data-legen]'), function (knopf) {
-      knopf.addEventListener('click', function () {
-        var sku = knopf.getAttribute('data-legen');
-        var mengenfeld = document.getElementById(knopf.getAttribute('data-menge') || '');
-        
-        
-        
-        var artikel = (D.artikel || []).filter(function (x) { return x.sku === sku; })[0];
-        var schritt = mengenschritt(artikel) || 1;
-        var menge = mengenfeld ? parseFloat(String(mengenfeld.value).replace(',', '.')) : schritt;
-        if (!Number.isFinite(menge) || menge <= 0) menge = schritt;
-        menge = Math.round(Math.ceil(Math.round((menge / schritt) * 1e6) / 1e6) * schritt * 100) / 100;
-        korb = legeInKorb(korb, sku, menge);
-        sichern();
-        knopf.textContent = String(menge).replace('.', ',') + '× im Warenkorb';
-        knopf.classList.add('getan');
-        window.setTimeout(function () {
-          knopf.textContent = 'In den Warenkorb';
-          knopf.classList.remove('getan');
-        }, 2200);
-      });
+    if (korbknoepfeVerdrahtet) return;
+    korbknoepfeVerdrahtet = true;
+    document.addEventListener('click', function (ev) {
+      var knopf = ev.target && ev.target.closest ? ev.target.closest('[data-legen]') : null;
+      if (!knopf) return;
+      var sku = knopf.getAttribute('data-legen');
+      
+      
+      
+      
+      
+      
+      
+      
+      var zeile = knopf.closest ? knopf.closest('.legen') : null;
+      var mengenfeld = (zeile && zeile.querySelector('input[type=number]'))
+        || document.getElementById(knopf.getAttribute('data-menge') || '');
+      
+      
+      
+      var artikel = (D.artikel || []).filter(function (x) { return x.sku === sku; })[0];
+      var schritt = mengenschritt(artikel) || 1;
+      var menge = mengenfeld ? parseFloat(String(mengenfeld.value).replace(',', '.')) : schritt;
+      if (!Number.isFinite(menge) || menge <= 0) menge = schritt;
+      menge = Math.round(Math.ceil(Math.round((menge / schritt) * 1e6) / 1e6) * schritt * 100) / 100;
+      korb = legeInKorb(korb, sku, menge);
+      sichern();
+      knopf.textContent = String(menge).replace('.', ',') + '× im Warenkorb';
+      knopf.classList.add('getan');
+      window.setTimeout(function () {
+        knopf.textContent = 'In den Warenkorb';
+        knopf.classList.remove('getan');
+      }, 2200);
     });
   }
 
@@ -2053,16 +2080,32 @@ function pruefeAnfrageAufGeheimnis(text, artikelMitEk = []) {
     zeichne();
   }
 
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
   function karte(a) {
-    var w = el('a', 'karte');
-    w.href = pfad('artikel/' + a.sku);
+    var w = el('div', 'karte');
+    var kopf = el('a', 'kopf');
+    kopf.href = pfad('artikel/' + a.sku);
     if (D.bilder && D.bilder[a.sku]) {
       var b = el('span', 'bild');
       b.innerHTML = D.bilder[a.sku];
-      w.appendChild(b);
+      kopf.appendChild(b);
     }
-    w.appendChild(el('span', 'nr', a.lieferantenArtikelnummer || ''));
-    w.appendChild(el('span', 't', a.bezeichnung));
+    kopf.appendChild(el('span', 'nr', a.lieferantenArtikelnummer || ''));
+    kopf.appendChild(el('span', 't', a.bezeichnung));
+    w.appendChild(kopf);
     var v = vorteil(a);
     if (v !== null && v >= 5) w.appendChild(el('span', 'marker vorteil', v + ' % unter Liste'));
     if (a.amListendeckel) w.appendChild(el('span', 'marker beipack', 'Beipack'));
@@ -2072,7 +2115,38 @@ function pruefeAnfrageAufGeheimnis(text, artikelMitEk = []) {
       p.appendChild(el('span', 'eh', ' je ' + (D.einheiten[a.einheit] || a.einheit) + ', netto'));
     }
     w.appendChild(p);
+    
+    
+    if (a.vkNetto !== null) w.appendChild(legenzeile(a));
     return w;
+  }
+
+  
+  function legenzeile(a) {
+    var einheit = D.einheiten[a.einheit] || a.einheit;
+    var schritt = mengenschritt(a);
+    var wert = schritt === null ? 1 : schritt;
+    var zeile = el('div', 'legen legen-klein');
+    var feld = document.createElement('input');
+    feld.type = 'number';
+    
+    
+    
+    feld.min = String(wert);
+    feld.max = '999';
+    if (schritt) feld.step = String(wert);
+    feld.value = String(wert);
+    feld.setAttribute('inputmode', 'decimal');
+    
+    
+    feld.setAttribute('aria-label', 'Menge in ' + einheit + ' für ' + a.bezeichnung);
+    var knopf = el('button', 'knopf', 'In den Warenkorb');
+    knopf.type = 'button';
+    knopf.setAttribute('data-legen', a.sku);
+    knopf.setAttribute('aria-label', a.bezeichnung + ' in den Warenkorb');
+    zeile.appendChild(feld);
+    zeile.appendChild(knopf);
+    return zeile;
   }
 
   

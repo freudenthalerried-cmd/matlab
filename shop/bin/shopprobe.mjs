@@ -194,6 +194,57 @@ const SZENARIEN = [
     erwartet: ['Zaehler:1', 'Menge:4', '7,72'],
   },
   {
+    // Der Umbau vom 02.09. Gemessen war sein Preis: Wer aus einer Anzeige mit
+    // drei Positionen kam, ging neun Schritte statt fünf, weil die Kachel
+    // keinen Knopf hatte. Jetzt hat sie einen — und die Probe hält fest, dass
+    // er die **Gebindemenge** legt und nicht „eins".
+    name: 'Der Legen-Knopf der Kachel legt die Gebindemenge, nicht eins',
+    aktionen: `
+      await geheZu('gruppe/wdvs');
+      const knopf = document.querySelector('#warenraster [data-legen="POS-50509"]');
+      const feld = knopf.closest('.legen').querySelector('input[type=number]');
+      const vorbelegt = feld.value;
+      knopf.click();
+      await geheZu('warenkorb');
+      out = 'vorbelegt=' + vorbelegt
+        + ' menge=' + document.querySelector('#warenkorb-ziel .kz-menge').value
+        + ' | ' + text('#warenkorb-ziel .korbzeile .kz-t');`,
+    // Das Glasgewebe gibt es ab 55 m². „1 m² Glasgewebe" wäre eine Menge, die
+    // niemand kommissionieren kann.
+    erwartet: ['vorbelegt=55', 'menge=55', 'Glasgewebe'],
+    verboten: ['menge=1 '],
+  },
+  {
+    name: 'Drei Positionen von der Gruppenseite werden drei Positionen im Korb',
+    aktionen: `
+      await geheZu('gruppe/wdvs');
+      const knoepfe = [...document.querySelectorAll('#warenraster [data-legen]')].slice(0, 3);
+      for (const k of knoepfe) k.click();
+      const zaehler = document.querySelector('[data-korbzaehler]').textContent;
+      await geheZu('warenkorb');
+      out = 'zaehler=' + zaehler
+        + ' zeilen=' + document.querySelectorAll('#warenkorb-ziel .korbzeile').length;`,
+    erwartet: ['zaehler=3', 'zeilen=3'],
+  },
+  {
+    // Ein Knopf in einem Verweis ist im Browser eine Fehlkonstruktion und für
+    // die Tastatur eine Falle. Genau deshalb war die Kachel bis zum 02.09.
+    // ohne Knopf; geprüft wird, dass der Umbau die Falle nicht eingebaut hat
+    // — und dass die Kachel ihren Verweis auf die Artikelseite behalten hat.
+    name: 'Kein Legen-Knopf steckt in einem Verweis, jede Kachel verlinkt weiter',
+    aktionen: `
+      await geheZu('gruppe/wdvs');
+      const karten = [...document.querySelectorAll('#warenraster .karte')];
+      const knoepfe = [...document.querySelectorAll('#warenraster [data-legen]')];
+      const imVerweis = knoepfe.filter((k) => k.closest('a')).length;
+      const mitVerweis = karten.filter((k) => k.querySelector('a.kopf')).length;
+      const ohneMarke = knoepfe.filter((k) => !k.getAttribute('aria-label')).length;
+      out = 'karten=' + karten.length + ' knoepfe=' + knoepfe.length
+        + ' imVerweis=' + imVerweis + ' mitVerweis=' + mitVerweis
+        + ' ohneMarke=' + ohneMarke;`,
+    erwartet: ['karten=11', 'knoepfe=11', 'imVerweis=0', 'mitVerweis=11', 'ohneMarke=0'],
+  },
+  {
     name: 'Der Warenkorb rechnet Fracht und Sperrgutzuschlag getrennt aus',
     aktionen: `
       await geheZu('artikel/POS-12566');
@@ -606,9 +657,15 @@ const SZENARIEN = [
     // Browsers. Wer mit der Tastatur durch 46 Karten geht, sah nichts
     // wandern. Geprüft wird der **berechnete** Stil vorher und nachher, nicht
     // das Vorhandensein einer Regel.
+    //
+    // **Nachgezogen am 02.09.** Geprüft wurde `.karte`; seit dem Umbau ist das
+    // ein `div` und nimmt keinen Fokus. Die Probe meldete „GLEICH" und hatte
+    // recht: Sie zielte auf etwas, das kein Bedienelement mehr ist. Der
+    // Tastaturweg führt jetzt über den Kopfbereich der Kachel — und der ist
+    // seither das, was den Ring tragen muss.
     aktionen: `
       await geheZu('artikel/POS-12569');
-      const proben = [['karte', '.karte'], ['nav', '.kopfleiste nav a'],
+      const proben = [['karte', '.karte .kopf'], ['nav', '.kopfleiste nav a'],
         ['knopf', '.knopf'], ['verweis', 'p a'], ['feld', 'input[type=number]']];
       const teile = [];
       for (const [name, wahl] of proben) {

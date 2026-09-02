@@ -170,8 +170,20 @@ padding:.6rem 1rem;z-index:10;text-decoration:none}
 .gebindehinweis{font-size:.9rem;color:var(--gedaempft);margin:.5rem 0 1.2rem}
 .karte .ab{display:block;font-size:.82rem;color:var(--gedaempft);margin-top:.15rem}
 
-.karte{background:var(--flaeche);padding:.9rem 1rem;display:flex;flex-direction:column;gap:.4rem;text-decoration:none;color:inherit}
+/* Die Karte war bis zum 02.09. ein Verweiselement um die ganze Kachel. Ein Knopf darin
+   wäre ein Bedienelement in einem Bedienelement gewesen — im Browser eine
+   Fehlkonstruktion und für die Tastatur eine Falle. Jetzt trägt die Karte einen
+   Kopfbereich, der verlinkt, und darunter Preis und Legen-Zeile. Der
+   Fokusring gehört seither dem Kopf, nicht der Kachel. */
+.karte{background:var(--flaeche);padding:.9rem 1rem;display:flex;flex-direction:column;gap:.4rem;color:inherit}
 .karte:hover{background:var(--flaeche-2)}
+.karte .kopf{display:flex;flex-direction:column;gap:.4rem;text-decoration:none;color:inherit}
+.karte .kopf:hover .t{text-decoration:underline}
+/* Die Legen-Zeile sitzt am Fuß der Kachel und drängt sich nicht vor den Preis:
+   Wer vergleicht, liest zuerst die Zahl. */
+.legen-klein{margin:.5rem 0 0;gap:.5rem;align-items:center}
+.legen-klein input{width:4.6rem;padding:.4rem}
+.legen-klein .knopf{padding:.5rem .7rem;font-size:.85rem;flex:1 1 auto}
 .karte .nr{font-family:var(--zahl);font-size:.68rem;color:var(--gedaempft)}
 .karte .t{font-weight:600;line-height:1.3}
 .karte .preis{margin-top:auto;font-family:var(--schmal);font-size:1.55rem;font-weight:600;font-variant-numeric:tabular-nums}
@@ -215,6 +227,7 @@ footer a{color:var(--gedaempft)}
 .kopfleiste nav a{padding:.15rem .7rem}
 #suchfeld{min-height:44px}
 .filterleiste select,.kasse select,.kz-menge,.legen input{min-height:44px}
+.legen-klein input,.legen-klein .knopf{min-height:44px}
 .zw{min-height:44px}
 </style>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Product","@id":"https://bauversand.com/artikel/POS-11133.html","sku":"POS-11133","name":"Schachtring 800 300 80 mm","category":"Kanal","offers":{"@type":"Offer","priceCurrency":"EUR","price":"74.67","availability":"https://schema.org/PreOrder","itemCondition":"https://schema.org/NewCondition","url":"https://bauversand.com/artikel/POS-11133.html","priceSpecification":{"@type":"UnitPriceSpecification","price":"74.67","priceCurrency":"EUR","valueAddedTaxIncluded":false,"referenceQuantity":{"@type":"QuantitativeValue","value":1,"unitCode":"C62"}},"areaServed":[{"@type":"AdministrativeArea","name":"Perg","address":{"@type":"PostalAddress","addressRegion":"Perg","addressCountry":"AT"}},{"@type":"AdministrativeArea","name":"Urfahr-Umgebung","address":{"@type":"PostalAddress","addressRegion":"Urfahr-Umgebung","addressCountry":"AT"}},{"@type":"AdministrativeArea","name":"Freistadt","address":{"@type":"PostalAddress","addressRegion":"Freistadt","addressCountry":"AT"}},{"@type":"AdministrativeArea","name":"Linz-Land","address":{"@type":"PostalAddress","addressRegion":"Linz-Land","addressCountry":"AT"}},{"@type":"AdministrativeArea","name":"Linz","address":{"@type":"PostalAddress","addressRegion":"Linz","addressCountry":"AT"}}],"seller":{"@type":"Organization","name":"Freudenthaler Bau GmbH"}},"description":"Schachtring 800 300 80 mm. Warengruppe Kanal. Verkaufseinheit Stück. Preis netto für Unternehmer, Umsatzsteuer wird getrennt ausgewiesen."}</script>
@@ -289,146 +302,234 @@ der Systemliste
 <a href="../system/kanal-dn100.html">Grundleitung DN 100 — die Liste</a>,
 weil sie zum selben Bauteil gehören. Was dort zusätzlich auf der Liste steht und wir <em>nicht</em> führen,
 sagt die Liste ebenfalls.</p>
-<div class="raster"><a class="karte" href="../artikel/POS-10095.html">
-  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Rohr mit Muffe"
+<div class="raster"><div class="karte">
+  <a class="kopf" href="../artikel/POS-10095.html">
+    <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Rohr mit Muffe"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><rect x="26" y="34" width="70" height="26" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <ellipse cx="26" cy="47" rx="7" ry="13" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <rect x="88" y="30" width="14" height="34" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <ellipse cx="102" cy="47" rx="6" ry="17" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <path d="M26 68 L102 68 M26 65 L26 71 M102 65 L102 71" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">NW 100</text></svg></span>
-  <span class="nr">10095</span>
-  <span class="t">PVC Kanalrohr NW 100 1 m</span>
+    <span class="nr">10095</span>
+    <span class="t">PVC Kanalrohr NW 100 1 m</span>
+  </a>
   <span class="marker vorteil">81 % unter Liste</span>
   <span class="preis">10,81&nbsp;€ <span class="eh">je Stück, netto</span></span>
   
-</a><a class="karte" href="../artikel/POS-10115.html">
-  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Rohrbogen im angegebenen Winkel"
+  <div class="legen legen-klein">
+    <input type="number" min="1" max="999" value="1" inputmode="decimal"
+      aria-label="Menge in Stück für PVC Kanalrohr NW 100 1 m">
+    <button class="knopf" type="button" data-legen="POS-10095"
+      aria-label="PVC Kanalrohr NW 100 1 m in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div><div class="karte">
+  <a class="kopf" href="../artikel/POS-10115.html">
+    <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Rohrbogen im angegebenen Winkel"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="M14 62 L40 62" stroke="var(--linie-stark)" stroke-width="14" fill="none" stroke-linecap="butt"/>
 <path d="M40 62 L76.4 41.0" stroke="var(--linie-stark)" stroke-width="14" fill="none"/>
 <path d="M14 62 L40 62 L76.4 41.0" stroke="var(--ocker)" fill="none" stroke-width="1.5" stroke-dasharray="3 3" stroke-width="1"/>
 <path d="M58 62 A18 18 0 0 0 55.6 53.0" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">30°</text></svg></span>
-  <span class="nr">10115</span>
-  <span class="t">PVC Kanalbogen NW 100 30 grad</span>
+    <span class="nr">10115</span>
+    <span class="t">PVC Kanalbogen NW 100 30 grad</span>
+  </a>
   <span class="marker vorteil">83 % unter Liste</span>
   <span class="preis">2,73&nbsp;€ <span class="eh">je Stück, netto</span></span>
   
-</a><a class="karte" href="../artikel/POS-10116.html">
-  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Rohrbogen im angegebenen Winkel"
+  <div class="legen legen-klein">
+    <input type="number" min="1" max="999" value="1" inputmode="decimal"
+      aria-label="Menge in Stück für PVC Kanalbogen NW 100 30 grad">
+    <button class="knopf" type="button" data-legen="POS-10115"
+      aria-label="PVC Kanalbogen NW 100 30 grad in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div><div class="karte">
+  <a class="kopf" href="../artikel/POS-10116.html">
+    <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Rohrbogen im angegebenen Winkel"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="M14 62 L40 62" stroke="var(--linie-stark)" stroke-width="14" fill="none" stroke-linecap="butt"/>
 <path d="M40 62 L69.7 32.3" stroke="var(--linie-stark)" stroke-width="14" fill="none"/>
 <path d="M14 62 L40 62 L69.7 32.3" stroke="var(--ocker)" fill="none" stroke-width="1.5" stroke-dasharray="3 3" stroke-width="1"/>
 <path d="M58 62 A18 18 0 0 0 52.7 49.3" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">45°</text></svg></span>
-  <span class="nr">10116</span>
-  <span class="t">PVC Kanalbogen NW 100 45 grad</span>
+    <span class="nr">10116</span>
+    <span class="t">PVC Kanalbogen NW 100 45 grad</span>
+  </a>
   <span class="marker vorteil">84 % unter Liste</span>
   <span class="preis">2,72&nbsp;€ <span class="eh">je Stück, netto</span></span>
   
-</a><a class="karte" href="../artikel/POS-10134.html">
-  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Abzweiger"
+  <div class="legen legen-klein">
+    <input type="number" min="1" max="999" value="1" inputmode="decimal"
+      aria-label="Menge in Stück für PVC Kanalbogen NW 100 45 grad">
+    <button class="knopf" type="button" data-legen="POS-10116"
+      aria-label="PVC Kanalbogen NW 100 45 grad in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div><div class="karte">
+  <a class="kopf" href="../artikel/POS-10134.html">
+    <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Abzweiger"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="M12 62 L100 62" stroke="var(--linie-stark)" stroke-width="14"/>
 <path d="M52 62 L84 30" stroke="var(--linie-stark)" stroke-width="12"/>
 <path d="M62 62 A14 14 0 0 0 61.9 52.1" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">45°</text></svg></span>
-  <span class="nr">10134</span>
-  <span class="t">PVC Kanalabzweiger 100 100 45 grad</span>
+    <span class="nr">10134</span>
+    <span class="t">PVC Kanalabzweiger 100 100 45 grad</span>
+  </a>
   <span class="marker vorteil">83 % unter Liste</span>
   <span class="preis">5,83&nbsp;€ <span class="eh">je Stück, netto</span></span>
   
-</a><a class="karte" href="../artikel/POS-21382.html">
-  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Rollenware"
+  <div class="legen legen-klein">
+    <input type="number" min="1" max="999" value="1" inputmode="decimal"
+      aria-label="Menge in Stück für PVC Kanalabzweiger 100 100 45 grad">
+    <button class="knopf" type="button" data-legen="POS-10134"
+      aria-label="PVC Kanalabzweiger 100 100 45 grad in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div><div class="karte">
+  <a class="kopf" href="../artikel/POS-21382.html">
+    <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Rollenware"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><rect x="30" y="26" width="60" height="40" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <ellipse cx="30" cy="46" rx="9" ry="20" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <ellipse cx="30" cy="46" rx="3" ry="7" fill="var(--grund)" stroke="var(--linie-stark)" stroke-width="1.2"/>
 <path d="M90 30 L104 36 L104 72 L90 66 Z" fill="var(--ocker-weich)" stroke="var(--ocker)" stroke-width="1.2"/>
 <path d="M30 72 L90 72 M30 69 L30 75 M90 69 L90 75" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">20 × 1,5 m</text></svg></span>
-  <span class="nr">21382</span>
-  <span class="t">Grundmauerschutz 20 1,5 m</span>
+    <span class="nr">21382</span>
+    <span class="t">Grundmauerschutz 20 1,5 m</span>
+  </a>
   <span class="marker vorteil">69 % unter Liste</span>
   <span class="preis">1,36&nbsp;€ <span class="eh">je m², netto</span></span>
   
-</a><a class="karte" href="../artikel/POS-29023.html">
-  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Rollenware"
+  <div class="legen legen-klein">
+    <input type="number" min="1" max="999" value="1" inputmode="decimal"
+      aria-label="Menge in m² für Grundmauerschutz 20 1,5 m">
+    <button class="knopf" type="button" data-legen="POS-21382"
+      aria-label="Grundmauerschutz 20 1,5 m in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div><div class="karte">
+  <a class="kopf" href="../artikel/POS-29023.html">
+    <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Rollenware"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><rect x="30" y="26" width="60" height="40" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <ellipse cx="30" cy="46" rx="9" ry="20" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <ellipse cx="30" cy="46" rx="3" ry="7" fill="var(--grund)" stroke="var(--linie-stark)" stroke-width="1.2"/>
 <path d="M90 30 L104 36 L104 72 L90 66 Z" fill="var(--ocker-weich)" stroke="var(--ocker)" stroke-width="1.2"/>
 <path d="M30 72 L90 72 M30 69 L30 75 M90 69 L90 75" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">2 × 50 m</text></svg></span>
-  <span class="nr">29023</span>
-  <span class="t">PAE-Folie T 100 2 50 m 100 m2</span>
+    <span class="nr">29023</span>
+    <span class="t">PAE-Folie T 100 2 50 m 100 m2</span>
+  </a>
   <span class="marker vorteil">73 % unter Liste</span>
   <span class="preis">17,12&nbsp;€ <span class="eh">je Rolle, netto</span></span>
   
-</a></div>
+  <div class="legen legen-klein">
+    <input type="number" min="1" max="999" value="1" inputmode="decimal"
+      aria-label="Menge in Rolle für PAE-Folie T 100 2 50 m 100 m2">
+    <button class="knopf" type="button" data-legen="POS-29023"
+      aria-label="PAE-Folie T 100 2 50 m 100 m2 in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div></div>
 <h2>Weitere Artikel aus Kanal</h2>
 <p>Dasselbe Regal, nicht dasselbe Bauteil: Diese Artikel gehören zur Gruppe
 Kanal. Ob einer davon der richtige ist, entscheidet die Planung.</p>
-<div class="raster"><a class="karte" href="../artikel/POS-21382.html">
-  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Rollenware"
+<div class="raster"><div class="karte">
+  <a class="kopf" href="../artikel/POS-21382.html">
+    <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Rollenware"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><rect x="30" y="26" width="60" height="40" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <ellipse cx="30" cy="46" rx="9" ry="20" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <ellipse cx="30" cy="46" rx="3" ry="7" fill="var(--grund)" stroke="var(--linie-stark)" stroke-width="1.2"/>
 <path d="M90 30 L104 36 L104 72 L90 66 Z" fill="var(--ocker-weich)" stroke="var(--ocker)" stroke-width="1.2"/>
 <path d="M30 72 L90 72 M30 69 L30 75 M90 69 L90 75" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">20 × 1,5 m</text></svg></span>
-  <span class="nr">21382</span>
-  <span class="t">Grundmauerschutz 20 1,5 m</span>
+    <span class="nr">21382</span>
+    <span class="t">Grundmauerschutz 20 1,5 m</span>
+  </a>
   <span class="marker vorteil">69 % unter Liste</span>
   <span class="preis">1,36&nbsp;€ <span class="eh">je m², netto</span></span>
   
-</a><a class="karte" href="../artikel/POS-10134.html">
-  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Abzweiger"
+  <div class="legen legen-klein">
+    <input type="number" min="1" max="999" value="1" inputmode="decimal"
+      aria-label="Menge in m² für Grundmauerschutz 20 1,5 m">
+    <button class="knopf" type="button" data-legen="POS-21382"
+      aria-label="Grundmauerschutz 20 1,5 m in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div><div class="karte">
+  <a class="kopf" href="../artikel/POS-10134.html">
+    <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Abzweiger"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="M12 62 L100 62" stroke="var(--linie-stark)" stroke-width="14"/>
 <path d="M52 62 L84 30" stroke="var(--linie-stark)" stroke-width="12"/>
 <path d="M62 62 A14 14 0 0 0 61.9 52.1" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">45°</text></svg></span>
-  <span class="nr">10134</span>
-  <span class="t">PVC Kanalabzweiger 100 100 45 grad</span>
+    <span class="nr">10134</span>
+    <span class="t">PVC Kanalabzweiger 100 100 45 grad</span>
+  </a>
   <span class="marker vorteil">83 % unter Liste</span>
   <span class="preis">5,83&nbsp;€ <span class="eh">je Stück, netto</span></span>
   
-</a><a class="karte" href="../artikel/POS-10115.html">
-  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Rohrbogen im angegebenen Winkel"
+  <div class="legen legen-klein">
+    <input type="number" min="1" max="999" value="1" inputmode="decimal"
+      aria-label="Menge in Stück für PVC Kanalabzweiger 100 100 45 grad">
+    <button class="knopf" type="button" data-legen="POS-10134"
+      aria-label="PVC Kanalabzweiger 100 100 45 grad in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div><div class="karte">
+  <a class="kopf" href="../artikel/POS-10115.html">
+    <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Rohrbogen im angegebenen Winkel"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="M14 62 L40 62" stroke="var(--linie-stark)" stroke-width="14" fill="none" stroke-linecap="butt"/>
 <path d="M40 62 L76.4 41.0" stroke="var(--linie-stark)" stroke-width="14" fill="none"/>
 <path d="M14 62 L40 62 L76.4 41.0" stroke="var(--ocker)" fill="none" stroke-width="1.5" stroke-dasharray="3 3" stroke-width="1"/>
 <path d="M58 62 A18 18 0 0 0 55.6 53.0" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">30°</text></svg></span>
-  <span class="nr">10115</span>
-  <span class="t">PVC Kanalbogen NW 100 30 grad</span>
+    <span class="nr">10115</span>
+    <span class="t">PVC Kanalbogen NW 100 30 grad</span>
+  </a>
   <span class="marker vorteil">83 % unter Liste</span>
   <span class="preis">2,73&nbsp;€ <span class="eh">je Stück, netto</span></span>
   
-</a><a class="karte" href="../artikel/POS-10116.html">
-  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Rohrbogen im angegebenen Winkel"
+  <div class="legen legen-klein">
+    <input type="number" min="1" max="999" value="1" inputmode="decimal"
+      aria-label="Menge in Stück für PVC Kanalbogen NW 100 30 grad">
+    <button class="knopf" type="button" data-legen="POS-10115"
+      aria-label="PVC Kanalbogen NW 100 30 grad in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div><div class="karte">
+  <a class="kopf" href="../artikel/POS-10116.html">
+    <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Rohrbogen im angegebenen Winkel"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="M14 62 L40 62" stroke="var(--linie-stark)" stroke-width="14" fill="none" stroke-linecap="butt"/>
 <path d="M40 62 L69.7 32.3" stroke="var(--linie-stark)" stroke-width="14" fill="none"/>
 <path d="M14 62 L40 62 L69.7 32.3" stroke="var(--ocker)" fill="none" stroke-width="1.5" stroke-dasharray="3 3" stroke-width="1"/>
 <path d="M58 62 A18 18 0 0 0 52.7 49.3" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">45°</text></svg></span>
-  <span class="nr">10116</span>
-  <span class="t">PVC Kanalbogen NW 100 45 grad</span>
+    <span class="nr">10116</span>
+    <span class="t">PVC Kanalbogen NW 100 45 grad</span>
+  </a>
   <span class="marker vorteil">84 % unter Liste</span>
   <span class="preis">2,72&nbsp;€ <span class="eh">je Stück, netto</span></span>
   
-</a><a class="karte" href="../artikel/POS-10095.html">
-  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Rohr mit Muffe"
+  <div class="legen legen-klein">
+    <input type="number" min="1" max="999" value="1" inputmode="decimal"
+      aria-label="Menge in Stück für PVC Kanalbogen NW 100 45 grad">
+    <button class="knopf" type="button" data-legen="POS-10116"
+      aria-label="PVC Kanalbogen NW 100 45 grad in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div><div class="karte">
+  <a class="kopf" href="../artikel/POS-10095.html">
+    <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Rohr mit Muffe"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><rect x="26" y="34" width="70" height="26" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <ellipse cx="26" cy="47" rx="7" ry="13" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <rect x="88" y="30" width="14" height="34" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <ellipse cx="102" cy="47" rx="6" ry="17" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <path d="M26 68 L102 68 M26 65 L26 71 M102 65 L102 71" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">NW 100</text></svg></span>
-  <span class="nr">10095</span>
-  <span class="t">PVC Kanalrohr NW 100 1 m</span>
+    <span class="nr">10095</span>
+    <span class="t">PVC Kanalrohr NW 100 1 m</span>
+  </a>
   <span class="marker vorteil">81 % unter Liste</span>
   <span class="preis">10,81&nbsp;€ <span class="eh">je Stück, netto</span></span>
   
-</a></div>
+  <div class="legen legen-klein">
+    <input type="number" min="1" max="999" value="1" inputmode="decimal"
+      aria-label="Menge in Stück für PVC Kanalrohr NW 100 1 m">
+    <button class="knopf" type="button" data-legen="POS-10095"
+      aria-label="PVC Kanalrohr NW 100 1 m in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div></div>
 </main>
 <footer>
   <p><strong>Liefergebiet:</strong> Perg, Urfahr-Umgebung, Freistadt, Linz-Land und Linz — regional, nicht österreichweit.

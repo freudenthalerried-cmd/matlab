@@ -237,28 +237,55 @@
 
   /* ---------------- In den Warenkorb ---------------- */
 
+  /**
+   * **Umgestellt am 2. September auf Stellvertretung.**
+   *
+   * Vorher hat diese Funktion jeden vorhandenen Knopf einzeln verdrahtet. Das
+   * hielt, solange die Knöpfe im gelieferten HTML standen. Seit die
+   * Artikelkachel einen eigenen Knopf trägt, entstehen sie **nach** dem
+   * Verdrahten — der Filter zeichnet das Raster neu — und ein Knopf ohne
+   * Behandler sieht aus wie einer, der nicht funktioniert.
+   *
+   * Ein einziger Behandler am Dokument trifft auch, was später entsteht. Die
+   * Wache dagegen, ihn bei jedem Rautenwechsel ein zweites Mal anzuhängen:
+   * Ein doppelter Behandler legt jede Menge zweimal in den Korb.
+   */
+  var korbknoepfeVerdrahtet = false;
+
   function baueKorbknoepfe() {
-    [].forEach.call(document.querySelectorAll('[data-legen]'), function (knopf) {
-      knopf.addEventListener('click', function () {
-        var sku = knopf.getAttribute('data-legen');
-        var mengenfeld = document.getElementById(knopf.getAttribute('data-menge') || '');
-        // `parseInt` hat hier bis zum 29.08. gestanden und aus „0,75 m²" eine
-        // 0 gemacht, die dann auf 1 gehoben wurde: Der Knopf legte einen
-        // ganzen Quadratmeter in den Korb, den es als Platte nicht gibt.
-        var artikel = (D.artikel || []).filter(function (x) { return x.sku === sku; })[0];
-        var schritt = mengenschritt(artikel) || 1;
-        var menge = mengenfeld ? parseFloat(String(mengenfeld.value).replace(',', '.')) : schritt;
-        if (!Number.isFinite(menge) || menge <= 0) menge = schritt;
-        menge = Math.round(Math.ceil(Math.round((menge / schritt) * 1e6) / 1e6) * schritt * 100) / 100;
-        korb = legeInKorb(korb, sku, menge);
-        sichern();
-        knopf.textContent = String(menge).replace('.', ',') + '× im Warenkorb';
-        knopf.classList.add('getan');
-        window.setTimeout(function () {
-          knopf.textContent = 'In den Warenkorb';
-          knopf.classList.remove('getan');
-        }, 2200);
-      });
+    if (korbknoepfeVerdrahtet) return;
+    korbknoepfeVerdrahtet = true;
+    document.addEventListener('click', function (ev) {
+      var knopf = ev.target && ev.target.closest ? ev.target.closest('[data-legen]') : null;
+      if (!knopf) return;
+      var sku = knopf.getAttribute('data-legen');
+      // **Zuerst die eigene Zeile, dann die Kennung.** Bis zum 02.09. hing
+      // die Zuordnung allein an `data-menge` und damit an einer Kennung, die
+      // auf einer Seite eindeutig sein muss. Seit die Kachel ein Mengenfeld
+      // trägt, steht derselbe Artikel auf einer Artikelseite in zwei Listen —
+      // „Verwandt" und „Mitverbaut" — und die Kennung gab es zweimal.
+      // `getElementById` liefert die erste: Der zweite Knopf legte die Menge
+      // des ersten Feldes in den Korb. Gefunden von der Probe, die nach
+      // doppelten Kennungen sucht.
+      var zeile = knopf.closest ? knopf.closest('.legen') : null;
+      var mengenfeld = (zeile && zeile.querySelector('input[type=number]'))
+        || document.getElementById(knopf.getAttribute('data-menge') || '');
+      // `parseInt` hat hier bis zum 29.08. gestanden und aus „0,75 m²" eine
+      // 0 gemacht, die dann auf 1 gehoben wurde: Der Knopf legte einen
+      // ganzen Quadratmeter in den Korb, den es als Platte nicht gibt.
+      var artikel = (D.artikel || []).filter(function (x) { return x.sku === sku; })[0];
+      var schritt = mengenschritt(artikel) || 1;
+      var menge = mengenfeld ? parseFloat(String(mengenfeld.value).replace(',', '.')) : schritt;
+      if (!Number.isFinite(menge) || menge <= 0) menge = schritt;
+      menge = Math.round(Math.ceil(Math.round((menge / schritt) * 1e6) / 1e6) * schritt * 100) / 100;
+      korb = legeInKorb(korb, sku, menge);
+      sichern();
+      knopf.textContent = String(menge).replace('.', ',') + '× im Warenkorb';
+      knopf.classList.add('getan');
+      window.setTimeout(function () {
+        knopf.textContent = 'In den Warenkorb';
+        knopf.classList.remove('getan');
+      }, 2200);
     });
   }
 
@@ -329,16 +356,32 @@
     zeichne();
   }
 
+  /**
+   * Die Artikelkachel.
+   *
+   * **Umgebaut am 2. September.** Sie war ein Verweiselement um die ganze
+   * Kachel; ein Knopf darin wäre ein Bedienelement in einem Bedienelement
+   * gewesen. Jetzt: ein Kopfbereich, der verlinkt, darunter Preis und eine
+   * Legen-Zeile. Gemessen war der Preis des Fehlens — wer aus einer Anzeige
+   * mit drei Positionen im Kopf kam, ging neun Schritte statt fünf.
+   *
+   * Die Legen-Zeile bedient sich derselben Verdrahtung wie die Artikelseite
+   * (`data-legen` und `data-menge`, siehe `baueKorbknoepfe`). Eine zweite
+   * Mengenrechnung neben der dort stehenden wäre die sicherste Art, in Korb
+   * und Karte zwei verschiedene Mengen zu erzeugen.
+   */
   function karte(a) {
-    var w = el('a', 'karte');
-    w.href = pfad('artikel/' + a.sku);
+    var w = el('div', 'karte');
+    var kopf = el('a', 'kopf');
+    kopf.href = pfad('artikel/' + a.sku);
     if (D.bilder && D.bilder[a.sku]) {
       var b = el('span', 'bild');
       b.innerHTML = D.bilder[a.sku];
-      w.appendChild(b);
+      kopf.appendChild(b);
     }
-    w.appendChild(el('span', 'nr', a.lieferantenArtikelnummer || ''));
-    w.appendChild(el('span', 't', a.bezeichnung));
+    kopf.appendChild(el('span', 'nr', a.lieferantenArtikelnummer || ''));
+    kopf.appendChild(el('span', 't', a.bezeichnung));
+    w.appendChild(kopf);
     var v = vorteil(a);
     if (v !== null && v >= 5) w.appendChild(el('span', 'marker vorteil', v + ' % unter Liste'));
     if (a.amListendeckel) w.appendChild(el('span', 'marker beipack', 'Beipack'));
@@ -348,7 +391,38 @@
       p.appendChild(el('span', 'eh', ' je ' + (D.einheiten[a.einheit] || a.einheit) + ', netto'));
     }
     w.appendChild(p);
+    // Ohne rechenbaren Preis kein Knopf: Was der Shop nicht rechnen kann, legt
+    // er auch nicht in einen Korb, der eine Summe bildet.
+    if (a.vkNetto !== null) w.appendChild(legenzeile(a));
     return w;
+  }
+
+  /** Mengenfeld und Knopf einer Kachel — dieselben Haken wie die Artikelseite. */
+  function legenzeile(a) {
+    var einheit = D.einheiten[a.einheit] || a.einheit;
+    var schritt = mengenschritt(a);
+    var wert = schritt === null ? 1 : schritt;
+    var zeile = el('div', 'legen legen-klein');
+    var feld = document.createElement('input');
+    feld.type = 'number';
+    // Bewusst **ohne** Kennung: Der Knopf findet sein Feld in seiner eigenen
+    // Zeile. Eine Kennung je Artikel wäre auf einer Seite mit zwei Listen
+    // desselben Artikels doppelt.
+    feld.min = String(wert);
+    feld.max = '999';
+    if (schritt) feld.step = String(wert);
+    feld.value = String(wert);
+    feld.setAttribute('inputmode', 'decimal');
+    // Elf Knöpfe, die alle „In den Warenkorb" heißen, sind für eine
+    // Vorleseausgabe elf gleiche Knöpfe. Der Name des Artikels gehört dazu.
+    feld.setAttribute('aria-label', 'Menge in ' + einheit + ' für ' + a.bezeichnung);
+    var knopf = el('button', 'knopf', 'In den Warenkorb');
+    knopf.type = 'button';
+    knopf.setAttribute('data-legen', a.sku);
+    knopf.setAttribute('aria-label', a.bezeichnung + ' in den Warenkorb');
+    zeile.appendChild(feld);
+    zeile.appendChild(knopf);
+    return zeile;
   }
 
   /* ---------------- Suchergebnisseite ---------------- */

@@ -170,8 +170,20 @@ padding:.6rem 1rem;z-index:10;text-decoration:none}
 .gebindehinweis{font-size:.9rem;color:var(--gedaempft);margin:.5rem 0 1.2rem}
 .karte .ab{display:block;font-size:.82rem;color:var(--gedaempft);margin-top:.15rem}
 
-.karte{background:var(--flaeche);padding:.9rem 1rem;display:flex;flex-direction:column;gap:.4rem;text-decoration:none;color:inherit}
+/* Die Karte war bis zum 02.09. ein Verweiselement um die ganze Kachel. Ein Knopf darin
+   wäre ein Bedienelement in einem Bedienelement gewesen — im Browser eine
+   Fehlkonstruktion und für die Tastatur eine Falle. Jetzt trägt die Karte einen
+   Kopfbereich, der verlinkt, und darunter Preis und Legen-Zeile. Der
+   Fokusring gehört seither dem Kopf, nicht der Kachel. */
+.karte{background:var(--flaeche);padding:.9rem 1rem;display:flex;flex-direction:column;gap:.4rem;color:inherit}
 .karte:hover{background:var(--flaeche-2)}
+.karte .kopf{display:flex;flex-direction:column;gap:.4rem;text-decoration:none;color:inherit}
+.karte .kopf:hover .t{text-decoration:underline}
+/* Die Legen-Zeile sitzt am Fuß der Kachel und drängt sich nicht vor den Preis:
+   Wer vergleicht, liest zuerst die Zahl. */
+.legen-klein{margin:.5rem 0 0;gap:.5rem;align-items:center}
+.legen-klein input{width:4.6rem;padding:.4rem}
+.legen-klein .knopf{padding:.5rem .7rem;font-size:.85rem;flex:1 1 auto}
 .karte .nr{font-family:var(--zahl);font-size:.68rem;color:var(--gedaempft)}
 .karte .t{font-weight:600;line-height:1.3}
 .karte .preis{margin-top:auto;font-family:var(--schmal);font-size:1.55rem;font-weight:600;font-variant-numeric:tabular-nums}
@@ -215,6 +227,7 @@ footer a{color:var(--gedaempft)}
 .kopfleiste nav a{padding:.15rem .7rem}
 #suchfeld{min-height:44px}
 .filterleiste select,.kasse select,.kz-menge,.legen input{min-height:44px}
+.legen-klein input,.legen-klein .knopf{min-height:44px}
 .zw{min-height:44px}
 </style>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":["Article","FAQPage"],"headline":"Dämmplatten","description":"XPS in mehreren Stärken für den erdberührten und den Sockelbereich, EPS als dünne Ausgleichsplatte und eine Trittschalldämmplatte; die Trennlage dazu steht als Folie beim Zubehör. Die Fassadendämmplatte in Flächenstärke führen wir nicht — die geführten EPS-Stärken gleichen aus, sie dämmen die Fläche nicht. Die Auswahl folgt dem Einbauort und dem Wärmeschutznachweis — nicht dem Preis je Quadratmeter.","inLanguage":"de-AT","dateModified":"2026-09-01","publisher":{"@type":"Organization","name":"Freudenthaler Bau GmbH"},"mainEntity":[{"@type":"Question","name":"Welche Dämmplatten führen wir, und wie wähle ich die richtige aus?","acceptedAnswer":{"@type":"Answer","text":"XPS in mehreren Stärken für den erdberührten und den Sockelbereich, EPS als dünne Ausgleichsplatte und eine Trittschalldämmplatte; die Trennlage dazu steht als Folie beim Zubehör. Die Fassadendämmplatte in Flächenstärke führen wir nicht — die geführten EPS-Stärken gleichen aus, sie dämmen die Fläche nicht. Die Auswahl folgt dem Einbauort und dem Wärmeschutznachweis — nicht dem Preis je Quadratmeter."}}]}</script>
@@ -245,124 +258,196 @@ nicht österreichweit. Fracht fällt je Lieferung an und wird getrennt ausgewies
 (<a href="../lieferung.html">Sätze</a>); Selbstabholung ist vorgesehen.</p>
 <h2>9 Artikel in dieser Gruppe</h2>
 <div class="filterleiste" id="filterleiste"></div>
-<div class="raster" id="warenraster" data-gruppe="Dämmung"><a class="karte" href="../artikel/POS-12566.html">
-  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Dämmplatte, Stärke maßstäblich"
+<div class="raster" id="warenraster" data-gruppe="Dämmung"><div class="karte">
+  <a class="kopf" href="../artikel/POS-12566.html">
+    <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Dämmplatte, Stärke maßstäblich"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="M18 50.2 L84 34.2 L104 42.2 L38 58.2 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <path d="M18 50.2 L18 58 L38 66 L38 58.2 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <path d="M38 58.2 L38 66 L104 50 L104 42.2 Z" fill="var(--ocker-weich)" stroke="var(--linie-stark)" stroke-width="1.5"/>
 <path d="M110 42.2 L110 50" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <path d="M107 42.2 L113 42.2 M107 50 L113 50" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">20 mm</text></svg></span>
-  <span class="nr">12566</span>
-  <span class="t">Fassaden EPS 2 cm 0,5 m2</span>
+    <span class="nr">12566</span>
+    <span class="t">Fassaden EPS 2 cm 0,5 m2</span>
+  </a>
   
   <span class="preis">1,93&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,5 m² · 0,97&nbsp;€</span>
-</a><a class="karte" href="../artikel/POS-12567.html">
-  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Dämmplatte, Stärke maßstäblich"
+  <div class="legen legen-klein">
+    <input type="number" min="0.5" max="999" value="0.5" step="0.5" inputmode="decimal"
+      aria-label="Menge in m² für Fassaden EPS 2 cm 0,5 m2">
+    <button class="knopf" type="button" data-legen="POS-12566"
+      aria-label="Fassaden EPS 2 cm 0,5 m2 in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div><div class="karte">
+  <a class="kopf" href="../artikel/POS-12567.html">
+    <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Dämmplatte, Stärke maßstäblich"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="M18 48.3 L84 32.3 L104 40.3 L38 56.3 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <path d="M18 48.3 L18 58 L38 66 L38 56.3 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <path d="M38 56.3 L38 66 L104 50 L104 40.3 Z" fill="var(--ocker-weich)" stroke="var(--linie-stark)" stroke-width="1.5"/>
 <path d="M110 40.3 L110 50" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <path d="M107 40.3 L113 40.3 M107 50 L113 50" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">30 mm</text></svg></span>
-  <span class="nr">12567</span>
-  <span class="t">Fassaden EPS 3 cm 0,5 m2</span>
+    <span class="nr">12567</span>
+    <span class="t">Fassaden EPS 3 cm 0,5 m2</span>
+  </a>
   <span class="marker vorteil">33 % unter Liste</span>
   <span class="preis">2,81&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,5 m² · 1,41&nbsp;€</span>
-</a><a class="karte" href="../artikel/POS-12583.html">
-  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Dämmplatte, Stärke maßstäblich"
+  <div class="legen legen-klein">
+    <input type="number" min="0.5" max="999" value="0.5" step="0.5" inputmode="decimal"
+      aria-label="Menge in m² für Fassaden EPS 3 cm 0,5 m2">
+    <button class="knopf" type="button" data-legen="POS-12567"
+      aria-label="Fassaden EPS 3 cm 0,5 m2 in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div><div class="karte">
+  <a class="kopf" href="../artikel/POS-12583.html">
+    <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Dämmplatte, Stärke maßstäblich"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="M18 44.5 L84 28.5 L104 36.5 L38 52.5 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <path d="M18 44.5 L18 58 L38 66 L38 52.5 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <path d="M38 52.5 L38 66 L104 50 L104 36.5 Z" fill="var(--ocker-weich)" stroke="var(--linie-stark)" stroke-width="1.5"/>
 <path d="M110 36.5 L110 50" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <path d="M107 36.5 L113 36.5 M107 50 L113 50" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">50 mm</text></svg></span>
-  <span class="nr">12583</span>
-  <span class="t">Fassaden EPS 5 cm 0,5 m2</span>
+    <span class="nr">12583</span>
+    <span class="t">Fassaden EPS 5 cm 0,5 m2</span>
+  </a>
   
   <span class="preis">4,67&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,5 m² · 2,34&nbsp;€</span>
-</a><a class="karte" href="../artikel/POS-28415.html">
-  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Dämmplatte, Stärke nicht aus der Bezeichnung ablesbar"
+  <div class="legen legen-klein">
+    <input type="number" min="0.5" max="999" value="0.5" step="0.5" inputmode="decimal"
+      aria-label="Menge in m² für Fassaden EPS 5 cm 0,5 m2">
+    <button class="knopf" type="button" data-legen="POS-12583"
+      aria-label="Fassaden EPS 5 cm 0,5 m2 in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div><div class="karte">
+  <a class="kopf" href="../artikel/POS-28415.html">
+    <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Dämmplatte, Stärke nicht aus der Bezeichnung ablesbar"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="M18 46.4 L84 30.4 L104 38.4 L38 54.4 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <path d="M18 46.4 L18 58 L38 66 L38 54.4 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <path d="M38 54.4 L38 66 L104 50 L104 38.4 Z" fill="var(--ocker-weich)" stroke="var(--linie-stark)" stroke-width="1.5"/>
 <path d="M110 38.4 L110 50" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <path d="M107 38.4 L113 38.4 M107 50 L113 50" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">Platte</text></svg></span>
-  <span class="nr">28415</span>
-  <span class="t">Isover TDPT 20 1200 600 mm 8,64 m2</span>
+    <span class="nr">28415</span>
+    <span class="t">Isover TDPT 20 1200 600 mm 8,64 m2</span>
+  </a>
   <span class="marker vorteil">40 % unter Liste</span>
   <span class="preis">10,69&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 8,64 m² · 92,36&nbsp;€</span>
-</a><a class="karte" href="../artikel/POS-12580.html">
-  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Dämmplatte, Stärke maßstäblich"
+  <div class="legen legen-klein">
+    <input type="number" min="8.64" max="999" value="8.64" step="8.64" inputmode="decimal"
+      aria-label="Menge in m² für Isover TDPT 20 1200 600 mm 8,64 m2">
+    <button class="knopf" type="button" data-legen="POS-28415"
+      aria-label="Isover TDPT 20 1200 600 mm 8,64 m2 in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div><div class="karte">
+  <a class="kopf" href="../artikel/POS-12580.html">
+    <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Dämmplatte, Stärke maßstäblich"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="M18 35 L84 19 L104 27 L38 43 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <path d="M18 35 L18 58 L38 66 L38 43 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <path d="M38 43 L38 66 L104 50 L104 27 Z" fill="var(--ocker-weich)" stroke="var(--linie-stark)" stroke-width="1.5"/>
 <path d="M110 27 L110 50" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <path d="M107 27 L113 27 M107 50 L113 50" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">100 mm</text></svg></span>
-  <span class="nr">12580</span>
-  <span class="t">XPS glatt SF 100 mm 0,75 m2</span>
+    <span class="nr">12580</span>
+    <span class="t">XPS glatt SF 100 mm 0,75 m2</span>
+  </a>
   
   <span class="preis">16,00&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,75 m² · 12,00&nbsp;€</span>
-</a><a class="karte" href="../artikel/POS-12569.html">
-  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Dämmplatte, Stärke maßstäblich"
+  <div class="legen legen-klein">
+    <input type="number" min="0.75" max="999" value="0.75" step="0.75" inputmode="decimal"
+      aria-label="Menge in m² für XPS glatt SF 100 mm 0,75 m2">
+    <button class="knopf" type="button" data-legen="POS-12580"
+      aria-label="XPS glatt SF 100 mm 0,75 m2 in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div><div class="karte">
+  <a class="kopf" href="../artikel/POS-12569.html">
+    <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Dämmplatte, Stärke maßstäblich"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="M18 48.3 L84 32.3 L104 40.3 L38 56.3 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <path d="M18 48.3 L18 58 L38 66 L38 56.3 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <path d="M38 56.3 L38 66 L104 50 L104 40.3 Z" fill="var(--ocker-weich)" stroke="var(--linie-stark)" stroke-width="1.5"/>
 <path d="M110 40.3 L110 50" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <path d="M107 40.3 L113 40.3 M107 50 L113 50" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">30 mm</text></svg></span>
-  <span class="nr">12569</span>
-  <span class="t">XPS glatt SF 30 mm 0,75 m2</span>
+    <span class="nr">12569</span>
+    <span class="t">XPS glatt SF 30 mm 0,75 m2</span>
+  </a>
   <span class="marker vorteil">46 % unter Liste</span>
   <span class="preis">5,23&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,75 m² · 3,92&nbsp;€</span>
-</a><a class="karte" href="../artikel/POS-12571.html">
-  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Dämmplatte, Stärke maßstäblich"
+  <div class="legen legen-klein">
+    <input type="number" min="0.75" max="999" value="0.75" step="0.75" inputmode="decimal"
+      aria-label="Menge in m² für XPS glatt SF 30 mm 0,75 m2">
+    <button class="knopf" type="button" data-legen="POS-12569"
+      aria-label="XPS glatt SF 30 mm 0,75 m2 in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div><div class="karte">
+  <a class="kopf" href="../artikel/POS-12571.html">
+    <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Dämmplatte, Stärke maßstäblich"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="M18 44.5 L84 28.5 L104 36.5 L38 52.5 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <path d="M18 44.5 L18 58 L38 66 L38 52.5 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <path d="M38 52.5 L38 66 L104 50 L104 36.5 Z" fill="var(--ocker-weich)" stroke="var(--linie-stark)" stroke-width="1.5"/>
 <path d="M110 36.5 L110 50" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <path d="M107 36.5 L113 36.5 M107 50 L113 50" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">50 mm</text></svg></span>
-  <span class="nr">12571</span>
-  <span class="t">XPS glatt SF 50 mm 0,75 m2</span>
+    <span class="nr">12571</span>
+    <span class="t">XPS glatt SF 50 mm 0,75 m2</span>
+  </a>
   <span class="marker vorteil">46 % unter Liste</span>
   <span class="preis">8,72&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,75 m² · 6,54&nbsp;€</span>
-</a><a class="karte" href="../artikel/POS-12575.html">
-  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Dämmplatte, Stärke maßstäblich"
+  <div class="legen legen-klein">
+    <input type="number" min="0.75" max="999" value="0.75" step="0.75" inputmode="decimal"
+      aria-label="Menge in m² für XPS glatt SF 50 mm 0,75 m2">
+    <button class="knopf" type="button" data-legen="POS-12571"
+      aria-label="XPS glatt SF 50 mm 0,75 m2 in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div><div class="karte">
+  <a class="kopf" href="../artikel/POS-12575.html">
+    <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Dämmplatte, Stärke maßstäblich"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="M18 38.8 L84 22.799999999999997 L104 30.799999999999997 L38 46.8 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <path d="M18 38.8 L18 58 L38 66 L38 46.8 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <path d="M38 46.8 L38 66 L104 50 L104 30.799999999999997 Z" fill="var(--ocker-weich)" stroke="var(--linie-stark)" stroke-width="1.5"/>
 <path d="M110 30.799999999999997 L110 50" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <path d="M107 30.799999999999997 L113 30.799999999999997 M107 50 L113 50" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">80 mm</text></svg></span>
-  <span class="nr">12575</span>
-  <span class="t">XPS glatt SF 80 mm 0,75 m2</span>
+    <span class="nr">12575</span>
+    <span class="t">XPS glatt SF 80 mm 0,75 m2</span>
+  </a>
   <span class="marker vorteil">46 % unter Liste</span>
   <span class="preis">13,95&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,75 m² · 10,46&nbsp;€</span>
-</a><a class="karte" href="../artikel/POS-12596.html">
-  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Dämmplatte, Stärke maßstäblich"
+  <div class="legen legen-klein">
+    <input type="number" min="0.75" max="999" value="0.75" step="0.75" inputmode="decimal"
+      aria-label="Menge in m² für XPS glatt SF 80 mm 0,75 m2">
+    <button class="knopf" type="button" data-legen="POS-12575"
+      aria-label="XPS glatt SF 80 mm 0,75 m2 in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div><div class="karte">
+  <a class="kopf" href="../artikel/POS-12596.html">
+    <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Dämmplatte, Stärke maßstäblich"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="M18 38.8 L84 22.799999999999997 L104 30.799999999999997 L38 46.8 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <path d="M18 38.8 L18 58 L38 66 L38 46.8 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <path d="M38 46.8 L38 66 L104 50 L104 30.799999999999997 Z" fill="var(--ocker-weich)" stroke="var(--linie-stark)" stroke-width="1.5"/>
 <path d="M110 30.799999999999997 L110 50" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <path d="M107 30.799999999999997 L113 30.799999999999997 M107 50 L113 50" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">80 mm</text></svg></span>
-  <span class="nr">12596</span>
-  <span class="t">XPS rau GK 80 mm 0,75 m2</span>
+    <span class="nr">12596</span>
+    <span class="t">XPS rau GK 80 mm 0,75 m2</span>
+  </a>
   <span class="marker vorteil">42 % unter Liste</span>
   <span class="preis">15,00&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,75 m² · 11,25&nbsp;€</span>
-</a></div>
+  <div class="legen legen-klein">
+    <input type="number" min="0.75" max="999" value="0.75" step="0.75" inputmode="decimal"
+      aria-label="Menge in m² für XPS rau GK 80 mm 0,75 m2">
+    <button class="knopf" type="button" data-legen="POS-12596"
+      aria-label="XPS rau GK 80 mm 0,75 m2 in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div></div>
 <!--quelltext-->
 <h2>Wie diese Platten sonst noch heißen</h2>
 <div class="scroll"><table><thead><tr><th>Bei uns</th><th>Auch gesucht als</th></tr></thead><tbody><tr><td>Fassaden EPS</td><td><strong>EPS-Fassadenplatten</strong>, <strong>Fassadendämmung</strong>, Styropor-Fassadenplatte</td></tr><tr><td>XPS glatt / rau</td><td>Perimeterplatte, Sockelplatte, <strong>druckfeste</strong> Dämmplatte</td></tr><tr><td>Isover TDPT</td><td>Trittschalldämmplatte</td></tr></tbody></table></div>

@@ -62,6 +62,13 @@ Kachel.
 > eine eigene Runde, und der Preis dafür steht jetzt gemessen daneben: vier
 > Schritte je zusätzlicher Position.
 
+> **Nachtrag vom 2. September, nachmittags — die eigene Runde hat
+> stattgefunden.** Die Kachel ist umgebaut: Kopfbereich mit Verweis,
+> Mengenfeld mit Gebindeschritt, Knopf. Der Hauptweg ist seither **vier**
+> Schritte, drei Positionen kosten **sechs** statt neun. Was oben über den
+> Zustand vor dem Umbau steht, bleibt als Messung stehen; hergeleitet ist der
+> Umbau in [`legen-knopf-auf-der-landeseite.md`](./legen-knopf-auf-der-landeseite.md).
+
 ## Was die Probe festhält
 
 Vier Zusicherungen, jede mit ihrem Grund:

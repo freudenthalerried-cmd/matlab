@@ -15,16 +15,20 @@
  * gegangen, Klick für Klick, und jeder Schritt zählt genau dann, wenn er eine
  * Handlung des Besuchers ist.
  *
- * Der Befund vom 2. September: **fünf Schritte, kein einziges Textfeld.** Der
- * Zahlweg ist vorbelegt, der Bezirk ist eine Auswahl, die Firmendaten fragt
- * die Kasse gar nicht — sie stehen erst in der Bestellung, die es noch nicht
- * gibt. Das ist kurz.
+ * Der Befund vom 2. September, vormittags: **fünf Schritte, kein einziges
+ * Textfeld.** Der Zahlweg ist vorbelegt, der Bezirk ist eine Auswahl, die
+ * Firmendaten fragt die Kasse gar nicht — sie stehen erst in der Bestellung,
+ * die es noch nicht gibt. Das war kurz.
  *
- * Und die eine gemessene Länge, die daneben steht: Die **Gruppenseite hat
- * keinen Legen-Knopf.** Wer aus der Anzeige „Kleber, Gewebe, Dübel" kommt und
- * drei Positionen braucht, geht dreimal Artikel öffnen, legen, zurück — neun
- * Schritte statt fünf. Warum das so bleibt, steht in
- * `docs/baustoff-shop/fuenf-schritte-bis-zur-anfrage.md`.
+ * Daneben stand eine zweite gemessene Länge: Die Gruppenseite hatte **keinen
+ * Legen-Knopf.** Wer aus der Anzeige „Kleber, Gewebe, Dübel" kam und drei
+ * Positionen brauchte, ging dreimal Artikel öffnen, legen, zurück — neun
+ * Schritte statt fünf.
+ *
+ * **Nachmittags gebaut.** Die Kachel trägt jetzt Mengenfeld und Knopf. Der
+ * Hauptweg ist damit **vier** Schritte statt fünf — der Umweg über die
+ * Artikelseite entfällt —, und drei Positionen kosten **sechs** statt neun.
+ * Hergeleitet in `docs/baustoff-shop/legen-knopf-auf-der-landeseite.md`.
  */
 
 import { readFileSync, writeFileSync, mkdtempSync, rmSync, existsSync, readdirSync } from 'node:fs';
@@ -82,18 +86,17 @@ const SONDE = `
   const schritt = (was) => schritte.push(was);
   try {
     await geheZu('gruppe/wdvs');
-    merkmale.legenAufGruppenseite = document.querySelectorAll('#warenraster [data-legen]').length;
-    merkmale.artikelAufGruppenseite = document.querySelectorAll('#warenraster a.karte').length;
+    const knoepfe = [...document.querySelectorAll('#warenraster [data-legen]')];
+    merkmale.legenAufGruppenseite = knoepfe.length;
+    merkmale.artikelAufGruppenseite = document.querySelectorAll('#warenraster .karte').length;
+    merkmale.kartenMitVerweis = document.querySelectorAll('#warenraster .karte a.kopf').length;
+    // Ein Knopf in einem Verweis wäre ein Bedienelement in einem
+    // Bedienelement. Gemessen wird, dass keiner mehr in einem steckt.
+    merkmale.knopfImVerweis = knoepfe.filter((k) => k.closest('a')).length;
+    merkmale.mengenfeldVorbelegt = knoepfe.length
+      ? knoepfe[0].closest('.legen')?.querySelector('input[type=number]')?.value ?? null : null;
 
-    const karte = document.querySelector('#warenraster a.karte');
-    karte.click(); await warte();
-    schritt('Klick auf einen Artikel');
-
-    const legen = document.querySelector('[data-legen]');
-    merkmale.legenAufArtikelseite = legen ? 1 : 0;
-    merkmale.mengenfeldVorbelegt = legen
-      ? document.getElementById(legen.getAttribute('data-menge'))?.value ?? null : null;
-    legen.click();
+    knoepfe[0].click(); await warte();
     schritt('In den Warenkorb legen');
 
     await geheZu('warenkorb');
@@ -119,6 +122,15 @@ const SONDE = `
     merkmale.anfragezeichen = feld ? (feld.value || feld.textContent).length : 0;
     merkmale.knoepfe = kasten
       ? [...kasten.querySelectorAll('button, a')].map((n) => n.textContent.trim()).filter(Boolean) : [];
+    // Der zweite gemessene Weg: drei Positionen aus derselben Anzeige. Bis zum
+    // 2. September kostete jede zusätzliche vier Schritte — Artikel öffnen,
+    // legen, zurück zur Gruppe. Gezählt werden nur die Handlungen **auf** der
+    // Gruppenseite; der Rest des Weges ist derselbe wie oben.
+    await geheZu('gruppe/wdvs');
+    const drei = [...document.querySelectorAll('#warenraster [data-legen]')].slice(0, 3);
+    let handlungen = 0;
+    for (const k of drei) { k.click(); handlungen += 1; await warte(); }
+    merkmale.dreiPositionen = handlungen + (schritte.length - 1);
   } catch (e) {
     merkmale.gestolpert = String(e && e.message);
   }
@@ -181,7 +193,9 @@ console.log(`Textfelder auszufüllen: ${merkmale.textfelder} · Auswahlfelder: $
   + `Zahlweg vorbelegt: ${merkmale.vorbelegteZahlwege === 1 ? 'ja' : 'nein'}`);
 console.log(`Am Ende: ${merkmale.anfragezeichen} Zeichen Anfragetext, Knöpfe: ${merkmale.knoepfe.join(' / ')}`);
 console.log(`\nAuf der Gruppenseite: ${merkmale.artikelAufGruppenseite} Artikel, `
-  + `${merkmale.legenAufGruppenseite} davon direkt legbar.`);
+  + `${merkmale.legenAufGruppenseite} davon direkt legbar, `
+  + `${merkmale.kartenMitVerweis} mit Verweis auf die Artikelseite.`);
+console.log(`Drei Positionen aus derselben Anzeige: ${merkmale.dreiPositionen} Schritte.`);
 
 const probleme = [];
 if (schritte.length > HOECHSTENS_SCHRITTE) {
@@ -196,6 +210,18 @@ if (!merkmale.anfragekasten || merkmale.anfragezeichen < 200) {
 if (merkmale.vorbelegteZahlwege !== 1) {
   probleme.push('Der Zahlweg ist nicht vorbelegt — ein Klick mehr ohne Erkenntnis');
 }
+if (merkmale.legenAufGruppenseite < 1) {
+  probleme.push('Kein Legen-Knopf auf der Gruppenseite — jede Position kostet wieder vier Schritte');
+}
+if (merkmale.knopfImVerweis > 0) {
+  probleme.push(`${merkmale.knopfImVerweis} Knöpfe stecken in einem Verweis — für die Tastatur eine Falle`);
+}
+if (merkmale.kartenMitVerweis !== merkmale.artikelAufGruppenseite) {
+  probleme.push('Nicht jede Kachel führt zur Artikelseite — der Umbau hat einen Verweis verloren');
+}
+if (merkmale.dreiPositionen > HOECHSTENS_SCHRITTE + 2) {
+  probleme.push(`Drei Positionen kosten ${merkmale.dreiPositionen} Schritte`);
+}
 
 if (probleme.length) {
   console.log('');
@@ -203,7 +229,7 @@ if (probleme.length) {
   console.log('\nEin Weg wird nicht kürzer, indem man ihn beschreibt. Nachsehen, was dazugekommen ist.');
   process.exitCode = 1;
 } else {
-  console.log('\nFünf Schritte, kein Textfeld, ein fertiger Text am Ende.');
-  console.log('Was hier fehlt, ist der Legen-Knopf auf der Gruppenseite: Drei Positionen');
-  console.log('kosten heute neun Schritte statt fünf — siehe fuenf-schritte-bis-zur-anfrage.md.');
+  console.log('\nVier Schritte, kein Textfeld, ein fertiger Text am Ende.');
+  console.log('Der Legen-Knopf sitzt seit dem 02.09. auf der Gruppenseite: Jede weitere');
+  console.log('Position kostet einen Klick statt vier — siehe legen-knopf-auf-der-landeseite.md.');
 }

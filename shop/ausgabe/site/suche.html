@@ -171,8 +171,20 @@ padding:.6rem 1rem;z-index:10;text-decoration:none}
 .gebindehinweis{font-size:.9rem;color:var(--gedaempft);margin:.5rem 0 1.2rem}
 .karte .ab{display:block;font-size:.82rem;color:var(--gedaempft);margin-top:.15rem}
 
-.karte{background:var(--flaeche);padding:.9rem 1rem;display:flex;flex-direction:column;gap:.4rem;text-decoration:none;color:inherit}
+/* Die Karte war bis zum 02.09. ein Verweiselement um die ganze Kachel. Ein Knopf darin
+   wäre ein Bedienelement in einem Bedienelement gewesen — im Browser eine
+   Fehlkonstruktion und für die Tastatur eine Falle. Jetzt trägt die Karte einen
+   Kopfbereich, der verlinkt, und darunter Preis und Legen-Zeile. Der
+   Fokusring gehört seither dem Kopf, nicht der Kachel. */
+.karte{background:var(--flaeche);padding:.9rem 1rem;display:flex;flex-direction:column;gap:.4rem;color:inherit}
 .karte:hover{background:var(--flaeche-2)}
+.karte .kopf{display:flex;flex-direction:column;gap:.4rem;text-decoration:none;color:inherit}
+.karte .kopf:hover .t{text-decoration:underline}
+/* Die Legen-Zeile sitzt am Fuß der Kachel und drängt sich nicht vor den Preis:
+   Wer vergleicht, liest zuerst die Zahl. */
+.legen-klein{margin:.5rem 0 0;gap:.5rem;align-items:center}
+.legen-klein input{width:4.6rem;padding:.4rem}
+.legen-klein .knopf{padding:.5rem .7rem;font-size:.85rem;flex:1 1 auto}
 .karte .nr{font-family:var(--zahl);font-size:.68rem;color:var(--gedaempft)}
 .karte .t{font-weight:600;line-height:1.3}
 .karte .preis{margin-top:auto;font-family:var(--schmal);font-size:1.55rem;font-weight:600;font-variant-numeric:tabular-nums}
@@ -216,6 +228,7 @@ footer a{color:var(--gedaempft)}
 .kopfleiste nav a{padding:.15rem .7rem}
 #suchfeld{min-height:44px}
 .filterleiste select,.kasse select,.kz-menge,.legen input{min-height:44px}
+.legen-klein input,.legen-klein .knopf{min-height:44px}
 .zw{min-height:44px}
 </style>
 </head>

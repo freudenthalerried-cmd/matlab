@@ -170,8 +170,20 @@ padding:.6rem 1rem;z-index:10;text-decoration:none}
 .gebindehinweis{font-size:.9rem;color:var(--gedaempft);margin:.5rem 0 1.2rem}
 .karte .ab{display:block;font-size:.82rem;color:var(--gedaempft);margin-top:.15rem}
 
-.karte{background:var(--flaeche);padding:.9rem 1rem;display:flex;flex-direction:column;gap:.4rem;text-decoration:none;color:inherit}
+/* Die Karte war bis zum 02.09. ein Verweiselement um die ganze Kachel. Ein Knopf darin
+   wäre ein Bedienelement in einem Bedienelement gewesen — im Browser eine
+   Fehlkonstruktion und für die Tastatur eine Falle. Jetzt trägt die Karte einen
+   Kopfbereich, der verlinkt, und darunter Preis und Legen-Zeile. Der
+   Fokusring gehört seither dem Kopf, nicht der Kachel. */
+.karte{background:var(--flaeche);padding:.9rem 1rem;display:flex;flex-direction:column;gap:.4rem;color:inherit}
 .karte:hover{background:var(--flaeche-2)}
+.karte .kopf{display:flex;flex-direction:column;gap:.4rem;text-decoration:none;color:inherit}
+.karte .kopf:hover .t{text-decoration:underline}
+/* Die Legen-Zeile sitzt am Fuß der Kachel und drängt sich nicht vor den Preis:
+   Wer vergleicht, liest zuerst die Zahl. */
+.legen-klein{margin:.5rem 0 0;gap:.5rem;align-items:center}
+.legen-klein input{width:4.6rem;padding:.4rem}
+.legen-klein .knopf{padding:.5rem .7rem;font-size:.85rem;flex:1 1 auto}
 .karte .nr{font-family:var(--zahl);font-size:.68rem;color:var(--gedaempft)}
 .karte .t{font-weight:600;line-height:1.3}
 .karte .preis{margin-top:auto;font-family:var(--schmal);font-size:1.55rem;font-weight:600;font-variant-numeric:tabular-nums}
@@ -215,6 +227,7 @@ footer a{color:var(--gedaempft)}
 .kopfleiste nav a{padding:.15rem .7rem}
 #suchfeld{min-height:44px}
 .filterleiste select,.kasse select,.kz-menge,.legen input{min-height:44px}
+.legen-klein input,.legen-klein .knopf{min-height:44px}
 .zw{min-height:44px}
 </style>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Product","@id":"https://bauversand.com/artikel/POS-29023.html","sku":"POS-29023","name":"PAE-Folie T 100 2 50 m 100 m2","category":"Zubehör","offers":{"@type":"Offer","priceCurrency":"EUR","price":"17.12","availability":"https://schema.org/PreOrder","itemCondition":"https://schema.org/NewCondition","url":"https://bauversand.com/artikel/POS-29023.html","priceSpecification":{"@type":"UnitPriceSpecification","price":"17.12","priceCurrency":"EUR","valueAddedTaxIncluded":false,"referenceQuantity":{"@type":"QuantitativeValue","value":1,"unitCode":"C62"}},"areaServed":[{"@type":"AdministrativeArea","name":"Perg","address":{"@type":"PostalAddress","addressRegion":"Perg","addressCountry":"AT"}},{"@type":"AdministrativeArea","name":"Urfahr-Umgebung","address":{"@type":"PostalAddress","addressRegion":"Urfahr-Umgebung","addressCountry":"AT"}},{"@type":"AdministrativeArea","name":"Freistadt","address":{"@type":"PostalAddress","addressRegion":"Freistadt","addressCountry":"AT"}},{"@type":"AdministrativeArea","name":"Linz-Land","address":{"@type":"PostalAddress","addressRegion":"Linz-Land","addressCountry":"AT"}},{"@type":"AdministrativeArea","name":"Linz","address":{"@type":"PostalAddress","addressRegion":"Linz","addressCountry":"AT"}}],"seller":{"@type":"Organization","name":"Freudenthaler Bau GmbH"}},"description":"PAE-Folie T 100 2 50 m 100 m2. Warengruppe Zubehör. Verkaufseinheit Rolle. Preis netto für Unternehmer, Umsatzsteuer wird getrennt ausgewiesen."}</script>
@@ -291,156 +304,252 @@ der Systemliste
 <a href="../system/kanal-dn100.html">Grundleitung DN 100 — die Liste</a>,
 weil sie zum selben Bauteil gehören. Was dort zusätzlich auf der Liste steht und wir <em>nicht</em> führen,
 sagt die Liste ebenfalls.</p>
-<div class="raster"><a class="karte" href="../artikel/POS-10095.html">
-  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Rohr mit Muffe"
+<div class="raster"><div class="karte">
+  <a class="kopf" href="../artikel/POS-10095.html">
+    <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Rohr mit Muffe"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><rect x="26" y="34" width="70" height="26" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <ellipse cx="26" cy="47" rx="7" ry="13" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <rect x="88" y="30" width="14" height="34" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <ellipse cx="102" cy="47" rx="6" ry="17" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <path d="M26 68 L102 68 M26 65 L26 71 M102 65 L102 71" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">NW 100</text></svg></span>
-  <span class="nr">10095</span>
-  <span class="t">PVC Kanalrohr NW 100 1 m</span>
+    <span class="nr">10095</span>
+    <span class="t">PVC Kanalrohr NW 100 1 m</span>
+  </a>
   <span class="marker vorteil">81 % unter Liste</span>
   <span class="preis">10,81&nbsp;€ <span class="eh">je Stück, netto</span></span>
   
-</a><a class="karte" href="../artikel/POS-10115.html">
-  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Rohrbogen im angegebenen Winkel"
+  <div class="legen legen-klein">
+    <input type="number" min="1" max="999" value="1" inputmode="decimal"
+      aria-label="Menge in Stück für PVC Kanalrohr NW 100 1 m">
+    <button class="knopf" type="button" data-legen="POS-10095"
+      aria-label="PVC Kanalrohr NW 100 1 m in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div><div class="karte">
+  <a class="kopf" href="../artikel/POS-10115.html">
+    <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Rohrbogen im angegebenen Winkel"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="M14 62 L40 62" stroke="var(--linie-stark)" stroke-width="14" fill="none" stroke-linecap="butt"/>
 <path d="M40 62 L76.4 41.0" stroke="var(--linie-stark)" stroke-width="14" fill="none"/>
 <path d="M14 62 L40 62 L76.4 41.0" stroke="var(--ocker)" fill="none" stroke-width="1.5" stroke-dasharray="3 3" stroke-width="1"/>
 <path d="M58 62 A18 18 0 0 0 55.6 53.0" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">30°</text></svg></span>
-  <span class="nr">10115</span>
-  <span class="t">PVC Kanalbogen NW 100 30 grad</span>
+    <span class="nr">10115</span>
+    <span class="t">PVC Kanalbogen NW 100 30 grad</span>
+  </a>
   <span class="marker vorteil">83 % unter Liste</span>
   <span class="preis">2,73&nbsp;€ <span class="eh">je Stück, netto</span></span>
   
-</a><a class="karte" href="../artikel/POS-10116.html">
-  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Rohrbogen im angegebenen Winkel"
+  <div class="legen legen-klein">
+    <input type="number" min="1" max="999" value="1" inputmode="decimal"
+      aria-label="Menge in Stück für PVC Kanalbogen NW 100 30 grad">
+    <button class="knopf" type="button" data-legen="POS-10115"
+      aria-label="PVC Kanalbogen NW 100 30 grad in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div><div class="karte">
+  <a class="kopf" href="../artikel/POS-10116.html">
+    <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Rohrbogen im angegebenen Winkel"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="M14 62 L40 62" stroke="var(--linie-stark)" stroke-width="14" fill="none" stroke-linecap="butt"/>
 <path d="M40 62 L69.7 32.3" stroke="var(--linie-stark)" stroke-width="14" fill="none"/>
 <path d="M14 62 L40 62 L69.7 32.3" stroke="var(--ocker)" fill="none" stroke-width="1.5" stroke-dasharray="3 3" stroke-width="1"/>
 <path d="M58 62 A18 18 0 0 0 52.7 49.3" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">45°</text></svg></span>
-  <span class="nr">10116</span>
-  <span class="t">PVC Kanalbogen NW 100 45 grad</span>
+    <span class="nr">10116</span>
+    <span class="t">PVC Kanalbogen NW 100 45 grad</span>
+  </a>
   <span class="marker vorteil">84 % unter Liste</span>
   <span class="preis">2,72&nbsp;€ <span class="eh">je Stück, netto</span></span>
   
-</a><a class="karte" href="../artikel/POS-10134.html">
-  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Abzweiger"
+  <div class="legen legen-klein">
+    <input type="number" min="1" max="999" value="1" inputmode="decimal"
+      aria-label="Menge in Stück für PVC Kanalbogen NW 100 45 grad">
+    <button class="knopf" type="button" data-legen="POS-10116"
+      aria-label="PVC Kanalbogen NW 100 45 grad in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div><div class="karte">
+  <a class="kopf" href="../artikel/POS-10134.html">
+    <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Abzweiger"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="M12 62 L100 62" stroke="var(--linie-stark)" stroke-width="14"/>
 <path d="M52 62 L84 30" stroke="var(--linie-stark)" stroke-width="12"/>
 <path d="M62 62 A14 14 0 0 0 61.9 52.1" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">45°</text></svg></span>
-  <span class="nr">10134</span>
-  <span class="t">PVC Kanalabzweiger 100 100 45 grad</span>
+    <span class="nr">10134</span>
+    <span class="t">PVC Kanalabzweiger 100 100 45 grad</span>
+  </a>
   <span class="marker vorteil">83 % unter Liste</span>
   <span class="preis">5,83&nbsp;€ <span class="eh">je Stück, netto</span></span>
   
-</a><a class="karte" href="../artikel/POS-11133.html">
-  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Schachtring in Draufsicht"
+  <div class="legen legen-klein">
+    <input type="number" min="1" max="999" value="1" inputmode="decimal"
+      aria-label="Menge in Stück für PVC Kanalabzweiger 100 100 45 grad">
+    <button class="knopf" type="button" data-legen="POS-10134"
+      aria-label="PVC Kanalabzweiger 100 100 45 grad in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div><div class="karte">
+  <a class="kopf" href="../artikel/POS-11133.html">
+    <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Schachtring in Draufsicht"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><ellipse cx="60" cy="46" rx="44" ry="26" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <ellipse cx="60" cy="46" rx="34" ry="18" fill="var(--grund)" stroke="var(--linie-stark)" stroke-width="1.5"/>
 <path d="M16 46 L26 46" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">⌀ 800</text></svg></span>
-  <span class="nr">11133</span>
-  <span class="t">Schachtring 800 300 80 mm</span>
+    <span class="nr">11133</span>
+    <span class="t">Schachtring 800 300 80 mm</span>
+  </a>
   <span class="marker vorteil">46 % unter Liste</span>
   <span class="preis">74,67&nbsp;€ <span class="eh">je Stück, netto</span></span>
   
-</a><a class="karte" href="../artikel/POS-21382.html">
-  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Rollenware"
+  <div class="legen legen-klein">
+    <input type="number" min="1" max="999" value="1" inputmode="decimal"
+      aria-label="Menge in Stück für Schachtring 800 300 80 mm">
+    <button class="knopf" type="button" data-legen="POS-11133"
+      aria-label="Schachtring 800 300 80 mm in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div><div class="karte">
+  <a class="kopf" href="../artikel/POS-21382.html">
+    <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Rollenware"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><rect x="30" y="26" width="60" height="40" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <ellipse cx="30" cy="46" rx="9" ry="20" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <ellipse cx="30" cy="46" rx="3" ry="7" fill="var(--grund)" stroke="var(--linie-stark)" stroke-width="1.2"/>
 <path d="M90 30 L104 36 L104 72 L90 66 Z" fill="var(--ocker-weich)" stroke="var(--ocker)" stroke-width="1.2"/>
 <path d="M30 72 L90 72 M30 69 L30 75 M90 69 L90 75" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">20 × 1,5 m</text></svg></span>
-  <span class="nr">21382</span>
-  <span class="t">Grundmauerschutz 20 1,5 m</span>
+    <span class="nr">21382</span>
+    <span class="t">Grundmauerschutz 20 1,5 m</span>
+  </a>
   <span class="marker vorteil">69 % unter Liste</span>
   <span class="preis">1,36&nbsp;€ <span class="eh">je m², netto</span></span>
   
-</a></div>
+  <div class="legen legen-klein">
+    <input type="number" min="1" max="999" value="1" inputmode="decimal"
+      aria-label="Menge in m² für Grundmauerschutz 20 1,5 m">
+    <button class="knopf" type="button" data-legen="POS-21382"
+      aria-label="Grundmauerschutz 20 1,5 m in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div></div>
 <h2>Weitere Artikel aus Zubehör</h2>
 <p>Dasselbe Regal, nicht dasselbe Bauteil: Diese Artikel gehören zur Gruppe
 Zubehör. Ob einer davon der richtige ist, entscheidet die Planung.</p>
-<div class="raster"><a class="karte" href="../artikel/POS-12294.html">
-  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Werkzeug"
+<div class="raster"><div class="karte">
+  <a class="kopf" href="../artikel/POS-12294.html">
+    <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Werkzeug"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="M18 40 L84 40 L84 54 L18 54 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <path d="M84 44 L104 44 L104 50 L84 50 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <path d="M40 54 L36 76 L48 76 L46 54" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <path d="M58 54 L66 72" stroke="var(--linie-stark)" fill="none" stroke-width="1.5"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">Werkzeug</text></svg></span>
-  <span class="nr">12294</span>
-  <span class="t">Prima Dosierpistole Metall Lite</span>
+    <span class="nr">12294</span>
+    <span class="t">Prima Dosierpistole Metall Lite</span>
+  </a>
   <span class="marker beipack">Beipack</span>
   <span class="preis">26,88&nbsp;€ <span class="eh">je Stück, netto</span></span>
   
-</a><a class="karte" href="../artikel/POS-53215.html">
-  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Dübel mit Teller"
+  <div class="legen legen-klein">
+    <input type="number" min="1" max="999" value="1" inputmode="decimal"
+      aria-label="Menge in Stück für Prima Dosierpistole Metall Lite">
+    <button class="knopf" type="button" data-legen="POS-12294"
+      aria-label="Prima Dosierpistole Metall Lite in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div><div class="karte">
+  <a class="kopf" href="../artikel/POS-53215.html">
+    <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Dübel mit Teller"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><rect x="20" y="40" width="14" height="14" rx="2" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <rect x="34" y="43" width="56" height="8" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <path d="M90 47 L104 43 L104 51 Z" fill="var(--ocker-weich)" stroke="var(--ocker)" stroke-width="1.2"/>
 <path d="M44 43 L44 51 M54 43 L54 51 M64 43 L64 51 M74 43 L74 51" stroke="var(--linie-stark)" stroke-width="1" opacity=".6"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">182 mm</text></svg></span>
-  <span class="nr">53215</span>
-  <span class="t">Rahmenschraube Zylinderkopf vz 7,5x182 mm lose</span>
+    <span class="nr">53215</span>
+    <span class="t">Rahmenschraube Zylinderkopf vz 7,5x182 mm lose</span>
+  </a>
   <span class="marker beipack">Beipack</span>
   <span class="preis">0,67&nbsp;€ <span class="eh">je Stück, netto</span></span>
   
-</a><a class="karte" href="../artikel/POS-29691.html">
-  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Kartusche"
+  <div class="legen legen-klein">
+    <input type="number" min="1" max="999" value="1" inputmode="decimal"
+      aria-label="Menge in Stück für Rahmenschraube Zylinderkopf vz 7,5x182 mm lose">
+    <button class="knopf" type="button" data-legen="POS-53215"
+      aria-label="Rahmenschraube Zylinderkopf vz 7,5x182 mm lose in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div><div class="karte">
+  <a class="kopf" href="../artikel/POS-29691.html">
+    <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Kartusche"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><rect x="42" y="30" width="36" height="46" rx="3" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <rect x="52" y="18" width="16" height="12" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <path d="M56 18 L56 8 L64 8 L64 18" stroke="var(--linie-stark)" fill="none" stroke-width="1.5"/>
 <rect x="46" y="46" width="28" height="12" rx="1" fill="var(--ocker-weich)" stroke="var(--ocker)" stroke-width="1.2"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">750 ml</text></svg></span>
-  <span class="nr">29691</span>
-  <span class="t">Soudal Perimeterkleber B3 750 ml</span>
+    <span class="nr">29691</span>
+    <span class="t">Soudal Perimeterkleber B3 750 ml</span>
+  </a>
   <span class="marker vorteil">20 % unter Liste</span>
   <span class="preis">7,60&nbsp;€ <span class="eh">je Dose, netto</span></span>
   
-</a><a class="karte" href="../artikel/POS-51987.html">
-  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Kartusche"
+  <div class="legen legen-klein">
+    <input type="number" min="1" max="999" value="1" inputmode="decimal"
+      aria-label="Menge in Dose für Soudal Perimeterkleber B3 750 ml">
+    <button class="knopf" type="button" data-legen="POS-29691"
+      aria-label="Soudal Perimeterkleber B3 750 ml in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div><div class="karte">
+  <a class="kopf" href="../artikel/POS-51987.html">
+    <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Kartusche"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><rect x="42" y="30" width="36" height="46" rx="3" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <rect x="52" y="18" width="16" height="12" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <path d="M56 18 L56 8 L64 8 L64 18" stroke="var(--linie-stark)" fill="none" stroke-width="1.5"/>
 <rect x="46" y="46" width="28" height="12" rx="1" fill="var(--ocker-weich)" stroke="var(--ocker)" stroke-width="1.2"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">750 ml</text></svg></span>
-  <span class="nr">51987</span>
-  <span class="t">Soudal Profi-Pistolenschaum B3 750 ml</span>
+    <span class="nr">51987</span>
+    <span class="t">Soudal Profi-Pistolenschaum B3 750 ml</span>
+  </a>
   <span class="marker vorteil">13 % unter Liste</span>
   <span class="preis">6,51&nbsp;€ <span class="eh">je Dose, netto</span></span>
   
-</a><a class="karte" href="../artikel/POS-31631.html">
-  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Kartusche"
+  <div class="legen legen-klein">
+    <input type="number" min="1" max="999" value="1" inputmode="decimal"
+      aria-label="Menge in Dose für Soudal Profi-Pistolenschaum B3 750 ml">
+    <button class="knopf" type="button" data-legen="POS-51987"
+      aria-label="Soudal Profi-Pistolenschaum B3 750 ml in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div><div class="karte">
+  <a class="kopf" href="../artikel/POS-31631.html">
+    <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Kartusche"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><rect x="42" y="30" width="36" height="46" rx="3" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <rect x="52" y="18" width="16" height="12" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <path d="M56 18 L56 8 L64 8 L64 18" stroke="var(--linie-stark)" fill="none" stroke-width="1.5"/>
 <rect x="46" y="46" width="28" height="12" rx="1" fill="var(--ocker-weich)" stroke="var(--ocker)" stroke-width="1.2"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">750 ml</text></svg></span>
-  <span class="nr">31631</span>
-  <span class="t">Soudal Soudabond Easy B1 Pist. 750 ml</span>
+    <span class="nr">31631</span>
+    <span class="t">Soudal Soudabond Easy B1 Pist. 750 ml</span>
+  </a>
   <span class="marker beipack">Beipack</span>
   <span class="preis">12,60&nbsp;€ <span class="eh">je Stück, netto</span></span>
   
-</a><a class="karte" href="../artikel/POS-31265.html">
-  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Rollenware"
+  <div class="legen legen-klein">
+    <input type="number" min="1" max="999" value="1" inputmode="decimal"
+      aria-label="Menge in Stück für Soudal Soudabond Easy B1 Pist. 750 ml">
+    <button class="knopf" type="button" data-legen="POS-31631"
+      aria-label="Soudal Soudabond Easy B1 Pist. 750 ml in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div><div class="karte">
+  <a class="kopf" href="../artikel/POS-31265.html">
+    <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Rollenware"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><rect x="30" y="26" width="60" height="40" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <ellipse cx="30" cy="46" rx="9" ry="20" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <ellipse cx="30" cy="46" rx="3" ry="7" fill="var(--grund)" stroke="var(--linie-stark)" stroke-width="1.2"/>
 <path d="M90 30 L104 36 L104 72 L90 66 Z" fill="var(--ocker-weich)" stroke="var(--ocker)" stroke-width="1.2"/>
 <path d="M30 72 L90 72 M30 69 L30 75 M90 69 L90 75" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">Rollenware</text></svg></span>
-  <span class="nr">31265</span>
-  <span class="t">SunCore Pro Abdeckklebeband 48 mm x 50 m bis 100 °C, gelb</span>
+    <span class="nr">31265</span>
+    <span class="t">SunCore Pro Abdeckklebeband 48 mm x 50 m bis 100 °C, gelb</span>
+  </a>
   <span class="marker vorteil">19 % unter Liste</span>
   <span class="preis">8,33&nbsp;€ <span class="eh">je Stück, netto</span></span>
   
-</a></div>
+  <div class="legen legen-klein">
+    <input type="number" min="1" max="999" value="1" inputmode="decimal"
+      aria-label="Menge in Stück für SunCore Pro Abdeckklebeband 48 mm x 50 m bis 100 °C, gelb">
+    <button class="knopf" type="button" data-legen="POS-31265"
+      aria-label="SunCore Pro Abdeckklebeband 48 mm x 50 m bis 100 °C, gelb in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div></div>
 </main>
 <footer>
   <p><strong>Liefergebiet:</strong> Perg, Urfahr-Umgebung, Freistadt, Linz-Land und Linz — regional, nicht österreichweit.

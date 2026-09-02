@@ -83,9 +83,18 @@ const gruppenOrdner = join(SITE, 'gruppe');
 if (existsSync(gruppenOrdner)) {
   for (const datei of readdirSync(gruppenOrdner).filter((d) => d.endsWith('.html'))) {
     const html = readFileSync(join(gruppenOrdner, datei), 'utf8');
-    for (const block of html.split('<a class="karte"').slice(1)) {
+    // **Nachgezogen am 02.09.** Hier stand `'<a class="karte"'`. Die Kachel ist
+    // seit dem Umbau ein `div` mit einem Verweis darin — die Trennung fand
+    // nichts mehr, und der Prüfer meldete für alle 46 Artikel „die
+    // Artikelkarte nennt die Mindestmenge nicht". Ein Anker im HTML ist eine
+    // Verabredung mit dem Bauwerkzeug, und wer das Bauwerkzeug ändert, ändert
+    // die Verabredung mit.
+    for (const block of html.split('<div class="karte"').slice(1)) {
       const sku = block.match(/artikel\/([A-Za-z0-9-]+)\.html/)?.[1];
-      if (sku && !karten.has(sku)) karten.set(sku, block.slice(0, block.indexOf('</a>') + 4));
+      // Bis zum Ende der Kachel: Die schließende Marke der Karte ist jetzt
+      // `</div>` — genommen wird der Block bis zur nächsten Karte bzw. bis zum
+      // Ende, was die Legen-Zeile einschließt und den Nachbarn nicht.
+      if (sku && !karten.has(sku)) karten.set(sku, block);
     }
   }
 }

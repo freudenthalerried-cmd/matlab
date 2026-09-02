@@ -405,8 +405,20 @@ padding:.6rem 1rem;z-index:10;text-decoration:none}
 .gebindehinweis{font-size:.9rem;color:var(--gedaempft);margin:.5rem 0 1.2rem}
 .karte .ab{display:block;font-size:.82rem;color:var(--gedaempft);margin-top:.15rem}
 
-.karte{background:var(--flaeche);padding:.9rem 1rem;display:flex;flex-direction:column;gap:.4rem;text-decoration:none;color:inherit}
+/* Die Karte war bis zum 02.09. ein Verweiselement um die ganze Kachel. Ein Knopf darin
+   wäre ein Bedienelement in einem Bedienelement gewesen — im Browser eine
+   Fehlkonstruktion und für die Tastatur eine Falle. Jetzt trägt die Karte einen
+   Kopfbereich, der verlinkt, und darunter Preis und Legen-Zeile. Der
+   Fokusring gehört seither dem Kopf, nicht der Kachel. */
+.karte{background:var(--flaeche);padding:.9rem 1rem;display:flex;flex-direction:column;gap:.4rem;color:inherit}
 .karte:hover{background:var(--flaeche-2)}
+.karte .kopf{display:flex;flex-direction:column;gap:.4rem;text-decoration:none;color:inherit}
+.karte .kopf:hover .t{text-decoration:underline}
+/* Die Legen-Zeile sitzt am Fuß der Kachel und drängt sich nicht vor den Preis:
+   Wer vergleicht, liest zuerst die Zahl. */
+.legen-klein{margin:.5rem 0 0;gap:.5rem;align-items:center}
+.legen-klein input{width:4.6rem;padding:.4rem}
+.legen-klein .knopf{padding:.5rem .7rem;font-size:.85rem;flex:1 1 auto}
 .karte .nr{font-family:var(--zahl);font-size:.68rem;color:var(--gedaempft)}
 .karte .t{font-weight:600;line-height:1.3}
 .karte .preis{margin-top:auto;font-family:var(--schmal);font-size:1.55rem;font-weight:600;font-variant-numeric:tabular-nums}
@@ -450,6 +462,7 @@ footer a{color:var(--gedaempft)}
 .kopfleiste nav a{padding:.15rem .7rem}
 #suchfeld{min-height:44px}
 .filterleiste select,.kasse select,.kz-menge,.legen input{min-height:44px}
+.legen-klein input,.legen-klein .knopf{min-height:44px}
 .zw{min-height:44px}
 `;
 }
@@ -518,23 +531,37 @@ function artikelKarte(a, befund, verweis) {
   const marker = [];
   if (abstand !== null && abstand >= 5) marker.push(`<span class="marker vorteil">${abstand} % unter Liste</span>`);
   if (beipack) marker.push('<span class="marker beipack">Beipack</span>');
-  return `<a class="karte" href="${verweis(`artikel/${a.sku}`)}">
-  <span class="bild">${artikelBild(a)}</span>
-  <span class="nr">${esc(a.lieferantenArtikelnummer)}</span>
-  <span class="t">${esc(a.bezeichnung)}</span>
+  const einheit = esc(EINHEITEN[a.einheit] ?? a.einheit);
+  const schritt = mengenschritt(a);
+  // Der Punkt bleibt im Attribut — `step="0,75"` ist für den Browser kein
+  // Wert; im sichtbaren Text steht das Komma. Dieselbe Trennung wie auf der
+  // Artikelseite.
+  const wert = schritt === null ? '1' : String(schritt);
+  return `<div class="karte">
+  <a class="kopf" href="${verweis(`artikel/${a.sku}`)}">
+    <span class="bild">${artikelBild(a)}</span>
+    <span class="nr">${esc(a.lieferantenArtikelnummer)}</span>
+    <span class="t">${esc(a.bezeichnung)}</span>
+  </a>
   ${marker.join('')}
-  <span class="preis">${euro(a.vkNetto)}&nbsp;€ <span class="eh">je ${esc(EINHEITEN[a.einheit] ?? a.einheit)}, netto</span></span>
-  ${(() => {
+  <span class="preis">${euro(a.vkNetto)}&nbsp;€ <span class="eh">je ${einheit}, netto</span></span>
+  ${
     // Die Karte ist oft das Einzige, was ein Kunde von einem Artikel sieht.
     // „5,23 € je m²" ohne den Zusatz, dass es die Platte nur zu 0,75 m² gibt,
     // ist dieselbe halbe Auskunft wie im Feed und in llms.txt.
-    const schritt = mengenschritt(a);
-    return schritt
-      ? `<span class="ab">ab ${esc(String(schritt).replace('.', ','))} ${
-          esc(EINHEITEN[a.einheit] ?? a.einheit)} · ${euro(a.vkNetto * schritt)}&nbsp;€</span>`
-      : '';
-  })()}
-</a>`;
+    schritt
+      ? `<span class="ab">ab ${esc(String(schritt).replace('.', ','))} ${einheit} · ${
+          euro(a.vkNetto * schritt)}&nbsp;€</span>`
+      : ''
+  }
+  <div class="legen legen-klein">
+    <input type="number" min="${wert}" max="999" value="${wert}"${
+      schritt ? ` step="${wert}"` : ''} inputmode="decimal"
+      aria-label="Menge in ${einheit} für ${esc(a.bezeichnung)}">
+    <button class="knopf" type="button" data-legen="${esc(a.sku)}"
+      aria-label="${esc(a.bezeichnung)} in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div>`;
 }
 
 /**

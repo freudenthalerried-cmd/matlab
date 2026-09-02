@@ -4,7 +4,7 @@ import { readFileSync, readdirSync, existsSync, mkdtempSync, writeFileSync, rmSy
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { join, relative } from 'node:path';
+import { join, relative, basename } from 'node:path';
 import { loeseVerweis, loeseVerwandt, marke, mitverbaut, HERSTELLER, positionsliste, sprungziel,
   betriebshinweis, kanonisch } from '../bin/website.mjs';
 import { lesKopf } from '../src/markdown.js';
@@ -1406,4 +1406,45 @@ test('Die Startseite kanonisiert auf die Wurzel, nicht auf index.html', () => {
   // Ohne Basis wird nichts erfunden — dann trägt die Seite gar keine.
   assert.equal(kanonisch('', 'index'), null);
   assert.equal(kanonisch(null, 'index'), null);
+});
+
+
+/* ------------------------------------------------------------------ *
+ * Keine Kennung zweimal auf einer Seite
+ *
+ * Seit dem 02.09. trägt jede Artikelkachel ein Mengenfeld mit der Kennung
+ * `menge-<SKU>`. Auf der Artikelseite steht daneben das eigene Mengenfeld
+ * desselben Artikels — stünde der Artikel auch unter seinen eigenen
+ * Verwandten, gäbe es die Kennung zweimal, und `getElementById` liefert dann
+ * das erste. Der Knopf läge die Menge des falschen Feldes in den Korb.
+ *
+ * Heute kommt das nicht vor. Die Zusicherung steht hier, weil „kommt heute
+ * nicht vor" keine Eigenschaft des Bauwerkzeugs ist, sondern eine Beobachtung.
+ * ------------------------------------------------------------------ */
+
+test('keine gebaute Seite trägt eine Kennung zweimal', () => {
+  const site = pfad('../ausgabe/site');
+  if (!existsSync(site)) return; // ohne Bau keine Aussage — und keine falsche
+
+  const dateien = [];
+  const sammle = (ordner) => {
+    for (const e of readdirSync(ordner, { withFileTypes: true })) {
+      const p = join(ordner, e.name);
+      if (e.isDirectory()) sammle(p);
+      else if (e.name.endsWith('.html')) dateien.push(p);
+    }
+  };
+  sammle(site);
+  assert.ok(dateien.length >= 40, `nur ${dateien.length} Seiten — die Schleife prüfte zu wenig`);
+
+  const doppelt = [];
+  for (const datei of dateien) {
+    const kennungen = [...readFileSync(datei, 'utf8').matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]);
+    const gesehen = new Set();
+    for (const k of kennungen) {
+      if (gesehen.has(k)) doppelt.push(`${basename(datei)}: ${k}`);
+      gesehen.add(k);
+    }
+  }
+  assert.deepEqual(doppelt, []);
 });

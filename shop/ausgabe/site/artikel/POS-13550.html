@@ -170,8 +170,20 @@ padding:.6rem 1rem;z-index:10;text-decoration:none}
 .gebindehinweis{font-size:.9rem;color:var(--gedaempft);margin:.5rem 0 1.2rem}
 .karte .ab{display:block;font-size:.82rem;color:var(--gedaempft);margin-top:.15rem}
 
-.karte{background:var(--flaeche);padding:.9rem 1rem;display:flex;flex-direction:column;gap:.4rem;text-decoration:none;color:inherit}
+/* Die Karte war bis zum 02.09. ein Verweiselement um die ganze Kachel. Ein Knopf darin
+   wäre ein Bedienelement in einem Bedienelement gewesen — im Browser eine
+   Fehlkonstruktion und für die Tastatur eine Falle. Jetzt trägt die Karte einen
+   Kopfbereich, der verlinkt, und darunter Preis und Legen-Zeile. Der
+   Fokusring gehört seither dem Kopf, nicht der Kachel. */
+.karte{background:var(--flaeche);padding:.9rem 1rem;display:flex;flex-direction:column;gap:.4rem;color:inherit}
 .karte:hover{background:var(--flaeche-2)}
+.karte .kopf{display:flex;flex-direction:column;gap:.4rem;text-decoration:none;color:inherit}
+.karte .kopf:hover .t{text-decoration:underline}
+/* Die Legen-Zeile sitzt am Fuß der Kachel und drängt sich nicht vor den Preis:
+   Wer vergleicht, liest zuerst die Zahl. */
+.legen-klein{margin:.5rem 0 0;gap:.5rem;align-items:center}
+.legen-klein input{width:4.6rem;padding:.4rem}
+.legen-klein .knopf{padding:.5rem .7rem;font-size:.85rem;flex:1 1 auto}
 .karte .nr{font-family:var(--zahl);font-size:.68rem;color:var(--gedaempft)}
 .karte .t{font-weight:600;line-height:1.3}
 .karte .preis{margin-top:auto;font-family:var(--schmal);font-size:1.55rem;font-weight:600;font-variant-numeric:tabular-nums}
@@ -215,6 +227,7 @@ footer a{color:var(--gedaempft)}
 .kopfleiste nav a{padding:.15rem .7rem}
 #suchfeld{min-height:44px}
 .filterleiste select,.kasse select,.kz-menge,.legen input{min-height:44px}
+.legen-klein input,.legen-klein .knopf{min-height:44px}
 .zw{min-height:44px}
 </style>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Product","@id":"https://bauversand.com/artikel/POS-13550.html","sku":"POS-13550","name":"Baumit ThermoMörtel 50 40 l","category":"Mörtel","offers":{"@type":"Offer","priceCurrency":"EUR","price":"10.07","availability":"https://schema.org/PreOrder","itemCondition":"https://schema.org/NewCondition","url":"https://bauversand.com/artikel/POS-13550.html","priceSpecification":{"@type":"UnitPriceSpecification","price":"10.07","priceCurrency":"EUR","valueAddedTaxIncluded":false,"referenceQuantity":{"@type":"QuantitativeValue","value":1,"unitCode":"C62"}},"areaServed":[{"@type":"AdministrativeArea","name":"Perg","address":{"@type":"PostalAddress","addressRegion":"Perg","addressCountry":"AT"}},{"@type":"AdministrativeArea","name":"Urfahr-Umgebung","address":{"@type":"PostalAddress","addressRegion":"Urfahr-Umgebung","addressCountry":"AT"}},{"@type":"AdministrativeArea","name":"Freistadt","address":{"@type":"PostalAddress","addressRegion":"Freistadt","addressCountry":"AT"}},{"@type":"AdministrativeArea","name":"Linz-Land","address":{"@type":"PostalAddress","addressRegion":"Linz-Land","addressCountry":"AT"}},{"@type":"AdministrativeArea","name":"Linz","address":{"@type":"PostalAddress","addressRegion":"Linz","addressCountry":"AT"}}],"seller":{"@type":"Organization","name":"Freudenthaler Bau GmbH"}},"brand":{"@type":"Brand","name":"Baumit"},"description":"Baumit ThermoMörtel 50 40 l. Warengruppe Mörtel. Verkaufseinheit Sack. Preis netto für Unternehmer, Umsatzsteuer wird getrennt ausgewiesen."}</script>
@@ -284,29 +297,45 @@ oder eine Palette — das ist der ganze Grund, warum es hier kein „frei Haus" 
 <h2>Weitere Artikel aus Mörtel</h2>
 <p>Dasselbe Regal, nicht dasselbe Bauteil: Diese Artikel gehören zur Gruppe
 Mörtel. Ob einer davon der richtige ist, entscheidet die Planung.</p>
-<div class="raster"><a class="karte" href="../artikel/POS-29108.html">
-  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Sackware"
+<div class="raster"><div class="karte">
+  <a class="kopf" href="../artikel/POS-29108.html">
+    <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Sackware"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="M34 30 Q34 24 40 24 L80 24 Q86 24 86 30 L88 70 Q88 76 82 76 L38 76 Q32 76 32 70 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <path d="M40 24 Q60 30 80 24" stroke="var(--linie-stark)" fill="none" stroke-width="1.5"/>
 <rect x="44" y="42" width="32" height="14" rx="2" fill="var(--ocker-weich)" stroke="var(--ocker)" stroke-width="1.2"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">25 kg</text></svg></span>
-  <span class="nr">29108</span>
-  <span class="t">Baumit KlebeSpachtel 25 kg</span>
+    <span class="nr">29108</span>
+    <span class="t">Baumit KlebeSpachtel 25 kg</span>
+  </a>
   <span class="marker vorteil">17 % unter Liste</span>
   <span class="preis">14,32&nbsp;€ <span class="eh">je Sack, netto</span></span>
   
-</a><a class="karte" href="../artikel/POS-29754.html">
-  <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Sackware"
+  <div class="legen legen-klein">
+    <input type="number" min="1" max="999" value="1" inputmode="decimal"
+      aria-label="Menge in Sack für Baumit KlebeSpachtel 25 kg">
+    <button class="knopf" type="button" data-legen="POS-29108"
+      aria-label="Baumit KlebeSpachtel 25 kg in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div><div class="karte">
+  <a class="kopf" href="../artikel/POS-29754.html">
+    <span class="bild"><svg class="schema" viewBox="0 0 120 90" role="img" aria-label="Schemazeichnung: Sackware"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="M34 30 Q34 24 40 24 L80 24 Q86 24 86 30 L88 70 Q88 76 82 76 L38 76 Q32 76 32 70 Z" stroke="var(--linie-stark)" fill="var(--flaeche-2)" stroke-width="1.5"/>
 <path d="M40 24 Q60 30 80 24" stroke="var(--linie-stark)" fill="none" stroke-width="1.5"/>
 <rect x="44" y="42" width="32" height="14" rx="2" fill="var(--ocker-weich)" stroke="var(--ocker)" stroke-width="1.2"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">25 kg</text></svg></span>
-  <span class="nr">29754</span>
-  <span class="t">Ravenit Vergussmörtel 25 kg</span>
+    <span class="nr">29754</span>
+    <span class="t">Ravenit Vergussmörtel 25 kg</span>
+  </a>
   <span class="marker vorteil">7 % unter Liste</span>
   <span class="preis">1,45&nbsp;€ <span class="eh">je kg, netto</span></span>
   <span class="ab">ab 25 kg · 36,25&nbsp;€</span>
-</a></div>
+  <div class="legen legen-klein">
+    <input type="number" min="25" max="999" value="25" step="25" inputmode="decimal"
+      aria-label="Menge in kg für Ravenit Vergussmörtel 25 kg">
+    <button class="knopf" type="button" data-legen="POS-29754"
+      aria-label="Ravenit Vergussmörtel 25 kg in den Warenkorb">In den Warenkorb</button>
+  </div>
+</div></div>
 </main>
 <footer>
   <p><strong>Liefergebiet:</strong> Perg, Urfahr-Umgebung, Freistadt, Linz-Land und Linz — regional, nicht österreichweit.
