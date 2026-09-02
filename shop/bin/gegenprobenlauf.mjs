@@ -81,9 +81,13 @@ for (const p of proben) {
       schritte.push('war schon vorher rot — an einem roten Prüfer lässt sich nichts zeigen');
       urteil = 'unbrauchbar';
     } else {
+      // `alle: true` ersetzt jedes Vorkommen. Der Anlass: Die Landeseite nennt
+      // ihre Lücke zweimal — im Kopf und im Fließtext —, und eine Mutation, die
+      // nur eine der beiden trifft, lässt den Prüfer zu Recht grün melden.
+      // Das sah aus wie „schlägt nicht an" und war eine halbe Mutation.
       const mutiert = p.art === 'anhaengen'
         ? vorher + p.text
-        : vorher.replace(p.suchen, p.ersetzen);
+        : (p.alle ? vorher.split(p.suchen).join(p.ersetzen) : vorher.replace(p.suchen, p.ersetzen));
 
       if (mutiert === vorher) {
         schritte.push(p.art === 'ersetzen'

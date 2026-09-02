@@ -4,7 +4,7 @@ art: gruppe
 slug: kanal
 gruppe: Kanal
 frage: Welche Kanal- und Erdbauteile führen wir?
-kurz: PVC-Kanalrohr DN 100 mit Bögen und Abzweigern, Schachtringe sowie Grundmauerschutz und Folien für das erdberührte Bauteil. Nennweite, Gefälle und Materialart kommen aus der Entwässerungsplanung.
+kurz: PVC-Kanalrohr DN 100 mit Bögen und Abzweigern, Schachtringe sowie Grundmauerschutz und Folien für das erdberührte Bauteil. Übergangsstücke, Gleitmittel und Abschlussschiene führen wir nicht — sie stehen auf der Stückliste und sind dort gekennzeichnet. Nennweite, Gefälle und Materialart kommen aus der Entwässerungsplanung.
 verwandt: kanal-was-zusammengehoert, perimeterdaemmung-und-grundmauerschutz
 system: kanal-dn100
 stand: 2026-08-25
@@ -14,8 +14,10 @@ stand: 2026-08-25
 
 **Die Antwort in zwei Sätzen.** Wir führen PVC-Kanalrohr DN 100 mit Bögen und
 Abzweigern, Schachtringe sowie Grundmauerschutz und Folien für das
-erdberührte Bauteil. Nennweite, Gefälle und Materialart kommen aus der
-Entwässerungsplanung, nicht aus dem Sortiment.
+erdberührte Bauteil — **Übergangsstücke, Gleitmittel und Abschlussschiene
+führen wir nicht**, sie stehen auf der Stückliste und sind dort gekennzeichnet.
+Nennweite, Gefälle und Materialart kommen aus der Entwässerungsplanung, nicht
+aus dem Sortiment.
 
 ## Wie Sie die Bestellung ermitteln
 

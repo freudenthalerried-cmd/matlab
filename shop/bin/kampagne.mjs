@@ -850,9 +850,34 @@ function main() {
     if (gruppe && LUECKENSATZ.test(text)) gruppenMitLuecke.add(gruppe);
   }
 
+  // **Zweite Hälfte derselben Regel, 2. September.** Eine Anzeige, die keine
+  // Vollständigkeit verspricht, ist nur die halbe Ehrlichkeit: Der Besucher
+  // klickt und landet auf der Gruppenseite. Nennt die Systemliste eine Lücke,
+  // muss **auch die Landeseite** sie nennen — sonst muss der Besucher selbst
+  // bemerken, dass in der Aufzählung die Hauptsache fehlt.
+  //
+  // Die Gruppenseite Kamin machte es von Anfang an richtig: „das
+  // Anschlussformteil der Feuerstätte steht auf der Stückliste, aber nicht im
+  // Regal." WDVS und Dämmung zählten nur auf, was da ist.
+  const textfehlerLandeseite = [];
+  const gruppenseiten = join(WURZEL, 'inhalte', 'gruppen');
+  for (const gruppe of gruppenMitLuecke) {
+    const datei = readdirSync(gruppenseiten)
+      .filter((d) => d.endsWith('.md'))
+      .find((d) => new RegExp(`^gruppe:\\s*${gruppe}\\s*$`, 'm')
+        .test(readFileSync(join(gruppenseiten, d), 'utf8')));
+    if (!datei) continue;
+    const text = readFileSync(join(gruppenseiten, datei), 'utf8');
+    if (!LUECKENSATZ.test(text) && !/nicht im Regal/i.test(text)) {
+      textfehlerLandeseite.push(`Gruppenseite ${datei}: Die Systemliste nennt für „${gruppe}" eine `
+        + 'nicht geführte Position, die Landeseite nicht. Der Besucher soll es nicht selbst merken müssen.');
+    }
+  }
+
   const textfehler = [
     ...pruefeTexte(alleAnzeigentexte(), gefuehrteEinheiten, gruppenMitLuecke),
     ...pruefeTexte(anzeigen, gefuehrteEinheiten, gruppenMitLuecke),
+    ...textfehlerLandeseite,
   ];
   if (textfehler.length) {
     // **Berichtigt am 31.08.** Hier stand „überschreiten die Längengrenzen" —

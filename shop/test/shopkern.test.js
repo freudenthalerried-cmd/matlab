@@ -706,7 +706,17 @@ const GRUPPENDATEI = new Map([
 
 const GRUPPENVERSPRECHEN = [
   { gruppe: 'Dämmung', wort: 'XPS' },
-  { gruppe: 'Dämmung', wort: 'Fassadenplatte' },
+  // **Berichtigt am 2. September.** Hier stand „Fassadenplatte". Die Seite
+  // verspricht sie seit heute nicht mehr: Der Shop führt EPS nur in dünnen
+  // Ausgleichsstärken, nicht in Flächenstärke — die Systemliste sagte es
+  // längst, die Landeseite nicht. Der Test hat den Wechsel angezeigt, und
+  // genau dafür gibt es die Gegenrichtung: Die Liste darf nicht neben den
+  // Seiten herlaufen.
+  //
+  // Erst stand hier „Ausgleichsplatte" — und die zweite Richtung schlug an:
+  // Das Wort findet keinen Artikel, denn die Ware heißt „Fassaden EPS 2 cm".
+  // Ein Versprechen, das der Kunde nicht eintippt, ist keines.
+  { gruppe: 'Dämmung', wort: 'EPS' },
   { gruppe: 'Dämmung', wort: 'Trittschalldämmplatte' },
   { gruppe: 'Dämmung', wort: 'Folie', findetIn: 'Zubehör' },
   { gruppe: 'Kamin', wort: 'Fertigfuß' },

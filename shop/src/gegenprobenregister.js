@@ -134,6 +134,19 @@ export const GEGENPROBEN = Object.freeze([
       + 'Flächenstärke führt der Shop nicht.',
   }),
   Object.freeze({
+    id: 'landeseite-verschweigt-luecke',
+    pruefer: 'kampagne',
+    was: 'Eine Landeseite, die die Lücke ihrer Systemliste nicht nennt',
+    datei: 'shop/inhalte/gruppen/wdvs.md',
+    art: 'ersetzen',
+    suchen: 'führen wir nicht',
+    ersetzen: 'ist eine eigene Position',
+    alle: true,
+    erwartet: /Landeseite nicht/,
+    warum: 'Eine ehrliche Anzeige ist nur die halbe Ehrlichkeit — der Besucher klickt und '
+      + 'landet auf der Gruppenseite. Dort soll er die Lücke lesen, nicht selbst bemerken.',
+  }),
+  Object.freeze({
     id: 'auftrag-nennt-was-es-nicht-gibt',
     pruefer: 'pruefe-auftrag',
     was: 'Eine Begründung, die einen Befehl nennt, den es nicht gibt',
