@@ -30,6 +30,7 @@ import { erzeugeAngebot, erzeugeRechnung, erzeugeAuftragsbestaetigung } from '..
 import { kundenWarenkorb } from '../src/shopkern.js';
 import { baueKundenanfrage, mailtoAdresse } from '../src/kundenanfrage.js';
 import { erzeugeImpressum } from '../src/rechtstexte.js';
+import { robotsTxt } from '../src/maschinenlesbar.js';
 import { belegzeile } from '../src/vies.js';
 import { neueAblage, haltefest, alsCsv } from '../src/ablage.js';
 import { journalzeile, ausJournal } from '../src/speicher.js';
@@ -381,7 +382,31 @@ test('Ausgang Impressum: Gift in den Betreiberdaten erzeugt keine zusätzliche Z
 });
 
 /* ------------------------------------------------------------------ *
- * Ausgang 8: die Oberfläche
+ * Ausgang 8: die robots.txt
+ *
+ * Am 2. September nachgetragen. Sie stand in keinem Verzeichnis, weil das
+ * Namensmuster `Text` kannte und `Txt` nicht — dabei liest sie jeder Crawler,
+ * und ihr einziges eingesetztes Feld ist eine Adresse von außen.
+ * ------------------------------------------------------------------ */
+
+test('Ausgang robots.txt: Gift in der Sitemap-Adresse erzeugt keine zusätzliche Zeile', () => {
+  const harmlos = robotsTxt({ sitemap: 'https://bauversand.com/sitemap.xml' });
+  const giftig = robotsTxt({ sitemap: `https://bauversand.com/sitemap.xml${GIFT}` });
+  assert.equal(zeilen(giftig), zeilen(harmlos));
+  // `hatSteuerzeichen` gilt der **Zeile**, nicht dem Dokument: Auf das ganze
+  // robots.txt angewandt meldet es die eigenen Zeilenumbrüche und ist immer
+  // wahr. Geprüft wird deshalb die eine Zeile, in der Fremdtext landet.
+  const sitemapzeile = giftig.split('\n').find((z) => z.startsWith('Sitemap:'));
+  assert.equal(hatSteuerzeichen(sitemapzeile), false);
+  // Und keine eingeschmuggelte zweite Anweisung: Eine `Disallow`-Zeile, die
+  // nicht aus dem Register stammt, wäre der Weg, mit dem sich ein Fremdtext
+  // den ganzen Shop aus den Suchmaschinen nimmt.
+  assert.equal((giftig.match(/^Disallow:/gm) ?? []).length,
+    (harmlos.match(/^Disallow:/gm) ?? []).length);
+});
+
+/* ------------------------------------------------------------------ *
+ * Ausgang 9: die Oberfläche
  * ------------------------------------------------------------------ */
 
 test('Ausgang Oberfläche: kein Quelltext schreibt fremden Text als HTML', () => {

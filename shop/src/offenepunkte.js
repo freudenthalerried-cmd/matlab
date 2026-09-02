@@ -80,6 +80,18 @@ export const OHNE_WERKZEUG = Object.freeze([
       + 'ein Vielfaches der gerechneten Zeit. Liste: `npm run messliste`.',
   },
   {
+    id: 'google-extended',
+    titel: 'Nachlesen, was `Google-Extended` beim Anbieter tatsächlich steuert',
+    zustaendig: 'entscheidung',
+    warumKeinWerkzeug: 'Steht in Googles Crawler-Dokumentation; der Netzausgang dieser Umgebung ist '
+      + 'gesperrt (403 am Proxy, am 2. September erneut geprüft). Das Register prüft die Absicht '
+      + 'und ihre Widerspruchsfreiheit, nicht die Wirkung beim Anbieter.',
+    loest: 'Die Kennung steht seit dem 2. September auf „erlaubt", weil für Google keine zweite, '
+      + 'reine Suchkennung geführt ist und die Sperre damit den Anbieter ausschloss statt sein '
+      + 'Training. Steuert sie in Wahrheit nur das Training, ist die Zeile eine Geschmacksfrage '
+      + 'und darf zurück auf „gesperrt" — ein Blick auf eine Seite, keine Ausgabe.',
+  },
+  {
     id: 'upload',
     titel: 'ausgabe/site/ auf bauversand.com hochladen',
     zustaendig: 'entscheidung',

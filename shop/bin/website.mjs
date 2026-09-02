@@ -2044,7 +2044,7 @@ function main() {
   // Die Fehlerklasse ist die des ganzen Vortags: zwei Wege zur selben
   // Ausgabe, und der kürzere gewinnt, weil er näher am Schreibaufruf steht.
   writeFileSync(join(site, 'robots.txt'),
-    robotsTxt({ suche: true, training: false, sitemap: `${BASIS}/sitemap.xml` }), 'utf8');
+    robotsTxt({ sitemap: `${BASIS}/sitemap.xml` }), 'utf8');
 
   const llms = [`# ${FIRMA} — Baustoffe zum Baumeisterpreis`, '',
     `> Baustoffhandel in ${ORT}, Oberösterreich. Lieferung regional (Bezirk Perg, Urfahr-Umgebung, Freistadt, Linz, Linz-Land), nicht österreichweit. Preise sind Nettopreise für Unternehmer.`,

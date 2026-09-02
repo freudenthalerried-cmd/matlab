@@ -137,6 +137,19 @@ export const GEGENPROBEN = Object.freeze([
       + 'fest eingetragene Zeitspannen im Quelltext macht sie scharf.',
   }),
   Object.freeze({
+    id: 'crawler-sperre-ohne-ausweg',
+    pruefer: 'pruefe-crawler',
+    was: 'Eine Sperre, die den Anbieter ausschließt statt sein Training',
+    datei: 'shop/src/crawler.js',
+    art: 'ersetzen',
+    suchen: "    kennung: 'Google-Extended',\n    anbieter: 'Google',\n    zweck: 'suche',\n    zugang: 'erlaubt',",
+    ersetzen: "    kennung: 'Google-Extended',\n    anbieter: 'Google',\n    zweck: 'training',\n    zugang: 'gesperrt',",
+    erwartet: /Google: keine erlaubte Such- oder Nutzerkennung/,
+    warum: 'Der Befund vom 2. September, wörtlich zurückgesetzt: Google-Extended stand als '
+      + 'Trainingszeile und war gesperrt, und daneben stand keine erlaubte Suchkennung. Die '
+      + 'Probe hält fest, dass genau dieser Zustand auffällt und nicht wieder ein Jahr steht.',
+  }),
+  Object.freeze({
     id: 'aufwand-ueber-der-grenze',
     pruefer: 'aufwand',
     was: 'Ein Betrieb, der nicht mehr nebenbei läuft',

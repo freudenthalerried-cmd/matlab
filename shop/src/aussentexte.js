@@ -32,7 +32,18 @@
  * Begründung. Ein zu weites Muster kostet Einträge, ein zu enges kostet
  * Ausgänge.
  */
-export const NAMENSMUSTER = /^(erzeuge|baue)|[Zz]eile$|Csv$|Adresse$|[Tt]ext$/;
+/**
+ * **Erweitert am 2. September.** Das Muster kannte das Wort `Text`, aber nicht
+ * die Dateiendung `Txt` — und `robotsTxt` in `maschinenlesbar.js` ist damit an
+ * einer Schreibweise vorbeigelaufen. Eine Datei, die jeder Crawler liest und
+ * die niemand als Ausgang geführt hat. Gefunden beim Bau des Crawler-Registers.
+ *
+ * Dritter Fall derselben Sorte in diesem Bestand: `\\bÖNORM` traf nie, weil `Ö`
+ * kein ASCII-Wortzeichen ist; `ZAHL_MIT_EINHEIT` kannte `Std`, aber nicht
+ * „Stunden". **Ein Muster prüft die Schreibweise, die sein Verfasser im Kopf
+ * hatte.**
+ */
+export const NAMENSMUSTER = /^(erzeuge|baue)|[Zz]eile$|Csv$|Adresse$|[Tt]e?xt$/;
 
 /** Die Ausgänge, die im Fremdtextverzeichnis geprüft werden. */
 export const AUSGAENGE = Object.freeze([
@@ -43,6 +54,7 @@ export const AUSGAENGE = Object.freeze([
   Object.freeze({ modul: 'src/kundenanfrage.js', funktion: 'baueKundenanfrage', an: 'Lieferant, über den Kunden', form: 'Zeilentext' }),
   Object.freeze({ modul: 'src/kundenanfrage.js', funktion: 'mailtoAdresse', an: 'das Mailprogramm des Kunden', form: 'URL' }),
   Object.freeze({ modul: 'src/rechtstexte.js', funktion: 'erzeugeImpressum', an: 'jeder Besucher', form: 'Zeilentext' }),
+  Object.freeze({ modul: 'src/maschinenlesbar.js', funktion: 'robotsTxt', an: 'jeder Crawler', form: 'robots.txt' }),
   Object.freeze({ modul: 'src/vies.js', funktion: 'belegzeile', an: 'die eigene Ablage', form: 'Zeile' }),
   Object.freeze({ modul: 'src/ablage.js', funktion: 'alsCsv', an: 'Buchhaltung', form: 'CSV' }),
   Object.freeze({ modul: 'src/speicher.js', funktion: 'journalzeile', an: 'Buchhaltung', form: 'JSONL' }),

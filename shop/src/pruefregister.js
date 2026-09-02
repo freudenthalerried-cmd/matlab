@@ -58,6 +58,15 @@ export const PRUEFER = [
     mindestens: 10,
   },
   {
+    // Zwölf Kennungen, sechs Anbieter. `mindestens: 8`, weil ein geschrumpftes
+    // Register „keine Meldung" meldete und damit aussähe wie ein geprüftes.
+    name: 'pruefe-crawler',
+    werkzeug: 'crawlerpruefung.mjs',
+    muster: /Crawler-Register — (\d+) Kennungen/,
+    einheit: 'Crawler-Kennungen',
+    mindestens: 8,
+  },
+  {
     // Sieben Kontrollen an einem gebauten Vorgang. `mindestens: 7`, weil eine
     // fehlende Kontrolle sonst als „alle bestanden" durchliefe — der Prüfer
     // meldete dann sechs von sechs.

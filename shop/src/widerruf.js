@@ -129,6 +129,19 @@ export const WIDERRUFE = Object.freeze([
     beispiel: 'Die Trennlinie verläuft nicht entlang der Warengruppen, sondern entlang des Rohstoffs.',
   },
   {
+    id: 'training-sperren-kostet-nichts',
+    these: 'Die Trainingsfrage sei eine Geschmacksfrage ohne unmittelbare Wirkung auf die Sichtbarkeit.',
+    statt: 'Sie ist es nur dort, wo der Anbieter neben der Trainingskennung eine erlaubte Suchkennung führt. Wo er das nicht tut — im Register am 2. September genau ein Fall — sperrt dieselbe Zeile den Anbieter und nicht sein Training.',
+    widerrufenAm: '2026-09-02',
+    belegt: 'crawler-register.md, src/crawler.js (anbieterOhneAusweg)',
+    // Gesucht wird die Aussage, nicht die Formulierung — dieselbe Lehre wie
+    // beim Frachteintrag: „Geschmacksfrage", „kostet nichts", „ohne Wirkung
+    // auf die Sichtbarkeit", jeweils in der Nähe des Trainings.
+    muster: /Trainingsfrage ist eine Geschmacksfrage|Training[\s\S]{0,60}ohne (?:unmittelbare )?Wirkung auf die Sichtbarkeit|Training zu sperren kostet nichts/g,
+    merkmal: /Geschwisterkennung|erlaubte Suchkennung|anbieterOhneAusweg|crawler-register|Nachtrag 2\. September/i,
+    beispiel: 'Die Trainingsfrage ist eine Geschmacksfrage ohne unmittelbare Wirkung auf die Sichtbarkeit.',
+  },
+  {
     id: 'fracht-auf-jedem-beleg',
     these: 'Die Frachtpauschale stehe auf jedem der fünfzehn Belege.',
     statt: 'Fracht steht auf drei von fünfzehn Rechnungen. Elf lauten „Abholung Kunde", eine „Retour durch Kunde" — der Auftraggeber holt meistens selbst am Lager Mauthausen ab.',

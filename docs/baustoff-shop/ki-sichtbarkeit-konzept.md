@@ -55,6 +55,16 @@ werden will, spricht alles dafür, die **Such**-Crawler ausdrücklich
 zuzulassen. (Die Trainingsfrage ist eine Geschmacksfrage ohne
 unmittelbare Wirkung auf die Sichtbarkeit.)
 
+> **Nachtrag 2. September — der Satz in Klammern gilt nur mit Bedingung.**
+> Er stimmt, solange der Anbieter neben der Trainingskennung eine **erlaubte
+> Suchkennung** führt: Dann liest sein Assistent weiter, und die Sperre kostet
+> wirklich nur Trainingsmaterial. Führt er keine, sperrt dieselbe Zeile den
+> Anbieter. Im Register stand am 2. September genau ein solcher Fall —
+> `Google-Extended`, gesperrt, ohne Geschwisterkennung daneben. Die Regel
+> heißt jetzt `anbieterOhneAusweg` in `src/crawler.js` und läuft als
+> `npm run pruefe-crawler`; die Herleitung steht in
+> [`crawler-register.md`](./crawler-register.md).
+
 **Preise müssen im HTML stehen, nicht im JavaScript und nicht im PDF.**
 Das ist der häufigste Grund, weshalb Baustoffhändler in KI-Antworten
 nicht vorkommen: Der Preis erscheint erst nach Anmeldung, nur auf

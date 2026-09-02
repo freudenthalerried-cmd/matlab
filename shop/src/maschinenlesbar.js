@@ -31,6 +31,7 @@ import { textZeile, EINHEITEN } from './format.js';
 import { istGtin } from './artikelliste.js';
 import { HERSTELLER, marke } from './hersteller.js';
 import { mengenschritt } from './gebinde.js';
+import { KENNUNGEN } from './crawler.js';
 
 /** Wie lange eine ausgezeichnete Preisangabe als gültig gilt (Tage). */
 export const PREIS_GUELTIG_TAGE = 7;
@@ -475,27 +476,44 @@ export function katalogFeed(artikel, lage = {}) {
 }
 
 /**
- * robots.txt mit bewusster Trennung von Suche und Training.
+ * robots.txt — gerendert aus dem Crawler-Register, nicht aus zwei flachen
+ * Listen.
  *
- * Die beiden sind heute getrennte Kennungen. Wer pauschal alles sperrt,
- * verschwindet auch aus den Antworten — das ist der häufigste
- * Selbstschaden in diesem Feld. Wer alles erlaubt, gibt auch
- * Trainingsmaterial her. Deshalb steht die Entscheidung hier als
- * Schalter und nicht als stille Voreinstellung.
+ * **Umgestellt am 2. September.** Hier standen `SUCH_CRAWLER` und
+ * `TRAININGS_CRAWLER` als Zeichenkettenlisten ohne Begründung je Kennung — die
+ * einzige Entscheidung im Bestand ohne Register. Beim Aufschreiben der Gründe
+ * in `crawler.js` fielen zwei Löcher auf, die in einer Liste aus Zeichenketten
+ * nicht sichtbar sein konnten: Apples Trainingskennung fehlte ganz, und
+ * `Google-Extended` war als Training geführt, obwohl daneben keine erlaubte
+ * Suchkennung stand. Die beiden Namen bleiben als **abgeleitete Sichten** auf
+ * das Register bestehen, damit die Proben, die an ihnen hängen, weiter greifen.
  */
-export const SUCH_CRAWLER = Object.freeze(['OAI-SearchBot', 'Claude-SearchBot', 'PerplexityBot', 'Applebot']);
-export const TRAININGS_CRAWLER = Object.freeze(['GPTBot', 'ClaudeBot', 'Google-Extended', 'CCBot']);
+export const SUCH_CRAWLER = Object.freeze(
+  KENNUNGEN.filter((k) => k.zweck === 'suche').map((k) => k.kennung),
+);
+export const TRAININGS_CRAWLER = Object.freeze(
+  KENNUNGEN.filter((k) => k.zweck === 'training').map((k) => k.kennung),
+);
 
-export function robotsTxt({ suche = true, training = false, sitemap = null } = {}) {
-  const zeilen = ['# Suche und Training sind getrennte Kennungen — siehe ki-sichtbarkeit-konzept.md'];
-  for (const bot of SUCH_CRAWLER) {
-    zeilen.push('', `User-agent: ${bot}`, suche ? 'Allow: /' : 'Disallow: /');
+/**
+ * @param {{suche?: boolean, training?: boolean, sitemap?: string|null}} wahl
+ *   `suche` und `training` sind **Übersteuerungen**, keine Voreinstellungen:
+ *   Bleiben sie weg, entscheidet der Zugang, der im Register bei der Kennung
+ *   steht. Sie bestehen weiter, weil eine Sperre möglich sein muss, ohne das
+ *   Register umzuschreiben — aber sie ist dann ausdrücklich zu wählen.
+ */
+export function robotsTxt({ suche, training, sitemap = null } = {}) {
+  const uebersteuert = { suche, nutzer: undefined, training };
+  const zeilen = ['# Wen dieser Shop einlässt — Register und Gründe in src/crawler.js'];
+  for (const k of KENNUNGEN) {
+    const schalter = uebersteuert[k.zweck];
+    const offen = schalter === undefined ? k.zugang === 'erlaubt' : schalter;
+    zeilen.push('', `User-agent: ${k.kennung}`, offen ? 'Allow: /' : 'Disallow: /');
   }
-  for (const bot of TRAININGS_CRAWLER) {
-    zeilen.push('', `User-agent: ${bot}`, training ? 'Allow: /' : 'Disallow: /');
-  }
+  // Die Sammelzeile ist die Voreinstellung für alles Unbenannte. Sie steht
+  // absichtlich am Ende und absichtlich auf `Allow`: Ein Shop, der gefunden
+  // werden will, sperrt nicht, was er nicht kennt.
   zeilen.push('', 'User-agent: *', 'Allow: /');
   if (sitemap) zeilen.push('', `Sitemap: ${textZeile(sitemap)}`);
   return zeilen.join('\n') + '\n';
 }
-
