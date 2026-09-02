@@ -29,7 +29,7 @@
  * der Auftraggeber, nicht dieses Werkzeug.
  */
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { bezirksliste, LIEFERGEBIET } from '../src/liefergebiet.js';
@@ -367,23 +367,23 @@ const ENDET_NICHT_AUF = ['vom', 'von', 'am', 'im', 'zum', 'zur', 'mit', 'für', 
  */
 export const ANZEIGENTEXTE = {
   WDVS: {
-    k: ['WDVS zum Baumeisterpreis', 'Capatect und Baumit', 'Fassade komplett liefern', 'Kleber, Gewebe, Dübel', 'Baumeisterpreis, nicht Liste', 'Fassade aus einer Bestellung'],
-    b: ['Das komplette Fassadensystem aus einer Hand — geliefert auf die Baustelle.', 'Kleber, Gewebe, Dübel, Putzgrund. Was zusammengehört, kommt zusammen.', 'Ein Baumeister kauft ein, Sie zahlen seinen Preis.'],
+    k: ['WDVS zum Baumeisterpreis', 'Capatect und Baumit', 'Armierung bis Oberputz', 'Kleber, Gewebe, Dübel', 'Baumeisterpreis, nicht Liste', 'Fassade aus einer Bestellung'],
+    b: ['Armierung, Putzgrund, Oberputz und Zubehör — geliefert auf die Baustelle.', 'Kleber, Gewebe, Dübel, Putzgrund. Was zusammengehört, kommt zusammen.', 'Ein Baumeister kauft ein, Sie zahlen seinen Preis.'],
     pfad: ['fassade', 'wdvs'],
   },
   'Dämmung': {
     k: ['XPS und EPS vom Baumeister', 'Perimeterdämmung 80 mm', 'Dämmplatten auf die Baustelle', 'Baumeisterpreis auf XPS', 'Druckfestes XPS im Sockel', 'Kein Baumarktpreis', 'XPS 30 bis 100 mm'],
-    b: ['XPS und EPS in allen gängigen Stärken, geliefert auf die Baustelle.', 'Perimeter- und Fassadendämmung zum Preis, den ein Baumeister zahlt.', 'In Paketeinheiten gerechnet, damit kein Rest übrig bleibt.'],
+    b: ['XPS von 30 bis 100 mm, EPS als Ausgleich — geliefert auf die Baustelle.', 'Perimeter- und Fassadendämmung zum Preis, den ein Baumeister zahlt.', 'In Paketeinheiten gerechnet, damit kein Rest übrig bleibt.'],
     pfad: ['daemmung', 'xps'],
   },
   Kamin: {
-    k: ['Schiedel Kaminsystem', 'Kaminzug komplett', 'Mantelstein und Rohr', 'Vom Fertigfuß zur Haube', 'Kamin auf die Baustelle', 'SIKM Systemteile', 'Kamin zum Baumeisterpreis'],
-    b: ['Der ganze Zug: Fertigfuß, Mantelsteine, gedämmtes Rohr, Putztür, Haube.', 'Schiedel-Systemteile aus einer Bestellung, geliefert statt abgeholt.', 'Was beim Kamin fehlt, hält die Baustelle auf. Deshalb komplett.'],
+    k: ['Schiedel Kaminsystem', 'Kaminzug in einer Lieferung', 'Mantelstein und Rohr', 'Vom Fertigfuß zur Haube', 'Kamin auf die Baustelle', 'SIKM Systemteile', 'Kamin zum Baumeisterpreis'],
+    b: ['Fertigfuß, Mantelsteine, gedämmtes Rohr, Putztür und Haube.', 'Schiedel-Systemteile aus einer Bestellung, geliefert statt abgeholt.', 'Was beim Kamin fehlt, hält die Baustelle auf. Die Stückliste sagt es vorher.'],
     pfad: ['kamin', 'schiedel'],
   },
   Kanal: {
-    k: ['Kanalrohr DN 100', 'Rohr, Bogen, Abzweig', 'Kanal komplett liefern', 'PVC Kanal vom Baumeister', 'Schacht und Formteile', 'Kanal zum Baumeisterpreis'],
-    b: ['Kanalrohr, Bögen, Abzweiger und Schacht — abgestimmt und komplett.', 'PVC-Kanal DN 100 mit allen Formteilen. Lieferung auf die Baustelle.', 'Ein Bogen zu wenig kostet einen halben Tag. Deshalb liefern wir das Set.'],
+    k: ['Kanalrohr DN 100', 'Rohr, Bogen, Abzweig', 'Rohr, Bögen, Abzweiger', 'PVC Kanal vom Baumeister', 'Schacht und Formteile', 'Kanal zum Baumeisterpreis'],
+    b: ['Kanalrohr, Bögen, Abzweiger und Schacht — aufeinander abgestimmt.', 'PVC-Kanal DN 100 mit allen Formteilen. Lieferung auf die Baustelle.', 'Ein Bogen zu wenig kostet einen halben Tag. Deshalb liefern wir das Set.'],
     pfad: ['kanal', 'dn100'],
   },
   'Mörtel': {
@@ -453,17 +453,53 @@ export const GEBINDEAUSSAGEN = Object.freeze([
 ]);
 
 /**
+ * Aussagen, die **Vollständigkeit** versprechen.
+ *
+ * **Befund vom 2. September.** Zwei der drei Anzeigengruppen des ersten
+ * Anlaufs warben mit „Fassade komplett liefern", „Das komplette
+ * Fassadensystem aus einer Hand" und „XPS und EPS in allen gängigen Stärken".
+ * Die eigene Systemliste `system/fassade-100-qm.md` sagt im selben Verzeichnis:
+ *
+ * > **Die Dämmplatte selbst führen wir derzeit nicht in Flächenstärke.** Im
+ * > Sortiment stehen Fassadenplatten nur in dünnen Stärken.
+ *
+ * Fassaden-EPS gibt es in 2, 3 und 5 cm. Eine WDVS-Dämmung beginnt bei acht.
+ * Der Besucher klickt für 4,19 € auf „Fassade komplett" und findet die
+ * Schicht nicht, aus der eine Fassadendämmung besteht.
+ *
+ * > **Ein Vollständigkeitsversprechen ist eine Aussage über den Katalog, nicht
+ * > über die Absicht.**
+ *
+ * Dieselbe Familie wie „Paletten, die es nicht gibt" und „ab Lager ohne
+ * Lager" — nur eine Ebene höher: nicht die Gebindeform, sondern der Umfang.
+ * Geprüft wird gegen die **eigenen Systemlisten**: Nennt eine davon eine
+ * Schicht als nicht geführt, darf keine Anzeige derselben Gruppe
+ * Vollständigkeit versprechen.
+ */
+export const VOLLSTAENDIGKEITSWORTE = Object.freeze([
+  /\bkomplett\w*/i,
+  /\baus einer Hand\b/i,
+  /\ball(?:e|en|er)\s+g(?:ä|ae)ngigen\b/i,
+  /\bvollst(?:ä|ae)ndig\w*/i,
+  /\bganze[sn]?\s+(?:System|Aufbau)\b/i,
+]);
+
+/** Woran eine Systemliste sagt, dass sie eine Schicht nicht führt. */
+export const LUECKENSATZ = /f(?:ü|ue)hren wir (?:derzeit )?nicht|nicht im Sortiment|steht nicht im Katalog/i;
+
+/**
  * @param {object[]} anzeigen
  * @param {Iterable<string>} gefuehrteEinheiten Einheitenkürzel, die im
  *   Katalog tatsächlich vorkommen. **Pflichtangabe** — eine Voreinstellung
  *   wäre die Stelle, an der ein Aufrufer die Gebindeprüfung stillschweigend
  *   überspringt, und dann prüfte sie nichts und meldete es als bestanden.
  */
-export function pruefeTexte(anzeigen, gefuehrteEinheiten) {
+export function pruefeTexte(anzeigen, gefuehrteEinheiten, gruppenMitLuecke = new Set()) {
   const fehler = [];
   if (gefuehrteEinheiten === undefined) {
     throw new Error('pruefeTexte braucht die geführten Einheiten — ohne sie prüft die Gebinderegel nichts.');
   }
+  const luecken = gruppenMitLuecke instanceof Set ? gruppenMitLuecke : new Set(gruppenMitLuecke);
   const einheiten = new Set(gefuehrteEinheiten);
   for (const a of anzeigen) {
     for (const [k, v] of Object.entries(a)) {
@@ -474,6 +510,15 @@ export function pruefeTexte(anzeigen, gefuehrteEinheiten) {
           fehler.push(`${a.Anzeigengruppe} · ${k}: „${v}" behauptet Vorrat — `
             + 'der Shop führt kein eigenes Lager (PARAMETER.md, Streckengeschäft)');
         }
+      }
+
+      // Eine Meldung je Feld, nicht je Muster: „Das komplette System aus
+      // einer Hand" trifft zwei Muster und ist ein Satz. Ein Prüfer, der
+      // denselben Satz zweimal meldet, wird nach dem Wortlaut gelesen und
+      // nicht nach der Zahl.
+      if (luecken.has(a.Anzeigengruppe) && VOLLSTAENDIGKEITSWORTE.some((m) => m.test(v))) {
+        fehler.push(`${a.Anzeigengruppe} · ${k}: „${v}" verspricht Vollständigkeit — `
+          + 'die eigene Systemliste nennt für diese Gruppe eine Schicht, die der Katalog nicht führt');
       }
 
       for (const g of GEBINDEAUSSAGEN) {
@@ -791,9 +836,23 @@ function main() {
   // Die geführten Einheiten kommen aus dem Katalog, nicht aus einer Liste —
   // siehe `GEBINDEAUSSAGEN`. Damit prüft die Regel den Shop, den es gibt.
   const gefuehrteEinheiten = new Set(katalog.artikel.map((a) => a.einheit));
+
+  // Welche Warengruppe hat laut **eigener** Systemliste eine Lücke? Gelesen
+  // wird die Liste, nicht eine zweite Aufzählung daneben: Die Systemlisten
+  // benennen jede Position, die der Shop nicht führt, und tun das sorgfältig
+  // — alle vier tun es. Eine Anzeige derselben Gruppe darf dann keine
+  // Vollständigkeit versprechen.
+  const gruppenMitLuecke = new Set();
+  const systemOrdner = join(WURZEL, 'inhalte', 'system');
+  for (const datei of readdirSync(systemOrdner).filter((d) => d.endsWith('.md'))) {
+    const text = readFileSync(join(systemOrdner, datei), 'utf8');
+    const gruppe = /^gruppe:\s*(.+)$/m.exec(text)?.[1]?.trim();
+    if (gruppe && LUECKENSATZ.test(text)) gruppenMitLuecke.add(gruppe);
+  }
+
   const textfehler = [
-    ...pruefeTexte(alleAnzeigentexte(), gefuehrteEinheiten),
-    ...pruefeTexte(anzeigen, gefuehrteEinheiten),
+    ...pruefeTexte(alleAnzeigentexte(), gefuehrteEinheiten, gruppenMitLuecke),
+    ...pruefeTexte(anzeigen, gefuehrteEinheiten, gruppenMitLuecke),
   ];
   if (textfehler.length) {
     // **Berichtigt am 31.08.** Hier stand „überschreiten die Längengrenzen" —

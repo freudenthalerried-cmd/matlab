@@ -121,6 +121,19 @@ export const GEGENPROBEN = Object.freeze([
       + 'eigene Behauptung über sich selbst — dieselbe Lage wie beim Auftragsabgleich.',
   }),
   Object.freeze({
+    id: 'anzeige-verspricht-vollstaendigkeit',
+    pruefer: 'kampagne',
+    was: 'Eine Anzeige, die Vollständigkeit verspricht, obwohl die Systemliste eine Lücke nennt',
+    datei: 'shop/bin/kampagne.mjs',
+    art: 'ersetzen',
+    suchen: "'Armierung bis Oberputz'",
+    ersetzen: "'Fassade komplett liefern'",
+    erwartet: /verspricht Vollständigkeit/,
+    warum: 'Der teuerste Klick des ersten Anlaufs führte auf ein Versprechen, das die '
+      + 'eigene Systemliste im selben Verzeichnis widerlegt — die Dämmplatte in '
+      + 'Flächenstärke führt der Shop nicht.',
+  }),
+  Object.freeze({
     id: 'auftrag-nennt-was-es-nicht-gibt',
     pruefer: 'pruefe-auftrag',
     was: 'Eine Begründung, die einen Befehl nennt, den es nicht gibt',
