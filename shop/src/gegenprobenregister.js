@@ -123,6 +123,76 @@ export const GEGENPROBEN = Object.freeze([
       + 'zweites Mal überwiesen.',
   }),
   Object.freeze({
+    id: 'test-ohne-zusicherung',
+    pruefer: 'pruefe-tests',
+    was: 'Ein Testfall, der eine leere Liste durchläuft und nichts prüft',
+    datei: 'shop/test/zahlschreibweise.test.js',
+    art: 'anhaengen',
+    // **Zweiter Anlauf.** Der erste lief über ein leeres Literal `[]`. Der
+    // Prüfer sucht Schleifen über eine **benannte** Liste — bei einem Literal
+    // sieht jeder, dass sie leer ist, und die Regel zielt auf den Fall, in dem
+    // man es nicht sieht. Die Mutation trifft jetzt die Regel, die es gibt.
+    text: "\ntest('Probe: eine Schleife ohne Längenzusicherung', () => {\n"
+      + "  const werte = [1];\n  for (const n of werte) {\n"
+      + "    assert.equal(zahlText(n), '1');\n  }\n});\n",
+    erwartet: /ohne vorherige Längenzusicherung|Schleife/,
+    warum: 'Der Eintrag stand unter „begründeter Verzicht" mit dem Grund, eine Gegenprobe wäre '
+      + 'ein absichtlich roter Test und der Lauf dauere vierzehn Sekunden. Beides trifft auf '
+      + 'einen **Testlauf** zu — dieser Prüfer lässt aber nichts laufen, er liest den '
+      + 'Quelltext der Testdateien und sucht drei Muster. Die Mutation ist deshalb billig: ein '
+      + 'Testfall mit genau einem der Muster. Vierter Verzicht dieses Abends, dessen Begründung '
+      + 'einen anderen Prüfer beschrieb als den, um den es ging.',
+  }),
+  Object.freeze({
+    id: 'gebot-auf-altem-preis',
+    pruefer: 'pruefe-preisalter',
+    was: 'Ein beworbener Artikel, dessen Einkaufspreis über der Grenze liegt',
+    datei: 'shop/data/katalog-baustoff.json',
+    art: 'ersetzen',
+    // POS-11283 steht im Referenzwarenkorb der beworbenen WDVS-Gruppe; auf ihm
+    // ruht damit ein Gebot. Der Suchtext trägt die Artikelnummer mit, damit er
+    // genau eine Stelle trifft — „preisStand" allein kommt sechsundvierzigmal vor.
+    suchen: '"lieferantenArtikelnummer": "11283",\n      "bezeichnung": "Capatect Klebe- und Spachtelmasse 186 M 25 kg",\n      "gruppe": "WDVS",\n      "lieferantId": "poschacher",\n      "einheit": "KG",\n      "sperrgut": false,\n      "sperrgutQuelle": "eingeschaetzt",\n      "gtin": null,\n      "preisStand": "2026-08-17"',
+    ersetzen: '"lieferantenArtikelnummer": "11283",\n      "bezeichnung": "Capatect Klebe- und Spachtelmasse 186 M 25 kg",\n      "gruppe": "WDVS",\n      "lieferantId": "poschacher",\n      "einheit": "KG",\n      "sperrgut": false,\n      "sperrgutQuelle": "eingeschaetzt",\n      "gtin": null,\n      "preisStand": "2025-01-02"',
+    erwartet: /POS-11283|Gebot/,
+    warum: 'Der Eintrag stand unter „begründeter Verzicht" mit dem Grund, die Grundlage sei '
+      + '`preise/` — die eine Datei, die diese Arbeit nicht anfasst. Das stimmt für den '
+      + '**Preis** und nicht für sein **Alter**: Der Preisstand steht im öffentlichen Katalog, '
+      + 'und genau er ist der Gegenstand dieses Prüfers. Dritter Verzicht an diesem Abend, '
+      + 'dessen Begründung schlüssig war und die Möglichkeit übersah.',
+  }),
+  Object.freeze({
+    id: 'preis-nur-auf-der-karte-verschoben',
+    pruefer: 'pruefe-preise',
+    was: 'Ein Preis, der auf der Artikelkarte anders steht als in den drei übrigen Ausgaben',
+    datei: 'shop/bin/website.mjs',
+    art: 'ersetzen',
+    suchen: '  <span class="preis">${euro(a.vkNetto)}&nbsp;€ <span class="eh">je ${einheit}, netto</span></span>',
+    ersetzen: '  <span class="preis">${euro(a.vkNetto + 1)}&nbsp;€ <span class="eh">je ${einheit}, netto</span></span>',
+    erwartet: /Artikelkarte|Abweichung/,
+    baueVorher: true,
+    warum: 'Der Eintrag stand unter „begründeter Verzicht": Zwei Mutationen waren Leerläufe, '
+      + 'weil alle vier Ausgaben aus **einem** Bau stammen und eine Änderung sie gemeinsam '
+      + 'verschiebt. Die Stelle, die genau eine trifft, ist die Preiszeile der Kachel — sie '
+      + 'kommt im Bauwerkzeug genau einmal vor. Was fehlte, war `baueVorher`: Ohne Bau '
+      + 'dazwischen erreicht eine Änderung am Werkzeug die Ausgaben gar nicht.',
+  }),
+  Object.freeze({
+    id: 'stand-datei-nicht-genannt',
+    pruefer: 'pruefe-stand',
+    was: 'Eine Arbeitsdatei, die in STATUS.md nicht mehr vorkommt',
+    datei: 'docs/baustoff-shop/STATUS.md',
+    art: 'ersetzen',
+    suchen: '| `produktfeed-stand.md`',
+    ersetzen: '| `produktfeed-stand-anders.md`',
+    erwartet: /produktfeed-stand\.md/,
+    warum: 'Der Eintrag stand bis zum 2. September unter „begründeter Verzicht" mit dem Grund, '
+      + 'die Mutation sei eine **neue Datei**, und das Werkzeug könne nur ändern. Der Grund sah '
+      + 'nur eine Richtung: Eine Datei ungenannt zu machen geht auch, indem man ihren Namen aus '
+      + 'dem Verzeichnis entfernt. Dieselbe Sorte Irrtum wie bei `pruefe-seiten` eine Stunde '
+      + 'davor — die Begründung war schlüssig und die Möglichkeit übersehen.',
+  }),
+  Object.freeze({
     id: 'auszeichnung-sagt-mehr-als-die-seite',
     pruefer: 'pruefe-seiten',
     was: 'Eine maschinenlesbare Antwort mit einer Zahl, die auf der Seite nicht steht',
@@ -378,11 +448,6 @@ export const GEGENPROBEN = Object.freeze([
  */
 export const OHNE_GEGENPROBE = Object.freeze([
   Object.freeze({
-    pruefer: 'pruefe-tests',
-    warumKeine: 'Er zählt die Testfälle und lässt sie laufen. Eine Gegenprobe wäre ein '
-      + 'absichtlich roter Test — und der ganze Lauf dauert vierzehn Sekunden je Durchgang.',
-  }),
-  Object.freeze({
     pruefer: 'pruefe-pruefer',
     warumKeine: 'Er prüft den Umfang der anderen Prüfer. Seine Gegenprobe wäre ein '
       + 'Prüfer mit leerem Ergebnis — das ist genau, was dieses Register hier tut.',
@@ -392,25 +457,6 @@ export const OHNE_GEGENPROBE = Object.freeze([
     warumKeine: 'Seine Mutation wäre, einen Einkaufspreis in eine öffentliche Datei zu '
       + 'schreiben. Auch nur für Sekunden und auch nur lokal — das ist die eine Datei, '
       + 'die diese Arbeit nicht anfassen darf.',
-  }),
-  Object.freeze({
-    pruefer: 'pruefe-preise',
-    warumKeine: 'Er hält vier Ausgaben gegeneinander, die alle aus **einem** Bau stammen. '
-      + 'Eine Mutation, die nur eine davon verschiebt, müsste im Seitenbauwerkzeug ansetzen '
-      + 'und dort genau eine Ausgabe treffen. Zwei Versuche waren Leerläufe; der Eintrag '
-      + 'wartet, bis ich eine Mutation habe, die ankommt.',
-  }),
-  Object.freeze({
-    pruefer: 'pruefe-preisalter',
-    warumKeine: 'Seine Grundlage ist `preise/` — außerhalb des Verzeichnisses und die eine '
-      + 'Datei, die diese Arbeit nicht anfasst. Eine Mutation im Katalog änderte den '
-      + 'Preisstand, nicht den Preis, und prüfte damit etwas anderes.',
-  }),
-  Object.freeze({
-    pruefer: 'pruefe-stand',
-    warumKeine: 'Seine Mutation ist eine **neue Datei**, nicht eine geänderte. Das Werkzeug '
-      + 'kann bisher nur ändern und zurückschreiben; eine Datei anzulegen und zu löschen '
-      + 'ist eine andere Zusicherung, und eine halbe wäre schlechter als keine.',
   }),
 ]);
 

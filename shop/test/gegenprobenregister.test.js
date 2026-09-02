@@ -31,7 +31,13 @@ test('Jeder genannte Prüfer ist ein echter Befehl', async () => {
 });
 
 test('Jeder Verzicht trägt seinen Grund', () => {
-  assert.ok(OHNE_GEGENPROBE.length >= 3, `nur ${OHNE_GEGENPROBE.length} begründete Verzichte`);
+  // **Untergrenze auf 1 gesenkt am 02.09.** Sie stand auf 3, als die Liste
+  // sieben Einträge hatte. An diesem Abend sind vier davon zu funktionierenden
+  // Gegenproben geworden — die Zahl ist gefallen, weil die Sache besser wurde,
+  // und eine Untergrenze, die das verbietet, hält den schlechteren Zustand
+  // fest. Was die Zusicherung leisten soll, ist nur: Die Schleife darunter
+  // läuft überhaupt.
+  assert.ok(OHNE_GEGENPROBE.length >= 1, `nur ${OHNE_GEGENPROBE.length} begründete Verzichte`);
   for (const o of OHNE_GEGENPROBE) {
     assert.ok(o.warumKeine.length >= 30, `${o.pruefer}: der Grund ist zu knapp`);
   }
@@ -39,7 +45,7 @@ test('Jeder Verzicht trägt seinen Grund', () => {
 
 test('Ein Prüfer steht nicht zugleich mit und ohne Gegenprobe da', () => {
   const mit = new Set(GEGENPROBEN.map((p) => p.pruefer));
-  assert.ok(mit.size >= 5 && OHNE_GEGENPROBE.length >= 3, 'zu wenige Einträge — die Schleife prüfte nichts');
+  assert.ok(mit.size >= 5 && OHNE_GEGENPROBE.length >= 1, 'zu wenige Einträge — die Schleife prüfte nichts');
   for (const o of OHNE_GEGENPROBE) {
     assert.ok(!mit.has(o.pruefer), `${o.pruefer} steht in beiden Listen`);
   }
