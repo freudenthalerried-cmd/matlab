@@ -213,7 +213,7 @@ const freigabe = darfAutomatischAusgeloestWerden(korb, {
   frachtVerrechnet: true,
 });
 
-const befund = pruefeBelege(belege);
+const befund = pruefeBelege(belege, { vollstaendig: true });
 const zeigeTexte = process.argv.includes('--zeigen');
 
 if (zeigeTexte) {

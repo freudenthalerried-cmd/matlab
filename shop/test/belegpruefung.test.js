@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { pruefeBeleg, pruefeBelege, leereAngaben, SUMMENZEILE, ZUSTANDSAUSSAGE , pruefeVerrechnetUndBestellt, VERRECHNET_UND_BESTELLT } from '../src/belegpruefung.js';
+import { pruefeBeleg, pruefeBelege, leereAngaben, SUMMENZEILE, ZUSTANDSAUSSAGE , pruefeVerrechnetUndBestellt, VERRECHNET_UND_BESTELLT, pruefeAgbVerweise } from '../src/belegpruefung.js';
+import { AGB_GLIEDERUNG, AGB_VERWEISE } from '../src/rechtstexte.js';
 
 const mitSumme = (rest) => `Rechnung RE-0001\n\nGesamtbetrag            1638,48 €\n\n${rest}`;
 
@@ -153,5 +154,80 @@ test('jeder Eintrag des Registers nennt seinen Grund', () => {
   for (const e of VERRECHNET_UND_BESTELLT) {
     assert.ok(e.warum && e.warum.length >= 40, `${e.id}: ohne belastbaren Grund`);
     assert.ok(e.verrechnet instanceof RegExp && e.bestellt instanceof RegExp, e.id);
+  }
+});
+
+
+/* ------------------------------------------------------------------ *
+ * Ein Verweis auf eine Nummer ist eine Verabredung mit einer Reihenfolge
+ *
+ * Die Auftragsbestätigung sagt „Punkt 2 unserer Allgemeinen
+ * Geschäftsbedingungen", das Angebot „Punkt 9 der Geschäftsbedingungen".
+ * Beides stimmt — und beides hängt an einer Zählung, die niemand bewacht.
+ * Wer einen Punkt einschiebt, verschiebt jede Nummer dahinter.
+ * ------------------------------------------------------------------ */
+
+const belegeMitVerweis = [
+  { art: 'Auftragsbestätigung', text: 'Der Vertrag kommt zustande (Punkt 2 unserer AGB).' },
+  { art: 'Angebot', text: 'Zahlung bei Bestellung, kein Zahlungsziel (Punkt 9 der AGB).' },
+];
+
+test('Der heutige Bestand ist widerspruchsfrei', () => {
+  assert.deepEqual(pruefeAgbVerweise(belegeMitVerweis, AGB_GLIEDERUNG, AGB_VERWEISE, { vollstaendig: true }), []);
+});
+
+test('Über einer Teilmenge meldet die dritte Regel nichts', () => {
+  assert.deepEqual(pruefeAgbVerweise([belegeMitVerweis[0]], AGB_GLIEDERUNG, AGB_VERWEISE), []);
+});
+
+test('Ein eingeschobener Punkt verschiebt jeden Verweis dahinter', () => {
+  // Der Fall, für den die Regel gebaut ist: Aus „Punkt 9, Zahlung" wird
+  // „Punkt 9, Gefahrübergang", und der Kundenbeleg zitiert eine Klausel, die
+  // etwas anderes regelt.
+  const verschoben = AGB_GLIEDERUNG.map((g) => (g.nr >= 3 ? { ...g, nr: g.nr + 1 } : g));
+  const m = pruefeAgbVerweise(belegeMitVerweis, verschoben, AGB_VERWEISE);
+  assert.ok(m.some((x) => x.regel === 'verweis-zeigt-woanders'), JSON.stringify(m));
+  assert.ok(m.some((x) => /Punkt 9 heißt/.test(x.text)), JSON.stringify(m));
+});
+
+test('Ein zitierter Punkt ohne Eintrag im Register fällt auf', () => {
+  const m = pruefeAgbVerweise(
+    [...belegeMitVerweis, { art: 'Rechnung', text: 'Siehe Punkt 11 der AGB.' }],
+    AGB_GLIEDERUNG, AGB_VERWEISE,
+  );
+  assert.equal(m.length, 1);
+  assert.equal(m[0].regel, 'verweis-ohne-eintrag');
+  assert.match(m[0].text, /Punkt 11/);
+});
+
+test('Ein Eintrag, den kein Beleg mehr zitiert, bewacht nichts', () => {
+  // Die Richtung, die man vergisst: Der Eintrag bleibt stehen, der Satz im
+  // Beleg ist längst umgeschrieben, und das Register meldet weiter grün.
+  //
+  // Nur bei einem **vollständigen** Durchlauf: Über einer Teilmenge sagt das
+  // Fehlen nichts.
+  const m = pruefeAgbVerweise([belegeMitVerweis[0]], AGB_GLIEDERUNG, AGB_VERWEISE, { vollstaendig: true });
+  assert.equal(m.length, 1);
+  assert.equal(m[0].regel, 'eintrag-ohne-verweis');
+  assert.match(m[0].text, /Punkt 9/);
+});
+
+test('Ein gestrichener Punkt lässt den Verweis ins Leere zeigen', () => {
+  const ohneNeun = AGB_GLIEDERUNG.filter((g) => g.nr !== 9);
+  const m = pruefeAgbVerweise(belegeMitVerweis, ohneNeun, AGB_VERWEISE);
+  assert.ok(m.some((x) => x.regel === 'verweis-ins-leere'), JSON.stringify(m));
+});
+
+test('Jeder Eintrag des Verweisregisters nennt seinen Grund', () => {
+  assert.ok(AGB_VERWEISE.length >= 2, 'das Register ist zu kurz');
+  for (const v of AGB_VERWEISE) {
+    assert.ok(v.warum && v.warum.length >= 40, `Punkt ${v.nr}: ohne belastbaren Grund`);
+    assert.ok(v.erwartetImTitel && v.erwartetImTitel.length >= 4, `Punkt ${v.nr}`);
+    // Das Wort muss im Titel vorkommen — bei „Vertragsschluss" ist es der
+    // ganze Titel, und das ist in Ordnung: Geprüft wird die Zuordnung, nicht
+    // die Länge.
+    const punkt = AGB_GLIEDERUNG.find((g) => g.nr === v.nr);
+    assert.ok(punkt, `Punkt ${v.nr} steht in keiner Gliederung`);
+    assert.ok(punkt.titel.toLowerCase().includes(v.erwartetImTitel.toLowerCase()), `Punkt ${v.nr}`);
   }
 });

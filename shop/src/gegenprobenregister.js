@@ -123,6 +123,20 @@ export const GEGENPROBEN = Object.freeze([
       + 'zweites Mal überwiesen.',
   }),
   Object.freeze({
+    id: 'agb-punkt-verschoben',
+    pruefer: 'pruefe-belege',
+    was: 'Ein Beleg, der auf eine Klausel zeigt, die etwas anderes regelt',
+    datei: 'shop/src/rechtstexte.js',
+    art: 'ersetzen',
+    suchen: "    titel: 'Zahlung, Verzug, Eigentumsvorbehalt',",
+    ersetzen: "    titel: 'Gewährleistung und Haftung',",
+    erwartet: /verweis-zeigt-woanders|Punkt 9 heißt/,
+    warum: 'Angebot und Auftragsbestätigung zitieren „Punkt 2" und „Punkt 9" der eigenen AGB. '
+      + 'Beide Verweise hängen an einer Zählung, die niemand bewacht: Wer einen Punkt '
+      + 'einschiebt, verschiebt jede Nummer dahinter, und der Kundenbeleg zitiert danach eine '
+      + 'fremde Klausel. Die Gliederung bleibt dabei richtig und der Beleg lesbar.',
+  }),
+  Object.freeze({
     id: 'datenschutz-zusage-stimmt-nicht',
     pruefer: 'pruefe-datenschutz',
     was: 'Ein Cookie in einem Shop, dessen Rechtsseite „keine Cookies" zusagt',

@@ -463,6 +463,48 @@ export const WEBSITE_VERARBEITUNG = [
   },
 ];
 
+/**
+ * Die Punkte der Geschäftsbedingungen, auf die ein **Außentext** verweist.
+ *
+ * **Der Anlass, 2. September 2026.** Die Auftragsbestätigung sagt „Mit dieser
+ * Bestätigung kommt der Vertrag zustande (Punkt 2 unserer Allgemeinen
+ * Geschäftsbedingungen)", das Angebot nennt „kein Zahlungsziel (Punkt 9 der
+ * Geschäftsbedingungen)". Beide Verweise stimmen — und beide hängen an einer
+ * **Zählung**, die niemand bewacht.
+ *
+ * Wer einen Punkt einschiebt, verschiebt jede Nummer dahinter. Aus „Punkt 9,
+ * Zahlung" wird „Punkt 9, Gewährleistung und Haftung", und der Beleg beim
+ * Kunden zitiert eine Klausel, die etwas anderes regelt. Das fällt nicht auf:
+ * Die Gliederung bleibt richtig, der Beleg bleibt lesbar, nur der Verweis
+ * zeigt woanders hin.
+ *
+ * > **Ein Verweis auf eine Nummer ist eine Verabredung mit einer Reihenfolge.**
+ *
+ * Dieselbe Bauart wie der Anker im HTML, an dem der Preisabgleich hing: Wer
+ * die Reihenfolge ändert, ändert die Verabredung mit.
+ *
+ * `erwartetImTitel` ist bewusst ein Wort und keine Wiederholung des Titels —
+ * eine Kopie des Titels prüfte nur, dass zwei Zeichenketten gleich sind, und
+ * wäre bei jeder Umformulierung rot, ohne dass etwas kaputt ist.
+ */
+export const AGB_VERWEISE = Object.freeze([
+  Object.freeze({
+    nr: 2,
+    zweck: 'Vertragsschluss durch die Auftragsbestätigung',
+    erwartetImTitel: 'Vertragsschluss',
+    warum: 'Die Auftragsbestätigung ist das Dokument, mit dem der Vertrag zustande kommt. '
+      + 'Zeigt der Verweis auf eine andere Klausel, steht auf dem Beleg eine falsche '
+      + 'Rechtsfolge — und der Beleg ist der, auf den hin der Kunde zahlt.',
+  }),
+  Object.freeze({
+    nr: 9,
+    zweck: 'Zahlungsbedingung ohne Zahlungsziel',
+    erwartetImTitel: 'Zahlung',
+    warum: 'Ohne diesen Satz gilt im B2B die Verkehrssitte, und die ist ein Zahlungsziel. '
+      + 'Der Verweis trägt die Ausnahme; zeigt er ins Leere, trägt sie nichts.',
+  }),
+]);
+
 export const DATENSCHUTZ_GLIEDERUNG = [
   'Verantwortlicher und Kontakt',
   'Was beim bloßen Besuch der Seite geschieht — siehe den technischen Befund darunter',

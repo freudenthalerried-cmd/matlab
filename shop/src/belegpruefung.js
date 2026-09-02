@@ -32,7 +32,7 @@
  */
 
 import { findeWiderrufe } from './widerruf.js';
-import { ZAHLUNGSBEDINGUNGEN } from './rechtstexte.js';
+import { ZAHLUNGSBEDINGUNGEN, AGB_GLIEDERUNG, AGB_VERWEISE } from './rechtstexte.js';
 
 /** Die Zeile, die eine Endsumme ausweist. */
 export const SUMMENZEILE = /^Gesamtbetrag\s+[\d.,]+\s*€/m;
@@ -243,10 +243,75 @@ export function pruefeVerrechnetUndBestellt(belege, register = VERRECHNET_UND_BE
 }
 
 /**
+ * Hält jede Punkt-Nennung eines Außentextes gegen die Gliederung der AGB.
+ *
+ * Drei Richtungen, und die dritte ist die, die man vergisst:
+ *
+ * 1. Ein Beleg zitiert einen Punkt, den das Register nicht führt — dann hat
+ *    ihn niemand gegen die Gliederung gehalten.
+ * 2. Ein geführter Punkt gibt es nicht mehr, oder er heißt anders — dann
+ *    zeigt der Verweis auf dem Kundenbeleg auf eine fremde Klausel.
+ * 3. Ein geführter Punkt kommt in keinem Beleg mehr vor — dann ist der
+ *    Eintrag stehengeblieben und bewacht nichts. **Nur bei einem vollständigen
+ *    Durchlauf**: Über einer Teilmenge der Belege sagt das Fehlen nichts, und
+ *    ein Prüfer, der bei jedem Ausschnitt rot wird, wird abgeschaltet.
+ *
+ * @param {{art: string, text: string}[]} belege
+ * @param {{nr: number, titel: string}[]} gliederung
+ * @param {{nr: number, erwartetImTitel: string}[]} register
+ */
+export function pruefeAgbVerweise(belege, gliederung, register, { vollstaendig = false } = {}) {
+  const meldungen = [];
+  const genannt = new Map();
+  for (const b of belege) {
+    for (const t of String(b.text).matchAll(/Punkt\s+(\d+)/g)) {
+      const nr = Number(t[1]);
+      if (!genannt.has(nr)) genannt.set(nr, b.art);
+    }
+  }
+
+  for (const [nr, art] of genannt) {
+    if (!register.some((r) => r.nr === nr)) {
+      meldungen.push({
+        regel: 'verweis-ohne-eintrag',
+        text: `${art} zitiert Punkt ${nr} der AGB — im Verweisregister steht er nicht, `
+          + 'also hält ihn niemand gegen die Gliederung',
+      });
+    }
+  }
+
+  for (const r of register) {
+    const punkt = gliederung.find((g) => g.nr === r.nr);
+    if (!punkt) {
+      meldungen.push({
+        regel: 'verweis-ins-leere',
+        text: `Punkt ${r.nr} (${r.zweck}) steht in keiner Gliederung mehr`,
+      });
+      continue;
+    }
+    if (!punkt.titel.toLowerCase().includes(String(r.erwartetImTitel).toLowerCase())) {
+      meldungen.push({
+        regel: 'verweis-zeigt-woanders',
+        text: `Punkt ${r.nr} heißt „${punkt.titel}" und soll ${r.zweck} tragen — `
+          + `„${r.erwartetImTitel}" kommt im Titel nicht vor`,
+      });
+    }
+    if (vollstaendig && !genannt.has(r.nr)) {
+      meldungen.push({
+        regel: 'eintrag-ohne-verweis',
+        text: `Punkt ${r.nr} (${r.zweck}) wird in keinem Beleg mehr zitiert — `
+          + 'der Eintrag bewacht nichts',
+      });
+    }
+  }
+  return meldungen;
+}
+
+/**
  * Alle Belege eines Durchlaufs.
  * @param {{art: string, text: string}[]} belege
  */
-export function pruefeBelege(belege) {
+export function pruefeBelege(belege, { vollstaendig = false } = {}) {
   if (!Array.isArray(belege) || belege.length === 0) {
     throw new Error('Ohne Belege gibt es nichts zu prüfen — ein leerer Durchlauf ist kein grüner.');
   }
@@ -254,7 +319,10 @@ export function pruefeBelege(belege) {
   // Der Fehler zwischen zwei Belegen gehört dem Durchlauf, nicht einem
   // einzelnen Beleg. Er wird deshalb dem Zielbeleg zugeschlagen, damit er in
   // derselben Liste erscheint wie alles andere.
-  const uebergreifend = pruefeVerrechnetUndBestellt(belege);
+  const uebergreifend = [
+    ...pruefeVerrechnetUndBestellt(belege),
+    ...pruefeAgbVerweise(belege, AGB_GLIEDERUNG, AGB_VERWEISE, { vollstaendig }),
+  ];
   if (uebergreifend.length) {
     const ziel = befunde.find((f) => f.art === 'Lieferantenbestellung') ?? befunde[0];
     ziel.meldungen.push(...uebergreifend);
