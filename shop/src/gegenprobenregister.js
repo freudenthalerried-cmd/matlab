@@ -121,6 +121,18 @@ export const GEGENPROBEN = Object.freeze([
       + 'eigene Behauptung über sich selbst — dieselbe Lage wie beim Auftragsabgleich.',
   }),
   Object.freeze({
+    id: 'auftrag-nennt-was-es-nicht-gibt',
+    pruefer: 'pruefe-auftrag',
+    was: 'Eine Begründung, die einen Befehl nennt, den es nicht gibt',
+    datei: 'shop/data/auftragszuordnung.json',
+    art: 'ersetzen',
+    suchen: 'npm run pruefe-kontrolle',
+    ersetzen: 'npm run pruefe-erfunden',
+    erwartet: /nennt den Befehl/,
+    warum: 'Zum neunten Ergebnis stand ein Vorgang im Präsens, den es nicht gab — die '
+      + 'Belegdatei existierte, der Aufruf nicht. Ein Beleg, der existiert, belegt noch nichts.',
+  }),
+  Object.freeze({
     id: 'kontrolle-margenleck',
     pruefer: 'pruefe-kontrolle',
     was: 'Der Wareneinsatz auf dem Kundenbeleg',

@@ -101,3 +101,110 @@ export function pruefeErgebnisse(liste, zuordnung = {}, gibtEs = () => false) {
     sauber: zaehle('ohne-zuordnung') === 0 && zaehle('beleg-fehlt') === 0,
   };
 }
+
+/* ------------------------------------------------------------------ *
+ * Was die Begründung nennt — Ergänzung vom 2. September
+ *
+ * Bis hierher prüfte der Abgleich, dass die **Belegdateien** existieren. Am
+ * 2. September stellte sich heraus, dass das zu wenig ist: Zum neunten
+ * Ergebnis stand *„kontrolle.js prüft jeden Beleg gegen die Rechnung"* — die
+ * Datei gab es, den Vorgang nicht. Dreiundfünfzig Testverweise, kein einziger
+ * Aufruf aus dem Betrieb.
+ *
+ * > **Ein Beleg, der existiert, belegt noch nichts.**
+ *
+ * Geprüft wird deshalb jetzt auch, was die Begründung **beim Namen nennt**:
+ * jede Datei, jeder `npm run`-Befehl, jede Kennung aus dem Quelltext. Was
+ * genannt wird, muss es geben.
+ *
+ * Zwei Sorten Ausnahme sind unvermeidlich und stehen deshalb ausdrücklich im
+ * Datensatz statt in einer Regel:
+ *
+ *   1. Etwas wird genannt, **weil es fehlt** — „statt einer Datei ANNAHMEN.md".
+ *   2. Ein Wort steht in Großbuchstaben zur **Betonung**, nicht als Kennung —
+ *      „Rohdaten von WETTBEWERBSPREISEN gibt es nicht".
+ *
+ * Beide brauchen einen Grund im Feld `_ausnahmen`. Wer eine Ausnahme einträgt,
+ * die keine ist, muss beim Schreiben des Grundes merken, dass er keinen hat.
+ * ------------------------------------------------------------------ */
+
+/** Eine Datei, wie sie in Prosa geschrieben wird. */
+export const DATEIMUSTER = /\b([A-Za-z0-9._-]+\.(?:js|mjs|json|md|html|xlsx|docx|csv))\b/g;
+
+/** Ein Werkzeugaufruf. */
+export const BEFEHLSMUSTER = /\bnpm run ([a-z][a-z0-9-]*)/g;
+
+/**
+ * Eine Kennung aus dem Quelltext: `kleinesCamelCase` oder
+ * `GROSS_MIT_UNTERSTRICH`.
+ *
+ * **Ein einzelnes Wort in Großbuchstaben steht ausdrücklich nicht darin**, und
+ * das ist die Grenze dieses Prüfers. Die erste Fassung nahm es auf und meldete
+ * prompt `DREI`, `GROESSTEN` und `RISIKEN` als Kennungen — aus dem Satz „die
+ * DREI GROESSTEN RISIKEN". In deutscher Prosa ist ein großgeschriebenes Wort
+ * eine Betonung, und `IMPRESSUMSFELDER` sieht genauso aus wie `WETTBEWERBS-
+ * PREISEN`.
+ *
+ * > **Was sich nicht unterscheiden lässt, wird nicht geprüft — nicht geraten.**
+ *
+ * Der Preis ist bekannt: `ANNAHMEN` und `IMPRESSUMSFELDER` fallen aus der
+ * Prüfung. `camelCase` bleibt, weil deutsche Prosa es nicht kennt, und die
+ * Datei- und Befehlsnamen tragen ohnehin das meiste Gewicht.
+ */
+export const KENNUNGSMUSTER = /\b([A-Z][A-Z0-9]*_[A-Z0-9_]+|[a-z]+[A-Z][A-Za-z0-9]{2,})\b/g;
+
+/** Was eine Begründung an Nachprüfbarem nennt. */
+export function genanntes(begruendung) {
+  const text = String(begruendung ?? '');
+  const hol = (muster) => [...new Set([...text.matchAll(muster)].map((m) => m[1]))];
+  const dateien = hol(DATEIMUSTER);
+  return {
+    dateien,
+    befehle: hol(BEFEHLSMUSTER),
+    // Ein Dateiname enthält oft selbst eine Kennung („empfindlichkeit.js");
+    // sie wird nicht doppelt geprüft.
+    kennungen: hol(KENNUNGSMUSTER).filter((k) => !dateien.some((d) => d.startsWith(k))),
+  };
+}
+
+/**
+ * Prüft jede Begründung gegen die Wirklichkeit.
+ *
+ * @param {object} zuordnung  der Datensatz, samt `_ausnahmen`
+ * @param {object} kennt      {datei(name), befehl(name), kennung(name)} → boolean
+ */
+export function pruefeBegruendungen(zuordnung = {}, kennt = {}) {
+  const ausnahmen = new Map((zuordnung._ausnahmen ?? []).map((a) => [a.was, a]));
+  for (const [was, a] of ausnahmen) {
+    if (!a.warum || a.warum.length < 30) throw new Error(`Ausnahme ohne Grund: ${was}`);
+  }
+
+  const meldungen = [];
+  let geprueft = 0;
+
+  for (const [nr, eintrag] of Object.entries(zuordnung)) {
+    if (nr.startsWith('_')) continue;
+    const g = genanntes(eintrag.begruendung);
+    const paare = [
+      ...g.dateien.map((x) => ['Datei', x, kennt.datei]),
+      ...g.befehle.map((x) => ['Befehl', x, kennt.befehl]),
+      ...g.kennungen.map((x) => ['Kennung', x, kennt.kennung]),
+    ];
+    for (const [art, name, weiss] of paare) {
+      if (ausnahmen.has(name)) continue;
+      geprueft += 1;
+      if (typeof weiss !== 'function') throw new Error(`Für ${art} fehlt die Auskunft`);
+      if (!weiss(name)) {
+        const artikel = { Datei: ['die Datei', 'die'], Befehl: ['den Befehl', 'den'], Kennung: ['die Kennung', 'die'] }[art];
+        meldungen.push({
+          nr,
+          art,
+          name,
+          text: `Ergebnis ${nr} nennt ${artikel[0]} „${name}" — ${artikel[1]} gibt es nicht`,
+        });
+      }
+    }
+  }
+
+  return { geprueft, meldungen, sauber: meldungen.length === 0, ausnahmen: ausnahmen.size };
+}

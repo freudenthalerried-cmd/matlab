@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ergebnisliste, pruefeErgebnisse, ERGEBNISKAPITEL } from '../src/auftrag.js';
+import { ergebnisliste, pruefeErgebnisse, genanntes, pruefeBegruendungen, ERGEBNISKAPITEL } from '../src/auftrag.js';
 
 const REPO = fileURLToPath(new URL('../../', import.meta.url));
 const auftrag = () => readFileSync(join(REPO, 'docs', 'baustoff-shop', 'master-prompt.md'), 'utf8');
@@ -78,4 +78,70 @@ test('Jede Anforderung des Auftrags ist beantwortet und belegt', () => {
     // Wer „erfüllt" oder „anders" sagt, muss zeigen, wo.
     if (b.zustand !== 'offen') assert.ok(b.belege.length > 0, `Ergebnis ${b.nr}: ${b.zustand} ohne Beleg`);
   }
+});
+
+/* ------------------------------------------------------------------ *
+ * Was die Begründung nennt — Ergänzung vom 2. September
+ *
+ * Der Abgleich prüfte, dass die Belegdateien existieren. Zum neunten
+ * Ergebnis stand trotzdem „kontrolle.js prüft jeden Beleg gegen die
+ * Rechnung": Die Datei gab es, den Vorgang nicht.
+ * ------------------------------------------------------------------ */
+
+test('Genanntes wird nach Art getrennt gelesen', () => {
+  const g = genanntes('Siehe kontrolle.js und npm run pruefe-belege; darfBestaetigtWerden sperrt, UST_SATZ auch.');
+  assert.deepEqual(g.dateien, ['kontrolle.js']);
+  assert.deepEqual(g.befehle, ['pruefe-belege']);
+  assert.deepEqual(g.kennungen.sort(), ['UST_SATZ', 'darfBestaetigtWerden']);
+});
+
+test('Ein betontes Wort in Großbuchstaben ist keine Kennung', () => {
+  // Die erste Fassung meldete DREI, GROESSTEN und RISIKEN als Kennungen. In
+  // deutscher Prosa ist Großschreibung Betonung; IMPRESSUMSFELDER sieht
+  // genauso aus wie WETTBEWERBSPREISEN. Was sich nicht unterscheiden lässt,
+  // wird nicht geprüft — der Preis steht in KENNUNGSMUSTER.
+  const g = genanntes('Die DREI GROESSTEN RISIKEN stehen in WETTBEWERBSPREISEN.');
+  assert.deepEqual(g.kennungen, []);
+});
+
+test('Der Dateiname wird nicht zusätzlich als Kennung geprüft', () => {
+  const g = genanntes('empfindlichkeit.js rechnet.');
+  assert.deepEqual(g.dateien, ['empfindlichkeit.js']);
+  assert.deepEqual(g.kennungen, []);
+});
+
+test('Was genannt wird und es nicht gibt, wird gemeldet', () => {
+  const z = { 1: { begruendung: 'Siehe npm run gibtesnicht.' }, _ausnahmen: [] };
+  const b = pruefeBegruendungen(z, { datei: () => true, befehl: () => false, kennung: () => true });
+  assert.equal(b.sauber, false);
+  assert.equal(b.meldungen[0].art, 'Befehl');
+  assert.match(b.meldungen[0].text, /den gibt es nicht/);
+});
+
+test('Eine Ausnahme braucht ihren Grund', () => {
+  const z = { 1: { begruendung: 'x' }, _ausnahmen: [{ was: 'ANNAHMEN.md', warum: 'zu kurz' }] };
+  assert.throws(() => pruefeBegruendungen(z, { datei: () => true, befehl: () => true, kennung: () => true }), /Ausnahme ohne Grund/);
+});
+
+test('Eine begründete Ausnahme wird nicht geprüft', () => {
+  const z = {
+    1: { begruendung: 'Statt einer Datei ANNAHMEN.md führen ANNAHMEN in empfindlichkeit.js jede Annahme.' },
+    _ausnahmen: [{ was: 'ANNAHMEN.md', warum: 'Wird genannt, weil es die Datei bewusst nicht gibt — das ist der Kern der Antwort.' }],
+  };
+  const b = pruefeBegruendungen(z, { datei: (n) => n !== 'ANNAHMEN.md', befehl: () => true, kennung: () => true });
+  assert.equal(b.sauber, true, JSON.stringify(b.meldungen));
+  assert.equal(b.ausnahmen, 1);
+});
+
+test('Der echte Datensatz nennt nichts, was es nicht gibt', () => {
+  const zuordnung = JSON.parse(readFileSync(fileURLToPath(new URL('../data/auftragszuordnung.json', import.meta.url)), 'utf8'));
+  const paket = JSON.parse(readFileSync(fileURLToPath(new URL('../package.json', import.meta.url)), 'utf8'));
+  const b = pruefeBegruendungen(zuordnung, {
+    datei: (n) => ['shop/src', 'shop/data', 'shop/bin', 'shop/ausgabe', 'docs/baustoff-shop', 'shop', '.']
+      .some((o) => existsSync(join(REPO, o, n))),
+    befehl: (n) => Boolean(paket.scripts[n]),
+    kennung: () => true,
+  });
+  assert.ok(b.geprueft >= 15, `nur ${b.geprueft} Angaben geprüft`);
+  assert.deepEqual(b.meldungen.map((m) => m.text), []);
 });
