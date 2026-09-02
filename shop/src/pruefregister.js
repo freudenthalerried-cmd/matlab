@@ -77,6 +77,17 @@ export const PRUEFER = [
     mindestens: 3,
   },
   {
+    // Sechs Zusagen der Datenschutzseite, fünf davon messbar. `mindestens: 5`,
+    // weil eine geschrumpfte Liste „keine Meldung" meldete und nichts gemessen
+    // hätte — dieselbe Falle wie bei jedem anderen Bestandsprüfer.
+    name: 'pruefe-datenschutz',
+    werkzeug: 'datenschutzpruefung.mjs',
+    muster: /Datenschutzzusagen — (\d+) auf der Seite/,
+    einheit: 'Zusagen über den Code',
+    mindestens: 5,
+    zweite: true,
+  },
+  {
     // Sieben Kontrollen an einem gebauten Vorgang. `mindestens: 7`, weil eine
     // fehlende Kontrolle sonst als „alle bestanden" durchliefe — der Prüfer
     // meldete dann sechs von sechs.

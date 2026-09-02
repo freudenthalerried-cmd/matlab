@@ -397,12 +397,33 @@ export function lieferhinweise(auftrag = {}) {
  * ändert sich mit dem Code und gehört deshalb hierher und nicht in eine
  * Kanzleivorlage.
  */
+/**
+ * **Jede Zusage hier trägt seit dem 2. September eine Kennung — oder einen
+ * Grund, warum sie sich nicht messen lässt.**
+ *
+ * Diese sechs Sätze stehen auf der Datenschutzseite und sind Aussagen über
+ * den **Code**. Vier davon können durch ein Skript falsch werden: Ein
+ * `document.cookie`, ein Zählpixel, eine eingebettete Schrift, ein `fetch` —
+ * und der Satz auf der Rechtsseite ist eine Unwahrheit, die niemand bemerkt.
+ * Geprüft war bisher nur, dass die Sätze **dastehen**.
+ *
+ * > **Eine Zusage auf einer Rechtsseite, die niemand nachmisst, ist eine
+ * > Behauptung mit Haftung.**
+ *
+ * `pruefbar: false` verlangt `warumNicht` — dieselbe Pflicht wie bei den
+ * offenen Punkten und den Außentexten. Wer eine siebte Zusage hinzufügt, muss
+ * beim Schreiben des Grundes merken, dass er keinen hat.
+ */
 export const WEBSITE_VERARBEITUNG = [
   {
+    id: 'keine-cookies',
+    pruefbar: true,
     was: 'Keine Cookies',
     befund: 'Die Seiten setzen keine Cookies — weder eigene noch fremde. Ein Einwilligungsbanner ist deshalb gegenstandslos.',
   },
   {
+    id: 'warenkorb-im-browser',
+    pruefbar: true,
     was: 'Warenkorb im Browser',
     // Der Schlüssel kommt aus dem Code, nicht aus dem Gedächtnis. Der erste
     // Wurf schrieb „fb.warenkorb" — frei erfunden, in einer Rechtsseite.
@@ -412,20 +433,31 @@ export const WEBSITE_VERARBEITUNG = [
       + 'Er verlässt das Gerät erst, wenn der Besucher den Anfragetext selbst kopiert und versendet.',
   },
   {
+    id: 'keine-analyse',
+    pruefbar: true,
     was: 'Keine Zählpixel, keine Analyse',
     befund: 'Kein Analysewerkzeug, kein Zählpixel, kein Werbenetzwerk auf den Seiten.',
   },
   {
+    id: 'keine-fremden-einbindungen',
+    pruefbar: true,
     was: 'Keine fremden Einbindungen',
     befund: 'Seit 29.08. lädt keine Seite eine Datei von einem fremden Server. Bis dahin kamen drei Schriften von '
       + 'fonts.googleapis.com und fonts.gstatic.com; damit ging die IP-Adresse jedes Besuchers ungefragt an einen Dritten.',
   },
   {
+    id: 'verweise-nicht-eingebettet',
+    pruefbar: true,
     was: 'Verweise auf Herstellerseiten',
     befund: 'Merkblätter und Sicherheitsdatenblätter sind verlinkt, nicht eingebettet. Sie werden erst geladen, wenn der Besucher klickt — '
       + 'dann gilt die Datenschutzerklärung des Herstellers.',
   },
   {
+    id: 'serverprotokoll',
+    pruefbar: false,
+    warumNicht: 'Was der Webserver protokolliert, entscheidet der Hoster und nicht dieser Bau. '
+      + 'Aus dem Verzeichnis ist es nicht ablesbar; die Angabe bleibt offen und steht als '
+      + 'solche auf der Seite.',
     was: 'Serverprotokoll',
     befund: 'Was der Webserver protokolliert, hängt am Hoster und ist noch nicht entschieden. Diese Angabe ist offen und muss vor dem Start ausgefüllt werden.',
   },

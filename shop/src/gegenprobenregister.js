@@ -123,6 +123,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'zweites Mal überwiesen.',
   }),
   Object.freeze({
+    id: 'datenschutz-zusage-stimmt-nicht',
+    pruefer: 'pruefe-datenschutz',
+    was: 'Ein Cookie in einem Shop, dessen Rechtsseite „keine Cookies" zusagt',
+    datei: 'shop/shop-ui.js',
+    art: 'anhaengen',
+    // **Kein Kommentar.** Der erste Versuch hängte `// document.cookie = …`
+    // an; das Bündel wirft Kommentare weg, und die Probe blieb grün. Eine
+    // Mutation, die der Bau entfernt, ist keine.
+    text: '\ntry { document.cookie = "probe=1"; } catch (e) {}\n',
+    erwartet: /keine-cookies|Keine Cookies/,
+    baueVorher: true,
+    warum: 'Die sechs Sätze auf der Datenschutzseite sind Aussagen über den Code, und geprüft '
+      + 'war bisher nur, dass sie dastehen. Eine Zusage auf einer Rechtsseite, die niemand '
+      + 'nachmisst, ist eine Behauptung mit Haftung.',
+  }),
+  Object.freeze({
     id: 'bestelltext-verliert-gebrochene-menge',
     pruefer: 'pruefe-kontrolle',
     was: 'Eine gebrochene Menge, die der Rückleser des Bestelltextes nicht sieht',
