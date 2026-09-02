@@ -53,7 +53,12 @@ const laufe = (name) => {
  * > diese rot statt grün, und eine falsche Anschuldigung ist auch eine
  * > Fehlmeldung.
  */
-const baue = () => spawnSync('npm', ['run', '--silent', 'website'], { cwd: SHOP, encoding: 'utf8' });
+const baue = () => {
+  // `build` **vor** `website`: Die Oberfläche `shop-ui.js` geht durch das
+  // Bündel, und eine Mutation dort erreicht die gebaute Seite sonst nicht.
+  spawnSync('npm', ['run', '--silent', 'build'], { cwd: SHOP, encoding: 'utf8' });
+  return spawnSync('npm', ['run', '--silent', 'website'], { cwd: SHOP, encoding: 'utf8' });
+};
 
 const nurEine = process.argv[2] ?? null;
 const proben = nurEine ? GEGENPROBEN.filter((p) => p.id === nurEine || p.pruefer === nurEine) : GEGENPROBEN;

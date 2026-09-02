@@ -11,6 +11,7 @@
     "auswerten": "node bin/auswerten.mjs",
     "suchvolumen": "node bin/suchvolumen.mjs",
     "oberflaechenprobe": "node bin/oberflaechenprobe.mjs",
+    "wegprobe": "node bin/wegprobe.mjs",
     "shopprobe": "node bin/shopprobe.mjs",
     "pruefe-inhalte": "node bin/inhaltspruefung.mjs",
     "pruefe-seiten": "node bin/inhaltspruefung.mjs --seiten",

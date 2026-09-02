@@ -121,6 +121,20 @@ export const GEGENPROBEN = Object.freeze([
       + 'eigene Behauptung über sich selbst — dieselbe Lage wie beim Auftragsabgleich.',
   }),
   Object.freeze({
+    id: 'weg-zahlweg-nicht-vorbelegt',
+    pruefer: 'wegprobe',
+    was: 'Ein Klick mehr auf dem Weg zur Anfrage',
+    datei: 'shop/shop-ui.js',
+    art: 'ersetzen',
+    suchen: 'if (i === 0) r.checked = true;',
+    ersetzen: 'if (i === -1) r.checked = true;',
+    erwartet: /nicht vorbelegt/,
+    warum: 'Der bezahlte Klick kostet 4,19 bis 8,22 €. Jeder zusätzliche Schritt bis zur '
+      + 'Anfrage entwertet ihn, und ein nicht vorbelegter Zahlweg ist ein Klick ohne '
+      + 'Erkenntnis.',
+    baueVorher: true,
+  }),
+  Object.freeze({
     id: 'anzeige-verspricht-vollstaendigkeit',
     pruefer: 'kampagne',
     was: 'Eine Anzeige, die Vollständigkeit verspricht, obwohl die Systemliste eine Lücke nennt',
