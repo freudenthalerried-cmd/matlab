@@ -120,6 +120,19 @@ export const GEGENPROBEN = Object.freeze([
     warum: 'Der Prüfer sagt „jede Aussage trägt ihre Quelle". Ohne Probe ist das seine '
       + 'eigene Behauptung über sich selbst — dieselbe Lage wie beim Auftragsabgleich.',
   }),
+  Object.freeze({
+    id: 'kontrolle-margenleck',
+    pruefer: 'pruefe-kontrolle',
+    was: 'Der Wareneinsatz auf dem Kundenbeleg',
+    datei: 'shop/src/beleg.js',
+    art: 'ersetzen',
+    suchen: "    'Leistungsort Österreich, Steuersatz 20 %.',",
+    ersetzen: "    `Wareneinsatz: ${EUR(warenkorb.einkaufNetto)}`,\n    'Leistungsort Österreich, Steuersatz 20 %.',",
+    erwartet: /Einkaufszahl|Wareneinsatz/i,
+    warum: 'Die Weisung vom 28.08. lautet: keine Spanne ausgeben. Die zweite Rechnung '
+      + 'liest den fertigen Belegtext und muss die Einkaufszahl darin finden — sonst '
+      + 'bestätigt sie nur, statt zu prüfen.',
+  }),
 ]);
 
 /**

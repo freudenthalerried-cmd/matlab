@@ -18,6 +18,7 @@
     "pruefe-quellen": "node bin/quellenpruefung.mjs",
     "pruefe-widerrufe": "node bin/widerrufpruefung.mjs",
     "pruefe-belege": "node bin/belegpruefung.mjs",
+    "pruefe-kontrolle": "node bin/kontrolllauf.mjs",
     "pruefe-geheimnis": "node bin/geheimnispruefung.mjs",
     "katalog": "node bin/katalog-aus-rechnungen.mjs",
     "artikelliste": "node bin/artikelliste.mjs",

@@ -4732,6 +4732,7 @@ function baueVorgang({
   lieferdatum = null,
   rechnungsnummer = null,
   zahlungEingegangen = false,
+  zahlung = {},
 }) {
   if (!vorgangsnummer) throw new Error('Ein Vorgang braucht eine Nummer');
 
@@ -4761,12 +4762,22 @@ function baueVorgang({
     auftrag,
     hinweise: lieferhinweise(auftrag),
   });
+  
+  
+  
+  
+  
+  
+  
+  
+  
   const rechnung = erzeugeRechnung(warenkorb, {
     nummer: rechnungsnummer,
     datum,
     lieferdatum,
     kunde,
     betreiber,
+    zahlung,
   });
 
   return {

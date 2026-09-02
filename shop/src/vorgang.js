@@ -62,6 +62,7 @@ export function baueVorgang({
   lieferdatum = null,
   rechnungsnummer = null,
   zahlungEingegangen = false,
+  zahlung = {},
 }) {
   if (!vorgangsnummer) throw new Error('Ein Vorgang braucht eine Nummer');
 
@@ -91,12 +92,22 @@ export function baueVorgang({
     auftrag,
     hinweise: lieferhinweise(auftrag),
   });
+  // **Nachgezogen am 2. September.** `erzeugeRechnung` hat am Vormittag den
+  // Zahlungsvermerk bekommen — den Satz, ohne den die Buchhaltung des Kunden
+  // ein zweites Mal überweist. Die Klammer hier hat ihn nicht mitbekommen und
+  // baute weiter Rechnungen ohne ihn. Gefunden hat es `npm run pruefe-kontrolle`
+  // am Tag seiner Entstehung: „Zahlungsvermerk unbrauchbar — Kein Zahlweg".
+  //
+  // Fünfter Fall derselben Familie an zwei Tagen: Eine Regel wird an der einen
+  // Stelle eingeführt und gilt an der anderen nicht, weil sie beim Schreiben
+  // nicht im Blick war. Siehe `wo-die-regel-aufhoerte.md`.
   const rechnung = erzeugeRechnung(warenkorb, {
     nummer: rechnungsnummer,
     datum,
     lieferdatum,
     kunde,
     betreiber,
+    zahlung,
   });
 
   return {

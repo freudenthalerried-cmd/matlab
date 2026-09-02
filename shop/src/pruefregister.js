@@ -47,6 +47,17 @@ export const PRUEFER = [
     mindestens: 90,
   },
   {
+    // Sieben Kontrollen an einem gebauten Vorgang. `mindestens: 7`, weil eine
+    // fehlende Kontrolle sonst als „alle bestanden" durchliefe — der Prüfer
+    // meldete dann sechs von sechs.
+    name: 'pruefe-kontrolle',
+    werkzeug: 'kontrolllauf.mjs',
+    muster: /(\d+) von (\d+) Kontrollen ohne Abweichung/,
+    einheit: 'Kontrollen',
+    mindestens: 7,
+    zweite: true,
+  },
+  {
     // Drei Leitzahlen, 274 Dateien. `mindestens: 3`, damit ein leeres Register
     // auffällt — ein Prüfer ohne Einträge meldet „keine Meldung" und meint
     // „nichts im Register".

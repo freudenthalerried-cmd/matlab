@@ -72,10 +72,12 @@
     "zustand": "anders",
     "belege": [
       "docs/baustoff-shop/phase6-automatisierung.md",
+      "docs/baustoff-shop/eine-kontrolle-die-nur-ein-test-aufruft.md",
       "shop/src/auftragslauf.js",
-      "shop/src/kontrolle.js"
+      "shop/src/kontrolle.js",
+      "shop/bin/kontrolllauf.mjs"
     ],
-    "begruendung": "Architektur und Strecken im Phasendokument, Fehlerfaelle und Eskalation im Code: auftragslauf.js fuehrt den Vorgang, kontrolle.js prueft jeden Beleg gegen die Rechnung, darfBestaetigtWerden verweigert die Bestaetigung bei unbekannter Lieferzeit."
+    "begruendung": "Architektur und Strecken im Phasendokument, Fehlerfaelle und Eskalation im Code: auftragslauf.js fuehrt den Vorgang, darfBestaetigtWerden verweigert die Bestaetigung bei unbekannter Lieferzeit, und kontrolle.js rechnet als zweite, unabhaengige Rechnung ueber den gerenderten Belegtext nach. **Berichtigt am 02.09.:** Hier stand \"kontrolle.js prueft jeden Beleg gegen die Rechnung\" im Praesens — beschrieben war damit ein Vorgang, den es nicht gab. Dreiundfuenfzig Testverweise, kein einziger Aufruf aus dem Betrieb: Der Rechenkern war fertig und unerreichbar. Seit npm run pruefe-kontrolle laufen sieben Kontrollen an einem aus dem echten Katalog gebauten Vorgang; am Tag der ersten Lieferantenrechnung nimmt derselbe Befehl sie entgegen."
   },
   "10": {
     "zustand": "anders",
