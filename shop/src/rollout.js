@@ -34,6 +34,21 @@ import { abbruchschwelle, TAGE_JE_MONAT } from './werbewirkung.js';
 /**
  * Die Etappen. `brauchtVor` ist die Abhängigkeit, nicht die Reihenfolge —
  * was nicht voneinander abhängt, läuft nebeneinander.
+ *
+ * **Jede Abhängigkeit trägt ihren Grund, und jede fehlende auch.** Bis zum
+ * 2. September war `brauchtVor` eine blanke Liste von Kennungen — das einzige
+ * Feld im Plan ohne Pflichtgrund. Genau dieses Feld war falsch:
+ * `lieferantengespraech` stand auf `[]` und begann an Tag 0, obwohl der Brief
+ * an den Lieferanten eine Rückantwortadresse braucht, die erst die Etappe
+ * `impressum` einträgt. `erzeugeLieferantenanfrage` sagt das von selbst
+ * („NICHT VERSANDFÄHIG"); der Plan hat nie gefragt.
+ *
+ * > **Wer „hängt von nichts ab" nicht begründen muss, schreibt es hin.**
+ *
+ * Deshalb ist `brauchtVor` jetzt `{etappe, warum}` — und eine **leere** Liste
+ * verlangt `warumOhneVoraussetzung`. Die leere Liste ist die gefährlichere:
+ * Eine falsche Abhängigkeit verlängert die Kette und fällt beim Rechnen auf,
+ * eine fehlende verkürzt sie und sieht aus wie ein guter Plan.
  */
 export const ETAPPEN = Object.freeze([
   Object.freeze({
@@ -41,6 +56,8 @@ export const ETAPPEN = Object.freeze([
     titel: 'Repository privat stellen',
     zustaendig: 'entscheidung',
     brauchtVor: [],
+    warumOhneVoraussetzung: 'Ein Klick, der von nichts abhängt — und der einzige Schritt, der '
+      + 'jeden Tag teurer wird, den er wartet.',
     tage: 0,
     art: 'gesetzt',
     woher: 'Ein Klick in den GitHub-Einstellungen.',
@@ -53,6 +70,8 @@ export const ETAPPEN = Object.freeze([
     titel: 'Vier Impressumsangaben eintragen (E-Mail, Telefon, UID, Gewerbewortlaut)',
     zustaendig: 'eintragen',
     brauchtVor: [],
+    warumOhneVoraussetzung: 'Die Angaben liegen beim Auftraggeber; es fehlt nichts, worauf sie '
+      + 'warten müssten.',
     tage: 1,
     art: 'gesetzt',
     woher: 'Die Angaben liegen beim Auftraggeber vor; einzutragen ist eine Datei.',
@@ -64,7 +83,17 @@ export const ETAPPEN = Object.freeze([
     id: 'lieferantengespraech',
     titel: 'Ein Gespräch mit dem Lieferanten',
     zustaendig: 'anfrage',
-    brauchtVor: [],
+    // **Berichtigt am 2. September.** Hier stand `[]`. Der Brief an den
+    // Lieferanten braucht eine Rückantwortadresse, und die steht in
+    // `betreiber.email` und `betreiber.telefon` — beides Teil dieser Etappe.
+    // `erzeugeLieferantenanfrage` weigert sich von selbst: „NICHT
+    // VERSANDFÄHIG". Der Plan ließ das Gespräch trotzdem an Tag 0 beginnen.
+    brauchtVor: [Object.freeze({
+      etappe: 'impressum',
+      warum: 'Der Brief braucht eine Rückantwortadresse. Ohne betreiber.email und '
+        + 'betreiber.telefon erzeugt `erzeugeLieferantenanfrage` ihn als „nicht versandfähig" '
+        + '— eine Frage ohne Empfänger für die Antwort.',
+    })],
     tage: 7,
     art: 'fremdbestimmt',
     woher: 'Angenommene Antwortzeit eines Baustoffhändlers auf eine Kundenanfrage. '
@@ -77,7 +106,11 @@ export const ETAPPEN = Object.freeze([
     id: 'katalog-erweitern',
     titel: 'Katalog aus der Artikelliste auf mindestens 100 Artikel erweitern',
     zustaendig: 'werkzeug',
-    brauchtVor: ['lieferantengespraech'],
+    brauchtVor: [Object.freeze({
+      etappe: 'lieferantengespraech',
+      warum: 'Die hundert Artikel stehen in der Artikelliste, die das Gespräch bringt. Der '
+        + 'Katalog von heute stammt aus fünfzehn Rechnungen und kennt nur, was darauf stand.',
+    })],
     tage: 2,
     art: 'gesetzt',
     woher: 'Einlesen, zuordnen, prüfen — Arbeit an vorliegenden Daten, keine Wartezeit.',
@@ -89,6 +122,8 @@ export const ETAPPEN = Object.freeze([
     titel: 'Rechtstexte mit verbindlichem Wortlaut beauftragen',
     zustaendig: 'ausgabe',
     brauchtVor: [],
+    warumOhneVoraussetzung: 'Die Gliederung mit Begründungen liegt fertig vor; der Auftrag kann '
+      + 'am selben Tag hinaus wie die Freigabe. Genau deshalb bestimmt diese Etappe den Strang.',
     tage: 10,
     art: 'fremdbestimmt',
     woher: 'Angenommene Bearbeitungszeit eines Rechtstexteanbieters. Die Vorarbeit '
@@ -102,6 +137,8 @@ export const ETAPPEN = Object.freeze([
     titel: 'Suchvolumen der 33 Keywords im Liefergebiet messen',
     zustaendig: 'entscheidung',
     brauchtVor: [],
+    warumOhneVoraussetzung: 'Ein kostenloses Ads-Konto ohne geschaltete Kampagne. Es hängt an '
+      + 'nichts — und muss vor dem Schalten liegen, nicht danach.',
     tage: 1,
     art: 'gesetzt',
     woher: 'Keyword-Planer, kostenlos, ein Ads-Konto ohne geschaltete Kampagne. '
@@ -114,7 +151,18 @@ export const ETAPPEN = Object.freeze([
     id: 'upload',
     titel: 'ausgabe/site/ auf bauversand.com hochladen',
     zustaendig: 'entscheidung',
-    brauchtVor: ['impressum', 'rechtstexte'],
+    brauchtVor: [
+      Object.freeze({
+        etappe: 'impressum',
+        warum: 'Die Abhängigkeit ist keine technische: Das Impressum-Gerüst sagt selbst, dass '
+          + 'es so nicht online gehen darf.',
+      }),
+      Object.freeze({
+        etappe: 'rechtstexte',
+        warum: 'AGB, Widerruf und Datenschutz stehen als Gerüst mit Begründungen. Ein Gerüst '
+          + 'online zu stellen wäre schlechter als kein Text, weil es wie einer aussieht.',
+      }),
+    ],
     tage: 1,
     art: 'gesetzt',
     woher: 'Ein FTP-Vorgang. Die Abhängigkeit ist keine technische: Das Impressum-Gerüst '
@@ -127,7 +175,11 @@ export const ETAPPEN = Object.freeze([
     id: 'zahlungsanbieter',
     titel: 'Zahlungsanbieter wählen und anbinden',
     zustaendig: 'ausgabe',
-    brauchtVor: ['impressum'],
+    brauchtVor: [Object.freeze({
+      etappe: 'impressum',
+      warum: 'Die Legitimationsprüfung des Anbieters verlangt die UID, und die wird in dieser '
+        + 'Etappe eingetragen.',
+    })],
     tage: 10,
     art: 'fremdbestimmt',
     woher: 'Angenommene Dauer der Legitimationsprüfung. Sie braucht die UID, deshalb '
@@ -139,7 +191,17 @@ export const ETAPPEN = Object.freeze([
     id: 'feed-einreichen',
     titel: 'Produktfeed bei Google Merchant einreichen',
     zustaendig: 'entscheidung',
-    brauchtVor: ['upload', 'katalog-erweitern'],
+    brauchtVor: [
+      Object.freeze({
+        etappe: 'upload',
+        warum: 'Der Feed verweist je Artikel auf eine Seite. Zeigt sie ins Leere, wird der Feed '
+          + 'abgelehnt.',
+      }),
+      Object.freeze({
+        etappe: 'katalog-erweitern',
+        warum: 'Eine erfundene GTIN sperrt das Konto. Die echten kommen mit der Artikelliste.',
+      }),
+    ],
     tage: 3,
     art: 'fremdbestimmt',
     woher: 'Angenommene Prüfdauer bei Google. Eine erfundene GTIN sperrt das Konto, '
@@ -151,7 +213,18 @@ export const ETAPPEN = Object.freeze([
     id: 'anzeigen-schalten',
     titel: 'Die drei Suchkampagnen des ersten Anlaufs schalten',
     zustaendig: 'ausgabe',
-    brauchtVor: ['upload', 'keywordmessung'],
+    brauchtVor: [
+      Object.freeze({
+        etappe: 'upload',
+        warum: 'Ein bezahlter Klick auf eine nicht erreichbare Seite ist bezahltes Geld für '
+          + 'nichts.',
+      }),
+      Object.freeze({
+        etappe: 'keywordmessung',
+        warum: 'Reicht das Suchvolumen das Budget nicht aus, dauert der Versuch ein Vielfaches. '
+          + 'Das gehört vor das Schalten, nicht danach.',
+      }),
+    ],
     tage: 1,
     art: 'gesetzt',
     woher: 'Die Kampagnen stehen fertig und pausiert. Das Schalten selbst ist ein Schalter.',
@@ -163,7 +236,10 @@ export const ETAPPEN = Object.freeze([
     id: 'klickversuch',
     titel: 'Klicks sammeln, bis die Kaufquote entschieden ist',
     zustaendig: 'entscheidung',
-    brauchtVor: ['anzeigen-schalten'],
+    brauchtVor: [Object.freeze({
+      etappe: 'anzeigen-schalten',
+      warum: 'Die Uhr des Versuchs beginnt mit dem ersten bezahlten Klick.',
+    })],
     tage: null,
     art: 'gerechnet',
     woher: 'Aus Tagesbudget, Klickpreis und der Abbruchschwelle — siehe werbewirkung.js.',
@@ -172,6 +248,39 @@ export const ETAPPEN = Object.freeze([
     gate: 'Gate 20',
   }),
 ]);
+
+/** Die Kennungen, von denen eine Etappe abhängt. */
+export function vorgaenger(etappe) {
+  return etappe.brauchtVor.map((v) => v.etappe);
+}
+
+/**
+ * Formprüfung der Etappenliste.
+ *
+ * Beides ist Pflicht und aus demselben Grund: Ein Plan, in dem niemand
+ * aufschreiben muss, warum etwas an nichts hängt, enthält irgendwann eine
+ * Etappe, die an etwas hängt und es nicht sagt.
+ */
+export function pruefeEtappen(etappen = ETAPPEN) {
+  const befunde = [];
+  const bekannt = new Set(etappen.map((e) => e.id));
+  for (const e of etappen) {
+    if (e.brauchtVor.length === 0) {
+      if (!e.warumOhneVoraussetzung || e.warumOhneVoraussetzung.length < 40) {
+        befunde.push(`${e.id}: hängt von nichts ab und sagt nicht, warum`);
+      }
+      continue;
+    }
+    if (e.warumOhneVoraussetzung) {
+      befunde.push(`${e.id}: nennt Voraussetzungen und begründet zugleich, keine zu haben`);
+    }
+    for (const v of e.brauchtVor) {
+      if (!bekannt.has(v.etappe)) befunde.push(`${e.id}: braucht „${v.etappe}", die es nicht gibt`);
+      if (!v.warum || v.warum.length < 40) befunde.push(`${e.id} → ${v.etappe}: ohne belastbaren Grund`);
+    }
+  }
+  return befunde;
+}
 
 /** Die Etappe zu einer Kennung, oder ein Fehler — kein stilles Überspringen. */
 function etappeVon(liste, id) {
@@ -208,7 +317,7 @@ export function rolloutplan({ tagesbudget, klickpreis, quote, frist = 90, etappe
   const rechne = (e, tiefe) => {
     if (tiefe > etappen.length) throw new Error(`Ringschluss in brauchtVor bei „${e.id}"`);
     if (fertigAm.has(e.id)) return fertigAm.get(e.id);
-    const beginn = e.brauchtVor.reduce((max, id) => Math.max(max, rechne(etappeVon(etappen, id), tiefe + 1)), 0);
+    const beginn = vorgaenger(e).reduce((max, id) => Math.max(max, rechne(etappeVon(etappen, id), tiefe + 1)), 0);
     beginnAm.set(e.id, beginn);
     const ende = beginn + dauerVon(e);
     fertigAm.set(e.id, ende);
@@ -225,7 +334,7 @@ export function rolloutplan({ tagesbudget, klickpreis, quote, frist = 90, etappe
   let lauf = letzte;
   while (lauf) {
     strang.unshift(lauf.id);
-    const vor = lauf.brauchtVor
+    const vor = vorgaenger(lauf)
       .map((id) => etappeVon(etappen, id))
       .sort((a, b) => fertigAm.get(b.id) - fertigAm.get(a.id))[0];
     lauf = vor;

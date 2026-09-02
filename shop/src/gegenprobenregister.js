@@ -137,6 +137,20 @@ export const GEGENPROBEN = Object.freeze([
       + 'fest eingetragene Zeitspannen im Quelltext macht sie scharf.',
   }),
   Object.freeze({
+    id: 'rollout-abhaengigkeit-ohne-grund',
+    pruefer: 'rollout',
+    was: 'Eine Etappe, die an nichts hängt und nicht sagt, warum',
+    datei: 'shop/src/rollout.js',
+    art: 'ersetzen',
+    suchen: "    warumOhneVoraussetzung: 'Die Angaben liegen beim Auftraggeber; es fehlt nichts, worauf sie '\n      + 'warten müssten.',\n",
+    ersetzen: '',
+    erwartet: /impressum: hängt von nichts ab und sagt nicht, warum/,
+    warum: 'Der Befund vom 2. September: `brauchtVor` war das einzige Feld im Plan ohne '
+      + 'Pflichtgrund, und genau dieses Feld war falsch. Eine fehlende Abhängigkeit verkürzt '
+      + 'die Kette und sieht aus wie ein guter Plan — die Probe hält fest, dass die leere '
+      + 'Liste jetzt auffällt.',
+  }),
+  Object.freeze({
     id: 'anfrage-punkt-ohne-frage',
     pruefer: 'pruefe-anfrage',
     was: 'Ein offener Punkt, den keine Frage des Briefes schließt',

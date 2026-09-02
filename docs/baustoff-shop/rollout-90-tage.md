@@ -45,18 +45,27 @@ dem Strang, der alles bestimmt. Alles andere ist Freigabe und Wartezeit.
 
 ## Die elf Etappen
 
-Was nicht voneinander abhängt, läuft nebeneinander — sechs der elf Etappen
+Was nicht voneinander abhängt, läuft nebeneinander — vier der elf Etappen
 können an Tag 0 beginnen. `›` markiert den bestimmenden Strang.
+
+> **Berichtigt am 2. September.** Das Lieferantengespräch stand hier auf
+> „Tag 0–7" und hing an nichts. Der Brief an den Lieferanten braucht eine
+> Rückantwortadresse, und die trägt erst die Etappe „Impressumsangaben"
+> ein — `erzeugeLieferantenanfrage` weigert sich von selbst. Jetzt Tag 1–8,
+> und der Katalog folgt auf Tag 8–10. **Die Kette bleibt bei 57 Tagen:** Das
+> Gespräch liegt nicht auf dem bestimmenden Strang, die Berichtigung kostet
+> also keinen Tag. Hergeleitet in
+> [`der-plan-hing-an-nichts.md`](./der-plan-hing-an-nichts.md).
 
 | | Woche | Tag | Etappe | Dauer | Gate |
 | --- | --- | --- | --- | --- | --- |
 | | 1 | 0 | Repository privat stellen | sofort | — |
 | | 1 | 0–1 | Vier Impressumsangaben eintragen | 1 (gesetzt) | — (§ 5 ECG) |
 | | 1 | 0–1 | Suchvolumen der 33 Keywords messen | 1 (gesetzt) | **15** |
-| | 1 | 0–7 | Ein Gespräch mit dem Lieferanten | 7 (Wartezeit) | **6, 23** |
+| | 1–2 | 1–8 | Ein Gespräch mit dem Lieferanten | 7 (Wartezeit) | **6, 23** |
 | **›** | 1–2 | 0–10 | Rechtstexte beauftragen | 10 (Wartezeit) | — |
 | | 1–2 | 1–11 | Zahlungsanbieter wählen und anbinden | 10 (Wartezeit) | **21** |
-| | 2 | 7–9 | Katalog auf ≥ 100 Artikel erweitern | 2 (gesetzt) | **22, 24** |
+| | 2 | 8–10 | Katalog auf ≥ 100 Artikel erweitern | 2 (gesetzt) | **22, 24** |
 | **›** | 2 | 10–11 | `ausgabe/site/` hochladen | 1 (gesetzt) | — |
 | **›** | 2 | 11–12 | Die drei Suchkampagnen schalten | 1 (gesetzt) | — |
 | | 2 | 11–14 | Produktfeed bei Google Merchant einreichen | 3 (Wartezeit) | **6** |

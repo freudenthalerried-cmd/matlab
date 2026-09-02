@@ -15,7 +15,7 @@
  * steht hier noch einmal.
  */
 
-import { rolloutplan, ETAPPEN } from '../src/rollout.js';
+import { rolloutplan, ETAPPEN, pruefeEtappen } from '../src/rollout.js';
 import { ZUSTAENDIGKEITEN } from '../src/offenepunkte.js';
 
 const TAGESBUDGET = 9.99;
@@ -30,6 +30,18 @@ const HAUPT = { tagesbudget: TAGESBUDGET, klickpreis: 1.5, quote: 0.01, frist: F
 
 const tag = (n) => (n === 0 ? 'Tag 0' : `Tag ${n}`);
 const artZeichen = { gerechnet: 'gerechnet', gesetzt: 'gesetzt', fremdbestimmt: 'Wartezeit auf Dritte' };
+
+// Vor dem Rechnen die Form. Ein Plan, dessen Abhängigkeiten unbegründet sind,
+// rechnet trotzdem — er rechnet nur etwas anderes, als er behauptet. Genau das
+// war er bis zum 2. September: `lieferantengespraech` hing an nichts und
+// begann an Tag 0, obwohl der Brief eine Rückantwortadresse braucht.
+const formfehler = pruefeEtappen();
+if (formfehler.length > 0) {
+  console.error(`Abbruch: ${formfehler.length} Etappe(n) ohne belastbaren Grund.\n`);
+  for (const f of formfehler) console.error(`  \u2717 ${f}`);
+  console.error('\nEine fehlende Abhängigkeit verkürzt die Kette und sieht aus wie ein guter Plan.');
+  process.exit(2);
+}
 
 const r = rolloutplan(HAUPT);
 
@@ -55,7 +67,11 @@ for (const e of r.plan) {
   console.log(`               ${dauer} (${artZeichen[e.art]}) · ${ZUSTAENDIGKEITEN[e.zustaendig].titel}`);
   console.log(`               Gate: ${e.gate ?? e.warumKeinGate}`);
   console.log(`               ${e.ergebnis}`);
-  if (e.brauchtVor.length) console.log(`               braucht vorher: ${e.brauchtVor.join(', ')}`);
+  for (const v of e.brauchtVor) {
+    // Der Grund steht mit: Eine Abhängigkeit ohne ihn ist die Sorte Zeile, die
+    // niemand prüft, weil sie plausibel aussieht.
+    console.log(`               braucht vorher: ${v.etappe} — ${v.warum}`);
+  }
   console.log('');
 }
 

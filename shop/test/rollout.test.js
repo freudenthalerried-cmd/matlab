@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { rolloutplan, ETAPPEN } from '../src/rollout.js';
+import { rolloutplan, ETAPPEN, vorgaenger, pruefeEtappen } from '../src/rollout.js';
 import { abbruchschwelle } from '../src/werbewirkung.js';
 
 const HAUPT = { tagesbudget: 9.99, klickpreis: 1.5, quote: 0.01 };
@@ -9,7 +9,7 @@ test('Jede Etappe in brauchtVor gibt es auch', () => {
   assert.ok(ETAPPEN.length >= 5, `nur ${ETAPPEN.length} Etappen — die Schleife prüfte zu wenig`);
   const ids = new Set(ETAPPEN.map((e) => e.id));
   for (const e of ETAPPEN) {
-    for (const v of e.brauchtVor) assert.ok(ids.has(v), `${e.id} braucht „${v}", das es nicht gibt`);
+    for (const v of vorgaenger(e)) assert.ok(ids.has(v), `${e.id} braucht „${v}", das es nicht gibt`);
   }
 });
 
@@ -52,7 +52,7 @@ test('Eine Etappe beginnt nie vor ihrer Vorbedingung', () => {
   assert.ok(r.plan.length >= 5, 'zu wenige Etappen im Plan');
   assert.ok(r.plan.some((e) => e.brauchtVor.length > 0), 'keine einzige Abhängigkeit — die Schleife prüfte nichts');
   for (const e of r.plan) {
-    for (const v of e.brauchtVor) {
+    for (const v of vorgaenger(e)) {
       assert.ok(e.beginntTag >= nach.get(v).fertigTag, `${e.id} beginnt vor ${v}`);
     }
   }
@@ -93,15 +93,59 @@ test('Unsinnige Eingaben werden abgewiesen, nicht gerechnet', () => {
 
 test('Ein Ringschluss fällt auf, statt den Lauf hängen zu lassen', () => {
   const ring = [
-    { id: 'a', titel: 'A', zustaendig: 'werkzeug', brauchtVor: ['b'], tage: 1, art: 'gesetzt', woher: '', ergebnis: '' },
-    { id: 'b', titel: 'B', zustaendig: 'werkzeug', brauchtVor: ['a'], tage: 1, art: 'gesetzt', woher: '', ergebnis: '' },
+    { id: 'a', titel: 'A', zustaendig: 'werkzeug', brauchtVor: [{ etappe: 'b', warum: 'x' }], tage: 1, art: 'gesetzt', woher: '', ergebnis: '' },
+    { id: 'b', titel: 'B', zustaendig: 'werkzeug', brauchtVor: [{ etappe: 'a', warum: 'x' }], tage: 1, art: 'gesetzt', woher: '', ergebnis: '' },
   ];
   assert.throws(() => rolloutplan({ ...HAUPT, etappen: ring }), /Ringschluss/);
 });
 
 test('Eine unbekannte Vorbedingung wird benannt, nicht übersprungen', () => {
   const kaputt = [
-    { id: 'a', titel: 'A', zustaendig: 'werkzeug', brauchtVor: ['gibtesnicht'], tage: 1, art: 'gesetzt', woher: '', ergebnis: '' },
+    { id: 'a', titel: 'A', zustaendig: 'werkzeug', brauchtVor: [{ etappe: 'gibtesnicht', warum: 'x' }], tage: 1, art: 'gesetzt', woher: '', ergebnis: '' },
   ];
   assert.throws(() => rolloutplan({ ...HAUPT, etappen: kaputt }), /gibtesnicht/);
+});
+
+
+/* ------------------------------------------------------------------ *
+ * Jede Abhängigkeit trägt ihren Grund — und jede fehlende auch
+ *
+ * Der Befund vom 2. September: `brauchtVor` war das einzige Feld im Plan ohne
+ * Pflichtgrund, und genau dieses Feld war falsch. `lieferantengespraech` stand
+ * auf `[]` und begann an Tag 0, obwohl der Brief an den Lieferanten eine
+ * Rückantwortadresse braucht, die erst `impressum` einträgt.
+ * ------------------------------------------------------------------ */
+
+test('Der Plan ist in Form: jede Abhängigkeit und jede fehlende begründet', () => {
+  assert.deepEqual(pruefeEtappen(), []);
+});
+
+test('Eine Etappe ohne Voraussetzung ohne Grund wird gemeldet', () => {
+  // Die gefährlichere Richtung: Eine falsche Abhängigkeit verlängert die Kette
+  // und fällt beim Rechnen auf, eine fehlende verkürzt sie und sieht aus wie
+  // ein guter Plan.
+  const befunde = pruefeEtappen([
+    { id: 'a', brauchtVor: [] },
+  ]);
+  assert.deepEqual(befunde, ['a: hängt von nichts ab und sagt nicht, warum']);
+});
+
+test('Eine Abhängigkeit ohne Grund wird gemeldet', () => {
+  const befunde = pruefeEtappen([
+    { id: 'a', brauchtVor: [{ etappe: 'b', warum: 'zu kurz' }] },
+    { id: 'b', brauchtVor: [], warumOhneVoraussetzung: 'Ein hinreichend langer Grund, der die Formprüfung besteht.' },
+  ]);
+  assert.deepEqual(befunde, ['a → b: ohne belastbaren Grund']);
+});
+
+test('Das Lieferantengespräch beginnt nicht vor dem Impressum', () => {
+  // Der Brief braucht eine Rückantwortadresse. Diese Zusicherung steht hier
+  // und nicht nur als Kommentar, weil die Verbindung zwischen zwei Dateien
+  // sonst niemand hält.
+  const r = rolloutplan(HAUPT);
+  const gespraech = r.plan.find((e) => e.id === 'lieferantengespraech');
+  const impressum = r.plan.find((e) => e.id === 'impressum');
+  assert.ok(vorgaenger(gespraech).includes('impressum'));
+  assert.ok(gespraech.beginntTag >= impressum.fertigTag,
+    `das Gespräch beginnt an Tag ${gespraech.beginntTag}, das Impressum ist an Tag ${impressum.fertigTag} fertig`);
 });
