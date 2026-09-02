@@ -2244,8 +2244,14 @@ function pruefeAnfrageAufGeheimnis(text, artikelMitEk = []) {
         
         
         
+        
+        
+        
+        
+        
         'Der zugestellte Beleg über 1.934 € netto trägt dieselbe Pauschale wie der über 614 € — '
         + 'die Fracht hängt an der Fahrt, nicht am Warenwert. '
+        + 'Quelle: eigene Lieferantenrechnungen, Stand: 2026-08-31. '
         + 'Deshalb weisen wir sie getrennt aus, statt sie in die Preise zu rechnen.'));
       z.appendChild(hinweis);
 

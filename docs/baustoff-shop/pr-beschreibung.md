@@ -42,7 +42,7 @@ Ursprünglich ein Streckenhandel für Radonvorsorge auf **unbelegten** Platzhalt
 | Kampagne | 6 Suchkampagnen gerechnet, **3 im ersten Anlauf**, alle **pausiert** |
 | Produktfeed | 43 Einträge — **nicht einreichbar**, GTIN fehlt bei allen 46 Artikeln |
 | Testbestand | **über 1.000 Testfälle**, alle grün, dazu 11 Oberflächenszenarien und 50 Shopszenarien im Browser |
-| Prüfwerkzeuge | **14 Prüfer** ohne Browser, 3 Browserproben zusätzlich |
+| Prüfwerkzeuge | **15 Prüfer** ohne Browser, 3 Browserproben zusätzlich |
 
 ## Die Zahlen, die das Modell tragen
 

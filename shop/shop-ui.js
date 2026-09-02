@@ -520,8 +520,14 @@
         // Datei im Wurzelverzeichnis liegt und durch alle vier Bestände des
         // Widerrufsprüfers fiel. Ausgerechnet die Datei, die im Browser des
         // Kunden läuft.
+        // **Quelle und Stand ergänzt am 2. September.** Die beiden Beträge
+        // stammen aus den eigenen Lieferantenrechnungen; die Wissensseite
+        // `warum-keine-gratislieferung` nennt beides seit jeher, dieser Satz
+        // nicht — weil kein Inhaltsprüfer ihn las. Seit `pruefe-oberflaeche`
+        // liest ihn einer.
         'Der zugestellte Beleg über 1.934 € netto trägt dieselbe Pauschale wie der über 614 € — '
         + 'die Fracht hängt an der Fahrt, nicht am Warenwert. '
+        + 'Quelle: eigene Lieferantenrechnungen, Stand: 2026-08-31. '
         + 'Deshalb weisen wir sie getrennt aus, statt sie in die Preise zu rechnen.'));
       z.appendChild(hinweis);
 

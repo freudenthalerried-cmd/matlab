@@ -121,6 +121,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'eigene Behauptung über sich selbst — dieselbe Lage wie beim Auftragsabgleich.',
   }),
   Object.freeze({
+    id: 'oberflaeche-erfindet-antwortzeit',
+    pruefer: 'pruefe-oberflaeche',
+    was: 'Eine Antwortzeit auf der Kasse, die niemand zugesagt hat',
+    datei: 'shop/shop-ui.js',
+    art: 'ersetzen',
+    suchen: "        : ' — wir bestätigen Preis, Verfügbarkeit und Termin.';",
+    ersetzen: "        : ' — wir bestätigen Preis, Verfügbarkeit und Termin innerhalb von 24 Stunden.';",
+    erwartet: /Zeitzusage im Quelltext|24 Stunden/i,
+    warum: 'Genau die Gegenprobe, die am 2. September nicht anschlug: Der Satz steht in '
+      + 'keiner gebauten Datei, `pruefe-seiten` blieb zu Recht grün. Seit es einen Prüfer '
+      + 'für die Oberflächensätze gibt, hat sie einen Adressaten. Beim ersten Lauf gegen '
+      + 'ihn blieb er trotzdem grün — die allgemeine Zahlenregel kennt „Std“, nicht '
+      + '„Stunden“. Wieder lag es an der Probe und nicht am Prüfer; erst die Regel gegen '
+      + 'fest eingetragene Zeitspannen im Quelltext macht sie scharf.',
+  }),
+  Object.freeze({
     id: 'aufwand-ueber-der-grenze',
     pruefer: 'aufwand',
     was: 'Ein Betrieb, der nicht mehr nebenbei läuft',
@@ -238,14 +254,6 @@ export const OHNE_GEGENPROBE = Object.freeze([
       + 'Eine Mutation, die nur eine davon verschiebt, müsste im Seitenbauwerkzeug ansetzen '
       + 'und dort genau eine Ausgabe treffen. Zwei Versuche waren Leerläufe; der Eintrag '
       + 'wartet, bis ich eine Mutation habe, die ankommt.',
-  }),
-  Object.freeze({
-    pruefer: 'oberflaechenprobe',
-    warumKeine: 'Ein Versuch am 2. September ist zurückgezogen: Die Zusage der Kasse — der '
-      + 'einzige Termin, den dieser Shop selbst nennt — entsteht erst im Browser aus '
-      + '`shop-ui.js`. Kein Inhaltsprüfer sieht sie, weil sie in keiner gebauten Datei '
-      + 'steht; `pruefe-seiten` meldete zu Recht grün. Der Satz gehört in ein Szenario '
-      + 'der Oberflächenprobe, und dann braucht diese eine eigene Gegenprobe.',
   }),
   Object.freeze({
     pruefer: 'pruefe-preisalter',

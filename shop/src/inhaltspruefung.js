@@ -381,3 +381,72 @@ export function schneideQuelltext(html) {
   }
   return { text: raus, fehler: null };
 }
+
+
+/* ------------------------------------------------------------------ *
+ * Vierter Bestand: die Sätze, die erst im Browser entstehen
+ * ------------------------------------------------------------------ */
+
+/**
+ * Die Sätze aus `shop-ui.js`, wie der Kunde sie liest.
+ *
+ * **Der Anlass, 2. September.** Eine Gegenprobe schlug nicht an, und der Grund
+ * war kein blinder Prüfer: Der Satz, den sie treffen sollte, steht in keiner
+ * gebauten Datei. Die Kassenzusage — „wir bestätigen Preis, Verfügbarkeit und
+ * Termin" — entsteht erst im Browser aus einer Zeichenkette im Quelltext.
+ *
+ * > **Was erst im Browser entsteht, prüft keine Datei.**
+ *
+ * Dritter Fall derselben Familie: am 1. September die Belege, die kein Prüfer
+ * las, und `shop-ui.js`, das in keinem Widerrufsbestand stand. Diesmal die
+ * Sätze darin.
+ *
+ * **Verkettete Literale werden zusammengezogen.** Im Quelltext steht ein Satz
+ * über drei Zeilen mit `+` dazwischen; einzeln geprüft wäre jedes Stück ein
+ * Fragment, und die Zahl in einem Fragment hätte ihre Quelle nie im selben.
+ * Der Kunde liest den ganzen Satz, also wird der ganze geprüft.
+ *
+ * Ausgenommen bleibt, was keine Aussage ist: Kennungen, Klassennamen,
+ * Auswahlausdrücke. Die Schwelle liegt bei dreißig Zeichen und einem deutschen
+ * Wortpaar — grob, und lieber ein Satz zu viel als eine Zusage zu wenig.
+ */
+export function oberflaechensaetze(quelltext) {
+  const geklebt = String(quelltext).replace(/'\s*\+\s*'/g, '');
+  const roh = [...geklebt.matchAll(/'((?:[^'\\\n]|\\.)*)'/g)]
+    .map((m) => m[1].replace(/\s+/g, ' ').trim());
+  const deutsch = /[a-zäöüß]{3,}\s+[a-zäöüßA-ZÄÖÜ]/;
+  const technik = /^[a-zA-Z0-9_.#\[\]$-]*$|^[a-z-]+$|data-|querySelector/;
+  return [...new Set(roh.filter((t) => t.length >= 30 && deutsch.test(t) && !technik.test(t)))];
+}
+
+/**
+ * Zeitangaben, die im Quelltext der Oberfläche fest eingetragen sind.
+ *
+ * **Die Regel in einem Satz: Eine ausgeschriebene Zeitspanne mit fester Zahl
+ * gehört nicht in `shop-ui.js`.** Jede echte Frist des Shops steht in den
+ * Daten und wird zur Laufzeit eingesetzt — die Kassenzusage baut ihre
+ * Werktage aus `betreiber.antwortzeitWerktage`, die Lieferzeiten kommen aus
+ * dem Katalog. Im Quelltext bleibt dann nur „innerhalb von " stehen; die Zahl
+ * taucht in keinem Literal auf. Steht dort trotzdem eine, ist sie von Hand
+ * hingeschrieben und von nichts gedeckt.
+ *
+ * **Warum nicht die allgemeine Zahlenregel.** `ZAHL_MIT_EINHEIT` kennt `h`,
+ * `min` und `Std`, aber nicht „Stunden" — ausgeschriebene Zeitwörter stehen am
+ * Anfang zu vieler deutscher Wörter, um sie überall gefahrlos zu suchen. Genau
+ * daran ist am 2. September die Gegenprobe vorbeigelaufen, die „innerhalb von
+ * 24 Stunden" in die Kasse schrieb: Der Prüfer blieb grün, und die Ursache lag
+ * in der Probe, nicht im Prüfer. Hier, auf 23 Sätzen Quelltext statt auf 274
+ * Dateien Fließtext, ist die Suche eng genug — und die Ausbeute ist heute
+ * null, was die Regel billig macht und ihren Zweck nicht schmälert:
+ * Sie bewacht die Stelle, an der eine Zusage entsteht, nicht die, an der
+ * schon eine steht.
+ *
+ * Bewusst **nicht** hier geprüft: Zeitangaben in `inhalte/`. Dort ist „14 Tage
+ * Widerrufsfrist" eine belegte Aussage mit Fundstelle, keine erfundene Zusage.
+ */
+export const ZEITZUSAGE = /(?<![\p{L}\d])(\d+(?:[.,]\d+)?)\s*(?:Sekunden?|Minuten?|Stunden?|Werktage?n?|Arbeitstage?n?|Tage?n?|Wochen?|Monate?n?|Jahre?n?)(?![\p{L}])/giu;
+
+/** Die fest eingetragenen Zeitspannen eines Oberflächensatzes. */
+export function erfundeneZeitangaben(satz) {
+  return [...String(satz).matchAll(ZEITZUSAGE)].map((m) => m[0]);
+}

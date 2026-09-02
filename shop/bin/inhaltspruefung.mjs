@@ -26,7 +26,9 @@
 import { readdirSync, readFileSync, statSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { pruefeInhalt, pruefeAbsatz, schneideQuelltext } from '../src/inhaltspruefung.js';
+import {
+  pruefeInhalt, pruefeAbsatz, schneideQuelltext, oberflaechensaetze, erfundeneZeitangaben,
+} from '../src/inhaltspruefung.js';
 
 const hier = dirname(fileURLToPath(import.meta.url));
 const INHALTSORDNER = ['wissen', 'gruppen', 'system'];
@@ -145,6 +147,56 @@ function seitenAbsaetze(wurzel) {
   };
   gehe(wurzel);
   return gefunden;
+}
+
+/**
+ * **Vierter Betriebsmodus, 2. September: die Sätze der Oberfläche.**
+ *
+ * Ein Drittel des Textes, den ein Kunde in der Kasse und im Warenkorb liest,
+ * steht in keiner gebauten Datei — er entsteht erst im Browser aus
+ * `shop-ui.js`. Aufgefallen ist das an einer Gegenprobe, die nicht anschlug:
+ * `pruefe-seiten` blieb bei einer erfundenen Antwortzeit zu Recht grün, weil
+ * der Satz dort gar nicht steht.
+ *
+ * > **Was erst im Browser entsteht, prüft keine Datei.**
+ *
+ * Jetzt eine. Dreiundzwanzig Sätze, dieselben Regeln wie überall.
+ */
+if (process.argv[2] === '--oberflaeche') {
+  const quelle = join(hier, '..', 'shop-ui.js');
+  if (!existsSync(quelle)) {
+    console.error('shop-ui.js fehlt — ohne sie gibt es keine Oberflächensätze.');
+    process.exit(2);
+  }
+  const saetze = oberflaechensaetze(readFileSync(quelle, 'utf8'));
+  // Ein leerer Bestand ist kein sauberer: Fände die Auslese nichts mehr,
+  // meldete dieser Modus „0 mit Verdacht" und hätte nichts angesehen.
+  if (saetze.length < 10) {
+    console.error(`Nur ${saetze.length} Sätze gefunden — die Auslese greift nicht mehr.`);
+    process.exit(2);
+  }
+  let treffer = 0;
+  for (const [i, text] of saetze.entries()) {
+    const verdacht = pruefeAbsatz({ text, zeile: i + 1 });
+    // Zusätzlich zu den allgemeinen Regeln: eine fest eingetragene Zeitspanne.
+    // Sie kann hier nicht gedeckt sein — die echten Fristen des Shops setzt
+    // erst die Laufzeit ein und steht deshalb in keinem Literal.
+    for (const zeit of erfundeneZeitangaben(text)) {
+      verdacht.push(`Zeitzusage im Quelltext: \u201e${zeit}\u201c \u2014 echte Fristen stehen in den Daten, nicht in shop-ui.js`);
+    }
+    if (!verdacht.length) continue;
+    treffer += 1;
+    console.log(`\n  „${text.slice(0, 100)}…"`);
+    for (const v of verdacht) console.log(`    → ${v}`);
+  }
+  console.log(`\n${saetze.length} Sätze der Oberfläche geprüft, ${treffer} mit Verdacht.`);
+  console.log('Diese Sätze stehen in shop-ui.js und erreichen den Kunden erst im Browser —');
+  console.log('sie unterliegen trotzdem denselben Regeln wie jede Inhaltsseite.');
+  if (treffer > 0 && !process.argv.includes('--bericht')) {
+    console.log('\nMit Verdacht endet dieser Lauf rot. Mit --bericht nicht.');
+    process.exit(1);
+  }
+  process.exit(0);
 }
 
 if (process.argv[2] === '--seiten') {

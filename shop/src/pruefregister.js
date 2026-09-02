@@ -47,6 +47,17 @@ export const PRUEFER = [
     mindestens: 90,
   },
   {
+    // Dreiundzwanzig Sätze aus `shop-ui.js`. `mindestens: 10`, weil eine
+    // Auslese, die nichts mehr findet, „0 mit Verdacht" meldet und nichts
+    // angesehen hat — das Werkzeug bricht davor selbst ab.
+    name: 'pruefe-oberflaeche',
+    werkzeug: 'inhaltspruefung.mjs',
+    argumente: ['--oberflaeche'],
+    muster: /(\d+) Sätze der Oberfläche geprüft/,
+    einheit: 'Oberflächensätze',
+    mindestens: 10,
+  },
+  {
     // Sieben Kontrollen an einem gebauten Vorgang. `mindestens: 7`, weil eine
     // fehlende Kontrolle sonst als „alle bestanden" durchliefe — der Prüfer
     // meldete dann sechs von sechs.

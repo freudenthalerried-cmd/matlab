@@ -15,6 +15,7 @@
     "shopprobe": "node bin/shopprobe.mjs",
     "pruefe-inhalte": "node bin/inhaltspruefung.mjs",
     "pruefe-seiten": "node bin/inhaltspruefung.mjs --seiten",
+    "pruefe-oberflaeche": "node bin/inhaltspruefung.mjs --oberflaeche",
     "veroeffentlichung": "node bin/veroeffentlichung.mjs",
     "pruefe-quellen": "node bin/quellenpruefung.mjs",
     "pruefe-widerrufe": "node bin/widerrufpruefung.mjs",
