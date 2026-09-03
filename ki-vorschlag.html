@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KI-Vorschlag – BauKG-Protokoll</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="chat">
+    <h1>Mangel erfassen</h1>
+
+    <p>
+      <input id="foto" type="file" accept="image/*" capture="environment">
+    </p>
+
+    <p>
+      <button id="ki-starten" class="ki-btn ki-primaer" type="button">KI-Vorschlag</button>
+    </p>
+
+    <label for="feststellung">Feststellung</label>
+    <textarea id="feststellung" rows="4" style="width:100%;box-sizing:border-box;"></textarea>
+  </main>
+
+  <script src="ki-vorschlag.js"></script>
+  <script>
+    (function () {
+      const fotoInput = document.getElementById('foto');
+      const feststellung = document.getElementById('feststellung');
+      let fotoDataUrl = null;
+
+      fotoInput.addEventListener('change', function () {
+        const datei = fotoInput.files && fotoInput.files[0];
+        if (!datei) { fotoDataUrl = null; return; }
+        const reader = new FileReader();
+        reader.onload = () => { fotoDataUrl = reader.result; };
+        reader.readAsDataURL(datei);
+      });
+
+      document.getElementById('ki-starten').addEventListener('click', function () {
+        KiVorschlag.open(fotoDataUrl, function (text) {
+          feststellung.value = text;
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
