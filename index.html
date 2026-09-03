@@ -3,31 +3,191 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chat</title>
+  <title>Baustellen</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <main class="chat">
-    <ul id="messages" class="messages" aria-live="polite"></ul>
 
-    <form id="chat-form" class="chat-form" autocomplete="off">
-      <input
-        id="chat-input"
-        class="chat-input"
-        type="text"
-        placeholder="Nachricht eingeben…"
-        aria-label="Nachricht"
-      >
-      <button
-        id="send-button"
-        class="send-button"
-        type="submit"
-        aria-label="Senden"
-        disabled
-      >&#10148;</button>
-    </form>
+  <!-- Ansicht 1: Baustellen-Liste -->
+  <main id="view-liste" class="liste">
+    <header class="gruen-kopf">
+      <h1>Baustellen</h1>
+      <div class="kopf-knoepfe">
+        <button id="liste-drucken" class="kopf-knopf" type="button" title="Drucken">&#128424;&#65039;</button>
+        <button id="liste-bausteine" class="kopf-knopf" type="button" title="Textbausteine">&#128218;</button>
+        <button id="neu-button" class="kopf-knopf kopf-knopf-text" type="button" title="Neue Baustelle">+ Neu</button>
+        <button id="ortung-button" class="kopf-knopf" type="button" title="Baustelle per GPS erkennen">&#128205;</button>
+      </div>
+    </header>
+
+    <div class="liste-inhalt">
+      <div class="suche-feld">
+        <span>&#128269;</span>
+        <input id="suche-input" type="search" placeholder="Baustelle suchen&hellip;" aria-label="Baustelle suchen">
+      </div>
+
+      <div id="standort-banner" class="standort-banner" hidden>
+        <span id="standort-text"></span>
+        <span class="standort-aktionen">
+          <button id="standort-uebernehmen" type="button" class="chip">Öffnen</button>
+          <a id="standort-ordner" href="#" target="_blank" rel="noopener" class="chip chip-kategorie">Ordner</a>
+          <button id="standort-schliessen" type="button" class="eintrag-knopf" aria-label="Schließen">&times;</button>
+        </span>
+      </div>
+
+      <form id="neu-form" class="neu-form" hidden>
+        <input id="neu-name" type="text" placeholder="Name der Baustelle" required>
+        <input id="neu-ort" type="text" placeholder="Ort">
+        <select id="neu-gruppe" aria-label="Gruppe"></select>
+        <div class="neu-aktionen">
+          <button type="submit" class="chip">Speichern</button>
+          <button type="button" id="neu-abbrechen" class="chip chip-kategorie">Abbrechen</button>
+        </div>
+      </form>
+
+      <div id="gruppen"></div>
+    </div>
   </main>
 
+  <!-- Ansicht 2: Protokoll einer Baustelle -->
+  <main id="view-protokoll" class="chat" hidden>
+    <header class="gruen-kopf">
+      <button id="zurueck-button" class="kopf-knopf" type="button" aria-label="Zurück">&#8249;</button>
+      <h1 id="protokoll-titel">Protokoll Nr. 1</h1>
+      <div class="kopf-knoepfe">
+        <button id="bausteine-button" class="kopf-knopf" type="button" title="Textbausteine">&#128218;</button>
+      </div>
+    </header>
+
+    <div class="protokoll-scroll">
+
+      <div class="kopf-karte">
+        <div class="feld-reihe">
+          <label class="feld feld-datum">Datum
+            <input id="kopf-datum" type="date">
+          </label>
+          <label class="feld feld-zeit">Uhrzeit
+            <input id="kopf-uhrzeit" type="time">
+          </label>
+          <label class="feld feld-nr">Nr.
+            <input id="kopf-nr" type="number" min="1" inputmode="numeric">
+          </label>
+        </div>
+        <label class="feld">Anwesend
+          <input id="kopf-anwesend" type="text">
+        </label>
+        <label class="feld">Wetter
+          <input id="kopf-wetter" type="text" placeholder="z. B. sonnig, 24 &deg;C">
+        </label>
+        <label class="feld">Allgemeines / Baustand
+          <textarea id="kopf-allgemein" rows="3"></textarea>
+        </label>
+      </div>
+
+      <div class="foto-knoepfe">
+        <label class="gross-knopf gross-gruen" for="foto-input">&#128247; Foto aufnehmen</label>
+        <label class="gross-knopf gross-grau" for="galerie-input">&#128444;&#65039; Galerie</label>
+      </div>
+      <input id="foto-input" type="file" accept="image/*" capture="environment" hidden>
+      <input id="galerie-input" type="file" accept="image/*" hidden>
+
+      <div id="foto-hinweis" class="foto-hinweis">
+        Noch keine Fotos.<br>Mit &bdquo;&#128247; Foto aufnehmen&ldquo; geht die Kamera direkt auf.
+      </div>
+
+      <div id="foto-preview" class="foto-preview" hidden>
+        <img id="foto-preview-img" alt="Foto-Vorschau">
+        <button id="foto-remove" class="foto-remove" type="button" aria-label="Foto entfernen">&times;</button>
+      </div>
+
+      <ul id="messages" class="messages" aria-live="polite"></ul>
+
+      <div id="foto-kategorien" class="foto-kategorien" hidden>
+        <div class="panel-hint">Was ist am Foto zu sehen?</div>
+        <div id="foto-kategorien-chips" class="chips"></div>
+      </div>
+
+      <div id="allgemein-panel" class="allgemein-panel" hidden>
+        <div class="panel-hint">Allgemeine Punkte für den Bericht auswählen:</div>
+        <div id="allgemein-liste" class="allgemein-liste"></div>
+        <div class="allgemein-aktionen">
+          <button id="allgemein-einfuegen" class="chip" type="button">Ausgewählte einfügen</button>
+          <button id="allgemein-abbrechen" class="chip chip-kategorie" type="button">Abbrechen</button>
+        </div>
+      </div>
+
+      <div id="ki-vorschlaege" class="ki-vorschlaege" hidden>
+        <div class="panel-hint ki-kopf">
+          <span>KI-Vorschlag (nur Sicherheit) – tippen zum Einfügen:</span>
+          <span class="detail-regler">
+            <button id="detail-minus" class="detail-button" type="button" title="Kürzere Antwort">&minus;</button>
+            <span id="detail-label">Normal</span>
+            <button id="detail-plus" class="detail-button" type="button" title="Längere Antwort mit Gesetzestext">+</button>
+          </span>
+        </div>
+        <div id="ki-chips" class="chips"></div>
+      </div>
+
+      <div class="typ-reihe">
+        <div class="typ-schalter" role="group" aria-label="Eintragstyp">
+          <button id="typ-hinweis" class="typ-knopf typ-aktiv" type="button">Hinweis</button>
+          <button id="typ-mangel" class="typ-knopf" type="button">Mangel</button>
+        </div>
+        <button id="allgemein-button" class="chip chip-kategorie" type="button">Allg. Punkte</button>
+      </div>
+
+      <div id="bearbeiten-hinweis" class="bearbeiten-hinweis" hidden>
+        Eintrag wird bearbeitet – Senden speichert die Änderung.
+        <button id="bearbeiten-abbrechen" type="button">Abbrechen</button>
+      </div>
+
+      <form id="chat-form" class="chat-form" autocomplete="off">
+        <textarea
+          id="chat-input"
+          class="chat-input"
+          rows="1"
+          placeholder="Feststellung eingeben&hellip; (Kürzel: helm, gas, wehren &hellip;)"
+          aria-label="Feststellung"
+        ></textarea>
+        <button
+          id="send-button"
+          class="send-button"
+          type="submit"
+          aria-label="Eintrag speichern"
+          disabled
+        >&#10148;</button>
+      </form>
+
+      <div class="pdf-karte">
+        <button id="print-button" class="gross-knopf gross-grau breit" type="button">&#128196; PDF ansehen</button>
+        <div class="pdf-neben">
+          <button id="mail-button" class="chip chip-kategorie" type="button">&#9993;&#65039; Mail senden</button>
+          <button id="info-button" class="chip chip-kategorie" type="button">&#8505;&#65039; Verteiler / Protokolle</button>
+        </div>
+      </div>
+
+      <div id="info-panel" class="info-panel" hidden>
+        <div class="panel-hint">Verteiler dieser Baustelle:</div>
+        <input id="info-verteiler" class="verteiler-input" type="text" placeholder="z. B. Bauleitung, polier@baufirma.at">
+        <div id="info-protokolle"></div>
+        <button id="info-position" class="chip chip-kategorie position-knopf" type="button">Aktuelle Position speichern</button>
+      </div>
+
+    </div>
+
+    <input id="ort-input" type="hidden">
+  </main>
+
+  <div id="bausteine-panel" class="bausteine-panel" hidden>
+    <div class="panel-header">
+      <span>Textbausteine (nach Häufigkeit)</span>
+      <button id="bausteine-close" class="tool-button" type="button" aria-label="Schließen">&times;</button>
+    </div>
+    <ul id="bausteine-liste" class="bausteine-liste"></ul>
+  </div>
+
+  <script src="textbausteine.js"></script>
+  <script src="baustellen.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
