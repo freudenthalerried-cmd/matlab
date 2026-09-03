@@ -323,8 +323,15 @@ const SZENARIEN = [
     // `.value` und nicht `.textContent`: Der Inhalt eines <textarea> steht im
     // Wert. Die erste Fassung dieser Probe las den Text und bekam den leeren
     // Anfangszustand — grün, ohne etwas gesehen zu haben.
+      // **Berichtigt am 3. September.** Dieses Szenario legte ein einziges
+      // Gebinde EPS (0,5 m² zu 1,93 €) in den Korb. Seit Gate 25 an
+      // demselben Tag nimmt die Kasse unter 250 € netto je Lieferung keine
+      // Anfrage mehr an — der Anfragetext entstand also gar nicht mehr, und
+      // die Probe las „KEIN FELD". Sie prüft den Anfragetext und nicht die
+      // Untergrenze; also bekommt sie einen Korb, der die Grenze hält.
     aktionen: `
       await geheZu('artikel/POS-12566');
+      document.getElementById('menge-POS-12566').value = '150';
       document.querySelector('[data-legen="POS-12566"]').click();
       await geheZu('kasse');
       const sel = document.querySelector('#kasse-ziel select');
@@ -357,6 +364,7 @@ const SZENARIEN = [
     name: 'Ohne hinterlegte Adresse gibt es keinen Mailknopf, aber den Grund dafür',
     aktionen: `
       await geheZu('artikel/POS-12566');
+      document.getElementById('menge-POS-12566').value = '150';
       document.querySelector('[data-legen="POS-12566"]').click();
       await geheZu('kasse');
       const sel = document.querySelector('#kasse-ziel select');
@@ -464,7 +472,14 @@ const SZENARIEN = [
   },
   {
     name: 'Der Anfragetext schreibt Mengen mit Komma und lesbarer Einheit',
+    // Die 5,25 m² sind der Gegenstand dieser Probe und bleiben, wie sie sind:
+    // fünf angefragte Quadratmeter, aufgerundet auf sieben Platten zu 0,75 m².
+    // Über die Mindestbestellwertgrenze hebt sie deshalb eine **zweite**
+    // Position (ein Thermo-Trennstein, 255,91 € netto) und nicht eine größere
+    // Menge derselben — sonst prüfte sie eine andere Zahl als die im Namen.
     aktionen: `
+      await geheZu('artikel/POS-51967');
+      document.querySelector('[data-legen="POS-51967"]').click();
       await geheZu('artikel/POS-12569');
       const feld = document.querySelector('#menge-POS-12569');
       feld.value = '5';

@@ -805,14 +805,18 @@
     // noch „Impressum unvollständig" behauptet, wenn der Auftraggeber es
     // längst vervollständigt hat. Jetzt kommt sie aus derselben Rechnung wie
     // `npm run startklar`.
-    var stand = D.bestellung || { moeglich: false, fehlt: [] };
+    //
+    // **Berichtigt am 3. September.** Hier stand `'Es fehlt ' + fehlt.join()`
+    // — Einzahl vor einer Aufzählung, die heute fünf Punkte trägt. Der Fuß und
+    // die Startseite bilden denselben Satz und beugen ihn richtig; diese
+    // dritte Stelle hatte die Liste, aber nicht die Regel. Sie bekommt den
+    // Satz jetzt fertig aus `fehltSatz()`, damit es ihn nicht dreimal gibt.
+    var stand = D.bestellung || { moeglich: false, fehlt: [], satz: '' };
     if (!stand.moeglich) {
       var abschluss = el('div', 'antwort');
       abschluss.appendChild(el('strong', null, 'Bestellen können Sie hier nicht. '));
       abschluss.appendChild(document.createTextNode(
-        (stand.fehlt.length
-          ? 'Es fehlt ' + stand.fehlt.join(', ') + '. '
-          : '')
+        (stand.satz ? stand.satz.charAt(0).toUpperCase() + stand.satz.slice(1) + '. ' : '')
         + 'Diese Seite rechnet die Bestellung durch, sie löst keine aus. '
         + 'Mitnehmen können Sie die fertige Anfrage darunter.'));
       z.appendChild(abschluss);

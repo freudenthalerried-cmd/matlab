@@ -65,6 +65,11 @@ const befund = startklar({
   domainZeigtAufShop: betreiber.domainZeigtAufShop ?? null,
   repositoryPrivat: betreiber.repositoryPrivat ?? null,
   lieferanten: lieferantenDatei.lieferanten,
+  // Der Quelltext, den der Browser des Kunden bekommt. Er entscheidet den
+  // ersten Punkt der Liste, und er wird gelesen statt behauptet: Ob diese
+  // Seite eine Bestellung abschicken kann, steht in ihr und nicht in einer
+  // Datei daneben.
+  oberflaechenQuelltext: readFileSync(join(WURZEL, 'shop-ui.js'), 'utf8'),
 });
 
 const zeichen = { erfuellt: '✓', offen: '✗', unpruefbar: '?' };

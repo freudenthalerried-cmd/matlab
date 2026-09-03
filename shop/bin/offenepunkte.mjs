@@ -58,6 +58,7 @@ const befund = startklar({
   domainZeigtAufShop: betreiber.domainZeigtAufShop ?? null,
   repositoryPrivat: betreiber.repositoryPrivat ?? null,
   lieferanten: lieferantenDatei.lieferanten,
+  oberflaechenQuelltext: readFileSync(join(SHOP, 'shop-ui.js'), 'utf8'),
 });
 
 const ausWerkzeugen = [];

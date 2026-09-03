@@ -34,7 +34,7 @@ import { pruefeSeiten } from '../src/interna.js';
 import { artikelBild, gruppenBild, schichten, schichtbild, dickeMm } from '../src/bilder.js';
 import { VERFUEGBARKEIT, angebotsAuszeichnung, robotsTxt, liefergebietOrte } from '../src/maschinenlesbar.js';
 import { baueKern, BROWSERMODULE } from '../src/buendel.js';
-import { startklar } from '../src/startklar.js';
+import { startklar, fehltSatz } from '../src/startklar.js';
 import { ohneKommentare } from '../src/entkommentieren.js';
 import { preisJeKilo, kilotafel, mengenschritt } from '../src/gebinde.js';
 import { EINHEITEN, aufzaehlung, jsonFuerSkript, kurzfassung } from '../src/format.js';
@@ -1212,9 +1212,8 @@ Geliefert wird im Umkreis, nicht in ganz Österreich: Das ist der Grund, warum d
 
 ${bereitschaft.startklar ? `<div class="antwort">Alle Preise sind Nettopreise für Unternehmer und tragen einen Preisstand.</div>`
   : `<div class="antwort"><strong>Dies ist eine Vorschau, kein laufender Shop.</strong> Bestellen können Sie
-hier noch nicht${bereitschaft.kassenhinweise.length
-  ? ` — es ${bereitschaft.kassenhinweise.length === 1 ? 'fehlt' : 'fehlen'} ${
-      bereitschaft.kassenhinweise.map((h) => esc(h.wort)).join(', ')}`
+hier noch nicht${fehltSatz(bereitschaft.kassenhinweise)
+  ? ` — ${esc(fehltSatz(bereitschaft.kassenhinweise))}`
   : ''}. Jeder Preis ist vor der
 Veröffentlichung beim Lieferanten zu bestätigen. <strong>Was schon geht:</strong> Warenkorb füllen,
 Bezirk wählen — und in der <a href="${verweis('kasse')}">Kasse</a> die fertig gerechnete Anfrage
@@ -1682,6 +1681,11 @@ function shopdaten(katalog, befund, seiten, lieferantenDatei, suchwoerterDatei, 
     bestellung: {
       moeglich: bereitschaft.startklar,
       fehlt: bereitschaft.kassenhinweise.map((h) => h.wort),
+      // **Ergänzt am 3. September.** Die Kasse bekam bis dahin nur die Liste
+      // und bildete den Satz selbst — mit „Es fehlt" auch bei fünf Punkten.
+      // Der Fuß und die Startseite bildeten denselben Satz richtig. Jetzt
+      // bildet ihn `fehltSatz()` einmal, und der Browser bekommt ihn fertig.
+      satz: fehltSatz(bereitschaft.kassenhinweise),
     },
   };
 }
@@ -1770,9 +1774,8 @@ export function betriebshinweis(bereitschaft) {
   if (bereitschaft?.startklar && offen.length === 0) {
     return 'Alle Preise netto für Unternehmer. Keine Steuer- oder Rechtsberatung.';
   }
-  const was = offen.length
-    ? ` — es ${offen.length === 1 ? 'fehlt' : 'fehlen'} ${offen.map((h) => h.wort).join(', ')}`
-    : '';
+  const satz = fehltSatz(offen);
+  const was = satz ? ` — ${satz}` : '';
   return `Vorschau ohne Bestellmöglichkeit${was}. Nichts ist gegründet, verkauft oder eingenommen. `
     + 'Keine Steuer- oder Rechtsberatung.';
 }
@@ -1908,6 +1911,20 @@ function main() {
   let katalog = ladeBaustoffkatalog(katalogDatei, lies(preisPfad), lieferantenDatei, ZIELMARGE);
   const befund = katalogbefund(katalog);
 
+  /**
+   * Der Quelltext der Kundenoberfläche — einmal gelesen, zweimal gebraucht:
+   * Er geht ins Bündel, und er beantwortet den ersten Punkt der
+   * Bereitschaftsliste („kann der Kunde eine Bestellung abschicken?").
+   *
+   * Über die Umgebung überschreibbar, wie Betreiber- und Lieferantendatei
+   * auch. Eine Probe muss den Bau mit einer Oberfläche laufen lassen können,
+   * die abschickt — sonst wäre der grüne Zweig der Auskunft „Bestellen ist
+   * möglich" einer, den nie jemand ausgeführt hat.
+   */
+  const oberflaecheRoh = readFileSync(
+    process.env.WEBSITE_OBERFLAECHE || join(WURZEL, 'shop-ui.js'), 'utf8',
+  );
+
   // Dieselbe Rechnung wie `npm run startklar`, nicht eine zweite. Die Seiten
   // sagen dem Besucher, was hier möglich ist — und das darf nicht auf einem
   // festen Satz stehen, der eines Tages falsch wird, ohne dass jemand ihn
@@ -1922,6 +1939,12 @@ function main() {
     domainZeigtAufShop: betreiber.domainZeigtAufShop ?? null,
     repositoryPrivat: betreiber.repositoryPrivat ?? null,
     lieferanten: lieferantenDatei.lieferanten,
+    // Derselbe Quelltext, der weiter unten ins Bündel geht — **eine** Lesung,
+    // nicht zwei. Er entscheidet, ob die Kasse eine Bestellung abschicken
+    // kann; gemessen und nicht angenommen. Zwei Lesungen wären die
+    // Fehlerklasse „zwei Wege zur selben Zahl": Die Bereitschaft könnte eine
+    // Oberfläche beurteilen, die gar nicht ausgeliefert wird.
+    oberflaechenQuelltext: oberflaecheRoh,
   });
 
   // Gate 24: Artikel, deren Einkaufspreis nur auf Anfrage zu haben ist,
@@ -2134,7 +2157,6 @@ function main() {
     (name) => readFileSync(join(WURZEL, 'src', name), 'utf8'),
     BROWSERMODULE,
   );
-  const oberflaecheRoh = readFileSync(join(WURZEL, 'shop-ui.js'), 'utf8');
   const kernBuendel = ohneKommentare(kernRoh).text;
   const shopOberflaeche = ohneKommentare(oberflaecheRoh).text;
   const gespart = (kernRoh.length + oberflaecheRoh.length)
@@ -2204,7 +2226,7 @@ function main() {
       // hier sonst „Es fehlen: ." gestanden — eine Ankündigung ohne Inhalt,
       // die wie ein Anzeigefehler aussieht und den Grund verschweigt.
       : bereitschaft.kassenhinweise.length
-        ? `- **Bestellen ist noch nicht möglich.** Es fehlen: ${bereitschaft.kassenhinweise.map((h) => h.wort).join(', ')}.`
+        ? `- **Bestellen ist noch nicht möglich** — ${fehltSatz(bereitschaft.kassenhinweise)}.`
         : '- **Bestellen ist noch nicht möglich.** Was fehlt, betrifft den Betrieb, nicht Ihre Bestellung.',
     `- **Möglich ist eine Anfrage.** Warenkorb füllen, Bezirk der Baustelle wählen, und die Kasse (${BASIS}/kasse.html) erzeugt eine fertig gerechnete Positionsliste mit Fracht, Umsatzsteuer und Preisstand zum Kopieren. Sie ist unverbindlich und wird nicht automatisch versendet.`,
     '- **Nur im Liefergebiet.** Anfragen aus anderen Bezirken werden nicht angenommen; die Fracht trägt sie nicht.',

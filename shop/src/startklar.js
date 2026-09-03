@@ -24,6 +24,8 @@
  * optimistischen Annahme gefüllt.
  */
 
+import { bestellwegBefund } from './bestellweg.js';
+
 /**
  * Welche offenen Punkte der **Kunde** auf der Kasse zu hören bekommt.
  *
@@ -40,12 +42,35 @@
  * das Impressum längst vervollständigt hätte.
  */
 const AUF_DER_KASSE = new Map([
+  ['bestellweg', 'ein Weg, die Bestellung abzuschicken'],
   ['impressum', 'ein vollständiges Impressum'],
   ['zahlungsanbieter', 'ein Zahlungsanbieter'],
   ['rechtstexte', 'verbindliche Rechtstexte'],
   ['lieferzeit', 'die Lieferzeit des Lieferanten'],
   ['antwortzeit', 'eine zugesagte Antwortzeit'],
 ]);
+
+/**
+ * Der Satz, den drei Oberflächen aus derselben Liste bilden.
+ *
+ * **Aufgeschrieben am 3. September.** Es gab ihn dreimal: im Fuß aller Seiten,
+ * im Vorschaukasten der Startseite und in der Kasse. Zwei der drei setzten
+ * „fehlt" und „fehlen" nach der Anzahl; die Kasse schrieb immer „Es fehlt" und
+ * hängte fünf Punkte daran. Ein Fehler ohne Folgen für die Rechnung — und
+ * genau die Sorte, an der ein Leser merkt, dass die Seite nicht gelesen wurde.
+ *
+ * Dass zwei Stellen es richtig machten, ist kein Zufall, sondern der Grund:
+ * **Drei Stellen bilden denselben Satz, also gibt es ihn dreimal.** Die dritte
+ * steht im Browser und hat die Liste, aber nicht die Regel.
+ *
+ * @param {{wort: string}[]} hinweise
+ * @returns {string} leer, wenn nichts zu nennen ist — dann fällt der Satz weg
+ */
+export function fehltSatz(hinweise = []) {
+  const woerter = hinweise.map((h) => h.wort).filter(Boolean);
+  if (woerter.length === 0) return '';
+  return `es ${woerter.length === 1 ? 'fehlt' : 'fehlen'} ${woerter.join(', ')}`;
+}
 
 /** Die Punkte, die über „online" entscheiden — in der Reihenfolge ihrer Härte. */
 export function startklar(lage = {}) {
@@ -59,6 +84,7 @@ export function startklar(lage = {}) {
     repositoryPrivat = null,
     impressumsfelder = [],
     lieferanten = [],
+    oberflaechenQuelltext = null,
   } = lage;
 
   const punkte = [];
@@ -66,6 +92,29 @@ export function startklar(lage = {}) {
     aufDerKasse: AUF_DER_KASSE.get(id) ?? null });
 
   // --- Was aus den Daten kommt ---------------------------------------
+
+  /**
+   * **Aufgenommen am 3. September, als erster Punkt.** Die Liste stand
+   * bis dahin in der Reihenfolge ihrer Härte und begann beim Impressum —
+   * alle neun Punkte waren Zulieferungen des Auftraggebers. Keiner war der
+   * Bestellweg selbst.
+   *
+   * > **Ein Auftraggeber hätte alle neun schließen können, und die Kasse
+   * > hätte danach genau so wenig eine Bestellung entgegengenommen wie
+   * > vorher.** `startklar: true` heißt in drei Oberflächen „Bestellen ist
+   * > möglich"; in `llms.txt` steht der Satz sogar wörtlich.
+   *
+   * Gemessen wird am Quelltext, den der Browser des Kunden bekommt, nicht an
+   * einer Zusage: `bestellweg.js` sucht die Wege, auf denen eine Seite Daten
+   * hinausgibt. Heute findet sie keinen — der Shop rechnet und erzeugt einen
+   * Anfragetext zum Kopieren.
+   */
+  const weg = bestellwegBefund(oberflaechenQuelltext);
+  p('bestellweg', 'Der Kunde kann eine Bestellung abschicken',
+    weg.moeglich === null ? 'unpruefbar' : (weg.moeglich ? 'erfuellt' : 'offen'),
+    weg.befund,
+    'Werkzeug');
+
   const fehlendeFelder = impressumsfelder.filter(
     (f) => typeof betreiber[f.feld] !== 'string' || betreiber[f.feld].trim() === '',
   );

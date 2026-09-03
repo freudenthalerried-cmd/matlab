@@ -22,6 +22,11 @@ const alles = {
   domainZeigtAufShop: true,
   repositoryPrivat: true,
   lieferanten: [{ id: 'l1', name: 'Lieferant Eins', lieferzeitWerktage: 5 }],
+  // Seit dem 3. September gehört der Bestellweg dazu, und zwar als erster
+  // Punkt: Alle anderen sind Zulieferungen des Auftraggebers, dieser ist der
+  // Weg selbst. Die Probe gibt einen Quelltext mit, der abschickt — sonst
+  // stünde hier ein „startklar", das es nie geben kann.
+  oberflaechenQuelltext: 'fetch(\'/bestellung\', { method: \'POST\' });',
 };
 
 test('mit allem, was gebraucht wird, ist der Shop startklar', () => {

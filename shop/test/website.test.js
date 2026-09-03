@@ -8,6 +8,7 @@ import { join, relative, basename } from 'node:path';
 import { loeseVerweis, loeseVerwandt, marke, mitverbaut, HERSTELLER, positionsliste, sprungziel,
   betriebshinweis, kanonisch } from '../bin/website.mjs';
 import { lesKopf } from '../src/markdown.js';
+import { fehltSatz } from '../src/startklar.js';
 import { KORBSCHLUESSEL } from '../src/shopkern.js';
 import { SUCH_CRAWLER, TRAININGS_CRAWLER } from '../src/maschinenlesbar.js';
 import { LIEFERGEBIET } from '../src/liefergebiet.js';
@@ -584,11 +585,31 @@ test('Startseite und llms.txt sagen aus den Daten, ob bestellt werden kann', () 
     })),
   }, null, 2));
 
+  /**
+   * **Ergänzt am 3. September.** Diese Probe beantwortete alles, was der
+   * Auftraggeber beantworten kann, und verlangte dann „Bestellen ist
+   * möglich". Sie hat damit dieselbe Annahme getragen wie die Auskunft
+   * selbst: dass eine vollständige Betreiberdatei einen Shop bestellfähig
+   * macht.
+   *
+   * > **Sie macht es nicht.** Der Shop rechnet und erzeugt einen Anfragetext
+   * > zum Kopieren; abgeschickt wird nichts. Seit dem 3. September steht das
+   * > als erster Punkt in `startklar()` — gemessen am Quelltext, den der
+   * > Browser bekommt.
+   *
+   * Die Probe gibt deshalb eine Oberfläche mit, die abschickt: die echte plus
+   * eine Zeile. Der grüne Zweig bleibt damit einer, den sie wirklich fährt.
+   */
+  const oberflaecheMitWeg = join(ablage, 'shop-ui.js');
+  writeFileSync(oberflaecheMitWeg,
+    `${readFileSync(pfad('../shop-ui.js'), 'utf8')}\nfunction sendeBestellung(k) { return fetch('/bestellung', { method: 'POST', body: k }); }\n`);
+
   const lauf = spawnSync(process.execPath, [pfad('../bin/website.mjs')], {
     encoding: 'utf8',
     env: {
       ...process.env, WEBSITE_AUSGABE: ablage,
       STARTKLAR_BETREIBER: betreiberVoll, WEBSITE_LIEFERANTEN: lieferantenVoll,
+      WEBSITE_OBERFLAECHE: oberflaecheMitWeg,
     },
   });
   assert.equal(lauf.status, 0, lauf.stderr);
@@ -1363,6 +1384,14 @@ test('Jede gebaute Seite trägt den Betriebshinweis aus derselben Rechnung', () 
     startklar: daten.bestellung.moeglich,
     kassenhinweise: daten.bestellung.fehlt.map((wort) => ({ wort })),
   });
+
+  // **Ergänzt am 3. September.** Der Browser bekommt beides: die Liste und den
+  // fertigen Satz. Die Kasse benutzt nur den Satz — aber solange die Liste
+  // mitfährt, könnte eine spätere Fassung wieder ihren eigenen bilden. Diese
+  // Zusicherung bindet die beiden aneinander.
+  assert.equal(daten.bestellung.satz,
+    fehltSatz(daten.bestellung.fehlt.map((wort) => ({ wort }))),
+    'der ausgelieferte Satz stammt nicht aus derselben Rechnung wie die Liste');
 
   const abweichend = seiten.filter((p) => !readFileSync(p, 'utf8').includes(erwartet));
   assert.deepEqual(abweichend.map((p) => relative(wurzel, p)), [],
