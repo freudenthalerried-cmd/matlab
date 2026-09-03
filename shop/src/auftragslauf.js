@@ -238,3 +238,103 @@ export function aufwandProMonat(welt, bestellungenProMonat) {
     blockaden: lauf.blockaden,
   };
 }
+
+/* ------------------------------------------------------------------ *
+ * Der Anfragebetrieb — was heute tatsächlich passiert
+ * ------------------------------------------------------------------ */
+
+/**
+ * Die Schritte **vor** dem Auftragslauf: was mit einer Anfrage geschieht.
+ *
+ * **Der Befund, 3. September 2026.** Der Kopf dieser Datei sagt: „Die
+ * Besucherstrecke ist gemessen — fünf Schritte vom Anzeigenklick bis zum
+ * fertigen Anfragetext. Was danach kommt, macht ein Mensch." Was danach kommt,
+ * beginnt in `SCHRITTE` aber mit **„Bestellung geht ein"** — und Bestellungen
+ * gibt es nicht: Die Kasse löst keine aus, solange kein Zahlungsanbieter
+ * angebunden ist.
+ *
+ * Dazwischen liegt der Zustand, in dem sich dieser Shop tatsächlich befindet
+ * und in dem er den ganzen 45-tägigen Klickversuch verbringen wird: Der Kunde
+ * kopiert den Anfragetext in eine Mail, und jemand beantwortet sie von Hand.
+ *
+ * > **Der Shop verspricht in der Kasse eine Rückmeldung, und niemand hat
+ * > gerechnet, was sie kostet.**
+ *
+ * Die Minuten sind **gesetzt, nicht gemessen** — es hat noch keine Anfrage
+ * gegeben. Sie stehen hier, damit die Zusage einer Antwortzeit eine Rechnung
+ * hat statt eines Gefühls; eine erste beantwortete Anfrage ersetzt sie.
+ *
+ * `wartetAufDritte` trennt die eigene Arbeit von der Durchlaufzeit. Beides
+ * zusammenzuwerfen wäre der Fehler, den der Rolloutplan am 2. September
+ * gemacht hat: Wer die Wartezeit als Arbeit zählt, hält die Zusage für
+ * teurer als sie ist — und wer sie weglässt, sagt eine Antwortzeit zu, die
+ * niemand halten kann.
+ */
+export const ANFRAGESCHRITTE = Object.freeze([
+  Object.freeze({
+    id: 'anfrage-lesen',
+    name: 'Anfrage lesen und den Positionen zuordnen',
+    minuten: 3,
+    wartetAufDritte: false,
+    woher: 'Der Text kommt fertig gerechnet aus der Kasse — Positionen, Mengen, '
+      + 'Artikelnummern, Fracht, Preisstand. Zu tun bleibt das Zuordnen zum Kunden.',
+  }),
+  Object.freeze({
+    id: 'verfuegbarkeit',
+    name: 'Verfügbarkeit und Tagespreis beim Lieferanten bestätigen',
+    minuten: 5,
+    wartetAufDritte: true,
+    woher: 'Ein Anruf oder eine Mail. Die eigene Arbeit ist kurz; wie lange die '
+      + 'Antwort braucht, weiß niemand — die Lieferzeit des Lieferanten ist eine der '
+      + 'fünf offenen Fragen an ihn.',
+  }),
+  Object.freeze({
+    id: 'angebot',
+    name: 'Angebot schreiben und senden',
+    minuten: 5,
+    wartetAufDritte: false,
+    woher: 'Der Beleg entsteht aus dem Warenkorb (`erzeugeAngebot`); zu tun bleiben '
+      + 'Anschrift, Zahlweg und das Absenden.',
+  }),
+  Object.freeze({
+    id: 'nachfassen',
+    name: 'Nachfassen, wenn keine Antwort kommt',
+    minuten: 2,
+    wartetAufDritte: false,
+    woher: 'Eine Zeile nach einigen Tagen. Ohne sie verfällt die Hälfte aller '
+      + 'Angebote unbeantwortet — gesetzt, nicht gemessen.',
+  }),
+]);
+
+/**
+ * Was der Anfragebetrieb kostet, und was er zusagen kann.
+ *
+ * Zwei Zahlen, die nicht dieselbe sind:
+ *
+ *   `minutenEigen`   die eigene Arbeit je Anfrage — daraus folgt, wie viele
+ *                    Anfragen neben dem Baugeschäft überhaupt zu schaffen sind
+ *   `warteschritte`  wie viele Schritte auf einen Dritten warten — daraus
+ *                    folgt, welche **Antwortzeit** zusagbar ist
+ *
+ * Die zusagbare Antwortzeit hängt damit an einer Angabe, die niemand hat: wie
+ * schnell der Lieferant antwortet. Solange sie fehlt, ist jede Zusage in der
+ * Kasse geraten — und deshalb steht dort bis heute keine.
+ */
+export function anfrageaufwand(anfragenProMonat, schritte = ANFRAGESCHRITTE) {
+  if (!(anfragenProMonat >= 0)) throw new Error('Die Zahl der Anfragen darf nicht negativ sein');
+  const minutenEigen = schritte.reduce((n, s) => n + s.minuten, 0);
+  const warteschritte = schritte.filter((s) => s.wartetAufDritte);
+  return {
+    minutenEigen,
+    anfragenProMonat,
+    stundenProMonat: Math.round((minutenEigen * anfragenProMonat / 60) * 10) / 10,
+    warteschritte: warteschritte.map((s) => s.id),
+    // Ohne die Antwortzeit des Lieferanten ist keine Antwortzeit zusagbar.
+    // Das ist keine Vorsicht, sondern die Kette: Jeder Warteschritt liegt
+    // zwischen der Anfrage des Kunden und der eigenen Antwort.
+    zusagbar: warteschritte.length === 0,
+    warumNichtZusagbar: warteschritte.length === 0 ? null
+      : `${warteschritte.length} Schritt(e) warten auf Dritte (${warteschritte.map((s) => s.id).join(', ')}); `
+        + 'die Antwortzeit des Lieferanten ist nicht bekannt und steht als Frage in der Anfrage an ihn.',
+  };
+}

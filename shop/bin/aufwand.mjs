@@ -20,7 +20,8 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { WELT_HEUTE, WELT_AUSGEBAUT, SCHRITTE, trockenlauf, aufwandProMonat, engpaesse } from '../src/auftragslauf.js';
+import { WELT_HEUTE, WELT_AUSGEBAUT, SCHRITTE, trockenlauf, aufwandProMonat, engpaesse,
+  ANFRAGESCHRITTE, anfrageaufwand } from '../src/auftragslauf.js';
 import { noetigerUmsatz } from '../src/kostenbild.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -104,6 +105,36 @@ console.log(`\nDer größte Einzelposten ist ${groesster.faehigkeit}: `
 console.log('Das ist Gate 6 in Stunden statt in Worten — ohne strukturierte Produktdaten');
 console.log('ist die Handarbeit nicht der Preis des Anfangs, sondern der des Betriebs.');
 
+/* ------------------------------------------------------------------ *
+ * Der Anfragebetrieb — der Zustand, in dem der Shop tatsächlich ist
+ * ------------------------------------------------------------------ */
+
+console.log('\n\nAnfragebetrieb — was heute passiert, wenn jemand kauft');
+console.log('Die Rechnung oben gilt ab dem Zahlungsanbieter. Bis dahin — und den ganzen');
+console.log('Klickversuch hindurch — löst die Kasse keine Bestellung aus, sondern erzeugt');
+console.log('einen Anfragetext, den der Kunde in eine Mail kopiert.\n');
+
+const jeAnfrage = anfrageaufwand(0).minutenEigen;
+for (const s of ANFRAGESCHRITTE) {
+  console.log(`  ${String(s.minuten).padStart(2)} min  ${s.name}${s.wartetAufDritte ? '  · wartet auf Dritte' : ''}`);
+}
+console.log(`\n  ${jeAnfrage} Minuten eigene Arbeit je Anfrage.\n`);
+
+console.log('  Anfragen/Monat   eigene Arbeit');
+for (const n of [4, 10, 20, 40]) {
+  const a = anfrageaufwand(n);
+  const rand = a.stundenProMonat > GRENZE_STUNDEN_JE_MONAT ? '  ← über der Grenze' : '';
+  console.log(`  ${String(n).padStart(13)}   ${String(a.stundenProMonat).padStart(5)} h${rand}`);
+}
+
+// Die Zusage, die in der Kasse steht — und warum dort keine Zahl steht.
+const zusage = anfrageaufwand(10);
+if (!zusage.zusagbar) {
+  console.log(`\n  Keine Antwortzeit zusagbar: ${zusage.warumNichtZusagbar}`);
+  console.log('  Deshalb steht in der Kasse „wir bestätigen Preis, Verfügbarkeit und Termin"');
+  console.log('  ohne Zahl. Eine geratene Zusage wäre schlechter als keine.');
+}
+
 console.log('');
 console.log('Was diese Rechnung nicht kann:');
 console.log('  · Die Minutenangaben je Schritt sind gesetzt, nicht gestoppt. Sie stehen');
@@ -112,6 +143,8 @@ console.log('  · Sie rechnet den Regelfall. Eine Rückfrage, eine Retoure, ein 
 console.log(`    geliefertes Gebinde kommen obendrauf — ${SCHRITTE.length} Schritte sind der glatte Weg.`);
 console.log('  · Sie sagt nichts über die Zeit vor der ersten Bestellung: Katalogpflege,');
 console.log('    Inhalte, Anzeigen. Die trägt heute dieses Verzeichnis.');
+console.log('  · Wie viele Anfragen kommen, ist nicht gemessen und nicht ableitbar. Die');
+console.log('    Tabelle rechnet deshalb Stufen und keine Prognose.');
 
 if (betrieb.blockaden.length || betrieb.stundenProMonat > GRENZE_STUNDEN_JE_MONAT) {
   process.exitCode = 1;

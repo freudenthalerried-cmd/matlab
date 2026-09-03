@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import {
   SCHRITTE,
   WELT_HEUTE,
@@ -133,4 +135,82 @@ test('Die eigene Bestätigung ist nicht mit der des Lieferanten verwechselbar', 
   assert.match(eigene.name, /an den Kunden/);
   assert.match(fremde.name, /des Lieferanten/);
   assert.ok(SCHRITTE.indexOf(eigene) < SCHRITTE.indexOf(fremde));
+});
+
+/* ------------------------------------------------------------------ *
+ * Der Anfragebetrieb
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Der Befund vom 3. September 2026.** Der Kopf von `bin/aufwand.mjs` sagt:
+ * „Die Besucherstrecke ist gemessen — was danach kommt, macht ein Mensch."
+ * Was danach kommt, begann in `SCHRITTE` mit „Bestellung geht ein" — und
+ * Bestellungen gibt es nicht, solange kein Zahlungsanbieter angebunden ist.
+ *
+ * Dazwischen liegt der Zustand, in dem der Shop tatsächlich ist und den ganzen
+ * 45-tägigen Klickversuch verbringen wird.
+ *
+ * > **Der Shop verspricht in der Kasse eine Rückmeldung, und niemand hat
+ * > gerechnet, was sie kostet.**
+ */
+test('jeder Anfrageschritt trägt Minuten und eine Herkunft', async () => {
+  const { ANFRAGESCHRITTE } = await import('../src/auftragslauf.js');
+  assert.ok(ANFRAGESCHRITTE.length >= 3, `nur ${ANFRAGESCHRITTE.length} Schritte — zu wenig zum Prüfen`);
+  for (const s of ANFRAGESCHRITTE) {
+    assert.ok(s.id && s.name, 'Schritt ohne Kennung oder Namen');
+    assert.ok(Number.isFinite(s.minuten) && s.minuten > 0, `${s.id}: ${s.minuten} Minuten`);
+    assert.equal(typeof s.wartetAufDritte, 'boolean', `${s.id}: wartetAufDritte fehlt`);
+    assert.ok(s.woher && s.woher.length >= 40, `${s.id}: ohne belastbare Herkunft`);
+  }
+});
+
+test('die eigene Arbeit je Anfrage ist die Summe der Schritte', async () => {
+  const { ANFRAGESCHRITTE, anfrageaufwand } = await import('../src/auftragslauf.js');
+  const summe = ANFRAGESCHRITTE.reduce((n, s) => n + s.minuten, 0);
+  const a = anfrageaufwand(20);
+  assert.equal(a.minutenEigen, summe);
+  assert.equal(a.stundenProMonat, Math.round((summe * 20 / 60) * 10) / 10);
+  assert.equal(anfrageaufwand(0).stundenProMonat, 0, 'ohne Anfrage keine Stunden');
+  assert.throws(() => anfrageaufwand(-1), /negativ/);
+});
+
+test('ohne die Antwortzeit des Lieferanten ist keine zusagbar', async () => {
+  const { anfrageaufwand } = await import('../src/auftragslauf.js');
+  const a = anfrageaufwand(10);
+  assert.equal(a.zusagbar, false, 'ein Schritt wartet auf Dritte — dann ist nichts zusagbar');
+  assert.ok(a.warteschritte.includes('verfuegbarkeit'));
+  assert.ok(a.warumNichtZusagbar.includes('Lieferanten'), 'der Grund nennt nicht, worauf gewartet wird');
+
+  // Die Gegenrichtung: Ohne Warteschritt wäre eine Zusage möglich. Ohne diese
+  // Probe könnte `zusagbar` fest auf false stehen und der Fall bliebe grün.
+  const ohneWarten = anfrageaufwand(10, [
+    { id: 'x', name: 'Nur eigene Arbeit', minuten: 4, wartetAufDritte: false, woher: 'Probe' },
+  ]);
+  assert.equal(ohneWarten.zusagbar, true);
+  assert.equal(ohneWarten.warumNichtZusagbar, null);
+});
+
+test('die Kasse sagt keine Antwortzeit zu, solange keine zusagbar ist', async () => {
+  // Die Verbindung, auf die es ankommt: Solange ein Schritt auf einen Dritten
+  // wartet, steht in den Betreiberdaten keine Antwortzeit — und die Kasse
+  // nennt keine. Eine geratene Zusage wäre schlechter als keine.
+  const { anfrageaufwand } = await import('../src/auftragslauf.js');
+  const betreiber = JSON.parse(
+    readFileSync(fileURLToPath(new URL('../data/betreiber.json', import.meta.url)), 'utf8'),
+  );
+  // **Ohne `if`.** Der erste Anlauf stellte die Zusicherung hinter „solange
+  // nichts zusagbar ist" — und `pruefe-tests` hat ihn gemeldet: Sobald die
+  // Bedingung nicht mehr zutrifft, prüft der Fall nichts und bleibt grün.
+  // Geprüft wird deshalb die **Folgerung** selbst, und die gilt immer.
+  const zusagbar = anfrageaufwand(1).zusagbar;
+  const zugesagt = betreiber.antwortzeitWerktage !== null;
+  assert.ok(!zugesagt || zusagbar,
+    'die Betreiberdaten sagen eine Antwortzeit zu, die der Anfragebetrieb nicht halten kann');
+
+  // Und der heutige Stand, damit die Folgerung nicht leer läuft: Solange ein
+  // Schritt auf den Lieferanten wartet, ist nichts zusagbar. Beantwortet er
+  // die Frage, fällt dieser Fall — und dann gehört die Zusage entschieden.
+  assert.equal(zusagbar, false,
+    'es ist eine Antwortzeit zusagbar — dann gehört sie in betreiber.antwortzeitWerktage '
+      + 'und dieser Testfall nachgezogen');
 });

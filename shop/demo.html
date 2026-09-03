@@ -5604,6 +5604,106 @@ function aufwandProMonat(welt, bestellungenProMonat) {
 
 
 
+
+
+
+
+
+
+
+
+const ANFRAGESCHRITTE = Object.freeze([
+  Object.freeze({
+    id: 'anfrage-lesen',
+    name: 'Anfrage lesen und den Positionen zuordnen',
+    minuten: 3,
+    wartetAufDritte: false,
+    woher: 'Der Text kommt fertig gerechnet aus der Kasse — Positionen, Mengen, '
+      + 'Artikelnummern, Fracht, Preisstand. Zu tun bleibt das Zuordnen zum Kunden.',
+  }),
+  Object.freeze({
+    id: 'verfuegbarkeit',
+    name: 'Verfügbarkeit und Tagespreis beim Lieferanten bestätigen',
+    minuten: 5,
+    wartetAufDritte: true,
+    woher: 'Ein Anruf oder eine Mail. Die eigene Arbeit ist kurz; wie lange die '
+      + 'Antwort braucht, weiß niemand — die Lieferzeit des Lieferanten ist eine der '
+      + 'fünf offenen Fragen an ihn.',
+  }),
+  Object.freeze({
+    id: 'angebot',
+    name: 'Angebot schreiben und senden',
+    minuten: 5,
+    wartetAufDritte: false,
+    woher: 'Der Beleg entsteht aus dem Warenkorb (`erzeugeAngebot`); zu tun bleiben '
+      + 'Anschrift, Zahlweg und das Absenden.',
+  }),
+  Object.freeze({
+    id: 'nachfassen',
+    name: 'Nachfassen, wenn keine Antwort kommt',
+    minuten: 2,
+    wartetAufDritte: false,
+    woher: 'Eine Zeile nach einigen Tagen. Ohne sie verfällt die Hälfte aller '
+      + 'Angebote unbeantwortet — gesetzt, nicht gemessen.',
+  }),
+]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function anfrageaufwand(anfragenProMonat, schritte = ANFRAGESCHRITTE) {
+  if (!(anfragenProMonat >= 0)) throw new Error('Die Zahl der Anfragen darf nicht negativ sein');
+  const minutenEigen = schritte.reduce((n, s) => n + s.minuten, 0);
+  const warteschritte = schritte.filter((s) => s.wartetAufDritte);
+  return {
+    minutenEigen,
+    anfragenProMonat,
+    stundenProMonat: Math.round((minutenEigen * anfragenProMonat / 60) * 10) / 10,
+    warteschritte: warteschritte.map((s) => s.id),
+    
+    
+    
+    zusagbar: warteschritte.length === 0,
+    warumNichtZusagbar: warteschritte.length === 0 ? null
+      : `${warteschritte.length} Schritt(e) warten auf Dritte (${warteschritte.map((s) => s.id).join(', ')}); `
+        + 'die Antwortzeit des Lieferanten ist nicht bekannt und steht als Frage in der Anfrage an ihn.',
+  };
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const VIES_ENDPUNKT = 'https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number';
 
 const STAND = {
