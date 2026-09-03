@@ -178,6 +178,28 @@ const FIRMA = BETREIBER.firma || 'Freudenthaler Bau GmbH';
 const MARKE = BETREIBER.marke || FIRMA;
 const ORT = BETREIBER.ort || 'Ried in der Riedmark';
 
+/**
+ * Die Organisation, wie eine Maschine sie lesen soll — **einmal, für alle
+ * Seiten.**
+ *
+ * **Der Befund, 3. September 2026, nachmittags.** Nach dem Markenwechsel trug
+ * die Startseite `name: "Bauversand", legalName: "Freudenthaler Bau GmbH"`.
+ * Auf allen übrigen 80 Seiten stand als `publisher` und als `seller` weiter
+ * allein die GmbH. Für einen Menschen ist das ein Schönheitsfehler; für die
+ * Leser, auf die dieser Shop ausgelegt ist, sind es **zwei Organisationen**:
+ * eine, die die Startseite betreibt, und eine, die alles verkauft und
+ * herausgibt. Verbunden waren sie an genau einer Stelle.
+ *
+ * > **Wer zwei Namen führt, muss sie überall zusammen führen — sonst hat er
+ * > zwei Firmen, von denen eine nichts verkauft.**
+ *
+ * Deshalb eine Funktion und keine drei Literale. `legalName` ist das Feld, das
+ * schema.org dafür vorsieht; fehlt eine Marke, bleibt es bei der Firma allein.
+ */
+const organisation = () => (MARKE === FIRMA
+  ? { '@type': 'Organization', name: FIRMA }
+  : { '@type': 'Organization', name: MARKE, legalName: FIRMA });
+
 
 
 /* ------------------------------------------------------------------ *
@@ -859,7 +881,7 @@ ${esc(a.gruppe)}. Ob einer davon der richtige ist, entscheidet die Planung.</p>`
           // Preisgültigkeit unbekannt ist. Die Begründung steht dort — an der
           // Quelle, wo auch der Feed sie mitbekommt.
           areaServed: liefergebietOrte({ land: LIEFERGEBIET.land, bezirke: LIEFERGEBIET.bezirke.map((b) => b.name) }),
-          seller: { '@type': 'Organization', name: FIRMA },
+          seller: organisation(),
         },
       }
     : null;
@@ -1109,7 +1131,7 @@ Preis bezieht sich auf Fläche, Länge oder Volumen. Geschätzt wird nichts.`
     description: alsText(kurz),
     inLanguage: 'de-AT',
     dateModified: seite.kopf.stand,
-    publisher: { '@type': 'Organization', name: FIRMA },
+    publisher: organisation(),
     ...(seite.kopf.frage
       ? {
           mainEntity: [{
@@ -1222,12 +1244,7 @@ die vor einer Baustoffbestellung zu klären sind — Untergrund, Mengen, Lagerun
 Jede beantwortet genau eine Frage, und die Antwort steht in den ersten zwei Sätzen.</p>`,
     jsonLd: {
       '@context': 'https://schema.org',
-      '@type': 'Organization',
-      // Der Laden heißt Bauversand, betrieben wird er von der GmbH. `legalName`
-      // ist genau das Feld dafür — beides in einer Auszeichnung, damit eine
-      // Maschine Marke und Betreiberin zusammenführt statt zu raten.
-      name: MARKE,
-      legalName: FIRMA,
+      ...organisation(),
       address: { '@type': 'PostalAddress', addressLocality: ORT, addressCountry: 'AT' },
       areaServed: liefergebietOrte({ land: LIEFERGEBIET.land, bezirke: LIEFERGEBIET.bezirke.map((b) => b.name) }),
       url: BASIS,

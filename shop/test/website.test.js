@@ -1496,3 +1496,56 @@ test('das Logo trägt die Marke, das Impressum die Betreiberin', () => {
   assert.ok(impressum.html.includes(firma),
     'das Impressum nennt die Betreiberin nicht mehr — die Marke ist keine Rechtsform');
 });
+
+/**
+ * Jede Organisation in den strukturierten Daten führt beide Namen.
+ *
+ * **Der Befund vom 3. September, nachmittags.** Nach dem Markenwechsel trug
+ * die Startseite Marke und `legalName`; auf allen übrigen 80 Seiten stand als
+ * `publisher` und als `seller` weiter allein die GmbH. Für einen Menschen ein
+ * Schönheitsfehler — für die Leser, auf die dieser Shop ausgelegt ist, sind es
+ * **zwei Organisationen**: eine, die die Startseite betreibt, und eine, die
+ * alles verkauft und herausgibt.
+ *
+ * > **Wer zwei Namen führt, muss sie überall zusammen führen — sonst hat er
+ * > zwei Firmen, von denen eine nichts verkauft.**
+ */
+test('jede Organisation der Auszeichnung nennt Marke und Betreiberin', () => {
+  const betreiber = JSON.parse(
+    readFileSync(fileURLToPath(new URL('../data/betreiber.json', import.meta.url)), 'utf8'),
+  );
+  const { marke, firma } = betreiber;
+  assert.ok(marke && firma && marke !== firma, 'Marke und Firma sind verschieden — sonst prüft der Fall nichts');
+
+  const site = pfad('../ausgabe/site');
+  const sammle = (ordner, hin = []) => {
+    for (const e of readdirSync(ordner, { withFileTypes: true })) {
+      const q = join(ordner, e.name);
+      if (e.isDirectory()) sammle(q, hin);
+      else if (e.name.endsWith('.html')) hin.push({ datei: q.slice(site.length + 1), html: readFileSync(q, 'utf8') });
+    }
+    return hin;
+  };
+
+  // Jede Organisation aus jeder JSON-LD-Insel jeder Seite, egal wie tief.
+  const organisationen = [];
+  for (const { datei, html } of sammle(site)) {
+    for (const t of html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)) {
+      const gehe = (wert) => {
+        if (Array.isArray(wert)) { wert.forEach(gehe); return; }
+        if (!wert || typeof wert !== 'object') return;
+        if (wert['@type'] === 'Organization') organisationen.push({ datei, org: wert });
+        Object.values(wert).forEach(gehe);
+      };
+      gehe(JSON.parse(t[1]));
+    }
+  }
+  assert.ok(organisationen.length >= 40,
+    `nur ${organisationen.length} Organisationen gefunden — die Schleife prüft zu wenig`);
+
+  const halb = organisationen
+    .filter(({ org }) => org.name !== marke || org.legalName !== firma)
+    .map(({ datei, org }) => `${datei}: ${org.name} / ${org.legalName ?? '—'}`);
+  assert.deepEqual(halb.slice(0, 5), [],
+    `${halb.length} Organisationen führen nicht beide Namen — eine Maschine liest daraus zwei Firmen`);
+});
