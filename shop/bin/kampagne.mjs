@@ -169,12 +169,48 @@ export const WARENKOERBE = {
  */
 const MARKEN = ['Capatect', 'Baumit', 'Soudal', 'Isover', 'Schiedel', 'SIKM', 'SIK', 'Ravenit', 'SunCore', 'Ökotherm', 'Prima'];
 
-/** Ausschlussliste. Jeder Klick, der nicht zur Baustelle führt, ist verloren. */
+/**
+ * Ausschlussliste. Jeder Klick, der nicht zur Baustelle führt, ist verloren.
+ *
+ * **Erweitert am 3. September 2026 um die zwei harten Grenzen des Shops.** Die
+ * vier vorhandenen Themen schließen aus, was *wahrscheinlich* nicht kauft.
+ * Was fehlte, war das, was **nicht kaufen kann**:
+ *
+ *   * **Außerhalb des Liefergebiets.** Gate 23 nimmt keine Bestellung aus
+ *     einem anderen Bezirk an. Die Ortssteuerung von Google richtet sich nach
+ *     dem Standort des Suchenden — sie greift nicht, wenn jemand aus Linz
+ *     „Dämmung kaufen Wien" tippt, weil er dort baut. Der Klick wird bezahlt,
+ *     die Anfrage abgelehnt.
+ *   * **Privatkunden.** Gate 7 lässt nur Unternehmer bestellen; alle Preise
+ *     sind netto. Ein Heimwerker klickt, rechnet mit Brutto und geht.
+ *
+ * > **Ein Ausschluss ist billiger als jede Anzeige: Er kostet nichts und
+ * > spart genau die Klicks, die nie zu einer Bestellung führen können.**
+ *
+ * **Was hier nicht hineingehört, ist ebenso wichtig.** Kein Ortsname des
+ * eigenen Liefergebiets — „linz" auszuschließen wäre ein Ausschluss der
+ * eigenen Kundschaft. Und kein Wort, das in einem geführten Suchbegriff
+ * vorkommt. Beides prüft ein Testfall gegen `LIEFERGEBIET` und die
+ * Keywordliste; ein Ausschluss, der eigene Ware oder das eigene Gebiet trifft,
+ * ist teurer als kein Ausschluss.
+ */
 const NEGATIVE = {
   'Preis und Menge': ['günstig', 'billig', 'gebraucht', 'restposten', 'einzeln', 'einzelsack', 'kleinmenge', 'muster', 'probe', 'reststück'],
   Wettbewerb: ['baumarkt', 'obi', 'hornbach', 'bauhaus', 'lagerhaus', 'hagebau', 'amazon', 'willhaben'],
   'Suche ohne Kaufabsicht': ['anleitung', 'wie', 'video', 'youtube', 'erfahrung', 'test', 'vergleich', 'berechnen', 'rechner', 'wikipedia', 'was ist'],
   'Falsche Absicht': ['job', 'jobs', 'lehre', 'gehalt', 'praktikum', 'miete', 'mieten', 'leihen', 'verleih', 'entsorgung', 'entsorgen', 'reparatur'],
+  // Die größten österreichischen Städte und Länder **außerhalb** der fünf
+  // Bezirke. Nicht alles, was außerhalb liegt — das wären hunderte Namen —,
+  // sondern das, was jemand tatsächlich eintippt, wenn er dort baut.
+  'Außerhalb des Liefergebiets': [
+    'wien', 'graz', 'salzburg', 'innsbruck', 'klagenfurt', 'villach', 'wels', 'steyr',
+    'st. pölten', 'dornbirn', 'bregenz', 'tirol', 'vorarlberg', 'kärnten', 'burgenland',
+    'steiermark', 'deutschland', 'bayern', 'passau',
+  ],
+  // Gate 7: nur Unternehmer. Der Shop führt Nettopreise und einen
+  // Mindestbestellwert von 250 € je Lieferung — ein Heimwerker ist an beidem
+  // falsch beraten, und der Klick ist trotzdem bezahlt.
+  Privatkunde: ['privat', 'heimwerker', 'diy', 'selber machen', 'für zuhause', 'hobby'],
 };
 
 function marke(bezeichnung) {

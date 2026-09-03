@@ -689,3 +689,74 @@ test('Jedes Keyword findet in der Shopsuche mindestens einen Treffer', async () 
   assert.deepEqual(leer, [],
     'diese Keywords bezahlen einen Klick auf eine leere Trefferliste');
 });
+
+/* ------------------------------------------------------------------ *
+ * Die Ausschlussliste darf nicht die eigene Kundschaft treffen
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Ergänzt am 3. September 2026.** Die Liste kennt seit diesem Tag zwei
+ * weitere Themen: Orte außerhalb des Liefergebiets (Gate 23) und
+ * Privatkundenbegriffe (Gate 7). Beides schließt aus, was **nicht kaufen
+ * kann** — die vier älteren Themen schließen aus, was wahrscheinlich nicht
+ * kauft.
+ *
+ * Ein Ausschluss kostet nichts und spart genau die Klicks, die nie zu einer
+ * Bestellung führen können. Er kann aber auch das Gegenteil tun:
+ *
+ * > **Ein Ausschluss, der eigene Ware oder das eigene Gebiet trifft, ist
+ * > teurer als kein Ausschluss.**
+ *
+ * „linz" auszuschließen wäre der Ausschluss der eigenen Kundschaft — Linz und
+ * Linz-Land sind zwei der fünf Bezirke. Diese beiden Testfälle sind die
+ * Gegenprobe dazu, und sie messen gegen die Quellen, nicht gegen eine zweite
+ * Liste.
+ */
+test('kein Ausschluss trifft einen Bezirk des eigenen Liefergebiets', async () => {
+  const { LIEFERGEBIET } = await import('../src/liefergebiet.js');
+  const zeilen = readFileSync(pfad('../ausgabe/kampagne/negative-keywords.csv'), 'utf8')
+    .trim().split('\n').slice(1);
+  assert.ok(zeilen.length >= 30, `nur ${zeilen.length} Ausschlüsse — die Prüfung greift zu wenig`);
+
+  const ausschluesse = zeilen.map((z) => z.split(',')[2].toLowerCase());
+  const bezirke = LIEFERGEBIET.bezirke.map((b) => b.name.toLowerCase());
+  assert.ok(bezirke.length >= 3, 'ohne Bezirke prüft dieser Fall nichts');
+
+  const treffer = [];
+  for (const bezirk of bezirke) {
+    for (const wort of ausschluesse) {
+      // Phrase-Ausschluss: Er greift, wenn er als Wortfolge vorkommt. „linz"
+      // trifft damit „linz-land" ebenso wie „linz".
+      if (bezirk.includes(wort)) treffer.push(`„${wort}" schließt den Bezirk ${bezirk} aus`);
+    }
+  }
+  assert.deepEqual(treffer, [], 'diese Ausschlüsse treffen das eigene Liefergebiet');
+});
+
+test('kein Ausschluss trifft einen geführten Suchbegriff', () => {
+  const zeilen = readFileSync(pfad('../ausgabe/kampagne/negative-keywords.csv'), 'utf8')
+    .trim().split('\n').slice(1);
+  const ausschluesse = zeilen.map((z) => z.split(',')[2].toLowerCase());
+
+  const keywords = readFileSync(pfad('../ausgabe/kampagne/keywords.csv'), 'utf8')
+    .trim().split('\n').slice(1).map((z) => z.split(',')[2].toLowerCase());
+  assert.ok(keywords.length >= 20, `nur ${keywords.length} Suchbegriffe — die Prüfung greift zu wenig`);
+
+  const treffer = [];
+  for (const k of keywords) {
+    for (const wort of ausschluesse) {
+      if (k.includes(wort)) treffer.push(`„${wort}" schließt den eigenen Begriff „${k}" aus`);
+    }
+  }
+  assert.deepEqual(treffer, [], 'diese Ausschlüsse treffen die eigenen Suchbegriffe');
+});
+
+test('die beiden harten Grenzen des Shops stehen in der Liste', () => {
+  const zeilen = readFileSync(pfad('../ausgabe/kampagne/negative-keywords.csv'), 'utf8')
+    .trim().split('\n').slice(1);
+  const themen = new Set(zeilen.map((z) => z.split(',')[1]));
+  // Gate 23 und Gate 7 sind keine Wahrscheinlichkeiten, sondern Sperren. Was
+  // sie sperren, gehört ausgeschlossen, bevor der erste Klick bezahlt ist.
+  assert.ok(themen.has('Außerhalb des Liefergebiets'), 'Gate 23 hat kein Ausschlussthema');
+  assert.ok(themen.has('Privatkunde'), 'Gate 7 hat kein Ausschlussthema');
+});
