@@ -374,20 +374,25 @@ export const GEGENPROBEN = Object.freeze([
       + 'spürbar — die Probe hält fest, dass es auffällt.',
   }),
   Object.freeze({
-    id: 'anfragetext-ohne-kleinmengensatz',
+    id: 'warenkorb-ohne-kleinmengensatz',
     pruefer: 'wegprobe',
-    was: 'Ein Anfragetext, der die Fracht über der Ware verschweigt',
-    datei: 'shop/src/kundenanfrage.js',
+    was: 'Ein Warenkorb, der die Fracht über der Ware verschweigt',
+    datei: 'shop/shop-ui.js',
     art: 'ersetzen',
-    suchen: "  if (rechnung.frachtNetto > rechnung.warenwertNetto) {\n    zeilen.push('Die Fracht kostet hier mehr als die Ware — das lohnt sich für Sie nicht.');",
-    ersetzen: "  if (false && rechnung.frachtNetto > rechnung.warenwertNetto) {\n    zeilen.push('Die Fracht kostet hier mehr als die Ware — das lohnt sich für Sie nicht.');",
-    erwartet: /Anfragetext sagt es nicht/,
+    suchen: '      if (rechnung.frachtNetto > rechnung.warenwertNetto) {',
+    ersetzen: '      if (false && rechnung.frachtNetto > rechnung.warenwertNetto) {',
+    erwartet: /Warenkorb sagt es nicht/,
     // Die Wegprobe geht durch den **gebauten** Shop. Eine Änderung an einer
     // Quelldatei erreicht sie erst nach `build` und `website`.
     baueVorher: true,
     warum: 'Der Befund vom 2. September: Der Warenkorb sagte „Das lohnt sich für Sie nicht", '
-      + 'und das eine Papier, das den Shop verlässt, sagte es nicht. Ein Hinweis, der nur auf '
-      + 'der Seite steht, fehlt in dem Papier, das der Kunde verschickt.',
+      + 'und das eine Papier, das den Shop verlässt, sagte es nicht. **Umgehängt am 3. September, '
+      + 'wegen Gate 25.** Die Mutation zeigte bis dahin auf den Satz im Anfragetext. Der '
+      + 'Mindestbestellwert von 250 € liegt über jedem Frachtsatz des Bestands (höchstens 100 €), '
+      + 'also kann kein Korb, der überhaupt einen Anfragetext erzeugt, die Fracht noch '
+      + 'unterschreiten — die Stelle ist über diesen Weg nicht mehr erreichbar. Der Satz im '
+      + 'Anfragetext bleibt und wird von kundenanfrage.test.js gehalten; die Gegenprobe zeigt '
+      + 'jetzt auf den Warenkorb, wo derselbe Hinweis weiter greift.',
   }),
   Object.freeze({
     id: 'weg-zahlweg-nicht-vorbelegt',
@@ -453,6 +458,21 @@ export const GEGENPROBEN = Object.freeze([
     warum: 'Die Weisung vom 28.08. lautet: keine Spanne ausgeben. Die zweite Rechnung '
       + 'liest den fertigen Belegtext und muss die Einkaufszahl darin finden — sonst '
       + 'bestätigt sie nur, statt zu prüfen.',
+  }),
+  Object.freeze({
+    id: 'kasse-ohne-mindestbestellwert',
+    pruefer: 'wegprobe',
+    was: 'Eine Kasse, die jeden Warenkorb annimmt — auch den, den Gate 20 später ablehnt',
+    datei: 'shop/src/shopkern.js',
+    art: 'ersetzen',
+    suchen: '  if (wert >= grenzeNetto) {',
+    ersetzen: '  if (true || wert >= grenzeNetto) {',
+    erwartet: /Mindestbestellwert nicht|Warenkorb sagt es nicht/,
+    baueVorher: true,
+    warum: 'Der Zustand bis zum 3. September, wörtlich: Gate 20 lief erst bei der Auslösung, '
+      + 'und die Kasse rechnete einen Korb über 19,30 € durch, wies Preise aus und bot ihn als '
+      + 'fertige Anfrage an. Eine Sperre, die erst nach dem Ja greift, ist keine Sperre, sondern '
+      + 'eine Absage mit Verzögerung. Diese Mutation stellt genau das wieder her.',
   }),
   Object.freeze({
     id: 'registereintrag-nennt-eine-klammer-zu-viel',

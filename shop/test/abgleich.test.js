@@ -33,6 +33,7 @@ import * as warenkorb from '../src/warenkorb.js';
 import * as preis from '../src/preis.js';
 import * as rechtstexte from '../src/rechtstexte.js';
 import * as zahlung from '../src/zahlung.js';
+import * as shopkern from '../src/shopkern.js';
 
 const MODULE = {
   'kunde.js': kunde,
@@ -41,6 +42,9 @@ const MODULE = {
   'preis.js': preis,
   'rechtstexte.js': rechtstexte,
   'zahlung.js': zahlung,
+  // Seit dem 3. September nennt AGB-Punkt 5 ein Ziel in `shopkern.js` — der
+  // Mindestbestellwert gegenüber dem Kunden (Gate 25).
+  'shopkern.js': shopkern,
 };
 
 /* ------------------------------------------------------------------ *

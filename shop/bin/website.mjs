@@ -1459,7 +1459,7 @@ zurück.</div>`,
  * unbekannt ist — eine erfundene Frist in der maschinenlesbaren Auszeichnung
  * wäre schlimmer als in der Prosa, denn sie wird zitiert und nicht gelesen.
  */
-function lieferungFragen(f, verweis) {
+function lieferungFragen(f, verweis, mindestNetto) {
   const bezirke = LIEFERGEBIET.bezirke.map((b) => b.name).join(', ');
   return [
     ['Was kostet die Zustellung?',
@@ -1473,9 +1473,14 @@ function lieferungFragen(f, verweis) {
       `In die Bezirke ${bezirke} — regional, nicht österreichweit.`],
     ['Kann ich selbst abholen?',
       'Ja, ausdrücklich vorgesehen. Wer selbst abholt, zahlt keine Fracht.'],
-    ['Ab welchem Warenwert lohnt sich eine Lieferung?',
-      'Unter etwa 400 € netto Warenwert trägt eine gelieferte Bestellung ihre eigenen Nebenkosten '
-      + 'nicht — für keine der beiden Seiten. Stand: 2026-08-25.'],
+    ['Gibt es einen Mindestbestellwert?',
+      mindestNetto
+        ? `Ja: ${euro(mindestNetto)} € netto Warenwert je Lieferung. Werden mehrere Hersteller `
+          + 'bestellt, entstehen mehrere Lieferungen, und die Grenze gilt für jede einzelne — '
+          + 'Anfahrt und Verpackung fallen je Lieferung an. Darunter ist Selbstabholung der '
+          + 'bessere Weg oder das Zusammenlegen mit der nächsten Bestellung.'
+        : 'Der Mindestbestellwert ist derzeit nicht hinterlegt; die Kasse nimmt deshalb keine '
+          + 'Anfrage an.'],
   ].map(([frage, antwort]) => ({
     '@type': 'Question',
     name: frage,
@@ -1483,7 +1488,7 @@ function lieferungFragen(f, verweis) {
   }));
 }
 
-function lieferungSeite(katalog, katalogDatei, verweis) {
+function lieferungSeite(katalog, katalogDatei, verweis, mindestNetto) {
   const f = katalog.lieferantenById.get(katalogDatei.lieferantId).fracht;
   return {
     titel: 'Lieferung und Frachtkosten',
@@ -1497,6 +1502,7 @@ Annahme. Sie werden getrennt ausgewiesen, weil sie je Lieferung anfallen und nic
   <div><span class="k">Pauschale je Lieferung</span><span class="w">${euro(f.pauschaleNetto)} €</span><span class="e">netto, Fracht plus Energiekostenzuschlag</span></div>
   <div><span class="k">Palettierte Ware</span><span class="w">+ ${euro(f.sperrgutZuschlagNetto)} €</span><span class="e">netto, Kranentladung je Hub</span></div>
   <div><span class="k">Frei Haus ab</span><span class="w">—</span><span class="e">gibt es nicht</span></div>
+  <div><span class="k">Mindestbestellwert</span><span class="w">${mindestNetto ? `${euro(mindestNetto)} €` : '—'}</span><span class="e">netto Warenwert, je Lieferung</span></div>
   <div><span class="k">Liefergebiet</span><span class="w">${LIEFERGEBIET.bezirke.length} Bezirke</span><span class="e">${esc(LIEFERBEZIRKE)}</span></div>
 </div>
 
@@ -1512,10 +1518,17 @@ hoch gerechnet. Stand: 2026-08-31.</p>
 <p>Die ausführliche Begründung samt Rechnung steht unter
 <a href="${verweis('wissen/warum-keine-gratislieferung')}">Warum es keine Gratislieferung gibt</a>.</p>
 
-<h2>Ab wann sich eine Lieferung lohnt</h2>
-<p>Unter etwa 400 € netto Warenwert trägt eine gelieferte Bestellung ihre eigenen Nebenkosten nicht —
-für keine der beiden Seiten. Darunter ist Selbstabholung der bessere Weg, oder das Zusammenlegen mit der
-nächsten Bestellung. Stand: 2026-08-25.</p>
+<h2>Der Mindestbestellwert</h2>
+<p>${mindestNetto
+  ? `Wir liefern ab ${euro(mindestNetto)} € netto Warenwert je Lieferung (Quelle: eigene `
+    + 'Lieferantenrechnungen und die daraus gerechneten Nebenkosten je Lieferung, Stand: '
+    + '2026-09-03). Der Grund ist derselbe wie oben: '
+    + 'Anfahrt und Verpackung hängen an der Fahrt und nicht am Warenwert. Eine kleine Zustellung kostet '
+    + 'dasselbe wie eine große, und unter dieser Grenze zahlt am Ende einer von beiden drauf.'
+  : 'Derzeit ist kein Mindestbestellwert hinterlegt; die Kasse nimmt deshalb keine Anfrage an.'}</p>
+<p>Bestellen Sie bei mehreren Herstellern, entstehen mehrere Lieferungen — dann gilt die Grenze
+<strong>je Lieferung</strong> und nicht für die Summe. Der Warenkorb sagt Ihnen, was noch fehlt.
+Darunter ist Selbstabholung der bessere Weg, oder das Zusammenlegen mit der nächsten Bestellung.</p>
 
 <h2>Selbstabholung</h2>
 <p>Ausdrücklich vorgesehen und nicht schlechter gestellt. Wer selbst abholt, zahlt keine Fracht — das ist
@@ -1523,7 +1536,7 @@ der ganze Vorteil der getrennten Ausweisung.</p>`,
     jsonLd: {
       '@context': 'https://schema.org',
       '@type': 'FAQPage',
-      mainEntity: lieferungFragen(f, verweis),
+      mainEntity: lieferungFragen(f, verweis, mindestNetto),
     },
   };
 }
@@ -1607,6 +1620,12 @@ function shopdaten(katalog, befund, seiten, lieferantenDatei, suchwoerterDatei, 
       // zu erfinden.
       antwortzeitWerktage: betreiber.antwortzeitWerktage ?? null,
     },
+    // Gate 25 — der Mindestbestellwert je Lieferung. Er gehört in die Seite
+    // und nicht nur in den Rechenkern: Bis zum 3. September rechnete die
+    // Kasse jeden Korb durch und bot ihn als Anfrage an, auch den, den Gate 20
+    // bei der Auslösung abgelehnt hätte. `null` heißt hier nicht „egal",
+    // sondern „nicht erfüllbar" — `mindestbestellwertKunde` sperrt dann.
+    mindestbestellwertNetto: betreiber.mindestbestellwertNetto ?? null,
     // Der Bereitschaftsstand, wie ihn `npm run startklar` rechnet. Die Kasse
     // sagt damit aus den Daten, warum nichts bestellt werden kann — statt
     // aus einem festen Satz, der stehenbliebe, wenn einer der drei Punkte
@@ -1950,7 +1969,8 @@ function main() {
     const m = new Map();
     m.set('index', startSeite(katalog, befund, seiten, verweisFabrik('index'), katalogDatei, bereitschaft));
     m.set('wissen/index', wissenIndex(seiten, verweisFabrik('wissen/index')));
-    m.set('lieferung', lieferungSeite(katalog, katalogDatei, verweisFabrik('lieferung')));
+    m.set('lieferung', lieferungSeite(katalog, katalogDatei, verweisFabrik('lieferung'),
+      betreiber.mindestbestellwertNetto ?? null));
     m.set('suche', sucheSeite(verweisFabrik('suche')));
     m.set('warenkorb', warenkorbSeite(verweisFabrik('warenkorb')));
     m.set('kasse', kasseSeite(verweisFabrik('kasse')));

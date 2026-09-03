@@ -25,6 +25,8 @@
   "rechtstexteFundstelle": null,
   "antwortzeitWerktage": null,
   "_antwortzeitHinweis": "Wie schnell der Auftraggeber auf eine Anfrage antwortet. Bewusst null: Der Shop erzeugt keine Bestellungen, sondern Anfragen — die Antwortzeit ist damit die einzige Zusage, die ueber den Auftrag entscheidet, und sie ist bisher nirgends entschieden. Im Baustoffhandel kauft, wer am Nachmittag anfragt und am uebernaechsten Tag ein Angebot bekommt, laengst woanders. Solange hier null steht, nennt die Kasse keine Zeit — erfunden wird sie nicht.",
+  "mindestbestellwertNetto": 250,
+  "_mindestbestellwertHinweis": "GATE 25, entschieden am 03.09.2026 im Arbeitsloop. Mindestbestellwert je Lieferung, gemessen am Warenwert netto. Hergeleitet aus dem Nulldurchgang von Gate 20 mit den Poschacher-Konditionen (Frachtpauschale 75,50 + 7,50 Kranentladung, Palette 22,00 + Folierung 6,50, Zielmarge 25 %): eine Palette traegt sich ab 114 EUR (Vorkasse) bis 129 EUR (Karte), zwei Paletten ab 202 bis 224 EUR, drei ab 290 bis 318 EUR. 250 EUR deckt zwei Paletten auf dem unguenstigsten angebotenen Zahlweg mit 26 EUR Abstand. DREI Paletten deckt diese Grenze NICHT — dafuer bleibt Gate 20 die Rueckfallebene, das jede einzelne Bestellung vor der Ausloesung nachrechnet. Die Palettenzahl je Lieferung ist nicht ableitbar (der Katalog fuehrt Gewicht fuer 7 von 46 Artikeln); sobald der Lieferant sie beantwortet, gehoert diese Zahl nachgerechnet.",
   "domainZeigtAufShop": null,
   "repositoryPrivat": null
 }

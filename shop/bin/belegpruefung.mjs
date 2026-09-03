@@ -170,6 +170,10 @@ const anfrage = baueKundenanfrage({
   rechnung: kundenWarenkorb(positionen, {
     artikel: katalog.artikel,
     lieferanten: lieferantenDatei.lieferanten ?? lieferantenDatei,
+    // Gate 25: aus derselben Datei wie in der Seite. Ohne die Grenze käme
+    // gar kein Anfragetext zustande — und dieser Prüfer sagt das dann auch,
+    // statt einen leeren Text gegen seine Pflichtangaben zu halten.
+    mindestbestellwertNetto: betreiberDatei.mindestbestellwertNetto ?? null,
   }),
   bezirk: 'Perg',
   betreiber: { firma: betreiber.firma, ort: 'Ried in der Riedmark', email: '' },

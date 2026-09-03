@@ -102,6 +102,41 @@ const SONDE = `
     await geheZu('warenkorb');
     schritt('Warenkorb öffnen');
 
+    // **Gate 25, ab 3. September.** Ein Gebinde reicht den Mindestbestellwert
+    // nicht — und das ist der Punkt: Bis dahin lief dieser Weg mit 65,45 €
+    // Warenwert bis zum fertigen Anfragetext durch, den Gate 20 bei der
+    // Auslösung abgelehnt hätte. Gemessen wird jetzt beides: dass der Hinweis
+    // im Korb steht, wenn die Menge nicht reicht — und dass die Erhöhung
+    // genau einen Schritt kostet und nicht drei.
+    merkmale.mindestwertHinweis = Boolean(document.querySelector('.mindestwert'));
+    // Der Kleinmengensatz — bei einem Gebinde uebersteigt die Fracht die Ware,
+    // und genau dort gehoert er hin. Gemessen wird er seit dem 3. September
+    // hier statt im Anfragetext: Gate 25 liegt ueber jedem Frachtsatz des
+    // Bestands, also kann ein Korb, der ueberhaupt einen Anfragetext erzeugt,
+    // die Fracht nie mehr unterschreiten. Der Satz in kundenanfrage.js bleibt
+    // stehen — gebraucht wird er, sobald der Mindestbestellwert faellt —, nur
+    // nachweisen laesst er sich dort nicht mehr ueber diesen Weg, sondern in
+    // kundenanfrage.test.js.
+    //
+    // KEINE Backslashes und KEINE Backticks in diesem Block: Er wandert als
+    // Zeichenkette durch eine Schablone in eine HTML-Datei. Steht oben schon.
+    // Gelesen wird der **gezeichnete Bereich**, nicht document.body: Dessen
+    // textContent enthaelt auch den Inhalt der Skript-Elemente, und die
+    // Zeichenkette steht im Quelltext des Buendels. Der erste Anlauf meldete
+    // deshalb ja, auch nachdem die Gegenprobe den Hinweis abgeschaltet hatte —
+    // eine Messung, die ihren eigenen Quelltext liest, kann nicht rot werden.
+    const korbBereich = document.getElementById('warenkorb-ziel');
+    merkmale.kleinmengensatzImKorb = /mehr als die Ware/
+      .test(korbBereich ? korbBereich.textContent : '');
+    const mengenfeld = document.querySelector('.korbzeile input[type=number]');
+    if (merkmale.mindestwertHinweis && mengenfeld) {
+      mengenfeld.value = '999';
+      mengenfeld.dispatchEvent(new Event('change'));
+      await warte();
+      schritt('Menge erhöhen');
+      merkmale.hinweisNachErhoehung = Boolean(document.querySelector('.mindestwert'));
+    }
+
     await geheZu('kasse');
     schritt('Weiter zur Kasse');
 
@@ -211,6 +246,9 @@ console.log(`Textfelder auszufüllen: ${merkmale.textfelder} · Auswahlfelder: $
 console.log(`Am Ende: ${merkmale.anfragezeichen} Zeichen Anfragetext, Knöpfe: ${merkmale.knoepfe.join(' / ')}`);
 console.log(`Fracht über Warenwert: ${merkmale.frachtUeberWare ? 'ja' : 'nein'} · `
   + `Kleinmengensatz im Anfragetext: ${merkmale.kleinmengensatz ? 'ja' : 'nein'}`);
+console.log(`Mindestbestellwert: Hinweis bei einem Gebinde ${merkmale.mindestwertHinweis ? 'ja' : 'nein'} · `
+  + `nach dem Erhöhen ${merkmale.hinweisNachErhoehung ? 'immer noch da' : 'weg'}`);
+console.log(`Kleinmengensatz im Warenkorb bei einem Gebinde: ${merkmale.kleinmengensatzImKorb ? 'ja' : 'nein'}`);
 console.log(`\nAuf der Gruppenseite: ${merkmale.artikelAufGruppenseite} Artikel, `
   + `${merkmale.legenAufGruppenseite} davon direkt legbar, `
   + `${merkmale.kartenMitVerweis} mit Verweis auf die Artikelseite.`);
@@ -248,6 +286,19 @@ if (merkmale.frachtUeberWare && !merkmale.kleinmengensatz) {
 if (!merkmale.frachtUeberWare && merkmale.kleinmengensatz) {
   probleme.push('Der Kleinmengensatz steht im Anfragetext, obwohl der Korb die Fracht trägt');
 }
+// Gate 25 muss **im Korb** stehen und nicht erst in der Kasse: Wer erst nach
+// Bezirk und Zahlweg erfährt, dass die Menge nicht reicht, hat drei Schritte
+// umsonst gemacht. Und er muss verschwinden, sobald die Menge reicht — ein
+// Hinweis, der stehen bleibt, ist ein Hinweis, den niemand mehr liest.
+if (!merkmale.mindestwertHinweis) {
+  probleme.push('Ein Gebinde reicht den Mindestbestellwert nicht, und der Warenkorb sagt es nicht');
+}
+if (merkmale.hinweisNachErhoehung) {
+  probleme.push('Der Mindestwerthinweis bleibt stehen, obwohl die Menge reicht');
+}
+if (!merkmale.kleinmengensatzImKorb) {
+  probleme.push('Die Fracht übersteigt bei einem Gebinde die Ware, und der Warenkorb sagt es nicht');
+}
 if (merkmale.dreiPositionen > HOECHSTENS_SCHRITTE + 2) {
   probleme.push(`Drei Positionen kosten ${merkmale.dreiPositionen} Schritte`);
 }
@@ -258,7 +309,10 @@ if (probleme.length) {
   console.log('\nEin Weg wird nicht kürzer, indem man ihn beschreibt. Nachsehen, was dazugekommen ist.');
   process.exitCode = 1;
 } else {
-  console.log('\nVier Schritte, kein Textfeld, ein fertiger Text am Ende.');
+  // Die Zahl kommt aus der Messung. Hier stand „Vier Schritte" als Text,
+  // während der Weg fünf zählte — ein Schlusssatz, der die eigene Messung
+  // überschreibt, ist die kleinste Form von zwei Wahrheiten.
+  console.log(`\n${schritte.length} Schritte, kein Textfeld, ein fertiger Text am Ende.`);
   console.log('Der Legen-Knopf sitzt seit dem 02.09. auf der Gruppenseite: Jede weitere');
   console.log('Position kostet einen Klick statt vier — siehe legen-knopf-auf-der-landeseite.md.');
 }

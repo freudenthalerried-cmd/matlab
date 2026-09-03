@@ -70,12 +70,19 @@ export const ZUORDNUNG = [
     wie: 'Aufteilung nach Lieferant — Teillieferungen entstehen zwangsläufig.',
   },
   {
+    // **Erweitert am 3. September, Gate 25.** Der Punkt nannte bis dahin nur
+    // die Grenze des Herstellers uns gegenüber. Unsere eigene Grenze gegenüber
+    // dem Kunden gab es nicht: Die Kasse nahm jeden Korb an, und Gate 20
+    // lehnte ihn erst bei der Auslösung ab — nach dem Ja des Kunden.
     nr: 5,
     art: 'code',
     modul: 'preis.js',
-    ziel: ['mindestbestellwertErfuellt'],
-    wie: 'Der Mindestbestellwert des Herstellers, gemessen am Bestellwert.',
+    ziel: ['mindestbestellwertErfuellt', 'shopkern.js#mindestbestellwertKunde'],
+    wie: 'Zwei Grenzen an einem Punkt: der Mindestbestellwert des Herstellers, gemessen am '
+      + 'Bestellwert — und unser eigener je Lieferung, gemessen am Warenwert netto und schon '
+      + 'in der Kasse statt erst bei der Auslösung.',
   },
+
   {
     nr: 6,
     art: 'code',
@@ -200,13 +207,22 @@ export function pruefeAbgleich(module = {}, tafeln = {}) {
         if (!schrittIds.has(ziel)) maengel.push(`Punkt ${z.nr}: Ablaufschritt „${ziel}" gibt es nicht`);
         continue;
       }
-      const modul = module[z.modul];
+      // **Ein Ziel darf sein Modul selbst nennen** — `shopkern.js#name`.
+      // Eingeführt am 3. September für AGB-Punkt 5: Er wird von zwei
+      // Funktionen in zwei Modulen eingelöst (die Grenze des Herstellers und
+      // unsere eigene). Die Alternative wäre ein zweiter Eintrag für denselben
+      // Punkt gewesen — und die Regel „ein Punkt, eine Zuordnung" ist gerade
+      // die, die verhindert, dass ein Punkt zweimal halb erklärt wird.
+      const teil = String(ziel).split('#');
+      const modulName = teil.length > 1 ? teil[0] : z.modul;
+      const name = teil.length > 1 ? teil[1] : ziel;
+      const modul = module[modulName];
       if (!modul) {
-        maengel.push(`Punkt ${z.nr}: Modul „${z.modul}" wurde nicht übergeben`);
+        maengel.push(`Punkt ${z.nr}: Modul „${modulName}" wurde nicht übergeben`);
         continue;
       }
-      if (typeof modul[ziel] !== 'function') {
-        maengel.push(`Punkt ${z.nr}: ${z.modul} exportiert keine Funktion „${ziel}"`);
+      if (typeof modul[name] !== 'function') {
+        maengel.push(`Punkt ${z.nr}: ${modulName} exportiert keine Funktion „${name}"`);
       }
     }
   }

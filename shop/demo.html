@@ -2385,7 +2385,57 @@ const runde = (n) => Math.round(n * 100) / 100;
 
 
 
-function kundenWarenkorb(zeilen, { artikel, lieferanten }, ust = UST_SATZ_KUNDE) {
+
+
+
+
+
+
+
+function mindestbestellwertKunde(warenwertNetto, grenzeNetto) {
+  if (typeof grenzeNetto !== 'number' || !(grenzeNetto > 0)) {
+    return {
+      erfuellt: false,
+      grenze: null,
+      fehlbetragNetto: null,
+      grund: 'Der Mindestbestellwert ist nicht hinterlegt.',
+    };
+  }
+  const wert = typeof warenwertNetto === 'number' && warenwertNetto > 0 ? warenwertNetto : 0;
+  if (wert >= grenzeNetto) {
+    return { erfuellt: true, grenze: grenzeNetto, fehlbetragNetto: 0, grund: null };
+  }
+  
+  
+  
+  const fehlbetragNetto = Math.ceil(grenzeNetto - wert);
+  return {
+    erfuellt: false,
+    grenze: grenzeNetto,
+    fehlbetragNetto,
+    grund: `Der Mindestbestellwert je Lieferung beträgt ${grenzeNetto} € netto Warenwert. `
+      + `Es fehlen noch rund ${fehlbetragNetto} €.`,
+  };
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function kundenWarenkorb(zeilen, { artikel, lieferanten, mindestbestellwertNetto = null }, ust = UST_SATZ_KUNDE) {
   const nachId = new Map(artikel.map((a) => [a.sku, a]));
   const lieferantById = new Map(lieferanten.map((l) => [l.id, l]));
   const gruppen = new Map();
@@ -2456,6 +2506,16 @@ function kundenWarenkorb(zeilen, { artikel, lieferanten }, ust = UST_SATZ_KUNDE)
     nettoGesamt,
     ustBetrag,
     bruttoGesamt: runde(nettoGesamt + ustBetrag),
+    
+    
+    
+    
+    
+    
+    mindestbestellwert: mindestbestellwertKunde(
+      teillieferungen.length ? Math.min(...teillieferungen.map((t) => t.warenwertNetto)) : 0,
+      mindestbestellwertNetto,
+    ),
     offen,
   };
 }
@@ -2685,12 +2745,18 @@ const AGB_GLIEDERUNG = [
   { nr: 4, titel: 'Lieferung im Streckengeschäft', hinweis: 'Direktversand durch den Hersteller; Teillieferungen je Lieferant sind der Regelfall.' },
   {
     nr: 5,
-    titel: 'Mindestbestellmengen je Hersteller',
+    titel: 'Mindestbestellwert und Mindestbestellmengen',
     hinweis:
-      'Jeder Hersteller setzt eine Mindestbestellmenge. Wird sie für einen Hersteller nicht ' +
+      'Für jede Lieferung gilt ein Mindestbestellwert, gemessen am Warenwert netto. Er steht ' +
+      'auf der Lieferseite und im Warenkorb; wird er nicht erreicht, kommt keine Anfrage ' +
+      'zustande, und der Shop weist den fehlenden Betrag aus. Bei mehreren Lieferungen gilt ' +
+      'er je Lieferung, weil Anfahrt und Verpackung je Lieferung anfallen. Daneben setzt ' +
+      'jeder Hersteller eine eigene Mindestbestellmenge. Wird sie für einen Hersteller nicht ' +
       'erreicht, kann die Bestellung insoweit nicht angenommen werden; der Shop weist die ' +
       'fehlende Menge im Warenwert aus. Der Punkt hat gefehlt, obwohl der Shop die Grenze ' +
-      'von Anfang an durchgesetzt hat — eine Ablehnung ohne veröffentlichte Grundlage.',
+      'von Anfang an durchgesetzt hat — eine Ablehnung ohne veröffentlichte Grundlage. Der ' +
+      'eigene Mindestbestellwert ist am 3. September dazugekommen; bis dahin nahm die Kasse ' +
+      'jeden Warenkorb an, und die Absage kam erst nach der Zusage des Bestellers.',
   },
   { nr: 6, titel: 'Fracht, Sperrgut und Baustellenanlieferung', hinweis: 'Abladen, Zufahrt und Anwesenheit sind Sache des Bestellers.' },
   {
@@ -6216,6 +6282,20 @@ function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = null, ein
   const gebiet = pruefeLieferort({ land: 'AT', bezirk });
   if (!gebiet.liefern) {
     return { moeglich: false, hindernis: gebiet.grund, ...leer };
+  }
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  const mbw = rechnung.mindestbestellwert;
+  if (mbw && !mbw.erfuellt) {
+    return { moeglich: false, hindernis: mbw.grund, ...leer };
   }
 
   const tag = datum ?? new Date().toISOString().slice(0, 10);

@@ -100,6 +100,20 @@ export function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = nu
     return { moeglich: false, hindernis: gebiet.grund, ...leer };
   }
 
+  // **Gate 25, ab 3. September.** Der Mindestbestellwert wird hier nicht
+  // nachgerechnet, sondern aus der Rechnung übernommen — dieselbe Begründung
+  // wie beim Liefergebiet eine Zeile darüber: Eine zweite Grenze neben der
+  // in `kundenWarenkorb` wäre die sicherste Art, beide auseinanderlaufen zu
+  // lassen.
+  //
+  // Und er steht **vor** dem Text, nicht daneben: Ein fertiger Anfragetext
+  // mit Beträgen, unter dem „das nehmen wir so nicht an" steht, ist ein
+  // Angebot mit Widerruf in derselben Zeile.
+  const mbw = rechnung.mindestbestellwert;
+  if (mbw && !mbw.erfuellt) {
+    return { moeglich: false, hindernis: mbw.grund, ...leer };
+  }
+
   const tag = datum ?? new Date().toISOString().slice(0, 10);
   const zeilen = [];
   const hinweise = [];

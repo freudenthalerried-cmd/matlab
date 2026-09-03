@@ -35,7 +35,12 @@ function preisliste() {
 }
 
 const artikel = preisliste();
-const daten = { artikel, lieferanten: lieferanten.lieferanten };
+// Der Mindestbestellwert (Gate 25) steht hier bewusst niedrig: Diese Datei
+// prüft den **Anfragetext**, nicht die Grenze. Mit den 250 € aus
+// `data/betreiber.json` läge jeder Korb dieser Probe darunter, und zwanzig
+// Testfälle prüften nur noch, dass die Sperre greift. Die Grenze selbst hat
+// ihre eigenen Testfälle weiter unten.
+const daten = { artikel, lieferanten: lieferanten.lieferanten, mindestbestellwertNetto: 5 };
 const zwei = [{ sku: artikel[0].sku, menge: 3 }, { sku: artikel[1].sku, menge: 2 }];
 const betreiber = { firma: 'Freudenthaler Bau GmbH', ort: 'Ried in der Riedmark', email: '' };
 
@@ -208,7 +213,7 @@ test('ein langer Artikelname läuft nicht in die Artikelnummer', () => {
   // Feld, an dem wir die Ware erkennen.
   const lang = { ...artikel[0], bezeichnung: 'Capatect Polystyrol-Rondelle für Capatect Universaldübel Rondelle und Capatect Schraubdübel Holz' };
   const rechnung = kundenWarenkorb([{ sku: lang.sku, menge: 2 }],
-    { artikel: [lang, ...artikel.slice(1)], lieferanten: lieferanten.lieferanten });
+    { ...daten, artikel: [lang, ...artikel.slice(1)] });
   const text = baueKundenanfrage({ rechnung, bezirk: 'Perg', betreiber, datum: '2026-08-30' }).text;
   assert.match(text, new RegExp(`\\s${lang.sku}\\s`), 'die Artikelnummer steht ohne Leerzeichen davor');
   // Und der Name ist vollständig wiederherstellbar, Wort für Wort.
@@ -237,7 +242,7 @@ test('die Beträge stehen in allen Zeilen an derselben Stelle', () => {
   // rechte Kante. Läuft eine Zeile aus, ist die Summenspalte wertlos.
   const lang = { ...artikel[0], bezeichnung: 'Ein sehr langer Name mit vielen Wörtern, der die Spalte deutlich überschreitet und umbrechen muss' };
   const rechnung = kundenWarenkorb([{ sku: lang.sku, menge: 2 }, { sku: artikel[1].sku, menge: 1 }],
-    { artikel: [lang, ...artikel.slice(1)], lieferanten: lieferanten.lieferanten });
+    { ...daten, artikel: [lang, ...artikel.slice(1)] });
   const text = baueKundenanfrage({ rechnung, bezirk: 'Perg', betreiber, datum: '2026-08-30' }).text;
   const positionszeilen = text.split('\n').filter((z) => /POS-|A-\d/.test(z) && z.includes('€'));
   assert.ok(positionszeilen.length >= 2, `nur ${positionszeilen.length} Positionszeilen`);
@@ -255,7 +260,7 @@ function zweiLieferanten() {
   const umgehaengt = artikel.map((a, i) => (i === 1 ? { ...a, lieferantId: 'zubehoer-de' } : a));
   const rechnung = kundenWarenkorb(
     [{ sku: umgehaengt[0].sku, menge: 2 }, { sku: umgehaengt[1].sku, menge: 3 }],
-    { artikel: umgehaengt, lieferanten: lieferanten.lieferanten },
+    { ...daten, artikel: umgehaengt },
   );
   return { rechnung, text: baueKundenanfrage({ rechnung, bezirk: 'Perg', betreiber, datum: '2026-08-30' }).text };
 }

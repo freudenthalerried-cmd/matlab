@@ -277,7 +277,11 @@ test('Ausgang Auftragsbestätigung: die untergeschobene Summenzeile verdrängt d
 });
 
 const anfragePaar = () => {
-  const daten = { artikel: katalog.artikel, lieferanten: lies('../data/lieferanten.json').lieferanten };
+  // Der Mindestbestellwert steht niedrig: Diese Probe prüft die Maskierung
+  // fremden Textes, nicht Gate 25. Mit der echten Grenze käme gar kein Text
+  // zustande, und die Probe prüfte eine leere Zeichenkette gegen sich selbst.
+  const daten = { artikel: katalog.artikel, lieferanten: lies('../data/lieferanten.json').lieferanten,
+    mindestbestellwertNetto: 1 };
   const rechnung = kundenWarenkorb([{ sku: 'AB-RD-375', menge: 1 }, { sku: 'ZB-DB-150', menge: 2 }], daten);
   const bau = (b) => baueKundenanfrage({
     rechnung, bezirk: 'Perg', betreiber: b, datum: '2026-09-02',

@@ -225,12 +225,18 @@ export const AGB_GLIEDERUNG = [
   { nr: 4, titel: 'Lieferung im Streckengeschäft', hinweis: 'Direktversand durch den Hersteller; Teillieferungen je Lieferant sind der Regelfall.' },
   {
     nr: 5,
-    titel: 'Mindestbestellmengen je Hersteller',
+    titel: 'Mindestbestellwert und Mindestbestellmengen',
     hinweis:
-      'Jeder Hersteller setzt eine Mindestbestellmenge. Wird sie für einen Hersteller nicht ' +
+      'Für jede Lieferung gilt ein Mindestbestellwert, gemessen am Warenwert netto. Er steht ' +
+      'auf der Lieferseite und im Warenkorb; wird er nicht erreicht, kommt keine Anfrage ' +
+      'zustande, und der Shop weist den fehlenden Betrag aus. Bei mehreren Lieferungen gilt ' +
+      'er je Lieferung, weil Anfahrt und Verpackung je Lieferung anfallen. Daneben setzt ' +
+      'jeder Hersteller eine eigene Mindestbestellmenge. Wird sie für einen Hersteller nicht ' +
       'erreicht, kann die Bestellung insoweit nicht angenommen werden; der Shop weist die ' +
       'fehlende Menge im Warenwert aus. Der Punkt hat gefehlt, obwohl der Shop die Grenze ' +
-      'von Anfang an durchgesetzt hat — eine Ablehnung ohne veröffentlichte Grundlage.',
+      'von Anfang an durchgesetzt hat — eine Ablehnung ohne veröffentlichte Grundlage. Der ' +
+      'eigene Mindestbestellwert ist am 3. September dazugekommen; bis dahin nahm die Kasse ' +
+      'jeden Warenkorb an, und die Absage kam erst nach der Zusage des Bestellers.',
   },
   { nr: 6, titel: 'Fracht, Sperrgut und Baustellenanlieferung', hinweis: 'Abladen, Zufahrt und Anwesenheit sind Sache des Bestellers.' },
   {

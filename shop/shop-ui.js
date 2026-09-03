@@ -531,7 +531,11 @@
 
       var rechnung;
       try {
-        rechnung = kundenWarenkorb(korb, { artikel: D.artikel, lieferanten: D.lieferanten });
+        rechnung = kundenWarenkorb(korb, {
+          artikel: D.artikel,
+          lieferanten: D.lieferanten,
+          mindestbestellwertNetto: D.mindestbestellwertNetto,
+        });
       } catch (e) {
         z.appendChild(el('p', 'antwort', 'Der Warenkorb lässt sich nicht rechnen: ' + e.message));
         return;
@@ -566,6 +570,13 @@
         tafel.appendChild(d);
       });
       z.appendChild(tafel);
+
+      // Gate 25. Der Hinweis steht schon im Warenkorb und nicht erst in der
+      // Kasse: Wer erst nach der Wahl von Bezirk und Zahlungsart erfährt,
+      // dass die Menge nicht reicht, hat drei Schritte umsonst gemacht.
+      // Der Fehlbetrag steht in seiner eigenen Währung, dem Warenwert; was
+      // die Grenze trägt — Palette, Anfahrt, Spanne — geht ihn nichts an.
+      zeigeMindestwert(z, rechnung);
 
       rechnung.offen.forEach(function (o) { z.appendChild(el('p', 'antwort', o)); });
 
@@ -693,6 +704,20 @@
 
   /* ---------------- Kasse ---------------- */
 
+  /**
+   * Der Hinweis zu Gate 25 — einmal geschrieben, an beiden Stellen gezeigt.
+   * Zwei Fassungen desselben Satzes wären zwei Fassungen derselben Grenze.
+   */
+  function zeigeMindestwert(z, rechnung) {
+    var mbw = rechnung.mindestbestellwert;
+    if (!mbw || mbw.erfuellt) return false;
+    var sperre = el('div', 'antwort mindestwert');
+    sperre.appendChild(el('strong', null, 'Der Warenkorb ist noch zu klein. '));
+    sperre.appendChild(document.createTextNode(mbw.grund));
+    z.appendChild(sperre);
+    return true;
+  }
+
   function baueKasse() {
     var z = ziel('kasse-ziel');
     if (!z) return;
@@ -703,7 +728,11 @@
 
     var rechnung;
     try {
-      rechnung = kundenWarenkorb(korb, { artikel: D.artikel, lieferanten: D.lieferanten });
+      rechnung = kundenWarenkorb(korb, {
+        artikel: D.artikel,
+        lieferanten: D.lieferanten,
+        mindestbestellwertNetto: D.mindestbestellwertNetto,
+      });
     } catch (e) {
       z.appendChild(el('p', 'antwort', 'Der Warenkorb lässt sich nicht rechnen: ' + e.message));
       return;
@@ -764,6 +793,10 @@
       tafel.appendChild(d);
     });
     z.appendChild(tafel);
+
+    // Gate 25, ein zweites Mal — hier ist es die Sperre und nicht nur der
+    // Hinweis: Unter der Grenze erzeugt `baueKundenanfrage` keinen Text mehr.
+    zeigeMindestwert(z, rechnung);
 
     // Bis zum 29.08. begann dieser Kasten mit „Hier endet die Vorschau." und
     // zählte danach fest auf, was fehlt. Beides war zu ändern: Der Satz

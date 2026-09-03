@@ -61,7 +61,19 @@ const katalog = ladeBaustoffkatalog(
 const befund = katalogbefund(katalog);
 
 const gateText = readFileSync(join(REPO, 'docs', 'baustoff-shop', 'gate-register.md'), 'utf8');
-const gates = Math.max(...[...gateText.matchAll(/Gate (\d+)/g)].map((t) => Number(t[1])));
+// **Gezählt werden die Zeilen der Tafel, nicht die Erwähnungen im Fließtext.**
+// Bis zum 3. September stand hier `/Gate (\d+)/` — die höchste Nummer, die
+// irgendwo im Text vorkam. Gate 25 wurde an diesem Tag eingetragen und in
+// seiner eigenen Zeile nie „Gate 25" genannt (die Zeile beginnt mit `| **25**`
+// und spricht im Text über Gate 20). Der Prüfer meldete weiter 24 und war
+// grün: Ein neues Gate war für ihn keines, solange niemand darüber schrieb.
+//
+// > **Ein Anker im Fließtext misst, worüber geredet wird — nicht, was da ist.**
+const gates = Math.max(...[...gateText.matchAll(/^\|\s*\*\*(\d+)\*\*\s*\|/gm)].map((t) => Number(t[1])));
+if (!Number.isFinite(gates) || gates < 20) {
+  console.error(`Abbruch: In gate-register.md stehen nur ${gates} Gates — die Tafel ist nicht lesbar.`);
+  process.exit(2);
+}
 
 const zaehleSzenarien = (datei) => {
   const quelle = readFileSync(join(SHOP, 'bin', datei), 'utf8');

@@ -813,6 +813,56 @@ export const ustText = (satz = UST_SATZ_KUNDE) =>
 const runde = (n) => Math.round(n * 100) / 100;
 
 /**
+ * Der Mindestbestellwert je Lieferung — **Gate 25, entschieden am 3. September
+ * 2026.**
+ *
+ * Bis dahin hatte der Shop gegenüber dem Kunden **keine Untergrenze**. Gate 20
+ * („keine Bestellung ohne positiven Deckungsbeitrag") lief erst in
+ * `darfAutomatischAusgeloestWerden`, also **nach** der Kasse: Ein Korb über
+ * 19,30 € wurde durchgerechnet, mit Preisen ausgewiesen und als fertige
+ * Anfrage zum Abschicken angeboten — und wäre bei der Auslösung abgelehnt
+ * worden.
+ *
+ * > **Eine Sperre, die erst nach dem Ja greift, ist keine Sperre, sondern eine
+ * > Absage mit Verzögerung.**
+ *
+ * Diese Funktion prüft nur den Warenwert gegen eine Grenze. Sie kennt keinen
+ * Einkaufspreis — sie läuft im Browser, und dort darf keiner hin. Die Grenze
+ * selbst steht in `data/betreiber.json`; dass sie über dem liegt, was Gate 20
+ * später verlangt, hält ein Testfall am Rechenkern nach.
+ *
+ * **Fehlt die Grenze, ist der Mindestbestellwert nicht erfüllt** — nicht
+ * erfüllt und nicht etwa übersprungen. Eine Sperre, die sich bei fehlender
+ * Angabe selbst abschaltet, ist keine; dieselbe Begründung wie bei den
+ * Pflichtfeldern in `bestellung.js`.
+ */
+export function mindestbestellwertKunde(warenwertNetto, grenzeNetto) {
+  if (typeof grenzeNetto !== 'number' || !(grenzeNetto > 0)) {
+    return {
+      erfuellt: false,
+      grenze: null,
+      fehlbetragNetto: null,
+      grund: 'Der Mindestbestellwert ist nicht hinterlegt.',
+    };
+  }
+  const wert = typeof warenwertNetto === 'number' && warenwertNetto > 0 ? warenwertNetto : 0;
+  if (wert >= grenzeNetto) {
+    return { erfuellt: true, grenze: grenzeNetto, fehlbetragNetto: 0, grund: null };
+  }
+  // Aufgerundet auf ganze Euro: Ein Fehlbetrag von „11,43 €" liest sich wie
+  // eine Rechnung, obwohl er nur eine Richtung angibt. Und aufgerundet, weil
+  // abgerundet der Korb nach dem Nachlegen immer noch zu klein wäre.
+  const fehlbetragNetto = Math.ceil(grenzeNetto - wert);
+  return {
+    erfuellt: false,
+    grenze: grenzeNetto,
+    fehlbetragNetto,
+    grund: `Der Mindestbestellwert je Lieferung beträgt ${grenzeNetto} € netto Warenwert. `
+      + `Es fehlen noch rund ${fehlbetragNetto} €.`,
+  };
+}
+
+/**
  * Rechnet den Warenkorb aus Kundensicht.
  *
  * **Warum es diese zweite Funktion gibt**, obwohl `berechneWarenkorb()` im
@@ -829,7 +879,7 @@ const runde = (n) => Math.round(n * 100) / 100;
  *
  * Was diese Funktion **nicht** kann, sagt sie im Feld `offen`.
  */
-export function kundenWarenkorb(zeilen, { artikel, lieferanten }, ust = UST_SATZ_KUNDE) {
+export function kundenWarenkorb(zeilen, { artikel, lieferanten, mindestbestellwertNetto = null }, ust = UST_SATZ_KUNDE) {
   const nachId = new Map(artikel.map((a) => [a.sku, a]));
   const lieferantById = new Map(lieferanten.map((l) => [l.id, l]));
   const gruppen = new Map();
@@ -900,6 +950,16 @@ export function kundenWarenkorb(zeilen, { artikel, lieferanten }, ust = UST_SATZ
     nettoGesamt,
     ustBetrag,
     bruttoGesamt: runde(nettoGesamt + ustBetrag),
+    // Gate 25. Gemessen am Warenwert und **je Teillieferung**, nicht an der
+    // Summe: Die Kosten, die die Untergrenze tragen — Palette, Folierung,
+    // Anfahrt — fallen je Lieferung an. Zwei kleine Teillieferungen sind zwei
+    // Verlustgeschäfte, auch wenn sie zusammen über der Grenze liegen.
+    // `Math.min` über eine leere Liste wäre `Infinity` und damit über jeder
+    // Grenze: Der leere Warenkorb hätte den Mindestbestellwert erfüllt.
+    mindestbestellwert: mindestbestellwertKunde(
+      teillieferungen.length ? Math.min(...teillieferungen.map((t) => t.warenwertNetto)) : 0,
+      mindestbestellwertNetto,
+    ),
     offen,
   };
 }
