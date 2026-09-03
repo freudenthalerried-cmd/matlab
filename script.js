@@ -32,7 +32,9 @@
   const kiKeinBild = document.getElementById('ki-kein-bild');
   const kiQuelle = document.getElementById('ki-quelle');
   const kiSaetze = document.getElementById('ki-saetze');
+  const kiVorschau = document.getElementById('ki-vorschau');
   const kiButton = document.getElementById('ki-button');
+  const kiTextButton = document.getElementById('ki-text-button');
   const kiSchliessen = document.getElementById('ki-schliessen');
   const fotoInput = document.getElementById('foto-input');
   const galerieInput = document.getElementById('galerie-input');
@@ -72,6 +74,7 @@
   const standortSchliessen = document.getElementById('standort-schliessen');
 
   let aktuellesFoto = null;
+  let kiNurText = false;      // Vorschaufenster im reinen Text-Modus (ohne Foto)
   let bearbeitetIndex = null;   // Index im gefilterten Eintrags-Array
   let eingefuegt = [];
   let eintragTyp = 'hinweis';
@@ -574,15 +577,22 @@
   }
 
   // Steht Text im Eingabefeld, wird er fur die Vorschlage verwendet;
-  // ist es leer, wird das Foto analysiert.
+  // ist es leer, wird das Foto analysiert. Im Text-Modus bleibt das Foto aussen vor.
   function rendereKiSaetze() {
     const text = kiEingabe.value.trim();
     const ausText = text.length > 0;
-    const liste = ausText ? vorschlaegeFuer(text) : (aktuellesFoto ? fotoVorschlaege() : []);
+    const foto = !kiNurText && aktuellesFoto;
+    const liste = ausText ? vorschlaegeFuer(text) : (foto ? fotoVorschlaege() : []);
 
-    kiQuelle.textContent = ausText
-      ? 'KI-Vorschlag aus deinem Text:'
-      : (aktuellesFoto ? 'KI-Vorschlag aus dem Foto:' : 'Bitte Text eingeben oder ein Foto aufnehmen.');
+    if (ausText) {
+      kiQuelle.textContent = 'KI-Vorschlag aus deinem Text:';
+    } else if (foto) {
+      kiQuelle.textContent = 'KI-Vorschlag aus dem Foto:';
+    } else if (kiNurText) {
+      kiQuelle.textContent = 'Bitte Text eingeben.';
+    } else {
+      kiQuelle.textContent = 'Bitte Text eingeben oder ein Foto aufnehmen.';
+    }
 
     kiSaetze.innerHTML = '';
     liste.slice(0, 3).forEach(function (b) {
@@ -591,10 +601,16 @@
     zeigeDetailStufe();
   }
 
-  function oeffneKiFenster() {
-    kiBild.src = aktuellesFoto || '';
-    kiBild.hidden = !aktuellesFoto;
-    kiKeinBild.hidden = !!aktuellesFoto;
+  // nurText = true: Fenster ohne Foto-Vorschau, Vorschlage nur aus dem Eingabefeld.
+  function oeffneKiFenster(nurText) {
+    kiNurText = !!nurText;
+    kiVorschau.hidden = kiNurText;
+    kiBild.src = kiNurText ? '' : (aktuellesFoto || '');
+    kiBild.hidden = kiNurText || !aktuellesFoto;
+    kiKeinBild.hidden = kiNurText || !!aktuellesFoto;
+    kiEingabe.placeholder = kiNurText
+      ? 'Text eingeben'
+      : 'Text eingeben \u2013 leer lassen, dann wird das Foto analysiert';
     kiEingabe.value = '';
     rendereKiSaetze();
     kiFenster.hidden = false;
@@ -606,7 +622,8 @@
   }
 
   kiEingabe.addEventListener('input', rendereKiSaetze);
-  kiButton.addEventListener('click', oeffneKiFenster);
+  kiButton.addEventListener('click', function () { oeffneKiFenster(false); });
+  kiTextButton.addEventListener('click', function () { oeffneKiFenster(true); });
   kiSchliessen.addEventListener('click', schliesseKiFenster);
   kiFenster.addEventListener('click', function (event) {
     if (event.target === kiFenster) schliesseKiFenster();
@@ -686,7 +703,7 @@
       fotoPreview.hidden = false;
       updateSendState();
       fotoHinweis.hidden = true;
-      oeffneKiFenster();
+      oeffneKiFenster(false);
     };
     reader.readAsDataURL(file);
   }
