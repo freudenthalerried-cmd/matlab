@@ -475,6 +475,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'eine Absage mit Verzögerung. Diese Mutation stellt genau das wieder her.',
   }),
   Object.freeze({
+    id: 'lieferhinweis-zeigt-auf-den-falschen-punkt',
+    pruefer: 'pruefe-belege',
+    was: 'Ein Kundenbeleg beruft sich auf eine AGB-Klausel, die etwas anderes regelt',
+    datei: 'shop/src/rechtstexte.js',
+    art: 'ersetzen',
+    suchen: "export const PUNKT_EMPFANGSVOLLMACHT = 'AGB Punkt 7';",
+    ersetzen: "export const PUNKT_EMPFANGSVOLLMACHT = 'AGB Punkt 6';",
+    erwartet: /Punkt 6 heißt|verweis-zeigt-woanders|Punkt 7 .* wird in keinem Beleg/,
+    warum: 'Der Zustand bis zum 3. September, wörtlich: Der Hinweis „Wer übernimmt, übernimmt '
+      + 'für Sie" berief sich auf Punkt 6 — den Frachtpunkt —, während sein Wortlaut fast Satz '
+      + 'für Satz in Punkt 7 steht. Die Regel dagegen gab es (`verweis-zeigt-woanders`), und sie '
+      + 'hat nie zugeschlagen: Das Register kannte den Punkt nicht, und der Prüfer baute seine '
+      + 'Auftragsbestätigung ohne die Hinweise — also ohne den Verweis. Diese Mutation stellt '
+      + 'den falschen Verweis wieder her; grün bliebe der Prüfer nur, wenn er die Bestätigung '
+      + 'wieder so bauen würde, wie der Betrieb sie nie erzeugt.',
+  }),
+  Object.freeze({
     id: 'registereintrag-nennt-eine-klammer-zu-viel',
     pruefer: 'pruefe-pruefer',
     was: 'Ein Registereintrag, der die zweite Klammer eines einklammrigen Musters liest',

@@ -25,6 +25,7 @@ import { erzeugeBestellungen, darfAutomatischAusgeloestWerden } from '../src/bes
 import { kundenWarenkorb } from '../src/shopkern.js';
 import { baueKundenanfrage } from '../src/kundenanfrage.js';
 import { pruefeBelege } from '../src/belegpruefung.js';
+import { lieferhinweise } from '../src/rechtstexte.js';
 
 const wurzel = dirname(dirname(fileURLToPath(import.meta.url)));
 const lies = (name) => JSON.parse(readFileSync(join(wurzel, 'data', name), 'utf8'));
@@ -149,9 +150,38 @@ const belege = [
     text: erzeugeAngebot(korb, { nummer: 'AN-0001', ...gemeinsam }).text,
     mussEnthalten: pflichtangaben,
   },
+  /**
+   * **Zweimal, seit dem 3. September.** Hier stand eine einzige
+   * Auftragsbestätigung **ohne Hinweise** — und genau die erzeugt der Betrieb
+   * nie: `baueVorgang` hängt `lieferhinweise(auftrag)` an, und die zitieren
+   * zwei AGB-Punkte, die dieser Prüfer nie zu sehen bekam. Einer davon zeigte
+   * auf den falschen Punkt.
+   *
+   * > **Ein Prüfer, der ein Dokument liest, das der Betrieb nie erzeugt, prüft
+   * > eine Möglichkeit statt eines Falls** — derselbe Satz, der über der Wahl
+   * > des Warenkorbs steht, eine Ebene weiter.
+   *
+   * Beide Fassungen, weil die Hinweise vom Lieferort abhängen: Geht die Ware an
+   * die Rechnungsanschrift, entfällt der Hinweis zur Empfangsvollmacht. Nur die
+   * abweichende Baustelle zeigt ihn — und nur die reichere Fassung zu prüfen
+   * hieße, den Regelfall ungeprüft zu lassen.
+   */
   {
     art: 'Auftragsbestätigung',
-    text: erzeugeAuftragsbestaetigung(korb, { nummer: 'AB-0001', ...gemeinsam }).text,
+    text: erzeugeAuftragsbestaetigung(korb, {
+      nummer: 'AB-0001',
+      ...gemeinsam,
+      hinweise: lieferhinweise({ lieferungAnRechnungsadresse: true }),
+    }).text,
+    mussEnthalten: pflichtangaben,
+  },
+  {
+    art: 'Auftragsbestätigung',
+    text: erzeugeAuftragsbestaetigung(korb, {
+      nummer: 'AB-0002',
+      ...gemeinsam,
+      hinweise: lieferhinweise({ lieferungAnRechnungsadresse: false }),
+    }).text,
     mussEnthalten: pflichtangaben,
   },
   {

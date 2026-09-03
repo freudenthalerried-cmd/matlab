@@ -350,13 +350,37 @@ export const ZUSICHERUNG_DRITTER = {
  * `baustelle-als-lieferort.md` ein Pflichtfeld ist: Er ist nicht für die
  * Spedition da, sondern für diese Frist.
  */
+/**
+ * Der Punkt, auf den sich der Hinweis zur Empfangsvollmacht beruft.
+ *
+ * **Berichtigt am 3. September.** Hier stand „AGB Punkt 6" — und Punkt 6 heißt
+ * „Fracht, Sperrgut und Baustellenanlieferung". Der Wortlaut des Hinweises
+ * steht in **Punkt 7** („Abweichende Lieferanschrift und Empfangsvollmacht"),
+ * fast Satz für Satz.
+ *
+ * > **Ein falscher Verweis auf einem Kundenbeleg ist keine Formalie:** Der
+ * > Kunde, der nachschlägt, findet dort eine Frachtklausel und keine Aussage
+ * > darüber, dass die Übernahme durch ein fremdes Gewerk für ihn wirkt.
+ *
+ * Es gibt eine Regel, die genau das findet (`verweis-zeigt-woanders` in
+ * `belegpruefung.js`), und sie hat nie zugeschlagen: Das Verweisregister kannte
+ * nur die zwei Punkte, die in `beleg.js` stehen — und der Prüfer baute seine
+ * Auftragsbestätigung **ohne** diese Hinweise. Er las damit ein Dokument, das
+ * der Betrieb so nie erzeugt.
+ *
+ * Steht als Konstante da, weil `lieferhinweise()` denselben Text zum Filtern
+ * braucht. Zwei Schreibweisen einer Fundstelle wären genau der Fehler, der hier
+ * gerade behoben wird.
+ */
+export const PUNKT_EMPFANGSVOLLMACHT = 'AGB Punkt 7';
+
 export const LIEFERHINWEISE = [
   {
     titel: 'Wer übernimmt, übernimmt für Sie',
     text:
       'Auf einer Baustelle nimmt an, wer gerade dort ist — ein anderes Gewerk, der Bauherr, der Polier. ' +
       'Die Übernahme wirkt für Sie als Besteller.',
-    grundlage: 'AGB Punkt 6',
+    grundlage: PUNKT_EMPFANGSVOLLMACHT,
   },
   {
     titel: 'Die Rügefrist läuft ab Ablieferung',
@@ -392,7 +416,7 @@ export const LIEFERHINWEISE = [
  */
 export function lieferhinweise(auftrag = {}) {
   const abweichend = auftrag.lieferungAnRechnungsadresse === false;
-  return LIEFERHINWEISE.filter((h) => abweichend || h.grundlage !== 'AGB Punkt 6');
+  return LIEFERHINWEISE.filter((h) => abweichend || h.grundlage !== PUNKT_EMPFANGSVOLLMACHT);
 }
 
 /**
@@ -525,6 +549,29 @@ export const AGB_VERWEISE = Object.freeze([
     warum: 'Die Auftragsbestätigung ist das Dokument, mit dem der Vertrag zustande kommt. '
       + 'Zeigt der Verweis auf eine andere Klausel, steht auf dem Beleg eine falsche '
       + 'Rechtsfolge — und der Beleg ist der, auf den hin der Kunde zahlt.',
+  }),
+  /**
+   * **Nachgetragen am 3. September**, nachdem `npm run vorgang` zum ersten Mal
+   * eine Auftragsbestätigung erzeugt hat, wie der Betrieb sie erzeugt: mit den
+   * Lieferhinweisen. Sie zitieren zwei weitere AGB-Punkte, und das Register
+   * kannte keinen von beiden — die Regel `verweis-ohne-eintrag` meldete sie im
+   * selben Lauf, in dem sie zum ersten Mal zu sehen waren.
+   */
+  Object.freeze({
+    nr: 4,
+    zweck: 'Teillieferungen je Lieferant als Regelfall',
+    erwartetImTitel: 'Streckengeschäft',
+    warum: 'Der Hinweis auf der Auftragsbestätigung sagt dem Bauleiter, dass seine Bestellung '
+      + 'in mehreren Sendungen ankommt und jede für sich zu prüfen ist. Zeigt der Verweis '
+      + 'woanders hin, sucht er die Regel im falschen Punkt — und die Rügefrist läuft.',
+  }),
+  Object.freeze({
+    nr: 7,
+    zweck: 'Empfangsvollmacht bei abweichender Baustelle',
+    erwartetImTitel: 'Empfangsvollmacht',
+    warum: 'Der Hinweis stand bis zum 3. September mit „Punkt 6" da — dem Frachtpunkt. Wer '
+      + 'nachschlägt, warum die Übernahme durch ein fremdes Gewerk für ihn wirkt, fand dort '
+      + 'eine Frachtklausel. Der Eintrag hält die Fundstelle jetzt fest.',
   }),
   Object.freeze({
     nr: 9,

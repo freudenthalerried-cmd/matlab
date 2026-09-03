@@ -167,8 +167,23 @@ test('jeder Eintrag des Registers nennt seinen Grund', () => {
  * Wer einen Punkt einschiebt, verschiebt jede Nummer dahinter.
  * ------------------------------------------------------------------ */
 
+/**
+ * **Erweitert am 3. September.** Die Auftragsbestätigung trug hier nur den
+ * Verweis auf Punkt 2 — den einen, der in `beleg.js` ausgeschrieben steht. Die
+ * echte trägt zusätzlich die **Lieferhinweise** aus `rechtstexte.js`, und die
+ * zitieren zwei weitere Punkte. Aufgefallen ist das, als `npm run vorgang` zum
+ * ersten Mal eine Bestätigung baute, wie der Betrieb sie baut.
+ *
+ * Die Vorlage bildet deshalb jetzt ab, was ein vollständiger Durchlauf
+ * tatsächlich sieht: vier zitierte Punkte, verteilt auf zwei Belege.
+ */
 const belegeMitVerweis = [
-  { art: 'Auftragsbestätigung', text: 'Der Vertrag kommt zustande (Punkt 2 unserer AGB).' },
+  {
+    art: 'Auftragsbestätigung',
+    text: 'Der Vertrag kommt zustande (Punkt 2 unserer AGB).\n'
+      + 'Teillieferungen kommen getrennt an. (AGB Punkt 4)\n'
+      + 'Wer übernimmt, übernimmt für Sie. (AGB Punkt 7)',
+  },
   { art: 'Angebot', text: 'Zahlung bei Bestellung, kein Zahlungsziel (Punkt 9 der AGB).' },
 ];
 

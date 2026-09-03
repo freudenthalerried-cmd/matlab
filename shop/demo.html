@@ -2912,13 +2912,37 @@ const ZUSICHERUNG_DRITTER = {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const PUNKT_EMPFANGSVOLLMACHT = 'AGB Punkt 7';
+
 const LIEFERHINWEISE = [
   {
     titel: 'Wer übernimmt, übernimmt für Sie',
     text:
       'Auf einer Baustelle nimmt an, wer gerade dort ist — ein anderes Gewerk, der Bauherr, der Polier. ' +
       'Die Übernahme wirkt für Sie als Besteller.',
-    grundlage: 'AGB Punkt 6',
+    grundlage: PUNKT_EMPFANGSVOLLMACHT,
   },
   {
     titel: 'Die Rügefrist läuft ab Ablieferung',
@@ -2954,7 +2978,7 @@ const LIEFERHINWEISE = [
 
 function lieferhinweise(auftrag = {}) {
   const abweichend = auftrag.lieferungAnRechnungsadresse === false;
-  return LIEFERHINWEISE.filter((h) => abweichend || h.grundlage !== 'AGB Punkt 6');
+  return LIEFERHINWEISE.filter((h) => abweichend || h.grundlage !== PUNKT_EMPFANGSVOLLMACHT);
 }
 
 
@@ -3087,6 +3111,29 @@ const AGB_VERWEISE = Object.freeze([
     warum: 'Die Auftragsbestätigung ist das Dokument, mit dem der Vertrag zustande kommt. '
       + 'Zeigt der Verweis auf eine andere Klausel, steht auf dem Beleg eine falsche '
       + 'Rechtsfolge — und der Beleg ist der, auf den hin der Kunde zahlt.',
+  }),
+  
+
+
+
+
+
+
+  Object.freeze({
+    nr: 4,
+    zweck: 'Teillieferungen je Lieferant als Regelfall',
+    erwartetImTitel: 'Streckengeschäft',
+    warum: 'Der Hinweis auf der Auftragsbestätigung sagt dem Bauleiter, dass seine Bestellung '
+      + 'in mehreren Sendungen ankommt und jede für sich zu prüfen ist. Zeigt der Verweis '
+      + 'woanders hin, sucht er die Regel im falschen Punkt — und die Rügefrist läuft.',
+  }),
+  Object.freeze({
+    nr: 7,
+    zweck: 'Empfangsvollmacht bei abweichender Baustelle',
+    erwartetImTitel: 'Empfangsvollmacht',
+    warum: 'Der Hinweis stand bis zum 3. September mit „Punkt 6" da — dem Frachtpunkt. Wer '
+      + 'nachschlägt, warum die Übernahme durch ein fremdes Gewerk für ihn wirkt, fand dort '
+      + 'eine Frachtklausel. Der Eintrag hält die Fundstelle jetzt fest.',
   }),
   Object.freeze({
     nr: 9,

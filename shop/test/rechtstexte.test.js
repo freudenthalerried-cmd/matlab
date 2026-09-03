@@ -12,6 +12,8 @@ import {
   B2B_ABGRENZUNG,
   LIEFERHINWEISE,
   lieferhinweise,
+  AGB_VERWEISE,
+  PUNKT_EMPFANGSVOLLMACHT,
 } from '../src/rechtstexte.js';
 
 const vollstaendig = {
@@ -332,4 +334,54 @@ test('ohne eigene Marke bleibt das Impressum ohne Markenzeile', async () => {
   // „Bauversand ist das Online-Angebot der Bauversand" wäre keine Auskunft,
   // sondern eine Schleife.
   assert.deepEqual(markenzeile({ marke: 'X', firma: '' }), [], 'ohne Firma keine Zeile');
+});
+
+/**
+ * Jeder AGB-Punkt, den ein Kundenbeleg zitiert, steht im Verweisregister.
+ *
+ * **Der Anlass, 3. September 2026.** `AGB_VERWEISE` kannte zwei Punkte — die
+ * beiden, die in `beleg.js` ausgeschrieben stehen. Die Lieferhinweise aus
+ * dieser Datei zitieren zwei weitere, und die kannte es nicht; einer davon
+ * zeigte auf den falschen Punkt („Punkt 6", Fracht, statt „Punkt 7",
+ * Empfangsvollmacht). Aufgefallen ist es erst, als `npm run vorgang` zum ersten
+ * Mal eine Auftragsbestätigung baute, wie der Betrieb sie baut.
+ *
+ * > **Ein Register, das nur kennt, was seine Nachbardatei schreibt, bewacht
+ * > die halbe Aussage.**
+ */
+test('jeder von den Lieferhinweisen zitierte AGB-Punkt steht im Verweisregister', () => {
+  const zitiert = LIEFERHINWEISE
+    .map((h) => /^AGB Punkt (\d+)$/.exec(h.grundlage))
+    .filter(Boolean)
+    .map((t) => Number(t[1]));
+  assert.ok(zitiert.length >= 2, `nur ${zitiert.length} AGB-Verweise in den Lieferhinweisen`);
+  for (const nr of zitiert) {
+    assert.ok(AGB_VERWEISE.some((v) => v.nr === nr),
+      `Punkt ${nr} wird auf einem Kundenbeleg zitiert und steht in keinem Registereintrag`);
+  }
+});
+
+test('der Hinweis zur Empfangsvollmacht zeigt auf den Punkt, der sie trägt', () => {
+  const hinweis = LIEFERHINWEISE.find((h) => /übernimmt/i.test(h.titel));
+  assert.ok(hinweis, 'der Hinweis zur Übernahme auf der Baustelle fehlt');
+  const nr = Number(/^AGB Punkt (\d+)$/.exec(hinweis.grundlage)[1]);
+  const punkt = AGB_GLIEDERUNG.find((g) => g.nr === nr);
+  assert.ok(punkt, `Punkt ${nr} steht in keiner Gliederung`);
+  // Nicht die Nummer festschreiben, sondern die Aussage: Der Punkt, auf den
+  // sich der Hinweis beruft, muss die Empfangsvollmacht regeln. Bis zum
+  // 3. September zeigte er auf „Fracht, Sperrgut und Baustellenanlieferung".
+  assert.match(punkt.titel, /Empfangsvollmacht/,
+    `Punkt ${nr} heißt „${punkt.titel}" — dort steht die Empfangsvollmacht nicht`);
+});
+
+test('der Filter der Lieferhinweise und die Fundstelle sind dieselbe Zeichenkette', () => {
+  // Ohne abweichende Baustelle entfällt genau der eine Hinweis. Stünde die
+  // Fundstelle zweimal im Quelltext, ließe eine Berichtigung den Filter
+  // stehen — und der Hinweis erschiene plötzlich immer.
+  const regel = lieferhinweise({ lieferungAnRechnungsadresse: true });
+  const abweichend = lieferhinweise({ lieferungAnRechnungsadresse: false });
+  assert.equal(abweichend.length, regel.length + 1);
+  const nurBeiAbweichung = abweichend.filter((h) => !regel.includes(h));
+  assert.equal(nurBeiAbweichung.length, 1);
+  assert.equal(nurBeiAbweichung[0].grundlage, PUNKT_EMPFANGSVOLLMACHT);
 });
