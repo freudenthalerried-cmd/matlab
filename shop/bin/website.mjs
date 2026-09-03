@@ -37,7 +37,7 @@ import { baueKern, BROWSERMODULE } from '../src/buendel.js';
 import { startklar } from '../src/startklar.js';
 import { ohneKommentare } from '../src/entkommentieren.js';
 import { preisJeKilo, kilotafel, mengenschritt } from '../src/gebinde.js';
-import { EINHEITEN, aufzaehlung, jsonFuerSkript } from '../src/format.js';
+import { EINHEITEN, aufzaehlung, jsonFuerSkript, kurzfassung } from '../src/format.js';
 import { GRUPPENSEITE } from '../src/artikelliste.js';
 import { preisstandSpanne } from '../src/preisalter.js';
 import { HERSTELLER, marke } from '../src/hersteller.js';
@@ -1879,7 +1879,7 @@ function bedienhinweis(seite) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(seite.titel)} — ${esc(MARKE)}</title>
-<meta name="description" content="${esc(seite.kurz.slice(0, 300))}">${bedienhinweis(seite)}${
+<meta name="description" content="${esc(kurzfassung(seite.kurz, 300))}">${bedienhinweis(seite)}${
   kanonisch(BASIS, id) ? `\n<link rel="canonical" href="${esc(kanonisch(BASIS, id))}">` : ''}
 ${SCHRIFTEINBINDUNG}<style>${stil()}</style>${ld}
 </head>

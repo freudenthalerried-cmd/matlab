@@ -455,6 +455,48 @@ function aufzaehlung(teile, bindewort = 'und') {
 
 
 
+function kurzfassung(text, grenze = 300) {
+  const roh = String(text ?? '').replace(/\s+/g, ' ').trim();
+  if (!(grenze > 0)) return '';
+  if (roh.length <= grenze) return roh;
+
+  const bis = roh.slice(0, grenze);
+  
+  
+  
+  
+  const satz = Math.max(bis.lastIndexOf('. '), bis.lastIndexOf('! '), bis.lastIndexOf('? '));
+  if (satz >= grenze / 2) return bis.slice(0, satz + 1);
+
+  const wort = bis.lastIndexOf(' ');
+  const gekuerzt = (wort > 0 ? bis.slice(0, wort) : bis).replace(/[\s,;:–—-]+$/, '');
+  return `${gekuerzt} …`;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

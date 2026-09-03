@@ -205,3 +205,45 @@ export function aufzaehlung(teile, bindewort = 'und') {
   if (w.length === 1) return w[0];
   return `${w.slice(0, -1).join(', ')} ${bindewort} ${w[w.length - 1]}`;
 }
+
+/**
+ * Eine Kurzbeschreibung auf Länge bringen — **an einer Wortgrenze**.
+ *
+ * **Der Befund, 3. September 2026.** Die `<meta name="description">` jeder
+ * Seite entstand als `kurz.slice(0, 300)`. Vier Seiten waren länger, und alle
+ * vier endeten mitten im Wort:
+ *
+ * > „…der Rechenweg steht dabei, das Ergebnis rechnen Sie m"
+ * > „…entscheiden über die Stückliste: Gesamthöhe, Ansc"
+ *
+ * Das ist der Text, den ein Suchergebnis anzeigt und den ein Sprachmodell als
+ * Zusammenfassung der Seite liest. Ein abgeschnittenes Wort sagt beiden
+ * dasselbe: **hier hat jemand nicht hingesehen.**
+ *
+ * Die Regel, in dieser Reihenfolge:
+ *
+ *   1. Passt der Text ganz, bleibt er, wie er ist.
+ *   2. Sonst endet er am **letzten Satzende** innerhalb der Grenze — ein
+ *      vollständiger Satz ist die beste Kurzfassung, die es umsonst gibt.
+ *   3. Gibt es keins, endet er an der letzten **Wortgrenze**, mit Auslassung.
+ *
+ * Kein Punkt wird angehängt, wo schon einer steht, und keine Auslassung, wo
+ * der Satz ohnehin zu Ende ist.
+ */
+export function kurzfassung(text, grenze = 300) {
+  const roh = String(text ?? '').replace(/\s+/g, ' ').trim();
+  if (!(grenze > 0)) return '';
+  if (roh.length <= grenze) return roh;
+
+  const bis = roh.slice(0, grenze);
+  // Ein Satzende ist ein `.`, `!` oder `?`, dem ein Leerzeichen folgt oder das
+  // am Ende steht. Abkürzungen wie „z. B." enden nicht auf Leerzeichen+Groß,
+  // aber sie sind auch keine Satzenden — deshalb wird nur dort geschnitten,
+  // wo mindestens die halbe Grenze schon voll ist.
+  const satz = Math.max(bis.lastIndexOf('. '), bis.lastIndexOf('! '), bis.lastIndexOf('? '));
+  if (satz >= grenze / 2) return bis.slice(0, satz + 1);
+
+  const wort = bis.lastIndexOf(' ');
+  const gekuerzt = (wort > 0 ? bis.slice(0, wort) : bis).replace(/[\s,;:–—-]+$/, '');
+  return `${gekuerzt} …`;
+}
