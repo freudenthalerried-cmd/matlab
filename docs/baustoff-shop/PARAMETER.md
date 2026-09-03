@@ -1,6 +1,6 @@
 # Festgelegte Projektparameter
 
-Stand: **2026-08-28**. Diese Werte sind vom Auftraggeber entschieden und nicht
+Stand: **2026-09-03**. Diese Werte sind vom Auftraggeber entschieden und nicht
 mehr zur Diskussion gestellt. Änderungen nur mit ausdrücklicher Freigabe.
 
 > **Diese Datei rangiert über dem Gate-Register.** Was hier steht, gilt —
@@ -9,6 +9,14 @@ mehr zur Diskussion gestellt. Änderungen nur mit ausdrücklicher Freigabe.
 > Radon-Modell, während der Auftraggeber seit dem 22. August mit eigenen
 > Baumeisterpreisen und 25 % Marge kalkuliert. Ein späterer Lauf hätte das
 > laufende Modell nach der eigenen obersten Regel verwerfen müssen.
+>
+> **Am 3. September dasselbe eine Ebene kleiner.** Die Weisungstafel endete am
+> 28. August; die Domainweisung vom 31. stand nicht darin, obwohl sie in
+> `data/betreiber.json` längst eingetragen war und der Bau sie verwendet.
+> **Eine Entscheidung, die nur im Code ankommt, ist im Verzeichnis weiter
+> offen** — und wer hier nachliest, was gilt, hätte die abgelöste
+> Domainempfehlung gefunden. Diese Tafel ist ab jetzt der Ort, an dem eine
+> Weisung des Auftraggebers als Erstes landet.
 
 ## Weisungen seit dem 9. August — was jetzt gilt
 
@@ -17,9 +25,10 @@ mehr zur Diskussion gestellt. Änderungen nur mit ausdrücklicher Freigabe.
 | 22.08. | Eigene **Baumeister-Einkaufspreise** aus den Lieferantenrechnungen als Kalkulationsgrundlage, nicht mehr Herstellerkonditionen | Gate 1 und Gate 2 sind gegenstandslos, siehe unten |
 | 22.08. | Vertrieb über **Google Shopping**, Lieferung **regional** statt österreichweit | Liefergebiet: Perg, Urfahr-Umgebung, Freistadt, Linz, Linz-Land (Gate 23) |
 | 25.08. | „25 %" heißt **Marge vom Verkauf**, nicht Zuschlag auf den Einkauf | nötiger Monatsumsatz **43.396 €** statt 67.826 € (Zahlweg EPS; **berichtigt 01.09.**, davor standen hier die Kartenzahlen 45.356 / 72.740 €); `marge-25-prozent.md`, `die-leitzahl-war-vom-falschen-zahlweg.md` |
-| 26.08. | Die Firma **existiert bereits**: Freudenthaler Bau GmbH, FN 347938z, Baustoffhandel als Gewerbe | keine Gründung nötig; Domain `freudenthaler-bau.at` in Betrieb |
+| 26.08. | Die Firma **existiert bereits**: Freudenthaler Bau GmbH, FN 347938z, Baustoffhandel als Gewerbe | keine Gründung nötig; die Firmenseite `freudenthaler-bau.at` ist in Betrieb — die Adresse des **Shops** ist eine andere, siehe 31.08. |
 | 28.08. | **Keine Spanne ausgeben** — die Handelsspanne erscheint nicht auf Kundenseiten | genannt wird stattdessen der Abstand zum Listenpreis; `spanne-nicht-mehr-ausgeben.md` |
 | 28.08. | **Sortiment auf mindestens 100 Artikel** erweitern | 46 sind das Maximum aus den Rechnungen; es braucht eine Artikelliste, `hundert-artikel-was-fehlt.md` |
+| 31.08. | **`bauversand.com` verwenden** — die Domain ist bei All-Inkl offen | Steht in `data/betreiber.json`; Seiten, Sitemap, `llms.txt` und die finalen URLs der Anzeigen nehmen sie von dort. **Damit ist die Empfehlung `shop.freudenthaler-bau.at` aus `domainwahl.md` abgelöst** — die Zeile darüber nennt nur noch die bestehende Firmendomain. `bauversand-com.md` |
 
 ### Was davon die Zahlen weiter unten außer Kraft setzt
 

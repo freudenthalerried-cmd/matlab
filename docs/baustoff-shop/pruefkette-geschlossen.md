@@ -73,7 +73,7 @@ Selbstzweck wäre. Was den Shop weiterbringt, ist etwas anderes.
 | **Artikelpreisliste bei Poschacher** | der einzige Hebel, der den Katalog um eine Größenordnung wachsen lässt |
 | **Zahlungsanbieter** | ohne ihn endet die Kasse bei der Rechnung |
 | **vier Impressumfelder** | E-Mail, Telefon, UID, Gewerbewortlaut |
-| **Domain und Hosting** | Empfehlung liegt vor: `shop.freudenthaler-bau.at` |
+| ~~**Domain und Hosting**~~ | **Erledigt am 31.08.:** `bauversand.com` bei All-Inkl, eingetragen in `data/betreiber.json`. Hier stand die überholte Empfehlung `shop.freudenthaler-bau.at` |
 | **Rechtstexteanbieter** | AGB Punkt 10 hat bis heute keine Fundstelle |
 | **Repository auf privat** | 44 von 46 Einkaufspreisen sind rückrechenbar |
 | **Handelsspanne öffentlich?** | steht auf drei Seiten; Vorschlag: Preisvorteil statt Spanne nennen |

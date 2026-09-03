@@ -27,6 +27,11 @@ bildet:
 'Finale URL': `https://shop.freudenthaler-bau.at/${t.pfad[0]}`
 ```
 
+Diese Adresse ist **abgelöst**: `shop.freudenthaler-bau.at` war die Empfehlung
+aus `domainwahl.md` vom 25. August; entschieden ist seit dem 31. August
+`bauversand.com`. Sie steht oben als Zitat, weil sie der Befund ist — nicht,
+weil sie noch gälte.
+
 > **Zwei Wege zu derselben Adresse, und der zweite wäre beim Wechsel alt
 > geblieben.** Von allen Duplikaten, die dieses Projekt gefunden hat, ist das
 > das teuerste: Eine Anzeige mit veralteter Ziel-URL kostet den Klick **und**

@@ -174,6 +174,29 @@ export const WIDERRUFE = Object.freeze([
     beispiel: '25 % Zuschlag auf den Einkauf sind eine Rohmarge von 20 % vom Verkauf.',
   },
   {
+    // **Aufgenommen am 3. September.** `data/betreiber.json` trägt seit dem
+    // 31. August `bauversand.com`, und beide Bauwerkzeuge lesen die Adresse
+    // von dort — der Code war am selben Tag richtig. Die **Akte** war es
+    // nicht: `domainwahl.md` empfiehlt weiter, `pruefkette-geschlossen.md`
+    // führt die Empfehlung als offenen Punkt, und `PARAMETER.md` — die Datei,
+    // die über dem Gate-Register rangiert — nennt in ihrer Weisungstafel nur
+    // die Firmendomain und hört am 28. August auf.
+    //
+    // > **Eine Entscheidung, die nur im Code ankommt, ist im Verzeichnis
+    // > weiter offen.** Und wer im Verzeichnis nachliest, was zu tun ist,
+    // > liest die alte Empfehlung.
+    id: 'shop-subdomain-als-adresse',
+    these: 'Die Adresse des Shops sei `shop.freudenthaler-bau.at`.',
+    statt: 'Der Auftraggeber hat am 31.08. `bauversand.com` bei All-Inkl gewählt. Sie steht in '
+      + '`data/betreiber.json`; Seiten, Sitemap, llms.txt und die finalen URLs der Anzeigen '
+      + 'nehmen sie von dort.',
+    widerrufenAm: '2026-08-31',
+    belegt: 'bauversand-com.md, data/betreiber.json',
+    muster: /shop\.freudenthaler-bau\.at/g,
+    merkmal: /bauversand|31\.08\.|31\. August|abgelöst|überholt|nicht mehr/i,
+    beispiel: 'Empfohlen wird shop.freudenthaler-bau.at als Hauptadresse des Shops.',
+  },
+  {
     id: 'rahmen-ohne-javascript',
     these: 'Ein eingebettetes Dokument führe in diesem Headless-Chromium seine Skripte nicht aus.',
     statt: 'Es führt sie aus. Angehalten hat der Parser am Stylesheet von fonts.googleapis.com, das hinter dem Ausgangsproxy hängt statt zu scheitern. Ohne Proxy: shop=object, ready=complete — mit: shop=undefined, ready=loading.',

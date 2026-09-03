@@ -1,5 +1,13 @@
 # Domainwahl — Kriterien, Kandidaten, Empfehlung
 
+> **Die Empfehlung dieses Dokuments ist überholt.** Es empfiehlt
+> `shop.freudenthaler-bau.at`; der Auftraggeber hat am **31. August 2026**
+> **`bauversand.com`** bei All-Inkl gewählt (`bauversand-com.md`). Die Adresse
+> steht seither in `data/betreiber.json`, und Seiten, Sitemap, `llms.txt` und
+> die finalen URLs der Anzeigen nehmen sie von dort. Das Dokument bleibt
+> stehen, weil die Kriterien und die Kandidatenprüfung weiter gelten — die
+> **Wahl** gilt nicht mehr.
+
 Stand: 2026-08-25 (überarbeitet). Recherche auf Wunsch des
 Auftraggebers. **Nichts registriert** — eine Registrierung ist eine
 Ausgabe und braucht seine Freigabe.
@@ -42,6 +50,9 @@ Domain würde bei null anfangen und diesen Bestand nicht erben.
 > **`shop.freudenthaler-bau.at`** als Hauptadresse des Shops,
 > ergänzt um **eine beschreibende `.at`-Domain als Weiterleitung.**
 
+**Abgelöst am 31. August** durch die Weisung des Auftraggebers:
+`bauversand.com`. Was darunter steht, ist die Begründung von damals.
+
 Die Gründe, in der Reihenfolge ihres Gewichts:
 
 1. **Deckungsgleichheit ohne Aufwand.** Firmenbuch, Impressum, UID,
@@ -64,7 +75,9 @@ Die Gründe, in der Reihenfolge ihres Gewichts:
 **Der Einwand dagegen**, fair benannt: Eine Subdomain sagt der Maschine
 nichts über die Ware. Wer „Baustoffe Mühlviertel liefern" fragt, findet
 im Namen `shop.freudenthaler-bau.at` keinen Anhaltspunkt. Deshalb die
-Ergänzung.
+Ergänzung. — **Genau dieser Einwand hat sich durchgesetzt:** Die am
+31. August entschiedene Adresse `bauversand.com` benennt die Ware selbst und
+braucht keine Ergänzung.
 
 ## Die Weiterleitungsdomain — geprüfte Kandidaten
 
@@ -91,7 +104,8 @@ muss beim Registrar geprüft werden.
 Ein Hinweis zu `shop.freudenthaler-bau.at`: Die Subdomain löst bereits
 auf, aber auf dieselbe Adresse wie die Hauptdomain — das ist ein
 Platzhalter-Eintrag des Webhosters für alle Subdomains, kein
-bestehender Shop. Die Adresse ist frei belegbar.
+bestehender Shop. Die Adresse ist frei belegbar. **Belegt wird sie nicht:**
+Seit dem 31. August ist `bauversand.com` entschieden.
 
 ## Der Wettbewerb im selben Kanal
 
