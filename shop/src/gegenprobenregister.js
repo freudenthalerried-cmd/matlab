@@ -454,6 +454,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'liest den fertigen Belegtext und muss die Einkaufszahl darin finden — sonst '
       + 'bestätigt sie nur, statt zu prüfen.',
   }),
+  Object.freeze({
+    id: 'registereintrag-nennt-eine-klammer-zu-viel',
+    pruefer: 'pruefe-pruefer',
+    was: 'Ein Registereintrag, der die zweite Klammer eines einklammrigen Musters liest',
+    datei: 'shop/src/pruefregister.js',
+    art: 'ersetzen',
+    suchen: "    einheit: 'Zusagen über den Code',\n    mindestens: 5,",
+    ersetzen: "    einheit: 'Zusagen über den Code',\n    mindestens: 5,\n    zweite: true,",
+    erwartet: /pruefe-datenschutz/,
+    warum: 'Der Eintrag stand unter „begründeter Verzicht" mit dem Grund, seine Gegenprobe '
+      + 'wäre ein Prüfer mit leerem Ergebnis und damit dasselbe, was dieses Register ohnehin '
+      + 'tut. Am 3. September ist der Fall von selbst eingetreten und sah anders aus: '
+      + '`pruefe-datenschutz` trug `zweite: true`, sein Muster hat eine Klammer, '
+      + '`Number(undefined)` ist NaN — und weil `NaN < 5` falsch ist, meldete der Prüfer der '
+      + 'Prüfer „✓ pruefe-datenschutz — NaN Zusagen über den Code". Nicht leer, sondern '
+      + 'unmessbar, und deshalb grün. Diese Mutation setzt genau das wieder ein.',
+  }),
 ]);
 
 /**
@@ -464,11 +481,6 @@ export const GEGENPROBEN = Object.freeze([
  * ließe, soll beim Schreiben des Grundes merken, dass er keinen hat.
  */
 export const OHNE_GEGENPROBE = Object.freeze([
-  Object.freeze({
-    pruefer: 'pruefe-pruefer',
-    warumKeine: 'Er prüft den Umfang der anderen Prüfer. Seine Gegenprobe wäre ein '
-      + 'Prüfer mit leerem Ergebnis — das ist genau, was dieses Register hier tut.',
-  }),
   Object.freeze({
     pruefer: 'pruefe-geheimnis',
     warumKeine: 'Seine Mutation wäre, einen Einkaufspreis in eine öffentliche Datei zu '

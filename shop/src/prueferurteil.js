@@ -18,7 +18,9 @@
  *
  *   `grün`        gelaufen, Menge genannt, Menge über dem Mindestmaß
  *   `zu-wenig`    gelaufen, aber zu wenig angesehen — zeigt er auf eine Probe?
- *   `ohne-menge`  gelaufen und stumm über den Umfang — dann ist er wertlos
+ *   `ohne-menge`  gelaufen und stumm über den Umfang — dann ist er wertlos;
+ *                 auch dann, wenn er redet, aber nicht an der Stelle, die
+ *                 sein Registereintrag nennt
  *   `abbruch`     **nicht** gelaufen; er hat sich geweigert und gesagt, warum
  *
  * Der vierte ist der, den es vorher nicht gab. Er ist keine Verschärfung,
@@ -73,7 +75,21 @@ export function beurteile(lauf, pruefer) {
     return { art: 'ohne-menge', zahl: null, code: lauf.code, grund: [] };
   }
 
+  // **NaN ist keine Menge, und `NaN < mindestens` ist falsch.** Nennt das
+  // Register eine Klammer, die es im Muster nicht gibt, dann steht hier
+  // `Number(undefined)` — und der Vergleich darunter macht daraus grün. Genau
+  // so lief `pruefe-datenschutz` vom 2. bis 3. September: Sein Muster hat eine
+  // Klammer, sein Registereintrag verlangte die zweite, und der Prüfer der
+  // Prüfer meldete „✓ pruefe-datenschutz — NaN Zusagen über den Code".
+  //
+  // Ein Häkchen hinter einer Nichtzahl ist schlimmer als ein Kreuz: Es sagt
+  // „nachgesehen", wo nichts gemessen wurde. Deshalb fällt der Fall in
+  // `ohne-menge` — dieselbe Schublade wie ein Prüfer, der über seinen Umfang
+  // schweigt, denn genau das tut er an der abgefragten Stelle.
   const zahl = Number(treffer[pruefer.zweite ? 2 : 1]);
+  if (!Number.isFinite(zahl)) {
+    return { art: 'ohne-menge', zahl: null, code: lauf.code, grund: [] };
+  }
   return {
     art: zahl < pruefer.mindestens ? 'zu-wenig' : 'grün',
     zahl,

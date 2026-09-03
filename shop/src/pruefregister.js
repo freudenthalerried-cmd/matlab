@@ -85,7 +85,8 @@ export const PRUEFER = [
     muster: /Datenschutzzusagen — (\d+) auf der Seite/,
     einheit: 'Zusagen über den Code',
     mindestens: 5,
-    zweite: true,
+    // Kein `zweite: true` — das Muster hat eine Klammer. Es stand hier vom
+    // 2. bis 3. September und ließ den Prüfer mit „NaN Zusagen" grün durch.
   },
   {
     // Sieben Kontrollen an einem gebauten Vorgang. `mindestens: 7`, weil eine

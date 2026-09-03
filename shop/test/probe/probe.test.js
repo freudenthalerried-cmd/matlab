@@ -58,3 +58,17 @@ test('mit Optionsobjekt: das ist ein Rumpf, kein leerer Test', { concurrency: 1 
   // „behauptet nichts". Dieser Fall hält die Schreibweise fest.
   assert.equal(1 + 1, 2);
 });
+
+test('behauptet nichts, aber zeigt eine geschweifte Klammer in einer Zeichenkette', () => {
+  // Bis zum 3.9. war dieser Fall unsichtbar: Die Klammerzählung sah das `{`
+  // im Text, fand keine Balance und übersprang den ganzen Testfall — still.
+  // Ein hohler Test blieb dadurch unentdeckt. Genau das steht hier.
+  const zeile = 'export function artikelEinkauf(artikel, lieferant) {';
+});
+
+test('behauptet nichts hinter einem Muster mit Anführungszeichen', () => {
+  // Der zweite Anlauf am selben Tag: Zeichenketten erkannt, Muster-Literale
+  // nicht. `/role="img" aria-label="[^"]+"/` hat fünf Anführungszeichen — beim
+  // fünften lief die Erkennung in den Rest der Datei.
+  const muster = /role="img" aria-label="[^"]+"/;
+});

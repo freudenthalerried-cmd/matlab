@@ -16,11 +16,17 @@ test('der Prüfer findet in der Probedatei jedes Muster und schweigt beim sauber
   assert.equal(lauf.status, 1, lauf.stderr);
   const bericht = spawnSync(process.execPath, [pruefer, probeOrdner, '--bericht'], { encoding: 'utf8' });
   assert.equal(bericht.status, 0, 'mit --bericht bleibt der alte Weg offen');
-  assert.ok(lauf.stdout.includes('7 Testfälle geprüft, 4 mit Verdacht'), lauf.stdout);
+  assert.ok(lauf.stdout.includes('9 Testfälle geprüft, 6 mit Verdacht'), lauf.stdout);
   assert.ok(lauf.stdout.includes('behauptet nichts — kein einziges assert'), 'Muster 1 wird gefunden');
   assert.ok(lauf.stdout.includes('stehen in einem if'), 'Muster 2 wird gefunden');
   assert.ok(lauf.stdout.includes('Schleife über `liste`'), 'Muster 3 wird gefunden');
   assert.ok(lauf.stdout.includes('Schleife über `leereListe`'), 'die fremde Längenzusicherung schirmt nicht mehr ab');
+  assert.ok(lauf.stdout.includes('geschweifte Klammer in einer Zeichenkette'),
+    'ein hohler Fall mit `{` im Text wird gefunden statt übersprungen');
+  assert.ok(lauf.stdout.includes('Muster mit Anführungszeichen'),
+    'ein hohler Fall hinter einem Muster-Literal wird gefunden statt übersprungen');
+  assert.ok(!lauf.stdout.includes('nicht lesbar'),
+    'keiner der Probefälle ist unlesbar — sonst prüft der Prüfer sie gar nicht');
   assert.ok(!lauf.stdout.includes('begruendet abgelehnt'), 'die begründete Ablehnung bleibt stumm');
   assert.ok(!lauf.stdout.includes('sauber:'), 'der saubere Fall löst keinen Verdacht aus');
   assert.ok(!lauf.stdout.includes('mit Optionsobjekt'),

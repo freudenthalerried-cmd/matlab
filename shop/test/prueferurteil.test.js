@@ -205,3 +205,42 @@ test('Jeder pruefe-Befehl steht im Register des Prüferprüfers', async () => {
   );
   assert.deepEqual(ohneBefehl, [], 'diese Registereinträge haben keinen npm-Befehl');
 });
+
+/**
+ * Die Klammer, die das Register nennt, muss es im Muster geben.
+ *
+ * Am 3. September meldete `pruefe-pruefer` „✓ pruefe-datenschutz — NaN Zusagen
+ * über den Code". Der Eintrag trug `zweite: true`, sein Muster hat aber nur
+ * eine Klammer; `Number(undefined)` ist NaN, und `NaN < 5` ist falsch — also
+ * grün. Ein Prüfer, der nichts messen kann, gab damit das beste Zeugnis ab.
+ *
+ * Die Anzahl der Klammern eines Musters lässt sich messen, ohne den Prüfer zu
+ * starten: Ein Muster mit angehängtem `|` trifft auf den leeren Text und
+ * liefert genau so viele Gruppen, wie es Klammern hat.
+ */
+test('Jeder Registereintrag liest eine Klammer, die sein Muster hat', async () => {
+  const { PRUEFER, BROWSERPRUEFER } = await import('../src/pruefregister.js');
+  const alle = [...PRUEFER, ...BROWSERPRUEFER];
+  assert.ok(alle.length >= 15, `nur ${alle.length} Registereinträge — die Schleife prüft zu wenig`);
+
+  const falsch = alle
+    .map((p) => {
+      const klammern = new RegExp(`${p.muster.source}|`).exec('').length - 1;
+      return { name: p.name, klammern, gelesen: p.zweite ? 2 : 1 };
+    })
+    .filter((e) => e.gelesen > e.klammern);
+
+  assert.deepEqual(falsch, [],
+    'diese Einträge lesen eine Klammer, die ihr Muster nicht hat — ihr Umfang wäre NaN');
+});
+
+/** Und das Urteil selbst darf NaN nicht durchlassen, egal wer es erzeugt. */
+test('Eine Nichtzahl an der abgefragten Stelle ist keine Menge', () => {
+  const urteil = beurteile(
+    { code: 0, ausgabe: 'Datenschutzzusagen — 6 auf der Seite' },
+    { muster: /Datenschutzzusagen — (\d+) auf der Seite/, mindestens: 5, zweite: true },
+  );
+  assert.equal(urteil.art, 'ohne-menge',
+    'NaN < mindestens ist falsch — ohne Fangstelle wäre das Urteil grün gewesen');
+  assert.equal(urteil.zahl, null);
+});
