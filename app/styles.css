@@ -286,10 +286,35 @@ html, body {
 
 .standort-banner .chip { text-decoration: none; }
 
+/* Adresse unter dem erkannten Baustellennamen */
+.standort-adresse {
+  flex-basis: 100%;
+  font-weight: 400;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.standort-adresse:empty { display: none; }
+
 .position-knopf {
-  margin-top: 8px;
+  margin-top: 0;
   font-size: 12px;
 }
+
+.info-knoepfe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.geo-status {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.geo-status:empty { display: none; }
 
 /* Eintragstyp Hinweis / Mangel */
 .typ-schalter {
@@ -446,8 +471,96 @@ html, body {
 }
 
 /* Vorschläge & Foto-Kategorien */
-.ki-vorschlaege, .foto-kategorien {
-  margin-bottom: 8px;
+/* KI-Vorschaufenster: Eingabefeld oben, darunter das Foto */
+.ki-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+}
+
+.ki-overlay[hidden] { display: none; }
+
+.ki-box {
+  width: 100%;
+  max-width: 480px;
+  max-height: 92vh;
+  overflow-y: auto;
+  background: var(--bubble);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.32);
+}
+
+.ki-eingabe {
+  width: 100%;
+  box-sizing: border-box;
+  font: inherit;
+  padding: 11px 13px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.ki-eingabe:focus {
+  outline: none;
+  border-color: var(--orange);
+}
+
+.ki-vorschau {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+  min-height: 90px;
+  overflow: hidden;
+}
+
+.ki-vorschau img {
+  max-width: 100%;
+  max-height: 42vh;
+  display: block;
+}
+
+.ki-vorschau img[hidden] { display: none; }
+
+.ki-kein-bild {
+  font-size: 13px;
+  color: var(--muted);
+  padding: 20px 12px;
+  text-align: center;
+}
+
+.ki-kein-bild[hidden] { display: none; }
+
+.ki-saetze {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ki-satz {
+  font: inherit;
+  text-align: left;
+  line-height: 1.4;
+  border: 1px solid var(--orange);
+  background: rgba(30, 122, 60, 0.08);
+  color: var(--orange-dark);
+  border-radius: 10px;
+  padding: 9px 12px;
+  cursor: pointer;
+}
+
+.ki-aktionen {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .panel-hint {
@@ -971,7 +1084,27 @@ html, body {
 }
 
 /* Druck: nur der Bericht */
+/* Fusszeile im gedruckten Protokoll / PDF – am Bildschirm ausgeblendet */
+.druck-fuss { display: none; }
+
 @media print {
+  .druck-fuss {
+    display: block;
+    margin-top: 18px;
+    padding-top: 8px;
+    border-top: 1px solid #c9d3cc;
+    font-size: 10px;
+    color: #4b5563;
+    text-align: center;
+    break-inside: avoid;
+  }
+
+  /* Der Link bleibt im PDF anklickbar */
+  .druck-fuss a {
+    color: #14532d;
+    text-decoration: none;
+  }
+
   #view-liste,
   .gruen-kopf .kopf-knoepfe,
   #zurueck-button,
@@ -979,8 +1112,7 @@ html, body {
   .foto-hinweis,
   .foto-preview,
   .chat-form,
-  .ki-vorschlaege,
-  .foto-kategorien,
+  .ki-overlay,
   .allgemein-panel,
   .typ-reihe,
   .bearbeiten-hinweis,
