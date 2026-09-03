@@ -15,18 +15,19 @@
  * steht hier noch einmal.
  */
 
-import { rolloutplan, ETAPPEN, pruefeEtappen } from '../src/rollout.js';
+import { rolloutplan, ETAPPEN, pruefeEtappen , HAUPTFALL } from '../src/rollout.js';
 import { ZUSTAENDIGKEITEN } from '../src/offenepunkte.js';
 
-const TAGESBUDGET = 9.99;
 const MARKT = [0.5, 1.5, 2.5];
 const QUOTEN = [0.02, 0.01, 0.005];
-const FRIST = 90;
 
-// Der mittlere Marktpreis als Hauptfall: Der untere Rand ist die günstigste
-// Annahme, und die optimistische Richtung ist in diesem Vorhaben schon
-// mehrfach die falsche gewesen.
-const HAUPT = { tagesbudget: TAGESBUDGET, klickpreis: 1.5, quote: 0.01, frist: FRIST };
+// **Verschoben am 3. September** nach `src/rollout.js`: Der Hauptfall ist eine
+// Modellannahme und keine Werkzeugeinstellung. Seit die PR-Beschreibung die
+// Etappenzahl und die Gesamtdauer nennt, misst `pruefe-schaufenster` sie — und
+// zwei Wege zur selben Zahl sind einer zu viel.
+const HAUPT = HAUPTFALL;
+const TAGESBUDGET = HAUPT.tagesbudget;
+const FRIST = HAUPT.frist;
 
 const tag = (n) => (n === 0 ? 'Tag 0' : `Tag ${n}`);
 const artZeichen = { gerechnet: 'gerechnet', gesetzt: 'gesetzt', fremdbestimmt: 'Wartezeit auf Dritte' };

@@ -13,7 +13,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { versuchsplan, nochPlausibleQuote, TAGE_JE_MONAT, SICHERHEIT,
-  leistbarerKlickpreis, quoteAmMarktboden } from '../src/werbewirkung.js';
+  leistbarerKlickpreis, quoteAmMarktboden, versuchsaussage } from '../src/werbewirkung.js';
 import { noetigerUmsatz } from '../src/kostenbild.js';
 import { MARKT_CPC } from './kampagne.mjs';
 
@@ -113,10 +113,34 @@ if (ziel.tragfaehig) {
   console.log('  Marktklick — dann trägt der Klickkanal die Zielgröße bei keinem Gebot mehr.');
 }
 
+/**
+ * **Was der Versuch am Ende aussagt — die Unsymmetrie, ausgerechnet.**
+ *
+ * Bis zum 3. September stand hier nur die Fußnote „Sie zählt Verkäufe. Der
+ * Shop erzeugt heute Anfragen." Sie stimmte und rechnete nichts. Jetzt steht
+ * die Folge daneben: Kaufquote = Anfragequote × Auftragsquote — und deshalb
+ * trägt der Versuch die **Absage** und nicht die Zusage.
+ */
+const versuchsquote = 0.01;
+console.log(`\nWas der Versuch trägt (ausgeschlossen werden soll ${(versuchsquote * 100).toFixed(0)} %):\n`);
+for (const fall of [
+  { klicks: 100, anfragen: 0 },
+  { klicks: 299, anfragen: 0 },
+  { klicks: 299, anfragen: 4 },
+]) {
+  const a = versuchsaussage({ ...fall, quote: versuchsquote, sicherheit });
+  console.log(`  ${String(fall.klicks).padStart(4)} Klicks, ${fall.anfragen} Anfrage(n)`);
+  console.log(`      Anfragequote ausgeschlossen: ${a.schliesstAnfragequoteAus ? 'ja' : 'nein'}`
+    + ` · Kaufquote ausgeschlossen: ${a.schliesstKaufquoteAus ? 'ja' : 'nein'}`
+    + ` · Kaufquote bestätigt: ${a.bestaetigtKaufquote ? 'ja' : 'nein'}`);
+  console.log(`      ${a.warum}`);
+}
+
 console.log('\nWas diese Rechnung nicht kann:');
 console.log('  · Sie unterstellt gleich gute Klicks ab der ersten Minute — die optimistische Richtung.');
 console.log('  · Sie sagt nicht, ob der Markt so viele Suchanfragen hergibt. Wird das Budget nicht');
 console.log('    ausgeschöpft, dauert jede Zeile länger als angeschrieben.');
 console.log('  · Sie zählt Verkäufe. Der Shop erzeugt heute Anfragen, keine Verkäufe — und gezählt');
-console.log('    werden können sie nur an einer Stelle: im Posteingang des Betreibers.');
+console.log('    werden können sie nur an einer Stelle: im Posteingang des Betreibers. Seit dem');
+console.log('    3. September steht das als eigene Etappe im Plan (`anfragen-zaehlen`).');
 console.log('\nAlle Kampagnen stehen auf PAUSIERT. Das Schalten löst Ausgaben aus.');

@@ -146,6 +146,14 @@ export function kennzahlen(messwerte) {
       muster: /\*\*(\d+) Fragen an den Lieferanten\*\*/, soll: m.lieferantenfragen },
     { name: 'Mindestbestellwert', wie: 'data/betreiber.json — Gate 25',
       muster: /\*\*(\d+) € netto Warenwert je Lieferung\*\*/, soll: m.mindestbestellwert },
+    // **Nachgetragen am 3. September.** Die Beschreibung nannte die
+    // Etappenzahl als **Wort** („zwölf Etappen") — und ein Wort findet dieses
+    // Muster nicht. Sie war überholt, sobald eine dreizehnte Etappe dazukam,
+    // und kein Prüfer hätte es gesagt. Seither steht die Zahl als Ziffer da.
+    { name: 'Etappen des Rolloutplans', wie: 'npm run rollout',
+      muster: /Kette aus (\d+) Etappen/, soll: m.etappen },
+    { name: 'Tage bis zur Entscheidung', wie: 'npm run rollout',
+      muster: /Wie lange bis zur Entscheidung: (\d+) Tage/, soll: m.rollouttage },
   ];
 
   // **Die Zahl, die diese Prüfung über sich selbst nennt.** Die Beschreibung

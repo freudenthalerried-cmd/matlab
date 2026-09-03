@@ -20,7 +20,7 @@ Machbarkeitsanalyse, Shop und Website für einen Baustoffhandel, der 3.000 € n
 
 👉 **`docs/baustoff-shop/STATUS.md`** — Stand, offene Weisungen, Dokumentenverzeichnis und eine Tabelle aller Korrekturen, die im Verlauf nötig waren. Diese Datei zuerst lesen. Bei Gate-Fragen gilt **`gate-register.md`** (25 Gates, Stand 3. September).
 
-Diese Beschreibung hat seit dem 1. September eine Quelle im Verzeichnis: `docs/baustoff-shop/pr-beschreibung.md`. `npm run pruefe-schaufenster` misst ihre 30 Kennzahlen gegen den Bestand — sie war zuvor an neun Stellen überholt, und seit dem 1. September ist auch die Leitzahl darunter.
+Diese Beschreibung hat seit dem 1. September eine Quelle im Verzeichnis: `docs/baustoff-shop/pr-beschreibung.md`. `npm run pruefe-schaufenster` misst ihre 32 Kennzahlen gegen den Bestand — sie war zuvor an neun Stellen überholt, und seit dem 1. September ist auch die Leitzahl darunter.
 
 ### Veröffentlichte Momentaufnahmen
 
@@ -67,7 +67,9 @@ nachgerechnet. Seit heute misst `npm run pruefe-schaufenster` auch sie.
 
 **Und darunter hört der Kanal auf zu existieren:** Unter einer Kaufquote von **0,77 %** trägt das Modell nicht einmal den billigsten Marktklick (0,50 €). Gerechnet wird mit 2 % — Faktor 2,6 dazwischen, und gemessen ist keine der beiden Zahlen. Das ist das erste der drei größten Risiken (`die-drei-groessten-risiken.md`).
 
-**Wie lange bis zur Entscheidung: 60 Tage.** `npm run rollout` rechnet die Kette aus zwölf Etappen mit ihren Abhängigkeiten — Tag 0 ist nicht heute, sondern der Tag, an dem die erste Freigabe erfolgt. Davon sind 45 Tage der Klickversuch selbst, der Rest ist Warten auf Dritte und zwei Tage eigene Arbeit. Die Frist von 90 Tagen trägt das, aber nicht alles: Eine Kaufquote von 1 % lässt sich bei jedem Marktklickpreis ausschließen, eine von 0,5 % nur am unteren Rand des Marktes.
+**Wie lange bis zur Entscheidung: 60 Tage.** `npm run rollout` rechnet die Kette aus 13 Etappen mit ihren Abhängigkeiten — Tag 0 ist nicht heute, sondern der Tag, an dem die erste Freigabe erfolgt. Davon sind 45 Tage der Klickversuch selbst, der Rest ist Warten auf Dritte und zwei Tage eigene Arbeit. Die Frist von 90 Tagen trägt das, aber nicht alles: Eine Quote von 1 % lässt sich bei jedem Marktklickpreis ausschließen, eine von 0,5 % nur am unteren Rand des Marktes.
+
+**Was der Versuch entscheidet, ist eine Absage.** Der Shop nimmt keine Bestellung entgegen, sondern erzeugt Anfragen; gemessen wird deshalb die **Anfragequote**. Bleibt jede Anfrage aus, ist sie ausgeschlossen — und ohne Anfrage entsteht kein Auftrag, also die Kaufquote mit. Kommen Anfragen, sagt die Anzeigenstatistik über die Kaufquote nichts: Der Schritt von der Anfrage zum Auftrag entsteht im Postfach und steht seit dem 3. September als eigene Etappe im Plan.
 
 ## Befunde aus den echten Daten
 

@@ -286,7 +286,24 @@ export const ETAPPEN = Object.freeze([
   }),
   Object.freeze({
     id: 'klickversuch',
-    titel: 'Klicks sammeln, bis die Kaufquote entschieden ist',
+    /**
+     * **Umbenannt am 3. September.** Die Etappe hieß „bis die **Kaufquote**
+     * entschieden ist" — und der Shop kann keine Bestellung entgegennehmen.
+     * Seit heute Abend steht das als erster Punkt in `startklar()`, am
+     * Quelltext gemessen: kein `fetch`, kein Formular, kein Beacon. Was ein
+     * bezahlter Klick hier auslösen kann, ist eine **Anfrage**.
+     *
+     * > **Ein Plan, der 45 Tage und das ganze Budget auf eine Größe setzt,
+     * > die der gebaute Shop nicht erzeugen kann, misst nicht zu wenig — er
+     * > misst etwas anderes.**
+     *
+     * Die Einschränkung stand seit dem 1. September im Kopfkommentar von
+     * `werbewirkung.js` und in der Ausgabe von `npm run werbeprobe`. Sie stand
+     * nicht dort, wo entschieden wird. Dieselbe Familie wie der Lieferhinweis,
+     * der auf den falschen AGB-Punkt zeigte: eine Regel, die es gibt, an der
+     * einen Stelle, an der sie zählt, nicht angewandt.
+     */
+    titel: 'Klicks sammeln, bis die Anfragequote entschieden ist',
     zustaendig: 'entscheidung',
     brauchtVor: [Object.freeze({
       etappe: 'anzeigen-schalten',
@@ -295,11 +312,61 @@ export const ETAPPEN = Object.freeze([
     tage: null,
     art: 'gerechnet',
     woher: 'Aus Tagesbudget, Klickpreis und der Abbruchschwelle — siehe werbewirkung.js.',
-    ergebnis: 'Ein Verkauf beendet ihn früher. Bleibt er aus, schließt die Schwelle die '
-      + 'Quote aus, für die das Modell gerechnet ist.',
+    ergebnis: 'Der Versuch trägt die Absage, nicht die Zusage. Bleibt jede Anfrage aus, '
+      + 'ist die Anfragequote ausgeschlossen — und weil kein Auftrag ohne Anfrage entsteht, '
+      + 'damit auch die Kaufquote. Kommen Anfragen, misst er die Anfragequote; was davon '
+      + 'ein Auftrag wird, entscheidet sich im Postfach und nicht in der Anzeigenstatistik.',
+    gate: 'Gate 20',
+  }),
+  /**
+   * **Aufgenommen am 3. September**, im selben Zug.
+   *
+   * Ohne diese Etappe endet der Versuch mit **einer** Zahl, und die zweite
+   * fehlt: Kaufquote = Anfragequote × Auftragsquote. Die erste zählt Google,
+   * die zweite zählt niemand — sie entsteht im Postfach des Betreibers, und
+   * wenn sie dort nicht mitgeschrieben wird, ist sie nach 45 Tagen nicht mehr
+   * rekonstruierbar.
+   *
+   * Läuft **neben** dem Versuch, nicht danach: Beide beginnen mit dem ersten
+   * bezahlten Klick, und beide dauern so lange wie er. Der bestimmende Strang
+   * ändert sich dadurch nicht.
+   */
+  Object.freeze({
+    id: 'anfragen-zaehlen',
+    titel: 'Anfragen und daraus entstandene Aufträge mitschreiben',
+    zustaendig: 'entscheidung',
+    brauchtVor: [Object.freeze({
+      etappe: 'anzeigen-schalten',
+      warum: 'Gezählt werden kann erst, was durch bezahlte Klicks entsteht. Vorher gibt es '
+        + 'keine Anfrage, die zu diesem Versuch gehört.',
+    })],
+    tage: null,
+    art: 'gerechnet',
+    woher: 'Dieselbe Dauer wie der Versuch — beide beginnen mit dem ersten bezahlten Klick.',
+    ergebnis: 'Liefert die zweite der beiden Zahlen, aus denen die Kaufquote besteht. Ohne '
+      + 'sie endet der Versuch mit einer Zahl, die wie ein Ergebnis aussieht und eine andere '
+      + 'Frage beantwortet. Zwei Striche auf einem Zettel je Anfrage genügen: eingegangen, '
+      + 'beauftragt.',
     gate: 'Gate 20',
   }),
 ]);
+
+/**
+ * Der Hauptfall, mit dem dieser Plan gerechnet wird.
+ *
+ * **Hierher gezogen am 3. September**, aus `bin/rollout.mjs`. Die Zahlen sind
+ * Modellannahmen und keine Werkzeugeinstellung — und seit die PR-Beschreibung
+ * die Etappenzahl und die Gesamtdauer nennt, misst `pruefe-schaufenster` sie.
+ * Stünden sie im Werkzeug, müsste der Prüfer sie nachbauen: zwei Wege zur
+ * selben Zahl, und einer davon veraltet.
+ *
+ * Der **mittlere** Marktklickpreis ist der Hauptfall, nicht der untere Rand:
+ * Die optimistische Richtung ist in diesem Vorhaben schon mehrfach die falsche
+ * gewesen.
+ */
+export const HAUPTFALL = Object.freeze({
+  tagesbudget: 9.99, klickpreis: 1.5, quote: 0.01, frist: 90,
+});
 
 /** Die Kennungen, von denen eine Etappe abhängt. */
 export function vorgaenger(etappe) {
@@ -359,7 +426,11 @@ export function rolloutplan({ tagesbudget, klickpreis, quote, frist = 90, etappe
   const klicksJeTag = tagesbudget / klickpreis;
   const versuchstage = Math.ceil(schwelleKlicks / klicksJeTag);
 
-  const dauerVon = (e) => (e.id === 'klickversuch' ? versuchstage : e.tage);
+  // **Verallgemeinert am 3. September.** Hier stand `e.id === 'klickversuch'`.
+  // Seit die Zählung der Anfragen eine eigene Etappe ist, gibt es zwei
+  // Etappen von der Dauer des Versuchs — und eine Sonderregel für **eine**
+  // Kennung hätte die zweite still mit `null` Tagen gerechnet.
+  const dauerVon = (e) => (e.art === 'gerechnet' ? versuchstage : e.tage);
 
   // Frühester Beginn: die längste Kette der Vorbedingungen. Zyklen fallen
   // durch die Tiefenbegrenzung auf — eine Kette kann nicht länger sein als die

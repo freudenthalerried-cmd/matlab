@@ -45,7 +45,9 @@
  * - Ein Kleinbudget schöpft die guten Suchanfragen nicht ab.
  * - Der Shop kann heute gar nichts verkaufen, sondern nur Anfragen erzeugen
  *   (`startklar`). Eine Anfrage ist kein Verkauf, und der Weg von der einen
- *   zum anderen ist hier nicht gemessen.
+ *   zum anderen ist hier nicht gemessen. **Seit dem 3. September steht das
+ *   nicht mehr nur hier:** `versuchsaussage()` rechnet die Folge aus, und der
+ *   Rolloutplan misst ausdrücklich die Anfragequote.
  *
  * Die errechnete Schwelle ist damit eine **Untergrenze der nötigen Klicks**,
  * nicht ihr Erwartungswert. Wer sie unterschreitet, weiß sicher nichts; wer
@@ -87,6 +89,67 @@ export function pKeinVerkauf(quote, klicks) {
 export function nochPlausibleQuote(klicks, sicherheit = SICHERHEIT) {
   if (!(klicks > 0)) return 1;
   return 1 - (1 - sicherheit) ** (1 / klicks);
+}
+
+/**
+ * Was der Versuch am Ende wirklich gezeigt hat — und was nicht.
+ *
+ * **Aufgeschrieben am 3. September**, als der Rolloutplan noch „bis die
+ * **Kaufquote** entschieden ist" hieß. Der Shop kann keine Bestellung
+ * entgegennehmen (erster Punkt in `startklar()`, am Quelltext gemessen); was
+ * ein bezahlter Klick auslösen kann, ist eine **Anfrage**.
+ *
+ * Die beiden Größen hängen so zusammen:
+ *
+ *     Kaufquote = Anfragequote × Auftragsquote
+ *
+ * Daraus folgt die **Unsymmetrie**, auf die es ankommt:
+ *
+ * | Beobachtung | Was sie trägt |
+ * |---|---|
+ * | keine Anfrage nach `n` Klicks | schließt die Anfragequote aus — **und damit die Kaufquote**, denn ohne Anfrage kein Auftrag |
+ * | Anfragen kommen | misst die **Anfragequote**. Über die Kaufquote sagt das nichts, solange die Auftragsquote nicht gezählt ist |
+ *
+ * > **Der Versuch trägt die Absage, nicht die Zusage.** Wer ihn für beides
+ * > hält, hat nach 45 Tagen eine Zahl, die wie ein Ergebnis aussieht und eine
+ * > andere Frage beantwortet.
+ *
+ * Die zweite Zahl entsteht im Postfach des Betreibers. Sie steht seit heute
+ * als eigene Etappe im Plan (`anfragen-zaehlen`) — zwei Striche je Anfrage:
+ * eingegangen, beauftragt.
+ *
+ * @param {object} p
+ * @param {number} p.klicks     bezahlte Klicks bis hierher
+ * @param {number} p.anfragen   eingegangene Anfragen aus diesen Klicks
+ * @param {number} p.quote      die Quote, die ausgeschlossen werden sollte
+ * @param {number} [p.sicherheit]
+ */
+export function versuchsaussage({ klicks, anfragen, quote, sicherheit = SICHERHEIT }) {
+  if (!(klicks >= 0)) throw new Error(`Klickzahl negativ: ${klicks}`);
+  if (!(anfragen >= 0)) throw new Error(`Anfragezahl negativ: ${anfragen}`);
+  if (anfragen > klicks) throw new Error('Mehr Anfragen als Klicks — eine der beiden Zahlen stimmt nicht');
+  const schwelle = abbruchschwelle(quote, sicherheit);
+  const ausgeschlossen = anfragen === 0 && klicks >= schwelle;
+  return {
+    schwelle,
+    anfragequote: klicks > 0 ? anfragen / klicks : null,
+    obergrenze: nochPlausibleQuote(klicks, sicherheit),
+    schliesstAnfragequoteAus: ausgeschlossen,
+    // Ohne Anfrage kein Auftrag: Die Kaufquote ist höchstens die
+    // Anfragequote. Was die eine ausschließt, schließt die andere mit aus.
+    schliesstKaufquoteAus: ausgeschlossen,
+    // **Immer falsch, und das ist keine Vorsicht, sondern die Rechnung:** Die
+    // Anzeigenstatistik kennt Klicks und Anfragen. Den Schritt von der Anfrage
+    // zum Auftrag sieht sie nicht.
+    bestaetigtKaufquote: false,
+    warum: ausgeschlossen
+      ? `${klicks} Klicks ohne eine einzige Anfrage — die Quote ist ausgeschlossen, `
+        + 'und ohne Anfrage entsteht auch kein Auftrag'
+      : anfragen > 0
+        ? `${anfragen} Anfrage(n) aus ${klicks} Klicks — gemessen ist die Anfragequote. `
+          + 'Was davon ein Auftrag wird, steht im Postfach und nicht in der Anzeigenstatistik'
+        : `${klicks} von ${schwelle} Klicks — noch nichts ausgeschlossen`,
+  };
 }
 
 /**

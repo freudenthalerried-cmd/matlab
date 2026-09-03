@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { abbruchschwelle, pKeinVerkauf, nochPlausibleQuote, versuchsplan, TAGE_JE_MONAT, SICHERHEIT }
+import { abbruchschwelle, pKeinVerkauf, nochPlausibleQuote, versuchsplan, versuchsaussage,
+  TAGE_JE_MONAT, SICHERHEIT }
   from '../src/werbewirkung.js';
 
 const nah = (ist, soll, toleranz = 1e-9) =>
@@ -126,4 +127,57 @@ test('Unbrauchbare Eingaben werfen auch hier', async () => {
   }
   for (const q of [0, 1, -0.1]) assert.throws(() => leistbarerKlickpreis({ ...lage, quote: q }), /Kaufquote/);
   assert.throws(() => quoteAmMarktboden({ ...lage, marktUnten: 0 }), /Marktklickpreis/);
+});
+
+/**
+ * Der Versuch trägt die Absage, nicht die Zusage.
+ *
+ * **Der Anlass, 3. September 2026.** Der Rolloutplan setzte 45 Tage und das
+ * ganze Budget auf die **Kaufquote** — und der Shop kann keine Bestellung
+ * entgegennehmen. Was ein bezahlter Klick auslösen kann, ist eine Anfrage.
+ * Die Einschränkung stand im Kopfkommentar dieser Datei und in der Ausgabe
+ * von `npm run werbeprobe`; sie stand nicht dort, wo entschieden wird.
+ */
+test('ausbleibende Anfragen schließen die Kaufquote mit aus', () => {
+  const e = versuchsaussage({ klicks: 299, anfragen: 0, quote: 0.01 });
+  assert.equal(e.schwelle, 299);
+  assert.equal(e.schliesstAnfragequoteAus, true);
+  // Ohne Anfrage kein Auftrag: Was die eine ausschließt, schließt die andere mit.
+  assert.equal(e.schliesstKaufquoteAus, true);
+});
+
+test('eingehende Anfragen bestätigen keine Kaufquote', () => {
+  const e = versuchsaussage({ klicks: 299, anfragen: 6, quote: 0.01 });
+  assert.equal(e.schliesstAnfragequoteAus, false);
+  assert.equal(e.bestaetigtKaufquote, false);
+  assert.equal(e.anfragequote, 6 / 299);
+  assert.match(e.warum, /Postfach/);
+});
+
+test('unter der Schwelle ist nichts ausgeschlossen', () => {
+  const e = versuchsaussage({ klicks: 100, anfragen: 0, quote: 0.01 });
+  assert.equal(e.schliesstAnfragequoteAus, false);
+  assert.equal(e.schliesstKaufquoteAus, false);
+  // Gezeigt hat der Fehlversuch trotzdem etwas: die Obergrenze.
+  assert.ok(e.obergrenze > 0.01, `${e.obergrenze} — nach 100 Klicks ist 1 % noch offen`);
+});
+
+test('mehr Anfragen als Klicks ist keine Beobachtung, sondern ein Fehler', () => {
+  assert.throws(() => versuchsaussage({ klicks: 10, anfragen: 11, quote: 0.01 }),
+    /Mehr Anfragen als Klicks/);
+  assert.throws(() => versuchsaussage({ klicks: -1, anfragen: 0, quote: 0.01 }), /negativ/);
+});
+
+test('bestätigt wird die Kaufquote in keinem Fall', () => {
+  // Kein Zweig darf `bestaetigtKaufquote` wahr machen — die
+  // Anzeigenstatistik kennt den Schritt von der Anfrage zum Auftrag nicht.
+  const faelle = [
+    { klicks: 0, anfragen: 0, quote: 0.01 },
+    { klicks: 299, anfragen: 0, quote: 0.01 },
+    { klicks: 1000, anfragen: 500, quote: 0.02 },
+  ];
+  assert.equal(faelle.length, 3);
+  for (const f of faelle) {
+    assert.equal(versuchsaussage(f).bestaetigtKaufquote, false, JSON.stringify(f));
+  }
 });

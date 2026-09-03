@@ -19,6 +19,7 @@ import { FRAGEN } from '../src/lieferantenanfrage.js';
 import { ladeBaustoffkatalog } from '../src/baustoffkatalog.js';
 import { katalogbefund } from '../src/baustoffkatalog.js';
 import { noetigerUmsatz } from '../src/kostenbild.js';
+import { rolloutplan, HAUPTFALL } from '../src/rollout.js';
 
 const SHOP = fileURLToPath(new URL('..', import.meta.url));
 const REPO = join(SHOP, '..');
@@ -122,6 +123,8 @@ const betreiberDatei = JSON.parse(readFileSync(join(SHOP, 'data', 'betreiber.jso
 const leitzahl = noetigerUmsatz(zielgroessen, zielgroessen.zahlweg);
 if (!leitzahl.tragfaehig) throw new Error(`Die Zielgrößen tragen sich nicht: ${leitzahl.grund}`);
 
+const plan = rolloutplan(HAUPTFALL);
+
 const messwerte = {
   artikel: katalog.artikel.length,
   seiten: zaehleHtml(site, true),
@@ -160,6 +163,11 @@ const messwerte = {
   // Beschreibung nennt sie, also gehört sie gehalten.
   mindestbestellwert: betreiberDatei.mindestbestellwertNetto ?? null,
   lieferantenfragen: FRAGEN.length,
+  // Aus derselben Rechnung wie `npm run rollout`, mit demselben Hauptfall —
+  // nicht aus einer zweiten. Bis zum 3. September stand die Etappenzahl als
+  // Wort in der Beschreibung und war damit außerhalb jeder Messung.
+  etappen: plan.plan.length,
+  rollouttage: plan.gesamt,
 };
 
 const e = pruefeSchaufenster(readFileSync(beschreibung, 'utf8'), messwerte);

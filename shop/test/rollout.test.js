@@ -65,11 +65,18 @@ test('Was nicht voneinander abhängt, läuft nebeneinander', () => {
   for (const e of ohneVor) assert.equal(e.beginntTag, 0, `${e.id} beginnt erst an Tag ${e.beginntTag}`);
 });
 
-test('Der bestimmende Strang endet an der spätesten Etappe', () => {
+test('Der bestimmende Strang endet an einer Etappe, die am Schlusstag fertig wird', () => {
   const r = rolloutplan(HAUPT);
-  const letzte = r.plan[r.plan.length - 1];
-  assert.equal(r.strang[r.strang.length - 1], letzte.id);
-  assert.equal(letzte.fertigTag, r.gesamt);
+  // **Berichtigt am 3. September.** Hier stand „an der **letzten** Etappe der
+  // Liste". Seit die Zählung der Anfragen neben dem Versuch läuft, enden
+  // **zwei** Etappen am selben Tag — und welche von beiden der Strang nennt,
+  // ist eine Frage der Reihenfolge in der Liste und keine Aussage über den
+  // Plan. Geprüft wird deshalb, was gemeint war.
+  const ende = r.plan.find((e) => e.id === r.strang[r.strang.length - 1]);
+  assert.ok(ende, `„${r.strang[r.strang.length - 1]}" steht im Strang und nicht im Plan`);
+  assert.equal(ende.fertigTag, r.gesamt);
+  assert.equal(r.plan[r.plan.length - 1].fertigTag, r.gesamt,
+    'die letzte Etappe der Liste ist nicht die späteste — dann stimmt die Reihenfolge nicht mehr');
 });
 
 test('Ein billigerer Klick verkürzt die Kette, ein teurerer verlängert sie', () => {
