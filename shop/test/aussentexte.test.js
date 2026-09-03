@@ -16,6 +16,19 @@ function exportierteFunktionen() {
     for (const t of text.matchAll(/^export function ([a-zA-Z0-9_]+)/gm)) {
       gefunden.push({ modul: `src/${name}`, funktion: t[1] });
     }
+    // **Erweitert am 3. September.** Der Leser kannte nur `export function`.
+    // Sechzehn Ausfuhren dieses Bestandes sind Pfeilfunktionen an einem
+    // `export const` — darunter `textZeile`, also ausgerechnet die
+    // Entschärfung, durch die jeder Ausgang läuft. Sie waren für das
+    // Verzeichnis unsichtbar, und ein Verzeichnis, das eine Schreibweise
+    // nicht kennt, führt sie auch nicht.
+    //
+    // Dritter Fall derselben Art: `\bÖNORM` traf nie wegen ASCII, das
+    // Namensmuster kannte `Text` und nicht `Txt`. Ein Leser prüft die
+    // Schreibweise, die sein Verfasser im Kopf hatte.
+    for (const t of text.matchAll(/^export const ([a-zA-Z0-9_]+)\s*=\s*(?:\([^)]*\)|[a-zA-Z0-9_]+)\s*=>/gm)) {
+      gefunden.push({ modul: `src/${name}`, funktion: t[1] });
+    }
   }
   return gefunden;
 }

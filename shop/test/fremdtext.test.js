@@ -32,6 +32,7 @@ import { baueKundenanfrage, mailtoAdresse } from '../src/kundenanfrage.js';
 import { erzeugeImpressum } from '../src/rechtstexte.js';
 import { robotsTxt } from '../src/maschinenlesbar.js';
 import { erzeugeLieferantenanfrage } from '../src/lieferantenanfrage.js';
+import { jsonFuerSkript } from '../src/format.js';
 import { belegzeile } from '../src/vies.js';
 import { neueAblage, haltefest, alsCsv } from '../src/ablage.js';
 import { journalzeile, ausJournal } from '../src/speicher.js';
@@ -383,7 +384,60 @@ test('Ausgang Impressum: Gift in den Betreiberdaten erzeugt keine zusätzliche Z
 });
 
 /* ------------------------------------------------------------------ *
- * Ausgang 8: die Lieferantenanfrage
+ * Ausgang 8: die Daten im Skriptelement
+ *
+ * Befund vom 3. September. Der Bau schreibt Shopdaten und maschinenlesbare
+ * Auszeichnung mit `JSON.stringify` direkt zwischen `<script>` und
+ * `</script>`. `JSON.stringify` maskiert kein `<` — eine Artikelbezeichnung
+ * mit der Zeichenfolge `</script>` beendet das Skriptelement, und alles
+ * dahinter liest der Browser als HTML.
+ *
+ * Vier Stellen waren betroffen: die Einzeldatei, `demo.html`, `shop.js` und
+ * die ld+json-Auszeichnung jeder der 81 Seiten.
+ * ------------------------------------------------------------------ */
+
+test('Ausgang Skriptdaten: eine Bezeichnung kann das Skriptelement nicht beenden', () => {
+  const giftig = { bezeichnung: `Platte </script><img src=x onerror=alert(1)> 50 mm${GIFT}` };
+  const ausgabe = jsonFuerSkript(giftig);
+  assert.doesNotMatch(ausgabe, /<\/script/i, 'die Zeichenfolge beendet das Element');
+  assert.doesNotMatch(ausgabe, /<img/i);
+  // Und der Wert überlebt: Maskiert wird die Schreibweise, nicht der Inhalt.
+  assert.equal(JSON.parse(ausgabe).bezeichnung, giftig.bezeichnung);
+});
+
+test('Ausgang Skriptdaten: keine gebaute Seite trägt eine offene Zeichenfolge im JSON', () => {
+  // Geprüft wird das Erzeugnis, nicht die Absicht: In den ld+json-Blöcken der
+  // gebauten Seiten darf `</script` nicht vorkommen — sonst hätte der Browser
+  // das Element schon dort beendet.
+  const wurzel = new URL('../ausgabe/site/', import.meta.url);
+  let ordner;
+  try {
+    ordner = readdirSync(wurzel);
+  } catch (e) {
+    return; // ohne Bau keine Aussage — und keine falsche
+  }
+  assert.ok(ordner.length > 3, 'der Bau ist leer');
+  const dateien = [];
+  const gehe = (u) => {
+    for (const e of readdirSync(u, { withFileTypes: true })) {
+      if (e.isDirectory()) gehe(new URL(`${e.name}/`, u));
+      else if (e.name.endsWith('.html')) dateien.push(new URL(e.name, u));
+    }
+  };
+  gehe(wurzel);
+  assert.ok(dateien.length >= 40, `nur ${dateien.length} Seiten — die Schleife prüfte zu wenig`);
+  const offen = [];
+  for (const datei of dateien) {
+    const html = readFileSync(datei, 'utf8');
+    for (const m of html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)) {
+      if (/<\/script/i.test(m[1])) offen.push(String(datei));
+    }
+  }
+  assert.deepEqual(offen, []);
+});
+
+/* ------------------------------------------------------------------ *
+ * Ausgang 9: die Lieferantenanfrage
  * ------------------------------------------------------------------ */
 
 test('Ausgang Lieferantenanfrage: Gift in den Betreiberdaten erzeugt keine zusätzliche Zeile', () => {
@@ -401,7 +455,7 @@ test('Ausgang Lieferantenanfrage: Gift in den Betreiberdaten erzeugt keine zusä
 });
 
 /* ------------------------------------------------------------------ *
- * Ausgang 9: die robots.txt
+ * Ausgang 10: die robots.txt
  *
  * Am 2. September nachgetragen. Sie stand in keinem Verzeichnis, weil das
  * Namensmuster `Text` kannte und `Txt` nicht — dabei liest sie jeder Crawler,
@@ -425,7 +479,7 @@ test('Ausgang robots.txt: Gift in der Sitemap-Adresse erzeugt keine zusätzliche
 });
 
 /* ------------------------------------------------------------------ *
- * Ausgang 10: die Oberfläche
+ * Ausgang 11: die Oberfläche
  * ------------------------------------------------------------------ */
 
 test('Ausgang Oberfläche: kein Quelltext schreibt fremden Text als HTML', () => {

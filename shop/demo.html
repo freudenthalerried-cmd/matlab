@@ -369,6 +369,40 @@ const LUECKE = (bezeichnung) => `[[ ${bezeichnung} — FEHLT ]]`;
 
 
 
+
+
+
+
+
+
+
+
+
+const jsonFuerSkript = (wert) => JSON.stringify(wert)
+  .replace(/</g, '\\u003c')
+  .replace(/>/g, '\\u003e')
+  .replace(/\u2028/g, '\\u2028')
+  .replace(/\u2029/g, '\\u2029');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const EINHEITEN = Object.freeze({
   STK: 'Stück', M2: 'm²', KG: 'kg', SCK: 'Sack', KRT: 'Karton',
   LFM: 'lfm', DOS: 'Dose', EIM: 'Eimer', RLL: 'Rolle',

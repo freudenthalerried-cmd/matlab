@@ -37,7 +37,7 @@ import { baueKern, BROWSERMODULE } from '../src/buendel.js';
 import { startklar } from '../src/startklar.js';
 import { ohneKommentare } from '../src/entkommentieren.js';
 import { preisJeKilo, kilotafel, mengenschritt } from '../src/gebinde.js';
-import { EINHEITEN, aufzaehlung } from '../src/format.js';
+import { EINHEITEN, aufzaehlung, jsonFuerSkript } from '../src/format.js';
 import { GRUPPENSEITE } from '../src/artikelliste.js';
 import { preisstandSpanne } from '../src/preisalter.js';
 import { HERSTELLER, marke } from '../src/hersteller.js';
@@ -1780,7 +1780,7 @@ Warengruppen in der Kopfleiste.</p></noscript>
   if (!eigenstaendig) return koerper;
 
   const ld = seite.jsonLd
-    ? `\n<script type="application/ld+json">${JSON.stringify(seite.jsonLd, null, 0)}</script>`
+    ? `\n<script type="application/ld+json">${jsonFuerSkript(seite.jsonLd)}</script>`
     : '';
 /**
  * Drei Seiten, die nichts zu sagen haben — und es jetzt auch sagen.
@@ -2077,7 +2077,7 @@ function main() {
   mkdirSync(site, { recursive: true });
   const dateiSeiten = bauen(pfadVerweis);
   const nutzdaten = shopdaten(katalog, befund, seiten, lieferantenDatei, suchwoerterDatei, betreiber, bereitschaft);
-  const shopskriptQuelle = `window.__SHOP__=${JSON.stringify(nutzdaten)};\n`
+  const shopskriptQuelle = `window.__SHOP__=${jsonFuerSkript(nutzdaten)};\n`
     + `window.__SHOP__.adressform=window.__SHOP_ADRESSFORM__||'datei';\n`
     + `window.__SHOP__.tiefe=!!window.__SHOP_TIEFE__;\n`
     + kernBuendel + '\n' + shopOberflaeche;
@@ -2225,7 +2225,7 @@ ${[...dateiSeiten.entries()].filter(([, seite]) => !seite.nurBedienung)
   writeFileSync(join(site, 'sitemap.xml'), sitemap, 'utf8');
 
   // --- Einzeldateifassung ---
-  const shopskriptRoh = `window.__SHOP__=${JSON.stringify(nutzdaten)};\n`
+  const shopskriptRoh = `window.__SHOP__=${jsonFuerSkript(nutzdaten)};\n`
     + `window.__SHOP__.adressform=window.__SHOP_ADRESSFORM__||'datei';\n`
     + `window.__SHOP__.tiefe=!!window.__SHOP_TIEFE__;\n`
     + kernBuendel + '\n' + shopOberflaeche;

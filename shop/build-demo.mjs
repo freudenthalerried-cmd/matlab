@@ -11,6 +11,7 @@ import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { baueKern, KERNMODULE, SHOPMODULE } from './src/buendel.js';
+import { jsonFuerSkript } from './src/format.js';
 import { ohneKommentare } from './src/entkommentieren.js';
 
 const lies = (p) => readFileSync(new URL(p, import.meta.url), 'utf8');
@@ -43,7 +44,12 @@ for (const platzhalter of ['/*__KERN__*/', '/*__DATEN__*/']) {
 }
 const html = vorlage
   .replace('/*__KERN__*/', () => kern)
-  .replace('/*__DATEN__*/', () => JSON.stringify(daten));
+  // `jsonFuerSkript` statt `JSON.stringify`: Die Daten landen zwischen
+  // `<script>` und `</script>` im Vorlagentext, und `JSON.stringify`
+  // maskiert kein `<`. Eine Artikelbezeichnung mit der Zeichenfolge
+  // `</script>` beendete das Skriptelement — vierte Stelle desselben
+  // Befundes vom 3. September.
+  .replace('/*__DATEN__*/', () => jsonFuerSkript(daten));
 
 // Der Kollisionswächter sieht nur den Kern. Das Template deklariert im selben
 // Skript eigene Namen (daten, katalog, eur …) — eine Kollision dort, oder ein

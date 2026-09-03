@@ -51,6 +51,7 @@ export const AUSGAENGE = Object.freeze([
   Object.freeze({ modul: 'src/beleg.js', funktion: 'erzeugeAuftragsbestaetigung', an: 'Kunde', form: 'Zeilentext' }),
   Object.freeze({ modul: 'src/beleg.js', funktion: 'erzeugeRechnung', an: 'Kunde', form: 'Zeilentext' }),
   Object.freeze({ modul: 'src/bestellung.js', funktion: 'erzeugeBestellungen', an: 'Lieferant', form: 'Zeilentext und CSV' }),
+  Object.freeze({ modul: 'src/format.js', funktion: 'jsonFuerSkript', an: 'jeder Besucher', form: 'JSON in einem Skriptelement' }),
   Object.freeze({ modul: 'src/lieferantenanfrage.js', funktion: 'erzeugeLieferantenanfrage', an: 'Lieferant', form: 'Brieftext' }),
   Object.freeze({ modul: 'src/kundenanfrage.js', funktion: 'baueKundenanfrage', an: 'Lieferant, über den Kunden', form: 'Zeilentext' }),
   Object.freeze({ modul: 'src/kundenanfrage.js', funktion: 'mailtoAdresse', an: 'das Mailprogramm des Kunden', form: 'URL' }),
@@ -70,12 +71,26 @@ export const AUSGAENGE = Object.freeze([
 export const KEIN_AUSGANG = Object.freeze([
   Object.freeze({ funktion: 'baueAuftrag', warum: 'Baut das Auftragsobjekt aus geprüften Feldern — kein Text verlässt den Shop. Die Eingangsprüfung davor steht in kunde.js und wird eigens geprüft.' }),
   Object.freeze({ funktion: 'baueKern', warum: 'Fügt die Quelldateien zum Browserbündel — Werkzeug, kein Kundentext. Namenskollisionen prüft buendel.js selbst.' }),
-  Object.freeze({ funktion: 'baueSuchindex', warum: 'Baut die Suchstruktur für die Oberfläche; ihr Inhalt kommt aus dem eigenen Katalog und geht als JSON ins Bündel, nicht als Zeilentext hinaus.' }),
+  // **Grund berichtigt am 3. September.** Er lautete: „…geht als JSON ins
+  // Bündel, nicht als Zeilentext hinaus." Der Satz hört einen Schritt zu
+  // früh auf — das Bündel wird in eine **HTML-Seite** eingebettet, und dort
+  // beendet die Zeichenfolge `</script>` in einer Artikelbezeichnung das
+  // Skriptelement. Ein Fremdtext, der in eine Seite eingebettet wird, ist
+  // ein Ausgang — auch wenn er als Daten aussieht.
+  Object.freeze({ funktion: 'baueSuchindex', warum: 'Baut die Suchstruktur für die Oberfläche; ihr Inhalt kommt aus dem eigenen Katalog und geht als JSON hinaus. Der Ausgang ist nicht diese Funktion, sondern die Einbettung: Sie läuft über jsonFuerSkript und steht mit ihr im Fremdtextverzeichnis.' }),
   Object.freeze({ funktion: 'baueVorgang', warum: 'Führt den Vorgangszustand im Speicher. Was daraus als Text hinausgeht, geht durch beleg.js und bestellung.js — dort ist es geprüft.' }),
   Object.freeze({ funktion: 'baueAnfrage', warum: 'Baut die UID-Abfrage an das EU-System aus einer geprüften UID; die Antwort darauf ist der Fremdtext, und die geht durch belegzeile.' }),
   Object.freeze({ funktion: 'alsText', warum: 'Wandelt eigenes Markdown in HTML für die eigenen Seiten. Fremdtext erreicht sie nicht — die Inhalte stehen im Verzeichnis.' }),
   Object.freeze({ funktion: 'leseCsv', warum: 'Liest, statt zu schreiben. Ein Leser kann keinen Ausgang vergiften; was er einliest, geht danach durch die geprüften Ausgänge.' }),
   Object.freeze({ funktion: 'leseBestellCsv', warum: 'Dasselbe in der Gegenrichtung: Er liest die eigene Bestell-CSV zur Kontrolle zurück. Sein Ausgang ist ein Vergleichsbefund, kein Text.' }),
+  // **Fünf Einträge vom 3. September.** Sie waren dem Verzeichnis bis dahin
+  // unsichtbar: Der Leser kannte nur `export function`, und diese fünf sind
+  // Pfeilfunktionen an einem `export const`.
+  Object.freeze({ funktion: 'textZeile', warum: 'Sie ist nicht der Ausgang, sondern die Entschärfung — jeder Ausgang läuft durch sie. Was sie zurückgibt, geht erst durch eine der geführten Funktionen hinaus.' }),
+  Object.freeze({ funktion: 'zahlText', warum: 'Schreibt eine Zahl in hiesiger Schreibweise. Sie baut keinen Text, sondern formt einen Wert — und die Zeilen, in denen er landet, stehen einzeln im Verzeichnis.' }),
+  Object.freeze({ funktion: 'zahlAusText', warum: 'Liest zurück, statt zu schreiben. Ein Leser kann keinen Ausgang vergiften; dieselbe Begründung wie bei leseCsv.' }),
+  Object.freeze({ funktion: 'einheitText', warum: 'Übersetzt ein Einheitenkürzel des Lieferanten in lesbares Deutsch. Die Übersetzung stammt aus einer eigenen Tabelle, nicht aus der Herstellerdatei.' }),
+  Object.freeze({ funktion: 'ustText', warum: 'Setzt den eigenen Steuersatz in einen Satz. Kein Fremdtext geht hindurch; der Satz selbst steht im Bestand.' }),
   Object.freeze({ funktion: 'schneideQuelltext', warum: 'Schneidet HTML für die Inhaltsprüfung auf — ein Prüfwerkzeug, dessen Ergebnis auf dem Bildschirm endet.' }),
 ]);
 

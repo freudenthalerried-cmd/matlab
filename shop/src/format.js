@@ -126,6 +126,40 @@ export const hatSteuerzeichen = (wert) => STEUERZEICHEN.test(String(wert ?? ''))
 export const LUECKE = (bezeichnung) => `[[ ${bezeichnung} — FEHLT ]]`;
 
 /**
+ * JSON für ein `<script>`-Element in einer HTML-Seite.
+ *
+ * **Der Befund vom 3. September.** Der Bau schreibt die Shopdaten und die
+ * maschinenlesbare Auszeichnung mit `JSON.stringify` **direkt zwischen
+ * `<script>` und `</script>`**. `JSON.stringify` maskiert Anführungszeichen
+ * und Steuerzeichen — aber **kein `<` und kein `/`**. Eine
+ * Artikelbezeichnung, die die Zeichenfolge `</script>` enthält, beendet damit
+ * das Skriptelement, und alles dahinter liest der Browser als HTML.
+ *
+ * Betroffen waren drei Stellen: die Einzeldateifassung, `demo.html` und die
+ * `application/ld+json`-Auszeichnung **jeder** der 81 gebauten Seiten. Die
+ * Artikelbezeichnungen stammen aus Herstellerdateien; sie sind Fremdtext, und
+ * an jedem anderen Ausgang gehen sie durch `textZeile`.
+ *
+ * > **Ein Fremdtext, der in eine Seite eingebettet wird, ist ein Ausgang —
+ * > auch wenn er als Daten aussieht.**
+ *
+ * Im Verzeichnis der Außentexte stand `baueSuchindex` unter „kein Ausgang",
+ * begründet mit: „geht als JSON ins Bündel, nicht als Zeilentext hinaus". Der
+ * Satz hört einen Schritt zu früh auf — das JSON geht in eine **HTML-Seite**.
+ *
+ * Maskiert werden `<` und `>` als Unicode-Fluchtfolgen; im JSON-Wert bleibt
+ * das Zeichen dadurch dasselbe, im HTML-Text steht es nicht mehr. Dazu
+ * U+2028 und U+2029: In JSON zulässig, in JavaScript vor ES2019 ein
+ * Zeilenumbruch, und ein Zeilenumbruch mitten in einer Zeichenkette ist ein
+ * Syntaxfehler, der die ganze Seite lahmlegt.
+ */
+export const jsonFuerSkript = (wert) => JSON.stringify(wert)
+  .replace(/</g, '\\u003c')
+  .replace(/>/g, '\\u003e')
+  .replace(/\u2028/g, '\\u2028')
+  .replace(/\u2029/g, '\\u2029');
+
+/**
  * Die Einheitenkürzel des Lieferanten in lesbaren Text.
  *
  * **Hierher verlegt am 31.08.** Die Zuordnung stand in `bin/website.mjs`, also
