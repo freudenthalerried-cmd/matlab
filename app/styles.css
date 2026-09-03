@@ -1084,7 +1084,27 @@ html, body {
 }
 
 /* Druck: nur der Bericht */
+/* Fusszeile im gedruckten Protokoll / PDF – am Bildschirm ausgeblendet */
+.druck-fuss { display: none; }
+
 @media print {
+  .druck-fuss {
+    display: block;
+    margin-top: 18px;
+    padding-top: 8px;
+    border-top: 1px solid #c9d3cc;
+    font-size: 10px;
+    color: #4b5563;
+    text-align: center;
+    break-inside: avoid;
+  }
+
+  /* Der Link bleibt im PDF anklickbar */
+  .druck-fuss a {
+    color: #14532d;
+    text-decoration: none;
+  }
+
   #view-liste,
   .gruen-kopf .kopf-knoepfe,
   #zurueck-button,
