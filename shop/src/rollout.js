@@ -177,6 +177,46 @@ export const ETAPPEN = Object.freeze([
     ergebnis: 'Ohne erreichbare Seite kein Klick, keine Auffindbarkeit, keine Anfrage.',
   }),
   Object.freeze({
+    // **Aufgenommen am 3. September 2026.** Der Plan ging vom Upload unmittelbar
+    // zum Schalten. Dazwischen fehlte der eine Schritt, der beantwortet, ob die
+    // hochgeladene Seite überhaupt gelesen wird: Ist sie erreichbar, ist
+    // `robots.txt` gültig, kommt die Sitemap an, wird indexiert?
+    //
+    // > **Der Plan hat 45 Tage Messung vorgesehen und keinen Tag für die
+    // > Frage, ob überhaupt gemessen werden kann.**
+    //
+    // Ein nicht indexierter Shop merkt das sonst erst am Ende des Versuchs —
+    // und dann sieht eine gescheiterte Auffindbarkeit aus wie eine zu kleine
+    // Kaufquote. Zwei völlig verschiedene Befunde, und der Plan könnte sie
+    // nicht auseinanderhalten.
+    //
+    // Kostet nichts: Die Search Console ist kostenlos, die Bestätigung läuft
+    // über eine Datei oder einen DNS-Eintrag auf der eigenen Domain. Sie ist
+    // außerdem der **einzige** Weg, die organische Seite des Kanals überhaupt
+    // zu sehen — die Anzeigen messen nur, was bezahlt ist.
+    id: 'indexierung',
+    titel: 'Search Console einrichten und die Indexierung bestätigen',
+    zustaendig: 'entscheidung',
+    brauchtVor: [
+      Object.freeze({
+        etappe: 'upload',
+        warum: 'Es gibt nichts zu bestätigen, solange nichts erreichbar ist. Die Search '
+          + 'Console prüft die Seite, nicht die Absicht.',
+      }),
+    ],
+    tage: 3,
+    art: 'fremdbestimmt',
+    woher: 'Einrichtung und Sitemap-Meldung sind eine Sache von Minuten; bis Google die '
+      + 'ersten Seiten erfasst hat, vergehen erfahrungsgemäß Tage. Keine Messung — die Zahl '
+      + 'ist eine Annahme, die eine erste erfasste Seite sofort ersetzt.',
+    gate: null,
+    warumKeinGate: 'Kein Gate — eine Feststellung. Was sie feststellt, entscheidet nichts, '
+      + 'aber ohne sie ist jeder spätere Befund zweideutig.',
+    ergebnis: 'Sagt, ob die Seite gelesen wird — und trennt damit „nicht gefunden" von '
+      + '„gefunden und nicht gekauft". Ohne diese Trennung misst der Klickversuch zwei Dinge '
+      + 'auf einmal.',
+  }),
+  Object.freeze({
     id: 'zahlungsanbieter',
     titel: 'Zahlungsanbieter wählen und anbinden',
     zustaendig: 'ausgabe',
@@ -228,6 +268,13 @@ export const ETAPPEN = Object.freeze([
         etappe: 'keywordmessung',
         warum: 'Reicht das Suchvolumen das Budget nicht aus, dauert der Versuch ein Vielfaches. '
           + 'Das gehört vor das Schalten, nicht danach.',
+      }),
+      Object.freeze({
+        etappe: 'indexierung',
+        warum: 'Nicht weil ein bezahlter Klick eine Indexierung bräuchte — er braucht sie '
+          + 'nicht. Sondern weil ein Fehler, den die Search Console in Minuten zeigt (tote '
+          + 'Seite, gesperrte robots.txt, falsche Adresse), sonst 45 Tage lang als schwache '
+          + 'Kaufquote verbucht wird.',
       }),
     ],
     tage: 1,

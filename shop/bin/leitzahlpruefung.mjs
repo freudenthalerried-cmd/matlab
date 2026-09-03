@@ -20,6 +20,7 @@ import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, relative } from 'node:path';
 import { LEITZAHLEN, pruefeLeitzahlen } from '../src/leitzahlen.js';
+import { rolloutplan } from '../src/rollout.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const REPO = dirname(SHOP);
@@ -39,9 +40,17 @@ if (!existsSync(messliste)) {
   console.error('Ohne sie ist eine Leitzahl ungemessen, und der Lauf sähe trotzdem grün aus.');
   process.exit(2);
 }
+/**
+ * Die Länge der Kette bis zur Entscheidung — aus demselben Rechenweg wie
+ * `npm run rollout`, mit denselben Hauptfallwerten. Kein Nachbau: Wer sie hier
+ * zweitrechnete, hätte zwei Ketten und prüfte die falsche.
+ */
+const planTage = rolloutplan({ tagesbudget: 9.99, klickpreis: 1.5, quote: 0.01, frist: 90 }).gesamt;
+
 const umfeld = {
   keywordAnzahl: JSON.parse(readFileSync(messliste, 'utf8'))
     .gruppen.reduce((n, g) => n + g.keywords.length, 0),
+  planTage,
 };
 
 /**

@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import {
   LEITZAHLEN, LEITDOKUMENTE, schreibweisen, fundstellen, inSpanne, pruefeLeitzahlen,
 } from '../src/leitzahlen.js';
+import { rolloutplan } from '../src/rollout.js';
 
 const ziel = JSON.parse(readFileSync(new URL('../data/zielgroessen.json', import.meta.url), 'utf8'));
 
@@ -16,6 +17,10 @@ const ziel = JSON.parse(readFileSync(new URL('../data/zielgroessen.json', import
 const umfeld = {
   keywordAnzahl: JSON.parse(readFileSync(new URL('../ausgabe/messliste-baustoff.json', import.meta.url), 'utf8'))
     .gruppen.reduce((k, g) => k + g.keywords.length, 0),
+  // Dieselben Hauptfallwerte wie `npm run rollout` — kein Nachbau der Kette,
+  // sondern derselbe Rechenweg. Wer sie hier zweitrechnete, hätte zwei Ketten
+  // und prüfte die falsche.
+  planTage: rolloutplan({ tagesbudget: 9.99, klickpreis: 1.5, quote: 0.01, frist: 90 }).gesamt,
 };
 
 test('Jede Leitzahl rechnet ihren gültigen Wert, statt ihn einzutragen', () => {
@@ -86,9 +91,32 @@ test('Die blanke abgelöste Zahl wird gemeldet', () => {
 });
 
 test('Ein führendes Dokument, das die Leitzahl gar nicht nennt, fällt auf', () => {
-  const b = pruefeLeitzahlen('Nichts von Belang.', LEITDOKUMENTE[0], ziel);
-  assert.equal(b.meldungen.length, LEITZAHLEN.length);
+  const dokument = LEITDOKUMENTE[0];
+  const b = pruefeLeitzahlen('Nichts von Belang.', dokument, ziel);
+
+  // **Nicht mehr „alle", seit dem 3. September.** Eine Leitzahl kann für ein
+  // einzelnes Leitdokument ausgenommen sein — die Länge der Kette gehört nicht
+  // in `PARAMETER.md`, weil diese Datei Weisungen führt und keine Ergebnisse.
+  // Die Ausnahme kostet einen Grund, und der wird hier mitgeprüft.
+  const ausgenommen = LEITZAHLEN.filter((lz) => (lz.ohneLeitdokument ?? [])
+    .some((a) => a.dokument.endsWith(dokument) || dokument.endsWith(a.dokument)));
+  // Ohne diese Zusicherung prüften die beiden Schleifen darunter nichts,
+  // sobald die Ausnahme wegfällt — und der Fall bliebe grün.
+  assert.equal(ausgenommen.length, 1,
+    `${ausgenommen.length} Ausnahmen für ${dokument} — erwartet ist genau eine (plan-gesamtdauer)`);
+  for (const lz of ausgenommen) {
+    assert.ok(lz.ohneLeitdokument.length >= 1, `${lz.id}: leere Ausnahmeliste`);
+    for (const a of lz.ohneLeitdokument) {
+      assert.ok(a.warum && a.warum.length >= 40, `${lz.id}: Ausnahme ohne belastbaren Grund`);
+    }
+  }
+
+  assert.equal(b.meldungen.length, LEITZAHLEN.length - ausgenommen.length);
   assert.ok(b.meldungen.every((m) => m.text.includes('führt nichts')));
+  for (const lz of ausgenommen) {
+    assert.ok(!b.meldungen.some((m) => m.leitzahl === lz.id),
+      `${lz.id} ist ausgenommen und wird trotzdem verlangt`);
+  }
 });
 
 test('Im führenden Dokument darf die abgelöste Zahl nicht vor der gültigen stehen', () => {

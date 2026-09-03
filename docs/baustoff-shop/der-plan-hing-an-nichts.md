@@ -52,7 +52,7 @@ trotzdem — er rechnet nur etwas anderes, als er behauptet.
 | Lieferantengespräch | Tag 0–7 | **Tag 1–8** |
 | Katalog auf ≥ 100 Artikel | Tag 7–9 | **Tag 8–10** |
 | Etappen, die an Tag 0 beginnen können | 6 | **4** |
-| Kette gesamt | 57 Tage | **57 Tage** |
+| Kette gesamt | 57 Tage | **57 Tage** (Stand damals, 2. September) |
 | bestimmender Strang | Rechtstexte → Upload → Anzeigen → Versuch | unverändert |
 
 Das Gespräch liegt nicht auf dem bestimmenden Strang — die zehn Tage für die
@@ -90,7 +90,7 @@ Begründung der Etappe `impressum` aus dem Quelltext und erwartet den Abbruch.
 | Etappen | 11 |
 | Abhängigkeiten mit Grund | 9 von 9 |
 | Etappen ohne Voraussetzung, alle begründet | 4 von 4 |
-| Kette | 57 Tage, Frist 90 |
+| Kette | 57 Tage, Frist 90 — Stand 2. September; mit der Etappe Search Console sind es 60 |
 | Gegenproben, die anschlagen | 17 von 17 |
 | Tests | 1234 |
 

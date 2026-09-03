@@ -67,6 +67,8 @@ nachgerechnet. Seit heute misst `npm run pruefe-schaufenster` auch sie.
 
 **Und darunter hört der Kanal auf zu existieren:** Unter einer Kaufquote von **0,77 %** trägt das Modell nicht einmal den billigsten Marktklick (0,50 €). Gerechnet wird mit 2 % — Faktor 2,6 dazwischen, und gemessen ist keine der beiden Zahlen. Das ist das erste der drei größten Risiken (`die-drei-groessten-risiken.md`).
 
+**Wie lange bis zur Entscheidung: 60 Tage.** `npm run rollout` rechnet die Kette aus zwölf Etappen mit ihren Abhängigkeiten — Tag 0 ist nicht heute, sondern der Tag, an dem die erste Freigabe erfolgt. Davon sind 45 Tage der Klickversuch selbst, der Rest ist Warten auf Dritte und zwei Tage eigene Arbeit. Die Frist von 90 Tagen trägt das, aber nicht alles: Eine Kaufquote von 1 % lässt sich bei jedem Marktklickpreis ausschließen, eine von 0,5 % nur am unteren Rand des Marktes.
+
 ## Befunde aus den echten Daten
 
 **Der Einkaufsvorteil ist extrem ungleich verteilt.** 39 von 46 Artikeln liegen unter dem Listenpreis des Lieferanten, im Median 26,7 % darunter. Daraus **Gate 22**: Kleinteile gehören nicht als Suchartikel in den Shop, sondern als Beipack. Das dreht die Lehrbuchregel um, die vorher im Bestand stand.

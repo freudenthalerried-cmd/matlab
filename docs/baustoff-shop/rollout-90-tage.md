@@ -29,7 +29,7 @@ auszuschließen.**
 
 | | Tage |
 | --- | ---: |
-| Kette insgesamt | **57** |
+| Kette insgesamt | **60** |
 | davon der Klickversuch selbst | 45 |
 | davon Warten auf Dritte im bestimmenden Strang | 10 |
 | davon eigene Arbeit im bestimmenden Strang | **2** |
@@ -43,19 +43,27 @@ Klickversuch.**
 Zwei Tage. So viel Arbeit liegt zwischen heute und dem Start des Versuchs, auf
 dem Strang, der alles bestimmt. Alles andere ist Freigabe und Wartezeit.
 
-## Die elf Etappen
+## Die zwölf Etappen
 
-Was nicht voneinander abhängt, läuft nebeneinander — vier der elf Etappen
+Was nicht voneinander abhängt, läuft nebeneinander — vier der zwölf Etappen
 können an Tag 0 beginnen. `›` markiert den bestimmenden Strang.
 
 > **Berichtigt am 2. September.** Das Lieferantengespräch stand hier auf
 > „Tag 0–7" und hing an nichts. Der Brief an den Lieferanten braucht eine
 > Rückantwortadresse, und die trägt erst die Etappe „Impressumsangaben"
 > ein — `erzeugeLieferantenanfrage` weigert sich von selbst. Jetzt Tag 1–8,
-> und der Katalog folgt auf Tag 8–10. **Die Kette bleibt bei 57 Tagen:** Das
-> Gespräch liegt nicht auf dem bestimmenden Strang, die Berichtigung kostet
-> also keinen Tag. Hergeleitet in
+> und der Katalog folgt auf Tag 8–10. **Die Kette blieb damals bei 57 Tagen:**
+> Das Gespräch liegt nicht auf dem bestimmenden Strang, die Berichtigung
+> kostete also keinen Tag. Hergeleitet in
 > [`der-plan-hing-an-nichts.md`](./der-plan-hing-an-nichts.md).
+
+> **Erweitert am 3. September.** Zwischen Upload und Schalten fehlte der
+> Schritt, der beantwortet, ob die hochgeladene Seite überhaupt gelesen wird:
+> Search Console einrichten, Sitemap melden, Indexierung bestätigen. **Der Plan
+> hatte 45 Tage Messung vorgesehen und keinen Tag für die Frage, ob überhaupt
+> gemessen werden kann.** Ein nicht indexierter Shop sähe am Ende des Versuchs
+> aus wie eine zu kleine Kaufquote — zwei völlig verschiedene Befunde. Drei
+> Tage Wartezeit, und dadurch wächst die Kette von zuvor 57 auf **60 Tage**.
 
 | | Woche | Tag | Etappe | Dauer | Gate |
 | --- | --- | --- | --- | --- | --- |
@@ -67,9 +75,10 @@ können an Tag 0 beginnen. `›` markiert den bestimmenden Strang.
 | | 1–2 | 1–11 | Zahlungsanbieter wählen und anbinden | 10 (Wartezeit) | **21** |
 | | 2 | 8–10 | Katalog auf ≥ 100 Artikel erweitern | 2 (gesetzt) | **22, 24** |
 | **›** | 2 | 10–11 | `ausgabe/site/` hochladen | 1 (gesetzt) | — |
-| **›** | 2 | 11–12 | Die drei Suchkampagnen schalten | 1 (gesetzt) | — |
+| **›** | 2 | 11–14 | Search Console einrichten, Indexierung bestätigen | 3 (Wartezeit) | — |
+| **›** | 2–3 | 14–15 | Die drei Suchkampagnen schalten | 1 (gesetzt) | — |
 | | 2 | 11–14 | Produktfeed bei Google Merchant einreichen | 3 (Wartezeit) | **6** |
-| **›** | 2–9 | 12–57 | Klicks sammeln bis zur Entscheidung | 45 (gerechnet) | **20** |
+| **›** | 3–9 | 15–60 | Klicks sammeln bis zur Entscheidung | 45 (gerechnet) | **20** |
 
 Jede Dauer trägt ihre Art, und die Arten sind nicht gleichwertig:
 
@@ -78,8 +87,10 @@ Jede Dauer trägt ihre Art, und die Arten sind nicht gleichwertig:
 - **Wartezeit auf Dritte** — eine Annahme über jemanden, den niemand gefragt
   hat. **Eine Terminzusage ersetzt sie sofort**, und dann ändert sich der Plan.
 
-Die zehn Tage für die Rechtstexte sind die einzige Wartezeit im bestimmenden
-Strang. Sie zu verkürzen ist der ganze Hebel, den es vor dem Versuch gibt.
+Im bestimmenden Strang liegen jetzt **zwei** Wartezeiten: zehn Tage für die
+Rechtstexte und drei für die Indexierung. Beide zu verkürzen ist der ganze
+Hebel, den es vor dem Versuch gibt — und die drei Tage sind eine Annahme, die
+eine erste erfasste Seite sofort ersetzt.
 
 ## Was die Frist trägt und was nicht
 
@@ -89,15 +100,15 @@ ausschließen.
 
 | Quote | Klickpreis | Schwelle | Versuch | Kette gesamt | |
 | ---: | ---: | ---: | ---: | ---: | :--- |
-| 2,0 % | 0,50 € | 149 | 8 T | 20 T | |
-| 2,0 % | 1,50 € | 149 | 23 T | 35 T | |
-| 2,0 % | 2,50 € | 149 | 38 T | 50 T | |
-| 1,0 % | 0,50 € | 299 | 15 T | 27 T | |
-| **1,0 %** | **1,50 €** | **299** | **45 T** | **57 T** | Hauptfall |
-| 1,0 % | 2,50 € | 299 | 75 T | 87 T | |
-| 0,5 % | 0,50 € | 598 | 30 T | 42 T | |
-| 0,5 % | 1,50 € | 598 | 90 T | **102 T** | über der Frist |
-| 0,5 % | 2,50 € | 598 | 150 T | **162 T** | über der Frist |
+| 2,0 % | 0,50 € | 149 | 8 T | 23 T | |
+| 2,0 % | 1,50 € | 149 | 23 T | 38 T | |
+| 2,0 % | 2,50 € | 149 | 38 T | 53 T | |
+| 1,0 % | 0,50 € | 299 | 15 T | 30 T | |
+| **1,0 %** | **1,50 €** | **299** | **45 T** | **60 T** | Hauptfall |
+| 1,0 % | 2,50 € | 299 | 75 T | 90 T | |
+| 0,5 % | 0,50 € | 598 | 30 T | 45 T | |
+| 0,5 % | 1,50 € | 598 | 90 T | **105 T** | über der Frist |
+| 0,5 % | 2,50 € | 598 | 150 T | **165 T** | über der Frist |
 
 **Lesart.** Eine Kaufquote von 1 % lässt sich innerhalb von neunzig Tagen bei
 jedem Marktklickpreis ausschließen. Eine von 0,5 % nur am unteren Rand des
@@ -113,7 +124,7 @@ entscheidet über das Vorhaben.
 > retten.**
 
 Wer den Bereich unter 1 % auflösen will, braucht mehr Budget oder mehr Zeit —
-oder er akzeptiert, dass ein Fehlversuch nach 57 Tagen ein *Nein* ist und kein
+oder er akzeptiert, dass ein Fehlversuch nach 60 Tagen ein *Nein* ist und kein
 *Vielleicht*.
 
 ## Was dieser Plan nicht kann

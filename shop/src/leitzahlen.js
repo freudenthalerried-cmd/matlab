@@ -112,6 +112,52 @@ export const LEITZAHLEN = Object.freeze([
     zeilenmuster: /Keyword|Begriff|Suchbegriff|Suchwort/i,
   }),
   Object.freeze({
+    // **Aufgenommen am 3. September 2026.** Sie erfüllt alle drei Bedingungen
+    // dieses Registers, und zwar deutlicher als jede andere: Sie ist
+    // **gerechnet** (aus Etappen, Budget, Klickpreis und Abbruchschwelle), sie
+    // steht in **sechs** Dokumenten, und sie trägt die Entscheidung, um die es
+    // in diesem Vorhaben geht — passt der Versuch in die Frist von 90 Tagen?
+    //
+    // Der Anlass: Am selben Tag ist eine zwölfte Etappe dazugekommen, und die
+    // Kette wuchs von 57 auf 60 Tage. „57 Tage" stand danach in sechs Dateien,
+    // die neue Zahl in einer.
+    //
+    // Die Seitenzahl ist heute früh am dritten Kriterium gescheitert und
+    // **nicht** aufgenommen worden (`register-mit-eigenem-stand.md`). Diese
+    // hier scheitert an keinem.
+    id: 'plan-gesamtdauer',
+    name: 'Kette bis zur Entscheidung',
+    traegt: 'Ob der Versuch in die Frist von 90 Tagen passt — die Frage, an der '
+      + 'das ganze Vorhaben hängt.',
+    jetzt: (ziel, umfeld) => umfeld?.planTage ?? null,
+    abgeloest: Object.freeze([
+      Object.freeze({
+        wert: 57,
+        weil: 'Vor der Etappe „Search Console einrichten und Indexierung bestätigen", '
+          + 'die am 3.9. zwischen Upload und Schalten eingefügt wurde.',
+        // **Eng gefasst, und der erste Anlauf war es nicht.** Er enthielt
+        // `damals|zuvor|inzwischen` — Wörter, die in dieser Akte auf jeder
+        // zweiten Seite stehen. Der Testfall „eine Bedingung, die überall
+        // gilt, ist keine" hat ihn sofort gemeldet. Gedeckt ist die alte Zahl
+        // jetzt nur dort, wo **benannt** ist, was sie abgelöst hat: die
+        // Indexierungsetappe, ihr Datum, oder die neue Zahl daneben.
+        bedingung: /Search Console|Indexierung|02\.09|2\. September|60 Tage/i,
+      }),
+    ]),
+    // Ohne enge Fassung meldet der Prüfer jede 57 und jede 60 im Bestand.
+    // Gesucht wird nur, wo von Tagen oder der Kette die Rede ist.
+    zeilenmuster: /Tag|Kette|Frist/i,
+    ohneLeitdokument: Object.freeze([
+      Object.freeze({
+        dokument: 'docs/baustoff-shop/PARAMETER.md',
+        warum: 'Diese Datei führt die Weisungen und Parameter des Auftraggebers. Die Länge der '
+          + 'Kette ist keine Weisung, sondern ein Ergebnis — sie folgt aus Etappen, Budget und '
+          + 'Abbruchschwelle und ändert sich, sobald eine Etappe dazukommt. Sie dort zu '
+          + 'verlangen hieße, ein Leitdokument mit einer Zahl zu füllen, die es nicht setzt.',
+      }),
+    ]),
+  }),
+  Object.freeze({
     id: 'quote-am-marktboden',
     name: 'Kaufquote am Marktboden',
     traegt: 'Darunter trägt das Modell nicht einmal den billigsten Marktklick — '
@@ -230,13 +276,40 @@ export function pruefeLeitzahlen(text, name, ziel, register = LEITZAHLEN, umfeld
 
   const istLeitdokument = LEITDOKUMENTE.some((d) => name.endsWith(d) || d.endsWith(name));
 
+  /**
+   * Gilt die Leitdokumentregel für **diese** Zahl in **diesem** Dokument?
+   *
+   * **Eingeführt am 3. September 2026.** Die Regel „in den führenden
+   * Dokumenten muss der gültige Wert vorkommen" nahm an, dass jede Leitzahl in
+   * jedes Leitdokument gehört. Für die Länge der Kette bis zur Entscheidung
+   * stimmt das nicht: `PARAMETER.md` führt die **Weisungen des Auftraggebers**,
+   * und eine gerechnete Plandauer ist keine Weisung.
+   *
+   * Am selben Morgen war die Gegenrichtung entschieden worden: Die Seitenzahl
+   * wurde **nicht** aufgenommen, weil ein Register, das man für einen Fall
+   * dehnt, danach etwas anderes misst. Hier wird nicht gedehnt, sondern
+   * benannt — und wie überall in diesem Bestand kostet die Ausnahme einen
+   * Grund, der aufgeschrieben und geprüft wird.
+   */
+  const ausgenommen = (lz) => (lz.ohneLeitdokument ?? [])
+    .some((a) => name.endsWith(a.dokument) || a.dokument.endsWith(name));
+
   for (const lz of register) {
     const gueltig = lz.jetzt(ziel, umfeld);
     const aktuelle = fundstellen(text, gueltig, lz);
     for (const f of aktuelle) {
       gefunden.push({ leitzahl: lz.id, wert: gueltig, aktuell: true, ...f });
     }
-    if (istLeitdokument) {
+    for (const a of lz.ohneLeitdokument ?? []) {
+      if (!a.warum || a.warum.length < 40) {
+        throw new Error(`Ausnahme ohne Grund: ${lz.id} in ${a.dokument}`);
+      }
+      if (!LEITDOKUMENTE.some((d) => d.endsWith(a.dokument) || a.dokument.endsWith(d))) {
+        throw new Error(`${a.dokument} ist kein Leitdokument — die Ausnahme wäre wirkungslos`);
+      }
+    }
+
+    if (istLeitdokument && !ausgenommen(lz)) {
       if (aktuelle.length === 0) {
         meldungen.push({
           datei: name,
