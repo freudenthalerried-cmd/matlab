@@ -76,8 +76,15 @@ test('ein Platzhalterpreis hält den Shop an', () => {
   assert.equal(b.startklar, false);
 });
 
+/**
+ * `--bericht`, weil das Werkzeug seit dem 3. September **rot endet**, solange
+ * der Shop nicht startklar ist. Vorher endete es immer grün, auch mit „NICHT
+ * STARTKLAR" auf dem Bildschirm — ein Urteil, das nur auf dem Bildschirm
+ * steht, ist keines. Diese Probe will den Text und nicht den Ausgang, und
+ * dafür gibt es den Schalter.
+ */
 test('das Werkzeug läuft am Bestand und sagt, dass der Shop nicht startklar ist', () => {
-  const ausgabe = execFileSync(process.execPath, [werkzeug], { encoding: 'utf8' });
+  const ausgabe = execFileSync(process.execPath, [werkzeug, '--bericht'], { encoding: 'utf8' });
   assert.match(ausgabe, /NICHT STARTKLAR/);
   assert.match(ausgabe, /Impressum vollständig/);
   assert.match(ausgabe, /Zahlungsanbieter/);
@@ -111,7 +118,7 @@ test('die Antworten kommen aus der Datei, nicht aus dem Werkzeug', async () => {
     domainZeigtAufShop: false,
   }));
 
-  const ausgabe = execFileSync(process.execPath, [werkzeug], {
+  const ausgabe = execFileSync(process.execPath, [werkzeug, '--bericht'], {
     encoding: 'utf8',
     env: { ...process.env, STARTKLAR_BETREIBER: pfad },
   });
@@ -224,4 +231,34 @@ test('Die Betreiberdaten führen das Feld mit seiner Begründung', () => {
   assert.ok('antwortzeitWerktage' in daten, 'das Feld fehlt in den Daten');
   assert.equal(daten.antwortzeitWerktage, null, 'heute ist keine Zeit entschieden');
   assert.ok((daten._antwortzeitHinweis ?? '').length > 80, 'ohne Begründung ist null nur eine Lücke');
+});
+
+
+/* ------------------------------------------------------------------ *
+ * Das Urteil steht nicht nur auf dem Bildschirm
+ *
+ * Befund vom 3. September: `bin/startklar.mjs` endete ohne jeden
+ * `process.exit` — also immer grün, auch mit „NICHT STARTKLAR". Es ist das
+ * Werkzeug, das die Frage „darf der Shop online gehen?" beantwortet; wer es
+ * in einen Veröffentlichungsschritt hängt, bekam von ihm jedes Mal ein Ja.
+ * ------------------------------------------------------------------ */
+
+test('Solange der Shop nicht startklar ist, endet der Lauf rot', () => {
+  let ausgang = 0;
+  let ausgabe = '';
+  try {
+    ausgabe = execFileSync(process.execPath, [werkzeug], { encoding: 'utf8' });
+  } catch (e) {
+    ausgang = e.status;
+    ausgabe = e.stdout ?? '';
+  }
+  assert.match(ausgabe, /NICHT STARTKLAR/, 'der Bestand ist entgegen der Annahme startklar');
+  assert.equal(ausgang, 1, 'das Urteil steht nur auf dem Bildschirm');
+});
+
+test('Mit --bericht bleibt derselbe Lauf grün', () => {
+  // Wer die Liste lesen will, soll sie ohne Fehlerschluss bekommen — dieselbe
+  // Regel wie bei den Prüfern.
+  const ausgabe = execFileSync(process.execPath, [werkzeug, '--bericht'], { encoding: 'utf8' });
+  assert.match(ausgabe, /NICHT STARTKLAR/);
 });

@@ -79,3 +79,25 @@ console.log(befund.startklar
   ? '\nSTARTKLAR.'
   : '\nNICHT STARTKLAR. Ein Punkt, den niemand bestätigt hat, zählt nicht als erfüllt —'
     + '\nsonst ginge der Shop online, weil das Werkzeug nicht hinsehen konnte.');
+
+/**
+ * **Berichtigt am 3. September.** Dieses Werkzeug endete ohne jeden
+ * `process.exit` — also **immer grün**, auch mit „NICHT STARTKLAR" auf dem
+ * Bildschirm. Es ist das Werkzeug, das die Frage „darf der Shop online gehen?"
+ * beantwortet; wer es in einen Veröffentlichungsschritt hängt, bekommt von ihm
+ * jedes Mal ein Ja.
+ *
+ * > **Ein Urteil, das nur auf dem Bildschirm steht, ist keines.**
+ *
+ * Gefunden beim Durchsehen aller Werkzeuge ohne roten Ausgang — nachdem am
+ * 2. September `pruefe-seiten` genau daran vorbeigelaufen war. Diesmal beim
+ * Nachsehen und nicht durch eine gescheiterte Gegenprobe.
+ *
+ * `--bericht` unterdrückt den roten Ausgang, wie bei den Prüfern auch: Wer die
+ * Liste nur lesen will, soll sie ohne Fehlerschluss bekommen.
+ */
+if (!befund.startklar && !process.argv.includes('--bericht')) {
+  console.log('\nMit offenen Punkten endet dieser Lauf rot. Mit --bericht nicht.');
+  process.exit(1);
+}
+process.exit(0);

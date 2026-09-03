@@ -304,6 +304,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'fest eingetragene Zeitspannen im Quelltext macht sie scharf.',
   }),
   Object.freeze({
+    id: 'rollout-ueber-der-frist',
+    pruefer: 'rollout',
+    was: 'Eine Kette, die nicht mehr in die Frist passt',
+    datei: 'shop/src/rollout.js',
+    art: 'ersetzen',
+    // **Zweiter Anlauf.** Der erste stellte ein zweites `tage: 60` **vor** das
+    // vorhandene `tage: 10`. In einem Objektliteral gewinnt der letzte
+    // Schlüssel — die Mutation kam an und bewirkte nichts. Eine Mutation, die
+    // der Bau überschreibt, ist keine.
+    suchen: "      + 'am selben Tag hinaus wie die Freigabe. Genau deshalb bestimmt diese Etappe den Strang.',\n    tage: 10,",
+    ersetzen: "      + 'am selben Tag hinaus wie die Freigabe. Genau deshalb bestimmt diese Etappe den Strang.',\n    tage: 60,",
+    erwartet: /passt mit \d+ Tagen nicht in die Frist|über der Frist/,
+    warum: 'Der Plan druckte „passt in die Frist" oder „über der Frist" und endete beide Male '
+      + 'grün. Eine Kette, die nicht mehr in neunzig Tage passt, ist ein Befund und keine '
+      + 'Fußnote — dieselbe Familie wie `startklar`, das mit „NICHT STARTKLAR" grün endete.',
+  }),
+  Object.freeze({
     id: 'rollout-abhaengigkeit-ohne-grund',
     pruefer: 'rollout',
     was: 'Eine Etappe, die an nichts hängt und nicht sagt, warum',

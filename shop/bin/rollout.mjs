@@ -108,3 +108,16 @@ console.log('  · Ein Verkauf beendet den Versuch früher als jede Schwelle. Die
 console.log('    rechnet den Fall, in dem keiner kommt — das ist die teure Richtung.');
 console.log('  · Reicht das gemessene Suchvolumen das Budget nicht aus, dauert jede Zeile');
 console.log('    länger als angeschrieben. Deshalb steht die Messung vor dem Schalten.');
+
+/**
+ * **Ergänzt am 3. September**, aus demselben Anlass wie bei `startklar`: Der
+ * Plan druckte „passt in die Frist" oder „über der Frist" und endete beide
+ * Male grün. Eine Kette, die nicht mehr in neunzig Tage passt, ist ein Befund
+ * und keine Fußnote.
+ */
+if (!r.passt && !process.argv.includes('--bericht')) {
+  console.log(`\nDie Kette passt mit ${r.gesamt} Tagen nicht in die Frist von ${r.frist}.`);
+  console.log('Mit --bericht endet dieser Lauf trotzdem grün.');
+  process.exit(1);
+}
+process.exit(0);
