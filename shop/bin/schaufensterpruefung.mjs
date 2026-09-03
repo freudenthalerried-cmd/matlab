@@ -15,6 +15,7 @@ import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { pruefeSchaufenster } from '../src/schaufenster.js';
 import { PRUEFER, BROWSERPRUEFER } from '../src/pruefregister.js';
+import { FRAGEN } from '../src/lieferantenanfrage.js';
 import { ladeBaustoffkatalog } from '../src/baustoffkatalog.js';
 import { katalogbefund } from '../src/baustoffkatalog.js';
 import { noetigerUmsatz } from '../src/kostenbild.js';
@@ -158,6 +159,7 @@ const messwerte = {
   // Gate 25. Die Zahl steht in den Betreiberdaten und nirgends sonst; die
   // Beschreibung nennt sie, also gehört sie gehalten.
   mindestbestellwert: betreiberDatei.mindestbestellwertNetto ?? null,
+  lieferantenfragen: FRAGEN.length,
 };
 
 const e = pruefeSchaufenster(readFileSync(beschreibung, 'utf8'), messwerte);

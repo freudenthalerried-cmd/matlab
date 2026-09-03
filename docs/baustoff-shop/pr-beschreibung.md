@@ -20,7 +20,7 @@ Machbarkeitsanalyse, Shop und Website für einen Baustoffhandel, der 3.000 € n
 
 👉 **`docs/baustoff-shop/STATUS.md`** — Stand, offene Weisungen, Dokumentenverzeichnis und eine Tabelle aller Korrekturen, die im Verlauf nötig waren. Diese Datei zuerst lesen. Bei Gate-Fragen gilt **`gate-register.md`** (25 Gates, Stand 3. September).
 
-Diese Beschreibung hat seit dem 1. September eine Quelle im Verzeichnis: `docs/baustoff-shop/pr-beschreibung.md`. `npm run pruefe-schaufenster` misst ihre 29 Kennzahlen gegen den Bestand — sie war zuvor an neun Stellen überholt, und seit dem 1. September ist auch die Leitzahl darunter.
+Diese Beschreibung hat seit dem 1. September eine Quelle im Verzeichnis: `docs/baustoff-shop/pr-beschreibung.md`. `npm run pruefe-schaufenster` misst ihre 30 Kennzahlen gegen den Bestand — sie war zuvor an neun Stellen überholt, und seit dem 1. September ist auch die Leitzahl darunter.
 
 ### Veröffentlichte Momentaufnahmen
 
@@ -133,7 +133,7 @@ Der gemeinsame Nenner: **eine Angabe, die berechnet und dann verschwiegen wird.*
 - **GTIN je Artikel** — bei allen 46 offen. Ohne sie läuft Google Shopping nicht. Eine erfundene GTIN führt nicht zur Ablehnung des Artikels, sondern zur Sperre des Kontos. Die Beschaffung ist eine Anfrage an Dritte und damit freigabepflichtig.
 - **Vier Impressumsangaben** — E-Mail, Telefon, UID, Gewerbewortlaut. Ohne E-Mail hat die fertig gerechnete Kundenanfrage am Ende der Kasse keinen Empfänger.
 - **Rechtstexte und Zahlungsanbieter** — Ausgaben, also freigabepflichtig. Welche Wege der Anbieter können muss, steht fest: EPS, Vorkasse, Karte.
-- **Drei Fragen an den Lieferanten**, alle drei freigabepflichtig, weil sie eine Anfrage an Dritte sind: die **Lieferzeit in Werktagen**, sein **Liefergebiet** (aus fünfzehn Rechnungen nicht ableitbar, weil die Frachtpauschale nicht nach Entfernung staffelt) und sein **Preisrhythmus** (er entscheidet, ob die 90-Tage-Grenze der Preisalterprüfung die richtige ist). Eine Artikelliste mit EAN-Spalte aus dem Kundenkonto löst zugleich die GTIN-Frage und die Weisung, das Sortiment auf mindestens 100 Artikel zu erweitern.
+- **5 Fragen an den Lieferanten**, alle freigabepflichtig, weil sie eine Anfrage an Dritte sind — sie stehen als fertiger Brief in `npm run pruefe-anfrage` und schließen zusammen alle neun offenen Punkte dieser Gruppe: die **Lieferzeit in Werktagen**, sein **Liefergebiet** (aus fünfzehn Rechnungen nicht ableitbar, weil die Frachtpauschale nicht nach Entfernung staffelt), sein **Preisrhythmus** (er entscheidet, ob die 90-Tage-Grenze der Preisalterprüfung die richtige ist), die **Palettenzahl je Lieferung** (auf ihr ruht der Mindestbestellwert aus Gate 25) und eine **Artikelliste mit EAN-Spalte** aus dem Kundenkonto, die zugleich die GTIN-Frage und die Weisung löst, das Sortiment auf mindestens 100 Artikel zu erweitern.
 - **Datenblätter der Hersteller.** Sieben Inhaltsseiten verweisen darauf, keine verlinkt eines: `baumit.at`, `schiedel.at`, `synthesa.at`, `isover.at` und `ris.bka.gv.at` sind aus der Arbeitsumgebung gesperrt.
 
 Erledigt seit der letzten Fassung dieser Beschreibung: Domain und Hosting (bauversand.com bei All-Inkl), Liefergebiet als Bezirksliste (Gate 23), Kundenzahlungsziel (Gate 21).
