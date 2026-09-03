@@ -86,6 +86,7 @@ export const KEIN_AUSGANG = Object.freeze([
   // **Fünf Einträge vom 3. September.** Sie waren dem Verzeichnis bis dahin
   // unsichtbar: Der Leser kannte nur `export function`, und diese fünf sind
   // Pfeilfunktionen an einem `export const`.
+  Object.freeze({ funktion: 'markenzeile', warum: 'Sie baut eine Zeile des Impressums — und das Impressum steht als Ganzes im Verzeichnis (erzeugeImpressum). Ihr Inhalt sind zwei eigene Felder aus data/betreiber.json, kein Fremdtext; sie geht nur über erzeugeImpressum hinaus und ist dort geprüft.' }),
   Object.freeze({ funktion: 'textZeile', warum: 'Sie ist nicht der Ausgang, sondern die Entschärfung — jeder Ausgang läuft durch sie. Was sie zurückgibt, geht erst durch eine der geführten Funktionen hinaus.' }),
   Object.freeze({ funktion: 'zahlText', warum: 'Schreibt eine Zahl in hiesiger Schreibweise. Sie baut keinen Text, sondern formt einen Wert — und die Zeilen, in denen er landet, stehen einzeln im Verzeichnis.' }),
   Object.freeze({ funktion: 'zahlAusText', warum: 'Liest zurück, statt zu schreiben. Ein Leser kann keinen Ausgang vergiften; dieselbe Begründung wie bei leseCsv.' }),

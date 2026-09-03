@@ -2585,6 +2585,19 @@ const zeile = (betreiber, feld, bezeichnung) => {
 };
 
 
+
+
+
+
+
+
+function markenzeile(betreiber = {}) {
+  const marke = String(betreiber.marke ?? '').trim();
+  const firma = String(betreiber.firma ?? '').trim();
+  if (!marke || !firma || marke === firma) return [];
+  return [`„${marke}" ist das Online-Angebot der ${firma}.`];
+}
+
 function erzeugeImpressum(betreiber = {}) {
   const p = pruefeBetreiberdaten(betreiber);
   const zeilen = [
@@ -2597,6 +2610,17 @@ function erzeugeImpressum(betreiber = {}) {
     `${zeile(betreiber, 'plz', 'PLZ')} ${zeile(betreiber, 'ort', 'Ort')}`,
     'Österreich',
     '',
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    ...markenzeile(betreiber),
+    ...(markenzeile(betreiber).length ? [''] : []),
     `E-Mail: ${zeile(betreiber, 'email', 'E-Mail')}`,
     `Telefon: ${zeile(betreiber, 'telefon', 'Telefon')}`,
     '',

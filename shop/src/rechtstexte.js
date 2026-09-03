@@ -65,6 +65,19 @@ const zeile = (betreiber, feld, bezeichnung) => {
 };
 
 /** Erzeugt den Impressumstext; Lücken bleiben sichtbar stehen. */
+/**
+ * Die Zeile, die Marke und Firma verbindet — oder keine.
+ *
+ * Leer, solange der Shop unter seiner Firma auftritt: Eine Zeile „Bauversand
+ * ist eine Marke der Bauversand" wäre keine Auskunft, sondern eine Schleife.
+ */
+export function markenzeile(betreiber = {}) {
+  const marke = String(betreiber.marke ?? '').trim();
+  const firma = String(betreiber.firma ?? '').trim();
+  if (!marke || !firma || marke === firma) return [];
+  return [`„${marke}" ist das Online-Angebot der ${firma}.`];
+}
+
 export function erzeugeImpressum(betreiber = {}) {
   const p = pruefeBetreiberdaten(betreiber);
   const zeilen = [
@@ -77,6 +90,17 @@ export function erzeugeImpressum(betreiber = {}) {
     `${zeile(betreiber, 'plz', 'PLZ')} ${zeile(betreiber, 'ort', 'Ort')}`,
     'Österreich',
     '',
+    // **Ergänzt am 3. September 2026.** Seit diesem Tag tritt der Shop unter
+    // `Bauversand` auf — Logo, Seitentitel, Belege, strukturierte Daten. Das
+    // Impressum nannte weiter allein die Firma laut Firmenbuch. § 5 ECG
+    // verlangt den Namen des Diensteanbieters, und der steht hier; was fehlte,
+    // war die **Verbindung**: Wer wissen will, wer „Bauversand" ist, findet es
+    // sonst auf keiner Seite.
+    //
+    // > **Ein Name, unter dem man auftritt, gehört auf die Seite, auf der man
+    // > sich zu erkennen gibt.**
+    ...markenzeile(betreiber),
+    ...(markenzeile(betreiber).length ? [''] : []),
     `E-Mail: ${zeile(betreiber, 'email', 'E-Mail')}`,
     `Telefon: ${zeile(betreiber, 'telefon', 'Telefon')}`,
     '',

@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import {
   IMPRESSUMSFELDER,
   pruefeBetreiberdaten,
@@ -288,4 +290,46 @@ test('Der fehlende Zahlungsanbieter bleibt ausgewiesen', () => {
   // verschwindet erst, wenn ein Anbieter gewählt ist — und das ist eine
   // Ausgabe, also freigabepflichtig.
   assert.match(ZAHLUNGSBEDINGUNGEN._offen, /nicht gewählt/);
+});
+
+/* ------------------------------------------------------------------ *
+ * Marke und Firma im Impressum
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Der Befund vom 3. September 2026.** Der Shop tritt seit diesem Tag unter
+ * `Bauversand` auf — Logo, Seitentitel, Belege, strukturierte Daten. Das
+ * Impressum nannte weiter allein die Firma laut Firmenbuch. § 5 ECG verlangt
+ * den Namen des Diensteanbieters, und der stand dort; was fehlte, war die
+ * **Verbindung** zwischen beiden.
+ *
+ * > **Ein Name, unter dem man auftritt, gehört auf die Seite, auf der man sich
+ * > zu erkennen gibt.**
+ */
+test('das Impressum verbindet die Marke mit der Firma', async () => {
+  const { erzeugeImpressum, markenzeile } = await import('../src/rechtstexte.js');
+  const betreiber = JSON.parse(
+    readFileSync(fileURLToPath(new URL('../data/betreiber.json', import.meta.url)), 'utf8'),
+  );
+  assert.ok(betreiber.marke && betreiber.marke !== betreiber.firma,
+    'Marke und Firma sind verschieden — sonst prüft dieser Fall nichts');
+
+  const text = erzeugeImpressum(betreiber).text;
+  assert.ok(text.includes(betreiber.marke), 'die Marke kommt im Impressum nicht vor');
+  assert.ok(text.includes(betreiber.firma), 'die Firma laut Firmenbuch fehlt');
+  // Die Firma steht zuerst: Sie ist die Pflichtangabe, die Marke die Erklärung.
+  assert.ok(text.indexOf(betreiber.firma) < text.indexOf(betreiber.marke),
+    'die Marke steht vor der Firma — die Pflichtangabe gehört nach vorn');
+});
+
+test('ohne eigene Marke bleibt das Impressum ohne Markenzeile', async () => {
+  const { markenzeile } = await import('../src/rechtstexte.js');
+  const firma = 'Freudenthaler Bau GmbH';
+  for (const marke of [undefined, '', '  ', firma]) {
+    assert.deepEqual(markenzeile({ marke, firma }), [],
+      `bei Marke ${JSON.stringify(marke)} gehört keine Zeile dazu`);
+  }
+  // „Bauversand ist das Online-Angebot der Bauversand" wäre keine Auskunft,
+  // sondern eine Schleife.
+  assert.deepEqual(markenzeile({ marke: 'X', firma: '' }), [], 'ohne Firma keine Zeile');
 });
