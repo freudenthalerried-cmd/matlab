@@ -664,7 +664,26 @@ function artikelSeite(a, katalog, befund, seiten, verweis) {
   const systemSeiten = [...seiten.values()].filter(
     (s) => s.art === 'system' && alsListe(s.kopf.skus).includes(a.sku),
   );
-  const geschwister = katalog.artikel.filter((x) => x.gruppe === a.gruppe && x.sku !== a.sku).slice(0, 8);
+  const zusammen = mitverbaut(a, katalog, systemSeiten);
+  /**
+   * **Berichtigt am 3. September.** Diese Zeile nahm die ersten acht Artikel
+   * der Gruppe — ohne anzusehen, welche darüber schon unter „Wird damit
+   * zusammen verbaut" standen. Auf einer WDVS-Seite waren das **sieben von
+   * acht**: derselbe Artikel, derselbe Preis, dieselbe Karte, zweimal auf
+   * einer Seite unter zwei Überschriften.
+   *
+   * > **Zwei Überschriften über derselben Liste sind keine zwei Auskünfte.**
+   * > Der Leser sucht beim zweiten Block, was daran anders ist, und findet
+   * > nichts.
+   *
+   * Aufgefallen beim Messen der Artikelseiten gegeneinander: Zwei Seiten
+   * desselben Sortiments glichen einander zu 99 % — und der Grund war nicht
+   * ihr eigener Text, sondern diese doppelte Liste.
+   */
+  const schonGezeigt = new Set(zusammen.artikel.map((x) => x.sku));
+  const geschwister = katalog.artikel
+    .filter((x) => x.gruppe === a.gruppe && x.sku !== a.sku && !schonGezeigt.has(x.sku))
+    .slice(0, 8);
 
   const teile = [];
   teile.push(`<p class="krume"><a href="${verweis('index')}">Start</a> › <a href="${verweis(gruppenSeite ? gruppenSeite.id : 'index')}">${esc(a.gruppe)}</a></p>`);
@@ -820,32 +839,85 @@ ausgewiesen wird und es kein „frei Haus" gibt, steht unter
     teile.push(`<p>Die Pauschale fällt <strong>je Lieferung</strong> an, nicht je Position: Wer diesen Artikel
 mit der übrigen Bestellung sammelt, zahlt sie einmal. Die Fahrt kostet dasselbe, ob ein Sack draufsteht
 oder eine Palette — das ist der ganze Grund, warum es hier kein „frei Haus" gibt.</p>`);
+
+    /**
+     * **Gate 25, auf diesen Artikel gerechnet — aufgenommen am 3. September.**
+     *
+     * Die Grenze von 250 € netto Warenwert je Lieferung steht seit dem Mittag
+     * auf der Lieferseite, in `llms.txt` und in der Kasse. Auf der
+     * Artikelseite stand sie nicht — und dort entscheidet sich, ob jemand
+     * überhaupt in den Warenkorb legt.
+     *
+     * > **Eine Grenze in Euro ist auf einer Seite mit einem Kilopreis keine
+     * > Auskunft.** „250 € netto" heißt bei 0,56 € je kg: 450 kg, also
+     * > 18 Gebinde. Das ist die Zahl, die der Bauleiter braucht, und sie ist
+     * > für jeden Artikel eine andere.
+     *
+     * Gerechnet wird in **lieferbaren** Mengen, nicht in glatten: Ein Wert,
+     * den die Kasse gar nicht annimmt, wäre dieselbe Sorte Zahl wie die
+     * Frachtschwelle darüber, bevor sie am 2. September auf ganze Gebinde
+     * gebracht wurde.
+     */
+    const grenzeNetto = BETREIBER.mindestbestellwertNetto ?? null;
+    if (grenzeNetto > 0 && a.vkNetto > 0) {
+      const rohMenge = grenzeNetto / a.vkNetto;
+      const gebinde = schrittHier ? Math.ceil(rohMenge / schrittHier - 1e-9) : null;
+      const mindestmenge = schrittHier
+        ? Math.round(gebinde * schrittHier * 100) / 100
+        : Math.ceil(rohMenge);
+      teile.push(`<p><strong>Angenommen wird eine Anfrage ab ${esc(String(mindestmenge).replace('.', ','))} ${eh}</strong>,
+wenn dieser Artikel allein bestellt wird${gebinde ? ` — ${gebinde} Gebinde zu ${esc(String(schrittHier).replace('.', ','))} ${eh}` : ''}.
+Der Mindestbestellwert beträgt ${euro(grenzeNetto)} € netto Warenwert je Lieferung; darunter trägt die Lieferung
+sich nicht (Quelle: <a href="${verweis('lieferung')}">Lieferung und Fracht</a>, Stand: ${esc(preisStand(katalog))}).
+Wer mehrere Artikel <strong>desselben Lieferanten</strong> sammelt, erreicht die Grenze gemeinsam — sie gilt je
+Lieferung, nicht je Position.</p>`);
+    }
   }
 
+  /**
+   * **Ab hier die Querverweise — seit dem 3. September in einem eigenen
+   * Abschnitt.**
+   *
+   * Drei Blöcke, die dieselben Artikel zeigen wie auf jeder anderen Seite
+   * derselben Gruppe. Sie gehören auf die Seite: Ein Bauleiter, der die
+   * Klebemasse sucht, braucht das Gewebe daneben. Sie gehören aber nicht zum
+   * **eigenen** Text der Seite, und genau der ist es, den eine Suchmaschine
+   * und ein Assistent gegen die 45 anderen Artikelseiten halten.
+   *
+   * `<section class="querverweise">` ist die Marke — und nicht `verwandt`:
+   * Diese Klasse trägt schon die Markerzeile über dem Preis., an der `npm run
+   * pruefe-dubletten` den eigenen Teil vom übernommenen trennt. Ohne sie
+   * müsste die Messung an Überschriften raten — und eine Messung, die an
+   * einer Überschrift hängt, misst beim nächsten Umformulieren etwas anderes.
+   */
+  const verwandtes = [];
   if (systemSeiten.length) {
-    teile.push('<h2>Gehört zu diesen Systemen</h2>');
-    teile.push(`<div class="kacheln">${systemSeiten.map((s) => `<a class="kachel" href="${verweis(s.id)}">
+    verwandtes.push('<h2>Gehört zu diesen Systemen</h2>');
+    verwandtes.push(`<div class="kacheln">${systemSeiten.map((s) => `<a class="kachel" href="${verweis(s.id)}">
       <span class="k">Systemliste</span><span class="t">${esc(s.kopf.titel)}</span>
       <span class="b">${esc(alsText(String(s.kopf.kurz ?? '')).slice(0, 150))}</span></a>`).join('')}</div>`);
   }
 
-  const zusammen = mitverbaut(a, katalog, systemSeiten);
   if (zusammen.artikel.length) {
-    teile.push('<h2>Wird damit zusammen verbaut</h2>');
-    teile.push(`<p>Nicht „andere Kunden kauften auch" — dieser Shop hat noch keine Bestellung gesehen und
+    verwandtes.push('<h2>Wird damit zusammen verbaut</h2>');
+    verwandtes.push(`<p>Nicht „andere Kunden kauften auch" — dieser Shop hat noch keine Bestellung gesehen und
 rechnet Ihnen keine erfundene Statistik vor. Die Artikel unten stehen mit diesem zusammen in
 ${zusammen.listen.length === 1 ? 'der Systemliste' : 'den Systemlisten'}
 ${zusammen.listen.map((s) => `<a href="${verweis(s.id)}">${esc(s.kopf.titel)}</a>`).join(' und ')},
 weil sie zum selben Bauteil gehören. Was dort zusätzlich auf der Liste steht und wir <em>nicht</em> führen,
 sagt die Liste ebenfalls.</p>`);
-    teile.push(`<div class="raster">${zusammen.artikel.map((g) => artikelKarte(g, befund, verweis)).join('')}</div>`);
+    verwandtes.push(`<div class="raster">${zusammen.artikel.map((g) => artikelKarte(g, befund, verweis)).join('')}</div>`);
   }
 
   if (geschwister.length) {
-    teile.push(`<h2>Weitere Artikel aus ${esc(a.gruppe)}</h2>`);
-    teile.push(`<p>Dasselbe Regal, nicht dasselbe Bauteil: Diese Artikel gehören zur Gruppe
+    verwandtes.push(`<h2>Weitere Artikel aus ${esc(a.gruppe)}</h2>`);
+    verwandtes.push(`<p>Dasselbe Regal, nicht dasselbe Bauteil: Diese Artikel gehören zur Gruppe
 ${esc(a.gruppe)}. Ob einer davon der richtige ist, entscheidet die Planung.</p>`);
-    teile.push(`<div class="raster">${geschwister.map((g) => artikelKarte(g, befund, verweis)).join('')}</div>`);
+    verwandtes.push(`<div class="raster">${geschwister.map((g) => artikelKarte(g, befund, verweis)).join('')}</div>`);
+  }
+
+  if (verwandtes.length) {
+    teile.push(`<section class="querverweise">\n${verwandtes.join('\n')}\n</section>`);
   }
 
   // **Eine Auszeichnung, nicht zwei.** Bis zum 29.08. baute diese Stelle das

@@ -179,6 +179,17 @@ export const PRUEFER = [
   // es ein Mensch beim Hinsehen gefunden. Die Zahl darf nicht auf null fallen,
   // ohne dass es auffällt: Ein leeres Ergebnis hieße hier nicht „alles
   // angeschlossen", sondern „die Messung hat nichts mehr gelesen".
+  // **Aufgenommen am 3. September, nachts.** Der Shop soll über Suche und
+  // maschinelle Auskunft gefunden werden — darauf ruht die ganze
+  // Kanalrechnung. Ob seine 46 Artikelseiten voneinander unterscheidbar sind,
+  // hat nie jemand gemessen; der erste Lauf fand vier Paare bei 0,99.
+  {
+    name: 'pruefe-dubletten',
+    werkzeug: 'dublettenpruefung.mjs',
+    muster: /Dublettenprüfung: (\d+) Artikelseiten/,
+    einheit: 'Artikelseiten gegeneinander',
+    mindestens: 30,
+  },
   {
     name: 'pruefe-ungerufen',
     werkzeug: 'ungerufen.mjs',

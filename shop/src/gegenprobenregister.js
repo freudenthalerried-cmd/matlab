@@ -475,6 +475,27 @@ export const GEGENPROBEN = Object.freeze([
       + 'eine Absage mit Verzögerung. Diese Mutation stellt genau das wieder her.',
   }),
   Object.freeze({
+    id: 'querverweise-ohne-marke',
+    pruefer: 'pruefe-dubletten',
+    was: 'Eine Messung, die die Navigation mitzählt und es Inhalt nennt',
+    datei: 'shop/bin/website.mjs',
+    art: 'ersetzen',
+    // **Zweiter Anlauf.** Der erste suchte `` `<section class="querverweise"> ``
+    // — und traf damit den **Kommentar** darüber, nicht die Zeile, die den
+    // Abschnitt baut. Die Mutation kam an und bewirkte nichts; der Prüfer
+    // meldete zu Recht grün. Dieselbe Familie wie die Rolloutmutation, die im
+    // Objektliteral überschrieben wurde.
+    suchen: 'teile.push(`<section class="querverweise">',
+    ersetzen: 'teile.push(`<section class="nachbarn">',
+    erwartet: /praktisch dieselbe Seite|Paar\(e\) ab 0\.98/,
+    baueVorher: true,
+    warum: 'Der Querverweisblock steht auf jeder Seite derselben Gruppe gleich und trägt mehr '
+      + 'Wörter als der eigene Text. Fällt die Marke weg, an der die Messung ihn abschneidet, '
+      + 'misst sie die Navigation — und weil die Navigation zweier Artikel derselben Gruppe '
+      + 'identisch ist, entstehen Paare bei 1,00. Am 3. September war das der gemessene '
+      + 'Zustand, bevor es die Marke gab. Diese Mutation stellt ihn wieder her.',
+  }),
+  Object.freeze({
     id: 'ausfuhr-ohne-rufer-und-ohne-grund',
     pruefer: 'pruefe-ungerufen',
     was: 'Eine Funktion, die außerhalb der Tests niemand ruft und für die das Register schweigt',
