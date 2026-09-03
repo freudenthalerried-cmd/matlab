@@ -102,11 +102,6 @@
 
       <ul id="messages" class="messages" aria-live="polite"></ul>
 
-      <div id="foto-kategorien" class="foto-kategorien" hidden>
-        <div class="panel-hint">Was ist am Foto zu sehen?</div>
-        <div id="foto-kategorien-chips" class="chips"></div>
-      </div>
-
       <div id="allgemein-panel" class="allgemein-panel" hidden>
         <div class="panel-hint">Allgemeine Punkte für den Bericht auswählen:</div>
         <div id="allgemein-liste" class="allgemein-liste"></div>
@@ -116,24 +111,13 @@
         </div>
       </div>
 
-      <div id="ki-vorschlaege" class="ki-vorschlaege" hidden>
-        <div class="panel-hint ki-kopf">
-          <span>KI-Vorschlag (nur Sicherheit) – tippen zum Einfügen:</span>
-          <span class="detail-regler">
-            <button id="detail-minus" class="detail-button" type="button" title="Kürzere Antwort">&minus;</button>
-            <span id="detail-label">Normal</span>
-            <button id="detail-plus" class="detail-button" type="button" title="Längere Antwort mit Gesetzestext">+</button>
-          </span>
-        </div>
-        <div id="ki-chips" class="chips"></div>
-      </div>
-
       <div class="typ-reihe">
         <div class="typ-schalter" role="group" aria-label="Eintragstyp">
           <button id="typ-hinweis" class="typ-knopf typ-aktiv" type="button">Hinweis</button>
           <button id="typ-mangel" class="typ-knopf" type="button">Mangel</button>
         </div>
         <button id="allgemein-button" class="chip chip-kategorie" type="button">Allg. Punkte</button>
+        <button id="ki-button" class="chip chip-kategorie" type="button">KI-Vorschlag</button>
       </div>
 
       <div id="bearbeiten-hinweis" class="bearbeiten-hinweis" hidden>
@@ -184,6 +168,39 @@
       <button id="bausteine-close" class="tool-button" type="button" aria-label="Schließen">&times;</button>
     </div>
     <ul id="bausteine-liste" class="bausteine-liste"></ul>
+  </div>
+
+  <!-- KI-Vorschaufenster: Eingabefeld oben, darunter das Foto -->
+  <div id="ki-fenster" class="ki-overlay" hidden>
+    <div class="ki-box" role="dialog" aria-modal="true" aria-label="KI-Vorschlag">
+      <input
+        id="ki-eingabe"
+        class="ki-eingabe"
+        type="text"
+        placeholder="Text eingeben &ndash; leer lassen, dann wird das Foto analysiert"
+        aria-label="Text f&uuml;r die KI"
+      >
+
+      <div class="ki-vorschau">
+        <img id="ki-bild" alt="Foto-Vorschau">
+        <div id="ki-kein-bild" class="ki-kein-bild">Kein Foto &ndash; bitte Text eingeben.</div>
+      </div>
+
+      <div class="panel-hint ki-kopf">
+        <span id="ki-quelle">KI-Vorschlag</span>
+        <span class="detail-regler">
+          <button id="detail-minus" class="detail-button" type="button" title="K&uuml;rzere Antwort">&minus;</button>
+          <span id="detail-label">Normal</span>
+          <button id="detail-plus" class="detail-button" type="button" title="L&auml;ngere Antwort mit Gesetzestext">+</button>
+        </span>
+      </div>
+
+      <div id="ki-saetze" class="ki-saetze"></div>
+
+      <div class="ki-aktionen">
+        <button id="ki-schliessen" class="chip chip-kategorie" type="button">Schlie&szlig;en</button>
+      </div>
+    </div>
   </div>
 
   <script src="textbausteine.js"></script>

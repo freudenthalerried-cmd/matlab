@@ -26,8 +26,14 @@
   const sendButton = document.getElementById('send-button');
   const messages = document.getElementById('messages');
   const ortInput = document.getElementById('ort-input');
-  const kiPanel = document.getElementById('ki-vorschlaege');
-  const kiChips = document.getElementById('ki-chips');
+  const kiFenster = document.getElementById('ki-fenster');
+  const kiEingabe = document.getElementById('ki-eingabe');
+  const kiBild = document.getElementById('ki-bild');
+  const kiKeinBild = document.getElementById('ki-kein-bild');
+  const kiQuelle = document.getElementById('ki-quelle');
+  const kiSaetze = document.getElementById('ki-saetze');
+  const kiButton = document.getElementById('ki-button');
+  const kiSchliessen = document.getElementById('ki-schliessen');
   const fotoInput = document.getElementById('foto-input');
   const galerieInput = document.getElementById('galerie-input');
   const fotoHinweis = document.getElementById('foto-hinweis');
@@ -40,8 +46,6 @@
   const fotoPreview = document.getElementById('foto-preview');
   const fotoPreviewImg = document.getElementById('foto-preview-img');
   const fotoRemove = document.getElementById('foto-remove');
-  const fotoKategorien = document.getElementById('foto-kategorien');
-  const fotoKategorienChips = document.getElementById('foto-kategorien-chips');
   const bausteineButton = document.getElementById('bausteine-button');
   const bausteinePanel = document.getElementById('bausteine-panel');
   const bausteineClose = document.getElementById('bausteine-close');
@@ -386,10 +390,10 @@
   }
 
   detailMinus.addEventListener('click', function () {
-    if (detailStufe > 0) { detailStufe--; speichereJson('bp_detail', detailStufe); zeigeDetailStufe(); }
+    if (detailStufe > 0) { detailStufe--; speichereJson('bp_detail', detailStufe); rendereKiSaetze(); }
   });
   detailPlus.addEventListener('click', function () {
-    if (detailStufe < 2) { detailStufe++; speichereJson('bp_detail', detailStufe); zeigeDetailStufe(); }
+    if (detailStufe < 2) { detailStufe++; speichereJson('bp_detail', detailStufe); rendereKiSaetze(); }
   });
 
   function bausteinText(b) {
@@ -445,7 +449,6 @@
       autoGrow();
       updateSendState();
     }
-    zeigeVorschlaege(vorschlaegeFuer(input.value));
   }
 
   typHinweisKnopf.addEventListener('click', function () { setzeTyp('hinweis'); });
@@ -533,34 +536,84 @@
     return treffer.slice(0, 3).map(function (x) { return x.baustein; });
   }
 
-  function chipFuer(b, onClick) {
-    const chip = document.createElement('button');
-    chip.type = 'button';
-    chip.className = 'chip';
+  // Ohne Text im Eingabefeld wird das Foto ausgewertet: die gebrauchlichsten
+  // Sicherheitsbausteine, damit auch ohne Tippen ein Vorschlag dasteht.
+  function fotoVorschlaege() {
+    return sicherheitsBausteine()
+      .slice()
+      .sort(function (a, b) { return score(b) - score(a); })
+      .slice(0, 3);
+  }
+
+  // Ein Vorschlag ist hochstens drei Satze lang.
+  function dreiSaetze(text) {
+    const saetze = String(text || '').trim().match(/[^.!?]+[.!?]*/g) || [];
+    return saetze
+      .map(function (s) { return s.trim(); })
+      .filter(Boolean)
+      .slice(0, 3)
+      .join(' ');
+  }
+
+  function satzZeile(b) {
+    const knopf = document.createElement('button');
+    knopf.type = 'button';
+    knopf.className = 'ki-satz';
     if (b.icon && ICONS[b.icon]) {
       const span = document.createElement('span');
       span.className = 'chip-icon';
       span.innerHTML = ICONS[b.icon];
-      chip.appendChild(span);
+      knopf.appendChild(span);
     }
-    chip.appendChild(document.createTextNode(b.titel));
-    chip.title = varianten[b.id] || b.text;
-    chip.addEventListener('click', onClick);
-    return chip;
+    knopf.appendChild(document.createTextNode(dreiSaetze(bausteinText(b))));
+    knopf.addEventListener('click', function () {
+      fuegeTextEin(b);
+      schliesseKiFenster();
+    });
+    return knopf;
   }
 
-  function zeigeVorschlaege(liste) {
-    kiChips.innerHTML = '';
-    if (!liste.length) {
-      kiPanel.hidden = true;
-      return;
-    }
-    liste.forEach(function (b) {
-      kiChips.appendChild(chipFuer(b, function () { fuegeTextEin(b); }));
+  // Steht Text im Eingabefeld, wird er fur die Vorschlage verwendet;
+  // ist es leer, wird das Foto analysiert.
+  function rendereKiSaetze() {
+    const text = kiEingabe.value.trim();
+    const ausText = text.length > 0;
+    const liste = ausText ? vorschlaegeFuer(text) : (aktuellesFoto ? fotoVorschlaege() : []);
+
+    kiQuelle.textContent = ausText
+      ? 'KI-Vorschlag aus deinem Text:'
+      : (aktuellesFoto ? 'KI-Vorschlag aus dem Foto:' : 'Bitte Text eingeben oder ein Foto aufnehmen.');
+
+    kiSaetze.innerHTML = '';
+    liste.slice(0, 3).forEach(function (b) {
+      kiSaetze.appendChild(satzZeile(b));
     });
     zeigeDetailStufe();
-    kiPanel.hidden = false;
   }
+
+  function oeffneKiFenster() {
+    kiBild.src = aktuellesFoto || '';
+    kiBild.hidden = !aktuellesFoto;
+    kiKeinBild.hidden = !!aktuellesFoto;
+    kiEingabe.value = '';
+    rendereKiSaetze();
+    kiFenster.hidden = false;
+    kiEingabe.focus();
+  }
+
+  function schliesseKiFenster() {
+    kiFenster.hidden = true;
+  }
+
+  kiEingabe.addEventListener('input', rendereKiSaetze);
+  kiButton.addEventListener('click', oeffneKiFenster);
+  kiSchliessen.addEventListener('click', schliesseKiFenster);
+  kiFenster.addEventListener('click', function (event) {
+    if (event.target === kiFenster) schliesseKiFenster();
+  });
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && !kiFenster.hidden) schliesseKiFenster();
+  });
 
   function fuegeTextEin(b) {
     merkeNutzung(b.id);
@@ -571,7 +624,6 @@
     updateSendState();
     autoGrow();
     input.focus();
-    zeigeVorschlaege(vorschlaegeFuer(input.value));
     renderBausteine();
   }
 
@@ -632,10 +684,9 @@
       aktuellesFoto = reader.result;
       fotoPreviewImg.src = aktuellesFoto;
       fotoPreview.hidden = false;
-      renderFotoKategorien();
-      fotoKategorien.hidden = false;
       updateSendState();
       fotoHinweis.hidden = true;
+      oeffneKiFenster();
     };
     reader.readAsDataURL(file);
   }
@@ -647,27 +698,8 @@
     aktuellesFoto = null;
     fotoInput.value = '';
     fotoPreview.hidden = true;
-    fotoKategorien.hidden = true;
     updateSendState();
   });
-
-  function renderFotoKategorien() {
-    fotoKategorienChips.innerHTML = '';
-    FOTO_KATEGORIEN.forEach(function (kat) {
-      const chip = document.createElement('button');
-      chip.type = 'button';
-      chip.className = 'chip chip-kategorie';
-      chip.textContent = kat.label;
-      chip.addEventListener('click', function () {
-        const liste = kat.bausteine
-          .map(function (id) { return BAUSTEINE.find(function (b) { return b.id === id; }); })
-          .filter(Boolean)
-          .sort(function (a, b) { return score(b) - score(a); });
-        zeigeVorschlaege(liste);
-      });
-      fotoKategorienChips.appendChild(chip);
-    });
-  }
 
   // ---------- Textbaustein-Panel ----------
 
@@ -855,7 +887,6 @@
   input.addEventListener('input', function () {
     updateSendState();
     autoGrow();
-    zeigeVorschlaege(vorschlaegeFuer(input.value));
   });
 
   // ---------- Intelligente Satz-Markierung ----------
@@ -924,7 +955,6 @@
         input.value = ersetzt + ' ';
         updateSendState();
         autoGrow();
-        zeigeVorschlaege(vorschlaegeFuer(input.value));
       }
     } else if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
@@ -986,8 +1016,7 @@
     fotoInput.value = '';
     galerieInput.value = '';
     fotoPreview.hidden = true;
-    fotoKategorien.hidden = true;
-    kiPanel.hidden = true;
+    schliesseKiFenster();
     input.value = '';
     setzeTyp('hinweis');
     updateSendState();
