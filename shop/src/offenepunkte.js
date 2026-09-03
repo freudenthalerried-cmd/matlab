@@ -71,6 +71,26 @@ export const OHNE_WERKZEUG = Object.freeze([
     loest: 'Bestätigt oder widerlegt Gate 23 — heute gilt die vorsichtige Fläche der Kampagne.',
   },
   {
+    // **Neu am 3. September, aus Gate 25.** Der Mindestbestellwert von 250 €
+    // deckt zwei Paletten. Ob eine Bestellung dieser Größe eine, zwei oder
+    // drei braucht, ist die eine Angabe, die aus der Grenze eine Rechnung
+    // machen würde — und sie stand in keinem Register. Ein offener Punkt, der
+    // eine getroffene Entscheidung trägt, gehört aufgeschrieben; sonst steht
+    // die Entscheidung da, als wäre sie vollständig belegt.
+    id: 'palettenzahl',
+    titel: 'Paletten je Lieferung — wie viele, und wonach',
+    zustaendig: 'anfrage',
+    warumKeinWerkzeug: 'Die Palettenzahl hängt an Gewicht und Packmaß; der Katalog führt Gewicht '
+      + 'für 7 von 46 Artikeln. Beziffert ist genau ein Fall: Auf der Rechnung über 1.934 € netto '
+      + 'stehen sechs Paletten, also rund 322 € Einkauf je Palette. Eine Beobachtung an einem '
+      + 'einzigen Beleg, und ausgerechnet bei voluminöser Leichtware (50 m² Fassaden-EPS sind '
+      + '96,50 € und eine halbe Palette) kehrt sich das Verhältnis um. Aus einem Punkt lässt '
+      + 'sich keine Regel ziehen.',
+    loest: 'Macht aus dem Mindestbestellwert (Gate 25, 250 €) eine Rechnung statt einer '
+      + 'vorsichtigen Grenze — nach oben wie nach unten. Heute deckt die Grenze zwei Paletten, '
+      + 'und für alles darüber bleibt Gate 20 die Rückfallebene.',
+  },
+  {
     id: 'artikelliste',
     titel: 'Artikelliste aus dem Kundenkonto, mit EAN, Herstellername und Bildverweis',
     zustaendig: 'anfrage',

@@ -72,7 +72,10 @@ if (!brief.versandfaehig) {
   console.log('NICHT VERSANDFÄHIG:');
   for (const g of brief.gruende) console.log(`  · ${g}`);
   console.log('\nBeide Angaben stehen in `npm run offenepunkte` unter „Liegt vor, fehlt nur in');
-  console.log('der Datei". Der billigste offene Punkt sperrt das Gespräch, das acht schließt.');
+  // Die Zahl kommt aus der Liste, nicht aus dem Satz. Sie stand hier als
+  // „acht" — und war am 3. September neun, an dem Tag, an dem die Palettenfrage
+  // dazukam. Ein Satz, der eine Menge behauptet, gehört an die Menge gehängt.
+  console.log(`der Datei". Der billigste offene Punkt sperrt das Gespräch, das ${anfragePunkte.length} schließt.`);
 }
 
 if (befunde.length > 0) {

@@ -98,8 +98,13 @@ export const ETAPPEN = Object.freeze([
     art: 'fremdbestimmt',
     woher: 'Angenommene Antwortzeit eines Baustoffhändlers auf eine Kundenanfrage. '
       + 'Keine Messung — die Zahl ist ein Platzhalter, den eine Terminzusage ersetzt.',
-    ergebnis: 'Löst acht offene Punkte auf einmal: Lieferzeit, Preisrhythmus, Liefergebiet '
-      + 'und — über eine Artikelliste mit EAN-Spalte — GTIN, Marke und Bild.',
+    // Ohne Zahl, absichtlich. Hier stand „Löst acht offene Punkte" — am
+    // 3. September waren es neun, weil die Palettenfrage dazukam, und die
+    // Zeile hätte es nicht gemerkt. Die Zahl führt `npm run offenepunkte`;
+    // dieser Plan nennt, **was** das Gespräch löst, nicht wie viel.
+    ergebnis: 'Löst die offenen Punkte der Gruppe „Anfrage" auf einmal: Lieferzeit, '
+      + 'Preisrhythmus, Liefergebiet, Palettenzahl und — über eine Artikelliste mit '
+      + 'EAN-Spalte — GTIN, Marke und Bild.',
     gate: 'Gate 6 und Gate 23',
   }),
   Object.freeze({

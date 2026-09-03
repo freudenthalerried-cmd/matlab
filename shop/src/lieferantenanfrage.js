@@ -1,7 +1,7 @@
 /**
- * Die Anfrage an den Lieferanten — vier Fragen, die acht offene Punkte schließen.
+ * Die Anfrage an den Lieferanten — fünf Fragen, die neun offene Punkte schließen.
  *
- * **Der Anlass, 2. September 2026.** `npm run offenepunkte` führt acht Punkte
+ * **Der Anlass, 2. September 2026.** `npm run offenepunkte` führte damals acht Punkte
  * in der Gruppe „Anfrage an Dritte". Sie hängen alle an demselben Gespräch mit
  * demselben Lieferanten, und für dieses Gespräch gab es keinen Text. Was es
  * gab, waren die `anschreiben-entwuerfe.md` vom 9. August — dreizehn
@@ -14,11 +14,17 @@
  *
  * Dieselbe Fehlerklasse, vor der `STATUS.md` in seinem eigenen Kopf warnt.
  *
- * **Warum vier und nicht zwölf.** Wer einem Lieferanten zwölf Fragen schickt,
+ * **Warum fünf und nicht zwölf.** Wer einem Lieferanten zwölf Fragen schickt,
  * bekommt keine Antwort — jede zusätzliche Frage senkt die Wahrscheinlichkeit
  * aller übrigen. Deshalb steht bei jeder Frage, welche Punkte sie schließt,
  * und `fragenOhnePunkt` meldet jede, die keinen schließt. Eine Frage, die
  * nichts löst, kostet die Antwort auf die, die etwas löst.
+ *
+ * **Von vier auf fünf am 3. September.** Gate 25 hat einen Mindestbestellwert
+ * gesetzt, der auf einer Annahme über die Palettenzahl je Lieferung ruht. Der
+ * Punkt stand in keinem Register — und `pruefe-anfrage` hat ihn in derselben
+ * Minute gemeldet, in der er eingetragen war: „offener Punkt, den keine Frage
+ * schließt." Genau dafür gibt es die beiden Richtungen.
  *
  * **Dieser Text wird hier nicht versendet.** Das Modul erzeugt ihn; das
  * Versenden an Dritte ist und bleibt Sache des Auftraggebers.
@@ -72,6 +78,29 @@ export const FRAGEN = Object.freeze([
     warum: 'Aus fünfzehn Rechnungen nicht ableitbar — sie zeigen, wann wir gekauft haben, nicht, '
       + 'wann die Liste sich ändert. Die 90-Tage-Grenze der Preisalterprüfung ist bis dahin '
       + 'gesetzt und nicht gemessen.',
+  }),
+  Object.freeze({
+    // **Die fünfte, ab 3. September.** Der Kopf dieser Datei sagt, warum es
+    // vier waren und nicht zwölf — jede zusätzliche Frage senkt die
+    // Wahrscheinlichkeit aller übrigen. Diese hier kostet den Platz trotzdem
+    // zu Recht: Gate 25 hat am selben Tag einen Mindestbestellwert von 250 €
+    // gesetzt, und der ruht auf einer Annahme über die Palettenzahl. Eine
+    // Entscheidung, die auf einer Annahme steht, gehört gefragt.
+    //
+    // Sie steht bewusst **hinter** der Frachtfrage: Beide betreffen die
+    // Lieferung, und wer zwei verwandte Fragen zusammen stellt, stellt
+    // eigentlich eine.
+    id: 'palettierung',
+    titel: 'Paletten je Lieferung',
+    schliesst: Object.freeze(['palettenzahl']),
+    frage: 'Wonach richtet sich die Zahl der Paletten je Lieferung, und ab welcher Menge '
+      + 'kommt eine zweite dazu? Auf unserer Rechnung über 1.934 € netto stehen sechs Paletten '
+      + 'zu je 22,00 € plus Folierung — für eine kleinere Bestellung können wir daraus nicht '
+      + 'ableiten, womit wir rechnen müssen.',
+    warum: 'Palette und Folierung sind mit 28,50 € je Lieferung die Kosten, die den '
+      + 'Mindestbestellwert tragen. Wie viele Paletten eine Bestellung braucht, hängt an '
+      + 'Gewicht und Packmaß; der Katalog führt Gewicht für 7 von 46 Artikeln. Die Grenze ist '
+      + 'deshalb heute vorsichtig gesetzt und nicht gerechnet.',
   }),
   Object.freeze({
     id: 'liefergebiet',

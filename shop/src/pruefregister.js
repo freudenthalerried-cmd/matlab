@@ -67,7 +67,7 @@ export const PRUEFER = [
     mindestens: 8,
   },
   {
-    // Vier Fragen für acht offene Punkte. `mindestens: 3`, weil eine leere
+    // Fünf Fragen für neun offene Punkte (Stand 3.9.). `mindestens: 3`, weil eine leere
     // Fragenliste „keine Meldung" meldete: Ohne Frage bleibt kein Punkt
     // ungefragt, und der Prüfer wäre grün und nutzlos.
     name: 'pruefe-anfrage',
