@@ -1,23 +1,46 @@
 # Schaufenster-Abgleich: was wo angezeigt wird, und ob es stimmt
 
-Stand: 2026-08-26. Am 17. August stand hier schon einmal derselbe
+Stand: 2026-09-03. Am 17. August stand hier schon einmal derselbe
 Befund: **Eine nicht mitgezogene Anzeige ist eine stille
-Falschaussage.** Seither sind drei Schaufenster dazugekommen und der
-Bestand ist um mehrere hundert Testfälle gewachsen. Dieses Dokument
-gleicht alle ab und hält fest, welches auf welchem Stand steht — damit
-der nächste Lauf nicht raten muss.
+Falschaussage.** Dieses Dokument führt alle veröffentlichten Anzeigen und
+hält fest, welche mitwandert und welche bewusst stillsteht — damit der
+nächste Lauf nicht raten muss.
+
+> **Berichtigt am 3. September.** Die Tafel darunter stand acht Tage auf dem
+> 26. August und trug Zahlen: „77 Seiten", „616 Testfälle", „26.08., abends".
+> Alle drei waren längst überholt, während das Dokument sie als *gültig*
+> auswies. **Ein Register der Stände, das selbst einen Stand hat, ist ein
+> Schaufenster** — und die eigene Regel weiter unten („wer eine Zahl in einem
+> Schaufenster ändert, ändert sie in allen") galt für alle außer für dieses.
+>
+> Die Tafel führt deshalb keine Zahlen mehr. Sie führt, was nicht altert:
+> **welches Modell** eine Anzeige zeigt, **ob sie mitwandert oder stillsteht**
+> und **wo die gültige Fassung liegt**. Die Zahlen stehen dort, wo ein Prüfer
+> sie misst.
 
 ## Der Bestand an Schaufenstern
 
-| Anzeige | Zeigt | Stand | gültig? |
+| Anzeige | Zeigt | Modell | Zustand — und wo die gültige Fassung liegt |
 |---|---|---|---|
-| **PR #14, Beschreibung** | den ganzen Vorhabenstand | **26.08., abends** | ja — mit Gate 21/23, 616 Testfällen und der Rekonstruierbarkeit |
-| [Baustoffe zum Baumeisterpreis](https://claude.ai/code/artifact/fe6d720d-473d-4af5-a26b-6fcfbea929dc) | die Website | **26.08., 77 Seiten** | ja, zuletzt nach dem Umschreiben der Geltungsaussagen |
-| [Was 25 % Marge tragen](https://claude.ai/code/artifact/6e356abb-b5d3-44a9-9b8d-f98a13fb0502) | die Kalkulation | 26.08., **vormittags** | **nein — trägt die berichtigte Gate-21-Aussage noch nicht** |
-| [Der Weg zum ersten Klick](https://claude.ai/code/artifact/44ba340b-a126-457c-96d5-64fc34efa3a4) | den Ablaufplan | **26.08.** | ja, mit Rechtsseiten und GTIN-Lage |
-| [Radonvorsorge Österreich](https://claude.ai/code/artifact/3d669d15-b632-41b9-838c-b9369dab8a4c) | den Radon-Bericht | 18.08. | **ja, für sein Modell** |
-| [Radonvorsorge Fachhandel](https://claude.ai/code/artifact/c40fd35f-56e1-4821-a3b1-a1a885102ec8) | das Radon-Funktionsmuster | 17.08. | **ja, für sein Modell** |
-| `shop/demo.html` | dasselbe Funktionsmuster als Datei | heute neu gebaut | ja |
+| **PR #14, Beschreibung** | den ganzen Vorhabenstand | Baustoff | **wandert mit.** Quelle im Verzeichnis: `pr-beschreibung.md`; ihre Zahlen misst `npm run pruefe-schaufenster` gegen den Bestand |
+| [Baustoffe zum Baumeisterpreis](https://claude.ai/code/artifact/fe6d720d-473d-4af5-a26b-6fcfbea929dc) | die Website | Baustoff | **steht still**, Momentaufnahme aus dem August. Der gültige Bau entsteht mit `npm run website` und liegt in `ausgabe/site/` |
+| [Was 25 % Marge tragen](https://claude.ai/code/artifact/6e356abb-b5d3-44a9-9b8d-f98a13fb0502) | die Kalkulation | Baustoff | **überholt und nicht ersetzbar** — fünf abgewiesene Veröffentlichungsversuche. Gültig ist `zuschlag-seite.html` im Verzeichnis; die PR-Beschreibung weist die Anzeige ausdrücklich als überholt aus |
+| [Der Weg zum ersten Klick](https://claude.ai/code/artifact/44ba340b-a126-457c-96d5-64fc34efa3a4) | den Ablaufplan | Baustoff | **steht still**, Momentaufnahme aus dem August. Gültig ist `weg-zum-ersten-verkauf-nachgerechnet.md` |
+| [Radonvorsorge Österreich](https://claude.ai/code/artifact/3d669d15-b632-41b9-838c-b9369dab8a4c) | den Radon-Bericht | **Radon** | **steht bewusst still**, Stand 17. August 2026 — gilt für sein Modell, siehe den Abschnitt darunter. Quelldatei `bericht-radon.html` |
+| [Radonvorsorge Fachhandel](https://claude.ai/code/artifact/c40fd35f-56e1-4821-a3b1-a1a885102ec8) | das Radon-Funktionsmuster | **Radon** | **steht bewusst still** — gilt für sein Modell |
+| `shop/demo.html` | dasselbe Funktionsmuster als Datei | **Radon** | wird bei jedem `npm run build` neu erzeugt; der Baustoff-Shop liegt in `ausgabe/website.html` |
+
+**Ein Einfrierdatum ist keine Kopie.** Wo eine Anzeige stillsteht, ist ihr
+Stand eine feste Tatsache und altert nicht — deshalb steht er dabei. Was
+gefehlt hat, war eine Quelle dafür: Der Radon-Bericht stand mit drei
+verschiedenen Daten in drei Dateien (16.08. in `PARAMETER.md`, 17.08. in
+`STATUS.md`, 18.08. hier). Maßgeblich ist, was die Anzeige selbst trägt, und
+das steht in ihrer Quelldatei `bericht-radon.html`: **Stand 17. August 2026.**
+
+**Keine Zahl über den heutigen Bestand in dieser Tafel.** Das ist die Lehre aus acht Tagen: Eine Zahl
+hier ist eine Kopie, und Kopien altern. Was der Bau heute umfasst, sagt
+`npm run alles`; was die PR-Beschreibung behauptet, misst
+`npm run pruefe-schaufenster`.
 
 ## Zwei Schaufenster stehen bewusst still
 

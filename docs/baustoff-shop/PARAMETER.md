@@ -62,12 +62,25 @@ Feststellung, dass fundiertes Fachwissen die Nischenwahl positiv gewichtet.
 
 ## Veröffentlichte Artefakte
 
-| Artefakt | URL |
-|---|---|
-| Statusbericht, Stand 16.08.2026 | https://claude.ai/code/artifact/3d669d15-b632-41b9-838c-b9369dab8a4c |
-| Shop-Funktionsmuster | https://claude.ai/code/artifact/c40fd35f-56e1-4821-a3b1-a1a885102ec8 |
+> **Beide gehören zum abgelösten Radon-Modell.** Sie stehen bewusst still und
+> sind nicht der Stand des laufenden Vorhabens; wer den sucht, liest die
+> Beschreibung von PR #14. Bis zum 3. September stand hier nur „Statusbericht"
+> — in der Datei, die über allem rangiert, und damit als Antwort auf die
+> Frage, wo der Stand steht. Das vollständige Verzeichnis aller
+> veröffentlichten Anzeigen führt
+> [`schaufenster-abgleich.md`](./schaufenster-abgleich.md).
+
+| Artefakt | Modell | URL |
+|---|---|---|
+| Statusbericht Radonvorsorge | **Radon, abgelöst** | https://claude.ai/code/artifact/3d669d15-b632-41b9-838c-b9369dab8a4c |
+| Shop-Funktionsmuster Radonvorsorge | **Radon, abgelöst** | https://claude.ai/code/artifact/c40fd35f-56e1-4821-a3b1-a1a885102ec8 |
 
 Quelldatei des Berichts: `bericht-radon.html` im Repo neben dieser Datei.
+
+**Das Datum stand an drei Stellen verschieden:** „Stand 16.08." hier, „auf
+Stand 17. August gebracht" in `STATUS.md`, „18.08." im
+Schaufensterverzeichnis. Es steht deshalb hier gar nicht mehr — geführt wird
+es an der einen Stelle, die dafür gebaut ist.
 **Wichtig für spätere Läufe:** Zum Aktualisieren dieses Berichts die obige URL
 als `url` an das Artifact-Tool übergeben — sonst entsteht eine neue Adresse und
 der Auftraggeber hat zwei widersprüchliche Stände.
