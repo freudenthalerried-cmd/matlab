@@ -117,6 +117,7 @@ const feedTreffer = feed.stdout.match(/(\d+) veröffentlichbar/);
 // Zahlweg, der entschieden ist, nicht mit dem, für den sie einmal gerechnet
 // wurde.
 const zielgroessen = JSON.parse(readFileSync(join(SHOP, 'data', 'zielgroessen.json'), 'utf8'));
+const betreiberDatei = JSON.parse(readFileSync(join(SHOP, 'data', 'betreiber.json'), 'utf8'));
 const leitzahl = noetigerUmsatz(zielgroessen, zielgroessen.zahlweg);
 if (!leitzahl.tragfaehig) throw new Error(`Die Zielgrößen tragen sich nicht: ${leitzahl.grund}`);
 
@@ -154,6 +155,9 @@ const messwerte = {
   // jemand etwas davon hat.
   noetigerUmsatz: Math.round(leitzahl.umsatzNetto),
   bestellungen: leitzahl.bestellungen,
+  // Gate 25. Die Zahl steht in den Betreiberdaten und nirgends sonst; die
+  // Beschreibung nennt sie, also gehört sie gehalten.
+  mindestbestellwert: betreiberDatei.mindestbestellwertNetto ?? null,
 };
 
 const e = pruefeSchaufenster(readFileSync(beschreibung, 'utf8'), messwerte);

@@ -20,7 +20,7 @@ Machbarkeitsanalyse, Shop und Website für einen Baustoffhandel, der 3.000 € n
 
 👉 **`docs/baustoff-shop/STATUS.md`** — Stand, offene Weisungen, Dokumentenverzeichnis und eine Tabelle aller Korrekturen, die im Verlauf nötig waren. Diese Datei zuerst lesen. Bei Gate-Fragen gilt **`gate-register.md`** (25 Gates, Stand 3. September).
 
-Diese Beschreibung hat seit dem 1. September eine Quelle im Verzeichnis: `docs/baustoff-shop/pr-beschreibung.md`. `npm run pruefe-schaufenster` misst ihre 28 Kennzahlen gegen den Bestand — sie war zuvor an neun Stellen überholt, und seit dem 1. September ist auch die Leitzahl darunter.
+Diese Beschreibung hat seit dem 1. September eine Quelle im Verzeichnis: `docs/baustoff-shop/pr-beschreibung.md`. `npm run pruefe-schaufenster` misst ihre 29 Kennzahlen gegen den Bestand — sie war zuvor an neun Stellen überholt, und seit dem 1. September ist auch die Leitzahl darunter.
 
 ### Veröffentlichte Momentaufnahmen
 
@@ -44,6 +44,7 @@ Ursprünglich ein Streckenhandel für Radonvorsorge auf **unbelegten** Platzhalt
 | Testbestand | **über 1.000 Testfälle**, alle grün, dazu 11 Oberflächenszenarien und 53 Shopszenarien im Browser |
 | Prüfwerkzeuge | **18 Prüfer** ohne Browser, 3 Browserproben zusätzlich |
 | Messliste für Gate 15 | **32 Begriffe** in 3 Anzeigengruppen, Ort = Liefergebiet |
+| Mindestbestellwert | **250 € netto Warenwert je Lieferung** (Gate 25), gerechnet aus Fracht, Palette und Zielmarge |
 
 ## Die Zahlen, die das Modell tragen
 
@@ -120,6 +121,7 @@ Die fünf Rechtsseiten sind ein **Gerüst mit sichtbaren Lücken**, kein fertige
 | Prüfer der Prüfer | meldete „8 Prüfer befragt", während neun liefen — ein vollständiges Ergebnis über eine unvollständige Liste |
 | Kundenbeleg | die Rechnung nannte **1.638,48 € Gesamtbetrag** und schwieg darüber, ob das Geld noch zu zahlen ist — bei Zahlungsziel null Tage und Vorkasse auf allen Wegen. Kein Prüfer las je einen **fertigen** Beleg |
 | Leitzahl | der nötige Monatsumsatz stand seit 25.08. mit **45.356 €** da: die **Kartenzahl**, zwei Tage älter als Gate 21, das EPS entschied. Mit dem entschiedenen Zahlweg sind es **43.396 €**. Zwölf Prüfer, und keiner sah die Zahl an, um die es geht |
+| Kasse | Der Shop hatte gegenüber dem Kunden **keine Untergrenze**: Ein Warenkorb über 19,30 € wurde durchgerechnet, mit Preisen ausgewiesen und als fertige Anfrage zum Abschicken angeboten — abgelehnt worden wäre er erst bei der Auslösung. Eine Sperre, die erst nach dem Ja greift, ist keine. Gate 25 entschieden: **250 € netto Warenwert je Lieferung** |
 | Testprüfer | `test/geheimnis.test.js` hat neun Testfälle, der Prüfer sah **acht**. Eine geschweifte Klammer in einer Zeichenkette ließ die Klammerzählung bis zum Dateiende laufen — der Fall wurde still übersprungen. Aufgefallen erst, als ein Gesamtlauf beide Zählungen nebeneinanderstellte |
 | Diese Beschreibung | an neun Stellen überholt: 616 Testfälle statt über 1.000, 77 Seiten statt 81, 23 Gates statt 24 |
 

@@ -142,6 +142,8 @@ export function kennzahlen(messwerte) {
       muster: /nötiger Monatsumsatz \| [\d.]+ € \| \*\*([\d.]+) €\*\*/, soll: m.noetigerUmsatz },
     { name: 'Bestellungen im Monat', wie: 'noetigerUmsatz(zielgroessen, ziel.zahlweg)',
       muster: /Bestellungen im Monat \| \d+ \| (\d+) \|/, soll: m.bestellungen },
+    { name: 'Mindestbestellwert', wie: 'data/betreiber.json — Gate 25',
+      muster: /\*\*(\d+) € netto Warenwert je Lieferung\*\*/, soll: m.mindestbestellwert },
   ];
 
   // **Die Zahl, die diese Prüfung über sich selbst nennt.** Die Beschreibung
