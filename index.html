@@ -28,6 +28,7 @@
 
       <div id="standort-banner" class="standort-banner" hidden>
         <span id="standort-text"></span>
+        <span id="standort-adresse" class="standort-adresse"></span>
         <span class="standort-aktionen">
           <button id="standort-uebernehmen" type="button" class="chip">Öffnen</button>
           <a id="standort-ordner" href="#" target="_blank" rel="noopener" class="chip chip-kategorie">Ordner</a>
@@ -155,7 +156,14 @@
         <div class="panel-hint">Verteiler dieser Baustelle:</div>
         <input id="info-verteiler" class="verteiler-input" type="text" placeholder="z. B. Bauleitung, polier@baufirma.at">
         <div id="info-protokolle"></div>
-        <button id="info-position" class="chip chip-kategorie position-knopf" type="button">Aktuelle Position speichern</button>
+
+        <div class="panel-hint">Adresse der Baustelle (f&uuml;r die Erkennung per GPS):</div>
+        <input id="info-adresse" class="verteiler-input" type="text" placeholder="z. B. Hamburgerstra&szlig;e 12, 4840 V&ouml;cklabruck">
+        <div id="info-geo-status" class="geo-status"></div>
+        <div class="info-knoepfe">
+          <button id="info-geocode" class="chip chip-kategorie" type="button">Aus Adresse ermitteln</button>
+          <button id="info-position" class="chip chip-kategorie position-knopf" type="button">Aktuelle Position speichern</button>
+        </div>
       </div>
 
     </div>

@@ -20,6 +20,10 @@
   const infoVerteiler = document.getElementById('info-verteiler');
   const infoProtokolle = document.getElementById('info-protokolle');
   const infoPosition = document.getElementById('info-position');
+  const infoAdresse = document.getElementById('info-adresse');
+  const infoGeocode = document.getElementById('info-geocode');
+  const infoGeoStatus = document.getElementById('info-geo-status');
+  const standortAdresse = document.getElementById('standort-adresse');
 
   const form = document.getElementById('chat-form');
   const input = document.getElementById('chat-input');
@@ -105,6 +109,7 @@
   let detailStufe = ladeJson('bp_detail', 1);
   let verteiler = ladeJson('bp_verteiler', {});      // Baustellen-ID -> Verteiler-Text
   let standorte = ladeJson('bp_standorte', {});      // Baustellen-ID -> {lat, lng}
+  let adressen = ladeJson('bp_adressen', {});        // Baustellen-ID -> Adresstext
   let eigene = ladeJson('bp_baustellen_eigene', []); // selbst angelegte Baustellen
   let gruppenOffen = ladeJson('bp_gruppen_offen', { 'SEENTOUR Gmunden': true });
   let koepfe = ladeJson('bp_koepfe', {}); // "<BaustellenID>:<Nr>" -> Kopfdaten
@@ -361,6 +366,16 @@
     infoPosition.textContent = standorte[bs.id]
       ? 'Position gespeichert – neu setzen'
       : 'Aktuelle Position speichern';
+    infoAdresse.value = adresseFuer(bs);
+    infoGeoStatus.textContent = koordinatenFuer(bs)
+      ? 'Koordinaten vorhanden – Baustelle wird per GPS erkannt.'
+      : 'Noch keine Koordinaten – Adresse eintragen und ermitteln, oder vor Ort die Position speichern.';
+  }
+
+  function adresseFuer(bs) {
+    if (adressen[bs.id]) return adressen[bs.id];
+    // Vorbelegung aus den Stammdaten, damit das Feld nicht leer bleibt
+    return [bs.name, bs.ort].filter(Boolean).join(', ');
   }
 
   infoVerteiler.addEventListener('change', function () {
@@ -368,6 +383,50 @@
     if (v) verteiler[aktuelleBaustelle.id] = v;
     else delete verteiler[aktuelleBaustelle.id];
     speichereJson('bp_verteiler', verteiler);
+  });
+
+  infoAdresse.addEventListener('change', function () {
+    if (!aktuelleBaustelle) return;
+    const a = infoAdresse.value.trim();
+    if (a) adressen[aktuelleBaustelle.id] = a;
+    else delete adressen[aktuelleBaustelle.id];
+    speichereJson('bp_adressen', adressen);
+  });
+
+  // Adresse -> Koordinaten uber OpenStreetMap (Nominatim). Wird nur auf
+  // Knopfdruck aufgerufen; das Ergebnis bleibt dauerhaft gespeichert, damit
+  // die Erkennung danach auch ohne Netz funktioniert.
+  infoGeocode.addEventListener('click', function () {
+    if (!aktuelleBaustelle) return;
+    const bs = aktuelleBaustelle;
+    const adresse = infoAdresse.value.trim();
+    if (!adresse) {
+      infoGeoStatus.textContent = 'Bitte zuerst eine Adresse eintragen.';
+      return;
+    }
+    adressen[bs.id] = adresse;
+    speichereJson('bp_adressen', adressen);
+
+    infoGeocode.disabled = true;
+    infoGeoStatus.textContent = 'Adresse wird gesucht …';
+    const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=at&q=' +
+      encodeURIComponent(adresse);
+    fetch(url, { headers: { 'Accept': 'application/json' } })
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error(r.status)); })
+      .then(function (daten) {
+        if (!daten.length) {
+          infoGeoStatus.textContent = 'Adresse nicht gefunden – bitte genauer angeben (Straße, PLZ, Ort).';
+          return;
+        }
+        standorte[bs.id] = { lat: parseFloat(daten[0].lat), lng: parseFloat(daten[0].lon) };
+        speichereJson('bp_standorte', standorte);
+        infoGeoStatus.textContent = 'Koordinaten gespeichert: ' + (daten[0].display_name || adresse);
+        infoPosition.textContent = 'Position gespeichert – neu setzen';
+      })
+      .catch(function () {
+        infoGeoStatus.textContent = 'Adresssuche nicht erreichbar – vor Ort die Position speichern.';
+      })
+      .then(function () { infoGeocode.disabled = false; });
   });
 
   infoPosition.addEventListener('click', function () {
@@ -1086,6 +1145,11 @@
     return null;
   }
 
+  // Bis hierher gilt man als "auf der Baustelle" – dann wird das Protokoll
+  // direkt geoeffnet. Weiter entfernte Baustellen werden nur vorgeschlagen.
+  const ANKUNFT_KM = 0.25;
+  const UMKREIS_KM = 5;
+
   function naechsteBaustelle(lat, lng) {
     let beste = null;
     alleBaustellen().forEach(function (bs) {
@@ -1095,7 +1159,13 @@
       const d = distanzKm(lat, lng, k.lat, k.lng);
       if (!beste || d < beste.distanz) beste = { baustelle: bs, distanz: d };
     });
-    return beste && beste.distanz <= 5 ? beste : null;
+    return beste && beste.distanz <= UMKREIS_KM ? beste : null;
+  }
+
+  function distanzText(km) {
+    return km < 1
+      ? Math.round(km * 1000) + ' m'
+      : km.toFixed(1).replace('.', ',') + ' km';
   }
 
   function zeigeStandort(treffer) {
@@ -1104,43 +1174,83 @@
       return;
     }
     erkannteBaustelle = treffer.baustelle;
-    const dist = treffer.distanz < 1
-      ? Math.round(treffer.distanz * 1000) + ' m'
-      : treffer.distanz.toFixed(1).replace('.', ',') + ' km';
-    standortText.textContent = 'Baustelle erkannt: ' + treffer.baustelle.name + ' (' + dist + ')';
+    standortText.textContent = 'Baustelle erkannt: ' + treffer.baustelle.name +
+      ' (' + distanzText(treffer.distanz) + ')';
+    standortAdresse.textContent = adressen[treffer.baustelle.id] || treffer.baustelle.ort || '';
     if (treffer.baustelle.ordnerUrl) standortOrdner.href = treffer.baustelle.ordnerUrl;
     else standortOrdner.removeAttribute('href');
     standortBanner.hidden = false;
   }
 
+  function ohneKoordinaten() {
+    return alleBaustellen().filter(function (bs) {
+      return bs.aktiv !== false && !koordinatenFuer(bs);
+    }).length;
+  }
+
+  // Wird sowohl beim Start, per Knopf als auch laufend von watchPosition
+  // aufgerufen. Nur bei einem echten Wechsel wird automatisch geoeffnet,
+  // damit die Ansicht nicht dauernd umspringt.
+  let zuletztGeoeffnet = null;
+
+  function verarbeiteStandort(lat, lng, leise) {
+    const treffer = naechsteBaustelle(lat, lng);
+
+    if (treffer && treffer.distanz <= ANKUNFT_KM && viewProtokoll.hidden &&
+        zuletztGeoeffnet !== treffer.baustelle.id) {
+      // Angekommen: Protokoll der Baustelle sofort oeffnen
+      zuletztGeoeffnet = treffer.baustelle.id;
+      oeffneBaustelle(treffer.baustelle);
+      zeigeStandort(treffer);
+      return;
+    }
+
+    if (treffer) {
+      zeigeStandort(treffer);
+      return;
+    }
+
+    erkannteBaustelle = null;
+    zuletztGeoeffnet = null;
+    if (!leise) {
+      const offen = ohneKoordinaten();
+      standortText.textContent = 'Keine Baustelle in der Nähe (max. ' + UMKREIS_KM + ' km) gefunden.';
+      standortAdresse.textContent = offen
+        ? offen + ' Baustelle(n) ohne Koordinaten – Adresse unter „Verteiler / Protokolle“ eintragen.'
+        : '';
+      standortOrdner.removeAttribute('href');
+      standortBanner.hidden = false;
+    }
+  }
+
   function ermittleStandort(leise) {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(function (pos) {
-      const treffer = naechsteBaustelle(pos.coords.latitude, pos.coords.longitude);
-      if (treffer && viewProtokoll.hidden) {
-        // Aus der Liste heraus die erkannte Baustelle direkt öffnen
-        oeffneBaustelle(treffer.baustelle);
-        zeigeStandort(treffer);
-        return;
-      }
-      zeigeStandort(treffer);
-      if (!treffer && !leise) {
-        standortText.textContent = 'Keine Baustelle in der Nähe (max. 5 km) gefunden.';
-        standortOrdner.removeAttribute('href');
-        standortBanner.hidden = false;
-        erkannteBaustelle = null;
-      }
+      verarbeiteStandort(pos.coords.latitude, pos.coords.longitude, leise);
     }, function () {
       if (!leise) {
         standortText.textContent = 'Standort nicht verfügbar – GPS-Freigabe prüfen.';
+        standortAdresse.textContent = '';
         standortBanner.hidden = false;
         erkannteBaustelle = null;
       }
     }, { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 });
   }
 
+  // Laufende Ortung: erkennt die Ankunft auch dann, wenn die App schon offen ist.
+  function starteUeberwachung() {
+    if (!navigator.geolocation || !navigator.geolocation.watchPosition) return;
+    navigator.geolocation.watchPosition(function (pos) {
+      verarbeiteStandort(pos.coords.latitude, pos.coords.longitude, true);
+    }, function () { /* stiller Fehler – der Knopf bleibt als Rueckfallebene */ },
+    { enableHighAccuracy: true, maximumAge: 30000, timeout: 20000 });
+  }
+
   standortUebernehmen.addEventListener('click', function () {
-    if (erkannteBaustelle) oeffneBaustelle(erkannteBaustelle);
+    if (erkannteBaustelle) {
+      zuletztGeoeffnet = erkannteBaustelle.id;
+      oeffneBaustelle(erkannteBaustelle);
+    }
     standortBanner.hidden = true;
   });
 
@@ -1156,4 +1266,5 @@
   zeigeTyp();
   renderGruppen();
   ermittleStandort(true);
+  starteUeberwachung();
 })();

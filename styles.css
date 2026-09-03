@@ -286,10 +286,35 @@ html, body {
 
 .standort-banner .chip { text-decoration: none; }
 
+/* Adresse unter dem erkannten Baustellennamen */
+.standort-adresse {
+  flex-basis: 100%;
+  font-weight: 400;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.standort-adresse:empty { display: none; }
+
 .position-knopf {
-  margin-top: 8px;
+  margin-top: 0;
   font-size: 12px;
 }
+
+.info-knoepfe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.geo-status {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.geo-status:empty { display: none; }
 
 /* Eintragstyp Hinweis / Mangel */
 .typ-schalter {
