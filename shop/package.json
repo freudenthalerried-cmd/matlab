@@ -19,6 +19,7 @@
     "pruefe-oberflaeche": "node bin/inhaltspruefung.mjs --oberflaeche",
     "pruefe-crawler": "node bin/crawlerpruefung.mjs",
     "pruefe-anfrage": "node bin/anfragepruefung.mjs",
+    "anfrage-lesen": "node bin/anfrage-lesen.mjs",
     "veroeffentlichung": "node bin/veroeffentlichung.mjs",
     "pruefe-quellen": "node bin/quellenpruefung.mjs",
     "pruefe-widerrufe": "node bin/widerrufpruefung.mjs",

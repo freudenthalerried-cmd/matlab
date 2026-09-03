@@ -82,6 +82,8 @@ export const KEIN_AUSGANG = Object.freeze([
   Object.freeze({ funktion: 'baueAnfrage', warum: 'Baut die UID-Abfrage an das EU-System aus einer geprüften UID; die Antwort darauf ist der Fremdtext, und die geht durch belegzeile.' }),
   Object.freeze({ funktion: 'alsText', warum: 'Wandelt eigenes Markdown in HTML für die eigenen Seiten. Fremdtext erreicht sie nicht — die Inhalte stehen im Verzeichnis.' }),
   Object.freeze({ funktion: 'leseCsv', warum: 'Liest, statt zu schreiben. Ein Leser kann keinen Ausgang vergiften; was er einliest, geht danach durch die geprüften Ausgänge.' }),
+  Object.freeze({ funktion: 'lesePositionen', warum: 'Liest die Positionen aus einem eingegangenen Anfragetext zurück. Ein Leser kann keinen Ausgang vergiften — und was er liest, geht erst weiter, wenn `leseAnfrage` es nachgerechnet hat.' }),
+  Object.freeze({ funktion: 'leseAnfrage', warum: 'Rechnet die zurückgelesene Anfrage nach und gibt bei jeder Abweichung nichts zurück, sondern den Grund. Ihr Ergebnis ist ein Befund, kein Text — der Beleg daraus entsteht in beleg.js und ist dort geprüft.' }),
   Object.freeze({ funktion: 'leseBestellCsv', warum: 'Dasselbe in der Gegenrichtung: Er liest die eigene Bestell-CSV zur Kontrolle zurück. Sein Ausgang ist ein Vergleichsbefund, kein Text.' }),
   // **Fünf Einträge vom 3. September.** Sie waren dem Verzeichnis bis dahin
   // unsichtbar: Der Leser kannte nur `export function`, und diese fünf sind
