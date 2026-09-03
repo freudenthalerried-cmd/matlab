@@ -42,6 +42,7 @@
     "gegenprobe": "node bin/gegenprobe.mjs",
     "gegenproben": "node bin/gegenprobenlauf.mjs",
     "pruefe-preisalter": "node bin/preisalterpruefung.mjs",
+    "pruefe-ungerufen": "node bin/ungerufen.mjs",
     "pruefe-schaufenster": "node bin/schaufensterpruefung.mjs",
     "pruefe-leitzahlen": "node bin/leitzahlpruefung.mjs",
     "werbeprobe": "node bin/werbeprobe.mjs",

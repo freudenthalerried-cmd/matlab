@@ -304,8 +304,23 @@ export function mailtoAdresse(anfrage) {
 export function pruefeAnfrageAufGeheimnis(text, artikelMitEk = []) {
   const treffer = [];
   const zahl = (n) => n.toFixed(2).replace('.', ',');
+  /**
+   * **Berichtigt am 3. September**, beim ersten Lauf dieser Funktion an einem
+   * echten Anfragetext. `text.includes('3,68')` fand die Zahl in
+   * `USt                   153,68 €` — und meldete den Einkaufspreis von
+   * POS-52124, der in diesem Korb gar nicht vorkommt.
+   *
+   * > **Ein Fehlalarm, der bei jedem Lauf kommt, ist schlimmer als keine
+   * > Prüfung:** Er bringt den Leser dazu, die Meldung zu überblättern — und
+   * > mit ihr die echte.
+   *
+   * Gesucht wird deshalb die **ganze** Zahl: keine Ziffer und kein Trennzeichen
+   * davor, keine Ziffer danach. Der zufällige Gleichstand zweier echter Beträge
+   * bleibt möglich und ist auch gemeint — er heißt weiterhin „hier nachsehen".
+   */
+  const ganzeZahl = (z) => new RegExp(`(?<![\\d.,])${z.replace(',', '[,]')}(?!\\d)`);
   for (const a of artikelMitEk) {
-    if (typeof a.ekNetto === 'number' && text.includes(zahl(a.ekNetto))) {
+    if (typeof a.ekNetto === 'number' && ganzeZahl(zahl(a.ekNetto)).test(text)) {
       treffer.push(`${a.sku}: die Zahl ${zahl(a.ekNetto)} ist sein Einkaufspreis und steht im Text`);
     }
   }

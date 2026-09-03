@@ -173,6 +173,19 @@ export const PRUEFER = [
     einheit: 'Kennzahlen der PR-Beschreibung',
     mindestens: 12,
   },
+  // **Aufgenommen am 3. September**, nachdem an einem Tag zweimal dasselbe
+  // aufgefallen ist: eine Funktion, die gebaut, geprüft und nie angeschlossen
+  // wurde (`erzeugeAngebot`, dann `pruefeAnfrageAufGeheimnis`). Beide Male hat
+  // es ein Mensch beim Hinsehen gefunden. Die Zahl darf nicht auf null fallen,
+  // ohne dass es auffällt: Ein leeres Ergebnis hieße hier nicht „alles
+  // angeschlossen", sondern „die Messung hat nichts mehr gelesen".
+  {
+    name: 'pruefe-ungerufen',
+    werkzeug: 'ungerufen.mjs',
+    muster: /Ungerufene Ausfuhren — (\d+) gefunden/,
+    einheit: 'ungerufene Ausfuhren mit Grund',
+    mindestens: 5,
+  },
 ];
 
 /**

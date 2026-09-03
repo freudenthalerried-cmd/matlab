@@ -23592,8 +23592,23 @@ function mailtoAdresse(anfrage) {
 function pruefeAnfrageAufGeheimnis(text, artikelMitEk = []) {
   const treffer = [];
   const zahl = (n) => n.toFixed(2).replace('.', ',');
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const ganzeZahl = (z) => new RegExp(`(?<![\\d.,])${z.replace(',', '[,]')}(?!\\d)`);
   for (const a of artikelMitEk) {
-    if (typeof a.ekNetto === 'number' && text.includes(zahl(a.ekNetto))) {
+    if (typeof a.ekNetto === 'number' && ganzeZahl(zahl(a.ekNetto)).test(text)) {
       treffer.push(`${a.sku}: die Zahl ${zahl(a.ekNetto)} ist sein Einkaufspreis und steht im Text`);
     }
   }

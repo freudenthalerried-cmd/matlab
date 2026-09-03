@@ -42,7 +42,7 @@ Ursprünglich ein Streckenhandel für Radonvorsorge auf **unbelegten** Platzhalt
 | Kampagne | 6 Suchkampagnen gerechnet, **3 im ersten Anlauf**, alle **pausiert** |
 | Produktfeed | 43 Einträge — **nicht einreichbar**, GTIN fehlt bei allen 46 Artikeln |
 | Testbestand | **über 1.000 Testfälle**, alle grün, dazu 11 Oberflächenszenarien und 53 Shopszenarien im Browser |
-| Prüfwerkzeuge | **18 Prüfer** ohne Browser, 3 Browserproben zusätzlich |
+| Prüfwerkzeuge | **19 Prüfer** ohne Browser, 3 Browserproben zusätzlich |
 | Messliste für Gate 15 | **32 Begriffe** in 3 Anzeigengruppen, Ort = Liefergebiet |
 | Mindestbestellwert | **250 € netto Warenwert je Lieferung** (Gate 25), gerechnet aus Fracht, Palette und Zielmarge |
 
@@ -127,6 +127,7 @@ Die fünf Rechtsseiten sind ein **Gerüst mit sichtbaren Lücken**, kein fertige
 | Testprüfer | `test/geheimnis.test.js` hat neun Testfälle, der Prüfer sah **acht**. Eine geschweifte Klammer in einer Zeichenkette ließ die Klammerzählung bis zum Dateiende laufen — der Fall wurde still übersprungen. Aufgefallen erst, als ein Gesamtlauf beide Zählungen nebeneinanderstellte |
 | Bereitschaftsliste | `npm run startklar` führte **neun Punkte, und keiner war der Bestellweg selbst** — alle waren Zulieferungen des Auftraggebers. Mit vollständig beantworteter Betreiberdatei meldete es „startklar", und vier Oberflächen lesen das als **„Bestellen ist möglich"**, `llms.txt` schreibt den Satz Assistenten wörtlich hin. Abgeschickt wird im ganzen Shop nichts: kein `fetch`, kein Formular, kein Beacon. **Die Probe trug dieselbe Annahme** und hätte den Befund nie finden können |
 | Kassenprobe | Drei von 53 Browserszenarien standen sechs Stunden rot, ohne dass ein Lauf es meldete: Gate 25 nimmt unter 250 € netto keine Anfrage mehr an, die drei legten 0,97 € in den Korb und prüfen den **Anfragetext**, nicht die Untergrenze. `npm run alles` holt die Browserproben nicht ab — es endete mit „20 von 20 grün" |
+| Ungerufene Ausfuhren | An einem Tag zweimal dasselbe: `erzeugeAngebot` (seit 31.08. gebaut, geprüft, mit Bindefrist und § 11-Pflichtangaben) und `pruefeAnfrageAufGeheimnis` (die zweite Reihe gegen Einkaufszahlen im Kundentext) waren an nichts angeschlossen. Beide Male hat es ein Mensch beim Hinsehen gefunden. **Gemessen: 34 Ausfuhren rufen außerhalb der Tests niemand** — jede steht jetzt mit Pflichtgrund im Register, `npm run pruefe-ungerufen` hält es gegen die Wirklichkeit, in beide Richtungen. Beim ersten Lauf hat es zwei eigene Fehler im frisch geschriebenen Register gefunden |
 | Diese Beschreibung | an neun Stellen überholt: 616 Testfälle statt über 1.000, 77 Seiten statt 81, 23 Gates statt 24 |
 
 Der gemeinsame Nenner: **eine Angabe, die berechnet und dann verschwiegen wird.** Immer meldet sich etwas *nicht*, und immer sieht das Ergebnis besser aus als es ist.

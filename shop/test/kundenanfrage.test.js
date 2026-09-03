@@ -394,3 +394,27 @@ test('Die Grenze liegt unter dem, was Mailprogramme stillschweigend kürzen', ()
   assert.ok(MAILTO_HOECHSTLAENGE <= 2000, `${MAILTO_HOECHSTLAENGE} ist über dem, was Outlook verlässlich trägt`);
   assert.ok(MAILTO_HOECHSTLAENGE >= 1000, 'unter 1000 trägt der Knopf gar nichts mehr');
 });
+
+/**
+ * Der Einkaufspreis in einer größeren Zahl ist keiner.
+ *
+ * **Der Anlass, 3. September 2026.** Beim ersten Lauf dieser Prüfung an einem
+ * echten Anfragetext meldete sie den Einkaufspreis 3,68 € eines Artikels, der
+ * in diesem Warenkorb gar nicht vorkommt. Gefunden hatte sie ihn in der Zeile
+ * `USt                   153,68 €`.
+ *
+ * > **Ein Fehlalarm, der bei jedem Lauf kommt, bringt den Leser dazu, die
+ * > Meldung zu überblättern — und mit ihr die echte.**
+ */
+test('eine Einkaufszahl im Innern einer größeren Zahl ist kein Treffer', () => {
+  const artikel = [{ sku: 'X', ekNetto: 3.68 }];
+  assert.deepEqual(pruefeAnfrageAufGeheimnis('USt                   153,68 €', artikel), []);
+  assert.deepEqual(pruefeAnfrageAufGeheimnis('Summe 3,681 €', artikel), []);
+  // Und die Gegenprobe: als eigene Zahl gefunden werden muss sie weiterhin.
+  const alleine = pruefeAnfrageAufGeheimnis('Einstand 3,68 € je Stück', artikel);
+  assert.equal(alleine.length, 1, JSON.stringify(alleine));
+  assert.match(alleine[0], /3,68/);
+  // Auch am Zeilenanfang und am Zeilenende, wo kein Zeichen davor oder danach
+  // steht — die Grenzprüfung darf nicht am Rand versagen.
+  assert.equal(pruefeAnfrageAufGeheimnis('3,68', artikel).length, 1);
+});

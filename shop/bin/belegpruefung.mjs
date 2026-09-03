@@ -23,7 +23,7 @@ import { ZIELMARGE, ladeBaustoffkatalog } from '../src/baustoffkatalog.js';
 import { erzeugeAngebot, erzeugeAuftragsbestaetigung, erzeugeRechnung } from '../src/beleg.js';
 import { erzeugeBestellungen, darfAutomatischAusgeloestWerden } from '../src/bestellung.js';
 import { kundenWarenkorb } from '../src/shopkern.js';
-import { baueKundenanfrage } from '../src/kundenanfrage.js';
+import { baueKundenanfrage, pruefeAnfrageAufGeheimnis } from '../src/kundenanfrage.js';
 import { pruefeBelege } from '../src/belegpruefung.js';
 import { lieferhinweise } from '../src/rechtstexte.js';
 
@@ -253,6 +253,36 @@ const freigabe = darfAutomatischAusgeloestWerden(korb, {
 });
 
 const befund = pruefeBelege(belege, { vollstaendig: true });
+
+/**
+ * **Die zweite Reihe, seit dem 3. September zum ersten Mal aufgestellt.**
+ *
+ * `pruefeAnfrageAufGeheimnis` gibt es seit dem 31. August. Sie bekommt den
+ * fertigen Anfragetext **und** die Artikel mitsamt ihren Einkaufsdaten und
+ * sucht beides darin: die Zahlen und die Wörter der Kalkulation. Gerufen hat
+ * sie außerhalb der Tests niemand.
+ *
+ * > **Eine zweite Reihe, die nirgends steht, ist keine.**
+ *
+ * Die erste Reihe hält: Ins Browserbündel geht nur `oeffentlicherArtikel()`,
+ * und `npm run pruefe-geheimnis` misst das am ausgelieferten Stand. Diese hier
+ * steht an dem einen Text, der aus dem Haus geht und aus einem Warenkorb mit
+ * Einkaufspreisen entsteht.
+ *
+ * Ein Treffer heißt „hier nachsehen", nicht „hier steht ein Geheimnis": Eine
+ * Zeilensumme kann zufällig dem Einkaufspreis eines anderen Artikels
+ * entsprechen. Er wird deshalb als Meldung geführt und nicht als Abbruch —
+ * gelesen wird er trotzdem, weil dieser Prüfer mit Meldungen rot endet.
+ */
+const geheim = pruefeAnfrageAufGeheimnis(anfrage.text, katalog.artikel)
+  .map((t) => ({ regel: 'geheimnis-im-aussentext', text: t }));
+if (geheim.length) {
+  const ziel = befund.befunde.find((b) => b.art === 'Kundenanfrage');
+  ziel.meldungen.push(...geheim);
+  ziel.sauber = false;
+  befund.meldungen += geheim.length;
+  befund.sauber = false;
+}
 const zeigeTexte = process.argv.includes('--zeigen');
 
 if (zeigeTexte) {

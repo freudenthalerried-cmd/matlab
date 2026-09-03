@@ -475,6 +475,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'eine Absage mit Verzögerung. Diese Mutation stellt genau das wieder her.',
   }),
   Object.freeze({
+    id: 'ausfuhr-ohne-rufer-und-ohne-grund',
+    pruefer: 'pruefe-ungerufen',
+    was: 'Eine Funktion, die außerhalb der Tests niemand ruft und für die das Register schweigt',
+    datei: 'shop/src/ungerufen.js',
+    art: 'ersetzen',
+    suchen: "    funktionen: ['reihengeschaeftEinordnung'],",
+    ersetzen: "    funktionen: [],",
+    erwartet: /reihengeschaeftEinordnung.*ohne-grund|ohne-grund/,
+    warum: 'Der Anlass sind zwei Funde desselben Tages: `erzeugeAngebot` (seit dem 31. August '
+      + 'gebaut, geprüft, mit Bindefrist und § 11-Pflichtangaben) und `pruefeAnfrageAufGeheimnis` '
+      + '(die zweite Reihe gegen Einkaufszahlen im Kundentext) waren angeschlossen an nichts. '
+      + 'Beide Male hat es ein Mensch beim Hinsehen gefunden. Diese Mutation nimmt eine Funktion '
+      + 'aus dem Register und verlangt, dass der Prüfer sie meldet — sonst wäre die Liste eine '
+      + 'Sammlung von Entschuldigungen ohne Gegenstand.',
+  }),
+  Object.freeze({
     id: 'lieferhinweis-zeigt-auf-den-falschen-punkt',
     pruefer: 'pruefe-belege',
     was: 'Ein Kundenbeleg beruft sich auf eine AGB-Klausel, die etwas anderes regelt',
