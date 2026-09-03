@@ -866,7 +866,13 @@ test('jede gebaute Seite steht in der sitemap — oder trägt noindex', () => {
   const wurzel = pfad('../ausgabe/site');
   if (!existsSync(sitemap)) return;
   const xml = readFileSync(sitemap, 'utf8');
-  const genannt = new Set([...xml.matchAll(/<loc>https:\/\/[^/]+\/(.*?)\.html<\/loc>/g)].map((m) => m[1]));
+  // **Erweitert am 3. September.** Die Sitemap nennt die Startseite seit
+  // diesem Tag als Wurzel (`bauversand.com/`) statt als `/index.html` — das
+  // ist die Adresse, die ihr eigenes `rel="canonical"` gelten lässt. Der
+  // frühere Ausdruck verlangte `.html` und zählte die Startseite deshalb als
+  // fehlend: **vier statt drei Lücken.** Die Wurzel ist `index`.
+  const genannt = new Set([...xml.matchAll(/<loc>https:\/\/[^/]+\/(.*?)<\/loc>/g)]
+    .map((m) => (m[1] === '' ? 'index' : m[1].replace(/\.html$/, ''))));
 
   const gebaut = new Set();
   const gehe = (o, vor = '') => {
@@ -1548,4 +1554,60 @@ test('jede Organisation der Auszeichnung nennt Marke und Betreiberin', () => {
     .map(({ datei, org }) => `${datei}: ${org.name} / ${org.legalName ?? '—'}`);
   assert.deepEqual(halb.slice(0, 5), [],
     `${halb.length} Organisationen führen nicht beide Namen — eine Maschine liest daraus zwei Firmen`);
+});
+
+/**
+ * Jede Adresse der Sitemap ist die kanonische Adresse ihrer Seite.
+ *
+ * **Der Befund vom 3. September.** `kanonisch()` gibt es seit dem 1. September,
+ * und sein Dateikopf beschreibt genau den Schaden: `bauversand.com/` und
+ * `bauversand.com/index.html` sind für einen Indexer zwei Adressen mit
+ * demselben Inhalt. Die Sitemap baute ihre Einträge trotzdem selbst zusammen
+ * und nannte für die Startseite `/index.html` — während deren eigenes
+ * `rel="canonical"` `/` sagt.
+ *
+ * > **Ein Werkzeug, das die Regel kennt und an einer Stelle nicht anwendet,
+ * > hat die Regel nicht.**
+ *
+ * Eine Sitemap, deren Eintrag auf eine Seite zeigt, die anderswohin
+ * kanonisiert, ist ein verschenkter Eintrag — und in der Search Console eine
+ * Meldung „Duplikat, Google hat eine andere Seite als kanonisch bestimmt".
+ * Genau dort soll ab der zwölften Etappe hingesehen werden.
+ */
+test('jede Adresse der Sitemap ist die kanonische ihrer Seite', () => {
+  const site = pfad('../ausgabe/site');
+  const sitemap = readFileSync(join(site, 'sitemap.xml'), 'utf8');
+  const adressen = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((t) => t[1]);
+  assert.ok(adressen.length >= 40, `nur ${adressen.length} Einträge — die Prüfung greift zu wenig`);
+
+  // Die Datei, die eine Adresse meint: Wurzel → index.html, sonst der Pfad.
+  const basis = adressen[0].replace(/\/(?:index\.html)?$/, '');
+  const falsch = [];
+  for (const adresse of adressen) {
+    const pfadTeil = adresse.slice(basis.length).replace(/^\//, '');
+    const datei = pfadTeil === '' ? 'index.html' : pfadTeil;
+    const voll = join(site, datei);
+    if (!existsSync(voll)) { falsch.push(`${adresse}: keine Datei`); continue; }
+    const canonical = /<link rel="canonical" href="([^"]+)">/.exec(readFileSync(voll, 'utf8'));
+    if (!canonical) { falsch.push(`${datei}: kein canonical`); continue; }
+    if (canonical[1] !== adresse) falsch.push(`${datei}: Sitemap ${adresse}, Seite ${canonical[1]}`);
+  }
+  assert.deepEqual(falsch, [],
+    'diese Sitemap-Einträge zeigen auf Seiten, die anderswohin kanonisieren');
+});
+
+test('die Startseite hat genau eine Schreibweise', () => {
+  const site = pfad('../ausgabe/site');
+  const start = readFileSync(join(site, 'index.html'), 'utf8');
+  const canonical = /<link rel="canonical" href="([^"]+)">/.exec(start)[1];
+  assert.ok(canonical.endsWith('/'), `die kanonische Startseite ist ${canonical}`);
+
+  const sitemap = readFileSync(join(site, 'sitemap.xml'), 'utf8');
+  assert.ok(sitemap.includes(`<loc>${canonical}</loc>`), 'die Sitemap nennt die Wurzel nicht');
+  assert.ok(!sitemap.includes(`${canonical}index.html`), 'die Sitemap nennt zusätzlich /index.html');
+
+  // Und die Auszeichnung nennt dieselbe — nicht die Domain ohne Schrägstrich.
+  const insel = /<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(start);
+  assert.equal(JSON.parse(insel[1]).url, canonical,
+    'die Organisation nennt eine andere Schreibweise als das canonical');
 });

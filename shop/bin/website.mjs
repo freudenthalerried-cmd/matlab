@@ -1249,7 +1249,10 @@ Jede beantwortet genau eine Frage, und die Antwort steht in den ersten zwei Sät
       ...organisation(),
       address: { '@type': 'PostalAddress', addressLocality: ORT, addressCountry: 'AT' },
       areaServed: liefergebietOrte({ land: LIEFERGEBIET.land, bezirke: LIEFERGEBIET.bezirke.map((b) => b.name) }),
-      url: BASIS,
+      // Dieselbe Schreibweise wie das `rel="canonical"` der Startseite. Hier
+      // stand `BASIS` ohne Schrägstrich — eine dritte Fassung derselben
+      // Adresse neben `/` und `/index.html`.
+      url: kanonisch(BASIS, 'index'),
     },
   };
 }
@@ -2300,7 +2303,18 @@ function main() {
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${[...dateiSeiten.entries()].filter(([, seite]) => !seite.nurBedienung)
-    .map(([id]) => `  <url><loc>${BASIS}/${id}.html</loc></url>`).join('\n')}
+    // **Über `kanonisch`, seit dem 3. September.** Hier stand
+    // `${BASIS}/${id}.html` — für die Startseite also
+    // `bauversand.com/index.html`, während ihr eigenes `rel="canonical"`
+    // `bauversand.com/` sagt. Zwei Adressen für dieselbe Seite, und die
+    // Sitemap nannte die, die die Seite selbst nicht gelten lässt.
+    //
+    // > **Ein Werkzeug, das die Regel kennt und an einer Stelle nicht anwendet,
+    // > hat die Regel nicht.**
+    //
+    // Der Dateikopf von `kanonisch` beschreibt genau diesen Schaden — er stand
+    // seit dem 1. September da, und die Sitemap ging daran vorbei.
+    .map(([id]) => `  <url><loc>${kanonisch(BASIS, id)}</loc></url>`).join('\n')}
 </urlset>
 `;
   writeFileSync(join(site, 'sitemap.xml'), sitemap, 'utf8');
