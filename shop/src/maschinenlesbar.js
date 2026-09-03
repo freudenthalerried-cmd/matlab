@@ -313,6 +313,29 @@ export function angebotsAuszeichnung(artikel, lage = {}) {
     }
   }
 
+  // **Der Mindestbestellwert, ab dem eine Bestellung überhaupt angenommen wird**
+  // — Gate 25, ergänzt am 3. September 2026.
+  //
+  // `eligibleTransactionVolume` ist das Feld, das schema.org dafür führt, und
+  // es ist nicht dasselbe wie `eligibleQuantity`: jenes sagt, **wie wenig
+  // Ware** man kaufen kann (der Gebindeschritt), dieses, **wie klein der
+  // Vorgang** sein darf. Die beiden standen bis heute nebeneinander, und nur
+  // das erste war ausgezeichnet.
+  //
+  // > **Ein Angebot, das seine Untergrenze nicht nennt, wird für Anfragen
+  // > empfohlen, die es ablehnt.**
+  //
+  // Gemessen wird je Lieferung, nicht je Warenkorb — deshalb steht der Wert am
+  // Angebot des einzelnen Artikels und nicht an einer Seite.
+  if (lage.mindestbestellwertNetto != null && Number(lage.mindestbestellwertNetto) > 0) {
+    angebot.eligibleTransactionVolume = {
+      '@type': 'PriceSpecification',
+      minPrice: Number(lage.mindestbestellwertNetto).toFixed(2),
+      priceCurrency: 'EUR',
+      valueAddedTaxIncluded: false,
+    };
+  }
+
   if (lage.versandkostenNetto != null && gebiet.vollstaendig) {
     angebot.shippingDetails = {
       '@type': 'OfferShippingDetails',

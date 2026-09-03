@@ -869,6 +869,8 @@ ${esc(a.gruppe)}. Ob einer davon der richtige ist, entscheidet die Planung.</p>`
     // den Betreiberdaten und bricht ab, wenn dort keine Domain steht — eine
     // erfundene Produktadresse wäre schlimmer als keine.
     seitenadresse: (art) => `${BASIS}/artikel/${art.sku}.html`,
+    // Gate 25 aus derselben Quelle wie Kasse, Lieferseite und llms.txt.
+    mindestbestellwertNetto: BETREIBER.mindestbestellwertNetto ?? null,
   });
   const jsonLd = auszeichnung.daten
     ? {
@@ -2180,6 +2182,9 @@ function main() {
   writeFileSync(join(site, 'robots.txt'),
     robotsTxt({ sitemap: `${BASIS}/sitemap.xml` }), 'utf8');
 
+  // Gate 25 aus derselben Quelle wie die Seite und die Kasse.
+  const mindestNetto = betreiber.mindestbestellwertNetto ?? null;
+
   const llms = [`# ${MARKE} — Baustoffe zum Baumeisterpreis`, '',
     `> Baustoffhandel in ${ORT}, Oberösterreich. Lieferung regional (Bezirk Perg, Urfahr-Umgebung, Freistadt, Linz, Linz-Land), nicht österreichweit. Preise sind Nettopreise für Unternehmer.`,
     // Was ein Besucher hier **tun** kann, stand bis zum 29.08. nirgends in
@@ -2200,6 +2205,18 @@ function main() {
         : '- **Bestellen ist noch nicht möglich.** Was fehlt, betrifft den Betrieb, nicht Ihre Bestellung.',
     `- **Möglich ist eine Anfrage.** Warenkorb füllen, Bezirk der Baustelle wählen, und die Kasse (${BASIS}/kasse.html) erzeugt eine fertig gerechnete Positionsliste mit Fracht, Umsatzsteuer und Preisstand zum Kopieren. Sie ist unverbindlich und wird nicht automatisch versendet.`,
     '- **Nur im Liefergebiet.** Anfragen aus anderen Bezirken werden nicht angenommen; die Fracht trägt sie nicht.',
+    // **Ergänzt am 3. September, nach Gate 25.** Diese Datei sagte „möglich ist
+    // eine Anfrage" und nannte die Untergrenze nicht. Ein Assistent, den jemand
+    // fragt „kann ich dort 10 m² Dämmung anfragen?", hätte ja gesagt — die
+    // Kasse sagt nein, und zwar bei jedem Korb unter 250 €.
+    //
+    // > **Eine maschinenlesbare Datei, die mehr verspricht als die Kasse
+    // > hergibt, erzeugt genau die Anfrage, die abgelehnt wird.**
+    ...(mindestNetto
+      ? [`- **Mindestbestellwert ${euro(mindestNetto)} € netto Warenwert je Lieferung.** Darunter `
+        + 'nimmt die Kasse keine Anfrage an und nennt den fehlenden Betrag. Bei mehreren '
+        + 'Herstellern entstehen mehrere Lieferungen, und die Grenze gilt für jede einzelne.']
+      : []),
     `- **Fracht fällt je Lieferung an, es gibt keine Frei-Haus-Schwelle.** Die Sätze und die Begründung stehen unter ${BASIS}/lieferung.html.`,
     '', '## Wie diese Seiten aufgebaut sind', '',
     '- Jede Seite beantwortet genau eine Frage; die Antwort steht in den ersten zwei Sätzen.',

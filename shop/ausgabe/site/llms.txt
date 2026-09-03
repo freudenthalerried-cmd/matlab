@@ -7,6 +7,7 @@
 - **Bestellen ist noch nicht möglich.** Es fehlen: ein vollständiges Impressum, eine zugesagte Antwortzeit, die Lieferzeit des Lieferanten, ein Zahlungsanbieter, verbindliche Rechtstexte.
 - **Möglich ist eine Anfrage.** Warenkorb füllen, Bezirk der Baustelle wählen, und die Kasse (https://bauversand.com/kasse.html) erzeugt eine fertig gerechnete Positionsliste mit Fracht, Umsatzsteuer und Preisstand zum Kopieren. Sie ist unverbindlich und wird nicht automatisch versendet.
 - **Nur im Liefergebiet.** Anfragen aus anderen Bezirken werden nicht angenommen; die Fracht trägt sie nicht.
+- **Mindestbestellwert 250,00 € netto Warenwert je Lieferung.** Darunter nimmt die Kasse keine Anfrage an und nennt den fehlenden Betrag. Bei mehreren Herstellern entstehen mehrere Lieferungen, und die Grenze gilt für jede einzelne.
 - **Fracht fällt je Lieferung an, es gibt keine Frei-Haus-Schwelle.** Die Sätze und die Begründung stehen unter https://bauversand.com/lieferung.html.
 
 ## Wie diese Seiten aufgebaut sind

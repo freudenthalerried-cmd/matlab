@@ -18,7 +18,8 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { mindestbestellwertKunde, kundenWarenkorb } from '../src/shopkern.js';
@@ -200,5 +201,95 @@ test('der Grund nennt keine Spanne und keinen Einkaufspreis', () => {
   const u = mindestbestellwertKunde(96.5, 250);
   for (const wort of ['Marge', 'Spanne', 'Einkauf', 'Palette', 'Deckungsbeitrag', 'Gate']) {
     assert.ok(!u.grund.includes(wort), `„${wort}" steht im Kundenhinweis`);
+  }
+});
+
+/* ------------------------------------------------------------------ *
+ * Was die Maschinen lesen
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Der Befund vom 3. September, nachmittags.** Gate 25 stand in der Kasse, im
+ * Warenkorb, auf der Lieferseite und in den AGB — und **nicht** in den beiden
+ * Dateien, für die dieser Shop überhaupt gebaut ist.
+ *
+ * `llms.txt` sagte „möglich ist eine Anfrage" und nannte keine Untergrenze; ein
+ * Assistent, den jemand fragt „kann ich dort 10 m² Dämmung anfragen?", hätte ja
+ * gesagt. Die Auszeichnung führte `eligibleQuantity` (wie wenig **Ware**) und
+ * nicht `eligibleTransactionVolume` (wie klein der **Vorgang**).
+ *
+ * > **Ein Angebot, das seine Untergrenze nicht nennt, wird für Anfragen
+ * > empfohlen, die es ablehnt.**
+ */
+test('llms.txt nennt den Mindestbestellwert', () => {
+  const pfad = fileURLToPath(new URL('../ausgabe/site/llms.txt', import.meta.url));
+  const text = readFileSync(pfad, 'utf8');
+  assert.ok(text.includes('Mindestbestellwert'), 'das Wort fehlt');
+  // Die Zahl in der Schreibweise der Datei — sie steht dort mit zwei
+  // Dezimalstellen, weil `euro()` sie so setzt.
+  assert.ok(
+    text.includes(String(GRENZE)) || text.includes(`${GRENZE},00`),
+    `${GRENZE} kommt in llms.txt nicht vor — die Datei verspricht mehr als die Kasse hergibt`,
+  );
+});
+
+test('jedes Angebot der Auszeichnung nennt seine Untergrenze', () => {
+  const site = fileURLToPath(new URL('../ausgabe/site/artikel', import.meta.url));
+  const dateien = readdirSync(site).filter((n) => n.endsWith('.html'));
+  assert.ok(dateien.length >= 40, `nur ${dateien.length} Artikelseiten — die Schleife prüft zu wenig`);
+
+  const ohne = [];
+  for (const name of dateien) {
+    const html = readFileSync(join(site, name), 'utf8');
+    const insel = /<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(html);
+    if (!insel) { ohne.push(`${name}: keine Auszeichnung`); continue; }
+    const volumen = JSON.parse(insel[1]).offers?.eligibleTransactionVolume;
+    if (Number(volumen?.minPrice) !== GRENZE) ohne.push(`${name}: ${volumen?.minPrice ?? '—'}`);
+  }
+  assert.deepEqual(ohne.slice(0, 5), [],
+    `${ohne.length} Angebote nennen ihre Untergrenze nicht oder eine andere`);
+});
+
+test('die Untergrenze des Vorgangs ist nicht die des Gebindes', async () => {
+  // Zwei Felder für zwei verschiedene Fragen: `eligibleQuantity` sagt, wie
+  // wenig **Ware** man kaufen kann, `eligibleTransactionVolume`, wie klein der
+  // **Vorgang** sein darf. Sie zu verwechseln hieße, entweder 0,5 m² als
+  // Mindestbestellwert auszuweisen oder 250 € als kleinste Liefermenge.
+  const { angebotsAuszeichnung } = await import('../src/maschinenlesbar.js');
+  // Der Gebindeschritt kommt aus der **Bezeichnung** (`mengenschritt`), nicht
+  // aus einem Feld — deshalb trägt der Probeartikel eine echte Schreibweise.
+  const artikel = {
+    sku: 'P-1', bezeichnung: 'Fassaden EPS 2 cm 0,5 m2', gruppe: 'Dämmung', einheit: 'M2',
+    vkNetto: 1.93, preisStand: '2026-06-16',
+  };
+  const { daten } = angebotsAuszeichnung(artikel, {
+    liefergebiet: { land: 'AT', bezirke: [{ name: 'Perg', plz: ['4310'] }] },
+    seitenadresse: (a) => `https://beispiel.at/${a.sku}`,
+    mindestbestellwertNetto: GRENZE,
+  });
+  const angebot = daten.offers;
+  assert.equal(Number(angebot.eligibleTransactionVolume.minPrice), GRENZE);
+  assert.equal(angebot.eligibleTransactionVolume.priceCurrency, 'EUR');
+  assert.notEqual(angebot.eligibleQuantity?.minValue, GRENZE,
+    'die kleinste Liefermenge trägt den Mindestbestellwert — die Felder sind verwechselt');
+  assert.equal(angebot.eligibleQuantity?.minValue, 0.5, 'der Gebindeschritt fehlt');
+});
+
+test('ohne hinterlegte Grenze bleibt das Angebot ohne Untergrenze', async () => {
+  // Kein erfundener Wert: Ein Angebot, das eine Untergrenze behauptet, die
+  // niemand gesetzt hat, ist schlechter als eines ohne.
+  const { angebotsAuszeichnung } = await import('../src/maschinenlesbar.js');
+  const artikel = {
+    sku: 'P-2', bezeichnung: 'Probeplatte', gruppe: 'Dämmung', einheit: 'M2',
+    vkNetto: 1.93, preisStand: '2026-06-16',
+  };
+  for (const wert of [null, undefined, 0, -5]) {
+    const { daten } = angebotsAuszeichnung(artikel, {
+      liefergebiet: { land: 'AT', bezirke: [{ name: 'Perg', plz: ['4310'] }] },
+      seitenadresse: (a) => `https://beispiel.at/${a.sku}`,
+      mindestbestellwertNetto: wert,
+    });
+    assert.equal(daten.offers.eligibleTransactionVolume, undefined,
+      `bei ${JSON.stringify(wert)} steht eine erfundene Untergrenze im Angebot`);
   }
 });
