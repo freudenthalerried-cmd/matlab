@@ -4,7 +4,7 @@
 ganzen Tag über auf keiner Seite beantworten.
 
 Der Shop tritt seit dem Vormittag unter `Bauversand` auf: Logo, Seitentitel,
-`llms.txt`, seit Mittag der Absender auf jedem Beleg, seit dem Nachmittag jede
+`llms.txt`, seit Mittag der Absender jedes Kundenbelegs, seit dem Nachmittag jede
 `Organization` in den strukturierten Daten. Das **Impressum** — die eine Seite,
 auf der man sich zu erkennen gibt — nannte weiter allein:
 

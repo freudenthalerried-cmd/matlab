@@ -29,16 +29,50 @@ const lies = (name) => readFileSync(fileURLToPath(new URL(name, import.meta.url)
 const parameter = lies('../../docs/baustoff-shop/PARAMETER.md');
 const betreiber = JSON.parse(lies('../data/betreiber.json'));
 
-test('die oberste Tafel nennt die Adresse, unter der der Shop gebaut wird', () => {
-  // Nicht die vollständige URL, sondern der Hostname: In der Tafel steht er
-  // ohne Schema, im Bau mit. Verglichen wird, was beide gemeinsam haben.
-  const host = new URL(betreiber.domain).host.replace(/^www\./, '');
-  assert.ok(host.length > 3, `betreiber.domain ist unbrauchbar: ${betreiber.domain}`);
-  assert.ok(
-    parameter.includes(host),
-    `PARAMETER.md nennt „${host}" nicht — der Bau verwendet eine Adresse, die in der `
-      + 'obersten Tafel nicht vorkommt',
-  );
+/**
+ * Die Angaben, unter denen der Shop nach außen auftritt.
+ *
+ * **Erweitert am 3. September 2026, und zwar aus gegebenem Anlass.** Der
+ * Testfall prüfte bis dahin nur die Adresse. Am Vormittag desselben Tages kam
+ * eine zweite Angabe dieser Art dazu — der Markenname —, und sie landete
+ * **nicht** in der Weisungstafel. Ausgerechnet in der Datei, in die sechs
+ * Stunden zuvor der Satz geschrieben worden war: „Diese Tafel ist ab jetzt der
+ * Ort, an dem eine Weisung des Auftraggebers als Erstes landet."
+ *
+ * > **Eine Regel, für die es keine Messung gibt, hält bis zum nächsten Fall.**
+ *
+ * Deshalb eine Liste statt eines Sonderfalls, mit dem Grund an jedem Eintrag:
+ * Wer eine dritte Auftrittsangabe einführt, trägt sie hier ein und merkt beim
+ * Schreiben des Grundes, ob sie eine ist.
+ */
+const AUFTRITT = [
+  {
+    feld: 'domain',
+    lesen: (b) => new URL(b.domain).host.replace(/^www\./, ''),
+    warum: 'Die Adresse, unter der gebaut wird. Steht in Verweisen, Sitemap, llms.txt und den '
+      + 'finalen URLs der Anzeigen — eine falsche hier kostet jeden Klick.',
+  },
+  {
+    feld: 'marke',
+    lesen: (b) => b.marke,
+    warum: 'Der Name, unter dem der Laden auftritt: Logo, Seitentitel, Absender auf jedem Beleg, '
+      + 'jede Organisation in den strukturierten Daten. Vier Fundstellen an einem Tag, und keine '
+      + 'davon stand in der Weisungstafel.',
+  },
+];
+
+test('die oberste Tafel nennt jede Angabe, unter der der Shop auftritt', () => {
+  assert.ok(AUFTRITT.length >= 2, 'die Liste ist gefüllt — sonst prüft die Schleife nichts');
+  const fehlend = [];
+  for (const a of AUFTRITT) {
+    assert.ok(a.warum.length >= 40, `${a.feld}: ohne belastbaren Grund kein Eintrag`);
+    const wert = a.lesen(betreiber);
+    assert.ok(typeof wert === 'string' && wert.length > 2,
+      `betreiber.${a.feld} ist unbrauchbar: ${JSON.stringify(wert)}`);
+    if (!parameter.includes(wert)) fehlend.push(`${a.feld} = „${wert}"`);
+  }
+  assert.deepEqual(fehlend, [],
+    'diese Angaben verwendet der Bau, und die oberste Tafel kennt sie nicht');
 });
 
 /**

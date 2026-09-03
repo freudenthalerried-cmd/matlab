@@ -29,6 +29,7 @@ mehr zur Diskussion gestellt. Änderungen nur mit ausdrücklicher Freigabe.
 | 28.08. | **Keine Spanne ausgeben** — die Handelsspanne erscheint nicht auf Kundenseiten | genannt wird stattdessen der Abstand zum Listenpreis; `spanne-nicht-mehr-ausgeben.md` |
 | 28.08. | **Sortiment auf mindestens 100 Artikel** erweitern | 46 sind das Maximum aus den Rechnungen; es braucht eine Artikelliste, `hundert-artikel-was-fehlt.md` |
 | 31.08. | **`bauversand.com` verwenden** — die Domain ist bei All-Inkl offen | Steht in `data/betreiber.json`; Seiten, Sitemap, `llms.txt` und die finalen URLs der Anzeigen nehmen sie von dort. **Damit ist die Empfehlung `shop.freudenthaler-bau.at` aus `domainwahl.md` abgelöst** — die Zeile darüber nennt nur noch die bestehende Firmendomain. `bauversand-com.md` |
+| 03.09. | **Der Shop tritt als „Bauversand" auf** — nicht unter dem Firmennamen | Steht als `marke` in `data/betreiber.json` und von dort in Logo, Seitentitel, `llms.txt`, im Absender jedes Belegs („Bauversand — Freudenthaler Bau GmbH") und als `name` jeder Organisation der strukturierten Daten, mit `legalName` daneben. **Die Freudenthaler Bau GmbH bleibt die Betreiberin**: Impressum, Belege, `seller` und `publisher`. Das Impressum verbindet beide in einer Zeile. `bestellt-bei-bauversand-rechnung-von-wem.md`, `wer-ist-bauversand.md` |
 
 ### Was davon die Zahlen weiter unten außer Kraft setzt
 
