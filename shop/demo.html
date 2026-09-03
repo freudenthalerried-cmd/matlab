@@ -4543,10 +4543,33 @@ const wert = (v, bezeichnung) => (gefuellt(v) ? textZeile(v) : LUECKE(bezeichnun
 
 function absenderzeilen(betreiber = {}) {
   return [
-    wert(betreiber.firma, 'Firma des Ausstellers'),
+    absenderkopf(betreiber),
     wert(betreiber.strasse, 'Straße des Ausstellers'),
     `${wert(betreiber.plz, 'PLZ des Ausstellers')} ${wert(betreiber.ort, 'Ort des Ausstellers')}`,
   ];
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function absenderkopf(betreiber = {}) {
+  const firma = wert(betreiber.firma, 'Firma des Ausstellers');
+  const marke = String(betreiber.marke ?? '').trim();
+  return marke && marke !== String(betreiber.firma ?? '').trim() ? `${marke} — ${firma}` : firma;
 }
 
 

@@ -109,10 +109,33 @@ const wert = (v, bezeichnung) => (gefuellt(v) ? textZeile(v) : LUECKE(bezeichnun
  */
 export function absenderzeilen(betreiber = {}) {
   return [
-    wert(betreiber.firma, 'Firma des Ausstellers'),
+    absenderkopf(betreiber),
     wert(betreiber.strasse, 'Straße des Ausstellers'),
     `${wert(betreiber.plz, 'PLZ des Ausstellers')} ${wert(betreiber.ort, 'Ort des Ausstellers')}`,
   ];
+}
+
+/**
+ * Die erste Zeile des Absenders: **Marke und Aussteller in einer Zeile.**
+ *
+ * **Der Befund, 3. September 2026.** Seit heute früh heißt der Laden
+ * `Bauversand` — Logo, Seitentitel, `llms.txt`. Die Belege trugen weiter nur
+ * `Freudenthaler Bau GmbH`. Ein Kunde bestellt also bei einem Namen und
+ * bekommt Angebot, Auftragsbestätigung und Rechnung von einem anderen.
+ *
+ * > **Wer nicht erkennt, von wem die Rechnung kommt, bezahlt sie nicht — er
+ * > ruft an.** Und im schlechteren Fall ruft er bei seiner Bank an.
+ *
+ * Die Reihenfolge ist nicht beliebig: Erst der Name, unter dem er bestellt
+ * hat, dann der, der die Rechnung ausstellt. § 11 UStG verlangt den Namen des
+ * **Ausstellers**; er steht vollständig in derselben Zeile, und die Prüfung
+ * nach § 11 findet ihn dort. Die Marke davor ist eine Zugabe, keine Ersetzung
+ * — fehlt sie, bleibt die Zeile, wie sie war.
+ */
+export function absenderkopf(betreiber = {}) {
+  const firma = wert(betreiber.firma, 'Firma des Ausstellers');
+  const marke = String(betreiber.marke ?? '').trim();
+  return marke && marke !== String(betreiber.firma ?? '').trim() ? `${marke} — ${firma}` : firma;
 }
 
 /**

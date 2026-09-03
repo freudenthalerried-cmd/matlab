@@ -578,3 +578,48 @@ test('Angebot und Auftragsbestätigung tragen dieselbe Absenderanschrift', () =>
     assert.match(t, /4600 Wels/);
   }
 });
+
+/* ------------------------------------------------------------------ *
+ * Marke und Aussteller
+ * ------------------------------------------------------------------ */
+
+/**
+ * Seit dem 3. September heißt der Laden `Bauversand`, betrieben von der
+ * Freudenthaler Bau GmbH. Die Belege trugen zunächst weiter nur die Firma: Ein
+ * Kunde bestellt bei einem Namen und bekommt die Rechnung von einem anderen.
+ *
+ * > **Wer nicht erkennt, von wem die Rechnung kommt, bezahlt sie nicht — er
+ * > ruft an.**
+ */
+test('der Absenderkopf nennt erst die Marke, dann den Aussteller', async () => {
+  const { absenderkopf, absenderzeilen } = await import('../src/beleg.js');
+  const betreiber = {
+    marke: 'Bauversand', firma: 'Freudenthaler Bau GmbH',
+    strasse: 'Marwach 5', plz: '4312', ort: 'Ried in der Riedmark',
+  };
+  assert.equal(absenderkopf(betreiber), 'Bauversand — Freudenthaler Bau GmbH');
+  assert.equal(absenderzeilen(betreiber)[0], 'Bauversand — Freudenthaler Bau GmbH',
+    'die erste Absenderzeile trägt beide Namen');
+  assert.equal(absenderzeilen(betreiber).length, 3, 'die Marke bekommt keine eigene Zeile');
+});
+
+test('ohne Marke bleibt der Absender, wie er war', async () => {
+  const { absenderkopf } = await import('../src/beleg.js');
+  const firma = 'Freudenthaler Bau GmbH';
+  for (const marke of [undefined, '', '   ', firma]) {
+    assert.equal(absenderkopf({ marke, firma }), firma,
+      `bei Marke ${JSON.stringify(marke)} gehört nichts dazu`);
+  }
+});
+
+test('der Name des Ausstellers steht weiterhin vollständig auf dem Beleg', async () => {
+  // § 11 UStG verlangt den Namen des Ausstellers. Die Marke davor ist eine
+  // Zugabe, keine Ersetzung — sonst hätte diese Änderung eine Pflichtangabe
+  // gegen eine Bequemlichkeit getauscht.
+  const { absenderkopf } = await import('../src/beleg.js');
+  const firma = 'Freudenthaler Bau GmbH';
+  const kopf = absenderkopf({ marke: 'Bauversand', firma });
+  assert.ok(kopf.includes(firma), 'der Ausstellername fehlt in der Zeile');
+  assert.ok(kopf.indexOf('Bauversand') < kopf.indexOf(firma),
+    'die Marke steht vorn — unter ihr hat der Kunde bestellt');
+});
