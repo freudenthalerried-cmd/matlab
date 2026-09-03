@@ -20,7 +20,7 @@ Machbarkeitsanalyse, Shop und Website für einen Baustoffhandel, der 3.000 € n
 
 👉 **`docs/baustoff-shop/STATUS.md`** — Stand, offene Weisungen, Dokumentenverzeichnis und eine Tabelle aller Korrekturen, die im Verlauf nötig waren. Diese Datei zuerst lesen. Bei Gate-Fragen gilt **`gate-register.md`** (24 Gates, Stand 27. August).
 
-Diese Beschreibung hat seit dem 1. September eine Quelle im Verzeichnis: `docs/baustoff-shop/pr-beschreibung.md`. `npm run pruefe-schaufenster` misst ihre 26 Kennzahlen gegen den Bestand — sie war zuvor an neun Stellen überholt, und seit dem 1. September ist auch die Leitzahl darunter.
+Diese Beschreibung hat seit dem 1. September eine Quelle im Verzeichnis: `docs/baustoff-shop/pr-beschreibung.md`. `npm run pruefe-schaufenster` misst ihre 28 Kennzahlen gegen den Bestand — sie war zuvor an neun Stellen überholt, und seit dem 1. September ist auch die Leitzahl darunter.
 
 ### Veröffentlichte Momentaufnahmen
 
@@ -120,6 +120,7 @@ Die fünf Rechtsseiten sind ein **Gerüst mit sichtbaren Lücken**, kein fertige
 | Prüfer der Prüfer | meldete „8 Prüfer befragt", während neun liefen — ein vollständiges Ergebnis über eine unvollständige Liste |
 | Kundenbeleg | die Rechnung nannte **1.638,48 € Gesamtbetrag** und schwieg darüber, ob das Geld noch zu zahlen ist — bei Zahlungsziel null Tage und Vorkasse auf allen Wegen. Kein Prüfer las je einen **fertigen** Beleg |
 | Leitzahl | der nötige Monatsumsatz stand seit 25.08. mit **45.356 €** da: die **Kartenzahl**, zwei Tage älter als Gate 21, das EPS entschied. Mit dem entschiedenen Zahlweg sind es **43.396 €**. Zwölf Prüfer, und keiner sah die Zahl an, um die es geht |
+| Testprüfer | `test/geheimnis.test.js` hat neun Testfälle, der Prüfer sah **acht**. Eine geschweifte Klammer in einer Zeichenkette ließ die Klammerzählung bis zum Dateiende laufen — der Fall wurde still übersprungen. Aufgefallen erst, als ein Gesamtlauf beide Zählungen nebeneinanderstellte |
 | Diese Beschreibung | an neun Stellen überholt: 616 Testfälle statt über 1.000, 77 Seiten statt 81, 23 Gates statt 24 |
 
 Der gemeinsame Nenner: **eine Angabe, die berechnet und dann verschwiegen wird.** Immer meldet sich etwas *nicht*, und immer sieht das Ergebnis besser aus als es ist.
@@ -134,5 +135,7 @@ Der gemeinsame Nenner: **eine Angabe, die berechnet und dann verschwiegen wird.*
 - **Datenblätter der Hersteller.** Sieben Inhaltsseiten verweisen darauf, keine verlinkt eines: `baumit.at`, `schiedel.at`, `synthesa.at`, `isover.at` und `ris.bka.gv.at` sind aus der Arbeitsumgebung gesperrt.
 
 Erledigt seit der letzten Fassung dieser Beschreibung: Domain und Hosting (bauversand.com bei All-Inkl), Liefergebiet als Bezirksliste (Gate 23), Kundenzahlungsziel (Gate 21).
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
 https://claude.ai/code/session_01NUkcuRkCJDZFDntY4wU3xy

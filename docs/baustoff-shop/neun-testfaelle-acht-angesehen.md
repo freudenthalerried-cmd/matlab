@@ -118,6 +118,38 @@ Muster mit Anführungszeichen. Beide müssen gefunden werden, keiner darf
 
 ---
 
+## 4. Die Beschreibung, die ihre eigene Quelle nicht kennt
+
+Zum Schluss die Pflichtrunde an PR #14: keine CI, keine Kommentare — und ein
+Auseinanderlaufen, das genau in dieselbe Familie gehört. Die PR-Beschreibung
+hat seit dem 1. September eine Quelle im Verzeichnis
+(`docs/baustoff-shop/pr-beschreibung.md`), und `npm run pruefe-schaufenster`
+hält deren Zahlen gegen den Bestand. Der Prüfer war grün. Der **auf GitHub
+sichtbare Text** stand trotzdem auf „12 Prüfer" (18) und „50 Shopszenarien"
+(53): Die Datei wurde gepflegt, das Schaufenster nicht nachgezogen.
+
+> **Eine Quelle, die niemand ausliefert, ist eine zweite Fassung.**
+
+Die Beschreibung ist jetzt aus der Datei erneuert. Und der eine Satz, den der
+Prüfer nicht prüfte, war ausgerechnet der über ihn selbst: „misst ihre **26**
+Kennzahlen" bei 27 Einträgen. Er ist jetzt die 28. Kennzahl und misst sich
+mit — `liste.length + 1`, weil dieser Eintrag einer ist.
+
+## Was in einer Datei stand und die nächste nicht erreichte
+
+Nachträglich gefunden: `bin/schaufensterpruefung.mjs` trägt seit dem
+1. September die Zeile
+
+> `node --test test/` zählt Dateien, nicht Fälle — der erste Versuch meldete „1".
+
+Genau diese Falle ist heute im neuen Gesamtlauf noch einmal aufgegangen. Das
+Wissen war da, im selben Verzeichnis, zwei Tage alt — es stand nur an einer
+Stelle, an der niemand suchte, der ein anderes Werkzeug schreibt. Deshalb ruft
+der Gesamtlauf jetzt `npm test` auf: **Nicht der bessere Aufruf ist die Lehre,
+sondern der einzige.**
+
+---
+
 ## Was daraus bleibt
 
 Der neue Gesamtlauf hat in seinem ersten Durchgang **keinen** neuen Fehler

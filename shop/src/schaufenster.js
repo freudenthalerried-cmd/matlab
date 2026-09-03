@@ -83,7 +83,7 @@ export function zahlAus(text) {
  */
 export function kennzahlen(messwerte) {
   const m = messwerte;
-  return [
+  const liste = [
     { name: 'Artikel im Katalog', wie: 'data/katalog-baustoff.json',
       muster: /\*\*(\d+) echte Artikel\*\*/, soll: m.artikel },
     { name: 'Gebaute Seiten (Tabelle)', wie: 'ausgabe/site/**/*.html',
@@ -143,6 +143,19 @@ export function kennzahlen(messwerte) {
     { name: 'Bestellungen im Monat', wie: 'noetigerUmsatz(zielgroessen, ziel.zahlweg)',
       muster: /Bestellungen im Monat \| \d+ \| (\d+) \|/, soll: m.bestellungen },
   ];
+
+  // **Die Zahl, die diese Prüfung über sich selbst nennt.** Die Beschreibung
+  // sagt, wie viele Kennzahlen hier gemessen werden — und genau dieser Satz
+  // war am 3.9. der einzige überholte in der Datei: „26 Kennzahlen" bei 27
+  // Einträgen. Ein Prüfer, der jede Zahl im Text hält außer der über sich
+  // selbst, hat eine blinde Stelle in der Mitte.
+  //
+  // `liste.length + 1` zählt diesen Eintrag mit, denn er ist einer.
+  liste.push({
+    name: 'Kennzahlen dieser Prüfung', wie: 'src/schaufenster.js — die Liste selbst',
+    muster: /misst ihre (\d+) Kennzahlen gegen den Bestand/, soll: liste.length + 1,
+  });
+  return liste;
 }
 
 /**
