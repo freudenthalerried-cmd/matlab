@@ -4,6 +4,8 @@
   "_quellen": "Firmenbuch ueber evi.gv.at (FN 347938z), WKO Firmen A-Z, Firmensitz laut eigener Firmenseite.",
   "_offen": "E-Mail, Telefon und UID-Nummer sind dem Auftraggeber bekannt und muessen von ihm eingetragen werden. Der Gewerbewortlaut ist im Gewerberegisterauszug nachzulesen und hier bewusst noch nicht behauptet.",
   "firma": "Freudenthaler Bau GmbH",
+  "marke": "Bauversand",
+  "_markeHinweis": "Weisung vom 03.09.2026: Der Shop tritt als \"Bauversand\" auf, passend zur Domain bauversand.com. NICHT dasselbe wie firma: Die Freudenthaler Bau GmbH bleibt die Betreiberin und steht im Impressum, auf allen Belegen und als seller/publisher in den strukturierten Daten. Die Marke steht dort, wo der Kunde den Laden erkennt: Logo, Seitentitel, llms.txt.",
   "rechtsform": "Gesellschaft mit beschränkter Haftung",
   "strasse": "Marwach 5",
   "plz": "4312",

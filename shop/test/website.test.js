@@ -1448,3 +1448,51 @@ test('keine gebaute Seite trägt eine Kennung zweimal', () => {
   }
   assert.deepEqual(doppelt, []);
 });
+
+/**
+ * Marke und Betreiberin dürfen nicht ineinanderfallen.
+ *
+ * **Weisung vom 3. September 2026:** Der Laden heißt `Bauversand`, betrieben
+ * wird er von der Freudenthaler Bau GmbH. Bis dahin trug die Kopfleiste aller
+ * 81 Seiten den Firmennamen — den eines Baumeisterbetriebs, nicht den eines
+ * Shops.
+ *
+ * Der Name stand als feste Zeichenkette in `bin/website.mjs`, so wie die
+ * Adresse vor dem 31. August. Beide kommen jetzt aus `data/betreiber.json`,
+ * und dieser Testfall hält die gebauten Seiten dagegen: **Ein Name an zwei
+ * Stellen wandert an einer nicht mit.**
+ */
+test('das Logo trägt die Marke, das Impressum die Betreiberin', () => {
+  const betreiber = JSON.parse(
+    readFileSync(fileURLToPath(new URL('../data/betreiber.json', import.meta.url)), 'utf8'),
+  );
+  const marke = betreiber.marke;
+  const firma = betreiber.firma;
+  assert.ok(marke && firma, 'betreiber.json führt Marke und Firma');
+  assert.notEqual(marke, firma, 'wären beide gleich, prüfte dieser Fall nichts');
+
+  const site = pfad('../ausgabe/site');
+  const sammle = (ordner, hin = []) => {
+    for (const e of readdirSync(ordner, { withFileTypes: true })) {
+      const p = join(ordner, e.name);
+      if (e.isDirectory()) sammle(p, hin);
+      else if (e.name.endsWith('.html')) hin.push({ datei: p.slice(site.length + 1), html: readFileSync(p, 'utf8') });
+    }
+    return hin;
+  };
+  const seiten = sammle(site);
+  assert.ok(seiten.length >= 40, `nur ${seiten.length} gebaute Seiten — die Schleife prüft zu wenig`);
+
+  const ohneMarke = [];
+  for (const { datei, html } of seiten) {
+    const logo = /<a class="logo"[^>]*>([^<]*)</.exec(html);
+    if (!logo || logo[1].trim() !== marke) ohneMarke.push(`${datei}: ${logo ? logo[1] : 'kein Logo'}`);
+  }
+  assert.deepEqual(ohneMarke, [], 'diese Seiten tragen im Logo nicht die Marke');
+
+  // Und die Gegenrichtung: Die Betreiberin darf nicht verschwinden.
+  const impressum = seiten.find((s) => s.datei.includes('impressum'));
+  assert.ok(impressum, 'kein Impressum gebaut');
+  assert.ok(impressum.html.includes(firma),
+    'das Impressum nennt die Betreiberin nicht mehr — die Marke ist keine Rechtsform');
+});

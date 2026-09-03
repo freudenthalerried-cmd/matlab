@@ -122,8 +122,6 @@ const BETREIBERDATEI = process.env.STARTKLAR_BETREIBER || join(WURZEL, 'data', '
 // kippen sehen — sie könnte nur die halbe Lage beantworten.
 const LIEFERANTENDATEI = process.env.WEBSITE_LIEFERANTEN || join(WURZEL, 'data', 'lieferanten.json');
 
-const FIRMA = 'Freudenthaler Bau GmbH';
-const ORT = 'Ried in der Riedmark';
 /**
  * Die Adresse, unter der der Shop steht.
  *
@@ -155,6 +153,31 @@ function basisAdresse(betreiber) {
 const BASIS = basisAdresse(existsSync(BETREIBERDATEI)
   ? JSON.parse(readFileSync(BETREIBERDATEI, 'utf8'))
   : {});
+
+/**
+ * Zwei Namen, und sie dürfen nicht ineinanderfallen.
+ *
+ * `FIRMA` ist die **Betreiberin** — sie steht im Impressum, auf allen
+ * Kundenbelegen und als `seller`/`publisher` in den strukturierten Daten. `MARKE` ist der
+ * Name, unter dem der Laden auftritt: Logo, Seitentitel, `llms.txt`.
+ *
+ * **Weisung vom 3. September 2026:** Die Marke ist `Bauversand`, passend zur
+ * Domain. Bis dahin trug die Kopfleiste aller 81 Seiten „Freudenthaler Bau
+ * GmbH" — den Namen eines Baumeisterbetriebs, nicht den eines Shops.
+ *
+ * **Beide kommen jetzt aus `data/betreiber.json`.** `FIRMA` stand hier als
+ * fest verdrahtete Zeichenkette — dieselbe Bauart wie die Adresse vor dem
+ * 31. August, und dieselbe Falle: Ein Name an zwei Stellen wandert an einer
+ * nicht mit. Fehlt `marke`, tritt die Firma an ihre Stelle; ein Shop ohne
+ * Namen wäre schlimmer als einer mit dem falschen.
+ */
+const BETREIBER = existsSync(BETREIBERDATEI)
+  ? JSON.parse(readFileSync(BETREIBERDATEI, 'utf8'))
+  : {};
+const FIRMA = BETREIBER.firma || 'Freudenthaler Bau GmbH';
+const MARKE = BETREIBER.marke || FIRMA;
+const ORT = BETREIBER.ort || 'Ried in der Riedmark';
+
 
 
 /* ------------------------------------------------------------------ *
@@ -1200,7 +1223,11 @@ Jede beantwortet genau eine Frage, und die Antwort steht in den ersten zwei Sät
     jsonLd: {
       '@context': 'https://schema.org',
       '@type': 'Organization',
-      name: FIRMA,
+      // Der Laden heißt Bauversand, betrieben wird er von der GmbH. `legalName`
+      // ist genau das Feld dafür — beides in einer Auszeichnung, damit eine
+      // Maschine Marke und Betreiberin zusammenführt statt zu raten.
+      name: MARKE,
+      legalName: FIRMA,
       address: { '@type': 'PostalAddress', addressLocality: ORT, addressCountry: 'AT' },
       areaServed: liefergebietOrte({ land: LIEFERGEBIET.land, bezirke: LIEFERGEBIET.bezirke.map((b) => b.name) }),
       url: BASIS,
@@ -1767,7 +1794,7 @@ function rahmen(seite, verweis, { eigenstaendig, skriptDatei, tiefe = false, dat
 Alle Artikel-, Wissens- und Gruppenseiten sind vollständig lesbar; das Sortiment steht über die
 Warengruppen in der Kopfleiste.</p></noscript>
 <header class="kopfleiste">
-  <a class="logo" href="${verweis('index')}">${esc(FIRMA)}</a>
+  <a class="logo" href="${verweis('index')}">${esc(MARKE)}</a>
   <div class="suche">
     <input id="suchfeld" type="search" autocomplete="off" placeholder="Artikel suchen — z. B. Spachtel, XPS 50, Kanalbogen"
       aria-label="Im Sortiment suchen">
@@ -1829,7 +1856,7 @@ function bedienhinweis(seite) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${esc(seite.titel)} — ${esc(FIRMA)}</title>
+<title>${esc(seite.titel)} — ${esc(MARKE)}</title>
 <meta name="description" content="${esc(seite.kurz.slice(0, 300))}">${bedienhinweis(seite)}${
   kanonisch(BASIS, id) ? `\n<link rel="canonical" href="${esc(kanonisch(BASIS, id))}">` : ''}
 ${SCHRIFTEINBINDUNG}<style>${stil()}</style>${ld}
@@ -2136,7 +2163,7 @@ function main() {
   writeFileSync(join(site, 'robots.txt'),
     robotsTxt({ sitemap: `${BASIS}/sitemap.xml` }), 'utf8');
 
-  const llms = [`# ${FIRMA} — Baustoffe zum Baumeisterpreis`, '',
+  const llms = [`# ${MARKE} — Baustoffe zum Baumeisterpreis`, '',
     `> Baustoffhandel in ${ORT}, Oberösterreich. Lieferung regional (Bezirk Perg, Urfahr-Umgebung, Freistadt, Linz, Linz-Land), nicht österreichweit. Preise sind Nettopreise für Unternehmer.`,
     // Was ein Besucher hier **tun** kann, stand bis zum 29.08. nirgends in
     // dieser Datei. Ein Assistent, den jemand fragt „kann ich dort
@@ -2287,7 +2314,7 @@ ${eingebettet}
     var id = roh.split('?')[0] || 'index';
     var s = seiten[id] || seiten['index'];
     ziel.innerHTML = s.html;
-    document.title = s.titel + ' — ${FIRMA}';
+    document.title = s.titel + ' — ${MARKE}';
     window.scrollTo(0, 0);
     if (window.__SHOP_START__) window.__SHOP_START__();
   }
