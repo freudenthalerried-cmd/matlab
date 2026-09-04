@@ -25,6 +25,7 @@
  */
 
 import { bestellwegBefund } from './bestellweg.js';
+import { vorDemHochladen } from './rechtstexte.js';
 
 /**
  * Welche offenen Punkte der **Kunde** auf der Kasse zu hören bekommt.
@@ -200,11 +201,26 @@ export function startklar(lage = {}) {
       : 'keiner gewählt — die Kasse löst nichts aus und sagt das auch',
     'Auftraggeber (Ausgabe)');
 
+  /**
+   * **Geschärft am 4. September.** Der Befund lautete „AGB, Widerruf und
+   * Datenschutz stehen als Gerüst" und warf damit zusammen, was zu
+   * verschiedenen Zeitpunkten Pflicht wird.
+   *
+   * > **Der Datenschutz blockiert das Hochladen, die AGB nicht.** Wer eine
+   * > Seite aufruft, hinterlässt eine IP-Adresse im Serverprotokoll; wer
+   * > nichts bestellen kann, schließt keinen Vertrag.
+   *
+   * Die Zuordnung steht in `PFLICHTTEXTE` und nicht in diesem Satz — sonst
+   * wäre sie die zweite und die ungeprüfte.
+   */
+  const vorOnline = vorDemHochladen();
   p('rechtstexte', 'Rechtstexte mit verbindlichem Wortlaut',
     rechtstexteFundstelle ? 'erfuellt' : 'offen',
     rechtstexteFundstelle
       ? `Fundstelle: ${rechtstexteFundstelle}`
-      : 'AGB, Widerruf und Datenschutz stehen als Gerüst mit Begründungen, nicht als Wortlaut',
+      : `${vorOnline.length} Texte gelten ab dem ersten Aufruf und stehen als Gliederung ohne `
+        + `Wortlaut: ${vorOnline.map((t) => `${t.id} (${t.grundlage})`).join(', ')}. `
+        + 'AGB und Widerruf hängen am Vertragsschluss und blockieren das Hochladen nicht',
     'Auftraggeber (Ausgabe)');
 
   // --- Was von hier aus nicht feststellbar ist -------------------------

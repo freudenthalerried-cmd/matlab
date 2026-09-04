@@ -162,10 +162,31 @@ export const ETAPPEN = Object.freeze([
         warum: 'Die Abhängigkeit ist keine technische: Das Impressum-Gerüst sagt selbst, dass '
           + 'es so nicht online gehen darf.',
       }),
+      /**
+       * **Begründung berichtigt am 4. September.** Hier stand: „AGB, Widerruf
+       * und Datenschutz stehen als Gerüst mit Begründungen. Ein Gerüst online
+       * zu stellen wäre schlechter als kein Text, weil es wie einer aussieht."
+       *
+       * Der zweite Halbsatz stimmt für ein Gerüst, das sich für einen Text
+       * ausgibt. **Diese Seiten tun das nicht:** Die AGB-Seite beginnt mit
+       * „Das hier ist die Gliederung, nicht der Vertrag". Die Begründung war
+       * an ihrem eigenen Erzeugnis widerlegt.
+       *
+       * Was hält, ist die schärfere Zuordnung aus `PFLICHTTEXTE`: Der
+       * **Datenschutz** blockiert das Hochladen, die AGB nicht. Wer eine Seite
+       * aufruft, hinterlässt eine IP-Adresse; wer nichts bestellen kann,
+       * schließt keinen Vertrag.
+       *
+       * An der Kette ändert das nichts — es ist dieselbe Bestellung beim
+       * selben Anbieter. An der Aussage schon: Der Plan behauptet nicht mehr,
+       * es hänge alles an allem.
+       */
       Object.freeze({
         etappe: 'rechtstexte',
-        warum: 'AGB, Widerruf und Datenschutz stehen als Gerüst mit Begründungen. Ein Gerüst '
-          + 'online zu stellen wäre schlechter als kein Text, weil es wie einer aussieht.',
+        warum: 'Die Datenschutzerklärung (Art. 13 DSGVO) und die Offenlegung (§ 25 MedienG) '
+          + 'gelten ab dem ersten Aufruf, nicht ab der ersten Bestellung — beide stehen heute '
+          + 'als Gliederung ohne Wortlaut da. AGB und Widerruf blockieren das Hochladen nicht: '
+          + 'Sie brauchen einen Vertrag, und dieser Shop nimmt keine Bestellung entgegen.',
       }),
     ],
     tage: 1,

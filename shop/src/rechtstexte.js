@@ -19,6 +19,96 @@
  */
 import { KORBSCHLUESSEL } from './shopkern.js';
 
+/**
+ * Welcher Pflichttext ab wann nötig ist.
+ *
+ * **Der Anlass, 4. September 2026.** Der Auftraggeber hat am 3. September
+ * gesagt: „lade shop auf bauversand.com hoch". Der Rolloutplan hält die Etappe
+ * `upload` mit dieser Begründung an:
+ *
+ * > „AGB, Widerruf und Datenschutz stehen als Gerüst mit Begründungen. Ein
+ * > Gerüst online zu stellen wäre schlechter als kein Text, weil es wie einer
+ * > aussieht."
+ *
+ * Der zweite Halbsatz stimmt für ein Gerüst, das sich für einen Text ausgibt.
+ * **Diese Seiten tun das nicht.** Die AGB-Seite beginnt mit „Das hier ist die
+ * Gliederung, nicht der Vertrag", die Datenschutzseite mit „Gliederung, kein
+ * fertiger Text". Die Begründung ist damit an ihrem eigenen Erzeugnis
+ * widerlegt.
+ *
+ * Was übrig bleibt, ist die härtere und richtige Frage: **Welcher Text ist ab
+ * wann Pflicht?** Und da laufen zwei Dinge auseinander, die bisher in einem
+ * Wort zusammenstanden:
+ *
+ * | | ab wann | Stand |
+ * |---|---|---|
+ * | Impressum | ab dem **ersten Besuch** | Gerüst, vier Pflichtangaben offen |
+ * | Offenlegung § 25 MedienG | ab dem **ersten Besuch** | steht im Auftrag an den Anbieter |
+ * | Datenschutzerklärung | ab dem **ersten Besuch** | Gliederung, kein Wortlaut |
+ * | AGB | ab dem ersten **Vertragsschluss** | Gliederung — und es kann kein Vertrag zustande kommen |
+ * | Widerrufsbelehrung | nur gegenüber **Verbrauchern** | Gate 7 schließt sie aus |
+ *
+ * > **Der Datenschutz blockiert das Hochladen, die AGB nicht.** Wer eine Seite
+ * > aufruft, hinterlässt eine IP-Adresse im Serverprotokoll; wer nichts
+ * > bestellen kann, schließt keinen Vertrag.
+ *
+ * Das ist **keine Rechtsberatung** und soll keine sein. Es ist die Zuordnung,
+ * die der Rechtstexteanbieter ohnehin trifft — hier steht sie, damit der
+ * Rolloutplan nicht mehr behauptet, es hänge alles an allem.
+ */
+export const PFLICHTTEXTE = Object.freeze([
+  Object.freeze({
+    id: 'impressum',
+    seite: 'rechtliches/impressum',
+    abWann: 'besuch',
+    grundlage: '§ 5 ECG, § 14 UGB',
+    warum: 'Die Pflichtangaben treffen jeden, der eine Website geschäftlich betreibt — '
+      + 'unabhängig davon, ob über sie etwas verkauft wird. Vier Angaben fehlen; die Seite '
+      + 'sagt das selbst.',
+  }),
+  Object.freeze({
+    id: 'offenlegung',
+    seite: null,
+    abWann: 'besuch',
+    grundlage: '§ 25 MedienG',
+    warum: 'Die Offenlegung gilt für wiederkehrend abrufbare Websites und steht neben dem '
+      + 'Impressum, nicht darin. Sie ist Teil des Auftrags an den Rechtstexteanbieter und hat '
+      + 'heute keine eigene Seite.',
+  }),
+  Object.freeze({
+    id: 'datenschutz',
+    seite: 'rechtliches/datenschutz',
+    abWann: 'besuch',
+    grundlage: 'Art. 13 DSGVO',
+    warum: 'Die Informationspflicht beginnt mit dem ersten Aufruf: Der Server protokolliert '
+      + 'eine IP-Adresse, und die Oberfläche legt den Warenkorb im Browser ab. Beides '
+      + 'geschieht, bevor irgendjemand etwas anfragt.',
+  }),
+  Object.freeze({
+    id: 'agb',
+    seite: 'rechtliches/agb',
+    abWann: 'vertrag',
+    warum: 'Geschäftsbedingungen werden Vertragsbestandteil — sie brauchen einen Vertrag. '
+      + 'Dieser Shop nimmt keine Bestellung entgegen (erster Punkt in `startklar`); die Kasse '
+      + 'erzeugt eine Anfrage, und die ist ausdrücklich unverbindlich.',
+    grundlage: '§ 864a, § 879 ABGB — Einbeziehung und Inhaltskontrolle',
+  }),
+  Object.freeze({
+    id: 'widerruf',
+    seite: null,
+    abWann: 'verbraucher',
+    grundlage: '§ 11 FAGG',
+    warum: 'Das Rücktrittsrecht bei Fernabsatz steht Verbrauchern zu. Gate 7 lässt '
+      + 'ausschließlich Unternehmer bestellen, und die Kundendatenprüfung verlangt die '
+      + 'Bestätigung. Solange das gilt, entsteht die Belehrungspflicht nicht.',
+  }),
+]);
+
+/** Was vor dem Hochladen dastehen muss — alles andere hängt am Verkauf. */
+export function vorDemHochladen(texte = PFLICHTTEXTE) {
+  return texte.filter((t) => t.abWann === 'besuch');
+}
+
 export const IMPRESSUMSFELDER = [
   { feld: 'firma', bezeichnung: 'Name oder Firma laut Firmenbuch', bedingt: false },
   { feld: 'rechtsform', bezeichnung: 'Rechtsform', bedingt: false },

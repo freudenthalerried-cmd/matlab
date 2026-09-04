@@ -2588,6 +2588,96 @@ function kundenWarenkorb(zeilen, { artikel, lieferanten, mindestbestellwertNetto
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const PFLICHTTEXTE = Object.freeze([
+  Object.freeze({
+    id: 'impressum',
+    seite: 'rechtliches/impressum',
+    abWann: 'besuch',
+    grundlage: '§ 5 ECG, § 14 UGB',
+    warum: 'Die Pflichtangaben treffen jeden, der eine Website geschäftlich betreibt — '
+      + 'unabhängig davon, ob über sie etwas verkauft wird. Vier Angaben fehlen; die Seite '
+      + 'sagt das selbst.',
+  }),
+  Object.freeze({
+    id: 'offenlegung',
+    seite: null,
+    abWann: 'besuch',
+    grundlage: '§ 25 MedienG',
+    warum: 'Die Offenlegung gilt für wiederkehrend abrufbare Websites und steht neben dem '
+      + 'Impressum, nicht darin. Sie ist Teil des Auftrags an den Rechtstexteanbieter und hat '
+      + 'heute keine eigene Seite.',
+  }),
+  Object.freeze({
+    id: 'datenschutz',
+    seite: 'rechtliches/datenschutz',
+    abWann: 'besuch',
+    grundlage: 'Art. 13 DSGVO',
+    warum: 'Die Informationspflicht beginnt mit dem ersten Aufruf: Der Server protokolliert '
+      + 'eine IP-Adresse, und die Oberfläche legt den Warenkorb im Browser ab. Beides '
+      + 'geschieht, bevor irgendjemand etwas anfragt.',
+  }),
+  Object.freeze({
+    id: 'agb',
+    seite: 'rechtliches/agb',
+    abWann: 'vertrag',
+    warum: 'Geschäftsbedingungen werden Vertragsbestandteil — sie brauchen einen Vertrag. '
+      + 'Dieser Shop nimmt keine Bestellung entgegen (erster Punkt in `startklar`); die Kasse '
+      + 'erzeugt eine Anfrage, und die ist ausdrücklich unverbindlich.',
+    grundlage: '§ 864a, § 879 ABGB — Einbeziehung und Inhaltskontrolle',
+  }),
+  Object.freeze({
+    id: 'widerruf',
+    seite: null,
+    abWann: 'verbraucher',
+    grundlage: '§ 11 FAGG',
+    warum: 'Das Rücktrittsrecht bei Fernabsatz steht Verbrauchern zu. Gate 7 lässt '
+      + 'ausschließlich Unternehmer bestellen, und die Kundendatenprüfung verlangt die '
+      + 'Bestätigung. Solange das gilt, entsteht die Belehrungspflicht nicht.',
+  }),
+]);
+
+
+function vorDemHochladen(texte = PFLICHTTEXTE) {
+  return texte.filter((t) => t.abWann === 'besuch');
+}
+
 const IMPRESSUMSFELDER = [
   { feld: 'firma', bezeichnung: 'Name oder Firma laut Firmenbuch', bedingt: false },
   { feld: 'rechtsform', bezeichnung: 'Rechtsform', bedingt: false },

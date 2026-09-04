@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   IMPRESSUMSFELDER,
@@ -14,6 +15,8 @@ import {
   lieferhinweise,
   AGB_VERWEISE,
   PUNKT_EMPFANGSVOLLMACHT,
+  PFLICHTTEXTE,
+  vorDemHochladen,
 } from '../src/rechtstexte.js';
 
 const vollstaendig = {
@@ -384,4 +387,48 @@ test('der Filter der Lieferhinweise und die Fundstelle sind dieselbe Zeichenkett
   const nurBeiAbweichung = abweichend.filter((h) => !regel.includes(h));
   assert.equal(nurBeiAbweichung.length, 1);
   assert.equal(nurBeiAbweichung[0].grundlage, PUNKT_EMPFANGSVOLLMACHT);
+});
+
+/**
+ * Welcher Pflichttext ab wann nötig ist.
+ *
+ * **Der Anlass, 4. September 2026.** Der Rolloutplan hielt das Hochladen mit
+ * der Begründung an, ein Gerüst online zu stellen sei „schlechter als kein
+ * Text, weil es wie einer aussieht". Die AGB-Seite beginnt mit „Das hier ist
+ * die Gliederung, nicht der Vertrag" — die Begründung war an ihrem eigenen
+ * Erzeugnis widerlegt.
+ *
+ * > **Der Datenschutz blockiert das Hochladen, die AGB nicht.**
+ */
+test('jeder Pflichttext sagt, ab wann er gilt und woraus', () => {
+  assert.ok(PFLICHTTEXTE.length >= 5, `nur ${PFLICHTTEXTE.length} Einträge`);
+  const erlaubt = ['besuch', 'vertrag', 'verbraucher'];
+  for (const t of PFLICHTTEXTE) {
+    assert.ok(erlaubt.includes(t.abWann), `${t.id}: „${t.abWann}" ist kein Zeitpunkt`);
+    assert.ok(t.grundlage && t.grundlage.length >= 6, `${t.id}: ohne Grundlage`);
+    assert.ok(t.warum && t.warum.length >= 80, `${t.id}: ohne belastbaren Grund`);
+  }
+});
+
+test('vor dem Hochladen zählen nur die Texte, die ab dem ersten Aufruf gelten', () => {
+  const vor = vorDemHochladen();
+  assert.deepEqual(vor.map((t) => t.id), ['impressum', 'offenlegung', 'datenschutz']);
+  // Und die Gegenrichtung, die den Befund trägt: AGB und Widerruf sind nicht dabei.
+  assert.ok(!vor.some((t) => t.id === 'agb'));
+  assert.ok(!vor.some((t) => t.id === 'widerruf'));
+});
+
+/**
+ * Ein Pflichttext mit eigener Seite muss diese Seite auch haben. Sonst führt
+ * das Register eine Fundstelle, die es nicht gibt.
+ */
+test('jede genannte Rechtsseite wird auch gebaut', () => {
+  const ordner = fileURLToPath(new URL('../ausgabe/site', import.meta.url));
+  assert.equal(typeof existsSync(ordner), 'boolean');
+  if (!existsSync(ordner)) return;
+  const mitSeite = PFLICHTTEXTE.filter((t) => t.seite);
+  assert.ok(mitSeite.length >= 3, `nur ${mitSeite.length} Einträge mit Seite`);
+  for (const t of mitSeite) {
+    assert.ok(existsSync(join(ordner, `${t.seite}.html`)), `${t.id}: ${t.seite}.html fehlt`);
+  }
 });
