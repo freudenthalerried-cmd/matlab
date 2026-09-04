@@ -1626,8 +1626,14 @@ function kundenWarenkorb(zeilen, { artikel, lieferanten, mindestbestellwertNetto
       
       
       
+      
+      
+      
+      
+      
+      
       frachtGrund: sperrgutPositionen > 0
-        ? `Pauschale plus ${sperrgutPositionen}× Kranentladung`
+        ? `Pauschale plus ${sperrgutPositionen}× Kranentladung (geschätzt je Sperrgut-Position)`
         : 'Pauschale',
       sperrgutPositionen,
     });

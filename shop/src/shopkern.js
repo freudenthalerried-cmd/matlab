@@ -916,8 +916,14 @@ export function kundenWarenkorb(zeilen, { artikel, lieferanten, mindestbestellwe
       // Derselbe Wortlaut wie in `preis.js` — und dieselbe Umbenennung vom
       // 2. September: Der Kunde liest auf der Lieferseite „Kranentladung je
       // Hub" und soll auf dem Beleg nicht etwas anderes lesen.
+      // **Ausgewiesen als Schätzung seit dem 4. September.** Der Lieferant
+      // verrechnet „Kranentladung pro Hub", und ein Hub ist das Anheben einer
+      // Palette, keine Artikelzeile: Auf Rechnung 262027463 stehen sechs
+      // Sperrgut-Positionen und drei Hübe. Die Zählung je Position ist damit
+      // widerlegt; wonach stattdessen zu zählen wäre, ist offen (Palettenzahl).
+      // Der Satz sagt es jetzt, statt eine Schätzung als Rechnung auszugeben.
       frachtGrund: sperrgutPositionen > 0
-        ? `Pauschale plus ${sperrgutPositionen}× Kranentladung`
+        ? `Pauschale plus ${sperrgutPositionen}× Kranentladung (geschätzt je Sperrgut-Position)`
         : 'Pauschale',
       sperrgutPositionen,
     });

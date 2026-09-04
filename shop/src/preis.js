@@ -199,7 +199,7 @@ export function fracht(positionen, lieferant) {
     // auf, weil beide Seiten für sich stimmen.
     grund:
       sperrgutPositionen > 0
-        ? `Pauschale plus ${sperrgutPositionen}× Kranentladung`
+        ? `Pauschale plus ${sperrgutPositionen}× Kranentladung (geschätzt je Sperrgut-Position)`
         : 'Pauschale',
     warenwertNetto,
     bestellwertNetto,

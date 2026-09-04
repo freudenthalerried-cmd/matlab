@@ -107,11 +107,20 @@ export const FRAGEN = Object.freeze([
     frage: 'Wonach richtet sich die Zahl der Paletten je Lieferung, und ab welcher Menge '
       + 'kommt eine zweite dazu? Auf unserer Rechnung über 1.934 € netto stehen sechs Paletten '
       + 'zu je 22,00 € plus Folierung — für eine kleinere Bestellung können wir daraus nicht '
-      + 'ableiten, womit wir rechnen müssen.',
+      + 'ableiten, womit wir rechnen müssen. '
+      // **Ergänzt am 4. September.** Die Frage hing bis dahin nur am
+      // Mindestbestellwert. Sie entscheidet auch, was ein Kunde für die
+      // Kranentladung zahlt — und dort ist der Betrag beziffert.
+      + 'Und dieselbe Angabe brauchen wir für die Kranentladung: Sie steht auf Ihren Belegen '
+      + '„pro Hub". Richtet sich ein Hub nach der Palette, oder wonach sonst?',
     warum: 'Palette und Folierung sind mit 28,50 € je Lieferung die Kosten, die den '
       + 'Mindestbestellwert tragen. Wie viele Paletten eine Bestellung braucht, hängt an '
       + 'Gewicht und Packmaß; der Katalog führt Gewicht für 7 von 46 Artikeln. Die Grenze ist '
-      + 'deshalb heute vorsichtig gesetzt und nicht gerechnet.',
+      + 'deshalb heute vorsichtig gesetzt und nicht gerechnet. **Und sie entscheidet einen '
+      + 'zweiten Betrag:** Der Shop rechnet die Kranentladung je Sperrgut-Position, der '
+      + 'Lieferant verrechnet sie je Hub — auf Rechnung 262027463 stehen sechs Positionen und '
+      + 'drei Hübe. Auf den zwei belegten Lieferungen liegt das Modell dadurch um bis zu '
+      + '22,50 € zu hoch und um bis zu 7,50 € zu niedrig.',
   }),
   Object.freeze({
     id: 'liefergebiet',

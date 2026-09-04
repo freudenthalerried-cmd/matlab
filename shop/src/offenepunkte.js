@@ -22,6 +22,9 @@
  * beim Lesen tatsächlich hat.
  */
 
+import { hubbefund } from './huebe.js';
+import { EUR } from './format.js';
+
 /**
  * Wer den Punkt schließen kann, und was das auslöst.
  *
@@ -86,9 +89,23 @@ export const OHNE_WERKZEUG = Object.freeze([
       + 'einzigen Beleg, und ausgerechnet bei voluminöser Leichtware (50 m² Fassaden-EPS sind '
       + '96,50 € und eine halbe Palette) kehrt sich das Verhältnis um. Aus einem Punkt lässt '
       + 'sich keine Regel ziehen.',
+    /**
+     * **Ergänzt am 4. September.** Der Punkt trug bis dahin eine Folge: den
+     * Mindestbestellwert. Die zweite ist teurer und steht seither in Euro da —
+     * der Shop verrechnet die Kranentladung **je Sperrgut-Position**, der
+     * Lieferant **je Hub**, und auf einer eindeutigen Rechnung sind das sechs
+     * Positionen gegen drei Hübe.
+     *
+     * Die Zahlen kommen aus `huebe.js` und nicht aus diesem Satz: Ein Betrag,
+     * den ein Dokument von Hand trägt, ist der nächste, der veraltet.
+     */
     loest: 'Macht aus dem Mindestbestellwert (Gate 25, 250 €) eine Rechnung statt einer '
       + 'vorsichtigen Grenze — nach oben wie nach unten. Heute deckt die Grenze zwei Paletten, '
-      + 'und für alles darüber bleibt Gate 20 die Rückfallebene.',
+      + 'und für alles darüber bleibt Gate 20 die Rückfallebene. '
+      + 'Und sie entscheidet die Kranentladung: Der Shop zählt sie je Sperrgut-Position, der '
+      + 'Lieferant verrechnet sie je Hub. Auf den zwei belegten Lieferungen liegt das Modell '
+      + `um bis zu ${EUR(hubbefund().groesstesZuViel)} zu hoch und um bis zu `
+      + `${EUR(hubbefund().groesstesZuWenig)} zu niedrig — auf jeder einzelnen, nicht im Mittel.`,
   },
   {
     id: 'artikelliste',
