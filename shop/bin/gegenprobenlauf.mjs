@@ -29,6 +29,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { GEGENPROBEN, OHNE_GEGENPROBE, registerbefund } from '../src/gegenprobenregister.js';
+import { markiere, nimmAb, offeneMarken, stelleZurueck } from '../src/mutationsschutz.js';
 import { PRUEFER } from '../src/pruefregister.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -67,6 +68,25 @@ if (nurEine && proben.length === 0) {
   process.exit(2);
 }
 
+/**
+ * **Erst aufräumen, dann prüfen.** Ein Lauf, den `SIGKILL` erwischt hat, ließ
+ * bis zum 4. September eine absichtlich falsche Datei im Bestand liegen — und
+ * das Original nur im Arbeitsspeicher des toten Prozesses. Seit heute hängt
+ * vor jeder Mutation ein Zettel mit dem Original daneben; hier wird er
+ * eingelöst.
+ */
+const liegengeblieben = offeneMarken(REPO);
+for (const m of liegengeblieben) {
+  if (!m.lesbar) {
+    console.error(`Abbruch: unlesbarer Zettel ${m.pfad} (${m.grund}) — von Hand ansehen.`);
+    process.exit(2);
+  }
+  const { datei, schonRichtig } = stelleZurueck(m);
+  console.log(`Aus einem abgebrochenen Lauf zurückgeholt: ${datei}`
+    + `${schonRichtig ? ' (stand schon richtig da)' : ''}`);
+}
+if (liegengeblieben.length) console.log('');
+
 const befund = registerbefund(PRUEFER.map((p) => p.name));
 
 console.log(`Gegenproben — ${GEGENPROBEN.length} im Register für ${befund.gedeckt} Prüfer,`);
@@ -79,6 +99,16 @@ for (const p of proben) {
   const vorher = readFileSync(pfad, 'utf8');
   const schritte = [];
   let urteil = 'geschlagen';
+
+  // Ein `finally` läuft nicht bei `SIGINT` und `SIGTERM`. Die Einzelprobe in
+  // `bin/gegenprobe.mjs` fängt beide seit dem 31. August ab; dieser Läufer,
+  // der unbeaufsichtigt in `npm run alles` steckt, tat es bis heute nicht.
+  const zuruecksetzen = () => {
+    writeFileSync(pfad, vorher);
+    nimmAb(pfad);
+  };
+  const beiSignal = () => { zuruecksetzen(); process.exit(130); };
+  for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, beiSignal);
 
   try {
     const vor = laufe(p.pruefer);
@@ -100,6 +130,9 @@ for (const p of proben) {
           : 'Mutation hat nichts geändert');
         urteil = 'nicht angekommen';
       } else {
+        // Der Zettel geht **vor** die Mutation. Danach wäre er ein Zettel für
+        // den Fall, der zwischen beiden Zeilen nicht mehr eintreten kann.
+        markiere(pfad, vorher, `gegenprobenlauf.mjs (${p.id})`, p.was);
         writeFileSync(pfad, mutiert);
         if (p.baueVorher) baue();
         const nach = laufe(p.pruefer);
@@ -115,8 +148,17 @@ for (const p of proben) {
       }
     }
   } finally {
-    writeFileSync(pfad, vorher);
+    zuruecksetzen();
+    for (const signal of ['SIGINT', 'SIGTERM']) process.off(signal, beiSignal);
     if (p.baueVorher) baue();
+  }
+
+  // **Zurückgeschrieben ist nicht dasselbe wie wieder da.** Die Einzelprobe
+  // sieht seit dem 31. August nach; dieser Läufer hat es geglaubt.
+  if (readFileSync(pfad, 'utf8') !== vorher) {
+    console.error(`\nAbbruch: ${p.datei} steht nach der Probe „${p.id}" nicht wieder wie vorher.`);
+    console.error('Der Zettel unter .sicherung/ trägt das Original.');
+    process.exit(3);
   }
 
   if (urteil === 'geschlagen') {

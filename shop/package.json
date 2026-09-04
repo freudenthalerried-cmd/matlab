@@ -47,6 +47,7 @@
     "pruefe-gebinde": "node bin/gebindepruefung.mjs",
     "pruefe-dubletten": "node bin/dublettenpruefung.mjs",
     "pruefe-ungerufen": "node bin/ungerufen.mjs",
+    "pruefe-mutationen": "node bin/mutationspruefung.mjs",
     "pruefe-schaufenster": "node bin/schaufensterpruefung.mjs",
     "pruefe-leitzahlen": "node bin/leitzahlpruefung.mjs",
     "werbeprobe": "node bin/werbeprobe.mjs",

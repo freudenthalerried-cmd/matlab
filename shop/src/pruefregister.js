@@ -209,6 +209,17 @@ export const PRUEFER = [
     einheit: 'ungerufene Ausfuhren mit Grund',
     mindestens: 5,
   },
+  {
+    name: 'pruefe-mutationen',
+    werkzeug: 'mutationspruefung.mjs',
+    // Gemessen wird das **Angesehene**. Der gesunde Zustand dieses Prüfers ist
+    // null Funde, und eine Fundzahl könnte hier nicht zwischen „keine Mutation
+    // liegen geblieben" und „gar nicht nachgesehen" unterscheiden — die Frage,
+    // für die es dieses Register gibt.
+    muster: /Mutationsschutz — (\d+) Einträge angesehen/,
+    einheit: 'Einträge auf liegen gebliebene Mutationen',
+    mindestens: 200,
+  },
 ];
 
 /**

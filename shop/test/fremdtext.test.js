@@ -491,8 +491,15 @@ test('Ausgang Oberfläche: kein Quelltext schreibt fremden Text als HTML', () =>
   // Die Oberfläche setzt Text ausschließlich über textContent. Das ist heute
   // wahr und soll es bleiben — ein einziges innerHTML mit eingesetztem
   // Artikelnamen wäre der Weg, auf dem fremdes Markup in die Seite kommt.
+  // **Berichtigt am 4. September.** Hier stand `readdirSync(...)` ohne Filter,
+  // und jeder Eintrag ging als Datei in `readFileSync`. Seit der
+  // Gegenprobenläufer sein Original als Zettel unter `src/.sicherung/`
+  // ablegt, liegt dort ein **Verzeichnis** — der Test starb mit `EISDIR`.
+  // Er will die Quelldateien, also sagt er das jetzt auch.
   const dateien = [
-    ...readdirSync(new URL('../src/', import.meta.url)).map((d) => new URL(`../src/${d}`, import.meta.url)),
+    ...readdirSync(new URL('../src/', import.meta.url))
+      .filter((d) => d.endsWith('.js'))
+      .map((d) => new URL(`../src/${d}`, import.meta.url)),
     new URL('../demo-template.html', import.meta.url),
   ];
   assert.ok(dateien.length > 10);

@@ -475,6 +475,21 @@ export const GEGENPROBEN = Object.freeze([
       + 'eine Absage mit Verzögerung. Diese Mutation stellt genau das wieder her.',
   }),
   Object.freeze({
+    id: 'liegen-gebliebene-mutation-uebersehen',
+    pruefer: 'test',
+    was: 'Eine absichtlich falsche Datei, die niemandem mehr auffällt',
+    datei: 'shop/src/mutationsschutz.js',
+    art: 'ersetzen',
+    suchen: "        regel: 'mutation-liegen-geblieben',",
+    ersetzen: "        regel: 'zettel-ohne-mutation',",
+    erwartet: /Befund trennt|mutation-liegen-geblieben/,
+    warum: 'Der Unterschied zwischen den beiden Meldungen ist der ganze Zweck des Zettels: '
+      + 'Ein abgebrochener Lauf nach dem Zurückschreiben ist harmlos, eine liegen gebliebene '
+      + 'Mutation steht als absichtlich falscher Code im Bestand — und dieser Loop committet '
+      + 'ohne Rückfrage. Fallen beide Fälle zusammen, meldet der Prüfer den harmlosen Wortlaut '
+      + 'über den gefährlichen Zustand.',
+  }),
+  Object.freeze({
     id: 'eigene-uid-ungeprueft',
     pruefer: 'test',
     was: 'Eine eigene UID, die dasteht und nicht stimmt',
@@ -590,6 +605,15 @@ export const OHNE_GEGENPROBE = Object.freeze([
     warumKeine: 'Seine Mutation wäre, einen Einkaufspreis in eine öffentliche Datei zu '
       + 'schreiben. Auch nur für Sekunden und auch nur lokal — das ist die eine Datei, '
       + 'die diese Arbeit nicht anfassen darf.',
+  }),
+  Object.freeze({
+    pruefer: 'pruefe-mutationen',
+    warumKeine: 'Er wird nicht durch Code rot, sondern durch einen Zettel auf der Platte — '
+      + 'eine liegen gebliebene Mutation. Eine Mutation an seiner Quelle könnte ihn nur dazu '
+      + 'bringen, einen Fund zu behaupten, den es nicht gibt; das zeigt nichts über den Fall, '
+      + 'für den es ihn gibt. Sein rotes Verhalten prüft `test/mutationsschutz.test.js` mit '
+      + 'einer echten liegen gebliebenen Datei, und die Gegenprobe '
+      + '„liegen-gebliebene-mutation-uebersehen" hält diese Prüfung wach.',
   }),
 ]);
 

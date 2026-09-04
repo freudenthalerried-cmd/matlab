@@ -137,6 +137,28 @@ schritte.push({
   },
 });
 
+/**
+ * **Zuletzt, nach den Gegenproben.** `pruefe-mutationen` steht schon im
+ * Prüferregister und lief damit weiter oben — also **vor** dem einzigen
+ * Schritt, der Quelldateien absichtlich falsch macht. Genau das war der
+ * Befund vom 4. September: Der Lauf war noch im Gegenprobenschritt, als die
+ * Abschlussprüfung „uncommitted changes" meldete.
+ *
+ * > **Ein Prüfer, der vor dem Ereignis läuft, prüft die Zeit davor.**
+ */
+schritte.push({
+  name: 'nichts liegen geblieben',
+  was: 'mutationspruefung.mjs — steht nach den Gegenproben noch etwas absichtlich falsch da?',
+  lauf: () => {
+    const e = spawnSync(process.execPath, [join(SHOP, 'bin', 'mutationspruefung.mjs')],
+      { cwd: SHOP, encoding: 'utf8' });
+    const ausgabe = `${e.stdout ?? ''}${e.stderr ?? ''}`;
+    const t = /(\d+) offene Zettel/.exec(ausgabe);
+    if (!t) return { ok: false, meldung: 'meldet sein Ergebnis nicht' };
+    return { ok: e.status === 0, meldung: `${t[1]} offene Zettel` };
+  },
+});
+
 console.log(`Gesamtlauf — ${schritte.length} Schritte`
   + `${mitBrowser ? ', mit Browserproben' : ' (ohne Browserproben, mit --mit-browser dazu)'}\n`);
 
