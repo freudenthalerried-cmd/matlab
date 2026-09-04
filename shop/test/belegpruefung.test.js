@@ -185,6 +185,10 @@ const belegeMitVerweis = [
       + 'Wer übernimmt, übernimmt für Sie. (AGB Punkt 7)',
   },
   { art: 'Angebot', text: 'Zahlung bei Bestellung, kein Zahlungsziel (Punkt 9 der AGB).' },
+  // **Ergänzt am 4. September.** Seit der Auftrag an den Rechtstexteanbieter
+  // die ganze AGB-Gliederung mitnimmt, geht auch der Verweis von Punkt 3 auf
+  // Punkt 12 hinaus — er stand vorher nur in einem internen Register.
+  { art: 'Rechtstexteauftrag', text: 'Leistungsort Inland, siehe Punkt 12 der AGB.' },
 ];
 
 test('Der heutige Bestand ist widerspruchsfrei', () => {
@@ -222,9 +226,13 @@ test('Ein Eintrag, den kein Beleg mehr zitiert, bewacht nichts', () => {
   // Nur bei einem **vollständigen** Durchlauf: Über einer Teilmenge sagt das
   // Fehlen nichts.
   const m = pruefeAgbVerweise([belegeMitVerweis[0]], AGB_GLIEDERUNG, AGB_VERWEISE, { vollstaendig: true });
-  assert.equal(m.length, 1);
-  assert.equal(m[0].regel, 'eintrag-ohne-verweis');
-  assert.match(m[0].text, /Punkt 9/);
+  // **Berichtigt am 4. September.** Hier stand `m.length === 1`. Seit das
+  // Register einen vierten Punkt führt (12, aus dem Auftrag an den
+  // Rechtstexteanbieter), fehlen über diesem einen Beleg zwei — die Zahl war
+  // die Registergröße von gestern und nicht die Aussage.
+  assert.ok(m.length >= 1, 'kein Eintrag ohne Verweis — dann prüft dieser Fall nichts');
+  assert.ok(m.every((x) => x.regel === 'eintrag-ohne-verweis'), JSON.stringify(m));
+  assert.ok(m.some((x) => /Punkt 9/.test(x.text)), JSON.stringify(m));
 });
 
 test('Ein gestrichener Punkt lässt den Verweis ins Leere zeigen', () => {

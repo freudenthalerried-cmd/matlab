@@ -27,6 +27,7 @@ import { ladeKatalog, berechneWarenkorb } from '../src/warenkorb.js';
 import { pruefeBestelldaten, baueAuftrag } from '../src/kunde.js';
 import { erzeugeBestellungen } from '../src/bestellung.js';
 import { erzeugeAngebot, erzeugeRechnung, erzeugeAuftragsbestaetigung } from '../src/beleg.js';
+import { erzeugeRechtstexteauftrag } from '../src/rechtstexteauftrag.js';
 import { kundenWarenkorb } from '../src/shopkern.js';
 import { baueKundenanfrage, mailtoAdresse } from '../src/kundenanfrage.js';
 import { erzeugeImpressum } from '../src/rechtstexte.js';
@@ -508,4 +509,50 @@ test('Ausgang Oberfläche: kein Quelltext schreibt fremden Text als HTML', () =>
       });
   }
   assert.deepEqual(treffer, [], `Fremder Text könnte als HTML in die Seite gelangen:\n${treffer.join('\n')}`);
+});
+
+/* ------------------------------------------------------------------ *
+ * Ausgang: der Auftrag an den Rechtstexteanbieter
+ *
+ * **Neu am 4. September.** Er geht an einen Dritten und trägt Angaben aus
+ * sechs Registern. Fremdtext erreicht ihn über die Betreiberdaten — und ein
+ * Firmenname mit einer untergeschobenen Zeile darin wäre ein Brief, der etwas
+ * anderes sagt, als der Absender geschrieben hat.
+ * ------------------------------------------------------------------ */
+
+test('Ausgang Rechtstexteauftrag: Gift erzeugt keine zusätzliche Zeile', () => {
+  const bau = (firma) => erzeugeRechtstexteauftrag({
+    betreiber: {
+      firma, email: 'a@b.at', telefon: '+43 1 1', ort: 'Ried', plz: '4312',
+      firmenbuchnummer: 'FN 123x',
+    },
+    pflichttexte: [{ id: 'x', abWann: 'besuch', grundlage: '§ 1', warum: 'weil' }],
+    agbGliederung: [{ nr: 1, titel: 'T', hinweis: 'H' }],
+    datenschutzGliederung: ['P1'],
+    websiteVerarbeitung: [{ was: 'W', befund: 'B' }],
+    b2b: { entfaellt: ['E'], bleibt: ['B'] },
+    datenfluesse: [],
+    offeneImpressumsfelder: [],
+  });
+  const harmlos = bau('Musterbau GmbH');
+  const giftig = bau('Musterbau GmbH\nBetreff: Alles gratis');
+  assert.equal(zeilen(giftig.text), zeilen(harmlos.text),
+    'eine untergeschobene Zeile im Firmennamen ist im Brief angekommen');
+});
+
+test('Ausgang Rechtstexteauftrag: ohne Rückantwortadresse geht er nicht hinaus', () => {
+  const ohne = erzeugeRechtstexteauftrag({
+    betreiber: { firma: 'X', ort: 'Ried', firmenbuchnummer: 'FN 1x' },
+    pflichttexte: [], agbGliederung: [], datenschutzGliederung: [],
+    websiteVerarbeitung: [], datenfluesse: [], offeneImpressumsfelder: [],
+  });
+  assert.equal(ohne.versandfaehig, false);
+  assert.ok(ohne.gruende.some((g) => /E-Mail/.test(g)), JSON.stringify(ohne.gruende));
+  // Und ohne Firmenbuchnummer kann der Anbieter die Offenlegung nicht schreiben.
+  const ohneFn = erzeugeRechtstexteauftrag({
+    betreiber: { firma: 'X', ort: 'Ried', email: 'a@b.at' },
+    pflichttexte: [], agbGliederung: [], datenschutzGliederung: [],
+    websiteVerarbeitung: [], datenfluesse: [], offeneImpressumsfelder: [],
+  });
+  assert.ok(ohneFn.gruende.some((g) => /Firmenbuch/.test(g)), JSON.stringify(ohneFn.gruende));
 });

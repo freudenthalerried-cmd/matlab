@@ -52,6 +52,10 @@ export const ZUSTANDSAUSSAGE = Object.freeze({
   // Sie steht hier trotzdem, weil sie beim Kunden landet und damit unter die
   // zweite Regel fällt — und weil eine Belegart ohne Eintrag gemeldet wird.
   Kundenanfrage: /UNVERBINDLICHE ANFRAGE|keine Bestellung/,
+  // Der Auftrag an den Rechtstexteanbieter nennt keine Endsumme, sondern
+  // einen Umfang. Er steht hier, weil er hinausgeht — und weil eine
+  // Belegart ohne Eintrag gemeldet wird.
+  Rechtstexteauftrag: /Angebot für|Einen Wortlaut erwarten wir von Ihnen/,
   // Der Bestelltext geht an den Lieferanten, nicht an den Kunden. Er steht
   // hier trotzdem: Ein Außentext ist ein Außentext, und die zweite und dritte
   // Regel gelten für ihn wortgleich. Die Endsumme darauf ist der Einkauf und

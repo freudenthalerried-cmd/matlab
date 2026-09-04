@@ -663,6 +663,25 @@ export const AGB_VERWEISE = Object.freeze([
       + 'nachschlägt, warum die Übernahme durch ein fremdes Gewerk für ihn wirkt, fand dort '
       + 'eine Frachtklausel. Der Eintrag hält die Fundstelle jetzt fest.',
   }),
+  /**
+   * **Nachgetragen am 4. September.** Punkt 3 der Gliederung verweist im
+   * eigenen Hinweistext auf Punkt 12 („für Reverse Charge gegenüber dem Kunden
+   * ist kein Raum, weil nur ins Inland geliefert wird (Punkt 12)"). Der
+   * Verweis stand nie in einem Außentext — bis der Auftrag an den
+   * Rechtstexteanbieter die ganze Gliederung mitnahm und `pruefe-belege` ihn
+   * im selben Lauf meldete.
+   *
+   * > **Ein Verweis, den nur ein internes Register trägt, wird nicht geprüft.**
+   * > Sobald er hinausgeht, gilt für ihn dieselbe Regel wie für jeden anderen.
+   */
+  Object.freeze({
+    nr: 12,
+    zweck: 'Beschränkung auf das inländische Liefergebiet',
+    erwartetImTitel: 'Liefergebiet',
+    warum: 'Punkt 3 begründet mit ihm, warum Reverse Charge gegenüber dem Kunden nicht in '
+      + 'Betracht kommt: Es wird nur ins Inland geliefert. Zeigt der Verweis woanders hin, '
+      + 'trägt die umsatzsteuerliche Aussage nichts mehr.',
+  }),
   Object.freeze({
     nr: 9,
     zweck: 'Zahlungsbedingung ohne Zahlungsziel',

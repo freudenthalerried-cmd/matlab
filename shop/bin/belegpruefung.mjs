@@ -25,7 +25,12 @@ import { erzeugeBestellungen, darfAutomatischAusgeloestWerden } from '../src/bes
 import { kundenWarenkorb } from '../src/shopkern.js';
 import { baueKundenanfrage, pruefeAnfrageAufGeheimnis } from '../src/kundenanfrage.js';
 import { pruefeBelege } from '../src/belegpruefung.js';
-import { lieferhinweise } from '../src/rechtstexte.js';
+import {
+  lieferhinweise, PFLICHTTEXTE, AGB_GLIEDERUNG, DATENSCHUTZ_GLIEDERUNG,
+  WEBSITE_VERARBEITUNG, B2B_ABGRENZUNG, IMPRESSUMSFELDER,
+} from '../src/rechtstexte.js';
+import { DATENFLUESSE } from '../src/abgleich.js';
+import { erzeugeRechtstexteauftrag } from '../src/rechtstexteauftrag.js';
 
 const wurzel = dirname(dirname(fileURLToPath(import.meta.url)));
 const lies = (name) => JSON.parse(readFileSync(join(wurzel, 'data', name), 'utf8'));
@@ -250,6 +255,29 @@ const freigabe = darfAutomatischAusgeloestWerden(korb, {
   uid: kunde.uid,
   zahlweg: 'eps',
   frachtVerrechnet: true,
+});
+
+/**
+ * **Der siebte Außentext, seit dem 4. September.** Er geht nicht an den Kunden
+ * und nicht an den Lieferanten, sondern an den Rechtstexteanbieter — und er
+ * trägt Angaben aus sechs Registern. Ein Brief, der aus Registern entsteht,
+ * gehört gelesen wie ein Beleg: auf widerrufene Aussagen, auf leere Angaben
+ * und darauf, dass keine Einkaufszahl mitfährt.
+ */
+belege.push({
+  art: 'Rechtstexteauftrag',
+  text: erzeugeRechtstexteauftrag({
+    betreiber: betreiberDatei,
+    pflichttexte: PFLICHTTEXTE,
+    agbGliederung: AGB_GLIEDERUNG,
+    datenschutzGliederung: DATENSCHUTZ_GLIEDERUNG,
+    websiteVerarbeitung: WEBSITE_VERARBEITUNG,
+    b2b: B2B_ABGRENZUNG,
+    datenfluesse: DATENFLUESSE,
+    offeneImpressumsfelder: IMPRESSUMSFELDER
+      .filter((f) => typeof betreiberDatei[f.feld] !== 'string' || betreiberDatei[f.feld].trim() === '')
+      .map((f) => f.bezeichnung),
+  }).text,
 });
 
 const befund = pruefeBelege(belege, { vollstaendig: true });
