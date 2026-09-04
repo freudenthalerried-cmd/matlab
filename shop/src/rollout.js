@@ -79,6 +79,39 @@ export const ETAPPEN = Object.freeze([
     warumKeinGate: 'Kein Gate — eine gesetzliche Pflicht nach § 5 ECG, keine Entscheidung.',
     ergebnis: 'Ohne E-Mail hat die fertig gerechnete Kundenanfrage keinen Empfänger.',
   }),
+  /**
+   * **Ergänzt am 4. September, spät.** Zwei Punkte der Bereitschaftsliste
+   * hatten im Plan keine Etappe: die zugesagte **Antwortzeit** und die
+   * **Bankverbindung**. Beide sind Angaben des Auftraggebers aus dem
+   * laufenden Betrieb, beide kosten nichts, und beide halten den Shop auf.
+   *
+   * > **Der Plan kannte nur den teuren Zahlweg.** Er führte zehn Tage
+   * > Legitimationsprüfung beim Zahlungsanbieter — und keinen Schritt, mit
+   * > dem der Shop am ersten Tag Geld annehmen kann. Gate 21 nennt die
+   * > Überweisung gleichrangig, und die braucht keinen Anbieter, sondern ein
+   * > Konto.
+   *
+   * Der Plan sagt selbst, ein Verkauf beende den Versuch früher als jede
+   * Schwelle. Bis heute enthielt er keinen Schritt, der einen Verkauf zu
+   * Ende bringt.
+   */
+  Object.freeze({
+    id: 'betreiberangaben',
+    titel: 'Antwortzeit und Bankverbindung eintragen',
+    zustaendig: 'eintragen',
+    brauchtVor: [],
+    warumOhneVoraussetzung: 'Zwei Angaben aus dem laufenden Betrieb, die auf nichts warten — '
+      + 'weder auf eine Antwort noch auf eine Ausgabe.',
+    tage: 1,
+    art: 'gesetzt',
+    woher: 'Eine Zahl (Werktage bis zur Rückmeldung) und zwei Zeilen (Kontoinhaber, IBAN). '
+      + 'Beide liegen beim Auftraggeber; einzutragen ist eine Datei.',
+    gate: 'Gate 21',
+    ergebnis: 'Die Auftragsbestätigung sagt dem Kunden, wohin er überweist, und die Kasse '
+      + 'nennt eine Frist statt einer Rückmeldung ohne Zeitangabe. Vorkasse braucht keinen '
+      + 'Zahlungsanbieter — dies ist der einzige Schritt zwischen heute und einem Geschäft, '
+      + 'das zu Ende geht.',
+  }),
   Object.freeze({
     id: 'lieferantengespraech',
     titel: 'Ein Gespräch mit dem Lieferanten',
@@ -264,6 +297,13 @@ export const ETAPPEN = Object.freeze([
         etappe: 'impressum',
         warum: 'Ohne die E-Mail-Adresse des Betreibers hat das Empfangsskript keinen Empfänger. '
           + 'Sie ist eine der vier offenen Pflichtangaben.',
+      }),
+      Object.freeze({
+        etappe: 'betreiberangaben',
+        warum: 'Mit der Auftragsbestätigung kommt nach Punkt 2 der eigenen AGB der Vertrag '
+          + 'zustande. Wer den Bestellweg einschaltet, ohne sagen zu können, wohin gezahlt '
+          + 'wird, schließt Verträge, die er nicht abwickeln kann: Die Bestätigung trägt dann '
+          + 'die sichtbare Lücke statt einer Kontonummer.',
       }),
     ],
     tage: 2,

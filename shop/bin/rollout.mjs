@@ -17,6 +17,8 @@
 
 import { rolloutplan, ETAPPEN, pruefeEtappen , HAUPTFALL } from '../src/rollout.js';
 import { ZUSTAENDIGKEITEN } from '../src/offenepunkte.js';
+import { planbefund } from '../src/bereitschaftsplan.js';
+import { startklar } from '../src/startklar.js';
 
 const MARKT = [0.5, 1.5, 2.5];
 const QUOTEN = [0.02, 0.01, 0.005];
@@ -41,6 +43,29 @@ if (formfehler.length > 0) {
   console.error(`Abbruch: ${formfehler.length} Etappe(n) ohne belastbaren Grund.\n`);
   for (const f of formfehler) console.error(`  \u2717 ${f}`);
   console.error('\nEine fehlende Abhängigkeit verkürzt die Kette und sieht aus wie ein guter Plan.');
+  process.exit(2);
+}
+
+/**
+ * Und die zweite Form: Führt der Plan jeden Punkt, der den Shop aufhält?
+ *
+ * **Der Anlass vom 4. September, spät.** `startklar()` bekam an dem Abend
+ * einen Punkt dazu — die Bankverbindung —, und der Plan erfuhr nichts davon.
+ * Zwei Listen über dieselbe Sache, und die kürzere las der Auftraggeber.
+ *
+ * Die Kennungen kommen aus `startklar({})` mit **leerer** Lage: Welche Punkte
+ * es gibt, hängt nicht von den Daten ab — welche davon offen sind, schon.
+ * Diese Prüfung fragt nach der Liste, nicht nach dem Stand, und braucht
+ * deshalb keine einzige Datei.
+ */
+const planluecken = planbefund(
+  startklar({}).punkte.map((p) => p.id),
+  ETAPPEN.map((e) => e.id),
+);
+if (!planluecken.sauber) {
+  console.error(`Abbruch: ${planluecken.meldungen.length} Punkt(e) zwischen Bereitschaftsliste und Plan.\n`);
+  for (const m of planluecken.meldungen) console.error(`  \u2717 ${m.text}  (${m.regel})`);
+  console.error('\nWas der Auftraggeber liefern muss, steht in zwei Listen. Sie müssen dasselbe sagen.');
   process.exit(2);
 }
 

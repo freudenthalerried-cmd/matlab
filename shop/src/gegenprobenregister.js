@@ -321,6 +321,21 @@ export const GEGENPROBEN = Object.freeze([
       + 'Fußnote — dieselbe Familie wie `startklar`, das mit „NICHT STARTKLAR" grün endete.',
   }),
   Object.freeze({
+    id: 'punkt-ohne-etappe',
+    pruefer: 'rollout',
+    was: 'Ein Punkt der Bereitschaftsliste, den der Plan nicht führt',
+    datei: 'shop/src/bereitschaftsplan.js',
+    art: 'ersetzen',
+    suchen: "  Object.freeze({ punkt: 'bankverbindung', etappe: 'betreiberangaben' }),\n",
+    ersetzen: '',
+    erwartet: /bankverbindung/,
+    warum: 'Genau der Fall vom 4. September: `startklar()` bekam abends die Bankverbindung als '
+      + 'neuen Punkt, und der Rolloutplan — das Papier, das der Auftraggeber vor der '
+      + 'Budgetfreigabe liest — erfuhr nichts davon. Zwei Listen über dieselbe Sache, und die '
+      + 'kürzere gewinnt, weil ein Plan mit einer Voraussetzung weniger wie ein guter Plan '
+      + 'aussieht. Diese Mutation nimmt den Eintrag wieder heraus.',
+  }),
+  Object.freeze({
     id: 'rollout-abhaengigkeit-ohne-grund',
     pruefer: 'rollout',
     was: 'Eine Etappe, die an nichts hängt und nicht sagt, warum',

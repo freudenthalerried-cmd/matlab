@@ -21,8 +21,8 @@
  *
  * ## Was hier nicht steht
  *
- * Der Weg **bis** zum ersten Kunden. Den rechnet `src/rollout.js` mit seinen
- * vierzehn Etappen und ihren Abhängigkeiten. Zwei Listen über dieselbe Sache
+ * Der Weg **bis** zum ersten Kunden. Den rechnet `src/rollout.js` aus seinen
+ * Etappen und ihren Abhängigkeiten — die Zahl steht dort und nicht hier. Zwei Listen über dieselbe Sache
  * wären zwei Antworten; diese beginnt, wo jene endet.
  */
 
