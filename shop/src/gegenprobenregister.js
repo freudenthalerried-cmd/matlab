@@ -475,6 +475,20 @@ export const GEGENPROBEN = Object.freeze([
       + 'eine Absage mit Verzögerung. Diese Mutation stellt genau das wieder her.',
   }),
   Object.freeze({
+    id: 'ablage-im-webverzeichnis',
+    pruefer: 'bestellprobe',
+    was: 'Ein Bestelljournal, das unter einer URL erreichbar ist',
+    datei: 'shop/bestellung.php',
+    art: 'ersetzen',
+    suchen: "const ABLAGEORDNER = __DIR__ . '/../bestellungen';",
+    ersetzen: "const ABLAGEORDNER = __DIR__ . '/bestellungen';",
+    erwartet: /Ablage liegt im Webverzeichnis/,
+    warum: 'Ein Zeichen Unterschied — `/../` gegen `/` — und das Journal mit Namen, '
+      + 'Anschriften und Positionslisten liegt im ausgelieferten Verzeichnis. Es wäre dann '
+      + 'kein Journal, sondern eine Veröffentlichung, und keine Prüfung des Bestandes außer '
+      + 'dieser sieht je das fertig ausgelieferte Verzeichnis mit eingeschaltetem Bestellweg.',
+  }),
+  Object.freeze({
     id: 'schlafendes-fetch-im-buendel',
     pruefer: 'pruefe-datenschutz',
     was: 'Ein Absendeweg im Bündel, während die Rechtsseite sagt, es gebe keinen',

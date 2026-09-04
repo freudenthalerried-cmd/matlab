@@ -164,7 +164,18 @@ schritte.push({
       { cwd: SHOP, encoding: 'utf8' });
     const ausgabe = `${e.stdout ?? ''}${e.stderr ?? ''}`;
     const t = /^(\d+) von (\d+) Gegenproben schlagen an/m.exec(ausgabe);
-    if (e.status !== 0) return { ok: false, meldung: `Ausgang ${e.status}` };
+    if (e.status !== 0) {
+      /**
+       * **Ergänzt am 4. September.** Hier stand nur `Ausgang ${e.status}` —
+       * und der Läufer selbst hatte in seiner Ausgabe genau gesagt, welche
+       * Probe warum gescheitert war. Diese Ausgabe wurde weggeworfen.
+       *
+       * > **Ein Schritt, der scheitert und den Grund für sich behält, kostet
+       * > einen ganzen zweiten Lauf.** Dieser hier dauert acht Minuten.
+       */
+      const letzte = ausgabe.trim().split('\n').slice(-12).join('\n      ');
+      return { ok: false, meldung: `Ausgang ${e.status}\n      ${letzte}` };
+    }
     if (!t) return { ok: false, meldung: 'meldet sein Ergebnis nicht' };
     return { ok: t[1] === t[2], meldung: `${t[1]} von ${t[2]}` };
   },

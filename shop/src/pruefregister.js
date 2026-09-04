@@ -272,6 +272,19 @@ export const BROWSERPRUEFER = [
     einheit: 'Szenarien',
     mindestens: 18,
   },
+  // **Aufgenommen am 4. September**, mit dem Bestellweg. Sie ist die einzige
+  // Probe des Bestandes, die **beide** Hälften zugleich fährt: echter Bau mit
+  // eingeschaltetem Weg, echtes PHP, echter Browser, echte Zeile in der
+  // Ablage. Die Zahl darf nicht auf null fallen, ohne dass es auffällt — eine
+  // Probe, die nach dem ersten Schritt abbricht, sähe sonst still aus wie eine
+  // bestandene.
+  {
+    name: 'bestellprobe',
+    werkzeug: 'bestellprobe.mjs',
+    muster: /Bestellprobe — (\d+) Prüfungen/,
+    einheit: 'Prüfungen von Klick bis Ablage',
+    mindestens: 3,
+  },
   // Der Zensus zählt keine Szenarien, sondern gebaute Seiten. Genau deshalb
   // steht er hier: Zeigt er eines Tages auf einen leeren Ausgabeordner,
   // meldet er „0 von 0 Seiten" — und das sähe ohne Mindestmaß wie Grün aus.
