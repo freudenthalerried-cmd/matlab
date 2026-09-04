@@ -514,7 +514,11 @@ test('Ein offener Punkt ohne Kundenbezug erzeugt keine leere Aufzählung', () =>
   const echt = JSON.parse(readFileSync(pfad('../data/betreiber.json'), 'utf8'));
   writeFileSync(betreiberDatei, JSON.stringify({
     ...echt,
-    email: 'office@example.at', telefon: '+43 1 234', uid: 'ATU12345678',
+    // **Berichtigt am 4. September.** Hier stand `ATU12345678` — eine UID, die
+    // aussieht wie eine und deren Prüfziffer nicht aufgeht. Seit der Punkt
+    // `impressum` auch die **Form** prüft, hätte diese Probe den Shop mit
+    // einer erfundenen UID für bestellfähig erklärt.
+    email: 'office@example.at', telefon: '+43 1 234', uid: 'ATU12345675',
     gewerbewortlaut: 'Handelsgewerbe',
     zahlungsanbieter: 'Beispiel', rechtstexteFundstelle: 'Kanzlei',
     domainZeigtAufShop: true,
@@ -561,7 +565,11 @@ test('Startseite und llms.txt sagen aus den Daten, ob bestellt werden kann', () 
   const echt = JSON.parse(readFileSync(pfad('../data/betreiber.json'), 'utf8'));
   writeFileSync(betreiberVoll, JSON.stringify({
     ...echt,
-    email: 'office@example.at', telefon: '+43 1 234', uid: 'ATU12345678',
+    // **Berichtigt am 4. September.** Hier stand `ATU12345678` — eine UID, die
+    // aussieht wie eine und deren Prüfziffer nicht aufgeht. Seit der Punkt
+    // `impressum` auch die **Form** prüft, hätte diese Probe den Shop mit
+    // einer erfundenen UID für bestellfähig erklärt.
+    email: 'office@example.at', telefon: '+43 1 234', uid: 'ATU12345675',
     gewerbewortlaut: 'Handelsgewerbe',
     zahlungsanbieter: 'Beispiel', rechtstexteFundstelle: 'Kanzlei',
     domainZeigtAufShop: true, repositoryPrivat: true,

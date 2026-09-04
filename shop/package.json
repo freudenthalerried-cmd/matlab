@@ -42,6 +42,7 @@
     "gegenprobe": "node bin/gegenprobe.mjs",
     "gegenproben": "node bin/gegenprobenlauf.mjs",
     "pruefe-preisalter": "node bin/preisalterpruefung.mjs",
+    "impressum": "node bin/impressum.mjs",
     "rechtstexte-auftrag": "node bin/rechtstexteauftrag.mjs",
     "pruefe-gebinde": "node bin/gebindepruefung.mjs",
     "pruefe-dubletten": "node bin/dublettenpruefung.mjs",

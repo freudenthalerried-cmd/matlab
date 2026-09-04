@@ -475,6 +475,20 @@ export const GEGENPROBEN = Object.freeze([
       + 'eine Absage mit Verzögerung. Diese Mutation stellt genau das wieder her.',
   }),
   Object.freeze({
+    id: 'eigene-uid-ungeprueft',
+    pruefer: 'test',
+    was: 'Eine eigene UID, die dasteht und nicht stimmt',
+    datei: 'shop/src/betreiberform.js',
+    art: 'ersetzen',
+    suchen: "    pruefe: (wert) => uidPruefzifferStimmt(String(wert).toUpperCase().replace(/\\s/g, '')),",
+    ersetzen: '    pruefe: (wert) => String(wert).length > 0,',
+    erwartet: /uid|falsch getippte UID/i,
+    warum: 'Die eigene UID geht nach § 11 Abs 1 Z 3 UStG auf jede Rechnung über 400 € und '
+      + 'gefährdet bei einem Tippfehler den Vorsteuerabzug des Kunden. Die Prüfziffernrechnung '
+      + 'gibt es seit dem 27. August — sie bewachte bis zum 4. September nur die UID des '
+      + 'Kunden. Diese Mutation nimmt sie wieder heraus und verlangt, dass es auffällt.',
+  }),
+  Object.freeze({
     id: 'gebindeschritt-verlesen',
     pruefer: 'pruefe-gebinde',
     was: 'Ein Gebindeschritt, der aus dem Namen falsch gelesen wird',

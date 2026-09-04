@@ -5,10 +5,20 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { startklar } from '../src/startklar.js';
 import { IMPRESSUMSFELDER } from '../src/rechtstexte.js';
+import { FORMREGELN } from '../src/betreiberform.js';
 
 const werkzeug = fileURLToPath(new URL('../bin/startklar.mjs', import.meta.url));
 
-const vollstaendig = Object.fromEntries(IMPRESSUMSFELDER.map((f) => [f.feld, 'steht']));
+// Ein Platzhalter ist kein Impressum. Seit dem 4. September fragt der Punkt
+// nicht nur, **ob** eine Angabe dasteht, sondern **ob sie die Form hat** — ein
+// „steht" in der UID-Zeile ist genau der Fall, den er finden soll. Wo es eine
+// Formregel gibt, nimmt die Probe deren Beispiel: So bringt jede neue Regel
+// ihre eigene gültige Angabe mit, statt diese Zeile stillschweigend rot zu
+// färben.
+const formbeispiele = new Map(FORMREGELN.map((r) => [r.feld, r.beispiel]));
+const vollstaendig = Object.fromEntries(
+  IMPRESSUMSFELDER.map((f) => [f.feld, formbeispiele.get(f.feld) ?? 'steht']),
+);
 const katalogVoll = { artikel: [{ sku: 'A', vkNetto: 10, ekIstPlatzhalter: false, lieferantId: 'l1' }] };
 const alles = {
   // Seit dem 2. September gehört die zugesagte Antwortzeit dazu — sie ist der

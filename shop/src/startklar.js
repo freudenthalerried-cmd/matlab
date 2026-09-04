@@ -26,6 +26,7 @@
 
 import { bestellwegBefund } from './bestellweg.js';
 import { vorDemHochladen } from './rechtstexte.js';
+import { pruefeBetreiberform } from './betreiberform.js';
 
 /**
  * Welche offenen Punkte der **Kunde** auf der Kasse zu hören bekommt.
@@ -119,11 +120,29 @@ export function startklar(lage = {}) {
   const fehlendeFelder = impressumsfelder.filter(
     (f) => typeof betreiber[f.feld] !== 'string' || betreiber[f.feld].trim() === '',
   );
+  /**
+   * **Geschärft am 4. September.** Der Punkt prüfte, ob die Pflichtangaben
+   * **dastehen** — nicht, ob sie stimmen. Eine gefüllte, aber falsch getippte
+   * UID galt als erfüllt und ginge nach § 11 UStG auf jede Rechnung über
+   * 400 €.
+   *
+   * > **Anwesend ist nicht dasselbe wie richtig.** Dieselbe Lehre wie bei den
+   * > Leitdokumenten, wo „anwesend" nicht „führend" hieß.
+   */
+  const formfehler = pruefeBetreiberform(betreiber).maengel;
   p('impressum', 'Impressum vollständig',
-    fehlendeFelder.length === 0 ? 'erfuellt' : 'offen',
-    fehlendeFelder.length === 0
-      ? 'alle Pflichtangaben nach § 5 ECG und § 14 UGB stehen'
-      : `${fehlendeFelder.length} Pflichtangaben fehlen: ${fehlendeFelder.map((f) => f.bezeichnung).join(', ')}`,
+    fehlendeFelder.length === 0 && formfehler.length === 0 ? 'erfuellt' : 'offen',
+    [
+      fehlendeFelder.length === 0 && formfehler.length === 0
+        ? 'alle Pflichtangaben nach § 5 ECG und § 14 UGB stehen und haben die richtige Form'
+        : null,
+      fehlendeFelder.length
+        ? `${fehlendeFelder.length} Pflichtangaben fehlen: ${fehlendeFelder.map((f) => f.bezeichnung).join(', ')}`
+        : null,
+      formfehler.length
+        ? `${formfehler.length} in falscher Form: ${formfehler.map((m) => m.text).join('; ')}`
+        : null,
+    ].filter(Boolean).join(' — '),
     'Auftraggeber');
 
   /**
