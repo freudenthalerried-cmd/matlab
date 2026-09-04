@@ -71,3 +71,40 @@ test('Die Ausgabe nennt Zählungen und Zeitspannen, keine Beträge', () => {
   // Ein Eurozeichen hat in dieser Ausgabe nichts verloren.
   assert.doesNotMatch(ausgabe, /€/, 'ein Betrag in der Ausgabe');
 });
+
+/**
+ * Die Spalte „Einzelpreis" trägt zwei verschiedene Größen.
+ *
+ * **Der Befund, 4. September 2026.** Beim ersten Lauf der neuen
+ * Listenpreismessung stand da:
+ *
+ *     12583  Netto unverändert, Liste um 50.21 % verschoben
+ *
+ * Es hat nie einen Listenpreissturz gegeben. Der Lieferant ist bei diesem
+ * Artikel von „Liste 7,03 minus 50 %" auf **netto 3,50** umgestellt — derselbe
+ * Nettopreis, und die Preisdatei führt ihn mit dem Hinweis „netto fakturiert,
+ * keine Liste ausgewiesen".
+ *
+ * > **Welche der beiden Größen in der Spalte steht, sagt die Rabattspalte
+ * > daneben.** Ein Vergleich, der das übergeht, meldet eine Bewegung, die es
+ * > nie gegeben hat — der dritte Fehlalarm derselben Bauart an zwei Tagen.
+ */
+test('ein netto fakturierter Preis gilt nicht als Listenpreis', () => {
+  if (!existsSync(join(SHOP, '..', 'preise', 'poschacher-positionen.csv'))) return;
+  const ausgabe = lauf();
+  // Der Bestand trägt genau diesen Fall: mindestens eine Artikelnummer, die
+  // nicht zweimal eine Liste ausweist.
+  assert.match(ausgabe, /Liste nur \d+× ausgewiesen/);
+  assert.match(ausgabe, /fakturiert sie netto, ohne Rabattzeile/);
+  // Und keine Meldung über einen verschobenen Listenpreis, den es nicht gibt.
+  assert.doesNotMatch(ausgabe, /Liste um 50/);
+});
+
+test('die Ausgabe trennt Netto- und Listenpreis', () => {
+  if (!existsSync(join(SHOP, '..', 'preise', 'poschacher-positionen.csv'))) return;
+  const ausgabe = lauf();
+  assert.match(ausgabe, /im Nettopreis unverändert/);
+  assert.match(ausgabe, /im Listenpreis/);
+  // Der Listenpreis ist die Bezugsgröße der Werbeaussage; das steht dabei.
+  assert.match(ausgabe, /Netto unverändert, Liste/);
+});
