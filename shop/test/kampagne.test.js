@@ -1,12 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { suchname, taugtAlsKeyword, kurzform, alleAnzeigentexte, pruefeTexte, ANZEIGENTEXTE,
-  GEBINDEAUSSAGEN, keywordWoerter, hauptbereichText, ungedeckteWoerter, WARENKOERBE } from '../bin/kampagne.mjs';
+  GEBINDEAUSSAGEN, keywordWoerter, hauptbereichText, ungedeckteWoerter, WARENKOERBE, warenkorbText } from '../bin/kampagne.mjs';
 import { LIEFERGEBIET, bezirksliste } from '../src/liefergebiet.js';
 import { WARENGRUPPEN, GRUPPENSEITE } from '../src/artikelliste.js';
 import { join } from 'node:path';
+import { lesKopf } from '../src/markdown.js';
 
 /**
  * Die Einheiten, die der Katalog tatsächlich führt.
@@ -759,4 +760,90 @@ test('die beiden harten Grenzen des Shops stehen in der Liste', () => {
   // sie sperren, gehört ausgeschlossen, bevor der erste Klick bezahlt ist.
   assert.ok(themen.has('Außerhalb des Liefergebiets'), 'Gate 23 hat kein Ausschlussthema');
   assert.ok(themen.has('Privatkunde'), 'Gate 7 hat kein Ausschlussthema');
+});
+
+/**
+ * Der Referenzwarenkorb wird aus seinen Positionen gebaut, nicht daneben
+ * geschrieben.
+ *
+ * **Der Befund, 4. September 2026.** Der WDVS-Korb trug den Text „100 m²
+ * Wärmedämmverbundsystem: Kleber, Gewebe, Dübel, Putzgrund, **Oberputz**" —
+ * und im Korb lag kein Oberputz, sondern **Kantenschutz**, den der Text nicht
+ * nannte. Der Text geht als `Referenzwarenkorb` nach Google, die Positionen
+ * tragen den Deckungsbeitrag und damit das Gebot.
+ *
+ * > **Ein Text, der neben den Daten steht, beschreibt sie irgendwann nicht
+ * > mehr.** Derselbe Befund wie am 1. September, eine Zeile weiter: „Eine
+ * > Palette Mörtel" über einem Korb aus vierzig Säcken.
+ */
+test('jeder Referenzwarenkorb nennt genau das, was in ihm liegt', () => {
+  const koerbe = Object.entries(WARENKOERBE);
+  assert.ok(koerbe.length >= 5, `nur ${koerbe.length} Warenkörbe`);
+  for (const [gruppe, korb] of koerbe) {
+    const text = warenkorbText(korb);
+    assert.ok(text.startsWith(korb.umfang), `${gruppe}: der Umfang fehlt im Text`);
+    assert.ok(korb.positionen.length > 0, `${gruppe}: Warenkorb ohne Position`);
+    for (const p of korb.positionen) {
+      assert.ok(text.includes(p.was), `${gruppe}: „${p.was}" liegt im Korb und steht nicht im Text`);
+    }
+    // Und die andere Richtung: Nach dem Doppelpunkt steht nichts, was nicht
+    // im Korb liegt. Genau daran ist der WDVS-Text gescheitert.
+    if (korb.positionen.length > 1) {
+      const genannt = text.slice(text.indexOf(': ') + 2).split(', ');
+      assert.deepEqual(genannt, korb.positionen.map((p) => p.was),
+        `${gruppe}: der Text nennt etwas anderes als die Positionen`);
+    }
+  }
+});
+
+test('eine Position ohne Klartext bricht den Bau ab', () => {
+  assert.throws(() => warenkorbText({ umfang: 'X', positionen: [{ sku: 'A', menge: 1 }] }),
+    /ohne Klartext/);
+});
+
+test('ein Korb aus einer Position liest sich als Ausdruck, nicht als Liste', () => {
+  const text = warenkorbText({ umfang: '40 Sack', positionen: [{ sku: 'A', menge: 40, was: 'Mörtel' }] });
+  assert.equal(text, '40 Sack Mörtel');
+  assert.ok(!text.includes(':'), 'ein Doppelpunkt vor einem einzigen Wort liest sich wie ein Formular');
+});
+
+/**
+ * Der Referenzwarenkorb und die Systemliste beschreiben dieselbe Baustelle.
+ *
+ * **Der zweite Teil des Befunds vom 4. September.** Der WDVS-Korb trägt fünf
+ * Positionen; die Systemliste „Fassade dämmen — die Liste für 100 m²" trägt
+ * neun. Das Gebot dieser Anzeigengruppe ruht damit auf einer **kleineren**
+ * Baustelle, als der Shop selbst beschreibt.
+ *
+ * Das ist die vorsichtige Richtung und bleibt so: Die fehlenden Mengen
+ * ergeben sich aus Verbrauchswerten, und die veröffentlicht dieser Shop aus
+ * gutem Grund nicht („Die Kennwerte gehören ins Merkblatt des Herstellers").
+ *
+ * > **Was hier geprüft wird, ist die Richtung:** Im Korb darf nichts liegen,
+ * > was auf der Liste fehlt. Umgekehrt darf die Liste mehr tragen — dann ist
+ * > das Gebot zu niedrig und nicht zu hoch.
+ */
+test('kein Referenzwarenkorb trägt eine Position, die seine Systemliste nicht kennt', () => {
+  const ordner = fileURLToPath(new URL('../inhalte/system', import.meta.url));
+  const listen = new Map();
+  for (const datei of readdirSync(ordner).filter((f) => f.endsWith('.md'))) {
+    const kopf = lesKopf(readFileSync(join(ordner, datei), 'utf8')).kopf;
+    if (kopf.gruppe) {
+      listen.set(kopf.gruppe, String(kopf.skus).split(',').map((x) => x.trim()).filter(Boolean));
+    }
+  }
+  assert.ok(listen.size >= 4, `nur ${listen.size} Systemlisten gefunden`);
+
+  const ohneListe = [];
+  for (const [gruppe, korb] of Object.entries(WARENKOERBE)) {
+    const liste = listen.get(gruppe);
+    if (!liste) { ohneListe.push(gruppe); continue; }
+    assert.ok(korb.positionen.length > 0, `${gruppe}: Warenkorb ohne Position`);
+    for (const p of korb.positionen) {
+      assert.ok(liste.includes(p.sku),
+        `${gruppe}: ${p.sku} liegt im Referenzwarenkorb und fehlt in der Systemliste`);
+    }
+  }
+  // Mörtel und Mauerwerk haben keine Systemliste — genannt, nicht übergangen.
+  assert.deepEqual(ohneListe.sort(), ['Mauerwerk', 'Mörtel']);
 });

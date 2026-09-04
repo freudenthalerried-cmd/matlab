@@ -112,38 +112,61 @@ const MAX_PFADTEIL = 15;
  * Gerechnet wird deshalb auf die Bestellung, die eine Suche tatsächlich
  * auslöst.
  */
+/**
+ * **Umgebaut am 4. September.** Bis dahin trug jeder Warenkorb einen von Hand
+ * geschriebenen `text` **neben** seinen Positionen. Beim WDVS-Korb sind die
+ * beiden auseinandergelaufen:
+ *
+ * > „100 m² Wärmedämmverbundsystem: Kleber, Gewebe, Dübel, Putzgrund,
+ * > **Oberputz**"
+ *
+ * Im Korb steht kein Oberputz. Statt seiner liegt **Kantenschutz** darin, den
+ * der Text nicht nennt. Der Text geht als `Referenzwarenkorb` nach Google, die
+ * Positionen tragen den Deckungsbeitrag und damit das Gebot — zwei Aussagen
+ * über dieselbe Sache, und eine davon falsch.
+ *
+ * Es ist derselbe Befund wie am 1. September, eine Zeile weiter: Damals stand
+ * „Eine Palette Mörtel" über einem Korb aus vierzig Säcken.
+ *
+ * > **Ein Text, der neben den Daten steht, beschreibt sie irgendwann nicht
+ * > mehr.** Er wird jetzt aus ihnen gebaut.
+ *
+ * `umfang` ist der Teil, den nur ein Mensch sagen kann („100 m² Fassade"). Was
+ * darin liegt, sagt die Liste — je Position ein `was` in der Sprache des
+ * Bauleiters, nicht die Artikelbezeichnung des Lieferanten.
+ */
 export const WARENKOERBE = {
   WDVS: {
-    text: '100 m² Wärmedämmverbundsystem: Kleber, Gewebe, Dübel, Putzgrund, Oberputz',
+    umfang: '100 m² Wärmedämmverbundsystem',
     positionen: [
-      { sku: 'POS-11283', menge: 500 },   // Klebe- und Spachtelmasse, kg
-      { sku: 'POS-50509', menge: 110 },   // Glasgewebe, m²
-      { sku: 'POS-11082', menge: 6 },     // Universaldübel, Karton
-      { sku: 'POS-13728', menge: 25 },    // Putzgrund, kg
-      { sku: 'POS-53402', menge: 40 },    // Kantenschutz, lfm
+      { sku: 'POS-11283', menge: 500, was: 'Kleber' },      // Klebe- und Spachtelmasse, kg
+      { sku: 'POS-50509', menge: 110, was: 'Gewebe' },      // Glasgewebe, m²
+      { sku: 'POS-11082', menge: 6, was: 'Dübel' },         // Universaldübel, Karton
+      { sku: 'POS-13728', menge: 25, was: 'Putzgrund' },    // Putzgrund, kg
+      { sku: 'POS-53402', menge: 40, was: 'Kantenschutz' }, // lfm
     ],
   },
   'Dämmung': {
-    text: '100 m² Perimeterdämmung XPS 80 mm',
-    positionen: [{ sku: 'POS-12575', menge: 100 }],
+    umfang: '100 m²',
+    positionen: [{ sku: 'POS-12575', menge: 100, was: 'Perimeterdämmung XPS 80 mm' }],
   },
   Kamin: {
-    text: 'Ein Kaminzug, Fertigfuß bis Regenhaube',
+    umfang: 'Ein Kaminzug',
     positionen: [
-      { sku: 'POS-10837', menge: 13 },    // Mantelstein
-      { sku: 'POS-12476', menge: 4 },     // gedämmtes Rohr
-      { sku: 'POS-12472', menge: 1 },     // Fertigfußpaket
-      { sku: 'POS-12467', menge: 1 },     // Putztüranschluss
-      { sku: 'POS-51875', menge: 1 },     // Regenhaube
+      { sku: 'POS-10837', menge: 13, was: 'Mantelsteine' },
+      { sku: 'POS-12476', menge: 4, was: 'gedämmtes Rohr' },
+      { sku: 'POS-12472', menge: 1, was: 'Fertigfußpaket' },
+      { sku: 'POS-12467', menge: 1, was: 'Putztüranschluss' },
+      { sku: 'POS-51875', menge: 1, was: 'Regenhaube' },
     ],
   },
   Kanal: {
-    text: '30 lfm Kanal DN 100 mit Formteilen und Schacht',
+    umfang: '30 lfm Kanal DN 100',
     positionen: [
-      { sku: 'POS-10095', menge: 30 },
-      { sku: 'POS-10115', menge: 4 },
-      { sku: 'POS-10134', menge: 3 },
-      { sku: 'POS-11133', menge: 1 },
+      { sku: 'POS-10095', menge: 30, was: 'Rohre' },
+      { sku: 'POS-10115', menge: 4, was: 'Bögen' },
+      { sku: 'POS-10134', menge: 3, was: 'Abzweiger' },
+      { sku: 'POS-11133', menge: 1, was: 'Schachtring' },
     ],
   },
   // **Berichtigt am 01.09.** Hier stand „Eine Palette Mörtel" und „Eine
@@ -153,14 +176,33 @@ export const WARENKOERBE = {
   // Artikel dieses Katalogs hat. Jetzt steht die Menge da, die tatsächlich
   // gerechnet wird.
   'Mörtel': {
-    text: '40 Sack Mörtel',
-    positionen: [{ sku: 'POS-13550', menge: 40 }],
+    umfang: '40 Sack',
+    positionen: [{ sku: 'POS-13550', menge: 40, was: 'Mörtel' }],
   },
   Mauerwerk: {
-    text: '128 Planziegel',
-    positionen: [{ sku: 'POS-29728', menge: 128 }],
+    umfang: '128',
+    positionen: [{ sku: 'POS-29728', menge: 128, was: 'Planziegel' }],
   },
 };
+
+/**
+ * Der Referenzwarenkorb, wie er nach Google geht — **aus den Positionen
+ * gebaut** und nicht daneben geschrieben.
+ *
+ * Zwei Aussagen über dieselbe Sache laufen auseinander; eine, die aus der
+ * anderen entsteht, kann es nicht.
+ */
+export function warenkorbText(korb) {
+  const teile = korb.positionen.map((p) => p.was).filter(Boolean);
+  if (teile.length !== korb.positionen.length) {
+    throw new Error(`Referenzwarenkorb „${korb.umfang}": eine Position ohne Klartext`);
+  }
+  // Eine Position: Umfang und Sache bilden einen Ausdruck („40 Sack Mörtel").
+  // Mehrere: der Umfang, ein Doppelpunkt, die Aufzählung.
+  return teile.length === 1
+    ? `${korb.umfang} ${teile[0]}`
+    : `${korb.umfang}: ${teile.join(', ')}`;
+}
 
 /**
  * Marken, die im Artikelnamen vorkommen. Sie tragen die Kampagne: Auf
@@ -658,7 +700,7 @@ function main() {
 
     const zeile = {
       gruppe,
-      text: korb.text,
+      text: warenkorbText(korb),
       warenwertNetto,
       frachtNetto,
       deckungsbeitragNetto: traegt.deckungsbeitragNetto,
