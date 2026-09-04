@@ -162,10 +162,16 @@ export function kennzahlen(messwerte) {
   // Einträgen. Ein Prüfer, der jede Zahl im Text hält außer der über sich
   // selbst, hat eine blinde Stelle in der Mitte.
   //
-  // `liste.length + 1` zählt diesen Eintrag mit, denn er ist einer.
+  // `liste.length + 1` zählt diesen Eintrag mit, denn er ist einer — und seit
+  // dem 4. September auch die **Aussagen**: Der Prüfer meldet sie in derselben
+  // Summe, also muss die Zahl in der Beschreibung sie mitzählen. Ohne diese
+  // Ergänzung hätte die selbstbezügliche Zahl die zwei neuen Prüfungen
+  // verschwiegen — an genau der Stelle, die es gibt, damit nichts unbemerkt
+  // aus der Prüfung fällt.
   liste.push({
     name: 'Kennzahlen dieser Prüfung', wie: 'src/schaufenster.js — die Liste selbst',
-    muster: /misst ihre (\d+) Kennzahlen gegen den Bestand/, soll: liste.length + 1,
+    muster: /misst ihre (\d+) Kennzahlen gegen den Bestand/,
+    soll: liste.length + 1 + aussagen(messwerte).length,
   });
   return liste;
 }
@@ -178,6 +184,49 @@ export function kennzahlen(messwerte) {
  */
 function meddung(meldungen, k, ist, grund) {
   meldungen.push({ art: 'veraltet', name: k.name, ist, soll: k.soll, grund });
+}
+
+/**
+ * Die **Aussagen** der Beschreibung — nicht ihre Zahlen.
+ *
+ * **Der Anlass, 4. September 2026, Abend.** Nach sechs Runden Bestellweg
+ * stand in der Beschreibung weiter: *„Der Shop nimmt keine Bestellung
+ * entgegen, sondern erzeugt Anfragen."* Alle 32 Kennzahlen stimmten dabei.
+ *
+ * > **Ein Zahlenwerk, das stimmt, macht aus einem überholten Satz keinen
+ * > richtigen.** Die Zahlen wurden gemessen, weil sie sich leicht messen
+ * > lassen; der Satz daneben sagt mehr über den Shop als jede von ihnen.
+ *
+ * Jede Aussage hier ist **entscheidbar** — aus demselben Bestand, den auch
+ * `npm run startklar` liest. Was sich nicht entscheiden lässt, gehört nicht
+ * in diese Liste, sondern bleibt ungemessener Fließtext; eine Aussage mit
+ * erfundener Messung wäre schlimmer als keine.
+ *
+ * `gilt` ist der Zustand, `wenn` der Satz, der dann dastehen muss, und
+ * `sonst` der, der dann **nicht** dastehen darf.
+ */
+export function aussagen(messwerte) {
+  return [
+    {
+      name: 'Bestellweg gebaut',
+      wie: 'src/bestellweg.js gegen die ausgelieferte Oberfläche (npm run startklar)',
+      gilt: messwerte.bestellwegGebaut,
+      wenn: /Bestellweg/,
+      sonst: /nimmt keine Bestellung entgegen/,
+      erklaerung: 'Seit Gate 26 gibt es Empfangsskript, Formular und Ablage. Ein Satz, der '
+        + 'das Gegenteil sagt, steht vor allem anderen in der Beschreibung.',
+    },
+    {
+      name: 'Bestellweg eingeschaltet',
+      wie: 'data/betreiber.json über bestellwegAktiv()',
+      gilt: messwerte.bestellwegAktiv,
+      wenn: /Bestellungen werden entgegengenommen/,
+      sonst: /gebaut und ausgeschaltet/,
+      erklaerung: 'Gebaut und eingeschaltet sind zwei Zustände. Wer sie verwechselt, verspricht '
+        + 'dem Leser einen Shop, der Bestellungen annimmt, während das Empfangsskript nicht '
+        + 'einmal ausgeliefert wird.',
+    },
+  ];
 }
 
 export function pruefeSchaufenster(text, messwerte) {
@@ -208,5 +257,28 @@ export function pruefeSchaufenster(text, messwerte) {
         grund: `die Beschreibung sagt ${treffer[1]}, gemessen sind ${k.soll} (${k.wie})` });
     }
   }
-  return { geprueft: liste.length, meldungen, sauber: meldungen.length === 0 };
+  /**
+   * **Und die Aussagen.** Sie kommen nach den Zahlen, weil sie seltener sind
+   * und schwerer wiegen: Eine überholte Zahl kostet Glaubwürdigkeit, ein
+   * überholter Satz kostet eine Entscheidung.
+   */
+  const saetze = aussagen(messwerte);
+  for (const a of saetze) {
+    if (a.gilt === undefined || a.gilt === null) {
+      meldungen.push({ art: 'ungemessen', name: a.name, grund: `kein Messwert für „${a.name}" (${a.wie})` });
+      continue;
+    }
+    const soll = a.gilt ? a.wenn : a.sonst;
+    const darfNicht = a.gilt ? a.sonst : a.wenn;
+    if (!soll.test(text)) {
+      meldungen.push({ art: 'aussage-fehlt', name: a.name,
+        grund: `die Beschreibung sagt nicht, was gilt (${a.erklaerung})` });
+    }
+    if (darfNicht.test(text)) {
+      meldungen.push({ art: 'aussage-ueberholt', name: a.name,
+        grund: `die Beschreibung sagt noch ${darfNicht} — ${a.erklaerung}` });
+    }
+  }
+
+  return { geprueft: liste.length + saetze.length, meldungen, sauber: meldungen.length === 0 };
 }

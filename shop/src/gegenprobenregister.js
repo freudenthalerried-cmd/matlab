@@ -475,6 +475,21 @@ export const GEGENPROBEN = Object.freeze([
       + 'eine Absage mit Verzögerung. Diese Mutation stellt genau das wieder her.',
   }),
   Object.freeze({
+    id: 'schaufenster-ohne-aussagen',
+    pruefer: 'pruefe-schaufenster',
+    was: 'Eine Beschreibung, deren Zahlen stimmen und deren Sätze überholt sind',
+    datei: 'shop/src/schaufenster.js',
+    art: 'ersetzen',
+    suchen: "      gilt: messwerte.bestellwegGebaut,",
+    ersetzen: "      gilt: false,",
+    erwartet: /aussage-fehlt|aussage-ueberholt|Bestellweg gebaut/,
+    warum: 'Am Abend des 4. September meldete der Prüfer „Alle 32 Kennzahlen stimmen" — und in '
+      + 'derselben Beschreibung stand, der Shop nehme keine Bestellung entgegen, sechs Runden '
+      + 'nach Gate 26. Ein Zahlenwerk, das stimmt, macht aus einem überholten Satz keinen '
+      + 'richtigen. Diese Mutation dreht den gemessenen Zustand um und verlangt, dass die '
+      + 'Beschreibung daran gemessen wird und nicht an der Erinnerung.',
+  }),
+  Object.freeze({
     id: 'befund-von-vorgestern',
     pruefer: 'test',
     was: 'Ein Befund, der den Zustand von vorgestern beschreibt',

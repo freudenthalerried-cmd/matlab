@@ -20,6 +20,8 @@ import { ladeBaustoffkatalog } from '../src/baustoffkatalog.js';
 import { katalogbefund } from '../src/baustoffkatalog.js';
 import { noetigerUmsatz } from '../src/kostenbild.js';
 import { rolloutplan, HAUPTFALL } from '../src/rollout.js';
+import { bestellwegBefund, VORAUSSETZUNGEN } from '../src/bestellweg.js';
+import { bestellwegAktiv, oberflaeche } from '../src/bestellwegbau.js';
 
 const SHOP = fileURLToPath(new URL('..', import.meta.url));
 const REPO = join(SHOP, '..');
@@ -144,6 +146,22 @@ const messwerte = {
   keywords: JSON.parse(readFileSync(join(SHOP, 'ausgabe', 'messliste-baustoff.json'), 'utf8'))
     .gruppen.reduce((n, g) => n + g.keywords.length, 0),
   browserpruefer: BROWSERPRUEFER.length,
+  /**
+   * **Zwei Zustände, nicht einer.** Der Bestellweg ist seit dem 4. September
+   * gebaut; eingeschaltet ist er erst, wenn E-Mail und Rechtstextewortlaut in
+   * der Betreiberdatei stehen. Wer beides verwechselt, verspricht dem Leser
+   * einen Shop, der Bestellungen annimmt, während das Empfangsskript nicht
+   * einmal ausgeliefert wird.
+   *
+   * `gebaut` wird am Quelltext gemessen, den der Browser bekäme — nicht an
+   * einer Zusage: `oberflaeche(..., true)` setzt zusammen, was mit
+   * eingeschaltetem Weg ausgeliefert würde, und `bestellwegBefund` sucht darin
+   * die Wege, auf denen eine Seite Daten hinausgibt.
+   */
+  bestellwegGebaut: bestellwegBefund(
+    oberflaeche((d) => readFileSync(join(SHOP, d), 'utf8'), true),
+  ).moeglich,
+  bestellwegAktiv: bestellwegAktiv(betreiberDatei, VORAUSSETZUNGEN).aktiv,
   feed: feedTreffer ? Number(feedTreffer[1]) : null,
   ohneGtin: katalogDatei.artikel.filter((a) => !a.gtin).length,
   unterListe: befund.unterListe,
