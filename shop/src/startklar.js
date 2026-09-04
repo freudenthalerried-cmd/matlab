@@ -24,7 +24,8 @@
  * optimistischen Annahme gefüllt.
  */
 
-import { bestellwegBefund } from './bestellweg.js';
+import { bestellwegBefund, VORAUSSETZUNGEN } from './bestellweg.js';
+import { bestellwegAktiv } from './bestellwegbau.js';
 import { vorDemHochladen } from './rechtstexte.js';
 import { pruefeBetreiberform } from './betreiberform.js';
 
@@ -123,9 +124,30 @@ export function startklar(lage = {}) {
    * > wartet, wird nie geschlossen.** Er hätte die Liste dauerhaft rot
    * > gehalten und dabei auf den Falschen gezeigt.
    */
+  /**
+   * **Der Befund sagt seit dem 4. September, abends, warum kein Weg da ist.**
+   *
+   * Er lautete „die Oberfläche schickt nichts ab; die Kasse rechnet und
+   * erzeugt einen Anfragetext zum Kopieren" — der Satz eines Shops, für den
+   * nichts gebaut ist. Gebaut ist seit heute alles: Empfangsskript, Formular,
+   * Ablage, Posteingang, und einmal von Ende zu Ende gefahren.
+   *
+   * > **Ein Befund, der den Zustand von vorgestern beschreibt, ist eine
+   * > Falschauskunft — auch wenn er in die vorsichtige Richtung irrt.** Er
+   * > hätte den Auftraggeber glauben lassen, hier stehe Arbeit aus, während
+   * > zwei Einträge in seiner eigenen Datei fehlen.
+   *
+   * Die Voraussetzungen kommen aus derselben Stelle, die den Weg schaltet.
+   */
+  const schalter = bestellwegAktiv(betreiber, VORAUSSETZUNGEN);
+  const wegbefund = (weg.moeglich === false && schalter.fehlend.length)
+    ? `der Bestellweg ist gebaut und ausgeschaltet — ${fehltSatz(
+      schalter.fehlend.map((v) => ({ wort: v.feld })),
+    )}. Bis dahin rechnet die Kasse und erzeugt einen Anfragetext zum Kopieren`
+    : weg.befund;
   p('bestellweg', 'Der Kunde kann eine Bestellung abschicken',
     weg.moeglich === null ? 'unpruefbar' : (weg.moeglich ? 'erfuellt' : 'offen'),
-    weg.befund,
+    wegbefund,
     'Auftraggeber');
 
   const fehlendeFelder = impressumsfelder.filter(

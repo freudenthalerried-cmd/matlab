@@ -153,3 +153,29 @@ test('die Voraussetzungen nennen Feld und Grund', () => {
   // Die Datenschutzzusage ist die eine, die mit demselben Bau fallen muss.
   assert.ok(VORAUSSETZUNGEN.some((v) => v.id === 'datenschutzwortlaut'));
 });
+
+/* ------------------------------------------------------------------ *
+ * Der Befund sagt, warum — ergänzt am 4. September, abends
+ * ------------------------------------------------------------------ */
+
+test('ohne Absendeweg sagt der Punkt, ob nichts gebaut oder nur nichts geschaltet ist', () => {
+  // **Der Befund vom Abend:** Der Satz lautete „die Oberfläche schickt nichts
+  // ab; die Kasse rechnet und erzeugt einen Anfragetext zum Kopieren" — der
+  // Satz eines Shops, für den nichts gebaut ist. Gebaut ist alles; es fehlen
+  // zwei Einträge in der Betreiberdatei.
+  const ohneDaten = startklar({ ...vollstaendig, oberflaechenQuelltext: oberflaeche });
+  const punkt = ohneDaten.punkte.find((p) => p.id === 'bestellweg');
+  assert.equal(punkt.zustand, 'offen');
+  assert.match(punkt.befund, /gebaut und ausgeschaltet/);
+  assert.match(punkt.befund, /betreiber\.email/);
+  assert.match(punkt.befund, /rechtstexteFundstelle/);
+
+  // Und mit beiden Angaben, aber ohne Weg im Quelltext, bleibt der alte Satz:
+  // Dann ist es wirklich der Bau, der fehlt.
+  const mitDaten = startklar({
+    ...vollstaendig,
+    betreiber: { ...vollstaendig.betreiber, email: 'a@b.at', rechtstexteFundstelle: 'Kanzlei' },
+    oberflaechenQuelltext: oberflaeche,
+  });
+  assert.match(mitDaten.punkte.find((p) => p.id === 'bestellweg').befund, /schickt nichts ab/);
+});

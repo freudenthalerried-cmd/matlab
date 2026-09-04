@@ -21424,8 +21424,30 @@ function pruefeAnfrageAufGeheimnis(text, artikelMitEk = []) {
           window.bestellSenden(stand.wegZiel, angaben, function (antwort) {
             if (antwort && antwort.ok) {
               
+
+
+
+
+
+
+
+
+
+
+
+
+              leere(sendeEcho);
+              sendeEcho.appendChild(el('strong', null, 'Angekommen. Ihre Nummer: ' + antwort.nummer + '. '));
               
-              sendeEcho.textContent = 'Angekommen. Ihre Nummer: ' + antwort.nummer;
+              
+              
+              sendeEcho.appendChild(document.createTextNode(
+                'Ein Vertrag entsteht erst mit unserer Auftragsbestätigung (AGB Punkt 2); '
+                + 'darin bestätigen wir Preis, Verfügbarkeit und Termin'
+                + (typeof zeit === 'number' && zeit > 0
+                  ? ' innerhalb von ' + zeit + (zeit === 1 ? ' Werktag' : ' Werktagen')
+                  : '')
+                + '. Bitte notieren Sie die Nummer für Rückfragen.'));
               return;
             }
             senden.disabled = false;

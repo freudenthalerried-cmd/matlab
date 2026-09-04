@@ -71,6 +71,10 @@ writeFileSync(betreiberDatei, JSON.stringify({
   // an dem Tag geschieht, an dem er an ist.
   email: 'office@example.at',
   rechtstexteFundstelle: 'Kanzlei X, Fassung vom 4.9.2026',
+  // Die zugesagte Antwortzeit ist keine Voraussetzung des Bestellwegs, aber
+  // sie steht in der Rückmeldung nach dem Absenden. Ohne sie prüfte diese
+  // Probe den Satz ohne seine wichtigste Angabe.
+  antwortzeitWerktage: 1,
 }, null, 2));
 
 const bau = spawnSync('npm', ['run', '--silent', 'website'], {
@@ -187,10 +191,26 @@ try {
   const bestanden = [];
   if (gemeldet === null) probleme.push('die Sonde ist nicht gelaufen — kein Marker in der Seite');
   else if (gemeldet.includes('[[SONDE GESTOLPERT')) probleme.push(gemeldet);
-  else if (!/^Angekommen\. Ihre Nummer: B-\d{4}-\d{4}$/.test(gemeldet.trim())) {
-    probleme.push(`die Kasse meldet: „${gemeldet.trim()}"`);
-  } else {
-    bestanden.push(`Die Kasse meldet: ${gemeldet.trim()}`);
+  else {
+    /**
+     * **Geprüft wird die Zusage, nicht der Wortlaut.** Die erste Fassung
+     * verlangte den Satz genau — und ging kaputt, als er um den Hinweis auf
+     * AGB Punkt 2 wuchs. Eine Probe, die auf den Wortlaut besteht, verbietet
+     * die Verbesserung des Textes.
+     *
+     * Drei Dinge muss der Besteller nach dem Absenden lesen: dass es
+     * angekommen ist, unter welcher Nummer, und dass er noch keinen Vertrag
+     * hat.
+     */
+    const satz = gemeldet.trim();
+    const fehlt = [
+      [/Angekommen/, 'die Bestätigung, dass es angekommen ist'],
+      [/B-\d{4}-\d{4}/, 'die Nummer'],
+      [/Auftragsbestätigung/, 'der Hinweis, dass der Vertrag erst mit ihr entsteht'],
+      [/1 Werktag/, 'die zugesagte Antwortzeit'],
+    ].filter(([muster]) => !muster.test(satz)).map(([, was]) => was);
+    if (fehlt.length) probleme.push(`der Kasse fehlt nach dem Absenden: ${fehlt.join(', ')} — „${satz}"`);
+    else bestanden.push(`Die Kasse meldet Nummer, Vertragslage und Antwortzeit: ${satz.slice(0, 60)}…`);
   }
 
   // **Der eigentliche Beweis liegt nicht im Browser.** Eine Kasse, die

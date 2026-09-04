@@ -475,6 +475,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'eine Absage mit Verzögerung. Diese Mutation stellt genau das wieder her.',
   }),
   Object.freeze({
+    id: 'befund-von-vorgestern',
+    pruefer: 'test',
+    was: 'Ein Befund, der den Zustand von vorgestern beschreibt',
+    datei: 'shop/src/startklar.js',
+    art: 'ersetzen',
+    suchen: '  const wegbefund = (weg.moeglich === false && schalter.fehlend.length)',
+    ersetzen: '  const wegbefund = (false && weg.moeglich === false && schalter.fehlend.length)',
+    erwartet: /gebaut und ausgeschaltet|nichts gebaut oder nur nichts geschaltet/,
+    warum: 'Der Punkt meldete „die Oberfläche schickt nichts ab; die Kasse rechnet und erzeugt '
+      + 'einen Anfragetext zum Kopieren" — den Satz eines Shops, für den nichts gebaut ist. '
+      + 'Gebaut ist seit dem 4. September alles; es fehlen zwei Einträge in der Betreiberdatei. '
+      + 'Ein Befund, der die Vergangenheit beschreibt, ist eine Falschauskunft, auch wenn er in '
+      + 'die vorsichtige Richtung irrt: Er hätte den Auftraggeber glauben lassen, hier stehe '
+      + 'Arbeit aus.',
+  }),
+  Object.freeze({
     id: 'bereitschaft-liest-die-halbe-oberflaeche',
     pruefer: 'test',
     was: 'Eine Bereitschaftsliste, die nur die Hälfte dessen liest, was ausgeliefert wird',

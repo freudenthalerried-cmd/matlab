@@ -1017,9 +1017,31 @@
           }
           window.bestellSenden(stand.wegZiel, angaben, function (antwort) {
             if (antwort && antwort.ok) {
-              // Die Nummer gehört sichtbar hin: Sie ist das Einzige, worauf
-              // sich der Kunde bei einer Rückfrage berufen kann.
-              sendeEcho.textContent = 'Angekommen. Ihre Nummer: ' + antwort.nummer;
+              /**
+               * **Die Nummer allein reicht nicht.** Bis zum 4. September stand
+               * hier nur „Angekommen. Ihre Nummer: …" — und der Besteller
+               * wusste weder, dass er noch keinen Vertrag hat, noch wann er
+               * etwas hört.
+               *
+               * > **Der Vertrag entsteht nach AGB Punkt 2 mit unserer
+               * > Auftragsbestätigung.** Wer das nach dem Absenden nicht
+               * > dasteht, hält seine Bestellung für angenommen.
+               *
+               * Die Zeitangabe wird nicht erfunden: Sie steht in denselben
+               * Betreiberdaten wie oben und fehlt heute noch.
+               */
+              leere(sendeEcho);
+              sendeEcho.appendChild(el('strong', null, 'Angekommen. Ihre Nummer: ' + antwort.nummer + '. '));
+              // Der Satz wird gebaut und nicht aus dem Satz darüber
+              // zusammengeschnitten: Zwei Sätze, die durch Ersetzen
+              // auseinander hervorgehen, ergeben beim ersten Umbau Kauderwelsch.
+              sendeEcho.appendChild(document.createTextNode(
+                'Ein Vertrag entsteht erst mit unserer Auftragsbestätigung (AGB Punkt 2); '
+                + 'darin bestätigen wir Preis, Verfügbarkeit und Termin'
+                + (typeof zeit === 'number' && zeit > 0
+                  ? ' innerhalb von ' + zeit + (zeit === 1 ? ' Werktag' : ' Werktagen')
+                  : '')
+                + '. Bitte notieren Sie die Nummer für Rückfragen.'));
               return;
             }
             senden.disabled = false;
