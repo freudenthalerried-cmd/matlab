@@ -31,7 +31,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { ladeBaustoffkatalog, katalogbefund, ZIELMARGE } from '../src/baustoffkatalog.js';
 import { pruefeSeiten } from '../src/interna.js';
-import { artikelBild, gruppenBild, schichten, schichtbild, dickeMm } from '../src/bilder.js';
+import { artikelBild, gruppenBild, schichten, schichtbild, dickeMm, bauform } from '../src/bilder.js';
 import { VERFUEGBARKEIT, angebotsAuszeichnung, robotsTxt, liefergebietOrte } from '../src/maschinenlesbar.js';
 import { baueKern, BROWSERMODULE } from '../src/buendel.js';
 import { startklar, fehltSatz } from '../src/startklar.js';
@@ -351,7 +351,8 @@ hr{border:none;border-top:1px solid var(--linie);margin:2rem 0}
 svg.schema{display:block;width:100%;height:auto;max-height:7.5rem}
 svg.schema.gruppe{max-height:5.5rem}
 .kachel .bild{display:block;background:var(--flaeche-2);margin:-1rem -1.1rem .6rem;padding:.6rem;border-bottom:1px solid var(--linie)}
-.artikelbild{background:var(--grund);border:1px solid var(--linie);padding:1.4rem;margin:0 0 1.5rem;display:flex;justify-content:center}
+.artikelbild{background:var(--grund);border:1px solid var(--linie);padding:1.4rem;margin:0 0 1.5rem;display:flex;flex-direction:column;align-items:center;gap:.9rem}
+.bildhinweis{margin:0;max-width:34rem;text-align:center;font-size:.86rem;color:var(--gedaempft)}
 .artikelbild svg.schema{max-height:12rem;max-width:22rem}
 .schichtbild{background:var(--grund);border:1px solid var(--linie);padding:1.2rem .8rem;margin:0 0 1rem}
 .schichtbild svg{display:block;width:100%;height:auto;max-width:32rem;margin:0 auto}
@@ -690,7 +691,24 @@ function artikelSeite(a, katalog, befund, seiten, verweis) {
   teile.push(`<h1>${esc(a.bezeichnung)}</h1>`);
   // Die Zeichnung steht vor den Zahlen: Wer auf einer Artikelseite landet,
   // will zuerst wissen, ob er beim richtigen Bauteil ist.
-  teile.push(`<div class="artikelbild">${artikelBild(a)}</div>`);
+  /**
+   * **Der Platzhalter sagt es auch dem, der sieht — seit dem 4. September.**
+   *
+   * `artikelBild` trägt die Auskunft seit heute in der Bildbeschreibung; die
+   * liest ein Vorleseprogramm und sonst niemand. Ein Bauleiter, der eine
+   * Zeichnung sieht, hält sie für eine Zeichnung dieses Artikels.
+   *
+   * Betroffen sind drei Kaminpakete — und es sind dieselben drei, deren Seiten
+   * einander am ähnlichsten sind (0,96 in `npm run pruefe-dubletten`). Wo der
+   * Shop am wenigsten über einen Artikel weiß, sieht seine Seite jeder anderen
+   * am ähnlichsten; das ist kein Zufall, sondern dieselbe Ursache zweimal.
+   */
+  const platzhalterform = bauform(a) === 'teil';
+  teile.push(`<div class="artikelbild">${artikelBild(a)}${platzhalterform
+    ? `<p class="bildhinweis">Die Form dieses Artikels ist aus seiner Bezeichnung nicht ablesbar —
+die Zeichnung ist ein Platzhalter und kein Schema dieses Erzeugnisses. Was zum Paket gehört, sagt
+${systemSeiten.length ? `die Systemliste unten` : 'die Systemliste'}.</p>`
+    : ''}</div>`);
 
   const marker = [];
   if (abstand !== null && abstand >= 5) marker.push(`<span class="marker vorteil">${abstand} % unter Listenpreis</span>`);

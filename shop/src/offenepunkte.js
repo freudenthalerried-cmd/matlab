@@ -97,7 +97,9 @@ export const OHNE_WERKZEUG = Object.freeze([
     warumKeinWerkzeug: 'Die Daten liegen beim Lieferanten. Der Katalog stammt aus fünfzehn Rechnungen; '
       + 'mehr geben sie nicht her.',
     loest: 'Löst auf einmal: GTIN, Marke und Bild im Feed — und die Weisung, das Sortiment auf '
-      + 'mindestens hundert Artikel zu erweitern.',
+      + 'mindestens hundert Artikel zu erweitern. Seit dem 4. September ein Viertes: 62 % der '
+      + 'Wörter einer Artikelseite stehen wortgleich auf allen 46 (`npm run pruefe-dubletten`). '
+      + 'Auf diese Seiten führt der bezahlte Klick.',
   },
   {
     id: 'suchvolumen',

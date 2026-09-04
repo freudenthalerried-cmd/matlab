@@ -52,7 +52,18 @@ export const FRAGEN = Object.freeze([
     warum: 'Die eine Frage, die am meisten löst. Der Katalog stammt heute aus fünfzehn '
       + 'Rechnungen; was nie auf einer Rechnung stand, kennt er nicht. Ohne EAN, Marke und '
       + 'Bild wird der Produktfeed nicht teilweise angenommen, sondern abgelehnt — und ohne '
-      + 'aktuelle Preise ist der älteste Einstand 133 Tage alt.',
+      + 'aktuelle Preise ist der älteste Einstand 133 Tage alt. '
+      // **Nachgetragen am 4. September**, nachdem `npm run pruefe-dubletten`
+      // die Artikelseiten zum ersten Mal gegeneinander gehalten hat. Bis dahin
+      // nannte diese Begründung drei Folgen; die vierte wiegt für den
+      // Klickkanal schwerer als die drei anderen, denn auf diese Seiten führt
+      // der bezahlte Klick.
+      + '**Und die vierte Folge, seit dem 4. September gemessen:** 62 % der Wörter einer '
+      + 'Artikelseite stehen wortgleich auf allen 46 — die Seiten unterscheiden sich in einem '
+      + 'Namen und vier Zahlen. 20 von 46 Artikeln tragen dieselbe Zeichnung wie ein anderer, '
+      + 'und bei drei Kaminpaketen ist die Form aus dem Namen gar nicht ablesbar. Hersteller, '
+      + 'EAN, Verpackungseinheit und ein Produktbild je Artikel sind das Einzige, was daran '
+      + 'etwas ändert.',
   }),
   Object.freeze({
     id: 'lieferzeit',

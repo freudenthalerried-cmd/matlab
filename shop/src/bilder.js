@@ -406,7 +406,23 @@ export function artikelBild(artikel, { klasse = 'schema' } = {}) {
   // die Bildbeschreibung darf das nicht als Maß ausgeben.
   const beschreibung = form === 'platte' && dickeMm(artikel?.bezeichnung) === null
     ? 'Schemazeichnung: Dämmplatte, Stärke nicht aus der Bezeichnung ablesbar'
-    : `Schemazeichnung: ${BAUFORM_TEXT[form] ?? 'Bauteil'}`;
+    // **Ergänzt am 4. September.** Die Regel darüber gab es seit dem 30. August
+    // und galt an genau einer Stelle: bei der Platte ohne ablesbare Stärke.
+    // Die **Auffangform** `teil` hatte sie nicht — sie meldete
+    // „Schemazeichnung: Bauteil" und las sich damit wie eine Aussage über
+    // diesen Artikel, obwohl sie das Gegenteil ist: die Form ließ sich aus dem
+    // Namen nicht bestimmen.
+    //
+    // > **Eine Lücke, die wie eine Angabe klingt, ist schlimmer als eine
+    // > sichtbare Lücke** — genau die Familie, gegen die dieser Bestand seine
+    // > `[[ … FEHLT ]]`-Marken führt.
+    //
+    // Betroffen sind heute drei Artikel, und es sind ausgerechnet die drei,
+    // deren Seiten sich am ähnlichsten sind (`npm run pruefe-dubletten`,
+    // 0,96): die Kaminpakete, bei denen der Name kein Bauteil nennt.
+    : form === 'teil'
+      ? 'Platzhalter: Die Form dieses Artikels ist aus seiner Bezeichnung nicht ablesbar'
+      : `Schemazeichnung: ${BAUFORM_TEXT[form] ?? 'Bauteil'}`;
   return `<svg class="${klasse}" viewBox="0 0 120 90" role="img" aria-label="${beschreibung}"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">${zeichnung}</svg>`;
 }
@@ -426,6 +442,9 @@ export const BAUFORM_TEXT = Object.freeze({
   dose: 'Kartusche',
   haube: 'Regenhaube',
   werkzeug: 'Werkzeug',
+  // Die Auffangform. Sie steht für „aus dem Namen nicht bestimmbar" und
+  // nicht für eine Bauart — die Bildbeschreibung sagt das seit dem 4. September
+  // ausdrücklich, statt „Bauteil" wie eine Angabe klingen zu lassen.
   teil: 'Bauteil',
 });
 

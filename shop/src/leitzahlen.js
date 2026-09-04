@@ -55,6 +55,7 @@ import { WIDERRUFSMERKMAL, sichtfeld, SICHTWEITE } from './widerruf.js';
 export const LEITZAHLEN = Object.freeze([
   Object.freeze({
     id: 'noetiger-monatsumsatz',
+    einheit: 'euro',
     name: 'Nötiger Monatsumsatz',
     traegt: 'Die ganze Wirtschaftlichkeitsrechnung — aus ihr folgen Bestellzahl, '
       + 'Werbebudget und leistbarer Klickpreis.',
@@ -70,6 +71,9 @@ export const LEITZAHLEN = Object.freeze([
   }),
   Object.freeze({
     id: 'bestellungen-je-monat',
+    // Stückzahlen tragen kein Einheitszeichen hinter der Ziffer.
+    // `null` heißt hier nicht „vergessen", sondern „nackt im Satz".
+    einheit: null,
     name: 'Bestellungen im Monat',
     traegt: 'Die Zahl, die der Betrieb von Hand schaffen muss, solange keine '
       + 'Schnittstelle da ist.',
@@ -85,6 +89,9 @@ export const LEITZAHLEN = Object.freeze([
   }),
   Object.freeze({
     id: 'keyword-anzahl',
+    // Stückzahlen tragen kein Einheitszeichen hinter der Ziffer.
+    // `null` heißt hier nicht „vergessen", sondern „nackt im Satz".
+    einheit: null,
     name: 'Begriffe der Messliste',
     traegt: 'Was der Auftraggeber im Keyword-Planer eintippt, und woran der '
       + 'Bedarf von 2.500 bis 6.700 Suchanfragen je Monat hängt.',
@@ -126,6 +133,7 @@ export const LEITZAHLEN = Object.freeze([
     // **nicht** aufgenommen worden (`register-mit-eigenem-stand.md`). Diese
     // hier scheitert an keinem.
     id: 'plan-gesamtdauer',
+    einheit: 'tage',
     name: 'Kette bis zur Entscheidung',
     traegt: 'Ob der Versuch in die Frist von 90 Tagen passt — die Frage, an der '
       + 'das ganze Vorhaben hängt.',
@@ -159,6 +167,7 @@ export const LEITZAHLEN = Object.freeze([
   }),
   Object.freeze({
     id: 'quote-am-marktboden',
+    einheit: 'prozent',
     name: 'Kaufquote am Marktboden',
     traegt: 'Darunter trägt das Modell nicht einmal den billigsten Marktklick — '
       + 'das erste der drei größten Risiken.',
@@ -212,7 +221,48 @@ export function inSpanne(zeile, form) {
   return new RegExp(`(zwischen\\s+[\\d.,]+\\s+und\\s+${z}|${z}\\s+(?:bis|–|—|-)\\s*[\\d.,]|[\\d.,]+\\s*(?:bis|–|—)\\s*${z})`, 'i').test(zeile);
 }
 
-export function fundstellen(text, wert, { bedingung, zeilenmuster = null, sichtweite = SICHTWEITE } = {}) {
+/**
+ * Die Zeichen, an denen eine Zahl ihre Einheit trägt.
+ *
+ * **Der Anlass, 4. September 2026.** In `STATUS.md` stand der Satz „hob den
+ * gemeinsamen Anteil von **57** auf 62 %" — ein Prozentwert aus der
+ * Dublettenmessung. Der Prüfer meldete ihn als abgelöste **Tageszahl** des
+ * Rolloutplans und verlangte ihre Bedingung.
+ *
+ * > **Ein Prüfer, der eine Prozentzahl für eine Tageszahl hält, wird beim
+ * > dritten Fehlalarm abgeschaltet** — und dann findet er auch den echten
+ * > nicht mehr. Dieselbe Lehre wie beim Geheimnisprüfer, der `3,68` mitten in
+ * > `153,68 €` fand.
+ *
+ * Die Prüfung ist bewusst schmal: Sie sieht nur, was **unmittelbar** hinter
+ * der Zahl steht. Eine Zahl ohne Einheitszeichen bleibt verdächtig — das ist
+ * die sichere Richtung, denn Leitzahlen stehen in dieser Akte oft nackt im
+ * Fließtext.
+ */
+export const EINHEITSZEICHEN = Object.freeze({
+  prozent: /^\s*(?:%|Prozent\b)/i,
+  euro: /^\s*(?:€|EUR\b|Euro\b)/i,
+  tage: /^\s*(?:Tage?n?\b|T\b|Werktage?n?\b)/i,
+});
+
+/**
+ * Trägt die Fundstelle eine **andere** Einheit als die Leitzahl?
+ *
+ * @param {string} zeile
+ * @param {number} stelle  Position hinter der gefundenen Zahl
+ * @param {string|null} eigene  Schlüssel aus `EINHEITSZEICHEN`, oder null
+ */
+export function fremdeEinheit(zeile, stelle, eigene) {
+  const rest = zeile.slice(stelle);
+  for (const [name, muster] of Object.entries(EINHEITSZEICHEN)) {
+    if (muster.test(rest)) return name !== eigene ? name : null;
+  }
+  return null;
+}
+
+export function fundstellen(text, wert, {
+  bedingung, zeilenmuster = null, sichtweite = SICHTWEITE, einheit = null,
+} = {}) {
   const zeilen = text.split('\n');
   const formen = schreibweisen(wert).map(entwerte).sort((a, b) => b.length - a.length);
   // Wortgrenzen von Hand: `\b` trennt an Punkt und Komma und würde „45.356"
@@ -222,9 +272,14 @@ export function fundstellen(text, wert, { bedingung, zeilenmuster = null, sichtw
   const treffer = [];
 
   for (const [i, zeile] of zeilen.entries()) {
-    if (!muster.test(zeile)) continue;
+    const fund = muster.exec(zeile);
+    if (!fund) continue;
     if (zeilenmuster && !zeilenmuster.test(zeile)) continue;
     if (schreibweisen(wert).some((f) => inSpanne(zeile, f))) continue;
+    // Eine Zahl mit fremder Einheit ist nicht diese Leitzahl. **Nur bei
+    // erklärter eigener Einheit:** Ohne sie ist nichts entschieden, und der
+    // Fund bleibt verdächtig — die sichere Richtung.
+    if (einheit && fremdeEinheit(zeile, fund.index + fund[0].length, einheit)) continue;
     const umfeld = sichtfeld(text, i + 1, sichtweite);
     treffer.push({
       zeile: i + 1,

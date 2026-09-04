@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { artikelBild, gruppenBild, bauform, dickeMm, gradzahl, schichten, schichtbild, BAUFORM_TEXT } from '../src/bilder.js';
 import { readdirSync } from 'node:fs';
@@ -463,4 +463,59 @@ test('Keine Beschriftung im Bestand nennt ein Bruchstück', () => {
       `${a.sku}: Beschriftung „${treffer[1]}" ist ein Bruchstück aus „${a.bezeichnung}"`);
   }
   assert.ok(geprueft >= 15, `nur ${geprueft} Beschriftungen mit Zahl geprüft`);
+});
+
+/**
+ * Die Auffangform sagt, dass sie eine Auffangform ist.
+ *
+ * **Der Anlass, 4. September 2026.** `artikelBild` trug die Regel seit dem
+ * 30. August und wandte sie an genau einer Stelle an: bei der Dämmplatte, deren
+ * Stärke nicht aus der Bezeichnung ablesbar ist. Die Auffangform `teil` hatte
+ * sie nicht — sie meldete „Schemazeichnung: Bauteil" und las sich damit wie
+ * eine Aussage über den Artikel, obwohl sie das Gegenteil ist.
+ *
+ * > **Eine Lücke, die wie eine Angabe klingt, ist schlimmer als eine sichtbare
+ * > Lücke.**
+ */
+test('die Auffangform wird als Platzhalter ausgewiesen, nicht als Bauart', () => {
+  const paket = { bezeichnung: 'SIKM Fertigfußpaket 18', gruppe: 'Kamin', einheit: 'STK' };
+  assert.equal(bauform(paket), 'teil', 'sonst prüft dieser Fall etwas anderes');
+  const svg = artikelBild(paket);
+  assert.match(svg, /Platzhalter/);
+  assert.ok(!/Schemazeichnung/.test(svg), svg.slice(0, 200));
+
+  // Und die Gegenprobe: Eine erkannte Form sagt weiterhin, was sie zeichnet.
+  const sack = { bezeichnung: 'Capatect Putzgrund weiß 25 kg', gruppe: 'WDVS', einheit: 'KG' };
+  assert.equal(bauform(sack), 'sack');
+  assert.match(artikelBild(sack), /Schemazeichnung: Sackware/);
+});
+
+test('jeder Artikel des Bestands mit Auffangform steht auf seiner Seite als Platzhalter', () => {
+  const ordner = fileURLToPath(new URL('../ausgabe/site/artikel', import.meta.url));
+  assert.equal(typeof existsSync(ordner), 'boolean');
+  if (!existsSync(ordner)) return;
+
+  const katalogDatei = fileURLToPath(new URL('../data/katalog-baustoff.json', import.meta.url));
+  const artikel = JSON.parse(readFileSync(katalogDatei, 'utf8')).artikel;
+  const auffang = artikel.filter((a) => bauform(a) === 'teil');
+  assert.ok(auffang.length > 0, 'kein Artikel mit Auffangform — dieser Fall prüft nichts mehr');
+
+  for (const a of auffang) {
+    const seite = join(ordner, `${a.sku}.html`);
+    if (!existsSync(seite)) continue;
+    const html = readFileSync(seite, 'utf8');
+    // `<p class=…>` und nicht das bloße Wort: Die Formatvorlage steht im
+    // Kopf **jeder** Seite, und danach zu suchen hieße, den Stil für den
+    // Inhalt zu halten.
+    assert.match(html, /<p class="bildhinweis">/,
+      `${a.sku} (${a.bezeichnung}) zeichnet einen Platzhalter und sagt es dem Leser nicht`);
+  }
+
+  // Und umgekehrt: Wer eine erkannte Form hat, bekommt den Hinweis nicht.
+  const erkannt = artikel.find((a) => bauform(a) !== 'teil');
+  const seiteErkannt = join(ordner, `${erkannt.sku}.html`);
+  if (existsSync(seiteErkannt)) {
+    assert.ok(!readFileSync(seiteErkannt, 'utf8').includes('<p class="bildhinweis">'),
+      `${erkannt.sku} trägt den Platzhalterhinweis, obwohl seine Form erkannt ist`);
+  }
 });

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
   LEITZAHLEN, LEITDOKUMENTE, schreibweisen, fundstellen, inSpanne, pruefeLeitzahlen,
+  fremdeEinheit, EINHEITSZEICHEN,
 } from '../src/leitzahlen.js';
 import { rolloutplan } from '../src/rollout.js';
 
@@ -132,4 +133,45 @@ test('Ein gewöhnliches Dokument kennt die Reihenfolgeregel nicht', () => {
   const text = 'Umsatz 45.356 € bei Karte.\n\nHeute 43.396 €.';
   const b = pruefeLeitzahlen(text, 'irgendwo.md', ziel);
   assert.equal(b.sauber, true, JSON.stringify(b.meldungen));
+});
+
+/**
+ * Eine Zahl mit fremder Einheit ist nicht diese Leitzahl.
+ *
+ * **Der Anlass, 4. September 2026.** In `STATUS.md` stand „hob den gemeinsamen
+ * Anteil von 57 % auf 62 %" — ein Prozentwert aus der Dublettenmessung. Der
+ * Prüfer meldete ihn als abgelöste **Tageszahl** des Rolloutplans.
+ *
+ * > **Ein Prüfer, der eine Prozentzahl für eine Tageszahl hält, wird beim
+ * > dritten Fehlalarm abgeschaltet** — und findet dann auch den echten nicht
+ * > mehr.
+ */
+test('eine Prozentzahl ist keine Tageszahl', () => {
+  const text = 'Der Anteil stieg von 57 % auf 62 % — gemessen an den Artikelseiten.';
+  assert.deepEqual(fundstellen(text, 57, { bedingung: /gibt es nicht/, einheit: 'tage' }), []);
+  // Ohne Einheitsangabe bleibt die Zahl verdächtig — die sichere Richtung,
+  // denn Leitzahlen stehen in dieser Akte oft nackt im Fließtext.
+  assert.equal(fundstellen(text, 57, { bedingung: /gibt es nicht/ }).length, 1);
+  // Und dieselbe Zahl in Tagen wird weiterhin gefunden.
+  assert.equal(
+    fundstellen('Die Kette dauerte 57 Tage.', 57, { bedingung: /gibt es nicht/, einheit: 'tage' }).length,
+    1,
+  );
+});
+
+test('die eigene Einheit deckt nicht, die fremde schon', () => {
+  assert.equal(fremdeEinheit('Umsatz 57 € netto', 'Umsatz 57'.length, 'euro'), null);
+  assert.equal(fremdeEinheit('Umsatz 57 € netto', 'Umsatz 57'.length, 'tage'), 'euro');
+  assert.equal(fremdeEinheit('Anteil 57 % davon', 'Anteil 57'.length, 'tage'), 'prozent');
+  // Kein Einheitszeichen: nichts entschieden, also nicht ausgeschlossen.
+  assert.equal(fremdeEinheit('genau 57 Stück', 'genau 57'.length, 'tage'), null);
+});
+
+test('jede Leitzahl sagt, ob sie eine Einheit trägt', () => {
+  assert.ok(LEITZAHLEN.length >= 4, 'das Register ist zu kurz');
+  for (const lz of LEITZAHLEN) {
+    assert.ok('einheit' in lz, `${lz.id}: sagt nicht, ob eine Einheit hinter der Zahl steht`);
+    assert.ok(lz.einheit === null || lz.einheit in EINHEITSZEICHEN,
+      `${lz.id}: „${lz.einheit}" steht in keinem Einheitszeichen`);
+  }
 });
