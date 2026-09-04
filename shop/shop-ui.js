@@ -936,28 +936,45 @@
        * gebraucht, wenn wirklich abgeschickt wird. Wer nur den Text mitnimmt,
        * schreibt seine Firma ohnehin in die eigene Mail.
        */
-      if (stand.wegZiel && typeof window.bestellSenden === 'function') {
+      if (stand.wegZiel && stand.felder && stand.felder.length
+        && typeof window.bestellSenden === 'function') {
         var form = el('div', 'bestellform');
         form.appendChild(el('h3', null, 'Verbindlich bestellen'));
         form.appendChild(el('p', 'lede',
           'Mit dem Abschicken geht diese Liste an uns. Ein Vertrag entsteht erst mit '
           + 'unserer Auftragsbestätigung (AGB Punkt 2).'));
 
+        /**
+         * **Die Felder kommen aus den Daten, nicht aus dieser Datei.**
+         *
+         * Der erste Wurf am 4. September zählte hier drei Felder auf — Firma,
+         * E-Mail, Telefon —, während `pruefeBestelldaten` acht verlangt.
+         *
+         * > **Die Kasse hätte Bestellungen entgegengenommen, aus denen kein
+         * > Angebot werden kann:** ohne Anschrift keine Rechnung nach § 11
+         * > UStG, ohne UID und Bestätigung keine Nettorechnung nach Gate 7.
+         *
+         * Zwei Listen für dieselbe Sache, und die kürzere gewann, weil sie
+         * zuerst gelesen wurde. Jetzt gibt es sie einmal, in
+         * `src/bestellfelder.js`.
+         */
         var felder = {};
-        var beschriftung = [
-          ['firma', 'Firma', 'text', true],
-          ['email', 'E-Mail für die Antwort', 'email', true],
-          ['telefon', 'Telefon (freiwillig)', 'tel', false],
-        ];
-        for (var f = 0; f < beschriftung.length; f++) {
-          var name = beschriftung[f][0];
-          var zeile = el('label', 'bestellfeld');
-          zeile.appendChild(el('span', null, beschriftung[f][1]));
+        for (var f = 0; f < stand.felder.length; f++) {
+          var vorgabe = stand.felder[f];
+          var zeile = el('label', 'bestellfeld ' + vorgabe.art);
           var eingabe = document.createElement('input');
-          eingabe.type = beschriftung[f][2];
-          eingabe.required = beschriftung[f][3];
-          zeile.appendChild(eingabe);
-          felder[name] = eingabe;
+          eingabe.type = vorgabe.art;
+          // Der Name macht das Feld auffindbar — für die Ausfüllhilfe des
+          // Browsers und für `npm run bestellprobe`, die den ganzen Weg fährt.
+          eingabe.name = vorgabe.name;
+          eingabe.required = true;
+          if (vorgabe.beispiel) eingabe.placeholder = vorgabe.beispiel;
+          // Beim Ankreuzfeld steht der Kasten vor der Beschriftung, sonst
+          // dahinter — alles andere liest sich falsch herum.
+          if (vorgabe.art === 'checkbox') zeile.appendChild(eingabe);
+          zeile.appendChild(el('span', null, vorgabe.beschriftung));
+          if (vorgabe.art !== 'checkbox') zeile.appendChild(eingabe);
+          felder[vorgabe.name] = eingabe;
           form.appendChild(zeile);
         }
 
@@ -965,8 +982,17 @@
         senden.type = 'button';
         var sendeEcho = el('p', 'anfrage-echo');
         senden.addEventListener('click', function () {
-          if (!felder.firma.value.trim() || !felder.email.value.trim()) {
-            sendeEcho.textContent = 'Firma und E-Mail werden gebraucht.';
+          var offen = [];
+          for (var n = 0; n < stand.felder.length; n++) {
+            var v = stand.felder[n];
+            var e = felder[v.name];
+            var da = v.art === 'checkbox' ? e.checked : e.value.trim() !== '';
+            if (!da) offen.push(v.beschriftung);
+          }
+          if (offen.length) {
+            // Beim Namen genannt, nicht gezählt: „drei Felder fehlen" schickt
+            // den Besteller auf die Suche.
+            sendeEcho.textContent = 'Es fehlt noch: ' + offen.join(', ') + '.';
             return;
           }
           senden.disabled = true;
@@ -982,13 +1008,14 @@
            * > schlafendes `fetch(` darin machte die Zusage von einer Tatsache
            * > zu einer Behauptung über den Kontrollfluss.
            */
-          window.bestellSenden(stand.wegZiel, {
-            text: a.text,
-            firma: felder.firma.value.trim(),
-            email: felder.email.value.trim(),
-            telefon: felder.telefon.value.trim(),
-            bezirk: wahl
-          }, function (antwort) {
+          var angaben = { text: a.text, bezirk: wahl };
+          for (var m = 0; m < stand.felder.length; m++) {
+            var w = stand.felder[m];
+            angaben[w.name] = w.art === 'checkbox'
+              ? felder[w.name].checked
+              : felder[w.name].value.trim();
+          }
+          window.bestellSenden(stand.wegZiel, angaben, function (antwort) {
             if (antwort && antwort.ok) {
               // Die Nummer gehört sichtbar hin: Sie ist das Einzige, worauf
               // sich der Kunde bei einer Rückfrage berufen kann.

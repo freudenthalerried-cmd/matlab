@@ -52,6 +52,8 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 import { leseAnfrage } from '../src/anfragelesen.js';
+import { pruefeBestellfelder } from '../src/bestellfelder.js';
+import { pruefeBestelldaten } from '../src/kunde.js';
 import { kundenWarenkorb, oeffentlicherArtikel, oeffentlicherLieferant } from '../src/shopkern.js';
 import { ladeBaustoffkatalog, ZIELMARGE } from '../src/baustoffkatalog.js';
 import { berechneWarenkorb } from '../src/warenkorb.js';
@@ -89,6 +91,27 @@ const nummer = wahl('nummer');
 // dort ins Leere (Abs. 3 lit. b). Ein Werkzeug, das bei jedem Probeausdruck
 // ablegt, sammelt erfundene Geschäftsfälle in einer Datei, die nichts vergisst.
 const ablegen = argumente.includes('--ablegen');
+
+/**
+ * **Das Feldregister gegen die Prüfung halten — vor allem anderen.**
+ *
+ * Dieses Werkzeug macht aus einer Bestellung ein Angebot. Erhebt das Formular
+ * weniger, als `pruefeBestelldaten` verlangt, kommt hier eine Bestellung an,
+ * aus der kein Beleg werden kann — genau der Zustand vom 4. September, als
+ * die Kasse drei Felder sammelte und die Prüfung acht verlangte.
+ *
+ * Der Prüfer steht **hier** und nicht in einem eigenen Werkzeug: Wer die
+ * beiden Listen auseinanderlaufen lässt, merkt es an der Stelle, an der es
+ * weh tut.
+ */
+const registerbefund = pruefeBestellfelder(pruefeBestelldaten);
+if (!registerbefund.sauber) {
+  console.error('\nAbbruch: Das Bestellfeldregister passt nicht zur Bestelldatenprüfung.');
+  for (const m of registerbefund.meldungen) console.error(`  · ${m.text} [${m.regel}]`);
+  console.error('Ein Formular, das weniger erhebt, als der Beleg braucht, sammelt Bestellungen,');
+  console.error('aus denen kein Angebot werden kann.');
+  process.exit(2);
+}
 
 const abbruch = (text, rat = null) => {
   console.error(`\nAbbruch: ${text}`);

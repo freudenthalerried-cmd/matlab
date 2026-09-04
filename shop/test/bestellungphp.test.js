@@ -14,6 +14,7 @@ import { mkdtempSync, mkdirSync, copyFileSync, writeFileSync, readFileSync, exis
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { BESTELLFELDER, beispielbestellung } from '../src/bestellfelder.js';
 
 const skript = fileURLToPath(new URL('../bestellung.php', import.meta.url));
 
@@ -35,8 +36,13 @@ async function server({ konfiguriert = true } = {}) {
   mkdirSync(site);
   copyFileSync(skript, join(site, 'bestellung.php'));
   if (konfiguriert) {
+    // **Dieselbe Erzeugung wie in `npm run website`.** Die Feldliste des
+    // Skripts kommt aus `src/bestellfelder.js`; eine eigene Liste in dieser
+    // Probe prüfte das Skript gegen etwas, das der Bau nie ausliefert.
+    const felder = BESTELLFELDER.map((f) => `    ${JSON.stringify(f.name)} => `
+      + `${JSON.stringify(f.art)},`).join('\n');
     writeFileSync(join(site, 'bestellung-konfiguration.php'),
-      "<?php return 'office@example.at';\n");
+      `<?php return [\n  'empfaenger' => 'office@example.at',\n  'felder' => [\n${felder}\n  ],\n];\n`);
   }
   const port = 8100 + Math.floor(Math.random() * 800);
   const kind = spawn('php', ['-S', `127.0.0.1:${port}`, '-t', site], { stdio: 'ignore' });
@@ -56,8 +62,7 @@ const schicke = (port, koerper) => fetch(`http://127.0.0.1:${port}/bestellung.ph
 });
 
 const GUELTIG = {
-  text: 'Position 1: 10 Sack Mörtel', firma: 'Musterbau GmbH',
-  email: 'kunde@example.at', bezirk: 'Perg', telefon: '+43 7238 1',
+  text: 'Position 1: 10 Sack Mörtel', bezirk: 'Perg', ...beispielbestellung(),
 };
 
 test('eine vollständige Bestellung wird angenommen und abgelegt',
@@ -110,7 +115,7 @@ test('eine unlesbare Adresse, ein fehlendes Feld und kein JSON werden abgewiesen
     try {
       for (const [koerper, muster] of [
         [{ ...GUELTIG, email: 'keine-adresse' }, /E-Mail-Adresse/],
-        [{ ...GUELTIG, bezirk: '' }, /bezirk/],
+        [{ ...GUELTIG, ort: '' }, /ort/],
         ['kein json', /JSON/],
       ]) {
         const antwort = await schicke(s.port, koerper);

@@ -475,6 +475,20 @@ export const GEGENPROBEN = Object.freeze([
       + 'eine Absage mit Verzögerung. Diese Mutation stellt genau das wieder her.',
   }),
   Object.freeze({
+    id: 'formular-erhebt-zu-wenig',
+    pruefer: 'bestellprobe',
+    was: 'Ein Bestellformular, aus dessen Angaben kein Angebot werden kann',
+    datei: 'shop/src/bestellfelder.js',
+    art: 'ersetzen',
+    suchen: "    name: 'uid',",
+    ersetzen: "    name: 'uidX',",
+    erwartet: /Felder ohne Wert in der Probe|wird kein Angebot/,
+    warum: 'Genau der Zustand vom 4. September: Das Formular sammelte drei Felder, '
+      + '`pruefeBestelldaten` verlangt acht. Die Bestellung kommt an, ist abgelegt — und '
+      + '`npm run vorgang` weist sie ab. Ohne UID und Unternehmerbestätigung gibt es nach '
+      + 'Gate 7 keine Nettorechnung, und darauf ruht das ganze Modell.',
+  }),
+  Object.freeze({
     id: 'ablage-im-webverzeichnis',
     pruefer: 'bestellprobe',
     was: 'Ein Bestelljournal, das unter einer URL erreichbar ist',

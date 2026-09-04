@@ -39,6 +39,7 @@ import { baueKern, BROWSERMODULE } from '../src/buendel.js';
 import { startklar, fehltSatz } from '../src/startklar.js';
 import { baubefund, EMPFANGSSKRIPT, KONFIGURATIONSDATEI } from '../src/bestellwegbau.js';
 import { VORAUSSETZUNGEN } from '../src/bestellweg.js';
+import { BESTELLFELDER } from '../src/bestellfelder.js';
 import { ohneKommentare } from '../src/entkommentieren.js';
 import { preisJeKilo, kilotafel, mengenschritt } from '../src/gebinde.js';
 import { EINHEITEN, aufzaehlung, jsonFuerSkript, kurzfassung } from '../src/format.js';
@@ -1803,6 +1804,15 @@ function shopdaten(katalog, befund, seiten, lieferantenDatei, suchwoerterDatei, 
        * bisher — sie erfindet keinen Knopf, der ins Leere führt.
        */
       wegZiel: WEG.aktiv ? EMPFANGSSKRIPT : null,
+      /**
+       * **Die Felder kommen aus dem Register, nicht aus der Oberfläche.**
+       * Der erste Wurf am 4. September hatte drei Felder im Browser stehen,
+       * während `pruefeBestelldaten` acht verlangt — die Kasse hätte
+       * Bestellungen entgegengenommen, aus denen kein Angebot werden kann.
+       */
+      felder: WEG.aktiv ? BESTELLFELDER.map((f) => ({
+        name: f.name, beschriftung: f.beschriftung, art: f.art, beispiel: f.beispiel ?? null,
+      })) : [],
     },
   };
 }
@@ -2457,9 +2467,15 @@ function main() {
   if (WEG.aktiv) {
     const betreiberDaten = JSON.parse(readFileSync(BETREIBERDATEI, 'utf8'));
     copyFileSync(join(WURZEL, EMPFANGSSKRIPT), join(site, EMPFANGSSKRIPT));
+    // **Das Empfangsskript bekommt dieselbe Feldliste.** PHP kann das Register
+    // nicht importieren; es aus derselben Quelle zu **erzeugen** ist der
+    // nächstbeste Weg. Eine handgepflegte zweite Liste im Skript wäre genau
+    // der Fehler, den dieses Register auflöst.
     writeFileSync(join(site, KONFIGURATIONSDATEI),
-      `<?php\n// Erzeugt von npm run website aus data/betreiber.json.\n`
-      + `return ${JSON.stringify(String(betreiberDaten.email))};\n`, 'utf8');
+      `<?php\n// Erzeugt von npm run website aus data/betreiber.json und src/bestellfelder.js.\n`
+      + `return [\n  'empfaenger' => ${JSON.stringify(String(betreiberDaten.email))},\n`
+      + `  'felder' => [${BESTELLFELDER.map((f) => `\n    ${JSON.stringify(f.name)} => `
+        + `${JSON.stringify(f.art)},`).join('')}\n  ],\n];\n`, 'utf8');
   }
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>

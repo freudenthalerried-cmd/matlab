@@ -31,6 +31,8 @@ import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, readdirSync, exist
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { beispielbestellung } from '../src/bestellfelder.js';
+import { pruefeBestelldaten } from '../src/kunde.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const ANFANG = '[[PROBE-ANFANG]]';
@@ -113,11 +115,24 @@ const nachher = `
 
     const form = document.querySelector('#kasse-ziel .bestellform');
     if (!form) throw new Error('kein Bestellformular — der Weg ist in der Oberfläche nicht da');
-    const felder = form.querySelectorAll('input');
-    if (felder.length < 3) throw new Error('zu wenige Felder: ' + felder.length);
-    felder[0].value = 'Musterbau GmbH';
-    felder[1].value = 'kunde@example.at';
-    felder[2].value = '+43 7238 1';
+
+    /**
+     * Ausgefuellt wird nach Namen, nicht nach Reihenfolge. Der erste Wurf
+     * setzte die ersten drei Eingabefelder der Reihe nach — und als das
+     * Formular aus dem Feldregister wuchs, fuellte die Sonde Firma, Strasse
+     * und PLZ mit einer Firma, einer Adresse und einer Telefonnummer.
+     */
+    const werte = ${JSON.stringify(beispielbestellung())};
+    for (const [name, wert] of Object.entries(werte)) {
+      const feld = form.querySelector('[name=' + JSON.stringify(name) + ']');
+      if (!feld) throw new Error('kein Feld für ' + name + ' — das Formular kennt es nicht');
+      if (feld.type === 'checkbox') feld.checked = wert === true;
+      else feld.value = String(wert);
+    }
+    const unbekannt = [...form.querySelectorAll('input')]
+      .map((e) => e.name).filter((n) => !(n in werte));
+    if (unbekannt.length) throw new Error('Felder ohne Wert in der Probe: ' + unbekannt.join(', '));
+
     form.querySelector('button').click();
 
     for (let i = 0; i < 60 && !/Angekommen|Nicht angekommen/.test(out); i++) {
@@ -206,6 +221,21 @@ try {
       }
       if (!z.text || z.text.length < 100) probleme.push('die Positionsliste ist nicht mitgekommen');
       else bestanden.push(`In der Ablage: ${z.nummer}, ${z.firma}, ${z.text.length} Zeichen Positionsliste`);
+
+      /**
+       * **Die eigentliche Frage: Lässt sich daraus ein Angebot machen?**
+       *
+       * Am 4. September sammelte das Formular drei Felder, und
+       * `pruefeBestelldaten` verlangt acht. Die Bestellung kam an, war
+       * abgelegt — und `npm run vorgang` hätte sie abgewiesen. Eine
+       * Bestellung, aus der kein Beleg werden kann, ist keine.
+       */
+      const geprueft = pruefeBestelldaten({ ...z, land: 'AT' });
+      if (!geprueft.gueltig) {
+        probleme.push(`aus dieser Bestellung wird kein Angebot: ${geprueft.fehler.join('; ')}`);
+      } else {
+        bestanden.push('Aus der abgelegten Bestellung lässt sich ein Angebot machen');
+      }
     }
   }
 
