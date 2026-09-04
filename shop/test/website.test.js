@@ -15,6 +15,7 @@ import { LIEFERGEBIET } from '../src/liefergebiet.js';
 import { GRUPPENSEITE } from '../src/artikelliste.js';
 import { ladeBaustoffkatalog, ZIELMARGE } from '../src/baustoffkatalog.js';
 import { wegwerfordner } from '../src/wegwerf.js';
+import { BANKFELDER } from '../src/bankverbindung.js';
 
 const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
 
@@ -579,6 +580,11 @@ test('Startseite und llms.txt sagen aus den Daten, ob bestellt werden kann', () 
     // möglich" aus einem Grund stehen, den diese Probe nicht meint — genau
     // wie bei der Lieferzeit darunter.
     antwortzeitWerktage: 1,
+    // **Seit dem 4. September, spät.** Dasselbe gilt für die Bankverbindung:
+    // Gate 21 lässt ab Start per Vorkasse zahlen, und ohne Konto ist der Shop
+    // nicht bestellfähig. Die Angaben kommen aus den Feldbeispielen, damit ein
+    // neues Bankfeld seine gültige Angabe mitbringt.
+    ...Object.fromEntries(BANKFELDER.map((f) => [f.feld, f.beispiel])),
   }, null, 2));
 
   // Auch die Lieferzeit gehört beantwortet — sie steht in der

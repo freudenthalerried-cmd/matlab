@@ -4841,6 +4841,133 @@ function darfAutomatischAusgeloestWerden(warenkorb, auftrag) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+const AT_IBAN = /^AT\d{18}$/;
+
+
+
+
+
+
+
+
+
+
+
+
+function ibanPruefsummeStimmt(roh) {
+  const iban = String(roh ?? '').toUpperCase().replace(/\s/g, '');
+  if (iban.length < 5 || !/^[A-Z]{2}\d{2}[A-Z0-9]+$/.test(iban)) return false;
+
+  const umgestellt = iban.slice(4) + iban.slice(0, 4);
+  let rest = 0;
+  for (const zeichen of umgestellt) {
+    const wert = /\d/.test(zeichen) ? zeichen : String(zeichen.charCodeAt(0) - 55);
+    for (const ziffer of wert) rest = (rest * 10 + Number(ziffer)) % 97;
+  }
+  return rest === 1;
+}
+
+
+
+
+
+
+
+
+
+const BANKFELDER = Object.freeze([
+  Object.freeze({
+    feld: 'kontoinhaber',
+    bezeichnung: 'Kontoinhaber',
+    beispiel: 'Musterfirma GmbH',
+    warum: 'Er kann vom Firmenwortlaut abweichen — bei einer Einzelfirma regelmäßig. Steht er '
+      + 'nicht dabei, prüft die Bank des Kunden den Namen gegen die IBAN und weist zurück.',
+  }),
+  Object.freeze({
+    feld: 'iban',
+    bezeichnung: 'IBAN',
+    beispiel: 'AT611904300234573201',
+    pruefe: ibanPruefsummeStimmt,
+    warum: 'Ohne sie kann der Kunde nicht überweisen, und Vorkasse ist nach Gate 21 der Weg, '
+      + 'der ab Start offensteht. Die Prüfsumme wird nachgerechnet: Eine IBAN mit Zahlendreher '
+      + 'sieht aus wie eine IBAN, und gemerkt wird der Fehler, wenn die Ware ausbleibt.',
+  }),
+]);
+
+
+
+
+
+
+
+
+
+function bankzeilen(betreiber = {}, verwendungszweck, luecke) {
+  const fehlend = BANKFELDER.filter((f) => {
+    const wert = betreiber[f.feld];
+    if (typeof wert !== 'string' || wert.trim() === '') return true;
+    return f.pruefe ? !f.pruefe(wert) : false;
+  });
+
+  if (fehlend.length) {
+    return {
+      vollstaendig: false,
+      fehlend: fehlend.map((f) => f.feld),
+      zeilen: [
+        'Bitte überweisen Sie auf:',
+        `  ${luecke(fehlend.map((f) => f.bezeichnung).join(' und '))}`,
+        `  Verwendungszweck: ${verwendungszweck}`,
+      ],
+    };
+  }
+
+  return {
+    vollstaendig: true,
+    fehlend: [],
+    zeilen: [
+      'Bitte überweisen Sie auf:',
+      `  ${betreiber.kontoinhaber}`,
+      `  IBAN ${betreiber.iban}`,
+      `  Verwendungszweck: ${verwendungszweck}`,
+    ],
+  };
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const KLEINBETRAG_GRENZE_BRUTTO = 400;
 const UID_EMPFAENGER_GRENZE_BRUTTO = 10000;
 
@@ -5239,6 +5366,20 @@ function erzeugeAuftragsbestaetigung(
       : `Zahlbar innerhalb von ${ZAHLUNGSBEDINGUNGEN.zielTage} Tagen. Die`,
     'Bestellungen bei den Herstellern lösen wir nach Zahlungseingang aus; die',
     'Lieferzeiten unten laufen ab diesem Zeitpunkt.',
+    '',
+    
+
+
+
+
+
+
+
+
+
+
+
+    ...bankzeilen(betreiber, nummer, LUECKE).zeilen,
     '',
   ];
 

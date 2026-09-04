@@ -4,6 +4,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { startklar } from '../src/startklar.js';
+import { BANKFELDER } from '../src/bankverbindung.js';
 import { IMPRESSUMSFELDER } from '../src/rechtstexte.js';
 import { FORMREGELN } from '../src/betreiberform.js';
 import { wegwerfordner } from '../src/wegwerf.js';
@@ -24,7 +25,15 @@ const katalogVoll = { artikel: [{ sku: 'A', vkNetto: 10, ekIstPlatzhalter: false
 const alles = {
   // Seit dem 2. September gehört die zugesagte Antwortzeit dazu — sie ist der
   // einzige Termin, den dieser Shop selbst nennt.
-  betreiber: { ...vollstaendig, antwortzeitWerktage: 1 },
+  // **Seit dem 4. September, spät.** Die Bankverbindung gehört dazu: Gate 21
+  // hat Vorkasse ab Start entschieden, und ohne Konto kann niemand zahlen.
+  // Die Angaben kommen aus den Feldbeispielen — so bringt ein neues Bankfeld
+  // seine eigene gültige Angabe mit, statt diese Probe still rot zu färben.
+  betreiber: {
+    ...vollstaendig,
+    ...Object.fromEntries(BANKFELDER.map((f) => [f.feld, f.beispiel])),
+    antwortzeitWerktage: 1,
+  },
   impressumsfelder: IMPRESSUMSFELDER,
   katalog: katalogVoll,
   preisdateiVorhanden: true,

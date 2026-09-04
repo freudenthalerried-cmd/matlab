@@ -79,6 +79,11 @@ export const KERNMODULE = Object.freeze([
   // Importhülle: Eine Liste, die nicht mehr alles nennt, was im Bündel landet,
   // ist keine Liste mehr.
   'bestellwegbau.js',
+  // **Ergänzt am 4. September, spät.** Die Auftragsbestätigung trägt seither
+  // die Bankverbindung; `beleg.js` holt sie von hier. Der Eintrag steht in
+  // der Liste und nicht nur implizit über die Importhülle — eine Liste, die
+  // nicht mehr alles nennt, was im Bündel landet, ist keine Liste mehr.
+  'bankverbindung.js',
 ]);
 
 /** Die Module des Shops, die zusätzlich in die Seiten wandern. */

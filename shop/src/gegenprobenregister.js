@@ -650,6 +650,21 @@ export const GEGENPROBEN = Object.freeze([
       + 'Kunden. Diese Mutation nimmt sie wieder heraus und verlangt, dass es auffällt.',
   }),
   Object.freeze({
+    id: 'iban-ungeprueft',
+    pruefer: 'test',
+    was: 'Eine IBAN mit Zahlendreher, die dasteht und angenommen wird',
+    datei: 'shop/src/bankverbindung.js',
+    art: 'ersetzen',
+    suchen: '    pruefe: ibanPruefsummeStimmt,',
+    ersetzen: '    pruefe: (wert) => String(wert).length > 0,',
+    erwartet: /iban/i,
+    warum: 'Gate 21 hat Vorkasse ab Start entschieden; die Auftragsbestätigung ist das '
+      + 'Dokument, auf das hin der Kunde zahlt. Eine IBAN mit vertauschten Ziffern sieht aus '
+      + 'wie eine IBAN, steht vollständig auf dem Papier und geht durch jede reine '
+      + 'Anwesenheitsprüfung. Gemerkt würde der Fehler erst, wenn die Ware ausbleibt. Diese '
+      + 'Mutation nimmt die Prüfsummenrechnung heraus und verlangt, dass es auffällt.',
+  }),
+  Object.freeze({
     id: 'gebindeschritt-verlesen',
     pruefer: 'pruefe-gebinde',
     was: 'Ein Gebindeschritt, der aus dem Namen falsch gelesen wird',

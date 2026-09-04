@@ -20,6 +20,7 @@ import { fileURLToPath } from 'node:url';
 
 import { ABSENDEWEGE, GEWAEHLTER_WEG, VERWORFENE_WEGE, VORAUSSETZUNGEN, absendewege, bestellwegBefund } from '../src/bestellweg.js';
 import { startklar, fehltSatz } from '../src/startklar.js';
+import { BANKFELDER } from '../src/bankverbindung.js';
 
 const oberflaeche = readFileSync(fileURLToPath(new URL('../shop-ui.js', import.meta.url)), 'utf8');
 
@@ -74,7 +75,13 @@ test('ohne Quelltext ist der Punkt ungeprüft und nicht erfüllt', () => {
 });
 
 const vollstaendig = {
-  betreiber: { antwortzeitWerktage: 1 },
+  // Die Bankverbindung gehört seit dem 4. September zur vollständigen Lage:
+  // Ohne Konto ist der Shop nicht startklar, und diese Probe will zeigen,
+  // dass **nur** der Bestellweg offen bleibt.
+  betreiber: {
+    ...Object.fromEntries(BANKFELDER.map((f) => [f.feld, f.beispiel])),
+    antwortzeitWerktage: 1,
+  },
   impressumsfelder: [],
   katalog: { artikel: [{ sku: 'A', vkNetto: 10, lieferantId: 'l1' }] },
   preisdateiVorhanden: true,

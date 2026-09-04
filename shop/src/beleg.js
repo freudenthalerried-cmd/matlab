@@ -21,6 +21,7 @@
 import { EUR, LUECKE, textZeile, einheitText } from './format.js';
 import { ZAHLUNGSBEDINGUNGEN } from './rechtstexte.js';
 import { zahlwegName } from './zahlung.js';
+import { bankzeilen } from './bankverbindung.js';
 
 export const KLEINBETRAG_GRENZE_BRUTTO = 400;
 export const UID_EMPFAENGER_GRENZE_BRUTTO = 10000;
@@ -420,6 +421,20 @@ export function erzeugeAuftragsbestaetigung(
       : `Zahlbar innerhalb von ${ZAHLUNGSBEDINGUNGEN.zielTage} Tagen. Die`,
     'Bestellungen bei den Herstellern lösen wir nach Zahlungseingang aus; die',
     'Lieferzeiten unten laufen ab diesem Zeitpunkt.',
+    '',
+    /**
+     * **Und wohin.** Bis zum 4. September stand der Satz oben allein da: Die
+     * Bestätigung ist das Dokument, auf das hin der Kunde zahlt, und sie sagte
+     * ihm nicht, auf welches Konto.
+     *
+     * > **Ohne Kontonummer wartet der Kunde auf Ware und der Shop auf Geld** —
+     * > genau der Fall, den der Kommentar eine Zeile weiter oben beschreibt.
+     *
+     * Der Verwendungszweck ist die Vorgangsnummer. Ohne ihn ist ein Eingang
+     * auf dem Kontoauszug keiner Bestellung zuzuordnen, und die
+     * Lieferantenbestellung wartet auf ein Geld, das längst da ist.
+     */
+    ...bankzeilen(betreiber, nummer, LUECKE).zeilen,
     '',
   ];
 

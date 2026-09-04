@@ -62,9 +62,17 @@ export const SCHRITTE = Object.freeze([
     was: 'Der Kunde zahlt; das Geld geht ein',
     werkzeug: null,
     gate: 'Gate 21 — Kundenzahlungsziel null Tage, Vorkasse und EPS',
-    warumOhneWerkzeug: 'Der Zahlungseingang entsteht beim Zahlungsanbieter, und der ist nicht '
-      + 'gewählt — eine Ausgabe und damit Sache des Auftraggebers. Ein Werkzeug, das ihn heute '
-      + 'nachbildete, bildete einen Anbieter nach, den niemand kennt.',
+    // **Berichtigt am 4. September, spät.** Hier stand, der Zahlungseingang
+    // hänge am Anbieter. Das gilt für EPS und für die Karte — nicht für die
+    // Überweisung, die Gate 21 gleichrangig nennt und die keinen Anbieter
+    // braucht, sondern ein Konto. Ein Grund, der zu breit ist, verdeckt genau
+    // den Weg, der ab Start offensteht.
+    warumOhneWerkzeug: 'Zwei Wege, zwei Gründe. **EPS und Karte** entstehen beim '
+      + 'Zahlungsanbieter, und der ist nicht gewählt — eine Ausgabe und damit Sache des '
+      + 'Auftraggebers. Die **Überweisung** braucht keinen Anbieter: Kontoinhaber und IBAN '
+      + 'stehen auf der Auftragsbestätigung, sobald sie in der Betreiberdatei stehen. Ein '
+      + 'Werkzeug fehlt trotzdem, weil den Eingang nur sieht, wer den Kontoauszug liest — '
+      + 'ein Zugang, den dieses Haus nicht hat und nicht haben soll.',
   }),
   Object.freeze({
     id: 'lieferantenbestellung',

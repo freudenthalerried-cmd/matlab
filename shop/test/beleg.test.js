@@ -42,6 +42,12 @@ const betreiber = {
   plz: '4600',
   ort: 'Wels',
   uid: 'ATU12345675',
+  // **Ergänzt am 4. September, spät.** Die Auftragsbestätigung ist das
+  // Dokument, auf das hin der Kunde zahlt, und trägt seither die
+  // Bankverbindung. Eine Probe, die „nichts fehlt" behauptet, muss alles
+  // mitbringen, was das Papier braucht — sonst prüft sie eine Lücke weniger.
+  kontoinhaber: 'Musterfirma GmbH',
+  iban: 'AT611904300234573201',
 };
 const kunde = {
   firma: 'Bau Muster GmbH',

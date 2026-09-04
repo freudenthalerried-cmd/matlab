@@ -26,6 +26,7 @@
 
 import { bestellwegBefund, VORAUSSETZUNGEN } from './bestellweg.js';
 import { bestellwegAktiv } from './bestellwegbau.js';
+import { bankzeilen } from './bankverbindung.js';
 import { vorDemHochladen } from './rechtstexte.js';
 import { pruefeBetreiberform } from './betreiberform.js';
 
@@ -46,6 +47,7 @@ import { pruefeBetreiberform } from './betreiberform.js';
  */
 const AUF_DER_KASSE = new Map([
   ['bestellweg', 'ein Weg, die Bestellung abzuschicken'],
+  ['bankverbindung', 'ein Konto, auf das gezahlt werden kann'],
   ['impressum', 'ein vollständiges Impressum'],
   ['zahlungsanbieter', 'ein Zahlungsanbieter'],
   ['rechtstexte', 'verbindliche Rechtstexte'],
@@ -148,6 +150,26 @@ export function startklar(lage = {}) {
   p('bestellweg', 'Der Kunde kann eine Bestellung abschicken',
     weg.moeglich === null ? 'unpruefbar' : (weg.moeglich ? 'erfuellt' : 'offen'),
     wegbefund,
+    'Auftraggeber');
+
+  /**
+   * **Wohin der Kunde überweist** — aufgenommen am 4. September, spät.
+   *
+   * Gate 21 hat Vorkasse ab Start entschieden, und die Auftragsbestätigung
+   * sagt „Zahlbar sofort". Bis heute stand darin nicht, auf welches Konto:
+   * Das Dokument, auf das hin der Kunde zahlt, sagte ihm nicht, wohin.
+   *
+   * > **Vorkasse braucht keinen Zahlungsanbieter, sondern ein Konto.** Der
+   * > Punkt steht deshalb neben dem Zahlungsanbieter und nicht in ihm: Der
+   * > eine kostet Geld, der andere ist eine Dateneingabe.
+   */
+  const bank = bankzeilen(betreiber, 'Prüfung', (w) => w);
+  p('bankverbindung', 'Die Bankverbindung steht auf der Auftragsbestätigung',
+    bank.vollstaendig ? 'erfuellt' : 'offen',
+    bank.vollstaendig
+      ? `Überweisung auf ${betreiber.iban} möglich`
+      : `${fehltSatz(bank.fehlend.map((f) => ({ wort: f })))} — ohne Konto kann kein Kunde `
+        + 'per Vorkasse zahlen, und Gate 21 hat Vorkasse ab Start entschieden',
     'Auftraggeber');
 
   const fehlendeFelder = impressumsfelder.filter(
