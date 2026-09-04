@@ -475,6 +475,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'eine Absage mit Verzögerung. Diese Mutation stellt genau das wieder her.',
   }),
   Object.freeze({
+    id: 'gebindeschritt-verlesen',
+    pruefer: 'pruefe-gebinde',
+    was: 'Ein Gebindeschritt, der aus dem Namen falsch gelesen wird',
+    datei: 'shop/src/gebinde.js',
+    art: 'ersetzen',
+    suchen: "  if (einheit === 'KG') return gebindeKg(artikel.bezeichnung);",
+    ersetzen: "  if (einheit === 'KG') return gebindeKg(artikel.bezeichnung) ? 20 : null;",
+    erwartet: /passt nicht zu dem, was fakturiert wurde|Schritt 20/,
+    warum: 'Der Schritt kommt aus einer Zeichenkette („Putzgrund weiß 25 kg" ergibt 25) und '
+      + 'trägt die kleinste Bestellmenge, den Preis je Gebinde, das Aufrunden im Warenkorb, die '
+      + 'Frachtschwelle und den Mindestbestellwertsatz auf jeder Artikelseite. Wer aus 25 eine '
+      + '20 liest, bekommt bei fakturierten Mengen von 25, 50 und 75 kg drei Abweichungen — '
+      + 'genau das stellt diese Mutation her. Ohne die Rechnungsmengen prüft den Wert nichts '
+      + 'außer der Zeichenkette, aus der er stammt.',
+  }),
+  Object.freeze({
     id: 'querverweise-ohne-marke',
     pruefer: 'pruefe-dubletten',
     was: 'Eine Messung, die die Navigation mitzählt und es Inhalt nennt',

@@ -42,7 +42,7 @@ Ursprünglich ein Streckenhandel für Radonvorsorge auf **unbelegten** Platzhalt
 | Kampagne | 6 Suchkampagnen gerechnet, **3 im ersten Anlauf**, alle **pausiert** |
 | Produktfeed | 43 Einträge — **nicht einreichbar**, GTIN fehlt bei allen 46 Artikeln |
 | Testbestand | **über 1.000 Testfälle**, alle grün, dazu 11 Oberflächenszenarien und 53 Shopszenarien im Browser |
-| Prüfwerkzeuge | **20 Prüfer** ohne Browser, 3 Browserproben zusätzlich |
+| Prüfwerkzeuge | **21 Prüfer** ohne Browser, 3 Browserproben zusätzlich |
 | Messliste für Gate 15 | **32 Begriffe** in 3 Anzeigengruppen, Ort = Liefergebiet |
 | Mindestbestellwert | **250 € netto Warenwert je Lieferung** (Gate 25), gerechnet aus Fracht, Palette und Zielmarge |
 

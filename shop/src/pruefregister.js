@@ -179,6 +179,18 @@ export const PRUEFER = [
   // es ein Mensch beim Hinsehen gefunden. Die Zahl darf nicht auf null fallen,
   // ohne dass es auffällt: Ein leeres Ergebnis hieße hier nicht „alles
   // angeschlossen", sondern „die Messung hat nichts mehr gelesen".
+  // **Aufgenommen am 4. September.** Der Gebindeschritt wird aus dem
+  // Artikelnamen **gelesen** und trägt fünf Rechnungen: kleinste Bestellmenge,
+  // Preis je Gebinde, Aufrunden im Warenkorb, Frachtschwelle und den Satz
+  // „angenommen wird eine Anfrage ab 450 kg". Er gehört gegen etwas gehalten,
+  // das nicht dieselbe Zeichenkette ist — die fakturierten Mengen.
+  {
+    name: 'pruefe-gebinde',
+    werkzeug: 'gebindepruefung.mjs',
+    muster: /Gebindeprüfung: (\d+) Artikel mit Gebindeschritt/,
+    einheit: 'Artikel gegen fakturierte Mengen',
+    mindestens: 10,
+  },
   // **Aufgenommen am 3. September, nachts.** Der Shop soll über Suche und
   // maschinelle Auskunft gefunden werden — darauf ruht die ganze
   // Kanalrechnung. Ob seine 46 Artikelseiten voneinander unterscheidbar sind,
