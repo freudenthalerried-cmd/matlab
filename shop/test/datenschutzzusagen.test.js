@@ -15,7 +15,14 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { WEBSITE_VERARBEITUNG } from '../src/rechtstexte.js';
+import { websiteVerarbeitung } from '../src/rechtstexte.js';
+
+/**
+ * **Aus der Konstanten wurde am 4. September eine Funktion** (Gate 26): Die
+ * Zusage über den Warenkorb hängt am Bestellweg. Diese Proben messen den
+ * ausgeschalteten Zustand — den heutigen — und eine von ihnen beide.
+ */
+const WEBSITE_VERARBEITUNG = websiteVerarbeitung(false);
 import { KORBSCHLUESSEL } from '../src/shopkern.js';
 
 test('Jede Zusage trägt eine Kennung', () => {

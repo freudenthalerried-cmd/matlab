@@ -14,7 +14,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 import {
-  PFLICHTTEXTE, AGB_GLIEDERUNG, DATENSCHUTZ_GLIEDERUNG, WEBSITE_VERARBEITUNG,
+  PFLICHTTEXTE, AGB_GLIEDERUNG, DATENSCHUTZ_GLIEDERUNG, websiteVerarbeitung,
   B2B_ABGRENZUNG, IMPRESSUMSFELDER,
 } from '../src/rechtstexte.js';
 import { DATENFLUESSE } from '../src/abgleich.js';
@@ -32,7 +32,12 @@ const e = erzeugeRechtstexteauftrag({
   pflichttexte: PFLICHTTEXTE,
   agbGliederung: AGB_GLIEDERUNG,
   datenschutzGliederung: DATENSCHUTZ_GLIEDERUNG,
-  websiteVerarbeitung: WEBSITE_VERARBEITUNG,
+      // **Seit Gate 26 eine Funktion.** Der Auftrag an den Rechtstexteanbieter
+    // beschreibt den Stand, in dem die Seite **heute** online ginge — und
+    // heute ist der Bestellweg aus. Steht er eines Tages an, gehört der
+    // Schalter hier durchgereicht; ein festes `true` wäre eine Zusage über
+    // einen Zustand, den dieses Werkzeug nicht kennt.
+    websiteVerarbeitung: websiteVerarbeitung(false),
   b2b: B2B_ABGRENZUNG,
   datenfluesse: DATENFLUESSE,
   offeneImpressumsfelder: offen,

@@ -23,7 +23,9 @@
  * Aufruf:  node bin/website.mjs
  */
 
-import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync, rmSync, mkdtempSync } from 'node:fs';
+import {
+  readFileSync, writeFileSync, copyFileSync, mkdirSync, readdirSync, existsSync, rmSync, mkdtempSync,
+} from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { gzipSync } from 'node:zlib';
 import { tmpdir } from 'node:os';
@@ -35,20 +37,24 @@ import { artikelBild, gruppenBild, schichten, schichtbild, dickeMm, bauform } fr
 import { VERFUEGBARKEIT, angebotsAuszeichnung, robotsTxt, liefergebietOrte } from '../src/maschinenlesbar.js';
 import { baueKern, BROWSERMODULE } from '../src/buendel.js';
 import { startklar, fehltSatz } from '../src/startklar.js';
+import { baubefund, EMPFANGSSKRIPT, KONFIGURATIONSDATEI } from '../src/bestellwegbau.js';
+import { VORAUSSETZUNGEN } from '../src/bestellweg.js';
 import { ohneKommentare } from '../src/entkommentieren.js';
 import { preisJeKilo, kilotafel, mengenschritt } from '../src/gebinde.js';
 import { EINHEITEN, aufzaehlung, jsonFuerSkript, kurzfassung } from '../src/format.js';
 import { GRUPPENSEITE } from '../src/artikelliste.js';
 import { preisstandSpanne } from '../src/preisalter.js';
 import { HERSTELLER, marke } from '../src/hersteller.js';
-import { oeffentlicherArtikel, oeffentlicherLieferant, vorteil, ustText } from '../src/shopkern.js';
+import {
+  oeffentlicherArtikel, oeffentlicherLieferant, vorteil, ustText, KORBSCHLUESSEL,
+} from '../src/shopkern.js';
 import { LIEFERGEBIET } from '../src/liefergebiet.js';
 import { ZAHLWEGE, zahlwegName } from '../src/zahlung.js';
 import { fracht } from '../src/preis.js';
 import { lesKopf, alsHtml, alsText, alsListe, esc } from '../src/markdown.js';
 import {
   erzeugeImpressum, pruefeBetreiberdaten, AGB_GLIEDERUNG, ZAHLUNGSBEDINGUNGEN,
-  DATENSCHUTZ_GLIEDERUNG, WEBSITE_VERARBEITUNG, B2B_ABGRENZUNG, LIEFERHINWEISE, IMPRESSUMSFELDER,
+  DATENSCHUTZ_GLIEDERUNG, websiteVerarbeitung, B2B_ABGRENZUNG, LIEFERHINWEISE, IMPRESSUMSFELDER,
 } from '../src/rechtstexte.js';
 
 const HIER = dirname(fileURLToPath(import.meta.url));
@@ -116,6 +122,14 @@ const REPO = join(WURZEL, '..');
 // Niemand könnte zeigen, dass er sich ändert, wenn die Daten sich ändern.
 const AUSGABE = process.env.WEBSITE_AUSGABE || join(WURZEL, 'ausgabe');
 const BETREIBERDATEI = process.env.STARTKLAR_BETREIBER || join(WURZEL, 'data', 'betreiber.json');
+
+/**
+ * **Der Bestellweg entscheidet über zwei Dinge zugleich** (Gate 26): ob
+ * `bestellung.php` mitgeliefert wird und was die Datenschutzseite über den
+ * Warenkorb sagt. Beides kommt aus derselben Stelle, weil zwei Schalter für
+ * dieselbe Sache ein Schalter sind, den einer vergisst.
+ */
+const WEG = baubefund(JSON.parse(readFileSync(BETREIBERDATEI, 'utf8')), KORBSCHLUESSEL, VORAUSSETZUNGEN);
 // Dieselbe Überschreibbarkeit wie bei der Betreiberdatei, aus demselben Grund:
 // Die Lieferzeit entscheidet mit über „Bestellen ist möglich", steht aber in
 // der Lieferantendatei. Ohne diesen Griff könnte eine Probe den Satz nie
@@ -1539,7 +1553,7 @@ davon ist im Baustoffhandel unangenehmer als in den meisten Branchen.</div>
 Rechtstext — er ist das, was der Rechtstexteanbieter wissen muss und außer dem Bau niemand kennt.</p>
 <div class="scroll"><table>
 <thead><tr><th>Punkt</th><th>Befund</th></tr></thead>
-<tbody>${WEBSITE_VERARBEITUNG.map((v) => `<tr><td>${esc(v.was)}</td><td>${esc(v.befund)}</td></tr>`).join('')}</tbody>
+<tbody>${websiteVerarbeitung(WEG.aktiv).map((v) => `<tr><td>${esc(v.was)}</td><td>${esc(v.befund)}</td></tr>`).join('')}</tbody>
 </table></div>
 <h2>Die Stelle, die wirklich klemmt</h2>
 <p>Wer auf der Baustelle die Ware übernimmt, ist ein <strong>Dritter</strong>. Er hat mit dem Shop
@@ -1776,6 +1790,19 @@ function shopdaten(katalog, befund, seiten, lieferantenDatei, suchwoerterDatei, 
       // Der Fuß und die Startseite bildeten denselben Satz richtig. Jetzt
       // bildet ihn `fehltSatz()` einmal, und der Browser bekommt ihn fertig.
       satz: fehltSatz(bereitschaft.kassenhinweise),
+      /**
+       * **Der Bestellweg, Gate 26 — ergänzt am 4. September.** `moeglich`
+       * oben sagt, ob der Auftraggeber alles beigebracht hat; `wegZiel` sagt,
+       * ob es eine Gegenstelle gibt, die eine Bestellung entgegennimmt.
+       *
+       * Beides ist nicht dasselbe, und die Verwechslung war der Befund vom
+       * 3. September: Neun erfüllte Punkte hätten „Bestellen ist möglich"
+       * gemeldet, während im ganzen Shop kein `fetch` stand.
+       *
+       * `null` heißt: kein Weg. Die Kasse zeigt dann den Kopiertext wie
+       * bisher — sie erfindet keinen Knopf, der ins Leere führt.
+       */
+      wegZiel: WEG.aktiv ? EMPFANGSSKRIPT : null,
     },
   };
 }
@@ -2013,7 +2040,12 @@ function main() {
    */
   const oberflaecheRoh = readFileSync(
     process.env.WEBSITE_OBERFLAECHE || join(WURZEL, 'shop-ui.js'), 'utf8',
-  );
+  )
+    // **Nur mit eingeschaltetem Bestellweg.** `shop-bestellen.js` enthält das
+    // einzige `fetch` des Shops; solange der Weg aus ist, darf es nicht ins
+    // Bündel — sonst wäre die gemessene Zusage „wird nicht an den Server
+    // übertragen" eine Behauptung über den Kontrollfluss statt über den Code.
+    + (WEG.aktiv ? `\n${readFileSync(join(WURZEL, 'shop-bestellen.js'), 'utf8')}` : '');
 
   // Dieselbe Rechnung wie `npm run startklar`, nicht eine zweite. Die Seiten
   // sagen dem Besucher, was hier möglich ist — und das darf nicht auf einem
@@ -2412,6 +2444,24 @@ function main() {
     ''].join('\n');
   writeFileSync(join(site, 'llms.txt'), llms, 'utf8');
 
+  /**
+   * **Das Empfangsskript geht nur mit, wenn der Weg eingeschaltet ist**
+   * (Gate 26). Ein Skript, das ohne Empfänger im Netz steht, nähme
+   * Bestellungen entgegen, die niemand liest — es antwortet zwar mit 503,
+   * aber die ehrlichere Lage ist, dass es gar nicht da ist.
+   *
+   * Die Konfiguration steht in einer eigenen Datei: So bleibt `bestellung.php`
+   * ein unveränderter Quelltext, der sich prüfen lässt, und die Adresse ist
+   * dort, wo sie hingehört — in den Daten des Betreibers.
+   */
+  if (WEG.aktiv) {
+    const betreiberDaten = JSON.parse(readFileSync(BETREIBERDATEI, 'utf8'));
+    copyFileSync(join(WURZEL, EMPFANGSSKRIPT), join(site, EMPFANGSSKRIPT));
+    writeFileSync(join(site, KONFIGURATIONSDATEI),
+      `<?php\n// Erzeugt von npm run website aus data/betreiber.json.\n`
+      + `return ${JSON.stringify(String(betreiberDaten.email))};\n`, 'utf8');
+  }
+
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${[...dateiSeiten.entries()].filter(([, seite]) => !seite.nurBedienung)
@@ -2538,6 +2588,7 @@ ${eingebettet}
     console.log('Die Mehrseitenfassung in ausgabe/site/ ist davon nicht betroffen.');
     console.log('Siehe docs/baustoff-shop/lastlauf-hundert-artikel.md.');
   }
+  for (const zeile of WEG.saetze) console.log(zeile);
   console.log(`\nAlle Verweise geprüft: ${kennungen.size} Kennungen, kein toter Link.`);
 }
 

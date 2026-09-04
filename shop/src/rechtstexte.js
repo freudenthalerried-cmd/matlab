@@ -18,6 +18,7 @@
  * `bedingt` heißt: nur nötig, wenn der Sachverhalt zutrifft.
  */
 import { KORBSCHLUESSEL } from './shopkern.js';
+import { warenkorbZusage } from './bestellwegbau.js';
 
 /**
  * Welcher Pflichttext ab wann nötig ist.
@@ -558,7 +559,31 @@ export function lieferhinweise(auftrag = {}) {
  * offenen Punkten und den Außentexten. Wer eine siebte Zusage hinzufügt, muss
  * beim Schreiben des Grundes merken, dass er keinen hat.
  */
-export const WEBSITE_VERARBEITUNG = [
+/**
+ * **Aus einer Konstanten wurde am 4. September eine Funktion.**
+ *
+ * Der Grund ist der Bestellweg (Gate 26): Schaltet er sich ein, wird aus
+ * „wird nicht an den Server übertragen" das Gegenteil. Solange die Liste eine
+ * Konstante war, hätten zwei Stellen — die gebaute Seite und der Prüfer —
+ * jede für sich daran denken müssen.
+ *
+ * > **Zwei Schalter für dieselbe Sache sind ein Schalter, den einer vergisst.**
+ *
+ * `aktiv` muss jeder Aufrufer mitbringen. Das ist die ganze Absicht: Die
+ * Konstante gibt es nicht mehr, also kann sie niemand versehentlich in der
+ * alten Lesart weiterbenutzen.
+ *
+ * @param {boolean} aktiv  ob der Bestellweg eingeschaltet ist
+ */
+export function websiteVerarbeitung(aktiv = false) {
+  return VERARBEITUNG_VORLAGE.map((z) => (
+    z.id === 'warenkorb-im-browser'
+      ? { ...z, befund: warenkorbZusage(aktiv, KORBSCHLUESSEL) }
+      : z
+  ));
+}
+
+const VERARBEITUNG_VORLAGE = [
   {
     id: 'keine-cookies',
     pruefbar: true,
@@ -573,8 +598,10 @@ export const WEBSITE_VERARBEITUNG = [
     // Wurf schrieb „fb.warenkorb" — frei erfunden, in einer Rechtsseite.
     // Genau die Sorte Angabe, die niemand nachprüft und die im Ernstfall
     // beweist, dass der Text nicht zum Shop gehört.
-    befund: `Der Warenkorb liegt in localStorage des Besuchers (Schlüssel ${KORBSCHLUESSEL}) und wird nicht an den Server übertragen. `
-      + 'Er verlässt das Gerät erst, wenn der Besucher den Anfragetext selbst kopiert und versendet.',
+    // **Kein `befund` in der Vorlage.** Er hängt am Bestellweg und kommt aus
+    // `warenkorbZusage()`. Stünde er hier, gäbe es ihn zweimal — und die
+    // zweite Fassung wäre die, die niemand nachzieht.
+    befund: null,
   },
   {
     id: 'keine-analyse',

@@ -98,7 +98,12 @@ test('das gebaute demo.html führt sein Skript wirklich aus', () => {
   const html = readFileSync(datei, 'utf8');
   const deklaration = html.indexOf('const KORBSCHLUESSEL =');
   assert.ok(deklaration > 0, 'der Warenkorbschlüssel steht nicht im Bündel');
-  const ersteNutzung = html.indexOf('${KORBSCHLUESSEL}');
+  // **Anker nachgezogen am 4. September.** Hier stand `${KORBSCHLUESSEL}` —
+  // die Einsetzung in `rechtstexte.js`. Seit Gate 26 bildet
+  // `warenkorbZusage()` den Satz, und `rechtstexte.js` reicht den Schlüssel
+  // als Wert weiter. Die geprüfte Eigenschaft ist dieselbe geblieben:
+  // Deklaration vor erster Verwendung.
+  const ersteNutzung = html.indexOf('warenkorbZusage(aktiv, KORBSCHLUESSEL)');
   assert.ok(ersteNutzung > 0, 'die Datenschutzseite nennt den Schlüssel nicht mehr — Probe nachziehen');
   assert.ok(deklaration < ersteNutzung,
     'der Schlüssel wird vor seiner Deklaration gelesen — das Skript stirbt beim Laden');

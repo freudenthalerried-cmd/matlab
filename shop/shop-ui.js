@@ -923,6 +923,89 @@
       reihe.appendChild(rueckmeldung);
       anfrageKasten.appendChild(reihe);
 
+      /**
+       * **Der Bestellweg — Gate 26, 4. September.** Bis dahin endete die Kasse
+       * hier: Der Kunde kopierte den Text in sein eigenes Programm, und ob
+       * dort jemand auf „Senden" drückte, erfuhr dieser Shop nie.
+       *
+       * `wegZiel` ist `null`, solange der Weg nicht eingeschaltet ist — dann
+       * bleibt alles wie bisher. Ein Knopf, der ins Leere führt, wäre
+       * schlimmer als kein Knopf.
+       *
+       * Die drei Felder stehen **hier** und nicht weiter oben: Sie werden erst
+       * gebraucht, wenn wirklich abgeschickt wird. Wer nur den Text mitnimmt,
+       * schreibt seine Firma ohnehin in die eigene Mail.
+       */
+      if (stand.wegZiel && typeof window.bestellSenden === 'function') {
+        var form = el('div', 'bestellform');
+        form.appendChild(el('h3', null, 'Verbindlich bestellen'));
+        form.appendChild(el('p', 'lede',
+          'Mit dem Abschicken geht diese Liste an uns. Ein Vertrag entsteht erst mit '
+          + 'unserer Auftragsbestätigung (AGB Punkt 2).'));
+
+        var felder = {};
+        var beschriftung = [
+          ['firma', 'Firma', 'text', true],
+          ['email', 'E-Mail für die Antwort', 'email', true],
+          ['telefon', 'Telefon (freiwillig)', 'tel', false],
+        ];
+        for (var f = 0; f < beschriftung.length; f++) {
+          var name = beschriftung[f][0];
+          var zeile = el('label', 'bestellfeld');
+          zeile.appendChild(el('span', null, beschriftung[f][1]));
+          var eingabe = document.createElement('input');
+          eingabe.type = beschriftung[f][2];
+          eingabe.required = beschriftung[f][3];
+          zeile.appendChild(eingabe);
+          felder[name] = eingabe;
+          form.appendChild(zeile);
+        }
+
+        var senden = el('button', 'knopf senden', 'Bestellung abschicken');
+        senden.type = 'button';
+        var sendeEcho = el('p', 'anfrage-echo');
+        senden.addEventListener('click', function () {
+          if (!felder.firma.value.trim() || !felder.email.value.trim()) {
+            sendeEcho.textContent = 'Firma und E-Mail werden gebraucht.';
+            return;
+          }
+          senden.disabled = true;
+          sendeEcho.textContent = 'Wird abgeschickt …';
+          /**
+           * **Das Absenden selbst steht nicht in dieser Datei.** Es kommt aus
+           * `shop-bestellen.js` und geht nur dann ins Bündel, wenn der
+           * Bestellweg eingeschaltet ist.
+           *
+           * > **Eine Zusage, die auf einer null-Prüfung ruht, ist keine.**
+           * > Die Datenschutzseite sagt heute, dass nichts an den Server geht,
+           * > und `npm run pruefe-datenschutz` misst das am **Bündel**. Ein
+           * > schlafendes `fetch(` darin machte die Zusage von einer Tatsache
+           * > zu einer Behauptung über den Kontrollfluss.
+           */
+          window.bestellSenden(stand.wegZiel, {
+            text: a.text,
+            firma: felder.firma.value.trim(),
+            email: felder.email.value.trim(),
+            telefon: felder.telefon.value.trim(),
+            bezirk: wahl
+          }, function (antwort) {
+            if (antwort && antwort.ok) {
+              // Die Nummer gehört sichtbar hin: Sie ist das Einzige, worauf
+              // sich der Kunde bei einer Rückfrage berufen kann.
+              sendeEcho.textContent = 'Angekommen. Ihre Nummer: ' + antwort.nummer;
+              return;
+            }
+            senden.disabled = false;
+            sendeEcho.textContent = 'Nicht angekommen'
+              + (antwort && antwort.grund ? ' — ' + antwort.grund : '')
+              + '. Bitte den Text oben kopieren und uns mailen.';
+          });
+        });
+        form.appendChild(senden);
+        form.appendChild(sendeEcho);
+        anfrageKasten.appendChild(form);
+      }
+
       // Warum kein Mailknopf da ist, steht dabei. Ein fehlender Knopf ohne
       // Begründung sieht aus wie ein Fehler; mit Begründung ist er ein
       // offener Punkt, den jemand schließen kann.

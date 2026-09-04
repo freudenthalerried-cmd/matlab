@@ -132,6 +132,8 @@ export const VORAUSSETZUNGEN = Object.freeze([
  * ein späterer Leser entscheiden kann, ob der Weg noch gemeint ist. Eine Liste
  * ohne Begründungen wächst um Einträge, die niemand mehr prüft.
  */
+import { ohneKommentare } from './entkommentieren.js';
+
 export const ABSENDEWEGE = Object.freeze([
   Object.freeze({
     name: 'fetch',
@@ -162,7 +164,20 @@ export const ABSENDEWEGE = Object.freeze([
  * @returns {string[]} die Namen der gefundenen Wege, in der Reihenfolge der Liste
  */
 export function absendewege(quelltext) {
-  const text = String(quelltext ?? '');
+  /**
+   * **Ohne Kommentare gemessen — berichtigt am 4. September.**
+   *
+   * An dem Tag bekam `shop-ui.js` einen Kommentar, der erklärt, warum das
+   * `fetch` **nicht** dort steht. Der Prüfer las ihn und meldete einen
+   * Absendeweg; vier Testfälle wurden rot, und keiner davon zu Recht.
+   *
+   * > **Ein Wort über eine Sache ist nicht die Sache.** Dieselbe Familie wie
+   * > die Gegenprobe, die den Kommentar über der Zeile traf statt der Zeile.
+   *
+   * Das Entkommentieren steht **hier** und nicht beim Aufrufer: Vier Stellen
+   * rufen diese Funktion, und die fünfte würde es vergessen.
+   */
+  const text = ohneKommentare(String(quelltext ?? '')).text;
   return ABSENDEWEGE.filter((w) => w.muster.test(text)).map((w) => w.name);
 }
 

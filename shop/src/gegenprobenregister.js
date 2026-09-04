@@ -475,6 +475,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'eine Absage mit Verzögerung. Diese Mutation stellt genau das wieder her.',
   }),
   Object.freeze({
+    id: 'schlafendes-fetch-im-buendel',
+    pruefer: 'pruefe-datenschutz',
+    was: 'Ein Absendeweg im Bündel, während die Rechtsseite sagt, es gebe keinen',
+    datei: 'shop/bin/website.mjs',
+    art: 'ersetzen',
+    suchen: "    + (WEG.aktiv ? `\\n${readFileSync(join(WURZEL, 'shop-bestellen.js'), 'utf8')}` : '');",
+    ersetzen: "    + `\\n${readFileSync(join(WURZEL, 'shop-bestellen.js'), 'utf8')}`;",
+    baueVorher: true,
+    erwartet: /warenkorb-im-browser/,
+    warum: 'Die Datenschutzseite sagt, solange der Bestellweg aus ist, dass nichts an den '
+      + 'Server übertragen wird — und `pruefe-datenschutz` misst das am **Bündel**. Diese '
+      + 'Mutation packt `shop-bestellen.js` mit dem einzigen `fetch` des Shops hinein, obwohl '
+      + 'der Weg aus ist. Käme sie durch, ruhte die Zusage nicht mehr auf dem Code, sondern '
+      + 'auf einer Bedingung, die zur Laufzeit nie wahr wird — und das kann kein Prüfer messen.',
+  }),
+  Object.freeze({
     id: 'leser-ohne-frischepruefung',
     pruefer: 'pruefe-erzeugnis',
     was: 'Ein Prüfer, der das Erzeugnis liest und nicht fragt, von wann es ist',

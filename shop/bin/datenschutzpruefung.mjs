@@ -28,7 +28,9 @@
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, relative } from 'node:path';
-import { WEBSITE_VERARBEITUNG } from '../src/rechtstexte.js';
+import { websiteVerarbeitung } from '../src/rechtstexte.js';
+import { bestellwegAktiv, EMPFANGSSKRIPT } from '../src/bestellwegbau.js';
+import { VORAUSSETZUNGEN } from '../src/bestellweg.js';
 import { KORBSCHLUESSEL } from '../src/shopkern.js';
 import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
 
@@ -68,6 +70,16 @@ const sammle = (ordner) => {
 sammle(SITE);
 
 const inhalt = new Map(dateien.map((d) => [relative(SITE, d), readFileSync(d, 'utf8')]));
+
+/**
+ * **Die Zusagen hängen am Bestellweg** (Gate 26, 4. September). Ist er aus,
+ * gilt „wird nicht an den Server übertragen" — dann darf nichts senden. Ist
+ * er an, gilt die andere Fassung, und dann darf genau **ein** Weg senden.
+ * Beide Fassungen sind messbar; die Liste sagt, welche gerade gilt.
+ */
+const BETREIBER = JSON.parse(readFileSync(join(SHOP, 'data', 'betreiber.json'), 'utf8'));
+const WEG_AKTIV = bestellwegAktiv(BETREIBER, VORAUSSETZUNGEN).aktiv;
+const ZUSAGEN = websiteVerarbeitung(WEG_AKTIV);
 const htmlDateien = [...inhalt].filter(([n]) => n.endsWith('.html'));
 
 /** Ein Befund je Datei, in der ein Muster trifft. */
@@ -105,8 +117,36 @@ const MESSUNGEN = {
           if (!m[2].startsWith(KORBSCHLUESSEL.split('-v')[0])) befunde.push(`${name}: speichert „${m[2]}"`);
         }
       }
-      // „wird nicht an den Server übertragen" — dann darf nichts senden.
-      befunde.push(...suche(/\bfetch\s*\(|XMLHttpRequest|sendBeacon|new\s+WebSocket|new\s+EventSource/));
+      /**
+       * **Zwei Zusagen, zwei Messungen** — seit Gate 26 am 4. September.
+       *
+       * Ist der Bestellweg **aus**, sagt die Seite „wird nicht an den Server
+       * übertragen": Dann darf im Bündel kein einziger Absendeweg stehen.
+       * Ein schlafendes `fetch(` machte die Zusage von einer Tatsache zu einer
+       * Behauptung über den Kontrollfluss, und die kann kein Textprüfer messen.
+       *
+       * Ist er **an**, benennt die Seite die Übertragung: Dann darf genau
+       * **ein** Weg senden, und zwar an das eigene Empfangsskript. Ein zweiter
+       * Empfänger wäre ein Dritter, den die Erklärung nicht nennt.
+       */
+      const wege = /\bfetch\s*\(|XMLHttpRequest|sendBeacon|new\s+WegSocket|new\s+WebSocket|new\s+EventSource/;
+      if (!WEG_AKTIV) {
+        befunde.push(...suche(wege));
+        return befunde;
+      }
+      for (const [name, text] of inhalt) {
+        for (const m of text.matchAll(/\bfetch\s*\(\s*([A-Za-z0-9_.]+|['"`][^'"`]*['"`])/g)) {
+          const ziel = m[1];
+          // Das Ziel kommt aus den Daten (`stand.wegZiel`), nicht als
+          // Zeichenkette — geprüft wird deshalb, dass keine **fremde**
+          // Adresse dasteht.
+          if (/^['"`]/.test(ziel) && !ziel.includes(EMPFANGSSKRIPT)) {
+            befunde.push(`${name}: sendet an ${ziel}`);
+          }
+        }
+        befunde.push(...[...text.matchAll(/XMLHttpRequest|sendBeacon|new\s+WebSocket|new\s+EventSource/g)]
+          .map(() => `${name}: sendet auf einem Weg, den die Erklärung nicht nennt`));
+      }
       return befunde;
     },
   },
@@ -145,7 +185,7 @@ const MESSUNGEN = {
 const meldungen = [];
 let gemessen = 0;
 
-for (const zusage of WEBSITE_VERARBEITUNG) {
+for (const zusage of ZUSAGEN) {
   if (!zusage.id) {
     meldungen.push(`Eine Zusage ohne Kennung: „${zusage.was}" — sie kann keiner Messung zugeordnet werden`);
     continue;
@@ -167,9 +207,9 @@ for (const zusage of WEBSITE_VERARBEITUNG) {
   }
 }
 
-console.log(`Datenschutzzusagen — ${WEBSITE_VERARBEITUNG.length} auf der Seite, ${gemessen} gemessen`);
+console.log(`Datenschutzzusagen — ${ZUSAGEN.length} auf der Seite, ${gemessen} gemessen`);
 console.log(`Gelesen: ${dateien.length} gebaute Dateien (${htmlDateien.length} Seiten).\n`);
-for (const zusage of WEBSITE_VERARBEITUNG) {
+for (const zusage of ZUSAGEN) {
   const messung = MESSUNGEN[zusage.id];
   console.log(`  ${zusage.was}`);
   console.log(`      ${messung ? messung.liest : `nicht messbar — ${zusage.warumNicht}`}`);

@@ -73,6 +73,12 @@ export const KERNMODULE = Object.freeze([
   'liefergebiet.js', 'kunde.js', 'messwert.js', 'rechtstexte.js',
   'bestellung.js', 'beleg.js', 'vorgang.js', 'auftragslauf.js', 'vies.js',
   'ablage.js', 'speicher.js', 'skonto.js', 'zahlung.js', 'kostenbild.js',
+  // **Ergänzt am 4. September.** `rechtstexte.js` holt sich von hier den Satz
+  // der Datenschutzseite über den Warenkorb — er hängt am Bestellweg
+  // (Gate 26). Der Eintrag steht hier und nicht nur implizit über die
+  // Importhülle: Eine Liste, die nicht mehr alles nennt, was im Bündel landet,
+  // ist keine Liste mehr.
+  'bestellwegbau.js',
 ]);
 
 /** Die Module des Shops, die zusätzlich in die Seiten wandern. */
