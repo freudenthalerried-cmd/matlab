@@ -5442,7 +5442,7 @@ function erzeugeAuftragsbestaetigung(
 
 
 
-function darfBestaetigtWerden(warenkorb, auftrag = {}) {
+function darfBestaetigtWerden(warenkorb, auftrag = {}, betreiber = {}) {
   const gruende = [];
 
   if (!auftrag.kundeIstUnternehmer) gruende.push('Unternehmerstatus nicht bestätigt (Gate 7)');
@@ -5464,6 +5464,34 @@ function darfBestaetigtWerden(warenkorb, auftrag = {}) {
     .map((t) => t.lieferantName ?? t.lieferantId);
   if (ohneLieferzeit.length) {
     gruende.push(`Lieferzeit unbekannt (${ohneLieferzeit.join(', ')}) — der zugesagte Termin wäre erfunden`);
+  }
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const bank = bankzeilen(betreiber, 'Prüfung', (was) => was);
+  if (!bank.vollstaendig) {
+    gruende.push(`Bankverbindung unvollständig (${bank.fehlend.join(', ')}) — die Bestätigung `
+      + 'verlangt Zahlung sofort und nennt kein Konto');
   }
 
   return { erlaubt: gruende.length === 0, gruende };
@@ -5727,7 +5755,10 @@ function baueVorgang({
       kundendaten: kundenpruefung.gueltig,
       
       
-      annahme: darfBestaetigtWerden(warenkorb, auftrag),
+      
+      
+      
+      annahme: darfBestaetigtWerden(warenkorb, auftrag, betreiber),
       bestellung: darfAutomatischAusgeloestWerden(warenkorb, auftrag),
       rechnung: darfRechnungGestelltWerden(warenkorb, rechnung, auftrag),
     },

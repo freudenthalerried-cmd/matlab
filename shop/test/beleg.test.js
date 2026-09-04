@@ -629,3 +629,68 @@ test('der Name des Ausstellers steht weiterhin vollständig auf dem Beleg', asyn
   assert.ok(kopf.indexOf('Bauversand') < kopf.indexOf(firma),
     'die Marke steht vorn — unter ihr hat der Kunde bestellt');
 });
+
+/* ------------------------------------------------------------------ *
+ * Die Sperren machen auch wieder auf — nachgewiesen am 4. September, spät
+ *
+ * **Der Befund.** `darfBestaetigtWerden` hat sechs Sperrgründe und sechs
+ * Proben, und jede prüft, dass *ihr* Grund kommt. Keine einzige prüfte je,
+ * dass die Sperre bei vollständiger Lage **aufmacht**. Die üblichen Zeilen
+ * lauteten `assert.ok(!f.gruende.some(...))` — sie halten fest, dass ein
+ * bestimmter Grund fehlt, und schweigen über die fünf anderen.
+ *
+ * > **Eine Sperre, von der niemand gezeigt hat, dass sie je aufgeht, könnte
+ * > jeden Auftrag abweisen, ohne dass eine Probe es merkt.** Der Shop nähme
+ * > Bestellungen entgegen und könnte keine einzige annehmen.
+ *
+ * Genau davor warnt der Kommentar zur Lieferzeit in `startklar.js` seit dem
+ * 30. August — für einen Grund. Diese beiden Fälle prüfen die Kette.
+ * ------------------------------------------------------------------ */
+
+/** Die vollständige Lage: alles beantwortet, was eine Annahme verlangt. */
+const annahmefaehig = {
+  ...korb,
+  teillieferungen: korb.teillieferungen.map((t) => ({
+    ...t,
+    lieferzeitWerktage: t.lieferzeitWerktage ?? 5,
+    positionen: t.positionen.map((p) => ({ ...p, ekIstPlatzhalter: false })),
+  })),
+};
+const auftragVollstaendig = { kundeIstUnternehmer: true, uid: 'ATU12345675' };
+
+test('Mit vollständiger Lage darf die Auftragsbestätigung hinaus', () => {
+  assert.equal(annahmefaehig.bestellbar, true, 'Vorbedingung des Testfalls');
+  const f = darfBestaetigtWerden(annahmefaehig, auftragVollstaendig, betreiber);
+  assert.equal(f.erlaubt, true, f.gruende.join(' | '));
+  assert.deepEqual(f.gruende, []);
+});
+
+/**
+ * Und die Gegenrichtung zur Gegenrichtung: Dieselbe vollständige Lage, nur
+ * ohne Konto beim Betreiber. Ohne diese Zeile stünde oben eine Zusicherung,
+ * die auch dann grün bliebe, wenn die Bankprüfung ersatzlos verschwände.
+ */
+test('Dieselbe Lage ohne Konto wird abgewiesen', () => {
+  const ohneKonto = { ...betreiber, kontoinhaber: undefined, iban: undefined };
+  const f = darfBestaetigtWerden(annahmefaehig, auftragVollstaendig, ohneKonto);
+  assert.equal(f.erlaubt, false);
+  assert.deepEqual(f.gruende.length, 1, f.gruende.join(' | '));
+  assert.match(f.gruende[0], /Bankverbindung unvollständig \(kontoinhaber, iban\)/);
+});
+
+test('Ohne Betreiber sperrt die Annahme, statt stillschweigend durchzulassen', () => {
+  // Der Grundwert `{}` ist die vorsichtige Richtung: Wer das Argument
+  // vergisst, bekommt einen Befund und keine Erlaubnis.
+  const f = darfBestaetigtWerden(annahmefaehig, auftragVollstaendig);
+  assert.equal(f.erlaubt, false);
+  assert.match(f.gruende.join(' | '), /Bankverbindung/);
+});
+
+test('Mit vollständiger Lage darf auch die Rechnung gestellt werden', () => {
+  const r = erzeugeRechnung(annahmefaehig, {
+    nummer: 'RE-0002', datum: '31.08.2026', lieferdatum: '31.08.2026',
+    kunde, betreiber, zahlung: gezahlt,
+  });
+  const f = darfRechnungGestelltWerden(annahmefaehig, r, { geliefert: true });
+  assert.equal(f.erlaubt, true, f.gruende.join(' | '));
+});

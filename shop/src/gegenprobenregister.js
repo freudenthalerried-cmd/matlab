@@ -665,6 +665,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'Kunden. Diese Mutation nimmt sie wieder heraus und verlangt, dass es auffällt.',
   }),
   Object.freeze({
+    id: 'bestaetigung-ohne-konto',
+    pruefer: 'test',
+    was: 'Eine Auftragsbestätigung, die hinausdarf, ohne ein Konto zu nennen',
+    datei: 'shop/src/beleg.js',
+    art: 'ersetzen',
+    suchen: '  if (!bank.vollstaendig) {',
+    ersetzen: '  if (false) {',
+    erwartet: /Konto/,
+    warum: 'Die Regel steht seit dem 30. August in der Datei: Das Angebot darf die Lücke '
+      + 'tragen und sichtbar machen, die Bestätigung nicht. Seit dem 4. September trägt die '
+      + 'Bestätigung die Bankverbindung — und die Sperre bekam den Betreiber nie zu sehen, '
+      + 'prüfte also genau die Lücke nicht, die sie verbietet. Mit der Bestätigung kommt nach '
+      + 'Punkt 2 der AGB der Vertrag zustande; ohne Konto ist der Kunde gebunden, soll sofort '
+      + 'zahlen und findet auf dem Papier keinen Weg dazu. Diese Mutation macht die Sperre '
+      + 'wieder blind.',
+  }),
+  Object.freeze({
     id: 'iban-ungeprueft',
     pruefer: 'test',
     was: 'Eine IBAN mit Zahlendreher, die dasteht und angenommen wird',

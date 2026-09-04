@@ -497,7 +497,7 @@ export function erzeugeAuftragsbestaetigung(
  * gemeldet. Wer so etwas bestätigt, hat einen Vertrag geschlossen, den er nicht
  * erfüllen kann — schlimmer als eine abgelehnte Bestellung.
  */
-export function darfBestaetigtWerden(warenkorb, auftrag = {}) {
+export function darfBestaetigtWerden(warenkorb, auftrag = {}, betreiber = {}) {
   const gruende = [];
 
   if (!auftrag.kundeIstUnternehmer) gruende.push('Unternehmerstatus nicht bestätigt (Gate 7)');
@@ -519,6 +519,34 @@ export function darfBestaetigtWerden(warenkorb, auftrag = {}) {
     .map((t) => t.lieferantName ?? t.lieferantId);
   if (ohneLieferzeit.length) {
     gruende.push(`Lieferzeit unbekannt (${ohneLieferzeit.join(', ')}) — der zugesagte Termin wäre erfunden`);
+  }
+
+  /**
+   * **Aufgenommen am 4. September, spät — und der Anlass ist die eigene
+   * Änderung von ein paar Stunden vorher.**
+   *
+   * Seit dem Abend trägt die Auftragsbestätigung die Bankverbindung, und
+   * ohne Konto eine sichtbare Lücke: `[[ Kontoinhaber und IBAN — FEHLT ]]`.
+   * Genau das verbietet die Regel ein paar Zeilen weiter oben, entschieden
+   * am 30. August: **Das Angebot darf die Lücke tragen und sichtbar machen,
+   * die Bestätigung nicht.**
+   *
+   * > **Die Regel stand da, und die Sperre hat den Verstoß nicht bemerkt —
+   * > weil sie den Betreiber nie zu sehen bekam.** Sie prüfte den Warenkorb
+   * > und den Auftrag; wer das Papier ausstellt, war nie ihr Gegenstand.
+   *
+   * Nach Gate 21 wird beim Hersteller nichts bestellt, bevor gezahlt ist.
+   * Eine Bestätigung ohne Konto schließt damit einen Vertrag, dessen
+   * Vorbedingung der Kunde gar nicht erfüllen kann: Er ist gebunden, soll
+   * sofort zahlen und findet auf dem Papier keinen Weg dazu.
+   *
+   * Der Grundwert `{}` sperrt, statt durchzulassen. Wer das Argument
+   * vergisst, bekommt einen Befund und keine stille Erlaubnis.
+   */
+  const bank = bankzeilen(betreiber, 'Prüfung', (was) => was);
+  if (!bank.vollstaendig) {
+    gruende.push(`Bankverbindung unvollständig (${bank.fehlend.join(', ')}) — die Bestätigung `
+      + 'verlangt Zahlung sofort und nennt kein Konto');
   }
 
   return { erlaubt: gruende.length === 0, gruende };

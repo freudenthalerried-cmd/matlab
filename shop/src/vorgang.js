@@ -130,7 +130,10 @@ export function baueVorgang({
       kundendaten: kundenpruefung.gueltig,
       // Die Annahme steht bewusst vor der Bestellung: Erst binden, dann Geld
       // nehmen, dann auslösen. Vgl. AGB Punkt 2.
-      annahme: darfBestaetigtWerden(warenkorb, auftrag),
+      // **Ergänzt am 4. September, spät.** Der Betreiber stand hier in der
+      // Hand und wurde nicht weitergereicht — seit die Bestätigung die
+      // Bankverbindung trägt, entscheidet er mit, ob sie hinaus darf.
+      annahme: darfBestaetigtWerden(warenkorb, auftrag, betreiber),
       bestellung: darfAutomatischAusgeloestWerden(warenkorb, auftrag),
       rechnung: darfRechnungGestelltWerden(warenkorb, rechnung, auftrag),
     },
