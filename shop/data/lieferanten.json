@@ -82,7 +82,7 @@
     "paletteRueckgabeNetto": 20.0,
     "folierungNetto": 6.5,
     "kranentladungJeHubNetto": 7.5,
-    "_gewicht": "Auf dem Beleg ueber 1.934 Euro netto: 6 Paletten (132,00) minus eine Rueckgabe (-20,00) plus Folierung (6,50) = 118,50 nicht gerechnete Nebenkosten — mehr als die Frachtpauschale selbst."
+    "_gewicht": "BERICHTIGT 04.09.: Hier stand '6 Paletten (132,00) minus eine Rueckgabe (-20,00) plus Folierung (6,50) = 118,50 nicht gerechnete Nebenkosten — mehr als die Frachtpauschale selbst'. Die Zahlen stimmen alle, die Rechnung nicht: Sie verbucht den PFANDBETRAG als Kosten. Pfand ist keine Ausgabe, sondern eine Auslage. Ueber alle fuenfzehn Rechnungen geht der Kreis auf — 9 Paletten hinaus zu je 22,00, 8 zurueck zu je 20,00, eine offen. Was haengen bleibt, sind 2,00 je Palette plus die Rueckfuehrungsfahrt (einmal belegt: 80,26 fuer sieben Paletten) = 13,47 je Palette. Fuer die sechs Paletten dieses Belegs also rund 80,80 statt 118,50, dazu die Folierung. Gerechnet in src/palettenkreis.js, nachgeprueft gegen die Positionsdatei."
    }
   }
  ]

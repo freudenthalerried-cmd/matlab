@@ -23,6 +23,7 @@
  */
 
 import { hubbefund } from './huebe.js';
+import { palettenkreis } from './palettenkreis.js';
 import { EUR } from './format.js';
 
 /**
@@ -105,7 +106,10 @@ export const OHNE_WERKZEUG = Object.freeze([
       + 'Und sie entscheidet die Kranentladung: Der Shop zählt sie je Sperrgut-Position, der '
       + 'Lieferant verrechnet sie je Hub. Auf den zwei belegten Lieferungen liegt das Modell '
       + `um bis zu ${EUR(hubbefund().groesstesZuViel)} zu hoch und um bis zu `
-      + `${EUR(hubbefund().groesstesZuWenig)} zu niedrig — auf jeder einzelnen, nicht im Mittel.`,
+      + `${EUR(hubbefund().groesstesZuWenig)} zu niedrig — auf jeder einzelnen, nicht im Mittel. `
+      + `Und sie beziffert die Nebenkosten: Eine Palette kostet nicht ihr Pfand, sondern `
+      + `${EUR(palettenkreis().differenzJePalette)} Differenz plus die Rückführungsfahrt — `
+      + `zusammen ${EUR(palettenkreis().jePaletteMitFahrt)} je Palette, einmal belegt.`,
   },
   {
     id: 'artikelliste',
