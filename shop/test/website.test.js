@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync, existsSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync, writeFileSync, rmSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -14,6 +14,7 @@ import { SUCH_CRAWLER, TRAININGS_CRAWLER } from '../src/maschinenlesbar.js';
 import { LIEFERGEBIET } from '../src/liefergebiet.js';
 import { GRUPPENSEITE } from '../src/artikelliste.js';
 import { ladeBaustoffkatalog, ZIELMARGE } from '../src/baustoffkatalog.js';
+import { wegwerfordner } from '../src/wegwerf.js';
 
 const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
 
@@ -509,7 +510,7 @@ test('Ein offener Punkt ohne Kundenbezug erzeugt keine leere Aufzählung', () =>
   // Hier ist alles beantwortet außer der Frage, ob das Repository privat ist,
   // und die steht auf keiner Kundenseite. Der Bau muss dann einen Satz
   // schreiben, der ohne Liste trägt.
-  const ablage = mkdtempSync(join(tmpdir(), 'bau-leer-'));
+  const ablage = wegwerfordner('bau-leer-');
   const betreiberDatei = join(ablage, 'betreiber.json');
   const echt = JSON.parse(readFileSync(pfad('../data/betreiber.json'), 'utf8'));
   writeFileSync(betreiberDatei, JSON.stringify({
@@ -560,7 +561,7 @@ test('Startseite und llms.txt sagen aus den Daten, ob bestellt werden kann', () 
   // echten Bau zweimal laufen — einmal auf dem Bestand, einmal mit einer
   // vollständig beantworteten Betreiberdatei — und verlangt, dass die
   // Auskunft kippt.
-  const ablage = mkdtempSync(join(tmpdir(), 'bau-bereit-'));
+  const ablage = wegwerfordner('bau-bereit-');
   const betreiberVoll = join(ablage, 'betreiber.json');
   const echt = JSON.parse(readFileSync(pfad('../data/betreiber.json'), 'utf8'));
   writeFileSync(betreiberVoll, JSON.stringify({
@@ -712,7 +713,7 @@ test('der Bauschritt nennt die übertragene Größe, nicht nur die rohe', () => 
   // sieht, wirft sie hinaus und spart nichts.
   const lauf = spawnSync(process.execPath, [pfad('../bin/website.mjs')], {
     encoding: 'utf8',
-    env: { ...process.env, WEBSITE_AUSGABE: mkdtempSync(join(tmpdir(), 'bau-groesse-')) },
+    env: { ...process.env, WEBSITE_AUSGABE: wegwerfordner('bau-groesse-') },
   });
   assert.equal(lauf.status, 0, lauf.stderr);
   assert.match(lauf.stdout, /shop\.js:\s+\d+ KB roh, [\d.]+ KB gezippt/);

@@ -1,7 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { baubefund, bestellwegAktiv, EMPFANGSSKRIPT, warenkorbZusage } from '../src/bestellwegbau.js';
-import { VORAUSSETZUNGEN } from '../src/bestellweg.js';
+import {
+  ABSENDEDATEI, baubefund, bestellwegAktiv, EMPFANGSSKRIPT, oberflaeche, warenkorbZusage,
+} from '../src/bestellwegbau.js';
+import { VORAUSSETZUNGEN, bestellwegBefund } from '../src/bestellweg.js';
 import { websiteVerarbeitung } from '../src/rechtstexte.js';
 
 const VOLL = { email: 'office@bauversand.com', rechtstexteFundstelle: 'Kanzlei X' };
@@ -62,4 +64,22 @@ test('der Baubefund sagt in Sätzen, was er tut', () => {
   assert.equal(an.aktiv, true);
   assert.match(an.saetze[0], /eingeschaltet/);
   assert.match(an.zusage, new RegExp(EMPFANGSSKRIPT.replace('.', '\\.')));
+});
+
+test('die ausgelieferte Oberfläche trägt den Absendeweg genau dann, wenn er an ist', () => {
+  // **Der Befund vom 4. September, abends.** `npm run startklar` las
+  // `shop-ui.js` und entschied daran den ersten Punkt. Das Absenden war am
+  // Nachmittag in eine Datei daneben gezogen — und die Bereitschaftsliste
+  // sagte auch mit vollständig beantworteter Betreiberdatei weiter, es gebe
+  // keinen Bestellweg.
+  const lies = (datei) => ({
+    'shop-ui.js': 'var a = 1;',
+    [ABSENDEDATEI]: "fetch('/bestellung', { method: 'POST' });",
+  })[datei];
+
+  assert.equal(bestellwegBefund(oberflaeche(lies, false)).moeglich, false);
+  assert.equal(bestellwegBefund(oberflaeche(lies, true)).moeglich, true);
+  // Und die Grundoberfläche geht in beiden Fällen mit.
+  assert.match(oberflaeche(lies, false), /var a = 1;/);
+  assert.match(oberflaeche(lies, true), /var a = 1;/);
 });

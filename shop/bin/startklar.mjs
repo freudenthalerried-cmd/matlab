@@ -15,6 +15,8 @@ import { dirname, join } from 'node:path';
 import { startklar } from '../src/startklar.js';
 import { IMPRESSUMSFELDER } from '../src/rechtstexte.js';
 import { ladeBaustoffkatalog, ZIELMARGE } from '../src/baustoffkatalog.js';
+import { bestellwegAktiv, oberflaeche } from '../src/bestellwegbau.js';
+import { VORAUSSETZUNGEN } from '../src/bestellweg.js';
 
 const HIER = dirname(fileURLToPath(import.meta.url));
 const WURZEL = join(HIER, '..');
@@ -65,11 +67,27 @@ const befund = startklar({
   domainZeigtAufShop: betreiber.domainZeigtAufShop ?? null,
   repositoryPrivat: betreiber.repositoryPrivat ?? null,
   lieferanten: lieferantenDatei.lieferanten,
-  // Der Quelltext, den der Browser des Kunden bekommt. Er entscheidet den
-  // ersten Punkt der Liste, und er wird gelesen statt behauptet: Ob diese
-  // Seite eine Bestellung abschicken kann, steht in ihr und nicht in einer
-  // Datei daneben.
-  oberflaechenQuelltext: readFileSync(join(WURZEL, 'shop-ui.js'), 'utf8'),
+  /**
+   * Der Quelltext, den der Browser des Kunden bekommt. Er entscheidet den
+   * ersten Punkt der Liste, und er wird gelesen statt behauptet.
+   *
+   * **Berichtigt am 4. September, abends.** Hier stand `shop-ui.js`, und der
+   * Kommentar dazu lautete: „Ob diese Seite eine Bestellung abschicken kann,
+   * steht in **ihr** und nicht in einer Datei daneben." Seit dem Nachmittag
+   * steht das Absenden in einer Datei daneben — `shop-bestellen.js`, die nur
+   * mit eingeschaltetem Bestellweg ins Bündel geht.
+   *
+   * > **Vier Runden Bestellweg, und diese Liste sagte weiterhin, es gebe
+   * > keinen** — auch mit vollständig beantworteter Betreiberdatei.
+   *
+   * Zusammengesetzt wird jetzt dort, wo der Schalter steht, und `npm run
+   * website` setzt mit derselben Funktion zusammen. Zwei Fassungen der
+   * Zusammensetzung wären zwei Antworten auf „was bekommt der Browser".
+   */
+  oberflaechenQuelltext: oberflaeche(
+    (datei) => readFileSync(join(WURZEL, datei), 'utf8'),
+    bestellwegAktiv(betreiber, VORAUSSETZUNGEN).aktiv,
+  ),
 });
 
 const zeichen = { erfuellt: '✓', offen: '✗', unpruefbar: '?' };

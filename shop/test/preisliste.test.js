@@ -1,11 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { readFileSync, writeFileSync, mkdtempSync, copyFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, copyFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { leseZahl, leseTabelle, lesePreisliste, fuegeZusammen, PFLICHTSPALTEN } from '../src/preisliste.js';
+import { wegwerfordner } from '../src/wegwerf.js';
 
 const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
 const werkzeug = pfad('../bin/preisliste.mjs');
@@ -158,7 +159,7 @@ test('neue Artikel kommen dazu, der Bestand bleibt vollzählig', () => {
  * ------------------------------------------------------------------ */
 
 const lauf = (dateiInhalt, args = []) => {
-  const ordner = mkdtempSync(join(tmpdir(), 'preisliste-'));
+  const ordner = wegwerfordner('preisliste-');
   const csv = join(ordner, 'artikelliste.csv');
   writeFileSync(csv, dateiInhalt);
   const katalog = join(ordner, 'katalog.json');
@@ -207,7 +208,7 @@ test('mit --schreiben stehen die Artikel im Katalog und die Preise daneben', () 
 });
 
 test('eine als Muster gekennzeichnete Datei wird abgewiesen', () => {
-  const ordner = mkdtempSync(join(tmpdir(), 'preisliste-'));
+  const ordner = wegwerfordner('preisliste-');
   const csv = join(ordner, 'muster-liste.csv');
   writeFileSync(csv, dreiZeilen);
   const e = spawnSync(process.execPath, [werkzeug, csv, '--schreiben'], { encoding: 'utf8' });

@@ -26,7 +26,7 @@
  * (`shopkern.test.js`), nicht hier.
  */
 
-import { readFileSync, writeFileSync, mkdtempSync, rmSync, existsSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync, rmSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { tmpdir } from 'node:os';
@@ -36,6 +36,7 @@ import { createServer } from 'node:http';
 import { KORBSCHLUESSEL } from '../src/shopkern.js';
 import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
 import { extname } from 'node:path';
+import { wegwerfordner } from '../src/wegwerf.js';
 
 const hier = fileURLToPath(new URL('.', import.meta.url));
 const shopDatei = join(hier, '..', 'ausgabe', 'website.html');
@@ -1038,7 +1039,7 @@ const START = { encoding: 'utf8', maxBuffer: 128 * 1024 * 1024, timeout: 90_000,
 const GLEICHZEITIG = 6;
 
 const seite = readFileSync(shopDatei, 'utf8');
-const ablage = mkdtempSync(join(tmpdir(), 'shopprobe-'));
+const ablage = wegwerfordner('shopprobe-');
 let fehlgeschlagen = 0;
 
 async function laufe(s, i) {

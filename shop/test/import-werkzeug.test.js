@@ -2,9 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { readFileSync, copyFileSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { readFileSync, copyFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { wegwerfordner } from '../src/wegwerf.js';
 
 const werkzeug = fileURLToPath(new URL('../bin/import.mjs', import.meta.url));
 const beispielVerzeichnis = fileURLToPath(new URL('../beispiel/', import.meta.url));
@@ -15,7 +16,7 @@ test('der Muster-Riegel prüft den aufgelösten Pfad, nicht nur das Argument', (
   // Ein markerfreier Dateiname in einem als Beispiel markierten Verzeichnis:
   // nur der aufgelöste Pfad trägt den Marker. Vor der Korrektur schrieb genau
   // dieser Aufruf vier erfundene Preise als bestätigt in den Katalog.
-  const verzeichnis = mkdtempSync(join(tmpdir(), 'beispiel-'));
+  const verzeichnis = wegwerfordner('beispiel-');
   copyFileSync(musterdatei, join(verzeichnis, 'preisliste-bahnen.csv'));
   const vorher = readFileSync(artikelDatei, 'utf8');
   const lauf = spawnSync(
@@ -71,7 +72,7 @@ test('das Werkzeug schreibt nicht mehr — auch nicht mit einer echten Liste', (
   //
   // Der Musterriegel oben greift nur bei Dateinamen mit „muster", „beispiel"
   // oder „demo". Eine echte Liste wäre durchgekommen.
-  const verzeichnis = mkdtempSync(join(tmpdir(), 'liste-'));
+  const verzeichnis = wegwerfordner('liste-');
   const liste = join(verzeichnis, 'artikelliste.csv');
   writeFileSync(liste, 'sku;bezeichnung;uvp_netto;ek_netto\nZ-1;Ware;100;60\n');
   const vorher = readFileSync(artikelDatei, 'utf8');
@@ -86,7 +87,7 @@ test('der Probelauf bleibt und rechnet die Liste durch', () => {
   // Was am Tag der Lieferantenliste zuerst gebraucht wird: eine Liste
   // einlesen und die Befunde lesen. Das bleibt, gesperrt ist nur das
   // Schreiben.
-  const verzeichnis = mkdtempSync(join(tmpdir(), 'liste-'));
+  const verzeichnis = wegwerfordner('liste-');
   const liste = join(verzeichnis, 'artikelliste.csv');
   writeFileSync(liste, 'sku;bezeichnung;uvp_netto;ek_netto\nZ-1;Ware;100;60\nZ-2;Ware zwei;20;18\n');
   const lauf = spawnSync(process.execPath, [werkzeug, 'bahnen-de', liste], { encoding: 'utf8' });

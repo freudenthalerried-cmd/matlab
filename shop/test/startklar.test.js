@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { startklar } from '../src/startklar.js';
 import { IMPRESSUMSFELDER } from '../src/rechtstexte.js';
 import { FORMREGELN } from '../src/betreiberform.js';
+import { wegwerfordner } from '../src/wegwerf.js';
 
 const werkzeug = fileURLToPath(new URL('../bin/startklar.mjs', import.meta.url));
 
@@ -118,13 +119,13 @@ test('die Antworten kommen aus der Datei, nicht aus dem Werkzeug', async () => {
   // null und schrieb daneben, sie gehörten in data/betreiber.json — dann
   // werde von selbst gemeldet. Das war eine Zusage, die der Code nicht
   // gehalten hätte. Diese Probe hält sie fest.
-  const { mkdtempSync, writeFileSync, readFileSync } = await import('node:fs');
+  const { writeFileSync, readFileSync } = await import('node:fs');
   const { tmpdir } = await import('node:os');
   const { join } = await import('node:path');
   const echt = JSON.parse(readFileSync(
     fileURLToPath(new URL('../data/betreiber.json', import.meta.url)), 'utf8'));
 
-  const ordner = mkdtempSync(join(tmpdir(), 'startklar-'));
+  const ordner = wegwerfordner('startklar-');
   const pfad = join(ordner, 'betreiber.json');
   writeFileSync(pfad, JSON.stringify({
     ...echt,

@@ -16,7 +16,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync, writeFileSync, mkdtempSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -24,6 +24,7 @@ import { fileURLToPath } from 'node:url';
 import { ladeBaustoffkatalog, ZIELMARGE } from '../src/baustoffkatalog.js';
 import { kundenWarenkorb, oeffentlicherArtikel, oeffentlicherLieferant } from '../src/shopkern.js';
 import { baueKundenanfrage } from '../src/kundenanfrage.js';
+import { wegwerfordner } from '../src/wegwerf.js';
 
 const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
 const werkzeug = pfad('../bin/vorgang.mjs');
@@ -75,7 +76,7 @@ function baueUmgebung() {
   });
   assert.equal(anfrage.moeglich, true, anfrage.hindernis);
 
-  const ordner = mkdtempSync(join(tmpdir(), 'vorgang-'));
+  const ordner = wegwerfordner('vorgang-');
   const anfrageDatei = join(ordner, 'anfrage.txt');
   const kundeDatei = join(ordner, 'kunde.json');
   writeFileSync(anfrageDatei, anfrage.text);
@@ -205,7 +206,7 @@ test('die Auftragsbestätigung entsteht nicht gegen die eigene Sperre',
  */
 test('ohne --ablegen bleibt die Akte leer', { skip: !vorhanden && 'preise/ fehlt' }, () => {
   const u = baueUmgebung();
-  const akte = mkdtempSync(join(tmpdir(), 'akte-'));
+  const akte = wegwerfordner('akte-');
   const e = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0101'],
     { VORGANG_ABLAGE: akte });
   assert.equal(e.code, 0, e.aus);
@@ -237,7 +238,7 @@ test('ein Beleg mit offener Pflichtangabe kommt nicht in die Akte',
     // trägt jedes Angebot eine sichtbare Lücke. Sieben Jahre lang stünde
     // sonst ein unvollständiges Papier in der Akte.
     const u = baueUmgebung();
-    const akte = mkdtempSync(join(tmpdir(), 'akte-'));
+    const akte = wegwerfordner('akte-');
     const e = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0106',
       '--datum', '2026-09-04', '--ablegen'], { VORGANG_ABLAGE: akte });
     assert.equal(e.code, 1, e.aus);
@@ -249,7 +250,7 @@ test('ein Beleg mit offener Pflichtangabe kommt nicht in die Akte',
 test('mit --ablegen entsteht eine Journalzeile je Ereignis',
   { skip: !vorhanden && 'preise/ fehlt' }, () => {
     const u = baueUmgebung();
-    const akte = mkdtempSync(join(tmpdir(), 'akte-'));
+    const akte = wegwerfordner('akte-');
     const e = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0102',
       '--datum', '2026-09-04', '--ablegen'],
     { VORGANG_ABLAGE: akte, VORGANG_LIEFERANTEN: mitLieferzeit(u.ordner) });
@@ -278,7 +279,7 @@ test('mit --ablegen entsteht eine Journalzeile je Ereignis',
 test('der zweite Lauf setzt den Nummernkreis fort statt ihn zurückzusetzen',
   { skip: !vorhanden && 'preise/ fehlt' }, () => {
     const u = baueUmgebung();
-    const akte = mkdtempSync(join(tmpdir(), 'akte-'));
+    const akte = wegwerfordner('akte-');
     const gemeinsam = { VORGANG_ABLAGE: akte, VORGANG_LIEFERANTEN: mitLieferzeit(u.ordner) };
     const erst = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0103',
       '--datum', '2026-09-04', '--ablegen'], gemeinsam);
@@ -299,7 +300,7 @@ test('der zweite Lauf setzt den Nummernkreis fort statt ihn zurückzusetzen',
 test('die Auftragsbestätigung wird ohne Belegnummer abgelegt',
   { skip: !vorhanden && 'preise/ fehlt' }, () => {
     const u = baueUmgebung();
-    const akte = mkdtempSync(join(tmpdir(), 'akte-'));
+    const akte = wegwerfordner('akte-');
     const e = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0105',
       '--datum', '2026-09-04', '--stufe', 'bestaetigung', '--ablegen'],
     { VORGANG_ABLAGE: akte, VORGANG_LIEFERANTEN: mitLieferzeit(u.ordner) });
@@ -319,7 +320,7 @@ test('dieselbe Belegnummer kommt kein zweites Mal in die Akte',
     // Nummer vom Papier kommt statt aus dem Zähler, sichert die Einmaligkeit
     // nicht mehr `naechsteNummer`, sondern `haltefest`.
     const u = baueUmgebung();
-    const akte = mkdtempSync(join(tmpdir(), 'akte-'));
+    const akte = wegwerfordner('akte-');
     const gemeinsam = { VORGANG_ABLAGE: akte, VORGANG_LIEFERANTEN: mitLieferzeit(u.ordner) };
     const argumente = [u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0107',
       '--datum', '2026-09-04', '--ablegen'];

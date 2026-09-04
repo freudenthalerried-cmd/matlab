@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { readFileSync, writeFileSync, mkdtempSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { wegwerfordner } from '../src/wegwerf.js';
 
 /**
  * Der Katalogerzeuger, wirklich ausgeführt.
@@ -26,7 +27,7 @@ const gewichte = fileURLToPath(new URL('../../preise/gewichte-aus-rechnungen.jso
 const vorhanden = existsSync(quelle) && existsSync(gewichte);
 
 const lauf = (umgebung) => {
-  const ordner = mkdtempSync(join(tmpdir(), 'katalogprobe-'));
+  const ordner = wegwerfordner('katalogprobe-');
   const ziel = join(ordner, 'katalog.json');
   const preise = join(ordner, 'preise.json');
   const ergebnis = spawnSync(process.execPath, [werkzeug], {
@@ -98,7 +99,7 @@ test('eine Artikelliste wird als falsches Format abgewiesen, nicht als leere Lis
   // fand kein `ArtNr` und meldete „Positionen gelesen: 2 / Artikel im
   // Katalog: 0" — mit Ausgang 0. Am entscheidenden Tag liest sich das wie
   // „die Liste enthält keine brauchbare Ware".
-  const ordner = mkdtempSync(join(tmpdir(), 'artikelliste-'));
+  const ordner = wegwerfordner('artikelliste-');
   const liste = join(ordner, 'artikelliste.csv');
   writeFileSync(liste, 'sku;bezeichnung;einheit;ek_netto\n10001;Ziegel;STK;0,42\n');
   const { ergebnis } = lauf({ KATALOG_QUELLE: liste });
@@ -113,7 +114,7 @@ test('ohne einen einzigen gelesenen Artikel wird nichts geschrieben', () => {
   // Grund — er meldete verlorene Gewichte, wo kein Artikel gelesen worden
   // war. Trüge der Bestand keine belegten Gewichte, wäre ein leerer Katalog
   // über den vollen geschrieben worden, mit der Meldung „geschrieben:".
-  const ordner = mkdtempSync(join(tmpdir(), 'leer-'));
+  const ordner = wegwerfordner('leer-');
   const leer = join(ordner, 'positionen.csv');
   // Richtiger Kopf, aber keine Zeile mit Artikelnummer.
   writeFileSync(leer, 'Rechnung;Datum;Pos;ArtNr;Bezeichnung;Menge;Einheit;Einzelpreis;Preisbasis;RabattProzent;Betrag;Belegart\n'
@@ -142,7 +143,7 @@ test('ein halb umgelenkter Lauf bricht ab, statt in den Bestand zu schreiben', (
   // Die Datei ist gitignoriert; kein `git checkout` holt sie zurück. Sie
   // ließ sich aus der Positionstabelle neu erzeugen, mit einem Befehl. Wer
   // eine Ausgabe umlenkt, lenkt beide um.
-  const ordner = mkdtempSync(join(tmpdir(), 'halb-'));
+  const ordner = wegwerfordner('halb-');
   const ergebnis = spawnSync(process.execPath, [werkzeug, '--pruefen'], {
     encoding: 'utf8',
     env: { ...process.env, KATALOG_ZIEL: join(ordner, 'katalog.json'), KATALOG_PREISE_ZIEL: undefined },

@@ -112,10 +112,21 @@ export function startklar(lage = {}) {
    * Anfragetext zum Kopieren.
    */
   const weg = bestellwegBefund(oberflaechenQuelltext);
+  /**
+   * **`wer` berichtigt am 4. September, abends.** Hier stand „Werkzeug", und
+   * das war richtig, solange der Weg nicht gebaut war. Er ist gebaut, geprüft
+   * und einmal von Ende zu Ende gefahren; was ihn anhält, sind zwei Angaben
+   * des Auftraggebers — die E-Mail-Adresse und der Rechtstextewortlaut, beide
+   * mit eigenem Punkt in dieser Liste.
+   *
+   * > **Ein Punkt, der auf meiner Seite steht und auf einer fremden Antwort
+   * > wartet, wird nie geschlossen.** Er hätte die Liste dauerhaft rot
+   * > gehalten und dabei auf den Falschen gezeigt.
+   */
   p('bestellweg', 'Der Kunde kann eine Bestellung abschicken',
     weg.moeglich === null ? 'unpruefbar' : (weg.moeglich ? 'erfuellt' : 'offen'),
     weg.befund,
-    'Werkzeug');
+    'Auftraggeber');
 
   const fehlendeFelder = impressumsfelder.filter(
     (f) => typeof betreiber[f.feld] !== 'string' || betreiber[f.feld].trim() === '',

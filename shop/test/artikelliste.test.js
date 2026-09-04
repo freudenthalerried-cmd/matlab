@@ -1,11 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
+import { writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { leseArtikelliste, fuehreZusammen, istStand, WARENGRUPPEN, istGtin } from '../src/artikelliste.js';
+import { wegwerfordner } from '../src/wegwerf.js';
 
 const KOPF_SPARTE = 'sku;bezeichnung;einheit;ek_netto;uvp_netto;sparte';
 
@@ -117,7 +118,7 @@ test('Zusammenführen behält, was die Liste nicht nennt', () => {
 /* --------------------------- das Werkzeug --------------------------- */
 
 const mitDatei = (inhalt) => {
-  const o = mkdtempSync(join(tmpdir(), 'artikelliste-'));
+  const o = wegwerfordner('artikelliste-');
   const datei = join(o, 'liste.csv');
   writeFileSync(datei, inhalt);
   return { ordner: o, datei };
@@ -226,7 +227,7 @@ test('eine Liste mit gültiger Gruppenspalte braucht keine Tabelle', () => {
 });
 
 test('das Werkzeug führt die offenen Sparten nach Gewicht auf', () => {
-  const o = mkdtempSync(join(tmpdir(), 'sparten-'));
+  const o = wegwerfordner('sparten-');
   const datei = join(o, 'liste.csv');
   writeFileSync(datei, [KOPF_SPARTE,
     ...Array.from({ length: 7 }, (_, i) => `${i + 1};Ware;STK;1,00;2,00;Waermedaemmverbund`),

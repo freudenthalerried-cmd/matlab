@@ -2,13 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { readFileSync, writeFileSync, mkdtempSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { wegwerfordner } from '../src/wegwerf.js';
 
 const werkzeug = fileURLToPath(new URL('../bin/auswerten.mjs', import.meta.url));
 const beispiel = fileURLToPath(new URL('../beispiel/antworten-beispiel.json', import.meta.url));
-const ablage = mkdtempSync(join(tmpdir(), 'auswerten-'));
+const ablage = wegwerfordner('auswerten-');
 
 test('das Auswertungswerkzeug läuft über die Beispieldatei und trägt vor', () => {
   const ausgabe = execFileSync(process.execPath, [werkzeug], { encoding: 'utf8' });

@@ -76,6 +76,37 @@ export function warenkorbZusage(aktiv, korbschluessel) {
     + 'Ein Dritter ist daran nicht beteiligt.';
 }
 
+/** Die Datei mit dem einzigen Absendeweg. Sie geht nur mit eingeschaltetem Weg ins Bündel. */
+export const ABSENDEDATEI = 'shop-bestellen.js';
+
+/**
+ * Der Quelltext, den der Browser des Kunden bekommt.
+ *
+ * **Der Anlass, 4. September 2026, abends.** `npm run startklar` entscheidet
+ * seinen ersten Punkt — „Der Kunde kann eine Bestellung abschicken" — am
+ * Quelltext der Oberfläche. Es las `shop-ui.js`, und der Kommentar daneben
+ * sagte: „Ob diese Seite eine Bestellung abschicken kann, steht in **ihr** und
+ * nicht in einer Datei daneben."
+ *
+ * Seit dem Nachmittag steht das Absenden in einer Datei daneben — mit gutem
+ * Grund: Ein schlafendes `fetch(` im Bündel machte die Datenschutzzusage von
+ * einer Tatsache zu einer Behauptung über den Kontrollfluss.
+ *
+ * > **Vier Runden Bestellweg, und die Bereitschaftsliste sagte weiterhin, es
+ * > gebe keinen** — auch mit vollständig beantworteter Betreiberdatei.
+ *
+ * Diese Funktion setzt zusammen, was ausgeliefert wird. Sie steht hier, weil
+ * hier der Schalter steht; `bin/website.mjs` und `bin/startklar.mjs` rufen
+ * beide sie, statt die Regel je einmal nachzubauen.
+ *
+ * @param {(datei: string) => string} lies  liest eine Datei des Shopordners
+ * @param {boolean} aktiv                   ob der Bestellweg eingeschaltet ist
+ */
+export function oberflaeche(lies, aktiv) {
+  const grund = lies('shop-ui.js');
+  return aktiv ? `${grund}\n${lies(ABSENDEDATEI)}` : grund;
+}
+
 /**
  * Was der Bau tun muss, damit beide Hälften zusammenbleiben.
  *

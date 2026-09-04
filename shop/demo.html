@@ -2647,6 +2647,37 @@ function warenkorbZusage(aktiv, korbschluessel) {
 }
 
 
+const ABSENDEDATEI = 'shop-bestellen.js';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function oberflaeche(lies, aktiv) {
+  const grund = lies('shop-ui.js');
+  return aktiv ? `${grund}\n${lies(ABSENDEDATEI)}` : grund;
+}
+
+
 
 
 

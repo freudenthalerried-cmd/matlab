@@ -1,15 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { wegwerfordner } from '../src/wegwerf.js';
 import {
   MARKENENDUNG, markenpfad, markiere, nimmAb, lies, offeneMarken, stelleZurueck, mutationsbefund,
 } from '../src/mutationsschutz.js';
 
 /** Ein Wegwerfverzeichnis mit einer Datei darin. */
 const bau = (inhalt = 'echt\n') => {
-  const ordner = mkdtempSync(join(tmpdir(), 'mutation-'));
+  const ordner = wegwerfordner('mutation-');
   const datei = join(ordner, 'quelle.js');
   writeFileSync(datei, inhalt);
   return { ordner, datei };
@@ -96,7 +97,7 @@ test('ein unlesbarer Zettel ist ein Fund, kein Absturz', () => {
 });
 
 test('ein leeres Verzeichnis ist sauber, sagt aber, dass es hingesehen hat', () => {
-  const ordner = mkdtempSync(join(tmpdir(), 'mutation-leer-'));
+  const ordner = wegwerfordner('mutation-leer-');
   writeFileSync(join(ordner, 'a.js'), 'x');
   writeFileSync(join(ordner, 'b.js'), 'y');
   const befund = mutationsbefund(ordner);

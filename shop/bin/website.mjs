@@ -24,8 +24,7 @@
  */
 
 import {
-  readFileSync, writeFileSync, copyFileSync, mkdirSync, readdirSync, existsSync, rmSync, mkdtempSync,
-} from 'node:fs';
+  readFileSync, writeFileSync, copyFileSync, mkdirSync, readdirSync, existsSync, rmSync, } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { gzipSync } from 'node:zlib';
 import { tmpdir } from 'node:os';
@@ -37,7 +36,9 @@ import { artikelBild, gruppenBild, schichten, schichtbild, dickeMm, bauform } fr
 import { VERFUEGBARKEIT, angebotsAuszeichnung, robotsTxt, liefergebietOrte } from '../src/maschinenlesbar.js';
 import { baueKern, BROWSERMODULE } from '../src/buendel.js';
 import { startklar, fehltSatz } from '../src/startklar.js';
-import { baubefund, EMPFANGSSKRIPT, KONFIGURATIONSDATEI } from '../src/bestellwegbau.js';
+import {
+  baubefund, oberflaeche, EMPFANGSSKRIPT, KONFIGURATIONSDATEI,
+} from '../src/bestellwegbau.js';
 import { VORAUSSETZUNGEN } from '../src/bestellweg.js';
 import { BESTELLFELDER } from '../src/bestellfelder.js';
 import { ohneKommentare } from '../src/entkommentieren.js';
@@ -53,6 +54,7 @@ import { LIEFERGEBIET } from '../src/liefergebiet.js';
 import { ZAHLWEGE, zahlwegName } from '../src/zahlung.js';
 import { fracht } from '../src/preis.js';
 import { lesKopf, alsHtml, alsText, alsListe, esc } from '../src/markdown.js';
+import { wegwerfordner } from '../src/wegwerf.js';
 import {
   erzeugeImpressum, pruefeBetreiberdaten, AGB_GLIEDERUNG, ZAHLUNGSBEDINGUNGEN,
   DATENSCHUTZ_GLIEDERUNG, websiteVerarbeitung, B2B_ABGRENZUNG, LIEFERHINWEISE, IMPRESSUMSFELDER,
@@ -102,7 +104,7 @@ const SCHRIFTEINBINDUNG = '';
  * statt die Seite.
  */
 function pruefeSkript(quelle, name) {
-  const ordner = mkdtempSync(join(tmpdir(), 'skriptpruefung-'));
+  const ordner = wegwerfordner('skriptpruefung-');
   try {
     const datei = join(ordner, 'skript.mjs');
     writeFileSync(datei, quelle, 'utf8');
@@ -2048,14 +2050,21 @@ function main() {
    * die abschickt — sonst wäre der grüne Zweig der Auskunft „Bestellen ist
    * möglich" einer, den nie jemand ausgeführt hat.
    */
-  const oberflaecheRoh = readFileSync(
-    process.env.WEBSITE_OBERFLAECHE || join(WURZEL, 'shop-ui.js'), 'utf8',
-  )
-    // **Nur mit eingeschaltetem Bestellweg.** `shop-bestellen.js` enthält das
-    // einzige `fetch` des Shops; solange der Weg aus ist, darf es nicht ins
-    // Bündel — sonst wäre die gemessene Zusage „wird nicht an den Server
-    // übertragen" eine Behauptung über den Kontrollfluss statt über den Code.
-    + (WEG.aktiv ? `\n${readFileSync(join(WURZEL, 'shop-bestellen.js'), 'utf8')}` : '');
+  /**
+   * **Nur mit eingeschaltetem Bestellweg.** `shop-bestellen.js` enthält das
+   * einzige `fetch` des Shops; solange der Weg aus ist, darf es nicht ins
+   * Bündel — sonst wäre die gemessene Zusage „wird nicht an den Server
+   * übertragen" eine Behauptung über den Kontrollfluss statt über den Code.
+   *
+   * Zusammengesetzt wird in `src/bestellwegbau.js`, damit `npm run startklar`
+   * dieselbe Oberfläche misst, die hier ausgeliefert wird.
+   */
+  const oberflaecheRoh = oberflaeche(
+    (datei) => readFileSync(datei === 'shop-ui.js' && process.env.WEBSITE_OBERFLAECHE
+      ? process.env.WEBSITE_OBERFLAECHE
+      : join(WURZEL, datei), 'utf8'),
+    WEG.aktiv,
+  );
 
   // Dieselbe Rechnung wie `npm run startklar`, nicht eine zweite. Die Seiten
   // sagen dem Besucher, was hier möglich ist — und das darf nicht auf einem

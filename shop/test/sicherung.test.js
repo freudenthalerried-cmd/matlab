@@ -1,11 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, writeFileSync, readFileSync, readdirSync, existsSync } from 'node:fs';
+import { writeFileSync, readFileSync, readdirSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { sichere, staende, zeitstempel, SICHERUNGSTIEFE } from '../src/sicherung.js';
+import { wegwerfordner } from '../src/wegwerf.js';
 
 /**
  * **Anlass ist der Vorfall vom 30.08.:** Ein Lauf mit halb umgelenkten
@@ -15,7 +16,7 @@ import { sichere, staende, zeitstempel, SICHERUNGSTIEFE } from '../src/sicherung
  * liefert der Auftraggeber demnächst.
  */
 
-const ordner = () => mkdtempSync(join(tmpdir(), 'sicherung-'));
+const ordner = () => wegwerfordner('sicherung-');
 const werkzeug = fileURLToPath(new URL('../bin/sicherung.mjs', import.meta.url));
 
 test('was es noch nicht gibt, wird nicht gesichert', () => {

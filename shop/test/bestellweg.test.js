@@ -101,7 +101,11 @@ test('alles beantwortet und trotzdem nicht startklar, solange nichts abschickt',
 test('der Bestellweg steht als erster Punkt und wird dem Kunden genannt', () => {
   const b = startklar({ ...vollstaendig, oberflaechenQuelltext: oberflaeche });
   assert.equal(b.punkte[0].id, 'bestellweg', 'der härteste Punkt gehört nach vorn');
-  assert.equal(b.punkte[0].wer, 'Werkzeug');
+  // **Berichtigt am 4. September, abends.** Hier stand „Werkzeug", und das
+  // war richtig, solange der Weg nicht gebaut war. Er ist gebaut und einmal
+  // von Ende zu Ende gefahren; was ihn anhält, sind zwei Angaben des
+  // Auftraggebers — die E-Mail-Adresse und der Rechtstextewortlaut.
+  assert.equal(b.punkte[0].wer, 'Auftraggeber');
   assert.deepEqual(b.kassenhinweise.map((h) => h.wort), ['ein Weg, die Bestellung abzuschicken']);
 });
 

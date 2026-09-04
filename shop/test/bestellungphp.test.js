@@ -10,12 +10,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, copyFileSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
+import { mkdirSync, copyFileSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { BESTELLFELDER, beispielbestellung } from '../src/bestellfelder.js';
 import { freierPort } from '../src/freierport.js';
+import { wegwerfordner } from '../src/wegwerf.js';
 
 const skript = fileURLToPath(new URL('../bestellung.php', import.meta.url));
 
@@ -32,7 +33,7 @@ test('ob PHP da ist, entscheidet, was diese Probe prüfen kann', () => {
 
 /** Startet einen Wegwerfserver mit dem Skript und gibt Adresse und Ordner. */
 async function server({ konfiguriert = true } = {}) {
-  const wurzel = mkdtempSync(join(tmpdir(), 'bestellweg-'));
+  const wurzel = wegwerfordner('bestellweg-');
   const site = join(wurzel, 'site');
   mkdirSync(site);
   copyFileSync(skript, join(site, 'bestellung.php'));

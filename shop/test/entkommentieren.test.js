@@ -1,12 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { readFileSync, readdirSync, writeFileSync, rmSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ohneKommentare } from '../src/entkommentieren.js';
 import { baueKern, KERNMODULE, SHOPMODULE } from '../src/buendel.js';
+import { wegwerfordner } from '../src/wegwerf.js';
 
 const hier = fileURLToPath(new URL('.', import.meta.url));
 const src = join(hier, '..', 'src');
@@ -61,7 +62,7 @@ test('jedes Modul in src/ übersteht das Entfernen und parst danach', () => {
   // meldete Grün.
   assert.ok(module.length >= 30, `${module.length} Module gefunden`);
 
-  const ablage = mkdtempSync(join(tmpdir(), 'ohne-kommentare-'));
+  const ablage = wegwerfordner('ohne-kommentare-');
   try {
     let gespart = 0;
     for (const m of module) {

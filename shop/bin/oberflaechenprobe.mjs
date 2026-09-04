@@ -29,12 +29,13 @@
  * Browserinstallation abhängen.
  */
 
-import { readFileSync, writeFileSync, mkdtempSync, rmSync, readdirSync, existsSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync, rmSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
+import { wegwerfordner } from '../src/wegwerf.js';
 
 const hier = fileURLToPath(new URL('.', import.meta.url));
 const demoDatei = join(hier, '..', 'demo.html');
@@ -197,7 +198,7 @@ if (!existsSync(demoDatei)) {
 }
 
 const seite = readFileSync(demoDatei, 'utf8');
-const ablage = mkdtempSync(join(tmpdir(), 'oberflaechenprobe-'));
+const ablage = wegwerfordner('oberflaechenprobe-');
 let fehlgeschlagen = 0;
 
 try {

@@ -27,13 +27,14 @@
  */
 
 import { spawn, spawnSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { beispielbestellung } from '../src/bestellfelder.js';
 import { freierPort } from '../src/freierport.js';
 import { pruefeBestelldaten } from '../src/kunde.js';
+import { wegwerfordner } from '../src/wegwerf.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const REPO = dirname(SHOP);
@@ -60,7 +61,7 @@ if (!chromium) abbruch('Kein Chromium gefunden.');
 
 // --- 1. Bauen, mit eingeschaltetem Bestellweg -------------------------------
 
-const ablage = mkdtempSync(join(tmpdir(), 'bestellprobe-'));
+const ablage = wegwerfordner('bestellprobe-');
 const betreiber = JSON.parse(readFileSync(join(SHOP, 'data', 'betreiber.json'), 'utf8'));
 const betreiberDatei = join(ablage, 'betreiber.json');
 writeFileSync(betreiberDatei, JSON.stringify({

@@ -2,9 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { cpSync, readFileSync, writeFileSync, mkdtempSync, appendFileSync } from 'node:fs';
+import { cpSync, readFileSync, writeFileSync, appendFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { wegwerfordner } from '../src/wegwerf.js';
 
 const wurzel = fileURLToPath(new URL('..', import.meta.url));
 
@@ -12,7 +13,7 @@ const wurzel = fileURLToPath(new URL('..', import.meta.url));
 // eigene Kopie von Bauskript, Vorlage, Daten und Kern — das echte demo.html
 // bleibt unangetastet.
 const baustelle = () => {
-  const ziel = mkdtempSync(join(tmpdir(), 'bau-'));
+  const ziel = wegwerfordner('bau-');
   for (const teil of ['build-demo.mjs', 'demo-template.html', 'data', 'src']) {
     cpSync(join(wurzel, teil), join(ziel, teil), { recursive: true });
   }

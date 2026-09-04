@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { readFileSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { wegwerfordner } from '../src/wegwerf.js';
 
 /**
  * **Der Anlass, 31. August 2026.** An einem Tag sind mir drei Gegenproben
@@ -22,7 +23,7 @@ import { join } from 'node:path';
 const werkzeug = fileURLToPath(new URL('../bin/gegenprobe.mjs', import.meta.url));
 
 function lauf({ inhalt, suche, ersatz, befehl }) {
-  const ablage = mkdtempSync(join(tmpdir(), 'gegenprobe-'));
+  const ablage = wegwerfordner('gegenprobe-');
   const ziel = join(ablage, 'ziel.txt');
   const sDatei = join(ablage, 'suche.txt');
   const eDatei = join(ablage, 'ersatz.txt');

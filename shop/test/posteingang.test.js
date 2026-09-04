@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { kundendatei, leseJournal, posteingangsbefund } from '../src/posteingang.js';
 import { BESTELLFELDER, beispielbestellung } from '../src/bestellfelder.js';
 import { pruefeBestelldaten } from '../src/kunde.js';
+import { wegwerfordner } from '../src/wegwerf.js';
 
 const werkzeug = fileURLToPath(new URL('../bin/posteingang.mjs', import.meta.url));
 const TEXT = 'Anfrage vom 4.9.2026\nPosition 1: 40 m2 POS-12569\n'
@@ -77,7 +78,7 @@ const lauf = (args) => {
 };
 
 test('das Werkzeug schneidet die zwei Dateien heraus, die npm run vorgang liest', () => {
-  const ordner = mkdtempSync(join(tmpdir(), 'posteingang-'));
+  const ordner = wegwerfordner('posteingang-');
   const journal = join(ordner, 'journal-2026.jsonl');
   writeFileSync(journal, `${JSON.stringify(VOLL)}\n${JSON.stringify(HALB)}\n`);
   const ziel = join(ordner, 'vorgang');
@@ -92,7 +93,7 @@ test('das Werkzeug schneidet die zwei Dateien heraus, die npm run vorgang liest'
 });
 
 test('eine unvollständige Bestellung wird nicht herausgeschnitten', () => {
-  const ordner = mkdtempSync(join(tmpdir(), 'posteingang-'));
+  const ordner = wegwerfordner('posteingang-');
   const journal = join(ordner, 'journal-2026.jsonl');
   writeFileSync(journal, `${JSON.stringify(HALB)}\n`);
   const ziel = join(ordner, 'vorgang');
@@ -106,7 +107,7 @@ test('eine unvollständige Bestellung wird nicht herausgeschnitten', () => {
 test('in das Verzeichnis selbst wird nicht geschrieben', () => {
   // Dieselbe Regel wie bei der Ablage: Was Namen und Anschriften trägt,
   // gehört nicht in ein öffentliches Repository.
-  const ordner = mkdtempSync(join(tmpdir(), 'posteingang-'));
+  const ordner = wegwerfordner('posteingang-');
   const journal = join(ordner, 'journal-2026.jsonl');
   writeFileSync(journal, `${JSON.stringify(VOLL)}\n`);
   const drinnen = fileURLToPath(new URL('../ausgabe/nicht-hierher', import.meta.url));

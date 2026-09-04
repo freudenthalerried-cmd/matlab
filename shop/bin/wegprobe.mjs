@@ -31,13 +31,14 @@
  * Hergeleitet in `docs/baustoff-shop/legen-knopf-auf-der-landeseite.md`.
  */
 
-import { readFileSync, writeFileSync, mkdtempSync, rmSync, existsSync, readdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, rmSync, existsSync, readdirSync } from 'node:fs';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
+import { wegwerfordner } from '../src/wegwerf.js';
 
 const fuehreAus = promisify(execFile);
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -209,7 +210,7 @@ const SONDE = `
 })();
 </script>`;
 
-const ablage = mkdtempSync(join(tmpdir(), 'wegprobe-'));
+const ablage = wegwerfordner('wegprobe-');
 const variante = join(ablage, 'weg.html');
 writeFileSync(variante, readFileSync(seitePfad, 'utf8') + SONDE);
 

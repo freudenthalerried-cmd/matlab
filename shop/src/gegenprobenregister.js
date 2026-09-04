@@ -475,6 +475,20 @@ export const GEGENPROBEN = Object.freeze([
       + 'eine Absage mit Verzögerung. Diese Mutation stellt genau das wieder her.',
   }),
   Object.freeze({
+    id: 'bereitschaft-liest-die-halbe-oberflaeche',
+    pruefer: 'test',
+    was: 'Eine Bereitschaftsliste, die nur die Hälfte dessen liest, was ausgeliefert wird',
+    datei: 'shop/src/bestellwegbau.js',
+    art: 'ersetzen',
+    suchen: '  return aktiv ? `${grund}\\n${lies(ABSENDEDATEI)}` : grund;',
+    ersetzen: '  return grund;',
+    erwartet: /ausgelieferte Oberfläche trägt den Absendeweg/,
+    warum: 'Genau der Zustand vom 4. September, abends: `npm run startklar` las `shop-ui.js` '
+      + 'und entschied daran den ersten Punkt — während das Absenden am Nachmittag in eine '
+      + 'Datei daneben gezogen war. Vier Runden Bestellweg, und die Bereitschaftsliste sagte '
+      + 'auch mit vollständig beantworteter Betreiberdatei weiter, es gebe keinen.',
+  }),
+  Object.freeze({
     id: 'formular-erhebt-zu-wenig',
     pruefer: 'bestellprobe',
     was: 'Ein Bestellformular, aus dessen Angaben kein Angebot werden kann',
@@ -506,10 +520,20 @@ export const GEGENPROBEN = Object.freeze([
     id: 'schlafendes-fetch-im-buendel',
     pruefer: 'pruefe-datenschutz',
     was: 'Ein Absendeweg im Bündel, während die Rechtsseite sagt, es gebe keinen',
-    datei: 'shop/bin/website.mjs',
+    /**
+     * **Nachgezogen am 4. September, abends.** Die Mutation saß auf einer
+     * Zeile in `bin/website.mjs`, die es nicht mehr gibt: Das Zusammensetzen
+     * der Oberfläche ist nach `src/bestellwegbau.js` gezogen, damit
+     * `npm run startklar` dieselbe Oberfläche misst, die ausgeliefert wird.
+     *
+     * Der Läufer hat es gemeldet — „Suchtext nicht gefunden" —, und das ist
+     * genau der Zweck des Feldes: Eine Gegenprobe, deren Mutation ins Leere
+     * geht, prüft nichts und sähe ohne diese Meldung aus wie eine bestandene.
+     */
+    datei: 'shop/src/bestellwegbau.js',
     art: 'ersetzen',
-    suchen: "    + (WEG.aktiv ? `\\n${readFileSync(join(WURZEL, 'shop-bestellen.js'), 'utf8')}` : '');",
-    ersetzen: "    + `\\n${readFileSync(join(WURZEL, 'shop-bestellen.js'), 'utf8')}`;",
+    suchen: '  return aktiv ? `${grund}\\n${lies(ABSENDEDATEI)}` : grund;',
+    ersetzen: '  return `${grund}\\n${lies(ABSENDEDATEI)}`;',
     baueVorher: true,
     erwartet: /warenkorb-im-browser/,
     warum: 'Die Datenschutzseite sagt, solange der Bestellweg aus ist, dass nichts an den '
