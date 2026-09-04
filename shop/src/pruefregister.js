@@ -282,8 +282,8 @@ export const BROWSERPRUEFER = [
     name: 'bestellprobe',
     werkzeug: 'bestellprobe.mjs',
     muster: /Bestellprobe — (\d+) Prüfungen/,
-    einheit: 'Prüfungen von Klick bis Ablage',
-    mindestens: 4,
+    einheit: 'Prüfungen von Klick bis Angebot',
+    mindestens: 5,
   },
   // Der Zensus zählt keine Szenarien, sondern gebaute Seiten. Genau deshalb
   // steht er hier: Zeigt er eines Tages auf einen leeren Ausgabeordner,

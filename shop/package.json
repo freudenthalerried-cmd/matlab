@@ -51,6 +51,7 @@
     "pruefe-ablage": "node bin/ablagepruefung.mjs",
     "pruefe-erzeugnis": "node bin/erzeugnispruefung.mjs",
     "bestellprobe": "node bin/bestellprobe.mjs",
+    "posteingang": "node bin/posteingang.mjs",
     "pruefe-schaufenster": "node bin/schaufensterpruefung.mjs",
     "pruefe-leitzahlen": "node bin/leitzahlpruefung.mjs",
     "werbeprobe": "node bin/werbeprobe.mjs",

@@ -15,6 +15,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { BESTELLFELDER, beispielbestellung } from '../src/bestellfelder.js';
+import { freierPort } from '../src/freierport.js';
 
 const skript = fileURLToPath(new URL('../bestellung.php', import.meta.url));
 
@@ -44,7 +45,7 @@ async function server({ konfiguriert = true } = {}) {
     writeFileSync(join(site, 'bestellung-konfiguration.php'),
       `<?php return [\n  'empfaenger' => 'office@example.at',\n  'felder' => [\n${felder}\n  ],\n];\n`);
   }
-  const port = 8100 + Math.floor(Math.random() * 800);
+  const port = await freierPort();
   const kind = spawn('php', ['-S', `127.0.0.1:${port}`, '-t', site], { stdio: 'ignore' });
   for (let i = 0; i < 50; i++) {
     try {

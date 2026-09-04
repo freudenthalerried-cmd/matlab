@@ -32,9 +32,11 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { beispielbestellung } from '../src/bestellfelder.js';
+import { freierPort } from '../src/freierport.js';
 import { pruefeBestelldaten } from '../src/kunde.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
+const REPO = dirname(SHOP);
 const ANFANG = '[[PROBE-ANFANG]]';
 const ENDE = '[[PROBE-ENDE]]';
 
@@ -156,7 +158,7 @@ writeFileSync(join(site, 'kasse.html'),
 
 // --- 3. PHP davor, Chromium darauf ------------------------------------------
 
-const port = 8300 + Math.floor(Math.random() * 600);
+const port = await freierPort();
 const server = spawn('php', ['-S', `127.0.0.1:${port}`, '-t', site], { stdio: 'ignore' });
 
 const OHNE_PROXY = {
@@ -239,11 +241,40 @@ try {
     }
   }
 
+  /**
+   * **Der letzte Schritt: Wird daraus wirklich ein Beleg?**
+   *
+   * Bis hierher ist gezeigt, dass die Bestellung ankommt und dass die
+   * Kundendaten der Prüfung genügen. Das ist noch nicht dasselbe wie ein
+   * Angebot: Dazwischen liegen `npm run posteingang` (schneidet die zwei
+   * Dateien heraus) und `npm run vorgang` (rechnet nach und erzeugt den
+   * Beleg). Beide sind einzeln geprüft — hier fahren sie am echten Journal.
+   */
+  if (existsSync(journal) && existsSync(join(REPO, 'preise', 'baustoff-preise.json'))) {
+    const ziel = join(ablage, 'vorgang');
+    const schnitt = spawnSync(process.execPath, [join(SHOP, 'bin', 'posteingang.mjs'),
+      '--journal', journal, '--nummer', 'B-' + new Date().getFullYear() + '-0001', '--nach', ziel],
+    { cwd: SHOP, encoding: 'utf8' });
+    if (schnitt.status !== 0) {
+      probleme.push(`posteingang schneidet nicht heraus: ${(schnitt.stderr || '').trim().slice(0, 200)}`);
+    } else {
+      const beleg = spawnSync(process.execPath, [join(SHOP, 'bin', 'vorgang.mjs'),
+        join(ziel, 'anfrage.txt'), '--kunde', join(ziel, 'kunde.json'), '--nummer', '2026-9001'],
+      { cwd: SHOP, encoding: 'utf8' });
+      const aus = `${beleg.stdout ?? ''}${beleg.stderr ?? ''}`;
+      if (beleg.status !== 0 || !/Angebot AN-2026-9001/.test(aus)) {
+        probleme.push(`aus der Bestellung entsteht kein Beleg: ${aus.trim().split('\n').slice(-4).join(' | ')}`);
+      } else {
+        bestanden.push('Aus dem Journal entsteht über posteingang und vorgang ein Angebot');
+      }
+    }
+  }
+
   // **Gezählt wird, was geprüft wurde.** Ohne die Zahl sähe eine Probe, die
   // nach dem ersten Schritt abbricht, genauso still aus wie eine bestandene —
   // dieselbe Regel wie im Prüferregister.
   console.log(`Bestellprobe — ${bestanden.length + probleme.length} Prüfungen `
-    + 'von Klick bis Ablage\n');
+    + 'von Klick bis Angebot\n');
   for (const b of bestanden) console.log(`  ✓ ${b}`);
   console.log('');
   if (probleme.length) {
@@ -251,7 +282,7 @@ try {
     console.log(`\n${probleme.length} Meldung(en). Der Weg vom Klick bis in die Ablage trägt nicht.`);
     process.exit(1);
   }
-  console.log('Der Weg trägt: Klick, Skript, Ablage. Gebaut, geprüft — und diesmal zusammen.');
+  console.log('Der Weg trägt: Klick, Empfangsskript, Ablage, Posteingang, Angebot.');
 } finally {
   server.kill();
 }

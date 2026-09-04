@@ -30,7 +30,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { GEGENPROBEN, OHNE_GEGENPROBE, registerbefund } from '../src/gegenprobenregister.js';
 import { markiere, nimmAb, offeneMarken, stelleZurueck } from '../src/mutationsschutz.js';
-import { PRUEFER } from '../src/pruefregister.js';
+import { PRUEFER, BROWSERPRUEFER } from '../src/pruefregister.js';
 import { LESER } from '../src/erzeugnisstand.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -102,8 +102,33 @@ const baue = () => {
   return spawnSync('npm', ['run', '--silent', 'website'], { cwd: SHOP, encoding: 'utf8' });
 };
 
-const nurEine = process.argv[2] ?? null;
-const proben = nurEine ? GEGENPROBEN.filter((p) => p.id === nurEine || p.pruefer === nurEine) : GEGENPROBEN;
+const mitBrowser = process.argv.includes('--mit-browser');
+const nurEine = process.argv.slice(2).find((a) => !a.startsWith('--')) ?? null;
+
+/**
+ * **Browserproben bleiben aus dem Regellauf heraus** — dieselbe Regel wie in
+ * `npm run alles`, und aus demselben Grund: Jede kostet einen Chromium-Start,
+ * `bestellprobe` zusätzlich einen PHP-Server, einen vollständigen Bau und
+ * zwei weitere Werkzeugläufe.
+ *
+ * Der Anlass, 4. September: Die beiden Gegenproben zu `bestellprobe` liefen
+ * einzeln grün und im Gesamtlauf zweimal hintereinander unterschiedlich rot —
+ * einmal „war schon vorher rot", einmal „etwas anderes gefunden". Beide Male
+ * war der Bestand in Ordnung; rot war die Maschine.
+ *
+ * > **Eine Probe, die unter Last etwas anderes meldet als allein, misst die
+ * > Last.** Sie gehört dorthin, wo sie allein läuft.
+ *
+ * Mit `--mit-browser` laufen sie mit, und `npm run alles --mit-browser` zieht
+ * sie über den Browserprüferzweig ohnehin mit herein.
+ */
+const browsernamen = new Set(BROWSERPRUEFER.map((p) => p.name));
+const zurueckgestellt = (!nurEine && !mitBrowser)
+  ? GEGENPROBEN.filter((p) => browsernamen.has(p.pruefer))
+  : [];
+const proben = nurEine
+  ? GEGENPROBEN.filter((p) => p.id === nurEine || p.pruefer === nurEine)
+  : GEGENPROBEN.filter((p) => mitBrowser || !browsernamen.has(p.pruefer));
 if (nurEine && proben.length === 0) {
   console.error(`Keine Gegenprobe zu „${nurEine}". Bekannt: ${GEGENPROBEN.map((p) => p.id).join(', ')}`);
   process.exit(2);
@@ -154,7 +179,24 @@ for (const p of proben) {
   try {
     const vor = laufeMitBau(p.pruefer);
     if (!vor.gruen) {
+      /**
+       * **Auch hier gehört der Grund dazu** — ergänzt am 4. September, aus
+       * demselben Anlass wie im Gesamtlauf: Zwei Gegenproben meldeten „war
+       * schon vorher rot", und der Prüfer hatte in seiner Ausgabe genau
+       * gesagt, warum. Diese Ausgabe wurde weggeworfen.
+       *
+       * > **Ein Urteil über einen Prüfer, das seine Begründung wegwirft, ist
+       * > eine Anschuldigung.**
+       */
+      // `not ok` zuerst: Bei `npm test` steht das ✗ auch in der eigenen
+      // Ausgabe geprüfter Werkzeuge, und der erste Treffer führte einmal
+      // zwanzig Minuten in die falsche Richtung.
+      const zeilen = vor.ausgabe.trim().split('\n');
+      const funde = (zeilen.filter((z) => z.startsWith('not ok')).length
+        ? zeilen.filter((z) => z.startsWith('not ok'))
+        : zeilen.filter((z) => z.includes('✗'))).slice(0, 4);
       schritte.push('war schon vorher rot — an einem roten Prüfer lässt sich nichts zeigen');
+      for (const z of (funde.length ? funde : zeilen.slice(-4))) schritte.push(`  ${z.trim()}`);
       urteil = 'unbrauchbar';
     } else {
       // `alle: true` ersetzt jedes Vorkommen. Der Anlass: Die Landeseite nennt
@@ -221,6 +263,13 @@ for (const p of proben) {
 const gescheitert = ergebnisse.filter((e) => e.urteil !== 'geschlagen');
 
 console.log(`${ergebnisse.length - gescheitert.length} von ${ergebnisse.length} Gegenproben schlagen an.\n`);
+
+if (zurueckgestellt.length) {
+  console.log(`${zurueckgestellt.length} Gegenprobe(n) zu Browserproben zurückgestellt `
+    + '— mit --mit-browser laufen sie mit:');
+  for (const p of zurueckgestellt) console.log(`  · ${p.pruefer}: ${p.was}`);
+  console.log('');
+}
 
 if (OHNE_GEGENPROBE.length && !nurEine) {
   console.log('Ohne Gegenprobe, mit Grund:');

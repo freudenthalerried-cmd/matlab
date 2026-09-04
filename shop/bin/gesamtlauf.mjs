@@ -173,8 +173,16 @@ schritte.push({
        * > **Ein Schritt, der scheitert und den Grund für sich behält, kostet
        * > einen ganzen zweiten Lauf.** Dieser hier dauert acht Minuten.
        */
-      const letzte = ausgabe.trim().split('\n').slice(-12).join('\n      ');
-      return { ok: false, meldung: `Ausgang ${e.status}\n      ${letzte}` };
+      /**
+       * **Die Fundzeilen, nicht die letzten Zeilen** — berichtigt beim ersten
+       * echten Einsatz. Der Schwanz der Ausgabe trug den Abspann des Läufers;
+       * der Fund stand dreißig Zeilen davor, und der zweite Lauf war wieder
+       * nötig.
+       */
+      const zeilen = ausgabe.trim().split('\n');
+      const funde = zeilen.flatMap((z, i) => (z.includes('✗') ? zeilen.slice(i, i + 3) : []));
+      const gezeigt = (funde.length ? funde : zeilen.slice(-12)).slice(0, 20);
+      return { ok: false, meldung: `Ausgang ${e.status}\n      ${gezeigt.join('\n      ')}` };
     }
     if (!t) return { ok: false, meldung: 'meldet sein Ergebnis nicht' };
     return { ok: t[1] === t[2], meldung: `${t[1]} von ${t[2]}` };
