@@ -18,7 +18,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-import { ABSENDEWEGE, absendewege, bestellwegBefund } from '../src/bestellweg.js';
+import { ABSENDEWEGE, GEWAEHLTER_WEG, VERWORFENE_WEGE, VORAUSSETZUNGEN, absendewege, bestellwegBefund } from '../src/bestellweg.js';
 import { startklar, fehltSatz } from '../src/startklar.js';
 
 const oberflaeche = readFileSync(fileURLToPath(new URL('../shop-ui.js', import.meta.url)), 'utf8');
@@ -116,4 +116,36 @@ test('der Fehlt-Satz wird nach der Anzahl gebeugt', () => {
   assert.equal(fehltSatz([{ wort: 'A' }, { wort: 'B' }]), 'es fehlen A, B');
   // Ein Hinweis ohne Wort darf den Satz nicht zu „es fehlen A, " machen.
   assert.equal(fehltSatz([{ wort: 'A' }, {}]), 'es fehlt A');
+});
+
+/* ------------------------------------------------------------------ *
+ * Gate 26 — die Entscheidung, ergänzt am 4. September
+ * ------------------------------------------------------------------ */
+
+test('der gewählte Weg nennt sich und seinen Grund', () => {
+  assert.ok(GEWAEHLTER_WEG.id, 'ohne Kennung lässt sich nichts darauf beziehen');
+  assert.ok(GEWAEHLTER_WEG.warum.length > 80, 'eine Entscheidung ohne Begründung ist eine Ansage');
+});
+
+test('jeder verworfene Weg trägt seinen Grund', () => {
+  assert.ok(VERWORFENE_WEGE.length >= 3, `nur ${VERWORFENE_WEGE.length} Alternativen erwogen`);
+  for (const w of VERWORFENE_WEGE) {
+    assert.ok(w.warumNicht.length > 80, `${w.id}: zu kurz begründet`);
+  }
+});
+
+test('mailto steht unter den verworfenen Wegen und in keiner Absendeliste', () => {
+  // Der Punkt ginge sonst grün, ohne dass je eine Bestellung ankäme.
+  assert.ok(VERWORFENE_WEGE.some((w) => w.id === 'mailto'));
+  assert.ok(!ABSENDEWEGE.some((w) => /mailto/i.test(w.name)));
+});
+
+test('die Voraussetzungen nennen Feld und Grund', () => {
+  assert.ok(VORAUSSETZUNGEN.length >= 2, 'weniger als zwei Voraussetzungen wären verdächtig wenig');
+  for (const v of VORAUSSETZUNGEN) {
+    assert.match(v.feld, /^[a-zA-Z]+\.?[a-zA-Z]*$/, `${v.id}: kein benanntes Feld`);
+    assert.ok(v.warum.length > 80, `${v.id}: zu kurz begründet`);
+  }
+  // Die Datenschutzzusage ist die eine, die mit demselben Bau fallen muss.
+  assert.ok(VORAUSSETZUNGEN.some((v) => v.id === 'datenschutzwortlaut'));
 });

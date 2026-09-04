@@ -42,6 +42,90 @@
  */
 
 /**
+ * **Gate 26, entschieden am 4. September 2026: eigenes Empfangsskript auf dem
+ * Hosting des Auftraggebers.**
+ *
+ * Der Anlass war nicht dieser Punkt selbst — er steht seit dem 3. September in
+ * der Bereitschaftsliste. Der Anlass war der **Rolloutplan**: Er führte in
+ * dreizehn Etappen bis zur gemessenen Anfragequote, und der Shop wäre danach
+ * genauso wenig bestellfähig gewesen wie heute. Schlimmer noch, die Etappe
+ * „Zahlungsanbieter" versprach „erst danach kann die Kasse etwas auslösen" —
+ * zehn Tage Legitimationsprüfung und eine laufende Gebühr für einen Anbieter,
+ * der nichts zu kassieren bekommt.
+ *
+ * > **Der einzige Punkt der Bereitschaftsliste, der nicht auf den Auftraggeber
+ * > wartet, kam in keinem Plan vor.**
+ *
+ * Die Entscheidung ist deshalb hier fällig, vor jeder Zeile Code. Vier Wege
+ * standen zur Wahl, drei sind ausgeschieden:
+ */
+export const GEWAEHLTER_WEG = Object.freeze({
+  id: 'eigenes-empfangsskript',
+  was: 'Ein Formular der Kasse schickt die fertig gerechnete Bestellung an ein kleines Skript '
+    + 'auf demselben Hosting (All-Inkl, PHP). Das Skript legt sie ab und benachrichtigt den '
+    + 'Betreiber per Mail.',
+  warum: 'Es kostet nichts, es kommt ohne Dritten aus, und die Daten des Kunden bleiben beim '
+    + 'Auftraggeber. Der Hoster steht ohnehin fest und kann PHP; ein Auftragsverarbeiter nach '
+    + 'Art. 28 DSGVO entsteht dadurch nicht zusätzlich.',
+});
+
+/**
+ * Die verworfenen Wege — mit dem Grund, damit niemand sie neu erwägen muss.
+ *
+ * Ein Register ohne die Abgelehnten sieht aus wie eine Entscheidung ohne
+ * Alternative, und die nächste Runde fängt von vorne an.
+ */
+export const VERWORFENE_WEGE = Object.freeze([
+  Object.freeze({
+    id: 'mailto',
+    was: 'Ein `mailto:`-Verweis mit vorbereitetem Text',
+    warumNicht: 'Er sendet nichts. Er öffnet das Programm des Kunden, und ob dort jemand auf '
+      + '„Senden" drückt, erfährt dieser Shop nie. Was dabei herausgeht, heißt in jedem Text '
+      + 'dieses Hauses Anfrage und ausdrücklich keine Bestellung. Der Weg bleibt als Bequemlichkeit '
+      + 'neben dem Kopiertext bestehen — er ist nur kein Bestellweg.',
+  }),
+  Object.freeze({
+    id: 'formulardienst',
+    was: 'Ein fremder Formulardienst (Formspree, Netlify Forms und Verwandte)',
+    warumNicht: 'Er kostet ab dem ersten ernsthaften Aufkommen Geld und macht den Anbieter zum '
+      + 'Auftragsverarbeiter nach Art. 28 DSGVO — mit Vertrag, Verzeichnis und der Frage, wo die '
+      + 'Daten liegen. Beides ist eine Entscheidung des Auftraggebers und keine des Bauwerkzeugs.',
+  }),
+  Object.freeze({
+    id: 'shopsystem',
+    was: 'Ein fertiges Shopsystem mit eigener Bestellverwaltung',
+    warumNicht: 'Es löst das Problem und wirft den ganzen Bestand weg: 81 gebaute Seiten, die '
+      + 'Frachtrechnung, Gate 20 und 25, die Belegerzeugung, die Ablage. Der Aufwand steht in '
+      + 'keinem Verhältnis zu einem Formular und dreißig Zeilen Empfangsskript.',
+  }),
+]);
+
+/**
+ * Was dastehen muss, bevor der Weg gebaut **und eingeschaltet** werden darf.
+ *
+ * Beides ist nicht dasselbe: Bauen kann man ihn heute, einschalten nicht. Die
+ * Reihenfolge ist keine Vorsicht, sondern Art. 13 DSGVO — die Erklärung muss
+ * die Übertragung **vor** der ersten Übertragung beschreiben.
+ */
+export const VORAUSSETZUNGEN = Object.freeze([
+  Object.freeze({
+    id: 'empfaengeradresse',
+    feld: 'betreiber.email',
+    warum: 'Ohne Empfänger benachrichtigt das Skript niemanden, und die Bestellung läge in '
+      + 'einer Datei, in die keiner sieht. Die Adresse ist eine der vier offenen '
+      + 'Impressumsangaben.',
+  }),
+  Object.freeze({
+    id: 'datenschutzwortlaut',
+    feld: 'rechtstexteFundstelle',
+    warum: 'Der heutige Text sagt das Gegenteil dessen, was der Bestellweg tut: „wird nicht an '
+      + 'den Server übertragen". Diese Zusage ist gemessen (`npm run pruefe-datenschutz`) und '
+      + 'stimmt heute. Sie muss mit demselben Bau fallen, mit dem der Weg entsteht — sonst '
+      + 'steht auf der Rechtsseite eine Unwahrheit, und zwar eine geprüfte.',
+  }),
+]);
+
+/**
  * Die Wege, auf denen eine Browserseite Daten hinausgibt.
  *
  * Jeder Eintrag trägt seine Begründung — nicht als Höflichkeit, sondern damit

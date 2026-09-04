@@ -237,21 +237,76 @@ export const ETAPPEN = Object.freeze([
       + '„gefunden und nicht gekauft". Ohne diese Trennung misst der Klickversuch zwei Dinge '
       + 'auf einmal.',
   }),
+  /**
+   * **Aufgenommen am 4. September.** Der Plan führte in dreizehn Etappen bis
+   * zur gemessenen Anfragequote — und der Shop wäre danach genauso wenig
+   * bestellfähig gewesen wie heute. Die Etappe, die aus einer Anfrage einen
+   * Auftrag macht, kam darin nicht vor.
+   *
+   * > **Es ist der einzige Punkt der Bereitschaftsliste, der nicht auf den
+   * > Auftraggeber wartet — und er stand in keinem Plan.**
+   *
+   * Was die Entscheidung dazu ist und warum, steht in `src/bestellweg.js`
+   * unter `GEWAEHLTER_WEG` (Gate 26).
+   */
+  Object.freeze({
+    id: 'bestellweg',
+    titel: 'Den Bestellweg bauen: Formular, Empfangsskript, Ablage',
+    zustaendig: 'werkzeug',
+    brauchtVor: [
+      Object.freeze({
+        etappe: 'rechtstexte',
+        warum: 'Der Bestellweg überträgt Namen, Anschrift und Warenkorb an den Server. Art. 13 '
+          + 'DSGVO verlangt, dass die Erklärung das **vor** der ersten Übertragung beschreibt — '
+          + 'und der heutige Text sagt das Gegenteil: „wird nicht an den Server übertragen".',
+      }),
+      Object.freeze({
+        etappe: 'impressum',
+        warum: 'Ohne die E-Mail-Adresse des Betreibers hat das Empfangsskript keinen Empfänger. '
+          + 'Sie ist eine der vier offenen Pflichtangaben.',
+      }),
+    ],
+    tage: 2,
+    art: 'gesetzt',
+    woher: 'Formular, Empfangsskript, Ablage und Proben — Arbeit an vorliegenden Daten. Die '
+      + 'Dauer ist gesetzt und nicht gemessen; sie hängt an keiner fremden Antwort.',
+    gate: 'Gate 26',
+    ergebnis: 'Erst danach kann ein Kunde bestellen. Vorher erzeugt der Shop Anfragen zum '
+      + 'Kopieren, und der Auftrag entsteht im Postfach.',
+  }),
   Object.freeze({
     id: 'zahlungsanbieter',
     titel: 'Zahlungsanbieter wählen und anbinden',
     zustaendig: 'ausgabe',
-    brauchtVor: [Object.freeze({
-      etappe: 'impressum',
-      warum: 'Die Legitimationsprüfung des Anbieters verlangt die UID, und die wird in dieser '
-        + 'Etappe eingetragen.',
-    })],
+    brauchtVor: [
+      Object.freeze({
+        etappe: 'impressum',
+        warum: 'Die Legitimationsprüfung des Anbieters verlangt die UID, und die wird in dieser '
+          + 'Etappe eingetragen.',
+      }),
+      /**
+       * **Ergänzt am 4. September.** Diese Etappe versprach: „Erst danach kann
+       * die Kasse etwas auslösen." Das war falsch — die Kasse kann auch mit
+       * Zahlungsanbieter nichts auslösen, weil es keinen Weg gibt, auf dem
+       * eine Bestellung den Browser verlässt.
+       *
+       * > **Der Plan hätte den Auftraggeber zehn Tage Legitimationsprüfung
+       * > und eine laufende Gebühr für einen Anbieter aufwenden lassen, der
+       * > nichts zu kassieren bekommt.**
+       */
+      Object.freeze({
+        etappe: 'bestellweg',
+        warum: 'Ein Zahlungsanbieter kassiert für eine Bestellung. Ohne Bestellweg gibt es '
+          + 'keine, und die Anbindung liefe ins Leere — bezahlt ab dem ersten Monat.',
+      }),
+    ],
     tage: 10,
     art: 'fremdbestimmt',
     woher: 'Angenommene Dauer der Legitimationsprüfung. Sie braucht die UID, deshalb '
       + 'hängt sie am Impressum.',
     gate: 'Gate 21',
-    ergebnis: 'Erst danach kann die Kasse etwas auslösen. Vorher erzeugt der Shop Anfragen.',
+    ergebnis: 'Erst danach kann die Kasse eine Zahlung auslösen. Den Weg dafür baut die '
+      + 'Etappe davor; ohne ihn kassiert der Anbieter nichts.',
   }),
   Object.freeze({
     id: 'feed-einreichen',
