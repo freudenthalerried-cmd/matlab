@@ -34,7 +34,7 @@ import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createServer } from 'node:http';
 import { KORBSCHLUESSEL } from '../src/shopkern.js';
-import { juengereQuellen } from '../src/buendel.js';
+import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
 import { extname } from 'node:path';
 
 const hier = fileURLToPath(new URL('.', import.meta.url));
@@ -968,19 +968,16 @@ if (!existsSync(shopDatei) || !existsSync(siteOrdner)) {
 // Dieselbe Sperre wie in der Oberflächenprobe, aus demselben Grund: Ein
 // Prüfer, der ein veraltetes Erzeugnis misst, prüft die Vergangenheit.
 {
-  const wurzel = join(hier, '..');
-  const quellen = [
-    ...readdirSync(join(wurzel, 'src')).filter((d) => d.endsWith('.js')).map((d) => join('src', d)),
-    ...readdirSync(join(wurzel, 'data')).filter((d) => d.endsWith('.json')).map((d) => join('data', d)),
-    join('bin', 'website.mjs'),
-  ].map((name) => ({ name, zeit: statSync(join(wurzel, name)).mtimeMs }));
-  const juenger = juengereQuellen(statSync(shopDatei).mtimeMs, quellen);
-  if (juenger.length) {
-    console.error(`\nAbbruch: ausgabe/website.html ist älter als ${juenger.length} Quelldatei(en) — zuerst npm run website.`);
-    console.error(`  ${juenger.slice(0, 5).join(', ')}${juenger.length > 5 ? ' …' : ''}`);
-    console.error('Eine Probe gegen ein veraltetes Erzeugnis prüft die Vergangenheit.');
+  // **Seit dem 4. September aus dem Register.** Hier stand eine eigene
+  // Quellenliste, und in `oberflaechenprobe.mjs` stand dieselbe noch einmal —
+  // zwei Fassungen desselben Satzes sind eine Fassung, die niemand pflegt.
+  // Sieben weitere Werkzeuge lasen das Erzeugnis ganz ohne diese Weigerung.
+  const stand = frischebefund(join(hier, '..'), 'ausgabe/website.html');
+  if (!stand.frisch) {
+    for (const zeile of abbruchtext(stand)) console.error(zeile);
     process.exit(2);
   }
+}
 }
 
 const fuehreAus = promisify(execFile);

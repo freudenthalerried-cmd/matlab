@@ -26,11 +26,13 @@
 import { readdirSync, readFileSync, statSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
 import {
   pruefeInhalt, pruefeAbsatz, schneideQuelltext, oberflaechensaetze, erfundeneZeitangaben,
 } from '../src/inhaltspruefung.js';
 
 const hier = dirname(fileURLToPath(import.meta.url));
+
 const INHALTSORDNER = ['wissen', 'gruppen', 'system'];
 
 /**
@@ -217,6 +219,22 @@ if (process.argv[2] === '--seiten') {
   const wurzel = join(hier, '..', 'ausgabe', 'site');
   if (!existsSync(wurzel)) {
     console.error('ausgabe/site/ fehlt — zuerst npm run website.');
+    process.exit(2);
+  }
+  /**
+   * **Vorhanden ist nicht dasselbe wie aktuell.** Ergänzt am 4. September: Die
+   * Weigerung, gegen ein veraltetes Erzeugnis zu prüfen, stand seit dem
+   * 29. August in zwei von neun Werkzeugen, die eines lesen; die anderen
+   * fragten nur, ob es da ist — die Zeile darüber ist genau diese Frage.
+   *
+   * Sie steht **hier** und nicht im Kopf der Datei: Dieses Werkzeug hat drei
+   * Durchgänge, und nur dieser liest das Erzeugnis. Eine Weigerung im Kopf
+   * hielte auch die Prüfung der Inhaltsdateien an, die damit nichts zu tun
+   * hat — vier Testfälle haben das binnen einer Minute gesagt.
+   */
+  const stand = frischebefund(join(hier, '..'), 'ausgabe/site');
+  if (!stand.frisch) {
+    for (const zeile of abbruchtext(stand)) console.error(zeile);
     process.exit(2);
   }
   const seiten = seitenAbsaetze(wurzel);

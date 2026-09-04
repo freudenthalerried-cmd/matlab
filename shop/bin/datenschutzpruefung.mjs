@@ -30,9 +30,26 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join, relative } from 'node:path';
 import { WEBSITE_VERARBEITUNG } from '../src/rechtstexte.js';
 import { KORBSCHLUESSEL } from '../src/shopkern.js';
+import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const SITE = join(SHOP, 'ausgabe', 'site');
+
+/**
+ * **Vorhanden ist nicht dasselbe wie aktuell.** Ergänzt am 4. September: Die
+ * Weigerung, gegen ein veraltetes Erzeugnis zu prüfen, stand seit dem
+ * 29. August in zwei von neun Werkzeugen, die eines lesen. Die anderen sieben
+ * fragten nur, ob es da ist. Das Register dazu steht in
+ * `src/erzeugnisstand.js`; der Text ist dort **eine** Fassung für alle.
+ */
+{
+  const stand = frischebefund(SHOP, 'ausgabe/site');
+  if (!stand.frisch) {
+    for (const zeile of abbruchtext(stand)) console.error(zeile);
+    process.exit(2);
+  }
+}
+
 
 if (!existsSync(SITE)) {
   console.error('ausgabe/site fehlt — erst `npm run website`.');

@@ -172,23 +172,8 @@ export function baueKern(lies, module = KERNMODULE) {
 }
 
 
-/**
- * Welche Quellen sind jünger als das Erzeugnis?
- *
- * **Warum es das gibt.** Am 29.08. bekam `rechtstexte.js` eine Abhängigkeit,
- * die das Bündel zerriss — und niemand merkte es, weil `demo.html` seit dem
- * 28.08. nicht neu gebaut worden war. Die Oberflächenprobe lief grün gegen
- * eine Datei, die zu ihrem Quelltext nicht mehr passte.
- *
- * > **Eine Probe gegen ein veraltetes Erzeugnis prüft die Vergangenheit.**
- *
- * Bewusst ohne Dateizugriff: Diese Funktion bekommt Zeitstempel und gibt
- * Namen zurück. Damit lässt sie sich prüfen, ohne Dateien anzulegen.
- *
- * @param {number} zielZeit  Änderungszeit des Erzeugnisses
- * @param {{name: string, zeit: number}[]} quellen
- * @returns {string[]} die Namen der jüngeren Quellen, leer wenn frisch
- */
-export function juengereQuellen(zielZeit, quellen) {
-  return quellen.filter((q) => q.zeit > zielZeit).map((q) => q.name);
-}
+// `juengereQuellen` stand hier bis zum 4. September. Sie ist nach
+// `src/erzeugnisstand.js` gezogen, zu dem Register, das weiß, **welches**
+// Erzeugnis aus welchen Quellen entsteht und wer es liest. Zwei Werkzeuge
+// riefen sie mit je eigener Quellenliste; sieben weitere lasen dasselbe
+// Erzeugnis und riefen sie gar nicht.

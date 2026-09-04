@@ -31,6 +31,7 @@ import { dirname, join } from 'node:path';
 import { GEGENPROBEN, OHNE_GEGENPROBE, registerbefund } from '../src/gegenprobenregister.js';
 import { markiere, nimmAb, offeneMarken, stelleZurueck } from '../src/mutationsschutz.js';
 import { PRUEFER } from '../src/pruefregister.js';
+import { LESER } from '../src/erzeugnisstand.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const REPO = dirname(SHOP);
@@ -38,6 +39,42 @@ const REPO = dirname(SHOP);
 const laufe = (name) => {
   const r = spawnSync('npm', ['run', '--silent', name], { cwd: SHOP, encoding: 'utf8' });
   return { gruen: r.status === 0, ausgabe: `${r.stdout ?? ''}${r.stderr ?? ''}` };
+};
+
+/**
+ * Welche Prüfer lesen ein gebautes Erzeugnis?
+ *
+ * **Ergänzt am 4. September.** Seit die Erzeugnisleser sich über einem
+ * veralteten Stand weigern, betrifft das diesen Läufer unmittelbar: Er
+ * **verändert Quelldateien** und schreibt sie zurück, und beides macht das
+ * Erzeugnis älter als die Quelle. Fünf Gegenproben meldeten daraufhin „war
+ * schon vorher rot" — und beschuldigten damit Prüfer, die nichts falsch
+ * gemacht hatten.
+ *
+ * > **Dasselbe Muster wie beim ignorierten `baueVorher`:** Ein Läufer, der die
+ * > Vorbedingung seiner Prüfer nicht kennt, erfindet Befunde.
+ *
+ * Das Feld `baueVorher` am Eintrag bleibt — es sagt, dass die **Mutation**
+ * durch den Bau muss. Diese Liste sagt etwas anderes: dass der **Prüfer** ohne
+ * frisches Erzeugnis gar nicht erst anläuft.
+ *
+ * Abgeleitet wird sie aus den veröffentlichten Skripten und dem Leserregister,
+ * nicht von Hand geführt — und ausdrücklich **nicht** aus `PRUEFER`: `wegprobe`
+ * steht dort nicht und liest trotzdem `ausgabe/website.html`. Eine Liste, die
+ * nur die geführten Prüfer kennt, hätte genau die beiden Gegenproben weiter
+ * beschuldigt, die den Anlass gaben.
+ */
+const SKRIPTE = JSON.parse(readFileSync(join(SHOP, 'package.json'), 'utf8')).scripts ?? {};
+const ERZEUGNISLESER = new Set(
+  Object.entries(SKRIPTE)
+    .filter(([, befehl]) => LESER.some((l) => l.erzeugnis && befehl.includes(l.werkzeug)))
+    .map(([name]) => name),
+);
+
+/** Läuft den Prüfer — und baut vorher, wenn er ein Erzeugnis liest. */
+const laufeMitBau = (name) => {
+  if (ERZEUGNISLESER.has(name)) baue();
+  return laufe(name);
 };
 
 /**
@@ -58,6 +95,10 @@ const baue = () => {
   // `build` **vor** `website`: Die Oberfläche `shop-ui.js` geht durch das
   // Bündel, und eine Mutation dort erreicht die gebaute Seite sonst nicht.
   spawnSync('npm', ['run', '--silent', 'build'], { cwd: SHOP, encoding: 'utf8' });
+  // `kampagne` gehört dazu, seit `werbeprobe` als Erzeugnisleser geführt ist:
+  // Sie misst `ausgabe/kampagne/`, und ein Bau, der nur die Website erneuert,
+  // ließe sie über einem veralteten Anzeigenstand weigern.
+  spawnSync('npm', ['run', '--silent', 'kampagne'], { cwd: SHOP, encoding: 'utf8' });
   return spawnSync('npm', ['run', '--silent', 'website'], { cwd: SHOP, encoding: 'utf8' });
 };
 
@@ -111,7 +152,7 @@ for (const p of proben) {
   for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, beiSignal);
 
   try {
-    const vor = laufe(p.pruefer);
+    const vor = laufeMitBau(p.pruefer);
     if (!vor.gruen) {
       schritte.push('war schon vorher rot — an einem roten Prüfer lässt sich nichts zeigen');
       urteil = 'unbrauchbar';
@@ -135,7 +176,7 @@ for (const p of proben) {
         markiere(pfad, vorher, `gegenprobenlauf.mjs (${p.id})`, p.was);
         writeFileSync(pfad, mutiert);
         if (p.baueVorher) baue();
-        const nach = laufe(p.pruefer);
+        const nach = laufeMitBau(p.pruefer);
         if (nach.gruen) {
           schritte.push('meldete trotz Mutation grün');
           urteil = 'schlägt nicht an';
@@ -162,7 +203,7 @@ for (const p of proben) {
   }
 
   if (urteil === 'geschlagen') {
-    const zurueck = laufe(p.pruefer);
+    const zurueck = laufeMitBau(p.pruefer);
     if (!zurueck.gruen) {
       schritte.push('nach dem Zurücksetzen nicht wieder grün — die Probe hat etwas hinterlassen');
       urteil = 'nicht sauber';

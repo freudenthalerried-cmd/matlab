@@ -37,9 +37,26 @@ import { promisify } from 'node:util';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
 
 const fuehreAus = promisify(execFile);
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
+
+/**
+ * **Vorhanden ist nicht dasselbe wie aktuell.** Ergänzt am 4. September: Die
+ * Weigerung, gegen ein veraltetes Erzeugnis zu prüfen, stand seit dem
+ * 29. August in zwei von neun Werkzeugen, die eines lesen. Die anderen sieben
+ * fragten nur, ob es da ist. Das Register dazu steht in
+ * `src/erzeugnisstand.js`; der Text ist dort **eine** Fassung für alle.
+ */
+{
+  const stand = frischebefund(SHOP, 'ausgabe/website.html');
+  if (!stand.frisch) {
+    for (const zeile of abbruchtext(stand)) console.error(zeile);
+    process.exit(2);
+  }
+}
+
 
 /** Wie viele Schritte höchstens — überschritten heißt: nachsehen, nicht nachziehen. */
 export const HOECHSTENS_SCHRITTE = 5;

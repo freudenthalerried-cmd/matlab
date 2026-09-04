@@ -98,7 +98,22 @@ test('mit --seiten prüft das Werkzeug die gebauten Seiten', () => {
   const gebaut = fileURLToPath(new URL('../ausgabe/site', import.meta.url));
   if (!existsSync(gebaut)) return; // ohne Bau nichts zu prüfen
   const lauf = spawnSync(process.execPath, [werkzeug, '--seiten'], { encoding: 'utf8' });
-  assert.equal(lauf.status, 0);
+
+  /**
+   * **Ergänzt am 4. September.** Seit dem Erzeugnisregister weigert sich das
+   * Werkzeug über einem veralteten Bau — und diese Probe lief über genau den.
+   * Sie prüft deshalb beide Ausgänge, statt einen davon stillschweigend
+   * hinzunehmen: Ist der Bau frisch, gelten die Zusicherungen; ist er es
+   * nicht, muss die Weigerung dastehen und ihren Grund nennen. Ein bloßes
+   * `return` wäre hier dasselbe wie eine grüne Probe, die nichts angesehen hat.
+   */
+  if (lauf.status === 2) {
+    assert.match(`${lauf.stderr}`, /ist älter als \d+ Quelldatei/,
+      `Ausgang 2 ohne Frischemeldung:\n${lauf.stdout}${lauf.stderr}`);
+    return;
+  }
+
+  assert.equal(lauf.status, 0, `${lauf.stdout}${lauf.stderr}`);
   const absaetze = Number((lauf.stdout.match(/(\d+) Fließtextabsätze/) ?? [])[1] ?? 0);
   assert.ok(absaetze >= 100, `nur ${absaetze} Absätze — die Seitenprüfung greift nicht`);
   assert.match(lauf.stdout, /0 mit Verdacht/);

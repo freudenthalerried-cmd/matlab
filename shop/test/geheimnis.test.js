@@ -83,6 +83,22 @@ test('Die Zeilennummer zeigt auf die Fundstelle', () => {
 test('Das Werkzeug läuft und benennt alle drei Durchgänge', () => {
   const werkzeug = fileURLToPath(new URL('../bin/geheimnispruefung.mjs', import.meta.url));
   const lauf = spawnSync(process.execPath, [werkzeug], { encoding: 'utf8' });
+
+  /**
+   * **Ergänzt am 4. September.** Der Prüfer misst die **gebauten** Seiten und
+   * weigert sich seither über einem veralteten Bau. Das ist bei ihm besonders
+   * wichtig: Er sagt, ob aus den veröffentlichten Verkaufspreisen die
+   * Einkaufspreise zurückzurechnen sind — über einem alten Erzeugnis sagte er
+   * das über die Seiten von gestern.
+   *
+   * Die Probe prüft deshalb beide Ausgänge und keinen davon stillschweigend.
+   */
+  if (lauf.status === 2) {
+    assert.match(`${lauf.stderr}`, /ist älter als \d+ Quelldatei/,
+      `Ausgang 2 ohne Frischemeldung:\n${lauf.stdout}${lauf.stderr}`);
+    return;
+  }
+
   // Durchgang 3 fällt ein Urteil: Steht die Zielmarge in einer Ausgabedatei,
   // endet das Werkzeug mit 1. Am Bestand darf das nicht sein.
   assert.equal(lauf.status, 0, lauf.stdout.slice(-1200));

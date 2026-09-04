@@ -24,8 +24,25 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join, relative } from 'node:path';
 import { rekonstruierbarkeit, findeAbfluss } from '../src/geheimnis.js';
 import { ladeBaustoffkatalog, ZIELMARGE } from '../src/baustoffkatalog.js';
+import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
 
 const wurzel = join(dirname(fileURLToPath(import.meta.url)), '..');
+
+/**
+ * **Vorhanden ist nicht dasselbe wie aktuell.** Ergänzt am 4. September: Die
+ * Weigerung, gegen ein veraltetes Erzeugnis zu prüfen, stand seit dem
+ * 29. August in zwei von neun Werkzeugen, die eines lesen. Die anderen sieben
+ * fragten nur, ob es da ist. Das Register dazu steht in
+ * `src/erzeugnisstand.js`; der Text ist dort **eine** Fassung für alle.
+ */
+{
+  const stand = frischebefund(wurzel, 'ausgabe/site');
+  if (!stand.frisch) {
+    for (const zeile of abbruchtext(stand)) console.error(zeile);
+    process.exit(2);
+  }
+}
+
 const repo = join(wurzel, '..');
 
 /* ------------------------------------------------------------------ *

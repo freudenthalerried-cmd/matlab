@@ -230,6 +230,16 @@ export const PRUEFER = [
     einheit: 'getrackte Dateien auf Kundendaten',
     mindestens: 300,
   },
+  {
+    // **Aufgenommen am 4. September.** Zwei von neun Werkzeugen, die ein
+    // gebautes Erzeugnis lesen, weigerten sich über einem veralteten; die
+    // anderen sieben fragten nur, ob es da ist.
+    name: 'pruefe-erzeugnis',
+    werkzeug: 'erzeugnispruefung.mjs',
+    muster: /Erzeugnisstand — (\d+) Werkzeuge angesehen/,
+    einheit: 'Werkzeuge auf ihre Frischeprüfung',
+    mindestens: 30,
+  },
 ];
 
 /**

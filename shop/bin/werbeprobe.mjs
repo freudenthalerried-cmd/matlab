@@ -16,8 +16,25 @@ import { versuchsplan, nochPlausibleQuote, TAGE_JE_MONAT, SICHERHEIT,
   leistbarerKlickpreis, quoteAmMarktboden, versuchsaussage } from '../src/werbewirkung.js';
 import { noetigerUmsatz } from '../src/kostenbild.js';
 import { MARKT_CPC } from './kampagne.mjs';
+import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
 
 const SHOP = fileURLToPath(new URL('..', import.meta.url));
+
+/**
+ * **Vorhanden ist nicht dasselbe wie aktuell.** Ergänzt am 4. September: Die
+ * Weigerung, gegen ein veraltetes Erzeugnis zu prüfen, stand seit dem
+ * 29. August in zwei von neun Werkzeugen, die eines lesen. Die anderen sieben
+ * fragten nur, ob es da ist. Das Register dazu steht in
+ * `src/erzeugnisstand.js`; der Text ist dort **eine** Fassung für alle.
+ */
+{
+  const stand = frischebefund(SHOP, 'ausgabe/kampagne');
+  if (!stand.frisch) {
+    for (const zeile of abbruchtext(stand)) console.error(zeile);
+    process.exit(2);
+  }
+}
+
 const kampagne = join(SHOP, 'ausgabe', 'kampagne');
 
 const argZahl = (name, vor) => {

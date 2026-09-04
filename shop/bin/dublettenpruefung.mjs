@@ -18,9 +18,26 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 import { seitenbefund, eigenerText, DUBLETTENGRENZE } from '../src/seitenaehnlichkeit.js';
+import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
 
 const WURZEL = dirname(dirname(fileURLToPath(import.meta.url)));
 const ORDNER = join(WURZEL, 'ausgabe', 'site', 'artikel');
+
+/**
+ * **Vorhanden ist nicht dasselbe wie aktuell.** Ergänzt am 4. September: Die
+ * Weigerung, gegen ein veraltetes Erzeugnis zu prüfen, stand seit dem
+ * 29. August in zwei von neun Werkzeugen, die eines lesen. Die anderen sieben
+ * fragten nur, ob es da ist. Das Register dazu steht in
+ * `src/erzeugnisstand.js`; der Text ist dort **eine** Fassung für alle.
+ */
+{
+  const stand = frischebefund(WURZEL, 'ausgabe/site');
+  if (!stand.frisch) {
+    for (const zeile of abbruchtext(stand)) console.error(zeile);
+    process.exit(2);
+  }
+}
+
 
 if (!existsSync(ORDNER)) {
   console.error(`Abbruch: ${ORDNER} fehlt — zuerst npm run website.`);

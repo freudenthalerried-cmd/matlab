@@ -70,6 +70,7 @@ export const AUSGAENGE = Object.freeze([
  * beim Schreiben des Grundes merken, dass er keinen hat.
  */
 export const KEIN_AUSGANG = Object.freeze([
+  Object.freeze({ funktion: 'abbruchtext', warum: 'Baut die Weigerung, gegen ein veraltetes Erzeugnis zu prüfen — drei Zeilen für die Konsole des Betreibers, aus Dateinamen des eigenen Bestands. Kein fremder Text erreicht sie, und sie erreicht keinen Empfänger außerhalb des Rechners.' }),
   Object.freeze({ funktion: 'baueAuftrag', warum: 'Baut das Auftragsobjekt aus geprüften Feldern — kein Text verlässt den Shop. Die Eingangsprüfung davor steht in kunde.js und wird eigens geprüft.' }),
   Object.freeze({ funktion: 'baueKern', warum: 'Fügt die Quelldateien zum Browserbündel — Werkzeug, kein Kundentext. Namenskollisionen prüft buendel.js selbst.' }),
   // **Grund berichtigt am 3. September.** Er lautete: „…geht als JSON ins

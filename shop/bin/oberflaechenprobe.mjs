@@ -34,7 +34,7 @@ import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { juengereQuellen } from '../src/buendel.js';
+import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
 
 const hier = fileURLToPath(new URL('.', import.meta.url));
 const demoDatei = join(hier, '..', 'demo.html');
@@ -185,19 +185,15 @@ if (!existsSync(demoDatei)) {
  * Ein Prüfer, der ein veraltetes Erzeugnis misst, prüft die Vergangenheit.
  */
 {
-  const wurzel = join(hier, '..');
-  const quellen = [
-    ...readdirSync(join(wurzel, 'src')).filter((d) => d.endsWith('.js')).map((d) => join('src', d)),
-    ...readdirSync(join(wurzel, 'data')).filter((d) => d.endsWith('.json')).map((d) => join('data', d)),
-    'demo-template.html', 'build-demo.mjs',
-  ].map((name) => ({ name, zeit: statSync(join(wurzel, name)).mtimeMs }));
-  const juenger = juengereQuellen(statSync(demoDatei).mtimeMs, quellen);
-  if (juenger.length) {
-    console.error(`\nAbbruch: demo.html ist älter als ${juenger.length} Quelldatei(en) — zuerst npm run build.`);
-    console.error(`  ${juenger.slice(0, 5).join(', ')}${juenger.length > 5 ? ' …' : ''}`);
-    console.error('Eine Probe gegen ein veraltetes Erzeugnis prüft die Vergangenheit.');
+  // **Seit dem 4. September aus dem Register.** Die Quellenliste stand hier und
+  // in `shopprobe.mjs` doppelt; das Register in `src/erzeugnisstand.js` führt
+  // sie einmal — und weiß außerdem, wer sie sonst noch braucht.
+  const stand = frischebefund(join(hier, '..'), 'demo.html');
+  if (!stand.frisch) {
+    for (const zeile of abbruchtext(stand)) console.error(zeile);
     process.exit(2);
   }
+}
 }
 
 const seite = readFileSync(demoDatei, 'utf8');

@@ -475,6 +475,21 @@ export const GEGENPROBEN = Object.freeze([
       + 'eine Absage mit Verzögerung. Diese Mutation stellt genau das wieder her.',
   }),
   Object.freeze({
+    id: 'leser-ohne-frischepruefung',
+    pruefer: 'pruefe-erzeugnis',
+    was: 'Ein Prüfer, der das Erzeugnis liest und nicht fragt, von wann es ist',
+    datei: 'shop/bin/geheimnispruefung.mjs',
+    art: 'ersetzen',
+    suchen: "  const stand = frischebefund(wurzel, 'ausgabe/site');",
+    ersetzen: "  const stand = { frisch: true };",
+    erwartet: /eintrag-ohne-pruefung/,
+    warum: 'Genau der Zustand vom 4. September: Sieben von neun Werkzeugen lasen das gebaute '
+      + 'Erzeugnis, ohne zu fragen, ob es noch zur Quelle passt. Bei diesem hier wiegt es am '
+      + 'schwersten — er misst, ob aus den veröffentlichten Verkaufspreisen die '
+      + 'Einkaufspreise zurückzurechnen sind, und meldete das über einem veralteten Bau über '
+      + 'die Seiten von gestern.',
+  }),
+  Object.freeze({
     id: 'ablageort-ohne-sperre',
     pruefer: 'pruefe-ablage',
     was: 'Ein Ablageort, den die .gitignore nicht kennt',

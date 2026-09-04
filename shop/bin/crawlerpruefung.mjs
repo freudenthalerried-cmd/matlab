@@ -20,8 +20,25 @@ import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { KENNUNGEN, ANBIETER, pruefeCrawler, vergleicheMitDatei } from '../src/crawler.js';
+import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
 
 const hier = dirname(fileURLToPath(import.meta.url));
+
+/**
+ * **Vorhanden ist nicht dasselbe wie aktuell.** Ergänzt am 4. September: Die
+ * Weigerung, gegen ein veraltetes Erzeugnis zu prüfen, stand seit dem
+ * 29. August in zwei von neun Werkzeugen, die eines lesen. Die anderen sieben
+ * fragten nur, ob es da ist. Das Register dazu steht in
+ * `src/erzeugnisstand.js`; der Text ist dort **eine** Fassung für alle.
+ */
+{
+  const stand = frischebefund(join(hier, '..'), 'ausgabe/site');
+  if (!stand.frisch) {
+    for (const zeile of abbruchtext(stand)) console.error(zeile);
+    process.exit(2);
+  }
+}
+
 const datei = join(hier, '..', 'ausgabe', 'site', 'robots.txt');
 
 const befunde = [...pruefeCrawler()];

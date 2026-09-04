@@ -51,6 +51,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { PRUEFER, BROWSERPRUEFER } from '../src/pruefregister.js';
+import { frischebefund } from '../src/erzeugnisstand.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const mitBrowser = process.argv.includes('--mit-browser');
@@ -65,6 +66,38 @@ const testfloor = PRUEFER.find((p) => p.name === 'pruefe-tests')?.mindestens ?? 
 
 /** Ein Schritt: Name, Befehl, und was ihn rot macht. */
 const schritte = [];
+
+/**
+ * **Erst bauen, dann messen** — ergänzt am 4. September.
+ *
+ * Fünf Prüfer dieses Laufs lesen das gebaute Erzeugnis. Bis heute fragten sie
+ * nur, **ob** es da ist; seit dem Erzeugnisregister weigern sie sich über
+ * einem veralteten. Ohne diesen Schritt hinge das Ergebnis des Gesamtlaufs
+ * daran, wann zuletzt jemand `npm run website` getippt hat.
+ *
+ * > **Eine Batterie, die das Erzeugnis misst, muss es vorher erzeugen.**
+ *
+ * Rot wird der Schritt, wenn ein Baubefehl scheitert: Was sich nicht bauen
+ * lässt, lässt sich auch nicht prüfen — und die fünf Prüfer darunter meldeten
+ * sonst „veraltet" und verschwiegen damit die eigentliche Ursache.
+ */
+schritte.push({
+  name: 'bauen',
+  was: 'npm run build und npm run website — das Erzeugnis auf den Stand der Quelle',
+  lauf: () => {
+    for (const befehl of ['build', 'website']) {
+      const e = spawnSync('npm', ['run', '--silent', befehl], { cwd: SHOP, encoding: 'utf8' });
+      if (e.status !== 0) {
+        return { ok: false, meldung: `npm run ${befehl} scheitert (Ausgang ${e.status})` };
+      }
+    }
+    const nachher = ['ausgabe/site', 'ausgabe/website.html', 'demo.html']
+      .map((n) => frischebefund(SHOP, n));
+    const alt = nachher.filter((b) => !b.frisch).map((b) => b.name);
+    if (alt.length) return { ok: false, meldung: `nach dem Bau noch veraltet: ${alt.join(', ')}` };
+    return { ok: true, meldung: `${nachher.length} Erzeugnisse auf dem Stand` };
+  },
+});
 
 schritte.push({
   name: 'Testlauf',
