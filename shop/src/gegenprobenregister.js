@@ -475,6 +475,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'eine Absage mit Verzögerung. Diese Mutation stellt genau das wieder her.',
   }),
   Object.freeze({
+    id: 'schritt-ohne-werkzeug-ohne-grund',
+    pruefer: 'pruefe-betriebskette',
+    was: 'Ein Schritt des Betriebs, für den es kein Werkzeug gibt und keinen Grund',
+    datei: 'shop/src/betriebskette.js',
+    art: 'ersetzen',
+    // Der Schlüssel wird umbenannt statt der Text gekürzt: Das bleibt gültiges
+    // JavaScript und entspricht dem Fall, den es zu finden gilt — ein Eintrag,
+    // dessen Begründung nicht dort steht, wo die Prüfung sie sucht.
+    suchen: '    warumOhneWerkzeug: \'Ein Vorgang in der Welt',
+    ersetzen: '    warumOhneWerkzeugX: \'Ein Vorgang in der Welt',
+    erwartet: /ohne-werkzeug-ohne-grund/,
+    warum: 'Der ganze Ertrag dieser Liste ist die Unterscheidung zwischen einer Lücke mit '
+      + 'Grund und einer Lücke ohne. Fällt der Grund weg, ist die Liste eine Aufzählung von '
+      + 'Wünschen — und der Auftraggeber liest daraus, dass hier Arbeit aussteht, wo eine '
+      + 'Weisung gilt.',
+  }),
+  Object.freeze({
     id: 'schaufenster-ohne-aussagen',
     pruefer: 'pruefe-schaufenster',
     was: 'Eine Beschreibung, deren Zahlen stimmen und deren Sätze überholt sind',

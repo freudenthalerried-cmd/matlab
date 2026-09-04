@@ -240,6 +240,17 @@ export const PRUEFER = [
     einheit: 'Werkzeuge auf ihre Frischeprüfung',
     mindestens: 30,
   },
+  {
+    // **Aufgenommen am 4. September, abends.** Der Rolloutplan endet beim
+    // ersten Kunden; was danach kommt, stand nirgends. Die Zahl darf nicht
+    // schrumpfen, ohne dass es auffällt: Ein Schritt, den jemand aus der Liste
+    // nimmt, ist ein Schritt, den niemand mehr vermisst.
+    name: 'pruefe-betriebskette',
+    werkzeug: 'betriebskette.mjs',
+    muster: /Betriebskette — (\d+) Schritte/,
+    einheit: 'Schritte eines Geschäftsfalls',
+    mindestens: 8,
+  },
 ];
 
 /**
