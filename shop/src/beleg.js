@@ -350,7 +350,12 @@ export function erzeugeAngebot(warenkorb, { nummer, datum, bindefristTage = 14, 
     zeilen.push('', 'Hinweise:', ...warenkorb.hinweise.map((h) => `  · ${textZeile(h)}`));
   }
 
-  return { text: zeilen.join('\n'), bruttobetrag: warenkorb.summeBrutto, bindefristTage };
+  // **`nummer` gehört in die Rückgabe.** Sie steht in der ersten Zeile des
+  // Textes, und wer den Beleg ablegen will, brauchte sie bisher aus dem Text
+  // zurückzulesen oder ein zweites Mal zu bilden. Beides sind zwei Quellen
+  // für dieselbe Zahl; am 4. September hat die zweite Quelle ein Angebot
+  // unter einer anderen Nummer abgelegt, als auf ihm stand.
+  return { text: zeilen.join('\n'), nummer, bruttobetrag: warenkorb.summeBrutto, bindefristTage };
 }
 
 /**
@@ -458,6 +463,7 @@ export function erzeugeAuftragsbestaetigung(
 
   return {
     text: zeilen.join('\n'),
+    nummer,
     bruttobetrag: warenkorb.summeBrutto,
     lieferzeitLaengsteWerktage: laengste,
     teillieferungen: warenkorb.teillieferungen.length,

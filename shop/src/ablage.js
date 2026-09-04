@@ -37,6 +37,20 @@ export const ARTEN = {
   lieferantenbestellung: { kuerzel: 'LB', nummernkreis: true },
   uidabfrage: { kuerzel: 'UP', nummernkreis: false },
   vermerk: { kuerzel: 'VM', nummernkreis: false },
+  /**
+   * **Aufgenommen am 4. September**, als `npm run vorgang` erstmals ablegen
+   * sollte. Das Werkzeug erzeugt zwei Papiere — Angebot und
+   * **Auftragsbestätigung** —, und dieses Verzeichnis kannte nur das erste.
+   * Ohne Eintrag hätte die Bestätigung als `vermerk` abgelegt werden müssen,
+   * also unter einem Namen, der etwas anderes meint.
+   *
+   * `nummernkreis: false` ist Absicht: Eine fortlaufende Nummer verlangt § 11
+   * UStG für die **Rechnung**. Wer für die Auftragsbestätigung einen sechsten
+   * Kreis eröffnet, handelt sich dessen Lückenerklärung ein, ohne dass
+   * irgendeine Vorschrift sie verlangt. Rückführbar bleibt sie über
+   * `vorgang` — das ist die Vorgangsakte nach § 131 Abs 1 Z 5 BAO.
+   */
+  auftragsbestaetigung: { kuerzel: 'AB', nummernkreis: false },
 };
 
 /**
@@ -149,6 +163,21 @@ export function naechsteNummer(ablage, art, jahr) {
 export function haltefest(ablage, eintrag) {
   if (!ARTEN[eintrag.art]) throw new Error(`Unbekannte Vorgangsart: ${eintrag.art}`);
   if (!eintrag.zeitpunkt) throw new Error('Jeder Eintrag braucht einen Zeitpunkt');
+
+  /**
+   * **Ergänzt am 4. September.** Die Einmaligkeit der Belegnummer hing bis
+   * dahin allein an `naechsteNummer` — wer die Nummer von woanders mitbringt,
+   * stand außerhalb jeder Prüfung. Genau das tut seit heute `npm run vorgang
+   * --ablegen`: Es legt unter der Nummer ab, die **auf dem Papier** steht,
+   * denn eine Akte unter einer zweiten Nummer findet niemand.
+   *
+   * § 11 Abs 1 Z 5 UStG verlangt fortlaufend **und einmalig**. Fortlaufend
+   * sichert der Zähler, einmalig sichert von hier an diese Zeile — und zwar
+   * für jeden Weg in die Ablage, nicht nur für den einen.
+   */
+  if (eintrag.nummer && ablage.eintraege.some((e) => e.nummer === eintrag.nummer)) {
+    throw new Error(`Die Belegnummer ${eintrag.nummer} steht schon in der Ablage`);
+  }
 
   const fertig = Object.freeze({
     lfd: ablage.eintraege.length + 1,

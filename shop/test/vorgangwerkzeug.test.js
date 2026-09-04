@@ -84,9 +84,13 @@ function baueUmgebung() {
 }
 
 /** Führt das Werkzeug aus und gibt Ausgabe und Rückgabewert zurück. */
-function lauf(argumente) {
+function lauf(argumente, umgebung = {}) {
   try {
-    return { code: 0, aus: execFileSync(process.execPath, [werkzeug, ...argumente], { encoding: 'utf8' }) };
+    return {
+      code: 0,
+      aus: execFileSync(process.execPath, [werkzeug, ...argumente],
+        { encoding: 'utf8', env: { ...process.env, ...umgebung } }),
+    };
   } catch (e) {
     return { code: e.status ?? 1, aus: `${e.stdout ?? ''}${e.stderr ?? ''}` };
   }
@@ -183,4 +187,144 @@ test('die Auftragsbestätigung entsteht nicht gegen die eigene Sperre',
     assert.equal(e.code, gesperrt ? 1 : 0, e.aus);
     if (gesperrt) assert.ok(!e.aus.includes('Auftragsbestätigung AB-2026-0006'));
     else assert.match(e.aus, /Auftragsbestätigung AB-2026-0006/);
+  });
+
+/* ------------------------------------------------------------------ *
+ * Ablegen — ergänzt am 4. September
+ * ------------------------------------------------------------------ */
+
+/**
+ * `src/ablage.js` und `src/speicher.js` sind seit dem 31. August fertig:
+ * Nummernkreis nach § 11 UStG, Journal aus Zeilen, die nur wachsen, § 132 BAO.
+ * Sieben ihrer Ausfuhren rief außerhalb der Tests niemand — es fehlte kein
+ * Code, sondern ein **Ort**, an dem Kundendaten liegen dürfen.
+ *
+ * Diese Proben fahren den Weg bis in die Akte, in ein Wegwerfverzeichnis.
+ * `VORGANG_ABLAGE` gibt es genau dafür: Eine Probe, die den Bestand verändert,
+ * ist keine.
+ */
+test('ohne --ablegen bleibt die Akte leer', { skip: !vorhanden && 'preise/ fehlt' }, () => {
+  const u = baueUmgebung();
+  const akte = mkdtempSync(join(tmpdir(), 'akte-'));
+  const e = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0101'],
+    { VORGANG_ABLAGE: akte });
+  assert.equal(e.code, 0, e.aus);
+  assert.match(e.aus, /Nichts abgelegt/);
+  assert.equal(existsSync(join(akte, 'journal-2026.jsonl')), false);
+});
+
+/**
+ * Ein Bestand mit beantworteter Lieferzeit.
+ *
+ * **Ohne ihn prüft keine dieser Proben den Durchgang.** Die Lieferzeit ist
+ * eine der neun offenen Fragen an den Lieferanten; solange sie offen ist,
+ * trägt jeder Beleg ein `[[ … FEHLT ]]`, und `--ablegen` weist ihn zu Recht
+ * ab. Genau diesen Fall prüft die Probe darunter — und diese hier den anderen.
+ */
+function mitLieferzeit(ordner) {
+  const echt = lies(pfad('../data/lieferanten.json'));
+  const datei = join(ordner, 'lieferanten.json');
+  writeFileSync(datei, JSON.stringify({
+    ...echt,
+    lieferanten: echt.lieferanten.map((l) => ({ ...l, lieferzeitWerktage: l.lieferzeitWerktage ?? 6 })),
+  }, null, 2));
+  return datei;
+}
+
+test('ein Beleg mit offener Pflichtangabe kommt nicht in die Akte',
+  { skip: !vorhanden && 'preise/ fehlt' }, () => {
+    // Der heutige Bestand: Die Lieferzeit des Lieferanten ist offen, also
+    // trägt jedes Angebot eine sichtbare Lücke. Sieben Jahre lang stünde
+    // sonst ein unvollständiges Papier in der Akte.
+    const u = baueUmgebung();
+    const akte = mkdtempSync(join(tmpdir(), 'akte-'));
+    const e = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0106',
+      '--datum', '2026-09-04', '--ablegen'], { VORGANG_ABLAGE: akte });
+    assert.equal(e.code, 1, e.aus);
+    assert.match(e.aus, /Nicht abgelegt: 1 Lücke/);
+    assert.equal(existsSync(join(akte, 'journal-2026.jsonl')), false,
+      'abgewiesen und trotzdem geschrieben wäre das Schlimmste von beidem');
+  });
+
+test('mit --ablegen entsteht eine Journalzeile je Ereignis',
+  { skip: !vorhanden && 'preise/ fehlt' }, () => {
+    const u = baueUmgebung();
+    const akte = mkdtempSync(join(tmpdir(), 'akte-'));
+    const e = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0102',
+      '--datum', '2026-09-04', '--ablegen'],
+    { VORGANG_ABLAGE: akte, VORGANG_LIEFERANTEN: mitLieferzeit(u.ordner) });
+    assert.equal(e.code, 0, e.aus);
+    // **Die Nummer auf dem Papier ist die Nummer in der Akte.** Der erste
+    // Wurf zog sie aus dem Zähler und legte `AN-2026-0001` ab, während auf
+    // dem Beleg `AN-2026-0102` stand.
+    assert.match(e.aus, /Abgelegt: angebot AN-2026-0102/);
+    assert.match(e.aus, /Angebot AN-2026-0102/);
+
+    const zeilen = readFileSync(join(akte, 'journal-2026.jsonl'), 'utf8')
+      .split('\n').filter(Boolean).map((z) => JSON.parse(z));
+    // **Keine `nummernvergabe`-Zeile**, und das ist Absicht: Die Nummer kommt
+    // vom Beleg, nicht aus dem Zähler. Was die Einmaligkeit sichert, ist
+    // seit heute `haltefest` — die Probe darunter fährt den Fall.
+    assert.equal(zeilen.length, 1);
+    assert.equal(zeilen[0].typ, 'eintrag');
+    assert.equal(zeilen[0].eintrag.nummer, 'AN-2026-0102');
+    assert.equal(zeilen[0].eintrag.vorgang, '2026-0102');
+    // Nur der Betreff, nie der Belegtext — das Felderverzeichnis verlangt es,
+    // weil hier sieben Jahre lang steht, was hineinkommt.
+    assert.ok(!zeilen[0].eintrag.text.includes('Baustellenweg'),
+      'die Anschrift des Kunden gehört in den Beleg, nicht ins Journal');
+  });
+
+test('der zweite Lauf setzt den Nummernkreis fort statt ihn zurückzusetzen',
+  { skip: !vorhanden && 'preise/ fehlt' }, () => {
+    const u = baueUmgebung();
+    const akte = mkdtempSync(join(tmpdir(), 'akte-'));
+    const gemeinsam = { VORGANG_ABLAGE: akte, VORGANG_LIEFERANTEN: mitLieferzeit(u.ordner) };
+    const erst = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0103',
+      '--datum', '2026-09-04', '--ablegen'], gemeinsam);
+    assert.equal(erst.code, 0, erst.aus);
+    const zweit = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0104',
+      '--datum', '2026-09-04', '--ablegen'], gemeinsam);
+    assert.equal(zweit.code, 0, zweit.aus);
+    // Zwei Vorgänge, zwei Nummern, ein Journal — und beide Zeilen stehen
+    // darin. Das ist die Zusicherung, die der Arbeitsspeicher nicht geben
+    // konnte: Nach einem Neustart begänne der Zähler sonst wieder bei eins.
+    assert.match(zweit.aus, /Abgelegt: angebot AN-2026-0104/);
+    const zeilen = readFileSync(join(akte, 'journal-2026.jsonl'), 'utf8')
+      .split('\n').filter(Boolean).map((z) => JSON.parse(z));
+    assert.equal(zeilen.filter((z) => z.typ === 'eintrag').length, 2);
+    assert.equal(zeilen.at(-1).eintrag.lfd, 2, 'die laufende Nummer setzt fort');
+  });
+
+test('die Auftragsbestätigung wird ohne Belegnummer abgelegt',
+  { skip: !vorhanden && 'preise/ fehlt' }, () => {
+    const u = baueUmgebung();
+    const akte = mkdtempSync(join(tmpdir(), 'akte-'));
+    const e = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0105',
+      '--datum', '2026-09-04', '--stufe', 'bestaetigung', '--ablegen'],
+    { VORGANG_ABLAGE: akte, VORGANG_LIEFERANTEN: mitLieferzeit(u.ordner) });
+    // Läuft die Bestätigung nicht (Freigabe fehlt), sagt das Werkzeug das —
+    // dann darf es aber auch nichts abgelegt haben.
+    if (e.code !== 0) {
+      assert.equal(existsSync(join(akte, 'journal-2026.jsonl')), false, e.aus);
+      return;
+    }
+    assert.match(e.aus, /Abgelegt: auftragsbestaetigung/);
+    assert.match(e.aus, /Ohne Belegnummer/);
+  });
+
+test('dieselbe Belegnummer kommt kein zweites Mal in die Akte',
+  { skip: !vorhanden && 'preise/ fehlt' }, () => {
+    // § 11 Abs 1 Z 5 UStG verlangt fortlaufend **und einmalig**. Seit die
+    // Nummer vom Papier kommt statt aus dem Zähler, sichert die Einmaligkeit
+    // nicht mehr `naechsteNummer`, sondern `haltefest`.
+    const u = baueUmgebung();
+    const akte = mkdtempSync(join(tmpdir(), 'akte-'));
+    const gemeinsam = { VORGANG_ABLAGE: akte, VORGANG_LIEFERANTEN: mitLieferzeit(u.ordner) };
+    const argumente = [u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0107',
+      '--datum', '2026-09-04', '--ablegen'];
+    assert.equal(lauf(argumente, gemeinsam).code, 0);
+    const zweit = lauf(argumente, gemeinsam);
+    assert.notEqual(zweit.code, 0, `zweimal dieselbe Nummer durchgelassen:\n${zweit.aus}`);
+    assert.match(zweit.aus, /AN-2026-0107 steht schon in der Ablage/);
   });

@@ -84,13 +84,17 @@ export const UNGERUFEN = Object.freeze([
   }),
   Object.freeze({
     modul: 'src/ablage.js',
-    funktionen: ['alsCsv', 'aufbewahrungBis', 'pruefeAblagefelder', 'pruefeNummernkreis',
+    funktionen: ['alsCsv', 'aufbewahrungBis', 'pruefeAblagefelder',
       'stelleRechnungAus', 'storniere', 'vorgangsakte'],
-    warum: 'Die Ablage ist gebaut und **nicht in Betrieb**: Sie vergibt fortlaufende '
-      + 'Rechnungsnummern nach § 11 Abs 1 Z 5 UStG und hält die Aufbewahrung nach § 132 BAO. '
-      + 'Beides beginnt mit dem ersten echten Vorgang — und der beginnt mit einem '
-      + 'Zahlungsanbieter, der beim Auftraggeber liegt. Ein Werkzeug, das heute Nummern '
-      + 'zöge, schriebe eine Reihe, die mit dem ersten Kunden nicht mehr stimmt.',
+    warum: 'Seit dem 4. September ist die Ablage in Betrieb — `npm run vorgang --ablegen` '
+      + 'schreibt Angebot und Auftragsbestätigung ins Journal. Was hier bleibt, hängt an der '
+      + '**Rechnung**, und die entsteht in keinem Werkzeug dieses Bestands: Sie braucht '
+      + 'Lieferdatum und Zahlungseingang, also einen Zahlungsanbieter, der eine Ausgabe ist '
+      + 'und beim Auftraggeber liegt. `storniere` und `vorgangsakte` setzen eine ausgestellte '
+      + 'Rechnung voraus, `alsCsv` eine Buchhaltung, die etwas abholt, `aufbewahrungBis` '
+      + 'einen Beleg, dessen Frist zu berechnen wäre. Der frühere Grund an dieser Stelle war '
+      + 'falsch: Er nannte den Zahlungsanbieter für die **ganze** Ablage. Gefehlt hat kein '
+      + 'Anbieter, sondern ein Ort, an dem Kundendaten liegen dürfen.',
   }),
   Object.freeze({
     modul: 'src/aussentexte.js',
@@ -180,13 +184,6 @@ export const UNGERUFEN = Object.freeze([
       + 'auf zwei Belegen ruht. Bis dahin eine Regel ohne Fall.',
   }),
   Object.freeze({
-    modul: 'src/speicher.js',
-    funktionen: ['ausJournal', 'journalzeile'],
-    warum: 'Dasselbe wie bei der Ablage: Das Journal schreibt erst, wenn ein echter Vorgang '
-      + 'läuft. Es hängt am selben offenen Punkt — dem Zahlungsanbieter, der eine Ausgabe '
-      + 'ist und beim Auftraggeber liegt.',
-  }),
-  Object.freeze({
     modul: 'src/verhandlung.js',
     funktionen: ['rueckwaertsKatalog', 'spielraumAusRabatt', 'staffel'],
     warum: 'Rechnet, welchen Einkauf oder Rabatt es für eine Zielmarge braucht — Zuarbeit '
@@ -204,10 +201,12 @@ export const UNGERUFEN = Object.freeze([
   Object.freeze({
     modul: 'src/vorgang.js',
     funktionen: ['ablageEintraege'],
-    warum: 'Weiß, welche Spuren ein Vorgang in der Ablage hinterlässt. Sie hängt am selben '
-      + 'Punkt wie die Ablage selbst: `npm run vorgang` legt bewusst nichts ab, weil ein '
-      + 'Werkzeug, das nebenbei Dateien anlegt, im ersten Betriebsmonat die Quelle der '
-      + 'Frage „welcher Stand gilt" ist.',
+    warum: 'Sie baut **alle** Spuren eines Vorgangs auf einmal: die Lieferantenbestellungen, '
+      + 'den Vermerk über die Auftragsbestätigung und das Angebot. Seit dem 4. September legt '
+      + '`npm run vorgang --ablegen` ab — aber je Aufruf genau das eine Papier, das '
+      + 'hinausgeht. Das Journal hält fest, **was geschehen ist**; eine Lieferantenbestellung, '
+      + 'die niemand aufgegeben hat, gehört nicht hinein, und nach § 131 BAO bleibt sie dort '
+      + 'stehen. Die falsche Körnung, nicht der falsche Zeitpunkt.',
   }),
   Object.freeze({
     modul: 'src/zahlung.js',

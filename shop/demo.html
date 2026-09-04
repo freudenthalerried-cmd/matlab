@@ -5012,7 +5012,12 @@ function erzeugeAngebot(warenkorb, { nummer, datum, bindefristTage = 14, kunde =
     zeilen.push('', 'Hinweise:', ...warenkorb.hinweise.map((h) => `  · ${textZeile(h)}`));
   }
 
-  return { text: zeilen.join('\n'), bruttobetrag: warenkorb.summeBrutto, bindefristTage };
+  
+  
+  
+  
+  
+  return { text: zeilen.join('\n'), nummer, bruttobetrag: warenkorb.summeBrutto, bindefristTage };
 }
 
 
@@ -5120,6 +5125,7 @@ function erzeugeAuftragsbestaetigung(
 
   return {
     text: zeilen.join('\n'),
+    nummer,
     bruttobetrag: warenkorb.summeBrutto,
     lieferzeitLaengsteWerktage: laengste,
     teillieferungen: warenkorb.teillieferungen.length,
@@ -6090,6 +6096,20 @@ const ARTEN = {
   lieferantenbestellung: { kuerzel: 'LB', nummernkreis: true },
   uidabfrage: { kuerzel: 'UP', nummernkreis: false },
   vermerk: { kuerzel: 'VM', nummernkreis: false },
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  auftragsbestaetigung: { kuerzel: 'AB', nummernkreis: false },
 };
 
 
@@ -6202,6 +6222,21 @@ function naechsteNummer(ablage, art, jahr) {
 function haltefest(ablage, eintrag) {
   if (!ARTEN[eintrag.art]) throw new Error(`Unbekannte Vorgangsart: ${eintrag.art}`);
   if (!eintrag.zeitpunkt) throw new Error('Jeder Eintrag braucht einen Zeitpunkt');
+
+  
+
+
+
+
+
+
+
+
+
+
+  if (eintrag.nummer && ablage.eintraege.some((e) => e.nummer === eintrag.nummer)) {
+    throw new Error(`Die Belegnummer ${eintrag.nummer} steht schon in der Ablage`);
+  }
 
   const fertig = Object.freeze({
     lfd: ablage.eintraege.length + 1,

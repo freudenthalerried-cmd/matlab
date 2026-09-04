@@ -220,6 +220,16 @@ export const PRUEFER = [
     einheit: 'Einträge auf liegen gebliebene Mutationen',
     mindestens: 200,
   },
+  {
+    // **Aufgenommen am 4. September**, mit dem ersten Werkzeug, das ablegt.
+    // Auch hier ist der gesunde Zustand null Funde — gemessen wird deshalb die
+    // Zahl der getrackten Dateien, die angesehen wurden.
+    name: 'pruefe-ablage',
+    werkzeug: 'ablagepruefung.mjs',
+    muster: /Ablageort — (\d+) getrackte Dateien angesehen/,
+    einheit: 'getrackte Dateien auf Kundendaten',
+    mindestens: 300,
+  },
 ];
 
 /**

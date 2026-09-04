@@ -47,7 +47,7 @@
  * nichts ab und schreibt keine Datei.
  */
 
-import { existsSync, readFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -58,6 +58,9 @@ import { berechneWarenkorb } from '../src/warenkorb.js';
 import { baueVorgang, darfVorgangLaufen } from '../src/vorgang.js';
 import { pruefeBelege } from '../src/belegpruefung.js';
 import { EUR } from '../src/format.js';
+import { ARTEN, haltefest, naechsteNummer, neueAblage, pruefeNummernkreis } from '../src/ablage.js';
+import { ausJournal, journalzeile } from '../src/speicher.js';
+import { ABLAGEORT, journalpfad } from '../src/ablageort.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const REPO = dirname(SHOP);
@@ -81,6 +84,11 @@ const datum = wahl('datum', heute);
 // vergibt bei jedem Lauf eine neue und macht aus einem zweiten Ausdruck einen
 // zweiten Vorgang. Ohne Angabe endet der Lauf und sagt das.
 const nummer = wahl('nummer');
+// **Ablegen ist eine eigene Entscheidung.** Was ins Journal geht, geht nach
+// § 132 BAO für sieben Jahre hinein; eine Löschung nach Art. 17 DSGVO läuft
+// dort ins Leere (Abs. 3 lit. b). Ein Werkzeug, das bei jedem Probeausdruck
+// ablegt, sammelt erfundene Geschäftsfälle in einer Datei, die nichts vergisst.
+const ablegen = argumente.includes('--ablegen');
 
 const abbruch = (text, rat = null) => {
   console.error(`\nAbbruch: ${text}`);
@@ -118,7 +126,14 @@ if (!existsSync(preisPfad)) {
     'Ohne sie hat kein Artikel einen Einkaufspreis — und ohne den prüft Gate 20 nichts.');
 }
 const betreiberDatei = lies(SHOP, 'data', 'betreiber.json');
-const lieferantenDatei = lies(SHOP, 'data', 'lieferanten.json');
+// `VORGANG_LIEFERANTEN` wie `WEBSITE_LIEFERANTEN`: Die Lieferzeit ist eine der
+// neun offenen Fragen an den Lieferanten, und ohne sie trägt jeder Beleg eine
+// Lücke. Eine Probe, die den Weg **bis in die Akte** fahren will, braucht
+// deshalb einen Bestand mit beantworteter Lieferzeit — sonst prüft sie nur die
+// Absage und nie den Durchgang.
+const lieferantenDatei = process.env.VORGANG_LIEFERANTEN
+  ? JSON.parse(readFileSync(process.env.VORGANG_LIEFERANTEN, 'utf8'))
+  : lies(SHOP, 'data', 'lieferanten.json');
 const katalog = ladeBaustoffkatalog(
   lies(SHOP, 'data', 'katalog-baustoff.json'),
   lies(preisPfad),
@@ -263,5 +278,113 @@ if (luecken.length) {
   for (const l of new Set(luecken)) console.log(`  · ${l}`);
   console.log('Die Marke steht absichtlich da. Eine gefüllte Lücke wäre eine erfundene Angabe.');
 }
-console.log('\nNichts abgelegt, nichts versendet. Das Absenden entscheidet der Auftraggeber.');
+/**
+ * Ablegen — der Schritt, den es seit dem 31. August gibt und den bis heute
+ * niemand gegangen ist.
+ *
+ * `src/ablage.js` führt Nummernkreis und Journal nach § 11 UStG und § 131 BAO,
+ * `src/speicher.js` gibt ihnen ein Gedächtnis aus Zeilen, die nur wachsen.
+ * Beide sind gebaut, geprüft und vollständig — und sieben ihrer Ausfuhren rief
+ * außerhalb der Tests niemand. Was gefehlt hat, war nicht Code, sondern ein
+ * **Ort**: Ein Journal trägt Namen, Anschriften und Beträge, und dieses
+ * Verzeichnis ist öffentlich. Seit heute gibt es `ablage/`, gesperrt in
+ * `.gitignore` und bewacht von `npm run pruefe-ablage`.
+ *
+ * Zwei Schranken davor, und beide sind unnachgiebig:
+ *
+ * **Ein Beleg mit einer sichtbaren Lücke wird nicht abgelegt.** `[[ … FEHLT ]]`
+ * heißt: Eine Pflichtangabe ist offen. Sieben Jahre lang stünde dann ein
+ * unvollständiges Papier in der Akte, und die Lücke wäre nicht mehr die
+ * Erinnerung an eine offene Frage, sondern ein Mangel im Beleg.
+ *
+ * **Ein Belegbefund verhindert die Ablage ebenso.** Die Prüfung oben hat den
+ * Lauf schon beendet, wenn sie etwas fand — hier steht sie noch einmal, weil
+ * eine Schranke, die von der Reihenfolge zweier Blöcke abhängt, keine ist.
+ */
+if (!ablegen) {
+  console.log('\nNichts abgelegt, nichts versendet. `--ablegen` schreibt ins Journal;');
+  console.log('das Absenden entscheidet der Auftraggeber.');
+  process.exit(0);
+}
+
+if (luecken.length) {
+  abbruch(`Nicht abgelegt: ${luecken.length} Lücke(n) im Beleg.`,
+    'Was ins Journal geht, geht nach § 132 BAO für sieben Jahre hinein.\n'
+    + 'Ein Beleg mit offener Pflichtangabe gehört nicht dazu.');
+}
+if (!befund.sauber) {
+  abbruch('Nicht abgelegt: die Belegprüfung hat etwas gefunden.');
+}
+
+const jahr = Number(datum.slice(0, 4));
+// `VORGANG_ABLAGE` lenkt den Ort um — für Proben, die den ganzen Weg fahren
+// wollen, ohne in die echte Akte zu schreiben. Dieselbe Bauweise wie
+// `WEBSITE_AUSGABE`: Eine Probe, die den Bestand verändert, ist keine.
+const wurzel = process.env.VORGANG_ABLAGE ?? join(REPO, ABLAGEORT);
+const journal = join(wurzel, `journal-${jahr}.jsonl`);
+mkdirSync(wurzel, { recursive: true });
+
+// **Erst zurücklesen, dann schreiben.** Ohne den Bestand begänne der Zähler
+// bei eins, und zwei Angebote trügen dieselbe Nummer. `ausJournal` ist dabei
+// streng: Eine Zeile, die nicht sauber zurückliest, bricht den Lauf ab, statt
+// den Zähler zu raten.
+const bestand = existsSync(journal) ? readFileSync(journal, 'utf8') : '';
+const ablage = ausJournal(bestand, {
+  schreibe: (e) => appendFileSync(journal, `${journalzeile(e)}\n`, 'utf8'),
+});
+
+const abgelegteArt = stufe === 'angebot' ? 'angebot' : 'auftragsbestaetigung';
+
+/**
+ * **Die Nummer kommt vom Beleg, nicht aus dem Zähler.**
+ *
+ * Der erste Wurf rief hier `naechsteNummer(ablage, 'angebot', jahr)` und
+ * bekam `AN-2026-0001`. Auf dem Papier stand `AN-2026-0102` — `vorgang.js`
+ * bildet die Angebotsnummer seit dem 31. August als `AN-${vorgangsnummer}`.
+ *
+ * > **Ein Beleg, der unter einer anderen Nummer abgelegt ist als der, die auf
+ * > ihm steht, ist schlechter als ein nicht abgelegter.** Wer die Akte nach
+ * > dem Papier durchsucht, findet nichts und schließt daraus das Falsche.
+ *
+ * Zwei Zahlenreihen für dasselbe Papier — dieselbe Familie wie die
+ * Listenpreisspalte vom Vormittag. Aufgelöst wird sie zugunsten des Papiers:
+ * Das Journal hält fest, was hinausgegangen ist.
+ *
+ * Was dabei offen bleibt und offen benannt gehört: Diese Nummer ist **von
+ * Hand** vergeben (`--nummer`). Fortlaufend und einmalig verlangt § 11 Abs 1
+ * Z 5 UStG für die **Rechnung**, und die entsteht hier nicht. Für das Angebot
+ * meldet `pruefeNummernkreis` unten, was der Bestand hergibt — Lücken sind
+ * dann eine Auskunft, keine Zusicherung.
+ */
+const belegnummer = ARTEN[abgelegteArt].nummernkreis ? beleg.nummer : null;
+
+const eintrag = haltefest(ablage, {
+  art: abgelegteArt,
+  nummer: belegnummer,
+  zeitpunkt: datum,
+  vorgang: nummer,
+  betragNetto: korb.summeNetto,
+  betragBrutto: korb.summeBrutto,
+  // **Nur der Betreff, nie der Belegtext.** Das Felderverzeichnis sagt es
+  // ausdrücklich: Was hier steht, steht sieben Jahre. Der volle Text enthält
+  // die Anschrift des Kunden ein zweites Mal und gehört in den Beleg, nicht
+  // ins Journal.
+  text: `${art} zu Vorgang ${nummer}, ${gelesen.zeilen.length} Position(en)`,
+});
+
+const kreis = ARTEN[abgelegteArt].nummernkreis
+  ? pruefeNummernkreis(ablage, abgelegteArt, jahr)
+  : null;
+
+console.log(`\nAbgelegt: ${abgelegteArt}${belegnummer ? ` ${belegnummer}` : ''}`
+  + ` als lfd. ${eintrag.lfd} in ${process.env.VORGANG_ABLAGE ? journal : journalpfad(jahr)}`);
+if (!belegnummer) {
+  console.log('Ohne Belegnummer — eine fortlaufende Nummer verlangt § 11 UStG für die');
+  console.log('Rechnung. Rückführbar bleibt der Eintrag über die Vorgangsnummer.');
+}
+if (kreis && !kreis.lueckenlos) {
+  console.log(`Achtung, Lücke im Nummernkreis: ${kreis.fehlend.join(', ')}`);
+}
+console.log('Das Journal liegt außerhalb der Versionierung. Nichts versendet —');
+console.log('das Absenden entscheidet der Auftraggeber.');
 process.exit(0);

@@ -475,6 +475,21 @@ export const GEGENPROBEN = Object.freeze([
       + 'eine Absage mit Verzögerung. Diese Mutation stellt genau das wieder her.',
   }),
   Object.freeze({
+    id: 'ablageort-ohne-sperre',
+    pruefer: 'pruefe-ablage',
+    was: 'Ein Ablageort, den die .gitignore nicht kennt',
+    datei: 'shop/src/ablageort.js',
+    art: 'ersetzen',
+    suchen: "export const ABLAGEORT = 'ablage';",
+    ersetzen: "export const ABLAGEORT = 'akte';",
+    erwartet: /ort-nicht-gesperrt/,
+    warum: 'Der Prüfer soll genau eines können: sagen, dass der Ordner, in den die Ablage '
+      + 'schreibt, nicht von der .gitignore gedeckt ist. Diese Mutation verschiebt den Ordner '
+      + 'unter einen Namen, den keine Sperre kennt — dann liegt das erste Journal mit Namen, '
+      + 'Anschriften und Beträgen von Kunden beim nächsten `git add -A` im öffentlichen '
+      + 'Verzeichnis, und die Geschichte behält es.',
+  }),
+  Object.freeze({
     id: 'liegen-gebliebene-mutation-uebersehen',
     pruefer: 'test',
     was: 'Eine absichtlich falsche Datei, die niemandem mehr auffällt',
