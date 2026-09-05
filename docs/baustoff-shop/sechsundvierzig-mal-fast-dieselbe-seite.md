@@ -130,6 +130,16 @@ Bis dahin ist gemessen, was ist. Der Anteil von 62 % ist kein Versäumnis,
 sondern die Grenze dessen, was aus fünfzehn Lieferantenrechnungen zu holen ist.
 Neu ist nur, dass die Zahl dasteht.
 
+> **Berichtigt am 5. September.** Beide Aussagen dieses Abschnitts sind
+> nachgemessen und halten nicht: Die Zahl war **62 %**, weil drei Stück
+> Navigation (der `noscript`-Hinweis, der Seitentitel, die Sprungmarke) in
+> der Messung standen, obwohl der Prüfer sie auszuschließen behauptete —
+> gemessen sind **58 %**. Und der gemeinsame Anteil ist **nicht** die Grenze
+> dessen, was aus fünfzehn Lieferantenrechnungen zu holen ist: Der größte
+> gleiche Block ist der **eigene Lieferabsatz**, 93 von 109 Wörtern auf jeder
+> Seite, und den macht keine Lieferantenliste kürzer. Siehe
+> `die-schuld-lag-im-eigenen-absatz.md`.
+
 ## Verweise
 
 - `shop/src/seitenaehnlichkeit.js` — die Regeln

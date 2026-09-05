@@ -117,10 +117,17 @@ export const OHNE_WERKZEUG = Object.freeze([
     zustaendig: 'anfrage',
     warumKeinWerkzeug: 'Die Daten liegen beim Lieferanten. Der Katalog stammt aus fünfzehn Rechnungen; '
       + 'mehr geben sie nicht her.',
+    // **Berichtigt am 5. September.** Hier stand, die Artikelliste senke den
+    // gemeinsamen Wortanteil der Artikelseiten. Nachgemessen je Abschnitt
+    // stimmt das nur für einen von dreien: Der größte Block ist der eigene
+    // Lieferabsatz, und den macht keine Lieferantenliste kürzer.
     loest: 'Löst auf einmal: GTIN, Marke und Bild im Feed — und die Weisung, das Sortiment auf '
-      + 'mindestens hundert Artikel zu erweitern. Seit dem 4. September ein Viertes: 62 % der '
-      + 'Wörter einer Artikelseite stehen wortgleich auf allen 46 (`npm run pruefe-dubletten`). '
-      + 'Auf diese Seiten führt der bezahlte Klick.',
+      + 'mindestens hundert Artikel zu erweitern. Ein Viertes betrifft die Auffindbarkeit, aber '
+      + 'kleiner als bisher hier stand: Der Abschnitt „Technische Kennwerte" trägt auf allen 46 '
+      + 'Artikelseiten nur sechs verschiedene Fassungen, die größte auf 22 — lauter '
+      + 'Platzhaltersätze statt Kennwerten (`npm run pruefe-dubletten`). Der größte gleiche '
+      + 'Block der Seiten ist dagegen unser eigener Lieferabsatz und bleibt es auch mit dieser '
+      + 'Liste.',
   },
   {
     id: 'suchvolumen',

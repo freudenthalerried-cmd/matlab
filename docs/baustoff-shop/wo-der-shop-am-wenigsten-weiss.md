@@ -85,6 +85,12 @@ gemessen, und sie wiegt für den Klickkanal schwerer als die drei anderen:
 > dieselbe Zeichnung wie ein anderer, und bei drei Kaminpaketen ist die Form
 > aus dem Namen gar nicht ablesbar.
 
+> **Berichtigt am 5. September.** Nachgemessen sind es **58 %** — die 62
+> enthielten drei Stück Navigation, die der Prüfer auszuschließen behauptete.
+> Und der Schluss, den dieser Absatz zieht, hält nicht: Der größte gleiche
+> Block ist der **eigene Lieferabsatz** und bleibt es mit jeder
+> Lieferantenliste. Siehe `die-schuld-lag-im-eigenen-absatz.md`.
+
 **Auf diese Seiten führt der bezahlte Klick.** Der Satz steht jetzt im Brief
 (`npm run pruefe-anfrage`) und in der Liste der offenen Punkte, nicht nur in
 einem Dokument.

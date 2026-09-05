@@ -17,7 +17,9 @@ import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-import { seitenbefund, eigenerText, DUBLETTENGRENZE } from '../src/seitenaehnlichkeit.js';
+import {
+  seitenbefund, eigenerText, abschnitte, abschnittsbefund, DUBLETTENGRENZE,
+} from '../src/seitenaehnlichkeit.js';
 import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
 
 const WURZEL = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -46,9 +48,10 @@ if (!existsSync(ORDNER)) {
 }
 
 const dateien = readdirSync(ORDNER).filter((f) => f.endsWith('.html')).sort();
-const seiten = dateien.map((f) => ({
+const roh = dateien.map((f) => readFileSync(join(ORDNER, f), 'utf8'));
+const seiten = dateien.map((f, i) => ({
   id: f.replace(/\.html$/, ''),
-  text: eigenerText(readFileSync(join(ORDNER, f), 'utf8')),
+  text: eigenerText(roh[i]),
 }));
 
 const e = seitenbefund(seiten, DUBLETTENGRENZE);
@@ -59,6 +62,33 @@ console.log(`  Median über alle     ${e.median.toFixed(2)}`);
 console.log(`  Auf jeder Seite      ${e.gemeinsameWorte} von ${e.mittlereLaenge.toFixed(0)} Wörtern `
   + `(${(e.gemeinsamerAnteil * 100).toFixed(0)} %)`);
 console.log(`  Kürzeste Seite       ${e.kuerzeste}`);
+
+/**
+ * **Wo sitzt die Gleichheit? — ergänzt am 5. September.**
+ *
+ * Bis heute endete dieser Lauf mit dem Satz, was den gemeinsamen Anteil
+ * wirklich senke, sei die Artikelliste des Lieferanten. Gemessen war das nie.
+ * Nachgezählt liegt der größte Block eigener Text: der Absatz **Lieferung**.
+ * Keine Lieferantenliste macht ihn kürzer.
+ *
+ * Drei Zahlen je Abschnitt, weil keine allein genügt:
+ *
+ *   **Schnitt**   was auf ausnahmslos jeder Seite steht — streng, ein
+ *                 einziger Ausreißer drückt ihn auf null
+ *   **Median**    wie gleich zwei beliebige Seiten sind — irreführend, wenn
+ *                 die Verteilung zwei Gipfel hat
+ *   **Fassungen** wie viele verschiedene Texte es überhaupt gibt — die Zahl,
+ *                 nach der jemand handeln kann
+ */
+const abschnittsteile = abschnittsbefund(roh.map((h) => abschnitte(h)));
+console.log('\n  Wo die Gleichheit sitzt:\n');
+console.log('    Abschnitt              Schnitt   Median   Fassungen');
+for (const a of abschnittsteile) {
+  const schnitt = `${a.gemeinsameWorte}/${a.mittlereLaenge.toFixed(0)} (${(a.anteil * 100).toFixed(0)} %)`;
+  const fassung = `${a.fassungen}, größte auf ${a.groessteFassung}`;
+  console.log(`    ${a.titel.padEnd(22)} ${schnitt.padEnd(15)} ${a.median.toFixed(2).padStart(6)}   ${fassung}`);
+  if (!a.aufJederSeite) console.log(`      (nur auf ${a.seiten} von ${seiten.length} Seiten)`);
+}
 
 if (e.dubletten.length) {
   console.log(`\n  ✗ ${e.dubletten.length} Paar(e) ab ${DUBLETTENGRENZE} — praktisch dieselbe Seite:`);
@@ -71,8 +101,28 @@ if (e.dubletten.length) {
   process.exit(1);
 }
 
-console.log(`\nKein Paar erreicht ${DUBLETTENGRENZE}. Der gemeinsame Anteil ist damit nicht klein —`);
-console.log('er ist die Grenze dessen, was aus fünfzehn Lieferantenrechnungen zu holen ist.');
-console.log('Was ihn wirklich senkt, steht als offener Punkt: die Artikelliste aus dem');
-console.log('Kundenkonto, mit Hersteller, EAN und Bild je Artikel.');
+console.log(`\nKein Paar erreicht ${DUBLETTENGRENZE}. Der gemeinsame Anteil ist nicht klein —`);
+
+/**
+ * **Der Schluss kommt aus der Messung, nicht aus einer Annahme.**
+ *
+ * Bis zum 5. September stand hier, der Anteil sei „die Grenze dessen, was aus
+ * fünfzehn Lieferantenrechnungen zu holen ist", und was ihn senke, sei die
+ * Artikelliste des Lieferanten. Beides war nie gemessen und ist falsch: Der
+ * größte Block ist eigener Text.
+ *
+ * > **Ein Befund, der die Ursache beim Dritten sucht, während sie im eigenen
+ * > Haus liegt, macht aus einer lösbaren Aufgabe eine blockierte.**
+ */
+const groesster = abschnittsteile[0];
+console.log(`aber er sitzt nicht überall gleich. Der größte Block ist „${groesster.titel}":`);
+console.log(`${groesster.gemeinsameWorte} von ${groesster.mittlereLaenge.toFixed(0)} Wörtern stehen `
+  + 'auf jeder Seite. Das ist eigener Text; keine');
+console.log('Lieferantenliste macht ihn kürzer — nur ein Absatz, der je Artikel etwas');
+console.log('anderes sagt. Was die Artikelliste löst, sind die Kennwerte: dort stehen');
+const kennwerte = abschnittsteile.find((a) => /kennwert/i.test(a.titel));
+if (kennwerte) {
+  console.log(`${kennwerte.fassungen} Fassungen auf ${seiten.length} Seiten, die größte auf `
+    + `${kennwerte.groessteFassung} — lauter Platzhaltersätze statt Kennwerten.`);
+}
 process.exit(0);

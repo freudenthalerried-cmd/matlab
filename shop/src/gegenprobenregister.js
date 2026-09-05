@@ -665,6 +665,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'Kunden. Diese Mutation nimmt sie wieder heraus und verlangt, dass es auffällt.',
   }),
   Object.freeze({
+    id: 'navigation-als-inhalt',
+    pruefer: 'test',
+    was: 'Navigation, die als eigener Seiteninhalt mitgezählt wird',
+    datei: 'shop/src/seitenaehnlichkeit.js',
+    art: 'ersetzen',
+    suchen: "const CHROM = ['script', 'style', 'svg', 'header', 'footer', 'nav', 'noscript', 'head'];",
+    ersetzen: "const CHROM = ['script', 'style', 'svg', 'header', 'footer', 'nav'];",
+    erwartet: /Navigation|Inhalt/i,
+    warum: 'Der Kommentar über der Funktion sagte seit dem 3. September „Kopf, Fuß, Skript und '
+      + 'Querverweise fallen heraus — sie stehen auf jeder Seite gleich und sind Navigation, '
+      + 'kein Inhalt". Drei Stück Navigation standen trotzdem drin: der `noscript`-Hinweis mit '
+      + 'dreißig wortgleichen Wörtern, der Seitentitel im `head` und die Sprungmarke. Die '
+      + 'gemeldeten 62 % waren dadurch zu hoch. Diese Mutation setzt die alte, kürzere Liste '
+      + 'wieder ein.',
+  }),
+  Object.freeze({
     id: 'sperre-ohne-gruenen-fall',
     pruefer: 'pruefe-sperren',
     was: 'Eine Sperre, von der keine Probe zeigt, dass sie je aufmacht',

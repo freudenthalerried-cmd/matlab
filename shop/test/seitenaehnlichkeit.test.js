@@ -14,7 +14,8 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
-  wortmenge, aehnlichkeit, seitenbefund, eigenerText, DUBLETTENGRENZE,
+  wortmenge, aehnlichkeit, seitenbefund, eigenerText, abschnitte, abschnittsbefund,
+  DUBLETTENGRENZE,
 } from '../src/seitenaehnlichkeit.js';
 
 test('gleiche Texte sind gleich, verschiedene nicht', () => {
@@ -98,4 +99,77 @@ test('der Bestand steht: kein Paar erreicht die Dublettengrenze', () => {
   // Namen und Zahlen identisch.
   assert.ok(e.gemeinsamerAnteil < 0.9,
     `${(e.gemeinsamerAnteil * 100).toFixed(0)} % der Wörter stehen auf jeder Seite`);
+});
+
+/* ------------------------------------------------------------------ *
+ * Wo die Gleichheit sitzt — ergänzt am 5. September
+ *
+ * **Der Anlass.** Der Lauf meldete „137 von 220 Wörtern auf jeder Seite" und
+ * schrieb darunter, was den Anteil senke, sei die Artikelliste des
+ * Lieferanten. Gemessen war das nie — und es stimmt nicht: Der größte gleiche
+ * Block ist der eigene Lieferabsatz.
+ *
+ * > **Eine Gesamtzahl sagt, wie viel gleich ist. Sie sagt nicht, wessen
+ * > Gleichheit es ist** — und damit auch nicht, wer sie ändern kann.
+ * ------------------------------------------------------------------ */
+
+test('Navigation außerhalb der Kopfleiste zählt nicht als Inhalt', () => {
+  // Drei Blöcke standen bis zum 5. September in der Messung, obwohl der
+  // Kommentar daneben „Navigation, kein Inhalt" sagte.
+  const mitChrom = '<head><title>Artikel — Bauversand</title></head>'
+    + '<a class="springen" href="#inhalt">Zum Inhalt springen</a>'
+    + '<noscript><p>Ohne JavaScript arbeiten Suchfeld und Warenkorb nicht.</p></noscript>'
+    + '<main><h1>Dachlatte</h1><p>Sie ist gehobelt.</p></main>';
+  assert.equal(eigenerText(mitChrom), 'Dachlatte Sie ist gehobelt.');
+});
+
+test('die Seite zerfällt an ihren Zwischenüberschriften', () => {
+  const html = '<main><h1>Rohr</h1><p>Kopftext.</p>'
+    + '<h2>Technische Kennwerte</h2><p>Keine da.</p>'
+    + '<h2>Lieferung</h2><p>Auf Palette.</p></main>';
+  const a = abschnitte(html);
+  assert.deepEqual(a.map((x) => x.titel), ['Kopf und Preistafel', 'Technische Kennwerte', 'Lieferung']);
+  assert.deepEqual(a.map((x) => x.text), ['Rohr Kopftext.', 'Keine da.', 'Auf Palette.']);
+});
+
+test('ein Abschnitt, den es nur auf einer Seite gibt, sagt das von sich', () => {
+  const seiten = [
+    [{ titel: 'A', text: 'eins zwei' }, { titel: 'B', text: 'drei' }],
+    [{ titel: 'A', text: 'eins vier' }],
+  ];
+  const b = abschnittsbefund(seiten);
+  assert.equal(b.find((x) => x.titel === 'A').aufJederSeite, true);
+  assert.equal(b.find((x) => x.titel === 'B').aufJederSeite, false);
+});
+
+test('drei Zahlen je Abschnitt, weil keine allein genügt', () => {
+  // Zwei Fassungen, je zur Hälfte. Der Schnitt über alle findet nur das eine
+  // gemeinsame Wort; der Median liegt tief, weil mehr Paare kreuz als gleich
+  // sind; erst die Fassungszahl sagt, wonach jemand handeln kann.
+  const seiten = [
+    [{ titel: 'K', text: 'gleich alpha beta' }],
+    [{ titel: 'K', text: 'gleich alpha beta' }],
+    [{ titel: 'K', text: 'gleich gamma delta' }],
+    [{ titel: 'K', text: 'gleich gamma delta' }],
+  ];
+  const [k] = abschnittsbefund(seiten);
+  assert.equal(k.gemeinsameWorte, 1, 'nur „gleich" steht auf jeder');
+  assert.equal(k.fassungen, 2);
+  assert.equal(k.groessteFassung, 2);
+  assert.ok(k.median < 0.4, `Median ${k.median} — die Verteilung hat zwei Gipfel`);
+});
+
+test('ein Abschnitt, der überall wortgleich ist, kommt auf Anteil 1', () => {
+  const seiten = [
+    [{ titel: 'L', text: 'immer derselbe Satz' }],
+    [{ titel: 'L', text: 'immer derselbe Satz' }],
+  ];
+  const [l] = abschnittsbefund(seiten);
+  assert.equal(l.anteil, 1);
+  assert.equal(l.fassungen, 1);
+  assert.equal(l.median, 1);
+});
+
+test('unter zwei Seiten wird nicht gemessen, sondern abgebrochen', () => {
+  assert.throws(() => abschnittsbefund([[{ titel: 'A', text: 'x' }]]), /zwei Seiten/);
 });

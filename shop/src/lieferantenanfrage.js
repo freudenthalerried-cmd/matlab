@@ -58,12 +58,18 @@ export const FRAGEN = Object.freeze([
       // nannte diese Begründung drei Folgen; die vierte wiegt für den
       // Klickkanal schwerer als die drei anderen, denn auf diese Seiten führt
       // der bezahlte Klick.
-      + '**Und die vierte Folge, seit dem 4. September gemessen:** 62 % der Wörter einer '
-      + 'Artikelseite stehen wortgleich auf allen 46 — die Seiten unterscheiden sich in einem '
-      + 'Namen und vier Zahlen. 20 von 46 Artikeln tragen dieselbe Zeichnung wie ein anderer, '
-      + 'und bei drei Kaminpaketen ist die Form aus dem Namen gar nicht ablesbar. Hersteller, '
-      + 'EAN, Verpackungseinheit und ein Produktbild je Artikel sind das Einzige, was daran '
-      + 'etwas ändert.',
+      // **Berichtigt am 5. September.** Hier stand „62 % der Wörter stehen
+      // wortgleich auf allen 46 … Hersteller, EAN und Bild sind das Einzige,
+      // was daran etwas ändert". Nachgemessen je Abschnitt ist der größte
+      // gleiche Block der **eigene** Lieferabsatz. Ein Brief an einen Dritten,
+      // der seine Bitte mit einer falsch zugeschriebenen Zahl begründet, ist
+      // schlechter als einer, der weniger verlangt und richtig rechnet.
+      + '**Und eine vierte Folge, gemessen:** Der Abschnitt „Technische Kennwerte" trägt auf '
+      + 'allen 46 Artikelseiten nur sechs verschiedene Fassungen, die größte auf 22 — es sind '
+      + 'Platzhaltersätze, weil uns kein Merkblatt vorliegt. 20 von 46 Artikeln tragen dieselbe '
+      + 'Schemazeichnung wie ein anderer, und bei drei Kaminpaketen ist die Bauform aus dem '
+      + 'Namen nicht ablesbar. Hersteller, EAN, Verpackungseinheit und ein Produktbild je '
+      + 'Artikel ändern genau das.',
   }),
   Object.freeze({
     id: 'lieferzeit',
