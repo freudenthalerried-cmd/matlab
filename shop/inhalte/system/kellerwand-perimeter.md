@@ -3,7 +3,7 @@ titel: Kellerwand außen dämmen — die Liste
 art: system
 slug: kellerwand-perimeter
 frage: Was brauche ich, um eine erdberührte Kellerwand zu dämmen und zu schützen?
-kurz: Sieben Positionen bilden das Bauteil, fünf davon aus dem Sortiment: Perimeterplatte, Kleber, Dosierpistole, Schutz- und Drainbahn und der obere Abschluss. Die beiden anderen sind fremde Gewerke — die Abdichtung davor, die Verfüllung danach. Drei Maße vom Bauwerk ergeben die Mengen, und die Reihenfolge der Schichten entscheidet, ob die Bestellung überhaupt etwas nützt.
+kurz: Sieben Positionen bilden das Bauteil, vier davon aus dem Sortiment: Perimeterplatte, Kleber, Dosierpistole und die Schutz- und Drainbahn. Die drei anderen führen wir nicht — die Abdichtung davor, die Verfüllung danach und die Abschlussschiene obenauf. Drei Maße vom Bauwerk ergeben die Mengen, und die Reihenfolge der Schichten entscheidet, ob die Bestellung überhaupt etwas nützt.
 gruppe: Dämmung
 schichten: Wand (fremd) | Abdichtung (fremd) | Perimeterplatte XPS | Grundmauerschutzbahn | Verfüllung (fremd)
 skus: POS-12569, POS-12571, POS-12575, POS-12580, POS-12596, POS-29691, POS-12294, POS-21382
@@ -13,12 +13,13 @@ stand: 2026-08-30
 
 # Kellerwand außen dämmen — die Liste
 
-**Die Antwort in zwei Sätzen.** Sieben Positionen bilden das Bauteil, fünf
-davon aus unserem Sortiment: Perimeterplatte, Kleber, Dosierpistole, Schutz-
-und Drainbahn und der obere Abschluss. Die beiden anderen sind fremde
-Gewerke — die Abdichtung davor und die Verfüllung danach; sie stehen in der
-Liste, damit sie in der Reihenfolge nicht untergehen, und ohne die Abdichtung
-ist alles Weitere wertlos.
+**Die Antwort in zwei Sätzen.** Sieben Positionen bilden das Bauteil, vier
+davon aus unserem Sortiment: Perimeterplatte, Kleber, Dosierpistole und die
+Schutz- und Drainbahn. Die drei anderen führen wir nicht — die Abdichtung
+davor und die Verfüllung danach sind fremde Gewerke, die Abschlussschiene
+obenauf steht schlicht nicht im Sortiment; alle drei stehen in der Liste,
+damit sie in der Reihenfolge nicht untergehen, und ohne die Abdichtung ist
+alles Weitere wertlos.
 
 ## Die Reihenfolge, die vor der Bestellung steht
 
@@ -49,13 +50,13 @@ bestellt wird — bei der Bahn genauso wie beim Glasgewebe an der Fassade.
 
 | # | Position | Menge nach | wird oft vergessen |
 |---|---|---|---|
-| 1 | Abdichtung | Fläche | **eigenes Gewerk, siehe oben** |
+| 1 | Abdichtung *(nicht im Sortiment)* | Fläche | **eigenes Gewerk, siehe oben** |
 | 2 | Perimeterplatte XPS | Fläche + Verschnitt, in Paketeinheiten | — |
 | 3 | Perimeterkleber | Fläche ÷ Reichweite je Dose | — |
 | 4 | Dosierpistole | eine je Baustelle | **ja** |
 | 5 | Grundmauerschutzbahn | Fläche **+ Überlappung** | — |
 | 6 | Abschlussschiene *(nicht im Sortiment)* | laufende Meter Oberkante | **ja** |
-| 7 | Verfüllmaterial | Kubatur des Arbeitsraums | eigenes Gewerk |
+| 7 | Verfüllmaterial *(nicht im Sortiment)* | Kubatur des Arbeitsraums | eigenes Gewerk |
 
 Drei der sieben Positionen führen wir nicht, und alle drei stehen trotzdem auf
 der Liste: die Abdichtung, die Abschlussschiene und das Verfüllmaterial. Sie

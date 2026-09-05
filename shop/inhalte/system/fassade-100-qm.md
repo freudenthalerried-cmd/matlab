@@ -24,7 +24,7 @@ dabei, das Ergebnis rechnen Sie mit Ihren Werten.
 | # | Position | Menge nach | wird oft vergessen |
 |---|---|---|---|
 | 1 | Klebemörtel | Fläche × Verbrauch je Auftragsart | — |
-| 2 | Dämmplatten | Fläche + Verschnitt, in Paketeinheiten | — |
+| 2 | Dämmplatten *(nicht in Flächenstärke)* | Fläche + Verschnitt, in Paketeinheiten | — |
 | 3 | Dübel | Anzahl je m² aus der Bemessung | — |
 | 4 | Rondellen | wie Dübel, bei versenkter Setzung | **ja** |
 | 5 | Armierungsmörtel | Fläche × Verbrauch | — |
@@ -33,6 +33,10 @@ dabei, das Ergebnis rechnen Sie mit Ihren Werten.
 | 8 | Gewebeanschlussleisten | laufende Meter aller Fenster- und Türanschlüsse | **ja** |
 | 9 | Putzgrund | Fläche × Verbrauch | — |
 | 10 | Oberputz | Fläche × Verbrauch, körnungsabhängig | — |
+
+**Position 2 ist die halbe Ausnahme:** Dämmplatten führen wir, aber nicht in
+Flächenstärke. Die Tabelle sagt es, und warum, steht weiter unten unter
+„Position 2 steht auf der Liste, aber nicht im Regal".
 
 Vier von zehn Positionen sind die, die typischerweise fehlen — und alle vier
 sind kleine Positionen. Warum das die teuersten sind, steht auf

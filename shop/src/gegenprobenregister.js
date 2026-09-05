@@ -665,6 +665,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'Kunden. Diese Mutation nimmt sie wieder heraus und verlangt, dass es auffällt.',
   }),
   Object.freeze({
+    id: 'stueckliste-verzaehlt-sich',
+    pruefer: 'pruefe-systemlisten',
+    was: 'Eine Stückliste, die über sich selbst falsch rechnet',
+    datei: 'shop/inhalte/system/kellerwand-perimeter.md',
+    art: 'ersetzen',
+    suchen: 'Drei der sieben Positionen führen wir nicht',
+    ersetzen: 'Fünf der sieben Positionen führen wir nicht',
+    erwartet: /kellerwand|nicht-gefuehrt-zahl/,
+    warum: 'Genau der Fall vom 5. September, nur andersherum: Die Seite versprach im Vorspann '
+      + '„fünf davon aus unserem Sortiment" und schrieb zwanzig Zeilen weiter „Drei der sieben '
+      + 'Positionen führen wir nicht" — und die fünfte war ausgerechnet die Position, die die '
+      + 'Tabelle als „nicht im Sortiment" kennzeichnet und die zugleich unter „wird oft '
+      + 'vergessen" steht. Eine Stückliste, die über sich selbst falsch rechnet, ist die eine '
+      + 'Sorte Text, bei der ein Fehler direkt auf der Baustelle ankommt.',
+  }),
+  Object.freeze({
     id: 'abgeloeste-zahl-im-quelltext',
     pruefer: 'pruefe-leitzahlen',
     was: 'Eine abgelöste Leitzahl im Quelltext, wo sie nicht nur falsch dasteht, sondern rechnet',

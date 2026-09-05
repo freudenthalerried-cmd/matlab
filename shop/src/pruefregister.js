@@ -290,6 +290,18 @@ export const PRUEFER = [
     einheit: 'Artikel auf ihre Sperrguteinstufung',
     mindestens: 40,
   },
+  {
+    // **Aufgenommen am 5. September.** Die Systemlisten sind der inhaltliche
+    // Kern: Sie sagen, was zu bestellen ist, **und** was dieses Haus davon
+    // nicht liefert. Eine von ihnen widersprach sich über genau diese Zahl.
+    // Gezählt werden die Positionen, nicht die Listen: Eine Liste, die zur
+    // Überschrift schrumpft, fiele bei einer Listenzählung nicht auf.
+    name: 'pruefe-systemlisten',
+    werkzeug: 'systemlistenpruefung.mjs',
+    muster: /Systemlisten: \d+ Listen mit (\d+) Positionen/,
+    einheit: 'Positionen der Stücklisten',
+    mindestens: 20,
+  },
 ];
 
 /**
