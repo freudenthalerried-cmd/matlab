@@ -854,6 +854,24 @@ export const GEGENPROBEN = Object.freeze([
       + 'Eintrag ohne Artikel auffällt.',
   }),
   Object.freeze({
+    id: 'startseite-verspricht-den-einkaufspreis',
+    pruefer: 'pruefe-seiten',
+    was: 'Eine Seite, die behauptet, der Kunde zahle den Einkaufspreis des Baumeisters',
+    datei: 'shop/bin/website.mjs',
+    art: 'ersetzen',
+    suchen: "}Der Einkauf eines Baumeisterbetriebs ist unsere Grundlage — deshalb liegen",
+    ersetzen: "}Was ein Baumeister im Einkauf zahlt, zahlen Sie auch — deshalb liegen",
+    erwartet: /zahle dasselbe wie der Baumeister|Aufschlag/,
+    baueVorher: true,
+    warum: 'Die Ersetzung ist keine erfundene Verschlechterung, sondern der Wortlaut, der bis '
+      + 'zum 5. September abends im ersten Satz unter der Hauptüberschrift der Startseite '
+      + 'stand — auf der Seite, die jeder zuerst sieht. Dieselbe Behauptung war am selben Tag '
+      + 'aus der WDVS-Anzeige entfernt worden, und der Prüfer, der dafür gebaut wurde, las nur '
+      + 'die Anzeigen. Über die 81 Seiten gelaufen hätte er außerdem null Treffer gemeldet: '
+      + 'Seine Muster kannten „zahlen … Preis", die Gleichsetzung auf der Startseite hängt am '
+      + 'Wort „auch". Diese Gegenprobe hält beides wach — den Ort und das Muster.',
+  }),
+  Object.freeze({
     id: 'kartenseite-ohne-grenze',
     pruefer: 'pruefe-seiten',
     was: 'Eine Seite, auf der man einen Korb füllt, ohne die Grenze zu nennen, an der er abgewiesen wird',

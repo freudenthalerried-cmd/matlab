@@ -24,6 +24,10 @@
  */
 
 import { readdirSync, readFileSync, statSync, existsSync } from 'node:fs';
+import {
+  PREISAUSSAGEN, VORRATSWORTE, aussagenbefund, stellenbefund,
+} from '../src/aussagen.js';
+import { nurText } from '../src/format.js';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
@@ -320,6 +324,54 @@ if (process.argv[2] === '--seiten') {
    * wenn der Einbau in `bin/website.mjs` entfernt oder ein Seitentyp anders
    * gebaut wird.
    * ---------------------------------------------------------------- */
+  /* ---------------------------------------------------------------- *
+   * Aussagen über den eigenen Bestand — auf jeder Fläche, nicht nur in
+   * der Anzeige (5. September 2026, abends)
+   *
+   * `PREISAUSSAGEN` und `VORRATSWORTE` gibt es seit dem 31. August und dem
+   * 5. September — und beide haben nur Anzeigentexte gelesen. Auf der
+   * **Startseite** stand derweil im ersten Satz unter der Hauptüberschrift:
+   *
+   * > „Was ein Baumeister im Einkauf zahlt, **zahlen Sie auch**"
+   *
+   * Wörtlich dieselbe Behauptung, die am selben Tag aus der WDVS-Anzeige
+   * entfernt wurde — auf der Seite, die jeder zuerst sieht.
+   *
+   * > **Der Prüfer, der dagegen gebaut wurde, las nur die Anzeigen.**
+   *
+   * Gesucht wird im **Text**, nicht im Markup: Die Startseite bricht den
+   * Satz über zwei Zeilen, und ein Muster über rohes HTML hätte ihn auch
+   * jetzt nicht gefunden — dieselbe Falle wie beim Herkunftsmuster.
+   * ---------------------------------------------------------------- */
+  const alleStellen = [];
+  for (const datei of alleSeitendateien(wurzel)) {
+    const text = nurText(readFileSync(datei, 'utf8'));
+    const name = datei.split('/site/')[1] ?? datei;
+    // Alle Fundstellen sammeln — auch die gedeckten. Ohne sie kann die
+    // Rückrichtung nicht sagen, ob ein Eintrag noch etwas trifft.
+    const pa = PREISAUSSAGEN.find((x) => x.muster.test(text));
+    if (pa) alleStellen.push({ datei: name, wort: pa.was });
+    for (const wort of VORRATSWORTE) {
+      if (text.toLowerCase().includes(wort.toLowerCase())) alleStellen.push({ datei: name, wort });
+    }
+
+    for (const m of aussagenbefund(name, text)) {
+      treffer += 1;
+      console.log(`\n${name}`);
+      console.log(m.regel === 'preisgleichheit'
+        ? `    → behauptet, ${m.was} — der Verkaufspreis trägt einen Aufschlag, und die eigene\n`
+          + '      Wissensseite „Was Baumeisterpreis heißt" sagt das auch'
+        : `    → „${m.was}" behauptet Vorrat — der Shop führt kein eigenes Lager`);
+    }
+  }
+  for (const m of stellenbefund(alleStellen)) {
+    treffer += 1;
+    console.log(`\n${m.datei}`);
+    console.log(m.regel === 'stelle-ohne-fall'
+      ? `    → als Ausnahme geführt für „${m.was}", die Stelle gibt es nicht mehr`
+      : `    → Ausnahme für „${m.was}" ohne tragfähigen Grund`);
+  }
+
   let mitKarten = 0;
   let ohneGrenze = 0;
   for (const datei of alleSeitendateien(wurzel)) {

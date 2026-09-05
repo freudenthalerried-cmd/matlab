@@ -36,6 +36,7 @@ import { bezirksliste, LIEFERGEBIET } from '../src/liefergebiet.js';
 import { GRUPPENSEITE } from '../src/artikelliste.js';
 import { ladeBaustoffkatalog, katalogbefund, ZIELMARGE } from '../src/baustoffkatalog.js';
 import { ETAPPEN } from '../src/rollout.js';
+import { PREISAUSSAGEN, VORRATSWORTE } from '../src/aussagen.js';
 import { cent } from '../src/preis.js';
 import { traegtSichSelbst } from '../src/kostenbild.js';
 import { berechneWarenkorb } from '../src/warenkorb.js';
@@ -510,19 +511,6 @@ function csv(kopf, zeilen) {
  * abgeschnittener Anzeigentext liest sich wie ein Fehler und wirbt trotzdem.
  * Wer eine Überschrift zu lang schreibt, soll sie selbst kürzen.
  */
-/**
- * Wörter, die ein Vorrat behaupten, den es nicht gibt.
- *
- * **Befund vom 31.08.** Eine Überschrift lautete „XPS und EPS **ab Lager**".
- * `PARAMETER.md` legt fest: *Reines Streckengeschäft, kein eigenes
- * Warenlager.* Die Ware geht vom Lieferanten direkt auf die Baustelle.
- *
- * Im B2B-Baustoffhandel ist „ab Lager" keine Floskel, sondern eine
- * **Terminzusage** — der Bauleiter plant danach und stellt die Kolonne
- * darauf ein. Sie zu machen, ohne ein Lager zu haben, ist nicht bloß
- * ungenau; sie kostet den Kunden einen Tag.
- */
-const VORRATSWORTE = ['ab Lager', 'auf Lager', 'lagernd', 'sofort verfügbar', 'vorrätig', 'Lagerware'];
 
 /**
  * Wörter, mit denen eine Überschrift nicht enden darf.
@@ -667,53 +655,10 @@ export const VOLLSTAENDIGKEITSWORTE = Object.freeze([
   /\bganze[sn]?\s+(?:System|Aufbau)\b/i,
 ]);
 
-/* ------------------------------------------------------------------ *
- * Aussagen über den Preis — 5. September 2026
- *
- * **Der Befund.** In der WDVS-Anzeige stand als Beschreibung 3:
- *
- * > „Ein Baumeister kauft ein, **Sie zahlen seinen Preis**."
- *
- * Die eigene Wissensseite `wissen/baumeisterpreis.md` — dieselbe, die von
- * jeder Artikelkarte verlinkt ist — beantwortet genau diese Frage im zweiten
- * Satz:
- *
- * > „Die Preise hier entstehen aus dem Einkauf eines Baumeisterbetriebs,
- * > **zuzüglich eines Aufschlags**, aus dem dieser Shop betrieben wird."
- *
- * Der Kunde zahlt nicht seinen Preis, sondern seinen Preis plus 25 %.
- *
- * > **Die Landeseite erklärt sorgfältig, warum die Aussage nicht stimmt, die
- * > die Anzeige macht, die auf sie führt.**
- *
- * Das ist keine Ungenauigkeit, sondern eine **Preisangabe in einer Werbung**
- * — die Gattung, bei der eine falsche Aussage nicht nur enttäuscht, sondern
- * eine Geschäftspraktik ist.
- *
- * **Nicht getroffen wird der Claim selbst.** „Zum Baumeisterpreis" ist die
- * Weisung des Auftraggebers, der Name der Website und durch eine eigene
- * Wissensseite eingeordnet („Was ‚Baumeisterpreis' heißt — und was nicht").
- * Getroffen wird die **Gleichsetzung**: Ihr Preis = sein Preis. Die Muster
- * sind deshalb eng und verlangen ein Wort der Gleichheit.
- *
- * Geprüft wird gegen `ZIELMARGE`, nicht gegen eine Liste: Wäre der Aufschlag
- * eines Tages null, hörte die Regel von selbst auf zu schlagen.
- * ------------------------------------------------------------------ */
-export const PREISAUSSAGEN = Object.freeze([
-  Object.freeze({
-    muster: /\bzahlen\s+(?:Sie\s+)?(?:seinen|den|unseren)\s+(?:Einkaufs)?[Pp]reis\b/i,
-    was: 'der Kunde zahle denselben Preis wie der Baumeister',
-  }),
-  Object.freeze({
-    muster: /\bzum\s+Einkaufspreis\b|\bzum\s+Einstandspreis\b/i,
-    was: 'der Verkaufspreis sei der Einkaufspreis',
-  }),
-  Object.freeze({
-    muster: /\bohne\s+Auf(?:schlag|preis|geld)\b|\bkein\w*\s+Auf(?:schlag|preis)\b/i,
-    was: 'es gebe keinen Aufschlag',
-  }),
-]);
-
+// `PREISAUSSAGEN` und `VORRATSWORTE` stehen seit dem 5. September in
+// `src/aussagen.js`. Beide sind aus Anzeigentexten entstanden und haben nur
+// Anzeigentexte gelesen — während auf der Startseite dieselbe Behauptung
+// stand. Sie gelten für jede Fläche; die Begründung steht dort.
 /* ------------------------------------------------------------------ *
  * Aussagen über die Bestellbarkeit — 5. September 2026
  *

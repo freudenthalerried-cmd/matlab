@@ -2,8 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   pruefeTexte, VOLLSTAENDIGKEITSWORTE, LUECKENSATZ,
-  PREISAUSSAGEN, BESTELLAUSSAGEN, pruefeBestellversprechen,
+  BESTELLAUSSAGEN, pruefeBestellversprechen,
 } from '../bin/kampagne.mjs';
+// Seit dem 5. September in `src/aussagen.js`: Beide Register hatten nur
+// Anzeigentexte gelesen, während dieselbe Behauptung auf der Startseite stand.
+import { PREISAUSSAGEN } from '../src/aussagen.js';
 import { ETAPPEN } from '../src/rollout.js';
 
 /* ------------------------------------------------------------------ *

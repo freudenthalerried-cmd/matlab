@@ -1361,7 +1361,20 @@ function startSeite(katalog, befund, seiten, verweis, katalogDatei, bereitschaft
     // — nur verrät die eine die Einkaufskondition und die andere nicht.
     kurz: `Baustoffe zum Baumeisterpreis, geliefert im Umkreis von ${ORT}. ${befund.artikelGesamt} Artikel, ${befund.unterListe} davon unter dem Listenpreis des Lieferanten.`,
     html: `<h1>Baustoffe zum<br>Baumeisterpreis</h1>
-<p class="lede">Was ein Baumeister im Einkauf zahlt, zahlen Sie auch — deshalb liegen
+<p class="lede">${
+  // **Berichtigt am 5. September, abends.** Hier stand „Was ein Baumeister im
+  // Einkauf zahlt, zahlen Sie auch" — im ersten Satz unter der
+  // Hauptüberschrift, auf der Seite, die jeder zuerst sieht.
+  //
+  // Dieselbe Behauptung war am selben Tag aus der WDVS-Anzeige entfernt
+  // worden („Ein Baumeister kauft ein, Sie zahlen seinen Preis"), und die
+  // eigene Wissensseite widerlegt sie im zweiten Satz: Die Preise entstehen
+  // aus dem Einkauf eines Baumeisterbetriebs, **zuzüglich eines Aufschlags**.
+  //
+  // Der neue Satz sagt dasselbe Verkaufsargument, ohne eine Gleichheit zu
+  // behaupten — und er sagt es mit dem Wort, das die Wissensseite benutzt.
+  ''
+}Der Einkauf eines Baumeisterbetriebs ist unsere Grundlage — deshalb liegen
 ${befund.unterListe} von ${befund.mitPreis} Artikeln unter dem Listenpreis des Lieferanten, im Median um
 ${String(befund.medianAbstandZurListe).replace('.', ',')} %. Preise der ${befund.artikelGesamt} Artikel, Stand: ${esc(preisStand(katalog))}.
 Geliefert wird im Umkreis, nicht in ganz Österreich: Das ist der Grund, warum die Rechnung aufgeht.</p>
