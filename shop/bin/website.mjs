@@ -578,6 +578,30 @@ const NAV_REIHENFOLGE = ['WDVS', 'Dämmung', 'Mauerwerk', 'Mörtel', 'Kamin', 'K
  */
 const LIEFERBEZIRKE = aufzaehlung(LIEFERGEBIET.bezirke.map((b) => b.name));
 /** Gate 25, aus den Betreiberdaten — `null`, solange keine Grenze hinterlegt ist. */
+/**
+ * Woran eine Seite erkannt wird, auf der ein Korb gefüllt wird.
+ *
+ * **Der zweite Eintrag kam am 5. September dazu, spätabends.** Der erste
+ * misst, was im gebauten HTML steht — und genau **eine** Seite füllt ihr
+ * Kartenraster erst, wenn jemand tippt: die Suchergebnisseite. Gemessen im
+ * Browser, `#suche?q=daemmung`:
+ *
+ * ```
+ * karten=9 legenknoepfe=9 nenntGrenze=false
+ * ```
+ *
+ * Neun Karten, neun Knöpfe „In den Warenkorb", keine Grenze. Dieselbe Familie
+ * wie der Befund, der diese Regel überhaupt ausgelöst hat, eine Fläche weiter.
+ *
+ * Der zweite Eintrag ist eine **Kennung** und keine allgemeine Regel — das ist
+ * ihm anzusehen und soll es. Die allgemeine Fassung („jede Fläche, auf der
+ * nach dem Laden ein Legen-Knopf steht") ist im gebauten Text nicht messbar,
+ * sondern nur im laufenden Browser; dort hält sie das Szenario *„Wo Karten
+ * erst beim Tippen entstehen, steht die Grenze trotzdem"* in
+ * `bin/shopprobe.mjs` nach.
+ */
+const KARTENFLAECHEN = Object.freeze(['class="karte"', 'id="suche-ziel"']);
+
 const MINDESTWERT_NETTO = BETREIBER.mindestbestellwertNetto ?? null;
 
 /**
@@ -2122,7 +2146,7 @@ Warengruppen in der Kopfleiste.</p></noscript>
  */
 function mitMindestwert(html, verweis) {
   if (MINDESTWERT_NETTO == null || MINDESTWERT_STAND == null) return html;
-  if (!html.includes('class="karte"')) return html;
+  if (!KARTENFLAECHEN.some((merkmal) => html.includes(merkmal))) return html;
   if (html.includes('Mindestbestellwert')) return html;
   return `${html}
 <p class="antwort mindestwert-hinweis"><strong>Mindestbestellwert ${euro(MINDESTWERT_NETTO)} € netto

@@ -958,8 +958,24 @@ test('keine Seite mit eigenem Inhalt trägt noindex', () => {
         const a = html.indexOf('<main id="inhalt"');
         const b = html.indexOf('</main>');
         assert.ok(a > 0 && b > a, `${vor}${e.name}: ohne <main> ist der eigene Inhalt nicht abgrenzbar`);
+        /*
+         * **Der Mindestwerthinweis zählt nicht als eigener Inhalt — 5. Sept.**
+         * `mitMindestwert` hängt denselben Absatz an jede Fläche, auf der ein
+         * Korb gefüllt wird; seit heute Nacht auch an die Suchergebnisseite.
+         * Er ist 371 Zeichen lang und hob sie damit von 214 auf 585 — über die
+         * Schwelle, ab der eine Seite in den Index gehört.
+         *
+         * > **Ein Absatz, der auf zwanzig Seiten wortgleich steht, sagt nichts
+         * > darüber, ob **diese** Seite Substanz hat.**
+         *
+         * Dieselbe Begründung wie bei der Brotkrume eine Zeile darunter: Was
+         * die Seite nicht selbst schreibt, misst nicht ihren Inhalt. Ohne
+         * diesen Schnitt entschiede eine Regel über Gate 25 darüber, welche
+         * Seiten in den Index gehören.
+         */
         const eigen = html.slice(a, b)
           .replace(/<script[\s\S]*?<\/script>/g, '')
+          .replace(/<p class="antwort mindestwert-hinweis">[\s\S]*?<\/p>/, '')
           .replace(/<p class="krume">[\s\S]*?<\/p>/, '')
           .replace(/<[^>]+>/g, ' ').replace(/&[a-z]+;/g, ' ').replace(/\s+/g, ' ').trim();
         gemessen.push({ id: vor + e.name.slice(0, -5), laenge: eigen.length, noindex: html.includes('noindex') });

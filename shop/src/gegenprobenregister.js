@@ -211,6 +211,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'durch `test/statuskopf.test.js` in beide Richtungen abgedeckt.',
   }),
   Object.freeze({
+    id: 'korbflaeche-ohne-grenze',
+    pruefer: 'shopprobe',
+    was: 'Eine Fläche mit Legen-Knopf, auf der die Grenze aus Gate 25 fehlt',
+    datei: 'shop/bin/website.mjs',
+    art: 'ersetzen',
+    suchen: "const KARTENFLAECHEN = Object.freeze(['class=\"karte\"', 'id=\"suche-ziel\"']);",
+    ersetzen: "const KARTENFLAECHEN = Object.freeze(['class=\"karte\"']);",
+    erwartet: /ohneGrenze=suche|Legen-Knopf/,
+    baueVorher: true,
+    warum: 'Der Zustand vom 5. September: neun Karten mit neun Knöpfen „In den Warenkorb" auf '
+      + 'der Suchergebnisseite, und kein Wort über die 250 € netto je Lieferung. Die Mutation '
+      + 'nimmt genau das Merkmal wieder heraus, das die Fläche kenntlich macht — und muss das '
+      + 'Szenario treffen, das **nicht** an dieser Liste hängt, sondern am Legen-Knopf im '
+      + 'laufenden Browser.',
+  }),
+  Object.freeze({
     id: 'auszeichnung-sagt-mehr-als-die-seite',
     pruefer: 'pruefe-seiten',
     was: 'Eine maschinenlesbare Antwort mit einer Zahl, die auf der Seite nicht steht',
@@ -929,10 +945,14 @@ export const GEGENPROBEN = Object.freeze([
     was: 'Eine Seite, auf der man einen Korb füllt, ohne die Grenze zu nennen, an der er abgewiesen wird',
     datei: 'shop/bin/website.mjs',
     art: 'ersetzen',
-    suchen: "  if (!html.includes('class=\"karte\"')) return html;",
+    suchen: '  if (!KARTENFLAECHEN.some((merkmal) => html.includes(merkmal))) return html;',
     ersetzen: "  if (!html.includes('class=\"gibtesnicht\"')) return html;",
     erwartet: /Mindestbestellwert nicht/,
     baueVorher: true,
+    // **Nachgezogen am 5. September, nachts.** Der Suchtext war die Zeile
+    // `if (!html.includes('class="karte"'))`; sie ist beim Einbau der zweiten
+    // Korbfläche zu `KARTENFLAECHEN.some(…)` geworden. Der Gegenprobenlauf hat
+    // es gemeldet — eine Mutation, die nicht mehr ankommt, prüft nichts.
     warum: 'Der Zustand bis zum 5. September: Der Mindestbestellwert (Gate 25, 250 € netto je '
       + 'Lieferung) stand auf 48 der 81 gebauten Seiten — auf jeder Artikelseite, auf der '
       + 'Lieferseite, in den AGB. Auf **keiner** der Seiten mit Artikelkarten: nicht auf der '

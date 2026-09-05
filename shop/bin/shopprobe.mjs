@@ -86,6 +86,73 @@ const SZENARIEN = [
     verboten: ['100 mm', '30 mm'],
   },
   {
+    /*
+     * **Die Seite, deren Karten erst beim Tippen entstehen — 5. September.**
+     * Gate 25 (250 € netto je Lieferung) steht seit dem 5. September auf jeder
+     * Seite, auf der man einen Korb füllt. Eingebaut ist die Regel in
+     * `mitMindestwert`, und sie erkennt eine solche Seite an `class="karte"`
+     * **im gebauten HTML**. Auf der Suchergebnisseite steht dort keine Karte:
+     * Sie entstehen erst, wenn jemand einen Begriff eingibt — mitsamt
+     * Mengenfeld und „In den Warenkorb".
+     *
+     * Dieselbe Familie wie der Befund, der die Regel überhaupt ausgelöst hat,
+     * eine Fläche weiter: *Die Grenze steht auf jeder Seite, auf der man einen
+     * Artikel ansieht — und auf keiner, auf der man eine Bestellung
+     * zusammenstellt.*
+     */
+    name: 'Wo Karten erst beim Tippen entstehen, steht die Grenze trotzdem',
+    aktionen: `
+      await geheZu('suche?q=daemmung');
+      const karten = document.querySelectorAll('#suche-ziel .karte').length;
+      const knoepfe = [...document.querySelectorAll('#suche-ziel .karte button')]
+        .filter((k) => /Warenkorb/.test(k.textContent)).length;
+      const inhalt = document.getElementById('inhalt');
+      out = 'karten=' + karten + ' legenknoepfe=' + knoepfe
+        + ' nenntGrenze=' + /Mindestbestellwert/.test(inhalt ? inhalt.textContent : '')
+        + ' imGanzenDokument=' + /Mindestbestellwert/.test(document.body.textContent);`,
+    erwartet: ['nenntGrenze=true'],
+    verboten: ['karten=0', 'legenknoepfe=0'],
+  },
+  {
+    /*
+     * **Die Regel, deren Reichweite nicht an einer Liste endet.**
+     * `mitMindestwert` in `bin/website.mjs` erkennt eine Korbfläche an zwei
+     * Merkmalen im gebauten Text. Zwei Merkmale sind eine Liste, und eine
+     * Liste ist so vollständig, wie jemand daran gedacht hat — der Befund
+     * dieser Runde ist ja gerade, dass die erste Fassung eine Fläche nicht
+     * kannte.
+     *
+     * Hier wird stattdessen **gemessen**, und zwar an dem, worauf es ankommt:
+     * Steht nach dem Laden ein Knopf „In den Warenkorb" auf der Seite, dann
+     * steht die Grenze dazu. Über alle Seiten der Einzeldatei, ohne Liste.
+     */
+    name: 'Keine Fläche mit Legen-Knopf ohne die Grenze',
+    aktionen: `
+      const ids = [...document.querySelectorAll('template[data-seite]')].map((t) => t.dataset.seite);
+      let mitKnopf = 0;
+      const fehlend = [];
+      // **Nicht \`geheZu\`.** Dessen 60 ms sind für einen Sprung gedacht; über
+      // 81 Seiten sind es 4,9 s und damit mehr als das Zeitbudget des
+      // Browsers (2,5 s virtuelle Zeit) — die Sonde käme nie zum Schreiben
+      // ihres Markers, und der Lauf meldete „nicht gelaufen" statt eines
+      // Ergebnisses. Der Seitenwechsel selbst ist synchron: Der Zuhörer auf
+      // \`hashchange\` setzt \`#inhalt\` und ruft \`start()\` in einem Zug. Ein
+      // Tick genügt, damit das Ereignis überhaupt zugestellt wird.
+      for (const id of ids) {
+        location.hash = id;
+        await new Promise((f) => setTimeout(f, 5));
+        const inhalt = document.getElementById('inhalt');
+        const knopf = [...inhalt.querySelectorAll('button')].some((b) => /Warenkorb/.test(b.textContent));
+        if (!knopf) continue;
+        mitKnopf++;
+        if (!/Mindestbestellwert/.test(inhalt.textContent)) fehlend.push(id);
+      }
+      out = 'seiten=' + ids.length + ' mitKnopf=' + mitKnopf
+        + ' ohneGrenze=' + (fehlend.join(',') || 'keine');`,
+    erwartet: ['ohneGrenze=keine'],
+    verboten: ['mitKnopf=0 ', 'seiten=0 '],
+  },
+  {
     // Gemessen am 28.08.: acht von neun plausiblen Vertippern fanden nichts.
     // Wer auf der Baustelle mit einer Hand tippt, bekommt eine leere Seite.
     name: 'Ein Vertipper bekommt einen Vorschlag, keine stille Ersetzung',
