@@ -21,6 +21,8 @@ import {
   seitenbefund, eigenerText, abschnitte, abschnittsbefund, DUBLETTENGRENZE,
 } from '../src/seitenaehnlichkeit.js';
 import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
+import { beschreibungsbefund } from '../src/maschinenlesbar.js';
+import { ladeBaustoffkatalog, ZIELMARGE } from '../src/baustoffkatalog.js';
 
 const WURZEL = dirname(dirname(fileURLToPath(import.meta.url)));
 const ORDNER = join(WURZEL, 'ausgabe', 'site', 'artikel');
@@ -56,12 +58,43 @@ const seiten = dateien.map((f, i) => ({
 
 const e = seitenbefund(seiten, DUBLETTENGRENZE);
 
+/* ------------------------------------------------------------------ *
+ * Und die Beschreibung, die die Maschine liest — 5. September 2026
+ *
+ * Diese Prüfung hält seit jeher die **sichtbaren** Artikelseiten
+ * gegeneinander. Die `description` in der JSON-LD stand außerhalb: 46 Seiten,
+ * **neun** Fassungen, und die neun unterschieden sich ausschließlich im Wort
+ * hinter „Verkaufseinheit". Name und Warengruppe, ihre einzigen weiteren
+ * Bestandteile, stehen als `name` und `category` im selben Datensatz daneben.
+ *
+ * > **Der Prüfer, der die Seiten gegeneinander hielt, sah die Auskunft nicht
+ * > an, für die dieses Vorhaben ausdrücklich optimiert wird.**
+ *
+ * Geprüft wird nicht, dass sich je zwei unterscheiden — dazu müsste man
+ * Eigenschaften erfinden. Geprüft wird, dass jede **etwas Eigenes** sagt.
+ * ------------------------------------------------------------------ */
+const preisdatei = join(WURZEL, '..', 'preise', 'baustoff-preise.json');
+const lies = (...t) => JSON.parse(readFileSync(join(...t), 'utf8'));
+const bb = existsSync(preisdatei)
+  ? beschreibungsbefund(ladeBaustoffkatalog(
+    lies(WURZEL, 'data', 'katalog-baustoff.json'),
+    lies(preisdatei),
+    lies(WURZEL, 'data', 'lieferanten.json'),
+    ZIELMARGE,
+  ).artikel)
+  : null;
+
 console.log(`\nDublettenprüfung: ${e.seiten} Artikelseiten, ${e.paare} Paare\n`);
 console.log(`  Ähnlichste zwei      ${e.hoechste.wert.toFixed(2)}  (${e.hoechste.a} / ${e.hoechste.b})`);
 console.log(`  Median über alle     ${e.median.toFixed(2)}`);
 console.log(`  Auf jeder Seite      ${e.gemeinsameWorte} von ${e.mittlereLaenge.toFixed(0)} Wörtern `
   + `(${(e.gemeinsamerAnteil * 100).toFixed(0)} %)`);
 console.log(`  Kürzeste Seite       ${e.kuerzeste}`);
+if (bb) {
+  console.log(`  Beschreibungen (JSON-LD) ${bb.verschieden} eigene Beiträge über ${bb.artikel} Artikel`);
+} else {
+  console.log('  Beschreibungen (JSON-LD) nicht geprüft — die vertrauliche Preisdatei liegt hier nicht');
+}
 
 /**
  * **Wo sitzt die Gleichheit? — ergänzt am 5. September.**
@@ -88,6 +121,14 @@ for (const a of abschnittsteile) {
   const fassung = `${a.fassungen}, größte auf ${a.groessteFassung}`;
   console.log(`    ${a.titel.padEnd(22)} ${schnitt.padEnd(15)} ${a.median.toFixed(2).padStart(6)}   ${fassung}`);
   if (!a.aufJederSeite) console.log(`      (nur auf ${a.seiten} von ${seiten.length} Seiten)`);
+}
+
+if (bb && !bb.sauber) {
+  console.log(`\n  ✗ ${bb.meldungen.length} Befund(e) an den maschinenlesbaren Beschreibungen:`);
+  for (const m of bb.meldungen) console.log(`      ${m.text}  (${m.regel})`);
+  console.log('\nEine Beschreibung, die nur wiederholt, was daneben als eigenes Feld steht,');
+  console.log('ist eine Schablone — und Assistenten zitieren sie als die Auskunft des Shops.');
+  process.exit(1);
 }
 
 if (e.dubletten.length) {

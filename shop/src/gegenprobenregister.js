@@ -916,6 +916,24 @@ export const GEGENPROBEN = Object.freeze([
       + 'sehen: die tote Einheit und die unbekannte.',
   }),
   Object.freeze({
+    id: 'beschreibung-als-schablone',
+    pruefer: 'pruefe-dubletten',
+    was: 'Eine maschinenlesbare Beschreibung, die nur wiederholt, was daneben als Feld steht',
+    datei: 'shop/src/maschinenlesbar.js',
+    art: 'ersetzen',
+    suchen: "  const stand = textZeile(artikel.preisStand ?? '');\n  if (stand) teile.push(`Preisstand ${stand}`);",
+    ersetzen: "  const stand = '';\n  if (stand) teile.push(`Preisstand ${stand}`);",
+    erwartet: /nichts-eigenes/,
+    baueVorher: true,
+    warum: 'Bis zum 5. September abends trug die `description` der 46 Artikelseiten nur '
+      + 'Bezeichnung, Warengruppe, Verkaufseinheit und einen auf allen identischen Satz zur '
+      + 'Umsatzsteuer — und alle vier stehen als `name`, `category` und `valueAddedTaxIncluded` '
+      + 'im selben Datensatz daneben. Neun Fassungen über 46 Seiten, unterschieden allein im '
+      + 'Wort hinter „Verkaufseinheit". Diese Mutation nimmt den Preisstand wieder heraus; für '
+      + 'die Artikel ohne Gebinde im Namen, ohne belegtes Gewicht und ohne Sperrguteinstufung '
+      + 'bleibt dann nichts Eigenes übrig, und genau das soll auffallen.',
+  }),
+  Object.freeze({
     id: 'querverweise-ohne-marke',
     pruefer: 'pruefe-dubletten',
     was: 'Eine Messung, die die Navigation mitzählt und es Inhalt nennt',

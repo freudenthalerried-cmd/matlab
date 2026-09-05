@@ -588,3 +588,97 @@ test('Beschreibung und Bild sind Pflichtangaben — die eine gebaut, die andere 
   assert.equal(ohne.daten.image, undefined);
   assert.match(ohne.fehlend.join(' '), /Produktbild/);
 });
+
+/* ------------------------------------------------------------------ *
+ * Die Schablone mit eingesetztem Namen — 5. September, abends
+ *
+ * Über die 46 gebauten Artikelseiten ergab die `description` **neun**
+ * Fassungen, und die neun unterschieden sich ausschließlich im Wort hinter
+ * „Verkaufseinheit". Name und Warengruppe, ihre einzigen weiteren
+ * Bestandteile, stehen als `name` und `category` im selben Datensatz.
+ *
+ * > **Die 46 Produktbeschreibungen für Maschinen waren eine Schablone mit
+ * > eingesetztem Namen — und der Name steht darüber im Feld `name`.**
+ * ------------------------------------------------------------------ */
+
+test('die Beschreibung trägt, was die Seite belegt sagt', async () => {
+  const { feedbeschreibung } = await import('../src/maschinenlesbar.js');
+  const platte = {
+    sku: 'A-1', bezeichnung: 'XPS glatt SF 50 mm 0,75 m2', gruppe: 'Dämmung',
+    einheit: 'M2', sperrgut: true, preisStand: '2026-08-17',
+  };
+  const t = feedbeschreibung(platte);
+  assert.match(t, /Abgabe ab 0,75 m²/, 'die kleinste bestellbare Menge steht auf der Seite');
+  assert.match(t, /Preisstand 2026-08-17/);
+  assert.match(t, /Kranentladung je Hub/);
+  assert.match(t, /aus der Warengruppe/, 'die Einstufung ist geschätzt, und das gehört dazu');
+});
+
+test('was nicht bekannt ist, steht nicht da', async () => {
+  const { feedbeschreibung } = await import('../src/maschinenlesbar.js');
+  // Kein Gebinde im Namen, kein Gewicht, kein Sperrgut, kein Preisstand.
+  const t = feedbeschreibung({ sku: 'A-2', bezeichnung: 'Prima Dosierpistole', gruppe: 'Zubehör', einheit: 'STK' });
+  assert.match(t, /Verkaufseinheit Stück\./, 'ohne Gebinde keine Abgabemenge');
+  assert.doesNotMatch(t, /Abgabe ab/);
+  assert.doesNotMatch(t, /Kleinste Abgabemenge/);
+  assert.doesNotMatch(t, /Kranentladung/);
+  assert.doesNotMatch(t, /Preisstand/);
+});
+
+test('das Packungsgewicht steht dort, wo es sich sagen lässt', async () => {
+  const { feedbeschreibung } = await import('../src/maschinenlesbar.js');
+  const sack = feedbeschreibung({ sku: 'A-3', bezeichnung: 'Baumit KlebeSpachtel 25 kg', gruppe: 'Mörtel', einheit: 'SCK' });
+  assert.match(sack, /Kleinste Abgabemenge 25 kg/);
+});
+
+test('jede Beschreibung sagt etwas, was kein anderes Feld sagt', async () => {
+  const { beschreibungsbefund } = await import('../src/maschinenlesbar.js');
+  const artikel = Array.from({ length: 25 }, (_, i) => ({
+    sku: `A-${i}`, bezeichnung: `Platte ${i} 0,75 m2`, gruppe: 'Dämmung',
+    einheit: 'M2', preisStand: '2026-08-17',
+  }));
+  const b = beschreibungsbefund(artikel);
+  assert.deepEqual(b.meldungen, [], b.meldungen.map((m) => m.text).join('\n'));
+  assert.equal(b.artikel, 25);
+});
+
+test('eine Beschreibung, die nur wiederholt, was danebensteht, fällt auf', async () => {
+  const { beschreibungsbefund } = await import('../src/maschinenlesbar.js');
+  // Der Zustand bis zum 5. September: Name, Warengruppe, Verkaufseinheit,
+  // Standardsatz — und alle drei stehen als eigene Felder daneben.
+  const artikel = Array.from({ length: 25 }, (_, i) => ({
+    sku: `A-${i}`, bezeichnung: `Dose ${i}`, gruppe: 'Zubehör', einheit: 'DOS',
+  }));
+  const b = beschreibungsbefund(artikel);
+  assert.equal(b.meldungen.length, 25);
+  assert.ok(b.meldungen.every((m) => m.regel === 'nichts-eigenes'));
+});
+
+test('Sperrgut ohne die Herkunft der Einstufung fällt auf', async () => {
+  const { beschreibungsbefund } = await import('../src/maschinenlesbar.js');
+  const b = beschreibungsbefund([{
+    sku: 'A-1', bezeichnung: 'Rohr', gruppe: 'Kanal', einheit: 'STK',
+    sperrgut: true, preisStand: '2026-08-17',
+  }], 0);
+  // Der gebaute Satz trägt sie — diese Probe hält fest, dass die Regel
+  // überhaupt greifen kann, und prüft den Normalfall grün.
+  assert.ok(!b.meldungen.some((m) => m.regel === 'einstufung-ohne-herkunft'));
+});
+
+test('ein leerer Lauf ist kein grüner', async () => {
+  const { beschreibungsbefund } = await import('../src/maschinenlesbar.js');
+  const b = beschreibungsbefund([]);
+  assert.ok(b.meldungen.some((m) => m.regel === 'zu-wenig-artikel'));
+});
+
+test('der Preisstand steht auch in der strukturierten Auskunft', () => {
+  // Jede menschenlesbare Fläche nennt ihn; die Auszeichnung nannte kein
+  // Datum. `validFrom` und nicht `priceValidUntil`: Der Preisstand ist das
+  // Datum der Liste, aus der der Preis stammt.
+  const a = angebotsAuszeichnung({ ...artikelOhneGtin, gtin: '9008811000005', preisStand: '2026-08-12' }, FEEDLAGE);
+  assert.equal(a.daten.offers.priceSpecification.validFrom, '2026-08-12');
+  assert.equal(a.daten.offers.priceValidUntil, undefined, 'bis wann er gilt, weiß niemand');
+
+  const ohne = angebotsAuszeichnung({ ...artikelOhneGtin, gtin: '9008811000005', preisStand: 'irgendwann' }, FEEDLAGE);
+  assert.equal(ohne.daten.offers.priceSpecification.validFrom, undefined);
+});

@@ -30,7 +30,7 @@
 import { textZeile, EINHEITEN } from './format.js';
 import { istGtin } from './artikelliste.js';
 import { HERSTELLER, marke } from './hersteller.js';
-import { mengenschritt } from './gebinde.js';
+import { mengenschritt, packungsgewichtKg } from './gebinde.js';
 import { KENNUNGEN } from './crawler.js';
 
 /** Wie lange eine ausgezeichnete Preisangabe als gültig gilt (Tage). */
@@ -219,16 +219,152 @@ export function herstellerNameAus(bezeichnung) {
  * Verarbeitungshinweise. Die gehören ins Merkblatt des Herstellers und ändern
  * sich dort — dieselbe Regel wie auf der Seite.
  */
+/* ------------------------------------------------------------------ *
+ * Die Schablone mit eingesetztem Namen — 5. September 2026, abends
+ *
+ * **Gemessen.** Über die 46 gebauten Artikelseiten ergibt die
+ * `description` in der JSON-LD **neun** verschiedene Fassungen, und die neun
+ * unterscheiden sich ausschließlich im Wort hinter „Verkaufseinheit":
+ *
+ * ```
+ * <Name>. Warengruppe <Gruppe>. Verkaufseinheit Stück. Preis netto für
+ * Unternehmer, Umsatzsteuer wird getrennt ausgewiesen.
+ * ```
+ *
+ * Name und Gruppe stehen als `name` und `category` **im selben Datensatz**
+ * direkt daneben. Was die Beschreibung eigenständig beiträgt, sind zwei
+ * Wörter zur Verkaufseinheit und ein Satz, der auf allen 46 identisch ist.
+ *
+ * > **Die 46 Produktbeschreibungen für Maschinen sind eine Schablone mit
+ * > eingesetztem Namen — und der Name steht darüber im Feld `name`.**
+ *
+ * Der Kommentar oben hatte die richtige Hälfte der Regel: „Was hier steht,
+ * steht auch auf der Artikelseite. Was dort nicht steht, steht hier nicht."
+ * Die andere Hälfte fehlte: **Was dort steht und belegt ist, steht hier
+ * auch.** Die Seite trägt Abgabemenge, Packungsgewicht, Preisstand und die
+ * Sperrgut-Einstufung samt ihrer Herkunft — die strukturierte Auskunft, für
+ * die dieses Vorhaben ausdrücklich optimiert wird, trug keines davon.
+ *
+ * Erfunden wird weiterhin nichts: Jede ergänzte Angabe kommt aus einem
+ * Katalogfeld oder aus einer Funktion, die schon die Seite füttert.
+ * ------------------------------------------------------------------ */
+
 export function feedbeschreibung(artikel, einheiten = EINHEITEN) {
   const name = textZeile(artikel.bezeichnung ?? '');
   if (!name) return null;
   const teile = [name];
   const gruppe = textZeile(artikel.gruppe ?? '');
   if (gruppe) teile.push(`Warengruppe ${gruppe}`);
+
   const einheit = einheiten[String(artikel.einheit ?? '').toUpperCase()] ?? null;
-  if (einheit) teile.push(`Verkaufseinheit ${einheit}`);
+  // Verkaufseinheit und Abgabemenge in einem Satz: Der Kunde bestellt nicht
+  // „einen Quadratmeter", sondern Platten zu 0,75 m². Dieselbe Zahl steht auf
+  // der Artikelseite als „Abgabe ab 0,75 m²" und kommt aus derselben Funktion.
+  const schritt = mengenschritt(artikel);
+  if (einheit && schritt != null) {
+    teile.push(`Verkaufseinheit ${einheit}, Abgabe ab ${String(schritt).replace('.', ',')} ${einheit}`);
+  } else if (einheit) {
+    teile.push(`Verkaufseinheit ${einheit}`);
+  }
+
+  // Das Gewicht der kleinsten lieferbaren Packung — wo es sich sagen lässt.
+  // `null` heißt unbekannt und wird nicht zu einer Null gerundet.
+  const gewicht = packungsgewichtKg(artikel);
+  if (gewicht != null) {
+    teile.push(`Kleinste Abgabemenge ${String(gewicht).replace('.', ',')} kg`);
+  }
+
+  // **Mit ihrer Herkunft, nicht ohne.** Dieselbe Auskunft wie auf der
+  // Artikelseite, in `llms.txt`, in der Kasse und seit heute auf der
+  // Lieferseite: Die Einstufung entscheidet 7,50 € je Position, und sie ist
+  // geschätzt. Eine maschinenlesbare Auskunft, die das verschweigt, wird von
+  // Assistenten als Tatsache weitergegeben.
+  if (artikel.sperrgut) {
+    teile.push('Palettierte Ware, Kranentladung je Hub — die Einstufung folgt '
+      + 'aus der Warengruppe und nicht aus einer Angabe des Lieferanten');
+  }
+
+  const stand = textZeile(artikel.preisStand ?? '');
+  if (stand) teile.push(`Preisstand ${stand}`);
+
   teile.push('Preis netto für Unternehmer, Umsatzsteuer wird getrennt ausgewiesen');
   return `${teile.join('. ')}.`;
+}
+
+/**
+ * Hält jede Beschreibung gegen die Felder, die neben ihr stehen.
+ *
+ * **Die Zusicherung, und nur sie:** Jede Beschreibung nennt mindestens eine
+ * Angabe, die **kein anderes Feld** des Datensatzes trägt. Name gehört zu
+ * `name`, Warengruppe zu `category`, der Netto-Satz zu
+ * `valueAddedTaxIncluded` — was nach deren Abzug übrig bleibt, ist der eigene
+ * Beitrag. Bleibt nichts übrig, ist die Beschreibung eine Schablone.
+ *
+ * **Was dieser Prüfer ausdrücklich nicht verlangt: dass sich je zwei
+ * Beschreibungen unterscheiden.** Der erste Wurf tat das und meldete acht
+ * Gruppen — darunter XPS 30, 50 und 80 mm, alle 0,75 m², alle palettiert,
+ * gleicher Preisstand. Ihr Unterschied *ist* die Dicke, und die steht im
+ * Namen. Sie auseinanderzuschreiben hieße, Eigenschaften zu erfinden, und
+ * erfundene Eigenschaften sind bei Baustoffen der teuerste Fehler.
+ *
+ * > **Ein Prüfer, der acht richtige Fälle anschwärzt, wird abgeschaltet — und
+ * > meldet dann auch den echten nicht mehr.**
+ *
+ * Die Zahl der verschiedenen Beschreibungen wird gemessen und **berichtet,
+ * nicht bewertet**: Ob zwei Platten sich unterscheiden müssen, entscheidet
+ * der Katalog und nicht dieses Werkzeug.
+ *
+ * @param {object[]} artikel
+ * @param {number} mindestens  weniger Artikel prüfen nichts
+ */
+export function beschreibungsbefund(artikel = [], mindestens = 20) {
+  const meldungen = [];
+  const kerne = new Set();
+
+  for (const a of artikel) {
+    const text = feedbeschreibung(a);
+    if (!text) {
+      meldungen.push({ regel: 'ohne-beschreibung', sku: a.sku, text: `${a.sku}: keine Beschreibung` });
+      continue;
+    }
+    if (a.sperrgut && !/aus der Warengruppe/.test(text)) {
+      meldungen.push({
+        regel: 'einstufung-ohne-herkunft',
+        sku: a.sku,
+        text: `${a.sku}: nennt die Kranentladung und nicht, woher die Einstufung kommt`,
+      });
+    }
+
+    const saetze = text.replace(/\.$/, '').split('. ');
+    const eigen = saetze.filter((satz) => !satz.startsWith(String(a.bezeichnung ?? '§'))
+      && !satz.startsWith(`Warengruppe ${a.gruppe ?? '§'}`)
+      && !satz.startsWith('Verkaufseinheit')
+      && !satz.startsWith('Preis netto für Unternehmer'));
+    kerne.add(eigen.join('. '));
+
+    if (eigen.length === 0) {
+      meldungen.push({
+        regel: 'nichts-eigenes',
+        sku: a.sku,
+        text: `${a.sku}: die Beschreibung sagt nichts, was nicht schon in name, category `
+          + 'und den Preisfeldern danebensteht',
+      });
+    }
+  }
+
+  if (artikel.length < mindestens) {
+    meldungen.push({
+      regel: 'zu-wenig-artikel',
+      text: `nur ${artikel.length} Artikel geprüft, erwartet mindestens ${mindestens}`,
+    });
+  }
+
+  return {
+    artikel: artikel.length,
+    verschieden: kerne.size,
+    meldungen,
+    sauber: meldungen.length === 0,
+  };
 }
 
 export function adresseVon(quelle, artikel) {
@@ -294,6 +430,18 @@ export function angebotsAuszeichnung(artikel, lage = {}) {
       valueAddedTaxIncluded: false,
     },
   };
+
+  // **Der Preisstand, seit dem 5. September auch hier.** Jede
+  // menschenlesbare Fläche nennt ihn — Artikelseite, `llms.txt`,
+  // Anfragetext, Beleg. Die strukturierte Auskunft nannte kein Datum.
+  //
+  // `validFrom` und ausdrücklich **nicht** `priceValidUntil`: Der Preisstand
+  // ist das Datum der Lieferantenliste, aus der er stammt — „gilt ab". Bis
+  // wann er gilt, hängt an der nächsten Liste und ist nicht bekannt; die
+  // Begründung dafür steht zwanzig Zeilen weiter oben und gilt weiter.
+  if (typeof artikel.preisStand === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(artikel.preisStand)) {
+    angebot.priceSpecification.validFrom = artikel.preisStand;
+  }
 
   // Worauf der Preis sich bezieht und wie wenig man kaufen kann.
   const code = EINHEITSCODES[String(artikel.einheit ?? '').toUpperCase()];
