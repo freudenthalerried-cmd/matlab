@@ -125,6 +125,26 @@ Gegenprobe `sperre-ohne-gruenen-fall` nimmt den grünen Fall des
 Rechtstexteauftrags wieder heraus und lässt die rote Richtung stehen — genau
 den Zustand von heute früh. **51 Gegenproben für 31 Prüfer.**
 
+## Ein dritter Fund, beim Nachziehen der Beschreibung
+
+`pruefe-schaufenster` meldete „Prüfer ohne Browser: die Beschreibung sagt 25,
+gemessen sind 26". Beim Nachsehen stand in der **veröffentlichten** Fassung
+auf GitHub aber **24** — die Quelle war seit zwei Tagen einen Schritt weiter
+als die Seite, und der Prüfer misst die Quelle.
+
+Entstanden ist die Abweichung beim Abschreiben von Hand: Die Beschreibung
+wird veröffentlicht, indem ihr Text in einen Werkzeugaufruf gesetzt wird, und
+dabei ist zweimal hintereinander eine alte Zahl mitgereist.
+
+> **Ein Schaufenster, dessen Preisschilder im Lager stimmen, ist immer noch
+> eines mit falschen Preisschildern.** Derselbe Satz stand am 4. September
+> schon einmal hier — damals über den Inhalt, jetzt über den Weg dorthin.
+
+Deshalb neu: `npm run pr-text`. Es gibt genau den Text aus, der veröffentlicht
+gehört — Kopfkommentar und Überschrift entfernt, Fußzeile angehängt. Das
+Abschreiben entfällt; wer etwas anderes veröffentlicht, tut es gegen ein
+Werkzeug und nicht aus Versehen.
+
 ## Die Lehre
 
 > **Wer eine Sperre baut, schuldet beide Richtungen: dass sie hält und dass
