@@ -55,6 +55,7 @@
     "betriebskette": "node bin/betriebskette.mjs",
     "pruefe-betriebskette": "node bin/betriebskette.mjs",
     "pruefe-sperren": "node bin/sperrenpruefung.mjs",
+    "pruefe-sperrgut": "node bin/sperrgutpruefung.mjs",
     "pr-text": "node bin/prtext.mjs",
     "pruefe-schaufenster": "node bin/schaufensterpruefung.mjs",
     "pruefe-leitzahlen": "node bin/leitzahlpruefung.mjs",

@@ -55,6 +55,7 @@ import { ZAHLWEGE, zahlwegName } from '../src/zahlung.js';
 import { fracht } from '../src/preis.js';
 import { lesKopf, alsHtml, alsText, alsListe, esc } from '../src/markdown.js';
 import { wegwerfordner } from '../src/wegwerf.js';
+import { HANDGEWICHT_KG } from '../src/sperrguteinstufung.js';
 import {
   erzeugeImpressum, pruefeBetreiberdaten, AGB_GLIEDERUNG, ZAHLUNGSBEDINGUNGEN,
   DATENSCHUTZ_GLIEDERUNG, websiteVerarbeitung, B2B_ABGRENZUNG, LIEFERHINWEISE, IMPRESSUMSFELDER,
@@ -824,6 +825,43 @@ wäre schlimmer als eine leere.</p>`);
 Die Frachtsätze stehen unter <a href="${verweis('lieferung')}">Lieferung</a>. Warum die Fracht getrennt
 ausgewiesen wird und es kein „frei Haus" gibt, steht unter
 <a href="${verweis('wissen/warum-keine-gratislieferung')}">Warum es keine Gratislieferung gibt</a>.</p>`);
+
+  /**
+   * **Woher die Einstufung kommt — aufgenommen am 5. September.**
+   *
+   * Der Satz darüber behauptet eine Lieferart. Er stammt aus keiner Angabe
+   * des Lieferanten, sondern aus der **Warengruppe**: Dämmung, Kamin, Kanal
+   * und Mauerwerk gelten als Sperrgut. Alle 46 Artikel tragen
+   * `sperrgutQuelle: "eingeschaetzt"`.
+   *
+   * > **Auf der Seite des Kanalbogens stand „Gewicht 0,285 kg je Stück, aus
+   * > dem Lieferschein" und darunter „Palettierte Ware. Sie wird mit dem Kran
+   * > entladen."** Beide Angaben stehen seit dem ersten Bau übereinander, und
+   * > niemand hat sie je nebeneinandergehalten.
+   *
+   * Umgestuft wird nichts: Ob der Lieferant einen Hub verrechnet, sagt der
+   * Lieferant. Aber der Kunde erfährt, dass die 7,50 € auf einer Schätzung
+   * beruhen — dieselbe Haltung wie überall hier: **jede Zahl mit Herkunft**,
+   * und die unangenehme steht vorne.
+   */
+  if (a.sperrgut) {
+    const zuschlag = katalog.lieferantenById.get(a.lieferantId)?.fracht?.sperrgutZuschlagNetto ?? null;
+    // **Jede Zahl mit Herkunft und Stand** — dieselbe Regel wie im Rest des
+    // Hauses, und `npm run pruefe-seiten` hat sie beim ersten Bau dieses
+    // Absatzes sofort eingefordert: Das Gewicht ohne Quelle, der Betrag ohne
+    // „netto". Ein Absatz, der die Herkunft einer Schätzung erklärt und dabei
+    // selbst Zahlen ohne Herkunft nennt, wäre ein schlechter Witz.
+    const widerspruch = Number.isFinite(a.gewichtKg) && a.gewichtKg < HANDGEWICHT_KG
+      ? ` Dieser Artikel wiegt ${esc(String(a.gewichtKg).replace('.', ','))} kg je ${esc(EINHEITEN[a.einheit] ?? a.einheit)}
+(Quelle: Positionsgewicht auf dem Lieferschein) — bei kleiner Menge kommt er ohne Palette, und die
+Entladung entfällt.`
+      : '';
+    teile.push(`<p class="einstufung">Die Einstufung als palettierte Ware stammt aus der
+<strong>Warengruppe ${esc(a.gruppe)}</strong> und nicht aus einer Angabe des Lieferanten.${widerspruch}
+${zuschlag ? `Die Kranentladung ist mit ${euro(zuschlag)} € netto je Position gerechnet und in der Zustellung
+unten enthalten (Quelle: <a href="${verweis('lieferung')}">Lieferung und Fracht</a>, Stand: ${esc(preisStand(katalog))});
+liegt die Schätzung zu hoch, ist die tatsächliche Lieferung um diesen Betrag günstiger.` : ''}</p>`);
+  }
 
   // **Die Zustellung dieses einen Artikels, in Euro.**
   //

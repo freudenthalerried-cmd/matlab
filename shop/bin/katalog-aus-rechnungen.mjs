@@ -28,6 +28,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { sichere } from '../src/sicherung.js';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { sperrgutAusGruppe } from '../src/sperrguteinstufung.js';
 
 const HIER = dirname(fileURLToPath(import.meta.url));
 const WURZEL = join(HIER, '..');
@@ -140,7 +141,8 @@ const GRUPPEN = {
  * `sperrgutQuelle: "eingeschaetzt"` gekennzeichnet, damit niemand sie für
  * eine Lieferantenangabe hält.
  */
-const SPERRGUT_GRUPPEN = new Set(['Dämmung', 'Kamin', 'Kanal', 'Mauerwerk']);
+// Die Liste steht in `src/sperrguteinstufung.js` — hier stand bis zum 5. September
+// eine zweite Fassung derselben vier Namen.
 
 /**
  * Die Spalten, die dieses Werkzeug braucht.
@@ -242,7 +244,7 @@ function main() {
       bezeichnung: bezeichnung(p.Bezeichnung),
       gruppe,
       einheit: p.Einheit,
-      sperrgut: SPERRGUT_GRUPPEN.has(gruppe),
+      sperrgut: sperrgutAusGruppe(gruppe),
       // Ohne ausgewiesene Liste wurde netto fakturiert (Projekt- oder
       // Aktionspreis). Dann gibt es keinen Rabattsatz, aus dem sich etwas
       // ableiten ließe — und keinen Deckel, gegen den zu prüfen wäre.

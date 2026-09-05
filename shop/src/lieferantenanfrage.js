@@ -118,7 +118,16 @@ export const FRAGEN = Object.freeze([
       // Mindestbestellwert. Sie entscheidet auch, was ein Kunde für die
       // Kranentladung zahlt — und dort ist der Betrag beziffert.
       + 'Und dieselbe Angabe brauchen wir für die Kranentladung: Sie steht auf Ihren Belegen '
-      + '„pro Hub". Richtet sich ein Hub nach der Palette, oder wonach sonst?',
+      + '„pro Hub". Richtet sich ein Hub nach der Palette, oder wonach sonst? '
+      // **Ergänzt am 5. September.** Die Frage nach der Zahl der Hübe setzte
+      // voraus, dass feststeht, **welche** Ware überhaupt palettiert kommt.
+      // Das steht nirgends: Die Einstufung stammt aus der Warengruppe.
+      + 'Und die Frage davor, die wir bisher nicht gestellt haben: **Welche Artikel kommen bei '
+      + 'Ihnen palettiert?** Wir stufen das heute nach der Warengruppe ein — Dämmung, Kamin, '
+      + 'Kanal und Mauerwerk gelten uns als Sperrgut. Auf Ihrem Lieferschein wiegt ein '
+      + 'Kanalbogen NW 100 aber 0,285 kg je Stück, und wir haben zwei davon bestellt. Eine '
+      + 'Kennzeichnung in der Artikelliste, welche Position palettiert geliefert wird, ersetzt '
+      + 'unsere Schätzung.',
     warum: 'Palette und Folierung sind mit 28,50 € je Lieferung die Kosten, die den '
       + 'Mindestbestellwert tragen. Wie viele Paletten eine Bestellung braucht, hängt an '
       + 'Gewicht und Packmaß; der Katalog führt Gewicht für 7 von 46 Artikeln. Die Grenze ist '
@@ -126,7 +135,11 @@ export const FRAGEN = Object.freeze([
       + 'zweiten Betrag:** Der Shop rechnet die Kranentladung je Sperrgut-Position, der '
       + 'Lieferant verrechnet sie je Hub — auf Rechnung 262027463 stehen sechs Positionen und '
       + 'drei Hübe. Auf den zwei belegten Lieferungen liegt das Modell dadurch um bis zu '
-      + '22,50 € zu hoch und um bis zu 7,50 € zu niedrig.',
+      + '22,50 € zu hoch und um bis zu 7,50 € zu niedrig. **Und eine Stufe davor:** Welche Ware '
+      + 'überhaupt palettiert kommt, schätzen wir aus der Warengruppe — belegt ist keine der '
+      + '46 Einstufungen. In allen vier Fällen, in denen ein Positionsgewicht dagegenhält, hält '
+      + 'es dagegen: vier Kanalpositionen mit zusammen rund acht Kilogramm, alle als Sperrgut '
+      + 'geführt.',
   }),
   Object.freeze({
     id: 'liefergebiet',

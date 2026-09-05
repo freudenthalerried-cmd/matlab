@@ -20,6 +20,7 @@
  */
 
 import { leseCsv, zahl, jaNein } from './import.js';
+import { sperrgutAusGruppe } from './sperrguteinstufung.js';
 
 /** Die sieben Warengruppen des Shops. Eine achte gibt es nicht. */
 export const WARENGRUPPEN = Object.freeze([
@@ -65,7 +66,10 @@ export const GRUPPENSEITE = Object.freeze({
  * Dieselbe Einschätzung wie in `bin/katalog-aus-rechnungen.mjs` — sie steuert
  * den Frachtzuschlag und ist **keine** Angabe des Lieferanten.
  */
-export const SPERRGUT_GRUPPEN = Object.freeze(['Dämmung', 'Kamin', 'Kanal', 'Mauerwerk']);
+// **Verlegt am 5. September** nach `src/sperrguteinstufung.js`. Dieselbe Liste
+// stand auch in `bin/katalog-aus-rechnungen.mjs` als eigenes `Set` — zwei Listen
+// für dieselbe Sache, heute gleich und morgen vielleicht nicht.
+export { SPERRGUT_GRUPPEN, sperrgutAusGruppe } from './sperrguteinstufung.js';
 
 /** Einheitenkürzel, mit denen der Rechenkern umgehen kann. */
 export const EINHEITEN = Object.freeze([
@@ -234,7 +238,7 @@ export function leseArtikelliste(csvText, lieferant, stand, sparten = {}) {
     // Die Herkunft steht daneben, damit niemand die Schätzung für eine
     // Lieferantenangabe hält.
     const ausListe = kopf.includes('sperrgut') && satz.sperrgut !== '';
-    const sperrgut = ausListe ? jaNein(satz.sperrgut) : SPERRGUT_GRUPPEN.includes(gruppe);
+    const sperrgut = ausListe ? jaNein(satz.sperrgut) : sperrgutAusGruppe(gruppe);
 
     const eintrag = {
       sku: `POS-${nummer}`,

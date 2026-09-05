@@ -263,6 +263,17 @@ export const PRUEFER = [
     einheit: 'Sperren auf ihren grünen Fall',
     mindestens: 5,
   },
+  {
+    // **Aufgenommen am 5. September.** Die Einstufung entscheidet 7,50 € je
+    // Position auf der Kundenrechnung und stammt aus der Warengruppe. Die Zahl
+    // darf nicht schrumpfen: Ein Artikel, der aus der Prüfung fällt, ist einer,
+    // dessen Widerspruch niemand mehr sieht.
+    name: 'pruefe-sperrgut',
+    werkzeug: 'sperrgutpruefung.mjs',
+    muster: /Sperrguteinstufung: (\d+) Artikel/,
+    einheit: 'Artikel auf ihre Sperrguteinstufung',
+    mindestens: 40,
+  },
 ];
 
 /**

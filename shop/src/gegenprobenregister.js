@@ -665,6 +665,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'Kunden. Diese Mutation nimmt sie wieder heraus und verlangt, dass es auffällt.',
   }),
   Object.freeze({
+    id: 'sperrgut-ohne-widerspruch',
+    pruefer: 'pruefe-sperrgut',
+    was: 'Ein Widerspruch zwischen belegtem Gewicht und Kranentladung, den niemand begründet',
+    datei: 'shop/src/sperrguteinstufung.js',
+    art: 'ersetzen',
+    suchen: "    sku: 'POS-10115',",
+    ersetzen: "    sku: 'POS-99999',",
+    erwartet: /POS-10115|POS-99999/,
+    warum: 'Auf der Seite des Kanalbogens stehen „Gewicht 0,285 kg je Stück, aus dem '
+      + 'Lieferschein" und „Palettierte Ware. Sie wird mit dem Kran entladen" übereinander, '
+      + 'seit es die Seite gibt. Die Einstufung stammt aus der Warengruppe und kostet den '
+      + 'Kunden 7,50 € je Position. Diese Mutation zieht den Grund von einem der vier Fälle ab '
+      + 'und verlangt, dass der Widerspruch wieder gemeldet wird — und dass zugleich der '
+      + 'Eintrag ohne Artikel auffällt.',
+  }),
+  Object.freeze({
     id: 'navigation-als-inhalt',
     pruefer: 'test',
     was: 'Navigation, die als eigener Seiteninhalt mitgezählt wird',
