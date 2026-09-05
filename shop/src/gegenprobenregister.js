@@ -692,6 +692,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'Gebührenzeile im Suchtext, sonst träfe er zweimal.',
   }),
   Object.freeze({
+    id: 'zweite-gitignore-uebersehen',
+    pruefer: 'pruefe-ablage',
+    was: 'Eine zweite .gitignore, die die Sperre aufhebt, ohne dass es auffällt',
+    datei: 'shop/.gitignore',
+    art: 'anhaengen',
+    text: '\n!ablage/\n',
+    erwartet: /ort-nicht-gesperrt/,
+    warum: 'Gefunden von `npm run reichweite`: `shop/.gitignore` öffnete kein Prüfer. Sie '
+      + 'enthält heute eine belanglose Zeile — aber eine `.gitignore` in einem Unterordner '
+      + 'kann eine Regel der Wurzel mit `!muster` **aufheben**, und genau die Wurzelregel '
+      + 'hält das Journal mit Namen, Anschriften und Beträgen aus dem öffentlichen '
+      + 'Verzeichnis. Ein Prüfer, der nur die Wurzel liest, sähe die Aufhebung nicht und '
+      + 'meldete die Sperre als bestehend. Diese Mutation hebt sie auf und verlangt, dass es '
+      + 'auffällt.',
+  }),
+  Object.freeze({
     id: 'ablageort-ohne-sperre',
     pruefer: 'pruefe-ablage',
     was: 'Ein Ablageort, den die .gitignore nicht kennt',

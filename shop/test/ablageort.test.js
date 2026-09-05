@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { ABLAGEORT, istJournal, journalpfad, NOETIGE_SPERREN, ortsbefund } from '../src/ablageort.js';
 
 test('das Journal eines Jahres hat einen Pfad, und nur ein Jahr bekommt einen', () => {
@@ -59,4 +61,56 @@ test('ein Journal außerhalb des Ortes ist der Fall vor dem Schaden', () => {
   });
   assert.equal(b.meldungen.length, 1);
   assert.equal(b.meldungen[0].regel, 'journal-am-falschen-ort');
+});
+
+/* ------------------------------------------------------------------ *
+ * Die Zeile, die die Sperre aufhebt — 5. September 2026, abends
+ *
+ * `npm run reichweite` fand, dass `shop/.gitignore` von keinem Prüfer
+ * geöffnet wird. Beim Nachziehen fiel das Schwerere auf: Die Prüfung suchte
+ * die **Zeile**, nicht ihre **Wirkung**.
+ *
+ * > **Eine Sperre, die an ihrem Wortlaut geprüft wird und nicht an ihrer
+ * > Wirkung, ist so gut wie die Zeile, die sie aufhebt.**
+ * ------------------------------------------------------------------ */
+
+test('eine Aufhebung hebt die Sperre auf — und fällt auf', () => {
+  const mit = ortsbefund({ gitignore: `${ABLAGEORT}/\n` });
+  assert.deepEqual(mit.meldungen.filter((m) => m.regel === 'ort-nicht-gesperrt'), []);
+
+  // Genau der Fall: Die Zeile steht weiter da, und `includes` bleibt wahr.
+  const aufgehoben = ortsbefund({ gitignore: `${ABLAGEORT}/\n!${ABLAGEORT}/\n` });
+  const m = aufgehoben.meldungen.filter((x) => x.regel === 'ort-nicht-gesperrt');
+  assert.equal(m.length, 1, JSON.stringify(aufgehoben.meldungen));
+  assert.match(m[0].text, /wieder auf/);
+
+  // Auch ohne Schrägstrich — git nimmt beide Formen.
+  assert.equal(
+    ortsbefund({ gitignore: `${ABLAGEORT}/\n!${ABLAGEORT}\n` })
+      .meldungen.filter((x) => x.regel === 'ort-nicht-gesperrt').length,
+    1,
+  );
+});
+
+test('der Bestand steht: keine .gitignore hebt die Sperre auf', async () => {
+  const { readdirSync } = await import('node:fs');
+  const repo = fileURLToPath(new URL('../../', import.meta.url));
+  const gefunden = [];
+  const suche = (ordner) => {
+    for (const e of readdirSync(ordner, { withFileTypes: true })) {
+      if (['node_modules', '.git', 'ausgabe'].includes(e.name)) continue;
+      const voll = `${ordner}${e.name}`;
+      if (e.isDirectory()) { suche(`${voll}/`); continue; }
+      if (e.name === '.gitignore') gefunden.push(voll);
+    }
+  };
+  suche(repo);
+  // Ein leerer Lauf ist kein grüner.
+  assert.ok(gefunden.length >= 2, `nur ${gefunden.length} .gitignore gefunden`);
+
+  const zusammen = gefunden.map((d) => readFileSync(d, 'utf8')).join('\n');
+  assert.deepEqual(
+    ortsbefund({ gitignore: zusammen }).meldungen.filter((m) => m.regel === 'ort-nicht-gesperrt'),
+    [],
+  );
 });

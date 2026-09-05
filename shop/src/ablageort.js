@@ -86,6 +86,29 @@ export function ortsbefund({ gitignore = '', getrackt = [], journaldateien = [] 
         regel: 'ort-nicht-gesperrt',
         text: `\`.gitignore\` führt „${sperre}" nicht — das erste Journal landete im öffentlichen Verzeichnis`,
       });
+      continue;
+    }
+    // **Und die Zeile, die sie wieder aufhebt — 5. September 2026, abends.**
+    //
+    // `npm run reichweite` fand, dass `shop/.gitignore` von keinem Prüfer
+    // geöffnet wird. Beim Nachziehen fiel das Schwerere auf: Die Prüfung sucht
+    // die **Zeile**, nicht ihre **Wirkung**. Ein `!ablage/` in irgendeiner
+    // `.gitignore` hebt die Sperre auf — und `zeilen.includes('ablage/')`
+    // bleibt wahr, weil die Zeile ja weiter dasteht.
+    //
+    // > **Eine Sperre, die an ihrem Wortlaut geprüft wird und nicht an ihrer
+    // > Wirkung, ist so gut wie die Zeile, die sie aufhebt.**
+    //
+    // Hier steht bewusst keine Nachbildung der git-Semantik: Wer sie nachbaut,
+    // hat zwei Fassungen derselben Regel. Gesucht wird die eine Form, die eine
+    // Sperre sicher aushebelt.
+    const aufhebung = zeilen.find((z) => z === `!${sperre}` || z === `!${sperre.replace(/\/$/, '')}`);
+    if (aufhebung) {
+      meldungen.push({
+        regel: 'ort-nicht-gesperrt',
+        text: `\`.gitignore\` führt „${sperre}" und hebt sie mit „${aufhebung}" wieder auf `
+          + '— eine Sperre, die aufgehoben ist, ist keine',
+      });
     }
   }
 

@@ -202,6 +202,26 @@ export const LESER = Object.freeze([
     warumOhnePruefung: 'Sie liest den Fließtext des Verzeichnisses. Die gebauten Seiten kommen '
       + 'nur als Fundort vor, und eine abgelöste Zahl darin ist ein Befund, kein Abbruchgrund.',
   }),
+  /*
+   * **Aufgenommen am 5. September, spätabends.** Beide nennen `ausgabe` genau
+   * einmal, und beide nennen es, um es **auszulassen**. Das Register meldet
+   * sie trotzdem, und das ist richtig so: Es sucht das Wort, weil es die
+   * Absicht dahinter nicht kennt — die steht hier.
+   */
+  Object.freeze({
+    werkzeug: 'bin/ablagepruefung.mjs',
+    erzeugnis: null,
+    warumOhnePruefung: 'Sie geht das Verzeichnis nach `.gitignore`-Dateien ab und überspringt '
+      + 'dabei `ausgabe/` — das Gebaute enthält keine Sperren, sondern ist selbst gesperrt. '
+      + 'Gelesen wird von dort nichts; ihr Bestand sind die getrackten Dateien und die Journale.',
+  }),
+  Object.freeze({
+    werkzeug: 'bin/reichweite.mjs',
+    erzeugnis: null,
+    warumOhnePruefung: 'Es misst, welche **geführten** Dateien ein Prüfer öffnet, und lässt '
+      + '`ausgabe/` aus der Vergleichsmenge heraus, weil dort nichts liegt, was `git ls-files` '
+      + 'kennt. Ein veraltetes Erzeugnis verschiebt keinen einzigen seiner Messwerte.',
+  }),
   Object.freeze({
     werkzeug: 'bin/prueferpruefung.mjs',
     erzeugnis: 'ausgabe/site',

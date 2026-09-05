@@ -68,6 +68,7 @@
     "offenepunkte": "node bin/offenepunkte.mjs",
     "rollout": "node bin/rollout.mjs",
     "kennzahlen": "node bin/kennzahlen.mjs",
-    "pruefe-auftrag": "node bin/auftragspruefung.mjs"
+    "pruefe-auftrag": "node bin/auftragspruefung.mjs",
+    "reichweite": "node bin/reichweite.mjs"
   }
 }
