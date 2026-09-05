@@ -437,6 +437,40 @@ export const GEGENPROBEN = Object.freeze([
       + 'Flächenstärke führt der Shop nicht.',
   }),
   Object.freeze({
+    id: 'anzeige-redet-den-aufschlag-weg',
+    pruefer: 'kampagne',
+    was: 'Eine Anzeige, die behauptet, der Kunde zahle den Einkaufspreis des Baumeisters',
+    datei: 'shop/bin/kampagne.mjs',
+    art: 'ersetzen',
+    suchen: "'Ein Baumeister kauft ein — wie weit unter der Liste, steht bei jedem Artikel.'",
+    ersetzen: "'Ein Baumeister kauft ein, Sie zahlen seinen Preis.'",
+    erwartet: /Aufschlag/,
+    warum: 'Die Ersetzung ist keine erfundene Verschlechterung, sondern der Wortlaut, der bis '
+      + 'zum 5. September in der WDVS-Anzeige stand. Die eigene Wissensseite — von jeder '
+      + 'Artikelkarte verlinkt — beantwortet dieselbe Frage im zweiten Satz mit „zuzüglich '
+      + 'eines Aufschlags". Der Kunde zahlt nicht seinen Preis, sondern seinen Preis plus '
+      + '25 %. Das ist eine Preisangabe in einer Werbung, also die Gattung, bei der eine '
+      + 'falsche Aussage nicht nur enttäuscht.',
+  }),
+  Object.freeze({
+    id: 'schalten-ohne-bestellweg',
+    pruefer: 'kampagne',
+    was: 'Anzeigen, die eine Bestellung versprechen, ohne dass der Plan sie an den Bestellweg bindet',
+    datei: 'shop/src/rollout.js',
+    art: 'ersetzen',
+    suchen: "        etappe: 'bestellweg',\n        warum: 'Alle drei Anzeigen versprechen eine Bestellung:",
+    ersetzen: "        etappe: 'upload',\n        warum: 'Alle drei Anzeigen versprechen eine Bestellung:",
+    erwartet: /verspricht eine Bestellung/,
+    warum: 'Der Zustand bis zum 5. September: Der Bestellweg lag im Plan zwei Tage vor dem '
+      + 'Schalten — aber nur zeitlich, nicht als Bedingung. Alle drei Anzeigen versprechen '
+      + '„aus einer Bestellung", „in einer Lieferung", „geliefert statt abgeholt", und '
+      + '`llms.txt` sagt daneben „Bestellen ist noch nicht möglich". Verschiebt sich eine '
+      + 'Etappe davor, laufen bezahlte Anzeigen auf ein Versprechen, das die Landeseite '
+      + 'nicht einlöst. Die Mutation ersetzt die Bedingung durch eine, die ohnehin '
+      + 'dasteht — die Reihenfolge im Plan bleibt, die Bindung fällt weg, und genau das '
+      + 'soll auffallen.',
+  }),
+  Object.freeze({
     id: 'landeseite-verschweigt-luecke',
     pruefer: 'kampagne',
     was: 'Eine Landeseite, die die Lücke ihrer Systemliste nicht nennt',

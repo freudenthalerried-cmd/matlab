@@ -392,6 +392,21 @@ export const ETAPPEN = Object.freeze([
           + 'Seite, gesperrte robots.txt, falsche Adresse), sonst 45 Tage lang als schwache '
           + 'Kaufquote verbucht wird.',
       }),
+      // **Ergänzt am 5. September.** Der Bestellweg lag im Plan ohnehin zwei
+      // Tage vor dem Schalten — aber nur zeitlich, nicht als Bedingung. Wer
+      // eine Etappe davor verschiebt, schaltet Anzeigen, die etwas
+      // versprechen, was die Landeseite nicht kann.
+      Object.freeze({
+        etappe: 'bestellweg',
+        warum: 'Alle drei Anzeigen versprechen eine Bestellung: „Fassade aus einer '
+          + 'Bestellung", „Kaminzug in einer Lieferung", „aus einer Bestellung, geliefert '
+          + 'statt abgeholt". Solange der Bestellweg aus ist, sagt `llms.txt` daneben '
+          + '„Bestellen ist noch nicht möglich" — und der Besucher zahlt den Klick nicht, '
+          + 'wir zahlen ihn. Ein bezahltes Versprechen, das die Landeseite nicht einlöst, '
+          + 'ist teurer als kein Klick und keine Geschmacksfrage: Es ist eine Angabe über '
+          + 'die Verfügbarkeit der Leistung. Die Reihenfolge stand schon im Plan; hier '
+          + 'steht sie als Bedingung.',
+      }),
     ],
     tage: 1,
     art: 'gesetzt',

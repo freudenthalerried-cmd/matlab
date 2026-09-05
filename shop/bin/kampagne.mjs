@@ -35,6 +35,7 @@ import { dirname, join, resolve } from 'node:path';
 import { bezirksliste, LIEFERGEBIET } from '../src/liefergebiet.js';
 import { GRUPPENSEITE } from '../src/artikelliste.js';
 import { ladeBaustoffkatalog, katalogbefund, ZIELMARGE } from '../src/baustoffkatalog.js';
+import { ETAPPEN } from '../src/rollout.js';
 import { cent } from '../src/preis.js';
 import { traegtSichSelbst } from '../src/kostenbild.js';
 import { berechneWarenkorb } from '../src/warenkorb.js';
@@ -446,7 +447,7 @@ const ENDET_NICHT_AUF = ['vom', 'von', 'am', 'im', 'zum', 'zur', 'mit', 'für', 
 export const ANZEIGENTEXTE = {
   WDVS: {
     k: ['WDVS zum Baumeisterpreis', 'Capatect und Baumit', 'Armierung bis Oberputz', 'Kleber, Gewebe, Dübel', 'Baumeisterpreis, nicht Liste', 'Fassade aus einer Bestellung'],
-    b: ['Armierung, Putzgrund, Oberputz und Zubehör — geliefert auf die Baustelle.', 'Kleber, Gewebe, Dübel, Putzgrund. Was zusammengehört, kommt zusammen.', 'Ein Baumeister kauft ein, Sie zahlen seinen Preis.'],
+    b: ['Armierung, Putzgrund, Oberputz und Zubehör — geliefert auf die Baustelle.', 'Kleber, Gewebe, Dübel, Putzgrund. Was zusammengehört, kommt zusammen.', 'Ein Baumeister kauft ein — wie weit unter der Liste, steht bei jedem Artikel.'],
     pfad: ['fassade', 'wdvs'],
   },
   'Dämmung': {
@@ -562,6 +563,117 @@ export const VOLLSTAENDIGKEITSWORTE = Object.freeze([
   /\bganze[sn]?\s+(?:System|Aufbau)\b/i,
 ]);
 
+/* ------------------------------------------------------------------ *
+ * Aussagen über den Preis — 5. September 2026
+ *
+ * **Der Befund.** In der WDVS-Anzeige stand als Beschreibung 3:
+ *
+ * > „Ein Baumeister kauft ein, **Sie zahlen seinen Preis**."
+ *
+ * Die eigene Wissensseite `wissen/baumeisterpreis.md` — dieselbe, die von
+ * jeder Artikelkarte verlinkt ist — beantwortet genau diese Frage im zweiten
+ * Satz:
+ *
+ * > „Die Preise hier entstehen aus dem Einkauf eines Baumeisterbetriebs,
+ * > **zuzüglich eines Aufschlags**, aus dem dieser Shop betrieben wird."
+ *
+ * Der Kunde zahlt nicht seinen Preis, sondern seinen Preis plus 25 %.
+ *
+ * > **Die Landeseite erklärt sorgfältig, warum die Aussage nicht stimmt, die
+ * > die Anzeige macht, die auf sie führt.**
+ *
+ * Das ist keine Ungenauigkeit, sondern eine **Preisangabe in einer Werbung**
+ * — die Gattung, bei der eine falsche Aussage nicht nur enttäuscht, sondern
+ * eine Geschäftspraktik ist.
+ *
+ * **Nicht getroffen wird der Claim selbst.** „Zum Baumeisterpreis" ist die
+ * Weisung des Auftraggebers, der Name der Website und durch eine eigene
+ * Wissensseite eingeordnet („Was ‚Baumeisterpreis' heißt — und was nicht").
+ * Getroffen wird die **Gleichsetzung**: Ihr Preis = sein Preis. Die Muster
+ * sind deshalb eng und verlangen ein Wort der Gleichheit.
+ *
+ * Geprüft wird gegen `ZIELMARGE`, nicht gegen eine Liste: Wäre der Aufschlag
+ * eines Tages null, hörte die Regel von selbst auf zu schlagen.
+ * ------------------------------------------------------------------ */
+export const PREISAUSSAGEN = Object.freeze([
+  Object.freeze({
+    muster: /\bzahlen\s+(?:Sie\s+)?(?:seinen|den|unseren)\s+(?:Einkaufs)?[Pp]reis\b/i,
+    was: 'der Kunde zahle denselben Preis wie der Baumeister',
+  }),
+  Object.freeze({
+    muster: /\bzum\s+Einkaufspreis\b|\bzum\s+Einstandspreis\b/i,
+    was: 'der Verkaufspreis sei der Einkaufspreis',
+  }),
+  Object.freeze({
+    muster: /\bohne\s+Auf(?:schlag|preis|geld)\b|\bkein\w*\s+Auf(?:schlag|preis)\b/i,
+    was: 'es gebe keinen Aufschlag',
+  }),
+]);
+
+/* ------------------------------------------------------------------ *
+ * Aussagen über die Bestellbarkeit — 5. September 2026
+ *
+ * **Der Befund.** Alle drei Anzeigen versprechen eine Bestellung:
+ *
+ * > „Fassade **aus einer Bestellung**" · „Kaminzug **in einer Lieferung**" ·
+ * > „Schiedel-Systemteile aus einer Bestellung, **geliefert statt abgeholt**"
+ *
+ * Der Shop kann heute keine Bestellung entgegennehmen — Gate 26, der
+ * Bestellweg ist gebaut und ausgeschaltet, und `llms.txt` sagt es wörtlich:
+ * „Bestellen ist noch nicht möglich."
+ *
+ * Das allein ist kein Fehler: Die Kampagnen stehen auf PAUSIERT, und der
+ * Rolloutplan setzt den Bestellweg auf Tag 10–12, das Schalten auf Tag 14–15.
+ * Der Fehler war, dass die Reihenfolge **nur zeitlich** dastand und nicht als
+ * Bedingung. `anzeigen-schalten` stützte sich auf `upload`, `keywordmessung`
+ * und `indexierung` — nicht auf `bestellweg`. Verschiebt sich eine Etappe
+ * davor, laufen Anzeigen, die etwas versprechen, was die Landeseite nicht
+ * kann.
+ *
+ * > **Die Reihenfolge stand im Plan, die Bedingung nicht — und dazwischen
+ * > liegt das ganze Werbebudget.**
+ *
+ * Nachgemessen: Die Kopplung kostet **null Tage**. Die Kette bleibt bei 60.
+ *
+ * **Keine Rückrichtung.** Sonst müsste dieser Prüfer verlangen, die
+ * Abhängigkeit wieder zu entfernen, sobald keine Anzeige mehr von einer
+ * Bestellung spricht — und ein Shop, der bestellfähig ist, bevor er Klicks
+ * kauft, ist unabhängig vom Anzeigentext die richtige Reihenfolge.
+ * ------------------------------------------------------------------ */
+export const BESTELLAUSSAGEN = Object.freeze([
+  /\baus einer Bestellung\b/i,
+  /\bin einer Lieferung\b/i,
+  /\bgeliefert statt abgeholt\b/i,
+  /\bjetzt bestellen\b|\bhier bestellen\b/i,
+]);
+
+/**
+ * Hält die Bestellversprechen der Anzeigen gegen den Rolloutplan.
+ *
+ * @param {object[]} anzeigen
+ * @param {object[]} etappen  aus `src/rollout.js`
+ */
+export function pruefeBestellversprechen(anzeigen, etappen) {
+  const schalten = etappen.find((e) => e.id === 'anzeigen-schalten');
+  if (!schalten) {
+    return ['Der Rolloutplan kennt keine Etappe „anzeigen-schalten" — die Kopplung '
+      + 'zwischen Anzeigentext und Bestellweg lässt sich nicht prüfen'];
+  }
+  const gestuetzt = (schalten.brauchtVor ?? []).some((b) => b.etappe === 'bestellweg');
+  if (gestuetzt) return [];
+
+  const fehler = [];
+  for (const a of anzeigen) {
+    for (const [k, v] of Object.entries(a)) {
+      if (!/^(Überschrift|Beschreibung)/.test(k) || !v) continue;
+      if (!BESTELLAUSSAGEN.some((m) => m.test(v))) continue;
+      fehler.push(`${a.Anzeigengruppe} · ${k}: „${v}" verspricht eine Bestellung — `
+        + 'der Rolloutplan bindet das Schalten der Kampagnen nicht an den Bestellweg');
+    }
+  }
+  return fehler;
+}
+
 /** Woran eine Systemliste sagt, dass sie eine Schicht nicht führt. */
 export const LUECKENSATZ = /f(?:ü|ue)hren wir (?:derzeit )?nicht|nicht im Sortiment|steht nicht im Katalog/i;
 
@@ -597,6 +709,20 @@ export function pruefeTexte(anzeigen, gefuehrteEinheiten, gruppenMitLuecke = new
       if (luecken.has(a.Anzeigengruppe) && VOLLSTAENDIGKEITSWORTE.some((m) => m.test(v))) {
         fehler.push(`${a.Anzeigengruppe} · ${k}: „${v}" verspricht Vollständigkeit — `
           + 'die eigene Systemliste nennt für diese Gruppe eine Schicht, die der Katalog nicht führt');
+      }
+
+      // **Preisaussagen — gegen die Zielmarge, nicht gegen eine Liste.**
+      // Der Aufschlag steht in `ZIELMARGE`; ist er null, hört diese Regel von
+      // selbst auf zu schlagen, und niemand muss daran denken.
+      if (ZIELMARGE > 0) {
+        // Eine Meldung je Feld, nicht je Muster — dieselbe Regel wie bei den
+        // Vollständigkeitsworten zwölf Zeilen weiter unten.
+        const pa = PREISAUSSAGEN.find((x) => x.muster.test(v));
+        if (pa) {
+          fehler.push(`${a.Anzeigengruppe} · ${k}: „${v}" behauptet, ${pa.was} — `
+            + `der Verkaufspreis trägt ${(ZIELMARGE * 100).toFixed(0)} % Aufschlag, `
+            + 'und die eigene Wissensseite „Was Baumeisterpreis heißt" sagt das auch');
+        }
       }
 
       for (const g of GEBINDEAUSSAGEN) {
@@ -955,6 +1081,7 @@ function main() {
   const textfehler = [
     ...pruefeTexte(alleAnzeigentexte(), gefuehrteEinheiten, gruppenMitLuecke),
     ...pruefeTexte(anzeigen, gefuehrteEinheiten, gruppenMitLuecke),
+    ...pruefeBestellversprechen(anzeigen, ETAPPEN),
     ...textfehlerLandeseite,
   ];
   if (textfehler.length) {
