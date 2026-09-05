@@ -246,7 +246,39 @@ export const EINHEITSZEICHEN = Object.freeze({
 });
 
 /**
+ * Wörter, die etwas **anderes** zählen als jede geführte Leitzahl.
+ *
+ * **Der Anlass, 5. September 2026.** Seit die Gegenproben 57 und die Prüfer 33
+ * zählen, kollidieren zwei Bestandszahlen mit zwei abgelösten Leitzahlen:
+ * `plan-gesamtdauer` (60 Tage; 57 galt vor der Etappe „Search Console") und
+ * `keyword-anzahl` (32 Begriffe; 33 galt vor dem 1. September, als „Kaminkopf
+ * Regenhaube" noch in der Kampagne stand).
+ * „57 Gegenproben für 33 Prüfer" ist eine gemeldete Fundstelle — und es
+ * gibt keinen vernünftigen Satz, der die Bedingung einer Kettenlänge neben
+ * eine Anzahl von Gegenproben schreibt.
+ *
+ * > **Ein Prüfer, der beim dritten Fehlalarm abgeschaltet wird, findet den
+ * > echten nicht mehr.** Derselbe Satz wie am 4. September, als eine
+ * > Prozentzahl für eine Tageszahl gehalten wurde — und dieselbe Antwort:
+ * > nicht die Regel lockern, sondern die Einheit lesen.
+ *
+ * Was hier stehen darf, muss **eindeutig etwas anderes** zählen als jede
+ * geführte Leitzahl. `Begriffe` steht deshalb ausdrücklich **nicht** hier:
+ * Genau das zählt `keyword-anzahl`.
+ */
+export const ZAEHLWOERTER = Object.freeze([
+  'Gegenproben', 'Prüfer', 'Testfälle', 'Testfällen', 'Artikel', 'Seiten', 'Dateien',
+  'Fundstellen', 'Schritte', 'Schritten', 'Punkte', 'Punkten', 'Szenarien', 'Einträge',
+  'Zeilen', 'Kennzahlen', 'Gates', 'Etappen', 'Werkzeuge', 'Sperren', 'Ausnahmen',
+]);
+
+const ZAEHLWORTMUSTER = new RegExp(`^\\s*(?:${ZAEHLWOERTER.join('|')})\\b`);
+
+/**
  * Trägt die Fundstelle eine **andere** Einheit als die Leitzahl?
+ *
+ * Zwei Wege: ein fremdes Einheitszeichen (€, %, Tage) — oder ein Zählwort,
+ * das eindeutig etwas anderes zählt.
  *
  * @param {string} zeile
  * @param {number} stelle  Position hinter der gefundenen Zahl
@@ -257,7 +289,8 @@ export function fremdeEinheit(zeile, stelle, eigene) {
   for (const [name, muster] of Object.entries(EINHEITSZEICHEN)) {
     if (muster.test(rest)) return name !== eigene ? name : null;
   }
-  return null;
+  const zaehlwort = ZAEHLWORTMUSTER.exec(rest);
+  return zaehlwort ? zaehlwort[0].trim() : null;
 }
 
 export function fundstellen(text, wert, {
@@ -265,9 +298,15 @@ export function fundstellen(text, wert, {
 } = {}) {
   const zeilen = text.split('\n');
   const formen = schreibweisen(wert).map(entwerte).sort((a, b) => b.length - a.length);
-  // Wortgrenzen von Hand: `\b` trennt an Punkt und Komma und würde „45.356"
+  // Wortgrenzen von Hand: `\b` trennt an Punkt und Komma und würde „12.345"
   // in zwei Treffer zerlegen. Geprüft wird deshalb auf keine Ziffer davor und
   // keine Ziffer, kein Punkt und kein Komma danach.
+  //
+  // **Die Beispielzahl ist mit Absicht erfunden.** Bis zum 5. September stand
+  // hier eine echte, abgelöste Leitzahl — und als der Prüfer am selben Tag
+  // auch den Quelltext zu lesen begann, meldete er die Veranschaulichung
+  // seiner eigenen Regel. Eine Erklärung, die eine geführte Zahl ausborgt,
+  // wird eines Tages als Behauptung gelesen.
   const muster = new RegExp(`(?<![\\d.,])(?:${formen.join('|')})(?![\\d.,]*\\d)`);
   const treffer = [];
 
@@ -325,6 +364,110 @@ export const LEITDOKUMENTE = Object.freeze([
  * @param {string} name
  * @param {object} ziel  die Zielgrößen
  */
+/**
+ * Stellen, die eine abgelöste Leitzahl nennen **dürfen** — mit Grund.
+ *
+ * **Der Anlass, 5. September 2026.** Bis heute durchsuchte dieser Prüfer die
+ * Akte und die Shoptexte, ausdrücklich nicht den Quelltext, und der Grund im
+ * Kopf von `bin/leitzahlpruefung.mjs` lautete: *„Dort stehen dieselben Zahlen
+ * als Testfälle und Registereinträge, und ein Prüfer, der seine eigene
+ * Prüftabelle meldet, hat sich selbst gefunden."*
+ *
+ * Der Grund stimmt für diese Datei und für das Gegenprobenregister. Er stimmt
+ * nicht für den übrigen Quelltext — und dort ist der Schaden größer als in
+ * der Akte:
+ *
+ * > **In einem Dokument steht eine abgelöste Zahl falsch da. Im Quelltext
+ * > rechnet sie.**
+ *
+ * Genau so ist die Schwelle „33 von 33" entstanden: Das Register kannte die
+ * 32 und wusste sogar, wann die 33 abgelöst wurde — es hat nur nie dort
+ * gesucht, wo sie stand.
+ *
+ * Nachgezählt waren es beim ersten Lauf über `src/`, `bin/` und `test/`
+ * **elf** Meldungen in sechs Dateien. Vier davon waren Erzählungen ohne ihre
+ * Bedingung und sind seither beschrieben; eine borgte sich eine echte
+ * Leitzahl als Veranschaulichung und rechnet heute mit einer erfundenen. Was
+ * bleibt, steht hier — **je Datei und je Leitzahl**, nicht je Datei: Eine
+ * Datei ganz auszunehmen hieße, in siebenhundert Zeilen Register jede
+ * künftige abgelöste Zahl mit auszunehmen.
+ *
+ * Die Pfade stehen so, wie der Prüfer sie meldet: vom Wurzelverzeichnis des
+ * Repositoriums aus. Ein Verzeichnis, dessen Schlüssel anders aussehen als die
+ * Meldungen, deckt nichts und fällt beim ersten Lauf als `ausnahme-ohne-fall`
+ * auf — so geschehen beim ersten Anlauf dieser Runde.
+ */
+export const QUELLAUSNAHMEN = Object.freeze([
+  Object.freeze({
+    datei: 'shop/src/gegenprobenregister.js',
+    leitzahl: 'keyword-anzahl',
+    warum: 'Die Gegenprobe `abgeschriebene-schwelle` schreibt die abgelöste 33 absichtlich in '
+      + 'den Quelltext zurück, um zu zeigen, dass der Testlauf sie meldet. Der Mutationstext '
+      + 'muss die alte Zahl wörtlich enthalten — eine Bedingung daneben würde etwas anderes '
+      + 'einsetzen, als der Fall verlangt.',
+  }),
+  Object.freeze({
+    datei: 'shop/src/gegenprobenregister.js',
+    leitzahl: 'noetiger-monatsumsatz',
+    warum: 'Zwei Mutationen legen eine abgelöste Zahl in eine Datei, um zu zeigen, dass sie '
+      + 'gemeldet wird — eine in ein Dokument der Akte, eine in den Quelltext. Beide brauchen '
+      + 'die alte Zahl wörtlich im Mutationstext. **Je Leitzahl eingetragen und nicht je '
+      + 'Datei:** Wer eine Mutation mit einer weiteren Leitzahl schreibt, soll an dieser Stelle '
+      + 'darüber nachdenken müssen.',
+  }),
+  Object.freeze({
+    datei: 'shop/test/leitzahlen.test.js',
+    leitzahl: 'noetiger-monatsumsatz',
+    warum: 'Die Proben dieses Registers rechnen an echten abgelösten Werten vor, dass die '
+      + 'deutschen Schreibweisen gefunden werden. Eine erfundene Zahl prüfte die Mechanik und '
+      + 'nicht den Fall, für den es sie gibt.',
+  }),
+  Object.freeze({
+    datei: 'shop/test/leitzahlen.test.js',
+    leitzahl: 'plan-gesamtdauer',
+    warum: 'Dieselbe Datei, andere Leitzahl: An der 57 hängt der Fehlalarm vom 4. September, '
+      + 'bei dem eine Prozentzahl für eine Tageszahl gehalten wurde. Die Probe muss genau '
+      + 'diese Zahl nennen, sonst prüft sie einen anderen Fall als den, der eingetreten ist.',
+  }),
+]);
+
+/**
+ * Trennt die Meldungen des Quelltexts in gemeldete und ausgenommene.
+ *
+ * In beide Richtungen: Eine Ausnahme, zu der es keine Meldung mehr gibt, ist
+ * eine Erlaubnis für etwas, das niemand mehr tut — und deckt beim nächsten
+ * Mal einen Fall, der nichts mit ihr zu tun hat.
+ */
+export function quellbefund(meldungen, ausnahmen = QUELLAUSNAHMEN) {
+  const genutzt = new Set();
+  const offen = [];
+  for (const m of meldungen) {
+    const a = ausnahmen.find((x) => x.datei === m.datei && x.leitzahl === m.leitzahl);
+    if (a) { genutzt.add(`${a.datei}|${a.leitzahl}`); continue; }
+    offen.push(m);
+  }
+
+  const formfehler = [];
+  for (const a of ausnahmen) {
+    if (!a.warum || a.warum.length < 80) {
+      formfehler.push({ regel: 'grund-zu-duenn', text: `${a.datei}/${a.leitzahl}: Grund zu dünn` });
+    }
+    if (!genutzt.has(`${a.datei}|${a.leitzahl}`)) {
+      formfehler.push({
+        regel: 'ausnahme-ohne-fall',
+        text: `${a.datei}/${a.leitzahl}: ausgenommen, aber es gibt dort keine Meldung mehr`,
+      });
+    }
+  }
+
+  return {
+    gemeldet: offen,
+    ausgenommen: meldungen.length - offen.length,
+    formfehler,
+    sauber: offen.length === 0 && formfehler.length === 0,
+  };
+}
+
 export function pruefeLeitzahlen(text, name, ziel, register = LEITZAHLEN, umfeld = {}) {
   const meldungen = [];
   const gefunden = [];

@@ -605,8 +605,10 @@ export function rolloutplan({ tagesbudget, klickpreis, quote, frist = 90, etappe
     wartenImStrang,
     // Drei Größen, die sich nicht überschneiden dürfen. Der erste Lauf zählte
     // den Versuch als Arbeit mit und meldete „45 Tage Versuch, 47 Tage
-    // Arbeit" bei einer Kette von 57 — eine Summe, die niemand nachrechnet
-    // und die niemandem auffällt, weil sie plausibel aussieht.
+    // Arbeit" bei einer Kette von 57 Tagen — der Länge vor der Etappe
+    // „Search Console", die am 3. September dazukam — eine Summe, die
+    // niemand nachrechnet und die niemandem auffällt, weil sie plausibel
+    // aussieht.
     arbeitImStrang: plan
       .filter((e) => e.imStrang && e.art === 'gesetzt')
       .reduce((n, e) => n + e.dauer, 0),

@@ -665,6 +665,21 @@ export const GEGENPROBEN = Object.freeze([
       + 'Kunden. Diese Mutation nimmt sie wieder heraus und verlangt, dass es auffällt.',
   }),
   Object.freeze({
+    id: 'abgeloeste-zahl-im-quelltext',
+    pruefer: 'pruefe-leitzahlen',
+    was: 'Eine abgelöste Leitzahl im Quelltext, wo sie nicht nur falsch dasteht, sondern rechnet',
+    datei: 'shop/src/werbewirkung.js',
+    art: 'anhaengen',
+    text: '\n// Der nötige Monatsumsatz liegt bei 45.356 €.\n',
+    erwartet: /noetiger-monatsumsatz/,
+    warum: 'Bis zum 5. September durchsuchte `pruefe-leitzahlen` die Akte und die Shoptexte, '
+      + 'ausdrücklich nicht den Quelltext. So ist die Schwelle „33 von 33" entstanden: Das '
+      + 'Register kannte die 32 und wusste sogar, wann die 33 abgelöst wurde — es hat nur nie '
+      + 'dort gesucht, wo sie stand. In einem Dokument steht eine abgelöste Zahl falsch da; im '
+      + 'Quelltext rechnet sie. Diese Mutation legt eine abgelöste Zahl in eine Quelldatei, die '
+      + 'in keinem Ausnahmeverzeichnis steht.',
+  }),
+  Object.freeze({
     id: 'abgeschriebene-schwelle',
     pruefer: 'test',
     was: 'Eine Schwelle, die als Zahl im Quelltext steht statt aus ihrer Liste zu kommen',

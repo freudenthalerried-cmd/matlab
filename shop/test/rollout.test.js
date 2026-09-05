@@ -41,7 +41,8 @@ test('Die Versuchsdauer folgt aus Schwelle, Budget und Klickpreis', () => {
 
 test('Versuch, Warten und Arbeit im Strang ergeben zusammen die Kettenlänge', () => {
   // Der erste Lauf zählte den Versuch als Arbeit mit: 45 + 10 + 47 bei einer
-  // Kette von 57. Eine Summe, die plausibel aussieht und nicht aufgeht.
+  // Kette von 57 Tagen — der Länge vor der Etappe „Search Console" vom
+  // 3. September. Eine Summe, die plausibel aussieht und nicht aufgeht.
   const r = rolloutplan(HAUPT);
   assert.equal(r.versuch.versuchstage + r.wartenImStrang + r.arbeitImStrang, r.gesamt);
 });

@@ -19,7 +19,7 @@
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, relative } from 'node:path';
-import { LEITZAHLEN, pruefeLeitzahlen } from '../src/leitzahlen.js';
+import { LEITZAHLEN, pruefeLeitzahlen, quellbefund, QUELLAUSNAHMEN } from '../src/leitzahlen.js';
 import { rolloutplan } from '../src/rollout.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -54,13 +54,32 @@ const umfeld = {
 };
 
 /**
- * Wo gesucht wird. Die Akte und die Shoptexte — nicht der Quelltext: Dort
- * stehen dieselben Zahlen als Testfälle und Registereinträge, und ein Prüfer,
- * der seine eigene Prüftabelle meldet, hat sich selbst gefunden.
+ * Wo gesucht wird.
+ *
+ * **Erweitert am 5. September 2026 um den Quelltext.** Bis dahin stand hier:
+ * *„nicht der Quelltext: Dort stehen dieselben Zahlen als Testfälle und
+ * Registereinträge, und ein Prüfer, der seine eigene Prüftabelle meldet, hat
+ * sich selbst gefunden."*
+ *
+ * Der Grund stimmt für `src/leitzahlen.js` und `src/gegenprobenregister.js`.
+ * Für die übrigen 250 Dateien stimmt er nicht — und dort ist der Schaden
+ * größer als in der Akte:
+ *
+ * > **In einem Dokument steht eine abgelöste Zahl falsch da. Im Quelltext
+ * > rechnet sie.**
+ *
+ * So ist die Schwelle „33 von 33" entstanden (`dreiunddreissig-von-
+ * zweiunddreissig.md`): Das Register kannte die 32 und wusste, wann die 33
+ * abgelöst wurde — es hat nur nie dort gesucht, wo sie stand. Was eine
+ * abgelöste Zahl nennen darf, steht mit Grund in `QUELLAUSNAHMEN`, je Datei
+ * **und** je Leitzahl.
  */
 const BESTAENDE = [
   { ordner: [REPO, 'docs', 'baustoff-shop'], endungen: ['.md', '.html'], was: 'Akte' },
   { ordner: [SHOP, 'inhalte'], endungen: ['.md'], was: 'Shoptexte' },
+  { ordner: [SHOP, 'src'], endungen: ['.js'], was: 'Quelltext' },
+  { ordner: [SHOP, 'bin'], endungen: ['.mjs'], was: 'Quelltext' },
+  { ordner: [SHOP, 'test'], endungen: ['.js'], was: 'Quelltext' },
 ];
 
 const dateien = [];
@@ -77,21 +96,41 @@ const befunde = dateien.map((d) =>
   pruefeLeitzahlen(readFileSync(d.pfad, 'utf8'), relative(REPO, d.pfad), ziel, LEITZAHLEN, umfeld));
 
 const fundstellen = befunde.reduce((n, b) => n + b.gefunden.length, 0);
-const meldungen = befunde.flatMap((b) => b.meldungen);
+/**
+ * **Die Ausnahmen des Quelltexts — seit dem 5. September.**
+ *
+ * Drei Stellen dürfen eine abgelöste Zahl nennen, weil sie ihr Gegenstand
+ * ist: die Mutation, die sie zurückschreibt, und zwei Proben des Registers
+ * selbst. Der Befund hält das Verzeichnis in beide Richtungen — eine
+ * Ausnahme ohne Fall ist eine Erlaubnis für etwas, das niemand mehr tut.
+ */
+const quelle = quellbefund(befunde.flatMap((b) => b.meldungen));
+const meldungen = quelle.gemeldet;
 const gedeckt = befunde.reduce((n, b) => n + b.gefunden.filter((f) => f.gedeckt || f.aktuell).length, 0);
 
 console.log(`Leitzahlen — ${LEITZAHLEN.length} im Register, ${dateien.length} Dateien durchsucht`);
-console.log(`${fundstellen} Fundstellen, davon ${gedeckt} gültig oder mit Bedingung in Sichtweite.\n`);
+console.log(`${fundstellen} Fundstellen, davon ${gedeckt} gültig oder mit Bedingung in Sichtweite.`);
+console.log(`${QUELLAUSNAHMEN.length} Ausnahmen im Quelltext, ${quelle.ausgenommen} Meldung(en) davon gedeckt.\n`);
 
 for (const lz of LEITZAHLEN) {
   const wert = lz.jetzt(ziel, umfeld);
   const n = befunde.reduce((s, b) => s + b.gefunden.filter((f) => f.leitzahl === lz.id).length, 0);
-  console.log(`  ${lz.name}: gültig ${wert} — ${n} Fundstellen in der Akte`);
+  // **Berichtigt am 5. September.** Hier stand "in der Akte", und seit
+  // demselben Tag wird auch der Quelltext durchsucht. Ein Pruefer, der ueber
+  // 609 Dateien urteilt und "in der Akte" darunterschreibt, benennt seinen
+  // eigenen Umfang falsch.
+  console.log(`  ${lz.name}: gültig ${wert} — ${n} Fundstellen in Akte und Quelltext`);
   console.log(`      ${lz.traegt}`);
 }
 console.log('');
 
-if (meldungen.length === 0) {
+if (quelle.formfehler.length) {
+  console.log(`${quelle.formfehler.length} Meldung(en) über das Ausnahmeverzeichnis selbst:\n`);
+  for (const f of quelle.formfehler) console.log(`  ✗ ${f.text}  (${f.regel})`);
+  console.log('');
+}
+
+if (meldungen.length === 0 && quelle.formfehler.length === 0) {
   console.log('Keine Meldung. Jede abgelöste Leitzahl trägt ihre Bedingung.');
   console.log('Eine Zahl, die in acht Dokumenten steht, wird in keinem gepflegt —');
   console.log('deshalb steht sie hier einmal und wird dort gemessen.');

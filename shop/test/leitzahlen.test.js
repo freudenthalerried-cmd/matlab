@@ -2,8 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
-  LEITZAHLEN, LEITDOKUMENTE, schreibweisen, fundstellen, inSpanne, pruefeLeitzahlen,
-  fremdeEinheit, EINHEITSZEICHEN,
+  LEITZAHLEN, LEITDOKUMENTE, schreibweisen, fundstellen, inSpanne, pruefeLeitzahlen,   fremdeEinheit, EINHEITSZEICHEN, QUELLAUSNAHMEN, quellbefund, ZAEHLWOERTER,
 } from '../src/leitzahlen.js';
 import { rolloutplan } from '../src/rollout.js';
 
@@ -174,4 +173,90 @@ test('jede Leitzahl sagt, ob sie eine Einheit trägt', () => {
     assert.ok(lz.einheit === null || lz.einheit in EINHEITSZEICHEN,
       `${lz.id}: „${lz.einheit}" steht in keinem Einheitszeichen`);
   }
+});
+
+/* ------------------------------------------------------------------ *
+ * Der Quelltext kommt dazu — 5. September
+ *
+ * **Der Anlass.** Die Schwelle „33 von 33" stand in `src/kennzahlen.js`,
+ * während die Messliste 32 Begriffe führt. **Das Register kannte die 32 und
+ * wusste sogar, wann die 33 abgelöst wurde** — es hat nur nie dort gesucht,
+ * wo sie stand: Der Prüfer las die Akte und die Shoptexte, ausdrücklich nicht
+ * den Quelltext.
+ *
+ * > **In einem Dokument steht eine abgelöste Zahl falsch da. Im Quelltext
+ * > rechnet sie.**
+ * ------------------------------------------------------------------ */
+
+test('jede Quellausnahme nennt Datei, Leitzahl und Grund', () => {
+  assert.ok(QUELLAUSNAHMEN.length >= 1, 'ein leeres Verzeichnis bestünde jede Prüfung');
+  for (const a of QUELLAUSNAHMEN) {
+    assert.match(a.datei, /^shop\//, `${a.datei}: der Prüfer meldet vom Wurzelverzeichnis aus`);
+    assert.ok(LEITZAHLEN.some((lz) => lz.id === a.leitzahl), `${a.leitzahl}: keine solche Leitzahl`);
+    assert.ok(a.warum.length >= 80, `${a.datei}/${a.leitzahl}: Grund zu kurz`);
+  }
+});
+
+test('eine Ausnahme deckt genau ihre Datei und ihre Leitzahl', () => {
+  const meldungen = [
+    { datei: 'shop/src/a.js', leitzahl: 'x' },
+    { datei: 'shop/src/a.js', leitzahl: 'y' },
+    { datei: 'shop/src/b.js', leitzahl: 'x' },
+  ];
+  const b = quellbefund(meldungen, [
+    { datei: 'shop/src/a.js', leitzahl: 'x', warum: 'g'.repeat(90) },
+  ]);
+  assert.equal(b.ausgenommen, 1);
+  assert.deepEqual(b.gemeldet.map((m) => `${m.datei}/${m.leitzahl}`),
+    ['shop/src/a.js/y', 'shop/src/b.js/x'],
+    'eine Ausnahme je Datei würde die zweite Leitzahl mit durchlassen');
+});
+
+test('eine Ausnahme ohne Fall fällt auf', () => {
+  // Eine Erlaubnis für etwas, das niemand mehr tut, deckt beim nächsten Mal
+  // einen Fall, der nichts mit ihr zu tun hat.
+  const b = quellbefund([], [{ datei: 'shop/src/a.js', leitzahl: 'x', warum: 'g'.repeat(90) }]);
+  assert.deepEqual(b.formfehler.map((f) => f.regel), ['ausnahme-ohne-fall']);
+  assert.equal(b.sauber, false);
+});
+
+test('ein zu dünner Grund zählt nicht als Grund', () => {
+  const b = quellbefund([{ datei: 'shop/src/a.js', leitzahl: 'x' }],
+    [{ datei: 'shop/src/a.js', leitzahl: 'x', warum: 'passt schon' }]);
+  assert.ok(b.formfehler.some((f) => f.regel === 'grund-zu-duenn'));
+});
+
+test('ohne Ausnahmen bleibt jede Meldung stehen', () => {
+  const b = quellbefund([{ datei: 'shop/src/a.js', leitzahl: 'x' }], []);
+  assert.equal(b.gemeldet.length, 1);
+  assert.equal(b.ausgenommen, 0);
+  assert.equal(b.sauber, false);
+});
+
+/**
+ * Zählwörter — die zweite Art, eine fremde Einheit zu erkennen.
+ *
+ * **Der Anlass, 5. September 2026.** Seit die Gegenproben 57 und die Prüfer 33
+ * zählen, kollidieren zwei Bestandszahlen mit zwei abgelösten Leitzahlen. Es
+ * gibt keinen vernünftigen Satz, der die Bedingung einer Kettenlänge neben
+ * eine Anzahl von Gegenproben schreibt.
+ */
+test('ein Zählwort deckt, ein Einheitszeichen deckt, das eigene Wort nicht', () => {
+  assert.equal(fremdeEinheit('57 Gegenproben für 33 Prüfer', 2, 'tage'), 'Gegenproben');
+  assert.equal(fremdeEinheit('33 Prüfer', 2, null), 'Prüfer');
+  // Die eigene Einheit deckt nicht — sonst wäre jede echte Fundstelle gedeckt.
+  assert.equal(fremdeEinheit('Die Kette dauerte 57 Tage.', 'Die Kette dauerte 57'.length, 'tage'), null);
+});
+
+test('„Begriffe" steht mit Absicht nicht unter den Zählwörtern', () => {
+  // Genau das zählt `keyword-anzahl`. Ein Zählwort, das eine Leitzahl zählt,
+  // deckte die Fundstellen zu, für die es den Prüfer gibt.
+  assert.ok(!ZAEHLWOERTER.includes('Begriffe'));
+  assert.equal(fremdeEinheit('32 Begriffe', 2, null), null);
+});
+
+test('jedes Zählwort steht genau einmal und trägt einen Großbuchstaben', () => {
+  assert.ok(ZAEHLWOERTER.length >= 10, `nur ${ZAEHLWOERTER.length} Zählwörter`);
+  assert.equal(new Set(ZAEHLWOERTER).size, ZAEHLWOERTER.length, 'ein Wort steht doppelt');
+  for (const w of ZAEHLWOERTER) assert.match(w, /^[A-ZÄÖÜ]/, `${w}: kein Hauptwort`);
 });

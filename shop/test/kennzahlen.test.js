@@ -110,9 +110,10 @@ test('Ohne erhobene offene Punkte zeigt die Kennzahl keinen glatten Nullstand', 
  * Die abgeschriebene Schwelle — 5. September
  *
  * **Der Befund.** „Keywords mit gemessenem Suchvolumen: mindestens **33** von
- * 33" stand als Zahl im Quelltext. Die Messliste führt **32**; sie kommt aus
- * `ausgabe/kampagne/keywords.csv` und hat sich geändert, ohne dass diese
- * Zeile es erfuhr.
+ * 33" stand als Zahl im Quelltext — die Zahl vor dem 1. September, als
+ * „Kaminkopf Regenhaube" noch in der Kampagne stand. Die Messliste führt
+ * **32**; sie kommt aus `ausgabe/kampagne/keywords.csv` und hat sich
+ * geändert, ohne dass diese Zeile es erfuhr.
  *
  * > **Ein Schwellendokument, dessen ganze Begründung lautet, Schwellen
  * > dürften sich nicht verschieben — und eine seiner Schwellen war eine
