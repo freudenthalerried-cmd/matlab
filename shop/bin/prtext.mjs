@@ -33,6 +33,26 @@ const FUSS = '\n\n🤖 Generated with [Claude Code](https://claude.com/claude-co
   + 'https://claude.ai/code/session_01NUkcuRkCJDZFDntY4wU3xy';
 
 const roh = readFileSync(quelle, 'utf8');
+
+/*
+ * **Und die Quelle trug sie doch** — bemerkt am 5. September, beim ersten
+ * Veröffentlichen mit diesem Werkzeug. Der Kommentar über `FUSS` sagt, wohin
+ * die Fußzeile gehört; die Quelle endete trotzdem damit, und die Ausgabe trug
+ * sie zweimal.
+ *
+ * > **Eine Regel, die nur im Kommentar steht, gilt bis zum ersten Lauf.**
+ *
+ * Abgewiesen statt weggeschnitten: Wer die Fußzeile in die Quelle schreibt,
+ * meint etwas damit, und ein Werkzeug, das sie stillschweigend entfernt,
+ * verbirgt genau diese Absicht.
+ */
+if (roh.includes('Generated with [Claude Code]')) {
+  console.error('Abbruch: Die Fußzeile steht schon in der Quelle.');
+  console.error(`  ${quelle}`);
+  console.error('Sie gehört zur Veröffentlichung, nicht zum Dokument — sonst steht sie zweimal.');
+  process.exit(2);
+}
+
 const text = roh
   .replace(/^<!--[\s\S]*?-->\s*/, '')   // der Kopfkommentar erklärt die Datei, nicht das Vorhaben
   .replace(/^# .*\n+/, '')              // die Überschrift ist der PR-Titel und steht dort schon
