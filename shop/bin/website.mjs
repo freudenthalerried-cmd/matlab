@@ -51,7 +51,7 @@ import {
   oeffentlicherArtikel, oeffentlicherLieferant, vorteil, ustText, KORBSCHLUESSEL,
 } from '../src/shopkern.js';
 import { LIEFERGEBIET } from '../src/liefergebiet.js';
-import { ZAHLWEGE, zahlwegName } from '../src/zahlung.js';
+import { zahlwegName } from '../src/zahlung.js';
 import { fracht } from '../src/preis.js';
 import { lesKopf, alsHtml, alsText, alsListe, esc } from '../src/markdown.js';
 import { wegwerfordner } from '../src/wegwerf.js';
@@ -1794,9 +1794,19 @@ function shopdaten(katalog, befund, seiten, lieferantenDatei, suchwoerterDatei, 
       .map((w) => ({ wort: w.wort, antwort: w.antwort.trim() })),
     einheiten: EINHEITEN,
     bezirke: LIEFERGEBIET.bezirke.map((b) => b.name),
+    // **`zahlwegName` statt `.name`, seit dem 5. September.** Hier stand der
+    // interne Name, und die Kasse lieferte damit „Kreditkarte (EU-Karte,
+    // Listenpreis Stripe)" an jeden Besucher aus — Abwickler und Preisart
+    // eines Anbieters, der noch nicht gewählt ist. Die AGB-Tabelle zwölf
+    // Zeilen weiter oben nahm schon immer `zahlwegName`; zwei Stellen, eine
+    // richtig, eine falsch, ist der Regelfall bei einem Feld mit zwei Lesern.
+    //
+    // Der Ausweichwert entfällt mit: `zahlwegName` wirft bei unbekannter
+    // Kennung. Ein `?? z.id` hätte im Ernstfall „karte-stripe" in die Kasse
+    // geschrieben und dabei ausgesehen wie Vorsorge.
     zahlwege: ZAHLUNGSBEDINGUNGEN.angeboten.map((z) => ({
       id: z.id,
-      name: (ZAHLWEGE.find((w) => w.id === z.id) ?? {}).name ?? z.id,
+      name: zahlwegName(z.id),
       kunde: z.kunde,
     })),
     // Nur die Angaben, die ohnehin im Impressum stehen. Sie gehen mit, weil

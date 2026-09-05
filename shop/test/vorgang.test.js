@@ -446,6 +446,51 @@ test('Ein Einkaufswert je Lieferant fällt ebenso auf wie die Summe', () => {
 });
 
 /* ------------------------------------------------------------------ *
+ * Die Schranke ist eine Aussage über die Zahl — 5. September
+ *
+ * Bis heute suchte `pruefeMargenleck` ausschließlich die **tatsächlichen**
+ * Beträge. Im erzeugten Angebot stand daneben:
+ *
+ * > `Fracht Rohrhersteller Österreich: 0,00 € (frei Haus ab 1500 € Bestellwert)`
+ *
+ * Keiner der gesuchten Werte — und trotzdem: Ist die Frachtzeile null, liegt
+ * unser Einkauf über 1.500 €, und der Warenwert steht auf demselben Blatt.
+ * `bestellwertNetto` ist in `fracht()` als `ekNetto × Menge` definiert; das
+ * Wort „Bestellwert" bedeutete dem Kunden dabei etwas anderes als uns.
+ * ------------------------------------------------------------------ */
+
+test('Eine Frei-Haus-Schwelle im Angebot fällt auf wie ein Einkaufswert', () => {
+  const v = machVorgang();
+  const teil = warenkorb.teillieferungen.find((t) => t.frachtSchwelleNetto != null);
+  assert.ok(teil, 'Vorbedingung: mindestens ein Lieferant mit Schwelle');
+
+  const undicht = {
+    ...v,
+    angebot: { ...v.angebot, text: `${v.angebot.text}\nfrei Haus ab ${teil.frachtSchwelleNetto} € Bestellwert` },
+  };
+  const p = pruefeMargenleck(undicht);
+  assert.equal(p.dicht, false);
+  assert.ok(p.funde.some((f) => /^Angebot: Frei-Haus-Schwelle /.test(f)), p.funde.join(' | '));
+});
+
+test('Der erzeugte Frachtgrund nennt die Schwelle nicht mehr', () => {
+  // Die Gegenrichtung zum Test darüber: Nicht nur fällt die Zahl auf, wenn
+  // jemand sie hineinschreibt — sie steht auch nicht mehr von selbst drin.
+  const p = pruefeMargenleck(machVorgang());
+  assert.equal(p.dicht, true, p.funde.join(' | '));
+
+  const gross = berechneWarenkorb([{ sku: 'AB-RD-375', menge: 6 }], katalog);
+  const frei = gross.teillieferungen.find((t) => t.frachtNetto === 0);
+  assert.ok(frei, 'Vorbedingung: eine Teillieferung, deren Fracht entfallen ist');
+  const v = baueVorgang({
+    vorgangsnummer: 'B-2026-0009', kundendaten: kundeA, warenkorb: gross, betreiber,
+    datum: '2026-08-16', lieferdatum: '2026-08-30', rechnungsnummer: 'RE-2',
+  });
+  assert.match(v.angebot.text, /frei Haus/, 'die Tatsache steht weiter da');
+  assert.equal(pruefeMargenleck(v).dicht, true, pruefeMargenleck(v).funde.join(' | '));
+});
+
+/* ------------------------------------------------------------------ *
  * Daten Dritter gehören nicht in die Ablage
  *
  * Die Ablage ist die einzige Stelle, aus der nichts mehr verschwindet:

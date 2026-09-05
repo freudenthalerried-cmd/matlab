@@ -52,13 +52,15 @@ import { zahlungszielTraegt } from './skonto.js';
 export function zahlwegName(id) {
   const z = ZAHLWEGE.find((w) => w.id === id);
   if (!z) throw new Error(`Zahlweg ohne Entsprechung in zahlung.js: ${id}`);
-  return z.name;
+  if (!z.kundenname) throw new Error(`Zahlweg ohne Kundennamen: ${id}`);
+  return z.kundenname;
 }
 
 export const ZAHLWEGE = [
   {
     id: 'vorkasse',
     name: 'Vorkasse per Überweisung',
+    kundenname: 'Vorkasse per Überweisung',
     prozent: 0,
     fixEuro: 0,
     tageBisEingang: 1,
@@ -72,6 +74,7 @@ export const ZAHLWEGE = [
   {
     id: 'karte-stripe',
     name: 'Kreditkarte (EU-Karte, Listenpreis Stripe)',
+    kundenname: 'Kreditkarte (EU-Karte)',
     prozent: 0.014,
     fixEuro: 0.25,
     tageBisEingang: 0,
@@ -85,6 +88,7 @@ export const ZAHLWEGE = [
   {
     id: 'karte-mollie',
     name: 'Kreditkarte (EU-Karte, Listenpreis Mollie)',
+    kundenname: 'Kreditkarte (EU-Karte)',
     prozent: 0.018,
     fixEuro: 0.25,
     tageBisEingang: 0,
@@ -98,6 +102,7 @@ export const ZAHLWEGE = [
   {
     id: 'eps',
     name: 'EPS-Onlineüberweisung',
+    kundenname: 'EPS-Onlineüberweisung',
     prozent: 0.009,
     fixEuro: 0.25,
     tageBisEingang: 0,
@@ -111,6 +116,7 @@ export const ZAHLWEGE = [
   {
     id: 'paypal',
     name: 'PayPal',
+    kundenname: 'PayPal',
     prozent: 0.0249,
     fixEuro: 0.35,
     tageBisEingang: 0,
@@ -124,6 +130,7 @@ export const ZAHLWEGE = [
   {
     id: 'rechnungskauf',
     name: 'B2B-Rechnungskauf über einen Anbieter',
+    kundenname: 'Rechnungskauf für Gewerbekunden',
     prozent: 0.03,
     fixEuro: 0,
     tageBisEingang: 0,
@@ -137,6 +144,7 @@ export const ZAHLWEGE = [
   {
     id: 'offene-rechnung',
     name: 'Offene Rechnung, 30 Tage netto — auf eigenes Risiko',
+    kundenname: 'Offene Rechnung, 30 Tage netto',
     prozent: 0,
     fixEuro: 0,
     tageBisEingang: 30,
@@ -154,6 +162,7 @@ export const ZAHLWEGE = [
   {
     id: 'nachnahme',
     name: 'Nachnahme',
+    kundenname: 'Nachnahme',
     prozent: 0,
     fixEuro: 6,
     tageBisEingang: 14,
@@ -165,6 +174,150 @@ export const ZAHLWEGE = [
     anmerkung: 'Ausgeschlossen: löst die Registrierkassenpflicht aus, siehe ablage-und-nummernkreis.md.',
   },
 ];
+
+/* ------------------------------------------------------------------ *
+ * Der Name des Zahlwegs hat zwei Leser — 5. September 2026
+ *
+ * **Der Befund.** `name` stand in einem Feld und ging an zwei Adressaten:
+ *
+ *   - an die **interne Kostentabelle** (`kostenbild.js`, `wirkungAufMonat`,
+ *     `vergleiche`), wo „Listenpreis Stripe" genau die Angabe ist, die zählt —
+ *     der Satz ist nicht verhandelt, und das gehört dazu;
+ *   - an den **Kunden** (`beleg.js` und die AGB-Seite über `zahlwegName`), wo
+ *     derselbe Text drei Dinge sagt, die ihn nichts angehen: dass wir einen
+ *     Abwickler benutzen, welchen, und dass wir dessen Listenpreis zahlen.
+ *
+ * Nachgewiesen, nicht befürchtet: In `ausgabe/website.html` steht seit dem
+ * ersten Bau der Seite
+ *
+ * > „Kreditkarte (EU-Karte, Listenpreis Stripe) — angeboten"
+ *
+ * für einen Anbieter, der **noch nicht gewählt ist**; der Absatz zwei Zeilen
+ * darunter sagt das ausdrücklich.
+ *
+ * Der zweite Fall im selben Feld ist stiller und schlimmer: „Offene Rechnung,
+ * 30 Tage netto — **auf eigenes Risiko**". Gemeint ist unser Risiko; auf einer
+ * Kundenseite liest das jeder als seines.
+ *
+ * > **Ein Feld, zwei Leser — dieselbe Familie wie der Frachtsatz und der
+ * > Bestellwert.**
+ * ------------------------------------------------------------------ */
+
+/**
+ * Wörter, die in die interne Kostentabelle gehören und in keinen Kundentext.
+ *
+ * Das Register wird **in beide Richtungen** gehalten: `namensbefund` verlangt,
+ * dass kein Kundenname eines dieser Wörter trägt — und dass jedes Wort in
+ * mindestens einem internen Namen wirklich vorkommt. Ein Eintrag, den nichts
+ * mehr betrifft, ist eine Regel, die grün bleibt, weil sie nichts prüft.
+ */
+export const INTERNE_WOERTER = Object.freeze([
+  Object.freeze({
+    wort: 'Stripe',
+    warum: 'Der Abwickler hinter der Kartenzahlung. Der Kunde zahlt mit Karte, nicht bei '
+      + 'Stripe — und gewählt ist der Anbieter noch gar nicht (Gate Zahlungsanbieter offen).',
+  }),
+  Object.freeze({
+    wort: 'Mollie',
+    warum: 'Derselbe Fall wie Stripe. Beide stehen nebeneinander in der Liste, weil sie '
+      + 'verglichen werden; verglichen wird intern.',
+  }),
+  Object.freeze({
+    wort: 'auf eigenes Risiko',
+    warum: 'Gemeint ist unser Ausfallrisiko. In einer Kundentabelle steht es neben seinem '
+      + 'Zahlweg und liest sich als seines — der Satz kehrt seine Bedeutung um, sobald er '
+      + 'die Seite wechselt.',
+  }),
+]);
+
+/**
+ * **Warum „Listenpreis" allein nicht im Register steht.**
+ *
+ * Der erste Wurf führte das Wort für sich. Der Lauf meldete daraufhin
+ * **216 Fundstellen in 47 Ausgabedateien** — und alle 216 waren richtig so:
+ *
+ * > „73 % unter dem Listenpreis des Lieferanten."
+ *
+ * Das ist der **Listenpreis des Herstellers**, die UVP. Sie steht auf jeder
+ * Artikelseite, sie ist öffentlich, und der Abstand zu ihr ist das Argument
+ * des Shops. Der „Listenpreis Stripe" ist der **Satz unseres Abwicklers**.
+ * Ein Wort, zwei Sachen — und ein Prüfer, der 216 richtige Sätze anschwärzt,
+ * um einen falschen zu finden, wird nach dem zweiten Lauf abgeschaltet; dann
+ * meldet er auch den echten Fall nicht mehr.
+ *
+ * Gesucht wird deshalb der Abwickler beim Namen. Er kommt in beiden
+ * Kartenzeilen vor und trägt den Listenpreis mit.
+ */
+export const NICHT_IM_REGISTER = Object.freeze([
+  Object.freeze({
+    wort: 'Listenpreis',
+    warumNicht: 'Bezeichnet an 216 Fundstellen in 47 Ausgabedateien den Listenpreis des '
+      + 'Herstellers — eine '
+      + 'öffentliche Angabe und das Verkaufsargument des Shops. Nur in Gesellschaft eines '
+      + 'Abwicklernamens ist es eine Angabe über unsere Kosten, und dafür genügt der Name.',
+  }),
+]);
+
+/**
+ * Hält die Kundennamen gegen das Register — in beide Richtungen.
+ *
+ * @param {Array} zahlwege
+ * @param {Array<{wort: string, warum: string}>} woerter
+ */
+export function namensbefund(zahlwege = ZAHLWEGE, woerter = INTERNE_WOERTER) {
+  const meldungen = [];
+
+  for (const z of zahlwege) {
+    if (!z.kundenname) {
+      meldungen.push({ regel: 'kundenname-fehlt', id: z.id, text: `${z.id}: kein Kundenname` });
+      continue;
+    }
+    for (const w of woerter) {
+      if (z.kundenname.toLowerCase().includes(w.wort.toLowerCase())) {
+        meldungen.push({
+          regel: 'internes-wort-im-kundennamen',
+          id: z.id,
+          text: `${z.id}: „${w.wort}" steht im Kundennamen „${z.kundenname}"`,
+        });
+      }
+    }
+  }
+
+  for (const w of NICHT_IM_REGISTER) {
+    if (!w.warumNicht || w.warumNicht.length < 80) {
+      meldungen.push({ regel: 'grund-zu-duenn', wort: w.wort, text: `${w.wort}: Grund zu kurz` });
+    }
+    if (woerter.some((x) => x.wort.toLowerCase() === w.wort.toLowerCase())) {
+      meldungen.push({
+        regel: 'zweimal-gefuehrt',
+        wort: w.wort,
+        text: `„${w.wort}" steht im Register und in der Begründung, warum es nicht darin steht`,
+      });
+    }
+  }
+
+  for (const w of woerter) {
+    if (!w.warum || w.warum.length < 80) {
+      meldungen.push({ regel: 'grund-zu-duenn', wort: w.wort, text: `${w.wort}: Grund zu kurz` });
+    }
+    const trifft = zahlwege.some((z) => (z.name ?? '').toLowerCase().includes(w.wort.toLowerCase()));
+    if (!trifft) {
+      meldungen.push({
+        regel: 'wort-ohne-fall',
+        wort: w.wort,
+        text: `„${w.wort}" kommt in keinem internen Namen vor — der Eintrag prüft nichts mehr`,
+      });
+    }
+  }
+
+  return {
+    sauber: meldungen.length === 0,
+    zahlwege: zahlwege.length,
+    woerter: woerter.length,
+    nichtGefuehrt: NICHT_IM_REGISTER.length,
+    meldungen,
+  };
+}
 
 /** Nachschlagen mit klarer Fehlermeldung. Einmal hier, damit es im Bündel nicht kollidiert. */
 export const findeZahlweg = (id) => {

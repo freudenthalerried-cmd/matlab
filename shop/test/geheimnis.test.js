@@ -2,7 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { rekonstruiereEinkauf, rekonstruierbarkeit, findeAbfluss } from '../src/geheimnis.js';
+import {
+  rekonstruiereEinkauf, rekonstruierbarkeit, findeAbfluss,
+  ausgabemuster, findeInterneWoerter, teileFunde, HINGENOMMEN,
+} from '../src/geheimnis.js';
+import { INTERNE_WOERTER } from '../src/zahlung.js';
 
 /* ------------------------------------------------------------------ *
  * Die Rechnung, die jeder anstellen kann
@@ -105,9 +109,67 @@ test('Das Werkzeug läuft und benennt alle drei Durchgänge', () => {
   assert.match(lauf.stdout, /Durchgang 1 — Abfluss/);
   assert.match(lauf.stdout, /Durchgang 2 — Rekonstruktion/);
   assert.match(lauf.stdout, /Durchgang 3 — steht der Schlüssel in der Ausgabe/);
+  assert.match(lauf.stdout, /Durchgang 4 — interne Namen und Schranken in der Ausgabe/);
+  assert.match(lauf.stdout, /Keine interne Bezeichnung und keine Lieferantenschwelle/);
   assert.match(lauf.stdout, /übergangen/, 'was nicht angesehen wurde, steht dabei');
   assert.match(lauf.stdout, /schützt keine Angabe/, 'das Werkzeug benennt seine eigene Aussage');
   // Der Durchgang muss etwas angesehen haben. „Keine Ausgabedatei gefunden"
   // sähe sonst genauso still aus wie ein sauberer Befund.
   assert.match(lauf.stdout, /[0-9]+ Ausgabedatei\(en\) geprüft, die Zielmarge steht in keiner/);
+});
+
+/* ------------------------------------------------------------------ *
+ * Aussagen über Werte — 5. September
+ *
+ * Die Durchgänge 1 bis 3 suchen Beträge. In `ausgabe/website.html` stand
+ * seit dem ersten Bau „Kreditkarte (EU-Karte, Listenpreis Stripe)", in
+ * `shop.js` „Eine Frei-Haus-Schwelle ab 1500 € misst am Bestellwert". Keines
+ * von beiden ist ein Einkaufspreis; beide sagen etwas über einen.
+ * ------------------------------------------------------------------ */
+
+const muster = () => ausgabemuster(INTERNE_WOERTER, [1500, 1200, null, 1500]);
+
+test('die Schwelle wird nur in Gesellschaft eines Frachtworts gesucht', () => {
+  // Ohne die Klammer traf 1200 jede Artikelnummer und jedes Millimetermaß.
+  // Ein Prüfer mit vierzig falschen Meldungen wird abgeschaltet.
+  const echt = findeInterneWoerter('Frei Haus ab 1500 € Bestellwert', muster(), 'x');
+  assert.equal(echt.length, 1);
+  assert.match(echt[0].art, /Frei-Haus-Schwelle 1500/);
+  assert.deepEqual(findeInterneWoerter('Rohr DN 1500, Länge 1200 mm', muster(), 'x'), []);
+});
+
+test('doppelte Schwellen ergeben ein Muster, fehlende keines', () => {
+  const m = muster();
+  assert.equal(m.filter((x) => /Frei-Haus-Schwelle/.test(x.name)).length, 2, '1500 zweimal, null gar nicht');
+  assert.equal(m.length, INTERNE_WOERTER.length + 2);
+});
+
+test('der Abwicklername wird gefunden, wo er im Kundentext steht', () => {
+  const f = findeInterneWoerter('Kreditkarte (EU-Karte, Listenpreis Stripe)', muster(), 'agb.html');
+  assert.ok(f.some((x) => /Stripe/.test(x.art)), 'genau der Satz, der seit dem ersten Bau ausgeliefert wurde');
+});
+
+test('jedes Muster trägt seinen Grund mit', () => {
+  for (const m of muster()) assert.ok(m.warum && m.warum.length >= 80, m.name);
+});
+
+test('eine hingenommene Fundstelle zählt nicht als offen', () => {
+  const funde = findeInterneWoerter('{"id":"karte-stripe","name":"Kreditkarte (EU-Karte)"}', muster(), 'shop.js');
+  const g = teileFunde(funde);
+  assert.equal(g.offen.length, 0);
+  assert.equal(g.hingenommen, 1);
+  assert.equal(g.sauber, true);
+});
+
+test('eine hingenommene Fundstelle, die es nicht mehr gibt, fällt auf', () => {
+  // Die Rückrichtung: Sonst stünde hier in einem Monat eine Ausnahme für eine
+  // Stelle, die längst behoben ist — und sie läse sich wie ein Zustand.
+  const g = teileFunde([]);
+  assert.equal(g.leerlaufend.length, HINGENOMMEN.length);
+  assert.equal(g.sauber, false);
+});
+
+test('jede hingenommene Fundstelle trägt einen tragfähigen Grund', () => {
+  assert.ok(HINGENOMMEN.length >= 1, 'ein leeres Verzeichnis bestünde jede Prüfung');
+  for (const h of HINGENOMMEN) assert.ok(h.warum.length >= 80, String(h.auszug));
 });

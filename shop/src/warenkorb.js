@@ -64,6 +64,13 @@ export function berechneWarenkorb(zeilen, katalog) {
       einkaufNetto: f.bestellwertNetto,
       frachtNetto: f.betragNetto,
       frachtGrund: f.grund,
+      // **Intern, und genau deshalb hier.** Die Frei-Haus-Schwelle misst am
+      // Einkauf; sie gehört zu den Zahlen, die kein Kundenpapier nennen darf.
+      // Sie wandert trotzdem in die Teillieferung, weil `pruefeMargenleck`
+      // sonst einen zweiten Weg zu den Lieferantendaten bräuchte — und ein
+      // Prüfer, dem man die Vergleichsgrößen erst hereinreichen muss, prüft
+      // dort nicht, wo man es vergisst.
+      frachtSchwelleNetto: f.schwelleNetto ?? null,
       mindestbestellwert: mbw,
       ...nebenkostenUntergrenze(positionen, lieferant),
     });

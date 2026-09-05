@@ -412,6 +412,24 @@ export function pruefeMargenleck(vorgang) {
     { name: 'Wareneinsatz gesamt', betrag: wk.einkaufNetto },
     { name: 'Deckungsbeitrag', betrag: wk.deckungsbeitragNetto },
     ...wk.teillieferungen.map((t) => ({ name: `Einkauf ${t.lieferantName}`, betrag: t.einkaufNetto })),
+
+    // **Ergänzt am 5. September: die Schranken, nicht nur die Werte.**
+    //
+    // Bis heute suchte diese Prüfung ausschließlich die **tatsächlichen**
+    // Beträge. Auf dem Angebot stand daneben unbemerkt der Satz „frei Haus ab
+    // 1500 € Bestellwert" — keiner der gesuchten Werte, aber eine Aussage über
+    // sie: Ist die Frachtzeile 0,00 €, liegt unser Einkauf darüber, und der
+    // Warenwert steht auf demselben Blatt.
+    //
+    // > **Eine Schranke auf einer geheimen Zahl ist eine Aussage über die
+    // > geheime Zahl.**
+    //
+    // Gesucht wird die Schwelle unabhängig davon, ob sie im Vorgang erreicht
+    // wurde: Auch „ab 1500 € entfällt die Fracht" auf einem Angebot über 400 €
+    // nennt sie.
+    ...wk.teillieferungen
+      .filter((t) => t.frachtSchwelleNetto != null)
+      .map((t) => ({ name: `Frei-Haus-Schwelle ${t.lieferantName}`, betrag: t.frachtSchwelleNetto })),
   ];
 
   const belege = [

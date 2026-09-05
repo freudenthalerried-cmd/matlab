@@ -40,3 +40,38 @@ export function frachtGrundText(sperrgutPositionen) {
   return `Pauschale plus ${sperrgutPositionen}× Kranentladung — Zahl je Sperrgut-Position `
     + 'gerechnet, Einstufung aus der Warengruppe geschätzt';
 }
+
+/**
+ * Der Satz an der Frachtzeile, wenn die Fracht entfällt.
+ *
+ * **Warum ohne Zahl, 5. September 2026.** Hier stand in `preis.js`:
+ *
+ * > `frei Haus ab 1500 € Bestellwert`
+ *
+ * Und `bestellwertNetto` ist in derselben Funktion definiert als
+ * `positionen.reduce((s, p) => s + p.ekNetto * p.menge, 0)` — der **Einkauf**.
+ * Der Satz stand auf dem Angebot, mit vierzehn Tagen Bindefrist, neben dem
+ * ausgewiesenen Warenwert.
+ *
+ * Er sagt damit zweierlei, was er nicht sagen soll:
+ *
+ * 1. **„Bestellwert" heißt für den Kunden etwas anderes als für uns.** Er
+ *    liest seinen Rechnungsbetrag; gemeint ist unsere Bestellung beim
+ *    Hersteller. Dasselbe Wort, zwei Leser — die Familie, aus der schon der
+ *    Frachtgrund oben stammt.
+ * 2. **Er ist eine Schranke auf einer geheimen Zahl.** Steht dort 0,00 €, dann
+ *    ist unser Einkauf mindestens 1.500 €. Der Warenwert steht daneben. Wer
+ *    beides nimmt, hat eine Obergrenze für die Handelsspanne — ohne dass ein
+ *    einziger Einkaufspreis im Papier steht.
+ *
+ * `warenkorb.js` hat denselben Fall beim Mindestbestellwert längst gelöst: Der
+ * Fehlbetrag wird über den Hebel in die Währung des Kunden gerechnet, bevor er
+ * hinausgeht. Beim Frei-Haus-Satz gibt es nichts umzurechnen — die Tatsache,
+ * die den Kunden angeht, ist, dass keine Fracht anfällt.
+ *
+ * > **Eine Schranke auf einer geheimen Zahl ist eine Aussage über die geheime
+ * > Zahl.**
+ */
+export function frachtfreiText() {
+  return 'frei Haus — die Frachtfreigrenze dieses Herstellers ist erreicht';
+}

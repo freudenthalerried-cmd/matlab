@@ -171,7 +171,15 @@ test('Über der Schwelle im Bestellwert entfällt die Fracht wirklich', () => {
   const grenze = katalog.lieferantenById.get('bahnen-de').fracht.freiHausAbNetto;
   assert.ok(teil.einkaufNetto >= grenze, 'Bestellwert erreicht die Schwelle');
   assert.equal(teil.frachtNetto, 0);
-  assert.match(teil.frachtGrund, /Bestellwert/);
+  assert.match(teil.frachtGrund, /frei Haus/);
+  // **Der Grund nennt die Schwelle seit dem 5. September nicht mehr.** Bis
+  // dahin lautete er „frei Haus ab 1500 € Bestellwert" — und „Bestellwert"
+  // heißt in derselben Funktion `ekNetto × Menge`. Der Satz stand auf dem
+  // Angebot neben dem Warenwert und gab damit eine Untergrenze des Einkaufs
+  // preis. Die Schwelle bleibt in der Teillieferung, nur eben intern.
+  assert.doesNotMatch(teil.frachtGrund, /\d/, 'im Grund steht keine Zahl mehr');
+  assert.doesNotMatch(teil.frachtGrund, /Bestellwert/, 'und auch das Wort nicht, das zwei Leser hat');
+  assert.equal(teil.frachtSchwelleNetto, grenze);
 });
 
 test('Der Mindestbestellwert wird am Bestellwert gemessen', () => {

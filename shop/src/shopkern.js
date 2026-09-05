@@ -768,7 +768,18 @@ export function oeffentlicherLieferant(l) {
       // Die Frei-Haus-Schwelle misst am **Bestellwert**, also am Einkauf.
       // Der Browser kennt keine Einkaufspreise und kann sie deshalb nicht
       // prüfen. Statt sie zu verschweigen, wird sie als offen gemeldet.
-      freiHausAbNetto: l.fracht?.freiHausAbNetto ?? null,
+      //
+      // **Seit dem 5. September nur noch als Ja/Nein.** Hier stand die Zahl
+      // selbst, und `ausgabe/site/shop.js` lieferte sie damit an jeden
+      // Besucher aus. Sie misst am Einkauf: Wer sie kennt und auf einem
+      // Angebot eine Frachtzeile von 0,00 € sieht, kennt eine Untergrenze
+      // unseres Wareneinsatzes und daneben den Warenwert. Der Hinweis, den
+      // die Kasse zu geben hat, lautet „die Fracht kann entfallen" — dafür
+      // genügt, **dass** es eine Schwelle gibt.
+      //
+      // Dieselbe Zeile trennt zwei Zeilen weiter oben schon einmal richtig:
+      // Geheim ist nicht die Geschäftsbeziehung, geheim sind die Konditionen.
+      freiHausMoeglich: l.fracht?.freiHausAbNetto != null,
     },
   };
 }
@@ -906,9 +917,10 @@ export function kundenWarenkorb(zeilen, { artikel, lieferanten, mindestbestellwe
     const sperrgutPositionen = positionen.filter((p) => p.sperrgut).length;
     const frachtNetto = runde(l.fracht.pauschaleNetto + sperrgutPositionen * l.fracht.sperrgutZuschlagNetto);
 
-    if (l.fracht.freiHausAbNetto !== null) {
-      offen.push(`Eine Frei-Haus-Schwelle ab ${l.fracht.freiHausAbNetto} € misst am Bestellwert `
-        + 'und lässt sich hier nicht prüfen — die Fracht kann entfallen.');
+    if (l.fracht.freiHausMoeglich) {
+      offen.push('Dieser Hersteller liefert ab einem bestimmten Bestellwert frachtfrei. '
+        + 'Die Schwelle misst am Bestellwert und lässt sich hier nicht prüfen — '
+        + 'die Fracht kann im Angebot entfallen.');
     }
 
     teillieferungen.push({

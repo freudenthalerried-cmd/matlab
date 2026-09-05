@@ -621,6 +621,26 @@ export const GEGENPROBEN = Object.freeze([
       + 'die Seiten von gestern.',
   }),
   Object.freeze({
+    id: 'abwicklername-im-kundennamen',
+    pruefer: 'pruefe-geheimnis',
+    was: 'Der interne Name eines Zahlwegs, der beim Kunden landet',
+    datei: 'shop/src/zahlung.js',
+    art: 'ersetzen',
+    suchen: "    kundenname: 'Kreditkarte (EU-Karte)',\n    prozent: 0.014,",
+    ersetzen: "    kundenname: 'Kreditkarte (EU-Karte, Listenpreis Stripe)',\n    prozent: 0.014,",
+    erwartet: /internes-wort-im-kundennamen/,
+    baueVorher: true,
+    warum: 'Bis zum 5. September stand `pruefe-geheimnis` in `OHNE_GEGENPROBE`, und der '
+      + 'Grund stimmte: Seine drei Durchgänge suchten Einkaufspreise, und eine Mutation '
+      + 'hätte heißen müssen, einen davon in eine öffentliche Datei zu schreiben — die eine '
+      + 'Datei, die diese Arbeit nicht anfassen darf. Durchgang 4 sucht keine Beträge, '
+      + 'sondern Aussagen über Beträge, und der lässt sich gefahrlos gegenproben. Diese '
+      + 'Mutation stellt genau den Zustand her, der bis heute ausgeliefert wurde: den '
+      + 'Abwicklernamen im Kundentext der AGB-Seite, für einen Anbieter, der nicht gewählt '
+      + 'ist. Der zweite Kartenweg trägt denselben Kundennamen; deshalb steht die '
+      + 'Gebührenzeile im Suchtext, sonst träfe er zweimal.',
+  }),
+  Object.freeze({
     id: 'ablageort-ohne-sperre',
     pruefer: 'pruefe-ablage',
     was: 'Ein Ablageort, den die .gitignore nicht kennt',
@@ -921,12 +941,6 @@ export const GEGENPROBEN = Object.freeze([
  * ließe, soll beim Schreiben des Grundes merken, dass er keinen hat.
  */
 export const OHNE_GEGENPROBE = Object.freeze([
-  Object.freeze({
-    pruefer: 'pruefe-geheimnis',
-    warumKeine: 'Seine Mutation wäre, einen Einkaufspreis in eine öffentliche Datei zu '
-      + 'schreiben. Auch nur für Sekunden und auch nur lokal — das ist die eine Datei, '
-      + 'die diese Arbeit nicht anfassen darf.',
-  }),
   Object.freeze({
     pruefer: 'pruefe-mutationen',
     warumKeine: 'Er wird nicht durch Code rot, sondern durch einen Zettel auf der Platte — '

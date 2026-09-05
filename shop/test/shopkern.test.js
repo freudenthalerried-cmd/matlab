@@ -260,13 +260,24 @@ test('dieselbe Rechnung wie im Rechenkern — nur mit weniger Wissen', () => {
     'der Lieferantenname gehört nicht in die Kundenrechnung');
 });
 
-test('eine Frei-Haus-Schwelle wird gemeldet statt verschwiegen', () => {
+test('eine Frei-Haus-Schwelle wird gemeldet statt verschwiegen — ohne ihre Zahl', () => {
   // Sie misst am Bestellwert, also am Einkauf. Der Browser kennt keine
   // Einkaufspreise und kann sie nicht prüfen — also sagt er das.
+  //
+  // **Und er sagt es seit dem 5. September ohne die Zahl.** Bis dahin stand
+  // hier `assert.match(r.offen[0], /1500/)`: Der Test hat ausdrücklich
+  // verlangt, dass die Schwelle in der Kasse steht, und `shop.js` hat sie an
+  // jeden Besucher ausgeliefert. Sie misst am Einkauf — wer sie kennt und ein
+  // Angebot mit 0,00 € Fracht daneben legt, hat eine Untergrenze unseres
+  // Wareneinsatzes und den Warenwert auf demselben Blatt.
   const mitSchwelle = oeffentlicherLieferant({ ...lieferantProbe, fracht: { ...lieferantProbe.fracht, freiHausAbNetto: 1500 } });
+  assert.ok(!('freiHausAbNetto' in mitSchwelle.fracht), 'die Zahl gehört nicht in die Seite');
+  assert.equal(mitSchwelle.fracht.freiHausMoeglich, true);
+
   const r = kundenWarenkorb([{ sku: 'A', menge: 1 }], { artikel: beispiel, lieferanten: [mitSchwelle] });
   assert.equal(r.offen.length, 1);
-  assert.match(r.offen[0], /1500/);
+  assert.match(r.offen[0], /frachtfrei/);
+  assert.doesNotMatch(r.offen[0], /1500/, 'die Schwelle darf genannt sein, ihre Höhe nicht');
   assert.equal(kundenWarenkorb([{ sku: 'A', menge: 1 }],
     { artikel: beispiel, lieferanten: [oeffentlicherLieferant(lieferantProbe)] }).offen.length, 0);
 });

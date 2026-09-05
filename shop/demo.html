@@ -655,6 +655,41 @@ function frachtGrundText(sperrgutPositionen) {
 
 
 
+function frachtfreiText() {
+  return 'frei Haus — die Frachtfreigrenze dieses Herstellers ist erreicht';
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -801,12 +836,18 @@ function fracht(positionen, lieferant) {
   const warenwertNetto = cent(positionen.reduce((s, p) => s + p.vkNetto * p.menge, 0));
   const bestellwertNetto = cent(positionen.reduce((s, p) => s + p.ekNetto * p.menge, 0));
 
+  
+  
+  
+  
+  
   if (regel.freiHausAbNetto != null && bestellwertNetto >= regel.freiHausAbNetto) {
     return {
       betragNetto: 0,
-      grund: `frei Haus ab ${regel.freiHausAbNetto} € Bestellwert`,
+      grund: frachtfreiText(),
       warenwertNetto,
       bestellwertNetto,
+      schwelleNetto: regel.freiHausAbNetto,
     };
   }
 
@@ -827,6 +868,10 @@ function fracht(positionen, lieferant) {
     grund: frachtGrundText(sperrgutPositionen),
     warenwertNetto,
     bestellwertNetto,
+    
+    
+    
+    schwelleNetto: regel.freiHausAbNetto ?? null,
   };
 }
 
@@ -1246,6 +1291,13 @@ function berechneWarenkorb(zeilen, katalog) {
       einkaufNetto: f.bestellwertNetto,
       frachtNetto: f.betragNetto,
       frachtGrund: f.grund,
+      
+      
+      
+      
+      
+      
+      frachtSchwelleNetto: f.schwelleNetto ?? null,
       mindestbestellwert: mbw,
       ...nebenkostenUntergrenze(positionen, lieferant),
     });
@@ -2407,7 +2459,18 @@ function oeffentlicherLieferant(l) {
       
       
       
-      freiHausAbNetto: l.fracht?.freiHausAbNetto ?? null,
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      freiHausMoeglich: l.fracht?.freiHausAbNetto != null,
     },
   };
 }
@@ -2545,9 +2608,10 @@ function kundenWarenkorb(zeilen, { artikel, lieferanten, mindestbestellwertNetto
     const sperrgutPositionen = positionen.filter((p) => p.sperrgut).length;
     const frachtNetto = runde(l.fracht.pauschaleNetto + sperrgutPositionen * l.fracht.sperrgutZuschlagNetto);
 
-    if (l.fracht.freiHausAbNetto !== null) {
-      offen.push(`Eine Frei-Haus-Schwelle ab ${l.fracht.freiHausAbNetto} € misst am Bestellwert `
-        + 'und lässt sich hier nicht prüfen — die Fracht kann entfallen.');
+    if (l.fracht.freiHausMoeglich) {
+      offen.push('Dieser Hersteller liefert ab einem bestimmten Bestellwert frachtfrei. '
+        + 'Die Schwelle misst am Bestellwert und lässt sich hier nicht prüfen — '
+        + 'die Fracht kann im Angebot entfallen.');
     }
 
     teillieferungen.push({
@@ -3110,7 +3174,12 @@ const AGB_GLIEDERUNG = [
       'Keine Nachnahme und keine Barzahlung auf der Baustelle — sonst entsteht ein Barumsatz ' +
       'und damit Registrierkassenpflicht. **Zahlungsziel: null Tage**, gezahlt wird bei der ' +
       'Bestellung; maßgeblich ist der Zahlungseingang, nicht das Datum der Bestellung. ' +
-      'Keine offene Rechnung auf eigenes Risiko. Der Eigentumsvorbehalt reicht bis zur ' +
+      
+      
+      
+      
+      'Keine offene Rechnung: Das Ausfallrisiko trüge der Händler, und es wanderte in die ' +
+      'Preise aller Kunden. Der Eigentumsvorbehalt reicht bis zur ' +
       'vollständigen Zahlung und muss den Weiterverkauf und den Einbau in fremdes Eigentum ' +
       'ausdrücklich regeln — im Baustoffhandel ist die Ware regelmäßig verbaut, bevor sie ' +
       'bezahlt ist. Verzugszinsen und Mahnspesen nach UGB, Höhe vom Anbieter zu setzen.',
@@ -4082,13 +4151,15 @@ function skontoGegenGebuehr(bestellung, zahlwegId, opt = {}) {
 function zahlwegName(id) {
   const z = ZAHLWEGE.find((w) => w.id === id);
   if (!z) throw new Error(`Zahlweg ohne Entsprechung in zahlung.js: ${id}`);
-  return z.name;
+  if (!z.kundenname) throw new Error(`Zahlweg ohne Kundennamen: ${id}`);
+  return z.kundenname;
 }
 
 const ZAHLWEGE = [
   {
     id: 'vorkasse',
     name: 'Vorkasse per Überweisung',
+    kundenname: 'Vorkasse per Überweisung',
     prozent: 0,
     fixEuro: 0,
     tageBisEingang: 1,
@@ -4102,6 +4173,7 @@ const ZAHLWEGE = [
   {
     id: 'karte-stripe',
     name: 'Kreditkarte (EU-Karte, Listenpreis Stripe)',
+    kundenname: 'Kreditkarte (EU-Karte)',
     prozent: 0.014,
     fixEuro: 0.25,
     tageBisEingang: 0,
@@ -4115,6 +4187,7 @@ const ZAHLWEGE = [
   {
     id: 'karte-mollie',
     name: 'Kreditkarte (EU-Karte, Listenpreis Mollie)',
+    kundenname: 'Kreditkarte (EU-Karte)',
     prozent: 0.018,
     fixEuro: 0.25,
     tageBisEingang: 0,
@@ -4128,6 +4201,7 @@ const ZAHLWEGE = [
   {
     id: 'eps',
     name: 'EPS-Onlineüberweisung',
+    kundenname: 'EPS-Onlineüberweisung',
     prozent: 0.009,
     fixEuro: 0.25,
     tageBisEingang: 0,
@@ -4141,6 +4215,7 @@ const ZAHLWEGE = [
   {
     id: 'paypal',
     name: 'PayPal',
+    kundenname: 'PayPal',
     prozent: 0.0249,
     fixEuro: 0.35,
     tageBisEingang: 0,
@@ -4154,6 +4229,7 @@ const ZAHLWEGE = [
   {
     id: 'rechnungskauf',
     name: 'B2B-Rechnungskauf über einen Anbieter',
+    kundenname: 'Rechnungskauf für Gewerbekunden',
     prozent: 0.03,
     fixEuro: 0,
     tageBisEingang: 0,
@@ -4167,6 +4243,7 @@ const ZAHLWEGE = [
   {
     id: 'offene-rechnung',
     name: 'Offene Rechnung, 30 Tage netto — auf eigenes Risiko',
+    kundenname: 'Offene Rechnung, 30 Tage netto',
     prozent: 0,
     fixEuro: 0,
     tageBisEingang: 30,
@@ -4184,6 +4261,7 @@ const ZAHLWEGE = [
   {
     id: 'nachnahme',
     name: 'Nachnahme',
+    kundenname: 'Nachnahme',
     prozent: 0,
     fixEuro: 6,
     tageBisEingang: 14,
@@ -4195,6 +4273,150 @@ const ZAHLWEGE = [
     anmerkung: 'Ausgeschlossen: löst die Registrierkassenpflicht aus, siehe ablage-und-nummernkreis.md.',
   },
 ];
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const INTERNE_WOERTER = Object.freeze([
+  Object.freeze({
+    wort: 'Stripe',
+    warum: 'Der Abwickler hinter der Kartenzahlung. Der Kunde zahlt mit Karte, nicht bei '
+      + 'Stripe — und gewählt ist der Anbieter noch gar nicht (Gate Zahlungsanbieter offen).',
+  }),
+  Object.freeze({
+    wort: 'Mollie',
+    warum: 'Derselbe Fall wie Stripe. Beide stehen nebeneinander in der Liste, weil sie '
+      + 'verglichen werden; verglichen wird intern.',
+  }),
+  Object.freeze({
+    wort: 'auf eigenes Risiko',
+    warum: 'Gemeint ist unser Ausfallrisiko. In einer Kundentabelle steht es neben seinem '
+      + 'Zahlweg und liest sich als seines — der Satz kehrt seine Bedeutung um, sobald er '
+      + 'die Seite wechselt.',
+  }),
+]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const NICHT_IM_REGISTER = Object.freeze([
+  Object.freeze({
+    wort: 'Listenpreis',
+    warumNicht: 'Bezeichnet an 216 Fundstellen in 47 Ausgabedateien den Listenpreis des '
+      + 'Herstellers — eine '
+      + 'öffentliche Angabe und das Verkaufsargument des Shops. Nur in Gesellschaft eines '
+      + 'Abwicklernamens ist es eine Angabe über unsere Kosten, und dafür genügt der Name.',
+  }),
+]);
+
+
+
+
+
+
+
+function namensbefund(zahlwege = ZAHLWEGE, woerter = INTERNE_WOERTER) {
+  const meldungen = [];
+
+  for (const z of zahlwege) {
+    if (!z.kundenname) {
+      meldungen.push({ regel: 'kundenname-fehlt', id: z.id, text: `${z.id}: kein Kundenname` });
+      continue;
+    }
+    for (const w of woerter) {
+      if (z.kundenname.toLowerCase().includes(w.wort.toLowerCase())) {
+        meldungen.push({
+          regel: 'internes-wort-im-kundennamen',
+          id: z.id,
+          text: `${z.id}: „${w.wort}" steht im Kundennamen „${z.kundenname}"`,
+        });
+      }
+    }
+  }
+
+  for (const w of NICHT_IM_REGISTER) {
+    if (!w.warumNicht || w.warumNicht.length < 80) {
+      meldungen.push({ regel: 'grund-zu-duenn', wort: w.wort, text: `${w.wort}: Grund zu kurz` });
+    }
+    if (woerter.some((x) => x.wort.toLowerCase() === w.wort.toLowerCase())) {
+      meldungen.push({
+        regel: 'zweimal-gefuehrt',
+        wort: w.wort,
+        text: `„${w.wort}" steht im Register und in der Begründung, warum es nicht darin steht`,
+      });
+    }
+  }
+
+  for (const w of woerter) {
+    if (!w.warum || w.warum.length < 80) {
+      meldungen.push({ regel: 'grund-zu-duenn', wort: w.wort, text: `${w.wort}: Grund zu kurz` });
+    }
+    const trifft = zahlwege.some((z) => (z.name ?? '').toLowerCase().includes(w.wort.toLowerCase()));
+    if (!trifft) {
+      meldungen.push({
+        regel: 'wort-ohne-fall',
+        wort: w.wort,
+        text: `„${w.wort}" kommt in keinem internen Namen vor — der Eintrag prüft nichts mehr`,
+      });
+    }
+  }
+
+  return {
+    sauber: meldungen.length === 0,
+    zahlwege: zahlwege.length,
+    woerter: woerter.length,
+    nichtGefuehrt: NICHT_IM_REGISTER.length,
+    meldungen,
+  };
+}
 
 
 const findeZahlweg = (id) => {

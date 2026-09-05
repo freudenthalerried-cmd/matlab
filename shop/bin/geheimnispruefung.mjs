@@ -4,7 +4,7 @@
  *
  *   node bin/geheimnispruefung.mjs
  *
- * Zwei Durchgänge:
+ * Vier Durchgänge:
  *
  *   1. **Abfluss.** Steht eine Einkaufsangabe wörtlich in einer Datei, die
  *      mitgeliefert wird? Das prüft der Lauf immer.
@@ -12,17 +12,28 @@
  *      veröffentlichten Verkaufspreisen und der bekannten Zielmarge
  *      zurückrechnen? Das prüft der Lauf nur, wenn die vertrauliche Datei
  *      örtlich vorhanden ist — die Gegenprobe braucht sie, der Befund nicht.
+ *   3. **Der Schlüssel.** Liefern wir die Zielmarge mit aus? Ohne sie führt
+ *      Durchgang 2 zu nichts.
+ *   4. **Aussagen über Werte.** Interne Bezeichnungen und Lieferantenschwellen
+ *      in der Auslieferung. Ergänzt am 5. September; die drei Durchgänge davor
+ *      suchten ausschließlich Beträge und konnten „Listenpreis Stripe" und
+ *      „Frei-Haus-Schwelle ab 1500 €" deshalb nicht sehen, obwohl beides seit
+ *      dem ersten Bau in `ausgabe/website.html` stand.
  *
  * Der zweite Durchgang ist der eigentliche Grund für dieses Werkzeug.
  * `.gitignore` schützt eine Datei; er schützt keine Angabe, die sich aus
- * zwei veröffentlichten Zahlen ergibt.
+ * zwei veröffentlichten Zahlen ergibt — und keine, die eine Schranke auf ihr
+ * nennt.
  */
 
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, relative } from 'node:path';
-import { rekonstruierbarkeit, findeAbfluss } from '../src/geheimnis.js';
+import {
+  rekonstruierbarkeit, findeAbfluss, ausgabemuster, findeInterneWoerter, teileFunde,
+} from '../src/geheimnis.js';
+import { INTERNE_WOERTER, namensbefund } from '../src/zahlung.js';
 import { ladeBaustoffkatalog, ZIELMARGE } from '../src/baustoffkatalog.js';
 import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
 
@@ -208,10 +219,82 @@ if (geprueft === 0) {
   console.log('  Ohne sie führt Durchgang 2 zu nichts: Die Rechnung braucht beide Zahlen.');
 }
 
+/* ------------------------------------------------------------------ *
+ * 4. Interne Namen und Schranken in der Ausgabe
+ *
+ * Die Durchgänge 1 bis 3 suchen Werte. Dieser sucht **Aussagen über Werte**:
+ * den internen Namen eines Zahlwegs und die Frei-Haus-Schwelle eines
+ * Lieferanten. Beide standen in `ausgabe/website.html`, seit es die Datei
+ * gibt; keiner der drei Durchgänge konnte sie sehen, weil keiner von beiden
+ * ein Einkaufspreis ist.
+ * ------------------------------------------------------------------ */
+
+console.log('\nDurchgang 4 — interne Namen und Schranken in der Ausgabe');
+
+// Zuerst das Register selbst: Trägt jedes Wort einen Grund, und betrifft es
+// noch einen Fall? Ein Register, das nichts mehr trifft, meldet nie etwas.
+const namen = namensbefund();
+if (!namen.sauber) {
+  for (const m of namen.meldungen) console.log(`  ✗ ${m.regel}: ${m.text}`);
+} else {
+  console.log(`  ${namen.zahlwege} Zahlwege tragen einen Kundennamen ohne eines der `
+    + `${namen.woerter} internen Wörter.`);
+}
+
+const lieferantenDatei = join(wurzel, 'data', 'lieferanten.json');
+const schwellen = existsSync(lieferantenDatei)
+  ? JSON.parse(readFileSync(lieferantenDatei, 'utf8')).lieferanten
+    .map((l) => l.fracht?.freiHausAbNetto).filter((x) => x != null)
+  : [];
+const muster = ausgabemuster(INTERNE_WOERTER, schwellen);
+
+// Alles, was ausgeliefert wird — nicht nur die drei Dateien aus Durchgang 3.
+// Der Fund von heute stand in `website.html` **und** in `shop.js`, und die
+// Kasse liefert ihre Daten in einer dritten Datei aus.
+const ausgabeDateien = [];
+{
+  const geh = (ordner) => {
+    if (!existsSync(ordner)) return;
+    for (const eintrag of readdirSync(ordner)) {
+      const voll = join(ordner, eintrag);
+      if (statSync(voll).isDirectory()) geh(voll);
+      else if (/\.(html|js|json|txt|csv|md)$/i.test(voll)) ausgabeDateien.push(voll);
+    }
+  };
+  geh(join(wurzel, 'ausgabe'));
+}
+
+const alleFunde = [];
+for (const datei of ausgabeDateien) {
+  alleFunde.push(...findeInterneWoerter(readFileSync(datei, 'utf8'), muster, relative(repo, datei)));
+}
+const geteilt = teileFunde(alleFunde);
+
+console.log(`  ${ausgabeDateien.length} Ausgabedateien gegen ${muster.length} Muster geprüft `
+  + `(${INTERNE_WOERTER.length} interne Namen, ${new Set(schwellen).size} Frei-Haus-Schwellen).`);
+console.log(`  ${geteilt.hingenommen} Fundstellen sind mit Grund hingenommen.`);
+if (geteilt.offen.length === 0) {
+  console.log('  Keine interne Bezeichnung und keine Lieferantenschwelle in der Auslieferung.');
+} else {
+  for (const t of geteilt.offen) {
+    console.log(`  ✗ ${t.name}:${t.zeile}  ${t.art}`);
+    console.log(`      …${t.auszug}…`);
+  }
+}
+// Ein Eintrag, der nichts mehr trifft, ist eine Ausnahme ohne Fall — und in
+// einem Monat liest ihn jemand als Beschreibung des Zustands.
+for (const h of geteilt.leerlaufend) {
+  console.log(`  ✗ hingenommene Fundstelle ${h.auszug} kommt nicht mehr vor — Eintrag streichen`);
+}
+for (const h of geteilt.duenn) {
+  console.log(`  ✗ hingenommene Fundstelle ${h.auszug} ohne tragfähigen Grund`);
+}
+
 console.log('\nEine Regel, die eine Datei ausschließt, schützt keine Angabe,');
 console.log('die sich aus zwei veröffentlichten Zahlen ergibt.');
 console.log('Bewertung und Handlungsmöglichkeiten: docs/baustoff-shop/rekonstruierbare-einkaufspreise.md\n');
 
-// Durchgang 3 ist der einzige, der ein Urteil fällt: Steht der Schlüssel in
-// der Ausgabe, ist das kein Hinweis, sondern ein Fehler.
-if (schluesselTreffer) process.exit(1);
+// Durchgang 3 und 4 fällen ein Urteil: Steht der Schlüssel, ein interner Name
+// oder eine Lieferantenschwelle in der Ausgabe, ist das kein Hinweis, sondern
+// ein Fehler. Durchgang 1 und 2 melden, was zu bewerten ist.
+if (schluesselTreffer || !geteilt.sauber || !namen.sauber) process.exit(1);

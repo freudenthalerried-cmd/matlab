@@ -12,6 +12,10 @@ import {
   wirkungAufMonat,
   pruefeZahlweg,
   vergleiche,
+  zahlwegName,
+  namensbefund,
+  INTERNE_WOERTER,
+  NICHT_IM_REGISTER,
 } from '../src/zahlung.js';
 
 const lies = (p) => JSON.parse(readFileSync(new URL(p, import.meta.url), 'utf8'));
@@ -139,4 +143,63 @@ test('Die Monatshochrechnung nimmt die Fracht in die Bemessungsgrundlage', () =>
     Math.abs(mit.gebuehrProMonat - ohne.gebuehrProMonat - erwartet) < 0.02,
     'genau der Prozentsatz auf die Bruttofracht aller Bestellungen',
   );
+});
+
+/* ------------------------------------------------------------------ *
+ * Ein Feld, zwei Leser — 5. September
+ *
+ * `name` ging an die interne Kostentabelle **und** an den Kunden. In
+ * `ausgabe/website.html` stand dadurch seit dem ersten Bau der AGB-Seite
+ * „Kreditkarte (EU-Karte, Listenpreis Stripe)" — Abwickler und Preisart eines
+ * Anbieters, der noch nicht gewählt ist. Zwei Absätze darunter sagte dieselbe
+ * Seite, dass er noch nicht gewählt ist.
+ * ------------------------------------------------------------------ */
+
+test('kein Kundenname trägt ein internes Wort', () => {
+  const b = namensbefund();
+  assert.deepEqual(b.meldungen, [], b.meldungen.map((m) => m.text).join('\n'));
+  assert.equal(b.zahlwege, ZAHLWEGE.length);
+  assert.ok(b.woerter >= 3, 'ein leeres Register bestünde jede Prüfung');
+});
+
+test('der Kunde liest den Kundennamen, die Kostentabelle den internen', () => {
+  assert.equal(zahlwegName('karte-stripe'), 'Kreditkarte (EU-Karte)');
+  assert.match(ZAHLWEGE.find((z) => z.id === 'karte-stripe').name, /Stripe/,
+    'intern bleibt der Abwickler stehen — dort ist er die Angabe, um die es geht');
+  assert.equal(zahlwegName('offene-rechnung'), 'Offene Rechnung, 30 Tage netto');
+});
+
+test('ein Zahlweg ohne Kundennamen wird nicht stillschweigend zum internen', () => {
+  // Der naheliegende Rückfall wäre `z.kundenname ?? z.name`. Er sähe aus wie
+  // Vorsorge und wäre der Fehler von heute, nur seltener.
+  const ohne = ZAHLWEGE.map((z) => ({ ...z, kundenname: undefined }));
+  const b = namensbefund(ohne);
+  assert.equal(b.meldungen.filter((m) => m.regel === 'kundenname-fehlt').length, ZAHLWEGE.length);
+});
+
+test('ein internes Wort, das im Kundennamen steht, fällt auf', () => {
+  const kaputt = [{ id: 'x', name: 'Karte (Listenpreis Stripe)', kundenname: 'Karte über Stripe' }];
+  const b = namensbefund(kaputt, INTERNE_WOERTER.filter((w) => w.wort === 'Stripe'));
+  assert.ok(b.meldungen.some((m) => m.regel === 'internes-wort-im-kundennamen'));
+});
+
+test('ein Eintrag, den kein interner Name mehr trägt, fällt auf', () => {
+  // Die Rückrichtung. Ohne sie bliebe ein Register grün, weil es leerläuft.
+  const b = namensbefund(ZAHLWEGE, [{ wort: 'Adyen', warum: 'x'.repeat(120) }]);
+  assert.ok(b.meldungen.some((m) => m.regel === 'wort-ohne-fall'));
+});
+
+test('jeder Eintrag trägt einen tragfähigen Grund, auch der ausgeschlossene', () => {
+  for (const w of INTERNE_WOERTER) assert.ok(w.warum.length >= 80, w.wort);
+  assert.ok(NICHT_IM_REGISTER.length >= 1);
+  for (const w of NICHT_IM_REGISTER) assert.ok(w.warumNicht.length >= 80, w.wort);
+});
+
+test('„Listenpreis" steht im Gegenregister, nicht im Register', () => {
+  // Das Wort meint an 216 Fundstellen den Listenpreis des Herstellers — das
+  // Verkaufsargument des Shops. Ein Prüfer, der es anschwärzt, wird
+  // abgeschaltet, und dann meldet er auch „Listenpreis Stripe" nicht mehr.
+  assert.ok(NICHT_IM_REGISTER.some((w) => w.wort === 'Listenpreis'));
+  const b = namensbefund(ZAHLWEGE, [...INTERNE_WOERTER, { wort: 'Listenpreis', warum: 'x'.repeat(120) }]);
+  assert.ok(b.meldungen.some((m) => m.regel === 'zweimal-gefuehrt'));
 });

@@ -17,7 +17,7 @@
  * Reine Rechenfunktionen, keine Dateizugriffe, keine Seiteneffekte.
  */
 
-import { frachtGrundText } from './frachttext.js';
+import { frachtGrundText, frachtfreiText } from './frachttext.js';
 
 /**
  * **Zwei Margen, die nicht dasselbe messen** — und die zu verwechseln kostet
@@ -176,12 +176,18 @@ export function fracht(positionen, lieferant) {
   const warenwertNetto = cent(positionen.reduce((s, p) => s + p.vkNetto * p.menge, 0));
   const bestellwertNetto = cent(positionen.reduce((s, p) => s + p.ekNetto * p.menge, 0));
 
+  // Die Schwelle wird **gerechnet, aber nicht genannt**: Ihr Wortlaut kommt
+  // seit dem 5. September aus `frachttext.js` und trägt keine Zahl mehr. Die
+  // Begründung steht dort; kurz: Ein Satz „frei Haus ab 1500 € Bestellwert"
+  // neben einer Frachtzeile von 0,00 € sagt dem Leser, dass unser Einkauf
+  // mindestens so hoch ist — und der Warenwert steht auf demselben Blatt.
   if (regel.freiHausAbNetto != null && bestellwertNetto >= regel.freiHausAbNetto) {
     return {
       betragNetto: 0,
-      grund: `frei Haus ab ${regel.freiHausAbNetto} € Bestellwert`,
+      grund: frachtfreiText(),
       warenwertNetto,
       bestellwertNetto,
+      schwelleNetto: regel.freiHausAbNetto,
     };
   }
 
@@ -202,6 +208,10 @@ export function fracht(positionen, lieferant) {
     grund: frachtGrundText(sperrgutPositionen),
     warenwertNetto,
     bestellwertNetto,
+    // Mitgeführt, damit die Prüfung sie im Beleg suchen kann, ohne dass ihr
+    // jemand die Lieferantenliste hereinreichen muss. `null`, wo es keine
+    // gibt — nicht 0: Eine Schwelle von null wäre eine Schwelle.
+    schwelleNetto: regel.freiHausAbNetto ?? null,
   };
 }
 

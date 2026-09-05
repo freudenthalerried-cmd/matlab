@@ -369,7 +369,12 @@ export const AGB_GLIEDERUNG = [
       'Keine Nachnahme und keine Barzahlung auf der Baustelle — sonst entsteht ein Barumsatz ' +
       'und damit Registrierkassenpflicht. **Zahlungsziel: null Tage**, gezahlt wird bei der ' +
       'Bestellung; maßgeblich ist der Zahlungseingang, nicht das Datum der Bestellung. ' +
-      'Keine offene Rechnung auf eigenes Risiko. Der Eigentumsvorbehalt reicht bis zur ' +
+      // **Umformuliert am 5. September.** Hier stand „Keine offene Rechnung auf
+      // eigenes Risiko." Gemeint war das Ausfallrisiko des Händlers; auf einer
+      // Kundenseite liest jeder Besteller „eigenes" als seines. Derselbe Satz
+      // trug denselben Fehler im Namen des Zahlwegs in `zahlung.js`.
+      'Keine offene Rechnung: Das Ausfallrisiko trüge der Händler, und es wanderte in die ' +
+      'Preise aller Kunden. Der Eigentumsvorbehalt reicht bis zur ' +
       'vollständigen Zahlung und muss den Weiterverkauf und den Einbau in fremdes Eigentum ' +
       'ausdrücklich regeln — im Baustoffhandel ist die Ware regelmäßig verbaut, bevor sie ' +
       'bezahlt ist. Verzugszinsen und Mahnspesen nach UGB, Höhe vom Anbieter zu setzen.',
