@@ -54,6 +54,7 @@
     "posteingang": "node bin/posteingang.mjs",
     "betriebskette": "node bin/betriebskette.mjs",
     "pruefe-betriebskette": "node bin/betriebskette.mjs",
+    "pruefe-sperren": "node bin/sperrenpruefung.mjs",
     "pruefe-schaufenster": "node bin/schaufensterpruefung.mjs",
     "pruefe-leitzahlen": "node bin/leitzahlpruefung.mjs",
     "werbeprobe": "node bin/werbeprobe.mjs",

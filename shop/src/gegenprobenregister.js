@@ -665,6 +665,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'Kunden. Diese Mutation nimmt sie wieder heraus und verlangt, dass es auffällt.',
   }),
   Object.freeze({
+    id: 'sperre-ohne-gruenen-fall',
+    pruefer: 'pruefe-sperren',
+    was: 'Eine Sperre, von der keine Probe zeigt, dass sie je aufmacht',
+    datei: 'shop/test/rechtstexteauftrag.test.js',
+    art: 'ersetzen',
+    suchen: "  assert.equal(f.darf, true, f.gruende.join(' | '));\n"
+      + '  assert.deepEqual(f.gruende, []);',
+    ersetzen: "  assert.equal(typeof f.darf, 'boolean');",
+    erwartet: /darfBeauftragtWerden/,
+    warum: 'Genau der Zustand vom 5. September: `darfBeauftragtWerden` wurde von keiner Probe '
+      + 'aufgerufen, und `darfVorgangLaufen` nur in der roten Richtung. Sechs Zusicherungen der '
+      + 'Form „dieser eine Grund kommt nicht" ergeben keine Aussage darüber, ob eine Sperre '
+      + 'aufgeht — sie könnte jeden Auftrag abweisen, und keine Probe merkte es. Diese Mutation '
+      + 'nimmt den grünen Fall wieder heraus und lässt die rote Richtung stehen.',
+  }),
+  Object.freeze({
     id: 'bestaetigung-ohne-konto',
     pruefer: 'test',
     was: 'Eine Auftragsbestätigung, die hinausdarf, ohne ein Konto zu nennen',

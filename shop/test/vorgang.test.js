@@ -562,3 +562,90 @@ test('Der unversehrte Vorgang meldet keinen der beiden Befunde', () => {
   assert.ok(!p.abweichungen.some((a) => /keine Lieferadresse|kein Empfänger/.test(a)),
     p.abweichungen.join(' | '));
 });
+
+/* ------------------------------------------------------------------ *
+ * Und sie macht auch wieder auf — nachgewiesen am 5. September
+ *
+ * **Der Befund.** `darfVorgangLaufen` hatte vier Proben, und alle vier
+ * prüften, dass sie **anhält**: Platzhalterpreise, untaugliche Kundendaten,
+ * ein leerer Vorgang, eine fremde Bestellnummer. Keine zeigte je, dass sie
+ * bei vollständiger Lage aufgeht.
+ *
+ * > **Eine Sperre, von der niemand gezeigt hat, dass sie aufmacht, könnte
+ * > jeden Auftrag abweisen, ohne dass eine Probe es merkt.**
+ *
+ * Dieser Fall ist zugleich die einzige Stelle im ganzen Bestand, an der
+ * einmal nachgerechnet steht, **was ein Geschäft vollständig macht**: Kunde,
+ * Ware, Lieferzeit, Konto, Zahlung, Lieferdatum, Rechnungsnummer.
+ * ------------------------------------------------------------------ */
+
+/**
+ * Ein Warenkorb ohne Platzhalterpreise und mit bekannten Lieferzeiten — und
+ * mit **vier** statt zwei Dichtbändern.
+ *
+ * Der geteilte Warenkorb der übrigen Proben reißt Gate 25: Die zweite
+ * Teillieferung kommt auf 148,80 € netto und liegt damit unter dem
+ * Mindestbestellwert von 250 € **je Lieferung**. Das ist kein Mangel des
+ * Warenkorbs, sondern der Grund, warum diese Probe einen eigenen braucht:
+ * *Eine vollständige Lage muss vollständig sein, nicht fast.*
+ */
+const warenkorbVollstaendig = (() => {
+  const roh = berechneWarenkorb(
+    [{ sku: 'AB-RD-375', menge: 5 }, { sku: 'ZB-DB-150', menge: 4 }],
+    katalog,
+  );
+  return {
+    ...roh,
+    teillieferungen: roh.teillieferungen.map((t) => ({
+      ...t,
+      lieferzeitWerktage: t.lieferzeitWerktage ?? 5,
+      positionen: t.positionen.map((p) => ({ ...p, ekIstPlatzhalter: false })),
+    })),
+  };
+})();
+
+const betreiberVollstaendig = {
+  ...betreiber,
+  kontoinhaber: 'Testbetrieb e.U.',
+  iban: 'AT611904300234573201',
+};
+
+test('Ein vollständiger Vorgang darf laufen', () => {
+  assert.equal(warenkorbVollstaendig.bestellbar, true, 'Vorbedingung des Testfalls');
+  const v = baueVorgang({
+    vorgangsnummer: 'B-2026-0008',
+    kundendaten: kundeA,
+    warenkorb: warenkorbVollstaendig,
+    betreiber: betreiberVollstaendig,
+    datum: '2026-08-16',
+    lieferdatum: '2026-08-30',
+    rechnungsnummer: 'RE-2026-0043',
+    zahlungEingegangen: true,
+    zahlung: { weg: 'eps', datum: '16.08.2026', kennzeichen: 'B-2026-0008' },
+  });
+  const f = darfVorgangLaufen(v);
+  assert.equal(f.erlaubt, true, f.gruende.join(' | '));
+  assert.deepEqual(f.gruende, []);
+});
+
+/**
+ * Die Gegenrichtung zur Gegenrichtung: dieselbe vollständige Lage, nur ohne
+ * Konto. Ohne diese Zeile bliebe die Probe oben auch dann grün, wenn die
+ * Kontoprüfung ersatzlos verschwände.
+ */
+test('Derselbe Vorgang ohne Konto des Betreibers wird angehalten', () => {
+  const v = baueVorgang({
+    vorgangsnummer: 'B-2026-0009',
+    kundendaten: kundeA,
+    warenkorb: warenkorbVollstaendig,
+    betreiber,
+    datum: '2026-08-16',
+    lieferdatum: '2026-08-30',
+    rechnungsnummer: 'RE-2026-0044',
+    zahlungEingegangen: true,
+    zahlung: { weg: 'eps', datum: '16.08.2026' },
+  });
+  const f = darfVorgangLaufen(v);
+  assert.equal(f.erlaubt, false);
+  assert.ok(f.gruende.some((g) => /Annahme: Bankverbindung/.test(g)), f.gruende.join(' | '));
+});

@@ -54,6 +54,21 @@ const feld = (wert, bezeichnung) => (textZeile(wert) !== ''
 export function darfBeauftragtWerden(betreiber = {}) {
   const gruende = [];
   if (!betreiber.email) gruende.push('keine E-Mail-Adresse des Absenders');
+  /**
+   * **Ergänzt am 5. September.** Der Brief druckt in der Unterschrift eine
+   * Telefonnummer — und die Sperre verlangte sie nicht. Ein Auftrag konnte
+   * also „versandfähig" heißen und trotzdem
+   * `[[ Telefonnummer des Absenders — FEHLT ]]` tragen.
+   *
+   * > **Ein Papier, das hinausdarf und eine sichtbare Lücke trägt, ist ein
+   * > Papier, das der Empfänger für unfertig hält.**
+   *
+   * Der Schwesterbrief an den Lieferanten verlangt beides seit jeher
+   * (`darfVersendetWerden`); zwei Ausgänge an Dritte mit zwei verschiedenen
+   * Maßstäben waren einer zu viel. Gefunden hat es der grüne Fall, den es
+   * bis heute nicht gab.
+   */
+  if (!betreiber.telefon) gruende.push('keine Telefonnummer des Absenders');
   if (!betreiber.firma) gruende.push('kein Firmenname');
   if (!betreiber.firmenbuchnummer) gruende.push('keine Firmenbuchnummer — die Offenlegung braucht sie');
   if (!betreiber.ort) gruende.push('kein Sitz');

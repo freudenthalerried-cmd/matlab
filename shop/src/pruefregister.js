@@ -251,6 +251,18 @@ export const PRUEFER = [
     einheit: 'Schritte eines Geschäftsfalls',
     mindestens: 8,
   },
+  {
+    // **Aufgenommen am 5. September.** Die Sperren entscheiden, ob ein Papier
+    // hinausgeht. Zwei von sieben hatten keinen Nachweis, dass sie je
+    // aufmachen — eine davon wurde nie aufgerufen. Die Zahl darf nicht
+    // schrumpfen: Eine Sperre, die aus der Liste fällt, ist eine, die niemand
+    // mehr prüft.
+    name: 'pruefe-sperren',
+    werkzeug: 'sperrenpruefung.mjs',
+    muster: /Sperrenabgleich: (\d+) Sperren/,
+    einheit: 'Sperren auf ihren grünen Fall',
+    mindestens: 5,
+  },
 ];
 
 /**
