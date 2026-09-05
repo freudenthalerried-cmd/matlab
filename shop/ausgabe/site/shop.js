@@ -746,6 +746,53 @@ function pruefeLieferort(ort = {}) {
 
 
 
+function frachtGrundText(sperrgutPositionen) {
+  if (!(sperrgutPositionen > 0)) return 'Pauschale';
+  return `Pauschale plus ${sperrgutPositionen}× Kranentladung — Zahl je Sperrgut-Position `
+    + 'gerechnet, Einstufung aus der Warengruppe geschätzt';
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1632,9 +1679,7 @@ function kundenWarenkorb(zeilen, { artikel, lieferanten, mindestbestellwertNetto
       
       
       
-      frachtGrund: sperrgutPositionen > 0
-        ? `Pauschale plus ${sperrgutPositionen}× Kranentladung (geschätzt je Sperrgut-Position)`
-        : 'Pauschale',
+      frachtGrund: frachtGrundText(sperrgutPositionen),
       sperrgutPositionen,
     });
   }

@@ -2450,7 +2450,15 @@ function main() {
     `> Alle Preise netto je Einheit, Preisstand ${preisStand(katalog)}; je Artikel steht er auf der Artikelseite. `
       + 'Die Zustellung kostet eine Pauschale je Lieferung, bei palettierter Ware zuzüglich '
       + 'Kranentladung je Hub; sie steht auf der Seite ' + `${BASIS}/lieferung.html. `
-      + 'Es gibt keine Frei-Haus-Schwelle.',
+      + 'Es gibt keine Frei-Haus-Schwelle. '
+      // **Ergänzt am 5. September.** Die Artikelzeilen unten tragen das Wort
+      // „palettiert" als Tatsache, und die Artikelseite sagt seit dem Vortag
+      // dazu, dass es eine Schätzung ist. Eine Auskunft, die an einer Stelle
+      // qualifiziert ist und an der maschinenlesbaren blank steht, wird von
+      // Assistenten als Tatsache weitergegeben.
+      + 'Die Angabe „palettiert" ist geschätzt: Sie folgt aus der Warengruppe und nicht aus '
+      + 'einer Angabe des Lieferanten. Sie entscheidet, ob die Kranentladung anfällt; wo ein '
+      + 'Positionsgewicht dagegenspricht, steht es auf der Artikelseite.',
     '',
     ...katalog.artikel
       .filter((a) => a.vkNetto !== null)

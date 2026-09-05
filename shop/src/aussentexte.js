@@ -71,6 +71,10 @@ export const AUSGAENGE = Object.freeze([
  */
 export const KEIN_AUSGANG = Object.freeze([
   Object.freeze({ funktion: 'abbruchtext', warum: 'Baut die Weigerung, gegen ein veraltetes Erzeugnis zu prüfen — drei Zeilen für die Konsole des Betreibers, aus Dateinamen des eigenen Bestands. Kein fremder Text erreicht sie, und sie erreicht keinen Empfänger außerhalb des Rechners.' }),
+  // **Ergänzt am 5. September**, mit der Verlegung des Frachtsatzes in ein
+  // eigenes Modul. Der Satz geht sehr wohl an den Kunden — aber er entsteht
+  // aus einer Zahl des eigenen Rechenkerns und aus nichts sonst.
+  Object.freeze({ funktion: 'frachtGrundText', warum: 'Baut den Satz an der Frachtzeile aus **einer eigenen Zahl** — der Anzahl der Sperrgut-Positionen im eigenen Warenkorb. Fremdtext erreicht ihn nicht: Er nimmt keine Zeichenkette entgegen, sondern eine Menge, und wo er hinausgeht (Kasse, Beleg), sind die umgebenden Texte geprüft.' }),
   Object.freeze({ funktion: 'baueAuftrag', warum: 'Baut das Auftragsobjekt aus geprüften Feldern — kein Text verlässt den Shop. Die Eingangsprüfung davor steht in kunde.js und wird eigens geprüft.' }),
   Object.freeze({ funktion: 'baueKern', warum: 'Fügt die Quelldateien zum Browserbündel — Werkzeug, kein Kundentext. Namenskollisionen prüft buendel.js selbst.' }),
   // **Grund berichtigt am 3. September.** Er lautete: „…geht als JSON ins

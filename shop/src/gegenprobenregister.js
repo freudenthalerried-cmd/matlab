@@ -665,6 +665,24 @@ export const GEGENPROBEN = Object.freeze([
       + 'Kunden. Diese Mutation nimmt sie wieder heraus und verlangt, dass es auffällt.',
   }),
   Object.freeze({
+    id: 'palettiert-ohne-herkunft',
+    pruefer: 'pruefe-sperrgut',
+    was: 'Eine maschinenlesbare Auskunft, die die Kranentladung nennt und ihre Herkunft nicht',
+    datei: 'shop/bin/website.mjs',
+    art: 'ersetzen',
+    suchen: "      + 'Die Angabe „palettiert\" ist geschätzt: Sie folgt aus der Warengruppe und nicht aus '\n"
+      + "      + 'einer Angabe des Lieferanten. Sie entscheidet, ob die Kranentladung anfällt; wo ein '\n"
+      + "      + 'Positionsgewicht dagegenspricht, steht es auf der Artikelseite.',",
+    ersetzen: "      + '',",
+    erwartet: /llms\.txt/,
+    baueVorher: true,
+    warum: 'Der Zustand vom 5. September, morgens: Die Artikelseite nannte die Herkunft der '
+      + 'Einstufung seit dem Vortag, `llms.txt` sagte weiter nur „· palettiert". Eine Auskunft, '
+      + 'die an einer Stelle qualifiziert ist und an der maschinenlesbaren blank steht, wird von '
+      + 'Assistenten als Tatsache weitergegeben — und diese Einstufung kostet den Kunden 7,50 € '
+      + 'je Position. Die Mutation nimmt den Satz wieder heraus.',
+  }),
+  Object.freeze({
     id: 'werkzeug-das-nicht-laedt',
     pruefer: 'pruefe-lesbar',
     was: 'Eine Klammer zu viel in einem Werkzeug, das der Regellauf nicht ausführt',

@@ -84,6 +84,11 @@ export const KERNMODULE = Object.freeze([
   // der Liste und nicht nur implizit über die Importhülle — eine Liste, die
   // nicht mehr alles nennt, was im Bündel landet, ist keine Liste mehr.
   'bankverbindung.js',
+  // **Ergänzt am 5. September.** Der Satz an der Frachtzeile stand zweimal —
+  // in `preis.js` und in `shopkern.js`. Er steht jetzt einmal, in einem Modul
+  // ohne Zahl und ohne Wissen: `preis.js` selbst darf nicht ins Bündel, es
+  // trägt die Einkaufsrechnung.
+  'frachttext.js',
 ]);
 
 /** Die Module des Shops, die zusätzlich in die Seiten wandern. */
@@ -116,6 +121,9 @@ export const SHOPMODULE = Object.freeze(['shopkern.js', 'gebinde.js', 'kundenanf
  */
 export const BROWSERMODULE = Object.freeze([
   'format.js', 'gebinde.js', 'liefergebiet.js', 'shopkern.js', 'kundenanfrage.js',
+  // **Ergänzt am 5. September.** Ein Satz, keine Zahl, kein Wissen — der Satz
+  // an der Frachtzeile, den `shopkern.js` und `preis.js` gemeinsam brauchen.
+  'frachttext.js',
 ]);
 
 /**

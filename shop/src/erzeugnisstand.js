@@ -81,6 +81,11 @@ export const LESER = Object.freeze([
   Object.freeze({ werkzeug: 'bin/crawlerpruefung.mjs', erzeugnis: 'ausgabe/site' }),
   Object.freeze({ werkzeug: 'bin/datenschutzpruefung.mjs', erzeugnis: 'ausgabe/site' }),
   Object.freeze({ werkzeug: 'bin/dublettenpruefung.mjs', erzeugnis: 'ausgabe/site' }),
+  // **Ergänzt am 5. September.** Sie hält seither auch die gebauten Flächen
+  // gegen die Einstufung: Sagt llms.txt "palettiert", muss dort stehen, woher
+  // die Einstufung kommt. Gegen eine Fläche von gestern zu prüfen hieße, die
+  // Auskunft von gestern für heute grün zu melden.
+  Object.freeze({ werkzeug: 'bin/sperrgutpruefung.mjs', erzeugnis: 'ausgabe/site' }),
   Object.freeze({ werkzeug: 'bin/geheimnispruefung.mjs', erzeugnis: 'ausgabe/site' }),
   Object.freeze({ werkzeug: 'bin/shopprobe.mjs', erzeugnis: 'ausgabe/website.html' }),
   Object.freeze({ werkzeug: 'bin/wegprobe.mjs', erzeugnis: 'ausgabe/website.html' }),

@@ -20,6 +20,10 @@
  * ------------------------------------------------------------------ */
 
 import { istMenge } from './gebinde.js';
+// **Seit dem 5. September von dort statt hier.** Der Wortlaut stand zweimal;
+// eine Probe hielt beide gegeneinander. Eine Probe, die zwei Fassungen
+// vergleicht, ist besser als nichts und schlechter als eine Fassung.
+import { frachtGrundText } from './frachttext.js';
 
 /**
  * Zerlegt Text in vergleichbare Wortstämme.
@@ -922,9 +926,7 @@ export function kundenWarenkorb(zeilen, { artikel, lieferanten, mindestbestellwe
       // Sperrgut-Positionen und drei Hübe. Die Zählung je Position ist damit
       // widerlegt; wonach stattdessen zu zählen wäre, ist offen (Palettenzahl).
       // Der Satz sagt es jetzt, statt eine Schätzung als Rechnung auszugeben.
-      frachtGrund: sperrgutPositionen > 0
-        ? `Pauschale plus ${sperrgutPositionen}× Kranentladung (geschätzt je Sperrgut-Position)`
-        : 'Pauschale',
+      frachtGrund: frachtGrundText(sperrgutPositionen),
       sperrgutPositionen,
     });
   }

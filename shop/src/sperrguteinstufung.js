@@ -114,6 +114,62 @@ export const HINGENOMMEN = Object.freeze([
 ]);
 
 /**
+ * Die gebauten Flächen, auf denen der Kunde von der Kranentladung liest —
+ * und der Nachweis, dass dort auch steht, woher die Einstufung kommt.
+ *
+ * **Der Anlass, 5. September 2026, morgens.** Die Artikelseite sagt seit dem
+ * Vortag, dass die Einstufung aus der Warengruppe geschätzt ist. `llms.txt`
+ * sagte weiter nur „· palettiert", und die Kasse „palettiert, Kranentladung
+ * je Hub".
+ *
+ * > **Eine Auskunft, die an einer Stelle qualifiziert ist und an der
+ * > maschinenlesbaren blank steht, wird von Assistenten als Tatsache
+ * > weitergegeben.**
+ *
+ * Geprüft wird grob und in eine Richtung: Wo das Wort fällt, muss die
+ * Herkunft in derselben Datei stehen. Wo sie fehlt, ist es ein Befund; dass
+ * sie an der richtigen Stelle steht, sagt diese Prüfung nicht — das sagt der
+ * Augenschein.
+ */
+export const FLAECHEN = Object.freeze([
+  Object.freeze({
+    datei: 'llms.txt',
+    warum: 'Die Datei, die Assistenten lesen. Sie führt 25 Artikel mit dem Wort „palettiert".',
+  }),
+  Object.freeze({
+    datei: 'shop.js',
+    warum: 'Das Bündel der Kasse: Es schreibt „palettiert, Kranentladung je Hub" an jede '
+      + 'betroffene Warenkorbzeile und rechnet den Betrag in die Frachtzeile.',
+  }),
+]);
+
+/** Woran die Herkunftsangabe zu erkennen ist — in jeder der Flächen dieselbe. */
+export const HERKUNFTSMUSTER = /aus der Warengruppe/;
+
+/**
+ * @param {(datei: string) => (string|null)} lies  Inhalt einer gebauten Datei
+ */
+export function flaechenbefund(lies, flaechen = FLAECHEN) {
+  const meldungen = [];
+  for (const f of flaechen) {
+    const inhalt = lies(f.datei);
+    if (inhalt === null || inhalt === undefined) {
+      meldungen.push({ regel: 'flaeche-fehlt', datei: f.datei, text: `${f.datei}: nicht gebaut` });
+      continue;
+    }
+    if (!/Kranentladung|palettiert/i.test(inhalt)) continue;
+    if (!HERKUNFTSMUSTER.test(inhalt)) {
+      meldungen.push({
+        regel: 'einstufung-ohne-herkunft',
+        datei: f.datei,
+        text: `${f.datei}: nennt die Kranentladung und nicht, woher die Einstufung kommt`,
+      });
+    }
+  }
+  return { flaechen: flaechen.length, meldungen, sauber: meldungen.length === 0 };
+}
+
+/**
  * Hält die Einstufung gegen die Tatsachen, die der Katalog hat.
  *
  * Drei Regeln, und keine davon stuft um:

@@ -618,6 +618,50 @@ function vorsorgeauskunft(bezirk) {
 
 
 
+function frachtGrundText(sperrgutPositionen) {
+  if (!(sperrgutPositionen > 0)) return 'Pauschale';
+  return `Pauschale plus ${sperrgutPositionen}× Kranentladung — Zahl je Sperrgut-Position `
+    + 'gerechnet, Einstufung aus der Warengruppe geschätzt';
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const MARGENUNTERGRENZE = 0.32;
 const UST_SATZ = 0.20;
@@ -780,10 +824,7 @@ function fracht(positionen, lieferant) {
     
     
     
-    grund:
-      sperrgutPositionen > 0
-        ? `Pauschale plus ${sperrgutPositionen}× Kranentladung (geschätzt je Sperrgut-Position)`
-        : 'Pauschale',
+    grund: frachtGrundText(sperrgutPositionen),
     warenwertNetto,
     bestellwertNetto,
   };
@@ -1596,6 +1637,10 @@ function pruefeLieferort(ort = {}) {
   }
   return { liefern: true, grund: null, bezirk };
 }
+
+
+
+
 
 
 
@@ -2520,9 +2565,7 @@ function kundenWarenkorb(zeilen, { artikel, lieferanten, mindestbestellwertNetto
       
       
       
-      frachtGrund: sperrgutPositionen > 0
-        ? `Pauschale plus ${sperrgutPositionen}× Kranentladung (geschätzt je Sperrgut-Position)`
-        : 'Pauschale',
+      frachtGrund: frachtGrundText(sperrgutPositionen),
       sperrgutPositionen,
     });
   }

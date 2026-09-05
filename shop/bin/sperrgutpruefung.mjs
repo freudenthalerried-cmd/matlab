@@ -19,19 +19,42 @@
  * Grund.
  */
 
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 import {
-  einstufungsbefund, HINGENOMMEN, HANDGEWICHT_KG, SPERRGUT_GRUPPEN, GEMEINSAMER_GRUND,
+  einstufungsbefund, flaechenbefund, HINGENOMMEN, HANDGEWICHT_KG, SPERRGUT_GRUPPEN,
+  GEMEINSAMER_GRUND,
 } from '../src/sperrguteinstufung.js';
+import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
 
 const wurzel = dirname(dirname(fileURLToPath(import.meta.url)));
 const datei = process.argv[2] ? process.argv[2] : join(wurzel, 'data', 'katalog-baustoff.json');
 const katalog = JSON.parse(readFileSync(datei, 'utf8'));
 
 const b = einstufungsbefund(katalog.artikel ?? []);
+
+/**
+ * **Und die gebauten Flächen — seit dem 5. September, morgens.**
+ *
+ * Die Artikelseite nennt die Herkunft der Einstufung seit dem Vortag,
+ * `llms.txt` und das Kassenbündel nannten sie nicht. Wer nur die eine Fläche
+ * bessert, hat den Satz gesagt und die Auskunft nicht geändert.
+ *
+ * Dieselbe Weigerung wie überall: Gegen ein veraltetes Erzeugnis wird nicht
+ * geprüft — sonst meldet dieser Lauf die Fläche von gestern grün.
+ */
+const stand = frischebefund(wurzel, 'ausgabe/site');
+if (!stand.frisch) {
+  for (const zeile of abbruchtext(stand)) console.error(zeile);
+  process.exit(2);
+}
+const lies = (datei) => {
+  const pfad = join(wurzel, 'ausgabe', 'site', datei);
+  return existsSync(pfad) ? readFileSync(pfad, 'utf8') : null;
+};
+const f = flaechenbefund(lies);
 
 console.log(`Sperrguteinstufung: ${b.artikel} Artikel, ${b.mitGewicht} mit belegtem Gewicht`);
 console.log(`Geschätzt aus der Warengruppe (${SPERRGUT_GRUPPEN.join(', ')}); `
@@ -48,10 +71,14 @@ if (HINGENOMMEN.length) {
   console.log(`\n    ${GEMEINSAMER_GRUND.replace(/(.{78}\s)/g, '$1\n    ')}`);
 }
 
-if (!b.sauber) {
-  console.error(`\n${b.meldungen.length} Einstufung(en) ohne Grund:\n`);
-  for (const m of b.meldungen) console.error(`  ✗ ${m.text}  (${m.regel})`);
-  console.error('\nEine Einstufung, die Geld kostet, gehört belegt oder begründet.');
+console.log(`  Gebaute Flächen mit dem Wort   ${f.flaechen}, `
+  + `${f.meldungen.length === 0 ? 'alle mit Herkunftsangabe' : `${f.meldungen.length} ohne`}`);
+
+if (!b.sauber || !f.sauber) {
+  console.error(`\n${b.meldungen.length + f.meldungen.length} Befund(e):\n`);
+  for (const m of [...b.meldungen, ...f.meldungen]) console.error(`  ✗ ${m.text}  (${m.regel})`);
+  console.error('\nEine Einstufung, die Geld kostet, gehört belegt oder begründet —');
+  console.error('und wo sie dem Kunden gesagt wird, gehört ihre Herkunft dazu.');
   process.exit(1);
 }
 

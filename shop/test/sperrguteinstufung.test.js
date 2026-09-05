@@ -13,8 +13,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 import {
-  SPERRGUT_GRUPPEN, HANDGEWICHT_KG, HINGENOMMEN,
-  sperrgutAusGruppe, einstufungsbefund,
+  SPERRGUT_GRUPPEN, HANDGEWICHT_KG, HINGENOMMEN, FLAECHEN,
+  sperrgutAusGruppe, einstufungsbefund, flaechenbefund,
 } from '../src/sperrguteinstufung.js';
 
 const katalog = JSON.parse(readFileSync(new URL('../data/katalog-baustoff.json', import.meta.url), 'utf8'));
@@ -126,4 +126,66 @@ test('die Artikelseite nennt die Herkunft der Einstufung', async () => {
   assert.match(html, /Warengruppe Kanal<\/strong> und nicht aus einer Angabe des Lieferanten/);
   // Und der Widerspruch steht dabei, nicht nur die Herkunft.
   assert.match(html, /wiegt 0,285 kg je Stück/);
+});
+
+/* ------------------------------------------------------------------ *
+ * Wo der Kunde davon liest — ergänzt am 5. September, morgens
+ *
+ * **Der Befund.** Die Artikelseite nennt die Herkunft der Einstufung seit dem
+ * Vortag. `llms.txt` sagte weiter nur „· palettiert", das Kassenbündel
+ * „palettiert, Kranentladung je Hub".
+ *
+ * > **Eine Auskunft, die an einer Stelle qualifiziert ist und an der
+ * > maschinenlesbaren blank steht, wird von Assistenten als Tatsache
+ * > weitergegeben.**
+ * ------------------------------------------------------------------ */
+
+test('jede gebaute Fläche nennt ihren Grund, warum sie geführt wird', () => {
+  assert.ok(FLAECHEN.length >= 2, 'weniger als zwei Flächen wären verdächtig wenig');
+  for (const f of FLAECHEN) {
+    assert.ok(f.datei, 'eine Fläche ohne Datei lässt sich nicht lesen');
+    assert.ok(f.warum.length >= 60, `${f.datei}: Begründung zu kurz`);
+  }
+});
+
+test('eine Fläche, die die Kranentladung nennt und ihre Herkunft nicht', () => {
+  const b = flaechenbefund(() => 'Zustellung inkl. Kranentladung je Hub.');
+  assert.equal(b.sauber, false);
+  assert.ok(b.meldungen.every((m) => m.regel === 'einstufung-ohne-herkunft'));
+});
+
+test('eine Fläche ohne das Wort wird nicht behelligt', () => {
+  // Nicht jede gebaute Datei muss davon reden. Ein Prüfer, der das verlangte,
+  // erzwänge den Satz an Stellen, an denen er nichts zu suchen hat.
+  const b = flaechenbefund(() => 'Nur Preise und Lieferzeiten.');
+  assert.equal(b.sauber, true);
+});
+
+test('eine Fläche, die es nicht gibt, ist ein Befund und kein Freispruch', () => {
+  const b = flaechenbefund(() => null);
+  assert.ok(b.meldungen.every((m) => m.regel === 'flaeche-fehlt'));
+  assert.equal(b.meldungen.length, FLAECHEN.length);
+});
+
+test('mit Herkunftsangabe ist die Fläche in Ordnung', () => {
+  const b = flaechenbefund(() => 'palettiert — die Angabe folgt aus der Warengruppe.');
+  assert.equal(b.sauber, true);
+});
+
+/**
+ * Und der Satz an der Frachtzeile: Er stand bis heute zweimal im Bestand,
+ * gehalten von einer Probe. Jetzt steht er einmal — und sagt, **welche** der
+ * beiden Schätzungen gemeint ist.
+ */
+test('der Frachtsatz nennt beide Schätzungen getrennt', async () => {
+  const { frachtGrundText } = await import('../src/frachttext.js');
+  assert.equal(frachtGrundText(0), 'Pauschale');
+  const drei = frachtGrundText(3);
+  assert.match(drei, /3× Kranentladung/);
+  assert.match(drei, /je Sperrgut-Position/, 'die Zahl der Hübe ist geschätzt');
+  assert.match(drei, /aus der Warengruppe/, 'und die Einstufung selbst auch');
+  // Ein Sonderfall, den der alte Ausdruck mit `> 0` schon richtig traf und der
+  // beim Verlegen leicht verlorengeht.
+  assert.equal(frachtGrundText(null), 'Pauschale');
+  assert.equal(frachtGrundText(undefined), 'Pauschale');
 });

@@ -17,6 +17,8 @@
  * Reine Rechenfunktionen, keine Dateizugriffe, keine Seiteneffekte.
  */
 
+import { frachtGrundText } from './frachttext.js';
+
 /**
  * **Zwei Margen, die nicht dasselbe messen** — und die zu verwechseln kostet
  * eine Fehlentscheidung.
@@ -197,10 +199,7 @@ export function fracht(positionen, lieferant) {
     // jemand tut. Zwei Namen für dieselbe Zahl sind dieselbe Familie wie
     // `PreOrder` gegen `InStock` am 28. August: Der Widerspruch fällt nicht
     // auf, weil beide Seiten für sich stimmen.
-    grund:
-      sperrgutPositionen > 0
-        ? `Pauschale plus ${sperrgutPositionen}× Kranentladung (geschätzt je Sperrgut-Position)`
-        : 'Pauschale',
+    grund: frachtGrundText(sperrgutPositionen),
     warenwertNetto,
     bestellwertNetto,
   };
