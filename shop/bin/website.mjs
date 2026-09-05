@@ -577,6 +577,24 @@ const NAV_REIHENFOLGE = ['WDVS', 'Dämmung', 'Mauerwerk', 'Mörtel', 'Kamin', 'K
  * — nach dem bezahlten Klick.
  */
 const LIEFERBEZIRKE = aufzaehlung(LIEFERGEBIET.bezirke.map((b) => b.name));
+/** Gate 25, aus den Betreiberdaten — `null`, solange keine Grenze hinterlegt ist. */
+const MINDESTWERT_NETTO = BETREIBER.mindestbestellwertNetto ?? null;
+
+/**
+ * Der Stand der Grenze — **gelesen, nicht abgeschrieben.**
+ *
+ * `_mindestbestellwertHinweis` trägt die ganze Herleitung und beginnt mit
+ * „GATE 25, entschieden am 03.09.2026". Das Datum hier noch einmal
+ * hinzuschreiben wäre eine Abschrift, die beim nächsten Beschluss stehen
+ * bliebe — derselbe Fehler wie die abgeschriebene Schwelle vom Vormittag.
+ * Fehlt das Datum, gibt es keinen Stand, und dann nennt der Absatz die Zahl
+ * gar nicht: Ein Preis ohne Stand ist in vier Wochen falsch.
+ */
+const MINDESTWERT_STAND = (() => {
+  const t = String(BETREIBER._mindestbestellwertHinweis ?? '');
+  const m = t.match(/entschieden am (\d{2})\.(\d{2})\.(\d{4})/);
+  return m ? `${m[3]}-${m[2]}-${m[1]}` : null;
+})();
 const NAV = [
   ...NAV_REIHENFOLGE.map((g) => [`gruppe/${GRUPPENSEITE[g]}`, g]),
   ['lieferung', 'Lieferung'],
@@ -2031,7 +2049,7 @@ Warengruppen in der Kopfleiste.</p></noscript>
     : daten
       ? `<script>${daten}</script>`
       : '';
-  const koerper = `${kopf}\n${seite.html}\n${fuss}`;
+  const koerper = `${kopf}\n${mitMindestwert(seite.html, verweis)}\n${fuss}`;
   if (!eigenstaendig) return koerper;
 
   const ld = seite.jsonLd
@@ -2055,6 +2073,53 @@ Warengruppen in der Kopfleiste.</p></noscript>
  * `noindex,follow` statt `noindex`: Die Verweise auf diesen Seiten sollen
  * weiterverfolgt werden, nur die Seite selbst gehört nicht in den Index.
  */
+/* ------------------------------------------------------------------ *
+ * Wo man einen Korb füllt, steht die Grenze — 5. September 2026
+ *
+ * **Gemessen an allen 81 gebauten Seiten.** Der Mindestbestellwert (Gate 25,
+ * 250 € netto Warenwert je Lieferung) stand auf **48** davon: auf jeder
+ * Artikelseite, auf `lieferung.html` und in den AGB.
+ *
+ * Er stand auf **keiner** der **19 Seiten mit Artikelkarten** — also auf
+ * keiner Seite, auf der man mehrere Artikel in den Korb legt:
+ *
+ * | Seite | Karten |
+ * |---|---|
+ * | Startseite | 46 |
+ * | 7 Gruppenseiten | 1 bis 11 |
+ * | 4 Systemlisten | 13 bis 20 |
+ * | 7 Wissensseiten | 6 bis 11 |
+ *
+ * > **Die Grenze steht auf jeder Seite, auf der man einen Artikel ansieht —
+ * > und auf keiner, auf der man eine Bestellung zusammenstellt.**
+ *
+ * Die drei Gruppenseiten sind zugleich die **Landeseiten der bezahlten
+ * Anzeigen**, 4,19 € bis 8,22 € je Klick. Dieselbe Familie wie der Befund vom
+ * 2. September zur Kasse: *„Eine Sperre, die erst nach dem Ja greift, ist
+ * keine."* Damals wurde die Sperre vorgezogen; die **Auskunft** kommt bis
+ * heute erst, wenn die Grenze reißt (`zeigeMindestwert` in `shop-ui.js` zeigt
+ * den Satz nur bei `!erfuellt`).
+ *
+ * **Warum hier und nicht in den vier Seitenbauern.** Ein Absatz, den jeder
+ * Seitentyp selbst anhängt, ist ein Absatz, den ein fünfter Seitentyp
+ * vergisst. Diese Stelle sieht die fertige Seite: Trägt sie eine Karte und
+ * nennt die Grenze noch nicht, bekommt sie den Satz — einmal, und ohne dass
+ * jemand daran denken muss. `pruefe-seiten` hält es unabhängig davon am
+ * Erzeugnis nach.
+ */
+function mitMindestwert(html, verweis) {
+  if (MINDESTWERT_NETTO == null || MINDESTWERT_STAND == null) return html;
+  if (!html.includes('class="karte"')) return html;
+  if (html.includes('Mindestbestellwert')) return html;
+  return `${html}
+<p class="antwort mindestwert-hinweis"><strong>Mindestbestellwert ${euro(MINDESTWERT_NETTO)} € netto
+Warenwert je Lieferung.</strong> Darunter nimmt die Kasse keine Anfrage an und nennt den fehlenden
+Betrag. Werden mehrere Hersteller bestellt, entstehen mehrere Lieferungen, und die Grenze gilt für
+jede einzelne — Anfahrt und Verpackung fallen je Lieferung an
+(Quelle: eigene Entscheidung, Gate 25, Stand: ${MINDESTWERT_STAND}).
+<a href="${verweis('lieferung')}">Lieferung und Frachtkosten</a></p>`;
+}
+
 function bedienhinweis(seite) {
   return seite.nurBedienung ? '\n<meta name="robots" content="noindex,follow">' : '';
 }

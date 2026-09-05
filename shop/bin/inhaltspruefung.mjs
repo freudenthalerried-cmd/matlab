@@ -304,7 +304,43 @@ if (process.argv[2] === '--seiten') {
     }
   }
 
+  /* ---------------------------------------------------------------- *
+   * Wo man einen Korb füllt, steht die Grenze — 5. September 2026
+   *
+   * Gemessen an allen 81 gebauten Seiten: Der Mindestbestellwert (Gate 25)
+   * stand auf 48 — auf jeder Artikelseite, auf `lieferung.html`, in den AGB.
+   * Auf **keiner** der 19 Seiten mit Artikelkarten: Startseite (46 Karten),
+   * sieben Gruppenseiten, vier Systemlisten, sieben Wissensseiten.
+   *
+   * > **Die Grenze steht auf jeder Seite, auf der man einen Artikel ansieht —
+   * > und auf keiner, auf der man eine Bestellung zusammenstellt.**
+   *
+   * Die Gruppenseiten sind die Landeseiten der bezahlten Anzeigen. Diese
+   * Prüfung misst das **Erzeugnis** und nicht den Bauer: Sie schlägt auch an,
+   * wenn der Einbau in `bin/website.mjs` entfernt oder ein Seitentyp anders
+   * gebaut wird.
+   * ---------------------------------------------------------------- */
+  let mitKarten = 0;
+  let ohneGrenze = 0;
+  for (const datei of alleSeitendateien(wurzel)) {
+    const html = readFileSync(datei, 'utf8');
+    if (!html.includes('class="karte"')) continue;
+    mitKarten += 1;
+    if (html.includes('Mindestbestellwert')) continue;
+    ohneGrenze += 1;
+    treffer += 1;
+    console.log(`\n${datei.split('/site/')[1] ?? datei}`);
+    console.log('    → zeigt Artikelkarten und nennt den Mindestbestellwert nicht');
+  }
+  // Ein leerer Lauf ist kein grüner: Fände die Sammlung keine Kartenseite,
+  // meldete diese Prüfung „sauber" über nichts.
+  if (mitKarten < 15) {
+    treffer += 1;
+    console.log(`\n    → nur ${mitKarten} Seiten mit Artikelkarten gefunden, erwartet mindestens 15`);
+  }
+
   console.log(`\n${seiten.length} Seiten, ${absaetze} Fließtextabsätze geprüft, ${treffer} mit Verdacht.`);
+  console.log(`${mitKarten} Seiten zeigen Artikelkarten, ${mitKarten - ohneGrenze} nennen den Mindestbestellwert.`);
   console.log(`${antworten} maschinenlesbare Antworten gegen den sichtbaren Text gehalten.`);
   console.log('Diese Texte stehen im Seitenbauwerkzeug, nicht in inhalte/ — sie unterliegen');
   console.log('trotzdem denselben Regeln.');

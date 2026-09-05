@@ -854,6 +854,24 @@ export const GEGENPROBEN = Object.freeze([
       + 'Eintrag ohne Artikel auffällt.',
   }),
   Object.freeze({
+    id: 'kartenseite-ohne-grenze',
+    pruefer: 'pruefe-seiten',
+    was: 'Eine Seite, auf der man einen Korb füllt, ohne die Grenze zu nennen, an der er abgewiesen wird',
+    datei: 'shop/bin/website.mjs',
+    art: 'ersetzen',
+    suchen: "  if (!html.includes('class=\"karte\"')) return html;",
+    ersetzen: "  if (!html.includes('class=\"gibtesnicht\"')) return html;",
+    erwartet: /Mindestbestellwert nicht/,
+    baueVorher: true,
+    warum: 'Der Zustand bis zum 5. September: Der Mindestbestellwert (Gate 25, 250 € netto je '
+      + 'Lieferung) stand auf 48 der 81 gebauten Seiten — auf jeder Artikelseite, auf der '
+      + 'Lieferseite, in den AGB. Auf **keiner** der Seiten mit Artikelkarten: nicht auf der '
+      + 'Startseite mit ihren 46 Karten, nicht auf den sieben Gruppenseiten, nicht auf den vier '
+      + 'Systemlisten. Die Gruppenseiten sind die Landeseiten der bezahlten Anzeigen, 4,19 € bis '
+      + '8,22 € je Klick. Die Mutation nimmt den Einbau wieder heraus und verlangt, dass die '
+      + 'Prüfung am Erzeugnis es meldet — sie misst die gebaute Seite und nicht den Bauer.',
+  }),
+  Object.freeze({
     id: 'navigation-als-inhalt',
     pruefer: 'test',
     was: 'Navigation, die als eigener Seiteninhalt mitgezählt wird',
