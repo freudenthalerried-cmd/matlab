@@ -316,3 +316,44 @@ test('Fließtext sieht keine fremden Tabellenzeilen', () => {
   assert.ok(feld.includes('Zahl im Fließtext'));
   assert.ok(!feld.includes('berichtigt'), 'eine fremde Tabellenzeile deckt den Absatz');
 });
+
+/* ------------------------------------------------------------------ *
+ * Und die gebaute Seite — 5. September 2026, abends
+ *
+ * `BESTAENDE` schließt `ausgabe/` mit Grund aus: Was ausgeliefert wird,
+ * entsteht aus `inhalte/` und `bin/website.mjs`, und beide sind im Bestand.
+ * Der Schluss ist richtig — **er war nur nie geprüft.**
+ *
+ * > **Ein Ausschluss mit gutem Grund ist trotzdem ein Ausschluss, und der
+ * > Grund gehört gemessen, nicht geglaubt.**
+ *
+ * Erzeugungswege ändern sich: Seit dem 4. September trägt jede Seite Text,
+ * den kein `inhalte/`-Dokument kennt, und seit heute wird ein Absatz beim
+ * Zusammenbau angehängt.
+ * ------------------------------------------------------------------ */
+
+test('keine gebaute Seite trägt eine widerrufene Aussage', async () => {
+  const { readdirSync, statSync } = await import('node:fs');
+  const { nurText } = await import('../src/format.js');
+  const wurzel = fileURLToPath(new URL('../ausgabe/site/', import.meta.url));
+
+  const dateien = [];
+  const geh = (d) => {
+    for (const e of readdirSync(d)) {
+      const v = `${d}${e}`;
+      if (statSync(v).isDirectory()) { geh(`${v}/`); continue; }
+      if (/\.(html|txt|js)$/.test(v)) dateien.push(v);
+    }
+  };
+  geh(wurzel);
+  // Ein leerer Lauf ist kein grüner.
+  assert.ok(dateien.length >= 60, `nur ${dateien.length} Ausgabedateien — die Prüfung greift zu wenig`);
+
+  const treffer = [];
+  for (const d of dateien) {
+    for (const fund of findeWiderrufe(nurText(readFileSync(d, 'utf8')), { sichtweite: 2, kopfzeilen: 0 })) {
+      treffer.push(`${d.slice(wurzel.length)}: „${fund.fundstelle}" (${fund.eintrag.id})`);
+    }
+  }
+  assert.deepEqual(treffer, [], 'widerrufene Aussagen auf einer ausgelieferten Seite');
+});

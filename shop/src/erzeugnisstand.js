@@ -185,6 +185,17 @@ export const LESER = Object.freeze([
     erzeugnis: null,
     warumOhnePruefung: 'Er zählt die Rahmen der Quelltexte, nicht die der gebauten Seiten.',
   }),
+  // **Aufgenommen am 5. September, abends** — von `pruefe-erzeugnis` selbst
+  // gemeldet, in derselben Minute, in der der Durchgang über die Ausgabe
+  // eingebaut war. Genau dafür gibt es das Register.
+  Object.freeze({
+    werkzeug: 'bin/widerrufpruefung.mjs',
+    erzeugnis: null,
+    warumOhnePruefung: 'Ihr Bestand ist die Akte; die gebaute Seite ist ein zusätzlicher '
+      + 'Fundort, den sie prüft, weil der Grund für ihren Ausschluss eine Behauptung über den '
+      + 'Erzeugungsweg ist. Ein veraltetes Erzeugnis macht diesen Durchgang wertlos, nicht die '
+      + '514 Verzeichnisdateien — sie nennt den Stand deshalb, statt abzubrechen.',
+  }),
   Object.freeze({
     werkzeug: 'bin/leitzahlpruefung.mjs',
     erzeugnis: null,

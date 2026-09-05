@@ -854,6 +854,24 @@ export const GEGENPROBEN = Object.freeze([
       + 'Eintrag ohne Artikel auffällt.',
   }),
   Object.freeze({
+    id: 'abgeloeste-zahl-auf-der-seite',
+    pruefer: 'pruefe-leitzahlen',
+    was: 'Eine abgelöste Leitzahl auf einer ausgelieferten Seite',
+    datei: 'shop/bin/website.mjs',
+    art: 'ersetzen',
+    suchen: "Geliefert wird im Umkreis, nicht in ganz Österreich: Das ist der Grund, warum die Rechnung aufgeht.",
+    ersetzen: "Der nötige Monatsumsatz liegt bei 45.356 €. Geliefert wird im Umkreis, nicht in ganz Österreich.",
+    erwartet: /index\.html|45\.?356/,
+    baueVorher: true,
+    warum: 'Die fünf Bestände des Leitzahlprüfers deckten alles ab, was **geschrieben** ist — '
+      + 'und nichts, was beim Bauen **entsteht**. Die Startseite zeigt „39 von 46" und „26,7 % '
+      + 'im Median", die Lieferseite „75,50 €": keine dieser Zahlen steht als Zahl in einer '
+      + 'Quelldatei. Ein Bestand, der nur die Quellen liest, findet jede abgeschriebene Zahl '
+      + 'und keine gerechnete. Beim Aufnehmen der Ausgabe waren es null Meldungen über 83 '
+      + 'Dateien; diese Mutation stellt den Fall her, für den der Bestand da ist — die '
+      + 'Kartenzahl 45.356 €, abgelöst am 1. September, auf der Seite, die jeder zuerst sieht.',
+  }),
+  Object.freeze({
     id: 'startseite-verspricht-den-einkaufspreis',
     pruefer: 'pruefe-seiten',
     was: 'Eine Seite, die behauptet, der Kunde zahle den Einkaufspreis des Baumeisters',

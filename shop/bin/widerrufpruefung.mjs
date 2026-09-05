@@ -29,7 +29,11 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { pruefeBestand, WIDERRUFE, SICHTWEITE, BESTAENDE, bestandsdateien } from '../src/widerruf.js';
+import {
+  pruefeBestand, WIDERRUFE, SICHTWEITE, BESTAENDE, bestandsdateien, findeWiderrufe,
+} from '../src/widerruf.js';
+import { nurText } from '../src/format.js';
+import { frischebefund } from '../src/erzeugnisstand.js';
 
 const WURZEL = fileURLToPath(new URL('../../', import.meta.url));
 
@@ -62,18 +66,81 @@ console.log(`\nWiderrufsregister: ${e.register} zurückgenommene Aussagen`);
 for (const w of WIDERRUFE) {
   console.log(`  · ${w.id} — widerrufen ${w.widerrufenAm}, belegt in ${w.belegt}`);
 }
+/* ------------------------------------------------------------------ *
+ * Und die gebaute Seite — 5. September 2026, abends
+ *
+ * `BESTAENDE` in `src/widerruf.js` schließt `ausgabe/` ausdrücklich aus, und
+ * die Begründung steht dort: Was ausgeliefert wird, entsteht aus `inhalte/`
+ * und `bin/website.mjs` — beide im Bestand. Der Schluss ist richtig.
+ *
+ * **Er war nur nie geprüft.** Eine Begründung der Form „das kann nicht
+ * vorkommen" ist eine Behauptung über einen Erzeugungsweg, und Erzeugungswege
+ * ändern sich: Seit dem 4. September trägt jede Seite Text, den kein
+ * `inhalte/`-Dokument kennt (der Bestellhinweis, der Mindestwertabsatz, die
+ * Frachterklärung), und seit heute wird ein Absatz beim Zusammenbau
+ * angehängt.
+ *
+ * > **Ein Ausschluss mit gutem Grund ist trotzdem ein Ausschluss — und der
+ * > Grund gehört gemessen, nicht geglaubt.**
+ *
+ * Der Durchgang kostet nichts: 83 Dateien, ein Durchlauf, und er sagt beim
+ * nächsten Mal, ob der Schluss noch trägt. Gelesen wird der **Text**, nicht
+ * das Markup.
+ * ------------------------------------------------------------------ */
+let ausgabeFunde = 0;
+let ausgabeDateien = 0;
+if (!nurVerzeichnis) {
+  const ordner = join(WURZEL, 'shop', 'ausgabe', 'site');
+  const sammle = (d) => {
+    for (const e2 of readdirSync(d, { withFileTypes: true })) {
+      const voll = join(d, e2.name);
+      if (e2.isDirectory()) { sammle(voll); continue; }
+      if (!/\.(html|txt|js)$/.test(e2.name)) continue;
+      ausgabeDateien += 1;
+      for (const fund of findeWiderrufe(nurText(readFileSync(voll, 'utf8')), { sichtweite: 2, kopfzeilen: 0 })) {
+        ausgabeFunde += 1;
+        console.log(`  ✗ ${voll.slice(WURZEL.length)}`);
+        console.log(`      „${fund.fundstelle}"`);
+        console.log(`      widerrufen ${fund.eintrag.widerrufenAm} (${fund.eintrag.belegt})`);
+        console.log(`      → ${fund.eintrag.statt}`);
+      }
+    }
+  };
+  // **Nicht abbrechen, aber sagen.** Ein Durchgang über ein veraltetes
+  // Erzeugnis, der „0 Fundstellen" meldet, ist genau die Sorte Grün, gegen
+  // die dieser Bestand seit dem 30. August anschreibt. Der Hauptbestand sind
+  // aber die 514 Verzeichnisdateien; ihretwegen abzubrechen wäre
+  // unverhältnismäßig.
+  const stand = frischebefund(join(WURZEL, 'shop'), 'ausgabe/site');
+  if (!stand.frisch) {
+    console.log('\nHinweis: ausgabe/site ist älter als die Quelle — der Durchgang darüber');
+    console.log('prüft die Seite von gestern. Die Akte prüft er trotzdem vollständig.');
+  }
+  try {
+    sammle(ordner);
+  } catch {
+    console.log('\nDie gebaute Seite liegt nicht vor — der Durchgang über die Ausgabe entfällt.');
+    console.log('Das ist kein Freispruch: Er sagt nichts, statt etwas Falsches zu sagen.');
+  }
+}
+
 console.log(`\nBestände: ${bestaende.map((b) => b.was).join(', ')}`);
+if (ausgabeDateien) {
+  console.log(`Dazu ${ausgabeDateien} gebaute Ausgabedateien — nicht im Bestand, weil sie aus`);
+  console.log('Quellen entstehen, die darin sind. Geprüft wird trotzdem: Der Schluss gilt für den');
+  console.log(`Erzeugungsweg von heute. ${ausgabeFunde} Fundstelle(n).`);
+}
 console.log(`\n${e.dateien} Dateien, ${e.funde} Fundstellen, davon ${e.gedeckt} mit Widerruf in Sichtweite.`);
 console.log(`Sichtweite: ±${SICHTWEITE} Zeilen im Fließtext — eine Tabellenzeile dagegen sieht nur`);
 console.log('sich selbst, den Kopf ihrer Tabelle und den Text davor. Der Nachbareintrag deckt nichts.');
 
-if (e.sauber) {
+if (e.sauber && ausgabeFunde === 0) {
   console.log('\nKeine Meldung — jede widerrufene Aussage trägt ihren Widerruf mit.');
   console.log('Ein Widerruf, der nur an einer Stelle steht, ist ein Notizzettel, keine Berichtigung.');
   process.exit(0);
 }
 
-console.log(`\n${e.meldungen.length} Meldung(en) — hier steht die Aussage ohne ihren Widerruf:\n`);
+console.log(`\n${e.meldungen.length + ausgabeFunde} Meldung(en) — hier steht die Aussage ohne ihren Widerruf:\n`);
 for (const m of e.meldungen) {
   console.log(`  ✗ ${m.datei}:${m.zeile}`);
   console.log(`      „${m.fundstelle}"`);
