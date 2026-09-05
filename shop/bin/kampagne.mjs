@@ -241,7 +241,27 @@ const NEGATIVE = {
   'Preis und Menge': ['günstig', 'billig', 'gebraucht', 'restposten', 'einzeln', 'einzelsack', 'kleinmenge', 'muster', 'probe', 'reststück'],
   Wettbewerb: ['baumarkt', 'obi', 'hornbach', 'bauhaus', 'lagerhaus', 'hagebau', 'amazon', 'willhaben'],
   'Suche ohne Kaufabsicht': ['anleitung', 'wie', 'video', 'youtube', 'erfahrung', 'test', 'vergleich', 'berechnen', 'rechner', 'wikipedia', 'was ist'],
-  'Falsche Absicht': ['job', 'jobs', 'lehre', 'gehalt', 'praktikum', 'miete', 'mieten', 'leihen', 'verleih', 'entsorgung', 'entsorgen', 'reparatur'],
+  // **Erweitert am 5. September um die Leistungssuche.** Die Gruppe trug mit
+  // „reparatur" schon ein Dienstleistungswort — und übersah die drei, nach
+  // denen bei Dämmung und Kamin tatsächlich gesucht wird. Dieser Shop
+  // verkauft **Ware und kein Gewerk**: Es gibt keine Werkleistung in der
+  // AGB-Gliederung, keinen Montagepreis im Katalog und keine Gewährleistung
+  // für eine Ausführung. Wer eine Leistung sucht, sucht einen Handwerker;
+  // der Klick ist trotzdem bezahlt.
+  //
+  // Dieselbe Begründungsform wie „mieten" und „verleih": nicht „kauft
+  // wahrscheinlich nicht", sondern **kann hier nicht kaufen, was er sucht**.
+  'Falsche Absicht': [
+    'job', 'jobs', 'lehre', 'gehalt', 'praktikum', 'miete', 'mieten', 'leihen', 'verleih',
+    'entsorgung', 'entsorgen', 'reparatur',
+    'montage', 'einbau', 'einbauen lassen', 'verlegen lassen', 'setzen lassen',
+    'sanieren lassen', 'firma sucht', 'handwerker',
+    // Förderung: Der Shop berät nicht und rechnet nichts ab. „Sanierungsbonus"
+    // und „Förderung Fassadendämmung" sind Suchen nach Geld, nicht nach Ware —
+    // und sie treffen genau die Gattungsbegriffe, auf denen dieser Shop
+    // ohnehin am teuersten einkauft.
+    'förderung', 'foerderung', 'sanierungsbonus', 'zuschuss',
+  ],
   // Die größten österreichischen Städte und Länder **außerhalb** der fünf
   // Bezirke. Nicht alles, was außerhalb liegt — das wären hunderte Namen —,
   // sondern das, was jemand tatsächlich eintippt, wenn er dort baut.
@@ -255,6 +275,90 @@ const NEGATIVE = {
   // falsch beraten, und der Klick ist trotzdem bezahlt.
   Privatkunde: ['privat', 'heimwerker', 'diy', 'selber machen', 'für zuhause', 'hobby'],
 };
+
+/* ------------------------------------------------------------------ *
+ * Was nicht ausgeschlossen wird — 5. September 2026
+ *
+ * Die Geo-Liste nennt Städte und Länder außerhalb der fünf Bezirke. Der
+ * naheliegende nächste Eintrag wäre **„ried"** — Ried im Innkreis ist eine
+ * oberösterreichische Bezirkshauptstadt weit außerhalb des Liefergebiets.
+ *
+ * Er wäre der teuerste Ausschluss der ganzen Liste. **Der Betrieb sitzt in
+ * Ried in der Riedmark** (Marwach 5, 4312), Bezirk Perg. Ein Bauleiter, der
+ * „Dämmplatten Ried" tippt, meint mit einiger Wahrscheinlichkeit den Ort, in
+ * dem der Shop steht — und der Ausschluss träfe die eigene Kundschaft an
+ * ihrer Haustür.
+ *
+ * Dieser Bestand ist an genau dieser Zweideutigkeit schon einmal gescheitert:
+ * Vier Dokumente hielten **Ried im Innkreis** für den Heimatbezirk.
+ *
+ * > **Der gefährlichste Ausschluss ist der Ortsname, den es zweimal gibt.**
+ *
+ * **Und die Prüfung, die das verhindern soll, hätte ihn durchgelassen.** Sie
+ * hält die Ausschlüsse gegen `LIEFERGEBIET.bezirke` — „Perg", „Linz",
+ * „Linz-Land", „Freistadt", „Urfahr-Umgebung". Keiner davon enthält „ried".
+ * Der **Ort**, an dem der Betrieb steht, stand in keiner Prüfung; er steht in
+ * `data/betreiber.json`.
+ *
+ * Dieses Verzeichnis hält den Fall fest, damit ein späterer Lauf ihn nicht
+ * arglos ergänzt — und `pruefeAusschluesse` hält es in beide Richtungen:
+ * Ein Eintrag, der doch in der Liste steht, ist ein Befund.
+ * ------------------------------------------------------------------ */
+export const NICHT_AUSGESCHLOSSEN = Object.freeze([
+  Object.freeze({
+    wort: 'ried',
+    warum: 'Der Betrieb sitzt in Ried in der Riedmark, Bezirk Perg — mitten im '
+      + 'Liefergebiet. Gemeint wäre Ried im Innkreis, 100 km westlich. Ein Phrase-Ausschluss '
+      + 'unterscheidet die beiden nicht und träfe die eigene Kundschaft an ihrer Haustür. '
+      + 'Dieselbe Verwechslung stand am 26. August in vier Dokumenten dieses Bestands.',
+  }),
+  Object.freeze({
+    wort: 'abholung',
+    warum: 'Die Lieferseite sagt ausdrücklich „Ja, ausdrücklich vorgesehen. Wer selbst '
+      + 'abholt, zahlt keine Fracht." Selbstabholung ist ein angebotener Weg und spart dem '
+      + 'Shop die Frachtpauschale — eine Suche danach ist die günstigste Bestellung, die '
+      + 'er bekommen kann.',
+  }),
+]);
+
+/**
+ * Hält die Ausschlussliste gegen das, was sie nicht treffen darf.
+ *
+ * Drei Quellen, keine zweite Liste: die Bezirke des Liefergebiets, der **Ort
+ * des Betriebs** und die geführten Suchbegriffe.
+ *
+ * @param {string[]} ausschluesse  kleingeschrieben
+ * @param {{bezirke: string[], ort: string, keywords: string[]}} lage
+ */
+export function pruefeAusschluesse(ausschluesse, lage, nichtAusgeschlossen = NICHT_AUSGESCHLOSSEN) {
+  const fehler = [];
+  const orte = [...(lage.bezirke ?? []), ...(lage.ort ? [lage.ort] : [])].map((o) => o.toLowerCase());
+  if (orte.length === 0) {
+    return ['pruefeAusschluesse ohne Orte — dann prüft sie nichts und meldet es als bestanden'];
+  }
+
+  for (const ort of orte) {
+    for (const wort of ausschluesse) {
+      // Phrase-Ausschluss: Er greift, wenn er als Wortfolge vorkommt. „linz"
+      // trifft damit „linz-land", und „ried" träfe „ried in der riedmark".
+      if (ort.includes(wort)) fehler.push(`„${wort}" schließt den eigenen Ort ${ort} aus`);
+    }
+  }
+  for (const k of lage.keywords ?? []) {
+    for (const wort of ausschluesse) {
+      if (k.toLowerCase().includes(wort)) fehler.push(`„${wort}" schließt den eigenen Begriff „${k}" aus`);
+    }
+  }
+  for (const n of nichtAusgeschlossen) {
+    if (!n.warum || n.warum.length < 80) {
+      fehler.push(`${n.wort}: im Verzeichnis der nicht ausgeschlossenen Wörter ohne tragfähigen Grund`);
+    }
+    if (ausschluesse.includes(n.wort)) {
+      fehler.push(`„${n.wort}" steht in der Ausschlussliste, obwohl das Verzeichnis sagt, warum nicht`);
+    }
+  }
+  return fehler;
+}
 
 function marke(bezeichnung) {
   return MARKEN.find((m) => bezeichnung.startsWith(m)) ?? null;
@@ -923,7 +1027,8 @@ function main() {
   // ist der teuerste Tippfehler von allen: Sie kostet den Klick und liefert
   // eine Fehlerseite. Die Adresse kommt jetzt aus den Betreiberdaten.
   const betreiberPfad = join(WURZEL, 'data', 'betreiber.json');
-  const basis = String((existsSync(betreiberPfad) ? lies(betreiberPfad) : {}).domain ?? '')
+  const betreiber = existsSync(betreiberPfad) ? lies(betreiberPfad) : {};
+  const basis = String(betreiber.domain ?? '')
     .trim().replace(/\/+$/, '');
   if (basis === '') {
     console.error('Abbruch: data/betreiber.json nennt keine `domain` — ohne sie hätten die');
@@ -1128,6 +1233,19 @@ function main() {
     for (const w of woerter) negative.push({ Liste: 'Baustoffe — Ausschluss', Thema: thema, Keyword: w, Übereinstimmungstyp: 'Phrase' });
   }
 
+  // **Gegen drei Quellen, nicht gegen eine zweite Liste** — und seit dem
+  // 5. September auch gegen den **Ort des Betriebs**. Bis dahin prüfte nur
+  // ein Testfall, und der kannte die fünf Bezirksnamen; „ried" wäre
+  // durchgegangen, obwohl der Betrieb in Ried in der Riedmark sitzt.
+  const ausschlussfehler = pruefeAusschluesse(
+    negative.map((n) => n.Keyword.toLowerCase()),
+    {
+      bezirke: LIEFERGEBIET.bezirke.map((b) => b.name),
+      ort: betreiber.ort ?? '',
+      keywords: keywordsEindeutig.map((k) => k.Keyword),
+    },
+  );
+
   const schreibe = (name, inhalt) => {
     writeFileSync(join(AUSGABE, name), inhalt, 'utf8');
     console.log(`  ${name}`);
@@ -1248,6 +1366,13 @@ function main() {
       console.log(`  ${k.Anzeigengruppe.padEnd(10)} „${k.Keyword}" — fehlt: ${k['Fehlende Wörter']}`);
     }
     console.log('  Zwei richtige Auswege: das Wort gehört auf die Seite, oder das Keyword gehört weg.');
+  }
+  if (ausschlussfehler.length) {
+    console.log('\n  ✗ Die Ausschlussliste trifft, was sie nicht treffen darf:');
+    for (const f of ausschlussfehler) console.log(`      ${f}`);
+    console.log('\nEin Ausschluss, der eigene Ware oder das eigene Gebiet trifft, ist teurer');
+    console.log('als kein Ausschluss — er kostet nicht Klicks, sondern Bestellungen.');
+    process.exit(1);
   }
   console.log(`Ausschlüsse: ${negative.length} | Anzeigen: ${anzeigen.length}`);
   console.log('\nAlle Kampagnen stehen auf PAUSIERT. Das Schalten löst Ausgaben aus');

@@ -471,6 +471,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'soll auffallen.',
   }),
   Object.freeze({
+    id: 'ausschluss-trifft-den-eigenen-ort',
+    pruefer: 'kampagne',
+    was: 'Ein Geo-Ausschluss, der den Ort trifft, in dem der Betrieb sitzt',
+    datei: 'shop/bin/kampagne.mjs',
+    art: 'ersetzen',
+    suchen: "    'wien', 'graz', 'salzburg', 'innsbruck',",
+    ersetzen: "    'ried', 'wien', 'graz', 'salzburg', 'innsbruck',",
+    erwartet: /eigenen Ort|warum nicht/,
+    warum: 'Ried im Innkreis liegt weit außerhalb des Liefergebiets, und der Eintrag sähe '
+      + 'aus wie der nächste selbstverständliche Geo-Ausschluss. Der Betrieb sitzt in Ried '
+      + 'in der Riedmark, Bezirk Perg — ein Phrase-Ausschluss unterscheidet die beiden '
+      + 'nicht und träfe die eigene Kundschaft an ihrer Haustür. Bis zum 5. September wäre '
+      + 'er durchgegangen: Die Prüfung hielt die Ausschlüsse gegen die fünf Bezirksnamen, '
+      + 'und keiner davon enthält „ried". Dieselbe Verwechslung stand am 26. August in '
+      + 'vier Dokumenten dieses Bestands.',
+  }),
+  Object.freeze({
     id: 'landeseite-verschweigt-luecke',
     pruefer: 'kampagne',
     was: 'Eine Landeseite, die die Lücke ihrer Systemliste nicht nennt',

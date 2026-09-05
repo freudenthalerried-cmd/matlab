@@ -713,43 +713,73 @@ test('Jedes Keyword findet in der Shopsuche mindestens einen Treffer', async () 
  * Gegenprobe dazu, und sie messen gegen die Quellen, nicht gegen eine zweite
  * Liste.
  */
-test('kein Ausschluss trifft einen Bezirk des eigenen Liefergebiets', async () => {
+test('kein Ausschluss trifft das eigene Gebiet, den eigenen Ort oder einen eigenen Begriff', async () => {
   const { LIEFERGEBIET } = await import('../src/liefergebiet.js');
+  const { pruefeAusschluesse } = await import('../bin/kampagne.mjs');
+  const betreiber = JSON.parse(readFileSync(pfad('../data/betreiber.json'), 'utf8'));
+
   const zeilen = readFileSync(pfad('../ausgabe/kampagne/negative-keywords.csv'), 'utf8')
     .trim().split('\n').slice(1);
   assert.ok(zeilen.length >= 30, `nur ${zeilen.length} Ausschlüsse — die Prüfung greift zu wenig`);
-
-  const ausschluesse = zeilen.map((z) => z.split(',')[2].toLowerCase());
-  const bezirke = LIEFERGEBIET.bezirke.map((b) => b.name.toLowerCase());
-  assert.ok(bezirke.length >= 3, 'ohne Bezirke prüft dieser Fall nichts');
-
-  const treffer = [];
-  for (const bezirk of bezirke) {
-    for (const wort of ausschluesse) {
-      // Phrase-Ausschluss: Er greift, wenn er als Wortfolge vorkommt. „linz"
-      // trifft damit „linz-land" ebenso wie „linz".
-      if (bezirk.includes(wort)) treffer.push(`„${wort}" schließt den Bezirk ${bezirk} aus`);
-    }
-  }
-  assert.deepEqual(treffer, [], 'diese Ausschlüsse treffen das eigene Liefergebiet');
-});
-
-test('kein Ausschluss trifft einen geführten Suchbegriff', () => {
-  const zeilen = readFileSync(pfad('../ausgabe/kampagne/negative-keywords.csv'), 'utf8')
-    .trim().split('\n').slice(1);
   const ausschluesse = zeilen.map((z) => z.split(',')[2].toLowerCase());
 
   const keywords = readFileSync(pfad('../ausgabe/kampagne/keywords.csv'), 'utf8')
-    .trim().split('\n').slice(1).map((z) => z.split(',')[2].toLowerCase());
+    .trim().split('\n').slice(1).map((z) => z.split(',')[2]);
   assert.ok(keywords.length >= 20, `nur ${keywords.length} Suchbegriffe — die Prüfung greift zu wenig`);
 
-  const treffer = [];
-  for (const k of keywords) {
-    for (const wort of ausschluesse) {
-      if (k.includes(wort)) treffer.push(`„${wort}" schließt den eigenen Begriff „${k}" aus`);
-    }
+  const bezirke = LIEFERGEBIET.bezirke.map((b) => b.name);
+  assert.ok(bezirke.length >= 3, 'ohne Bezirke prüft dieser Fall nichts');
+  assert.ok(betreiber.ort, 'ohne den Ort des Betriebs fehlt die Hälfte der Prüfung');
+
+  assert.deepEqual(pruefeAusschluesse(ausschluesse, { bezirke, ort: betreiber.ort, keywords }), []);
+});
+
+/* ------------------------------------------------------------------ *
+ * Der Ortsname, den es zweimal gibt — 5. September
+ *
+ * Der naheliegende nächste Geo-Ausschluss wäre „ried": Ried im Innkreis liegt
+ * weit außerhalb des Liefergebiets. **Der Betrieb sitzt in Ried in der
+ * Riedmark**, Bezirk Perg.
+ *
+ * > **Der gefährlichste Ausschluss ist der Ortsname, den es zweimal gibt.**
+ *
+ * Die Prüfung, die genau das verhindern soll, hielt die Ausschlüsse gegen
+ * `LIEFERGEBIET.bezirke` — „Perg", „Linz", „Linz-Land", „Freistadt",
+ * „Urfahr-Umgebung". Keiner davon enthält „ried". Der **Ort** stand in keiner
+ * Prüfung.
+ * ------------------------------------------------------------------ */
+
+test('„ried" hätte den Betriebssitz getroffen — und wäre durchgegangen', async () => {
+  const { pruefeAusschluesse } = await import('../bin/kampagne.mjs');
+  const bezirke = ['Perg', 'Linz', 'Linz-Land', 'Freistadt', 'Urfahr-Umgebung'];
+
+  // Die Prüfung von gestern: nur Bezirke, kein Ort, kein Verzeichnis.
+  assert.deepEqual(pruefeAusschluesse(['ried'], { bezirke, keywords: [] }, []), [],
+    'genau das war die Lücke');
+
+  // Die Prüfung von heute.
+  const mitOrt = pruefeAusschluesse(['ried'], { bezirke, ort: 'Ried in der Riedmark', keywords: [] }, []);
+  assert.equal(mitOrt.length, 1);
+  assert.match(mitOrt[0], /eigenen Ort/);
+});
+
+test('das Verzeichnis der nicht ausgeschlossenen Wörter wird in beide Richtungen gehalten', async () => {
+  const { pruefeAusschluesse, NICHT_AUSGESCHLOSSEN } = await import('../bin/kampagne.mjs');
+  assert.ok(NICHT_AUSGESCHLOSSEN.length >= 1, 'ein leeres Verzeichnis bestünde jede Prüfung');
+  for (const n of NICHT_AUSGESCHLOSSEN) assert.ok(n.warum.length >= 80, `${n.wort}: Grund zu kurz`);
+
+  const lage = { bezirke: ['Perg'], ort: 'Ried in der Riedmark', keywords: [] };
+  for (const n of NICHT_AUSGESCHLOSSEN) {
+    const fehler = pruefeAusschluesse([n.wort], lage);
+    assert.ok(fehler.some((f) => f.includes('warum nicht')), `${n.wort} wurde nicht bemerkt`);
   }
-  assert.deepEqual(treffer, [], 'diese Ausschlüsse treffen die eigenen Suchbegriffe');
+});
+
+test('eine Prüfung ohne Orte meldet sich, statt grün zu sein', async () => {
+  const { pruefeAusschluesse } = await import('../bin/kampagne.mjs');
+  const fehler = pruefeAusschluesse(['wien'], { keywords: [] });
+  assert.equal(fehler.length, 1);
+  assert.match(fehler[0], /prüft sie nichts/);
 });
 
 test('die beiden harten Grenzen des Shops stehen in der Liste', () => {
