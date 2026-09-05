@@ -193,6 +193,24 @@ export const GEGENPROBEN = Object.freeze([
       + 'davor — die Begründung war schlüssig und die Möglichkeit übersehen.',
   }),
   Object.freeze({
+    id: 'kopfzahl-abgeloest',
+    pruefer: 'pruefe-stand',
+    was: 'Der Kopf von STATUS.md nennt eine Zahl, die der Prüfer selbst widerlegt',
+    datei: 'docs/baustoff-shop/STATUS.md',
+    art: 'ersetzen',
+    suchen: 'zuerst lesen.** ',
+    ersetzen: 'zuerst lesen.** 1',
+    erwartet: /zahl-abgeloest/,
+    warum: 'Genau der Zustand, in dem der Kopf sechs Tage lang stand, während der Prüfer '
+      + 'darunter „338 von 338" meldete. Mutiert wird eine **vorangestellte Ziffer** und '
+      + 'nicht die Zahl selbst: Die Zahl ändert sich jede Runde, ein Suchtext auf ihr wäre '
+      + 'nach der nächsten Runde nicht mehr auffindbar — und eine Gegenprobe, deren Mutation '
+      + 'nicht ankommt, prüft den unveränderten Bestand. Die zweite Angabe des Kopfes, das '
+      + 'Datum, lässt sich hier nicht mutieren: Sobald die Datei angefasst ist, gilt der '
+      + 'heutige Tag als jüngster Eingriff, und ein Stand von heute ist nie zu alt. Sie ist '
+      + 'durch `test/statuskopf.test.js` in beide Richtungen abgedeckt.',
+  }),
+  Object.freeze({
     id: 'auszeichnung-sagt-mehr-als-die-seite',
     pruefer: 'pruefe-seiten',
     was: 'Eine maschinenlesbare Antwort mit einer Zahl, die auf der Seite nicht steht',
