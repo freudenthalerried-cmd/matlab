@@ -1,0 +1,24 @@
+# Einkaufskonditionen gehören nicht in ein öffentliches Verzeichnis.
+# Die Rabattsätze, die ein Lieferant einem Baumeister einräumt, sind
+# dessen Geschäftsgeheimnis und zugleich die Verhandlungsposition des
+# Auftraggebers. Alles unter preise/ bleibt lokal.
+preise/
+*.einkaufspreise.csv
+
+# Python-Bytecode der Auslesewerkzeuge
+__pycache__/
+
+# Datierte Kopien, die src/sicherung.js vor jedem Überschreiben anlegt.
+# Sie liegen neben dem Original — bei preise/ also im ohnehin
+# ausgeschlossenen Bereich, bei data/ im versionierten. Getrackt gehören
+# sie nirgends: Wofür es git gibt, braucht es keine Kopie, und wofür es
+# keine gibt, darf sie nicht ins Repository.
+.sicherung/
+
+# Die Ablage der Geschäftsvorgänge. Ein Journal nach § 132 BAO trägt Namen,
+# Anschriften und Beträge von Kunden und wird sieben Jahre aufbewahrt; dieses
+# Verzeichnis ist öffentlich. Die Sperre steht hier, **bevor** der erste
+# Datensatz entsteht — danach hilft sie nicht mehr, weil die Geschichte des
+# Verzeichnisses ihn behält. Nicht unter preise/: Das trägt die Konditionen des
+# Lieferanten und untersteht anderen Fristen und einem anderen Löschanspruch.
+ablage/

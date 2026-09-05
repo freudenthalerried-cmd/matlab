@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="de-AT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wissen — Fragen vor der Bestellung — Bauversand</title>
+<meta name="description" content="Fachliche Seiten zu den Fragen, die vor einer Baustoffbestellung zu klären sind.">
+<link rel="canonical" href="https://bauversand.com/wissen/index.html">
+<style>
+:root{--grund:#F2F0EC;--flaeche:#FBFAF8;--flaeche-2:#E6E2DA;--tinte:#1B1A17;--tinte-2:#45423B;
+--gedaempft:#68635A;--linie:#D6D1C6;--linie-stark:#908A7C;--ocker:#9C560F;--ocker-weich:#F6E6D2;
+--gruen:#3E6B45;--gruen-weich:#DEEADF;--ziegel:#9C3521;--ziegel-weich:#F4DCD5;
+--schmal:"Barlow Condensed","Arial Narrow",sans-serif;--text:"Source Sans 3",system-ui,-apple-system,sans-serif;
+--zahl:"JetBrains Mono",ui-monospace,Menlo,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--grund:#171614;--flaeche:#201E1B;
+--flaeche-2:#2B2823;--tinte:#EDEAE3;--tinte-2:#C6C1B7;--gedaempft:#9A9488;--linie:#33302B;
+--linie-stark:#787266;--ocker:#E0964A;--ocker-weich:#362514;--gruen:#8CBE95;--gruen-weich:#1D2A1F;
+--ziegel:#E08A72;--ziegel-weich:#341913}}
+:root[data-theme="dark"]{--grund:#171614;--flaeche:#201E1B;--flaeche-2:#2B2823;--tinte:#EDEAE3;
+--tinte-2:#C6C1B7;--gedaempft:#9A9488;--linie:#33302B;--linie-stark:#787266;--ocker:#E0964A;
+--ocker-weich:#362514;--gruen:#8CBE95;--gruen-weich:#1D2A1F;--ziegel:#E08A72;--ziegel-weich:#341913}
+*{box-sizing:border-box}
+body{margin:0;background:var(--grund);color:var(--tinte);font-family:var(--text);font-size:16px;
+line-height:1.6;-webkit-font-smoothing:antialiased}
+.huelle{max-width:64rem;margin:0 auto;padding:1.5rem 1.25rem 4rem}
+/* Deutsche Komposita in großen Überschriften sprengen schmale Anzeigen:
+   „Geschäftsbedingungen" ist bei 390 px Breite 437 px breit, und die
+   AGB-Seite scrollte deshalb 82 px seitwärts. Die Seiten tragen
+   lang="de-AT", ein Browser mit deutschem Trennwörterbuch trennt also
+   sauber. Was den Fehler tatsächlich behebt, ist die zweite Regel:
+   overflow-wrap auf body. Die Gegenprobe zeigt es — nur die
+   Überschriftenregel zu entfernen ändert nichts, beide zu entfernen bringt
+   die 82 px zurück. hyphens:auto bleibt trotzdem stehen, weil es auf einem
+   echten Telefon den schöneren Umbruch macht; im Prüf-Chromium fehlt das
+   Wörterbuch und es tut nichts.
+   Gefunden durch Messung in einem 390-px-Rahmen, nicht durch Hinsehen —
+   Headless-Chromium erzwingt 500 px Fensterbreite und schneidet das
+   Bildschirmfoto einfach ab. */
+h1,h2,h3,.kachel .t,.karte .t,.kz-t{overflow-wrap:break-word;hyphens:auto}
+body{overflow-wrap:break-word}
+h1,h2,h3,h4{font-family:var(--schmal);font-weight:600;margin:2rem 0 .6rem;text-wrap:balance;line-height:1.15}
+h1{font-size:clamp(2rem,5vw,3rem);text-transform:uppercase;margin-top:.5rem}
+h2{font-size:clamp(1.35rem,3vw,1.8rem);text-transform:uppercase;border-bottom:2px solid var(--linie-stark);padding-bottom:.25rem}
+h3{font-size:1.15rem}h4{font-size:1rem;font-family:var(--text)}
+p,ul,ol{margin:0 0 1rem}li{margin-bottom:.3rem}
+a{color:var(--ocker)}
+.kopfleiste{display:flex;flex-wrap:wrap;gap:.4rem 1rem;align-items:baseline;border-bottom:3px solid var(--tinte);padding-bottom:.7rem;margin-bottom:1rem}
+.kopfleiste .logo{font-family:var(--schmal);font-weight:700;text-transform:uppercase;font-size:1.15rem;letter-spacing:.02em;text-decoration:none;color:var(--tinte)}
+.kopfleiste nav{display:flex;gap:.15rem;flex-wrap:wrap;margin-left:auto}
+.kopfleiste nav a{font-family:var(--schmal);text-transform:uppercase;font-size:.95rem;text-decoration:none;color:var(--tinte-2);padding:.15rem .55rem;border:1px solid var(--linie);border-radius:2px}
+.kopfleiste nav a:hover{background:var(--flaeche-2);color:var(--tinte)}
+.krume{font-size:.82rem;color:var(--gedaempft);margin-bottom:.5rem}
+.krume a{color:var(--gedaempft)}
+.lede{font-size:1.08rem;color:var(--tinte-2);max-width:44rem}
+.antwort{border-left:4px solid var(--ocker);background:var(--ocker-weich);padding:.9rem 1.1rem;margin:1.2rem 0;color:var(--tinte-2)}
+.liefernotiz{border:1px solid var(--linie);border-left:4px solid var(--linie);background:var(--flaeche-2);padding:.65rem .9rem;margin:1rem 0;font-size:.9rem;color:var(--tinte-2);max-width:52rem}
+.liefernotiz strong{color:var(--tinte)}
+.antwort strong{color:var(--tinte)}
+blockquote{border-left:3px solid var(--linie-stark);margin:1.2rem 0;padding:.2rem 0 .2rem 1rem;color:var(--tinte-2)}
+blockquote p:last-child{margin-bottom:0}
+.scroll{overflow-x:auto;border:1px solid var(--linie);margin-bottom:1rem}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+th,td{padding:.45rem .7rem;text-align:left;border-bottom:1px solid var(--linie);vertical-align:top}
+th{font-family:var(--schmal);text-transform:uppercase;font-size:.85rem;background:var(--flaeche-2);white-space:nowrap}
+tbody tr:last-child td{border-bottom:none}
+code{font-family:var(--zahl);font-size:.86em;background:var(--flaeche-2);padding:.05em .3em;border-radius:2px}
+hr{border:none;border-top:1px solid var(--linie);margin:2rem 0}
+.raster{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:1px;background:var(--flaeche);border:1px solid var(--linie);margin-bottom:1.5rem}
+.raster>*{outline:1px solid var(--linie)}
+.karte .bild{display:block;background:var(--flaeche-2);margin:-1rem -1.1rem .7rem;padding:.7rem .6rem;border-bottom:1px solid var(--linie)}
+svg.schema{display:block;width:100%;height:auto;max-height:7.5rem}
+svg.schema.gruppe{max-height:5.5rem}
+.kachel .bild{display:block;background:var(--flaeche-2);margin:-1rem -1.1rem .6rem;padding:.6rem;border-bottom:1px solid var(--linie)}
+.artikelbild{background:var(--grund);border:1px solid var(--linie);padding:1.4rem;margin:0 0 1.5rem;display:flex;flex-direction:column;align-items:center;gap:.9rem}
+.bildhinweis{margin:0;max-width:34rem;text-align:center;font-size:.86rem;color:var(--gedaempft)}
+.artikelbild svg.schema{max-height:12rem;max-width:22rem}
+.schichtbild{background:var(--grund);border:1px solid var(--linie);padding:1.2rem .8rem;margin:0 0 1rem}
+.schichtbild svg{display:block;width:100%;height:auto;max-width:32rem;margin:0 auto}
+.mehr{font-family:var(--schmal);text-transform:uppercase;letter-spacing:.06em;font-size:.82rem}
+
+/* --- Kopfleiste mit Suche und Warenkorb --- */
+.kopfleiste{flex-wrap:wrap;gap:.6rem 1rem}
+.suche{position:relative;flex:1 1 18rem;min-width:12rem}
+#suchfeld{width:100%;font:inherit;font-size:.95rem;padding:.5rem .7rem;border:1px solid var(--linie-stark);background:var(--flaeche);color:var(--tinte);border-radius:0}
+/* **Ein sichtbarer Fokus für alles, was bedienbar ist.**
+   Gemessen am 29.08. im Browser: Die Artikelkarte hatte mit und ohne Fokus
+   denselben Umriss — die Zierlinie auf .raster > * überschrieb den
+   Fokusring des Browsers. Ein Kunde, der mit der
+   Tastatur durch 46 Karten geht, sah nichts wandern. Die beiden zweiten
+   zweite Regel ist **nicht** aus Vorrangsgründen nötig — das stand hier
+   zuerst und war falsch: Der Universalselektor zählt für die Genauigkeit
+   nicht, beide Regeln sind gleich genau, und die spätere gewinnt.
+   Nachgemessen: Ohne die Zweitregel wandert der Ring trotzdem. Sie steht
+   da, weil ein Raster ohne Zwischenraum baut — ein Ring mit Abstand nach
+   außen liefe in die Nachbarkarte hinein, deshalb dort drei Pixel nach
+   innen. */
+:focus-visible{outline:2px solid var(--ocker);outline-offset:2px}
+.raster>*:focus-visible,.kacheln>*:focus-visible{outline:3px solid var(--ocker);outline-offset:-3px}
+/* Zum Inhalt springen — die Kopfleiste trägt neun Verweise, und ohne diesen
+   einen muss ein Tastaturkunde sie auf jeder Seite durchlaufen. Sichtbar
+   wird er erst, wenn er den Fokus hat. */
+.springen{position:absolute;left:-9999px;top:0;background:var(--ocker);color:var(--grund);
+padding:.6rem 1rem;z-index:10;text-decoration:none}
+.springen:focus{left:0}
+#suchfeld:focus-visible{outline:2px solid var(--ocker);outline-offset:1px}
+.vorschlaege{position:absolute;z-index:20;left:0;right:0;top:calc(100% + 2px);background:var(--flaeche);border:1px solid var(--linie-stark);max-height:22rem;overflow-y:auto;box-shadow:0 6px 24px rgba(0,0,0,.14)}
+.vorschlag{display:flex;flex-direction:column;gap:.1rem;padding:.5rem .7rem;text-decoration:none;color:inherit;border-bottom:1px solid var(--linie)}
+.vorschlag:last-child{border-bottom:0}
+.vorschlag:hover,.vorschlag:focus-visible{background:var(--flaeche-2)}
+.vorschlag.gewaehlt{background:var(--ocker-weich);outline:2px solid var(--ocker);outline-offset:-2px}
+.vorschlag .v-t{font-family:var(--schmal);font-size:1.05rem;font-weight:600;line-height:1.2}
+.vorschlag .v-a{font-size:.8rem;color:var(--gedaempft);font-variant-numeric:tabular-nums}
+.korb{position:relative;font-family:var(--schmal);text-transform:uppercase;letter-spacing:.05em;font-size:.85rem;text-decoration:none;color:inherit;border:1px solid var(--linie-stark);padding:.45rem .8rem;white-space:nowrap}
+.korb:hover{background:var(--flaeche-2)}
+.korb .zahl{display:inline-block;margin-left:.45rem;min-width:1.35rem;padding:0 .3rem;text-align:center;background:var(--ocker);color:var(--grund);font-family:var(--zahl);font-size:.78rem;border-radius:999px}
+
+/* --- Filterleiste --- */
+.filterleiste{display:flex;flex-wrap:wrap;gap:.8rem 1.2rem;align-items:flex-end;padding:.9rem 1rem;background:var(--flaeche);border:1px solid var(--linie);margin-bottom:1rem}
+.filterleiste .f{display:flex;flex-direction:column;gap:.2rem}
+.filterleiste .f-b{font-family:var(--schmal);text-transform:uppercase;font-size:.75rem;letter-spacing:.06em;color:var(--ocker)}
+.filterleiste select{font:inherit;font-size:.9rem;padding:.35rem .5rem;border:1px solid var(--linie-stark);background:var(--grund);color:var(--tinte)}
+.filterleiste .f-schalter{flex-direction:row;align-items:center;gap:.4rem;font-size:.9rem}
+.filterleiste .f-zahl{margin-left:auto;font-family:var(--zahl);font-size:.85rem;color:var(--gedaempft)}
+
+/* --- In den Warenkorb --- */
+.legen{display:flex;flex-wrap:wrap;gap:.7rem;align-items:flex-end;margin:0 0 1.5rem}
+.legen .f-b{display:block;font-family:var(--schmal);text-transform:uppercase;font-size:.75rem;letter-spacing:.06em;color:var(--ocker);margin-bottom:.2rem}
+.legen input{font:inherit;width:5.5rem;padding:.5rem;border:1px solid var(--linie-stark);background:var(--flaeche);color:var(--tinte);font-variant-numeric:tabular-nums}
+.knopf{display:inline-block;font-family:var(--schmal);text-transform:uppercase;letter-spacing:.06em;font-size:.9rem;padding:.62rem 1.2rem;background:var(--ocker);color:var(--grund);border:1px solid var(--ocker);text-decoration:none;cursor:pointer}
+.knopf:hover{filter:brightness(1.08)}
+.knopf.getan{background:var(--gruen);border-color:var(--gruen)}
+.knopf.gross{font-size:1rem;padding:.8rem 1.6rem;margin-top:1rem}
+
+/* --- Warenkorbseite --- */
+.korbblock{border:1px solid var(--linie);background:var(--flaeche);padding:1rem 1.1rem;margin-bottom:1.2rem}
+.korbblock h2{margin-top:0}
+.korbzeile{display:grid;grid-template-columns:5.5rem 1fr 5rem 6rem auto;gap:.8rem;align-items:center;padding:.7rem 0;border-top:1px solid var(--linie)}
+.korbzeile:first-of-type{border-top:0}
+.kz-bild{background:var(--flaeche-2);padding:.3rem;border:1px solid var(--linie)}
+.kz-bild svg{max-height:3.4rem}
+.kz-mitte{display:flex;flex-direction:column;gap:.15rem;min-width:0}
+.kz-t{font-family:var(--schmal);font-size:1.1rem;font-weight:600;line-height:1.2;color:inherit}
+.kz-e{font-size:.82rem;color:var(--gedaempft)}
+.kz-menge{font:inherit;width:100%;padding:.4rem;border:1px solid var(--linie-stark);background:var(--grund);color:var(--tinte);font-variant-numeric:tabular-nums;text-align:right}
+.kz-summe{font-family:var(--schmal);font-size:1.15rem;font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+.kz-weg{font:inherit;font-size:.82rem;background:none;border:0;color:var(--gedaempft);text-decoration:underline;cursor:pointer;padding:.2rem}
+.kz-weg:hover{color:var(--ziegel)}
+@media(max-width:38rem){.korbzeile{grid-template-columns:1fr 4.5rem 5.5rem;grid-template-areas:"m m m" "t menge summe"}.kz-bild{display:none}}
+
+/* --- Kasse --- */
+.kasse{background:var(--flaeche);border:1px solid var(--linie);padding:1rem 1.1rem;margin-bottom:1.2rem}
+.kasse h2:first-child{margin-top:0}
+.kasse .f{display:flex;flex-direction:column;gap:.25rem;max-width:26rem}
+.kasse select{font:inherit;padding:.5rem;border:1px solid var(--linie-stark);background:var(--grund);color:var(--tinte)}
+.gebiet{font-size:.92rem;margin:.6rem 0 0;padding:.55rem .8rem;border-left:3px solid var(--linie-stark);background:var(--grund)}
+.gebiet:empty{display:none}
+.gebiet.ja{border-left-color:var(--gruen);background:var(--gruen-weich)}
+.gebiet.nein{border-left-color:var(--ziegel);background:var(--ziegel-weich)}
+.zahlwege{display:flex;flex-direction:column;gap:1px;background:var(--linie);border:1px solid var(--linie)}
+.zw{display:flex;gap:.7rem;align-items:flex-start;padding:.7rem .9rem;background:var(--grund);cursor:pointer}
+.zw:hover{background:var(--flaeche-2)}
+.zw-t{display:flex;flex-direction:column;gap:.2rem}
+.zw-g{font-size:.85rem;color:var(--gedaempft)}
+/* Der Anfragetext: volle Breite mit border-box. Ein Textfeld mit cols
+   sprengt sonst jeden schmalen Rahmen. Die Liste ist auf feste Spalten
+   ausgerichtet und soll im Feld waagrecht rollen, nicht die Seite. */
+.anfragetext{display:block;width:100%;box-sizing:border-box;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.82rem;line-height:1.45;padding:.7rem;border:1px solid var(--linie-stark);background:var(--grund);color:var(--tinte);white-space:pre;overflow:auto;min-height:44px}
+.anfrage-knoepfe{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin-top:.7rem}
+.anfrage-echo{font-size:.9rem;color:var(--gedaempft)}
+.anfrage-hinweis{font-size:.88rem;color:var(--gedaempft);margin:.6rem 0 0}
+.gebindehinweis{font-size:.9rem;color:var(--gedaempft);margin:.5rem 0 1.2rem}
+.karte .ab{display:block;font-size:.82rem;color:var(--gedaempft);margin-top:.15rem}
+
+/* Die Karte war bis zum 02.09. ein Verweiselement um die ganze Kachel. Ein Knopf darin
+   wäre ein Bedienelement in einem Bedienelement gewesen — im Browser eine
+   Fehlkonstruktion und für die Tastatur eine Falle. Jetzt trägt die Karte einen
+   Kopfbereich, der verlinkt, und darunter Preis und Legen-Zeile. Der
+   Fokusring gehört seither dem Kopf, nicht der Kachel. */
+.karte{background:var(--flaeche);padding:.9rem 1rem;display:flex;flex-direction:column;gap:.4rem;color:inherit}
+.karte:hover{background:var(--flaeche-2)}
+.karte .kopf{display:flex;flex-direction:column;gap:.4rem;text-decoration:none;color:inherit}
+.karte .kopf:hover .t{text-decoration:underline}
+/* Die Legen-Zeile sitzt am Fuß der Kachel und drängt sich nicht vor den Preis:
+   Wer vergleicht, liest zuerst die Zahl. */
+.legen-klein{margin:.5rem 0 0;gap:.5rem;align-items:center}
+.legen-klein input{width:4.6rem;padding:.4rem}
+.legen-klein .knopf{padding:.5rem .7rem;font-size:.85rem;flex:1 1 auto}
+.karte .nr{font-family:var(--zahl);font-size:.68rem;color:var(--gedaempft)}
+.karte .t{font-weight:600;line-height:1.3}
+.karte .preis{margin-top:auto;font-family:var(--schmal);font-size:1.55rem;font-weight:600;font-variant-numeric:tabular-nums}
+.karte .eh{font-size:.78rem;color:var(--gedaempft);font-family:var(--text);font-weight:400}
+.marker{display:inline-flex;font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;padding:.1rem .4rem;border-radius:2px;width:fit-content}
+.marker.vorteil{background:var(--gruen-weich);color:var(--gruen)}
+.marker.beipack{background:var(--ziegel-weich);color:var(--ziegel)}
+.marker.sperrig{background:var(--flaeche-2);color:var(--tinte-2)}
+.kacheln{display:grid;grid-template-columns:repeat(auto-fill,minmax(17rem,1fr));gap:1px;background:var(--flaeche);border:1px solid var(--linie);margin-bottom:1.5rem}
+.kacheln>*{outline:1px solid var(--linie)}
+.kachel{background:var(--flaeche);padding:1rem 1.1rem;text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:.35rem}
+.kachel:hover{background:var(--flaeche-2)}
+.kachel .k{font-family:var(--schmal);text-transform:uppercase;font-size:.78rem;letter-spacing:.06em;color:var(--ocker)}
+.kachel .t{font-family:var(--schmal);font-size:1.25rem;font-weight:600;line-height:1.2}
+.kachel .b{font-size:.88rem;color:var(--gedaempft)}
+.preistafel{display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:1px;background:var(--linie);border:1px solid var(--linie);margin:1.2rem 0}
+.preistafel>div{background:var(--flaeche);padding:.9rem 1rem}
+.preistafel .k,.preistafel .w,.preistafel .e{display:block}
+.preistafel .k{font-family:var(--schmal);text-transform:uppercase;font-size:.78rem;letter-spacing:.05em;color:var(--ocker)}
+.preistafel .w{font-family:var(--schmal);font-size:1.7rem;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
+.preistafel .e{font-size:.82rem;color:var(--gedaempft)}
+.rechtstext{font-family:var(--zahl);font-size:.86rem;line-height:1.7;white-space:pre-wrap;
+background:var(--flaeche);border:1px solid var(--linie);padding:1.1rem 1.2rem;overflow-x:auto;margin-bottom:1rem}
+mark.luecke{background:var(--ziegel-weich);color:var(--ziegel);font-weight:600;padding:.05em .35em;border-radius:2px}
+td.n{text-align:right;font-family:var(--zahl);font-variant-numeric:tabular-nums}
+footer{margin-top:3rem;padding-top:1.2rem;border-top:1px solid var(--linie);font-size:.85rem;color:var(--gedaempft)}
+footer a{color:var(--gedaempft)}
+.verwandt{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem}
+.verwandt a{font-size:.88rem;text-decoration:none;border:1px solid var(--linie);padding:.2rem .6rem;border-radius:2px;background:var(--flaeche)}
+.verwandt a:hover{background:var(--flaeche-2)}
+@media(max-width:40rem){.kopfleiste nav{margin-left:0;width:100%}}
+/* Bedienbarkeit mit dem Daumen. Gemessen im 390-px-Rahmen: Die
+   Navigationsknöpfe waren 31 px hoch, der Warenkorb 38, das Suchfeld 42.
+   WCAG 2.5.8 verlangt mindestens 24 px, Apple empfiehlt 44, Google 48 —
+   und ein Baustoffhändler bedient die Seite mit Arbeitshandschuhen oder
+   staubigen Fingern, nicht mit der Mausspitze.
+   Fließtextverweise bleiben ausgenommen: Sie stehen im Satz, und WCAG
+   nimmt sie ausdrücklich aus. Ein Absatz mit aufgeblasenen Zeilenabständen
+   wäre schlechter lesbar und nicht barrierefreier. */
+.kopfleiste nav a,.korb,.knopf,.kz-weg{min-height:44px;display:inline-flex;align-items:center}
+.kopfleiste nav a{padding:.15rem .7rem}
+#suchfeld{min-height:44px}
+.filterleiste select,.kasse select,.kz-menge,.legen input{min-height:44px}
+.legen-klein input,.legen-klein .knopf{min-height:44px}
+.zw{min-height:44px}
+</style>
+</head>
+<body><div class="huelle">
+<a class="springen" href="#inhalt">Zum Inhalt springen</a>
+<noscript><p class="antwort"><strong>Ohne JavaScript</strong> arbeiten Suchfeld und Warenkorb nicht.
+Alle Artikel-, Wissens- und Gruppenseiten sind vollständig lesbar; das Sortiment steht über die
+Warengruppen in der Kopfleiste.</p></noscript>
+<header class="kopfleiste">
+  <a class="logo" href="../index.html">Bauversand</a>
+  <div class="suche">
+    <input id="suchfeld" type="search" autocomplete="off" placeholder="Artikel suchen — z. B. Spachtel, XPS 50, Kanalbogen"
+      aria-label="Im Sortiment suchen">
+    <div id="suchvorschlag" class="vorschlaege" hidden></div>
+  </div>
+  <a class="korb" href="../warenkorb.html" aria-label="Warenkorb">Warenkorb<span
+    class="zahl" data-korbzaehler hidden></span></a>
+  <nav><a href="../gruppe/wdvs.html">WDVS</a><a href="../gruppe/daemmung.html">Dämmung</a><a href="../gruppe/mauerwerk.html">Mauerwerk</a><a href="../gruppe/moertel.html">Mörtel</a><a href="../gruppe/kamin.html">Kamin</a><a href="../gruppe/kanal.html">Kanal</a><a href="../gruppe/zubehoer.html">Zubehör</a><a href="../lieferung.html">Lieferung</a></nav>
+</header>
+<main id="inhalt" tabindex="-1">
+<p class="krume"><a href="../index.html">Start</a> › Wissen</p>
+<h1>Wissen</h1>
+<p class="lede">Jede Seite beantwortet genau eine Frage, und die Antwort steht in den ersten zwei Sätzen.
+Wer weiterliest, will die Begründung; wer nicht weiterliest, soll trotzdem die Antwort haben.</p>
+<div class="kacheln"><a class="kachel" href="../wissen/baumeisterpreis.html">
+  <span class="k">Grundsätzlich</span>
+  <span class="t">Was „Baumeisterpreis&quot; heißt — und was nicht</span>
+  <span class="b">Warum ist das hier günstiger als im Fachhandel, und wo ist der Haken?</span></a><a class="kachel" href="../wissen/kaminzug-aufbau.html">
+  <span class="k">Kamin</span>
+  <span class="t">Welche Teile ein Kaminzug braucht</span>
+  <span class="b">Aus welchen Bauteilen besteht ein einzügiger Systemkamin, von unten nach oben?</span></a><a class="kachel" href="../wissen/kanal-was-zusammengehoert.html">
+  <span class="k">Kanal</span>
+  <span class="t">Kanal DN 100 — was zusammengehört</span>
+  <span class="b">Welche Teile brauche ich für eine Grundleitung, und welche werden vergessen?</span></a><a class="kachel" href="../wissen/lagerung-von-sackware.html">
+  <span class="k">Grundsätzlich</span>
+  <span class="t">Lagerung von Sackware und Platten</span>
+  <span class="b">Wie lagere ich Mörtel, Kleber und Dämmplatten auf der Baustelle richtig?</span></a><a class="kachel" href="../wissen/mengen-fuer-100-qm-wdvs.html">
+  <span class="k">WDVS</span>
+  <span class="t">Mengen für 100 m² Fassade ermitteln</span>
+  <span class="b">Wie viel Material brauche ich für 100 Quadratmeter Wärmedämmverbundsystem?</span></a><a class="kachel" href="../wissen/perimeterdaemmung-und-grundmauerschutz.html">
+  <span class="k">Kanal</span>
+  <span class="t">Perimeterdämmung und Grundmauerschutz</span>
+  <span class="b">Was kommt in welcher Reihenfolge an eine erdberührte Kellerwand?</span></a><a class="kachel" href="../wissen/redaktionsprinzipien.html">
+  <span class="k">Grundsätzlich</span>
+  <span class="t">Wie dieser Shop seine Angaben prüft</span>
+  <span class="b">Woher stammen die Angaben auf diesen Seiten, und was passiert, wenn eine falsch ist?</span></a><a class="kachel" href="../wissen/untergrund-pruefen.html">
+  <span class="k">WDVS</span>
+  <span class="t">Untergrund prüfen, bevor geklebt wird</span>
+  <span class="b">Wie stelle ich fest, ob eine Wand für ein WDVS tragfähig ist?</span></a><a class="kachel" href="../wissen/verarbeitung-bei-kaelte-und-naesse.html">
+  <span class="k">Grundsätzlich</span>
+  <span class="t">Verarbeitung bei Kälte und Nässe</span>
+  <span class="b">Bis wann im Jahr kann ich noch verputzen und dämmen?</span></a><a class="kachel" href="../wissen/warum-keine-gratislieferung.html">
+  <span class="k">Grundsätzlich</span>
+  <span class="t">Warum es hier keine Gratislieferung gibt</span>
+  <span class="b">Andere liefern ab einem bestimmten Bestellwert frei Haus — warum hier nicht?</span></a><a class="kachel" href="../wissen/was-fehlt-haelt-die-baustelle-auf.html">
+  <span class="k">Grundsätzlich</span>
+  <span class="t">Was fehlt, hält die Baustelle auf</span>
+  <span class="b">Warum verkauft dieser Shop Systempakete statt Einzelartikel?</span></a><a class="kachel" href="../wissen/wdvs-systemaufbau.html">
+  <span class="k">WDVS</span>
+  <span class="t">Was zu einem Wärmedämmverbundsystem gehört</span>
+  <span class="b">Welche Bestandteile braucht ein WDVS, und in welcher Reihenfolge kommen sie an die Wand?</span></a><a class="kachel" href="../wissen/xps-oder-eps.html">
+  <span class="k">Dämmung</span>
+  <span class="t">XPS oder EPS — welche Platte wohin</span>
+  <span class="b">Wann nimmt man XPS und wann EPS, und was passiert, wenn man es vertauscht?</span></a></div>
+</main>
+<footer>
+  <p><strong>Liefergebiet:</strong> Perg, Urfahr-Umgebung, Freistadt, Linz-Land und Linz — regional, nicht österreichweit.
+  Fracht fällt je Lieferung an und wird getrennt ausgewiesen; kein Frei-Haus-Versand.
+  <a href="../lieferung.html">Frachtsätze und Gebiet</a></p>
+  <p>Freudenthaler Bau GmbH, Ried in der Riedmark · Alle Preise netto in Euro für Unternehmer, Umsatzsteuer 20 % getrennt
+  ausgewiesen · <a href="../wissen/redaktionsprinzipien.html">Wie wir unsere Angaben prüfen</a>
+  · <a href="../wissen/index.html">Wissen</a>
+  · <a href="../rechtliches/index.html">Rechtliches</a>
+  · <a href="../rechtliches/impressum.html">Impressum</a>
+  · <a href="../rechtliches/datenschutz.html">Datenschutz</a></p>
+  <p>Vorschau ohne Bestellmöglichkeit — es fehlen ein Weg, die Bestellung abzuschicken, ein Konto, auf das gezahlt werden kann, ein vollständiges Impressum, eine zugesagte Antwortzeit, die Lieferzeit des Lieferanten, ein Zahlungsanbieter, verbindliche Rechtstexte. Nichts ist gegründet, verkauft oder eingenommen. Keine Steuer- oder Rechtsberatung.</p>
+</footer>
+</div>
+<script>window.__SHOP_TIEFE__=true;</script>
+<script src="../shop.js" defer></script>
+</body>
+</html>

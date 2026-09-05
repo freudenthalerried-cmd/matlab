@@ -1,0 +1,579 @@
+{
+  "_datenstand": "Stand 2026-09-01. Erweitert nach einer Messung von 78 Baustellenwörtern gegen den Bestand; die Begründung steht je Wort. Am 30.08. sind zwei Einträge entfallen, die nur Schreibweise und Mehrzahl abdeckten — das erledigt jetzt der Wortstamm; siehe _entfallen. Am 30.08. sind sieben Wörter dazugekommen, die auf den eigenen Gruppen- und Systemseiten stehen und im Katalog anders heißen. Am 01.09. sieben weitere: Sie standen in den Begriffstabellen der Gruppenseiten und im Keywordsatz der Kampagne, aber nicht im Suchindex — sechs von 33 Anzeigen-Keywords fanden in der eigenen Suche nichts. Ein achtes — kaminkopf — wurde am selben Tag wieder zurückgenommen: Es steht in _nichtAufgenommen, weil wir die Kaminkopfverkleidung nicht führen. Zwei Testfälle haben die Kollision gemeldet; die Ablehnung ist die ältere und die richtige Entscheidung.",
+  "_hinweis": "Kundenwörter, die im Sortiment nicht vorkommen. Von Hand entschieden, Wort für Wort. Ein Suchwort ist kein Werbeversprechen: Es darf nur dorthin führen, wo der Artikel die Aufgabe tatsächlich erfüllt — was der Shop nicht führt, bleibt unauffindbar und wird nicht auf ein Ersatzprodukt umgeleitet. — Seit 29.08. trägt jede Ablehnung zwei Texte: `warum` begründet die redaktionelle Entscheidung gegenüber dem nächsten Lauf, `antwort` ist der Satz, den der Kunde auf der Suchseite liest. Zwei Fragen, zwei Texte.",
+  "_gewicht": "Suchwörter zählen im Index als schwacher Treffer. Ein Artikel, der das Wort im eigenen Namen trägt, steht immer davor.",
+  "_entfallen": [
+    {
+      "wort": "dübelteller",
+      "warum": "Reine Umlautschreibweise von duebelteller. Seit 30.08. fallen beide auf dieselbe Normalform; zwei Einträge für ein Wort sind zwei Stellen, die auseinanderlaufen können."
+    },
+    {
+      "wort": "rondellen",
+      "warum": "Reine Mehrzahl von Rondelle, und Rondelle steht in der Artikelbezeichnung. Die Begründung des Eintrags lautete „Der Suchindex kennt keine deutsche Mehrzahlbildung\" — seit 30.08. kennt er sie."
+    }
+  ],
+  "woerter": [
+    {
+      "wort": "abdeckband",
+      "skus": [
+        "POS-31265"
+      ],
+      "warum": "Unsere Bezeichnung lautet Abdeckklebeband. Abdeckband ist darin kein Teilwort, weil das eingeschobene klebe es trennt."
+    },
+    {
+      "wort": "abflussrohr",
+      "gruppe": "Kanal",
+      "warum": "geläufiger Name für die Kanalrohre und Formteile."
+    },
+    {
+      "wort": "abklebeband",
+      "skus": [
+        "POS-31265"
+      ],
+      "warum": "Abdeckklebeband, im Sprachgebrauch auch Abklebeband."
+    },
+    {
+      "wort": "anputzleiste",
+      "skus": [
+        "POS-52124"
+      ],
+      "warum": "die Gewebeanschlussleiste heißt beim Verarbeiter Anputzleiste."
+    },
+    {
+      "wort": "armierungsgewebe",
+      "skus": [
+        "POS-50509",
+        "POS-52058"
+      ],
+      "warum": "das Glasgewebe im WDVS heißt beim Verarbeiter Armierungsgewebe."
+    },
+    {
+      "wort": "armierungsgitter",
+      "gruppe": "WDVS",
+      "warum": "Drittes Wort für Glasgewebe neben Armierungsgewebe, das schon im Index steht."
+    },
+    {
+      "wort": "armierungsmörtel",
+      "skus": [
+        "POS-11283",
+        "POS-29461"
+      ],
+      "warum": "die Klebe- und Spachtelmasse ist im WDVS zugleich Armierungsmörtel — beide Aufgaben stehen im Produktnamen des Herstellers."
+    },
+    {
+      "wort": "baufolie",
+      "skus": [
+        "POS-29023"
+      ],
+      "warum": "PAE-Folie ist die Baufolie; welche Aufgabe sie im Einzelfall übernimmt, steht nicht hier."
+    },
+    {
+      "wort": "bauschaum",
+      "skus": [
+        "POS-51987"
+      ],
+      "warum": "der Pistolenschaum ist der Bauschaum; die Dose braucht eine Pistole."
+    },
+    {
+      "wort": "druckfest",
+      "skus": [
+        "POS-12580",
+        "POS-12569",
+        "POS-12571",
+        "POS-12575",
+        "POS-12596"
+      ],
+      "warum": "Materialklasse, nicht Bemessung: XPS nimmt höhere Druckbelastung auf als EPS (wissen/xps-oder-eps). Keyword des ersten Anlaufs; die Suche fand es nicht, weil alle Suchwörter treffen müssen."
+    },
+    {
+      "wort": "duebelteller",
+      "skus": [
+        "POS-29610"
+      ],
+      "warum": "Anderer Name für die Rondelle bei versenkter Dübelsetzung. Unsere Bezeichnung nennt nur die Rondelle."
+    },
+    {
+      "wort": "dämmplatte",
+      "gruppe": "Dämmung",
+      "warum": "Oberbegriff für die ganze Gruppe."
+    },
+    {
+      "wort": "dämmplattenkleber",
+      "skus": [
+        "POS-31631"
+      ],
+      "warum": "Soudabond Easy ist der Klebeschaum für Dämmplatten — nicht der Perimeterkleber, der ins Erdreich geht."
+    },
+    {
+      "wort": "dämmstoffdübel",
+      "skus": [
+        "POS-11082",
+        "POS-52537"
+      ],
+      "warum": "wie Tellerdübel"
+    },
+    {
+      "wort": "eckschiene",
+      "skus": [
+        "POS-53402"
+      ],
+      "warum": "der Kantenschutz mit Gewebe ist die Eckschiene der Fassade."
+    },
+    {
+      "wort": "fassadendämmung",
+      "gruppe": "Dämmung",
+      "warum": "Steht seit 01.09. in der Begriffstabelle auf gruppe/daemmung und ist Keyword des ersten Anzeigenanlaufs — die Shopsuche fand es nicht. Der Katalog nennt die Ware „Fassaden EPS\"."
+    },
+    {
+      "wort": "fassadendübel",
+      "skus": [
+        "POS-29610",
+        "POS-11082",
+        "POS-52537"
+      ],
+      "warum": "Ausschreibungswort für Universal-, Schraub- und Drehstiftdübel. Steht in der Begriffstabelle auf gruppe/wdvs; die Suche kannte es nicht."
+    },
+    {
+      "wort": "fassadenplatte",
+      "skus": [
+        "POS-12566",
+        "POS-12567",
+        "POS-12583"
+      ],
+      "warum": "Die Gruppenseite verspricht „EPS als Fassadenplatte\"; der Katalog schreibt „Fassaden EPS 2 cm\". Das längere Kundenwort findet das kürzere Katalogwort nicht — die Trefferregel geht nur vom kurzen zum langen."
+    },
+    {
+      "wort": "fensteranschluss",
+      "skus": [
+        "POS-52124"
+      ],
+      "warum": "Die Gewebeanschlussleiste ist genau das Bauteil für den Fensteranschluss im WDVS. Das Wort steht nicht in der Bezeichnung."
+    },
+    {
+      "wort": "glasfasergewebe",
+      "skus": [
+        "POS-50509",
+        "POS-52058"
+      ],
+      "warum": "wie Armierungsgewebe"
+    },
+    {
+      "wort": "grundierung",
+      "skus": [
+        "POS-13728"
+      ],
+      "warum": "Putzgrund ist die Grundierung unter dem Oberputz."
+    },
+    {
+      "wort": "grundleitung",
+      "gruppe": "Kanal",
+      "warum": "die Fachbezeichnung der Leitung unter der Bodenplatte."
+    },
+    {
+      "wort": "grundmauerschutzbahn",
+      "skus": [
+        "POS-21382"
+      ],
+      "warum": "Zwei Systemlisten nennen die Bahn so; der Katalog nennt sie „Grundmauerschutz 20 1,5 m\". Ohne dieses Wort findet die eigene Positionsliste den eigenen Artikel nicht."
+    },
+    {
+      "wort": "hartschaum",
+      "skus": [
+        "POS-12580",
+        "POS-12569",
+        "POS-12571",
+        "POS-12575",
+        "POS-12596",
+        "POS-12566",
+        "POS-12567",
+        "POS-12583"
+      ],
+      "warum": "Sammelwort für EPS und XPS. Es steht in keiner unserer Bezeichnungen, meint aber genau diese beiden Plattenarten."
+    },
+    {
+      "wort": "hochlochziegel",
+      "skus": [
+        "POS-29728"
+      ],
+      "warum": "„HL\" im Namen steht dafür."
+    },
+    {
+      "wort": "innenrohr",
+      "skus": [
+        "POS-12476"
+      ],
+      "warum": "Kaminseite und Systemliste sagen „Innenrohre mit Dämmung\"; der Katalog sagt „SIKM Rohr 133cm gedämmt 18\"."
+    },
+    {
+      "wort": "kamin",
+      "gruppe": "Kamin",
+      "warum": "die Gruppe heißt so, die Artikel nicht — kein einziger trägt das Wort im Namen."
+    },
+    {
+      "wort": "kaminrohr",
+      "skus": [
+        "POS-12476"
+      ],
+      "warum": "Das gedämmte Innenrohr des Systemkamins. Unsere Bezeichnung lautet SIKM Rohr 133cm gedämmt 18 — das Wort Kamin steckt nur im Kürzel SIKM und ist als Wort nicht lesbar."
+    },
+    {
+      "wort": "kellerdämmung",
+      "skus": [
+        "POS-12569",
+        "POS-12571",
+        "POS-12575",
+        "POS-12580",
+        "POS-12596"
+      ],
+      "warum": "wie Perimeterdämmung"
+    },
+    {
+      "wort": "klebemasse",
+      "skus": [
+        "POS-11283",
+        "POS-29461"
+      ],
+      "warum": "Der Katalog schreibt „Klebe- und Spachtelmasse\". Der Bindestrich trennt das Wort so, dass „Klebemasse\" nichts findet, obwohl es genau das ist."
+    },
+    {
+      "wort": "klebemörtel",
+      "skus": [
+        "POS-11283",
+        "POS-29461",
+        "POS-29108"
+      ],
+      "warum": "wie Armierungsmörtel; der KlebeSpachtel trägt es im Namen und wird ohnehin gefunden."
+    },
+    {
+      "wort": "klebeschaum",
+      "skus": [
+        "POS-31631"
+      ],
+      "warum": "wie Dämmplattenkleber"
+    },
+    {
+      "wort": "klebespachtel",
+      "skus": [
+        "POS-11283",
+        "POS-29461"
+      ],
+      "warum": "Handelswort für die Klebe- und Spachtelmasse; steht in der Begriffstabelle auf gruppe/wdvs."
+    },
+    {
+      "wort": "klebespachtelmasse",
+      "skus": [
+        "POS-29108",
+        "POS-11283",
+        "POS-29461"
+      ],
+      "warum": "Langform von Klebespachtel. Der Suchindex trifft Wortmitten ab vier Zeichen, aber nicht über eine angehängte Endung hinweg."
+    },
+    {
+      "wort": "kreppband",
+      "skus": [
+        "POS-31265"
+      ],
+      "warum": "wie Abklebeband"
+    },
+    {
+      "wort": "laibung",
+      "skus": [
+        "POS-52124"
+      ],
+      "warum": "Die Laibung ist die Stelle, an der die Anschlussleiste sitzt. Wer nach Laibung sucht, sucht dieses Teil."
+    },
+    {
+      "wort": "malerband",
+      "skus": [
+        "POS-31265"
+      ],
+      "warum": "Werkstattname für dasselbe Band. Kommt in keiner Bezeichnung vor."
+    },
+    {
+      "wort": "montageschaum",
+      "skus": [
+        "POS-51987"
+      ],
+      "warum": "wie Bauschaum"
+    },
+    {
+      "wort": "noppenbahn",
+      "skus": [
+        "POS-21382"
+      ],
+      "warum": "Handelsname der Bahn; unsere Bezeichnung nennt die Funktion (Grundmauerschutz) statt der Form."
+    },
+    {
+      "wort": "noppenfolie",
+      "skus": [
+        "POS-21382"
+      ],
+      "warum": "wie Noppenbahn"
+    },
+    {
+      "wort": "oberputz",
+      "skus": [
+        "POS-19333"
+      ],
+      "warum": "der Reibputz ist der Oberputz des Systems."
+    },
+    {
+      "wort": "pe-folie",
+      "skus": [
+        "POS-29023"
+      ],
+      "warum": "wie Baufolie"
+    },
+    {
+      "wort": "perimeterdämmung",
+      "skus": [
+        "POS-12569",
+        "POS-12571",
+        "POS-12575",
+        "POS-12580",
+        "POS-12596"
+      ],
+      "warum": "erdberührte Dämmung ist XPS; EPS gehört ausdrücklich nicht dazu (siehe wissen/xps-oder-eps)."
+    },
+    {
+      "wort": "perimeterplatte",
+      "skus": [
+        "POS-12569",
+        "POS-12571",
+        "POS-12575",
+        "POS-12580"
+      ],
+      "warum": "Die Systemliste Kellerwand führt Position 2 als „Perimeterplatte XPS\". Geführt wird sie als „XPS glatt SF\" — dasselbe Erzeugnis, anderer Name."
+    },
+    {
+      "wort": "putzgewebe",
+      "skus": [
+        "POS-50509",
+        "POS-52058"
+      ],
+      "warum": "wie Armierungsgewebe"
+    },
+    {
+      "wort": "putztüranschluss",
+      "skus": [
+        "POS-12467"
+      ],
+      "warum": "Schreibweise ohne Paketzusatz. Der Katalog nennt es „Putztüranschlusspaket\"."
+    },
+    {
+      "wort": "putztürformteil",
+      "skus": [
+        "POS-12467"
+      ],
+      "warum": "So heißt es auf der Kaminseite. Ein Formteil ist es, ein Paket auch — der Kunde sucht nach dem Bauteil, nicht nach der Verpackung."
+    },
+    {
+      "wort": "rauchfang",
+      "gruppe": "Kamin",
+      "warum": "das österreichische Wort für den Kamin. Ohne diesen Eintrag findet die Suche im halben Land nichts."
+    },
+    {
+      "wort": "schornstein",
+      "gruppe": "Kamin",
+      "warum": "das deutsche Wort dafür."
+    },
+    {
+      "wort": "sockeldämmung",
+      "skus": [
+        "POS-12569",
+        "POS-12571",
+        "POS-12575",
+        "POS-12580",
+        "POS-12596"
+      ],
+      "warum": "wie Perimeterdämmung"
+    },
+    {
+      "wort": "sockelplatte",
+      "skus": [
+        "POS-12580",
+        "POS-12569",
+        "POS-12571",
+        "POS-12575",
+        "POS-12596"
+      ],
+      "warum": "Einbauort statt Material — dieselbe Platte, die wir XPS nennen."
+    },
+    {
+      "wort": "styrodur",
+      "skus": [
+        "POS-12580",
+        "POS-12569",
+        "POS-12571",
+        "POS-12575",
+        "POS-12596"
+      ],
+      "warum": "Markenname der BASF für XPS. Ein Bauleiter sagt Styrodur und meint die extrudierte Platte; unsere Bezeichnungen nennen nur XPS."
+    },
+    {
+      "wort": "styropor",
+      "skus": [
+        "POS-12566",
+        "POS-12567",
+        "POS-12583"
+      ],
+      "warum": "eingeführter Markenname für expandiertes Polystyrol — nur die EPS-Platten, nicht die extrudierten (XPS)."
+    },
+    {
+      "wort": "tellerdübel",
+      "skus": [
+        "POS-11082",
+        "POS-52537"
+      ],
+      "warum": "die geläufige Form für Dämmstoffdübel mit Teller."
+    },
+    {
+      "wort": "trittschalldämmplatte",
+      "skus": [
+        "POS-28415"
+      ],
+      "warum": "So nennt die Gruppenseite die Ware seit dem 30.08. Der Katalog schreibt „Isover TDPT\" — vier Buchstaben, die niemand tippt."
+    },
+    {
+      "wort": "trittschalldämmung",
+      "skus": [
+        "POS-28415"
+      ],
+      "warum": "eigene Zuordnung aus dem Typenkürzel TDPT des Herstellers, nicht aus einem Merkblatt — die schwächste Begründung im Register."
+    },
+    {
+      "wort": "vollwärmeschutz",
+      "gruppe": "WDVS",
+      "warum": "das österreichische Wort für das Wärmedämmverbundsystem."
+    },
+    {
+      "wort": "wdvs",
+      "gruppe": "WDVS",
+      "warum": "die Abkürzung, die im Sortiment nur als Gruppenname vorkommt."
+    },
+    {
+      "wort": "ziegel",
+      "skus": [
+        "POS-29728"
+      ],
+      "warum": "der Ökotherm HL N+F ist ein Hochlochziegel; das Wort fehlt im Namen."
+    }
+  ],
+  "_nichtAufgenommen": [
+    {
+      "wort": "drainage",
+      "warum": "Wir führen kein Drainagerohr. Die Noppenbahn ist Schutz- und Drainschicht, aber keine Drainage — sie hier zu finden, wäre die Verwechslung, vor der die Wissensseite warnt.",
+      "antwort": "Drainagerohre führen wir nicht. Die Noppenbahn schützt die Kellerwand und leitet Wasser ab, sie ersetzt aber keine Drainageleitung."
+    },
+    {
+      "wort": "abdichtung",
+      "warum": "Wir führen keine. Ein Suchwort, das auf die Dämmplatte zeigt, würde genau den Fehler erzeugen, den die Systemliste verhindert: dämmen ohne abzudichten.",
+      "antwort": "Abdichtungsbahnen führen wir nicht. Gedämmt wird über der Abdichtung, nicht statt ihrer — welche Bahn Ihr Aufbau braucht, steht in der Planung."
+    },
+    {
+      "wort": "bitumen",
+      "warum": "wie Abdichtung",
+      "antwort": "Bitumenbahnen und -anstriche führen wir nicht."
+    },
+    {
+      "wort": "gleitmittel",
+      "warum": "steht als Position auf der Kanalliste, ist aber kein Artikel des Sortiments. Ein Suchwort ohne Ware findet nichts und soll nichts vortäuschen.",
+      "antwort": "Gleitmittel für Steckmuffen führen wir nicht. Es steht auf unserer Kanalliste als Position, die Sie anderswo besorgen."
+    },
+    {
+      "wort": "estrichfolie",
+      "warum": "Die PAE-Folie kann als Trennlage dienen; ob sie für einen konkreten Estrichaufbau taugt, sagt das Merkblatt, nicht die Suche.",
+      "antwort": "Eine eigene Estrichfolie führen wir nicht. Die PAE-Folie kann als Trennlage dienen; ob sie für Ihren Estrichaufbau zugelassen ist, sagt das Merkblatt des Herstellers."
+    },
+    {
+      "wort": "rauchrohr",
+      "warum": "Das Ofenrohr vom Ofen zum Kamin führen wir nicht. Es auf das gedämmte Innenrohr zu lenken wäre die Verwechslung, die einen Kaminbrand nach sich zieht.",
+      "antwort": "Ofenrohre vom Ofen zum Kamin führen wir nicht. Unser gedämmtes Innenrohr ist ein Teil des Systemkamins und kein Ersatz dafür."
+    },
+    {
+      "wort": "schamotterohr",
+      "warum": "Unser Systemkamin ist keramisch und gedämmt, kein Schamottezug. Ein Treffer wäre ein anderes Bauteil.",
+      "antwort": "Schamottezüge führen wir nicht. Unser Systemkamin ist keramisch und gedämmt."
+    },
+    {
+      "wort": "kaminkopf",
+      "warum": "Die Verkleidung über Dach führen wir nicht; wir haben Regenhaube und Trennstein, aber keinen Kaminkopf.",
+      "antwort": "Eine Kaminkopfverkleidung führen wir nicht. Regenhaube und Thermo-Trennstein haben wir."
+    },
+    {
+      "wort": "sockelschiene",
+      "warum": "Das Sockelprofil des WDVS führen wir nicht. Kantenschutz und Anschlussleiste sind andere Teile.",
+      "antwort": "Sockelprofile führen wir nicht. Kantenschutz und Gewebeanschlussleiste sind andere Teile des Systems."
+    },
+    {
+      "wort": "abschlussprofil",
+      "warum": "Wie Sockelschiene — nicht im Sortiment.",
+      "antwort": "Abschluss- und Sockelprofile führen wir nicht."
+    },
+    {
+      "wort": "silikatputz",
+      "warum": "Wir führen einen Oberputz (PrimaPor K20, Reibputz). Silikat-, Silikon- und Mineralputze sind eigene Systeme; jemanden auf den vorhandenen zu lenken wäre eine Empfehlung, keine Suche.",
+      "antwort": "Silikatputz führen wir nicht. Unser Oberputz ist ein Reibputz (Capatect PrimaPor K20); Silikat-, Silikon- und Mineralputze sind eigene Systeme und nicht gegeneinander austauschbar."
+    },
+    {
+      "wort": "silikonputz",
+      "warum": "Siehe silikatputz.",
+      "antwort": "Silikonputz führen wir nicht. Unser Oberputz ist ein Reibputz (Capatect PrimaPor K20); die Putzsysteme sind nicht gegeneinander austauschbar."
+    },
+    {
+      "wort": "mineralputz",
+      "warum": "Siehe silikatputz.",
+      "antwort": "Mineralputz führen wir nicht. Unser Oberputz ist ein Reibputz (Capatect PrimaPor K20); die Putzsysteme sind nicht gegeneinander austauschbar."
+    },
+    {
+      "wort": "kratzputz",
+      "warum": "Andere Auftragsart als der geführte Reibputz.",
+      "antwort": "Kratzputz führen wir nicht. Unser Oberputz wird gerieben, nicht gekratzt — das ist eine andere Auftragsart."
+    },
+    {
+      "wort": "flexkleber",
+      "warum": "Fliesenkleber führen wir nicht. Der Klebespachtel ist für Dämmplatten.",
+      "antwort": "Fliesenkleber führen wir nicht. Unser Klebespachtel ist für Dämmplatten."
+    },
+    {
+      "wort": "fugenmörtel",
+      "warum": "Die geführte Schiedel Fugenmasse ist für Kaminformteile, nicht für Fliesenfugen. Ein Treffer wäre irreführend.",
+      "antwort": "Fugenmörtel für Fliesen führen wir nicht. Die Schiedel Fugenmasse ist für Kaminformteile."
+    },
+    {
+      "wort": "muffe",
+      "warum": "Steckmuffen sind an unseren Kanalrohren angeformt; eine lose Muffe führen wir nicht.",
+      "antwort": "Lose Muffen führen wir nicht. An unseren PVC-Kanalrohren ist die Steckmuffe angeformt."
+    },
+    {
+      "wort": "übergangsstück",
+      "warum": "Nicht im Sortiment. Wir führen Rohr, Bogen und Abzweiger in DN 100.",
+      "antwort": "Übergangsstücke führen wir nicht. In DN 100 haben wir Rohr, Bogen und Abzweiger."
+    },
+    {
+      "wort": "dichtring",
+      "warum": "Nicht einzeln im Sortiment.",
+      "antwort": "Einzelne Dichtringe führen wir nicht."
+    },
+    {
+      "wort": "schachtabdeckung",
+      "warum": "Wir führen den Schachtring, nicht die Abdeckung.",
+      "antwort": "Schachtabdeckungen führen wir nicht. Den Schachtring haben wir."
+    },
+    {
+      "wort": "kanalgrundrohr",
+      "warum": "Nicht im Sortiment; unsere Kanalrohre sind PVC NW 100.",
+      "antwort": "Grundrohre in anderen Nennweiten führen wir nicht. Unsere Kanalrohre sind PVC NW 100."
+    },
+    {
+      "wort": "gewebeecke",
+      "warum": "Diagonal- und Eckgewebe führen wir nicht; der Kantenschutz mit Gewebe ist ein anderes Teil.",
+      "antwort": "Eck- und Diagonalgewebe führen wir nicht. Der Kantenschutz mit Gewebe ist ein anderes Teil."
+    },
+    {
+      "wort": "diagonalgewebe",
+      "warum": "Siehe gewebeecke.",
+      "antwort": "Diagonal- und Eckgewebe führen wir nicht. Der Kantenschutz mit Gewebe ist ein anderes Teil."
+    }
+  ]
+}

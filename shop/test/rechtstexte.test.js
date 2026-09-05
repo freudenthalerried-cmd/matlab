@@ -1,0 +1,434 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import {
+  IMPRESSUMSFELDER,
+  pruefeBetreiberdaten,
+  erzeugeImpressum,
+  AGB_GLIEDERUNG,
+  ZAHLUNGSBEDINGUNGEN,
+  DATENSCHUTZ_GLIEDERUNG,
+  B2B_ABGRENZUNG,
+  LIEFERHINWEISE,
+  lieferhinweise,
+  AGB_VERWEISE,
+  PUNKT_EMPFANGSVOLLMACHT,
+  PFLICHTTEXTE,
+  vorDemHochladen,
+} from '../src/rechtstexte.js';
+
+const vollstaendig = {
+  firma: 'Musterfirma GmbH',
+  rechtsform: 'Gesellschaft mit beschränkter Haftung',
+  strasse: 'Musterweg 1',
+  plz: '4600',
+  ort: 'Wels',
+  email: 'office@muster.at',
+  telefon: '+43 7242 000000',
+  imFirmenbuch: true,
+  firmenbuchnummer: 'FN 123456a',
+  firmenbuchgericht: 'Landesgericht Wels',
+  uid: 'ATU12345675',
+  gewerbebehoerde: 'Bezirkshauptmannschaft Wels-Land',
+  kammer: 'Wirtschaftskammer Oberösterreich',
+  gewerbewortlaut: 'Handelsgewerbe',
+};
+
+test('Leere Betreiberdaten melden jede Pflichtangabe einzeln', () => {
+  const p = pruefeBetreiberdaten({});
+  assert.equal(p.vollstaendig, false);
+  // Ohne Firmenbucheintrag entfallen die beiden bedingten Firmenbuchfelder.
+  assert.equal(p.fehlend.length, IMPRESSUMSFELDER.length - 2);
+  assert.ok(p.fehlend.some((f) => /E-Mail/.test(f)));
+  assert.ok(p.fehlend.some((f) => /Gewerbebehörde/.test(f)));
+});
+
+test('Vollständige Daten gelten als vollständig', () => {
+  const p = pruefeBetreiberdaten(vollstaendig);
+  assert.equal(p.vollstaendig, true);
+  assert.deepEqual(p.fehlend, []);
+});
+
+test('Firmenbuchfelder werden nur bei Eintragung verlangt', () => {
+  const ohne = pruefeBetreiberdaten({ ...vollstaendig, imFirmenbuch: false, firmenbuchnummer: '', firmenbuchgericht: '' });
+  assert.equal(ohne.vollstaendig, true);
+
+  const mit = pruefeBetreiberdaten({ ...vollstaendig, firmenbuchnummer: '' });
+  assert.equal(mit.vollstaendig, false);
+  assert.ok(mit.fehlendeFelder.includes('firmenbuchnummer'));
+});
+
+test('Leerzeichen zählen nicht als ausgefülltes Feld', () => {
+  const p = pruefeBetreiberdaten({ ...vollstaendig, ort: '   ' });
+  assert.equal(p.vollstaendig, false);
+  assert.ok(p.fehlendeFelder.includes('ort'));
+});
+
+test('Das Impressum macht jede Lücke sichtbar statt sie zu verschweigen', () => {
+  const { text, vollstaendig: v } = erzeugeImpressum({ firma: 'Nur die Firma' });
+  assert.equal(v, false);
+  assert.match(text, /\[\[ E-Mail — FEHLT \]\]/);
+  assert.match(text, /\[\[ Gewerbebehörde — FEHLT \]\]/);
+  assert.match(text, /Nur die Firma/);
+});
+
+test('Vollständiges Impressum enthält keine Lückenmarkierung', () => {
+  const { text, vollstaendig: v } = erzeugeImpressum(vollstaendig);
+  assert.equal(v, true);
+  assert.ok(!text.includes('FEHLT'), 'kein Platzhalter darf übrig bleiben');
+  assert.match(text, /§ 5 E-Commerce-Gesetz/);
+  assert.match(text, /FN 123456a/);
+  assert.match(text, /Landesgericht Wels/);
+});
+
+test('Ohne Firmenbucheintrag steht das ausdrücklich im Impressum', () => {
+  const { text } = erzeugeImpressum({ ...vollstaendig, imFirmenbuch: false });
+  assert.match(text, /Nicht im Firmenbuch eingetragen/);
+  assert.ok(!text.includes('Firmenbuchnummer:'));
+});
+
+test('Die AGB-Gliederung enthält keine Widerrufsbelehrung', () => {
+  const alleTitel = AGB_GLIEDERUNG.map((a) => a.titel).join(' ').toLowerCase();
+  assert.ok(!/widerruf|rücktrittsrecht/.test(alleTitel), 'Gate 7: kein Verbraucherrücktritt im B2B');
+  assert.ok(AGB_GLIEDERUNG.some((a) => /Streckengeschäft/.test(a.titel)));
+  assert.ok(AGB_GLIEDERUNG.some((a) => /Transportschäden/.test(a.titel)));
+});
+
+test('Der Zahlungspunkt schließt Nachnahme und Barzahlung aus', () => {
+  // Kartenzahlung im Web ist kein Barumsatz, Nachnahme schon. Ohne diesen
+  // Ausschluss entstünde Registrierkassenpflicht — siehe ablage-und-nummernkreis.md.
+  const zahlung = AGB_GLIEDERUNG.find((a) => /Zahlung, Verzug/.test(a.titel));
+  assert.ok(zahlung, 'Der Zahlungspunkt fehlt in der Gliederung');
+  assert.match(zahlung.hinweis, /Nachnahme/);
+  assert.match(zahlung.hinweis, /Registrierkassenpflicht/);
+});
+
+test('Die Gliederung ist lückenlos durchnummeriert', () => {
+  AGB_GLIEDERUNG.forEach((a, i) => assert.equal(a.nr, i + 1));
+});
+
+test('Die B2B-Abgrenzung nennt Ersparnis und verbleibende Pflichten', () => {
+  assert.ok(B2B_ABGRENZUNG.entfaellt.some((e) => /Widerrufsbelehrung/.test(e)));
+  assert.ok(B2B_ABGRENZUNG.entfaellt.some((e) => /zwölf Monate/.test(e)));
+  assert.ok(B2B_ABGRENZUNG.bleibt.some((b) => /§ 5 ECG/.test(b)));
+  assert.ok(
+    B2B_ABGRENZUNG.bleibt.some((b) => /Ausschluss von Verbraucherbestellungen/.test(b)),
+    'die Auflage aus Gate 7 muss unter "bleibt" stehen',
+  );
+});
+
+test('Die Datenschutzgliederung nennt die Weitergabe an Lieferanten', () => {
+  assert.ok(DATENSCHUTZ_GLIEDERUNG.some((d) => /Weitergabe an Lieferanten/.test(d)));
+  assert.ok(DATENSCHUTZ_GLIEDERUNG.some((d) => /Art\. 6/.test(d)));
+});
+
+/* ------------------------------------------------------------------ *
+ * Lieferhinweise nach § 377 UGB
+ *
+ * Der Punkt, an dem im B2B-Baustoffhandel wirklich Geld verlorengeht: Die
+ * Rügefrist läuft ab Ablieferung auf der Baustelle, nicht ab dem Tag, an dem
+ * der Besteller die Palette zum ersten Mal sieht.
+ * ------------------------------------------------------------------ */
+
+test('Die Gliederung regelt die abweichende Lieferanschrift', () => {
+  const punkt = AGB_GLIEDERUNG.find((a) => /Abweichende Lieferanschrift/.test(a.titel));
+  assert.ok(punkt, 'Der Punkt fehlt');
+  assert.match(punkt.hinweis, /Empfangsvollmacht|nimmt für den Besteller an/);
+  assert.match(punkt.hinweis, /Ansprechpartner vor Ort/);
+});
+
+test('Die Gliederung nennt die Beschränkung auf Lieferorte in Österreich', () => {
+  // Der Punkt hieß bis zum 26. August „Lieferorte nur in Österreich" und war
+  // damit eine Erlaubnis für ganz Österreich — während die Weisung seit dem
+  // 22. August „regional" lautet. Er heißt jetzt „Liefergebiet" und nennt die
+  // Bezirke; die Ausfuhrbegründung bleibt zusätzlich stehen.
+  const punkt = AGB_GLIEDERUNG.find((a) => /Liefergebiet/.test(a.titel));
+  assert.ok(punkt, 'Der Punkt fehlt');
+  assert.match(punkt.hinweis, /Art 6, 7 UStG|Ausfuhr/);
+});
+
+test('Der Gefahrübergang nennt die Ablieferung auf der Baustelle als Fristbeginn', () => {
+  const punkt = AGB_GLIEDERUNG.find((a) => /Gefahrübergang/.test(a.titel));
+  assert.ok(punkt);
+  assert.match(punkt.hinweis, /§ 377 UGB/);
+  assert.match(punkt.hinweis, /ab Ablieferung/);
+});
+
+test('Jeder Lieferhinweis nennt seine Grundlage', () => {
+  assert.ok(LIEFERHINWEISE.length >= 4, 'zu wenige Hinweise für diese Prüfung');
+  for (const h of LIEFERHINWEISE) {
+    assert.ok(h.titel && h.titel.length > 0);
+    assert.ok(h.text && h.text.length > 40, `${h.titel}: zu dünn`);
+    assert.ok(h.grundlage && h.grundlage.length > 0, `${h.titel}: ohne Grundlage`);
+  }
+});
+
+test('Die Rügefrist steht immer da, auch ohne abweichende Baustelle', () => {
+  const ohne = lieferhinweise({ lieferungAnRechnungsadresse: true });
+  assert.ok(ohne.some((h) => /§ 377 UGB/.test(h.grundlage)), 'Die Frist gilt in jedem Fall');
+});
+
+test('Die Empfangsvollmacht erscheint nur bei abweichender Baustelle', () => {
+  const ohne = lieferhinweise({ lieferungAnRechnungsadresse: true });
+  const mit = lieferhinweise({ lieferungAnRechnungsadresse: false });
+
+  assert.ok(!ohne.some((h) => /übernimmt für Sie/.test(h.titel)), 'Hinweis ohne Anlass');
+  assert.ok(mit.some((h) => /übernimmt für Sie/.test(h.titel)), 'Hinweis fehlt, wo er hingehört');
+  assert.ok(mit.length > ohne.length);
+});
+
+test('Ohne Auftrag wird der weniger passende Hinweis weggelassen, nicht der wichtigere', () => {
+  // Ein Aufruf ohne Angaben darf nicht schweigen — die Rügefrist gilt immer.
+  const h = lieferhinweise();
+  assert.ok(h.length >= 3);
+  assert.ok(h.some((x) => /§ 377 UGB/.test(x.grundlage)));
+});
+
+/* ------------------------------------------------------------------ *
+ * AGB gegen Ablauf — was der Shop tut, muss in den AGB stehen
+ * ------------------------------------------------------------------ */
+
+test('Die Umsatzsteuerklausel widerspricht der Lieferbeschränkung nicht mehr', () => {
+  // Sie versprach Reverse Charge bei innergemeinschaftlicher Lieferung —
+  // während ein anderer Punkt Lieferungen außerhalb Österreichs ausschließt.
+  const steuer = AGB_GLIEDERUNG.find((a) => /Preise und Umsatzsteuer/.test(a.titel));
+  const orte = AGB_GLIEDERUNG.find((a) => /Liefergebiet/.test(a.titel));
+  assert.ok(steuer && orte);
+
+  assert.match(steuer.hinweis, /Leistungsort ist Österreich/);
+  assert.match(steuer.hinweis, /Eingangsseite|innergemeinschaftlichen Erwerb/);
+  assert.match(steuer.hinweis, new RegExp('Punkt ' + orte.nr), 'Der Verweis muss auf den richtigen Punkt zeigen');
+});
+
+test('Die durchgesetzte Mindestbestellmenge hat einen eigenen AGB-Punkt', () => {
+  // Der Shop lehnt Bestellungen unter der Herstellergrenze ab. Bis zu dieser
+  // Runde stand das in keinem Punkt — eine Ablehnung ohne Grundlage.
+  const punkt = AGB_GLIEDERUNG.find((a) => /Mindestbestellmengen/.test(a.titel));
+  assert.ok(punkt, 'Der Punkt fehlt');
+  assert.match(punkt.hinweis, /nicht angenommen werden/);
+  assert.match(punkt.hinweis, /Warenwert/, 'in der Währung des Kunden, nicht im Einkauf');
+});
+
+test('Jeder Querverweis zwischen AGB-Punkten zeigt auf einen vorhandenen Punkt', () => {
+  const nummern = new Set(AGB_GLIEDERUNG.map((a) => a.nr));
+
+  // Erst sammeln, dann prüfen: So steht die Längenzusicherung vor der Schleife
+  // und nicht dahinter — sonst prüfte der Testfall bei null Verweisen nichts.
+  const verweise = AGB_GLIEDERUNG.flatMap((a) =>
+    [...String(a.hinweis ?? '').matchAll(/Punkt (\d+)/g)].map((t) => ({ von: a.nr, auf: Number(t[1]) })),
+  );
+  assert.ok(verweise.length >= 1, 'Ohne Querverweis prüft dieser Testfall nichts');
+
+  for (const v of verweise) {
+    assert.ok(nummern.has(v.auf), `Punkt ${v.von} verweist auf ${v.auf} — gibt es nicht`);
+  }
+});
+
+/* ------------------------------------------------------------------ *
+ * Zahlungsbedingungen — die Entscheidung, nicht die Aufzählung
+ * ------------------------------------------------------------------ */
+
+test('Jede genannte Zahlweg-Kennung gibt es auch im Rechenkern', async () => {
+  // Die Bedingung steht in den Rechtstexten, gerechnet wird sie in
+  // zahlung.js. Weichen die Listen auseinander, verspricht die AGB einen
+  // Weg, den niemand gerechnet hat — oder umgekehrt.
+  const { ZAHLWEGE } = await import('../src/zahlung.js');
+  const bekannt = new Set(ZAHLWEGE.map((z) => z.id));
+  const alle = [
+    ...ZAHLUNGSBEDINGUNGEN.angeboten,
+    ...ZAHLUNGSBEDINGUNGEN.ausgeschlossen,
+    ...ZAHLUNGSBEDINGUNGEN.zurueckgestellt,
+  ];
+  for (const z of alle) assert.ok(bekannt.has(z.id), `unbekannter Zahlweg: ${z.id}`);
+  assert.ok(alle.length >= 6, 'die Entscheidung verschweigt keinen der gerechneten Wege');
+});
+
+test('Kein Zahlweg steht in zwei Töpfen', () => {
+  const alle = [
+    ...ZAHLUNGSBEDINGUNGEN.angeboten,
+    ...ZAHLUNGSBEDINGUNGEN.ausgeschlossen,
+    ...ZAHLUNGSBEDINGUNGEN.zurueckgestellt,
+  ].map((z) => z.id);
+  assert.equal(new Set(alle).size, alle.length);
+});
+
+test('Jeder angebotene Weg hält Gate 21', async () => {
+  const { findeZahlweg } = await import('../src/zahlung.js');
+  const { zahlungszielTraegt } = await import('../src/skonto.js');
+  assert.ok(ZAHLUNGSBEDINGUNGEN.angeboten.length >= 2,
+    `nur ${ZAHLUNGSBEDINGUNGEN.angeboten.length} angebotene Wege — dann prüft die Schleife fast nichts`);
+  for (const z of ZAHLUNGSBEDINGUNGEN.angeboten) {
+    const w = findeZahlweg(z.id);
+    assert.ok(
+      zahlungszielTraegt({ kundenzielTage: w.tageBisEingang }).traegt,
+      `${z.id} wird angeboten, verletzt aber Gate 21`,
+    );
+  }
+});
+
+test('Jede Einordnung trägt ihren Grund', () => {
+  // pruefung: begruendet — geprüft wird über drei Töpfe hinweg, und ein
+  // einzelner Topf darf leer sein (heute ist keiner es). Die Gesamtzahl der
+  // eingeordneten Zahlwege ist unten zugesichert; sie ist die Angabe, auf die
+  // es ankommt.
+  const zahl = ['angeboten', 'ausgeschlossen', 'zurueckgestellt']
+    .reduce((s, topf) => s + ZAHLUNGSBEDINGUNGEN[topf].length, 0);
+  assert.ok(zahl >= 6, `nur ${zahl} eingeordnete Zahlwege`);
+  for (const topf of ['angeboten', 'ausgeschlossen', 'zurueckgestellt']) {
+    for (const z of ZAHLUNGSBEDINGUNGEN[topf]) {
+      assert.ok(z.grund && z.grund.length > 20, `${z.id} in ${topf} ohne Begründung`);
+    }
+  }
+});
+
+test('Das Zahlungsziel ist null und steht auch in Punkt 9', () => {
+  assert.equal(ZAHLUNGSBEDINGUNGEN.zielTage, 0);
+  const punkt = AGB_GLIEDERUNG.find((a) => /Zahlung, Verzug/.test(a.titel));
+  assert.match(punkt.hinweis, /null Tage/);
+  assert.match(punkt.hinweis, /Keine offene Rechnung/);
+});
+
+test('Der fehlende Zahlungsanbieter bleibt ausgewiesen', () => {
+  // Eine Bedingung ohne Abwicklung ist eine Lücke, keine Zusage. Sie
+  // verschwindet erst, wenn ein Anbieter gewählt ist — und das ist eine
+  // Ausgabe, also freigabepflichtig.
+  assert.match(ZAHLUNGSBEDINGUNGEN._offen, /nicht gewählt/);
+});
+
+/* ------------------------------------------------------------------ *
+ * Marke und Firma im Impressum
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Der Befund vom 3. September 2026.** Der Shop tritt seit diesem Tag unter
+ * `Bauversand` auf — Logo, Seitentitel, Belege, strukturierte Daten. Das
+ * Impressum nannte weiter allein die Firma laut Firmenbuch. § 5 ECG verlangt
+ * den Namen des Diensteanbieters, und der stand dort; was fehlte, war die
+ * **Verbindung** zwischen beiden.
+ *
+ * > **Ein Name, unter dem man auftritt, gehört auf die Seite, auf der man sich
+ * > zu erkennen gibt.**
+ */
+test('das Impressum verbindet die Marke mit der Firma', async () => {
+  const { erzeugeImpressum, markenzeile } = await import('../src/rechtstexte.js');
+  const betreiber = JSON.parse(
+    readFileSync(fileURLToPath(new URL('../data/betreiber.json', import.meta.url)), 'utf8'),
+  );
+  assert.ok(betreiber.marke && betreiber.marke !== betreiber.firma,
+    'Marke und Firma sind verschieden — sonst prüft dieser Fall nichts');
+
+  const text = erzeugeImpressum(betreiber).text;
+  assert.ok(text.includes(betreiber.marke), 'die Marke kommt im Impressum nicht vor');
+  assert.ok(text.includes(betreiber.firma), 'die Firma laut Firmenbuch fehlt');
+  // Die Firma steht zuerst: Sie ist die Pflichtangabe, die Marke die Erklärung.
+  assert.ok(text.indexOf(betreiber.firma) < text.indexOf(betreiber.marke),
+    'die Marke steht vor der Firma — die Pflichtangabe gehört nach vorn');
+});
+
+test('ohne eigene Marke bleibt das Impressum ohne Markenzeile', async () => {
+  const { markenzeile } = await import('../src/rechtstexte.js');
+  const firma = 'Freudenthaler Bau GmbH';
+  for (const marke of [undefined, '', '  ', firma]) {
+    assert.deepEqual(markenzeile({ marke, firma }), [],
+      `bei Marke ${JSON.stringify(marke)} gehört keine Zeile dazu`);
+  }
+  // „Bauversand ist das Online-Angebot der Bauversand" wäre keine Auskunft,
+  // sondern eine Schleife.
+  assert.deepEqual(markenzeile({ marke: 'X', firma: '' }), [], 'ohne Firma keine Zeile');
+});
+
+/**
+ * Jeder AGB-Punkt, den ein Kundenbeleg zitiert, steht im Verweisregister.
+ *
+ * **Der Anlass, 3. September 2026.** `AGB_VERWEISE` kannte zwei Punkte — die
+ * beiden, die in `beleg.js` ausgeschrieben stehen. Die Lieferhinweise aus
+ * dieser Datei zitieren zwei weitere, und die kannte es nicht; einer davon
+ * zeigte auf den falschen Punkt („Punkt 6", Fracht, statt „Punkt 7",
+ * Empfangsvollmacht). Aufgefallen ist es erst, als `npm run vorgang` zum ersten
+ * Mal eine Auftragsbestätigung baute, wie der Betrieb sie baut.
+ *
+ * > **Ein Register, das nur kennt, was seine Nachbardatei schreibt, bewacht
+ * > die halbe Aussage.**
+ */
+test('jeder von den Lieferhinweisen zitierte AGB-Punkt steht im Verweisregister', () => {
+  const zitiert = LIEFERHINWEISE
+    .map((h) => /^AGB Punkt (\d+)$/.exec(h.grundlage))
+    .filter(Boolean)
+    .map((t) => Number(t[1]));
+  assert.ok(zitiert.length >= 2, `nur ${zitiert.length} AGB-Verweise in den Lieferhinweisen`);
+  for (const nr of zitiert) {
+    assert.ok(AGB_VERWEISE.some((v) => v.nr === nr),
+      `Punkt ${nr} wird auf einem Kundenbeleg zitiert und steht in keinem Registereintrag`);
+  }
+});
+
+test('der Hinweis zur Empfangsvollmacht zeigt auf den Punkt, der sie trägt', () => {
+  const hinweis = LIEFERHINWEISE.find((h) => /übernimmt/i.test(h.titel));
+  assert.ok(hinweis, 'der Hinweis zur Übernahme auf der Baustelle fehlt');
+  const nr = Number(/^AGB Punkt (\d+)$/.exec(hinweis.grundlage)[1]);
+  const punkt = AGB_GLIEDERUNG.find((g) => g.nr === nr);
+  assert.ok(punkt, `Punkt ${nr} steht in keiner Gliederung`);
+  // Nicht die Nummer festschreiben, sondern die Aussage: Der Punkt, auf den
+  // sich der Hinweis beruft, muss die Empfangsvollmacht regeln. Bis zum
+  // 3. September zeigte er auf „Fracht, Sperrgut und Baustellenanlieferung".
+  assert.match(punkt.titel, /Empfangsvollmacht/,
+    `Punkt ${nr} heißt „${punkt.titel}" — dort steht die Empfangsvollmacht nicht`);
+});
+
+test('der Filter der Lieferhinweise und die Fundstelle sind dieselbe Zeichenkette', () => {
+  // Ohne abweichende Baustelle entfällt genau der eine Hinweis. Stünde die
+  // Fundstelle zweimal im Quelltext, ließe eine Berichtigung den Filter
+  // stehen — und der Hinweis erschiene plötzlich immer.
+  const regel = lieferhinweise({ lieferungAnRechnungsadresse: true });
+  const abweichend = lieferhinweise({ lieferungAnRechnungsadresse: false });
+  assert.equal(abweichend.length, regel.length + 1);
+  const nurBeiAbweichung = abweichend.filter((h) => !regel.includes(h));
+  assert.equal(nurBeiAbweichung.length, 1);
+  assert.equal(nurBeiAbweichung[0].grundlage, PUNKT_EMPFANGSVOLLMACHT);
+});
+
+/**
+ * Welcher Pflichttext ab wann nötig ist.
+ *
+ * **Der Anlass, 4. September 2026.** Der Rolloutplan hielt das Hochladen mit
+ * der Begründung an, ein Gerüst online zu stellen sei „schlechter als kein
+ * Text, weil es wie einer aussieht". Die AGB-Seite beginnt mit „Das hier ist
+ * die Gliederung, nicht der Vertrag" — die Begründung war an ihrem eigenen
+ * Erzeugnis widerlegt.
+ *
+ * > **Der Datenschutz blockiert das Hochladen, die AGB nicht.**
+ */
+test('jeder Pflichttext sagt, ab wann er gilt und woraus', () => {
+  assert.ok(PFLICHTTEXTE.length >= 5, `nur ${PFLICHTTEXTE.length} Einträge`);
+  const erlaubt = ['besuch', 'vertrag', 'verbraucher'];
+  for (const t of PFLICHTTEXTE) {
+    assert.ok(erlaubt.includes(t.abWann), `${t.id}: „${t.abWann}" ist kein Zeitpunkt`);
+    assert.ok(t.grundlage && t.grundlage.length >= 6, `${t.id}: ohne Grundlage`);
+    assert.ok(t.warum && t.warum.length >= 80, `${t.id}: ohne belastbaren Grund`);
+  }
+});
+
+test('vor dem Hochladen zählen nur die Texte, die ab dem ersten Aufruf gelten', () => {
+  const vor = vorDemHochladen();
+  assert.deepEqual(vor.map((t) => t.id), ['impressum', 'offenlegung', 'datenschutz']);
+  // Und die Gegenrichtung, die den Befund trägt: AGB und Widerruf sind nicht dabei.
+  assert.ok(!vor.some((t) => t.id === 'agb'));
+  assert.ok(!vor.some((t) => t.id === 'widerruf'));
+});
+
+/**
+ * Ein Pflichttext mit eigener Seite muss diese Seite auch haben. Sonst führt
+ * das Register eine Fundstelle, die es nicht gibt.
+ */
+test('jede genannte Rechtsseite wird auch gebaut', () => {
+  const ordner = fileURLToPath(new URL('../ausgabe/site', import.meta.url));
+  assert.equal(typeof existsSync(ordner), 'boolean');
+  if (!existsSync(ordner)) return;
+  const mitSeite = PFLICHTTEXTE.filter((t) => t.seite);
+  assert.ok(mitSeite.length >= 3, `nur ${mitSeite.length} Einträge mit Seite`);
+  for (const t of mitSeite) {
+    assert.ok(existsSync(join(ordner, `${t.seite}.html`)), `${t.id}: ${t.seite}.html fehlt`);
+  }
+});

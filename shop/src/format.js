@@ -1,0 +1,291 @@
+/**
+ * Gemeinsame Darstellungshilfen.
+ *
+ * Sie stehen hier und nicht dreimal verstreut, aus einem Grund, der beim Bauen
+ * aufgefallen ist: Beim Zusammenfügen zu `demo.html` teilen sich alle Module
+ * einen Gültigkeitsbereich. Zwei gleichnamige Hilfsfunktionen ergeben dort
+ * einen SyntaxError — und der legt die ganze Seite still, während die Tests
+ * grün bleiben, weil sie die Module einzeln laden.
+ */
+
+/** Betrag in österreichischer Schreibweise. */
+export const EUR = (n) => n.toFixed(2).replace('.', ',') + ' €';
+
+/*
+ * Alle Zeichen, die in einem einzeiligen Feld nichts verloren haben:
+ * Steuerzeichen U+0000–U+001F samt Tabulator, U+007F, dazu die drei Zeichen,
+ * die Unicode ausdrücklich als Zeilentrenner führt — U+0085 (NEL), U+2028
+ * (Line Separator), U+2029 (Paragraph Separator).
+ *
+ * Der Tabulator ist bewusst dabei. Er bricht zwar keine Zeile, verschiebt aber
+ * die mit `padStart`/`padEnd` gesetzten Spalten der Belege und bei manchen
+ * Lesern die Feldgrenzen einer CSV.
+ */
+const STEUERZEICHEN = /[\u0000-\u001F\u007F\u0085\u2028\u2029]/;
+const STEUERZEICHEN_FOLGE = /[\u0000-\u001F\u007F\u0085\u2028\u2029]+/g;
+
+/**
+ * Zwingt fremden Text in **eine** Zeile.
+ *
+ * Alle Belege dieses Shops sind zeilenorientiert: Eine Position ist eine Zeile,
+ * eine Summe ist eine Zeile, eine CSV-Position ist eine Zeile. Wer einen
+ * Zeilenumbruch in ein Feld unterbringt, das in so einen Beleg wandert,
+ * schreibt dort eine zusätzliche Zeile — und eine zusätzliche Zeile in einer
+ * Bestellung ist eine zusätzliche Position.
+ *
+ * Nachgewiesen, nicht befürchtet: Der Firmenname
+ * `"Bau Muster GmbH\n  999 × AB-RD-375  Abdichtungsbahn"` hat die
+ * Eingabeprüfung anstandslos passiert und im Bestelltext an den Lieferanten
+ * eine zweite Position über 999 Rollen erzeugt.
+ */
+export const textZeile = (wert) => String(wert ?? '').replace(STEUERZEICHEN_FOLGE, ' ').trim();
+
+/**
+ * Entschärft ein Feld für eine CSV mit Semikolon als Trenner.
+ *
+ * Anlass: Eine Artikelbezeichnung mit Zeilenumbruch hat die Bestell-CSV an den
+ * Lieferanten in zwei Zeilen zerlegt — die zweite wurde beim Zurücklesen zu
+ * einer Geisterposition mit unlesbarer Menge. In einer Kette, die ohne Zutun
+ * bestellt, wäre das eine falsche Bestellung.
+ *
+ * `ablage.js` hat das von Anfang an richtig gemacht, `bestellung.js` nicht —
+ * ausgerechnet in der Datei, die Ware bewegt. Deshalb steht es jetzt an einer
+ * Stelle.
+ */
+export const csvFeld = (wert) => textZeile(wert).replaceAll(';', ',');
+
+/**
+ * Eine Zahl, wie sie hierzulande geschrieben wird.
+ *
+ * **Der Befund vom 2. September.** Die Buchhaltungs-CSV geht mit Semikolon
+ * als Trenner hinaus — das ist die hiesige Schreibweise — und trug die
+ * Beträge mit **Punkt**:
+ *
+ * ```
+ * 1;rechnung;RE-2026-0001;2026-09-02;V-1;768.39;922.07;;…
+ * ```
+ *
+ * In einer Tabellenkalkulation mit deutscher Ländereinstellung ist der Punkt
+ * das **Tausendertrennzeichen**. Aus 768,39 € werden 76.839 €, und zwar
+ * lautlos: Die Zahl sieht nach dem Import wie eine Zahl aus. Dieselbe Datei
+ * geht zum Steuerberater.
+ *
+ * > **Eine Datei, die zur Hälfte deutsch formatiert ist, ist falsch
+ * > formatiert.**
+ *
+ * `zahlText` schreibt ganze Zahlen ohne Nachkomma („55") und gebrochene mit
+ * Komma und höchstens zwei Stellen („0,75") — die Genauigkeit, in der Gebinde
+ * aufgehen und eine Rechnung stellbar ist. `csvBetrag` schreibt Geld immer
+ * mit zwei Stellen: „1234,5" ist in einer Buchhaltung kein Betrag.
+ */
+const keineZahl = (wert) => wert === null || wert === undefined || wert === ''
+  || !Number.isFinite(Number(wert));
+
+export const zahlText = (wert) => {
+  // `Number(null)` ist 0, und `null` heißt hier „keine Angabe". Ohne diese
+  // Wache stünde in der Buchhaltungszeile eines Vermerks ohne Betrag ein
+  // sauberes „0,00 €" — eine erfundene Null sieht aus wie eine gebuchte.
+  if (keineZahl(wert)) return '';
+  const n = Number(wert);
+  return Number.isInteger(n) ? String(n) : String(Math.round(n * 100) / 100).replace('.', ',');
+};
+
+/** Geldbeträge — immer zwei Nachkommastellen, Komma. Leer, wenn es keine Zahl ist. */
+export const csvBetrag = (wert) => (keineZahl(wert) ? '' : Number(wert).toFixed(2).replace('.', ','));
+
+/**
+ * Zurück aus beiden Schreibweisen.
+ *
+ * Liest „0,75" und „0.75". Absichtlich beides: Die alten Dateien im Umlauf
+ * tragen den Punkt, und ein Leser, der sie ab heute nicht mehr versteht,
+ * macht aus einem Formatfehler einen Datenverlust.
+ */
+export const zahlAusText = (wert) => {
+  const roh = String(wert ?? '').trim().replace(',', '.');
+  return roh === '' ? NaN : Number(roh);
+};
+
+/**
+ * Findet Zeichen, die `textZeile` entfernen würde.
+ *
+ * Das Gegenstück für den **Eingang**: Am Ausgang wird entschärft, am Eingang
+ * abgewiesen. Beides wird gebraucht. Nur entschärfen hieße, stillschweigend
+ * eine Eingabe anzunehmen, die so niemand gemeint haben kann — und wer eine
+ * Bestellposition in ein Namensfeld schreibt, hat sie gemeint. Nur abweisen
+ * deckt bloß die Felder ab, die durch eine Eingabeprüfung kommen;
+ * Artikelbezeichnungen aus einer Herstellerdatei kommen das nicht.
+ */
+export const hatSteuerzeichen = (wert) => STEUERZEICHEN.test(String(wert ?? ''));
+
+/**
+ * Sichtbare Markierung für eine fehlende Pflichtangabe.
+ *
+ * Absichtlich hässlich. Eine Lücke, die im Entwurf hübsch aussieht, geht
+ * irgendwann versehentlich hinaus.
+ */
+export const LUECKE = (bezeichnung) => `[[ ${bezeichnung} — FEHLT ]]`;
+
+/**
+ * JSON für ein `<script>`-Element in einer HTML-Seite.
+ *
+ * **Der Befund vom 3. September.** Der Bau schreibt die Shopdaten und die
+ * maschinenlesbare Auszeichnung mit `JSON.stringify` **direkt zwischen
+ * `<script>` und `</script>`**. `JSON.stringify` maskiert Anführungszeichen
+ * und Steuerzeichen — aber **kein `<` und kein `/`**. Eine
+ * Artikelbezeichnung, die die Zeichenfolge `</script>` enthält, beendet damit
+ * das Skriptelement, und alles dahinter liest der Browser als HTML.
+ *
+ * Betroffen waren drei Stellen: die Einzeldateifassung, `demo.html` und die
+ * `application/ld+json`-Auszeichnung **jeder** der 81 gebauten Seiten. Die
+ * Artikelbezeichnungen stammen aus Herstellerdateien; sie sind Fremdtext, und
+ * an jedem anderen Ausgang gehen sie durch `textZeile`.
+ *
+ * > **Ein Fremdtext, der in eine Seite eingebettet wird, ist ein Ausgang —
+ * > auch wenn er als Daten aussieht.**
+ *
+ * Im Verzeichnis der Außentexte stand `baueSuchindex` unter „kein Ausgang",
+ * begründet mit: „geht als JSON ins Bündel, nicht als Zeilentext hinaus". Der
+ * Satz hört einen Schritt zu früh auf — das JSON geht in eine **HTML-Seite**.
+ *
+ * Maskiert werden `<` und `>` als Unicode-Fluchtfolgen; im JSON-Wert bleibt
+ * das Zeichen dadurch dasselbe, im HTML-Text steht es nicht mehr. Dazu
+ * U+2028 und U+2029: In JSON zulässig, in JavaScript vor ES2019 ein
+ * Zeilenumbruch, und ein Zeilenumbruch mitten in einer Zeichenkette ist ein
+ * Syntaxfehler, der die ganze Seite lahmlegt.
+ */
+export const jsonFuerSkript = (wert) => JSON.stringify(wert)
+  .replace(/</g, '\\u003c')
+  .replace(/>/g, '\\u003e')
+  .replace(/\u2028/g, '\\u2028')
+  .replace(/\u2029/g, '\\u2029');
+
+/**
+ * Die Einheitenkürzel des Lieferanten in lesbaren Text.
+ *
+ * **Hierher verlegt am 31.08.** Die Zuordnung stand in `bin/website.mjs`, also
+ * in einem Bauwerkzeug — erreichbar nur für die Seiten. Wer sie anderswo
+ * brauchte, half sich selbst, und das dreimal mit derselben Zeile:
+ * `einheit === 'KG' ? 'kg' : 'm²'`. Solange nur diese beiden Einheiten einen
+ * Gebindeschritt hatten, war die Fallunterscheidung vollständig; mit den
+ * laufenden Metern stand danach „2,55 m²" auf einer Leiste, im Warenkorb, im
+ * Vorlesetext und in einem Satz, der sich selbst widersprach.
+ *
+ * `beleg.js` half sich anders und gar nicht: Angebot und Rechnung setzten das
+ * Kürzel roh, während der Anfragetext derselben Bestellung „Sack" schrieb —
+ * derselbe Kunde, dieselbe Position, zwei Schreibweisen.
+ *
+ * Ein unbekanntes Kürzel wird **nicht** übersetzt, sondern durchgereicht.
+ * Erfinden wäre schlimmer als stehenlassen: „PAK" als „Paket" zu lesen ist
+ * eine Vermutung, und sie stünde dann auf einer Rechnung.
+ */
+export const EINHEITEN = Object.freeze({
+  STK: 'Stück', M2: 'm²', KG: 'kg', SCK: 'Sack', KRT: 'Karton',
+  LFM: 'lfm', DOS: 'Dose', EIM: 'Eimer', RLL: 'Rolle',
+});
+
+/** Das lesbare Wort zu einem Einheitenkürzel — oder das Kürzel selbst. */
+export const einheitText = (kuerzel) => EINHEITEN[kuerzel] ?? kuerzel ?? 'Stk';
+
+/**
+ * Eine Aufzählung, wie man sie spricht: „Perg, Linz und Freistadt".
+ *
+ * Steht hier und nicht an der Verwendungsstelle, weil die Liste, die sie
+ * aufzählt, an mehreren Stellen ausgegeben wird — im Seitenfuß, auf der
+ * Lieferseite, in den Anzeigentexten. Drei handgeschriebene Fassungen
+ * derselben fünf Bezirke wären drei Gelegenheiten, sie auseinanderlaufen zu
+ * lassen; die vierte wäre die, die niemand nachzieht.
+ *
+ * Leere Liste ergibt leeren Text — nicht „und", nicht „—". Wer eine leere
+ * Aufzählung ausgibt, hat ein Datenproblem und keinen Satzbaufehler, und ein
+ * eingesetztes Füllwort würde es verstecken.
+ */
+export function aufzaehlung(teile, bindewort = 'und') {
+  const w = [...teile].map((t) => textZeile(t)).filter((t) => t !== '');
+  if (w.length === 0) return '';
+  if (w.length === 1) return w[0];
+  return `${w.slice(0, -1).join(', ')} ${bindewort} ${w[w.length - 1]}`;
+}
+
+/**
+ * Eine Kurzbeschreibung auf Länge bringen — **an einer Wortgrenze**.
+ *
+ * **Der Befund, 3. September 2026.** Die `<meta name="description">` jeder
+ * Seite entstand als `kurz.slice(0, 300)`. Vier Seiten waren länger, und alle
+ * vier endeten mitten im Wort:
+ *
+ * > „…der Rechenweg steht dabei, das Ergebnis rechnen Sie m"
+ * > „…entscheiden über die Stückliste: Gesamthöhe, Ansc"
+ *
+ * Das ist der Text, den ein Suchergebnis anzeigt und den ein Sprachmodell als
+ * Zusammenfassung der Seite liest. Ein abgeschnittenes Wort sagt beiden
+ * dasselbe: **hier hat jemand nicht hingesehen.**
+ *
+ * Die Regel, in dieser Reihenfolge:
+ *
+ *   1. Passt der Text ganz, bleibt er, wie er ist.
+ *   2. Sonst endet er am **letzten Satzende** innerhalb der Grenze — ein
+ *      vollständiger Satz ist die beste Kurzfassung, die es umsonst gibt.
+ *   3. Gibt es keins, endet er an der letzten **Wortgrenze**, mit Auslassung.
+ *
+ * Kein Punkt wird angehängt, wo schon einer steht, und keine Auslassung, wo
+ * der Satz ohnehin zu Ende ist.
+ */
+export function kurzfassung(text, grenze = 300) {
+  const roh = String(text ?? '').replace(/\s+/g, ' ').trim();
+  if (!(grenze > 0)) return '';
+  if (roh.length <= grenze) return roh;
+
+  const bis = roh.slice(0, grenze);
+  // Ein Satzende ist ein `.`, `!` oder `?`, dem ein Leerzeichen folgt oder das
+  // am Ende steht. Abkürzungen wie „z. B." enden nicht auf Leerzeichen+Groß,
+  // aber sie sind auch keine Satzenden — deshalb wird nur dort geschnitten,
+  // wo mindestens die halbe Grenze schon voll ist.
+  const satz = Math.max(bis.lastIndexOf('. '), bis.lastIndexOf('! '), bis.lastIndexOf('? '));
+  if (satz >= grenze / 2) return bis.slice(0, satz + 1);
+
+  const wort = bis.lastIndexOf(' ');
+  const gekuerzt = (wort > 0 ? bis.slice(0, wort) : bis).replace(/[\s,;:–—-]+$/, '');
+  return `${gekuerzt} …`;
+}
+
+/* ------------------------------------------------------------------ *
+ * Text aus HTML — 5. September 2026
+ *
+ * **Der Anlass.** `flaechenbefund` in `sperrguteinstufung.js` suchte die
+ * Herkunftsangabe zur Sperrguteinstufung mit `/aus der Warengruppe/` im rohen
+ * Dateiinhalt. Auf `llms.txt` und `shop.js` trifft das. Auf einer Artikelseite
+ * steht dort:
+ *
+ * ```html
+ * Die Einstufung als palettierte Ware stammt aus der
+ * <strong>Warengruppe Dämmung</strong> und nicht aus einer Angabe des Lieferanten.
+ * ```
+ *
+ * Ein Zeilenumbruch und eine Marke zwischen „aus der" und „Warengruppe" — das
+ * Muster trifft nicht, obwohl die Auskunft vollständig dasteht. Ein Prüfer mit
+ * diesem Muster über die 25 betroffenen Artikelseiten hätte **25 Fehlmeldungen**
+ * erzeugt.
+ *
+ * > **Ein Muster, das auf zwei Textdateien passt, zerbricht an HTML — und
+ * > deshalb führte das Register genau die zwei Textdateien.**
+ *
+ * Diese Funktion stand bis heute dreimal im Bestand: in `seitenaehnlichkeit.js`
+ * (als lokales `nurText`), in `interna.js` und in `bin/inhaltspruefung.mjs`.
+ * Die ersten beiden sind hierher gezogen. Die dritte bleibt, wo sie ist, und
+ * zwar mit Grund: Sie **löst** Entitäten auf (`&amp;` → `&`), statt sie zu
+ * entfernen, weil ein „&" mitten in einem Satz dort eine Wortgrenze wäre.
+ * ------------------------------------------------------------------ */
+
+/**
+ * Nur der Text: Marken raus, Entitäten raus, Leerraum zusammen.
+ *
+ * @param {string} html
+ * @returns {string}
+ */
+export function nurText(html) {
+  return String(html ?? '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&[a-z]+;|&#\d+;/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}

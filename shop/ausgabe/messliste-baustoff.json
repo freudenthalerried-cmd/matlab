@@ -1,0 +1,233 @@
+{
+  "_hinweis": "Messliste für das laufende Baustoffmodell. Die Begriffe kommen aus ausgabe/kampagne/keywords.csv und sind erzeugt, nicht abgeschrieben — neu erzeugen mit `npm run messliste`. Einzutragen ist je Begriff `volumen` (Suchanfragen je Monat) und optional `kd` (Keyword-Difficulty 0–100).",
+  "_ort": "WICHTIG: Im Keyword-Planer als Ort GENAU das Liefergebiet einstellen — Perg, Urfahr-Umgebung, Freistadt, Linz-Land, Linz (AT). Österreichweites Volumen beantwortet die Frage dieses Modells nicht: Geworben wird in fünf Bezirken, und wer landesweit misst, überschätzt sich um den Faktor der Bevölkerung.",
+  "_bedarf": "Damit das Tagesbudget von 10 € bei 1.50 € Klickpreis 200 Klicks im Monat ergibt, müssen diese Begriffe im Liefergebiet zusammen 6667 (bei 3 % Klickrate) bis 4000 (bei 5 % Klickrate) bis 2500 (bei 8 % Klickrate) Suchanfragen je Monat tragen.",
+  "_klickrate": "Erfahrungswert für Suchanzeigen auf spezifische Fachbegriffe in oberer Position. NICHT aus den Daten dieses Vorhabens — es gibt keine geschaltete Anzeige. Deshalb ein Band und kein Wert; beim ersten gemessenen Wert gehört es ersetzt.",
+  "_abbruchschwelle": "299 Klicks ohne Bestellung schließen eine Kaufquote von 1.0 % mit 95 % Sicherheit aus (siehe wann-kein-verkauf-eine-antwort-ist.md).",
+  "markt": {
+    "land": "AT",
+    "bezirke": [
+      "Perg",
+      "Urfahr-Umgebung",
+      "Freistadt",
+      "Linz-Land",
+      "Linz"
+    ]
+  },
+  "plan": {
+    "tagesbudget": 10,
+    "klickpreis": 1.5,
+    "quote": 0.01,
+    "schwelleKlicks": 299,
+    "klicksJeMonat": 200
+  },
+  "gruppen": [
+    {
+      "gruppe": "WDVS",
+      "keywords": [
+        {
+          "begriff": "Armierungsgewebe",
+          "herkunft": "Gattung",
+          "volumen": null,
+          "kd": null
+        },
+        {
+          "begriff": "Armierungsmörtel",
+          "herkunft": "Gattung",
+          "volumen": null,
+          "kd": null
+        },
+        {
+          "begriff": "Baumit TextilglasGitter",
+          "herkunft": "Marke",
+          "volumen": null,
+          "kd": null
+        },
+        {
+          "begriff": "Capatect 11,5 13,5",
+          "herkunft": "Typkennung",
+          "volumen": null,
+          "kd": null
+        },
+        {
+          "begriff": "Capatect 186 M",
+          "herkunft": "Typkennung",
+          "volumen": null,
+          "kd": null
+        },
+        {
+          "begriff": "Capatect 190 FEIN",
+          "herkunft": "Typkennung",
+          "volumen": null,
+          "kd": null
+        },
+        {
+          "begriff": "Capatect Gewebeanschlussleiste 3D Universal Plus",
+          "herkunft": "Marke",
+          "volumen": null,
+          "kd": null
+        },
+        {
+          "begriff": "Capatect Glasgewebe M",
+          "herkunft": "Marke",
+          "volumen": null,
+          "kd": null
+        },
+        {
+          "begriff": "Capatect Putzgrund",
+          "herkunft": "Marke",
+          "volumen": null,
+          "kd": null
+        },
+        {
+          "begriff": "Fassadendübel",
+          "herkunft": "Gattung",
+          "volumen": null,
+          "kd": null
+        },
+        {
+          "begriff": "Klebe und Spachtelmasse",
+          "herkunft": "Gattung",
+          "volumen": null,
+          "kd": null
+        },
+        {
+          "begriff": "Putzgrund Fassade",
+          "herkunft": "Gattung",
+          "volumen": null,
+          "kd": null
+        },
+        {
+          "begriff": "WDVS Kleber",
+          "herkunft": "Gattung",
+          "volumen": null,
+          "kd": null
+        },
+        {
+          "begriff": "WDVS System kaufen",
+          "herkunft": "Gattung",
+          "volumen": null,
+          "kd": null
+        }
+      ]
+    },
+    {
+      "gruppe": "Dämmung",
+      "keywords": [
+        {
+          "begriff": "EPS Fassadenplatten",
+          "herkunft": "Gattung",
+          "volumen": null,
+          "kd": null
+        },
+        {
+          "begriff": "Fassadendämmung EPS",
+          "herkunft": "Gattung",
+          "volumen": null,
+          "kd": null
+        },
+        {
+          "begriff": "Isover TDPT 20",
+          "herkunft": "Typkennung",
+          "volumen": null,
+          "kd": null
+        },
+        {
+          "begriff": "Perimeterdämmung druckfest",
+          "herkunft": "Gattung",
+          "volumen": null,
+          "kd": null
+        },
+        {
+          "begriff": "Perimeterdämmung XPS",
+          "herkunft": "Gattung",
+          "volumen": null,
+          "kd": null
+        },
+        {
+          "begriff": "XPS 100 mm",
+          "herkunft": "Gattung",
+          "volumen": null,
+          "kd": null
+        },
+        {
+          "begriff": "XPS 80 mm",
+          "herkunft": "Gattung",
+          "volumen": null,
+          "kd": null
+        },
+        {
+          "begriff": "XPS Platten kaufen",
+          "herkunft": "Gattung",
+          "volumen": null,
+          "kd": null
+        }
+      ]
+    },
+    {
+      "gruppe": "Kamin",
+      "keywords": [
+        {
+          "begriff": "Kamin Fertigfuß",
+          "herkunft": "Gattung",
+          "volumen": null,
+          "kd": null
+        },
+        {
+          "begriff": "Kaminrohr gedämmt",
+          "herkunft": "Gattung",
+          "volumen": null,
+          "kd": null
+        },
+        {
+          "begriff": "Kaminsystem einzügig",
+          "herkunft": "Gattung",
+          "volumen": null,
+          "kd": null
+        },
+        {
+          "begriff": "Mantelstein Kamin",
+          "herkunft": "Gattung",
+          "volumen": null,
+          "kd": null
+        },
+        {
+          "begriff": "Schiedel Fugenmasse FM",
+          "herkunft": "Marke",
+          "volumen": null,
+          "kd": null
+        },
+        {
+          "begriff": "Schiedel Kamin",
+          "herkunft": "Gattung",
+          "volumen": null,
+          "kd": null
+        },
+        {
+          "begriff": "SIK Zuluftplatte EZ 16-18",
+          "herkunft": "Marke",
+          "volumen": null,
+          "kd": null
+        },
+        {
+          "begriff": "SIKM Fertigfußpaket",
+          "herkunft": "Marke",
+          "volumen": null,
+          "kd": null
+        },
+        {
+          "begriff": "SIKM Putztüranschlusspaket oben",
+          "herkunft": "Marke",
+          "volumen": null,
+          "kd": null
+        },
+        {
+          "begriff": "SIKM Rohr 133cm gedämmt",
+          "herkunft": "Marke",
+          "volumen": null,
+          "kd": null
+        }
+      ]
+    }
+  ]
+}

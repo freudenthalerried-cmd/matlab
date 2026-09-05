@@ -1,0 +1,198 @@
+/**
+ * Den Rechenkern zu einem Inline-Skript zusammenfügen.
+ *
+ * Herausgelöst aus `build-demo.mjs`, als der Shop denselben Kern brauchte.
+ * Der Grundsatz bleibt der von dort:
+ *
+ * > **Der Rechenkern wird nicht nachgebaut, sondern eingebettet** — damit im
+ * > Shop dieselbe Logik läuft, die die Tests prüfen. Eine zweite
+ * > Preisrechnung im Frontend wäre die sicherste Art, unbemerkt falsche
+ * > Preise anzuzeigen.
+ *
+ * Zwei Läufe haben hier je einen Fehler hinterlassen, und beide Schutzmaßnahmen
+ * stehen unten im Code: das übersehene `export { … };` (Parserfehler beim Bau)
+ * und die Namenskollision `EUR` (SyntaxError erst im Browser, Tests grün).
+ */
+
+/**
+ * Import-Zeilen entfernen, Exporte entkleiden.
+ *
+ * Weitergereichte Namen (`export { a, b };`) fallen ersatzlos weg: Im
+ * zusammengefügten Skript stehen sie ohnehin schon im selben Bereich. Ohne
+ * diese Zeile blieb ein `export` im Nicht-Modul stehen, und der Bau brach mit
+ * einem Parserfehler ab — gefunden, als `kostenbild.js` zum ersten Mal Namen
+ * aus `skonto.js` weiterreichte.
+ */
+export const entkleide = (quelle) =>
+  quelle
+    .replace(/^import[^;]+;\s*$/gm, '')
+    .replace(/^export \{[^}]*\};\s*$/gm, '')
+    .replace(/^export (const|let|function|class|async function) /gm, '$1 ');
+
+/**
+ * Namenskollisionen im Bündel finden.
+ *
+ * Getrennte Module dürfen denselben Namen tragen; im zusammengefügten Skript
+ * ist das ein SyntaxError, und dann läuft die ganze Seite nicht. Genau das ist
+ * mit einer Hilfsfunktion namens `EUR` passiert — die Tests blieben grün, weil
+ * sie die Module einzeln laden. Der Bauschritt muss es deshalb selbst merken.
+ */
+export function pruefeNamenskollisionen(quelle) {
+  const gesehen = new Map();
+  const doppelt = [];
+  const muster = /^(?:const|let|var|class|async\s+function|function)\s+([A-Za-z_$][\w$]*)/gm;
+  for (const treffer of quelle.matchAll(muster)) {
+    const name = treffer[1];
+    if (gesehen.has(name)) doppelt.push(name);
+    else gesehen.set(name, true);
+  }
+  if (doppelt.length) {
+    throw new Error(
+      'Doppelt deklariert im Bündel: ' + [...new Set(doppelt)].join(', ') +
+        '\nIm Modul harmlos, im zusammengefügten Skript ein SyntaxError.',
+    );
+  }
+}
+
+/**
+ * Die Module des Kerns.
+ *
+ * **Berichtigt am 30.08.** Hier stand „Reihenfolge der Module —
+ * Abhängigkeiten stehen vor ihren Nutzern", und die Reihenfolge war von Hand
+ * geführt. Sie ist am 29.08. still falsch geworden: `rechtstexte.js` nennt
+ * seit der Datenschutzseite den Warenkorbschlüssel aus `shopkern.js`, steht
+ * aber neun Plätze davor. Im Modulbetrieb ist das gleichgültig, im
+ * zusammengefügten Skript nicht — `Cannot access 'KORBSCHLUESSEL' before
+ * initialization`, und damit war das gesamte Skript der Demoseite tot.
+ *
+ * Die Reihenfolge wird jetzt **gerechnet** (`reihenfolge`); diese Liste sagt
+ * nur noch, *welche* Module gebraucht werden.
+ */
+export const KERNMODULE = Object.freeze([
+  'format.js', 'gebiet.js', 'preis.js', 'warenkorb.js', 'bedarf.js',
+  'liefergebiet.js', 'kunde.js', 'messwert.js', 'rechtstexte.js',
+  'bestellung.js', 'beleg.js', 'vorgang.js', 'auftragslauf.js', 'vies.js',
+  'ablage.js', 'speicher.js', 'skonto.js', 'zahlung.js', 'kostenbild.js',
+  // **Ergänzt am 4. September.** `rechtstexte.js` holt sich von hier den Satz
+  // der Datenschutzseite über den Warenkorb — er hängt am Bestellweg
+  // (Gate 26). Der Eintrag steht hier und nicht nur implizit über die
+  // Importhülle: Eine Liste, die nicht mehr alles nennt, was im Bündel landet,
+  // ist keine Liste mehr.
+  'bestellwegbau.js',
+  // **Ergänzt am 4. September, spät.** Die Auftragsbestätigung trägt seither
+  // die Bankverbindung; `beleg.js` holt sie von hier. Der Eintrag steht in
+  // der Liste und nicht nur implizit über die Importhülle — eine Liste, die
+  // nicht mehr alles nennt, was im Bündel landet, ist keine Liste mehr.
+  'bankverbindung.js',
+  // **Ergänzt am 5. September.** Der Satz an der Frachtzeile stand zweimal —
+  // in `preis.js` und in `shopkern.js`. Er steht jetzt einmal, in einem Modul
+  // ohne Zahl und ohne Wissen: `preis.js` selbst darf nicht ins Bündel, es
+  // trägt die Einkaufsrechnung.
+  'frachttext.js',
+]);
+
+/** Die Module des Shops, die zusätzlich in die Seiten wandern. */
+export const SHOPMODULE = Object.freeze(['shopkern.js', 'gebinde.js', 'kundenanfrage.js']);
+
+/**
+ * Was der **Browser** braucht — und nur das.
+ *
+ * **Gemessen am 29.08.** Das ausgelieferte `shop.js` trug alle 22 Module des
+ * Kerns. Die Oberfläche benutzt Exporte aus fünf davon; die übrigen
+ * siebzehn — Rechnungsstellung, UID-Abfrage beim EU-Register, Mahnwesen,
+ * Aktenablage, Skonto, Zahlwege, Kostenbild, der Radon-Materialbedarf des
+ * abgelösten Modells — fuhren bei jedem Seitenaufruf mit.
+ *
+ * Zwei Gründe, das zu ändern, und der zweite wiegt schwerer:
+ *
+ * 1. **Gewicht.** Ein Bauleiter lädt die Seite auf der Baustelle, nicht im
+ *    Büro.
+ * 2. **Was im Browser steht, ist veröffentlicht.** `kostenbild.js` rechnet
+ *    den Deckungsbeitrag, `skonto.js` die Zahlungsbedingungen, `preis.js`
+ *    trägt die Margenregel. Keine dieser Dateien enthält eine
+ *    Einkaufszahl — aber sie enthalten die **Methode**, und die gehört dem
+ *    Betrieb. Der Kommentarentferner hat heute früh die Erklärung entfernt;
+ *    hier verschwindet die Rechnung selbst.
+ *
+ * Die Liste ist **von Hand geführt und maschinell geprüft**: `test/buendel`
+ * rechnet die Importhülle aus und verlangt, dass sie genau diese Liste ist.
+ * Ein Modul, das eines Tages etwas Neues importiert, fällt damit auf, statt
+ * still wieder mitzufahren.
+ */
+export const BROWSERMODULE = Object.freeze([
+  'format.js', 'gebinde.js', 'liefergebiet.js', 'shopkern.js', 'kundenanfrage.js',
+  // **Ergänzt am 5. September.** Ein Satz, keine Zahl, kein Wissen — der Satz
+  // an der Frachtzeile, den `shopkern.js` und `preis.js` gemeinsam brauchen.
+  'frachttext.js',
+]);
+
+/**
+ * Die Importhülle einer Modulliste — alles, was sie mitzieht.
+ *
+ * @param {(name: string) => string} lies
+ * @param {string[]} anfang
+ */
+export function importhuelle(lies, anfang) {
+  const drin = new Set(anfang);
+  const rand = [...anfang];
+  while (rand.length) {
+    const modul = rand.pop();
+    for (const treffer of lies(modul).matchAll(/from '\.\/([a-z.]+\.js)'/g)) {
+      if (!drin.has(treffer[1])) { drin.add(treffer[1]); rand.push(treffer[1]); }
+    }
+  }
+  return [...drin].sort();
+}
+
+/**
+ * Die Module in einer Reihenfolge, in der jede Abhängigkeit vor ihrem Nutzer
+ * steht — aus den `import`-Zeilen gerechnet, nicht aus einer gepflegten
+ * Liste gelesen.
+ *
+ * Eine Liste von Hand kann still falsch werden, und genau das ist am 29.08.
+ * geschehen. Was hier herauskommt, kann es nicht: Wer eine Abhängigkeit
+ * hinzufügt, verschiebt damit die Reihenfolge.
+ *
+ * Ein Ringschluss ist kein Sonderfall, den man sortieren könnte — er wird
+ * gemeldet.
+ *
+ * @param {(name: string) => string} lies
+ * @param {string[]} module
+ */
+export function reihenfolge(lies, module) {
+  const fertig = [];
+  const fertigSet = new Set();
+  const imGang = new Set();
+  const gehe = (modul, pfad) => {
+    if (fertigSet.has(modul)) return;
+    if (imGang.has(modul)) {
+      throw new Error(`Ringschluss im Bündel: ${[...pfad, modul].join(' → ')}`);
+    }
+    imGang.add(modul);
+    for (const treffer of lies(modul).matchAll(/from '\.\/([a-z.]+\.js)'/g)) {
+      gehe(treffer[1], [...pfad, modul]);
+    }
+    imGang.delete(modul);
+    fertigSet.add(modul);
+    fertig.push(modul);
+  };
+  for (const modul of module) gehe(modul, []);
+  return fertig;
+}
+
+/**
+ * @param {(name: string) => string} lies  liest `src/<name>` als Text
+ * @param {string[]} module
+ */
+export function baueKern(lies, module = KERNMODULE) {
+  const kern = reihenfolge(lies, module).map((m) => entkleide(lies(m))).join('\n');
+  pruefeNamenskollisionen(kern);
+  return kern;
+}
+
+
+// `juengereQuellen` stand hier bis zum 4. September. Sie ist nach
+// `src/erzeugnisstand.js` gezogen, zu dem Register, das weiß, **welches**
+// Erzeugnis aus welchen Quellen entsteht und wer es liest. Zwei Werkzeuge
+// riefen sie mit je eigener Quellenliste; sieben weitere lasen dasselbe
+// Erzeugnis und riefen sie gar nicht.

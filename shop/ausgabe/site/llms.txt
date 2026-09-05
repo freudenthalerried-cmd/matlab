@@ -1,0 +1,132 @@
+# Bauversand — Baustoffe zum Baumeisterpreis
+
+> Baustoffhandel in Ried in der Riedmark, Oberösterreich. Lieferung regional (Bezirk Perg, Urfahr-Umgebung, Freistadt, Linz, Linz-Land), nicht österreichweit. Preise sind Nettopreise für Unternehmer.
+
+## Was hier möglich ist
+
+- **Bestellen ist noch nicht möglich** — es fehlen ein Weg, die Bestellung abzuschicken, ein Konto, auf das gezahlt werden kann, ein vollständiges Impressum, eine zugesagte Antwortzeit, die Lieferzeit des Lieferanten, ein Zahlungsanbieter, verbindliche Rechtstexte.
+- **Möglich ist eine Anfrage.** Warenkorb füllen, Bezirk der Baustelle wählen, und die Kasse (https://bauversand.com/kasse.html) erzeugt eine fertig gerechnete Positionsliste mit Fracht, Umsatzsteuer und Preisstand zum Kopieren. Sie ist unverbindlich und wird nicht automatisch versendet.
+- **Nur im Liefergebiet.** Anfragen aus anderen Bezirken werden nicht angenommen; die Fracht trägt sie nicht.
+- **Mindestbestellwert 250,00 € netto Warenwert je Lieferung.** Darunter nimmt die Kasse keine Anfrage an und nennt den fehlenden Betrag. Bei mehreren Herstellern entstehen mehrere Lieferungen, und die Grenze gilt für jede einzelne.
+- **Fracht fällt je Lieferung an, es gibt keine Frei-Haus-Schwelle.** Die Sätze und die Begründung stehen unter https://bauversand.com/lieferung.html.
+
+## Wie diese Seiten aufgebaut sind
+
+- Jede Seite beantwortet genau eine Frage; die Antwort steht in den ersten zwei Sätzen.
+- Technische Kennwerte werden nicht abgeschrieben, sondern beim Hersteller verlinkt.
+- Preise tragen einen Preisstand und die Angabe netto oder brutto.
+- Wie geprüft wird: https://bauversand.com/wissen/redaktionsprinzipien.html
+
+## Wissen
+
+- [Was „Baumeisterpreis" heißt — und was nicht](https://bauversand.com/wissen/baumeisterpreis.html): Warum ist das hier günstiger als im Fachhandel, und wo ist der Haken?
+- [Welche Teile ein Kaminzug braucht](https://bauversand.com/wissen/kaminzug-aufbau.html): Aus welchen Bauteilen besteht ein einzügiger Systemkamin, von unten nach oben?
+- [Kanal DN 100 — was zusammengehört](https://bauversand.com/wissen/kanal-was-zusammengehoert.html): Welche Teile brauche ich für eine Grundleitung, und welche werden vergessen?
+- [Lagerung von Sackware und Platten](https://bauversand.com/wissen/lagerung-von-sackware.html): Wie lagere ich Mörtel, Kleber und Dämmplatten auf der Baustelle richtig?
+- [Mengen für 100 m² Fassade ermitteln](https://bauversand.com/wissen/mengen-fuer-100-qm-wdvs.html): Wie viel Material brauche ich für 100 Quadratmeter Wärmedämmverbundsystem?
+- [Perimeterdämmung und Grundmauerschutz](https://bauversand.com/wissen/perimeterdaemmung-und-grundmauerschutz.html): Was kommt in welcher Reihenfolge an eine erdberührte Kellerwand?
+- [Wie dieser Shop seine Angaben prüft](https://bauversand.com/wissen/redaktionsprinzipien.html): Woher stammen die Angaben auf diesen Seiten, und was passiert, wenn eine falsch ist?
+- [Untergrund prüfen, bevor geklebt wird](https://bauversand.com/wissen/untergrund-pruefen.html): Wie stelle ich fest, ob eine Wand für ein WDVS tragfähig ist?
+- [Verarbeitung bei Kälte und Nässe](https://bauversand.com/wissen/verarbeitung-bei-kaelte-und-naesse.html): Bis wann im Jahr kann ich noch verputzen und dämmen?
+- [Warum es hier keine Gratislieferung gibt](https://bauversand.com/wissen/warum-keine-gratislieferung.html): Andere liefern ab einem bestimmten Bestellwert frei Haus — warum hier nicht?
+- [Was fehlt, hält die Baustelle auf](https://bauversand.com/wissen/was-fehlt-haelt-die-baustelle-auf.html): Warum verkauft dieser Shop Systempakete statt Einzelartikel?
+- [Was zu einem Wärmedämmverbundsystem gehört](https://bauversand.com/wissen/wdvs-systemaufbau.html): Welche Bestandteile braucht ein WDVS, und in welcher Reihenfolge kommen sie an die Wand?
+- [XPS oder EPS — welche Platte wohin](https://bauversand.com/wissen/xps-oder-eps.html): Wann nimmt man XPS und wann EPS, und was passiert, wenn man es vertauscht?
+
+## Systemlisten
+
+- [Fassade dämmen — die Liste für 100 m²](https://bauversand.com/system/fassade-100-qm.html): Was muss ich bestellen, um 100 Quadratmeter Fassade zu dämmen?
+- [Kaminzug — die Liste für einen Zug](https://bauversand.com/system/kaminzug.html): Welche Teile muss ich für einen einzügigen Systemkamin bestellen?
+- [Grundleitung DN 100 — die Liste](https://bauversand.com/system/kanal-dn100.html): Welche Teile brauche ich für eine Grundleitung, und wie zähle ich sie aus dem Plan?
+- [Kellerwand außen dämmen — die Liste](https://bauversand.com/system/kellerwand-perimeter.html): Was brauche ich, um eine erdberührte Kellerwand zu dämmen und zu schützen?
+
+## Sortiment
+
+- [Dämmplatten](https://bauversand.com/gruppe/daemmung.html): 9 Artikel
+- [Kaminsystem](https://bauversand.com/gruppe/kamin.html): 9 Artikel
+- [Kanal und Erdbau](https://bauversand.com/gruppe/kanal.html): 6 Artikel
+- [Mauerwerk](https://bauversand.com/gruppe/mauerwerk.html): 1 Artikel
+- [Mörtel und Putze](https://bauversand.com/gruppe/moertel.html): 3 Artikel
+- [WDVS-Komponenten](https://bauversand.com/gruppe/wdvs.html): 11 Artikel
+- [Zubehör und Kleinteile](https://bauversand.com/gruppe/zubehoer.html): 7 Artikel
+
+## Artikel
+
+> Alle Preise netto je Einheit, Preisstand 2026-04-22 bis 2026-08-17; je Artikel steht er auf der Artikelseite. Die Zustellung kostet eine Pauschale je Lieferung, bei palettierter Ware zuzüglich Kranentladung je Hub; sie steht auf der Seite https://bauversand.com/lieferung.html. Es gibt keine Frei-Haus-Schwelle. Die Angabe „palettiert" ist geschätzt: Sie folgt aus der Warengruppe und nicht aus einer Angabe des Lieferanten. Sie entscheidet, ob die Kranentladung anfällt; wo ein Positionsgewicht dagegenspricht, steht es auf der Artikelseite.
+
+- [Fassaden EPS 2 cm 0,5 m2](https://bauversand.com/artikel/POS-12566.html): 1,93 € je m², netto · Abgabe ab 0,5 m² (0,97 €) · Dämmung · palettiert
+- [Fassaden EPS 3 cm 0,5 m2](https://bauversand.com/artikel/POS-12567.html): 2,81 € je m², netto · Abgabe ab 0,5 m² (1,41 €) · Dämmung · palettiert
+- [Fassaden EPS 5 cm 0,5 m2](https://bauversand.com/artikel/POS-12583.html): 4,67 € je m², netto · Abgabe ab 0,5 m² (2,34 €) · Dämmung · palettiert
+- [Isover TDPT 20 1200 600 mm 8,64 m2](https://bauversand.com/artikel/POS-28415.html): 10,69 € je m², netto · Abgabe ab 8,64 m² (92,36 €) · Dämmung · palettiert
+- [XPS glatt SF 100 mm 0,75 m2](https://bauversand.com/artikel/POS-12580.html): 16,00 € je m², netto · Abgabe ab 0,75 m² (12,00 €) · Dämmung · palettiert
+- [XPS glatt SF 30 mm 0,75 m2](https://bauversand.com/artikel/POS-12569.html): 5,23 € je m², netto · Abgabe ab 0,75 m² (3,92 €) · Dämmung · palettiert
+- [XPS glatt SF 50 mm 0,75 m2](https://bauversand.com/artikel/POS-12571.html): 8,72 € je m², netto · Abgabe ab 0,75 m² (6,54 €) · Dämmung · palettiert
+- [XPS glatt SF 80 mm 0,75 m2](https://bauversand.com/artikel/POS-12575.html): 13,95 € je m², netto · Abgabe ab 0,75 m² (10,46 €) · Dämmung · palettiert
+- [XPS rau GK 80 mm 0,75 m2](https://bauversand.com/artikel/POS-12596.html): 15,00 € je m², netto · Abgabe ab 0,75 m² (11,25 €) · Dämmung · palettiert
+- [Mantelstein MSTS EZ 16-18 SIKM](https://bauversand.com/artikel/POS-10837.html): 23,25 € je Stück, netto · Kamin · palettiert
+- [Mantelsteinkleber RMRTL Dünnbettmörtel](https://bauversand.com/artikel/POS-18110.html): 44,00 € je Stück, netto · Kamin · palettiert
+- [Regenhaube mit Sicherungsseil 180 Absolut & SIH](https://bauversand.com/artikel/POS-51875.html): 105,25 € je Stück, netto · Kamin · palettiert
+- [Schiedel Fugenmasse FM 1,5 kg](https://bauversand.com/artikel/POS-16070.html): 46,29 € je Eimer, netto · Kamin · palettiert
+- [SIK Zuluftplatte EZ 16-18 inkl. Befestigungsset](https://bauversand.com/artikel/POS-12455.html): 164,64 € je Stück, netto · Kamin · palettiert
+- [SIKM Fertigfußpaket 18](https://bauversand.com/artikel/POS-12472.html): 183,92 € je Stück, netto · Kamin · palettiert
+- [SIKM Putztüranschlusspaket oben 18](https://bauversand.com/artikel/POS-12467.html): 458,33 € je Stück, netto · Kamin · palettiert
+- [SIKM Rohr 133cm gedämmt 18](https://bauversand.com/artikel/POS-12476.html): 210,99 € je Stück, netto · Kamin · palettiert
+- [Thermo-Trennstein 12-18 EZ Absolut monolithisch weiß](https://bauversand.com/artikel/POS-51967.html): 255,91 € je Stück, netto · Kamin · palettiert
+- [Grundmauerschutz 20 1,5 m](https://bauversand.com/artikel/POS-21382.html): 1,36 € je m², netto · Kanal · palettiert
+- [PVC Kanalabzweiger 100 100 45 grad](https://bauversand.com/artikel/POS-10134.html): 5,83 € je Stück, netto · Kanal · 0,6433 kg je Einheit · palettiert
+- [PVC Kanalbogen NW 100 30 grad](https://bauversand.com/artikel/POS-10115.html): 2,73 € je Stück, netto · Kanal · 0,285 kg je Einheit · palettiert
+- [PVC Kanalbogen NW 100 45 grad](https://bauversand.com/artikel/POS-10116.html): 2,72 € je Stück, netto · Kanal · 0,285 kg je Einheit · palettiert
+- [PVC Kanalrohr NW 100 1 m](https://bauversand.com/artikel/POS-10095.html): 10,81 € je Stück, netto · Kanal · 1,7333 kg je Einheit · palettiert
+- [Schachtring 800 300 80 mm](https://bauversand.com/artikel/POS-11133.html): 74,67 € je Stück, netto · Kanal · palettiert
+- [Ökotherm HL N+F 10 50 23,8 cm](https://bauversand.com/artikel/POS-29728.html): 3,07 € je Stück, netto · Mauerwerk · palettiert
+- [Baumit KlebeSpachtel 25 kg](https://bauversand.com/artikel/POS-29108.html): 14,32 € je Sack, netto · Mörtel
+- [Baumit ThermoMörtel 50 40 l](https://bauversand.com/artikel/POS-13550.html): 10,07 € je Sack, netto · Mörtel · 24 kg je Einheit
+- [Ravenit Vergussmörtel 25 kg](https://bauversand.com/artikel/POS-29754.html): 1,45 € je kg, netto · Abgabe ab 25 kg (36,25 €) · Mörtel
+- [Baumit TextilglasGitter 1,1x50 m](https://bauversand.com/artikel/POS-52058.html): 1,19 € je m², netto · Abgabe ab 55 m² (65,45 €) · WDVS
+- [Capatect Gewebeanschlussleiste 3D Universal Plus 2,55 m](https://bauversand.com/artikel/POS-52124.html): 4,91 € je lfm, netto · Abgabe ab 2,55 lfm (12,52 €) · WDVS
+- [Capatect Glasgewebe M, Breite 110cm, orange 55 m2](https://bauversand.com/artikel/POS-50509.html): 1,07 € je m², netto · Abgabe ab 55 m² (58,85 €) · WDVS
+- [Capatect Kantenschutz mit Gewebe Carbon 11,5 13,5 cm 2,5 m](https://bauversand.com/artikel/POS-53402.html): 0,95 € je lfm, netto · Abgabe ab 2,5 lfm (2,38 €) · WDVS
+- [Capatect Klebe- und Spachtelmasse 186 M 25 kg](https://bauversand.com/artikel/POS-11283.html): 0,56 € je kg, netto · Abgabe ab 25 kg (14,00 €) · WDVS
+- [Capatect Klebe- und Spachtelmasse 190 FEIN 25 kg](https://bauversand.com/artikel/POS-29461.html): 0,60 € je kg, netto · Abgabe ab 25 kg (15,00 €) · WDVS
+- [Capatect Polystyrol-Rondelle für Capatect Universaldübel Rondelle und Capatect Schraubdübel Holz](https://bauversand.com/artikel/POS-29610.html): 13,24 € je Karton, netto · WDVS
+- [Capatect PrimaPor K20 weiß 25 kg SH-Reibputz](https://bauversand.com/artikel/POS-19333.html): 2,27 € je kg, netto · Abgabe ab 25 kg (56,75 €) · WDVS · 1 kg je Einheit
+- [Capatect Putzgrund weiß 25 kg](https://bauversand.com/artikel/POS-13728.html): 2,77 € je kg, netto · Abgabe ab 25 kg (69,25 €) · WDVS · 1 kg je Einheit
+- [Capatect Universaldübel Schraubdübel 053 115, 100 STK, 1 KAR](https://bauversand.com/artikel/POS-11082.html): 66,35 € je Karton, netto · WDVS
+- [Drehstiftdübel PK(100) K 6 40 mm](https://bauversand.com/artikel/POS-52537.html): 2,87 € je Karton, netto · WDVS
+- [PAE-Folie T 100 2 50 m 100 m2](https://bauversand.com/artikel/POS-29023.html): 17,12 € je Rolle, netto · Zubehör
+- [Prima Dosierpistole Metall Lite](https://bauversand.com/artikel/POS-12294.html): 26,88 € je Stück, netto · Zubehör
+- [Rahmenschraube Zylinderkopf vz 7,5x182 mm lose](https://bauversand.com/artikel/POS-53215.html): 0,67 € je Stück, netto · Zubehör
+- [Soudal Perimeterkleber B3 750 ml](https://bauversand.com/artikel/POS-29691.html): 7,60 € je Dose, netto · Zubehör
+- [Soudal Profi-Pistolenschaum B3 750 ml](https://bauversand.com/artikel/POS-51987.html): 6,51 € je Dose, netto · Zubehör
+- [Soudal Soudabond Easy B1 Pist. 750 ml](https://bauversand.com/artikel/POS-31631.html): 12,60 € je Stück, netto · Zubehör
+- [SunCore Pro Abdeckklebeband 48 mm x 50 m bis 100 °C, gelb](https://bauversand.com/artikel/POS-31265.html): 8,33 € je Stück, netto · Zubehör
+
+Jeder geführte Artikel steht in dieser Liste.
+
+## Was wir nicht führen
+
+Danach wird gefragt, und wir haben es nicht. Genannt ist jeweils, was stattdessen im Sortiment steht — als Abgrenzung, nicht als Ersatz.
+
+- **drainage**: Drainagerohre führen wir nicht. Die Noppenbahn schützt die Kellerwand und leitet Wasser ab, sie ersetzt aber keine Drainageleitung.
+- **abdichtung**: Abdichtungsbahnen führen wir nicht. Gedämmt wird über der Abdichtung, nicht statt ihrer — welche Bahn Ihr Aufbau braucht, steht in der Planung.
+- **bitumen**: Bitumenbahnen und -anstriche führen wir nicht.
+- **gleitmittel**: Gleitmittel für Steckmuffen führen wir nicht. Es steht auf unserer Kanalliste als Position, die Sie anderswo besorgen.
+- **estrichfolie**: Eine eigene Estrichfolie führen wir nicht. Die PAE-Folie kann als Trennlage dienen; ob sie für Ihren Estrichaufbau zugelassen ist, sagt das Merkblatt des Herstellers.
+- **rauchrohr**: Ofenrohre vom Ofen zum Kamin führen wir nicht. Unser gedämmtes Innenrohr ist ein Teil des Systemkamins und kein Ersatz dafür.
+- **schamotterohr**: Schamottezüge führen wir nicht. Unser Systemkamin ist keramisch und gedämmt.
+- **kaminkopf**: Eine Kaminkopfverkleidung führen wir nicht. Regenhaube und Thermo-Trennstein haben wir.
+- **sockelschiene**: Sockelprofile führen wir nicht. Kantenschutz und Gewebeanschlussleiste sind andere Teile des Systems.
+- **abschlussprofil**: Abschluss- und Sockelprofile führen wir nicht.
+- **silikatputz**: Silikatputz führen wir nicht. Unser Oberputz ist ein Reibputz (Capatect PrimaPor K20); Silikat-, Silikon- und Mineralputze sind eigene Systeme und nicht gegeneinander austauschbar.
+- **silikonputz**: Silikonputz führen wir nicht. Unser Oberputz ist ein Reibputz (Capatect PrimaPor K20); die Putzsysteme sind nicht gegeneinander austauschbar.
+- **mineralputz**: Mineralputz führen wir nicht. Unser Oberputz ist ein Reibputz (Capatect PrimaPor K20); die Putzsysteme sind nicht gegeneinander austauschbar.
+- **kratzputz**: Kratzputz führen wir nicht. Unser Oberputz wird gerieben, nicht gekratzt — das ist eine andere Auftragsart.
+- **flexkleber**: Fliesenkleber führen wir nicht. Unser Klebespachtel ist für Dämmplatten.
+- **fugenmörtel**: Fugenmörtel für Fliesen führen wir nicht. Die Schiedel Fugenmasse ist für Kaminformteile.
+- **muffe**: Lose Muffen führen wir nicht. An unseren PVC-Kanalrohren ist die Steckmuffe angeformt.
+- **übergangsstück**: Übergangsstücke führen wir nicht. In DN 100 haben wir Rohr, Bogen und Abzweiger.
+- **dichtring**: Einzelne Dichtringe führen wir nicht.
+- **schachtabdeckung**: Schachtabdeckungen führen wir nicht. Den Schachtring haben wir.
+- **kanalgrundrohr**: Grundrohre in anderen Nennweiten führen wir nicht. Unsere Kanalrohre sind PVC NW 100.
+- **gewebeecke**: Eck- und Diagonalgewebe führen wir nicht. Der Kantenschutz mit Gewebe ist ein anderes Teil.
+- **diagonalgewebe**: Diagonal- und Eckgewebe führen wir nicht. Der Kantenschutz mit Gewebe ist ein anderes Teil.

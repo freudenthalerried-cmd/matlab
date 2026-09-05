@@ -1,0 +1,26 @@
+{
+  "_hinweis": "Die Zielgrößen des laufenden Modells an EINER Stelle. Sie standen bis zum 01.09. nur in Fließtext (marge-25-prozent.md, PARAMETER.md) und als Zahlen in Testvorrichtungen — und in src/empfindlichkeit.js stand als Rohmarge weiterhin 0,35 aus dem Radonmodell, das der Auftraggeber am 22.08. verlassen hat. Eine Annahmenliste, die eine ueberholte Annahme fuehrt, misst die Empfindlichkeit des falschen Plans.",
+  "_quelle": "PARAMETER.md (Zielgroesse, Fixkosten), marge-25-prozent.md (Zielgewinn, Warenkorb, Umsatzquote), Weisung vom 25.08. (25 % Marge).",
+  "_pruefung": "npm run empfindlichkeit rechnet damit; die Rohmarge wird gegen ZIELMARGE in src/baustoffkatalog.js gehalten, damit Katalog und Zielrechnung nicht auseinanderlaufen.",
+
+  "zielgewinn": 5374,
+  "_zielgewinnHinweis": "Vor Steuer, damit beim Gesellschafter 3.000 € netto im Monat ankommen. Herleitung in marge-25-prozent.md.",
+
+  "fixkosten": 650,
+  "_fixkostenHinweis": "€ im Monat. Aus phase3-unit-economics.md.",
+
+  "rohmarge": 0.25,
+  "_rohmargeHinweis": "Weisung vom 25.08.: 25 % Marge vom Verkauf, nicht 25 % Zuschlag. Muss mit ZIELMARGE in src/baustoffkatalog.js uebereinstimmen.",
+
+  "werbeanteil": 0.10,
+  "_werbeanteilHinweis": "Anteil am Nettoumsatz. Annahme aus phase3-unit-economics.md, realistisches Szenario. Die Tragfaehigkeitsgrenze liegt bei 23 % (marge-25-prozent.md).",
+
+  "warenkorbNetto": 650,
+  "_warenkorbNettoHinweis": "€ netto je Bestellung. Hergeleitet aus den Stuecklisten, nicht gesetzt.",
+
+  "umsatzProSession": 0.02,
+  "_umsatzProSessionHinweis": "DIESELBE GROESSE wie die Kaufquote der Kampagne (bin/kampagne.mjs, --kaufquote). Zwei Namen fuer eine Zahl: Hier heisst sie Umsatzquote je Besuch, dort Kaufquote. Unbelegt in beiden Faellen; im erklaerungsbeduerftigen B2B eher optimistisch.",
+
+  "zahlweg": "eps",
+  "_zahlwegHinweis": "Entschieden am 26.08. (Gate 21): EPS und Vorkasse ab Start, Karte als Zusatz."
+}
