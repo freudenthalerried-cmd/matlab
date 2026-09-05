@@ -43,6 +43,8 @@
  * Palettenfrage an den Lieferanten, die ohnehin offen ist.
  */
 
+import { packungsgewichtKg } from './gebinde.js';
+
 /**
  * Die Warengruppen, aus denen die Schätzung „Sperrgut" folgt.
  *
@@ -61,6 +63,22 @@ export const SPERRGUT_GRUPPEN = Object.freeze(['Dämmung', 'Kamin', 'Kanal', 'Ma
  * zugleich das gängige Sackgewicht im Baustoffhandel. Die Zahl entscheidet
  * hier **nichts** — sie trennt nur die Fälle, in denen ein belegtes Gewicht
  * der Einstufung widerspricht, von denen, in denen es zu ihr passt.
+ *
+ * **Verglichen wird seit dem 5. September mit `>`, nicht mit `>=`.** Der Satz
+ * darüber sagt, 25 kg sei *die übliche Obergrenze für das Heben durch eine
+ * Person* und *das gängige Sackgewicht* — ein 25-kg-Sack ist damit gerade der
+ * Regelfall des Tragens und kein Widerspruch zur Einstufung „nicht
+ * palettiert". Mit `>=` war er einer.
+ *
+ * Der Fehler war bis heute unsichtbar, weil **kein einziger Artikel je 25 kg
+ * erreichte**: Die beiden Kiloartikel trugen `gewichtKg: 1`, die fünf
+ * Sackartikel gar nichts (siehe `packungsgewichtKg`). Erst als das
+ * Packungsgewicht richtig gerechnet wurde, standen sechs Artikel exakt auf der
+ * Grenze — und hätten mit `>=` einen Widerspruch gemeldet, den es nicht gibt.
+ *
+ * > **Die Grenze wurde entschieden, bevor feststand, wem sie nützt.** Mit
+ * > `>=` hätte diese Runde sechs Befunde gehabt statt einen; sechs Befunde
+ * > sehen nach mehr Arbeit aus und wären sechs Fehlmeldungen gewesen.
  */
 export const HANDGEWICHT_KG = 25;
 
@@ -110,6 +128,20 @@ export const HINGENOMMEN = Object.freeze([
     sku: 'POS-10116',
     kurz: 'Kanalformteil, 0,285 kg je Stück',
     warum: `Kanalformteil, 0,285 kg je Stück. ${GEMEINSAMER_GRUND}`,
+  }),
+  // **Der fünfte Fall, sichtbar seit dem 5. September.** Er stand die ganze
+  // Zeit da und war nicht zu sehen: Der Eimer trägt sein Gewicht im Namen und
+  // nicht im Feld, und der Prüfer las nur das Feld.
+  Object.freeze({
+    sku: 'POS-16070',
+    kurz: 'Eimer Fugenmasse, 1,5 kg',
+    warum: 'Ein Eimer Fugenmasse zu 1,5 kg, eingestuft als Sperrgut, weil er in der '
+      + 'Warengruppe Kamin steht — und die Kamingruppe ist die mit den Mantelsteinen. '
+      + 'Anderthalb Kilogramm Fugenmasse mit dem Kran zu entladen ist so wenig plausibel '
+      + 'wie der Kanalbogen von 285 Gramm. Umgestuft wird aus demselben Grund nicht: Ob der '
+      + 'Lieferant einen Hub verrechnet, sagt der Lieferant. Der Eimer kommt vermutlich '
+      + 'mit den Mantelsteinen auf derselben Palette — was die Einstufung eher stützt als '
+      + 'widerlegt, aber eben eine Vermutung ist. Aufgelöst mit der Palettenfrage.',
   }),
 ]);
 
@@ -197,11 +229,17 @@ export function einstufungsbefund(artikel = [], hingenommen = HINGENOMMEN) {
       });
     }
 
-    if (!Number.isFinite(a.gewichtKg)) continue;
+    // **Nicht `a.gewichtKg`, seit dem 5. September.** Das Feld heißt bei
+    // Stückware „je Packung" und bei Kiloware „je Kilogramm"; gegen eine
+    // Handgrenze in Kilogramm ist nur das Erste vergleichbar. Zwei Artikel
+    // trugen `gewichtKg: 1` bei Einheit `KG` — wahr, und gegen 25 kg nie
+    // anzuschlagen. Die Begründung steht bei `packungsgewichtKg`.
+    const gewicht = packungsgewichtKg(a);
+    if (!Number.isFinite(gewicht)) continue;
     belegbar += 1;
 
-    const leicht = a.sperrgut && a.gewichtKg < HANDGEWICHT_KG;
-    const schwer = !a.sperrgut && a.gewichtKg >= HANDGEWICHT_KG;
+    const leicht = a.sperrgut && gewicht < HANDGEWICHT_KG;
+    const schwer = !a.sperrgut && gewicht > HANDGEWICHT_KG;
     if (!leicht && !schwer) continue;
     widerspruch += 1;
 
@@ -210,8 +248,8 @@ export function einstufungsbefund(artikel = [], hingenommen = HINGENOMMEN) {
       regel: leicht ? 'leicht-und-sperrgut' : 'schwer-und-frei',
       sku: a.sku,
       text: leicht
-        ? `${a.sku}: ${a.gewichtKg} kg je ${a.einheit} und trotzdem Kranentladung — ${a.bezeichnung}`
-        : `${a.sku}: ${a.gewichtKg} kg je ${a.einheit} und trotzdem keine — ${a.bezeichnung}`,
+        ? `${a.sku}: ${gewicht} kg je Packung und trotzdem Kranentladung — ${a.bezeichnung}`
+        : `${a.sku}: ${gewicht} kg je Packung und trotzdem keine — ${a.bezeichnung}`,
     });
   }
 
@@ -234,6 +272,11 @@ export function einstufungsbefund(artikel = [], hingenommen = HINGENOMMEN) {
     artikel: artikel.length,
     mitGewicht: belegbar,
     widersprueche: widerspruch,
+    // **Gemessen, nicht abgezählt** — ergänzt am 5. September. Das Werkzeug
+    // schrieb „davon `HINGENOMMEN.length` mit Grund" und meldete damit die
+    // Länge des Verzeichnisses als Ergebnis der Prüfung. Bei einem
+    // ungedeckten Widerspruch hätte dort dieselbe Zahl gestanden.
+    gedeckt: gesehen.size,
     unbelegt: artikel.filter((a) => a.sperrgutQuelle !== 'liste' && a.sperrgutQuelle !== 'belegt').length,
     meldungen,
     sauber: meldungen.length === 0,

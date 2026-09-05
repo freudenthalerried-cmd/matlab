@@ -61,14 +61,32 @@ console.log(`Geschätzt aus der Warengruppe (${SPERRGUT_GRUPPEN.join(', ')}); `
   + `Handgrenze ${HANDGEWICHT_KG} kg.\n`);
 
 console.log(`  Ohne belegte Einstufung   ${b.unbelegt} von ${b.artikel}`);
-console.log(`  Widersprüche zum Gewicht  ${b.widersprueche}, davon ${HINGENOMMEN.length} mit Grund`);
+// `b.gedeckt` und nicht `HINGENOMMEN.length`: Die erste Zahl ist gemessen, die
+// zweite ist die Länge des Verzeichnisses. Bei einem ungedeckten Widerspruch
+// stünde dort dieselbe Zahl — eine Angabe, die nie widerspricht.
+console.log(`  Widersprüche zum Gewicht  ${b.widersprueche}, davon ${b.gedeckt} mit Grund`);
 
 // Der Fall je Zeile, der gemeinsame Grund einmal darunter. Viermal derselbe
 // Absatz wäre eine Ausgabe, die niemand liest — und ungelesen ist ungeprüft.
+//
+// **Seit dem 5. September ist einer nicht gemeinsam.** Der Eimer Fugenmasse
+// hat seinen eigenen Grund; ihn unter denselben Absatz zu stellen hieße, vier
+// Kanalpositionen als Begründung für einen Kamineimer auszugeben. Gedruckt
+// wird deshalb, wer den gemeinsamen Grund trägt — und wer einen eigenen hat.
 if (HINGENOMMEN.length) {
+  const gemeinsam = HINGENOMMEN.filter((h) => h.warum.includes(GEMEINSAMER_GRUND));
+  const eigen = HINGENOMMEN.filter((h) => !h.warum.includes(GEMEINSAMER_GRUND));
+
   console.log('\n  Hingenommen, mit Grund:\n');
-  for (const h of HINGENOMMEN) console.log(`    · ${h.sku}  ${h.kurz ?? ''}`);
-  console.log(`\n    ${GEMEINSAMER_GRUND.replace(/(.{78}\s)/g, '$1\n    ')}`);
+  const umbruch = (t) => t.replace(/(.{78}\s)/g, '$1\n    ');
+  if (gemeinsam.length) {
+    for (const h of gemeinsam) console.log(`    · ${h.sku}  ${h.kurz ?? ''}`);
+    console.log(`\n    ${umbruch(GEMEINSAMER_GRUND)}`);
+  }
+  for (const h of eigen) {
+    console.log(`\n    · ${h.sku}  ${h.kurz ?? ''}`);
+    console.log(`\n    ${umbruch(h.warum)}`);
+  }
 }
 
 console.log(`  Gebaute Flächen mit dem Wort   ${f.flaechen}, `

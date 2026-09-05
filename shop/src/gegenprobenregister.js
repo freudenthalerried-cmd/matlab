@@ -861,6 +861,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'außer der Zeichenkette, aus der er stammt.',
   }),
   Object.freeze({
+    id: 'einheitenliste-von-gestern',
+    pruefer: 'pruefe-gebinde',
+    was: 'Eine Einheitenliste, die den Bestand von gestern festhält',
+    datei: 'shop/src/gebinde.js',
+    art: 'ersetzen',
+    suchen: "export const STUECKEINHEITEN = new Set(['SCK', 'STK', 'EIM', 'KRT', 'DOS', 'RLL']);",
+    ersetzen: "export const STUECKEINHEITEN = new Set(['SCK', 'STK', 'PAK', 'EIM', 'KAR', 'ROL']);",
+    erwartet: /einheit-ohne-artikel|einheit-unbekannt/,
+    warum: 'Die Ersetzung ist keine erfundene Verschlechterung, sondern der Zustand vom '
+      + '4. September: `PAK`, `KAR` und `ROL` standen in der Liste und kommen im Katalog nicht '
+      + 'vor; `KRT` (3 Artikel), `DOS` (2) und `RLL` (1) kommen vor und fehlten. Folgenlos war '
+      + 'das nur, weil `preisJeKilo` außerdem ein Kilogramm im Namen braucht und keiner der '
+      + 'sechs eines trägt — der erste Karton mit Gewicht im Namen hätte den Kilopreis still '
+      + 'weggelassen. Ein Prüfer, der eine Liste gegen den Bestand hält, muss beide Richtungen '
+      + 'sehen: die tote Einheit und die unbekannte.',
+  }),
+  Object.freeze({
     id: 'querverweise-ohne-marke',
     pruefer: 'pruefe-dubletten',
     was: 'Eine Messung, die die Navigation mitzählt und es Inhalt nennt',

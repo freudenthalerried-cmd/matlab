@@ -38,14 +38,35 @@ test('es gibt sie nur einmal — auch für den Einleser', async () => {
   assert.match(quelle, /sperrgutAusGruppe/);
 });
 
-test('der Bestand widerspricht sich in vier Fällen, und jeder trägt seinen Grund', () => {
+test('der Bestand widerspricht sich in fünf Fällen, und jeder trägt seinen Grund', () => {
+  // **Vier waren es bis zum 5. September, mittags.** Gemessen wurde gegen
+  // `gewichtKg`, und das Feld heißt bei Kiloware „je Kilogramm": Zwei Artikel
+  // trugen dort eine 1, fünf weitere gar nichts, obwohl ihr Sackgewicht im
+  // Namen steht. Mit `packungsgewichtKg` sind es 12 belegte Gewichte statt 7
+  // — und der fünfte Widerspruch ist ein Eimer Fugenmasse zu 1,5 kg, der seit
+  // jeher als Sperrgut geführt wird, weil er in der Kamingruppe steht.
   const b = einstufungsbefund(katalog.artikel);
   assert.equal(b.artikel, 46);
-  assert.ok(b.mitGewicht >= 5, `nur ${b.mitGewicht} Artikel mit Gewicht — dann prüft das hier wenig`);
-  assert.equal(b.widersprueche, 4);
+  assert.equal(b.mitGewicht, 12, 'weniger hieße, das Packungsgewicht wird wieder nicht gerechnet');
+  assert.equal(b.widersprueche, 5);
+  assert.equal(b.gedeckt, 5, 'gemessen, nicht die Länge des Verzeichnisses');
   assert.deepEqual(b.meldungen, [], b.meldungen.map((m) => m.text).join('\n'));
   // Die Zahl, die den Anlass trägt: keine einzige Einstufung ist belegt.
   assert.equal(b.unbelegt, 46);
+});
+
+test('die sechs Säcke zu genau 25 kg sind kein Widerspruch', () => {
+  // **Die Grenze wurde entschieden, bevor feststand, wem sie nützt.** Der
+  // Kommentar über `HANDGEWICHT_KG` nennt 25 kg *die übliche Obergrenze für
+  // das Heben durch eine Person* und *das gängige Sackgewicht* — ein
+  // 25-kg-Sack ist damit der Regelfall des Tragens. Verglichen wurde
+  // trotzdem mit `>=`; unsichtbar blieb es nur, weil vor heute kein Artikel
+  // je 25 kg erreichte.
+  const saecke = katalog.artikel.filter((a) => /(^|\D)25\s?kg/i.test(a.bezeichnung) && !a.sperrgut);
+  assert.equal(saecke.length, 6, 'die Vorbedingung des Testfalls');
+  const b = einstufungsbefund(saecke, []);
+  assert.deepEqual(b.meldungen, [], b.meldungen.map((m) => m.text).join('\n'));
+  assert.equal(b.mitGewicht, 6, 'gewogen sind sie sehr wohl — nur widersprechen sie nicht');
 });
 
 test('jeder hingenommene Fall trägt einen tragfähigen Grund', () => {
@@ -75,11 +96,15 @@ test('schwere Ware ohne Kranentladung auch', () => {
   assert.deepEqual(b.meldungen.map((m) => m.regel), ['schwer-und-frei']);
 });
 
-test('zwischen den Grenzen wird nicht geurteilt', () => {
-  // Genau auf der Grenze gilt sie als schwer; knapp darunter ist der Fall
-  // nicht zu entscheiden, und ein Prüfer, der ihn entscheidet, erfindet.
+test('genau auf der Grenze wird nicht geurteilt', () => {
+  // **Umgekehrt seit dem 5. September.** Hier stand „Genau auf der Grenze
+  // gilt sie als schwer" — im Widerspruch zum Kommentar der Konstante, die
+  // 25 kg als das gängige Sackgewicht und die Obergrenze des Tragens
+  // beschreibt. Ein Sack, der genau so viel wiegt, wie ein Mensch trägt, ist
+  // kein Fall für den Kran.
   const frei = (kg) => artikel({ gruppe: 'Mörtel', sperrgut: false, gewichtKg: kg });
-  assert.equal(einstufungsbefund([frei(HANDGEWICHT_KG)], []).meldungen.length, 1);
+  assert.equal(einstufungsbefund([frei(HANDGEWICHT_KG)], []).meldungen.length, 0);
+  assert.equal(einstufungsbefund([frei(HANDGEWICHT_KG + 1)], []).meldungen.length, 1);
   assert.equal(einstufungsbefund([frei(HANDGEWICHT_KG - 1)], []).meldungen.length, 0);
   assert.equal(einstufungsbefund([artikel({ sperrgut: true, gewichtKg: HANDGEWICHT_KG })], []).meldungen.length, 0);
 });

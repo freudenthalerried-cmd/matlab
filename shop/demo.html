@@ -1084,7 +1084,27 @@ function gebindeLfm(bezeichnung) {
 }
 
 
-const STUECKEINHEITEN = new Set(['SCK', 'STK', 'PAK', 'EIM', 'KAR', 'ROL']);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const STUECKEINHEITEN = new Set(['SCK', 'STK', 'EIM', 'KRT', 'DOS', 'RLL']);
 
 
 
@@ -1190,6 +1210,90 @@ function mengenschritt(artikel) {
   
   
   
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function packungsgewichtKg(artikel) {
+  if (!artikel) return null;
+  const einheit = String(artikel.einheit ?? '').toUpperCase();
+  const ausName = gebindeKg(artikel.bezeichnung);
+  const ausRechnung = Number.isFinite(artikel.gewichtKg) ? artikel.gewichtKg : null;
+  const runde = (n) => Math.round(n * 1000) / 1000;
+
+  if (einheit === 'KG') return ausName;
+  if (STUECKEINHEITEN.has(einheit)) return ausRechnung ?? ausName;
+
+  
+  
+  
+  const schritt = mengenschritt(artikel);
+  if (schritt != null && ausRechnung != null) return runde(schritt * ausRechnung);
+  return null;
+}
+
+
+
+
+
+
+function einheitenbefund(artikel = []) {
+  const meldungen = [];
+  const gefuehrt = new Set(artikel.map((a) => String(a.einheit ?? '').toUpperCase()).filter(Boolean));
+  const gemessen = new Set(Object.keys(GEBINDELESER));
+
+  for (const e of STUECKEINHEITEN) {
+    if (!gefuehrt.has(e)) {
+      meldungen.push({ regel: 'einheit-ohne-artikel', einheit: e, text: `${e}: kein Artikel führt diese Einheit` });
+    }
+  }
+  for (const e of gefuehrt) {
+    if (!STUECKEINHEITEN.has(e) && !gemessen.has(e)) {
+      meldungen.push({
+        regel: 'einheit-unbekannt',
+        einheit: e,
+        text: `${e}: weder Stückeinheit noch Maßeinheit — fällt aus jeder Umrechnung`,
+      });
+    }
+  }
+
+  return { einheiten: gefuehrt.size, sauber: meldungen.length === 0, meldungen };
 }
 
 

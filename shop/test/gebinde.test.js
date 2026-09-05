@@ -4,7 +4,7 @@ import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { EINHEITEN, einheitText } from '../src/format.js';
-import { gebindeKg, gebindeM2, gebindezahl, preisJeKilo, kilotafel, mengenschritt, GROESSTES_GEBINDE_KG, gebindeLfm, GEBINDELESER, rollenmass } from '../src/gebinde.js';
+import { gebindeKg, gebindeM2, gebindezahl, preisJeKilo, kilotafel, mengenschritt, GROESSTES_GEBINDE_KG, gebindeLfm, GEBINDELESER, rollenmass, packungsgewichtKg, einheitenbefund, STUECKEINHEITEN } from '../src/gebinde.js';
 
 const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
 
@@ -365,4 +365,61 @@ test('einheitText erfindet nichts und lässt nichts leer', () => {
   assert.equal(einheitText('PAK'), 'PAK');
   assert.equal(einheitText(null), 'Stk');
   assert.equal(einheitText(undefined), 'Stk');
+});
+
+/* ------------------------------------------------------------------ *
+ * Was die kleinste lieferbare Packung wiegt — 5. September
+ *
+ * `sperrgutpruefung.mjs` meldete „7 mit belegtem Gewicht" und hielt sie gegen
+ * 25 kg. Zwei der sieben trugen `gewichtKg: 1` bei Einheit `KG` — wahr, und
+ * gegen eine Grenze von 25 kg nie anzuschlagen. Ihr Sack wiegt 25 kg, und die
+ * Zahl steht im Namen, wo `mengenschritt()` sie seit dem 29. August liest.
+ * ------------------------------------------------------------------ */
+
+test('bei Kiloware ist die Gebindegröße das Gewicht', () => {
+  const a = { bezeichnung: 'Capatect Putzgrund weiß 25 kg', einheit: 'KG', gewichtKg: 1 };
+  assert.equal(packungsgewichtKg(a), 25, 'ein Kilogramm je Kilogramm ist keine Angabe');
+  // Ohne das Feld dieselbe Antwort: Kilogramm sind Kilogramm.
+  assert.equal(packungsgewichtKg({ bezeichnung: 'Ravenit Vergussmörtel 25 kg', einheit: 'KG' }), 25);
+});
+
+test('bei Stückware zählt das Feld, und der Name springt ein', () => {
+  assert.equal(packungsgewichtKg({ bezeichnung: 'Baumit ThermoMörtel 50 40 l', einheit: 'SCK', gewichtKg: 24 }), 24);
+  assert.equal(packungsgewichtKg({ bezeichnung: 'Baumit KlebeSpachtel 25 kg', einheit: 'SCK' }), 25);
+  assert.equal(packungsgewichtKg({ bezeichnung: 'Schiedel Fugenmasse FM 1,5 kg', einheit: 'EIM' }), 1.5);
+});
+
+test('bei Flächen- und Längenware wird der Schritt mitgerechnet', () => {
+  const platte = { bezeichnung: 'XPS glatt SF 50 mm 0,75 m2', einheit: 'M2', gewichtKg: 2 };
+  assert.equal(packungsgewichtKg(platte), 1.5, '0,75 m² zu 2 kg je m²');
+  // Ohne Gewicht bleibt es offen — eine Platte, die niemand gewogen hat,
+  // wiegt nicht null.
+  assert.equal(packungsgewichtKg({ ...platte, gewichtKg: undefined }), null);
+});
+
+test('was sich nicht sagen lässt, bleibt null', () => {
+  assert.equal(packungsgewichtKg(null), null);
+  assert.equal(packungsgewichtKg({ bezeichnung: 'Prima Dosierpistole Metall Lite', einheit: 'STK' }), null);
+  // Liter sind kein Gewicht — dieselbe Regel wie bei `gebindeKg`.
+  assert.equal(packungsgewichtKg({ bezeichnung: 'Soudal Profi-Pistolenschaum B3 750 ml', einheit: 'DOS' }), null);
+});
+
+test('die Einheitenliste wird gegen den Katalog gehalten, in beide Richtungen', () => {
+  const katalog = [{ einheit: 'STK' }, { einheit: 'KRT' }, { einheit: 'M2' }];
+  assert.equal(einheitenbefund(katalog).sauber, false, 'SCK, EIM, DOS, RLL führt keiner');
+  assert.ok(einheitenbefund(katalog).meldungen.every((m) => m.regel === 'einheit-ohne-artikel'));
+
+  // Die andere Richtung: eine Einheit, die keine der beiden Listen kennt.
+  const fremd = einheitenbefund([...[...STUECKEINHEITEN].map((e) => ({ einheit: e })),
+    { einheit: 'M2' }, { einheit: 'LFM' }, { einheit: 'KG' }, { einheit: 'PAL' }]);
+  assert.deepEqual(fremd.meldungen.map((m) => m.regel), ['einheit-unbekannt']);
+});
+
+test('der echte Katalog kennt jede seiner Einheiten', () => {
+  // **Der Befund vom 5. September.** Die Liste führte `PAK`, `KAR` und `ROL`,
+  // die es nicht gibt, und kannte `KRT`, `DOS` und `RLL` nicht, die es gibt.
+  const katalog = JSON.parse(readFileSync(new URL('../data/katalog-baustoff.json', import.meta.url), 'utf8'));
+  const b = einheitenbefund(katalog.artikel);
+  assert.deepEqual(b.meldungen, [], b.meldungen.map((m) => m.text).join('\n'));
+  assert.ok(b.einheiten >= 8, `nur ${b.einheiten} Einheiten — der Katalog prüfte zu wenig`);
 });

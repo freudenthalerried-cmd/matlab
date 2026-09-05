@@ -187,8 +187,28 @@ export function gebindeLfm(bezeichnung) {
   return m;
 }
 
-/** Einheiten, die eine Stückzahl meinen — bei ihnen ist der Preis der Gebindepreis. */
-const STUECKEINHEITEN = new Set(['SCK', 'STK', 'PAK', 'EIM', 'KAR', 'ROL']);
+/**
+ * Einheiten, die eine Stückzahl meinen — bei ihnen ist der Preis der
+ * Gebindepreis und `gewichtKg` das Gewicht **einer Packung**.
+ *
+ * **Berichtigt am 5. September.** Hier standen `PAK`, `KAR` und `ROL` — drei
+ * Kürzel, die im Katalog **nicht vorkommen** —, und es fehlten `KRT`
+ * (3 Artikel), `DOS` (2) und `RLL` (1), die vorkommen. Die Liste war eine
+ * plausible Erfindung, keine Ablesung.
+ *
+ * Der Schaden war bis heute keiner: `preisJeKilo` braucht **beides**, die
+ * Einheit und ein Kilogramm im Namen, und keiner der sechs Artikel trägt eines.
+ * Der Fehler war blind, nicht folgenlos — er wäre mit dem ersten Karton
+ * aufgewacht, dessen Name ein Gewicht nennt.
+ *
+ * > **Eine Liste, die den Bestand von gestern festhält.** Der Satz steht seit
+ * > dem 30. August dreißig Zeilen weiter unten über `GEBINDELESER` — dort
+ * > wurde die Lehre gezogen und die Zuordnung an eine Stelle geholt. Diese
+ * > Menge daneben blieb, wie sie war.
+ *
+ * `einheitenbefund` hält sie seither gegen den Katalog, in beide Richtungen.
+ */
+export const STUECKEINHEITEN = new Set(['SCK', 'STK', 'EIM', 'KRT', 'DOS', 'RLL']);
 
 /**
  * Beide Preise zu einem Artikel — je Gebinde und je Kilogramm.
@@ -294,6 +314,90 @@ export function mengenschritt(artikel) {
   // Zuordnung ist die Zusicherung, die Kette ihre Ausführung. Liefe beides
   // über dieselbe Tabelle, prüfte die Probe darunter nur noch, dass eine
   // Tabelle sich selbst gleicht.
+}
+
+/* ------------------------------------------------------------------ *
+ * Was die kleinste lieferbare Packung wiegt — 5. September 2026
+ *
+ * **Der Anlass.** `sperrgutpruefung.mjs` meldete „46 Artikel, **7 mit
+ * belegtem Gewicht**" und hielt diese sieben gegen eine Handgrenze von 25 kg.
+ * Zwei der sieben sind `Capatect PrimaPor K20 weiß 25 kg` und `Capatect
+ * Putzgrund weiß 25 kg` — Einheit `KG`, `gewichtKg: 1`, Quelle „rechnung".
+ *
+ * Ein Kilogramm je Kilogramm. Die Angabe ist wahr und sagt nichts; gegen eine
+ * Grenze von 25 kg kann sie **nie** anschlagen. Beide Artikel wiegen in
+ * Wirklichkeit 25 kg je Sack — und die Zahl steht in ihrem Namen.
+ *
+ * Sie steht dort nicht ungelesen: `mengenschritt()` liest sie seit dem
+ * 29. August, und jede Artikelseite druckt „Abgabe ab 25 kg". Zwei Leser
+ * derselben Zeile, und der eine kennt das Gebinde, während der andere ein
+ * Kilo wiegt.
+ *
+ * > **Eine Zahl ohne ihre Einheit ist keine Angabe. `gewichtKg` heißt bei
+ * > Stückware „je Packung" und bei Kiloware „je Kilogramm" — dasselbe Feld,
+ * > zwei Bedeutungen.**
+ *
+ * Diese Funktion beantwortet die eine Frage, die der Sperrgutprüfer stellt:
+ * **Was hebt der Fahrer an?** Sie rät nichts — wo sie es nicht sagen kann,
+ * gibt sie `null` zurück.
+ * ------------------------------------------------------------------ */
+
+/**
+ * Das Gewicht der kleinsten lieferbaren Packung in Kilogramm, oder `null`.
+ *
+ * | Einheit | Grundlage |
+ * |---|---|
+ * | `KG` | die Gebindegröße aus dem Namen — Kilogramm sind Kilogramm, `gewichtKg` ist hier die Identität |
+ * | Stückeinheit | `gewichtKg` aus der Rechnung, sonst die Gebindegröße aus dem Namen |
+ * | `M2`, `LFM` | Mengenschritt × `gewichtKg`, wenn beide bekannt sind |
+ *
+ * @param {{bezeichnung: string, einheit: string, gewichtKg?: number}} artikel
+ * @returns {number|null}
+ */
+export function packungsgewichtKg(artikel) {
+  if (!artikel) return null;
+  const einheit = String(artikel.einheit ?? '').toUpperCase();
+  const ausName = gebindeKg(artikel.bezeichnung);
+  const ausRechnung = Number.isFinite(artikel.gewichtKg) ? artikel.gewichtKg : null;
+  const runde = (n) => Math.round(n * 1000) / 1000;
+
+  if (einheit === 'KG') return ausName;
+  if (STUECKEINHEITEN.has(einheit)) return ausRechnung ?? ausName;
+
+  // Fläche und Länge: Das Gewicht steht je Quadratmeter oder je laufendem
+  // Meter da, die Packung ist der Mengenschritt. Ohne beides bleibt es offen —
+  // eine Platte, deren Gewicht niemand notiert hat, wiegt nicht null.
+  const schritt = mengenschritt(artikel);
+  if (schritt != null && ausRechnung != null) return runde(schritt * ausRechnung);
+  return null;
+}
+
+/**
+ * Hält `STUECKEINHEITEN` und die Maßeinheiten gegen den Katalog — in beide
+ * Richtungen. Eine Einheit, die keiner führt, prüft nichts; eine, die keine
+ * der beiden Listen kennt, fällt still aus jeder Umrechnung.
+ */
+export function einheitenbefund(artikel = []) {
+  const meldungen = [];
+  const gefuehrt = new Set(artikel.map((a) => String(a.einheit ?? '').toUpperCase()).filter(Boolean));
+  const gemessen = new Set(Object.keys(GEBINDELESER));
+
+  for (const e of STUECKEINHEITEN) {
+    if (!gefuehrt.has(e)) {
+      meldungen.push({ regel: 'einheit-ohne-artikel', einheit: e, text: `${e}: kein Artikel führt diese Einheit` });
+    }
+  }
+  for (const e of gefuehrt) {
+    if (!STUECKEINHEITEN.has(e) && !gemessen.has(e)) {
+      meldungen.push({
+        regel: 'einheit-unbekannt',
+        einheit: e,
+        text: `${e}: weder Stückeinheit noch Maßeinheit — fällt aus jeder Umrechnung`,
+      });
+    }
+  }
+
+  return { einheiten: gefuehrt.size, sauber: meldungen.length === 0, meldungen };
 }
 
 /**
