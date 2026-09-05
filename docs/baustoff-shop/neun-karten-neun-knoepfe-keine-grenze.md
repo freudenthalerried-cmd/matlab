@@ -192,6 +192,23 @@ selben Lauf nachgezogen. Der Prüfer hat getan, wofür es ihn gibt.
 | Gegenproben gesamt | **72 für 36 Prüfer** |
 | Neue Gates | keine — Gate 25 gilt unverändert, es stand nur nicht überall |
 
+---
+
+## Das Schaufenster mitgezogen
+
+Die veröffentlichte PR-Beschreibung ist nach dem Commit mit `npm run pr-text`
+neu gesetzt worden — sie trug „53 Shopszenarien" und jetzt 55, und die
+Befundtabelle hat eine Zeile mehr.
+
+**Dabei wäre mir fast derselbe Fehler unterlaufen, den das Werkzeug verhindern
+soll:** Ich habe die neue Befundzeile zuerst nur in die *veröffentlichte*
+Fassung geschrieben. `pruefe-schaufenster` misst die **Quelle** —
+`docs/baustoff-shop/pr-beschreibung.md` — und hätte das nie gesehen; genau
+dafür gibt es `bin/prtext.mjs` seit heute Vormittag: *„Wer etwas anderes
+veröffentlicht, tut es gegen ein Werkzeug und nicht aus Versehen."* Die Zeile
+steht jetzt in der Quelle, und die Ausgabe des Werkzeugs ist mit dem
+Veröffentlichten identisch.
+
 ## Was offen bleibt
 
 - **`suche.html` ist gelesen.** Was dabei sonst auffiel und **nicht** geändert
