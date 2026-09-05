@@ -13,7 +13,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 import {
-  SPERRGUT_GRUPPEN, HANDGEWICHT_KG, HINGENOMMEN, FLAECHEN,
+  SPERRGUT_GRUPPEN, HANDGEWICHT_KG, HINGENOMMEN, OHNE_HERKUNFT,
   sperrgutAusGruppe, einstufungsbefund, flaechenbefund,
 } from '../src/sperrguteinstufung.js';
 
@@ -165,36 +165,84 @@ test('die Artikelseite nennt die Herkunft der Einstufung', async () => {
  * > weitergegeben.**
  * ------------------------------------------------------------------ */
 
-test('jede gebaute Fläche nennt ihren Grund, warum sie geführt wird', () => {
-  assert.ok(FLAECHEN.length >= 2, 'weniger als zwei Flächen wären verdächtig wenig');
-  for (const f of FLAECHEN) {
-    assert.ok(f.datei, 'eine Fläche ohne Datei lässt sich nicht lesen');
-    assert.ok(f.warum.length >= 60, `${f.datei}: Begründung zu kurz`);
-  }
+/* ------------------------------------------------------------------ *
+ * Gesucht, nicht aufgezählt — 5. September, abends
+ *
+ * Die erste Fassung führte ein Verzeichnis von **zwei** Dateien, und der
+ * Bericht meldete darüber „Gebaute Flächen mit dem Wort 2". Gemessen sind es
+ * **31** unter `ausgabe/site/`.
+ *
+ * > **Der Prüfer, der zählt, wie viele Flächen er geprüft hat, zählte sein
+ * > eigenes Register.**
+ *
+ * Und warum es genau zwei waren: `HERKUNFTSMUSTER` suchte im rohen
+ * Dateiinhalt. Auf der Artikelseite steht die Auskunft als
+ * `aus der\n<strong>Warengruppe Dämmung</strong>` — Umbruch und Marke
+ * dazwischen, das Muster trifft nicht. Über die 25 Artikelseiten hätte diese
+ * Fassung 25 Fehlmeldungen erzeugt.
+ * ------------------------------------------------------------------ */
+
+/** Eine Sammlung, wie das Werkzeug sie liefert. */
+const sammlung = (...dateien) => () => dateien.map(([datei, inhalt]) => ({ datei, inhalt }));
+/** Genug Flächen, damit die Untergrenze nicht dazwischenfunkt. */
+const fuellung = (n, inhalt) => Array.from({ length: n }, (_, i) => [`site/f${i}.html`, inhalt]);
+const mitHerkunft = 'palettiert — die Angabe folgt aus der Warengruppe.';
+
+test('die Flächen werden gesucht, nicht aufgezählt', () => {
+  const b = flaechenbefund(sammlung(...fuellung(25, mitHerkunft), ['site/ohne.html', 'Nur Preise.']), []);
+  assert.equal(b.flaechen, 25, 'die Datei ohne das Wort zählt nicht mit');
+  assert.equal(b.mitHerkunft, 25);
+  assert.deepEqual(b.meldungen, []);
+});
+
+test('die Herkunft wird im Text gesucht, nicht im Markup', () => {
+  // Der Grund, warum das Verzeichnis genau die zwei Textdateien führte.
+  const html = 'Ware <em>palettiert</em>. Die Einstufung stammt aus der\n<strong>Warengruppe Kanal</strong>.';
+  const b = flaechenbefund(sammlung(...fuellung(20, html)), []);
+  assert.deepEqual(b.meldungen, [], b.meldungen.map((m) => m.text).join('\n'));
 });
 
 test('eine Fläche, die die Kranentladung nennt und ihre Herkunft nicht', () => {
-  const b = flaechenbefund(() => 'Zustellung inkl. Kranentladung je Hub.');
+  const b = flaechenbefund(sammlung(...fuellung(20, 'Zustellung inkl. Kranentladung je Hub.')), []);
   assert.equal(b.sauber, false);
-  assert.ok(b.meldungen.every((m) => m.regel === 'einstufung-ohne-herkunft'));
+  assert.ok(b.meldungen.some((m) => m.regel === 'einstufung-ohne-herkunft'));
 });
 
 test('eine Fläche ohne das Wort wird nicht behelligt', () => {
   // Nicht jede gebaute Datei muss davon reden. Ein Prüfer, der das verlangte,
   // erzwänge den Satz an Stellen, an denen er nichts zu suchen hat.
-  const b = flaechenbefund(() => 'Nur Preise und Lieferzeiten.');
+  const b = flaechenbefund(sammlung(['site/a.html', 'Nur Preise und Lieferzeiten.']), [], 0);
   assert.equal(b.sauber, true);
+  assert.equal(b.flaechen, 0);
 });
 
-test('eine Fläche, die es nicht gibt, ist ein Befund und kein Freispruch', () => {
-  const b = flaechenbefund(() => null);
-  assert.ok(b.meldungen.every((m) => m.regel === 'flaeche-fehlt'));
-  assert.equal(b.meldungen.length, FLAECHEN.length);
+test('ein leerer Lauf ist kein grüner', () => {
+  // Fände die Sammlung nichts — nicht gebaut, Pfad verschoben —, meldete die
+  // Prüfung „sauber" über null Dateien.
+  const b = flaechenbefund(sammlung(), []);
+  assert.equal(b.sauber, false);
+  assert.ok(b.meldungen.some((m) => m.regel === 'zu-wenig-flaechen'));
 });
 
-test('mit Herkunftsangabe ist die Fläche in Ordnung', () => {
-  const b = flaechenbefund(() => 'palettiert — die Angabe folgt aus der Warengruppe.');
-  assert.equal(b.sauber, true);
+test('eine Ausnahme deckt ihre Fläche und wird gegengehalten', () => {
+  const ausnahme = [{ datei: 'site/wissen/x.html', warum: 'w'.repeat(90) }];
+  const b = flaechenbefund(sammlung(...fuellung(20, mitHerkunft),
+    ['site/wissen/x.html', 'Kranentladung als Beispiel.']), ausnahme);
+  assert.deepEqual(b.meldungen, [], b.meldungen.map((m) => m.text).join('\n'));
+  assert.equal(b.hingenommen, 1);
+
+  // Die Rückrichtung: Eine Ausnahme, deren Fläche das Wort nicht mehr trägt,
+  // ist eine Erlaubnis für etwas, das niemand mehr tut.
+  const leer = flaechenbefund(sammlung(...fuellung(20, mitHerkunft)), ausnahme);
+  assert.ok(leer.meldungen.some((m) => m.regel === 'ausnahme-ohne-fall'));
+});
+
+test('jede geführte Ausnahme trägt einen tragfähigen Grund', () => {
+  assert.ok(OHNE_HERKUNFT.length >= 1, 'ein leeres Verzeichnis bestünde jede Prüfung');
+  for (const o of OHNE_HERKUNFT) {
+    assert.ok(o.datei, 'eine Ausnahme ohne Datei lässt sich nicht halten');
+    assert.ok(o.warum.length >= 80, `${o.datei}: Begründung zu kurz`);
+  }
 });
 
 /**

@@ -247,3 +247,45 @@ export function kurzfassung(text, grenze = 300) {
   const gekuerzt = (wort > 0 ? bis.slice(0, wort) : bis).replace(/[\s,;:–—-]+$/, '');
   return `${gekuerzt} …`;
 }
+
+/* ------------------------------------------------------------------ *
+ * Text aus HTML — 5. September 2026
+ *
+ * **Der Anlass.** `flaechenbefund` in `sperrguteinstufung.js` suchte die
+ * Herkunftsangabe zur Sperrguteinstufung mit `/aus der Warengruppe/` im rohen
+ * Dateiinhalt. Auf `llms.txt` und `shop.js` trifft das. Auf einer Artikelseite
+ * steht dort:
+ *
+ * ```html
+ * Die Einstufung als palettierte Ware stammt aus der
+ * <strong>Warengruppe Dämmung</strong> und nicht aus einer Angabe des Lieferanten.
+ * ```
+ *
+ * Ein Zeilenumbruch und eine Marke zwischen „aus der" und „Warengruppe" — das
+ * Muster trifft nicht, obwohl die Auskunft vollständig dasteht. Ein Prüfer mit
+ * diesem Muster über die 25 betroffenen Artikelseiten hätte **25 Fehlmeldungen**
+ * erzeugt.
+ *
+ * > **Ein Muster, das auf zwei Textdateien passt, zerbricht an HTML — und
+ * > deshalb führte das Register genau die zwei Textdateien.**
+ *
+ * Diese Funktion stand bis heute dreimal im Bestand: in `seitenaehnlichkeit.js`
+ * (als lokales `nurText`), in `interna.js` und in `bin/inhaltspruefung.mjs`.
+ * Die ersten beiden sind hierher gezogen. Die dritte bleibt, wo sie ist, und
+ * zwar mit Grund: Sie **löst** Entitäten auf (`&amp;` → `&`), statt sie zu
+ * entfernen, weil ein „&" mitten in einem Satz dort eine Wortgrenze wäre.
+ * ------------------------------------------------------------------ */
+
+/**
+ * Nur der Text: Marken raus, Entitäten raus, Leerraum zusammen.
+ *
+ * @param {string} html
+ * @returns {string}
+ */
+export function nurText(html) {
+  return String(html ?? '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&[a-z]+;|&#\d+;/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}

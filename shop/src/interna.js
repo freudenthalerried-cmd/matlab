@@ -18,6 +18,8 @@
  * Bauen aufrufen muss, wird irgendwann nicht aufgerufen.
  */
 
+import { nurText } from './format.js';
+
 /**
  * Die Muster.
  *
@@ -78,8 +80,10 @@ export function findeInterna(text, { muster = INTERNA } = {}) {
         id: eintrag.id,
         fund: treffer[0],
         stelle: treffer.index,
-        umfeld: text.slice(Math.max(0, treffer.index - 60), treffer.index + treffer[0].length + 60)
-          .replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim(),
+        // `nurText` seit dem 5. September: Diese vier Ersetzungen standen im
+        // Bestand dreimal, und die dritte Fassung war die, die an HTML
+        // zerbrach. Sie stehen jetzt einmal in `format.js`.
+        umfeld: nurText(text.slice(Math.max(0, treffer.index - 60), treffer.index + treffer[0].length + 60)),
         warum: eintrag.warum,
       });
     }

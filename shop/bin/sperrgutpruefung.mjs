@@ -19,12 +19,12 @@
  * Grund.
  */
 
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 
 import {
-  einstufungsbefund, flaechenbefund, HINGENOMMEN, HANDGEWICHT_KG, SPERRGUT_GRUPPEN,
+  einstufungsbefund, flaechenbefund, HINGENOMMEN, HANDGEWICHT_KG, SPERRGUT_GRUPPEN, OHNE_HERKUNFT,
   GEMEINSAMER_GRUND,
 } from '../src/sperrguteinstufung.js';
 import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
@@ -50,11 +50,34 @@ if (!stand.frisch) {
   for (const zeile of abbruchtext(stand)) console.error(zeile);
   process.exit(2);
 }
-const lies = (datei) => {
-  const pfad = join(wurzel, 'ausgabe', 'site', datei);
-  return existsSync(pfad) ? readFileSync(pfad, 'utf8') : null;
+/**
+ * **Gesucht, nicht aufgezählt — seit dem 5. September, abends.**
+ *
+ * Hier stand ein `lies(datei)` über ein Verzeichnis von **zwei** Namen, und
+ * der Bericht meldete darüber „Gebaute Flächen mit dem Wort 2". Gemessen sind
+ * es 32. Die Sammlung geht deshalb über den ganzen Ausgabeordner; welche
+ * davon das Wort trägt, entscheidet der Inhalt.
+ *
+ * `ausgabe/website.html` bleibt draußen: Die Einzeldatei enthält alle Seiten
+ * noch einmal, und eine Fundstelle doppelt zu zählen macht keine Prüfung
+ * besser. Was in ihr steht, steht in `ausgabe/site/`.
+ */
+const sammle = () => {
+  const wurzelordner = join(wurzel, 'ausgabe', 'site');
+  const aus = [];
+  const geh = (ordner) => {
+    if (!existsSync(ordner)) return;
+    for (const eintrag of readdirSync(ordner)) {
+      const voll = join(ordner, eintrag);
+      if (statSync(voll).isDirectory()) { geh(voll); continue; }
+      if (!/\.(html|js|txt|csv|json)$/i.test(voll)) continue;
+      aus.push({ datei: `site/${relative(wurzelordner, voll)}`, inhalt: readFileSync(voll, 'utf8') });
+    }
+  };
+  geh(wurzelordner);
+  return aus;
 };
-const f = flaechenbefund(lies);
+const f = flaechenbefund(sammle);
 
 console.log(`Sperrguteinstufung: ${b.artikel} Artikel, ${b.mitGewicht} mit belegtem Gewicht`);
 console.log(`Geschätzt aus der Warengruppe (${SPERRGUT_GRUPPEN.join(', ')}); `
@@ -89,8 +112,13 @@ if (HINGENOMMEN.length) {
   }
 }
 
-console.log(`  Gebaute Flächen mit dem Wort   ${f.flaechen}, `
-  + `${f.meldungen.length === 0 ? 'alle mit Herkunftsangabe' : `${f.meldungen.length} ohne`}`);
+// Die Zahl ist gemessen, nicht eingetragen: Bis zum 5. September stand hier
+// die Länge eines Verzeichnisses von zwei Namen.
+console.log(`  Gebaute Flächen mit dem Wort   ${f.flaechen}, davon ${f.mitHerkunft} mit Herkunftsangabe`);
+if (f.hingenommen) {
+  console.log(`  Ohne Herkunft, mit Grund       ${f.hingenommen}`);
+  for (const o of OHNE_HERKUNFT) console.log(`    · ${o.datei}`);
+}
 
 if (!b.sauber || !f.sauber) {
   console.error(`\n${b.meldungen.length + f.meldungen.length} Befund(e):\n`);

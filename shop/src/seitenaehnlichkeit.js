@@ -53,6 +53,8 @@
  * Messung, die an einer Überschrift hängt, misst beim nächsten Umformulieren
  * etwas anderes.
  */
+import { nurText } from './format.js';
+
 const CHROM = ['script', 'style', 'svg', 'header', 'footer', 'nav', 'noscript', 'head'];
 
 /**
@@ -80,14 +82,9 @@ function ohneChrom(html) {
   return s.replace(/<a class="springen"[^>]*>[\s\S]*?<\/a>/gi, ' ');
 }
 
-/** Marken raus, Entitäten raus, Leerraum zusammen. */
-function nurText(s) {
-  return String(s)
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&[a-z]+;|&#\d+;/gi, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
+// `nurText` steht seit dem 5. September in `format.js` — es gab die Funktion
+// dreimal im Bestand, und die dritte Fassung wurde gebraucht, als der
+// Flächenprüfer HTML lesen musste.
 
 export function eigenerText(html) {
   return nurText(ohneChrom(html));

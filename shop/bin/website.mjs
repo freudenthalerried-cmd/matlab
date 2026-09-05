@@ -1658,7 +1658,8 @@ function lieferungFragen(f, verweis, mindestNetto) {
     ['Was kostet die Zustellung?',
       `${euro(f.pauschaleNetto)} € netto Pauschale je Lieferung, bei palettierter Ware zuzüglich `
       + `${euro(f.sperrgutZuschlagNetto)} € netto Kranentladung je Hub. Die Fracht fällt je Lieferung `
-      + 'an und nicht je Artikel.'],
+      + 'an und nicht je Artikel. Welcher Artikel palettiert kommt, ist geschätzt: Die Einstufung '
+      + 'folgt aus der Warengruppe und nicht aus einer Angabe des Lieferanten.'],
     ['Gibt es eine Frei-Haus-Schwelle?',
       'Nein. Die Frachtpauschale hängt an der Fahrt und nicht am Warenwert; wer sie trotzdem als '
       + '„frei Haus" bewirbt, hat sie in alle Warenpreise eingerechnet.'],
@@ -1698,6 +1699,12 @@ Annahme. Sie werden getrennt ausgewiesen, weil sie je Lieferung anfallen und nic
   <div><span class="k">Mindestbestellwert</span><span class="w">${mindestNetto ? `${euro(mindestNetto)} €` : '—'}</span><span class="e">netto Warenwert, je Lieferung</span></div>
   <div><span class="k">Liefergebiet</span><span class="w">${LIEFERGEBIET.bezirke.length} Bezirke</span><span class="e">${esc(LIEFERBEZIRKE)}</span></div>
 </div>
+
+<p class="einstufung">Welcher Artikel als palettierte Ware gilt, ist <strong>geschätzt</strong>: Die
+Einstufung folgt aus der Warengruppe und nicht aus einer Angabe des Lieferanten. Keine der 46
+Einstufungen ist belegt. Sie entscheidet, ob die Kranentladung anfällt; wo ein Positionsgewicht
+dagegenspricht, steht es auf der Artikelseite. Aufgelöst wird das mit der Palettenfrage an den
+Lieferanten (Quelle: eigene Lieferantenrechnungen, Stand: 2026-08-31).</p>
 
 <h2>Warum es kein „frei Haus" gibt</h2>
 <p>Weil die Frachtpauschale bei unserem Lieferanten an der Fahrt hängt und nicht am Warenwert: Der

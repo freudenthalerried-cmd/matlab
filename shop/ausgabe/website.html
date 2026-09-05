@@ -1395,6 +1395,12 @@ Annahme. Sie werden getrennt ausgewiesen, weil sie je Lieferung anfallen und nic
   <div><span class="k">Liefergebiet</span><span class="w">5 Bezirke</span><span class="e">Perg, Urfahr-Umgebung, Freistadt, Linz-Land und Linz</span></div>
 </div>
 
+<p class="einstufung">Welcher Artikel als palettierte Ware gilt, ist <strong>geschätzt</strong>: Die
+Einstufung folgt aus der Warengruppe und nicht aus einer Angabe des Lieferanten. Keine der 46
+Einstufungen ist belegt. Sie entscheidet, ob die Kranentladung anfällt; wo ein Positionsgewicht
+dagegenspricht, steht es auf der Artikelseite. Aufgelöst wird das mit der Palettenfrage an den
+Lieferanten (Quelle: eigene Lieferantenrechnungen, Stand: 2026-08-31).</p>
+
 <h2>Warum es kein „frei Haus" gibt</h2>
 <p>Weil die Frachtpauschale bei unserem Lieferanten an der Fahrt hängt und nicht am Warenwert: Der
 zugestellte Beleg über 1.934 € netto trägt dieselbe Pauschale wie der über 614 € netto (Quelle: eigene
@@ -18776,6 +18782,48 @@ function kurzfassung(text, grenze = 300) {
   const wort = bis.lastIndexOf(' ');
   const gekuerzt = (wort > 0 ? bis.slice(0, wort) : bis).replace(/[\s,;:–—-]+$/, '');
   return `${gekuerzt} …`;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function nurText(html) {
+  return String(html ?? '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&[a-z]+;|&#\d+;/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 

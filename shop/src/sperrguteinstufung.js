@@ -44,6 +44,7 @@
  */
 
 import { packungsgewichtKg } from './gebinde.js';
+import { nurText } from './format.js';
 
 /**
  * Die Warengruppen, aus denen die Schätzung „Sperrgut" folgt.
@@ -158,47 +159,127 @@ export const HINGENOMMEN = Object.freeze([
  * > maschinenlesbaren blank steht, wird von Assistenten als Tatsache
  * > weitergegeben.**
  *
- * Geprüft wird grob und in eine Richtung: Wo das Wort fällt, muss die
- * Herkunft in derselben Datei stehen. Wo sie fehlt, ist es ein Befund; dass
- * sie an der richtigen Stelle steht, sagt diese Prüfung nicht — das sagt der
- * Augenschein.
+ * ## Und die Flächen wurden aufgezählt statt gesucht — 5. September, abends
+ *
+ * Die erste Fassung führte ein **Verzeichnis** von zwei Dateien, und das
+ * Werkzeug meldete darüber: „Gebaute Flächen mit dem Wort **2**, alle mit
+ * Herkunftsangabe."
+ *
+ * Gemessen sind es **32**: 25 Artikelseiten, `lieferung.html`, zwei
+ * Wissensseiten, eine Gruppenseite, `llms.txt`, `shop.js` und
+ * `website.html`.
+ *
+ * > **Der Prüfer, der zählt, wie viele Flächen er geprüft hat, zählte sein
+ * > eigenes Register.**
+ *
+ * Dieselbe Familie wie „davon `HINGENOMMEN.length` mit Grund" zwei Felder
+ * weiter oben — am selben Tag gefunden, im selben Modul, und beim Beheben des
+ * einen ist das andere nicht aufgefallen.
+ *
+ * **Warum es genau zwei waren, ist der zweite Teil des Befunds.**
+ * `HERKUNFTSMUSTER` suchte im rohen Dateiinhalt. Auf der Artikelseite steht
+ * die Auskunft vollständig da — aber als
+ * `aus der\n<strong>Warengruppe Dämmung</strong>`. Umbruch und Marke
+ * dazwischen; das Muster trifft nicht. Ein Prüfer mit diesem Muster über die
+ * 25 Artikelseiten hätte 25 Fehlmeldungen erzeugt. Gesucht wird deshalb im
+ * **Text**, nicht im Markup (`nurText` aus `format.js`).
+ *
+ * Geprüft wird weiterhin grob und in eine Richtung: Wo das Wort fällt, muss
+ * die Herkunft in derselben Datei stehen. Dass sie an der richtigen Stelle
+ * steht, sagt diese Prüfung nicht — das sagt der Augenschein.
  */
-export const FLAECHEN = Object.freeze([
-  Object.freeze({
-    datei: 'llms.txt',
-    warum: 'Die Datei, die Assistenten lesen. Sie führt 25 Artikel mit dem Wort „palettiert".',
-  }),
-  Object.freeze({
-    datei: 'shop.js',
-    warum: 'Das Bündel der Kasse: Es schreibt „palettiert, Kranentladung je Hub" an jede '
-      + 'betroffene Warenkorbzeile und rechnet den Betrag in die Frachtzeile.',
-  }),
-]);
 
 /** Woran die Herkunftsangabe zu erkennen ist — in jeder der Flächen dieselbe. */
 export const HERKUNFTSMUSTER = /aus der Warengruppe/;
 
+/** Woran eine Fläche zu erkennen ist. */
+export const FLAECHENMUSTER = /Kranentladung|palettiert/i;
+
 /**
- * @param {(datei: string) => (string|null)} lies  Inhalt einer gebauten Datei
+ * Flächen, die das Wort tragen dürfen, ohne die Herkunft zu nennen — mit Grund.
+ *
+ * In beide Richtungen gehalten: Ein Eintrag, dessen Datei das Wort gar nicht
+ * mehr trägt, ist eine Erlaubnis für etwas, das niemand mehr tut.
  */
-export function flaechenbefund(lies, flaechen = FLAECHEN) {
+export const OHNE_HERKUNFT = Object.freeze([
+  Object.freeze({
+    datei: 'site/wissen/warum-keine-gratislieferung.html',
+    warum: 'Die Seite erklärt, warum die Fracht getrennt ausgewiesen wird, und nennt die '
+      + 'Kranentladung als einen der Posten. Sie stuft keinen Artikel ein und nennt keinen '
+      + 'Betrag je Position — die Herkunft der Einstufung gehört dorthin, wo sie Geld kostet: '
+      + 'auf die Artikelseite und in den Warenkorb.',
+  }),
+  Object.freeze({
+    datei: 'site/wissen/baumeisterpreis.html',
+    warum: 'Erklärt den Preisaufbau und erwähnt die Kranentladung als Beispiel für einen '
+      + 'Kostenbestandteil, der getrennt bleibt. Kein Artikel, keine Einstufung, kein Betrag '
+      + 'je Position — dieselbe Abgrenzung wie bei der Gratislieferungsseite.',
+  }),
+  Object.freeze({
+    datei: 'site/gruppe/mauerwerk.html',
+    warum: 'Die Gruppenseite listet Artikel mit dem Etikett „palettiert" und verlinkt jeden '
+      + 'auf seine Artikelseite, wo die Herkunft steht. Das Etikett darf kurz sein, solange '
+      + 'die Erklärung in Sichtweite steht — dieselbe Entscheidung wie beim Marker über dem '
+      + 'Preis am 5. September vormittags.',
+  }),
+]);
+
+/**
+ * Sucht die Flächen selbst — statt sie aufzuzählen.
+ *
+ * @param {() => Array<{datei: string, inhalt: string}>} sammle  gebaute Dateien
+ * @param {number} mindestens  unter dieser Zahl ist der Lauf leer, nicht sauber
+ */
+export function flaechenbefund(sammle, ohneHerkunft = OHNE_HERKUNFT, mindestens = 20) {
   const meldungen = [];
-  for (const f of flaechen) {
-    const inhalt = lies(f.datei);
-    if (inhalt === null || inhalt === undefined) {
-      meldungen.push({ regel: 'flaeche-fehlt', datei: f.datei, text: `${f.datei}: nicht gebaut` });
-      continue;
+  const gedeckt = new Set();
+  const gefunden = [];
+
+  for (const { datei, inhalt } of sammle()) {
+    const text = nurText(inhalt);
+    if (!FLAECHENMUSTER.test(text)) continue;
+    gefunden.push(datei);
+    if (HERKUNFTSMUSTER.test(text)) continue;
+
+    const eintrag = ohneHerkunft.find((o) => o.datei === datei);
+    if (eintrag) { gedeckt.add(eintrag); continue; }
+    meldungen.push({
+      regel: 'einstufung-ohne-herkunft',
+      datei,
+      text: `${datei}: nennt die Kranentladung und nicht, woher die Einstufung kommt`,
+    });
+  }
+
+  // **Ein leerer Lauf ist kein grüner.** Fände die Sammlung nichts — weil
+  // nicht gebaut wurde, weil ein Pfad sich verschoben hat —, meldete diese
+  // Prüfung „sauber" über null Dateien.
+  if (gefunden.length < mindestens) {
+    meldungen.push({
+      regel: 'zu-wenig-flaechen',
+      text: `nur ${gefunden.length} Flächen mit dem Wort gefunden, erwartet mindestens ${mindestens}`,
+    });
+  }
+
+  for (const o of ohneHerkunft) {
+    if (!o.warum || o.warum.length < 80) {
+      meldungen.push({ regel: 'grund-zu-duenn', datei: o.datei, text: `${o.datei}: Grund zu kurz` });
     }
-    if (!/Kranentladung|palettiert/i.test(inhalt)) continue;
-    if (!HERKUNFTSMUSTER.test(inhalt)) {
+    if (!gedeckt.has(o)) {
       meldungen.push({
-        regel: 'einstufung-ohne-herkunft',
-        datei: f.datei,
-        text: `${f.datei}: nennt die Kranentladung und nicht, woher die Einstufung kommt`,
+        regel: 'ausnahme-ohne-fall',
+        datei: o.datei,
+        text: `${o.datei}: als Ausnahme geführt, trägt das Wort aber nicht (mehr) ohne Herkunft`,
       });
     }
   }
-  return { flaechen: flaechen.length, meldungen, sauber: meldungen.length === 0 };
+
+  return {
+    flaechen: gefunden.length,
+    mitHerkunft: gefunden.length - gedeckt.size - meldungen.filter((m) => m.regel === 'einstufung-ohne-herkunft').length,
+    hingenommen: gedeckt.size,
+    meldungen,
+    sauber: meldungen.length === 0,
+  };
 }
 
 /**

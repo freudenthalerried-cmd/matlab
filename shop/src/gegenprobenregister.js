@@ -765,6 +765,28 @@ export const GEGENPROBEN = Object.freeze([
       + 'umlegt. Diese Mutation setzt die Klammer wieder ein.',
   }),
   Object.freeze({
+    id: 'flaeche-nur-im-verzeichnis',
+    pruefer: 'pruefe-sperrgut',
+    was: 'Eine Fläche, die die Kranentladung nennt und keine Prüfung erreicht',
+    datei: 'shop/bin/website.mjs',
+    art: 'ersetzen',
+    // `alle: true`: `lieferung.html` nennt die Herkunft zweimal — in der
+    // FAQ-Antwort und im Absatz unter der Preistafel. Eine Mutation, die nur
+    // eine der beiden trifft, lässt die Datei zu Recht gedeckt.
+    suchen: 'folgt aus der Warengruppe und nicht aus einer Angabe des Lieferanten',
+    ersetzen: 'steht in der Preistafel',
+    alle: true,
+    erwartet: /lieferung\.html/,
+    baueVorher: true,
+    warum: 'Bis zum 5. September abends nahm `flaechenbefund` seine Flächen aus einem '
+      + 'handgeführten Verzeichnis von zwei Dateien, und der Bericht meldete darüber '
+      + '„Gebaute Flächen mit dem Wort 2" — die Länge des Verzeichnisses als Ergebnis der '
+      + 'Prüfung. Gemessen sind es 31, und `lieferung.html` war eine davon: die Seite, auf '
+      + 'der der Betrag steht und auf die jede Artikelseite verweist. Diese Mutation nimmt '
+      + 'die Herkunftsangabe dort wieder heraus und verlangt, dass die gesuchte — nicht '
+      + 'aufgezählte — Fläche es meldet.',
+  }),
+  Object.freeze({
     id: 'sperrgut-ohne-widerspruch',
     pruefer: 'pruefe-sperrgut',
     was: 'Ein Widerspruch zwischen belegtem Gewicht und Kranentladung, den niemand begründet',

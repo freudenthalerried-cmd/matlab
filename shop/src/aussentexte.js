@@ -78,6 +78,10 @@ export const KEIN_AUSGANG = Object.freeze([
   // **Ergänzt am 5. September**, aus demselben Anlass wie sein Nachbar: Der
   // Frei-Haus-Satz kam aus `preis.js` hierher, weil er dort mit einer Zahl
   // stand, die er nicht nennen darf.
+  // **Ergänzt am 5. September.** Sie baut keinen Text, sie **zerlegt** einen —
+  // aus HTML wird Fließtext, damit ein Prüfer darin suchen kann. Der Weg geht
+  // nach innen, nicht nach außen.
+  Object.freeze({ funktion: 'nurText', warum: 'Nimmt HTML entgegen und gibt weniger zurück: Marken raus, Entitäten raus, Leerraum zusammen. Sie ist kein Ausgang, sondern das Gegenteil — sie wird von Prüfern benutzt, um in gebautem HTML nach Text zu suchen (Sperrgutflächen, Interna, Seitenähnlichkeit). Was sie liefert, geht in keine Datei und an keinen Empfänger.' }),
   Object.freeze({ funktion: 'frachtfreiText', warum: 'Nimmt **nichts** entgegen und gibt einen festen Satz zurück — die schmalste denkbare Textfunktion. Fremdtext kann sie nicht erreichen, weil sie keinen Eingang hat; das war der ganze Zweck der Änderung, die sie geschaffen hat (vorher stand dort eine Lieferantenschwelle in einer Zeichenkettenschablone).' }),
   Object.freeze({ funktion: 'baueAuftrag', warum: 'Baut das Auftragsobjekt aus geprüften Feldern — kein Text verlässt den Shop. Die Eingangsprüfung davor steht in kunde.js und wird eigens geprüft.' }),
   Object.freeze({ funktion: 'baueKern', warum: 'Fügt die Quelldateien zum Browserbündel — Werkzeug, kein Kundentext. Namenskollisionen prüft buendel.js selbst.' }),
