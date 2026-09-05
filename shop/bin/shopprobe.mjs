@@ -979,7 +979,6 @@ if (!existsSync(shopDatei) || !existsSync(siteOrdner)) {
     process.exit(2);
   }
 }
-}
 
 const fuehreAus = promisify(execFile);
 

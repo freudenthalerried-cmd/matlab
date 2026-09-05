@@ -195,7 +195,6 @@ if (!existsSync(demoDatei)) {
     process.exit(2);
   }
 }
-}
 
 const seite = readFileSync(demoDatei, 'utf8');
 const ablage = wegwerfordner('oberflaechenprobe-');

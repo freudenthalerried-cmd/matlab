@@ -18,6 +18,22 @@
  */
 export const PRUEFER = [
   {
+    // **Ganz vorne, seit dem 5. September.** `bin/shopprobe.mjs` und
+    // `bin/oberflaechenprobe.mjs` trugen fünfzehn Stunden lang je eine
+    // geschweifte Klammer zu viel — 64 Browserszenarien, und die beiden
+    // Dateien ließen sich nicht einmal einlesen. Elf Gesamtläufe, jeder grün.
+    //
+    // Diese Prüfung ist die unterste Stufe und die einzige, die **jede** Datei
+    // erreicht — auch die, die aus Kostengründen aus dem Regellauf
+    // herausbleiben. Sie steht deshalb vor allen anderen: Wer sie nicht
+    // besteht, ist kein Werkzeug, sondern Text.
+    name: 'pruefe-lesbar',
+    werkzeug: 'lesbarkeitspruefung.mjs',
+    muster: /Lesbarkeit: (\d+) Quelldateien/,
+    einheit: 'Quelldateien mit dem Übersetzer eingelesen',
+    mindestens: 200,
+  },
+  {
     name: 'pruefe-inhalte',
     werkzeug: 'inhaltspruefung.mjs',
     muster: /(\d+) Dateien, (\d+) Absätze geprüft/,

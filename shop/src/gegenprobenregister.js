@@ -665,6 +665,21 @@ export const GEGENPROBEN = Object.freeze([
       + 'Kunden. Diese Mutation nimmt sie wieder heraus und verlangt, dass es auffällt.',
   }),
   Object.freeze({
+    id: 'werkzeug-das-nicht-laedt',
+    pruefer: 'pruefe-lesbar',
+    was: 'Eine Klammer zu viel in einem Werkzeug, das der Regellauf nicht ausführt',
+    datei: 'shop/bin/shopprobe.mjs',
+    art: 'anhaengen',
+    text: '\n}\n',
+    erwartet: /shopprobe/,
+    warum: 'Genau der Zustand vom 4. auf den 5. September: `bin/shopprobe.mjs` und '
+      + '`bin/oberflaechenprobe.mjs` trugen je eine geschweifte Klammer zu viel, aus der Runde, '
+      + 'die den Frischeschutz eingebaut hat. Fünfzehn Stunden und elf Gesamtläufe lang grün — '
+      + '`npm run alles` holt die Browserproben nicht ab, weil jede einen Chromium-Start '
+      + 'kostet. Der einzige Schutz davor, dass sie verrotten, war ein Schalter, den niemand '
+      + 'umlegt. Diese Mutation setzt die Klammer wieder ein.',
+  }),
+  Object.freeze({
     id: 'sperrgut-ohne-widerspruch',
     pruefer: 'pruefe-sperrgut',
     was: 'Ein Widerspruch zwischen belegtem Gewicht und Kranentladung, den niemand begründet',
