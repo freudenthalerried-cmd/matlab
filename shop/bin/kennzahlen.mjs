@@ -14,11 +14,12 @@
  * Eine Begründung, die überzeugt, überzeugt auch die Konkurrenz.
  */
 
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { kennzahlen, kennzahlbefund, ABSCHNITTE } from '../src/kennzahlen.js';
+import { kennzahlen, kennzahlbefund, schwellenbefund, ABSCHNITTE } from '../src/kennzahlen.js';
 import { gruppen as offeneGruppen } from './offenepunkte.mjs';
+import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
 
 const wurzel = dirname(dirname(fileURLToPath(import.meta.url)));
 const ziel = JSON.parse(readFileSync(join(wurzel, 'data', 'zielgroessen.json'), 'utf8'));
@@ -30,7 +31,57 @@ const ziel = JSON.parse(readFileSync(join(wurzel, 'data', 'zielgroessen.json'), 
 // niemandem auf: Es gibt ja nichts, woran man sie prüfen würde.
 const offen = Object.fromEntries(offeneGruppen.map((g) => [g.id, g.punkte.length]));
 
-const liste = kennzahlen({ ziel, offen });
+/**
+ * **Die Zahl der Messbegriffe kommt aus der Messliste, nicht aus dieser
+ * Datei — seit dem 5. September.**
+ *
+ * Sie stand als `33` in `src/kennzahlen.js`; die Liste führt **32**. Eine
+ * abgeschriebene Schwelle verschiebt sich unbemerkt, und dieses Dokument gibt
+ * es genau deshalb, weil Schwellen sich nicht verschieben sollen.
+ *
+ * Die Liste selbst stammt aus `ausgabe/kampagne/keywords.csv`. Über einem
+ * veralteten Stand wird nicht gerechnet: Eine Schwelle aus den Anzeigen von
+ * gestern ist dieselbe Sorte Zahl wie die abgeschriebene.
+ */
+{
+  const stand = frischebefund(wurzel, 'ausgabe/kampagne');
+  if (!stand.frisch) {
+    for (const zeile of abbruchtext(stand)) console.error(zeile);
+    process.exit(2);
+  }
+}
+const messlistendatei = join(wurzel, 'ausgabe', 'messliste-baustoff.json');
+if (!existsSync(messlistendatei)) {
+  console.error(`Abbruch: ${messlistendatei} fehlt — zuerst \`npm run messliste\`.`);
+  console.error('Eine Schwelle über eine Liste, die es nicht gibt, ist eine Behauptung.');
+  process.exit(2);
+}
+const messliste = JSON.parse(readFileSync(messlistendatei, 'utf8'));
+const begriffe = messliste.gruppen.reduce((n, g) => n + g.keywords.length, 0);
+
+const liste = kennzahlen({ ziel, offen, begriffe });
+
+/**
+ * **Und die Schwellen selbst — geprüft, statt versprochen.**
+ *
+ * Der Testfall „Die Schwellen sind gerechnet, nicht eingetragen" prüfte eine
+ * von zehn. Hier wird zweimal mit deutlich verschiedenen Eingaben gerechnet;
+ * was sich nicht rührt, ist eingetragen und braucht einen Grund im
+ * Verzeichnis. Genau das hätte die abgeschriebene 33 gemeldet.
+ */
+const schwellen = schwellenbefund(({ klickpreis, quote, begriffe: n, faktor }) => kennzahlen({
+  ziel: { ...ziel, zielgewinn: ziel.zielgewinn * faktor },
+  klickpreis,
+  quote,
+  begriffe: n,
+}));
+if (!schwellen.sauber) {
+  console.error(`Abbruch: ${schwellen.meldungen.length} Schwelle(n) ohne Rechnung und ohne Grund.\n`);
+  for (const m of schwellen.meldungen) console.error(`  ✗ ${m.text}  (${m.regel})`);
+  console.error('\nEine abgeschriebene Schwelle verschiebt sich unbemerkt — und dieses');
+  console.error('Dokument gibt es, weil Schwellen sich nicht verschieben sollen.');
+  process.exit(2);
+}
 const befund = kennzahlbefund(liste);
 
 const EUR = (n) => `${n.toLocaleString('de-AT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;

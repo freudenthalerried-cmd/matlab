@@ -665,6 +665,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'Kunden. Diese Mutation nimmt sie wieder heraus und verlangt, dass es auffällt.',
   }),
   Object.freeze({
+    id: 'abgeschriebene-schwelle',
+    pruefer: 'test',
+    was: 'Eine Schwelle, die als Zahl im Quelltext steht statt aus ihrer Liste zu kommen',
+    datei: 'shop/src/kennzahlen.js',
+    art: 'ersetzen',
+    suchen: '      einheit: `von ${begriffe}`,\n      schwelle: begriffe,',
+    ersetzen: "      einheit: 'von 33',\n      schwelle: 33,",
+    erwartet: /Schwelle|suchvolumen/i,
+    warum: 'Der Zustand bis zum 5. September: „Keywords mit gemessenem Suchvolumen — mindestens '
+      + '33 von 33" stand als Zahl im Quelltext, während die Messliste 32 Begriffe führt. Ein '
+      + 'Schwellendokument, dessen ganze Begründung lautet, Schwellen dürften sich nicht '
+      + 'verschieben — und eine seiner Schwellen war eine abgeschriebene Zahl, die sich längst '
+      + 'verschoben hatte. Der Testfall daneben heißt „Die Schwellen sind gerechnet, nicht '
+      + 'eingetragen" und prüfte eine von zehn. Diese Mutation schreibt die Zahl wieder hinein.',
+  }),
+  Object.freeze({
     id: 'palettiert-ohne-herkunft',
     pruefer: 'pruefe-sperrgut',
     was: 'Eine maschinenlesbare Auskunft, die die Kranentladung nennt und ihre Herkunft nicht',

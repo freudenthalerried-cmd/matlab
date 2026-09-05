@@ -117,12 +117,13 @@ export const LESER = Object.freeze([
     warumOhnePruefung: 'Er ruft die Prüfer, statt selbst zu lesen. Die Weigerung gehört '
       + 'dorthin, wo gemessen wird — sonst stünde sie einmal zu früh und einmal zu spät.',
   }),
-  Object.freeze({
-    werkzeug: 'bin/kennzahlen.mjs',
-    erzeugnis: null,
-    warumOhnePruefung: 'Es schreibt eine Übersicht in `ausgabe/`, es liest dort nichts. '
-      + 'Wer nur schreibt, kann nichts Veraltetes messen.',
-  }),
+  // **Berichtigt am 5. September.** Der Grund lautete: „Es schreibt eine
+  // Übersicht in `ausgabe/`, es liest dort nichts." Seit heute liest es die
+  // Messliste — die Schwelle „Keywords mit gemessenem Suchvolumen" stand bis
+  // dahin als abgeschriebene 33 im Quelltext, während die Liste 32 führt.
+  // Ein Grund, der einmal stimmte, gilt nicht weiter, wenn das Werkzeug
+  // etwas Neues tut.
+  Object.freeze({ werkzeug: 'bin/kennzahlen.mjs', erzeugnis: 'ausgabe/kampagne' }),
   Object.freeze({
     werkzeug: 'bin/kampagne.mjs',
     erzeugnis: null,
@@ -221,6 +222,49 @@ export function juengereQuellen(zielZeit, quellen) {
  * @param {string} wurzel  das Verzeichnis `shop/`
  * @param {string} name    ein Schlüssel aus `ERZEUGNISSE`
  */
+/**
+ * Wie alt ist ein Erzeugnis — und was heißt „das Erzeugnis" bei einem Ordner?
+ *
+ * **Berichtigt am 5. September 2026.** Hier stand `statSync(ziel).mtimeMs`.
+ * Bei einer Datei ist das richtig. Bei einem **Ordner** ist es die Zeit, zu
+ * der zuletzt ein Eintrag dazukam oder wegfiel — nicht die Zeit, zu der sein
+ * Inhalt entstanden ist.
+ *
+ * Aufgefallen an `ausgabe/kampagne`: `npm run kampagne` überschreibt die vier
+ * Dateien darin, legt aber keine neue an. Der Ordner behielt seine Zeit von
+ * 00:41, die Dateien darin trugen 06:39 — und das Werkzeug meldete
+ * unverdrossen „älter als 70 Quelldateien", nach jedem Neubau wieder.
+ *
+ * > **Die Weigerung, gegen ein veraltetes Erzeugnis zu prüfen, hat das
+ * > falsche Alter gemessen.** In die eine Richtung ist das lästig: Sie
+ * > verweigert die Arbeit über einem frischen Stand. In die andere ist es
+ * > gefährlich: `ausgabe/site` hat fünf Unterordner, und die Zeit des
+ * > obersten sagt nichts über die Seiten darin.
+ *
+ * Gemessen wird deshalb die **älteste** Datei des Erzeugnisses, rekursiv. Ein
+ * Erzeugnis ist so frisch wie sein ältester Teil — alles andere hieße, einen
+ * halb gebauten Stand für gebaut zu erklären.
+ *
+ * @returns {number|null} Millisekunden, oder `null` bei einem leeren Ordner
+ */
+export function zielzeit(pfad) {
+  const stand = statSync(pfad);
+  if (!stand.isDirectory()) return stand.mtimeMs;
+
+  let aeltester = null;
+  const rand = [pfad];
+  while (rand.length) {
+    const ordner = rand.pop();
+    for (const eintrag of readdirSync(ordner, { withFileTypes: true })) {
+      const voll = join(ordner, eintrag.name);
+      if (eintrag.isDirectory()) { rand.push(voll); continue; }
+      const zeit = statSync(voll).mtimeMs;
+      if (aeltester === null || zeit < aeltester) aeltester = zeit;
+    }
+  }
+  return aeltester;
+}
+
 export function frischebefund(wurzel, name) {
   const e = ERZEUGNISSE[name];
   if (!e) throw new Error(`Unbekanntes Erzeugnis: ${name}`);
@@ -228,8 +272,12 @@ export function frischebefund(wurzel, name) {
   const ziel = join(wurzel, name);
   let zielZeit;
   try {
-    zielZeit = statSync(ziel).mtimeMs;
+    zielZeit = zielzeit(ziel);
   } catch {
+    return { name, baubefehl: e.baubefehl, fehlt: true, juenger: [], frisch: false };
+  }
+  if (zielZeit === null) {
+    // Ein Ordner ohne eine einzige Datei ist kein Erzeugnis, sondern ein Ordner.
     return { name, baubefehl: e.baubefehl, fehlt: true, juenger: [], frisch: false };
   }
 

@@ -59,7 +59,34 @@ const prozent = (x) => `${(x * 100).toFixed(2).replace('.', ',')} %`;
  * @param {number} [p.klickpreis]
  * @param {number} [p.quote]     Kaufquote, die der Versuch ausschließen soll
  */
-export function kennzahlen({ ziel, gemessen = {}, offen = null, klickpreis = 1.5, quote = 0.01 }) {
+export function kennzahlen({
+  ziel, gemessen = {}, offen = null, klickpreis = 1.5, quote = 0.01, begriffe,
+}) {
+  /**
+   * **`begriffe` hat keinen Vorgabewert — und das ist der Punkt.**
+   *
+   * Bis zum 5. September stand die Schwelle „mindestens 33 von 33" hier als
+   * Zahl im Text. Die Messliste führt **32** Begriffe; sie kommt aus
+   * `ausgabe/kampagne/keywords.csv` und hat sich irgendwann geändert, ohne
+   * dass diese Zeile es erfuhr.
+   *
+   * > **Ein Schwellendokument, dessen ganze Begründung lautet, Schwellen
+   * > dürften sich nicht verschieben — und eine seiner Schwellen war eine
+   * > abgeschriebene Zahl, die sich längst verschoben hatte.**
+   *
+   * Der Kommentar zwei Dateien weiter sagte es im selben Zusammenhang schon:
+   * *„Eine Zahl, die plausibel aussieht und falsch ist, fällt in einem
+   * Dashboard niemandem auf: Es gibt ja nichts, woran man sie prüfen würde."*
+   * Er stand über den **offenen Punkten**, die deshalb hereingereicht werden.
+   * Die Begriffe standen daneben und wurden abgeschrieben.
+   *
+   * Ein Vorgabewert wäre hier die schlechteste aller Lösungen: Er sähe aus
+   * wie eine Angabe und wäre wieder eine Abschrift.
+   */
+  if (!Number.isFinite(begriffe) || begriffe <= 0) {
+    throw new Error('kennzahlen() braucht die Zahl der Messbegriffe aus der Messliste — '
+      + 'eine abgeschriebene Schwelle verschiebt sich unbemerkt (npm run messliste).');
+  }
   const umsatz = noetigerUmsatz(ziel, ziel.zahlweg);
   if (!umsatz.tragfaehig) throw new Error(`Zielgrößen tragen sich nicht: ${umsatz.grund}`);
 
@@ -89,8 +116,8 @@ export function kennzahlen({ ziel, gemessen = {}, offen = null, klickpreis = 1.5
       id: 'suchvolumen-gemessen',
       abschnitt: 'freigabe',
       name: 'Keywords mit gemessenem Suchvolumen',
-      einheit: 'von 33',
-      schwelle: 33,
+      einheit: `von ${begriffe}`,
+      schwelle: begriffe,
       richtung: 'mindestens',
       herkunft: 'npm run messliste — die Liste steht, die Messung ist kostenlos',
       entscheidung: 'Reicht das Volumen das Budget nicht aus, dauert der Versuch ein Vielfaches — '
@@ -207,6 +234,91 @@ export function kennzahlen({ ziel, gemessen = {}, offen = null, klickpreis = 1.5
 }
 
 /** Hält der Ist-Wert die Schwelle? `genau` kennt kein Halten — nur Erreichen. */
+/**
+ * Schwellen, die mit Absicht eingetragen und nicht gerechnet sind.
+ *
+ * **Der Anlass, 5. September 2026.** `test/kennzahlen.test.js` trägt einen
+ * Testfall mit dem Namen **„Die Schwellen sind gerechnet, nicht eingetragen"**
+ * — und sein Körper prüft **eine** von zehn: den Monatsumsatz.
+ *
+ * > **Eine Probe, deren Name die Regel nennt und deren Körper einen Fall
+ * > prüft.** Dieselbe Familie wie die Sperren, von denen niemand gezeigt
+ * > hatte, dass sie aufmachen: Der Name verspricht das Allgemeine, geprüft
+ * > ist das Einzelne.
+ *
+ * Durchgerutscht ist dabei die Schwelle „Keywords mit gemessenem
+ * Suchvolumen": **33**, hineingeschrieben, während die Messliste **32**
+ * führt. Sie kommt jetzt von außen herein.
+ *
+ * Zwei bleiben eingetragen, und beide mit Grund. Wer eine dritte einträgt,
+ * muss sie hier nennen — `pruefe-schwellen` hält die Liste dagegen, indem es
+ * die Kennzahlen mit **verschiedenen** Eingaben rechnet und ansieht, welche
+ * Schwelle sich nicht rührt.
+ */
+export const EINGETRAGENE_SCHWELLEN = Object.freeze([
+  Object.freeze({
+    id: 'freigaben-offen',
+    warum: 'Die Null ist keine Rechnung, sondern die Entscheidung selbst: Solange **ein** Punkt '
+      + 'offen ist, den nur der Auftraggeber schließen kann, startet der Versuch nicht. Eine '
+      + 'gerechnete Schwelle hieße, dass es eine erträgliche Zahl offener Freigaben gibt.',
+  }),
+  Object.freeze({
+    id: 'werbeanteil',
+    warum: 'Die Tragfähigkeitsgrenze von 23 % folgt aus der Rohmarge von 25 % und ist in '
+      + '`empfindlichkeit.js` gerechnet — hier steht das **Ergebnis** dieser Rechnung als '
+      + 'Entscheidung. Sie mitwandern zu lassen hieße, die Grenze an dem Tag zu verschieben, an '
+      + 'dem die Marge nachgibt; genau davor soll ein Schwellendokument schützen.',
+  }),
+]);
+
+/**
+ * Welche Schwellen rühren sich nicht, wenn sich die Eingaben ändern?
+ *
+ * Gerechnet wird zweimal mit deutlich verschiedenen Eingaben. Was gleich
+ * bleibt, ist eingetragen — und muss in `EINGETRAGENE_SCHWELLEN` stehen.
+ *
+ * @param {(eingaben: object) => object[]} rechne
+ */
+export function schwellenbefund(rechne, eingetragen = EINGETRAGENE_SCHWELLEN) {
+  const eins = rechne({ klickpreis: 1.5, quote: 0.01, begriffe: 32, faktor: 1 });
+  const zwei = rechne({ klickpreis: 2.5, quote: 0.005, begriffe: 17, faktor: 2 });
+  const zweiById = new Map(zwei.map((k) => [k.id, k]));
+
+  const meldungen = [];
+  const starr = [];
+  for (const k of eins) {
+    const andere = zweiById.get(k.id);
+    if (!andere) {
+      meldungen.push({ regel: 'kennzahl-verschwindet', id: k.id, text: `${k.id}: nur in einem der beiden Läufe` });
+      continue;
+    }
+    if (andere.schwelle !== k.schwelle) continue;
+    starr.push(k.id);
+    if (!eingetragen.some((e) => e.id === k.id)) {
+      meldungen.push({
+        regel: 'schwelle-eingetragen-ohne-grund',
+        id: k.id,
+        text: `${k.id}: die Schwelle ${k.schwelle} rührt sich bei keiner Eingabe — eingetragen ohne Grund`,
+      });
+    }
+  }
+  for (const e of eingetragen) {
+    if (!e.warum || e.warum.length < 80) {
+      meldungen.push({ regel: 'grund-zu-duenn', id: e.id, text: `${e.id}: Grund zu dünn` });
+    }
+    if (!starr.includes(e.id)) {
+      meldungen.push({
+        regel: 'grund-ohne-fall',
+        id: e.id,
+        text: `${e.id}: steht als eingetragen und rührt sich sehr wohl`,
+      });
+    }
+  }
+  return {
+    kennzahlen: eins.length, eingetragen: starr.length, meldungen, sauber: meldungen.length === 0,
+  };
+}
+
 export function haeltSchwelle(ist, schwelle, richtung) {
   if (richtung === 'mindestens') return ist >= schwelle;
   if (richtung === 'hoechstens') return ist <= schwelle;
