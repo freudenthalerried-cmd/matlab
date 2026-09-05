@@ -861,6 +861,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'außer der Zeichenkette, aus der er stammt.',
   }),
   Object.freeze({
+    id: 'kuerzel-im-kundentext',
+    pruefer: 'pruefe-belege',
+    was: 'Das Einheitenkürzel des Lieferanten in der Mengenspalte eines Kundentexts',
+    datei: 'shop/src/kundenanfrage.js',
+    art: 'ersetzen',
+    suchen: '      const menge = anfrageSpalte(`${mengeText} ${einheitText(p.einheit)}`, 14);',
+    ersetzen: '      const menge = anfrageSpalte(`${mengeText} ${p.einheit}`, 14);',
+    erwartet: /kuerzel-statt-wort/,
+    warum: 'Die Ersetzung stellt den Zustand vom 4. September her — nicht im Quelltext, '
+      + 'sondern im Text, den der Prüfer sah: `baueKundenanfrage` nahm die Einheitentafel als '
+      + 'Aufrufparameter mit Vorgabewert `{}`, die Oberfläche reichte sie herein, '
+      + '`bin/belegpruefung.mjs` nicht. Der einzige Prüfer über diesen Text las damit eine '
+      + 'Fassung mit „500 KG" und „6 KRT", die es beim Kunden nie gab — und keine Regel konnte '
+      + 'anschlagen, weil es keine gab. Diese Gegenprobe verlangt, dass sie es jetzt tut.',
+  }),
+  Object.freeze({
     id: 'einheitenliste-von-gestern',
     pruefer: 'pruefe-gebinde',
     was: 'Eine Einheitenliste, die den Bestand von gestern festhält',

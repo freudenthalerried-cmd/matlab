@@ -32,6 +32,7 @@
  */
 
 import { findeWiderrufe } from './widerruf.js';
+import { EINHEITEN } from './format.js';
 import { ZAHLUNGSBEDINGUNGEN, AGB_GLIEDERUNG, AGB_VERWEISE } from './rechtstexte.js';
 
 /** Die Zeile, die eine Endsumme ausweist. */
@@ -160,7 +161,55 @@ export function pruefeBeleg({ art, text, mussEnthalten = [] }) {
     });
   }
 
+  for (const fund of roheEinheiten(text)) {
+    meldungen.push({
+      regel: 'kuerzel-statt-wort',
+      zeile: fund.zeile,
+      text: `„${fund.fundstelle}" — Kürzel des Lieferanten in der Mengenspalte, `
+        + `lesbar wäre „${fund.menge} ${EINHEITEN[fund.kuerzel]}"`,
+    });
+  }
+
   return { art, meldungen, sauber: meldungen.length === 0 };
+}
+
+/* ------------------------------------------------------------------ *
+ * Kürzel des Lieferanten in der Mengenspalte — 5. September 2026
+ *
+ * Der Anfragetext, den `bin/belegpruefung.mjs` prüfte, sah so aus:
+ *
+ * ```
+ * 500 KG        Capatect Klebe- und Spachtelmasse 186 M 25 kg
+ * 6 KRT         Capatect Universaldübel Schraubdübel …
+ * ```
+ *
+ * `baueKundenanfrage` nahm die Einheitentafel als **Aufrufparameter mit
+ * Vorgabewert `{}`**. Die Oberfläche reichte sie herein, der Prüfer nicht —
+ * also las der einzige Prüfer über diesen Text eine Fassung, die es beim
+ * Kunden nie gab, und keine Regel konnte anschlagen.
+ *
+ * > **Ein Prüfer, der eine andere Fassung liest als der Empfänger, prüft ein
+ * > Dokument, das niemand bekommt.**
+ *
+ * Gesucht wird eng: eine Zeile, die mit einer Zahl beginnt, darauf ein
+ * Kürzel aus `EINHEITEN` und dahinter Spaltenabstand oder Zeilenende. Die
+ * Artikelnamen selbst tragen Kürzel („100 STK, 1 KAR" steht im Namen eines
+ * Dübelkartons) — dort folgt ein Komma, und dort gehören sie hin: Der Name
+ * kommt vom Lieferanten und wird nicht umgeschrieben.
+ * ------------------------------------------------------------------ */
+
+const KUERZELZEILE = new RegExp(
+  `^\\s*(\\d+(?:[.,]\\d+)?)\\s(${Object.keys(EINHEITEN).join('|')})(?=\\s\\s|\\s*$)`,
+);
+
+/** Findet Mengenzeilen, die das Kürzel statt des Wortes tragen. */
+export function roheEinheiten(text) {
+  const funde = [];
+  String(text ?? '').split(/\r?\n/).forEach((zeile, i) => {
+    const t = zeile.match(KUERZELZEILE);
+    if (t) funde.push({ zeile: i + 1, menge: t[1], kuerzel: t[2], fundstelle: `${t[1]} ${t[2]}` });
+  });
+  return funde;
 }
 
 /**

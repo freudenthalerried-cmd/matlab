@@ -848,11 +848,15 @@
           + 'annehmen. Wir liefern nach ' + D.bezirke.join(', ') + '.'));
         return;
       }
+      // **`einheiten` entfällt seit dem 5. September.** `baueKundenanfrage`
+      // holt die Tafel selbst aus `format.js`. Sie hier hereinzureichen hieß,
+      // dass ein Aufrufer sie vergessen konnte — und der Prüfer über diesen
+      // Text tat es. Die Oberfläche braucht `D.einheiten` weiter für ihre
+      // eigenen Zeilen; der Anfragetext nicht mehr.
       var a = baueKundenanfrage({
         rechnung: rechnung,
         bezirk: wahl,
         betreiber: D.betreiber || {},
-        einheiten: D.einheiten || {},
       });
       if (!a.moeglich) {
         anfrageKasten.appendChild(el('p', 'gebiet nein', a.hindernis));
@@ -912,16 +916,24 @@
       });
       reihe.appendChild(kopieren);
 
-      var mail = mailtoAdresse(a);
-      if (mail) {
+      // **Der Grund statt der Lücke — 5. September.** Hier stand `if (mail)`,
+      // und wo keine Adresse zustande kam, fehlte der Knopf wortlos. Gemessen
+      // wurde das erst heute: Ab **zwei** Positionen ist die Adresse länger
+      // als 1.800 Zeichen, also bei jedem Korb, für den dieser Shop gebaut
+      // ist. `bin/website.mjs` hat sich zu genau dieser Stelle schon einmal
+      // festgelegt — die Oberfläche solle sagen, *warum* kein Mailknopf da
+      // ist, statt ihn stillschweigend wegzulassen.
+      var weg = mailtoWeg(a);
+      if (weg.adresse) {
         var link = document.createElement('a');
         link.className = 'knopf';
-        link.href = mail;
+        link.href = weg.adresse;
         link.textContent = 'Als Mail öffnen';
         reihe.appendChild(link);
       }
       reihe.appendChild(rueckmeldung);
       anfrageKasten.appendChild(reihe);
+      if (weg.text) anfrageKasten.appendChild(el('p', 'gebiet', weg.text));
 
       /**
        * **Der Bestellweg — Gate 26, 4. September.** Bis dahin endete die Kasse

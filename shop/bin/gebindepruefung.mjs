@@ -65,7 +65,7 @@ if (e.ohneArtikel) console.log(`  Positionen ohne Artikel im Katalog ${e.ohneArt
  */
 const eb = einheitenbefund(artikel);
 console.log(`  Einheiten im Katalog            ${eb.einheiten}, `
-  + `${STUECKEINHEITEN.size} davon Stückeinheiten`);
+  + `${STUECKEINHEITEN.size} davon Stückeinheiten, ${eb.mitWort} mit lesbarem Wort`);
 if (!eb.sauber) {
   console.log('\n  ✗ Die Einheitenliste passt nicht zum Katalog:');
   for (const m of eb.meldungen) console.log(`      ${m.text}  (${m.regel})`);

@@ -38,6 +38,8 @@
 export const KLEINSTES_GEBINDE_KG = 0.1;
 export const GROESSTES_GEBINDE_KG = 50;
 
+import { EINHEITEN } from './format.js';
+
 const zahl = (roh) => Number(String(roh).replace(',', '.'));
 
 /**
@@ -377,10 +379,25 @@ export function packungsgewichtKg(artikel) {
  * Richtungen. Eine Einheit, die keiner führt, prüft nichts; eine, die keine
  * der beiden Listen kennt, fällt still aus jeder Umrechnung.
  */
-export function einheitenbefund(artikel = []) {
+export function einheitenbefund(artikel = [], woerter = EINHEITEN) {
   const meldungen = [];
   const gefuehrt = new Set(artikel.map((a) => String(a.einheit ?? '').toUpperCase()).filter(Boolean));
   const gemessen = new Set(Object.keys(GEBINDELESER));
+
+  // **Die dritte Liste, ergänzt am 5. September.** `EINHEITEN` in `format.js`
+  // ist die einzige, die dem Kunden begegnet: Ohne Eintrag reicht
+  // `einheitText` das Kürzel des Lieferanten durch — richtig so, denn Raten
+  // wäre schlimmer —, und dann steht „6 KRT" auf einem Kundentext. Genau das
+  // stand dort, bis heute, in der Fassung, die der Prüfer las.
+  for (const e of gefuehrt) {
+    if (!woerter[e]) {
+      meldungen.push({
+        regel: 'einheit-ohne-wort',
+        einheit: e,
+        text: `${e}: kein lesbares Wort — das Kürzel ginge so an den Kunden`,
+      });
+    }
+  }
 
   for (const e of STUECKEINHEITEN) {
     if (!gefuehrt.has(e)) {
@@ -397,7 +414,12 @@ export function einheitenbefund(artikel = []) {
     }
   }
 
-  return { einheiten: gefuehrt.size, sauber: meldungen.length === 0, meldungen };
+  return {
+    einheiten: gefuehrt.size,
+    mitWort: [...gefuehrt].filter((e) => woerter[e]).length,
+    sauber: meldungen.length === 0,
+    meldungen,
+  };
 }
 
 /**

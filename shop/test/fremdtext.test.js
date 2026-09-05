@@ -29,7 +29,7 @@ import { erzeugeBestellungen } from '../src/bestellung.js';
 import { erzeugeAngebot, erzeugeRechnung, erzeugeAuftragsbestaetigung } from '../src/beleg.js';
 import { erzeugeRechtstexteauftrag } from '../src/rechtstexteauftrag.js';
 import { kundenWarenkorb } from '../src/shopkern.js';
-import { baueKundenanfrage, mailtoAdresse } from '../src/kundenanfrage.js';
+import { baueKundenanfrage, mailtoWeg } from '../src/kundenanfrage.js';
 import { erzeugeImpressum } from '../src/rechtstexte.js';
 import { robotsTxt } from '../src/maschinenlesbar.js';
 import { erzeugeLieferantenanfrage } from '../src/lieferantenanfrage.js';
@@ -308,7 +308,7 @@ test('Ausgang mailto-Adresse: Gift bleibt eine Adresse ohne zusätzliche Kopfzei
   // Ein Umbruch in einem mailto-Rumpf kann im Mailprogramm einen zweiten
   // Kopfeintrag erzeugen. Die Adresse muss vollständig kodiert sein.
   const [, giftig] = anfragePaar();
-  const adresse = mailtoAdresse({ ...giftig, empfaenger: 'bestellung@example.at' });
+  const adresse = mailtoWeg({ ...giftig, empfaenger: 'bestellung@example.at' }).adresse;
   if (adresse === null) return; // zu lang — dann gibt es keinen Knopf, siehe kundenanfrage.test.js
   assert.equal(zeilen(adresse), 1);
   assert.ok(!/[\r\n\u2028\u2029]/.test(adresse), 'roher Umbruch in der Adresse');

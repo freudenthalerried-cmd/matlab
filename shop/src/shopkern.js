@@ -950,6 +950,22 @@ export function kundenWarenkorb(zeilen, { artikel, lieferanten, mindestbestellwe
   let ohneGewicht = 0;
   for (const t of teillieferungen) {
     for (const p of t.positionen) {
+      // **Bei Kiloware ist die Menge das Gewicht** — ergänzt am 5. September.
+      //
+      // Ein Warenkorb über 500 kg Klebe- und Spachtelmasse meldete
+      // „125,0 kg (für 4 Positionen nicht hinterlegt)": Der Artikel wird je
+      // Kilogramm verkauft und trägt kein `gewichtKg`, also fiel er unter die
+      // offenen Positionen — obwohl 500 kg keine Schätzung sind, sondern die
+      // bestellte Menge in Kilogramm.
+      //
+      // > **Die eine Zahl, die entscheidet, ob das eigene Fahrzeug reicht oder
+      // > eine Spedition nötig ist, war um den Faktor fünf zu klein — und der
+      // > Klammerzusatz ließ die Lücke woanders vermuten.**
+      //
+      // Dieselbe Rechnung deckt die beiden Artikel mit `gewichtKg: 1` bei
+      // Einheit `KG` ab: Ein Kilogramm je Kilogramm ist die Identität, und
+      // 50 × 1 ist dasselbe wie 50. Die Einheit sagt es ohne das Feld.
+      if (String(p.einheit ?? '').toUpperCase() === 'KG') { gewichtKg += p.menge; continue; }
       if (typeof p.gewichtKg === 'number') gewichtKg += p.gewichtKg * p.menge;
       else ohneGewicht += 1;
     }

@@ -1,8 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { baueKundenanfrage, mailtoAdresse, pruefeAnfrageAufGeheimnis, MAILTO_HOECHSTLAENGE }
+import { baueKundenanfrage, mailtoWeg, pruefeAnfrageAufGeheimnis, MAILTO_HOECHSTLAENGE }
   from '../src/kundenanfrage.js';
+import { einheitText } from '../src/format.js';
+
+/** Nur die Adresse — die Proben unten fragen meistens danach. */
+const adresseVon = (a) => mailtoWeg(a).adresse;
 import { kundenWarenkorb } from '../src/shopkern.js';
 
 const katalog = JSON.parse(readFileSync(new URL('../data/katalog-baustoff.json', import.meta.url), 'utf8'));
@@ -70,7 +74,10 @@ test('jede Position steht mit Menge, Einheit, Artikelnummer und Zeilensumme im T
       gezaehlt++;
       assert.ok(a.text.includes(p.sku), `${p.sku} fehlt im Text`);
       assert.ok(a.text.includes(p.bezeichnung), `${p.bezeichnung} fehlt im Text`);
-      assert.ok(a.text.includes(`${String(p.menge).replace('.', ',')} ${p.einheit}`),
+      // `einheitText`, nicht `p.einheit`: Der Kunde liest „Karton", nicht
+      // „KRT". Bis zum 5. September stand hier das Kürzel — und dieselbe
+      // Zusicherung hätte sie geprüft, wenn der Text sie getragen hätte.
+      assert.ok(a.text.includes(`${String(p.menge).replace('.', ',')} ${einheitText(p.einheit)}`),
         `Menge von ${p.sku} fehlt`);
       assert.ok(a.text.includes(p.zeilensummeNetto.toFixed(2).replace('.', ',')),
         `Zeilensumme von ${p.sku} fehlt`);
@@ -139,7 +146,7 @@ test('die Geheimnisprüfung schlägt an, wenn ein Einkaufspreis im Text steht', 
 test('ohne hinterlegte E-Mail-Adresse gibt es keine mailto-Adresse, aber einen Hinweis', () => {
   const a = anfrageFuer(zwei);
   assert.equal(a.empfaenger, null);
-  assert.equal(mailtoAdresse(a), null);
+  assert.equal(adresseVon(a), null);
   assert.ok(a.hinweise.some((h) => /E-Mail-Adresse/.test(h)));
 });
 
@@ -148,8 +155,14 @@ test('mit Adresse entsteht eine mailto-Adresse, die Betreff und Text trägt', ()
   // den Satz „Die Fracht kostet hier mehr als die Ware", sobald das zutrifft —
   // und in dieser Probe trifft es zu, weil die Prüfpreise klein sind. Der Satz
   // kostet rund zweihundert Zeichen in der Adresse.
-  const a = anfrageFuer([zwei[0]], { betreiber: { ...betreiber, email: 'office@example.at' } });
-  const adresse = mailtoAdresse(a);
+  //
+  // **Ohne den Kleinmengensatz, seit dem 05.09.** Die Frachtzeile trägt jetzt
+  // auch im Einzellieferungsfall ihren Grund — noch einmal gut hundert
+  // Zeichen. Ein Korb, der die Fracht trägt, hat den Kleinmengensatz nicht
+  // und behält den Knopf; genau so ein Korb steht hier.
+  const a = anfrageFuer([{ sku: artikel[0].sku, menge: 60 }],
+    { betreiber: { ...betreiber, email: 'office@example.at' } });
+  const adresse = adresseVon(a);
   assert.ok(adresse.startsWith('mailto:office%40example.at?subject='));
   assert.ok(adresse.includes(encodeURIComponent('UNVERBINDLICHE ANFRAGE')));
   assert.ok(adresse.length <= MAILTO_HOECHSTLAENGE);
@@ -160,7 +173,7 @@ test('eine lange Liste bekommt keine mailto-Adresse, statt einer stillschweigend
   const a = anfrageFuer(alle, { betreiber: { ...betreiber, email: 'office@example.at' } });
   assert.equal(a.moeglich, true);
   assert.ok(a.text.length > 1000);
-  assert.equal(mailtoAdresse(a), null,
+  assert.equal(adresseVon(a), null,
     'Eine gekürzte Positionsliste in der Mail wäre schlimmer als kein Knopf');
 });
 
@@ -182,19 +195,25 @@ test('Mengen stehen mit Komma und lesbarer Einheit im Anfragetext', () => {
   // Kürzel aus dem Katalog. Ein Text, der an einen Kunden geht, schreibt
   // nicht in Datenbankschreibweise.
   const rechnung = kundenWarenkorb([{ sku: artikel[0].sku, menge: 5.25 }], daten);
-  const a = baueKundenanfrage({
-    rechnung, bezirk: 'Perg', betreiber, datum: '2026-08-29',
-    einheiten: { [artikel[0].einheit]: 'm²' },
-  });
+  const a = baueKundenanfrage({ rechnung, bezirk: 'Perg', betreiber, datum: '2026-08-29' });
   assert.match(a.text, /5,25 m²/);
   assert.ok(!a.text.includes('5.25'), 'kein Dezimalpunkt im Kundentext');
 });
 
-test('ohne Einheitentabelle bleibt das Kürzel stehen, statt zu verschwinden', () => {
-  const rechnung = kundenWarenkorb([{ sku: artikel[0].sku, menge: 2 }], daten);
+test('ein unbekanntes Kürzel bleibt stehen, statt zu verschwinden', () => {
+  // **Umgebaut am 5. September.** Vorher hieß dieser Fall „ohne
+  // Einheitentabelle": Die Tafel kam als Aufrufparameter mit Vorgabewert
+  // `{}`, und wer sie vergaß, bekam die Kürzel des Lieferanten in einen
+  // Kundentext. Genau das tat `bin/belegpruefung.mjs`, der einzige Prüfer
+  // über diesen Text — *er las eine Fassung, die es beim Kunden nie gab.*
+  //
+  // Die Schutzabsicht bleibt, nur eine Ebene tiefer: `einheitText` reicht ein
+  // **unbekanntes** Kürzel durch, statt es zu raten.
+  const fremd = [{ ...artikel[0], sku: 'X-1', einheit: 'PAL' }];
+  const rechnung = kundenWarenkorb([{ sku: 'X-1', menge: 2 }],
+    { ...daten, artikel: fremd });
   const a = baueKundenanfrage({ rechnung, bezirk: 'Perg', betreiber, datum: '2026-08-29' });
-  assert.ok(a.text.includes(`2 ${artikel[0].einheit}`),
-    'lieber das Kürzel als gar keine Einheit');
+  assert.ok(a.text.includes('2 PAL'), 'lieber das Kürzel als eine geratene Einheit');
 });
 
 
@@ -344,7 +363,7 @@ const mailKorb = (n) =>
 
 test('Ohne hinterlegte Adresse gibt es den Knopf gar nicht', () => {
   assert.equal(betreiber.email, '', 'die Vorlage dieser Proben hat bewusst keine Adresse');
-  assert.equal(mailtoAdresse(anfrageFuer([{ sku: artikel[0].sku, menge: 3 }])), null);
+  assert.equal(adresseVon(anfrageFuer([{ sku: artikel[0].sku, menge: 3 }])), null);
 });
 
 /*
@@ -358,15 +377,60 @@ test('Ohne hinterlegte Adresse gibt es den Knopf gar nicht', () => {
  * dass sich diese Lieferung für ihn nicht lohnt; der kopierbare Text bleibt
  * in jedem Fall. Bei einem Korb, der die Fracht trägt, ändert sich nichts —
  * dann steht der Satz gar nicht im Text.
+ *
+ * **Noch einmal verschoben am 05.09., und dieselbe Abwägung.** Die
+ * Frachtzeile nannte ihren Grund nur bei mehreren Lieferungen — also nie,
+ * denn der Katalog führt einen Lieferanten. Seit heute steht er auch im
+ * Regelfall da, und in einem Korb, in dem palettierte Ware liegt, sind das
+ * gut hundert weitere Zeichen. Damit verliert **auch der Ein-Positionen-Korb
+ * mit Kleinmengensatz** den Knopf.
+ *
+ * Zwei Sätze kosten ihn, und beide sagen dem Kunden etwas, das er sonst
+ * nirgends erfährt. Die Antwort auf das Schrumpfen ist deshalb nicht, den
+ * Text zu kürzen, sondern das, was diese Runde tut: **dem Kunden sagen,
+ * warum der Knopf fehlt** (`mailtoWeg().text`), statt ihn wortlos
+ * wegzulassen.
  */
-test('Bei einer Position gibt es den Mailknopf', () => {
-  assert.ok(mailtoAdresse(mailKorb(1)), 'eine Position');
+test('Ein Korb ohne Kleinmengensatz behält den Knopf', () => {
+  // Nicht die Zahl der Positionen entscheidet allein, sondern die Länge —
+  // und die hängt an den Sätzen, die der Text tragen muss.
+  const gross = anfrageFuer([{ sku: artikel[0].sku, menge: 60 }], {
+    betreiber: { ...betreiber, email: 'bestellung@bauversand.com' },
+  });
+  assert.ok(!/mehr als die Ware/.test(gross.text), 'Vorbedingung: kein Kleinmengensatz');
+  assert.ok(adresseVon(gross), 'ein Korb, der die Fracht trägt');
 });
 
-test('Ab zwei Positionen gibt es ihn nicht mehr', () => {
-  for (const n of [2, 3, 5, 8]) {
-    assert.equal(mailtoAdresse(mailKorb(n)), null, `${n} Positionen`);
+test('Mit Kleinmengensatz gibt es ihn ab der ersten Position nicht mehr', () => {
+  for (const n of [1, 2, 3, 5, 8]) {
+    assert.equal(adresseVon(mailKorb(n)), null, `${n} Positionen`);
   }
+});
+
+test('Wo der Knopf fehlt, steht der Grund', () => {
+  // **Der eigentliche Fund vom 5. September.** Die Schwelle ist seit dem
+  // 1. September gemessen und begründet; niemand hatte je gesagt, dass der
+  // Kunde nichts davon erfährt. `bin/website.mjs` legt sich zum
+  // Schwesterfall ausdrücklich fest: Die Oberfläche solle sagen, *warum*
+  // kein Mailknopf da ist, statt ihn stillschweigend wegzulassen.
+  const ohneAdresse = mailtoWeg(anfrageFuer([{ sku: artikel[0].sku, menge: 3 }]));
+  assert.equal(ohneAdresse.grund, 'keine-adresse');
+  assert.match(ohneAdresse.text, /kopieren/);
+
+  const zuLang = mailtoWeg(mailKorb(8));
+  assert.equal(zuLang.grund, 'zu-lang');
+  assert.match(zuLang.text, /kürzen ihn/);
+
+  const geht = mailtoWeg(anfrageFuer([{ sku: artikel[0].sku, menge: 60 }],
+    { betreiber: { ...betreiber, email: 'bestellung@bauversand.com' } }));
+  assert.equal(geht.grund, null);
+  assert.equal(geht.text, '', 'wo der Knopf da ist, braucht es keinen Grund');
+});
+
+test('Die Oberfläche zeigt den Grund, statt den Knopf wegzulassen', () => {
+  const ui = readFileSync(new URL('../shop-ui.js', import.meta.url), 'utf8');
+  assert.match(ui, /mailtoWeg\(/, 'sonst kennt sie den Grund gar nicht');
+  assert.match(ui, /weg\.text/, 'und schreibt ihn nicht hin');
 });
 
 test('Ein Korb, der die Fracht trägt, verliert den Knopf nicht', () => {
@@ -376,7 +440,7 @@ test('Ein Korb, der die Fracht trägt, verliert den Knopf nicht', () => {
     betreiber: { ...betreiber, email: 'bestellung@bauversand.com' },
   });
   assert.ok(!/mehr als die Ware/.test(gross.text), 'der Satz steht zu Unrecht im Text');
-  assert.ok(mailtoAdresse(gross), 'der Knopf fehlt, obwohl der Korb die Fracht trägt');
+  assert.ok(adresseVon(gross), 'der Knopf fehlt, obwohl der Korb die Fracht trägt');
 });
 
 test('Der Kopiertext bleibt in jeder Größe da — er ist der Weg, nicht die Abkürzung', () => {

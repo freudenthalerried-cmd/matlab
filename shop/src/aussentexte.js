@@ -55,7 +55,7 @@ export const AUSGAENGE = Object.freeze([
   Object.freeze({ modul: 'src/lieferantenanfrage.js', funktion: 'erzeugeLieferantenanfrage', an: 'Lieferant', form: 'Brieftext' }),
   Object.freeze({ modul: 'src/rechtstexteauftrag.js', funktion: 'erzeugeRechtstexteauftrag', an: 'Rechtstexteanbieter', form: 'Brieftext' }),
   Object.freeze({ modul: 'src/kundenanfrage.js', funktion: 'baueKundenanfrage', an: 'Lieferant, über den Kunden', form: 'Zeilentext' }),
-  Object.freeze({ modul: 'src/kundenanfrage.js', funktion: 'mailtoAdresse', an: 'das Mailprogramm des Kunden', form: 'URL' }),
+  Object.freeze({ modul: 'src/kundenanfrage.js', funktion: 'mailtoWeg', an: 'das Mailprogramm des Kunden', form: 'URL' }),
   Object.freeze({ modul: 'src/rechtstexte.js', funktion: 'erzeugeImpressum', an: 'jeder Besucher', form: 'Zeilentext' }),
   Object.freeze({ modul: 'src/maschinenlesbar.js', funktion: 'robotsTxt', an: 'jeder Crawler', form: 'robots.txt' }),
   Object.freeze({ modul: 'src/vies.js', funktion: 'belegzeile', an: 'die eigene Ablage', form: 'Zeile' }),

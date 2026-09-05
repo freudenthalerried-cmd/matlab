@@ -291,6 +291,7 @@ function kurzfassung(text, grenze = 300) {
 const KLEINSTES_GEBINDE_KG = 0.1;
 const GROESSTES_GEBINDE_KG = 50;
 
+
 const zahl = (roh) => Number(String(roh).replace(',', '.'));
 
 
@@ -630,10 +631,25 @@ function packungsgewichtKg(artikel) {
 
 
 
-function einheitenbefund(artikel = []) {
+function einheitenbefund(artikel = [], woerter = EINHEITEN) {
   const meldungen = [];
   const gefuehrt = new Set(artikel.map((a) => String(a.einheit ?? '').toUpperCase()).filter(Boolean));
   const gemessen = new Set(Object.keys(GEBINDELESER));
+
+  
+  
+  
+  
+  
+  for (const e of gefuehrt) {
+    if (!woerter[e]) {
+      meldungen.push({
+        regel: 'einheit-ohne-wort',
+        einheit: e,
+        text: `${e}: kein lesbares Wort — das Kürzel ginge so an den Kunden`,
+      });
+    }
+  }
 
   for (const e of STUECKEINHEITEN) {
     if (!gefuehrt.has(e)) {
@@ -650,7 +666,12 @@ function einheitenbefund(artikel = []) {
     }
   }
 
-  return { einheiten: gefuehrt.size, sauber: meldungen.length === 0, meldungen };
+  return {
+    einheiten: gefuehrt.size,
+    mitWort: [...gefuehrt].filter((e) => woerter[e]).length,
+    sauber: meldungen.length === 0,
+    meldungen,
+  };
 }
 
 
@@ -1842,6 +1863,22 @@ function kundenWarenkorb(zeilen, { artikel, lieferanten, mindestbestellwertNetto
   let ohneGewicht = 0;
   for (const t of teillieferungen) {
     for (const p of t.positionen) {
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      if (String(p.einheit ?? '').toUpperCase() === 'KG') { gewichtKg += p.menge; continue; }
       if (typeof p.gewichtKg === 'number') gewichtKg += p.gewichtKg * p.menge;
       else ohneGewicht += 1;
     }
@@ -1875,6 +1912,11 @@ function kundenWarenkorb(zeilen, { artikel, lieferanten, mindestbestellwertNetto
     offen,
   };
 }
+
+
+
+
+
 
 
 
@@ -1959,7 +2001,7 @@ function anfrageUmbruch(text, breite) {
 
 
 
-function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = null, einheiten = {} }) {
+function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = null }) {
   const leer = { betreff: '', text: '', hinweise: [] };
 
   if (!rechnung || !rechnung.teillieferungen || rechnung.positionen === 0) {
@@ -2031,7 +2073,10 @@ function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = null, ein
       
       
       const namenszeilen = anfrageUmbruch(p.bezeichnung, 44);
-      const menge = anfrageSpalte(`${mengeText} ${einheiten[p.einheit] ?? p.einheit ?? 'Stk'}`, 14);
+      
+      
+      
+      const menge = anfrageSpalte(`${mengeText} ${einheitText(p.einheit)}`, 14);
       
       
       
@@ -2056,7 +2101,23 @@ function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = null, ein
         + `   ${teil.frachtGrund ?? ''}`.trimEnd());
     }
   }
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  const einzelgrund = mehrere ? '' : (rechnung.teillieferungen[0]?.frachtGrund ?? '');
   zeilen.push(`${anfrageSpalte(mehrere ? 'Zustellung gesamt' : 'Zustellung', 22)}${anfrageEuro(rechnung.frachtNetto)}`);
+  
+  
+  
+  for (const zeile of einzelgrund ? anfrageUmbruch(einzelgrund, 52) : []) {
+    zeilen.push(`  ${zeile}`);
+  }
   zeilen.push(`${anfrageSpalte('Netto gesamt', 22)}${anfrageEuro(rechnung.nettoGesamt)}`);
   zeilen.push(`${anfrageSpalte('USt', 22)}${anfrageEuro(rechnung.ustBetrag)}`);
   zeilen.push(`${anfrageSpalte('Brutto gesamt', 22)}${anfrageEuro(rechnung.bruttoGesamt)}`);
@@ -2150,13 +2211,74 @@ function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = null, ein
 
 const MAILTO_HOECHSTLAENGE = 1800;
 
-function mailtoAdresse(anfrage) {
-  if (!anfrage.moeglich || !anfrage.empfaenger) return null;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function mailtoWeg(anfrage) {
+  if (!anfrage.moeglich) {
+    return { adresse: null, grund: 'keine-anfrage', text: '' };
+  }
+  if (!anfrage.empfaenger) {
+    return {
+      adresse: null,
+      grund: 'keine-adresse',
+      text: 'Eine Mailadresse ist noch nicht hinterlegt. Bitte den Text kopieren '
+        + 'und an die Adresse aus dem Impressum schicken.',
+    };
+  }
   const adresse = `mailto:${encodeURIComponent(anfrage.empfaenger)}`
     + `?subject=${encodeURIComponent(anfrage.betreff)}`
     + `&body=${encodeURIComponent(anfrage.text)}`;
-  return adresse.length > MAILTO_HOECHSTLAENGE ? null : adresse;
+  if (adresse.length > MAILTO_HOECHSTLAENGE) {
+    return {
+      adresse: null,
+      grund: 'zu-lang',
+      text: 'Diese Liste ist zu lang für einen Maillink — Mailprogramme kürzen ihn '
+        + 'stillschweigend, und dann fehlte die Hälfte der Positionen. Bitte den Text '
+        + 'kopieren und in eine Mail einfügen.',
+    };
+  }
+  return { adresse, grund: null, text: '' };
 }
+
+
+
+
+
+
 
 
 
@@ -3057,11 +3179,15 @@ function pruefeAnfrageAufGeheimnis(text, artikelMitEk = []) {
           + 'annehmen. Wir liefern nach ' + D.bezirke.join(', ') + '.'));
         return;
       }
+      
+      
+      
+      
+      
       var a = baueKundenanfrage({
         rechnung: rechnung,
         bezirk: wahl,
         betreiber: D.betreiber || {},
-        einheiten: D.einheiten || {},
       });
       if (!a.moeglich) {
         anfrageKasten.appendChild(el('p', 'gebiet nein', a.hindernis));
@@ -3121,16 +3247,24 @@ function pruefeAnfrageAufGeheimnis(text, artikelMitEk = []) {
       });
       reihe.appendChild(kopieren);
 
-      var mail = mailtoAdresse(a);
-      if (mail) {
+      
+      
+      
+      
+      
+      
+      
+      var weg = mailtoWeg(a);
+      if (weg.adresse) {
         var link = document.createElement('a');
         link.className = 'knopf';
-        link.href = mail;
+        link.href = weg.adresse;
         link.textContent = 'Als Mail öffnen';
         reihe.appendChild(link);
       }
       reihe.appendChild(rueckmeldung);
       anfrageKasten.appendChild(reihe);
+      if (weg.text) anfrageKasten.appendChild(el('p', 'gebiet', weg.text));
 
       
 

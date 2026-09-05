@@ -409,10 +409,22 @@ test('die Einheitenliste wird gegen den Katalog gehalten, in beide Richtungen', 
   assert.equal(einheitenbefund(katalog).sauber, false, 'SCK, EIM, DOS, RLL führt keiner');
   assert.ok(einheitenbefund(katalog).meldungen.every((m) => m.regel === 'einheit-ohne-artikel'));
 
-  // Die andere Richtung: eine Einheit, die keine der beiden Listen kennt.
+  // Die andere Richtung: eine Einheit, die keine der beiden Listen kennt —
+  // und, seit dem 5. September, keine mit lesbarem Wort.
   const fremd = einheitenbefund([...[...STUECKEINHEITEN].map((e) => ({ einheit: e })),
     { einheit: 'M2' }, { einheit: 'LFM' }, { einheit: 'KG' }, { einheit: 'PAL' }]);
-  assert.deepEqual(fremd.meldungen.map((m) => m.regel), ['einheit-unbekannt']);
+  assert.deepEqual(fremd.meldungen.map((m) => m.regel).sort(),
+    ['einheit-ohne-wort', 'einheit-unbekannt']);
+});
+
+test('eine Einheit ohne lesbares Wort ginge als Kürzel an den Kunden', () => {
+  // `einheitText` reicht ein unbekanntes Kürzel durch — richtig, denn Raten
+  // wäre schlimmer. Dann steht aber „6 KRT" auf einem Kundentext, und genau
+  // das stand dort, bis der Anfragetext die Tafel selbst holte.
+  const b = einheitenbefund([...[...STUECKEINHEITEN].map((e) => ({ einheit: e })),
+    { einheit: 'M2' }, { einheit: 'LFM' }, { einheit: 'KG' }], { STK: 'Stück' });
+  assert.ok(b.meldungen.filter((m) => m.regel === 'einheit-ohne-wort').length >= 5);
+  assert.equal(b.mitWort, 1);
 });
 
 test('der echte Katalog kennt jede seiner Einheiten', () => {

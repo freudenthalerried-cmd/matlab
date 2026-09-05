@@ -329,13 +329,34 @@ test('das Gewicht summiert nur, was belegt ist, und nennt den Rest', () => {
   // Eine Summe über Artikel mit unbekanntem Gewicht wäre eine Untergrenze,
   // die wie eine Summe aussieht.
   const artikel = [
-    { ...beispiel[0], sku: 'G1', gewichtKg: 2.5 },
-    { ...beispiel[1], sku: 'G2', gewichtKg: null },
+    { ...beispiel[0], sku: 'G1', einheit: 'STK', gewichtKg: 2.5 },
+    { ...beispiel[1], sku: 'G2', einheit: 'STK', gewichtKg: null },
   ];
   const r = kundenWarenkorb([{ sku: 'G1', menge: 4 }, { sku: 'G2', menge: 1 }],
     { artikel, lieferanten: [oeffentlicherLieferant(lieferantProbe)] });
   assert.equal(r.gewichtKg, 10);
   assert.equal(r.positionenOhneGewicht, 1);
+});
+
+test('bei Kiloware ist die bestellte Menge das Gewicht', () => {
+  // **Der Befund vom 5. September.** Ein Warenkorb über 500 kg Klebe- und
+  // Spachtelmasse meldete „125,0 kg (für 4 Positionen nicht hinterlegt)":
+  // Der Artikel wird je Kilogramm verkauft und trägt kein `gewichtKg`, also
+  // fiel er unter die offenen Positionen — obwohl 500 kg keine Schätzung
+  // sind, sondern die bestellte Menge in Kilogramm.
+  //
+  // > **Die eine Zahl, die entscheidet, ob das eigene Fahrzeug reicht,
+  // > war um den Faktor fünf zu klein — und der Klammerzusatz ließ die
+  // > Lücke woanders vermuten.**
+  const artikel = [
+    { ...beispiel[0], sku: 'K1', einheit: 'KG', gewichtKg: null },
+    // Derselbe Fall mit der Identität im Feld: 50 × 1 ist 50.
+    { ...beispiel[1], sku: 'K2', einheit: 'KG', gewichtKg: 1 },
+  ];
+  const r = kundenWarenkorb([{ sku: 'K1', menge: 500 }, { sku: 'K2', menge: 50 }],
+    { artikel, lieferanten: [oeffentlicherLieferant(lieferantProbe)] });
+  assert.equal(r.gewichtKg, 550);
+  assert.equal(r.positionenOhneGewicht, 0, 'bei Kiloware ist nichts offen');
 });
 
 test('ohne jede Gewichtsangabe bleibt die Summe null und die Lücke sichtbar', () => {

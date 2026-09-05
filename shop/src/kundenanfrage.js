@@ -27,6 +27,11 @@
  */
 
 import { pruefeLieferort } from './liefergebiet.js';
+// **Nicht mehr hereingereicht, seit dem 5. September.** Die Einheitentafel kam
+// als Aufrufparameter mit Vorgabewert `{}` — und wer sie vergaß, bekam
+// stillschweigend die Kürzel des Lieferanten in einen Kundentext. Genau das
+// tat `bin/belegpruefung.mjs`, der einzige Prüfer über diesen Text.
+import { einheitText } from './format.js';
 
 // Heißt `anfrageEuro` und nicht `eur`: Ein Modul dieses Bündels wandert auch
 // in die Demo-Einzeldatei, und deren Vorlage führt dort bereits ein `const
@@ -82,7 +87,7 @@ function anfrageUmbruch(text, breite) {
  * @param {string} [eingabe.datum]    ISO-Datum, Vorgabe: heute
  * @returns {{moeglich: boolean, hindernis: string|null, betreff: string, text: string, hinweise: string[]}}
  */
-export function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = null, einheiten = {} }) {
+export function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = null }) {
   const leer = { betreff: '', text: '', hinweise: [] };
 
   if (!rechnung || !rechnung.teillieferungen || rechnung.positionen === 0) {
@@ -154,7 +159,10 @@ export function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = nu
       // Nummer und Beträge stehen auf der **letzten** seiner Zeilen, damit
       // die Spalten unter einander bleiben.
       const namenszeilen = anfrageUmbruch(p.bezeichnung, 44);
-      const menge = anfrageSpalte(`${mengeText} ${einheiten[p.einheit] ?? p.einheit ?? 'Stk'}`, 14);
+      // `einheitText` statt einer hereingereichten Tafel: **eine Stelle, kein
+      // Parameter, der vergessen werden kann.** Ein unbekanntes Kürzel wird
+      // weiterhin durchgereicht statt geraten — das entscheidet `format.js`.
+      const menge = anfrageSpalte(`${mengeText} ${einheitText(p.einheit)}`, 14);
       // Menge zuerst, dann der Name; Nummer und Beträge stehen am Ende des
       // Blocks. So liest sich jede Position in der Reihenfolge, in der ein
       // Bauleiter sie prüft — wie viel, wovon, welche Nummer, was kostet es.
@@ -179,7 +187,23 @@ export function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = nu
         + `   ${teil.frachtGrund ?? ''}`.trimEnd());
     }
   }
+  // **Der Grund auch im Regelfall** — seit dem 5. September.
+  //
+  // Er stand nur im Zweig `mehrere`. Der Katalog führt genau **einen**
+  // Lieferanten; der zweite kommt erst mit der Artikelliste des Auftraggebers.
+  // Der Kunde las also ausnahmslos „Zustellung 83,00 €" und nie, dass darin
+  // eine geschätzte Kranentladung steckt — während Artikelseite, `llms.txt`
+  // und Kasse sie seit dem 5. September ausdrücklich als Schätzung ausweisen.
+  //
+  // > **Die Aufschlüsselung war für den Fall geschrieben, den es nicht gibt.**
+  const einzelgrund = mehrere ? '' : (rechnung.teillieferungen[0]?.frachtGrund ?? '');
   zeilen.push(`${anfrageSpalte(mehrere ? 'Zustellung gesamt' : 'Zustellung', 22)}${anfrageEuro(rechnung.frachtNetto)}`);
+  // Eingerückt und umgebrochen, nicht an die Betragszeile gehängt: Der Satz
+  // ist länger als das ganze übrige Blatt breit ist, und eine Zeile, die aus
+  // der Spalte läuft, macht die Tabelle darunter unlesbar.
+  for (const zeile of einzelgrund ? anfrageUmbruch(einzelgrund, 52) : []) {
+    zeilen.push(`  ${zeile}`);
+  }
   zeilen.push(`${anfrageSpalte('Netto gesamt', 22)}${anfrageEuro(rechnung.nettoGesamt)}`);
   zeilen.push(`${anfrageSpalte('USt', 22)}${anfrageEuro(rechnung.ustBetrag)}`);
   zeilen.push(`${anfrageSpalte('Brutto gesamt', 22)}${anfrageEuro(rechnung.bruttoGesamt)}`);
@@ -273,13 +297,74 @@ export function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = nu
  */
 export const MAILTO_HOECHSTLAENGE = 1800;
 
-export function mailtoAdresse(anfrage) {
-  if (!anfrage.moeglich || !anfrage.empfaenger) return null;
+/* ------------------------------------------------------------------ *
+ * Der Knopf, der bei jedem echten Warenkorb verschwand — 5. September
+ *
+ * **Gemessen, nicht vermutet.** Für den Katalog dieses Shops:
+ *
+ * | Positionen | Warenwert | Adresslänge | Knopf |
+ * |---|---|---|---|
+ * | 1 | 265 € | 1.505 | da |
+ * | 2 | 359 € | 1.894 | **weg** |
+ * | 3 | 428 € | 2.209 | **weg** |
+ * | 6 | 1.572 € | 3.055 | **weg** |
+ *
+ * Die Grenze ist richtig — Mailprogramme kappen lange Adressen
+ * stillschweigend, und eine halbe Positionsliste wäre schlimmer als kein
+ * Knopf. Falsch war, dass niemand nachgesehen hat, **wann** sie greift: Dieser
+ * Shop verkauft Systemlisten mit sieben bis elf Positionen; das ist seine
+ * ganze These („Was fehlt, hält die Baustelle auf"). Für jeden Korb, für den
+ * er gebaut ist, war der Knopf weg — **ohne ein Wort**.
+ *
+ * Und das Haus hat sich dazu schon einmal festgelegt. In `bin/website.mjs`
+ * steht über der Betreiberadresse:
+ *
+ * > „…weil ein leeres `email` der Oberfläche erlaubt zu sagen, **warum** kein
+ * > Mailknopf da ist, statt ihn stillschweigend wegzulassen."
+ *
+ * Genau das tat sie nicht — in beiden Fällen nicht. `mailtoAdresse` gab `null`
+ * zurück, und die Oberfläche ließ den Knopf weg.
+ *
+ * > **Eine Zusage im Kommentar ist keine Prüfung — und keine Umsetzung.**
+ * ------------------------------------------------------------------ */
+
+/**
+ * Der Mailweg: die Adresse **oder** der Grund, warum es keine gibt.
+ *
+ * @returns {{adresse: string|null, grund: null|'keine-anfrage'|'keine-adresse'|'zu-lang', text: string}}
+ */
+export function mailtoWeg(anfrage) {
+  if (!anfrage.moeglich) {
+    return { adresse: null, grund: 'keine-anfrage', text: '' };
+  }
+  if (!anfrage.empfaenger) {
+    return {
+      adresse: null,
+      grund: 'keine-adresse',
+      text: 'Eine Mailadresse ist noch nicht hinterlegt. Bitte den Text kopieren '
+        + 'und an die Adresse aus dem Impressum schicken.',
+    };
+  }
   const adresse = `mailto:${encodeURIComponent(anfrage.empfaenger)}`
     + `?subject=${encodeURIComponent(anfrage.betreff)}`
     + `&body=${encodeURIComponent(anfrage.text)}`;
-  return adresse.length > MAILTO_HOECHSTLAENGE ? null : adresse;
+  if (adresse.length > MAILTO_HOECHSTLAENGE) {
+    return {
+      adresse: null,
+      grund: 'zu-lang',
+      text: 'Diese Liste ist zu lang für einen Maillink — Mailprogramme kürzen ihn '
+        + 'stillschweigend, und dann fehlte die Hälfte der Positionen. Bitte den Text '
+        + 'kopieren und in eine Mail einfügen.',
+    };
+  }
+  return { adresse, grund: null, text: '' };
 }
+
+// `mailtoAdresse` stand hier bis zum 5. September und gab nur die Adresse
+// zurück. Nach der Umstellung rief sie außerhalb der Tests niemand mehr —
+// `npm run pruefe-ungerufen` hat das in derselben Minute gemeldet. Eine
+// Hülle, die nur noch Proben bedienen, ist genau der Fall, für den es diesen
+// Prüfer gibt; sie ist deshalb weg statt eingetragen.
 
 /**
  * Prüft, dass im Anfragetext nichts steht, was dem Kunden nicht gehört.
