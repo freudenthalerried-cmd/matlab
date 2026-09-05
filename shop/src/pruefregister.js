@@ -295,11 +295,17 @@ export const PRUEFER = [
 /**
  * Die Browserproben.
  *
- * Sie bleiben aus dem Regellauf heraus, weil jede einen Chromium-Start je
- * Einheit kostet — je Szenario bei den Proben, je gebauter Seite beim
- * Zensus; zusammen gut eine Minute. Mit `--mit-browser` kommen sie
- * dazu. Geprüft wird auch hier nur der **Umfang**: Eine gelöschte Datei mit
- * Szenarien fiele sonst niemandem auf.
+ * **Seit Gate 27 (5. September) laufen sie mit.** Bis dahin standen sie
+ * draußen, weil jede einen Chromium-Start je Einheit kostet — „zusammen gut
+ * eine Minute". Das stimmte am 1. September, als der Lauf zwanzig Schritte
+ * hatte; nachgemessen sind es **37 Sekunden** gegen 820 bis 1.259 Sekunden
+ * Lauf.
+ *
+ * > **Die Begründung ist nicht falsch geworden, sie ist abgelaufen.**
+ *
+ * `--ohne-browser` lässt sie weg und sagt es dazu. Geprüft wird auch hier nur
+ * der **Umfang**: Eine gelöschte Datei mit Szenarien fiele sonst niemandem
+ * auf.
  *
  * Für die Frage, ob ein einzelnes Szenario etwas gesehen hat, ist dieses
  * Werkzeug der falsche Ort. Das muss jedes Szenario selbst beweisen — durch

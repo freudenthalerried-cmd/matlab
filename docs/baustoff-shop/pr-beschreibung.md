@@ -18,7 +18,7 @@ Machbarkeitsanalyse, Shop und Website für einen Baustoffhandel, der 3.000 € n
 
 ## Einstieg
 
-👉 **`docs/baustoff-shop/STATUS.md`** — Stand, offene Weisungen, Dokumentenverzeichnis und eine Tabelle aller Korrekturen, die im Verlauf nötig waren. Diese Datei zuerst lesen. Bei Gate-Fragen gilt **`gate-register.md`** (26 Gates, Stand 4. September).
+👉 **`docs/baustoff-shop/STATUS.md`** — Stand, offene Weisungen, Dokumentenverzeichnis und eine Tabelle aller Korrekturen, die im Verlauf nötig waren. Diese Datei zuerst lesen. Bei Gate-Fragen gilt **`gate-register.md`** (27 Gates, Stand 5. September).
 
 Diese Beschreibung hat seit dem 1. September eine Quelle im Verzeichnis: `docs/baustoff-shop/pr-beschreibung.md`. `npm run pruefe-schaufenster` misst ihre 34 Kennzahlen gegen den Bestand — sie war zuvor an neun Stellen überholt, und seit dem 1. September ist auch die Leitzahl darunter. Seit dem 4. September sind **Aussagen** darunter, nicht nur Zahlen: An dem Tag stimmten alle 32 Zahlen, und der Satz daneben behauptete das Gegenteil dessen, was der Shop kann.
 

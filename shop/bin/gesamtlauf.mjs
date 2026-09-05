@@ -54,7 +54,35 @@ import { PRUEFER, BROWSERPRUEFER } from '../src/pruefregister.js';
 import { frischebefund } from '../src/erzeugnisstand.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
-const mitBrowser = process.argv.includes('--mit-browser');
+/**
+ * **Gate 27, entschieden am 5. September 2026: Die Browserproben laufen mit.**
+ *
+ * Bis heute standen sie draußen, mit dieser Begründung im Register: „jede
+ * kostet einen Chromium-Start je Einheit … zusammen gut eine Minute". Das
+ * stimmte am 1. September, als dieser Lauf zwanzig Schritte hatte und etwa
+ * drei Minuten dauerte — eine Minute war ein Drittel.
+ *
+ * Nachgemessen am 5. September: **37 Sekunden für alle vier** (12 + 12 + 5 +
+ * 8) gegen den Lauf selbst — zweimal gestoppt, 820 und 1.259 Sekunden.
+ * Drei bis fünf Prozent. **Zwei Messungen, weil eine Zahl bei einer
+ * schwankenden Größe keine Messung ist**; die zweite lief neben anderer
+ * Arbeit.
+ *
+ * > **Die Begründung ist nicht falsch geworden, sie ist abgelaufen.** Der
+ * > Preis ist derselbe geblieben und der Vergleichsmaßstab um das Fünffache
+ * > gewachsen.
+ *
+ * Und was in der ausgelassenen Hälfte lag, sagen die letzten acht Tage: ein
+ * Prüfer gegen ein veraltetes Erzeugnis (30.08.), drei rote Szenarien, die
+ * sechs Stunden niemand sah (03.09.), und zwei Probendateien, die sich
+ * fünfzehn Stunden lang nicht einmal einlesen ließen (05.09.). **Alle drei
+ * saßen in dem Teil, den der Regellauf nicht anfasste.**
+ *
+ * `--ohne-browser` bleibt für den eiligen Lauf. `--mit-browser` bleibt
+ * gültig und tut nichts mehr — ein Schalter, der einmal etwas bedeutet hat,
+ * gehört nicht stillschweigend zum Fehler.
+ */
+const mitBrowser = !process.argv.includes('--ohne-browser');
 // Wie npm aufzurufen ist: Läuft dieser Lauf selbst unter npm, steht dessen
 // Skript in `npm_execpath` und gehört mit dem laufenden node gestartet —
 // sonst nimmt `npm` aus dem Pfad, was auch immer dort zuerst liegt.
@@ -212,7 +240,12 @@ schritte.push({
 });
 
 console.log(`Gesamtlauf — ${schritte.length} Schritte`
-  + `${mitBrowser ? ', mit Browserproben' : ' (ohne Browserproben, mit --mit-browser dazu)'}\n`);
+  + `${mitBrowser ? ', mit Browserproben' : ' OHNE Browserproben (--ohne-browser)'}\n`);
+if (!mitBrowser) {
+  // Ein ausgelassener Teil, der sich nicht meldet, ist ein Teil, den niemand
+  // vermisst. Drei Befunde in acht Tagen lagen genau dort.
+  console.log(`  ! ${BROWSERPRUEFER.length} Browserproben übersprungen — was hier nicht läuft, ist nicht geprüft.\n`);
+}
 
 const rot = [];
 for (const s of schritte) {
