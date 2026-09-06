@@ -39,6 +39,11 @@ import { ETAPPEN } from '../src/rollout.js';
 import { PREISAUSSAGEN, VORRATSWORTE } from '../src/aussagen.js';
 import { abgegrenztesKeyword } from '../src/abgrenzung.js';
 import { ausschlussbefund } from '../src/ausschluss.js';
+import {
+  THEMA as THEMA_NICHT_GEFUEHRT,
+  ausschluesseAusRegister,
+  deckungsbefund,
+} from '../src/nichtgefuehrt.js';
 import { suchdeckungsbefund } from '../src/suchdeckung.js';
 import { baueSuchindex, suche } from '../src/shopkern.js';
 import { cent } from '../src/preis.js';
@@ -1405,16 +1410,65 @@ function main() {
     const site = join(WURZEL, 'ausgabe', 'site');
     if (existsSync(site)) gehe(site);
   }
+  /*
+   * **Die Ausschlüsse aus dem eigenen Nicht-Sortiment — 6. September 2026.**
+   *
+   * Der Shop führt 24 Wörter, von denen er sagt, er führe sie nicht. Keines
+   * davon stand in der Ausschlussliste. Die Anzeige läuft auf *Phrase* und
+   * erscheint, sobald die Anfrage den Produktbegriff enthält — „XPS 80 mm
+   * Sockelschiene" enthält ihn.
+   *
+   * > **Ein Betrieb, der aufschreibt, was er nicht hat, und weiter dafür
+   * > bezahlt, hat die Liste für den falschen Leser geschrieben.**
+   *
+   * Abgeleitet, nicht abgeschrieben: `src/nichtgefuehrt.js`. Zurückgehalten
+   * wird, was im eigenen Seitentext gewöhnliches Deutsch ist — dieselbe
+   * gemessene Grenze wie beim Ausschlussprüfer, und aus demselben Anlass.
+   */
+  const nichtGefuehrtRegister = (() => {
+    const datei = join(WURZEL, 'data', 'suchwoerter.json');
+    if (!existsSync(datei)) return [];
+    return JSON.parse(readFileSync(datei, 'utf8'))._nichtAufgenommen ?? [];
+  })();
+  const ausSortiment = ausschluesseAusRegister({
+    register: nichtGefuehrtRegister,
+    seitentext: eigenerText,
+    keywords: keywordsEindeutig.map((k) => k.Keyword),
+  });
+
   const ausschlussflaeche = eigenerText
     ? ausschlussbefund({
       // Aus `NEGATIVE` und nicht aus der fertigen Zeilenliste: Die entsteht
       // erst weiter unten, und eine Prüfung, die auf ihre Eingabe wartet,
-      // stünde an der falschen Stelle.
-      ausschluesse: Object.entries(NEGATIVE)
-        .flatMap(([thema, woerter]) => woerter.map((wort) => ({ thema, wort }))),
+      // stünde an der falschen Stelle. Die abgeleiteten Ausschlüsse gehören
+      // mit hinein — ein Prüfer, der nur die von Hand geführten Wörter sieht,
+      // hat eine kleinere Reichweite als die Regel, die er prüft.
+      ausschluesse: [
+        ...Object.entries(NEGATIVE)
+          .flatMap(([thema, woerter]) => woerter.map((wort) => ({ thema, wort }))),
+        ...ausSortiment.woerter.map((wort) => ({ thema: THEMA_NICHT_GEFUEHRT, wort })),
+      ],
       seitentext: eigenerText,
     })
     : null;
+
+  const sortimentsdeckung = deckungsbefund({
+    register: nichtGefuehrtRegister,
+    ausgeschlossen: ausSortiment.woerter,
+    zurueckgehalten: ausSortiment.zurueckgehalten,
+  });
+  console.log(`\nNicht im Sortiment: ${sortimentsdeckung.ausgeschlossen} von `
+    + `${sortimentsdeckung.geprueft} Registerwörtern ausgeschlossen.`);
+  for (const z of ausSortiment.zurueckgehalten) {
+    console.log(`  · „${z.wort}" bleibt zulässig — ${z.grund}`);
+  }
+
+  if (!sortimentsdeckung.sauber) {
+    console.error('\nDas Nicht-Sortiment und die Ausschlussliste gehen auseinander:\n');
+    for (const m of sortimentsdeckung.meldungen) console.error(`  ✗ ${m.text}`);
+    console.error('\nNichts geschrieben.');
+    process.exit(1);
+  }
 
   const textfehler = [
     ...pruefeTexte(alleAnzeigentexte(), gefuehrteEinheiten, gruppenMitLuecke, seitentexte, bauteilJeGruppe),
@@ -1465,6 +1519,13 @@ function main() {
   const negative = [];
   for (const [thema, woerter] of Object.entries(NEGATIVE)) {
     for (const w of woerter) negative.push({ Liste: 'Baustoffe — Ausschluss', Thema: thema, Keyword: w, Übereinstimmungstyp: 'Phrase' });
+  }
+  // Abgeleitet aus `_nichtAufgenommen` — siehe `src/nichtgefuehrt.js`. Sie
+  // laufen durch dieselbe Kollisionsprüfung wie die übrigen: Ein Ausschluss,
+  // der einen Bezirksnamen, den Ort des Betriebs oder ein geführtes Keyword
+  // trifft, hält den Lauf an.
+  for (const w of ausSortiment.woerter) {
+    negative.push({ Liste: 'Baustoffe — Ausschluss', Thema: THEMA_NICHT_GEFUEHRT, Keyword: w, Übereinstimmungstyp: 'Phrase' });
   }
 
   // **Gegen drei Quellen, nicht gegen eine zweite Liste** — und seit dem

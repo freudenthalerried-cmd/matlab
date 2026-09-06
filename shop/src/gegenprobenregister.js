@@ -1392,6 +1392,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'fehlt dort, wo die Trefferliste in die Irre führt. Diese Mutation setzt die alte '
       + 'Bedingung wieder ein.',
   }),
+  Object.freeze({
+    id: 'nicht-gefuehrt-und-trotzdem-beworben',
+    pruefer: 'test',
+    was: 'Ein Wort, das der Shop nicht führt und für das er trotzdem zahlt',
+    datei: 'shop/src/nichtgefuehrt.js',
+    art: 'ersetzen',
+    baueVorher: true,
+    suchen: '    if (vorkommen >= grenze) {',
+    ersetzen: '    if (vorkommen >= 0) {',
+    erwartet: /Nicht-Sortiments|bitumen/,
+    warum: 'Der Zustand vom 6. September: 24 Wörter im Register „das führen wir nicht", '
+      + 'null davon in der Ausschlussliste. Die Anzeigen laufen auf Phrase und erscheinen, '
+      + 'sobald die Anfrage den Produktbegriff enthält — „XPS 80 mm Sockelschiene" enthält '
+      + 'ihn, der Klick ist bezahlt, und am Ende steht ein Satz, der mit „führen wir nicht" '
+      + 'beginnt. Diese Mutation hält jedes Wort zurück, also auch die 21 ohne eigene '
+      + 'Fundstelle, und stellt damit genau den alten Zustand wieder her.',
+  }),
 ]);
 
 /**
