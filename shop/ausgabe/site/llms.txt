@@ -8,7 +8,7 @@
 - **Möglich ist eine Anfrage.** Warenkorb füllen, Bezirk der Baustelle wählen, und die Kasse (https://bauversand.com/kasse.html) erzeugt eine fertig gerechnete Positionsliste mit Fracht, Umsatzsteuer und Preisstand zum Kopieren. Sie ist unverbindlich und wird nicht automatisch versendet.
 - **Nur im Liefergebiet.** Anfragen aus anderen Bezirken werden nicht angenommen; die Fracht trägt sie nicht.
 - **Das Gebiet ist unsere Entscheidung, nicht die Zusage des Lieferanten.** Ob er in alle fünf Bezirke zustellt, ist nicht bestätigt; die Frachtpauschale staffelt nicht nach Entfernung, aus den Rechnungen ist es nicht ableitbar. Innerhalb dieser Bezirke sagen wir zu — hält der Lieferant nicht, erfährt der Kunde es vor der Bestellung.
-- **Mindestbestellwert 250,00 € netto Warenwert je Lieferung.** Darunter nimmt die Kasse keine Anfrage an und nennt den fehlenden Betrag. Bei mehreren Herstellern entstehen mehrere Lieferungen, und die Grenze gilt für jede einzelne.
+- **Mindestbestellwert 250,00 € netto Warenwert je Lieferung.** Darunter nimmt die Kasse keine Anfrage an und nennt den fehlenden Betrag. Alle geführten Artikel kommen von einem Lieferanten; ein Warenkorb ist deshalb eine Lieferung, und die Grenze gilt einmal. Kommt ein zweiter Lieferant dazu, entstehen mehrere Lieferungen, und sie gilt für jede einzelne.
 - **Fracht fällt je Lieferung an, es gibt keine Frei-Haus-Schwelle.** Die Sätze und die Begründung stehen unter https://bauversand.com/lieferung.html.
 
 ## Wie diese Seiten aufgebaut sind

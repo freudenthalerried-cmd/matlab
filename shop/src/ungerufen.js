@@ -170,6 +170,16 @@ export const UNGERUFEN = Object.freeze([
       + 'täglich neu druckt. Was hier fehlt, fiele dem Leitzahlenprüfer auf.',
   }),
   Object.freeze({
+    modul: 'src/lieferungen.js',
+    funktionen: ['lieferungsbefund'],
+    warum: 'Ein Prüfer, der in den Testfällen wohnt — wie `src/abgleich.js` und '
+      + '`src/llmsdeckung.js`. `test/lieferungen.test.js` hält ihn gegen **alle** gebauten '
+      + 'Seiten und gegen `llms.txt` und läuft damit in Schritt 1 des Gesamtlaufs mit. Der Bau '
+      + 'selbst kann ihn nicht rufen: Er misst den fertigen Ordner, den der Bau erst am Ende '
+      + 'vollständig hat. `lieferungssatz` und `lieferantenzahl` stehen nicht hier — die ruft '
+      + 'der Bau bei jeder Seite, und genau darum geht es.',
+  }),
+  Object.freeze({
     modul: 'src/llmsdeckung.js',
     funktionen: ['llmsbefund'],
     warum: 'Ein Prüfer, der in den Testfällen wohnt statt in einem Werkzeug — dieselbe Lage '

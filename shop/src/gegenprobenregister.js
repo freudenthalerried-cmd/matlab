@@ -1461,6 +1461,24 @@ export const GEGENPROBEN = Object.freeze([
       + 'Diese Mutation vertauscht die Spaltennamen mit plausiblen anderen — genau das, was '
       + 'beim Abschreiben von Hand passiert.',
   }),
+  Object.freeze({
+    id: 'mehr-lieferungen-als-lieferanten',
+    pruefer: 'test',
+    was: 'Ein Text, der dem Kunden mehr Lieferungen verspricht, als es Lieferanten gibt',
+    datei: 'shop/src/lieferungen.js',
+    art: 'ersetzen',
+    baueVorher: true,
+    suchen: "  return lieferanten <= 1",
+    ersetzen: "  return false",
+    erwartet: /mehrere-lieferungen-ohne-zweiten-lieferanten|verspricht mehrere Lieferungen|Lieferseite/,
+    warum: 'Der Zustand vom 6. September: Vier Stellen sagten „Werden mehrere Hersteller '
+      + 'bestellt, entstehen mehrere Lieferungen, und die Grenze gilt für jede einzelne" — der '
+      + 'Katalog führt 46 Artikel von einem Lieferanten, und der Rechenkern teilt nach '
+      + 'lieferantId. Wer Baumit, Schiedel und Soudal in den Korb legt, las, er brauche dreimal '
+      + '250 € statt einmal; an der Kasse sah er dann eine Teillieferung. Die vorsichtige '
+      + 'Richtung fällt nicht auf, weil abgeschreckte Körbe in keiner Abrechnung stehen. Diese '
+      + 'Mutation lässt den Satz wieder unabhängig von der Lieferantenzahl stehen.',
+  }),
 ]);
 
 /**

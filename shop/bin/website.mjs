@@ -49,6 +49,7 @@ import { preisstandSpanne, preisalterTage, GRENZE_TAGE, GRENZE_HERKUNFT } from '
 import { BINDEFRIST_TAGE } from '../src/beleg.js';
 import { execFileSync } from 'node:child_process';
 import { standAusGit } from '../src/inhaltsstand.js';
+import { lieferantenzahl, lieferungssatz } from '../src/lieferungen.js';
 import { HERSTELLER, marke } from '../src/hersteller.js';
 import {
   oeffentlicherArtikel, oeffentlicherLieferant, vorteil, ustText, KORBSCHLUESSEL,
@@ -624,6 +625,19 @@ const LIEFERBEZIRKE = aufzaehlung(LIEFERGEBIET.bezirke.map((b) => b.name));
 const KARTENFLAECHEN = Object.freeze(['class="karte"', 'id="suche-ziel"']);
 
 const MINDESTWERT_NETTO = BETREIBER.mindestbestellwertNetto ?? null;
+
+/**
+ * Wie viele Lieferanten der Katalog führt — gesetzt, sobald er gelesen ist.
+ *
+ * **Warum kein Aufrufparameter.** Der Satz über die Zahl der Lieferungen steht
+ * auch in `mitMindestwert`, und das läuft in `rahmen` — der Rahmenfunktion,
+ * die jede der 82 Seiten baut und den Katalog nicht kennt. Ihn durch sechs
+ * Aufrufebenen zu reichen, damit ein Satz eine Zahl bekommt, wäre der teurere
+ * Umbau. Gesetzt wird genau einmal, unmittelbar nach dem Laden und vor dem
+ * ersten Bau; die Voreinstellung `1` ist die vorsichtige: Sie sagt „eine
+ * Lieferung", und das ist der Satz, der ohne Katalog nichts verspricht.
+ */
+let LIEFERANTENZAHL = 1;
 
 /**
  * Der Stand der Grenze — **gelesen, nicht abgeschrieben.**
@@ -1824,7 +1838,7 @@ zurück.</div>`,
  * unbekannt ist — eine erfundene Frist in der maschinenlesbaren Auszeichnung
  * wäre schlimmer als in der Prosa, denn sie wird zitiert und nicht gelesen.
  */
-function lieferungFragen(f, verweis, mindestNetto) {
+function lieferungFragen(f, verweis, mindestNetto, lieferanten) {
   const bezirke = LIEFERGEBIET.bezirke.map((b) => b.name).join(', ');
   return [
     ['Was kostet die Zustellung?',
@@ -1841,9 +1855,8 @@ function lieferungFragen(f, verweis, mindestNetto) {
       'Ja, ausdrücklich vorgesehen. Wer selbst abholt, zahlt keine Fracht.'],
     ['Gibt es einen Mindestbestellwert?',
       mindestNetto
-        ? `Ja: ${euro(mindestNetto)} € netto Warenwert je Lieferung. Werden mehrere Hersteller `
-          + 'bestellt, entstehen mehrere Lieferungen, und die Grenze gilt für jede einzelne — '
-          + 'Anfahrt und Verpackung fallen je Lieferung an. Darunter ist Selbstabholung der '
+        ? `Ja: ${euro(mindestNetto)} € netto Warenwert je Lieferung. `
+          + `${lieferungssatz(lieferanten)} Darunter ist Selbstabholung der `
           + 'bessere Weg oder das Zusammenlegen mit der nächsten Bestellung.'
         : 'Der Mindestbestellwert ist derzeit nicht hinterlegt; die Kasse nimmt deshalb keine '
           + 'Anfrage an.'],
@@ -1906,8 +1919,7 @@ hoch gerechnet. Stand: 2026-08-31.</p>
     + 'Anfahrt und Verpackung hängen an der Fahrt und nicht am Warenwert. Eine kleine Zustellung kostet '
     + 'dasselbe wie eine große, und unter dieser Grenze zahlt am Ende einer von beiden drauf.'
   : 'Derzeit ist kein Mindestbestellwert hinterlegt; die Kasse nimmt deshalb keine Anfrage an.'}</p>
-<p>Bestellen Sie bei mehreren Herstellern, entstehen mehrere Lieferungen — dann gilt die Grenze
-<strong>je Lieferung</strong> und nicht für die Summe. Der Warenkorb sagt Ihnen, was noch fehlt.
+<p>${lieferungssatz(lieferantenzahl(katalog.artikel))} Der Warenkorb sagt Ihnen, was noch fehlt.
 Darunter ist Selbstabholung der bessere Weg, oder das Zusammenlegen mit der nächsten Bestellung.</p>
 
 <h2>Selbstabholung</h2>
@@ -1916,7 +1928,7 @@ der ganze Vorteil der getrennten Ausweisung.</p>`,
     jsonLd: {
       '@context': 'https://schema.org',
       '@type': 'FAQPage',
-      mainEntity: lieferungFragen(f, verweis, mindestNetto),
+      mainEntity: lieferungFragen(f, verweis, mindestNetto, lieferantenzahl(katalog.artikel)),
     },
   };
 }
@@ -2285,8 +2297,7 @@ function mitMindestwert(html, verweis) {
   return `${html}
 <p class="antwort mindestwert-hinweis"><strong>Mindestbestellwert ${euro(MINDESTWERT_NETTO)} € netto
 Warenwert je Lieferung.</strong> Darunter nimmt die Kasse keine Anfrage an und nennt den fehlenden
-Betrag. Werden mehrere Hersteller bestellt, entstehen mehrere Lieferungen, und die Grenze gilt für
-jede einzelne — Anfahrt und Verpackung fallen je Lieferung an
+Betrag. ${lieferungssatz(LIEFERANTENZAHL)}
 (Quelle: eigene Entscheidung, Gate 25, Stand: ${MINDESTWERT_STAND}).
 <a href="${verweis('lieferung')}">Lieferung und Frachtkosten</a></p>`;
 }
@@ -2329,6 +2340,7 @@ function main() {
   }
 
   let katalog = ladeBaustoffkatalog(katalogDatei, lies(preisPfad), lieferantenDatei, ZIELMARGE);
+  LIEFERANTENZAHL = lieferantenzahl(katalog.artikel);
   const befund = katalogbefund(katalog);
 
   /**
@@ -2722,8 +2734,8 @@ function main() {
     // > hergibt, erzeugt genau die Anfrage, die abgelehnt wird.**
     ...(mindestNetto
       ? [`- **Mindestbestellwert ${euro(mindestNetto)} € netto Warenwert je Lieferung.** Darunter `
-        + 'nimmt die Kasse keine Anfrage an und nennt den fehlenden Betrag. Bei mehreren '
-        + 'Herstellern entstehen mehrere Lieferungen, und die Grenze gilt für jede einzelne.']
+        + 'nimmt die Kasse keine Anfrage an und nennt den fehlenden Betrag. '
+        + `${lieferungssatz(LIEFERANTENZAHL)}`]
       : []),
     `- **Fracht fällt je Lieferung an, es gibt keine Frei-Haus-Schwelle.** Die Sätze und die Begründung stehen unter ${BASIS}/lieferung.html.`,
     '', '## Wie diese Seiten aufgebaut sind', '',
