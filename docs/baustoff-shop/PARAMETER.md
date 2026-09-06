@@ -135,11 +135,16 @@ konservativere Kapitalgesellschaftsweg unterstellt.
 > `die-drei-groessten-risiken.md`.
 >
 > **Und die Zahl, mit der gemessen wird:** Die Messliste führt
-> **32 Begriffe** in drei Anzeigengruppen (`npm run messliste`). Sie müssen im
+> **30 Begriffe** in drei Anzeigengruppen (`npm run messliste`). Sie müssen im
 > Liefergebiet zusammen 2.500 bis 6.700 Suchanfragen je Monat tragen, sonst
 > bindet der Markt und nicht das Budget. Bis zum 01.09. waren es 33; dann
 > fiel „Kaminkopf Regenhaube“ weg, weil der Shop die Kaminkopfverkleidung
-> nicht führt und ein Suchwort kein Werbeversprechen ist.
+> nicht führt und ein Suchwort kein Werbeversprechen ist. **Am 06.09. fielen
+> zwei weitere weg, aus genau demselben Grund:** „EPS Fassadenplatten“ und
+> „Fassadendämmung EPS“ — die eigene Landeseite sagt im zweiten Satz, dass die
+> Fassadendämmplatte in Flächenstärke nicht geführt wird. Seither ist es keine
+> Handentscheidung mehr: `abgegrenztesKeyword` hält jedes Keyword gegen die
+> Abgrenzungssätze seiner Landeseite (`ein-gebot-auf-die-eigene-absage.md`).
 >
 > **Berichtigt am 01.09.:** Hier stand 45.356 €. Das ist die Zahl für
 > **Kreditkarte**, gerechnet am 25.08. — zwei Tage bevor Gate 21 EPS und

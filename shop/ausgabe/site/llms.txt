@@ -131,3 +131,4 @@ Danach wird gefragt, und wir haben es nicht. Genannt ist jeweils, was stattdesse
 - **kanalgrundrohr**: Grundrohre in anderen Nennweiten führen wir nicht. Unsere Kanalrohre sind PVC NW 100.
 - **gewebeecke**: Eck- und Diagonalgewebe führen wir nicht. Der Kantenschutz mit Gewebe ist ein anderes Teil.
 - **diagonalgewebe**: Diagonal- und Eckgewebe führen wir nicht. Der Kantenschutz mit Gewebe ist ein anderes Teil.
+- **flächendämmung**: Die Dämmplatte in Flächenstärke führen wir nicht. Geführt sind EPS in 2, 3 und 5 cm — sie gleichen aus und gehören an Laibungen; eine WDVS-Dämmung beginnt bei acht Zentimetern. XPS führen wir von 30 bis 100 mm für den Sockel- und Perimeterbereich.

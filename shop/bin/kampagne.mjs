@@ -37,6 +37,7 @@ import { GRUPPENSEITE } from '../src/artikelliste.js';
 import { ladeBaustoffkatalog, katalogbefund, ZIELMARGE } from '../src/baustoffkatalog.js';
 import { ETAPPEN } from '../src/rollout.js';
 import { PREISAUSSAGEN, VORRATSWORTE } from '../src/aussagen.js';
+import { abgegrenztesKeyword } from '../src/abgrenzung.js';
 import { cent } from '../src/preis.js';
 import { traegtSichSelbst } from '../src/kostenbild.js';
 import { berechneWarenkorb } from '../src/warenkorb.js';
@@ -473,7 +474,24 @@ const GATTUNGSBEGRIFFE = {
   ],
   'Dämmung': [
     'XPS Platten kaufen', 'XPS 80 mm', 'XPS 100 mm', 'Perimeterdämmung XPS',
-    'EPS Fassadenplatten', 'Fassadendämmung EPS', 'Perimeterdämmung druckfest',
+    // **„EPS Fassadenplatten" ist am 06.09. entfallen.** Dieselbe Begründung
+    // wie bei „Kaminkopf Regenhaube" am 01.09., nur ist sie hier vier Monate
+    // lang übersehen worden: Die Landeseite sagt im zweiten Satz „Die
+    // Fassadendämmplatte in Flächenstärke führen wir nicht", und geführt sind
+    // 2, 3 und 5 cm — eine WDVS-Dämmung beginnt bei acht.
+    //
+    // **„Fassadendämmung EPS" steht absichtlich weiter hier.** Es wird nicht
+    // von Hand gestrichen, sondern von `abgegrenztesKeyword` zurückgehalten
+    // und landet mit Grund in `keywords-verneint.csv` — so wie ein Keyword
+    // ohne Deckung seit jeher zurückgehalten wird. Ein Wort, das eine Regel
+    // fängt, gehört nicht gelöscht: Gelöscht sieht man der Liste nicht mehr
+    // an, dass die Regel arbeitet.
+    //
+    // Das erste Wort fängt sie **nicht**: Aus „Fassadendämmplatte" wird der
+    // Stamm `fassadendä`, und „Fassadenplatten" trägt ihn nicht, obwohl
+    // dasselbe Bauteil gemeint ist. Die Grenze steht im Kopf von
+    // `src/abgrenzung.js`.
+    'Fassadendämmung EPS', 'Perimeterdämmung druckfest',
   ],
   Kamin: [
     'Schiedel Kamin', 'Kaminsystem einzügig', 'Mantelstein Kamin', 'Kaminrohr gedämmt',
@@ -1225,8 +1243,36 @@ function main() {
   }
 
   const ohneDeckung = [];
+  /*
+   * **Zwei Fragen an dasselbe Keyword — seit dem 6. September.**
+   *
+   * Die erste steht seit jeher da: *Sagt die Landeseite die Wörter des
+   * Keywords?* Die zweite kam heute dazu: *Sagt sie sie in einem Satz, der
+   * sie verneint?*
+   *
+   * > **Der Prüfer fragte, ob das Wort auf der Seite steht. Er fragte nicht,
+   * > in welchem Satz.**
+   *
+   * „Fassadendämmung EPS" hat die erste Frage vier Monate lang bestanden: Das
+   * Wort steht auf `gruppe/daemmung.html` — im Satz „Die Fassadendämmplatte in
+   * Flächenstärke **führen wir nicht**".
+   */
+  const abgegrenzt = [];
   const keywordsGedeckt = keywordsAnlauf.filter((k) => {
-    const fehlt = ungedeckteWoerter(k.Keyword, seitentexte.get(k.Anzeigengruppe));
+    const seite = seitentexte.get(k.Anzeigengruppe);
+    const verneint = abgegrenztesKeyword(k.Keyword, seite);
+    if (verneint) {
+      abgegrenzt.push({
+        Anzeigengruppe: k.Anzeigengruppe,
+        Keyword: k.Keyword,
+        Herkunft: k.Herkunft,
+        Landeseite: `gruppe/${GRUPPENSEITE[k.Anzeigengruppe]}.html`,
+        'Verneint als': verneint.wort,
+        Satz: verneint.satz,
+      });
+      return false;
+    }
+    const fehlt = ungedeckteWoerter(k.Keyword, seite);
     if (fehlt.length === 0) return true;
     ohneDeckung.push({
       Anzeigengruppe: k.Anzeigengruppe,
@@ -1241,6 +1287,8 @@ function main() {
   schreibe('keywords.csv', csv(['Kampagne', 'Anzeigengruppe', 'Keyword', 'Übereinstimmungstyp', 'Herkunft', 'Marke'], keywordsGedeckt));
   schreibe('keywords-ohne-deckung.csv', csv(
     ['Anzeigengruppe', 'Keyword', 'Herkunft', 'Landeseite', 'Fehlende Wörter'], ohneDeckung));
+  schreibe('keywords-verneint.csv', csv(
+    ['Anzeigengruppe', 'Keyword', 'Herkunft', 'Landeseite', 'Verneint als', 'Satz'], abgegrenzt));
   schreibe('negative-keywords.csv', csv(['Liste', 'Thema', 'Keyword', 'Übereinstimmungstyp'], negative));
 
   // **Zurückgestellt, nicht verworfen.** Die schwachen Gruppen kommen dazu,
@@ -1300,6 +1348,14 @@ function main() {
 
   const jeHerkunft = keywordsEindeutig.reduce((m, k) => ({ ...m, [k.Herkunft]: (m[k.Herkunft] ?? 0) + 1 }), {});
   console.log(`\nKeywords: ${keywordsEindeutig.length} (${Object.entries(jeHerkunft).map(([h, n]) => `${n} ${h}`).join(', ')})`);
+  if (abgegrenzt.length) {
+    console.log(`\nZurückgehalten — die Landeseite verneint das Wort (keywords-verneint.csv): ${abgegrenzt.length}`);
+    for (const k of abgegrenzt) {
+      console.log(`  · ${k.Anzeigengruppe}: „${k.Keyword}" — die Seite sagt „${k['Verneint als']} führen wir nicht"`);
+    }
+    console.log('  Auf ein Wort zu bieten, das die eigene Seite verneint, ist ein bezahlter');
+    console.log('  Klick auf eine Absage.');
+  }
   if (ohneDeckung.length) {
     const versch = new Set(ohneDeckung.map((k) => `${k.Anzeigengruppe}|${k.Keyword}`)).size;
     console.log(`\nZurückgehalten — die Landeseite sagt das Wort nicht (keywords-ohne-deckung.csv): ${versch}`);

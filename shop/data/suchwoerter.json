@@ -122,7 +122,7 @@
     {
       "wort": "fassadendämmung",
       "gruppe": "Dämmung",
-      "warum": "Steht seit 01.09. in der Begriffstabelle auf gruppe/daemmung und ist Keyword des ersten Anzeigenanlaufs — die Shopsuche fand es nicht. Der Katalog nennt die Ware „Fassaden EPS\"."
+      "warum": "Steht seit 01.09. in der Begriffstabelle auf gruppe/daemmung. Berichtigt am 06.09.: Hier stand als Grund „ist Keyword des ersten Anzeigenanlaufs\" — ein Suchwort, das aufgenommen wurde, weil eine Anzeige darauf bietet, und nicht, weil der Shop die Ware hat. Das Keyword ist entfallen; das Suchwort bleibt, aber aus dem richtigen Grund: Wer danach sucht, soll auf der Gruppenseite landen und dort im zweiten Satz lesen, dass die Flächenstärke nicht geführt wird. Der Katalog nennt die Ware „Fassaden EPS\"."
     },
     {
       "wort": "fassadendübel",
@@ -574,6 +574,11 @@
       "wort": "diagonalgewebe",
       "warum": "Siehe gewebeecke.",
       "antwort": "Diagonal- und Eckgewebe führen wir nicht. Der Kantenschutz mit Gewebe ist ein anderes Teil."
+    },
+    {
+      "wort": "flächendämmung",
+      "warum": "Am 06.09. aufgenommen. Zwei Seiten sagen es im Klartext — gruppe/daemmung („Die Fassadendämmplatte in Flächenstärke führen wir nicht\") und system/fassade-100-qm („Position 2 steht auf der Liste, aber nicht im Regal\") —, und das Register kannte die teuerste Lücke des Sortiments nicht. Ein Assistent, der llms.txt liest, sah 23 Ausschlüsse und darunter nicht den einen, nach dem bei einer Fassade zuerst gefragt wird.",
+      "antwort": "Die Dämmplatte in Flächenstärke führen wir nicht. Geführt sind EPS in 2, 3 und 5 cm — sie gleichen aus und gehören an Laibungen; eine WDVS-Dämmung beginnt bei acht Zentimetern. XPS führen wir von 30 bis 100 mm für den Sockel- und Perimeterbereich."
     }
   ]
 }

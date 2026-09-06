@@ -211,6 +211,21 @@ export const GEGENPROBEN = Object.freeze([
       + 'durch `test/statuskopf.test.js` in beide Richtungen abgedeckt.',
   }),
   Object.freeze({
+    id: 'gebot-auf-die-absage',
+    pruefer: 'test',
+    was: 'Ein Anzeigen-Keyword, das die eigene Landeseite verneint',
+    datei: 'shop/src/abgrenzung.js',
+    art: 'ersetzen',
+    suchen: '  /\\bführen wir (?:derzeit |hier |aktuell )?(?:nicht|keine[nrs]?\\b)/i;',
+    ersetzen: '  /\\bfuehren wir bestimmt nicht\\b/i;',
+    erwartet: /müsste zurückgehalten werden|gefunden:/,
+    warum: 'Die Anzeigengruppe „Dämmung" bot auf „Fassadendämmung EPS", bis zu 5,91 € je Klick, '
+      + 'während die Landeseite im zweiten Satz sagt, dass die Fassadendämmplatte in '
+      + 'Flächenstärke nicht geführt wird. Die Mutation macht das Abgrenzungsmuster blind und '
+      + 'verlangt, dass es auffällt: Ohne die Regel geht das Keyword wieder in die Kampagne, '
+      + 'und der bezahlte Klick landet auf einer Absage.',
+  }),
+  Object.freeze({
     id: 'preisstand-ohne-alter',
     pruefer: 'test',
     was: 'Eine Preisgrundlage über der eigenen Grenze, ohne dass die Seite es sagt',
