@@ -211,6 +211,21 @@ export const GEGENPROBEN = Object.freeze([
       + 'durch `test/statuskopf.test.js` in beide Richtungen abgedeckt.',
   }),
   Object.freeze({
+    id: 'kopfvermerk-ohne-aussage',
+    pruefer: 'pruefe-widerrufe',
+    was: 'Ein Kopfvermerk, der nur ein Umgebungswort trägt statt einer Rücknahme',
+    datei: 'docs/baustoff-shop/rechnung-zum-zuschlag.md',
+    art: 'ersetzen',
+    suchen: '> **Überholt seit 25.08.:**',
+    ersetzen: '> **Abgelöst seit 25.08.:**',
+    erwartet: /marge-als-zuschlag/,
+    warum: 'Der Kopfvermerk dieser Datei deckt fünf Fundstellen im ganzen Dokument. Die '
+      + 'Mutation tauscht das eine Wort, das ihn zu einer Rücknahme macht, gegen eines aus der '
+      + 'Umgebungsliste eines Eintrags — genau der Zustand, der `STATUS.md:775` sechs Tage lang '
+      + 'stillgestellt hat. Ohne diese Gegenprobe wäre die Sammeldeckung das einzige Stück des '
+      + 'Prüfers, dessen Ausfall niemand bemerkt: Sie macht grün, wo sonst rot stünde.',
+  }),
+  Object.freeze({
     id: 'vorbehalt-erreicht-niemanden',
     pruefer: 'pruefe-vorbehalte',
     was: 'Ein Vorbehalt aus dem Rechenkern, der in keiner Ausgabe steht',

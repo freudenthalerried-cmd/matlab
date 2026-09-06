@@ -39,6 +39,31 @@ export const SICHTWEITE = 8;
  * deshalb jede Fundstelle der Datei — aber nur, wenn er als Zitatblock
  * (`>`) gesetzt ist. Ein Widerruf, der wie Fließtext aussieht, wird
  * überlesen.
+ *
+ * **Berichtigt am 6. September, nachts.** Der Kopfvermerk zählte bis dahin
+ * auch, wenn ein Wort aus dem **eintragsspezifischen** `merkmal` in den
+ * ersten fünfzehn Zeilen stand. Gefunden am 5. September, als ein
+ * hinzugefügter Hinweiskasten in `STATUS.md` eine Zeile über die Grenze
+ * schob und ein Testfall rot wurde: Der Verzeichniseintrag zu
+ * `domainwahl.md` empfahl `shop.freudenthaler-bau.at` — seit dem 31.08.
+ * abgelöst — und war sechs Tage lang **nur** dadurch gedeckt, dass das Wort
+ * *abgelöst* im Merkmal jenes Eintrags steht und in Zeile 9 ein Satz über
+ * die **Modellfrage** stand.
+ *
+ * > **Ein Wort aus der Umgebungsliste eines Eintrags sagt nichts über das
+ * > ganze Dokument. Eine Deckung für alles braucht eine Aussage über
+ * > alles.**
+ *
+ * Gedeckt wird der Kopf deshalb nur noch durch `WIDERRUFSMERKMAL` — die
+ * absichtlich enge Liste, die ausdrücklich eine frühere Aussage zurücknimmt.
+ * Das eintragsspezifische Merkmal wirkt weiter, aber nur dort, wo es
+ * hingehört: **in Sichtweite** des Fundes.
+ *
+ * **Vor der Änderung gemessen, über alle fünf Bestände (497 Dateien):** 22
+ * Fundstellen sind durch einen Kopfvermerk gedeckt, **alle 22** durch ein
+ * allgemeines Merkmal. Keine einzige hing an der Umgebungsliste. Die
+ * Änderung nimmt also nichts weg, was heute trägt — sie nimmt weg, was
+ * jederzeit zufällig hätte tragen können.
  */
 export const KOPFZEILEN = 15;
 
@@ -213,9 +238,9 @@ export const WIDERRUFE = Object.freeze([
  *
  * Dann gilt er für das ganze Dokument.
  */
-export function kopfwiderruf(text, { kopfzeilen = KOPFZEILEN, merkmal } = {}) {
+export function kopfwiderruf(text, { kopfzeilen = KOPFZEILEN } = {}) {
   return text.split('\n').slice(0, kopfzeilen).some(
-    (z) => /^\s*>/.test(z) && (WIDERRUFSMERKMAL.test(z) || (merkmal ? merkmal.test(z) : false)),
+    (z) => /^\s*>/.test(z) && WIDERRUFSMERKMAL.test(z),
   );
 }
 
@@ -294,7 +319,7 @@ function tabellensichtfeld(zeilen, i, sichtweite) {
 export function findeWiderrufe(text, { register = WIDERRUFE, sichtweite = SICHTWEITE, kopfzeilen = KOPFZEILEN } = {}) {
   const funde = [];
   for (const eintrag of register) {
-    const imKopf = kopfwiderruf(text, { kopfzeilen, merkmal: eintrag.merkmal });
+    const imKopf = kopfwiderruf(text, { kopfzeilen });
     const muster = new RegExp(eintrag.muster.source, eintrag.muster.flags.includes('g')
       ? eintrag.muster.flags
       : eintrag.muster.flags + 'g');

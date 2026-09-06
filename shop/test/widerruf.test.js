@@ -140,6 +140,29 @@ test('das Merkmal ist ohne g-Flag — sonst ist test() zustandsbehaftet', () => 
   assert.equal(WIDERRUFSMERKMAL.test(text), WIDERRUFSMERKMAL.test(text), 'zweimal dasselbe Ergebnis');
 });
 
+/**
+ * **Der Befund vom 5. September, behoben am 6.** Der Kopfvermerk deckte das
+ * ganze Dokument auch dann, wenn nur ein Wort aus der **Umgebungsliste** eines
+ * Eintrags oben stand. So war der Verzeichniseintrag zu `domainwahl.md` sechs
+ * Tage lang gedeckt: Das Wort *abgelöst* steht im Merkmal jenes Eintrags, und
+ * in Zeile 9 stand ein Satz über die Modellfrage.
+ */
+test('ein Wort aus der Umgebungsliste eines Eintrags deckt nicht das ganze Dokument', () => {
+  const kopf = '# Titel\n\n> Der Kurswechsel hat beide Modelle abgelöst.\n\n';
+  assert.equal(kopfwiderruf(kopf), false, 'abgelöst allein ist kein Widerrufsvermerk');
+
+  const mitAussage = '# Titel\n\n> Diese Empfehlung ist zurückgenommen.\n\n';
+  assert.equal(kopfwiderruf(mitAussage), true, 'eine Rücknahme deckt das Dokument');
+});
+
+test('eine widerrufene Aussage unter einem bloßen Umgebungswort bleibt ungedeckt', () => {
+  const text = '# Titel\n\n> Der Kurswechsel hat beide Modelle abgelöst.\n\n'
+    + `${'\n'.repeat(20)}Empfohlen wird shop.freudenthaler-bau.at als Hauptadresse.\n`;
+  const offen = findeWiderrufe(text).filter((f) => !f.gedeckt);
+  assert.equal(offen.length, 1, 'genau der Fall aus STATUS.md:775');
+  assert.equal(offen[0].id, 'shop-subdomain-als-adresse');
+});
+
 test('der eigene Bestand trägt jeden Widerruf mit', () => {
   const dateien = readdirSync(verzeichnis)
     .filter((n) => n.endsWith('.md'))
