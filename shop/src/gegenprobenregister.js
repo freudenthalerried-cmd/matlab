@@ -1445,6 +1445,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'nichts findet, antwortet mit dem, was bei einem Baustoffhändler üblich ist. Diese '
       + 'Mutation lässt drei der vier wieder heraus.',
   }),
+  Object.freeze({
+    id: 'vorlage-die-ihr-werkzeug-abweist',
+    pruefer: 'test',
+    was: 'Eine Vorlage, die durch ihr eigenes Werkzeug nicht durchgeht',
+    datei: 'shop/beispiel/artikelliste-muster.csv',
+    art: 'ersetzen',
+    suchen: 'sku;bezeichnung;einheit;ek_netto;uvp_netto;gruppe;gewicht_kg;sperrgut',
+    ersetzen: 'artikel;name;einheit;preis;liste;gruppe;gewicht;sperrgut',
+    erwartet: /Vorlage|Import|artikelliste/i,
+    warum: 'Die Vorlage ist die Datei, die der Lieferant ausfüllt — der Importweg verweist auf '
+      + 'sie, und sie löst zugleich die Weisung „Sortiment auf mindestens hundert Artikel". Bis '
+      + 'zum 6. September öffnete sie kein Lauf: Ihre Spaltennamen waren eine Behauptung über '
+      + 'ein Dateiformat. Merkt es jemand, dann am Tag, an dem die ausgefüllte Liste kommt. '
+      + 'Diese Mutation vertauscht die Spaltennamen mit plausiblen anderen — genau das, was '
+      + 'beim Abschreiben von Hand passiert.',
+  }),
 ]);
 
 /**

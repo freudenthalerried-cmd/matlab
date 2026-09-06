@@ -61,17 +61,58 @@ if (alle.status !== 0) {
 const gefuehrt = alle.stdout.split('\n').filter(Boolean)
   .filter((d) => !OHNE.some((o) => o.muster.test(d)));
 
+/*
+ * **Die Testfälle gehören dazu — 6. September 2026.**
+ *
+ * Dieses Werkzeug maß 31 Prüfer und schloss mit dem Satz *„Ungelesen ist
+ * dagegen sicher ungeprüft"*. Der Satz war falsch, und zwar an einer der
+ * sieben Dateien, die es selbst namentlich nannte:
+ * `beispiel/preisliste-muster-bahnen.csv` wird von
+ * `test/import-werkzeug.test.js` gelesen — dem größten Leser des ganzen
+ * Bestands, 1750 Testfälle, Schritt 1 des Gesamtlaufs.
+ *
+ * > **Das Werkzeug, das misst, wessen Reichweite zu klein ist, hatte selbst
+ * > eine zu kleine — und beschuldigte damit eine Datei, die geprüft wird.**
+ *
+ * Der Lauf steht nicht in `PRUEFER` (dort stehen die `bin/`-Werkzeuge), er
+ * kommt aus `package.json`. Die Spur erreicht die Kindprozesse des
+ * Testläufers über `NODE_OPTIONS`; ein `--require` am Elternprozess bliebe
+ * dort, wo nichts gelesen wird.
+ */
+const SKRIPTE = JSON.parse(readFileSync(join(SHOP, 'package.json'), 'utf8')).scripts ?? {};
+const LAEUFE = [
+  ...PRUEFER.map((p) => ({
+    name: p.name,
+    argumente: ['--require', SPUR, join(SHOP, 'bin', p.werkzeug), ...(p.argumente ?? [])],
+    umgebung: {},
+  })),
+  ...(SKRIPTE.test
+    ? [{
+      name: 'test',
+      // Aus dem Skript, nicht aus dem Gedächtnis: Ändert sich das Muster der
+      // Testdateien, misst dieser Lauf weiter dieselben.
+      argumente: SKRIPTE.test.replace(/^node\s+/, '').split(/\s+/),
+      umgebung: { NODE_OPTIONS: `--require ${SPUR}` },
+    }]
+    : []),
+];
+
 const ordner = wegwerfordner('reichweite-');
 const gelesen = new Set();
 const jePruefer = [];
 
-for (const p of PRUEFER) {
+for (const p of LAEUFE) {
   const datei = join(ordner, `${p.name}.txt`);
   writeFileSync(datei, '');
   const lauf = spawnSync(
     process.execPath,
-    ['--require', SPUR, join(SHOP, 'bin', p.werkzeug), ...(p.argumente ?? [])],
-    { cwd: SHOP, encoding: 'utf8', env: { ...process.env, SPUR_DATEI: datei }, timeout: 300000 },
+    p.argumente,
+    {
+      cwd: SHOP,
+      encoding: 'utf8',
+      env: { ...process.env, ...p.umgebung, SPUR_DATEI: datei },
+      timeout: 900000,
+    },
   );
   const pfade = existsSync(datei)
     ? readFileSync(datei, 'utf8').split('\n').filter(Boolean)
@@ -85,9 +126,10 @@ for (const p of PRUEFER) {
 
 const ungelesen = gefuehrt.filter((d) => !gelesen.has(d));
 
-console.log(`\nReichweite — ${PRUEFER.length} Prüfer, ${gefuehrt.length} geführte Dateien\n`);
-console.log(`  Von mindestens einem Prüfer gelesen  ${gefuehrt.length - ungelesen.length}`);
-console.log(`  Von keinem                           ${ungelesen.length}`);
+console.log(`\nReichweite — ${LAEUFE.length} Läufe (${PRUEFER.length} Prüfer`
+  + `${SKRIPTE.test ? ' und die Testfälle' : ''}), ${gefuehrt.length} geführte Dateien\n`);
+console.log(`  Von mindestens einem Lauf gelesen  ${gefuehrt.length - ungelesen.length}`);
+console.log(`  Von keinem                         ${ungelesen.length}`);
 console.log('\n  Die weiteste Reichweite:');
 for (const p of [...jePruefer].sort((a, b) => b.dateien.size - a.dateien.size).slice(0, 5)) {
   console.log(`    ${String(p.dateien.size).padStart(4)}  ${p.name}`);
@@ -95,10 +137,14 @@ for (const p of [...jePruefer].sort((a, b) => b.dateien.size - a.dateien.size).s
 console.log(`\n  Ausgenommen: ${OHNE.map((o) => o.warum).join(', ')}`);
 
 if (ungelesen.length) {
-  console.log(`\n  Diese ${ungelesen.length} Dateien öffnet kein Prüfer:\n`);
+  console.log(`\n  Diese ${ungelesen.length} Dateien öffnet kein Lauf:\n`);
   for (const d of ungelesen) console.log(`    ${d}`);
 }
 
 console.log('\nGelesen ist nicht geprüft: `pruefe-lesbar` reicht jede Quelldatei durch den');
 console.log('Übersetzer und sagt nichts über ihren Inhalt. Ungelesen ist dagegen sicher');
 console.log('ungeprüft — die Zahl oben ist eine untere Schranke, kein Zeugnis.');
+console.log('');
+console.log('Gemessen wird, was der Gesamtlauf öffnet: die Prüfer aus src/pruefregister.js');
+console.log('und die Testfälle. Bis zum 6. September fehlten die Testfälle, und damit stand');
+console.log('eine Datei zu Unrecht auf dieser Liste, die eine Probe bei jedem Lauf liest.');
