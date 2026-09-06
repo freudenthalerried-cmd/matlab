@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
+import { GRENZE_TAGE, preisGueltigBis } from '../src/preisalter.js';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import {
@@ -343,8 +344,17 @@ test('Seite und Feed zeichnen dasselbe Angebot aus, nicht zwei', () => {
   // Was die Seite darüber hinaus trägt, ersetzt nichts.
   assert.ok(daten.offers.areaServed);
   assert.equal(daten.offers.seller['@type'], 'Organization');
-  assert.equal(daten.offers.priceValidUntil, undefined,
-    'ein erfundenes Gültigkeitsdatum wäre eine Zusage');
+  /*
+   * **Berichtigt am 6. September.** Hier stand `priceValidUntil === undefined`
+   * mit dem Grund „ein erfundenes Gültigkeitsdatum wäre eine Zusage". Erfunden
+   * wäre es gewesen; gerechnet ist es keines: Der Betrieb hat eine Antwort auf
+   * „bis wann" und hatte sie nur woanders aufgeschrieben — `GRENZE_TAGE` aus
+   * `preisalter.js`, ab dem er die Grundlage selbst für überholt hält.
+   *
+   * Geprüft wird deshalb der **Wert**, nicht seine Abwesenheit.
+   */
+  assert.equal(daten.offers.priceValidUntil, preisGueltigBis(daten.offers.priceSpecification.validFrom),
+    'das Gültigkeitsdatum muss aus dem Preisstand gerechnet sein');
 });
 
 
@@ -672,13 +682,43 @@ test('ein leerer Lauf ist kein grüner', async () => {
 });
 
 test('der Preisstand steht auch in der strukturierten Auskunft', () => {
-  // Jede menschenlesbare Fläche nennt ihn; die Auszeichnung nannte kein
-  // Datum. `validFrom` und nicht `priceValidUntil`: Der Preisstand ist das
-  // Datum der Liste, aus der der Preis stammt.
+  // Jede menschenlesbare Fläche nennt ihn; die Auszeichnung nannte kein Datum.
+  // `validFrom` ist der Preisstand — das Datum der Liste, aus der der Preis
+  // stammt.
+  //
+  // **Berichtigt am 6. September.** Hier stand `priceValidUntil === undefined`
+  // mit dem Grund „bis wann er gilt, weiß niemand". Der Satz stammt aus
+  // derselben Woche wie „gültig bis zur nächsten Liste" auf der Artikelseite —
+  // und den hat die Seite einen Tag später zurückgenommen. Der Betrieb hat
+  // eine Antwort auf „bis wann": `GRENZE_TAGE`, ab dem er die Grundlage selbst
+  // für überholt hält und kein Gebot mehr darauf ruhen lässt.
   const a = angebotsAuszeichnung({ ...artikelOhneGtin, gtin: '9008811000005', preisStand: '2026-08-12' }, FEEDLAGE);
   assert.equal(a.daten.offers.priceSpecification.validFrom, '2026-08-12');
-  assert.equal(a.daten.offers.priceValidUntil, undefined, 'bis wann er gilt, weiß niemand');
+  assert.equal(a.daten.offers.priceValidUntil, preisGueltigBis('2026-08-12'),
+    'das Gültigkeitsdatum kommt aus dem Preisstand plus der eigenen Grenze');
 
+  // Ohne brauchbaren Stand bleibt **beides** weg: Was nicht bekannt ist,
+  // bekommt keinen Schlüssel.
   const ohne = angebotsAuszeichnung({ ...artikelOhneGtin, gtin: '9008811000005', preisStand: 'irgendwann' }, FEEDLAGE);
   assert.equal(ohne.daten.offers.priceSpecification.validFrom, undefined);
+  assert.equal(ohne.daten.offers.priceValidUntil, undefined);
+
+  // Und ein Aufrufer, der es selbst weiß, behält den Vortritt.
+  const gesetzt = angebotsAuszeichnung({ ...artikelOhneGtin, gtin: '9008811000005', preisStand: '2026-08-12' },
+    { ...FEEDLAGE, preisGueltigBis: '2026-12-31' });
+  assert.equal(gesetzt.daten.offers.priceValidUntil, '2026-12-31');
+});
+
+/**
+ * **Die Auszeichnung sagt dasselbe wie die Seite.** Sieben der 46 Artikel
+ * tragen seit dem 6. September auf ihrer Seite „Diese Grundlage ist N Tage
+ * alt"; für dieselben sieben liegt `priceValidUntil` in der Vergangenheit.
+ * Menschen- und maschinenlesbare Fläche stimmen überein — das ist der Zweck.
+ */
+test('ein überalterter Preisstand ergibt ein abgelaufenes Gültigkeitsdatum', () => {
+  const alt = angebotsAuszeichnung(
+    { ...artikelOhneGtin, gtin: '9008811000005', preisStand: '2026-01-01' }, FEEDLAGE);
+  assert.ok(alt.daten.offers.priceValidUntil < '2026-09-06',
+    'ein Preisstand von Januar kann im September nicht mehr gültig sein');
+  assert.equal(alt.daten.offers.priceValidUntil, preisGueltigBis('2026-01-01', GRENZE_TAGE));
 });

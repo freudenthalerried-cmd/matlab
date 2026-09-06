@@ -211,6 +211,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'durch `test/statuskopf.test.js` in beide Richtungen abgedeckt.',
   }),
   Object.freeze({
+    id: 'auszeichnung-ohne-ablauf',
+    pruefer: 'test',
+    was: 'Eine strukturierte Auskunft, die den Preis ohne Ablauf ausweist',
+    datei: 'shop/src/preisalter.js',
+    art: 'ersetzen',
+    suchen: '  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(s)) return null;\n  const dann = Date.parse(`${s}T00:00:00Z`);\n  if (Number.isNaN(dann)) return null;\n  return new Date(dann + grenzeTage * TAG_MS).toISOString().slice(0, 10);',
+    ersetzen: '  return null;',
+    erwartet: /Gültigkeitsdatum|priceValidUntil/,
+    warum: 'Die Artikelseite hat am 6. September den Satz „gültig bis zur nächsten Liste" '
+      + 'zurückgenommen — auf allen 46 Seiten. Die strukturierte Auskunft ließ '
+      + '`priceValidUntil` mit **derselben** Begründung weg („bis wann er gilt, weiß niemand") '
+      + 'und behielt sie einen Tag länger. Die Mutation nimmt das gerechnete Datum wieder '
+      + 'heraus: Ohne es sagt der Shop einer Maschine, sein Preis gelte unbefristet, während '
+      + 'sieben seiner Artikelseiten im Klartext das Gegenteil sagen.',
+  }),
+  Object.freeze({
     id: 'korb-ohne-liste-ungeprueft',
     pruefer: 'pruefe-koerbe',
     was: 'Ein Referenzwarenkorb ohne Systemliste, den keine Prüfung ansieht',

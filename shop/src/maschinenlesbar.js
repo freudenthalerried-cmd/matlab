@@ -32,6 +32,7 @@ import { istGtin } from './artikelliste.js';
 import { HERSTELLER, marke } from './hersteller.js';
 import { mengenschritt, packungsgewichtKg } from './gebinde.js';
 import { KENNUNGEN } from './crawler.js';
+import { GRENZE_TAGE, preisGueltigBis } from './preisalter.js';
 
 /** Wie lange eine ausgezeichnete Preisangabe als gültig gilt (Tage). */
 export const PREIS_GUELTIG_TAGE = 7;
@@ -400,7 +401,32 @@ export function angebotsAuszeichnung(artikel, lage = {}) {
     //
     // Dieselbe Form wie `gtin13` und `versandkostenNetto` weiter unten: Was
     // nicht bekannt ist, bekommt keinen Schlüssel.
-    ...(lage.preisGueltigBis ? { priceValidUntil: lage.preisGueltigBis } : {}),
+    /*
+     * **`priceValidUntil` seit dem 6. September, aus der eigenen Regel.**
+     *
+     * Hier stand ein Zweig, der nie einen Wert bekam, und zwanzig Zeilen
+     * tiefer die Begründung dafür: *„Bis wann er gilt, hängt an der nächsten
+     * Liste und ist nicht bekannt."* Diesen Satz hat die Artikelseite einen
+     * Tag später zurückgenommen — sie sagte ihn wörtlich („gültig bis zur
+     * nächsten Liste", 46 Seiten) und sagt ihn nicht mehr, weil der Betrieb
+     * die nächste Liste nicht beobachten kann.
+     *
+     * > **Die Seite hat den Satz berichtigt, die Auszeichnung nicht.**
+     *
+     * Der Betrieb hat eine Antwort auf „bis wann", nur an anderer Stelle:
+     * `GRENZE_TAGE` aus `preisalter.js`. Ab dann gilt die Grundlage als
+     * überholt, und kein Gebot darf mehr darauf ruhen. Ein Aufrufer kann den
+     * Wert weiter selbst setzen; ohne ihn wird er aus dem Preisstand
+     * gerechnet.
+     *
+     * **Was das kostet, steht dazu:** Bei sieben der 46 Artikel liegt dieses
+     * Datum heute in der Vergangenheit. Eine Suchmaschine liest das als
+     * abgelaufenes Angebot — und das ist dieselbe Auskunft, die diese sieben
+     * Artikelseiten seit gestern im Klartext geben.
+     */
+    ...((lage.preisGueltigBis ?? preisGueltigBis(artikel.preisStand))
+      ? { priceValidUntil: lage.preisGueltigBis ?? preisGueltigBis(artikel.preisStand) }
+      : {}),
     availability: artikel.lieferbar === false
       ? 'https://schema.org/OutOfStock'
       : VERFUEGBARKEIT,
@@ -435,10 +461,12 @@ export function angebotsAuszeichnung(artikel, lage = {}) {
   // menschenlesbare Fläche nennt ihn — Artikelseite, `llms.txt`,
   // Anfragetext, Beleg. Die strukturierte Auskunft nannte kein Datum.
   //
-  // `validFrom` und ausdrücklich **nicht** `priceValidUntil`: Der Preisstand
-  // ist das Datum der Lieferantenliste, aus der er stammt — „gilt ab". Bis
-  // wann er gilt, hängt an der nächsten Liste und ist nicht bekannt; die
-  // Begründung dafür steht zwanzig Zeilen weiter oben und gilt weiter.
+  // `validFrom` ist der Preisstand — das Datum der Lieferantenliste, aus der
+  // er stammt, also „gilt ab". **Berichtigt am 6. September:** Hier stand
+  // „und ausdrücklich **nicht** `priceValidUntil` … bis wann er gilt, hängt
+  // an der nächsten Liste und ist nicht bekannt". Diesen Satz hat die
+  // Artikelseite einen Tag später zurückgenommen; das Gegenstück steht jetzt
+  // oben bei `priceValidUntil`.
   if (typeof artikel.preisStand === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(artikel.preisStand)) {
     angebot.priceSpecification.validFrom = artikel.preisStand;
   }

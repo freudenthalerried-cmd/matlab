@@ -82,6 +82,37 @@ const TAG_MS = 24 * 60 * 60 * 1000;
  * darf ein Alter nicht um eine Stunde und damit über eine Tagesgrenze
  * schieben.
  */
+/**
+ * Bis wann die Preisgrundlage nach eigener Regel als aktuell gilt.
+ *
+ * **Aufgenommen am 6. September 2026.** Die strukturierte Auskunft ließ
+ * `priceValidUntil` ausdrücklich weg, mit der Begründung vom 5. September:
+ * *„Bis wann er gilt, hängt an der nächsten Liste und ist nicht bekannt."*
+ *
+ * Genau diesen Satz hat die Artikelseite **einen Tag später** zurückgenommen:
+ * „gültig bis zur nächsten Liste" stand dort auf allen 46 Seiten und ist
+ * gefallen, weil der Betrieb die nächste Liste nicht beobachten kann
+ * (`preisrhythmus: null`) und der Preis erst mit dem Angebot verbindlich wird.
+ *
+ * > **Eine Begründung, die auf einem Satz ruht, den die Seite inzwischen
+ * > zurückgenommen hat.**
+ *
+ * Der Betrieb hat sehr wohl eine Antwort auf „bis wann" — er hat sie nur
+ * woanders aufgeschrieben: `GRENZE_TAGE`. Ab dann gilt die Grundlage als
+ * überholt, und `pruefe-preisalter` lässt kein Gebot mehr darauf ruhen. Diese
+ * Zahl ist ein Platzhalter für den unbekannten Preisrhythmus und sagt das
+ * selbst — aber sie ist die Zahl, nach der dieser Betrieb handelt.
+ *
+ * @returns {string|null} `JJJJ-MM-TT` oder null, wenn kein brauchbarer Stand
+ */
+export function preisGueltigBis(preisStand, grenzeTage = GRENZE_TAGE) {
+  const s = String(preisStand ?? '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return null;
+  const dann = Date.parse(`${s}T00:00:00Z`);
+  if (Number.isNaN(dann)) return null;
+  return new Date(dann + grenzeTage * TAG_MS).toISOString().slice(0, 10);
+}
+
 export function preisalterTage(preisStand, heute) {
   const s = String(preisStand ?? '').trim();
   if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return null;
