@@ -221,6 +221,20 @@ export const LESER = Object.freeze([
    * erreicht. Über einem veralteten Erzeugnis stünde die Frage falsch — er
    * sagt den Stand deshalb im Kopf an, statt abzubrechen.
    */
+  /*
+   * **Aufgenommen am 6. September 2026.** Sie liest `ausgabe/site` und leitet
+   * daraus die Abnahmeliste ab — die Liste **ist** eine Aussage über das
+   * Erzeugnis. Eine Weigerung wäre hier trotzdem falsch, siehe Grund.
+   */
+  Object.freeze({
+    werkzeug: 'bin/abnahmeliste.mjs',
+    erzeugnis: null,
+    warumOhnePruefung: 'Sie druckt, was nach dem Hochladen im Browser nachzusehen ist — und '
+      + 'nachgesehen wird an dem Ordner, der hochgeladen wurde. Wer eine veraltete Ausgabe '
+      + 'hochlädt, braucht die Liste zu **dieser** Ausgabe; eine Weigerung ließe ihn ohne '
+      + 'Liste dastehen. Sie nennt stattdessen die Zahl der Dateien, aus denen sie abgeleitet '
+      + 'ist, und `pruefe-erzeugnis` sagt im selben Lauf, ob der Bau frisch war.',
+  }),
   Object.freeze({
     werkzeug: 'bin/vorbehaltspruefung.mjs',
     erzeugnis: null,

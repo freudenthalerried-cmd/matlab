@@ -211,6 +211,20 @@ export const GEGENPROBEN = Object.freeze([
       + 'durch `test/statuskopf.test.js` in beide Richtungen abgedeckt.',
   }),
   Object.freeze({
+    id: 'abnahme-fragt-ins-leere',
+    pruefer: 'test',
+    was: 'Eine Abnahmeliste, die nach etwas fragt, das im Ausgabeordner nicht steht',
+    datei: 'shop/src/abnahme.js',
+    art: 'ersetzen',
+    suchen: "      erwartet: 'window.__SHOP__',",
+    ersetzen: "      erwartet: 'window.__GIBT_ES_NICHT__',",
+    erwartet: /erwartung-steht-nicht-drin|skript/,
+    warum: 'Die Liste wird abgearbeitet, wenn niemand mehr am Bau sitzt: Der Auftraggeber ruft '
+      + 'acht Adressen auf und sieht nach, ob der genannte Text da ist. Fragt sie nach einem '
+      + 'Text, den es im Ordner gar nicht gibt, meldet er einen Fehler des Servers, wo der '
+      + 'Fehler in der Liste steht — und sucht ihn an der falschen Stelle.',
+  }),
+  Object.freeze({
     id: 'fehlerseite-ohne-auslieferung',
     pruefer: 'test',
     was: 'Eine Fehlerseite, die im Ordner liegt und die niemand ausliefert',

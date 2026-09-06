@@ -231,6 +231,47 @@ export const ETAPPEN = Object.freeze([
     ergebnis: 'Ohne erreichbare Seite kein Klick, keine Auffindbarkeit, keine Anfrage.',
   }),
   Object.freeze({
+    /*
+     * **Aufgenommen am 6. September 2026.** Der Plan ging vom Hochladen
+     * unmittelbar zur Search Console — also von „die Dateien sind oben" zu
+     * „Google liest sie". Dazwischen fehlte die Frage, ob der Server
+     * überhaupt herausgibt, was im Ordner liegt.
+     *
+     * > **Der Plan prüfte, ob Google die Seite findet, und nicht, ob der
+     * > Server sie richtig herausgibt.**
+     *
+     * Seit derselben Nacht hängt die Fehlerseite an einer Zeile in
+     * `.htaccess`, deren Wirkung von hier aus **nicht** messbar ist: Der
+     * Netzausgang dieser Umgebung ist gesperrt. Dasselbe gilt für
+     * Erreichbarkeit, Zeichensatz und die Frage, ob `shop.js` als JavaScript
+     * ankommt. Was hier nicht geht, gehört auf eine Liste — nicht in einen
+     * Vorsatz.
+     *
+     * Null Tage und trotzdem eine Etappe: Sie kostet nichts und verschiebt
+     * nichts, aber ohne sie steht der Schritt in keinem Plan, den der
+     * Auftraggeber liest. `npm run abnahme` druckt die Liste; sie wird aus
+     * dem gebauten Erzeugnis abgeleitet und kann deshalb nicht veralten.
+     */
+    id: 'abnahme',
+    titel: 'Die Auslieferung im Browser abnehmen (npm run abnahme)',
+    zustaendig: 'entscheidung',
+    brauchtVor: [
+      Object.freeze({
+        etappe: 'upload',
+        warum: 'Es gibt nichts abzunehmen, solange nichts oben liegt.',
+      }),
+    ],
+    tage: 0,
+    art: 'gesetzt',
+    woher: 'Acht Adressen im Browser aufrufen und nachsehen, ob der genannte Text da ist. '
+      + 'Die Liste erzeugt `npm run abnahme` aus dem Ausgabeordner.',
+    gate: null,
+    warumKeinGate: 'Kein Gate — eine Feststellung über die Auslieferung, keine Entscheidung.',
+    ergebnis: 'Trennt „falsch gebaut" von „falsch ausgeliefert". Ohne sie sieht eine nicht '
+      + 'befolgte `.htaccess` genauso aus wie eine fehlende Fehlerseite, und ein nicht '
+      + 'ausgeliefertes `shop.js` genauso wie ein kaputter Warenkorb.',
+  }),
+  Object.freeze({
     // **Aufgenommen am 3. September 2026.** Der Plan ging vom Upload unmittelbar
     // zum Schalten. Dazwischen fehlte der eine Schritt, der beantwortet, ob die
     // hochgeladene Seite überhaupt gelesen wird: Ist sie erreichbar, ist
