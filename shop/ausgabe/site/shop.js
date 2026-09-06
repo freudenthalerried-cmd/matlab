@@ -2822,6 +2822,34 @@ function pruefeAnfrageAufGeheimnis(text, artikelMitEk = []) {
     }
     leere(z);
 
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    var gesucht = frage ? wortstaemme(frage) : [];
+    var bekannt = (D.nichtGefuehrt || []).filter(function (n) {
+      return gesucht.indexOf(n.wort.toLowerCase()) >= 0
+        || wortstaemme(n.wort).some(function (w) { return gesucht.indexOf(w) >= 0; });
+    });
+    if (bekannt.length) {
+      var wir = el('p', 'antwort');
+      wir.appendChild(el('strong', null, 'Das führen wir nicht. '));
+      wir.appendChild(document.createTextNode(bekannt[0].antwort
+        + (t.length ? ' Die Treffer darunter zeigen, was daneben steht — nicht das gesuchte Teil.' : '')));
+      z.appendChild(wir);
+    }
+
     var waren = t.filter(function (e) { return e.art === 'artikel'; });
     var rest = t.filter(function (e) { return e.art !== 'artikel'; });
 
@@ -2862,22 +2890,6 @@ function pruefeAnfrageAufGeheimnis(text, artikelMitEk = []) {
         });
         p.appendChild(document.createTextNode('?'));
         z.appendChild(p);
-      }
-      
-      
-      
-      
-      
-      var gesucht = wortstaemme(frage);
-      var bekannt = (D.nichtGefuehrt || []).filter(function (n) {
-        return gesucht.indexOf(n.wort.toLowerCase()) >= 0
-          || wortstaemme(n.wort).some(function (w) { return gesucht.indexOf(w) >= 0; });
-      });
-      if (bekannt.length) {
-        var wir = el('p', 'antwort');
-        wir.appendChild(el('strong', null, 'Das führen wir nicht. '));
-        wir.appendChild(document.createTextNode(bekannt[0].antwort));
-        z.appendChild(wir);
       }
       z.appendChild(el('p', 'antwort', 'Der Katalog umfasst ' + D.artikel.length
         + ' Artikel aus dem laufenden Einkauf. Was nicht darin steht, führen wir nicht — '

@@ -1373,6 +1373,25 @@ export const GEGENPROBEN = Object.freeze([
       + 'sichtbar ist. Die Mutation setzt das Handregister wieder ein und verlangt, dass es '
       + 'auffällt.',
   }),
+  Object.freeze({
+    id: 'auskunft-nur-im-leeren-fall',
+    pruefer: 'shopprobe',
+    was: 'Eine Auskunft, die nur erscheint, wenn die Trefferliste leer ist',
+    datei: 'shop/shop-ui.js',
+    art: 'ersetzen',
+    baueVorher: true,
+    suchen: '    if (bekannt.length) {',
+    ersetzen: '    if (bekannt.length && !t.length) {',
+    erwartet: /ohneAuskunft=\[|Nicht-Sortiment/,
+    warum: 'Der Zustand vom 6. September: Die redaktionelle Antwort „Das führen wir nicht" '
+      + 'stand im Zweig für die leere Trefferliste, und geprüft wurde sie an „drainage" — '
+      + 'einem Wort, das nichts findet. Drei Wörter des Registers finden sehr wohl etwas, '
+      + 'und für die drei blieb die Antwort verborgen: bei „abdichtung" ausgerechnet die, '
+      + 'die vor „dämmen ohne abzudichten" warnt, während die Trefferliste die Kellerwand- '
+      + 'und die Perimeterseite zeigt. Eine Auskunft, die nur im leeren Fall erscheint, '
+      + 'fehlt dort, wo die Trefferliste in die Irre führt. Diese Mutation setzt die alte '
+      + 'Bedingung wieder ein.',
+  }),
 ]);
 
 /**

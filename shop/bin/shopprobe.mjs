@@ -784,13 +784,49 @@ const SZENARIEN = [
   {
     name: 'Ein bekanntes Nicht-Sortiment bekommt eine eigene Antwort',
     // Die Suchseite sagte bei jedem Fehlschlag denselben allgemeinen Satz.
-    // Für 23 Wörter steht im Register, was wir nicht führen und was daneben
-    // steht.
+    // Im Register steht für eine Reihe von Wörtern, was wir nicht führen und
+    // was daneben steht. Wie viele es sind, zählt das Szenario darunter —
+    // hier stand die Zahl von Hand und war überholt.
     aktionen: `
       await geheZu('suche?q=drainage');
       out = text('#suche-ziel');`,
     erwartet: ['Das führen wir nicht', 'Drainagerohre führen wir nicht',
       'Noppenbahn', 'ersetzt aber keine Drainageleitung'],
+  },
+  {
+    /*
+     * **Der Fall vom 6. September.** Die Auskunft stand im Zweig für die
+     * leere Trefferliste, und das Szenario darüber prüfte sie an „drainage" —
+     * einem Wort, das nichts findet. Gemessen über das ganze Register finden
+     * **drei** seiner Wörter etwas: „abdichtung" die Kellerwandliste und die
+     * Perimeterseite, „gleitmittel" und „übergangsstück" die Kanalgruppe.
+     * Für diese drei blieb die Antwort verborgen — bei „abdichtung"
+     * ausgerechnet die, die vor „dämmen ohne abzudichten" warnt.
+     *
+     * Dieses Szenario fragt jedes Wort des Registers, nicht eines davon:
+     * **die Reichweite des Prüfers so groß wie die der Regel.**
+     */
+    name: 'Jedes Wort des Nicht-Sortiments bekommt seine Antwort — auch mit Treffern',
+    aktionen: `
+      await geheZu('suche?q=drainage');
+      const register = (window.__SHOP__.nichtGefuehrt || []).map(function (n) { return n.wort; });
+      const ohneAuskunft = [];
+      const mitTreffern = [];
+      for (const w of register) {
+        await geheZu('suche?q=' + encodeURIComponent(w));
+        const gezeigt = text('#suche-ziel');
+        if (gezeigt.indexOf('Das führen wir nicht') === -1) ohneAuskunft.push(w);
+        if (document.querySelectorAll('#suche-ziel .karte, #suche-ziel .kachel').length) mitTreffern.push(w);
+      }
+      out = 'genug=' + (register.length >= 20)
+        + ' ohneAuskunft=[' + ohneAuskunft.join(',') + ']'
+        + ' mitTrefferFall=' + (mitTreffern.length > 0);`,
+    // `mitTrefferFall` ist keine Zahl, sondern die Frage, ob dieses Szenario
+    // den Fall überhaupt noch durchläuft, für den es gebaut wurde: ein
+    // abgegrenztes Wort **mit** Trefferliste. Fällt er weg, ist das Szenario
+    // wieder so blind wie das darüber — und sagt es, statt still grün zu
+    // bleiben. Eine feste Zahl stünde hier von Hand und liefe ab.
+    erwartet: ['genug=true', 'ohneAuskunft=[]', 'mitTrefferFall=true'],
   },
   {
     name: 'Ein unbekanntes Wort bekommt weiterhin nur den allgemeinen Satz',

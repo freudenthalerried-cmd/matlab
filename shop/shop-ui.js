@@ -449,6 +449,34 @@
     }
     leere(z);
 
+    /*
+     * **Die Auskunft steht vor den Treffern — 6. September 2026.**
+     *
+     * Sie stand bis heute im Zweig für die **leere** Trefferliste. Gemessen
+     * über das ganze Register: Drei seiner Wörter finden sehr wohl etwas —
+     * „abdichtung" die Kellerwandliste und die Perimeterseite, „gleitmittel"
+     * und „übergangsstück" die Kanalgruppe. Für genau diese drei blieb die
+     * redaktionelle Antwort verborgen, und ausgerechnet bei „abdichtung"
+     * steht im Register als Grund, was sonst passiert: **dämmen ohne
+     * abzudichten.**
+     *
+     * > **Eine Auskunft, die nur im leeren Fall erscheint, fehlt dort, wo die
+     * > Trefferliste in die Irre führt.** Dieselbe Gestalt wie die
+     * > Bankverbindungsprüfung, die nur im unerreichbaren Zweig griff.
+     */
+    var gesucht = frage ? wortstaemme(frage) : [];
+    var bekannt = (D.nichtGefuehrt || []).filter(function (n) {
+      return gesucht.indexOf(n.wort.toLowerCase()) >= 0
+        || wortstaemme(n.wort).some(function (w) { return gesucht.indexOf(w) >= 0; });
+    });
+    if (bekannt.length) {
+      var wir = el('p', 'antwort');
+      wir.appendChild(el('strong', null, 'Das führen wir nicht. '));
+      wir.appendChild(document.createTextNode(bekannt[0].antwort
+        + (t.length ? ' Die Treffer darunter zeigen, was daneben steht — nicht das gesuchte Teil.' : '')));
+      z.appendChild(wir);
+    }
+
     var waren = t.filter(function (e) { return e.art === 'artikel'; });
     var rest = t.filter(function (e) { return e.art !== 'artikel'; });
 
@@ -489,22 +517,6 @@
         });
         p.appendChild(document.createTextNode('?'));
         z.appendChild(p);
-      }
-      // Wo wir es genauer wissen, sagen wir es genauer. Für 23 Wörter steht
-      // im Register, was wir nicht führen und was daneben steht — das ist
-      // eine bessere Auskunft als der allgemeine Satz darunter, und sie
-      // stammt aus einer redaktionellen Entscheidung, nicht aus einer
-      // Ähnlichkeitsrechnung.
-      var gesucht = wortstaemme(frage);
-      var bekannt = (D.nichtGefuehrt || []).filter(function (n) {
-        return gesucht.indexOf(n.wort.toLowerCase()) >= 0
-          || wortstaemme(n.wort).some(function (w) { return gesucht.indexOf(w) >= 0; });
-      });
-      if (bekannt.length) {
-        var wir = el('p', 'antwort');
-        wir.appendChild(el('strong', null, 'Das führen wir nicht. '));
-        wir.appendChild(document.createTextNode(bekannt[0].antwort));
-        z.appendChild(wir);
       }
       z.appendChild(el('p', 'antwort', 'Der Katalog umfasst ' + D.artikel.length
         + ' Artikel aus dem laufenden Einkauf. Was nicht darin steht, führen wir nicht — '
