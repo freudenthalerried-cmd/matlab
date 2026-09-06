@@ -1409,6 +1409,25 @@ export const GEGENPROBEN = Object.freeze([
       + 'beginnt. Diese Mutation hält jedes Wort zurück, also auch die 21 ohne eigene '
       + 'Fundstelle, und stellt damit genau den alten Zustand wieder her.',
   }),
+  Object.freeze({
+    id: 'keywords-der-zurueckgestellten-gruppen-ungeprueft',
+    pruefer: 'test',
+    was: 'Keywords, die durch keine Prüfung gehen, weil ihre Gruppe noch nicht schaltet',
+    datei: 'shop/bin/kampagne.mjs',
+    art: 'ersetzen',
+    baueVorher: true,
+    suchen: '  const keywordsGeprueft = keywordsEindeutig.filter((k) => {',
+    ersetzen: '  const keywordsGeprueft = keywordsEindeutig'
+      + '.filter((k) => imAnlauf.has(k.Anzeigengruppe)).filter((k) => {',
+    erwartet: /zurueckgestellt|zurückgestellten/,
+    warum: 'Der Zustand vom 6. September: Alle Keywordprüfungen — Landeseitendeckung, '
+      + 'Abgrenzungssatz, eigene Suche — liefen nur über die drei Gruppen des ersten '
+      + 'Anlaufs, 60 von 98 Keywords. Die 38 der zurückgestellten Gruppen gingen durch '
+      + 'keine einzige und standen in keiner Ausgabedatei; am Tag, an dem eine Gruppe '
+      + 'dazukommt, wären sie ungeprüft live gegangen. Beim ersten Lauf über alle fand die '
+      + 'Prüfung sofort drei Keywords ohne Antwort in der eigenen Suche und fünf ohne Wort '
+      + 'auf ihrer Landeseite. Diese Mutation stellt die kleine Reichweite wieder her.',
+  }),
 ]);
 
 /**

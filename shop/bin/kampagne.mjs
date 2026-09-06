@@ -651,14 +651,45 @@ const GATTUNGSBEGRIFFE = {
     'Kamin Fertigfuß',
   ],
   Kanal: [
+    // **Zwei Wörter entfallen am 6. September**, an dem Tag, an dem die
+    // Keywordprüfungen zum ersten Mal auch über die zurückgestellten Gruppen
+    // liefen:
+    //
+    // · „Kanalschacht 800" — wir führen einen **Schachtring**, keinen Schacht.
+    //   Konus und Abdeckung fehlen, und die Abdeckung steht in
+    //   `suchwoerter.json` ausdrücklich als nicht geführt. Wer einen Schacht
+    //   sucht, kann hier nicht kaufen, was er sucht.
+    // · „Drainage Grundmauerschutz" — dasselbe Register sagt „Drainagerohre
+    //   führen wir nicht", und die Landeseite sagt das Wort nicht. Seither ist
+    //   `drainage` auch als Ausschluss ableitbar; solange auf das Wort geboten
+    //   wurde, ging das nicht.
+    //
+    // „Noppenbahn Grundmauer" bleibt: Das ist unser Grundmauerschutz unter dem
+    // Namen, den die Baustelle sagt — hier war der richtige Ausweg, das Wort
+    // auf die Landeseite zu schreiben, und nicht, das Keyword zu streichen.
     'Kanalrohr DN 100', 'PVC Kanalrohr', 'Kanalbogen DN 100', 'Kanalabzweiger 45 Grad',
-    'Kanalschacht 800', 'Drainage Grundmauerschutz', 'Noppenbahn Grundmauer',
+    'Noppenbahn Grundmauer',
   ],
   'Mörtel': [
-    'Baumit ThermoMörtel', 'Leichtmörtel Palette', 'Mauermörtel Palette', 'Vergussmörtel 25 kg',
+    // **„Mauermörtel Palette" entfällt am 6. September.** Zwei Gründe, jeder
+    // für sich ausreichend: Der Shop führt keinen Mauermörtel — der
+    // ThermoMörtel 50 ist ein Wärmedämmmörtel und für den, der gewöhnlichen
+    // Kalkzementmörtel sucht, das falsche Produkt. Und palettenweise wird hier
+    // nichts verkauft; die Anzeigentexte haben das Wort am 1. September aus
+    // demselben Grund verloren. Die eigene Suche findet dazu nichts, und das
+    // ist hier die richtige Antwort und kein Mangel.
+    // „Leichtmörtel Palette" entfällt mit derselben Begründung wie
+    // „Mauermörtel Palette": Der ThermoMörtel ist ein Wärmedämmmörtel, und
+    // palettenweise verkauft dieser Shop nichts.
+    'Baumit ThermoMörtel', 'Vergussmörtel 25 kg',
   ],
   Mauerwerk: [
-    'Planziegel kaufen', 'Hochlochziegel Palette', 'Ökotherm Ziegel', 'Ziegel 50 cm',
+    // „Planziegel kaufen" entfällt am 6. September: Geführt ist ein
+    // Hochlochziegel mit Nut und Feder. Ein Planziegel ist plangeschliffen und
+    // wird im Dünnbett versetzt — ein anderes Bauteil und ein anderer
+    // Arbeitsgang. Das Wort steht auf keiner eigenen Seite, und das ist
+    // richtig so.
+    'Hochlochziegel Palette', 'Ökotherm Ziegel', 'Ziegel 50 cm',
   ],
 };
 
@@ -1371,9 +1402,23 @@ function main() {
    * Regel vom Vortag, worauf **geboten** wird, und nicht, was die Anzeige
    * **sagt**.
    */
+  /*
+   * **Alle Gruppen, nicht nur die drei im ersten Anlauf — 6. September 2026.**
+   *
+   * Die Landeseiten wurden bis heute nur für den ersten Anlauf gelesen, und
+   * damit liefen **alle** Keywordprüfungen nur über dessen drei Gruppen: 60
+   * von 98 Keywords. Die 38 der zurückgestellten Gruppen Kanal, Mörtel und
+   * Mauerwerk gingen durch keine einzige — und tauchten in keiner
+   * Ausgabedatei auf.
+   *
+   * > **Ein Prüfer, dessen Reichweite kleiner ist als die Reichweite der
+   * > Regel, die er prüft.** Die Regel gilt für jedes Wort, auf das dieser
+   * > Betrieb je bietet, nicht für die, auf die er zuerst bietet.
+   */
   const seitentexte = new Map();
-  for (const g of ersterAnlauf) {
-    const datei = join(WURZEL, 'ausgabe', 'site', 'gruppe', `${GRUPPENSEITE[g.gruppe]}.html`);
+  const gruppenMitKeyword = [...new Set(keywordsEindeutig.map((k) => k.Anzeigengruppe))];
+  for (const name of gruppenMitKeyword) {
+    const datei = join(WURZEL, 'ausgabe', 'site', 'gruppe', `${GRUPPENSEITE[name]}.html`);
     if (!existsSync(datei)) {
       console.error(`Abbruch: Die Landeseite ${datei} ist nicht gebaut.`);
       console.error('Ohne sie lässt sich nicht prüfen, ob die Anzeige verspricht, was die Seite sagt.');
@@ -1385,7 +1430,7 @@ function main() {
       console.error(`Abbruch: ${datei} hat keinen Hauptbereich — die Seite ist unvollständig gebaut.`);
       process.exit(2);
     }
-    seitentexte.set(g.gruppe, text);
+    seitentexte.set(name, text);
   }
 
   /*
@@ -1552,7 +1597,6 @@ function main() {
   // Auch die Keywords folgen dem ersten Anlauf: Ein Keyword ohne Anzeigengruppe
   // lädt nicht, und eines für eine Gruppe ohne Budget wirbt nicht.
   const imAnlauf = new Set(ersterAnlauf.map((g) => g.gruppe));
-  const keywordsAnlauf = keywordsEindeutig.filter((k) => imAnlauf.has(k.Anzeigengruppe));
 
   // **Jedes Keyword gegen seine eigene Landeseite.** Siehe `ungedeckteWoerter`.
   // Fehlt die gebaute Seite, wird nicht geraten, sondern abgebrochen: Eine
@@ -1574,7 +1618,14 @@ function main() {
    * Flächenstärke **führen wir nicht**".
    */
   const abgegrenzt = [];
-  const keywordsGedeckt = keywordsAnlauf.filter((k) => {
+  /*
+   * **Geprüft wird jedes Keyword, nicht nur das des ersten Anlaufs.** Bis zum
+   * 6. September lief diese Zeile über `keywordsAnlauf` — 60 von 98. Die 38
+   * der zurückgestellten Gruppen gingen durch keine Prüfung und standen in
+   * keiner Datei; sie wären beim Einschalten der Gruppe ungeprüft live
+   * gegangen.
+   */
+  const keywordsGeprueft = keywordsEindeutig.filter((k) => {
     const seite = seitentexte.get(k.Anzeigengruppe);
     const verneint = abgegrenztesKeyword(k.Keyword, seite);
     if (verneint) {
@@ -1601,6 +1652,18 @@ function main() {
   });
 
   /*
+   * **Was der erste Anlauf schaltet, und was geprüft danebenliegt.**
+   *
+   * `keywords.csv` bleibt die Datei zum Hochladen und enthält nur die
+   * Gruppen mit Budget — ein Keyword für eine Gruppe ohne Anzeige wirbt
+   * nicht. Die geprüften Keywords der zurückgestellten Gruppen verschwinden
+   * seit heute aber nicht mehr, sondern stehen in einer eigenen Datei: Der
+   * Tag, an dem eine Gruppe dazukommt, soll keine ungeprüfte Liste vorfinden.
+   */
+  const keywordsGedeckt = keywordsGeprueft.filter((k) => imAnlauf.has(k.Anzeigengruppe));
+  const keywordsSpaeter = keywordsGeprueft.filter((k) => !imAnlauf.has(k.Anzeigengruppe));
+
+  /*
    * **Die eigene Suche gegen die geführten Keywords — 6. September 2026.**
    *
    * Die Regel steht seit dem 1. September als Kommentar in dieser Datei:
@@ -1625,7 +1688,9 @@ function main() {
           artikel: D.artikel ?? [], seiten: D.seiten ?? [], suchwoerter: D.suchwoerter ?? [],
         });
         suchdeckung = suchdeckungsbefund({
-          keywords: [...new Set(keywordsGedeckt.map((k) => k.Keyword))],
+          // Über **alle** geprüften Keywords, nicht nur die geschalteten:
+          // Die Regel gilt für jedes Wort, auf das dieser Betrieb je bietet.
+          keywords: [...new Set(keywordsGeprueft.map((k) => k.Keyword))],
           finde: (frage) => suche(index, frage, { grenze: 20 }),
         });
       }
@@ -1652,6 +1717,8 @@ function main() {
   }
 
   schreibe('keywords.csv', csv(['Kampagne', 'Anzeigengruppe', 'Keyword', 'Übereinstimmungstyp', 'Herkunft', 'Marke'], keywordsGedeckt));
+  schreibe('keywords-zurueckgestellt.csv', csv(
+    ['Kampagne', 'Anzeigengruppe', 'Keyword', 'Übereinstimmungstyp', 'Herkunft', 'Marke'], keywordsSpaeter));
   schreibe('keywords-ohne-deckung.csv', csv(
     ['Anzeigengruppe', 'Keyword', 'Herkunft', 'Landeseite', 'Fehlende Wörter'], ohneDeckung));
   schreibe('keywords-verneint.csv', csv(

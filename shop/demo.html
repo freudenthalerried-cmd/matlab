@@ -1908,16 +1908,37 @@ function pruefeLieferort(ort = {}) {
 
 
 
-const MASS = /(\d+(?:[.,]\d+)?)\s*(cm|mm)(?![\p{L}\d])/giu;
+
+
+
+
+
+
+
+
+
+
+
+
+
+const MASS = /((?:\d+(?:[.,]\d+)?[\s×x*]+)*\d+(?:[.,]\d+)?)\s*(cm|mm)(?![\p{L}\d])/giu;
 
 function vereinheitlicheMasse(text) {
   const zahlen = [];
-  const ersetzt = text.replace(MASS, (_, zahl, einheit) => {
-    const wert = Number(String(zahl).replace(',', '.'));
-    if (!Number.isFinite(wert) || wert <= 0) return ` ${zahl} ${einheit} `;
-    const mm = einheit.toLowerCase() === 'cm' ? wert * 10 : wert;
-    zahlen.push(String(zahl).replace(',', '.'));
-    return ` ${Math.round(mm)}mm `;
+  const ersetzt = text.replace(MASS, (treffer, lauf, einheit) => {
+    const teile = String(lauf).split(/[\s×x*]+/).filter(Boolean);
+    const umgerechnet = [];
+    for (const roh of teile) {
+      const wert = Number(String(roh).replace(',', '.'));
+      
+      
+      if (!Number.isFinite(wert) || wert <= 0) { umgerechnet.push(roh); continue; }
+      const mm = einheit.toLowerCase() === 'cm' ? wert * 10 : wert;
+      zahlen.push(String(roh).replace(',', '.'));
+      umgerechnet.push(`${Math.round(mm)}mm`);
+    }
+    if (!umgerechnet.length) return treffer;
+    return ` ${umgerechnet.join(' ')} `;
   });
   return { ersetzt, zahlen };
 }

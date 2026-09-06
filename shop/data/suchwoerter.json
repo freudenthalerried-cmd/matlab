@@ -75,6 +75,16 @@
       "warum": "der Pistolenschaum ist der Bauschaum; die Dose braucht eine Pistole."
     },
     {
+      "wort": "dn",
+      "skus": [
+        "POS-10095",
+        "POS-10115",
+        "POS-10116",
+        "POS-10134"
+      ],
+      "warum": "DN und NW bezeichnen dieselbe Nennweite; der Katalog des Lieferanten schreibt „NW 100“, die eigenen Wissens- und Systemseiten schreiben „DN 100“, und der Kunde tippt DN. Gemessen: „Kanalbogen DN 100“ fand null Treffer, obwohl der Bogen im Regal liegt. Nur die vier DN-100-Formteile — der Schachtring und der Grundmauerschutz sind keine Nennweitenware."
+    },
+    {
       "wort": "druckfest",
       "skus": [
         "POS-12580",

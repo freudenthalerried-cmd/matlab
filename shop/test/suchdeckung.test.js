@@ -18,6 +18,10 @@ import { baueSuchindex, suche } from '../src/shopkern.js';
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const SKRIPT = join(SHOP, 'ausgabe', 'site', 'shop.js');
 const KEYWORDS = join(SHOP, 'ausgabe', 'kampagne', 'keywords.csv');
+// **Auch die zurückgestellten** — seit dem 6. September stehen sie in einer
+// eigenen Datei, statt in keiner. Die Regel gilt für jedes Wort, auf das dieser
+// Betrieb je bietet, nicht für die, auf die er zuerst bietet.
+const SPAETER = join(SHOP, 'ausgabe', 'kampagne', 'keywords-zurueckgestellt.csv');
 
 const viele = (n) => Array.from({ length: n }, (_, i) => `wort${i}`);
 
@@ -66,10 +70,14 @@ test('jedes geführte Keyword findet im ausgelieferten Index etwas', () => {
   const index = baueSuchindex({
     artikel: D.artikel ?? [], seiten: D.seiten ?? [], suchwoerter: D.suchwoerter ?? [],
   });
-  const keywords = [...new Set(readFileSync(KEYWORDS, 'utf8').trim().split('\n').slice(1)
+  const zeilenVon = (datei) => (existsSync(datei)
+    ? readFileSync(datei, 'utf8').trim().split('\n').slice(1)
+    : []);
+  const keywords = [...new Set([...zeilenVon(KEYWORDS), ...zeilenVon(SPAETER)]
     .map((z) => (z.match(/^[^,]*,[^,]*,("(?:[^"]|"")*"|[^,]*)/) ?? [])[1])
     .filter(Boolean)
     .map((f) => f.replace(/^"|"$/g, '').replaceAll('""', '"')))];
+  assert.ok(existsSync(SPAETER), 'die zurückgestellten Keywords stehen in keiner Datei');
 
   const b = suchdeckungsbefund({ keywords, finde: (f) => suche(index, f, { grenze: 20 }) });
   assert.deepEqual(b.meldungen.map((m) => m.text), []);

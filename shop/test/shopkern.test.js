@@ -975,6 +975,46 @@ test('Meter und Quadratmeter bleiben unberührt', () => {
     'die 20 ist eine Typkennung, kein Maß');
 });
 
+/**
+ * **Die Einheit am Ende gilt für alle Zahlen davor — 6. September 2026.**
+ *
+ * `Ziegel 50 cm` fand nichts, obwohl der Ziegel im Regal liegt: Er heißt
+ * „Ökotherm HL N+F **10 50 23,8 cm**", und vereinheitlicht wurde nur die Zahl
+ * unmittelbar vor der Einheit. Die 50 blieb eine nackte Zahl, die Anfrage
+ * suchte nach `500mm`.
+ */
+test('ein Maß mit der Einheit am Ende gilt für alle Zahlen davor', () => {
+  const s = wortstaemme('Ökotherm HL N+F 10 50 23,8 cm');
+  assert.ok(s.includes('500mm'), '50 cm fehlt als 500mm');
+  assert.ok(s.includes('100mm'), '10 cm fehlt als 100mm');
+  assert.ok(s.includes('238mm'), '23,8 cm fehlt als 238mm');
+  // Die nackten Zahlen bleiben zusätzlich stehen — „ziegel 50" trifft weiter.
+  assert.ok(s.includes('50'));
+});
+
+test('die Zahlen eines Laufs in Millimeter bleiben Millimeter', () => {
+  // „Isover TDPT 20 1200 600 mm" ist 20 mm dick und 1200 × 600 mm groß — die
+  // Einheit steht einmal und meint alle drei. Dass die 20 dabei zugleich die
+  // Typbezeichnung ist, ändert nichts an ihrer Länge.
+  const s = wortstaemme('Isover TDPT 20 1200 600 mm 8,64 m2');
+  assert.ok(s.includes('20mm'));
+  assert.ok(s.includes('1200mm'));
+  assert.ok(s.includes('600mm'));
+});
+
+test('ein Maßlauf mit × wird ebenso aufgelöst', () => {
+  const s = wortstaemme('Rahmenschraube Zylinderkopf vz 7,5x182 mm lose');
+  assert.ok(s.includes('182mm'));
+  assert.ok(s.includes('8mm'), '7,5 mm fehlt (gerundet 8mm)');
+});
+
+test('der Ziegel ist über sein Längenmaß zu finden', () => {
+  const index = bestandsindex();
+  const treffer = suche(index, 'Ziegel 50 cm').filter((t) => t.art === 'artikel');
+  assert.ok(treffer.length >= 1, '„Ziegel 50 cm" findet keinen Artikel');
+  assert.match(treffer[0].titel, /Ökotherm/);
+});
+
 test('die neuen Kundenwörter führen zu genau der gemeinten Ware', () => {
   // Die Messung vom 29.08., als Probe festgehalten: 78 Baustellenwörter
   // gegen den Bestand, elf davon fanden nichts und meinten trotzdem Ware.

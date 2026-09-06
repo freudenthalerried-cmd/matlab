@@ -171,11 +171,18 @@ test('jedes Wort des Nicht-Sortiments ist ausgeschlossen — oder aus gemessenem
     if ((eigenvorkommen(wort, text) ?? 0) >= EIGENWORTGRENZE) continue;
     offen.push(wort);
   }
-  // „drainage" steht im geführten Keyword „Drainage Grundmauerschutz" der
-  // zurückgestellten Gruppe Kanal — worauf geboten wird, wird nicht
-  // ausgeschlossen. Der Fall steht namentlich hier, damit ein zweiter nicht
-  // stillschweigend dazukommt.
-  assert.deepEqual(offen, ['drainage']);
+  /*
+   * **Am 6. September abends leer geworden.** Hier stand `['drainage']`: Das
+   * Wort war zulässig geblieben, weil die zurückgestellte Gruppe Kanal auf
+   * „Drainage Grundmauerschutz" bot. Einen Lauf später liefen die
+   * Keywordprüfungen zum ersten Mal auch über die zurückgestellten Gruppen —
+   * die Landeseite sagt „Drainage" nicht, das Keyword ist entfallen, und
+   * seither ist auch dieses Wort ausgeschlossen.
+   *
+   * Die leere Liste bleibt eine **Aufzählung** und keine Null: Kommt ein Fall
+   * dazu, steht er hier mit Namen, oder diese Zusicherung wird rot.
+   */
+  assert.deepEqual(offen, []);
 });
 
 test('kein abgeleiteter Ausschluss ohne Eintrag im Register — die Rückrichtung im Bestand', () => {

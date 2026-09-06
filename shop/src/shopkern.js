@@ -50,16 +50,37 @@ import { frachtGrundText } from './frachttext.js';
  * „1,1x50 m" ist ein Rollenmaß und „0,5 m2" eine Fläche — daraus eine Länge
  * zu machen hieße, eine Kante zu erfinden.
  */
-const MASS = /(\d+(?:[.,]\d+)?)\s*(cm|mm)(?![\p{L}\d])/giu;
+/**
+ * **Die Einheit am Ende gilt für alle Zahlen davor — 6. September 2026.**
+ *
+ * `Ziegel 50 cm` fand nichts. Der Shop führt „Ökotherm HL N+F **10 50 23,8
+ * cm**" — dreimal Zentimeter, einmal geschrieben, wie es auf jedem Lieferschein
+ * steht. Vereinheitlicht wurde nur die Zahl **unmittelbar vor** der Einheit:
+ * `238mm`. Die 50 blieb eine nackte Zahl, und die Anfrage suchte nach `500mm`.
+ *
+ * > **Ein Maß, dessen Einheit am Ende steht, gilt für alle Zahlen davor.**
+ *
+ * Betrifft nicht nur den einen Ziegel: „Isover TDPT **20 1200 600 mm**" ist
+ * 20 mm dick, und genau danach fragt ein Bauleiter.
+ */
+const MASS = /((?:\d+(?:[.,]\d+)?[\s×x*]+)*\d+(?:[.,]\d+)?)\s*(cm|mm)(?![\p{L}\d])/giu;
 
 function vereinheitlicheMasse(text) {
   const zahlen = [];
-  const ersetzt = text.replace(MASS, (_, zahl, einheit) => {
-    const wert = Number(String(zahl).replace(',', '.'));
-    if (!Number.isFinite(wert) || wert <= 0) return ` ${zahl} ${einheit} `;
-    const mm = einheit.toLowerCase() === 'cm' ? wert * 10 : wert;
-    zahlen.push(String(zahl).replace(',', '.'));
-    return ` ${Math.round(mm)}mm `;
+  const ersetzt = text.replace(MASS, (treffer, lauf, einheit) => {
+    const teile = String(lauf).split(/[\s×x*]+/).filter(Boolean);
+    const umgerechnet = [];
+    for (const roh of teile) {
+      const wert = Number(String(roh).replace(',', '.'));
+      // Eine unbrauchbare Zahl macht nicht den ganzen Lauf unbrauchbar: Sie
+      // bleibt stehen, wie sie dasteht, und die übrigen werden umgerechnet.
+      if (!Number.isFinite(wert) || wert <= 0) { umgerechnet.push(roh); continue; }
+      const mm = einheit.toLowerCase() === 'cm' ? wert * 10 : wert;
+      zahlen.push(String(roh).replace(',', '.'));
+      umgerechnet.push(`${Math.round(mm)}mm`);
+    }
+    if (!umgerechnet.length) return treffer;
+    return ` ${umgerechnet.join(' ')} `;
   });
   return { ersetzt, zahlen };
 }

@@ -543,14 +543,26 @@ test('hauptbereichText liest nur den eigenen Inhalt der Seite', () => {
 /**
  * Die Probe misst nicht die 102 Keywords von heute, sondern die Regel: Was in
  * `keywords.csv` steht, muss auf seiner Landeseite vorkommen.
+ *
+ * **Seit dem 6. September auch die zurückgestellten.** Bis dahin las diese
+ * Probe nur die Datei des ersten Anlaufs — und das Werkzeug prüfte auch nur
+ * dessen Gruppen. Zwei Reichweiten, dieselbe zu kleine: Die 38 Keywords der
+ * Gruppen Kanal, Mörtel und Mauerwerk gingen durch keine Prüfung und standen
+ * in keiner Datei. Sie wären beim Einschalten der Gruppe ungeprüft live
+ * gegangen.
  */
 test('Jedes ausgelieferte Keyword findet seine Wörter auf der Landeseite', () => {
   const keywordDatei = pfad('../ausgabe/kampagne/keywords.csv');
+  const spaeterDatei = pfad('../ausgabe/kampagne/keywords-zurueckgestellt.csv');
   const siteOrdner = pfad('../ausgabe/site/gruppe');
   if (!existsSync(keywordDatei) || !existsSync(siteOrdner)) return;
 
-  const zeilen = zeilenVon(keywordDatei);
+  const zeilen = [...zeilenVon(keywordDatei), ...(existsSync(spaeterDatei) ? zeilenVon(spaeterDatei) : [])];
   assert.ok(zeilen.length > 0, 'keywords.csv ist leer — die Schleife darunter prüft nichts');
+  assert.ok(existsSync(spaeterDatei),
+    'die geprüften Keywords der zurückgestellten Gruppen stehen in keiner Datei');
+  assert.ok(zeilenVon(spaeterDatei).length > 0,
+    'keywords-zurueckgestellt.csv ist leer — dann prüft diese Probe nur den ersten Anlauf');
 
   const texte = new Map();
   const ungedeckt = [];

@@ -36,7 +36,10 @@ und warum es nicht überall so ist, steht auf
 ## Was zum Bauwerk gehört, nicht zur Leitung
 
 Grundmauerschutzbahn und Abschlussschiene schützen die Kellerwand und sind
-ein eigenes Gewerk — sie werden aber im selben Arbeitsgang verbaut. Die
+ein eigenes Gewerk — sie werden aber im selben Arbeitsgang verbaut. Auf der
+Baustelle heißt die Bahn meist **Noppenbahn**; im Katalog steht sie als
+Grundmauerschutz, weil der Lieferant sie so nennt. Gemeint ist dasselbe
+Bauteil. Die
 Reihenfolge der Schichten steht auf
 [Perimeterdämmung und Grundmauerschutz](../wissen/perimeterdaemmung-und-grundmauerschutz),
 samt der Verwechslung, die dort am häufigsten passiert.
