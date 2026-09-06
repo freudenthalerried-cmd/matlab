@@ -211,6 +211,21 @@ export const GEGENPROBEN = Object.freeze([
       + 'durch `test/statuskopf.test.js` in beide Richtungen abgedeckt.',
   }),
   Object.freeze({
+    id: 'vorbehalt-erreicht-niemanden',
+    pruefer: 'pruefe-vorbehalte',
+    was: 'Ein Vorbehalt aus dem Rechenkern, der in keiner Ausgabe steht',
+    datei: 'shop/bin/website.mjs',
+    art: 'ersetzen',
+    suchen: 'Lieferant in alle fünf Bezirke zustellt, ist nicht bestätigt:',
+    ersetzen: 'Lieferant in alle fünf Bezirke zustellt, steht fest:',
+    erwartet: /nicht-in-der-ausgabe/,
+    baueVorher: true,
+    warum: 'Der Zustand vom 26. August bis zum 5. September: `LIEFERGEBIET.vorbehalt` stand im '
+      + 'Rechenkern, und 81 von 81 gebauten Seiten nannten das Gebiet als feststehende Tatsache. '
+      + 'Die Mutation nimmt genau die Wendung heraus, an der der Vorbehalt in der Ausgabe '
+      + 'erkennbar ist — sie prüft damit die Ausgabe und nicht den Bauer.',
+  }),
+  Object.freeze({
     id: 'korbflaeche-ohne-grenze',
     pruefer: 'shopprobe',
     was: 'Eine Fläche mit Legen-Knopf, auf der die Grenze aus Gate 25 fehlt',

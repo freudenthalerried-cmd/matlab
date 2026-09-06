@@ -58,6 +58,7 @@
     "pruefe-sperrgut": "node bin/sperrgutpruefung.mjs",
     "pruefe-lesbar": "node bin/lesbarkeitspruefung.mjs",
     "pruefe-systemlisten": "node bin/systemlistenpruefung.mjs",
+    "pruefe-vorbehalte": "node bin/vorbehaltspruefung.mjs",
     "pr-text": "node bin/prtext.mjs",
     "pruefe-schaufenster": "node bin/schaufensterpruefung.mjs",
     "pruefe-leitzahlen": "node bin/leitzahlpruefung.mjs",

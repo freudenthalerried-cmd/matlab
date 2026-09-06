@@ -1761,6 +1761,14 @@ Einstufungen ist belegt. Sie entscheidet, ob die Kranentladung anfällt; wo ein 
 dagegenspricht, steht es auf der Artikelseite. Aufgelöst wird das mit der Palettenfrage an den
 Lieferanten (Quelle: eigene Lieferantenrechnungen, Stand: 2026-08-31).</p>
 
+<p class="einstufung">Das Liefergebiet ist <strong>unsere Entscheidung</strong>, und ob unser
+Lieferant in alle fünf Bezirke zustellt, ist nicht bestätigt: Die Frachtpauschale staffelt nicht
+nach Entfernung, aus den fünfzehn Rechnungen ist deshalb kein Gebiet ableitbar. Wir nehmen an, dass
+unsere Liste die engere der beiden ist — bestätigt ist das nicht. Aufgelöst wird es mit der
+Gebietsfrage an den Lieferanten; bis dahin gilt: außerhalb dieser Bezirke sagen wir ab, innerhalb
+sagen wir zu, und wenn der Lieferant nicht hinkommt, erfahren Sie es vor der Bestellung und nicht
+danach (Quelle: eigene Entscheidung vom 26.08.2026, Stand: 2026-08-26).</p>
+
 <h2>Warum es kein „frei Haus" gibt</h2>
 <p>Weil die Frachtpauschale bei unserem Lieferanten an der Fahrt hängt und nicht am Warenwert: Der
 zugestellte Beleg über 1.934 € netto trägt dieselbe Pauschale wie der über 614 € netto (Quelle: eigene
@@ -2528,6 +2536,22 @@ function main() {
         : '- **Bestellen ist noch nicht möglich.** Was fehlt, betrifft den Betrieb, nicht Ihre Bestellung.',
     `- **Möglich ist eine Anfrage.** Warenkorb füllen, Bezirk der Baustelle wählen, und die Kasse (${BASIS}/kasse.html) erzeugt eine fertig gerechnete Positionsliste mit Fracht, Umsatzsteuer und Preisstand zum Kopieren. Sie ist unverbindlich und wird nicht automatisch versendet.`,
     '- **Nur im Liefergebiet.** Anfragen aus anderen Bezirken werden nicht angenommen; die Fracht trägt sie nicht.',
+    /*
+     * **Ergänzt am 5. September, nachts.** Diese Datei nannte das Liefergebiet
+     * als feststehende Tatsache — genauso wie die 81 gebauten Seiten und
+     * `areaServed` in den strukturierten Daten. Die **Grundlage** ist eine
+     * Annahme: Das Gebiet des Lieferanten ist unbekannt, und `LIEFERGEBIET`
+     * sagt das seit dem 26. August in einem Feld, das keine Ausgabe je erreicht
+     * hat.
+     *
+     * > **Ein Assistent, der diese Datei liest, zitiert fünf Bezirke als
+     * > Zusage. Eine Zusage, deren Grundlage eine Annahme ist, gehört mit der
+     * > Annahme zitiert.**
+     */
+    '- **Das Gebiet ist unsere Entscheidung, nicht die Zusage des Lieferanten.** Ob er in alle fünf '
+      + 'Bezirke zustellt, ist nicht bestätigt; die Frachtpauschale staffelt nicht nach Entfernung, '
+      + 'aus den Rechnungen ist es nicht ableitbar. Innerhalb dieser Bezirke sagen wir zu — hält der '
+      + 'Lieferant nicht, erfährt der Kunde es vor der Bestellung.',
     // **Ergänzt am 3. September, nach Gate 25.** Diese Datei sagte „möglich ist
     // eine Anfrage" und nannte die Untergrenze nicht. Ein Assistent, den jemand
     // fragt „kann ich dort 10 m² Dämmung anfragen?", hätte ja gesagt — die

@@ -215,6 +215,20 @@ export const LESER = Object.freeze([
       + 'dabei `ausgabe/` — das Gebaute enthält keine Sperren, sondern ist selbst gesperrt. '
       + 'Gelesen wird von dort nichts; ihr Bestand sind die getrackten Dateien und die Journale.',
   }),
+  /*
+   * **Aufgenommen am 5. September, nachts.** Er liest `ausgabe/site` und muss
+   * es: Sein Befund ist, ob ein Vorbehalt aus dem Rechenkern die Ausgabe
+   * erreicht. Über einem veralteten Erzeugnis stünde die Frage falsch — er
+   * sagt den Stand deshalb im Kopf an, statt abzubrechen.
+   */
+  Object.freeze({
+    werkzeug: 'bin/vorbehaltspruefung.mjs',
+    erzeugnis: null,
+    warumOhnePruefung: 'Sie misst, ob ein Vorbehalt aus `src/` in der gebauten Ausgabe steht. '
+      + 'Ein veraltetes Erzeugnis kann diese Frage in beide Richtungen verfälschen — deshalb '
+      + 'läuft sie im Gesamtlauf hinter dem Bauschritt und nennt die Zahl der Ausgabedateien, '
+      + 'aus denen sie geurteilt hat. Ein Abbruch wäre hier kein Schutz, sondern ein Schweigen.',
+  }),
   Object.freeze({
     werkzeug: 'bin/reichweite.mjs',
     erzeugnis: null,

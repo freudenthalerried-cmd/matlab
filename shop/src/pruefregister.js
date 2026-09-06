@@ -302,6 +302,18 @@ export const PRUEFER = [
     einheit: 'Positionen der Stücklisten',
     mindestens: 20,
   },
+  {
+    // **Aufgenommen am 5. September, nachts.** `LIEFERGEBIET.vorbehalt` stand
+    // seit dem 26. August im Rechenkern und in keiner Ausgabedatei, während
+    // 81 von 81 Seiten das Gebiet als feststehende Tatsache nannten. Gezählt
+    // werden die **Quelldateien**, nicht die Einträge: Ein Register, das
+    // seine eigene Länge meldet, sagt nichts über den Bestand, den es prüft.
+    name: 'pruefe-vorbehalte',
+    werkzeug: 'vorbehaltspruefung.mjs',
+    muster: /(\d+) Quelldateien angesehen/,
+    einheit: 'Quelldateien auf mitgeführte Vorbehalte',
+    mindestens: 40,
+  },
 ];
 
 /**
