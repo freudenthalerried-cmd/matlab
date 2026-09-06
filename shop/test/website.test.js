@@ -859,7 +859,13 @@ test('jede Seite sagt, was ohne JavaScript nicht geht — und der Inhalt steht t
     const text = stumm.slice(von, bis).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
     // Warenkorb, Kasse und Suche entstehen erst mit dem Skript — sie sagen
     // das selbst und sind hier ausgenommen.
-    if (/^(warenkorb|kasse|suche)\.html$/.test(name)) continue;
+    //
+    // **`404.html` seit dem 6. September, aus einem anderen Grund.** Ihr
+    // Inhalt entsteht nicht erst durch ein Skript, sie ist absichtlich kurz:
+    // Ihre Aufgabe ist, den Besucher weiterzuschicken, nicht ihn zu
+    // beschäftigen. Sie auf 800 Zeichen zu bringen hieße, eine Fehlerseite zu
+    // füllen, damit eine Zahl stimmt.
+    if (/^(warenkorb|kasse|suche|404)\.html$/.test(name)) continue;
     if (text.length < 800) zuWenigText.push(`${name}: ${text.length} Zeichen`);
   }
   assert.deepEqual(ohneHinweis, [], 'Seiten ohne Hinweis auf die Grenzen ohne JavaScript');
@@ -929,9 +935,14 @@ test('jede gebaute Seite steht in der sitemap — oder trägt noindex', () => {
   //
   // Die Lücke bleibt trotzdem verboten. Wer nicht in der Sitemap steht, muss
   // ausdrücklich `noindex` tragen — Vergessen sieht sonst aus wie Absicht.
+  //
+  // **Vier seit dem 6. September.** `404` kommt dazu, und zwar aus einem
+  // anderen Grund als die drei: Sie ist nicht dünn, sie ist **keine Adresse**.
+  // Eine Fehlerseite in der Sitemap wäre die Behauptung, es gebe sie zu
+  // besuchen. Sie trägt `noindex` und kein `canonical`.
   const fehlend = [...gebaut].filter((k) => !genannt.has(k)).sort();
-  assert.equal(fehlend.length, 3, `${fehlend.length} Seiten fehlen in der sitemap, erwartet sind drei`);
-  assert.deepEqual(fehlend, ['kasse', 'suche', 'warenkorb'],
+  assert.equal(fehlend.length, 4, `${fehlend.length} Seiten fehlen in der sitemap, erwartet sind vier`);
+  assert.deepEqual(fehlend, ['404', 'kasse', 'suche', 'warenkorb'],
     'die Liste der ausgenommenen Seiten hat sich geändert — nachmessen');
   for (const id of fehlend) {
     const html = readFileSync(join(wurzel, `${id}.html`), 'utf8');
@@ -1458,10 +1469,42 @@ test('Jede gebaute Seite nennt ihre kanonische Adresse — und zwar ihre eigene'
     const id = relative(wurzel, p).replace(/\.html$/, '').replaceAll('\\', '/');
     const erwartet = kanonisch(basis, id);
     const treffer = readFileSync(p, 'utf8').match(/<link rel="canonical" href="([^"]+)">/);
-    if (!treffer) falsch.push(`${id}: keine kanonische Adresse`);
+    // **Die Gegenrichtung, seit dem 6. September.** `kanonisch` gibt für die
+    // Fehlerseite `null` zurück — sie wird unter jeder Adresse ausgeliefert,
+    // die es nicht gibt, und ein Kanonisch darauf behauptete gegenüber einer
+    // Suchmaschine, sie sei eine gültige Seite. Geprüft wird deshalb beides:
+    // Wo eine erwartet wird, muss sie stimmen; wo keine erwartet wird, darf
+    // keine stehen.
+    if (erwartet === null) {
+      if (treffer) falsch.push(`${id}: trägt eine kanonische Adresse und darf keine haben`);
+    } else if (!treffer) falsch.push(`${id}: keine kanonische Adresse`);
     else if (treffer[1] !== erwartet) falsch.push(`${id}: ${treffer[1]} statt ${erwartet}`);
   }
   assert.deepEqual(falsch, []);
+});
+
+/**
+ * **Eine Fehlerseite, die niemand ausliefert, ist eine Datei.**
+ *
+ * `404.html` liegt seit dem 6. September im Ausgabeordner. Ausgeliefert wird
+ * sie nur, weil `.htaccess` sie dem Server nennt — All-Inkl fährt Apache. Wer
+ * die Seite umbenennt und die Zeile vergisst, hat wieder die Fehlerseite des
+ * Hosters, ohne dass irgendetwas rot würde.
+ *
+ * Geprüft wird die **Wirkung**, nicht der Wortlaut: Der genannte Pfad muss auf
+ * eine Datei zeigen, die es gibt. Dieselbe Lehre wie bei der Ablagesperre am
+ * 5. September — eine Zeile, die auf nichts zeigt, ist keine Anweisung.
+ */
+test('die .htaccess nennt eine Fehlerseite, die es gibt', () => {
+  const wurzel = pfad('../ausgabe/site');
+  const datei = join(wurzel, '.htaccess');
+  if (!existsSync(datei)) return; // ohne Bau keine Aussage — und keine falsche
+  const txt = readFileSync(datei, 'utf8');
+  const treffer = txt.match(/^ErrorDocument\s+404\s+(\S+)$/m);
+  assert.ok(treffer, `.htaccess nennt keine Fehlerseite:\n${txt}`);
+  assert.ok(treffer[1].startsWith('/'), `„${treffer[1]}" ist kein Pfad ab der Wurzel`);
+  assert.ok(existsSync(join(wurzel, treffer[1].slice(1))),
+    `.htaccess zeigt auf ${treffer[1]}, und die Datei liegt nicht im Ausgabeordner`);
 });
 
 test('Die Startseite kanonisiert auf die Wurzel, nicht auf index.html', () => {

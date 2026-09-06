@@ -1489,6 +1489,50 @@ function warenkorbSeite(verweis) {
   };
 }
 
+/**
+ * Die Kennung der Fehlerseite. Sie liegt als `404.html` im Wurzelverzeichnis,
+ * weil `.htaccess` sie von dort holt.
+ */
+const FEHLERSEITE = '404';
+
+/**
+ * Was ein Besucher sieht, wenn es die Adresse nicht gibt.
+ *
+ * **Der Anlass, 6. September 2026.** Der Shop veröffentlicht 78 Adressen in
+ * der Sitemap, drei davon sind die Endziele bezahlter Anzeigen (4,19 € bis
+ * 8,22 € je Klick). Für **jede andere** Adresse unter `bauversand.com` lieferte
+ * das Hosting bis heute seine eigene Fehlerseite aus: ohne Marke, ohne
+ * Kopfleiste, ohne einen Weg zurück ins Sortiment.
+ *
+ * > **Ein Klick, der bezahlt ist und ins Leere geht, ist doppelt verloren:
+ * > einmal das Geld und einmal der Besucher.**
+ *
+ * Und das ist keine erfundene Gefahr: Am 1. September zeigten **alle drei**
+ * Anzeigen des ersten Anlaufs auf Seiten, die es nicht gab — die Ziel-URL war
+ * versehentlich der Google-Anzeigepfad. Der Fehler ist behoben; die Sorte
+ * Fehler bleibt.
+ *
+ * **Was sie ausdrücklich nicht tut:** weiterleiten. Eine Fehlerseite, die
+ * heimlich zur Startseite springt, macht aus einem sichtbaren Fehler einen
+ * unsichtbaren — der Besucher glaubt, er sei richtig, und der Betreiber
+ * erfährt nie, dass eine Adresse falsch ist.
+ */
+function fehlerSeite(verweis) {
+  return {
+    titel: 'Diese Seite gibt es nicht',
+    kurz: 'Die aufgerufene Adresse führt zu keiner Seite dieses Shops.',
+    nurBedienung: true,
+    html: `<p class="krume"><a href="${verweis('index')}">Start</a> › Adresse nicht gefunden</p>
+<h1>Diese Seite gibt es nicht</h1>
+<p class="lede">Die aufgerufene Adresse führt zu keiner Seite dieses Shops — vertippt, veraltet oder
+falsch übernommen. Der Shop selbst ist vollständig da.</p>
+<p class="antwort">Weiter geht es über die <a href="${verweis('index')}">Startseite</a> mit dem
+gesamten Sortiment, über die Warengruppen in der Kopfleiste oder über das Suchfeld darüber. Zu
+Fracht und Liefergebiet steht alles unter <a href="${verweis('lieferung')}">Lieferung</a>.</p>`,
+    jsonLd: null,
+  };
+}
+
 function kasseSeite(verweis) {
   return {
     titel: 'Lieferadresse und Zahlung',
@@ -2044,6 +2088,15 @@ export function betriebshinweis(bereitschaft) {
 export function kanonisch(basis, id) {
   const wurzel = String(basis ?? '').replace(/\/+$/, '');
   if (!wurzel) return null;
+  /*
+   * **Die Fehlerseite bekommt keine — 6. September 2026.** Ein `canonical`
+   * sagt: *diese Seite ist unter dieser Adresse die maßgebliche.* Die
+   * Fehlerseite wird unter jeder Adresse ausgeliefert, die es **nicht** gibt.
+   * Ein Kanonisch darauf behauptete gegenüber einer Suchmaschine, `404.html`
+   * sei eine gültige Seite dieses Shops — die einzige Aussage, die eine
+   * Fehlerseite gerade nicht machen darf.
+   */
+  if (id === FEHLERSEITE) return null;
   return id === 'index' ? `${wurzel}/` : `${wurzel}/${id}.html`;
 }
 
@@ -2268,7 +2321,7 @@ function main() {
 
   // Verweise in den Inhalten prüfen, bevor irgendetwas ausgegeben wird.
   const kennungen = new Set([
-    'index', 'lieferung', 'wissen/index', 'suche', 'warenkorb', 'kasse',
+    'index', 'lieferung', 'wissen/index', 'suche', 'warenkorb', 'kasse', FEHLERSEITE,
     'rechtliches/index', 'rechtliches/impressum', 'rechtliches/agb',
     'rechtliches/datenschutz', 'rechtliches/abnahme',
     ...seiten.keys(),
@@ -2338,6 +2391,18 @@ function main() {
   // --- alle Seiten aufbauen ---
   const alle = new Map();
   const pfadVerweis = (von) => (ziel) => {
+    /*
+     * **Die Fehlerseite kennt ihre eigene Tiefe nicht — 6. September 2026.**
+     * Jede andere Seite weiß, wo sie liegt, und verlinkt relativ. Die
+     * Fehlerseite wird unter **jeder** nicht gefundenen Adresse ausgeliefert:
+     * `/tippfehler.html` genauso wie `/artikel/gibt-es-nicht.html`. Ein
+     * `../index.html` zeigte im zweiten Fall aus dem Verzeichnis heraus und im
+     * ersten daneben.
+     *
+     * > **Eine Seite, die an jeder Adresse ausgeliefert wird, darf von keiner
+     * > ausgehen.**
+     */
+    if (von === FEHLERSEITE) return ziel === 'index' ? '/index.html' : `/${ziel}.html`;
     const tiefe = von.includes('/') ? '../' : '';
     return ziel === 'index' ? `${tiefe}index.html` : `${tiefe}${ziel}.html`;
   };
@@ -2352,6 +2417,7 @@ function main() {
     m.set('suche', sucheSeite(verweisFabrik('suche')));
     m.set('warenkorb', warenkorbSeite(verweisFabrik('warenkorb')));
     m.set('kasse', kasseSeite(verweisFabrik('kasse')));
+    m.set(FEHLERSEITE, fehlerSeite(verweisFabrik(FEHLERSEITE)));
     m.set('rechtliches/index', rechtlichesIndex(betreiber, verweisFabrik('rechtliches/index')));
     m.set('rechtliches/impressum', impressumSeite(betreiber, verweisFabrik('rechtliches/impressum')));
     m.set('rechtliches/agb', agbSeite(verweisFabrik('rechtliches/agb')));
@@ -2427,6 +2493,11 @@ function main() {
   // Fehler.
   const dateiZurueck = (h, von) => {
     if (!h.endsWith('.html')) return null;
+    // Ein Pfad ab der Wurzel (`/gruppe/wdvs.html`) steht seit dem 6. September
+    // auf der Fehlerseite. Ohne diesen Zweig löste ihn die Prüfung zu
+    // `/gruppe/wdvs` auf — einer Kennung, die es nicht gibt, und meldete
+    // jeden Verweis der Fehlerseite als tot.
+    if (h.startsWith('/')) return h.slice(1, -5);
     const ordner = von.includes('/') ? von.slice(0, von.lastIndexOf('/')) : '';
     const teile = [...ordner.split('/').filter(Boolean), ...h.slice(0, -5).split('/')];
     const weg = [];
@@ -2484,13 +2555,30 @@ function main() {
   // ausgelieferte Seite ohne Skript ist es nicht.
   pruefeSkript(shopskriptQuelle, 'ausgabe/site/shop.js');
   writeFileSync(join(site, 'shop.js'), shopskriptQuelle, 'utf8');
+
+  /*
+   * **`.htaccess` — 6. September 2026.** Ohne diese Zeile liegt `404.html` im
+   * Verzeichnis und wird nie ausgeliefert: Das Hosting (All-Inkl, Apache)
+   * kennt sie nicht und zeigt seine eigene Seite. *Eine Fehlerseite, die
+   * niemand ausliefert, ist eine Datei.*
+   *
+   * Bewusst nur diese eine Anweisung. Was hier sonst noch stünde —
+   * Weiterleitungen, Kompression, Kopfzeilen — wäre eine Serverkonfiguration
+   * ohne Prüfung: Von hier aus lässt sich nicht messen, ob sie wirkt, und der
+   * Netzausgang dieser Umgebung ist gesperrt.
+   */
+  writeFileSync(join(site, '.htaccess'),
+    '# Von `npm run website` erzeugt. Änderungen hier gehen beim nächsten Bau verloren.\n'
+    + `ErrorDocument 404 /${FEHLERSEITE}.html\n`, 'utf8');
   for (const [id, seite] of dateiSeiten) {
     const pfad = join(site, `${id}.html`);
     const tiefe = id.includes('/');
     mkdirSync(dirname(pfad), { recursive: true });
     writeFileSync(pfad, rahmen(seite, pfadVerweis(id), {
       eigenstaendig: true,
-      skriptDatei: `${tiefe ? '../' : ''}shop.js`,
+      // Aus demselben Grund wie die Verweise: Die Fehlerseite steht an jeder
+      // Adresse und darf ihren Weg zum Skript nicht raten.
+      skriptDatei: id === FEHLERSEITE ? '/shop.js' : `${tiefe ? '../' : ''}shop.js`,
       tiefe,
       bereitschaft,
       id,

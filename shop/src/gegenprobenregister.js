@@ -211,6 +211,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'durch `test/statuskopf.test.js` in beide Richtungen abgedeckt.',
   }),
   Object.freeze({
+    id: 'fehlerseite-ohne-auslieferung',
+    pruefer: 'test',
+    was: 'Eine Fehlerseite, die im Ordner liegt und die niemand ausliefert',
+    datei: 'shop/bin/website.mjs',
+    art: 'ersetzen',
+    suchen: "    + `ErrorDocument 404 /${FEHLERSEITE}.html\\n`, 'utf8');",
+    ersetzen: "    + 'ErrorDocument 404 /fehler.html\\n', 'utf8');",
+    erwartet: /zeigt auf \/fehler\.html/,
+    baueVorher: true,
+    warum: 'Die Fehlerseite wird nur ausgeliefert, weil `.htaccess` sie dem Server nennt. Wer '
+      + 'sie umbenennt und die Zeile vergisst, hat wieder die Seite des Hosters — ohne Marke, '
+      + 'ohne Kopfleiste, ohne Weg ins Sortiment, und ohne dass irgendetwas rot würde. Die '
+      + 'Mutation lässt die Zeile stehen und zeigt auf eine Datei, die es nicht gibt: geprüft '
+      + 'wird die Wirkung, nicht der Wortlaut.',
+  }),
+  Object.freeze({
     id: 'kopfvermerk-ohne-aussage',
     pruefer: 'pruefe-widerrufe',
     was: 'Ein Kopfvermerk, der nur ein Umgebungswort trägt statt einer Rücknahme',

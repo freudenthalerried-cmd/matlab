@@ -1,0 +1,2 @@
+# Von `npm run website` erzeugt. Änderungen hier gehen beim nächsten Bau verloren.
+ErrorDocument 404 /404.html
