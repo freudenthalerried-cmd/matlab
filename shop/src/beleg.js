@@ -310,7 +310,18 @@ function summenblock(warenkorb) {
  * angemessene Zeit, und „angemessen" entscheidet im Streitfall jemand anderer.
  * Bei Streckengeschäft mit Herstellerpreisen ist das keine gute Idee.
  */
-export function erzeugeAngebot(warenkorb, { nummer, datum, bindefristTage = 14, kunde = {}, betreiber = {} }) {
+/**
+ * Wie lange ein Angebot bindet.
+ *
+ * **Seit dem 6. September eine Konstante und keine Voreinstellung.** Sie stand
+ * als Vorgabewert im Kopf von `erzeugeAngebot` und war damit an genau einer
+ * Stelle bekannt. Die Artikelseite sagt dem Kunden seither, ab wann der Preis
+ * verbindlich wird — und muss dieselbe Zahl nennen wie das Papier, das sie
+ * verbindlich macht.
+ */
+export const BINDEFRIST_TAGE = 14;
+
+export function erzeugeAngebot(warenkorb, { nummer, datum, bindefristTage = BINDEFRIST_TAGE, kunde = {}, betreiber = {} }) {
   const zeilen = [
     `Angebot ${wert(nummer, 'Angebotsnummer')}`,
     `Datum: ${wert(datum, 'Datum')}`,

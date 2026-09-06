@@ -45,7 +45,8 @@ import { ohneKommentare } from '../src/entkommentieren.js';
 import { preisJeKilo, kilotafel, mengenschritt } from '../src/gebinde.js';
 import { EINHEITEN, aufzaehlung, jsonFuerSkript, kurzfassung } from '../src/format.js';
 import { GRUPPENSEITE } from '../src/artikelliste.js';
-import { preisstandSpanne } from '../src/preisalter.js';
+import { preisstandSpanne, preisalterTage, GRENZE_TAGE, GRENZE_HERKUNFT } from '../src/preisalter.js';
+import { BINDEFRIST_TAGE } from '../src/beleg.js';
 import { HERSTELLER, marke } from '../src/hersteller.js';
 import {
   oeffentlicherArtikel, oeffentlicherLieferant, vorteil, ustText, KORBSCHLUESSEL,
@@ -791,13 +792,51 @@ ${systemSeiten.length ? `die Systemliste unten` : 'die Systemliste'}.</p>`
       : `netto, aus ${esc(String(kilo.gebindeKg).replace('.', ','))} kg je Gebinde gerechnet`}</span></div>` : ''}
   <div><span class="k">Brutto</span><span class="w">${euro(a.vkBrutto)} €</span><span class="e">inkl. ${ustText()} USt</span></div>
   <div><span class="k">Artikelnummer</span><span class="w">${esc(a.lieferantenArtikelnummer)}</span><span class="e">Lieferantennummer</span></div>
-  <div><span class="k">Preisstand</span><span class="w">${esc(a.preisStand)}</span><span class="e">gültig bis zur nächsten Liste</span></div>
+  <div><span class="k">Preisstand</span><span class="w">${esc(a.preisStand)}</span><span class="e">Stand der Preisgrundlage</span></div>
   <div><span class="k">Gewicht</span><span class="w">${typeof a.gewichtKg === 'number'
     ? `${String(a.gewichtKg).replace('.', ',')} kg`
     : '—'}</span><span class="e">${typeof a.gewichtKg === 'number'
     ? `je ${esc(EINHEITEN[a.einheit] ?? a.einheit)}, aus dem Lieferschein`
     : 'liegt uns nicht belegt vor'}</span></div>
 </div>`);
+
+  /*
+   * **Was der Preisstand bedeutet — 6. September 2026.**
+   *
+   * Bis heute stand neben dem Datum: *„gültig bis zur nächsten Liste"*. Auf
+   * allen 46 Artikelseiten, seit es sie gibt. Der Satz sagt zweierlei, und
+   * beides hält nicht:
+   *
+   * 1. Er behauptet eine **Gültigkeit** — der Preis stehe fest, bis der
+   *    Lieferant eine neue Liste herausgibt. Verbindlich wird der Preis aber
+   *    erst mit dem Angebot, und das bindet 14 Tage (§ 862 ABGB).
+   * 2. Er knüpft sie an ein Ereignis, das dieser Betrieb **nicht beobachten
+   *    kann**: `lieferanten.json` führt `preisrhythmus: null`, und
+   *    `pruefe-preisalter` nennt seine eigene 90-Tage-Grenze deshalb einen
+   *    geschätzten Wert. Die Frage nach dem Rhythmus steht als eine von fünf
+   *    im Brief an den Lieferanten.
+   *
+   * > **Zwei Aussagen über denselben Preis, und die schwächere stand dort, wo
+   * > der Kunde entscheidet.**
+   *
+   * Am selben Tag gemessen: **7 von 46** Preisgrundlagen sind älter als die
+   * eigene Grenze, die älteste 137 Tage. `pruefe-preisalter` lässt sie
+   * durchgehen, solange kein Anzeigengebot auf ihnen ruht — das schützt das
+   * Werbebudget und sagt dem Kunden nichts. Seit heute steht es auf der Seite.
+   */
+  if (a.preisStand) {
+    const tage = preisalterTage(a.preisStand, new Date().toISOString().slice(0, 10));
+    const alt = typeof tage === 'number' && tage > GRENZE_TAGE;
+    teile.push(`<p class="antwort"><strong>Was der Preisstand bedeutet.</strong> Er nennt den Tag,
+von dem die Grundlage dieses Preises stammt. Verbindlich wird der Preis nicht hier, sondern mit dem
+Angebot: Das bindet ${BINDEFRIST_TAGE} Tage ab Angebotsdatum (Quelle: eigene Belegvorlage nach
+§ 862 ABGB, Stand: ${esc(a.preisStand)}). Bis dahin ist die Zahl eine Auskunft und keine Zusage.${
+  alt ? `
+<br><strong>Diese Grundlage ist ${tage} Tage alt</strong> und damit älter als die selbst gesetzte
+Grenze von ${GRENZE_TAGE} Tagen. Der Preisrhythmus des Lieferanten ist uns nicht bekannt — die Frage
+steht in der offenen Anfrage an ihn. Vor einer Auftragsbestätigung wird dieser Preis nachgesehen.`
+    : ''}</p>`);
+  }
 
   if (a.vkNetto !== null) {
     // Das Mengenfeld stand bis zum 29.08. auf jedem Artikel gleich: min 1,

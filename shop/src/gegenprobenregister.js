@@ -211,6 +211,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'durch `test/statuskopf.test.js` in beide Richtungen abgedeckt.',
   }),
   Object.freeze({
+    id: 'preisstand-ohne-alter',
+    pruefer: 'test',
+    was: 'Eine Preisgrundlage über der eigenen Grenze, ohne dass die Seite es sagt',
+    datei: 'shop/bin/website.mjs',
+    art: 'ersetzen',
+    suchen: '    const alt = typeof tage === \'number\' && tage > GRENZE_TAGE;',
+    ersetzen: '    const alt = false;',
+    erwartet: /nennt das Alter nicht|Marke fehlt/,
+    baueVorher: true,
+    warum: 'Sieben von 46 Preisgrundlagen sind älter als die selbst gesetzte Grenze, die '
+      + 'älteste 137 Tage. `pruefe-preisalter` lässt sie durchgehen, solange kein '
+      + 'Anzeigengebot auf ihnen ruht — das schützt das Werbebudget und sagt dem Kunden '
+      + 'nichts. Die Mutation schaltet die Marke ab und verlangt, dass es auffällt: Ohne sie '
+      + 'stünde auf sieben Seiten ein Preis, dessen Grundlage älter ist als das, was dieser '
+      + 'Betrieb selbst für vertretbar hält.',
+  }),
+  Object.freeze({
     id: 'abnahme-fragt-ins-leere',
     pruefer: 'test',
     was: 'Eine Abnahmeliste, die nach etwas fragt, das im Ausgabeordner nicht steht',

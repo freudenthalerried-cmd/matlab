@@ -5703,7 +5703,18 @@ function summenblock(warenkorb) {
 
 
 
-function erzeugeAngebot(warenkorb, { nummer, datum, bindefristTage = 14, kunde = {}, betreiber = {} }) {
+
+
+
+
+
+
+
+
+
+const BINDEFRIST_TAGE = 14;
+
+function erzeugeAngebot(warenkorb, { nummer, datum, bindefristTage = BINDEFRIST_TAGE, kunde = {}, betreiber = {} }) {
   const zeilen = [
     `Angebot ${wert(nummer, 'Angebotsnummer')}`,
     `Datum: ${wert(datum, 'Datum')}`,
