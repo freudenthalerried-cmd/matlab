@@ -1637,14 +1637,26 @@ function mitLuecken(text) {
   );
 }
 
+/**
+ * Die Rechtsseiten, einmal aufgezählt.
+ *
+ * **Herausgezogen am 6. September 2026.** Sie standen in der Übersichtsseite
+ * und sonst nirgends — `llms.txt` kannte sie nicht. Wer einen Assistenten
+ * fragt, unter welchen Bedingungen dieser Händler liefert oder wie lange die
+ * Rügefrist läuft, bekam von der Datei, die für diesen Kanal gemacht ist,
+ * keine Antwort. Eine zweite Aufzählung wäre die falsche Abhilfe gewesen; es
+ * ist dieselbe.
+ */
+const RECHTSSEITEN = [
+  ['rechtliches/impressum', 'Impressum', 'Pflichtangaben nach § 5 ECG und § 14 UGB'],
+  ['rechtliches/agb', 'Geschäftsbedingungen', 'Gliederung in dreizehn Punkten, ausschließlich für Unternehmer'],
+  ['rechtliches/datenschutz', 'Datenschutz', 'Neun Punkte nach DSGVO, samt der Stelle, die im Baustoffhandel wirklich klemmt'],
+  ['rechtliches/abnahme', 'Abnahme und Rügefrist', 'Warum § 377 UGB auf der Baustelle beginnt, nicht im Büro'],
+];
+
 function rechtlichesIndex(betreiber, verweis) {
   const p = pruefeBetreiberdaten(betreiber);
-  const seiten = [
-    ['rechtliches/impressum', 'Impressum', 'Pflichtangaben nach § 5 ECG und § 14 UGB'],
-    ['rechtliches/agb', 'Geschäftsbedingungen', 'Gliederung in dreizehn Punkten, ausschließlich für Unternehmer'],
-    ['rechtliches/datenschutz', 'Datenschutz', 'Neun Punkte nach DSGVO, samt der Stelle, die im Baustoffhandel wirklich klemmt'],
-    ['rechtliches/abnahme', 'Abnahme und Rügefrist', 'Warum § 377 UGB auf der Baustelle beginnt, nicht im Büro'],
-  ];
+  const seiten = RECHTSSEITEN;
   return {
     titel: 'Rechtliches',
     kurz: 'Impressum, Geschäftsbedingungen, Datenschutz und die Rügefrist — als Gerüst mit ausgewiesenen Lücken, nicht als fertiger Rechtstext.',
@@ -2719,6 +2731,32 @@ function main() {
     '- Technische Kennwerte werden nicht abgeschrieben, sondern beim Hersteller verlinkt.',
     '- Preise tragen einen Preisstand und die Angabe netto oder brutto.',
     `- Wie geprüft wird: ${BASIS}/wissen/redaktionsprinzipien.html`,
+    /*
+     * **Rechtliches — ergänzt am 6. September 2026.**
+     *
+     * Diese Datei nannte Wissen, Systemlisten, Sortiment, Artikel und das
+     * Nicht-Sortiment. Die vier Rechtsseiten kannte sie nicht. Wer einen
+     * Assistenten fragt, unter welchen Bedingungen dieser Händler liefert,
+     * ob er an Private verkauft oder wie lange die Rügefrist läuft, bekam
+     * von der Datei, die genau für diesen Kanal gemacht ist, keine Antwort —
+     * und ein Assistent, der nichts findet, antwortet mit dem, was bei einem
+     * Baustoffhändler üblich ist.
+     *
+     * **Der Zusatz darunter ist keine Zierde.** Drei der vier Seiten sind eine
+     * Gliederung ohne verbindlichen Wortlaut. Sie zu nennen und das
+     * zu verschweigen, hieße, ein Gerüst als Rechtstext auszugeben —
+     * dieselbe Fehlerrichtung wie „gültig bis zur nächsten Liste". Der Satz
+     * hängt an `betreiber.rechtstexteFundstelle` und verschwindet von selbst,
+     * sobald der Wortlaut da ist.
+     */
+    '', '## Rechtliches', '',
+    ...RECHTSSEITEN.map(([id, titel, kurz]) => `- [${titel}](${BASIS}/${id}.html): ${kurz}`),
+    ...(betreiber.rechtstexteFundstelle
+      ? []
+      : ['', '> **Geschäftsbedingungen, Datenschutz und Impressum sind heute eine Gliederung '
+        + 'ohne verbindlichen Wortlaut**, und die Seiten weisen ihre Lücken selbst aus. '
+        + 'Verbindlich ist keine Angabe daraus; der endgültige Wortlaut ist Sache eines '
+        + 'Rechtstexteanbieters und heute weder beauftragt noch eingesetzt.']),
     '', '## Wissen', '',
     ...[...seiten.values()].filter((s) => s.art === 'wissen')
       .map((s) => `- [${s.kopf.titel}](${BASIS}/${s.id}.html): ${alsText(String(s.kopf.frage ?? ''))}`),

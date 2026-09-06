@@ -170,6 +170,17 @@ export const UNGERUFEN = Object.freeze([
       + 'täglich neu druckt. Was hier fehlt, fiele dem Leitzahlenprüfer auf.',
   }),
   Object.freeze({
+    modul: 'src/llmsdeckung.js',
+    funktionen: ['llmsbefund'],
+    warum: 'Ein Prüfer, der in den Testfällen wohnt statt in einem Werkzeug — dieselbe Lage '
+      + 'wie bei `src/abgleich.js`. `test/llmsdeckung.test.js` ruft ihn gegen die **gebaute** '
+      + 'Site und die ausgelieferte `llms.txt` und läuft damit in Schritt 1 des Gesamtlaufs '
+      + 'mit; ein eigenes `npm run`-Werkzeug brächte keine zusätzliche Prüfung, sondern eine '
+      + 'zweite Stelle, an der dieselbe Liste zu pflegen wäre. Der Bau selbst kann ihn nicht '
+      + 'rufen: Er misst das Ergebnis des Baus gegen den Ordner, den der Bau erst am Ende '
+      + 'vollständig hat.',
+  }),
+  Object.freeze({
     modul: 'src/messwert.js',
     funktionen: ['ordneEin'],
     warum: 'Die Einordnung eines Radon-Messwerts — Radonzweig, wie Bedarfsrechner und '

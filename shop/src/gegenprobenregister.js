@@ -1428,6 +1428,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'Prüfung sofort drei Keywords ohne Antwort in der eigenen Suche und fünf ohne Wort '
       + 'auf ihrer Landeseite. Diese Mutation stellt die kleine Reichweite wieder her.',
   }),
+  Object.freeze({
+    id: 'seiten-die-der-assistent-nie-sieht',
+    pruefer: 'test',
+    was: 'Eine gebaute Seite, die in der Datei für Maschinen nicht vorkommt',
+    datei: 'shop/bin/website.mjs',
+    art: 'ersetzen',
+    baueVorher: true,
+    suchen: "    ...RECHTSSEITEN.map(([id, titel, kurz]) => `- [${titel}](${BASIS}/${id}.html): ${kurz}`),",
+    ersetzen: "    ...RECHTSSEITEN.slice(0, 1).map(([id, titel, kurz]) => `- [${titel}](${BASIS}/${id}.html): ${kurz}`),",
+    erwartet: /seite-ohne-eintrag|rechtliches\/(agb|datenschutz|abnahme)/,
+    warum: 'Der Zustand vom 6. September: `llms.txt` nannte 70 von 82 gebauten Seiten, und vier '
+      + 'der Auslassungen waren die Rechtsseiten. Wer einen Assistenten fragt, unter welchen '
+      + 'Bedingungen dieser Händler liefert oder wie lange die Rügefrist läuft, bekam von der '
+      + 'Datei, die genau für diesen Kanal gemacht ist, keine Antwort — und ein Assistent, der '
+      + 'nichts findet, antwortet mit dem, was bei einem Baustoffhändler üblich ist. Diese '
+      + 'Mutation lässt drei der vier wieder heraus.',
+  }),
 ]);
 
 /**
