@@ -141,38 +141,126 @@ const MAX_PFADTEIL = 15;
  * darin liegt, sagt die Liste — je Position ein `was` in der Sprache des
  * Bauleiters, nicht die Artikelbezeichnung des Lieferanten.
  */
+/*
+ * **Jede Korbposition nennt ihre Position in der Systemliste — 6.9.2026.**
+ *
+ * Gezählt, was die Systemlisten als Positionen des Bauteils führen und was
+ * davon im Korb lag: WDVS 5 von 9, Kamin 5 von 9, Kanal 4 von 5 — und
+ * **Dämmung 1 von 4.** Genau der Ein-Positionen-Korb, gegen den der Kommentar
+ * darüber anschreibt.
+ *
+ * Der Deckungsbeitrag des Korbs trägt das Gebot; ein zu kleiner Korb ergibt ein
+ * zu kleines Gebot. **Verlorene Auktionen, nicht verbranntes Geld** — und
+ * damit nichts, was in einer Abrechnung auffällt. Drei Anzeigengruppen sind
+ * außerdem *zurückgestellt*, weil ihr Deckungsbeitrag 125 € Werbekosten nicht
+ * trägt; auch diese Entscheidung ist auf demselben Korb gerechnet.
+ *
+ * `position` bindet jede Zeile an die Systemliste, `ohne` nennt jede geführte
+ * Position, die nicht im Korb liegt, **mit Grund**. `npm run pruefe-koerbe`
+ * hält beides gegen die Listen.
+ *
+ * > **Eine geratene Menge im Korb ergäbe ein geratenes Gebot.** Deshalb liegt
+ * > nur drin, was die Systemliste selbst beziffert („1 je Zug", „eine je
+ * > Baustelle", „Fläche + Überlappung").
+ */
 export const WARENKOERBE = {
   WDVS: {
     umfang: '100 m² Wärmedämmverbundsystem',
     positionen: [
-      { sku: 'POS-11283', menge: 500, was: 'Kleber' },      // Klebe- und Spachtelmasse, kg
-      { sku: 'POS-50509', menge: 110, was: 'Gewebe' },      // Glasgewebe, m²
-      { sku: 'POS-11082', menge: 6, was: 'Dübel' },         // Universaldübel, Karton
-      { sku: 'POS-13728', menge: 25, was: 'Putzgrund' },    // Putzgrund, kg
-      { sku: 'POS-53402', menge: 40, was: 'Kantenschutz' }, // lfm
+      { sku: 'POS-11283', menge: 500, was: 'Kleber', position: 'Klebemörtel' },
+      { sku: 'POS-50509', menge: 110, was: 'Gewebe', position: 'Glasgewebe' },
+      { sku: 'POS-11082', menge: 6, was: 'Dübel', position: 'Dübel' },
+      { sku: 'POS-13728', menge: 25, was: 'Putzgrund', position: 'Putzgrund' },
+      { sku: 'POS-53402', menge: 40, was: 'Kantenschutz', position: 'Kantenschutz mit Gewebe' },
+    ],
+    ohne: [
+      { position: 'Rondellen',
+        warum: 'Nur bei versenkter Setzung — die Systemliste sagt es in derselben Zeile, und ob '
+          + 'versenkt gesetzt wird, entscheidet die Dübelbemessung und nicht der Korb.' },
+      { position: 'Armierungsmörtel',
+        warum: 'Menge nach Fläche × Verbrauch. Der Verbrauchswert steht im Merkblatt des '
+          + 'Herstellers und nicht im Katalog — dieser Shop schreibt technische Kennwerte '
+          + 'nicht ab, und eine geratene Menge ergäbe ein geratenes Gebot.' },
+      { position: 'Gewebeanschlussleisten',
+        warum: 'Laufende Meter aller Fenster- und Türanschlüsse. Ohne Bauwerk keine Zahl; der '
+          + 'Korb rechnet 100 m² Fläche und kennt keine Öffnungen.' },
+      { position: 'Oberputz',
+        warum: 'Menge nach Fläche × Verbrauch, körnungsabhängig. Derselbe Grund wie beim '
+          + 'Armierungsmörtel, und die Körnung entscheidet der Kunde.' },
     ],
   },
   'Dämmung': {
-    umfang: '100 m²',
-    positionen: [{ sku: 'POS-12575', menge: 100, was: 'Perimeterdämmung XPS 80 mm' }],
+    umfang: '100 m² Kellerwand außen',
+    positionen: [
+      { sku: 'POS-12575', menge: 100, was: 'Perimeterdämmung XPS 80 mm', position: 'Perimeterplatte XPS' },
+    ],
+    /*
+     * **Zwei Positionen wieder heraus, und zwar von `pruefe-preisalter` — 6.9.**
+     *
+     * Beide waren nachgetragen und beide sind wieder draußen, weil im selben
+     * Lauf ein anderer Prüfer rot wurde: Auf einen Einkaufspreis, der älter ist
+     * als die eigene Grenze von 90 Tagen, darf kein Gebot ruhen. Der
+     * Grundmauerschutz ist 103 Tage alt, die Dosierpistole 137.
+     *
+     * > **Zwei richtige Regeln, die sich treffen — und die vorsichtige
+     * > gewinnt.** Ein zu kleiner Korb kostet Auktionen; ein Korb auf einer
+     * > alten Marge setzt Geld auf eine Zahl von vorgestern.
+     *
+     * `pruefe-preisalter` nennt zwei Auswege — den Preis nachziehen oder den
+     * Artikel aus dem Korb nehmen — und einen falschen: die Grenze hochsetzen.
+     * Der erste braucht den Lieferanten und ist freigabepflichtig. Also der
+     * zweite, mit Grund.
+     */
+    ohne: [
+      { position: 'Perimeterkleber',
+        warum: 'Menge nach Fläche ÷ Reichweite je Dose. Die Reichweite steht im Merkblatt des '
+          + 'Herstellers und nicht im Katalog — sie zu raten hieße, das Gebot zu raten.' },
+      { position: 'Grundmauerschutzbahn',
+        warum: 'Menge wäre 110 m² („Fläche + Überlappung"), und sie war am 6. September kurz '
+          + 'im Korb. Wieder heraus, weil ihr Einkaufspreis 103 Tage alt ist und die eigene '
+          + 'Grenze bei 90 liegt: Auf eine Marge von vorgestern darf kein Gebot ruhen. Zurück '
+          + 'in den Korb, sobald der Preis nachgezogen ist.' },
+      { position: 'Dosierpistole',
+        warum: 'Menge wäre 1 („eine je Baustelle"). Wieder heraus aus demselben Grund wie die '
+          + 'Bahn — der Einkaufspreis ist 137 Tage alt, der älteste im Katalog. Zurück in den '
+          + 'Korb, sobald der Preis nachgezogen ist.' },
+    ],
   },
   Kamin: {
     umfang: 'Ein Kaminzug',
     positionen: [
-      { sku: 'POS-10837', menge: 13, was: 'Mantelsteine' },
-      { sku: 'POS-12476', menge: 4, was: 'gedämmtes Rohr' },
-      { sku: 'POS-12472', menge: 1, was: 'Fertigfußpaket' },
-      { sku: 'POS-12467', menge: 1, was: 'Putztüranschluss' },
-      { sku: 'POS-51875', menge: 1, was: 'Regenhaube' },
+      { sku: 'POS-10837', menge: 13, was: 'Mantelsteine', position: 'Mantelsteine' },
+      { sku: 'POS-12476', menge: 4, was: 'gedämmtes Rohr', position: 'Innenrohr gedämmt' },
+      { sku: 'POS-12472', menge: 1, was: 'Fertigfußpaket', position: 'Fertigfußpaket' },
+      { sku: 'POS-12467', menge: 1, was: 'Putztüranschluss', position: 'Putztüranschluss' },
+      { sku: 'POS-51875', menge: 1, was: 'Regenhaube', position: 'Regenhaube mit Sicherung' },
+      // „1 je Zug, am Kopf" — die Systemliste beziffert ihn selbst.
+      { sku: 'POS-51967', menge: 1, was: 'Thermo-Trennstein', position: 'Thermo-Trennstein' },
+    ],
+    ohne: [
+      { position: 'Dünnbettmörtel',
+        warum: 'Menge nach Anzahl der Lagen. Die hängt an der Gesamthöhe des Zuges, und die '
+          + 'lässt der Korb offen — er rechnet einen Zug, keine Höhe.' },
+      { position: 'Fugenmasse',
+        warum: 'Menge nach Anzahl der Rohrstöße, also wieder an der Gesamthöhe. Derselbe Grund '
+          + 'wie beim Dünnbettmörtel.' },
+      { position: 'Zuluftplatte mit Befestigung',
+        warum: 'Nur bei raumluftunabhängiger Feuerstätte — die Systemliste sagt es in derselben '
+          + 'Zeile. Das ist eine Bedingung und keine Menge.' },
     ],
   },
   Kanal: {
     umfang: '30 lfm Kanal DN 100',
     positionen: [
-      { sku: 'POS-10095', menge: 30, was: 'Rohre' },
-      { sku: 'POS-10115', menge: 4, was: 'Bögen' },
-      { sku: 'POS-10134', menge: 3, was: 'Abzweiger' },
-      { sku: 'POS-11133', menge: 1, was: 'Schachtring' },
+      { sku: 'POS-10095', menge: 30, was: 'Rohre', position: 'Kanalrohr' },
+      { sku: 'POS-10115', menge: 4, was: 'Bögen', position: 'Bögen' },
+      { sku: 'POS-10134', menge: 3, was: 'Abzweiger', position: 'Abzweiger' },
+      { sku: 'POS-11133', menge: 1, was: 'Schachtring', position: 'Schachtringe' },
+    ],
+    ohne: [
+      { position: 'Grundmauerschutzbahn',
+        warum: 'Auf der Kanalliste ausdrücklich als eigenes Gewerk gekennzeichnet — sie gehört '
+          + 'zur Kellerwand und wird dort auch berechnet.' },
     ],
   },
   // **Berichtigt am 01.09.** Hier stand „Eine Palette Mörtel" und „Eine

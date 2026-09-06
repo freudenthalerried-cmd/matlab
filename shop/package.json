@@ -59,6 +59,7 @@
     "pruefe-lesbar": "node bin/lesbarkeitspruefung.mjs",
     "pruefe-systemlisten": "node bin/systemlistenpruefung.mjs",
     "abnahme": "node bin/abnahmeliste.mjs",
+    "pruefe-koerbe": "node bin/koerbepruefung.mjs",
     "pruefe-vorbehalte": "node bin/vorbehaltspruefung.mjs",
     "pr-text": "node bin/prtext.mjs",
     "pruefe-schaufenster": "node bin/schaufensterpruefung.mjs",

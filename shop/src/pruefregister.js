@@ -308,6 +308,19 @@ export const PRUEFER = [
     // 81 von 81 Seiten das Gebiet als feststehende Tatsache nannten. Gezählt
     // werden die **Quelldateien**, nicht die Einträge: Ein Register, das
     // seine eigene Länge meldet, sagt nichts über den Bestand, den es prüft.
+    // **Aufgenommen am 6. September 2026.** Der Referenzwarenkorb trägt den
+    // Deckungsbeitrag und damit das Gebot. Bei „Dämmung" lag eine von vier
+    // geführten Positionen darin — das Gebot war 14 % zu klein, und ein zu
+    // kleines Gebot verliert Auktionen, ohne dass eine Abrechnung es zeigt.
+    // Gezählt werden die **Systemlisten**, nicht die Körbe: Eine Liste ohne
+    // Korb ist der Fall, den diese Prüfung finden soll.
+    name: 'pruefe-koerbe',
+    werkzeug: 'koerbepruefung.mjs',
+    muster: /Referenzwarenkörbe — (\d+) Systemlisten/,
+    einheit: 'Systemlisten gegen ihre Warenkörbe',
+    mindestens: 3,
+  },
+  {
     name: 'pruefe-vorbehalte',
     werkzeug: 'vorbehaltspruefung.mjs',
     muster: /(\d+) Quelldateien angesehen/,

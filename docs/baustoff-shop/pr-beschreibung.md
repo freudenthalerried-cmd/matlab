@@ -42,7 +42,7 @@ Ursprünglich ein Streckenhandel für Radonvorsorge auf **unbelegten** Platzhalt
 | Kampagne | 6 Suchkampagnen gerechnet, **3 im ersten Anlauf**, alle **pausiert** |
 | Produktfeed | 43 Einträge — **nicht einreichbar**, GTIN fehlt bei allen 46 Artikeln |
 | Testbestand | **über 1.000 Testfälle**, alle grün, dazu 11 Oberflächenszenarien und 55 Shopszenarien im Browser |
-| Prüfwerkzeuge | **30 Prüfer** ohne Browser, 4 Browserproben zusätzlich |
+| Prüfwerkzeuge | **31 Prüfer** ohne Browser, 4 Browserproben zusätzlich |
 | Messliste für Gate 15 | **30 Begriffe** in 3 Anzeigengruppen, Ort = Liefergebiet (am 6. September zwei weniger: die Landeseite verneint sie) |
 | Mindestbestellwert | **250 € netto Warenwert je Lieferung** (Gate 25), gerechnet aus Fracht, Palette und Zielmarge |
 | Bestellweg | **gebaut und ausgeschaltet** (Gate 26) — Formular, Empfangsskript, Ablage, Posteingang; eingeschaltet mit E-Mail und Rechtstextewortlaut |
@@ -92,7 +92,7 @@ nachgerechnet. Seit heute misst `npm run pruefe-schaufenster` auch sie.
 
 Grund: Das Skonto rechnet auf den Einkauf netto (484,50 €), die Gebühr auf den Bruttobetrag samt Fracht und Umsatzsteuer (865,80 €). Gleicher Prozentsatz, 79 % größere Grundlage. **Entschieden:** EPS und Vorkasse ab Start, Karte als Zusatz, keine offene Rechnung, Kundenzahlungsziel null Tage.
 
-**Gebote gehören auf die Bestellung gerechnet, nicht auf den Artikel.** Die großen Belege bestehen aus acht bis zwölf Positionen. Zulässiger Klickpreis: Kamin 8,22 €, Dämmung 5,91 €, WDVS 4,19 € gegen einen Markt von 0,50–2,50 €. Kanal 1,38 €, Mörtel 1,85 € und Mauerwerk 1,24 € tragen den Klick nicht verlässlich und sind **zurückgestellt**, bis eine gemessene Kaufquote vorliegt — das Budget zu streuen hieße, es gleichmäßig zu verlieren.
+**Gebote gehören auf die Bestellung gerechnet, nicht auf den Artikel.** Die großen Belege bestehen aus acht bis zwölf Positionen. Zulässiger Klickpreis: Kamin 9,41 €, Dämmung 5,91 €, WDVS 4,19 € gegen einen Markt von 0,50–2,50 €. Kanal 1,38 €, Mörtel 1,85 € und Mauerwerk 1,24 € tragen den Klick nicht verlässlich und sind **zurückgestellt**, bis eine gemessene Kaufquote vorliegt — das Budget zu streuen hieße, es gleichmäßig zu verlieren.
 
 **Auf generische Suchbegriffe ist dieser Shop nicht konkurrenzfähig** und wird es nie sein — dort gewinnen Baumarkt-Eigenmarken. Konkurrenzfähig ist er auf Produktnamen und Fachanforderungen.
 

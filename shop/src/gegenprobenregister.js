@@ -211,6 +211,26 @@ export const GEGENPROBEN = Object.freeze([
       + 'durch `test/statuskopf.test.js` in beide Richtungen abgedeckt.',
   }),
   Object.freeze({
+    id: 'korb-ohne-die-halbe-bestellung',
+    pruefer: 'pruefe-koerbe',
+    was: 'Ein Referenzwarenkorb, dem eine geführte Position seiner Systemliste fehlt',
+    datei: 'shop/bin/kampagne.mjs',
+    art: 'ersetzen',
+    // **Nachgezogen am 6. September, eine Stunde nach dem Eintrag.** Der
+    // Suchtext war die Zeile der Dosierpistole — sie ist im selben Lauf wieder
+    // aus dem Korb gefallen, weil `pruefe-preisalter` sie als 137 Tage alten
+    // Preis meldete, auf dem ein Gebot ruht. Mutiert wird jetzt der
+    // Thermo-Trennstein, der aus demselben Grund drinbleiben durfte: 73 Tage.
+    suchen: "      { sku: 'POS-51967', menge: 1, was: 'Thermo-Trennstein', position: 'Thermo-Trennstein' },",
+    ersetzen: '',
+    erwartet: /Thermo-Trennstein/,
+    warum: 'Der Deckungsbeitrag des Korbs trägt das Gebot. Bis zum 6. September lag im Korb '
+      + 'der Gruppe „Dämmung" **eine von vier** geführten Positionen ihrer eigenen '
+      + 'Systemliste, und das Gebot war 14 % zu klein. Ein zu kleines Gebot verliert '
+      + 'Auktionen, ohne dass eine Abrechnung es zeigt — die Mutation nimmt eine Position '
+      + 'wieder heraus und verlangt, dass es auffällt.',
+  }),
+  Object.freeze({
     id: 'gebot-auf-die-leere-trefferliste',
     pruefer: 'test',
     was: 'Ein geführtes Keyword, das die eigene Suche nicht beantwortet',
