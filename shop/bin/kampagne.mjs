@@ -271,11 +271,37 @@ export const WARENKOERBE = {
   // gerechnet wird.
   'Mörtel': {
     umfang: '40 Sack',
-    positionen: [{ sku: 'POS-13550', menge: 40, was: 'Mörtel' }],
+    positionen: [{ sku: 'POS-13550', menge: 40, was: 'Mörtel', position: null }],
+    ohneSystemliste:
+      'Kein Bauteil, sondern ein Baustoff. Die Gruppe führt drei Mörtel mit drei verschiedenen '
+      + 'Aufgaben — Klebespachtel für das WDVS, ThermoMörtel für das Mauerwerk, Vergussmörtel '
+      + 'für den Verguss. Ein gemeinsames Bauteil, dessen Positionen man auflisten könnte, gibt '
+      + 'es nicht: Wer Vergussmörtel bestellt, bestellt Vergussmörtel.',
   },
   Mauerwerk: {
-    umfang: '128',
-    positionen: [{ sku: 'POS-29728', menge: 128, was: 'Planziegel' }],
+    umfang: '128 Planziegel',
+    positionen: [{ sku: 'POS-29728', menge: 128, was: 'Planziegel', position: null }],
+    /*
+     * **Hier steht mehr als ein Grund — 6. September 2026, nachmittags.**
+     *
+     * Der Korb trägt 128 Planziegel und keinen Mörtel. Gemauert wird kein
+     * Ziegel ohne ihn, und der Shop **führt** ihn: `POS-13550 Baumit
+     * ThermoMörtel 50` ist der Leichtmauermörtel zum Hochlochziegel — er liegt
+     * nur in der Anzeigengruppe „Mörtel".
+     *
+     * > **Zwei Anzeigengruppen, zwei Ein-Positionen-Körbe — und zusammen wären
+     * > sie eine Bestellung.**
+     *
+     * Die Menge fehlt: Der Mörtelverbrauch je Quadratmeter Mauerwerk steht im
+     * Merkblatt des Herstellers und nicht im Katalog. Damit ist auch die Folge
+     * offen — der Deckungsbeitrag dieser Gruppe (61,81 €) ist eine **untere
+     * Schranke**, und die Rückstellung ruht auf ihr.
+     */
+    ohneSystemliste:
+      'Kein Bauteil im Sinne der Systemlisten, aber auch nicht vollständig: Der Mörtel gehört '
+      + 'dazu und liegt in der Anzeigengruppe „Mörtel". Seine Menge (Verbrauch je m² Mauerwerk) '
+      + 'steht im Herstellermerkblatt und nicht im Katalog, deshalb ist der Deckungsbeitrag '
+      + 'dieser Gruppe eine untere Schranke — und die Rückstellung ruht auf ihr.',
   },
 };
 

@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 import {
-  MINDESTGRUND, korbbefund, nichtGefuehrt, positionen, positionsname,
+  MINDESTGRUND, OHNE_LISTE, korbbefund, nichtGefuehrt, positionen, positionsname,
 } from '../src/warenkorbdeckung.js';
 import { WARENKOERBE } from '../bin/kampagne.mjs';
 
@@ -91,5 +91,54 @@ test('jeder echte Korb deckt seine Systemliste oder sagt, warum nicht', () => {
   assert.ok(Object.keys(systemlisten).length >= 3, 'zu wenige Systemlisten — das misst nichts');
   const b = korbbefund({ koerbe: WARENKOERBE, systemlisten });
   assert.deepEqual(b.meldungen.map((m) => m.text), []);
-  assert.ok(b.uebersicht.every((u) => u.gefuehrt >= 3), 'eine Liste ohne geführte Positionen');
+  // Die Übersicht enthält seit dem 6. September auch die Körbe **ohne**
+  // Systemliste; für sie ist `gefuehrt` null, und das ist kein Mangel,
+  // sondern die Auskunft „hier gibt es nichts zu decken".
+  const mitListe = b.uebersicht.filter((u) => u.gefuehrt !== null);
+  assert.ok(mitListe.length >= 3, `nur ${mitListe.length} Körbe mit Systemliste`);
+  assert.ok(mitListe.every((u) => u.gefuehrt >= 3), 'eine Liste ohne geführte Positionen');
+  assert.ok(b.uebersicht.length > mitListe.length,
+    'kein Korb ohne Systemliste in der Übersicht — dann prüft die Gegenrichtung nichts');
+});
+
+/* ------------------------------------------------------------------ *
+ * Die Gegenrichtung — 6. September 2026, nachmittags
+ *
+ * Die erste Fassung lief über die Systemlisten und sah die beiden Körbe nicht,
+ * zu denen es keine Liste gibt. Genau diese beiden Gruppen sind
+ * zurückgestellt: Die Entscheidung, die sie aus dem Budget nimmt, ruhte auf
+ * den Körben, die keine Prüfung sah.
+ * ------------------------------------------------------------------ */
+
+test('ein Korb ohne Systemliste und ohne Grund ist ein Fund', () => {
+  const b = korbbefund({
+    koerbe: { Ohne: { positionen: [{ position: null }] } },
+    systemlisten: {},
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['korb-ohne-liste-und-ohne-grund']);
+});
+
+test('ein Korb ohne Systemliste mit tragfähigem Grund geht durch', () => {
+  const b = korbbefund({
+    koerbe: { Ohne: { positionen: [{ position: null }], [OHNE_LISTE]: 'x'.repeat(MINDESTGRUND) } },
+    systemlisten: {},
+  });
+  assert.deepEqual(b.meldungen, []);
+  assert.equal(b.uebersicht[0].positionen, null, 'ohne Liste gibt es keine Positionszahl');
+});
+
+test('ein knapper Grund ist auch hier keiner', () => {
+  const b = korbbefund({
+    koerbe: { Ohne: { positionen: [], [OHNE_LISTE]: 'zu kurz' } },
+    systemlisten: {},
+  });
+  assert.equal(b.sauber, false);
+});
+
+test('ein Korb mit Systemliste braucht diesen Grund nicht', () => {
+  const b = korbbefund({
+    koerbe: { G: { positionen: [{ position: 'Platte' }, { position: 'Bahn' }] } },
+    systemlisten: { G: liste },
+  });
+  assert.deepEqual(b.meldungen, []);
 });

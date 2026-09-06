@@ -48,6 +48,24 @@
 /** Wie lang eine Begründung mindestens sein muss, um eine zu sein. */
 export const MINDESTGRUND = 40;
 
+/**
+ * **Die Gegenrichtung, aufgenommen am 6. September, nachmittags.**
+ *
+ * Die erste Fassung dieser Prüfung ging über die **Systemlisten** und hielt
+ * jede gegen ihren Korb. Zwei Anzeigengruppen haben aber gar keine Systemliste
+ * — „Mörtel" und „Mauerwerk" —, und die waren damit unsichtbar.
+ *
+ * > **Ein Prüfer, der über die Listen läuft, sieht die Körbe nicht, zu denen
+ * > es keine Liste gibt.** Dasselbe Register, das nur seine eigenen Einträge
+ * > zählt, in der eigenen Prüfung von gestern.
+ *
+ * Und es sind nicht irgendwelche zwei: **Genau sie sind zurückgestellt**, weil
+ * ihr Deckungsbeitrag die Werbekosten je Verkauf nicht trägt. Die Entscheidung,
+ * die zwei von sechs Gruppen aus dem Budget nimmt, ruhte auf den beiden
+ * Körben, die keine Prüfung sah.
+ */
+export const OHNE_LISTE = 'ohneSystemliste';
+
 /** Die Positionszeilen einer Systemliste, in der Reihenfolge der Tabelle. */
 export function positionen(markdown) {
   return [...String(markdown ?? '').matchAll(/^\|\s*(\d+)\s*\|\s*([^|]+?)\s*\|/gm)]
@@ -143,6 +161,23 @@ export function korbbefund({ koerbe, systemlisten }) {
       gefuehrt: gefuehrt.length,
       imKorb: imKorb.size,
       mitGrund: (korb.ohne ?? []).length,
+    });
+  }
+
+  // **Und die Körbe, zu denen es keine Systemliste gibt.**
+  for (const [gruppe, korb] of Object.entries(koerbe)) {
+    if (systemlisten[gruppe] !== undefined) continue;
+    const grund = korb?.[OHNE_LISTE];
+    if (!grund || grund.length < MINDESTGRUND) {
+      meldungen.push({
+        regel: 'korb-ohne-liste-und-ohne-grund',
+        gruppe,
+        text: `${gruppe}: Referenzwarenkorb ohne Systemliste und ohne tragfähigen Grund — `
+          + 'sein Deckungsbeitrag entscheidet über das Gebot und ist von nichts gedeckt',
+      });
+    }
+    uebersicht.push({
+      gruppe, positionen: null, gefuehrt: null, imKorb: korb?.positionen?.length ?? 0, mitGrund: 0,
     });
   }
 

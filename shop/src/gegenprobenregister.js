@@ -211,6 +211,21 @@ export const GEGENPROBEN = Object.freeze([
       + 'durch `test/statuskopf.test.js` in beide Richtungen abgedeckt.',
   }),
   Object.freeze({
+    id: 'korb-ohne-liste-ungeprueft',
+    pruefer: 'pruefe-koerbe',
+    was: 'Ein Referenzwarenkorb ohne Systemliste, den keine Prüfung ansieht',
+    datei: 'shop/bin/kampagne.mjs',
+    art: 'ersetzen',
+    suchen: "    ohneSystemliste:\n      'Kein Bauteil, sondern ein Baustoff.",
+    ersetzen: "    ohneSystemlisteVergessen:\n      'Kein Bauteil, sondern ein Baustoff.",
+    erwartet: /Mörtel/,
+    warum: 'Die erste Fassung dieser Prüfung lief über die **Systemlisten** und sah die beiden '
+      + 'Körbe nicht, zu denen es keine gibt — „Mörtel" und „Mauerwerk". Genau diese beiden '
+      + 'Gruppen sind zurückgestellt: Die Entscheidung, die sie aus dem Budget nimmt, ruhte auf '
+      + 'den Körben, die keine Prüfung ansah. Die Mutation kürzt den Grund unter die Grenze und '
+      + 'verlangt, dass es auffällt.',
+  }),
+  Object.freeze({
     id: 'korb-ohne-die-halbe-bestellung',
     pruefer: 'pruefe-koerbe',
     was: 'Ein Referenzwarenkorb, dem eine geführte Position seiner Systemliste fehlt',
