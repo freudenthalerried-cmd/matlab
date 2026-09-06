@@ -1354,6 +1354,25 @@ export const GEGENPROBEN = Object.freeze([
       + 'Prüfer „✓ pruefe-datenschutz — NaN Zusagen über den Code". Nicht leer, sondern '
       + 'unmessbar, und deshalb grün. Diese Mutation setzt genau das wieder ein.',
   }),
+  Object.freeze({
+    id: 'stand-aus-dem-gedaechtnis',
+    pruefer: 'test',
+    was: 'Ein Änderungsdatum, das jemand von Hand nachführen muss',
+    datei: 'shop/bin/website.mjs',
+    art: 'ersetzen',
+    baueVorher: true,
+    suchen: '    ...(seite.stand ? { dateModified: seite.stand } : {}),',
+    ersetzen: '    dateModified: seite.kopf.stand,',
+    erwartet: /ausgezeichnet .*geändert|dateModified|Änderungsgeschichte/,
+    warum: 'Genau der Zustand vom 6. September, den diese Zeile abgelöst hat: `dateModified` '
+      + 'kam aus dem Kopffeld `stand:`, und bei 10 von 24 Inhaltsseiten war dieses Feld älter '
+      + 'als die letzte Änderung der Datei — bei `kanal.md` acht Tage, und dazwischen lag die '
+      + 'inhaltliche Berichtigung vom 2. September. Ein berichtigter Satz unter einem Datum, '
+      + 'das vor der Berichtigung liegt, ist für jeden maschinellen Leser die falsche Auskunft '
+      + 'über die Aktualität — und niemandem fiel es auf, weil das Feld auf keiner Seite '
+      + 'sichtbar ist. Die Mutation setzt das Handregister wieder ein und verlangt, dass es '
+      + 'auffällt.',
+  }),
 ]);
 
 /**

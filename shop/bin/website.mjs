@@ -47,6 +47,8 @@ import { EINHEITEN, aufzaehlung, jsonFuerSkript, kurzfassung } from '../src/form
 import { GRUPPENSEITE } from '../src/artikelliste.js';
 import { preisstandSpanne, preisalterTage, GRENZE_TAGE, GRENZE_HERKUNFT } from '../src/preisalter.js';
 import { BINDEFRIST_TAGE } from '../src/beleg.js';
+import { execFileSync } from 'node:child_process';
+import { standAusGit } from '../src/inhaltsstand.js';
 import { HERSTELLER, marke } from '../src/hersteller.js';
 import {
   oeffentlicherArtikel, oeffentlicherLieferant, vorteil, ustText, KORBSCHLUESSEL,
@@ -234,7 +236,25 @@ function lesInhalte() {
       const { kopf, koerper } = lesKopf(readFileSync(join(ordner, datei), 'utf8'));
       const slug = kopf.slug ?? datei.replace(/\.md$/, '');
       const id = `${art === 'gruppen' ? 'gruppe' : art}/${slug}`;
-      seiten.set(id, { id, art, slug, kopf, koerper, datei: `${art}/${datei}` });
+      /*
+       * **Der Stand kommt aus der Änderungsgeschichte — 6. September 2026.**
+       *
+       * Er stand bis heute als Feld `stand:` im Kopfblock, mit genau einem
+       * Abnehmer: `dateModified` in der strukturierten Auskunft. Gemessen
+       * waren **10 von 24** älter als die letzte Änderung ihrer Datei — bei
+       * `kanal.md` acht Tage, und dazwischen lag die inhaltliche Berichtigung
+       * vom 2. September.
+       *
+       * > **Ein Datum, das jemand nachführen muss, ist so aktuell wie sein
+       * > Gedächtnis. Ein Datum, das aus der Änderung selbst kommt, ist es
+       * > immer.**
+       */
+      const stand = standAusGit({
+        pfad: `shop/inhalte/${art}/${datei}`,
+        git: (argumente) => execFileSync('git', argumente, { cwd: join(WURZEL, '..'), encoding: 'utf8' }),
+        heute: new Date().toISOString().slice(0, 10),
+      }) ?? kopf.stand ?? null;
+      seiten.set(id, { id, art, slug, kopf, koerper, stand, datei: `${art}/${datei}` });
     }
   }
   return seiten;
@@ -1358,7 +1378,9 @@ Preis bezieht sich auf Fläche, Länge oder Volumen. Geschätzt wird nichts.`
     headline: seite.kopf.titel,
     description: alsText(kurz),
     inLanguage: 'de-AT',
-    dateModified: seite.kopf.stand,
+    // Aus der Änderungsgeschichte, nicht aus dem Kopfblock — siehe
+    // `src/inhaltsstand.js`. Was nicht bekannt ist, bekommt keinen Schlüssel.
+    ...(seite.stand ? { dateModified: seite.stand } : {}),
     publisher: organisation(),
     ...(seite.kopf.frage
       ? {
