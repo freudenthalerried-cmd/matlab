@@ -556,17 +556,17 @@ const ENDET_NICHT_AUF = ['vom', 'von', 'am', 'im', 'zum', 'zur', 'mit', 'für', 
  */
 export const ANZEIGENTEXTE = {
   WDVS: {
-    k: ['WDVS zum Baumeisterpreis', 'Capatect und Baumit', 'Armierung bis Oberputz', 'Kleber, Gewebe, Dübel', 'Baumeisterpreis, nicht Liste', 'Fassade aus einer Bestellung'],
+    k: ['WDVS zum Baumeisterpreis', 'Capatect und Baumit', 'Armierung bis Oberputz', 'Kleber, Gewebe, Dübel', 'Baumeisterpreis, nicht Liste', 'Kleber bis Oberputz geliefert'],
     b: ['Armierung, Putzgrund, Oberputz und Zubehör — geliefert auf die Baustelle.', 'Kleber, Gewebe, Dübel, Putzgrund. Was zusammengehört, kommt zusammen.', 'Ein Baumeister kauft ein — wie weit unter der Liste, steht bei jedem Artikel.'],
     pfad: ['fassade', 'wdvs'],
   },
   'Dämmung': {
     k: ['XPS und EPS vom Baumeister', 'Perimeterdämmung 80 mm', 'Dämmplatten auf die Baustelle', 'Baumeisterpreis auf XPS', 'Druckfestes XPS im Sockel', 'Kein Baumarktpreis', 'XPS 30 bis 100 mm'],
-    b: ['XPS von 30 bis 100 mm, EPS als Ausgleich — geliefert auf die Baustelle.', 'Perimeter- und Fassadendämmung zum Preis, den ein Baumeister zahlt.', 'In Paketeinheiten gerechnet, damit kein Rest übrig bleibt.'],
+    b: ['XPS von 30 bis 100 mm, EPS als Ausgleich — geliefert auf die Baustelle.', 'Perimeter- und Sockeldämmung zum Preis, den ein Baumeister zahlt.', 'In Paketeinheiten gerechnet, damit kein Rest übrig bleibt.'],
     pfad: ['daemmung', 'xps'],
   },
   Kamin: {
-    k: ['Schiedel Kaminsystem', 'Kaminzug in einer Lieferung', 'Mantelstein und Rohr', 'Vom Fertigfuß zur Haube', 'Kamin auf die Baustelle', 'SIKM Systemteile', 'Kamin zum Baumeisterpreis'],
+    k: ['Schiedel Kaminsystem', 'Eine Lieferung, kein Abholen', 'Mantelstein und Rohr', 'Vom Fertigfuß zur Haube', 'Kamin auf die Baustelle', 'SIKM Systemteile', 'Kamin zum Baumeisterpreis'],
     b: ['Fertigfuß, Mantelsteine, gedämmtes Rohr, Putztür und Haube.', 'Schiedel-Systemteile aus einer Bestellung, geliefert statt abgeholt.', 'Was beim Kamin fehlt, hält die Baustelle auf. Die Stückliste sagt es vorher.'],
     pfad: ['kamin', 'schiedel'],
   },
@@ -665,6 +665,24 @@ export const GEBINDEAUSSAGEN = Object.freeze([
  * Schicht als nicht geführt, darf keine Anzeige derselben Gruppe
  * Vollständigkeit versprechen.
  */
+/**
+ * Wendungen, die „in einem Vorgang" sagen.
+ *
+ * **Aufgenommen am 6. September 2026.** Für sich sind sie harmlos:
+ * „Schiedel-Systemteile aus einer Bestellung" stimmt. Falsch werden sie erst
+ * zusammen mit dem **Namen des ganzen Bauteils** — „Fassade aus einer
+ * Bestellung", „Kaminzug in einer Lieferung" —, wenn die Systemliste dieses
+ * Bauteils eine Position als nicht geführt ausweist. Deshalb stehen sie nicht
+ * in `VOLLSTAENDIGKEITSWORTE`, sondern werden mit dem Bauteilnamen gepaart,
+ * und der wird aus dem Titel der Systemliste **abgeleitet** statt
+ * aufgeschrieben.
+ */
+export const EINVORGANGSWORTE = Object.freeze([
+  /\baus einer Bestellung\b/i,
+  /\bin einer (?:Bestellung|Lieferung)\b/i,
+  /\baus einer Lieferung\b/i,
+]);
+
 export const VOLLSTAENDIGKEITSWORTE = Object.freeze([
   /\bkomplett\w*/i,
   /\baus einer Hand\b/i,
@@ -751,7 +769,8 @@ export const LUECKENSATZ = /f(?:ü|ue)hren wir (?:derzeit )?nicht|nicht im Sorti
  *   wäre die Stelle, an der ein Aufrufer die Gebindeprüfung stillschweigend
  *   überspringt, und dann prüfte sie nichts und meldete es als bestanden.
  */
-export function pruefeTexte(anzeigen, gefuehrteEinheiten, gruppenMitLuecke = new Set()) {
+export function pruefeTexte(anzeigen, gefuehrteEinheiten, gruppenMitLuecke = new Set(),
+  landeseiten = new Map(), bauteilJeGruppe = new Map()) {
   const fehler = [];
   if (gefuehrteEinheiten === undefined) {
     throw new Error('pruefeTexte braucht die geführten Einheiten — ohne sie prüft die Gebinderegel nichts.');
@@ -769,6 +788,34 @@ export function pruefeTexte(anzeigen, gefuehrteEinheiten, gruppenMitLuecke = new
         }
       }
 
+      /*
+       * **Was die Anzeige sagt, gegen das, was ihre Seite absagt — 6.9.2026.**
+       *
+       * Die Regel vom Vortag hält jedes **Keyword** gegen die
+       * Abgrenzungssätze seiner Landeseite. Sie hat „Fassadendämmung EPS"
+       * zurückgehalten — und in derselben Anzeigengruppe stand ungeprüft
+       * weiter:
+       *
+       * > „Perimeter- und **Fassadendämmung** zum Preis, den ein Baumeister
+       * > zahlt."
+       *
+       * > **Die Regel prüfte, worauf geboten wird, und nicht, was die Anzeige
+       * > sagt.** Ein Keyword kauft den Klick; der Anzeigentext ist das
+       * > Versprechen, für das er gekauft wird.
+       *
+       * Ein Anzeigentext wird **nicht** zurückgehalten wie ein Keyword: Er ist
+       * geschrieben worden, also gehört er berichtigt und nicht stillschweigend
+       * weggelassen.
+       */
+      const seite = landeseiten.get(a.Anzeigengruppe);
+      if (seite) {
+        const verneint = abgegrenztesKeyword(v, seite);
+        if (verneint) {
+          fehler.push(`${a.Anzeigengruppe} · ${k}: „${v}" nennt „${verneint.wort}" — `
+            + 'die eigene Landeseite sagt dazu „führen wir nicht"');
+        }
+      }
+
       // Eine Meldung je Feld, nicht je Muster: „Das komplette System aus
       // einer Hand" trifft zwei Muster und ist ein Satz. Ein Prüfer, der
       // denselben Satz zweimal meldet, wird nach dem Wortlaut gelesen und
@@ -776,6 +823,18 @@ export function pruefeTexte(anzeigen, gefuehrteEinheiten, gruppenMitLuecke = new
       if (luecken.has(a.Anzeigengruppe) && VOLLSTAENDIGKEITSWORTE.some((m) => m.test(v))) {
         fehler.push(`${a.Anzeigengruppe} · ${k}: „${v}" verspricht Vollständigkeit — `
           + 'die eigene Systemliste nennt für diese Gruppe eine Schicht, die der Katalog nicht führt');
+      } else if (luecken.has(a.Anzeigengruppe)) {
+        // **Dasselbe Versprechen, andere Wörter.** „Fassade komplett liefern"
+        // ist am 2. September entfallen; „Fassade aus einer Bestellung" stand
+        // vier Tage später unbeanstandet da. Ein Register, das nach Wörtern
+        // sucht, lässt dieselbe Aussage in anderer Formulierung durch.
+        const bauteil = bauteilJeGruppe.get(a.Anzeigengruppe);
+        if (bauteil && new RegExp(`\\b${bauteil}\\b`, 'i').test(v)
+          && EINVORGANGSWORTE.some((m) => m.test(v))) {
+          fehler.push(`${a.Anzeigengruppe} · ${k}: „${v}" verspricht „${bauteil}" in einem `
+            + 'Vorgang — die eigene Systemliste nennt für dieses Bauteil eine Position, '
+            + 'die der Katalog nicht führt');
+        }
       }
 
       // **Preisaussagen — gegen die Zielmarge, nicht gegen eine Liste.**
@@ -1115,11 +1174,23 @@ function main() {
   // — alle vier tun es. Eine Anzeige derselben Gruppe darf dann keine
   // Vollständigkeit versprechen.
   const gruppenMitLuecke = new Set();
+  const bauteilJeGruppe = new Map();
   const systemOrdner = join(WURZEL, 'inhalte', 'system');
   for (const datei of readdirSync(systemOrdner).filter((d) => d.endsWith('.md'))) {
     const text = readFileSync(join(systemOrdner, datei), 'utf8');
     const gruppe = /^gruppe:\s*(.+)$/m.exec(text)?.[1]?.trim();
     if (gruppe && LUECKENSATZ.test(text)) gruppenMitLuecke.add(gruppe);
+    /*
+     * **Der Name des Bauteils, abgeleitet statt aufgeschrieben.** Er steht im
+     * Titel der Systemliste vor dem ersten Gedankenstrich: „Fassade dämmen —
+     * die Liste für 100 m²" → `Fassade`, „Kaminzug — die Liste für einen Zug"
+     * → `Kaminzug`. Eine Liste solcher Namen wäre ein Register, das jemand
+     * pflegen müsste; dieser Bestand hat an einem Tag dreimal gesehen, was
+     * davon zu halten ist.
+     */
+    const titel = /^titel:\s*(.+)$/m.exec(text)?.[1]?.trim();
+    const bauteil = titel?.split('—')[0]?.trim().split(/\s+/)[0];
+    if (gruppe && bauteil && bauteil.length >= 5) bauteilJeGruppe.set(gruppe, bauteil);
   }
 
   // **Zweite Hälfte derselben Regel, 2. September.** Eine Anzeige, die keine
@@ -1146,9 +1217,32 @@ function main() {
     }
   }
 
+  /*
+   * **Die Landeseiten stehen seit dem 6. September vor den Textprüfungen.**
+   * Sie wurden bisher erst für die Keywords gelesen — und damit prüfte die
+   * Regel vom Vortag, worauf **geboten** wird, und nicht, was die Anzeige
+   * **sagt**.
+   */
+  const seitentexte = new Map();
+  for (const g of ersterAnlauf) {
+    const datei = join(WURZEL, 'ausgabe', 'site', 'gruppe', `${GRUPPENSEITE[g.gruppe]}.html`);
+    if (!existsSync(datei)) {
+      console.error(`Abbruch: Die Landeseite ${datei} ist nicht gebaut.`);
+      console.error('Ohne sie lässt sich nicht prüfen, ob die Anzeige verspricht, was die Seite sagt.');
+      console.error('Erst `npm run website`, dann `npm run kampagne`.');
+      process.exit(2);
+    }
+    const text = hauptbereichText(readFileSync(datei, 'utf8'));
+    if (text === null) {
+      console.error(`Abbruch: ${datei} hat keinen Hauptbereich — die Seite ist unvollständig gebaut.`);
+      process.exit(2);
+    }
+    seitentexte.set(g.gruppe, text);
+  }
+
   const textfehler = [
-    ...pruefeTexte(alleAnzeigentexte(), gefuehrteEinheiten, gruppenMitLuecke),
-    ...pruefeTexte(anzeigen, gefuehrteEinheiten, gruppenMitLuecke),
+    ...pruefeTexte(alleAnzeigentexte(), gefuehrteEinheiten, gruppenMitLuecke, seitentexte, bauteilJeGruppe),
+    ...pruefeTexte(anzeigen, gefuehrteEinheiten, gruppenMitLuecke, seitentexte, bauteilJeGruppe),
     ...pruefeBestellversprechen(anzeigen, ETAPPEN),
     ...textfehlerLandeseite,
   ];
@@ -1225,22 +1319,6 @@ function main() {
   // **Jedes Keyword gegen seine eigene Landeseite.** Siehe `ungedeckteWoerter`.
   // Fehlt die gebaute Seite, wird nicht geraten, sondern abgebrochen: Eine
   // Deckungsprüfung ohne Seite prüft nichts und meldete es als bestanden.
-  const seitentexte = new Map();
-  for (const g of ersterAnlauf) {
-    const datei = join(WURZEL, 'ausgabe', 'site', 'gruppe', `${GRUPPENSEITE[g.gruppe]}.html`);
-    if (!existsSync(datei)) {
-      console.error(`Abbruch: Die Landeseite ${datei} ist nicht gebaut.`);
-      console.error('Ohne sie lässt sich nicht prüfen, ob die Anzeige verspricht, was die Seite sagt.');
-      console.error('Erst `npm run website`, dann `npm run kampagne`.');
-      process.exit(2);
-    }
-    const text = hauptbereichText(readFileSync(datei, 'utf8'));
-    if (text === null) {
-      console.error(`Abbruch: ${datei} hat keinen Hauptbereich — die Seite ist unvollständig gebaut.`);
-      process.exit(2);
-    }
-    seitentexte.set(g.gruppe, text);
-  }
 
   const ohneDeckung = [];
   /*

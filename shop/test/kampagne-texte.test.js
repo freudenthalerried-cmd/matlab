@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  pruefeTexte, VOLLSTAENDIGKEITSWORTE, LUECKENSATZ,
+  pruefeTexte, VOLLSTAENDIGKEITSWORTE, EINVORGANGSWORTE, LUECKENSATZ,
   BESTELLAUSSAGEN, pruefeBestellversprechen,
 } from '../bin/kampagne.mjs';
 // Seit dem 5. September in `src/aussagen.js`: Beide Register hatten nur
@@ -146,4 +146,71 @@ test('Ein Plan ohne die Etappe ist ein Befund und kein Freispruch', () => {
   const fehler = pruefeBestellversprechen([bestellanzeige], []);
   assert.equal(fehler.length, 1);
   assert.match(fehler[0], /kennt keine Etappe/);
+});
+
+
+/* ------------------------------------------------------------------ *
+ * Was die Anzeige sagt, gegen das, was ihre Seite absagt — 6. September
+ *
+ * Die Regel vom Vortag hielt jedes **Keyword** gegen die Abgrenzungssätze
+ * seiner Landeseite und hat „Fassadendämmung EPS" zurückgehalten. In
+ * derselben Anzeigengruppe stand ungeprüft weiter: „Perimeter- und
+ * **Fassadendämmung** zum Preis, den ein Baumeister zahlt."
+ *
+ * > **Die Regel prüfte, worauf geboten wird, und nicht, was die Anzeige sagt.**
+ * ------------------------------------------------------------------ */
+
+const EINHEITEN = ['SCK', 'STK', 'M2'];
+const SEITE = new Map([['Dämmung',
+  'wir führen xps in mehreren stärken. die fassadendämmplatte in flächenstärke führen wir nicht.']]);
+
+test('ein Anzeigentext, den die eigene Landeseite verneint, geht nicht hinaus', () => {
+  const anzeige = { Anzeigengruppe: 'Dämmung', 'Beschreibung 2': 'Perimeter- und Fassadendämmung zum Baumeisterpreis.' };
+  const fehler = pruefeTexte([anzeige], EINHEITEN, new Set(), SEITE);
+  assert.equal(fehler.length, 1, fehler.join('\n'));
+  assert.match(fehler[0], /führen wir nicht/);
+});
+
+test('ein Anzeigentext, den die Seite nicht verneint, geht durch', () => {
+  const anzeige = { Anzeigengruppe: 'Dämmung', 'Beschreibung 2': 'Perimeter- und Sockeldämmung zum Baumeisterpreis.' };
+  assert.deepEqual(pruefeTexte([anzeige], EINHEITEN, new Set(), SEITE), []);
+});
+
+test('ohne Landeseite meldet die Regel nichts — und behauptet auch nichts', () => {
+  const anzeige = { Anzeigengruppe: 'Dämmung', 'Beschreibung 2': 'Perimeter- und Fassadendämmung zum Baumeisterpreis.' };
+  assert.deepEqual(pruefeTexte([anzeige], EINHEITEN, new Set(), new Map()), []);
+});
+
+/* ------------------------------------------------------------------ *
+ * Dasselbe Versprechen, andere Wörter
+ *
+ * „Fassade komplett liefern" ist am 2. September entfallen. „Fassade aus
+ * einer Bestellung" stand vier Tage später unbeanstandet da: Ein Register,
+ * das nach Wörtern sucht, lässt dieselbe Aussage in anderer Formulierung
+ * durch.
+ * ------------------------------------------------------------------ */
+
+const BAUTEIL = new Map([['WDVS', 'Fassade'], ['Kamin', 'Kaminzug']]);
+
+test('das Bauteil in einem Vorgang zu versprechen, ist ein Vollständigkeitsversprechen', () => {
+  const anzeige = { Anzeigengruppe: 'WDVS', 'Überschrift 6': 'Fassade aus einer Bestellung' };
+  const fehler = pruefeTexte([anzeige], EINHEITEN, new Set(['WDVS']), new Map(), BAUTEIL);
+  assert.equal(fehler.length, 1, fehler.join('\n'));
+  assert.match(fehler[0], /in einem\s+Vorgang/);
+});
+
+test('eine Ein-Vorgang-Wendung ohne den Bauteilnamen ist keine Zusage über das Ganze', () => {
+  const anzeige = { Anzeigengruppe: 'Kamin', 'Beschreibung 2': 'Schiedel-Systemteile aus einer Bestellung.' };
+  assert.deepEqual(pruefeTexte([anzeige], EINHEITEN, new Set(['Kamin']), new Map(), BAUTEIL), []);
+});
+
+test('ohne Lücke in der Systemliste ist dasselbe Versprechen in Ordnung', () => {
+  const anzeige = { Anzeigengruppe: 'WDVS', 'Überschrift 6': 'Fassade aus einer Bestellung' };
+  assert.deepEqual(pruefeTexte([anzeige], EINHEITEN, new Set(), new Map(), BAUTEIL), []);
+});
+
+test('die Ein-Vorgang-Wendungen sind eng gefasst', () => {
+  assert.ok(EINVORGANGSWORTE.length >= 2, 'ein leeres Register bestünde stumm');
+  assert.equal(EINVORGANGSWORTE.some((m) => m.test('Geliefert wird in die Bezirke Perg und Linz.')), false);
+  assert.equal(EINVORGANGSWORTE.some((m) => m.test('Fassade aus einer Bestellung')), true);
 });

@@ -211,6 +211,20 @@ export const GEGENPROBEN = Object.freeze([
       + 'durch `test/statuskopf.test.js` in beide Richtungen abgedeckt.',
   }),
   Object.freeze({
+    id: 'anzeige-verspricht-die-absage',
+    pruefer: 'test',
+    was: 'Ein Anzeigentext, der nennt, was die eigene Landeseite absagt',
+    datei: 'shop/bin/kampagne.mjs',
+    art: 'ersetzen',
+    suchen: "'Perimeter- und Sockeldämmung zum Preis",
+    ersetzen: "'Perimeter- und Fassadendämmung zum Preis",
+    erwartet: /führen wir nicht|Fassadendämmung/,
+    warum: 'Genau der Text, der bis zum 6. September in der Anzeigengruppe „Dämmung" stand, '
+      + 'während die Landeseite im zweiten Satz sagt, dass die Fassadendämmplatte in '
+      + 'Flächenstärke nicht geführt wird. Die Regel vom Vortag hielt das gleichlautende '
+      + '**Keyword** zurück und sah den **Text** nicht an.',
+  }),
+  Object.freeze({
     id: 'gebot-auf-die-absage',
     pruefer: 'test',
     was: 'Ein Anzeigen-Keyword, das die eigene Landeseite verneint',
