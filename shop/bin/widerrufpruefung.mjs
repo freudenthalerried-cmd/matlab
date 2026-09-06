@@ -31,6 +31,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   pruefeBestand, WIDERRUFE, SICHTWEITE, BESTAENDE, bestandsdateien, findeWiderrufe,
+  noetigeSichtweite,
 } from '../src/widerruf.js';
 import { nurText } from '../src/format.js';
 import { frischebefund } from '../src/erzeugnisstand.js';
@@ -133,6 +134,42 @@ if (ausgabeDateien) {
 console.log(`\n${e.dateien} Dateien, ${e.funde} Fundstellen, davon ${e.gedeckt} mit Widerruf in Sichtweite.`);
 console.log(`Sichtweite: ±${SICHTWEITE} Zeilen im Fließtext — eine Tabellenzeile dagegen sieht nur`);
 console.log('sich selbst, den Kopf ihrer Tabelle und den Text davor. Der Nachbareintrag deckt nichts.');
+
+/* ------------------------------------------------------------------ *
+ * Wie viel von der Sichtweite wird gebraucht? — 6. September 2026
+ *
+ * `SICHTWEITE = 8` steht seit dem 31. August da und war nie gemessen. Die
+ * Runde davor hat das als offenen Punkt benannt und ausdrücklich nichts
+ * geändert: *Eine Zahl zu ändern, für die man kein Maß hat, tauscht nur eine
+ * Vermutung gegen eine andere.* Hier steht das Maß.
+ *
+ * Gelesen wird es in **beide** Richtungen. Zu klein erzeugt Fehlalarme — der
+ * Prüfer meldet eine Aussage, deren Berichtigung zwei Zeilen weiter steht.
+ * Zu groß erzeugt das Gegenteil und ist die gefährlichere Seite: Ein
+ * Nachbarabsatz über etwas anderes deckt eine Falschangabe zu. Genau das war
+ * der Befund vom 2. September (Tabellenzeilen) und der vom 5. (Kopfvermerk).
+ * ------------------------------------------------------------------ */
+{
+  const noetig = [];
+  for (const d of dateien) {
+    for (const f of findeWiderrufe(d.text)) {
+      if (!f.gedeckt || f.wodurch === 'Kopfvermerk') continue;
+      const n = noetigeSichtweite(d.text, f);
+      if (n !== null) noetig.push({ n, wo: `${d.name}:${f.zeile}`, id: f.id });
+    }
+  }
+  if (noetig.length) {
+    const verteilung = {};
+    for (const x of noetig) verteilung[x.n] = (verteilung[x.n] ?? 0) + 1;
+    const groesste = Math.max(...noetig.map((x) => x.n));
+    const knapp = noetig.filter((x) => x.n === groesste);
+    console.log(`\nGebraucht wird davon: ${Object.entries(verteilung)
+      .map(([n, k]) => `${k}× ±${n}`).join(', ')}.`);
+    console.log(`Die knappste Deckung liegt bei ±${groesste} von ±${SICHTWEITE}`
+      + `${groesste === SICHTWEITE ? ' — also am Rand' : ''}: `
+      + `${knapp.slice(0, 3).map((x) => `${x.wo} (${x.id})`).join(', ')}.`);
+  }
+}
 
 if (e.sauber && ausgabeFunde === 0) {
   console.log('\nKeine Meldung — jede widerrufene Aussage trägt ihren Widerruf mit.');

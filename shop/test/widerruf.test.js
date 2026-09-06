@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   WIDERRUFE, WIDERRUFSMERKMAL, SICHTWEITE, KOPFZEILEN,
-  findeWiderrufe, pruefeBestand, kopfwiderruf, sichtfeld,
+  findeWiderrufe, pruefeBestand, kopfwiderruf, sichtfeld, noetigeSichtweite,
   BESTAENDE, AUSGENOMMEN, bestandsdateien,
 } from '../src/widerruf.js';
 
@@ -161,6 +161,56 @@ test('eine widerrufene Aussage unter einem bloßen Umgebungswort bleibt ungedeck
   const offen = findeWiderrufe(text).filter((f) => !f.gedeckt);
   assert.equal(offen.length, 1, 'genau der Fall aus STATUS.md:775');
   assert.equal(offen[0].id, 'shop-subdomain-als-adresse');
+});
+
+/* ------------------------------------------------------------------ *
+ * Wie viel von der Sichtweite gebraucht wird — 6. September 2026
+ * ------------------------------------------------------------------ */
+
+test('die nötige Sichtweite ist die kleinste, bei der der Widerruf noch im Fenster liegt', () => {
+  const text = ['Empfohlen wird shop.freudenthaler-bau.at als Hauptadresse.', '', '', 'bauversand'].join('\n');
+  const fund = findeWiderrufe(text)[0];
+  assert.equal(noetigeSichtweite(text, fund), 3);
+});
+
+test('steht der Widerruf in derselben Zeile, ist die nötige Sichtweite null', () => {
+  const text = 'Empfohlen wurde shop.freudenthaler-bau.at — irrtümlich.';
+  assert.equal(noetigeSichtweite(text, findeWiderrufe(text)[0]), 0);
+});
+
+test('ohne Widerruf im Fenster kommt null zurück — nicht die Obergrenze', () => {
+  const text = `Empfohlen wird shop.freudenthaler-bau.at.${'\n'.repeat(40)}bauversand`;
+  const fund = findeWiderrufe(text)[0];
+  assert.equal(noetigeSichtweite(text, fund), null);
+  assert.equal(fund.gedeckt, false, 'sonst misst der Test etwas anderes als der Prüfer');
+});
+
+/**
+ * **Die Zahl 8 ist seit heute gemessen.** Sie stand seit dem 31. August ohne
+ * Maß da. Dieser Fall hält die tragende Richtung fest: Kein Fund im Bestand
+ * braucht mehr, als die Konstante hergibt — sonst meldete der Prüfer eine
+ * Aussage, deren Berichtigung danebensteht.
+ */
+test('kein Fund im Bestand braucht mehr Sichtweite, als die Konstante hergibt', () => {
+  // **Erst sammeln, dann zusichern, dann durchgehen.** Die erste Fassung hatte
+  // zwei geschachtelte Schleifen und die Zahl der gemessenen Fälle erst am
+  // Ende — `pruefe-tests` hat das zu Recht gemeldet: Über die innere Schleife
+  // lässt sich vorher nichts zusichern, weil die meisten Dateien null Funde
+  // haben. Die flache Liste ist die, um die es geht.
+  const funde = readdirSync(verzeichnis)
+    .filter((n) => n.endsWith('.md'))
+    .flatMap((name) => {
+      const text = readFileSync(join(verzeichnis, name), 'utf8');
+      return findeWiderrufe(text)
+        .filter((f) => f.gedeckt && f.wodurch !== 'Kopfvermerk')
+        .map((f) => ({ name, text, fund: f }));
+    });
+  assert.ok(funde.length >= 20, `nur ${funde.length} Fundstellen gefunden — das misst nichts`);
+  for (const { name, text, fund } of funde) {
+    const n = noetigeSichtweite(text, fund);
+    assert.notEqual(n, null, `${name}:${fund.zeile} gilt als gedeckt und ist es nicht`);
+    assert.ok(n <= SICHTWEITE, `${name}:${fund.zeile} braucht ±${n}`);
+  }
 });
 
 test('der eigene Bestand trägt jeden Widerruf mit', () => {

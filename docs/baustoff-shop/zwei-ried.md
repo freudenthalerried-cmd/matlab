@@ -50,8 +50,8 @@ die Aussage, dass die eigene Umgebung betroffen ist.
 
 Es gibt in Oberösterreich zwei Bezirke, deren Namen mit „Ried" beginnen.
 Die Gebietsauskunft brauchte am 16. August einen Beispielwert, jemand
-setzte „Ried im Innkreis" ein, und ab da war der Beispielwert die
-Behauptung: `gebietsauskunft-zwischenloesung.md` nennt ihn „den
+setzte „Ried im Innkreis" ein — irrtümlich, der Sitz liegt in Ried in der
+Riedmark —, und ab da war der Beispielwert die Behauptung: `gebietsauskunft-zwischenloesung.md` nennt ihn „den
 Heimatbezirk des Betreibers", `gegenpruefung-bezirksliste.md` prüft ihn
 gegen die amtliche Liste und bestätigt ihn — **richtig geprüft, falsche
 Frage.** Die Gegenprüfung hat bestätigt, dass Ried im Innkreis ausgenommen

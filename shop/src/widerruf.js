@@ -344,6 +344,32 @@ export function findeWiderrufe(text, { register = WIDERRUFE, sichtweite = SICHTW
 }
 
 /**
+ * Wie eng ein Fund gedeckt ist: die **kleinste** Sichtweite, bei der sein
+ * Widerruf noch im Fenster liegt.
+ *
+ * **Der Anlass, 6. September 2026.** `SICHTWEITE = 8` steht seit dem
+ * 31. August da und ist nie gemessen worden. Die Runde davor hat das als
+ * offenen Punkt benannt und ausdrücklich nichts geändert — *eine Zahl zu
+ * ändern, für die man kein Maß hat, tauscht nur eine Vermutung gegen eine
+ * andere.* Dies ist das Maß.
+ *
+ * Zurück kommt `null`, wenn der Fund bis `hoechstens` nicht gedeckt ist —
+ * dann trägt ihn entweder ein Kopfvermerk oder gar nichts.
+ *
+ * @param {string} text
+ * @param {{zeile: number, eintrag: object}} fund
+ * @param {number} [hoechstens]
+ */
+export function noetigeSichtweite(text, fund, hoechstens = SICHTWEITE) {
+  for (let n = 0; n <= hoechstens; n++) {
+    const umfeld = sichtfeld(text, fund.zeile, n);
+    if (WIDERRUFSMERKMAL.test(umfeld)) return n;
+    if (fund.eintrag?.merkmal && fund.eintrag.merkmal.test(umfeld)) return n;
+  }
+  return null;
+}
+
+/**
  * Prüft mehrere Dateien.
  *
  * `dateien` ist eine Liste von `{ name, text }` — das Einlesen bleibt beim
