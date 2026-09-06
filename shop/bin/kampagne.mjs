@@ -39,6 +39,8 @@ import { ETAPPEN } from '../src/rollout.js';
 import { PREISAUSSAGEN, VORRATSWORTE } from '../src/aussagen.js';
 import { abgegrenztesKeyword } from '../src/abgrenzung.js';
 import { ausschlussbefund } from '../src/ausschluss.js';
+import { suchdeckungsbefund } from '../src/suchdeckung.js';
+import { baueSuchindex, suche } from '../src/shopkern.js';
 import { cent } from '../src/preis.js';
 import { traegtSichSelbst } from '../src/kostenbild.js';
 import { berechneWarenkorb } from '../src/warenkorb.js';
@@ -1422,6 +1424,57 @@ function main() {
     });
     return false;
   });
+
+  /*
+   * **Die eigene Suche gegen die geführten Keywords — 6. September 2026.**
+   *
+   * Die Regel steht seit dem 1. September als Kommentar in dieser Datei:
+   * *„Auf ein Wort zu bieten, das die eigene Suche nicht beantwortet, ist ein
+   * bezahlter Klick auf eine leere Trefferliste."* Ein Satz, ein Fall, kein
+   * Prüfer.
+   *
+   * Gemessen wird an `window.__SHOP__` aus dem gebauten `shop.js` — denselben
+   * Daten, die im Browser des Besuchers liegen. Der erste Messversuch nahm nur
+   * Artikel und Suchwörter und ließ die 24 Inhaltsseiten weg; er meldete drei
+   * Fehler, die keine waren. **Ein Prüfer, der einen anderen Index befragt als
+   * der Kunde, misst einen anderen Shop.**
+   */
+  let suchdeckung = null;
+  {
+    const skript = join(WURZEL, 'ausgabe', 'site', 'shop.js');
+    if (existsSync(skript)) {
+      const roh = readFileSync(skript, 'utf8').match(/window\.__SHOP__=(\{[\s\S]*?\});\n/);
+      if (roh) {
+        const D = JSON.parse(roh[1]);
+        const index = baueSuchindex({
+          artikel: D.artikel ?? [], seiten: D.seiten ?? [], suchwoerter: D.suchwoerter ?? [],
+        });
+        suchdeckung = suchdeckungsbefund({
+          keywords: [...new Set(keywordsGedeckt.map((k) => k.Keyword))],
+          finde: (frage) => suche(index, frage, { grenze: 20 }),
+        });
+      }
+    }
+  }
+
+  if (suchdeckung && !suchdeckung.sauber) {
+    console.error('\nGeführte Keywords, die die eigene Suche nicht beantwortet:\n');
+    for (const m of suchdeckung.meldungen) console.error(`  ✗ ${m.text}`);
+    console.error('\nNichts geschrieben. Ein Wort, für das bezahlt wird, muss im eigenen Shop');
+    console.error('zu etwas führen — sonst zahlt die Anzeige für eine Absage.');
+    process.exit(1);
+  }
+  if (suchdeckung) {
+    console.log(`\nEigene Suche: ${suchdeckung.geprueft} geführte Keywords, alle mit Treffer, `
+      + `${suchdeckung.mitArtikel} davon mit mindestens einem Artikel.`);
+    for (const o of suchdeckung.ohneArtikel) {
+      console.log(`  · „${o.keyword}" führt nur auf ${o.treffer.join(', ')}`);
+    }
+    if (suchdeckung.ohneArtikel.length) {
+      console.log('  Das ist kein Fehler: Für eine Systemfrage ist die Gruppenseite die');
+      console.log('  richtige Antwort, und der Klick aus der Anzeige landet ohnehin dort.');
+    }
+  }
 
   schreibe('keywords.csv', csv(['Kampagne', 'Anzeigengruppe', 'Keyword', 'Übereinstimmungstyp', 'Herkunft', 'Marke'], keywordsGedeckt));
   schreibe('keywords-ohne-deckung.csv', csv(

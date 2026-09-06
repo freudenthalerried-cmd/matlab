@@ -211,6 +211,24 @@ export const GEGENPROBEN = Object.freeze([
       + 'durch `test/statuskopf.test.js` in beide Richtungen abgedeckt.',
   }),
   Object.freeze({
+    id: 'gebot-auf-die-leere-trefferliste',
+    pruefer: 'test',
+    was: 'Ein geführtes Keyword, das die eigene Suche nicht beantwortet',
+    datei: 'shop/bin/kampagne.mjs',
+    art: 'ersetzen',
+    suchen: '          artikel: D.artikel ?? [], seiten: D.seiten ?? [], suchwoerter: D.suchwoerter ?? [],',
+    ersetzen: '          artikel: D.artikel ?? [], seiten: [], suchwoerter: D.suchwoerter ?? [],',
+    erwartet: /leere Trefferliste/,
+    warum: 'Die Regel steht seit dem 1. September als Kommentar in derselben Datei — „auf ein '
+      + 'Wort zu bieten, das die eigene Suche nicht beantwortet, ist ein bezahlter Klick auf '
+      + 'eine leere Trefferliste" —, und sie war ein Satz, ein Fall, kein Prüfer. '
+      + '**Mutiert wird der Index, nicht die Wortliste**, und zwar genau so, wie der erste '
+      + 'Messversuch am 6. September falsch lag: ohne die 24 Inhaltsseiten. Drei Keywords '
+      + 'finden dann nichts. Damit hält diese Gegenprobe beides wach — die Regel und die '
+      + 'Bedingung, unter der sie etwas wert ist: *Ein Prüfer, der einen anderen Index '
+      + 'befragt als der Kunde, misst einen anderen Shop.*',
+  }),
+  Object.freeze({
     id: 'eigenes-wort-ausgeschlossen',
     pruefer: 'test',
     was: 'Ein Ausschluss, der ein Wort der eigenen Seiten trifft',
