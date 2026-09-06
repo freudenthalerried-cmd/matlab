@@ -211,6 +211,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'durch `test/statuskopf.test.js` in beide Richtungen abgedeckt.',
   }),
   Object.freeze({
+    id: 'eigenes-wort-ausgeschlossen',
+    pruefer: 'test',
+    was: 'Ein Ausschluss, der ein Wort der eigenen Seiten trifft',
+    datei: 'shop/bin/kampagne.mjs',
+    art: 'ersetzen',
+    suchen: "  'Suche ohne Kaufabsicht': ['anleitung', 'video',",
+    ersetzen: "  'Suche ohne Kaufabsicht': ['vergleich', 'anleitung', 'video',",
+    erwartet: /vergleich/,
+    warum: 'Genau der Zustand bis zum 6. September: „vergleich" stand als Ausschluss in der '
+      + 'Kampagne und 39× im eigenen Seitentext — im Satz „Der Vergleich bezieht sich auf die '
+      + 'Liste unseres Lieferanten", der das Verkaufsargument dieses Shops trägt. Der '
+      + 'vorhandene Prüfer hielt die Ausschlüsse gegen das Liefergebiet und gegen die '
+      + 'Keywordliste und kannte den dritten Bestand nicht: die Seiten, auf die die Anzeige '
+      + 'zeigt.',
+  }),
+  Object.freeze({
     id: 'anzeige-verspricht-die-absage',
     pruefer: 'test',
     was: 'Ein Anzeigentext, der nennt, was die eigene Landeseite absagt',

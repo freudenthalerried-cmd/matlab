@@ -38,6 +38,7 @@ import { ladeBaustoffkatalog, katalogbefund, ZIELMARGE } from '../src/baustoffka
 import { ETAPPEN } from '../src/rollout.js';
 import { PREISAUSSAGEN, VORRATSWORTE } from '../src/aussagen.js';
 import { abgegrenztesKeyword } from '../src/abgrenzung.js';
+import { ausschlussbefund } from '../src/ausschluss.js';
 import { cent } from '../src/preis.js';
 import { traegtSichSelbst } from '../src/kostenbild.js';
 import { berechneWarenkorb } from '../src/warenkorb.js';
@@ -242,7 +243,33 @@ const MARKEN = ['Capatect', 'Baumit', 'Soudal', 'Isover', 'Schiedel', 'SIKM', 'S
 const NEGATIVE = {
   'Preis und Menge': ['günstig', 'billig', 'gebraucht', 'restposten', 'einzeln', 'einzelsack', 'kleinmenge', 'muster', 'probe', 'reststück'],
   Wettbewerb: ['baumarkt', 'obi', 'hornbach', 'bauhaus', 'lagerhaus', 'hagebau', 'amazon', 'willhaben'],
-  'Suche ohne Kaufabsicht': ['anleitung', 'wie', 'video', 'youtube', 'erfahrung', 'test', 'vergleich', 'berechnen', 'rechner', 'wikipedia', 'was ist'],
+  /*
+   * **„wie" und „vergleich" entfallen am 6. September.**
+   *
+   * Gezählt über alle 82 gebauten Seiten: „wie" steht **112×** im eigenen
+   * Text, „vergleich" **39×**. Die übrigen 67 einwortigen Ausschlüsse zusammen
+   * sieben Mal. Das ist keine Abstufung, das ist eine Kante.
+   *
+   * Die 39 sind dabei nicht irgendein Vorkommen: Auf 39 Artikelseiten steht
+   * *„Der **Vergleich** bezieht sich auf die Liste unseres Lieferanten"* — der
+   * Satz, der das Verkaufsargument dieses Shops trägt.
+   *
+   * > **Wer Preise vergleicht, ist der Kunde, für den „46 % unter Liste"
+   * > geschrieben ist.**
+   *
+   * „wie" ist ein Funktionswort. Als Phrase-Ausschluss trifft es jede Anfrage,
+   * in der es vorkommt — auch „wie viel XPS 80 mm brauche ich für 100 m²",
+   * also die Planungsfrage, für die dieser Shop seine Systemlisten hat.
+   *
+   * **Warum das ohne Ersatz geht:** Die Keywords stehen auf *Phrase* und
+   * *Exakt* und nennen ein Produkt. Eine Anfrage erreicht die Anzeige nur,
+   * wenn sie den Produktbegriff schon enthält — „XPS 80 mm Vergleich" ist
+   * dann eine Kaufanfrage und keine Lesefrage. Die Absicht, die wirklich
+   * nichts kauft, tragen die spezifischen Wörter, die stehen bleiben:
+   * `anleitung`, `video`, `youtube`, `wikipedia`, `was ist`, `erfahrung`,
+   * `test`.
+   */
+  'Suche ohne Kaufabsicht': ['anleitung', 'video', 'youtube', 'erfahrung', 'test', 'berechnen', 'rechner', 'wikipedia', 'was ist'],
   // **Erweitert am 5. September um die Leistungssuche.** Die Gruppe trug mit
   // „reparatur" schon ein Dienstleistungswort — und übersah die drei, nach
   // denen bei Dämmung und Kamin tatsächlich gesucht wird. Dieser Shop
@@ -1240,11 +1267,45 @@ function main() {
     seitentexte.set(g.gruppe, text);
   }
 
+  /*
+   * **Die Ausschlüsse gegen den eigenen Text — 6. September 2026.**
+   *
+   * Der Kopfkommentar von `NEGATIVE` nennt zwei Bestände, gegen die geprüft
+   * wird: das eigene Liefergebiet und die Keywordliste. Der dritte fehlte —
+   * die Seiten, auf die die Anzeige zeigt. „vergleich" stand 39× darin, in dem
+   * Satz, der das Verkaufsargument trägt.
+   */
+  let eigenerText = '';
+  {
+    const gehe = (o) => {
+      for (const e of readdirSync(o, { withFileTypes: true })) {
+        const pfad = join(o, e.name);
+        if (e.isDirectory()) { gehe(pfad); continue; }
+        if (!e.name.endsWith('.html')) continue;
+        const t = hauptbereichText(readFileSync(pfad, 'utf8'));
+        if (t) eigenerText += ` ${t}`;
+      }
+    };
+    const site = join(WURZEL, 'ausgabe', 'site');
+    if (existsSync(site)) gehe(site);
+  }
+  const ausschlussflaeche = eigenerText
+    ? ausschlussbefund({
+      // Aus `NEGATIVE` und nicht aus der fertigen Zeilenliste: Die entsteht
+      // erst weiter unten, und eine Prüfung, die auf ihre Eingabe wartet,
+      // stünde an der falschen Stelle.
+      ausschluesse: Object.entries(NEGATIVE)
+        .flatMap(([thema, woerter]) => woerter.map((wort) => ({ thema, wort }))),
+      seitentext: eigenerText,
+    })
+    : null;
+
   const textfehler = [
     ...pruefeTexte(alleAnzeigentexte(), gefuehrteEinheiten, gruppenMitLuecke, seitentexte, bauteilJeGruppe),
     ...pruefeTexte(anzeigen, gefuehrteEinheiten, gruppenMitLuecke, seitentexte, bauteilJeGruppe),
     ...pruefeBestellversprechen(anzeigen, ETAPPEN),
     ...textfehlerLandeseite,
+    ...(ausschlussflaeche?.meldungen ?? []).map((m) => `Ausschluss: ${m.text}`),
   ];
   if (textfehler.length) {
     // **Berichtigt am 31.08.** Hier stand „überschreiten die Längengrenzen" —
