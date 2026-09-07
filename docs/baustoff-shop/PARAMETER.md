@@ -31,6 +31,13 @@ mehr zur Diskussion gestellt. Änderungen nur mit ausdrücklicher Freigabe.
 | 31.08. | **`bauversand.com` verwenden** — die Domain ist bei All-Inkl offen | Steht in `data/betreiber.json`; Seiten, Sitemap, `llms.txt` und die finalen URLs der Anzeigen nehmen sie von dort. **Damit ist die Empfehlung `shop.freudenthaler-bau.at` aus `domainwahl.md` abgelöst** — die Zeile darüber nennt nur noch die bestehende Firmendomain. `bauversand-com.md` |
 | 03.09. | **Der Shop tritt als „Bauversand" auf** — nicht unter dem Firmennamen | Steht als `marke` in `data/betreiber.json` und von dort in Logo, Seitentitel, `llms.txt`, im Absender jedes Belegs („Bauversand — Freudenthaler Bau GmbH") und als `name` jeder Organisation der strukturierten Daten, mit `legalName` daneben. **Die Freudenthaler Bau GmbH bleibt die Betreiberin**: Impressum, Belege, `seller` und `publisher`. Das Impressum verbindet beide in einer Zeile. `bestellt-bei-bauversand-rechnung-von-wem.md`, `wer-ist-bauversand.md` |
 
+> **Seit dem 7. September wird diese Tabelle gemessen.** `npm run pruefe-weisungen`
+> liest die acht Weisungen von hier und hält jede gegen den Bestand: sieben
+> wirken an einer benannten Stelle, eine ist offen und als offener Punkt
+> geführt (die hundert Artikel), keine ist vergessen. Geprüft wird die Sache,
+> nicht das Datum — und jeder Eintrag prüft sein Datum mit, weil die Nummern
+> aus der Zeilenfolge dieser Tabelle kommen. `acht-weisungen-ohne-pruefer.md`
+
 ### Was davon die Zahlen weiter unten außer Kraft setzt
 
 - **Die Margenuntergrenze von 32 % gilt nicht mehr.** An ihre Stelle tritt

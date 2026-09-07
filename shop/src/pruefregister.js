@@ -328,6 +328,13 @@ export const PRUEFER = [
     mindestens: 20,
   },
   {
+    name: 'pruefe-weisungen',
+    werkzeug: 'weisungspruefung.mjs',
+    muster: /Weisungsstand — (\d+) Weisungen/,
+    einheit: 'Weisungen des Auftraggebers gegen den Bestand',
+    mindestens: 5,
+  },
+  {
     name: 'pruefe-vorbehalte',
     werkzeug: 'vorbehaltspruefung.mjs',
     muster: /(\d+) Quelldateien angesehen/,

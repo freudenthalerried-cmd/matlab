@@ -1708,6 +1708,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'rechnet weiter, aber die Entscheidung ist im Bestand nicht mehr wiederzufinden — '
       + 'genau der Zustand, den niemand bemerkt, weil nichts davon rot wird.',
   }),
+  Object.freeze({
+    id: 'weisung-nur-noch-im-protokoll',
+    pruefer: 'pruefe-weisungen',
+    was: 'Eine Weisung des Auftraggebers, die aus dem Bestand verschwunden ist',
+    datei: 'shop/src/baustoffkatalog.js',
+    art: 'ersetzen',
+    suchen: 'export const ZIELMARGE = 0.25;',
+    ersetzen: 'export const ZIELMARGE = 1 / 4;',
+    erwartet: /Weisung 3/,
+    warum: 'Der Befund vom 7. September: Acht Weisungen seit dem 22. August, zwei davon haben '
+      + 'frühere Arbeit vollständig umgeworfen — und gehalten hat sie nichts. `pruefe-auftrag` '
+      + 'misst den Ursprungsauftrag vom 9. August, dort endet es. Diese Mutation schreibt '
+      + 'dieselbe Zahl als Bruch: `1 / 4` **ist** 0,25. Gerechnet wird unverändert, kein '
+      + 'Testfall fällt, kein Preis ändert sich — nur die Weisung „25 % ist Marge vom '
+      + 'Verkauf" ist im Bestand nicht mehr wiederzufinden. Der erste Anlauf schrieb '
+      + '`0.2500` und war zu Recht grün: Das Muster stand noch da.',
+  }),
 ]);
 
 /**
