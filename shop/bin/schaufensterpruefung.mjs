@@ -167,6 +167,15 @@ const messwerte = {
   unterListe: befund.unterListe,
   medianVorteil: befund.medianAbstandZurListe,
   anlauf: readFileSync(join(kampagne, 'kampagnen.csv'), 'utf8').trim().split('\n').length - 1,
+  // Die Zahl der Belege schreibt der Katalogerzeuger in `_datenstand` — sie
+  // steht damit in einer verfolgten Datei, obwohl die Rechnungen selbst unter
+  // `preise/` liegen und dort bleiben.
+  belege: Number((/aus (\d+) Lieferantenbelegen/i.exec(katalogDatei._datenstand ?? '') ?? [])[1]) || null,
+  // Gerechnet werden alle Gruppen: die mit Budget und die zurückgestellten.
+  kampagnen: readFileSync(join(kampagne, 'kampagnen.csv'), 'utf8').trim().split('\n').length - 1
+    + (existsSync(join(kampagne, 'spaeter-pruefen.csv'))
+      ? readFileSync(join(kampagne, 'spaeter-pruefen.csv'), 'utf8').trim().split('\n').length - 1
+      : 0),
   cpcKamin: cpc('Kamin'),
   cpcDaemmung: cpc('Dämmung'),
   cpcWdvs: cpc('WDVS'),

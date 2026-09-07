@@ -1601,6 +1601,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'eine Zahl. Diese Mutation lässt vier der sechs Fragen wieder aus dem Plan '
       + 'verschwinden, den der Auftraggeber vor der Budgetfreigabe liest.',
   }),
+  Object.freeze({
+    id: 'lebende-zahl-ohne-anker',
+    pruefer: 'pruefe-schaufenster',
+    was: 'Eine lebende Zahl der Beschreibung, die kein Muster misst',
+    datei: 'shop/src/schaufenster.js',
+    art: 'ersetzen',
+    suchen: "      muster: /aus (\\d+) Lieferantenbelegen/, soll: m.belege },",
+    ersetzen: "      muster: /aus (\\d+) Lieferantenbelegen/, soll: m.belege + 1 },",
+    erwartet: /Lieferantenbelege/,
+    warum: 'Der Befund vom 7. September: Diese Tafel misst, was jemand zu messen angeordnet '
+      + 'hat. Beim Nachzählen aller Zahlen der Beschreibung standen zwei lebende Angaben da, '
+      + 'die kein Muster berührte — die Zahl der Lieferantenbelege und die der gerechneten '
+      + 'Suchkampagnen. Ein Prüfer, der nur die angeordneten Zahlen misst, ist so vollständig '
+      + 'wie die Anordnung. Diese Mutation verschiebt den Sollwert um eins und verlangt, dass '
+      + 'die Zahl wirklich gemessen wird und nicht bloß dasteht.',
+  }),
 ]);
 
 /**

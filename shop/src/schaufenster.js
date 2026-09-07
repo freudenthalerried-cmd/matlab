@@ -96,6 +96,23 @@ export function kennzahlen(messwerte) {
     { name: 'Gruppenseiten', wie: 'ausgabe/site/gruppe/', muster: /, (\d+) Gruppen,/, soll: m.gruppen },
     { name: 'Rechtsseiten', wie: 'ausgabe/site/rechtliches/', muster: /, (\d+) Rechtsseiten/, soll: m.rechtliches },
     { name: 'Gates', wie: 'gate-register.md', muster: /\((\d+) Gates, Stand/, soll: m.gates },
+    /*
+     * **Zwei Zahlen ohne Anker — 7. September 2026.**
+     *
+     * Diese Tafel misst, was jemand zu messen angeordnet hat. Beim Nachzählen
+     * aller Zahlen der Beschreibung standen zwei **lebende** Angaben da, die
+     * kein Muster berührte: die Zahl der Belege, aus denen der Katalog kommt,
+     * und die Zahl der gerechneten Suchkampagnen. Beide sind ableitbar —
+     * die eine aus `_datenstand` der Katalogdatei, die der Erzeuger schreibt,
+     * die andere aus den beiden Kampagnendateien.
+     *
+     * > **Ein Prüfer, der nur die angeordneten Zahlen misst, ist so
+     * > vollständig wie die Anordnung.**
+     */
+    { name: 'Lieferantenbelege', wie: 'data/katalog-baustoff.json (_datenstand)',
+      muster: /aus (\d+) Lieferantenbelegen/, soll: m.belege },
+    { name: 'Gerechnete Kampagnen', wie: 'ausgabe/kampagne/kampagnen.csv + spaeter-pruefen.csv',
+      muster: /\| (\d+) Suchkampagnen gerechnet/, soll: m.kampagnen },
     { name: 'Testfälle', wie: 'node --test', muster: /\*\*über ([\d.]+) Testfälle\*\*/,
       soll: m.tests, art: 'mindestens' },
     // **Gezählt in der Quelle, nicht aus dem Lauf gelesen.** Beide Proben

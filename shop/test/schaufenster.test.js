@@ -164,3 +164,34 @@ test('Das Muster der Leitzahl trifft die Zeile der Beschreibung', () => {
   assert.ok(treffer, 'das Muster findet die Zeile nicht');
   assert.equal(zahlAus(treffer[1]), 43396);
 });
+
+/**
+ * **Zwei Zahlen ohne Anker — 7. September 2026.**
+ *
+ * Diese Tafel misst, was jemand zu messen angeordnet hat. Beim Nachzählen
+ * aller Zahlen der Beschreibung standen zwei **lebende** Angaben da, die kein
+ * Muster berührte: die Zahl der Lieferantenbelege und die Zahl der gerechneten
+ * Suchkampagnen.
+ *
+ * > **Ein Prüfer, der nur die angeordneten Zahlen misst, ist so vollständig
+ * > wie die Anordnung.**
+ */
+test('die Zahl der Lieferantenbelege wird gemessen', () => {
+  const k = kennzahlen({ belege: 15 }).find((x) => x.name === 'Lieferantenbelege');
+  assert.ok(k, 'kein Anker für die Belege');
+  assert.equal(zahlAus(k.muster.exec('Katalog | **46 echte Artikel** aus 15 Lieferantenbelegen')[1]), 15);
+});
+
+test('die Zahl der gerechneten Kampagnen wird gemessen', () => {
+  const k = kennzahlen({ kampagnen: 6 }).find((x) => x.name === 'Gerechnete Kampagnen');
+  assert.ok(k, 'kein Anker für die Kampagnen');
+  assert.equal(zahlAus(k.muster.exec('| Kampagne | 6 Suchkampagnen gerechnet, **3 im ersten Anlauf** |')[1]), 6);
+});
+
+test('beide Anker greifen nur auf ihre eigene Zeile', () => {
+  // Ein Muster, das auch die Nachbarzahl fängt, misst irgendetwas.
+  const belege = kennzahlen({}).find((x) => x.name === 'Lieferantenbelege');
+  assert.equal(belege.muster.exec('aus 15 Rechnungen nicht ableitbar'), null);
+  const kampagnen = kennzahlen({}).find((x) => x.name === 'Gerechnete Kampagnen');
+  assert.equal(kampagnen.muster.exec('6 Suchkampagnen ohne Tafelzeile'), null);
+});
