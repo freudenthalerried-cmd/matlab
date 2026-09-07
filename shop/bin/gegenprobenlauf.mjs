@@ -28,7 +28,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { GEGENPROBEN, OHNE_GEGENPROBE, registerbefund } from '../src/gegenprobenregister.js';
+import { GEGENPROBEN, OHNE_GEGENPROBE, neueMeldungen, registerbefund } from '../src/gegenprobenregister.js';
 import { markiere, nimmAb, offeneMarken, stelleZurueck } from '../src/mutationsschutz.js';
 import { PRUEFER, BROWSERPRUEFER } from '../src/pruefregister.js';
 import { LESER } from '../src/erzeugnisstand.js';
@@ -241,7 +241,18 @@ for (const p of proben) {
         if (nach.gruen) {
           schritte.push('meldete trotz Mutation grün');
           urteil = 'schlägt nicht an';
-        } else if (!p.erwartet.test(nach.ausgabe)) {
+        } else if (!p.erwartet.test(neueMeldungen(vor.ausgabe, nach.ausgabe))) {
+          /*
+           * **Verglichen wird, was neu ist — 7. September 2026.**
+           *
+           * Bis heute stand hier `nach.ausgabe`, also die ganze rote Ausgabe.
+           * Gemessen über das Register passen **34 von 101 Erwartungen schon
+           * auf die grüne** — bei `npm test` fast alle, weil TAP jeden
+           * Testfall beim Namen nennt, ob er durchläuft oder nicht. Eine
+           * Erwartung, die auch auf Grün passt, sagt nur, dass es rot ist,
+           * nicht warum: Die dritte Zusicherung war für ein Drittel der
+           * Einträge dieselbe Aussage wie die vorige.
+           */
           schritte.push(`meldete rot, aber nicht wegen ${p.erwartet} — er hat etwas anderes gefunden`);
           urteil = 'falsche Meldung';
         } else {

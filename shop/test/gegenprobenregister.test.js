@@ -1,6 +1,7 @@
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
-import { GEGENPROBEN, OHNE_GEGENPROBE, ARTEN, registerbefund, suchtextbefund } from '../src/gegenprobenregister.js';
+import { GEGENPROBEN, OHNE_GEGENPROBE, ARTEN, neueMeldungen, registerbefund, suchtextbefund } from '../src/gegenprobenregister.js';
 import { PRUEFER } from '../src/pruefregister.js';
 
 test('Jede Gegenprobe nennt Prüfer, Datei, Erwartung und Grund', () => {
@@ -74,7 +75,13 @@ test('Jeder Suchtext trifft genau die Stelle, die gemeint ist', async () => {
   //
   // Der volle Gegenprobenlauf braucht zwanzig Minuten und findet es erst dort.
   // Hier kostet dieselbe Auskunft Sekunden: gelesen wird nur, gemutet nichts.
-  const { readFileSync } = await import('node:fs');
+  //
+  // **Ausgenommen ist, was gerade selbst mutiert wird.** Läuft eine Gegenprobe,
+  // steht ihre Datei mit ersetztem Suchtext da — dieser Fall meldete dann
+  // `suchtext-passt-nicht` über eine Stelle, die es in einer Minute wieder
+  // gibt. Der Mutationszettel sagt, welche Datei das gerade ist.
+  const { readFileSync, existsSync } = await import('node:fs');
+  const { markenpfad } = await import('../src/mutationsschutz.js');
   const wurzel = new URL('../../', import.meta.url);
   const lies = (datei) => {
     try {
@@ -83,7 +90,8 @@ test('Jeder Suchtext trifft genau die Stelle, die gemeint ist', async () => {
       return null;
     }
   };
-  const b = suchtextbefund({ lies });
+  const unterMutation = (datei) => existsSync(markenpfad(fileURLToPath(new URL(datei, wurzel))));
+  const b = suchtextbefund({ lies, unterMutation });
   assert.ok(b.geprueft >= 80, `nur ${b.geprueft} ersetzende Proben — die Schleife prüfte fast nichts`);
   assert.deepEqual(b.meldungen.map((m) => m.text), [], 'ein Suchtext trifft nicht die gemeinte Stelle');
 });
@@ -109,6 +117,13 @@ test('Ein zweimal passender Suchtext fällt auf, ein gewollt mehrfacher nicht', 
   const weg = suchtextbefund({ proben: eine({}), lies: () => null });
   assert.deepEqual(weg.meldungen.map((m) => m.regel), ['datei-fehlt']);
 
+  // Was gerade selbst mutiert wird, zählt nicht mit: Der Suchtext ist dort
+  // ersetzt, und das ist kein Befund, sondern der Zweck der Mutation.
+  const wegen = suchtextbefund({ proben: eine({}), lies: () => 'grün', unterMutation: () => true });
+  assert.deepEqual(wegen.meldungen, []);
+  assert.deepEqual(wegen.uebersprungen, ['x']);
+  assert.equal(wegen.geprueft, 0);
+
   // Anhängende Proben haben keinen Suchtext — sie werden nicht gezählt.
   const anhaengen = suchtextbefund({
     proben: eine({ art: 'anhaengen', text: 'x', suchen: undefined, ersetzen: undefined }),
@@ -116,4 +131,22 @@ test('Ein zweimal passender Suchtext fällt auf, ein gewollt mehrfacher nicht', 
   });
   assert.equal(anhaengen.geprueft, 0);
   assert.equal(anhaengen.sauber, true);
+});
+
+test('Verglichen wird, was in der roten Ausgabe neu ist', () => {
+  // Bis zum 7. September prüfte der Läufer die Erwartung gegen die **ganze**
+  // rote Ausgabe. Gemessen passten 34 von 101 Erwartungen schon auf die
+  // grüne — bei TAP fast alle, weil dort jeder Testfall beim Namen steht, ob
+  // er durchläuft oder nicht. Eine Erwartung, die auch auf Grün passt, sagt
+  // nur, dass es rot ist, nicht warum.
+  const gruen = 'ok 1 - der Preis steht\nok 2 - die Fracht steht\n# duration_ms 12';
+  const rot = 'ok 1 - der Preis steht\nnot ok 2 - die Fracht steht\n# duration_ms 19';
+  const neu = neueMeldungen(gruen, rot);
+
+  assert.match(neu, /not ok 2 - die Fracht steht/, 'die Fundzeile fehlt');
+  assert.doesNotMatch(neu, /ok 1 - der Preis steht/, 'eine Zeile, die schon grün dastand, zählt nicht');
+  assert.equal(neueMeldungen(gruen, gruen), '', 'ohne Unterschied bleibt nichts übrig');
+
+  // Einrückung verschiebt sich zwischen zwei Läufen — verglichen wird beschnitten.
+  assert.equal(neueMeldungen('  a\nb', 'a\n   b'), '');
 });

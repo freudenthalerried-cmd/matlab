@@ -71,7 +71,11 @@ export const GEGENPROBEN = Object.freeze([
     datei: 'docs/baustoff-shop/weg-zum-ersten-verkauf-nachgerechnet.md',
     art: 'anhaengen',
     text: '\n\nDie Frachtpauschale steht auf jedem Beleg.\n',
-    erwartet: /fracht-auf-jedem-beleg/,
+    // Nicht die Regel-Kennung: Die steht auch in der **grünen** Ausgabe, weil der
+    // Prüfer sein Register aufzählt. Gemessen am 7. September war das eine von 34
+    // solchen Erwartungen. Die Fundzeile nennt Datei und Zeilennummer — die gibt
+    // es ohne die Mutation nicht.
+    erwartet: /weg-zum-ersten-verkauf-nachgerechnet\.md:\d+/,
     warum: 'Die Aussage ist am 27.08. zurückgenommen worden; sie stand danach noch '
       + 'sechs Tage im Warenkorb, weil der Prüfer die Datei nicht las.',
   }),
@@ -1479,7 +1483,10 @@ export const GEGENPROBEN = Object.freeze([
     baueVorher: true,
     suchen: "  return lieferanten <= 1",
     ersetzen: "  return false",
-    erwartet: /mehrere-lieferungen-ohne-zweiten-lieferanten|verspricht mehrere Lieferungen|Lieferseite/,
+    // Gemessen am 7. September: Die Mutation lässt genau diesen Testfall fallen. Der
+    // Korpusfall über die gebauten Seiten fällt **nicht** — die Seiten entstehen aus
+    // derselben mutierten Quelle, Seite und Prüfer sind sich einig.
+    erwartet: /bei einem Lieferanten sagt der Satz/,
     warum: 'Der Zustand vom 6. September: Vier Stellen sagten „Werden mehrere Hersteller '
       + 'bestellt, entstehen mehrere Lieferungen, und die Grenze gilt für jede einzelne" — der '
       + 'Katalog führt 46 Artikel von einem Lieferanten, und der Rechenkern teilt nach '
@@ -1661,6 +1668,24 @@ export const GEGENPROBEN = Object.freeze([
       + 'Mutation nimmt `alle: true` bei einer Probe weg, deren Suchtext zweimal in '
       + '`website.mjs` steht — genau die Lage, die niemandem auffiel.',
   }),
+  Object.freeze({
+    id: 'erwartung-gegen-die-ganze-ausgabe',
+    pruefer: 'test',
+    was: 'Ein Vergleich, der die schon grün dastehenden Zeilen mitzählt',
+    datei: 'shop/src/gegenprobenregister.js',
+    art: 'ersetzen',
+    suchen: '  const bekannt = new Set(vorher.split(\'\\n\').map((z) => z.trim()));\n'
+      + '  return nachher.split(\'\\n\').filter((z) => !bekannt.has(z.trim())).join(\'\\n\');',
+    ersetzen: '  return nachher;',
+    erwartet: /Verglichen wird, was in der roten Ausgabe neu ist/,
+    warum: 'Der Befund vom 7. September: Der Läufer sichert zu, der Prüfer melde rot **und '
+      + 'nenne die erwartete Stelle** — verglichen wurde gegen die ganze rote Ausgabe. '
+      + 'Gemessen passen 34 von 101 Erwartungen schon auf die grüne, bei `npm test` fast '
+      + 'alle, weil TAP jeden Testfall beim Namen nennt. Eine Erwartung, die auch auf Grün '
+      + 'passt, sagt nur, dass es rot ist, nicht warum. Diese Mutation gibt die ganze '
+      + 'Ausgabe zurück und stellt damit genau den Zustand her, der ein Drittel der '
+      + 'Zusicherungen wertlos machte.',
+  }),
 ]);
 
 /**
@@ -1684,6 +1709,36 @@ export const OHNE_GEGENPROBE = Object.freeze([
 
 
 /**
+ * Was in der roten Ausgabe steht und in der grünen nicht stand.
+ *
+ * **Der Befund vom 7. September.** Der Läufer sichert vier Dinge zu, und das
+ * dritte lautet: Der Prüfer meldet rot **und nennt die erwartete Stelle**.
+ * Geprüft wurde das gegen die **ganze** rote Ausgabe. Gemessen über das
+ * Register passen aber **34 von 101 Erwartungen schon auf die grüne** — bei
+ * `npm test` sogar fast alle, weil TAP jeden Testfall beim Namen nennt, ob er
+ * nun durchläuft oder nicht.
+ *
+ * > **Eine Erwartung, die auch auf Grün passt, sagt nur, dass es rot ist —
+ * > nicht, warum.**
+ *
+ * Verglichen wird deshalb, was **neu** ist. Bei einem Testlauf ist das die
+ * Zeile `not ok … — <Name>` (in Grün stand dort `ok`), bei einem Prüfer die
+ * Fundzeile. Der Rest der Ausgabe zählt nicht mehr, und damit misst die
+ * Erwartung wieder das, wofür sie da ist.
+ *
+ * Verglichen wird zeilenweise und beschnitten, weil Einrückung und
+ * Zeilennummern sich zwischen zwei Läufen ohnehin verschieben.
+ *
+ * @param {string} vorher   Ausgabe des grünen Laufs
+ * @param {string} nachher  Ausgabe des roten Laufs
+ * @returns {string} nur die hinzugekommenen Zeilen
+ */
+export function neueMeldungen(vorher, nachher) {
+  const bekannt = new Set(vorher.split('\n').map((z) => z.trim()));
+  return nachher.split('\n').filter((z) => !bekannt.has(z.trim())).join('\n');
+}
+
+/**
  * Passt jeder Suchtext genau dorthin, wo er gemeint ist?
  *
  * **Der Anlass, 7. September 2026.** Beim Schreiben einer neuen Gegenprobe
@@ -1704,14 +1759,31 @@ export const OHNE_GEGENPROBE = Object.freeze([
  * Fundstellen fallen, weil eine halbe Mutation den Prüfer zu Recht grün
  * melden lässt.
  *
+ * **Nachtrag vom selben Tag.** Während eine Gegenprobe läuft, steht die Datei,
+ * die sie mutiert, nicht so da wie im Register — der Suchtext ist gerade
+ * ersetzt. Dieser Prüfer schlug deshalb bei **jeder fremden Mutation** an und
+ * meldete `suchtext-passt-nicht` über eine Stelle, die es in einer Minute
+ * wieder gibt. Gefunden hat das die schärfere Regel dieser Runde: Der Testlauf
+ * ging rot, und zwar an einer Zeile, die mit der geprüften Mutation nichts zu
+ * tun hatte.
+ *
+ * > **Ein Prüfer, der den Bestand liest, während ein anderer ihn absichtlich
+ * > verstellt, misst die Verstellung.**
+ *
+ * Übersprungen wird deshalb, was einen offenen Mutationszettel trägt — und nur
+ * das: Der Zettel liegt genau so lange, wie die Mutation steht.
+ *
  * @param {object} eingabe
  * @param {object[]} eingabe.proben
  * @param {(datei: string) => string|null} eingabe.lies  Dateiinhalt oder null
+ * @param {(datei: string) => boolean} [eingabe.unterMutation]  trägt einen offenen Zettel
  */
-export function suchtextbefund({ proben = GEGENPROBEN, lies }) {
+export function suchtextbefund({ proben = GEGENPROBEN, lies, unterMutation = () => false }) {
   const meldungen = [];
+  const uebersprungen = [];
   for (const p of proben) {
     if (p.art !== 'ersetzen') continue;
+    if (unterMutation(p.datei)) { uebersprungen.push(p.id); continue; }
     const text = lies(p.datei);
     if (text === null) {
       meldungen.push({ regel: 'datei-fehlt', id: p.id, text: `${p.id}: ${p.datei} gibt es nicht` });
@@ -1735,7 +1807,12 @@ export function suchtextbefund({ proben = GEGENPROBEN, lies }) {
       });
     }
   }
-  return { geprueft: proben.filter((p) => p.art === 'ersetzen').length, meldungen, sauber: meldungen.length === 0 };
+  return {
+    geprueft: proben.filter((p) => p.art === 'ersetzen').length - uebersprungen.length,
+    uebersprungen,
+    meldungen,
+    sauber: meldungen.length === 0,
+  };
 }
 
 /** Was das Register über sich selbst weiß. */
