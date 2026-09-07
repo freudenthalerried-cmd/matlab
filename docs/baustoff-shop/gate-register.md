@@ -48,6 +48,15 @@ Seither kamen Gate 25 (Mindestbestellwert, 3. September), Gate 26
 5. September) und Gate 28 (Abholung nicht zugesagt, 6. September) hinzu; die
 Überschrift ist mitgezählt worden.*
 
+> **Seit dem 7. September wird dieser Abschnitt gemessen.** `npm run pruefe-gates`
+> liest die Gates von hier und hält jede Entscheidung gegen den Bestand: zwölf
+> haben eine nachgewiesene Spur — eine Datei und ein Muster, das verschwindet,
+> wenn die Entscheidung zurückgenommen wird —, sechzehn stehen mit Grund ohne
+> Spur, weil sie dem Radon- oder dem Leadmodell gehören oder das Verfahren
+> regeln. Geprüft wird die Sache, nicht die Nummer: Ein Prüfer, der nach
+> „Gate 25" sucht, misst nur, ob jemand die Nummer in einen Kommentar
+> geschrieben hat.
+
 ### Lieferantenseite — alle drei hängen an einer einzigen Freigabe
 
 | Nr. | Entscheidung | Stand | Festgelegt in |

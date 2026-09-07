@@ -1686,6 +1686,28 @@ export const GEGENPROBEN = Object.freeze([
       + 'Ausgabe zurück und stellt damit genau den Zustand her, der ein Drittel der '
       + 'Zusicherungen wertlos machte.',
   }),
+  Object.freeze({
+    id: 'gate-nur-noch-im-protokoll',
+    pruefer: 'pruefe-gates',
+    was: 'Eine Gate-Entscheidung, die aus dem Bestand verschwunden ist',
+    datei: 'shop/src/shopkern.js',
+    art: 'ersetzen',
+    // **Die Mutation nimmt das `export`, nicht den Namen.** Der erste Anlauf
+    // benannte um — und `pruefe-ungerufen` hielt daraufhin
+    // `untergrenzeFuerDenKorb` für eine Ausfuhr **dieser** Datei, weil der
+    // Ersetzungstext die Zeile wörtlich mitführt. Ein Register, das Quelltext
+    // zitiert, ist Quelltext. Dieselbe Falle wie bei den Gate-Mustern, am
+    // selben Tag, eine Stunde später.
+    suchen: 'export function mindestbestellwertKunde(',
+    ersetzen: 'function mindestbestellwertKunde(',
+    erwartet: /Gate 25/,
+    warum: 'Der Befund vom 7. September: Achtundzwanzig Gates, und nichts hielt sie gegen '
+      + 'den Bestand. Ein Gate ist die stärkste Festlegung dieses Vorhabens — eine '
+      + 'Entscheidung, die nur im Protokoll steht, ist eine Absichtserklärung. Diese '
+      + 'Mutation benennt die Stelle um, an der Gate 25 wirkt: Der Mindestbestellwert '
+      + 'rechnet weiter, aber die Entscheidung ist im Bestand nicht mehr wiederzufinden — '
+      + 'genau der Zustand, den niemand bemerkt, weil nichts davon rot wird.',
+  }),
 ]);
 
 /**

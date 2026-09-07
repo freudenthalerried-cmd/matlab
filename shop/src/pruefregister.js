@@ -321,6 +321,13 @@ export const PRUEFER = [
     mindestens: 3,
   },
   {
+    name: 'pruefe-gates',
+    werkzeug: 'gatepruefung.mjs',
+    muster: /Gate-Stand — (\d+) Gates/,
+    einheit: 'Gate-Entscheidungen gegen den Bestand',
+    mindestens: 20,
+  },
+  {
     name: 'pruefe-vorbehalte',
     werkzeug: 'vorbehaltspruefung.mjs',
     muster: /(\d+) Quelldateien angesehen/,
