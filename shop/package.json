@@ -62,6 +62,7 @@
     "pruefe-koerbe": "node bin/koerbepruefung.mjs",
     "pruefe-gates": "node bin/gatepruefung.mjs",
     "pruefe-weisungen": "node bin/weisungspruefung.mjs",
+    "pruefe-zahlen": "node bin/zahlenpruefung.mjs",
     "pruefe-vorbehalte": "node bin/vorbehaltspruefung.mjs",
     "pr-text": "node bin/prtext.mjs",
     "pruefe-schaufenster": "node bin/schaufensterpruefung.mjs",

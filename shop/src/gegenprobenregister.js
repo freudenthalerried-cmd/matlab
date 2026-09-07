@@ -1725,6 +1725,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'Verkauf" ist im Bestand nicht mehr wiederzufinden. Der erste Anlauf schrieb '
       + '`0.2500` und war zu Recht grün: Das Muster stand noch da.',
   }),
+  Object.freeze({
+    id: 'zahl-auf-der-seite-ohne-fundstelle',
+    pruefer: 'pruefe-zahlen',
+    was: 'Eine belegte Aussage, die aus dem Quellenregister fällt',
+    datei: 'shop/inhalte/quellen.json',
+    art: 'ersetzen',
+    suchen: 'Füllungsgrad höchstens 70 % beträgt',
+    ersetzen: 'Füllungsgrad nicht überschritten wird',
+    erwartet: /70 %/,
+    warum: 'Der Befund vom 7. September: `pruefe-quellen` meldete „6 von 6 belegt" — eine '
+      + 'Aussage über das Register, nicht über die Seiten. Von der anderen Seite gemessen '
+      + 'standen vier Zahlen ohne Eintrag da, und alle vier nannten ihre Quelle im laufenden '
+      + 'Satz. Diese Mutation nimmt die Zahl aus der nachgetragenen Aussage heraus: Die '
+      + 'Fundstelle bleibt im Register stehen, die Zahl auf der Seite verliert sie — genau '
+      + 'der Zustand, den sechs Wochen lang niemand gesehen hat.',
+  }),
 ]);
 
 /**

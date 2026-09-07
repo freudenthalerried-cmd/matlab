@@ -335,6 +335,13 @@ export const PRUEFER = [
     mindestens: 5,
   },
   {
+    name: 'pruefe-zahlen',
+    werkzeug: 'zahlenpruefung.mjs',
+    muster: /Inhaltsseiten — \d+ Seiten, (\d+) Zahlen mit Einheit/,
+    einheit: 'Zahlen der Inhaltsseiten gegen ihre Fundstelle',
+    mindestens: 10,
+  },
+  {
     name: 'pruefe-vorbehalte',
     werkzeug: 'vorbehaltspruefung.mjs',
     muster: /(\d+) Quelldateien angesehen/,

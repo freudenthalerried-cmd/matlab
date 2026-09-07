@@ -121,6 +121,18 @@
       "text": "Verjüngungen in Fließrichtung sind nicht zulässig.",
       "quellen": ["oenorm-b2501"],
       "notiz": "Abschnitt 5.7.1."
+    },
+    {
+      "id": "a-kanal-fuellungsgrad",
+      "text": "Die Mindestgefälle dürfen nur unterschritten werden, wenn rechnerisch nachgewiesen ist, dass die Fließgeschwindigkeit 1 m/s nicht unterschreitet und der Füllungsgrad höchstens 70 % beträgt.",
+      "quellen": ["oenorm-b2501"],
+      "notiz": "Abschnitt 5.7.1, dieselbe Fundstelle wie die Gefällewerte zwei Zeilen darüber. Am 07.09. nachgetragen: Die Seite nannte die Fundstelle im laufenden Satz, das Register kannte die Aussage nicht."
+    },
+    {
+      "id": "a-kanal-bogenradius",
+      "text": "Die Begrenzung auf Einzelbögen bis 45° entfällt erst bei einem Bogenradius ab 500 mm.",
+      "quellen": ["oenorm-b2501"],
+      "notiz": "Abschnitt 5.7.1. Gehört zu a-kanal-bogen und war bis zum 07.09. nicht eingetragen — dieselbe Fundstelle, halb verzeichnet."
     }
   ]
 }
