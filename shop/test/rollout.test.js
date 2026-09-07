@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { rolloutplan, ETAPPEN, vorgaenger, pruefeEtappen } from '../src/rollout.js';
+import { rolloutplan, ETAPPEN, vorgaenger, pruefeEtappen, planzahlbefund } from '../src/rollout.js';
 import { abbruchschwelle } from '../src/werbewirkung.js';
+import { FRAGEN } from '../src/lieferantenanfrage.js';
 
 const HAUPT = { tagesbudget: 9.99, klickpreis: 1.5, quote: 0.01 };
 
@@ -156,4 +157,57 @@ test('Das Lieferantengespräch beginnt nicht vor dem Impressum', () => {
   assert.ok(vorgaenger(gespraech).includes('impressum'));
   assert.ok(gespraech.beginntTag >= impressum.fertigTag,
     `das Gespräch beginnt an Tag ${gespraech.beginntTag}, das Impressum ist an Tag ${impressum.fertigTag} fertig`);
+});
+
+/**
+ * **Die Aufzählung des Plans — 7. September 2026.**
+ *
+ * Die Etappe „Ein Gespräch mit dem Lieferanten" zählte auf, was das Gespräch
+ * löst. Am 3. September war daraus schon eine **Zahl** entfernt worden („Löst
+ * acht offene Punkte"), weil sie ablief; die **Aufzählung** blieb von Hand und
+ * lief am 6. September ab, als die sechste Frage dazukam.
+ *
+ * > **Eine Aufzählung ist auch eine Zahl.**
+ */
+test('der Plan nennt jede Frage, die der Brief an den Lieferanten stellt', () => {
+  const b = planzahlbefund();
+  assert.deepEqual(b.meldungen.map((m) => m.text), []);
+});
+
+test('eine fehlende Frage wird gemeldet', () => {
+  const b = planzahlbefund(ETAPPEN, [
+    ...FRAGEN,
+    { id: 'neu', titel: 'Eine Frage, die im Plan nicht steht' },
+  ]);
+  const m = b.meldungen.find((x) => x.regel === 'frage-fehlt-im-plan');
+  assert.ok(m, 'die Meldung fehlt');
+  assert.equal(m.wo, 'neu');
+});
+
+test('eine gezählte Menge im Plan wird gemeldet', () => {
+  const b = planzahlbefund([{
+    id: 'probe',
+    titel: 'Suchvolumen der 32 Keywords messen',
+    ergebnis: 'x',
+    brauchtVor: [],
+  }], []);
+  assert.ok(b.meldungen.some((m) => m.regel === 'gezaehlte-menge-im-plan'));
+});
+
+test('eine Zielzahl ist keine gezählte Menge', () => {
+  // „Auf mindestens 100 Artikel erweitern" ist die Weisung des Auftraggebers.
+  // Sie läuft nicht ab, sie wird erfüllt — im Unterschied zu „die 32
+  // Keywords", die behauptet, wie viele es gibt.
+  const b = planzahlbefund([{
+    id: 'probe',
+    titel: 'Katalog auf mindestens 100 Artikel erweitern',
+    ergebnis: 'x',
+    brauchtVor: [],
+  }], []);
+  assert.deepEqual(b.meldungen.filter((m) => m.regel === 'gezaehlte-menge-im-plan'), []);
+});
+
+test('fehlt die Etappe, meldet der Prüfer das und nicht die Fragen', () => {
+  const b = planzahlbefund([], FRAGEN);
+  assert.ok(b.meldungen.some((m) => m.regel === 'etappe-fehlt'));
 });

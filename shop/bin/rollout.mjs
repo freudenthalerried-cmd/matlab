@@ -15,10 +15,15 @@
  * steht hier noch einmal.
  */
 
-import { rolloutplan, ETAPPEN, pruefeEtappen , HAUPTFALL } from '../src/rollout.js';
+import { existsSync, readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+import { rolloutplan, ETAPPEN, pruefeEtappen, planzahlbefund, HAUPTFALL } from '../src/rollout.js';
 import { ZUSTAENDIGKEITEN } from '../src/offenepunkte.js';
 import { planbefund } from '../src/bereitschaftsplan.js';
 import { startklar } from '../src/startklar.js';
+
+const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 
 const MARKT = [0.5, 1.5, 2.5];
 const QUOTEN = [0.02, 0.01, 0.005];
@@ -43,6 +48,21 @@ if (formfehler.length > 0) {
   console.error(`Abbruch: ${formfehler.length} Etappe(n) ohne belastbaren Grund.\n`);
   for (const f of formfehler) console.error(`  \u2717 ${f}`);
   console.error('\nEine fehlende Abhängigkeit verkürzt die Kette und sieht aus wie ein guter Plan.');
+  process.exit(2);
+}
+
+/*
+ * **Die Zahlen und Aufzählungen des Plans — 7. September 2026.** Der Plan ist
+ * das Papier, das der Auftraggeber vor der Budgetfreigabe liest. Eine
+ * Aufzählung darin, die von Hand geführt wird, läuft ab wie eine Zahl: Am
+ * 6. September kam die sechste Frage an den Lieferanten dazu, und die Zeile
+ * hat es nicht gemerkt.
+ */
+const zahlen = planzahlbefund();
+if (!zahlen.sauber) {
+  console.error('Abbruch: Der Plan nennt etwas, das ein Register führt.\n');
+  for (const m of zahlen.meldungen) console.error(`  \u2717 ${m.text}`);
+  console.error('\nEine Aufzählung ist auch eine Zahl — sie gehört dorthin, wo sie gemessen wird.');
   process.exit(2);
 }
 
@@ -93,6 +113,28 @@ for (const e of r.plan) {
   console.log(`               ${dauer} (${artZeichen[e.art]}) · ${ZUSTAENDIGKEITEN[e.zustaendig].titel}`);
   console.log(`               Gate: ${e.gate ?? e.warumKeinGate}`);
   console.log(`               ${e.ergebnis}`);
+  /*
+   * **Die Zahl kommt aus der Messung, nicht aus dem Plan — 7. September 2026.**
+   *
+   * Die Etappe hieß „Suchvolumen der **32** Keywords messen". Die Messliste
+   * führt 30, seit am 1. und 6. September Keywords entfallen sind. Der Plan
+   * sagt seither, **was** zu tun ist; wie viele es sind, sagt diese Zeile —
+   * gezählt in der Datei, die der Auftraggeber am Messtag vor sich hat.
+   */
+  if (e.id === 'keywordmessung') {
+    const datei = join(SHOP, 'ausgabe', 'messliste-baustoff.json');
+    if (existsSync(datei)) {
+      try {
+        const liste = JSON.parse(readFileSync(datei, 'utf8'));
+        const gruppen = liste.gruppen ?? liste.cluster ?? [];
+        const begriffe = gruppen.reduce((n, g) => n + (g.keywords ?? []).length, 0);
+        if (begriffe > 0) {
+          console.log(`               Gemessen wird die Liste aus \`npm run messliste\`: `
+            + `${begriffe} Begriffe in ${gruppen.length} Anzeigengruppen.`);
+        }
+      } catch { /* eine unlesbare Liste ist kein Grund, den Plan nicht auszugeben */ }
+    }
+  }
   for (const v of e.brauchtVor) {
     // Der Grund steht mit: Eine Abhängigkeit ohne ihn ist die Sorte Zeile, die
     // niemand prüft, weil sie plausibel aussieht.

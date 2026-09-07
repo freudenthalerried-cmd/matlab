@@ -1585,6 +1585,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'Artikelseiten wieder weg, also der Hälfte, bei der der Pfad am meisten trägt: Er '
       + 'nennt die Warengruppe, in der der Artikel steht.',
   }),
+  Object.freeze({
+    id: 'eine-aufzaehlung-die-ablaeuft',
+    pruefer: 'test',
+    was: 'Eine Aufzählung im Plan, die eine Frage des Briefes nicht mehr kennt',
+    datei: 'shop/src/rollout.js',
+    art: 'ersetzen',
+    suchen: '      FRAGEN.map((f) => f.titel).join(\'; \')}.`,',
+    ersetzen: '      FRAGEN.slice(0, 2).map((f) => f.titel).join(\'; \')}.`,',
+    erwartet: /frage-fehlt-im-plan|der Plan nennt/,
+    warum: 'Der Fall vom 7. September: Die Etappe „Ein Gespräch mit dem Lieferanten" zählte '
+      + 'von Hand auf, was das Gespräch löst. Am 3. September war daraus schon eine Zahl '
+      + 'entfernt worden („Löst acht offene Punkte"), weil sie ablief — die Aufzählung blieb '
+      + 'und lief am 6. September ab, als die sechste Frage dazukam. Eine Aufzählung ist auch '
+      + 'eine Zahl. Diese Mutation lässt vier der sechs Fragen wieder aus dem Plan '
+      + 'verschwinden, den der Auftraggeber vor der Budgetfreigabe liest.',
+  }),
 ]);
 
 /**

@@ -227,6 +227,16 @@ export const LESER = Object.freeze([
    * Erzeugnis. Eine Weigerung wäre hier trotzdem falsch, siehe Grund.
    */
   Object.freeze({
+    werkzeug: 'bin/rollout.mjs',
+    erzeugnis: null,
+    warumOhnePruefung: 'Der Plan liest seit dem 7. September `ausgabe/messliste-baustoff.json` — '
+      + 'aber nur, um die Zahl der Begriffe zu **nennen**, statt sie im Titel der Etappe '
+      + 'mitzuführen, wo sie ablief. Eine Weigerung über einer alten Messliste ließe den '
+      + 'Auftraggeber ohne Plan dastehen, und der Plan hängt an keiner ihrer Zahlen: Fehlt die '
+      + 'Datei oder ist sie unlesbar, entfällt die eine Zeile und der Rest steht. Wie frisch '
+      + 'der Bau ist, sagt `pruefe-erzeugnis` im selben Lauf.',
+  }),
+  Object.freeze({
     werkzeug: 'bin/abnahmeliste.mjs',
     erzeugnis: null,
     warumOhnePruefung: 'Sie druckt, was nach dem Hochladen im Browser nachzusehen ist — und '

@@ -30,6 +30,9 @@
  */
 
 import { abbruchschwelle, TAGE_JE_MONAT } from './werbewirkung.js';
+// Die Fragen des Briefes — damit der Plan nennt, was das Gespräch wirklich
+// schließt, und nicht, was beim Schreiben dieser Zeile gerade darin stand.
+import { FRAGEN } from './lieferantenanfrage.js';
 
 /**
  * Die Etappen. `brauchtVor` ist die Abhängigkeit, nicht die Reihenfolge —
@@ -131,13 +134,24 @@ export const ETAPPEN = Object.freeze([
     art: 'fremdbestimmt',
     woher: 'Angenommene Antwortzeit eines Baustoffhändlers auf eine Kundenanfrage. '
       + 'Keine Messung — die Zahl ist ein Platzhalter, den eine Terminzusage ersetzt.',
-    // Ohne Zahl, absichtlich. Hier stand „Löst acht offene Punkte" — am
-    // 3. September waren es neun, weil die Palettenfrage dazukam, und die
-    // Zeile hätte es nicht gemerkt. Die Zahl führt `npm run offenepunkte`;
-    // dieser Plan nennt, **was** das Gespräch löst, nicht wie viel.
-    ergebnis: 'Löst die offenen Punkte der Gruppe „Anfrage" auf einmal: Lieferzeit, '
-      + 'Preisrhythmus, Liefergebiet, Palettenzahl und — über eine Artikelliste mit '
-      + 'EAN-Spalte — GTIN, Marke und Bild.',
+    /*
+     * Ohne Zahl, absichtlich. Hier stand „Löst acht offene Punkte" — am
+     * 3. September waren es neun, weil die Palettenfrage dazukam, und die
+     * Zeile hätte es nicht gemerkt. Die Zahl führt `npm run offenepunkte`;
+     * dieser Plan nennt, **was** das Gespräch löst, nicht wie viel.
+     *
+     * **Und die Aufzählung ebenso — 7. September 2026.** Die Zahl war
+     * herausgenommen, die Liste blieb von Hand: „Lieferzeit, Preisrhythmus,
+     * Liefergebiet, Palettenzahl und … GTIN, Marke und Bild". Am 6. September
+     * kam die sechste Frage dazu (Abholung durch unsere Kunden, Gate 28), und
+     * die Zeile hat es nicht gemerkt — derselbe Fehler eine Ebene tiefer.
+     *
+     * > **Eine Aufzählung ist auch eine Zahl.**
+     *
+     * Sie kommt jetzt aus `FRAGEN`: Was im Brief steht, steht im Plan.
+     */
+    ergebnis: `Löst die offenen Punkte der Gruppe „Anfrage" auf einmal — ${
+      FRAGEN.map((f) => f.titel).join('; ')}.`,
     gate: 'Gate 6 und Gate 23',
   }),
   Object.freeze({
@@ -172,7 +186,11 @@ export const ETAPPEN = Object.freeze([
   }),
   Object.freeze({
     id: 'keywordmessung',
-    titel: 'Suchvolumen der 32 Keywords im Liefergebiet messen',
+    // **Ohne Zahl seit dem 7. September.** Hier stand „der 32 Keywords" — die
+    // Messliste führt 30, seit am 1. und 6. September Keywords entfallen sind.
+    // Wie viele es sind, sagt das Werkzeug beim Ausgeben; der Plan sagt, was
+    // zu tun ist.
+    titel: 'Suchvolumen der geführten Keywords im Liefergebiet messen',
     zustaendig: 'entscheidung',
     brauchtVor: [],
     warumOhneVoraussetzung: 'Ein kostenloses Ads-Konto ohne geschaltete Kampagne. Es hängt an '
@@ -572,6 +590,75 @@ export function pruefeEtappen(etappen = ETAPPEN) {
   }
   return befunde;
 }
+
+/**
+ * Nennt der Plan, was das Gespräch wirklich löst — und keine Zahl, die er
+ * nicht messen kann?
+ *
+ * **Der Anlass, 7. September 2026.** Die Etappe „Ein Gespräch mit dem
+ * Lieferanten" trug den Satz *„Löst die offenen Punkte der Gruppe ‚Anfrage'
+ * auf einmal: Lieferzeit, Preisrhythmus, Liefergebiet, Palettenzahl und —
+ * über eine Artikelliste mit EAN-Spalte — GTIN, Marke und Bild."* Am
+ * 3. September war schon einmal eine **Zahl** daraus entfernt worden („Löst
+ * acht offene Punkte"), weil sie ablief. Die **Aufzählung** blieb von Hand —
+ * und lief am 6. September ab, als die sechste Frage dazukam.
+ *
+ * > **Eine Aufzählung ist auch eine Zahl.**
+ *
+ * @param {object[]} [etappen]
+ * @param {object[]} [fragen]  die Fragen des Lieferantenbriefs
+ */
+export function planzahlbefund(etappen = ETAPPEN, fragen = FRAGEN) {
+  const meldungen = [];
+
+  const gespraech = etappen.find((e) => e.id === 'lieferantengespraech');
+  if (!gespraech) {
+    meldungen.push({ regel: 'etappe-fehlt', text: 'die Etappe „lieferantengespraech" gibt es nicht' });
+  } else {
+    for (const f of fragen) {
+      if (!String(gespraech.ergebnis ?? '').includes(f.titel)) {
+        meldungen.push({
+          regel: 'frage-fehlt-im-plan',
+          wo: f.id,
+          text: `der Plan nennt „${f.titel}" nicht — der Brief stellt die Frage`,
+        });
+      }
+    }
+  }
+
+  /*
+   * Und keine gezählte Menge in Titel oder Ergebnis: „32 Keywords", „acht
+   * offene Punkte", „46 Artikel". Solche Zahlen führt ein Register, und der
+   * Plan wird nicht mit ihm zusammen nachgeführt. Jahreszahlen, Fristen und
+   * Gate-Nummern bleiben — sie stehen für sich.
+   */
+  for (const e of etappen) {
+    for (const feld of ['titel', 'ergebnis']) {
+      const text = String(e[feld] ?? '');
+      const treffer = ZAEHLUNG.exec(text);
+      if (!treffer) continue;
+      /*
+       * **Zielzahl oder Bestandszahl.** „Auf mindestens 100 Artikel
+       * erweitern" ist eine Weisung des Auftraggebers — sie läuft nicht ab,
+       * sie wird erfüllt. „Die 32 Keywords" war eine Bestandszahl: Sie
+       * behauptet, wie viele es gibt, und ein Register führt sie. Nur die
+       * zweite Sorte gehört hier heraus.
+       */
+      if (/\b(?:mindestens|h(?:ö|oe)chstens|bis zu|rund|etwa)\s*$/i.test(text.slice(0, treffer.index))) continue;
+      meldungen.push({
+        regel: 'gezaehlte-menge-im-plan',
+        wo: `${e.id}.${feld}`,
+        text: `${e.id}: „${treffer[0]}" ist eine gezählte Menge — sie gehört in das Register, `
+          + 'das sie führt, nicht in den Plan',
+      });
+    }
+  }
+
+  return { geprueft: etappen.length, meldungen, sauber: meldungen.length === 0 };
+}
+
+/** Eine gezählte Menge: eine Zahl vor einem Ding, das ein Register führt. */
+export const ZAEHLUNG = /\b\d+\s+(?:Keywords?|Artikel|Punkte|Begriffe|Seiten|Fragen|Prüfer)\b/;
 
 /** Die Etappe zu einer Kennung, oder ein Fehler — kein stilles Überspringen. */
 function etappeVon(liste, id) {
