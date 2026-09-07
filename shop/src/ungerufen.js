@@ -188,6 +188,16 @@ export const UNGERUFEN = Object.freeze([
       + 'täglich neu druckt. Was hier fehlt, fiele dem Leitzahlenprüfer auf.',
   }),
   Object.freeze({
+    modul: 'src/krume.js',
+    funktionen: ['krumenbefund'],
+    warum: 'Ein Prüfer, der in den Testfällen wohnt — wie `src/sitemapstand.js` und '
+      + '`src/merkblattverweis.js`. `test/krume.test.js` hält ihn gegen alle 82 gebauten '
+      + 'Seiten und läuft damit in Schritt 1 des Gesamtlaufs mit. Der Bau kann ihn nicht '
+      + 'rufen: Er misst die fertige Seite, aus der die Auszeichnung gerade erst entstanden '
+      + 'ist. `krumeAusHtml` und `brotkrume` stehen nicht hier — die ruft der Rahmen für jede '
+      + 'Seite.',
+  }),
+  Object.freeze({
     modul: 'src/lieferungen.js',
     funktionen: ['lieferungsbefund'],
     warum: 'Ein Prüfer, der in den Testfällen wohnt — wie `src/abgleich.js` und '

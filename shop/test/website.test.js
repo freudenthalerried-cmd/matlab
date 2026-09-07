@@ -1709,8 +1709,20 @@ test('die Startseite hat genau eine Schreibweise', () => {
   assert.ok(sitemap.includes(`<loc>${canonical}</loc>`), 'die Sitemap nennt die Wurzel nicht');
   assert.ok(!sitemap.includes(`${canonical}index.html`), 'die Sitemap nennt zusätzlich /index.html');
 
-  // Und die Auszeichnung nennt dieselbe — nicht die Domain ohne Schrägstrich.
-  const insel = /<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(start);
-  assert.equal(JSON.parse(insel[1]).url, canonical,
-    'die Organisation nennt eine andere Schreibweise als das canonical');
+  // Und **jede** Auszeichnung nennt dieselbe — nicht die Domain ohne
+  // Schrägstrich. Seit dem 7. September steht neben der Organisation ein
+  // `WebSite`-Knoten mit der eigenen Suche; ein Prüfer, der nur den ersten
+  // Block liest, hätte die zweite Schreibweise nicht gesehen.
+  const knoten = [...start.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
+    .flatMap((m) => {
+      const daten = JSON.parse(m[1]);
+      return Array.isArray(daten) ? daten : [daten];
+    });
+  assert.ok(knoten.length >= 2, `nur ${knoten.length} Auszeichnungsknoten auf der Startseite`);
+  const mitUrl = knoten.filter((k) => typeof k.url === 'string');
+  assert.ok(mitUrl.length >= 2, 'weniger als zwei Knoten nennen eine Adresse');
+  for (const k of mitUrl) {
+    assert.equal(k.url, canonical,
+      `${k['@type']} nennt eine andere Schreibweise als das canonical`);
+  }
 });

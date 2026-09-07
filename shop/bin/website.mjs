@@ -55,6 +55,7 @@ import { UEBERSCHRIFT as GRENZEN_UEBERSCHRIFT, grenzenbausteine } from '../src/e
 import { abgegrenzteStaemme } from '../src/abgrenzung.js';
 import { MERKBLATT, herstellerDerGruppe } from '../src/merkblattverweis.js';
 import { lastmodFuer } from '../src/sitemapstand.js';
+import { brotkrume, krumeAusHtml } from '../src/krume.js';
 import { HERSTELLER, marke } from '../src/hersteller.js';
 import {
   oeffentlicherArtikel, oeffentlicherLieferant, vorteil, ustText, KORBSCHLUESSEL,
@@ -797,7 +798,10 @@ function artikelSeite(a, katalog, befund, seiten, verweis) {
     .slice(0, 8);
 
   const teile = [];
-  teile.push(`<p class="krume"><a href="${verweis('index')}">Start</a> › <a href="${verweis(gruppenSeite ? gruppenSeite.id : 'index')}">${esc(a.gruppe)}</a></p>`);
+  // **Der Pfad endet seit dem 7. September bei der Seite selbst.** Vorher
+  // hieß die letzte Stufe „WDVS" — und die Auszeichnung, die aus dieser Krume
+  // entsteht, hätte der Suchmaschine gesagt, diese Seite heiße so.
+  teile.push(`<p class="krume"><a href="${verweis('index')}">Start</a> › <a href="${verweis(gruppenSeite ? gruppenSeite.id : 'index')}">${esc(a.gruppe)}</a> › ${esc(a.bezeichnung)}</p>`);
   teile.push(`<h1>${esc(a.bezeichnung)}</h1>`);
   // Die Zeichnung steht vor den Zahlen: Wer auf einer Artikelseite landet,
   // will zuerst wissen, ob er beim richtigen Bauteil ist.
@@ -1260,7 +1264,13 @@ function inhaltsSeite(seite, katalog, befund, seiten, verweis) {
     : [];
 
   const wo = { wissen: 'Wissen', gruppe: 'Sortiment', system: 'Systemlisten' }[seite.id.split('/')[0]];
-  teile.push(`<p class="krume"><a href="${verweis('index')}">Start</a> › ${esc(wo)}</p>`);
+  // Der Bereich wird verlinkt, wo es ihn als Seite gibt — die Wissensübersicht
+  // stand da und war aus der Krume nicht erreichbar. Die letzte Stufe ist die
+  // Seite selbst; siehe die Anmerkung auf der Artikelseite.
+  const bereichSeite = seite.id.startsWith('wissen/') ? 'wissen/index' : null;
+  teile.push(`<p class="krume"><a href="${verweis('index')}">Start</a> › ${
+    bereichSeite ? `<a href="${verweis(bereichSeite)}">${esc(wo)}</a>` : esc(wo)
+  } › ${esc(seite.kopf.titel)}</p>`);
 
   // Der Titel steht im Kopfblock; der Körper beginnt mit derselben Überschrift.
   // Ausgegeben wird sie einmal — aus dem Körper, damit der Text die Quelle bleibt.
@@ -1608,7 +1618,7 @@ Sie streichen können statt nachzubestellen.</p>
 <p class="mehr"><a href="${verweis('wissen/index')}">${wissen.length} fachliche Seiten</a> zu den Fragen,
 die vor einer Baustoffbestellung zu klären sind — Untergrund, Mengen, Lagerung, Verarbeitung bei Kälte.
 Jede beantwortet genau eine Frage, und die Antwort steht in den ersten zwei Sätzen.</p>`,
-    jsonLd: {
+    jsonLd: [{
       '@context': 'https://schema.org',
       ...organisation(),
       address: { '@type': 'PostalAddress', addressLocality: ORT, addressCountry: 'AT' },
@@ -1618,6 +1628,35 @@ Jede beantwortet genau eine Frage, und die Antwort steht in den ersten zwei Sät
       // Adresse neben `/` und `/index.html`.
       url: kanonisch(BASIS, 'index'),
     },
+    /*
+     * **Die eigene Suche, angemeldet — 7. September 2026.**
+     *
+     * Der Shop hat eine Suche, die im Browser des Besuchers läuft und ihre
+     * Anfrage in der Adresse trägt (`suche.html?q=…`). Für eine Suchmaschine
+     * ist das eine Angabe, die sie kennen will: Sie stellt das Suchfeld
+     * neben das Ergebnis, statt den Besucher erst auf die Startseite zu
+     * schicken.
+     *
+     * Die Adressvorlage ist **die echte** — dieselbe, die die Vorschlagsliste
+     * unter dem Suchfeld baut. Eine erfundene Vorlage führte auf eine leere
+     * Trefferliste, und das wäre dieselbe Sorte Zusage wie ein Keyword, das
+     * die eigene Suche nicht beantwortet.
+     */
+    {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: MARKE,
+      url: kanonisch(BASIS, 'index'),
+      inLanguage: 'de-AT',
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: {
+          '@type': 'EntryPoint',
+          urlTemplate: `${BASIS}/suche.html?q={search_term_string}`,
+        },
+        'query-input': 'required name=search_term_string',
+      },
+    }],
   };
 }
 
@@ -2327,9 +2366,31 @@ Warengruppen in der Kopfleiste.</p></noscript>
   const koerper = `${kopf}\n${mitMindestwert(seite.html, verweis)}\n${fuss}`;
   if (!eigenstaendig) return koerper;
 
-  const ld = seite.jsonLd
-    ? `\n<script type="application/ld+json">${jsonFuerSkript(seite.jsonLd)}</script>`
-    : '';
+  /*
+   * **Die Krume wird ausgezeichnet — 7. September 2026.**
+   *
+   * 81 von 82 Seiten zeigten einen Pfad, und keine einzige zeichnete ihn aus.
+   * Eine Suchmaschine stellt ihn statt der nackten Adresse ins Ergebnis, wenn
+   * er ausgezeichnet ist.
+   *
+   * **Aus der gerenderten Seite**, nicht aus einer zweiten Liste — derselbe
+   * Grund wie bei `mitMindestwert` eine Funktion weiter unten: Ein Stück, das
+   * jeder Seitentyp selbst mitgeben muss, vergisst der nächste. Und zwei
+   * Listen laufen auseinander; eine Auszeichnung, die etwas anderes sagt als
+   * die Seite, ist eine Behauptung an eine Maschine.
+   */
+  const seiteUrl = id ? kanonisch(BASIS, id) : null;
+  const krumenLd = seiteUrl
+    ? brotkrume({
+      stufen: krumeAusHtml(koerper),
+      seiteUrl,
+      normalisiere: (u) => (u === `${BASIS}/index.html` ? `${BASIS}/` : u),
+    })
+    : null;
+
+  const ld = [seite.jsonLd, krumenLd].filter(Boolean)
+    .map((daten) => `\n<script type="application/ld+json">${jsonFuerSkript(daten)}</script>`)
+    .join('');
 /**
  * Drei Seiten, die nichts zu sagen haben — und es jetzt auch sagen.
  *

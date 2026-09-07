@@ -1569,6 +1569,22 @@ export const GEGENPROBEN = Object.freeze([
       + '46 Artikelseiten wieder weg — der Hälfte, bei der ein Preiswechsel der eigentliche '
       + 'Anlass zum Neubesuch wäre.',
   }),
+  Object.freeze({
+    id: 'pfad-auf-der-seite-ohne-auszeichnung',
+    pruefer: 'test',
+    was: 'Ein Pfad, den die Seite zeigt und keine Maschine liest',
+    datei: 'shop/bin/website.mjs',
+    art: 'ersetzen',
+    baueVorher: true,
+    suchen: '      stufen: krumeAusHtml(koerper),',
+    ersetzen: '      stufen: id.startsWith(\'artikel/\') ? [] : krumeAusHtml(koerper),',
+    erwartet: /krume-ohne-auszeichnung|zeigt einen Pfad/,
+    warum: 'Der Zustand vom 7. September: 81 von 82 gebauten Seiten zeigten oben einen Pfad, '
+      + 'und keine einzige zeichnete ihn aus — eine Suchmaschine stellt ihn statt der nackten '
+      + 'Adresse ins Ergebnis, wenn er ausgezeichnet ist. Diese Mutation nimmt ihn den 46 '
+      + 'Artikelseiten wieder weg, also der Hälfte, bei der der Pfad am meisten trägt: Er '
+      + 'nennt die Warengruppe, in der der Artikel steht.',
+  }),
 ]);
 
 /**
