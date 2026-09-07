@@ -67,6 +67,21 @@ export const OHNE_WERKZEUG = Object.freeze([
     loest: 'Entscheidet, ob die 90-Tage-Grenze der Preisalterprüfung die richtige ist (gesetzt, nicht gemessen).',
   },
   {
+    // **Neu am 6. September 2026.** Fünf Stellen sagten dem Kunden, er könne
+    // selbst abholen — eine davon nannte den Betriebssitz. Der Shop ist ein
+    // reines Streckengeschäft ohne eigenes Lager; dort liegt nie Ware. Belegt
+    // ist nur, dass **wir** am Lager Mauthausen abholen (elf von fünfzehn
+    // Rechnungen). Ob unsere Kunden das dürfen, hat nie jemand gefragt.
+    id: 'abholung-durch-kunden',
+    titel: 'Abholung durch unsere Kunden an Ihrem Lager',
+    zustaendig: 'anfrage',
+    warumKeinWerkzeug: 'Es steht in keiner Rechnung: Die elf Belege mit „Abholung Kunde" belegen '
+      + 'unsere eigene Abholung, nicht die eines Dritten auf unsere Rechnung. Aus einem '
+      + 'Ja für uns folgt kein Ja für einen fremden Lkw an der Rampe.',
+    loest: 'Entscheidet, ob der Shop Abholung wieder zusagen darf — und ob es unterhalb des '
+      + 'Mindestbestellwerts überhaupt einen Weg gibt. Gate 28 hat sie bis dahin zurückgenommen.',
+  },
+  {
     id: 'liefergebiet-lieferant',
     titel: 'Liefergebiet des Lieferanten',
     zustaendig: 'anfrage',

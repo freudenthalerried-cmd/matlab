@@ -50,6 +50,7 @@ import { BINDEFRIST_TAGE } from '../src/beleg.js';
 import { execFileSync } from 'node:child_process';
 import { standAusGit } from '../src/inhaltsstand.js';
 import { lieferantenzahl, lieferungssatz } from '../src/lieferungen.js';
+import { abholungslage, abholungssatz } from '../src/abholung.js';
 import { HERSTELLER, marke } from '../src/hersteller.js';
 import {
   oeffentlicherArtikel, oeffentlicherLieferant, vorteil, ustText, KORBSCHLUESSEL,
@@ -638,6 +639,13 @@ const MINDESTWERT_NETTO = BETREIBER.mindestbestellwertNetto ?? null;
  * Lieferung", und das ist der Satz, der ohne Katalog nichts verspricht.
  */
 let LIEFERANTENZAHL = 1;
+
+/**
+ * Die Abhollage — gesetzt, sobald der Katalog gelesen ist, aus demselben Grund
+ * wie `LIEFERANTENZAHL`. Die Voreinstellung ist die vorsichtige: Ohne Katalog
+ * wird nichts zugesagt.
+ */
+let ABHOLLIEFERANT = { abholungDurchKunden: null };
 
 /**
  * Der Stand der Grenze — **gelesen, nicht abgeschrieben.**
@@ -1236,7 +1244,7 @@ function inhaltsSeite(seite, katalog, befund, seiten, verweis) {
   const liefernotiz = `<p class="liefernotiz"><strong>Preise netto für Unternehmer</strong> —
 Umsatzsteuer ${ustText()} kommt dazu. <strong>Geliefert wird in ${esc(LIEFERBEZIRKE)}</strong>,
 nicht österreichweit. Fracht fällt je Lieferung an und wird getrennt ausgewiesen
-(<a href="${verweis('lieferung')}">Sätze</a>); Selbstabholung ist vorgesehen.</p>`;
+(<a href="${verweis('lieferung')}">Sätze</a>).</p>`;
 
   if (seite.art === 'gruppen' && warenraster) {
     // Auf einer Sortimentsseite kommt die Ware zuerst. Der Fachtext stand
@@ -1851,13 +1859,12 @@ function lieferungFragen(f, verweis, mindestNetto, lieferanten) {
       + '„frei Haus" bewirbt, hat sie in alle Warenpreise eingerechnet.'],
     ['Wohin wird geliefert?',
       `In die Bezirke ${bezirke} — regional, nicht österreichweit.`],
-    ['Kann ich selbst abholen?',
-      'Ja, ausdrücklich vorgesehen. Wer selbst abholt, zahlt keine Fracht.'],
+    ['Kann ich selbst abholen?', abholungssatz(ABHOLLIEFERANT)],
     ['Gibt es einen Mindestbestellwert?',
       mindestNetto
         ? `Ja: ${euro(mindestNetto)} € netto Warenwert je Lieferung. `
-          + `${lieferungssatz(lieferanten)} Darunter ist Selbstabholung der `
-          + 'bessere Weg oder das Zusammenlegen mit der nächsten Bestellung.'
+          + `${lieferungssatz(lieferanten)} Darunter hilft nur das Zusammenlegen `
+          + 'mit der nächsten Bestellung.'
         : 'Der Mindestbestellwert ist derzeit nicht hinterlegt; die Kasse nimmt deshalb keine '
           + 'Anfrage an.'],
   ].map(([frage, antwort]) => ({
@@ -1920,11 +1927,14 @@ hoch gerechnet. Stand: 2026-08-31.</p>
     + 'dasselbe wie eine große, und unter dieser Grenze zahlt am Ende einer von beiden drauf.'
   : 'Derzeit ist kein Mindestbestellwert hinterlegt; die Kasse nimmt deshalb keine Anfrage an.'}</p>
 <p>${lieferungssatz(lieferantenzahl(katalog.artikel))} Der Warenkorb sagt Ihnen, was noch fehlt.
-Darunter ist Selbstabholung der bessere Weg, oder das Zusammenlegen mit der nächsten Bestellung.</p>
+Darunter hilft nur das Zusammenlegen mit der nächsten Bestellung.</p>
 
-<h2>Selbstabholung</h2>
-<p>Ausdrücklich vorgesehen und nicht schlechter gestellt. Wer selbst abholt, zahlt keine Fracht — das ist
-der ganze Vorteil der getrennten Ausweisung.</p>`,
+<h2>Abholung</h2>
+<p>${abholungssatz(ABHOLLIEFERANT)}</p>
+<p>Belegt ist etwas anderes, und das gehört dazu: Elf von fünfzehn unserer eigenen Rechnungen lauten
+„Abholung Kunde" — abgeholt wird beim Lieferanten in Mauthausen, und der Kunde sind wir. Ob ein
+Besteller von uns dort abholen darf, entscheidet der Lieferant; gefragt ist es, beantwortet noch
+nicht. Bis dahin sagen wir nichts zu, was wir nicht halten können.</p>`,
     jsonLd: {
       '@context': 'https://schema.org',
       '@type': 'FAQPage',
@@ -2341,6 +2351,7 @@ function main() {
 
   let katalog = ladeBaustoffkatalog(katalogDatei, lies(preisPfad), lieferantenDatei, ZIELMARGE);
   LIEFERANTENZAHL = lieferantenzahl(katalog.artikel);
+  ABHOLLIEFERANT = abholungslage([...katalog.lieferantenById.values()]);
   const befund = katalogbefund(katalog);
 
   /**

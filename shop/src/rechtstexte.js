@@ -389,8 +389,12 @@ export const AGB_GLIEDERUNG = [
       'nicht in ganz Österreich. Die Weisung lautet seit dem 22. August „regional", umgesetzt ' +
       'war sie bis zum 26. nur in der Kampagne, also in der Werbung und nicht in der Annahme. ' +
       'Der Bezirk der Baustelle wird gefragt und nicht aus der Postleitzahl erraten: Eine ' +
-      'Postleitzahl beweist keinen Bezirk, so wie sie kein Land beweist. Abholung am ' +
-      'Betriebssitz ist davon unberührt. Lieferung außerhalb Österreichs bleibt zusätzlich ' +
+      'Postleitzahl beweist keinen Bezirk, so wie sie kein Land beweist. Bis zum 6. September ' +
+      'nahm dieser Punkt die Grenze für Selbstabholer ausdrücklich zurück — im Widerspruch ' +
+      'zu Punkt 4 derselben Gliederung: Im Streckengeschäft geht die Ware direkt vom ' +
+      'Lieferanten zur Baustelle und liegt nie an unserer Anschrift. Abgeholt wird nichts, ' +
+      'solange der Lieferant es nicht bestätigt hat. Lieferung außerhalb Österreichs bleibt ' +
+      'zusätzlich ' +
       'ausgeschlossen — sie wäre nach Art 6, 7 UStG steuerfrei bzw. eine Ausfuhr und damit ' +
       'anders zu verrechnen.',
   },

@@ -423,13 +423,18 @@ export const GEGENPROBEN = Object.freeze([
     was: 'Eine maschinenlesbare Antwort mit einer Zahl, die auf der Seite nicht steht',
     datei: 'shop/bin/website.mjs',
     art: 'ersetzen',
-    suchen: "      'Ja, ausdrücklich vorgesehen. Wer selbst abholt, zahlt keine Fracht.'],",
-    ersetzen: "      'Ja, ausdrücklich vorgesehen. Wer selbst abholt, zahlt keine Fracht und bekommt 3 % Nachlass.'],",
-    erwartet: /3 %/,
+    suchen: "      'Nein. Die Frachtpauschale hängt an der Fahrt und nicht am Warenwert; wer sie trotzdem als '",
+    ersetzen: "      'Nein, erst ab 3000 € netto. Die Frachtpauschale hängt an der Fahrt und nicht am Warenwert; wer sie trotzdem als '",
+    erwartet: /3000|3\s?000/,
     baueVorher: true,
     warum: 'Eine Auszeichnung, die mehr sagt als die Seite, ist eine Behauptung an eine '
       + 'Maschine — sie wird zitiert und nicht gelesen. Dieselbe Familie wie `PreOrder` gegen '
-      + '`InStock`: Beide Seiten stimmen für sich, und der Widerspruch fällt beim Kunden auf.',
+      + '`InStock`: Beide Seiten stimmen für sich, und der Widerspruch fällt beim Kunden auf. '
+      + '**Suchtext nachgezogen am 6. September:** Er mutierte die Antwort „Kann ich selbst '
+      + 'abholen?", und die ist mit Gate 28 abgeleitet worden — ein Suchtext, der auf einen '
+      + 'Satz zeigt, den es nicht mehr gibt, hält den Lauf an, statt etwas zu zeigen. Jetzt '
+      + 'trifft er die Frei-Haus-Antwort: eine erfundene Schwelle in der maschinenlesbaren '
+      + 'Fassung, die auf der Seite nirgends steht.',
   }),
   Object.freeze({
     id: 'agb-punkt-verschoben',
@@ -1478,6 +1483,24 @@ export const GEGENPROBEN = Object.freeze([
       + '250 € statt einmal; an der Kasse sah er dann eine Teillieferung. Die vorsichtige '
       + 'Richtung fällt nicht auf, weil abgeschreckte Körbe in keiner Abrechnung stehen. Diese '
       + 'Mutation lässt den Satz wieder unabhängig von der Lieferantenzahl stehen.',
+  }),
+  Object.freeze({
+    id: 'abholung-an-einer-adresse-ohne-lager',
+    pruefer: 'test',
+    was: 'Eine zugesagte Abholung an einem Ort, an dem nie Ware liegt',
+    datei: 'shop/src/abholung.js',
+    art: 'ersetzen',
+    baueVorher: true,
+    suchen: '  const erlaubt = lieferant?.abholungDurchKunden;',
+    ersetzen: '  const erlaubt = true;',
+    erwartet: /abholung-zugesagt-ohne-ort|sagt Abholung zu|Abholung/,
+    warum: 'Der Zustand vom 6. September: Fünf Stellen sagten dem Kunden, er könne selbst '
+      + 'abholen — die Fragen und Antworten, die Lieferseite mit eigener Überschrift, zweimal '
+      + 'der Rat „unter der Grenze ist Abholung der bessere Weg" und AGB Punkt 12 mit dem '
+      + 'Betriebssitz. Der Gründungsparameter lautet „reines Streckengeschäft, kein eigenes '
+      + 'Warenlager", und Punkt 4 derselben AGB sagt Direktversand durch den Hersteller: In '
+      + 'Marwach 5 liegt nie Ware. Belegt ist nur unsere eigene Abholung am Lager Mauthausen. '
+      + 'Diese Mutation sagt Abholung wieder zu, ohne dass es jemand bestätigt hat.',
   }),
 ]);
 

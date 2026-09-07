@@ -19,6 +19,8 @@ import {
 const GRUPPE = [
   'lieferzeit', 'feed:GTIN/EAN', 'feed:Marke', 'feed:Produktbild',
   'preisalter', 'preisrhythmus', 'liefergebiet-lieferant', 'palettenzahl', 'artikelliste',
+  // Neu am 6. September: Abholung war fünfmal zugesagt und nie gefragt.
+  'abholung-durch-kunden',
 ].map((id) => ({ id }));
 
 const betreiber = {

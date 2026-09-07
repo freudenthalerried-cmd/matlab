@@ -83,6 +83,15 @@ export const UNGERUFEN = Object.freeze([
       + 'liest. Der Anschluss an `pruefregister.js` wäre Bequemlichkeit, keine Prüfung.',
   }),
   Object.freeze({
+    modul: 'src/abholung.js',
+    funktionen: ['abholungsbefund'],
+    warum: 'Ein Prüfer, der in den Testfällen wohnt — wie `src/lieferungen.js` und '
+      + '`src/llmsdeckung.js`. `test/abholung.test.js` hält ihn gegen alle 82 gebauten Seiten '
+      + 'und gegen `llms.txt`; er läuft damit in Schritt 1 des Gesamtlaufs mit. Der Bau kann '
+      + 'ihn nicht rufen, weil er den fertigen Ordner misst. `abholungssatz` und '
+      + '`abholungslage` stehen nicht hier: Die ruft der Bau, und genau darum geht es.',
+  }),
+  Object.freeze({
     modul: 'src/ablage.js',
     funktionen: ['alsCsv', 'aufbewahrungBis', 'pruefeAblagefelder',
       'stelleRechnungAus', 'storniere', 'vorgangsakte'],

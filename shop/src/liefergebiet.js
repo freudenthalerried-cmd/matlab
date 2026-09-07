@@ -64,8 +64,18 @@ export const LIEFERGEBIET = Object.freeze({
     'Das tatsächliche Liefergebiet des Lieferanten ist unbekannt — aus fünfzehn Rechnungen '
     + 'nicht ableitbar, weil die Frachtpauschale nicht nach Entfernung staffelt. Beim '
     + 'Lieferanten zu erfragen; bis dahin gilt diese Liste als die engere der beiden.',
+  /*
+   * **Berichtigt am 6. September 2026.** Hier stand „Abholung am Betriebssitz
+   * ist von der Bezirksgrenze unberührt". Sie ist es — nur gibt es sie nicht:
+   * Der Shop ist ein reines Streckengeschäft ohne eigenes Lager, die Ware geht
+   * vom Lieferanten zur Baustelle und liegt nie in Marwach 5. Einem Kunden
+   * außerhalb des Gebiets diesen Ausweg zu nennen hieße, ihn zu einer Adresse
+   * ohne Ware zu schicken.
+   */
   selbstabholung:
-    'Abholung am Betriebssitz ist von der Bezirksgrenze unberührt — sie setzt keine Lieferung voraus.',
+    'Abholung ist nicht zugesagt: Die Ware geht im Streckengeschäft direkt vom Lieferanten '
+    + 'zur Baustelle, ein eigenes Lager gibt es nicht. Ob unsere Kunden beim Lieferanten '
+    + 'abholen dürfen, ist dort angefragt.',
 });
 
 /** Vergleichsform eines Bezirksnamens: ohne Zierrat, damit „Linz Land" trifft. */
@@ -119,7 +129,7 @@ export function pruefeLieferort(ort = {}) {
       liefern: false,
       grund:
         `Bezirk ${bezirk} liegt außerhalb des Liefergebiets. Geliefert wird nach: `
-        + `${bezirksliste()}. Abholung am Betriebssitz ist davon unberührt.`,
+        + `${bezirksliste()}. ${LIEFERGEBIET.selbstabholung}`,
     };
   }
   return { liefern: true, grund: null, bezirk };

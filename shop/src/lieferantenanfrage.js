@@ -142,6 +142,19 @@ export const FRAGEN = Object.freeze([
       + 'geführt.',
   }),
   Object.freeze({
+    id: 'abholung',
+    titel: 'Abholung durch unsere Kunden',
+    schliesst: Object.freeze(['abholung-durch-kunden']),
+    frage: 'Dürfen Kunden von uns Ware auf unsere Rechnung bei Ihnen am Lager abholen — '
+      + 'und wenn ja: mit welchem Nachweis, zu welchen Zeiten und an welchem Tor?',
+    warum: 'Der Shop hat kein eigenes Lager; im Streckengeschäft geht die Ware vom Lieferanten '
+      + 'zur Baustelle. Bis zum 6. September sagten fünf Stellen der Website trotzdem Abholung '
+      + 'zu, eine davon „am Betriebssitz" — dort liegt nie Ware. Belegt ist nur unsere eigene '
+      + 'Abholung am Lager Mauthausen (elf von fünfzehn Rechnungen). Ohne diese Antwort bleibt '
+      + 'Abholung zurückgenommen (Gate 28), und unterhalb des Mindestbestellwerts gibt es '
+      + 'keinen zweiten Weg.',
+  }),
+  Object.freeze({
     id: 'liefergebiet',
     titel: 'Liefergebiet und Frachtsätze',
     schliesst: Object.freeze(['liefergebiet-lieferant']),

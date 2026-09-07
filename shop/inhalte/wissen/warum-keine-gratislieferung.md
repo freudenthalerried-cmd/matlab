@@ -47,8 +47,9 @@ kleiner Warenkorb nicht aus.
 Daraus folgt kein Trick, sondern eine offene Ansage:
 
 > **Unter etwa 400 Euro netto Warenwert lohnt eine Lieferung für keine der
-> beiden Seiten.** Darunter ist Selbstabholung der bessere Weg — oder das
-> Zusammenlegen mit der nächsten Bestellung.
+> beiden Seiten.** Darunter hilft das Zusammenlegen mit der nächsten
+> Bestellung. (Bis zum 6. September stand hier auch der Rat abzuholen — er
+> zeigte auf ein Lager, das es nicht gibt.)
 >
 > Quelle: eigene Kostenrechnung auf Grundlage der Frachtsätze aus
 > den Lieferantenrechnungen, Stand: 2026-08-25.
@@ -68,4 +69,6 @@ ausgewiesene Fracht heißt: Wer wenig Aufwand verursacht, zahlt wenig.
   geht, statt drei Teillieferungen zu fahren.
 - **Systempakete statt Einzelartikel.** Wenn das Zubehör mitkommt, spart das
   die zweite Fahrt — der eigentliche Kostentreiber.
-- **Selbstabholung ist ausdrücklich vorgesehen** und nicht bestraft.
+- **Abholung sagen wir nicht zu.** Im Streckengeschäft geht die Ware vom Lieferanten
+  direkt zur Baustelle; ein eigenes Lager gibt es nicht. Ob unsere Kunden beim
+  Lieferanten abholen dürfen, ist dort angefragt und noch offen.
