@@ -1552,6 +1552,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'dem 1. September in `src/hersteller.js`, nur kannten die Inhaltsseiten das Register '
       + 'nicht. Diese Mutation lässt die Herstellerliste je Gruppe wieder leer laufen.',
   }),
+  Object.freeze({
+    id: 'sitemap-ohne-aenderungsdatum',
+    pruefer: 'test',
+    was: 'Eine Sitemap, die das Änderungsdatum verschweigt, das der Bau kennt',
+    datei: 'shop/src/sitemapstand.js',
+    art: 'ersetzen',
+    baueVorher: true,
+    suchen: '  if (String(id).startsWith(\'artikel/\')) return katalogStand ?? OHNE_QUELLE;',
+    ersetzen: '  if (String(id).startsWith(\'artikel/\')) return OHNE_QUELLE;',
+    erwartet: /lastmod|Änderungsdatum|sitemap/i,
+    warum: 'Der Zustand vom 7. September: 78 Einträge in der Sitemap, null `<lastmod>` — '
+      + 'obwohl der Bau seit dem Vortag für jede Inhaltsseite ein Änderungsdatum aus dem '
+      + 'Verzeichnis ableitet und es als `dateModified` ausgibt. Die Angabe war da und stand '
+      + 'nicht dort, wo eine Suchmaschine zuerst danach sieht. Diese Mutation nimmt sie den '
+      + '46 Artikelseiten wieder weg — der Hälfte, bei der ein Preiswechsel der eigentliche '
+      + 'Anlass zum Neubesuch wäre.',
+  }),
 ]);
 
 /**

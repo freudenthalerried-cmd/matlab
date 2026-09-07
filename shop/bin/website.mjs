@@ -54,6 +54,7 @@ import { abholungslage, abholungssatz } from '../src/abholung.js';
 import { UEBERSCHRIFT as GRENZEN_UEBERSCHRIFT, grenzenbausteine } from '../src/eignungsgrenzen.js';
 import { abgegrenzteStaemme } from '../src/abgrenzung.js';
 import { MERKBLATT, herstellerDerGruppe } from '../src/merkblattverweis.js';
+import { lastmodFuer } from '../src/sitemapstand.js';
 import { HERSTELLER, marke } from '../src/hersteller.js';
 import {
   oeffentlicherArtikel, oeffentlicherLieferant, vorteil, ustText, KORBSCHLUESSEL,
@@ -649,6 +650,9 @@ let LIEFERANTENZAHL = 1;
  * wird nichts zugesagt.
  */
 let ABHOLLIEFERANT = { abholungDurchKunden: null };
+
+/** Das Änderungsdatum der Katalogdatei — gesetzt, sobald sie gelesen ist. */
+let KATALOGSTAND = null;
 
 /**
  * Der Stand der Grenze — **gelesen, nicht abgeschrieben.**
@@ -2429,6 +2433,13 @@ function main() {
 
   let katalog = ladeBaustoffkatalog(katalogDatei, lies(preisPfad), lieferantenDatei, ZIELMARGE);
   LIEFERANTENZAHL = lieferantenzahl(katalog.artikel);
+  // Das Änderungsdatum der Katalogdatei — die Quelle jeder Artikelseite.
+  // Aus der Änderungsgeschichte, nicht aus einem Feld: siehe `inhaltsstand.js`.
+  KATALOGSTAND = standAusGit({
+    pfad: 'shop/data/katalog-baustoff.json',
+    git: (argumente) => execFileSync('git', argumente, { cwd: join(WURZEL, '..'), encoding: 'utf8' }),
+    heute: new Date().toISOString().slice(0, 10),
+  });
   ABHOLLIEFERANT = abholungslage([...katalog.lieferantenById.values()]);
   const befund = katalogbefund(katalog);
 
@@ -2978,7 +2989,17 @@ ${[...dateiSeiten.entries()].filter(([, seite]) => !seite.nurBedienung)
     //
     // Der Dateikopf von `kanonisch` beschreibt genau diesen Schaden — er stand
     // seit dem 1. September da, und die Sitemap ging daran vorbei.
-    .map(([id]) => `  <url><loc>${kanonisch(BASIS, id)}</loc></url>`).join('\n')}
+    //
+    // **`lastmod` seit dem 7. September**, und nur wo es eine datierbare
+    // Quelle gibt: die Markdown-Datei einer Inhaltsseite, die Katalogdatei
+    // einer Artikelseite. Für die übrigen steht keines — ihre Quelle ist
+    // dieses Bauwerkzeug, und ein Datum, das immer heute sagt, entwertet auch
+    // die richtigen daneben. Siehe `src/sitemapstand.js`.
+    .map(([id]) => {
+      const stand = lastmodFuer({ id, inhalte: seiten, katalogStand: KATALOGSTAND });
+      return `  <url><loc>${kanonisch(BASIS, id)}</loc>${
+        stand ? `<lastmod>${stand}</lastmod>` : ''}</url>`;
+    }).join('\n')}
 </urlset>
 `;
   writeFileSync(join(site, 'sitemap.xml'), sitemap, 'utf8');

@@ -232,6 +232,16 @@ export const UNGERUFEN = Object.freeze([
       + 'auf zwei Belegen ruht. Bis dahin eine Regel ohne Fall.',
   }),
   Object.freeze({
+    modul: 'src/sitemapstand.js',
+    funktionen: ['sitemapbefund'],
+    warum: 'Ein Prüfer, der in den Testfällen wohnt — wie `src/merkblattverweis.js` und '
+      + '`src/eignungsgrenzen.js`. `test/sitemapstand.test.js` hält ihn gegen die gebaute '
+      + '`sitemap.xml` und die Änderungsgeschichte der Quelldateien; er läuft damit in '
+      + 'Schritt 1 des Gesamtlaufs mit. Der Bau kann ihn nicht rufen: Er misst die fertige '
+      + 'Datei, die der Bau erst schreibt. `lastmodFuer` steht nicht hier — die ruft der Bau '
+      + 'für jeden Eintrag.',
+  }),
+  Object.freeze({
     modul: 'src/verhandlung.js',
     funktionen: ['rueckwaertsKatalog', 'spielraumAusRabatt', 'staffel'],
     warum: 'Rechnet, welchen Einkauf oder Rabatt es für eine Zielmarge braucht — Zuarbeit '
