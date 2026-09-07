@@ -207,7 +207,26 @@ for (const p of proben) {
         ? vorher + p.text
         : (p.alle ? vorher.split(p.suchen).join(p.ersetzen) : vorher.replace(p.suchen, p.ersetzen));
 
-      if (mutiert === vorher) {
+      /*
+       * **Ein Suchtext, der zweimal passt — 7. September 2026.**
+       *
+       * `replace` ersetzt die **erste** Fundstelle. Beim Schreiben einer neuen
+       * Gegenprobe traf der Suchtext eine Zeile, die in `shopkern.js` zweimal
+       * steht: einmal im Suchindex, einmal im öffentlichen Artikel. Mutiert
+       * wurde der Suchindex, und der Preisprüfer meldete zu Recht grün — das
+       * sah aus wie ein Prüfer, der nicht anschlägt.
+       *
+       * Die Einzelprobe bricht seit dem 31. August bei mehrfachem Treffer ab.
+       * Dieser Läufer steckt unbeaufsichtigt im Gesamtlauf und tat es nicht:
+       * **Was der Mensch von Hand ausführt, war abgesichert; was allein läuft,
+       * nicht.**
+       */
+      const treffer = p.art === 'ersetzen' ? vorher.split(p.suchen).length - 1 : 1;
+      if (p.art === 'ersetzen' && !p.alle && treffer > 1) {
+        schritte.push(`Suchtext kommt ${treffer}-mal vor — mutiert würde die erste Stelle, `
+          + 'und das ist nicht unbedingt die gemeinte');
+        urteil = 'mehrdeutig';
+      } else if (mutiert === vorher) {
         schritte.push(p.art === 'ersetzen'
           ? `Suchtext nicht gefunden: ${JSON.stringify(p.suchen.slice(0, 50))}`
           : 'Mutation hat nichts geändert');

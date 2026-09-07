@@ -170,6 +170,18 @@ export const UNGERUFEN = Object.freeze([
       + 'Der Baustoffhandel hat seine eigene Gebietsfrage (Gate 23) in `liefergebiet.js`.',
   }),
   Object.freeze({
+    modul: 'src/gegenprobenregister.js',
+    funktionen: ['suchtextbefund'],
+    warum: 'Ein Prüfer, der in den Testfällen wohnt — und dort mit Absicht. Er hält jeden '
+      + 'Suchtext des Registers gegen die Datei, die er treffen soll, und meldet, wenn er '
+      + 'gar nicht oder zweimal passt. `bin/gegenprobenlauf.mjs` weigert sich seit dem '
+      + '7. September bei mehrfachem Treffer selbst, aber erst mitten im zwanzigminütigen '
+      + 'Lauf und nur für die Probe, die gerade dran ist. `test/gegenprobenregister.test.js` '
+      + 'misst dasselbe über jeden ersetzenden Eintrag in Millisekunden und mutiert '
+      + 'nichts. Der Läufer kann ihn nicht rufen: Er prüft das Register, in dem der Läufer '
+      + 'selbst steht, und tut es, bevor irgendetwas ausgeführt wird.',
+  }),
+  Object.freeze({
     modul: 'src/kontrolle.js',
     funktionen: ['pruefeBestellung'],
     warum: 'Die zweite Rechnung liest Belegtexte zurück. `npm run pruefe-kontrolle` führt '

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { GEGENPROBEN, OHNE_GEGENPROBE, ARTEN, registerbefund } from '../src/gegenprobenregister.js';
+import { GEGENPROBEN, OHNE_GEGENPROBE, ARTEN, registerbefund, suchtextbefund } from '../src/gegenprobenregister.js';
 import { PRUEFER } from '../src/pruefregister.js';
 
 test('Jede Gegenprobe nennt Prüfer, Datei, Erwartung und Grund', () => {
@@ -64,4 +64,56 @@ test('Ein Prüfer, den weder Probe noch Grund kennt, fällt auf', () => {
   const b = registerbefund(['pruefe-erfunden'], [], []);
   assert.deepEqual(b.unerklaert, ['pruefe-erfunden']);
   assert.equal(b.vollstaendig, false);
+});
+
+test('Jeder Suchtext trifft genau die Stelle, die gemeint ist', async () => {
+  // Am 7. September traf ein neuer Suchtext eine Zeile, die zweimal in
+  // `shopkern.js` steht. Der Läufer ersetzt die erste Fundstelle — mutiert
+  // wurde der Suchindex statt des öffentlichen Artikels, und der Prüfer meldete
+  // zu Recht grün. Das sah aus wie ein Prüfer, der nicht anschlägt.
+  //
+  // Der volle Gegenprobenlauf braucht zwanzig Minuten und findet es erst dort.
+  // Hier kostet dieselbe Auskunft Sekunden: gelesen wird nur, gemutet nichts.
+  const { readFileSync } = await import('node:fs');
+  const wurzel = new URL('../../', import.meta.url);
+  const lies = (datei) => {
+    try {
+      return readFileSync(new URL(datei, wurzel), 'utf8');
+    } catch {
+      return null;
+    }
+  };
+  const b = suchtextbefund({ lies });
+  assert.ok(b.geprueft >= 80, `nur ${b.geprueft} ersetzende Proben — die Schleife prüfte fast nichts`);
+  assert.deepEqual(b.meldungen.map((m) => m.text), [], 'ein Suchtext trifft nicht die gemeinte Stelle');
+});
+
+test('Ein zweimal passender Suchtext fällt auf, ein gewollt mehrfacher nicht', () => {
+  const eine = (zusatz) => [{
+    id: 'x', pruefer: 'p', datei: 'd.txt', art: 'ersetzen',
+    suchen: 'rot', ersetzen: 'blau', erwartet: /x/,
+    warum: 'ein hinreichend langer Grund für den Eintrag', ...zusatz,
+  }];
+  const zweimal = () => 'rot und nochmal rot';
+
+  const doppelt = suchtextbefund({ proben: eine({}), lies: zweimal });
+  assert.equal(doppelt.sauber, false);
+  assert.deepEqual(doppelt.meldungen.map((m) => m.regel), ['suchtext-mehrdeutig']);
+
+  // `alle: true` meint genau das: Dort sollen alle Fundstellen fallen.
+  assert.equal(suchtextbefund({ proben: eine({ alle: true }), lies: zweimal }).sauber, true);
+
+  const fehlt = suchtextbefund({ proben: eine({}), lies: () => 'grün' });
+  assert.deepEqual(fehlt.meldungen.map((m) => m.regel), ['suchtext-passt-nicht']);
+
+  const weg = suchtextbefund({ proben: eine({}), lies: () => null });
+  assert.deepEqual(weg.meldungen.map((m) => m.regel), ['datei-fehlt']);
+
+  // Anhängende Proben haben keinen Suchtext — sie werden nicht gezählt.
+  const anhaengen = suchtextbefund({
+    proben: eine({ art: 'anhaengen', text: 'x', suchen: undefined, ersetzen: undefined }),
+    lies: zweimal,
+  });
+  assert.equal(anhaengen.geprueft, 0);
+  assert.equal(anhaengen.sauber, true);
 });

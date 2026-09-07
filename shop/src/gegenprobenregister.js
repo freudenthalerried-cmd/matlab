@@ -725,6 +725,10 @@ export const GEGENPROBEN = Object.freeze([
     art: 'ersetzen',
     suchen: 'führen wir nicht',
     ersetzen: 'ist eine eigene Position',
+    // `alle: true`: Heute nennt `wdvs.md` die Lücke genau einmal, die Mutation
+    // wäre auch ohne die Marke eindeutig. Sie steht trotzdem hier, weil der
+    // Satz eine Aufzählung begleitet: Kommt eine zweite Lücke dazu, soll die
+    // Probe beide entfernen und nicht die halbe Seite stehen lassen.
     alle: true,
     erwartet: /Landeseite nicht/,
     warum: 'Eine ehrliche Anzeige ist nur die halbe Ehrlichkeit — der Besucher klickt und '
@@ -1639,6 +1643,24 @@ export const GEGENPROBEN = Object.freeze([
       + 'der Seite den einen Betrag und bekommt im Korb den anderen. Diese Mutation zieht in '
       + 'den Kassendaten zehn Prozent ab und lässt jede sichtbare Seite unberührt.',
   }),
+  Object.freeze({
+    id: 'suchtext-trifft-die-falsche-stelle',
+    pruefer: 'test',
+    was: 'Eine Gegenprobe, deren Suchtext zweimal passt und die erste Stelle trifft',
+    datei: 'shop/src/gegenprobenregister.js',
+    art: 'ersetzen',
+    suchen: "    ersetzen: 'steht in der Preistafel',\n    alle: true,",
+    ersetzen: "    ersetzen: 'steht in der Preistafel',",
+    erwartet: /2-mal vor/,
+    warum: 'Der Fall vom 7. September: Ein neuer Suchtext traf eine Zeile, die zweimal in '
+      + '`shopkern.js` steht. Der Läufer ersetzt die erste Fundstelle, mutiert wurde der '
+      + 'Suchindex statt des öffentlichen Artikels, und der Preisprüfer meldete zu Recht '
+      + 'grün — das sieht aus wie ein Prüfer, der nicht anschlägt. Die Einzelprobe bricht '
+      + 'seit dem 31. August bei mehrfachem Treffer ab, der unbeaufsichtigte Läufer nicht: '
+      + 'Was der Mensch von Hand ausführt, war abgesichert; was allein läuft, nicht. Diese '
+      + 'Mutation nimmt `alle: true` bei einer Probe weg, deren Suchtext zweimal in '
+      + '`website.mjs` steht — genau die Lage, die niemandem auffiel.',
+  }),
 ]);
 
 /**
@@ -1659,6 +1681,62 @@ export const OHNE_GEGENPROBE = Object.freeze([
       + '„liegen-gebliebene-mutation-uebersehen" hält diese Prüfung wach.',
   }),
 ]);
+
+
+/**
+ * Passt jeder Suchtext genau dorthin, wo er gemeint ist?
+ *
+ * **Der Anlass, 7. September 2026.** Beim Schreiben einer neuen Gegenprobe
+ * traf der Suchtext `    vkNetto: a.vkNetto ?? null,` — und die Zeile steht in
+ * `shopkern.js` **zweimal**: einmal im Suchindex, einmal im öffentlichen
+ * Artikel. Der Läufer ersetzt die **erste** Fundstelle, mutiert wurde also der
+ * Suchindex, und der Preisprüfer meldete zu Recht grün.
+ *
+ * > **Ein Suchtext, der zweimal passt, trifft die erste Stelle — nicht die
+ * > gemeinte.** Und das sieht aus wie ein Prüfer, der nicht anschlägt.
+ *
+ * Die Einzelprobe (`bin/gegenprobe.mjs`) bricht seit dem 31. August bei
+ * mehrfachem Treffer ab. Der Läufer, der unbeaufsichtigt im Gesamtlauf steckt,
+ * tat es nicht — dieselbe Ungleichheit wie damals bei den Signalen: Was der
+ * Mensch von Hand ausführt, ist abgesichert; was allein läuft, nicht.
+ *
+ * `alle: true` ist die Ausnahme und bleibt eine: Dort sollen **alle**
+ * Fundstellen fallen, weil eine halbe Mutation den Prüfer zu Recht grün
+ * melden lässt.
+ *
+ * @param {object} eingabe
+ * @param {object[]} eingabe.proben
+ * @param {(datei: string) => string|null} eingabe.lies  Dateiinhalt oder null
+ */
+export function suchtextbefund({ proben = GEGENPROBEN, lies }) {
+  const meldungen = [];
+  for (const p of proben) {
+    if (p.art !== 'ersetzen') continue;
+    const text = lies(p.datei);
+    if (text === null) {
+      meldungen.push({ regel: 'datei-fehlt', id: p.id, text: `${p.id}: ${p.datei} gibt es nicht` });
+      continue;
+    }
+    const treffer = text.split(p.suchen).length - 1;
+    if (treffer === 0) {
+      meldungen.push({
+        regel: 'suchtext-passt-nicht',
+        id: p.id,
+        text: `${p.id}: der Suchtext kommt in ${p.datei} nicht vor — die Mutation käme nie an`,
+      });
+      continue;
+    }
+    if (!p.alle && treffer > 1) {
+      meldungen.push({
+        regel: 'suchtext-mehrdeutig',
+        id: p.id,
+        text: `${p.id}: der Suchtext kommt in ${p.datei} ${treffer}-mal vor — mutiert würde die `
+          + 'erste Stelle, und das ist nicht unbedingt die gemeinte',
+      });
+    }
+  }
+  return { geprueft: proben.filter((p) => p.art === 'ersetzen').length, meldungen, sauber: meldungen.length === 0 };
+}
 
 /** Was das Register über sich selbst weiß. */
 export function registerbefund(pruefernamen, proben = GEGENPROBEN, ohne = OHNE_GEGENPROBE) {
