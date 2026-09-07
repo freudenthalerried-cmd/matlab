@@ -470,6 +470,58 @@ test('Die Verneinung wirkt nur nach links und nur im selben Satz', () => {
     'ein „nicht" im vorigen Satz hat entschärft');
 });
 
+/**
+ * **Die zweite Betriebsaussage — 7. September 2026.** Das Register kannte bis
+ * dahin genau eine: den Vorrat. Gefunden wurde die zweite ausgerechnet auf der
+ * Seite, die erklärt, wie hier geprüft wird — *„Jede Seite geht durch eine
+ * zweite Hand, bevor sie erscheint."* Es gibt keine zweite Hand; es gibt
+ * Prüfprogramme.
+ *
+ * > **Eine Zusage über den eigenen Betrieb ist teurer als eine falsche Zahl:
+ * > Sie lässt sich nicht nachrechnen, nur glauben.**
+ */
+test('Aussagen über Leistungen, die dieser Betrieb nicht hat, werden gemeldet', () => {
+  for (const [satz, begruendung] of [
+    ['Jede Seite geht durch eine zweite Hand, bevor sie erscheint.', /zweite Hand/],
+    ['Wir arbeiten nach dem Vier-Augen-Prinzip.', /zweite Hand/],
+    ['Jeder Text wird gegengelesen.', /zweite Hand/],
+    ['Unsere Monteure bringen die Ware auf das Gerüst.', /Werkleistung|Gewerk/],
+    ['Wir montieren das System auf Wunsch.', /Werkleistung|Gewerk/],
+    ['Besuchen Sie unseren Schauraum in Ried.', /Ausstellung|Lager/],
+    ['Die Muster liegen im Ausstellungsraum.', /Ausstellung|Lager/],
+    ['Wir sind rund um die Uhr erreichbar.', /Antwortzeit/],
+    ['Unsere Hotline hilft weiter.', /Antwortzeit/],
+  ]) {
+    const v = pruefeAbsatz({ text: satz });
+    assert.ok(v.some((x) => /Betriebsaussage/.test(x)), `nicht gemeldet: „${satz}"`);
+    assert.ok(v.some((x) => begruendung.test(x)), `ohne passende Begründung gemeldet: „${satz}"`);
+  }
+});
+
+test('Die Sätze, die dieser Shop wirklich schreibt, schlagen nicht an', () => {
+  // Die Gegenrichtung, und sie ist die wichtigere: Ein Prüfer, der bei jedem
+  // zweiten Satz anschlägt, wird abgeschaltet statt befolgt. Die drei Sätze
+  // stehen so oder fast so im Bestand.
+  for (const satz of [
+    'Wir liefern die Stärke, die im Nachweis steht, und beraten nicht darüber hinweg.',
+    'Jede Seite läuft gegen Prüfprogramme, die unabhängig vom Text entstehen.',
+    'Bis zum 7. September versprach diese Regel ein zweites Augenpaar vor dem Erscheinen jeder Seite.',
+    'Eine Antwortzeit ist nicht zugesagt; die Kasse verspricht eine Rückmeldung ohne Zeitangabe.',
+  ]) {
+    const v = pruefeAbsatz({ text: satz });
+    assert.ok(!v.some((x) => /Betriebsaussage/.test(x)),
+      `fälschlich gemeldet: „${satz}" → ${v.join(' | ')}`);
+  }
+});
+
+test('Das Register nennt zu jeder Aussage die Stelle, die dagegensteht', () => {
+  assert.ok(BETRIEBSAUSSAGEN.length >= 5, 'zu wenige Einträge — die Schleife prüft dann kaum etwas');
+  for (const eintrag of BETRIEBSAUSSAGEN) {
+    assert.ok(eintrag.grund.length >= 40, `zu kurzer Grund: ${eintrag.wort}`);
+    assert.ok(/—/.test(eintrag.grund), `der Grund nennt keine Gegenstelle: ${eintrag.grund}`);
+  }
+});
+
 test('Betriebsaussagen und Grenzwörter sind zwei verschiedene Listen', () => {
   // Der Unterschied ist der Grund: `GRENZWOERTER` sammelt, was **kein**
   // Baustoffhändler behaupten darf; `BETRIEBSAUSSAGEN`, was **dieser** nicht
@@ -477,7 +529,14 @@ test('Betriebsaussagen und Grenzwörter sind zwei verschiedene Listen', () => {
   assert.ok(BETRIEBSAUSSAGEN.length >= 1, 'die Liste ist leer');
   for (const eintrag of BETRIEBSAUSSAGEN) {
     assert.ok(eintrag.wort instanceof RegExp, 'kein Muster');
-    assert.match(eintrag.grund, /PARAMETER\.md/, 'die Begründung nennt ihre Grundlage nicht');
+    // **Erweitert am 7. September.** Hier stand `/PARAMETER\.md/`, und das war
+    // richtig, solange die Liste einen Eintrag hatte. Die Grundlage ist nicht
+    // immer die Parameterdatei: Dass dieser Betrieb kein Gewerk verkauft,
+    // steht in der AGB-Gliederung, und dass keine Antwortzeit zugesagt ist,
+    // in der Bereitschaftsliste. Verlangt wird weiter eine **benannte**
+    // Grundlage — nur nicht immer dieselbe.
+    assert.match(eintrag.grund, /PARAMETER\.md|src\/[a-z]+\.js|npm run [a-z-]+/,
+      'die Begründung nennt ihre Grundlage nicht');
   }
   const grenzworte = GRENZWOERTER.map((g) => String(g.wort));
   for (const eintrag of BETRIEBSAUSSAGEN) {

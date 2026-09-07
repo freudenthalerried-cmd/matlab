@@ -23,8 +23,17 @@ falsche Angabe kostet den Kunden einen Arbeitstag und uns die Glaubwürdigkeit
 ## Die vier Regeln
 
 **Erstens: Verfassen und Prüfen sind nie derselbe Arbeitsgang.** Wer einen
-Text geschrieben hat, liest ihn nicht mehr unbefangen. Jede Seite geht durch
-eine zweite Hand, bevor sie erscheint.
+Text geschrieben hat, liest ihn nicht mehr unbefangen. Jede Seite läuft
+deshalb gegen Prüfprogramme, die unabhängig vom Text entstehen und ihn nicht
+kennen: Sie halten Zahlen gegen ihre Quelle, Aussagen über den Betrieb gegen
+das, was er tatsächlich kann, und jedes Versprechen gegen die Stelle, die es
+einlösen müsste. Was sie finden, wird berichtigt, und die Berichtigung steht
+in der Änderungsgeschichte.
+
+*Bis zum 7. September versprach diese Regel ein zweites Augenpaar vor dem
+Erscheinen jeder Seite. Ein zweiter Mensch liest hier nichts gegen — und eine
+Zusage über den eigenen Betrieb, die er nicht einlöst, ist genau das, was die
+Prüfer suchen.*
 
 **Zweitens: Eine Zahl ohne Herkunft ist keine Zahl.** Verbrauchswerte,
 Schichtdicken und Verarbeitungsbedingungen stehen nur dann hier, wenn das

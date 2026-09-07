@@ -107,6 +107,44 @@ export const BETRIEBSAUSSAGEN = Object.freeze([
     wort: /\b(?:ab|auf|am)\s+Lager\b|\blagernd\b|\bvorr(?:ä|ae)tig\b|\bLagerware\b|\bsofort\s+(?:verf(?:ü|ue)gbar|lieferbar)\b/i,
     grund: 'behauptet Vorrat — dieser Betrieb führt kein eigenes Warenlager (PARAMETER.md, Streckengeschäft)',
   },
+  /*
+   * **Ergänzt am 7. September 2026.** Bis dahin kannte dieses Register genau
+   * eine Aussage — den Vorrat. Gefunden wurde an dem Tag eine zweite, und
+   * ausgerechnet auf der Seite, die von sich sagt, sie erkläre, wie hier
+   * geprüft wird: *„Jede Seite geht durch eine zweite Hand, bevor sie
+   * erscheint."* Es gibt keine zweite Hand; es gibt Prüfprogramme.
+   *
+   * > **Eine Zusage über den eigenen Betrieb ist teurer als eine falsche Zahl:
+   * > Sie lässt sich nicht nachrechnen, nur glauben.**
+   *
+   * Aufgenommen sind deshalb die Leistungen, die ein Baustoffhändler
+   * üblicherweise anbietet und die dieser Betrieb **nicht** hat — jede mit der
+   * Stelle, die dagegensteht. Nicht aufgenommen sind Wörter, die auch harmlos
+   * vorkommen („beraten" steht auf der Dämmungsseite in „wir beraten nicht
+   * darüber hinweg"): Die Verneinung wird links vom Treffer gesucht, und ein
+   * Prüfer, der bei jedem zweiten Satz anschlägt, wird abgeschaltet statt
+   * befolgt.
+   */
+  {
+    wort: /\bgeht durch eine zweite Hand\b|\bVier-Augen-Prinzip\b|\bvon einer zweiten Person (?:gelesen|gepr(?:ü|ue)ft)\b|\blektoriert\b|\bgegengelesen\b/i,
+    grund: 'behauptet eine zweite Hand — die Texte entstehen in einem Lauf und werden von '
+      + 'Prüfprogrammen gemessen (src/pruefregister.js), nicht von einem zweiten Menschen gelesen',
+  },
+  {
+    wort: /\beigene[rn]?\s+Fuhrpark\b|\bunsere[rn]?\s+(?:Monteure|Techniker|Fahrer)\b|\beigene[rn]?\s+Monteure\b|\bwir montieren\b|\bMontage durch uns\b/i,
+    grund: 'behauptet eigene Leute oder Fahrzeuge — dieser Betrieb verkauft Ware und kein Gewerk '
+      + '(src/rechtstexte.js, AGB_GLIEDERUNG ohne Werkleistung), und der Lieferant fährt',
+  },
+  {
+    wort: /\bAusstellung(?:sraum)?\b|\bSchauraum\b|\bShowroom\b|\bMusterhaus\b/i,
+    grund: 'behauptet Räume für Kunden — es gibt kein Lager und keine Ausstellung '
+      + '(PARAMETER.md, Streckengeschäft)',
+  },
+  {
+    wort: /\brund um die Uhr\b|\b24\s*(?:\/\s*7|Stunden)\s+(?:erreichbar|verf(?:ü|ue)gbar)\b|\bjederzeit erreichbar\b|\bHotline\b/i,
+    grund: 'behauptet eine Erreichbarkeit, die niemand zugesagt hat — eine Antwortzeit steht bis '
+      + 'heute als offener Punkt (`npm run startklar`)',
+  },
 ]);
 
 /**

@@ -1518,6 +1518,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'Kaminseiten wieder weg, also genau dort, wo die Warengruppe keine eigenen '
       + 'Abgrenzungssätze hat und die Lücke am wenigsten auffiele.',
   }),
+  Object.freeze({
+    id: 'eine-zweite-hand-die-es-nicht-gibt',
+    pruefer: 'pruefe-inhalte',
+    was: 'Eine Zusage über den eigenen Betrieb, die er nicht einlöst',
+    datei: 'shop/inhalte/wissen/redaktionsprinzipien.md',
+    art: 'ersetzen',
+    suchen: 'Jede Seite läuft\ndeshalb gegen Prüfprogramme',
+    ersetzen: 'Jede Seite geht durch eine zweite Hand, bevor sie erscheint, und läuft\ndeshalb gegen Prüfprogramme',
+    erwartet: /Betriebsaussage|zweite Hand/,
+    warum: 'Der Fall vom 7. September, und er stand auf der Seite, die erklärt, wie hier '
+      + 'geprüft wird: „Jede Seite geht durch eine zweite Hand, bevor sie erscheint." Es gibt '
+      + 'keine zweite Hand — die Texte entstehen in einem Lauf, und was sie prüft, sind '
+      + 'Programme. Eine Zusage über den eigenen Betrieb ist teurer als eine falsche Zahl: Sie '
+      + 'lässt sich nicht nachrechnen, nur glauben. Das Register der Betriebsaussagen kannte '
+      + 'bis dahin genau eine Regel (den Vorrat); diese Mutation setzt die abgelöste Zusage '
+      + 'wieder ein.',
+  }),
 ]);
 
 /**
