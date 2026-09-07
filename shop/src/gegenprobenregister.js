@@ -1535,6 +1535,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'bis dahin genau eine Regel (den Vorrat); diese Mutation setzt die abgelöste Zusage '
       + 'wieder ein.',
   }),
+  Object.freeze({
+    id: 'merkblatt-ohne-weg-dorthin',
+    pruefer: 'test',
+    was: 'Eine Seite, die ins Merkblatt schickt und den Weg dorthin verschweigt',
+    datei: 'shop/src/merkblattverweis.js',
+    art: 'ersetzen',
+    baueVorher: true,
+    suchen: '    if (a?.gruppe !== gruppe) continue;',
+    ersetzen: '    if (a?.gruppe !== gruppe) continue;\n    if (true) continue;',
+    erwartet: /merkblatt-ohne-weg|Wo das Merkblatt steht/,
+    warum: 'Der Zustand vom 7. September: Acht Inhaltsseiten schickten den Leser ins Merkblatt '
+      + 'des Herstellers, vier nannten keinen — darunter „Mengen für 100 m² Fassade" mit acht '
+      + 'Erwähnungen und null Verweisen, also ausgerechnet die Seite, deren ganzer Zweck der '
+      + 'Rechenweg mit den Werten aus dem eigenen Merkblatt ist. Der Shop kennt den Weg seit '
+      + 'dem 1. September in `src/hersteller.js`, nur kannten die Inhaltsseiten das Register '
+      + 'nicht. Diese Mutation lässt die Herstellerliste je Gruppe wieder leer laufen.',
+  }),
 ]);
 
 /**

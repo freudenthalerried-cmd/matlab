@@ -209,6 +209,15 @@ export const UNGERUFEN = Object.freeze([
       + 'vollständig hat.',
   }),
   Object.freeze({
+    modul: 'src/merkblattverweis.js',
+    funktionen: ['merkblattbefund'],
+    warum: 'Ein Prüfer, der in den Testfällen wohnt — wie `src/eignungsgrenzen.js` und '
+      + '`src/abholung.js`. `test/merkblattverweis.test.js` hält ihn gegen die gebauten '
+      + 'Inhaltsseiten und läuft damit in Schritt 1 des Gesamtlaufs mit. Der Bau kann ihn nicht '
+      + 'rufen: Er misst die fertigen Seiten. `herstellerDerGruppe` und `MERKBLATT` stehen '
+      + 'nicht hier — die ruft der Bau bei jeder Inhaltsseite.',
+  }),
+  Object.freeze({
     modul: 'src/messwert.js',
     funktionen: ['ordneEin'],
     warum: 'Die Einordnung eines Radon-Messwerts — Radonzweig, wie Bedarfsrechner und '

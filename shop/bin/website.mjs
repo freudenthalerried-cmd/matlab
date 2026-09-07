@@ -53,6 +53,7 @@ import { lieferantenzahl, lieferungssatz } from '../src/lieferungen.js';
 import { abholungslage, abholungssatz } from '../src/abholung.js';
 import { UEBERSCHRIFT as GRENZEN_UEBERSCHRIFT, grenzenbausteine } from '../src/eignungsgrenzen.js';
 import { abgegrenzteStaemme } from '../src/abgrenzung.js';
+import { MERKBLATT, herstellerDerGruppe } from '../src/merkblattverweis.js';
 import { HERSTELLER, marke } from '../src/hersteller.js';
 import {
   oeffentlicherArtikel, oeffentlicherLieferant, vorteil, ustText, KORBSCHLUESSEL,
@@ -1313,6 +1314,35 @@ nicht österreichweit. Fracht fällt je Lieferung an und wird getrennt ausgewies
   } else {
     teile.push(ausQuelle(koerper));
     if (warenraster) teile.push(warenraster);
+  }
+
+  /*
+   * **Wo das Merkblatt steht — 7. September 2026.**
+   *
+   * Die zweite Redaktionsregel schickt den Leser ins Merkblatt des
+   * Herstellers, statt Kennwerte abzuschreiben. Acht Inhaltsseiten tun das,
+   * **vier nannten keinen Hersteller** — darunter „Mengen für 100 m² Fassade"
+   * mit acht Erwähnungen und null Verweisen, also ausgerechnet die Seite,
+   * deren ganzer Zweck der Rechenweg mit den Werten aus *Ihrem* Merkblatt ist.
+   *
+   * > **Eine Seite, die den Leser ins Merkblatt schickt und den Weg dorthin
+   * > verschweigt, hat die Auskunft an die Stelle verlegt, an der sie nicht
+   * > steht.**
+   *
+   * Abgeleitet aus der Warengruppe der Seite und den Marken, die der Katalog
+   * dort führt (`src/merkblattverweis.js`). Wo keine Marke bekannt ist —
+   * Kanalrohre tragen keine —, steht nichts: Ein erfundener Weg wäre
+   * schlimmer als keiner.
+   */
+  {
+    const hersteller = herstellerDerGruppe(katalog.artikel, seite.kopf.gruppe ?? null);
+    if (hersteller.length && MERKBLATT.test(seite.koerper ?? '')) {
+      teile.push(`<p class="antwort"><strong>Wo das Merkblatt steht.</strong> Die Kennwerte zu
+dieser Warengruppe führt der Hersteller: ${hersteller
+        .map((h) => `<a href="${h.url}" target="_blank" rel="noopener noreferrer">${esc(h.name)}</a>`)
+        .join(' · ')}. Wir verlinken die Herstellerseite und kein einzelnes Dokument — ein
+Dokumentpfad ändert sich mit jeder Überarbeitung, und ein toter Verweis sieht aus wie ein Beleg.</p>`);
+    }
   }
 
   // Der Schichtenschnitt: Er steht **vor** der Artikelliste, weil er die
