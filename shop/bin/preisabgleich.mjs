@@ -17,7 +17,7 @@
  * miteinander verglich. Genau das tut dieses Werkzeug — und zwar für **jeden**
  * Artikel, nicht für die drei, an denen es aufgefallen ist.
  *
- * Verglichen werden vier Ausgaben:
+ * Verglichen werden sechs Ausgaben:
  *
  * | Ausgabe | woher |
  * |---|---|
@@ -25,6 +25,14 @@
  * | Artikelseite, JSON-LD | dieselbe Datei |
  * | Artikelkarte auf der Gruppenseite | `ausgabe/site/gruppe/<gruppe>.html` |
  * | `llms.txt` | `ausgabe/site/llms.txt` |
+ * | **die Daten der Kasse** | `ausgabe/site/shop.js` |
+ * | dieselben in der Einzeldatei | `ausgabe/website.html` |
+ *
+ * **Die fünfte und sechste kamen am 7. September dazu.** Die ersten vier
+ * *zeigen* den Preis, die fünfte *rechnet* mit ihm: Warenkorbsumme, Fracht,
+ * Umsatzsteuer und der Anfragetext entstehen aus `shop.js`. Eine Abweichung
+ * dort ist die teuerste — der Kunde liest auf der Seite den einen Betrag und
+ * bekommt im Korb den anderen.
  *
  * Geprüft wird zweierlei: **derselbe Preis** überall, und — wo es eine
  * Gebindebindung gibt — **die kleinste bestellbare Menge überall**. Eine
@@ -75,7 +83,34 @@ if (artikel.length === 0) {
   process.exit(2);
 }
 
+const befundeVorab = [];
 const llms = existsSync(join(SITE, 'llms.txt')) ? readFileSync(join(SITE, 'llms.txt'), 'utf8') : '';
+
+/**
+ * Die Artikeltabelle, mit der die Oberfläche rechnet — je Ausgabe eine.
+ *
+ * Gelesen wird sie so, wie der Browser sie bekommt: aus dem ausgelieferten
+ * Skript, nicht aus dem Katalog daneben. Ein Abgleich gegen die Quelle, aus
+ * der beide entstehen, vergliche zweimal dasselbe.
+ */
+const shopdaten = [];
+for (const [name, datei] of [
+  ['shop.js (Kasse rechnet damit)', join(SITE, 'shop.js')],
+  ['Einzeldateifassung', join(WURZEL, 'ausgabe', 'website.html')],
+]) {
+  if (!existsSync(datei)) continue;
+  const roh = readFileSync(datei, 'utf8').match(/window\.__SHOP__=(\{[\s\S]*?\});\n/);
+  if (!roh) {
+    befundeVorab.push(`${name}: trägt keine __SHOP__-Daten — die Kasse rechnet dann mit nichts`);
+    continue;
+  }
+  try {
+    const daten = JSON.parse(roh[1]);
+    shopdaten.push([name, new Map((daten.artikel ?? []).map((x) => [x.sku, x]))]);
+  } catch (fehler) {
+    befundeVorab.push(`${name}: die __SHOP__-Daten sind nicht lesbar (${fehler.message})`);
+  }
+}
 
 /** Die Kartenblöcke aller Gruppenseiten, nach Artikelnummer aufgeschlüsselt. */
 const karten = new Map();
@@ -99,7 +134,7 @@ if (existsSync(gruppenOrdner)) {
   }
 }
 
-const befunde = [];
+const befunde = [...befundeVorab];
 let geprueft = 0;
 let mitSchritt = 0;
 
@@ -144,6 +179,32 @@ for (const a of artikel) {
   const zeile = llms.split('\n').find((z) => z.includes(`/artikel/${a.sku}.html`));
   const llmsPreis = zeile?.match(/:\s*([\d.,]+)\s*€\s*je/)?.[1];
   stellen.push({ name: 'llms.txt', preis: llmsPreis ? alsZahl(llmsPreis) : null, text: zeile ?? null });
+
+  /*
+   * **5. und 6.: die Daten, aus denen gerechnet wird — 7. September 2026.**
+   *
+   * Bis heute verglich dieses Werkzeug vier Ausgaben, und alle vier
+   * **zeigen** den Preis. Die fünfte **rechnet** mit ihm: `shop.js` trägt
+   * `vkNetto` für alle 46 Artikel, und daraus entstehen Warenkorbsumme,
+   * Fracht, Umsatzsteuer und der Anfragetext, den der Kunde abschickt.
+   *
+   * > **Vier Ausgaben, die den Preis zeigen, wurden verglichen — die fünfte,
+   * > aus der gerechnet wird, nicht.**
+   *
+   * Eine Abweichung dort ist die teuerste von allen: Der Kunde liest auf der
+   * Seite den einen Betrag und bekommt im Korb den anderen. Die sechste ist
+   * dieselbe Tabelle in der Einzeldateifassung — sie ist es, die der
+   * Auftraggeber öffnet, wenn er den Shop ohne Server ansieht, und die 55
+   * Browserszenarien fahren darauf.
+   */
+  for (const [name, daten] of shopdaten) {
+    const eintrag = daten?.get(a.sku);
+    stellen.push({
+      name,
+      preis: typeof eintrag?.vkNetto === 'number' ? eintrag.vkNetto : null,
+      text: eintrag ? 'vorhanden' : null,
+    });
+  }
 
   for (const s of stellen) {
     if (s.text === null) {
@@ -193,7 +254,10 @@ for (const a of artikel) {
   }
 }
 
-console.log(`\nPreisabgleich: ${geprueft} Artikel über 4 Ausgaben, ${mitSchritt} davon mit Gebindebindung\n`);
+// Gezählt, nicht geschrieben: Die Vier stand hier als Wort, während die
+// fünfte Ausgabe dazukam. Dieselbe Sorte Zahl wie im Rolloutplan.
+console.log(`\nPreisabgleich: ${geprueft} Artikel über ${4 + shopdaten.length} Ausgaben, `
+  + `${mitSchritt} davon mit Gebindebindung\n`);
 for (const b of befunde) console.log(`  ✗ ${b}`);
 if (!befunde.length) {
   console.log('  Jede Ausgabe nennt denselben Preis, und wo es ein Gebinde gibt, nennen ihn alle.');

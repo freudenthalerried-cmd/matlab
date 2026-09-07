@@ -1617,6 +1617,28 @@ export const GEGENPROBEN = Object.freeze([
       + 'wie die Anordnung. Diese Mutation verschiebt den Sollwert um eins und verlangt, dass '
       + 'die Zahl wirklich gemessen wird und nicht bloß dasteht.',
   }),
+  Object.freeze({
+    id: 'die-kasse-rechnet-mit-einem-anderen-preis',
+    pruefer: 'pruefe-preise',
+    was: 'Ein Preis in den Daten der Kasse, den keine Seite nennt',
+    datei: 'shop/src/shopkern.js',
+    art: 'ersetzen',
+    baueVorher: true,
+    // Der Suchtext nimmt die Zeile darüber mit: `vkNetto: a.vkNetto ?? null`
+    // steht zweimal in dieser Datei — einmal im Suchindex, einmal im
+    // öffentlichen Artikel. Beim ersten Anlauf traf die Mutation den
+    // Suchindex, und der Prüfer meldete zu Recht grün.
+    suchen: '    sperrgut: !!a.sperrgut,\n    vkNetto: a.vkNetto ?? null,',
+    ersetzen: '    sperrgut: !!a.sperrgut,\n'
+      + '    vkNetto: a.vkNetto == null ? null : Math.round(a.vkNetto * 90) / 100,',
+    erwartet: /shop\.js|Kasse rechnet/,
+    warum: 'Bis zum 7. September verglich der Preisabgleich vier Ausgaben, und alle vier '
+      + 'zeigen den Preis. Die fünfte rechnet mit ihm: `shop.js` trägt `vkNetto` für alle 46 '
+      + 'Artikel, und daraus entstehen Warenkorbsumme, Fracht, Umsatzsteuer und der '
+      + 'Anfragetext. Eine Abweichung dort ist die teuerste von allen — der Kunde liest auf '
+      + 'der Seite den einen Betrag und bekommt im Korb den anderen. Diese Mutation zieht in '
+      + 'den Kassendaten zehn Prozent ab und lässt jede sichtbare Seite unberührt.',
+  }),
 ]);
 
 /**
