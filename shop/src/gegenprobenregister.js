@@ -1741,6 +1741,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'Fundstelle bleibt im Register stehen, die Zahl auf der Seite verliert sie — genau '
       + 'der Zustand, den sechs Wochen lang niemand gesehen hat.',
   }),
+  Object.freeze({
+    id: 'vorlauf-vom-fremden-pruefer',
+    pruefer: 'test',
+    was: 'Ein gesparter Vorlauf, der vom Lauf eines anderen Prüfers stammt',
+    datei: 'shop/src/gegenprobenplan.js',
+    art: 'ersetzen',
+    suchen: "  if (vorige.pruefer !== jetzige.pruefer) return false;",
+    ersetzen: '',
+    erwartet: /Vorlauf entfällt nur nach einer geschlagenen Probe/,
+    warum: 'Seit dem 7. September spart der Läufer den „vorher grün"-Lauf, wenn die vorige '
+      + 'Probe denselben Prüfer hatte und geschlagen wurde — aus 315 Prüferläufen werden 251, '
+      + 'und die Ersparnis liegt fast ganz bei den dreißig Testproben zu je 23 Sekunden. Die '
+      + 'Bedingung „derselbe Prüfer" ist dabei die ganze Sicherheit: Ohne sie übernähme eine '
+      + 'Probe das grüne Ergebnis eines **anderen** Prüfers als Beweis, dass ihr eigener '
+      + 'vorher grün war — und das ist kein Beweis, sondern eine Verwechslung.',
+  }),
 ]);
 
 /**

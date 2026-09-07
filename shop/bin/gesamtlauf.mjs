@@ -248,13 +248,32 @@ if (!mitBrowser) {
 }
 
 const rot = [];
+/*
+ * **Der Lauf misst jetzt auch sich selbst — 7. September 2026.**
+ *
+ * Zweiundvierzig Schritte, 1851 Testfälle, 105 Gegenproben, und keine einzige
+ * Angabe darüber, was das kostet. Die Laufzeit ist aber die eine Zahl, die
+ * darüber entscheidet, ob dieser Lauf weiter gemacht wird:
+ *
+ * > **Ein Prüfstand, der zu lange braucht, wird nicht langsamer — er wird
+ * > übersprungen.**
+ *
+ * Gemessen wird je Schritt und in Summe. Rot wird davon nichts: Eine Grenze
+ * zu setzen hieße, sie ohne Messreihe zu erfinden. Erst steht die Zahl da.
+ */
+const begonnen = Date.now();
 for (const s of schritte) {
+  const seit = Date.now();
   const ergebnis = s.lauf();
-  console.log(`  ${ergebnis.ok ? '✓' : '✗'} ${s.name.padEnd(22)} ${ergebnis.meldung}`);
+  const sekunden = Math.round((Date.now() - seit) / 1000);
+  const zeit = sekunden >= 1 ? `${String(sekunden).padStart(4)} s` : '     ·';
+  console.log(`  ${ergebnis.ok ? '✓' : '✗'} ${s.name.padEnd(22)} ${zeit}  ${ergebnis.meldung}`);
   if (!ergebnis.ok) rot.push(`${s.name}: ${ergebnis.meldung}`);
 }
 
-console.log(`\n${schritte.length - rot.length} von ${schritte.length} Schritten grün.`);
+const dauer = Math.round((Date.now() - begonnen) / 1000);
+console.log(`\n${schritte.length - rot.length} von ${schritte.length} Schritten grün `
+  + `— ${Math.floor(dauer / 60)} min ${dauer % 60} s.`);
 if (rot.length === 0) {
   console.log('Der Bestand steht. Was hier nicht läuft, ist nicht geprüft — die Liste kommt aus');
   console.log('src/pruefregister.js und nicht aus dem Gedächtnis.');

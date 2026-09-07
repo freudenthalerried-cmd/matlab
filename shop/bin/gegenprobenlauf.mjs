@@ -29,6 +29,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { GEGENPROBEN, OHNE_GEGENPROBE, neueMeldungen, registerbefund } from '../src/gegenprobenregister.js';
+import { laufzahl, nachPrueferGruppiert, vorlaufEntfaellt } from '../src/gegenprobenplan.js';
 import { markiere, nimmAb, offeneMarken, stelleZurueck } from '../src/mutationsschutz.js';
 import { PRUEFER, BROWSERPRUEFER } from '../src/pruefregister.js';
 import { LESER } from '../src/erzeugnisstand.js';
@@ -126,9 +127,12 @@ const browsernamen = new Set(BROWSERPRUEFER.map((p) => p.name));
 const zurueckgestellt = (!nurEine && !mitBrowser)
   ? GEGENPROBEN.filter((p) => browsernamen.has(p.pruefer))
   : [];
-const proben = nurEine
+const gewaehlt = nurEine
   ? GEGENPROBEN.filter((p) => p.id === nurEine || p.pruefer === nurEine)
   : GEGENPROBEN.filter((p) => mitBrowser || !browsernamen.has(p.pruefer));
+// Nach Prüfer gruppiert, damit der „wieder grün"-Lauf der einen Probe der
+// „vorher grün"-Lauf der nächsten sein kann. Siehe `src/gegenprobenplan.js`.
+const proben = nachPrueferGruppiert(gewaehlt);
 if (nurEine && proben.length === 0) {
   console.error(`Keine Gegenprobe zu „${nurEine}". Bekannt: ${GEGENPROBEN.map((p) => p.id).join(', ')}`);
   process.exit(2);
@@ -156,7 +160,13 @@ if (liegengeblieben.length) console.log('');
 const befund = registerbefund(PRUEFER.map((p) => p.name));
 
 console.log(`Gegenproben — ${GEGENPROBEN.length} im Register für ${befund.gedeckt} Prüfer,`);
-console.log(`${befund.begruendet} weitere mit begründetem Verzicht.\n`);
+console.log(`${befund.begruendet} weitere mit begründetem Verzicht.`);
+console.log(`${proben.length} laufen, ${laufzahl(proben)} Prüferläufe statt ${proben.length * 3} `
+  + '— der „wieder grün"-Lauf zählt als „vorher grün" der nächsten Probe.\n');
+
+const begonnen = Date.now();
+let gesparteLaeufe = 0;
+let voriges = null;
 
 const ergebnisse = [];
 
@@ -176,8 +186,12 @@ for (const p of proben) {
   const beiSignal = () => { zuruecksetzen(); process.exit(130); };
   for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, beiSignal);
 
+  const seit = Date.now();
+
   try {
-    const vor = laufeMitBau(p.pruefer);
+    const wieder = vorlaufEntfaellt(voriges, p) ? voriges.zurueck : null;
+    if (wieder) gesparteLaeufe += 1;
+    const vor = wieder ?? laufeMitBau(p.pruefer);
     if (!vor.gruen) {
       /**
        * **Auch hier gehört der Grund dazu** — ergänzt am 4. September, aus
@@ -276,23 +290,35 @@ for (const p of proben) {
 
   if (urteil === 'geschlagen') {
     const zurueck = laufeMitBau(p.pruefer);
-    if (!zurueck.gruen) {
+    if (zurueck.gruen) {
+      // Genau dieser Lauf ist der „vorher grün"-Lauf der nächsten Probe am
+      // selben Prüfer: Die Datei steht byteweise wieder da, geprüft eine
+      // Zeile weiter oben.
+      voriges = { pruefer: p.pruefer, urteil: 'geschlagen', zurueck };
+    } else {
       schritte.push('nach dem Zurücksetzen nicht wieder grün — die Probe hat etwas hinterlassen');
       urteil = 'nicht sauber';
+      voriges = null;
     }
+  } else {
+    voriges = null;
   }
 
-  ergebnisse.push({ ...p, urteil, schritte });
+  const sekunden = Math.round((Date.now() - seit) / 1000);
+  ergebnisse.push({ ...p, urteil, schritte, sekunden });
   const zeichen = urteil === 'geschlagen' ? '✓' : '✗';
   console.log(`  ${zeichen} ${p.pruefer} — ${p.was}`);
-  console.log(`      ${p.datei} (${p.art})`);
+  console.log(`      ${p.datei} (${p.art}) · ${ergebnisse[ergebnisse.length - 1].sekunden} s`);
   for (const s of schritte) console.log(`      ${s}`);
   console.log('');
 }
 
 const gescheitert = ergebnisse.filter((e) => e.urteil !== 'geschlagen');
 
-console.log(`${ergebnisse.length - gescheitert.length} von ${ergebnisse.length} Gegenproben schlagen an.\n`);
+const dauer = Math.round((Date.now() - begonnen) / 1000);
+console.log(`${ergebnisse.length - gescheitert.length} von ${ergebnisse.length} Gegenproben schlagen an `
+  + `— ${Math.floor(dauer / 60)} min ${dauer % 60} s, ${gesparteLaeufe} `
+  + `${gesparteLaeufe === 1 ? 'Prüferlauf' : 'Prüferläufe'} gespart.\n`);
 
 if (zurueckgestellt.length) {
   console.log(`${zurueckgestellt.length} Gegenprobe(n) zu Browserproben zurückgestellt `
