@@ -146,6 +146,15 @@ export const UNGERUFEN = Object.freeze([
       + '— bis dahin ist er eine Ausfuhr ohne Anlass.',
   }),
   Object.freeze({
+    modul: 'src/eignungsgrenzen.js',
+    funktionen: ['grenzenbefund'],
+    warum: 'Ein Prüfer, der in den Testfällen wohnt — wie `src/abholung.js` und '
+      + '`src/lieferungen.js`. `test/eignungsgrenzen.test.js` hält ihn gegen alle 46 gebauten '
+      + 'Artikelseiten und läuft damit in Schritt 1 des Gesamtlaufs mit. Der Bau kann ihn nicht '
+      + 'rufen: Er misst die fertigen Seiten, die der Bau erst am Ende hat. `grenzenbausteine` '
+      + 'steht nicht hier — die ruft der Bau für jede Artikelseite.',
+  }),
+  Object.freeze({
     modul: 'src/empfindlichkeit.js',
     funktionen: ['rangfolge'],
     warum: 'Sagt, welche der vier unbelegten Annahmen zuerst gemessen gehört. Ihr Ergebnis '

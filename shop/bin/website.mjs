@@ -51,6 +51,8 @@ import { execFileSync } from 'node:child_process';
 import { standAusGit } from '../src/inhaltsstand.js';
 import { lieferantenzahl, lieferungssatz } from '../src/lieferungen.js';
 import { abholungslage, abholungssatz } from '../src/abholung.js';
+import { UEBERSCHRIFT as GRENZEN_UEBERSCHRIFT, grenzenbausteine } from '../src/eignungsgrenzen.js';
+import { abgegrenzteStaemme } from '../src/abgrenzung.js';
 import { HERSTELLER, marke } from '../src/hersteller.js';
 import {
   oeffentlicherArtikel, oeffentlicherLieferant, vorteil, ustText, KORBSCHLUESSEL,
@@ -1086,6 +1088,52 @@ Lieferung, nicht je Position.</p>`);
    * müsste die Messung an Überschriften raten — und eine Messung, die an
    * einer Überschrift hängt, misst beim nächsten Umformulieren etwas anderes.
    */
+  /*
+   * **Die vierte Redaktionsregel, eingelöst am 7. September 2026.**
+   *
+   * „Wir sagen auch, wofür etwas nicht taugt. Jede Produktseite hat einen
+   * Abschnitt dazu." — gezählt hatten ihn **null von 46**. Er steht jetzt auf
+   * jeder, und er erfindet nichts: Eignungsgrenzen sind technische Aussagen,
+   * und Regel zwei derselben Seite verbietet die Zahl ohne Herkunft. Was
+   * hier steht, ist abgeleitet — die Wissensseiten der Warengruppe, die
+   * Abgrenzungssätze der Gruppenseite und das Merkblatt, das die Seite ohnehin
+   * verlinkt. Siehe `src/eignungsgrenzen.js`.
+   */
+  {
+    const b = grenzenbausteine({
+      artikel: a,
+      wissen: [...seiten.values()]
+        .filter((s) => s.art === 'wissen' && s.kopf.gruppe)
+        .map((s) => ({ id: s.id, titel: s.kopf.titel, frage: String(s.kopf.frage ?? ''), gruppe: s.kopf.gruppe })),
+      // Aus der **Gruppenseite dieses Artikels**, nicht aus einer zweiten
+      // Liste: Dort stehen die Sätze, die sagen, was auf der Systemliste steht
+      // und nicht im Regal — und `abgegrenzteStaemme` ist derselbe Leser, mit
+      // dem die Kampagne prüft, ob ein Keyword auf eine Absage bietet.
+      abgrenzungen: abgegrenzteStaemme([...seiten.values()]
+        .filter((s) => s.art === 'gruppen' && s.kopf.gruppe === a.gruppe)
+        .map((s) => `${s.kopf.kurz ?? ''} ${s.koerper ?? ''}`).join(' ')),
+      merkblatt: Boolean(h),
+    });
+    teile.push(`<h2>${GRENZEN_UEBERSCHRIFT}</h2>`);
+    teile.push(`<p>${b.merkblatt
+      ? 'Wofür dieser Artikel <em>nicht</em> taugt, entscheidet der Untergrund und der Einbauort — '
+        + 'und das steht im Merkblatt des Herstellers, das oben verlinkt ist. Wir schreiben es nicht '
+        + 'ab: Eine abgeschriebene Grenze ist in dem Moment falsch, in dem der Hersteller sie ändert.'
+      : 'Wofür dieser Artikel <em>nicht</em> taugt, steht im Merkblatt des Herstellers — und das '
+        + 'liegt uns für diesen Artikel noch nicht vor. Wir tragen es nach, statt hier eine Grenze '
+        + 'zu erfinden.'}</p>`);
+    if (b.abgrenzungen.length) {
+      teile.push(`<p><strong>Was wir in dieser Warengruppe nicht führen:</strong> ${b.abgrenzungen
+        .map((x) => esc(x.satz.replace(/\s+/g, ' ').trim()))
+        .join(' ')}</p>`);
+    }
+    if (b.wissen.length) {
+      teile.push(`<p>Was wir aus eigener Kenntnis dazu sagen können, steht hier:</p>
+<ul>${b.wissen.map((w) => `<li><a href="${verweis(w.id)}">${esc(w.titel)}</a>${
+  w.frage ? ` — ${esc(alsText(w.frage))}` : ''}</li>`).join('')}</ul>`);
+    }
+  }
+
   const verwandtes = [];
   if (systemSeiten.length) {
     verwandtes.push('<h2>Gehört zu diesen Systemen</h2>');

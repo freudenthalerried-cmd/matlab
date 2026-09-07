@@ -1502,6 +1502,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'Marwach 5 liegt nie Ware. Belegt ist nur unsere eigene Abholung am Lager Mauthausen. '
       + 'Diese Mutation sagt Abholung wieder zu, ohne dass es jemand bestätigt hat.',
   }),
+  Object.freeze({
+    id: 'produktseite-ohne-eignungsgrenzen',
+    pruefer: 'test',
+    was: 'Eine Produktseite ohne den Abschnitt, den die eigene Redaktionsregel verspricht',
+    datei: 'shop/bin/website.mjs',
+    art: 'ersetzen',
+    baueVorher: true,
+    suchen: '    teile.push(`<h2>${GRENZEN_UEBERSCHRIFT}</h2>`);',
+    ersetzen: '    if (a.gruppe !== "Kamin") teile.push(`<h2>${GRENZEN_UEBERSCHRIFT}</h2>`);',
+    erwartet: /produktseite-ohne-grenzen|Wofür dieser Artikel nicht gedacht/,
+    warum: 'Der Zustand vom 7. September: Die vierte Redaktionsregel versprach „Jede '
+      + 'Produktseite hat einen Abschnitt dazu", und null von 46 hatten ihn — auf der Seite, '
+      + 'auf die `llms.txt` mit „Wie geprüft wird" verweist. Diese Mutation lässt ihn auf den '
+      + 'Kaminseiten wieder weg, also genau dort, wo die Warengruppe keine eigenen '
+      + 'Abgrenzungssätze hat und die Lücke am wenigsten auffiele.',
+  }),
 ]);
 
 /**

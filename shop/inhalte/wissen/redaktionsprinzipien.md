@@ -37,9 +37,17 @@ Normen werden überarbeitet, zurückgezogen und ersetzt. Steht keine Nummer
 dabei, ist der Verweis eine Behauptung.
 
 **Viertens: Wir sagen auch, wofür etwas nicht taugt.** Jede Produktseite hat
-einen Abschnitt dazu. Das kostet Umsatz an der einen Stelle und spart ihn an
-der anderen — eine Rücklieferung ist für beide Seiten teurer als ein
-verlorener Auftrag.
+einen Abschnitt dazu — und er schreibt nichts ab. Wo die Eignungsgrenzen
+stehen, sagt er (im Merkblatt des Herstellers, oben verlinkt); was wir aus
+eigener Kenntnis dazu wissen, steht darin verlinkt: die Wissensseiten der
+Warengruppe und das, was wir in ihr *nicht* führen. Das kostet Umsatz an der
+einen Stelle und spart ihn an der anderen — eine Rücklieferung ist für beide
+Seiten teurer als ein verlorener Auftrag.
+
+*Bis zum 7. September stand hier nur der erste Satz, und keine einzige der 46
+Artikelseiten hatte den Abschnitt. Eine Regel, die auf dieser Seite steht und
+auf keiner anderen eingelöst ist, ist eine Behauptung über den eigenen
+Betrieb.*
 
 ## Was wir nicht tun
 
