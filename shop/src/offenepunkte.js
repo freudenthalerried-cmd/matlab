@@ -60,10 +60,12 @@ export const OHNE_WERKZEUG = Object.freeze([
     // Rechnung steht, ist ablesbar, ob sich sein Preis bewegt hat.
     // `npm run preiswechsel` misst es.
     warumKeinWerkzeug: 'Der Rhythmus steht in keiner Rechnung — sie zeigen, wann wir gekauft '
-      + 'haben. Gemessen ist immerhin das Gegenstück: `npm run preiswechsel` findet in acht '
-      + 'mehrfach gekauften Artikeln über bis zu 32 Tage keinen einzigen Preiswechsel. Das '
-      + 'beziffert die Beobachtung und ersetzt die Auskunft nicht — beobachtet sind 32 Tage, '
-      + 'gesetzt ist eine Grenze von 90.',
+      + 'haben. Gemessen war immerhin das Gegenstück: `npm run preiswechsel` fand am '
+      + '30. August in acht mehrfach gekauften Artikeln über bis zu 32 Tage keinen einzigen '
+      + 'Preiswechsel. Seit dem 8. September misst es nichts mehr — die Rechnungspositionen '
+      + 'sind verloren, und das Werkzeug weigert sich, statt über nichts grün zu melden. Die '
+      + 'Beobachtung bleibt, was sie war, und ersetzt die Auskunft nicht: beobachtet sind '
+      + '32 Tage, gesetzt ist eine Grenze von 90.',
     loest: 'Entscheidet, ob die 90-Tage-Grenze der Preisalterprüfung die richtige ist (gesetzt, nicht gemessen).',
   },
   {
@@ -166,7 +168,7 @@ export const OHNE_WERKZEUG = Object.freeze([
   },
   {
     id: 'suchvolumen',
-    titel: 'Suchvolumen der 32 Keywords im Liefergebiet messen',
+    titel: 'Suchvolumen der 29 Keywords im Liefergebiet messen',
     zustaendig: 'entscheidung',
     warumKeinWerkzeug: 'Die Zahlen liegen bei Google. Der Keyword-Planer ist kostenlos, ein Ads-Konto '
       + 'ohne geschaltete Kampagne kostet nichts.',

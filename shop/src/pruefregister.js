@@ -226,6 +226,24 @@ export const PRUEFER = [
     mindestens: 5,
   },
   {
+    // **Aufgenommen am 8. September.** `src/offenepunkte.js` sagt in seinem
+    // eigenen Kopf, warum es das Modul gibt: Eine von Hand fortgeschriebene
+    // Liste ist an dem Tag falsch, an dem jemand einen Punkt schließt und die
+    // Liste nicht anfasst. Das galt für die **Punkte** und nicht für die
+    // **Sätze über die Punkte** — ein Punkt hieß „Suchvolumen der 32 Keywords
+    // messen", während die Messliste seit dem 6. September 29 führt.
+    //
+    // Gemessen wird die Zahl der **lebenden Zahlen**, nicht die der Funde:
+    // Der gesunde Zustand ist null Meldungen, und eine Fundzahl könnte hier
+    // nicht zwischen „keine Zahl veraltet" und „keine Zahl angesehen"
+    // unterscheiden.
+    name: 'pruefe-punkte',
+    werkzeug: 'punktepruefung.mjs',
+    muster: /Offene Punkte — (\d+) lebende Zahlen/,
+    einheit: 'lebende Zahlen der offenen Punkte',
+    mindestens: 5,
+  },
+  {
     // **Aufgenommen am 8. September**, nachdem ein Commit dieses Loops eine
     // laufende Gegenprobe mitgenommen und damit `pruefe-schaufenster`
     // blindgestellt hatte. Gemessen wird die Zahl der **angeordneten** Haken,

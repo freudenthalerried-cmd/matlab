@@ -49,6 +49,7 @@
     "pruefe-ungerufen": "node bin/ungerufen.mjs",
     "haken": "node bin/hakeneinrichtung.mjs",
     "pruefe-haken": "node bin/hakenpruefung.mjs",
+    "pruefe-punkte": "node bin/punktepruefung.mjs",
     "pruefe-mutationen": "node bin/mutationspruefung.mjs",
     "pruefe-ablage": "node bin/ablagepruefung.mjs",
     "pruefe-erzeugnis": "node bin/erzeugnispruefung.mjs",

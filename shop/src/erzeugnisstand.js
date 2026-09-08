@@ -163,6 +163,14 @@ export const LESER = Object.freeze([
     warumOhnePruefung: 'Es baut den Produktfeed aus dem Katalog, nicht aus den Seiten.',
   }),
   Object.freeze({
+    werkzeug: 'bin/punktepruefung.mjs',
+    erzeugnis: 'ausgabe/kampagne',
+    // Sie misst die Zahl der Begriffe gegen `ausgabe/messliste-baustoff.json`,
+    // und die schreibt `npm run messliste` aus derselben Quelle wie die
+    // Anzeigendateien. Über einer veralteten Kampagne bestätigte sie die
+    // Aufgabenliste von gestern.
+  }),
+  Object.freeze({
     werkzeug: 'bin/offenepunkte.mjs',
     erzeugnis: null,
     warumOhnePruefung: 'Es fasst zusammen, was andere Werkzeuge melden, und liest deren '

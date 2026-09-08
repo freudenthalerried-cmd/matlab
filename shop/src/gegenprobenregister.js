@@ -1880,6 +1880,24 @@ export const GEGENPROBEN = Object.freeze([
       + 'was der Haken zu rufen hat, und verlangt, dass der Prüfer den Inhalt liest und '
       + 'nicht nur den Dateinamen.',
   }),
+  Object.freeze({
+    id: 'eine-aufgabe-fuer-drei-begriffe-die-es-nicht-mehr-gibt',
+    pruefer: 'pruefe-punkte',
+    was: 'Eine Zahl in der Aufgabenliste, die älter ist als der Bestand',
+    datei: 'shop/src/offenepunkte.js',
+    art: 'ersetzen',
+    baueVorher: true,
+    suchen: "    titel: 'Suchvolumen der 29 Keywords im Liefergebiet messen',",
+    ersetzen: "    titel: 'Suchvolumen der 32 Keywords im Liefergebiet messen',",
+    erwartet: /zahl-veraltet|Begriffe der Messliste/,
+    warum: 'Der Fall vom 8. September: Der Punkt stand auf 32, während die Messliste seit '
+      + 'dem 6. September 29 Begriffe führt — zwei hat die Landeseite verneint, einen hat '
+      + 'Gate 29 zurückgestellt. Der Schaden ist nicht die Zahl, sondern die Aufgabe: Der '
+      + 'Auftraggeber soll für drei Begriffe Suchvolumen holen, für die keine Anzeige mehr '
+      + 'läuft. src/offenepunkte.js sagt in seinem eigenen Kopf, dass eine von Hand '
+      + 'fortgeschriebene Liste an dem Tag falsch ist, an dem jemand einen Punkt schließt — '
+      + 'das galt für die Punkte und nicht für die Sätze in ihnen.',
+  }),
 ]);
 
 /**

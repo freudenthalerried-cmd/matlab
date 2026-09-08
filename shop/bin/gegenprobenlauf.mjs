@@ -101,6 +101,12 @@ const baue = () => {
   // Sie misst `ausgabe/kampagne/`, und ein Bau, der nur die Website erneuert,
   // ließe sie über einem veralteten Anzeigenstand weigern.
   spawnSync('npm', ['run', '--silent', 'kampagne'], { cwd: SHOP, encoding: 'utf8' });
+  // `messliste` hinterher, seit `pruefe-punkte` sie liest: Sie wird aus
+  // `ausgabe/kampagne/keywords.csv` geschrieben, also aus dem, was der Schritt
+  // davor gerade erneuert hat. Ohne sie stünde die frische Kampagne neben
+  // einer Messliste von gestern, und der Prüfer vergliche die Aufgabenliste
+  // mit einer überholten Zahl.
+  spawnSync('npm', ['run', '--silent', 'messliste'], { cwd: SHOP, encoding: 'utf8' });
   return spawnSync('npm', ['run', '--silent', 'website'], { cwd: SHOP, encoding: 'utf8' });
 };
 
