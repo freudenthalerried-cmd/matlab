@@ -342,6 +342,13 @@ export const PRUEFER = [
     mindestens: 10,
   },
   {
+    name: 'pruefe-korbtext',
+    werkzeug: 'korbtextpruefung.mjs',
+    muster: /Korbtexte — \d+ Referenzwarenkörbe, (\d+) Positionen/,
+    einheit: 'Korbpositionen gegen ihren Klartext',
+    mindestens: 10,
+  },
+  {
     name: 'pruefe-vorbehalte',
     werkzeug: 'vorbehaltspruefung.mjs',
     muster: /(\d+) Quelldateien angesehen/,

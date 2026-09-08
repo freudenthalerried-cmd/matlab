@@ -1798,6 +1798,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'Der Artikel ist dann über „Fassade" wieder unerreichbar, und die Kampagne muss sich '
       + 'weigern, statt das Wort zu schalten.',
   }),
+  Object.freeze({
+    id: 'korbtext-nennt-ein-anderes-bauteil',
+    pruefer: 'pruefe-korbtext',
+    was: 'Ein Klartext im Referenzwarenkorb, der ein anderes Bauteil nennt',
+    datei: 'shop/bin/kampagne.mjs',
+    art: 'ersetzen',
+    suchen: "was: 'Hochlochziegel', position: null }],",
+    ersetzen: "was: 'Planziegel', position: null }],",
+    erwartet: /Planziegel/,
+    warum: 'Der Befund vom 8. September: Der Korb der Gruppe Mauerwerk trug „128 Planziegel" '
+      + 'mit dem Klartext „Planziegel" — geführt ist ein Hochlochziegel mit Nut und Feder. '
+      + 'Das Wort war zwölf Zeilen weiter oben in derselben Datei schon zurückgenommen '
+      + 'worden, als Keyword; es blieb an der Stelle stehen, die rechnet. Der Korbtext geht '
+      + 'nach außen und beschreibt zugleich die Rechnung, aus der das Höchstgebot entsteht. '
+      + 'Diese Mutation setzt das falsche Bauteil wieder ein.',
+  }),
 ]);
 
 /**

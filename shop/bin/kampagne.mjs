@@ -286,8 +286,16 @@ export const WARENKOERBE = {
       + 'es nicht: Wer Vergussmörtel bestellt, bestellt Vergussmörtel.',
   },
   Mauerwerk: {
-    umfang: '128 Planziegel',
-    positionen: [{ sku: 'POS-29728', menge: 128, was: 'Planziegel', position: null }],
+    /*
+     * **Berichtigt am 8. September.** Hier stand „128 Planziegel" mit dem
+     * Klartext „Planziegel" — und der Korbtext, der nach Google geht, lautete
+     * wörtlich „128 Planziegel Planziegel". Geführt ist `POS-29728 Ökotherm
+     * HL N+F`, ein **Hochlochziegel** mit Nut und Feder. Das Wort war am
+     * 6. September zwölf Zeilen weiter oben schon zurückgenommen worden — als
+     * Keyword. Es blieb an der Stelle stehen, die rechnet.
+     */
+    umfang: '128 Stück',
+    positionen: [{ sku: 'POS-29728', menge: 128, was: 'Hochlochziegel', position: null }],
     /*
      * **Hier steht mehr als ein Grund — 6. September 2026, nachmittags.**
      *
