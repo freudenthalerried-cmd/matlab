@@ -226,3 +226,30 @@ test('ohne Anfrageartikel ändert sich nichts', () => {
   assert.equal(katalogbefund(k).verkaeuflich, 1);
   assert.ok(k.artikel[0].vkNetto > 0);
 });
+
+test('Ein Artikel ohne Einkaufspreis steht im Befund — und fällt nicht still heraus', () => {
+  // Bis zum 8. September führte `ladeBaustoffkatalog` die Lücke, und der
+  // Befund reichte sie nicht weiter. Der Bau brach deshalb mitten in einer
+  // Artikelkarte mit `null.toLocaleString` ab, statt sie zu nennen.
+  const katalogDatei = {
+    artikel: [
+      { sku: 'POS-1', bezeichnung: 'Mit Preis', gruppe: 'X', lieferantId: 'l1', ekQuelle: 'bestaetigt' },
+      { sku: 'POS-2', bezeichnung: 'Ohne Preis', gruppe: 'X', lieferantId: 'l1', ekQuelle: 'bestaetigt' },
+    ],
+  };
+  const lieferantenDatei = { lieferanten: [{ id: 'l1', name: 'L', frachtpauschaleNetto: 10 }] };
+  const katalog = ladeBaustoffkatalog(
+    katalogDatei, { preise: { 'POS-1': { ekNetto: 10 } } }, lieferantenDatei, 0.25,
+  );
+
+  assert.deepEqual(katalog.ohnePreis, ['POS-2']);
+  assert.equal(katalog.vollstaendig, false);
+  assert.deepEqual(katalogbefund(katalog).ohnePreisSkus, ['POS-2'],
+    'der Befund muss die Lücke weiterreichen, sonst erfährt der Bau nie davon');
+
+  // Und mit vollständiger Preisdatei bleibt die Liste leer.
+  const ganz = ladeBaustoffkatalog(
+    katalogDatei, { preise: { 'POS-1': { ekNetto: 10 }, 'POS-2': { ekNetto: 20 } } }, lieferantenDatei, 0.25,
+  );
+  assert.deepEqual(katalogbefund(ganz).ohnePreisSkus, []);
+});

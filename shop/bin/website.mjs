@@ -2563,6 +2563,33 @@ function main() {
     console.log('');
     katalog = { ...katalog, artikel: katalog.artikel.filter((a) => a.ekQuelle !== 'anfrage') };
   }
+
+  /*
+   * **Der Katalog kennt den Fall, der Bau erfuhr nie davon — 8. September 2026.**
+   *
+   * `ladeBaustoffkatalog` führt seit jeher eine Liste `ohnePreis`: Artikel, zu
+   * denen die Preisdatei nichts sagt. Sie bekommen `vkNetto: null` und den
+   * Grund im Klartext. Gelesen hat diese Liste hier niemand — bis die
+   * Preisdatei am 8. September zum ersten Mal eine Lücke hatte und der Bau mit
+   * `null.toLocaleString` abbrach, mitten in einer Artikelkarte.
+   *
+   * Ein Absturz war dabei noch das bessere Ende. Das schlechtere wäre eine
+   * Seite mit „null €" gewesen, oder — schlimmer — ein Shop, der drei Artikel
+   * stillschweigend weglässt. Gate 24 sagt es zwei Absätze weiter oben: *Eine
+   * Ware, die aus dem Katalog fällt, ohne dass es jemand sieht, ist derselbe
+   * Fehler wie eine Zahl, die berechnet und verschwiegen wird.*
+   */
+  if (befund.ohnePreisSkus?.length) {
+    console.error(`Abbruch: ${befund.ohnePreisSkus.length} Artikel haben keinen Einkaufspreis `
+      + `— ${befund.ohnePreisSkus.join(', ')}`);
+    console.error('Die Preisdatei kennt sie nicht. Ohne Einkauf gibt es keinen Verkaufspreis,');
+    console.error('und eine Artikelseite ohne Preis ist keine Artikelseite.');
+    console.error('Entweder die Preise nachtragen (preise/baustoff-preise.json) oder die');
+    console.error('Artikel aus dem Katalog nehmen — stillschweigend weglassen tut dieser Bau');
+    console.error('nicht: Ware, die verschwindet, ohne dass es jemand sieht, ist derselbe');
+    console.error('Fehler wie eine verschwiegene Zahl.');
+    process.exit(2);
+  }
   const seiten = lesInhalte();
 
   // Verweise in den Inhalten prüfen, bevor irgendetwas ausgegeben wird.

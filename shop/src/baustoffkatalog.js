@@ -166,5 +166,11 @@ export function katalogbefund(katalog) {
     // Fall ist: Dort fehlt ein Vergleichsmaßstab oder ein Vorteil, hier fehlt
     // der Einkaufspreis selbst.
     nurAnfrageSkus: nurAnfrage.map((a) => a.sku),
+    // **Ergänzt am 8. September.** `ladeBaustoffkatalog` führt die Lücke seit
+    // jeher, der Befund reichte sie nicht weiter — und der Bau brach deshalb
+    // mitten in einer Artikelkarte ab, statt sie zu nennen. Auch hier ein
+    // anderer Fall: Bei `nurAnfrage` gibt es keinen rechenbaren Preis, hier
+    // gibt es ihn und die Datei kennt ihn nicht.
+    ohnePreisSkus: katalog.artikel.filter((a) => a.ekQuelle === 'fehlt').map((a) => a.sku),
   };
 }
