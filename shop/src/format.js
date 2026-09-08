@@ -123,6 +123,35 @@ export const hatSteuerzeichen = (wert) => STEUERZEICHEN.test(String(wert ?? ''))
  * Absichtlich hässlich. Eine Lücke, die im Entwurf hübsch aussieht, geht
  * irgendwann versehentlich hinaus.
  */
+/**
+ * Zahlwörter, wie sie in den Texten dieses Bestands vorkommen — in beide
+ * Richtungen.
+ *
+ * **Zusammengelegt am 8. September 2026.** Dieselbe Tabelle stand zweimal im
+ * Bestand: in `src/systemlisten.js` (als Objekt, mit „eine") und in
+ * `src/inhaltspruefung.js` (als `Map`, ohne). Zwei Fassungen derselben
+ * Tabelle sind eine Fassung, die niemand pflegt — die eine kannte ein Wort,
+ * das die andere für eine unbekannte Zahl hielt.
+ *
+ * Der Anlass war die Gegenrichtung: Der Brief an den Lieferanten sagte
+ * zweimal „vier Auskünfte" und stellte sechs Fragen. Eine Zahl, die als Wort
+ * dasteht, findet kein Muster, das nach Ziffern sucht — der Befund vom
+ * 4. September über die Etappenzahl der PR-Beschreibung, diesmal in dem
+ * einen Dokument, das an einen Dritten geht.
+ */
+export const ZAHLWORT = Object.freeze({
+  eine: 1, zwei: 2, drei: 3, vier: 4, fünf: 5, sechs: 6, sieben: 7,
+  acht: 8, neun: 9, zehn: 10, elf: 11, zwölf: 12,
+});
+
+/**
+ * Die Zahl als Wort — und über zwölf hinaus als Ziffer.
+ *
+ * Die Grenze ist keine Willkür: Über zwölf schreibt niemand mehr aus, und ein
+ * Wort, das keiner benutzt, würde in keinem Text wiedergefunden.
+ */
+export const zahlwort = (n) => Object.keys(ZAHLWORT).find((w) => ZAHLWORT[w] === n) ?? String(n);
+
 export const LUECKE = (bezeichnung) => `[[ ${bezeichnung} — FEHLT ]]`;
 
 /**

@@ -1898,6 +1898,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'fortgeschriebene Liste an dem Tag falsch ist, an dem jemand einen Punkt schließt — '
       + 'das galt für die Punkte und nicht für die Sätze in ihnen.',
   }),
+  Object.freeze({
+    id: 'ein-brief-der-sich-selbst-falsch-zaehlt',
+    pruefer: 'pruefe-anfrage',
+    was: 'Ein Brief an einen Dritten, der seine eigenen Fragen falsch zählt',
+    datei: 'shop/src/lieferantenanfrage.js',
+    art: 'ersetzen',
+    suchen: '      + `brauchen wir ${zahlwort(fragen.length)} Auskünfte.`,',
+    ersetzen: "      + 'brauchen wir vier Auskünfte.',",
+    erwartet: /brief-zaehlt-falsch|sagt „vier"/,
+    warum: 'Der Zustand bis zum 8. September: Der Brief sagte im ersten und im letzten Absatz '
+      + '„vier Auskünfte" und stellte sechs Fragen. Angefangen hatte er mit vier; am '
+      + '3. September kam die fünfte dazu, am 6. September die sechste. Der Kopfkommentar '
+      + 'derselben Datei hält den ersten Schritt sogar fest — geändert wurde die Zahl im '
+      + 'Kommentar und nicht im Brief. Eine Zahl, die als Wort dasteht, findet kein Muster, '
+      + 'das nach Ziffern sucht, und dies ist das einzige Dokument dieses Bestands, das an '
+      + 'einen Dritten geht. Diese Mutation schreibt die Zahl wieder aus.',
+  }),
 ]);
 
 /**

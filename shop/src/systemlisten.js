@@ -37,11 +37,10 @@
  *   `alles-fremd`           keine einzige lieferbare Position
  */
 
-/** Zahlwörter, wie sie in diesen Texten vorkommen. */
-export const ZAHLWORT = Object.freeze({
-  eine: 1, zwei: 2, drei: 3, vier: 4, fünf: 5, sechs: 6, sieben: 7,
-  acht: 8, neun: 9, zehn: 10, elf: 11, zwölf: 12,
-});
+// **Zahlwörter am 8. September nach `src/format.js` verlegt.** Dieselbe
+// Tabelle stand auch in `src/inhaltspruefung.js`, dort ohne „eine" — zwei
+// Fassungen derselben Tabelle sind eine Fassung, die niemand pflegt.
+import { ZAHLWORT } from './format.js';
 
 /** Die Kennzeichnung, mit der eine Position als **gar nicht** lieferbar dasteht. */
 export const NICHT_GEFUEHRT = /\(nicht im Sortiment\)/;

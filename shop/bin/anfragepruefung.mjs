@@ -27,6 +27,7 @@ import { dirname, join } from 'node:path';
 import { gruppen } from './offenepunkte.mjs';
 import {
   FRAGEN, punkteOhneFrage, fragenOhnePunkt, erzeugeLieferantenanfrage,
+  selbstzaehlungsbefund,
 } from '../src/lieferantenanfrage.js';
 
 const hier = dirname(fileURLToPath(import.meta.url));
@@ -60,9 +61,16 @@ for (const f of FRAGEN) {
   console.log(`  ${f.titel} → schließt ${f.schliesst.length}: ${f.schliesst.join(', ')}`);
 }
 
+// **Der Brief zählt sich selbst — geprüft seit dem 8. September.** Er sagte
+// zweimal „vier Auskünfte" und stellte sechs Fragen. Die Lehre stand da
+// bereits, zwanzig Zeilen weiter unten an einer Konsolenzeile; angewandt war
+// sie dort, wo sie auffiel, und nicht dort, wo sie zählt.
+const selbst = selbstzaehlungsbefund(brief.text, FRAGEN.length);
+
 const befunde = [
   ...ungefragt.map((id) => `${id}: offener Punkt, den keine Frage schließt`),
   ...ueberfluessig.map((id) => `${id}: Frage im Brief, die keinen offenen Punkt mehr schließt`),
+  ...selbst.meldungen.map((m) => `${m.text} [${m.regel}]`),
 ];
 
 console.log(`\n--- Der Brief (${brief.zeilen.length} Zeilen) ---\n`);

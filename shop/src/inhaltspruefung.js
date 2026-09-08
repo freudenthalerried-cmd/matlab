@@ -17,6 +17,11 @@
  * aus Bequemlichkeit gemacht als eine, die man wegkonfiguriert.
  */
 
+// **Am 8. September zusammengelegt.** Hier stand dieselbe Tabelle noch einmal,
+// als eigene `Map` und ohne „eine" — das Wort, das die andere Fassung kannte.
+// Zwei Fassungen derselben Tabelle sind eine Fassung, die niemand pflegt.
+import { ZAHLWORT } from './format.js';
+
 /**
  * Zahlen mit Maßeinheit — sie sind Behauptungen und brauchen eine Quelle.
  *
@@ -306,13 +311,6 @@ export function kopffelder(text) {
   return felder;
 }
 
-/**
- * Zahlwörter, wie sie in diesen Texten vorkommen.
- */
-const ZAHLWORT = new Map([
-  ['zwei', 2], ['drei', 3], ['vier', 4], ['fünf', 5], ['sechs', 6], ['sieben', 7],
-  ['acht', 8], ['neun', 9], ['zehn', 10], ['elf', 11], ['zwölf', 12],
-]);
 
 const POSITIONSZAHL = /(?<![\p{L}\d])(\d{1,2}|zwei|drei|vier|fünf|sechs|sieben|acht|neun|zehn|elf|zwölf)\s+Positionen(?![\p{L}])/giu;
 const TABELLENZEILE = /^\|\s*(\d{1,2})\s*\|/gm;
@@ -343,7 +341,7 @@ export function pruefeZaehlung(text) {
   const verdacht = [];
   for (const m of text.matchAll(POSITIONSZAHL)) {
     const roh = m[1].toLowerCase();
-    const genannt = ZAHLWORT.get(roh) ?? Number(roh);
+    const genannt = ZAHLWORT[roh] ?? Number(roh);
     if (!Number.isFinite(genannt) || genannt === anzahl) continue;
     const bis = text.slice(0, m.index).split(/\n/).length;
     verdacht.push({

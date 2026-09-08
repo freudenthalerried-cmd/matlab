@@ -9,6 +9,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   FRAGEN, punkteOhneFrage, fragenOhnePunkt, darfVersendetWerden, erzeugeLieferantenanfrage,
+  SELBSTZAEHLUNG,
+  selbstzaehlungsbefund,
 } from '../src/lieferantenanfrage.js';
 
 // Die offenen Punkte der Gruppe „Anfrage", wie `npm run offenepunkte` sie
@@ -100,4 +102,45 @@ test('die Probeliste kennt jeden handgeführten Punkt der Gruppe „Anfrage"', a
   const inProbe = new Set(GRUPPE.map((p) => p.id));
   const fehlend = ausRegister.filter((id) => !inProbe.has(id));
   assert.deepEqual(fehlend, [], 'diese Punkte stehen im Register und nicht in der Probeliste');
+});
+
+/**
+ * **Der Befund vom 8. September.** Der Brief sagte zweimal „vier Auskünfte"
+ * und stellte sechs Fragen — im ersten und im letzten Absatz.
+ */
+test('der fertige Brief zählt seine eigenen Fragen richtig', () => {
+  const brief = erzeugeLieferantenanfrage({ betreiber: {}, lieferant: {} });
+  const b = selbstzaehlungsbefund(brief.text, FRAGEN.length);
+  assert.deepEqual(b.meldungen, []);
+  assert.equal(b.geprueft, SELBSTZAEHLUNG.length);
+});
+
+test('jede Stelle der Selbstzählung wird im echten Brief auch gefunden', () => {
+  const brief = erzeugeLieferantenanfrage({ betreiber: {}, lieferant: {} });
+  assert.ok(SELBSTZAEHLUNG.length >= 2);
+  for (const s of SELBSTZAEHLUNG) {
+    assert.match(brief.text, s.muster, `${s.wo}: das Muster trifft im gebauten Brief nicht`);
+  }
+});
+
+test('eine ausgeschriebene Zahl, die nicht stimmt, ist ein Befund', () => {
+  const b = selbstzaehlungsbefund('brauchen wir vier Auskünfte, die vier oben genügen uns', 6);
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['brief-zaehlt-falsch', 'brief-zaehlt-falsch']);
+  assert.match(b.meldungen[0].text, /sagt „vier", gestellt werden 6/);
+});
+
+test('eine Ziffer wird genauso gelesen wie das Wort', () => {
+  assert.deepEqual(
+    selbstzaehlungsbefund('brauchen wir 6 Auskünfte, die sechs oben genügen uns', 6).meldungen,
+    [],
+  );
+});
+
+/**
+ * Der Anker-Fall: Wird der Satz umgeschrieben, prüft niemand mehr diese Zahl.
+ * Das ist ein eigener Befund und nicht dasselbe wie „Zahl stimmt nicht".
+ */
+test('ein umgeschriebener Satz ist ein eigener Befund', () => {
+  const b = selbstzaehlungsbefund('Wir haben ein paar Fragen an Sie.', 6);
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['stelle-ohne-treffer', 'stelle-ohne-treffer']);
 });

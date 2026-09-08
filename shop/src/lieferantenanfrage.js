@@ -31,6 +31,7 @@
  */
 
 import { textZeile } from './format.js';
+import { ZAHLWORT, zahlwort } from './format.js';
 
 /**
  * Die Fragen.
@@ -222,6 +223,56 @@ function feld(wert, bezeichnung) {
  * Ein Außentext wie jeder andere: Alles Eingesetzte läuft durch `textZeile`,
  * damit ein Zeilenumbruch in einem Feld keine zweite Frage erfindet.
  */
+/**
+ * Die Stellen, an denen der Brief **sich selbst zählt**.
+ *
+ * **Der Anlass, 8. September 2026.** Er sagte zweimal „vier Auskünfte" und
+ * stellte sechs Fragen — im ersten und im letzten Absatz. Beide Zahlen kommen
+ * jetzt aus `fragen.length`, und dieses Register hält das fest: Wer sie wieder
+ * ausschreibt, wird gemeldet.
+ *
+ * Bitter daran: Genau diese Lehre steht seit dem 3. September **eine Datei
+ * weiter** — in `bin/anfragepruefung.mjs`, an der Konsolenzeile, die die Zahl
+ * der geschlossenen Punkte nennt: *„Ein Satz, der eine Menge behauptet, gehört
+ * an die Menge gehängt."* Angewandt wurde sie dort, wo sie auffiel, und nicht
+ * dort, wo sie zählt — im Brief an den Dritten.
+ *
+ * `wo` ist kein Schmuck: Bleibt ein Muster ohne Treffer, wurde der Satz
+ * umgeschrieben, und dann prüft niemand mehr diese Zahl. Das ist ein eigener
+ * Befund und nicht dasselbe wie „Zahl stimmt nicht".
+ */
+export const SELBSTZAEHLUNG = Object.freeze([
+  Object.freeze({ muster: /brauchen wir (\S+) Auskünfte/, wo: 'der erste Absatz' }),
+  Object.freeze({ muster: /die (\S+) oben genügen uns/, wo: 'der letzte Absatz' }),
+]);
+
+/**
+ * @param {string} text     der fertige Brief
+ * @param {number} anzahl   wie viele Fragen wirklich darin stehen
+ */
+export function selbstzaehlungsbefund(text, anzahl, stellen = SELBSTZAEHLUNG) {
+  const meldungen = [];
+  for (const s of stellen) {
+    const treffer = text.match(s.muster);
+    if (!treffer) {
+      meldungen.push({
+        regel: 'stelle-ohne-treffer',
+        text: `${s.wo}: der Satz, der die Zahl der Fragen nennt, steht nicht mehr da — `
+          + 'umgeschrieben, und das Muster gehört mit',
+      });
+      continue;
+    }
+    const gelesen = ZAHLWORT[treffer[1].toLowerCase()] ?? Number(treffer[1]);
+    if (gelesen !== anzahl) {
+      meldungen.push({
+        regel: 'brief-zaehlt-falsch',
+        text: `${s.wo}: der Brief sagt „${treffer[1]}", gestellt werden ${anzahl} Fragen`,
+      });
+    }
+  }
+  return { geprueft: stellen.length, meldungen, sauber: meldungen.length === 0 };
+}
+
 export function erzeugeLieferantenanfrage({ betreiber = {}, lieferant = {}, fragen = FRAGEN } = {}) {
   const pruefung = darfVersendetWerden(betreiber, lieferant);
   const zeilen = [
@@ -234,7 +285,7 @@ export function erzeugeLieferantenanfrage({ betreiber = {}, lieferant = {}, frag
       + `${feld(betreiber.plz, 'PLZ')} ${feld(betreiber.ort, 'Ort')}, beziehen seit `
       + 'Längerem Baustoffe über Sie. Wir bauen derzeit einen Online-Shop für unsere Region '
       + 'auf, in dem wir ausschließlich Ware anbieten, die wir bei Ihnen bestellen. Dafür '
-      + 'brauchen wir vier Auskünfte.',
+      + `brauchen wir ${zahlwort(fragen.length)} Auskünfte.`,
     '',
   ];
   for (const [i, f] of fragen.entries()) {
@@ -242,7 +293,7 @@ export function erzeugeLieferantenanfrage({ betreiber = {}, lieferant = {}, frag
   }
   zeilen.push(
     'Der Shop führt keine eigene Lagerhaltung; jede Bestellung geht als Bestellung bei Ihnen',
-    'ein. Mehr Auskünfte brauchen wir nicht — die vier oben genügen uns.',
+    `ein. Mehr Auskünfte brauchen wir nicht — die ${zahlwort(fragen.length)} oben genügen uns.`,
     '',
     'Für Rückfragen erreichen Sie uns unter:',
     `  ${feld(betreiber.email, 'E-Mail-Adresse des Absenders')}`,

@@ -16,7 +16,10 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 import {
-  ZAHLWORT, NICHT_GEFUEHRT, liesSystemliste, listenbefund, systemlistenbefund, WORTLUECKEN, zuordnungsbefund } from '../src/systemlisten.js';
+  NICHT_GEFUEHRT, liesSystemliste, listenbefund, systemlistenbefund, WORTLUECKEN, zuordnungsbefund } from '../src/systemlisten.js';
+// **Am 8. September verlegt**: Die Zahlwörter stehen jetzt in src/format.js,
+// weil dieselbe Tabelle auch in src/inhaltspruefung.js stand.
+import { ZAHLWORT } from '../src/format.js';
 
 const wurzel = join(dirname(fileURLToPath(import.meta.url)), '..');
 const katalog = JSON.parse(readFileSync(join(wurzel, 'data', 'katalog-baustoff.json'), 'utf8'));
