@@ -20,7 +20,7 @@ Kalkulation — alles hängt daran.
 
 ---
 
-## Was sich zurückholen ließ: 43 von 46
+## Was sich zurückholen ließ: alle 46
 
 `npm run pruefe-geheimnis` misst seit dem 30. August, dass aus den
 **veröffentlichten** Verkaufspreisen und der dokumentierten Zielmarge die
@@ -42,11 +42,13 @@ stand implizit in derselben Messung („zwei weichen ab").
 **Damit sind es 46 von 46.** Und der Fund dahinter ist unangenehmer als der
 Verlust.
 
-**Und keiner der 43 heißt „belegt".** Jeder Eintrag trägt
-`ekQuelle: 'rekonstruiert'`, und der Shop führt ihn folgerichtig als
-Platzhalter:
+**Und keiner davon heißt „belegt".** Jeder Eintrag trägt
+`ekQuelle: 'rekonstruiert'`:
 
 > **Ein Wert, der stimmt, ist noch kein Wert, der belegt ist.**
+
+Was daraus folgt, entscheidet Gate 30 weiter unten — und zwar anders, als es
+zuerst aussah.
 
 ---
 
