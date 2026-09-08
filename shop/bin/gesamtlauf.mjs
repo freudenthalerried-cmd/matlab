@@ -165,6 +165,26 @@ for (const p of [...PRUEFER, ...(mitBrowser ? BROWSERPRUEFER : [])]) {
       // `pruefe-pruefer` gibt — hier kostet die Prüfung nichts extra.
       const treffer = p.muster.exec(ausgabe);
       const umfang = treffer ? Number(treffer[p.zweite ? 2 : 1]) : null;
+      /*
+       * **Rot ist nicht dasselbe wie nicht messbar — 8. September 2026.**
+       *
+       * Mit dem Neuaufsetzen der Arbeitsumgebung ging
+       * `preise/poschacher-positionen.csv` verloren, und zwei Prüfer weigern
+       * sich seither zu Recht: „Ohne sie ist hier nichts zu messen, und ein
+       * grüner Lauf über nichts wäre eine Lüge." Der Lauf zählte das als
+       * Befund und meldete „Ausgang 2" — dieselbe Zeile wie bei einem echten
+       * Fund.
+       *
+       * Beides ist nicht grün, und beides bleibt es. Aber es ist ein
+       * Unterschied, ob ein Prüfer **etwas gefunden** hat oder ob ihm die
+       * Grundlage fehlt: Das eine behebt man im Bestand, das andere kann nur,
+       * wer die fehlende Datei hat. Ausgang 2 ist im ganzen Bestand die
+       * Weigerung, Ausgang 1 der Befund.
+       */
+      if (e.status === 2) {
+        const grund = ausgabe.trim().split('\n')[0] || 'ohne Angabe';
+        return { ok: false, messbar: false, meldung: `nicht messbar — ${grund}` };
+      }
       if (e.status !== 0) return { ok: false, meldung: `Ausgang ${e.status}` };
       if (umfang === null) return { ok: false, meldung: 'meldet seinen Umfang nicht' };
       // NaN ist keine Menge. `NaN < mindestens` ist falsch, also käme ein
@@ -262,18 +282,26 @@ const rot = [];
  * zu setzen hieße, sie ohne Messreihe zu erfinden. Erst steht die Zahl da.
  */
 const begonnen = Date.now();
+const unmessbar = [];
 for (const s of schritte) {
   const seit = Date.now();
   const ergebnis = s.lauf();
   const sekunden = Math.round((Date.now() - seit) / 1000);
   const zeit = sekunden >= 1 ? `${String(sekunden).padStart(4)} s` : '     ·';
-  console.log(`  ${ergebnis.ok ? '✓' : '✗'} ${s.name.padEnd(22)} ${zeit}  ${ergebnis.meldung}`);
+  if (ergebnis.messbar === false) unmessbar.push(`${s.name}: ${ergebnis.meldung}`);
+  const zeichen = ergebnis.ok ? '✓' : (ergebnis.messbar === false ? '⃠' : '✗');
+  console.log(`  ${zeichen} ${s.name.padEnd(22)} ${zeit}  ${ergebnis.meldung}`);
   if (!ergebnis.ok) rot.push(`${s.name}: ${ergebnis.meldung}`);
 }
 
 const dauer = Math.round((Date.now() - begonnen) / 1000);
 console.log(`\n${schritte.length - rot.length} von ${schritte.length} Schritten grün `
   + `— ${Math.floor(dauer / 60)} min ${dauer % 60} s.`);
+if (unmessbar.length) {
+  console.log(`\n${unmessbar.length} davon nicht messbar — die Grundlage fehlt, nicht der Befund:`);
+  for (const u of unmessbar) console.log(`  ⃠ ${u}`);
+  console.log('Das ist keine Entwarnung: Was nicht gemessen wurde, ist nicht geprüft.');
+}
 if (rot.length === 0) {
   console.log('Der Bestand steht. Was hier nicht läuft, ist nicht geprüft — die Liste kommt aus');
   console.log('src/pruefregister.js und nicht aus dem Gedächtnis.');

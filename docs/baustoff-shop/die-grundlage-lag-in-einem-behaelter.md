@@ -132,8 +132,29 @@ Ort — sie ist die einzige Zahlengrundlage des ganzen Vorhabens und war bis
 heute nirgends gesichert.
 
 **Nicht zurückzuholen ist `preise/poschacher-positionen.csv`** — die
-Rechnungspositionen mit Datum. Sie ergibt sich aus keiner Ausgabe;
-`npm run preiswechsel` misst seither nichts und sagt das.
+Rechnungspositionen mit Datum. Sie ergibt sich aus keiner Ausgabe. **Zwei
+Prüfer** hängen daran: `npm run preiswechsel` (der Preisrhythmus) und
+`npm run pruefe-gebinde` (18 Artikel gegen fakturierte Mengen). Beide weigern
+sich seither — *„Ohne sie ist hier nichts zu messen, und ein grüner Lauf über
+nichts wäre eine Lüge."*
+
+---
+
+## Rot ist nicht dasselbe wie nicht messbar
+
+Der Gesamtlauf zählte diese Weigerung als Befund und schrieb „Ausgang 2" —
+dieselbe Zeile wie bei einem echten Fund.
+
+Beides ist nicht grün, und beides bleibt es. Aber es ist ein Unterschied, ob
+ein Prüfer **etwas gefunden hat** oder ob ihm die **Grundlage fehlt**: Das eine
+behebt man im Bestand, das andere kann nur, wer die fehlende Datei hat.
+
+> **Ein Prüfer ohne Grundlage hat nichts gefunden — er hat nichts gesucht.**
+
+Ausgang 2 ist im ganzen Bestand die Weigerung, Ausgang 1 der Befund. Der Lauf
+liest das jetzt: Solche Schritte erscheinen als `⃠ nicht messbar` mit ihrem
+Grund und stehen am Ende noch einmal beisammen. Grün wird davon nichts, und
+der Lauf endet weiter rot — *was nicht gemessen wurde, ist nicht geprüft.*
 
 **Für dieses Verzeichnis:** Der Bau läuft wieder, und die Tests sind grün —
 aber jede Preisangabe trägt jetzt „rekonstruiert" statt „bestätigt", und der
