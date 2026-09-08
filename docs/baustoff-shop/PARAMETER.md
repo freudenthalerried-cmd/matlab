@@ -142,7 +142,7 @@ konservativere Kapitalgesellschaftsweg unterstellt.
 > `die-drei-groessten-risiken.md`.
 >
 > **Und die Zahl, mit der gemessen wird:** Die Messliste führt
-> **30 Begriffe** in drei Anzeigengruppen (`npm run messliste`). Sie müssen im
+> **29 Begriffe** in drei Anzeigengruppen (`npm run messliste`). Sie müssen im
 > Liefergebiet zusammen 2.500 bis 6.700 Suchanfragen je Monat tragen, sonst
 > bindet der Markt und nicht das Budget. Bis zum 01.09. waren es 33; dann
 > fiel „Kaminkopf Regenhaube“ weg, weil der Shop die Kaminkopfverkleidung
@@ -152,6 +152,12 @@ konservativere Kapitalgesellschaftsweg unterstellt.
 > Fassadendämmplatte in Flächenstärke nicht geführt wird. Seither ist es keine
 > Handentscheidung mehr: `abgegrenztesKeyword` hält jedes Keyword gegen die
 > Abgrenzungssätze seiner Landeseite (`ein-gebot-auf-die-eigene-absage.md`).
+>
+> **Am 08.09. eines weniger, aus einem anderen Grund:** „Fassadendübel" trifft
+> in der eigenen Suche einen Artikel, dessen Einkaufspreis 104 Tage alt ist —
+> **Gate 29** stellt solche Wörter zurück, bis der Preis bestätigt ist. Es ist
+> keine Streichung: Die Liste entsteht bei jedem Lauf neu, und das Wort kommt
+> mit dem bestätigten Preis von selbst wieder (`das-gebot-ruht-auf-dem-korb.md`).
 >
 > **Berichtigt am 01.09.:** Hier stand 45.356 €. Das ist die Zahl für
 > **Kreditkarte**, gerechnet am 25.08. — zwei Tage bevor Gate 21 EPS und

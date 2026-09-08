@@ -59,6 +59,18 @@
  * angehalten. Eine Regel, die am ersten Tag den falschen trifft, wird am
  * zweiten abgeschaltet. Maßgeblich ist nicht, in welchem Regal ein Artikel
  * steht, sondern ob ein Gebot auf seinem Preis ruht.
+ *
+ * **Berichtigt am 8. September.** Der Absatz darüber nennt zwei Gründe — „in
+ * keinem Keyword, in keinem Referenzkorb" —, und geprüft wurde bis dahin nur
+ * der zweite. Gemessen traf das geschaltete Keyword **„Fassadendübel"** genau
+ * diesen Drehstiftdübel, dessen Preis 104 Tage alt war.
+ *
+ * > **Das Gebot ruht auf dem Korb; gekauft wird, was das Wort nennt.**
+ *
+ * `beworbeneSkus` ist seither die **Vereinigung**: Korbpositionen und die
+ * Artikel, die die geschalteten Keywords in der eigenen Suche treffen. Die
+ * WDVS-Kampagne hält das aus — nicht die Gruppe wird angehalten, sondern
+ * **Gate 29** stellt das eine Wort zurück, bis der Preis bestätigt ist.
  */
 
 /** Ein Quartal. Gesetzt, nicht gemessen — siehe oben. */

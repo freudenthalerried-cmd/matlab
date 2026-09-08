@@ -39,6 +39,8 @@ import { ETAPPEN } from '../src/rollout.js';
 import { PREISAUSSAGEN, VORRATSWORTE } from '../src/aussagen.js';
 import { abgegrenztesKeyword } from '../src/abgrenzung.js';
 import { ausschlussbefund } from '../src/ausschluss.js';
+import { GRENZE_TAGE, preisalterTage } from '../src/preisalter.js';
+import { preisdeckungsbefund } from '../src/preisdeckung.js';
 import {
   THEMA as THEMA_NICHT_GEFUEHRT,
   ausschluesseAusRegister,
@@ -1678,6 +1680,8 @@ function main() {
    * der Kunde, misst einen anderen Shop.**
    */
   let suchdeckung = null;
+  let preisdeckung = null;
+  let finde = null;
   {
     const skript = join(WURZEL, 'ausgabe', 'site', 'shop.js');
     if (existsSync(skript)) {
@@ -1687,11 +1691,30 @@ function main() {
         const index = baueSuchindex({
           artikel: D.artikel ?? [], seiten: D.seiten ?? [], suchwoerter: D.suchwoerter ?? [],
         });
+        finde = (frage) => suche(index, frage, { grenze: 20 });
+
+        /*
+         * **Gate 29, 8. September 2026.** Ein Keyword, dessen eigene
+         * Trefferliste einen Artikel mit überaltertem Einkaufspreis enthält,
+         * wird zurückgestellt — siehe `src/preisdeckung.js`. Gemessen wird an
+         * denselben Daten, die im Browser des Besuchers liegen; das
+         * Preisalter steht dort je Artikel.
+         */
+        const heute = new Date().toISOString().slice(0, 10);
+        const alterJeSku = new Map(
+          (D.artikel ?? [])
+            .map((a) => [a.sku, preisalterTage(a.preisStand, heute)])
+            .filter(([, t]) => t !== null),
+        );
+        preisdeckung = preisdeckungsbefund({
+          keywords: keywordsGedeckt, finde, alterJeSku, grenzeTage: GRENZE_TAGE,
+        });
+
         suchdeckung = suchdeckungsbefund({
           // Über **alle** geprüften Keywords, nicht nur die geschalteten:
           // Die Regel gilt für jedes Wort, auf das dieser Betrieb je bietet.
           keywords: [...new Set(keywordsGeprueft.map((k) => k.Keyword))],
-          finde: (frage) => suche(index, frage, { grenze: 20 }),
+          finde,
         });
       }
     }
@@ -1716,7 +1739,43 @@ function main() {
     }
   }
 
-  schreibe('keywords.csv', csv(['Kampagne', 'Anzeigengruppe', 'Keyword', 'Übereinstimmungstyp', 'Herkunft', 'Marke'], keywordsGedeckt));
+  /*
+   * **Gate 29 wirkt hier.** Die betroffenen Keywords verschwinden nicht,
+   * sondern wechseln die Datei — mit dem Artikel und seinem Preisalter
+   * daneben. Sobald der Preis bestätigt ist, stehen sie beim nächsten Lauf
+   * wieder in `keywords.csv`; die Liste entsteht jedes Mal neu.
+   */
+  const altpreisig = new Set((preisdeckung?.betroffen ?? []).map((b) => b.Keyword));
+  const keywordsGeschaltet = keywordsGedeckt.filter((k) => !altpreisig.has(k.Keyword));
+  // Ein Keyword steht je Übereinstimmungstyp mehrfach in der Liste; hier zählt
+  // das Wort, nicht die Schaltform.
+  const schonGenannt = new Set();
+  const keywordsAltpreis = (preisdeckung?.betroffen ?? []).filter((b) => {
+    const schluessel = `${b.Anzeigengruppe}|${b.Keyword}`;
+    if (schonGenannt.has(schluessel)) return false;
+    schonGenannt.add(schluessel);
+    return true;
+  }).map((b) => ({
+    Anzeigengruppe: b.Anzeigengruppe,
+    Keyword: b.Keyword,
+    Herkunft: b.Herkunft,
+    Artikel: b.alt.map((a) => a.sku).join(' '),
+    'Ältester Preis (Tage)': b.alt[0].tage,
+  }));
+
+  if (keywordsAltpreis.length) {
+    console.log(`\nGate 29: ${keywordsAltpreis.length} Keyword(s) zurückgestellt, `
+      + 'weil ihre eigene Trefferliste einen überalterten Einkaufspreis enthält:');
+    for (const k of keywordsAltpreis) {
+      console.log(`  · „${k.Keyword}" (${k.Anzeigengruppe}) → ${k.Artikel}, `
+        + `${k['Ältester Preis (Tage)']} Tage`);
+    }
+    console.log('  Das Gebot ruht auf dem Korb; gekauft wird, was das Wort nennt.');
+  }
+
+  schreibe('keywords.csv', csv(['Kampagne', 'Anzeigengruppe', 'Keyword', 'Übereinstimmungstyp', 'Herkunft', 'Marke'], keywordsGeschaltet));
+  schreibe('keywords-alter-preis.csv', csv(
+    ['Anzeigengruppe', 'Keyword', 'Herkunft', 'Artikel', 'Ältester Preis (Tage)'], keywordsAltpreis));
   schreibe('keywords-zurueckgestellt.csv', csv(
     ['Kampagne', 'Anzeigengruppe', 'Keyword', 'Übereinstimmungstyp', 'Herkunft', 'Marke'], keywordsSpaeter));
   schreibe('keywords-ohne-deckung.csv', csv(

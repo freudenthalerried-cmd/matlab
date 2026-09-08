@@ -1757,6 +1757,25 @@ export const GEGENPROBEN = Object.freeze([
       + 'Probe das grüne Ergebnis eines **anderen** Prüfers als Beweis, dass ihr eigener '
       + 'vorher grün war — und das ist kein Beweis, sondern eine Verwechslung.',
   }),
+  Object.freeze({
+    id: 'gebot-auf-das-wort-statt-den-korb',
+    pruefer: 'pruefe-preisalter',
+    was: 'Ein Keyword, das auf einen überalterten Einkaufspreis zeigt und trotzdem schaltet',
+    datei: 'shop/bin/kampagne.mjs',
+    art: 'ersetzen',
+    suchen: '  const keywordsGeschaltet = keywordsGedeckt.filter((k) => !altpreisig.has(k.Keyword));',
+    ersetzen: '  const keywordsGeschaltet = keywordsGedeckt;',
+    erwartet: /ruht ein Gebot/,
+    baueVorher: true,
+    warum: 'Der Befund vom 8. September: `pruefe-preisalter` bestimmte die gebotstragenden '
+      + 'Artikel über die Referenzwarenkörbe. Die eigene Begründung des Moduls nannte zwei '
+      + 'Gründe — „in keinem Keyword, in keinem Referenzkorb" —, und geprüft wurde nur der '
+      + 'zweite; gemessen traf das geschaltete Keyword „Fassadendübel" einen Artikel mit '
+      + '104 Tage altem Preis. Diese Mutation hebt Gate 29 auf und schaltet das Wort wieder '
+      + 'mit. Dann ruht ein Gebot auf einem Preis über der Grenze, und genau das muss der '
+      + 'Prüfer melden — beides zugleich: dass die Vereinigung aus Korb und Wort greift und '
+      + 'dass Gate 29 der Grund für das Grün ist.',
+  }),
 ]);
 
 /**

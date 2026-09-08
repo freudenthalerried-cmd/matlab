@@ -162,6 +162,15 @@ export const SPUREN = Object.freeze([
       + 'vierundzwanzig Schritten.',
   }),
   Object.freeze({
+    gate: 29,
+    datei: 'shop/src/preisdeckung.js',
+    muster: /export\s+function\s+preisdeckungsbefund/,
+    warum: 'Ein Keyword, dessen eigene Trefferliste einen Artikel mit überaltertem '
+      + 'Einkaufspreis enthält, wird zurückgestellt. Diese Funktion ist die Stelle, an der '
+      + 'das entschieden wird — fällt sie weg, bietet die Kampagne wieder auf ein Wort, das '
+      + 'auf eine Marge zeigt, die niemand bestätigt hat.',
+  }),
+  Object.freeze({
     gate: 28,
     datei: 'shop/src/abholung.js',
     muster: /export\s+const\s+ZUSAGE/,

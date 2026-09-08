@@ -155,9 +155,14 @@ export const LESER = Object.freeze([
   }),
   Object.freeze({
     werkzeug: 'bin/preisalterpruefung.mjs',
-    erzeugnis: null,
-    warumOhnePruefung: 'Sie misst das Alter der **Einkaufspreise** gegen den Kalender. Mit '
-      + 'dem gebauten Erzeugnis hat sie nichts zu tun.',
+    erzeugnis: 'ausgabe/site',
+    // **Berichtigt am 8. September.** Hier stand: „Sie misst das Alter der
+    // Einkaufspreise gegen den Kalender. Mit dem gebauten Erzeugnis hat sie
+    // nichts zu tun." Das galt bis zu diesem Tag. Seit Gate 29 fragt sie die
+    // **eigene Suche**, welche Artikel die geschalteten Keywords treffen, und
+    // liest dafür `ausgabe/site/shop.js` — dieselben Daten wie der Browser des
+    // Besuchers. Gegen einen alten Index geprüft, ruhte das Gebot auf der
+    // Trefferliste von gestern.
   }),
   /**
    * **Zwei Werkzeuge lesen das Erzeugnis und weigern sich ausdrücklich nicht.**
