@@ -105,6 +105,12 @@ export function liesSystemliste(text) {
       position: z.position,
       gefuehrt: !NICHT_GEFUEHRT.test(z.position),
       eingeschraenkt: EINGESCHRAENKT.test(z.position),
+      // **Die vierte Spalte dazu — 8. September 2026.** „Wird oft vergessen"
+      // ist der eigentliche Zweck dieser Tabellen, und drei der vier
+      // Positionen, die wir nicht führen, stehen dort auf „ja": Die Liste
+      // warnt vor genau den Teilen, die der Kunde woanders kaufen muss.
+      // Ausgewertet wird das in `src/sortimentsluecke.js`.
+      hinweis: (z.rest.split('|')[1] ?? '').trim(),
     }))),
     ohneSortiment: zeilen.filter((z) => NICHT_GEFUEHRT.test(z.position)).length,
     eingeschraenkt: zeilen.filter((z) => EINGESCHRAENKT.test(z.position)).length,

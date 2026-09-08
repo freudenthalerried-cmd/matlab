@@ -273,7 +273,16 @@ export function selbstzaehlungsbefund(text, anzahl, stellen = SELBSTZAEHLUNG) {
   return { geprueft: stellen.length, meldungen, sauber: meldungen.length === 0 };
 }
 
-export function erzeugeLieferantenanfrage({ betreiber = {}, lieferant = {}, fragen = FRAGEN } = {}) {
+/**
+ * @param {object} [was]
+ * @param {string} [was.zusatz]  ein Satz, der an die Frage nach der Artikelliste
+ *   gehängt wird — gemessen aus den Systemlisten, siehe `src/sortimentsluecke.js`.
+ *   Er hängt an einer **bestehenden** Frage und macht keine neue daraus: Jede
+ *   zusätzliche Frage senkt die Wahrscheinlichkeit einer vollständigen Antwort.
+ */
+export function erzeugeLieferantenanfrage({
+  betreiber = {}, lieferant = {}, fragen = FRAGEN, zusatz = '',
+} = {}) {
   const pruefung = darfVersendetWerden(betreiber, lieferant);
   const zeilen = [
     `An: ${feld(lieferant.name, 'Name des Lieferanten')}`,
@@ -289,7 +298,8 @@ export function erzeugeLieferantenanfrage({ betreiber = {}, lieferant = {}, frag
     '',
   ];
   for (const [i, f] of fragen.entries()) {
-    zeilen.push(`${i + 1}. ${f.titel}`, `   ${f.frage}`, '');
+    const text = f.id === 'artikelliste' && zusatz ? `${f.frage} ${zusatz}` : f.frage;
+    zeilen.push(`${i + 1}. ${f.titel}`, `   ${text}`, '');
   }
   zeilen.push(
     'Der Shop führt keine eigene Lagerhaltung; jede Bestellung geht als Bestellung bei Ihnen',

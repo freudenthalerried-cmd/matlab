@@ -1915,6 +1915,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'das nach Ziffern sucht, und dies ist das einzige Dokument dieses Bestands, das an '
       + 'einen Dritten geht. Diese Mutation schreibt die Zahl wieder aus.',
   }),
+  Object.freeze({
+    id: 'eine-luecke-die-der-brief-nicht-mehr-nennt',
+    pruefer: 'pruefe-anfrage',
+    was: 'Eine Sortimentslücke, die stillschweigend zum eigenen Gewerk erklärt wird',
+    datei: 'shop/inhalte/system/kanal-dn100.md',
+    art: 'ersetzen',
+    suchen: '| 6 | Gleitmittel *(nicht im Sortiment)* | nach Anzahl der Steckverbindungen | **ja** |',
+    ersetzen: '| 6 | Gleitmittel *(nicht im Sortiment)* | nach Anzahl der Steckverbindungen | eigenes Gewerk |',
+    erwartet: /gewerk-ohne-eintrag|Gleitmittel/,
+    warum: 'Der Brief an den Lieferanten nennt seit dem 8. September die vier Positionen, die '
+      + 'unsere eigenen Systemlisten führen und unser Sortiment nicht hergibt — gemessen aus '
+      + 'den Listen, nicht getippt. Der bequemste Weg, eine Lücke loszuwerden, ist, sie zum '
+      + 'eigenen Gewerk zu erklären: Dann steht die Marke weiter offen in der Tabelle, der '
+      + 'Kunde liest dasselbe, und die Frage an den Lieferanten fällt weg. Diese Mutation '
+      + 'tut genau das mit dem Gleitmittel und verlangt, dass jede solche Erklärung einen '
+      + 'Eintrag mit Grund hat.',
+  }),
 ]);
 
 /**

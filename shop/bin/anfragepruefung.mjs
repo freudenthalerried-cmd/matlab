@@ -21,7 +21,7 @@
  * Auftraggeber versenden kann.
  */
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { gruppen } from './offenepunkte.mjs';
@@ -29,6 +29,8 @@ import {
   FRAGEN, punkteOhneFrage, fragenOhnePunkt, erzeugeLieferantenanfrage,
   selbstzaehlungsbefund,
 } from '../src/lieferantenanfrage.js';
+import { liesSystemliste } from '../src/systemlisten.js';
+import { lueckensatz, sortimentsluecken } from '../src/sortimentsluecke.js';
 
 const hier = dirname(fileURLToPath(import.meta.url));
 const lies = (...p) => JSON.parse(readFileSync(join(hier, '..', ...p), 'utf8'));
@@ -52,7 +54,26 @@ if (anfragePunkte.length === 0) {
   process.exit(2);
 }
 
-const brief = erzeugeLieferantenanfrage({ betreiber, lieferant });
+// **Die Lücken aus den eigenen Systemlisten — 8. September 2026.** Die einzige
+// offene Weisung des Auftraggebers heißt „Sortiment auf mindestens 100
+// Artikel". Der Brief bat um die Artikelliste und nannte nicht, was konkret
+// fehlt, obwohl der Bestand es weiß: Sieben Positionen der vier Systemlisten
+// tragen „(nicht im Sortiment)", zwei davon sind eigenes Gewerk.
+const systemordner = join(hier, '..', 'inhalte', 'system');
+const systemlisten = readdirSync(systemordner).filter((n) => n.endsWith('.md')).sort()
+  .map((datei) => {
+    const text = readFileSync(join(systemordner, datei), 'utf8');
+    return {
+      name: datei.replace(/\.md$/, ''),
+      titel: (/^titel:\s*(.+)$/m.exec(text)?.[1] ?? datei).replace(/\s+—\s+die Liste.*$/, ''),
+      gelesen: liesSystemliste(text),
+    };
+  });
+const luecken = sortimentsluecken(systemlisten);
+
+const brief = erzeugeLieferantenanfrage({
+  betreiber, lieferant, zusatz: lueckensatz(luecken.luecken),
+});
 
 console.log(`Lieferantenanfrage — ${FRAGEN.length} Fragen für ${anfragePunkte.length} offene Punkte`);
 console.log(`Empfänger: ${lieferant.name}\n`);
@@ -71,6 +92,7 @@ const befunde = [
   ...ungefragt.map((id) => `${id}: offener Punkt, den keine Frage schließt`),
   ...ueberfluessig.map((id) => `${id}: Frage im Brief, die keinen offenen Punkt mehr schließt`),
   ...selbst.meldungen.map((m) => `${m.text} [${m.regel}]`),
+  ...luecken.meldungen.map((m) => `${m.text} [${m.regel}]`),
 ];
 
 console.log(`\n--- Der Brief (${brief.zeilen.length} Zeilen) ---\n`);
