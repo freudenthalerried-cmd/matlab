@@ -57,10 +57,10 @@ Die zwei Werte, die den Bestand gerettet haben, standen im Klartext in einem
 Beträgen selbst als Suchmuster, nicht mit einer Regel:
 
 **Fünf Fundstellen in vier Dokumenten.** Ein Einkaufspreis in Sichtweite eines
-Einkaufsworts, jedes Mal beiläufig: „2,15 € Einkauf für hundert Stück" als
-Begründung, warum ein Dübel keine Kampagne anhält. Zweimal derselbe Betrag in
-zwei Runden. Und die Tabelle „rekonstruiert / tatsächlich / daneben" — aus der
-sich der Einkauf gleich dreifach ergibt.
+Einkaufsworts, jedes Mal beiläufig: „… € Einkauf für hundert Stück" als
+Begründung, warum ein Dübel keine Kampagne anhält — derselbe Betrag in zwei
+Runden. Und die Tabelle „rekonstruiert / tatsächlich / daneben", aus der sich
+der Einkauf gleich dreifach ergibt.
 
 > **Der Prüfer sah in die Ausgabe. Das Verzeichnis ist genauso öffentlich.**
 
@@ -71,11 +71,24 @@ war nie Teil der Frage.
 **Durchgang 5** hält seither jedes Dokument gegen jeden Einkaufspreis der
 Preisdatei. Gesucht werden die **Zahlen selbst**, gemeldet wird nur, was in
 Sichtweite eines Einkaufsworts steht — ein Betrag allein ist kein Fund. Der
-erste Anlauf meldete vier Fehlalarme (`5,70 €` in `1.775,70 €`); seither muss
-der Betrag vorne zu Ende sein.
+erste Anlauf meldete vier Fehlalarme — er fand die Endziffern eines
+Einkaufspreises **in** einem viel größeren Erlösbetrag; seither muss der Betrag
+vorne zu Ende sein.
 
 Die fünf Stellen sind heraus. Das Argument steht überall noch: Der Dübel ist
 billig, die Rückrechnung greift bei zweien zu tief — nur die Zahl fehlt.
+
+**Und dann fing der Prüfer seinen eigenen Verfasser.** Dieses Dokument nannte
+in seiner ersten Fassung zwei der Beträge — einmal als Beispiel für den Fund,
+einmal als Beispiel für den Fehlalarm. Beide standen in Sichtweite eines
+Einkaufsworts, beide waren echte Einkaufspreise, und der Gesamtlauf meldete
+sie eine Stunde nach dem Aufräumen.
+
+> **Wer über ein Leck schreibt, zitiert es.**
+
+Auch das ist heraus. Der Fehlalarm heißt jetzt „die Endziffern eines
+Einkaufspreises in einem viel größeren Erlösbetrag" — das erklärt ihn genauso
+und nennt nichts.
 
 ---
 
