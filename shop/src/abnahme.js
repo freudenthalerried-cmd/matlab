@@ -112,7 +112,7 @@ export function abnahmeplan({ ausgabe, marke }) {
       id: 'skript',
       pfad: '/shop.js',
       datei: 'shop.js',
-      erwartet: 'window.__GIBT_ES_NICHT__',
+      erwartet: 'window.__SHOP__',
       warum: 'Ohne dieses Skript sind Suche, Warenkorb und Kasse tot. Es muss als JavaScript '
         + 'ankommen, nicht als Text zum Herunterladen.',
     });

@@ -39,7 +39,7 @@ const REPO = dirname(SHOP);
 
 const laufe = (name) => {
   const r = spawnSync('npm', ['run', '--silent', name], { cwd: SHOP, encoding: 'utf8' });
-  return { gruen: r.status === 0, ausgabe: `${r.stdout ?? ''}${r.stderr ?? ''}` };
+  return { gruen: r.status === 0, ausgang: r.status, ausgabe: `${r.stdout ?? ''}${r.stderr ?? ''}` };
 };
 
 /**
@@ -192,7 +192,23 @@ for (const p of proben) {
     const wieder = vorlaufEntfaellt(voriges, p) ? voriges.zurueck : null;
     if (wieder) gesparteLaeufe += 1;
     const vor = wieder ?? laufeMitBau(p.pruefer);
-    if (!vor.gruen) {
+    /*
+     * **Weigerung ist kein roter Prüfer — 8. September 2026.**
+     *
+     * Zwei Prüfer können seit dem Verlust von
+     * `preise/poschacher-positionen.csv` nichts messen und sagen das mit
+     * Ausgang 2. Ihre Gegenproben meldeten daraufhin „war schon vorher rot —
+     * an einem roten Prüfer lässt sich nichts zeigen" und beschuldigten damit
+     * Prüfer, die nichts falsch gemacht haben. Dasselbe Muster wie am
+     * 4. September beim veralteten Erzeugnis.
+     *
+     * Zurückgestellt, nicht gescheitert: Was nicht gemessen werden kann, ist
+     * nicht widerlegt.
+     */
+    if (vor.ausgang === 2) {
+      schritte.push(`der Prüfer kann nichts messen: ${vor.ausgabe.trim().split('\n')[0]}`);
+      urteil = 'nicht messbar';
+    } else if (!vor.gruen) {
       /**
        * **Auch hier gehört der Grund dazu** — ergänzt am 4. September, aus
        * demselben Anlass wie im Gesamtlauf: Zwei Gegenproben meldeten „war
@@ -313,10 +329,18 @@ for (const p of proben) {
   console.log('');
 }
 
-const gescheitert = ergebnisse.filter((e) => e.urteil !== 'geschlagen');
+const nichtMessbar = ergebnisse.filter((e) => e.urteil === 'nicht messbar');
+const gescheitert = ergebnisse.filter((e) => e.urteil !== 'geschlagen' && e.urteil !== 'nicht messbar');
 
 const dauer = Math.round((Date.now() - begonnen) / 1000);
-console.log(`${ergebnisse.length - gescheitert.length} von ${ergebnisse.length} Gegenproben schlagen an `
+if (nichtMessbar.length) {
+  console.log(`${nichtMessbar.length} Gegenprobe(n) zurückgestellt — ihr Prüfer kann nichts messen:`);
+  for (const e of nichtMessbar) console.log(`  ⃠ ${e.pruefer}: ${e.was}`);
+  console.log('Was nicht gemessen werden kann, ist nicht widerlegt.\n');
+}
+
+console.log(`${ergebnisse.length - gescheitert.length - nichtMessbar.length} von `
+  + `${ergebnisse.length - nichtMessbar.length} Gegenproben schlagen an `
   + `— ${Math.floor(dauer / 60)} min ${dauer % 60} s, ${gesparteLaeufe} `
   + `${gesparteLaeufe === 1 ? 'Prüferlauf' : 'Prüferläufe'} gespart.\n`);
 

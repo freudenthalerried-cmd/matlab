@@ -92,6 +92,15 @@ export const LESER = Object.freeze([
   // Erzeugnis wäre die schlimmste Sorte: Es sieht vollständig aus, liegt auf
   // dem Server, und niemand sieht ihm an, dass es von gestern ist.
   Object.freeze({ werkzeug: 'bin/paket.mjs', erzeugnis: 'ausgabe/site' }),
+  Object.freeze({
+    werkzeug: 'bin/preiswiederherstellung.mjs',
+    erzeugnis: null,
+    warumOhnePruefung: 'Sie liest das Erzeugnis, **weil sonst nichts mehr da ist**: Nach dem '
+      + 'Verlust der Preisdatei am 8. September ist die gebaute Ausgabe die letzte Quelle '
+      + 'der Einkaufspreise. Sich über einem veralteten Stand zu weigern hieße hier, den '
+      + 'Rettungsweg genau dann zu sperren, wenn er gebraucht wird — neu bauen kann man '
+      + 'ohne Preise nicht. Wie alt die Ausgabe ist, steht im Kopf der geschriebenen Datei.',
+  }),
   Object.freeze({ werkzeug: 'bin/shopprobe.mjs', erzeugnis: 'ausgabe/website.html' }),
   Object.freeze({ werkzeug: 'bin/wegprobe.mjs', erzeugnis: 'ausgabe/website.html' }),
   Object.freeze({ werkzeug: 'bin/werbeprobe.mjs', erzeugnis: 'ausgabe/kampagne' }),

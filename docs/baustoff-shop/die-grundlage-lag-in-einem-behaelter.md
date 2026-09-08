@@ -156,6 +156,15 @@ liest das jetzt: Solche Schritte erscheinen als `⃠ nicht messbar` mit ihrem
 Grund und stehen am Ende noch einmal beisammen. Grün wird davon nichts, und
 der Lauf endet weiter rot — *was nicht gemessen wurde, ist nicht geprüft.*
 
+**Und eine Ebene tiefer dasselbe.** Die beiden Gegenproben zu `pruefe-gebinde`
+meldeten „war schon vorher rot — an einem roten Prüfer lässt sich nichts
+zeigen" und beschuldigten damit einen Prüfer, der nichts falsch gemacht hat.
+Genau das Muster, das am 4. September schon einmal auffiel, als das veraltete
+Erzeugnis fünf Gegenproben rot färbte. Sie sind jetzt **zurückgestellt**, nicht
+gescheitert:
+
+> **Was nicht gemessen werden kann, ist nicht widerlegt.**
+
 **Für dieses Verzeichnis:** Der Bau läuft wieder, und die Tests sind grün —
 aber jede Preisangabe trägt jetzt „rekonstruiert" statt „bestätigt", und der
 offene Punkt sagt, was das heißt.
