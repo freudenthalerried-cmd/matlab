@@ -11,6 +11,8 @@ import {
   FRAGEN, punkteOhneFrage, fragenOhnePunkt, darfVersendetWerden, erzeugeLieferantenanfrage,
   SELBSTZAEHLUNG,
   selbstzaehlungsbefund,
+  deckungsbefund,
+  nachfragesatz,
 } from '../src/lieferantenanfrage.js';
 
 // Die offenen Punkte der Gruppe „Anfrage", wie `npm run offenepunkte` sie
@@ -143,4 +145,46 @@ test('eine Ziffer wird genauso gelesen wie das Wort', () => {
 test('ein umgeschriebener Satz ist ein eigener Befund', () => {
   const b = selbstzaehlungsbefund('Wir haben ein paar Fragen an Sie.', 6);
   assert.deepEqual(b.meldungen.map((m) => m.regel), ['stelle-ohne-treffer', 'stelle-ohne-treffer']);
+});
+
+/**
+ * **Der Befund vom 8. September, abends.** Die Frage nach der Artikelliste
+ * schloss sieben offene Punkte und nannte nur drei. Ein Lieferant schickt,
+ * wonach er gefragt wird.
+ */
+test('eine Lücke, die der Brief nicht nennt, ist ein Befund', () => {
+  const b = deckungsbefund('Bitte um Ihre Artikelliste.', [
+    { id: 'systemzugehoerigkeit', nennt: ['POS-18110'] },
+  ]);
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['luecke-ungenannt']);
+  assert.match(b.meldungen[0].text, /POS-18110/);
+});
+
+test('nennt der Brief alles, meldet die Deckung nichts', () => {
+  const b = deckungsbefund('… zu POS-18110 und für Ravenit …', [
+    { id: 'systemzugehoerigkeit', nennt: ['POS-18110'] },
+    { id: 'merkblattadressen', nennt: ['Ravenit'] },
+  ]);
+  assert.deepEqual(b.meldungen, []);
+  assert.equal(b.geprueft, 2);
+});
+
+test('die Deckung nennt jede fehlende Angabe einzeln, nicht nur die erste', () => {
+  const b = deckungsbefund('nichts davon', [
+    { id: 'merkblattadressen', nennt: ['Ravenit', 'SunCore', 'Ökotherm'] },
+  ]);
+  assert.match(b.meldungen[0].text, /Ravenit, SunCore, Ökotherm/);
+});
+
+test('der Nachfragesatz nennt Artikelnummer und Marken — oder ist leer', () => {
+  assert.equal(nachfragesatz(), '');
+  assert.equal(nachfragesatz({ ohneSystem: [], ohneAdresse: [] }), '');
+  const satz = nachfragesatz({
+    ohneSystem: [{ sku: 'POS-18110', was: 'Mantelsteinkleber' }],
+    ohneAdresse: ['Ravenit', 'Prima'],
+  });
+  assert.match(satz, /POS-18110/);
+  assert.match(satz, /Ravenit, Prima/);
+  // Er fragt und behauptet nicht: Die Systemzuordnung bleibt beim Lieferanten.
+  assert.match(satz, /Zu welchem System gehört dieser Artikel\?/);
 });

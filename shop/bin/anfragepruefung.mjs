@@ -28,8 +28,12 @@ import { gruppen } from './offenepunkte.mjs';
 import {
   FRAGEN, punkteOhneFrage, fragenOhnePunkt, erzeugeLieferantenanfrage,
   selbstzaehlungsbefund,
+  deckungsbefund,
+  nachfragesatz,
 } from '../src/lieferantenanfrage.js';
+import { HERSTELLER } from '../src/hersteller.js';
 import { liesSystemliste } from '../src/systemlisten.js';
+import { SYSTEM_UNBEKANNT } from '../src/systemtreue.js';
 import { lueckensatz, sortimentsluecken } from '../src/sortimentsluecke.js';
 
 const hier = dirname(fileURLToPath(import.meta.url));
@@ -71,8 +75,31 @@ const systemlisten = readdirSync(systemordner).filter((n) => n.endsWith('.md')).
   });
 const luecken = sortimentsluecken(systemlisten);
 
+// **Nennt der Brief, was seine Antwort schließt? — 8. September, abends.**
+// Die Frage nach der Artikelliste schließt seit heute sieben offene Punkte
+// und nannte nur drei. Der Lieferant schickt, wonach er gefragt wird.
+const katalogArtikel = lies('data', 'katalog-baustoff.json').artikel;
+const zuNennen = [
+  {
+    id: 'systemzugehoerigkeit',
+    nennt: SYSTEM_UNBEKANNT.map((u) => u.sku),
+  },
+  {
+    id: 'merkblattadressen',
+    nennt: Object.entries(HERSTELLER).filter(([, h]) => h.url === null).map(([k]) => k),
+  },
+];
+
 const brief = erzeugeLieferantenanfrage({
-  betreiber, lieferant, zusatz: lueckensatz(luecken.luecken),
+  betreiber,
+  lieferant,
+  zusatz: [
+    lueckensatz(luecken.luecken),
+    nachfragesatz({
+      ohneSystem: SYSTEM_UNBEKANNT.filter((u) => katalogArtikel.some((a) => a.sku === u.sku)),
+      ohneAdresse: zuNennen[1].nennt,
+    }),
+  ].filter(Boolean).join(' '),
 });
 
 console.log(`Lieferantenanfrage — ${FRAGEN.length} Fragen für ${anfragePunkte.length} offene Punkte`);
@@ -93,6 +120,7 @@ const befunde = [
   ...ueberfluessig.map((id) => `${id}: Frage im Brief, die keinen offenen Punkt mehr schließt`),
   ...selbst.meldungen.map((m) => `${m.text} [${m.regel}]`),
   ...luecken.meldungen.map((m) => `${m.text} [${m.regel}]`),
+  ...deckungsbefund(brief.text, zuNennen).meldungen.map((m) => `${m.text} [${m.regel}]`),
 ];
 
 console.log(`\n--- Der Brief (${brief.zeilen.length} Zeilen) ---\n`);

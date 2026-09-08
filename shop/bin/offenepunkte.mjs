@@ -22,6 +22,8 @@ import { preisalterBefund, GRENZE_TAGE } from '../src/preisalter.js';
 import { LIEFERGEBIET } from '../src/liefergebiet.js';
 import { WARENKOERBE } from './kampagne.mjs';
 import { fracht } from '../src/preis.js';
+import { HERSTELLER, marke } from '../src/hersteller.js';
+import { SYSTEM_UNBEKANNT } from '../src/systemtreue.js';
 
 const SHOP = fileURLToPath(new URL('..', import.meta.url));
 const REPO = join(SHOP, '..');
@@ -112,6 +114,45 @@ if (alter.verdacht.length) {
     befund: `ältester ${alter.aelteste} Tage, Median ${alter.median}. Auf keinem ruht ein Gebot — `
       + 'aber ein alter Einstand ist die Marge von gestern, ausgewiesen als die von heute.',
     quelle: 'npm run pruefe-preisalter',
+  });
+}
+
+// --- Was die Systemtreue weiß -----------------------------------------------
+//
+// **Neu am 8. September, abends.** Zwei Lücken waren gemessen und standen nur
+// im Quelltext: der fehlende Hersteller des Mantelsteinklebers und die vier
+// Marken ohne belegte Merkblattadresse. Der Auftraggeber liest diese Liste —
+// und beide löst dieselbe Antwort, um die der Brief ohnehin bittet.
+//
+// Gezogen statt getippt: Verschwindet eine Lücke, verschwindet der Punkt.
+const katalogArtikel = lies(join(SHOP, 'data', 'katalog-baustoff.json')).artikel;
+
+const ohneSystem = SYSTEM_UNBEKANNT.filter((u) => katalogArtikel.some((a) => a.sku === u.sku));
+if (ohneSystem.length) {
+  ausWerkzeugen.push({
+    id: 'systemzugehoerigkeit',
+    titel: `Systemzugehörigkeit von ${ohneSystem.length} Artikel${ohneSystem.length === 1 ? '' : 'n'}`,
+    zustaendig: 'anfrage',
+    befund: `${ohneSystem.map((u) => `${u.sku} (${u.was})`).join(', ')} — die Bezeichnung nennt `
+      + 'keine Marke. Ein Kamin wird über die Systemzulassung abgenommen; geraten wird die '
+      + 'Zuordnung deshalb nicht (Gate 31).',
+    quelle: 'npm run pruefe-systemtreue',
+  });
+}
+
+const ohneMerkblatt = Object.entries(HERSTELLER)
+  .filter(([kuerzel, h]) => h.url === null
+    && katalogArtikel.some((a) => marke(a.bezeichnung) === kuerzel));
+if (ohneMerkblatt.length) {
+  ausWerkzeugen.push({
+    id: 'merkblattadressen',
+    titel: `Merkblattadresse für ${ohneMerkblatt.length} Marken`,
+    zustaendig: 'anfrage',
+    befund: `${ohneMerkblatt.map(([k]) => k).join(', ')} — für sie ist keine Hersteller- oder `
+      + 'Merkblattadresse belegt. Ihre Artikelseiten sagen das offen; eine geratene Adresse '
+      + 'wäre eine erfundene Quelle. Darunter ist der einzige Mauerwerksartikel des Katalogs, '
+      + 'bei dem die Bemessung an der Steinfestigkeit hängt.',
+    quelle: 'npm run pruefe-systemtreue',
   });
 }
 

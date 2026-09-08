@@ -1983,6 +1983,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'zwei Kaminteile hatten den Hersteller und ihre Marke floss in kein Keyword. Diese '
       + 'Mutation legt die zweite Liste wieder an.',
   }),
+  Object.freeze({
+    id: 'eine-frage-die-schliesst-ohne-zu-nennen',
+    pruefer: 'pruefe-anfrage',
+    was: 'Eine Frage, die einen Punkt zu schließen behauptet, ohne ihn zu nennen',
+    datei: 'shop/bin/anfragepruefung.mjs',
+    art: 'ersetzen',
+    suchen: '      ohneAdresse: zuNennen[1].nennt,',
+    ersetzen: '      ohneAdresse: [],',
+    erwartet: /luecke-ungenannt|nennt aber nicht/,
+    warum: 'Der Zustand vom 8. September abends: Die Frage nach der Artikelliste schloss '
+      + 'sieben offene Punkte und nannte nur drei. Ein Lieferant schickt, wonach er gefragt '
+      + 'wird — steht die Marke nicht im Brief, kommt die Zeile mit der Merkblattadresse '
+      + 'vielleicht mit und vielleicht nicht. Der Auftraggeber hat genau ein Gespräch, und '
+      + 'der Unterschied kostet ihn eine zweite Runde. Diese Mutation lässt die vier Marken '
+      + 'aus dem Brief fallen und verlangt, dass die Deckung das merkt.',
+  }),
 ]);
 
 /**

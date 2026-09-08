@@ -45,7 +45,12 @@ export const FRAGEN = Object.freeze([
   Object.freeze({
     id: 'artikelliste',
     titel: 'Artikelliste aus dem Kundenkonto',
-    schliesst: Object.freeze(['artikelliste', 'feed:GTIN/EAN', 'feed:Marke', 'feed:Produktbild', 'preisalter']),
+    // **Ergänzt am 8. September, abends.** Dieselbe Datei schließt zwei
+    // frisch gemessene Lücken mit: die Systemzugehörigkeit des
+    // Mantelsteinklebers (kein Markenname in der Bezeichnung) und die
+    // Merkblattadressen der vier Marken, für die keine belegt ist.
+    schliesst: Object.freeze(['artikelliste', 'feed:GTIN/EAN', 'feed:Marke', 'feed:Produktbild',
+      'preisalter', 'systemzugehoerigkeit', 'merkblattadressen']),
     frage: 'Können Sie uns die Artikelliste unseres Kundenkontos als Datei zur Verfügung '
       + 'stellen — je Artikel Ihre Artikelnummer, die Bezeichnung, die EAN/GTIN, den '
       + 'Hersteller, die Verpackungseinheit und den aktuellen Nettopreis? Ein Verweis auf '
@@ -313,4 +318,61 @@ export function erzeugeLieferantenanfrage({
     feld(betreiber.firma, 'Absenderfirma'),
   );
   return { text: zeilen.join('\n') + '\n', zeilen, versandfaehig: pruefung.darf, gruende: pruefung.gruende };
+}
+/**
+ * Nennt der Brief jede Lücke, die seine Antwort schließen würde?
+ *
+ * **Der Anlass, 8. September 2026, abends.** Die Frage nach der Artikelliste
+ * schließt fünf offene Punkte, und seit dieser Runde sieben. Sie **nennt**
+ * aber nur, was jemand hineingeschrieben hat. Am selben Abend waren zwei
+ * frisch gemessene Lücken dazugekommen — der fehlende Hersteller des
+ * Mantelsteinklebers und vier Marken ohne Merkblattadresse —, und der Brief
+ * wusste nichts davon.
+ *
+ * > **Eine Frage, die fünf Punkte schließt, aber nur drei nennt, bekommt eine
+ * > Antwort auf drei.**
+ *
+ * Der Lieferant schickt, wonach er gefragt wird. Steht die Artikelnummer nicht
+ * im Brief, kommt die Zeile mit dem Hersteller vielleicht mit — und vielleicht
+ * nicht. Der Unterschied kostet eine weitere Runde beim Auftraggeber, und der
+ * hat genau ein Gespräch.
+ *
+ * @param {string} brieftext
+ * @param {{id: string, nennt: string[]}[]} luecken  was genannt sein muss
+ */
+export function deckungsbefund(brieftext, luecken) {
+  const meldungen = [];
+  for (const l of luecken) {
+    const fehlend = l.nennt.filter((n) => !brieftext.includes(n));
+    if (fehlend.length === 0) continue;
+    meldungen.push({
+      regel: 'luecke-ungenannt',
+      text: `Der Brief schließt „${l.id}", nennt aber nicht: ${fehlend.join(', ')} — `
+        + 'der Lieferant schickt, wonach er gefragt wird',
+    });
+  }
+  return { geprueft: luecken.length, meldungen, sauber: meldungen.length === 0 };
+}
+/**
+ * Der zweite Nachsatz zur Artikelliste: was uns in ihr besonders fehlt.
+ *
+ * Er nennt Artikelnummern und Markennamen, weil ein Lieferant schickt, wonach
+ * er gefragt wird. Die Liste dafür entsteht aus dem Bestand — aus
+ * `SYSTEM_UNBEKANNT` und aus den Herstellern ohne belegte Adresse —, damit
+ * kein Punkt hinzukommt, den der Brief dann nicht kennt.
+ */
+export function nachfragesatz({ ohneSystem = [], ohneAdresse = [] } = {}) {
+  const teile = [];
+  if (ohneSystem.length) {
+    teile.push(`Zu ${ohneSystem.map((u) => `**${u.sku}** (${u.was})`).join(', ')} nennt Ihre `
+      + 'Bezeichnung keinen Hersteller. Weil ein Kamin über die Systemzulassung abgenommen '
+      + 'wird, tragen wir dort lieber nichts ein als das Falsche: Zu welchem System gehört '
+      + 'dieser Artikel?');
+  }
+  if (ohneAdresse.length) {
+    teile.push(`Und für ${ohneAdresse.join(', ')} fehlt uns eine Hersteller- oder `
+      + 'Merkblattadresse. Unsere Artikelseiten sagen das offen; wir möchten dort lieber auf '
+      + 'die Unterlage des Herstellers verweisen als auf nichts.');
+  }
+  return teile.join(' ');
 }
