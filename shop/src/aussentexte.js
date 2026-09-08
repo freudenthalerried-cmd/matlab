@@ -75,6 +75,10 @@ export const AUSGAENGE = Object.freeze([
  * beim Schreiben des Grundes merken, dass er keinen hat.
  */
 export const KEIN_AUSGANG = Object.freeze([
+  // **Ergänzt am 8. September**, mit dem Baumabdruck des Gegenprobenläufers.
+  // Derselbe Fall wie `abbruchtext` eine Zeile darunter: eine Weigerung für die
+  // eigene Konsole, gebaut aus Pfaden des eigenen Bestands.
+  Object.freeze({ funktion: 'bewegungstext', warum: 'Baut den Satz, mit dem der Gegenprobenläufer eine Probe zurückstellt, weil sich der Bestand unter ihm bewegt hat — aus Pfaden, die er selbst eingelesen hat, für die eigene Konsole. Kein fremder Text erreicht ihn, und er erreicht keinen Empfänger außerhalb des Rechners.' }),
   Object.freeze({ funktion: 'abbruchtext', warum: 'Baut die Weigerung, gegen ein veraltetes Erzeugnis zu prüfen — drei Zeilen für die Konsole des Betreibers, aus Dateinamen des eigenen Bestands. Kein fremder Text erreicht sie, und sie erreicht keinen Empfänger außerhalb des Rechners.' }),
   // **Ergänzt am 5. September**, mit der Verlegung des Frachtsatzes in ein
   // eigenes Modul. Der Satz geht sehr wohl an den Kunden — aber er entsteht

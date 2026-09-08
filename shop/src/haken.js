@@ -61,11 +61,13 @@ export const HAKENWEG = 'shop/haken';
 export const HAKEN = Object.freeze([
   Object.freeze({
     name: 'pre-commit',
-    ruft: 'bin/mutationspruefung.mjs',
+    ruft: ['bin/mutationspruefung.mjs', 'npm test'],
     warum: 'Eine Gegenprobe hält eine Quelldatei absichtlich falsch. Wer währenddessen '
       + 'committet, committet die Mutation — am 8. September stand so fünfunddreißig '
       + 'Minuten lang ein blindgestellter Prüfer auf dem Zweig. Der Zettel unter '
-      + '.sicherung/ weiß es; dieser Haken fragt ihn, bevor git schreibt.',
+      + '.sicherung/ weiß es; dieser Haken fragt ihn, bevor git schreibt. Und seit dem '
+      + 'Abend desselben Tages auch die Testfälle: Ein Commit ging mit zwei roten hinaus, '
+      + 'weil `npm test | tail -5` den Ausgang von tail liefert und nicht den von npm.',
   }),
 ]);
 
@@ -110,10 +112,11 @@ export function hakenbefund({
         text: `${haken.name} ist nicht ausführbar — git überspringt ihn wortlos`,
       });
     }
-    if (!lies(haken.name).includes(haken.ruft)) {
+    for (const ruft of haken.ruft) {
+      if (lies(haken.name).includes(ruft)) continue;
       meldungen.push({
         regel: 'haken-ruft-nicht',
-        text: `${haken.name} ruft ${haken.ruft} nicht auf`,
+        text: `${haken.name} ruft ${ruft} nicht auf`,
       });
     }
 

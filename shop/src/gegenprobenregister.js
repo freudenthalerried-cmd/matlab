@@ -1869,8 +1869,8 @@ export const GEGENPROBEN = Object.freeze([
     was: 'Ein Haken, der auf ein Werkzeug zeigt, das er nicht mehr aufruft',
     datei: 'shop/src/haken.js',
     art: 'ersetzen',
-    suchen: "    ruft: 'bin/mutationspruefung.mjs',",
-    ersetzen: "    ruft: 'bin/mutationswache.mjs',",
+    suchen: "    ruft: ['bin/mutationspruefung.mjs', 'npm test'],",
+    ersetzen: "    ruft: ['bin/mutationswache.mjs', 'npm test'],",
     erwartet: /haken-ruft-nicht/,
     warum: 'Der Fall vom 8. September: Ein Commit dieses Loops nahm eine laufende Gegenprobe '
       + 'mit und stellte damit pruefe-schaufenster blind. Der Haken hält das seither auf — '

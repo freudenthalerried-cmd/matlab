@@ -1,10 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync, unlinkSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { mkdirSync, writeFileSync, unlinkSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { ENDUNGEN, NICHT_HINEIN, baumabdruck, baumbefund, bewegungstext } from '../src/baumstand.js';
+// **Nicht `mkdtempSync` von Hand.** Der Befund vom 4. September: 63.082
+// Einträge unter `/tmp`, weil zwölf Proben sich selbst ein Verzeichnis
+// anlegten und es liegen ließen. `src/wegwerf.js` räumt auch bei
+// `process.exit` auf; eine Probe, die ihre Spuren behält, wird irgendwann
+// selbst der Fehler.
+import { wegwerfordner } from '../src/wegwerf.js';
 
 const abdruckVon = (eintraege) => new Map(Object.entries(eintraege));
 
@@ -61,8 +66,8 @@ test('bei vielen Dateien nennt der Satz die ersten und zählt den Rest', () => {
 });
 
 test('der Abdruck liest den Inhalt, nicht die Änderungszeit', () => {
-  const wurzel = mkdtempSync(join(tmpdir(), 'baumstand-'));
-  try {
+  const wurzel = wegwerfordner('baumstand-');
+  {
     const datei = join(wurzel, 'a.js');
     writeFileSync(datei, 'const a = 1;\n');
     const vorher = baumabdruck(wurzel);
@@ -73,34 +78,28 @@ test('der Abdruck liest den Inhalt, nicht die Änderungszeit', () => {
     assert.deepEqual(baumbefund(vorher, baumabdruck(wurzel)).geaendert, ['a.js']);
     unlinkSync(datei);
     assert.deepEqual(baumbefund(vorher, baumabdruck(wurzel)).weg, ['a.js']);
-  } finally {
-    rmSync(wurzel, { recursive: true, force: true });
   }
 });
 
 test('der Abdruck geht nicht in die ausgeschlossenen Ordner', () => {
-  const wurzel = mkdtempSync(join(tmpdir(), 'baumstand-'));
-  try {
+  const wurzel = wegwerfordner('baumstand-');
+  {
     writeFileSync(join(wurzel, 'a.js'), 'x');
     for (const name of NICHT_HINEIN) {
       mkdirSync(join(wurzel, name), { recursive: true });
       writeFileSync(join(wurzel, name, 'drin.js'), 'x');
     }
     assert.deepEqual([...baumabdruck(wurzel).keys()], ['a.js']);
-  } finally {
-    rmSync(wurzel, { recursive: true, force: true });
   }
 });
 
 test('der Abdruck nimmt nur die Endungen des Bestands', () => {
-  const wurzel = mkdtempSync(join(tmpdir(), 'baumstand-'));
-  try {
+  const wurzel = wegwerfordner('baumstand-');
+  {
     writeFileSync(join(wurzel, 'a.js'), 'x');
     writeFileSync(join(wurzel, 'bild.png'), 'x');
     writeFileSync(join(wurzel, 'ohne'), 'x');
     assert.deepEqual([...baumabdruck(wurzel).keys()], ['a.js']);
     assert.ok(ENDUNGEN.includes('.js'));
-  } finally {
-    rmSync(wurzel, { recursive: true, force: true });
   }
 });

@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Bleibt ein Commit stehen, solange irgendwo eine Datei absichtlich falsch ist?
+# Bleibt ein Commit stehen, solange der Bestand nicht committierbar ist?
 #
 # **Der Anlass, 8. September 2026.** Ein Commit dieses Loops rief `git add -A`,
 # während im Hintergrund die Gegenproben liefen. Eine davon hielt
@@ -16,8 +16,22 @@
 #
 #   Eine Regel, die nur als Satz dasteht, gilt für den, der sie liest.
 #
-# Deshalb steht sie jetzt im Weg. Der Zettel unter `.sicherung/` sagt, dass
-# gerade eine Mutation offen ist; dieser Haken fragt ihn, bevor git schreibt.
+# **Und am selben Abend zum zweiten Mal, eine Ebene daneben.** Ein Commit ging
+# mit zwei roten Testfällen hinaus, weil `npm test | tail -5` den Ausgang von
+# `tail` liefert und nicht den von `npm`. Die Prüfung war gelaufen, das
+# Ergebnis war rot, und die Verkettung las eine Null.
+#
+#   Ein Ausgang, der durch eine Röhre geht, ist der Ausgang der Röhre.
+#
+# Deshalb stehen beide Prüfungen jetzt im Weg statt in einem Kommentar. Die
+# billige zuerst: Wer eine offene Mutation hat, braucht keine Testläufe.
 set -e
 WURZEL=$(git rev-parse --show-toplevel)
-exec node "$WURZEL/shop/bin/mutationspruefung.mjs"
+
+node "$WURZEL/shop/bin/mutationspruefung.mjs" || exit 1
+
+if ! (cd "$WURZEL/shop" && npm test >/dev/null 2>&1); then
+  echo 'Abbruch: npm test ist rot — der Commit bleibt stehen.'
+  echo 'Ausgabe ansehen mit: npm --prefix shop test'
+  exit 1
+fi

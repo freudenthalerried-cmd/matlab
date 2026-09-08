@@ -93,3 +93,38 @@ statt in der Überschrift.
 eines Laufs am Bestand arbeitet, bekommt kein Ergebnis, sondern einen Bericht
 über zwei Zustände. Seit heute sagt der Läufer das, statt einen Prüfer dafür
 verantwortlich zu machen.
+
+---
+
+## Nachtrag am selben Abend: derselbe Fehler eine Ebene daneben
+
+Der Commit dieser Runde ging **mit zwei roten Testfällen hinaus.** Beide waren
+echte Registerverstöße meines eigenen neuen Codes: `bewegungstext` stand in
+keinem der beiden Verzeichnisse für textbauende Funktionen, und
+`test/baumstand.test.js` legte sich mit `mkdtempSync` selbst ein
+Wegwerfverzeichnis — genau das, was am 4. September zu 63.082 Einträgen unter
+`/tmp` geführt hat, und wofür es seither `src/wegwerf.js` gibt.
+
+Die Prüfung **war gelaufen** und **war rot**. Herausgegangen ist es trotzdem,
+weil der Befehl so lautete:
+
+```
+npm test 2>&1 | tail -5 && git commit … && git push …
+```
+
+> **Ein Ausgang, der durch eine Röhre geht, ist der Ausgang der Röhre.**
+> `tail` gelingt immer.
+
+Behoben ist beides: `bewegungstext` steht mit Grund in `KEIN_AUSGANG` — es baut
+eine Weigerung für die eigene Konsole aus eigenen Pfaden —, und die Probe
+benutzt `wegwerfordner()`, der auch bei `process.exit` aufräumt.
+
+**Und der Haken hat den Satz bekommen.** Er fragte bisher nur den Zettel unter
+`.sicherung/`; jetzt fragt er danach `npm test` und lässt einen roten Bestand
+nicht durch. Die billige Prüfung zuerst: Wer eine offene Mutation hat, braucht
+keine Testläufe.
+
+Damit steht dieselbe Lehre zum dritten Mal an diesem Tag, und zum dritten Mal
+nicht als Satz:
+
+> **Eine Regel, die nur als Satz dasteht, gilt für den, der sie liest.**

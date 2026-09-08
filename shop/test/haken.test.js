@@ -11,7 +11,8 @@ import { HAKEN, HAKENWEG, hakenbefund } from '../src/haken.js';
 const gut = () => ({
   hakenweg: HAKENWEG,
   dateien: HAKEN.map((h) => h.name),
-  lies: (name) => `#!/bin/sh\nexec node "$W/${HAKEN.find((h) => h.name === name).ruft}"\n`,
+  lies: (name) => `#!/bin/sh\n${HAKEN.find((h) => h.name === name).ruft
+    .map((r) => `# ruft ${r}`).join('\n')}\n`,
   ausfuehrbar: () => true,
   probiere: () => ({ mitZettel: 1, ohneZettel: 0 }),
   aufrufer: "import { richteHakenEin } from './hakeneinrichtung.mjs';",
@@ -21,7 +22,8 @@ test('das Register nennt mindestens einen Haken, jeden mit Grund', () => {
   assert.ok(HAKEN.length >= 1);
   for (const h of HAKEN) {
     assert.ok(h.name, 'ein Haken ohne Namen ist nicht auffindbar');
-    assert.ok(h.ruft, 'ein Haken, der nichts ruft, hält nichts auf');
+    assert.ok(Array.isArray(h.ruft) && h.ruft.length >= 1,
+      'ein Haken, der nichts ruft, hält nichts auf');
     assert.ok(h.warum.length > 80, `${h.name}: der Grund ist zu knapp, um in einem Jahr zu tragen`);
   }
 });
@@ -54,9 +56,19 @@ test('ein Haken ohne Ausführungsrecht ist ein Befund — git überspringt ihn w
   assert.deepEqual(b.meldungen.map((m) => m.regel), ['haken-nicht-ausfuehrbar']);
 });
 
-test('ein Haken, der den Prüfer nicht ruft, ist ein Befund', () => {
+test('für jedes ungerufene Werkzeug eine eigene Meldung', () => {
   const b = hakenbefund({ ...gut(), lies: () => '#!/bin/sh\nexit 0\n' });
-  assert.deepEqual(b.meldungen.map((m) => m.regel), ['haken-ruft-nicht']);
+  const erwartet = HAKEN.reduce((n, h) => n + h.ruft.length, 0);
+  assert.equal(b.meldungen.length, erwartet,
+    'ein Haken, der zwei Werkzeuge rufen soll und keines ruft, hat zwei Mängel');
+  assert.ok(b.meldungen.every((m) => m.regel === 'haken-ruft-nicht'));
+});
+
+test('ein Haken, der nur eines von zweien ruft, meldet genau dieses eine', () => {
+  const [erstes, ...weitere] = HAKEN[0].ruft;
+  const b = hakenbefund({ ...gut(), lies: () => `#!/bin/sh\n# ruft ${erstes}\n` });
+  assert.equal(b.meldungen.length, weitere.length);
+  for (const w of weitere) assert.ok(b.meldungen.some((m) => m.text.includes(w)));
 });
 
 test('ein Haken, der den offenen Zettel durchlässt, ist ein Befund', () => {
