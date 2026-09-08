@@ -32,6 +32,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join, relative } from 'node:path';
 import {
   rekonstruierbarkeit, findeAbfluss, ausgabemuster, findeInterneWoerter, teileFunde,
+  verzeichnisbefund,
 } from '../src/geheimnis.js';
 import { INTERNE_WOERTER, namensbefund } from '../src/zahlung.js';
 import { ladeBaustoffkatalog, ZIELMARGE } from '../src/baustoffkatalog.js';
@@ -290,6 +291,47 @@ for (const h of geteilt.duenn) {
   console.log(`  ✗ hingenommene Fundstelle ${h.auszug} ohne tragfähigen Grund`);
 }
 
+/*
+ * **Durchgang 5 — das Verzeichnis, 8. September 2026.**
+ *
+ * Die vier Durchgänge davor sehen in die **Ausgabe**: Was lädt der Besucher?
+ * Nach dem Verlust der Preisdatei wurde nach einer zweiten Quelle gesucht und
+ * eine gefunden — im eigenen Verzeichnis. Vier Rundendokumente nannten einen
+ * Einkaufspreis im Klartext, eines davon ausgerechnet jenes, das davor warnt,
+ * dass 44 von 46 aus der Ausgabe zurückzurechnen sind: Dort standen die
+ * **zwei**, die es nicht sind.
+ *
+ * > **Der Prüfer sah in die Ausgabe. Das Verzeichnis ist genauso öffentlich.**
+ *
+ * Gesucht wird nicht nach Mustern, sondern nach den **Zahlen selbst** — und
+ * nur, was in Sichtweite eines Einkaufsworts steht, ist ein Fund. Ohne
+ * Preisdatei entfällt dieser Durchgang; dann gibt es nichts zu suchen.
+ */
+console.log('\nDurchgang 5 — steht ein Einkaufspreis im Verzeichnis?');
+let verzeichnisRot = false;
+{
+  const preisPfad = join(wurzel, '..', 'preise', 'baustoff-preise.json');
+  if (!existsSync(preisPfad)) {
+    console.log('  übersprungen: preise/baustoff-preise.json liegt nicht vor.');
+    console.log('  Ohne die Beträge gibt es nichts zu suchen — das ist keine Entwarnung.');
+  } else {
+    const { preise = {} } = JSON.parse(readFileSync(preisPfad, 'utf8'));
+    const einkaufJeSku = new Map(Object.entries(preise).map(([sku, w]) => [sku, w.ekNetto]));
+    const dateien = new Map();
+    const ordner = join(wurzel, '..', 'docs', 'baustoff-shop');
+    for (const name of existsSync(ordner) ? readdirSync(ordner) : []) {
+      if (name.endsWith('.md')) dateien.set(`docs/baustoff-shop/${name}`, readFileSync(join(ordner, name), 'utf8'));
+    }
+    const b = verzeichnisbefund({ einkaufJeSku, dateien, sichtweite: 120 });
+    if (b.sauber) {
+      console.log(`  ${b.dateien} Dokumente gegen ${b.betraege} Einkaufspreise gehalten, keiner steht darin.`);
+    } else {
+      verzeichnisRot = true;
+      for (const m of b.meldungen) console.log(`  ✗ ${m.text}`);
+    }
+  }
+}
+
 console.log('\nEine Regel, die eine Datei ausschließt, schützt keine Angabe,');
 console.log('die sich aus zwei veröffentlichten Zahlen ergibt.');
 console.log('Bewertung und Handlungsmöglichkeiten: docs/baustoff-shop/rekonstruierbare-einkaufspreise.md\n');
@@ -297,4 +339,4 @@ console.log('Bewertung und Handlungsmöglichkeiten: docs/baustoff-shop/rekonstru
 // Durchgang 3 und 4 fällen ein Urteil: Steht der Schlüssel, ein interner Name
 // oder eine Lieferantenschwelle in der Ausgabe, ist das kein Hinweis, sondern
 // ein Fehler. Durchgang 1 und 2 melden, was zu bewerten ist.
-if (schluesselTreffer || !geteilt.sauber || !namen.sauber) process.exit(1);
+if (schluesselTreffer || !geteilt.sauber || !namen.sauber || verzeichnisRot) process.exit(1);

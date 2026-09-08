@@ -162,6 +162,14 @@ export const SPUREN = Object.freeze([
       + 'vierundzwanzig Schritten.',
   }),
   Object.freeze({
+    gate: 30,
+    datei: 'shop/src/preis.js',
+    muster: /ekQuelle !== 'rekonstruiert'/,
+    warum: 'Ein zurückgerechneter Einkaufspreis ist kein Platzhalter. Diese eine Bedingung '
+      + 'ist die ganze Entscheidung — fällt sie weg, schreibt der Shop dem Kunden auf 46 '
+      + 'Artikelseiten hin, sein Preis sei erfunden, obwohl er auf den Cent stimmt.',
+  }),
+  Object.freeze({
     gate: 29,
     datei: 'shop/src/preisdeckung.js',
     muster: /export\s+function\s+preisdeckungsbefund/,

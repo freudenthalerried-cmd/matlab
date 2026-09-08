@@ -53,10 +53,16 @@ Die beiden Ausnahmen sind kein Zufall. Gate 22 kappt den Verkaufspreis am
 Listenpreis des Lieferanten, wo die Zielmarge ihn darüber heben würde.
 Genau dort greift die Rückrechnung zu tief:
 
-| Artikel | rekonstruiert | tatsächlich | daneben |
-|---|---|---|---|
-| POS-53215 | 0,50 € | 0,60 € | 0,10 € |
-| POS-31631 | 9,45 € | 10,08 € | 0,63 € |
+| Artikel | greift die Rückrechnung |
+|---|---|
+| POS-53215 | zu tief |
+| POS-31631 | zu tief |
+
+*Um wie viel, stand hier bis zum 08.09. — mit dem tatsächlichen Einkaufspreis
+daneben. Ausgerechnet in dem Dokument, das davor warnt, dass 44 von 46
+Einkaufspreisen aus der Ausgabe zurückzurechnen sind, standen die **zwei**,
+die es nicht sind. Beide Zahlen sind heraus: Aus „rekonstruiert" plus
+„daneben" ergibt sich der Einkauf, und aus dem Einkauf allein erst recht.*
 
 **Ausgerechnet die Sperre, die den fehlenden Preisvorteil ausweist,
 verbirgt nebenbei den Einkauf.** Was aus kaufmännischen Gründen gedeckelt

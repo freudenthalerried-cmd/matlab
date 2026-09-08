@@ -32,10 +32,15 @@ Heute war dieselbe Rechnung der Rettungsweg. `npm run preise-wiederherstellen`
 liest `ausgabe/site/shop.js` — die gebaute Ausgabe liegt im Verzeichnis — und
 rechnet zurück: `ekNetto = vkNetto × (1 − Marge)`.
 
-**Drei gehen nicht.** Wo der Verkaufspreis am **Listendeckel** hängt, ist die
-Rechnung nicht umkehrbar: Jeder Einkauf oberhalb einer Schwelle ergibt denselben
-gedeckelten Verkaufspreis. Das sind `POS-12294`, `POS-53215` und `POS-31631`.
-Für sie hilft nur die Lieferantenrechnung.
+**Drei hängen am Listendeckel**, und dort greift die Rückrechnung nicht
+zwingend: Jeder Einkauf oberhalb einer Schwelle ergibt denselben gedeckelten
+Verkaufspreis. Für zwei davon war die Abweichung am 30. August **gemessen und
+aufgeschrieben** — in `rekonstruierbare-einkaufspreise.md`, dem Dokument, das
+vor genau dieser Rückrechenbarkeit warnt. Beim dritten trifft die Rechnung; das
+stand implizit in derselben Messung („zwei weichen ab").
+
+**Damit sind es 46 von 46.** Und der Fund dahinter ist unangenehmer als der
+Verlust.
 
 **Und keiner der 43 heißt „belegt".** Jeder Eintrag trägt
 `ekQuelle: 'rekonstruiert'`, und der Shop führt ihn folgerichtig als
@@ -45,7 +50,36 @@ Platzhalter:
 
 ---
 
-## Der zweite Fund: Der Katalog kannte den Fall, der Bau nicht
+## Der zweite Fund: Die Einkaufspreise standen im Verzeichnis
+
+Die zwei Werte, die den Bestand gerettet haben, standen im Klartext in einem
+öffentlichen Repository. Nachgesehen wurde daraufhin überall — mit den
+Beträgen selbst als Suchmuster, nicht mit einer Regel:
+
+**Fünf Fundstellen in vier Dokumenten.** Ein Einkaufspreis in Sichtweite eines
+Einkaufsworts, jedes Mal beiläufig: „2,15 € Einkauf für hundert Stück" als
+Begründung, warum ein Dübel keine Kampagne anhält. Zweimal derselbe Betrag in
+zwei Runden. Und die Tabelle „rekonstruiert / tatsächlich / daneben" — aus der
+sich der Einkauf gleich dreifach ergibt.
+
+> **Der Prüfer sah in die Ausgabe. Das Verzeichnis ist genauso öffentlich.**
+
+`pruefe-geheimnis` hat vier Durchgänge, und alle vier lesen `ausgabe/`: Was
+lädt der Besucher? Dass daneben 382 Dokumente liegen, die jeder abrufen kann,
+war nie Teil der Frage.
+
+**Durchgang 5** hält seither jedes Dokument gegen jeden Einkaufspreis der
+Preisdatei. Gesucht werden die **Zahlen selbst**, gemeldet wird nur, was in
+Sichtweite eines Einkaufsworts steht — ein Betrag allein ist kein Fund. Der
+erste Anlauf meldete vier Fehlalarme (`5,70 €` in `1.775,70 €`); seither muss
+der Betrag vorne zu Ende sein.
+
+Die fünf Stellen sind heraus. Das Argument steht überall noch: Der Dübel ist
+billig, die Rückrechnung greift bei zweien zu tief — nur die Zahl fehlt.
+
+---
+
+## Der dritte Fund: Der Katalog kannte den Fall, der Bau nicht
 
 Mit der lückenhaften Preisdatei brach `npm run website` ab — nicht mit einer
 Meldung, sondern mit `TypeError: Cannot read properties of null (reading
@@ -72,15 +106,25 @@ Der Bau **weigert sich** jetzt und nennt die Artikelnummern.
 
 ## Was daraus folgt
 
-**Für den Auftraggeber, sofort:** Drei Einkaufspreise aus den
-Lieferantenrechnungen nachtragen, dann baut der Shop wieder. Und die
-Preisdatei gehört an einen zweiten Ort — sie ist die einzige Zahlengrundlage
-des ganzen Vorhabens und war bis heute nirgends gesichert.
+**Gate 30, selbst entschieden.** „Platzhalter" heißt: Die Zahl ist nicht der
+Preis. Hier **ist** sie der Preis — was fehlt, ist die Rechnung, die es
+beweist. Beides gleich zu nennen wäre selbst eine falsche Angabe, und zwar
+über die eigene Ware: Der Shop schriebe dem Kunden auf 46 Artikelseiten hin,
+sein Preis sei erfunden, obwohl er stimmt. Der Mangel liegt im **Beleg**, nicht
+im Wert, und steht als offener Punkt dort, wo Mängel hingehören.
 
-**Für dieses Verzeichnis:** Der Prüfstand steht so lange still, wie der Bau
-steht. Das ist richtig so und wird nicht umgangen; ein Lauf, der mit
-zurückgerechneten Zahlen grün meldet, meldete etwas anderes als das, was
-gemessen werden soll.
+**Für den Auftraggeber:** Die Rechnungen wieder einlesen, dann steht
+`ekQuelle` wieder auf „bestaetigt". Und die Preisdatei gehört an einen zweiten
+Ort — sie ist die einzige Zahlengrundlage des ganzen Vorhabens und war bis
+heute nirgends gesichert.
+
+**Nicht zurückzuholen ist `preise/poschacher-positionen.csv`** — die
+Rechnungspositionen mit Datum. Sie ergibt sich aus keiner Ausgabe;
+`npm run preiswechsel` misst seither nichts und sagt das.
+
+**Für dieses Verzeichnis:** Der Bau läuft wieder, und die Tests sind grün —
+aber jede Preisangabe trägt jetzt „rekonstruiert" statt „bestätigt", und der
+offene Punkt sagt, was das heißt.
 
 **Und ein Gedanke, der bleibt:** Der Befund „44 von 46 Einkaufspreisen sind aus
 den veröffentlichten Verkaufspreisen rekonstruierbar" stand sechs Wochen lang

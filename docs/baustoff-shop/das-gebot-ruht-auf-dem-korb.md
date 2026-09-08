@@ -9,8 +9,12 @@ schaltenden Anzeigengruppen.
 Im Kopfkommentar desselben Moduls steht seit dem ersten Tag, warum der
 Drehstiftdübel damals nicht eskaliert wurde:
 
-> *„2,15 € Einkauf für hundert Stück, **in keinem Keyword**, in keinem
+> *„… Cent Einkauf für hundert Stück, **in keinem Keyword**, in keinem
 > Referenzkorb."*
+
+*(Der Betrag stand hier bis zum 08.09. im Klartext — ein Einkaufspreis in
+einem öffentlichen Verzeichnis. Er ist herausgenommen; das Argument hängt
+nicht an ihm, sondern daran, dass er klein ist.)*
 
 Zwei Gründe. Geprüft wurde einer.
 
@@ -46,7 +50,8 @@ zurückgestellt.
 Die naheliegende Verschärfung wäre gewesen, die **Gruppe** anzuhalten. Genau
 das hat das Modul am ersten Tag verworfen, und zu Recht: *Eine Regel, die am
 ersten Tag den falschen trifft, wird am zweiten abgeschaltet.* Die WDVS-Gruppe
-wegen eines Dübels von 2,15 € je hundert Stück anzuhalten, wäre diese Regel.
+wegen eines Dübels von wenigen Cent je hundert Stück anzuhalten, wäre diese
+Regel.
 
 Zurückgestellt wird deshalb genau das Wort — eines von dreißig. Es steht mit
 Artikel und Preisalter in `keywords-alter-preis.csv`, und es kommt **von

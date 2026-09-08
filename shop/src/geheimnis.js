@@ -221,3 +221,76 @@ export function findeInterneWoerter(text, muster, name = '') {
   });
   return treffer;
 }
+
+/**
+ * Steht ein Einkaufspreis im **Verzeichnis** statt in der Ausgabe?
+ *
+ * **Der Anlass, 8. September 2026.** Nach dem Verlust der Preisdatei wurde
+ * nach einer zweiten Quelle gesucht — und eine gefunden, im eigenen
+ * Verzeichnis: `rekonstruierbare-einkaufspreise.md` führte eine Tabelle
+ * „rekonstruiert / tatsächlich / daneben" mit den **tatsächlichen**
+ * Einkaufspreisen zweier Artikel.
+ *
+ * Ausgerechnet in dem Dokument, das davor warnt, dass 44 von 46
+ * Einkaufspreisen aus den veröffentlichten Verkaufspreisen zurückzurechnen
+ * sind, standen die **zwei**, die es nicht sind.
+ *
+ * > **Der Prüfer sah in die Ausgabe. Das Verzeichnis ist genauso öffentlich.**
+ *
+ * Gesucht wird nicht nach Mustern, sondern nach den **Zahlen selbst**: Jeder
+ * Einkaufspreis der Preisdatei wird im Text gesucht, und gemeldet wird nur,
+ * was in Sichtweite eines Einkaufsworts steht. Ein Betrag allein ist kein
+ * Fund — 0,60 € kann alles sein.
+ *
+ * @param {object} eingabe
+ * @param {Map<string, number>} eingabe.einkaufJeSku
+ * @param {Map<string, string>} eingabe.dateien  Pfad → Text
+ * @param {number} [eingabe.sichtweite] Zeichen um den Betrag herum
+ */
+export const EINKAUFSWORTE = /Einkauf|EK\b|eingekauft|tatsächlich|Einstand|Kondition/i;
+
+export function verzeichnisbefund({ einkaufJeSku, dateien, sichtweite = 60 }) {
+  const meldungen = [];
+  const betraege = new Map();
+  for (const [sku, ek] of einkaufJeSku) {
+    if (typeof ek !== 'number' || !(ek > 0)) continue;
+    // Nur die Schreibweise, in der Beträge hier stehen: „0,60 €".
+    const text = `${ek.toFixed(2).replace('.', ',')} €`;
+    if (!betraege.has(text)) betraege.set(text, []);
+    betraege.get(text).push(sku);
+  }
+
+  for (const [datei, inhalt] of dateien) {
+    for (const [betrag, skus] of betraege) {
+      let ab = inhalt.indexOf(betrag);
+      while (ab !== -1) {
+        /*
+         * **Der Betrag muss vorne zu Ende sein.** Der erste Anlauf meldete
+         * „5,70 €" in `1.775,70 €` und „4,88 €" in `324,88 €` — vier
+         * Fehlalarme aus vier Teilzeichenketten. Ein Prüfer, der Erlöse für
+         * Einkaufspreise hält, wird nach dem zweiten Mal abgeschaltet.
+         */
+        const davor = ab === 0 ? '' : inhalt[ab - 1];
+        const angewachsen = /[\d.,]/.test(davor);
+        const umfeld = inhalt.slice(Math.max(0, ab - sichtweite), ab + betrag.length + sichtweite);
+        if (!angewachsen && EINKAUFSWORTE.test(umfeld)) {
+          meldungen.push({
+            regel: 'einkaufspreis-im-verzeichnis',
+            datei,
+            text: `${datei} nennt ${betrag} in Sichtweite eines Einkaufsworts — das ist der `
+              + `Einkaufspreis von ${skus.join(', ')}, und dieses Verzeichnis ist öffentlich`,
+          });
+          break;
+        }
+        ab = inhalt.indexOf(betrag, ab + 1);
+      }
+    }
+  }
+
+  return {
+    dateien: dateien.size,
+    betraege: betraege.size,
+    meldungen,
+    sauber: meldungen.length === 0,
+  };
+}

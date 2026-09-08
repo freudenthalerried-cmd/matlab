@@ -82,6 +82,26 @@ export const OHNE_WERKZEUG = Object.freeze([
       + 'Mindestbestellwerts überhaupt einen Weg gibt. Gate 28 hat sie bis dahin zurückgenommen.',
   },
   {
+    /*
+     * **Der 8. September.** Die Arbeitsumgebung wurde neu aufgesetzt, und
+     * `preise/baustoff-preise.json` war weg — zu Recht gitignoriert, und
+     * damit in genau einer Kopie. Zurückgeholt sind alle 46 Werte; was fehlt,
+     * ist der Beleg dahinter.
+     */
+    id: 'einkaufspreise-belegen',
+    titel: 'Einkaufspreise wieder belegen (46 sind zurückgerechnet)',
+    zustaendig: 'entscheidung',
+    warumKeinWerkzeug: 'Der Beleg ist die Lieferantenrechnung, und die liegt nicht in dieser '
+      + 'Umgebung. Zurückgerechnet stimmen die Zahlen auf den Cent — 44 aus Verkaufspreis '
+      + 'und Zielmarge, zwei aus dem Befund vom 30.08. Ein Wert, der stimmt, ist noch kein '
+      + 'Wert, der belegt ist (Gate 30). Verloren ist außerdem '
+      + '`preise/poschacher-positionen.csv`; sie lässt sich aus nichts zurückrechnen, und '
+      + '`npm run preiswechsel` misst seither nichts.',
+    loest: 'Setzt `ekQuelle` wieder auf „bestaetigt" und macht den Preisrhythmus wieder '
+      + 'messbar. Und: Die Datei gehört an einen zweiten Ort — sie ist die einzige '
+      + 'Zahlengrundlage dieses Vorhabens und war bis zum 08.09. nirgends gesichert.',
+  },
+  {
     id: 'liefergebiet-lieferant',
     titel: 'Liefergebiet des Lieferanten',
     zustaendig: 'anfrage',

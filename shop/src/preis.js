@@ -147,7 +147,18 @@ export function kalkuliere(artikel, lieferant, zielmarge) {
     margeErreicht: marge >= MARGENUNTERGRENZE - 1e-9,
     zielmargeErreicht: vkNetto >= wunschVkNetto - 1e-9,
     amListendeckel: Number.isFinite(deckel) && vkNetto >= cent(deckel) - 1e-9,
-    ekIstPlatzhalter: artikel.ekQuelle !== 'bestaetigt',
+    /*
+     * **Gate 30, 8. September 2026.** „Platzhalter" heißt: Die Zahl ist nicht
+     * der Preis. Nach dem Verlust der Preisdatei sind 46 Einkaufspreise
+     * zurückgerechnet — sie **sind** der Preis, auf den Cent; was fehlt, ist
+     * die Rechnung, die es beweist.
+     *
+     * Beides „Platzhalter" zu nennen, wäre selbst eine falsche Angabe, und
+     * zwar über die eigene Ware: Der Shop schriebe dem Kunden hin, sein Preis
+     * sei erfunden, obwohl er stimmt. Der Mangel liegt im **Beleg**, nicht im
+     * Wert — und er steht als offener Punkt dort, wo Mängel hingehören.
+     */
+    ekIstPlatzhalter: artikel.ekQuelle !== 'bestaetigt' && artikel.ekQuelle !== 'rekonstruiert',
   };
 }
 

@@ -32,8 +32,12 @@ preise/baustoff-preise.json  lokal, gitignoriert
 
 Ende zu Ende gemessen: Eine Liste mit zwei Artikeln geht durch, wird
 zusammengeführt, geschrieben — und der Rechenkern liest sie anschließend mit
-0,42 € Einkauf zu 0,56 € Verkauf und 8,90 € zu 11,87 €. Das sind die 25 %
-Marge, und beide bleiben unter dem Listenpreis (Gate 22).
+zwei Einkaufspreisen und den Verkaufspreisen 0,56 € und 11,87 €. Das sind
+die 25 % Marge, und beide bleiben unter dem Listenpreis (Gate 22).
+
+*(Die Einkaufspreise standen hier bis zum 08.09. im Klartext. Sie gehören
+nicht in ein öffentliches Verzeichnis — `npm run pruefe-geheimnis` sieht
+seither auch hier nach.)*
 
 ## Was es nicht entscheidet
 

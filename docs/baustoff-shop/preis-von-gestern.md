@@ -81,7 +81,7 @@ Gruppe**. Der erste Lauf meldete daraufhin:
     98 Tage alt (Grenze 90) — und für diese Gruppe wird geworben
 ```
 
-Nachgesehen: 2,15 € Einkauf für hundert Stück, kein Keyword zeigt darauf,
+Nachgesehen: wenige Cent Einkauf für hundert Stück, kein Keyword zeigt darauf,
 und im Referenzwarenkorb steht er nicht. Die Regel hätte die WDVS-Kampagne
 wegen eines Dübels angehalten.
 

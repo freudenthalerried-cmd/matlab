@@ -2,10 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import {
   rekonstruiereEinkauf, rekonstruierbarkeit, findeAbfluss,
-  ausgabemuster, findeInterneWoerter, teileFunde, HINGENOMMEN,
+  ausgabemuster, findeInterneWoerter, teileFunde, verzeichnisbefund, HINGENOMMEN,
 } from '../src/geheimnis.js';
+
+const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
+const PREISPFAD = pfad('../../preise/baustoff-preise.json');
 import { INTERNE_WOERTER } from '../src/zahlung.js';
 
 /* ------------------------------------------------------------------ *
@@ -172,4 +177,45 @@ test('eine hingenommene Fundstelle, die es nicht mehr gibt, fällt auf', () => {
 test('jede hingenommene Fundstelle trägt einen tragfähigen Grund', () => {
   assert.ok(HINGENOMMEN.length >= 1, 'ein leeres Verzeichnis bestünde jede Prüfung');
   for (const h of HINGENOMMEN) assert.ok(h.warum.length >= 80, String(h.auszug));
+});
+
+test('Ein Einkaufspreis im Verzeichnis fällt auf — ein Erlös mit denselben Ziffern nicht', () => {
+  const einkaufJeSku = new Map([['POS-1', 2.15], ['POS-2', 5.70]]);
+
+  const gefunden = verzeichnisbefund({
+    einkaufJeSku,
+    dateien: new Map([['runde.md', 'Nachgesehen: 2,15 € Einkauf für hundert Stück, kein Keyword.']]),
+  });
+  assert.deepEqual(gefunden.meldungen.map((m) => m.regel), ['einkaufspreis-im-verzeichnis']);
+  assert.match(gefunden.meldungen[0].text, /POS-1/);
+
+  // **Der Betrag muss vorne zu Ende sein.** Der erste Anlauf meldete „5,70 €"
+  // in „1.775,70 €" — vier Fehlalarme aus vier Teilzeichenketten.
+  const erloes = verzeichnisbefund({
+    einkaufJeSku,
+    dateien: new Map([['plan.md', '| Erlös je Referenzgebäude, Einkauf gegengerechnet | 1.775,70 € |']]),
+  });
+  assert.deepEqual(erloes.meldungen, []);
+
+  // Ein Betrag ohne Einkaufswort in Sichtweite ist kein Fund: 2,15 € kann alles sein.
+  const harmlos = verzeichnisbefund({
+    einkaufJeSku,
+    dateien: new Map([['runde.md', 'Die Fracht kostet 2,15 € je Position, sagt die Preistafel.']]),
+  });
+  assert.deepEqual(harmlos.meldungen, []);
+});
+
+test('Das Verzeichnis des Bestands trägt keinen Einkaufspreis', { skip: !existsSync(PREISPFAD) && 'preise/ fehlt' }, () => {
+  const { preise } = JSON.parse(readFileSync(PREISPFAD, 'utf8'));
+  const ordner = pfad('../../docs/baustoff-shop');
+  const dateien = new Map(readdirSync(ordner).filter((n) => n.endsWith('.md'))
+    .map((n) => [n, readFileSync(join(ordner, n), 'utf8')]));
+  assert.ok(dateien.size >= 100, `nur ${dateien.size} Dokumente gelesen`);
+
+  const b = verzeichnisbefund({
+    einkaufJeSku: new Map(Object.entries(preise).map(([sku, w]) => [sku, w.ekNetto])),
+    dateien,
+    sichtweite: 120,
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.text), []);
 });

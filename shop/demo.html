@@ -849,7 +849,18 @@ function kalkuliere(artikel, lieferant, zielmarge) {
     margeErreicht: marge >= MARGENUNTERGRENZE - 1e-9,
     zielmargeErreicht: vkNetto >= wunschVkNetto - 1e-9,
     amListendeckel: Number.isFinite(deckel) && vkNetto >= cent(deckel) - 1e-9,
-    ekIstPlatzhalter: artikel.ekQuelle !== 'bestaetigt',
+    
+
+
+
+
+
+
+
+
+
+
+    ekIstPlatzhalter: artikel.ekQuelle !== 'bestaetigt' && artikel.ekQuelle !== 'rekonstruiert',
   };
 }
 
