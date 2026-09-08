@@ -165,9 +165,13 @@ gescheitert:
 
 > **Was nicht gemessen werden kann, ist nicht widerlegt.**
 
-**Für dieses Verzeichnis:** Der Bau läuft wieder, und die Tests sind grün —
-aber jede Preisangabe trägt jetzt „rekonstruiert" statt „bestätigt", und der
+**Für dieses Verzeichnis:** Der Bau läuft wieder, die 1.880 Testfälle sind
+grün, und `npm run alles` steht bei **42 von 43 Schritten grün — einer nicht
+messbar**. Jede Preisangabe trägt „rekonstruiert" statt „bestätigt", und der
 offene Punkt sagt, was das heißt.
+
+Das ist der Zustand, den dieser Tag hinterlässt: Alles, was gemessen werden
+kann, ist gemessen; das eine, was nicht geht, sagt warum.
 
 **Und ein Gedanke, der bleibt:** Der Befund „44 von 46 Einkaufspreisen sind aus
 den veröffentlichten Verkaufspreisen rekonstruierbar" stand sechs Wochen lang
