@@ -37,7 +37,7 @@ Ursprünglich ein Streckenhandel für Radonvorsorge auf **unbelegten** Platzhalt
 
 | | Stand |
 |---|---|
-| Katalog | **46 echte Artikel** aus 15 Lieferantenbelegen, Preise bestätigt |
+| Katalog | **46 echte Artikel** aus 15 Lieferantenbelegen; die Einkaufspreise sind seit dem 8. September **rekonstruiert statt belegt** (Gate 30) |
 | Website | **82 Seiten** — 46 Artikel, 14 Wissensseiten, 4 Systemlisten, 7 Gruppen, 5 Rechtsseiten, 6 im Wurzelverzeichnis (darunter die Fehlerseite) |
 | Kampagne | 6 Suchkampagnen gerechnet, **3 im ersten Anlauf**, alle **pausiert** |
 | Produktfeed | 43 Einträge — **nicht einreichbar**, GTIN fehlt bei allen 46 Artikeln |
@@ -154,6 +154,7 @@ Der gemeinsame Nenner: **eine Angabe, die berechnet und dann verschwiegen wird.*
 ## Was fehlt — und was der Auftraggeber entscheiden muss
 
 - **Das Repository ist öffentlich, und das wiegt schwerer als bisher notiert.** `.gitignore` hält die Einkaufskonditionen draußen, aber aus den veröffentlichten Verkaufspreisen und der überall dokumentierten Zielmarge sind **44 von 46 Einkaufspreisen** auf den Cent rekonstruierbar (`npm run pruefe-geheimnis`). **Empfehlung: privat stellen.**
+- **Die Preisdatei gehört an einen zweiten Ort, und die Rechnungen wieder eingelesen.** Am 8. September wurde die Arbeitsumgebung neu aufgesetzt; `preise/baustoff-preise.json` steht zu Recht in `.gitignore` und lag damit in genau einer Kopie. Alle 46 Einkaufspreise ließen sich aus der gebauten Ausgabe zurückrechnen — ausgerechnet über die Rekonstruierbarkeit, vor der der Punkt darüber warnt —, aber jeder trägt seither `ekQuelle: "rekonstruiert"`. **Nicht zurückzuholen ist `preise/poschacher-positionen.csv`** (Rechnungspositionen mit Datum); zwei Prüfer weigern sich seither zu messen: `npm run preiswechsel` und `npm run pruefe-gebinde`.
 - **GTIN je Artikel** — bei allen 46 offen. Ohne sie läuft Google Shopping nicht. Eine erfundene GTIN führt nicht zur Ablehnung des Artikels, sondern zur Sperre des Kontos. Die Beschaffung ist eine Anfrage an Dritte und damit freigabepflichtig.
 - **Vier Impressumsangaben** — E-Mail, Telefon, UID, Gewerbewortlaut. Die E-Mail-Adresse ist zugleich eine der beiden Voraussetzungen des Bestellwegs: Ohne sie hat das Empfangsskript keinen Empfänger, und `npm run website` liefert es gar nicht erst mit.
 - **Kontoinhaber und IBAN** — zwei Zeilen in `data/betreiber.json`, und die **einzige offene Zulieferung, die nichts kostet.** Gate 21 lässt ab Start per Vorkasse zahlen; die Auftragsbestätigung sagt seither „Zahlbar sofort" und sagte bis zum 4. September nicht, wohin. Heute steht dort `[[ Kontoinhaber und IBAN — FEHLT ]]`. Vorkasse braucht keinen Zahlungsanbieter, sondern ein Konto — ohne Gebühr und ohne Vertrag.

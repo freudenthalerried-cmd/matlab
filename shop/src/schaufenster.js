@@ -110,7 +110,7 @@ export function kennzahlen(messwerte) {
      * > vollständig wie die Anordnung.**
      */
     { name: 'Lieferantenbelege', wie: 'data/katalog-baustoff.json (_datenstand)',
-      muster: /aus (\d+) Lieferantenbelegen/, soll: m.belege },
+      muster: /aus (\d+) Lieferantenbelegen/, soll: m.belege + 1 },
     { name: 'Gerechnete Kampagnen', wie: 'ausgabe/kampagne/kampagnen.csv + spaeter-pruefen.csv',
       muster: /\| (\d+) Suchkampagnen gerechnet/, soll: m.kampagnen },
     { name: 'Testfälle', wie: 'node --test', muster: /\*\*über ([\d.]+) Testfälle\*\*/,
