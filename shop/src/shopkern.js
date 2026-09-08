@@ -20,6 +20,7 @@
  * ------------------------------------------------------------------ */
 
 import { istMenge } from './gebinde.js';
+import { systembruch, systembruchsatz } from './systemtreue.js';
 // **Seit dem 5. September von dort statt hier.** Der Wortlaut stand zweimal;
 // eine Probe hielt beide gegeneinander. Eine Probe, die zwei Fassungen
 // vergleicht, ist besser als nichts und schlechter als eine Fassung.
@@ -997,6 +998,14 @@ export function kundenWarenkorb(zeilen, { artikel, lieferanten, mindestbestellwe
   const nettoGesamt = runde(warenwertNetto + frachtNetto);
   const ustBetrag = runde(nettoGesamt * ust);
 
+  // **Systemtreue — 8. September 2026.** Zuletzt, damit der Hinweis unter den
+  // rechnerischen Punkten steht: Er kostet nichts und hält nichts auf, er
+  // sagt nur, was sonst niemand bemerkt hätte.
+  const bruch = systembruch(zeilen
+    .map((z) => artikel.find((a) => a.sku === z.sku))
+    .filter(Boolean));
+  if (bruch) offen.push(systembruchsatz(bruch));
+
   return {
     teillieferungen,
     positionen: teillieferungen.reduce((n, t) => n + t.positionen.length, 0),
@@ -1013,6 +1022,13 @@ export function kundenWarenkorb(zeilen, { artikel, lieferanten, mindestbestellwe
     // Verlustgeschäfte, auch wenn sie zusammen über der Grenze liegen.
     // `Math.min` über eine leere Liste wäre `Infinity` und damit über jeder
     // Grenze: Der leere Warenkorb hätte den Mindestbestellwert erfüllt.
+    // **Systemtreue — 8. September 2026.** Der Bestand sagt an zwei Stellen,
+    // dass ein WDVS als Kombination geprüft wird und Mischen die Zulassung
+    // verlässt; der Katalog führt Gewebe und Klebe-Spachtelmasse zweier
+    // Hersteller, und diese Rechnung zählte beides anstandslos zusammen. Der
+    // Satz geht über `offen` hinaus — dieselbe Leitung, die den
+    // Mindestbestellwert trägt, und damit an die Kasse **und** in den
+    // Anfragetext. Siehe `src/systemtreue.js`.
     mindestbestellwert: mindestbestellwertKunde(
       teillieferungen.length ? Math.min(...teillieferungen.map((t) => t.warenwertNetto)) : 0,
       mindestbestellwertNetto,

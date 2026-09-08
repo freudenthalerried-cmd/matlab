@@ -259,7 +259,13 @@ export function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = nu
   }
 
   for (const o of rechnung.offen ?? []) {
-    zeilen.push(`Offen: ${o}`);
+    // **Ein Hinweis ist kein offener Punkt — 8. September 2026.** Die Leitung
+    // `offen` trug bisher nur Punkte, die den Auftrag wirklich aufhalten (der
+    // Mindestbestellwert, ein fehlendes Gewicht). Seit die Systemtreue über
+    // dieselbe Leitung geht, stünde dort „Offen: Hinweis zur Systemtreue …" —
+    // und sagte dem Kunden, seine Bestellung sei unvollständig, obwohl sie
+    // vollständig ist und nur eine Anmerkung trägt.
+    zeilen.push(/^Hinweis\b/.test(o) ? o : `Offen: ${o}`);
     hinweise.push(o);
   }
 

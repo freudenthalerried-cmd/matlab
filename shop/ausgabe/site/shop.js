@@ -952,6 +952,257 @@ function pruefeLieferort(ort = {}) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const SYSTEME = Object.freeze([
+  Object.freeze({
+    name: 'Capatect',
+    hersteller: 'Synthesa',
+    muster: /^Capatect\b/,
+    warum: 'Neun der elf WDVS-Artikel tragen diesen Namen; zusammen ergeben sie einen '
+      + 'vollständigen Aufbau von der Klebe- und Spachtelmasse bis zum Reibputz.',
+  }),
+  Object.freeze({
+    name: 'Baumit',
+    hersteller: 'Baumit',
+    muster: /^Baumit\b/,
+    warum: 'Zwei Schichtbestandteile aus einem zweiten Haus — das Gewebe in der '
+      + 'WDVS-Gruppe, die Klebe-Spachtelmasse unter „Mörtel". Sie sind kein Zubehör, '
+      + 'sondern Ersatz für zwei Positionen des Capatect-Aufbaus.',
+  }),
+]);
+
+
+
+
+
+
+
+
+const SCHICHTEN = Object.freeze([
+  Object.freeze({
+    rolle: 'Klebe- und Armierungsmörtel',
+    
+    
+    
+    
+    muster: /Klebe[-\s]*(?:und\s+)?Spachtel|Armierungsm[öo]rtel/i,
+    warum: 'Die Prüfgrundlage nennt ausdrücklich den Klebemörtel des einen Herstellers mit '
+      + 'dem Gewebe eines anderen als den Fall, der die Zusammenstellung verlässt.',
+  }),
+  Object.freeze({
+    rolle: 'Glasgewebe',
+    muster: /Glasgewebe|Textilglasgitter/i,
+    warum: 'Das Gewebe liegt eingebettet im Armierungsmörtel; die beiden werden als Paar '
+      + 'geprüft und sind der im Regelwerk genannte Beispielfall.',
+  }),
+  Object.freeze({
+    rolle: 'Putzgrund',
+    muster: /Putzgrund/i,
+    warum: 'Der Putzgrund stellt die Haftung zwischen Armierungsschicht und Oberputz her — '
+      + 'beide Seiten davon gehören dem System.',
+  }),
+  Object.freeze({
+    rolle: 'Oberputz',
+    muster: /Reibputz|Oberputz|Silikatputz|Silikonharzputz/i,
+    warum: 'Die oberste Schicht des geprüften Aufbaus; ihre Körnung und Bindemittelbasis '
+      + 'stehen in den Systemunterlagen des Herstellers.',
+  }),
+]);
+
+
+
+
+
+
+
+const OHNE_SCHICHT = Object.freeze([
+  Object.freeze({
+    sku: 'POS-11082',
+    was: 'Capatect Universaldübel Schraubdübel',
+    warum: 'Dübel tragen eine eigene Zulassung. Die eigene Wissensseite sagt es beim Dübel '
+      + 'selbst: Zahl und Anordnung kommen vom Planer oder aus der Dübelzulassung, nicht aus '
+      + 'dem Baustoffhandel. Ein Dübel aus einem anderen Haus ist deshalb kein Systembruch.',
+  }),
+  Object.freeze({
+    sku: 'POS-52537',
+    was: 'Drehstiftdübel PK(100) K 6',
+    warum: 'Derselbe Grund wie beim Universaldübel — und dieser trägt gar keinen '
+      + 'Markennamen. Er ist der Beleg dafür, dass die Marke aus der Bezeichnung kein '
+      + 'Ersatz für ein Herstellerfeld ist, sondern eine Behelfslösung bis zur '
+      + 'Artikelliste des Lieferanten.',
+  }),
+  Object.freeze({
+    sku: 'POS-29610',
+    was: 'Capatect Polystyrol-Rondelle',
+    warum: 'Die Rondelle gehört zum Dübel und nicht zur Schichtenfolge: Sie deckt den '
+      + 'versenkt gesetzten Teller ab. Ihre Passung richtet sich nach dem Dübel, dessen '
+      + 'Zulassung eigenständig ist.',
+  }),
+  Object.freeze({
+    sku: 'POS-53402',
+    was: 'Capatect Kantenschutz mit Gewebe Carbon',
+    warum: 'Ein Profil für Außenecken und Laibungen. Es trägt zwar ein Gewebefähnchen, '
+      + 'bildet aber keine Fläche der Armierungsschicht, sondern deren Rand — es ersetzt '
+      + 'keine Schicht und steht in keiner Verbrauchsrechnung je m².',
+  }),
+  Object.freeze({
+    sku: 'POS-52124',
+    was: 'Capatect Gewebeanschlussleiste 3D Universal Plus',
+    warum: 'Dasselbe am Fenster- und Türanschluss: ein Anschlussprofil mit Dichtband, das '
+      + 'die Putzfläche vom Rahmen trennt. Es ist die Position, die am häufigsten vergessen '
+      + 'wird, und keine Schicht des geprüften Aufbaus.',
+  }),
+]);
+
+
+function einordnung(artikel) {
+  const text = String(artikel.bezeichnung ?? '');
+  const schicht = SCHICHTEN.find((s) => s.muster.test(text)) ?? null;
+  const system = SYSTEME.find((s) => s.muster.test(text)) ?? null;
+  return { sku: artikel.sku, schicht: schicht?.rolle ?? null, system: system?.name ?? null };
+}
+
+
+
+
+
+
+function zuordnungsbefund(artikel, ohneSchicht = OHNE_SCHICHT) {
+  const meldungen = [];
+  const befreit = new Map(ohneSchicht.map((e) => [e.sku, e]));
+  const gesehen = new Set();
+
+  for (const a of artikel) {
+    const e = einordnung(a);
+    if (e.schicht === null) {
+      if (!befreit.has(a.sku)) {
+        meldungen.push({
+          regel: 'artikel-ohne-schicht',
+          text: `${a.sku} „${a.bezeichnung}" gehört keiner Schicht an und steht in keinem `
+            + 'Eintrag von OHNE_SCHICHT — wer ihn aus der Systemprüfung nimmt, schreibt den Grund dazu',
+        });
+      } else {
+        gesehen.add(a.sku);
+      }
+      continue;
+    }
+    if (befreit.has(a.sku)) {
+      meldungen.push({
+        regel: 'befreiter-artikel-ist-schicht',
+        text: `${a.sku} steht als schichtlos im Register und trifft doch die Schicht `
+          + `„${e.schicht}"`,
+      });
+      gesehen.add(a.sku);
+      continue;
+    }
+    if (e.system === null) {
+      meldungen.push({
+        regel: 'schicht-ohne-system',
+        text: `${a.sku} „${a.bezeichnung}" ist eine Schicht (${e.schicht}), und aus der `
+          + 'Bezeichnung ist kein System ablesbar — eine Schicht ohne System lässt sich gegen '
+          + 'keine andere prüfen',
+      });
+    }
+  }
+
+  for (const e of ohneSchicht) {
+    if (gesehen.has(e.sku)) continue;
+    meldungen.push({
+      regel: 'eintrag-ohne-artikel',
+      text: `${e.sku} („${e.was}") steht als schichtlos im Register, im Katalog aber nicht mehr`,
+    });
+  }
+  return { geprueft: artikel.length, meldungen, sauber: meldungen.length === 0 };
+}
+
+
+
+
+
+
+
+
+function systembruch(artikelImKorb) {
+  const schichten = artikelImKorb.map(einordnung).filter((e) => e.schicht && e.system);
+  const systeme = [...new Set(schichten.map((e) => e.system))].sort();
+  if (systeme.length < 2) return null;
+  const jeSystem = systeme.map((s) => ({
+    system: s,
+    rollen: [...new Set(schichten.filter((e) => e.system === s).map((e) => e.schicht))].sort(),
+  }));
+  return { systeme, jeSystem };
+}
+
+
+
+
+
+
+function systembruchsatz(bruch) {
+  if (!bruch) return '';
+  const teile = bruch.jeSystem.map((s) => `${s.system} (${s.rollen.join(', ')})`);
+  return `Hinweis zur Systemtreue: Ihr Warenkorb enthält Schichten aus zwei Systemen — `
+    + `${teile.join(' und ')}. Ein Wärmedämmverbundsystem wird als Kombination geprüft `
+    + '(ETAG 004, ÖNORM B 6400); wer den Klebemörtel des einen Herstellers mit dem Gewebe '
+    + 'eines anderen kombiniert, verlässt die geprüfte Zusammenstellung. Welche '
+    + 'Zusammenstellung geprüft ist, steht in den Systemunterlagen des Herstellers. '
+    + 'Wir liefern, was Sie bestellen — diese Zeile soll nur verhindern, dass es niemand '
+    + 'bemerkt hat.';
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function frachtGrundText(sperrgutPositionen) {
   if (!(sperrgutPositionen > 0)) return 'Pauschale';
   return `Pauschale plus ${sperrgutPositionen}× Kranentladung — Zahl je Sperrgut-Position `
@@ -992,6 +1243,7 @@ function frachtGrundText(sperrgutPositionen) {
 function frachtfreiText() {
   return 'frei Haus — die Frachtfreigrenze dieses Herstellers ist erreicht';
 }
+
 
 
 
@@ -1991,6 +2243,14 @@ function kundenWarenkorb(zeilen, { artikel, lieferanten, mindestbestellwertNetto
   const nettoGesamt = runde(warenwertNetto + frachtNetto);
   const ustBetrag = runde(nettoGesamt * ust);
 
+  
+  
+  
+  const bruch = systembruch(zeilen
+    .map((z) => artikel.find((a) => a.sku === z.sku))
+    .filter(Boolean));
+  if (bruch) offen.push(systembruchsatz(bruch));
+
   return {
     teillieferungen,
     positionen: teillieferungen.reduce((n, t) => n + t.positionen.length, 0),
@@ -2001,6 +2261,13 @@ function kundenWarenkorb(zeilen, { artikel, lieferanten, mindestbestellwertNetto
     nettoGesamt,
     ustBetrag,
     bruttoGesamt: runde(nettoGesamt + ustBetrag),
+    
+    
+    
+    
+    
+    
+    
     
     
     
@@ -2275,7 +2542,13 @@ function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = null }) {
   }
 
   for (const o of rechnung.offen ?? []) {
-    zeilen.push(`Offen: ${o}`);
+    
+    
+    
+    
+    
+    
+    zeilen.push(/^Hinweis\b/.test(o) ? o : `Offen: ${o}`);
     hinweise.push(o);
   }
 

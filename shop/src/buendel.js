@@ -89,6 +89,12 @@ export const KERNMODULE = Object.freeze([
   // ohne Zahl und ohne Wissen: `preis.js` selbst darf nicht ins Bündel, es
   // trägt die Einkaufsrechnung.
   'frachttext.js',
+  // **Ergänzt am 8. September.** Die Systemtreue eines WDVS — welche Schicht
+  // zu welchem Hersteller gehört und dass Mischen die Zulassung verlässt.
+  // Sie darf in den Browser: Sie trägt keine Zahl und keine Rechnung, sondern
+  // Bautechnik, die auf den eigenen Inhaltsseiten ohnehin veröffentlicht ist.
+  // Und sie **muss** dorthin, denn der Warenkorb entsteht im Browser.
+  'systemtreue.js',
 ]);
 
 /** Die Module des Shops, die zusätzlich in die Seiten wandern. */
@@ -120,7 +126,9 @@ export const SHOPMODULE = Object.freeze(['shopkern.js', 'gebinde.js', 'kundenanf
  * still wieder mitzufahren.
  */
 export const BROWSERMODULE = Object.freeze([
-  'format.js', 'gebinde.js', 'liefergebiet.js', 'shopkern.js', 'kundenanfrage.js',
+  // **`systemtreue.js` vor `shopkern.js`** — es wird von dort gerufen, und im
+  // Bündel steht jede Abhängigkeit vor ihrem Nutzer.
+  'format.js', 'gebinde.js', 'liefergebiet.js', 'systemtreue.js', 'shopkern.js', 'kundenanfrage.js',
   // **Ergänzt am 5. September.** Ein Satz, keine Zahl, kein Wissen — der Satz
   // an der Frachtzeile, den `shopkern.js` und `preis.js` gemeinsam brauchen.
   'frachttext.js',

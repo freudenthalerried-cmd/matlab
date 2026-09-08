@@ -226,6 +226,19 @@ export const PRUEFER = [
     mindestens: 5,
   },
   {
+    // **Aufgenommen am 8. September.** Die eigene Wissensseite sagt seit dem
+    // ersten Tag, dass ein WDVS als Kombination geprüft wird und Mischen die
+    // Zulassung verlässt; der Katalog führt Gewebe und Klebe-Spachtelmasse
+    // zweier Hersteller, und der Warenkorb rechnete beides anstandslos
+    // zusammen. Gemessen wird die Zahl der **angesehenen** Artikel, nicht die
+    // der Funde: Der gesunde Zustand ist null Meldungen.
+    name: 'pruefe-systemtreue',
+    werkzeug: 'systemtreuepruefung.mjs',
+    muster: /Systemtreue — (\d+) Artikel eines WDVS-Aufbaus/,
+    einheit: 'Artikel eines WDVS-Aufbaus gegen ihr System',
+    mindestens: 8,
+  },
+  {
     // **Aufgenommen am 8. September.** `src/offenepunkte.js` sagt in seinem
     // eigenen Kopf, warum es das Modul gibt: Eine von Hand fortgeschriebene
     // Liste ist an dem Tag falsch, an dem jemand einen Punkt schließt und die

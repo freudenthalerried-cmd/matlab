@@ -1932,6 +1932,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'tut genau das mit dem Gleitmittel und verlangt, dass jede solche Erklärung einen '
       + 'Eintrag mit Grund hat.',
   }),
+  Object.freeze({
+    id: 'die-kasse-schweigt-zum-gemischten-system',
+    pruefer: 'pruefe-systemtreue',
+    was: 'Ein Warenkorb aus zwei Systemen, der den Kunden nichts davon merken lässt',
+    datei: 'shop/src/shopkern.js',
+    art: 'ersetzen',
+    suchen: '  if (bruch) offen.push(systembruchsatz(bruch));',
+    ersetzen: '  if (false && bruch) offen.push(systembruchsatz(bruch));',
+    erwartet: /kasse-schweigt|nichts davon/,
+    warum: 'Der Zustand bis zum 8. September. Die eigene Wissensseite sagt seit dem ersten '
+      + 'Tag, dass ein WDVS als Kombination geprüft wird und wer den Klebemörtel des einen '
+      + 'Herstellers mit dem Gewebe eines anderen kombiniert die Zulassung verlässt — und der '
+      + 'Katalog führt genau diese beiden Paare. Der Warenkorb rechnete sie anstandslos '
+      + 'zusammen. Diese Mutation lässt die Erkennung im Modul stehen und schneidet nur den '
+      + 'Weg zum Kunden ab: Eine Regel, die niemand hinausträgt, ist keine — dasselbe Muster '
+      + 'wie bei den sieben Sperren ohne grünen Fall.',
+  }),
 ]);
 
 /**
