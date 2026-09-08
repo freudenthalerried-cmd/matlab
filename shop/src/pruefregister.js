@@ -226,6 +226,18 @@ export const PRUEFER = [
     mindestens: 5,
   },
   {
+    // **Aufgenommen am 8. September**, nachdem ein Commit dieses Loops eine
+    // laufende Gegenprobe mitgenommen und damit `pruefe-schaufenster`
+    // blindgestellt hatte. Gemessen wird die Zahl der **angeordneten** Haken,
+    // nicht der Funde: Der gesunde Zustand ist null Meldungen, und „kein Haken
+    // hat gefehlt" darf nicht aussehen wie „es gibt keinen Haken".
+    name: 'pruefe-haken',
+    werkzeug: 'hakenpruefung.mjs',
+    muster: /Haken — (\d+) angeordnete Haken/,
+    einheit: 'angeordnete Haken, mit und ohne offenen Zettel gerufen',
+    mindestens: 1,
+  },
+  {
     name: 'pruefe-mutationen',
     werkzeug: 'mutationspruefung.mjs',
     // Gemessen wird das **Angesehene**. Der gesunde Zustand dieses Prüfers ist

@@ -31,6 +31,7 @@ import { dirname, join } from 'node:path';
 import { GEGENPROBEN, OHNE_GEGENPROBE, neueMeldungen, registerbefund } from '../src/gegenprobenregister.js';
 import { laufzahl, nachPrueferGruppiert, vorlaufEntfaellt } from '../src/gegenprobenplan.js';
 import { markiere, nimmAb, offeneMarken, stelleZurueck } from '../src/mutationsschutz.js';
+import { richteHakenEin } from './hakeneinrichtung.mjs';
 import { PRUEFER, BROWSERPRUEFER } from '../src/pruefregister.js';
 import { LESER } from '../src/erzeugnisstand.js';
 
@@ -145,6 +146,24 @@ if (nurEine && proben.length === 0) {
  * vor jeder Mutation ein Zettel mit dem Original daneben; hier wird er
  * eingelöst.
  */
+/*
+ * **Der Haken zuerst, dann die erste Mutation — 8. September 2026.**
+ *
+ * An diesem Tag rief ein Commit dieses Loops `git add -A`, während hier die
+ * Gegenproben liefen; die gerade offene Mutation ging mit und stellte einen
+ * Prüfer blind. Der Satz „wer währenddessen committet, committet die
+ * Mutation" stand seit dem 4. September im Kopf der Mutationsprüfung — als
+ * Warnung an einen Leser. Committet wird hier aber von einem Programm.
+ *
+ * > **Der Schutz gehört zu der Stelle, die die Gefahr erzeugt.** Diese Zeile
+ * > macht die Dateien absichtlich falsch; sie stellt deshalb auch den Haken
+ * > auf, der einen Commit so lange aufhält.
+ */
+const haken = richteHakenEin(REPO);
+console.log(haken.geaendert
+  ? `Haken gesetzt: core.hooksPath → ${haken.weg}\n`
+  : `Haken steht: core.hooksPath → ${haken.weg}\n`);
+
 const liegengeblieben = offeneMarken(REPO);
 for (const m of liegengeblieben) {
   if (!m.lesbar) {

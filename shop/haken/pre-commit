@@ -1,0 +1,23 @@
+#!/bin/sh
+#
+# Bleibt ein Commit stehen, solange irgendwo eine Datei absichtlich falsch ist?
+#
+# **Der Anlass, 8. September 2026.** Ein Commit dieses Loops rief `git add -A`,
+# während im Hintergrund die Gegenproben liefen. Eine davon hielt
+# `src/schaufenster.js` absichtlich falsch — der Sollwert der
+# Lieferantenbelege um eins verschoben. Die Zeile ging mit und stand
+# fünfunddreißig Minuten lang auf dem Zweig: ein Prüfer, der nichts mehr
+# misst, veröffentlicht.
+#
+# Der Satz stand seit dem 4. September im Kopf von `bin/mutationspruefung.mjs`:
+# „Wer währenddessen committet, committet die Mutation." Er stand dort als
+# Warnung an einen Leser. Gelesen hat ihn niemand, denn committet wird hier
+# von einem Programm.
+#
+#   Eine Regel, die nur als Satz dasteht, gilt für den, der sie liest.
+#
+# Deshalb steht sie jetzt im Weg. Der Zettel unter `.sicherung/` sagt, dass
+# gerade eine Mutation offen ist; dieser Haken fragt ihn, bevor git schreibt.
+set -e
+WURZEL=$(git rev-parse --show-toplevel)
+exec node "$WURZEL/shop/bin/mutationspruefung.mjs"

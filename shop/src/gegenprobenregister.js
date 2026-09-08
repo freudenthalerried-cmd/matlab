@@ -1863,6 +1863,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'Verweis steht dann auf **jeder** der 82 Seiten und führt auf nichts. Drei dieser '
       + 'Seiten sind Endziele bezahlter Anzeigen zu 4,19 € bis 8,22 € je Klick.',
   }),
+  Object.freeze({
+    id: 'der-haken-ruft-einen-pruefer-der-nicht-mehr-so-heisst',
+    pruefer: 'pruefe-haken',
+    was: 'Ein Haken, der auf ein Werkzeug zeigt, das er nicht mehr aufruft',
+    datei: 'shop/src/haken.js',
+    art: 'ersetzen',
+    suchen: "    ruft: 'bin/mutationspruefung.mjs',",
+    ersetzen: "    ruft: 'bin/mutationswache.mjs',",
+    erwartet: /haken-ruft-nicht/,
+    warum: 'Der Fall vom 8. September: Ein Commit dieses Loops nahm eine laufende Gegenprobe '
+      + 'mit und stellte damit pruefe-schaufenster blind. Der Haken hält das seither auf — '
+      + 'aber nur, solange er wirklich die Mutationsprüfung ruft. Wird das Werkzeug einmal '
+      + 'umbenannt und der Haken nicht, steht die Datei weiter da, ist ausführbar, ist im '
+      + 'Register genannt und hält nichts mehr auf. Diese Mutation benennt im Register um, '
+      + 'was der Haken zu rufen hat, und verlangt, dass der Prüfer den Inhalt liest und '
+      + 'nicht nur den Dateinamen.',
+  }),
 ]);
 
 /**
