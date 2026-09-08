@@ -30,6 +30,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { GEGENPROBEN, OHNE_GEGENPROBE, neueMeldungen, registerbefund } from '../src/gegenprobenregister.js';
 import { laufzahl, nachPrueferGruppiert, vorlaufEntfaellt } from '../src/gegenprobenplan.js';
+import { baumabdruck, baumbefund, bewegungstext } from '../src/baumstand.js';
 import { markiere, nimmAb, offeneMarken, stelleZurueck } from '../src/mutationsschutz.js';
 import { richteHakenEin } from './hakeneinrichtung.mjs';
 import { PRUEFER, BROWSERPRUEFER } from '../src/pruefregister.js';
@@ -195,6 +196,17 @@ let voriges = null;
 
 const ergebnisse = [];
 
+/*
+ * **Der Abdruck des Bestands — 8. September 2026.**
+ *
+ * Ein Gesamtlauf meldete sieben Proben gegen `npm test` rot, fünf davon mit
+ * „war schon vorher rot". Am Bestand war nichts; gearbeitet wurde an der
+ * nächsten Runde, während der Lauf lief. Der Satz ist richtig und traf den
+ * Falschen. Verglichen wird gegen die **vorige** Probe, damit jede Meldung
+ * sagt, was sich seit dem letzten Messpunkt bewegt hat.
+ */
+let letzterAbdruck = baumabdruck(REPO);
+
 for (const p of proben) {
   const pfad = join(REPO, p.datei);
   const vorher = readFileSync(pfad, 'utf8');
@@ -214,9 +226,18 @@ for (const p of proben) {
   const seit = Date.now();
 
   try {
-    const wieder = vorlaufEntfaellt(voriges, p) ? voriges.zurueck : null;
+    const jetzt = baumabdruck(REPO);
+    const baum = baumbefund(letzterAbdruck, jetzt);
+    letzterAbdruck = jetzt;
+
+    // Über einem Bestand, der sich bewegt, wird gar nicht erst gemessen: Ein
+    // Prüferlauf kostet hier bis zu fünfzig Sekunden, und sein Ergebnis wäre
+    // eine Aussage über einen Zustand, den es beim Lesen nicht mehr gibt.
+    const wieder = baum.ruhig && vorlaufEntfaellt(voriges, p) ? voriges.zurueck : null;
     if (wieder) gesparteLaeufe += 1;
-    const vor = wieder ?? laufeMitBau(p.pruefer);
+    const vor = baum.ruhig
+      ? (wieder ?? laufeMitBau(p.pruefer))
+      : { gruen: false, ausgang: -1, ausgabe: '' };
     /*
      * **Weigerung ist kein roter Prüfer — 8. September 2026.**
      *
@@ -230,7 +251,10 @@ for (const p of proben) {
      * Zurückgestellt, nicht gescheitert: Was nicht gemessen werden kann, ist
      * nicht widerlegt.
      */
-    if (vor.ausgang === 2) {
+    if (!baum.ruhig) {
+      schritte.push(bewegungstext(baum));
+      urteil = 'nicht messbar';
+    } else if (vor.ausgang === 2) {
       schritte.push(`der Prüfer kann nichts messen: ${vor.ausgabe.trim().split('\n')[0]}`);
       urteil = 'nicht messbar';
     } else if (!vor.gruen) {
@@ -359,8 +383,16 @@ const gescheitert = ergebnisse.filter((e) => e.urteil !== 'geschlagen' && e.urte
 
 const dauer = Math.round((Date.now() - begonnen) / 1000);
 if (nichtMessbar.length) {
-  console.log(`${nichtMessbar.length} Gegenprobe(n) zurückgestellt — ihr Prüfer kann nichts messen:`);
-  for (const e of nichtMessbar) console.log(`  ⃠ ${e.pruefer}: ${e.was}`);
+  // **Verallgemeinert am 8. September.** Hier stand „ihr Prüfer kann nichts
+  // messen" — das trifft die Weigerung wegen fehlender Grundlage und nicht den
+  // zweiten Fall, der seit heute dazugehört: einen Bestand, der sich unter dem
+  // Lauf bewegt hat. Der Grund steht jetzt bei jeder Zeile statt in der
+  // Überschrift.
+  console.log(`${nichtMessbar.length} Gegenprobe(n) zurückgestellt — nicht messbar:`);
+  for (const e of nichtMessbar) {
+    console.log(`  ⃠ ${e.pruefer}: ${e.was}`);
+    if (e.schritte[0]) console.log(`      ${e.schritte[0]}`);
+  }
   console.log('Was nicht gemessen werden kann, ist nicht widerlegt.\n');
 }
 
