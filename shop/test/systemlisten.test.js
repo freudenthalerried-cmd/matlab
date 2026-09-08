@@ -16,8 +16,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 import {
-  ZAHLWORT, NICHT_GEFUEHRT, liesSystemliste, listenbefund, systemlistenbefund,
-} from '../src/systemlisten.js';
+  ZAHLWORT, NICHT_GEFUEHRT, liesSystemliste, listenbefund, systemlistenbefund, WORTLUECKEN, zuordnungsbefund } from '../src/systemlisten.js';
 
 const wurzel = join(dirname(fileURLToPath(import.meta.url)), '..');
 const katalog = JSON.parse(readFileSync(join(wurzel, 'data', 'katalog-baustoff.json'), 'utf8'));
@@ -134,4 +133,80 @@ test('„nicht im Sortiment" und „nicht in Flächenstärke" sind zweierlei', a
   assert.equal(EINGESCHRAENKT.test('Dämmplatten *(nicht in Flächenstärke)*'), true);
   assert.equal(EINGESCHRAENKT.test('Abschlussschiene *(nicht im Sortiment)*'), false);
   assert.equal(NICHT_GEFUEHRT.test('Abschlussschiene *(nicht im Sortiment)*'), true);
+});
+
+test('Jede lieferbare Position trägt den Namen eines Artikels — und jeder Artikel eine Zeile', async () => {
+  const { readFileSync, readdirSync } = await import('node:fs');
+  const { fileURLToPath } = await import('node:url');
+  const { join } = await import('node:path');
+  const { wortstaemme } = await import('../src/shopkern.js');
+  const wurzel = fileURLToPath(new URL('..', import.meta.url));
+  const ordner = join(wurzel, 'inhalte', 'system');
+
+  const dateien = readdirSync(ordner).filter((d) => d.endsWith('.md'));
+  assert.ok(dateien.length >= 3, `nur ${dateien.length} Systemlisten`);
+  const listen = Object.fromEntries(dateien.map((d) => [
+    d, liesSystemliste(readFileSync(join(ordner, d), 'utf8')),
+  ]));
+  const katalog = JSON.parse(readFileSync(join(wurzel, 'data', 'katalog-baustoff.json'), 'utf8'));
+
+  const b = zuordnungsbefund({
+    listen,
+    bezeichnungJeSku: new Map(katalog.artikel.map((a) => [a.sku, a.bezeichnung])),
+    staemme: wortstaemme,
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.text), []);
+  assert.ok(b.positionen >= 15, `nur ${b.positionen} Positionen geprüft`);
+});
+
+test('Ein Artikel ohne Zeile und eine Zeile ohne Artikel fallen beide auf', () => {
+  const liste = {
+    zeilen: [{ nr: 1, position: 'Kanalrohr', gefuehrt: true, eingeschraenkt: false }],
+    skus: ['POS-1', 'POS-2'],
+  };
+  const b = zuordnungsbefund({
+    listen: { 'x.md': liste },
+    bezeichnungJeSku: new Map([['POS-1', 'PVC Kanalrohr NW 100'], ['POS-2', 'PAE-Folie T 100']]),
+    staemme: (t) => t.toLowerCase().split(/[^a-zäöüß]+/).filter(Boolean),
+    wortluecken: [],
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['artikel-ohne-position']);
+  assert.match(b.meldungen[0].text, /POS-2/);
+
+  const ohne = zuordnungsbefund({
+    listen: { 'x.md': { zeilen: [{ nr: 1, position: 'Gleitmittel', gefuehrt: true, eingeschraenkt: false }], skus: [] } },
+    bezeichnungJeSku: new Map(),
+    staemme: (t) => t.toLowerCase().split(/[^a-zäöüß]+/).filter(Boolean),
+    wortluecken: [],
+  });
+  assert.deepEqual(ohne.meldungen.map((m) => m.regel), ['position-ohne-artikel']);
+});
+
+test('Eine Position mit eigener Einschränkung braucht keinen Artikel', () => {
+  // „Dämmplatten *(nicht in Flächenstärke)*" sagt selbst, dass der Artikel in
+  // dieser Form nicht kommt. Sie ist geführt und trägt zu Recht keinen.
+  const b = zuordnungsbefund({
+    listen: { 'x.md': { zeilen: [{ nr: 2, position: 'Dämmplatten *(nicht in Flächenstärke)*', gefuehrt: true, eingeschraenkt: true }], skus: [] } },
+    bezeichnungJeSku: new Map(),
+    staemme: (t) => [t],
+    wortluecken: [],
+  });
+  assert.equal(b.sauber, true);
+  assert.equal(b.positionen, 0);
+});
+
+test('Jede Wortlücke nennt einen Grund und kommt in einer Liste vor', () => {
+  assert.ok(WORTLUECKEN.length >= 2, 'leeres Register — die Schleife prüft nichts');
+  for (const l of WORTLUECKEN) {
+    assert.match(l.sku, /^POS-\d+$/, `„${l.position}" nennt keine Artikelnummer`);
+    assert.ok(l.warum.length >= 150, `„${l.position}": der Grund ist zu knapp`);
+  }
+
+  const b = zuordnungsbefund({
+    listen: {},
+    bezeichnungJeSku: new Map(),
+    staemme: (t) => [t],
+    wortluecken: [{ position: 'Gibt es nicht', sku: 'POS-9', warum: 'x'.repeat(150) }],
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['wortluecke-ohne-fall']);
 });

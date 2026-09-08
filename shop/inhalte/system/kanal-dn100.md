@@ -5,7 +5,7 @@ slug: kanal-dn100
 frage: Welche Teile brauche ich für eine Grundleitung, und wie zähle ich sie aus dem Plan?
 kurz: Rohre nach laufenden Metern, Bögen und Abzweiger nach Winkel, Schächte nach Tiefe, dazu Übergänge und Gleitmittel. Fünf Zahlen aus dem Plan ergeben die vollständige Bestellung — in zehn Minuten ausgezählt.
 gruppe: Kanal
-skus: POS-10095, POS-10115, POS-10116, POS-10134, POS-11133, POS-21382, POS-29023
+skus: POS-10095, POS-10115, POS-10116, POS-10134, POS-11133, POS-21382
 verwandt: kanal-was-zusammengehoert, perimeterdaemmung-und-grundmauerschutz, system/kellerwand-perimeter
 stand: 2026-08-30
 ---

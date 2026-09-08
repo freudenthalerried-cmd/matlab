@@ -96,6 +96,17 @@ export function liesSystemliste(text) {
 
   return {
     positionen: zeilen.length,
+    // **Die Zeilen selbst, nicht nur ihre Zahl — 8. September 2026.** Bis
+    // dahin zählte diese Datei Positionen und Artikel und band beides nie
+    // aneinander: „5 von 8 lieferbar, 7 Artikel" sagt nicht, welcher Artikel
+    // welche Position deckt. Genau dort lag ein Artikel, den die Tabelle der
+    // Seite mit keiner Zeile erklärt.
+    zeilen: Object.freeze(zeilen.map((z) => Object.freeze({
+      nr: z.nr,
+      position: z.position,
+      gefuehrt: !NICHT_GEFUEHRT.test(z.position),
+      eingeschraenkt: EINGESCHRAENKT.test(z.position),
+    }))),
     ohneSortiment: zeilen.filter((z) => NICHT_GEFUEHRT.test(z.position)).length,
     eingeschraenkt: zeilen.filter((z) => EINGESCHRAENKT.test(z.position)).length,
     skus,
@@ -170,4 +181,123 @@ export function systemlistenbefund(listen, katalogSkus, mindestens = 3) {
     meldungen,
     sauber: meldungen.length === 0,
   };
+}
+
+/**
+ * Positionen und Artikelnamen, die dieselbe Sache meinen und sich im Wortlaut
+ * nicht treffen — mit dem Grund.
+ *
+ * Der Lieferant benennt nach Marke und Bauform, die Stückliste nach Gewerk.
+ * Wo beides auseinandergeht, gehört der Grund hierher.
+ */
+export const WORTLUECKEN = Object.freeze([
+  Object.freeze({
+    position: 'Oberputz',
+    sku: 'POS-19333',
+    warum: 'Der Artikel heißt „Capatect PrimaPor K20 SH-Reibputz". Ein Reibputz **ist** der '
+      + 'Oberputz des Systems — die Stückliste nennt die Schicht, der Lieferant die Struktur '
+      + 'und die Körnung. Beides ist richtig, und keines steht im anderen.',
+  }),
+  Object.freeze({
+    position: 'Armierungsmörtel',
+    sku: 'POS-11283',
+    warum: 'Dieselbe Klebe- und Spachtelmasse trägt im System zwei Schichten: Sie klebt die '
+      + 'Platte und nimmt später das Gewebe auf. Die Stückliste führt beide Positionen — mit '
+      + 'Recht, denn die Mengen unterscheiden sich —, der Katalog führt einen Artikel.',
+  }),
+  Object.freeze({
+    position: 'Bögen',
+    sku: 'POS-10116',
+    warum: 'Der zweite der beiden Bögen — „PVC Kanalbogen NW 100 45 grad". Dieselbe '
+      + 'Stammbildungslücke wie beim 30-Grad-Bogen, und beide gehören zur selben Zeile der '
+      + 'Stückliste: Eine Richtungsänderung besteht aus zwei 45-Grad-Bögen, und der flache '
+      + 'kommt an der Sohle dazu.',
+  }),
+  Object.freeze({
+    position: 'Bögen',
+    sku: 'POS-10115',
+    warum: 'Mehrzahl mit Umlaut: Die Artikel heißen „PVC Kanalbogen 30 grad" und „45 grad". '
+      + 'Die Wortstammbildung führt „Bögen" und „Kanalbogen" nicht zusammen — eine Eigenheit '
+      + 'der Stammbildung und keine Abweichung in der Sache.',
+  }),
+]);
+
+/**
+ * Deckt jede lieferbare Position einen Artikel, und jeder Artikel eine
+ * Position?
+ *
+ * **Der Anlass, 8. September 2026.** `pruefe-systemlisten` meldete „5 von 8
+ * lieferbar, 7 Artikel" — zwei Zahlen nebeneinander und keine Verbindung
+ * dazwischen. Gemessen trug `kanal-dn100.md` die **PAE-Folie**, und keine
+ * Zeile ihrer Tabelle erklärt, wozu sie in einer Grundleitung gehört. Der
+ * Kunde sah sie trotzdem: Die Seite baut ihre Artikelkarten aus genau dieser
+ * Kopfzeile.
+ *
+ * > **Die Seite zeigte einen Artikel, den ihre eigene Liste nicht erklärt.**
+ *
+ * @param {object} eingabe
+ * @param {Record<string, object>} eingabe.listen  Name → `liesSystemliste`
+ * @param {Map<string, string>} eingabe.bezeichnungJeSku
+ * @param {(text: string) => string[]} eingabe.staemme
+ */
+export function zuordnungsbefund({
+  listen, bezeichnungJeSku, staemme, wortluecken = WORTLUECKEN,
+}) {
+  const meldungen = [];
+  const benutzt = new Set();
+  let geprueft = 0;
+
+  const passt = (position, sku) => {
+    const l = wortluecken.find((w) => w.position === position && w.sku === sku);
+    if (l) { benutzt.add(`${l.position}|${l.sku}`); return true; }
+    const imArtikel = staemme(bezeichnungJeSku.get(sku) ?? '');
+    return staemme(position.replace(/\*.*/, ''))
+      .some((w) => imArtikel.some((b) => b.includes(w) || w.includes(b)));
+  };
+
+  for (const [name, liste] of Object.entries(listen)) {
+    const gedeckt = new Set();
+    for (const z of liste.zeilen ?? []) {
+      if (!z.gefuehrt) continue;
+      // Eine Position mit eigener Einschränkung sagt selbst, dass der Artikel
+      // in dieser Form nicht kommt („Dämmplatten *(nicht in Flächenstärke)*").
+      // Sie ist geführt und trägt trotzdem zu Recht keinen Artikel.
+      if (z.eingeschraenkt) continue;
+      geprueft += 1;
+      const treffer = liste.skus.filter((s) => passt(z.position, s));
+      treffer.forEach((s) => gedeckt.add(s));
+      if (!treffer.length) {
+        meldungen.push({
+          regel: 'position-ohne-artikel',
+          datei: name,
+          text: `${name}: Position ${z.nr} „${z.position}" ist als lieferbar geführt, und `
+            + 'kein Artikel der Liste trägt ihren Namen',
+        });
+      }
+    }
+    for (const s of liste.skus) {
+      if (gedeckt.has(s)) continue;
+      meldungen.push({
+        regel: 'artikel-ohne-position',
+        datei: name,
+        text: `${name}: ${s} „${bezeichnungJeSku.get(s) ?? '?'}" steht in der Kopfzeile, und `
+          + 'keine Zeile der Tabelle erklärt ihn — die Seite zeigt ihn trotzdem als Karte',
+      });
+    }
+  }
+
+  for (const l of wortluecken) {
+    if (!benutzt.has(`${l.position}|${l.sku}`)) {
+      meldungen.push({
+        regel: 'wortluecke-ohne-fall',
+        datei: null,
+        text: `„${l.position}" ↔ ${l.sku} ist begründet und kommt in keiner Liste mehr vor`,
+      });
+    }
+    if (l.warum.length < 150) {
+      meldungen.push({ regel: 'grund-zu-kurz', datei: null, text: `„${l.position}": der Grund ist zu knapp` });
+    }
+  }
+
+  return { positionen: geprueft, meldungen, sauber: meldungen.length === 0 };
 }

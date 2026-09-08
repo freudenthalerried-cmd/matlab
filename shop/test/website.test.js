@@ -282,7 +282,10 @@ test('Jede Systemliste des Bestands erzeugt für jeden ihrer Artikel Mitverbaute
       mitVorschlag++;
     }
   }
-  assert.equal(mitVorschlag, 32, 'so viele Artikel stehen in mindestens einer Systemliste');
+  // 32 bis zum 8. September; dann fiel die PAE-Folie aus `kanal-dn100.md`, weil
+  // keine Zeile der Tabelle sie erklärt. Die Zahl steht hier als Anker und
+  // nicht als Rechnung: Wer eine Liste ändert, soll sie hier bestätigen müssen.
+  assert.equal(mitVorschlag, 31, 'so viele Artikel stehen in mindestens einer Systemliste');
 });
 
 test('Keine stille Kappung: eine lange Liste wird vollständig gezeigt', () => {

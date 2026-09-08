@@ -1814,6 +1814,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'nach außen und beschreibt zugleich die Rechnung, aus der das Höchstgebot entsteht. '
       + 'Diese Mutation setzt das falsche Bauteil wieder ein.',
   }),
+  Object.freeze({
+    id: 'karte-ohne-zeile-in-der-stueckliste',
+    pruefer: 'pruefe-systemlisten',
+    was: 'Ein Artikel in der Kopfzeile, den keine Zeile der Stückliste erklärt',
+    datei: 'shop/inhalte/system/kanal-dn100.md',
+    art: 'ersetzen',
+    suchen: 'skus: POS-10095, POS-10115, POS-10116, POS-10134, POS-11133, POS-21382',
+    ersetzen: 'skus: POS-10095, POS-10115, POS-10116, POS-10134, POS-11133, POS-21382, POS-29023',
+    erwartet: /POS-29023|keine Zeile der Tabelle/,
+    warum: 'Der Befund vom 8. September: `pruefe-systemlisten` meldete „5 von 8 lieferbar, 7 '
+      + 'Artikel" — zwei Zahlen nebeneinander und nichts dazwischen. Die PAE-Folie stand in '
+      + 'der Kopfzeile der Kanalliste, und keine Zeile ihrer Tabelle erklärt, wozu sie in '
+      + 'einer Grundleitung gehört; das Verzeichnis führt sie als Estrichfolie in der Gruppe '
+      + 'Zubehör. Die Seite zeigte sie trotzdem als Karte, weil sie ihre Artikelkarten aus '
+      + 'genau dieser Kopfzeile baut. Diese Mutation setzt sie wieder ein.',
+  }),
 ]);
 
 /**

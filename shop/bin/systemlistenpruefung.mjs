@@ -18,7 +18,8 @@ import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-import { liesSystemliste, systemlistenbefund } from '../src/systemlisten.js';
+import { liesSystemliste, systemlistenbefund, zuordnungsbefund } from '../src/systemlisten.js';
+import { wortstaemme } from '../src/shopkern.js';
 
 const hier = dirname(fileURLToPath(import.meta.url));
 const wurzel = join(hier, '..');
@@ -39,6 +40,23 @@ const listen = readdirSync(ordner)
 
 const b = systemlistenbefund(listen, katalogSkus);
 
+/*
+ * **Position und Artikel gehören aneinander — 8. September 2026.**
+ *
+ * Bis dahin standen zwei Zahlen nebeneinander („5 von 8 lieferbar, 7
+ * Artikel") und nichts dazwischen. Gemessen trug `kanal-dn100.md` die
+ * PAE-Folie, und keine Zeile ihrer Tabelle erklärt, wozu sie in einer
+ * Grundleitung gehört — die Seite zeigte sie trotzdem als Karte, weil sie ihre
+ * Artikelkarten aus genau dieser Kopfzeile baut.
+ */
+const z = zuordnungsbefund({
+  listen: Object.fromEntries(listen.map((l) => [l.name, l.gelesen])),
+  bezeichnungJeSku: new Map(katalog.artikel.map((a) => [a.sku, a.bezeichnung])),
+  staemme: wortstaemme,
+});
+b.meldungen.push(...z.meldungen);
+if (z.meldungen.length) b.sauber = false;
+
 console.log(`Systemlisten: ${b.listen} Listen mit ${b.positionen} Positionen`);
 console.log(`${b.nichtGefuehrt} davon ausdrücklich nicht im Sortiment und trotzdem aufgeführt.\n`);
 
@@ -56,6 +74,9 @@ if (!b.sauber) {
   process.exit(1);
 }
 
+console.log(`\n${z.positionen} lieferbare Positionen tragen den Namen eines Artikels der Liste.`);
 console.log('\nJede Liste sagt richtig, wie viele Positionen sie führt und wie viele davon');
 console.log('nicht aus dem Sortiment kommen. Was fehlt, steht drauf — das ist der Zweck.');
+console.log('Und jeder Artikel der Kopfzeile hat eine Zeile, die ihn erklärt: Die Seite');
+console.log('baut ihre Karten daraus, und eine Karte ohne Zeile ist eine Frage ohne Antwort.');
 process.exit(0);
