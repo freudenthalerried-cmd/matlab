@@ -1846,6 +1846,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'sich stimmig, und `unzip -t` weist es zurück. Genau deshalb prüft der Testfall '
       + 'gegen ein fremdes Programm und nicht gegen sich selbst.',
   }),
+  Object.freeze({
+    id: 'verweis-auf-eine-seite-die-es-nicht-gibt',
+    pruefer: 'pruefe-verweise',
+    was: 'Ein Verweis auf eine Seite, die im Ausgabeordner fehlt',
+    datei: 'shop/bin/website.mjs',
+    art: 'ersetzen',
+    suchen: '  <a class="korb" href="${verweis(\'warenkorb\')}" aria-label="Warenkorb">Warenkorb<span',
+    ersetzen: '  <a class="korb" href="${verweis(\'warenkorb\')}x" aria-label="Warenkorb">Warenkorb<span',
+    erwartet: /verweist auf|ins Leere/,
+    baueVorher: true,
+    warum: 'Am 8. September von Hand gemessen: 2.650 interne Verweise, keiner ins Leere. Ein '
+      + 'Befund, den kein Werkzeug wiederholt, gilt für den Tag, an dem er erhoben wurde — '
+      + 'der Bau benennt Seiten um, Gruppen kommen dazu, eine Vorlage ändert sich. Diese '
+      + 'Mutation hängt einen Buchstaben an die Warenkorbadresse in der Kopfleiste: Der '
+      + 'Verweis steht dann auf **jeder** der 82 Seiten und führt auf nichts. Drei dieser '
+      + 'Seiten sind Endziele bezahlter Anzeigen zu 4,19 € bis 8,22 € je Klick.',
+  }),
 ]);
 
 /**

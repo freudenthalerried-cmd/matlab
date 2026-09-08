@@ -349,6 +349,13 @@ export const PRUEFER = [
     mindestens: 10,
   },
   {
+    name: 'pruefe-verweise',
+    werkzeug: 'verweispruefung.mjs',
+    muster: /Verweise — \d+ gebaute Seiten, (\d+) interne Verweise/,
+    einheit: 'interne Verweise der gebauten Seiten',
+    mindestens: 500,
+  },
+  {
     name: 'pruefe-vorbehalte',
     werkzeug: 'vorbehaltspruefung.mjs',
     muster: /(\d+) Quelldateien angesehen/,

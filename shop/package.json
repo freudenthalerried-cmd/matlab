@@ -64,6 +64,7 @@
     "pruefe-weisungen": "node bin/weisungspruefung.mjs",
     "pruefe-zahlen": "node bin/zahlenpruefung.mjs",
     "pruefe-korbtext": "node bin/korbtextpruefung.mjs",
+    "pruefe-verweise": "node bin/verweispruefung.mjs",
     "paket": "node bin/paket.mjs",
     "preise-wiederherstellen": "node bin/preiswiederherstellung.mjs",
     "pruefe-vorbehalte": "node bin/vorbehaltspruefung.mjs",

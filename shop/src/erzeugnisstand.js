@@ -92,6 +92,7 @@ export const LESER = Object.freeze([
   // Erzeugnis wäre die schlimmste Sorte: Es sieht vollständig aus, liegt auf
   // dem Server, und niemand sieht ihm an, dass es von gestern ist.
   Object.freeze({ werkzeug: 'bin/paket.mjs', erzeugnis: 'ausgabe/site' }),
+  Object.freeze({ werkzeug: 'bin/verweispruefung.mjs', erzeugnis: 'ausgabe/site' }),
   Object.freeze({
     werkzeug: 'bin/preiswiederherstellung.mjs',
     erzeugnis: null,
