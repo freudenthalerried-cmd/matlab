@@ -25,7 +25,10 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { readdirSync } from 'node:fs';
+
 import { ladeBaustoffkatalog } from '../src/baustoffkatalog.js';
+import { HERSTELLER, markenlistenbefund, ohneKommentarzeilen } from '../src/hersteller.js';
 import { kundenWarenkorb } from '../src/shopkern.js';
 import { GEWERKE, SCHICHTEN, gewerkbefund, systembruch, zuordnungsbefund } from '../src/systemtreue.js';
 
@@ -48,6 +51,8 @@ const katalog = ladeBaustoffkatalog(
 const kandidaten = katalog.artikel.filter(
   (a) => a.gruppe === 'WDVS' || SCHICHTEN.some((s) => s.muster.test(a.bezeichnung)),
 );
+// Seit die Kaminschichten dazugehören, sind es zwei Gewerke; die Zeile darüber
+// zieht beide ein, weil die Schichtmuster nicht nach Gruppe fragen.
 
 const befund = zuordnungsbefund(kandidaten);
 // **Und die Gewerke daneben — 8. September, abends.** Der Kaminzug behauptet
@@ -56,7 +61,22 @@ const befund = zuordnungsbefund(kandidaten);
 // keine. Das steht als Eintrag mit Grund und mit dem Artikel, an dem es
 // scheitert — verschwindet der, ist die Frage neu zu stellen.
 const gewerke = gewerkbefund(katalog.artikel);
-const meldungen = [...befund.meldungen, ...gewerke.meldungen];
+// **Und die eine Liste — 8. September, abends.** Der Bestand führte drei
+// Markenlisten mit verschiedenem Umfang; vier Artikel wurden als Marke
+// beworben und sagten auf ihrer Seite, der Hersteller sei unbekannt.
+const quellen = [];
+for (const ordner of ['src', 'bin']) {
+  for (const datei of readdirSync(join(SHOP, ordner))) {
+    if (!/\.(js|mjs)$/.test(datei) || datei === 'hersteller.js') continue;
+    quellen.push({
+      datei: `${ordner}/${datei}`,
+      quelle: readFileSync(join(SHOP, ordner, datei), 'utf8'),
+    });
+  }
+}
+const listen = markenlistenbefund(quellen, Object.keys(HERSTELLER), ohneKommentarzeilen);
+
+const meldungen = [...befund.meldungen, ...gewerke.meldungen, ...listen.meldungen];
 
 // **Der grüne und der rote Fall, beide gemessen.** Ein Korb aus zwei Systemen
 // muss melden; einer aus einem darf nicht.
@@ -93,7 +113,7 @@ if (gemischt.length === 2 && !(korb.offen ?? []).some((o) => /Systemtreue/.test(
 }
 
 const messbar = GEWERKE.filter((g) => g.messbar).length;
-console.log(`Systemtreue — ${befund.geprueft} Artikel eines WDVS-Aufbaus, `
+console.log(`Systemtreue — ${befund.geprueft} Artikel mit Systembindung, `
   + `${SCHICHTEN.length} geprüfte Schichten`);
 console.log(`${GEWERKE.length} Gewerke mit Systemtreue in ihrer Wissensseite, `
   + `${messbar} davon am Katalog messbar\n`);

@@ -1,5 +1,10 @@
 # Dieselbe Regel, schärfer — und nicht messbar
 
+> ⚠️ **Diese Fassung war falsch und ist am selben Abend berichtigt worden.**
+> Der Kamin **ist** messbar: Acht von neun Artikeln lösen sich über
+> `src/hersteller.js` zu „Schiedel Österreich" auf. Der Nachtrag am Ende sagt,
+> was gilt.
+
 **8. September 2026, abends.** Nachdem der WDVS-Fall gefunden war, lag die
 Frage nahe: **Gibt es ihn woanders auch?**
 
@@ -105,3 +110,32 @@ gewesen. Derselbe Fund wie in der Runde davor, im selben Testmuster.
 `pruefe-schaufenster` meldete, dass die PR-Beschreibung weiter **30 Gates**
 nennt, während es einunddreißig sind. Beides behoben, bevor es hinausging —
 der Haken vom Nachmittag hätte den Commit ohnehin nicht durchgelassen.
+---
+
+## Berichtigt am selben Abend: Der Kamin **ist** messbar
+
+**Dieses Dokument war in seiner ersten Fassung falsch.** Es schloss aus vier
+Schreibweisen, die Systemzugehörigkeit der Kaminartikel sei „nicht
+bestimmbar". Der Bestand löst sie seit Langem auf.
+
+`src/hersteller.js` führt `HERSTELLER` mit **SIKM, SIK, Schiedel, Absolut und
+SIH** — alle auf „Schiedel Österreich", mit Beleg für die Produktlinien
+(Konditionenblatt des Lagerhauses, Seite 18). `marke()` sucht überall im Text,
+aber nur als ganzes Wort und mit der längsten Marke zuerst; sein
+Kopfkommentar nennt als Anlass **genau die drei Artikel**, über die ich
+gestolpert bin.
+
+Gemessen mit der richtigen Liste: **acht von neun** Kaminartikeln lösen sich
+auf. Genau einer nicht — `POS-18110 Mantelsteinkleber RMRTL Dünnbettmörtel`.
+
+> **Ich habe aus der Unkenntnis meiner eigenen Liste einen Befund über den
+> Bestand gemacht.**
+
+Was bleibt, ist **schärfer** als das, was hier stand: nicht ein unlesbares
+Gewerk, sondern **eine einzige Lücke an der schlechtestmöglichen Stelle** — bei
+dem Teil, das die Kaminseite als einzige Position mit dem Zusatz „des Systems"
+hervorhebt. Sie steht jetzt in `SYSTEM_UNBEKANNT`, mit Grund und mit dem Weg
+zur Auflösung, und der Kamin gilt als messbar.
+
+Alles Weitere steht in
+[`drei-listen-fuer-dieselbe-marke.md`](./drei-listen-fuer-dieselbe-marke.md).

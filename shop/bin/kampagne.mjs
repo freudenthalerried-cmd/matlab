@@ -41,6 +41,7 @@ import { abgegrenztesKeyword } from '../src/abgrenzung.js';
 import { ausschlussbefund } from '../src/ausschluss.js';
 import { GRENZE_TAGE, preisalterTage } from '../src/preisalter.js';
 import { preisdeckungsbefund } from '../src/preisdeckung.js';
+import { HERSTELLER } from '../src/hersteller.js';
 import {
   THEMA as THEMA_NICHT_GEFUEHRT,
   ausschluesseAusRegister,
@@ -344,7 +345,22 @@ export function warenkorbText(korb) {
  * Gattungsbegriffe („Dämmplatte") gewinnt die Baumarkt-Eigenmarke, auf
  * Markenbegriffe („Capatect 186 M") vergleicht der Kunde Gleiches mit Gleichem.
  */
-const MARKEN = ['Capatect', 'Baumit', 'Soudal', 'Isover', 'Schiedel', 'SIKM', 'SIK', 'Ravenit', 'SunCore', 'Ökotherm', 'Prima'];
+/*
+ * **Eine Liste statt drei — 8. September 2026.** Hier stand eine eigene
+ * Markenliste mit elf Namen. `src/hersteller.js` führte eine zweite mit neun,
+ * und am selben Abend kam in `src/systemtreue.js` beinahe eine dritte dazu.
+ * Sie waren nicht deckungsgleich, und beide Richtungen hatten Folgen:
+ *
+ *   · Ökotherm, Ravenit, Prima und SunCore standen nur hier — sie wurden als
+ *     Markenbegriff beworben, und ihre Artikelseite sagte „kein
+ *     Herstellermerkblatt".
+ *   · „Absolut" und „SIH" standen nur dort — die Regenhaube und der
+ *     Thermo-Trennstein bekamen ihren Markennamen in kein Keyword.
+ *
+ * > **Zwei Listen für dieselbe Sache sind eine Liste, die niemand pflegt** —
+ * > und die dritte entsteht von dem, der die erste nicht kennt.
+ */
+const MARKEN = Object.keys(HERSTELLER);
 
 /**
  * Ausschlussliste. Jeder Klick, der nicht zur Baustelle führt, ist verloren.

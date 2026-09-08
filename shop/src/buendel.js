@@ -94,6 +94,11 @@ export const KERNMODULE = Object.freeze([
   // Sie darf in den Browser: Sie trägt keine Zahl und keine Rechnung, sondern
   // Bautechnik, die auf den eigenen Inhaltsseiten ohnehin veröffentlicht ist.
   // Und sie **muss** dorthin, denn der Warenkorb entsteht im Browser.
+  // **Ergänzt am 8. September, abends.** `systemtreue.js` liest den Hersteller
+  // nicht mehr selbst, sondern über `marke()` — die eine Liste. Sie darf in
+  // den Browser: Herstellernamen und Merkblattadressen stehen ohnehin auf
+  // jeder Artikelseite.
+  'hersteller.js',
   'systemtreue.js',
 ]);
 
@@ -128,7 +133,8 @@ export const SHOPMODULE = Object.freeze(['shopkern.js', 'gebinde.js', 'kundenanf
 export const BROWSERMODULE = Object.freeze([
   // **`systemtreue.js` vor `shopkern.js`** — es wird von dort gerufen, und im
   // Bündel steht jede Abhängigkeit vor ihrem Nutzer.
-  'format.js', 'gebinde.js', 'liefergebiet.js', 'systemtreue.js', 'shopkern.js', 'kundenanfrage.js',
+  'format.js', 'gebinde.js', 'liefergebiet.js', 'hersteller.js', 'systemtreue.js',
+  'shopkern.js', 'kundenanfrage.js',
   // **Ergänzt am 5. September.** Ein Satz, keine Zahl, kein Wissen — der Satz
   // an der Frachtzeile, den `shopkern.js` und `preis.js` gemeinsam brauchen.
   'frachttext.js',

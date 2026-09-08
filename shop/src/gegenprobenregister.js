@@ -1955,9 +1955,9 @@ export const GEGENPROBEN = Object.freeze([
     was: 'Ein Gewerk, das „nicht bestimmbar" heißt, ohne den Artikel zu nennen, an dem es scheitert',
     datei: 'shop/src/systemtreue.js',
     art: 'ersetzen',
-    suchen: "    blockiert: 'POS-18110',",
-    ersetzen: "    blockiert: 'POS-00000',",
-    erwartet: /blockierer-verschwunden|neu zu stellen/,
+    suchen: "    sku: 'POS-18110',",
+    ersetzen: "    sku: 'POS-00000',",
+    erwartet: /unbekannt-ohne-artikel|nicht mehr/,
     warum: 'Der Kaminzug behauptet die Systemtreue in seinem ersten Satz und lässt sich am '
       + 'Katalog nicht messen: Die Systemmarke steht in vier Schreibweisen, und der '
       + 'Mantelsteinkleber RMRTL trägt gar keine — ausgerechnet der Dünnbettmörtel, den '
@@ -1965,6 +1965,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'nennen, an dem er scheitert: Verschwindet der, ist die Frage neu zu stellen. Sonst '
       + 'bliebe eine Begründung stehen, deren Anlass es nicht mehr gibt — und aus einem '
       + 'Befund würde eine Ausrede.',
+  }),
+  Object.freeze({
+    id: 'eine-zweite-markenliste',
+    pruefer: 'pruefe-systemtreue',
+    was: 'Eine zweite Markenliste neben der einen in src/hersteller.js',
+    datei: 'shop/bin/kampagne.mjs',
+    art: 'ersetzen',
+    suchen: 'const MARKEN = Object.keys(HERSTELLER);',
+    ersetzen: "const MARKEN = ['Capatect', 'Baumit', 'Soudal'];",
+    erwartet: /zweite-markenliste|src\/hersteller\.js/,
+    warum: 'Der Zustand bis zum 8. September abends: Der Bestand führte drei Markenlisten. '
+      + '`HERSTELLER` (neun Namen, mit Merkblattadresse), `MARKEN` in der Kampagne (elf, für '
+      + 'die Anzeigen-Keywords) und seit einer Stunde eine dritte in `systemtreue.js`. Sie '
+      + 'waren nicht deckungsgleich, und beide Richtungen hatten Folgen: Vier Artikel wurden '
+      + 'als Markenbegriff beworben und sagten auf ihrer Seite, der Hersteller sei unbekannt; '
+      + 'zwei Kaminteile hatten den Hersteller und ihre Marke floss in kein Keyword. Diese '
+      + 'Mutation legt die zweite Liste wieder an.',
   }),
 ]);
 

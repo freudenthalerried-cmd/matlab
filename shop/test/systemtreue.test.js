@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 import {
-  OHNE_SCHICHT, SCHICHTEN, SYSTEME,
+  OHNE_SCHICHT, SCHICHTEN, SYSTEM_UNBEKANNT,
   einordnung, systembruch, systembruchsatz, zuordnungsbefund,
 } from '../src/systemtreue.js';
 
@@ -19,9 +19,9 @@ const kandidaten = () => KATALOG.artikel.filter(
 
 const artikel = (sku, bezeichnung) => ({ sku, bezeichnung });
 
-test('jedes System und jede Schicht trägt einen Grund, der trägt', () => {
-  assert.ok(SYSTEME.length >= 2, 'mit einem System gäbe es nichts zu vergleichen');
-  for (const s of SYSTEME) assert.ok(s.warum.length > 80, `${s.name}: der Grund ist zu knapp`);
+test('jede Schicht trägt einen Grund, der trägt', () => {
+  // **Am 8. September abends fiel `SYSTEME` weg.** Das System eines Artikels
+  // ist sein Hersteller, und den führt `src/hersteller.js` — eine Liste.
   assert.ok(SCHICHTEN.length >= 3);
   for (const s of SCHICHTEN) assert.ok(s.warum.length > 80, `${s.rolle}: der Grund ist zu knapp`);
 });
@@ -51,10 +51,10 @@ test('die Klebe- und Spachtelmasse wird als Schicht erkannt — mit Bindestrich 
   // zwei Capatect-Massen durchfallen: Zwischen den Wörtern stehen zwei Zeichen.
   const e = einordnung(artikel('POS-11283', 'Capatect Klebe- und Spachtelmasse 186 M 25 kg'));
   assert.equal(e.schicht, 'Klebe- und Armierungsmörtel');
-  assert.equal(e.system, 'Capatect');
+  assert.equal(e.system, 'Synthesa (Capatect)');
   const b = einordnung(artikel('POS-29108', 'Baumit KlebeSpachtel 25 kg'));
   assert.equal(b.schicht, 'Klebe- und Armierungsmörtel');
-  assert.equal(b.system, 'Baumit');
+  assert.equal(b.system, 'Baumit Österreich');
 });
 
 test('ein Zubehörteil ist keine Schicht', () => {
@@ -72,7 +72,7 @@ test('zwei Systeme im Korb sind ein Bruch — der Fall aus der eigenen Wissensse
     artikel('POS-11283', 'Capatect Klebe- und Spachtelmasse 186 M 25 kg'),
     artikel('POS-52058', 'Baumit TextilglasGitter 1,1x50 m'),
   ]);
-  assert.deepEqual(bruch.systeme, ['Baumit', 'Capatect']);
+  assert.deepEqual(bruch.systeme, ['Baumit Österreich', 'Synthesa (Capatect)']);
   assert.match(systembruchsatz(bruch), /ETAG 004/);
   assert.match(systembruchsatz(bruch), /Glasgewebe/);
 });
@@ -112,9 +112,35 @@ test('ein Artikel ohne Schicht und ohne Eintrag ist ein Befund', () => {
 });
 
 test('ein Eintrag, dessen Artikel verschwunden ist, ist ein Befund — die zweite Richtung', () => {
-  const b = zuordnungsbefund([], OHNE_SCHICHT);
+  const b = zuordnungsbefund([], OHNE_SCHICHT, []);
   assert.equal(b.meldungen.length, OHNE_SCHICHT.length);
   assert.ok(b.meldungen.every((m) => m.regel === 'eintrag-ohne-artikel'));
+});
+
+/**
+ * Dasselbe für das zweite Register — und der wichtigere Fall: Nennt die
+ * Bezeichnung eines Tages doch einen Hersteller, gehört der Eintrag weg.
+ */
+test('ein System-unbekannt-Eintrag, dessen Artikel eine Marke bekommt, ist ein Befund', () => {
+  const b = zuordnungsbefund(
+    [{ sku: 'POS-18110', bezeichnung: 'Schiedel Mantelsteinkleber Dünnbettmörtel' }],
+    [], SYSTEM_UNBEKANNT,
+  );
+  assert.ok(b.meldungen.some((m) => m.regel === 'unbekannt-und-doch-bekannt'));
+});
+
+test('ein System-unbekannt-Eintrag ohne Artikel ist ein Befund', () => {
+  const b = zuordnungsbefund([], [], SYSTEM_UNBEKANNT);
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['unbekannt-ohne-artikel']);
+});
+
+test('jeder System-unbekannt-Eintrag nennt Grund und Weg zur Auflösung', () => {
+  assert.ok(SYSTEM_UNBEKANNT.length >= 1);
+  for (const u of SYSTEM_UNBEKANNT) {
+    assert.match(u.sku, /^POS-\d+$/);
+    assert.ok(u.warum.length > 150, `${u.sku}: der Grund ist zu knapp`);
+    assert.ok(u.loest.length > 80, `${u.sku}: ohne Weg zur Auflösung bleibt es eine Ausrede`);
+  }
 });
 
 /**
@@ -198,17 +224,6 @@ test('der echte Katalog ergibt einen sauberen Gewerkbefund', async () => {
   assert.deepEqual(gewerkbefund(KATALOG.artikel).meldungen, []);
 });
 
-/**
- * Der Kern des zweiten Registers: Eine Begründung, deren Anlass verschwunden
- * ist, bleibt sonst als Ausrede stehen.
- */
-test('ein verschwundener Blockierer ist ein Befund', async () => {
-  const { GEWERKE, gewerkbefund } = await import('../src/systemtreue.js');
-  const unmessbar = GEWERKE.find((g) => !g.messbar);
-  const ohne = KATALOG.artikel.filter((a) => a.sku !== unmessbar.blockiert);
-  const b = gewerkbefund(ohne, [unmessbar]);
-  assert.deepEqual(b.meldungen.map((m) => m.regel), ['blockierer-verschwunden']);
-});
 
 test('„nicht bestimmbar" ohne benannten Artikel ist ein Befund', async () => {
   const { gewerkbefund } = await import('../src/systemtreue.js');

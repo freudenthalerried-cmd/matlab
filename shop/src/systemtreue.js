@@ -43,32 +43,8 @@
  * > niemand mehr.**
  */
 
-/**
- * Die Systemfamilien, wie sie im Katalog vorkommen — erkannt am Markennamen
- * am Anfang der Bezeichnung.
- *
- * Der Katalog führt keinen Herstellerfeld; bis die Artikelliste des
- * Lieferanten vorliegt (offener Punkt „artikelliste"), ist der Markenname der
- * Bezeichnung die einzige Quelle. Sie steht dort seit dem ersten Import und
- * stammt aus den Lieferantenrechnungen, nicht aus einer Zuschreibung.
- */
-export const SYSTEME = Object.freeze([
-  Object.freeze({
-    name: 'Capatect',
-    hersteller: 'Synthesa',
-    muster: /^Capatect\b/,
-    warum: 'Neun der elf WDVS-Artikel tragen diesen Namen; zusammen ergeben sie einen '
-      + 'vollständigen Aufbau von der Klebe- und Spachtelmasse bis zum Reibputz.',
-  }),
-  Object.freeze({
-    name: 'Baumit',
-    hersteller: 'Baumit',
-    muster: /^Baumit\b/,
-    warum: 'Zwei Schichtbestandteile aus einem zweiten Haus — das Gewebe in der '
-      + 'WDVS-Gruppe, die Klebe-Spachtelmasse unter „Mörtel". Sie sind kein Zubehör, '
-      + 'sondern Ersatz für zwei Positionen des Capatect-Aufbaus.',
-  }),
-]);
+import { HERSTELLER, marke } from './hersteller.js';
+
 
 /**
  * Die Schichten, die nach der eigenen Wissensseite als **Kombination** geprüft
@@ -105,6 +81,42 @@ export const SCHICHTEN = Object.freeze([
     muster: /Reibputz|Oberputz|Silikatputz|Silikonharzputz/i,
     warum: 'Die oberste Schicht des geprüften Aufbaus; ihre Körnung und Bindemittelbasis '
       + 'stehen in den Systemunterlagen des Herstellers.',
+  }),
+  /*
+   * **Die Schichten des Kaminzugs — 8. September 2026.** Seine Seite nennt sie
+   * ausdrücklich als systemgebunden: die Mantelsteine „mit einem
+   * Dünnbettmörtel **des Systems** versetzt, nicht mit gewöhnlichem
+   * Mauermörtel — die Fugendicke gehört zum System", und das Innenrohr „mit
+   * der Fugenmasse **des Systems** verbunden".
+   */
+  Object.freeze({
+    rolle: 'Mantelstein',
+    // „Mantelstein" und „Mantelsteinkleber" sind zwei verschiedene Dinge —
+    // derselbe Fall wie bei den Schemazeichnungen am 6. September: Ein
+    // Mantelstein ist ein Stein, ein Mantelsteinkleber ist keiner. Hinter dem
+    // Wort darf deshalb kein weiterer Buchstabe stehen.
+    muster: /Mantelstein(?![\p{L}])/u,
+    warum: 'Der tragende Mantel des Zugs. Seine Steinhöhe bestimmt die Lagenzahl und mit ihr '
+      + 'die Fugendicke, die laut der eigenen Seite zum System gehört.',
+  }),
+  Object.freeze({
+    rolle: 'Dünnbettmörtel des Systems',
+    muster: /Dünnbettmörtel|Mantelsteinkleber/i,
+    warum: 'Die Seite nennt ihn als einzige Position ausdrücklich mit dem Zusatz „des '
+      + 'Systems" und grenzt ihn gegen gewöhnlichen Mauermörtel ab — die Fugendicke gehört '
+      + 'zum System.',
+  }),
+  Object.freeze({
+    rolle: 'Innenrohr',
+    muster: /Innenrohr|Rohr \d+\s?cm gedämmt/i,
+    warum: 'Das rauchgasführende Rohr mit seiner Dämmschale; sein Durchmesser und seine '
+      + 'Länge sind auf Mantelstein und Fertigfuß abgestimmt.',
+  }),
+  Object.freeze({
+    rolle: 'Fugenmasse',
+    muster: /Fugenmasse/i,
+    warum: 'Die Rohrstöße werden mit der Fugenmasse des Systems verbunden — auch das steht '
+      + 'wörtlich auf der eigenen Seite.',
   }),
 ]);
 
@@ -153,12 +165,65 @@ export const OHNE_SCHICHT = Object.freeze([
   }),
 ]);
 
-/** Was zu einem Artikel bekannt ist: Schicht und System, oder nichts davon. */
+/**
+ * Schichten, deren System sich aus der Bezeichnung **nicht** lesen lässt.
+ *
+ * **Der Fund, der von Runde 192 übrig bleibt.** Acht der neun Kaminartikel
+ * lösen sich über `marke()` zu „Schiedel Österreich" auf. Einer nicht — und es
+ * ist ausgerechnet der Dünnbettmörtel, den die eigene Seite als einzige
+ * Position mit dem Zusatz „des Systems" hervorhebt.
+ *
+ * Ein Kamin ist ein Brandschutzbauteil; über seine Abnahme entscheidet der
+ * Rauchfangkehrer anhand der Systemzulassung. Eine geratene Zuordnung wäre
+ * dort schlimmer als keine — sie sähe aus wie eine Auskunft (Gate 31).
+ *
+ * Der Eintrag steht hier und nicht in `OHNE_SCHICHT`: Der Artikel **ist** eine
+ * Schicht, und zwar die empfindlichste. Was fehlt, ist sein System.
+ */
+export const SYSTEM_UNBEKANNT = Object.freeze([
+  Object.freeze({
+    sku: 'POS-18110',
+    was: 'Mantelsteinkleber RMRTL Dünnbettmörtel',
+    warum: 'Die Bezeichnung trägt keine Marke und keine Produktlinie, nur das Kürzel RMRTL. '
+      + 'Acht Kaminartikel daneben nennen SIKM, SIK, Schiedel oder Absolut; dieser nicht. '
+      + 'Damit lässt sich nicht sagen, ob er zum Schiedel-Aufbau gehört — und geraten wird '
+      + 'es nicht, weil ein Kamin über die Systemzulassung abgenommen wird.',
+    loest: 'Das Herstellerfeld aus der Artikelliste des Lieferanten. Der Brief erbittet sie '
+      + 'bereits; dieser Artikel ist der Beleg dafür, dass die Marke in der Bezeichnung '
+      + 'eine Behelfslösung ist und keine Datenhaltung.',
+  }),
+]);
+
+/**
+ * **Am 8. September zurückgenommen: eine eigene Markenliste.**
+ *
+ * Hier stand `SYSTEME` mit zwei Einträgen — `/^Capatect\b/` und `/^Baumit\b/`,
+ * die Marke musste ganz vorn stehen. Damit war der Kamin unsichtbar, und ich
+ * habe daraus geschlossen, seine Systemzugehörigkeit sei „nicht bestimmbar".
+ *
+ * `src/hersteller.js` löst das seit Langem: `marke()` sucht überall im Text,
+ * aber nur als ganzes Wort und mit der längsten Marke zuerst — und sein
+ * Kopfkommentar nennt als Anlass genau die drei Artikel, über die ich
+ * gestolpert bin („Mantelstein MSTS EZ 16-18 **SIKM**", „Regenhaube … 180
+ * **Absolut & SIH**", „Thermo-Trennstein 12-18 EZ **Absolut**").
+ *
+ * > **Ich habe aus der Unkenntnis meiner eigenen Liste einen Befund über den
+ * > Bestand gemacht.**
+ *
+ * Gemessen mit der richtigen Liste: **acht von neun** Kaminartikeln lösen sich
+ * zu „Schiedel Österreich" auf. Genau einer nicht — und das ist der Befund,
+ * der bleibt, siehe `GEWERKE` weiter unten.
+ *
+ * Das System eines Artikels ist deshalb der **Hersteller**, nicht die Marke:
+ * `SIKM`, `SIK`, `Schiedel` und `Absolut` sind Produktlinien desselben Hauses,
+ * und ein Kamin daraus ist systemtreu. Eine Liste, die sie auseinanderhielte,
+ * warnte vor einem Bruch, den es nicht gibt.
+ */
 export function einordnung(artikel) {
   const text = String(artikel.bezeichnung ?? '');
   const schicht = SCHICHTEN.find((s) => s.muster.test(text)) ?? null;
-  const system = SYSTEME.find((s) => s.muster.test(text)) ?? null;
-  return { sku: artikel.sku, schicht: schicht?.rolle ?? null, system: system?.name ?? null };
+  const m = marke(text);
+  return { sku: artikel.sku, schicht: schicht?.rolle ?? null, system: m ? HERSTELLER[m].name : null };
 }
 
 /**
@@ -166,10 +231,11 @@ export function einordnung(artikel) {
  *
  * @param {object[]} artikel  alle Artikel, die in einen WDVS-Aufbau gehören
  */
-export function zuordnungsbefund(artikel, ohneSchicht = OHNE_SCHICHT) {
+export function zuordnungsbefund(artikel, ohneSchicht = OHNE_SCHICHT, unbekannt = SYSTEM_UNBEKANNT) {
   const meldungen = [];
   const befreit = new Map(ohneSchicht.map((e) => [e.sku, e]));
   const gesehen = new Set();
+  const gesehenUnbekannt = new Set();
 
   for (const a of artikel) {
     const e = einordnung(a);
@@ -195,11 +261,40 @@ export function zuordnungsbefund(artikel, ohneSchicht = OHNE_SCHICHT) {
       continue;
     }
     if (e.system === null) {
+      // **Registriert statt gemeldet.** Eine Schicht ohne ablesbares System
+      // ist ein Fund — aber ein bekannter, wenn er mit Grund und mit dem Weg
+      // zur Auflösung dasteht. Ein Prüfer, der jeden Lauf dieselbe bekannte
+      // Lücke meldet, wird nach dem dritten Mal weggeklickt.
+      const bekannt = unbekannt.find((u) => u.sku === a.sku);
+      if (bekannt) { gesehenUnbekannt.add(a.sku); continue; }
       meldungen.push({
         regel: 'schicht-ohne-system',
         text: `${a.sku} „${a.bezeichnung}" ist eine Schicht (${e.schicht}), und aus der `
           + 'Bezeichnung ist kein System ablesbar — eine Schicht ohne System lässt sich gegen '
           + 'keine andere prüfen',
+      });
+    }
+  }
+
+  for (const u of unbekannt) {
+    const a = artikel.find((x) => x.sku === u.sku);
+    if (!a) {
+      meldungen.push({
+        regel: 'unbekannt-ohne-artikel',
+        text: `${u.sku} („${u.was}") steht als System-unbekannt im Register, im Katalog aber nicht mehr`,
+      });
+      continue;
+    }
+    if (einordnung(a).system !== null) {
+      meldungen.push({
+        regel: 'unbekannt-und-doch-bekannt',
+        text: `${u.sku} steht als System-unbekannt im Register, die Bezeichnung nennt aber `
+          + `inzwischen ${einordnung(a).system} — der Eintrag gehört weg`,
+      });
+    } else if (!gesehenUnbekannt.has(u.sku)) {
+      meldungen.push({
+        regel: 'unbekannt-ohne-schicht',
+        text: `${u.sku} steht als System-unbekannt im Register, ist aber gar keine Schicht mehr`,
       });
     }
   }
@@ -290,15 +385,13 @@ export const GEWERKE = Object.freeze([
   Object.freeze({
     gruppe: 'Kamin',
     seite: 'wissen/kaminzug-aufbau',
-    messbar: false,
-    blockiert: 'POS-18110',
-    warum: 'Die Systemmarke steht in vier Schreibweisen und an wechselnder Stelle (SIKM am '
-      + 'Anfang und am Ende, SIK, Schiedel, Absolut, „Absolut & SIH"), und der '
-      + 'Mantelsteinkleber RMRTL trägt gar keine — ausgerechnet der Dünnbettmörtel, den die '
-      + 'eigene Seite als systemgebunden hervorhebt. Ein Kamin ist ein Brandschutzbauteil; '
-      + 'über die Abnahme entscheidet der Rauchfangkehrer anhand der Systemzulassung. Eine '
-      + 'geratene Zuordnung wäre dort schlimmer als keine. Auflösbar mit dem Herstellerfeld '
-      + 'aus der Artikelliste des Lieferanten — der Brief erbittet sie bereits.',
+    messbar: true,
+    warum: 'Acht der neun Kaminartikel lösen sich über marke() zu „Schiedel Österreich" auf — '
+      + 'SIKM, SIK, Schiedel und Absolut sind Produktlinien desselben Hauses, und ein Kamin '
+      + 'daraus ist systemtreu. Der neunte, der Mantelsteinkleber, trägt keine Marke und '
+      + 'steht mit Grund in SYSTEM_UNBEKANNT. Am 08.09. stand hier zuerst „nicht bestimmbar" '
+      + 'für das ganze Gewerk — das war ein Irrtum über die eigene Ablage und nicht über den '
+      + 'Katalog.',
   }),
 ]);
 
@@ -322,8 +415,9 @@ export function gewerkbefund(artikel, gewerke = GEWERKE) {
       continue;
     }
     if (g.messbar) {
+      const registriert = new Set(SYSTEM_UNBEKANNT.map((u) => u.sku));
       const stumm = eigene.filter((a) => einordnung(a).system === null
-        && einordnung(a).schicht !== null);
+        && einordnung(a).schicht !== null && !registriert.has(a.sku));
       for (const a of stumm) {
         meldungen.push({
           regel: 'messbar-und-doch-stumm',

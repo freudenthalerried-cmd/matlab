@@ -768,7 +768,14 @@ export function mitverbaut(a, katalog, systemSeiten) {
 
 function artikelSeite(a, katalog, befund, seiten, verweis) {
   const m = marke(a.bezeichnung);
-  const h = m ? HERSTELLER[m] : null;
+  // **Berichtigt am 8. September, abends.** Bis dahin genügte ein Treffer in
+  // der Markenliste, damit die Seite einen Herstellerverweis baute — und alle
+  // Einträge trugen eine Adresse. Seit die Liste aus `bin/kampagne.mjs`
+  // dazugekommen ist, gibt es vier Marken **ohne** belegte Merkblattadresse
+  // (Ravenit, SunCore, Ökotherm, Prima). Für sie bleibt der Satz „Für diesen
+  // Artikel liegt uns kein Herstellermerkblatt vor" richtig — eine geratene
+  // Adresse wäre eine erfundene Quelle.
+  const h = m && HERSTELLER[m]?.url ? HERSTELLER[m] : null;
   // Eine Quelle für den Vorteil — `vorteil()` rundet ab, siehe dort.
   const abstand = vorteil(a);
   const beipack = befund.nurBeipackSkus.includes(a.sku);

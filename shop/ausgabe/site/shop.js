@@ -939,6 +939,36 @@ function pruefeLieferort(ort = {}) {
 
 
 
+const HERSTELLER = {
+  Capatect: { name: 'Synthesa (Capatect)', url: 'https://www.synthesa.at/' },
+  Baumit: { name: 'Baumit Österreich', url: 'https://www.baumit.at/' },
+  Schiedel: { name: 'Schiedel Österreich', url: 'https://www.schiedel.at/' },
+  SIKM: { name: 'Schiedel Österreich', url: 'https://www.schiedel.at/' },
+  SIK: { name: 'Schiedel Österreich', url: 'https://www.schiedel.at/' },
+  Isover: { name: 'Isover Österreich', url: 'https://www.isover.at/' },
+  Soudal: { name: 'Soudal', url: 'https://www.soudal.com/' },
+  
+  
+  
+  Absolut: { name: 'Schiedel Österreich', url: 'https://www.schiedel.at/' },
+  SIH: { name: 'Schiedel Österreich', url: 'https://www.schiedel.at/' },
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  Ravenit: { name: 'Ravenit', url: null, warumOhneUrl: 'Vergussmörtel eines Baustoffherstellers; in den fünfzehn Rechnungen steht der Markenname ohne Hersteller- oder Merkblattangabe, und eine geratene Adresse wäre eine erfundene Quelle.' },
+  SunCore: { name: 'SunCore', url: null, warumOhneUrl: 'Abdeckklebeband; dasselbe — die Rechnung nennt den Markennamen und sonst nichts. Für ein Klebeband gibt es auch keine Verarbeitungsrichtlinie, die auf der Artikelseite fehlte.' },
+  'Ökotherm': { name: 'Ökotherm', url: null, warumOhneUrl: 'Hochlochziegel und der einzige Mauerwerksartikel des Katalogs. Gerade hier wäre ein Merkblatt wertvoll — die Bemessung hängt an der Steinfestigkeit —, und gerade hier ist keines belegt. Die Frage gehört in die Artikelliste des Lieferanten.' },
+  Prima: { name: 'Prima', url: null, warumOhneUrl: 'Dosierpistole, ein Werkzeug ohne Einbauvorschrift. Ein Merkblatt fehlt hier ohne Folge für den Bau — aufgenommen ist die Marke, damit die Liste vollständig ist und nicht, weil sie etwas verspricht.' },
+};
 
 
 
@@ -955,6 +985,9 @@ function pruefeLieferort(ort = {}) {
 
 
 
+const marke = (bez) => Object.keys(HERSTELLER)
+  .sort((a, b) => b.length - a.length)
+  .find((m) => new RegExp(`(?<![\\p{L}\\d])${m}(?![\\p{L}\\d])`, 'u').test(bez)) ?? null;
 
 
 
@@ -969,23 +1002,137 @@ function pruefeLieferort(ort = {}) {
 
 
 
-const SYSTEME = Object.freeze([
+
+const ohneKommentarzeilen = (quelle) => String(quelle)
+  .split('\n')
+  .filter((z) => !/^\s*(\/\/|\/\*|\*)/.test(z))
+  .join('\n');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const NICHT_DURCHSUCHT = Object.freeze([
   Object.freeze({
-    name: 'Capatect',
-    hersteller: 'Synthesa',
-    muster: /^Capatect\b/,
-    warum: 'Neun der elf WDVS-Artikel tragen diesen Namen; zusammen ergeben sie einen '
-      + 'vollständigen Aufbau von der Klebe- und Spachtelmasse bis zum Reibputz.',
-  }),
-  Object.freeze({
-    name: 'Baumit',
-    hersteller: 'Baumit',
-    muster: /^Baumit\b/,
-    warum: 'Zwei Schichtbestandteile aus einem zweiten Haus — das Gewebe in der '
-      + 'WDVS-Gruppe, die Klebe-Spachtelmasse unter „Mörtel". Sie sind kein Zubehör, '
-      + 'sondern Ersatz für zwei Positionen des Capatect-Aufbaus.',
+    datei: 'src/gegenprobenregister.js',
+    warum: 'Es führt zu jeder Gegenprobe den Such- und den Ersatztext wörtlich. Wo eine '
+      + 'Mutation eine Markenliste wiederherstellt, steht diese Liste dort im Klartext — '
+      + 'nicht als Datenhaltung, sondern als Beweisstück. Eine Regel, die das meldet, '
+      + 'verbietet ihre eigene Gegenprobe.',
   }),
 ]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function markenlistenbefund(dateien, namen, ohneKommentare, ausnahmen = NICHT_DURCHSUCHT) {
+  const meldungen = [];
+  const befreit = new Set(ausnahmen.map((a) => a.datei));
+  for (const a of ausnahmen) {
+    if (dateien.some((d) => d.datei === a.datei)) continue;
+    meldungen.push({
+      regel: 'ausnahme-ohne-datei',
+      text: `${a.datei} ist von der Suche ausgenommen, die Datei gibt es aber nicht mehr`,
+    });
+  }
+  for (const d of dateien) {
+    if (befreit.has(d.datei)) continue;
+    const nackt = ohneKommentare(d.quelle);
+    const treffer = namen.filter((n) => new RegExp(`['"\`]${n}['"\`]`).test(nackt));
+    
+    
+    if (treffer.length >= 2) {
+      meldungen.push({
+        regel: 'zweite-markenliste',
+        text: `${d.datei} führt ${treffer.length} Markennamen als Zeichenkette `
+          + `(${treffer.join(', ')}) — die eine Liste steht in src/hersteller.js`,
+      });
+    }
+  }
+  return { geprueft: dateien.length, meldungen, sauber: meldungen.length === 0 };
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1022,6 +1169,42 @@ const SCHICHTEN = Object.freeze([
     muster: /Reibputz|Oberputz|Silikatputz|Silikonharzputz/i,
     warum: 'Die oberste Schicht des geprüften Aufbaus; ihre Körnung und Bindemittelbasis '
       + 'stehen in den Systemunterlagen des Herstellers.',
+  }),
+  
+
+
+
+
+
+
+  Object.freeze({
+    rolle: 'Mantelstein',
+    
+    
+    
+    
+    muster: /Mantelstein(?![\p{L}])/u,
+    warum: 'Der tragende Mantel des Zugs. Seine Steinhöhe bestimmt die Lagenzahl und mit ihr '
+      + 'die Fugendicke, die laut der eigenen Seite zum System gehört.',
+  }),
+  Object.freeze({
+    rolle: 'Dünnbettmörtel des Systems',
+    muster: /Dünnbettmörtel|Mantelsteinkleber/i,
+    warum: 'Die Seite nennt ihn als einzige Position ausdrücklich mit dem Zusatz „des '
+      + 'Systems" und grenzt ihn gegen gewöhnlichen Mauermörtel ab — die Fugendicke gehört '
+      + 'zum System.',
+  }),
+  Object.freeze({
+    rolle: 'Innenrohr',
+    muster: /Innenrohr|Rohr \d+\s?cm gedämmt/i,
+    warum: 'Das rauchgasführende Rohr mit seiner Dämmschale; sein Durchmesser und seine '
+      + 'Länge sind auf Mantelstein und Fertigfuß abgestimmt.',
+  }),
+  Object.freeze({
+    rolle: 'Fugenmasse',
+    muster: /Fugenmasse/i,
+    warum: 'Die Rohrstöße werden mit der Fugenmasse des Systems verbunden — auch das steht '
+      + 'wörtlich auf der eigenen Seite.',
   }),
 ]);
 
@@ -1071,11 +1254,64 @@ const OHNE_SCHICHT = Object.freeze([
 ]);
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const SYSTEM_UNBEKANNT = Object.freeze([
+  Object.freeze({
+    sku: 'POS-18110',
+    was: 'Mantelsteinkleber RMRTL Dünnbettmörtel',
+    warum: 'Die Bezeichnung trägt keine Marke und keine Produktlinie, nur das Kürzel RMRTL. '
+      + 'Acht Kaminartikel daneben nennen SIKM, SIK, Schiedel oder Absolut; dieser nicht. '
+      + 'Damit lässt sich nicht sagen, ob er zum Schiedel-Aufbau gehört — und geraten wird '
+      + 'es nicht, weil ein Kamin über die Systemzulassung abgenommen wird.',
+    loest: 'Das Herstellerfeld aus der Artikelliste des Lieferanten. Der Brief erbittet sie '
+      + 'bereits; dieser Artikel ist der Beleg dafür, dass die Marke in der Bezeichnung '
+      + 'eine Behelfslösung ist und keine Datenhaltung.',
+  }),
+]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function einordnung(artikel) {
   const text = String(artikel.bezeichnung ?? '');
   const schicht = SCHICHTEN.find((s) => s.muster.test(text)) ?? null;
-  const system = SYSTEME.find((s) => s.muster.test(text)) ?? null;
-  return { sku: artikel.sku, schicht: schicht?.rolle ?? null, system: system?.name ?? null };
+  const m = marke(text);
+  return { sku: artikel.sku, schicht: schicht?.rolle ?? null, system: m ? HERSTELLER[m].name : null };
 }
 
 
@@ -1083,10 +1319,11 @@ function einordnung(artikel) {
 
 
 
-function zuordnungsbefund(artikel, ohneSchicht = OHNE_SCHICHT) {
+function zuordnungsbefund(artikel, ohneSchicht = OHNE_SCHICHT, unbekannt = SYSTEM_UNBEKANNT) {
   const meldungen = [];
   const befreit = new Map(ohneSchicht.map((e) => [e.sku, e]));
   const gesehen = new Set();
+  const gesehenUnbekannt = new Set();
 
   for (const a of artikel) {
     const e = einordnung(a);
@@ -1112,11 +1349,40 @@ function zuordnungsbefund(artikel, ohneSchicht = OHNE_SCHICHT) {
       continue;
     }
     if (e.system === null) {
+      
+      
+      
+      
+      const bekannt = unbekannt.find((u) => u.sku === a.sku);
+      if (bekannt) { gesehenUnbekannt.add(a.sku); continue; }
       meldungen.push({
         regel: 'schicht-ohne-system',
         text: `${a.sku} „${a.bezeichnung}" ist eine Schicht (${e.schicht}), und aus der `
           + 'Bezeichnung ist kein System ablesbar — eine Schicht ohne System lässt sich gegen '
           + 'keine andere prüfen',
+      });
+    }
+  }
+
+  for (const u of unbekannt) {
+    const a = artikel.find((x) => x.sku === u.sku);
+    if (!a) {
+      meldungen.push({
+        regel: 'unbekannt-ohne-artikel',
+        text: `${u.sku} („${u.was}") steht als System-unbekannt im Register, im Katalog aber nicht mehr`,
+      });
+      continue;
+    }
+    if (einordnung(a).system !== null) {
+      meldungen.push({
+        regel: 'unbekannt-und-doch-bekannt',
+        text: `${u.sku} steht als System-unbekannt im Register, die Bezeichnung nennt aber `
+          + `inzwischen ${einordnung(a).system} — der Eintrag gehört weg`,
+      });
+    } else if (!gesehenUnbekannt.has(u.sku)) {
+      meldungen.push({
+        regel: 'unbekannt-ohne-schicht',
+        text: `${u.sku} steht als System-unbekannt im Register, ist aber gar keine Schicht mehr`,
       });
     }
   }
@@ -1207,15 +1473,13 @@ const GEWERKE = Object.freeze([
   Object.freeze({
     gruppe: 'Kamin',
     seite: 'wissen/kaminzug-aufbau',
-    messbar: false,
-    blockiert: 'POS-18110',
-    warum: 'Die Systemmarke steht in vier Schreibweisen und an wechselnder Stelle (SIKM am '
-      + 'Anfang und am Ende, SIK, Schiedel, Absolut, „Absolut & SIH"), und der '
-      + 'Mantelsteinkleber RMRTL trägt gar keine — ausgerechnet der Dünnbettmörtel, den die '
-      + 'eigene Seite als systemgebunden hervorhebt. Ein Kamin ist ein Brandschutzbauteil; '
-      + 'über die Abnahme entscheidet der Rauchfangkehrer anhand der Systemzulassung. Eine '
-      + 'geratene Zuordnung wäre dort schlimmer als keine. Auflösbar mit dem Herstellerfeld '
-      + 'aus der Artikelliste des Lieferanten — der Brief erbittet sie bereits.',
+    messbar: true,
+    warum: 'Acht der neun Kaminartikel lösen sich über marke() zu „Schiedel Österreich" auf — '
+      + 'SIKM, SIK, Schiedel und Absolut sind Produktlinien desselben Hauses, und ein Kamin '
+      + 'daraus ist systemtreu. Der neunte, der Mantelsteinkleber, trägt keine Marke und '
+      + 'steht mit Grund in SYSTEM_UNBEKANNT. Am 08.09. stand hier zuerst „nicht bestimmbar" '
+      + 'für das ganze Gewerk — das war ein Irrtum über die eigene Ablage und nicht über den '
+      + 'Katalog.',
   }),
 ]);
 
@@ -1239,8 +1503,9 @@ function gewerkbefund(artikel, gewerke = GEWERKE) {
       continue;
     }
     if (g.messbar) {
+      const registriert = new Set(SYSTEM_UNBEKANNT.map((u) => u.sku));
       const stumm = eigene.filter((a) => einordnung(a).system === null
-        && einordnung(a).schicht !== null);
+        && einordnung(a).schicht !== null && !registriert.has(a.sku));
       for (const a of stumm) {
         meldungen.push({
           regel: 'messbar-und-doch-stumm',

@@ -53,7 +53,15 @@ export function herstellerDerGruppe(artikel = [], gruppe = null) {
     if (a?.gruppe !== gruppe) continue;
     const m = marke(String(a.bezeichnung ?? ''));
     const h = m ? HERSTELLER[m] : null;
-    if (h) gefunden.set(h.url, h);
+    // **Nur mit Adresse — 8. September, abends.** Diese Liste dient dem
+    // **Verweis**: Die Gruppenseite baut daraus Links, und die Regel darunter
+    // fragt, ob einer davon dasteht. Seit die Markenliste der Kampagne mit
+    // `HERSTELLER` zusammengelegt ist, gibt es vier Marken ohne belegte
+    // Merkblattadresse; ohne diese Zeile schrieb die Seite `href="null"` und
+    // die Regel verlangte einen Weg, den es nicht gibt. Eine geratene Adresse
+    // wäre eine erfundene Quelle — der Mangel steht als `warumOhneUrl` beim
+    // Hersteller und als offener Punkt in der Artikelliste des Lieferanten.
+    if (h?.url) gefunden.set(h.url, h);
   }
   return [...gefunden.values()].sort((a, b) => a.name.localeCompare(b.name, 'de'));
 }
@@ -83,7 +91,7 @@ export function merkblattbefund({ seiten, hersteller, mindestens = 10 }) {
 
   for (const s of gepruefte) {
     if (!MERKBLATT.test(String(s.text ?? ''))) continue;
-    const bekannt = s.gruppe ? (hersteller(s.gruppe) ?? []) : [];
+const bekannt = s.gruppe ? (hersteller(s.gruppe) ?? []) : [];
     if (!bekannt.length) continue;
     if (!bekannt.some((h) => String(s.text ?? '').includes(h.url))) {
       meldungen.push({

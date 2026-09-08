@@ -208,15 +208,29 @@ test('eine Marke wird nur als ganzes Wort erkannt', () => {
   assert.equal(marke('Baumithaltiger Ersatz'), null, 'kein Treffer mitten im Wort');
 });
 
-test('jeder Artikel mit Marke bekommt einen Herstellerverweis', () => {
+test('jeder Artikel mit Marke bekommt einen Herstellerverweis — oder keinen und sagt es', () => {
   const katalog = JSON.parse(readFileSync(pfad('../data/katalog-baustoff.json'), 'utf8'));
   assert.ok(katalog.artikel.length >= 40);
   const mitMarke = katalog.artikel.filter((a) => marke(a.bezeichnung));
   assert.ok(mitMarke.length >= 24, `nur ${mitMarke.length} Artikel mit erkannter Marke`);
+  // **Erweitert am 8. September, abends.** Seit die Markenliste der Kampagne
+  // mit dieser zusammengelegt ist, gibt es Marken ohne belegte
+  // Merkblattadresse. Sie tragen `url: null` **und einen Grund** — eine
+  // geratene Adresse wäre eine erfundene Quelle, ein stilles Weglassen eine
+  // Lücke ohne Spur.
+  let ohneAdresse = 0;
   for (const a of mitMarke) {
     const h = HERSTELLER[marke(a.bezeichnung)];
-    assert.ok(h?.url?.startsWith('https://'), `${a.sku}: Hersteller ohne Adresse`);
+    assert.ok(h, `${a.sku}: Marke erkannt, aber kein Eintrag`);
+    if (h.url === null) {
+      ohneAdresse += 1;
+      assert.ok(h.warumOhneUrl?.length > 80,
+        `${a.sku}: Hersteller ohne Adresse und ohne Grund`);
+      continue;
+    }
+    assert.ok(h.url?.startsWith('https://'), `${a.sku}: Hersteller ohne Adresse`);
   }
+  assert.ok(ohneAdresse <= 6, `${ohneAdresse} Marken ohne Merkblattadresse — das wird zur Regel`);
 });
 
 /* ------------------------------------------------------------------ *

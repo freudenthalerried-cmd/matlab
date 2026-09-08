@@ -234,8 +234,8 @@ export const PRUEFER = [
     // der Funde: Der gesunde Zustand ist null Meldungen.
     name: 'pruefe-systemtreue',
     werkzeug: 'systemtreuepruefung.mjs',
-    muster: /Systemtreue — (\d+) Artikel eines WDVS-Aufbaus/,
-    einheit: 'Artikel eines WDVS-Aufbaus gegen ihr System',
+    muster: /Systemtreue — (\d+) Artikel mit Systembindung/,
+    einheit: 'Artikel mit Systembindung gegen ihr System',
     mindestens: 8,
   },
   {
