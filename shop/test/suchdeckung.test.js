@@ -29,6 +29,9 @@ test('ein Keyword ohne jeden Treffer ist der Fund', () => {
   const b = suchdeckungsbefund({
     keywords: [...viele(10), 'gibt es nicht'],
     finde: (f) => (f === 'gibt es nicht' ? [] : [{ art: 'artikel', titel: 'x' }]),
+    // Das echte Register hält seine eigenen Wörter gegen die Liste; hier wird
+    // die Regel geprüft und nicht der Bestand.
+    systemfragen: [],
   });
   assert.deepEqual(b.meldungen.map((m) => m.regel), ['keyword-ohne-treffer']);
   assert.match(b.meldungen[0].text, /leere Trefferliste/);
@@ -40,6 +43,7 @@ test('ein Keyword, das nur auf eine Gruppenseite führt, ist kein Fehler — abe
     finde: (f) => (f === 'WDVS System kaufen'
       ? [{ art: 'gruppe', titel: 'WDVS-Komponenten' }]
       : [{ art: 'artikel', titel: 'x' }]),
+    systemfragen: [{ keyword: 'WDVS System kaufen', warum: 'x'.repeat(120) }],
   });
   assert.deepEqual(b.meldungen, []);
   assert.equal(b.ohneArtikel.length, 1);
@@ -82,4 +86,54 @@ test('jedes geführte Keyword findet im ausgelieferten Index etwas', () => {
   const b = suchdeckungsbefund({ keywords, finde: (f) => suche(index, f, { grenze: 20 }) });
   assert.deepEqual(b.meldungen.map((m) => m.text), []);
   assert.ok(b.geprueft >= 20, `nur ${b.geprueft} Keywords — das misst nichts`);
+});
+
+test('Ein Wort mehr, ein Treffer weniger — das ist keine Systemfrage', () => {
+  // „Putzgrund" fand den Artikel, „Putzgrund Fassade" nicht: Die Suche
+  // verlangt alle Wortstämme. Wer mehr tippt, bekommt weniger — und dafür
+  // wäre bezahlt worden.
+  const b = suchdeckungsbefund({
+    keywords: [...viele(10), 'Putzgrund Fassade'],
+    finde: (f) => {
+      if (f === 'Putzgrund Fassade') return [{ art: 'gruppe', titel: 'WDVS-Komponenten' }];
+      return [{ art: 'artikel', titel: 'x' }];
+    },
+    systemfragen: [],
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['wort-mehr-treffer-weniger']);
+  assert.match(b.meldungen[0].text, /„Putzgrund" schon|„Fassade" schon/);
+});
+
+test('Ein einzelnes Wort ohne Artikel braucht einen Grund, keine kürzere Fassung', () => {
+  const b = suchdeckungsbefund({
+    keywords: [...viele(10), 'Systemkamin'],
+    finde: (f) => (f === 'Systemkamin' ? [{ art: 'gruppe', titel: 'Kaminsystem' }] : [{ art: 'artikel', titel: 'x' }]),
+    systemfragen: [],
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['keyword-ohne-artikel-ohne-grund']);
+
+  const mitGrund = suchdeckungsbefund({
+    keywords: [...viele(10), 'Systemkamin'],
+    finde: (f) => (f === 'Systemkamin' ? [{ art: 'gruppe', titel: 'Kaminsystem' }] : [{ art: 'artikel', titel: 'x' }]),
+    systemfragen: [{ keyword: 'Systemkamin', warum: 'x'.repeat(120) }],
+  });
+  assert.deepEqual(mitGrund.meldungen, []);
+});
+
+test('Ein Grund für ein Wort, das niemand mehr führt, fällt auf', () => {
+  const b = suchdeckungsbefund({
+    keywords: viele(10),
+    finde: () => [{ art: 'artikel', titel: 'x' }],
+    systemfragen: [{ keyword: 'gibt es nicht mehr', warum: 'x'.repeat(120) }],
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['grund-ohne-keyword']);
+});
+
+test('Jede Systemfrage im Register nennt einen Grund, der einer ist', async () => {
+  const { SYSTEMFRAGEN } = await import('../src/suchdeckung.js');
+  assert.ok(SYSTEMFRAGEN.length >= 1, 'leeres Register — die Schleife prüft nichts');
+  for (const f of SYSTEMFRAGEN) {
+    assert.ok(f.keyword.length > 3, `„${f.keyword}" ist kein Keyword`);
+    assert.ok(f.warum.length >= 120, `„${f.keyword}": der Grund ist zu knapp`);
+  }
 });

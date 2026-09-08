@@ -1776,6 +1776,28 @@ export const GEGENPROBEN = Object.freeze([
       + 'Prüfer melden — beides zugleich: dass die Vereinigung aus Korb und Wort greift und '
       + 'dass Gate 29 der Grund für das Grün ist.',
   }),
+  Object.freeze({
+    id: 'ein-wort-mehr-und-die-liste-ist-leer',
+    pruefer: 'kampagne',
+    was: 'Ein Keyword, das mit einem Wort mehr keinen Artikel mehr findet',
+    datei: 'shop/data/suchwoerter.json',
+    art: 'ersetzen',
+    suchen: '"wort": "fassade",',
+    // **Nicht „fassadenwand".** Der erste Anlauf benannte so um und der Prüfer
+    // meldete zu Recht grün: Die Suche vergleicht Wortstämme, „fassadenwand"
+    // trägt „fassade" in sich, und die Zuordnung galt weiter. Eine Mutation,
+    // die den gemeinten Bezug nicht löst, prüft den unveränderten Bestand.
+    ersetzen: '"wort": "regenrinne",',
+    erwartet: /Putzgrund Fassade/,
+    baueVorher: true,
+    warum: 'Der Befund vom 8. September: Die eigene Suche verlangt alle Wortstämme. '
+      + '„Putzgrund" fand den Artikel, „Putzgrund Fassade" fand ihn nicht — ein zusätzliches '
+      + 'Wort macht die Liste nicht genauer, sondern leer, und für genau dieses Wort wäre '
+      + 'bezahlt worden. Gedeckt hat das ein Freibrief, der für Systemfragen geschrieben war '
+      + 'und über allen dreien stand. Diese Mutation benennt das nachgetragene Suchwort um: '
+      + 'Der Artikel ist dann über „Fassade" wieder unerreichbar, und die Kampagne muss sich '
+      + 'weigern, statt das Wort zu schalten.',
+  }),
 ]);
 
 /**

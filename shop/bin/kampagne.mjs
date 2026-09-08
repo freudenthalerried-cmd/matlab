@@ -691,7 +691,14 @@ const GATTUNGSBEGRIFFE = {
     // wird im Dünnbett versetzt — ein anderes Bauteil und ein anderer
     // Arbeitsgang. Das Wort steht auf keiner eigenen Seite, und das ist
     // richtig so.
-    'Hochlochziegel Palette', 'Ökotherm Ziegel', 'Ziegel 50 cm',
+    // „Hochlochziegel Palette" entfällt am 8. September. Die eigene Suche
+    // findet dazu keinen Artikel — „Hochlochziegel" allein schon. Der Grund
+    // ist keine Wortlücke, sondern eine offene Frage: Verkauft wird je Stück,
+    // und wie viele Ziegel auf eine Palette gehen, weiß bis heute niemand
+    // (offener Punkt „Paletten je Lieferung"). Auf ein Wort zu bieten, dessen
+    // Antwort wir schuldig bleiben, ist ein bezahlter Klick auf eine
+    // Rückfrage.
+    'Ökotherm Ziegel', 'Ziegel 50 cm',
   ],
 };
 
@@ -1734,8 +1741,9 @@ function main() {
       console.log(`  · „${o.keyword}" führt nur auf ${o.treffer.join(', ')}`);
     }
     if (suchdeckung.ohneArtikel.length) {
-      console.log('  Das ist kein Fehler: Für eine Systemfrage ist die Gruppenseite die');
-      console.log('  richtige Antwort, und der Klick aus der Anzeige landet ohnehin dort.');
+      console.log('  Das ist kein Fehler, aber auch kein Freibrief: Jedes dieser Wörter steht');
+      console.log('  mit Grund in `SYSTEMFRAGEN` (src/suchdeckung.js). Für eine Systemfrage ist');
+      console.log('  die Gruppenseite die richtige Antwort — für eine Produktsuche nicht.');
     }
   }
 

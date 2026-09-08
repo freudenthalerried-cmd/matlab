@@ -42,12 +42,43 @@
  */
 
 /**
+ * Keywords, die zu Recht auf keinen Artikel führen — mit dem Grund.
+ *
+ * **Der Anlass, 8. September 2026.** Bis heute galt für **jedes** Keyword ohne
+ * Artikeltreffer derselbe Freibrief: *„Für eine Systemfrage ist die
+ * Gruppenseite die richtige Antwort, und der Klick aus der Anzeige landet
+ * ohnehin dort."* Der Satz stimmt — für Systemfragen. Er stand aber über
+ * **allen** drei Fällen, und einer davon war keine Systemfrage:
+ * **„Putzgrund Fassade"** ist eine Produktsuche, und den Putzgrund gibt es.
+ *
+ * > **Ein Freibrief für die eine Sorte deckt auch die andere.**
+ */
+export const SYSTEMFRAGEN = Object.freeze([
+  Object.freeze({
+    keyword: 'WDVS System kaufen',
+    warum: 'Eine Systemfrage: Wer ein WDVS „System" sucht, sucht die Zusammenstellung und '
+      + 'nicht einen Sack. Die Gruppenseite führt die Bestandteile und die Stückliste für '
+      + '100 m² — das ist die Antwort, und der Klick aus der Anzeige landet ohnehin dort.',
+  }),
+  Object.freeze({
+    keyword: 'Kaminsystem einzügig',
+    warum: 'Dieselbe Lage wie beim WDVS: Ein einzügiger Systemkamin ist eine Zusammenstellung '
+      + 'aus Fertigfuß, Rohren, Putztür und Zuluftplatte. Die Gruppenseite und die '
+      + 'Wissensseite „Welche Teile ein Kaminzug braucht" beantworten die Frage; ein '
+      + 'einzelner Artikel wäre die falsche Antwort.',
+  }),
+]);
+
+/**
  * @param {object} eingabe
  * @param {string[]} eingabe.keywords
  * @param {(frage: string) => {art: string, titel: string}[]} eingabe.finde
  * @param {number} [eingabe.mindestens] ab wie vielen Keywords die Aussage trägt
+ * @param {object[]} [eingabe.systemfragen] Keywords, die zu Recht keinen Artikel treffen
  */
-export function suchdeckungsbefund({ keywords, finde, mindestens = 10 }) {
+export function suchdeckungsbefund({
+  keywords, finde, mindestens = 10, systemfragen = SYSTEMFRAGEN,
+}) {
   const meldungen = [];
   const ohneArtikel = [];
   let mitArtikel = 0;
@@ -65,6 +96,49 @@ export function suchdeckungsbefund({ keywords, finde, mindestens = 10 }) {
     }
     if (treffer.some((t) => t.art === 'artikel')) { mitArtikel += 1; continue; }
     ohneArtikel.push({ keyword: kw, treffer: treffer.map((t) => `${t.art}:${t.titel}`) });
+
+    /*
+     * **Ein Wort mehr, ein Treffer weniger — 8. September 2026.**
+     *
+     * Die Suche verlangt **alle** Wortstämme. „Putzgrund" findet den Artikel,
+     * „Putzgrund Fassade" findet ihn nicht: Ein zusätzliches Wort macht die
+     * Liste nicht genauer, sondern leer. Wer mehr tippt, bekommt weniger.
+     *
+     * Das ist keine Systemfrage und lässt sich auch nicht als eine begründen —
+     * deshalb steht diese Regel **vor** dem Register und nicht dahinter.
+     */
+    if (systemfragen.some((f) => f.keyword === kw)) continue;
+
+    const woerter = kw.split(/\s+/).filter(Boolean);
+    let kuerzerMitArtikel = null;
+    for (let i = 0; i < woerter.length && woerter.length > 1; i += 1) {
+      const kuerzer = woerter.filter((_, n) => n !== i).join(' ');
+      if ((finde(kuerzer) ?? []).some((t) => t.art === 'artikel')) {
+        kuerzerMitArtikel = kuerzer;
+        break;
+      }
+    }
+
+    meldungen.push(kuerzerMitArtikel ? {
+      regel: 'wort-mehr-treffer-weniger',
+      keyword: kw,
+      text: `„${kw}" findet keinen Artikel, „${kuerzerMitArtikel}" schon — ein zusätzliches `
+        + 'Wort macht die Liste nicht genauer, sondern leer',
+    } : {
+      regel: 'keyword-ohne-artikel-ohne-grund',
+      keyword: kw,
+      text: `„${kw}" führt auf keinen Artikel, und nichts sagt, warum das in Ordnung ist`,
+    });
+  }
+
+  for (const f of systemfragen) {
+    if (!keywords.includes(f.keyword)) {
+      meldungen.push({
+        regel: 'grund-ohne-keyword',
+        keyword: f.keyword,
+        text: `„${f.keyword}" ist als Systemfrage begründet und wird gar nicht mehr geführt`,
+      });
+    }
   }
 
   if (keywords.length < mindestens) {
