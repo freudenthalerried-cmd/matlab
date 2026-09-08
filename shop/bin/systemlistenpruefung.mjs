@@ -18,7 +18,8 @@ import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-import { liesSystemliste, systemlistenbefund, zuordnungsbefund } from '../src/systemlisten.js';
+import { liesSystemliste, llmsqualifikation, systemlistenbefund, zuordnungsbefund } from '../src/systemlisten.js';
+import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
 import { wortstaemme } from '../src/shopkern.js';
 
 const hier = dirname(fileURLToPath(import.meta.url));
@@ -36,7 +37,12 @@ const katalogSkus = new Set(katalog.artikel.map((a) => a.sku));
 const listen = readdirSync(ordner)
   .filter((d) => d.endsWith('.md'))
   .sort()
-  .map((d) => ({ name: d, gelesen: liesSystemliste(readFileSync(join(ordner, d), 'utf8')) }));
+  .map((d) => {
+    const text = readFileSync(join(ordner, d), 'utf8');
+    // Der Titel für die Meldungen: „kaminzug.md" sagt einem Leser weniger als
+    // „Kaminzug — die Liste für einen Zug", und in llms.txt steht der Titel.
+    return { name: d, titel: /^titel:\s*(.+)$/m.exec(text)?.[1] ?? d, gelesen: liesSystemliste(text) };
+  });
 
 const b = systemlistenbefund(listen, katalogSkus);
 
@@ -72,6 +78,35 @@ if (!b.sauber) {
   console.error('\nEine Stückliste, die über sich selbst falsch rechnet, ist die eine Sorte');
   console.error('Text, bei der ein Fehler direkt auf der Baustelle ankommt.');
   process.exit(1);
+}
+
+/*
+ * **Und was `llms.txt` daraus macht — 8. September 2026, nachts.**
+ *
+ * Die Seite kennzeichnet jede Position, die wir nicht liefern; die
+ * maschinenlesbare Datei sagte es nicht. Ein Assistent liest die Liste dann
+ * als vollständig bestellbar. Geprüft wird deshalb hier, wo die Zahlen
+ * ohnehin gelesen werden.
+ */
+const llmsDatei = join(wurzel, 'ausgabe', 'site', 'llms.txt');
+if (existsSync(llmsDatei)) {
+  const stand = frischebefund(wurzel, 'ausgabe/site');
+  if (!stand.frisch) {
+    for (const zeile of abbruchtext(stand)) console.error(zeile);
+    process.exit(2);
+  }
+  const l = llmsqualifikation(
+    listen.map((x) => ({
+      slug: x.name.replace(/\.md$/, ''),
+      titel: x.titel,
+      gelesen: x.gelesen,
+    })),
+    readFileSync(llmsDatei, 'utf8'),
+  );
+  if (l.meldungen.length) {
+    for (const m of l.meldungen) console.error(`  ✗ ${m.text}  (${m.regel})`);
+    process.exit(1);
+  }
 }
 
 console.log(`\n${z.positionen} lieferbare Positionen tragen den Namen eines Artikels der Liste.`);

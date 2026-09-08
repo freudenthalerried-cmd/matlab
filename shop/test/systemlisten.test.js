@@ -16,7 +16,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 import {
-  NICHT_GEFUEHRT, liesSystemliste, listenbefund, systemlistenbefund, WORTLUECKEN, zuordnungsbefund } from '../src/systemlisten.js';
+  NICHT_GEFUEHRT, llmsqualifikation, liesSystemliste, listenbefund, systemlistenbefund, WORTLUECKEN, zuordnungsbefund } from '../src/systemlisten.js';
 // **Am 8. September verlegt**: Die Zahlwörter stehen jetzt in src/format.js,
 // weil dieselbe Tabelle auch in src/inhaltspruefung.js stand.
 import { ZAHLWORT } from '../src/format.js';
@@ -212,4 +212,45 @@ test('Jede Wortlücke nennt einen Grund und kommt in einer Liste vor', () => {
     wortluecken: [{ position: 'Gibt es nicht', sku: 'POS-9', warum: 'x'.repeat(150) }],
   });
   assert.deepEqual(b.meldungen.map((m) => m.regel), ['wortluecke-ohne-fall']);
+});
+
+/**
+ * **Der Befund vom 8. September, nachts.** `llms.txt` führte die vier
+ * Systemseiten mit ihrer Frage und sagte nicht, dass drei von acht Positionen
+ * der Grundleitung nicht im Sortiment sind. Ein Assistent liest die Liste dann
+ * als vollständig bestellbar.
+ */
+test('eine Systemliste mit Lücke, die llms.txt nicht qualifiziert, ist ein Befund', () => {
+  const listen = [{ slug: 'kanal-dn100', titel: 'Grundleitung DN 100', gelesen: { positionen: 8, ohneSortiment: 3 } }];
+  const b = llmsqualifikation(listen, '- [Grundleitung DN 100](https://x/system/kanal-dn100.html): Welche Teile?');
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['system-unqualifiziert']);
+  assert.match(b.meldungen[0].text, /3 von 8/);
+});
+
+test('mit dem Zusatz meldet sie nichts', () => {
+  const listen = [{ slug: 'kanal-dn100', titel: 'Grundleitung DN 100', gelesen: { positionen: 8, ohneSortiment: 3 } }];
+  const zeile = '- [Grundleitung DN 100](https://x/system/kanal-dn100.html): Welche Teile?'
+    + ' — davon liefern wir 3 von 8 Positionen nicht';
+  assert.deepEqual(llmsqualifikation(listen, zeile).meldungen, []);
+});
+
+test('eine Liste ohne Lücke braucht keinen Zusatz', () => {
+  const listen = [{ slug: 'fassade-100-qm', titel: 'Fassade', gelesen: { positionen: 10, ohneSortiment: 0 } }];
+  assert.deepEqual(llmsqualifikation(listen, '- [Fassade](https://x/system/fassade-100-qm.html): Was?').meldungen, []);
+});
+
+test('eine Liste mit Lücke, die gar nicht in llms.txt steht, ist ein eigener Befund', () => {
+  const listen = [{ slug: 'kanal-dn100', titel: 'Grundleitung DN 100', gelesen: { positionen: 8, ohneSortiment: 3 } }];
+  assert.deepEqual(llmsqualifikation(listen, '## Systemlisten\n').meldungen.map((m) => m.regel),
+    ['system-fehlt-in-llms']);
+});
+
+/**
+ * Verlangt wird die **Zahl**, nicht ein Wort: „unvollständig" könnte alles
+ * heißen, „3 von 8" nicht.
+ */
+test('ein unbestimmtes Wort genügt nicht', () => {
+  const listen = [{ slug: 'kanal-dn100', titel: 'Grundleitung DN 100', gelesen: { positionen: 8, ohneSortiment: 3 } }];
+  const zeile = '- [Grundleitung](https://x/system/kanal-dn100.html): Welche Teile? — teilweise lieferbar';
+  assert.deepEqual(llmsqualifikation(listen, zeile).meldungen.map((m) => m.regel), ['system-unqualifiziert']);
 });

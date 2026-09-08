@@ -2016,6 +2016,24 @@ export const GEGENPROBEN = Object.freeze([
       + 'durch einen Verweis auf die Positionen — lesbar für einen Menschen, unbrauchbar '
       + 'für eine Auszählung von fünfundvierzig Tagen.',
   }),
+  Object.freeze({
+    id: 'llms-txt-verschweigt-die-luecke',
+    pruefer: 'pruefe-systemlisten',
+    was: 'Eine Systemliste, die einem Assistenten als vollständig bestellbar erscheint',
+    datei: 'shop/bin/website.mjs',
+    art: 'ersetzen',
+    baueVorher: true,
+    suchen: '          ? ` — davon liefern wir ${gelesen.ohneSortiment} von ${gelesen.positionen} Positionen nicht`',
+    ersetzen: '          ? \'\'',
+    erwartet: /system-unqualifiziert|vollständig bestellbar/,
+    warum: 'llms.txt ist die Datei, für die dieser Shop laut Abnahmeliste überhaupt so '
+      + 'geschrieben ist. Sie führte die vier Systemseiten mit ihrer Frage und sagte nicht, '
+      + 'dass drei von acht Positionen der Grundleitung nicht im Sortiment sind — die Seite '
+      + 'kennzeichnet es, die JSON-LD-ItemList trägt es, die maschinenlesbare Datei nicht. '
+      + 'Ein Assistent empfiehlt dann „dort bekommst du die ganze Grundleitung", und es sind '
+      + 'genau die drei Positionen, die dieselbe Liste als wird-oft-vergessen führt. Diese '
+      + 'Mutation nimmt den Zusatz wieder heraus.',
+  }),
 ]);
 
 /**

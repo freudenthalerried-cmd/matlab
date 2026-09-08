@@ -54,6 +54,7 @@ import { abholungslage, abholungssatz } from '../src/abholung.js';
 import { UEBERSCHRIFT as GRENZEN_UEBERSCHRIFT, grenzenbausteine } from '../src/eignungsgrenzen.js';
 import { abgegrenzteStaemme } from '../src/abgrenzung.js';
 import { MERKBLATT, herstellerDerGruppe } from '../src/merkblattverweis.js';
+import { liesSystemliste } from '../src/systemlisten.js';
 import { lastmodFuer } from '../src/sitemapstand.js';
 import { brotkrume, krumeAusHtml } from '../src/krume.js';
 import { HERSTELLER, marke } from '../src/hersteller.js';
@@ -2968,8 +2969,28 @@ function main() {
     ...[...seiten.values()].filter((s) => s.art === 'wissen')
       .map((s) => `- [${s.kopf.titel}](${BASIS}/${s.id}.html): ${alsText(String(s.kopf.frage ?? ''))}`),
     '', '## Systemlisten', '',
+    /*
+     * **Mit der Zahl der Positionen, die wir nicht liefern — 8. September 2026.**
+     *
+     * Hier stand nur Titel und Frage. Die Seite selbst kennzeichnet jede
+     * Position „(nicht im Sortiment)", die JSON-LD-`ItemList` trägt es als
+     * `disambiguatingDescription` — diese Datei sagte es nicht. Ein Assistent,
+     * der sie liest, empfiehlt „dort bekommst du die ganze Grundleitung"; für
+     * drei von acht Positionen stimmt das nicht, und es sind genau die drei,
+     * die dieselbe Liste als „wird oft vergessen" führt.
+     *
+     * Derselbe Satz wie beim „palettiert" ein paar Zeilen weiter unten: Eine
+     * Auskunft, die an einer Stelle qualifiziert ist und an der
+     * maschinenlesbaren blank steht, wird als Tatsache weitergegeben.
+     */
     ...[...seiten.values()].filter((s) => s.art === 'system')
-      .map((s) => `- [${s.kopf.titel}](${BASIS}/${s.id}.html): ${alsText(String(s.kopf.frage ?? ''))}`),
+      .map((s) => {
+        const gelesen = liesSystemliste(String(s.koerper ?? s.text ?? ''));
+        const luecke = gelesen.ohneSortiment > 0
+          ? ` — davon liefern wir ${gelesen.ohneSortiment} von ${gelesen.positionen} Positionen nicht`
+          : '';
+        return `- [${s.kopf.titel}](${BASIS}/${s.id}.html): ${alsText(String(s.kopf.frage ?? ''))}${luecke}`;
+      }),
     '', '## Sortiment', '',
     ...[...seiten.values()].filter((s) => s.art === 'gruppen')
       .map((s) => `- [${s.kopf.titel}](${BASIS}/${s.id}.html): ${befund.jeGruppe[s.kopf.gruppe]?.gesamt ?? 0} Artikel`),

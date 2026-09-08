@@ -93,6 +93,10 @@ export const LESER = Object.freeze([
   // dem Server, und niemand sieht ihm an, dass es von gestern ist.
   Object.freeze({ werkzeug: 'bin/paket.mjs', erzeugnis: 'ausgabe/site' }),
   Object.freeze({ werkzeug: 'bin/verweispruefung.mjs', erzeugnis: 'ausgabe/site' }),
+  // **Seit dem 8. September, nachts.** Der Prüfer liest zusätzlich
+  // `ausgabe/site/llms.txt` — er hält die Zahl der nicht geführten Positionen
+  // gegen das, was die maschinenlesbare Datei darüber sagt.
+  Object.freeze({ werkzeug: 'bin/systemlistenpruefung.mjs', erzeugnis: 'ausgabe/site' }),
   Object.freeze({
     werkzeug: 'bin/preiswiederherstellung.mjs',
     erzeugnis: null,

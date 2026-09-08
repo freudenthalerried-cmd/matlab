@@ -306,3 +306,61 @@ export function zuordnungsbefund({
 
   return { positionen: geprueft, meldungen, sauber: meldungen.length === 0 };
 }
+/**
+ * Sagt `llms.txt`, was die Systemseiten qualifizieren?
+ *
+ * **Der Anlass, 8. September 2026, nachts.** `llms.txt` ist die Datei, für die
+ * dieser Shop laut Abnahmeliste „überhaupt so geschrieben ist". Sie trägt seit
+ * dem 5. September einen Satz, der genau diese Lehre zieht — damals für die
+ * Palettierung:
+ *
+ * > **Eine Auskunft, die an einer Stelle qualifiziert ist und an der
+ * > maschinenlesbaren blank steht, wird von Assistenten als Tatsache
+ * > weitergegeben.**
+ *
+ * Ihr Abschnitt `## Systemlisten` führte die vier Seiten mit ihrer Frage — und
+ * sagte **nicht**, dass drei von acht Positionen der Grundleitung nicht im
+ * Sortiment sind. Die Seite selbst sagt es (Marke in der Tabelle), die
+ * JSON-LD-`ItemList` sagt es (`disambiguatingDescription`), `llms.txt` nicht.
+ *
+ * Ein Assistent, der sie liest, empfiehlt „dort bekommst du die ganze
+ * Grundleitung". Für drei von acht Positionen stimmt das nicht — und es sind
+ * genau die drei, die dieselbe Liste als *„wird oft vergessen"* führt.
+ *
+ * **Der Name mit Bedacht.** `src/llmsdeckung.js` führt bereits ein
+ * `llmsbefund` — es misst, ob jede gebaute Seite in `llms.txt` steht. Diese
+ * Funktion misst etwas anderes: ob die Zeile, die dort steht, ihre Lücke
+ * nennt. Zwei gleichnamige Ausfuhren in zwei Modulen haben am 8. September den
+ * Prüfer der ungerufenen Ausfuhren stolpern lassen, der nach Namen sucht —
+ * dieselbe Familie wie die drei Markenlisten desselben Tages.
+ *
+ * @param {{slug: string, titel: string, gelesen: object}[]} listen
+ * @param {string} llms   der gebaute Text
+ */
+export function llmsqualifikation(listen, llms) {
+  const meldungen = [];
+  const zeilen = String(llms ?? '').split('\n');
+  for (const l of listen) {
+    if ((l.gelesen?.ohneSortiment ?? 0) === 0) continue;
+    const zeile = zeilen.find((z) => z.includes(`${l.slug}.html`));
+    if (!zeile) {
+      meldungen.push({
+        regel: 'system-fehlt-in-llms',
+        text: `„${l.titel}" führt ${l.gelesen.ohneSortiment} Position(en), die wir nicht `
+          + 'liefern, und steht in llms.txt gar nicht',
+      });
+      continue;
+    }
+    // Verlangt wird die **Zahl**, nicht ein Wort: „unvollständig" könnte
+    // alles heißen, „3 von 8" nicht.
+    if (!zeile.includes(`${l.gelesen.ohneSortiment} von ${l.gelesen.positionen}`)) {
+      meldungen.push({
+        regel: 'system-unqualifiziert',
+        text: `„${l.titel}" steht in llms.txt ohne den Zusatz, dass `
+          + `${l.gelesen.ohneSortiment} von ${l.gelesen.positionen} Positionen nicht aus `
+          + 'unserem Sortiment kommen — ein Assistent liest die Liste als vollständig bestellbar',
+      });
+    }
+  }
+  return { geprueft: listen.length, meldungen, sauber: meldungen.length === 0 };
+}
