@@ -8194,6 +8194,11 @@ function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = null }) {
   zeilen.push('');
   zeilen.push(`Baustelle im Bezirk: ${bezirk}`);
   zeilen.push(`Erstellt am: ${tag}`);
+  
+  
+  if (gruppenImKorb(rechnung).length) {
+    zeilen.push(`Warengruppen: ${gruppenImKorb(rechnung).join(', ')}`);
+  }
   zeilen.push('');
   zeilen.push('Positionen');
   zeilen.push('----------');
@@ -8340,8 +8345,18 @@ function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = null }) {
   zeilen.push('Bitte um Rückmeldung zu Preis, Verfügbarkeit und Liefertermin.');
 
   const firma = betreiber.firma ?? '';
+  
+
+
+
+
+
+
+
+  const gruppen = gruppenImKorb(rechnung);
   const betreff = `Anfrage ${tag} — ${rechnung.positionen} Position`
-    + `${rechnung.positionen === 1 ? '' : 'en'}, Bezirk ${bezirk}`;
+    + `${rechnung.positionen === 1 ? '' : 'en'}`
+    + `${gruppen.length ? ` ${gruppen.join('/')}` : ''}, Bezirk ${bezirk}`;
 
   if (!betreiber.email) {
     hinweise.push('Keine E-Mail-Adresse hinterlegt — der Text kann nur kopiert, nicht gesendet werden.');
@@ -8486,6 +8501,74 @@ function pruefeAnfrageAufGeheimnis(text, artikelMitEk = []) {
     if (new RegExp(wort, 'i').test(text)) treffer.push(`Das Wort „${wort}" steht im Text`);
   }
   return treffer;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function gruppenImKorb(rechnung) {
+  const namen = [];
+  for (const t of rechnung?.teillieferungen ?? []) {
+    for (const p of t.positionen ?? []) {
+      const g = p.gruppe ?? p.artikel?.gruppe ?? null;
+      if (g && !namen.includes(g)) namen.push(g);
+    }
+  }
+  return namen.sort((a, b) => a.localeCompare(b, 'de'));
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function gruppenbefund(rechnung, text) {
+  const meldungen = [];
+  const gruppen = gruppenImKorb(rechnung);
+  if (gruppen.length === 0) {
+    meldungen.push({
+      regel: 'korb-ohne-gruppe',
+      text: 'Der Warenkorb nennt zu keiner Position eine Warengruppe — dann lässt sich '
+        + 'keine Anfrage einer Anzeigengruppe zuordnen',
+    });
+  }
+  for (const g of gruppen) {
+    if (String(text ?? '').includes(g)) continue;
+    meldungen.push({
+      regel: 'gruppe-ungenannt',
+      text: `Die Anfrage enthält ${g}-Ware und nennt die Gruppe nicht — im Postfach ist sie `
+        + 'dann von jeder anderen nicht zu unterscheiden',
+    });
+  }
+  return { geprueft: gruppen.length, meldungen, sauber: meldungen.length === 0 };
 }
 
 

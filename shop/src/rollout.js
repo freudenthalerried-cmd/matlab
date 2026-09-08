@@ -512,10 +512,17 @@ export const ETAPPEN = Object.freeze([
    * **Aufgenommen am 3. September**, im selben Zug.
    *
    * Ohne diese Etappe endet der Versuch mit **einer** Zahl, und die zweite
-   * fehlt: Kaufquote = Anfragequote × Auftragsquote. Die erste zählt Google,
-   * die zweite zählt niemand — sie entsteht im Postfach des Betreibers, und
-   * wenn sie dort nicht mitgeschrieben wird, ist sie nach 45 Tagen nicht mehr
-   * rekonstruierbar.
+   * fehlt: Kaufquote = Anfragequote × Auftragsquote.
+   *
+   * **Berichtigt am 8. September, abends.** Hier stand „die erste zählt
+   * Google". Das stimmt nicht: Der Shop überträgt nichts — `mailto:` öffnet
+   * das Programm des Kunden, und `npm run pruefe-datenschutz` verbietet jede
+   * Zählmarke ausdrücklich. Google zählt **Klicks**. Beide Quoten entstehen
+   * im Postfach des Betreibers, und wenn sie dort nicht mitgeschrieben
+   * werden, sind sie nach 45 Tagen nicht mehr rekonstruierbar.
+   *
+   * Damit sie sich je Anzeigengruppe unterscheiden lassen, nennt die Anfrage
+   * seit demselben Tag ihre Warengruppen — im Betreff und im Text.
    *
    * Läuft **neben** dem Versuch, nicht danach: Beide beginnen mit dem ersten
    * bezahlten Klick, und beide dauern so lange wie er. Der bestimmende Strang

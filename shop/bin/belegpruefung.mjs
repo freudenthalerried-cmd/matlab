@@ -23,7 +23,7 @@ import { ZIELMARGE, ladeBaustoffkatalog } from '../src/baustoffkatalog.js';
 import { erzeugeAngebot, erzeugeAuftragsbestaetigung, erzeugeRechnung } from '../src/beleg.js';
 import { erzeugeBestellungen, darfAutomatischAusgeloestWerden } from '../src/bestellung.js';
 import { kundenWarenkorb } from '../src/shopkern.js';
-import { baueKundenanfrage, pruefeAnfrageAufGeheimnis } from '../src/kundenanfrage.js';
+import { baueKundenanfrage, gruppenbefund, pruefeAnfrageAufGeheimnis } from '../src/kundenanfrage.js';
 import { pruefeBelege } from '../src/belegpruefung.js';
 import {
   lieferhinweise, PFLICHTTEXTE, AGB_GLIEDERUNG, DATENSCHUTZ_GLIEDERUNG,
@@ -206,15 +206,17 @@ const belege = [
 // derselbe Korb, zwei Kalkulationen. Genau deshalb gehört er in denselben
 // Durchlauf: Was der Kunde in einem Zug liest, muss ein Prüfer in einem Zug
 // gelesen haben.
+const rechnungFuerAnfrage = kundenWarenkorb(positionen, {
+  artikel: katalog.artikel,
+  lieferanten: lieferantenDatei.lieferanten ?? lieferantenDatei,
+  // Gate 25: aus derselben Datei wie in der Seite. Ohne die Grenze käme
+  // gar kein Anfragetext zustande — und dieser Prüfer sagt das dann auch,
+  // statt einen leeren Text gegen seine Pflichtangaben zu halten.
+  mindestbestellwertNetto: betreiberDatei.mindestbestellwertNetto ?? null,
+});
+
 const anfrage = baueKundenanfrage({
-  rechnung: kundenWarenkorb(positionen, {
-    artikel: katalog.artikel,
-    lieferanten: lieferantenDatei.lieferanten ?? lieferantenDatei,
-    // Gate 25: aus derselben Datei wie in der Seite. Ohne die Grenze käme
-    // gar kein Anfragetext zustande — und dieser Prüfer sagt das dann auch,
-    // statt einen leeren Text gegen seine Pflichtangaben zu halten.
-    mindestbestellwertNetto: betreiberDatei.mindestbestellwertNetto ?? null,
-  }),
+  rechnung: rechnungFuerAnfrage,
   bezirk: 'Perg',
   betreiber: { firma: betreiber.firma, ort: 'Ried in der Riedmark', email: '' },
   datum: '2026-09-01',
@@ -307,6 +309,30 @@ const befund = pruefeBelege(belege, { vollstaendig: true });
  * entsprechen. Er wird deshalb als Meldung geführt und nicht als Abbruch —
  * gelesen wird er trotzdem, weil dieser Prüfer mit Meldungen rot endet.
  */
+/*
+ * **Die Warengruppe in der Anfrage — 8. September 2026, abends.** Ohne sie
+ * hießen im Postfach alle Anfragen gleich, und der Versuch entscheidet je
+ * Anzeigengruppe.
+ *
+ * **Zwei eigene Fehler auf dem Weg hierher, beide von der Gegenprobe
+ * gefunden.** Der erste Anlauf vergaß `befund.meldungen` mitzuzählen — eine
+ * Meldung, die niemand zählt, ist keine. Der zweite stand **innerhalb** von
+ * `if (geheim.length)` und lief damit nur, wenn ein Geheimnisfund vorlag:
+ * genau der Befund vom 4. September über die Bankverbindung — *eine Prüfung,
+ * die nur im ungenutzten Fall greift, ist keine.*
+ */
+const gruppen = gruppenbefund(rechnungFuerAnfrage, anfrage.text);
+if (gruppen.meldungen.length) {
+  const ziel = befund.befunde.find((b) => b.art === 'Kundenanfrage');
+  ziel.meldungen.push(...gruppen.meldungen.map((m) => ({ regel: m.regel, text: m.text })));
+  ziel.sauber = false;
+  // **Und der Gesamtstand.** `befund.sauber` entscheidet, ob der Lauf rot
+  // endet; `ziel.sauber` allein färbt nur einen Abschnitt. Der dritte Anlauf
+  // an derselben Stelle — die Gegenprobe hat jeden einzelnen gefunden.
+  befund.sauber = false;
+  befund.meldungen += gruppen.meldungen.length;
+}
+
 const geheim = pruefeAnfrageAufGeheimnis(anfrage.text, katalog.artikel)
   .map((t) => ({ regel: 'geheimnis-im-aussentext', text: t }));
 if (geheim.length) {

@@ -127,6 +127,11 @@ export function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = nu
   zeilen.push('');
   zeilen.push(`Baustelle im Bezirk: ${bezirk}`);
   zeilen.push(`Erstellt am: ${tag}`);
+  // Dieselbe Angabe noch einmal im Text: Wer die Mail weiterleitet oder
+  // ausdruckt, verliert den Betreff.
+  if (gruppenImKorb(rechnung).length) {
+    zeilen.push(`Warengruppen: ${gruppenImKorb(rechnung).join(', ')}`);
+  }
   zeilen.push('');
   zeilen.push('Positionen');
   zeilen.push('----------');
@@ -273,8 +278,18 @@ export function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = nu
   zeilen.push('Bitte um Rückmeldung zu Preis, Verfügbarkeit und Liefertermin.');
 
   const firma = betreiber.firma ?? '';
+  /*
+   * **Die Warengruppe im Betreff — 8. September 2026, abends.**
+   *
+   * Der Versuch läuft über drei Anzeigengruppen mit sehr verschiedenen
+   * Klickpreisen, und nach fünfundvierzig Tagen soll je Gruppe entschieden
+   * werden. Im Postfach lagen bis heute Anfragen, die alle gleich hießen.
+   * Der Betreiber soll die Liste sortieren können, ohne jede Mail zu öffnen.
+   */
+  const gruppen = gruppenImKorb(rechnung);
   const betreff = `Anfrage ${tag} — ${rechnung.positionen} Position`
-    + `${rechnung.positionen === 1 ? '' : 'en'}, Bezirk ${bezirk}`;
+    + `${rechnung.positionen === 1 ? '' : 'en'}`
+    + `${gruppen.length ? ` ${gruppen.join('/')}` : ''}, Bezirk ${bezirk}`;
 
   if (!betreiber.email) {
     hinweise.push('Keine E-Mail-Adresse hinterlegt — der Text kann nur kopiert, nicht gesendet werden.');
@@ -419,4 +434,72 @@ export function pruefeAnfrageAufGeheimnis(text, artikelMitEk = []) {
     if (new RegExp(wort, 'i').test(text)) treffer.push(`Das Wort „${wort}" steht im Text`);
   }
   return treffer;
+}
+/**
+ * Die Warengruppen eines Warenkorbs, in der Reihenfolge des Bestands.
+ *
+ * **Der Anlass, 8. September 2026, abends.** Der Versuch läuft über drei
+ * Anzeigengruppen mit sehr verschiedenen Klickpreisen — Kamin 9,41 €,
+ * Dämmung 5,91 €, WDVS 4,19 € —, und nach fünfundvierzig Tagen soll **je
+ * Gruppe** entschieden werden, ob der Klick sich trägt.
+ *
+ * Die Anfrage nannte Datum, Positionszahl und Bezirk. Aus welcher Ecke des
+ * Sortiments sie kommt, stand nirgends — der Betreiber hätte eine Gesamtzahl
+ * bekommen und drei Entscheidungen treffen müssen.
+ *
+ * > **Ein Versuch, der drei Gruppen unterscheiden soll, braucht eine Anfrage,
+ * > die sagt, aus welcher sie kommt.**
+ *
+ * **Was das ist und was nicht:** Es ist die Gruppe der **bestellten Ware**,
+ * nicht die der angeklickten Anzeige. Wer über die Kaminanzeige kommt und
+ * Dämmung kauft, erscheint hier unter Dämmung. Die angeklickte Anzeige wüsste
+ * nur ein Zähler im Browser — und der ist hier ausgeschlossen: Die
+ * Datenschutzzusage nennt genau einen Speicherschlüssel, und
+ * `npm run pruefe-datenschutz` misst das.
+ */
+export function gruppenImKorb(rechnung) {
+  const namen = [];
+  for (const t of rechnung?.teillieferungen ?? []) {
+    for (const p of t.positionen ?? []) {
+      const g = p.gruppe ?? p.artikel?.gruppe ?? null;
+      if (g && !namen.includes(g)) namen.push(g);
+    }
+  }
+  return namen.sort((a, b) => a.localeCompare(b, 'de'));
+}
+/**
+ * Nennt die Anfrage jede Warengruppe, die in ihr steckt?
+ *
+ * **Der Anlass, 8. September 2026, abends.** Der Versuch läuft über drei
+ * Anzeigengruppen mit Klickpreisen von 4,19 € bis 9,41 €, und nach
+ * fünfundvierzig Tagen soll **je Gruppe** entschieden werden. Die Anfrage
+ * nannte Datum, Positionszahl und Bezirk — im Postfach hießen alle gleich.
+ *
+ * Der Betreiber hätte eine Gesamtzahl bekommen und drei Entscheidungen
+ * treffen müssen. Zählen kann er nur, was die Mail ihm sagt: Der Shop
+ * überträgt nichts, `mailto:` öffnet das Programm des Kunden, und eine
+ * Zählmarke verbietet die gemessene Datenschutzzusage.
+ *
+ * > **Ein Versuch, der drei Gruppen unterscheiden soll, braucht eine Anfrage,
+ * > die sagt, aus welcher sie kommt.**
+ */
+export function gruppenbefund(rechnung, text) {
+  const meldungen = [];
+  const gruppen = gruppenImKorb(rechnung);
+  if (gruppen.length === 0) {
+    meldungen.push({
+      regel: 'korb-ohne-gruppe',
+      text: 'Der Warenkorb nennt zu keiner Position eine Warengruppe — dann lässt sich '
+        + 'keine Anfrage einer Anzeigengruppe zuordnen',
+    });
+  }
+  for (const g of gruppen) {
+    if (String(text ?? '').includes(g)) continue;
+    meldungen.push({
+      regel: 'gruppe-ungenannt',
+      text: `Die Anfrage enthält ${g}-Ware und nennt die Gruppe nicht — im Postfach ist sie `
+        + 'dann von jeder anderen nicht zu unterscheiden',
+    });
+  }
+  return { geprueft: gruppen.length, meldungen, sauber: meldungen.length === 0 };
 }

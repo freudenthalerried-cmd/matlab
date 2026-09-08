@@ -139,8 +139,15 @@ export function versuchsaussage({ klicks, anfragen, quote, sicherheit = SICHERHE
     // Anfragequote. Was die eine ausschließt, schließt die andere mit aus.
     schliesstKaufquoteAus: ausgeschlossen,
     // **Immer falsch, und das ist keine Vorsicht, sondern die Rechnung:** Die
-    // Anzeigenstatistik kennt Klicks und Anfragen. Den Schritt von der Anfrage
-    // zum Auftrag sieht sie nicht.
+    // Anzeigenstatistik kennt **Klicks**. Weder die Anfrage noch den Auftrag
+    // sieht sie.
+    //
+    // **Berichtigt am 8. September, abends.** Hier stand „kennt Klicks und
+    // Anfragen". Der Shop überträgt nichts: Die Anfrage geht als `mailto:`
+    // aus dem Programm des Kunden hinaus, und eine Zählmarke verbietet die
+    // gemessene Datenschutzzusage. `anfragen` ist deshalb kein Wert aus einer
+    // Statistik, sondern eine Zahl, die der Betreiber aus seinem Postfach
+    // mitschreibt — die Etappe dafür steht seit dem 3. September im Plan.
     bestaetigtKaufquote: false,
     warum: ausgeschlossen
       ? `${klicks} Klicks ohne eine einzige Anfrage — die Quote ist ausgeschlossen, `

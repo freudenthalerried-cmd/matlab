@@ -1,8 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { baueKundenanfrage, mailtoWeg, pruefeAnfrageAufGeheimnis, MAILTO_HOECHSTLAENGE }
-  from '../src/kundenanfrage.js';
+import {
+  baueKundenanfrage, mailtoWeg, pruefeAnfrageAufGeheimnis, MAILTO_HOECHSTLAENGE,
+  gruppenImKorb, gruppenbefund,
+} from '../src/kundenanfrage.js';
 import { einheitText } from '../src/format.js';
 
 /** Nur die Adresse — die Proben unten fragen meistens danach. */
@@ -481,4 +483,44 @@ test('eine Einkaufszahl im Innern einer größeren Zahl ist kein Treffer', () =>
   // Auch am Zeilenanfang und am Zeilenende, wo kein Zeichen davor oder danach
   // steht — die Grenzprüfung darf nicht am Rand versagen.
   assert.equal(pruefeAnfrageAufGeheimnis('3,68', artikel).length, 1);
+});
+
+/**
+ * **Der Befund vom 8. September, abends.** Der Versuch läuft über drei
+ * Anzeigengruppen mit Klickpreisen von 4,19 € bis 9,41 €, und nach
+ * fünfundvierzig Tagen soll je Gruppe entschieden werden. Im Postfach hießen
+ * bis dahin alle Anfragen gleich.
+ */
+test('die Warengruppen eines Korbs stehen einmal und alphabetisch da', () => {
+  const rechnung = {
+    teillieferungen: [
+      { positionen: [{ gruppe: 'WDVS' }, { gruppe: 'Kamin' }, { gruppe: 'WDVS' }] },
+      { positionen: [{ gruppe: 'Kamin' }] },
+    ],
+  };
+  assert.deepEqual(gruppenImKorb(rechnung), ['Kamin', 'WDVS']);
+});
+
+test('ein leerer Korb ergibt keine Gruppen und keinen Absturz', () => {
+  assert.deepEqual(gruppenImKorb({}), []);
+  assert.deepEqual(gruppenImKorb({ teillieferungen: [] }), []);
+});
+
+test('eine Anfrage, die ihre Gruppe nicht nennt, ist ein Befund', () => {
+  const rechnung = { teillieferungen: [{ positionen: [{ gruppe: 'Kamin' }] }] };
+  const b = gruppenbefund(rechnung, 'Anfrage 2026-09-08 — 1 Position, Bezirk Perg');
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['gruppe-ungenannt']);
+  assert.match(b.meldungen[0].text, /Kamin/);
+});
+
+test('nennt sie jede Gruppe, meldet der Befund nichts', () => {
+  const rechnung = { teillieferungen: [{ positionen: [{ gruppe: 'Kamin' }, { gruppe: 'WDVS' }] }] };
+  const b = gruppenbefund(rechnung, 'Warengruppen: Kamin, WDVS');
+  assert.deepEqual(b.meldungen, []);
+  assert.equal(b.geprueft, 2);
+});
+
+test('ein Korb ohne jede Warengruppe ist selbst ein Befund', () => {
+  const b = gruppenbefund({ teillieferungen: [{ positionen: [{}] }] }, 'irgendein Text');
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['korb-ohne-gruppe']);
 });

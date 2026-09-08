@@ -1999,6 +1999,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'der Unterschied kostet ihn eine zweite Runde. Diese Mutation lässt die vier Marken '
       + 'aus dem Brief fallen und verlangt, dass die Deckung das merkt.',
   }),
+  Object.freeze({
+    id: 'eine-anfrage-ohne-ihre-warengruppe',
+    pruefer: 'pruefe-belege',
+    was: 'Eine Anfrage, die im Postfach von jeder anderen nicht zu unterscheiden ist',
+    datei: 'shop/src/kundenanfrage.js',
+    art: 'ersetzen',
+    suchen: '    zeilen.push(`Warengruppen: ${gruppenImKorb(rechnung).join(\', \')}`);',
+    ersetzen: '    zeilen.push(\'Warengruppen: siehe Positionen\');',
+    erwartet: /gruppe-ungenannt|nennt die Gruppe nicht/,
+    warum: 'Der Versuch läuft über drei Anzeigengruppen mit Klickpreisen von 4,19 € bis '
+      + '9,41 €, und nach fünfundvierzig Tagen soll je Gruppe entschieden werden, ob der '
+      + 'Klick sich trägt. Zählen kann der Betreiber nur, was die Mail ihm sagt: Der Shop '
+      + 'überträgt nichts, mailto öffnet das Programm des Kunden, und eine Zählmarke '
+      + 'verbietet die gemessene Datenschutzzusage. Diese Mutation ersetzt die Gruppennamen '
+      + 'durch einen Verweis auf die Positionen — lesbar für einen Menschen, unbrauchbar '
+      + 'für eine Auszählung von fünfundvierzig Tagen.',
+  }),
 ]);
 
 /**
