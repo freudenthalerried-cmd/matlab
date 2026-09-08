@@ -117,4 +117,19 @@ if (!mitBrowser) {
 }
 console.log('Geprüft ist damit der Umfang, nicht der Befund: Was die Prüfer melden,');
 console.log('steht in ihrer eigenen Ausgabe und gehört einzeln angesehen.');
-process.exit(gescheitert || abgebrochen ? 1 : 0);
+/*
+ * **Zwei Ausgänge, zwei Sachen — 8. September 2026.**
+ *
+ * `gescheitert` heißt: Ein Prüfer lief und nannte einen Umfang, der zu klein
+ * ist. Das ist ein **Befund** — Ausgang 1.
+ *
+ * `abgebrochen` heißt: Er lief gar nicht, weil ihm etwas fehlt. Das ist keine
+ * Aussage über den Umfang, sondern das Fehlen einer Messung — Ausgang 2, im
+ * ganzen Bestand die Weigerung. Seit dem Verlust von
+ * `preise/poschacher-positionen.csv` gibt es einen dauerhaften Fall davon, und
+ * die Gegenprobe zu diesem Prüfer hing daran fest: Sie meldete „war schon
+ * vorher rot" und beschuldigte einen Prüfer, der nichts falsch gemacht hat.
+ *
+ * Grün wird davon nichts. Nur die Ursache steht jetzt am richtigen Ort.
+ */
+process.exit(gescheitert ? 1 : (abgebrochen ? 2 : 0));
