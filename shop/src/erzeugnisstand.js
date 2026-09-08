@@ -87,6 +87,11 @@ export const LESER = Object.freeze([
   // Auskunft von gestern für heute grün zu melden.
   Object.freeze({ werkzeug: 'bin/sperrgutpruefung.mjs', erzeugnis: 'ausgabe/site' }),
   Object.freeze({ werkzeug: 'bin/geheimnispruefung.mjs', erzeugnis: 'ausgabe/site' }),
+  // **Ergänzt am 8. September.** `npm run paket` packt genau diesen Ordner in
+  // ein Archiv, das der Auftraggeber hochlädt. Ein Paket aus einem veralteten
+  // Erzeugnis wäre die schlimmste Sorte: Es sieht vollständig aus, liegt auf
+  // dem Server, und niemand sieht ihm an, dass es von gestern ist.
+  Object.freeze({ werkzeug: 'bin/paket.mjs', erzeugnis: 'ausgabe/site' }),
   Object.freeze({ werkzeug: 'bin/shopprobe.mjs', erzeugnis: 'ausgabe/website.html' }),
   Object.freeze({ werkzeug: 'bin/wegprobe.mjs', erzeugnis: 'ausgabe/website.html' }),
   Object.freeze({ werkzeug: 'bin/werbeprobe.mjs', erzeugnis: 'ausgabe/kampagne' }),

@@ -1830,6 +1830,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'Zubehör. Die Seite zeigte sie trotzdem als Karte, weil sie ihre Artikelkarten aus '
       + 'genau dieser Kopfzeile baut. Diese Mutation setzt sie wieder ein.',
   }),
+  Object.freeze({
+    id: 'archiv-das-kein-fremdes-programm-oeffnet',
+    pruefer: 'test',
+    was: 'Ein Archiv, dessen Prüfsumme nur die eigene Umsetzung für richtig hält',
+    datei: 'shop/src/paket.js',
+    art: 'ersetzen',
+    suchen: '  return (c ^ 0xffffffff) >>> 0;',
+    ersetzen: '  return c >>> 0;',
+    erwartet: /fremdes Programm kann das Archiv lesen|123456789/,
+    warum: 'Das Paket vom 8. September geht an den Auftraggeber, und der packt es mit dem '
+      + 'Programm aus, das er hat. Ein selbstgeschriebenes Archivformat, das nur die eigene '
+      + 'Umsetzung öffnet, ist keines. Diese Mutation lässt die Schlussverknüpfung der '
+      + 'Prüfsumme weg — das Archiv sieht unverändert aus, unsere eigenen Zahlen bleiben in '
+      + 'sich stimmig, und `unzip -t` weist es zurück. Genau deshalb prüft der Testfall '
+      + 'gegen ein fremdes Programm und nicht gegen sich selbst.',
+  }),
 ]);
 
 /**

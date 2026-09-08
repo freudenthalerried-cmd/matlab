@@ -64,6 +64,7 @@
     "pruefe-weisungen": "node bin/weisungspruefung.mjs",
     "pruefe-zahlen": "node bin/zahlenpruefung.mjs",
     "pruefe-korbtext": "node bin/korbtextpruefung.mjs",
+    "paket": "node bin/paket.mjs",
     "pruefe-vorbehalte": "node bin/vorbehaltspruefung.mjs",
     "pr-text": "node bin/prtext.mjs",
     "pruefe-schaufenster": "node bin/schaufensterpruefung.mjs",

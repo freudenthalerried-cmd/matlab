@@ -563,3 +563,24 @@ test('Ausgang Rechtstexteauftrag: ohne Rückantwortadresse geht er nicht hinaus'
   });
   assert.ok(ohneFn.gruende.some((g) => /Firmenbuch/.test(g)), JSON.stringify(ohneFn.gruende));
 });
+
+test('Ausgang Archiv: ein Name, der aus dem Ziel hinausführt, kommt nicht ins Paket', async () => {
+  // **Der ungewöhnlichste Ausgang dieses Verzeichnisses.** Was hier
+  // hinausgeht, ist kein Text an einen Leser, sondern ein Archiv an den
+  // Auftraggeber — und es wird in ein **Webverzeichnis** ausgepackt. Das
+  // Format speichert Pfade als Text, und die meisten Auspackprogramme folgen
+  // ihm: `../../etc/etwas` landet dann außerhalb.
+  const { baueZip } = await import('../src/paket.js');
+
+  const gut = baueZip([{ name: 'site/index.html', inhalt: Buffer.from('hallo') }]);
+  assert.ok(gut.length > 22, 'der harmlose Fall geht durch');
+
+  for (const name of ['../oben.html', 'a/../../oben.html', '/etc/passwd', 'C:/x.html']) {
+    assert.throws(() => baueZip([{ name, inhalt: Buffer.from('x') }]), /Archiveintrag/, name);
+  }
+
+  // Steuerzeichen im Namen — dieselbe Sorte Gift wie im Firmennamen, nur an
+  // einer Stelle, die kein Mensch liest.
+  assert.throws(() => baueZip([{ name: 'a\nb.html', inhalt: Buffer.from('x') }]), /Steuerzeichen/);
+  assert.throws(() => baueZip([{ name: '', inhalt: Buffer.from('x') }]), /ohne Namen/);
+});

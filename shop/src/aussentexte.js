@@ -61,6 +61,11 @@ export const AUSGAENGE = Object.freeze([
   Object.freeze({ modul: 'src/vies.js', funktion: 'belegzeile', an: 'die eigene Ablage', form: 'Zeile' }),
   Object.freeze({ modul: 'src/ablage.js', funktion: 'alsCsv', an: 'Buchhaltung', form: 'CSV' }),
   Object.freeze({ modul: 'src/speicher.js', funktion: 'journalzeile', an: 'Buchhaltung', form: 'JSONL' }),
+  // **Ergänzt am 8. September.** Der Zweck dieses Ausgangs ist ungewöhnlich:
+  // Er geht zuerst an den Auftraggeber und danach, ausgepackt, an jeden
+  // Besucher — das Archiv **ist** die Website. Es trägt keinen fremden Text
+  // hinein, sondern die Dateien, die `npm run website` gebaut hat.
+  Object.freeze({ modul: 'src/paket.js', funktion: 'baueZip', an: 'Auftraggeber, danach jeder Besucher', form: 'ZIP-Archiv' }),
 ]);
 
 /**

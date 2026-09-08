@@ -170,7 +170,10 @@ export const OHNE_WERKZEUG = Object.freeze([
     titel: 'ausgabe/site/ auf bauversand.com hochladen',
     zustaendig: 'entscheidung',
     warumKeinWerkzeug: 'Der Netzausgang dieser Umgebung ist gesperrt; ob die Seite erreichbar ist, '
-      + 'lässt sich von hier nicht feststellen.',
+      + 'lässt sich von hier nicht feststellen. **Vorbereitet ist es seit dem 8. September:** '
+      + '`npm run paket` schreibt ein ZIP aus dem gebauten Ordner, mit der Abnahmeliste und '
+      + 'einem Inhaltsverzeichnis samt Prüfsummen darin. Hochgeladen wird der Inhalt von '
+      + '`site/`, nicht der Ordner selbst.',
     loest: 'Ohne erreichbare Seite kein Klick, keine Auffindbarkeit, keine Anfrage.',
   },
 ]);

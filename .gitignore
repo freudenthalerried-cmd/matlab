@@ -22,3 +22,12 @@ __pycache__/
 # Verzeichnisses ihn behält. Nicht unter preise/: Das trägt die Konditionen des
 # Lieferanten und untersteht anderen Fristen und einem anderen Löschanspruch.
 ablage/
+
+# **Das Archiv aus `npm run paket` — 8. September 2026.**
+#
+# Es enthält Byte für Byte, was unter `shop/ausgabe/site/` ohnehin im
+# Verzeichnis steht, und wiegt 3,3 MB je Bau. Ein zweites Mal dasselbe
+# aufzubewahren macht das Verzeichnis schwer und den Inhalt nicht sicherer;
+# gebaut ist es in Sekunden. Wer es braucht, ruft `npm run paket` — oder
+# bekommt es einzeln übergeben.
+shop/ausgabe/bauversand-*.zip
