@@ -97,3 +97,38 @@ export function beurteile(lauf, pruefer) {
     grund: [],
   };
 }
+/**
+ * Die Begründung eines roten Schritts — aus seiner eigenen Ausgabe.
+ *
+ * **Der Anlass, 8. September 2026, nachts.** Ein Gesamtlauf meldete
+ * `✗ oberflaechenprobe — Ausgang 1` und sonst nichts. Welches der elf
+ * Szenarien gescheitert war, stand nirgends: Der Lauf hatte die Ausgabe des
+ * Werkzeugs verworfen. Beim nächsten Bau war die Probe grün, und **der Grund
+ * ist nicht mehr feststellbar** — genau das ist der Schaden.
+ *
+ * Vier Zeilen darüber macht derselbe Code es richtig: Der Zweig für Ausgang 2
+ * nimmt die erste Zeile der Ausgabe als Grund mit. Die Regel dafür steht seit
+ * dem 4. September im Gegenprobenläufer:
+ *
+ * > **Ein Urteil über einen Prüfer, das seine Begründung wegwirft, ist eine
+ * > Anschuldigung.**
+ *
+ * Angewandt war sie dort, wo sie auffiel, und nicht im Zweig daneben.
+ *
+ * Gesucht werden zuerst die Zeilen, die ein Werkzeug dieses Hauses für einen
+ * Fund benutzt — `✗` und `not ok` —, sonst die letzten Zeilen. Dieselbe
+ * Reihenfolge wie im Gegenprobenläufer, und aus demselben Grund: Bei
+ * `npm test` steht das ✗ auch in der Ausgabe geprüfter Werkzeuge.
+ *
+ * @param {string} ausgabe   stdout und stderr des Werkzeugs
+ * @param {number} hoechstens  wie viele Zeilen mitgehen
+ */
+export function befundzeilen(ausgabe, hoechstens = 3) {
+  const zeilen = String(ausgabe ?? '').trim().split('\n').filter((z) => z.trim());
+  if (zeilen.length === 0) return [];
+  const notOk = zeilen.filter((z) => z.startsWith('not ok'));
+  const kreuze = zeilen.filter((z) => z.includes('✗'));
+  const gefunden = notOk.length ? notOk : kreuze;
+  return (gefunden.length ? gefunden : zeilen.slice(-hoechstens)).slice(0, hoechstens)
+    .map((z) => z.trim());
+}

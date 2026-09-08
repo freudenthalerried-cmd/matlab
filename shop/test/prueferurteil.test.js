@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { beurteile, abbruchgrund, GELAUFEN } from '../src/prueferurteil.js';
+import { beurteile, abbruchgrund, GELAUFEN, befundzeilen} from '../src/prueferurteil.js';
 
 const PRUEFER = { muster: /(\d+) Dinge geprüft/, mindestens: 20 };
 
@@ -243,4 +243,38 @@ test('Eine Nichtzahl an der abgefragten Stelle ist keine Menge', () => {
   assert.equal(urteil.art, 'ohne-menge',
     'NaN < mindestens ist falsch — ohne Fangstelle wäre das Urteil grün gewesen');
   assert.equal(urteil.zahl, null);
+});
+
+/**
+ * **Der Anlass, 8. September 2026, nachts.** Ein Gesamtlauf meldete
+ * `✗ oberflaechenprobe — Ausgang 1` und sonst nichts. Welches der elf
+ * Szenarien gescheitert war, stand nirgends, und beim nächsten Bau war die
+ * Probe grün: Der Grund ist nicht mehr feststellbar.
+ */
+test('die Begründung eines roten Schritts kommt aus seiner eigenen Ausgabe', () => {
+  const ausgabe = '✓ eins\n✗ Kasse: der Korb bleibt leer\n✓ drei\n\n11 Szenarien, 1 fehlgeschlagen.';
+  assert.deepEqual(befundzeilen(ausgabe), ['✗ Kasse: der Korb bleibt leer']);
+});
+
+test('bei npm test gewinnt „not ok" gegen das ✗ der geprüften Werkzeuge', () => {
+  // Dieselbe Reihenfolge wie im Gegenprobenläufer, und aus demselben Grund:
+  // Ein geprüftes Werkzeug druckt sein eigenes ✗ in die Testausgabe.
+  const ausgabe = 'not ok 3 - etwas\nok 4 - ✗ steht hier nur als Text\nnot ok 5 - anderes';
+  assert.deepEqual(befundzeilen(ausgabe), ['not ok 3 - etwas', 'not ok 5 - anderes']);
+});
+
+test('ohne Fundzeile stehen die letzten Zeilen da — irgendetwas ist besser als nichts', () => {
+  assert.deepEqual(befundzeilen('erste\nzweite\ndritte\nvierte'), ['zweite', 'dritte', 'vierte']);
+});
+
+test('mehr als die vereinbarte Zahl kommt nicht mit', () => {
+  const viele = Array.from({ length: 9 }, (_, i) => `✗ Fund ${i}`).join('\n');
+  assert.equal(befundzeilen(viele).length, 3);
+  assert.equal(befundzeilen(viele, 5).length, 5);
+});
+
+test('eine leere Ausgabe ergibt keine Zeile und keinen Absturz', () => {
+  assert.deepEqual(befundzeilen(''), []);
+  assert.deepEqual(befundzeilen(null), []);
+  assert.deepEqual(befundzeilen('   \n  \n'), []);
 });

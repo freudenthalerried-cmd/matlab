@@ -51,6 +51,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { PRUEFER, BROWSERPRUEFER } from '../src/pruefregister.js';
+import { befundzeilen } from '../src/prueferurteil.js';
 import { frischebefund } from '../src/erzeugnisstand.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -185,7 +186,14 @@ for (const p of [...PRUEFER, ...(mitBrowser ? BROWSERPRUEFER : [])]) {
         const grund = ausgabe.trim().split('\n')[0] || 'ohne Angabe';
         return { ok: false, messbar: false, meldung: `nicht messbar — ${grund}` };
       }
-      if (e.status !== 0) return { ok: false, meldung: `Ausgang ${e.status}` };
+      // **Mit Begründung — 8. September 2026, nachts.** Hier stand nur der
+      // Ausgangscode. Ein roter Lauf sagte damit „✗ oberflaechenprobe —
+      // Ausgang 1" und sonst nichts; welches der elf Szenarien gescheitert
+      // war, ließ sich hinterher nicht mehr feststellen. Der Zweig vier
+      // Zeilen darüber macht es seit heute Vormittag richtig.
+      if (e.status !== 0) {
+        return { ok: false, meldung: `Ausgang ${e.status}`, zeilen: befundzeilen(ausgabe) };
+      }
       if (umfang === null) return { ok: false, meldung: 'meldet seinen Umfang nicht' };
       // NaN ist keine Menge. `NaN < mindestens` ist falsch, also käme ein
       // Prüfer, dessen Register die falsche Klammer nennt, hier als grün
@@ -291,7 +299,10 @@ for (const s of schritte) {
   if (ergebnis.messbar === false) unmessbar.push(`${s.name}: ${ergebnis.meldung}`);
   const zeichen = ergebnis.ok ? '✓' : (ergebnis.messbar === false ? '⃠' : '✗');
   console.log(`  ${zeichen} ${s.name.padEnd(22)} ${zeit}  ${ergebnis.meldung}`);
-  if (!ergebnis.ok) rot.push(`${s.name}: ${ergebnis.meldung}`);
+  // **Die Begründung gleich darunter — 8. September, nachts.** Der Lauf endet
+  // nach vierzig Minuten; wer ihn liest, hat den Zustand von damals nicht mehr.
+  for (const z of ergebnis.zeilen ?? []) console.log(`        ${z}`);
+  if (!ergebnis.ok) rot.push(`${s.name}: ${ergebnis.meldung}`, ...(ergebnis.zeilen ?? []).map((z) => `    ${z}`));
 }
 
 const dauer = Math.round((Date.now() - begonnen) / 1000);
