@@ -166,3 +166,63 @@ test('ein systemtreuer Warenkorb trägt keinen Hinweis hinaus', async () => {
   );
   assert.equal((rechnung.offen ?? []).some((o) => /Systemtreue/.test(o)), false);
 });
+
+test('jedes Gewerk der Liste nennt seine Seite und einen Grund', async () => {
+  const { GEWERKE } = await import('../src/systemtreue.js');
+  assert.ok(GEWERKE.length >= 2);
+  for (const g of GEWERKE) {
+    assert.ok(g.gruppe, 'ein Gewerk ohne Gruppe lässt sich nicht am Katalog messen');
+    assert.match(g.seite, /^wissen\//, `${g.gruppe}: die Fundstelle fehlt`);
+    assert.ok(g.warum.length > 150, `${g.gruppe}: der Grund ist zu knapp`);
+    if (!g.messbar) {
+      assert.match(g.blockiert ?? '', /^POS-\d+$/,
+        `${g.gruppe}: „nicht bestimmbar" ohne den Artikel, an dem es scheitert, ist eine Ausrede`);
+    }
+  }
+});
+
+test('die Wissensseite jedes Gewerks behauptet die Systemtreue wirklich', async () => {
+  const { GEWERKE } = await import('../src/systemtreue.js');
+  assert.ok(GEWERKE.length >= 2, 'ohne Gewerke prüft die Schleife darunter nichts');
+  for (const g of GEWERKE) {
+    const text = readFileSync(
+      fileURLToPath(new URL(`../inhalte/${g.seite}.md`, import.meta.url)), 'utf8',
+    );
+    assert.match(text, /nicht mit denen eines anderen|nicht mischen|Mischen verlässt/,
+      `${g.seite} sagt nichts über Systemtreue — dann gehört das Gewerk nicht in diese Liste`);
+  }
+});
+
+test('der echte Katalog ergibt einen sauberen Gewerkbefund', async () => {
+  const { gewerkbefund } = await import('../src/systemtreue.js');
+  assert.deepEqual(gewerkbefund(KATALOG.artikel).meldungen, []);
+});
+
+/**
+ * Der Kern des zweiten Registers: Eine Begründung, deren Anlass verschwunden
+ * ist, bleibt sonst als Ausrede stehen.
+ */
+test('ein verschwundener Blockierer ist ein Befund', async () => {
+  const { GEWERKE, gewerkbefund } = await import('../src/systemtreue.js');
+  const unmessbar = GEWERKE.find((g) => !g.messbar);
+  const ohne = KATALOG.artikel.filter((a) => a.sku !== unmessbar.blockiert);
+  const b = gewerkbefund(ohne, [unmessbar]);
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['blockierer-verschwunden']);
+});
+
+test('„nicht bestimmbar" ohne benannten Artikel ist ein Befund', async () => {
+  const { gewerkbefund } = await import('../src/systemtreue.js');
+  const b = gewerkbefund(KATALOG.artikel, [
+    { gruppe: 'Kamin', seite: 'wissen/kaminzug-aufbau', messbar: false, warum: 'x'.repeat(160) },
+  ]);
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['unmessbar-ohne-beleg']);
+});
+
+test('ein messbares Gewerk mit einer stummen Schicht ist ein Befund', async () => {
+  const { gewerkbefund } = await import('../src/systemtreue.js');
+  const b = gewerkbefund(
+    [{ sku: 'POS-99997', gruppe: 'WDVS', bezeichnung: 'Namenloser Putzgrund 25 kg' }],
+    [{ gruppe: 'WDVS', seite: 'wissen/wdvs-systemaufbau', messbar: true, warum: 'x'.repeat(160) }],
+  );
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['messbar-und-doch-stumm']);
+});

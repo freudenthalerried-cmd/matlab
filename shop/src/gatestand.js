@@ -73,6 +73,16 @@ export function gatesAusRegister(text) {
  */
 export const SPUREN = Object.freeze([
   Object.freeze({
+    gate: 31,
+    datei: 'shop/src/systemtreue.js',
+    muster: /export\s+function\s+systembruch/,
+    warum: 'Bei Systemtreue wird gewarnt und nicht gesperrt. Die Entscheidung steckt in '
+      + 'dieser Funktion: Sie gibt einen Befund zurück, den die Kasse als Satz weiterreicht, '
+      + 'und keine Sperre. Wäre sie eine Sperre, hätte der Shop entschieden, was der Kunde '
+      + 'vorhat — und welche Zusammenstellung geprüft ist, steht in den Systemunterlagen des '
+      + 'Herstellers und nicht bei uns.',
+  }),
+  Object.freeze({
     gate: 7,
     datei: 'shop/src/kunde.js',
     muster: /export\s+function\s+uidPruefzifferStimmt/,

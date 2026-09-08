@@ -1949,6 +1949,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'Weg zum Kunden ab: Eine Regel, die niemand hinausträgt, ist keine — dasselbe Muster '
       + 'wie bei den sieben Sperren ohne grünen Fall.',
   }),
+  Object.freeze({
+    id: 'eine-ausrede-die-ihren-anlass-ueberlebt',
+    pruefer: 'pruefe-systemtreue',
+    was: 'Ein Gewerk, das „nicht bestimmbar" heißt, ohne den Artikel zu nennen, an dem es scheitert',
+    datei: 'shop/src/systemtreue.js',
+    art: 'ersetzen',
+    suchen: "    blockiert: 'POS-18110',",
+    ersetzen: "    blockiert: 'POS-00000',",
+    erwartet: /blockierer-verschwunden|neu zu stellen/,
+    warum: 'Der Kaminzug behauptet die Systemtreue in seinem ersten Satz und lässt sich am '
+      + 'Katalog nicht messen: Die Systemmarke steht in vier Schreibweisen, und der '
+      + 'Mantelsteinkleber RMRTL trägt gar keine — ausgerechnet der Dünnbettmörtel, den '
+      + 'dieselbe Seite als systemgebunden hervorhebt. Ein solcher Eintrag muss den Artikel '
+      + 'nennen, an dem er scheitert: Verschwindet der, ist die Frage neu zu stellen. Sonst '
+      + 'bliebe eine Begründung stehen, deren Anlass es nicht mehr gibt — und aus einem '
+      + 'Befund würde eine Ausrede.',
+  }),
 ]);
 
 /**

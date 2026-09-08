@@ -27,7 +27,7 @@ import { fileURLToPath } from 'node:url';
 
 import { ladeBaustoffkatalog } from '../src/baustoffkatalog.js';
 import { kundenWarenkorb } from '../src/shopkern.js';
-import { SCHICHTEN, systembruch, zuordnungsbefund } from '../src/systemtreue.js';
+import { GEWERKE, SCHICHTEN, gewerkbefund, systembruch, zuordnungsbefund } from '../src/systemtreue.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const REPO = dirname(SHOP);
@@ -50,7 +50,13 @@ const kandidaten = katalog.artikel.filter(
 );
 
 const befund = zuordnungsbefund(kandidaten);
-const meldungen = [...befund.meldungen];
+// **Und die Gewerke daneben — 8. September, abends.** Der Kaminzug behauptet
+// dieselbe Regel schärfer als das WDVS und lässt sich nicht messen: Die
+// Systemmarke steht in vier Schreibweisen, und der Dünnbettmörtel trägt gar
+// keine. Das steht als Eintrag mit Grund und mit dem Artikel, an dem es
+// scheitert — verschwindet der, ist die Frage neu zu stellen.
+const gewerke = gewerkbefund(katalog.artikel);
+const meldungen = [...befund.meldungen, ...gewerke.meldungen];
 
 // **Der grüne und der rote Fall, beide gemessen.** Ein Korb aus zwei Systemen
 // muss melden; einer aus einem darf nicht.
@@ -86,8 +92,16 @@ if (gemischt.length === 2 && !(korb.offen ?? []).some((o) => /Systemtreue/.test(
   });
 }
 
+const messbar = GEWERKE.filter((g) => g.messbar).length;
 console.log(`Systemtreue — ${befund.geprueft} Artikel eines WDVS-Aufbaus, `
-  + `${SCHICHTEN.length} geprüfte Schichten\n`);
+  + `${SCHICHTEN.length} geprüfte Schichten`);
+console.log(`${GEWERKE.length} Gewerke mit Systemtreue in ihrer Wissensseite, `
+  + `${messbar} davon am Katalog messbar\n`);
+for (const g of GEWERKE.filter((x) => !x.messbar)) {
+  console.log(`  ⃠ ${g.gruppe}: nicht bestimmbar — ${g.blockiert} trägt keine Systemmarke.`);
+  console.log('      Auflösbar mit dem Herstellerfeld aus der Artikelliste des Lieferanten.');
+}
+if (messbar < GEWERKE.length) console.log('');
 
 if (meldungen.length === 0) {
   console.log('Keine Meldung. Jede Schicht kennt ihr System, jede Ausnahme ihren Grund,');

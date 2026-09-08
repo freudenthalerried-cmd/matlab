@@ -20018,6 +20018,108 @@ function systembruchsatz(bruch) {
 
 
 
+const GEWERKE = Object.freeze([
+  Object.freeze({
+    gruppe: 'WDVS',
+    seite: 'wissen/wdvs-systemaufbau',
+    messbar: true,
+    warum: 'Neun von elf Artikeln tragen den Herstellernamen am Anfang der Bezeichnung, die '
+      + 'zwei übrigen sind ein Dübel ohne Systembindung und ein zweiter Hersteller. Die '
+      + 'Zuordnung ist eindeutig, und der Fall, vor dem die Seite warnt, ist bestellbar.',
+  }),
+  Object.freeze({
+    gruppe: 'Kamin',
+    seite: 'wissen/kaminzug-aufbau',
+    messbar: false,
+    blockiert: 'POS-18110',
+    warum: 'Die Systemmarke steht in vier Schreibweisen und an wechselnder Stelle (SIKM am '
+      + 'Anfang und am Ende, SIK, Schiedel, Absolut, „Absolut & SIH"), und der '
+      + 'Mantelsteinkleber RMRTL trägt gar keine — ausgerechnet der Dünnbettmörtel, den die '
+      + 'eigene Seite als systemgebunden hervorhebt. Ein Kamin ist ein Brandschutzbauteil; '
+      + 'über die Abnahme entscheidet der Rauchfangkehrer anhand der Systemzulassung. Eine '
+      + 'geratene Zuordnung wäre dort schlimmer als keine. Auflösbar mit dem Herstellerfeld '
+      + 'aus der Artikelliste des Lieferanten — der Brief erbittet sie bereits.',
+  }),
+]);
+
+
+
+
+
+
+
+
+
+function gewerkbefund(artikel, gewerke = GEWERKE) {
+  const meldungen = [];
+  for (const g of gewerke) {
+    const eigene = artikel.filter((a) => a.gruppe === g.gruppe);
+    if (eigene.length === 0) {
+      meldungen.push({
+        regel: 'gewerk-ohne-artikel',
+        text: `${g.gruppe} steht in der Gewerkeliste, der Katalog führt dazu keinen Artikel mehr`,
+      });
+      continue;
+    }
+    if (g.messbar) {
+      const stumm = eigene.filter((a) => einordnung(a).system === null
+        && einordnung(a).schicht !== null);
+      for (const a of stumm) {
+        meldungen.push({
+          regel: 'messbar-und-doch-stumm',
+          text: `${g.gruppe} gilt als messbar, ${a.sku} „${a.bezeichnung}" ist aber eine `
+            + 'Schicht ohne erkennbares System',
+        });
+      }
+      continue;
+    }
+    if (!g.blockiert) {
+      meldungen.push({
+        regel: 'unmessbar-ohne-beleg',
+        text: `${g.gruppe} gilt als nicht bestimmbar und nennt keinen Artikel, an dem es scheitert`,
+      });
+      continue;
+    }
+    if (!eigene.some((a) => a.sku === g.blockiert)) {
+      meldungen.push({
+        regel: 'blockierer-verschwunden',
+        text: `${g.gruppe} beruft sich auf ${g.blockiert}; den Artikel gibt es nicht mehr — `
+          + 'die Frage ist neu zu stellen',
+      });
+    }
+  }
+  return { gewerke: gewerke.length, meldungen, sauber: meldungen.length === 0 };
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

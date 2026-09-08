@@ -248,3 +248,105 @@ export function systembruchsatz(bruch) {
     + 'Wir liefern, was Sie bestellen — diese Zeile soll nur verhindern, dass es niemand '
     + 'bemerkt hat.';
 }
+/**
+ * Gewerke, deren eigene Wissensseite Systemtreue behauptet — und ob sie sich
+ * am Katalog überhaupt messen lässt.
+ *
+ * **Der Anlass, 8. September 2026, abends.** Nachdem der WDVS-Fall gefunden
+ * war, lag die Frage nahe: Gibt es ihn woanders auch? Der Kaminzug behauptet
+ * dieselbe Regel schärfer als das WDVS, und zwar im **ersten Satz** seiner
+ * Seite: *„Die Teile eines Systems sind aufeinander abgestimmt und werden
+ * nicht mit denen eines anderen gemischt."* Und einen Absatz weiter, für ein
+ * ganz bestimmtes Teil: *„mit einem **Dünnbettmörtel des Systems** versetzt,
+ * nicht mit gewöhnlichem Mauermörtel — die Fugendicke gehört zum System."*
+ *
+ * Gemessen an den neun Kaminartikeln ist das **nicht prüfbar**. Die
+ * Systemmarke steht in vier Schreibweisen und an wechselnder Stelle — `SIKM`
+ * am Anfang und am Ende, `SIK`, `Schiedel`, `Absolut`, `Absolut & SIH` —, und
+ * ein Artikel trägt gar keine: **`Mantelsteinkleber RMRTL Dünnbettmörtel`.**
+ * Ausgerechnet das Teil, das die eigene Seite als systemgebunden hervorhebt.
+ *
+ * > **Beim WDVS war die Marke eine Behelfslösung, die trug. Beim Kamin trägt
+ * > sie nicht — und das ist kein Grund, sie trotzdem zu benutzen.**
+ *
+ * Ein Kamin ist ein Brandschutzbauteil; über seine Abnahme entscheidet der
+ * Rauchfangkehrer anhand der Systemzulassung. Eine geratene Zuordnung wäre
+ * dort schlimmer als keine — deshalb steht hier „nicht bestimmbar" mit dem
+ * Grund und nicht eine Regel, die meistens stimmt (Gate 31).
+ *
+ * Auflösen lässt sich das nicht im Verzeichnis, sondern nur mit dem
+ * Herstellerfeld aus der Artikelliste des Lieferanten — der Punkt, den der
+ * Brief ohnehin schon erbittet.
+ */
+export const GEWERKE = Object.freeze([
+  Object.freeze({
+    gruppe: 'WDVS',
+    seite: 'wissen/wdvs-systemaufbau',
+    messbar: true,
+    warum: 'Neun von elf Artikeln tragen den Herstellernamen am Anfang der Bezeichnung, die '
+      + 'zwei übrigen sind ein Dübel ohne Systembindung und ein zweiter Hersteller. Die '
+      + 'Zuordnung ist eindeutig, und der Fall, vor dem die Seite warnt, ist bestellbar.',
+  }),
+  Object.freeze({
+    gruppe: 'Kamin',
+    seite: 'wissen/kaminzug-aufbau',
+    messbar: false,
+    blockiert: 'POS-18110',
+    warum: 'Die Systemmarke steht in vier Schreibweisen und an wechselnder Stelle (SIKM am '
+      + 'Anfang und am Ende, SIK, Schiedel, Absolut, „Absolut & SIH"), und der '
+      + 'Mantelsteinkleber RMRTL trägt gar keine — ausgerechnet der Dünnbettmörtel, den die '
+      + 'eigene Seite als systemgebunden hervorhebt. Ein Kamin ist ein Brandschutzbauteil; '
+      + 'über die Abnahme entscheidet der Rauchfangkehrer anhand der Systemzulassung. Eine '
+      + 'geratene Zuordnung wäre dort schlimmer als keine. Auflösbar mit dem Herstellerfeld '
+      + 'aus der Artikelliste des Lieferanten — der Brief erbittet sie bereits.',
+  }),
+]);
+
+/**
+ * Hält die Gewerkeliste gegen den Katalog — in beide Richtungen.
+ *
+ * Ein Gewerk, das als „nicht bestimmbar" geführt wird, muss den Artikel noch
+ * haben, an dem es scheitert. Verschwindet er, ist die Begründung hinfällig
+ * und die Frage neu zu stellen — sonst bliebe eine Ausrede stehen, deren
+ * Anlass es nicht mehr gibt.
+ */
+export function gewerkbefund(artikel, gewerke = GEWERKE) {
+  const meldungen = [];
+  for (const g of gewerke) {
+    const eigene = artikel.filter((a) => a.gruppe === g.gruppe);
+    if (eigene.length === 0) {
+      meldungen.push({
+        regel: 'gewerk-ohne-artikel',
+        text: `${g.gruppe} steht in der Gewerkeliste, der Katalog führt dazu keinen Artikel mehr`,
+      });
+      continue;
+    }
+    if (g.messbar) {
+      const stumm = eigene.filter((a) => einordnung(a).system === null
+        && einordnung(a).schicht !== null);
+      for (const a of stumm) {
+        meldungen.push({
+          regel: 'messbar-und-doch-stumm',
+          text: `${g.gruppe} gilt als messbar, ${a.sku} „${a.bezeichnung}" ist aber eine `
+            + 'Schicht ohne erkennbares System',
+        });
+      }
+      continue;
+    }
+    if (!g.blockiert) {
+      meldungen.push({
+        regel: 'unmessbar-ohne-beleg',
+        text: `${g.gruppe} gilt als nicht bestimmbar und nennt keinen Artikel, an dem es scheitert`,
+      });
+      continue;
+    }
+    if (!eigene.some((a) => a.sku === g.blockiert)) {
+      meldungen.push({
+        regel: 'blockierer-verschwunden',
+        text: `${g.gruppe} beruft sich auf ${g.blockiert}; den Artikel gibt es nicht mehr — `
+          + 'die Frage ist neu zu stellen',
+      });
+    }
+  }
+  return { gewerke: gewerke.length, meldungen, sauber: meldungen.length === 0 };
+}
