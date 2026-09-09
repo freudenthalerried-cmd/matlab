@@ -187,3 +187,19 @@ test('eine Herstellerseite trägt keine Aussage', () => {
       `${a.id}: hängt nur an Herstellerseiten`);
   }
 });
+
+// **Ergänzt am 9. September 2026.** Alle bisherigen Arten belegen Aussagen über
+// die Welt. Eine Aussage über das eigene Sortiment ist etwas anderes, und der
+// eigene Katalog ist dafür die maßgebliche Stelle — tragend aber nur, weil ein
+// Prüfer sie bei jedem Lauf gegen die Daten hält.
+test('der eigene Bestand trägt eine Aussage über das eigene Sortiment', () => {
+  assert.equal(QUELLENARTEN.bestand.tragend, true);
+  assert.match(QUELLENARTEN.bestand.was, /gegen die Daten gehalten/);
+});
+
+test('die Grenze des Registers nennt die neue Art und schließt Preise weiter aus', () => {
+  const register = JSON.parse(readFileSync(
+    new URL('../inhalte/quellen.json', import.meta.url), 'utf8'));
+  assert.match(register._grenze, /Preise und Einkaufskonditionen stehen NICHT hier/);
+  assert.match(register._grenze, /Für Preise und Konditionen gilt sie nicht/);
+});

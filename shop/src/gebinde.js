@@ -455,3 +455,50 @@ export function kilotafel(artikel = []) {
   zeilen.sort((x, y) => x.jeKgNetto - y.jeKgNetto);
   return { zeilen, ohne, gesamt: artikel.length };
 }
+
+/**
+ * Nennt eine Inhaltsseite eine Paketgröße, die es im Sortiment gibt?
+ *
+ * **Der Anlass, 9. September 2026.** `xps-oder-eps.md` gab einen
+ * Bestellhinweis: *„Die Paketgröße hängt an der Stärke — dünne Platten kommen
+ * in mehr Quadratmetern je Paket als dicke."* Gegen `mengenschritt` gehalten,
+ * die Funktion, mit der die Kasse rechnet:
+ *
+ * | Reihe | Stärken | Schritt |
+ * |---|---|---|
+ * | Fassaden-EPS | 2, 3, 5 cm | **0,5 m²** |
+ * | XPS | 30, 50, 80, 100 mm | **0,75 m²** |
+ *
+ * Die Paketgröße hängt an der **Reihe**, nicht an der Stärke — und die dünnste
+ * Platte hat das kleinere Paket, nicht das größere. Beide Hälften des Satzes
+ * waren falsch, auf der Seite, die ein Kunde beim Plattenvergleich liest.
+ *
+ * > **Eine Faustregel aus der Branche ist keine Aussage über dieses
+ * > Sortiment.**
+ *
+ * Geprüft wird deshalb nur, was nachrechenbar ist: **Jede Quadratmeterzahl,
+ * die eine Inhaltsseite „je Paket" nennt, muss ein tatsächlicher Mengenschritt
+ * im Katalog sein.** Ob ein Satz daneben eine falsche Regel behauptet, kann
+ * diese Regel nicht sehen — sie hält die Zahlen, und die Zahlen tragen den
+ * Satz.
+ *
+ * @param {{datei: string, text: string}[]} seiten
+ * @param {{gruppe: string}[]} artikel
+ */
+export function paketgroessenbefund(seiten, artikel) {
+  const schritte = new Set(artikel.map((a) => mengenschritt(a)).filter((s) => Number.isFinite(s)));
+  const meldungen = [];
+  for (const s of seiten) {
+    for (const t of s.text.matchAll(/(\d+(?:,\d+)?)\s*m²\s*je\s*Paket/gi)) {
+      const wert = Number(t[1].replace(',', '.'));
+      if (schritte.has(wert)) continue;
+      meldungen.push({
+        regel: 'paketgroesse-ohne-artikel',
+        datei: s.datei,
+        text: `${s.datei} nennt ${t[1]} m² je Paket — kein Artikel im Katalog hat diesen `
+          + 'Mengenschritt; die Kasse rechnet mit einem anderen',
+      });
+    }
+  }
+  return { geprueft: seiten.length, schritte: schritte.size, meldungen, sauber: meldungen.length === 0 };
+}

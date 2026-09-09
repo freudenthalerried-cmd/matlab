@@ -56,8 +56,12 @@ Baustelle:
 - **Sockelprofile** und der Übergang zur Perimeterdämmung
 - **Rondellen**, wenn die Dübel versenkt gesetzt werden
 
-Deshalb liefern wir diese Gruppe als Paket und nicht als Einzelartikel. Der
-Grund dahinter: [Was fehlt, hält die Baustelle auf](was-fehlt-haelt-die-baustelle-auf).
+Deshalb stellen wir diese Gruppe als **Systemliste** dar und nicht als lose
+Einzelteile: Die Liste [Fassade 100 m²](../system/fassade-100-qm) nennt jede
+Schicht mitsamt dem Zubehör, das sonst fehlt, und legt sie in einem Zug in den
+Warenkorb. **Einzeln bestellbar bleibt trotzdem jede Position** — die Liste
+nimmt niemandem die Entscheidung ab, sie nimmt ihm das Vergessen ab. Der Grund
+dahinter: [Was fehlt, hält die Baustelle auf](was-fehlt-haelt-die-baustelle-auf).
 
 ## Systemtreue — warum man nicht mischen sollte
 

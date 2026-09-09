@@ -1037,6 +1037,24 @@ export const GEGENPROBEN = Object.freeze([
       + 'eingetragen" und prüfte eine von zehn. Diese Mutation schreibt die Zahl wieder hinein.',
   }),
   Object.freeze({
+    id: 'die-paketgroesse-die-es-nicht-gibt',
+    pruefer: 'pruefe-zahlen',
+    was: 'Eine Paketgröße auf einer Inhaltsseite, die kein Artikel im Katalog hat',
+    datei: 'shop/inhalte/wissen/xps-oder-eps.md',
+    art: 'ersetzen',
+    suchen: 'Fassaden-EPS kommt in 0,5 m² je Paket',
+    ersetzen: 'Fassaden-EPS kommt in 0,6 m² je Paket',
+    erwartet: /paketgroesse-ohne-artikel/,
+    warum: 'Der Zustand vom 9. September, morgens: Die Seite gab den Bestellhinweis „die '
+      + 'Paketgröße hängt an der Stärke — dünne Platten kommen in mehr Quadratmetern je Paket '
+      + 'als dicke". Gegen `mengenschritt` gehalten, die Funktion, mit der die Kasse auf volle '
+      + 'Pakete aufrechnet, ist beides falsch: EPS hat 0,5 m² bei 2 wie bei 5 cm, XPS 0,75 m² '
+      + 'bei 30 wie bei 100 mm — die Größe hängt an der Reihe, und die dünnste Platte hat das '
+      + 'kleinere Paket. Es ist die Seite, die ein Kunde beim Plattenvergleich liest. Die '
+      + 'Mutation verschiebt die Zahl auf einen Wert, den kein Artikel hat, und verlangt, dass '
+      + 'der Prüfer ihn nennt.',
+  }),
+  Object.freeze({
     id: 'die-gruppenseite-verspricht-eine-palette',
     pruefer: 'pruefe-sperrgut',
     was: 'Eine Gruppenseite, die eine Palette zusagt, wo keiner ihrer Artikel palettiert ist',

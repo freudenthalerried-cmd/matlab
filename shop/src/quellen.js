@@ -32,6 +32,22 @@ export const QUELLENARTEN = Object.freeze({
   behoerde: { tragend: true, was: 'Behörde, Kammer oder Gesetzestext' },
   fachbuch: { tragend: true, was: 'Fachliteratur mit Auflage' },
   eigen: { tragend: true, was: 'eigene Berufserfahrung, als solche gekennzeichnet' },
+  /**
+   * **Aufgenommen am 9. September 2026.** Alle Arten darüber belegen Aussagen
+   * über die **Welt** — Normen, Merkblätter, Erfahrung. Eine Aussage über das
+   * **eigene Sortiment** ist etwas anderes: „Fassaden-EPS kommt in 0,5 m² je
+   * Paket" ist keine Behauptung über die Branche, sondern über diesen Katalog,
+   * und der Katalog ist dafür die maßgebliche Stelle.
+   *
+   * > **Tragend ist diese Art nicht, weil wir es sagen, sondern weil ein
+   * > Prüfer sie bei jedem Lauf gegen die Daten hält.** Ohne diese Prüfung
+   * > wäre sie die schwächste Quelle von allen, nicht die stärkste.
+   *
+   * Sie gilt nur für Aussagen über den eigenen Bestand. Preise und
+   * Einkaufskonditionen bleiben ausgeschlossen — das sagt `_grenze` des
+   * Registers seit dem 27. August, und daran ändert sich nichts.
+   */
+  bestand: { tragend: true, was: 'der eigene Bestand, maschinell gegen die Daten gehalten' },
   video: { tragend: false, was: 'Video — Hinweis, keine Fundstelle' },
   forum: { tragend: false, was: 'Forum oder Kommentar' },
   haendler: { tragend: false, was: 'Werbeaussage eines Händlers' },

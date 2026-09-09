@@ -1,6 +1,6 @@
 {
   "_hinweis": "Das Quellenregister des Bestands — keine Vorlage. Verzeichnet sind die Fundstellen, auf die sich die Inhaltsseiten berufen, und die Aussagen, die daran hängen. Geprüft mit `npm run pruefe-quellen`. Die Vorlage mit erfundenen Quellen liegt weiterhin in beispiel/recherche-beispiel.json und wird mit --probe aufgerufen.",
-  "_grenze": "Preise und Einkaufskonditionen stehen NICHT hier. Sie tragen ihren Preisstand am Artikel und stammen aus Lieferantenbelegen; eine Rechnung ist kein Beleg im Sinn dieses Registers, sondern ein Geschäftsvorfall.",
+  "_grenze": "Preise und Einkaufskonditionen stehen NICHT hier. Sie tragen ihren Preisstand am Artikel und stammen aus Lieferantenbelegen; eine Rechnung ist kein Beleg im Sinn dieses Registers, sondern ein Geschäftsvorfall. Seit dem 9. September gibt es die Art `bestand` für Aussagen über das eigene Sortiment (Paketgrößen, Mengenschritte): Sie tragen nicht, weil wir sie sagen, sondern weil ein Prüfer sie bei jedem Lauf gegen den Katalog hält. Für Preise und Konditionen gilt sie nicht.",
   "thema": "Fundstellen der Inhaltsseiten",
   "stand": "2026-08-27",
   "quellen": [
@@ -80,6 +80,14 @@
       "url": "https://www.soudal.com/",
       "stand": "2026-08",
       "notiz": "Wie Synthesa: verlinkt, trägt keine Aussage."
+    },
+    {
+      "id": "katalog-mengenschritt",
+      "art": "bestand",
+      "titel": "Der eigene Katalog, Mengenschritt je Artikel (`mengenschritt` in src/gebinde.js)",
+      "urheber": "Bauversand",
+      "stand": "2026-09-09",
+      "notiz": "Keine fremde Fundstelle, sondern der eigene Bestand: Die Paketgröße steht in der Artikelbezeichnung des Lieferanten und wird von `mengenschritt` daraus gelesen — dieselbe Zahl, mit der die Kasse auf volle Pakete aufrechnet. Belegt ist damit, was dieser Shop verkauft, nicht was die Branche üblicherweise liefert."
     }
   ],
   "aussagen": [
@@ -133,6 +141,12 @@
       "text": "Die Begrenzung auf Einzelbögen bis 45° entfällt erst bei einem Bogenradius ab 500 mm.",
       "quellen": ["oenorm-b2501"],
       "notiz": "Abschnitt 5.7.1. Gehört zu a-kanal-bogen und war bis zum 07.09. nicht eingetragen — dieselbe Fundstelle, halb verzeichnet."
+},
+    {
+      "id": "a-paketgroesse-daemmung",
+      "text": "Fassaden-EPS kommt in 0,5 m² je Paket, XPS in 0,75 m² — die Paketgröße hängt an der Reihe und nicht an der Stärke.",
+      "quellen": ["katalog-mengenschritt"],
+      "notiz": "Steht auf wissen/xps-oder-eps.md. Bis zum 9. September stand dort das Gegenteil („die Paketgröße hängt an der Stärke, dünne Platten kommen in mehr Quadratmetern je Paket\") — eine Faustregel der Branche, die dieses Sortiment nicht hergibt: 0,5 m² bei EPS von 2 bis 5 cm, 0,75 m² bei XPS von 30 bis 100 mm. Die Zahlen hält `paketgroessenbefund` gegen den Katalog."
     }
   ]
 }

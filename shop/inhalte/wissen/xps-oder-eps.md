@@ -58,9 +58,14 @@ Stärke die richtige ist, ergibt sich aus dem Wärmeschutznachweis des
 Bauvorhabens — nicht aus dem Preis und nicht aus dem, was vorrätig ist.
 
 **Ein praktischer Hinweis zur Bestellung:** Dämmplatten werden nach Fläche
-verkauft, aber in Paketen geliefert. Die Paketgröße hängt an der Stärke —
-dünne Platten kommen in mehr Quadratmetern je Paket als dicke. Bestellen Sie
-in Paketeinheiten, sonst bleibt ein Rest übrig, der niemandem nützt.
+verkauft, aber in Paketen geliefert, und die Kasse rechnet auf volle Pakete
+auf. In diesem Sortiment hängt die Paketgröße **nicht** an der Stärke, sondern
+an der Reihe: Fassaden-EPS kommt in 0,5 m² je Paket — bei 2 cm wie bei 5 cm —,
+XPS in 0,75 m², von 30 bis 100 mm (Quelle: unser Katalog, Stand 2026-09-09;
+die Paketgröße steht in der Artikelbezeichnung des Lieferanten und ist die
+Menge, auf die die Kasse aufrechnet). Die Faustregel, die man sonst hört, dünne
+Platten kämen in mehr Quadratmetern je Paket, trifft auf diese Artikel nicht
+zu; wer danach bestellt, rechnet an unserem Sortiment vorbei.
 
 ## Was diese Seite nicht ist
 

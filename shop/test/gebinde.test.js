@@ -4,7 +4,7 @@ import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { EINHEITEN, einheitText } from '../src/format.js';
-import { gebindeKg, gebindeM2, gebindezahl, preisJeKilo, kilotafel, mengenschritt, GROESSTES_GEBINDE_KG, gebindeLfm, GEBINDELESER, rollenmass, packungsgewichtKg, einheitenbefund, STUECKEINHEITEN } from '../src/gebinde.js';
+import { gebindeKg, gebindeM2, gebindezahl, preisJeKilo, kilotafel, mengenschritt, GROESSTES_GEBINDE_KG, gebindeLfm, GEBINDELESER, rollenmass, packungsgewichtKg, einheitenbefund, STUECKEINHEITEN, paketgroessenbefund } from '../src/gebinde.js';
 
 const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
 
@@ -435,4 +435,50 @@ test('der echte Katalog kennt jede seiner Einheiten', () => {
   const b = einheitenbefund(katalog.artikel);
   assert.deepEqual(b.meldungen, [], b.meldungen.map((m) => m.text).join('\n'));
   assert.ok(b.einheiten >= 8, `nur ${b.einheiten} Einheiten — der Katalog prüfte zu wenig`);
+});
+
+// **Ergänzt am 9. September 2026.** `xps-oder-eps.md` gab den Bestellhinweis
+// „die Paketgröße hängt an der Stärke — dünne Platten kommen in mehr
+// Quadratmetern je Paket als dicke". Gegen `mengenschritt` gehalten: EPS 0,5 m²
+// bei 2 wie bei 5 cm, XPS 0,75 m² bei 30 wie bei 100 mm. Die Größe hängt an der
+// Reihe, nicht an der Stärke, und die dünnste Platte hat das kleinere Paket.
+const platte = (bezeichnung) => ({ bezeichnung, einheit: 'M2', gruppe: 'Dämmung' });
+
+test('eine genannte Paketgröße, die es im Katalog gibt, meldet nichts', () => {
+  const b = paketgroessenbefund(
+    [{ datei: 'x.md', text: 'EPS kommt in 0,5 m² je Paket.' }],
+    [platte('Fassaden EPS 2 cm 0,5 m2')],
+  );
+  assert.deepEqual(b.meldungen, []);
+  assert.equal(b.schritte, 1, 'ohne Schritte prüfte der Vergleich gegen nichts');
+});
+
+test('eine Paketgröße, die kein Artikel hat, ist ein Befund', () => {
+  const b = paketgroessenbefund(
+    [{ datei: 'x.md', text: 'EPS kommt in 0,6 m² je Paket.' }],
+    [platte('Fassaden EPS 2 cm 0,5 m2')],
+  );
+  assert.equal(b.meldungen.length, 1);
+  assert.equal(b.meldungen[0].regel, 'paketgroesse-ohne-artikel');
+  assert.match(b.meldungen[0].text, /0,6 m² je Paket/);
+});
+
+test('die echten Dämmplatten tragen zwei Schritte, nicht einen je Stärke', () => {
+  // Der Befund selbst, als Testfall: Wäre die Paketgröße von der Stärke
+  // abhängig, gäbe es so viele Schritte wie Stärken.
+  const artikel = [
+    platte('Fassaden EPS 2 cm 0,5 m2'), platte('Fassaden EPS 5 cm 0,5 m2'),
+    platte('XPS glatt SF 30 mm 0,75 m2'), platte('XPS glatt SF 100 mm 0,75 m2'),
+  ];
+  const b = paketgroessenbefund([{ datei: 'x.md', text: 'Kein Wort dazu.' }], artikel);
+  assert.equal(b.schritte, 2, 'vier Stärken, zwei Paketgrößen — die Reihe entscheidet');
+});
+
+test('eine Seite ohne Paketgröße wird gezählt und nicht beurteilt', () => {
+  const b = paketgroessenbefund(
+    [{ datei: 'a.md', text: 'Nichts.' }, { datei: 'b.md', text: 'Auch nichts.' }],
+    [platte('Fassaden EPS 2 cm 0,5 m2')],
+  );
+  assert.equal(b.geprueft, 2);
+  assert.equal(b.sauber, true);
 });

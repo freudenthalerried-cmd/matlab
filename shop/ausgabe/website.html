@@ -3298,7 +3298,7 @@ Warengruppen in der Kopfleiste.</p></noscript>
 <h2>Was am häufigsten fehlt</h2>
 <p>Nicht die großen Positionen, sondern das Zubehör — und dann steht die Baustelle:</p>
 <ul><li><strong>Kantenschutzprofile</strong> für alle Außenecken und Laibungen</li><li><strong>Gewebeanschlussleisten</strong> an Fenstern und Türen, damit der Putz nicht am Rahmen reißt</li><li><strong>Sockelprofile</strong> und der Übergang zur Perimeterdämmung</li><li><strong>Rondellen</strong>, wenn die Dübel versenkt gesetzt werden</li></ul>
-<p>Deshalb liefern wir diese Gruppe als Paket und nicht als Einzelartikel. Der Grund dahinter: <a href="#wissen/was-fehlt-haelt-die-baustelle-auf">Was fehlt, hält die Baustelle auf</a>.</p>
+<p>Deshalb stellen wir diese Gruppe als <strong>Systemliste</strong> dar und nicht als lose Einzelteile: Die Liste <a href="#system/fassade-100-qm">Fassade 100 m²</a> nennt jede Schicht mitsamt dem Zubehör, das sonst fehlt, und legt sie in einem Zug in den Warenkorb. <strong>Einzeln bestellbar bleibt trotzdem jede Position</strong> — die Liste nimmt niemandem die Entscheidung ab, sie nimmt ihm das Vergessen ab. Der Grund dahinter: <a href="#wissen/was-fehlt-haelt-die-baustelle-auf">Was fehlt, hält die Baustelle auf</a>.</p>
 <h2>Systemtreue — warum man nicht mischen sollte</h2>
 <p>Ein WDVS wird als Kombination geprüft, nicht Bestandteil für Bestandteil. Die Prüfgrundlage ist die europäische Zulassungsleitlinie <strong>ETAG 004</strong> für außenseitige Wärmedämm-Verbundsysteme mit Putzschicht; die österreichischen Anwendungskriterien stehen in <strong>ÖNORM B 6400, Ausgabe 2004-08-01</strong> (<em>Außenwand-Wärmedämm-Verbundsysteme — Anwendung</em>). Wer den Klebemörtel des einen Herstellers mit dem Gewebe eines anderen kombiniert, verlässt die geprüfte Zusammenstellung. Welche Zusammenstellung geprüft ist, steht in den Systemunterlagen des Herstellers — wir geben sie hier nicht wieder, weil sie sich je System unterscheidet.</p>
 <p>Zur Ausgabe: Die Fundstelle bezieht sich auf die Fassung von 2004, die dem Betrieb vorliegt. Ob inzwischen eine neuere Ausgabe gilt, ist beim Österreichischen Normungsinstitut zu prüfen — eine Norm ohne Ausgabejahr ist wertlos, eine mit altem Ausgabejahr ist wenigstens nachprüfbar. Ob das technisch funktioniert, ist eine Frage; ob es im Schadensfall trägt, eine andere — und die zweite entscheidet der Sachverständige, nicht der Verarbeiter.</p>
@@ -3579,7 +3579,7 @@ Warengruppen in der Kopfleiste.</p></noscript>
 <p>Was dann passiert, ist kein Einsturz, sondern etwas Unauffälligeres: Die Platte nimmt Feuchte auf, die Dämmwirkung fällt, der Putz bekommt Feuchtestellen, und im Frost arbeitet die Fläche. Sichtbar wird das in der zweiten oder dritten Heizperiode — dann, wenn niemand mehr an die Plattenwahl denkt.</p>
 <h2>Die Stärken, die wir führen</h2>
 <p>XPS in mehreren Stärken, EPS als Fassadenplatte in dünneren Stärken. Welche Stärke die richtige ist, ergibt sich aus dem Wärmeschutznachweis des Bauvorhabens — nicht aus dem Preis und nicht aus dem, was vorrätig ist.</p>
-<p><strong>Ein praktischer Hinweis zur Bestellung:</strong> Dämmplatten werden nach Fläche verkauft, aber in Paketen geliefert. Die Paketgröße hängt an der Stärke — dünne Platten kommen in mehr Quadratmetern je Paket als dicke. Bestellen Sie in Paketeinheiten, sonst bleibt ein Rest übrig, der niemandem nützt.</p>
+<p><strong>Ein praktischer Hinweis zur Bestellung:</strong> Dämmplatten werden nach Fläche verkauft, aber in Paketen geliefert, und die Kasse rechnet auf volle Pakete auf. In diesem Sortiment hängt die Paketgröße <strong>nicht</strong> an der Stärke, sondern an der Reihe: Fassaden-EPS kommt in 0,5 m² je Paket — bei 2 cm wie bei 5 cm —, XPS in 0,75 m², von 30 bis 100 mm (Quelle: unser Katalog, Stand 2026-09-09; die Paketgröße steht in der Artikelbezeichnung des Lieferanten und ist die Menge, auf die die Kasse aufrechnet). Die Faustregel, die man sonst hört, dünne Platten kämen in mehr Quadratmetern je Paket, trifft auf diese Artikel nicht zu; wer danach bestellt, rechnet an unserem Sortiment vorbei.</p>
 <h2>Was diese Seite nicht ist</h2>
 <p>Keine Bemessung. Welche Dämmstärke und welche Druckfestigkeit ein konkretes Bauteil braucht, ergibt sich aus der Planung und dem Wärmeschutznachweis. Wir liefern die Platte, die dort steht.</p><!--/quelltext-->
 <h2>9 Artikel in dieser Gruppe</h2>
@@ -19647,6 +19647,53 @@ function kilotafel(artikel = []) {
   }
   zeilen.sort((x, y) => x.jeKgNetto - y.jeKgNetto);
   return { zeilen, ohne, gesamt: artikel.length };
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function paketgroessenbefund(seiten, artikel) {
+  const schritte = new Set(artikel.map((a) => mengenschritt(a)).filter((s) => Number.isFinite(s)));
+  const meldungen = [];
+  for (const s of seiten) {
+    for (const t of s.text.matchAll(/(\d+(?:,\d+)?)\s*m²\s*je\s*Paket/gi)) {
+      const wert = Number(t[1].replace(',', '.'));
+      if (schritte.has(wert)) continue;
+      meldungen.push({
+        regel: 'paketgroesse-ohne-artikel',
+        datei: s.datei,
+        text: `${s.datei} nennt ${t[1]} m² je Paket — kein Artikel im Katalog hat diesen `
+          + 'Mengenschritt; die Kasse rechnet mit einem anderen',
+      });
+    }
+  }
+  return { geprueft: seiten.length, schritte: schritte.size, meldungen, sauber: meldungen.length === 0 };
 }
 
 

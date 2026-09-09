@@ -1490,6 +1490,53 @@ function kilotafel(artikel = []) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function paketgroessenbefund(seiten, artikel) {
+  const schritte = new Set(artikel.map((a) => mengenschritt(a)).filter((s) => Number.isFinite(s)));
+  const meldungen = [];
+  for (const s of seiten) {
+    for (const t of s.text.matchAll(/(\d+(?:,\d+)?)\s*m²\s*je\s*Paket/gi)) {
+      const wert = Number(t[1].replace(',', '.'));
+      if (schritte.has(wert)) continue;
+      meldungen.push({
+        regel: 'paketgroesse-ohne-artikel',
+        datei: s.datei,
+        text: `${s.datei} nennt ${t[1]} m² je Paket — kein Artikel im Katalog hat diesen `
+          + 'Mengenschritt; die Kasse rechnet mit einem anderen',
+      });
+    }
+  }
+  return { geprueft: seiten.length, schritte: schritte.size, meldungen, sauber: meldungen.length === 0 };
+}
+
+
+
+
+
+
+
+
+
+
+
+
 function ladeKatalog(daten, zielmarge) {
   const lieferantenById = new Map(daten.lieferanten.lieferanten.map((l) => [l.id, l]));
 
