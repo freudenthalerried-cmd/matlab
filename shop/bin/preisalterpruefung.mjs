@@ -13,10 +13,11 @@
 
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
 import { preisalterBefund, GRENZE_TAGE, GRENZE_HERKUNFT } from '../src/preisalter.js';
-import { gebotstragendeSkus } from '../src/preisdeckung.js';
+import { gebotstragendeSkus, rettungswegbefund } from '../src/preisdeckung.js';
 import { baueSuchindex, suche } from '../src/shopkern.js';
 import { WARENKOERBE } from './kampagne.mjs';
 
@@ -121,12 +122,24 @@ if (e.verdacht.length) {
   }
 }
 
-if (e.sauber) {
+
+/**
+ * **Ergänzt am 9. September 2026.** Der Rettungsweg der Preisdatei gehört
+ * hierher, wo ohnehin über die Einkaufspreise gewacht wird: Ohne sie gibt es
+ * keinen Preis, dessen Alter zu messen wäre.
+ */
+const versioniert = (pfad) => spawnSync('git', ['ls-files', '--error-unmatch', join('shop', pfad)],
+  { cwd: join(WURZEL, '..'), encoding: 'utf8' }).status === 0;
+const r = rettungswegbefund((pfad) => existsSync(join(WURZEL, pfad)), versioniert);
+console.log(`  Rettungsweg der Preisdatei: ${r.geprueft} Datei(en) auf Vorhandensein und Versionierung`);
+
+if (e.sauber && r.sauber) {
   console.log('\nKeine Meldung — kein Gebot ruht auf einem Preis über der Grenze.');
   console.log('Ein alter Einkaufspreis ist die Marge von gestern, ausgewiesen als die von heute.');
   process.exit(0);
 }
 
+for (const m of r.meldungen) console.log(`  ✗ ${m.text}  [${m.regel}]`);
 console.log(`\n${e.fehler.length} Meldung(en) — hier wird auf eine alte Marge Geld gesetzt:\n`);
 for (const f of e.fehler) {
   console.log(`  ✗ ${f.sku}  ${f.gruppe}  ${f.bezeichnung.slice(0, 52)}`);

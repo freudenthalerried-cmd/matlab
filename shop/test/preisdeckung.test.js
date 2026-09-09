@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 
-import { gebotstragendeSkus, preisdeckungsbefund } from '../src/preisdeckung.js';
+import { gebotstragendeSkus, preisdeckungsbefund, RETTUNGSWEG, rettungswegbefund } from '../src/preisdeckung.js';
 
 const treffer = {
   Fassadendübel: [{ sku: 'POS-1' }, { sku: 'POS-2' }],
@@ -70,4 +71,50 @@ test('Gebotstragend ist die Vereinigung aus Korb und Wort', () => {
   // Ohne Keywords bleibt der Korb, ohne Korb bleiben die Wörter.
   assert.deepEqual([...gebotstragendeSkus({ korbSkus: ['POS-9'], finde })], ['POS-9']);
   assert.deepEqual([...gebotstragendeSkus({ keywords: ['WDVS Kleber'], finde })], ['POS-2']);
+});
+
+// **Ergänzt am 9. September 2026, nachmittags.** Der Behälter wurde neu
+// gestartet — genau das hat am 8. September die Preisdatei gekostet. Der
+// Rettungsweg (Rückrechnung aus der gebauten Ausgabe) wurde an diesem Tag zum
+// ersten Mal nachgeprüft statt angenommen: 46 von 46 Einkaufspreisen auf den
+// Cent identisch. Er hängt daran, dass `ausgabe/site/shop.js` versioniert ist
+// — und gebaute Ausgaben versioniert man normalerweise nicht.
+test('vorhanden und versioniert meldet nichts', () => {
+  const b = rettungswegbefund(() => true, () => true);
+  assert.deepEqual(b.meldungen, []);
+  assert.equal(b.geprueft, RETTUNGSWEG.length);
+  assert.ok(b.geprueft > 0, 'ein leerer Rettungsweg prüfte nichts');
+});
+
+test('eine fehlende Datei ist ein Befund', () => {
+  const b = rettungswegbefund(() => false, () => true);
+  assert.equal(b.meldungen.length, RETTUNGSWEG.length);
+  assert.equal(b.meldungen[0].regel, 'rettungsweg-fehlt');
+});
+
+test('vorhanden, aber nicht versioniert ist genauso ein Befund', () => {
+  // Der eigentliche Punkt: Wer `ausgabe/` in .gitignore schreibt, tut das
+  // Übliche und kappt den einzigen Weg zurück. Niemand erführe es bis zum
+  // nächsten Verlust — dann ist es zu spät.
+  const b = rettungswegbefund(() => true, () => false);
+  assert.equal(b.meldungen.length, RETTUNGSWEG.length);
+  assert.equal(b.meldungen[0].regel, 'rettungsweg-nicht-versioniert');
+  assert.match(b.meldungen[0].text, /nächsten Neuaufsetzen/);
+});
+
+test('das Register nennt genau die Datei, aus der zurückgerechnet wird', () => {
+  // Zwei Listen für dieselbe Sache wären eine, die niemand pflegt: Steht hier
+  // eine Datei, die `preiswiederherstellung.mjs` nicht liest, führt das
+  // Register etwas, das den Rettungsweg gar nicht trägt.
+  const werkzeug = readFileSync(
+    new URL('../bin/preiswiederherstellung.mjs', import.meta.url), 'utf8');
+  // Ohne diese Zusicherung liefe die Schleife bei leerem Register durch und
+  // prüfte nichts — `pruefe-tests` hat genau das hier gefunden, im Haken,
+  // bevor der Commit hinausging.
+  assert.ok(RETTUNGSWEG.length > 0, 'ein leeres Register prüfte nichts');
+  for (const pfad of RETTUNGSWEG) {
+    const teile = pfad.split('/');
+    assert.ok(werkzeug.includes(teile[teile.length - 1]),
+      `${pfad} steht im Register, wird aber vom Rettungswerkzeug nicht gelesen`);
+  }
 });

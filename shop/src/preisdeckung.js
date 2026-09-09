@@ -79,3 +79,66 @@ export function gebotstragendeSkus({ korbSkus = [], keywords = [], finde }) {
   }
   return skus;
 }
+
+/**
+ * Steht der Rettungsweg der Preisdatei noch offen?
+ *
+ * **Der Anlass, 9. September 2026, nachmittags.** Der Behälter wurde neu
+ * gestartet. Am 8. September hat genau das die Preisdatei gekostet: Sie steht
+ * zu Recht in `.gitignore` — sie trägt die Einkaufskonditionen — und lag damit
+ * in **einer** Kopie, in einem Verzeichnis, das jederzeit neu aufgesetzt wird.
+ *
+ * Zurückgeholt wurde sie damals aus der **gebauten Ausgabe**: `shop.js` trägt
+ * die Verkaufspreise, und mit der Zielmarge lässt sich der Einkauf
+ * zurückrechnen. Heute nachgeprüft, nicht angenommen — Datei beiseite,
+ * `npm run preise-wiederherstellen`, verglichen: **46 von 46 Einkaufspreisen
+ * auf den Cent identisch.** Danach das Original byteweise zurückgelegt.
+ *
+ * > **Der Rettungsweg hängt daran, dass die gebaute Ausgabe versioniert ist —
+ * > und gebaute Ausgaben versioniert man normalerweise nicht.**
+ *
+ * Wer `ausgabe/` eines Tages in `.gitignore` schreibt, tut das Naheliegende
+ * und Übliche. Er kappt damit den einzigen Weg zurück, und niemand erführe es
+ * bis zum nächsten Verlust — dann ist es zu spät, denn der Weg wird genau in
+ * dem Moment gebraucht, in dem er fehlt.
+ *
+ * Geprüft wird deshalb beides: dass die Datei existiert **und** dass sie
+ * versioniert ist. Eine vorhandene, aber ungetrackte Datei ist kein
+ * Rettungsweg, sondern dieselbe eine Kopie wie die Preisdatei selbst.
+ *
+ * @param {(pfad: string) => boolean} gibtEs
+ * @param {(pfad: string) => boolean} versioniert
+ */
+export function rettungswegbefund(gibtEs, versioniert) {
+  const meldungen = [];
+  for (const pfad of RETTUNGSWEG) {
+    if (!gibtEs(pfad)) {
+      meldungen.push({
+        regel: 'rettungsweg-fehlt',
+        pfad,
+        text: `${pfad} gibt es nicht — aus ihr rechnet npm run preise-wiederherstellen die `
+          + 'Einkaufspreise zurück, wenn die Preisdatei verloren geht',
+      });
+      continue;
+    }
+    if (!versioniert(pfad)) {
+      meldungen.push({
+        regel: 'rettungsweg-nicht-versioniert',
+        pfad,
+        text: `${pfad} liegt da, ist aber nicht versioniert — beim nächsten Neuaufsetzen des `
+          + 'Behälters ist sie weg, und mit ihr der einzige Weg zurück zu den Einkaufspreisen',
+      });
+    }
+  }
+  return { geprueft: RETTUNGSWEG.length, meldungen, sauber: meldungen.length === 0 };
+}
+
+/**
+ * Die Dateien, aus denen sich die Preisdatei zurückrechnen lässt.
+ *
+ * Nur `shop.js` — sie trägt die Verkaufspreise aller 46 Artikel im
+ * Shopdatensatz. Die Artikelseiten tragen dieselben Zahlen, aber einzeln; wer
+ * hier eine zweite Datei einträgt, muss `bin/preiswiederherstellung.mjs`
+ * mitnehmen, sonst führt das Register etwas, das der Rettungsweg nicht liest.
+ */
+export const RETTUNGSWEG = Object.freeze(['ausgabe/site/shop.js']);
