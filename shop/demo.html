@@ -4082,18 +4082,29 @@ const ZAHLUNGSBEDINGUNGEN = Object.freeze({
     {
       id: 'eps',
       vorkasse: true,
+      
+      
+      
+      
+      
+      
+      abStart: true,
       grund: 'einziger Weg, der alle vier Anforderungen erfüllt; +6,50 € je Bestellung nach Gebühr und Skonto',
       kunde: 'Der empfohlene Weg: Freigabe im eigenen Bankkonto, Zahlung sofort bestätigt, keine Kartendaten im Spiel.',
     },
     {
       id: 'vorkasse',
       vorkasse: true,
+      abStart: true,
       grund: 'billigster Weg und Gate-21-fest; meldet den Eingang aber nicht maschinell',
       kunde: 'Überweisung nach Auftragsbestätigung. Die Ware geht auf den Weg, sobald der Betrag eingelangt ist — das dauert je nach Bank ein bis zwei Werktage länger.',
     },
     {
       id: 'karte-stripe',
       vorkasse: true,
+      
+      
+      abStart: false,
       grund: 'je Bestellung noch positiv, auf den Monat über der 10-%-Grenze — angeboten, weil er Bestellungen ermöglicht, nicht weil er sich rechnet',
       kunde: 'Für Bestellungen, die aus der Firmenkarte laufen sollen. Zahlung sofort bestätigt.',
     },
@@ -5544,6 +5555,65 @@ function vergleiche(lage) {
     b2bUeblich: z.b2bUeblich,
     anmerkung: z.anmerkung,
   })).sort((a, b) => a.gebuehrProMonat - b.gebuehrProMonat);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const BRAUCHT_ANBIETER = Object.freeze({
+  vorkasse: Object.freeze({
+    braucht: false,
+    warum: 'Überweisung auf das eigene Konto; dazwischen steht niemand. Was sie braucht, '
+      + 'ist die Bankverbindung — und die ist ein eigener Punkt der Bereitschaftsliste.',
+  }),
+  eps: Object.freeze({
+    braucht: true,
+    warum: 'Freigabe im Bankkonto des Kunden, Einzug und Weiterleitung über einen Dritten. '
+      + 'Ohne Vertrag mit ihm gibt es den Weg nicht.',
+  }),
+  'karte-stripe': Object.freeze({
+    braucht: true,
+    warum: 'Kartenakzeptanz ist ohne Acquirer nicht zu haben.',
+  }),
+});
+
+
+
+
+
+
+
+
+
+function anbieterbedarf(bedingungen) {
+  const mitAnbieter = [];
+  const ohneAnbieter = [];
+  const unbekannt = [];
+  for (const w of bedingungen.angeboten) {
+    const eintrag = BRAUCHT_ANBIETER[w.id];
+    if (!eintrag) { unbekannt.push(w.id); continue; }
+    (eintrag.braucht ? mitAnbieter : ohneAnbieter).push(w.id);
+  }
+  return { mitAnbieter, ohneAnbieter, unbekannt };
 }
 
 

@@ -16,7 +16,10 @@ import {
   namensbefund,
   INTERNE_WOERTER,
   NICHT_IM_REGISTER,
+  BRAUCHT_ANBIETER,
+  anbieterbedarf,
 } from '../src/zahlung.js';
+import { ZAHLUNGSBEDINGUNGEN } from '../src/rechtstexte.js';
 
 const lies = (p) => JSON.parse(readFileSync(new URL(p, import.meta.url), 'utf8'));
 const katalog = ladeKatalog(
@@ -202,4 +205,48 @@ test('„Listenpreis" steht im Gegenregister, nicht im Register', () => {
   assert.ok(NICHT_IM_REGISTER.some((w) => w.wort === 'Listenpreis'));
   const b = namensbefund(ZAHLWEGE, [...INTERNE_WOERTER, { wort: 'Listenpreis', warum: 'x'.repeat(120) }]);
   assert.ok(b.meldungen.some((m) => m.regel === 'zweimal-gefuehrt'));
+});
+
+// **Ergänzt am 9. September 2026.** Die Bereitschaftsliste entschied über den
+// Zahlungsanbieter, ohne zu wissen, welche Zahlwege dieser Shop anbietet —
+// `ZAHLUNGSBEDINGUNGEN` führt sie seit dem 27. August mit Begründung.
+test('jeder angebotene Zahlweg sagt, ob er einen Anbieter braucht', () => {
+  const b = anbieterbedarf(ZAHLUNGSBEDINGUNGEN);
+  assert.deepEqual(b.unbekannt, [],
+    'ein Zahlweg ohne Eintrag ginge stillschweigend als „braucht keinen" durch');
+  assert.ok(b.mitAnbieter.length > 0 && b.ohneAnbieter.length > 0,
+    'beide Seiten müssen belegt sein, sonst prüft die Zerlegung nichts');
+});
+
+test('die Vorkasse braucht keinen Anbieter, EPS und Karte schon', () => {
+  const b = anbieterbedarf(ZAHLUNGSBEDINGUNGEN);
+  assert.deepEqual(b.ohneAnbieter, ['vorkasse']);
+  assert.deepEqual(b.mitAnbieter.sort(), ['eps', 'karte-stripe']);
+});
+
+test('ein neuer Zahlweg ohne Eintrag fällt auf', () => {
+  const b = anbieterbedarf({ angeboten: [{ id: 'erfundener-weg' }] });
+  assert.deepEqual(b.unbekannt, ['erfundener-weg']);
+  assert.deepEqual(b.mitAnbieter, []);
+  assert.deepEqual(b.ohneAnbieter, []);
+});
+
+test('jeder Eintrag trägt einen Grund, nicht nur ein Ja oder Nein', () => {
+  for (const [id, eintrag] of Object.entries(BRAUCHT_ANBIETER)) {
+    assert.equal(typeof eintrag.braucht, 'boolean', id);
+    assert.ok(eintrag.warum && eintrag.warum.length > 40,
+      `${id}: ohne tragfähigen Grund ist der Eintrag eine Behauptung`);
+  }
+});
+
+// Gate 21: „EPS und Vorkasse ab Start, Karte als Zusatz." Die Unterscheidung
+// stand nur im Gate-Register als Satz — ihr Fehlen hat einen Fehlbefund
+// erzeugt.
+test('die Startwege stehen als Angabe da, nicht nur im Register als Satz', () => {
+  const abStart = ZAHLUNGSBEDINGUNGEN.angeboten.filter((w) => w.abStart).map((w) => w.id);
+  assert.deepEqual(abStart.sort(), ['eps', 'vorkasse']);
+  for (const w of ZAHLUNGSBEDINGUNGEN.angeboten) {
+    assert.equal(typeof w.abStart, 'boolean',
+      `${w.id}: ohne Angabe wäre offen, ob er zum Start gehört`);
+  }
 });

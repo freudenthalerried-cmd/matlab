@@ -283,18 +283,29 @@ export const ZAHLUNGSBEDINGUNGEN = Object.freeze({
     {
       id: 'eps',
       vorkasse: true,
+      // **Ergänzt am 9. September 2026.** Gate 21 hat „EPS und Vorkasse ab
+      // Start, Karte als Zusatz" entschieden. Diese Unterscheidung stand nur
+      // im Gate-Register als Satz — und genau ihr Fehlen hat mich am
+      // 9. September einen Fehlbefund notieren lassen („ein Shop, der nur per
+      // Vorkasse verkauft, kann nie startklar werden"). Wer sie hier liest,
+      // liest sie nicht mehr im Fließtext nach.
+      abStart: true,
       grund: 'einziger Weg, der alle vier Anforderungen erfüllt; +6,50 € je Bestellung nach Gebühr und Skonto',
       kunde: 'Der empfohlene Weg: Freigabe im eigenen Bankkonto, Zahlung sofort bestätigt, keine Kartendaten im Spiel.',
     },
     {
       id: 'vorkasse',
       vorkasse: true,
+      abStart: true,
       grund: 'billigster Weg und Gate-21-fest; meldet den Eingang aber nicht maschinell',
       kunde: 'Überweisung nach Auftragsbestätigung. Die Ware geht auf den Weg, sobald der Betrag eingelangt ist — das dauert je nach Bank ein bis zwei Werktage länger.',
     },
     {
       id: 'karte-stripe',
       vorkasse: true,
+      // Zusatz, nicht Startbedingung: Gate 21 nennt ihn „angeboten, weil er
+      // Bestellungen ermöglicht, nicht weil er sich rechnet".
+      abStart: false,
       grund: 'je Bestellung noch positiv, auf den Monat über der 10-%-Grenze — angeboten, weil er Bestellungen ermöglicht, nicht weil er sich rechnet',
       kunde: 'Für Bestellungen, die aus der Firmenkarte laufen sollen. Zahlung sofort bestätigt.',
     },

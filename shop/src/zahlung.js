@@ -448,3 +448,62 @@ export function vergleiche(lage) {
     anmerkung: z.anmerkung,
   })).sort((a, b) => a.gebuehrProMonat - b.gebuehrProMonat);
 }
+
+/**
+ * Welche Zahlwege einen Zahlungsanbieter brauchen — und welche nicht.
+ *
+ * **Aufgenommen am 9. September 2026.** Die Bereitschaftsliste entscheidet
+ * seit ihrem ersten Tag über den Punkt „Zahlungsanbieter" und hat nie
+ * gefragt, **welche** Zahlwege dieser Shop überhaupt anbietet. Sie las eine
+ * freie Zeichenkette aus `data/betreiber.json`.
+ *
+ * Die Antwort steht seit dem 27. August im Bestand: `ZAHLUNGSBEDINGUNGEN` in
+ * `rechtstexte.js` führt `angeboten`, `ausgeschlossen` und `zurueckgestellt`
+ * mit Begründung — Gate 21 hat EPS, Vorkasse und Karte entschieden. Deren
+ * Kopfkommentar warnt ausdrücklich davor, dass **zwei** Stellen wüssten,
+ * welche Zahlwege es gibt. Die Bereitschaftsliste war eine dritte, die es
+ * nicht wusste und trotzdem entschied.
+ *
+ * > **Ein Prüfer, der eine Frage beantwortet, die das Register schon
+ * > beantwortet, beantwortet sie irgendwann anders.**
+ *
+ * Der Unterschied ist keine Meinung: Die Vorkasse ist eine Überweisung auf
+ * das eigene Konto — dazwischen steht niemand. EPS und Karte laufen über
+ * einen Dritten, der den Betrag einzieht und weiterleitet.
+ */
+export const BRAUCHT_ANBIETER = Object.freeze({
+  vorkasse: Object.freeze({
+    braucht: false,
+    warum: 'Überweisung auf das eigene Konto; dazwischen steht niemand. Was sie braucht, '
+      + 'ist die Bankverbindung — und die ist ein eigener Punkt der Bereitschaftsliste.',
+  }),
+  eps: Object.freeze({
+    braucht: true,
+    warum: 'Freigabe im Bankkonto des Kunden, Einzug und Weiterleitung über einen Dritten. '
+      + 'Ohne Vertrag mit ihm gibt es den Weg nicht.',
+  }),
+  'karte-stripe': Object.freeze({
+    braucht: true,
+    warum: 'Kartenakzeptanz ist ohne Acquirer nicht zu haben.',
+  }),
+});
+
+/**
+ * Die angebotenen Zahlwege, die einen Anbieter brauchen — und die, die keinen
+ * brauchen. Beide Richtungen, damit ein neuer Zahlweg ohne Eintrag auffällt
+ * statt stillschweigend als „braucht keinen" durchzugehen.
+ *
+ * @param {object} bedingungen  `ZAHLUNGSBEDINGUNGEN`
+ * @returns {{mitAnbieter: string[], ohneAnbieter: string[], unbekannt: string[]}}
+ */
+export function anbieterbedarf(bedingungen) {
+  const mitAnbieter = [];
+  const ohneAnbieter = [];
+  const unbekannt = [];
+  for (const w of bedingungen.angeboten) {
+    const eintrag = BRAUCHT_ANBIETER[w.id];
+    if (!eintrag) { unbekannt.push(w.id); continue; }
+    (eintrag.braucht ? mitAnbieter : ohneAnbieter).push(w.id);
+  }
+  return { mitAnbieter, ohneAnbieter, unbekannt };
+}

@@ -27,7 +27,8 @@
 import { bestellwegBefund, VORAUSSETZUNGEN } from './bestellweg.js';
 import { bestellwegAktiv } from './bestellwegbau.js';
 import { bankzeilen } from './bankverbindung.js';
-import { vorDemHochladen } from './rechtstexte.js';
+import { vorDemHochladen, ZAHLUNGSBEDINGUNGEN } from './rechtstexte.js';
+import { anbieterbedarf, zahlwegName } from './zahlung.js';
 import { pruefeBetreiberform } from './betreiberform.js';
 
 /**
@@ -297,38 +298,49 @@ export function startklar(lage = {}) {
     'Auftraggeber (Anfrage)');
 
   /**
-   * **Berichtigt am 9. September 2026, aus derselben Runde wie der
-   * Platzhalterpunkt.** Der Punkt hieß „Zahlungsanbieter gewählt **und
-   * angebunden**" und meldete grün „angebunden: <Name>", sobald in
-   * `data/betreiber.json` ein Name steht. Gemessen ist eine nichtleere
-   * Zeichenkette; behauptet ist, dass die Kasse mit einem Anbieter spricht.
+   * **Berichtigt am 9. September 2026, zweiter Anlauf.** Am Morgen hieß der
+   * Punkt noch „gewählt **und angebunden**" und meldete eine Anbindung, die
+   * niemand gemessen hatte; das ist behoben. Übrig blieb eine Frage, die ich
+   * offen notiert hatte: *Ein Shop, der nur per Vorkasse verkauft, kann nach
+   * dieser Liste nie startklar werden.*
    *
-   * Sie spricht mit keinem: Im ganzen Shop gibt es **keinen Zahlschritt**. Der
-   * Bestellweg aus Gate 26 erzeugt eine Anfrage, kein Zahlungsvorgang; das
-   * einzige „EPS" in `shopkern.js` ist die Dämmplatte.
+   * **Die Notiz war falsch, und der Grund dafür ist der eigentliche Befund.**
+   * Gate 21 hat nicht „einen Zahlweg" entschieden, sondern **EPS und Vorkasse
+   * ab Start**, Karte als Zusatz. Ein Start ohne EPS ist damit kein
+   * zulässiger Sonderfall, sondern eine Abweichung vom Gate — der Punkt
+   * verlangt zu Recht einen Anbieter.
    *
-   * > **Ein Wort in einer Konfigurationsdatei ist eine Entscheidung, keine
-   * > Anbindung.**
+   * Nachlesen konnte ich das nur im Gate-Register, nicht hier: Dieser Punkt
+   * las eine freie Zeichenkette aus `data/betreiber.json` und wusste nichts
+   * davon, **welche** Zahlwege dieser Shop anbietet. `ZAHLUNGSBEDINGUNGEN`
+   * führt sie seit dem 27. August mit Begründung, und deren Kopfkommentar
+   * warnt ausdrücklich davor, dass zwei Stellen das wüssten.
    *
-   * Es ist derselbe Fehler, den diese Liste beim **Bestellweg** schon einmal
-   * hatte: Sie meldete „startklar", während im ganzen Shop nichts abgeschickt
-   * wurde. Dort wird seither der Quelltext der Oberfläche gemessen. Der
-   * Zahlungspunkt daneben blieb bei der Konfigurationszeile.
+   * > **Ein Prüfer, der eine Frage beantwortet, die das Register schon
+   * > beantwortet, beantwortet sie irgendwann anders — und niemand merkt,
+   * > welche der beiden Antworten gilt.**
    *
-   * **Nicht gebaut: eine Anbindungsprüfung.** Es gibt kein Merkmal im
-   * Quelltext, das eine echte Anbindung von ihrer Erwähnung unterscheidet —
-   * und die Kasse soll heute gar keinen Zahlschritt haben, weil Gate 21 die
-   * **Vorkasse** gleichrangig nennt und die keinen Anbieter braucht. Ein
-   * erfundenes Merkmal wäre wieder eine Behauptung mit Ziffern. Geändert wird
-   * deshalb, was der Punkt **sagt**: Er heißt nach dem, was er misst, und
-   * nennt seine Grenze mit.
+   * Der Punkt nennt jetzt, **wofür** der Anbieter gebraucht wird, abgeleitet
+   * aus `anbieterbedarf()`. Kommt ein Zahlweg dazu oder fällt einer weg,
+   * ändert sich der Satz mit — und ein Zahlweg ohne Eintrag fällt auf, statt
+   * stillschweigend als „braucht keinen" durchzugehen.
    */
+  const bedarf = anbieterbedarf(ZAHLUNGSBEDINGUNGEN);
+  // **Nur die Startwege begründen die Sperre.** Die Karte braucht auch einen
+  // Anbieter, ist aber nach Gate 21 ein Zusatz — sie in denselben Satz zu
+  // nehmen hieße, aus einem Zusatz eine Startbedingung zu machen.
+  const abStart = new Set(
+    ZAHLUNGSBEDINGUNGEN.angeboten.filter((w) => w.abStart).map((w) => w.id),
+  );
+  const wofuer = bedarf.mitAnbieter.filter((id) => abStart.has(id))
+    .map((id) => zahlwegName(id)).join(' und ');
   p('zahlungsanbieter', 'Zahlungsanbieter gewählt',
     zahlungsanbieter ? 'erfuellt' : 'offen',
     zahlungsanbieter
       ? `gewählt: ${zahlungsanbieter} — aus data/betreiber.json; ob die Kasse mit ihm `
         + 'spricht, misst dieses Werkzeug nicht'
-      : 'keiner gewählt — die Kasse löst nichts aus und sagt das auch',
+      : `keiner gewählt — ${wofuer} braucht einen und ist nach Gate 21 ab Start `
+        + 'entschieden; die Kasse löst nichts aus und sagt das auch',
     'Auftraggeber (Ausgabe)');
 
   /**

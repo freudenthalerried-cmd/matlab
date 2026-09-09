@@ -76,13 +76,22 @@ Entscheidungen, keine Bequemlichkeit:
 Ein Punkt, der seine Grenze nennt, ist ehrlicher als einer, der eine Grenze
 erfindet, um grün aussehen zu dürfen.
 
-### Was dabei aufgefallen ist und offen bleibt
+### ⚠️ Was dabei aufgefallen ist — und am selben Tag widerrufen wurde
 
-Ein Shop, der **nur** per Vorkasse verkauft, kann nach dieser Liste nie
-startklar werden: Der Zahlungsanbieterpunkt bleibt offen, obwohl Gate 21 die
-Vorkasse ab Start zulässt. Das ist **kein neuer Zustand** — er gilt seit es
-den Punkt gibt —, und er gehört in eine eigene Runde, nicht in diese. Notiert,
-damit er nicht als entschieden gilt.
+> **Berichtigt am 9. September, eine Runde später.** Der Absatz, der hier
+> stand, war falsch. Er lautete: *„Ein Shop, der nur per Vorkasse verkauft,
+> kann nach dieser Liste nie startklar werden — obwohl Gate 21 die Vorkasse
+> ab Start zulässt."*
+>
+> Gate 21 hat nicht „die Vorkasse" zugelassen, sondern **EPS und Vorkasse ab
+> Start** entschieden, Karte als Zusatz. Ein Start ohne EPS ist damit keine
+> zulässige Sparfassung, sondern eine Abweichung vom Gate. **Der Punkt
+> verlangt zu Recht einen Anbieter**, und es gibt nichts zu lockern.
+>
+> Warum ich es falsch notiert habe, steht in
+> [`der-punkt-wusste-nicht-welche-zahlwege-es-gibt.md`](./der-punkt-wusste-nicht-welche-zahlwege-es-gibt.md):
+> Der Punkt las eine freie Zeichenkette und nannte keinen Zahlweg; nachlesen
+> ließ es sich nur im Gate-Register. Seither sagt er es selbst.
 
 ---
 
