@@ -74,6 +74,25 @@ const ERZEUGNISLESER = new Set(
     .map(([name]) => name),
 );
 
+/*
+ * **Der Testlauf gehört dazu — 9. September 2026, nachts.**
+ *
+ * Er steht in keinem `LESER`-Eintrag, weil sein Befehl kein Werkzeug aus
+ * `bin/` nennt (`node --test test/*.test.js`). Gelesen hat er die Erzeugnisse
+ * trotzdem immer: fünfunddreißig Testdateien lesen `ausgabe/site`.
+ *
+ * Aufgefallen ist es in der Nacht, in der `test/erzeugnisfrische.test.js`
+ * dazukam. Seither **sagt** der Testlauf, wenn das Erzeugnis veraltet ist —
+ * und im Gegenprobenlauf ist es das nach jeder Mutation. Die erste Probe am
+ * Prüfer `test` schlug an, alle folgenden meldeten „war schon vorher rot".
+ *
+ * > **Eine neue Regel, die eine bestehende Messung unmöglich macht, ist keine
+ * > Verschärfung, sondern ein Ausfall.**
+ *
+ * Er wird deshalb wie jeder andere Erzeugnisleser vor dem Lauf gebaut.
+ */
+ERZEUGNISLESER.add('test');
+
 /** Läuft den Prüfer — und baut vorher, wenn er ein Erzeugnis liest. */
 const laufeMitBau = (name) => {
   if (ERZEUGNISLESER.has(name)) baue();
