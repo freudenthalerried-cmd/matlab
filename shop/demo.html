@@ -2696,6 +2696,53 @@ function llmssystembefund(llms, artikel) {
 
 
 
+function artikelseitensystembefund(liesSeite, artikel) {
+  const schichten = artikel.map(einordnung).filter((x) => x.schicht && x.system);
+  const meldungen = [];
+  let gelesen = 0;
+  for (const e of schichten) {
+    const seite = liesSeite(e.sku);
+    if (seite === null || seite === undefined) {
+      
+      
+      meldungen.push({
+        regel: 'artikelseite-fehlt',
+        sku: e.sku,
+        text: `${e.sku} ist ${e.schicht} des Systems ${e.system}, und die gebaute Artikelseite `
+          + 'ist nicht lesbar — ob der Satz dort steht, ließ sich nicht feststellen',
+      });
+      continue;
+    }
+    gelesen += 1;
+    if (seite.includes(`des Systems ${e.system}`)) continue;
+    meldungen.push({
+      regel: 'artikelseite-ohne-system',
+      sku: e.sku,
+      text: `${e.sku} ist ${e.schicht} des Systems ${e.system} und sagt es auf seiner eigenen `
+        + 'Seite nicht — dort wird die Schicht ausgewählt, und dort landen die Anzeigen',
+    });
+  }
+  return { schichten: schichten.length, gelesen, meldungen, sauber: meldungen.length === 0 };
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

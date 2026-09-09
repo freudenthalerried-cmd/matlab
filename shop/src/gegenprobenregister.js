@@ -1037,6 +1037,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'eingetragen" und prüfte eine von zehn. Diese Mutation schreibt die Zahl wieder hinein.',
   }),
   Object.freeze({
+    id: 'die-artikelseite-verschweigt-ihr-system',
+    pruefer: 'pruefe-systemtreue',
+    was: 'Eine Artikelseite, auf der die Schicht ausgewählt wird, ohne ihr System',
+    datei: 'shop/bin/website.mjs',
+    art: 'ersetzen',
+    suchen: '  if (e.schicht && e.system) {',
+    ersetzen: '  if (false && e.schicht && e.system) {',
+    erwartet: /artikelseite-ohne-system/,
+    baueVorher: true,
+    warum: 'Der Zustand vom 9. September, morgens: Die Systemtreue stand in der Kasse (seit dem '
+      + '8.), in `llms.txt` und auf einer Wissensseite (seit dem 9.) — und auf **keiner** der 46 '
+      + 'Artikelseiten. Das ist die Fläche, auf der die Schicht ausgewählt wird, und das Ziel '
+      + 'der bezahlten Anzeigen: Die Warnung erreichte die Maschine und den Warenkorb, nicht die '
+      + 'Stelle, an der entschieden wird. Die Mutation schaltet den abgeleiteten Satz ab und '
+      + 'verlangt, dass der Prüfer jede stumme Schicht nennt.',
+  }),
+  Object.freeze({
     id: 'das-sinnbild-zeigt-ein-mass-das-es-nicht-gibt',
     pruefer: 'pruefe-sinnbilder',
     was: 'Ein Sinnbild auf der Startseite mit einem Maß, das kein Artikel der Gruppe hat',

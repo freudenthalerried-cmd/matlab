@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import {
   OHNE_SCHICHT, SCHICHTEN, SYSTEM_UNBEKANNT,
   einordnung, systembruch, systembruchsatz, zuordnungsbefund,
+  artikelseitensystembefund,
 } from '../src/systemtreue.js';
 
 const KATALOG = JSON.parse(readFileSync(
@@ -292,4 +293,41 @@ test('der echte Bau ist sauber', async () => {
   const pfad = fileURLToPath(new URL('../ausgabe/site/llms.txt', import.meta.url));
   if (!existsSync(pfad)) return; // ohne Bau keine Aussage
   assert.deepEqual(llmssystembefund(readFileSync(pfad, 'utf8'), KATALOG.artikel).meldungen, []);
+});
+
+// **Ergänzt am 9. September 2026.** Die Systemtreue stand in der Kasse, in
+// `llms.txt` und auf einer Wissensseite — auf keiner der 46 Artikelseiten. Das
+// ist die Fläche, auf der die Schicht ausgewählt wird, und das Ziel der
+// bezahlten Anzeigen.
+test('eine Schicht, deren Seite ihr System nicht nennt, ist ein Befund', () => {
+  const artikel = [{ sku: 'POS-10837', bezeichnung: 'Mantelstein MSTS EZ 16-18 SIKM', gruppe: 'Kamin' }];
+  const b = artikelseitensystembefund(() => '<p>Kein Wort dazu.</p>', artikel);
+  assert.equal(b.meldungen.length, 1);
+  assert.equal(b.meldungen[0].regel, 'artikelseite-ohne-system');
+  assert.match(b.meldungen[0].text, /Schiedel/);
+});
+
+test('nennt die Seite ihr System, meldet die Regel nichts', () => {
+  const artikel = [{ sku: 'POS-10837', bezeichnung: 'Mantelstein MSTS EZ 16-18 SIKM', gruppe: 'Kamin' }];
+  const b = artikelseitensystembefund(
+    () => '<p>Mantelstein des Systems Schiedel Österreich.</p>', artikel);
+  assert.deepEqual(b.meldungen, []);
+  assert.equal(b.schichten, 1, 'ohne Schicht prüfte die Regel nichts');
+  assert.equal(b.gelesen, 1);
+});
+
+test('eine fehlende Artikelseite ist nicht messbar und nicht grün', () => {
+  const artikel = [{ sku: 'POS-10837', bezeichnung: 'Mantelstein MSTS EZ 16-18 SIKM', gruppe: 'Kamin' }];
+  const b = artikelseitensystembefund(() => null, artikel);
+  assert.equal(b.meldungen[0].regel, 'artikelseite-fehlt');
+  assert.equal(b.gelesen, 0);
+});
+
+test('ein Artikel ohne Systembindung wird nicht verlangt', () => {
+  // Dübel und Zubehör tragen eine eigene Zulassung — von ihnen den Satz zu
+  // verlangen hieße, eine Systemtreue zu behaupten, die es dort nicht gibt.
+  const artikel = [{ sku: 'POS-11082', bezeichnung: 'Capatect Universaldübel Schraubdübel 053 115', gruppe: 'WDVS' }];
+  const b = artikelseitensystembefund(() => '<p>Nichts.</p>', artikel);
+  assert.equal(b.schichten, 0);
+  assert.deepEqual(b.meldungen, []);
 });

@@ -1153,6 +1153,27 @@ Lieferung, nicht je Position.</p>`);
   }
 
   const verwandtes = [];
+  /**
+   * **Ergänzt am 9. September 2026.** Die Systemtreue stand seit dem
+   * 8. September in der Kasse, seit dem 9. in `llms.txt` und auf einer
+   * Wissensseite — auf **keiner einzigen der 46 Artikelseiten**. Das ist die
+   * Fläche, auf der die Schicht ausgewählt wird, und das Ziel der bezahlten
+   * Anzeigen.
+   *
+   * > **Die Warnung erreichte die Maschine und den Warenkorb, nicht die
+   * > Stelle, an der entschieden wird.**
+   *
+   * Der Satz wird aus `einordnung` abgeleitet und steht nur dort, wo der
+   * Artikel wirklich eine Schicht eines Systems ist — Dübel und Zubehör
+   * tragen eine eigene Zulassung und bekommen ihn nicht.
+   */
+  const e = einordnung(a);
+  if (e.schicht && e.system) {
+    verwandtes.push(`<p class="antwort"><strong>${esc(e.schicht)} des Systems ${esc(e.system)}.</strong>
+Die Schichten eines Aufbaus gehören zu <strong>einem</strong> System: Wer diese Position mit der
+gleichen Schicht eines anderen Herstellers ersetzt, verlässt die geprüfte Zusammenstellung.
+Welche Zusammenstellung geprüft ist, steht in den Systemunterlagen des Herstellers.</p>`);
+  }
   if (systemSeiten.length) {
     verwandtes.push('<h2>Gehört zu diesen Systemen</h2>');
     verwandtes.push(`<div class="kacheln">${systemSeiten.map((s) => `<a class="kachel" href="${verweis(s.id)}">

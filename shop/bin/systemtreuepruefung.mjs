@@ -31,7 +31,8 @@ import { ladeBaustoffkatalog } from '../src/baustoffkatalog.js';
 import { HERSTELLER, markenlistenbefund, ohneKommentarzeilen } from '../src/hersteller.js';
 import { kundenWarenkorb } from '../src/shopkern.js';
 import {
-  GEWERKE, SCHICHTEN, gewerkbefund, llmssystembefund, systembruch, zuordnungsbefund,
+    GEWERKE, SCHICHTEN, artikelseitensystembefund, gewerkbefund, llmssystembefund, systembruch,
+  zuordnungsbefund,
 } from '../src/systemtreue.js';
 import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
 
@@ -134,6 +135,17 @@ if (existsSync(llmsDatei)) {
     process.exit(2);
   }
   meldungen.push(...llmssystembefund(readFileSync(llmsDatei, 'utf8'), katalog.artikel).meldungen);
+
+  // **Ergänzt am 9. September 2026.** Dieselbe Frage an die Fläche, auf der
+  // ausgewählt wird. Sie hängt an derselben Frischeprüfung: Ein Satz, der
+  // heute gebaut wurde, sagt nichts über die Seite von gestern.
+  const seiten = artikelseitensystembefund((sku) => {
+    const pfad = join(SHOP, 'ausgabe', 'site', 'artikel', `${sku}.html`);
+    return existsSync(pfad) ? readFileSync(pfad, 'utf8') : null;
+  }, katalog.artikel);
+  meldungen.push(...seiten.meldungen);
+  console.log(`  ${seiten.gelesen} von ${seiten.schichten} Artikelseiten systemgebundener `
+    + 'Schichten gelesen');
 }
 const messbar = GEWERKE.filter((g) => g.messbar).length;
 console.log(`Systemtreue — ${befund.geprueft} Artikel mit Systembindung, `

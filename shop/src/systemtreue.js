@@ -504,3 +504,50 @@ export function llmssystembefund(llms, artikel) {
   }
   return { geprueft: schichten.length, meldungen, sauber: meldungen.length === 0 };
 }
+
+/**
+ * Nennt die Artikelseite einer systemgebundenen Schicht ihr System?
+ *
+ * **Der Anlass, 9. September 2026.** Die Systemtreue stand in der Kasse (seit
+ * dem 8.), in `llms.txt` und auf einer Wissensseite (seit dem 9.) — und auf
+ * **keiner einzigen der 46 Artikelseiten**. Das ist die Fläche, auf der die
+ * Schicht ausgewählt wird, und das Ziel der bezahlten Anzeigen.
+ *
+ * > **Die Warnung erreichte die Maschine und den Warenkorb, nicht die Stelle,
+ * > an der entschieden wird.**
+ *
+ * Geprüft wird nur, was zuzuordnen ist: Ein Artikel ohne Schicht oder ohne
+ * erkennbares System — Dübel, Zubehör, `POS-18110` — bekommt den Satz nicht
+ * und wird hier nicht verlangt.
+ *
+ * @param {(sku: string) => string|null} liesSeite  gebaute Artikelseite oder null
+ * @param {object[]} artikel
+ */
+export function artikelseitensystembefund(liesSeite, artikel) {
+  const schichten = artikel.map(einordnung).filter((x) => x.schicht && x.system);
+  const meldungen = [];
+  let gelesen = 0;
+  for (const e of schichten) {
+    const seite = liesSeite(e.sku);
+    if (seite === null || seite === undefined) {
+      // **Nicht messbar ist nicht grün.** Eine fehlende Seite ist kein Beleg
+      // dafür, dass der Satz dort steht.
+      meldungen.push({
+        regel: 'artikelseite-fehlt',
+        sku: e.sku,
+        text: `${e.sku} ist ${e.schicht} des Systems ${e.system}, und die gebaute Artikelseite `
+          + 'ist nicht lesbar — ob der Satz dort steht, ließ sich nicht feststellen',
+      });
+      continue;
+    }
+    gelesen += 1;
+    if (seite.includes(`des Systems ${e.system}`)) continue;
+    meldungen.push({
+      regel: 'artikelseite-ohne-system',
+      sku: e.sku,
+      text: `${e.sku} ist ${e.schicht} des Systems ${e.system} und sagt es auf seiner eigenen `
+        + 'Seite nicht — dort wird die Schicht ausgewählt, und dort landen die Anzeigen',
+    });
+  }
+  return { schichten: schichten.length, gelesen, meldungen, sauber: meldungen.length === 0 };
+}
