@@ -35,28 +35,203 @@
  * Kommentare zählen ausdrücklich **nicht** mit. Sonst hätte der Satz „gerufen
  * hat `erzeugeAngebot` niemand" die Funktion als gerufen gemeldet — ein
  * Register, das sich an seiner eigenen Begründung sattsieht.
+ *
+ * ## Was am 9. September dazukam
+ *
+ * Drei Ausfuhren standen als gerufen da und waren es nicht. Alle drei aus
+ * demselben Grund: **Die Messung kannte Funktionen bei ihrem Vornamen und
+ * zählte Erwähnungen wie Aufrufe.**
+ *
+ * 1. **Ein Name ist nur in seinem Modul eindeutig.** Acht Namen gibt es im
+ *    Bestand zweimal. Wurde einer gerufen, galt der andere als gerufen — so
+ *    blieb `vergleiche` aus `zahlung.js` unsichtbar, die Tafel, auf der
+ *    Gate 21 ruht, weil `import.js` eine gleichnamige Funktion hat.
+ * 2. **Eine Zeichenkette ist kein Code.** `pruefeAblageAufDrittdaten` galt
+ *    als gerufen, weil ihr Name in `src/ablage.js` in einem Feldtext steht:
+ *    „Schranke: keine Daten Dritter (pruefeAblageAufDrittdaten)".
+ * 3. **Ein Muster ist kein Aufruf.** `zeitstempel` galt als gerufen, weil
+ *    der Name in einem regulären Ausdruck vorkommt.
+ *
+ * Seither zählt ein Aufruf nur dort, wo die Datei den Namen **aus diesem
+ * Modul** eingeführt hat — oder wo sie aus dem Browserbündel läuft und gar
+ * nichts einführen kann. Zeichenketten und Muster fallen vorher heraus.
+ *
+ * Die Richtung des Irrtums bleibt dieselbe: Mehrzeilige Schablonen bleiben
+ * unangetastet, weil in ihnen echter Code zwischen HTML-Anführungszeichen
+ * steht. Wer sie wie Code behandelt, verliert Aufrufe und meldet Funde, die
+ * es nicht gibt.
  */
 
 /** Zeilen, die keinen Aufruf enthalten können, auch wenn der Name darin steht. */
 const IST_LISTE = /^\s*(import|export)\s*\{|^\s*\w+,\s*$|^\s*\w+\s*$/;
 
 /**
+ * Die Dateien, die im Browser **aus dem Bündel** laufen. Sie führen nichts
+ * ein — der Bau fügt die Module davor. Für sie gilt weiter der bloße Name.
+ */
+export const GEBUENDELT = Object.freeze(['shop-ui.js', 'shop-bestellen.js']);
+
+/** Vor einem Muster steht eines dieser Zeichen, nie ein Wert. */
+const VOR_MUSTER = /[=(,:[!&|?;]\s*$/;
+
+/**
+ * Eine Zeile ohne ihre Zeichenketten und ohne ihre Muster.
+ *
+ * **Der Anlass, 9. September 2026.** `pruefeAblageAufDrittdaten` galt als
+ * gerufen, weil ihr Name in `src/ablage.js` in einer **Zeichenkette** steht
+ * („Schranke: keine Daten Dritter (pruefeAblageAufDrittdaten)"). Und
+ * `zeitstempel` galt als gerufen, weil der Name in einem **Muster** steht.
+ * Kommentare entfernt diese Messung seit ihrem ersten Tag, aus genau diesem
+ * Grund — Zeichenketten und Muster nicht.
+ *
+ * > **Eine Erwähnung ist kein Aufruf.** Der Unterschied entscheidet, ob eine
+ * > gebaute und geprüfte Funktion angeschlossen ist oder nur beschrieben.
+ */
+function ohneTexteInZeile(zeile) {
+  const s = String(zeile ?? '');
+  let aus = '';
+  let i = 0;
+  while (i < s.length) {
+    const c = s[i];
+    if (c === '"' || c === "'") {
+      i += 1;
+      while (i < s.length && s[i] !== c) i += s[i] === '\\' ? 2 : 1;
+      i += 1;
+      aus += `${c}${c}`;
+      continue;
+    }
+    if (c === '/' && VOR_MUSTER.test(aus)) {
+      let j = i + 1;
+      let inKlasse = false;
+      let gefunden = false;
+      while (j < s.length) {
+        if (s[j] === '\\') { j += 2; continue; }
+        if (s[j] === '[') inKlasse = true;
+        else if (s[j] === ']') inKlasse = false;
+        else if (s[j] === '/' && !inKlasse) { gefunden = true; break; }
+        j += 1;
+      }
+      if (gefunden) { i = j + 1; aus += '//'; continue; }
+    }
+    aus += c;
+    i += 1;
+  }
+  return aus;
+}
+
+/**
+ * Der Quelltext ohne Zeichenketten und ohne Muster, Zeile für Zeile.
+ *
+ * **Mehrzeilige Schablonen bleiben stehen.** `bin/website.mjs` baut die
+ * Seiten aus Schablonen, und darin steht echter Code in `${…}` — mitten
+ * zwischen Anführungszeichen eines HTML-Merkmals:
+ *
+ * ```
+ * <meta name="description" content="${esc(kurzfassung(seite.kurz, 300))}">
+ * ```
+ *
+ * Wer diese Zeile wie Code behandelt, hält `content="` für den Anfang einer
+ * Zeichenkette und verliert den Aufruf darin — ein **Fund, den es nicht
+ * gibt**. Deshalb bleibt alles zwischen zwei Rückstrichen unangetastet.
+ *
+ * > **Die Messung irrt weiter in die Richtung, die sie selbst nennt: Sie
+ * > findet zu wenig, nie zu viel.**
+ */
+export function ohneTexte(quelltext) {
+  let inSchablone = false;
+  return String(quelltext ?? '').split('\n').map((zeile) => {
+    if (inSchablone) {
+      // Zählen, ob die Schablone auf dieser Zeile endet — und wieder beginnt.
+      for (let i = 0; i < zeile.length; i += 1) {
+        if (zeile[i] === '\\') { i += 1; continue; }
+        if (zeile[i] === '`') inSchablone = !inSchablone;
+      }
+      return zeile;
+    }
+    const rein = ohneTexteInZeile(zeile);
+    for (let i = 0; i < rein.length; i += 1) {
+      if (rein[i] === '\\') { i += 1; continue; }
+      if (rein[i] === '`') inSchablone = !inSchablone;
+    }
+    return rein;
+  }).join('\n');
+}
+
+/**
+ * Unter welchem Namen eine fremde Datei diese Ausfuhr ruft — oder `null`,
+ * wenn sie sie gar nicht einführt.
+ *
+ * **Der Anlass, 9. September 2026.** Bis dahin suchte die Messung den bloßen
+ * Namen im ganzen Bestand. Ein Name ist aber nur **innerhalb seines Moduls**
+ * eindeutig: Acht Namen gibt es im Bestand zweimal, und wurde einer der
+ * beiden irgendwo gerufen, galt der andere als gerufen. So blieb
+ * `vergleiche` aus `zahlung.js` unsichtbar — die Tafel, auf der Gate 21
+ * ruht —, weil `import.js` eine gleichnamige Funktion hat, die gerufen wird.
+ */
+function ortsname(text, name, quellen) {
+  for (const m of text.matchAll(/import\s*\{([^}]*)\}\s*from\s*['"]([^'"]+)['"]/g)) {
+    const woher = m[2].split('/').pop();
+    if (!quellen.has(woher)) continue;
+    for (const teil of m[1].split(',')) {
+      const stuecke = teil.trim().split(/\s+as\s+/).map((x) => x.trim());
+      if (stuecke[0] === name) return stuecke[stuecke.length - 1];
+    }
+  }
+  return null;
+}
+
+/**
  * Die Ausfuhren, die außerhalb der Tests niemand ruft.
  *
  * @param {{name: string, text: string}[]} dateien  Quelltexte **ohne** Kommentare
+ * @param {string[]} [gebuendelt]  Dateien, die ohne Einfuhr aus dem Bündel laufen
  * @returns {{modul: string, funktion: string}[]} nach Modul und Name sortiert
  */
-export function ungerufeneAusfuehrungen(dateien) {
+export function ungerufeneAusfuehrungen(dateien, gebuendelt = GEBUENDELT) {
+  /*
+   * **Zwei Fassungen je Datei, und das ist keine Doppelung.** Die Einfuhren
+   * stehen in Zeichenketten — `from './zahlung.js'` —, die Aufrufe stehen
+   * daneben im Code. Wer beides in derselben Fassung sucht, verliert
+   * entweder die Herkunft oder zählt Erwähnungen als Aufrufe.
+   */
+  const ohne = dateien.map((d) => ({
+    name: d.name,
+    text: d.text,
+    zeilen: ohneTexte(d.text).split('\n'),
+  }));
+
+  // Wer einen Namen weiterexportiert, ist eine zweite Quelle für ihn.
+  const weiter = new Map();
+  for (const d of ohne) {
+    for (const m of d.text.matchAll(/export\s*\{[^}]*\}\s*from\s*['"]([^'"]+)['"]/g)) {
+      const woher = m[1].split('/').pop();
+      if (!weiter.has(woher)) weiter.set(woher, new Set());
+      weiter.get(woher).add(d.name.split('/').pop());
+    }
+  }
+
   const gefunden = [];
-  for (const datei of dateien) {
+  for (const datei of ohne) {
     if (!datei.name.startsWith('src/')) continue;
-    for (const m of datei.text.matchAll(/export function (\w+)/g)) {
+    const modul = datei.name.split('/').pop();
+    const quellen = new Set([modul, ...(weiter.get(modul) ?? [])]);
+    // **Nur am Zeilenanfang.** Ein `export function` mitten in einer Zeile
+    // steht in einem Mutationstext oder in einem Beispiel, nicht im Bestand.
+    for (const m of datei.zeilen.join('\n').matchAll(/^export function (\w+)/gm)) {
       const name = m[1];
       const definition = new RegExp(`export function ${name}\\b`);
-      const aufruf = new RegExp(`\\b${name}\\s*[(,)]`);
-      const gerufen = dateien.some((d) => d.text.split('\n').some(
-        (zeile) => !definition.test(zeile) && !IST_LISTE.test(zeile) && aufruf.test(zeile),
-      ));
+      let gerufen = false;
+      for (const d of ohne) {
+        const hier = d.name === datei.name || gebuendelt.includes(d.name)
+          ? name : ortsname(d.text, name, quellen);
+        if (!hier) continue;
+        const aufruf = new RegExp(`\\b${hier}\\s*[(,)]`);
+        if (d.zeilen.some(
+          (zeile) => !definition.test(zeile) && !IST_LISTE.test(zeile) && aufruf.test(zeile))) {
+          gerufen = true;
+          break;
+        }
+      }
       if (!gerufen) gefunden.push({ modul: datei.name, funktion: name });
     }
   }
@@ -277,6 +452,19 @@ export const UNGERUFEN = Object.freeze([
     warum: 'Die UID-Abfrage beim EU-Informationsaustauschsystem ist aus dieser '
       + 'Arbeitsumgebung nicht erreichbar (der Netzausgang ist gesperrt). Beide Funktionen '
       + 'verarbeiten ihre **Antwort** — sie können erst laufen, wenn es eine gibt.',
+  }),
+  Object.freeze({
+    modul: 'src/geschaeftszeit.js',
+    funktionen: ['zeitstempel'],
+    warum: 'Der volle Zeitstempel mit Zonenversatz — der JS-Gegenpart zu dem, was '
+      + '`bestellung.php` seit dem 9. September in jede Journalzeile schreibt. Auf der '
+      + 'JS-Seite stempelt heute niemand: `bin/vorgang.mjs` legt mit einem **Tag** ab, weil '
+      + 'das Ausstellungsdatum nach § 11 UStG ein Tag ist und `--datum` es überschreibbar '
+      + 'hält. Damit fehlt der Ablage die Zeitfolge des § 131 Abs 1 Z 2 BAO, die dieselbe '
+      + 'Feldbeschreibung verlangt: Zwei Einträge desselben Tages stehen ohne Reihenfolge. '
+      + 'Das ist eine offene Frage an den Beleg, keine an diese Funktion — sie steht bereit, '
+      + 'und der Tag, an dem sie gebraucht wird, ist der Tag, an dem jemand die Zeitfolge '
+      + 'entscheidet. **Bis dahin ist sie geprüft und nicht angeschlossen, und das steht hier.**',
   }),
   Object.freeze({
     modul: 'src/vorgang.js',

@@ -75,6 +75,16 @@ export function gatesAusRegister(text) {
  */
 export const SPUREN = Object.freeze([
   Object.freeze({
+    gate: 32,
+    datei: 'shop/bin/zahlwege.mjs',
+    muster: /Diese Liste ist älter/,
+    warum: 'Die Anforderungsliste warnt und entscheidet nicht. Die Entscheidung steckt in '
+      + 'diesem Werkzeug: Es rechnet die Tafel und nennt danach die Wege, bei denen die '
+      + 'Liste dem entschiedenen Gate 21 widerspricht — statt sie als untauglich zu '
+      + 'melden. Nähme jemand Gate 32 zurück, müsste hier eine Sperre stehen und das '
+      + 'Werkzeug mit Ausgang 1 enden; der Satz verschwände.',
+  }),
+  Object.freeze({
     gate: 31,
     datei: 'shop/src/systemtreue.js',
     muster: /export\s+function\s+systembruch/,

@@ -24,7 +24,7 @@ mehr zur Diskussion gestellt. Änderungen nur mit ausdrücklicher Freigabe.
 |---|---|---|
 | 22.08. | Eigene **Baumeister-Einkaufspreise** aus den Lieferantenrechnungen als Kalkulationsgrundlage, nicht mehr Herstellerkonditionen | Gate 1 und Gate 2 sind gegenstandslos, siehe unten |
 | 22.08. | Vertrieb über **Google Shopping**, Lieferung **regional** statt österreichweit | Liefergebiet: Perg, Urfahr-Umgebung, Freistadt, Linz, Linz-Land (Gate 23) |
-| 25.08. | „25 %" heißt **Marge vom Verkauf**, nicht Zuschlag auf den Einkauf | nötiger Monatsumsatz **43.396 €** statt 67.826 € (Zahlweg EPS; **berichtigt 01.09.**, davor standen hier die Kartenzahlen 45.356 / 72.740 €); `marge-25-prozent.md`, `die-leitzahl-war-vom-falschen-zahlweg.md` |
+| 25.08. | „25 %" heißt **Marge vom Verkauf**, nicht Zuschlag auf den Einkauf | nötiger Monatsumsatz **43.792 €** statt 68.798 € (Zahlweg EPS; **berichtigt 01.09.**, davor standen hier die Kartenzahlen 45.356 / 72.740 €); `marge-25-prozent.md`, `die-leitzahl-war-vom-falschen-zahlweg.md` |
 | 26.08. | Die Firma **existiert bereits**: Freudenthaler Bau GmbH, FN 347938z, Baustoffhandel als Gewerbe | keine Gründung nötig; die Firmenseite `freudenthaler-bau.at` ist in Betrieb — die Adresse des **Shops** ist eine andere, siehe 31.08. |
 | 28.08. | **Keine Spanne ausgeben** — die Handelsspanne erscheint nicht auf Kundenseiten | genannt wird stattdessen der Abstand zum Listenpreis; `spanne-nicht-mehr-ausgeben.md` |
 | 28.08. | **Sortiment auf mindestens 100 Artikel** erweitern | 46 sind das Maximum aus den Rechnungen; es braucht eine Artikelliste, `hundert-artikel-was-fehlt.md` |
@@ -133,11 +133,11 @@ konservativere Kapitalgesellschaftsweg unterstellt.
 
 > **Für das laufende Modell überholt.** Die Tabelle rechnet mit 30–45 %
 > Rohmarge im Radon-Streckenhandel. Mit 25 % Marge auf Baumeisterpreise
-> lautet die Zahl **43.396 € Monatsumsatz** — `marge-25-prozent.md`. Die
+> lautet die Zahl **43.792 € Monatsumsatz** — `marge-25-prozent.md`. Die
 > Kaskade bleibt als Rechenweg stehen.
 >
 > **Die Zahl darunter, an der alles hängt:** Unter einer Kaufquote von
-> **0,77 %** trägt das Modell nicht einmal den billigsten Marktklick von
+> **0,78 %** trägt das Modell nicht einmal den billigsten Marktklick von
 > 0,50 €. Gerechnet wird mit 2 %. Gemessen ist keine der beiden —
 > `die-drei-groessten-risiken.md`.
 >
@@ -159,9 +159,20 @@ konservativere Kapitalgesellschaftsweg unterstellt.
 > keine Streichung: Die Liste entsteht bei jedem Lauf neu, und das Wort kommt
 > mit dem bestätigten Preis von selbst wieder (`das-gebot-ruht-auf-dem-korb.md`).
 >
+> **Berichtigt am 09.09., zum zweiten Mal:** Hier stand 43.396 € und 67
+> Bestellungen. Die Zahlungsgebühr rechnet auf den vollen Kundenzahlbetrag,
+> und der trägt die **Fracht** mit — 75,50 € je Lieferung, ohne
+> Frei-Haus-Schwelle. `wirkungAufMonat` sagt das seit ihrer eigenen
+> Berichtigung, `data/zielgroessen.json` nannte die Fracht nicht, und
+> `noetigerUmsatz` rechnete deshalb mit null. **Die Berichtigung war an der
+> Funktion angekommen und nicht an den Daten.** Gültig sind **43.792 €** und
+> **68 Bestellungen**; die Kaufquote am Marktboden steigt von 0,77 auf
+> **0,78 %**. Gefunden hat es `npm run zahlwege` — das Werkzeug, das es an
+> dem Tag zum ersten Mal gab (`ein-name-ist-nur-im-modul-eindeutig.md`).
+>
 > **Berichtigt am 01.09.:** Hier stand 45.356 €. Das ist die Zahl für
 > **Kreditkarte**, gerechnet am 25.08. — zwei Tage bevor Gate 21 EPS und
-> Vorkasse entschied. Mit dem entschiedenen Zahlweg sind es 43.396 € und
+> Vorkasse entschied. Mit dem entschiedenen Zahlweg waren es 43.396 € und
 > 67 statt 70 Bestellungen. Gemessen wird die Leitzahl jetzt von
 > `npm run pruefe-schaufenster`; wie sie durchrutschen konnte, steht in
 > `die-leitzahl-war-vom-falschen-zahlweg.md`.

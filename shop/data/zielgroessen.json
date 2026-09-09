@@ -17,6 +17,8 @@
 
   "warenkorbNetto": 650,
   "_warenkorbNettoHinweis": "€ netto je Bestellung. Hergeleitet aus den Stuecklisten, nicht gesetzt.",
+  "frachtProBestellungNetto": 75.5,
+  "_frachtHinweis": "EUR je Lieferung, die Pauschale von poschacher in data/lieferanten.json. ERGAENZT 09.09.: wirkungAufMonat() nimmt die Fracht seit ihrer Berichtigung in die Gebuehrengrundlage — der Kunde zahlt sie mit, und der Zahlungsanbieter nimmt seinen Prozentsatz vom vollen Betrag. Die Berichtigung kam an der Funktion an und nicht an den Daten: Hier stand nichts, also rechnete noetigerUmsatz() mit 0 und die Leitzahl war um 396 EUR im Monat zu niedrig (43.396 statt 43.792) und um eine Bestellung (67 statt 68). Poschacher hat keine Frei-Haus-Schwelle, die Pauschale faellt bei jeder Zustellung an. Der Sperrgutzuschlag von 7,50 EUR je Hub steht bewusst nicht darin: Er faellt nur bei palettierter Ware an, und welche Artikel palettiert kommen, ist eine der offenen Fragen an den Lieferanten. Die Zahl waere damit eher zu niedrig als zu hoch.",
 
   "umsatzProSession": 0.02,
   "_umsatzProSessionHinweis": "DIESELBE GROESSE wie die Kaufquote der Kampagne (bin/kampagne.mjs, --kaufquote). Zwei Namen fuer eine Zahl: Hier heisst sie Umsatzquote je Besuch, dort Kaufquote. Unbelegt in beiden Faellen; im erklaerungsbeduerftigen B2B eher optimistisch.",

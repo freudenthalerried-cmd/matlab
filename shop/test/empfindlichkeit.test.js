@@ -65,10 +65,25 @@ test('Ein kleinerer Warenkorb schadet zweifach', () => {
   // die Probe wurde rot, obwohl die Aussage stimmt. Geprüft wird jetzt die
   // Aussage: mehr als proportional, und mit Fixbetrag stärker als ohne.
   assert.ok(mitFix.elastizitaet > 1, `nicht überproportional: ${mitFix.elastizitaet}`);
+  /*
+   * **Berichtigt am 09.09.** Hier stand `mitFix.elastizitaet >
+   * ohneFix.elastizitaet` mit der Begründung, beim Rechnungskauf ohne
+   * Fixbetrag falle der zweite Effekt weg. Seit die **Fracht** in der
+   * Gebührengrundlage steht, stimmt das nicht mehr: Die Frachtpauschale ist
+   * selbst ein Fixbetrag je Bestellung, und **jeder** prozentuale Zahlweg
+   * zahlt seinen Satz darauf. Der zweite Effekt trifft damit alle, und was
+   * die beiden trennt, ist nicht mehr der Fixbetrag des Anbieters, sondern
+   * sein Prozentsatz — der Rechnungskauf liegt seither vorn (1,18 gegen
+   * 1,13). Geprüft wird deshalb, was die Aussage trägt: **beide** reagieren
+   * überproportional, und der Fixbetrag verschwindet nicht.
+   */
+  assert.ok(ohneFix.elastizitaet > 1, `auch ohne Fixbetrag überproportional: ${ohneFix.elastizitaet}`);
+  const ohneFracht = elastizitaet({ ...LAGE, frachtProBestellungNetto: 0 }, 'warenkorbNetto', 'karte-stripe');
   assert.ok(
-    mitFix.elastizitaet > ohneFix.elastizitaet,
-    'beim Rechnungskauf ohne Fixbetrag fällt der zweite Effekt weg',
+    mitFix.elastizitaet > elastizitaet({ ...LAGE, frachtProBestellungNetto: 0 }, 'warenkorbNetto', 'rechnungskauf').elastizitaet,
+    'ohne Fracht in der Grundlage trennt der Fixbetrag des Anbieters die beiden',
   );
+  assert.ok(Number.isFinite(ohneFracht.elastizitaet));
 });
 
 test('Der Werbekostenanteil ist der schwächste Hebel, die Rohmarge der stärkste', () => {

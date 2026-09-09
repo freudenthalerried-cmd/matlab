@@ -142,8 +142,17 @@ test('jede Schwelle ist gerechnet — oder steht mit Grund im Verzeichnis', () =
   // Die Fassung, die den Fund gemacht hätte: Sie rechnet zweimal mit
   // deutlich verschiedenen Eingaben und sieht an, welche Schwelle sich nicht
   // rührt. Was sich nicht rührt, ist eingetragen und braucht einen Grund.
+  /*
+   * **Berichtigt am 9. September.** Hier stand `ziel` nur mit verändertem
+   * Zielgewinn. Der leistbare Klickpreis liest die Quote aber aus
+   * `ziel.umsatzProSession` und nicht aus dem `quote`-Argument daneben — die
+   * Störung erreichte ihn also nie. Grün war er trotzdem, weil `bestellungen`
+   * aufgerundet wird und der Sprung die Zahl zufällig bewegte; mit der
+   * Fracht in der Zielrechnung fiel der Zufall weg. **Eine Störung, die die
+   * gestörte Größe nicht erreicht, prüft nichts.**
+   */
   const b = schwellenbefund(({ klickpreis, quote, begriffe, faktor }) => kennzahlen({
-    ziel: { ...ziel, zielgewinn: ziel.zielgewinn * faktor },
+    ziel: { ...ziel, zielgewinn: ziel.zielgewinn * faktor, umsatzProSession: quote },
     klickpreis,
     quote,
     begriffe,

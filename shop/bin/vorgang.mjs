@@ -59,6 +59,7 @@ import { ladeBaustoffkatalog, ZIELMARGE } from '../src/baustoffkatalog.js';
 import { berechneWarenkorb } from '../src/warenkorb.js';
 import { baueVorgang, darfVorgangLaufen } from '../src/vorgang.js';
 import { pruefeBelege } from '../src/belegpruefung.js';
+import { pruefeAblageAufDrittdaten } from '../src/kontrolle.js';
 import { EUR } from '../src/format.js';
 import { ARTEN, haltefest, naechsteNummer, neueAblage, pruefeNummernkreis } from '../src/ablage.js';
 import { ausJournal, journalzeile } from '../src/speicher.js';
@@ -411,6 +412,28 @@ if (!belegnummer) {
 if (kreis && !kreis.lueckenlos) {
   console.log(`Achtung, Lücke im Nummernkreis: ${kreis.fehlend.join(', ')}`);
 }
+/*
+ * **Angeschlossen am 9. September 2026.** `pruefeAblageAufDrittdaten` gibt es
+ * seit dem Bau der Ablage, und sie sagt über sich selbst, sie mache „aus dem
+ * Zufall eine Zusicherung": Heute steht die Rufnummer der fremden Baustelle
+ * nicht im Journal, weil `ablageEintraege` nur den Betreff ablegt — nicht,
+ * weil jemand es prüft. **Gerufen hat sie niemand**, also war sie eine
+ * Erklärung und keine Zusicherung. Gefunden hat das der Prüfer der
+ * ungerufenen Ausfuhren, nachdem er gelernt hatte, Erwähnungen von Aufrufen
+ * zu unterscheiden.
+ *
+ * Die Prüfung läuft **nach** dem Schreiben, und das ist kein Widerspruch:
+ * § 131 BAO verlangt, dass der ursprüngliche Inhalt feststellbar bleibt —
+ * herausnehmen ließe sich der Eintrag ohnehin nicht mehr. Sie sagt, was
+ * drinsteht, damit es beim nächsten Mal nicht wieder hineingerät.
+ */
+const drittdaten = pruefeAblageAufDrittdaten(ablage, vorgang.auftrag ?? {});
+if (!drittdaten.dicht) {
+  console.log('\nAchtung, Daten Dritter in der Ablage:');
+  for (const f of drittdaten.funde) console.log(`  ${f}`);
+  console.log('Sie stehen dort sieben Jahre und sind nach Art. 17 DSGVO nicht zu löschen.');
+}
+
 console.log('Das Journal liegt außerhalb der Versionierung. Nichts versendet —');
 console.log('das Absenden entscheidet der Auftraggeber.');
 process.exit(0);

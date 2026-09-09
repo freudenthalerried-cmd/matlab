@@ -85,8 +85,8 @@ export const GEGENPROBEN = Object.freeze([
     was: 'Eine überholte Zahl in der PR-Beschreibung',
     datei: 'docs/baustoff-shop/pr-beschreibung.md',
     art: 'ersetzen',
-    suchen: '| nötiger Monatsumsatz | 67.826 € | **43.396 €** |',
-    ersetzen: '| nötiger Monatsumsatz | 67.826 € | **43.111 €** |',
+    suchen: '| **43.792 €** |',
+    ersetzen: '| **43.111 €** |',
     erwartet: /Nötiger Monatsumsatz/,
     warum: 'Die Beschreibung ist das Erste, was der Auftraggeber liest. Sie war '
       + 'schon einmal an neun Stellen überholt.',
@@ -1683,6 +1683,21 @@ export const GEGENPROBEN = Object.freeze([
       + 'verschwinden, den der Auftraggeber vor der Budgetfreigabe liest.',
   }),
   Object.freeze({
+    id: 'ein-name-aus-einem-fremden-modul',
+    pruefer: 'pruefe-ungerufen',
+    was: 'Eine ungerufene Ausfuhr, die den Namen einer gerufenen trägt',
+    datei: 'shop/src/format.js',
+    art: 'anhaengen',
+    text: '\nexport function kennzahlen() { return null; }\n',
+    erwartet: /format\.js#kennzahlen/,
+    warum: 'Bis zum 9. September suchte diese Messung den bloßen Namen im ganzen Bestand. '
+      + '`kennzahlen` gibt es in `kennzahlen.js` und wird gerufen — eine gleichnamige, von '
+      + 'niemandem gerufene Ausfuhr daneben fiel damit nicht auf. Genau so blieb `vergleiche` '
+      + 'aus `zahlung.js` unsichtbar, die Tafel, auf der Gate 21 ruht. Die Mutation hängt eine '
+      + 'solche Zwillingsausfuhr an und verlangt, dass sie beim Namen ihres Moduls gemeldet '
+      + 'wird. Bleibt der Prüfer grün, kennt er Funktionen wieder nur beim Vornamen.',
+  }),
+  Object.freeze({
     id: 'die-rechneruhr-im-beleg',
     pruefer: 'pruefe-zeit',
     was: 'Ein Belegdatum, das wieder aus der Rechneruhr kommt',
@@ -1970,8 +1985,8 @@ export const GEGENPROBEN = Object.freeze([
     was: 'Ein maßgebliches Dokument, dessen erste Zeilen anders zählen als sein Inhalt',
     datei: 'docs/baustoff-shop/gate-register.md',
     art: 'ersetzen',
-    suchen: 'Stand: 2026-09-09. **Maßgeblich für alle Gate-Fragen.** Einunddreißig',
-    ersetzen: 'Stand: 2026-09-09. **Maßgeblich für alle Gate-Fragen.** Vierundzwanzig',
+    suchen: '**Maßgeblich für alle Gate-Fragen.** Zweiunddreißig',
+    ersetzen: '**Maßgeblich für alle Gate-Fragen.** Vierundzwanzig',
     erwartet: /kopfzahl-abgeloest/,
     warum: 'Der Zustand vom 9. September, morgens: Die dritte Zeile sagte „Vierundzwanzig '
       + 'Entscheidungen", die Überschrift siebenunddreißig Zeilen tiefer „Die einunddreißig '

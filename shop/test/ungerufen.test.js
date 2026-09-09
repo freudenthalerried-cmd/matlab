@@ -29,9 +29,83 @@ const eintrag = (modul, funktionen) => Object.freeze({ modul, funktionen, warum:
 test('eine Ausfuhr, die niemand ruft, wird gefunden', () => {
   const gefunden = ungerufeneAusfuehrungen([
     { name: 'src/a.js', text: 'export function alleine() { return 1; }\nexport function gerufen() {}' },
-    { name: 'bin/b.mjs', text: 'gerufen();' },
+    { name: 'bin/b.mjs', text: "import { gerufen } from '../src/a.js';\ngerufen();" },
   ]);
   assert.deepEqual(gefunden, [{ modul: 'src/a.js', funktion: 'alleine' }]);
+});
+
+/**
+ * **Seit dem 9. September.** Ein Name ist nur **in seinem Modul** eindeutig.
+ * Acht Namen gibt es im Bestand zweimal; wurde einer gerufen, galt der andere
+ * als gerufen. So blieb `vergleiche` aus `zahlung.js` unsichtbar — die Tafel,
+ * auf der Gate 21 ruht — weil `import.js` eine gleichnamige Funktion hat.
+ */
+test('ein gleicher Name aus einem anderen Modul ruft nichts', () => {
+  const gefunden = ungerufeneAusfuehrungen([
+    { name: 'src/a.js', text: 'export function doppelt() {}' },
+    { name: 'src/b.js', text: 'export function doppelt() {}' },
+    { name: 'bin/w.mjs', text: "import { doppelt } from '../src/b.js';\ndoppelt();" },
+  ]);
+  assert.deepEqual(gefunden, [{ modul: 'src/a.js', funktion: 'doppelt' }]);
+});
+
+/** Ein umbenannter Import ruft trotzdem — unter seinem neuen Namen. */
+test('ein umbenannter Import zählt als Aufruf', () => {
+  const gefunden = ungerufeneAusfuehrungen([
+    { name: 'src/a.js', text: 'export function eng() {}' },
+    { name: 'bin/w.mjs', text: "import { eng as weit } from '../src/a.js';\nweit();" },
+  ]);
+  assert.deepEqual(gefunden, []);
+});
+
+/**
+ * Die Dateien des Browserbündels führen nichts ein — der Bau fügt die Module
+ * davor. Für sie gilt weiter der bloße Name; sonst gälte der halbe Shopkern
+ * als ungerufen.
+ */
+test('das Browserbündel ruft ohne Einfuhr', () => {
+  const gefunden = ungerufeneAusfuehrungen([
+    { name: 'src/a.js', text: 'export function legeInKorb() {}' },
+    { name: 'shop-ui.js', text: 'legeInKorb();' },
+  ]);
+  assert.deepEqual(gefunden, []);
+});
+
+/**
+ * **Eine Erwähnung ist kein Aufruf.** `pruefeAblageAufDrittdaten` galt als
+ * gerufen, weil ihr Name in `src/ablage.js` in einem **Feldtext** steht;
+ * `zeitstempel`, weil er in einem **Muster** vorkommt. Kommentare hat diese
+ * Messung von Anfang an entfernt — Zeichenketten und Muster nicht.
+ */
+test('ein Name in einer Zeichenkette oder in einem Muster ruft nichts', () => {
+  const faelle = [
+    "const feld = { zweck: 'Schranke (sperre)' };",
+    'const muster = /\\b(a|sperre)\\s*\\(/;',
+  ];
+  assert.equal(faelle.length, 2, 'die Schleife prüfte zu wenig');
+  for (const text of faelle) {
+    const gefunden = ungerufeneAusfuehrungen([
+      { name: 'src/a.js', text: 'export function sperre() {}' },
+      { name: 'bin/w.mjs', text: `import { sperre } from '../src/a.js';\n${text}` },
+    ]);
+    assert.deepEqual(gefunden, [{ modul: 'src/a.js', funktion: 'sperre' }], text);
+  }
+});
+
+/**
+ * Und die Gegenrichtung, ohne die das Entfernen zu viel nähme: In einer
+ * mehrzeiligen Schablone steht echter Code zwischen HTML-Anführungszeichen.
+ * `bin/website.mjs` ruft `kurzfassung` genau so.
+ */
+test('ein Aufruf in einer mehrzeiligen Schablone bleibt ein Aufruf', () => {
+  const gefunden = ungerufeneAusfuehrungen([
+    { name: 'src/a.js', text: 'export function kurz() {}' },
+    {
+      name: 'bin/w.mjs',
+      text: "import { kurz } from '../src/a.js';\nconst h = `\n<meta content=\"${kurz(x)}\">\n`;",
+    },
+  ]);
+  assert.deepEqual(gefunden, []);
 });
 
 /**
