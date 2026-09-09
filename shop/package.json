@@ -79,6 +79,8 @@
     "pruefe-vorbehalte": "node bin/vorbehaltspruefung.mjs",
     "pr-text": "node bin/prtext.mjs",
     "pruefe-schaufenster": "node bin/schaufensterpruefung.mjs",
+    "pruefe-marke": "node bin/markenpruefung.mjs",
+    "abgleich-veroeffentlichung": "node bin/veroeffentlichungsabgleich.mjs",
     "pruefe-leitzahlen": "node bin/leitzahlpruefung.mjs",
     "werbeprobe": "node bin/werbeprobe.mjs",
     "messliste": "node bin/messliste.mjs",

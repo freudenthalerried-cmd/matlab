@@ -27,7 +27,14 @@ test('der Vermerk im Verzeichnis ist lesbar und trägt sein Messdatum', () => {
   assert.equal(typeof vermerk.repositoryOeffentlich, 'boolean');
   // Die Grenze der Datei gehört in die Datei — nicht nur in den Kopf dieses Tests.
   assert.match(vermerk._grenze, /Handgriff/);
-  assert.match(vermerk._wieGemessen, /GitHub-Werkzeug/);
+  /*
+   * **Nachgezogen am 10. September.** Hier stand `/GitHub-Werkzeug/`, weil die
+   * Sichtbarkeit nur über ein fremdes Werkzeug zu haben war. Seit an dem Tag
+   * gemessen wurde, dass `api.github.com` aus dieser Umgebung antwortet, kann
+   * der Shop sie selbst erheben — und der Weg, der ohne fremdes Werkzeug
+   * auskommt, ist der, den dieses Feld nennen muss.
+   */
+  assert.match(vermerk._wieGemessen, /api\.github\.com/);
 });
 
 test('eine frische Messung wird durchgereicht', () => {

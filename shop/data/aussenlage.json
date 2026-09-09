@@ -1,9 +1,9 @@
 {
   "_zweck": "Was von aussen ueber dieses Vorhaben zu sehen ist — gemessen, nicht angenommen. Die Bereitschaftsliste liest von hier; ohne diese Datei stehen die beiden Punkte wieder als Fragezeichen da.",
-  "_anlass": "Am 9. September stand in src/startklar.js seit dem ersten Bau, ob das Repository privat ist, sei „von hier aus nicht feststellbar\". Nachgesehen hatte das niemand. Der Netzausgang ist gesperrt — das GitHub-Werkzeug nicht: Es beantwortet die Frage in einem Aufruf. Zwei Runden zuvor war dieselbe Bewegung schon einmal aufgefallen, bei der Grenze des Veroeffentlichungsvermerks. EINE GRENZE, DIE ZU WEIT GEZOGEN IST, DECKT GENAU DAS, WAS SIE AUSSCHLIESST.",
-  "_grenze": "Diese Datei ist ein Vermerk ueber einen Handgriff, kein Messwert, der sich von selbst erneuert. Der Shop kann keines der beiden Felder selbst erheben: Sein Netzausgang ist gesperrt, und das GitHub-Werkzeug gehoert nicht zu ihm. Deshalb traegt jede Zeile ihr Messdatum, und die Bereitschaftsliste laesst eine Messung nach GRENZE_TAGE wieder als Fragezeichen gelten.",
-  "_wieGemessen": "repositoryOeffentlich: GitHub-Werkzeug, Feld visibility der Repository-Auskunft. domainErreichbar: curl -L https://bauversand.com/ aus dieser Umgebung.",
-  "gemessenAm": "2026-09-09",
+  "_anlass": "Am 9. September stand in src/startklar.js seit dem ersten Bau, ob das Repository privat ist, sei „von hier aus nicht feststellbar\". Nachgesehen hatte das niemand. Der Netzausgang schien gesperrt — das GitHub-Werkzeug war es nicht: Es beantwortet die Frage in einem Aufruf. Am 10. September stellte sich heraus, dass auch der Netzausgang selbst diese eine Adresse durchlaesst; gesperrt ist er fuer die drei Adressen, an denen gemessen wurde, und nicht als solcher. Zwei Runden zuvor war dieselbe Bewegung schon einmal aufgefallen, bei der Grenze des Veroeffentlichungsvermerks. EINE GRENZE, DIE ZU WEIT GEZOGEN IST, DECKT GENAU DAS, WAS SIE AUSSCHLIESST.",
+  "_grenze": "Diese Datei ist ein Vermerk ueber einen Handgriff, kein Messwert, der sich von selbst erneuert. Der Shop kann keines der beiden Felder selbst erheben: Sein Netzausgang ist gesperrt, und das GitHub-Werkzeug gehoert nicht zu ihm. Deshalb traegt jede Zeile ihr Messdatum, und die Bereitschaftsliste laesst eine Messung nach GRENZE_TAGE wieder als Fragezeichen gelten. BERICHTIGT AM 10. SEPTEMBER: Hier stand, der Shop koenne keines der beiden Felder selbst erheben, sein Netzausgang sei gesperrt. Der zweite Halbsatz war zu weit gezogen. Gemessen ist die Sperre an bauversand.com, den Herstellerseiten und dem Rechtsinformationssystem — alle antworten mit CONNECT tunnel failed, response 403. Fuer api.github.com hatte das niemand versucht: Sie antwortet mit 200, und die Sichtbarkeit dieses Repositorys ist damit vom Shop selbst messbar, ohne fremdes Werkzeug. ZUM DRITTEN MAL IN FUENF RUNDEN DECKTE EINE ZU WEIT GEZOGENE GRENZE GENAU DAS, WAS SIE AUSSCHLOSS. Was bleibt: Die Datei ist weiter ein Vermerk mit Messdatum, weil die Messung Netz braucht und ein Prueferlauf ohne Netz sonst raten muesste; die Bereitschaftsliste laesst eine Messung nach GRENZE_TAGE wieder als Fragezeichen gelten.",
+  "_wieGemessen": "repositoryOeffentlich: Feld visibility der Repository-Auskunft — seit dem 10. September auch ohne fremdes Werkzeug: curl https://api.github.com/repos/freudenthalerried-cmd/matlab. domainErreichbar: curl -L https://bauversand.com/ aus dieser Umgebung.",
+  "gemessenAm": "2026-09-10",
   "repositoryOeffentlich": true,
   "_repositoryHinweis": "visibility: public, private: false. Damit ist die Empfehlung „privat stellen\" keine Vermutung mehr, sondern der gemessene Zustand — und die 44 von 46 rueckrechenbaren Einkaufspreisen stehen offen.",
   "domainErreichbar": null,
@@ -16,9 +16,9 @@
       "beleg": "curl: (56) CONNECT tunnel failed, response 403 — auch bei www.freudenthaler-bau.at, die Sperre liegt am Ausgang und nicht an der Adresse"
     },
     "repository-sichtbarkeit": {
-      "am": "2026-09-09",
+      "am": "2026-09-10",
       "ergebnis": "moeglich",
-      "beleg": "GitHub-Werkzeug antwortet \"private\": false, \"visibility\": \"public\" — die Grenze war zu weit gezogen"
+      "beleg": "Zweimal gemessen: GitHub-Werkzeug (\"private\": false, \"visibility\": \"public\") und am 10. September der Shop selbst ueber api.github.com, mit demselben Ergebnis. Der zweite Weg braucht kein fremdes Werkzeug."
     },
     "herstellerseiten": {
       "am": "2026-09-09",
@@ -29,6 +29,11 @@
       "am": "2026-09-09",
       "ergebnis": "gesperrt",
       "beleg": "ris.bka.gv.at: 403 am Ausgang, gleicher Grund wie bei den Herstellerseiten"
+    },
+    "github-schnittstelle": {
+      "am": "2026-09-10",
+      "ergebnis": "moeglich",
+      "beleg": "curl https://api.github.com/repos/freudenthalerried-cmd/matlab: HTTP 200, visibility public. Dieselbe Umgebung, dieselbe Minute: www.baumit.at und bauversand.com weiter 403 am Ausgang, github.com selbst 400. Die Sperre ist nach Adresse verschieden und nicht der Ausgang als solcher — versucht hatte es fuer diese Adresse niemand."
     }
   }
 }

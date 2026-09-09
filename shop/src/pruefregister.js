@@ -189,6 +189,37 @@ export const PRUEFER = [
     einheit: 'Kennzahlen der PR-Beschreibung',
     mindestens: 12,
   },
+  /*
+   * **Aufgenommen am 10. September 2026.** Die veröffentlichte Beschreibung
+   * trägt seither ihren eigenen Fingerabdruck als letzte Zeile. Dieser Prüfer
+   * hält sie dagegen — ohne Datei die Werkzeugausgabe, mit Datei eine
+   * zurückgelesene Veröffentlichung. Gemessen wird die Zahl der gedeckten
+   * Zeichen: Sie sagt, wie viel Text die Marke tatsächlich trägt, und eine
+   * Marke über nichts wäre grün und leer.
+   */
+  {
+    name: 'pruefe-marke',
+    werkzeug: 'markenpruefung.mjs',
+    muster: /über (\d+) Zeichen/,
+    einheit: 'Zeichen, die die Marke der Beschreibung deckt',
+    mindestens: 10000,
+  },
+  /*
+   * **Aufgenommen am 10. September 2026, und er braucht Netz.** Er holt die
+   * veröffentlichte Beschreibung von `api.github.com` und hält sie gegen
+   * `npm run pr-text` — der erste Prüfer dieses Bestands, der nach draußen
+   * sieht. Ohne Netz weigert er sich mit Ausgang 2; das ist der richtige
+   * Ausgang und kein Fehler im Lauf. Bis zu diesem Tag stand in
+   * `data/aussenlage.json`, der Netzausgang sei gesperrt — gemessen an drei
+   * Adressen, die es sind, und nie an dieser.
+   */
+  {
+    name: 'abgleich-veroeffentlichung',
+    werkzeug: 'veroeffentlichungsabgleich.mjs',
+    muster: /eigenen Marke \((\d+) Zeichen\)/,
+    einheit: 'Zeichen der veröffentlichten Beschreibung, gegen die Quelle gerechnet',
+    mindestens: 10000,
+  },
   // **Aufgenommen am 3. September**, nachdem an einem Tag zweimal dasselbe
   // aufgefallen ist: eine Funktion, die gebaut, geprüft und nie angeschlossen
   // wurde (`erzeugeAngebot`, dann `pruefeAnfrageAufGeheimnis`). Beide Male hat

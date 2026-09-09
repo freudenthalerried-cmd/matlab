@@ -22,6 +22,7 @@
  */
 
 import { readFileSync } from 'node:fs';
+import { markiere } from '../src/veroeffentlichung.js';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -58,9 +59,22 @@ const text = roh
   .replace(/^# .*\n+/, '')              // die Überschrift ist der PR-Titel und steht dort schon
   .trimEnd() + FUSS;
 
+/*
+ * **Die Marke, seit dem 10. September 2026.** Bis dahin endete die Ausgabe
+ * hier, und ob das Veröffentlichte ihr entsprach, ließ sich nur durch
+ * Danebenlegen feststellen — von Hand, im Kopf, viermal in sechs Runden
+ * vergeblich. Die letzte Zeile trägt seither den Fingerabdruck des Textes
+ * über ihr: Wer die veröffentlichte Fassung prüfen will, braucht diese Quelle
+ * nicht mehr, er hasht, was über der Marke steht.
+ *
+ * Ein beim Übertragen dazugeschriebener Satz ändert den Text und nicht die
+ * Marke — und ist damit nachweisbar, heute und in einem Jahr.
+ */
+const fassung = markiere(text, 'docs/baustoff-shop/pr-beschreibung.md', 'npm run pruefe-marke');
+
 // **Nur auf die Ausgabe, nie in eine Datei.** Die erste Fassung schrieb nach
 // `ausgabe/`, und `pruefe-erzeugnis` hat sie noch in derselben Minute gemeldet:
 // Jedes Werkzeug, das `ausgabe/` anfasst, gehört ins Frischeregister. Es
 // schreiben zu lassen wäre ein Eintrag mehr für nichts — die Umleitung der
 // Ausgabe kann die Schale besser.
-process.stdout.write(`${text}\n`);
+process.stdout.write(`${fassung}\n`);

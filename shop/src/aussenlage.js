@@ -147,8 +147,23 @@ export const AUSSENGRENZEN = Object.freeze([
   Object.freeze({
     id: 'repository-sichtbarkeit',
     was: 'Ob das Repository öffentlich ist',
-    wie: 'GitHub-Werkzeug, Feld visibility der Repository-Auskunft',
+    wie: 'Feld visibility der Repository-Auskunft — über das GitHub-Werkzeug oder, '
+      + 'seit dem 10. September gemessen, mit curl auf api.github.com',
     haengtAn: 'Bereitschaftspunkt „Repository ist privat"',
+  }),
+  /*
+   * **Aufgenommen am 10. September 2026.** Diese Grenze hat es vorher nicht
+   * gegeben, weil niemand sie für prüfbar hielt: `data/aussenlage.json` sagte,
+   * der Netzausgang sei gesperrt — gemessen an drei Adressen, die es sind. Der
+   * Abgleich der veröffentlichten Beschreibung brauchte einen Weg nach
+   * draußen, und der erste Versuch mit dieser Adresse hat 200 geantwortet.
+   */
+  Object.freeze({
+    id: 'github-schnittstelle',
+    was: 'Ob die GitHub-Schnittstelle aus dieser Umgebung erreichbar ist',
+    wie: 'curl https://api.github.com/repos/freudenthalerried-cmd/matlab',
+    haengtAn: 'Der Abgleich der veröffentlichten PR-Beschreibung gegen die Quelle '
+      + '(`npm run abgleich-veroeffentlichung`) und die Messung der Repository-Sichtbarkeit',
   }),
   Object.freeze({
     id: 'herstellerseiten',

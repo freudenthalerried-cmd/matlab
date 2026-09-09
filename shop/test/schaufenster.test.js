@@ -227,12 +227,22 @@ test('ein Vermerk ohne brauchbaren Fingerabdruck ist nicht messbar und nicht gr�
 });
 
 test('der Vermerk im Verzeichnis nennt seine eigene Grenze', () => {
-  // Er belegt den Handgriff, nicht sein Ergebnis. Ein Prüfer, der behauptete,
-  // GitHub zeige diesen Text, wäre eine Behauptung mit Ziffern.
+  /*
+   * **Nachgezogen am 10. September.** Hier stand `/belegt NICHT/`: Der
+   * Fingerabdruck belegte den Handgriff und nicht sein Ergebnis, weil das
+   * Ergebnis aus dieser Umgebung nicht zu holen war. Seit `api.github.com`
+   * antwortet, holt `npm run abgleich-veroeffentlichung` es. Die Grenze ist
+   * damit eine andere geworden und nicht verschwunden: Diese Datei sagt,
+   * **wann** zuletzt veröffentlicht wurde, der Prüfer sagt, **ob** das
+   * Veröffentlichte stimmt. Gefordert wird deshalb, dass der Vermerk den
+   * Prüfer nennt — sonst liest ihn jemand als die ganze Auskunft.
+   */
   const v = JSON.parse(readFileSync(
     new URL('../../docs/baustoff-shop/pr-veroeffentlicht.json', import.meta.url), 'utf8'));
-  assert.match(v._grenze, /belegt NICHT/);
+  assert.match(v._grenze, /abgleich-veroeffentlichung/);
+  assert.match(v._grenze, /keine ersetzt die andere/);
   assert.match(v.sha256, /^[0-9a-f]{64}$/);
+  assert.equal(v.geprueftMit, 'npm run abgleich-veroeffentlichung');
 });
 
 /**
@@ -252,8 +262,12 @@ test('der Vermerk hält fest, wann zuletzt zurückgelesen wurde', () => {
     new URL('../../docs/baustoff-shop/pr-veroeffentlicht.json', import.meta.url), 'utf8'));
   assert.match(v.zurueckgelesen, /^\d{4}-\d{2}-\d{2}$/,
     'ohne Datum wäre es eine Zusage statt eines Vermerks');
-  // Und die Grenze sagt selbst, dass das Zurücklesen geht — sonst stünde die
-  // widerlegte Behauptung wieder da.
-  assert.match(v._grenze, /zurücklesen/);
+  // Und die Grenze sagt selbst, dass die Veröffentlichung zu holen ist —
+  // sonst stünde die widerlegte Behauptung wieder da. Am 10. September ist
+  // dieselbe Behauptung ein zweites Mal gefallen: nicht nur das
+  // GitHub-Werkzeug kommt hinaus, der Netzausgang selbst kommt zu dieser
+  // einen Adresse hinaus.
+  assert.match(v._grenze, /durchlässt/);
   assert.doesNotMatch(v._grenze, /erlaubt keine Prüfung der Veröffentlichung selbst/);
+  assert.match(v._zurueckgelesen, /api\.github\.com/);
 });

@@ -1763,6 +1763,40 @@ export const GEGENPROBEN = Object.freeze([
       + 'des Bestands steht unter der Uhrenaufsicht.',
   }),
   Object.freeze({
+    id: 'eine-marke-ueber-den-falschen-text',
+    pruefer: 'pruefe-marke',
+    was: 'Eine Beschreibung, deren Marke den Text darüber nicht deckt',
+    datei: 'shop/src/veroeffentlichung.js',
+    art: 'ersetzen',
+    suchen: '  return text + TRENNER + marke(text, quelle, befehl);',
+    ersetzen: "  return text + TRENNER + marke(`${text} `, quelle, befehl);",
+    erwartet: /marke-passt-nicht/,
+    warum: 'Das ist der Fehler, für den die Marke gebaut wurde, an seiner kleinstmöglichen '
+      + 'Stelle: Die Marke entsteht über einen Text mit einem Leerzeichen mehr als der, der '
+      + 'darunter steht. Genau so sah der Fehler in Wirklichkeit aus — nur war es dort ein '
+      + 'ganzer Satz, und niemand konnte ihn nachweisen. Der erste Anlauf dieser Probe hat '
+      + 'stattdessen das Werkzeug mutiert, das die Marke setzt: Dann wächst die Marke mit, '
+      + 'die Fassung bleibt in sich stimmig, und der Prüfer war zu Recht grün. Die Marke '
+      + 'prüft eine Fassung gegen sich selbst — mutiert werden muss die Naht zwischen beiden. '
+      + 'Bleibt der Prüfer grün, vergleicht er nicht die Zeichen, sondern etwas Ähnliches.',
+  }),
+  Object.freeze({
+    id: 'die-quelle-ist-der-veroeffentlichung-voraus',
+    pruefer: 'abgleich-veroeffentlichung',
+    was: 'Eine Quelle, die sich seit der Veröffentlichung geändert hat',
+    datei: 'shop/bin/prtext.mjs',
+    art: 'ersetzen',
+    suchen: "const FUSS = '\\n\\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\\n\\n'",
+    ersetzen: "const FUSS = '\\n\\nNachgezogen und nicht veröffentlicht.\\n\\n'",
+    erwartet: /weicht von der Ausgabe/,
+    warum: 'Das ist der Fall vom 5. September, an dem der ganze Handgriff hängt: Die Quelle '
+      + 'wurde nachgezogen, die Veröffentlichung vergessen, und `pruefe-schaufenster` war '
+      + 'grün, weil es die Quelle gegen den Bestand misst und nicht gegen GitHub. Die '
+      + 'Mutation ändert die Werkzeugausgabe, ohne die Veröffentlichung anzufassen — genau '
+      + 'die Lage, die dreimal unbemerkt blieb. Bleibt der Prüfer grün, holt er die Fassung '
+      + 'nicht wirklich oder vergleicht sie nicht wirklich.',
+  }),
+  Object.freeze({
     id: 'veroeffentlichung-haengt-hinterher',
     pruefer: 'pruefe-schaufenster',
     was: 'Ein Beschreibungstext, der sich seit der letzten Veröffentlichung geändert hat',

@@ -1,0 +1,152 @@
+/**
+ * Die Marke am Ende der veröffentlichten Beschreibung.
+ *
+ * **Der Anlass, 10. September 2026.** Seit dem 9. September wird die
+ * veröffentlichte PR-Beschreibung zurückgelesen und gegen die Werkzeugausgabe
+ * gehalten. In vier von sechs Veröffentlichungen fand der Abgleich eine
+ * Abweichung, und jedes Mal dieselbe Ursache: Das Werkzeug gibt den Text aus,
+ * übertragen muss ihn ein Mensch — und wer dabei noch einen Satz ergänzt, der
+ * gerade richtig ist, veröffentlicht einen Text, den die Quelle nicht kennt.
+ *
+ * Der Abgleich selbst ist die schwache Stelle. Er ist ein **Augenvergleich**:
+ * Die zurückgelesene Fassung kommt als Antwort eines Werkzeugs, nicht als
+ * Datei, und sie in eine Datei zu bringen hieße, sie erneut abzutippen — also
+ * genau den Schritt zu wiederholen, der die Abweichungen erzeugt.
+ *
+ * > **Ein Abgleich, den niemand rechnet, findet nur, was auffällt.**
+ *
+ * Diese Datei dreht die Prüfung um. Statt zwei Fassungen nebeneinanderzulegen,
+ * trägt die veröffentlichte Fassung ihren eigenen Fingerabdruck **in sich**:
+ * eine letzte Zeile, die den sha256 des Textes darüber nennt. Wer sie prüfen
+ * will, braucht die Quelle nicht mehr — er hasht, was über der Marke steht,
+ * und vergleicht.
+ *
+ * **Was das fängt und was nicht.** Es fängt genau den Fehler, der viermal
+ * passiert ist: Ein beim Übertragen dazugeschriebener Satz ändert den Text und
+ * nicht die Marke, und die beiden passen nicht mehr zueinander — heute nicht
+ * und in einem Jahr nicht. Es fängt **nicht**, dass jemand Text *und* Marke
+ * zusammen neu setzt; dagegen hilft keine Prüfung, die im selben Kopf abläuft
+ * wie die Änderung. Die Marke macht aus einem unbemerkbaren Fehler einen
+ * dauerhaft nachweisbaren — mehr behauptet sie nicht.
+ *
+ * **Warum ein HTML-Kommentar.** GitHub zeigt ihn nicht an. Die Marke steht in
+ * der Beschreibung und nicht auf ihr; wer den Text liest, sieht sie nicht, wer
+ * ihn prüft, findet sie in der ersten Zeile von unten.
+ */
+
+import { createHash } from 'node:crypto';
+
+/** Was zwischen dem Text und seiner Marke steht. */
+export const TRENNER = '\n\n';
+
+/**
+ * Die Marke, wie sie am Ende steht. Der Hinweis auf Quelle und Prüfbefehl
+ * gehört dazu: Eine Zeichenkette aus 64 Zeichen ohne Anleitung ist für den,
+ * der sie findet, kein Werkzeug, sondern ein Rätsel.
+ */
+export const MARKENMUSTER =
+  /^<!-- fingerabdruck sha256:([0-9a-f]{64}) · Quelle: ([^ ]+) · geprüft mit `([^`]+)` -->$/;
+
+/** Der Fingerabdruck eines Textes — sha256 über genau diese Zeichen. */
+export function fingerabdruck(text) {
+  return createHash('sha256').update(String(text ?? ''), 'utf8').digest('hex');
+}
+
+/**
+ * Die Marke zu einem Text.
+ *
+ * @param {string} text der Text, der veröffentlicht wird — ohne Marke
+ * @param {string} quelle der Pfad der Quelle im Verzeichnis
+ * @param {string} befehl der Befehl, mit dem sich die Marke prüfen lässt
+ */
+export function marke(text, quelle, befehl) {
+  return `<!-- fingerabdruck sha256:${fingerabdruck(text)} · Quelle: ${quelle} `
+    + `· geprüft mit \`${befehl}\` -->`;
+}
+
+/** Text und Marke, fertig zum Veröffentlichen. */
+export function markiere(text, quelle, befehl) {
+  return text + TRENNER + marke(text, quelle, befehl);
+}
+
+/**
+ * Hält eine Fassung gegen ihre eigene Marke.
+ *
+ * **Die vier Fälle sind verschieden, und das gehört gesagt.** Keine Marke
+ * heißt: Diese Fassung stammt aus der Zeit davor oder aus einer anderen Hand —
+ * kein Befund über den Text, sondern über die Fassung. Eine Marke, die nicht
+ * passt, ist der Befund, für den das Ganze gebaut ist. Zwei Marken oder Text
+ * hinter der Marke heißen: Jemand hat angehängt, und angehängt wird beim
+ * Übertragen.
+ *
+ * @param {string} fassung der volle Text, wie er veröffentlicht wurde
+ */
+export function markenbefund(fassung) {
+  const t = String(fassung ?? '');
+  const zeilen = t.split('\n');
+  const stellen = zeilen
+    .map((z, i) => (z.startsWith('<!-- fingerabdruck') ? i : -1))
+    .filter((i) => i >= 0);
+
+  if (stellen.length === 0) {
+    return {
+      regel: 'keine-marke', passt: false,
+      text: 'Diese Fassung trägt keine Marke — sie lässt sich aus sich selbst nicht prüfen',
+    };
+  }
+  if (stellen.length > 1) {
+    return {
+      regel: 'mehrere-marken', passt: false,
+      text: `${stellen.length} Marken in einer Fassung — angehängt wird beim Übertragen`,
+    };
+  }
+
+  const i = stellen[0];
+  const treffer = MARKENMUSTER.exec(zeilen[i]);
+  if (!treffer) {
+    return {
+      regel: 'marke-unlesbar', passt: false,
+      text: 'Die Marke steht da und ist nicht zu lesen — geändert oder abgeschnitten',
+    };
+  }
+  const dahinter = zeilen.slice(i + 1).join('\n');
+  if (dahinter.trim() !== '') {
+    return {
+      regel: 'text-hinter-der-marke', passt: false,
+      text: 'Hinter der Marke steht Text — sie deckt ihn nicht, egal wie sie lautet',
+    };
+  }
+
+  /*
+   * Der Text ist alles vor `TRENNER + Marke` — am ganzen String gemessen und
+   * nicht über die Zeilenliste zusammengesetzt. Die erste Fassung hier hat
+   * `zeilen.slice(0, i)` genommen und damit die Leerzeile mitgehasht, die zur
+   * Marke gehört: Der Prüfer meldete `trenner-fehlt` über seine eigene,
+   * fehlerfreie Ausgabe. Ein Zeichen daneben ist beim Hashen kein Zeichen
+   * daneben, sondern ein anderer Fingerabdruck.
+   */
+  const angehaengt = TRENNER + zeilen[i];
+  if (!t.endsWith(angehaengt)) {
+    return {
+      regel: 'trenner-fehlt', passt: false,
+      text: 'Zwischen Text und Marke steht nicht die Leerzeile, mit der sie gesetzt wurde',
+    };
+  }
+  const text = t.slice(0, -angehaengt.length);
+  const ist = fingerabdruck(text);
+  const soll = treffer[1];
+
+  if (ist !== soll) {
+    return {
+      regel: 'marke-passt-nicht', passt: false, soll, ist,
+      quelle: treffer[2], befehl: treffer[3],
+      text: 'Die Fassung trägt Text, den ihre eigene Marke nicht deckt — zwischen dem '
+        + 'Erzeugen und dem Veröffentlichen ist sie geändert worden',
+    };
+  }
+  return {
+    regel: 'marke-passt', passt: true, soll, ist,
+    quelle: treffer[2], befehl: treffer[3], zeichen: text.length,
+    text: 'Die Fassung deckt sich mit ihrer eigenen Marke',
+  };
+}
