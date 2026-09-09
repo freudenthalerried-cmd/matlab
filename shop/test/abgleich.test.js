@@ -123,6 +123,7 @@ test('Ein Ablaufschritt, den es nicht gibt, fällt auf', () => {
   // Nachweis über die Umkehrung: Ein erfundener Schritt in der Begründungsliste
   // wird ebenso gemeldet.
   const echt = { ...SCHRITTE_OHNE_AGB };
+  assert.ok(Object.keys(echt).length > 0, 'ohne Schritte prüft die Allaussage nichts');
   assert.ok(Object.keys(echt).every((id) => SCHRITTE.some((s) => s.id === id)));
 });
 

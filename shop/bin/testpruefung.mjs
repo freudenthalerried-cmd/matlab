@@ -232,6 +232,43 @@ function ifBereiche(rumpf) {
 }
 
 /** Prüft einen einzelnen Testfall auf die drei Muster. */
+/**
+ * Stellen, an denen eine leere Liste der **Regelfall** ist.
+ *
+ * **Aufgenommen am 9. September 2026, beim ersten Lauf von Regel 4.** Acht der
+ * neun Verdachtsfälle waren echt und sind behoben. Einer nicht:
+ *
+ * ```js
+ * // `ohne` ist bei einem stummen Wort leer, und das ist der Regelfall.
+ * assert.ok(ohne.every((id) => mit.includes(id)), …);
+ * ```
+ *
+ * Dort wird geprüft, dass **nichts wegfällt** — nicht, dass etwas da war. Eine
+ * Längenzusicherung wäre an dieser Stelle sachlich falsch, und der Kommentar
+ * daneben sagt das seit dem Tag, an dem der Testfall entstand, also lange vor
+ * dieser Regel.
+ *
+ * > **Ein Prüfer, der einen richtigen Testfall zwingt, falsch zu werden, ist
+ * > schlechter als keiner.**
+ *
+ * Deshalb ein Register statt einer Ausnahme im Code: mit Pflichtgrund und in
+ * **beide Richtungen** gehalten — ein Eintrag, dessen Stelle die Regel gar
+ * nicht mehr auslöst, ist selbst ein Befund. Sonst sammeln sich hier
+ * Freibriefe für Stellen, die es nicht mehr gibt.
+ */
+const OHNE_LAENGENZUSICHERUNG = Object.freeze([
+  Object.freeze({
+    datei: 'shopkern.test.js',
+    fall: 'achtzehn Wörter, die vorher nichts fanden, finden jetzt Ware',
+    ausdruck: 'ohne',
+    warum: 'Geprüft wird, dass das Wortregister keine Treffer wegnimmt. Bei einem Wort, '
+      + 'das vorher stumm war, ist `ohne` leer — das ist der Regelfall und nicht die '
+      + 'Ausnahme. Eine Längenzusicherung verlangte, dass jedes der achtzehn Wörter '
+      + 'vorher schon etwas fand, und genau das ist die Behauptung, die der Testfall '
+      + 'widerlegt.',
+  }),
+]);
+
 function pruefeFall(fall) {
   const verdacht = [];
 
@@ -297,6 +334,57 @@ function pruefeFall(fall) {
     }
   }
 
+  /**
+   * **Regel 4, ergänzt am 9. September 2026.** Regel 3 fand am Vortag zwei
+   * hohle Testfälle — beide Schleifen. Die Frage danach war, ob dieselbe
+   * Lücke eine andere Schreibweise hat, und sie hat eine:
+   *
+   * ```js
+   * assert.ok(liste.every((x) => …));   // bei leerer Liste: true
+   * ```
+   *
+   * `Array.prototype.every` auf einer leeren Liste ist `true` — die leere
+   * Allaussage. Für die Zusicherung ist das dasselbe wie eine Schleife, die
+   * nicht läuft: **grün, ohne etwas geprüft zu haben.** Gemessen im Bestand:
+   * 23 Fundstellen.
+   *
+   * Geprüft wird derselbe Umstand wie bei Regel 3 — steht in **derselben**
+   * Zusicherung oder davor eine Aussage über die Länge genau dieser Liste? —
+   * und mit derselben Zurückhaltung: Ein Literal mit Inhalt kann nicht leer
+   * sein, und ein Verdacht ist kein Urteil.
+   */
+  for (const treffer of fall.rumpf.matchAll(/\bassert\s*\.\s*ok\s*\(\s*([^;]*?)\.every\s*\(/g)) {
+    const ueber = treffer[1].trim();
+    if (/^\[[^\]]/.test(ueber)) continue;
+
+    // **Eine verneinte Allaussage kennt die Falle nicht.** `!x.every(…)` ist
+    // auf der leeren Liste `!true`, also `false` — die Zusicherung fiele
+    // durch, statt still zu bestehen. Sie zu melden wäre Lärm, und ein
+    // Prüfer, der Lärm macht, wird ruhiggestellt statt befolgt.
+    // Gefunden beim ersten Lauf dieser Regel: `quellen.test.js:176`.
+    if (ueber.startsWith('!')) continue;
+
+    // Die Zeile selbst zählt mit: `assert.ok(x.length > 0 && x.every(…))`
+    // sichert die Länge in derselben Zusicherung zu.
+    const zeilenende = fall.rumpf.indexOf('\n', treffer.index);
+    const davor = fall.rumpf.slice(0, zeilenende === -1 ? undefined : zeilenende);
+    const namen = [...ueber.matchAll(/[A-Za-z_$][\w$]*/g)]
+      .map((t) => t[0])
+      .filter((n) => !['Object', 'Array', 'Map', 'Set', 'entries', 'keys', 'values', 'from', 'new', 'filter', 'map', 'slice', 'flat'].includes(n));
+    const laengeGeprueft = namen.some((n) =>
+      new RegExp(`assert[^;\\n]*\\b${n}\\b[^;\\n]*\\.(?:length|size)|assert[^;\\n]*\\.(?:length|size)[^;\\n]*\\b${n}\\b`).test(davor),
+    );
+
+    const befreit = OHNE_LAENGENZUSICHERUNG.some(
+      (e) => e.datei === fall.datei && e.fall === fall.titel && e.ausdruck === ueber,
+    );
+    if (befreit) { genutzteBefreiungen.add(`${fall.datei}|${fall.titel}|${ueber}`); continue; }
+
+    if (!laengeGeprueft) {
+      verdacht.push(`\`${ueber}.every(…)\` ohne Längenzusicherung — bei leerer Liste ist die Allaussage wahr`);
+    }
+  }
+
   return verdacht;
 }
 
@@ -308,6 +396,7 @@ try {
   console.error(`  ${fehler.message}`);
   process.exit(2);
 }
+const genutzteBefreiungen = new Set();
 let faelleGesamt = 0;
 let verdaechtig = 0;
 
@@ -317,7 +406,7 @@ for (const datei of dateien) {
   faelleGesamt += faelle.length;
 
   const treffer = faelle
-    .map((f) => ({ ...f, verdacht: pruefeFall(f) }))
+    .map((f) => ({ ...f, verdacht: pruefeFall({ ...f, datei }) }))
     .filter((f) => f.verdacht.length > 0);
 
   if (treffer.length === 0) continue;
@@ -331,6 +420,33 @@ for (const datei of dateien) {
 }
 
 console.log(`\n${faelleGesamt} Testfälle geprüft, ${verdaechtig} mit Verdacht.`);
+// **Die zweite Richtung — und wofür sie gilt.** Ein Register ohne Gegenprobe
+// sammelt Freibriefe für Stellen, die es nicht mehr gibt: Wird der Testfall
+// umgeschrieben oder gelöscht, bleibt der Eintrag stehen und deckt beim
+// nächsten Mal etwas, das niemand geprüft hat.
+//
+// **Berichtigt, bevor es hinausging.** Der erste Anlauf prüfte das bei *jedem*
+// Lauf und rief `process.exit(1)`, ohne `--bericht` anzusehen. Beides falsch,
+// und der eigene Testfall dieses Prüfers hat es sofort gefunden: Über den
+// Probeordner ist der Eintrag zu Recht ungenutzt — dort steht der gemeinte
+// Testfall gar nicht. Ein ungenutzter Eintrag ist nur dann ein Befund, wenn
+// **der Bestand gemeint war, für den das Register geschrieben wurde.**
+//
+//   Die Gegenrichtung eines Registers muss wissen, über welchen Bestand sie
+//   spricht. Sonst meldet sie eine Lücke, wo nur jemand woanders hingesehen hat.
+const eigenerBestand = !process.argv[2];
+const ungenutzt = !eigenerBestand ? [] : OHNE_LAENGENZUSICHERUNG.filter(
+  (e) => !genutzteBefreiungen.has(`${e.datei}|${e.fall}|${e.ausdruck}`),
+);
+if (ungenutzt.length) {
+  console.log(`\n${ungenutzt.length} Eintrag/Einträge im Ausnahmeregister greifen nicht mehr:`);
+  for (const e of ungenutzt) {
+    console.log(`  ✗ ${e.datei} — „${e.fall}" (${e.ausdruck})`);
+  }
+  console.log('Eine Ausnahme für eine Stelle, die es nicht mehr gibt, deckt beim');
+  console.log('nächsten Mal etwas, das niemand geprüft hat.');
+  if (!process.argv.includes('--bericht') && !process.argv.includes('--probe')) process.exit(1);
+}
 console.log('Jeder Treffer ist anzusehen, nicht automatisch zu beheben.');
 
 /**

@@ -969,7 +969,9 @@ test('cm und mm finden einander', () => {
 test('Meter und Quadratmeter bleiben unberührt', () => {
   // Aus „1,1x50 m" eine Länge in Millimetern zu machen hieße, eine Kante zu
   // erfinden — dieselbe Regel wie bei der Plattenstärke.
-  assert.ok(wortstaemme('Baumit TextilglasGitter 1,1x50 m').every((w) => !w.endsWith('mm')));
+  const staemme = wortstaemme('Baumit TextilglasGitter 1,1x50 m');
+  assert.ok(staemme.length > 0, 'ohne Wortstämme wäre die Allaussage leer wahr');
+  assert.ok(staemme.every((w) => !w.endsWith('mm')));
   assert.ok(wortstaemme('Fassaden EPS 2 cm 0,5 m2').includes('20mm'));
   assert.ok(!wortstaemme('Isover TDPT 20 1200 600 mm 8,64 m2').includes('200mm'),
     'die 20 ist eine Typkennung, kein Maß');

@@ -407,6 +407,7 @@ test('was sich nicht sagen lässt, bleibt null', () => {
 test('die Einheitenliste wird gegen den Katalog gehalten, in beide Richtungen', () => {
   const katalog = [{ einheit: 'STK' }, { einheit: 'KRT' }, { einheit: 'M2' }];
   assert.equal(einheitenbefund(katalog).sauber, false, 'SCK, EIM, DOS, RLL führt keiner');
+  assert.ok(einheitenbefund(katalog).meldungen.length > 0, 'ohne Meldung ist die Allaussage leer');
   assert.ok(einheitenbefund(katalog).meldungen.every((m) => m.regel === 'einheit-ohne-artikel'));
 
   // Die andere Richtung: eine Einheit, die keine der beiden Listen kennt —

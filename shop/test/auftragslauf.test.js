@@ -16,6 +16,7 @@ test('Im Vollausbau läuft die Kette ohne einen einzigen Handgriff durch', () =>
   assert.equal(lauf.laeuftDurch, true);
   assert.equal(lauf.minutenMensch, 0);
   assert.deepEqual(lauf.blockaden, []);
+  assert.ok(lauf.protokoll.length > 0, 'ein leeres Protokoll erfüllt jede Allaussage');
   assert.ok(lauf.protokoll.every((p) => p.stand === 'automatisch'));
 });
 

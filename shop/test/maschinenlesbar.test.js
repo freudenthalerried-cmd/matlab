@@ -260,6 +260,7 @@ test('ohne Frachtsatz bleibt die Lücke stehen, statt eine Null zu erfinden', ()
     versandkostenNetto: () => null,
   });
   assert.equal(feed.zeilen[0].offers.shippingDetails, undefined);
+  assert.ok(feed.mitLuecken.length > 0, 'ohne Lücke prüft die Allaussage nichts');
   assert.ok(feed.mitLuecken.every((l) => l.fehlend.includes('Versandkosten')));
 });
 

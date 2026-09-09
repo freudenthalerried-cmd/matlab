@@ -153,6 +153,7 @@ test('Auslandslieferanten machen das Streckengeschäft zum Reihengeschäft', () 
   assert.equal(e.reihengeschaeft, true);
   assert.equal(e.uidPflicht, true);
   assert.ok(e.hinweise.some((h) => /innergemeinschaftlicher Erwerb/.test(h)));
+  assert.ok(e.betroffeneLieferanten.length > 0, 'ohne betroffene Lieferanten sagt die Zeile nichts');
   assert.ok(e.betroffeneLieferanten.every((id) => katalog.lieferantenById.get(id).land !== 'AT'));
 });
 

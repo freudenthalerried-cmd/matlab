@@ -40,6 +40,7 @@ test('Katalog lädt vollständig und verknüpft die Lieferanten', () => {
 });
 
 test('Alle Katalogpreise sind als Platzhalter gekennzeichnet', () => {
+  assert.ok(katalog.artikel.length > 0, 'ein leerer Katalog erfüllt jede Allaussage');
   assert.ok(katalog.artikel.every((a) => a.ekIstPlatzhalter));
 });
 
