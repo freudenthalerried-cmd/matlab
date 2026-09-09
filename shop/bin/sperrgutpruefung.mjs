@@ -26,6 +26,7 @@ import { dirname, join, relative } from 'node:path';
 import {
   einstufungsbefund, flaechenbefund, HINGENOMMEN, HANDGEWICHT_KG, SPERRGUT_GRUPPEN, OHNE_HERKUNFT,
   GEMEINSAMER_GRUND,
+  gruppentextbefund,
 } from '../src/sperrguteinstufung.js';
 import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
 
@@ -120,9 +121,46 @@ if (f.hingenommen) {
   for (const o of OHNE_HERKUNFT) console.log(`    · ${o.datei}`);
 }
 
-if (!b.sauber || !f.sauber) {
-  console.error(`\n${b.meldungen.length + f.meldungen.length} Befund(e):\n`);
-  for (const m of [...b.meldungen, ...f.meldungen]) console.error(`  ✗ ${m.text}  (${m.regel})`);
+
+/**
+ * **Ergänzt am 9. September 2026.** Sieben Gruppentexte sind von Hand
+ * geschrieben und sagen der Kundschaft, wie geliefert wird. Kein Prüfer hielt
+ * sie gegen die Einstufung, die auf der Rechnung 7,50 € je Position
+ * entscheidet — und genau dort stand ein Widerspruch.
+ */
+const gruppenordner = join(wurzel, 'inhalte', 'gruppen');
+const GRUPPENNAME = {
+  daemmung: 'Dämmung', kamin: 'Kamin', kanal: 'Kanal', mauerwerk: 'Mauerwerk',
+  moertel: 'Mörtel', wdvs: 'WDVS', zubehoer: 'Zubehör',
+};
+const seiten = readdirSync(gruppenordner)
+  .filter((n) => n.endsWith('.md'))
+  .map((n) => {
+    const gruppe = GRUPPENNAME[n.replace('.md', '')];
+    return {
+      gruppe: gruppe ?? n,
+      text: readFileSync(join(gruppenordner, n), 'utf8'),
+      artikel: katalog.artikel.filter((a) => a.gruppe === gruppe),
+    };
+  });
+
+// **Nicht messbar ist nicht grün.** Ein Dateiname ohne Eintrag in
+// `GRUPPENNAME` fände keine Artikel und ginge als „keine Zusage" durch.
+const unbekannt = seiten.filter((s) => !Object.values(GRUPPENNAME).includes(s.gruppe));
+if (unbekannt.length) {
+  console.error(`\nAbbruch: ${unbekannt.length} Gruppendatei(en) ohne Entsprechung im Katalog:`);
+  for (const s of unbekannt) console.error(`  ${s.gruppe}`);
+  console.error('Ohne Zuordnung prüfte diese Regel eine leere Artikelliste und schwiege.');
+  process.exit(2);
+}
+
+const g = gruppentextbefund(seiten);
+console.log(`  Gruppentexte gegen die Einstufung  ${g.geprueft} geprüft`);
+
+if (!b.sauber || !f.sauber || !g.sauber) {
+  const alle = [...b.meldungen, ...f.meldungen, ...g.meldungen];
+  console.error(`\n${alle.length} Befund(e):\n`);
+  for (const m of alle) console.error(`  ✗ ${m.text}  (${m.regel})`);
   console.error('\nEine Einstufung, die Geld kostet, gehört belegt oder begründet —');
   console.error('und wo sie dem Kunden gesagt wird, gehört ihre Herkunft dazu.');
   process.exit(1);

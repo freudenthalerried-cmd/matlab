@@ -15,6 +15,7 @@ import { readFileSync } from 'node:fs';
 import {
   SPERRGUT_GRUPPEN, HANDGEWICHT_KG, HINGENOMMEN, OHNE_HERKUNFT,
   sperrgutAusGruppe, einstufungsbefund, flaechenbefund,
+  gruppentextbefund,
 } from '../src/sperrguteinstufung.js';
 
 const katalog = JSON.parse(readFileSync(new URL('../data/katalog-baustoff.json', import.meta.url), 'utf8'));
@@ -261,4 +262,45 @@ test('der Frachtsatz nennt beide Schätzungen getrennt', async () => {
   // beim Verlegen leicht verlorengeht.
   assert.equal(frachtGrundText(null), 'Pauschale');
   assert.equal(frachtGrundText(undefined), 'Pauschale');
+});
+
+// **Ergänzt am 9. September 2026.** `moertel.md` sagte der Kundschaft unter
+// „Bestellhinweis": „Mörtel wird palettenweise geliefert." Alle drei
+// Mörtelartikel sind `sperrgut: false` — kein Kranhub, sackweiser Verkauf.
+// Die eine Gruppenseite mit der stärksten Palettenaussage war die einzige
+// Gruppe, in der kein Artikel als palettiert gilt.
+test('eine Lieferzusage ohne einen einzigen palettierten Artikel ist ein Befund', () => {
+  const b = gruppentextbefund([
+    { gruppe: 'Mörtel', text: 'Mörtel wird palettenweise geliefert.', artikel: [{ sperrgut: false }, { sperrgut: false }] },
+  ]);
+  assert.equal(b.meldungen.length, 1);
+  assert.equal(b.meldungen[0].regel, 'lieferaussage-ohne-einstufung');
+  assert.match(b.meldungen[0].text, /keiner der 2 Artikel/);
+});
+
+test('dieselbe Zusage mit einem palettierten Artikel meldet nichts', () => {
+  const b = gruppentextbefund([
+    { gruppe: 'Mauerwerk', text: 'Wird palettenweise geliefert.', artikel: [{ sperrgut: true }] },
+  ]);
+  assert.deepEqual(b.meldungen, []);
+});
+
+test('ein Lagerhinweis über Paletten ist keine Lieferzusage', () => {
+  // `moertel.md` rät unter „Bodenfeuchte" richtig, die Säcke auf der Palette
+  // stehen zu lassen. Ein Prüfer, der das meldete, machte Lärm — und wird
+  // dann ruhiggestellt statt befolgt.
+  const b = gruppentextbefund([
+    { gruppe: 'Mörtel', text: 'Säcke gehören auf der Palette zu bleiben.', artikel: [{ sperrgut: false }] },
+  ]);
+  assert.deepEqual(b.meldungen, []);
+});
+
+test('geprüft wird jede übergebene Seite, auch die stummen', () => {
+  const seiten = [
+    { gruppe: 'WDVS', text: 'Kein Wort dazu.', artikel: [{ sperrgut: false }] },
+    { gruppe: 'Kamin', text: 'Mit Kran entladen.', artikel: [{ sperrgut: true }] },
+  ];
+  const b = gruppentextbefund(seiten);
+  assert.equal(b.geprueft, 2, 'die Zahl nennt das Angesehene, nicht das Gefundene');
+  assert.equal(b.sauber, true);
 });

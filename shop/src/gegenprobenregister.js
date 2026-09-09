@@ -1037,6 +1037,25 @@ export const GEGENPROBEN = Object.freeze([
       + 'eingetragen" und prüfte eine von zehn. Diese Mutation schreibt die Zahl wieder hinein.',
   }),
   Object.freeze({
+    id: 'die-gruppenseite-verspricht-eine-palette',
+    pruefer: 'pruefe-sperrgut',
+    was: 'Eine Gruppenseite, die eine Palette zusagt, wo keiner ihrer Artikel palettiert ist',
+    datei: 'shop/inhalte/gruppen/moertel.md',
+    art: 'ersetzen',
+    suchen: 'Wir rechnen Mörtel **nicht** als palettierte Ware ab: Auf die drei Positionen',
+    ersetzen: 'Mörtel wird palettenweise geliefert. Auf die drei Positionen',
+    erwartet: /lieferaussage-ohne-einstufung/,
+    baueVorher: true,
+    warum: 'Der Zustand vom 9. September, morgens: Unter der Überschrift „Bestellhinweis" '
+      + 'stand „Mörtel wird palettenweise geliefert", und alle drei Mörtelartikel sind '
+      + '`sperrgut: false` — auf keinen fällt ein Kranhub an, verkauft wird sackweise. Die '
+      + 'eine Gruppenseite mit der stärksten Palettenaussage war die einzige Gruppe, in der '
+      + 'kein Artikel als palettiert gilt; der Kunde las eine Zusage, der die Rechnung '
+      + 'widerspricht. Sieben Gruppentexte sind von Hand geschrieben, und keiner wurde je '
+      + 'gegen den Katalog gehalten. Die Mutation setzt den alten Satz zurück und verlangt, '
+      + 'dass der Prüfer den Widerspruch nennt.',
+  }),
+  Object.freeze({
     id: 'palettiert-ohne-herkunft',
     pruefer: 'pruefe-sperrgut',
     was: 'Eine maschinenlesbare Auskunft, die die Kranentladung nennt und ihre Herkunft nicht',

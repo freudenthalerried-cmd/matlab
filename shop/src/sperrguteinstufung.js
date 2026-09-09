@@ -215,13 +215,11 @@ export const OHNE_HERKUNFT = Object.freeze([
       + 'Kostenbestandteil, der getrennt bleibt. Kein Artikel, keine Einstufung, kein Betrag '
       + 'je Position — dieselbe Abgrenzung wie bei der Gratislieferungsseite.',
   }),
-  Object.freeze({
-    datei: 'site/gruppe/mauerwerk.html',
-    warum: 'Die Gruppenseite listet Artikel mit dem Etikett „palettiert" und verlinkt jeden '
-      + 'auf seine Artikelseite, wo die Herkunft steht. Das Etikett darf kurz sein, solange '
-      + 'die Erklärung in Sichtweite steht — dieselbe Entscheidung wie beim Marker über dem '
-      + 'Preis am 5. September vormittags.',
-  }),
+  // **Gestrichen am 9. September 2026.** Der Eintrag stand hier, weil die
+  // Gruppenseite das Etikett kurz hielt und die Erklärung auf der Artikelseite
+  // stand. Seit heute trägt sie die Herkunft selbst — die Ausnahme hat keinen
+  // Fall mehr, und die zweite Richtung dieses Registers hat das gemeldet,
+  // bevor ich es bemerkte: `ausnahme-ohne-fall`.
 ]);
 
 /**
@@ -362,4 +360,52 @@ export function einstufungsbefund(artikel = [], hingenommen = HINGENOMMEN) {
     meldungen,
     sauber: meldungen.length === 0,
   };
+}
+
+/**
+ * Sagt ein Gruppentext, die Ware komme palettiert — und stimmt das mit der
+ * Einstufung dieser Gruppe überein?
+ *
+ * **Der Anlass, 9. September 2026.** `inhalte/gruppen/moertel.md` trug unter
+ * der Überschrift **Bestellhinweis** den Satz „Mörtel wird palettenweise
+ * geliefert." Alle drei Mörtelartikel sind `sperrgut: false` — auf sie fällt
+ * **kein Kranhub** an, und verkauft werden sie sackweise.
+ *
+ * > **Die eine Gruppenseite mit der stärksten Palettenaussage war die einzige
+ * > Gruppe, in der kein Artikel als palettiert gilt.**
+ *
+ * Der Kunde liest auf der Gruppenseite, er bekomme eine Palette; die Rechnung
+ * folgt der Einstufung und sagt das Gegenteil. Sieben Gruppentexte sind von
+ * Hand geschrieben, und kein Prüfer hielt sie gegen den Katalog.
+ *
+ * ## Was hier gemeint ist und was nicht
+ *
+ * Gesucht werden Aussagen darüber, **wie geliefert und verrechnet wird** —
+ * nicht jedes Vorkommen des Wortes „Palette". `moertel.md` rät unter
+ * „Bodenfeuchte" richtig, die Säcke *auf der Palette* stehen zu lassen; das
+ * ist ein Lagerhinweis und keine Zusage. Ein Prüfer, der ihn meldete, machte
+ * Lärm — und wird dann ruhiggestellt statt befolgt.
+ */
+export const LIEFERAUSSAGE = /palettenweise geliefert|palettierte Ware|mit Kran entladen|Kranhub/i;
+
+/**
+ * @param {{gruppe: string, text: string, artikel: {sperrgut: boolean}[]}[]} seiten
+ */
+export function gruppentextbefund(seiten) {
+  const meldungen = [];
+  for (const s of seiten) {
+    const saetze = (s.text.match(/[^.\n]*\./g) || []).filter((z) => LIEFERAUSSAGE.test(z));
+    if (saetze.length === 0) continue;
+    const palettiert = s.artikel.filter((a) => a.sperrgut).length;
+    if (palettiert === 0) {
+      meldungen.push({
+        regel: 'lieferaussage-ohne-einstufung',
+        gruppe: s.gruppe,
+        text: `${s.gruppe} sagt der Kundschaft eine palettierte Lieferung zu, und keiner der `
+          + `${s.artikel.length} Artikel dieser Gruppe ist so eingestuft — auf keinen fällt ein `
+          + 'Kranhub an. Die Rechnung sagt das Gegenteil der Seite',
+      });
+    }
+  }
+  return { geprueft: seiten.length, meldungen, sauber: meldungen.length === 0 };
 }

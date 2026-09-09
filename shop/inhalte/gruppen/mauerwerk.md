@@ -20,10 +20,14 @@ zugehörige Mörtel gehört zum selben System wie der Stein.
 
 **Steine je Quadratmeter.** Ergibt sich aus dem Steinformat und ist auf dem
 Datenblatt des Steins angegeben. Daraus mal der Wandfläche kommt die
-Stückzahl, aufgerundet auf volle Paletten.
+Stückzahl. Bestellt wird stückweise — auf volle Paletten rundet dieser Shop
+nicht auf, und die Kasse verlangt es auch nicht.
 
 **Kranentladung.** Eine Palette Ziegel wird nicht von Hand abgeladen. Der
-Kranhub ist eine eigene Position und fällt je Hub an — was das für die
+Kranhub ist eine eigene Position und fällt je Hub an. Dass diese Gruppe als
+palettierte Ware gilt, ist **geschätzt**: Die Einstufung folgt aus der
+Warengruppe und nicht aus einer Angabe des Lieferanten — dieselbe Auskunft
+steht auf der Artikelseite — was das für die
 Lieferkosten heißt, steht auf
 [Warum es keine Gratislieferung gibt](../wissen/warum-keine-gratislieferung).
 

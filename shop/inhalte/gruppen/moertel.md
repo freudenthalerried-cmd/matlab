@@ -46,7 +46,14 @@ Nacht nach der Verarbeitung. Was zu beachten ist, steht auf
 
 ## Bestellhinweis
 
-Mörtel wird palettenweise geliefert. Eine angebrochene Palette ist kein
-Vorteil: Der Rest steht über den Winter und ist im Frühjahr oft nicht mehr
+Wir rechnen Mörtel **nicht** als palettierte Ware ab: Auf die drei Positionen
+dieser Gruppe fällt kein Kranhub an, und bestellt wird sackweise, nicht
+palettenweise. Diese Einstufung folgt aus der Warengruppe und nicht aus einer
+Angabe des Lieferanten — sie ist geschätzt, in diese Richtung wie in die
+andere. Ob er die Säcke trotzdem auf einer Palette anliefert, steht nicht
+fest; die Frage ist an ihn gestellt.
+
+Was für die Menge gilt, gilt unabhängig davon: Eine angebrochene Palette ist
+kein Vorteil. Der Rest steht über den Winter und ist im Frühjahr oft nicht mehr
 brauchbar. Lieber knapper bestellen und nachbestellen — sofern die Anfahrt
 ohnehin ansteht.
