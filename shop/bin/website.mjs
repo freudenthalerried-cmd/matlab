@@ -77,6 +77,17 @@ import {
 const HIER = dirname(fileURLToPath(import.meta.url));
 const WURZEL = join(HIER, '..');
 
+/*
+ * **Die Außenlage — gemessen, nicht erklärt.** Sie steht in einer eigenen
+ * Datei, weil der Shop sie nicht selbst erheben kann: Sein Netzausgang ist
+ * gesperrt, und das GitHub-Werkzeug gehört nicht zu ihm. Fehlt die Datei,
+ * bleibt der Repositorypunkt eine Frage — und sagt das auch.
+ */
+const AUSSENLAGEPFAD = process.env.STARTKLAR_AUSSENLAGE
+  || join(WURZEL, 'data', 'aussenlage.json');
+const AUSSENLAGE = existsSync(AUSSENLAGEPFAD)
+  ? JSON.parse(readFileSync(AUSSENLAGEPFAD, 'utf8')) : null;
+
 /**
  * **Keine Schrift von einem fremden Server.**
  *
@@ -107,7 +118,6 @@ const WURZEL = join(HIER, '..');
  * Konstante ein `<style>` mit `@font-face` — eine Zeile, kein Umbau.
  */
 const SCHRIFTEINBINDUNG = '';
-
 
 /**
  * Ein Skript vor dem Schreiben parsen lassen.
@@ -230,8 +240,6 @@ const ORT = BETREIBER.ort || 'Ried in der Riedmark';
 const organisation = () => (MARKE === FIRMA
   ? { '@type': 'Organization', name: FIRMA }
   : { '@type': 'Organization', name: MARKE, legalName: FIRMA });
-
-
 
 /* ------------------------------------------------------------------ *
  * Inhalte einlesen
@@ -2490,7 +2498,6 @@ function bedienhinweis(seite) {
   return seite.nurBedienung ? '\n<meta name="robots" content="noindex,follow">' : '';
 }
 
-
   return `<!doctype html>
 <html lang="de-AT">
 <head>
@@ -2570,7 +2577,7 @@ function main() {
     impressumsfelder: IMPRESSUMSFELDER,
     katalog,
     preisdateiVorhanden: true,
-    ...betreiberangaben(betreiber),
+    ...betreiberangaben(betreiber, AUSSENLAGE, geschaeftstag()),
     lieferanten: lieferantenDatei.lieferanten,
     // Derselbe Quelltext, der weiter unten ins Bündel geht — **eine** Lesung,
     // nicht zwei. Er entscheidet, ob die Kasse eine Bestellung abschicken

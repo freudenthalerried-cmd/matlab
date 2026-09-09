@@ -16,6 +16,7 @@ import { GRUPPENSEITE } from '../src/artikelliste.js';
 import { ladeBaustoffkatalog, ZIELMARGE } from '../src/baustoffkatalog.js';
 import { wegwerfordner } from '../src/wegwerf.js';
 import { BANKFELDER } from '../src/bankverbindung.js';
+import { geschaeftstag } from '../src/geschaeftszeit.js';
 
 const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
 
@@ -613,6 +614,11 @@ test('Startseite und llms.txt sagen aus den Daten, ob bestellt werden kann', () 
   // Lieferantendatei, nicht in der Betreiberdatei, und ohne sie bliebe der
   // Satz „noch nicht möglich" aus einem Grund stehen, den diese Probe gar
   // nicht meint.
+  const aussenlageVoll = join(ablage, 'aussenlage.json');
+  writeFileSync(aussenlageVoll, JSON.stringify({
+    gemessenAm: geschaeftstag(), repositoryOeffentlich: false,
+  }));
+
   const lieferantenVoll = join(ablage, 'lieferanten.json');
   const echteLieferanten = JSON.parse(readFileSync(pfad('../data/lieferanten.json'), 'utf8'));
   writeFileSync(lieferantenVoll, JSON.stringify({
@@ -646,6 +652,11 @@ test('Startseite und llms.txt sagen aus den Daten, ob bestellt werden kann', () 
     env: {
       ...process.env, WEBSITE_AUSGABE: ablage,
       STARTKLAR_BETREIBER: betreiberVoll, WEBSITE_LIEFERANTEN: lieferantenVoll,
+      // **Seit dem 9. September, nachts.** Der Repositorypunkt kommt aus einer
+      // Messung. Diese Probe bringt ihre eigene mit — sonst prüfte sie den
+      // Zustand des echten Verzeichnisses mit und wäre an dem Tag rot, an dem
+      // jemand dort etwas umstellt.
+      STARTKLAR_AUSSENLAGE: aussenlageVoll,
       WEBSITE_OBERFLAECHE: oberflaecheMitWeg,
     },
   });

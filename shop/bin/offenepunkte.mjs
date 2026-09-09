@@ -15,6 +15,7 @@ import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { offenePunkte } from '../src/offenepunkte.js';
 import { startklar, betreiberangaben } from '../src/startklar.js';
+import { geschaeftstag } from '../src/geschaeftszeit.js';
 import { IMPRESSUMSFELDER } from '../src/rechtstexte.js';
 import { ladeBaustoffkatalog } from '../src/baustoffkatalog.js';
 import { katalogFeed } from '../src/maschinenlesbar.js';
@@ -26,6 +27,17 @@ import { HERSTELLER, marke } from '../src/hersteller.js';
 import { SYSTEM_UNBEKANNT } from '../src/systemtreue.js';
 
 const SHOP = fileURLToPath(new URL('..', import.meta.url));
+
+/*
+ * **Die Außenlage — gemessen, nicht erklärt.** Sie steht in einer eigenen
+ * Datei, weil der Shop sie nicht selbst erheben kann: Sein Netzausgang ist
+ * gesperrt, und das GitHub-Werkzeug gehört nicht zu ihm. Fehlt die Datei,
+ * bleibt der Repositorypunkt eine Frage — und sagt das auch.
+ */
+const AUSSENLAGEPFAD = process.env.STARTKLAR_AUSSENLAGE
+  || join(SHOP, 'data', 'aussenlage.json');
+const AUSSENLAGE = existsSync(AUSSENLAGEPFAD)
+  ? JSON.parse(readFileSync(AUSSENLAGEPFAD, 'utf8')) : null;
 const REPO = join(SHOP, '..');
 const lies = (p) => JSON.parse(readFileSync(p, 'utf8'));
 
@@ -55,7 +67,7 @@ const befund = startklar({
   impressumsfelder: IMPRESSUMSFELDER,
   katalog,
   preisdateiVorhanden,
-  ...betreiberangaben(betreiber),
+  ...betreiberangaben(betreiber, AUSSENLAGE, geschaeftstag()),
   lieferanten: lieferantenDatei.lieferanten,
   oberflaechenQuelltext: readFileSync(join(SHOP, 'shop-ui.js'), 'utf8'),
 });

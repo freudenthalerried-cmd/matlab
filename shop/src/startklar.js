@@ -25,6 +25,7 @@
  */
 
 import { bestellwegBefund, VORAUSSETZUNGEN } from './bestellweg.js';
+import { aussenlage as ausAussenlage } from './aussenlage.js';
 import { bestellwegAktiv } from './bestellwegbau.js';
 import { bankzeilen } from './bankverbindung.js';
 import { vorDemHochladen, ZAHLUNGSBEDINGUNGEN } from './rechtstexte.js';
@@ -101,13 +102,23 @@ export function fehltSatz(hinweise = []) {
  * @param {object} betreiber der Inhalt von `data/betreiber.json`
  * @returns {object} die abgeleiteten Felder für `startklar()`
  */
-export function betreiberangaben(betreiber = {}) {
+export function betreiberangaben(betreiber = {}, aussenlage = null, heute = null) {
   return {
     zahlungsanbieter: betreiber.zahlungsanbieter ?? null,
     rechtstexteFundstelle: betreiber.rechtstexteFundstelle ?? null,
     domainZeigtAufShop: betreiber.domainZeigtAufShop ?? null,
     repositoryPrivat: betreiber.repositoryPrivat ?? null,
     ablageGesichert: betreiber.ablageGesichert ?? null,
+    /*
+     * **Ergänzt am 9. September 2026, nachts.** Der Vermerk über die
+     * Außenlage kommt nicht aus der Betreiberdatei, sondern aus einer
+     * Messung — er gehört trotzdem hierher. Diese Abbildung gibt es, weil
+     * dasselbe Feld am selben Tag in **einem** von drei Werkzeugen
+     * nachgetragen wurde und in zweien fehlte; eine zweite Abbildung
+     * daneben wäre derselbe Fehler mit einer anderen Datei.
+     */
+    aussenlage,
+    heute,
   };
 }
 
@@ -122,10 +133,19 @@ export function startklar(lage = {}) {
     domainZeigtAufShop = null,
     repositoryPrivat = null,
     ablageGesichert = null,
+    // Der Vermerk über die Außenlage — gemessen, nicht erklärt. Ohne ihn
+    // bleibt der Repositorypunkt, was er war: eine Frage.
+    aussenlage = null,
+    // Der Geschäftstag, gegen den das Alter der Messung gehalten wird. Kein
+    // Vorgabewert aus der Uhr: Eine Liste, die selbst auf die Uhr sieht, ist
+    // nicht zweimal gleich zu prüfen.
+    heute = null,
     impressumsfelder = [],
     lieferanten = [],
     oberflaechenQuelltext = null,
   } = lage;
+
+  const aussenlagebefund = ausAussenlage(aussenlage, heute);
 
   const punkte = [];
   const p = (id, titel, zustand, befund, wer) => punkte.push({ id, titel, zustand, befund, wer,
@@ -407,9 +427,40 @@ export function startklar(lage = {}) {
     wer,
   );
   unpruefbar('domain', 'Die Seite ist unter einer Adresse erreichbar', domainZeigtAufShop,
-    'von hier aus nicht feststellbar — der Netzausgang dieser Umgebung ist gesperrt', 'Auftraggeber');
-  unpruefbar('repository', 'Repository ist privat', repositoryPrivat,
-    'von hier aus nicht feststellbar; solange es öffentlich ist, sind Einkaufspreise rekonstruierbar', 'Auftraggeber');
+    aussenlagebefund.domainErreichbar === null && aussenlagebefund.alter === 0
+      ? 'nachgesehen und gesperrt: Der Ausgang dieser Umgebung antwortet auf den '
+        + 'Verbindungsaufbau mit 403, auch bei der bestehenden Firmenseite'
+      : 'von hier aus nicht feststellbar — der Netzausgang dieser Umgebung ist gesperrt',
+    'Auftraggeber');
+
+  /**
+   * **Berichtigt am 9. September 2026, nachts.** Hier stand seit dem ersten
+   * Bau *„von hier aus nicht feststellbar"*, und der Punkt trug ein
+   * Fragezeichen. Nachgesehen hatte das niemand: Der Netzausgang ist gesperrt,
+   * **das GitHub-Werkzeug ist es nicht** — es beantwortet die Frage in einem
+   * Aufruf.
+   *
+   * > **Eine Grenze, die zu weit gezogen ist, deckt genau das, was sie
+   * > ausschließt.**
+   *
+   * Die Messung steht in `data/aussenlage.json` und trägt ihr Datum; nach
+   * `GRENZE_TAGE` gilt sie wieder als offene Frage. Sie **schlägt die
+   * Angabe**: Wer „privat" einträgt und öffentlich ist, hat sich geirrt, und
+   * eine Liste, die der Angabe glaubt, irrt mit.
+   */
+  if (aussenlagebefund.repositoryOeffentlich !== null) {
+    const privat = aussenlagebefund.repositoryOeffentlich === false;
+    p('repository', 'Repository ist privat', privat ? 'erfuellt' : 'offen',
+      privat
+        ? `gemessen am ${aussenlage?.gemessenAm} über das GitHub-Werkzeug`
+        : `gemessen am ${aussenlage?.gemessenAm}: öffentlich — die 44 von 46 `
+          + 'rückrechenbaren Einkaufspreisen stehen offen',
+      'Auftraggeber');
+  } else {
+    unpruefbar('repository', 'Repository ist privat', repositoryPrivat,
+      `${aussenlagebefund.grund}; solange es öffentlich ist, sind Einkaufspreise rekonstruierbar`,
+      'Auftraggeber');
+  }
   /**
    * **Aufgenommen am 9. September 2026.** `src/ablage.js` weiß seit ihrem
    * ersten Bau, was für die Vorgänge gilt: **§ 132 BAO verlangt sieben Jahre

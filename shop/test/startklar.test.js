@@ -48,6 +48,12 @@ const alles = {
   rechtstexteFundstelle: 'Kanzlei X, Fassung vom …',
   domainZeigtAufShop: true,
   repositoryPrivat: true,
+  // **Seit dem 9. September, nachts.** Der Repositorypunkt kommt aus einer
+  // Messung, nicht aus der Angabe: „von hier aus nicht feststellbar" stand
+  // dort seit dem ersten Bau, und das GitHub-Werkzeug beantwortet die Frage
+  // in einem Aufruf. Die Probe bringt ihre eigene mit.
+  aussenlage: { gemessenAm: '2026-09-09', repositoryOeffentlich: false },
+  heute: '2026-09-09',
   // Seit dem 9. September gehört die Sicherung der Vorgangsablage dazu. Sie
   // ist wie das Repository von hier aus nicht feststellbar — unbeantwortet
   // ein Fragezeichen, und ohne Antwort gäbe es hier kein „startklar".
@@ -72,20 +78,41 @@ test('ein unbeantworteter Punkt zählt nicht als erfüllt', () => {
   // Der Kern dieses Werkzeugs. Ohne diese Regel ginge der Shop online, weil
   // die Prüfung nicht hinsehen konnte — und das ist genau die Sorte Lücke,
   // die dieses Vorhaben sonst überall vermeidet.
-  const b = startklar({ ...alles, repositoryPrivat: null });
+  const b = startklar({ ...alles, repositoryPrivat: null, aussenlage: null });
   assert.equal(b.startklar, false);
   assert.equal(b.unpruefbar, 1);
   const punkt = b.punkte.find((p) => p.id === 'repository');
   assert.equal(punkt.zustand, 'unpruefbar');
-  assert.match(punkt.befund, /nicht feststellbar/);
+  // Seit dem 9. September nennt der Befund den Grund: Es ist keine Messung da.
+  assert.match(punkt.befund, /kein Vermerk/);
+  assert.match(punkt.befund, /rekonstruierbar/);
   assert.equal(punkt.wer, 'Auftraggeber');
 });
 
 test('ein ausdrücklich verneinter Punkt ist offen, kein Fragezeichen', () => {
-  const b = startklar({ ...alles, repositoryPrivat: false });
+  // Ohne Messung entscheidet die Angabe — ein „nein" ist eine Antwort.
+  const b = startklar({ ...alles, aussenlage: null, repositoryPrivat: false });
   assert.equal(b.unpruefbar, 0);
   assert.equal(b.offen, 1);
   assert.match(b.punkte.find((p) => p.id === 'repository').befund, /verneint/);
+});
+
+/**
+ * **Seit dem 9. September, nachts.** Mit einer Messung entscheidet sie, und
+ * die Angabe daneben ändert daran nichts: Wer „privat" einträgt und
+ * öffentlich ist, hat sich geirrt. Der Befund nennt dann den gemessenen
+ * Zustand, nicht die Erklärung.
+ */
+test('die Messung schlägt die Angabe', () => {
+  const b = startklar({
+    ...alles,
+    repositoryPrivat: true,
+    aussenlage: { gemessenAm: '2026-09-09', repositoryOeffentlich: true },
+  });
+  const punkt = b.punkte.find((p) => p.id === 'repository');
+  assert.equal(punkt.zustand, 'offen', 'gemessen öffentlich, also offen — trotz „privat" in der Angabe');
+  assert.match(punkt.befund, /gemessen am 2026-09-09/);
+  assert.doesNotMatch(punkt.befund, /bestätigt/);
 });
 
 test('fehlende Impressumsangaben werden gezählt und benannt', () => {
@@ -155,12 +182,26 @@ test('die Antworten kommen aus der Datei, nicht aus dem Werkzeug', async () => {
     domainZeigtAufShop: false,
   }));
 
+  // **Seit dem 9. September, nachts.** Auch die Außenlage kommt aus einer
+  // Datei — sonst prüfte diese Probe die Messung des echten Verzeichnisses
+  // mit und wäre an dem Tag rot, an dem jemand das Repository umstellt.
+  const aussenPfad = join(ordner, 'aussenlage.json');
+  writeFileSync(aussenPfad, JSON.stringify({
+    gemessenAm: '2026-09-09', repositoryOeffentlich: false,
+  }));
+
   const ausgabe = execFileSync(process.execPath, [werkzeug, '--bericht'], {
     encoding: 'utf8',
-    env: { ...process.env, STARTKLAR_BETREIBER: pfad },
+    env: {
+      ...process.env,
+      STARTKLAR_BETREIBER: pfad,
+      STARTKLAR_AUSSENLAGE: aussenPfad,
+      // Der Geschäftstag, gegen den das Alter der Messung gehalten wird.
+      GESCHAEFTSTAG: '2026-09-09',
+    },
   });
   assert.match(ausgabe, /gewählt: Anbieter aus der Probe/);
-  assert.match(ausgabe, /Repository ist privat\n\s+bestätigt/);
+  assert.match(ausgabe, /Repository ist privat\n\s+gemessen am 2026-09-09/);
   // Ein ausdrückliches „nein" ist eine Antwort, kein Fragezeichen.
   assert.match(ausgabe, /ausdrücklich verneint/);
   assert.match(ausgabe, /0 von hier aus nicht feststellbar/);
@@ -433,7 +474,7 @@ test('die Betreiberangaben kommen aus einer Abbildung, nicht aus drei', () => {
   for (const werkzeugname of ['startklar.mjs', 'offenepunkte.mjs', 'website.mjs']) {
     const quelle = readFileSync(
       fileURLToPath(new URL(`../bin/${werkzeugname}`, import.meta.url)), 'utf8');
-    assert.match(quelle, /betreiberangaben\(betreiber\)/,
+    assert.match(quelle, /betreiberangaben\(betreiber[,)]/,
       `${werkzeugname} baut die Lage selbst zusammen`);
     for (const feld of felder) {
       // Der Bezeichner darf im Fließtext vorkommen; gemeint ist der Zugriff.

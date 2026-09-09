@@ -13,6 +13,8 @@ import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { startklar, betreiberangaben } from '../src/startklar.js';
+import { geschaeftstag } from '../src/geschaeftszeit.js';
+import { aussenlage as ausAussenlage, widerspruchsbefund } from '../src/aussenlage.js';
 import { IMPRESSUMSFELDER } from '../src/rechtstexte.js';
 import { ladeBaustoffkatalog, ZIELMARGE } from '../src/baustoffkatalog.js';
 import { bestellwegAktiv, oberflaeche } from '../src/bestellwegbau.js';
@@ -20,6 +22,17 @@ import { VORAUSSETZUNGEN } from '../src/bestellweg.js';
 
 const HIER = dirname(fileURLToPath(import.meta.url));
 const WURZEL = join(HIER, '..');
+
+/*
+ * **Die Außenlage — gemessen, nicht erklärt.** Sie steht in einer eigenen
+ * Datei, weil der Shop sie nicht selbst erheben kann: Sein Netzausgang ist
+ * gesperrt, und das GitHub-Werkzeug gehört nicht zu ihm. Fehlt die Datei,
+ * bleibt der Repositorypunkt eine Frage — und sagt das auch.
+ */
+const AUSSENLAGEPFAD = process.env.STARTKLAR_AUSSENLAGE
+  || join(WURZEL, 'data', 'aussenlage.json');
+const AUSSENLAGE = existsSync(AUSSENLAGEPFAD)
+  ? JSON.parse(readFileSync(AUSSENLAGEPFAD, 'utf8')) : null;
 const REPO = join(WURZEL, '..');
 const lies = (p) => JSON.parse(readFileSync(p, 'utf8'));
 
@@ -62,7 +75,7 @@ const befund = startklar({
   impressumsfelder: IMPRESSUMSFELDER,
   katalog,
   preisdateiVorhanden,
-  ...betreiberangaben(betreiber),
+  ...betreiberangaben(betreiber, AUSSENLAGE, geschaeftstag()),
   lieferanten: lieferantenDatei.lieferanten,
   /**
    * Der Quelltext, den der Browser des Kunden bekommt. Er entscheidet den
@@ -99,6 +112,18 @@ console.log(befund.startklar
   ? '\nSTARTKLAR.'
   : '\nNICHT STARTKLAR. Ein Punkt, den niemand bestätigt hat, zählt nicht als erfüllt —'
     + '\nsonst ginge der Shop online, weil das Werkzeug nicht hinsehen konnte.');
+
+/*
+ * **Die Angabe gegen die Messung.** Trägt der Auftraggeber eines Tages
+ * „privat" in die Betreiberdatei ein, während die Messung „öffentlich" sagt,
+ * gewinnt ohne diese Zeile, wer zuletzt gelesen wird — und das ist die
+ * Angabe. Der Punkt oben nennt dann den gemessenen Zustand und schweigt über
+ * den Widerspruch; hier steht er.
+ */
+for (const m of widerspruchsbefund(
+  ausAussenlage(AUSSENLAGE, geschaeftstag()), betreiber.repositoryPrivat)) {
+  console.log(`\nAchtung: ${m.text}  [${m.regel}]`);
+}
 
 /**
  * **Berichtigt am 3. September.** Dieses Werkzeug endete ohne jeden
