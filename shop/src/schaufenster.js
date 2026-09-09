@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 /**
  * Die Kennzahlen der PR-Beschreibung — und wie man sie nachmisst.
  *
@@ -298,4 +299,61 @@ export function pruefeSchaufenster(text, messwerte) {
   }
 
   return { geprueft: liste.length + saetze.length, meldungen, sauber: meldungen.length === 0 };
+}
+
+/**
+ * Ist der Text, den `npm run pr-text` ausgibt, auch der veröffentlichte?
+ *
+ * **Der Anlass, 9. September 2026.** Dreimal ist derselbe Handgriff vergessen
+ * worden — die Quelle nachgezogen, die Veröffentlichung nicht:
+ *
+ * | Wann | Quelle | veröffentlicht |
+ * |---|---|---|
+ * | 5. September | 25 Prüfer | 24 |
+ * | 9. September, vormittags | 31 Gates | 30 |
+ * | 9. September, nachmittags | über 2.000 Testfälle, 40 Prüfer | über 1.000, 39 |
+ *
+ * `pruefe-schaufenster` misst die **Quelle** gegen den Bestand und war jedes
+ * Mal grün. Zwischen der Quelle und dem, was auf GitHub steht, lag ein
+ * Handgriff — und ein Handgriff ohne Werkzeug unterbleibt.
+ *
+ * > **Ein Werkzeug, das den richtigen Text ausgibt, hat ihn nicht
+ * > veröffentlicht.**
+ *
+ * ## Was diese Prüfung sagt und was nicht
+ *
+ * Sie vergleicht den Fingerabdruck der Werkzeugausgabe mit dem, der beim
+ * letzten Veröffentlichen eingetragen wurde. Ändert sich die Quelle, fällt der
+ * Vergleich auseinander, und der Lauf sagt: **hier steht eine Veröffentlichung
+ * aus.**
+ *
+ * Sie sagt **nicht**, dass GitHub diesen Text zeigt. Das ließe sich von hier
+ * aus nicht messen — der Netzausgang ist gesperrt —, und ein Prüfer, der es
+ * behauptete, wäre eine Behauptung mit Ziffern. Was er belegt, ist der
+ * Handgriff, nicht sein Ergebnis. Die Grenze steht in der Datei selbst.
+ */
+export function veroeffentlichungsbefund(text, vermerk) {
+  const meldungen = [];
+  const soll = String(vermerk?.sha256 ?? '');
+  if (!/^[0-9a-f]{64}$/.test(soll)) {
+    return {
+      meldungen: [{
+        regel: 'vermerk-ohne-fingerabdruck',
+        text: 'der Vermerk über die letzte Veröffentlichung trägt keinen brauchbaren '
+          + 'sha256 — ohne ihn ist nichts vergleichbar, und nicht messbar ist nicht grün',
+      }],
+      sauber: false,
+      ist: null,
+    };
+  }
+  const ist = createHash('sha256').update(String(text ?? '')).digest('hex');
+  if (ist !== soll) {
+    meldungen.push({
+      regel: 'veroeffentlichung-steht-aus',
+      text: `die Beschreibung hat sich seit der letzten Veröffentlichung (${vermerk.stand}) `
+        + 'geändert — was auf GitHub steht, ist nicht mehr das, was das Werkzeug ausgibt. '
+        + 'Mit `npm run pr-text` neu setzen und den Vermerk nachziehen',
+    });
+  }
+  return { meldungen, sauber: meldungen.length === 0, ist };
 }

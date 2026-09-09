@@ -10,10 +10,10 @@
  */
 
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
-import { pruefeSchaufenster } from '../src/schaufenster.js';
+import { pruefeSchaufenster, veroeffentlichungsbefund } from '../src/schaufenster.js';
 import { PRUEFER, BROWSERPRUEFER } from '../src/pruefregister.js';
 import { FRAGEN } from '../src/lieferantenanfrage.js';
 import { ladeBaustoffkatalog } from '../src/baustoffkatalog.js';
@@ -232,20 +232,46 @@ const messwerte = {
 
 const e = pruefeSchaufenster(readFileSync(beschreibung, 'utf8'), messwerte);
 
+/**
+ * **Ergänzt am 9. September 2026.** Dreimal wurde die Quelle nachgezogen und
+ * die Veröffentlichung vergessen. Der Prüfer misst die Quelle gegen den
+ * Bestand und war jedes Mal grün — zwischen beiden lag ein Handgriff ohne
+ * Werkzeug.
+ */
+const vermerkPfad = join(SHOP, '..', 'docs', 'baustoff-shop', 'pr-veroeffentlicht.json');
+const prText = spawnSync('node', ['bin/prtext.mjs'], { cwd: SHOP, encoding: 'utf8' });
+if (prText.status !== 0) {
+  console.error('Abbruch: `npm run pr-text` lief nicht — ohne seine Ausgabe ist nichts zu vergleichen.');
+  process.exit(2);
+}
+const vermerk = existsSync(vermerkPfad)
+  ? JSON.parse(readFileSync(vermerkPfad, 'utf8')) : null;
+if (!vermerk) {
+  console.error(`Abbruch: ${relative(SHOP, vermerkPfad)} fehlt — ohne Vermerk über die letzte`);
+  console.error('Veröffentlichung ließe sich nicht sagen, ob eine aussteht.');
+  process.exit(2);
+}
+const v = veroeffentlichungsbefund(prText.stdout, vermerk);
+console.log(`  Veröffentlichte Fassung: Fingerabdruck vom ${vermerk.stand} verglichen`);
+
 console.log(`\nSchaufensterabgleich: ${e.geprueft} Kennzahlen der PR-Beschreibung`);
 console.log('Geprüft werden die Zahlen, nicht die Prosa — eine überholte Einschätzung findet');
 console.log('dieses Werkzeug nicht.\n');
 
-if (e.sauber) {
+if (e.sauber && v.sauber) {
   console.log(`Alle ${e.geprueft} Kennzahlen stimmen mit dem Verzeichnis überein.`);
   console.log('Ein Zahlenwerk, das nur beim Schreiben stimmt, ist ein Preisschild von letztem Jahr.');
   process.exit(0);
 }
 
-console.log(`${e.meldungen.length} Meldung(en):\n`);
+console.log(`${e.meldungen.length + v.meldungen.length} Meldung(en):\n`);
 for (const m of e.meldungen) {
   console.log(`  ✗ ${m.name} [${m.art}]`);
   console.log(`      ${m.grund}`);
+}
+for (const m of v.meldungen) {
+  console.log(`  ✗ ${m.regel}`);
+  console.log(`      ${m.text}`);
 }
 console.log('\n„veraltet" heißt: die Zahl nachziehen. „anker" heißt: der Satz wurde umgeschrieben');
 console.log('und das Muster in src/schaufenster.js gehört mit. Das Muster zu löschen wäre der');

@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { zahlAus, kennzahlen, pruefeSchaufenster } from '../src/schaufenster.js';
+import { zahlAus, kennzahlen, pruefeSchaufenster, veroeffentlichungsbefund } from '../src/schaufenster.js';
 
 const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
 
@@ -194,4 +195,42 @@ test('beide Anker greifen nur auf ihre eigene Zeile', () => {
   assert.equal(belege.muster.exec('aus 15 Rechnungen nicht ableitbar'), null);
   const kampagnen = kennzahlen({}).find((x) => x.name === 'Gerechnete Kampagnen');
   assert.equal(kampagnen.muster.exec('6 Suchkampagnen ohne Tafelzeile'), null);
+});
+
+// **Ergänzt am 9. September 2026.** Dreimal wurde die Quelle nachgezogen und
+// die Veröffentlichung vergessen — zuletzt gleich zweifach („über 1.000
+// Testfälle" bei 2009, „39 Prüfer" bei 40). `pruefe-schaufenster` misst die
+// Quelle gegen den Bestand und war jedes Mal grün; zwischen Quelle und GitHub
+// lag ein Handgriff ohne Werkzeug.
+const abdruck = (t) => createHash('sha256').update(t).digest('hex');
+
+test('stimmt der Fingerabdruck, steht keine Veröffentlichung aus', () => {
+  const text = 'Die Beschreibung.';
+  const b = veroeffentlichungsbefund(text, { sha256: abdruck(text), stand: '2026-09-09' });
+  assert.deepEqual(b.meldungen, []);
+  assert.equal(b.ist, abdruck(text));
+});
+
+test('eine geänderte Quelle meldet die ausstehende Veröffentlichung', () => {
+  const b = veroeffentlichungsbefund('neu', { sha256: abdruck('alt'), stand: '2026-09-09' });
+  assert.equal(b.meldungen.length, 1);
+  assert.equal(b.meldungen[0].regel, 'veroeffentlichung-steht-aus');
+  assert.match(b.meldungen[0].text, /2026-09-09/);
+});
+
+test('ein Vermerk ohne brauchbaren Fingerabdruck ist nicht messbar und nicht grün', () => {
+  for (const kaputt of [{}, { sha256: '' }, { sha256: 'abc' }, { sha256: 'Z'.repeat(64) }]) {
+    const b = veroeffentlichungsbefund('irgendwas', kaputt);
+    assert.equal(b.sauber, false, JSON.stringify(kaputt));
+    assert.equal(b.meldungen[0].regel, 'vermerk-ohne-fingerabdruck');
+  }
+});
+
+test('der Vermerk im Verzeichnis nennt seine eigene Grenze', () => {
+  // Er belegt den Handgriff, nicht sein Ergebnis. Ein Prüfer, der behauptete,
+  // GitHub zeige diesen Text, wäre eine Behauptung mit Ziffern.
+  const v = JSON.parse(readFileSync(
+    new URL('../../docs/baustoff-shop/pr-veroeffentlicht.json', import.meta.url), 'utf8'));
+  assert.match(v._grenze, /belegt NICHT/);
+  assert.match(v.sha256, /^[0-9a-f]{64}$/);
 });
