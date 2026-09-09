@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 
 import {
   GRUND_MINDESTLAENGE, OHNE_SPUR, QUELLE, SPUREN, gatebefund, gatesAusRegister,
+  registerkopfbefund,
 } from '../src/gatestand.js';
 
 const WURZEL = new URL('../../', import.meta.url);
@@ -93,4 +94,95 @@ test('Ein Gate ohne Eintrag und ein Eintrag ohne Gate fallen beide auf', () => {
 
 test('Ein anderer Abschnitt liefert kein Gate — und behauptet keines', () => {
   assert.deepEqual(gatesAusRegister('## Etwas anderes\n| **1** | x |\n'), []);
+});
+
+// **Ergänzt am 9. September 2026.** Der Kopf des Registers sagte
+// „Vierundzwanzig Entscheidungen", die Überschrift darunter „Die einunddreißig
+// Gates". Der Prüfer zählte beide Zahlen nie gegeneinander.
+const kopftext = (stand, wort, ueberschrift, rest = 'Nachgetragen am 26. August.') => [
+  '# Gate-Register',
+  '',
+  `Stand: ${stand}. **Maßgeblich für alle Gate-Fragen.** ${wort}`,
+  'Entscheidungen sind über die Phasen verteilt gefallen.',
+  '',
+  '',
+  `## Die ${ueberschrift} Gates`,
+  '',
+  rest,
+].join('\n');
+
+test('ein Kopf, der mit der gezählten Zahl übereinstimmt, meldet nichts', () => {
+  const b = registerkopfbefund({
+    text: kopftext('2026-08-27', 'Vierundzwanzig', 'vierundzwanzig'),
+    gates: 24,
+  });
+  assert.deepEqual(b.meldungen, []);
+  assert.equal(b.sauber, true);
+});
+
+test('ein Kopf, der weniger nennt als gezählt sind, ist ein Befund', () => {
+  const b = registerkopfbefund({
+    text: kopftext('2026-08-27', 'Vierundzwanzig', 'einunddreißig'),
+    gates: 31,
+  });
+  const regeln = b.meldungen.map((m) => m.regel);
+  assert.ok(regeln.includes('kopfzahl-abgeloest'));
+  assert.ok(!regeln.includes('ueberschrift-abgeloest'),
+    'die Überschrift stimmt hier — sie darf nicht mitgemeldet werden');
+});
+
+test('auch die Überschrift wird gehalten, nicht nur der Kopf', () => {
+  const b = registerkopfbefund({
+    text: kopftext('2026-08-27', 'einunddreißig', 'vierundzwanzig'),
+    gates: 31,
+  });
+  assert.ok(b.meldungen.some((m) => m.regel === 'ueberschrift-abgeloest'));
+});
+
+test('ein Kopfdatum vor dem jüngsten Datum im Text ist ein Befund', () => {
+  const b = registerkopfbefund({
+    text: kopftext('2026-08-27', 'einunddreißig', 'einunddreißig', 'Nachgetragen am 7. September.'),
+    gates: 31,
+  });
+  const m = b.meldungen.find((x) => x.regel === 'stand-aelter-als-der-inhalt');
+  assert.ok(m);
+  assert.match(m.text, /2026-09-07/);
+});
+
+test('ein Kopfdatum nach dem jüngsten Datum im Text ist keiner — das Register darf alt sein', () => {
+  const b = registerkopfbefund({
+    text: kopftext('2026-09-09', 'einunddreißig', 'einunddreißig', 'Nachgetragen am 7. September.'),
+    gates: 31,
+  });
+  assert.deepEqual(b.meldungen, []);
+});
+
+test('ohne ausgeschriebenes Datum im Text weigert sich der Prüfer, statt grün zu melden', () => {
+  const b = registerkopfbefund({
+    text: kopftext('2026-08-27', 'einunddreißig', 'einunddreißig', 'Kein Datum hier.'),
+    gates: 31,
+  });
+  assert.ok(b.meldungen.some((m) => m.regel === 'stand-nicht-messbar'));
+});
+
+test('ein unlesbares Zahlwort zählt nicht als null', () => {
+  const b = registerkopfbefund({
+    text: kopftext('2026-09-09', 'Ungefähreviele', 'einunddreißig'),
+    gates: 31,
+  });
+  const regeln = b.meldungen.map((m) => m.regel);
+  assert.ok(regeln.includes('kopf-ohne-zahl'));
+  assert.ok(!regeln.includes('kopfzahl-abgeloest'),
+    'ein nicht gelesenes Wort darf keinen Zahlenunterschied behaupten');
+});
+
+test('ohne gezählte Gates wird nicht verglichen', () => {
+  const b = registerkopfbefund({ text: kopftext('2026-09-09', 'einunddreißig', 'einunddreißig'), gates: 0 });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['nichts-gezaehlt']);
+});
+
+test('das echte Register hält seinen eigenen Kopf', () => {
+  const text = readFileSync(new URL('../../docs/baustoff-shop/gate-register.md', import.meta.url), 'utf8');
+  const b = registerkopfbefund({ text, gates: gatesAusRegister(text).length });
+  assert.deepEqual(b.meldungen, []);
 });

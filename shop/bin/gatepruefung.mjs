@@ -21,7 +21,9 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-import { QUELLE, gatesAusRegister, gatebefund } from '../src/gatestand.js';
+import {
+  QUELLE, gatesAusRegister, gatebefund, registerkopfbefund,
+} from '../src/gatestand.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const REPO = dirname(SHOP);
@@ -49,11 +51,20 @@ if (!gates.length) {
 
 const b = gatebefund({ gates, lies });
 
+// **Ergänzt am 9. September 2026.** Der Prüfer zählte die Gates und hielt
+// seine Zahl nie gegen die, die das Dokument über sich selbst druckt: Der
+// Kopf sagte „Vierundzwanzig Entscheidungen", die Überschrift siebenunddreißig
+// Zeilen tiefer „Die einunddreißig Gates". Die Meldungen gehen in denselben
+// Topf, damit ein Kopfbefund denselben Ausgang 1 erzeugt wie ein fehlendes
+// Gate — eine falsche Zahl im maßgeblichen Dokument ist kein kleinerer Fehler.
+const kopf = registerkopfbefund({ text: register, gates: gates.length });
+b.meldungen.push(...kopf.meldungen);
+
 console.log(`\nGate-Stand — ${b.gates} Gates aus ${QUELLE}\n`);
 console.log(`  ${b.mitSpur} mit nachgewiesener Spur im Bestand`);
 console.log(`  ${b.ohneSpur} ohne Spur, mit Grund\n`);
 
-if (b.sauber) {
+if (b.meldungen.length === 0) {
   console.log('Jede Entscheidung wirkt an einer Stelle — oder sagt, warum sie es nicht tut.');
   console.log('Geprüft ist die Sache, nicht die Nummer: Eine Gate-Nummer im Kommentar wäre');
   console.log('nur die Behauptung, das Gate sei umgesetzt.');

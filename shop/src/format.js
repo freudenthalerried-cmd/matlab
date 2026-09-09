@@ -152,6 +152,52 @@ export const ZAHLWORT = Object.freeze({
  */
 export const zahlwort = (n) => Object.keys(ZAHLWORT).find((w) => ZAHLWORT[w] === n) ?? String(n);
 
+/**
+ * Die Zehner als Wort. **Ergänzt am 9. September 2026.**
+ *
+ * `zahlwort` hört bei zwölf auf, mit der Begründung: „Über zwölf schreibt
+ * niemand mehr aus, und ein Wort, das keiner benutzt, würde in keinem Text
+ * wiedergefunden." Als allgemeine Regel stimmt das. Für **diesen** Bestand
+ * stimmt es nicht: `gate-register.md` schreibt in seiner dritten Zeile
+ * „Vierundzwanzig Entscheidungen" und siebenunddreißig Zeilen tiefer „Die
+ * einunddreißig Gates".
+ *
+ *   Eine Begründung, der der eigene Bestand widerspricht, ist keine.
+ *
+ * Geschrieben wird weiter mit `zahlwort` — hier steht nur, was zum **Lesen**
+ * solcher Wörter nötig ist. `sechzig` und `siebzig` sind unregelmäßig und
+ * stehen deshalb als eigene Einträge und nicht als Regel.
+ */
+export const ZEHNERWORT = Object.freeze({
+  zwanzig: 20, dreißig: 30, vierzig: 40, fünfzig: 50,
+  sechzig: 60, siebzig: 70, achtzig: 80, neunzig: 90,
+});
+
+/** Der Einer, wie er in einem zusammengesetzten Wort steht: `einundzwanzig`. */
+const EINERWORT = Object.freeze({
+  ein: 1, zwei: 2, drei: 3, vier: 4, fünf: 5, sechs: 6, sieben: 7, acht: 8, neun: 9,
+});
+
+/**
+ * Aus einem ausgeschriebenen Zahlwort die Zahl — oder `null`.
+ *
+ * Deckt 1–12 über `ZAHLWORT`, die glatten Zehner und die Zusammensetzungen
+ * `<Einer>und<Zehner>` ab. Alles andere gibt `null`: **nicht gelesen ist nicht
+ * null**, und ein Prüfer, der ein unbekanntes Wort als 0 zählt, meldet einen
+ * Unterschied, den es nicht gibt.
+ */
+export function wortzahl(wort) {
+  const w = String(wort ?? '').trim().toLowerCase();
+  if (!w) return null;
+  if (w in ZAHLWORT) return ZAHLWORT[w];
+  if (w in ZEHNERWORT) return ZEHNERWORT[w];
+  const teile = w.match(/^([a-zäöüß]+)und([a-zäöüß]+)$/);
+  if (!teile) return null;
+  const [, einer, zehner] = teile;
+  if (!(einer in EINERWORT) || !(zehner in ZEHNERWORT)) return null;
+  return ZEHNERWORT[zehner] + EINERWORT[einer];
+}
+
 export const LUECKE = (bezeichnung) => `[[ ${bezeichnung} — FEHLT ]]`;
 
 /**

@@ -155,6 +155,52 @@ const ZAHLWORT = Object.freeze({
 
 const zahlwort = (n) => Object.keys(ZAHLWORT).find((w) => ZAHLWORT[w] === n) ?? String(n);
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const ZEHNERWORT = Object.freeze({
+  zwanzig: 20, dreißig: 30, vierzig: 40, fünfzig: 50,
+  sechzig: 60, siebzig: 70, achtzig: 80, neunzig: 90,
+});
+
+
+const EINERWORT = Object.freeze({
+  ein: 1, zwei: 2, drei: 3, vier: 4, fünf: 5, sechs: 6, sieben: 7, acht: 8, neun: 9,
+});
+
+
+
+
+
+
+
+
+
+function wortzahl(wort) {
+  const w = String(wort ?? '').trim().toLowerCase();
+  if (!w) return null;
+  if (w in ZAHLWORT) return ZAHLWORT[w];
+  if (w in ZEHNERWORT) return ZEHNERWORT[w];
+  const teile = w.match(/^([a-zäöüß]+)und([a-zäöüß]+)$/);
+  if (!teile) return null;
+  const [, einer, zehner] = teile;
+  if (!(einer in EINERWORT) || !(zehner in ZEHNERWORT)) return null;
+  return ZEHNERWORT[zehner] + EINERWORT[einer];
+}
+
 const LUECKE = (bezeichnung) => `[[ ${bezeichnung} — FEHLT ]]`;
 
 

@@ -25,6 +25,8 @@
  */
 
 /** Woher die Gates kommen — gemessen, nicht abgeschrieben. */
+import { wortzahl } from './format.js';
+
 export const QUELLE = 'docs/baustoff-shop/gate-register.md';
 
 /** Überschrift des Abschnitts, in dem die Gates stehen. */
@@ -317,4 +319,157 @@ export function gatebefund({ gates, lies, spuren = SPUREN, ohneSpur = OHNE_SPUR 
     meldungen,
     sauber: meldungen.length === 0,
   };
+}
+
+/**
+ * Stimmt, was das Gate-Register über sich selbst sagt?
+ *
+ * **Der Anlass, 9. September 2026.** Die dritte Zeile von `gate-register.md`
+ * lautete „Stand: 2026-08-27. **Maßgeblich für alle Gate-Fragen.**
+ * Vierundzwanzig Entscheidungen sind über die Phasen verteilt gefallen." —
+ * und siebenunddreißig Zeilen tiefer stand die Überschrift „Die einunddreißig
+ * Gates". Dasselbe Dokument, sieben Gates Unterschied, zwölf Tage.
+ *
+ * Es ist die Datei, auf die die PR-Beschreibung mit „Bei Gate-Fragen gilt"
+ * zeigt. Wer sie öffnet und nach drei Zeilen weiß, was er wissen wollte, geht
+ * mit der falschen Zahl.
+ *
+ * > **Ein Dokument, das „maßgeblich" von sich sagt, wird oben gelesen und
+ * > nicht ganz.**
+ *
+ * Der Prüfer zählt die Gates ohnehin — `gatesAusRegister` liest die Tabelle.
+ * Er hielt seine Zahl nur nie gegen die, die das Dokument über sich druckt.
+ * Genau derselbe Schnitt wie bei `src/statuskopf.js` am 5. September, eine
+ * Datei weiter: **die Aussagen eines Dokuments über genau das, was der Prüfer
+ * ohnehin misst, sind ohne jedes Textverständnis prüfbar.**
+ *
+ * Geprüft werden drei Angaben und keine vierte:
+ *
+ * | Angabe | Gemessen an |
+ * |---|---|
+ * | das Zahlwort im Kopf | den gezählten Gates |
+ * | die Zahl in der Überschrift „Die N Gates" | den gezählten Gates |
+ * | `Stand: JJJJ-MM-TT` im Kopf | dem jüngsten Datum, das das Dokument selbst nennt |
+ *
+ * Das Datum wird **gegen den eigenen Inhalt** gemessen und nicht gegen den
+ * Kalender: Ein Register darf alt sein, solange nichts dazukam. Falsch wird
+ * es, wenn es selbst von etwas Späterem erzählt.
+ */
+export const KOPFZEILEN = 6;
+
+/** `Stand: 2026-08-27` — die Form, in der der Kopf sein Datum trägt. */
+export const KOPFSTAND = /^Stand:\s*(\d{4})-(\d{2})-(\d{2})\./m;
+
+/** `Vierundzwanzig Entscheidungen` — das Zahlwort, das der Kopf über sich setzt. */
+export const KOPFZAHL = /([A-Za-zÄÖÜäöüß]+)\s+Entscheidungen/;
+
+/** `## Die einunddreißig Gates` — dieselbe Aussage als Überschrift. */
+export const UEBERSCHRIFT = /^## Die ([A-Za-zÄÖÜäöüß]+) Gates\s*$/m;
+
+const MONATE = Object.freeze({
+  Januar: 1, Februar: 2, März: 3, April: 4, Mai: 5, Juni: 6,
+  Juli: 7, August: 8, September: 9, Oktober: 10, November: 11, Dezember: 12,
+});
+
+/**
+ * Das jüngste Datum, das der Text ausgeschrieben nennt — `JJJJ-MM-TT` oder ''.
+ *
+ * Das Jahr steht in diesen Sätzen fast nie dabei („Nachgetragen am 26.
+ * August"), deshalb kommt es aus dem Kopfdatum. Das ist keine Schwäche,
+ * sondern der Sinn: Verglichen wird ein Datum mit Daten aus **demselben**
+ * Dokumentjahr.
+ */
+export function juengstesDatum(text, jahr) {
+  if (!jahr) return '';
+  let best = '';
+  const muster = /(\d{1,2})\.\s+(Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember)/g;
+  for (const t of String(text ?? '').matchAll(muster)) {
+    const tag = Number(t[1]);
+    const monat = MONATE[t[2]];
+    if (!monat || tag < 1 || tag > 31) continue;
+    const d = `${jahr}-${String(monat).padStart(2, '0')}-${String(tag).padStart(2, '0')}`;
+    if (d > best) best = d;
+  }
+  return best;
+}
+
+/**
+ * Der Befund über den Kopf des Gate-Registers.
+ *
+ * @param {object} eingabe
+ * @param {string} eingabe.text   der volle Text von `gate-register.md`
+ * @param {number} eingabe.gates  wie viele Gates in der Tabelle stehen
+ */
+export function registerkopfbefund({ text, gates }) {
+  const meldungen = [];
+  const voll = String(text ?? '');
+  const kopf = voll.split('\n').slice(0, KOPFZEILEN).join('\n');
+
+  // **Ein Abgleich über null Gates ist kein Befund** — dieselbe Regel wie in
+  // `kopfbefund`: „nichts gefunden" und „nicht hingesehen" dürfen nicht gleich
+  // aussehen.
+  if (!Number.isInteger(gates) || gates <= 0) {
+    return {
+      meldungen: [{
+        regel: 'nichts-gezaehlt',
+        text: 'ohne gezählte Gates ist der Kopf mit nichts vergleichbar',
+      }],
+      sauber: false,
+    };
+  }
+
+  const kopftreffer = kopf.match(KOPFZAHL);
+  const genannt = kopftreffer ? wortzahl(kopftreffer[1]) : null;
+  if (genannt === null) {
+    meldungen.push({
+      regel: 'kopf-ohne-zahl',
+      text: `der Kopf (erste ${KOPFZEILEN} Zeilen) nennt keine lesbare Zahl der Form `
+        + '„<Zahlwort> Entscheidungen"',
+    });
+  } else if (genannt !== gates) {
+    meldungen.push({
+      regel: 'kopfzahl-abgeloest',
+      text: `der Kopf nennt ${genannt} Entscheidungen, gezählt sind ${gates} Gates`,
+    });
+  }
+
+  const uebertreffer = voll.match(UEBERSCHRIFT);
+  const inUeberschrift = uebertreffer ? wortzahl(uebertreffer[1]) : null;
+  if (inUeberschrift === null) {
+    meldungen.push({
+      regel: 'ueberschrift-ohne-zahl',
+      text: 'die Überschrift der Form „## Die <Zahlwort> Gates" fehlt oder ist nicht lesbar',
+    });
+  } else if (inUeberschrift !== gates) {
+    meldungen.push({
+      regel: 'ueberschrift-abgeloest',
+      text: `die Überschrift sagt ${inUeberschrift} Gates, gezählt sind ${gates}`,
+    });
+  }
+
+  const standtreffer = kopf.match(KOPFSTAND);
+  if (!standtreffer) {
+    meldungen.push({
+      regel: 'kopf-ohne-stand',
+      text: `der Kopf (erste ${KOPFZEILEN} Zeilen) nennt kein Datum der Form „Stand: JJJJ-MM-TT."`,
+    });
+  } else {
+    const stand = `${standtreffer[1]}-${standtreffer[2]}-${standtreffer[3]}`;
+    const juengstes = juengstesDatum(voll.split('\n').slice(KOPFZEILEN).join('\n'), standtreffer[1]);
+    if (!juengstes) {
+      // **Nicht messbar ist nicht grün.**
+      meldungen.push({
+        regel: 'stand-nicht-messbar',
+        text: `der Kopf sagt „Stand: ${stand}", und das Dokument nennt kein einziges `
+          + 'ausgeschriebenes Datum, gegen das sich das halten ließe',
+      });
+    } else if (stand < juengstes) {
+      meldungen.push({
+        regel: 'stand-aelter-als-der-inhalt',
+        text: `der Kopf sagt „Stand: ${stand}", das Dokument erzählt selbst vom ${juengstes}`,
+      });
+    }
+  }
+
+  return { meldungen, sauber: meldungen.length === 0 };
 }

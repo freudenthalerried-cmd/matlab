@@ -1864,6 +1864,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'Seiten sind Endziele bezahlter Anzeigen zu 4,19 € bis 8,22 € je Klick.',
   }),
   Object.freeze({
+    id: 'der-kopf-des-registers-zaehlt-anders-als-die-tabelle',
+    pruefer: 'pruefe-gates',
+    was: 'Ein maßgebliches Dokument, dessen erste Zeilen anders zählen als sein Inhalt',
+    datei: 'docs/baustoff-shop/gate-register.md',
+    art: 'ersetzen',
+    suchen: 'Stand: 2026-09-09. **Maßgeblich für alle Gate-Fragen.** Einunddreißig',
+    ersetzen: 'Stand: 2026-09-09. **Maßgeblich für alle Gate-Fragen.** Vierundzwanzig',
+    erwartet: /kopfzahl-abgeloest/,
+    warum: 'Der Zustand vom 9. September, morgens: Die dritte Zeile sagte „Vierundzwanzig '
+      + 'Entscheidungen", die Überschrift siebenunddreißig Zeilen tiefer „Die einunddreißig '
+      + 'Gates". Es ist die Datei, auf die die PR-Beschreibung mit „Bei Gate-Fragen gilt" '
+      + 'zeigt — wer sie öffnet und nach drei Zeilen weiß, was er wissen wollte, geht mit '
+      + 'der falschen Zahl. Der Prüfer zählte die Gates ohnehin und hielt seine Zahl nie '
+      + 'gegen die gedruckte. Die Mutation setzt das alte Zahlwort zurück und verlangt, '
+      + 'dass der Prüfer den Unterschied nennt.',
+  }),
+  Object.freeze({
     id: 'der-haken-ruft-einen-pruefer-der-nicht-mehr-so-heisst',
     pruefer: 'pruefe-haken',
     was: 'Ein Haken, der auf ein Werkzeug zeigt, das er nicht mehr aufruft',

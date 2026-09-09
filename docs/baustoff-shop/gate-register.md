@@ -1,6 +1,6 @@
 # Gate-Register
 
-Stand: 2026-08-27. **Maßgeblich für alle Gate-Fragen.** Vierundzwanzig
+Stand: 2026-09-09. **Maßgeblich für alle Gate-Fragen.** Einunddreißig
 Entscheidungen sind über die Phasen verteilt gefallen. Wer wissen will, was
 gilt, musste bisher alles lesen. Hier steht es an einer Stelle.
 
