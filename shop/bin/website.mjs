@@ -55,6 +55,7 @@ import { UEBERSCHRIFT as GRENZEN_UEBERSCHRIFT, grenzenbausteine } from '../src/e
 import { abgegrenzteStaemme } from '../src/abgrenzung.js';
 import { MERKBLATT, herstellerDerGruppe } from '../src/merkblattverweis.js';
 import { liesSystemliste } from '../src/systemlisten.js';
+import { GEWERKE, einordnung } from '../src/systemtreue.js';
 import { lastmodFuer } from '../src/sitemapstand.js';
 import { brotkrume, krumeAusHtml } from '../src/krume.js';
 import { HERSTELLER, marke } from '../src/hersteller.js';
@@ -3016,7 +3017,23 @@ function main() {
       // Assistenten als Tatsache weitergegeben.
       + 'Die Angabe „palettiert" ist geschätzt: Sie folgt aus der Warengruppe und nicht aus '
       + 'einer Angabe des Lieferanten. Sie entscheidet, ob die Kranentladung anfällt; wo ein '
-      + 'Positionsgewicht dagegenspricht, steht es auf der Artikelseite.',
+      + 'Positionsgewicht dagegenspricht, steht es auf der Artikelseite. '
+      /*
+       * **Systemtreue — 9. September 2026.** Die Kasse warnt seit dem
+       * 8. September, wenn ein Warenkorb Schichten zweier Hersteller mischt.
+       * Diese Datei sagte nichts davon, und sie ist die, aus der ein Assistent
+       * eine Bestellliste zusammenstellt — bevor ein Mensch sie sieht.
+       *
+       * Der Satz entsteht aus `GEWERKE`: Er nennt die Gewerke, deren eigene
+       * Wissensseite die Systemtreue behauptet, und nicht mehr.
+       */
+      + `Bei ${GEWERKE.map((g) => g.gruppe).join(' und ')} gehören die Schichten eines `
+      + 'Aufbaus zu **einem** System: Wer den Klebemörtel des einen Herstellers mit dem '
+      + 'Gewebe eines anderen kombiniert, verlässt die geprüfte Zusammenstellung '
+      + '(ETAG 004, ÖNORM B 6400). Welche Zusammenstellung geprüft ist, steht in den '
+      + 'Systemunterlagen des Herstellers. Die Zeilen unten nennen deshalb bei jeder '
+      + 'systemgebundenen Schicht ihr System; Dübel und Zubehör tragen eine eigene '
+      + 'Zulassung und sind nicht systemgebunden.',
     '',
     ...katalog.artikel
       .filter((a) => a.vkNetto !== null)
@@ -3029,11 +3046,28 @@ function main() {
       .map((a) => {
         const schritt = mengenschritt(a);
         const eh = EINHEITEN[a.einheit] ?? a.einheit;
+        /*
+         * **Die Systemzugehörigkeit — 9. September 2026.** Seit dem
+         * 8. September warnt die Kasse, wenn ein Warenkorb Schichten zweier
+         * Hersteller mischt (ETAG 004, ÖNORM B 6400). Diese Datei wusste
+         * nichts davon: Sie führt „Capatect Glasgewebe" zu 1,07 € und
+         * „Baumit TextilglasGitter" zu 1,19 € in derselben Gruppe, ohne
+         * Unterschied.
+         *
+         * > **Die Kasse warnt den Menschen. Der Assistent stellt den Korb
+         * > zusammen, bevor ein Mensch ihn sieht.**
+         *
+         * Genannt wird die Angabe nur bei den Schichten, die als Kombination
+         * geprüft werden — bei Dübel und Zubehör wäre sie falsch (sie tragen
+         * eine eigene Zulassung, siehe `src/systemtreue.js`).
+         */
+        const e = einordnung(a);
+        const system = e.schicht && e.system ? ` · ${e.schicht} des Systems ${e.system}` : '';
         return `- [${a.bezeichnung}](${BASIS}/artikel/${a.sku}.html): `
         + `${euro(a.vkNetto)} € je ${eh}, netto`
         + (schritt ? ` · Abgabe ab ${String(schritt).replace('.', ',')} ${eh}`
             + ` (${euro(a.vkNetto * schritt)} €)` : '')
-        + ` · ${a.gruppe}`
+        + ` · ${a.gruppe}${system}`
         + (typeof a.gewichtKg === 'number' ? ` · ${String(a.gewichtKg).replace('.', ',')} kg je Einheit` : '')
         + (a.sperrgut ? ' · palettiert' : '');
       }),

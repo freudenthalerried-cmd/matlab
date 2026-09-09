@@ -444,3 +444,63 @@ export function gewerkbefund(artikel, gewerke = GEWERKE) {
   }
   return { gewerke: gewerke.length, meldungen, sauber: meldungen.length === 0 };
 }
+/**
+ * Sagt `llms.txt`, wovor die Kasse warnt?
+ *
+ * **Der Anlass, 9. September 2026.** Seit dem 8. September warnt die Kasse,
+ * wenn ein Warenkorb Schichten zweier Hersteller mischt (ETAG 004,
+ * ÖNORM B 6400). `llms.txt` wusste nichts davon: Sie führte „Capatect
+ * Glasgewebe" zu 1,07 € und „Baumit TextilglasGitter" zu 1,19 € in derselben
+ * Gruppe, ohne Unterschied.
+ *
+ * > **Die Kasse warnt den Menschen. Der Assistent stellt den Korb zusammen,
+ * > bevor ein Mensch ihn sieht.**
+ *
+ * Der Shop ist ausdrücklich für diesen Kanal gebaut. Eine Empfehlung, die
+ * einen unzulässigen Aufbau zusammenstellt, ist teurer als keine Empfehlung —
+ * sie kommt beim Sachverständigen an und nicht bei uns.
+ *
+ * Geprüft wird zweierlei, und beides nur, **wenn** die Datei überhaupt zwei
+ * Systeme in derselben Rolle führt:
+ *
+ *   1. Der Satz über die Systemtreue steht da.
+ *   2. Jede systemgebundene Schicht nennt ihr System in ihrer eigenen Zeile —
+ *      ein Satz im Vorspann nützt nichts, wenn die Zeile darunter schweigt.
+ *
+ * @param {string} llms      der gebaute Text
+ * @param {object[]} artikel alle Artikel des Katalogs
+ */
+export function llmssystembefund(llms, artikel) {
+  const text = String(llms ?? '');
+  const schichten = artikel.map(einordnung).filter((e) => e.schicht && e.system);
+  const rollen = new Map();
+  for (const e of schichten) {
+    const bekannt = rollen.get(e.schicht) ?? new Set();
+    bekannt.add(e.system);
+    rollen.set(e.schicht, bekannt);
+  }
+  const strittig = [...rollen.entries()].filter(([, systeme]) => systeme.size > 1);
+  if (strittig.length === 0) return { geprueft: schichten.length, meldungen: [], sauber: true };
+
+  const meldungen = [];
+  if (!/verlässt die geprüfte Zusammenstellung/.test(text)) {
+    meldungen.push({
+      regel: 'systemtreue-unerwaehnt',
+      text: `llms.txt führt ${strittig.map(([r]) => r).join(' und ')} von je zwei Systemen `
+        + 'und sagt nicht, dass die Schichten eines Aufbaus zu einem gehören — ein Assistent '
+        + 'stellt daraus einen Korb zusammen, vor dem die Kasse warnt',
+    });
+  }
+  for (const e of schichten) {
+    const zeile = text.split('\n').find((z) => z.includes(`/artikel/${e.sku}.html`));
+    if (!zeile) continue;
+    if (!zeile.includes(e.system)) {
+      meldungen.push({
+        regel: 'schicht-ohne-system-in-llms',
+        text: `${e.sku} ist ${e.schicht} und nennt in llms.txt sein System nicht `
+          + `(${e.system}) — der Satz im Vorspann nützt nichts, wenn die Zeile schweigt`,
+      });
+    }
+  }
+  return { geprueft: schichten.length, meldungen, sauber: meldungen.length === 0 };
+}

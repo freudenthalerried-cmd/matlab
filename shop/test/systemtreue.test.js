@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 import {
@@ -240,4 +240,56 @@ test('ein messbares Gewerk mit einer stummen Schicht ist ein Befund', async () =
     [{ gruppe: 'WDVS', seite: 'wissen/wdvs-systemaufbau', messbar: true, warum: 'x'.repeat(160) }],
   );
   assert.deepEqual(b.meldungen.map((m) => m.regel), ['messbar-und-doch-stumm']);
+});
+
+/**
+ * **Der Befund vom 9. September.** Die Kasse warnt seit dem Vortag vor
+ * gemischten Systemen; `llms.txt` führte „Capatect Glasgewebe" zu 1,07 € und
+ * „Baumit TextilglasGitter" zu 1,19 € in derselben Gruppe, ohne Unterschied.
+ * Ein Assistent stellt daraus einen Korb zusammen, bevor ein Mensch ihn sieht.
+ */
+const zweiSysteme = [
+  { sku: 'POS-50509', bezeichnung: 'Capatect Glasgewebe M 55 m2' },
+  { sku: 'POS-52058', bezeichnung: 'Baumit TextilglasGitter 1,1x50 m' },
+];
+const zeilen = (mitSystem) => zweiSysteme
+  .map((a) => `- [${a.bezeichnung}](https://x/artikel/${a.sku}.html): 1,00 € · WDVS`
+    + (mitSystem ? ` · Glasgewebe des Systems ${a.bezeichnung.startsWith('Capatect') ? 'Synthesa (Capatect)' : 'Baumit Österreich'}` : ''))
+  .join('\n');
+
+test('führt llms.txt zwei Systeme in einer Rolle, muss der Satz dastehen', async () => {
+  const { llmssystembefund } = await import('../src/systemtreue.js');
+  const b = llmssystembefund(zeilen(true), zweiSysteme);
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['systemtreue-unerwaehnt']);
+});
+
+test('mit dem Satz und den Systemen in den Zeilen meldet sie nichts', async () => {
+  const { llmssystembefund } = await import('../src/systemtreue.js');
+  const text = `… verlässt die geprüfte Zusammenstellung …\n${zeilen(true)}`;
+  assert.deepEqual(llmssystembefund(text, zweiSysteme).meldungen, []);
+});
+
+/**
+ * Der wichtigere der beiden Fälle: Ein Satz im Vorspann nützt nichts, wenn die
+ * Zeile darunter schweigt — ein Assistent liest die Zeile, nicht den Vorspann.
+ */
+test('ein Satz im Vorspann genügt nicht, wenn die Zeile ihr System nicht nennt', async () => {
+  const { llmssystembefund } = await import('../src/systemtreue.js');
+  const text = `… verlässt die geprüfte Zusammenstellung …\n${zeilen(false)}`;
+  const b = llmssystembefund(text, zweiSysteme);
+  assert.equal(b.meldungen.length, 2);
+  assert.ok(b.meldungen.every((m) => m.regel === 'schicht-ohne-system-in-llms'));
+});
+
+test('führt die Datei nur ein System, ist nichts zu melden', async () => {
+  const { llmssystembefund } = await import('../src/systemtreue.js');
+  const nur = [zweiSysteme[0]];
+  assert.deepEqual(llmssystembefund(zeilen(true), nur).meldungen, []);
+});
+
+test('der echte Bau ist sauber', async () => {
+  const { llmssystembefund } = await import('../src/systemtreue.js');
+  const pfad = fileURLToPath(new URL('../ausgabe/site/llms.txt', import.meta.url));
+  if (!existsSync(pfad)) return; // ohne Bau keine Aussage
+  assert.deepEqual(llmssystembefund(readFileSync(pfad, 'utf8'), KATALOG.artikel).meldungen, []);
 });

@@ -62,7 +62,7 @@
 
 ## Artikel
 
-> Alle Preise netto je Einheit, Preisstand 2026-04-22 bis 2026-08-17; je Artikel steht er auf der Artikelseite. Die Zustellung kostet eine Pauschale je Lieferung, bei palettierter Ware zuzüglich Kranentladung je Hub; sie steht auf der Seite https://bauversand.com/lieferung.html. Es gibt keine Frei-Haus-Schwelle. Die Angabe „palettiert" ist geschätzt: Sie folgt aus der Warengruppe und nicht aus einer Angabe des Lieferanten. Sie entscheidet, ob die Kranentladung anfällt; wo ein Positionsgewicht dagegenspricht, steht es auf der Artikelseite.
+> Alle Preise netto je Einheit, Preisstand 2026-04-22 bis 2026-08-17; je Artikel steht er auf der Artikelseite. Die Zustellung kostet eine Pauschale je Lieferung, bei palettierter Ware zuzüglich Kranentladung je Hub; sie steht auf der Seite https://bauversand.com/lieferung.html. Es gibt keine Frei-Haus-Schwelle. Die Angabe „palettiert" ist geschätzt: Sie folgt aus der Warengruppe und nicht aus einer Angabe des Lieferanten. Sie entscheidet, ob die Kranentladung anfällt; wo ein Positionsgewicht dagegenspricht, steht es auf der Artikelseite. Bei WDVS und Kamin gehören die Schichten eines Aufbaus zu **einem** System: Wer den Klebemörtel des einen Herstellers mit dem Gewebe eines anderen kombiniert, verlässt die geprüfte Zusammenstellung (ETAG 004, ÖNORM B 6400). Welche Zusammenstellung geprüft ist, steht in den Systemunterlagen des Herstellers. Die Zeilen unten nennen deshalb bei jeder systemgebundenen Schicht ihr System; Dübel und Zubehör tragen eine eigene Zulassung und sind nicht systemgebunden.
 
 - [Fassaden EPS 2 cm 0,5 m2](https://bauversand.com/artikel/POS-12566.html): 1,93 € je m², netto · Abgabe ab 0,5 m² (0,97 €) · Dämmung · palettiert
 - [Fassaden EPS 3 cm 0,5 m2](https://bauversand.com/artikel/POS-12567.html): 2,81 € je m², netto · Abgabe ab 0,5 m² (1,41 €) · Dämmung · palettiert
@@ -73,14 +73,14 @@
 - [XPS glatt SF 50 mm 0,75 m2](https://bauversand.com/artikel/POS-12571.html): 8,72 € je m², netto · Abgabe ab 0,75 m² (6,54 €) · Dämmung · palettiert
 - [XPS glatt SF 80 mm 0,75 m2](https://bauversand.com/artikel/POS-12575.html): 13,95 € je m², netto · Abgabe ab 0,75 m² (10,46 €) · Dämmung · palettiert
 - [XPS rau GK 80 mm 0,75 m2](https://bauversand.com/artikel/POS-12596.html): 15,00 € je m², netto · Abgabe ab 0,75 m² (11,25 €) · Dämmung · palettiert
-- [Mantelstein MSTS EZ 16-18 SIKM](https://bauversand.com/artikel/POS-10837.html): 23,25 € je Stück, netto · Kamin · palettiert
+- [Mantelstein MSTS EZ 16-18 SIKM](https://bauversand.com/artikel/POS-10837.html): 23,25 € je Stück, netto · Kamin · Mantelstein des Systems Schiedel Österreich · palettiert
 - [Mantelsteinkleber RMRTL Dünnbettmörtel](https://bauversand.com/artikel/POS-18110.html): 44,00 € je Stück, netto · Kamin · palettiert
 - [Regenhaube mit Sicherungsseil 180 Absolut & SIH](https://bauversand.com/artikel/POS-51875.html): 105,25 € je Stück, netto · Kamin · palettiert
-- [Schiedel Fugenmasse FM 1,5 kg](https://bauversand.com/artikel/POS-16070.html): 46,29 € je Eimer, netto · Kamin · palettiert
+- [Schiedel Fugenmasse FM 1,5 kg](https://bauversand.com/artikel/POS-16070.html): 46,29 € je Eimer, netto · Kamin · Fugenmasse des Systems Schiedel Österreich · palettiert
 - [SIK Zuluftplatte EZ 16-18 inkl. Befestigungsset](https://bauversand.com/artikel/POS-12455.html): 164,64 € je Stück, netto · Kamin · palettiert
 - [SIKM Fertigfußpaket 18](https://bauversand.com/artikel/POS-12472.html): 183,92 € je Stück, netto · Kamin · palettiert
 - [SIKM Putztüranschlusspaket oben 18](https://bauversand.com/artikel/POS-12467.html): 458,33 € je Stück, netto · Kamin · palettiert
-- [SIKM Rohr 133cm gedämmt 18](https://bauversand.com/artikel/POS-12476.html): 210,99 € je Stück, netto · Kamin · palettiert
+- [SIKM Rohr 133cm gedämmt 18](https://bauversand.com/artikel/POS-12476.html): 210,99 € je Stück, netto · Kamin · Innenrohr des Systems Schiedel Österreich · palettiert
 - [Thermo-Trennstein 12-18 EZ Absolut monolithisch weiß](https://bauversand.com/artikel/POS-51967.html): 255,91 € je Stück, netto · Kamin · palettiert
 - [Grundmauerschutz 20 1,5 m](https://bauversand.com/artikel/POS-21382.html): 1,36 € je m², netto · Kanal · palettiert
 - [PVC Kanalabzweiger 100 100 45 grad](https://bauversand.com/artikel/POS-10134.html): 5,83 € je Stück, netto · Kanal · 0,6433 kg je Einheit · palettiert
@@ -89,18 +89,18 @@
 - [PVC Kanalrohr NW 100 1 m](https://bauversand.com/artikel/POS-10095.html): 10,81 € je Stück, netto · Kanal · 1,7333 kg je Einheit · palettiert
 - [Schachtring 800 300 80 mm](https://bauversand.com/artikel/POS-11133.html): 74,67 € je Stück, netto · Kanal · palettiert
 - [Ökotherm HL N+F 10 50 23,8 cm](https://bauversand.com/artikel/POS-29728.html): 3,07 € je Stück, netto · Mauerwerk · palettiert
-- [Baumit KlebeSpachtel 25 kg](https://bauversand.com/artikel/POS-29108.html): 14,32 € je Sack, netto · Mörtel
+- [Baumit KlebeSpachtel 25 kg](https://bauversand.com/artikel/POS-29108.html): 14,32 € je Sack, netto · Mörtel · Klebe- und Armierungsmörtel des Systems Baumit Österreich
 - [Baumit ThermoMörtel 50 40 l](https://bauversand.com/artikel/POS-13550.html): 10,07 € je Sack, netto · Mörtel · 24 kg je Einheit
 - [Ravenit Vergussmörtel 25 kg](https://bauversand.com/artikel/POS-29754.html): 1,45 € je kg, netto · Abgabe ab 25 kg (36,25 €) · Mörtel
-- [Baumit TextilglasGitter 1,1x50 m](https://bauversand.com/artikel/POS-52058.html): 1,19 € je m², netto · Abgabe ab 55 m² (65,45 €) · WDVS
+- [Baumit TextilglasGitter 1,1x50 m](https://bauversand.com/artikel/POS-52058.html): 1,19 € je m², netto · Abgabe ab 55 m² (65,45 €) · WDVS · Glasgewebe des Systems Baumit Österreich
 - [Capatect Gewebeanschlussleiste 3D Universal Plus 2,55 m](https://bauversand.com/artikel/POS-52124.html): 4,91 € je lfm, netto · Abgabe ab 2,55 lfm (12,52 €) · WDVS
-- [Capatect Glasgewebe M, Breite 110cm, orange 55 m2](https://bauversand.com/artikel/POS-50509.html): 1,07 € je m², netto · Abgabe ab 55 m² (58,85 €) · WDVS
+- [Capatect Glasgewebe M, Breite 110cm, orange 55 m2](https://bauversand.com/artikel/POS-50509.html): 1,07 € je m², netto · Abgabe ab 55 m² (58,85 €) · WDVS · Glasgewebe des Systems Synthesa (Capatect)
 - [Capatect Kantenschutz mit Gewebe Carbon 11,5 13,5 cm 2,5 m](https://bauversand.com/artikel/POS-53402.html): 0,95 € je lfm, netto · Abgabe ab 2,5 lfm (2,38 €) · WDVS
-- [Capatect Klebe- und Spachtelmasse 186 M 25 kg](https://bauversand.com/artikel/POS-11283.html): 0,56 € je kg, netto · Abgabe ab 25 kg (14,00 €) · WDVS
-- [Capatect Klebe- und Spachtelmasse 190 FEIN 25 kg](https://bauversand.com/artikel/POS-29461.html): 0,60 € je kg, netto · Abgabe ab 25 kg (15,00 €) · WDVS
+- [Capatect Klebe- und Spachtelmasse 186 M 25 kg](https://bauversand.com/artikel/POS-11283.html): 0,56 € je kg, netto · Abgabe ab 25 kg (14,00 €) · WDVS · Klebe- und Armierungsmörtel des Systems Synthesa (Capatect)
+- [Capatect Klebe- und Spachtelmasse 190 FEIN 25 kg](https://bauversand.com/artikel/POS-29461.html): 0,60 € je kg, netto · Abgabe ab 25 kg (15,00 €) · WDVS · Klebe- und Armierungsmörtel des Systems Synthesa (Capatect)
 - [Capatect Polystyrol-Rondelle für Capatect Universaldübel Rondelle und Capatect Schraubdübel Holz](https://bauversand.com/artikel/POS-29610.html): 13,24 € je Karton, netto · WDVS
-- [Capatect PrimaPor K20 weiß 25 kg SH-Reibputz](https://bauversand.com/artikel/POS-19333.html): 2,27 € je kg, netto · Abgabe ab 25 kg (56,75 €) · WDVS · 1 kg je Einheit
-- [Capatect Putzgrund weiß 25 kg](https://bauversand.com/artikel/POS-13728.html): 2,77 € je kg, netto · Abgabe ab 25 kg (69,25 €) · WDVS · 1 kg je Einheit
+- [Capatect PrimaPor K20 weiß 25 kg SH-Reibputz](https://bauversand.com/artikel/POS-19333.html): 2,27 € je kg, netto · Abgabe ab 25 kg (56,75 €) · WDVS · Oberputz des Systems Synthesa (Capatect) · 1 kg je Einheit
+- [Capatect Putzgrund weiß 25 kg](https://bauversand.com/artikel/POS-13728.html): 2,77 € je kg, netto · Abgabe ab 25 kg (69,25 €) · WDVS · Putzgrund des Systems Synthesa (Capatect) · 1 kg je Einheit
 - [Capatect Universaldübel Schraubdübel 053 115, 100 STK, 1 KAR](https://bauversand.com/artikel/POS-11082.html): 66,35 € je Karton, netto · WDVS
 - [Drehstiftdübel PK(100) K 6 40 mm](https://bauversand.com/artikel/POS-52537.html): 2,87 € je Karton, netto · WDVS
 - [PAE-Folie T 100 2 50 m 100 m2](https://bauversand.com/artikel/POS-29023.html): 17,12 € je Rolle, netto · Zubehör

@@ -20381,6 +20381,66 @@ function gewerkbefund(artikel, gewerke = GEWERKE) {
 
 
 
+function llmssystembefund(llms, artikel) {
+  const text = String(llms ?? '');
+  const schichten = artikel.map(einordnung).filter((e) => e.schicht && e.system);
+  const rollen = new Map();
+  for (const e of schichten) {
+    const bekannt = rollen.get(e.schicht) ?? new Set();
+    bekannt.add(e.system);
+    rollen.set(e.schicht, bekannt);
+  }
+  const strittig = [...rollen.entries()].filter(([, systeme]) => systeme.size > 1);
+  if (strittig.length === 0) return { geprueft: schichten.length, meldungen: [], sauber: true };
+
+  const meldungen = [];
+  if (!/verlässt die geprüfte Zusammenstellung/.test(text)) {
+    meldungen.push({
+      regel: 'systemtreue-unerwaehnt',
+      text: `llms.txt führt ${strittig.map(([r]) => r).join(' und ')} von je zwei Systemen `
+        + 'und sagt nicht, dass die Schichten eines Aufbaus zu einem gehören — ein Assistent '
+        + 'stellt daraus einen Korb zusammen, vor dem die Kasse warnt',
+    });
+  }
+  for (const e of schichten) {
+    const zeile = text.split('\n').find((z) => z.includes(`/artikel/${e.sku}.html`));
+    if (!zeile) continue;
+    if (!zeile.includes(e.system)) {
+      meldungen.push({
+        regel: 'schicht-ohne-system-in-llms',
+        text: `${e.sku} ist ${e.schicht} und nennt in llms.txt sein System nicht `
+          + `(${e.system}) — der Satz im Vorspann nützt nichts, wenn die Zeile schweigt`,
+      });
+    }
+  }
+  return { geprueft: schichten.length, meldungen, sauber: meldungen.length === 0 };
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

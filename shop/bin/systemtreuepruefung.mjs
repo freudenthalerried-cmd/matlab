@@ -21,7 +21,7 @@
  * die sieben Sperren ohne grünen Fall.
  */
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync} from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -30,7 +30,10 @@ import { readdirSync } from 'node:fs';
 import { ladeBaustoffkatalog } from '../src/baustoffkatalog.js';
 import { HERSTELLER, markenlistenbefund, ohneKommentarzeilen } from '../src/hersteller.js';
 import { kundenWarenkorb } from '../src/shopkern.js';
-import { GEWERKE, SCHICHTEN, gewerkbefund, systembruch, zuordnungsbefund } from '../src/systemtreue.js';
+import {
+  GEWERKE, SCHICHTEN, gewerkbefund, llmssystembefund, systembruch, zuordnungsbefund,
+} from '../src/systemtreue.js';
+import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const REPO = dirname(SHOP);
@@ -112,6 +115,26 @@ if (gemischt.length === 2 && !(korb.offen ?? []).some((o) => /Systemtreue/.test(
   });
 }
 
+/*
+ * **Und was `llms.txt` daraus macht — 9. September 2026.** Die Kasse warnt
+ * seit gestern; die Datei, aus der ein Assistent eine Bestellliste
+ * zusammenstellt, wusste nichts davon. Gelesen wird sie nur, wenn sie da und
+ * auf dem Stand der Quelle ist — sonst misst die Prüfung die Vergangenheit.
+ *
+ * Der Block steht **vor** der Auswertung, nicht hinter `process.exit(0)`.
+ * Dreimal in der Nacht zuvor lag eine neue Regel hinter einem Ausgang oder in
+ * einem Zweig, der nie läuft; seither wird zuerst nachgesehen, wo der Prüfer
+ * endet.
+ */
+const llmsDatei = join(SHOP, 'ausgabe', 'site', 'llms.txt');
+if (existsSync(llmsDatei)) {
+  const stand = frischebefund(SHOP, 'ausgabe/site');
+  if (!stand.frisch) {
+    for (const zeile of abbruchtext(stand)) console.error(zeile);
+    process.exit(2);
+  }
+  meldungen.push(...llmssystembefund(readFileSync(llmsDatei, 'utf8'), katalog.artikel).meldungen);
+}
 const messbar = GEWERKE.filter((g) => g.messbar).length;
 console.log(`Systemtreue — ${befund.geprueft} Artikel mit Systembindung, `
   + `${SCHICHTEN.length} geprüfte Schichten`);

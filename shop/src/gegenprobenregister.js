@@ -1044,8 +1044,8 @@ export const GEGENPROBEN = Object.freeze([
     art: 'ersetzen',
     suchen: "      + 'Die Angabe „palettiert\" ist geschätzt: Sie folgt aus der Warengruppe und nicht aus '\n"
       + "      + 'einer Angabe des Lieferanten. Sie entscheidet, ob die Kranentladung anfällt; wo ein '\n"
-      + "      + 'Positionsgewicht dagegenspricht, steht es auf der Artikelseite.',",
-    ersetzen: "      + '',",
+      + "      + 'Positionsgewicht dagegenspricht, steht es auf der Artikelseite. '",
+    ersetzen: "      + ''",
     erwartet: /llms\.txt/,
     baueVorher: true,
     warum: 'Der Zustand vom 5. September, morgens: Die Artikelseite nannte die Herkunft der '
@@ -2033,6 +2033,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'Ein Assistent empfiehlt dann „dort bekommst du die ganze Grundleitung", und es sind '
       + 'genau die drei Positionen, die dieselbe Liste als wird-oft-vergessen führt. Diese '
       + 'Mutation nimmt den Zusatz wieder heraus.',
+  }),
+  Object.freeze({
+    id: 'llms-txt-verschweigt-das-system',
+    pruefer: 'pruefe-systemtreue',
+    was: 'Eine Artikelzeile, aus der ein Assistent zwei Systeme mischt',
+    datei: 'shop/bin/website.mjs',
+    art: 'ersetzen',
+    baueVorher: true,
+    suchen: "        const system = e.schicht && e.system ? ` · ${e.schicht} des Systems ${e.system}` : '';",
+    ersetzen: "        const system = '';",
+    erwartet: /schicht-ohne-system-in-llms|Zeile schweigt/,
+    warum: 'Die Kasse warnt seit dem 8. September, wenn ein Warenkorb Schichten zweier '
+      + 'Hersteller mischt. llms.txt ist die Datei, aus der ein Assistent eine Bestellliste '
+      + 'zusammenstellt — sie führte Capatect Glasgewebe zu 1,07 € und Baumit '
+      + 'TextilglasGitter zu 1,19 € in derselben Gruppe, ohne Unterschied. Diese Mutation '
+      + 'nimmt die Systemangabe aus den Zeilen und lässt den Satz im Vorspann stehen: Ein '
+      + 'Assistent liest die Zeile, nicht den Vorspann.',
   }),
 ]);
 
