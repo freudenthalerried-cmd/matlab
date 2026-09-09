@@ -33,6 +33,7 @@ import { BESTELLFELDER } from '../src/bestellfelder.js';
 import { pruefeBestelldaten } from '../src/kunde.js';
 import { ABLAGEORT } from '../src/ablageort.js';
 import { kundendatei, leseJournal, posteingangsbefund } from '../src/posteingang.js';
+import { geschaeftsjahr } from '../src/geschaeftszeit.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const REPO = dirname(SHOP);
@@ -43,7 +44,10 @@ const wahl = (name, ersatz = null) => {
   return i >= 0 && argumente[i + 1] ? argumente[i + 1] : ersatz;
 };
 
-const jahr = Number(wahl('jahr', String(new Date().getFullYear())));
+// Das Wirtschaftsjahr entscheidet die Journaldatei. Am 1. Jänner um
+// 00:30 Uhr ist das schon das neue — die Rechneruhr in UTC sagt noch
+// das alte und fände die erste Bestellung des Jahres nicht.
+const jahr = Number(wahl('jahr', String(geschaeftsjahr())));
 const journal = wahl('journal', join(REPO, ABLAGEORT, 'posteingang', `journal-${jahr}.jsonl`));
 const nummer = wahl('nummer');
 const nach = wahl('nach');

@@ -68,6 +68,7 @@ import { fracht } from '../src/preis.js';
 import { lesKopf, alsHtml, alsText, alsListe, esc } from '../src/markdown.js';
 import { wegwerfordner } from '../src/wegwerf.js';
 import { HANDGEWICHT_KG } from '../src/sperrguteinstufung.js';
+import { geschaeftstag } from '../src/geschaeftszeit.js';
 import {
   erzeugeImpressum, pruefeBetreiberdaten, AGB_GLIEDERUNG, ZAHLUNGSBEDINGUNGEN,
   DATENSCHUTZ_GLIEDERUNG, websiteVerarbeitung, B2B_ABGRENZUNG, LIEFERHINWEISE, IMPRESSUMSFELDER,
@@ -261,7 +262,7 @@ function lesInhalte() {
       const stand = standAusGit({
         pfad: `shop/inhalte/${art}/${datei}`,
         git: (argumente) => execFileSync('git', argumente, { cwd: join(WURZEL, '..'), encoding: 'utf8' }),
-        heute: new Date().toISOString().slice(0, 10),
+        heute: geschaeftstag(),
       }) ?? kopf.stand ?? null;
       seiten.set(id, { id, art, slug, kopf, koerper, stand, datei: `${art}/${datei}` });
     }
@@ -887,7 +888,7 @@ ${systemSeiten.length ? `die Systemliste unten` : 'die Systemliste'}.</p>`
    * Werbebudget und sagt dem Kunden nichts. Seit heute steht es auf der Seite.
    */
   if (a.preisStand) {
-    const tage = preisalterTage(a.preisStand, new Date().toISOString().slice(0, 10));
+    const tage = preisalterTage(a.preisStand, geschaeftstag());
     const alt = typeof tage === 'number' && tage > GRENZE_TAGE;
     teile.push(`<p class="antwort"><strong>Was der Preisstand bedeutet.</strong> Er nennt den Tag,
 von dem die Grundlage dieses Preises stammt. Verbindlich wird der Preis nicht hier, sondern mit dem
@@ -2529,7 +2530,7 @@ function main() {
   KATALOGSTAND = standAusGit({
     pfad: 'shop/data/katalog-baustoff.json',
     git: (argumente) => execFileSync('git', argumente, { cwd: join(WURZEL, '..'), encoding: 'utf8' }),
-    heute: new Date().toISOString().slice(0, 10),
+    heute: geschaeftstag(),
   });
   ABHOLLIEFERANT = abholungslage([...katalog.lieferantenById.values()]);
   const befund = katalogbefund(katalog);

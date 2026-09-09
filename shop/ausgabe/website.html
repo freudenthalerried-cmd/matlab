@@ -21751,6 +21751,382 @@ function kundenWarenkorb(zeilen, { artikel, lieferanten, mindestbestellwertNetto
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+const ZEITZONE = 'Europe/Vienna';
+
+
+const TAGFORM = new Intl.DateTimeFormat('sv-SE', {
+  timeZone: ZEITZONE, year: 'numeric', month: '2-digit', day: '2-digit',
+});
+const ZEITFORM = new Intl.DateTimeFormat('sv-SE', {
+  timeZone: ZEITZONE, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
+});
+
+
+
+
+
+
+
+function geschaeftstag(datum = new Date()) {
+  return TAGFORM.format(datum);
+}
+
+
+
+
+
+
+
+
+function geschaeftsjahr(datum = new Date()) {
+  return Number(geschaeftstag(datum).slice(0, 4));
+}
+
+
+
+
+
+
+
+
+
+
+
+
+function zeitstempel(datum = new Date()) {
+  const tag = geschaeftstag(datum);
+  const uhr = ZEITFORM.format(datum).replace(/^24/, '00');
+  
+  const alsUtc = Date.UTC(
+    Number(tag.slice(0, 4)), Number(tag.slice(5, 7)) - 1, Number(tag.slice(8, 10)),
+    Number(uhr.slice(0, 2)), Number(uhr.slice(3, 5)), Number(uhr.slice(6, 8)));
+  const genau = datum.getTime() - datum.getMilliseconds();
+  const minuten = Math.round((alsUtc - genau) / 60000);
+  const vor = minuten < 0 ? '-' : '+';
+  const b = Math.abs(minuten);
+  const zz = (n) => String(n).padStart(2, '0');
+  return `${tag}T${uhr}${vor}${zz(Math.floor(b / 60))}:${zz(b % 60)}`;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const UHRSTELLEN = Object.freeze([
+  Object.freeze({
+    datei: 'src/geschaeftszeit.js', roh: 3, uhr: 'geschaeft',
+    was: 'der Kalender selbst',
+    warum: 'Die drei Griffe sind die Vorgabewerte von geschaeftstag, geschaeftsjahr und '
+      + 'zeitstempel. Hier entsteht die Ortszeit, hier darf die Uhr gelesen werden.',
+  }),
+  Object.freeze({
+    datei: 'src/kundenanfrage.js', roh: 0, uhr: 'geschaeft',
+    was: 'das Datum im Anfragetext',
+    warum: 'Der Text geht als Anfrage an uns und ist die Grundlage des Angebots. Ein Kunde, '
+      + 'der um 00:30 Uhr bestellt, liest darin sonst den Vortag und schreibt uns über eine '
+      + 'Anfrage von gestern.',
+  }),
+  Object.freeze({
+    datei: 'bin/vorgang.mjs', roh: 0, uhr: 'geschaeft',
+    was: 'das Ausstellungsdatum auf Angebot, Auftragsbestätigung und Rechnung',
+    warum: '§ 11 Abs 1 Z 4 UStG verlangt das Ausstellungsdatum. Gemeint ist der Tag am Sitz '
+      + 'des Unternehmens; ein Beleg mit dem Datum des Vortags ist kein Formfehler auf dem '
+      + 'Papier, sondern eine falsche Angabe darauf.',
+  }),
+  Object.freeze({
+    datei: 'bin/posteingang.mjs', roh: 0, uhr: 'geschaeft',
+    was: 'das Wirtschaftsjahr der Journaldatei',
+    warum: 'Es entscheidet, welche Datei gelesen wird — und damit, ob die Bestellungen des '
+      + '1. Jänner überhaupt gefunden werden. § 132 BAO zählt sieben Jahre ab Ende des '
+      + 'Wirtschaftsjahres, und das ist ein österreichisches Jahr.',
+  }),
+  Object.freeze({
+    datei: 'bin/bestellprobe.mjs', roh: 0, uhr: 'geschaeft',
+    was: 'die Journaldatei, in der die Probe ihre eigene Bestellung sucht',
+    warum: 'Sie muss dieselbe Datei treffen wie das Empfangsskript. Rechnen beide anders, '
+      + 'ist die Probe am Jahreswechsel rot, ohne dass etwas kaputt wäre — oder schlimmer: '
+      + 'grün, weil sie eine alte Zeile findet.',
+  }),
+  Object.freeze({
+    datei: 'bestellung.php', roh: 2, uhr: 'geschaeft',
+    was: 'Journaljahr und Ausstellungsdatum jeder eingehenden Bestellung',
+    warum: 'Der eine Griff wählt die Datei und damit die fortlaufende Nummer, der andere '
+      + 'stempelt den Eintrag. Sie liefen aus zwei Uhren: die Jahreszahl aus der '
+      + 'ungesetzten Zeitzone des Hosts, der Stempel aus UTC.',
+  }),
+  Object.freeze({
+    datei: 'bin/preisliste.mjs', roh: 0, uhr: 'geschaeft',
+    was: 'der Preisstand je Artikel beim Einlesen',
+    warum: 'Er steht auf jeder Artikelseite und ist die Grundlage der Alterswarnung. Ein '
+      + 'Preisstand, der einen Tag vor dem Einlesen liegt, ist eine Angabe über einen Tag, '
+      + 'an dem niemand etwas eingelesen hat.',
+  }),
+  Object.freeze({
+    datei: 'bin/website.mjs', roh: 0, uhr: 'geschaeft',
+    was: 'der Seitenstand, der Katalogstand und das Heute der Alterswarnung',
+    warum: 'Alle drei stehen auf ausgelieferten Seiten. Der dritte rechnet zusätzlich die '
+      + 'Tage seit dem Preisstand aus und entscheidet, ob der Kunde die Warnung sieht.',
+  }),
+
+  Object.freeze({
+    datei: 'src/gegenprobenregister.js', roh: 1, uhr: 'zitat',
+    was: 'der Mutationstext der Gegenprobe zu diesem Prüfer',
+    warum: 'Die Probe dreht das Ausstellungsdatum in bin/vorgang.mjs auf die Rechneruhr '
+      + 'zurück; dafür steht die alte Zeile als Zeichenkette im Register. Sie wird nie '
+      + 'ausgeführt — der Prüfer hat sie beim ersten Lauf trotzdem gefunden, und das ist '
+      + 'richtig so: Er kann ein Zitat nicht von einem Aufruf unterscheiden, also entscheidet '
+      + 'ein Mensch es hier einmal statt der Prüfer jedes Mal falsch.',
+  }),
+
+  
+  Object.freeze({
+    datei: 'src/mutationsschutz.js', roh: 1, uhr: 'technisch',
+    was: 'der Zettel an einer absichtlich verfälschten Datei',
+    warum: 'Er hält fest, seit wann eine Gegenprobe läuft. Gebraucht wird die Reihenfolge, '
+      + 'nicht der Kalendertag — und der Zettel überlebt keine Nacht.',
+  }),
+  Object.freeze({
+    datei: 'src/paket.js', roh: 1, uhr: 'technisch',
+    was: 'der Zeitstempel der Einträge im Auslieferungspaket',
+    warum: 'Ein ZIP-Eintrag trägt sein Datum im DOS-Format ohne Zonenangabe. Es beschreibt '
+      + 'die Datei, nicht einen Geschäftsfall.',
+  }),
+  Object.freeze({
+    datei: 'src/sicherung.js', roh: 2, uhr: 'technisch',
+    was: 'der Dateiname einer Sicherungskopie',
+    warum: 'Der Stempel muss nur eindeutig und sortierbar sein. UTC ist dafür die bessere '
+      + 'Wahl: Er springt nicht zur Sommerzeit und erzeugt keine doppelte Stunde.',
+  }),
+  Object.freeze({
+    datei: 'bin/paket.mjs', roh: 1, uhr: 'technisch',
+    was: 'der Dateiname des Auslieferungspakets',
+    warum: 'Derselbe Fall wie die Sicherung: ein Name, kein Datum auf einem Papier.',
+  }),
+  Object.freeze({
+    datei: 'bin/kampagne.mjs', roh: 1, uhr: 'technisch',
+    was: 'der Stand der erzeugten Kampagnendateien',
+    warum: 'Eine Angabe über einen Erzeugungslauf in dieser Werkstatt. Sie geht an keinen '
+      + 'Kunden und in keinen Beleg; Google liest die Dateien, nicht das Datum darin.',
+  }),
+  Object.freeze({
+    datei: 'bin/kennzahlen.mjs', roh: 1, uhr: 'technisch',
+    was: 'der Stand der Auswertungsseite',
+    warum: 'Sie ist eine Arbeitsauswertung für den Auftraggeber und wird nicht ausgeliefert.',
+  }),
+  Object.freeze({
+    datei: 'bin/offenepunkte.mjs', roh: 2, uhr: 'technisch',
+    was: 'der Stand der Liste offener Punkte',
+    warum: 'Eine Arbeitsliste. Ein Tag Unterschied ändert an keinem der Punkte etwas.',
+  }),
+  Object.freeze({
+    datei: 'bin/preisalterpruefung.mjs', roh: 1, uhr: 'technisch',
+    was: 'der Stichtag, gegen den das Alter der Einkaufspreise gemessen wird',
+    warum: 'Gemessen wird eine Spanne von 90 Tagen, kein Belegdatum. Ein Tag Unterschied '
+      + 'verschiebt den Befund nur genau am Rand, und der Rand ist selbst eine Schätzung — '
+      + 'der Preisrhythmus des Lieferanten ist eine der offenen Fragen an ihn.',
+  }),
+  Object.freeze({
+    datei: 'bin/preiswiederherstellung.mjs', roh: 1, uhr: 'technisch',
+    was: 'der Vermerk _stand in der zurückgerechneten Preisdatei',
+    warum: 'Er sagt, wann zurückgerechnet wurde — eine Angabe über einen Rettungsvorgang in '
+      + 'dieser Werkstatt. Der Preisstand der Artikel entsteht davon getrennt.',
+  }),
+  Object.freeze({
+    datei: 'bin/standpruefung.mjs', roh: 1, uhr: 'technisch',
+    was: 'das Heute, gegen das der Kopf von STATUS.md gehalten wird',
+    warum: 'Eine Angabe über das Arbeitsverzeichnis. Sie wird gegen den jüngsten Eingriff '
+      + 'gehalten, und der kommt aus derselben Uhr.',
+  }),
+]);
+
+
+
+
+
+
+const ROHGRIFF = /new Date\(\s*\)|\bgmdate\s*\(|(?<![\w$])date\s*\(/g;
+
+
+const KALENDERRUF = /\b(geschaeftstag|geschaeftsjahr|zeitstempel)\s*\(/;
+
+
+
+
+
+
+
+
+
+function ohneKommentare(quelltext, php = false) {
+  let t = String(quelltext ?? '').replace(/\/\*[\s\S]*?\*\//g, '');
+  t = t.replace(/^\s*\/\/.*$/gm, '');
+  if (php) t = t.replace(/^\s*#.*$/gm, '');
+  return t;
+}
+
+
+function rohgriffe(quelltext, php = false) {
+  return (ohneKommentare(quelltext, php).match(ROHGRIFF) ?? []).length;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function zeitbefund(dateien, register = UHRSTELLEN) {
+  const meldungen = [];
+  const melde = (regel, text) => meldungen.push({ regel, text });
+  const nachPfad = new Map(register.map((e) => [e.datei, e]));
+
+  for (const e of register) {
+    if (!e.warum || e.warum.length < 40) {
+      melde('grund-zu-duenn', `${e.datei}: ein Grund, der in eine Zeile passt, ist keiner`);
+    }
+    if (!['geschaeft', 'technisch', 'zitat'].includes(e.uhr)) {
+      melde('uhr-unbekannt', `${e.datei}: „${e.uhr}" ist keine der beiden Uhren`);
+    }
+  }
+
+  const gesehen = new Set();
+  for (const { pfad, text } of dateien) {
+    const php = pfad.endsWith('.php');
+    const roh = rohgriffe(text, php);
+    const eintrag = nachPfad.get(pfad);
+    if (!eintrag) {
+      if (roh > 0) {
+        melde('stelle-ohne-eintrag',
+          `${pfad} sieht ${roh}-mal roh auf die Uhr und steht in keinem Register — `
+          + 'unentschieden, ob daraus ein Belegdatum wird');
+      }
+      continue;
+    }
+    gesehen.add(pfad);
+
+    if (roh !== eintrag.roh) {
+      melde(eintrag.roh === 0 ? 'rohe-uhr-im-beleg' : 'rohzahl-abgeloest',
+        eintrag.roh === 0
+          ? `${pfad} führt Belegdaten und sieht ${roh}-mal roh auf die Uhr — `
+            + 'ein Datum aus der Rechneruhr ist am Sitz des Betriebs der falsche Tag'
+          : `${pfad}: das Register erlaubt ${eintrag.roh} rohe Uhrgriffe, gezählt sind ${roh}`);
+    }
+
+    
+
+
+
+
+
+    if (eintrag.uhr === 'geschaeft' && eintrag.datei !== 'src/geschaeftszeit.js') {
+      const ruft = php
+        ? /date_default_timezone_set\(\s*'Europe\/Vienna'\s*\)/.test(text)
+        : KALENDERRUF.test(ohneKommentare(text));
+      if (!ruft) {
+        melde('beleguhr-nicht-verwendet',
+          `${pfad} soll den Geschäftskalender führen und ruft ihn nicht auf — `
+          + 'die Absicht steht im Register, im Code steht sie nicht');
+      }
+      if (php && /\bgmdate\s*\(/.test(ohneKommentare(text, true))) {
+        melde('utc-stempel-im-beleg',
+          `${pfad} stempelt einen Beleg in UTC — gesetzte Zeitzone hin oder her, `
+          + 'gmdate geht an ihr vorbei');
+      }
+    }
+  }
+
+  for (const e of register) {
+    if (!gesehen.has(e.datei)) {
+      melde('eintrag-ohne-datei', `${e.datei} steht im Register und wurde nicht gelesen`);
+    }
+  }
+
+  return {
+    meldungen,
+    sauber: meldungen.length === 0,
+    geprueft: dateien.length,
+    eintraege: register.length,
+    belegdateien: register.filter((e) => e.uhr === 'geschaeft').length,
+  };
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const anfrageEuro = (n) => `${n.toFixed(2).replace('.', ',')} €`;
 
 
@@ -21833,7 +22209,7 @@ function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = null }) {
     return { moeglich: false, hindernis: mbw.grund, ...leer };
   }
 
-  const tag = datum ?? new Date().toISOString().slice(0, 10);
+  const tag = datum ?? geschaeftstag();
   const zeilen = [];
   const hinweise = [];
 

@@ -63,6 +63,7 @@ import { EUR } from '../src/format.js';
 import { ARTEN, haltefest, naechsteNummer, neueAblage, pruefeNummernkreis } from '../src/ablage.js';
 import { ausJournal, journalzeile } from '../src/speicher.js';
 import { ABLAGEORT, journalpfad } from '../src/ablageort.js';
+import { geschaeftstag } from '../src/geschaeftszeit.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const REPO = dirname(SHOP);
@@ -79,7 +80,9 @@ const frei = argumente.filter((a, i) => !a.startsWith('--') && !argumente[i - 1]
 const anfrageDatei = frei[0] ?? null;
 const kundeDatei = wahl('kunde');
 const stufe = wahl('stufe', 'angebot');
-const heute = new Date().toISOString().slice(0, 10);
+// Der Kalender des Betriebs, nicht die Uhr des Rechners: § 11 Abs 1 Z 4
+// UStG verlangt das Ausstellungsdatum, und das ist der Tag am Sitz.
+const heute = geschaeftstag();
 const datum = wahl('datum', heute);
 // Die Vorgangsnummer klammert Angebot, Bestätigung, Bestellungen und Rechnung.
 // Sie wird **nicht** hier erzeugt: Ein Werkzeug, das selbst Nummern zieht,

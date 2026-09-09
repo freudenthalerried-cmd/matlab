@@ -35,6 +35,7 @@ import { beispielbestellung } from '../src/bestellfelder.js';
 import { freierPort } from '../src/freierport.js';
 import { pruefeBestelldaten } from '../src/kunde.js';
 import { wegwerfordner } from '../src/wegwerf.js';
+import { geschaeftsjahr } from '../src/geschaeftszeit.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const REPO = dirname(SHOP);
@@ -231,7 +232,7 @@ try {
     bestanden.push('Die Ablage liegt außerhalb des Webverzeichnisses');
   }
 
-  const journal = join(ablage, 'bestellungen', `journal-${new Date().getFullYear()}.jsonl`);
+  const journal = join(ablage, 'bestellungen', `journal-${geschaeftsjahr()}.jsonl`);
   if (!existsSync(journal)) probleme.push('kein Journal in der Ablage — es ist nichts angekommen');
   else {
     const zeilen = readFileSync(journal, 'utf8').split('\n').filter(Boolean).map((z) => JSON.parse(z));
@@ -274,7 +275,7 @@ try {
   if (existsSync(journal) && existsSync(join(REPO, 'preise', 'baustoff-preise.json'))) {
     const ziel = join(ablage, 'vorgang');
     const schnitt = spawnSync(process.execPath, [join(SHOP, 'bin', 'posteingang.mjs'),
-      '--journal', journal, '--nummer', 'B-' + new Date().getFullYear() + '-0001', '--nach', ziel],
+      '--journal', journal, '--nummer', 'B-' + geschaeftsjahr() + '-0001', '--nach', ziel],
     { cwd: SHOP, encoding: 'utf8' });
     if (schnitt.status !== 0) {
       probleme.push(`posteingang schneidet nicht heraus: ${(schnitt.stderr || '').trim().slice(0, 200)}`);

@@ -100,6 +100,11 @@ export const KERNMODULE = Object.freeze([
   // jeder Artikelseite.
   'hersteller.js',
   'systemtreue.js',
+  // **Ergänzt am 9. September.** Der Kalender des Betriebs: `Europe/Vienna`,
+  // gerechnet über `Intl`. Der Anfragetext trägt ein Datum, und es ist
+  // **unseres**. Ein Browser in Hamburg oder auf einem Rechner mit UTC
+  // stempelte sonst einen Tag, den es am Sitz nie gab.
+  'geschaeftszeit.js',
 ]);
 
 /** Die Module des Shops, die zusätzlich in die Seiten wandern. */
@@ -135,6 +140,11 @@ export const BROWSERMODULE = Object.freeze([
   // Bündel steht jede Abhängigkeit vor ihrem Nutzer.
   'format.js', 'gebinde.js', 'liefergebiet.js', 'hersteller.js', 'systemtreue.js',
   'shopkern.js', 'kundenanfrage.js',
+  // **Ergänzt am 9. September.** Der Kalender des Betriebs. `kundenanfrage.js`
+  // datiert den Anfragetext, und das Datum darauf ist **unseres**, nicht das
+  // des Kunden: Ein Browser in einer anderen Zeitzone stempelte sonst einen
+  // Tag, den es in Ried nie gab. Weder Zahl noch Methode — eine Zeitzone.
+  'geschaeftszeit.js',
   // **Ergänzt am 5. September.** Ein Satz, keine Zahl, kein Wissen — der Satz
   // an der Frachtzeile, den `shopkern.js` und `preis.js` gemeinsam brauchen.
   'frachttext.js',

@@ -32,6 +32,7 @@ import { pruefeLieferort } from './liefergebiet.js';
 // stillschweigend die Kürzel des Lieferanten in einen Kundentext. Genau das
 // tat `bin/belegpruefung.mjs`, der einzige Prüfer über diesen Text.
 import { einheitText } from './format.js';
+import { geschaeftstag } from './geschaeftszeit.js';
 
 // Heißt `anfrageEuro` und nicht `eur`: Ein Modul dieses Bündels wandert auch
 // in die Demo-Einzeldatei, und deren Vorlage führt dort bereits ein `const
@@ -119,7 +120,7 @@ export function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = nu
     return { moeglich: false, hindernis: mbw.grund, ...leer };
   }
 
-  const tag = datum ?? new Date().toISOString().slice(0, 10);
+  const tag = datum ?? geschaeftstag();
   const zeilen = [];
   const hinweise = [];
 

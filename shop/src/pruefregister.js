@@ -282,6 +282,19 @@ export const PRUEFER = [
     mindestens: 1,
   },
   {
+    // **Aufgenommen am 9. September 2026.** `bestellung.php` wählte die
+    // Journaldatei aus der ungesetzten Zeitzone des Hosts und stempelte den
+    // Eintrag in UTC — zwei Uhren in einem Beleg, und keine davon die
+    // österreichische. Gemessen wird die Zahl der **angesehenen**
+    // Quelldateien: „keine fremde Uhr" darf nicht aussehen wie „keine Uhr
+    // angesehen".
+    name: 'pruefe-zeit',
+    werkzeug: 'zeitpruefung.mjs',
+    muster: /Uhrenabgleich — (\d+) Quelldateien/,
+    einheit: 'Quelldateien auf die Uhr, aus der ihre Daten kommen',
+    mindestens: 50,
+  },
+  {
     name: 'pruefe-mutationen',
     werkzeug: 'mutationspruefung.mjs',
     // Gemessen wird das **Angesehene**. Der gesunde Zustand dieses Prüfers ist

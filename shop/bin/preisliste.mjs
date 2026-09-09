@@ -26,6 +26,7 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { lesePreisliste, fuegeZusammen } from '../src/preisliste.js';
+import { geschaeftstag } from '../src/geschaeftszeit.js';
 
 const HIER = dirname(fileURLToPath(import.meta.url));
 const WURZEL = join(HIER, '..');
@@ -64,7 +65,7 @@ try {
 const bestandKatalog = existsSync(KATALOG) ? JSON.parse(readFileSync(KATALOG, 'utf8')) : { artikel: [] };
 const bestandPreise = existsSync(PREISE) ? JSON.parse(readFileSync(PREISE, 'utf8')) : { preise: {} };
 const lieferantId = bestandKatalog.lieferantId ?? 'poschacher';
-const heute = new Date().toISOString().slice(0, 10);
+const heute = geschaeftstag();
 
 const gelesen = lesePreisliste(inhalt, { lieferantId, stand: heute });
 

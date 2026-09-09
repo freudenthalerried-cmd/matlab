@@ -234,3 +234,26 @@ test('der Vermerk im Verzeichnis nennt seine eigene Grenze', () => {
   assert.match(v._grenze, /belegt NICHT/);
   assert.match(v.sha256, /^[0-9a-f]{64}$/);
 });
+
+/**
+ * **Berichtigt am 9. September, abends.** Die Grenze stand bis dahin zu weit:
+ * Sie behauptete, eine Prüfung der Veröffentlichung sei aus dieser Umgebung
+ * unmöglich. Der Netzausgang ist gesperrt, das GitHub-Werkzeug nicht — die
+ * Beschreibung lässt sich zurücklesen. Gedeckt hatte die falsche Grenze einen
+ * echten Fall: Die veröffentlichte Fassung trug einen Punkt, den die Quelle
+ * nie hatte, und der Prüfer blieb grün, weil er die Werkzeugausgabe gegen
+ * eine Zahl in dieser Datei hält und nicht gegen GitHub.
+ *
+ * > **Eine Grenze, die zu weit gezogen ist, deckt genau das, was sie
+ * > ausschließt.**
+ */
+test('der Vermerk hält fest, wann zuletzt zurückgelesen wurde', () => {
+  const v = JSON.parse(readFileSync(
+    new URL('../../docs/baustoff-shop/pr-veroeffentlicht.json', import.meta.url), 'utf8'));
+  assert.match(v.zurueckgelesen, /^\d{4}-\d{2}-\d{2}$/,
+    'ohne Datum wäre es eine Zusage statt eines Vermerks');
+  // Und die Grenze sagt selbst, dass das Zurücklesen geht — sonst stünde die
+  // widerlegte Behauptung wieder da.
+  assert.match(v._grenze, /zurücklesen/);
+  assert.doesNotMatch(v._grenze, /erlaubt keine Prüfung der Veröffentlichung selbst/);
+});

@@ -29,6 +29,34 @@
 
 declare(strict_types=1);
 
+/*
+ * **Die Uhr dieses Betriebs, gesetzt am 9. September 2026.** Bis dahin stand
+ * hier nichts, und das Skript las zwei verschiedene Uhren: Die Journaldatei
+ * kam aus `date('Y')` — also aus der Zeitzone, die der Hoster eingestellt
+ * hat und die niemand nachgesehen hat —, der Zeitstempel aus `gmdate('c')`,
+ * also aus UTC.
+ *
+ * Mit echtem PHP nachgestellt, Bestellung am 1. Jänner 2027 um 00:30 Uhr
+ * österreichischer Zeit:
+ *
+ *   Zeitzone UTC             journal-2026.jsonl   Stempel 2026-12-31T23:30:00+00:00
+ *   Zeitzone Europe/Vienna   journal-2027.jsonl   Stempel 2026-12-31T23:30:00+00:00
+ *
+ * Auf einem UTC-Host landet der Geschäftsfall im Journal des **Vorjahres**
+ * und bekommt eine Nummer daraus; auf einem Wiener Host stimmt die Datei,
+ * und der Stempel nennt trotzdem den 31. Dezember. § 11 UStG meint mit dem
+ * Ausstellungsdatum den Tag am Sitz des Unternehmens, § 132 BAO zählt sieben
+ * Jahre ab Ende des Wirtschaftsjahres — beides österreichische Daten.
+ *
+ * Es braucht dafür keinen Jahreswechsel: Jede Bestellung zwischen
+ * Mitternacht und 01:00 Uhr (im Sommer 02:00) trug das Datum des Vortags.
+ *
+ * Der Aufruf steht **vor** jeder Zeitrechnung und nicht in einer Zeile
+ * daneben: Ein Skript, das seine Zeitzone erst nach dem ersten `date()`
+ * setzt, hat sie für dieses eine nicht gesetzt.
+ */
+date_default_timezone_set('Europe/Vienna');
+
 const HOECHSTLAENGE = 65536;
 const ABLAGEORDNER = __DIR__ . '/../bestellungen';
 
@@ -179,7 +207,7 @@ $nummer = sprintf('B-%d-%04d', $jahr, $bestand + 1);
 
 $zeile = json_encode([
     'nummer'    => $nummer,
-    'zeitpunkt' => gmdate('c'),
+    'zeitpunkt' => date('c'),
     'bezirk'    => $bezirk,
     'text'      => $text,
 ] + $erhoben, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

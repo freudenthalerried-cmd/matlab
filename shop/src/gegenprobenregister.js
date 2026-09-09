@@ -1683,6 +1683,21 @@ export const GEGENPROBEN = Object.freeze([
       + 'verschwinden, den der Auftraggeber vor der Budgetfreigabe liest.',
   }),
   Object.freeze({
+    id: 'die-rechneruhr-im-beleg',
+    pruefer: 'pruefe-zeit',
+    was: 'Ein Belegdatum, das wieder aus der Rechneruhr kommt',
+    datei: 'shop/bin/vorgang.mjs',
+    art: 'ersetzen',
+    suchen: 'const heute = geschaeftstag();',
+    ersetzen: 'const heute = new Date().toISOString().slice(0, 10);',
+    erwartet: /rohe-uhr-im-beleg/,
+    warum: 'Genau diese Zeile stand hier bis zum 9. September und setzte das Ausstellungsdatum '
+      + 'nach § 11 Abs 1 Z 4 UStG aus UTC — jede Rechnung zwischen Mitternacht und 01:00 Uhr '
+      + 'trug den Vortag. Die Mutation dreht sie zurück. Bleibt der Prüfer grün, prüft er die '
+      + 'Absicht im Register und nicht den Code daneben; genau davon gab es an diesem Tag '
+      + 'sieben Fälle, und alle sahen richtig aus.',
+  }),
+  Object.freeze({
     id: 'veroeffentlichung-haengt-hinterher',
     pruefer: 'pruefe-schaufenster',
     was: 'Ein Beschreibungstext, der sich seit der letzten Veröffentlichung geändert hat',
