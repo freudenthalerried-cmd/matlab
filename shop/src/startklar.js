@@ -232,12 +232,40 @@ export function startklar(lage = {}) {
       : `${mitPreis.length} von ${katalog.artikel.length} Artikeln mit gerechnetem Verkaufspreis`,
     'Werkzeug');
 
+  /**
+   * **Berichtigt am 9. September 2026.** Der Punkt maß `ekIstPlatzhalter` und
+   * meldete dazu „jeder Einkaufspreis ist bestätigt". Seit Gate 30 vom
+   * 8. September ist dieser Satz falsch: **46 von 46 Einkaufspreisen sind
+   * `rekonstruiert`**, keiner belegt.
+   *
+   * > **Der Prüfer hat gemessen, dass kein Platzhalter da ist, und behauptet,
+   * > dass jeder Preis belegt ist. Das ist nicht dieselbe Aussage.**
+   *
+   * Gate 30 hat die beiden ausdrücklich getrennt: Ein zurückgerechneter Preis
+   * ist **kein Platzhalter** — „Platzhalter" hieße, die Zahl sei nicht der
+   * Preis; sie ist es, auf den Cent. *Der Mangel liegt im Beleg, nicht im
+   * Wert.* Genau diese Trennung hat der Satz wieder eingeebnet.
+   *
+   * **Der Punkt bleibt grün, und das ist die Entscheidung.** Was er misst —
+   * kein Platzhalter im Katalog —, ist erfüllt, und die Verkaufspreise sind
+   * richtig; ein offener Punkt daraus hieße, der Shop dürfe wegen einer Zahl
+   * nicht online, die stimmt. Der Beleg steht als eigener offener Punkt bei
+   * Gate 30 und in der PR-Beschreibung. Geändert wird der **Satz**: Er sagt
+   * jetzt, was gemessen wurde, und nennt den Belegstand dazu — aus `ekQuelle`
+   * abgeleitet, damit er sich mit den wiedereingelesenen Rechnungen von selbst
+   * ändert.
+   */
   const platzhalter = katalog.artikel.filter((a) => a.ekIstPlatzhalter);
+  const belegt = katalog.artikel.filter((a) => a.ekQuelle === 'bestaetigt');
+  const alleBelegt = katalog.artikel.length > 0 && belegt.length === katalog.artikel.length;
   p('keine-platzhalter', 'Kein Platzhalterpreis im Katalog',
     platzhalter.length === 0 ? 'erfuellt' : 'offen',
-    platzhalter.length === 0
-      ? 'jeder Einkaufspreis ist bestätigt'
-      : `${platzhalter.length} Artikel mit Platzhalterpreis`,
+    platzhalter.length !== 0
+      ? `${platzhalter.length} Artikel mit Platzhalterpreis`
+      : (alleBelegt
+        ? `kein Platzhalter — ${belegt.length} von ${katalog.artikel.length} Einkaufspreisen belegt`
+        : `kein Platzhalter — aber nur ${belegt.length} von ${katalog.artikel.length} `
+          + 'Einkaufspreisen sind belegt, der Rest ist zurückgerechnet (Gate 30)'),
     'Werkzeug');
 
   // **Aufgenommen am 30.08.** Die Lieferzeit ist keine Nebensache, sondern

@@ -21,7 +21,14 @@ const formbeispiele = new Map(FORMREGELN.map((r) => [r.feld, r.beispiel]));
 const vollstaendig = Object.fromEntries(
   IMPRESSUMSFELDER.map((f) => [f.feld, formbeispiele.get(f.feld) ?? 'steht']),
 );
-const katalogVoll = { artikel: [{ sku: 'A', vkNetto: 10, ekIstPlatzhalter: false, lieferantId: 'l1' }] };
+// `ekQuelle: 'bestaetigt'` ist der Normalfall dieser Probe — seit dem
+// 9. September unterscheidet der Bereitschaftspunkt „kein Platzhalter" von
+// „belegt", und ohne die Angabe stünde hier stillschweigend der Ausnahmefall.
+const katalogVoll = {
+  artikel: [{
+    sku: 'A', vkNetto: 10, ekIstPlatzhalter: false, ekQuelle: 'bestaetigt', lieferantId: 'l1',
+  }],
+};
 const alles = {
   // Seit dem 2. September gehört die zugesagte Antwortzeit dazu — sie ist der
   // einzige Termin, den dieser Shop selbst nennt.
@@ -286,4 +293,56 @@ test('Mit --bericht bleibt derselbe Lauf grün', () => {
   // Regel wie bei den Prüfern.
   const ausgabe = execFileSync(process.execPath, [werkzeug, '--bericht'], { encoding: 'utf8' });
   assert.match(ausgabe, /NICHT STARTKLAR/);
+});
+
+// **Ergänzt am 9. September 2026.** Der Punkt maß `ekIstPlatzhalter` und meldete
+// dazu „jeder Einkaufspreis ist bestätigt" — seit Gate 30 vom 8. September sind
+// 46 von 46 zurückgerechnet und keiner belegt. Gemessen war „kein Platzhalter",
+// behauptet war „belegt"; das ist nicht dieselbe Aussage.
+test('mit belegten Einkaufspreisen nennt der Punkt sie belegt', () => {
+  const b = startklar(alles);
+  const punkt = b.punkte.find((p) => p.id === 'keine-platzhalter');
+  assert.equal(punkt.zustand, 'erfuellt');
+  assert.match(punkt.befund, /1 von 1 Einkaufspreisen belegt/);
+});
+
+test('zurückgerechnete Einkaufspreise heißen nicht belegt', () => {
+  const b = startklar({
+    ...alles,
+    katalog: { artikel: [{ ...katalogVoll.artikel[0], ekQuelle: 'rekonstruiert' }] },
+  });
+  const punkt = b.punkte.find((p) => p.id === 'keine-platzhalter');
+  // **Grün bleibt grün, und das ist die Entscheidung:** Was der Punkt misst —
+  // kein Platzhalter — ist erfüllt, und die Verkaufspreise stimmen. Ein offener
+  // Punkt hieße, der Shop dürfe wegen einer Zahl nicht online, die richtig ist.
+  assert.equal(punkt.zustand, 'erfuellt');
+  assert.doesNotMatch(punkt.befund, /Einkaufspreisen belegt/);
+  assert.match(punkt.befund, /zurückgerechnet/);
+  assert.match(punkt.befund, /Gate 30/);
+});
+
+test('kein Zustand des Katalogs lässt den Punkt „belegt" sagen, wo keiner belegt ist', () => {
+  // Die Regel selbst, nicht ein Beispiel: Steht in der Meldung „belegt", muss
+  // die Zahl davor die Zahl der belegten Artikel sein.
+  for (const quelle of ['rekonstruiert', 'ausListe', 'anfrage', undefined]) {
+    const b = startklar({
+      ...alles,
+      katalog: { artikel: [{ ...katalogVoll.artikel[0], ekQuelle: quelle }] },
+    });
+    const { befund } = b.punkte.find((p) => p.id === 'keine-platzhalter');
+    assert.doesNotMatch(befund, /1 von 1 Einkaufspreisen belegt/,
+      `ekQuelle=${quelle} darf nicht als belegt gelten`);
+  }
+});
+
+test('ein Platzhalter schlägt weiter durch, egal was ekQuelle sagt', () => {
+  const b = startklar({
+    ...alles,
+    katalog: {
+      artikel: [{ ...katalogVoll.artikel[0], ekIstPlatzhalter: true, ekQuelle: 'bestaetigt' }],
+    },
+  });
+  const punkt = b.punkte.find((p) => p.id === 'keine-platzhalter');
+  assert.equal(punkt.zustand, 'offen');
+  assert.match(punkt.befund, /1 Artikel mit Platzhalterpreis/);
 });
