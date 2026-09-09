@@ -1683,6 +1683,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'verschwinden, den der Auftraggeber vor der Budgetfreigabe liest.',
   }),
   Object.freeze({
+    id: 'eine-grenze-die-niemand-versucht-hat',
+    pruefer: 'pruefe-grenzen',
+    was: 'Eine behauptete Grenze, zu der kein Versuch im Vermerk steht',
+    datei: 'shop/data/aussenlage.json',
+    art: 'ersetzen',
+    suchen: '"repository-sichtbarkeit": {',
+    ersetzen: '"repository-sichtbarkeit-anders": {',
+    erwartet: /grenze-ohne-versuch/,
+    warum: 'Am 9. September hat sich zweimal an einem Abend eine behauptete Grenze als zu weit '
+      + 'gezogen erwiesen, und beide Male hatte niemand es versucht. Genau das ist der Zustand, '
+      + 'den dieser Prüfer finden soll: Eine Grenze nennt ihren Weg, und im Vermerk steht kein '
+      + 'Versuch dazu. Die Mutation benennt den Versuch um, sodass die Grenze ohne ihn dasteht — '
+      + 'und der Versuch ohne Grenze daneben. Bleibt der Prüfer grün, misst er nichts: '
+      + 'Nicht versucht ist nicht unmöglich.',
+  }),
+  Object.freeze({
     id: 'ein-name-aus-einem-fremden-modul',
     pruefer: 'pruefe-ungerufen',
     was: 'Eine ungerufene Ausfuhr, die den Namen einer gerufenen trägt',

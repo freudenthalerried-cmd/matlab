@@ -14,7 +14,9 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-import { aussenlage, tageSeit, widerspruchsbefund, GRENZE_TAGE } from '../src/aussenlage.js';
+import {
+  aussenlage, tageSeit, widerspruchsbefund, aussengrenzenbefund, GRENZE_TAGE,
+} from '../src/aussenlage.js';
 import { startklar } from '../src/startklar.js';
 
 const vermerk = JSON.parse(readFileSync(
@@ -126,4 +128,81 @@ test('ohne tragende Messung ist der Punkt wieder eine Frage', () => {
   assert.equal(b.zustand, 'unpruefbar');
   assert.match(b.befund, /fehlt/);
   assert.match(b.befund, /rekonstruierbar/);
+});
+
+/* ------------------------------------------------------------------ *
+ * Die behaupteten Grenzen
+ * ------------------------------------------------------------------ */
+
+test('jede behauptete Grenze nennt einen Weg oder einen Grund', () => {
+  const b = aussengrenzenbefund(vermerk, vermerk.gemessenAm);
+  assert.deepEqual(b.meldungen, [], b.meldungen.map((m) => m.text).join('\n'));
+  assert.ok(b.grenzen >= 5, `nur ${b.grenzen} Grenzen — die Liste ist zu dünn zum Prüfen`);
+  assert.equal(b.gemessen + b.begruendet, b.grenzen);
+});
+
+/**
+ * Der Kern: **Nicht versucht ist nicht unmöglich.** Genau diese Lücke hat am
+ * 9. September zweimal eine falsche Grenze gedeckt.
+ */
+test('ein genannter Weg ohne Versuch fällt auf', () => {
+  const b = aussengrenzenbefund({ versuche: {} }, '2026-09-09',
+    [{ id: 'x', was: 'irgendwas', wie: 'curl' }]);
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['grenze-ohne-versuch']);
+  assert.match(b.meldungen[0].text, /niemand ist ihn gegangen/);
+});
+
+test('ein alter Versuch sagt über heute nichts', () => {
+  const b = aussengrenzenbefund(
+    { versuche: { x: { am: '2026-01-01', ergebnis: 'gesperrt', beleg: 'a'.repeat(30) } } },
+    '2026-09-09', [{ id: 'x', was: 'irgendwas', wie: 'curl' }]);
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['versuch-veraltet']);
+});
+
+test('ein Ergebnis ohne Beleg ist eine Behauptung mit Ziffern', () => {
+  const b = aussengrenzenbefund(
+    { versuche: { x: { am: '2026-09-09', ergebnis: 'gesperrt', beleg: 'ging nicht' } } },
+    '2026-09-09', [{ id: 'x', was: 'irgendwas', wie: 'curl' }]);
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['beleg-fehlt']);
+});
+
+test('ein drittes Ergebnis gibt es nicht', () => {
+  const b = aussengrenzenbefund(
+    { versuche: { x: { am: '2026-09-09', ergebnis: 'vielleicht', beleg: 'a'.repeat(30) } } },
+    '2026-09-09', [{ id: 'x', was: 'irgendwas', wie: 'curl' }]);
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['ergebnis-unbekannt']);
+});
+
+test('ohne Weg braucht es einen ganzen Grund', () => {
+  const b = aussengrenzenbefund({ versuche: {} }, '2026-09-09',
+    [{ id: 'x', was: 'irgendwas', wie: null, warumOhneVersuch: 'geht halt nicht' }]);
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['grund-zu-duenn']);
+});
+
+/** Beide Richtungen: ein Versuch ohne Grenze, und ein Versuch ohne Weg. */
+test('ein Versuch, zu dem keine Grenze gehört, fällt auch auf', () => {
+  const b = aussengrenzenbefund(
+    { versuche: { fremd: { am: '2026-09-09', ergebnis: 'gesperrt', beleg: 'a'.repeat(30) } } },
+    '2026-09-09', []);
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['versuch-ohne-grenze']);
+});
+
+test('eine Grenze ohne Weg, zu der es einen Versuch gibt, ist ein Widerspruch', () => {
+  const b = aussengrenzenbefund(
+    { versuche: { x: { am: '2026-09-09', ergebnis: 'gesperrt', beleg: 'a'.repeat(30) } } },
+    '2026-09-09',
+    [{ id: 'x', was: 'irgendwas', wie: null, warumOhneVersuch: 'g'.repeat(90) }]);
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['versuch-ohne-weg']);
+});
+
+/**
+ * Und das Ergebnis, um das es geht: Eine Grenze, die sich als überschreitbar
+ * erwiesen hat, ist keine Grenze mehr. Am 9. September war es die
+ * Sichtbarkeit des Repositorys.
+ */
+test('das Verzeichnis hält fest, welche Grenze gefallen ist', () => {
+  const b = aussengrenzenbefund(vermerk, vermerk.gemessenAm);
+  assert.ok(b.moeglich >= 1, 'keine einzige überschrittene Grenze — dann fehlt der Anlass');
+  assert.equal(vermerk.versuche['repository-sichtbarkeit'].ergebnis, 'moeglich');
+  assert.match(vermerk.versuche['repository-sichtbarkeit'].beleg, /visibility/);
 });

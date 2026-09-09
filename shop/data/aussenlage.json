@@ -3,12 +3,32 @@
   "_anlass": "Am 9. September stand in src/startklar.js seit dem ersten Bau, ob das Repository privat ist, sei „von hier aus nicht feststellbar\". Nachgesehen hatte das niemand. Der Netzausgang ist gesperrt — das GitHub-Werkzeug nicht: Es beantwortet die Frage in einem Aufruf. Zwei Runden zuvor war dieselbe Bewegung schon einmal aufgefallen, bei der Grenze des Veroeffentlichungsvermerks. EINE GRENZE, DIE ZU WEIT GEZOGEN IST, DECKT GENAU DAS, WAS SIE AUSSCHLIESST.",
   "_grenze": "Diese Datei ist ein Vermerk ueber einen Handgriff, kein Messwert, der sich von selbst erneuert. Der Shop kann keines der beiden Felder selbst erheben: Sein Netzausgang ist gesperrt, und das GitHub-Werkzeug gehoert nicht zu ihm. Deshalb traegt jede Zeile ihr Messdatum, und die Bereitschaftsliste laesst eine Messung nach GRENZE_TAGE wieder als Fragezeichen gelten.",
   "_wieGemessen": "repositoryOeffentlich: GitHub-Werkzeug, Feld visibility der Repository-Auskunft. domainErreichbar: curl -L https://bauversand.com/ aus dieser Umgebung.",
-
   "gemessenAm": "2026-09-09",
-
   "repositoryOeffentlich": true,
   "_repositoryHinweis": "visibility: public, private: false. Damit ist die Empfehlung „privat stellen\" keine Vermutung mehr, sondern der gemessene Zustand — und die 44 von 46 rueckrechenbaren Einkaufspreisen stehen offen.",
-
   "domainErreichbar": null,
-  "_domainHinweis": "Nicht messbar, und diesmal nachgesehen: Der Ausgang dieser Umgebung antwortet auf den Verbindungsaufbau zu bauversand.com mit „CONNECT tunnel failed, response 403\". Auch die bestehende Firmenseite freudenthaler-bau.at antwortet nicht anders. Die Sperre liegt also am Ausgang und nicht an der Adresse — ein Ergebnis, das die Aussage stuetzt, statt sie zu behaupten."
+  "_domainHinweis": "Nicht messbar, und diesmal nachgesehen: Der Ausgang dieser Umgebung antwortet auf den Verbindungsaufbau zu bauversand.com mit „CONNECT tunnel failed, response 403\". Auch die bestehende Firmenseite freudenthaler-bau.at antwortet nicht anders. Die Sperre liegt also am Ausgang und nicht an der Adresse — ein Ergebnis, das die Aussage stuetzt, statt sie zu behaupten.",
+  "_versucheZweck": "Wer eine Grenze behauptet, nennt in src/aussenlage.js den Weg — hier steht, wann jemand ihn gegangen ist und was dabei herauskam. Ein Ergebnis ohne Beleg ist eine Behauptung mit Ziffern; ein Versuch ohne Datum sagt ueber heute nichts.",
+  "versuche": {
+    "eigene-adresse": {
+      "am": "2026-09-09",
+      "ergebnis": "gesperrt",
+      "beleg": "curl: (56) CONNECT tunnel failed, response 403 — auch bei www.freudenthaler-bau.at, die Sperre liegt am Ausgang und nicht an der Adresse"
+    },
+    "repository-sichtbarkeit": {
+      "am": "2026-09-09",
+      "ergebnis": "moeglich",
+      "beleg": "GitHub-Werkzeug antwortet \"private\": false, \"visibility\": \"public\" — die Grenze war zu weit gezogen"
+    },
+    "herstellerseiten": {
+      "am": "2026-09-09",
+      "ergebnis": "gesperrt",
+      "beleg": "baumit.at, www.baumit.at, schiedel.at, www.schiedel.at, synthesa.at, isover.at, www.isover.at: alle 403 am Ausgang. Auch ueber WebFetch: EGRESS_BLOCKED. Der Proxy nennt als Grund \"policy denial\""
+    },
+    "rechtsinformationssystem": {
+      "am": "2026-09-09",
+      "ergebnis": "gesperrt",
+      "beleg": "ris.bka.gv.at: 403 am Ausgang, gleicher Grund wie bei den Herstellerseiten"
+    }
+  }
 }

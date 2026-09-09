@@ -4,7 +4,7 @@
   "_anlass": "Dreimal vergessen: am 5. September (25 Prüfer in der Quelle, 24 veröffentlicht), am 9. September vormittags (31 Gates) und am 9. September nachmittags gleich zweifach — „über 1.000 Testfälle\" bei 2009 und „39 Prüfer\" bei 40. Der Handgriff hat kein Werkzeug, das ihn einfordert. Am 9. September abends kam der vierte Fall dazu, und er sah anders aus: nicht eine vergessene Veröffentlichung, sondern eine Veröffentlichung mit einem Satz, den die Quelle nicht kannte.",
   "werkzeug": "npm run --silent pr-text",
   "stand": "2026-09-09",
-  "sha256": "2ed934fc83d012a932446314aca6041c31983d8f6012b765c1342cb5608edbe6",
+  "sha256": "fde946dbe33d6d7abadb0f6a8737f1398134eeed1b3b0d79c8ede6cecc601ab2",
   "zurueckgelesen": "2026-09-09",
   "_zurueckgelesen": "Die veroeffentlichte Fassung wird seit dem 9. September mit dem GitHub-Werkzeug zurueckgelesen und gegen die Werkzeugausgabe gehalten. DREIMAL an einem Abend hat der Handgriff dabei eine Abweichung gefunden, und dreimal dieselbe Ursache: Das Werkzeug gibt den Text aus, uebertragen muss ihn ein Mensch — und wer dabei noch etwas ergaenzt oder kuerzt, veroeffentlicht einen Text, den die Quelle nicht kennt. Berichtigt wurde jedes Mal die Quelle. Der Fingerabdruck gehoert deshalb NACH dem Abgleich gesetzt, nicht davor: Vorher belegt er nur, dass jemand etwas veroeffentlicht hat."
 }

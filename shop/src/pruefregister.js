@@ -282,6 +282,18 @@ export const PRUEFER = [
     mindestens: 1,
   },
   {
+    // **Aufgenommen am 9. September 2026, spät.** Zweimal an einem Abend hat
+    // sich eine behauptete Grenze als zu weit gezogen erwiesen — beide Male
+    // hatte niemand es versucht. Gemessen wird die Zahl der **angesehenen**
+    // Grenzen: „keine ungeprüfte Behauptung" darf nicht aussehen wie „keine
+    // Behauptung angesehen".
+    name: 'pruefe-grenzen',
+    werkzeug: 'grenzenpruefung.mjs',
+    muster: /Außengrenzen — (\d+) behauptete Grenzen/,
+    einheit: 'behauptete Grenzen gegen die Versuche, sie zu überschreiten',
+    mindestens: 5,
+  },
+  {
     // **Aufgenommen am 9. September 2026.** `bestellung.php` wählte die
     // Journaldatei aus der ungesetzten Zeitzone des Hosts und stempelte den
     // Eintrag in UTC — zwei Uhren in einem Beleg, und keine davon die
