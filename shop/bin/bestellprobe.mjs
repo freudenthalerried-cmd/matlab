@@ -35,7 +35,7 @@ import { beispielbestellung } from '../src/bestellfelder.js';
 import { freierPort } from '../src/freierport.js';
 import { pruefeBestelldaten } from '../src/kunde.js';
 import { wegwerfordner } from '../src/wegwerf.js';
-import { geschaeftsjahr } from '../src/geschaeftszeit.js';
+import { geschaeftsjahr, geschaeftstag, zeitstempel } from '../src/geschaeftszeit.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const REPO = dirname(SHOP);
@@ -245,6 +245,46 @@ try {
       }
       if (!z.text || z.text.length < 100) probleme.push('die Positionsliste ist nicht mitgekommen');
       else bestanden.push(`In der Ablage: ${z.nummer}, ${z.firma}, ${z.text.length} Zeichen Positionsliste`);
+
+      /*
+       * **Der Stempel, am laufenden PHP gemessen — seit dem 9. September.**
+       * An dem Tag bekam `bestellung.php` seine Zeitzone: Vorher wählte es
+       * die Journaldatei aus der ungesetzten Zeitzone des Hosts und stempelte
+       * den Eintrag in UTC, sodass jede Bestellung zwischen Mitternacht und
+       * 01:00 Uhr das Datum des Vortags trug. Gezeigt wurde das mit einem
+       * eigenen kleinen PHP-Schnipsel — **an der echten Kette gemessen hat es
+       * niemand.** Ein Beleg über einen Schnipsel ist ein Beleg über den
+       * Schnipsel.
+       *
+       * Geprüft wird die Sache, nicht die Schreibweise: Der Stempel muss
+       * denselben **Kalendertag** nennen wie `geschaeftstag()` und denselben
+       * Augenblick meinen wie seine eigene Zeichenkette. Ein Stempel ohne
+       * Zonenversatz wäre eine Ortszeit ohne Ort — er käme durch jede
+       * Datumsprüfung und wäre trotzdem nicht vergleichbar.
+       */
+      if (typeof z.zeitpunkt !== 'string' || !z.zeitpunkt) {
+        probleme.push('der Journaleintrag trägt keinen Zeitpunkt');
+      } else if (!/[+-]\d{2}:\d{2}$/.test(z.zeitpunkt)) {
+        probleme.push(`der Zeitpunkt ${z.zeitpunkt} trägt keinen Zonenversatz — eine Ortszeit ohne Ort`);
+      } else if (z.zeitpunkt.slice(0, 10) !== geschaeftstag()) {
+        probleme.push(`der Zeitpunkt nennt den ${z.zeitpunkt.slice(0, 10)}, `
+          + `der Geschäftstag ist der ${geschaeftstag()}`);
+      } else if (zeitstempel(new Date(z.zeitpunkt)) !== z.zeitpunkt) {
+        probleme.push(`PHP stempelt ${z.zeitpunkt}, der Kalender dieses Betriebs `
+          + `${zeitstempel(new Date(z.zeitpunkt))} — zwei Uhren`);
+      } else {
+        bestanden.push(`Der Stempel nennt den Geschäftstag: ${z.zeitpunkt}`);
+      }
+
+      /*
+       * Und die Datei, in der er steht. Sie entscheidet die fortlaufende
+       * Nummer und damit, ab wann die sieben Jahre des § 132 BAO laufen.
+       */
+      const jahrImNamen = Number(journal.match(/journal-(\d{4})\.jsonl$/)?.[1]);
+      const jahrImStempel = Number(String(z.zeitpunkt).slice(0, 4));
+      if (jahrImNamen !== jahrImStempel) {
+        probleme.push(`Die Zeile steht in journal-${jahrImNamen}, der Stempel nennt ${jahrImStempel}`);
+      }
 
       /**
        * **Die eigentliche Frage: Lässt sich daraus ein Angebot machen?**

@@ -182,12 +182,30 @@ sich selbst behauptet: *Er findet zu wenig, nie zu viel.*
 
 ## Was das nicht löst
 
-`zeitstempel` steht jetzt mit Grund im Register, und der Grund ist eine offene
-Frage: `bin/vorgang.mjs` legt mit einem **Tag** ab, weil das Ausstellungsdatum
-nach § 11 UStG ein Tag ist. Dieselbe Feldbeschreibung verlangt nach § 131 Abs 1
-Z 2 BAO aber die **Zeitfolge** — und zwei Einträge desselben Tages stehen ohne
-Reihenfolge. Das PHP-Journal stempelt seit gestern auf die Sekunde, die
-JS-Ablage nicht. Wer die Zeitfolge entscheidet, hat die Funktion schon.
+> ⚠️ **Zurückgenommen am 9. September, spät.** Hier stand, `zeitstempel`
+> stehe mit Grund im Register und der Grund sei eine offene Frage: Die
+> JS-Ablage lege mit einem Tag ab, und damit fehle ihr die **Zeitfolge**
+> nach § 131 Abs 1 Z 2 BAO — zwei Einträge desselben Tages stünden ohne
+> Reihenfolge. **Das ist falsch, und die Antwort stand in derselben Datei,
+> zwölf Zeilen über der, die ich gelesen hatte.** `FELDER_DER_ABLAGE` führt
+> als erstes Feld `lfd` mit genau dieser Grundlage: *„Eintragungen der
+> Zeitfolge nach — die laufende Nummer macht Lücken und Umsortierungen
+> sichtbar."* Sie wird beim Anhängen vergeben, steht in jeder Journalzeile
+> und wird beim Einlesen Zeile für Zeile gegen ihre Position gehalten. Die
+> Zeitfolge ist damit geführt; der Tag im `zeitpunkt` ist das
+> Ausstellungsdatum nach § 11 UStG und muss kein Zeitstempel sein.
+>
+> *Ich habe eine Lücke behauptet, ohne die Stelle zu lesen, die sie
+> schließt* — dieselbe Bewegung, die dieses Verzeichnis sonst an anderen
+> findet.
+
+`zeitstempel` steht seit heute **nicht mehr** im Register: `npm run
+bestellprobe` ruft ihn. Er misst am laufenden PHP, ob der Stempel des
+Empfangsskripts denselben Kalendertag nennt wie der Kalender dieses Betriebs
+und denselben Augenblick meint wie seine eigene Zeichenkette. Der Beleg für
+die Berichtigung vom Vortag war bis dahin ein **eigener kleiner
+PHP-Schnipsel** — und ein Beleg über einen Schnipsel ist ein Beleg über den
+Schnipsel.
 
 Und die 10-%-Schwelle bleibt unbelegt. Gate 32 hält sie als Warnung, nicht als
 Sperre — belegt ist sie damit nicht, sondern nur eingeordnet.

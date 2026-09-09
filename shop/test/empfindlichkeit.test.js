@@ -216,6 +216,42 @@ test('Der Kipppunkt nennt die dokumentierte Grenze mit — und nur, wo es eine g
  * derselben Marge. Laufen sie auseinander, plant das Modell einen Shop mit
  * einer Marge, die der Shop nicht nimmt.
  */
+/**
+ * **Der Anlass, 9. September 2026.** `frachtProBestellungNetto` kam an dem
+ * Tag in die Zielgrößen, weil die Zahlungsgebühr auf den vollen
+ * Kundenzahlbetrag rechnet und der die Fracht mitträgt. Die Zahl steht damit
+ * an **zwei** Stellen: hier und als Pauschale des Lieferanten. Der Hinweis
+ * daneben sagt, woher sie kommt — ***ein Hinweis ist keine Prüfung***, und
+ * genau diese Runde hat gezeigt, was aus einer Berichtigung wird, die nur an
+ * einer der beiden Stellen ankommt.
+ */
+test('Die Fracht der Zielrechnung ist die Pauschale des Lieferanten', async () => {
+  const lieferanten = JSON.parse(readFileSync(
+    fileURLToPath(new URL('../data/lieferanten.json', import.meta.url)), 'utf8'));
+  const katalog = JSON.parse(readFileSync(
+    fileURLToPath(new URL('../data/katalog-baustoff.json', import.meta.url)), 'utf8'));
+
+  // Wer liefert die geführte Ware? Nicht geraten, sondern aus dem Katalog.
+  const ids = new Set(katalog.artikel.map((a) => a.lieferantId ?? katalog.lieferantId));
+  assert.equal(ids.size, 1, `${ids.size} Lieferanten im Katalog — die Zielrechnung kennt nur eine Fracht`);
+  const [id] = ids;
+  const lieferant = lieferanten.lieferanten.find((l) => l.id === id);
+  assert.ok(lieferant, `${id} steht nicht in lieferanten.json`);
+
+  assert.equal(LAGE.frachtProBestellungNetto, lieferant.fracht.pauschaleNetto,
+    `zielgroessen.json rechnet mit ${LAGE.frachtProBestellungNetto} €, `
+      + `${id} verlangt ${lieferant.fracht.pauschaleNetto} €`);
+
+  /*
+   * Und die Bedingung, unter der eine **feste** Fracht je Bestellung
+   * überhaupt zulässig ist: Gäbe es eine Frei-Haus-Schwelle, fiele die
+   * Pauschale nicht bei jeder Lieferung an, und eine Zielrechnung mit einem
+   * festen Betrag wäre zu hoch statt zu niedrig.
+   */
+  assert.equal(lieferant.fracht.freiHausAbNetto, null,
+    'mit einer Frei-Haus-Schwelle wäre eine feste Fracht je Bestellung falsch gerechnet');
+});
+
 test('Die Zielgrößen sind vollständig und decken sich mit dem Katalog', async () => {
   const { ZIELMARGE } = await import('../src/baustoffkatalog.js');
   assert.equal(LAGE.rohmarge, ZIELMARGE,

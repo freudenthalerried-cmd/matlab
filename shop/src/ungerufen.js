@@ -454,19 +454,6 @@ export const UNGERUFEN = Object.freeze([
       + 'verarbeiten ihre **Antwort** — sie können erst laufen, wenn es eine gibt.',
   }),
   Object.freeze({
-    modul: 'src/geschaeftszeit.js',
-    funktionen: ['zeitstempel'],
-    warum: 'Der volle Zeitstempel mit Zonenversatz — der JS-Gegenpart zu dem, was '
-      + '`bestellung.php` seit dem 9. September in jede Journalzeile schreibt. Auf der '
-      + 'JS-Seite stempelt heute niemand: `bin/vorgang.mjs` legt mit einem **Tag** ab, weil '
-      + 'das Ausstellungsdatum nach § 11 UStG ein Tag ist und `--datum` es überschreibbar '
-      + 'hält. Damit fehlt der Ablage die Zeitfolge des § 131 Abs 1 Z 2 BAO, die dieselbe '
-      + 'Feldbeschreibung verlangt: Zwei Einträge desselben Tages stehen ohne Reihenfolge. '
-      + 'Das ist eine offene Frage an den Beleg, keine an diese Funktion — sie steht bereit, '
-      + 'und der Tag, an dem sie gebraucht wird, ist der Tag, an dem jemand die Zeitfolge '
-      + 'entscheidet. **Bis dahin ist sie geprüft und nicht angeschlossen, und das steht hier.**',
-  }),
-  Object.freeze({
     modul: 'src/vorgang.js',
     funktionen: ['ablageEintraege'],
     warum: 'Sie baut **alle** Spuren eines Vorgangs auf einmal: die Lieferantenbestellungen, '

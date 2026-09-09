@@ -480,7 +480,10 @@ export const BROWSERPRUEFER = [
     werkzeug: 'bestellprobe.mjs',
     muster: /Bestellprobe — (\d+) Prüfungen/,
     einheit: 'Prüfungen von Klick bis Angebot',
-    mindestens: 5,
+    // **Am 9. September von 5 auf 6.** Ein Mindestmaß, das dem Umfang nicht
+    // folgt, verliert seinen Sinn: Fiele die neue Prüfung des Zeitstempels
+    // wieder heraus, stünden hier wieder fünf — und die Zahl sähe gesund aus.
+    mindestens: 6,
   },
   // Der Zensus zählt keine Szenarien, sondern gebaute Seiten. Genau deshalb
   // steht er hier: Zeigt er eines Tages auf einen leeren Ausgabeordner,
