@@ -42,7 +42,7 @@ Ursprünglich ein Streckenhandel für Radonvorsorge auf **unbelegten** Platzhalt
 | Kampagne | 6 Suchkampagnen gerechnet, **3 im ersten Anlauf**, alle **pausiert** |
 | Produktfeed | 43 Einträge — **nicht einreichbar**, GTIN fehlt bei allen 46 Artikeln |
 | Testbestand | **über 2.000 Testfälle**, alle grün, dazu 11 Oberflächenszenarien und 56 Shopszenarien im Browser |
-| Prüfwerkzeuge | **39 Prüfer** ohne Browser, 4 Browserproben zusätzlich |
+| Prüfwerkzeuge | **40 Prüfer** ohne Browser, 4 Browserproben zusätzlich |
 | Messliste für Gate 15 | **29 Begriffe** in 3 Anzeigengruppen, Ort = Liefergebiet (am 6. September zwei weniger: die Landeseite verneint sie; am 8. September eines weniger: Gate 29 stellt „Fassadendübel" zurück, weil es auf einen 104 Tage alten Einkaufspreis zeigt) |
 | Mindestbestellwert | **250 € netto Warenwert je Lieferung** (Gate 25), gerechnet aus Fracht, Palette und Zielmarge |
 | Bestellweg | **gebaut und ausgeschaltet** (Gate 26) — Formular, Empfangsskript, Ablage, Posteingang; eingeschaltet mit E-Mail und Rechtstextewortlaut |

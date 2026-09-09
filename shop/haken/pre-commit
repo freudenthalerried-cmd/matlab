@@ -48,11 +48,13 @@ if ! node "$WURZEL/shop/bin/erzeugnispruefung.mjs" >/dev/null 2>&1; then
   exit 1
 fi
 
-if ! (cd "$WURZEL/shop" && npm test >/dev/null 2>&1); then
+# Die Ausgabe wird festgehalten statt verworfen: Aus ihr kommt die Zahl der
+# Testfälle, die `pruefe-schaufenster` sonst mit einem zweiten Lauf erhebt.
+TESTAUSGABE=$(cd "$WURZEL/shop" && npm test 2>&1) || {
   echo 'Abbruch: npm test ist rot — der Commit bleibt stehen.'
   echo 'Ausgabe ansehen mit: npm --prefix shop test'
   exit 1
-fi
+}
 # **Ergänzt am 9. September 2026.** Der Gesamtlauf fand zwei Testfälle, die
 # über eine Liste laufen und bei leerer Liste nichts prüfen — beide aus den
 # zwei Runden davor, beide von mir, beide durch diesen Haken hindurch
@@ -65,5 +67,21 @@ fi
 if ! node "$WURZEL/shop/bin/testpruefung.mjs" >/dev/null 2>&1; then
   echo 'Abbruch: npm run pruefe-tests hat einen Verdacht — der Commit bleibt stehen.'
   echo 'Ansehen mit: npm --prefix shop run pruefe-tests'
+  exit 1
+fi
+# **Ergänzt am 9. September 2026, nachmittags.** `pruefe-schaufenster` blieb
+# am Vormittag draußen, weil es 24 Sekunden kostete und „jeden Commit
+# verdoppelt" hätte. Die Rechnung stimmte, die Zahl nicht: 97 % davon war ein
+# zweiter Testlauf — unmittelbar nach dem, den dieser Haken ohnehin macht.
+#
+#   Dieselbe Zahl zweimal zu erheben kostet 24 Sekunden und bringt nichts.
+#
+# Mit der übergebenen Zahl sind es 0,6 s. Der Anlass: Zwei Runden nachdem der
+# Prüfer draußen blieb, ging „39 Prüfer" hinaus, während 40 im Register standen
+# — gefunden erst vom 39-Minuten-Gesamtlauf.
+ZAHL=$(printf '%s\n' "$TESTAUSGABE" | sed -n 's/^# tests \([0-9]*\)$/\1/p' | tail -1)
+if [ -n "$ZAHL" ] && ! node "$WURZEL/shop/bin/schaufensterpruefung.mjs" "--testfaelle=$ZAHL" >/dev/null 2>&1; then
+  echo 'Abbruch: npm run pruefe-schaufenster meldet eine überholte Kennzahl.'
+  echo "Ansehen mit: npm --prefix shop run pruefe-schaufenster -- --testfaelle=$ZAHL"
   exit 1
 fi

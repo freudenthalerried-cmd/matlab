@@ -73,6 +73,13 @@ export const HAKEN = Object.freeze([
       // braucht 23 Sekunden und verdoppelte jeden Commit — sein Befund ist
       // eine veraltete Zahl, kein falsches Verhalten.
       'bin/testpruefung.mjs',
+      // **Ergänzt am 9. September 2026, nachmittags.** Am Vormittag blieb
+      // dieser Prüfer draußen: 24 Sekunden, „verdoppelte jeden Commit". Die
+      // Rechnung stimmte, die Zahl nicht — 97 % davon war ein zweiter
+      // Testlauf, unmittelbar nach dem, den der Haken ohnehin macht. Mit der
+      // übergebenen Zahl sind es 0,6 s. Der Anlass: Zwei Runden später ging
+      // „39 Prüfer" hinaus, während 40 im Register standen.
+      'bin/schaufensterpruefung.mjs',
     ],
     warum: 'Eine Gegenprobe hält eine Quelldatei absichtlich falsch. Wer währenddessen '
       + 'committet, committet die Mutation — am 8. September stand so fünfunddreißig '

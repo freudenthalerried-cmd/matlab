@@ -103,12 +103,45 @@ if (testDateien.length === 0) {
   console.error('Abbruch: keine Testdateien gefunden — die Zahl wäre eine erfundene Null.');
   process.exit(2);
 }
-const lauf = spawnSync('node', ['--test', ...testDateien], { cwd: SHOP, encoding: 'utf8' });
-const testTreffer = lauf.stdout.match(/^# tests (\d+)$/m);
-if (!testTreffer) {
-  console.error('Abbruch: Der Testlauf hat keine Zahl gemeldet.');
-  console.error(lauf.stdout.slice(-800) + lauf.stderr.slice(-800));
-  process.exit(2);
+/**
+ * **Ergänzt am 9. September 2026.** Von den 24,8 Sekunden dieses Prüfers waren
+ * 24,1 dieser eine Testlauf — 97 %. Deshalb blieb er am 9. September aus dem
+ * pre-commit-Haken heraus („verdoppelte jeden Commit"), und deshalb ging zwei
+ * Runden später die Zahl der Prüfer veraltet hinaus: 39 in der Beschreibung,
+ * 40 im Register, gefunden erst vom 39-Minuten-Lauf.
+ *
+ * > **Die Entscheidung war richtig gerechnet und an der falschen Zahl: Der
+ * > Haken lässt `npm test` unmittelbar davor laufen. Dieselbe Zahl zweimal zu
+ * > erheben kostet 24 Sekunden und bringt nichts.**
+ *
+ * Mit `--testfaelle=N` nimmt der Prüfer die Zahl entgegen, statt sie noch
+ * einmal zu erheben. Ohne die Angabe läuft er wie bisher — ein Lauf von Hand
+ * soll nicht davon abhängen, dass jemand eine Zahl mitgibt.
+ *
+ * **Erfunden werden kann sie nicht:** Der Haken gibt weiter, was der Testlauf
+ * eine Zeile vorher gemeldet hat. Eine unbrauchbare Angabe (keine Zahl, null,
+ * negativ) ist ein Abbruch und kein stilles Zurückfallen — sonst sähe „Zahl
+ * war Unsinn" aus wie „Zahl war richtig".
+ */
+const mitgegeben = process.argv.find((a) => a.startsWith('--testfaelle='));
+let testTreffer;
+if (mitgegeben) {
+  const wert = Number(mitgegeben.slice('--testfaelle='.length));
+  if (!Number.isInteger(wert) || wert <= 0) {
+    console.error(`Abbruch: --testfaelle=${mitgegeben.slice('--testfaelle='.length)} ist keine `
+      + 'brauchbare Zahl von Testfällen.');
+    process.exit(2);
+  }
+  testTreffer = [null, String(wert)];
+  console.log(`  Testfälle übernommen: ${wert} (aus dem Lauf des Aufrufers, nicht neu erhoben)`);
+} else {
+  const lauf = spawnSync('node', ['--test', ...testDateien], { cwd: SHOP, encoding: 'utf8' });
+  testTreffer = lauf.stdout.match(/^# tests (\d+)$/m);
+  if (!testTreffer) {
+    console.error('Abbruch: Der Testlauf hat keine Zahl gemeldet.');
+    console.error(lauf.stdout.slice(-800) + lauf.stderr.slice(-800));
+    process.exit(2);
+  }
 }
 
 const geheimnis = spawnSync('node', ['bin/geheimnispruefung.mjs'], { cwd: SHOP, encoding: 'utf8' });
