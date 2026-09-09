@@ -63,6 +63,7 @@ export const ZUORDNUNG = Object.freeze([
   Object.freeze({ punkt: 'rechtstexte', etappe: 'rechtstexte' }),
   Object.freeze({ punkt: 'domain', etappe: 'upload' }),
   Object.freeze({ punkt: 'repository', etappe: 'repository-privat' }),
+  Object.freeze({ punkt: 'ablagesicherung', etappe: 'ablagesicherung' }),
 ]);
 
 /**

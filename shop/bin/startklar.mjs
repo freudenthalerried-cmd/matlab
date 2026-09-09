@@ -12,7 +12,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { startklar } from '../src/startklar.js';
+import { startklar, betreiberangaben } from '../src/startklar.js';
 import { IMPRESSUMSFELDER } from '../src/rechtstexte.js';
 import { ladeBaustoffkatalog, ZIELMARGE } from '../src/baustoffkatalog.js';
 import { bestellwegAktiv, oberflaeche } from '../src/bestellwegbau.js';
@@ -62,10 +62,7 @@ const befund = startklar({
   impressumsfelder: IMPRESSUMSFELDER,
   katalog,
   preisdateiVorhanden,
-  zahlungsanbieter: betreiber.zahlungsanbieter ?? null,
-  rechtstexteFundstelle: betreiber.rechtstexteFundstelle ?? null,
-  domainZeigtAufShop: betreiber.domainZeigtAufShop ?? null,
-  repositoryPrivat: betreiber.repositoryPrivat ?? null,
+  ...betreiberangaben(betreiber),
   lieferanten: lieferantenDatei.lieferanten,
   /**
    * Der Quelltext, den der Browser des Kunden bekommt. Er entscheidet den

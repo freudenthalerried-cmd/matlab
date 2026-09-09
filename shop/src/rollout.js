@@ -55,6 +55,33 @@ import { FRAGEN } from './lieferantenanfrage.js';
  */
 export const ETAPPEN = Object.freeze([
   Object.freeze({
+    /**
+     * **Aufgenommen am 9. September 2026.** `src/ablage.js` weiß seit ihrem
+     * ersten Bau, dass § 132 BAO sieben Jahre Aufbewahrung verlangt. Auf
+     * keiner Liste stand, dass die Vorgänge gesichert gehören — der Shop war
+     * darauf ausgelegt, Aufzeichnungen sieben Jahre zu halten, und niemand
+     * hatte gesagt, wo sie so lange liegen.
+     */
+    id: 'ablagesicherung',
+    titel: 'Sicherung der Vorgangsablage einrichten (§ 132 BAO, sieben Jahre)',
+    zustaendig: 'entscheidung',
+    brauchtVor: [Object.freeze({
+      etappe: 'bestellweg',
+      warum: 'Vorher gibt es nichts zu sichern: Der Bestellweg ist ausgeschaltet, und die '
+        + 'Ablage bleibt leer. Die Pflicht beginnt mit dem ersten Datensatz — sie vorher '
+        + 'einzurichten hieße, eine leere Datei zu sichern und sich für vorbereitet zu halten.',
+    })],
+    tage: 1,
+    art: 'gesetzt',
+    woher: 'Beim Hoster einzurichten oder zu bestätigen; ob All-Inkl die Ablage in seine '
+      + 'eigene Sicherung nimmt, ist von hier aus nicht feststellbar.',
+    gate: null,
+    warumKeinGate: 'Kein Gate — eine gesetzliche Pflicht, keine Modellentscheidung. § 132 BAO '
+      + 'lässt nichts zu entscheiden.',
+    ergebnis: 'Ohne sie hält der erste Verlust auf dem Hosting nicht nur Vorgänge auf, '
+      + 'sondern die Aufzeichnungspflicht selbst — und bemerkt wird das nach dem Verlust.',
+  }),
+  Object.freeze({
     id: 'repository-privat',
     titel: 'Repository privat stellen',
     zustaendig: 'entscheidung',

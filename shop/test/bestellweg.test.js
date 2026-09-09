@@ -89,6 +89,10 @@ const vollstaendig = {
   rechtstexteFundstelle: 'Kanzlei',
   domainZeigtAufShop: true,
   repositoryPrivat: true,
+  // Seit dem 9. September: die Sicherung der Vorgangsablage (§ 132 BAO).
+  // Sie ist wie das Repository von hier aus nicht feststellbar, und ohne
+  // Antwort bliebe hier ein zweiter Punkt offen, den diese Probe nicht meint.
+  ablageGesichert: true,
   lieferanten: [{ id: 'l1', name: 'Eins', lieferzeitWerktage: 5 }],
 };
 

@@ -78,6 +78,39 @@ export function fehltSatz(hinweise = []) {
   return `es ${woerter.length === 1 ? 'fehlt' : 'fehlen'} ${woerter.join(', ')}`;
 }
 
+/**
+ * Die Angaben, die aus `data/betreiber.json` in die Bereitschaftsliste
+ * gehören — an **einer** Stelle.
+ *
+ * **Der Anlass, 9. September 2026.** Vier Werkzeuge rufen `startklar()`, drei
+ * davon bauen ihre Lage von Hand aus derselben Betreiberdatei zusammen:
+ * `bin/startklar.mjs`, `bin/offenepunkte.mjs` und `bin/website.mjs`. Als die
+ * Sicherung der Vorgangsablage als Punkt dazukam, wurde sie in **einem**
+ * der drei nachgetragen. Die anderen beiden lasen das Feld nicht, es fiel
+ * auf `null` zurück, und die Auskunft blieb hängen: Die Startseite und
+ * `llms.txt` hätten „Bestellen ist noch nicht möglich" aus einem Grund
+ * stehen gelassen, den die Betreiberdatei längst beantwortet hatte.
+ *
+ * > **Dieselbe Abbildung dreimal geschrieben ist eine Abbildung, die niemand
+ * > pflegt.** Ein neues Feld erreicht dann eine Stelle und zwei nicht — und
+ * > das fällt nicht auf, weil `?? null` genau wie „unbeantwortet" aussieht.
+ *
+ * `?? null` und nicht `|| null`: Ein ausdrückliches `false` ist eine
+ * **Antwort** und muss als solche durchkommen.
+ *
+ * @param {object} betreiber der Inhalt von `data/betreiber.json`
+ * @returns {object} die abgeleiteten Felder für `startklar()`
+ */
+export function betreiberangaben(betreiber = {}) {
+  return {
+    zahlungsanbieter: betreiber.zahlungsanbieter ?? null,
+    rechtstexteFundstelle: betreiber.rechtstexteFundstelle ?? null,
+    domainZeigtAufShop: betreiber.domainZeigtAufShop ?? null,
+    repositoryPrivat: betreiber.repositoryPrivat ?? null,
+    ablageGesichert: betreiber.ablageGesichert ?? null,
+  };
+}
+
 /** Die Punkte, die über „online" entscheiden — in der Reihenfolge ihrer Härte. */
 export function startklar(lage = {}) {
   const {
@@ -88,6 +121,7 @@ export function startklar(lage = {}) {
     rechtstexteFundstelle = null,
     domainZeigtAufShop = null,
     repositoryPrivat = null,
+    ablageGesichert = null,
     impressumsfelder = [],
     lieferanten = [],
     oberflaechenQuelltext = null,
@@ -376,6 +410,33 @@ export function startklar(lage = {}) {
     'von hier aus nicht feststellbar — der Netzausgang dieser Umgebung ist gesperrt', 'Auftraggeber');
   unpruefbar('repository', 'Repository ist privat', repositoryPrivat,
     'von hier aus nicht feststellbar; solange es öffentlich ist, sind Einkaufspreise rekonstruierbar', 'Auftraggeber');
+  /**
+   * **Aufgenommen am 9. September 2026.** `src/ablage.js` weiß seit ihrem
+   * ersten Bau, was für die Vorgänge gilt: **§ 132 BAO verlangt sieben Jahre
+   * Aufbewahrung**, § 131 BAO, dass der ursprüngliche Inhalt feststellbar
+   * bleibt, § 11 UStG eine fortlaufende und einmalige Rechnungsnummer. Der
+   * Kopfkommentar erklärt beides über eine halbe Seite.
+   *
+   * Auf keiner Liste stand, dass diese Vorgänge **gesichert** gehören.
+   *
+   * > **Der Shop ist darauf ausgelegt, Aufzeichnungen sieben Jahre zu halten,
+   * > und niemand hat je gesagt, wo sie so lange liegen sollen.**
+   *
+   * Die Ablage steht in `.gitignore` — zu Recht, sie trägt Namen, Anschriften
+   * und Beträge, und dieses Verzeichnis ist öffentlich. Der Kommentar dort
+   * begründet die **Vertraulichkeit** sorgfältig und sagt zur **Haltbarkeit**
+   * nichts. Beim Einschalten des Bestellwegs (Gate 26) entstehen die ersten
+   * Datensätze auf dem Hosting des Auftraggebers; ob sie dort in eine Sicherung
+   * fallen, ist von hier aus nicht feststellbar.
+   *
+   * Deshalb ein Punkt wie „Repository ist privat": unbeantwortet ein
+   * Fragezeichen, kein stilles Grün. **Er hält den Shop nicht auf** — am ersten
+   * Tag gibt es nichts zu verlieren —, aber die Pflicht beginnt mit dem ersten
+   * Datensatz, und wer sie erst nach dem Verlust bemerkt, bemerkt sie zu spät.
+   */
+  unpruefbar('ablagesicherung', 'Die Ablage der Vorgänge ist gesichert', ablageGesichert,
+    'von hier aus nicht feststellbar — § 132 BAO verlangt sieben Jahre, und die Ablage liegt '
+      + 'auf dem Hosting des Auftraggebers', 'Auftraggeber');
 
   const zaehle = (z) => punkte.filter((x) => x.zustand === z).length;
   return {

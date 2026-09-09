@@ -96,3 +96,32 @@ test('der Bestellweg hängt an der Bankverbindung, nicht nur an E-Mail und Recht
   assert.ok(v, 'sonst nimmt der Shop Bestellungen an, die er nicht abrechnen kann');
   assert.match(v.warum, /Vertrag/);
 });
+
+/**
+ * **9. September 2026.** Derselbe Riss ein zweites Mal, nur von der anderen
+ * Seite: `startklar()` bekam die **Sicherung der Vorgangsablage** als zwölften
+ * Punkt, und ohne Etappe wäre sie ein Punkt gewesen, den der Plan nicht
+ * kennt. `npm run rollout` hat den eigenen Zusatz sofort gemeldet — die
+ * Verbindung, die im September gebaut wurde, hat beim ersten echten Anlass
+ * gehalten.
+ */
+test('der Plan führt die Etappe, die die Aufbewahrungspflicht bedient', () => {
+  const e = ETAPPEN.find((x) => x.id === 'ablagesicherung');
+  assert.ok(e, '§ 132 BAO verlangt sieben Jahre — ohne Etappe sagt das niemand');
+  assert.equal(e.art, 'gesetzt', 'eine Frist aus dem Gesetz, keine gerechnete Dauer');
+  assert.equal(e.gate, null);
+  assert.match(e.warumKeinGate, /132 BAO/,
+    'ohne Gate braucht sie den Grund, warum nichts zu entscheiden ist');
+});
+
+/**
+ * Vorher gibt es nichts zu sichern. Eine leere Ablage zu sichern und sich
+ * für vorbereitet zu halten, wäre genau die Sorte Grün, die dieses Vorhaben
+ * sonst überall aufspürt.
+ */
+test('gesichert wird erst, wenn der Bestellweg Datensätze erzeugt', () => {
+  const e = ETAPPEN.find((x) => x.id === 'ablagesicherung');
+  const v = e.brauchtVor.find((x) => x.etappe === 'bestellweg');
+  assert.ok(v, 'ohne diese Reihenfolge sichert der Plan eine leere Datei');
+  assert.match(v.warum, /leer/);
+});

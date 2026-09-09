@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { startklar } from '../src/startklar.js';
+import { startklar, betreiberangaben } from '../src/startklar.js';
 import { BANKFELDER } from '../src/bankverbindung.js';
 import { IMPRESSUMSFELDER } from '../src/rechtstexte.js';
 import { FORMREGELN } from '../src/betreiberform.js';
@@ -48,6 +48,10 @@ const alles = {
   rechtstexteFundstelle: 'Kanzlei X, Fassung vom …',
   domainZeigtAufShop: true,
   repositoryPrivat: true,
+  // Seit dem 9. September gehört die Sicherung der Vorgangsablage dazu. Sie
+  // ist wie das Repository von hier aus nicht feststellbar — unbeantwortet
+  // ein Fragezeichen, und ohne Antwort gäbe es hier kein „startklar".
+  ablageGesichert: true,
   lieferanten: [{ id: 'l1', name: 'Lieferant Eins', lieferzeitWerktage: 5 }],
   // Seit dem 3. September gehört der Bestellweg dazu, und zwar als erster
   // Punkt: Alle anderen sind Zulieferungen des Auftraggebers, dieser ist der
@@ -147,6 +151,7 @@ test('die Antworten kommen aus der Datei, nicht aus dem Werkzeug', async () => {
     ...echt,
     zahlungsanbieter: 'Anbieter aus der Probe',
     repositoryPrivat: true,
+    ablageGesichert: true,
     domainZeigtAufShop: false,
   }));
 
@@ -375,4 +380,75 @@ test('kein Punkt behauptet eine Anbindung, die niemand gemessen hat', () => {
     assert.doesNotMatch(punkt.befund, /\bangebunden\b/,
       `${punkt.id} behauptet eine Anbindung: ${punkt.befund}`);
   }
+});
+
+/* ------------------------------------------------------------------ *
+ * Die Sicherung der Vorgangsablage — § 132 BAO, sieben Jahre
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Der Anlass, 9. September 2026.** `src/ablage.js` weiß seit ihrem ersten
+ * Bau, dass § 132 BAO sieben Jahre Aufbewahrung verlangt und § 131 BAO, dass
+ * der ursprüngliche Inhalt feststellbar bleibt. Auf keiner Liste stand, dass
+ * die Vorgänge **gesichert** gehören: Der Shop war darauf ausgelegt,
+ * Aufzeichnungen sieben Jahre zu halten, und niemand hatte gesagt, wo sie so
+ * lange liegen.
+ */
+test('unbeantwortet ist die Ablagesicherung ein Fragezeichen, kein stilles Grün', () => {
+  const b = startklar({ ...alles, ablageGesichert: null });
+  assert.equal(b.startklar, false);
+  assert.equal(b.unpruefbar, 1);
+  const punkt = b.punkte.find((p) => p.id === 'ablagesicherung');
+  assert.equal(punkt.zustand, 'unpruefbar');
+  assert.match(punkt.befund, /nicht feststellbar/);
+  assert.match(punkt.befund, /132 BAO/);
+  // Von hier aus ist nichts zu tun: Die Ablage liegt auf dem Hosting des
+  // Auftraggebers, und nur er sieht, ob sie in eine Sicherung fällt.
+  assert.equal(punkt.wer, 'Auftraggeber');
+});
+
+test('ein ausdrückliches Nein zur Ablagesicherung hält den Shop auf, ohne zu raten', () => {
+  const b = startklar({ ...alles, ablageGesichert: false });
+  assert.equal(b.unpruefbar, 0);
+  assert.equal(b.offen, 1);
+  assert.match(b.punkte.find((p) => p.id === 'ablagesicherung').befund, /verneint/);
+});
+
+/* ------------------------------------------------------------------ *
+ * Eine Abbildung, dreimal geschrieben
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Der zweite Fund vom 9. September.** Der neue Punkt war in `startklar()`,
+ * in `bin/startklar.mjs` und in beiden Listen — und die Startseite sagte
+ * weiter „Bestellen ist noch nicht möglich", obwohl die Betreiberdatei die
+ * Frage beantwortete. `bin/website.mjs` und `bin/offenepunkte.mjs` bauen ihre
+ * Lage von Hand aus derselben Datei zusammen; das neue Feld stand in einem
+ * der drei. `?? null` sieht dabei genau aus wie „unbeantwortet".
+ */
+test('die Betreiberangaben kommen aus einer Abbildung, nicht aus drei', () => {
+  const felder = Object.keys(betreiberangaben({}));
+  assert.ok(felder.length >= 4, `nur ${felder.length} Felder — die Schleife prüfte zu wenig`);
+
+  for (const werkzeugname of ['startklar.mjs', 'offenepunkte.mjs', 'website.mjs']) {
+    const quelle = readFileSync(
+      fileURLToPath(new URL(`../bin/${werkzeugname}`, import.meta.url)), 'utf8');
+    assert.match(quelle, /betreiberangaben\(betreiber\)/,
+      `${werkzeugname} baut die Lage selbst zusammen`);
+    for (const feld of felder) {
+      // Der Bezeichner darf im Fließtext vorkommen; gemeint ist der Zugriff.
+      assert.doesNotMatch(quelle, new RegExp(`betreiber\\.${feld}\\s*\\?\\?`),
+        `${werkzeugname} liest ${feld} noch von Hand — das nächste neue Feld fehlt hier wieder`);
+    }
+  }
+});
+
+test('ein ausdrückliches Nein kommt durch, ein fehlendes Feld wird zu null', () => {
+  // `?? null` und nicht `|| null`: Sonst würde aus „nein" ein Fragezeichen,
+  // und ein verneinter Punkt sähe aus wie ein unbeantworteter.
+  const a = betreiberangaben({ repositoryPrivat: false, ablageGesichert: false });
+  assert.equal(a.repositoryPrivat, false);
+  assert.equal(a.ablageGesichert, false);
+  assert.equal(betreiberangaben({}).ablageGesichert, null);
+  assert.equal(betreiberangaben().domainZeigtAufShop, null);
 });

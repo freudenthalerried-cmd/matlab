@@ -352,7 +352,7 @@ export function veroeffentlichungsbefund(text, vermerk) {
       regel: 'veroeffentlichung-steht-aus',
       text: `die Beschreibung hat sich seit der letzten Veröffentlichung (${vermerk.stand}) `
         + 'geändert — was auf GitHub steht, ist nicht mehr das, was das Werkzeug ausgibt. '
-        + 'Mit `npm run pr-text` neu setzen und den Vermerk nachziehen',
+        + 'Mit `npm run --silent pr-text` neu setzen und den Vermerk nachziehen',
     });
   }
   return { meldungen, sauber: meldungen.length === 0, ist };

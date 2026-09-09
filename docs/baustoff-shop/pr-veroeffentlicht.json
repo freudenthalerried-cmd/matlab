@@ -2,7 +2,7 @@
   "_zweck": "Was zuletzt an Pull Request #14 veröffentlicht wurde — als Fingerabdruck, nicht als Kopie. Eine zweite Kopie desselben Textes wäre eine Liste, die niemand pflegt; der Fingerabdruck sagt genau eine Sache: ob seit der letzten Veröffentlichung etwas an der Quelle geändert wurde.",
   "_grenze": "Er belegt NICHT, dass GitHub diesen Text zeigt. Er belegt, dass jemand den Handgriff gemacht und dabei diesen Stand eingetragen hat. Der Netzausgang dieser Umgebung erlaubt keine Prüfung der Veröffentlichung selbst; ein Prüfer, der das behauptete, wäre eine Behauptung mit Ziffern.",
   "_anlass": "Dreimal vergessen: am 5. September (25 Prüfer in der Quelle, 24 veröffentlicht), am 9. September vormittags (31 Gates) und am 9. September nachmittags gleich zweifach — „über 1.000 Testfälle\" bei 2009 und „39 Prüfer\" bei 40. Der Handgriff hat kein Werkzeug, das ihn einfordert.",
-  "werkzeug": "npm run pr-text",
+  "werkzeug": "npm run --silent pr-text",
   "stand": "2026-09-09",
-  "sha256": "8c3fadfe55f6a73b1d9ea2d407373d17c1d0bb0a8a5f71f0d60b6a35d4d2c2ef"
+  "sha256": "0cea925686b73d0e708b490362865c00548daaf42d7abaf30464f79622f38c25"
 }

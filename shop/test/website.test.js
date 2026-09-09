@@ -602,6 +602,11 @@ test('Startseite und llms.txt sagen aus den Daten, ob bestellt werden kann', () 
     // nicht bestellfähig. Die Angaben kommen aus den Feldbeispielen, damit ein
     // neues Bankfeld seine gültige Angabe mitbringt.
     ...Object.fromEntries(BANKFELDER.map((f) => [f.feld, f.beispiel])),
+    // **Seit dem 9. September.** Und dasselbe für die Sicherung der
+    // Vorgangsablage: § 132 BAO verlangt sieben Jahre, von hier aus ist
+    // nichts feststellbar, und unbeantwortet bliebe „noch nicht möglich"
+    // wieder aus einem Grund stehen, den diese Probe nicht meint.
+    ablageGesichert: true,
   }, null, 2));
 
   // Auch die Lieferzeit gehört beantwortet — sie steht in der

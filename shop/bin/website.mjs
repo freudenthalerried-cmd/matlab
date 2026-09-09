@@ -35,7 +35,7 @@ import { pruefeSeiten } from '../src/interna.js';
 import { artikelBild, gruppenBild, schichten, schichtbild, dickeMm, bauform } from '../src/bilder.js';
 import { VERFUEGBARKEIT, angebotsAuszeichnung, robotsTxt, liefergebietOrte } from '../src/maschinenlesbar.js';
 import { baueKern, BROWSERMODULE } from '../src/buendel.js';
-import { startklar, fehltSatz } from '../src/startklar.js';
+import { startklar, fehltSatz, betreiberangaben } from '../src/startklar.js';
 import {
   baubefund, oberflaeche, EMPFANGSSKRIPT, KONFIGURATIONSDATEI,
 } from '../src/bestellwegbau.js';
@@ -2569,10 +2569,7 @@ function main() {
     impressumsfelder: IMPRESSUMSFELDER,
     katalog,
     preisdateiVorhanden: true,
-    zahlungsanbieter: betreiber.zahlungsanbieter ?? null,
-    rechtstexteFundstelle: betreiber.rechtstexteFundstelle ?? null,
-    domainZeigtAufShop: betreiber.domainZeigtAufShop ?? null,
-    repositoryPrivat: betreiber.repositoryPrivat ?? null,
+    ...betreiberangaben(betreiber),
     lieferanten: lieferantenDatei.lieferanten,
     // Derselbe Quelltext, der weiter unten ins Bündel geht — **eine** Lesung,
     // nicht zwei. Er entscheidet, ob die Kasse eine Bestellung abschicken

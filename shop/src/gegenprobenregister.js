@@ -1683,6 +1683,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'verschwinden, den der Auftraggeber vor der Budgetfreigabe liest.',
   }),
   Object.freeze({
+    id: 'veroeffentlichung-haengt-hinterher',
+    pruefer: 'pruefe-schaufenster',
+    was: 'Ein Beschreibungstext, der sich seit der letzten Veröffentlichung geändert hat',
+    datei: 'shop/bin/prtext.mjs',
+    art: 'ersetzen',
+    suchen: '  .trimEnd() + FUSS;',
+    ersetzen: "  .trimEnd() + FUSS + ' ';",
+    erwartet: /veroeffentlichung-steht-aus/,
+    warum: 'Am 9. September wurde die Regel gebaut, weil die veröffentlichte Beschreibung '
+      + 'dreimal hinter der Quelle zurückblieb; eine Gegenprobe bekam sie damals nicht. '
+      + 'Diese Mutation ändert den Text, der veröffentlicht gehört, um ein einziges '
+      + 'Leerzeichen — unsichtbar für jeden Leser, aber der Fingerabdruck ist ein anderer. '
+      + 'Bleibt der Prüfer grün, vergleicht er nicht, sondern nickt: Er hätte genau die '
+      + 'Abweichung durchgehen lassen, für die er gebaut wurde.',
+  }),
+  Object.freeze({
     id: 'lebende-zahl-ohne-anker',
     pruefer: 'pruefe-schaufenster',
     was: 'Eine lebende Zahl der Beschreibung, die kein Muster misst',

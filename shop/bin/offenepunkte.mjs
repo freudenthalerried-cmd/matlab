@@ -14,7 +14,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { offenePunkte } from '../src/offenepunkte.js';
-import { startklar } from '../src/startklar.js';
+import { startklar, betreiberangaben } from '../src/startklar.js';
 import { IMPRESSUMSFELDER } from '../src/rechtstexte.js';
 import { ladeBaustoffkatalog } from '../src/baustoffkatalog.js';
 import { katalogFeed } from '../src/maschinenlesbar.js';
@@ -55,10 +55,7 @@ const befund = startklar({
   impressumsfelder: IMPRESSUMSFELDER,
   katalog,
   preisdateiVorhanden,
-  zahlungsanbieter: betreiber.zahlungsanbieter ?? null,
-  rechtstexteFundstelle: betreiber.rechtstexteFundstelle ?? null,
-  domainZeigtAufShop: betreiber.domainZeigtAufShop ?? null,
-  repositoryPrivat: betreiber.repositoryPrivat ?? null,
+  ...betreiberangaben(betreiber),
   lieferanten: lieferantenDatei.lieferanten,
   oberflaechenQuelltext: readFileSync(join(SHOP, 'shop-ui.js'), 'utf8'),
 });
