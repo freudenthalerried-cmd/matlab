@@ -1886,8 +1886,16 @@ export const GEGENPROBEN = Object.freeze([
     was: 'Ein Haken, der auf ein Werkzeug zeigt, das er nicht mehr aufruft',
     datei: 'shop/src/haken.js',
     art: 'ersetzen',
-    suchen: "    ruft: ['bin/mutationspruefung.mjs', 'bin/erzeugnispruefung.mjs', 'npm test'],",
-    ersetzen: "    ruft: ['bin/mutationswache.mjs', 'bin/erzeugnispruefung.mjs', 'npm test'],",
+    // **Kürzer angesetzt am 9. September 2026.** Dieser Suchtext war zweimal
+    // die ganze Zeile und ist zweimal ins Leere gelaufen, weil die Zeile einen
+    // Eintrag mehr bekam — beim zweiten Mal am selben Tag. Eine Gegenprobe
+    // hängt an einem Satz, und ein Satz, der bei jeder Erweiterung anders
+    // lautet, ist ein schlechter Anker. Gesucht wird jetzt die **kleinste**
+    // Stelle, die den Ort eindeutig bezeichnet: der Eintrag selbst, nicht die
+    // Liste um ihn herum. Der Registertest hält fest, dass sie genau einmal
+    // vorkommt — im Kopfkommentar steht der Name ohne Anführungszeichen.
+    suchen: "      'bin/mutationspruefung.mjs',",
+    ersetzen: "      'bin/mutationswache.mjs',",
     erwartet: /haken-ruft-nicht/,
     warum: 'Der Fall vom 8. September: Ein Commit dieses Loops nahm eine laufende Gegenprobe '
       + 'mit und stellte damit pruefe-schaufenster blind. Der Haken hält das seither auf — '

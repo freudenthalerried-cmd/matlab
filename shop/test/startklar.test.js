@@ -367,6 +367,10 @@ test('kein Punkt behauptet eine Anbindung, die niemand gemessen hat', () => {
   // Die Regel, nicht das Beispiel: Solange es keinen Zahlschritt gibt, darf
   // das Wort „angebunden" in keiner Meldung dieser Liste stehen.
   const b = startklar({ ...alles, zahlungsanbieter: 'Anbieter X' });
+  // Ohne diese Zusicherung liefe die Schleife bei leerer Liste durch und
+  // prüfte nichts — `npm run pruefe-tests` hat genau das an dieser Stelle
+  // gefunden, einen Tag nachdem ich sie geschrieben hatte.
+  assert.ok(b.punkte.length >= 7, `nur ${b.punkte.length} Punkte`);
   for (const punkt of b.punkte) {
     assert.doesNotMatch(punkt.befund, /\bangebunden\b/,
       `${punkt.id} behauptet eine Anbindung: ${punkt.befund}`);

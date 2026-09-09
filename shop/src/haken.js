@@ -61,7 +61,19 @@ export const HAKENWEG = 'shop/haken';
 export const HAKEN = Object.freeze([
   Object.freeze({
     name: 'pre-commit',
-    ruft: ['bin/mutationspruefung.mjs', 'bin/erzeugnispruefung.mjs', 'npm test'],
+    ruft: [
+      'bin/mutationspruefung.mjs',
+      'bin/erzeugnispruefung.mjs',
+      'npm test',
+      // **Ergänzt am 9. September 2026.** Der Gesamtlauf fand zwei Testfälle,
+      // die über eine Liste laufen und bei leerer Liste nichts prüfen — beide
+      // aus den zwei Runden davor, beide von mir, beide über den Haken
+      // committet. `npm test` kann das nie finden: Eine Schleife über nichts
+      // ist grün. Gemessen: 215 ms. `pruefe-schaufenster` bleibt draußen, es
+      // braucht 23 Sekunden und verdoppelte jeden Commit — sein Befund ist
+      // eine veraltete Zahl, kein falsches Verhalten.
+      'bin/testpruefung.mjs',
+    ],
     warum: 'Eine Gegenprobe hält eine Quelldatei absichtlich falsch. Wer währenddessen '
       + 'committet, committet die Mutation — am 8. September stand so fünfunddreißig '
       + 'Minuten lang ein blindgestellter Prüfer auf dem Zweig. Der Zettel unter '

@@ -245,6 +245,9 @@ test('jeder Eintrag trägt einen Grund, nicht nur ein Ja oder Nein', () => {
 test('die Startwege stehen als Angabe da, nicht nur im Register als Satz', () => {
   const abStart = ZAHLUNGSBEDINGUNGEN.angeboten.filter((w) => w.abStart).map((w) => w.id);
   assert.deepEqual(abStart.sort(), ['eps', 'vorkasse']);
+  // Dieselbe Lücke wie im Punkt darüber: eine leere Liste durchliefe die
+  // Schleife und prüfte nichts.
+  assert.equal(ZAHLUNGSBEDINGUNGEN.angeboten.length, 3);
   for (const w of ZAHLUNGSBEDINGUNGEN.angeboten) {
     assert.equal(typeof w.abStart, 'boolean',
       `${w.id}: ohne Angabe wäre offen, ob er zum Start gehört`);

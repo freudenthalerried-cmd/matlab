@@ -53,3 +53,17 @@ if ! (cd "$WURZEL/shop" && npm test >/dev/null 2>&1); then
   echo 'Ausgabe ansehen mit: npm --prefix shop test'
   exit 1
 fi
+# **Ergänzt am 9. September 2026.** Der Gesamtlauf fand zwei Testfälle, die
+# über eine Liste laufen und bei leerer Liste nichts prüfen — beide aus den
+# zwei Runden davor, beide von mir, beide durch diesen Haken hindurch
+# committet.
+#
+#   Eine Schleife über nichts ist grün. `npm test` kann das nie finden.
+#
+# 215 ms. Draußen bleibt `pruefe-schaufenster`: 23 Sekunden, und sein Befund
+# ist eine veraltete Zahl, kein falsches Verhalten.
+if ! node "$WURZEL/shop/bin/testpruefung.mjs" >/dev/null 2>&1; then
+  echo 'Abbruch: npm run pruefe-tests hat einen Verdacht — der Commit bleibt stehen.'
+  echo 'Ansehen mit: npm --prefix shop run pruefe-tests'
+  exit 1
+fi
