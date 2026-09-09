@@ -26,9 +26,9 @@
       "beleg": "baumit.at, www.baumit.at, schiedel.at, www.schiedel.at, synthesa.at, isover.at, www.isover.at: alle 403 am Ausgang. Auch ueber WebFetch: EGRESS_BLOCKED. Der Proxy nennt als Grund \"policy denial\""
     },
     "rechtsinformationssystem": {
-      "am": "2026-09-09",
+      "am": "2026-09-10",
       "ergebnis": "gesperrt",
-      "beleg": "ris.bka.gv.at: 403 am Ausgang, gleicher Grund wie bei den Herstellerseiten"
+      "beleg": "Am 9. September ris.bka.gv.at: 403 am Ausgang. Am 10. September nach dem Fund, dass die Sperre adressweise verschieden ist, drei weitere Adressen versucht — www.ris.bka.gv.at, data.bka.gv.at und ogd.bka.gv.at, wo die offenen Daten des Bundes liegen: alle vier ohne Verbindung. Zum Vergleich in derselben Minute: api.github.com 200, registry.npmjs.org 200, pypi.org 200. Die Freigabe umfasst Entwicklerinfrastruktur, nicht das offene Netz — der Volltext der Gesetze ist von hier aus auf keinem gemessenen Weg zu haben."
     },
     "github-schnittstelle": {
       "am": "2026-09-10",

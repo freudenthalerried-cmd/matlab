@@ -85,7 +85,13 @@ export const GEGENPROBEN = Object.freeze([
     was: 'Eine überholte Zahl in der PR-Beschreibung',
     datei: 'docs/baustoff-shop/pr-beschreibung.md',
     art: 'ersetzen',
-    suchen: '| **43.792 €** |',
+    /*
+     * **Auf ein Muster umgestellt (10.09.).** Diese Zahl ist dreimal berichtigt
+     * worden — 45.356 → 43.396 → 43.792 —, und jedes Mal zeigte der Anker
+     * danach ins Leere. Gemeint ist die fett gesetzte Leitzahl in ihrer Spalte,
+     * nicht ihr jeweiliger Betrag.
+     */
+    suchenMuster: /\| \*\*[\d.]+ €\*\* \|/,
     ersetzen: '| **43.111 €** |',
     erwartet: /Nötiger Monatsumsatz/,
     warum: 'Die Beschreibung ist das Erste, was der Auftraggeber liest. Sie war '
@@ -2070,13 +2076,21 @@ export const GEGENPROBEN = Object.freeze([
     datei: 'docs/baustoff-shop/gate-register.md',
     art: 'ersetzen',
     /*
-     * **Zum dritten Mal nachgezogen (10.09., Ortszeit).** Dieser Suchtext ist auf
-     * genau das Zahlwort verankert, das sich mit jedem neuen Gate ändert — er
-     * bricht deshalb bei jedem neuen Gate. Bisher: 31 → 32 → 33. Was ihn heilte,
-     * wäre ein Suchmuster statt eines Suchtextes; der Läufer kennt nur
-     * Zeichenketten (`split`/`replace`). Steht als eigene Aufgabe an.
+     * **Auf ein Muster umgestellt (10.09.).** Dieser Anker saß auf genau dem
+     * Zahlwort, das sich mit jedem neuen Gate ändert, und ist dreimal
+     * nachgezogen worden: 31 → 32 → 33. Jedes Mal fiel es erst auf, als der
+     * Testlauf rot wurde. Das Muster beschreibt die Stelle, ohne ihren
+     * beweglichen Teil festzuschreiben — `\S+` steht für das Zahlwort, wie es
+     * gerade lautet.
+     *
+     * **Und `\S+` statt `\w+`, nach dem ersten Fehlschlag.** `\w` ist ASCII:
+     * Es trifft „Dreiunddrei" und bleibt am „ß" stehen. Die Mutation ließ „ßig"
+     * stehen und erzeugte „Vierundzwanzigßig" — der Prüfer meldete rot, aber
+     * aus einem anderen Grund als dem gemeinten. Dieselbe Falle hat diesen
+     * Bestand schon einmal erwischt: `\b` kennt „Ö" nicht als Wortzeichen, und
+     * die ÖNORM-Regel traf deshalb nie.
      */
-    suchen: '**Maßgeblich für alle Gate-Fragen.** Dreiunddreißig',
+    suchenMuster: /\*\*Maßgeblich für alle Gate-Fragen\.\*\* \S+/,
     ersetzen: '**Maßgeblich für alle Gate-Fragen.** Vierundzwanzig',
     erwartet: /kopfzahl-abgeloest/,
     warum: 'Der Zustand vom 9. September, morgens: Die dritte Zeile sagte „Vierundzwanzig '
@@ -2119,7 +2133,13 @@ export const GEGENPROBEN = Object.freeze([
     datei: 'shop/src/offenepunkte.js',
     art: 'ersetzen',
     baueVorher: true,
-    suchen: "    titel: 'Suchvolumen der 29 Keywords im Liefergebiet messen',",
+    /*
+     * **Auf ein Muster umgestellt (10.09.).** Die Zahl der Begriffe ist seit
+     * dem 6. September zweimal gefallen (31 → 29), weil Gate 29 und die
+     * Landeseite je einen zurückstellten. Der Anker meint die Aufgabe, nicht
+     * ihren Zählstand.
+     */
+    suchenMuster: /    titel: 'Suchvolumen der \d+ Keywords im Liefergebiet messen',/,
     ersetzen: "    titel: 'Suchvolumen der 32 Keywords im Liefergebiet messen',",
     erwartet: /zahl-veraltet|Begriffe der Messliste/,
     warum: 'Der Fall vom 8. September: Der Punkt stand auf 32, während die Messliste seit '
@@ -2335,6 +2355,93 @@ export function neueMeldungen(vorher, nachher) {
   return nachher.split('\n').filter((z) => !bekannt.has(z.trim())).join('\n');
 }
 
+
+/* ------------------------------------------------------------------ *
+ * Wo eine Probe zupackt
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Der Anlass, 10. September 2026.** Der Suchtext der Probe
+ * `der-kopf-des-registers-zaehlt-anders-als-die-tabelle` sitzt auf dem Zahlwort
+ * im Kopf des Gate-Registers — auf genau der Stelle, die sich mit jedem neuen
+ * Gate ändert. Er ist dreimal nachgezogen worden: 31 → 32 → 33. Jedes Mal fiel
+ * es erst auf, als der Testlauf rot wurde.
+ *
+ * > **Ein Anker auf einer Zahl, die sich ändert, ist ein Anker auf Sand.**
+ *
+ * Eine Probe kann seither statt `suchen` ein `suchenMuster` tragen. Das Muster
+ * beschreibt die Stelle, ohne ihren beweglichen Teil festzuschreiben:
+ * `/\*\*Maßgeblich für alle Gate-Fragen\.\*\* \w+/` findet den Kopf, gleich
+ * welches Zahlwort dort steht.
+ *
+ * **Ersetzt wird über Stellen, nicht mit `String.replace`.** Das ist kein
+ * Umweg: `replace` deutet in seinem Ersetzungstext `$&`, ``$` ``, `$'` und
+ * `$1` als Anweisungen. Kein Eintrag dieses Registers nutzt heute eine davon —
+ * gemessen —, und der Erste, der es täte, bekäme eine Mutation, die woanders
+ * landet als im Register steht. Ein Prüfer, der daraufhin grün meldet, sieht
+ * aus wie einer, der nicht anschlägt.
+ *
+ * @param {string} text der Dateiinhalt
+ * @param {object} probe ein Eintrag mit `suchen` oder `suchenMuster`
+ * @returns {{index: number, laenge: number}[]}
+ */
+export function fundstellen(text, probe) {
+  const t = String(text ?? '');
+  const stellen = [];
+
+  if (probe.suchenMuster) {
+    const m = probe.suchenMuster;
+    const re = new RegExp(m.source, m.flags.includes('g') ? m.flags : `${m.flags}g`);
+    let treffer = re.exec(t);
+    while (treffer) {
+      stellen.push({ index: treffer.index, laenge: treffer[0].length });
+      // Ein Muster, das die leere Zeichenkette trifft, stünde sonst ewig still.
+      if (treffer[0].length === 0) re.lastIndex += 1;
+      treffer = re.exec(t);
+    }
+    return stellen;
+  }
+
+  const s = String(probe.suchen ?? '');
+  if (s === '') return stellen;
+  let i = t.indexOf(s);
+  while (i >= 0) {
+    stellen.push({ index: i, laenge: s.length });
+    i = t.indexOf(s, i + s.length);
+  }
+  return stellen;
+}
+
+/** Der mutierte Text — die erste Fundstelle, oder mit `alle: true` jede. */
+export function mutiere(text, probe) {
+  let t = String(text ?? '');
+  const stellen = fundstellen(t, probe);
+  const genutzt = probe.alle ? stellen : stellen.slice(0, 1);
+  // Von hinten nach vorn, damit die früheren Stellen ihre Lage behalten.
+  for (const stelle of [...genutzt].reverse()) {
+    t = t.slice(0, stelle.index) + probe.ersetzen + t.slice(stelle.index + stelle.laenge);
+  }
+  return t;
+}
+
+/** Wie der Anker in einer Meldung dasteht — Muster und Text sehen verschieden aus. */
+export function ankerbeschreibung(probe) {
+  return probe.suchenMuster
+    ? `Suchmuster ${String(probe.suchenMuster)}`
+    : `Suchtext ${JSON.stringify(String(probe.suchen ?? '').slice(0, 50))}`;
+}
+
+/**
+ * Wie weit ein Muster greifen darf.
+ *
+ * **Warum es eine Grenze braucht.** Ein Suchtext zeigt, was er ersetzt — man
+ * liest ihn im Register. Ein Muster zeigt es nicht: `/Gate[\s\S]*Register/`
+ * sieht harmlos aus und verschluckt vierhundert Zeilen. Die Mutation wäre dann
+ * nicht die im Register beschriebene, und ein rot meldender Prüfer bewiese
+ * nichts über die gemeinte Stelle.
+ */
+export const MUSTER_HOECHSTLAENGE = 400;
+
 /**
  * Passt jeder Suchtext genau dorthin, wo er gemeint ist?
  *
@@ -2386,12 +2493,14 @@ export function suchtextbefund({ proben = GEGENPROBEN, lies, unterMutation = () 
       meldungen.push({ regel: 'datei-fehlt', id: p.id, text: `${p.id}: ${p.datei} gibt es nicht` });
       continue;
     }
-    const treffer = text.split(p.suchen).length - 1;
+    const stellen = fundstellen(text, p);
+    const treffer = stellen.length;
+    const wie = p.suchenMuster ? 'das Suchmuster' : 'der Suchtext';
     if (treffer === 0) {
       meldungen.push({
         regel: 'suchtext-passt-nicht',
         id: p.id,
-        text: `${p.id}: der Suchtext kommt in ${p.datei} nicht vor — die Mutation käme nie an`,
+        text: `${p.id}: ${wie} kommt in ${p.datei} nicht vor — die Mutation käme nie an`,
       });
       continue;
     }
@@ -2399,8 +2508,24 @@ export function suchtextbefund({ proben = GEGENPROBEN, lies, unterMutation = () 
       meldungen.push({
         regel: 'suchtext-mehrdeutig',
         id: p.id,
-        text: `${p.id}: der Suchtext kommt in ${p.datei} ${treffer}-mal vor — mutiert würde die `
+        text: `${p.id}: ${wie} kommt in ${p.datei} ${treffer}-mal vor — mutiert würde die `
           + 'erste Stelle, und das ist nicht unbedingt die gemeinte',
+      });
+    }
+    /*
+     * **Nur für Muster.** Ein Suchtext zeigt im Register, was er ersetzt; ein
+     * Muster nicht. Greift es weiter, als ein Mensch beim Lesen annimmt, ist
+     * die ausgeführte Mutation eine andere als die beschriebene — und ein rot
+     * meldender Prüfer beweist etwas über eine Stelle, die niemand gemeint hat.
+     */
+    const zuLang = p.suchenMuster && stellen.find((s) => s.laenge > MUSTER_HOECHSTLAENGE);
+    if (zuLang) {
+      meldungen.push({
+        regel: 'muster-greift-zu-weit',
+        id: p.id,
+        text: `${p.id}: das Suchmuster fasst ${zuLang.laenge} Zeichen in ${p.datei} — mehr als `
+          + `die erlaubten ${MUSTER_HOECHSTLAENGE}. Ein Muster, das zu viel greift, ersetzt `
+          + 'mehr, als im Register steht',
       });
     }
   }
@@ -2420,8 +2545,20 @@ export function registerbefund(pruefernamen, proben = GEGENPROBEN, ohne = OHNE_G
 
   for (const p of proben) {
     if (!ARTEN.includes(p.art)) throw new Error(`Unbekannte Mutationsart „${p.art}" bei ${p.id}`);
-    if (p.art === 'ersetzen' && (p.suchen === undefined || p.ersetzen === undefined)) {
-      throw new Error(`„ersetzen" braucht suchen und ersetzen: ${p.id}`);
+    if (p.art === 'ersetzen') {
+      if (p.ersetzen === undefined) throw new Error(`„ersetzen" braucht ersetzen: ${p.id}`);
+      /*
+       * **Genau einer der beiden Anker, seit dem 10. September.** Beide
+       * zugleich wäre nicht doppelt gesichert, sondern unentschieden: Wer den
+       * Eintrag liest, sähe zwei Stellen und wüsste nicht, welche mutiert wird.
+       */
+      const anker = [p.suchen, p.suchenMuster].filter((a) => a !== undefined).length;
+      if (anker !== 1) {
+        throw new Error(`„ersetzen" braucht genau einen Anker — suchen ODER suchenMuster: ${p.id}`);
+      }
+      if (p.suchenMuster && !(p.suchenMuster instanceof RegExp)) {
+        throw new Error(`suchenMuster ist kein regulärer Ausdruck: ${p.id}`);
+      }
     }
     if (p.art === 'anhaengen' && !p.text) throw new Error(`„anhaengen" braucht text: ${p.id}`);
     if (!p.warum || p.warum.length < 30) throw new Error(`Ohne Begründung kein Eintrag: ${p.id}`);

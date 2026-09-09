@@ -57,8 +57,14 @@ test('Ein unvollständiger Eintrag wird abgewiesen, nicht gerechnet', () => {
   assert.throws(() => registerbefund(['p'], ohneGrund, []), /Ohne Begründung/);
   const falscheArt = [{ ...ohneGrund[0], art: 'löschen', warum: 'ein hinreichend langer Grund für den Eintrag' }];
   assert.throws(() => registerbefund(['p'], falscheArt, []), /Mutationsart/);
-  const halbesErsetzen = [{ id: 'x', pruefer: 'p', datei: 'd', art: 'ersetzen', erwartet: /x/, warum: 'ein hinreichend langer Grund für den Eintrag' }];
-  assert.throws(() => registerbefund(['p'], halbesErsetzen, []), /suchen und ersetzen/);
+  // **Nachgezogen am 10. September.** „ersetzen" verlangt seither einen
+  // Ersetzungstext und **genau einen** Anker — `suchen` oder `suchenMuster`.
+  // Der fehlende Ersetzungstext und der fehlende Anker sind zwei verschiedene
+  // Fehler und melden sich deshalb verschieden.
+  const ohneErsetzung = [{ id: 'x', pruefer: 'p', datei: 'd', art: 'ersetzen', suchen: 'a', erwartet: /x/, warum: 'ein hinreichend langer Grund für den Eintrag' }];
+  assert.throws(() => registerbefund(['p'], ohneErsetzung, []), /braucht ersetzen/);
+  const ohneAnker = [{ id: 'x', pruefer: 'p', datei: 'd', art: 'ersetzen', ersetzen: 'b', erwartet: /x/, warum: 'ein hinreichend langer Grund für den Eintrag' }];
+  assert.throws(() => registerbefund(['p'], ohneAnker, []), /genau einen Anker/);
 });
 
 test('Ein Prüfer, den weder Probe noch Grund kennt, fällt auf', () => {

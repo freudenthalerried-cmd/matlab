@@ -28,7 +28,10 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { GEGENPROBEN, OHNE_GEGENPROBE, neueMeldungen, registerbefund } from '../src/gegenprobenregister.js';
+import {
+  GEGENPROBEN, OHNE_GEGENPROBE, neueMeldungen, registerbefund,
+  fundstellen, mutiere, ankerbeschreibung, MUSTER_HOECHSTLAENGE,
+} from '../src/gegenprobenregister.js';
 import { laufzahl, nachPrueferGruppiert, vorlaufEntfaellt } from '../src/gegenprobenplan.js';
 import { baumabdruck, baumbefund, bewegungstext } from '../src/baumstand.js';
 import { markiere, nimmAb, offeneMarken, stelleZurueck } from '../src/mutationsschutz.js';
@@ -301,9 +304,7 @@ for (const p of proben) {
       // ihre Lücke zweimal — im Kopf und im Fließtext —, und eine Mutation, die
       // nur eine der beiden trifft, lässt den Prüfer zu Recht grün melden.
       // Das sah aus wie „schlägt nicht an" und war eine halbe Mutation.
-      const mutiert = p.art === 'anhaengen'
-        ? vorher + p.text
-        : (p.alle ? vorher.split(p.suchen).join(p.ersetzen) : vorher.replace(p.suchen, p.ersetzen));
+      const mutiert = p.art === 'anhaengen' ? vorher + p.text : mutiere(vorher, p);
 
       /*
        * **Ein Suchtext, der zweimal passt — 7. September 2026.**
@@ -319,14 +320,28 @@ for (const p of proben) {
        * **Was der Mensch von Hand ausführt, war abgesichert; was allein läuft,
        * nicht.**
        */
-      const treffer = p.art === 'ersetzen' ? vorher.split(p.suchen).length - 1 : 1;
+      const stellen = p.art === 'ersetzen' ? fundstellen(vorher, p) : [];
+      const treffer = p.art === 'ersetzen' ? stellen.length : 1;
+      /*
+       * **Seit dem 10. September auch für Muster.** Ein Suchtext zeigt im
+       * Register, was er ersetzt; ein Muster zeigt es nicht und kann still weit
+       * mehr fassen, als beim Schreiben gemeint war. Dann liefe eine andere
+       * Mutation als die beschriebene, und ihr Ergebnis sagte über die gemeinte
+       * Stelle nichts.
+       */
+      const zuLang = stellen.slice(0, p.alle ? stellen.length : 1)
+        .find((s) => p.suchenMuster && s.laenge > MUSTER_HOECHSTLAENGE);
       if (p.art === 'ersetzen' && !p.alle && treffer > 1) {
-        schritte.push(`Suchtext kommt ${treffer}-mal vor — mutiert würde die erste Stelle, `
-          + 'und das ist nicht unbedingt die gemeinte');
+        schritte.push(`${ankerbeschreibung(p)} kommt ${treffer}-mal vor — mutiert würde die `
+          + 'erste Stelle, und das ist nicht unbedingt die gemeinte');
+        urteil = 'mehrdeutig';
+      } else if (zuLang) {
+        schritte.push(`${ankerbeschreibung(p)} fasst ${zuLang.laenge} Zeichen — mehr als die `
+          + `erlaubten ${MUSTER_HOECHSTLAENGE}; ersetzt würde mehr, als im Register steht`);
         urteil = 'mehrdeutig';
       } else if (mutiert === vorher) {
         schritte.push(p.art === 'ersetzen'
-          ? `Suchtext nicht gefunden: ${JSON.stringify(p.suchen.slice(0, 50))}`
+          ? `nicht gefunden: ${ankerbeschreibung(p)}`
           : 'Mutation hat nichts geändert');
         urteil = 'nicht angekommen';
       } else {
