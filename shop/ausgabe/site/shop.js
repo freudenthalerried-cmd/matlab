@@ -2981,6 +2981,43 @@ function zeitstempel(datum = new Date()) {
 
 const UHRSTELLEN = Object.freeze([
   Object.freeze({
+    datei: 'test/preisstand-auf-der-seite.test.js', roh: 0, uhr: 'geschaeft',
+    was: 'das Vergleichsdatum für das Alter der Einkaufsgrundlage',
+    warum: 'Die Probe hält die Altersmarke der gebauten Artikelseite gegen ihre eigene '
+      + 'Rechnung. Die Seite ist mit dem Geschäftskalender gestempelt; las die Probe die '
+      + 'Uhr roh, verglich sie zwischen 22:00 und 24:00 UTC das Alter von gestern mit der '
+      + 'Marke von heute. Genau daran ist sie am 9. September rot geworden.',
+  }),
+  Object.freeze({
+    datei: 'test/inhaltsstand.test.js', roh: 0, uhr: 'geschaeft',
+    was: 'das Heute, gegen das die Git-Stände der Inhaltsseiten gemessen werden',
+    warum: 'Die Stände kommen aus derselben Ablage, die den Geschäftskalender führt. Zwei '
+      + 'Uhren ergeben hier einen Tag Unterschied und damit eine Probe, die am späten Abend '
+      + 'anders urteilt als am Vormittag — ohne dass sich am Bestand etwas geändert hätte.',
+  }),
+  Object.freeze({
+    datei: 'test/sitemapstand.test.js', roh: 0, uhr: 'geschaeft',
+    was: 'das Heute, gegen das die Datumsangaben der sitemap.xml gemessen werden',
+    warum: 'Die sitemap.xml wird von `npm run website` mit dem Geschäftskalender gestempelt '
+      + 'und geht so an Google. Eine Probe, die sie gegen die Rechneruhr hält, prüft zwei '
+      + 'verschiedene Tage gegeneinander.',
+  }),
+  Object.freeze({
+    datei: 'test/bestellungphp.test.js', roh: 0, uhr: 'geschaeft',
+    was: 'das Wirtschaftsjahr der Journaldatei, in der die Probe ihre Bestellung sucht',
+    warum: '`bestellung.php` wählt seine Journaldatei über Europe/Vienna. Suchte die Probe '
+      + 'mit dem UTC-Jahr, ginge sie am 31. Dezember nach 23:00 Uhr Ortszeit an der Datei '
+      + 'vorbei, die das Skript gerade geschrieben hat — genau der Fehler, gegen den sie steht.',
+  }),
+  Object.freeze({
+    datei: 'test/geschaeftszeit.test.js', roh: 17, uhr: 'zitat',
+    was: 'die Prüfungen des Kalenders selbst',
+    warum: 'Alle siebzehn Griffe stehen in Zeichenketten: Die Probe baut sich Quelltexte, an '
+      + 'denen sie den Zähler misst — auch die PHP-Formen gmdate und date. Sie sieht nicht auf '
+      + 'die Uhr, sie schreibt über sie. Die Zahl steht hier genau, damit ein echter Uhrgriff, '
+      + 'der sich in diese Datei verirrt, die Summe verschiebt und auffällt.',
+  }),
+  Object.freeze({
     datei: 'src/geschaeftszeit.js', roh: 3, uhr: 'geschaeft',
     was: 'der Kalender selbst',
     warum: 'Die drei Griffe sind die Vorgabewerte von geschaeftstag, geschaeftsjahr und '
@@ -3036,13 +3073,16 @@ const UHRSTELLEN = Object.freeze([
   }),
 
   Object.freeze({
-    datei: 'src/gegenprobenregister.js', roh: 1, uhr: 'zitat',
-    was: 'der Mutationstext der Gegenprobe zu diesem Prüfer',
-    warum: 'Die Probe dreht das Ausstellungsdatum in bin/vorgang.mjs auf die Rechneruhr '
-      + 'zurück; dafür steht die alte Zeile als Zeichenkette im Register. Sie wird nie '
-      + 'ausgeführt — der Prüfer hat sie beim ersten Lauf trotzdem gefunden, und das ist '
-      + 'richtig so: Er kann ein Zitat nicht von einem Aufruf unterscheiden, also entscheidet '
-      + 'ein Mensch es hier einmal statt der Prüfer jedes Mal falsch.',
+    datei: 'src/gegenprobenregister.js', roh: 2, uhr: 'zitat',
+    was: 'die Mutationstexte der beiden Gegenproben zu diesem Prüfer',
+    warum: 'Beide Proben drehen ein Datum auf die Rechneruhr zurück — einmal das '
+      + 'Ausstellungsdatum in bin/vorgang.mjs, einmal das Vergleichsdatum in '
+      + 'test/preisstand-auf-der-seite.test.js; dafür stehen die alten Zeilen als '
+      + 'Zeichenketten im Register. Sie werden nie ausgeführt — der Prüfer hat sie trotzdem '
+      + 'gefunden, und das ist richtig so: Er kann ein Zitat nicht von einem Aufruf '
+      + 'unterscheiden, also entscheidet ein Mensch es hier einmal statt der Prüfer jedes Mal '
+      + 'falsch. Die zweite kostete beim Anlegen einen Lauf: Die Gegenprobe fand ihren Prüfer '
+      + 'rot vor, weil ihr eigener Mutationstext ihn rot gemacht hatte.',
   }),
 
   

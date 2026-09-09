@@ -123,7 +123,7 @@ const betreiber = {
   // Die Marke gehört auf den Beleg, seit der Laden anders heißt als die
   // Betreiberin: Wer bei „Bauversand" bestellt, soll auf der Rechnung nicht
   // erst raten müssen. Der Name des Ausstellers steht in derselben Zeile —
-  // die Prüfung nach § 11 findet ihn dort weiterhin.
+  // die Prüfung nach § 11 UStG findet ihn dort weiterhin.
   marke: betreiberDatei.marke ?? '',
   // **Nachgetragen am 2. September.** Hier standen nur Firma und UID. Die
   // Anschrift ist Pflichtangabe nach § 11 UStG und stand in betreiber.json

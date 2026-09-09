@@ -19,6 +19,7 @@ import { dirname, join } from 'node:path';
 
 import { DATUM, lastmodFuer, sitemapbefund } from '../src/sitemapstand.js';
 import { standAusGit } from '../src/inhaltsstand.js';
+import { geschaeftstag } from '../src/geschaeftszeit.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const SITEMAP = join(SHOP, 'ausgabe', 'site', 'sitemap.xml');
@@ -98,7 +99,10 @@ test('jedes lastmod in der Sitemap stimmt mit seiner Quelle überein', () => {
   if (!existsSync(SITEMAP)) return; // ohne Bau keine Aussage
 
   const git = (argumente) => execFileSync('git', argumente, { cwd: join(SHOP, '..'), encoding: 'utf8' });
-  const heute = new Date().toISOString().slice(0, 10);
+  /* Der Geschaeftskalender: Die sitemap.xml traegt ihre Staende in Ortszeit,
+   * und ein Vergleich gegen die Rechneruhr weicht am spaeten Abend um einen
+   * Tag ab. */
+  const heute = geschaeftstag();
   const katalogStand = standAusGit({ pfad: 'shop/data/katalog-baustoff.json', git, heute });
 
   const inhalte = new Map();

@@ -62,6 +62,7 @@
     "pruefe-sinnbilder": "node bin/sinnbildpruefung.mjs",
     "pruefe-zeit": "node bin/zeitpruefung.mjs",
     "pruefe-grenzen": "node bin/grenzenpruefung.mjs",
+    "pruefe-recht": "node bin/rechtspruefung.mjs",
     "zahlwege": "node bin/zahlwege.mjs",
     "pruefe-sperrgut": "node bin/sperrgutpruefung.mjs",
     "pruefe-lesbar": "node bin/lesbarkeitspruefung.mjs",

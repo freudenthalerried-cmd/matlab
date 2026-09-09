@@ -17,6 +17,7 @@ import { fileURLToPath } from 'node:url';
 import { BESTELLFELDER, beispielbestellung } from '../src/bestellfelder.js';
 import { freierPort } from '../src/freierport.js';
 import { wegwerfordner } from '../src/wegwerf.js';
+import { geschaeftsjahr } from '../src/geschaeftszeit.js';
 
 const skript = fileURLToPath(new URL('../bestellung.php', import.meta.url));
 
@@ -77,7 +78,14 @@ test('eine vollständige Bestellung wird angenommen und abgelegt',
       assert.equal(d.ok, true);
       assert.match(d.nummer, /^B-\d{4}-0001$/);
 
-      const journal = join(s.wurzel, 'bestellungen', `journal-${new Date().getFullYear()}.jsonl`);
+      /*
+       * Das Geschaeftsjahr, nicht das der Rechneruhr. `bestellung.php` waehlt
+       * seine Journaldatei seit dem 9. September ueber `Europe/Vienna`; suchte
+       * die Probe daneben mit dem UTC-Jahr, ginge sie am 31. Dezember nach
+       * 23:00 Uhr Ortszeit an der Datei vorbei, die das Skript gerade
+       * geschrieben hat — genau der Fehler, gegen den diese Probe steht.
+       */
+      const journal = join(s.wurzel, 'bestellungen', `journal-${geschaeftsjahr()}.jsonl`);
       const zeilen = readFileSync(journal, 'utf8').split('\n').filter(Boolean).map((z) => JSON.parse(z));
       assert.equal(zeilen.length, 1);
       assert.equal(zeilen[0].firma, 'Musterbau GmbH');

@@ -459,8 +459,8 @@ export function pruefeMargenleck(vorgang) {
  * Stehen Daten eines Dritten in der Ablage?
  *
  * Die Ablage ist die **einzige Stelle, aus der nichts mehr verschwindet**:
- * § 131 BAO verlangt, dass der ursprüngliche Inhalt feststellbar bleibt, § 132
- * verlangt sieben Jahre Aufbewahrung. Eine Löschung nach Art. 17 DSGVO läuft
+ * § 131 BAO verlangt, dass der ursprüngliche Inhalt feststellbar bleibt,
+ * § 132 BAO verlangt sieben Jahre Aufbewahrung. Eine Löschung nach Art. 17 DSGVO läuft
  * dort ins Leere — und muss es auch, denn Art. 17 Abs. 3 lit. b nimmt
  * gesetzliche Aufbewahrungspflichten aus.
  *

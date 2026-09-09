@@ -19,10 +19,18 @@ import { dirname, join } from 'node:path';
 
 import { preisalterTage, GRENZE_TAGE } from '../src/preisalter.js';
 import { BINDEFRIST_TAGE } from '../src/beleg.js';
+import { geschaeftstag } from '../src/geschaeftszeit.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const ORDNER = join(SHOP, 'ausgabe', 'site', 'artikel');
-const HEUTE = new Date().toISOString().slice(0, 10);
+/*
+ * Der Geschaeftskalender, nicht die Rechneruhr. Die Seite daneben wurde von
+ * `npm run website` mit `geschaeftstag()` gestempelt; liest diese Probe die
+ * Uhr roh, vergleicht sie zwischen 22:00 und 24:00 UTC das Alter von gestern
+ * mit der Marke von heute — und meldet einen Fehler, den es nicht gibt, oder
+ * uebersieht einen, den es gibt.
+ */
+const HEUTE = geschaeftstag();
 
 const katalog = () => JSON.parse(readFileSync(join(SHOP, 'data', 'katalog-baustoff.json'), 'utf8')).artikel;
 

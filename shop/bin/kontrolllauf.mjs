@@ -109,7 +109,7 @@ const vorgang = baueVorgang({
     unternehmerBestaetigt: true,
   },
   warenkorb,
-  // Anschrift seit dem 2. September dabei: § 11 verlangt Name **und**
+  // Anschrift seit dem 2. September dabei: § 11 UStG verlangt Name **und**
   // Anschrift, und dieser Lauf hat sie — wie der Belegprüflauf — nicht
   // weitergereicht und danach über eine unvollständige Rechnung geurteilt.
   betreiber: {

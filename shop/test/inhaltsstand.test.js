@@ -24,6 +24,7 @@ import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 
 import { UNBEKANNT, standAusGit } from '../src/inhaltsstand.js';
+import { geschaeftstag } from '../src/geschaeftszeit.js';
 
 const WURZEL = fileURLToPath(new URL('..', import.meta.url));
 const OBEN = join(WURZEL, '..');
@@ -104,7 +105,11 @@ test('unbekannt ist null — damit der Schlüssel entfallen kann', () => {
  * ------------------------------------------------------------------ */
 
 const gitEcht = (argumente) => execFileSync('git', argumente, { cwd: OBEN, encoding: 'utf8' });
-const HEUTE = new Date().toISOString().slice(0, 10);
+/* Der Geschaeftskalender: Dieses Datum wird gegen Git-Staende gehalten, die
+ * derselbe Bestand in Ortszeit fuehrt. Zwei Uhren ergeben hier einen Tag
+ * Unterschied und damit eine Probe, die zwischen 22:00 und 24:00 UTC anders
+ * urteilt als davor. */
+const HEUTE = geschaeftstag();
 
 /** Jede Inhaltsdatei mit der Seite, die aus ihr gebaut wurde. */
 function inhaltsseiten() {

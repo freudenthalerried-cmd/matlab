@@ -75,6 +75,15 @@ export function gatesAusRegister(text) {
  */
 export const SPUREN = Object.freeze([
   Object.freeze({
+    gate: 33,
+    datei: 'shop/src/rechtsgrund.js',
+    muster: /belegt: false/,
+    warum: 'Die Ziffern bleiben stehen und tragen den fehlenden Beleg daneben. Die '
+      + 'Entscheidung steckt in diesem Feld: Jede Fundstelle sagt von sich, dass sie nicht '
+      + 'am Volltext geprüft ist. Wäre Gate 33 anders ausgefallen, stünden hier keine '
+      + 'Ziffern, sondern nur Paragraphen — und das Feld gäbe es nicht.',
+  }),
+  Object.freeze({
     gate: 32,
     datei: 'shop/bin/zahlwege.mjs',
     muster: /Diese Liste ist älter/,

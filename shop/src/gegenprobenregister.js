@@ -1683,6 +1683,24 @@ export const GEGENPROBEN = Object.freeze([
       + 'verschwinden, den der Auftraggeber vor der Budgetfreigabe liest.',
   }),
   Object.freeze({
+    id: 'eine-nummer-ohne-aussage',
+    pruefer: 'pruefe-recht',
+    was: 'Eine Fundstelle, deren Behauptung nicht ausgeschrieben ist',
+    datei: 'shop/src/rechtsgrund.js',
+    art: 'ersetzen',
+    suchen: "    behauptung: 'Die Rechnung trägt ein Ausstellungsdatum.',",
+    ersetzen: "    behauptung: 'steht drauf.',",
+    erwartet: /behauptung-zu-duenn/,
+    warum: 'Am 9. September stellte sich heraus, dass keine Paragraphenangabe dieses Bestands '
+      + 'am Volltext belegt ist — das Rechtsinformationssystem ist gesperrt. Was bleibt, ist '
+      + 'eine Liste, die ein Rechtstexteanbieter in einer Sitzung abhaken kann — und die trägt '
+      + 'nur, wenn neben jeder Nummer steht, **was** sie behauptet. Die Mutation kürzt eine '
+      + 'Behauptung auf zwei Wörter. Bleibt der Prüfer grün, sammelt er Nummern statt Aussagen, '
+      + 'und der Anbieter bekäme eine Liste, die er selbst erst nachschlagen müsste. Bewusst '
+      + 'ohne Paragraphenzeichen im Mutationstext: Ein Zitat im Register ist selbst eine '
+      + 'Fundstelle, und die Probe soll den Prüfer messen, nicht sich selbst.',
+  }),
+  Object.freeze({
     id: 'eine-grenze-die-niemand-versucht-hat',
     pruefer: 'pruefe-grenzen',
     was: 'Eine behauptete Grenze, zu der kein Versuch im Vermerk steht',
@@ -1727,6 +1745,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'trug den Vortag. Die Mutation dreht sie zurück. Bleibt der Prüfer grün, prüft er die '
       + 'Absicht im Register und nicht den Code daneben; genau davon gab es an diesem Tag '
       + 'sieben Fälle, und alle sahen richtig aus.',
+  }),
+  Object.freeze({
+    id: 'die-rechneruhr-in-der-probe',
+    pruefer: 'pruefe-zeit',
+    was: 'Eine Probe, die das Erzeugnis gegen die Rechneruhr hält statt gegen den Kalender',
+    datei: 'shop/test/preisstand-auf-der-seite.test.js',
+    art: 'ersetzen',
+    suchen: 'const HEUTE = geschaeftstag();',
+    ersetzen: 'const HEUTE = new Date().toISOString().slice(0, 10);',
+    erwartet: /rohe-uhr-im-beleg/,
+    warum: 'Genau diese Zeile stand hier bis zum 10. September und hat die Probe um 00:01 Uhr '
+      + 'Wiener Zeit rot gemacht: Die Artikelseite daneben trug „93 Tage", gerechnet mit dem '
+      + 'Geschäftskalender, die Probe rechnete 92 aus der Rechneruhr. Der Prüfer sah die Datei '
+      + 'damals nicht an — seine Liste endete bei `src` und `bin`. Die Mutation dreht die Zeile '
+      + 'zurück. Bleibt der Prüfer grün, ist seine Grenze wieder zu eng gezogen, und keine Probe '
+      + 'des Bestands steht unter der Uhrenaufsicht.',
   }),
   Object.freeze({
     id: 'veroeffentlichung-haengt-hinterher',
@@ -2001,7 +2035,14 @@ export const GEGENPROBEN = Object.freeze([
     was: 'Ein maßgebliches Dokument, dessen erste Zeilen anders zählen als sein Inhalt',
     datei: 'docs/baustoff-shop/gate-register.md',
     art: 'ersetzen',
-    suchen: '**Maßgeblich für alle Gate-Fragen.** Zweiunddreißig',
+    /*
+     * **Zum dritten Mal nachgezogen (10.09., Ortszeit).** Dieser Suchtext ist auf
+     * genau das Zahlwort verankert, das sich mit jedem neuen Gate ändert — er
+     * bricht deshalb bei jedem neuen Gate. Bisher: 31 → 32 → 33. Was ihn heilte,
+     * wäre ein Suchmuster statt eines Suchtextes; der Läufer kennt nur
+     * Zeichenketten (`split`/`replace`). Steht als eigene Aufgabe an.
+     */
+    suchen: '**Maßgeblich für alle Gate-Fragen.** Dreiunddreißig',
     ersetzen: '**Maßgeblich für alle Gate-Fragen.** Vierundzwanzig',
     erwartet: /kopfzahl-abgeloest/,
     warum: 'Der Zustand vom 9. September, morgens: Die dritte Zeile sagte „Vierundzwanzig '

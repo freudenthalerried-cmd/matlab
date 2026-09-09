@@ -24,7 +24,19 @@ import { UHRSTELLEN, zeitbefund } from '../src/geschaeftszeit.js';
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 
 const dateien = [];
-for (const ordner of ['src', 'bin']) {
+/*
+ * **Erweitert am 10. September 2026 (Ortszeit).** Bis dahin las dieser Prüfer
+ * `src` und `bin`. Um 00:01 Uhr Wiener Zeit — die Rechneruhr stand noch auf
+ * dem 9. — wurde `test/preisstand-auf-der-seite.test.js` rot: Die gebaute
+ * Artikelseite trug „93 Tage", die Probe rechnete 92, weil sie
+ * `new Date().toISOString()` las. Der Prüfer, der genau diesen Unterschied
+ * misst, sah die Datei nicht an: Seine Liste endete an der Grenze zwischen
+ * Quelltext und Probe.
+ *
+ * > Eine Probe, die zwei Uhren vergleicht, prüft den Kalender des Rechners,
+ * > nicht den des Betriebs.
+ */
+for (const ordner of ['src', 'bin', 'test']) {
   for (const name of readdirSync(join(SHOP, ordner)).sort()) {
     if (!/\.(js|mjs)$/.test(name)) continue;
     dateien.push({ pfad: `${ordner}/${name}`, text: readFileSync(join(SHOP, ordner, name), 'utf8') });
