@@ -296,10 +296,38 @@ export function startklar(lage = {}) {
     // fünf Minuten und einem Anruf, den jemand führen muss.
     'Auftraggeber (Anfrage)');
 
-  p('zahlungsanbieter', 'Zahlungsanbieter gewählt und angebunden',
+  /**
+   * **Berichtigt am 9. September 2026, aus derselben Runde wie der
+   * Platzhalterpunkt.** Der Punkt hieß „Zahlungsanbieter gewählt **und
+   * angebunden**" und meldete grün „angebunden: <Name>", sobald in
+   * `data/betreiber.json` ein Name steht. Gemessen ist eine nichtleere
+   * Zeichenkette; behauptet ist, dass die Kasse mit einem Anbieter spricht.
+   *
+   * Sie spricht mit keinem: Im ganzen Shop gibt es **keinen Zahlschritt**. Der
+   * Bestellweg aus Gate 26 erzeugt eine Anfrage, kein Zahlungsvorgang; das
+   * einzige „EPS" in `shopkern.js` ist die Dämmplatte.
+   *
+   * > **Ein Wort in einer Konfigurationsdatei ist eine Entscheidung, keine
+   * > Anbindung.**
+   *
+   * Es ist derselbe Fehler, den diese Liste beim **Bestellweg** schon einmal
+   * hatte: Sie meldete „startklar", während im ganzen Shop nichts abgeschickt
+   * wurde. Dort wird seither der Quelltext der Oberfläche gemessen. Der
+   * Zahlungspunkt daneben blieb bei der Konfigurationszeile.
+   *
+   * **Nicht gebaut: eine Anbindungsprüfung.** Es gibt kein Merkmal im
+   * Quelltext, das eine echte Anbindung von ihrer Erwähnung unterscheidet —
+   * und die Kasse soll heute gar keinen Zahlschritt haben, weil Gate 21 die
+   * **Vorkasse** gleichrangig nennt und die keinen Anbieter braucht. Ein
+   * erfundenes Merkmal wäre wieder eine Behauptung mit Ziffern. Geändert wird
+   * deshalb, was der Punkt **sagt**: Er heißt nach dem, was er misst, und
+   * nennt seine Grenze mit.
+   */
+  p('zahlungsanbieter', 'Zahlungsanbieter gewählt',
     zahlungsanbieter ? 'erfuellt' : 'offen',
     zahlungsanbieter
-      ? `angebunden: ${zahlungsanbieter}`
+      ? `gewählt: ${zahlungsanbieter} — aus data/betreiber.json; ob die Kasse mit ihm `
+        + 'spricht, misst dieses Werkzeug nicht'
       : 'keiner gewählt — die Kasse löst nichts aus und sagt das auch',
     'Auftraggeber (Ausgabe)');
 
@@ -353,7 +381,7 @@ export function startklar(lage = {}) {
     kassenhinweise: punkte
       .filter((x) => x.aufDerKasse && x.zustand !== 'erfuellt')
       // `wort` ist die kundentaugliche Fassung: „ein Zahlungsanbieter" statt
-      // „Zahlungsanbieter gewählt und angebunden". Die Prüflisten-Überschrift
+      // „Zahlungsanbieter gewählt". Die Prüflisten-Überschrift
       // in einen Satz zu setzen las sich wie ein Formular, nicht wie eine
       // Auskunft.
       .map((x) => ({ id: x.id, titel: x.titel, wort: x.aufDerKasse, befund: x.befund })),

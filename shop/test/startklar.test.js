@@ -154,7 +154,7 @@ test('die Antworten kommen aus der Datei, nicht aus dem Werkzeug', async () => {
     encoding: 'utf8',
     env: { ...process.env, STARTKLAR_BETREIBER: pfad },
   });
-  assert.match(ausgabe, /angebunden: Anbieter aus der Probe/);
+  assert.match(ausgabe, /gewählt: Anbieter aus der Probe/);
   assert.match(ausgabe, /Repository ist privat\n\s+bestätigt/);
   // Ein ausdrückliches „nein" ist eine Antwort, kein Fragezeichen.
   assert.match(ausgabe, /ausdrücklich verneint/);
@@ -345,4 +345,30 @@ test('ein Platzhalter schlägt weiter durch, egal was ekQuelle sagt', () => {
   const punkt = b.punkte.find((p) => p.id === 'keine-platzhalter');
   assert.equal(punkt.zustand, 'offen');
   assert.match(punkt.befund, /1 Artikel mit Platzhalterpreis/);
+});
+
+// **Ergänzt am 9. September 2026.** Der Punkt hieß „Zahlungsanbieter gewählt
+// **und angebunden**" und meldete „angebunden: <Name>", sobald in
+// `data/betreiber.json` ein Name stand. Gemessen ist eine nichtleere
+// Zeichenkette; im ganzen Shop gibt es keinen Zahlschritt. Ein Wort in einer
+// Konfigurationsdatei ist eine Entscheidung, keine Anbindung.
+test('ein gewählter Zahlungsanbieter heißt nicht angebunden', () => {
+  const b = startklar({ ...alles, zahlungsanbieter: 'Anbieter X' });
+  const punkt = b.punkte.find((p) => p.id === 'zahlungsanbieter');
+  assert.equal(punkt.zustand, 'erfuellt');
+  assert.equal(punkt.titel, 'Zahlungsanbieter gewählt');
+  assert.match(punkt.befund, /gewählt: Anbieter X/);
+  assert.doesNotMatch(punkt.befund, /angebunden: /);
+  // Der Punkt nennt seine Grenze mit, statt sie wegzulassen.
+  assert.match(punkt.befund, /misst dieses Werkzeug nicht/);
+});
+
+test('kein Punkt behauptet eine Anbindung, die niemand gemessen hat', () => {
+  // Die Regel, nicht das Beispiel: Solange es keinen Zahlschritt gibt, darf
+  // das Wort „angebunden" in keiner Meldung dieser Liste stehen.
+  const b = startklar({ ...alles, zahlungsanbieter: 'Anbieter X' });
+  for (const punkt of b.punkte) {
+    assert.doesNotMatch(punkt.befund, /\bangebunden\b/,
+      `${punkt.id} behauptet eine Anbindung: ${punkt.befund}`);
+  }
 });
