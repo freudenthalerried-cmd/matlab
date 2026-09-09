@@ -1,7 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { readFileSync } from 'node:fs';
+
 import { HAKEN, HAKENWEG, hakenbefund } from '../src/haken.js';
+import { LESER } from '../src/erzeugnisstand.js';
 
 /**
  * Die Lage, in der alles stimmt. Jeder Testfall verbiegt genau eine Sache
@@ -99,4 +102,29 @@ test('ein Gegenprobenläufer, der den Weg nicht setzt, ist ein Befund', () => {
 test('ohne Aufrufer wird der Aufrufer nicht beurteilt', () => {
   const b = hakenbefund({ ...gut(), aufrufer: null });
   assert.deepEqual(b.meldungen, []);
+});
+
+// **Ergänzt am 9. September 2026.** Der Haken sperrte jeden Commit, sobald das
+// Erzeugnis älter war als die Quelle — ein `touch` genügte —, und meldete
+// dabei „npm test ist rot". Die Sperre bleibt, denn `ausgabe/site` liegt im
+// Verzeichnis; was fehlte, war der Anlass in der Meldung. Ein Satz im
+// Hakenskript, den niemand nachliest, ist wieder nur ein Satz.
+test('der Haken nennt den Anlass, wenn das Erzeugnis veraltet ist', () => {
+  const skript = readFileSync(new URL('../haken/pre-commit', import.meta.url), 'utf8');
+  assert.match(skript, /erzeugnispruefung\.mjs/);
+  assert.match(skript, /Das Erzeugnis ist älter als die Quelle/);
+  // Die Meldung nennt den Weg heraus und nicht nur die Sperre.
+  assert.match(skript, /npm --prefix shop run website/);
+});
+
+test('das Register verlangt vom Haken die Frischeprüfung', () => {
+  const eintrag = HAKEN.find((h) => h.name === 'pre-commit');
+  assert.ok(eintrag.ruft.includes('bin/erzeugnispruefung.mjs'),
+    'ohne Eintrag im Register hält haken-ruft-nicht das Skript nicht fest');
+});
+
+test('der Hakenprüfer liest das Erzeugnis durch den Haken hindurch', () => {
+  const eintrag = LESER.find((l) => l.werkzeug === 'bin/hakenpruefung.mjs');
+  assert.ok(eintrag, 'ohne Eintrag misst er den Haken über einem veralteten Stand');
+  assert.equal(eintrag.erzeugnis, 'ausgabe/site');
 });

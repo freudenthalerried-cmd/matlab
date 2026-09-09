@@ -61,7 +61,7 @@ export const HAKENWEG = 'shop/haken';
 export const HAKEN = Object.freeze([
   Object.freeze({
     name: 'pre-commit',
-    ruft: ['bin/mutationspruefung.mjs', 'npm test'],
+    ruft: ['bin/mutationspruefung.mjs', 'bin/erzeugnispruefung.mjs', 'npm test'],
     warum: 'Eine Gegenprobe hält eine Quelldatei absichtlich falsch. Wer währenddessen '
       + 'committet, committet die Mutation — am 8. September stand so fünfunddreißig '
       + 'Minuten lang ein blindgestellter Prüfer auf dem Zweig. Der Zettel unter '

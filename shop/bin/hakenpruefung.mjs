@@ -23,6 +23,7 @@ import { fileURLToPath } from 'node:url';
 
 import { HAKENWEG, hakenbefund } from '../src/haken.js';
 import { markiere, markenpfad, nimmAb } from '../src/mutationsschutz.js';
+import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const REPO = dirname(SHOP);
@@ -63,6 +64,21 @@ function probiere(name) {
     throw new Error(`Der Probezettel liegt noch: ${markenpfad(PROBEDATEI)}`);
   }
   return { mitZettel, ohneZettel };
+}
+
+// **Ergänzt am 9. September 2026.** Dieser Prüfer liest das Erzeugnis nicht
+// selbst — er ruft den Haken, und der ruft `npm test`, und fünfunddreißig
+// Testdateien lesen `ausgabe/site`. Über einem veralteten Erzeugnis sperrt der
+// Haken zu Recht, und die Messung nannte das `haken-sperrt-immer`: ein Befund
+// über den Haken, der in Wahrheit einer über den Bauzustand war.
+//
+//   Ein Prüfer, der durch ein anderes Werkzeug hindurch liest, liest.
+//
+// Nicht messbar ist nicht grün — deshalb Ausgang 2 und nicht 0.
+const stand = frischebefund(SHOP, 'ausgabe/site');
+if (!stand.frisch) {
+  for (const zeile of abbruchtext(stand)) console.error(zeile);
+  process.exit(2);
 }
 
 if (!existsSync(ORDNER)) {

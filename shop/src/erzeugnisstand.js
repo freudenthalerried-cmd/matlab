@@ -97,6 +97,18 @@ export const LESER = Object.freeze([
   // `ausgabe/site/llms.txt` — er hält die Zahl der nicht geführten Positionen
   // gegen das, was die maschinenlesbare Datei darüber sagt.
   Object.freeze({ werkzeug: 'bin/systemlistenpruefung.mjs', erzeugnis: 'ausgabe/site' }),
+  // **Seit dem 9. September.** Der Prüfer liest zusätzlich
+  // `ausgabe/site/llms.txt` — er hält die Systemzuordnung der Artikelzeilen
+  // gegen den Katalog. Gegen eine Datei von gestern zu prüfen hieße, ein
+  // Schweigen für behoben zu erklären, das im heutigen Erzeugnis noch steht.
+  Object.freeze({ werkzeug: 'bin/systemtreuepruefung.mjs', erzeugnis: 'ausgabe/site' }),
+  // **Seit dem 9. September.** Sie liest das Erzeugnis nicht selbst — sie ruft
+  // den Haken, und der ruft `npm test`, und fünfunddreißig Testdateien lesen
+  // `ausgabe/site`. Ohne Eintrag maß sie den Haken in einem Zustand, in dem
+  // jede Sperre richtig ist: Bei veraltetem Erzeugnis sperrt er zu Recht, und
+  // die Messung nannte das `haken-sperrt-immer`. Ein Prüfer, der durch ein
+  // anderes Werkzeug hindurch liest, liest.
+  Object.freeze({ werkzeug: 'bin/hakenpruefung.mjs', erzeugnis: 'ausgabe/site' }),
   Object.freeze({
     werkzeug: 'bin/preiswiederherstellung.mjs',
     erzeugnis: null,

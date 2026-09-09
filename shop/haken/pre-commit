@@ -30,6 +30,24 @@ WURZEL=$(git rev-parse --show-toplevel)
 
 node "$WURZEL/shop/bin/mutationspruefung.mjs" || exit 1
 
+# **Ergänzt am 9. September 2026.** Der Haken sperrte bis heute jeden Commit,
+# sobald das Erzeugnis älter war als die Quelle — `npm test` enthält seit dem
+# 8. September `test/erzeugnisfrische.test.js`, und ein `touch` auf eine
+# Quelldatei genügt. Gemeldet hat er dabei „npm test ist rot".
+#
+#   Eine Sperre, die den Anlass nicht nennt, ist von einer Störung nicht zu
+#   unterscheiden.
+#
+# Gesperrt wird weiter, und zwar zu Recht: `ausgabe/site` liegt im
+# Verzeichnis. Ein Commit mit Quelle von jetzt und Erzeugnis von vorhin hält
+# einen Stand fest, den es nie gab. Aber er sagt jetzt, was zu tun ist.
+if ! node "$WURZEL/shop/bin/erzeugnispruefung.mjs" >/dev/null 2>&1; then
+  echo 'Abbruch: Das Erzeugnis ist älter als die Quelle — der Commit hielte einen Stand fest, den es nie gab.'
+  echo 'Bauen mit: npm --prefix shop run website && npm --prefix shop run build && npm --prefix shop run kampagne && npm --prefix shop run messliste'
+  echo 'Was genau veraltet ist: npm --prefix shop run pruefe-erzeugnis'
+  exit 1
+fi
+
 if ! (cd "$WURZEL/shop" && npm test >/dev/null 2>&1); then
   echo 'Abbruch: npm test ist rot — der Commit bleibt stehen.'
   echo 'Ausgabe ansehen mit: npm --prefix shop test'
