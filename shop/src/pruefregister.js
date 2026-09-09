@@ -269,6 +269,19 @@ export const PRUEFER = [
     mindestens: 1,
   },
   {
+    // **Aufgenommen am 9. September 2026**, nachdem die Kachel der Warengruppe
+    // Mauerwerk auf der Startseite „Ziegel N+F 25 cm" zeigte und der einzige
+    // Artikel dieser Gruppe 23,8 cm hat. Gemessen wird die Zahl der
+    // **angesehenen** Warengruppen, nicht der Funde: Der gesunde Zustand ist
+    // null Meldungen, und „kein Maß daneben" darf nicht aussehen wie „kein Maß
+    // angesehen".
+    name: 'pruefe-sinnbilder',
+    werkzeug: 'sinnbildpruefung.mjs',
+    muster: /Sinnbilder — (\d+) Warengruppen/,
+    einheit: 'Warengruppen, ihre Maße gegen den Katalog',
+    mindestens: 1,
+  },
+  {
     name: 'pruefe-mutationen',
     werkzeug: 'mutationspruefung.mjs',
     // Gemessen wird das **Angesehene**. Der gesunde Zustand dieses Prüfers ist

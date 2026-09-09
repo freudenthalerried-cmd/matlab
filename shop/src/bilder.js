@@ -449,16 +449,73 @@ export const BAUFORM_TEXT = Object.freeze({
 });
 
 /** Sinnbild einer Warengruppe — dieselbe Sprache, eine Stufe gröber. */
+export const GRUPPENEINHEIT = Object.freeze({
+  'Dämmung': 'M2', WDVS: 'M2', 'Mörtel': 'SCK', Kanal: 'STK',
+  Kamin: 'STK', Mauerwerk: 'STK', 'Zubehör': 'DOS',
+});
+
+export const GRUPPENMUSTER = Object.freeze({
+  'Dämmung': 'Dämmplatte 80 mm',
+  WDVS: 'Gewebe 110 cm',
+  'Mörtel': 'Mörtel 25 kg',
+  Kanal: 'Kanalrohr NW 100',
+  Kamin: 'Mantelstein',
+  Mauerwerk: 'Ziegel N+F 23,8 cm',
+  'Zubehör': 'Kartusche 750 ml',
+});
+
+/**
+ * Trägt ein Sinnbild ein Maß, das kein Artikel seiner Gruppe hat?
+ *
+ * **Der Anlass, 9. September 2026.** Die Kachel der Warengruppe Mauerwerk auf
+ * der **Startseite** zeigte „Ziegel N+F **25 cm**". Geführt wird in dieser
+ * Gruppe genau ein Artikel: „Ökotherm HL N+F 10 50 **23,8 cm**".
+ *
+ * Bei Mauersteinen ist die Wandstärke die entscheidende Eigenschaft — die
+ * Gruppenseite sagt selbst, Steinformat und Wandstärke kämen aus der Planung.
+ * Ein rundes Maß auf der Seite, die jeder zuerst sieht, liest sich als
+ * Angebot, und geliefert wird ein anderes.
+ *
+ * > **Ein Sinnbild darf grob sein. Eine Zahl darin ist trotzdem eine Zahl.**
+ *
+ * Sechs der sieben Muster stimmten (80 mm, 110 cm, 25 kg, NW 100, 750 ml, und
+ * „Mantelstein" trägt gar keine Zahl). Geprüft wird deshalb nicht das Bild,
+ * sondern nur das, was nachrechenbar ist: **Jedes Maß in einem Muster muss im
+ * Namen eines Artikels dieser Gruppe vorkommen.**
+ *
+ * @param {Record<string, string>} muster    Gruppe → Musterbezeichnung
+ * @param {{gruppe: string, bezeichnung: string}[]} artikel
+ */
+export function sinnbildbefund(muster, artikel) {
+  const meldungen = [];
+  let masse = 0;
+  for (const [gruppe, bezeichnung] of Object.entries(muster)) {
+    const namen = artikel.filter((a) => a.gruppe === gruppe).map((a) => a.bezeichnung);
+    for (const t of String(bezeichnung).matchAll(/(\d+(?:,\d+)?)\s*(mm|cm|m|kg|ml|l)\b/g)) {
+      masse += 1;
+      const [, zahl, einheit] = t;
+      const gesucht = new RegExp(`${zahl.replace(',', '[,.]')}\\s*${einheit}\\b`, 'i');
+      if (namen.some((n) => gesucht.test(n))) continue;
+      meldungen.push({
+        regel: 'sinnbildmass-ohne-artikel',
+        gruppe,
+        text: `Das Sinnbild der Gruppe ${gruppe} zeigt „${zahl} ${einheit}", und kein Artikel `
+          + `dieser Gruppe trägt dieses Maß (${namen.length} geprüft) — auf der Startseite `
+          + 'liest sich das als Angebot',
+      });
+    }
+  }
+  return { gruppen: Object.keys(muster).length, masse, meldungen, sauber: meldungen.length === 0 };
+}
+
+
 export function gruppenBild(gruppe) {
-  const muster = {
-    'Dämmung': { bezeichnung: 'Dämmplatte 80 mm', gruppe: 'Dämmung', einheit: 'M2' },
-    WDVS: { bezeichnung: 'Gewebe 110 cm', gruppe: 'WDVS', einheit: 'M2' },
-    'Mörtel': { bezeichnung: 'Mörtel 25 kg', gruppe: 'Mörtel', einheit: 'SCK' },
-    Kanal: { bezeichnung: 'Kanalrohr NW 100', gruppe: 'Kanal', einheit: 'STK' },
-    Kamin: { bezeichnung: 'Mantelstein', gruppe: 'Kamin', einheit: 'STK' },
-    Mauerwerk: { bezeichnung: 'Ziegel N+F 25 cm', gruppe: 'Mauerwerk', einheit: 'STK' },
-    'Zubehör': { bezeichnung: 'Kartusche 750 ml', gruppe: 'Zubehör', einheit: 'DOS' },
-  }[gruppe] ?? { bezeichnung: gruppe, gruppe, einheit: 'STK' };
+  // **Seit dem 9. September aus `GRUPPENMUSTER`.** Die Tabelle stand hier im
+  // Rumpf und war von außen nicht lesbar — ein Maß, das nur innerhalb einer
+  // Funktion existiert, kann kein Prüfer gegen den Katalog halten. Sie steht
+  // jetzt einmal, als Ausfuhr, und diese Zeile liest sie.
+  const bezeichnung = GRUPPENMUSTER[gruppe] ?? gruppe;
+  const muster = { bezeichnung, gruppe, einheit: GRUPPENEINHEIT[gruppe] ?? 'STK' };
   return artikelBild(muster, { klasse: 'schema gruppe' });
 }
 
@@ -543,3 +600,11 @@ export function schichtbild(lagen, { klasse = 'schichten' } = {}) {
   return `<svg class="${klasse}" viewBox="0 0 ${breite} ${hoehe}" role="img" aria-label="${escText(beschreibung)}"
  xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">${teile.join('')}</svg>`;
 }
+
+/**
+ * Die Sinnbilder der Warengruppen — als Angabe, nicht nur als Zeichnung.
+ *
+ * `gruppenBild` hält sie in einer Tabelle im Funktionsrumpf. Sie steht hier
+ * zusätzlich als Ausfuhr, damit ein Prüfer sie lesen kann: Ein Maß, das nur
+ * innerhalb einer Funktion existiert, ist von außen nicht messbar.
+ */

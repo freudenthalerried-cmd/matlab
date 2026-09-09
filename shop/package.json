@@ -59,6 +59,7 @@
     "betriebskette": "node bin/betriebskette.mjs",
     "pruefe-betriebskette": "node bin/betriebskette.mjs",
     "pruefe-sperren": "node bin/sperrenpruefung.mjs",
+    "pruefe-sinnbilder": "node bin/sinnbildpruefung.mjs",
     "pruefe-sperrgut": "node bin/sperrgutpruefung.mjs",
     "pruefe-lesbar": "node bin/lesbarkeitspruefung.mjs",
     "pruefe-systemlisten": "node bin/systemlistenpruefung.mjs",

@@ -1037,6 +1037,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'eingetragen" und prüfte eine von zehn. Diese Mutation schreibt die Zahl wieder hinein.',
   }),
   Object.freeze({
+    id: 'das-sinnbild-zeigt-ein-mass-das-es-nicht-gibt',
+    pruefer: 'pruefe-sinnbilder',
+    was: 'Ein Sinnbild auf der Startseite mit einem Maß, das kein Artikel der Gruppe hat',
+    datei: 'shop/src/bilder.js',
+    art: 'ersetzen',
+    suchen: "  Mauerwerk: 'Ziegel N+F 23,8 cm',",
+    ersetzen: "  Mauerwerk: 'Ziegel N+F 25 cm',",
+    erwartet: /sinnbildmass-ohne-artikel/,
+    warum: 'Der Zustand vom 9. September, morgens: Die Kachel der Warengruppe Mauerwerk auf der '
+      + 'Startseite zeigte „Ziegel N+F 25 cm". Geführt wird in dieser Gruppe genau ein Artikel, '
+      + 'mit 23,8 cm. Bei Mauersteinen ist die Wandstärke die entscheidende Eigenschaft — die '
+      + 'Gruppenseite sagt selbst, Steinformat und Wandstärke kämen aus der Planung —, und ein '
+      + 'rundes Maß auf der Seite, die jeder zuerst sieht, liest sich als Angebot. Die Mutation '
+      + 'setzt das runde Maß zurück und verlangt, dass der Prüfer es nennt.',
+  }),
+  Object.freeze({
     id: 'die-paketgroesse-die-es-nicht-gibt',
     pruefer: 'pruefe-zahlen',
     was: 'Eine Paketgröße auf einer Inhaltsseite, die kein Artikel im Katalog hat',

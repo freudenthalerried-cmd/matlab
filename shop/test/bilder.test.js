@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { ladeBaustoffkatalog } from '../src/baustoffkatalog.js';
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { artikelBild, gruppenBild, bauform, dickeMm, gradzahl, schichten, schichtbild, BAUFORM_TEXT } from '../src/bilder.js';
+import { artikelBild, gruppenBild, bauform, dickeMm, gradzahl, schichten, schichtbild, BAUFORM_TEXT, GRUPPENMUSTER, sinnbildbefund } from '../src/bilder.js';
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { lesKopf } from '../src/markdown.js';
@@ -518,4 +519,53 @@ test('jeder Artikel des Bestands mit Auffangform steht auf seiner Seite als Plat
     assert.ok(!readFileSync(seiteErkannt, 'utf8').includes('<p class="bildhinweis">'),
       `${erkannt.sku} trägt den Platzhalterhinweis, obwohl seine Form erkannt ist`);
   }
+});
+
+// **Ergänzt am 9. September 2026.** Die Kachel der Warengruppe Mauerwerk auf
+// der Startseite zeigte „Ziegel N+F 25 cm"; der einzige Artikel dieser Gruppe
+// hat 23,8 cm. Bei Mauersteinen ist die Wandstärke die entscheidende
+// Eigenschaft — ein rundes Maß liest sich als Angebot.
+test('ein Maß, das kein Artikel der Gruppe hat, ist ein Befund', () => {
+  const b = sinnbildbefund(
+    { Mauerwerk: 'Ziegel N+F 25 cm' },
+    [{ gruppe: 'Mauerwerk', bezeichnung: 'Ökotherm HL N+F 10 50 23,8 cm' }],
+  );
+  assert.equal(b.meldungen.length, 1);
+  assert.equal(b.meldungen[0].regel, 'sinnbildmass-ohne-artikel');
+  assert.match(b.meldungen[0].text, /25 cm/);
+});
+
+test('dasselbe Maß mit passendem Artikel meldet nichts', () => {
+  const b = sinnbildbefund(
+    { Mauerwerk: 'Ziegel N+F 23,8 cm' },
+    [{ gruppe: 'Mauerwerk', bezeichnung: 'Ökotherm HL N+F 10 50 23,8 cm' }],
+  );
+  assert.deepEqual(b.meldungen, []);
+  assert.equal(b.masse, 1, 'ein Maß muss gefunden worden sein, sonst prüfte nichts');
+});
+
+test('ein Muster ohne Maß wird gezählt und nicht beurteilt', () => {
+  const b = sinnbildbefund({ Kamin: 'Mantelstein' }, [{ gruppe: 'Kamin', bezeichnung: 'Irgendwas' }]);
+  assert.equal(b.gruppen, 1);
+  assert.equal(b.masse, 0);
+  assert.equal(b.sauber, true);
+});
+
+test('das Maß muss aus der eigenen Gruppe kommen, nicht aus irgendeiner', () => {
+  const b = sinnbildbefund(
+    { Mauerwerk: 'Ziegel 25 cm' },
+    [{ gruppe: 'Kanal', bezeichnung: 'Rohr 25 cm' }, { gruppe: 'Mauerwerk', bezeichnung: 'Ziegel 23,8 cm' }],
+  );
+  assert.equal(b.meldungen.length, 1, 'ein Treffer in einer fremden Gruppe darf nicht decken');
+});
+
+test('die echten Sinnbilder tragen nur Maße, die es gibt', () => {
+  const katalog = ladeBaustoffkatalog(
+    JSON.parse(readFileSync(new URL('../data/katalog-baustoff.json', import.meta.url), 'utf8')),
+    JSON.parse(readFileSync(new URL('../../preise/baustoff-preise.json', import.meta.url), 'utf8')),
+    JSON.parse(readFileSync(new URL('../data/lieferanten.json', import.meta.url), 'utf8')),
+  );
+  const b = sinnbildbefund(GRUPPENMUSTER, katalog.artikel);
+  assert.deepEqual(b.meldungen, []);
+  assert.ok(b.masse >= 4, `nur ${b.masse} Maße geprüft — die Regel liefe fast leer`);
 });
