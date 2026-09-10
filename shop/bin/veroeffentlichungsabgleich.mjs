@@ -30,7 +30,7 @@
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { markenbefund } from '../src/veroeffentlichung.js';
+import { markenbefund, WEGZUSATZ } from '../src/veroeffentlichung.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const PR = 'https://api.github.com/repos/freudenthalerried-cmd/matlab/pulls/14';
@@ -76,20 +76,29 @@ console.log(marke.passt
  * Eine alte, in sich stimmige Veröffentlichung besteht die erste Prüfung und
  * fällt bei der zweiten durch; genau dieser Fall ist am 5. September passiert.
  */
-const gleich = ist === soll;
+/*
+ * **Der Zusatz des Weges gehört abgezogen, seit dem 10. September 2026.** Wird
+ * die Beschreibung direkt über die Schnittstelle geschrieben — seit diesem Tag
+ * der Weg —, hängt der Übertragungsweg selbst eine Attributionszeile an. Sie
+ * gehört dorthin, steht aber hinter der Marke und nach dem Text, den das
+ * Werkzeug ausgibt. Verglichen wird deshalb, was ohne sie dasteht; dass sie es
+ * ist und nichts anderes, hat `markenbefund` eine Zeile zuvor geprüft.
+ */
+const ohneZusatz = ist.endsWith(WEGZUSATZ) ? ist.slice(0, -WEGZUSATZ.length) : ist;
+const gleich = ohneZusatz === soll;
 console.log(gleich
   ? '  ✓ Sie ist Zeichen für Zeichen die Ausgabe von `npm run pr-text`'
   : '  ✗ Sie weicht von der Ausgabe von `npm run pr-text` ab');
 
 if (!gleich) {
-  const kurz = Math.min(ist.length, soll.length);
+  const kurz = Math.min(ohneZusatz.length, soll.length);
   let i = 0;
-  while (i < kurz && ist[i] === soll[i]) i++;
+  while (i < kurz && ohneZusatz[i] === soll[i]) i++;
   const zeile = soll.slice(0, i).split('\n').length;
   console.log(`      erste Abweichung in Zeile ${zeile}, Zeichen ${i}`);
-  console.log(`      veröffentlicht: …${JSON.stringify(ist.slice(Math.max(0, i - 40), i + 40))}`);
+  console.log(`      veröffentlicht: …${JSON.stringify(ohneZusatz.slice(Math.max(0, i - 40), i + 40))}`);
   console.log(`      Quelle        : …${JSON.stringify(soll.slice(Math.max(0, i - 40), i + 40))}`);
-  console.log(`      Länge: ${ist.length} veröffentlicht, ${soll.length} in der Quelle`);
+  console.log(`      Länge: ${ohneZusatz.length} veröffentlicht, ${soll.length} in der Quelle`);
 }
 
 console.log(`\nAbgleich: ${gleich && marke.passt ? 'ohne Befund' : 'mit Befund'} — gerechnet, nicht gelesen.`);
