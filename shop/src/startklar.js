@@ -456,8 +456,20 @@ export function startklar(lage = {}) {
     p('repository', 'Repository ist privat', privat ? 'erfuellt' : 'offen',
       privat
         ? `gemessen am ${aussenlage?.gemessenAm} über das GitHub-Werkzeug`
-        : `gemessen am ${aussenlage?.gemessenAm}: öffentlich — die 44 von 46 `
-          + 'rückrechenbaren Einkaufspreisen stehen offen',
+        /*
+         * **Geschärft am 10. September 2026.** Hier stand „öffentlich", und das
+         * war ein Feldwert der Schnittstelle. Am selben Tag wurde der Abruf
+         * selbst gemessen: Eine gebaute Artikelseite kommt **ohne jeden
+         * Zugangsschlüssel** mit HTTP 200 herunter. Aus genau diesen Bytes
+         * rechnet `npm run pruefe-geheimnis` 44 von 46 Einkaufspreisen auf den
+         * Cent zurück.
+         *
+         * > **Ein Feldwert sagt, wie es eingestellt ist; ein Abruf sagt, was
+         * > jemand bekommt.**
+         */
+        : `gemessen am ${aussenlage?.gemessenAm}: öffentlich, und der Abruf ist belegt — `
+          + 'eine gebaute Artikelseite kommt ohne Zugangsdaten herunter, und aus ihr sind '
+          + '44 von 46 Einkaufspreisen auf den Cent rückrechenbar',
       'Auftraggeber');
   } else {
     unpruefbar('repository', 'Repository ist privat', repositoryPrivat,

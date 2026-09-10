@@ -169,6 +169,20 @@ export const AUSSENGRENZEN = Object.freeze([
     haengtAn: 'Der Abgleich der veröffentlichten PR-Beschreibung gegen die Quelle '
       + '(`npm run abgleich-veroeffentlichung`) und die Messung der Repository-Sichtbarkeit',
   }),
+  /*
+   * **Aufgenommen am 10. September 2026.** „Repository ist öffentlich" war bis
+   * dahin ein **Feldwert** der Schnittstelle. Ob ein Fremder ohne Konto die
+   * gebauten Seiten wirklich herunterlädt, hatte niemand versucht — und genau
+   * darauf beruht die Empfehlung, das Repository privat zu stellen.
+   */
+  Object.freeze({
+    id: 'fremder-zugriff',
+    was: 'Ob ein Fremder ohne Zugangsdaten die gebauten Seiten herunterladen kann',
+    wie: 'curl ohne Zugangsschlüssel auf raw.githubusercontent.com, eine Artikelseite',
+    haengtAn: 'Die Empfehlung „privat stellen": Aus dem Verkaufspreis auf der gebauten Seite '
+      + 'und der dokumentierten Zielmarge rechnet `npm run pruefe-geheimnis` 44 von 46 '
+      + 'Einkaufspreisen auf den Cent zurück — aus genau diesen Bytes',
+  }),
   Object.freeze({
     id: 'herstellerseiten',
     was: 'Ob die Merkblätter von Baumit, Schiedel, Synthesa und Isover abrufbar sind',

@@ -5,7 +5,7 @@
   "_wieGemessen": "repositoryOeffentlich: Feld visibility der Repository-Auskunft — seit dem 10. September auch ohne fremdes Werkzeug: curl https://api.github.com/repos/freudenthalerried-cmd/matlab. domainErreichbar: curl -L https://bauversand.com/ aus dieser Umgebung.",
   "gemessenAm": "2026-09-10",
   "repositoryOeffentlich": true,
-  "_repositoryHinweis": "visibility: public, private: false. Damit ist die Empfehlung „privat stellen\" keine Vermutung mehr, sondern der gemessene Zustand — und die 44 von 46 rueckrechenbaren Einkaufspreisen stehen offen.",
+  "_repositoryHinweis": "visibility: public, private: false. AM 10. SEPTEMBER GESCHAERFT: Bis dahin war das ein Feldwert der Schnittstelle. Seither ist der Abruf selbst gemessen — eine gebaute Artikelseite kommt ohne jeden Zugangsschluessel mit HTTP 200 herunter. Die Empfehlung „privat stellen\" beruht damit nicht mehr auf einer Folgerung aus einem Feld, sondern auf einer Datei, die jemand ohne Konto in der Hand hatte. Der oeffentliche Katalog traegt weiterhin keinen Einkaufspreis; die Kette laeuft ueber den Verkaufspreis auf der gebauten Seite und die ueberall dokumentierte Zielmarge.",
   "domainErreichbar": null,
   "_domainHinweis": "Nicht messbar, und diesmal nachgesehen: Der Ausgang dieser Umgebung antwortet auf den Verbindungsaufbau zu bauversand.com mit „CONNECT tunnel failed, response 403\". Auch die bestehende Firmenseite freudenthaler-bau.at antwortet nicht anders. Die Sperre liegt also am Ausgang und nicht an der Adresse — ein Ergebnis, das die Aussage stuetzt, statt sie zu behaupten.",
   "_versucheZweck": "Wer eine Grenze behauptet, nennt in src/aussenlage.js den Weg — hier steht, wann jemand ihn gegangen ist und was dabei herauskam. Ein Ergebnis ohne Beleg ist eine Behauptung mit Ziffern; ein Versuch ohne Datum sagt ueber heute nichts.",
@@ -44,6 +44,11 @@
       "am": "2026-09-10",
       "ergebnis": "gesperrt",
       "beleg": "developers.google.com, www.google.com, support.google.com, platform.openai.com, docs.anthropic.com und commoncrawl.org: keine Verbindung. Damit ist die Annahme in src/crawler.js, was Google-Extended beim Anbieter steuert, von hier aus auf keinem gemessenen Weg zu belegen — vorher stand dort eine Pauschale ueber den Ausgang."
+    },
+    "fremder-zugriff": {
+      "am": "2026-09-10",
+      "ergebnis": "moeglich",
+      "beleg": "Ohne jeden Zugangsschluessel (Umgebungsvariablen ausdruecklich entfernt): api.github.com/repos/... antwortet mit HTTP 200, und raw.githubusercontent.com liefert shop/ausgabe/site/artikel/POS-10095.html mit HTTP 200 und 37.928 Bytes aus. Damit ist nicht nur das Feld visibility gemessen, sondern der Abruf selbst: Ein Fremder bekommt genau die Bytes, aus denen npm run pruefe-geheimnis 44 von 46 Einkaufspreisen auf den Cent zurueckrechnet."
     }
   }
 }
