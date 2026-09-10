@@ -50,7 +50,16 @@ Seite sagt, dass er fehlt.
 <!-- pruefung: begruendet — der Absatz zitiert die unzulaessige Form als Beispiel, er verwendet sie nicht -->
 **Drittens: Normen nur mit Nummer und Ausgabe.** „Nach ÖNORM" ist wertlos:
 Normen werden überarbeitet, zurückgezogen und ersetzt. Steht keine Nummer
-dabei, ist der Verweis eine Behauptung.
+dabei, ist der Verweis eine Behauptung. Wo eine Norm auf einer Seite zum
+ersten Mal vorkommt, steht die Ausgabe in Sichtweite — Wiederholungen weiter
+unten verkürzen. Eine Normen**reihe** und eine europäische
+Zulassungsleitlinie tragen keine Ausgabe in diesem Sinn; dort steht, was sie
+sind.
+
+*Bis zum 10. September war von dieser Regel nur die Nummer gemessen. Die
+Ausgabe hat kein Prüfprogramm nachgeschlagen — eine Regel, von der die Hälfte
+gemessen wird, ist zur Hälfte eine Zusage. Der Bestand hielt sie: vier
+Normen, jede mit ihrer Ausgabe.*
 
 **Viertens: Wir sagen auch, wofür etwas nicht taugt.** Jede Produktseite hat
 einen Abschnitt dazu — und er schreibt nichts ab. Wo die Eignungsgrenzen

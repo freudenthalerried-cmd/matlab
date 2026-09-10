@@ -2412,6 +2412,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'Assistent liest die Zeile, nicht den Vorspann.',
   }),
   Object.freeze({
+    id: 'norm-ohne-ihre-ausgabe',
+    pruefer: 'pruefe-inhalte',
+    was: 'Eine Norm, die auf einer Kundenseite ohne ihre Ausgabe steht',
+    datei: 'shop/inhalte/wissen/kanal-was-zusammengehoert.md',
+    art: 'ersetzen',
+    suchen: "— für den Regelfall nennt ÖNORM B 2501 aber Untergrenzen.",
+    ersetzen: "— für den Regelfall nennt ÖNORM B 5017 aber Untergrenzen.",
+    erwartet: /norm-ohne-ausgabe/,
+    warum: 'Die dritte Redaktionsregel verlangt Nummer **und** Ausgabe; gemessen wurde bis zum '
+      + '10. September nur die Nummer. Die Mutation setzt in den Vorspann eine zweite '
+      + 'Normnummer, die sonst nirgends vorkommt — der häufigste Fall in der Praxis: Eine Norm '
+      + 'wird genannt, und ihre Ausgabe steht nirgends. Die Ausgabe der bereits zitierten Norm '
+      + 'aus derselben Seite herauszunehmen, hätte nicht gereicht: Sie steht dort dreimal, und '
+      + 'jede Nennung in Sichtweite deckt die erste.',
+  }),
+  Object.freeze({
     id: 'uebernahme-ohne-einen-einzigen-kennwert',
     pruefer: 'pruefe-inhalte',
     was: 'Eine Seite, die verspricht, Kennwerte zu übernehmen, ohne einen einzigen zu tragen',

@@ -37,6 +37,7 @@ import {
 import { untergrenzenbefund } from '../src/untergrenze.js';
 import { mehrlieferungsbefund, lieferantenzahl } from '../src/lieferungen.js';
 import { kennwerteImBestand, uebernahmebefund } from '../src/merkblattverweis.js';
+import { normstellenbefund } from '../src/normstelle.js';
 
 const hier = dirname(fileURLToPath(import.meta.url));
 
@@ -61,6 +62,22 @@ const MINDESTWERT_NETTO = JSON.parse(
 const LIEFERANTEN = lieferantenzahl(
   JSON.parse(readFileSync(join(hier, '..', 'data', 'katalog-baustoff.json'), 'utf8')).artikel ?? [],
 );
+
+/**
+ * Meldet Normbezüge, deren Ausgabe nicht in Sichtweite steht.
+ *
+ * **Die zweite Hälfte der dritten Redaktionsregel — 10. September 2026.**
+ * `NORM_OHNE_NUMMER` meldet seit jeher „nach ÖNORM" ohne Nummer. Die
+ * **Ausgabe** hat nie jemand nachgeschlagen, obwohl die Regel sie verlangt.
+ */
+function meldeNormstellen(flaechen, mindestens) {
+  const b = normstellenbefund(flaechen, mindestens);
+  for (const m of b.meldungen) {
+    console.log(`\n${m.wo}  [${m.regel}]`);
+    console.log(`    → ${m.text}`);
+  }
+  return b;
+}
 
 /**
  * Meldet Behauptungen, Kennwerte würden übernommen, solange keine Seite einen
@@ -505,6 +522,22 @@ if (process.argv[2] === '--seiten') {
   );
   treffer += uebernahme.meldungen.length;
 
+  /*
+   * **Über die ganzen Seiten, nicht über den eigenen Text.** Normbezüge
+   * stehen im Inhalt, und der ist in diesem Modus herausgeschnitten. Der
+   * erste Lauf meldete deshalb „0 Erstnennungen" und wäre an seiner eigenen
+   * Untergrenze rot geworden — ein Prüfer, der den falschen Ausschnitt liest,
+   * misst nicht zu wenig, sondern das Falsche.
+   */
+  const normen = meldeNormstellen(
+    alleSeitendateien(wurzel).map((datei) => ({
+      name: datei.split('/site/')[1] ?? datei,
+      text: nurText(readFileSync(datei, 'utf8')),
+    })),
+    3,
+  );
+  treffer += normen.meldungen.length;
+
   console.log(`\n${seiten.length} Seiten, ${absaetze} Fließtextabsätze geprüft, ${treffer} mit Verdacht.`);
   console.log(`${mitKarten} Seiten zeigen Artikelkarten, ${mitKarten - ohneGrenze} nennen den Mindestbestellwert.`);
   console.log(`${grenzen.gefunden} Grenzaussagen auf ${grenzen.flaechen} Seiten gegen die hinterlegten `
@@ -513,6 +546,7 @@ if (process.argv[2] === '--seiten') {
     + 'im Katalog gehalten.');
   console.log(`${uebernahme.kennwerte.mit.length} von ${uebernahme.kennwerte.gesamt} Seiten tragen `
     + 'einen technischen Kennwert — daran hängt, ob eine Übernahme behauptet werden darf.');
+  console.log(`${normen.geprueft} Erstnennungen einer Norm gegen ihre Ausgabe gehalten.`);
   console.log(`${antworten} maschinenlesbare Antworten gegen den sichtbaren Text gehalten.`);
   console.log('Diese Texte stehen im Seitenbauwerkzeug, nicht in inhalte/ — sie unterliegen');
   console.log('trotzdem denselben Regeln.');
@@ -623,6 +657,9 @@ if (grenzflaechen.length > 0) {
   if (gebauteSeiten.length) {
     trefferGesamt += meldeUebernahme(grenzflaechen, gebauteSeiten, 1).meldungen.length;
   }
+  const normen = meldeNormstellen(grenzflaechen, 3);
+  trefferGesamt += normen.meldungen.length;
+  console.log(`\n${normen.geprueft} Erstnennungen einer Norm gegen ihre Ausgabe gehalten.`);
   console.log(`\n${mehr.gesehen} Aussage(n) über mehrere Lieferungen gegen ${LIEFERANTEN} `
     + 'Lieferant(en) im Katalog gehalten.');
   console.log(`\n${grenzen.gefunden} Grenzaussage(n) auf ${grenzen.flaechen} Inhaltsseite(n) gegen die`);
