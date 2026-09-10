@@ -8,7 +8,7 @@ frage: Welche WDVS-Komponenten führen wir, und wonach wählt man sie aus?
 kurz: Klebe- und Spachtelmassen, Glasgewebe, Dübel, Kantenschutz, Putzgrund und Oberputz — die Bestandteile eines Fassadensystems bis auf eine: Die Dämmplatte in Flächenstärke führen wir nicht, sie steht auf der Stückliste und ist dort gekennzeichnet. Ausgewählt wird nach dem System, nicht nach dem Einzelpreis: Geprüft wird die Kombination, nicht der einzelne Sack.
 verwandt: wdvs-systemaufbau, mengen-fuer-100-qm-wdvs, untergrund-pruefen
 system: fassade-100-qm
-stand: 2026-09-01
+stand: 2026-09-10
 ---
 
 # WDVS-Komponenten
@@ -79,4 +79,7 @@ werden. Sie stehen deshalb auf unserer Systemliste
 
 Verarbeitungsanweisungen. Die verbindlichen Angaben stehen in der
 Verarbeitungsrichtlinie des Systemherstellers, und dorthin verlinken wir. Wir
-geben die Kennwerte wieder — wir schreiben die Richtlinie nicht ab.
+schreiben die Richtlinie nicht ab und geben auch ihre Kennwerte nicht wieder:
+Keine Seite dieses Shops nennt einen Verbrauchswert oder eine Schichtdicke.
+(Bis zum 10. September stand hier das Gegenteil — angekündigt war die
+Wiedergabe der Kennwerte, eingelöst wurde sie auf keiner Seite.)

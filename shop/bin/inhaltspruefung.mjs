@@ -36,6 +36,7 @@ import {
 } from '../src/inhaltspruefung.js';
 import { untergrenzenbefund } from '../src/untergrenze.js';
 import { mehrlieferungsbefund, lieferantenzahl } from '../src/lieferungen.js';
+import { kennwerteImBestand, uebernahmebefund } from '../src/merkblattverweis.js';
 
 const hier = dirname(fileURLToPath(import.meta.url));
 
@@ -60,6 +61,25 @@ const MINDESTWERT_NETTO = JSON.parse(
 const LIEFERANTEN = lieferantenzahl(
   JSON.parse(readFileSync(join(hier, '..', 'data', 'katalog-baustoff.json'), 'utf8')).artikel ?? [],
 );
+
+/**
+ * Meldet Behauptungen, Kennwerte würden übernommen, solange keine Seite einen
+ * trägt.
+ *
+ * **Der Anlass, 10. September 2026.** Eine Stunde nachdem der Satz in
+ * `llms.txt` berichtigt war, stand derselbe Anspruch unberichtigt auf der
+ * Seite, die ihn aufstellt — und im Widerspruch zur zweiten Regel derselben
+ * Seite. Gemessen trägt **keine** Seite dieses Shops einen Verbrauchswert,
+ * eine Schichtdicke oder eine Verarbeitungstemperatur.
+ */
+function meldeUebernahme(flaechen, seiten, mindestens) {
+  const b = uebernahmebefund(flaechen, kennwerteImBestand(seiten), mindestens);
+  for (const m of b.meldungen) {
+    console.log(`\n${m.wo}  [${m.regel}]`);
+    console.log(`    → ${m.text}`);
+  }
+  return b;
+}
 
 /**
  * Meldet Behauptungen über mehrere Lieferungen, denen auf derselben Fläche
@@ -476,12 +496,23 @@ if (process.argv[2] === '--seiten') {
   const mehr = meldeMehrlieferungen(grenzflaechen, 40);
   treffer += mehr.meldungen.length;
 
+  const uebernahme = meldeUebernahme(
+    grenzflaechen,
+    alleSeitendateien(wurzel).map((datei) => ({
+      name: datei.split('/site/')[1] ?? datei, html: readFileSync(datei, 'utf8'),
+    })),
+    40,
+  );
+  treffer += uebernahme.meldungen.length;
+
   console.log(`\n${seiten.length} Seiten, ${absaetze} Fließtextabsätze geprüft, ${treffer} mit Verdacht.`);
   console.log(`${mitKarten} Seiten zeigen Artikelkarten, ${mitKarten - ohneGrenze} nennen den Mindestbestellwert.`);
   console.log(`${grenzen.gefunden} Grenzaussagen auf ${grenzen.flaechen} Seiten gegen die hinterlegten `
     + `${grenzen.grenzeNetto} € netto Warenwert je Lieferung gehalten.`);
   console.log(`${mehr.gesehen} Aussagen über mehrere Lieferungen gegen ${LIEFERANTEN} Lieferant(en) `
     + 'im Katalog gehalten.');
+  console.log(`${uebernahme.kennwerte.mit.length} von ${uebernahme.kennwerte.gesamt} Seiten tragen `
+    + 'einen technischen Kennwert — daran hängt, ob eine Übernahme behauptet werden darf.');
   console.log(`${antworten} maschinenlesbare Antworten gegen den sichtbaren Text gehalten.`);
   console.log('Diese Texte stehen im Seitenbauwerkzeug, nicht in inhalte/ — sie unterliegen');
   console.log('trotzdem denselben Regeln.');
@@ -582,6 +613,16 @@ if (grenzflaechen.length > 0) {
   trefferGesamt += grenzen.meldungen.length;
   const mehr = meldeMehrlieferungen(grenzflaechen, 1);
   trefferGesamt += mehr.meldungen.length;
+  // Gemessen wird gegen das **Erzeugnis**: Ob eine Seite einen Kennwert
+  // trägt, entscheidet die gebaute Seite und nicht der Quelltext.
+  const gebauteSeiten = existsSync(join(hier, '..', 'ausgabe', 'site'))
+    ? alleSeitendateien(join(hier, '..', 'ausgabe', 'site')).map((datei) => ({
+      name: datei.split('/site/')[1] ?? datei, html: readFileSync(datei, 'utf8'),
+    }))
+    : [];
+  if (gebauteSeiten.length) {
+    trefferGesamt += meldeUebernahme(grenzflaechen, gebauteSeiten, 1).meldungen.length;
+  }
   console.log(`\n${mehr.gesehen} Aussage(n) über mehrere Lieferungen gegen ${LIEFERANTEN} `
     + 'Lieferant(en) im Katalog gehalten.');
   console.log(`\n${grenzen.gefunden} Grenzaussage(n) auf ${grenzen.flaechen} Inhaltsseite(n) gegen die`);

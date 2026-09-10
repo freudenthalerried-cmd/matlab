@@ -16,11 +16,11 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-import { MERKBLATT, herstellerDerGruppe, merkblattbefund, merkblattsatz, merkblattdeckung, selbstbeschreibungsbefund } from '../src/merkblattverweis.js';
+import { MERKBLATT, herstellerDerGruppe, merkblattbefund, merkblattsatz, merkblattdeckung, selbstbeschreibungsbefund , KENNWERT, kennwerteImBestand, uebernahmebefund, UEBERNAHMEBEHAUPTUNGEN } from '../src/merkblattverweis.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const SITE = join(SHOP, 'ausgabe', 'site');
@@ -191,5 +191,72 @@ test('llms.txt beschreibt die gebauten Artikelseiten richtig', (t) => {
     .filter((n) => n.endsWith('.html'))
     .map((n) => ({ name: n, html: readFileSync(join(ordner, n), 'utf8') }));
   const b = selbstbeschreibungsbefund(readFileSync(llmsDatei, 'utf8'), merkblattdeckung(seiten), 20);
+  assert.deepEqual(b.meldungen.map((m) => m.text), []);
+});
+
+/* ------------------------------------------------------------------ *
+ * „Übernommen und verlinkt" — 10. September 2026, nachmittags
+ *
+ * Eine Stunde nach der Berichtigung in `llms.txt` stand derselbe Anspruch
+ * unberichtigt auf der Seite, die ihn aufstellt: *„Technische Kennwerte
+ * werden aus dem Datenblatt des Herstellers übernommen und verlinkt."* Keine
+ * Seite dieses Shops trägt einen Verbrauchswert, eine Schichtdicke oder eine
+ * Verarbeitungstemperatur. Die zweite Regel derselben Seite sagte es die
+ * ganze Zeit richtig.
+ * ------------------------------------------------------------------ */
+
+test('ein Kennwert braucht eine Einheit, keine Ziffer in der Nähe', () => {
+  assert.equal(KENNWERT.test('Verbrauch 4,5 kg/m² je Auftrag'), true);
+  assert.equal(KENNWERT.test('Schichtdicke 3 mm'), true);
+  assert.equal(KENNWERT.test('Verarbeitungstemperatur ab 5 °C'), true);
+  // Die Systemliste, die den ersten Lauf abgeschaltet hätte: eine
+  // Tabellenzelle mit Zeilennummer.
+  assert.equal(KENNWERT.test('1 Klebemörtel Fläche × Verbrauch je Auftragsart — 2 Dämmplatten'), false);
+});
+
+test('die Übernahmebehauptung wird gemeldet, solange kein Kennwert dasteht', () => {
+  assert.ok(UEBERNAHMEBEHAUPTUNGEN.length >= 2, 'ohne Einträge prüft diese Schleife nichts');
+  const leer = { gesamt: 46, mit: [] };
+  const flaechen = (satz) => [{ name: 'x', text: satz }, { name: 'y', text: '' }, { name: 'z', text: '' }];
+  for (const satz of [
+    'Technische Kennwerte werden aus dem Datenblatt des Herstellers übernommen und verlinkt.',
+    'Wir verlinken sie und geben die Kennwerte wieder.',
+  ]) {
+    const b = uebernahmebefund(flaechen(satz), leer, 3);
+    assert.ok(b.meldungen.some((m) => m.regel === 'uebernahme-ohne-kennwert'), satz);
+  }
+  // Die Verneinung ist die richtige Auskunft und steht so auf der Seite.
+  for (const satz of [
+    'Kennwerte werden nicht aus dem Merkblatt übernommen.',
+    'Technische Kennwerte schreiben wir nicht ab.',
+  ]) {
+    assert.deepEqual(uebernahmebefund(flaechen(satz), leer, 3).meldungen, [], satz);
+  }
+});
+
+test('sobald eine Seite einen Kennwert trägt, schaltet sich die Regel ab', () => {
+  const b = uebernahmebefund(
+    [{ name: 'x', text: 'Wir geben die Kennwerte wieder.' }, { name: 'y', text: '' }, { name: 'z', text: '' }],
+    { gesamt: 46, mit: ['artikel/POS-1.html'] },
+    3,
+  );
+  assert.deepEqual(b.meldungen, [], 'mit belegtem Kennwert ist die Behauptung wahr');
+});
+
+test('keine Kundenfläche behauptet eine Übernahme, die nicht stattfindet', (t) => {
+  const ordner = join(SHOP, 'inhalte', 'wissen');
+  if (!existsSync(SITE) || !existsSync(ordner)) return t.skip('ohne Bau keine Aussage');
+  const flaechen = readdirSync(ordner).filter((n) => n.endsWith('.md'))
+    .map((n) => ({ name: n, text: readFileSync(join(ordner, n), 'utf8') }));
+  const seiten = [];
+  const gehe = (o) => {
+    for (const e of readdirSync(o)) {
+      const p = join(o, e);
+      if (statSync(p).isDirectory()) { gehe(p); continue; }
+      if (e.endsWith('.html')) seiten.push({ name: e, html: readFileSync(p, 'utf8') });
+    }
+  };
+  gehe(SITE);
+  const b = uebernahmebefund(flaechen, kennwerteImBestand(seiten), 10);
   assert.deepEqual(b.meldungen.map((m) => m.text), []);
 });

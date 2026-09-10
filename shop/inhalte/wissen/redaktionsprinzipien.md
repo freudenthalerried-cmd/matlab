@@ -3,17 +3,24 @@ titel: Wie dieser Shop seine Angaben prüft
 art: wissen
 slug: redaktionsprinzipien
 frage: Woher stammen die Angaben auf diesen Seiten, und was passiert, wenn eine falsch ist?
-kurz: Jede Zahl auf diesen Seiten hat eine benannte Herkunft, oder sie steht nicht da. Technische Kennwerte werden aus dem Datenblatt des Herstellers übernommen und verlinkt, nicht abgeschrieben und nicht aus dem Gedächtnis ergänzt.
+kurz: Jede Zahl auf diesen Seiten hat eine benannte Herkunft, oder sie steht nicht da. Technische Kennwerte schreiben wir nicht ab: Wo eine Merkblattadresse des Herstellers bekannt ist, steht der Verweis; wo nicht, sagt die Seite, dass der Wert fehlt.
 verwandt: baumeisterpreis, warum-keine-gratislieferung
-stand: 2026-08-25
+stand: 2026-09-10
 ---
 
 # Wie dieser Shop seine Angaben prüft
 
 **Die Antwort in zwei Sätzen.** Jede Zahl auf diesen Seiten hat eine benannte
-Herkunft, oder sie steht nicht da. Technische Kennwerte werden aus dem
-Datenblatt des Herstellers übernommen und verlinkt — nicht abgeschrieben, nicht
-aus dem Gedächtnis ergänzt und nicht gerundet, bis sie besser klingen.
+Herkunft, oder sie steht nicht da. Technische Kennwerte schreiben wir nicht ab
+— weder aus dem Merkblatt noch aus dem Gedächtnis: Wo eine Merkblattadresse
+des Herstellers bekannt ist, steht der Verweis darauf; wo keine bekannt ist,
+sagt die Artikelseite, dass der Wert fehlt.
+
+*Bis zum 10. September stand hier, technische Kennwerte würden aus dem
+Datenblatt des Herstellers hierher geholt und verlinkt. Geholt wird nichts:
+Keine Seite dieses Shops trägt einen Verbrauchswert, eine Schichtdicke oder
+eine Verarbeitungstemperatur. Die zweite Regel weiter unten sagte es die
+ganze Zeit richtig — der Vorspann widersprach ihr.*
 
 Diese Seite steht bewusst weit vorne. Wer Baustoffe verkauft, verkauft
 Angaben mit: Verbrauch, Schichtdicke, Untergrund, Verträglichkeit. Eine
@@ -66,7 +73,7 @@ Betrieb.*
 - **Keine Erfolgszusagen.** Ein Baustoff kann fachgerecht verarbeitet werden
   oder nicht; das Ergebnis hängt an der Ausführung, nicht am Lieferschein.
 - **Keine fremden Texte ohne Kennzeichnung.** Herstellerunterlagen sind
-  geschützte Werke. Wir verlinken sie und geben die Kennwerte wieder.
+  geschützte Werke. Wir verlinken sie und schreiben ihre Kennwerte nicht ab.
 
 ## Woher die Preise kommen
 

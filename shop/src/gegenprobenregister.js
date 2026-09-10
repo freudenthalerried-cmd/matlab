@@ -2412,6 +2412,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'Assistent liest die Zeile, nicht den Vorspann.',
   }),
   Object.freeze({
+    id: 'uebernahme-ohne-einen-einzigen-kennwert',
+    pruefer: 'pruefe-inhalte',
+    was: 'Eine Seite, die verspricht, Kennwerte zu übernehmen, ohne einen einzigen zu tragen',
+    datei: 'shop/inhalte/wissen/redaktionsprinzipien.md',
+    art: 'ersetzen',
+    suchen: "Herkunft, oder sie steht nicht da. Technische Kennwerte schreiben wir nicht ab\n— weder aus dem Merkblatt noch aus dem Gedächtnis: Wo eine Merkblattadresse\ndes Herstellers bekannt ist, steht der Verweis darauf; wo keine bekannt ist,\nsagt die Artikelseite, dass der Wert fehlt.",
+    ersetzen: "Herkunft, oder sie steht nicht da. Technische Kennwerte werden aus dem\nDatenblatt des Herstellers übernommen und verlinkt.",
+    erwartet: /uebernahme-ohne-kennwert/,
+    warum: 'Wörtlich der Zustand bis zum 10. September, auf der Seite, die von sich sagt, sie '
+      + 'erkläre, wie hier geprüft wird. Keine der 82 gebauten Seiten trägt einen '
+      + 'Verbrauchswert, eine Schichtdicke oder eine Verarbeitungstemperatur; die zweite Regel '
+      + 'derselben Seite sagte das die ganze Zeit richtig, der Vorspann widersprach ihr. Eine '
+      + 'Stunde zuvor war derselbe Anspruch in llms.txt berichtigt worden — und blieb hier '
+      + 'stehen.',
+  }),
+  Object.freeze({
     id: 'selbstbeschreibung-fuer-alle-behauptet',
     pruefer: 'test',
     was: 'Eine Datei für Maschinen, die den eigenen Bau besser beschreibt als er ist',

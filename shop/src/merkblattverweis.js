@@ -200,3 +200,112 @@ export function selbstbeschreibungsbefund(llms, deckung, mindestens = 20) {
   }
   return { ...deckung, soll, meldungen, sauber: meldungen.length === 0 };
 }
+
+/**
+ * Kennwerte, die eine Seite tatsächlich trägt.
+ *
+ * **Der Anlass, 10. September 2026, nachmittags.** Eine Stunde nachdem der
+ * Satz in `llms.txt` berichtigt war, stand derselbe Anspruch unberichtigt auf
+ * der Seite, die ihn aufstellt — *„Wie dieser Shop seine Angaben prüft"*:
+ *
+ * > *„Technische Kennwerte werden aus dem Datenblatt des Herstellers
+ * > **übernommen und verlinkt**."* · *„Wir verlinken sie und **geben die
+ * > Kennwerte wieder**."*
+ *
+ * Gemessen über alle Artikel- und Wissensseiten: **keine einzige** trägt
+ * einen Verbrauchswert, eine Schichtdicke oder eine Verarbeitungstemperatur
+ * mit Zahl. Übernommen wird nichts, wiedergegeben nichts.
+ *
+ * Die **zweite Regel derselben Seite** sagt es richtig: *„Fehlt der Beleg,
+ * fehlt der Wert — und die Seite sagt, dass er fehlt."* Die Seite widersprach
+ * sich damit in ihrem eigenen Vorspann.
+ *
+ * > **Eine Berichtigung, die eine Stelle erreicht, gilt für eine Stelle** —
+ * > auch wenn beide Stellen denselben Satz tragen und dieselbe Stunde alt sind.
+ *
+ * @param {{name: string, html: string}[]} seiten
+ */
+/*
+ * **Verschärft am 10. September, unmittelbar nach dem ersten Lauf.** Die
+ * erste Fassung verlangte nur eine **Ziffer** in der Nähe des Wortes — und
+ * zählte damit die Systemliste mit: *„1 Klebemörtel Fläche × Verbrauch je
+ * Auftragsart — **2** Dämmplatten …"*. Das ist eine Tabellenzelle mit einer
+ * Zeilennummer, kein Kennwert.
+ *
+ * > **Ein Fehltreffer, der eine Regel abschaltet, ist teurer als einer, der
+ * > meldet.** Er hätte die Übernahmebehauptung stillschweigend erlaubt.
+ *
+ * Verlangt wird deshalb eine Zahl **mit Einheit** — das, was einen Kennwert
+ * ausmacht.
+ */
+export const KENNWERT =
+  /(Verbrauch|Schichtdicke|Auftragsdicke|Verarbeitungstemperatur)[^.!?]{0,60}?\d[\d,.]*\s*(?:mm|cm|m²|m2|kg\/m²|g\/m²|kg|°\s?C|%)/i;
+
+export function kennwerteImBestand(seiten = []) {
+  const mit = [];
+  for (const s of seiten) {
+    const text = String(s.html ?? '').replace(/<script[\s\S]*?<\/script>/g, ' ')
+      .replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+    if (KENNWERT.test(text)) mit.push(s.name);
+  }
+  return { gesamt: seiten.length, mit };
+}
+
+/**
+ * Formulierungen, die eine Übernahme von Kennwerten behaupten.
+ *
+ * Eng gefasst: „nicht abgeschrieben" ist die **richtige** Auskunft und steht
+ * so auf derselben Seite. Getroffen wird nur, wer sagt, dass Werte
+ * herübergeholt werden.
+ */
+export const UEBERNAHMEBEHAUPTUNGEN = Object.freeze([
+  Object.freeze({
+    muster: /Kennwerte[^.!?]{0,60}?(?:übernommen|entnommen)/i,
+    was: 'behauptet, Kennwerte würden aus dem Merkblatt übernommen',
+  }),
+  Object.freeze({
+    muster: /geben die Kennwerte wieder|Kennwerte[^.!?]{0,30}?wiedergegeben/i,
+    was: 'behauptet, Kennwerte würden wiedergegeben',
+  }),
+]);
+
+/**
+ * Behauptet eine Kundenfläche, Kennwerte zu übernehmen, während keine Seite
+ * einen trägt?
+ *
+ * Die Regel schaltet sich selbst ab: Sobald eine Seite einen belegten Wert
+ * führt, ist die Behauptung wahr und wird nicht mehr gemeldet.
+ *
+ * @param {{name: string, text: string}[]} flaechen Kundentexte
+ * @param {{gesamt: number, mit: string[]}} kennwerte Ergebnis von `kennwerteImBestand`
+ * @param {number} mindestens Wie viele Flächen der Bestand trägt
+ */
+export function uebernahmebefund(flaechen = [], kennwerte = { gesamt: 0, mit: [] }, mindestens = 20) {
+  const meldungen = [];
+  if (flaechen.length < mindestens) {
+    meldungen.push({
+      regel: 'zu-wenig-flaechen',
+      wo: '—',
+      text: `nur ${flaechen.length} Kundenflächen gemessen, erwartet mindestens ${mindestens}`,
+    });
+  }
+  if ((kennwerte.mit ?? []).length > 0) {
+    return { geprueft: flaechen.length, kennwerte, meldungen, sauber: meldungen.length === 0 };
+  }
+  for (const f of flaechen) {
+    for (const b of UEBERNAHMEBEHAUPTUNGEN) {
+      const treffer = new RegExp(b.muster.source, b.muster.flags).exec(String(f.text ?? ''));
+      if (!treffer) continue;
+      // Dieselbe Vorsicht wie bei der Abholzusage: „Kennwerte werden **nicht**
+      // übernommen" ist die richtige Auskunft und steht so auf derselben Seite.
+      if (/\b(?:nicht|kein|keine|weder|ohne)\b/i.test(treffer[0])) continue;
+      meldungen.push({
+        regel: 'uebernahme-ohne-kennwert',
+        wo: f.name,
+        text: `${f.name} ${b.was} — keine der ${kennwerte.gesamt} gemessenen Seiten trägt einen: `
+          + `„${treffer[0].replace(/\s+/g, ' ').slice(0, 80)}"`,
+      });
+    }
+  }
+  return { geprueft: flaechen.length, kennwerte, meldungen, sauber: meldungen.length === 0 };
+}
