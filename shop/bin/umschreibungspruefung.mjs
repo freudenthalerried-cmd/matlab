@@ -28,7 +28,14 @@
 import { BETRIEBSAUSSAGEN, GRENZWOERTER } from '../src/inhaltspruefung.js';
 import { findeInterna } from '../src/interna.js';
 import { PREISAUSSAGEN, VORRATSWORTE } from '../src/aussagen.js';
-import { UMSCHREIBUNGEN, umschreibungsbefund, registerbefund } from '../src/umschreibung.js';
+import { MEHRLIEFERUNG } from '../src/lieferungen.js';
+import { GRENZAUSSAGEN } from '../src/untergrenze.js';
+import {
+  UMSCHREIBUNGEN, umschreibungsbefund, registerbefund, quellenbefund,
+} from '../src/umschreibung.js';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 
 /**
  * Würde dieser Satz auf einer Kundenfläche gemeldet?
@@ -43,8 +50,55 @@ function faengt(satz) {
   if (findeInterna(satz).length > 0) return true;
   if (PREISAUSSAGEN.some((e) => new RegExp(e.muster.source, e.muster.flags).test(satz))) return true;
   if (VORRATSWORTE.some((w) => satz.toLowerCase().includes(w.toLowerCase()))) return true;
+  // **Nachgetragen am 10. September, nachmittags.** Die beiden Regeln, die an
+  // diesem Vormittag entstanden sind, fehlten hier — und fielen beim ersten
+  // Lauf mit 0 von 5 und 1 von 5 durch. Ein Prüfer über die Reichweite, der
+  // die jüngsten Regeln nicht kennt, misst die Vergangenheit.
+  if (MEHRLIEFERUNG.test(satz)) return true;
+  if (GRENZAUSSAGEN.some((a) => new RegExp(a.muster.source, a.muster.flags).test(satz))) return true;
   return false;
 }
+
+/**
+ * Welche Musterausfuhren erreichen die Kundentext-Werkzeuge überhaupt?
+ *
+ * Gefunden statt aufgezählt: Die vier Werkzeuge sagen selbst, welche Module
+ * sie laden, und die Module sagen selbst, was sie ausführen. Eine Aufzählung,
+ * die von Hand gepflegt wird, hat dieselbe Lücke wie das Register, das sie
+ * bewachen soll.
+ */
+const HIER = dirname(fileURLToPath(import.meta.url));
+const WERKZEUGE = [
+  'inhaltspruefung.mjs', 'belegpruefung.mjs', 'website.mjs', 'umschreibungspruefung.mjs',
+];
+
+async function musterausfuhren() {
+  const module = new Set();
+  for (const w of WERKZEUGE) {
+    const quelle = readFileSync(join(HIER, w), 'utf8');
+    for (const m of quelle.matchAll(/from '\.\.\/src\/([a-z]+)\.js'/g)) module.add(m[1]);
+  }
+  const gefunden = [];
+  for (const name of [...module].sort()) {
+    const mod = await import(join(HIER, '..', 'src', `${name}.js`));
+    for (const [k, v] of Object.entries(mod)) {
+      const istRegister = Array.isArray(v)
+        && v.some((e) => e && typeof e === 'object' && (e.muster instanceof RegExp || e.wort instanceof RegExp));
+      // **Nachgezogen am 10. September.** Die erste Fassung suchte nur nach
+      // RegExp und Musterregistern — und übersah damit `VORRATSWORTE`, eine
+      // Wortliste, die genauso eine Behauptung verbietet. Ein Suchlauf, der
+      // eine Bauform nicht kennt, meldet vollständig über das, was er kennt.
+      // Aufgenommen sind Zeichenkettenlisten, deren Name sie als Wortliste
+      // ausweist; alle anderen wären Einheiten, Modulnamen und Gliederungen.
+      const istWortliste = Array.isArray(v) && v.length > 0
+        && v.every((e) => typeof e === 'string') && /WOERTER$|WORTE$/.test(k);
+      if (v instanceof RegExp || istRegister || istWortliste) gefunden.push(`${name}.${k}`);
+    }
+  }
+  return gefunden;
+}
+
+const quellen = quellenbefund(await musterausfuhren());
 
 const form = registerbefund(UMSCHREIBUNGEN);
 if (!form.sauber) {
@@ -57,7 +111,10 @@ if (!form.sauber) {
 const b = umschreibungsbefund(faengt, UMSCHREIBUNGEN);
 
 console.log(`Reichweite der Textprüfer: ${b.regeln} Regeln, ${b.gemessen} Umschreibungen`);
-console.log(`${b.gemessen - b.offen} gefangen, ${b.offen} als offene Lücke geführt — jede mit Grund.\n`);
+console.log(`${b.gemessen - b.offen} gefangen, ${b.offen} als offene Lücke geführt — jede mit Grund.`);
+console.log(`${quellen.gefunden} Musterausfuhren erreichen die Kundentext-Werkzeuge, `
+  + `${quellen.behauptungsregeln} davon sind Behauptungsregeln, `
+  + `${quellen.offen} davon noch ohne Umschreibungen.\n`);
 
 for (const regel of UMSCHREIBUNGEN) {
   const zeilen = regel.saetze.map((s) => `${s.gefangen ? '✓' : '·'} ${s.text}`);
@@ -65,16 +122,13 @@ for (const regel of UMSCHREIBUNGEN) {
   for (const z of zeilen) console.log(`      ${z}`);
 }
 
-if (b.meldungen.length) {
-  console.log('');
-  for (const m of b.meldungen) {
-    console.log(`  ✗ ${m.wo} [${m.regel}]`);
-    console.log(`      ${m.text}`);
-  }
+for (const m of [...b.meldungen, ...quellen.meldungen]) {
+  console.log(`\n  ✗ ${m.wo} [${m.regel}]`);
+  console.log(`      ${m.text}`);
 }
 
 console.log('');
-if (b.sauber) {
+if (b.sauber && quellen.sauber) {
   console.log('Jede Regel reicht so weit, wie das Register sagt.');
   console.log('Eine Lücke, die aufgeschrieben ist, ist eine Entscheidung —');
   console.log('eine Lücke, die niemand kennt, ist ein Versehen.');

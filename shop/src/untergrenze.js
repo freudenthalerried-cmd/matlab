@@ -76,6 +76,34 @@ export const GRENZAUSSAGEN = Object.freeze([
     muster: /\bab\s+(\d[\d.]*(?:,\d+)?)\s*(?:€|EUR|Euro)[^.!?]{0,60}?(?:netto\s+)?(?:Warenwert|Bestellwert)/gi,
     form: 'ab … Betrag … Warenwert',
   }),
+  /*
+   * **Vier Formen ergänzt am 10. September.** Die Reichweitenmessung hat die
+   * drei Formen darüber gegen fünf Umschreibungen gehalten; sie fingen
+   * **eine**. Dieses Register ist am selben Morgen entstanden, aus dem einen
+   * Satz, der im Bestand stand — genau der Fehler, den es am Nachmittag zu
+   * diagnostizieren galt. Über 110 Kundenflächen erzeugt keine der vier
+   * Formen einen Treffer, der nicht schon von Form 1 gesehen wird.
+   */
+  Object.freeze({
+    id: 'bestellungen-unter',
+    muster: /Bestellungen?\s+unter\s+(\d[\d.]*(?:,\d+)?)\s*(?:€|EUR|Euro)/gi,
+    form: 'Bestellungen unter … Betrag',
+  }),
+  Object.freeze({
+    id: 'untergrenze',
+    muster: /Untergrenze[^.!?]{0,40}?(\d[\d.]*(?:,\d+)?)\s*(?:€|EUR|Euro)/gi,
+    form: 'Untergrenze … Betrag',
+  }),
+  Object.freeze({
+    id: 'bestellwert-von',
+    muster: /Bestellwert\s+von\s+(\d[\d.]*(?:,\d+)?)\s*(?:€|EUR|Euro)/gi,
+    form: 'Bestellwert von … Betrag',
+  }),
+  Object.freeze({
+    id: 'kleinstmengen',
+    muster: /Kleinstmengen?\s+unter\s+(\d[\d.]*(?:,\d+)?)\s*(?:€|EUR|Euro)/gi,
+    form: 'Kleinstmengen unter … Betrag',
+  }),
 ]);
 
 /**

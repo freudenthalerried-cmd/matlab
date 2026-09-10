@@ -81,6 +81,35 @@ export const PREISAUSSAGEN = Object.freeze([
     muster: /(Einkauf|Baumeister|Einstand)[^.!?]{0,90}\bzahlen\s+Sie\s+(auch|dasselbe|genauso|denselben)\b/i,
     was: 'der Kunde zahle dasselbe wie der Baumeister',
   }),
+  /*
+   * **Fünf Umschreibungen, ergänzt am 10. September.** Gemessen an sechs
+   * Formulierungen derselben Gleichsetzung fing dieses Register **eine** —
+   * die, gegen die es geschrieben wurde. Die fünf hier sind keine
+   * Kunstprodukte: „zu denselben Konditionen wie ein Baumeister" ist die
+   * Wendung, die ein Anzeigentext zuerst wählt, wenn „Einkaufspreis"
+   * beanstandet wurde. Über 110 Kundenflächen erzeugt jede von ihnen null
+   * Fehltreffer; die Reichweite steht jetzt in `src/umschreibung.js`.
+   */
+  Object.freeze({
+    muster: /(?:dieselben|dieselbe|gleiche[nr]?|denselben)\s+Konditionen[^.!?]{0,40}?(?:Baumeister|Handwerker|Profi)/i,
+    was: 'der Kunde kaufe zu denselben Konditionen wie der Baumeister',
+  }),
+  Object.freeze({
+    muster: /\bBaumeisterkonditionen\b|\bHandwerkerkonditionen\b/i,
+    was: 'es gebe Baumeisterkonditionen für jeden',
+  }),
+  Object.freeze({
+    muster: /Einkauf[^.!?]{0,30}?\beins zu eins\b|\beins zu eins\b[^.!?]{0,30}?weiter/i,
+    was: 'der Einkauf werde eins zu eins weitergegeben',
+  }),
+  Object.freeze({
+    muster: /zahlen\s+Sie\s+nicht\s+mehr\s+als\s+(?:der|ein)\s+(?:Baumeister|Handwerker|Profi)/i,
+    was: 'der Kunde zahle nicht mehr als der Handwerker',
+  }),
+  Object.freeze({
+    muster: /Auf(?:schl(?:ä|ae)ge|preise)\s+entfallen\b|\bohne\s+(?:Handels)?spanne\b/i,
+    was: 'die Aufschläge entfielen',
+  }),
   Object.freeze({
     muster: /\bzahlen\s+Sie\s+(auch|dasselbe|genauso|denselben)\b[^.!?]{0,90}(Einkauf|Baumeister|Einstand)/i,
     was: 'der Kunde zahle dasselbe wie der Baumeister',
@@ -100,7 +129,12 @@ export const PREISAUSSAGEN = Object.freeze([
  * darauf ein. Sie zu machen, ohne ein Lager zu haben, ist nicht bloß
  * ungenau; sie kostet den Kunden einen Tag.
  */
-export const VORRATSWORTE = ['ab Lager', 'auf Lager', 'lagernd', 'sofort verfügbar', 'vorrätig', 'Lagerware'];
+// **Erweitert am 10. September.** Drei Umschreibungen gingen durch: „sofort
+// mitnehmen", „heute noch abholbar", „alles da". Keines der sechs Wörter
+// darüber trifft sie, und alle drei behaupten dasselbe — Ware, die hier liegt.
+// Über 110 Kundenflächen null Fehltreffer.
+export const VORRATSWORTE = ['ab Lager', 'auf Lager', 'lagernd', 'sofort verfügbar', 'vorrätig',
+  'Lagerware', 'sofort mitnehmen', 'gleich mitnehmen', 'noch abholbar', 'alles da'];
 
 /**
  * Fundstellen auf gebauten Seiten, die stehen bleiben — mit dem Grund.

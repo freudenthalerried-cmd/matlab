@@ -204,6 +204,94 @@ export const UMSCHREIBUNGEN = Object.freeze([
           + 'gemeldet gehört die Zahl, nicht das Wort' }),
     ]),
   }),
+  /* ---------------------------------------------------------------- *
+   * Nachgetragen am 10. September, eine Runde später
+   *
+   * Die erste Fassung dieses Registers deckte vier Regeln ab. Der eigene
+   * Schlusssatz nannte die Lücke: `PREISAUSSAGEN` und `VORRATSWORTE` fehlten.
+   * Beim Nachtragen ist etwas Unangenehmeres herausgekommen — **die beiden
+   * Regeln, die ich am selben Vormittag geschrieben habe, fallen durch
+   * denselben Test.** `MEHRLIEFERUNG` fing 0 von 5 Umschreibungen,
+   * `GRENZAUSSAGEN` 1 von 5.
+   *
+   * > **Die Falle am Vormittag beschrieben, am Nachmittag hineingetappt.**
+   *
+   * Das ist kein Zufall und keine Nachlässigkeit, sondern die Bauart: Wer ein
+   * Muster gegen gefundene Sätze schreibt, schreibt es gegen gefundene Sätze.
+   * Dagegen hilft keine Sorgfalt, sondern nur eine zweite Messung.
+   * ---------------------------------------------------------------- */
+  Object.freeze({
+    id: 'preisgleichheit',
+    aussage: 'behauptet, der Kunde zahle dasselbe wie der Baumeister',
+    register: 'PREISAUSSAGEN',
+    saetze: Object.freeze([
+      Object.freeze({ text: 'Was ein Baumeister im Einkauf zahlt, zahlen Sie auch.', gefangen: true,
+        woher: 'Startseite, Fund vom 5. September — der Anlass des vierten Musters' }),
+      Object.freeze({ text: 'Sie kaufen zu denselben Konditionen wie ein Baumeister.', gefangen: true,
+        woher: 'am 10.09. aufgenommen — die Wendung, die ein Anzeigentext als Nächstes wählt' }),
+      Object.freeze({ text: 'Baumeisterkonditionen für jeden.', gefangen: true, woher: 'am 10.09. aufgenommen' }),
+      Object.freeze({ text: 'Wir geben unseren Einkauf eins zu eins weiter.', gefangen: true,
+        woher: 'am 10.09. aufgenommen' }),
+      Object.freeze({ text: 'Bei uns zahlen Sie nicht mehr als der Handwerker.', gefangen: true,
+        woher: 'am 10.09. aufgenommen' }),
+      Object.freeze({ text: 'Handelsübliche Aufschläge entfallen bei uns.', gefangen: true,
+        woher: 'am 10.09. aufgenommen' }),
+    ]),
+  }),
+  Object.freeze({
+    id: 'vorrat-in-der-anzeige',
+    aussage: 'behauptet in einem Anzeigentext Ware, die hier liegt',
+    register: 'VORRATSWORTE',
+    saetze: Object.freeze([
+      Object.freeze({ text: 'XPS und EPS ab Lager', gefangen: true, woher: 'Anzeigenüberschrift vom 31. August' }),
+      Object.freeze({ text: 'Sofort mitnehmen', gefangen: true, woher: 'am 10.09. aufgenommen' }),
+      Object.freeze({ text: 'Heute noch abholbar', gefangen: true, woher: 'am 10.09. aufgenommen' }),
+      Object.freeze({ text: 'Alles da', gefangen: true, woher: 'am 10.09. aufgenommen' }),
+    ]),
+  }),
+  Object.freeze({
+    id: 'mehrlieferung',
+    aussage: 'behauptet mehrere Lieferungen, wo der Katalog einen Lieferanten führt',
+    register: 'MEHRLIEFERUNG',
+    saetze: Object.freeze([
+      Object.freeze({ text: 'Teillieferungen je Lieferant sind der Regelfall.', gefangen: true,
+        woher: 'AGB Punkt 4, Fund vom 10. September vormittags' }),
+      Object.freeze({ text: 'Ihre Bestellung wird auf zwei Fuhren aufgeteilt.', gefangen: true,
+        woher: 'am 10.09. nachmittags aufgenommen — das Muster vom Vormittag fing sie nicht' }),
+      Object.freeze({ text: 'Die Ware kommt in Etappen.', gefangen: true, woher: 'am 10.09. nachmittags aufgenommen' }),
+      Object.freeze({ text: 'Wir liefern in Teilmengen.', gefangen: true, woher: 'am 10.09. nachmittags aufgenommen' }),
+      Object.freeze({ text: 'Jeder Lieferant schickt seine eigene Fuhre.', gefangen: true,
+        woher: 'am 10.09. nachmittags aufgenommen' }),
+      /*
+       * **Offen, mit Grund.** Die Wissensseite zur Lagerung rät: *„Drei
+       * Anlieferungen sind allerdings teurer als eine."* Das ist richtig und
+       * das Gegenteil einer Zusage — es beschreibt, was der **Kunde** täte,
+       * nicht was der Shop tut. Der Unterschied liegt am Subjekt, und das
+       * sieht ein Muster nicht.
+       */
+      Object.freeze({ text: 'Eine Bestellung, mehrere Anlieferungen.', gefangen: false,
+        warum: '„Anlieferungen" steht auch in der richtigen Auskunft der Lagerungsseite, die vom '
+          + 'Bestellverhalten des Kunden handelt — der Unterschied liegt am Subjekt' }),
+    ]),
+  }),
+  Object.freeze({
+    id: 'untergrenze',
+    aussage: 'nennt eine andere Bestelluntergrenze als die hinterlegte',
+    register: 'GRENZAUSSAGEN',
+    saetze: Object.freeze([
+      Object.freeze({ text: 'Unter etwa 400 Euro netto Warenwert lohnt eine Lieferung nicht.', gefangen: true,
+        woher: 'Wissensseite, Fund vom 10. September früh' }),
+      Object.freeze({ text: 'Wir liefern erst ab 400 Euro netto Warenwert.', gefangen: true, woher: 'Erstfassung' }),
+      Object.freeze({ text: 'Bestellungen unter 400 Euro nehmen wir nicht an.', gefangen: true,
+        woher: 'am 10.09. nachmittags aufgenommen' }),
+      Object.freeze({ text: 'Die Untergrenze liegt bei 400 Euro netto.', gefangen: true,
+        woher: 'am 10.09. nachmittags aufgenommen' }),
+      Object.freeze({ text: 'Ab einem Bestellwert von 400 Euro netto liefern wir.', gefangen: true,
+        woher: 'am 10.09. nachmittags aufgenommen' }),
+      Object.freeze({ text: 'Kleinstmengen unter 400 Euro sind nicht möglich.', gefangen: true,
+        woher: 'am 10.09. nachmittags aufgenommen' }),
+    ]),
+  }),
 ]);
 
 /**
@@ -267,4 +355,166 @@ export function registerbefund(register = UMSCHREIBUNGEN) {
     }
   }
   return { sauber: maengel.length === 0, maengel };
+}
+
+/* ------------------------------------------------------------------ *
+ * Eine Ebene höher: Welche Regeln gibt es überhaupt?
+ *
+ * **Der Fund vom 10. September, nachmittags.** Die erste Fassung dieses
+ * Registers deckte vier Regeln ab und meldete grün. Sie kannte
+ * `PREISAUSSAGEN`, `VORRATSWORTE`, `MEHRLIEFERUNG` und `GRENZAUSSAGEN` nicht
+ * — zwei davon waren am selben Vormittag entstanden.
+ *
+ * > **Ein Register über die Reichweite, das nicht jede Regel kennt, hat die
+ * > Lücke, die es misst — eine Ebene höher.**
+ *
+ * Dagegen hilft kein Vorsatz, sondern eine Aufzählung, die sich selbst
+ * fortschreibt: `musterausfuhren()` findet die Musterausfuhren der Module,
+ * die die vier Kundentext-Werkzeuge laden. Was sie findet und was hier steht,
+ * wird gegeneinander gehalten — in beide Richtungen. Eine neue Regel, die
+ * niemand einordnet, ist ein Befund; ein Eintrag, dessen Ausfuhr es nicht
+ * mehr gibt, auch.
+ * ------------------------------------------------------------------ */
+
+/**
+ * Jede Musterausfuhr, die die Kundentext-Werkzeuge erreichen — mit der
+ * Angabe, ob sie eine **Behauptungsregel** ist.
+ *
+ * Nicht jedes Muster ist eine: Die meisten lesen eine Form (ein Datum, eine
+ * Summenzeile, einen Krümelpfad) statt eine Behauptung zu verbieten. Die
+ * bekommen `behauptung: false` und einen Grund — und genau der unterscheidet
+ * eine Entscheidung von einem Versehen.
+ */
+export const REGELQUELLEN = Object.freeze([
+  Object.freeze({ modul: 'aussagen', ausfuhr: 'PREISAUSSAGEN', behauptung: true, umschrieben: 'preisgleichheit' }),
+  Object.freeze({ modul: 'inhaltspruefung', ausfuhr: 'BETRIEBSAUSSAGEN', behauptung: true, umschrieben: 'vorrat' }),
+  Object.freeze({ modul: 'inhaltspruefung', ausfuhr: 'GRENZWOERTER', behauptung: true, umschrieben: 'erfolgszusage' }),
+  Object.freeze({ modul: 'interna', ausfuhr: 'INTERNA', behauptung: true, umschrieben: 'eigene-marge' }),
+  Object.freeze({ modul: 'untergrenze', ausfuhr: 'GRENZAUSSAGEN', behauptung: true, umschrieben: 'untergrenze' }),
+  Object.freeze({ modul: 'lieferungen', ausfuhr: 'MEHRLIEFERUNG', behauptung: true, umschrieben: 'mehrlieferung' }),
+  Object.freeze({
+    modul: 'lieferungen', ausfuhr: 'BEHAUPTUNG', behauptung: false,
+    warum: 'die erste Fassung derselben Regel, vom 6. September. Sie kennt eine Formulierung, '
+      + 'und genau das war der Anlass dieses Registers; gemessen wird jetzt `MEHRLIEFERUNG`, '
+      + 'die sie enthält.',
+  }),
+  Object.freeze({
+    modul: 'lieferungen', ausfuhr: 'SATZBEDINGUNG', behauptung: false,
+    warum: 'kein Verbot, sondern seine Ausnahme — sie deckt einen Satz, statt ihn zu melden. '
+      + 'Ihre Reichweite wird über `MEHRLIEFERUNG` mitgemessen: Eine Bedingung, die zu weit '
+      + 'reicht, macht dort einen gefangenen Satz frei.',
+  }),
+  Object.freeze({
+    modul: 'lieferungen', ausfuhr: 'FLAECHENBEDINGUNG', behauptung: false,
+    warum: 'dasselbe eine Ebene höher — die Deckung der Fläche statt des Satzes.',
+  }),
+  Object.freeze({
+    modul: 'inhaltspruefung', ausfuhr: 'ZEITZUSAGE', behauptung: false,
+    warum: 'liest eine Form, keine Behauptung: jede Zeitangabe mit Einheit. Was daraus ein '
+      + 'Befund wird, entscheidet `erfundeneZeitangaben` gegen die zugesagte Antwortzeit.',
+  }),
+  Object.freeze({
+    modul: 'aussagen', ausfuhr: 'VORRATSWORTE', behauptung: true, umschrieben: 'vorrat-in-der-anzeige',
+  }),
+  Object.freeze({
+    modul: 'bestellweg', ausfuhr: 'ABSENDEWEGE', behauptung: false,
+    warum: 'sucht im Quelltext nach Wegen, die etwas absenden — eine Eigenschaft des Programms, '
+      + 'keine Aussage an den Kunden.',
+  }),
+  Object.freeze({
+    modul: 'systemtreue', ausfuhr: 'SCHICHTEN', behauptung: false,
+    warum: 'ordnet Artikel den Schichten eines Systems zu. Es verbietet keine Formulierung, '
+      + 'sondern misst eine Zusammenstellung gegen den Katalog.',
+  }),
+  Object.freeze({
+    modul: 'sperrguteinstufung', ausfuhr: 'LIEFERAUSSAGE', behauptung: false,
+    warum: 'findet den Satz über die Sperrguteinstufung, um seine Zahlen gegen ihre Quelle zu '
+      + 'halten — geprüft wird die Herkunft der Zahl, nicht der Wortlaut der Aussage.',
+  }),
+  Object.freeze({
+    modul: 'shopkern', ausfuhr: 'ABSICHTSWOERTER', behauptung: false,
+    warum: 'keine Regel über Kundentext, sondern über die Suche: Wörter, die eine Absicht '
+      + 'benennen statt eines Artikels („kaufen", „günstig"). Sie verbieten nichts, sie '
+      + 'werden aus der Suchfrage genommen, damit „xps kaufen" den Artikel findet.',
+  }),
+  Object.freeze({
+    modul: 'abholung', ausfuhr: 'ZUSAGE', behauptung: true,
+    umschrieben: null,
+    warum: 'OFFEN: die Zusage der Abholung ist eine Behauptungsregel wie die anderen, und sie '
+      + 'hat noch keine Umschreibungen. Das ist die nächste Zeile — aufgeschrieben, damit sie '
+      + 'nicht wieder auffällt, weil jemand zufällig hinsieht.',
+  }),
+]);
+
+/**
+ * Muster, die keine Behauptungsregel sind und **auch nicht einzeln geführt**
+ * werden müssen: Sie lesen eine Form.
+ *
+ * Getrennt von `REGELQUELLEN`, weil die Liste sonst aus Formmustern bestünde
+ * und die Behauptungsregeln darin untergingen. Was hier steht, ist gesehen
+ * und eingeordnet worden — nur nicht einzeln begründet.
+ */
+export const FORMMUSTER = Object.freeze([
+  'abgrenzung.ABGRENZUNGSMUSTER', 'belegpruefung.SUMMENZEILE', 'geschaeftszeit.KALENDERRUF',
+  'geschaeftszeit.ROHGRIFF', 'krume.KRUMENMUSTER', 'merkblattverweis.MERKBLATT',
+  'sitemapstand.DATUM', 'sperrguteinstufung.EINSTUFUNGSBLOCK', 'sperrguteinstufung.FLAECHENMUSTER',
+  'sperrguteinstufung.HERKUNFTSMUSTER', 'systemlisten.EINGESCHRAENKT', 'systemlisten.NICHT_GEFUEHRT',
+]);
+
+/**
+ * Hält die gefundenen Musterausfuhren gegen die Aufzählung — in beide
+ * Richtungen.
+ *
+ * @param {string[]} gefunden `modul.AUSFUHR`, wie sie im Quelltext stehen.
+ */
+export function quellenbefund(gefunden, register = REGELQUELLEN, form = FORMMUSTER) {
+  const meldungen = [];
+  const gefuehrt = new Set([...register.map((r) => `${r.modul}.${r.ausfuhr}`), ...form]);
+  const vorhanden = new Set(gefunden);
+
+  for (const name of gefunden) {
+    if (!gefuehrt.has(name)) {
+      meldungen.push({
+        regel: 'regel-nicht-eingeordnet',
+        wo: name,
+        text: `${name} ist ein Muster, das die Kundentext-Werkzeuge erreichen, und steht in `
+          + 'keiner der beiden Listen — es sagt niemand, ob es eine Behauptungsregel ist',
+      });
+    }
+  }
+  for (const name of gefuehrt) {
+    if (!vorhanden.has(name)) {
+      meldungen.push({
+        regel: 'eintrag-ohne-regel',
+        wo: name,
+        text: `${name} steht in der Aufzählung, wird von den Kundentext-Werkzeugen aber nicht `
+          + 'mehr erreicht — umbenannt, entfernt oder abgehängt',
+      });
+    }
+  }
+  for (const r of register) {
+    if (!r.behauptung && (r.warum ?? '').length < 30) {
+      meldungen.push({
+        regel: 'ohne-grund',
+        wo: `${r.modul}.${r.ausfuhr}`,
+        text: `${r.modul}.${r.ausfuhr} ist als „keine Behauptungsregel" geführt, ohne dass ein `
+          + 'Grund dabeisteht',
+      });
+    }
+    if (r.behauptung && !r.umschrieben && (r.warum ?? '').length < 30) {
+      meldungen.push({
+        regel: 'ohne-umschreibung',
+        wo: `${r.modul}.${r.ausfuhr}`,
+        text: `${r.modul}.${r.ausfuhr} ist eine Behauptungsregel ohne Umschreibungen und ohne `
+          + 'Grund — ihre Reichweite ist ungemessen',
+      });
+    }
+  }
+  return {
+    gefunden: gefunden.length,
+    behauptungsregeln: register.filter((r) => r.behauptung).length,
+    offen: register.filter((r) => r.behauptung && !r.umschrieben).length,
+    meldungen,
+    sauber: meldungen.length === 0,
+  };
 }

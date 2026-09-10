@@ -156,8 +156,25 @@ export function lieferungsbefund({ texte, lieferanten, mindestens = 3 }) {
  * Nicht „Lieferung" — das Wort steht auf jeder Seite. Gesucht ist die
  * **Mehrzahl**: geteilte Sendungen, getrennte Lieferungen, Teillieferungen.
  */
+/*
+ * **Erweitert am 10. September, wenige Stunden nach dem ersten Wurf.** Die
+ * Reichweitenmessung aus `src/umschreibung.js` hat dieses Muster gegen fünf
+ * Umschreibungen gehalten: „auf zwei **Fuhren** aufgeteilt", „kommt in
+ * **Etappen**", „in **Teilmengen**", „eigene **Fuhre**", „mehrere
+ * **Anlieferungen**". Es fing **keine einzige** — geschrieben aus den vier
+ * Sätzen, die am selben Morgen im Bestand standen.
+ *
+ * > **Ich habe die Falle am Vormittag beschrieben und bin am Nachmittag
+ * > hineingetappt.**
+ *
+ * Vier der fünf sind jetzt drin. „mehrere Anlieferungen" bleibt draußen und
+ * steht als offene Lücke mit Grund im Umschreibungsregister: Die
+ * Wissensseite zur Lagerung rät *„Drei Anlieferungen sind allerdings teurer
+ * als eine"* — richtig und das Gegenteil einer Zusage. Der Unterschied liegt
+ * am Subjekt, und das sieht ein Muster nicht.
+ */
 export const MEHRLIEFERUNG =
-  /Teillieferung(?:en)?|mehrere[nr]?\s+(?:Sendungen|Lieferungen|Teillieferungen)|getrennte[nr]?\s+(?:Sendungen|Lieferungen)|(?:zwei|drei)\s+(?:Sendungen|Lieferungen|Teillieferungen)/i;
+  /Teillieferung(?:en)?|mehrere[nr]?\s+(?:Sendungen|Lieferungen|Teillieferungen)|getrennte[nr]?\s+(?:Sendungen|Lieferungen)|(?:zwei|drei)\s+(?:Sendungen|Lieferungen|Teillieferungen)|(?:zwei|drei|mehrere[nr]?)\s+(?:Fuhren|Teilmengen|Teilsendungen)|\bin (?:Etappen|Teilmengen)\b|eigene\s+Fuhre/i;
 
 /**
  * Die Bedingung **im Satz**: Wovon die mehreren Lieferungen abhängen.

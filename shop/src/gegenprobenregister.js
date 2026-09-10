@@ -2412,6 +2412,21 @@ export const GEGENPROBEN = Object.freeze([
       + 'Assistent liest die Zeile, nicht den Vorspann.',
   }),
   Object.freeze({
+    id: 'reichweite-einer-jungen-regel',
+    pruefer: 'pruefe-umschreibung',
+    was: 'Eine Regel vom selben Tag, zurück auf die Sätze, aus denen sie gebaut wurde',
+    datei: 'shop/src/lieferungen.js',
+    art: 'ersetzen',
+    suchen: "|(?:zwei|drei|mehrere[nr]?)\\s+(?:Fuhren|Teilmengen|Teilsendungen)|\\bin (?:Etappen|Teilmengen)\\b|eigene\\s+Fuhre",
+    ersetzen: '',
+    erwartet: /regel-verengt/,
+    warum: 'Die Mutation setzt `MEHRLIEFERUNG` auf ihren ersten Wurf vom 10. September vormittags '
+      + 'zurück — auf die vier Sätze, die an dem Morgen im Bestand standen. In dieser Fassung '
+      + 'fing sie 0 von 5 Umschreibungen, und gefunden hat das nicht das Lesen, sondern die '
+      + 'Reichweitenmessung am selben Nachmittag. Die Probe hält fest, dass die Messung genau '
+      + 'diesen Rückschritt sieht.',
+  }),
+  Object.freeze({
     id: 'vorratsregel-wieder-verengt',
     pruefer: 'pruefe-umschreibung',
     was: 'Eine Textregel, die auf ihren eigenen Beispielsatz zurückgeschrumpft ist',

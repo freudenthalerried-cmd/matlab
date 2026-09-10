@@ -13,7 +13,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { UMSCHREIBUNGEN, umschreibungsbefund, registerbefund } from '../src/umschreibung.js';
+import {
+  UMSCHREIBUNGEN, umschreibungsbefund, registerbefund,
+  REGELQUELLEN, FORMMUSTER, quellenbefund,
+} from '../src/umschreibung.js';
+import { MEHRLIEFERUNG } from '../src/lieferungen.js';
+import { GRENZAUSSAGEN } from '../src/untergrenze.js';
 import { BETRIEBSAUSSAGEN, GRENZWOERTER } from '../src/inhaltspruefung.js';
 import { findeInterna } from '../src/interna.js';
 import { PREISAUSSAGEN, VORRATSWORTE } from '../src/aussagen.js';
@@ -23,7 +28,9 @@ const faengt = (satz) => BETRIEBSAUSSAGEN.some((e) => e.wort.test(satz))
   || GRENZWOERTER.some((e) => e.wort.test(satz))
   || findeInterna(satz).length > 0
   || PREISAUSSAGEN.some((e) => new RegExp(e.muster.source, e.muster.flags).test(satz))
-  || VORRATSWORTE.some((w) => satz.toLowerCase().includes(w.toLowerCase()));
+  || VORRATSWORTE.some((w) => satz.toLowerCase().includes(w.toLowerCase()))
+  || MEHRLIEFERUNG.test(satz)
+  || GRENZAUSSAGEN.some((a) => new RegExp(a.muster.source, a.muster.flags).test(satz));
 
 test('jede Regel reicht so weit, wie das Register sagt', () => {
   const b = umschreibungsbefund(faengt, UMSCHREIBUNGEN);
@@ -108,5 +115,84 @@ test('die offenen Lücken bleiben offen — und stehen mit Grund da', () => {
   for (const s of offen) {
     assert.equal(faengt(s.text), false, `nicht mehr offen: ${s.text}`);
     assert.ok(s.warum.length >= 30, `${s.text}: Grund zu knapp`);
+  }
+});
+
+/* ------------------------------------------------------------------ *
+ * Eine Ebene höher — 10. September, nachmittags
+ *
+ * Die erste Fassung des Registers deckte vier Regeln ab und meldete grün.
+ * Sie kannte vier weitere nicht, zwei davon vom selben Vormittag.
+ *
+ * > **Ein Register über die Reichweite, das nicht jede Regel kennt, hat die
+ * > Lücke, die es misst — eine Ebene höher.**
+ * ------------------------------------------------------------------ */
+
+test('jede Behauptungsregel ist eingeordnet — oder sagt, warum nicht', () => {
+  const namen = [...REGELQUELLEN.map((r) => `${r.modul}.${r.ausfuhr}`), ...FORMMUSTER];
+  assert.equal(new Set(namen).size, namen.length, 'ein Muster steht zweimal in den Listen');
+  const b = quellenbefund(namen);
+  assert.deepEqual(b.meldungen.map((m) => m.text), []);
+  assert.ok(b.behauptungsregeln >= 6, `nur ${b.behauptungsregeln} Behauptungsregeln geführt`);
+});
+
+test('jede eingeordnete Behauptungsregel zeigt auf eine Regel des Registers', () => {
+  const ids = new Set(UMSCHREIBUNGEN.map((r) => r.id));
+  const eingeordnet = REGELQUELLEN.filter((x) => x.behauptung && x.umschrieben);
+  assert.ok(eingeordnet.length >= 6, 'ohne eingeordnete Regeln prüft diese Schleife nichts');
+  for (const r of eingeordnet) {
+    assert.ok(ids.has(r.umschrieben),
+      `${r.modul}.${r.ausfuhr} zeigt auf „${r.umschrieben}" — die Regel gibt es nicht`);
+  }
+});
+
+test('eine neu aufgetauchte Regel ist ein Befund', () => {
+  const b = quellenbefund(['aussagen.PREISAUSSAGEN', 'neu.FRISCHES_MUSTER'],
+    [{ modul: 'aussagen', ausfuhr: 'PREISAUSSAGEN', behauptung: true, umschrieben: 'preisgleichheit' }], []);
+  assert.equal(b.meldungen.length, 1);
+  assert.equal(b.meldungen[0].regel, 'regel-nicht-eingeordnet');
+});
+
+test('ein Eintrag ohne Regel ist auch einer', () => {
+  const b = quellenbefund([],
+    [{ modul: 'weg', ausfuhr: 'MUSTER', behauptung: true, umschrieben: 'x' }], []);
+  assert.ok(b.meldungen.some((m) => m.regel === 'eintrag-ohne-regel'));
+});
+
+test('„keine Behauptungsregel" braucht einen Grund', () => {
+  const b = quellenbefund(['x.Y'], [{ modul: 'x', ausfuhr: 'Y', behauptung: false, warum: 'kurz' }], []);
+  assert.ok(b.meldungen.some((m) => m.regel === 'ohne-grund'));
+});
+
+test('eine Behauptungsregel ohne Umschreibungen braucht einen Grund', () => {
+  const ohne = quellenbefund(['x.Y'], [{ modul: 'x', ausfuhr: 'Y', behauptung: true }], []);
+  assert.ok(ohne.meldungen.some((m) => m.regel === 'ohne-umschreibung'));
+  const mit = quellenbefund(['x.Y'], [{
+    modul: 'x', ausfuhr: 'Y', behauptung: true,
+    warum: 'OFFEN: steht als nächste Zeile aufgeschrieben und ist damit eine Entscheidung',
+  }], []);
+  assert.deepEqual(mit.meldungen, []);
+});
+
+/**
+ * Der unangenehme Testfall: Die beiden Regeln, die am Vormittag des
+ * 10. September entstanden sind, fielen nachmittags durch denselben Test, den
+ * sie diagnostizieren halfen — `MEHRLIEFERUNG` mit 0 von 5, `GRENZAUSSAGEN`
+ * mit 1 von 5.
+ */
+test('auch die jüngsten Regeln reichen weiter als ihr Anlass', () => {
+  for (const satz of [
+    'Ihre Bestellung wird auf zwei Fuhren aufgeteilt.',
+    'Die Ware kommt in Etappen.',
+    'Wir liefern in Teilmengen.',
+  ]) assert.equal(MEHRLIEFERUNG.test(satz), true, `MEHRLIEFERUNG rutscht durch: ${satz}`);
+
+  for (const satz of [
+    'Bestellungen unter 400 Euro nehmen wir nicht an.',
+    'Die Untergrenze liegt bei 400 Euro netto.',
+    'Ab einem Bestellwert von 400 Euro netto liefern wir.',
+  ]) {
+    assert.equal(GRENZAUSSAGEN.some((a) => new RegExp(a.muster.source, a.muster.flags).test(satz)), true,
+      `GRENZAUSSAGEN rutscht durch: ${satz}`);
   }
 });
