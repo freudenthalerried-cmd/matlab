@@ -27,6 +27,7 @@ import {
   einstufungsbefund, flaechenbefund, HINGENOMMEN, HANDGEWICHT_KG, SPERRGUT_GRUPPEN, OHNE_HERKUNFT,
   GEMEINSAMER_GRUND,
   gruppentextbefund,
+  blockquellenbefund,
 } from '../src/sperrguteinstufung.js';
 import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
 
@@ -116,6 +117,20 @@ if (HINGENOMMEN.length) {
 // Die Zahl ist gemessen, nicht eingetragen: Bis zum 5. September stand hier
 // die Länge eines Verzeichnisses von zwei Namen.
 console.log(`  Gebaute Flächen mit dem Wort   ${f.flaechen}, davon ${f.mitHerkunft} mit Herkunftsangabe`);
+
+/*
+ * **Ergänzt am 10. September 2026.** Die Abhilfe vom 5. September war, dem
+ * Kunden Herkunft, Gewicht und Betrag der Schätzung zu nennen. Gemessen steht
+ * sie auf allen Seiten mit Einstufungsblock — behauptet hatte es niemand:
+ * `flaechenbefund` verlangt nur „aus der Warengruppe" irgendwo in der Datei,
+ * und der Testfall prüfte eine Seite und den ersten Halbsatz. Die 7,50 €, die
+ * der Kunde je Position zahlt, standen in keiner Zusicherung.
+ *
+ * > **Eine Abhilfe, die nur der Erzeuger kennt, hält so lange wie seine Vorlage.**
+ */
+const q = blockquellenbefund([...sammle()].map((s) => ({ datei: s.datei, inhalt: s.inhalt })));
+console.log(`  Einstufungsblöcke              ${q.bloecke}, ${q.zahlen} Zahlen mit Quellenpflicht`);
+for (const m of q.meldungen) console.log(`    ✗ ${m.text}`);
 if (f.hingenommen) {
   console.log(`  Ohne Herkunft, mit Grund       ${f.hingenommen}`);
   for (const o of OHNE_HERKUNFT) console.log(`    · ${o.datei}`);
@@ -157,8 +172,17 @@ if (unbekannt.length) {
 const g = gruppentextbefund(seiten);
 console.log(`  Gruppentexte gegen die Einstufung  ${g.geprueft} geprüft`);
 
-if (!b.sauber || !f.sauber || !g.sauber) {
-  const alle = [...b.meldungen, ...f.meldungen, ...g.meldungen];
+/*
+ * **`q` gehört in diese Zeile, seit dem 10. September 2026.** Die erste Fassung
+ * druckte seine Meldungen und ließ den Ausgang unberührt: Der Prüfer nannte
+ * sechsundzwanzig Fundstellen und endete mit null. Aufgefallen ist es an der
+ * Gegenprobe, die „meldete trotz Mutation grün" sagte, während die Meldungen
+ * eine Zeile darüber standen.
+ *
+ * > **Ein Befund, der niemanden aufhält, ist eine Bemerkung.**
+ */
+if (!b.sauber || !f.sauber || !g.sauber || !q.sauber) {
+  const alle = [...b.meldungen, ...f.meldungen, ...g.meldungen, ...q.meldungen];
   console.error(`\n${alle.length} Befund(e):\n`);
   for (const m of alle) console.error(`  ✗ ${m.text}  (${m.regel})`);
   console.error('\nEine Einstufung, die Geld kostet, gehört belegt oder begründet —');

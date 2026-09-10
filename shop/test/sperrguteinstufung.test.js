@@ -16,6 +16,7 @@ import {
   SPERRGUT_GRUPPEN, HANDGEWICHT_KG, HINGENOMMEN, OHNE_HERKUNFT,
   sperrgutAusGruppe, einstufungsbefund, flaechenbefund,
   gruppentextbefund,
+  blockquellenbefund,
 } from '../src/sperrguteinstufung.js';
 
 const katalog = JSON.parse(readFileSync(new URL('../data/katalog-baustoff.json', import.meta.url), 'utf8'));
@@ -303,4 +304,92 @@ test('geprüft wird jede übergebene Seite, auch die stummen', () => {
   const b = gruppentextbefund(seiten);
   assert.equal(b.geprueft, 2, 'die Zahl nennt das Angesehene, nicht das Gefundene');
   assert.equal(b.sauber, true);
+});
+
+/* ------------------------------------------------------------------ *
+ * Die Zahlen im Einstufungsblock und ihre Quellen — 10. September 2026
+ *
+ * Die Abhilfe zum Befund „Kranentladung für 285 Gramm" war, dem Kunden
+ * Herkunft, Gewicht und Betrag der Schätzung zu nennen. Fünf Tage lang hing
+ * sie allein an der Vorlage: Der Flächenprüfer verlangt nur „aus der
+ * Warengruppe" irgendwo in der Datei, und der Testfall prüfte eine Seite und
+ * den ersten Halbsatz.
+ * ------------------------------------------------------------------ */
+
+const block = (inneres) => `<p class="einstufung">${inneres}</p>`;
+const echterBlock = block(
+  'Die Einstufung als palettierte Ware stammt aus der Warengruppe Kanal. '
+  + 'Dieser Artikel wiegt 1,7 kg je Stück (Quelle: Positionsgewicht auf dem Lieferschein) — '
+  + 'bei kleiner Menge kommt er ohne Palette. '
+  + 'Die Kranentladung ist mit 7,50 € netto je Position gerechnet und in der Zustellung '
+  + 'unten enthalten (Quelle: Lieferung und Fracht, Stand: 2026-08-17); liegt die Schätzung '
+  + 'zu hoch, ist die Lieferung günstiger.');
+
+test('Ein vollständiger Block ist keine Meldung', () => {
+  const b = blockquellenbefund([{ datei: 'a.html', inhalt: echterBlock }], 1);
+  assert.deepEqual(b.meldungen, []);
+  assert.equal(b.bloecke, 1);
+  assert.equal(b.zahlen, 2, 'beide Zahlen tragen Quellenpflicht');
+});
+
+test('Dem Betrag fehlt seine Quelle — der Fall, für den das gebaut ist', () => {
+  const ohne = echterBlock.replace('(Quelle: Lieferung und Fracht, Stand: 2026-08-17)',
+    '(Lieferung und Fracht, Stand: 2026-08-17)');
+  const b = blockquellenbefund([{ datei: 'a.html', inhalt: ohne }], 1);
+  assert.equal(b.meldungen.length, 1);
+  assert.equal(b.meldungen[0].regel, 'zahl-ohne-quelle');
+  assert.match(b.meldungen[0].text, /kranbetrag/);
+});
+
+test('Die Quelle des Gewichts deckt den Betrag nicht', () => {
+  /*
+   * **Der erste Entwurf prüfte gegen den ganzen Block** — und der trägt zwei
+   * Quellen. Die Gegenprobe nahm dem Betrag seine, und der Prüfer blieb grün:
+   * Er fand die des Gewichts, ein paar Zeilen darüber.
+   *
+   * > Eine Quelle gehört zu ihrer Zahl, nicht zu ihrem Absatz.
+   */
+  const ohne = echterBlock.replace('(Quelle: Lieferung und Fracht, Stand: 2026-08-17)', '(dort)');
+  const b = blockquellenbefund([{ datei: 'a.html', inhalt: ohne }], 1);
+  assert.equal(b.meldungen.length, 1, 'die Gewichtsquelle darf nicht einspringen');
+  assert.match(b.meldungen[0].text, /kranbetrag/);
+});
+
+test('Beim Betrag fehlt auch der Stand nicht ungestraft', () => {
+  const ohne = echterBlock.replace(', Stand: 2026-08-17', '');
+  const b = blockquellenbefund([{ datei: 'a.html', inhalt: ohne }], 1);
+  assert.equal(b.meldungen.length, 1, 'ein Frachtsatz altert — der Stand gehört dazu');
+});
+
+test('Dem Gewicht fehlt seine Quelle', () => {
+  const ohne = echterBlock.replace('(Quelle: Positionsgewicht auf dem Lieferschein)', '(gewogen)');
+  const b = blockquellenbefund([{ datei: 'a.html', inhalt: ohne }], 1);
+  assert.equal(b.meldungen.length, 1);
+  assert.match(b.meldungen[0].text, /gewicht/);
+});
+
+test('Eine Seite ohne Block wird nicht gezählt', () => {
+  const b = blockquellenbefund([{ datei: 'a.html', inhalt: '<p>nichts</p>' }], 0);
+  assert.equal(b.bloecke, 0);
+  assert.deepEqual(b.meldungen, []);
+});
+
+test('Ein leerer Lauf ist kein grüner', () => {
+  // Fände die Sammlung keinen Block — nicht gebaut, Klasse verloren —, meldete
+  // die Prüfung „sauber" über nichts.
+  const b = blockquellenbefund([], 20);
+  assert.equal(b.meldungen.length, 1);
+  assert.equal(b.meldungen[0].regel, 'zu-wenig-bloecke');
+});
+
+test('Der echte Bestand trägt zu jeder Zahl ihre Quelle', async () => {
+  const { readFileSync, readdirSync, existsSync } = await import('node:fs');
+  const ordner = new URL('../ausgabe/site/artikel/', import.meta.url);
+  if (!existsSync(ordner)) return; // pruefung: begruendet — ohne Bau nichts zu lesen
+  const seiten = readdirSync(ordner).filter((n) => n.endsWith('.html'))
+    .map((n) => ({ datei: n, inhalt: readFileSync(new URL(n, ordner), 'utf8') }));
+  assert.ok(seiten.length >= 40, `nur ${seiten.length} Artikelseiten`);
+  const b = blockquellenbefund(seiten, 20);
+  assert.ok(b.zahlen >= 20, `nur ${b.zahlen} Zahlen mit Quellenpflicht — die Schleife prüfte fast nichts`);
+  assert.deepEqual(b.meldungen.map((m) => m.text), []);
 });

@@ -1893,6 +1893,24 @@ export const GEGENPROBEN = Object.freeze([
       + 'misst er den Zettel gegen sich selbst statt gegen die Datei.',
   }),
   Object.freeze({
+    id: 'ein-betrag-ohne-seine-quelle',
+    pruefer: 'pruefe-sperrgut',
+    was: 'Der Kranbetrag auf der Artikelseite, ohne Quelle und Stand daneben',
+    datei: 'shop/bin/website.mjs',
+    art: 'ersetzen',
+    suchen: 'unten enthalten (Quelle: <a href="${verweis(\'lieferung\')}">Lieferung und Fracht</a>,',
+    ersetzen: 'unten enthalten (<a href="${verweis(\'lieferung\')}">Lieferung und Fracht</a>,',
+    baueVorher: true,
+    erwartet: /zahl-ohne-quelle/,
+    warum: 'Die Abhilfe zum Befund vom 5. September („Kranentladung für 285 Gramm") war, dem '
+      + 'Kunden Herkunft, Gewicht und Betrag der Schätzung zu nennen. Fünf Tage lang hing sie '
+      + 'allein an dieser Vorlage: Der Flächenprüfer verlangt nur „aus der Warengruppe" '
+      + 'irgendwo in der Datei, und der Testfall prüfte eine Seite und den ersten Halbsatz. Die '
+      + '7,50 €, die der Kunde je Position zahlt, standen in keiner Zusicherung. Die Mutation '
+      + 'nimmt dem Betrag seine Quelle. Bleibt der Prüfer grün, hält die Offenlegung wieder nur '
+      + 'so lange wie die Vorlage.',
+  }),
+  Object.freeze({
     id: 'veroeffentlichung-haengt-hinterher',
     pruefer: 'pruefe-schaufenster',
     was: 'Ein Beschreibungstext, der sich seit der letzten Veröffentlichung geändert hat',

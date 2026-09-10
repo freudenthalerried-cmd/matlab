@@ -409,3 +409,108 @@ export function gruppentextbefund(seiten) {
   }
   return { geprueft: seiten.length, meldungen, sauber: meldungen.length === 0 };
 }
+
+/* ------------------------------------------------------------------ *
+ * Die Zahlen im Einstufungsblock und ihre Quellen
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Der Anlass, 10. September 2026.** Der Befund vom 5. September lautete:
+ * Auf der Artikelseite stand *„Gewicht 0,285 kg je Stück"* über *„Palettierte
+ * Ware. Sie wird mit dem Kran entladen"*, und die Einstufung stammte aus der
+ * Warengruppe — belegt ist keine der 46. Die Abhilfe war, dem Kunden
+ * **Herkunft, Gewicht und Betrag der Schätzung** zu nennen.
+ *
+ * Gemessen am 10. September: Sie steht auf allen 25 Seiten mit
+ * Einstufungsblock, mit beiden Quellen. Behauptet hat das **niemand**.
+ * `flaechenbefund` verlangt nur, dass irgendwo in der Datei „aus der
+ * Warengruppe" vorkommt; der Testfall prüfte **eine** Seite und nur den ersten
+ * Halbsatz. Die 7,50 €, die der Kunde je Position zahlt, waren in keiner
+ * Zusicherung.
+ *
+ * > **Eine Abhilfe, die nur der Erzeuger kennt, hält so lange wie seine
+ * > Vorlage.**
+ *
+ * Diese Prüfung hält den Block gegen sich selbst: Wo eine Zahl steht, steht
+ * ihre Quelle — und beim Betrag zusätzlich der Stand, weil ein Frachtsatz
+ * altert.
+ */
+export const EINSTUFUNGSBLOCK = /<p class="einstufung">[\s\S]*?<\/p>/;
+
+/**
+ * Was im Block eine Zahl mit Quellenpflicht ist.
+ *
+ * **`satz` ist der Punkt, seit dem ersten Fehlschlag.** Die erste Fassung prüfte
+ * `braucht` gegen den **ganzen** Block — und der trägt zwei Quellen. Die
+ * Gegenprobe nahm dem Kranbetrag seine Quelle, und der Prüfer blieb grün: Er
+ * fand die des Gewichts, ein paar Zeilen darüber.
+ *
+ * > **Eine Quelle gehört zu ihrer Zahl, nicht zu ihrem Absatz.**
+ *
+ * Gesucht wird deshalb der Satz, in dem die Zahl steht, und die Quelle darin.
+ */
+export const BLOCKZAHLEN = Object.freeze([
+  Object.freeze({
+    id: 'gewicht',
+    steht: /wiegt\s/,
+    satz: /wiegt[\s\S]*?(?:\.|—)/,
+    braucht: /Quelle: Positionsgewicht/,
+    warum: 'Das Positionsgewicht ist das Einzige, was der Einstufung aus der Warengruppe '
+      + 'widerspricht. Ohne seine Herkunft steht Zahl gegen Zahl, und der Kunde kann nicht '
+      + 'sehen, welche belegt ist.',
+  }),
+  Object.freeze({
+    id: 'kranbetrag',
+    steht: /Kranentladung ist mit/,
+    satz: /Kranentladung ist mit[\s\S]*?(?:\)|;)/,
+    braucht: /Quelle:[\s\S]*?Stand:/,
+    warum: 'Der Betrag steht auf der Kundenrechnung, je Position. Er stammt aus den eigenen '
+      + 'Lieferantenrechnungen und altert mit ihnen — deshalb Quelle **und** Stand.',
+  }),
+]);
+
+/**
+ * Hält jede Zahl des Einstufungsblocks gegen ihre Quelle.
+ *
+ * @param {{datei: string, inhalt: string}[]} seiten die gebauten Artikelseiten
+ * @param {number} mindestens wie viele Blöcke es mindestens geben muss
+ */
+export function blockquellenbefund(seiten, mindestens = 20) {
+  const meldungen = [];
+  let bloecke = 0;
+  let zahlen = 0;
+
+  for (const { datei, inhalt } of seiten) {
+    const treffer = EINSTUFUNGSBLOCK.exec(inhalt);
+    if (!treffer) continue;
+    bloecke += 1;
+    const block = treffer[0];
+    for (const z of BLOCKZAHLEN) {
+      if (!z.steht.test(block)) continue;
+      zahlen += 1;
+      const satz = z.satz ? (z.satz.exec(block)?.[0] ?? '') : block;
+      if (!z.braucht.test(satz)) {
+        meldungen.push({
+          regel: 'zahl-ohne-quelle',
+          datei,
+          text: `${datei}: „${z.id}" steht im Einstufungsblock ohne seine Quelle — ${z.warum}`,
+        });
+      }
+    }
+  }
+
+  /*
+   * **Ein leerer Lauf ist kein grüner.** Fände die Sammlung keinen Block —
+   * weil nicht gebaut wurde, weil die Vorlage die Klasse verlor —, meldete
+   * diese Prüfung „sauber" über nichts. Genau so hat sich der Befund vom
+   * 5. September fünf Tage lang gehalten.
+   */
+  if (bloecke < mindestens) {
+    meldungen.push({
+      regel: 'zu-wenig-bloecke',
+      text: `nur ${bloecke} Einstufungsblöcke gefunden, erwartet mindestens ${mindestens}`,
+    });
+  }
+
+  return { bloecke, zahlen, meldungen, sauber: meldungen.length === 0 };
+}
