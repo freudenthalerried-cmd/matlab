@@ -41,6 +41,7 @@ import { abgegrenztesKeyword } from '../src/abgrenzung.js';
 import { ausschlussbefund } from '../src/ausschluss.js';
 import { GRENZE_TAGE, preisalterTage } from '../src/preisalter.js';
 import { preisdeckungsbefund } from '../src/preisdeckung.js';
+import { abholungslage } from '../src/abholung.js';
 import { HERSTELLER } from '../src/hersteller.js';
 import {
   THEMA as THEMA_NICHT_GEFUEHRT,
@@ -488,14 +489,85 @@ export const NICHT_AUSGESCHLOSSEN = Object.freeze([
       + 'unterscheidet die beiden nicht und träfe die eigene Kundschaft an ihrer Haustür. '
       + 'Dieselbe Verwechslung stand am 26. August in vier Dokumenten dieses Bestands.',
   }),
-  Object.freeze({
-    wort: 'abholung',
-    warum: 'Die Lieferseite sagt ausdrücklich „Ja, ausdrücklich vorgesehen. Wer selbst '
-      + 'abholt, zahlt keine Fracht." Selbstabholung ist ein angebotener Weg und spart dem '
-      + 'Shop die Frachtpauschale — eine Suche danach ist die günstigste Bestellung, die '
-      + 'er bekommen kann.',
-  }),
+  /*
+   * **Der Eintrag „abholung" ist am 10. September gestrichen worden.**
+   *
+   * Er stand hier mit dieser Begründung:
+   *
+   * > *„Die Lieferseite sagt ausdrücklich ‚Ja, ausdrücklich vorgesehen. Wer
+   * > selbst abholt, zahlt keine Fracht.' Selbstabholung ist ein angebotener
+   * > Weg und spart dem Shop die Frachtpauschale — eine Suche danach ist die
+   * > günstigste Bestellung, die er bekommen kann."*
+   *
+   * Die Lieferseite sagt das **seit dem 6. September nicht mehr.** Sie sagt
+   * das Gegenteil: *„Abholung können wir derzeit nicht zusagen."* Der Shop
+   * hat kein eigenes Lager, und ob Kunden beim Lieferanten abholen dürfen,
+   * ist dort angefragt und unbeantwortet.
+   *
+   * Vier Tage lang hat diese Begründung dafür gesorgt, dass „abholung"
+   * **absichtlich nicht ausgeschlossen** war — bei 4,19 € bis 8,22 € je
+   * Klick. Wer „baustoffe abholen perg" tippt, wollte genau das eine, was
+   * dieser Betrieb nicht kann, und landet auf einer Seite, die ihm das sagt.
+   *
+   * > **Eine Begründung, die eine Zusage zitiert, überlebt die Zusage.**
+   *
+   * Der Ausschluss wird jetzt **abgeleitet** statt eingetragen: Sagt der
+   * Lieferant die Abholung zu, fällt er von selbst weg (`abholungsausschluss`
+   * weiter unten). Und jeder verbliebene Eintrag, der eine Seite zitiert,
+   * wird gegen diese Seite gehalten — `zitatbefund`.
+   */
 ]);
+
+/**
+ * Die Ausschlüsse, die aus dem Bestand folgen statt aus einer Liste.
+ *
+ * Solange die Abholung nicht bestätigt ist, ist eine Suche danach eine Suche
+ * nach etwas, das es hier nicht gibt — teuer bezahlt und auf der Landeseite
+ * abschlägig beantwortet. Sobald der Lieferant zusagt, verschwindet der
+ * Ausschluss ohne Zutun: Dann ist die Suche wieder die günstigste Bestellung,
+ * die der Shop bekommen kann.
+ *
+ * @param {{abholungDurchKunden: boolean|null}} lage Ergebnis von `abholungslage`
+ */
+export const THEMA_NICHT_ZUGESAGT = 'Nicht zugesagt';
+
+export function abholungsausschluss(lage = {}) {
+  if (lage?.abholungDurchKunden === true) return [];
+  return ['abholung', 'abholen', 'selbstabholung', 'selbstabholer'];
+}
+
+/**
+ * Hält jedes Zitat eines Verzeichniseintrags gegen die Seite, aus der es
+ * stammt.
+ *
+ * **Warum es das gibt.** Der Eintrag „abholung" hat vier Tage lang einen Satz
+ * zitiert, den die Lieferseite nicht mehr trug. Ein Zitat in einer
+ * Begründung ist eine Behauptung über den Bestand wie jede andere — nur
+ * hat sie bis heute niemand nachgeschlagen.
+ *
+ * @param {object[]} eintraege mit optionalem `zitat` und `fundstelle`
+ * @param {(fundstelle: string) => string|null} lies gibt den Text der Seite
+ */
+export function zitatbefund(eintraege, lies) {
+  const fehler = [];
+  for (const e of eintraege) {
+    if (!e.zitat) continue;
+    if (!e.fundstelle) {
+      fehler.push(`${e.wort}: Zitat ohne Fundstelle — dann lässt es sich nicht nachschlagen`);
+      continue;
+    }
+    const text = lies(e.fundstelle);
+    if (text === null || text === undefined) {
+      fehler.push(`${e.wort}: die Fundstelle ${e.fundstelle} gibt es nicht`);
+      continue;
+    }
+    if (!text.replace(/\s+/g, ' ').includes(e.zitat.replace(/\s+/g, ' '))) {
+      fehler.push(`${e.wort}: das Zitat steht nicht mehr auf ${e.fundstelle} — `
+        + `„${e.zitat.slice(0, 60)}…"`);
+    }
+  }
+  return fehler;
+}
 
 /**
  * Hält die Ausschlussliste gegen das, was sie nicht treffen darf.
@@ -506,6 +578,14 @@ export const NICHT_AUSGESCHLOSSEN = Object.freeze([
  * @param {string[]} ausschluesse  kleingeschrieben
  * @param {{bezirke: string[], ort: string, keywords: string[]}} lage
  */
+/**
+ * Erkennt eine Begründung, die den eigenen Bestand zitiert.
+ *
+ * Deutsche Anführungszeichen um mindestens ein paar Wörter — kurz genug für
+ * ein Wort in Anführungszeichen wäre zu eng, ein Zitat sind mehrere.
+ */
+export const ZITIERT = /„[^"]{20,}"/;
+
 export function pruefeAusschluesse(ausschluesse, lage, nichtAusgeschlossen = NICHT_AUSGESCHLOSSEN) {
   const fehler = [];
   const orte = [...(lage.bezirke ?? []), ...(lage.ort ? [lage.ort] : [])].map((o) => o.toLowerCase());
@@ -531,6 +611,17 @@ export function pruefeAusschluesse(ausschluesse, lage, nichtAusgeschlossen = NIC
     }
     if (ausschluesse.includes(n.wort)) {
       fehler.push(`„${n.wort}" steht in der Ausschlussliste, obwohl das Verzeichnis sagt, warum nicht`);
+    }
+    /*
+     * **Ergänzt am 10. September.** Der Eintrag „abholung" hat seine
+     * Begründung auf ein **Zitat** der Lieferseite gestützt — und das Zitat
+     * war seit vier Tagen falsch. Eine Begründung, die den eigenen Bestand
+     * zitiert, behauptet etwas über ihn; wer zitiert, muss sagen **woher**,
+     * sonst kann es niemand nachschlagen.
+     */
+    if (ZITIERT.test(n.warum ?? '') && !(n.zitat && n.fundstelle)) {
+      fehler.push(`${n.wort}: die Begründung zitiert den eigenen Bestand, nennt aber keine `
+        + 'nachschlagbare Fundstelle (`zitat` und `fundstelle`)');
     }
   }
   return fehler;
@@ -1606,6 +1697,35 @@ function main() {
     negative.push({ Liste: 'Baustoffe — Ausschluss', Thema: THEMA_NICHT_GEFUEHRT, Keyword: w, Übereinstimmungstyp: 'Phrase' });
   }
 
+  /*
+   * **Der Ausschluss, der aus dem Bestand folgt — 10. September 2026.**
+   *
+   * Solange der Lieferant die Abholung nicht bestätigt hat, ist eine Suche
+   * danach eine Suche nach etwas, das es hier nicht gibt — bei 4,19 € bis
+   * 8,22 € je Klick, und die Landeseite antwortet abschlägig. Bis heute stand
+   * „abholung" **absichtlich nicht** auf der Ausschlussliste, begründet mit
+   * einem Satz, den die Lieferseite seit dem 6. September nicht mehr trägt.
+   *
+   * Abgeleitet und nicht eingetragen: Sagt der Lieferant zu, fällt der
+   * Ausschluss von selbst weg.
+   */
+  // Nur die Lieferanten, die der Katalog tatsächlich führt: Ein
+  // Platzhalterlieferant, der Abholung zusagt, dürfte diesen Ausschluss nicht
+  // aufheben.
+  const gefuehrt = new Set(katalog.artikel.map((a) => a.lieferantId));
+  const abholung = abholungslage(
+    [...katalog.lieferantenById.values()].filter((l) => gefuehrt.has(l.id)),
+  );
+  for (const w of abholungsausschluss(abholung)) {
+    negative.push({
+      // **Eigenes Thema.** „Nicht im Sortiment" wäre falsch und würde die
+      // Rückrichtung im Register anlügen: Der Ausschluss folgt keiner
+      // Sortimentsentscheidung, sondern einer offenen Frage an den
+      // Lieferanten — und verschwindet mit ihrer Antwort.
+      Liste: 'Baustoffe — Ausschluss', Thema: THEMA_NICHT_ZUGESAGT, Keyword: w, Übereinstimmungstyp: 'Phrase',
+    });
+  }
+
   // **Gegen drei Quellen, nicht gegen eine zweite Liste** — und seit dem
   // 5. September auch gegen den **Ort des Betriebs**. Bis dahin prüfte nur
   // ein Testfall, und der kannte die fünf Bezirksnamen; „ried" wäre
@@ -1618,6 +1738,13 @@ function main() {
       keywords: keywordsEindeutig.map((k) => k.Keyword),
     },
   );
+  // Und jedes Zitat gegen die Seite, aus der es stammt. Gelesen wird das
+  // Erzeugnis, nicht die Vorlage: Was der Kunde sieht, ist die Behauptung.
+  ausschlussfehler.push(...zitatbefund(NICHT_AUSGESCHLOSSEN, (fundstelle) => {
+    const datei = join(WURZEL, 'ausgabe', 'site', fundstelle);
+    if (!existsSync(datei)) return null;
+    return readFileSync(datei, 'utf8').replace(/<[^>]+>/g, ' ');
+  }));
 
   const schreibe = (name, inhalt) => {
     writeFileSync(join(AUSGABE, name), inhalt, 'utf8');

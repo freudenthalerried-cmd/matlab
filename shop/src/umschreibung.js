@@ -292,6 +292,35 @@ export const UMSCHREIBUNGEN = Object.freeze([
         woher: 'am 10.09. nachmittags aufgenommen' }),
     ]),
   }),
+  Object.freeze({
+    id: 'abholung',
+    aussage: 'sagt eine Abholung zu, die der Lieferant nicht bestätigt hat',
+    register: 'ZUSAGE',
+    saetze: Object.freeze([
+      Object.freeze({ text: 'Abholung ist möglich: Lager Mauthausen.', gefangen: true, woher: 'Erstfassung' }),
+      Object.freeze({ text: 'Wer selbst abholt, zahlt keine Fracht.', gefangen: true, woher: 'Erstfassung' }),
+      Object.freeze({ text: 'Sie können die Ware bei uns abholen.', gefangen: true,
+        woher: 'am 10.09. aufgenommen — die Formulierung, die ein Shoptext zuerst wählt' }),
+      Object.freeze({ text: 'Selbstabholer sparen die Frachtpauschale.', gefangen: true,
+        woher: 'am 10.09. aufgenommen' }),
+      Object.freeze({ text: 'Abholung nach Vereinbarung.', gefangen: true, woher: 'am 10.09. aufgenommen' }),
+      Object.freeze({ text: 'Gerne stellen wir Ihre Bestellung zur Abholung bereit.', gefangen: true,
+        woher: 'am 10.09. aufgenommen' }),
+      Object.freeze({ text: 'Ware kann am Lager übernommen werden.', gefangen: true,
+        woher: 'am 10.09. aufgenommen' }),
+      Object.freeze({ text: 'Auf Wunsch holen Sie selbst ab.', gefangen: true, woher: 'am 10.09. aufgenommen' }),
+      /*
+       * **Offen, mit Grund — und ausdrücklich richtig so.** Das bloße Wort
+       * steht in der AGB in einem Berichtigungsvermerk: *„Bis zum
+       * 6. September nahm dieser Punkt die Grenze für Selbstabholer
+       * ausdrücklich zurück."* Das ist die Rücknahme der Zusage und nicht
+       * sie selbst.
+       */
+      Object.freeze({ text: 'Die Grenze für Selbstabholer wurde zurückgenommen.', gefangen: false,
+        warum: 'das bloße Wort ohne versprechendes Verb — es steht in der AGB in einem '
+          + 'Berichtigungsvermerk, der die Zusage gerade zurücknimmt' }),
+    ]),
+  }),
 ]);
 
 /**
@@ -437,12 +466,15 @@ export const REGELQUELLEN = Object.freeze([
       + 'benennen statt eines Artikels („kaufen", „günstig"). Sie verbieten nichts, sie '
       + 'werden aus der Suchfrage genommen, damit „xps kaufen" den Artikel findet.',
   }),
+  // **Geschlossen am 10. September, abends.** Stand hier eine Runde lang als
+  // offene Zeile — und war der Beweis, dass eine aufgeschriebene Lücke
+  // wiedergefunden wird: Der Prüfer hat sie beim nächsten Lauf selbst genannt.
+  Object.freeze({ modul: 'abholung', ausfuhr: 'ZUSAGE', behauptung: true, umschrieben: 'abholung' }),
   Object.freeze({
-    modul: 'abholung', ausfuhr: 'ZUSAGE', behauptung: true,
-    umschrieben: null,
-    warum: 'OFFEN: die Zusage der Abholung ist eine Behauptungsregel wie die anderen, und sie '
-      + 'hat noch keine Umschreibungen. Das ist die nächste Zeile — aufgeschrieben, damit sie '
-      + 'nicht wieder auffällt, weil jemand zufällig hinsieht.',
+    modul: 'abholung', ausfuhr: 'VERNEINT', behauptung: false,
+    warum: 'kein Verbot, sondern seine Ausnahme: die Verneinung links vom Verb, die eine '
+      + 'richtige Auskunft vor der Meldung schützt. Ihre Reichweite wird über `ZUSAGE` '
+      + 'mitgemessen — eine Ausnahme, die zu weit reicht, macht dort einen gefangenen Satz frei.',
   }),
 ]);
 

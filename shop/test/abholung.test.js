@@ -132,3 +132,42 @@ test('die Lieferseite sagt, warum nicht abgeholt werden kann', () => {
   // Standort des Lieferanten, und so steht es jetzt da.
   assert.ok(!/am Lager/.test(text), 'die Seite behauptet wieder ein Lager');
 });
+
+/**
+ * **Die Reichweite, gemessen am 10. September 2026.** Das Muster fing zwei
+ * von acht Sätzen, die alle dasselbe zusagen — die beiden, gegen die es
+ * geschrieben wurde. Die sechs anderen sind die Formulierungen, die ein
+ * Shoptext zuerst wählt.
+ *
+ * Diese Zusage ist keine Formalie: Der Shop hat kein eigenes Lager, und ob
+ * Kunden beim Lieferanten abholen dürfen, ist dort angefragt und
+ * unbeantwortet. Wer sie zusagt, schickt einen Bauleiter zu einem Tor, das
+ * ihn nicht kennt.
+ */
+test('das Muster reicht weiter als die zwei Sätze, aus denen es gebaut wurde', () => {
+  for (const satz of [
+    'Sie können die Ware bei uns abholen.',
+    'Selbstabholer sparen die Frachtpauschale.',
+    'Abholung nach Vereinbarung.',
+    'Gerne stellen wir Ihre Bestellung zur Abholung bereit.',
+    'Ware kann am Lager übernommen werden.',
+    'Auf Wunsch holen Sie selbst ab.',
+  ]) assert.equal(ZUSAGE.test(satz), true, `rutscht durch: ${satz}`);
+});
+
+test('die richtige Auskunft bleibt still', () => {
+  const still = (satz) => {
+    const b = abholungsbefund({
+      texte: [{ name: 'x', text: satz }, { name: 'y', text: '' }, { name: 'z', text: '' }],
+      zugesagt: null,
+    });
+    return !b.meldungen.some((m) => m.regel === 'abholung-zugesagt-ohne-ort');
+  };
+  // Die drei Sätze, die der Shop heute tatsächlich schreibt.
+  assert.equal(still('Abholung können wir derzeit nicht zusagen.'), true);
+  assert.equal(still('Sie können die Ware nicht bei uns abholen.'), true);
+  assert.equal(still('Ob unsere Kunden beim Lieferanten abholen dürfen, ist dort angefragt und noch offen.'), true);
+  // Und die Gegenrichtung: Die Verneinung im Nachsatz deckt die Zusage davor nicht.
+  assert.equal(still('Wer selbst abholt, zahlt keine Fracht.'), false,
+    'die Verneinung steht hinter dem Verb und gehört zur Fracht, nicht zur Abholung');
+});

@@ -2412,6 +2412,36 @@ export const GEGENPROBEN = Object.freeze([
       + 'Assistent liest die Zeile, nicht den Vorspann.',
   }),
   Object.freeze({
+    id: 'abholsuche-wieder-beworben',
+    pruefer: 'test',
+    was: 'Bezahlte Klicks auf eine Suche nach etwas, das dieser Betrieb nicht kann',
+    datei: 'shop/bin/kampagne.mjs',
+    art: 'ersetzen',
+    baueVorher: true,
+    suchen: "  for (const w of abholungsausschluss(abholung)) {",
+    ersetzen: '  for (const w of []) {',
+    erwartet: /nicht zugesagt und trotzdem beworben/,
+    warum: 'Der Zustand bis zum 10. September: „abholung" stand absichtlich **nicht** auf der '
+      + 'Ausschlussliste, begründet mit einem wörtlichen Zitat der Lieferseite, das seit dem '
+      + '6. September falsch war. Wer „baustoffe abholen perg" tippt, wollte genau das eine, '
+      + 'was dieser Betrieb nicht kann — bei 4,19 € bis 8,22 € je Klick. Die Mutation nimmt '
+      + 'den abgeleiteten Ausschluss wieder heraus.',
+  }),
+  Object.freeze({
+    id: 'abholzusage-nur-in-zwei-worten',
+    pruefer: 'pruefe-umschreibung',
+    was: 'Die Abholzusage, zurück auf die zwei Formulierungen ihres Anlasses',
+    datei: 'shop/src/abholung.js',
+    art: 'ersetzen',
+    suchen: "|(?:k(?:ö|oe)nnen|k(?:ö|oe)nnt?|d(?:ü|ue)rfen)\\s+(?:Sie\\s+)?[^.!?]{0,40}?abholen|Selbstabholer\\s+(?:sparen|zahlen|erhalten|bekommen)|Abholung\\s+nach Vereinbarung|zur\\s+Abholung\\s+(?:bereit|bereitstellen|bereitgestellt)|am\\s+Lager\\s+(?:ü|ue)bernommen|holen\\s+Sie\\s+selbst\\s+ab",
+    ersetzen: '',
+    erwartet: /regel-verengt/,
+    warum: 'Der Zustand bis zum 10. September abends: Das Muster fing „Abholung ist möglich" und '
+      + '„wer selbst abholt, zahlt keine Fracht" — und keine der sechs Formulierungen, die ein '
+      + 'Shoptext zuerst wählt. Die Zusage ist keine Formalie: Es gibt kein eigenes Lager, und '
+      + 'ob Kunden beim Lieferanten abholen dürfen, ist dort angefragt und unbeantwortet.',
+  }),
+  Object.freeze({
     id: 'reichweite-einer-jungen-regel',
     pruefer: 'pruefe-umschreibung',
     was: 'Eine Regel vom selben Tag, zurück auf die Sätze, aus denen sie gebaut wurde',

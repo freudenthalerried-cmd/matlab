@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { suchname, taugtAlsKeyword, kurzform, alleAnzeigentexte, pruefeTexte, ANZEIGENTEXTE,
-  GEBINDEAUSSAGEN, keywordWoerter, hauptbereichText, ungedeckteWoerter, WARENKOERBE, warenkorbText } from '../bin/kampagne.mjs';
+  GEBINDEAUSSAGEN, keywordWoerter, hauptbereichText, ungedeckteWoerter, WARENKOERBE, warenkorbText,
+  NICHT_AUSGESCHLOSSEN, pruefeAusschluesse, abholungsausschluss, zitatbefund, ZITIERT } from '../bin/kampagne.mjs';
 import { LIEFERGEBIET, bezirksliste } from '../src/liefergebiet.js';
 import { WARENGRUPPEN, GRUPPENSEITE } from '../src/artikelliste.js';
 import { join } from 'node:path';
@@ -888,4 +889,78 @@ test('kein Referenzwarenkorb trägt eine Position, die seine Systemliste nicht k
   }
   // Mörtel und Mauerwerk haben keine Systemliste — genannt, nicht übergangen.
   assert.deepEqual(ohneListe.sort(), ['Mauerwerk', 'Mörtel']);
+});
+
+/* ------------------------------------------------------------------ *
+ * Eine Begründung, die eine Zusage zitiert — 10. September 2026
+ *
+ * „abholung" stand vier Tage lang **absichtlich nicht** auf der
+ * Ausschlussliste, begründet mit einem wörtlichen Zitat der Lieferseite:
+ * *„Ja, ausdrücklich vorgesehen. Wer selbst abholt, zahlt keine Fracht."*
+ * Die Lieferseite sagt seit dem 6. September das Gegenteil.
+ *
+ * > **Eine Begründung, die eine Zusage zitiert, überlebt die Zusage.**
+ *
+ * Bei 4,19 € bis 8,22 € je Klick.
+ * ------------------------------------------------------------------ */
+
+test('der Abholausschluss folgt dem Lieferanten, nicht einer Liste', () => {
+  assert.deepEqual(abholungsausschluss({ abholungDurchKunden: true }), [],
+    'sagt der Lieferant zu, ist die Suche wieder die günstigste Bestellung');
+  const offen = abholungsausschluss({ abholungDurchKunden: null });
+  assert.ok(offen.includes('abholung') && offen.includes('abholen'),
+    'solange die Abholung offen ist, gehört sie ausgeschlossen');
+  assert.deepEqual(abholungsausschluss({ abholungDurchKunden: false }), offen);
+});
+
+test('keine gebaute Ausschlussliste ohne den Abholausschluss, solange nichts zugesagt ist', () => {
+  const datei = pfad('../ausgabe/kampagne/negative-keywords.csv');
+  if (!existsSync(datei)) return;
+  const lieferanten = JSON.parse(readFileSync(pfad('../data/lieferanten.json'), 'utf8')).lieferanten ?? [];
+  const katalog = JSON.parse(readFileSync(pfad('../data/katalog-baustoff.json'), 'utf8'));
+  const gefuehrt = new Set((katalog.artikel ?? []).map((a) => a.lieferantId));
+  const zugesagt = lieferanten.filter((l) => gefuehrt.has(l.id))
+    .every((l) => l.abholungDurchKunden === true);
+  const text = readFileSync(datei, 'utf8').toLowerCase();
+  if (zugesagt) assert.ok(!text.includes(',abholung,'), 'zugesagt und trotzdem ausgeschlossen');
+  else assert.ok(text.includes(',abholung,'), 'nicht zugesagt und trotzdem beworben');
+});
+
+test('eine Begründung, die zitiert, muss die Fundstelle nennen', () => {
+  const historisch = [{
+    wort: 'abholung',
+    warum: 'Die Lieferseite sagt ausdrücklich „Ja, ausdrücklich vorgesehen. Wer selbst abholt, '
+      + 'zahlt keine Fracht." Selbstabholung ist ein angebotener Weg und spart dem Shop die '
+      + 'Frachtpauschale — eine Suche danach ist die günstigste Bestellung, die er bekommen kann.',
+  }];
+  assert.equal(ZITIERT.test(historisch[0].warum), true);
+  const fehler = pruefeAusschluesse([], { bezirke: ['Perg'], ort: 'Ried', keywords: [] }, historisch);
+  assert.ok(fehler.some((f) => f.includes('nachschlagbare Fundstelle')),
+    'der Eintrag, der vier Tage lang galt, kommt heute nicht mehr durch');
+});
+
+test('ein Zitat, das die Seite nicht mehr trägt, ist ein Befund', () => {
+  const fehler = zitatbefund(
+    [{ wort: 'x', zitat: 'Ja, ausdrücklich vorgesehen', fundstelle: 'lieferung.html' }],
+    () => 'Abholung können wir derzeit nicht zusagen.',
+  );
+  assert.equal(fehler.length, 1);
+  assert.match(fehler[0], /steht nicht mehr auf lieferung\.html/);
+});
+
+test('ein Zitat ohne Fundstelle und eine Fundstelle ohne Seite sind auch Befunde', () => {
+  assert.match(zitatbefund([{ wort: 'x', zitat: 'irgendwas' }], () => '')[0], /ohne Fundstelle/);
+  assert.match(zitatbefund([{ wort: 'x', zitat: 'a', fundstelle: 'weg.html' }], () => null)[0],
+    /gibt es nicht/);
+  assert.deepEqual(zitatbefund([{ wort: 'x', warum: 'ohne Zitat' }], () => ''), []);
+});
+
+test('das Verzeichnis der nicht ausgeschlossenen Wörter ist begründet', () => {
+  assert.ok(NICHT_AUSGESCHLOSSEN.length >= 1, 'ohne Einträge prüft diese Schleife nichts');
+  for (const n of NICHT_AUSGESCHLOSSEN) {
+    assert.ok(n.warum && n.warum.length >= 80, `${n.wort}: Grund zu knapp`);
+    if (ZITIERT.test(n.warum)) {
+      assert.ok(n.zitat && n.fundstelle, `${n.wort}: zitiert ohne nachschlagbare Fundstelle`);
+    }
+  }
 });

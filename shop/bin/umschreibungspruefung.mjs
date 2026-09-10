@@ -30,6 +30,7 @@ import { findeInterna } from '../src/interna.js';
 import { PREISAUSSAGEN, VORRATSWORTE } from '../src/aussagen.js';
 import { MEHRLIEFERUNG } from '../src/lieferungen.js';
 import { GRENZAUSSAGEN } from '../src/untergrenze.js';
+import { ZUSAGE } from '../src/abholung.js';
 import {
   UMSCHREIBUNGEN, umschreibungsbefund, registerbefund, quellenbefund,
 } from '../src/umschreibung.js';
@@ -56,6 +57,7 @@ function faengt(satz) {
   // die jüngsten Regeln nicht kennt, misst die Vergangenheit.
   if (MEHRLIEFERUNG.test(satz)) return true;
   if (GRENZAUSSAGEN.some((a) => new RegExp(a.muster.source, a.muster.flags).test(satz))) return true;
+  if (ZUSAGE.test(satz)) return true;
   return false;
 }
 
