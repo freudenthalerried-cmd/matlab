@@ -2412,6 +2412,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'Assistent liest die Zeile, nicht den Vorspann.',
   }),
   Object.freeze({
+    id: 'suche-ohne-die-dienstseiten',
+    pruefer: 'test',
+    was: 'Eine Suche, die nur das Sortiment kennt',
+    datei: 'shop/bin/website.mjs',
+    art: 'ersetzen',
+    baueVorher: true,
+    suchen: "      ...DIENSTSEITEN.map((s) => ({ ...s, gruppe: null })),",
+    ersetzen: '',
+    erwartet: /diese Fragen an den Shop bleiben ohne Antwort/,
+    warum: 'Der Zustand bis zum 10. September: Der ausgelieferte Suchindex trug 46 Artikel und '
+      + '24 Inhaltsseiten. Gemessen an zwanzig Fragen, die ein Besteller vor dem Absenden stellt '
+      + '— kranentladung, versandkosten, widerruf, rügefrist, impressum, vorkasse —, fand er '
+      + 'zwei. Und „lieferung" führte auf die Gruppenseite „Zubehör und Kleinteile". Für den '
+      + 'bezahlten Klick heißt das: Der Besucher landet auf einer Gruppenseite, tippt seine '
+      + 'Frage und liest „nichts gefunden", obwohl die Antwort im Haus liegt.',
+  }),
+  Object.freeze({
     id: 'karte-ohne-auskunft-zur-liste',
     pruefer: 'pruefe-seiten',
     was: 'Eine Artikelkarte, die zum Abstand zur Liste schweigt',

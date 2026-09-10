@@ -57,6 +57,7 @@ import {
   MERKBLATT, herstellerDerGruppe, merkblattsatz, merkblattdeckung,
 } from '../src/merkblattverweis.js';
 import { liesSystemliste } from '../src/systemlisten.js';
+import { DIENSTSEITEN } from '../src/dienstseiten.js';
 import { GEWERKE, einordnung } from '../src/systemtreue.js';
 import { lastmodFuer } from '../src/sitemapstand.js';
 import { brotkrume, krumeAusHtml } from '../src/krume.js';
@@ -1932,7 +1933,7 @@ function agbSeite(verweis) {
     titel: 'Geschäftsbedingungen — Gliederung',
     kurz: 'Dreizehn Punkte, ausschließlich für Unternehmer. Die Gliederung steht mit Begründung je Punkt; der verbindliche Wortlaut kommt vom Rechtstexteanbieter.',
     html: `<p class="krume"><a href="${verweis('index')}">Start</a> › <a href="${verweis('rechtliches/index')}">Rechtliches</a> › Geschäftsbedingungen</p>
-<h1>Geschäftsbedingungen</h1>
+<h1>Geschäftsbedingungen (AGB)</h1>
 <div class="antwort"><strong>Das hier ist die Gliederung, nicht der Vertrag.</strong> Jeder Punkt
 steht mit dem Grund, warum er nötig ist — das ist genau die Vorarbeit, die ein Rechtstexteanbieter
 sonst mit Rückfragen erhebt. Der verbindliche Wortlaut fehlt und wird nicht erfunden.</div>
@@ -2157,17 +2158,36 @@ function shopdaten(katalog, befund, seiten, lieferantenDatei, suchwoerterDatei, 
     lieferanten: lieferantenDatei.lieferanten
       .filter((l) => verwendet.has(l.id))
       .map(oeffentlicherLieferant),
-    seiten: [...seiten.values()].map((s) => ({
-      id: s.id,
-      art: s.art,
-      titel: s.kopf.titel,
-      kurz: alsText(String(s.kopf.kurz ?? '')),
-      frage: String(s.kopf.frage ?? ''),
-      gruppe: s.kopf.gruppe ?? null,
-      // Der Fließtext geht bewusst **nicht** mit: Er wiegt 300 KB, und ein
-      // Treffer im vierzigsten Absatz einer Wissensseite hilft niemandem beim
-      // Bestellen. Gesucht wird in Titel, Frage und Kurzfassung.
-    })),
+    seiten: [
+      ...[...seiten.values()].map((s) => ({
+        id: s.id,
+        art: s.art,
+        titel: s.kopf.titel,
+        kurz: alsText(String(s.kopf.kurz ?? '')),
+        frage: String(s.kopf.frage ?? ''),
+        gruppe: s.kopf.gruppe ?? null,
+        // Der Fließtext geht bewusst **nicht** mit: Er wiegt 300 KB, und ein
+        // Treffer im vierzigsten Absatz einer Wissensseite hilft niemandem beim
+        // Bestellen. Gesucht wird in Titel, Frage und Kurzfassung.
+      })),
+      /*
+       * **Die Dienstseiten — 10. September 2026.**
+       *
+       * Der Index kannte 46 Artikel und 24 Inhaltsseiten. Gemessen an zwanzig
+       * Fragen, die ein Besteller vor dem Absenden stellt, fand er **zwei**:
+       * „kranentladung", „versandkosten", „widerruf", „rügefrist",
+       * „impressum", „vorkasse" — nichts gefunden. Und „lieferung" führte auf
+       * die Gruppenseite *Zubehör und Kleinteile*.
+       *
+       * > **Eine Suche, die nur das Sortiment kennt, antwortet auf jede zweite
+       * > Frage mit „nichts gefunden" — obwohl die Antwort im Haus liegt.**
+       *
+       * Die Kurzantworten stehen in `src/dienstseiten.js` und werden von dort
+       * gegen den Bau gehalten: Was dort steht, muss gebaut werden, und was
+       * gebaut wird und eine Frage beantwortet, muss dort stehen.
+       */
+      ...DIENSTSEITEN.map((s) => ({ ...s, gruppe: null })),
+    ],
     bilder,
     // Nur Wort und Ziel: Die Begründung je Eintrag steht in
     // data/suchwoerter.json und gehört ins Repository, nicht in jede

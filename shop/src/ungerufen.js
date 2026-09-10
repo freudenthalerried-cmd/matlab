@@ -406,6 +406,15 @@ export const UNGERUFEN = Object.freeze([
       + 'vollständig hat.',
   }),
   Object.freeze({
+    modul: 'src/dienstseiten.js',
+    funktionen: ['dienstseitenbefund'],
+    warum: 'Ein Prüfer, der in den Testfällen wohnt — wie `src/abholung.js` und '
+      + '`src/lieferungen.js`. `test/dienstseiten.test.js` hält das Verzeichnis gegen den '
+      + 'ausgelieferten Suchindex und läuft damit in Schritt 1 des Gesamtlaufs mit. Der Bau '
+      + 'kann ihn nicht rufen: Er prüft die Datei, die der Bau gerade schreibt. `DIENSTSEITEN` '
+      + 'steht nicht hier — die Aufzählung selbst geht in den Index, und genau darum geht es.',
+  }),
+  Object.freeze({
     modul: 'src/merkblattverweis.js',
     funktionen: ['merkblattbefund', 'selbstbeschreibungsbefund'],
     warum: 'Ein Prüfer, der in den Testfällen wohnt — wie `src/eignungsgrenzen.js` und '
