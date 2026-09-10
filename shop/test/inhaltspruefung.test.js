@@ -504,7 +504,11 @@ test('Die Sätze, die dieser Shop wirklich schreibt, schlagen nicht an', () => {
   // stehen so oder fast so im Bestand.
   for (const satz of [
     'Wir liefern die Stärke, die im Nachweis steht, und beraten nicht darüber hinweg.',
-    'Jede Seite läuft gegen Prüfprogramme, die unabhängig vom Text entstehen.',
+    // **Berichtigt am 10. September, abends.** Dieser Satz stand hier als
+    // einer, den der Shop wirklich schreibt — und war genau die Zusage, die
+    // an diesem Tag gefallen ist: Vier der laufenden Regeln sind aus Sätzen
+    // dieses Bestands entstanden. Jetzt steht hier, was die Seite sagt.
+    'Jede Seite läuft gegen Prüfprogramme, die das fertige Erzeugnis messen.',
     'Bis zum 7. September versprach diese Regel ein zweites Augenpaar vor dem Erscheinen jeder Seite.',
     'Eine Antwortzeit ist nicht zugesagt; die Kasse verspricht eine Rückmeldung ohne Zeitangabe.',
   ]) {

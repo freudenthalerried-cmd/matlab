@@ -31,11 +31,25 @@ falsche Angabe kostet den Kunden einen Arbeitstag und uns die Glaubwürdigkeit
 
 **Erstens: Verfassen und Prüfen sind nie derselbe Arbeitsgang.** Wer einen
 Text geschrieben hat, liest ihn nicht mehr unbefangen. Jede Seite läuft
-deshalb gegen Prüfprogramme, die unabhängig vom Text entstehen und ihn nicht
-kennen: Sie halten Zahlen gegen ihre Quelle, Aussagen über den Betrieb gegen
+deshalb gegen Prüfprogramme, die das fertige Erzeugnis messen und nicht die
+Absicht: Sie halten Zahlen gegen ihre Quelle, Aussagen über den Betrieb gegen
 das, was er tatsächlich kann, und jedes Versprechen gegen die Stelle, die es
 einlösen müsste. Was sie finden, wird berichtigt, und die Berichtigung steht
 in der Änderungsgeschichte.
+
+**Und die unbequeme Hälfte davon:** Diese Programme entstehen aus gefundenen
+Fehlern — jemand stößt auf einen falschen Satz und schreibt die Regel gegen
+ihn. Das macht sie eng: Sie erkennen zuerst die Formulierung, gegen die sie
+geschrieben wurden, und nicht jede andere, die dasselbe behauptet. Deshalb
+wird ihre **Reichweite** selbst gemessen: Zu jeder Regel steht eine Liste von
+Umschreibungen derselben Behauptung, und wo eine Lücke bleibt, steht sie mit
+ihrem Grund da statt zu fehlen.
+
+*Bis zum 10. September stand hier, die Prüfprogramme entstünden „unabhängig
+vom Text" und kennten ihn nicht. Das stimmt nicht: Vier der heute laufenden
+Regeln sind an diesem Tag aus Sätzen dieses Bestands entstanden. Eine Lücke,
+die aufgeschrieben ist, ist eine Entscheidung; eine Zusage, die sie
+wegredet, ist eine Behauptung über den eigenen Betrieb.*
 
 *Bis zum 7. September versprach diese Regel ein zweites Augenpaar vor dem
 Erscheinen jeder Seite. Ein zweiter Mensch liest hier nichts gegen — und eine

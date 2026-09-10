@@ -2412,6 +2412,21 @@ export const GEGENPROBEN = Object.freeze([
       + 'Assistent liest die Zeile, nicht den Vorspann.',
   }),
   Object.freeze({
+    id: 'pruefer-die-den-text-nicht-kennen',
+    pruefer: 'pruefe-inhalte',
+    was: 'Eine Seite, die ihren Prüfprogrammen Unabhängigkeit vom Text nachsagt',
+    datei: 'shop/inhalte/wissen/redaktionsprinzipien.md',
+    art: 'ersetzen',
+    suchen: "deshalb gegen Prüfprogramme, die das fertige Erzeugnis messen und nicht die\nAbsicht: Sie halten Zahlen gegen ihre Quelle",
+    ersetzen: "deshalb gegen Prüfprogramme, die unabhängig vom Text entstehen und ihn nicht\nkennen: Sie halten Zahlen gegen ihre Quelle",
+    erwartet: /unabh(?:ä|ae)ngig vom Text|den geprüften Text nicht kennen/,
+    warum: 'Wörtlich der Zustand bis zum 10. September abends, auf der Seite, die erklärt, wie '
+      + 'hier geprüft wird. An **diesem Tag** sind vier der laufenden Regeln aus Sätzen dieses '
+      + 'Bestands entstanden — deshalb gibt es `src/umschreibung.js`, das ihre Reichweite misst. '
+      + 'Eine Zusage über den eigenen Betrieb ist teurer als eine falsche Zahl: Sie lässt sich '
+      + 'nicht nachrechnen, nur glauben.',
+  }),
+  Object.freeze({
     id: 'norm-ohne-ihre-ausgabe',
     pruefer: 'pruefe-inhalte',
     was: 'Eine Norm, die auf einer Kundenseite ohne ihre Ausgabe steht',

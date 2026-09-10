@@ -20,6 +20,7 @@ import {
 import { MEHRLIEFERUNG } from '../src/lieferungen.js';
 import { GRENZAUSSAGEN } from '../src/untergrenze.js';
 import { ZUSAGE } from '../src/abholung.js';
+import { UEBERNAHMEBEHAUPTUNGEN } from '../src/merkblattverweis.js';
 import { BETRIEBSAUSSAGEN, GRENZWOERTER } from '../src/inhaltspruefung.js';
 import { findeInterna } from '../src/interna.js';
 import { PREISAUSSAGEN, VORRATSWORTE } from '../src/aussagen.js';
@@ -32,7 +33,8 @@ const faengt = (satz) => BETRIEBSAUSSAGEN.some((e) => e.wort.test(satz))
   || VORRATSWORTE.some((w) => satz.toLowerCase().includes(w.toLowerCase()))
   || MEHRLIEFERUNG.test(satz)
   || GRENZAUSSAGEN.some((a) => new RegExp(a.muster.source, a.muster.flags).test(satz))
-  || ZUSAGE.test(satz);
+  || ZUSAGE.test(satz)
+  || UEBERNAHMEBEHAUPTUNGEN.some((e) => new RegExp(e.muster.source, e.muster.flags).test(satz));
 
 test('jede Regel reicht so weit, wie das Register sagt', () => {
   const b = umschreibungsbefund(faengt, UMSCHREIBUNGEN);

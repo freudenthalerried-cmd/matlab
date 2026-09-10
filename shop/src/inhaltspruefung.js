@@ -161,6 +161,29 @@ export const BETRIEBSAUSSAGEN = Object.freeze([
     grund: 'behauptet Räume für Kunden — es gibt kein Lager und keine Ausstellung '
       + '(PARAMETER.md, Streckengeschäft)',
   },
+  /*
+   * **Ergänzt am 10. September 2026, abends.** Die Redaktionsprinzipien
+   * sagten über die eigenen Prüfprogramme, sie entstünden *„unabhängig vom
+   * Text"* und kennten ihn nicht. Am selben Tag sind **vier** der laufenden
+   * Regeln aus Sätzen dieses Bestands entstanden — genau deshalb gibt es
+   * `src/umschreibung.js`, das ihre Reichweite misst und jede Lücke mit Grund
+   * führt.
+   *
+   * > **Eine Zusage über den eigenen Betrieb ist teurer als eine falsche
+   * > Zahl: Sie lässt sich nicht nachrechnen, nur glauben** — und diese stand
+   * > auf der Seite, die erklärt, wie hier geprüft wird.
+   *
+   * Getroffen wird die Unabhängigkeitsbehauptung, nicht das Wort
+   * „unabhängig": Der Shop ist an anderen Stellen zu Recht unabhängig — vom
+   * Hersteller, vom Lieferanten —, und ein Muster darauf träfe die richtige
+   * Auskunft.
+   */
+  {
+    wort: /(?:Pr(?:ü|ue)fprogramme?|Pr(?:ü|ue)fer|Pr(?:ü|ue)fungen)[^.!?]{0,80}?unabh(?:ä|ae)ngig vom Text|unabh(?:ä|ae)ngig vom Text[^.!?]{0,60}?entste(?:hen|ht)|kennen (?:ihn|den Text) nicht/i,
+    grund: 'behauptet Prüfprogramme, die den geprüften Text nicht kennen — sie entstehen aus '
+      + 'gefundenen Fehlern und sind deshalb eng; ihre Reichweite steht gemessen in '
+      + 'src/umschreibung.js (`npm run pruefe-umschreibung`)',
+  },
   {
     // **Erweitert am 10. September:** „immer für Sie da", „an sieben Tagen".
     wort: /\brund um die Uhr\b|\b24\s*(?:\/\s*7|Stunden)\s+(?:erreichbar|verf(?:ü|ue)gbar)\b|\bjederzeit erreichbar\b|\bimmer für Sie da\b|\ban sieben Tagen\b|\bHotline\b/i,

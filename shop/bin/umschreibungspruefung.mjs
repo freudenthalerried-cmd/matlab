@@ -31,6 +31,7 @@ import { PREISAUSSAGEN, VORRATSWORTE } from '../src/aussagen.js';
 import { MEHRLIEFERUNG } from '../src/lieferungen.js';
 import { GRENZAUSSAGEN } from '../src/untergrenze.js';
 import { ZUSAGE } from '../src/abholung.js';
+import { UEBERNAHMEBEHAUPTUNGEN } from '../src/merkblattverweis.js';
 import {
   UMSCHREIBUNGEN, umschreibungsbefund, registerbefund, quellenbefund,
 } from '../src/umschreibung.js';
@@ -58,6 +59,7 @@ function faengt(satz) {
   if (MEHRLIEFERUNG.test(satz)) return true;
   if (GRENZAUSSAGEN.some((a) => new RegExp(a.muster.source, a.muster.flags).test(satz))) return true;
   if (ZUSAGE.test(satz)) return true;
+  if (UEBERNAHMEBEHAUPTUNGEN.some((e) => new RegExp(e.muster.source, e.muster.flags).test(satz))) return true;
   return false;
 }
 

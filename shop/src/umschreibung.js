@@ -321,6 +321,50 @@ export const UMSCHREIBUNGEN = Object.freeze([
           + 'Berichtigungsvermerk, der die Zusage gerade zurücknimmt' }),
     ]),
   }),
+  Object.freeze({
+    id: 'unabhaengige-pruefer',
+    aussage: 'behauptet Prüfprogramme, die den geprüften Text nicht kennen',
+    register: 'BETRIEBSAUSSAGEN',
+    saetze: Object.freeze([
+      Object.freeze({ text: 'Prüfprogramme, die unabhängig vom Text entstehen und ihn nicht kennen.',
+        gefangen: true, woher: 'Redaktionsprinzipien, Fund vom 10. September abends' }),
+      Object.freeze({ text: 'Unsere Prüfer sind unabhängig vom Text.', gefangen: true,
+        woher: 'am 10.09. aufgenommen' }),
+      Object.freeze({ text: 'Die Programme kennen den Text nicht.', gefangen: true,
+        woher: 'am 10.09. aufgenommen' }),
+      /*
+       * **Offen, mit Grund.** „Unabhängig" ist an anderen Stellen die
+       * richtige Auskunft: unabhängig vom Hersteller, unabhängig vom
+       * Lieferanten. Getroffen wird die Unabhängigkeit **vom Text**, und wer
+       * sie anders umschreibt („die Regeln entstehen ohne Ansehen der Seite"),
+       * kommt durch.
+       */
+      Object.freeze({ text: 'Die Regeln entstehen ohne Ansehen der Seite.', gefangen: false,
+        warum: 'die Behauptung ohne die Wörter, an denen sie hängt — ein Muster darauf träfe '
+          + 'jede richtige Aussage über Unabhängigkeit vom Hersteller oder Lieferanten' }),
+    ]),
+  }),
+  Object.freeze({
+    id: 'kennwertuebernahme',
+    aussage: 'behauptet, Kennwerte würden aus dem Merkblatt übernommen',
+    register: 'UEBERNAHMEBEHAUPTUNGEN',
+    saetze: Object.freeze([
+      Object.freeze({ text: 'Technische Kennwerte werden aus dem Datenblatt des Herstellers übernommen und verlinkt.',
+        gefangen: true, woher: 'Redaktionsprinzipien, Fund vom 10. September nachmittags' }),
+      Object.freeze({ text: 'Wir verlinken sie und geben die Kennwerte wieder.', gefangen: true,
+        woher: 'gruppen/wdvs.md, vom Prüfer beim ersten Lauf gefunden' }),
+      Object.freeze({ text: 'Die Kennwerte sind dem Merkblatt entnommen.', gefangen: true,
+        woher: 'am 10.09. aufgenommen' }),
+      /*
+       * **Offen, mit Grund.** Ohne das Wort „Kennwerte" hängt die Behauptung
+       * an nichts Fassbarem — „die Angaben stammen aus dem Merkblatt" könnte
+       * ebenso die Merkblattadresse meinen wie einen Zahlenwert.
+       */
+      Object.freeze({ text: 'Die Angaben stammen aus dem Merkblatt des Herstellers.', gefangen: false,
+        warum: 'ohne das Wort „Kennwerte" ist nicht zu unterscheiden, ob ein Zahlenwert oder '
+          + 'die Fundstelle gemeint ist — beides steht in diesem Bestand nebeneinander' }),
+    ]),
+  }),
 ]);
 
 /**
@@ -470,6 +514,33 @@ export const REGELQUELLEN = Object.freeze([
   // offene Zeile — und war der Beweis, dass eine aufgeschriebene Lücke
   // wiedergefunden wird: Der Prüfer hat sie beim nächsten Lauf selbst genannt.
   Object.freeze({ modul: 'abholung', ausfuhr: 'ZUSAGE', behauptung: true, umschrieben: 'abholung' }),
+  // **Nachgezogen am 10. September, abends** — vom Prüfer selbst gemeldet:
+  // Die beiden Runden davor haben Muster gebaut und nicht eingeordnet.
+  Object.freeze({
+    modul: 'merkblattverweis', ausfuhr: 'UEBERNAHMEBEHAUPTUNGEN',
+    behauptung: true, umschrieben: 'kennwertuebernahme',
+  }),
+  Object.freeze({
+    modul: 'merkblattverweis', ausfuhr: 'KENNWERT', behauptung: false,
+    warum: 'liest eine Form, keine Behauptung: eine Zahl mit Einheit hinter einem Kennwertwort. '
+      + 'Sie entscheidet, ob eine Übernahmebehauptung überhaupt gemeldet werden darf — ihre '
+      + 'Reichweite wird über `UEBERNAHMEBEHAUPTUNGEN` mitgemessen.',
+  }),
+  Object.freeze({
+    modul: 'normstelle', ausfuhr: 'NORMBEZUG', behauptung: false,
+    warum: 'findet die Nennung einer Norm, um ihre Ausgabe danebenzuhalten. Verboten ist keine '
+      + 'Formulierung; gemessen wird, ob die Ausgabe am Namen steht.',
+  }),
+  Object.freeze({
+    modul: 'normstelle', ausfuhr: 'AUSGABE', behauptung: false,
+    warum: 'die Form einer Ausgabeangabe (`Ausgabe 2009-09-01` oder `:2009`) — die Gegenprobe '
+      + 'zur Nennung, keine eigene Regel.',
+  }),
+  Object.freeze({
+    modul: 'normstelle', ausfuhr: 'REIHE', behauptung: false,
+    warum: 'die Ausnahme statt des Verbots: Eine Normenreihe hat keine Ausgabe, und dieses '
+      + 'Muster hält sie von der Meldung frei.',
+  }),
   Object.freeze({
     modul: 'abholung', ausfuhr: 'VERNEINT', behauptung: false,
     warum: 'kein Verbot, sondern seine Ausnahme: die Verneinung links vom Verb, die eine '
