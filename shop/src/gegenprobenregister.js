@@ -2708,6 +2708,40 @@ export const GEGENPROBEN = Object.freeze([
       + 'Preisstand zurück und verlangt, dass die Abweichung auffällt — gemessen an den gebauten '
       + 'Seiten, nicht an der Vorlage.',
   }),
+  Object.freeze({
+    id: 'stiller-wegfall-im-korb',
+    pruefer: 'shopprobe',
+    was: 'Eine Position, die aus dem Warenkorb verschwindet, ohne dass es jemand sagt',
+    datei: 'shop/shop-ui.js',
+    art: 'ersetzen',
+    baueVorher: true,
+    suchen: '    merkeEntfallen(speicher, bereinigt.entfallen);',
+    ersetzen: '    void bereinigt.entfallen;',
+    erwartet: /führen wir nicht mehr|stiller|entfallene Position/,
+    warum: 'Der Zustand vom 22. August bis zum 10. September: `bereinige` gab die entfallenen '
+      + 'Kennungen zurück, und die Oberfläche fragte nur, ob es welche gab. Ein Korb aus zwei '
+      + 'Positionen, von denen eine nicht mehr im Katalog steht, wurde beim nächsten Aufruf zu '
+      + 'einem mit einer — kleinere Summe, kein Wort dazu. Die Mutation nimmt den Vermerk heraus '
+      + 'und lässt die Bereinigung stehen: So verschwindet die Position weiterhin, nur eben '
+      + 'wieder still. Gemessen wird an der ausgelieferten Warenkorbseite mit gefülltem '
+      + 'Speicher, denn dieser Zustand entsteht erst im Browser.',
+  }),
+  Object.freeze({
+    id: 'einzahl-im-korbkopf',
+    pruefer: 'shopprobe',
+    was: 'Eine Überschrift, die bei einer Position „1 Positionen" sagt',
+    datei: 'shop/shop-ui.js',
+    art: 'ersetzen',
+    baueVorher: true,
+    suchen: "          + (t.positionen.length === 1 ? ' Position' : ' Positionen')));",
+    ersetzen: "          + ' Positionen'));",
+    erwartet: /1 Positionen|Einzahl/,
+    warum: 'Wörtlich der Zustand bis zum 10. September, gefunden beim Messen des stillen '
+      + 'Wegfalls: Die Überschrift des Warenkorbs setzte die Zahl vor ein festes „Positionen". '
+      + 'Die Regel dafür stand elf Zeilen tiefer am Gewichtssatz, der die Eins ausdrücklich '
+      + 'behandelt. Von sieben Stellen dieser Oberfläche, an denen eine Zahl vor ein Hauptwort '
+      + 'tritt, war dies die einzige, die es hätte tun müssen und nicht tat.',
+  }),
 ]);
 
 /**

@@ -23,6 +23,14 @@
     "absage-ohne-naechsten-schritt": {
       "am": "2026-09-10",
       "sekunden": 39
+    },
+    "stiller-wegfall-im-korb": {
+      "am": "2026-09-11",
+      "sekunden": 31
+    },
+    "einzahl-im-korbkopf": {
+      "am": "2026-09-11",
+      "sekunden": 30
     }
   }
 }

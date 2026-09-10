@@ -43,7 +43,27 @@
  * „Stunden". **Ein Muster prüft die Schreibweise, die sein Verfasser im Kopf
  * hatte.**
  */
-export const NAMENSMUSTER = /^(erzeuge|baue)|[Zz]eile$|Csv$|Adresse$|[Tt]e?xt$/;
+/*
+ * **Erweitert am 10. September 2026 um `[Ss]atz$`.**
+ *
+ * Der dritte Fall derselben Art in dieser Datei, und diesmal fiel er beim
+ * eigenen Bauen auf: Für den Hinweis über entfallene Warenkorbpositionen
+ * entstand `entfallensatz` — eine Funktion, die einen Satz für den Kunden
+ * baut und Kennungen aus dem Browserspeicher hineinsetzt. Das Verzeichnis sah
+ * sie nicht, weil ihr Name auf „satz" endet und nicht auf „text".
+ *
+ * Nachgezählt fanden sich **zehn** Ausfuhren auf `satz`, davon sieben, die
+ * einen Satz für einen Kunden oder einen Lieferanten bauen.
+ *
+ * > **Ein Verzeichnis, das eine Schreibweise nicht kennt, führt sie auch
+ * > nicht** — und meldet dabei vollständig über das, was es kennt.
+ *
+ * Zwei der zehn enden nur zufällig so: `noetigerUmsatz` ist eine Zahl, und
+ * `pruefeAbsatz` ist ein Prüfer. Beide stehen mit ihrem Grund in
+ * `KEIN_AUSGANG` — eine Ausnahme mit Begründung ist billiger als ein Muster,
+ * das die Fälle von Hand ausnimmt.
+ */
+export const NAMENSMUSTER = /^(erzeuge|baue)|[Zz]eile$|Csv$|Adresse$|[Ss]atz$|[Tt]e?xt$/;
 
 /** Die Ausgänge, die im Fremdtextverzeichnis geprüft werden. */
 export const AUSGAENGE = Object.freeze([
@@ -90,6 +110,22 @@ export const KEIN_AUSGANG = Object.freeze([
   // **Ergänzt am 5. September.** Sie baut keinen Text, sie **zerlegt** einen —
   // aus HTML wird Fließtext, damit ein Prüfer darin suchen kann. Der Weg geht
   // nach innen, nicht nach außen.
+  /* **Zehn Einträge vom 10. September**, mit der Aufnahme von `[Ss]atz$` ins
+   * Namensmuster. Sieben bauen einen Satz für einen Kunden oder einen
+   * Lieferanten — keiner von ihnen ist selbst ein Ausgang: Sie liefern eine
+   * Zeile an ein Dokument, das im Verzeichnis oben steht, oder an eine
+   * Oberfläche, die sie als Text und nicht als Markup setzt. Zwei enden nur
+   * zufällig auf diese Buchstaben. */
+  Object.freeze({ funktion: 'entfallensatz', warum: 'Baut den Hinweis über Positionen, die nicht mehr im Katalog stehen. Die Kennungen darin kommen aus dem Browserspeicher des Besuchers, also von außen — die Oberfläche setzt den Satz über `textContent` und nicht als Markup, damit eine erfundene Kennung Text bleibt und keine Marke wird.' }),
+  Object.freeze({ funktion: 'systembruchsatz', warum: 'Baut den Hinweis, dass ein Warenkorb Schichten aus zwei Wärmedämmverbundsystemen mischt. Systemnamen und Rollen stammen aus dem eigenen Katalog; der Satz geht in die Hinweisliste des Warenkorbs und wird dort als Text gesetzt, nicht als Markup.' }),
+  Object.freeze({ funktion: 'abholungssatz', warum: 'Baut die Antwort auf „Kann ich selbst abholen?" aus einem Feld der eigenen Lieferantendatei. Er geht ausschließlich über das Seitenbauwerkzeug hinaus und läuft dort durch dieselbe Entschärfung wie jeder andere eingesetzte Wert.' }),
+  Object.freeze({ funktion: 'lieferungssatz', warum: 'Baut aus **einer eigenen Zahl** — der Anzahl der Lieferanten im Katalog — den Satz darüber, ob ein Warenkorb eine oder mehrere Lieferungen ist. Fremdtext kann ihn nicht erreichen: Er nimmt eine Menge entgegen und keine Zeichenkette.' }),
+  Object.freeze({ funktion: 'merkblattsatz', warum: 'Baut aus zwei eigenen Zahlen — wie viele Artikelseiten einen Merkblattverweis tragen und wie viele es gibt — den Satz für die Maschinendatei. Er nimmt keine Zeichenkette entgegen, also erreicht ihn kein fremder Text.' }),
+  Object.freeze({ funktion: 'nachfragesatz', warum: 'Baut die Nachfragen zu Artikeln ohne Hersteller und ohne Merkblattadresse. Die Bezeichnungen darin stammen vom Lieferanten, also von außen — der Satz geht nur über `erzeugeLieferantenanfrage` hinaus, und dieser Brief steht als Ausgang im Verzeichnis und ist dort geprüft.' }),
+  Object.freeze({ funktion: 'lueckensatz', warum: 'Baut die Frage nach den Positionen, die unsere Systemlisten nicht aus dem Sortiment des Lieferanten zusammenbekommen. Die Positionsnamen stammen aus den eigenen Stücklisten; hinaus geht der Satz nur über `erzeugeLieferantenanfrage`.' }),
+  Object.freeze({ funktion: 'fehltSatz', warum: 'Baut die halbe Zeile „es fehlen E-Mail, Telefon" für die Startklar-Prüfung — drei Wörter für die Konsole des Betreibers, aus Feldnamen des eigenen Bestands. Sie erreicht keinen Empfänger außerhalb des Rechners.' }),
+  Object.freeze({ funktion: 'noetigerUmsatz', warum: 'Endet nur zufällig auf diese Buchstaben: Sie gibt eine **Zahl** zurück — den Monatsumsatz, den ein Zahlweg nötig macht — und keinen Satz. Ein Ausgang ist sie damit unter keiner Lesart; das Muster kann „Umsatz" nicht von „Satz" unterscheiden, und eine Ausnahme mit Grund ist billiger als ein Muster mit Sonderfällen.' }),
+  Object.freeze({ funktion: 'pruefeAbsatz', warum: 'Endet ebenfalls nur zufällig so: Sie prüft einen **Absatz** und gibt eine Liste von Verdachtsmomenten zurück. Sie ist der Prüfer, nicht das Geprüfte — der Weg geht nach innen, nicht nach außen.' }),
   // **Ergänzt am 10. September**, mit dem Register der Quellenstempel. Derselbe
   // Fall wie `nurText` darunter — und sie ruft es sogar auf.
   Object.freeze({ funktion: 'sichtbarerText', warum: 'Nimmt eine gebaute Seite entgegen und gibt weniger zurück: Skript und Stil heraus, Marken heraus, Leerraum zusammen. Sie ist kein Ausgang, sondern das Gegenteil — der Stempelprüfer sucht damit in gebautem HTML nach Quellenangaben. Was sie liefert, geht in eine Meldung auf der eigenen Konsole und in keine Datei.' }),

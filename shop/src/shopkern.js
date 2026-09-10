@@ -669,6 +669,101 @@ export function filterwerte(artikel) {
 export const KORBSCHLUESSEL = 'freudenthaler-shop-warenkorb-v1';
 
 /**
+ * Wo vermerkt wird, **was aus dem Korb genommen wurde**.
+ *
+ * **Der Anlass, 10. September 2026.** `bereinige` gibt seit jeher zwei Dinge
+ * zurück: die gültigen Zeilen und die Kennungen, die es nicht mehr gibt. Die
+ * Oberfläche nahm das erste, speicherte es — und warf das zweite weg. Ein
+ * Korb mit zwei Positionen wurde beim nächsten Aufruf zu einem mit einer, und
+ * kein Wort dazu.
+ *
+ * > **Was ein Kunde eingelegt hat, verschwindet nicht ohne einen Satz.**
+ *
+ * Warum ein **zweiter Schlüssel** und nicht einfach eine Meldung an der
+ * Stelle, an der bereinigt wird: Der Shop wird als Einzeldateien
+ * ausgeliefert, ein Klick auf „Warenkorb" ist ein vollständiger Seitenwechsel.
+ * Bereinigt wird auf der Seite, die der Kunde gerade offen hat — meldet sie es
+ * nur dort und speichert den bereinigten Korb, ist der Hinweis beim
+ * Seitenwechsel weg und die Position trotzdem fort. Der Vermerk überlebt den
+ * Wechsel und wird gelöscht, wenn er gelesen wurde.
+ */
+export const ENTFALLENSCHLUESSEL = 'freudenthaler-shop-entfallen-v1';
+
+/**
+ * Vermerkt Kennungen, die aus dem Korb genommen wurden — ohne Dubletten und
+ * ohne das zu verlieren, was ein früherer Aufruf schon vermerkt hat.
+ */
+export function merkeEntfallen(speicher, skus) {
+  const neu = (skus ?? []).filter((s) => typeof s === 'string' && s);
+  if (!neu.length) return true;
+  try {
+    const alt = holeEntfallen(speicher);
+    const zusammen = [...new Set([...alt, ...neu])].slice(0, 50);
+    speicher?.setItem(ENTFALLENSCHLUESSEL, JSON.stringify(zusammen));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Liest den Vermerk. Fremde oder beschädigte Inhalte gelten als keiner. */
+export function holeEntfallen(speicher) {
+  try {
+    const roh = speicher?.getItem(ENTFALLENSCHLUESSEL);
+    if (!roh) return [];
+    const daten = JSON.parse(roh);
+    if (!Array.isArray(daten)) return [];
+    return daten.filter((s) => typeof s === 'string' && s).slice(0, 50);
+  } catch {
+    return [];
+  }
+}
+
+/** Löscht den Vermerk — gerufen, sobald der Satz dazu gezeigt wurde. */
+export function vergissEntfallen(speicher) {
+  try {
+    speicher?.removeItem(ENTFALLENSCHLUESSEL);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Der Satz, den der Kunde über die entfallenen Positionen liest.
+ *
+ * Er nennt die Kennungen, weil ein Kunde sonst nicht weiß, **was** fehlt —
+ * und der Korb steht in seiner Liste nicht mehr, um es nachzusehen. Und er
+ * sagt den Grund, den wir wirklich kennen: Der Artikel steht nicht mehr im
+ * Katalog. Warum er das nicht mehr tut, wissen wir an dieser Stelle nicht;
+ * eine erfundene Begründung wäre schlimmer als keine.
+ */
+export function entfallensatz(skus, nochImKorb = true) {
+  const liste = (skus ?? []).filter((s) => typeof s === 'string' && s);
+  if (!liste.length) return null;
+  const eins = liste.length === 1;
+  /*
+   * **Der Nachsatz hängt daran, ob es noch eine Summe gibt.**
+   *
+   * Beim Messen am 10. September stand über einem leeren Warenkorb: „…
+   * herausgenommen: POS-WEG-A, POS-WEG-B. Die Summe darunter ist ohne sie
+   * gerechnet." Darunter stand keine Summe, sondern „Der Warenkorb ist leer".
+   * Ein Satz, der auf etwas zeigt, das nicht da ist, kostet den Leser genau
+   * die Sekunde, die er sparen soll.
+   */
+  const nachsatz = nochImKorb ? ' Die Summe darunter ist ohne sie gerechnet.' : '';
+  // Zwei ganze Sätze statt einer Schablone mit Schaltern: Der erste Wurf
+  // setzte Ein- und Mehrzahl an vier Stellen einzeln ein und ergab
+  // „Eine Position … führen wir nicht mehr und ist deshalb herausgenommen".
+  // Wer eine Zahl in einen Satz einsetzt, muss den ganzen Satz lesen.
+  return eins
+    ? `Eine Position aus Ihrem Warenkorb führen wir nicht mehr; sie ist herausgenommen: `
+      + `${liste[0]}.${nachsatz}`
+    : `${liste.length} Positionen aus Ihrem Warenkorb führen wir nicht mehr; sie sind `
+      + `herausgenommen: ${liste.join(', ')}.${nachsatz}`;
+}
+
+/**
  * Liest den Warenkorb aus dem Browserspeicher.
  *
  * Jeder Zugriff steht in try/catch: In einem privaten Fenster, bei

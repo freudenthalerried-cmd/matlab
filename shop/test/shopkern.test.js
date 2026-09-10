@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import {
   wortstaemme, baueSuchindex, suche, sortiere, filtere, filterwerte, vorteil,
   ladeKorb, speichereKorb, legeInKorb, setzeMenge, korbPositionen, bereinige,
+  merkeEntfallen, holeEntfallen, vergissEntfallen, entfallensatz, ENTFALLENSCHLUESSEL,
   kundenWarenkorb, oeffentlicherArtikel, oeffentlicherLieferant, kundenwoerter,
   abstand, erlaubterAbstand, meintenSie, KORBSCHLUESSEL, stamm, indexwoerter,
 } from '../src/shopkern.js';
@@ -1093,4 +1094,85 @@ test('Absichtswörter machen eine Suche nicht leer — allein sind sie aber kein
   // Und ein Wort, das die Suche nicht kennt, schränkt weiterhin ein — sonst
   // wäre aus dem Ausnahmefall eine allgemeine Aufweichung geworden.
   assert.deepEqual(suche(index, 'XPS Regenrinne', { grenze: 5 }), []);
+});
+
+/* ------------------------------------------------------------------ *
+ * Was aus dem Korb genommen wurde — 10. September 2026
+ *
+ * `bereinige` gab die entfallenen Kennungen immer zurück; die Oberfläche
+ * fragte nur, **ob** es welche gab, und warf sie weg. Gemessen an einem Korb
+ * aus zwei Positionen, von denen eine nicht mehr im Katalog steht: „1
+ * Positionen", eine kleinere Summe, kein Wort dazu.
+ * ------------------------------------------------------------------ */
+
+/** Eine Attrappe mit `removeItem` — die einfache oben kennt nur zwei Wege. */
+function speicherMitLoeschen(anfang = null, kaputt = false) {
+  const werte = anfang ? { ...anfang } : {};
+  return {
+    getItem: (k) => { if (kaputt) throw new Error('gesperrt'); return werte[k] ?? null; },
+    setItem: (k, v) => { if (kaputt) throw new Error('gesperrt'); werte[k] = v; },
+    removeItem: (k) => { if (kaputt) throw new Error('gesperrt'); delete werte[k]; },
+    inhalt: () => werte,
+  };
+}
+
+test('Der Vermerk über entfallene Positionen überlebt den Seitenwechsel', () => {
+  const s = speicherMitLoeschen();
+  assert.deepEqual(holeEntfallen(s), []);
+  merkeEntfallen(s, ['POS-A']);
+  // Ein zweiter Aufruf auf einer anderen Seite darf den ersten nicht löschen.
+  merkeEntfallen(s, ['POS-B', 'POS-A']);
+  assert.deepEqual(holeEntfallen(s), ['POS-A', 'POS-B']);
+  assert.ok(ENTFALLENSCHLUESSEL in s.inhalt(), 'der Vermerk steht unter seinem eigenen Schlüssel');
+  vergissEntfallen(s);
+  assert.deepEqual(holeEntfallen(s), []);
+});
+
+test('Ein leerer Vermerk schreibt nichts — sonst stünde ein leerer Eintrag im Speicher', () => {
+  const s = speicherMitLoeschen();
+  merkeEntfallen(s, []);
+  merkeEntfallen(s, null);
+  assert.deepEqual(Object.keys(s.inhalt()), []);
+});
+
+test('Ein gesperrter Speicher macht auch den Vermerk nicht kaputt', () => {
+  const s = speicherMitLoeschen(null, true);
+  assert.equal(merkeEntfallen(s, ['POS-A']), false);
+  assert.deepEqual(holeEntfallen(s), []);
+  assert.equal(vergissEntfallen(s), false);
+  assert.deepEqual(holeEntfallen(null), []);
+});
+
+test('Ein beschädigter Vermerk gilt als keiner', () => {
+  assert.deepEqual(holeEntfallen(speicherMitLoeschen({ [ENTFALLENSCHLUESSEL]: 'kein json' })), []);
+  assert.deepEqual(holeEntfallen(speicherMitLoeschen({ [ENTFALLENSCHLUESSEL]: '{"a":1}' })), []);
+  assert.deepEqual(holeEntfallen(speicherMitLoeschen({ [ENTFALLENSCHLUESSEL]: '[1,2,"POS-A"]' })), ['POS-A']);
+});
+
+test('Der Satz nennt jede entfallene Kennung und trifft die Einzahl', () => {
+  assert.equal(entfallensatz([]), null);
+  assert.equal(entfallensatz(null), null);
+  const eins = entfallensatz(['POS-A']);
+  assert.match(eins, /^Eine Position aus Ihrem Warenkorb führen wir nicht mehr/);
+  assert.match(eins, /POS-A/);
+  const zwei = entfallensatz(['POS-A', 'POS-B']);
+  assert.match(zwei, /^2 Positionen aus Ihrem Warenkorb führen wir nicht mehr/);
+  assert.match(zwei, /POS-A, POS-B/);
+});
+
+test('Ist nichts übrig, zeigt der Satz auf keine Summe', () => {
+  // Gemessen am 10. September: Über einem leeren Warenkorb stand „Die Summe
+  // darunter ist ohne sie gerechnet" — darunter stand „Der Warenkorb ist leer".
+  assert.match(entfallensatz(['POS-A'], true), /Die Summe darunter/);
+  assert.doesNotMatch(entfallensatz(['POS-A'], false), /Summe/);
+  assert.match(entfallensatz(['POS-A'], false), /POS-A\.$/);
+});
+
+test('Was bereinige meldet, ist genau das, was der Satz nennt', () => {
+  // Die Verbindung der beiden Enden: Der Prüfer soll nicht die Attrappe
+  // messen, sondern den Weg, den die Oberfläche geht.
+  const katalog = [{ sku: 'POS-A' }, { sku: 'POS-B' }];
+  const b = bereinige([{ sku: 'POS-A', menge: 1 }, { sku: 'POS-WEG', menge: 2 }], katalog);
+  assert.deepEqual(b.entfallen, ['POS-WEG']);
+  assert.match(entfallensatz(b.entfallen, b.zeilen.length > 0), /POS-WEG/);
 });

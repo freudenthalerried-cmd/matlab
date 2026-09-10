@@ -2492,6 +2492,101 @@ const KORBSCHLUESSEL = 'freudenthaler-shop-warenkorb-v1';
 
 
 
+
+
+
+
+
+
+
+const ENTFALLENSCHLUESSEL = 'freudenthaler-shop-entfallen-v1';
+
+
+
+
+
+function merkeEntfallen(speicher, skus) {
+  const neu = (skus ?? []).filter((s) => typeof s === 'string' && s);
+  if (!neu.length) return true;
+  try {
+    const alt = holeEntfallen(speicher);
+    const zusammen = [...new Set([...alt, ...neu])].slice(0, 50);
+    speicher?.setItem(ENTFALLENSCHLUESSEL, JSON.stringify(zusammen));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+
+function holeEntfallen(speicher) {
+  try {
+    const roh = speicher?.getItem(ENTFALLENSCHLUESSEL);
+    if (!roh) return [];
+    const daten = JSON.parse(roh);
+    if (!Array.isArray(daten)) return [];
+    return daten.filter((s) => typeof s === 'string' && s).slice(0, 50);
+  } catch {
+    return [];
+  }
+}
+
+
+function vergissEntfallen(speicher) {
+  try {
+    speicher?.removeItem(ENTFALLENSCHLUESSEL);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+function entfallensatz(skus, nochImKorb = true) {
+  const liste = (skus ?? []).filter((s) => typeof s === 'string' && s);
+  if (!liste.length) return null;
+  const eins = liste.length === 1;
+  
+
+
+
+
+
+
+
+
+  const nachsatz = nochImKorb ? ' Die Summe darunter ist ohne sie gerechnet.' : '';
+  
+  
+  
+  
+  return eins
+    ? `Eine Position aus Ihrem Warenkorb führen wir nicht mehr; sie ist herausgenommen: `
+      + `${liste[0]}.${nachsatz}`
+    : `${liste.length} Positionen aus Ihrem Warenkorb führen wir nicht mehr; sie sind `
+      + `herausgenommen: ${liste.join(', ')}.${nachsatz}`;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 function ladeKorb(speicher) {
   try {
     const roh = speicher?.getItem(KORBSCHLUESSEL);
@@ -3795,9 +3890,27 @@ function gruppenbefund(rechnung, text) {
   var artikelNach = {};
   D.artikel.forEach(function (a) { artikelNach[a.sku] = a; });
 
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   var bereinigt = bereinige(korb, D.artikel);
   if (bereinigt.entfallen.length) {
     korb = bereinigt.zeilen;
+    merkeEntfallen(speicher, bereinigt.entfallen);
     speichereKorb(speicher, korb);
   }
 
@@ -4338,6 +4451,15 @@ function gruppenbefund(rechnung, text) {
 
     function zeichne() {
       leere(z);
+      
+      
+      
+      
+      var weg = holeEntfallen(speicher);
+      if (weg.length) {
+        z.appendChild(el('p', 'antwort', entfallensatz(weg, korb.length > 0)));
+        vergissEntfallen(speicher);
+      }
       if (!korb.length) {
         z.appendChild(el('p', 'lede', 'Der Warenkorb ist leer.'));
         var a = el('a', 'knopf');
@@ -4361,7 +4483,14 @@ function gruppenbefund(rechnung, text) {
 
       rechnung.teillieferungen.forEach(function (t) {
         var block = el('div', 'korbblock');
-        block.appendChild(el('h2', null, t.positionen.length + ' Positionen'));
+        
+        
+        
+        
+        
+        
+        block.appendChild(el('h2', null, t.positionen.length
+          + (t.positionen.length === 1 ? ' Position' : ' Positionen')));
         t.positionen.forEach(function (p) { block.appendChild(korbzeile(p, zeichne)); });
         z.appendChild(block);
       });

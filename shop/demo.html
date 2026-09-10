@@ -3406,6 +3406,101 @@ const KORBSCHLUESSEL = 'freudenthaler-shop-warenkorb-v1';
 
 
 
+
+
+
+
+
+
+
+const ENTFALLENSCHLUESSEL = 'freudenthaler-shop-entfallen-v1';
+
+
+
+
+
+function merkeEntfallen(speicher, skus) {
+  const neu = (skus ?? []).filter((s) => typeof s === 'string' && s);
+  if (!neu.length) return true;
+  try {
+    const alt = holeEntfallen(speicher);
+    const zusammen = [...new Set([...alt, ...neu])].slice(0, 50);
+    speicher?.setItem(ENTFALLENSCHLUESSEL, JSON.stringify(zusammen));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+
+function holeEntfallen(speicher) {
+  try {
+    const roh = speicher?.getItem(ENTFALLENSCHLUESSEL);
+    if (!roh) return [];
+    const daten = JSON.parse(roh);
+    if (!Array.isArray(daten)) return [];
+    return daten.filter((s) => typeof s === 'string' && s).slice(0, 50);
+  } catch {
+    return [];
+  }
+}
+
+
+function vergissEntfallen(speicher) {
+  try {
+    speicher?.removeItem(ENTFALLENSCHLUESSEL);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+function entfallensatz(skus, nochImKorb = true) {
+  const liste = (skus ?? []).filter((s) => typeof s === 'string' && s);
+  if (!liste.length) return null;
+  const eins = liste.length === 1;
+  
+
+
+
+
+
+
+
+
+  const nachsatz = nochImKorb ? ' Die Summe darunter ist ohne sie gerechnet.' : '';
+  
+  
+  
+  
+  return eins
+    ? `Eine Position aus Ihrem Warenkorb führen wir nicht mehr; sie ist herausgenommen: `
+      + `${liste[0]}.${nachsatz}`
+    : `${liste.length} Positionen aus Ihrem Warenkorb führen wir nicht mehr; sie sind `
+      + `herausgenommen: ${liste.join(', ')}.${nachsatz}`;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 function ladeKorb(speicher) {
   try {
     const roh = speicher?.getItem(KORBSCHLUESSEL);

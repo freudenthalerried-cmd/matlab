@@ -23,9 +23,27 @@
   var artikelNach = {};
   D.artikel.forEach(function (a) { artikelNach[a.sku] = a; });
 
+  /*
+   * **Was aus dem Korb genommen wurde, wird vermerkt — 10. September 2026.**
+   *
+   * Hier stand dreieinhalb Wochen lang genau dieselbe Verzweigung ohne die
+   * mittlere Zeile: `bereinige` liefert die entfallenen Kennungen, die
+   * Oberfläche fragte nur, **ob** es welche gab, speicherte den kürzeren Korb
+   * und sagte nichts. Gemessen an einem Korb aus zwei Positionen, von denen
+   * eine nicht mehr im Katalog steht: „1 Positionen", die Summe kleiner, kein
+   * Wort dazu.
+   *
+   * > **Was ein Kunde eingelegt hat, verschwindet nicht ohne einen Satz.**
+   *
+   * Der Vermerk geht in den Speicher und nicht in eine Variable: Der Shop wird
+   * als Einzeldateien ausgeliefert, und der Klick auf „Warenkorb" ist ein
+   * vollständiger Seitenwechsel. Bereinigt wird auf der Seite, die gerade
+   * offen ist — meist nicht der Warenkorb.
+   */
   var bereinigt = bereinige(korb, D.artikel);
   if (bereinigt.entfallen.length) {
     korb = bereinigt.zeilen;
+    merkeEntfallen(speicher, bereinigt.entfallen);
     speichereKorb(speicher, korb);
   }
 
@@ -566,6 +584,15 @@
 
     function zeichne() {
       leere(z);
+      // Zuerst der Hinweis, dann der Korb — und er steht **auch** über einem
+      // leeren Korb: Wer eine einzige Position eingelegt hatte und sie ist
+      // entfallen, sähe sonst „Der Warenkorb ist leer" und erführe nie,
+      // warum.
+      var weg = holeEntfallen(speicher);
+      if (weg.length) {
+        z.appendChild(el('p', 'antwort', entfallensatz(weg, korb.length > 0)));
+        vergissEntfallen(speicher);
+      }
       if (!korb.length) {
         z.appendChild(el('p', 'lede', 'Der Warenkorb ist leer.'));
         var a = el('a', 'knopf');
@@ -589,7 +616,14 @@
 
       rechnung.teillieferungen.forEach(function (t) {
         var block = el('div', 'korbblock');
-        block.appendChild(el('h2', null, t.positionen.length + ' Positionen'));
+        // **Die Einzahl, berichtigt am 10. September.** Hier stand
+        // `+ ' Positionen'` ohne Fall für die Eins — und die Regel dafür steht
+        // elf Zeilen tiefer am Gewichtssatz. Gemessen: sieben Stellen dieser
+        // Oberfläche setzen eine Zahl vor ein Hauptwort, fünf davon sind
+        // unveränderlich oder erreichen die Eins nie, eine behandelt sie —
+        // und diese eine nicht.
+        block.appendChild(el('h2', null, t.positionen.length
+          + (t.positionen.length === 1 ? ' Position' : ' Positionen')));
         t.positionen.forEach(function (p) { block.appendChild(korbzeile(p, zeichne)); });
         z.appendChild(block);
       });

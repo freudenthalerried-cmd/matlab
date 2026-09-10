@@ -965,6 +965,43 @@ const RAHMENSZENARIEN = [
   // jemand bemerkt. Es entsteht erst nach der Bezirkswahl; deshalb wählt der
   // Rahmen den Bezirk, bevor er misst. `mindestens` beweist, dass er da war:
   // ohne gezeichneten Abschnitt fällt das Szenario um.
+  /*
+   * **Was aus dem Korb genommen wurde — 10. September 2026.**
+   *
+   * Gemessen an einem Korb aus zwei Positionen, von denen eine nicht mehr im
+   * Katalog steht: Die Seite zeigte „1 Positionen", eine kleinere Summe und
+   * kein Wort dazu. Beides steht hier, weil beides an derselben Stelle
+   * aufgefallen ist — der stille Wegfall und die fehlende Einzahl.
+   *
+   * Der Fall gehört in den **Rahmen** und nicht zu den Szenarien oben: Er
+   * entsteht aus dem Speicher, und den kann nur der Rahmen vor dem Laden
+   * füllen.
+   */
+  {
+    name: 'Eine entfallene Position verschwindet nicht stillschweigend',
+    kennung: 'warenkorb',
+    korb: [{ sku: 'POS-12566', menge: 12 }, { sku: 'POS-NICHT-MEHR-IM-KATALOG', menge: 3 }],
+    mindestens: 3,
+    ablesen: "return d.getElementById('warenkorb-ziel').textContent;",
+    erwartet: ['führen wir nicht mehr', 'POS-NICHT-MEHR-IM-KATALOG', '1 Position '],
+    // Die Einzahl ist die zweite Zusicherung: „1 Positionen" wäre verboten,
+    // und ohne diese Zeile bliebe die Probe grün, weil „1 Position" darin
+    // enthalten ist.
+    verboten: ['1 Positionen', 'gelesen=[]'],
+  },
+  /*
+   * Die Gegenrichtung: Ist der ganze Korb entfallen, steht darunter keine
+   * Summe — und der Satz darf nicht auf eine zeigen.
+   */
+  {
+    name: 'Ist der ganze Korb entfallen, zeigt der Satz auf keine Summe',
+    kennung: 'warenkorb',
+    korb: [{ sku: 'POS-WEG-A', menge: 3 }, { sku: 'POS-WEG-B', menge: 1 }],
+    ablesen: "return d.getElementById('warenkorb-ziel').textContent;",
+    erwartet: ['2 Positionen aus Ihrem Warenkorb führen wir nicht mehr',
+      'POS-WEG-A, POS-WEG-B', 'Der Warenkorb ist leer'],
+    verboten: ['Die Summe darunter'],
+  },
   {
     name: 'Kasse mit Anfragetext bei 390 px',
     kennung: 'kasse',
@@ -1009,7 +1046,7 @@ const TYPEN = {
  *   Ohne diesen Haken misst der Rahmen die Seite vor der Eingabe — und
  *   bescheinigt einem Textfeld, dass es passt, das es gar nicht gab.
  */
-function rahmenSeite(kennung, korb, imRahmen = null) {
+function rahmenSeite(kennung, korb, imRahmen = null, ablesen = null) {
   const vorbereitung = korb
     ? `try { localStorage.setItem(${JSON.stringify(KORBSCHLUESSEL)}, ${JSON.stringify(JSON.stringify(korb))}); } catch (e) {}`
     : 'try { localStorage.clear(); } catch (e) {}';
@@ -1052,7 +1089,14 @@ setTimeout(function () {
             d.querySelectorAll('.knopf,.kz-weg,.kz-menge,button,select,textarea,input[type=number]'),
             function (n) { return !n.closest('.kopfleiste'); }
           ).length
-        + ' h1=' + (h1 ? h1.textContent.trim().slice(0, 40) : 'KEINE');
+        + ' h1=' + (h1 ? h1.textContent.trim().slice(0, 40) : 'KEINE')
+        // **Optional abgelesener Text — ergänzt am 10. September.** Bis dahin
+        // maß dieser Rahmen ausschließlich Maße: Rollen, Größe der
+        // Bedienelemente, Zahl der Elemente. Was auf der Seite *steht*, war
+        // hier nicht prüfbar — und genau das braucht der Warenkorb, dessen
+        // Zustand erst aus dem Speicher entsteht und deshalb im Einzelrahmen
+        // gemessen werden muss und nicht in der Einzeldatei-Fassung.
+        + ${ablesen ? `' gelesen=[' + String((function () { ${ablesen} })()).replace(/\\s+/g, ' ').slice(0, 500) + ']'` : "''"};
   } catch (e) { aus = 'ZUGRIFF ' + e.message; }
   var o = document.createElement('div');
   o.textContent = '${ANFANG.slice(0, 5)}' + '${ANFANG.slice(5)}' + aus + '${ENDE.slice(0, 5)}' + '${ENDE.slice(5)}';
@@ -1070,7 +1114,7 @@ function starteServer() {
           const korb = url.searchParams.get('korb');
           antwort.writeHead(200, { 'content-type': TYPEN['.html'] });
           antwort.end(rahmenSeite(url.searchParams.get('ziel') ?? 'index', korb ? JSON.parse(korb) : null,
-            url.searchParams.get('imrahmen')));
+            url.searchParams.get('imrahmen'), url.searchParams.get('ablesen')));
           return;
         }
         // Kein Pfad darf aus dem Ausgabeordner herausführen.
@@ -1232,6 +1276,7 @@ async function laufeRahmen(r, i, adresse) {
   url.searchParams.set('ziel', r.kennung);
   if (r.korb) url.searchParams.set('korb', JSON.stringify(r.korb));
   if (r.imRahmen) url.searchParams.set('imrahmen', r.imRahmen);
+  if (r.ablesen) url.searchParams.set('ablesen', r.ablesen);
 
   let dom = '';
   try {
@@ -1263,6 +1308,14 @@ async function laufeRahmen(r, i, adresse) {
           probleme.push(`nur ${gefunden} Bedienelemente gefunden, erwartet mindestens `
             + `${r.mindestens} — die Seite war vermutlich leer: ${gerendert}`);
         }
+      }
+      // Dieselben zwei Listen wie bei den Szenarien oben, damit ein
+      // Rahmenszenario nicht seine eigene Sprache spricht.
+      for (const muss of r.erwartet ?? []) {
+        if (!gerendert.includes(muss)) probleme.push(`fehlt im gerenderten Ergebnis: „${muss}"`);
+      }
+      for (const darfNicht of r.verboten ?? []) {
+        if (gerendert.includes(darfNicht)) probleme.push(`stand im Ergebnis, darf nicht: „${darfNicht}"`);
       }
     }
   }
