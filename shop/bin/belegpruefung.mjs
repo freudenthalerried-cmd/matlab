@@ -25,6 +25,7 @@ import { erzeugeBestellungen, darfAutomatischAusgeloestWerden } from '../src/bes
 import { kundenWarenkorb } from '../src/shopkern.js';
 import { baueKundenanfrage, gruppenbefund, pruefeAnfrageAufGeheimnis } from '../src/kundenanfrage.js';
 import { pruefeBelege } from '../src/belegpruefung.js';
+import { mehrlieferungsbefund, lieferantenzahl } from '../src/lieferungen.js';
 import {
   lieferhinweise, PFLICHTTEXTE, AGB_GLIEDERUNG, DATENSCHUTZ_GLIEDERUNG,
   websiteVerarbeitung, B2B_ABGRENZUNG, IMPRESSUMSFELDER,
@@ -376,12 +377,40 @@ if (freigabe.erlaubt) {
   for (const g of freigabe.gruende) console.log(`    · ${g}`);
 }
 
+/*
+ * **Mehrere Lieferungen auf einem Beleg — 10. September 2026.**
+ *
+ * Die Auftragsbestätigung trug bis heute den Hinweis *„Teillieferungen kommen
+ * getrennt an … in mehreren Sendungen an verschiedenen Tagen"*. Die
+ * Abnahme**seite** trägt denselben Text und sagt zwei Absätze darunter, dass
+ * er heute nicht zutrifft; auf dem Beleg steht er allein. Und dort ist er
+ * keine Beschreibung, sondern eine Auskunft über die Rügeobliegenheit nach
+ * § 377 UGB: Wer auf eine zweite Sendung wartet, die nicht kommt, prüft die
+ * erste zu spät.
+ *
+ * Gemessen wird der **Beleg**, nicht die Vorlage — dieselbe Regel, die über
+ * dieser Datei steht: Was auf ihm steht, gilt.
+ */
+const lieferantenImKatalog = lieferantenzahl(katalog.artikel ?? []);
+const mehr = mehrlieferungsbefund(
+  belege.map((b) => ({ name: b.art, text: b.text })),
+  lieferantenImKatalog,
+  belege.length,
+);
+console.log(`Aussagen über mehrere Lieferungen: ${mehr.gesehen} auf ${belege.length} Belegen, `
+  + `${lieferantenImKatalog} Lieferant(en) im Katalog.`);
+for (const m of mehr.meldungen) {
+  console.log(`  ✗ ${m.wo} [${m.regel}]`);
+  console.log(`      ${m.text}`);
+}
+
 console.log('');
-if (befund.sauber) {
+if (befund.sauber && mehr.sauber) {
   console.log('Keine Meldung. Der Text, der beim Kunden ankommt, ist gelesen worden —');
   console.log('nicht nur der Quelltext, aus dem er entsteht.');
   console.log('\nMit --zeigen stehen die Belege vollständig da; gelesen gehören sie trotzdem.');
 } else {
-  console.log(`${befund.meldungen} Meldung(en). Ein Beleg hat keine Fußnoten — was auf ihm steht, gilt.`);
+  console.log(`${befund.meldungen + mehr.meldungen.length} Meldung(en). `
+    + 'Ein Beleg hat keine Fußnoten — was auf ihm steht, gilt.');
   process.exitCode = 1;
 }

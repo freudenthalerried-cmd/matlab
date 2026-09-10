@@ -2412,6 +2412,65 @@ export const GEGENPROBEN = Object.freeze([
       + 'Assistent liest die Zeile, nicht den Vorspann.',
   }),
   Object.freeze({
+    id: 'angebot-verspricht-teillieferungen',
+    pruefer: 'pruefe-belege',
+    was: 'Ein Angebot mit Bindefrist, das Teillieferungen zum Regelfall erklärt',
+    datei: 'shop/src/beleg.js',
+    art: 'ersetzen',
+    suchen: "    'Lieferung im Streckengeschäft: Die Ware geht vom Lieferanten direkt zur',\n"
+      + "    'Baustelle, ein eigenes Lager gibt es nicht. Alle geführten Artikel kommen',\n"
+      + "    'von einem Lieferanten; dieses Angebot ist deshalb eine Lieferung mit einer',\n"
+      + "    'Frachtpauschale. Kommt ein zweiter Lieferant dazu, entsteht je Lieferant',\n"
+      + "    'eine eigene Lieferung, und die Pauschale fällt für jede an.',",
+    ersetzen: "    'Lieferung im Streckengeschäft ab Werk der Hersteller; Teillieferungen je',\n"
+      + "    'Lieferant sind der Regelfall und werden nicht gesondert berechnet.',",
+    erwartet: /mehrlieferung-ohne-bedingung/,
+    warum: 'Wörtlich der Satz, der bis zum 10. September auf jedem Angebot stand — auf einem '
+      + 'Beleg mit Bindefrist, also einer Zusage. Er hat drei Fehler: Die Ware kommt nicht ab '
+      + 'Werk, Teillieferungen gibt es bei einem Lieferanten nicht, und „nicht gesondert '
+      + 'berechnet" widerspricht Punkt 5 der eigenen AGB, wo die Fracht je Lieferung anfällt. '
+      + 'Gefunden hat ihn nicht das Lesen, sondern der neue Prüfer bei seinem ersten Lauf.',
+  }),
+  Object.freeze({
+    id: 'agb-macht-teillieferungen-zum-regelfall',
+    pruefer: 'pruefe-seiten',
+    was: 'Eine AGB-Klausel, die Teillieferungen zum Regelfall erklärt',
+    datei: 'shop/src/rechtstexte.js',
+    art: 'ersetzen',
+    baueVorher: true,
+    suchen: "      'Die Ware geht vom Lieferanten direkt zur Baustelle; ein eigenes Lager gibt es nicht. ' +\n"
+      + "      'Alle geführten Artikel kommen derzeit von einem Lieferanten, eine Bestellung ist ' +\n"
+      + "      'deshalb eine Lieferung. Kommt ein zweiter Lieferant dazu, entsteht je Lieferant eine ' +\n"
+      + "      'eigene Lieferung mit eigener Anfahrt.',",
+    ersetzen: "      'Direktversand durch den Hersteller; Teillieferungen je Lieferant sind der Regelfall.',",
+    erwartet: /mehrlieferung-ohne-bedingung/,
+    warum: 'Der Zustand der AGB bis zum 10. September. Der Befund vom 6. September hat vier '
+      + 'Kundenflächen erreicht und diese nicht — das Muster von damals kennt nur die dort '
+      + 'berichtigte Formulierung. Die Mutation misst das Erzeugnis: Die Klausel steht auf '
+      + 'der gebauten AGB-Seite, und dort trägt sie keinen Satz über die Zahl der Lieferanten.',
+  }),
+  Object.freeze({
+    id: 'wissensseite-buendelt-was-nicht-geteilt-ist',
+    pruefer: 'pruefe-inhalte',
+    was: 'Eine Zusage, drei Teillieferungen zu bündeln, die es nicht gibt',
+    datei: 'shop/inhalte/wissen/warum-keine-gratislieferung.md',
+    art: 'ersetzen',
+    suchen: '- **Eine Lieferung, ein Termin.** Alle geführten Artikel kommen von einem\n'
+      + '  Lieferanten; ein Warenkorb ist deshalb eine Lieferung mit einer Anfahrt.\n'
+      + '  Kommt ein zweiter Lieferant dazu, wird daraus je Lieferant eine eigene.\n'
+      + '  (Bis zum 10. September stand hier „wir bündeln, was auf dieselbe Baustelle\n'
+      + '  geht, statt drei Teillieferungen zu fahren" — der Shop fährt nicht, und\n'
+      + '  drei Teillieferungen kann es bei einem Lieferanten nicht geben.)',
+    ersetzen: '- **Eine Lieferung, ein Termin.** Wir bündeln, was auf dieselbe Baustelle\n'
+      + '  geht, statt drei Teillieferungen zu fahren.',
+    erwartet: /mehrlieferung-ohne-bedingung/,
+    warum: 'Die dritte Formulierung derselben Behauptung, wörtlich vom Bestand. Sie verspricht '
+      + 'außerdem eine Tätigkeit, die dieser Betrieb nicht ausübt: Gefahren wird von der '
+      + 'Spedition des Lieferanten, ein eigenes Lager zum Bündeln gibt es nicht — dieselbe '
+      + 'Sorte Zusage wie der Rat zum Abholen, der am 6. September aus demselben Absatz '
+      + 'genommen wurde.',
+  }),
+  Object.freeze({
     id: 'untergrenze-auf-der-inhaltsseite',
     pruefer: 'pruefe-inhalte',
     was: 'Eine Inhaltsseite, die eine andere Bestellgrenze nennt als die geltende',

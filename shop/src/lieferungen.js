@@ -109,3 +109,122 @@ export function lieferungsbefund({ texte, lieferanten, mindestens = 3 }) {
     sauber: meldungen.length === 0,
   };
 }
+
+/* ------------------------------------------------------------------ *
+ * Die zweite Fassung — 10. September 2026
+ *
+ * `BEHAUPTUNG` oben stammt vom 6. September und findet genau eine Formulierung:
+ * *„… mehrere Hersteller … entstehen mehrere Lieferungen"*. Das war der Satz,
+ * der an dem Tag an vier Stellen stand und dort berichtigt wurde. Gemessen am
+ * 10. September über **127 Kundenflächen** — gebaute Seiten, Quelltexte,
+ * AGB-Gliederung und die Lieferhinweise der Auftragsbestätigung — steht
+ * dieselbe Behauptung an **sieben** weiteren Stellen, in vier anderen
+ * Formulierungen. Das Muster trifft **keine** davon:
+ *
+ * | Fläche | Satz |
+ * |---|---|
+ * | AGB Punkt 4 | „Direktversand durch den Hersteller; **Teillieferungen je Lieferant sind der Regelfall**." |
+ * | Auftragsbestätigung | „**Teillieferungen kommen getrennt an.** … erreicht die Baustelle deshalb **in mehreren Sendungen an verschiedenen Tagen**." |
+ * | Wissensseite | „Wir bündeln, was auf dieselbe Baustelle geht, **statt drei Teillieferungen zu fahren**." |
+ *
+ * > **Ein Prüfer, der aus einem Beispielsatz gebaut wird, erkennt den
+ * > Beispielsatz.** Seine grüne Meldung hat seit dem 6. September nichts
+ * > bedeutet.
+ *
+ * Die Abnahmeseite ist der Gegenfall und bleibt grün: Sie trägt denselben
+ * Hinweis und sagt zwei Absätze darunter, dass er heute nicht zutrifft. Genau
+ * diese Auskunft fehlt der **Auftragsbestätigung**, auf der derselbe Text
+ * allein steht — die Berichtigung vom 30. August ist an der Seite angekommen
+ * und nicht am Text.
+ *
+ * ## Die Regel
+ *
+ * > **Wer mehrere Lieferungen behauptet, sagt auf derselben Fläche, wovon sie
+ * > abhängen.**
+ *
+ * Gemessen wird zweistufig, und das ist Absicht. Ein Satz, der die Bedingung
+ * selbst trägt („Kommt ein zweiter Lieferant dazu, entstehen mehrere
+ * Lieferungen"), ist fertig — so stehen 24 Fundstellen im Bestand, und keine
+ * davon ist ein Befund. Trägt er sie nicht, entscheidet die **Fläche**: Nennt
+ * sie irgendwo den einen Lieferanten oder den zweiten, der dazukommen müsste,
+ * liest der Kunde beides zusammen.
+ */
+
+/**
+ * Wörter, die mehr als eine Lieferung behaupten.
+ *
+ * Nicht „Lieferung" — das Wort steht auf jeder Seite. Gesucht ist die
+ * **Mehrzahl**: geteilte Sendungen, getrennte Lieferungen, Teillieferungen.
+ */
+export const MEHRLIEFERUNG =
+  /Teillieferung(?:en)?|mehrere[nr]?\s+(?:Sendungen|Lieferungen|Teillieferungen)|getrennte[nr]?\s+(?:Sendungen|Lieferungen)|(?:zwei|drei)\s+(?:Sendungen|Lieferungen|Teillieferungen)/i;
+
+/**
+ * Die Bedingung **im Satz**: Wovon die mehreren Lieferungen abhängen.
+ *
+ * Eng gefasst und mit Vorsatz. „mehreren" allein genügt nicht — „erreicht die
+ * Baustelle in mehreren Sendungen" wäre sonst durch sein eigenes Wort gedeckt.
+ */
+export const SATZBEDINGUNG =
+  /\b(?:wenn|falls|sobald|sofern|kommt[^.!?]{0,40}dazu|k(?:ä|ae)me|bei mehreren|verschiedene[nr]?\s+(?:Lieferanten|Hersteller)|mehrerer\s+(?:Lieferanten|Hersteller)|f(?:ü|ue)hrt der Katalog)\b/i;
+
+/**
+ * Die Bedingung **auf der Fläche**: der Satz über die Zahl der Lieferanten.
+ *
+ * Das ist die Auskunft, die den Hinweis einordnet — „alle Artikel kommen von
+ * einem Lieferanten", „sobald ein zweiter dazukommt". Ein beliebiges
+ * Bedingungswort irgendwo auf der Seite genügt ausdrücklich nicht: Ein
+ * Freibrief, der überall gilt, ist keiner.
+ */
+export const FLAECHENBEDINGUNG =
+  /zweite[rn]?\s+Lieferant|zweiten\s+Lieferanten|von\s+einem\s+Lieferanten|(?:ü|ue)ber\s+einen\s+Lieferanten/i;
+
+/** Sätze eines Textes — über Zeilenumbrüche hinweg, wie im Markdown üblich. */
+export function saetzeVon(text) {
+  return String(text ?? '').replace(/\s+/g, ' ').split(/(?<=[.!?])\s+/);
+}
+
+/**
+ * Behauptet eine Fläche mehrere Lieferungen, ohne zu sagen, wovon sie abhängen?
+ *
+ * @param {{name: string, text: string}[]} flaechen
+ * @param {number} lieferanten Wie viele Lieferanten der Katalog führt.
+ * @param {number} mindestens Ab wie vielen Flächen die Aussage trägt.
+ */
+export function mehrlieferungsbefund(flaechen = [], lieferanten = 1, mindestens = 20) {
+  const meldungen = [];
+  let gesehen = 0;
+  if (flaechen.length < mindestens) {
+    meldungen.push({
+      regel: 'zu-wenig-flaechen',
+      wo: '—',
+      text: `nur ${flaechen.length} Kundenflächen gemessen, erwartet mindestens ${mindestens} — `
+        + 'darüber lässt sich nichts aussagen',
+    });
+  }
+  // Bei zwei Lieferanten stimmt jeder dieser Sätze. Die Regel gilt für den
+  // Zustand, in dem sie falsch sind — und dreht sich von selbst ab, sobald der
+  // zweite Lieferant im Katalog steht.
+  if (lieferanten > 1) return { geprueft: flaechen.length, lieferanten, gesehen, meldungen, sauber: meldungen.length === 0 };
+  for (const { name, text } of flaechen) {
+    const gedeckt = FLAECHENBEDINGUNG.test(String(text ?? ''));
+    for (const satz of saetzeVon(text)) {
+      if (!MEHRLIEFERUNG.test(satz)) continue;
+      gesehen += 1;
+      if (SATZBEDINGUNG.test(satz) || gedeckt) continue;
+      meldungen.push({
+        regel: 'mehrlieferung-ohne-bedingung',
+        wo: name,
+        text: `${name} behauptet mehrere Lieferungen und sagt nirgends auf derselben Fläche, `
+          + `wovon sie abhängen — der Katalog führt einen Lieferanten: „${satz.trim().slice(0, 110)}"`,
+      });
+    }
+  }
+  return {
+    geprueft: flaechen.length,
+    lieferanten,
+    gesehen,
+    meldungen,
+    sauber: meldungen.length === 0,
+  };
+}

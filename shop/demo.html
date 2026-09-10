@@ -4241,7 +4241,26 @@ const AGB_GLIEDERUNG = [
       'wird (Punkt 12). Das Verfahren betrifft die Eingangsseite: den ' +
       'innergemeinschaftlichen Erwerb bei ausländischen Herstellern im Reihengeschäft.',
   },
-  { nr: 4, titel: 'Lieferung im Streckengeschäft', hinweis: 'Direktversand durch den Hersteller; Teillieferungen je Lieferant sind der Regelfall.' },
+  
+
+
+
+
+
+
+
+
+
+
+  {
+    nr: 4,
+    titel: 'Lieferung im Streckengeschäft',
+    hinweis:
+      'Die Ware geht vom Lieferanten direkt zur Baustelle; ein eigenes Lager gibt es nicht. ' +
+      'Alle geführten Artikel kommen derzeit von einem Lieferanten, eine Bestellung ist ' +
+      'deshalb eine Lieferung. Kommt ein zweiter Lieferant dazu, entsteht je Lieferant eine ' +
+      'eigene Lieferung mit eigener Anfahrt.',
+  },
   {
     nr: 5,
     titel: 'Mindestbestellwert und Mindestbestellmengen',
@@ -4401,11 +4420,30 @@ const LIEFERHINWEISE = [
       'Zeitpunkt ist die Rüge in aller Regel verspätet und die Ware gilt als genehmigt.',
     grundlage: '§ 377 Abs 2 UGB',
   },
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   {
-    titel: 'Teillieferungen kommen getrennt an',
+    titel: 'Was in mehreren Sendungen kommt, wird einzeln geprüft',
     text:
-      'Im Streckengeschäft liefert jeder Hersteller selbst. Eine Bestellung erreicht die Baustelle ' +
-      'deshalb in mehreren Sendungen an verschiedenen Tagen; jede ist für sich zu prüfen.',
+      'Alle geführten Artikel kommen von einem Lieferanten; diese Bestellung erreicht die ' +
+      'Baustelle deshalb in einer Sendung. Kommt später ein zweiter Lieferant dazu, liefert ' +
+      'jeder für sich, und jede Sendung ist ab ihrer eigenen Ablieferung zu prüfen.',
     grundlage: 'AGB Punkt 4',
   },
 ];
@@ -4589,11 +4627,14 @@ const AGB_VERWEISE = Object.freeze([
 
   Object.freeze({
     nr: 4,
-    zweck: 'Teillieferungen je Lieferant als Regelfall',
+    
+    
+    zweck: 'Eine Lieferung je Lieferant, mit eigener Anfahrt',
     erwartetImTitel: 'Streckengeschäft',
-    warum: 'Der Hinweis auf der Auftragsbestätigung sagt dem Bauleiter, dass seine Bestellung '
-      + 'in mehreren Sendungen ankommt und jede für sich zu prüfen ist. Zeigt der Verweis '
-      + 'woanders hin, sucht er die Regel im falschen Punkt — und die Rügefrist läuft.',
+    warum: 'Der Hinweis auf der Auftragsbestätigung sagt dem Bauleiter, wovon die Zahl der '
+      + 'Sendungen abhängt und dass jede ab ihrer eigenen Ablieferung zu prüfen ist. Zeigt '
+      + 'der Verweis woanders hin, sucht er die Regel im falschen Punkt — und die Rügefrist '
+      + 'läuft.',
   }),
   Object.freeze({
     nr: 7,
@@ -6718,8 +6759,19 @@ function erzeugeAngebot(warenkorb, { nummer, datum, bindefristTage = BINDEFRIST_
       ? 'Zahlung bei Bestellung, kein Zahlungsziel'
       : `${ZAHLUNGSBEDINGUNGEN.zielTage} Tage netto`}`
       + ` (${angeboteneZahlwege().map((id) => zahlwegName(id)).join(', ')}).`,
-    'Lieferung im Streckengeschäft ab Werk der Hersteller; Teillieferungen je',
-    'Lieferant sind der Regelfall und werden nicht gesondert berechnet.',
+    
+    
+    
+    
+    
+    
+    
+    
+    'Lieferung im Streckengeschäft: Die Ware geht vom Lieferanten direkt zur',
+    'Baustelle, ein eigenes Lager gibt es nicht. Alle geführten Artikel kommen',
+    'von einem Lieferanten; dieses Angebot ist deshalb eine Lieferung mit einer',
+    'Frachtpauschale. Kommt ein zweiter Lieferant dazu, entsteht je Lieferant',
+    'eine eigene Lieferung, und die Pauschale fällt für jede an.',
     
     
     

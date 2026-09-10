@@ -17,11 +17,15 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-import { BEHAUPTUNG, lieferantenzahl, lieferungsbefund, lieferungssatz } from '../src/lieferungen.js';
+import {
+  BEHAUPTUNG, lieferantenzahl, lieferungsbefund, lieferungssatz,
+  MEHRLIEFERUNG, SATZBEDINGUNG, FLAECHENBEDINGUNG, saetzeVon, mehrlieferungsbefund,
+} from '../src/lieferungen.js';
+import { AGB_GLIEDERUNG, LIEFERHINWEISE } from '../src/rechtstexte.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const SITE = join(SHOP, 'ausgabe', 'site');
@@ -124,4 +128,118 @@ test('die Lieferseite sagt, was aus einem Warenkorb wird', () => {
   // da, ist er von Hand geschrieben und läuft ab.
   assert.ok(text.includes(lieferungssatz(lieferantenzahl(katalog.artikel ?? katalog)).slice(0, 60)),
     'die Lieferseite trägt den abgeleiteten Satz nicht');
+});
+
+/* ------------------------------------------------------------------ *
+ * Die zweite Fassung — 10. September 2026
+ *
+ * `BEHAUPTUNG` kennt eine Formulierung: die, die am 6. September berichtigt
+ * wurde. Gemessen über 127 Kundenflächen stand dieselbe Behauptung an sieben
+ * weiteren Stellen — AGB Punkt 4, die Lieferhinweise der
+ * Auftragsbestätigung, das Angebot und eine Wissensseite.
+ *
+ * > **Ein Prüfer, der aus einem Beispielsatz gebaut wird, erkennt den
+ * > Beispielsatz.**
+ * ------------------------------------------------------------------ */
+
+test('die alten Formulierungen des Bestands kommen alle durch BEHAUPTUNG', () => {
+  // Der Nachweis, warum es eine zweite Fassung braucht: nicht behauptet,
+  // sondern hier festgehalten. Fiele einer dieser Sätze doch unter das alte
+  // Muster, wäre die Begründung dieses Moduls falsch.
+  for (const satz of [
+    'Teillieferungen je Lieferant sind der Regelfall.',
+    'Eine Bestellung erreicht die Baustelle deshalb in mehreren Sendungen an verschiedenen Tagen.',
+    'Wir bündeln, was auf dieselbe Baustelle geht, statt drei Teillieferungen zu fahren.',
+    'Lieferung im Streckengeschäft ab Werk der Hersteller; Teillieferungen je Lieferant sind der Regelfall.',
+  ]) {
+    assert.equal(BEHAUPTUNG.test(satz), false, `alt: ${satz}`);
+    assert.equal(MEHRLIEFERUNG.test(satz), true, `neu: ${satz}`);
+    assert.equal(SATZBEDINGUNG.test(satz), false, `Bedingung erfunden: ${satz}`);
+  }
+});
+
+test('die richtigen Sätze des Bestands tragen ihre Bedingung', () => {
+  for (const satz of [
+    'Kommt ein zweiter Lieferant dazu, entstehen mehrere Lieferungen, und sie gilt für jede einzelne.',
+    'Bei mehreren Lieferungen gilt er je Lieferung, weil Anfahrt und Verpackung je Lieferung anfallen.',
+    'Artikel verschiedener Lieferanten kommen in getrennten Lieferungen.',
+  ]) {
+    assert.equal(MEHRLIEFERUNG.test(satz), true, `nicht gesehen: ${satz}`);
+    assert.equal(SATZBEDINGUNG.test(satz), true, `nicht gedeckt: ${satz}`);
+  }
+});
+
+test('„mehreren" allein deckt sich nicht selbst', () => {
+  // Die Falle des ersten Entwurfs: „erreicht die Baustelle in mehreren
+  // Sendungen" wäre durch sein eigenes Wort gedeckt gewesen.
+  assert.equal(SATZBEDINGUNG.test('erreicht die Baustelle in mehreren Sendungen'), false);
+  assert.equal(SATZBEDINGUNG.test('Bei mehreren Lieferungen gilt er je Lieferung'), true);
+});
+
+test('die Fläche darf tragen, was der Satz nicht sagt', () => {
+  const b = mehrlieferungsbefund([
+    { name: 'abnahme', text: 'Eine Bestellung erreicht die Baustelle in mehreren Sendungen. '
+      + 'Das jetzige Sortiment läuft über einen Lieferanten, also kommt eine Bestellung in einer Sendung.' },
+    { name: 'agb', text: 'Teillieferungen je Lieferant sind der Regelfall.' },
+    { name: 'index', text: 'nichts dazu' },
+  ], 1, 3);
+  assert.equal(b.meldungen.length, 1);
+  assert.equal(b.meldungen[0].wo, 'agb');
+  assert.equal(b.gesehen, 2, 'beide Aussagen gehören gesehen, nur eine gemeldet');
+});
+
+test('ein beliebiges Bedingungswort auf der Seite deckt nichts', () => {
+  // Der Freibrief, der überall gilt: „wenn" steht auf jeder Seite.
+  const b = mehrlieferungsbefund([
+    { name: 'x', text: 'Teillieferungen sind der Regelfall. Wenn Sie Fragen haben, rufen Sie an.' },
+    { name: 'y', text: '' }, { name: 'z', text: '' },
+  ], 1, 3);
+  assert.equal(b.meldungen.length, 1, 'FLAECHENBEDINGUNG ist nicht „irgendein Bedingungswort"');
+  assert.equal(FLAECHENBEDINGUNG.test('Wenn Sie Fragen haben'), false);
+});
+
+test('mit dem zweiten Lieferanten schaltet sich die Regel selbst ab', () => {
+  const flaechen = [
+    { name: 'agb', text: 'Teillieferungen je Lieferant sind der Regelfall.' },
+    { name: 'y', text: '' }, { name: 'z', text: '' },
+  ];
+  assert.equal(mehrlieferungsbefund(flaechen, 2, 3).meldungen.length, 0);
+  assert.equal(mehrlieferungsbefund(flaechen, 1, 3).meldungen.length, 1);
+});
+
+test('zu wenige Flächen sind kein grüner Befund', () => {
+  const b = mehrlieferungsbefund([{ name: 'x', text: '' }], 1, 20);
+  assert.ok(b.meldungen.some((m) => m.regel === 'zu-wenig-flaechen'));
+});
+
+test('Sätze werden über Zeilenumbrüche hinweg getrennt', () => {
+  // Markdown bricht mitten im Satz um; zeilenweise wäre die Bedingung
+  // unsichtbar, die eine Zeile tiefer steht.
+  assert.deepEqual(saetzeVon('Erster Satz.\nZweiter\nSatz.'), ['Erster Satz.', 'Zweiter Satz.']);
+});
+
+/* Gegen den Bestand: alle Kundenflächen, die es gibt. */
+test('keine Kundenfläche behauptet mehrere Lieferungen ohne ihre Bedingung', (t) => {
+  if (!existsSync(SITE)) return t.skip('ausgabe/site fehlt — zuerst npm run website');
+  const ohneTags = (h) => h.replace(/<style[\s\S]*?<\/style>/g, ' ')
+    .replace(/<script[\s\S]*?<\/script>/g, ' ').replace(/<[^>]+>/g, ' ').replace(/&quot;/g, '"');
+  const flaechen = [];
+  const gehe = (ordner, roh) => {
+    for (const e of readdirSync(ordner)) {
+      const pfad = join(ordner, e);
+      if (statSync(pfad).isDirectory()) { gehe(pfad, roh); continue; }
+      if (!e.endsWith('.html') && !e.endsWith('.md') && e !== 'llms.txt') continue;
+      const text = readFileSync(pfad, 'utf8');
+      flaechen.push({ name: pfad, text: roh || e.endsWith('.md') ? text : ohneTags(text) });
+    }
+  };
+  gehe(SITE, false);
+  gehe(join(SHOP, 'inhalte'), true);
+  for (const p of AGB_GLIEDERUNG) flaechen.push({ name: `AGB Punkt ${p.nr}`, text: `${p.titel}. ${p.hinweis ?? ''}` });
+  for (const h of LIEFERHINWEISE) flaechen.push({ name: `Lieferhinweis ${h.titel}`, text: `${h.titel}. ${h.text}` });
+
+  const artikel = JSON.parse(readFileSync(join(SHOP, 'data', 'katalog-baustoff.json'), 'utf8')).artikel ?? [];
+  const b = mehrlieferungsbefund(flaechen, lieferantenzahl(artikel), 60);
+  assert.deepEqual(b.meldungen.map((m) => `${m.wo}: ${m.text}`), []);
+  assert.ok(b.gesehen >= 20, `nur ${b.gesehen} Aussagen gesehen — der Bestand trägt mehr`);
 });

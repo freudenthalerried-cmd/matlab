@@ -346,8 +346,19 @@ export function erzeugeAngebot(warenkorb, { nummer, datum, bindefristTage = BIND
       ? 'Zahlung bei Bestellung, kein Zahlungsziel'
       : `${ZAHLUNGSBEDINGUNGEN.zielTage} Tage netto`}`
       + ` (${angeboteneZahlwege().map((id) => zahlwegName(id)).join(', ')}).`,
-    'Lieferung im Streckengeschäft ab Werk der Hersteller; Teillieferungen je',
-    'Lieferant sind der Regelfall und werden nicht gesondert berechnet.',
+    // **Berichtigt am 10. September.** Hier stand „Lieferung im
+    // Streckengeschäft ab Werk der Hersteller; Teillieferungen je Lieferant
+    // sind der Regelfall und werden nicht gesondert berechnet." Drei Fehler in
+    // anderthalb Zeilen, auf einem Beleg mit Bindefrist: Die Ware kommt nicht
+    // ab Werk, sondern vom Lager eines Baustoffhändlers. Teillieferungen sind
+    // kein Regelfall — alle 46 geführten Artikel kommen von einem Lieferanten.
+    // Und „nicht gesondert berechnet" widerspricht Punkt 5 der eigenen AGB:
+    // Die Frachtpauschale fällt **je Lieferung** an, weil die Anfahrt es tut.
+    'Lieferung im Streckengeschäft: Die Ware geht vom Lieferanten direkt zur',
+    'Baustelle, ein eigenes Lager gibt es nicht. Alle geführten Artikel kommen',
+    'von einem Lieferanten; dieses Angebot ist deshalb eine Lieferung mit einer',
+    'Frachtpauschale. Kommt ein zweiter Lieferant dazu, entsteht je Lieferant',
+    'eine eigene Lieferung, und die Pauschale fällt für jede an.',
     // **Berichtigt am 2. September.** Hier stand nur „Abladen, Zufahrt und
     // Anwesenheit obliegen dem Besteller" — daneben eine berechnete
     // Kranentladung. Wer beides liest, weiß nicht, wofür er die 7,50 € je Hub

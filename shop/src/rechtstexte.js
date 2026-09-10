@@ -348,7 +348,26 @@ export const AGB_GLIEDERUNG = [
       'wird (Punkt 12). Das Verfahren betrifft die Eingangsseite: den ' +
       'innergemeinschaftlichen Erwerb bei ausländischen Herstellern im Reihengeschäft.',
   },
-  { nr: 4, titel: 'Lieferung im Streckengeschäft', hinweis: 'Direktversand durch den Hersteller; Teillieferungen je Lieferant sind der Regelfall.' },
+  /*
+   * **Berichtigt am 10. September 2026.** Hier stand „Direktversand durch den
+   * Hersteller; Teillieferungen je Lieferant sind der Regelfall." Beides war
+   * falsch: Es liefert kein Hersteller, sondern ein Baustoffhändler — und
+   * Teillieferungen sind kein Regelfall, sondern gibt es heute überhaupt
+   * nicht. Alle 46 geführten Artikel kommen von einem Lieferanten, der
+   * Rechenkern teilt nach `lieferantId`, und ein Warenkorb ist damit **eine**
+   * Lieferung. Der Befund vom 6. September hat vier Kundenflächen erreicht;
+   * die AGB stand nicht darunter, weil der Prüfer nur die dort berichtigte
+   * Formulierung kennt.
+   */
+  {
+    nr: 4,
+    titel: 'Lieferung im Streckengeschäft',
+    hinweis:
+      'Die Ware geht vom Lieferanten direkt zur Baustelle; ein eigenes Lager gibt es nicht. ' +
+      'Alle geführten Artikel kommen derzeit von einem Lieferanten, eine Bestellung ist ' +
+      'deshalb eine Lieferung. Kommt ein zweiter Lieferant dazu, entsteht je Lieferant eine ' +
+      'eigene Lieferung mit eigener Anfahrt.',
+  },
   {
     nr: 5,
     titel: 'Mindestbestellwert und Mindestbestellmengen',
@@ -508,11 +527,30 @@ export const LIEFERHINWEISE = [
       'Zeitpunkt ist die Rüge in aller Regel verspätet und die Ware gilt als genehmigt.',
     grundlage: '§ 377 Abs 2 UGB',
   },
+  /*
+   * **Berichtigt am 10. September 2026.** Der Hinweis lautete „Teillieferungen
+   * kommen getrennt an — im Streckengeschäft liefert jeder Hersteller selbst.
+   * Eine Bestellung erreicht die Baustelle deshalb in mehreren Sendungen an
+   * verschiedenen Tagen."
+   *
+   * Die Abnahme**seite** trägt denselben Text und sagt zwei Absätze darunter,
+   * dass er heute nicht zutrifft — seit dem 30. August. Auf der
+   * **Auftragsbestätigung** steht er allein, und dort ist er eine Auskunft
+   * über die Rügeobliegenheit: Wer auf eine zweite Sendung wartet, die nicht
+   * kommt, prüft die erste zu spät.
+   *
+   * > **Die Berichtigung ist an der Seite angekommen und nicht am Text.**
+   *
+   * Der Hinweis bleibt stehen, wie am 30. August entschieden — ein Hinweis,
+   * der einmal weggelassen wurde, kommt selten zurück. Er trägt seine
+   * Bedingung jetzt selbst, weil er allein reist.
+   */
   {
-    titel: 'Teillieferungen kommen getrennt an',
+    titel: 'Was in mehreren Sendungen kommt, wird einzeln geprüft',
     text:
-      'Im Streckengeschäft liefert jeder Hersteller selbst. Eine Bestellung erreicht die Baustelle ' +
-      'deshalb in mehreren Sendungen an verschiedenen Tagen; jede ist für sich zu prüfen.',
+      'Alle geführten Artikel kommen von einem Lieferanten; diese Bestellung erreicht die ' +
+      'Baustelle deshalb in einer Sendung. Kommt später ein zweiter Lieferant dazu, liefert ' +
+      'jeder für sich, und jede Sendung ist ab ihrer eigenen Ablieferung zu prüfen.',
     grundlage: 'AGB Punkt 4',
   },
 ];
@@ -696,11 +734,14 @@ export const AGB_VERWEISE = Object.freeze([
    */
   Object.freeze({
     nr: 4,
-    zweck: 'Teillieferungen je Lieferant als Regelfall',
+    // **Nachgezogen am 10. September**, mit dem Punkt selbst: Teillieferungen
+    // waren nie der Regelfall, sie sind bei einem Lieferanten unmöglich.
+    zweck: 'Eine Lieferung je Lieferant, mit eigener Anfahrt',
     erwartetImTitel: 'Streckengeschäft',
-    warum: 'Der Hinweis auf der Auftragsbestätigung sagt dem Bauleiter, dass seine Bestellung '
-      + 'in mehreren Sendungen ankommt und jede für sich zu prüfen ist. Zeigt der Verweis '
-      + 'woanders hin, sucht er die Regel im falschen Punkt — und die Rügefrist läuft.',
+    warum: 'Der Hinweis auf der Auftragsbestätigung sagt dem Bauleiter, wovon die Zahl der '
+      + 'Sendungen abhängt und dass jede ab ihrer eigenen Ablieferung zu prüfen ist. Zeigt '
+      + 'der Verweis woanders hin, sucht er die Regel im falschen Punkt — und die Rügefrist '
+      + 'läuft.',
   }),
   Object.freeze({
     nr: 7,

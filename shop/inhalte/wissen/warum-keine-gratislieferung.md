@@ -70,8 +70,12 @@ ausgewiesene Fracht heißt: Wer wenig Aufwand verursacht, zahlt wenig.
 
 ## Was wir stattdessen tun
 
-- **Eine Lieferung, ein Termin.** Wir bündeln, was auf dieselbe Baustelle
-  geht, statt drei Teillieferungen zu fahren.
+- **Eine Lieferung, ein Termin.** Alle geführten Artikel kommen von einem
+  Lieferanten; ein Warenkorb ist deshalb eine Lieferung mit einer Anfahrt.
+  Kommt ein zweiter Lieferant dazu, wird daraus je Lieferant eine eigene.
+  (Bis zum 10. September stand hier „wir bündeln, was auf dieselbe Baustelle
+  geht, statt drei Teillieferungen zu fahren" — der Shop fährt nicht, und
+  drei Teillieferungen kann es bei einem Lieferanten nicht geben.)
 - **Systempakete statt Einzelartikel.** Wenn das Zubehör mitkommt, spart das
   die zweite Fahrt — der eigentliche Kostentreiber.
 - **Abholung sagen wir nicht zu.** Im Streckengeschäft geht die Ware vom Lieferanten

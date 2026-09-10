@@ -35,6 +35,7 @@ import {
   pruefeInhalt, pruefeAbsatz, schneideQuelltext, oberflaechensaetze, erfundeneZeitangaben,
 } from '../src/inhaltspruefung.js';
 import { untergrenzenbefund } from '../src/untergrenze.js';
+import { mehrlieferungsbefund, lieferantenzahl } from '../src/lieferungen.js';
 
 const hier = dirname(fileURLToPath(import.meta.url));
 
@@ -49,6 +50,29 @@ const INHALTSORDNER = ['wissen', 'gruppen', 'system'];
 const MINDESTWERT_NETTO = JSON.parse(
   readFileSync(join(hier, '..', 'data', 'betreiber.json'), 'utf8'),
 ).mindestbestellwertNetto ?? null;
+
+/**
+ * Wie viele Lieferanten der Katalog führt — gelesen, nicht angenommen.
+ *
+ * Die Regel unten gilt nur, solange es einer ist; mit dem zweiten Lieferanten
+ * stimmt jeder der beanstandeten Sätze und die Prüfung schaltet sich selbst ab.
+ */
+const LIEFERANTEN = lieferantenzahl(
+  JSON.parse(readFileSync(join(hier, '..', 'data', 'katalog-baustoff.json'), 'utf8')).artikel ?? [],
+);
+
+/**
+ * Meldet Behauptungen über mehrere Lieferungen, denen auf derselben Fläche
+ * die Bedingung fehlt. Gibt zurück, wie viele Treffer dazukommen.
+ */
+function meldeMehrlieferungen(flaechen, mindestens) {
+  const b = mehrlieferungsbefund(flaechen, LIEFERANTEN, mindestens);
+  for (const m of b.meldungen) {
+    console.log(`\n${m.wo}  [${m.regel}]`);
+    console.log(`    → ${m.text}`);
+  }
+  return b;
+}
 
 /**
  * Meldet die Abweichungen einer Grenzaussage und gibt zurück, wie viele
@@ -440,10 +464,24 @@ if (process.argv[2] === '--seiten') {
   const grenzen = meldeUntergrenzen(grenzflaechen, 40);
   treffer += grenzen.meldungen.length;
 
+  /* ---------------------------------------------------------------- *
+   * Mehrere Lieferungen, ohne zu sagen wovon sie abhängen — 10.09.2026
+   *
+   * `BEHAUPTUNG` in `src/lieferungen.js` stammt vom 6. September und kennt
+   * eine Formulierung. Gemessen über 127 Kundenflächen stand dieselbe
+   * Behauptung an sieben weiteren Stellen, in vier anderen Formulierungen —
+   * die AGB, die Auftragsbestätigung, das Angebot und diese Wissensseite.
+   * Siehe `mehrlieferungsbefund`.
+   * ---------------------------------------------------------------- */
+  const mehr = meldeMehrlieferungen(grenzflaechen, 40);
+  treffer += mehr.meldungen.length;
+
   console.log(`\n${seiten.length} Seiten, ${absaetze} Fließtextabsätze geprüft, ${treffer} mit Verdacht.`);
   console.log(`${mitKarten} Seiten zeigen Artikelkarten, ${mitKarten - ohneGrenze} nennen den Mindestbestellwert.`);
   console.log(`${grenzen.gefunden} Grenzaussagen auf ${grenzen.flaechen} Seiten gegen die hinterlegten `
     + `${grenzen.grenzeNetto} € netto Warenwert je Lieferung gehalten.`);
+  console.log(`${mehr.gesehen} Aussagen über mehrere Lieferungen gegen ${LIEFERANTEN} Lieferant(en) `
+    + 'im Katalog gehalten.');
   console.log(`${antworten} maschinenlesbare Antworten gegen den sichtbaren Text gehalten.`);
   console.log('Diese Texte stehen im Seitenbauwerkzeug, nicht in inhalte/ — sie unterliegen');
   console.log('trotzdem denselben Regeln.');
@@ -542,6 +580,10 @@ const grenzflaechen = process.argv.includes('--probe')
 if (grenzflaechen.length > 0) {
   const grenzen = meldeUntergrenzen(grenzflaechen, 1);
   trefferGesamt += grenzen.meldungen.length;
+  const mehr = meldeMehrlieferungen(grenzflaechen, 1);
+  trefferGesamt += mehr.meldungen.length;
+  console.log(`\n${mehr.gesehen} Aussage(n) über mehrere Lieferungen gegen ${LIEFERANTEN} `
+    + 'Lieferant(en) im Katalog gehalten.');
   console.log(`\n${grenzen.gefunden} Grenzaussage(n) auf ${grenzen.flaechen} Inhaltsseite(n) gegen die`);
   console.log(`hinterlegten ${grenzen.grenzeNetto} € netto Warenwert je Lieferung gehalten.`);
 }
