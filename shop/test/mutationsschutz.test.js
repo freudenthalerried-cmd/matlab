@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { wegwerfordner } from '../src/wegwerf.js';
 import {
   MARKENENDUNG, markenpfad, markiere, nimmAb, lies, offeneMarken, stelleZurueck, mutationsbefund,
+  laufendeGegenproben,
 } from '../src/mutationsschutz.js';
 
 /** Ein Wegwerfverzeichnis mit einer Datei darin. */
@@ -103,4 +104,66 @@ test('ein leeres Verzeichnis ist sauber, sagt aber, dass es hingesehen hat', () 
   const befund = mutationsbefund(ordner);
   assert.equal(befund.sauber, true);
   assert.equal(befund.angesehen, 2);
+});
+
+/**
+ * **Ein laufender Gegenprobenlauf sperrt den Commit — seit dem 10. September.**
+ *
+ * Der Satz „Ein Commit während einer Gegenprobe nimmt die Mutation mit" stand
+ * seit dem 4. September auf dem grünen Weg des Prüfers, als Warnung, die
+ * niemand einforderte. In der Nacht auf den 10. ist er eingetreten.
+ */
+test('Ein laufender Lauf wird in der Prozessliste erkannt', () => {
+  const liste = [
+    '  1     0 /sbin/init',
+    ' 42     1 node /home/user/matlab/shop/bin/gegenprobenlauf.mjs',
+    ' 43     1 node bin/prtext.mjs',
+  ].join('\n');
+  const gefunden = laufendeGegenproben(liste, [43]);
+  assert.equal(gefunden.length, 1);
+  assert.equal(gefunden[0].pid, 42);
+});
+
+test('Wer selbst fragt, meldet sich nicht — aber nur er', () => {
+  /*
+   * Der erste Entwurf nahm auch die **Elternkennung** des gefundenen Prozesses
+   * aus. Damit fiel jedes Geschwister unter die Ausnahme: ein Lauf, der im
+   * selben Terminal im Hintergrund liegt, während davor committet wird — genau
+   * die Lage, gegen die diese Prüfung gebaut ist. Ein Testfall mit einem
+   * echten Prozess hat es gezeigt; die Sperre schwieg.
+   */
+  const liste = [
+    '100    10 bash',
+    '200   100 node bin/gegenprobenlauf.mjs',
+    '300   100 node bin/mutationspruefung.mjs',
+  ].join('\n');
+  // Geschwister: gemeinsamer Elternprozess 100, und der Lauf gehört gemeldet.
+  assert.equal(laufendeGegenproben(liste, [300, 100]).length, 1);
+  // Vorfahr: Der Lauf selbst ruft den Prüfer — dann schweigt er.
+  assert.equal(laufendeGegenproben(liste, [300, 200]).length, 0);
+});
+
+test('Ein Name, der nur so aussieht, zählt nicht', () => {
+  const liste = [
+    ' 50     1 node bin/gegenprobenlauf.mjs.bak',
+    ' 51     1 vim src/gegenprobenregister.js',
+    ' 52     1 cat lauf/bin/gegenprobenlauf.mjsx',
+  ].join('\n');
+  assert.deepEqual(laufendeGegenproben(liste), []);
+});
+
+test('Der Pfad davor darf beliebig sein', () => {
+  for (const cmd of [
+    'node bin/gegenprobenlauf.mjs',
+    'node /home/user/matlab/shop/bin/gegenprobenlauf.mjs eine-probe',
+    'sh -c node bin/gegenprobenlauf.mjs',
+  ]) {
+    assert.equal(laufendeGegenproben(` 7 1 ${cmd}`).length, 1, cmd);
+  }
+});
+
+test('Eine leere oder unlesbare Liste erfindet nichts', () => {
+  assert.deepEqual(laufendeGegenproben(''), []);
+  assert.deepEqual(laufendeGegenproben(null), []);
+  assert.deepEqual(laufendeGegenproben('kein pid hier'), []);
 });

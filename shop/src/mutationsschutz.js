@@ -199,3 +199,65 @@ export function mutationsbefund(wurzel) {
   }
   return { marken, angesehen, meldungen, sauber: meldungen.length === 0 };
 }
+
+/* ------------------------------------------------------------------ *
+ * Läuft gerade ein Gegenprobenlauf?
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Der Anlass, 10. September 2026.** Seit dem 4. September druckt
+ * `npm run pruefe-mutationen` auf seinem **grünen** Weg den Satz:
+ *
+ * > *„Ein Commit während einer Gegenprobe nimmt die Mutation mit."*
+ *
+ * In der Nacht auf den 10. ist genau das eingetreten. Ein Lauf sollte
+ * abgebrochen werden; `pkill -f gegenprobenlauf` traf auf sein eigenes Muster
+ * auch die aufrufende Shell, die Shell starb, **der Läufer lief weiter**. Neun
+ * Minuten lang wurde daneben gemessen und committet — drei Messungen in Folge
+ * waren Artefakte und wiesen in drei Richtungen, und ein `git add -A` legte
+ * sieben Dateien gleichzeitig als gelöscht und als unverfolgt in den Index.
+ *
+ * Der Zettel hat gehalten: Keine Quelldatei blieb falsch. Aber der Satz
+ * darüber war eine **Warnung ohne Werkzeug** — er stand da, und niemand hat
+ * ihn eingefordert.
+ *
+ * > **Eine Regel, die nur als Satz dasteht, gilt für den, der sie liest.**
+ *
+ * Seither fragt der Prüfer nach. Er sieht nicht in eine Datei, die
+ * stehenbleiben könnte, sondern in die Prozessliste: Ein Lauf, dessen Prozess
+ * lebt, läuft; ein abgebrochener hinterlässt nichts, was später falsch
+ * behauptet, er liefe noch.
+ */
+export const LAUFMUSTER = /(?:^|\/|\s)bin\/gegenprobenlauf\.mjs(?:\s|$)/;
+
+/**
+ * Welche Zeilen der Prozessliste einen laufenden Gegenprobenlauf zeigen.
+ *
+ * **Ausgenommen ist, wer gerade fragt.** Der Prüfer kann aus einem Lauf heraus
+ * aufgerufen werden, und einer, der sich selbst meldet, wäre rot, sobald er
+ * gebraucht wird. Ausgenommen wird deshalb die **Kette der Vorfahren** — und
+ * nur sie.
+ *
+ * **Der erste Entwurf nahm auch die Elternkennung des gefundenen Prozesses
+ * aus.** Damit fiel jedes **Geschwister** unter die Ausnahme: ein Lauf, der im
+ * selben Terminal im Hintergrund liegt, während davor committet wird. Das ist
+ * genau die Lage vom 10. September, gegen die diese Prüfung gebaut ist. Der
+ * Testfall mit einem echten Prozess hat es gezeigt — die Sperre schwieg, und
+ * ohne den Versuch wäre sie als fertig durchgegangen.
+ *
+ * @param {string} prozessliste Ausgabe von `ps -eo pid,ppid,cmd`
+ * @param {number[]} eigene Kennungen, die nicht zählen (der Prüfer und seine Eltern)
+ */
+export function laufendeGegenproben(prozessliste, eigene = []) {
+  const ausgenommen = new Set(eigene.map(Number));
+  return String(prozessliste ?? '')
+    .split('\n')
+    .map((z) => z.trim())
+    .filter(Boolean)
+    .map((z) => {
+      const teile = z.split(/\s+/);
+      return { pid: Number(teile[0]), ppid: Number(teile[1]), cmd: teile.slice(2).join(' ') };
+    })
+    .filter((p) => Number.isFinite(p.pid) && LAUFMUSTER.test(p.cmd))
+    .filter((p) => !ausgenommen.has(p.pid));
+}

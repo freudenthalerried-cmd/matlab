@@ -21,7 +21,8 @@
 
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
-import { mutationsbefund } from '../src/mutationsschutz.js';
+import { spawnSync } from 'node:child_process';
+import { mutationsbefund, laufendeGegenproben } from '../src/mutationsschutz.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const REPO = dirname(SHOP);
@@ -33,9 +34,49 @@ const { marken, angesehen, meldungen } = mutationsbefund(REPO);
 // Fundzahl gleich aus, und genau das misst `src/pruefregister.js` sonst.
 console.log(`Mutationsschutz — ${angesehen} Einträge angesehen, ${marken.length} offene Zettel\n`);
 
+/*
+ * **Die zweite Frage, seit dem 10. September 2026.** Der Satz unten stand
+ * hier seit dem 4. September auf dem grünen Weg — als Warnung, die niemand
+ * einforderte. In der Nacht auf den 10. ist er eingetreten: Ein Lauf überlebte
+ * seinen Abbruch, mutierte neun Minuten weiter, und daneben wurde gemessen und
+ * committet. Der Zettel hat gehalten, keine Quelldatei blieb falsch — aber der
+ * Zettel kommt erst, wenn eine Mutation **liegt**. Zwischen zwei Proben liegt
+ * keine, und genau dann sieht der Baum ruhig aus und ist es nicht.
+ *
+ * > **Eine Regel, die nur als Satz dasteht, gilt für den, der sie liest.**
+ *
+ * Gefragt wird die Prozessliste und keine Datei: Ein abgebrochener Lauf
+ * hinterlässt so nichts, was später behauptet, er liefe noch.
+ */
+const ps = spawnSync('ps', ['-eo', 'pid,ppid,cmd'], { encoding: 'utf8' });
+if (ps.status !== 0) {
+  console.error('Weigerung: Die Prozessliste war nicht zu lesen.');
+  console.error('Ob gerade ein Gegenprobenlauf mutiert, ist damit offen — und');
+  console.error('nicht messbar ist nicht grün.');
+  process.exit(2);
+}
+const ahnen = [process.pid, process.ppid];
+for (let i = 0; i < 8; i += 1) {
+  const zeile = ps.stdout.split('\n').map((z) => z.trim().split(/\s+/))
+    .find((f) => Number(f[0]) === ahnen[ahnen.length - 1]);
+  if (!zeile || !Number.isFinite(Number(zeile[1])) || Number(zeile[1]) <= 1) break;
+  ahnen.push(Number(zeile[1]));
+}
+const laufend = laufendeGegenproben(ps.stdout, ahnen);
+if (laufend.length > 0) {
+  console.log(`  ✗ ${laufend.length} Gegenprobenlauf(e) laufen gerade — der Arbeitsbaum bewegt`);
+  console.log('      sich unter jeder Messung, und ein Commit nimmt die Mutation mit.');
+  for (const l of laufend) console.log(`      PID ${l.pid}: ${l.cmd}`);
+  console.log('');
+  console.log('Abwarten, bis der Lauf durch ist. Beenden nur über die Kennung —');
+  console.log('`pkill -f gegenprobenlauf` trifft auf sein eigenes Muster die aufrufende');
+  console.log('Shell und lässt den Läufer stehen. Genau so ist es am 10. September gegangen.');
+  process.exit(1);
+}
+
 if (meldungen.length === 0) {
-  console.log('Keine Meldung. Keine Datei ist gerade absichtlich falsch.');
-  console.log('Ein Commit während einer Gegenprobe nimmt die Mutation mit.');
+  console.log('Keine Meldung. Keine Datei ist gerade absichtlich falsch,');
+  console.log('und es läuft keine Gegenprobe, die daran gerade etwas ändert.');
   process.exit(0);
 }
 

@@ -1803,6 +1803,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'nicht wirklich oder vergleicht sie nicht wirklich.',
   }),
   Object.freeze({
+    id: 'die-sperre-nimmt-geschwister-aus',
+    pruefer: 'test',
+    was: 'Eine Ausnahme, die neben dem Fragenden auch seine Geschwister deckt',
+    datei: 'shop/src/mutationsschutz.js',
+    art: 'ersetzen',
+    suchen: '    .filter((p) => !ausgenommen.has(p.pid));',
+    ersetzen: '    .filter((p) => !ausgenommen.has(p.pid) && !ausgenommen.has(p.ppid));',
+    erwartet: /Wer selbst fragt/,
+    warum: 'Genau so stand die Zeile im ersten Entwurf vom 10. September, und die Sperre schwieg '
+      + 'gegen einen echten laufenden Prozess: Über die Elternkennung ausgenommen fällt jedes '
+      + 'Geschwister mit heraus — ein Lauf, der im selben Terminal im Hintergrund liegt, während '
+      + 'davor committet wird. Das ist die Lage, gegen die die Prüfung gebaut ist. Bleibt der '
+      + 'Testlauf grün, prüft er die Ausnahme nur an dem Fall, für den sie gedacht ist, und '
+      + 'nicht an dem, den sie nicht treffen darf.',
+  }),
+  Object.freeze({
     id: 'veroeffentlichung-haengt-hinterher',
     pruefer: 'pruefe-schaufenster',
     was: 'Ein Beschreibungstext, der sich seit der letzten Veröffentlichung geändert hat',
