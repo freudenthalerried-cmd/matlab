@@ -783,11 +783,37 @@ export function ladeKorb(speicher) {
     if (!Array.isArray(daten)) return [];
     return daten
       .filter((z) => z && typeof z.sku === 'string' && istMenge(z.menge))
-      .map((z) => ({ sku: z.sku, menge: Math.min(z.menge, 999) }));
+      .map((z) => ({ sku: z.sku, menge: Math.min(z.menge, HOECHSTMENGE) }));
   } catch {
     return [];
   }
 }
+
+/**
+ * Die höchste Menge, die eine Warenkorbzeile aufnimmt — **Gate 34.**
+ *
+ * **Der Anlass, 11. September 2026.** Die Zahl stand als nackte `999` an
+ * **fünf** Stellen: dreimal in diesem Modul, zweimal als `max` im
+ * Seitenbauwerkzeug. Keine trug einen Grund, und der Kunde erfuhr von ihr
+ * nichts: Wer 2000 eintippte, bekam 999 in den Korb — und der Knopf sagte
+ * „2000× im Warenkorb".
+ *
+ * **Warum es überhaupt eine Grenze gibt.** Sie ist keine physische, sondern
+ * eine der Selbstbedienung. Der Frachtrechner dieses Shops kennt eine
+ * Pauschale je Lieferung plus einen Zuschlag je Hub; die Palettenzahl ist
+ * offen (eine von zwölf Fragen an den Lieferanten), und der
+ * Mindestbestellwert deckt nach Gate 25 zwei Paletten. Eine Zeile über 999
+ * Einheiten — bei Fassaden-EPS rund zwanzig Paletten — ist damit außerhalb
+ * dessen, was dieser Korb überhaupt rechnen kann. Solche Mengen gehören in
+ * ein Angebot mit Bindefrist, und das kann der Betrieb seit dem 6. September.
+ *
+ * **Warum sie nicht stillschweigend greift.** Eine Grenze, die eine Eingabe
+ * verkleinert und schweigt, ist derselbe Fall wie die entfallene Position vom
+ * Vortag: *Was ein Kunde eingegeben hat, ändert sich nicht ohne einen Satz.*
+ * Die Oberfläche nennt deshalb, was **im Korb** liegt, und sagt es, wenn das
+ * weniger ist als der Wunsch.
+ */
+export const HOECHSTMENGE = 999;
 
 /** Schreibt den Warenkorb. Gibt zurück, ob es geklappt hat. */
 export function speichereKorb(speicher, zeilen) {
@@ -810,8 +836,8 @@ export function legeInKorb(zeilen, sku, menge = 1) {
   if (!istMenge(menge)) throw new Error(`Ungültige Menge: ${menge}`);
   const neu = zeilen.map((z) => ({ ...z }));
   const treffer = neu.find((z) => z.sku === sku);
-  if (treffer) treffer.menge = Math.min(Math.round((treffer.menge + menge) * 100) / 100, 999);
-  else neu.push({ sku, menge: Math.min(menge, 999) });
+  if (treffer) treffer.menge = Math.min(Math.round((treffer.menge + menge) * 100) / 100, HOECHSTMENGE);
+  else neu.push({ sku, menge: Math.min(menge, HOECHSTMENGE) });
   return neu;
 }
 
@@ -819,7 +845,7 @@ export function legeInKorb(zeilen, sku, menge = 1) {
 export function setzeMenge(zeilen, sku, menge) {
   if (menge !== 0 && !istMenge(menge)) throw new Error(`Ungültige Menge: ${menge}`);
   if (menge === 0) return zeilen.filter((z) => z.sku !== sku);
-  return zeilen.map((z) => (z.sku === sku ? { ...z, menge: Math.min(menge, 999) } : { ...z }));
+  return zeilen.map((z) => (z.sku === sku ? { ...z, menge: Math.min(menge, HOECHSTMENGE) } : { ...z }));
 }
 
 /** Stückzahl im Korb — die Zahl neben dem Korbsymbol. */

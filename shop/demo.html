@@ -3509,11 +3509,37 @@ function ladeKorb(speicher) {
     if (!Array.isArray(daten)) return [];
     return daten
       .filter((z) => z && typeof z.sku === 'string' && istMenge(z.menge))
-      .map((z) => ({ sku: z.sku, menge: Math.min(z.menge, 999) }));
+      .map((z) => ({ sku: z.sku, menge: Math.min(z.menge, HOECHSTMENGE) }));
   } catch {
     return [];
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const HOECHSTMENGE = 999;
 
 
 function speichereKorb(speicher, zeilen) {
@@ -3536,8 +3562,8 @@ function legeInKorb(zeilen, sku, menge = 1) {
   if (!istMenge(menge)) throw new Error(`Ungültige Menge: ${menge}`);
   const neu = zeilen.map((z) => ({ ...z }));
   const treffer = neu.find((z) => z.sku === sku);
-  if (treffer) treffer.menge = Math.min(Math.round((treffer.menge + menge) * 100) / 100, 999);
-  else neu.push({ sku, menge: Math.min(menge, 999) });
+  if (treffer) treffer.menge = Math.min(Math.round((treffer.menge + menge) * 100) / 100, HOECHSTMENGE);
+  else neu.push({ sku, menge: Math.min(menge, HOECHSTMENGE) });
   return neu;
 }
 
@@ -3545,7 +3571,7 @@ function legeInKorb(zeilen, sku, menge = 1) {
 function setzeMenge(zeilen, sku, menge) {
   if (menge !== 0 && !istMenge(menge)) throw new Error(`Ungültige Menge: ${menge}`);
   if (menge === 0) return zeilen.filter((z) => z.sku !== sku);
-  return zeilen.map((z) => (z.sku === sku ? { ...z, menge: Math.min(menge, 999) } : { ...z }));
+  return zeilen.map((z) => (z.sku === sku ? { ...z, menge: Math.min(menge, HOECHSTMENGE) } : { ...z }));
 }
 
 

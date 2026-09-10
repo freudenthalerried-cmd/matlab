@@ -298,7 +298,29 @@
       menge = Math.round(Math.ceil(Math.round((menge / schritt) * 1e6) / 1e6) * schritt * 100) / 100;
       korb = legeInKorb(korb, sku, menge);
       sichern();
-      knopf.textContent = String(menge).replace('.', ',') + '× im Warenkorb';
+      /*
+       * **Der Knopf sagt, was im Korb liegt — 11. September 2026.**
+       *
+       * Hier stand `String(menge)`, also die **Eingabe**. Gemessen an vier
+       * Fällen war das in zweien falsch:
+       *
+       * | Eingabe | im Korb | der Knopf sagte |
+       * |---|---|---|
+       * | 0,3 bei Schritt 0,5 | 0,5 | 0,5 ✓ |
+       * | −4 | 1 | 1 ✓ |
+       * | **2000** | **999** | **2000** ✗ |
+       * | zweimal 5 | **10** | **5** ✗ |
+       *
+       * Der Satz behauptet den Korbinhalt („im Warenkorb") und zeigte die
+       * Eingabe. Gelesen wird deshalb die Zeile, die tatsächlich entstanden
+       * ist — damit sind beide Fälle in einem erledigt.
+       */
+      var zeileImKorb = korb.filter(function (z) { return z.sku === sku; })[0];
+      var drin = zeileImKorb ? zeileImKorb.menge : menge;
+      knopf.textContent = String(drin).replace('.', ',') + '× im Warenkorb'
+        // Und wenn die Grenze zugeschlagen hat, steht es dabei: Eine Zahl,
+        // die kleiner ist als der Wunsch, erklärt sich nicht von selbst.
+        + (drin < menge ? ' — mehr als ' + HOECHSTMENGE + ' geht hier nicht' : '');
       knopf.classList.add('getan');
       window.setTimeout(function () {
         knopf.textContent = 'In den Warenkorb';

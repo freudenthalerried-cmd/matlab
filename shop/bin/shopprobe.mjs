@@ -283,6 +283,48 @@ const SZENARIEN = [
     verboten: ['menge=1 '],
   },
   {
+    /*
+     * **Gemessen am 11. September.** Der Knopf behauptet den Korbinhalt („im
+     * Warenkorb") und zeigte die **Eingabe**. Bei zweimal Drücken sagte er
+     * die Menge eines Drucks, an der Höchstmenge die eingetippte 2000 —
+     * während 999 im Korb lagen.
+     */
+    name: 'Der Knopf sagt, was im Korb liegt, und nicht, was eingetippt war',
+    aktionen: `
+      await geheZu('artikel/POS-12566');
+      const knopf = document.querySelector('[data-legen="POS-12566"]');
+      const feld = knopf.closest('.legen').querySelector('input[type=number]');
+      feld.value = '5';
+      knopf.click();
+      const nachEinmal = knopf.textContent;
+      feld.value = '5';
+      knopf.click();
+      const nachZweimal = knopf.textContent;
+      await geheZu('warenkorb');
+      out = 'einmal=[' + nachEinmal + '] zweimal=[' + nachZweimal + ']'
+        + ' imKorb=' + document.querySelector('#warenkorb-ziel .kz-menge').value;`,
+    erwartet: ['einmal=[5× im Warenkorb]', 'zweimal=[10× im Warenkorb]', 'imKorb=10'],
+    verboten: ['zweimal=[5× im Warenkorb]'],
+  },
+  {
+    // Die Höchstmenge ist Gate 34: eine Grenze der Selbstbedienung, keine der
+    // Ware. Sie darf greifen — schweigen darf sie nicht.
+    name: 'Die Höchstmenge kürzt den Wunsch und sagt es',
+    aktionen: `
+      await geheZu('artikel/POS-12566');
+      const knopf = document.querySelector('[data-legen="POS-12566"]');
+      const feld = knopf.closest('.legen').querySelector('input[type=number]');
+      feld.value = '2000';
+      knopf.click();
+      const gesagt = knopf.textContent;
+      await geheZu('warenkorb');
+      out = 'gesagt=[' + gesagt + ']'
+        + ' imKorb=' + document.querySelector('#warenkorb-ziel .kz-menge').value
+        + ' max=' + document.querySelector('#warenkorb-ziel .kz-menge').getAttribute('max');`,
+    erwartet: ['999× im Warenkorb', 'mehr als 999 geht hier nicht', 'imKorb=999', 'max=999'],
+    verboten: ['gesagt=[2000× im Warenkorb]'],
+  },
+  {
     name: 'Drei Positionen von der Gruppenseite werden drei Positionen im Korb',
     aktionen: `
       await geheZu('gruppe/wdvs');

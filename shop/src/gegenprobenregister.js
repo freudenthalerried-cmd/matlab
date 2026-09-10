@@ -2742,6 +2742,39 @@ export const GEGENPROBEN = Object.freeze([
       + 'behandelt. Von sieben Stellen dieser Oberfläche, an denen eine Zahl vor ein Hauptwort '
       + 'tritt, war dies die einzige, die es hätte tun müssen und nicht tat.',
   }),
+  Object.freeze({
+    id: 'knopf-nennt-die-eingabe',
+    pruefer: 'shopprobe',
+    was: 'Ein Knopf, der den Korbinhalt behauptet und die Eingabe zeigt',
+    datei: 'shop/shop-ui.js',
+    art: 'ersetzen',
+    baueVorher: true,
+    suchen: "      var drin = zeileImKorb ? zeileImKorb.menge : menge;",
+    ersetzen: "      var drin = menge;",
+    erwartet: /Knopf sagt, was im Korb liegt|zweimal=\[5|2000× im Warenkorb/,
+    warum: 'Wörtlich der Zustand bis zum 11. September: Der Knopf setzte `String(menge)` ein, '
+      + 'also die Eingabe, und behauptete mit „im Warenkorb" den Korbinhalt. Gemessen an vier '
+      + 'Fällen war das in zweien falsch — bei zweimal Drücken nannte er die Menge eines '
+      + 'Drucks, an der Höchstmenge die eingetippte 2000, während 999 im Korb lagen. Die '
+      + 'Mutation setzt die Eingabe zurück; rot werden müssen dann beide Szenarien, die den '
+      + 'Knopf gegen den Korb halten.',
+  }),
+  Object.freeze({
+    id: 'grenze-ohne-wort',
+    pruefer: 'shopprobe',
+    was: 'Eine Grenze, die den Wunsch kürzt und nichts dazu sagt',
+    datei: 'shop/shop-ui.js',
+    art: 'ersetzen',
+    baueVorher: true,
+    suchen: "        + (drin < menge ? ' — mehr als ' + HOECHSTMENGE + ' geht hier nicht' : '');",
+    ersetzen: "        + '';",
+    erwartet: /mehr als 999 geht hier nicht|Höchstmenge kürzt/,
+    warum: 'Die zweite Hälfte desselben Befundes und der Kern von Gate 34: Die Grenze darf '
+      + 'greifen, schweigen darf sie nicht. Ohne den Zusatz nennt der Knopf zwar die richtige '
+      + 'Zahl, aber der Kunde sieht nur, dass aus seinen 2000 eine 999 geworden ist, und '
+      + 'erfährt nicht, warum. Die Mutation nimmt den Satz heraus und lässt die richtige Zahl '
+      + 'stehen — sie trennt damit die beiden Hälften, statt beide zugleich abzuschalten.',
+  }),
 ]);
 
 /**

@@ -75,6 +75,16 @@ export function gatesAusRegister(text) {
  */
 export const SPUREN = Object.freeze([
   Object.freeze({
+    gate: 34,
+    datei: 'shop/src/shopkern.js',
+    muster: /export\s+const\s+HOECHSTMENGE/,
+    warum: 'Die Höchstmenge je Korbzeile ist eine Grenze der Selbstbedienung und keine der '
+      + 'Ware. Die Entscheidung steckt darin, dass sie **eine benannte Zahl mit Begründung** '
+      + 'ist und kein Literal: Vorher stand 999 an fünf Stellen ohne Grund, und die Oberfläche '
+      + 'kürzte den Wunsch stillschweigend. Nähme jemand Gate 34 zurück, verschwände die '
+      + 'Konstante und mit ihr der Satz, den der Knopf sagt, wenn gekürzt wurde.',
+  }),
+  Object.freeze({
     gate: 33,
     datei: 'shop/src/rechtsgrund.js',
     muster: /belegt: false/,

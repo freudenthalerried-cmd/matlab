@@ -63,7 +63,7 @@ import { lastmodFuer } from '../src/sitemapstand.js';
 import { brotkrume, krumeAusHtml } from '../src/krume.js';
 import { HERSTELLER, marke } from '../src/hersteller.js';
 import {
-  oeffentlicherArtikel, oeffentlicherLieferant, vorteil, ustText, KORBSCHLUESSEL,
+  oeffentlicherArtikel, oeffentlicherLieferant, vorteil, ustText, KORBSCHLUESSEL, HOECHSTMENGE,
 } from '../src/shopkern.js';
 import { LIEFERGEBIET } from '../src/liefergebiet.js';
 import { zahlwegName } from '../src/zahlung.js';
@@ -750,7 +750,7 @@ function artikelKarte(a, befund, verweis) {
       : ''
   }
   <div class="legen legen-klein">
-    <input type="number" min="${wert}" max="999" value="${wert}"${
+    <input type="number" min="${wert}" max="${HOECHSTMENGE}" value="${wert}"${
       schritt ? ` step="${wert}"` : ''} inputmode="decimal"
       aria-label="Menge in ${einheit} für ${esc(a.bezeichnung)}">
     <button class="knopf" type="button" data-legen="${esc(a.sku)}"
@@ -966,7 +966,7 @@ steht in der offenen Anfrage an ihn. Vor einer Auftragsbestätigung wird dieser 
     const wert = schritt === null ? '1' : String(schritt);
     teile.push(`<div class="legen">
   <label><span class="f-b">Menge in ${esc(EINHEITEN[a.einheit] ?? a.einheit)}</span>
-    <input id="menge-${esc(a.sku)}" type="number" min="${wert}" max="999" value="${wert}"${
+    <input id="menge-${esc(a.sku)}" type="number" min="${wert}" max="${HOECHSTMENGE}" value="${wert}"${
       schritt ? ` step="${wert}"` : ''} inputmode="decimal"></label>
   <button class="knopf" type="button" data-legen="${esc(a.sku)}" data-menge="menge-${esc(a.sku)}">In den Warenkorb</button>
 </div>`);

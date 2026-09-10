@@ -7,6 +7,7 @@ import {
   wortstaemme, baueSuchindex, suche, sortiere, filtere, filterwerte, vorteil,
   ladeKorb, speichereKorb, legeInKorb, setzeMenge, korbPositionen, bereinige,
   merkeEntfallen, holeEntfallen, vergissEntfallen, entfallensatz, ENTFALLENSCHLUESSEL,
+  HOECHSTMENGE,
   kundenWarenkorb, oeffentlicherArtikel, oeffentlicherLieferant, kundenwoerter,
   abstand, erlaubterAbstand, meintenSie, KORBSCHLUESSEL, stamm, indexwoerter,
 } from '../src/shopkern.js';
@@ -1175,4 +1176,41 @@ test('Was bereinige meldet, ist genau das, was der Satz nennt', () => {
   const b = bereinige([{ sku: 'POS-A', menge: 1 }, { sku: 'POS-WEG', menge: 2 }], katalog);
   assert.deepEqual(b.entfallen, ['POS-WEG']);
   assert.match(entfallensatz(b.entfallen, b.zeilen.length > 0), /POS-WEG/);
+});
+
+/* ------------------------------------------------------------------ *
+ * Die Höchstmenge — Gate 34, 11. September 2026
+ *
+ * Die Zahl stand als nacktes Literal an fünf Stellen. Wer 2000 eintippte,
+ * bekam 999 in den Korb — und der Knopf sagte „2000× im Warenkorb".
+ * ------------------------------------------------------------------ */
+
+test('Die Höchstmenge ist eine benannte Zahl und greift an jeder Stelle gleich', () => {
+  assert.equal(typeof HOECHSTMENGE, 'number');
+  assert.ok(HOECHSTMENGE > 0);
+  // Alle drei Wege in den Korb enden bei derselben Grenze — sonst hinge es am
+  // Weg, wie viel ein Kunde bestellen kann.
+  assert.equal(legeInKorb([], 'A', HOECHSTMENGE + 500)[0].menge, HOECHSTMENGE);
+  assert.equal(setzeMenge([{ sku: 'A', menge: 1 }], 'A', HOECHSTMENGE + 1)[0].menge, HOECHSTMENGE);
+  assert.equal(
+    ladeKorb(speicherAttrappe(JSON.stringify([{ sku: 'A', menge: HOECHSTMENGE + 1 }])))[0].menge,
+    HOECHSTMENGE,
+  );
+});
+
+test('Zweimal legen summiert — und bleibt an der Grenze stehen', () => {
+  // Der zweite gemessene Fall: Der Knopf nannte die Eingabe eines Drucks,
+  // während im Korb die Summe lag.
+  let k = legeInKorb([], 'A', 5);
+  k = legeInKorb(k, 'A', 5);
+  assert.equal(k[0].menge, 10);
+  k = legeInKorb(k, 'A', HOECHSTMENGE);
+  assert.equal(k[0].menge, HOECHSTMENGE, 'die Summe darf die Grenze nicht überspringen');
+});
+
+test('Die Seite gibt die Grenze als max mit, und zwar dieselbe', () => {
+  // Ein `max` im Formular, das von der Grenze im Rechenkern abweicht, ist die
+  // teurere Sorte Widerspruch: Der Browser sagt „geht", und der Korb kürzt.
+  const seite = readFileSync(pfad('../ausgabe/site/artikel/POS-12566.html'), 'utf8');
+  assert.match(seite, new RegExp(`type="number"[^>]*max="${HOECHSTMENGE}"`));
 });
