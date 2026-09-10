@@ -1,5 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 import { findeInterna, pruefeSeiten, INTERNA } from '../src/interna.js';
 import { ZAHLUNGSBEDINGUNGEN, AGB_GLIEDERUNG } from '../src/rechtstexte.js';
 import { ZAHLWEGE } from '../src/zahlung.js';
@@ -78,4 +81,43 @@ test('das Register ist begründet', () => {
     assert.ok(m.id && m.warum, `${m.id}: Grund fehlt`);
     assert.ok(m.muster.flags.includes('g'), `${m.id}: Muster ohne g findet nur den ersten Treffer`);
   }
+});
+
+/**
+ * **Die Regel galt für den Rumpf, nicht für die Seite — 10. September 2026.**
+ *
+ * `bin/website.mjs` prüfte die Interna an `seite.html`: dem Rumpf, wie ihn
+ * die Seitenbauer abliefern. Geschrieben wird, was `rahmen()` daraus macht —
+ * mitsamt Kopf, Fuß und dem Absatz, den `mitMindestwert()` anhängt. Genau
+ * dieser Absatz trug seit dem 5. September auf **zwanzig** Kundenseiten
+ * „(Quelle: eigene Entscheidung, Gate 25, …)" — eine Gate-Nummer, das erste
+ * Muster des Registers.
+ *
+ * > **Eine Prüfung, die das Modell liest statt die Ausgabe, prüft die eigene
+ * > Absicht.**
+ *
+ * Dieser Testfall liest die Dateien, die auf dem Hosting landen. Er misst
+ * damit unabhängig vom Bauwerkzeug — auch dann, wenn jemand die Prüfung
+ * dort wieder an den Rumpf hängt.
+ */
+test('keine gebaute Seite trägt Interna', (t) => {
+  const shop = dirname(dirname(fileURLToPath(import.meta.url)));
+  const site = join(shop, 'ausgabe', 'site');
+  if (!existsSync(site)) return t.skip('ausgabe/site fehlt — zuerst npm run website');
+  const seiten = [];
+  const gehe = (ordner) => {
+    for (const e of readdirSync(ordner)) {
+      const pfad = join(ordner, e);
+      if (statSync(pfad).isDirectory()) gehe(pfad);
+      else if (e.endsWith('.html')) {
+        seiten.push({ kennung: pfad.split('/site/')[1], html: readFileSync(pfad, 'utf8') });
+      }
+    }
+  };
+  gehe(site);
+  assert.ok(seiten.length >= 60, `nur ${seiten.length} gebaute Seiten — hier ist nichts zu messen`);
+  const befund = pruefeSeiten(seiten);
+  assert.deepEqual(
+    befund.meldungen.map((m) => `${m.kennung} [${m.id}] ${m.fund}`), [],
+  );
 });

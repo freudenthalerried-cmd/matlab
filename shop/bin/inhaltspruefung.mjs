@@ -34,10 +34,41 @@ import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
 import {
   pruefeInhalt, pruefeAbsatz, schneideQuelltext, oberflaechensaetze, erfundeneZeitangaben,
 } from '../src/inhaltspruefung.js';
+import { untergrenzenbefund } from '../src/untergrenze.js';
 
 const hier = dirname(fileURLToPath(import.meta.url));
 
 const INHALTSORDNER = ['wissen', 'gruppen', 'system'];
+
+/**
+ * Die eine Grenze, gegen die jede Grenzaussage auf einer Kundenseite steht.
+ *
+ * Gelesen und nicht eingetippt: Eine zweite Fassung derselben Zahl im
+ * Prüfwerkzeug wäre genau der Fehler, den das Werkzeug sucht.
+ */
+const MINDESTWERT_NETTO = JSON.parse(
+  readFileSync(join(hier, '..', 'data', 'betreiber.json'), 'utf8'),
+).mindestbestellwertNetto ?? null;
+
+/**
+ * Meldet die Abweichungen einer Grenzaussage und gibt zurück, wie viele
+ * Treffer dazukommen. Beide Betriebsmodi rufen dieselbe Stelle — ein
+ * Absatz, den jeder Modus selbst schreibt, ist ein Absatz, den der zweite
+ * anders schreibt.
+ */
+function meldeUntergrenzen(flaechen, mindestens) {
+  const b = untergrenzenbefund(flaechen, MINDESTWERT_NETTO, mindestens);
+  if (!b.messbar) {
+    console.error(`Untergrenze nicht prüfbar: ${b.grund}.`);
+    process.exit(2);
+  }
+  for (const m of b.meldungen) {
+    console.log(`\n${m.datei}${m.zeile ? `, Zeile ${m.zeile}` : ''}`);
+    console.log(`    → ${m.text}`);
+    if (m.auszug) console.log(`      „${m.auszug}…"`);
+  }
+  return b;
+}
 
 /**
  * Dritter Betriebsmodus: die **gebauten Seiten**.
@@ -391,8 +422,28 @@ if (process.argv[2] === '--seiten') {
     console.log(`\n    → nur ${mitKarten} Seiten mit Artikelkarten gefunden, erwartet mindestens 15`);
   }
 
+  /* ---------------------------------------------------------------- *
+   * Und welche Zahl steht dort? — 10. September 2026
+   *
+   * Die Prüfung darüber fragt, **ob** eine Kartenseite den
+   * Mindestbestellwert nennt. Sie fragt nicht, **welchen**. Der Fund vom
+   * 10. September stand auf einer Seite ohne Karten und nannte 400 € statt
+   * 250 € — von dieser Zählung aus unsichtbar, weil sie das Wort zählt und
+   * nicht den Betrag. Siehe `src/untergrenze.js`.
+   * ---------------------------------------------------------------- */
+  const grenzflaechen = alleSeitendateien(wurzel).map((datei) => ({
+    name: datei.split('/site/')[1] ?? datei,
+    // Derselbe Schnitt wie im ganzen Modus: Text aus `inhalte/` wird an der
+    // Quelle geprüft, sonst stünde jeder Fund zweimal im Bericht.
+    text: nurText(ohneQuelltext(readFileSync(datei, 'utf8'), datei)),
+  }));
+  const grenzen = meldeUntergrenzen(grenzflaechen, 40);
+  treffer += grenzen.meldungen.length;
+
   console.log(`\n${seiten.length} Seiten, ${absaetze} Fließtextabsätze geprüft, ${treffer} mit Verdacht.`);
   console.log(`${mitKarten} Seiten zeigen Artikelkarten, ${mitKarten - ohneGrenze} nennen den Mindestbestellwert.`);
+  console.log(`${grenzen.gefunden} Grenzaussagen auf ${grenzen.flaechen} Seiten gegen die hinterlegten `
+    + `${grenzen.grenzeNetto} € netto Warenwert je Lieferung gehalten.`);
   console.log(`${antworten} maschinenlesbare Antworten gegen den sichtbaren Text gehalten.`);
   console.log('Diese Texte stehen im Seitenbauwerkzeug, nicht in inhalte/ — sie unterliegen');
   console.log('trotzdem denselben Regeln.');
@@ -472,6 +523,27 @@ for (const { ordner, datei } of dateien) {
     console.log(`  Zeile ${t.zeile}: ${t.auszug}…`);
     for (const v of t.verdacht) console.log(`    → ${v}`);
   }
+}
+
+/*
+ * Die Untergrenze am Quelltext — 10. September 2026.
+ *
+ * Der Seitenmodus schneidet den Text aus `inhalte/` heraus; hier ist die
+ * Stelle, an der er gemessen wird. Auf der Probedatei läuft die Prüfung
+ * nicht: Sie führt absichtlich falsche Sätze vor, und die Grenze gehört
+ * nicht dazu.
+ */
+const grenzflaechen = process.argv.includes('--probe')
+  ? []
+  : dateien.map(({ ordner, datei }) => ({
+    name: datei,
+    text: readFileSync(join(ordner, datei), 'utf8'),
+  }));
+if (grenzflaechen.length > 0) {
+  const grenzen = meldeUntergrenzen(grenzflaechen, 1);
+  trefferGesamt += grenzen.meldungen.length;
+  console.log(`\n${grenzen.gefunden} Grenzaussage(n) auf ${grenzen.flaechen} Inhaltsseite(n) gegen die`);
+  console.log(`hinterlegten ${grenzen.grenzeNetto} € netto Warenwert je Lieferung gehalten.`);
 }
 
 console.log(`\n${dateien.length} Dateien, ${absaetzeGesamt} Absätze geprüft, ${trefferGesamt} mit Verdacht.`);

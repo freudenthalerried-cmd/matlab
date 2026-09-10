@@ -2411,6 +2411,51 @@ export const GEGENPROBEN = Object.freeze([
       + 'nimmt die Systemangabe aus den Zeilen und lässt den Satz im Vorspann stehen: Ein '
       + 'Assistent liest die Zeile, nicht den Vorspann.',
   }),
+  Object.freeze({
+    id: 'untergrenze-auf-der-inhaltsseite',
+    pruefer: 'pruefe-inhalte',
+    was: 'Eine Inhaltsseite, die eine andere Bestellgrenze nennt als die geltende',
+    datei: 'shop/inhalte/wissen/warum-keine-gratislieferung.md',
+    art: 'ersetzen',
+    suchen: 'Unter 250 Euro netto Warenwert je Lieferung',
+    ersetzen: 'Unter 400 Euro netto Warenwert je Lieferung',
+    erwartet: /nennt 400 € als untere Bestellgrenze/,
+    warum: 'Der Zustand vom 3. bis zum 10. September, wörtlich. Gate 25 hat am 3. September '
+      + 'die Lieferseite berichtigt; auf dieser Wissensseite blieben „etwa 400 Euro" stehen — '
+      + 'der Nulldurchgang einer Kostenrechnung vom 25. August mit einer Marge, die am Tag '
+      + 'darauf abgelöst wurde. Am 6. September hat ein Lauf denselben Absatz angefasst und '
+      + 'die Zahl danebenstehen lassen. Kein Prüfer hat je nachgerechnet, welche Zahl dort '
+      + 'steht.',
+  }),
+  Object.freeze({
+    id: 'untergrenze-auf-der-gebauten-seite',
+    pruefer: 'pruefe-seiten',
+    was: 'Ein angehängter Grenzabsatz mit einem Betrag, den niemand entschieden hat',
+    datei: 'shop/bin/website.mjs',
+    art: 'ersetzen',
+    baueVorher: true,
+    suchen: 'Mindestbestellwert ${euro(MINDESTWERT_NETTO)} € netto',
+    ersetzen: 'Mindestbestellwert ${euro(MINDESTWERT_NETTO + 50)} € netto',
+    erwartet: /nennt 300,00 € als untere Bestellgrenze/,
+    warum: 'Die andere Richtung derselben Regel: nicht die handgeschriebene Seite, sondern '
+      + 'der Absatz, den der Bau selbst auf 20 Kundenseiten hängt. Er nimmt die Zahl heute '
+      + 'aus `data/betreiber.json` und ist damit richtig „von selbst" — genau die Sorte '
+      + 'Richtigkeit, die niemand bemerkt, wenn sie aufhört. Die Mutation legt 50 € drauf.',
+  }),
+  Object.freeze({
+    id: 'gate-nummer-im-angehaengten-absatz',
+    pruefer: 'website',
+    was: 'Eine interne Gate-Nummer in einem Absatz, den erst der Rahmen anhängt',
+    datei: 'shop/bin/website.mjs',
+    art: 'ersetzen',
+    suchen: '(Quelle: eigene Entscheidung, Stand: ${MINDESTWERT_STAND}).',
+    ersetzen: '(Quelle: eigene Entscheidung, Gate 25, Stand: ${MINDESTWERT_STAND}).',
+    erwartet: /Interna auf der fertigen Seite/,
+    warum: 'Wörtlich der Zustand vom 5. bis zum 10. September: Diese Zeile stand auf zwanzig '
+      + 'Kundenseiten, und die Interna-Prüfung des Baus sah sie nie — sie las `seite.html`, '
+      + 'also den Rumpf vor dem Rahmen. Die Mutation setzt die Gate-Nummer zurück; rot werden '
+      + 'darf jetzt nur die Prüfung am Erzeugnis, denn im Rumpf steht der Absatz nicht.',
+  }),
 ]);
 
 /**

@@ -5,7 +5,7 @@ slug: warum-keine-gratislieferung
 frage: Andere liefern ab einem bestimmten Bestellwert frei Haus — warum hier nicht?
 kurz: Weil die Fracht an der Fahrt hängt und nicht am Warenwert — die große Lieferung trägt dieselbe Pauschale wie die kleine. Wer sie trotzdem einpreist, verteuert die Ware für alle, auch für den, der selbst abholt.
 verwandt: baumeisterpreis, was-fehlt-haelt-die-baustelle-auf
-stand: 2026-08-31
+stand: 2026-09-10
 ---
 
 # Warum es hier keine Gratislieferung gibt
@@ -39,23 +39,28 @@ ein Sack draufsteht oder eine Palette.
 
 ## Was das für kleine Bestellungen heißt
 
-Rechnen Sie es mit: Eine gelieferte Kleinbestellung trägt ihre eigene Fracht
-nicht. Der Warenwert müsste die Fracht, die Zahlungsgebühr und den
-Wareneinsatz decken — bei einem knapp kalkulierten Preis reicht dafür ein
-kleiner Warenkorb nicht aus.
+Rechnen Sie es mit: Fracht und Kranentladung stehen auf Ihrer Rechnung — die
+gibt dieser Shop weiter, wie der Lieferant sie verrechnet. Was **nicht**
+daraufsteht, fällt trotzdem an: Palette, Folierung und die Gebühr des
+Zahlwegs. Bei einem knapp kalkulierten Preis trägt ein kleiner Warenkorb
+diese Nebenkosten nicht.
 
 Daraus folgt kein Trick, sondern eine offene Ansage:
 
-> **Unter etwa 400 Euro netto Warenwert lohnt eine Lieferung für keine der
-> beiden Seiten.** Darunter hilft das Zusammenlegen mit der nächsten
-> Bestellung. (Bis zum 6. September stand hier auch der Rat abzuholen — er
-> zeigte auf ein Lager, das es nicht gibt.)
+> **Unter 250 Euro netto Warenwert je Lieferung nimmt die Kasse keine Anfrage
+> an** und sagt Ihnen, welcher Betrag fehlt. Darunter hilft das Zusammenlegen
+> mit der nächsten Bestellung. (Bis zum 6. September stand hier auch der Rat
+> abzuholen — er zeigte auf ein Lager, das es nicht gibt. Bis zum
+> 10. September stand hier „etwa 400 Euro": der Nulldurchgang einer
+> Kostenrechnung vom 25. August, gerechnet mit einer Marge, die am Tag darauf
+> abgelöst wurde. Verbindlich ist die Grenze, die auf jeder Artikelseite
+> steht.)
 >
-> Quelle: eigene Kostenrechnung auf Grundlage der Frachtsätze aus
-> den Lieferantenrechnungen, Stand: 2026-08-25.
+> Quelle: eigene Entscheidung, Stand: 2026-09-03.
 
-Die Schwelle ist gerechnet, nicht gesetzt — sie ist der Punkt, ab dem nach
-Wareneinsatz, Fracht und Zahlungsgebühr etwas übrig bleibt.
+Die Schwelle ist gerechnet, nicht gesetzt: Sie ist der Punkt, ab dem eine
+Lieferung nach Wareneinsatz, Nebenkosten und Zahlungsgebühr etwas übrig
+lässt. Sie deckt zwei Paletten auf dem ungünstigsten angebotenen Zahlweg.
 
 ## Warum das ein Vorteil ist
 

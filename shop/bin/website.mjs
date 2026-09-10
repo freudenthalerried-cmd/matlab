@@ -2492,7 +2492,7 @@ function mitMindestwert(html, verweis) {
 <p class="antwort mindestwert-hinweis"><strong>Mindestbestellwert ${euro(MINDESTWERT_NETTO)} € netto
 Warenwert je Lieferung.</strong> Darunter nimmt die Kasse keine Anfrage an und nennt den fehlenden
 Betrag. ${lieferungssatz(LIEFERANTENZAHL)}
-(Quelle: eigene Entscheidung, Gate 25, Stand: ${MINDESTWERT_STAND}).
+(Quelle: eigene Entscheidung, Stand: ${MINDESTWERT_STAND}).
 <a href="${verweis('lieferung')}">Lieferung und Frachtkosten</a></p>`;
 }
 
@@ -2880,19 +2880,65 @@ function main() {
   writeFileSync(join(site, '.htaccess'),
     '# Von `npm run website` erzeugt. Änderungen hier gehen beim nächsten Bau verloren.\n'
     + `ErrorDocument 404 /${FEHLERSEITE}.html\n`, 'utf8');
+  /*
+   * **Die Interna-Prüfung am Erzeugnis — 10. September 2026.**
+   *
+   * Die Prüfung weiter oben liest `seite.html`: den Rumpf, wie ihn die
+   * Seitenbauer abliefern. Geschrieben wird etwas anderes — `rahmen()` legt
+   * Kopf und Fuß darum und hängt über `mitMindestwert()` einen Absatz an,
+   * den kein Seitenbauer je gesehen hat. Genau dieser Absatz trug seit dem
+   * 5. September auf **zwanzig** Kundenseiten die Zeile
+   * *„(Quelle: eigene Entscheidung, Gate 25, Stand: 2026-09-03)"* — eine
+   * Gate-Nummer, also genau das, was `INTERNA` als erstes Muster verbietet.
+   *
+   * > **Eine Prüfung, die das Modell liest statt die Ausgabe, prüft die
+   * > eigene Absicht.** Der Satz steht seit dem 30. August dreißig Zeilen
+   * > weiter oben — über die toten Verweise. Für die Interna galt er nicht.
+   *
+   * Gefunden hat es nicht diese Prüfung, sondern ihr Gegenstück am
+   * Quelltext: Eine Wissensseite bekam denselben Quellenhinweis von Hand,
+   * und dort schlug `interna` an. Dieselbe Zeile, dieselbe Regel — die eine
+   * Stelle gemeldet, die zwanzig anderen nicht.
+   *
+   * Die Prüfung am Modell bleibt: Sie sieht `kurz` und `frage`, die nie in
+   * den Fließtext geraten, und sie hält den Bau früher an. Diese hier sieht,
+   * was der Kunde sieht. Beides, nicht eines davon.
+   */
+  const fertig = [];
   for (const [id, seite] of dateiSeiten) {
-    const pfad = join(site, `${id}.html`);
     const tiefe = id.includes('/');
-    mkdirSync(dirname(pfad), { recursive: true });
-    writeFileSync(pfad, rahmen(seite, pfadVerweis(id), {
-      eigenstaendig: true,
-      // Aus demselben Grund wie die Verweise: Die Fehlerseite steht an jeder
-      // Adresse und darf ihren Weg zum Skript nicht raten.
-      skriptDatei: id === FEHLERSEITE ? '/shop.js' : `${tiefe ? '../' : ''}shop.js`,
-      tiefe,
-      bereitschaft,
+    fertig.push({
       id,
-    }), 'utf8');
+      pfad: join(site, `${id}.html`),
+      kennung: id,
+      html: rahmen(seite, pfadVerweis(id), {
+        eigenstaendig: true,
+        // Aus demselben Grund wie die Verweise: Die Fehlerseite steht an jeder
+        // Adresse und darf ihren Weg zum Skript nicht raten.
+        skriptDatei: id === FEHLERSEITE ? '/shop.js' : `${tiefe ? '../' : ''}shop.js`,
+        tiefe,
+        bereitschaft,
+        id,
+      }),
+      ausnahme: seite.intern,
+      nur: seite.internNur,
+    });
+  }
+  const amErzeugnis = pruefeSeiten(fertig);
+  if (!amErzeugnis.sauber) {
+    console.error('Interna auf der fertigen Seite — nichts ausgegeben:\n');
+    for (const m of amErzeugnis.meldungen) {
+      console.error(`  ${m.kennung}  [${m.id}] „${m.fund}"`);
+      console.error(`      … ${m.umfeld} …`);
+      console.error(`      → ${m.warum}`);
+    }
+    console.error('\nDer Fund steht nicht im Seitenrumpf, sondern in Kopf, Fuß oder einem');
+    console.error('angehängten Absatz — dort gehört er umformuliert.');
+    process.exit(1);
+  }
+  for (const { pfad, html } of fertig) {
+    mkdirSync(dirname(pfad), { recursive: true });
+    writeFileSync(pfad, html, 'utf8');
   }
 
   // robots.txt, llms.txt, sitemap.xml
