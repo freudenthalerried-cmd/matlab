@@ -23168,6 +23168,40 @@ function gruppenbefund(rechnung, text) {
       z.appendChild(el('p', 'antwort', 'Der Katalog umfasst ' + D.artikel.length
         + ' Artikel aus dem laufenden Einkauf. Was nicht darin steht, führen wir nicht — '
         + 'wir zeigen lieber nichts als etwas Erfundenes.'));
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      var gruppenseiten = (D.seiten || []).filter(function (s) {
+        return String(s.id).indexOf('gruppe/') === 0;
+      });
+      if (gruppenseiten.length) {
+        var g = el('p', 'antwort');
+        g.appendChild(el('strong', null, 'Das führen wir: '));
+        gruppenseiten.forEach(function (s, i) {
+          if (i) {
+            g.appendChild(document.createTextNode(i === gruppenseiten.length - 1 ? ' und ' : ', '));
+          }
+          var a2 = el('a', null, s.titel);
+          a2.href = pfad(s.id);
+          g.appendChild(a2);
+        });
+        g.appendChild(document.createTextNode('.'));
+        z.appendChild(g);
+      }
     }
   }
 

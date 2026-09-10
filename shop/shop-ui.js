@@ -521,6 +521,40 @@
       z.appendChild(el('p', 'antwort', 'Der Katalog umfasst ' + D.artikel.length
         + ' Artikel aus dem laufenden Einkauf. Was nicht darin steht, führen wir nicht — '
         + 'wir zeigen lieber nichts als etwas Erfundenes.'));
+      /*
+       * **Und was wir führen — 10. September 2026.**
+       *
+       * Gemessen an vierundzwanzig Baustoffwörtern, die dieser Shop nicht
+       * führt (estrich, rigips, ytong, dachziegel …), endeten **neunzehn**
+       * auf einer Seite ohne nächsten Schritt. Der Satz darüber ist ehrlich
+       * und stimmt — er sagt nur nicht, wohin.
+       *
+       * > **Eine ehrliche Absage ohne nächsten Schritt ist bei einem
+       * > bezahlten Klick eine Sackgasse.**
+       *
+       * Die Gruppen kommen aus den geführten Artikeln und nicht aus einer
+       * Liste: Fällt eine Gruppe aus dem Sortiment, verschwindet sie hier von
+       * selbst. Das ist **keine Umleitung** — das Suchwort wird nicht
+       * heimlich auf ein Ersatzprodukt gelenkt, es steht daneben, was es
+       * überhaupt gibt.
+       */
+      var gruppenseiten = (D.seiten || []).filter(function (s) {
+        return String(s.id).indexOf('gruppe/') === 0;
+      });
+      if (gruppenseiten.length) {
+        var g = el('p', 'antwort');
+        g.appendChild(el('strong', null, 'Das führen wir: '));
+        gruppenseiten.forEach(function (s, i) {
+          if (i) {
+            g.appendChild(document.createTextNode(i === gruppenseiten.length - 1 ? ' und ' : ', '));
+          }
+          var a2 = el('a', null, s.titel);
+          a2.href = pfad(s.id);
+          g.appendChild(a2);
+        });
+        g.appendChild(document.createTextNode('.'));
+        z.appendChild(g);
+      }
     }
   }
 

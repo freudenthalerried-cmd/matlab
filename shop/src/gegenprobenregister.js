@@ -2671,6 +2671,25 @@ export const GEGENPROBEN = Object.freeze([
       + 'also den Rumpf vor dem Rahmen. Die Mutation setzt die Gate-Nummer zurück; rot werden '
       + 'darf jetzt nur die Prüfung am Erzeugnis, denn im Rumpf steht der Absatz nicht.',
   }),
+  Object.freeze({
+    id: 'absage-ohne-naechsten-schritt',
+    pruefer: 'shopprobe',
+    was: 'Eine Absage im leeren Suchergebnis, die nicht sagt, was es stattdessen gibt',
+    datei: 'shop/shop-ui.js',
+    art: 'ersetzen',
+    baueVorher: true,
+    suchen: "        return String(s.id).indexOf('gruppe/') === 0;",
+    ersetzen: "        return String(s.id).indexOf('gruppe/') === 1;",
+    erwartet: /Wer nichts findet|absatz=\[KEINER\]|gruppen=0/,
+    warum: 'Der Zustand bis zum 10. September: Das leere Suchergebnis sagte wahrheitsgemäß '
+      + '„Was nicht darin steht, führen wir nicht" und hörte dort auf. Gemessen an '
+      + 'vierundzwanzig Baustoffwörtern, die dieser Shop nicht führt, endeten neunzehn auf '
+      + 'einer Seite ohne nächsten Schritt — bei einem Klick, der zwischen 4,19 € und 8,22 € '
+      + 'kostet. Die Mutation lässt den Filter ins Leere greifen, statt den Block zu löschen: '
+      + 'So bleibt der Zweig stehen und die Liste wird still leer, also genau der Fehler, den '
+      + 'niemand am fehlenden Code bemerkt. Gemessen wird an der ausgelieferten Seite, und '
+      + 'das Szenario folgt dem ersten Verweis, statt nur seine Adresse zu lesen.',
+  }),
 ]);
 
 /**

@@ -849,6 +849,38 @@ const SZENARIEN = [
         + ' mitpreis=' + zeilen.filter((z) => /netto/.test(z.textContent)).length;`,
     erwartet: ['mitpreis=0'],
   },
+  {
+    // Gemessen am 10.09.: 19 von 24 plausiblen Nicht-Sortiment-Wörtern endeten
+    // auf einer Seite ohne nächsten Schritt. Der Absagesatz stimmt, er sagt nur
+    // nicht, was es stattdessen gibt.
+    //
+    // **Dem Verweis folgen, nicht nur seine Adresse lesen** — dieselbe Regel wie
+    // beim Vertipper weiter oben. Was zählt, ist die Seite danach.
+    name: 'Wer nichts findet, erfährt wenigstens, was es gibt',
+    aktionen: `
+      await geheZu('suche?q=estrich');
+      const ziel = document.getElementById('suche-ziel');
+      const absatz = [...ziel.querySelectorAll('.antwort')]
+        .find((p) => /Das führen wir/.test(p.textContent));
+      const verweise = absatz ? [...absatz.querySelectorAll('a')] : [];
+      // Erst ablesen, dann folgen: Nach dem Sprung gibt es diesen Kopf nicht mehr.
+      const kopf = text('#suche-kopf');
+      let danach = 'NICHT GEFOLGT';
+      if (verweise.length) {
+        await geheZu(verweise[0].getAttribute('href').replace(/^.*#/, ''));
+        danach = text('h1');
+      }
+      out = 'kopf=[' + kopf + ']'
+        + ' absatz=[' + (absatz ? absatz.textContent : 'KEINER') + ']'
+        + ' gruppen=' + verweise.length
+        + ' danach=[' + danach + ']';`,
+    // Der Kopf nennt weiterhin die eingegebene Anfrage: Es wird nichts auf ein
+    // Ersatzprodukt umgelenkt, es steht nur daneben, was es überhaupt gibt.
+    // Kein festes „gruppen=N": die Zahl folgt dem Sortiment. Verboten ist die
+    // Null.
+    erwartet: ['Kein Treffer für „estrich"', 'Das führen wir'],
+    verboten: ['gruppen=0 ', 'danach=[NICHT GEFOLGT]', 'absatz=[KEINER]'],
+  },
 ];
 
 /**

@@ -19,6 +19,10 @@
     "ablage-im-webverzeichnis": {
       "am": "2026-09-10",
       "sekunden": 5
+    },
+    "absage-ohne-naechsten-schritt": {
+      "am": "2026-09-10",
+      "sekunden": 39
     }
   }
 }
