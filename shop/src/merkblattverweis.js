@@ -110,3 +110,93 @@ const bekannt = s.gruppe ? (hersteller(s.gruppe) ?? []) : [];
     sauber: meldungen.length === 0,
   };
 }
+
+/**
+ * Der Satz über die Merkblätter — abgeleitet, nicht geschrieben.
+ *
+ * **Der Anlass, 10. September 2026.** `llms.txt` sagt jedem Assistenten, wie
+ * diese Seiten gebaut sind. Eine der drei Zeilen lautete:
+ *
+ * > *„Technische Kennwerte werden nicht abgeschrieben, sondern beim
+ * > Hersteller verlinkt."*
+ *
+ * Gemessen: **24 von 46** Artikelseiten tragen den Verweis. Auf den übrigen
+ * **22** steht, dass kein Merkblatt vorliegt — richtig und offen gesagt, aber
+ * eben nicht „beim Hersteller verlinkt". Die Zeile war für die Hälfte des
+ * Sortiments eine Zusage, die die Seite nicht einlöst, und sie stand in genau
+ * der Datei, die für Maschinen geschrieben ist.
+ *
+ * > **Eine Selbstbeschreibung ist eine Zusage wie jede andere — nur liest sie
+ * > niemand nach, weil sie über den eigenen Bau spricht.**
+ *
+ * Der Satz folgt jetzt der Zahl, wie `lieferungssatz` der Lieferantenzahl:
+ * Beantwortet der Lieferant Frage 1 und kommen die Merkblattadressen, wird er
+ * von selbst wieder der kurze.
+ *
+ * @param {number} mitVerweis Artikelseiten mit Merkblattverweis
+ * @param {number} gesamt Artikelseiten insgesamt
+ */
+export function merkblattsatz(mitVerweis, gesamt) {
+  if (!(gesamt > 0)) {
+    return 'Technische Kennwerte werden nicht abgeschrieben, sondern beim Hersteller verlinkt.';
+  }
+  if (mitVerweis >= gesamt) {
+    return 'Technische Kennwerte werden nicht abgeschrieben, sondern beim Hersteller verlinkt.';
+  }
+  if (mitVerweis === 0) {
+    return 'Technische Kennwerte werden nicht abgeschrieben. Eine Merkblattadresse des '
+      + `Herstellers liegt für keinen der ${gesamt} Artikel vor; die Artikelseiten sagen das.`;
+  }
+  return 'Technische Kennwerte werden nicht abgeschrieben. Auf '
+    + `${mitVerweis} von ${gesamt} Artikelseiten steht der Verweis auf das Merkblatt des `
+    + `Herstellers; für die übrigen ${gesamt - mitVerweis} liegt uns keine Adresse vor, und die `
+    + 'Seite sagt das statt eine Kennwerttabelle zu erfinden.';
+}
+
+/**
+ * Wie viele Artikelseiten einen Merkblattverweis tragen.
+ *
+ * Gemessen am **Erzeugnis** und nicht am Katalog: Ob der Verweis auf der
+ * Seite landet, hängt an der Marke in der Bezeichnung und an der bekannten
+ * Adresse — beides Schritte, die zwischen Katalog und Seite liegen.
+ *
+ * @param {{name: string, html: string}[]} seiten Artikelseiten
+ */
+export function merkblattdeckung(seiten = []) {
+  let mitVerweis = 0;
+  const ohne = [];
+  for (const s of seiten) {
+    const block = /Technische Kennwerte([\s\S]*?)(<h2|<\/main)/.exec(String(s.html ?? ''));
+    const text = block ? block[1] : '';
+    if (/<a [^>]*href="https?:\/\//.test(text)) mitVerweis += 1;
+    else ohne.push(s.name);
+  }
+  return { gesamt: seiten.length, mitVerweis, ohne };
+}
+
+/**
+ * Hält den Satz in `llms.txt` gegen die gebauten Artikelseiten.
+ *
+ * @param {string} llms Inhalt von `ausgabe/site/llms.txt`
+ * @param {{gesamt: number, mitVerweis: number}} deckung
+ * @param {number} mindestens Wie viele Artikelseiten der Bestand trägt
+ */
+export function selbstbeschreibungsbefund(llms, deckung, mindestens = 20) {
+  const meldungen = [];
+  if (deckung.gesamt < mindestens) {
+    meldungen.push({
+      regel: 'zu-wenig-seiten',
+      text: `nur ${deckung.gesamt} Artikelseiten gemessen, erwartet mindestens ${mindestens} — `
+        + 'darüber lässt sich nichts aussagen',
+    });
+  }
+  const soll = merkblattsatz(deckung.mitVerweis, deckung.gesamt);
+  if (!String(llms ?? '').includes(soll)) {
+    meldungen.push({
+      regel: 'selbstbeschreibung-haelt-nicht',
+      text: 'llms.txt beschreibt die Merkblattverweise anders, als die Seiten sie tragen — '
+        + `${deckung.mitVerweis} von ${deckung.gesamt} tragen einen. Dort gehört: „${soll}"`,
+    });
+  }
+  return { ...deckung, soll, meldungen, sauber: meldungen.length === 0 };
+}

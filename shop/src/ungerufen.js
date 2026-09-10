@@ -407,12 +407,16 @@ export const UNGERUFEN = Object.freeze([
   }),
   Object.freeze({
     modul: 'src/merkblattverweis.js',
-    funktionen: ['merkblattbefund'],
+    funktionen: ['merkblattbefund', 'selbstbeschreibungsbefund'],
     warum: 'Ein Prüfer, der in den Testfällen wohnt — wie `src/eignungsgrenzen.js` und '
       + '`src/abholung.js`. `test/merkblattverweis.test.js` hält ihn gegen die gebauten '
       + 'Inhaltsseiten und läuft damit in Schritt 1 des Gesamtlaufs mit. Der Bau kann ihn nicht '
       + 'rufen: Er misst die fertigen Seiten. `herstellerDerGruppe` und `MERKBLATT` stehen '
-      + 'nicht hier — die ruft der Bau bei jeder Inhaltsseite.',
+      + 'nicht hier — die ruft der Bau bei jeder Inhaltsseite. **Seit dem 10. September** '
+      + 'steht `selbstbeschreibungsbefund` daneben: Er hält den Satz in `llms.txt` gegen die '
+      + 'gebauten Artikelseiten und wohnt aus demselben Grund im Testfall — der Bau schreibt '
+      + 'die Datei, die er prüft. `merkblattsatz` und `merkblattdeckung` stehen nicht hier: '
+      + 'Die ruft der Bau, um den Satz überhaupt erst zu schreiben, und genau darum geht es.',
   }),
   Object.freeze({
     modul: 'src/messwert.js',

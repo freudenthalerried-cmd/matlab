@@ -14,7 +14,7 @@
 ## Wie diese Seiten aufgebaut sind
 
 - Jede Seite beantwortet genau eine Frage; die Antwort steht in den ersten zwei Sätzen.
-- Technische Kennwerte werden nicht abgeschrieben, sondern beim Hersteller verlinkt.
+Technische Kennwerte werden nicht abgeschrieben. Auf 24 von 46 Artikelseiten steht der Verweis auf das Merkblatt des Herstellers; für die übrigen 22 liegt uns keine Adresse vor, und die Seite sagt das statt eine Kennwerttabelle zu erfinden.
 - Preise tragen einen Preisstand und die Angabe netto oder brutto.
 - Wie geprüft wird: https://bauversand.com/wissen/redaktionsprinzipien.html
 

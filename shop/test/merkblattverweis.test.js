@@ -20,7 +20,7 @@ import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-import { MERKBLATT, herstellerDerGruppe, merkblattbefund } from '../src/merkblattverweis.js';
+import { MERKBLATT, herstellerDerGruppe, merkblattbefund, merkblattsatz, merkblattdeckung, selbstbeschreibungsbefund } from '../src/merkblattverweis.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const SITE = join(SHOP, 'ausgabe', 'site');
@@ -137,4 +137,59 @@ test('der Verweis zeigt auf die Herstellerseite und nicht auf ein Dokument', () 
   // nächsten Update des Herstellers einer auf eine Fehlerseite.
   const stelle = html.slice(html.indexOf('Wo das Merkblatt steht'), html.indexOf('Wo das Merkblatt steht') + 700);
   assert.ok(!/\.pdf/i.test(stelle), 'der Verweis zeigt auf ein Dokument');
+});
+
+/* ------------------------------------------------------------------ *
+ * Die Selbstbeschreibung in llms.txt — 10. September 2026
+ *
+ * Die Datei, die für Maschinen geschrieben ist, sagte über den eigenen Bau:
+ * *„Technische Kennwerte werden nicht abgeschrieben, sondern beim Hersteller
+ * verlinkt."* Gemessen tragen **24 von 46** Artikelseiten den Verweis.
+ *
+ * > **Eine Selbstbeschreibung ist eine Zusage wie jede andere — nur liest sie
+ * > niemand nach, weil sie über den eigenen Bau spricht.**
+ * ------------------------------------------------------------------ */
+
+test('der Satz folgt der Zahl', () => {
+  assert.match(merkblattsatz(46, 46), /sondern beim Hersteller verlinkt/);
+  assert.match(merkblattsatz(24, 46), /24 von 46/);
+  assert.match(merkblattsatz(24, 46), /übrigen 22/);
+  assert.match(merkblattsatz(0, 46), /für keinen der 46/);
+  // Ohne Seiten keine Zahl — und dann auch keine erfundene.
+  assert.match(merkblattsatz(0, 0), /beim Hersteller verlinkt/);
+});
+
+test('die Deckung wird am Erzeugnis gemessen, nicht am Katalog', () => {
+  const d = merkblattdeckung([
+    { name: 'a', html: '<h2>Technische Kennwerte</h2><p>Siehe <a href="https://www.baumit.at/">Baumit</a></p><h2>x' },
+    { name: 'b', html: '<h2>Technische Kennwerte</h2><p>Kein Merkblatt vorhanden.</p><h2>x' },
+    { name: 'c', html: '<h2>Anderes</h2><p><a href="https://www.baumit.at/">Baumit</a></p><h2>x' },
+  ]);
+  assert.equal(d.gesamt, 3);
+  assert.equal(d.mitVerweis, 1, 'ein Verweis außerhalb des Abschnitts zählt nicht');
+  assert.deepEqual(d.ohne, ['b', 'c']);
+});
+
+test('eine Selbstbeschreibung, die nicht hält, ist ein Befund', () => {
+  const alt = 'Technische Kennwerte werden nicht abgeschrieben, sondern beim Hersteller verlinkt.';
+  const b = selbstbeschreibungsbefund(alt, { gesamt: 46, mitVerweis: 24 }, 20);
+  assert.equal(b.sauber, false);
+  assert.equal(b.meldungen[0].regel, 'selbstbeschreibung-haelt-nicht');
+  assert.match(b.meldungen[0].text, /24 von 46/);
+});
+
+test('zu wenige Seiten sind kein grüner Befund', () => {
+  const b = selbstbeschreibungsbefund('irgendwas', { gesamt: 2, mitVerweis: 2 }, 20);
+  assert.ok(b.meldungen.some((m) => m.regel === 'zu-wenig-seiten'));
+});
+
+test('llms.txt beschreibt die gebauten Artikelseiten richtig', (t) => {
+  const llmsDatei = join(SITE, 'llms.txt');
+  const ordner = join(SITE, 'artikel');
+  if (!existsSync(llmsDatei) || !existsSync(ordner)) return t.skip('ohne Bau keine Aussage');
+  const seiten = readdirSync(ordner)
+    .filter((n) => n.endsWith('.html'))
+    .map((n) => ({ name: n, html: readFileSync(join(ordner, n), 'utf8') }));
+  const b = selbstbeschreibungsbefund(readFileSync(llmsDatei, 'utf8'), merkblattdeckung(seiten), 20);
+  assert.deepEqual(b.meldungen.map((m) => m.text), []);
 });

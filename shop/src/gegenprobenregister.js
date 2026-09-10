@@ -2412,6 +2412,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'Assistent liest die Zeile, nicht den Vorspann.',
   }),
   Object.freeze({
+    id: 'selbstbeschreibung-fuer-alle-behauptet',
+    pruefer: 'test',
+    was: 'Eine Datei für Maschinen, die den eigenen Bau besser beschreibt als er ist',
+    datei: 'shop/bin/website.mjs',
+    art: 'ersetzen',
+    baueVorher: true,
+    suchen: "    merkblattsatz(merkblattdeckung(\n      fertig.filter((f) => f.id.startsWith('artikel/')).map((f) => ({ name: f.id, html: f.html })),\n    ).mitVerweis, katalog.artikel.length),",
+    ersetzen: "    '- Technische Kennwerte werden nicht abgeschrieben, sondern beim Hersteller verlinkt.',",
+    erwartet: /selbstbeschreibung-haelt-nicht|24 von 46/,
+    warum: 'Der Zustand bis zum 10. September: `llms.txt` sagte jedem Assistenten, technische '
+      + 'Kennwerte würden beim Hersteller verlinkt. Auf 24 von 46 Artikelseiten stimmt das; auf '
+      + 'den übrigen 22 steht offen, dass kein Merkblatt vorliegt. Die Mutation setzt den '
+      + 'kurzen Satz zurück — eine Selbstbeschreibung ist eine Zusage wie jede andere, nur '
+      + 'liest sie niemand nach, weil sie über den eigenen Bau spricht.',
+  }),
+  Object.freeze({
     id: 'abholsuche-wieder-beworben',
     pruefer: 'test',
     was: 'Bezahlte Klicks auf eine Suche nach etwas, das dieser Betrieb nicht kann',

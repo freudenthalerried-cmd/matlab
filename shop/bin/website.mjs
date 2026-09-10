@@ -53,7 +53,9 @@ import { lieferantenzahl, lieferungssatz } from '../src/lieferungen.js';
 import { abholungslage, abholungssatz } from '../src/abholung.js';
 import { UEBERSCHRIFT as GRENZEN_UEBERSCHRIFT, grenzenbausteine } from '../src/eignungsgrenzen.js';
 import { abgegrenzteStaemme } from '../src/abgrenzung.js';
-import { MERKBLATT, herstellerDerGruppe } from '../src/merkblattverweis.js';
+import {
+  MERKBLATT, herstellerDerGruppe, merkblattsatz, merkblattdeckung,
+} from '../src/merkblattverweis.js';
 import { liesSystemliste } from '../src/systemlisten.js';
 import { GEWERKE, einordnung } from '../src/systemtreue.js';
 import { lastmodFuer } from '../src/sitemapstand.js';
@@ -3011,7 +3013,23 @@ function main() {
     `- **Fracht fällt je Lieferung an, es gibt keine Frei-Haus-Schwelle.** Die Sätze und die Begründung stehen unter ${BASIS}/lieferung.html.`,
     '', '## Wie diese Seiten aufgebaut sind', '',
     '- Jede Seite beantwortet genau eine Frage; die Antwort steht in den ersten zwei Sätzen.',
-    '- Technische Kennwerte werden nicht abgeschrieben, sondern beim Hersteller verlinkt.',
+    /*
+     * **Abgeleitet seit dem 10. September 2026.** Hier stand der kurze Satz
+     * „Technische Kennwerte werden nicht abgeschrieben, sondern beim
+     * Hersteller verlinkt." Gemessen tragen **24 von 46** Artikelseiten den
+     * Verweis; auf den übrigen 22 steht, dass kein Merkblatt vorliegt.
+     *
+     * > **Eine Selbstbeschreibung ist eine Zusage wie jede andere — nur liest
+     * > sie niemand nach, weil sie über den eigenen Bau spricht.**
+     *
+     * Und diese hier steht in der Datei, die für Maschinen geschrieben ist:
+     * Ein Assistent hätte sie für alle 46 zitiert. Der Satz folgt jetzt der
+     * Zahl und wird von selbst wieder der kurze, sobald die Merkblattadressen
+     * da sind (Frage 1 an den Lieferanten).
+     */
+    merkblattsatz(merkblattdeckung(
+      fertig.filter((f) => f.id.startsWith('artikel/')).map((f) => ({ name: f.id, html: f.html })),
+    ).mitVerweis, katalog.artikel.length),
     '- Preise tragen einen Preisstand und die Angabe netto oder brutto.',
     `- Wie geprüft wird: ${BASIS}/wissen/redaktionsprinzipien.html`,
     /*
