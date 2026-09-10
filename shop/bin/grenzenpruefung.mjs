@@ -19,11 +19,13 @@
  * einen Grund, und zwar einen ganzen.
  */
 
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-import { AUSSENGRENZEN, aussengrenzenbefund, VERSUCH_GRENZE_TAGE } from '../src/aussenlage.js';
+import {
+  AUSSENGRENZEN, aussengrenzenbefund, VERSUCH_GRENZE_TAGE, aussagenbefund,
+} from '../src/aussenlage.js';
 import { geschaeftstag } from '../src/geschaeftszeit.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -47,10 +49,36 @@ try {
 const b = aussengrenzenbefund(vermerk, geschaeftstag(), AUSSENGRENZEN);
 
 // Gezählt wird das Angesehene, nicht das Gefundene.
+/*
+ * **Die zweite Frage, seit dem 10. September 2026.** Bis zum 9. stand in 15
+ * Quelldateien derselbe pauschale Satz über den Ausgang, und am 9. war
+ * gemessen, dass er zu weit gezogen ist: bauversand.com antwortet nicht,
+ * api.github.com schon. Berichtigt wurde die Datei, in der es stand — gezählt
+ * waren es 22 solche Sätze.
+ *
+ * > **Eine Berichtigung, die eine Stelle erreicht, gilt für eine Stelle.**
+ *
+ * Deshalb liest dieser Prüfer seither auch den Quelltext: Wer sperrt, nennt die
+ * Adresse, zu der ein Versuch mit Datum und Beleg vorliegt.
+ */
+const quellen = [];
+for (const ordner of ['src', 'bin']) {
+  for (const name of readdirSync(join(SHOP, ordner))) {
+    if (!/\.(js|mjs)$/.test(name)) continue;
+    quellen.push({
+      pfad: `${ordner}/${name}`,
+      text: readFileSync(join(SHOP, ordner, name), 'utf8'),
+    });
+  }
+}
+const a = aussagenbefund(quellen, vermerk.versuche);
+
 console.log(`\nAußengrenzen — ${b.grenzen} behauptete Grenzen, ${b.gemessen} mit belegtem Versuch,`);
 console.log(`${b.begruendet} ohne Weg und mit Grund; Versuche gelten ${VERSUCH_GRENZE_TAGE} Tage\n`);
 
-if (b.sauber) {
+console.log(`Sperraussagen im Quelltext: ${a.gefunden}, gemessene Adressen: ${a.adressen}`);
+
+if (b.sauber && a.sauber) {
   for (const g of AUSSENGRENZEN) {
     const v = vermerk.versuche?.[g.id];
     const zeichen = v ? (v.ergebnis === 'moeglich' ? '!' : '·') : '—';
@@ -66,6 +94,8 @@ if (b.sauber) {
   process.exit(0);
 }
 
-for (const m of b.meldungen) console.log(`  ✗ ${m.text}  [${m.regel}]`);
-console.log(`\n${b.meldungen.length} Meldung(en).`);
+for (const m of [...b.meldungen, ...a.meldungen]) {
+  console.log(`  ✗ ${m.text}  [${m.regel}]`);
+}
+console.log(`\n${b.meldungen.length + a.meldungen.length} Meldung(en).`);
 process.exit(1);

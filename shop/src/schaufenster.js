@@ -327,10 +327,24 @@ export function pruefeSchaufenster(text, messwerte) {
  * Vergleich auseinander, und der Lauf sagt: **hier steht eine Veröffentlichung
  * aus.**
  *
- * Sie sagt **nicht**, dass GitHub diesen Text zeigt. Das ließe sich von hier
- * aus nicht messen — der Netzausgang ist gesperrt —, und ein Prüfer, der es
- * behauptete, wäre eine Behauptung mit Ziffern. Was er belegt, ist der
+ * Sie sagt **nicht**, dass GitHub diesen Text zeigt: Was er belegt, ist der
  * Handgriff, nicht sein Ergebnis. Die Grenze steht in der Datei selbst.
+ *
+ * **Berichtigt am 10. September 2026.** Hier stand, das ließe sich von hier aus
+ * nicht messen, der Netzausgang sei gesperrt. Der Satz war schon beim Schreiben
+ * überholt: In derselben Nacht ist `npm run abgleich-veroeffentlichung`
+ * entstanden, das die veröffentlichte Fassung über api.github.com holt und
+ * Zeichen für Zeichen gegen die Werkzeugausgabe hält. Gesperrt ist der Ausgang
+ * für bauversand.com, die Herstellerseiten und das Rechtsinformationssystem —
+ * nicht für diese Adresse.
+ *
+ * > **Ein Satz über eine Grenze veraltet in dem Augenblick, in dem jemand sie
+ * > überschreitet — und bleibt trotzdem stehen, bis ihn jemand liest.**
+ *
+ * Warum dieser Prüfer sie trotzdem nicht selbst holt: Er läuft in `npm run
+ * alles` ohne Netz, und ein Prüfer, der ohne Netz behauptete, GitHub gesehen zu
+ * haben, wäre eine Behauptung mit Ziffern. Die beiden Fragen sind getrennt und
+ * bleiben es — dieser hier misst die Quelle, jener die Veröffentlichung.
  */
 export function veroeffentlichungsbefund(text, vermerk) {
   const meldungen = [];

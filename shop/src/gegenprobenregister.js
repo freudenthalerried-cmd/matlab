@@ -1819,6 +1819,29 @@ export const GEGENPROBEN = Object.freeze([
       + 'nicht an dem, den sie nicht treffen darf.',
   }),
   Object.freeze({
+    id: 'eine-pauschale-sperre-ohne-adresse',
+    pruefer: 'pruefe-grenzen',
+    was: 'Eine Aussage über den Ausgang dieser Umgebung ohne eine gemessene Adresse',
+    datei: 'shop/src/paket.js',
+    art: 'ersetzen',
+    /*
+     * **Mutiert wird die Adresse, nicht der Satz.** Der erste Entwurf schrieb den
+     * pauschalen Satz als Ersetzungstext — und stellte damit den Prüfer rot,
+     * bevor die Probe lief: Der Ersetzungstext steht in dieser Datei, und diese
+     * Datei wird mitgelesen. Zum vierten Mal in vier Runden hat sich eine
+     * Gegenprobe an ihrem eigenen Text gestoßen; ein Register, das seine
+     * Mutationen aufschreibt, schreibt sie in den Bestand, den es prüft.
+     */
+    suchen: 'ausgabe/site/` auf bauversand.com',
+    ersetzen: 'ausgabe/site/` auf die Zieladresse',
+    erwartet: /pauschale-sperre/,
+    warum: 'Bis zum 9. September stand dieser Satz in fünfzehn Quelldateien als Pauschale, und '
+      + 'am 9. war gemessen, dass er zu weit gezogen ist: bauversand.com antwortet nicht, '
+      + 'api.github.com schon. Berichtigt wurde die Datei, in der es stand — die übrigen führten '
+      + 'die Pauschale weiter. Die Mutation nimmt einer Fundstelle ihre Adresse wieder weg. '
+      + 'Bleibt der Prüfer grün, misst er die Berichtigung nur dort, wo sie schon angekommen ist.',
+  }),
+  Object.freeze({
     id: 'veroeffentlichung-haengt-hinterher',
     pruefer: 'pruefe-schaufenster',
     was: 'Ein Beschreibungstext, der sich seit der letzten Veröffentlichung geändert hat',

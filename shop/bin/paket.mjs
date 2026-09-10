@@ -16,8 +16,9 @@
  * Shop und die acht Punkte, an denen sich nach dem Hochladen zeigt, ob er
  * wirklich ausgeliefert wird.
  *
- * **Was es nicht tut:** hochladen. Der Netzausgang dieser Umgebung ist
- * gesperrt, und ein Upload wäre ohnehin eine Handlung nach außen.
+ * **Was es nicht tut:** hochladen. Für bauversand.com ist der Netzausgang
+ * dieser Umgebung gesperrt, und ein Upload wäre ohnehin eine Handlung nach
+ * außen.
  */
 
 import { createHash } from 'node:crypto';

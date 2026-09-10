@@ -30,8 +30,9 @@
  *
  * Die Form, nicht die Wahrheit. Ob `FN 347938z` **die** Nummer dieser
  * Gesellschaft ist, steht im Firmenbuch und nicht in einem regulären Ausdruck;
- * ob die UID zu ihr gehört, sagt das EU-Informationsaustauschsystem, und dessen
- * Netzausgang ist aus dieser Umgebung gesperrt.
+ * ob die UID zu ihr gehört, sagt das EU-Informationsaustauschsystem — und
+ * ec.europa.eu ist aus dieser Umgebung nicht erreichbar, am 10. September
+ * gemessen. Bis dahin stand hier dieselbe Aussage ohne Messung dahinter.
  *
  * > **Was eine Formprüfung findet, ist der Tippfehler — und das ist die
  * > häufigste Art, wie eine richtige Zahl falsch auf ein Papier kommt.**

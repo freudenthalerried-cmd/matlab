@@ -25,8 +25,10 @@ const WURZEL = join(HIER, '..');
 
 /*
  * **Die Außenlage — gemessen, nicht erklärt.** Sie steht in einer eigenen
- * Datei, weil der Shop sie nicht selbst erheben kann: Sein Netzausgang ist
- * gesperrt, und das GitHub-Werkzeug gehört nicht zu ihm. Fehlt die Datei,
+ * Datei, weil sie einen Handgriff braucht: Für bauversand.com ist der
+ * Netzausgang dieser Umgebung gesperrt, und die Sichtbarkeit über
+ * api.github.com abzufragen hieße, einen Prüferlauf vom Netz abhängig zu
+ * machen. Fehlt die Datei,
  * bleibt der Repositorypunkt eine Frage — und sagt das auch.
  */
 const AUSSENLAGEPFAD = process.env.STARTKLAR_AUSSENLAGE

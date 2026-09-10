@@ -79,8 +79,10 @@ const WURZEL = join(HIER, '..');
 
 /*
  * **Die Außenlage — gemessen, nicht erklärt.** Sie steht in einer eigenen
- * Datei, weil der Shop sie nicht selbst erheben kann: Sein Netzausgang ist
- * gesperrt, und das GitHub-Werkzeug gehört nicht zu ihm. Fehlt die Datei,
+ * Datei, weil sie einen Handgriff braucht: Für bauversand.com ist der
+ * Netzausgang dieser Umgebung gesperrt, und die Sichtbarkeit über
+ * api.github.com abzufragen hieße, einen Prüferlauf vom Netz abhängig zu
+ * machen. Fehlt die Datei,
  * bleibt der Repositorypunkt eine Frage — und sagt das auch.
  */
 const AUSSENLAGEPFAD = process.env.STARTKLAR_AUSSENLAGE
@@ -2872,8 +2874,8 @@ function main() {
    *
    * Bewusst nur diese eine Anweisung. Was hier sonst noch stünde —
    * Weiterleitungen, Kompression, Kopfzeilen — wäre eine Serverkonfiguration
-   * ohne Prüfung: Von hier aus lässt sich nicht messen, ob sie wirkt, und der
-   * Netzausgang dieser Umgebung ist gesperrt.
+   * ohne Prüfung: Von hier aus lässt sich nicht messen, ob sie wirkt — für
+   * bauversand.com ist der Netzausgang dieser Umgebung gesperrt.
    */
   writeFileSync(join(site, '.htaccess'),
     '# Von `npm run website` erzeugt. Änderungen hier gehen beim nächsten Bau verloren.\n'

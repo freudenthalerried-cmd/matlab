@@ -16,6 +16,7 @@ import { fileURLToPath } from 'node:url';
 
 import {
   aussenlage, tageSeit, widerspruchsbefund, aussengrenzenbefund, GRENZE_TAGE,
+  aussagenbefund, gemesseneAdressen, UMFELD,
 } from '../src/aussenlage.js';
 import { startklar } from '../src/startklar.js';
 
@@ -212,4 +213,95 @@ test('das Verzeichnis hält fest, welche Grenze gefallen ist', () => {
   assert.ok(b.moeglich >= 1, 'keine einzige überschrittene Grenze — dann fehlt der Anlass');
   assert.equal(vermerk.versuche['repository-sichtbarkeit'].ergebnis, 'moeglich');
   assert.match(vermerk.versuche['repository-sichtbarkeit'].beleg, /visibility/);
+});
+
+/**
+ * **Was der Bestand über den Netzausgang behauptet.**
+ *
+ * Bis zum 9. September stand in 15 Quelldateien derselbe pauschale Satz. Am 9.
+ * war gemessen, dass er zu weit gezogen ist; berichtigt wurde die Datei, in der
+ * es stand. *Eine Berichtigung, die eine Stelle erreicht, gilt für eine Stelle.*
+ */
+test('Ein Satz ohne Adresse ist eine Pauschale', () => {
+  const b = aussagenbefund(
+    [{ pfad: 'src/x.js', text: 'Der Netzausgang dieser Umgebung ist gesperrt.' }],
+    { a: { beleg: 'bauversand.com antwortet nicht' } });
+  assert.equal(b.gefunden, 1);
+  assert.equal(b.meldungen.length, 1);
+  assert.equal(b.meldungen[0].regel, 'pauschale-sperre');
+  assert.equal(b.meldungen[0].pfad, 'src/x.js');
+});
+
+test('Ein Satz mit gemessener Adresse geht durch', () => {
+  const b = aussagenbefund(
+    [{ pfad: 'src/x.js', text: 'Für bauversand.com ist der Netzausgang gesperrt.' }],
+    { a: { beleg: 'bauversand.com antwortet nicht' } });
+  assert.equal(b.gefunden, 1);
+  assert.deepEqual(b.meldungen, []);
+});
+
+test('Eine Adresse ohne Messung deckt nichts', () => {
+  // Sonst genügte es, irgendeine Adresse danebenzuschreiben.
+  const b = aussagenbefund(
+    [{ pfad: 'src/x.js', text: 'Für erfunden.example ist der Netzausgang gesperrt.' }],
+    { a: { beleg: 'bauversand.com antwortet nicht' } });
+  assert.equal(b.meldungen.length, 1);
+});
+
+test('Die Adresse muss in der Nähe stehen, nicht irgendwo in der Datei', () => {
+  const weit = `bauversand.com\n${'x'.repeat(UMFELD * 2)}\nDer Netzausgang ist gesperrt.`;
+  const b = aussagenbefund([{ pfad: 'src/x.js', text: weit }],
+    { a: { beleg: 'bauversand.com antwortet nicht' } });
+  assert.equal(b.meldungen.length, 1, 'ein weiter Umkreis erklärt Sätze für gedeckt, die er nicht meint');
+});
+
+test('Die Zeilennummer zeigt auf den Satz, nicht auf die Datei', () => {
+  const text = ['eins', 'zwei', 'drei', 'Der Netzausgang ist gesperrt.'].join('\n');
+  const b = aussagenbefund([{ pfad: 'src/x.js', text }], {});
+  assert.equal(b.meldungen[0].zeile, 4);
+});
+
+test('Mehrere Sätze in einer Datei werden einzeln gezählt', () => {
+  const text = `Der Netzausgang ist gesperrt.\n${'y'.repeat(1200)}\nSein Netzausgang war gesperrt.`;
+  const b = aussagenbefund([{ pfad: 'src/x.js', text }], {});
+  assert.equal(b.gefunden, 2);
+  assert.equal(b.meldungen.length, 2);
+});
+
+test('Aus den Belegen werden nur echte Adressen gelesen', () => {
+  const a = gemesseneAdressen({
+    eins: { beleg: 'curl https://api.github.com/repos/x/y: HTTP 200' },
+    zwei: { beleg: 'ris.bka.gv.at und www.ris.bka.gv.at ohne Verbindung' },
+    drei: { beleg: 'kein Weg, kein Beleg' },
+  });
+  assert.ok(a.has('api.github.com'), [...a].join(' '));
+  assert.ok(a.has('ris.bka.gv.at'));
+  assert.ok(!a.has('kein.weg'));
+});
+
+test('Der echte Bestand trägt zu jeder Sperraussage eine gemessene Adresse', async () => {
+  // Die Richtung, die den Fund gemacht hätte: 22 Sätze, drei berichtigt.
+  const { readFileSync, readdirSync } = await import('node:fs');
+  const wurzel = new URL('../', import.meta.url);
+  const dateien = [];
+  for (const ordner of ['src', 'bin']) {
+    for (const name of readdirSync(new URL(`${ordner}/`, wurzel))) {
+      if (!/\.(js|mjs)$/.test(name)) continue;
+      dateien.push({
+        pfad: `${ordner}/${name}`,
+        text: readFileSync(new URL(`${ordner}/${name}`, wurzel), 'utf8'),
+      });
+    }
+  }
+  assert.ok(dateien.length >= 100, `nur ${dateien.length} Quelldateien`);
+  const versuche = JSON.parse(readFileSync(new URL('data/aussenlage.json', wurzel), 'utf8')).versuche;
+  const b = aussagenbefund(dateien, versuche);
+  /*
+   * **Die Zahl steht hier mit Absicht.** Beim Nachziehen der Fundstellen fiel sie
+   * schon einmal von 24 auf 7, weil das Muster die Wortstellung vorschrieb und die
+   * umformulierten Sätze aus seinem Blickfeld rutschten. Der Prüfer war grün, ohne
+   * etwas geprüft zu haben. Fällt sie wieder, ist das ein Befund und kein Fortschritt.
+   */
+  assert.ok(b.gefunden >= 15, `nur ${b.gefunden} Sperraussagen — die Schleife prüfte fast nichts`);
+  assert.deepEqual(b.meldungen.map((m) => `${m.pfad}:${m.zeile}`), []);
 });

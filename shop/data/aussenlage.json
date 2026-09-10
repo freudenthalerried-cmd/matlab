@@ -34,6 +34,16 @@
       "am": "2026-09-10",
       "ergebnis": "moeglich",
       "beleg": "curl https://api.github.com/repos/freudenthalerried-cmd/matlab: HTTP 200, visibility public. Dieselbe Umgebung, dieselbe Minute: www.baumit.at und bauversand.com weiter 403 am Ausgang, github.com selbst 400. Die Sperre ist nach Adresse verschieden und nicht der Ausgang als solcher — versucht hatte es fuer diese Adresse niemand."
+    },
+    "uid-pruefung": {
+      "am": "2026-09-10",
+      "ergebnis": "gesperrt",
+      "beleg": "ec.europa.eu (das EU-Informationsaustauschsystem VIES): keine Verbindung. Bis dahin stand in src/betreiberform.js, dessen Netzausgang sei gesperrt — versucht hatte es niemand. Das Ergebnis stuetzt den Satz jetzt, statt ihn zu behaupten."
+    },
+    "crawler-dokumentation": {
+      "am": "2026-09-10",
+      "ergebnis": "gesperrt",
+      "beleg": "developers.google.com, www.google.com, support.google.com, platform.openai.com, docs.anthropic.com und commoncrawl.org: keine Verbindung. Damit ist die Annahme in src/crawler.js, was Google-Extended beim Anbieter steuert, von hier aus auf keinem gemessenen Weg zu belegen — vorher stand dort eine Pauschale ueber den Ausgang."
     }
   }
 }

@@ -12,7 +12,10 @@
  * Das ist keine theoretische Lücke. Seit dem 6. September hängt die
  * Fehlerseite an einer Zeile in `.htaccess`, von der dieses Verzeichnis
  * **nicht** wissen kann, ob der Hoster sie befolgt: Der Netzausgang dieser
- * Umgebung ist gesperrt. Dasselbe gilt für jede andere Frage der Auslieferung
+ * Umgebung ist für bauversand.com gesperrt — am 9. September gemessen, mit
+ * derselben Antwort für die bestehende Firmenseite freudenthaler-bau.at, also
+ * am Ausgang und nicht an der Adresse. Dasselbe gilt für jede andere Frage der
+ * Auslieferung
  * — Erreichbarkeit, Zeichensatz, ob `shop.js` als JavaScript ankommt.
  *
  * ## Warum die Liste erzeugt wird und nicht geschrieben

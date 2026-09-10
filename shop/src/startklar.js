@@ -430,15 +430,18 @@ export function startklar(lage = {}) {
     aussenlagebefund.domainErreichbar === null && aussenlagebefund.alter === 0
       ? 'nachgesehen und gesperrt: Der Ausgang dieser Umgebung antwortet auf den '
         + 'Verbindungsaufbau mit 403, auch bei der bestehenden Firmenseite'
-      : 'von hier aus nicht feststellbar — der Netzausgang dieser Umgebung ist gesperrt',
+      : 'von hier aus nicht feststellbar — für bauversand.com ist der Netzausgang '
+        + 'dieser Umgebung gesperrt',
     'Auftraggeber');
 
   /**
    * **Berichtigt am 9. September 2026, nachts.** Hier stand seit dem ersten
    * Bau *„von hier aus nicht feststellbar"*, und der Punkt trug ein
-   * Fragezeichen. Nachgesehen hatte das niemand: Der Netzausgang ist gesperrt,
-   * **das GitHub-Werkzeug ist es nicht** — es beantwortet die Frage in einem
-   * Aufruf.
+   * Fragezeichen. Nachgesehen hatte das niemand: Für bauversand.com ist der
+   * Netzausgang gesperrt, **für api.github.com ist er es nicht** — die Frage
+   * ist in einem Aufruf beantwortet. Am 9. September ging das nur über das
+   * GitHub-Werkzeug; am 10. war gemessen, dass auch der Ausgang selbst diese
+   * eine Adresse durchlässt.
    *
    * > **Eine Grenze, die zu weit gezogen ist, deckt genau das, was sie
    * > ausschließt.**

@@ -34,8 +34,10 @@
  *
  * **Was dieses Register nicht kann.** Es weiß nicht, was eine Kennung beim
  * Anbieter tatsächlich auslöst; die Belege dafür stehen in den
- * Crawler-Dokumentationen der Anbieter, und der Netzausgang dieser Umgebung
- * ist gesperrt (403 am Proxy, am 2. September erneut geprüft). Was hier steht,
+ * Crawler-Dokumentationen der Anbieter, und die sind aus dieser Umgebung nicht
+ * erreichbar: developers.google.com, platform.openai.com, docs.anthropic.com
+ * und commoncrawl.org antworten nicht, am 10. September gemessen. Was hier
+ * steht,
  * ist die **Absicht** des Shops und ihre innere Widerspruchsfreiheit. Wo eine
  * Entscheidung auf einer nicht belegbaren Annahme über einen Anbieter beruht,
  * steht die Annahme im Grund — nachlesbar und widerlegbar, statt still.
@@ -178,8 +180,10 @@ export const KENNUNGEN = Object.freeze([
       + 'kostet es Trainingsmaterial, was das Sichtbarkeitskonzept selbst „eine Geschmacksfrage '
       + 'ohne unmittelbare Wirkung auf die Sichtbarkeit" nennt. **Annahme, hier nicht belegbar:** '
       + 'dass diese Kennung beim Anbieter auch den Assistenten steuert und nicht nur das '
-      + 'Training. Der Netzausgang ist gesperrt; die Herstellerdokumentation ist von hier aus '
-      + 'nicht lesbar. Die Annahme steht als Punkt im Register der offenen Punkte.',
+      + 'Training. developers.google.com ist aus dieser Umgebung nicht erreichbar — am '
+      + '10. September gemessen, zusammen mit den Dokumentationen der anderen Anbieter; die '
+      + 'Herstellerdokumentation ist von hier aus nicht lesbar. Die Annahme steht als Punkt im '
+      + 'Register der offenen Punkte.',
   }),
   Object.freeze({
     kennung: 'GPTBot',

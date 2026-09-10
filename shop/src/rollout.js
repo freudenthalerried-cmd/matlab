@@ -286,8 +286,9 @@ export const ETAPPEN = Object.freeze([
      * > Server sie richtig herausgibt.**
      *
      * Seit derselben Nacht hängt die Fehlerseite an einer Zeile in
-     * `.htaccess`, deren Wirkung von hier aus **nicht** messbar ist: Der
-     * Netzausgang dieser Umgebung ist gesperrt. Dasselbe gilt für
+     * `.htaccess`, deren Wirkung von hier aus **nicht** messbar ist: Für
+     * bauversand.com ist der Netzausgang dieser Umgebung gesperrt, am
+     * 9. September gemessen. Dasselbe gilt für
      * Erreichbarkeit, Zeichensatz und die Frage, ob `shop.js` als JavaScript
      * ankommt. Was hier nicht geht, gehört auf eine Liste — nicht in einen
      * Vorsatz.

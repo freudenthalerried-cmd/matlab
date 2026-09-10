@@ -179,9 +179,10 @@ export const OHNE_WERKZEUG = Object.freeze([
     id: 'google-extended',
     titel: 'Nachlesen, was `Google-Extended` beim Anbieter tatsächlich steuert',
     zustaendig: 'entscheidung',
-    warumKeinWerkzeug: 'Steht in Googles Crawler-Dokumentation; der Netzausgang dieser Umgebung ist '
-      + 'gesperrt (403 am Proxy, am 2. September erneut geprüft). Das Register prüft die Absicht '
-      + 'und ihre Widerspruchsfreiheit, nicht die Wirkung beim Anbieter.',
+    warumKeinWerkzeug: 'Steht in Googles Crawler-Dokumentation, und developers.google.com ist aus '
+      + 'dieser Umgebung nicht erreichbar — am 10. September gemessen, zusammen mit '
+      + 'platform.openai.com, docs.anthropic.com und commoncrawl.org. Das Register prüft die '
+      + 'Absicht und ihre Widerspruchsfreiheit, nicht die Wirkung beim Anbieter.',
     loest: 'Die Kennung steht seit dem 2. September auf „erlaubt", weil für Google keine zweite, '
       + 'reine Suchkennung geführt ist und die Sperre damit den Anbieter ausschloss statt sein '
       + 'Training. Steuert sie in Wahrheit nur das Training, ist die Zeile eine Geschmacksfrage '

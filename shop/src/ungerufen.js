@@ -450,7 +450,8 @@ export const UNGERUFEN = Object.freeze([
     modul: 'src/vies.js',
     funktionen: ['belegzeile', 'ergaenzeFreigabe'],
     warum: 'Die UID-Abfrage beim EU-Informationsaustauschsystem ist aus dieser '
-      + 'Arbeitsumgebung nicht erreichbar (der Netzausgang ist gesperrt). Beide Funktionen '
+      + 'Arbeitsumgebung nicht erreichbar: ec.europa.eu antwortet nicht, am 10. September '
+      + 'gemessen. Beide Funktionen '
       + 'verarbeiten ihre **Antwort** — sie können erst laufen, wenn es eine gibt.',
   }),
   Object.freeze({
