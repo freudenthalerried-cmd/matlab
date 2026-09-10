@@ -16,6 +16,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 import { FORMREGELN, pruefeBetreiberform } from '../src/betreiberform.js';
+import { ZULIEFERUNGEN } from '../src/zettel.js';
 import { IMPRESSUMSFELDER } from '../src/rechtstexte.js';
 
 const betreiber = JSON.parse(readFileSync(
@@ -25,9 +26,32 @@ const betreiber = JSON.parse(readFileSync(
 test('jede Formregel nennt ein Beispiel und einen Grund', () => {
   assert.ok(FORMREGELN.length >= 5, `nur ${FORMREGELN.length} Regeln`);
   const felder = new Set(IMPRESSUMSFELDER.map((f) => f.feld));
+  const zettelfelder = new Set(ZULIEFERUNGEN.map((z) => z.feld));
   for (const r of FORMREGELN) {
-    assert.ok(felder.has(r.feld), `${r.feld}: steht in keiner Pflichtangabe`);
-    assert.ok(r.beispiel && r.beispiel.length >= 4, `${r.feld}: ohne Beispiel`);
+    /*
+     * **Erweitert am 10. September.** Bis dahin musste jede Formregel ein
+     * Impressumsfeld betreffen — was stimmte, solange alle es waren. Die Regel
+     * für `antwortzeitWerktage` betrifft keine Pflichtangabe nach § 5 ECG,
+     * sondern eine **Zusage an den Kunden**, die der Shop selbst macht. Was der
+     * Fall verlangt, ist deshalb nicht „steht im Impressum", sondern „wird
+     * irgendwo verlangt": im Impressum oder auf dem Zettel der Zulieferungen.
+     * Eine Formregel für ein Feld, das nirgends verlangt wird, prüft die Form
+     * von etwas, das niemand einträgt.
+     */
+    assert.ok(felder.has(r.feld) || zettelfelder.has(r.feld),
+      `${r.feld}: wird weder im Impressum noch auf dem Zettel verlangt`);
+    /*
+     * **Gelockert am 10. September, mit Grund.** Die Untergrenze von vier
+     * Zeichen war eine Faustregel aus den Anschriftsfeldern: Sie sollte den
+     * faulen Platzhalter („x") abfangen. Für eine Zahl ist sie sinnlos — das
+     * Beispiel für eine Antwortzeit in Werktagen ist eine Ziffer, und länger
+     * zu schreiben hieße, ein falsches Beispiel zu geben. Was wirklich
+     * schützt, steht zwei Zeilen tiefer: Das Beispiel muss seiner eigenen
+     * Regel genügen. Ein Platzhalter tut das nicht.
+     */
+    const zahlbeispiel = Number.isFinite(Number(r.beispiel));
+    assert.ok(r.beispiel && (String(r.beispiel).length >= 4 || zahlbeispiel),
+      `${r.feld}: ohne Beispiel`);
     assert.ok(r.warum && r.warum.length >= 80, `${r.feld}: ohne belastbaren Grund`);
     // Das Beispiel muss seiner eigenen Regel genügen — sonst führt es in die Irre.
     assert.ok(r.pruefe(r.beispiel), `${r.feld}: das Beispiel „${r.beispiel}" scheitert an der eigenen Regel`);

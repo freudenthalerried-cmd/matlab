@@ -219,6 +219,20 @@ export const PRUEFER = [
     mindestens: 4,
   },
   /*
+   * **Aufgenommen am 10. September 2026.** Am selben Tag führte die
+   * Aufgabenliste 25 offene Punkte, und kein einziger lag bei mir. Sieben
+   * kosten nichts und verteilten sich über vier Werkzeugausgaben. Dieser
+   * Prüfer hält den Zettel gegen `data/betreiber.json` — in beide Richtungen,
+   * damit er weder nach Ausgefülltem fragt noch ein leeres Feld verschweigt.
+   */
+  {
+    name: 'zettel',
+    werkzeug: 'zettel.mjs',
+    muster: /(\d+) von \d+ offen/,
+    einheit: 'Zulieferungen ohne Ausgabe, noch offen',
+    mindestens: 0,
+  },
+  /*
    * **Aufgenommen am 10. September 2026, und er braucht Netz.** Er holt die
    * veröffentlichte Beschreibung von `api.github.com` und hält sie gegen
    * `npm run pr-text` — der erste Prüfer dieses Bestands, der nach draußen

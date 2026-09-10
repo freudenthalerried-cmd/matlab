@@ -1878,6 +1878,21 @@ export const GEGENPROBEN = Object.freeze([
       + '„ungeprüft, ohne dass es jemand sieht".',
   }),
   Object.freeze({
+    id: 'eine-zeile-nach-etwas-das-schon-dasteht',
+    pruefer: 'zettel',
+    was: 'Ein Zettel, der eine Angabe abfragt, die längst in der Datei steht',
+    datei: 'shop/data/betreiber.json',
+    art: 'ersetzen',
+    suchen: '"email": ""',
+    ersetzen: '"email": "office@bauversand.com"',
+    erwartet: /schon-geliefert/,
+    warum: 'Der Zettel ist die Liste der sieben Angaben, die nichts kosten. Sein Wert hängt '
+      + 'daran, dass er stimmt: Wer ihn aufschlägt und als Erstes nach etwas gefragt wird, das '
+      + 'er vor drei Wochen eingetragen hat, liest die übrigen sechs Zeilen nicht mehr. Die '
+      + 'Mutation füllt ein Feld aus, ohne die Zeile zu entfernen. Bleibt der Prüfer grün, '
+      + 'misst er den Zettel gegen sich selbst statt gegen die Datei.',
+  }),
+  Object.freeze({
     id: 'veroeffentlichung-haengt-hinterher',
     pruefer: 'pruefe-schaufenster',
     was: 'Ein Beschreibungstext, der sich seit der letzten Veröffentlichung geändert hat',

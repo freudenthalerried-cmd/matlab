@@ -48,6 +48,41 @@ import { uidPruefzifferStimmt } from './kunde.js';
  * genau darauf warten.
  */
 export const FORMREGELN = Object.freeze([
+  /*
+   * **Aufgenommen am 10. September 2026.** Der Zettel für den Auftraggeber
+   * fragt sieben Angaben ab und holt Form und Beispiel von hier. Bei zwei von
+   * ihnen kam nichts zurück: Sie standen als Pflichtangabe auf jeder Liste und
+   * hatten **keine Formregel**. Wer sie einträgt, hätte geraten, und ein
+   * Zahlendreher oder ein Platzhalter wäre durchgegangen.
+   */
+  Object.freeze({
+    feld: 'gewerbewortlaut',
+    beispiel: 'Handel mit Waren aller Art',
+    // Bewusst grob: Ob der Wortlaut dem Gewerberegisterauszug entspricht, sagt
+    // nur der Auszug. Was diese Regel findet, ist der Platzhalter und das
+    // einzelne Wort — „Gewerbe", „TODO", „Bau".
+    pruefe: (wert) => {
+      const w = String(wert).trim();
+      return w.length >= 10 && /\s/.test(w) && !/^(todo|tbd|gewerbe|offen)$/i.test(w);
+    },
+    warum: 'Der Wortlaut des angemeldeten Gewerbes steht nach § 5 ECG im Impressum, und zwar '
+      + 'so, wie er angemeldet wurde — abgeschrieben, nicht formuliert. Ein einzelnes Wort '
+      + 'ist kein Wortlaut, und ein Platzhalter, der online geht, ist eine falsche Angabe '
+      + 'über das eigene Gewerbe.',
+  }),
+  Object.freeze({
+    feld: 'antwortzeitWerktage',
+    beispiel: '2',
+    pruefe: (wert) => {
+      const n = Number(String(wert).trim());
+      return Number.isInteger(n) && n >= 1 && n <= 10;
+    },
+    warum: 'Die Zahl geht als Zusage an den Kunden: „Wir melden uns innerhalb von N '
+      + 'Werktagen." Null Werktage wäre keine Zusage, sondern ein Versprechen für denselben '
+      + 'Augenblick; mehr als zehn ist keine Rückmeldung mehr, sondern ein Ausbleiben mit '
+      + 'Datum. Geprüft wird die Spanne, nicht die Höhe — welche Zahl richtig ist, weiß der '
+      + 'Betrieb.',
+  }),
   Object.freeze({
     feld: 'uid',
     beispiel: 'ATU12345675',
@@ -103,14 +138,32 @@ export function pruefeBetreiberform(betreiber = {}, regeln = FORMREGELN) {
   let geprueft = 0;
   for (const r of regeln) {
     const wert = betreiber[r.feld];
-    if (typeof wert !== 'string' || wert.trim() === '') continue;
+    /*
+     * **Berichtigt am 10. September 2026.** Hier stand
+     * `if (typeof wert !== 'string' …) continue`, und damit übersprang die
+     * Schleife jede Zahl. Aufgefallen ist es beim Aufnehmen der Regel für
+     * `antwortzeitWerktage`: Sie geht als Zusage an den Kunden — „wir melden
+     * uns innerhalb von N Werktagen" —, und das Feld trägt eine **Zahl**.
+     * Gemessen wurden 2, 0 und 99: alle drei durchgelassen, während „0" in
+     * Anführungszeichen gemeldet wurde.
+     *
+     * > **Eine Prüfung, die nur für einen Typ greift, ist für den anderen
+     * > keine.** Derselbe Satz wie beim Zahlungsvermerk, der nur im
+     * > ungenutzten Zweig prüfte.
+     *
+     * Übersprungen wird seither nur das **Leere** — das ist kein Formfehler,
+     * sondern ein offener Punkt, und den führt `startklar`.
+     */
+    if (wert === null || wert === undefined) continue;
+    if (typeof wert === 'string' && wert.trim() === '') continue;
     geprueft += 1;
     if (!r.pruefe(wert)) {
+      const gezeigt = typeof wert === 'string' ? wert.trim() : String(wert);
       maengel.push({
         feld: r.feld,
-        wert: wert.trim(),
+        wert: gezeigt,
         beispiel: r.beispiel,
-        text: `${r.feld}: „${wert.trim()}" hat nicht die Form einer gültigen Angabe (${r.beispiel})`,
+        text: `${r.feld}: „${gezeigt}" hat nicht die Form einer gültigen Angabe (${r.beispiel})`,
       });
     }
   }

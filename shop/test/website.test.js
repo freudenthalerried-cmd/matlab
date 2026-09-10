@@ -539,7 +539,13 @@ test('Ein offener Punkt ohne Kundenbezug erzeugt keine leere Aufzählung', () =>
     // `impressum` auch die **Form** prüft, hätte diese Probe den Shop mit
     // einer erfundenen UID für bestellfähig erklärt.
     email: 'office@example.at', telefon: '+43 1 234', uid: 'ATU12345675',
-    gewerbewortlaut: 'Handelsgewerbe',
+    // **Nachgezogen am 10. September.** Hier stand `Handelsgewerbe` — ein
+    // einzelnes Wort. Seit an dem Tag eine Formregel dazukam, ist das kein
+    // Wortlaut mehr: § 5 ECG meint den angemeldeten Text, abgeschrieben und
+    // nicht formuliert. Dieselbe Bewegung wie bei der UID sechs Tage zuvor —
+    // eine Probe, deren „vollständige" Datei die eigenen Regeln nicht besteht,
+    // erklärt den Shop für bestellfähig, ohne dass er es wäre.
+    gewerbewortlaut: 'Handel mit Baustoffen',
     zahlungsanbieter: 'Beispiel', rechtstexteFundstelle: 'Kanzlei',
     domainZeigtAufShop: true,
     repositoryPrivat: null, // die eine offene Frage — und sie geht den Kunden nichts an
@@ -590,7 +596,13 @@ test('Startseite und llms.txt sagen aus den Daten, ob bestellt werden kann', () 
     // `impressum` auch die **Form** prüft, hätte diese Probe den Shop mit
     // einer erfundenen UID für bestellfähig erklärt.
     email: 'office@example.at', telefon: '+43 1 234', uid: 'ATU12345675',
-    gewerbewortlaut: 'Handelsgewerbe',
+    // **Nachgezogen am 10. September.** Hier stand `Handelsgewerbe` — ein
+    // einzelnes Wort. Seit an dem Tag eine Formregel dazukam, ist das kein
+    // Wortlaut mehr: § 5 ECG meint den angemeldeten Text, abgeschrieben und
+    // nicht formuliert. Dieselbe Bewegung wie bei der UID sechs Tage zuvor —
+    // eine Probe, deren „vollständige" Datei die eigenen Regeln nicht besteht,
+    // erklärt den Shop für bestellfähig, ohne dass er es wäre.
+    gewerbewortlaut: 'Handel mit Baustoffen',
     zahlungsanbieter: 'Beispiel', rechtstexteFundstelle: 'Kanzlei',
     domainZeigtAufShop: true, repositoryPrivat: true,
     // **Seit dem 2. September.** Die zugesagte Antwortzeit ist der einzige
