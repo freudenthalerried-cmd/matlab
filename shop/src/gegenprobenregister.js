@@ -419,7 +419,20 @@ export const GEGENPROBEN = Object.freeze([
     art: 'ersetzen',
     suchen: "const KARTENFLAECHEN = Object.freeze(['class=\"karte\"', 'id=\"suche-ziel\"']);",
     ersetzen: "const KARTENFLAECHEN = Object.freeze(['class=\"karte\"']);",
-    erwartet: /ohneGrenze=suche|Legen-Knopf/,
+    /*
+     * **Berichtigt am 10. September 2026.** Die Erwartung nannte das
+     * **allgemeine** Szenario („Keine Fläche mit Legen-Knopf ohne die Grenze"),
+     * und das bleibt unter dieser Mutation zu Recht grün: Die Suchergebnisseite
+     * trägt vor dem ersten Tastendruck gar keinen Knopf. Rot wird das Szenario
+     * daneben, das genau für sie gebaut wurde. Der Läufer hat es gesagt —
+     * „meldete rot, aber nicht wegen …" —, und ohne diese Unterscheidung wäre
+     * die Probe als geschlagen durchgegangen, obwohl sie auf die falsche Stelle
+     * zeigte.
+     *
+     * Gesehen hat das erst der erste Lauf **mit Browser**: Die Probe stand seit
+     * dem 5. September im Register und war bis heute nie ausgeführt.
+     */
+    erwartet: /Karten erst beim Tippen entstehen/,
     baueVorher: true,
     warum: 'Der Zustand vom 5. September: neun Karten mit neun Knöpfen „In den Warenkorb" auf '
       + 'der Suchergebnisseite, und kein Wort über die 250 € netto je Lieferung. Die Mutation '
@@ -1842,6 +1855,29 @@ export const GEGENPROBEN = Object.freeze([
       + 'Bleibt der Prüfer grün, misst er die Berichtigung nur dort, wo sie schon angekommen ist.',
   }),
   Object.freeze({
+    id: 'eine-zurueckstellung-die-nie-verfaellt',
+    pruefer: 'pruefe-browserproben',
+    was: 'Eine zurückgestellte Probe, deren letzter Anschlag aus einer anderen Woche stammt',
+    datei: 'shop/data/browserproben.json',
+    art: 'ersetzen',
+    /*
+     * **Ein Suchmuster, kein Suchtext.** Zwei Dinge bewegen sich hier: das
+     * Datum, das der Läufer nach jedem Anschlag neu schreibt, und die
+     * Formatierung, die dabei aus der kompakten Zeile einen Block macht. Ein
+     * fester Suchtext wäre nach dem ersten Anschlag tot — genau der Fall, für
+     * den das Muster zwei Runden zuvor gebaut wurde.
+     */
+    suchenMuster: /"korbflaeche-ohne-grenze":\s*\{\s*"am":\s*"\d{4}-\d{2}-\d{2}"/,
+    ersetzen: '"korbflaeche-ohne-grenze": {\n      "am": "2026-07-01"',
+    erwartet: /zu-lange-her/,
+    warum: 'Genau dieser Zustand herrschte zwischen dem 5. und dem 10. September, nur ohne '
+      + 'Datum: Vier Gegenproben standen im Register, der Lauf druckte ihre Namen als '
+      + 'zurückgestellt, und keine lief. Als sie am 10. zum ersten Mal liefen, zeigte eine auf '
+      + 'das falsche Szenario. Die Mutation setzt einen Anschlag weit zurück. Bleibt der Prüfer '
+      + 'grün, verfällt die Zurückstellung wieder nie, und „zurückgestellt" heißt dauerhaft '
+      + '„ungeprüft, ohne dass es jemand sieht".',
+  }),
+  Object.freeze({
     id: 'veroeffentlichung-haengt-hinterher',
     pruefer: 'pruefe-schaufenster',
     was: 'Ein Beschreibungstext, der sich seit der letzten Veröffentlichung geändert hat',
@@ -2612,5 +2648,94 @@ export function registerbefund(pruefernamen, proben = GEGENPROBEN, ohne = OHNE_G
     begruendet: begruendet.size,
     unerklaert,
     vollstaendig: unerklaert.length === 0,
+  };
+}
+
+/* ------------------------------------------------------------------ *
+ * Browserproben: zurückgestellt, aber nicht vergessen
+ * ------------------------------------------------------------------ */
+
+/**
+ * **Der Anlass, 10. September 2026.** Vier Gegenproben laufen nicht im
+ * Regellauf mit. Der Grund ist gut und steht in `bin/gegenprobenlauf.mjs`:
+ * Zwei von ihnen meldeten am 4. September unter Last etwas anderes als allein.
+ *
+ * > **Eine Probe, die unter Last etwas anderes meldet als allein, misst die
+ * > Last.**
+ *
+ * Gefehlt hat die andere Hälfte. Der Lauf druckte die vier Namen als Zeile
+ * *„zurückgestellt — mit `--mit-browser` laufen sie mit"*, und niemand ließ sie
+ * mitlaufen. Am 10. September liefen sie zum ersten Mal seit ihrer Aufnahme.
+ * Drei schlugen an; die vierte stand seit dem 5. September im Register und
+ * zeigte auf das **falsche Szenario**.
+ *
+ * > **Eine Zurückstellung, die nie verfällt, ist eine Probe, die nie läuft.**
+ *
+ * Gemessen kostet der ganze Satz **2 Minuten** — gegen 46 Minuten des
+ * Regellaufs. Die Zurückstellung bleibt trotzdem: Sie war nie eine Frage der
+ * Kosten, sondern der Last. Was dazukommt, ist ein Datum je Probe und eine
+ * Frist, nach der „zurückgestellt" wieder „ungeprüft" heißt.
+ */
+export const BROWSERPROBEN_GRENZE_TAGE = 14;
+
+/**
+ * Hält den Vermerk gegen das Register — in beide Richtungen.
+ *
+ * @param {object[]} proben die Browsergegenproben aus dem Register
+ * @param {object} vermerk der Inhalt von data/browserproben.json
+ * @param {string} heute Geschäftstag als YYYY-MM-DD
+ */
+export function browserprobenbefund(proben, vermerk, heute) {
+  const meldungen = [];
+  const melde = (regel, text) => meldungen.push({ regel, text });
+  const eintraege = vermerk?.proben ?? {};
+  const grenze = Number(vermerk?.grenzeTage ?? BROWSERPROBEN_GRENZE_TAGE);
+  let frisch = 0;
+  let aeltester = null;
+
+  for (const p of proben) {
+    const e = eintraege[p.id];
+    if (!e?.am) {
+      melde('nie-geschlagen',
+        `${p.id} ist zurückgestellt und hat nie angeschlagen — eine Zurückstellung ohne `
+        + 'Datum ist eine Probe, die nie läuft');
+      continue;
+    }
+    const tage = Math.floor((Date.parse(`${heute}T00:00:00Z`) - Date.parse(`${e.am}T00:00:00Z`))
+      / 86400000);
+    if (!Number.isFinite(tage)) {
+      melde('datum-unlesbar', `${p.id}: „${e.am}" ist kein Datum`);
+      continue;
+    }
+    if (tage > grenze) {
+      melde('zu-lange-her',
+        `${p.id} hat zuletzt vor ${tage} Tagen angeschlagen — die Frist sind ${grenze}. `
+        + 'Mit `npm run gegenproben -- --mit-browser` nachziehen');
+      continue;
+    }
+    frisch += 1;
+    if (aeltester === null || tage > aeltester) aeltester = tage;
+  }
+
+  /*
+   * Die Richtung, die den Fund gemacht hätte: Ein Eintrag ohne Probe. Wird eine
+   * Browsergegenprobe gelöscht oder in eine andere Prüfergruppe verschoben,
+   * bliebe ihr Datum hier stehen und sagte über etwas aus, das es nicht gibt.
+   */
+  const bekannt = new Set(proben.map((p) => p.id));
+  for (const id of Object.keys(eintraege)) {
+    if (!bekannt.has(id)) {
+      melde('vermerk-ohne-probe',
+        `${id} steht im Vermerk und ist keine zurückgestellte Browserprobe mehr`);
+    }
+  }
+
+  return {
+    meldungen,
+    proben: proben.length,
+    frisch,
+    aeltester,
+    grenze,
+    sauber: meldungen.length === 0,
   };
 }

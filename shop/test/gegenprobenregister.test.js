@@ -1,7 +1,7 @@
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
-import { GEGENPROBEN, OHNE_GEGENPROBE, ARTEN, neueMeldungen, registerbefund, suchtextbefund } from '../src/gegenprobenregister.js';
+import { GEGENPROBEN, OHNE_GEGENPROBE, ARTEN, neueMeldungen, registerbefund, suchtextbefund, browserprobenbefund } from '../src/gegenprobenregister.js';
 import { PRUEFER } from '../src/pruefregister.js';
 
 test('Jede Gegenprobe nennt Prüfer, Datei, Erwartung und Grund', () => {
@@ -155,4 +155,74 @@ test('Verglichen wird, was in der roten Ausgabe neu ist', () => {
 
   // Einrückung verschiebt sich zwischen zwei Läufen — verglichen wird beschnitten.
   assert.equal(neueMeldungen('  a\nb', 'a\n   b'), '');
+});
+
+/**
+ * **Zurückgestellte Browsergegenproben.**
+ *
+ * Vier Proben laufen aus gutem Grund nicht im Regellauf mit. Was bis zum
+ * 10. September fehlte, war die andere Hälfte: *Eine Zurückstellung, die nie
+ * verfällt, ist eine Probe, die nie läuft.* Zwischen dem 5. und dem
+ * 10. September lief keine von ihnen, und eine zeigte auf das falsche Szenario.
+ */
+const probe = (id) => ({ id, pruefer: 'shopprobe' });
+
+test('Eine frische Zurückstellung ist keine Meldung', () => {
+  const b = browserprobenbefund(
+    [probe('a')],
+    { grenzeTage: 14, proben: { a: { am: '2026-09-10', sekunden: 5 } } },
+    '2026-09-12');
+  assert.deepEqual(b.meldungen, []);
+  assert.equal(b.frisch, 1);
+  assert.equal(b.aeltester, 2);
+});
+
+test('Eine Probe ohne Datum hat nie angeschlagen', () => {
+  const b = browserprobenbefund([probe('a')], { proben: {} }, '2026-09-10');
+  assert.equal(b.meldungen.length, 1);
+  assert.equal(b.meldungen[0].regel, 'nie-geschlagen');
+});
+
+test('Nach der Frist heißt zurückgestellt wieder ungeprüft', () => {
+  const alt = { grenzeTage: 14, proben: { a: { am: '2026-08-20', sekunden: 5 } } };
+  const b = browserprobenbefund([probe('a')], alt, '2026-09-10');
+  assert.equal(b.meldungen.length, 1);
+  assert.equal(b.meldungen[0].regel, 'zu-lange-her');
+  assert.match(b.meldungen[0].text, /21 Tagen/);
+});
+
+test('Genau auf der Frist zählt noch als frisch', () => {
+  // Sonst hinge das Urteil an der Stunde, zu der jemand den Lauf startet.
+  const b = browserprobenbefund(
+    [probe('a')],
+    { grenzeTage: 14, proben: { a: { am: '2026-08-27', sekunden: 5 } } },
+    '2026-09-10');
+  assert.deepEqual(b.meldungen, []);
+});
+
+test('Ein Vermerk ohne Probe fällt auf — die andere Richtung', () => {
+  const b = browserprobenbefund(
+    [probe('a')],
+    { proben: { a: { am: '2026-09-10' }, weg: { am: '2026-09-10' } } },
+    '2026-09-10');
+  assert.equal(b.meldungen.length, 1);
+  assert.equal(b.meldungen[0].regel, 'vermerk-ohne-probe');
+});
+
+test('Ein unlesbares Datum ist ein Befund, keine stille Null', () => {
+  const b = browserprobenbefund([probe('a')], { proben: { a: { am: 'neulich' } } }, '2026-09-10');
+  assert.equal(b.meldungen[0].regel, 'datum-unlesbar');
+});
+
+test('Der echte Vermerk deckt jede zurückgestellte Probe', async () => {
+  const { readFileSync } = await import('node:fs');
+  const { BROWSERPRUEFER } = await import('../src/pruefregister.js');
+  const { geschaeftstag } = await import('../src/geschaeftszeit.js');
+  const vermerk = JSON.parse(readFileSync(
+    new URL('../data/browserproben.json', import.meta.url), 'utf8'));
+  const namen = new Set(BROWSERPRUEFER.map((p) => p.name));
+  const proben = GEGENPROBEN.filter((p) => namen.has(p.pruefer));
+  assert.ok(proben.length >= 4, `nur ${proben.length} Browsergegenproben`);
+  const b = browserprobenbefund(proben, vermerk, geschaeftstag());
+  assert.deepEqual(b.meldungen.map((m) => m.text), []);
 });

@@ -1,0 +1,24 @@
+{
+  "_zweck": "Wann jede Browsergegenprobe zuletzt angeschlagen hat. Sie laufen nicht im Regellauf mit — aus gutem Grund, siehe bin/gegenprobenlauf.mjs: Eine Probe, die unter Last etwas anderes meldet als allein, misst die Last. Was bis zum 10. September fehlte, war die andere Haelfte: Eine Zurueckstellung, die nie verfaellt, ist eine Probe, die nie laeuft.",
+  "_anlass": "Am 10. September liefen die vier zurueckgestellten Proben zum ersten Mal seit ihrer Aufnahme. Drei schlugen an. Die vierte — korbflaeche-ohne-grenze, seit dem 5. September im Register — zeigte auf das falsche Szenario: Sie erwartete das allgemeine (Keine Flaeche mit Legen-Knopf ohne die Grenze), rot wird aber das fuer die Suchergebnisseite gebaute. Fuenf Tage lang stand eine Probe da, die nichts bewiesen haette.",
+  "_grenze": "Dieser Vermerk sagt, wann eine Probe zuletzt angeschlagen hat, nicht ob sie es heute wieder taete. Er wird vom Laeufer geschrieben, wenn eine Browserprobe geschlagen hat — von Hand gepflegt waere er ein Handgriff ohne Werkzeug, und genau davon handelt dieser Eintrag.",
+  "grenzeTage": 14,
+  "proben": {
+    "korbflaeche-ohne-grenze": {
+      "am": "2026-09-10",
+      "sekunden": 56
+    },
+    "auskunft-nur-im-leeren-fall": {
+      "am": "2026-09-10",
+      "sekunden": 56
+    },
+    "formular-erhebt-zu-wenig": {
+      "am": "2026-09-10",
+      "sekunden": 8
+    },
+    "ablage-im-webverzeichnis": {
+      "am": "2026-09-10",
+      "sekunden": 5
+    }
+  }
+}

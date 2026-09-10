@@ -205,6 +205,20 @@ export const PRUEFER = [
     mindestens: 10000,
   },
   /*
+   * **Aufgenommen am 10. September 2026.** Vier Gegenproben laufen aus gutem
+   * Grund nicht im Regellauf mit — zwei von ihnen meldeten unter Last etwas
+   * anderes als allein. Der Lauf druckte ihre Namen seither als Zeile, und
+   * niemand ließ sie mitlaufen: Zwischen dem 5. und dem 10. September lief
+   * keine von ihnen. Dieser Prüfer startet keinen Browser, er liest ein Datum.
+   */
+  {
+    name: 'pruefe-browserproben',
+    werkzeug: 'browserprobenpruefung.mjs',
+    muster: /(\d+) zurückgestellt/,
+    einheit: 'zurückgestellte Browsergegenproben mit Datum',
+    mindestens: 4,
+  },
+  /*
    * **Aufgenommen am 10. September 2026, und er braucht Netz.** Er holt die
    * veröffentlichte Beschreibung von `api.github.com` und hält sie gegen
    * `npm run pr-text` — der erste Prüfer dieses Bestands, der nach draußen

@@ -24,7 +24,8 @@
  * richtig so und keine Fehlfunktion — aber `npm run website` gehört danach.
  */
 
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { geschaeftstag } from '../src/geschaeftszeit.js';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -213,6 +214,28 @@ console.log(`${proben.length} laufen, ${laufzahl(proben)} Prüferläufe statt ${
   + '— der „wieder grün"-Lauf zählt als „vorher grün" der nächsten Probe.\n');
 
 const begonnen = Date.now();
+
+/**
+ * Schreibt einer geschlagenen Browsergegenprobe ihr Datum.
+ *
+ * **Warum überhaupt geschrieben wird.** Die vier zurückgestellten Proben
+ * liefen zwischen dem 5. und dem 10. September kein einziges Mal, obwohl der
+ * Lauf ihre Namen jedes Mal druckte. Ein Vermerk, den ein Mensch nachtragen
+ * müsste, hätte dasselbe Schicksal.
+ */
+function vermerkeBrowserprobe(id, sekunden) {
+  const pfad = join(SHOP, 'data', 'browserproben.json');
+  if (!existsSync(pfad)) return;
+  try {
+    const v = JSON.parse(readFileSync(pfad, 'utf8'));
+    v.proben = v.proben ?? {};
+    v.proben[id] = { am: geschaeftstag(), sekunden };
+    writeFileSync(pfad, `${JSON.stringify(v, null, 2)}\n`);
+  } catch {
+    // Ein Vermerk, der nicht zu schreiben ist, darf den Lauf nicht abbrechen —
+    // der Prüfer daneben meldet dann zu Recht „zu lange her".
+  }
+}
 let gesparteLaeufe = 0;
 let voriges = null;
 
@@ -388,6 +411,15 @@ for (const p of proben) {
   }
 
   if (urteil === 'geschlagen') {
+    /*
+     * **Der Vermerk schreibt sich selbst, seit dem 10. September 2026.** Die
+     * zurückgestellten Browserproben tragen ihr Datum in
+     * `data/browserproben.json`, und `npm run pruefe-browserproben` lässt eine
+     * Zurückstellung nach vierzehn Tagen wieder als ungeprüft gelten. Von Hand
+     * gepflegt wäre dieser Vermerk genau das, wogegen er gebaut ist: ein
+     * Handgriff, an den sich niemand erinnert.
+     */
+    if (browsernamen.has(p.pruefer)) vermerkeBrowserprobe(p.id, Math.round((Date.now() - seit) / 1000));
     const zurueck = laufeMitBau(p.pruefer);
     if (zurueck.gruen) {
       // Genau dieser Lauf ist der „vorher grün"-Lauf der nächsten Probe am
