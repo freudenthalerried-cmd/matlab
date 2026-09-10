@@ -79,11 +79,14 @@ const GELTUNGSAUSSAGE = /(?<![\p{L}\d])(?:Zulassung|zugelassen|bauaufsichtlich|v
  * gehören einem Baustoffhändler nicht.
  */
 export const GRENZWOERTER = Object.freeze([
-  { wort: /\bgesundheitlich|\bGesundheit\b|\bkrebs/i, grenze: 'Gesundheitsaussage' },
+  // **Erweitert am 10. September:** „wohnbiologisch". Nicht aufgenommen:
+  // „Schimmel" — bauphysikalisch und in richtigen Auskünften zu Hause; die
+  // offene Lücke steht mit Grund in `src/umschreibung.js`.
+  { wort: /\bgesundheitlich|\bGesundheit\b|\bkrebs|\bwohnbiologisch/i, grenze: 'Gesundheitsaussage' },
   { wort: /\bheilt\b|\bschützt vor Krankheit/i, grenze: 'Gesundheitsaussage' },
-  { wort: /\brechtssicher\b|\brechtlich unbedenklich\b|\bwir beraten Sie rechtlich/i, grenze: 'Rechtsauskunft' },
-  { wort: /\bgarantiert\b|\bwir garantieren\b|\bzugesichert\b/i, grenze: 'Erfolgszusage' },
-  { wort: /\bdauerhaft trocken\b|\bfür immer\b/i, grenze: 'Erfolgszusage' },
+  { wort: /\brechtssicher\b|\brechtlich unbedenklich\b|\brechtlich auf der sicheren Seite\b|\bwir beraten Sie rechtlich\b|\bIhren Vertrag\b[^.!?]{0,20}\bpr(?:ü|ue)fen\b|\bpr(?:ü|ue)fen\b[^.!?]{0,20}\bIhren Vertrag\b/i, grenze: 'Rechtsauskunft' },
+  { wort: /\bgarantiert\b|\bwir garantieren\b|\bzugesichert\b|\bversprochen\b|\bwir versprechen\b|\bsichern\s+(?:wir\s+)?Ihnen\b[^.!?]{0,30}\bzu\b/i, grenze: 'Erfolgszusage' },
+  { wort: /\bdauerhaft trocken\b|\bfür immer\b|\bein Leben lang\b/i, grenze: 'Erfolgszusage' },
 ]);
 
 /**
@@ -109,7 +112,12 @@ export const GRENZWOERTER = Object.freeze([
  */
 export const BETRIEBSAUSSAGEN = Object.freeze([
   {
-    wort: /\b(?:ab|auf|am)\s+Lager\b|\blagernd\b|\bvorr(?:ä|ae)tig\b|\bLagerware\b|\bsofort\s+(?:verf(?:ü|ue)gbar|lieferbar)\b/i,
+    // **Erweitert am 10. September.** Bis dahin fing dieses Muster genau die
+    // Wörter, gegen die es am 31. August geschrieben wurde. Gemessen an fünf
+    // Umschreibungen derselben Behauptung fing es **keine**: „immer da",
+    // „aus unserem Bestand", „liegt bereit", „Bevorratung". Die vier
+    // Ergänzungen erzeugen über 106 Kundenflächen null Fehltreffer.
+    wort: /\b(?:ab|auf|am)\s+Lager\b|\blagernd\b|\bvorr(?:ä|ae)tig\b|\bLagerware\b|\bsofort\s+(?:verf(?:ü|ue)gbar|lieferbar)\b|\b(?:immer|st(?:ä|ae)ndig|stets)\s+(?:bei uns\s+)?da\b|aus\s+(?:unserem|eigenem)\s+(?:Bestand|Lager)\b|liegt\s+(?:bei uns|hier)\s+bereit\b|\bbevorratet\b|\bBevorratung\b/i,
     grund: 'behauptet Vorrat — dieser Betrieb führt kein eigenes Warenlager (PARAMETER.md, Streckengeschäft)',
   },
   /*
@@ -131,22 +139,31 @@ export const BETRIEBSAUSSAGEN = Object.freeze([
    * befolgt.
    */
   {
-    wort: /\bgeht durch eine zweite Hand\b|\bVier-Augen-Prinzip\b|\bvon einer zweiten Person (?:gelesen|gepr(?:ü|ue)ft)\b|\blektoriert\b|\bgegengelesen\b/i,
+    // **Erweitert am 10. September:** „von einem Redakteur geprüft" und „vier
+    // Augen sehen" — das Prinzip stand im Muster, der ausgeschriebene Satz nicht.
+    wort: /\bgeht durch eine zweite Hand\b|\bVier-Augen-Prinzip\b|\bvier Augen\b|\bvon einer zweiten Person (?:gelesen|gepr(?:ü|ue)ft)\b|\bvon\s+eine[mr]\s+(?:Redakteur|Lektor|Korrektor)\b|\blektoriert\b|\bgegengelesen\b/i,
     grund: 'behauptet eine zweite Hand — die Texte entstehen in einem Lauf und werden von '
       + 'Prüfprogrammen gemessen (src/pruefregister.js), nicht von einem zweiten Menschen gelesen',
   },
   {
-    wort: /\beigene[rn]?\s+Fuhrpark\b|\bunsere[rn]?\s+(?:Monteure|Techniker|Fahrer)\b|\beigene[rn]?\s+Monteure\b|\bwir montieren\b|\bMontage durch uns\b/i,
+    // **Erweitert am 10. September:** „unser Team", „wir stellen selbst zu".
+    // Nicht aufgenommen: „wir liefern" — das ist die richtige Auskunft, der
+    // Shop liefert und fährt nur nicht selbst. Steht als offene Lücke mit
+    // Grund in `src/umschreibung.js`.
+    wort: /\beigene[rn]?\s+Fuhrpark\b|\bunsere[rn]?\s+(?:Monteure|Techniker|Fahrer)\b|\bunser(?:e|es)?\s+(?:Team|Leute|Mannschaft|Partie)\b|\beigene[rn]?\s+Monteure\b|\bwir montieren\b|\bMontage durch uns\b|\bwir\s+(?:liefern|stellen)\b[^.!?]{0,25}\bselbst\b/i,
     grund: 'behauptet eigene Leute oder Fahrzeuge — dieser Betrieb verkauft Ware und kein Gewerk '
       + '(src/rechtstexte.js, AGB_GLIEDERUNG ohne Werkleistung), und der Lieferant fährt',
   },
   {
-    wort: /\bAusstellung(?:sraum)?\b|\bSchauraum\b|\bShowroom\b|\bMusterhaus\b/i,
+    // **Erweitert am 10. September:** „Verkaufsraum", „Ladengeschäft",
+    // „Filiale", „bei uns im Geschäft".
+    wort: /\bAusstellung(?:sraum)?\b|\bSchauraum\b|\bShowroom\b|\bMusterhaus\b|\bVerkaufsraum\b|\bLadengesch(?:ä|ae)ft\b|\bFiliale\b|\bbei uns im Gesch(?:ä|ae)ft\b/i,
     grund: 'behauptet Räume für Kunden — es gibt kein Lager und keine Ausstellung '
       + '(PARAMETER.md, Streckengeschäft)',
   },
   {
-    wort: /\brund um die Uhr\b|\b24\s*(?:\/\s*7|Stunden)\s+(?:erreichbar|verf(?:ü|ue)gbar)\b|\bjederzeit erreichbar\b|\bHotline\b/i,
+    // **Erweitert am 10. September:** „immer für Sie da", „an sieben Tagen".
+    wort: /\brund um die Uhr\b|\b24\s*(?:\/\s*7|Stunden)\s+(?:erreichbar|verf(?:ü|ue)gbar)\b|\bjederzeit erreichbar\b|\bimmer für Sie da\b|\ban sieben Tagen\b|\bHotline\b/i,
     grund: 'behauptet eine Erreichbarkeit, die niemand zugesagt hat — eine Antwortzeit steht bis '
       + 'heute als offener Punkt (`npm run startklar`)',
   },

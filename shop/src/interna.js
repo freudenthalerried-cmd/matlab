@@ -34,7 +34,18 @@ export const INTERNA = Object.freeze([
   },
   {
     id: 'eigene-marge',
-    muster: /Rohmarge|Deckungsbeitrag|Zielmarge|Handelsspanne von \d|Aufschlag von \d|\d+\s*%\s*(?:Marge|Zuschlag|Aufschlag)/g,
+    /*
+     * **Erweitert am 10. September.** Zwei Lücken, beide gemessen: „25
+     * **Prozent** Aufschlag" — ausgeschrieben statt mit Zeichen — und das
+     * Wort **Einkaufspreis** selbst, das im Register überhaupt nicht stand,
+     * obwohl es die vertraulichste Zahl dieses Vorhabens benennt.
+     *
+     * Gemeldet wird der Einkaufspreis **mit einer Zahl daneben** und nicht
+     * das Wort: Die Wissensseite „Was Baumeisterpreis heißt" erklärt das
+     * Geschäftsmodell und muss dafür davon sprechen. Über 106 Kundenflächen
+     * erzeugen beide Ergänzungen null Fehltreffer.
+     */
+    muster: /Rohmarge|Deckungsbeitrag|Zielmarge|Handelsspanne von \d|Aufschlag von \d|\d+\s*(?:%|Prozent)\s*(?:Marge|Zuschlag|Aufschlag)|Einkaufspreis(?:e|en)?[^.!?]{0,30}?\d/g,
     warum: 'Die eigene Spanne. Wer sie kennt, kennt den Einkaufspreis — und verhandelt ab da nicht mehr über den Verkaufspreis.',
   },
   {

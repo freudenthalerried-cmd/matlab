@@ -2412,6 +2412,21 @@ export const GEGENPROBEN = Object.freeze([
       + 'Assistent liest die Zeile, nicht den Vorspann.',
   }),
   Object.freeze({
+    id: 'vorratsregel-wieder-verengt',
+    pruefer: 'pruefe-umschreibung',
+    was: 'Eine Textregel, die auf ihren eigenen Beispielsatz zurückgeschrumpft ist',
+    datei: 'shop/src/inhaltspruefung.js',
+    art: 'ersetzen',
+    suchen: "|\\b(?:immer|st(?:ä|ae)ndig|stets)\\s+(?:bei uns\\s+)?da\\b|aus\\s+(?:unserem|eigenem)\\s+(?:Bestand|Lager)\\b|liegt\\s+(?:bei uns|hier)\\s+bereit\\b|\\bbevorratet\\b|\\bBevorratung\\b",
+    ersetzen: '',
+    erwartet: /regel-verengt/,
+    warum: 'Die Mutation setzt das Vorratsmuster auf den Stand vom 31. August zurück — auf die '
+      + 'Wörter, gegen die es geschrieben wurde. Bis zum 10. September war das der Zustand, und '
+      + 'kein Prüfer hat gemerkt, dass „Wir haben die gängigen Größen immer da" durchgeht. Genau '
+      + 'das ist die Frage, die dieser Prüfer stellt: nicht ob die Regel anschlägt, sondern wie '
+      + 'weit sie reicht.',
+  }),
+  Object.freeze({
     id: 'angebot-verspricht-teillieferungen',
     pruefer: 'pruefe-belege',
     was: 'Ein Angebot mit Bindefrist, das Teillieferungen zum Regelfall erklärt',

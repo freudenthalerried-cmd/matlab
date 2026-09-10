@@ -15,6 +15,7 @@
     "wegprobe": "node bin/wegprobe.mjs",
     "shopprobe": "node bin/shopprobe.mjs",
     "pruefe-inhalte": "node bin/inhaltspruefung.mjs",
+    "pruefe-umschreibung": "node bin/umschreibungspruefung.mjs",
     "pruefe-seiten": "node bin/inhaltspruefung.mjs --seiten",
     "pruefe-oberflaeche": "node bin/inhaltspruefung.mjs --oberflaeche",
     "pruefe-crawler": "node bin/crawlerpruefung.mjs",

@@ -419,6 +419,21 @@ export const PRUEFER = [
     einheit: 'Schritte eines Geschäftsfalls',
     mindestens: 8,
   },
+  /*
+   * **Aufgenommen am 10. September 2026.** Er prüft keinen Bestand, sondern
+   * die **Reichweite** der Textprüfer: Fängt jedes Register die Behauptung
+   * auch dann, wenn sie anders formuliert ist? Der Anlass war `BEHAUPTUNG` in
+   * `src/lieferungen.js`, die genau ihren eigenen Beispielsatz kannte und
+   * vier Tage lang grün war, während dieselbe Behauptung an sieben Stellen in
+   * anderen Worten stand.
+   */
+  {
+    name: 'pruefe-umschreibung',
+    werkzeug: 'umschreibungspruefung.mjs',
+    muster: /Reichweite der Textprüfer: \d+ Regeln, (\d+) Umschreibungen/,
+    einheit: 'Umschreibungen gegen die Textregister gehalten',
+    mindestens: 20,
+  },
   {
     // **Aufgenommen am 5. September.** Die Sperren entscheiden, ob ein Papier
     // hinausgeht. Zwei von sieben hatten keinen Nachweis, dass sie je
