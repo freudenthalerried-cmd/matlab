@@ -46,7 +46,7 @@ import { preisJeKilo, kilotafel, mengenschritt } from '../src/gebinde.js';
 import { EINHEITEN, aufzaehlung, jsonFuerSkript, kurzfassung } from '../src/format.js';
 import { GRUPPENSEITE } from '../src/artikelliste.js';
 import { preisstandSpanne, preisalterTage, GRENZE_TAGE, GRENZE_HERKUNFT } from '../src/preisalter.js';
-import { BINDEFRIST_TAGE } from '../src/beleg.js';
+import { BINDEFRIST } from '../src/beleg.js';
 import { execFileSync } from 'node:child_process';
 import { standAusGit } from '../src/inhaltsstand.js';
 import { lieferantenzahl, lieferungssatz } from '../src/lieferungen.js';
@@ -922,18 +922,31 @@ ${systemSeiten.length ? `die Systemliste unten` : 'die Systemliste'}.</p>`
    * > **Zwei Aussagen über denselben Preis, und die schwächere stand dort, wo
    * > der Kunde entscheidet.**
    *
-   * Am selben Tag gemessen: **7 von 46** Preisgrundlagen sind älter als die
-   * eigene Grenze, die älteste 137 Tage. `pruefe-preisalter` lässt sie
-   * durchgehen, solange kein Anzeigengebot auf ihnen ruht — das schützt das
-   * Werbebudget und sagt dem Kunden nichts. Seit heute steht es auf der Seite.
+   * Gemessen am 6. September: **7 von 46** Preisgrundlagen älter als die eigene
+   * Grenze, die älteste 137 Tage — **am 10. September 11 von 46**, die älteste
+   * 141. Die Zahl steht hier mit ihrem Tag, weil sie mit jedem Tag wächst:
+   * Eine handgeschriebene Zahl ohne Datum wäre in einer Woche eine
+   * Falschauskunft über den eigenen Bestand. Gemessen wird sie von
+   * `pruefe-preisalter`; der lässt sie durchgehen, solange kein Anzeigengebot
+   * auf ihnen ruht — das schützt das Werbebudget und sagt dem Kunden nichts.
+   * Seit dem 6. September steht es auf der Seite.
+   *
+   * **Berichtigt am 10. September.** Der Beleg für die Bindefrist trug
+   * `a.preisStand` — den Tag, an dem der Lieferant seine Liste für *diese
+   * Ware* geschrieben hat. Belegt werden soll aber eine Regel **unseres**
+   * Papiers. Auf 46 Seiten standen damit acht verschiedene Daten für eine
+   * einzige Zahl; sieben der acht Quellenstempel des Auftritts nannten je
+   * genau einen. *Eine Regel hat ein Beschlussdatum, keins je Ware.* Der Stand
+   * kommt jetzt aus `BINDEFRIST.stand`, und `src/quellenstempel.js` hält alle
+   * 146 Stempel des gebauten Auftritts gegen ihre Tatsache.
    */
   if (a.preisStand) {
     const tage = preisalterTage(a.preisStand, geschaeftstag());
     const alt = typeof tage === 'number' && tage > GRENZE_TAGE;
     teile.push(`<p class="antwort"><strong>Was der Preisstand bedeutet.</strong> Er nennt den Tag,
 von dem die Grundlage dieses Preises stammt. Verbindlich wird der Preis nicht hier, sondern mit dem
-Angebot: Das bindet ${BINDEFRIST_TAGE} Tage ab Angebotsdatum (Quelle: eigene Belegvorlage nach
-§ 862 ABGB, Stand: ${esc(a.preisStand)}). Bis dahin ist die Zahl eine Auskunft und keine Zusage.${
+Angebot: Das bindet ${BINDEFRIST.tage} Tage ab Angebotsdatum (Quelle: eigene Belegvorlage nach
+§ 862 ABGB, Stand: ${esc(BINDEFRIST.stand)}). Bis dahin ist die Zahl eine Auskunft und keine Zusage.${
   alt ? `
 <br><strong>Diese Grundlage ist ${tage} Tage alt</strong> und damit älter als die selbst gesetzte
 Grenze von ${GRENZE_TAGE} Tagen. Der Preisrhythmus des Lieferanten ist uns nicht bekannt — die Frage

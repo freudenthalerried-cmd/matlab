@@ -2690,6 +2690,24 @@ export const GEGENPROBEN = Object.freeze([
       + 'niemand am fehlenden Code bemerkt. Gemessen wird an der ausgelieferten Seite, und '
       + 'das Szenario folgt dem ersten Verweis, statt nur seine Adresse zu lesen.',
   }),
+  Object.freeze({
+    id: 'beleg-mit-fremdem-stand',
+    pruefer: 'pruefe-seiten',
+    was: 'Ein Quellenbeleg, der den Stand einer anderen Sache nennt',
+    datei: 'shop/bin/website.mjs',
+    art: 'ersetzen',
+    baueVorher: true,
+    suchen: '§ 862 ABGB, Stand: ${esc(BINDEFRIST.stand)}).',
+    ersetzen: '§ 862 ABGB, Stand: ${esc(a.preisStand)}).',
+    erwartet: /stand-uneinheitlich|verschiedene Stände/,
+    warum: 'Wörtlich der Zustand vom 6. bis zum 10. September: Die Artikelseite belegte die '
+      + 'Bindefrist des Angebots — eine Zahl aus der eigenen Belegvorlage — mit dem Preisstand '
+      + 'des jeweiligen Artikels. Auf 46 Seiten standen acht verschiedene Daten für eine einzige '
+      + 'Regel; die älteste ließ sie 141 Tage alt aussehen, die jüngste 24. Sieben der acht '
+      + 'Quellenstempel des Auftritts nannten je genau einen Stand. Die Mutation setzt den '
+      + 'Preisstand zurück und verlangt, dass die Abweichung auffällt — gemessen an den gebauten '
+      + 'Seiten, nicht an der Vorlage.',
+  }),
 ]);
 
 /**

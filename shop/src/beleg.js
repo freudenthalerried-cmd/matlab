@@ -311,15 +311,34 @@ function summenblock(warenkorb) {
  * Bei Streckengeschäft mit Herstellerpreisen ist das keine gute Idee.
  */
 /**
- * Wie lange ein Angebot bindet.
+ * Wie lange ein Angebot bindet — **und seit wann diese Zahl gilt.**
  *
  * **Seit dem 6. September eine Konstante und keine Voreinstellung.** Sie stand
  * als Vorgabewert im Kopf von `erzeugeAngebot` und war damit an genau einer
  * Stelle bekannt. Die Artikelseite sagt dem Kunden seither, ab wann der Preis
  * verbindlich wird — und muss dieselbe Zahl nennen wie das Papier, das sie
  * verbindlich macht.
+ *
+ * **Der Stand kam dazu am 10. September**, und zwar wegen eines Befundes:
+ * Die Artikelseite belegte diese Zahl mit *„eigene Belegvorlage nach § 862
+ * ABGB, Stand: …"* und setzte dort den **Preisstand des Artikels** ein. Auf 46
+ * Seiten standen so acht verschiedene Daten für eine einzige Regel — auf der
+ * ältesten sah sie 141 Tage alt aus, auf der jüngsten 24.
+ *
+ * > **Eine Regel hat ein Beschlussdatum, keins je Ware.**
+ *
+ * Zahl und Stand stehen deshalb in **einem** eingefrorenen Paar und nicht in
+ * zwei Konstanten nebeneinander: Wer die Frist ändert, hat die Zeile mit dem
+ * Datum vor Augen. `test/beleg.test.js` hält das Paar zusätzlich fest — es
+ * lässt sich nicht die eine Hälfte ändern, ohne dass die andere auffällt.
  */
-export const BINDEFRIST_TAGE = 14;
+export const BINDEFRIST = Object.freeze({
+  tage: 14,
+  stand: '2026-09-06',
+});
+
+/** Die Frist allein — der Name, unter dem der Bestand sie seit dem 6.9. kennt. */
+export const BINDEFRIST_TAGE = BINDEFRIST.tage;
 
 export function erzeugeAngebot(warenkorb, { nummer, datum, bindefristTage = BINDEFRIST_TAGE, kunde = {}, betreiber = {} }) {
   const zeilen = [

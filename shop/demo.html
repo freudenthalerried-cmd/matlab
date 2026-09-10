@@ -6732,7 +6732,26 @@ function summenblock(warenkorb) {
 
 
 
-const BINDEFRIST_TAGE = 14;
+
+
+
+
+
+
+
+
+
+
+
+
+
+const BINDEFRIST = Object.freeze({
+  tage: 14,
+  stand: '2026-09-06',
+});
+
+
+const BINDEFRIST_TAGE = BINDEFRIST.tage;
 
 function erzeugeAngebot(warenkorb, { nummer, datum, bindefristTage = BINDEFRIST_TAGE, kunde = {}, betreiber = {} }) {
   const zeilen = [

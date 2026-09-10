@@ -39,6 +39,7 @@ import { mehrlieferungsbefund, lieferantenzahl } from '../src/lieferungen.js';
 import { kennwerteImBestand, uebernahmebefund } from '../src/merkblattverweis.js';
 import { normstellenbefund } from '../src/normstelle.js';
 import { vorteilsangabebefund } from '../src/vorteilsangabe.js';
+import { stempelbefund, registerbefund } from '../src/quellenstempel.js';
 
 const hier = dirname(fileURLToPath(import.meta.url));
 
@@ -558,6 +559,36 @@ if (process.argv[2] === '--seiten') {
   }
   treffer += angaben.meldungen.length;
 
+  /* ---------------------------------------------------------------- *
+   * Die Belege, die erst der Bau anhängt (10. September 2026)
+   *
+   * 146 Quellenstempel stehen auf dem gebauten Auftritt, keiner davon in
+   * `inhalte/`. `pruefe-quellen` und `pruefe-zahlen` lesen nur, was ein
+   * Redakteur geschrieben hat — diese hier entstehen in den Vorlagen des
+   * Seitenbauwerkzeugs. Sieben der acht Formen nannten im ganzen Auftritt
+   * genau einen Stand, die achte acht. Siehe `src/quellenstempel.js`.
+   * ---------------------------------------------------------------- */
+  const stempel = stempelbefund(
+    alleSeitendateien(wurzel).map((datei) => ({
+      name: datei.split('/site/')[1] ?? datei, html: readFileSync(datei, 'utf8'),
+    })),
+    100,
+  );
+  // Erst das Register gegen sich selbst, dann gegen die Seiten: Ein Eintrag
+  // ohne Tatsache oder ohne Herkunft seines Standes belegt nichts, und dann
+  // sagt der Abgleich darunter über ihn auch nichts.
+  const stempelregister = registerbefund();
+  for (const m of stempelregister.meldungen) {
+    console.log(`\n${m.wo}  [${m.regel}]`);
+    console.log(`    → ${m.text}`);
+  }
+  treffer += stempelregister.meldungen.length;
+  for (const m of stempel.meldungen) {
+    console.log(`\n${m.wo}  [${m.regel}]`);
+    console.log(`    → ${m.text}`);
+  }
+  treffer += stempel.meldungen.length;
+
   console.log(`\n${seiten.length} Seiten, ${absaetze} Fließtextabsätze geprüft, ${treffer} mit Verdacht.`);
   console.log(`${mitKarten} Seiten zeigen Artikelkarten, ${mitKarten - ohneGrenze} nennen den Mindestbestellwert.`);
   console.log(`${grenzen.gefunden} Grenzaussagen auf ${grenzen.flaechen} Seiten gegen die hinterlegten `
@@ -570,6 +601,8 @@ if (process.argv[2] === '--seiten') {
   console.log(`${angaben.gesamt} Artikelkarten: ${angaben.nach.vorteil} mit dem Abstand zur Liste, `
     + `${angaben.nach.beipack} als Beipack, ${angaben.nach['listenpreis-offen']} mit offenem `
     + 'Listenpreis — jede sagt, woran sie ist.');
+  console.log(`${stempel.gesamt} Quellenangaben in ${Object.keys(stempel.nach).length} Formen `
+    + 'gegen ihre Tatsache gehalten — jede sagt, woher ihr Stand kommt.');
   console.log(`${antworten} maschinenlesbare Antworten gegen den sichtbaren Text gehalten.`);
   console.log('Diese Texte stehen im Seitenbauwerkzeug, nicht in inhalte/ — sie unterliegen');
   console.log('trotzdem denselben Regeln.');

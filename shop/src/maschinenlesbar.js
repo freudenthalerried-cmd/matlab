@@ -419,10 +419,13 @@ export function angebotsAuszeichnung(artikel, lage = {}) {
      * Wert weiter selbst setzen; ohne ihn wird er aus dem Preisstand
      * gerechnet.
      *
-     * **Was das kostet, steht dazu:** Bei sieben der 46 Artikel liegt dieses
-     * Datum heute in der Vergangenheit. Eine Suchmaschine liest das als
-     * abgelaufenes Angebot — und das ist dieselbe Auskunft, die diese sieben
-     * Artikelseiten seit gestern im Klartext geben.
+     * **Was das kostet, steht dazu:** Bei sieben der 46 Artikel lag dieses
+     * Datum am 6. September in der Vergangenheit, am 10. September bei elf.
+     * Eine Suchmaschine liest das als abgelaufenes Angebot — und das ist
+     * dieselbe Auskunft, die genau diese Artikelseiten im Klartext geben.
+     * Nachgemessen am 10. September: **11 Auszeichnungen abgelaufen, 11 Seiten
+     * mit dem Klartextsatz, keine Abweichung in beide Richtungen.** Die Zahl
+     * steht hier mit ihrem Tag, weil sie mit jedem Tag wächst.
      */
     ...((lage.preisGueltigBis ?? preisGueltigBis(artikel.preisStand))
       ? { priceValidUntil: lage.preisGueltigBis ?? preisGueltigBis(artikel.preisStand) }

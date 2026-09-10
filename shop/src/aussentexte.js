@@ -90,6 +90,9 @@ export const KEIN_AUSGANG = Object.freeze([
   // **Ergänzt am 5. September.** Sie baut keinen Text, sie **zerlegt** einen —
   // aus HTML wird Fließtext, damit ein Prüfer darin suchen kann. Der Weg geht
   // nach innen, nicht nach außen.
+  // **Ergänzt am 10. September**, mit dem Register der Quellenstempel. Derselbe
+  // Fall wie `nurText` darunter — und sie ruft es sogar auf.
+  Object.freeze({ funktion: 'sichtbarerText', warum: 'Nimmt eine gebaute Seite entgegen und gibt weniger zurück: Skript und Stil heraus, Marken heraus, Leerraum zusammen. Sie ist kein Ausgang, sondern das Gegenteil — der Stempelprüfer sucht damit in gebautem HTML nach Quellenangaben. Was sie liefert, geht in eine Meldung auf der eigenen Konsole und in keine Datei.' }),
   Object.freeze({ funktion: 'nurText', warum: 'Nimmt HTML entgegen und gibt weniger zurück: Marken raus, Entitäten raus, Leerraum zusammen. Sie ist kein Ausgang, sondern das Gegenteil — sie wird von Prüfern benutzt, um in gebautem HTML nach Text zu suchen (Sperrgutflächen, Interna, Seitenähnlichkeit). Was sie liefert, geht in keine Datei und an keinen Empfänger.' }),
   Object.freeze({ funktion: 'frachtfreiText', warum: 'Nimmt **nichts** entgegen und gibt einen festen Satz zurück — die schmalste denkbare Textfunktion. Fremdtext kann sie nicht erreichen, weil sie keinen Eingang hat; das war der ganze Zweck der Änderung, die sie geschaffen hat (vorher stand dort eine Lieferantenschwelle in einer Zeichenkettenschablone).' }),
   Object.freeze({ funktion: 'baueAuftrag', warum: 'Baut das Auftragsobjekt aus geprüften Feldern — kein Text verlässt den Shop. Die Eingangsprüfung davor steht in kunde.js und wird eigens geprüft.' }),
