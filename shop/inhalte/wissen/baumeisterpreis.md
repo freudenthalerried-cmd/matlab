@@ -5,7 +5,7 @@ slug: baumeisterpreis
 frage: Warum ist das hier günstiger als im Fachhandel, und wo ist der Haken?
 kurz: Die Preise entstehen aus dem Einkauf eines Baumeisterbetriebs, zuzüglich eines Aufschlags für den Betrieb dieses Shops. Der Haken ist die Menge: Der Vorteil trägt bei Systemware und Paletten, bei Kleinteilen trägt er nicht.
 verwandt: redaktionsprinzipien, warum-keine-gratislieferung, was-fehlt-haelt-die-baustelle-auf
-stand: 2026-08-28
+stand: 2026-09-10
 ---
 
 # Was „Baumeisterpreis" heißt — und was nicht
@@ -26,8 +26,8 @@ und an der Warengruppe.
 Der entscheidende Punkt, den die meisten Shops verschweigen: **Dieser Rabatt
 ist nicht gleichmäßig.** Er ist bei schwerer, palettierter Systemware tief und
 bei Kleinteilen dünn. Deshalb ist der Preisvorteil hier nicht überall
-derselbe — und deshalb steht auf jeder Artikelkarte, wie weit der Preis unter
-der Liste des Lieferanten liegt.
+derselbe — und deshalb steht auf der Artikelkarte, wie weit der Preis unter
+der Liste des Lieferanten liegt, oder warum dort keine Zahl steht.
 
 ## Wo der Vorteil trägt
 
@@ -52,10 +52,18 @@ Einkaufspreis, den niemand anbietet, nützt niemandem.
 
 **Wie hoch er ist, steht hier nicht.** Das ist kein Versteckspiel: Die Zahl,
 die Sie tatsächlich betrifft, ist eine andere — **wie weit der Preis unter der
-Liste des Lieferanten liegt.** Sie steht auf jeder Artikelkarte, artikelweise
-und nachrechenbar, denn nur sie sagt etwas über Ihre Ersparnis. Der Aufschlag
-sagt etwas über das Verhältnis zwischen uns und dem Lieferanten, und das ist
-zwischen uns und dem Lieferanten.
+Liste des Lieferanten liegt.** Sie steht artikelweise und nachrechenbar auf
+der Karte, denn nur sie sagt etwas über Ihre Ersparnis. Wo sie nicht steht,
+sagt die Karte den Grund: **Beipack** heißt „kein Preisvorteil", und
+**Listenpreis nicht bekannt** heißt, dass uns für diesen Artikel keine Liste
+des Lieferanten vorliegt — heute betrifft das vier von sechsundvierzig
+Artikeln. Der Aufschlag sagt etwas über das Verhältnis zwischen uns und dem
+Lieferanten, und das ist zwischen uns und dem Lieferanten.
+
+*Bis zum 10. September stand hier „auf jeder Artikelkarte". Gemessen stand die
+Zahl auf 39 von 46; drei Karten trugen „Beipack" und damit die Auskunft, vier
+trugen nichts. Eine leere Stelle sieht aus wie ein Artikel ohne Vorteil — die
+Karten sagen es jetzt.*
 
 ## Was der Preis nicht enthält
 

@@ -193,6 +193,9 @@ padding:.6rem 1rem;z-index:10;text-decoration:none}
 .marker.vorteil{background:var(--gruen-weich);color:var(--gruen)}
 .marker.beipack{background:var(--ziegel-weich);color:var(--ziegel)}
 .marker.sperrig{background:var(--flaeche-2);color:var(--tinte-2)}
+/* Zurückhaltend und nicht alarmierend: Ein fehlender Listenpreis ist kein
+   Mangel des Artikels, sondern eine Angabe, die wir nicht haben. */
+.marker.offen{background:var(--flaeche-2);color:var(--gedaempft)}
 .kacheln{display:grid;grid-template-columns:repeat(auto-fill,minmax(17rem,1fr));gap:1px;background:var(--flaeche);border:1px solid var(--linie);margin-bottom:1.5rem}
 .kacheln>*{outline:1px solid var(--linie)}
 .kachel{background:var(--flaeche);padding:1rem 1.1rem;text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:.35rem}
@@ -260,7 +263,7 @@ Warengruppen in der Kopfleiste.</p></noscript>
 <path d="M110 42.2 L110 50" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <path d="M107 42.2 L113 42.2 M107 50 L113 50" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">20 mm</text></svg></div>
-<p class="verwandt"><span class="marker sperrig">palettiert, Kranentladung</span></p>
+<p class="verwandt"><span class="marker offen">Listenpreis des Lieferanten nicht bekannt</span><span class="marker sperrig">palettiert, Kranentladung</span></p>
 <div class="preistafel">
   <div><span class="k">Netto</span><span class="w">1,93 €</span><span class="e">je m², für Unternehmer</span></div>
   
@@ -349,7 +352,7 @@ Dämmung. Ob einer davon der richtige ist, entscheidet die Planung.</p>
     <span class="nr">12583</span>
     <span class="t">Fassaden EPS 5 cm 0,5 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">4,67&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,5 m² · 2,34&nbsp;€</span>
   <div class="legen legen-klein">
@@ -391,7 +394,7 @@ Dämmung. Ob einer davon der richtige ist, entscheidet die Planung.</p>
     <span class="nr">12580</span>
     <span class="t">XPS glatt SF 100 mm 0,75 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">16,00&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,75 m² · 12,00&nbsp;€</span>
   <div class="legen legen-klein">

@@ -188,6 +188,9 @@ padding:.6rem 1rem;z-index:10;text-decoration:none}
 .marker.vorteil{background:var(--gruen-weich);color:var(--gruen)}
 .marker.beipack{background:var(--ziegel-weich);color:var(--ziegel)}
 .marker.sperrig{background:var(--flaeche-2);color:var(--tinte-2)}
+/* Zurückhaltend und nicht alarmierend: Ein fehlender Listenpreis ist kein
+   Mangel des Artikels, sondern eine Angabe, die wir nicht haben. */
+.marker.offen{background:var(--flaeche-2);color:var(--gedaempft)}
 .kacheln{display:grid;grid-template-columns:repeat(auto-fill,minmax(17rem,1fr));gap:1px;background:var(--flaeche);border:1px solid var(--linie);margin-bottom:1.5rem}
 .kacheln>*{outline:1px solid var(--linie)}
 .kachel{background:var(--flaeche);padding:1rem 1.1rem;text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:.35rem}
@@ -345,7 +348,7 @@ Artikels — kein Herstellerfoto: Was gezeigt wird, steht auch im Datensatz.</p>
     <span class="nr">12566</span>
     <span class="t">Fassaden EPS 2 cm 0,5 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">1,93&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,5 m² · 0,97&nbsp;€</span>
   <div class="legen legen-klein">
@@ -387,7 +390,7 @@ Artikels — kein Herstellerfoto: Was gezeigt wird, steht auch im Datensatz.</p>
     <span class="nr">12583</span>
     <span class="t">Fassaden EPS 5 cm 0,5 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">4,67&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,5 m² · 2,34&nbsp;€</span>
   <div class="legen legen-klein">
@@ -429,7 +432,7 @@ Artikels — kein Herstellerfoto: Was gezeigt wird, steht auch im Datensatz.</p>
     <span class="nr">12580</span>
     <span class="t">XPS glatt SF 100 mm 0,75 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">16,00&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,75 m² · 12,00&nbsp;€</span>
   <div class="legen legen-klein">
@@ -1046,7 +1049,7 @@ Artikels — kein Herstellerfoto: Was gezeigt wird, steht auch im Datensatz.</p>
     <span class="nr">19333</span>
     <span class="t">Capatect PrimaPor K20 weiß 25 kg SH-Reibputz</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">2,27&nbsp;€ <span class="eh">je kg, netto</span></span>
   <span class="ab">ab 25 kg · 56,75&nbsp;€</span>
   <div class="legen legen-klein">
@@ -1873,13 +1876,14 @@ Warengruppen in der Kopfleiste.</p></noscript>
 <p><strong>Die Antwort in zwei Sätzen.</strong> Die Preise hier entstehen aus dem Einkauf eines Baumeisterbetriebs, zuzüglich eines Aufschlags, aus dem dieser Shop betrieben wird. Der Haken ist die Menge: Bei Systemware und Paletten trägt der Vorteil deutlich, bei Kleinteilen trägt er nicht — und wir schreiben dazu, wo er nicht trägt.</p>
 <h2>Woher der Vorteil kommt</h2>
 <p>Ein Baustofflieferant räumt einem Verarbeiter andere Konditionen ein als einem Endkunden. Das ist keine Besonderheit, sondern die übliche Struktur des Baustoffhandels: Der Rabatt hängt an der Abnahmemenge, an der Regelmäßigkeit und an der Warengruppe.</p>
-<p>Der entscheidende Punkt, den die meisten Shops verschweigen: <strong>Dieser Rabatt ist nicht gleichmäßig.</strong> Er ist bei schwerer, palettierter Systemware tief und bei Kleinteilen dünn. Deshalb ist der Preisvorteil hier nicht überall derselbe — und deshalb steht auf jeder Artikelkarte, wie weit der Preis unter der Liste des Lieferanten liegt.</p>
+<p>Der entscheidende Punkt, den die meisten Shops verschweigen: <strong>Dieser Rabatt ist nicht gleichmäßig.</strong> Er ist bei schwerer, palettierter Systemware tief und bei Kleinteilen dünn. Deshalb ist der Preisvorteil hier nicht überall derselbe — und deshalb steht auf der Artikelkarte, wie weit der Preis unter der Liste des Lieferanten liegt, oder warum dort keine Zahl steht.</p>
 <h2>Wo der Vorteil trägt</h2>
 <div class="scroll"><table><thead><tr><th>Warengruppe</th><th>Lage</th></tr></thead><tbody><tr><td>Kanal, Folien, Grundmauerschutz</td><td>der Vorteil ist am größten</td></tr><tr><td>Dämmplatten, WDVS, Kaminsystem</td><td>der Vorteil trägt deutlich</td></tr><tr><td>Mörtel und Putze</td><td>der Vorteil trägt, aber knapper</td></tr><tr><td>Kleinteile und Zubehör</td><td><strong>kein Preisvorteil</strong></td></tr></tbody></table></div>
 <p>Die letzte Zeile ist der Grund für den Hinweis <strong>„Beipack&quot;</strong> auf einigen Artikeln. Diese Artikel sind bestellbar, weil sie zur Lieferung gehören — Schaum, Klebeband, Schrauben. Sie sind aber kein Grund, hier zu bestellen. Wer nur sie braucht, kauft sie günstiger im Fachhandel um die Ecke, und das sagen wir lieber vorher als nachher.</p>
 <h2>Warum überhaupt ein Aufschlag</h2>
 <p>Aus ihm werden die Fixkosten, die Zahlungsgebühren und die Werbung bezahlt, bevor etwas übrig bleibt. Ohne ihn gäbe es diesen Shop nicht — und ein Einkaufspreis, den niemand anbietet, nützt niemandem.</p>
-<p><strong>Wie hoch er ist, steht hier nicht.</strong> Das ist kein Versteckspiel: Die Zahl, die Sie tatsächlich betrifft, ist eine andere — <strong>wie weit der Preis unter der Liste des Lieferanten liegt.</strong> Sie steht auf jeder Artikelkarte, artikelweise und nachrechenbar, denn nur sie sagt etwas über Ihre Ersparnis. Der Aufschlag sagt etwas über das Verhältnis zwischen uns und dem Lieferanten, und das ist zwischen uns und dem Lieferanten.</p>
+<p><strong>Wie hoch er ist, steht hier nicht.</strong> Das ist kein Versteckspiel: Die Zahl, die Sie tatsächlich betrifft, ist eine andere — <strong>wie weit der Preis unter der Liste des Lieferanten liegt.</strong> Sie steht artikelweise und nachrechenbar auf der Karte, denn nur sie sagt etwas über Ihre Ersparnis. Wo sie nicht steht, sagt die Karte den Grund: <strong>Beipack</strong> heißt „kein Preisvorteil&quot;, und <strong>Listenpreis nicht bekannt</strong> heißt, dass uns für diesen Artikel keine Liste des Lieferanten vorliegt — heute betrifft das vier von sechsundvierzig Artikeln. Der Aufschlag sagt etwas über das Verhältnis zwischen uns und dem Lieferanten, und das ist zwischen uns und dem Lieferanten.</p>
+<p><em>Bis zum 10. September stand hier „auf jeder Artikelkarte&quot;. Gemessen stand die Zahl auf 39 von 46; drei Karten trugen „Beipack&quot; und damit die Auskunft, vier trugen nichts. Eine leere Stelle sieht aus wie ein Artikel ohne Vorteil — die Karten sagen es jetzt.</em></p>
 <h2>Was der Preis nicht enthält</h2>
 <ul><li><strong>Keine Fracht.</strong> Sie wird getrennt ausgewiesen, weil sie je Lieferung anfällt und nicht je Artikel. Der Grund steht auf einer eigenen Seite: <a href="#wissen/warum-keine-gratislieferung">Warum es keine Gratislieferung gibt</a>.</li><li><strong>Keine Verarbeitung.</strong> Wir liefern Material, keine Bauleistung.</li><li><strong>Keine Umsatzsteuer.</strong> Alle Preise sind Nettopreise für Unternehmer, die Umsatzsteuer wird getrennt ausgewiesen.</li></ul>
 <h2>Wie lange ein Preis gilt</h2>
@@ -2547,7 +2551,7 @@ Warengruppen in der Kopfleiste.</p></noscript>
     <span class="nr">19333</span>
     <span class="t">Capatect PrimaPor K20 weiß 25 kg SH-Reibputz</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">2,27&nbsp;€ <span class="eh">je kg, netto</span></span>
   <span class="ab">ab 25 kg · 56,75&nbsp;€</span>
   <div class="legen legen-klein">
@@ -3050,7 +3054,7 @@ Warengruppen in der Kopfleiste.</p></noscript>
     <span class="nr">19333</span>
     <span class="t">Capatect PrimaPor K20 weiß 25 kg SH-Reibputz</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">2,27&nbsp;€ <span class="eh">je kg, netto</span></span>
   <span class="ab">ab 25 kg · 56,75&nbsp;€</span>
   <div class="legen legen-klein">
@@ -3466,7 +3470,7 @@ Warengruppen in der Kopfleiste.</p></noscript>
     <span class="nr">19333</span>
     <span class="t">Capatect PrimaPor K20 weiß 25 kg SH-Reibputz</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">2,27&nbsp;€ <span class="eh">je kg, netto</span></span>
   <span class="ab">ab 25 kg · 56,75&nbsp;€</span>
   <div class="legen legen-klein">
@@ -3602,7 +3606,7 @@ Warengruppen in der Kopfleiste.</p></noscript>
     <span class="nr">12566</span>
     <span class="t">Fassaden EPS 2 cm 0,5 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">1,93&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,5 m² · 0,97&nbsp;€</span>
   <div class="legen legen-klein">
@@ -3644,7 +3648,7 @@ Warengruppen in der Kopfleiste.</p></noscript>
     <span class="nr">12583</span>
     <span class="t">Fassaden EPS 5 cm 0,5 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">4,67&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,5 m² · 2,34&nbsp;€</span>
   <div class="legen legen-klein">
@@ -3686,7 +3690,7 @@ Warengruppen in der Kopfleiste.</p></noscript>
     <span class="nr">12580</span>
     <span class="t">XPS glatt SF 100 mm 0,75 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">16,00&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,75 m² · 12,00&nbsp;€</span>
   <div class="legen legen-klein">
@@ -3838,7 +3842,7 @@ nicht österreichweit. Fracht fällt je Lieferung an und wird getrennt ausgewies
     <span class="nr">12566</span>
     <span class="t">Fassaden EPS 2 cm 0,5 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">1,93&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,5 m² · 0,97&nbsp;€</span>
   <div class="legen legen-klein">
@@ -3880,7 +3884,7 @@ nicht österreichweit. Fracht fällt je Lieferung an und wird getrennt ausgewies
     <span class="nr">12583</span>
     <span class="t">Fassaden EPS 5 cm 0,5 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">4,67&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,5 m² · 2,34&nbsp;€</span>
   <div class="legen legen-klein">
@@ -3922,7 +3926,7 @@ nicht österreichweit. Fracht fällt je Lieferung an und wird getrennt ausgewies
     <span class="nr">12580</span>
     <span class="t">XPS glatt SF 100 mm 0,75 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">16,00&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,75 m² · 12,00&nbsp;€</span>
   <div class="legen legen-klein">
@@ -4892,7 +4896,7 @@ nicht österreichweit. Fracht fällt je Lieferung an und wird getrennt ausgewies
     <span class="nr">19333</span>
     <span class="t">Capatect PrimaPor K20 weiß 25 kg SH-Reibputz</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">2,27&nbsp;€ <span class="eh">je kg, netto</span></span>
   <span class="ab">ab 25 kg · 56,75&nbsp;€</span>
   <div class="legen legen-klein">
@@ -5411,7 +5415,7 @@ Warengruppen in der Kopfleiste.</p></noscript>
     <span class="nr">19333</span>
     <span class="t">Capatect PrimaPor K20 weiß 25 kg SH-Reibputz</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">2,27&nbsp;€ <span class="eh">je kg, netto</span></span>
   <span class="ab">ab 25 kg · 56,75&nbsp;€</span>
   <div class="legen legen-klein">
@@ -5669,7 +5673,7 @@ Untergrund, Dämmplatte.</p>
     <span class="nr">19333</span>
     <span class="t">Capatect PrimaPor K20 weiß 25 kg SH-Reibputz</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">2,27&nbsp;€ <span class="eh">je kg, netto</span></span>
   <span class="ab">ab 25 kg · 56,75&nbsp;€</span>
   <div class="legen legen-klein">
@@ -6448,7 +6452,7 @@ Warengruppen in der Kopfleiste.</p></noscript>
     <span class="nr">12566</span>
     <span class="t">Fassaden EPS 2 cm 0,5 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">1,93&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,5 m² · 0,97&nbsp;€</span>
   <div class="legen legen-klein">
@@ -6490,7 +6494,7 @@ Warengruppen in der Kopfleiste.</p></noscript>
     <span class="nr">12583</span>
     <span class="t">Fassaden EPS 5 cm 0,5 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">4,67&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,5 m² · 2,34&nbsp;€</span>
   <div class="legen legen-klein">
@@ -6532,7 +6536,7 @@ Warengruppen in der Kopfleiste.</p></noscript>
     <span class="nr">12580</span>
     <span class="t">XPS glatt SF 100 mm 0,75 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">16,00&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,75 m² · 12,00&nbsp;€</span>
   <div class="legen legen-klein">
@@ -6719,7 +6723,7 @@ Wand, Abdichtung, Verfüllung.</p>
     <span class="nr">12580</span>
     <span class="t">XPS glatt SF 100 mm 0,75 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">16,00&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,75 m² · 12,00&nbsp;€</span>
   <div class="legen legen-klein">
@@ -6854,7 +6858,7 @@ Warengruppen in der Kopfleiste.</p></noscript>
 <path d="M110 42.2 L110 50" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <path d="M107 42.2 L113 42.2 M107 50 L113 50" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">20 mm</text></svg></div>
-<p class="verwandt"><span class="marker sperrig">palettiert, Kranentladung</span></p>
+<p class="verwandt"><span class="marker offen">Listenpreis des Lieferanten nicht bekannt</span><span class="marker sperrig">palettiert, Kranentladung</span></p>
 <div class="preistafel">
   <div><span class="k">Netto</span><span class="w">1,93 €</span><span class="e">je m², für Unternehmer</span></div>
   
@@ -6943,7 +6947,7 @@ Dämmung. Ob einer davon der richtige ist, entscheidet die Planung.</p>
     <span class="nr">12583</span>
     <span class="t">Fassaden EPS 5 cm 0,5 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">4,67&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,5 m² · 2,34&nbsp;€</span>
   <div class="legen legen-klein">
@@ -6985,7 +6989,7 @@ Dämmung. Ob einer davon der richtige ist, entscheidet die Planung.</p>
     <span class="nr">12580</span>
     <span class="t">XPS glatt SF 100 mm 0,75 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">16,00&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,75 m² · 12,00&nbsp;€</span>
   <div class="legen legen-klein">
@@ -7188,7 +7192,7 @@ Dämmung. Ob einer davon der richtige ist, entscheidet die Planung.</p>
     <span class="nr">12566</span>
     <span class="t">Fassaden EPS 2 cm 0,5 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">1,93&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,5 m² · 0,97&nbsp;€</span>
   <div class="legen legen-klein">
@@ -7209,7 +7213,7 @@ Dämmung. Ob einer davon der richtige ist, entscheidet die Planung.</p>
     <span class="nr">12583</span>
     <span class="t">Fassaden EPS 5 cm 0,5 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">4,67&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,5 m² · 2,34&nbsp;€</span>
   <div class="legen legen-klein">
@@ -7251,7 +7255,7 @@ Dämmung. Ob einer davon der richtige ist, entscheidet die Planung.</p>
     <span class="nr">12580</span>
     <span class="t">XPS glatt SF 100 mm 0,75 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">16,00&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,75 m² · 12,00&nbsp;€</span>
   <div class="legen legen-klein">
@@ -7382,7 +7386,7 @@ Warengruppen in der Kopfleiste.</p></noscript>
 <path d="M110 36.5 L110 50" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <path d="M107 36.5 L113 36.5 M107 50 L113 50" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">50 mm</text></svg></div>
-<p class="verwandt"><span class="marker sperrig">palettiert, Kranentladung</span></p>
+<p class="verwandt"><span class="marker offen">Listenpreis des Lieferanten nicht bekannt</span><span class="marker sperrig">palettiert, Kranentladung</span></p>
 <div class="preistafel">
   <div><span class="k">Netto</span><span class="w">4,67 €</span><span class="e">je m², für Unternehmer</span></div>
   
@@ -7450,7 +7454,7 @@ Dämmung. Ob einer davon der richtige ist, entscheidet die Planung.</p>
     <span class="nr">12566</span>
     <span class="t">Fassaden EPS 2 cm 0,5 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">1,93&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,5 m² · 0,97&nbsp;€</span>
   <div class="legen legen-klein">
@@ -7513,7 +7517,7 @@ Dämmung. Ob einer davon der richtige ist, entscheidet die Planung.</p>
     <span class="nr">12580</span>
     <span class="t">XPS glatt SF 100 mm 0,75 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">16,00&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,75 m² · 12,00&nbsp;€</span>
   <div class="legen legen-klein">
@@ -7719,7 +7723,7 @@ Dämmung. Ob einer davon der richtige ist, entscheidet die Planung.</p>
     <span class="nr">12566</span>
     <span class="t">Fassaden EPS 2 cm 0,5 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">1,93&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,5 m² · 0,97&nbsp;€</span>
   <div class="legen legen-klein">
@@ -7761,7 +7765,7 @@ Dämmung. Ob einer davon der richtige ist, entscheidet die Planung.</p>
     <span class="nr">12583</span>
     <span class="t">Fassaden EPS 5 cm 0,5 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">4,67&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,5 m² · 2,34&nbsp;€</span>
   <div class="legen legen-klein">
@@ -7782,7 +7786,7 @@ Dämmung. Ob einer davon der richtige ist, entscheidet die Planung.</p>
     <span class="nr">12580</span>
     <span class="t">XPS glatt SF 100 mm 0,75 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">16,00&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,75 m² · 12,00&nbsp;€</span>
   <div class="legen legen-klein">
@@ -7913,7 +7917,7 @@ Warengruppen in der Kopfleiste.</p></noscript>
 <path d="M110 27 L110 50" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <path d="M107 27 L113 27 M107 50 L113 50" stroke="var(--ocker)" fill="none" stroke-width="1.5"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">100 mm</text></svg></div>
-<p class="verwandt"><span class="marker sperrig">palettiert, Kranentladung</span></p>
+<p class="verwandt"><span class="marker offen">Listenpreis des Lieferanten nicht bekannt</span><span class="marker sperrig">palettiert, Kranentladung</span></p>
 <div class="preistafel">
   <div><span class="k">Netto</span><span class="w">16,00 €</span><span class="e">je m², für Unternehmer</span></div>
   
@@ -8138,7 +8142,7 @@ Dämmung. Ob einer davon der richtige ist, entscheidet die Planung.</p>
     <span class="nr">12566</span>
     <span class="t">Fassaden EPS 2 cm 0,5 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">1,93&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,5 m² · 0,97&nbsp;€</span>
   <div class="legen legen-klein">
@@ -8180,7 +8184,7 @@ Dämmung. Ob einer davon der richtige ist, entscheidet die Planung.</p>
     <span class="nr">12583</span>
     <span class="t">Fassaden EPS 5 cm 0,5 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">4,67&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,5 m² · 2,34&nbsp;€</span>
   <div class="legen legen-klein">
@@ -8370,7 +8374,7 @@ sagt die Liste ebenfalls.</p>
     <span class="nr">12580</span>
     <span class="t">XPS glatt SF 100 mm 0,75 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">16,00&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,75 m² · 12,00&nbsp;€</span>
   <div class="legen legen-klein">
@@ -8477,7 +8481,7 @@ Dämmung. Ob einer davon der richtige ist, entscheidet die Planung.</p>
     <span class="nr">12566</span>
     <span class="t">Fassaden EPS 2 cm 0,5 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">1,93&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,5 m² · 0,97&nbsp;€</span>
   <div class="legen legen-klein">
@@ -8519,7 +8523,7 @@ Dämmung. Ob einer davon der richtige ist, entscheidet die Planung.</p>
     <span class="nr">12583</span>
     <span class="t">Fassaden EPS 5 cm 0,5 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">4,67&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,5 m² · 2,34&nbsp;€</span>
   <div class="legen legen-klein">
@@ -8709,7 +8713,7 @@ sagt die Liste ebenfalls.</p>
     <span class="nr">12580</span>
     <span class="t">XPS glatt SF 100 mm 0,75 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">16,00&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,75 m² · 12,00&nbsp;€</span>
   <div class="legen legen-klein">
@@ -8816,7 +8820,7 @@ Dämmung. Ob einer davon der richtige ist, entscheidet die Planung.</p>
     <span class="nr">12566</span>
     <span class="t">Fassaden EPS 2 cm 0,5 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">1,93&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,5 m² · 0,97&nbsp;€</span>
   <div class="legen legen-klein">
@@ -8858,7 +8862,7 @@ Dämmung. Ob einer davon der richtige ist, entscheidet die Planung.</p>
     <span class="nr">12583</span>
     <span class="t">Fassaden EPS 5 cm 0,5 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">4,67&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,5 m² · 2,34&nbsp;€</span>
   <div class="legen legen-klein">
@@ -9048,7 +9052,7 @@ sagt die Liste ebenfalls.</p>
     <span class="nr">12580</span>
     <span class="t">XPS glatt SF 100 mm 0,75 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">16,00&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,75 m² · 12,00&nbsp;€</span>
   <div class="legen legen-klein">
@@ -9155,7 +9159,7 @@ Dämmung. Ob einer davon der richtige ist, entscheidet die Planung.</p>
     <span class="nr">12566</span>
     <span class="t">Fassaden EPS 2 cm 0,5 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">1,93&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,5 m² · 0,97&nbsp;€</span>
   <div class="legen legen-klein">
@@ -9197,7 +9201,7 @@ Dämmung. Ob einer davon der richtige ist, entscheidet die Planung.</p>
     <span class="nr">12583</span>
     <span class="t">Fassaden EPS 5 cm 0,5 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">4,67&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,5 m² · 2,34&nbsp;€</span>
   <div class="legen legen-klein">
@@ -9408,7 +9412,7 @@ sagt die Liste ebenfalls.</p>
     <span class="nr">12580</span>
     <span class="t">XPS glatt SF 100 mm 0,75 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">16,00&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,75 m² · 12,00&nbsp;€</span>
   <div class="legen legen-klein">
@@ -9494,7 +9498,7 @@ Dämmung. Ob einer davon der richtige ist, entscheidet die Planung.</p>
     <span class="nr">12566</span>
     <span class="t">Fassaden EPS 2 cm 0,5 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">1,93&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,5 m² · 0,97&nbsp;€</span>
   <div class="legen legen-klein">
@@ -9536,7 +9540,7 @@ Dämmung. Ob einer davon der richtige ist, entscheidet die Planung.</p>
     <span class="nr">12583</span>
     <span class="t">Fassaden EPS 5 cm 0,5 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">4,67&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,5 m² · 2,34&nbsp;€</span>
   <div class="legen legen-klein">
@@ -12232,7 +12236,7 @@ sagt die Liste ebenfalls.</p>
     <span class="nr">12580</span>
     <span class="t">XPS glatt SF 100 mm 0,75 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">16,00&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,75 m² · 12,00&nbsp;€</span>
   <div class="legen legen-klein">
@@ -14047,7 +14051,7 @@ WDVS. Ob einer davon der richtige ist, entscheidet die Planung.</p>
     <span class="nr">19333</span>
     <span class="t">Capatect PrimaPor K20 weiß 25 kg SH-Reibputz</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">2,27&nbsp;€ <span class="eh">je kg, netto</span></span>
   <span class="ab">ab 25 kg · 56,75&nbsp;€</span>
   <div class="legen legen-klein">
@@ -14326,7 +14330,7 @@ sagt die Liste ebenfalls.</p>
     <span class="nr">19333</span>
     <span class="t">Capatect PrimaPor K20 weiß 25 kg SH-Reibputz</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">2,27&nbsp;€ <span class="eh">je kg, netto</span></span>
   <span class="ab">ab 25 kg · 56,75&nbsp;€</span>
   <div class="legen legen-klein">
@@ -14635,7 +14639,7 @@ sagt die Liste ebenfalls.</p>
     <span class="nr">19333</span>
     <span class="t">Capatect PrimaPor K20 weiß 25 kg SH-Reibputz</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">2,27&nbsp;€ <span class="eh">je kg, netto</span></span>
   <span class="ab">ab 25 kg · 56,75&nbsp;€</span>
   <div class="legen legen-klein">
@@ -14940,7 +14944,7 @@ sagt die Liste ebenfalls.</p>
     <span class="nr">19333</span>
     <span class="t">Capatect PrimaPor K20 weiß 25 kg SH-Reibputz</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">2,27&nbsp;€ <span class="eh">je kg, netto</span></span>
   <span class="ab">ab 25 kg · 56,75&nbsp;€</span>
   <div class="legen legen-klein">
@@ -15249,7 +15253,7 @@ sagt die Liste ebenfalls.</p>
     <span class="nr">19333</span>
     <span class="t">Capatect PrimaPor K20 weiß 25 kg SH-Reibputz</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">2,27&nbsp;€ <span class="eh">je kg, netto</span></span>
   <span class="ab">ab 25 kg · 56,75&nbsp;€</span>
   <div class="legen legen-klein">
@@ -15558,7 +15562,7 @@ sagt die Liste ebenfalls.</p>
     <span class="nr">19333</span>
     <span class="t">Capatect PrimaPor K20 weiß 25 kg SH-Reibputz</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">2,27&nbsp;€ <span class="eh">je kg, netto</span></span>
   <span class="ab">ab 25 kg · 56,75&nbsp;€</span>
   <div class="legen legen-klein">
@@ -15862,7 +15866,7 @@ sagt die Liste ebenfalls.</p>
     <span class="nr">19333</span>
     <span class="t">Capatect PrimaPor K20 weiß 25 kg SH-Reibputz</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">2,27&nbsp;€ <span class="eh">je kg, netto</span></span>
   <span class="ab">ab 25 kg · 56,75&nbsp;€</span>
   <div class="legen legen-klein">
@@ -15952,6 +15956,7 @@ Warengruppen in der Kopfleiste.</p></noscript>
 <path d="M40 24 Q60 30 80 24" stroke="var(--linie-stark)" fill="none" stroke-width="1.5"/>
 <rect x="44" y="42" width="32" height="14" rx="2" fill="var(--ocker-weich)" stroke="var(--ocker)" stroke-width="1.2"/>
 <text x="60" y="86" text-anchor="middle" fill="var(--gedaempft)" font-family="var(--zahl), monospace" font-size="9">25 kg</text></svg></div>
+<p class="verwandt"><span class="marker offen">Listenpreis des Lieferanten nicht bekannt</span></p>
 <div class="preistafel">
   <div><span class="k">Netto</span><span class="w">2,27 €</span><span class="e">je kg, für Unternehmer</span></div>
   <div><span class="k">Je Gebinde</span><span class="w">56,75 €</span><span class="e">netto, für 25 kg aus der Bezeichnung</span></div>
@@ -16475,7 +16480,7 @@ sagt die Liste ebenfalls.</p>
     <span class="nr">19333</span>
     <span class="t">Capatect PrimaPor K20 weiß 25 kg SH-Reibputz</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">2,27&nbsp;€ <span class="eh">je kg, netto</span></span>
   <span class="ab">ab 25 kg · 56,75&nbsp;€</span>
   <div class="legen legen-klein">
@@ -16779,7 +16784,7 @@ sagt die Liste ebenfalls.</p>
     <span class="nr">19333</span>
     <span class="t">Capatect PrimaPor K20 weiß 25 kg SH-Reibputz</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">2,27&nbsp;€ <span class="eh">je kg, netto</span></span>
   <span class="ab">ab 25 kg · 56,75&nbsp;€</span>
   <div class="legen legen-klein">
@@ -17077,7 +17082,7 @@ WDVS. Ob einer davon der richtige ist, entscheidet die Planung.</p>
     <span class="nr">19333</span>
     <span class="t">Capatect PrimaPor K20 weiß 25 kg SH-Reibputz</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">2,27&nbsp;€ <span class="eh">je kg, netto</span></span>
   <span class="ab">ab 25 kg · 56,75&nbsp;€</span>
   <div class="legen legen-klein">
@@ -17470,7 +17475,7 @@ sagt die Liste ebenfalls.</p>
     <span class="nr">12580</span>
     <span class="t">XPS glatt SF 100 mm 0,75 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">16,00&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,75 m² · 12,00&nbsp;€</span>
   <div class="legen legen-klein">
@@ -18037,7 +18042,7 @@ sagt die Liste ebenfalls.</p>
     <span class="nr">12580</span>
     <span class="t">XPS glatt SF 100 mm 0,75 m2</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">16,00&nbsp;€ <span class="eh">je m², netto</span></span>
   <span class="ab">ab 0,75 m² · 12,00&nbsp;€</span>
   <div class="legen legen-klein">

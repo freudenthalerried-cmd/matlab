@@ -193,6 +193,9 @@ padding:.6rem 1rem;z-index:10;text-decoration:none}
 .marker.vorteil{background:var(--gruen-weich);color:var(--gruen)}
 .marker.beipack{background:var(--ziegel-weich);color:var(--ziegel)}
 .marker.sperrig{background:var(--flaeche-2);color:var(--tinte-2)}
+/* Zurückhaltend und nicht alarmierend: Ein fehlender Listenpreis ist kein
+   Mangel des Artikels, sondern eine Angabe, die wir nicht haben. */
+.marker.offen{background:var(--flaeche-2);color:var(--gedaempft)}
 .kacheln{display:grid;grid-template-columns:repeat(auto-fill,minmax(17rem,1fr));gap:1px;background:var(--flaeche);border:1px solid var(--linie);margin-bottom:1.5rem}
 .kacheln>*{outline:1px solid var(--linie)}
 .kachel{background:var(--flaeche);padding:1rem 1.1rem;text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:.35rem}
@@ -477,7 +480,7 @@ sagt die Liste ebenfalls.</p>
     <span class="nr">19333</span>
     <span class="t">Capatect PrimaPor K20 weiß 25 kg SH-Reibputz</span>
   </a>
-  
+  <span class="marker offen">Listenpreis nicht bekannt</span>
   <span class="preis">2,27&nbsp;€ <span class="eh">je kg, netto</span></span>
   <span class="ab">ab 25 kg · 56,75&nbsp;€</span>
   <div class="legen legen-klein">

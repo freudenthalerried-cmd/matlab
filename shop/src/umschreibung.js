@@ -537,6 +537,12 @@ export const REGELQUELLEN = Object.freeze([
       + 'zur Nennung, keine eigene Regel.',
   }),
   Object.freeze({
+    modul: 'vorteilsangabe', ausfuhr: 'AUSKUENFTE', behauptung: false,
+    warum: 'kein Verbot, sondern das Gegenteil: die drei Auskünfte, von denen **eine** auf jeder '
+      + 'Artikelkarte stehen muss — der Abstand zur Liste, „Beipack" oder „Listenpreis nicht '
+      + 'bekannt". Gemessen wird das Fehlen aller drei, nicht eine Formulierung.',
+  }),
+  Object.freeze({
     modul: 'normstelle', ausfuhr: 'REIHE', behauptung: false,
     warum: 'die Ausnahme statt des Verbots: Eine Normenreihe hat keine Ausgabe, und dieses '
       + 'Muster hält sie von der Meldung frei.',

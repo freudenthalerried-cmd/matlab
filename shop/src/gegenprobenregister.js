@@ -2412,6 +2412,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'Assistent liest die Zeile, nicht den Vorspann.',
   }),
   Object.freeze({
+    id: 'karte-ohne-auskunft-zur-liste',
+    pruefer: 'pruefe-seiten',
+    was: 'Eine Artikelkarte, die zum Abstand zur Liste schweigt',
+    datei: 'shop/bin/website.mjs',
+    art: 'ersetzen',
+    baueVorher: true,
+    suchen: "  if (abstand === null && !a.amListendeckel && !beipack) {\n    marker.push('<span class=\"marker offen\">Listenpreis nicht bekannt</span>');\n  }",
+    ersetzen: '',
+    erwartet: /karte-ohne-auskunft/,
+    warum: 'Der Zustand bis zum 10. September: Die Wissensseite sagte zweimal, der Abstand zur '
+      + 'Liste stehe „auf jeder Artikelkarte" — gemessen stand er auf 39 von 46. Drei der '
+      + 'übrigen tragen „Beipack" und damit die Auskunft, vier trugen nichts. Eine leere Stelle '
+      + 'sieht aus wie ein Artikel ohne Vorteil, und der Leser kann beides nicht unterscheiden. '
+      + 'Die Mutation nimmt den Grund wieder heraus.',
+  }),
+  Object.freeze({
     id: 'pruefer-die-den-text-nicht-kennen',
     pruefer: 'pruefe-inhalte',
     was: 'Eine Seite, die ihren Prüfprogrammen Unabhängigkeit vom Text nachsagt',

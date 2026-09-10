@@ -38,6 +38,7 @@ import { untergrenzenbefund } from '../src/untergrenze.js';
 import { mehrlieferungsbefund, lieferantenzahl } from '../src/lieferungen.js';
 import { kennwerteImBestand, uebernahmebefund } from '../src/merkblattverweis.js';
 import { normstellenbefund } from '../src/normstelle.js';
+import { vorteilsangabebefund } from '../src/vorteilsangabe.js';
 
 const hier = dirname(fileURLToPath(import.meta.url));
 
@@ -538,6 +539,25 @@ if (process.argv[2] === '--seiten') {
   );
   treffer += normen.meldungen.length;
 
+  /* ---------------------------------------------------------------- *
+   * Der Abstand zur Liste — und wo er fehlt, warum (10. September 2026)
+   *
+   * Die Wissensseite sagt zweimal, er stehe „auf **jeder** Artikelkarte".
+   * Gemessen stand er auf 39 von 46. Drei tragen „Beipack" und damit die
+   * Auskunft; vier trugen nichts. Siehe `src/vorteilsangabe.js`.
+   * ---------------------------------------------------------------- */
+  const angaben = vorteilsangabebefund(
+    alleSeitendateien(wurzel).map((datei) => ({
+      name: datei.split('/site/')[1] ?? datei, html: readFileSync(datei, 'utf8'),
+    })),
+    200,
+  );
+  for (const m of angaben.meldungen) {
+    console.log(`\n${m.wo}  [${m.regel}]`);
+    console.log(`    → ${m.text}`);
+  }
+  treffer += angaben.meldungen.length;
+
   console.log(`\n${seiten.length} Seiten, ${absaetze} Fließtextabsätze geprüft, ${treffer} mit Verdacht.`);
   console.log(`${mitKarten} Seiten zeigen Artikelkarten, ${mitKarten - ohneGrenze} nennen den Mindestbestellwert.`);
   console.log(`${grenzen.gefunden} Grenzaussagen auf ${grenzen.flaechen} Seiten gegen die hinterlegten `
@@ -547,6 +567,9 @@ if (process.argv[2] === '--seiten') {
   console.log(`${uebernahme.kennwerte.mit.length} von ${uebernahme.kennwerte.gesamt} Seiten tragen `
     + 'einen technischen Kennwert — daran hängt, ob eine Übernahme behauptet werden darf.');
   console.log(`${normen.geprueft} Erstnennungen einer Norm gegen ihre Ausgabe gehalten.`);
+  console.log(`${angaben.gesamt} Artikelkarten: ${angaben.nach.vorteil} mit dem Abstand zur Liste, `
+    + `${angaben.nach.beipack} als Beipack, ${angaben.nach['listenpreis-offen']} mit offenem `
+    + 'Listenpreis — jede sagt, woran sie ist.');
   console.log(`${antworten} maschinenlesbare Antworten gegen den sichtbaren Text gehalten.`);
   console.log('Diese Texte stehen im Seitenbauwerkzeug, nicht in inhalte/ — sie unterliegen');
   console.log('trotzdem denselben Regeln.');

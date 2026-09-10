@@ -534,6 +534,9 @@ padding:.6rem 1rem;z-index:10;text-decoration:none}
 .marker.vorteil{background:var(--gruen-weich);color:var(--gruen)}
 .marker.beipack{background:var(--ziegel-weich);color:var(--ziegel)}
 .marker.sperrig{background:var(--flaeche-2);color:var(--tinte-2)}
+/* Zurückhaltend und nicht alarmierend: Ein fehlender Listenpreis ist kein
+   Mangel des Artikels, sondern eine Angabe, die wir nicht haben. */
+.marker.offen{background:var(--flaeche-2);color:var(--gedaempft)}
 .kacheln{display:grid;grid-template-columns:repeat(auto-fill,minmax(17rem,1fr));gap:1px;background:var(--flaeche);border:1px solid var(--linie);margin-bottom:1.5rem}
 .kacheln>*{outline:1px solid var(--linie)}
 .kachel{background:var(--flaeche);padding:1rem 1.1rem;text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:.35rem}
@@ -702,6 +705,25 @@ function artikelKarte(a, befund, verweis) {
   const abstand = vorteil(a);
   const marker = [];
   if (abstand !== null && abstand >= 5) marker.push(`<span class="marker vorteil">${abstand} % unter Liste</span>`);
+  /*
+   * **Und wo keine Zahl steht, warum — 10. September 2026.**
+   *
+   * Die Wissensseite „Was Baumeisterpreis heißt" sagt zweimal, der Abstand
+   * zur Liste stehe *„auf **jeder** Artikelkarte, artikelweise und
+   * nachrechenbar, denn nur sie sagt etwas über Ihre Ersparnis"*. Gemessen
+   * stand er auf **39 von 46**. Drei der sieben tragen „Beipack" und damit
+   * die Auskunft; **vier** trugen nichts.
+   *
+   * Der Grund ist harmlos — für sie ist kein Listenpreis des Lieferanten
+   * bekannt —, und genau deshalb gehört er auf die Karte: Die zweite
+   * Redaktionsregel dieses Shops lautet *„fehlt der Beleg, fehlt der Wert —
+   * und die Seite sagt, dass er fehlt."* Eine leere Stelle sieht sonst aus
+   * wie ein Artikel ohne Vorteil, und der Leser kann beides nicht
+   * unterscheiden.
+   */
+  if (abstand === null && !a.amListendeckel && !beipack) {
+    marker.push('<span class="marker offen">Listenpreis nicht bekannt</span>');
+  }
   if (beipack) marker.push('<span class="marker beipack">Beipack</span>');
   const einheit = esc(EINHEITEN[a.einheit] ?? a.einheit);
   const schritt = mengenschritt(a);
@@ -848,6 +870,11 @@ ${systemSeiten.length ? `die Systemliste unten` : 'die Systemliste'}.</p>`
 
   const marker = [];
   if (abstand !== null && abstand >= 5) marker.push(`<span class="marker vorteil">${abstand} % unter Listenpreis</span>`);
+  // Dieselbe Auskunft wie auf der Karte: Eine leere Stelle sieht aus wie ein
+  // Artikel ohne Vorteil.
+  if (abstand === null && !a.amListendeckel && !beipack) {
+    marker.push('<span class="marker offen">Listenpreis des Lieferanten nicht bekannt</span>');
+  }
   if (beipack) marker.push('<span class="marker beipack">Beipack — kein Preisvorteil</span>');
   if (a.sperrgut) marker.push('<span class="marker sperrig">palettiert, Kranentladung</span>');
   if (marker.length) teile.push(`<p class="verwandt">${marker.join('')}</p>`);
