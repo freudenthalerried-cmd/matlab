@@ -819,6 +819,51 @@ export const GEGENPROBEN = Object.freeze([
       + 'Weisung gilt.',
   }),
   Object.freeze({
+    id: 'abzweig-ins-leere',
+    pruefer: 'pruefe-betriebskette',
+    was: 'Ein Abzweig, der von einem Schritt abgeht, den es in der Kette nicht gibt',
+    datei: 'shop/src/betriebskette.js',
+    art: 'ersetzen',
+    suchen: '    ab: \'posteingang\',',
+    ersetzen: '    ab: \'posteingangX\',',
+    erwartet: /abzweig-ins-leere/,
+    warum: 'Ein Abzweig ist nur so viel wert wie die Stelle, an der er abgeht. Zeigt er ins '
+      + 'Leere, liest der Betreiber, die Absage gehöre irgendwohin — und sucht sie an einem '
+      + 'Punkt des Ablaufs, an dem sie nie entsteht.',
+  }),
+  Object.freeze({
+    id: 'stufe-ohne-platz',
+    pruefer: 'pruefe-betriebskette',
+    was: 'Das Werkzeug kann eine Stufe, die in der Karte des Betriebs nicht vorkommt',
+    datei: 'shop/src/betriebskette.js',
+    art: 'ersetzen',
+    // Mutiert wird die Karte und nicht das Werkzeug: Eine Stufe aus
+    // `bin/vorgang.mjs` zu entfernen hielte die beiden Seiten wieder in
+    // Übereinstimmung — und bewiese nichts.
+    suchen: '    werkzeug: \'npm run vorgang -- --stufe absage\',',
+    ersetzen: '    werkzeug: \'npm run vorgang -- --stufe mahnung\',',
+    erwartet: /stufe-ohne-platz/,
+    warum: 'Genau der Zustand vom 10. September: `bin/vorgang.mjs` bekam die Stufe `absage`, '
+      + 'und die Karte des Betriebs meldete weiter, es sei alles in Ordnung. Eine Liste, die '
+      + 'nur sich selbst gegen sich selbst hält, bleibt grün, während die Wirklichkeit '
+      + 'davonläuft.',
+  }),
+  Object.freeze({
+    id: 'methodenaufruf-als-testfall',
+    pruefer: 'pruefe-tests',
+    was: 'Der Prüfer hält `muster.test(`…`)` für die Erklärung eines Testfalls',
+    datei: 'shop/bin/testpruefung.mjs',
+    art: 'ersetzen',
+    suchen: '  const muster = /(?<![.\\w$])test\\(',
+    ersetzen: '  const muster = /\\btest\\(',
+    erwartet: /nicht lesbar/,
+    warum: 'Der Zustand bis zum 11. September: Eine Wortgrenze steht auch zwischen dem Punkt '
+      + 'und dem Namen. Der Prüfer las jeden Aufruf von `RegExp.prototype.test` mit einem '
+      + 'Schablonentext als Testfall, nahm dessen Inhalt als Namen und suchte einen Rumpf, den '
+      + 'es nicht gibt. Zwei solche Zeilen standen im Bestand; eine davon galt seit Wochen als '
+      + 'geprüfter Testfall. Ein Prüfer, der eine Zeile prüft, die es nicht gibt, verdeckt die, die es gibt.',
+  }),
+  Object.freeze({
     id: 'schaufenster-ohne-aussagen',
     pruefer: 'pruefe-schaufenster',
     was: 'Eine Beschreibung, deren Zahlen stimmen und deren Sätze überholt sind',

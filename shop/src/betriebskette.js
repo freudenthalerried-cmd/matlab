@@ -145,3 +145,166 @@ export function kettenbefund(schritte = SCHRITTE) {
     sauber: meldungen.length === 0,
   };
 }
+
+/**
+ * Die Abzweige: Stellen, an denen ein Geschäftsfall die Kette verlässt.
+ *
+ * **Der Anlass, 11. September 2026.** Die Liste oben führt neun Schritte „in
+ * der Reihenfolge, in der sie eintreten" — und jeder einzelne setzt voraus,
+ * dass der Fall gelingt. Seit dem 10. September gibt es
+ * `npm run vorgang -- --stufe absage`, ein Werkzeug für genau den Fall, dass er
+ * **nicht** gelingt. Es stand in keinem Schritt, und es konnte in keinem
+ * stehen: Eine Absage tritt nicht nach der Annahme ein, sondern statt ihrer.
+ *
+ * > **Eine Karte, die nur den geglückten Weg kennt, meldet sich sauber und
+ * > verschweigt jede Stelle, an der ein Kunde stehen bleibt.**
+ *
+ * Dieselbe Pflicht wie oben, um eine Frage erweitert. `ab` nennt den Schritt,
+ * nach dem der Abzweig möglich wird, `werkzeug` den Befehl, `grundlage` die
+ * **veröffentlichte** Regel, die den Abzweig trägt — und wo eines von beiden
+ * fehlt, steht der Pflichtgrund daneben. Ein Abzweig ohne Werkzeug und ohne
+ * Grund ist der Fund; ein Abzweig ohne Grundlage und ohne Grund ist der
+ * teurere davon, weil er den Kunden trifft, der schon gezahlt hat.
+ */
+export const ABZWEIGE = Object.freeze([
+  Object.freeze({
+    id: 'absage',
+    ab: 'posteingang',
+    was: 'Der Fall kommt nicht zustande; der Kunde bekommt den Grund im Klartext',
+    werkzeug: 'npm run vorgang -- --stufe absage',
+    grundlage: 'AGB Punkt 2 — die Bestellung ist das Angebot, der Vertrag entsteht erst mit '
+      + 'der Auftragsbestätigung. Die einzelnen Gründe stehen in Punkt 1, 5 und 12.',
+  }),
+  Object.freeze({
+    id: 'angebot-verfaellt',
+    ab: 'angebot',
+    was: 'Die Bindefrist läuft ab, ohne dass der Kunde annimmt',
+    werkzeug: null,
+    grundlage: 'Die Bindefrist von vierzehn Tagen, die `BINDEFRIST` setzt und die auf jedem '
+      + 'Angebot mit Datum steht.',
+    warumOhneWerkzeug: 'Der Ablauf einer Frist ist kein Ereignis im Rechner, sondern das '
+      + 'Ausbleiben eines Ereignisses. Ein Werkzeug müsste täglich über die Ablage laufen und '
+      + 'Datum für Datum vergleichen; nichts in diesem Haus läuft täglich. Die Folge des '
+      + 'Ablaufs ist auch keine Nachricht, sondern eine Entscheidung des Betreibers — neu '
+      + 'rechnen oder ziehen lassen. Der Preis von gestern bindet nicht mehr, mehr geschieht nicht.',
+  }),
+  Object.freeze({
+    id: 'kann-nicht-geliefert-werden',
+    ab: 'lieferantenbestellung',
+    was: 'Nach Vertragsschluss und Zahlung sagt der Lieferant ab',
+    werkzeug: null,
+    grundlage: null,
+    warumOhneWerkzeug: 'Was zu tun wäre, hängt davon ab, was die Regel sagt — und die gibt es '
+      + 'nicht (nebenan). Ein Werkzeug vor der Regel wäre eine Zusage, die niemand geprüft hat. '
+      + 'Dazu kommt dieselbe Grenze wie beim Zahlungseingang: Eine Rückzahlung geht über das '
+      + 'Konto, und dieses Haus hat keinen Zugang dorthin und soll keinen haben.',
+    warumOhneGrundlage: 'Die dreizehn AGB-Punkte regeln Vertragsschluss, Lieferung, Zahlung, '
+      + 'Gewährleistung und Gerichtsstand — keiner sagt, was gilt, wenn die bestellte und '
+      + 'bezahlte Ware nicht kommt. Rücktritt, Nachfrist und Rückzahlung sind Rechtstexte, und '
+      + 'die sind ein offener Punkt beim Auftraggeber. Sie hier zu erfinden hieße, dem Kunden '
+      + 'eine Regel zu versprechen, die auf keiner veröffentlichten Seite steht.',
+  }),
+]);
+
+/**
+ * Der Befund über die Abzweige — dieselben Regeln, eine Spalte mehr.
+ */
+export function abzweigbefund(abzweige = ABZWEIGE, schritte = SCHRITTE) {
+  const meldungen = [];
+  const ids = new Set(schritte.map((s) => s.id));
+  for (const a of abzweige) {
+    if (!ids.has(a.ab)) {
+      meldungen.push({
+        regel: 'abzweig-ins-leere',
+        text: `${a.id}: zweigt nach „${a.ab}" ab — diesen Schritt gibt es nicht`,
+      });
+    }
+    if (!a.werkzeug && (!a.warumOhneWerkzeug || a.warumOhneWerkzeug.length < 80)) {
+      meldungen.push({
+        regel: 'abzweig-ohne-werkzeug-ohne-grund',
+        text: `${a.id}: kein Werkzeug und kein tragfähiger Grund`,
+      });
+    }
+    if (a.werkzeug && a.warumOhneWerkzeug) {
+      meldungen.push({
+        regel: 'grund-ohne-fall',
+        text: `${a.id}: hat ein Werkzeug und begründet trotzdem, warum keines da ist`,
+      });
+    }
+    if (!a.grundlage && (!a.warumOhneGrundlage || a.warumOhneGrundlage.length < 80)) {
+      meldungen.push({
+        regel: 'abzweig-ohne-grundlage-ohne-grund',
+        text: `${a.id}: keine veröffentlichte Regel und kein tragfähiger Grund`,
+      });
+    }
+    if (a.grundlage && a.warumOhneGrundlage) {
+      meldungen.push({
+        regel: 'grundlage-doppelt',
+        text: `${a.id}: nennt eine Regel und begründet trotzdem, warum keine da ist`,
+      });
+    }
+  }
+  return {
+    abzweige: abzweige.length,
+    mitWerkzeug: abzweige.filter((a) => a.werkzeug).length,
+    ohneGrundlage: abzweige.filter((a) => !a.grundlage).length,
+    meldungen,
+    sauber: meldungen.length === 0,
+  };
+}
+
+/**
+ * Die Gegenrichtung: Kennt die Karte jede Stufe, die das Werkzeug anbietet?
+ *
+ * **Warum das die eigentliche Prüfung ist.** Eine Liste, die nur sich selbst
+ * gegen sich selbst hält, bleibt grün, während die Wirklichkeit davonläuft.
+ * Genau das ist am 10. September passiert: `bin/vorgang.mjs` bekam eine dritte
+ * Stufe, und die Karte des Betriebs meldete weiter, es sei alles in Ordnung.
+ * Dieser Befund wäre an jenem Tag rot geworden.
+ *
+ * Gelesen wird die Zeile, die `bin/vorgang.mjs` seine erlaubten Stufen nennt.
+ * Findet sie sich nicht oder ist sie leer, ist das **kein grünes Ergebnis**,
+ * sondern eine eigene Meldung: Ein Prüfer, der nichts findet, hat nichts geprüft.
+ */
+export function stufenbefund(quelltext, schritte = SCHRITTE, abzweige = ABZWEIGE) {
+  const zeile = /\[([^\]]*)\]\.includes\(stufe\)/.exec(quelltext ?? '');
+  const stufen = zeile ? [...zeile[1].matchAll(/'([^']+)'/g)].map((m) => m[1]) : [];
+  if (!stufen.length) {
+    return {
+      stufen: [],
+      meldungen: [{
+        regel: 'stufen-nicht-lesbar',
+        text: 'In bin/vorgang.mjs steht keine lesbare Liste erlaubter Stufen — '
+          + 'dieser Befund prüft damit nichts.',
+      }],
+      sauber: false,
+    };
+  }
+
+  const benannt = new Map();
+  for (const e of [...schritte, ...abzweige]) {
+    const m = /--stufe\s+(\S+)/.exec(e.werkzeug ?? '');
+    if (m) benannt.set(m[1], e.id);
+  }
+
+  const meldungen = [];
+  for (const s of stufen) {
+    if (!benannt.has(s)) {
+      meldungen.push({
+        regel: 'stufe-ohne-platz',
+        text: `Das Werkzeug kennt die Stufe „${s}" — die Karte führt sie weder als `
+          + 'Schritt noch als Abzweig',
+      });
+    }
+  }
+  for (const [s, id] of benannt) {
+    if (!stufen.includes(s)) {
+      meldungen.push({
+        regel: 'platz-ohne-stufe',
+        text: `„${id}" nennt die Stufe „${s}" — das Werkzeug kennt sie nicht`,
+      });
+    }
+  }
+
+  return { stufen, benannt: [...benannt.keys()], meldungen, sauber: meldungen.length === 0 };
+}

@@ -51,6 +51,13 @@ test('sauber: eigene Laenge zugesichert, dann geschleift', () => {
   for (const e of eintraege) {
     assert.ok(e > 10);
   }
+  // **Dazugekommen am 11.9.** Ein Methodenaufruf, kein Testfall. Bis zu
+  // diesem Tag suchte der Prüfer `\btest\(` — und eine Wortgrenze steht auch
+  // zwischen dem Punkt und dem Namen. Er zählte diese Zeile als zehnten Fall,
+  // nahm den Schablonentext als seinen Namen und meldete ihn als hohl.
+  assert.ok(/^ja/.test(
+    `ja, ein Schablonentext mit Beistrich danach`,
+  ));
 });
 
 test('mit Optionsobjekt: das ist ein Rumpf, kein leerer Test', { concurrency: 1 }, () => {

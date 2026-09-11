@@ -7,7 +7,11 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { SCHRITTE, kettenbefund } from '../src/betriebskette.js';
+import { readFileSync } from 'node:fs';
+import {
+  SCHRITTE, ABZWEIGE, kettenbefund, abzweigbefund, stufenbefund,
+} from '../src/betriebskette.js';
+import { AGB_GLIEDERUNG } from '../src/rechtstexte.js';
 
 test('jeder Schritt nennt ein Gate, und jede Lücke ihren Grund', () => {
   assert.ok(SCHRITTE.length >= 8, `nur ${SCHRITTE.length} Schritte — die Kette ist zu kurz gefasst`);
@@ -66,4 +70,106 @@ test('der Bestand hört bei der Zahlung auf', () => {
   const b = kettenbefund();
   assert.equal(b.ersteLuecke.id, 'zahlung');
   assert.equal(b.erreicht, 4);
+});
+
+/*
+ * **Die Abzweige, 11. September 2026.** Die Schritte oben beschreiben den
+ * geglückten Fall. Was passiert, wenn er nicht glückt, stand nirgends — auch
+ * nicht, nachdem `npm run vorgang -- --stufe absage` gebaut war.
+ */
+
+test('jeder Abzweig nennt Werkzeug oder Grund und Regel oder Grund', () => {
+  assert.equal(ABZWEIGE.length, 3, `${ABZWEIGE.length} Abzweige — die Liste hat sich geändert`);
+  assert.deepEqual(abzweigbefund().meldungen, []);
+});
+
+test('ein Abzweig, der von einem erfundenen Schritt abgeht, wird gemeldet', () => {
+  const b = abzweigbefund([{
+    id: 'x', ab: 'gibtsnicht', was: 'X', werkzeug: 'npm run x', grundlage: 'AGB Punkt 1',
+  }]);
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['abzweig-ins-leere']);
+});
+
+test('ein Abzweig ohne Werkzeug und ohne Grund ist der Fund', () => {
+  const b = abzweigbefund(
+    [{ id: 'x', ab: 'a', was: 'X', werkzeug: null, grundlage: 'AGB Punkt 1' }],
+    [{ id: 'a' }],
+  );
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['abzweig-ohne-werkzeug-ohne-grund']);
+});
+
+test('ein Abzweig ohne veröffentlichte Regel und ohne Grund ist der teurere Fund', () => {
+  // Der Unterschied zur Zeile darüber: Diesen trifft der Kunde, der schon
+  // gezahlt hat — er sucht die Regel und findet keine.
+  const b = abzweigbefund(
+    [{ id: 'x', ab: 'a', was: 'X', werkzeug: 'npm run x', grundlage: null }],
+    [{ id: 'a' }],
+  );
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['abzweig-ohne-grundlage-ohne-grund']);
+});
+
+test('eine Begründung neben dem, was sie begründet, wird gemeldet', () => {
+  const lang = 'Ein Grund, der hier nichts mehr zu suchen hat, weil das Benannte längst da ist.';
+  const b = abzweigbefund(
+    [{
+      id: 'x', ab: 'a', was: 'X', werkzeug: 'npm run x', grundlage: 'AGB Punkt 1',
+      warumOhneWerkzeug: lang, warumOhneGrundlage: lang,
+    }],
+    [{ id: 'a' }],
+  );
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['grund-ohne-fall', 'grundlage-doppelt']);
+});
+
+/*
+ * **Die Gegenrichtung.** Am 10. September bekam `bin/vorgang.mjs` eine dritte
+ * Stufe, und die Karte des Betriebs meldete weiter, es sei alles in Ordnung.
+ * Die nächsten vier Fälle sind der Prüfer, der das nicht mehr zulässt.
+ */
+
+const QUELLE = readFileSync(new URL('../bin/vorgang.mjs', import.meta.url), 'utf8');
+
+test('die Karte hat für jede Stufe des Werkzeugs einen Platz', () => {
+  const b = stufenbefund(QUELLE);
+  assert.equal(b.stufen.length, 3, `gelesen: ${JSON.stringify(b.stufen)}`);
+  assert.deepEqual(b.meldungen, []);
+});
+
+test('eine Stufe, die in der Karte fehlt, wird gemeldet', () => {
+  // Genau der Zustand vor dieser Runde: Der Abzweig „absage" existierte nicht.
+  const ohne = ABZWEIGE.filter((z) => z.id !== 'absage');
+  const b = stufenbefund(QUELLE, SCHRITTE, ohne);
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['stufe-ohne-platz']);
+  assert.match(b.meldungen[0].text, /absage/);
+});
+
+test('ein Platz für eine Stufe, die es nicht gibt, wird auch gemeldet', () => {
+  const b = stufenbefund(QUELLE, [], [{
+    id: 'x', ab: 'a', was: 'X', werkzeug: 'npm run vorgang -- --stufe mahnung',
+  }]);
+  assert.ok(b.meldungen.some((m) => m.regel === 'platz-ohne-stufe'), JSON.stringify(b.meldungen));
+});
+
+test('ein Quelltext ohne lesbare Stufenliste ist kein grünes Ergebnis', () => {
+  // Ein Prüfer, der nichts findet, hat nichts geprüft — und muss das sagen.
+  const b = stufenbefund('const stufe = wahl("stufe");');
+  assert.equal(b.sauber, false);
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['stufen-nicht-lesbar']);
+});
+
+test('die Begründung des Abzweigs ohne Regel gilt, solange die AGB schweigt', () => {
+  /**
+   * **Eine Begründung, die einen Verzicht trägt, gehört selbst geprüft.** Der
+   * Abzweig `kann-nicht-geliefert-werden` hat keine veröffentlichte Regel, und
+   * der Grund dafür lautet: keiner der dreizehn AGB-Punkte sagt, was gilt,
+   * wenn die bezahlte Ware nicht kommt. Sobald das nicht mehr stimmt, ist die
+   * Begründung falsch — und dieser Fall wird rot, bevor sie jemand liest.
+   */
+  assert.equal(AGB_GLIEDERUNG.length, 13, 'die AGB hat nicht mehr dreizehn Punkte');
+  const treffer = AGB_GLIEDERUNG.filter(
+    (p) => /rücktritt|lieferunfähig|nicht geliefert|nicht lieferbar/i.test(
+      `${p.titel} ${p.hinweis ?? ''}`,
+    ),
+  );
+  assert.deepEqual(treffer.map((p) => p.nr), [],
+    'Die AGB regelt die Lieferunfähigkeit jetzt — warumOhneGrundlage nachziehen.');
 });

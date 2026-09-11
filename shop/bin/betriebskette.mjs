@@ -16,11 +16,21 @@
  * von Hand weitergeht und warum.
  */
 
-import { SCHRITTE, kettenbefund } from '../src/betriebskette.js';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
+import {
+  SCHRITTE, ABZWEIGE, kettenbefund, abzweigbefund, stufenbefund,
+} from '../src/betriebskette.js';
+
+const VORGANG = fileURLToPath(new URL('./vorgang.mjs', import.meta.url));
 
 const b = kettenbefund();
+const a = abzweigbefund();
+const st = stufenbefund(readFileSync(VORGANG, 'utf8'));
 
-console.log(`Betriebskette — ${b.schritte} Schritte, ${b.mitWerkzeug} mit Werkzeug\n`);
+console.log(`Betriebskette — ${b.schritte} Schritte, ${b.mitWerkzeug} mit Werkzeug, `
+  + `${a.abzweige} Abzweige, ${a.mitWerkzeug} mit Werkzeug\n`);
 
 SCHRITTE.forEach((s, i) => {
   const zeichen = s.werkzeug ? (i < b.erreicht ? '✓' : '·') : '✗';
@@ -46,12 +56,36 @@ if (b.ersteLuecke) {
   console.log('Die Kette reicht von der Bestellung bis zur Aufbewahrung.');
 }
 
-if (b.meldungen.length) {
+/**
+ * **Die Abzweige stehen unter der Kette und nicht in ihr.** Ein Abzweig tritt
+ * nicht nach einem Schritt ein, sondern statt der folgenden — eine Nummer in
+ * der Reihe hätte genau das verwischt.
+ */
+console.log('\nAbzweige — wo ein Fall die Kette verlässt\n');
+
+ABZWEIGE.forEach((z) => {
+  console.log(`  ${z.werkzeug ? '\u2713' : '\u2717'} nach „${z.ab}“: ${z.was}`);
+  console.log(`         ${z.werkzeug ?? '— kein Werkzeug'}`);
+  console.log(`         ${z.grundlage ?? '— keine veröffentlichte Regel'}`);
+  if (z.warumOhneWerkzeug) console.log(`         ${z.warumOhneWerkzeug}`);
+  if (z.warumOhneGrundlage) console.log(`         ${z.warumOhneGrundlage}`);
   console.log('');
-  for (const m of b.meldungen) console.log(`  ✗ ${m.text}  [${m.regel}]`);
-  console.log(`\n${b.meldungen.length} Meldung(en). Ein Schritt ohne Werkzeug und ohne Grund`);
-  console.log('ist der Fund, für den es diese Liste gibt.');
+});
+
+if (a.ohneGrundlage) {
+  console.log(`${a.ohneGrundlage} Abzweig(e) ohne veröffentlichte Regel — der Grund steht oben.`);
+  console.log('');
+}
+
+const meldungen = [...b.meldungen, ...a.meldungen, ...st.meldungen];
+
+if (meldungen.length) {
+  console.log('');
+  for (const m of meldungen) console.log(`  ✗ ${m.text}  [${m.regel}]`);
+  console.log(`\n${meldungen.length} Meldung(en). Ein Schritt oder Abzweig ohne Werkzeug und`);
+  console.log('ohne Grund ist der Fund, für den es diese Liste gibt.');
   process.exit(1);
 }
 
-console.log('\nJeder Schritt ohne Werkzeug sagt, warum es keines gibt.');
+console.log(`Das Werkzeug kennt ${st.stufen.length} Stufen, und die Karte hat für jede einen Platz.`);
+console.log('\nJeder Schritt und jeder Abzweig ohne Werkzeug sagt, warum es keines gibt.');

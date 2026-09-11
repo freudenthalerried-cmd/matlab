@@ -29,6 +29,8 @@ test('der Prüfer findet in der Probedatei jedes Muster und schweigt beim sauber
     'keiner der Probefälle ist unlesbar — sonst prüft der Prüfer sie gar nicht');
   assert.ok(!lauf.stdout.includes('begruendet abgelehnt'), 'die begründete Ablehnung bleibt stumm');
   assert.ok(!lauf.stdout.includes('sauber:'), 'der saubere Fall löst keinen Verdacht aus');
+  assert.ok(!lauf.stdout.includes('Schablonentext mit Beistrich'),
+    'ein Methodenaufruf `muster.test(`…`)` ist kein Testfall und bekommt keinen Namen');
   assert.ok(!lauf.stdout.includes('mit Optionsobjekt'),
     'test(name, options, fn) ist eine gültige Schreibweise — ihr Rumpf ist die Funktion, nicht das Optionsobjekt');
 });

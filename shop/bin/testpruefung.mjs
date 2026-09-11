@@ -158,7 +158,15 @@ function bisSchliessend(text, start, auf = '{', zu = '}') {
 /** Zerlegt eine Testdatei in ihre einzelnen Testfälle. */
 function zerlege(quelle) {
   const faelle = [];
-  const muster = /\btest\(\s*(['"`])((?:\\.|(?!\1).)*)\1\s*,/g;
+  // **Berichtigt am 11. September 2026.** Hier stand `\btest\(`. Eine
+  // Wortgrenze steht auch zwischen dem Punkt und dem Namen, und damit las
+  // dieser Prüfer `muster.test(`…`)` als Testfall — samt allem, was im
+  // Schablonentext stand. In `betriebskette.test.js` fiel das auf: Der
+  // vermeintliche Fall hatte keinen Rumpf und meldete sich als unlesbar.
+  //
+  // > **Ein Prüfer, der einen Methodenaufruf für eine Erklärung hält, prüft
+  // > eine Zeile, die es nicht gibt** — und verdeckt damit die, die es gibt.
+  const muster = /(?<![.\w$])test\(\s*(['"`])((?:\\.|(?!\1).)*)\1\s*,/g;
 
   for (const treffer of quelle.matchAll(muster)) {
     const titel = treffer[2];
