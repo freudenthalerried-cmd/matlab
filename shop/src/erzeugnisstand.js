@@ -159,6 +159,22 @@ export const LESER = Object.freeze([
     warumOhnePruefung: 'Er ruft die Prüfer, statt selbst zu lesen. Die Weigerung gehört '
       + 'dorthin, wo gemessen wird — sonst stünde sie einmal zu früh und einmal zu spät.',
   }),
+  /*
+   * **Ergänzt am 11. September 2026.** Dieser Prüfer liest `ausgabe/` nicht,
+   * er **schreibt** eines: einen zweiten Bau mit vollständiger
+   * Betreiberdatei, in einen Wegwerfordner. Eine Frischeprüfung wäre hier
+   * sinnlos — er prüft ausdrücklich einen Stand, den der Auslieferungsordner
+   * heute nicht haben darf.
+   */
+  Object.freeze({
+    werkzeug: 'bin/tagxpruefung.mjs',
+    erzeugnis: null,
+    warumOhnePruefung: 'Er baut selbst, und zwar bewusst an `ausgabe/` vorbei: Der Bau des '
+      + 'Tages X geht nach `WEBSITE_AUSGABE` in einen Wegwerfordner, damit keine erfundene '
+      + 'UID je in den Auslieferungsordner gerät. Was er prüft, ist ein Stand, den es heute '
+      + 'nicht geben darf — eine Frage nach der Frische des echten Erzeugnisses ginge daran '
+      + 'vorbei.',
+  }),
   Object.freeze({
     werkzeug: 'bin/schnelllauf.mjs',
     erzeugnis: null,

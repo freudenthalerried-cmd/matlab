@@ -292,6 +292,13 @@ export const NICHT_IM_HAKEN = Object.freeze([
       + 'nicht an der Laufzeit hängt, sondern daran, was er prüft.',
   }),
   Object.freeze({
+    pruefer: 'pruefe-tagx', sekunden: 1.5,
+    warum: 'Er **baut** den ganzen Shop noch einmal, mit einer vollständigen Betreiberdatei in '
+      + 'einen Wegwerfordner. Ein zweiter vollständiger Bau vor jedem Commit wäre der teuerste '
+      + 'Posten des Hakens, und was er prüft, ändert sich nicht mit jedem Commit, sondern mit '
+      + 'dem Bauwerkzeug. Er läuft im Gesamtlauf.',
+  }),
+  Object.freeze({
     pruefer: 'wegprobe', sekunden: 2.4,
     warum: 'Am 11. September ins Prüferregister aufgenommen und damit zuerst im Schnelllauf '
       + 'gelandet — dort kostete sie eine Sekunde mehr als die anderen dreiundvierzig '

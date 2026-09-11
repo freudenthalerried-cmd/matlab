@@ -590,6 +590,16 @@ export const PRUEFER = [
     einheit: 'Abnahmepunkte gegen den Ausgabeordner',
     mindestens: 8,
   },
+  // **Aufgenommen am 11. September 2026.** Jeder andere Prüfer misst den
+  // Zustand von heute; dieser baut den Shop mit vollständiger Betreiberdatei
+  // und sieht nach, ob die Angaben dort ankommen, wo sie hingehören.
+  {
+    name: 'pruefe-tagx',
+    werkzeug: 'tagxpruefung.mjs',
+    muster: /Tag X — (\d+) offene Angaben/,
+    einheit: 'offene Angaben des Auftraggebers eingesetzt',
+    mindestens: 4,
+  },
   // **Aufgenommen am 11. September 2026.** Die Konsistenz der Entität ist
   // nach dem eigenen Sichtbarkeitskonzept „der billigste und
   // meistvernachlässigte Hebel" — gemessen war er nicht gezogen.

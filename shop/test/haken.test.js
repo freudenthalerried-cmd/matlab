@@ -152,7 +152,7 @@ test('jeder Grund nennt die gestoppte Laufzeit', () => {
   // Ein Grund, der sich auf die Laufzeit beruft, muss die Zahl mitführen —
   // sonst ist er in einem halben Jahr eine Behauptung über einen Rechner,
   // den es nicht mehr gibt.
-  assert.equal(NICHT_IM_HAKEN.length, 9, `${NICHT_IM_HAKEN.length} Ausnahmen`);
+  assert.equal(NICHT_IM_HAKEN.length, 10, `${NICHT_IM_HAKEN.length} Ausnahmen`);
   for (const e of NICHT_IM_HAKEN) {
     assert.equal(typeof e.sekunden, 'number', `${e.pruefer}: keine gestoppte Zeit`);
     assert.ok(e.warum.length >= 80, `${e.pruefer}: der Grund trägt den Verzicht nicht`);
@@ -191,7 +191,7 @@ test('der Schnelllauf nimmt weder die Ausgenommenen noch die schon Gerufenen', (
   const alle = [...PRUEFER, ...BROWSERPRUEFER];
   const namen = new Set(imSchnelllauf(alle).map((p) => p.name));
   assert.ok(namen.size >= 40, `nur ${namen.size} im Schnelllauf`);
-  assert.equal(NICHT_IM_HAKEN.length, 9, 'sonst prüft die Schleife bei leerer Liste nichts');
+  assert.equal(NICHT_IM_HAKEN.length, 10, 'sonst prüft die Schleife bei leerer Liste nichts');
   for (const e of NICHT_IM_HAKEN) {
     assert.equal(namen.has(e.pruefer), false, `${e.pruefer} ist ausgenommen und läuft trotzdem`);
   }

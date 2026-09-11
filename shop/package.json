@@ -12,6 +12,7 @@
     "pruefe-pruefer": "node bin/prueferpruefung.mjs",
     "pruefe-register": "node bin/registerpruefung.mjs",
     "pruefe-entitaet": "node bin/entitaetspruefung.mjs",
+    "pruefe-tagx": "node bin/tagxpruefung.mjs",
     "auswerten": "node bin/auswerten.mjs",
     "suchvolumen": "node bin/suchvolumen.mjs",
     "oberflaechenprobe": "node bin/oberflaechenprobe.mjs",

@@ -3325,6 +3325,21 @@ export const GEGENPROBEN = Object.freeze([
       + 'saß in einer Überschrift, die aus zwei Feldern zusammengesetzt wird — an keinem der '
       + 'beiden Felder wäre er zu sehen gewesen, nur am fertigen Text.',
   }),
+  Object.freeze({
+    id: 'angabe-erreicht-die-entitaet-nicht',
+    pruefer: 'pruefe-tagx',
+    was: 'Die UID des Auftraggebers kommt am Tag X nicht in der Auszeichnung an',
+    datei: 'shop/src/maschinenlesbar.js',
+    art: 'ersetzen',
+    suchen: "  if (hat('uid')) org.vatID = betreiber.uid;",
+    ersetzen: "  if (false) org.vatID = betreiber.uid;",
+    erwartet: /angabe-erreicht-entitaet-nicht/,
+    warum: 'Jeder andere Prüfer dieses Bestandes misst den Zustand von heute — und heute ist '
+      + 'die UID leer, also fällt eine abgeklemmte Zeile nirgends auf. Genau dafür gibt es '
+      + 'diesen Lauf: Er setzt die Angaben ein, die der Auftraggeber noch schuldet, und sieht '
+      + 'nach, ob sie ankommen. Bricht der Weg, merkt es sonst niemand — bis zu dem Tag, an '
+      + 'dem es darauf ankommt.',
+  }),
 ]);
 
 /**
