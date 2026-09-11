@@ -334,14 +334,58 @@ try {
     if (schnitt.status !== 0) {
       probleme.push(`posteingang schneidet nicht heraus: ${(schnitt.stderr || '').trim().slice(0, 200)}`);
     } else {
+      /*
+       * **Dieselbe Betreiberdatei wie der Bau — berichtigt am 11. September.**
+       *
+       * Bis heute baute diese Probe die Seiten mit der Datei des Tages X und
+       * ließ die **Belege** gegen die echte laufen, also gegen eine ohne
+       * E-Mail und ohne UID. Für das Angebot fiel das nicht auf: Es braucht
+       * beides nicht.
+       *
+       * > **Eine Probe mit zwei Ständen desselben Betriebs prüft keinen von
+       * > beiden ganz.**
+       */
+      const werkzeugumgebung = { ...process.env, VORGANG_BETREIBER: betreiberDatei };
       const beleg = spawnSync(process.execPath, [join(SHOP, 'bin', 'vorgang.mjs'),
         join(ziel, 'anfrage.txt'), '--kunde', join(ziel, 'kunde.json'), '--nummer', '2026-9001'],
-      { cwd: SHOP, encoding: 'utf8' });
+      { cwd: SHOP, encoding: 'utf8', env: werkzeugumgebung });
       const aus = `${beleg.stdout ?? ''}${beleg.stderr ?? ''}`;
       if (beleg.status !== 0 || !/Angebot AN-2026-9001/.test(aus)) {
         probleme.push(`aus der Bestellung entsteht kein Beleg: ${aus.trim().split('\n').slice(-4).join(' | ')}`);
       } else {
         bestanden.push('Aus dem Journal entsteht über posteingang und vorgang ein Angebot');
+      }
+
+      /*
+       * **Und das letzte Papier — 11. September 2026.**
+       *
+       * Die Betriebskette führt neun Schritte; das Angebot ist der dritte.
+       * Die Rechnung ist der achte und hat seit heute ein Werkzeug, das aber
+       * an der fehlenden UID des Ausstellers abbricht — zu Recht, denn sie ist
+       * Pflichtangabe nach § 11 Abs 1 Z 6 UStG.
+       *
+       * Mit der Betreiberdatei des Tages X fällt diese Sperre, und damit läuft
+       * die Papierkette zum ersten Mal **ganz** durch: aus einem Klick wird
+       * eine Rechnung. Lieferdatum und Zahlungseingang setzt diese Probe
+       * selbst — in der Welt stellt sie der Betreiber fest, und genau deshalb
+       * sind sie Argumente und keine Vermutung.
+       */
+      const rechnung = spawnSync(process.execPath, [join(SHOP, 'bin', 'vorgang.mjs'),
+        join(ziel, 'anfrage.txt'), '--kunde', join(ziel, 'kunde.json'), '--nummer', '2026-9001',
+        '--stufe', 'rechnung', '--geliefert', '2026-09-09', '--bezahlt', '2026-09-08'],
+      { cwd: SHOP, encoding: 'utf8', env: werkzeugumgebung });
+      const rtext = `${rechnung.stdout ?? ''}${rechnung.stderr ?? ''}`;
+      const pflicht = [
+        [/2026-09-09/, 'das Lieferdatum'],
+        [/20 ?%/, 'der Steuersatz'],
+        [new RegExp(betreiberAmTagX(betreiber).uid), 'die UID des Ausstellers'],
+      ].filter(([muster]) => !muster.test(rtext)).map(([, was]) => was);
+      if (rechnung.status !== 0) {
+        probleme.push(`aus dem Vorgang entsteht keine Rechnung: ${rtext.trim().split('\n').slice(-4).join(' | ')}`);
+      } else if (pflicht.length) {
+        probleme.push(`der Rechnung fehlt: ${pflicht.join(', ')}`);
+      } else {
+        bestanden.push('Am Tag X entsteht aus derselben Bestellung eine Rechnung nach § 11 UStG');
       }
     }
   }
@@ -350,7 +394,7 @@ try {
   // nach dem ersten Schritt abbricht, genauso still aus wie eine bestandene —
   // dieselbe Regel wie im Prüferregister.
   console.log(`Bestellprobe — ${bestanden.length + probleme.length} Prüfungen `
-    + 'von Klick bis Angebot\n');
+    + 'von Klick bis Rechnung\n');
   for (const b of bestanden) console.log(`  ✓ ${b}`);
   console.log('');
   if (probleme.length) {
@@ -358,7 +402,9 @@ try {
     console.log(`\n${probleme.length} Meldung(en). Der Weg vom Klick bis in die Ablage trägt nicht.`);
     process.exit(1);
   }
-  console.log('Der Weg trägt: Klick, Empfangsskript, Ablage, Posteingang, Angebot.');
+  console.log('Der Weg trägt: Klick, Empfangsskript, Ablage, Posteingang, Angebot, Rechnung.');
+  console.log('Die Papierkette läuft ganz durch — was dazwischen in der Welt geschieht');
+  console.log('(Zahlung, Bestellung beim Lieferanten, Lieferung), steht in der Betriebskette.');
 } finally {
   server.kill();
 }

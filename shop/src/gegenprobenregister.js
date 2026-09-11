@@ -3355,6 +3355,21 @@ export const GEGENPROBEN = Object.freeze([
       + 'sobald eine Angabe dazukommt; der Prüfer fragt seither jedes leere Feld der '
       + 'Betreiberdatei, wo es hingehört.',
   }),
+  Object.freeze({
+    id: 'zwei-staende-desselben-betriebs',
+    pruefer: 'bestellprobe',
+    was: 'Die Belege laufen gegen eine andere Betreiberdatei als der Bau',
+    datei: 'shop/bin/bestellprobe.mjs',
+    art: 'ersetzen',
+    suchen: '      const werkzeugumgebung = { ...process.env, VORGANG_BETREIBER: betreiberDatei };',
+    ersetzen: '      const werkzeugumgebung = { ...process.env };',
+    erwartet: /entsteht keine Rechnung|UID/,
+    warum: 'Genau der Zustand bis zum 11. September: Diese Probe baute die Seiten mit der '
+      + 'Betreiberdatei des Tages X und ließ die Belege gegen die echte laufen — eine ohne '
+      + 'E-Mail und ohne UID. Für das Angebot fiel das nicht auf, denn es braucht beides '
+      + 'nicht; die Rechnung bricht sofort ab. Eine Probe mit zwei Ständen desselben Betriebs '
+      + 'prüft keinen von beiden ganz.',
+  }),
 ]);
 
 /**
