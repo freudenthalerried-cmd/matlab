@@ -25,6 +25,7 @@ import { erzeugeBestellungen, darfAutomatischAusgeloestWerden } from '../src/bes
 import { kundenWarenkorb } from '../src/shopkern.js';
 import { baueKundenanfrage, gruppenbefund, pruefeAnfrageAufGeheimnis } from '../src/kundenanfrage.js';
 import { pruefeBelege } from '../src/belegpruefung.js';
+import { absagebefund, gruendeAusQuellen } from '../src/absage.js';
 import { mehrlieferungsbefund, lieferantenzahl } from '../src/lieferungen.js';
 import {
   lieferhinweise, PFLICHTTEXTE, AGB_GLIEDERUNG, DATENSCHUTZ_GLIEDERUNG,
@@ -404,13 +405,30 @@ for (const m of mehr.meldungen) {
   console.log(`      ${m.text}`);
 }
 
+/* ------------------------------------------------------------------ *
+ * Die Absage — 11. September 2026
+ *
+ * Der vierte Beleg dieses Betriebs und der einzige, der **nein** sagt. Seine
+ * Gründe erzeugt der Bestand ohnehin; geprüft wird hier, dass es zu jedem
+ * einen Satz für den Kunden gibt und zu jedem Satz einen Grund, den es
+ * wirklich gibt — gelesen aus dem Quelltext und nicht aufgezählt.
+ * ------------------------------------------------------------------ */
+const absagen = absagebefund(gruendeAusQuellen(
+  (datei) => readFileSync(join(wurzel, datei), 'utf8'),
+));
+console.log(`Absagegründe: ${absagen.geprueft} Sätze gegen die Gründe des Bestandes gehalten.`);
+for (const m of absagen.meldungen) {
+  console.log(`  ✗ ${m.wo} [${m.regel}]`);
+  console.log(`      ${m.text}`);
+}
+
 console.log('');
-if (befund.sauber && mehr.sauber) {
+if (befund.sauber && mehr.sauber && absagen.sauber) {
   console.log('Keine Meldung. Der Text, der beim Kunden ankommt, ist gelesen worden —');
   console.log('nicht nur der Quelltext, aus dem er entsteht.');
   console.log('\nMit --zeigen stehen die Belege vollständig da; gelesen gehören sie trotzdem.');
 } else {
-  console.log(`${befund.meldungen + mehr.meldungen.length} Meldung(en). `
+  console.log(`${befund.meldungen + mehr.meldungen.length + absagen.meldungen.length} Meldung(en). `
     + 'Ein Beleg hat keine Fußnoten — was auf ihm steht, gilt.');
   process.exitCode = 1;
 }

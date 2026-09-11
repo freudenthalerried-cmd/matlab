@@ -329,3 +329,36 @@ test('dieselbe Belegnummer kommt kein zweites Mal in die Akte',
     assert.notEqual(zweit.code, 0, `zweimal dieselbe Nummer durchgelassen:\n${zweit.aus}`);
     assert.match(zweit.aus, /AN-2026-0107 steht schon in der Ablage/);
   });
+
+/* ------------------------------------------------------------------ *
+ * Die dritte Stufe: die Absage (11. September 2026)
+ *
+ * Der Betrieb konnte drei Dinge schreiben, und alle drei sagten ja. Für das
+ * Nein gab es nichts — obwohl `darfVorgangLaufen` die Gründe einzeln aufzählt,
+ * in der Sprache des Betriebs.
+ * ------------------------------------------------------------------ */
+
+test('--stufe absage schreibt den Brief an den Kunden', { skip: !vorhanden && 'preise/ fehlt' }, () => {
+  const u = baueUmgebung();
+  const e = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0100',
+    '--stufe', 'absage']);
+  assert.equal(e.code, 0, e.aus);
+  assert.match(e.aus, /Zu Ihrer Anfrage 2026-0100/);
+  assert.match(e.aus, /Musterbau GmbH/);
+  assert.match(e.aus, /nicht zustande gekommen/);
+  // Die beiden gemessenen Lecks: eine Gate-Nummer und der Name des
+  // Lieferanten. Beide stehen in den internen Gründen, und keiner darf in
+  // einer Kundenmail landen.
+  assert.ok(!e.aus.includes('Gate '), `eine Gate-Nummer in der Absage:\n${e.aus}`);
+  assert.ok(!e.aus.includes('Poschacher'), `der Lieferantenname in der Absage:\n${e.aus}`);
+  // Und sie sagt trotzdem, warum.
+  assert.match(e.aus, /Liefertermin|Zahlungsweg|Unternehmer/);
+});
+
+test('eine unbekannte Stufe wird abgewiesen', { skip: !vorhanden && 'preise/ fehlt' }, () => {
+  const u = baueUmgebung();
+  const e = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0101',
+    '--stufe', 'gutschrift']);
+  assert.notEqual(e.code, 0);
+  assert.match(e.aus, /absage/);
+});

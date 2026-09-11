@@ -4,6 +4,7 @@
  *
  *   npm run vorgang -- anfrage.txt --kunde ../kunden/mueller.json
  *   npm run vorgang -- anfrage.txt --kunde … --stufe bestaetigung
+ *   npm run vorgang -- anfrage.txt --kunde … --stufe absage
  *
  * **Der Anlass, 3. September 2026.** Seit heute früh liest `npm run
  * anfrage-lesen` die Anfrage zurück, statt sie abtippen zu lassen — drei
@@ -58,6 +59,8 @@ import { kundenWarenkorb, oeffentlicherArtikel, oeffentlicherLieferant } from '.
 import { ladeBaustoffkatalog, ZIELMARGE } from '../src/baustoffkatalog.js';
 import { berechneWarenkorb } from '../src/warenkorb.js';
 import { baueVorgang, darfVorgangLaufen } from '../src/vorgang.js';
+import { absagegruende, erzeugeAbsage } from '../src/absage.js';
+import { findeInterna } from '../src/interna.js';
 import { pruefeBelege } from '../src/belegpruefung.js';
 import { pruefeAblageAufDrittdaten } from '../src/kontrolle.js';
 import { EUR } from '../src/format.js';
@@ -133,9 +136,9 @@ if (!nummer) {
     'Sie klammert Angebot, Bestätigung und Rechnung. Zweimal dieselbe Nummer ist\n'
     + 'derselbe Vorgang; eine selbst gezogene wäre bei jedem Ausdruck eine neue.');
 }
-if (!['angebot', 'bestaetigung'].includes(stufe)) {
+if (!['angebot', 'bestaetigung', 'absage'].includes(stufe)) {
   abbruch(`Unbekannte Stufe „${stufe}".`,
-    'Möglich sind „angebot" und „bestaetigung". Die Rechnung entsteht hier nicht:\n'
+    'Möglich sind „angebot", „bestaetigung" und „absage". Die Rechnung entsteht hier nicht:\n'
     + 'Sie braucht Lieferdatum und Zahlungseingang, und beides ist kein Kommandozeilenwert,\n'
     + 'sondern ein Vorgang, den niemand aus einer Anfrage ableiten kann.');
 }
@@ -222,6 +225,60 @@ const vorgang = baueVorgang({
   datum,
 });
 
+/*
+ * **Die dritte Stufe: die Absage — 11. September 2026.**
+ *
+ * Der Betrieb konnte drei Dinge schreiben, und alle drei sagten **ja**:
+ * Angebot, Auftragsbestätigung, Rechnung. Für das Nein gab es nichts, obwohl
+ * der Bestand genau weiß, wann es eintritt — `darfVorgangLaufen` zählt die
+ * Gründe einzeln auf. Nur stehen sie in der Sprache des Betriebs, denn sie
+ * sind für diese Konsole geschrieben: „…(Gate 7)", „Lieferzeit unbekannt
+ * (<Lieferantenname>)". Gemessen an `findeInterna` tragen **zwei von neun**
+ * ein Internum.
+ *
+ * > **Eine Absage, die es nur in der Sprache des Betriebs gibt, wird in der
+ * > Sprache des Betriebs verschickt.**
+ *
+ * Sie ist eine eigene Stufe und nicht die Nebenwirkung einer Sperre: Ob ein
+ * Kunde ein Angebot oder eine Absage bekommt, entscheidet der Betreiber und
+ * nicht der Zustand einer Prüfung. Ein Vorgang, der noch nicht bis zur
+ * Bestätigung laufen darf, ist ja oft genau der, für den ein **Angebot** das
+ * Richtige ist.
+ */
+if (stufe === 'absage') {
+  const ganzeLage = darfVorgangLaufen(vorgang);
+  const gruende = [...ganzeLage.gruende, ...vorgang.kundenpruefung.fehler];
+  if (!gruende.length) {
+    console.error('\nAbbruch: Es gibt keinen Grund für eine Absage — der Vorgang läuft.');
+    console.error('Eine Absage ohne Grund ist keine Absage, sondern eine Unhöflichkeit.');
+    process.exit(1);
+  }
+  const uebersetzt = absagegruende(gruende);
+  if (!uebersetzt.vollstaendig) {
+    console.error('\nAbbruch: Für diese Gründe gibt es keinen Satz an den Kunden:');
+    for (const g of uebersetzt.ohneSatz) console.error(`  · ${g}`);
+    console.error('Eine Absage, die einen Grund weglässt, sagt nicht, warum sie absagt.');
+    process.exit(1);
+  }
+  const absage = erzeugeAbsage({
+    nummer, datum, kunde: vorgang.kundendaten ?? lies(kundeDatei), betreiber, gruende,
+  });
+  // Derselbe Prüfer, der über jede gebaute Seite läuft — nur dass ihn eine
+  // Mail bisher nie gesehen hat.
+  const leck = findeInterna(absage.text);
+  if (leck.length) {
+    console.error('\nAbbruch: Die Absage trägt ein Internum — nichts ausgegeben.');
+    for (const l of leck) console.error(`  · ${l.text ?? JSON.stringify(l)}`);
+    process.exit(1);
+  }
+  console.log(`\n${'—'.repeat(72)}\n`);
+  console.log(absage.text);
+  console.log(`\n${'—'.repeat(72)}`);
+  console.log('\nDie Absage nennt keinen Betrag und keine Position: Was abgesagt wird,');
+  console.log('steht in der Anfrage des Kunden.');
+  process.exit(0);
+}
+
 const beleg = stufe === 'angebot' ? vorgang.angebot : vorgang.bestaetigung;
 const art = stufe === 'angebot' ? 'Angebot' : 'Auftragsbestätigung';
 
@@ -269,6 +326,7 @@ const ganz = darfVorgangLaufen(vorgang);
 if (!ganz.erlaubt) {
   console.log('\nDer Vorgang als Ganzes läuft noch nicht:');
   for (const g of ganz.gruende) console.log(`  · ${g}`);
+  console.log('Mit `--stufe absage` entsteht daraus der Brief an den Kunden.');
 }
 
 if (!befund.sauber) {

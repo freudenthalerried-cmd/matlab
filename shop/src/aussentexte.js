@@ -70,6 +70,10 @@ export const AUSGAENGE = Object.freeze([
   Object.freeze({ modul: 'src/beleg.js', funktion: 'erzeugeAngebot', an: 'Kunde', form: 'Zeilentext' }),
   Object.freeze({ modul: 'src/beleg.js', funktion: 'erzeugeAuftragsbestaetigung', an: 'Kunde', form: 'Zeilentext' }),
   Object.freeze({ modul: 'src/beleg.js', funktion: 'erzeugeRechnung', an: 'Kunde', form: 'Zeilentext' }),
+  // **Ergänzt am 11. September.** Der vierte Beleg — und der einzige, der nein
+  // sagt. Er setzt die Anschrift des Kunden ein und die Gründe aus einem
+  // Register; die Gründe selbst kommen aus dem Bestand und nicht von außen.
+  Object.freeze({ modul: 'src/absage.js', funktion: 'erzeugeAbsage', an: 'Kunde', form: 'Zeilentext' }),
   Object.freeze({ modul: 'src/bestellung.js', funktion: 'erzeugeBestellungen', an: 'Lieferant', form: 'Zeilentext und CSV' }),
   Object.freeze({ modul: 'src/format.js', funktion: 'jsonFuerSkript', an: 'jeder Besucher', form: 'JSON in einem Skriptelement' }),
   Object.freeze({ modul: 'src/lieferantenanfrage.js', funktion: 'erzeugeLieferantenanfrage', an: 'Lieferant', form: 'Brieftext' }),

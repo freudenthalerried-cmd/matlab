@@ -2973,6 +2973,35 @@ export const GEGENPROBEN = Object.freeze([
       + 'derselben Bestellung immer zwei verschiedene Abdrücke. Der Code sähe vollständig '
       + 'aus, die Sperre griffe nie. Die Mutation nimmt die Nummer wieder hinein.',
   }),
+  Object.freeze({
+    id: 'absage-in-der-sprache-des-betriebs',
+    pruefer: 'test',
+    was: 'Eine Absage, die den internen Grund im Original an den Kunden schickt',
+    datei: 'shop/src/absage.js',
+    art: 'ersetzen',
+    suchen: '    kunde: \'Wir verkaufen ausschließlich an Unternehmer. Ihre Bestellung enthält keine \'',
+    ersetzen: '    kunde: \'Unternehmerstatus nicht bestätigt (Gate 7). Ihre Bestellung enthält keine \'',
+    erwartet: /Gate-Nummer in|Internum|kommen nicht im Original hinaus/,
+    warum: 'Der Kern des Befundes vom 11. September: Von neun internen Absagegründen tragen '
+      + 'zwei ein Internum — eine Gate-Nummer und den Namen des Lieferanten. Die Mutation '
+      + 'schreibt die Gate-Nummer in den Satz für den Kunden; rot wird dann die Probe, die '
+      + 'den fertigen Brief durch `findeInterna` schickt. Ohne sie wäre die Übersetzung eine '
+      + 'Absichtserklärung.',
+  }),
+  Object.freeze({
+    id: 'grund-ohne-satz-faellt-weg',
+    pruefer: 'test',
+    was: 'Ein Absagegrund, für den es keinen Satz gibt und der stillschweigend verschwindet',
+    datei: 'shop/src/absage.js',
+    art: 'ersetzen',
+    suchen: "    if (!treffer) { ohneSatz.push(String(g)); continue; }",
+    ersetzen: '    if (!treffer) { continue; }',
+    erwartet: /unübersetzt|ohneSatz|ohne Satz/,
+    warum: 'Die stille Art, dieses Modul unbrauchbar zu machen: Ein Grund ohne Satz fällt weg, '
+      + 'die Absage entsteht trotzdem — und sagt dann nicht, warum sie absagt. Der Kunde liest '
+      + 'einen von zwei Gründen und hält den zweiten für erledigt. Die Mutation lässt das '
+      + 'Weglassen zu; rot werden muss der Fall, der einen unbekannten Grund hineingibt.',
+  }),
 ]);
 
 /**

@@ -28,6 +28,7 @@ import { pruefeBestelldaten, baueAuftrag } from '../src/kunde.js';
 import { erzeugeBestellungen } from '../src/bestellung.js';
 import { erzeugeAngebot, erzeugeRechnung, erzeugeAuftragsbestaetigung } from '../src/beleg.js';
 import { erzeugeRechtstexteauftrag } from '../src/rechtstexteauftrag.js';
+import { erzeugeAbsage } from '../src/absage.js';
 import { kundenWarenkorb } from '../src/shopkern.js';
 import { baueKundenanfrage, mailtoWeg } from '../src/kundenanfrage.js';
 import { erzeugeImpressum } from '../src/rechtstexte.js';
@@ -236,6 +237,25 @@ const belegPaar = (erzeuge) => {
 test('Ausgang Angebot: Gift erzeugt keine zusätzliche Zeile', () => {
   const [harmlos, giftig] = belegPaar(erzeugeAngebot);
   assert.equal(zeilen(giftig.text), zeilen(harmlos.text));
+});
+
+/*
+ * **Ausgang Absage — 11. September 2026.** Der vierte Beleg an den Kunden und
+ * der einzige, der nein sagt. Er setzt die Anschrift ein wie die anderen drei;
+ * eine untergeschobene Zeile darin verschöbe die Begründung.
+ */
+test('Ausgang Absage: Gift erzeugt keine zusätzliche Zeile', () => {
+  const feld = {
+    nummer: 'B-2026-0001',
+    datum: '2026-09-11',
+    betreiber,
+    gruende: ['Keine UID-Nummer hinterlegt'],
+  };
+  const harmlos = erzeugeAbsage({ ...feld, kunde: harmloserKunde });
+  const giftig = erzeugeAbsage({ ...feld, kunde: giftigerKunde });
+  assert.equal(zeilen(giftig.text), zeilen(harmlos.text));
+  // Und die Begründung bleibt an ihrem Platz.
+  assert.match(giftig.text, /UID-Nummer/);
 });
 
 test('Ausgang Rechnung: Gift erzeugt keine zusätzliche Zeile', () => {
