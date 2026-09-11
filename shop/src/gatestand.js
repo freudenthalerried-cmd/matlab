@@ -75,6 +75,16 @@ export function gatesAusRegister(text) {
  */
 export const SPUREN = Object.freeze([
   Object.freeze({
+    gate: 38,
+    datei: 'shop/haken/pre-commit',
+    muster: /schnelllauf\.mjs/,
+    warum: 'Was unter einer Sekunde bleibt, läuft vor jedem Commit. Die Entscheidung steckt in '
+      + 'dieser einen Zeile des Hakens: Ohne sie liefen wieder vier von fünfundfünfzig Prüfern, '
+      + 'und drei rote blieben siebzehn Tage lang rot, ohne einen einzigen Commit aufzuhalten — '
+      + 'gemessen am 11. September. Nähme jemand Gate 38 zurück, sagte das Register in '
+      + '`src/haken.js` weiter, es seien dreiundvierzig mehr.',
+  }),
+  Object.freeze({
     gate: 37,
     datei: 'shop/bestellung.php',
     muster: /DOPPELFENSTER/,
