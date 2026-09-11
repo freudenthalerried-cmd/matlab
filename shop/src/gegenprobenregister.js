@@ -369,10 +369,14 @@ export const GEGENPROBEN = Object.freeze([
     id: 'fehlerseite-ohne-auslieferung',
     pruefer: 'test',
     was: 'Eine Fehlerseite, die im Ordner liegt und die niemand ausliefert',
-    datei: 'shop/bin/website.mjs',
+    // **Nachgezogen am 11. September**, mit dem Umzug der `.htaccess` nach
+    // `src/serverkopf.js`. Der Suchtext stand im Seitenbauwerkzeug und traf
+    // dort nichts mehr — der Testfall „Jeder Suchtext trifft genau die Stelle,
+    // die gemeint ist" hat es sofort gesagt.
+    datei: 'shop/src/serverkopf.js',
     art: 'ersetzen',
-    suchen: "    + `ErrorDocument 404 /${FEHLERSEITE}.html\\n`, 'utf8');",
-    ersetzen: "    + 'ErrorDocument 404 /fehler.html\\n', 'utf8');",
+    suchen: "    `ErrorDocument 404 /${fehlerseite}.html`,",
+    ersetzen: "    'ErrorDocument 404 /fehler.html',",
     erwartet: /zeigt auf \/fehler\.html/,
     baueVorher: true,
     warum: 'Die Fehlerseite wird nur ausgeliefert, weil `.htaccess` sie dem Server nennt. Wer '
@@ -2920,6 +2924,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'Drei Auskünfte über den eigenen Vorgang, die nur zu sehen und nicht zu hören waren. '
       + 'Die Mutation nimmt eine der drei Rollen heraus und lässt die anderen stehen: So ist '
       + 'sichtbar, dass die Probe die Rolle misst und nicht das Erscheinen des Absatzes.',
+  }),
+  Object.freeze({
+    id: 'kopfzeilen-ohne-ifmodule',
+    pruefer: 'pruefe-kopfzeilen',
+    was: 'Serverkopfzeilen ohne den Rahmen, der ein fehlendes Modul abfängt',
+    datei: 'shop/src/serverkopf.js',
+    art: 'ersetzen',
+    baueVorher: true,
+    suchen: "    '<IfModule mod_headers.c>',",
+    ersetzen: "    '# ohne Rahmen',",
+    erwartet: /ohne-modul-kaputt|<IfModule> trägt|500/,
+    warum: 'Am 11. September an einem laufenden Apache gemessen: Eine Direktive, deren Modul '
+      + 'fehlt, beantwortet Apache mit **500 für die ganze Seite** — dieselbe Zeile in einem '
+      + '`<IfModule>` mit 200. Genau diese Gefahr war bis dahin der Grund, gar keine '
+      + 'Kopfzeilen zu schreiben. Die Mutation nimmt den Rahmen heraus und lässt die Zeilen '
+      + 'stehen; rot wird dann die Hälfte des Prüfers, die **ohne** mod_headers misst — die '
+      + 'andere bleibt grün, denn mit Modul wirken die Zeilen ja.',
   }),
 ]);
 

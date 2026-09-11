@@ -75,6 +75,16 @@ export function gatesAusRegister(text) {
  */
 export const SPUREN = Object.freeze([
   Object.freeze({
+    gate: 36,
+    datei: 'shop/src/serverkopf.js',
+    muster: /<IfModule mod_headers\.c>/,
+    warum: 'Vier Sicherheitskopfzeilen gehen mit dem Auslieferungsordner hinaus, und zwar in '
+      + 'einer Klammer, die ein fehlendes Modul abfängt. Die Entscheidung steckt in genau '
+      + 'dieser Klammer: Ohne sie beantwortet Apache eine Direktive für ein fehlendes Modul '
+      + 'mit 500 für die ganze Seite — gemessen am 11. September. Nähme jemand Gate 36 '
+      + 'zurück, stünde die `.htaccess` wieder bei ihrer einen Zeile.',
+  }),
+  Object.freeze({
     gate: 35,
     datei: 'shop/bestellung.php',
     muster: /HOECHSTENJEFENSTER/,

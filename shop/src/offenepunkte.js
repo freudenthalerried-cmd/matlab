@@ -124,6 +124,25 @@ export const OHNE_WERKZEUG = Object.freeze([
      * aufgeschrieben; sonst steht die Entscheidung da, als wäre sie
      * vollständig.
      */
+    /*
+     * **Neu am 11. September, aus Gate 36.** Vier Sicherheitskopfzeilen gehen
+     * seit heute mit; die bekannteste fehlt und wird auch nicht kommen,
+     * solange niemand das Zertifikat gesehen hat.
+     */
+    id: 'hsts',
+    titel: 'HSTS für bauversand.com entscheiden',
+    zustaendig: 'entscheidung',
+    warumKeinWerkzeug: 'HSTS ist ein Versprechen an den Browser, das sich für die Dauer seiner '
+      + '`max-age` nicht zurücknehmen lässt: Wer es setzt und danach kein gültiges Zertifikat '
+      + 'hat, sperrt seine eigenen Kunden aus — und kann es nicht rückgängig machen. Ob '
+      + 'bauversand.com über HTTPS erreichbar ist, lässt sich von hier nicht sehen; der '
+      + 'Netzausgang dieser Umgebung ist für die Adresse gesperrt. Eine unumkehrbare Zusage '
+      + 'über etwas, das niemand gesehen hat, macht dieser Bestand nicht.',
+    loest: 'Schließt die einzige Lücke der vier Kopfzeilen aus Gate 36. Zu tun ist es erst, '
+      + 'wenn die Seite steht und das Zertifikat gilt — dann eine Zeile in derselben '
+      + '`<IfModule>`-Klammer, in der die anderen vier schon stehen.',
+  },
+  {
     id: 'flut-je-adresse',
     titel: 'Schutz gegen eine langsame Flut auf den Bestellweg',
     zustaendig: 'entscheidung',

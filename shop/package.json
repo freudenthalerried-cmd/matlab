@@ -78,6 +78,7 @@
     "paket": "node bin/paket.mjs",
     "pruefe-paket": "node bin/paketpruefung.mjs",
     "pruefe-zwillinge": "node bin/zwillingspruefung.mjs",
+    "pruefe-kopfzeilen": "node bin/kopfzeilenpruefung.mjs",
     "preise-wiederherstellen": "node bin/preiswiederherstellung.mjs",
     "pruefe-vorbehalte": "node bin/vorbehaltspruefung.mjs",
     "pr-text": "node bin/prtext.mjs",

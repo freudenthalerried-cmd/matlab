@@ -132,6 +132,32 @@ export function abnahmeplan({ ausgabe, marke }) {
     });
   }
 
+  /*
+   * **Die Kopfzeilen — 11. September 2026.** Sie sind der eine Punkt, den kein
+   * Blick auf eine Seite zeigt: Er steht im **Antwortkopf** und nicht im Text.
+   * Deshalb das Feld `kopf` — ohne es läse die Zeile „muss enthalten:
+   * X-Content-Type-Options", und der Leser suchte im Seitentext danach.
+   *
+   * Gemessen ist hier nur, dass die Zeile in der `.htaccess` steht, die
+   * hochgeladen wird. Ob der Server sie befolgt, zeigt erst der Server — und
+   * genau dafür ist diese Liste da.
+   */
+  if (nimm('.htaccess') !== undefined) {
+    punkte.push({
+      id: 'kopfzeilen',
+      pfad: '/',
+      datei: '.htaccess',
+      kopf: true,
+      erwartet: 'X-Content-Type-Options',
+      warum: 'Im Browser mit F12 auf „Netzwerk", die Seite neu laden, die erste Zeile '
+        + 'anklicken und unter „Antwortkopfzeilen" nachsehen. Fehlen sie, hat der Hoster '
+        + 'mod_headers nicht — die Seite läuft dann trotzdem, das ist gemessen. Fehlt '
+        + 'dagegen auch die eigene Fehlerseite aus Punkt 2, ist die .htaccess gar nicht '
+        + 'hochgeladen: Sie beginnt mit einem Punkt, und viele Programme zeigen solche '
+        + 'Dateien nicht an.',
+    });
+  }
+
   const artikel = Object.keys(ausgabe).find((p) => p.startsWith('artikel/') && p.endsWith('.html'));
   if (artikel) {
     punkte.push({

@@ -66,6 +66,7 @@ import {
   oeffentlicherArtikel, oeffentlicherLieferant, vorteil, ustText, KORBSCHLUESSEL, HOECHSTMENGE,
 } from '../src/shopkern.js';
 import { LIEFERGEBIET } from '../src/liefergebiet.js';
+import { htaccessText } from '../src/serverkopf.js';
 import { zahlwegName } from '../src/zahlung.js';
 import { fracht } from '../src/preis.js';
 import { lesKopf, alsHtml, alsText, alsListe, esc } from '../src/markdown.js';
@@ -2934,14 +2935,19 @@ function main() {
    * kennt sie nicht und zeigt seine eigene Seite. *Eine Fehlerseite, die
    * niemand ausliefert, ist eine Datei.*
    *
-   * Bewusst nur diese eine Anweisung. Was hier sonst noch stünde —
-   * Weiterleitungen, Kompression, Kopfzeilen — wäre eine Serverkonfiguration
-   * ohne Prüfung: Von hier aus lässt sich nicht messen, ob sie wirkt — für
-   * bauversand.com ist der Netzausgang dieser Umgebung gesperrt.
+   * **Bis zum 11. September bewusst nur diese eine Anweisung.** Der Grund stand
+   * hier: *„Was hier sonst noch stünde — Weiterleitungen, Kompression,
+   * Kopfzeilen — wäre eine Serverkonfiguration ohne Prüfung: Von hier aus
+   * lässt sich nicht messen, ob sie wirkt."*
+   *
+   * Die Begründung war richtig und ist es nicht mehr: Ein Apache lässt sich in
+   * dieser Umgebung starten, und damit ist beides messbar — dass die
+   * Kopfzeilen ankommen **und** dass ein fehlendes Modul die Seite nicht
+   * umbringt. Der Inhalt und die Gründe je Zeile stehen in
+   * `src/serverkopf.js`; `npm run pruefe-kopfzeilen` hält sie gegen einen
+   * laufenden Apache.
    */
-  writeFileSync(join(site, '.htaccess'),
-    '# Von `npm run website` erzeugt. Änderungen hier gehen beim nächsten Bau verloren.\n'
-    + `ErrorDocument 404 /${FEHLERSEITE}.html\n`, 'utf8');
+  writeFileSync(join(site, '.htaccess'), htaccessText(FEHLERSEITE), 'utf8');
   /*
    * **Die Interna-Prüfung am Erzeugnis — 10. September 2026.**
    *

@@ -116,6 +116,8 @@ export const KEIN_AUSGANG = Object.freeze([
    * Zeile an ein Dokument, das im Verzeichnis oben steht, oder an eine
    * Oberfläche, die sie als Text und nicht als Markup setzt. Zwei enden nur
    * zufällig auf diese Buchstaben. */
+  // **Ergänzt am 11. September**, mit den Serverkopfzeilen.
+  Object.freeze({ funktion: 'htaccessText', warum: 'Baut die `.htaccess` des Auslieferungsordners aus einem eingefrorenen Register — vier Kopfzeilen und der Name der Fehlerseite. Sie nimmt keine Zeichenkette von außen entgegen, sondern einen Dateinamen aus dem eigenen Bau; ein Empfänger ist sie auch nicht: Was sie liefert, liest der Webserver und kein Mensch. `npm run pruefe-kopfzeilen` hält das Ergebnis an einem laufenden Apache.' }),
   Object.freeze({ funktion: 'entfallensatz', warum: 'Baut den Hinweis über Positionen, die nicht mehr im Katalog stehen. Die Kennungen darin kommen aus dem Browserspeicher des Besuchers, also von außen — die Oberfläche setzt den Satz über `textContent` und nicht als Markup, damit eine erfundene Kennung Text bleibt und keine Marke wird.' }),
   Object.freeze({ funktion: 'systembruchsatz', warum: 'Baut den Hinweis, dass ein Warenkorb Schichten aus zwei Wärmedämmverbundsystemen mischt. Systemnamen und Rollen stammen aus dem eigenen Katalog; der Satz geht in die Hinweisliste des Warenkorbs und wird dort als Text gesetzt, nicht als Markup.' }),
   Object.freeze({ funktion: 'abholungssatz', warum: 'Baut die Antwort auf „Kann ich selbst abholen?" aus einem Feld der eigenen Lieferantendatei. Er geht ausschließlich über das Seitenbauwerkzeug hinaus und läuft dort durch dieselbe Entschärfung wie jeder andere eingesetzte Wert.' }),

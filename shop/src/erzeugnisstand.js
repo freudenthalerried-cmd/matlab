@@ -97,6 +97,11 @@ export const LESER = Object.freeze([
   // er einem Paket von gestern, dass es zum Bau von gestern passt — richtig und
   // nutzlos.
   Object.freeze({ werkzeug: 'bin/paketpruefung.mjs', erzeugnis: 'ausgabe/site' }),
+  // **Ergänzt am 11. September.** Der Kopfzeilenprüfer stellt einen Apache
+  // über genau diesen Ordner und misst, was er ausliefert. Läuft er gegen ein
+  // veraltetes Erzeugnis, bescheinigt er einer `.htaccess` von gestern, dass
+  // sie zum Bau von gestern passt — richtig und nutzlos.
+  Object.freeze({ werkzeug: 'bin/kopfzeilenpruefung.mjs', erzeugnis: 'ausgabe/site' }),
   Object.freeze({ werkzeug: 'bin/verweispruefung.mjs', erzeugnis: 'ausgabe/site' }),
   // **Seit dem 8. September, nachts.** Der Prüfer liest zusätzlich
   // `ausgabe/site/llms.txt` — er hält die Zahl der nicht geführten Positionen

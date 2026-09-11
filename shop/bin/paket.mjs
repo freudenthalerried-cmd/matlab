@@ -13,7 +13,7 @@
  * Dieses Werkzeug schreibt ein ZIP ohne Kompression und ohne fremde
  * Bibliothek, legt die **Abnahmeliste** als Textdatei dazu und ein
  * Inhaltsverzeichnis mit Prüfsummen. Wer das Archiv auspackt, hat den ganzen
- * Shop und die acht Punkte, an denen sich nach dem Hochladen zeigt, ob er
+ * Shop und die Punkte, an denen sich nach dem Hochladen zeigt, ob er
  * wirklich ausgeliefert wird.
  *
  * **Was es nicht tut:** hochladen. Für bauversand.com ist der Netzausgang
@@ -93,12 +93,13 @@ const abnahme = [
   `Abnahme nach dem Hochladen — ${punkte.length} Punkte`,
   `Ziel: ${BASIS || '[[ Domain fehlt in data/betreiber.json ]]'}`,
   '',
-  'Jeden Punkt im Browser aufrufen und nachsehen, ob der genannte Text darin steht.',
+  'Jeden Punkt im Browser aufrufen und nachsehen, ob der genannte Text da ist —',
+  'im Seitentext, oder beim einen Punkt, der es sagt, im Antwortkopf.',
   'Schlaegt einer fehl, ist die Datei nicht ausgeliefert oder falsch ausgeliefert.',
   '',
   ...punkte.flatMap((p, i) => [
     `${String(i + 1).padStart(2)}. ${BASIS}${p.pfad}`,
-    `    muss enthalten: ${p.erwartet}`,
+    p.kopf ? `    muss im Antwortkopf stehen: ${p.erwartet}` : `    muss enthalten: ${p.erwartet}`,
     `    ${p.warum}`,
     '',
   ]),
@@ -132,4 +133,7 @@ console.log(`  SHA-256 des Archivs: ${summe(archiv)}`);
 console.log('');
 console.log('Hochgeladen wird der **Inhalt** von site/ in das Webverzeichnis — nicht der');
 console.log('Ordner site/ selbst, sonst liegt der Shop unter /site/ statt unter /.');
-console.log('Danach die acht Punkte aus ABNAHME.txt im Browser durchgehen.');
+// **Die Zahl kommt aus der Liste — 11. September.** Hier stand „die acht
+// Punkte", und mit dem neunten wurde der Satz falsch. Eine Zahl, die einen
+// Bestand nennt und von Hand dasteht, ist die nächste, die veraltet.
+console.log(`Danach die ${punkte.length} Punkte aus ABNAHME.txt im Browser durchgehen.`);

@@ -473,6 +473,20 @@ export const PRUEFER = [
      * und nicht die geführten Zahlen: Ein Eintrag, dessen Vorkommen alle
      * verschwinden, fiele bei einer Zählung der Einträge nicht auf.
      */
+    /*
+     * **Aufgenommen am 11. September.** Er braucht einen Apache und weigert
+     * sich ohne einen — in einer Umgebung ohne ihn steht er als Abbruch da,
+     * und das ist die ehrliche Anzeige: Eine Serverkonfiguration, die kein
+     * Server gelesen hat, ist eine Behauptung. Gezählt werden die Kopfzeilen,
+     * nicht die Läufe.
+     */
+    name: 'pruefe-kopfzeilen',
+    werkzeug: 'kopfzeilenpruefung.mjs',
+    muster: /Kopfzeilenprobe: (\d+) Kopfzeilen/,
+    einheit: 'Kopfzeilen an einem Apache gemessen',
+    mindestens: 3,
+  },
+  {
     name: 'pruefe-zwillinge',
     werkzeug: 'zwillingspruefung.mjs',
     muster: /Zwillingsabgleich: (\d+) Fundstellen/,

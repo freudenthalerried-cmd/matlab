@@ -18,12 +18,17 @@ const minimal = () => ({
   'shop.js': 'window.__SHOP__={};',
   'llms.txt': 'Liefergebiet: Perg',
   'artikel/A-1.html': '<script src="../shop.js"></script>',
+  // **Seit dem 11. September Teil der Vorlage.** Die Kopfzeilen sind der eine
+  // Punkt, der nicht im Seitentext steht, sondern im Antwortkopf — die Liste
+  // führt ihn, sobald die Datei mitgeht.
+  '.htaccess': 'ErrorDocument 404 /404.html\nHeader always set X-Content-Type-Options "nosniff"\n',
 });
 
 test('aus einem vollständigen Ausgabeordner entsteht die volle Liste', () => {
   const punkte = abnahmeplan({ ausgabe: minimal(), marke: 'Bauversand' });
   assert.deepEqual(punkte.map((p) => p.id).sort(), [
-    'fehlerseite', 'fehlerseite-tief', 'llms', 'robots', 'sitemap', 'skript', 'startseite', 'tiefe-seite',
+    'fehlerseite', 'fehlerseite-tief', 'kopfzeilen', 'llms', 'robots', 'sitemap', 'skript',
+    'startseite', 'tiefe-seite',
   ]);
 });
 
