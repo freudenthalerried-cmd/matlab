@@ -3340,6 +3340,21 @@ export const GEGENPROBEN = Object.freeze([
       + 'nach, ob sie ankommen. Bricht der Weg, merkt es sonst niemand — bis zu dem Tag, an '
       + 'dem es darauf ankommt.',
   }),
+  Object.freeze({
+    id: 'zweite-liste-fuer-denselben-tag',
+    pruefer: 'pruefe-tagx',
+    was: 'Ein leeres Feld der Betreiberdatei steht in keiner der beiden Listen',
+    datei: 'shop/src/tagx.js',
+    art: 'ersetzen',
+    suchen: "    feld: 'antwortzeitWerktage',",
+    ersetzen: "    feld: 'antwortzeitInWerktagen',",
+    erwartet: /leeres-feld-ohne-platz|angabe-ohne-feld/,
+    warum: 'Genau der Zustand vom 11. September: `bin/bestellprobe.mjs` führte eine zweite '
+      + 'Liste für denselben Tag X — drei Felder gegen sechs, und die zugesagte Antwortzeit '
+      + 'stand nur in der kleineren. Zwei Listen über denselben Tag sind zwei Antworten, '
+      + 'sobald eine Angabe dazukommt; der Prüfer fragt seither jedes leere Feld der '
+      + 'Betreiberdatei, wo es hingehört.',
+  }),
 ]);
 
 /**

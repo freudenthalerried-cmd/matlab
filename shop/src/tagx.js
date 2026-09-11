@@ -82,6 +82,22 @@ export const OFFENE_ANGABEN = Object.freeze([
       + 'Angabe kostet Geld und steht deshalb in einem anderen offenen Punkt als die vier '
       + 'darüber.',
   }),
+  /*
+   * **Die sechste, gefunden am 11. September durch eine zweite Liste.**
+   * `bin/bestellprobe.mjs` baute sich seit dem 4. September eine eigene
+   * Betreiberdatei für denselben Tag X — mit **drei** Feldern, und eines davon
+   * stand hier nicht. Zwei Listen über denselben Tag, und keine kannte die
+   * andere.
+   */
+  Object.freeze({
+    feld: 'antwortzeitWerktage',
+    probe: 2,
+    sichtbarIn: Object.freeze(['oberflaeche']),
+    warum: 'Die einzige Zusage, die der Shop über den eigenen Betrieb macht: „Wir melden uns '
+      + 'innerhalb von N Werktagen." Sie geht mit den Betreiberdaten in `shop.js` und steht '
+      + 'nach dem Absenden in der Rückmeldung. Ohne sie verspricht die Kasse eine Antwort '
+      + 'ohne Zeit — und eine Zusage über den eigenen Betrieb ist teurer als eine falsche Zahl.',
+  }),
   Object.freeze({
     feld: 'gewerbewortlaut',
     probe: 'Handelsgewerbe mit Baustoffen',
@@ -90,6 +106,94 @@ export const OFFENE_ANGABEN = Object.freeze([
       + 'Impressum und nirgends sonst — in der Entität hat er kein Feld.',
   }),
 ]);
+
+/**
+ * Leere Felder der Betreiberdatei, die im **Bau** nichts bewirken — jedes mit
+ * dem Grund.
+ *
+ * Ohne diese Liste hätte die Prüfung zwei Möglichkeiten, und beide wären
+ * falsch: jedes leere Feld im Bau zu suchen (dann scheitert sie an
+ * Bestätigungen über die Welt) oder nur die aufzuzählen, die schon geführt
+ * werden (dann wächst die Betreiberdatei ungeprüft weiter).
+ */
+export const OHNE_BAUWIRKUNG = Object.freeze([
+  Object.freeze({
+    feld: 'zahlungsanbieter',
+    warum: 'Eine Entscheidung des Auftraggebers, die Geld kostet (Gate 21, EPS-Onlineüberweisung). '
+      + 'Sie wirkt im **Ablauf** — `src/auftragslauf.js` und der Rolloutplan hängen daran —, '
+      + 'aber im gebauten Shop ändert sie keine Zeile: Die Kasse löst keine Zahlung aus und '
+      + 'sagt das auch. Ein Bau des Tages X könnte ihre Wirkung nirgends nachsehen.',
+  }),
+  Object.freeze({
+    feld: 'domainZeigtAufShop',
+    warum: 'Eine Bestätigung über die Welt, kein Inhalt: Ob bauversand.com auf dieses '
+      + 'Verzeichnis zeigt, sieht man am Browser und nicht am Bau. `npm run startklar` führt '
+      + 'sie als eigenen Punkt und sagt ausdrücklich, dass sie von hier aus nicht feststellbar '
+      + 'ist — der Netzausgang dieser Umgebung ist für die Adresse gesperrt.',
+  }),
+  Object.freeze({
+    feld: 'repositoryPrivat',
+    warum: 'Ebenfalls eine Bestätigung über die Welt — und die einzige, die `npm run startklar` '
+      + '**gegen** die Angabe misst: Steht dort „privat" und ist das Verzeichnis öffentlich, '
+      + 'gilt die Messung und die Angabe gehört berichtigt. Im gebauten Shop kommt sie nicht vor.',
+  }),
+]);
+
+/**
+ * Hält die Betreiberdatei gegen beide Listen — in beide Richtungen.
+ *
+ * **Der Anlass.** Am 11. September führte `bin/bestellprobe.mjs` eine zweite,
+ * eigene Liste für denselben Tag X. Zwei Listen über dieselbe Sache sind zwei
+ * Antworten, sobald eine Angabe dazukommt.
+ */
+export function betreiberbefund(betreiber, angaben = OFFENE_ANGABEN, ohne = OHNE_BAUWIRKUNG) {
+  const meldungen = [];
+  const gefuehrt = new Set(angaben.map((a) => a.feld));
+  const begruendet = new Set(ohne.map((o) => o.feld));
+  const leer = Object.entries(betreiber)
+    .filter(([k, v]) => !k.startsWith('_') && (v === null || v === undefined || v === ''))
+    .map(([k]) => k);
+
+  if (!leer.length) {
+    return {
+      leer: 0,
+      meldungen: [{
+        regel: 'nichts-mehr-offen',
+        text: 'Kein leeres Feld in der Betreiberdatei — dieser Befund prüft nichts mehr, '
+          + 'und das wäre eine gute Nachricht: Dann ist der Tag X da',
+      }],
+      sauber: false,
+    };
+  }
+
+  for (const f of leer) {
+    if (gefuehrt.has(f) || begruendet.has(f)) continue;
+    meldungen.push({
+      regel: 'leeres-feld-ohne-platz',
+      text: `${f} ist leer und steht weder unter den offenen Angaben noch mit Grund daneben`,
+    });
+  }
+  for (const o of ohne) {
+    if (gefuehrt.has(o.feld)) {
+      meldungen.push({
+        regel: 'gefuehrt-und-ohne-wirkung',
+        text: `${o.feld} steht als offene Angabe und zugleich als ohne Bauwirkung`,
+      });
+    }
+    if (!o.warum || o.warum.length < 80) {
+      meldungen.push({ regel: 'grund-zu-duenn', text: `${o.feld}: der Grund trägt nicht` });
+    }
+  }
+  for (const a of angaben) {
+    if (a.feld in betreiber) continue;
+    meldungen.push({
+      regel: 'angabe-ohne-feld',
+      text: `${a.feld} steht als offene Angabe — dieses Feld gibt es in der Betreiberdatei nicht`,
+    });
+  }
+
+  return { leer: leer.length, gefuehrt: gefuehrt.size, begruendet: ohne.length, meldungen, sauber: meldungen.length === 0 };
+}
 
 /**
  * Baut aus der heutigen Betreiberdatei die des Tages X.
@@ -111,9 +215,10 @@ export function betreiberAmTagX(heute, angaben = OFFENE_ANGABEN) {
  * @param {object[]} lage.entitaeten         jeder Organisationsblock der Ausgabe
  * @param {string[]} lage.dateien            die Dateinamen im Auslieferungsordner
  * @param {string} lage.hinweis              der Hinweis auf einer Artikelseite
+ * @param {string} lage.oberflaeche           das gebaute `shop.js` mit den Betreiberdaten
  */
 export function tagxbefund({
-  impressum, entitaeten, dateien, hinweis, angaben = OFFENE_ANGABEN,
+  impressum, entitaeten, dateien, hinweis, oberflaeche = '', angaben = OFFENE_ANGABEN,
 }) {
   const meldungen = [];
 
@@ -139,6 +244,12 @@ export function tagxbefund({
       meldungen.push({
         regel: 'angabe-erreicht-impressum-nicht',
         text: `${a.feld} steht am Tag X nicht im Impressum — ${a.warum}`,
+      });
+    }
+    if (a.sichtbarIn.includes('oberflaeche') && !String(oberflaeche).includes(String(a.probe))) {
+      meldungen.push({
+        regel: 'angabe-erreicht-oberflaeche-nicht',
+        text: `${a.feld} steht am Tag X nicht in den Betreiberdaten der Oberfläche — ${a.warum}`,
       });
     }
     if (!a.sichtbarIn.includes('entitaet')) continue;

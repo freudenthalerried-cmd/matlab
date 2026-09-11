@@ -35,6 +35,7 @@ import { beispielbestellung } from '../src/bestellfelder.js';
 import { freierPort } from '../src/freierport.js';
 import { pruefeBestelldaten } from '../src/kunde.js';
 import { wegwerfordner } from '../src/wegwerf.js';
+import { betreiberAmTagX } from '../src/tagx.js';
 import { geschaeftsjahr, geschaeftstag, zeitstempel } from '../src/geschaeftszeit.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -65,18 +66,26 @@ if (!chromium) abbruch('Kein Chromium gefunden.');
 const ablage = wegwerfordner('bestellprobe-');
 const betreiber = JSON.parse(readFileSync(join(SHOP, 'data', 'betreiber.json'), 'utf8'));
 const betreiberDatei = join(ablage, 'betreiber.json');
-writeFileSync(betreiberDatei, JSON.stringify({
-  ...betreiber,
-  // Die zwei Voraussetzungen aus `src/bestellweg.js`. Sie stehen hier und
-  // nicht im Bestand: Der Weg ist heute **aus**, und diese Probe prüft, was
-  // an dem Tag geschieht, an dem er an ist.
-  email: 'office@example.at',
-  rechtstexteFundstelle: 'Kanzlei X, Fassung vom 4.9.2026',
-  // Die zugesagte Antwortzeit ist keine Voraussetzung des Bestellwegs, aber
-  // sie steht in der Rückmeldung nach dem Absenden. Ohne sie prüfte diese
-  // Probe den Satz ohne seine wichtigste Angabe.
-  antwortzeitWerktage: 1,
-}, null, 2));
+/*
+ * **Eine Liste, nicht zwei — berichtigt am 11. September 2026.**
+ *
+ * Hier standen drei Felder mit eigener Begründung: die beiden Voraussetzungen
+ * des Bestellwegs und die zugesagte Antwortzeit. Seit dem 11. September führt
+ * `src/tagx.js` **dieselbe Sache** — die Angaben, die der Auftraggeber noch
+ * schuldet, mit einer Probe je Feld —, und die beiden Listen kannten einander
+ * nicht: Die dortige hatte sechs Felder, diese drei, und eines der drei fehlte
+ * dort ganz.
+ *
+ * > **Zwei Listen über denselben Tag sind zwei Antworten, sobald eine Angabe
+ * > dazukommt.**
+ *
+ * Diese Probe nimmt jetzt die Liste von dort. Kommt eine siebte Voraussetzung
+ * dazu, fährt sie sie mit, ohne dass jemand daran denkt.
+ */
+writeFileSync(betreiberDatei, JSON.stringify(betreiberAmTagX(betreiber), null, 2));
+
+/** Die Zahl, die der Bau eingesetzt bekommt — dieselbe, die die Kasse nennen muss. */
+const ANTWORTZEIT = betreiberAmTagX(betreiber).antwortzeitWerktage;
 
 const bau = spawnSync('npm', ['run', '--silent', 'website'], {
   cwd: SHOP,
@@ -208,7 +217,12 @@ try {
       [/Angekommen/, 'die Bestätigung, dass es angekommen ist'],
       [/B-\d{4}-\d{4}/, 'die Nummer'],
       [/Auftragsbestätigung/, 'der Hinweis, dass der Vertrag erst mit ihr entsteht'],
-      [/1 Werktag/, 'die zugesagte Antwortzeit'],
+      // **Aus der Liste gelesen, nicht abgeschrieben.** Hier stand `/1 Werktag/`,
+      // während die Probe ihre Betreiberdatei selbst schrieb. Seit sie
+      // `betreiberAmTagX` nimmt, kommt die Zahl von dort — und eine zweite
+      // Fassung derselben Zahl wäre genau die Sorte Fehler, wegen der die
+      // beiden Listen zusammengelegt wurden.
+      [new RegExp(`${ANTWORTZEIT} Werktag`), 'die zugesagte Antwortzeit'],
     ].filter(([muster]) => !muster.test(satz)).map(([, was]) => was);
     if (fehlt.length) probleme.push(`der Kasse fehlt nach dem Absenden: ${fehlt.join(', ')} — „${satz}"`);
     else bestanden.push(`Die Kasse meldet Nummer, Vertragslage und Antwortzeit: ${satz.slice(0, 60)}…`);

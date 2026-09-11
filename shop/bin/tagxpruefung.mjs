@@ -33,7 +33,7 @@ import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { OFFENE_ANGABEN, betreiberAmTagX, tagxbefund } from '../src/tagx.js';
+import { OFFENE_ANGABEN, betreiberAmTagX, tagxbefund, betreiberbefund } from '../src/tagx.js';
 import { wegwerfordner } from '../src/wegwerf.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -99,15 +99,29 @@ const seite = readFileSync(join(site, 'artikel', artikel[0]), 'utf8');
 const hinweis = (/Vorschau ohne Bestellmöglichkeit[^<]*/.exec(seite.replace(/<[^>]+>/g, ' '))
   ?? [''])[0];
 
+/*
+ * **Erst die Liste, dann der Bau.** Ein leeres Feld, das in keiner der beiden
+ * Listen steht, wäre sonst still: Der Bau des Tages X setzte es nicht ein,
+ * und niemand fragte, warum.
+ */
+const liste = betreiberbefund(heute);
+if (!liste.sauber) {
+  console.error('Abbruch: Die Betreiberdatei trägt ein leeres Feld, das keine Liste kennt.');
+  for (const m of liste.meldungen) console.error(`  ✗ ${m.text}  [${m.regel}]`);
+  process.exit(1);
+}
+
 const b = tagxbefund({
   impressum: readFileSync(join(site, 'rechtliches', 'impressum.html'), 'utf8'),
   entitaeten: entitaeten(site),
   dateien: readdirSync(site),
   hinweis,
+  oberflaeche: readFileSync(join(site, 'shop.js'), 'utf8'),
 });
 
 console.log(`Tag X — ${b.angaben} offene Angaben eingesetzt, `
-  + `${b.entitaeten} Organisationsblöcke gebaut\n`);
+  + `${b.entitaeten} Organisationsblöcke gebaut, `
+  + `${liste.begruendet} Felder ohne Bauwirkung\n`);
 for (const a of OFFENE_ANGABEN) {
   console.log(`  · ${a.feld.padEnd(16)} → ${a.sichtbarIn.join(', ')}`);
 }
