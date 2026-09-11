@@ -940,6 +940,67 @@ export const GEGENPROBEN = Object.freeze([
       + 'Lücke, die es misst — eine Ebene höher.',
   }),
   Object.freeze({
+    id: 'abnahmepunkt-zeigt-ins-leere',
+    pruefer: 'abnahme',
+    was: 'Ein Abnahmepunkt zeigt auf eine Datei, die im Ausgabeordner nicht liegt',
+    datei: 'shop/src/abnahme.js',
+    art: 'ersetzen',
+    suchen: "      datei: 'robots.txt',",
+    ersetzen: "      datei: 'robots.txtx',",
+    erwartet: /datei-fehlt/,
+    warum: 'Die Abnahmeliste ist das Blatt, mit dem nach dem Hochladen neun Adressen im '
+      + 'Browser geöffnet werden. Zeigt ein Punkt auf eine Datei, die es nicht gibt, prüft '
+      + 'der Betreiber eine Adresse, die der Server nie ausliefern konnte — und hakt sie ab, '
+      + 'weil dort erwartungsgemäß nichts steht. Bis zum 11. September hatte diese Liste '
+      + 'keine einzige Gegenprobe.',
+  }),
+  Object.freeze({
+    id: 'referenzwert-schon-bei-gleichstand',
+    pruefer: 'oberflaechenprobe',
+    was: 'Ein Messwert von genau 300 gilt als Überschreitung',
+    datei: 'shop/src/messwert.js',
+    art: 'ersetzen',
+    suchen: '  if (wert <= REFERENZWERT) {',
+    ersetzen: '  if (wert < REFERENZWERT) {',
+    baueVorher: true,
+    erwartet: /Messwert genau 300/,
+    warum: 'Die Grenze der Strahlenschutzverordnung heißt „überschreitet", nicht „erreicht". '
+      + 'Die erste Fassung zählte genau 300 Bq/m³ als Überschreitung und schrieb dem Besucher '
+      + '„liegen über dem Referenzwert" — eine falsche Rechtsauskunft an der Stelle, an der '
+      + 'jemand eine Sanierung erwägt. Die Oberflächenprobe hat dafür ein Szenario und bis '
+      + 'zum 11. September keine Gegenprobe.',
+  }),
+  Object.freeze({
+    id: 'suchfeld-sprengt-den-rahmen',
+    pruefer: 'rahmenzensus',
+    was: 'Ein Bedienelement, das breiter ist als ein Telefon',
+    datei: 'shop/bin/website.mjs',
+    art: 'ersetzen',
+    suchen: '.suche{position:relative;flex:1 1 18rem;min-width:12rem}',
+    ersetzen: '.suche{position:relative;flex:1 1 18rem;min-width:52rem}',
+    baueVorher: true,
+    erwartet: /Seiten rollen/,
+    warum: 'Das Suchfeld steht in der Kopfleiste jeder gebauten Seite. Eine Mindestbreite über '
+      + 'der Fensterbreite schiebt sie alle seitlich hinaus — und ein Besteller auf der '
+      + 'Baustelle hält das Telefon quer oder geht weg. Der Zensus misst genau das und hatte '
+      + 'bis zum 11. September keine Gegenprobe: Er stand achtundvierzig Läufe lang grün da, '
+      + 'ohne dass jemand ihn einmal rot gesehen hätte.',
+  }),
+  Object.freeze({
+    id: 'gegenprobe-ohne-platz',
+    pruefer: 'pruefe-register',
+    was: 'Ein Befehl mit Gegenprobe steht in keinem Lauf und hat keinen Grund daneben',
+    datei: 'shop/src/pruefregister.js',
+    art: 'ersetzen',
+    suchen: "    name: 'aufwand',",
+    ersetzen: "    name: 'aufwandsrechnung',",
+    erwartet: /gegenprobe-ohne-platz/,
+    warum: 'Genau der Zustand vom 11. September: Acht Namen hatten eine Gegenprobe und standen '
+      + 'in keinem Prüferregister, darunter `wegprobe` mit dreien. Der Bestand hatte dreimal '
+      + 'bewiesen, dass sie anschlägt, und fragte sie in keinem Lauf — die Umkehrung eines '
+      + 'Prüfers ohne Gegenprobe: gesehen, dass sie rot wird, nie gesehen, dass sie schweigt.',
+  }),
+  Object.freeze({
     id: 'schaufenster-ohne-aussagen',
     pruefer: 'pruefe-schaufenster',
     was: 'Eine Beschreibung, deren Zahlen stimmen und deren Sätze überholt sind',

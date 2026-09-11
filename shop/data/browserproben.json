@@ -47,6 +47,26 @@
     "meldung-die-niemand-hoert": {
       "am": "2026-09-11",
       "sekunden": 35
+    },
+    "referenzwert-schon-bei-gleichstand": {
+      "am": "2026-09-11",
+      "sekunden": 17
+    },
+    "suchfeld-sprengt-den-rahmen": {
+      "am": "2026-09-11",
+      "sekunden": 23
+    },
+    "warenkorb-ohne-kleinmengensatz": {
+      "am": "2026-09-11",
+      "sekunden": 12
+    },
+    "weg-zahlweg-nicht-vorbelegt": {
+      "am": "2026-09-11",
+      "sekunden": 12
+    },
+    "kasse-ohne-mindestbestellwert": {
+      "am": "2026-09-11",
+      "sekunden": 11
     }
   }
 }

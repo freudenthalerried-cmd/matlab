@@ -292,6 +292,13 @@ export const NICHT_IM_HAKEN = Object.freeze([
       + 'nicht an der Laufzeit hängt, sondern daran, was er prüft.',
   }),
   Object.freeze({
+    pruefer: 'wegprobe', sekunden: 2.4,
+    warum: 'Am 11. September ins Prüferregister aufgenommen und damit zuerst im Schnelllauf '
+      + 'gelandet — dort kostete sie eine Sekunde mehr als die anderen dreiundvierzig '
+      + 'zusammen. Sie startet Chromium und geht den Weg vom Anzeigenklick bis zur fertigen '
+      + 'Anfrage; derselbe Grund wie bei den vier anderen Browserproben.',
+  }),
+  Object.freeze({
     pruefer: 'abgleich-veroeffentlichung', sekunden: 0.7,
     warum: 'Holt die veröffentlichte PR-Beschreibung über api.github.com und rechnet sie gegen '
       + 'die Quelle. Er ist billig genug, und trotzdem falsch am Platz: **Ein Commit, der ohne '

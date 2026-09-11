@@ -152,7 +152,7 @@ test('jeder Grund nennt die gestoppte Laufzeit', () => {
   // Ein Grund, der sich auf die Laufzeit beruft, muss die Zahl mitführen —
   // sonst ist er in einem halben Jahr eine Behauptung über einen Rechner,
   // den es nicht mehr gibt.
-  assert.equal(NICHT_IM_HAKEN.length, 8, `${NICHT_IM_HAKEN.length} Ausnahmen`);
+  assert.equal(NICHT_IM_HAKEN.length, 9, `${NICHT_IM_HAKEN.length} Ausnahmen`);
   for (const e of NICHT_IM_HAKEN) {
     assert.equal(typeof e.sekunden, 'number', `${e.pruefer}: keine gestoppte Zeit`);
     assert.ok(e.warum.length >= 80, `${e.pruefer}: der Grund trägt den Verzicht nicht`);
@@ -191,7 +191,7 @@ test('der Schnelllauf nimmt weder die Ausgenommenen noch die schon Gerufenen', (
   const alle = [...PRUEFER, ...BROWSERPRUEFER];
   const namen = new Set(imSchnelllauf(alle).map((p) => p.name));
   assert.ok(namen.size >= 40, `nur ${namen.size} im Schnelllauf`);
-  assert.equal(NICHT_IM_HAKEN.length, 8, 'sonst prüft die Schleife bei leerer Liste nichts');
+  assert.equal(NICHT_IM_HAKEN.length, 9, 'sonst prüft die Schleife bei leerer Liste nichts');
   for (const e of NICHT_IM_HAKEN) {
     assert.equal(namen.has(e.pruefer), false, `${e.pruefer} ist ausgenommen und läuft trotzdem`);
   }
@@ -220,4 +220,26 @@ test('der Schnelllauf lässt eine Weigerung durch und einen Fund nicht', () => {
   assert.match(quelle, /e\.status === 2/, 'die Weigerung hat einen eigenen Zweig');
   assert.match(quelle, /weigerungen\.push/, 'und wird gemeldet statt verschluckt');
   assert.match(quelle, /keine Entwarnung/, 'die Meldung sagt, dass sie keine ist');
+});
+
+test('der Schnelllauf misst seine eigene Grenze nach', () => {
+  /**
+   * **Der Abend desselben Tages.** Gate 38 sagt: Was unter einer Sekunde
+   * bleibt, läuft vor jedem Commit. Wer in der Auswahl steht, war am Tag der
+   * Messung schnell genug — und nichts hielt das nach. Prompt eingetreten:
+   * `wegprobe` kam ins Register, landete im Schnelllauf und kostete dort mehr
+   * als die anderen dreiundvierzig zusammen.
+   *
+   * > **Eine Grenze, die einmal gemessen wurde, ist eine Behauptung über den
+   * > Tag, an dem gemessen wurde.**
+   *
+   * Rot wird davon nichts — eine Sperre über eine Laufzeit hielte irgendwann
+   * einen Commit auf, weil der Rechner beschäftigt war. Gemeldet wird sie.
+   */
+  const quelle = readFileSync(new URL('../bin/schnelllauf.mjs', import.meta.url), 'utf8');
+  assert.match(quelle, /GRENZE_MS = 1000/, 'die Grenze steht als Zahl da');
+  assert.match(quelle, /langsame\.push/, 'und wird je Prüfer nachgemessen');
+  assert.match(quelle, /NICHT_IM_HAKEN/, 'die Meldung nennt den Weg heraus');
+  assert.ok(!/langsame\.length[^]{0,200}process\.exit\(1\)/.test(quelle),
+    'eine Laufzeit sperrt keinen Commit');
 });

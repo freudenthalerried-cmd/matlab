@@ -59,9 +59,31 @@ const begonnen = Date.now();
 const rot = [];
 const weigerungen = [];
 
+/*
+ * **Die Grenze wird gemessen, nicht geglaubt — 11. September 2026, abends.**
+ *
+ * Gate 38 sagt: Was unter einer Sekunde bleibt, läuft vor jedem Commit. Wer
+ * in der Auswahl steht, war damit am Tag der Messung schnell genug — und
+ * nichts hielt das nach. Am selben Abend ist es prompt eingetreten: `wegprobe`
+ * kam ins Register, landete im Schnelllauf und kostete dort mehr als die
+ * anderen dreiundvierzig zusammen.
+ *
+ * > **Eine Grenze, die einmal gemessen wurde, ist eine Behauptung über den
+ * > Tag, an dem gemessen wurde.**
+ *
+ * Rot wird davon nichts: Ein langsamer Prüfer ist kein Fehler im Bestand, und
+ * eine Sperre über eine Laufzeit hielte irgendwann einen Commit auf, weil der
+ * Rechner gerade beschäftigt war. Gemeldet wird er.
+ */
+const GRENZE_MS = 1000;
+const langsame = [];
+
 for (const p of laeufer) {
+  const seitPruefer = Date.now();
   const e = spawnSync(process.execPath, [join(SHOP, 'bin', p.werkzeug), ...(p.argumente ?? [])],
     { cwd: SHOP, encoding: 'utf8' });
+  const gebraucht = Date.now() - seitPruefer;
+  if (gebraucht > GRENZE_MS) langsame.push({ name: p.name, ms: gebraucht });
   const ausgabe = `${e.stdout ?? ''}${e.stderr ?? ''}`;
   if (e.status === 2) {
     weigerungen.push(`${p.name}: ${ausgabe.trim().split('\n')[0] || 'ohne Angabe'}`);
@@ -77,6 +99,13 @@ const dauer = ((Date.now() - begonnen) / 1000).toFixed(1);
 if (weigerungen.length) {
   console.log(`${weigerungen.length} Prüfer können nicht messen — das ist keine Entwarnung:`);
   for (const w of weigerungen) console.log(`  ⃠ ${w}`);
+  console.log('');
+}
+
+if (langsame.length) {
+  console.log(`${langsame.length} Prüfer über der Sekunde aus Gate 38 — sie gehören `
+    + 'angesehen und entweder beschleunigt oder mit Grund nach NICHT_IM_HAKEN:');
+  for (const l of langsame) console.log(`  ! ${l.name} — ${(l.ms / 1000).toFixed(1)} s`);
   console.log('');
 }
 

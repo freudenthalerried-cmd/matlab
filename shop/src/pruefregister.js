@@ -572,6 +572,31 @@ export const PRUEFER = [
     einheit: 'Quelldateien auf mitgeführte Vorbehalte',
     mindestens: 40,
   },
+  // **Aufgenommen am 11. September 2026 — Runde 28.** Diese vier standen in
+  // keinem Lauf. Drei von ihnen hatten sogar Gegenproben: Es war bewiesen,
+  // dass sie anschlagen, und niemand hat sie je gefragt. Die Laufzeiten sind
+  // am selben Tag gestoppt.
+  {
+    name: 'rollout',
+    werkzeug: 'rollout.mjs',
+    muster: /Weg bis zur Entscheidung — (\d+) Etappen/,
+    einheit: 'Etappen bis zur Entscheidung',
+    mindestens: 12,
+  },
+  {
+    name: 'abnahme',
+    werkzeug: 'abnahmeliste.mjs',
+    muster: /Abnahme nach dem Hochladen — (\d+) Punkte/,
+    einheit: 'Abnahmepunkte gegen den Ausgabeordner',
+    mindestens: 8,
+  },
+  {
+    name: 'pruefe-register',
+    werkzeug: 'registerpruefung.mjs',
+    muster: /Registerabgleich — (\d+) Prüfer/,
+    einheit: 'Prüfer gegen beide Register gehalten',
+    mindestens: 40,
+  },
 ];
 
 /**
@@ -637,4 +662,204 @@ export const BROWSERPRUEFER = [
     mindestens: 40,
     zweite: true,
   },
+  // **Aufgenommen am 11. September 2026.** Sie stand in keinem Lauf, hatte
+  // aber drei Gegenproben — der Bestand hat also dreimal bewiesen, dass sie
+  // anschlägt, und niemand hat sie je gefragt, ob sie schweigt. Sie ist die
+  // einzige Probe, die den Weg **von der Anzeige** bis zur fertigen Anfrage
+  // geht, und misst damit genau das, was das ganze Werbebudget kauft.
+  {
+    name: 'wegprobe',
+    werkzeug: 'wegprobe.mjs',
+    muster: /^(\d+) Schritte, kein Textfeld/m,
+    einheit: 'Schritte vom Anzeigenklick bis zur fertigen Anfrage',
+    mindestens: 4,
+  },
 ];
+
+/* ------------------------------------------------------------------
+ * **Der Anlass, 11. September 2026 — Runde 28.**
+ *
+ * Zwei Register dieses Bestandes beschreiben dieselbe Sache: was rot werden
+ * kann. Hier stehen die Prüfer, in `src/gegenprobenregister.js` steht je
+ * Prüfer die Mutation, die ihn rot machen muss.
+ *
+ * Das Gegenprobenregister verlangt von jedem genannten Namen, dass es ihn als
+ * npm-Befehl gibt — ein Tippfehler wäre sonst eine Gegenprobe, die es nicht
+ * gibt. **Keines der beiden Register fragt das andere.** Gemessen an diesem
+ * Tag, in beide Richtungen:
+ *
+ * | Richtung | gefunden |
+ * |---|---|
+ * | Gegenprobe da, Prüfer nicht im Register | **acht** Namen, darunter `wegprobe` mit drei Gegenproben |
+ * | Prüfer im Register, keine Gegenprobe und kein Verzicht | **zwei**: `oberflaechenprobe`, `rahmenzensus` |
+ *
+ * > **Bei `wegprobe` lief der Bestand in die Umkehrung eines Prüfers ohne
+ * > Gegenprobe: Man hatte dreimal gesehen, dass sie anschlägt, und nie, dass
+ * > sie schweigt.** Sie stand in keinem Lauf — weder im Gesamtlauf noch im
+ * > Haken —, und ausgeführt wurde sie nur als Nebenwirkung ihrer eigenen
+ * > Gegenproben.
+ *
+ * `wegprobe`, `rollout`, `abnahme` und `pruefe-pruefer` stehen seit heute im
+ * Register oben. Was übrig bleibt, steht hier — mit Grund.
+ * ------------------------------------------------------------------ */
+
+/**
+ * Befehle, die eine Gegenprobe haben und trotzdem **kein Prüfer** sind.
+ *
+ * Der Unterschied ist nicht die Farbe, sondern der Gegenstand: Ein Prüfer
+ * wird rot über den **Bestand**, ein Werkzeug über seine **eigene Eingabe
+ * oder Handlung**. Ein Bauwerkzeug, das abbricht statt Unsinn zu schreiben,
+ * ist kein Prüfer — aber seine Weigerung ist eine Gegenprobe wert.
+ */
+export const KEIN_PRUEFER = Object.freeze([
+  Object.freeze({
+    name: 'test',
+    warum: 'Der Testlauf. Er hat im Gesamtlauf und im Haken einen eigenen Schritt mit einer '
+      + 'eigenen Untergrenze und eine andere Zählweise als ein Prüfer: Er zählt ausgeführte '
+      + 'Fälle, das Prüferregister zählt angesehene Einheiten. Als Registereintrag stünde '
+      + 'dieselbe Prüfung zweimal im Lauf.',
+  }),
+  Object.freeze({
+    name: 'kampagne',
+    warum: 'Ein Bauwerkzeug: Es schreibt die Anzeigendateien. Rot wird es nur über die eigene '
+      + 'Handlung — es bricht ab, statt eine Landeseite ohne Hauptbereich oder eine Gruppe '
+      + 'ohne Seitenkennung auszuliefern. Was es gebaut hat, prüfen die Prüfer danach; wäre '
+      + 'es selbst einer, prüfte es sein eigenes Erzeugnis.',
+  }),
+  Object.freeze({
+    name: 'website',
+    warum: 'Derselbe Fall wie bei der Kampagne: Es baut den Auslieferungsordner und weigert '
+      + 'sich, einen unvollständigen zu schreiben. Ein Bauwerkzeug im Prüferregister hieße, '
+      + 'den Bau vor jedem Commit noch einmal zu fahren — der Haken tut das schon eine Zeile '
+      + 'vorher über die Frischeprüfung.',
+  }),
+  Object.freeze({
+    name: 'schnelllauf',
+    warum: 'Er **ruft** die Prüfer, statt selbst zu messen. Im Prüferregister stünde er in '
+      + 'seiner eigenen Liste und riefe sich selbst — eine Schleife ohne Boden, derselbe '
+      + 'Grund, aus dem der Hakenprüfer nicht im Haken läuft.',
+  }),
+  Object.freeze({
+    name: 'aufwand',
+    warum: 'Eine Rechnung über den Restaufwand im Monat, aus dem Auftragslauf abgeleitet. Sie '
+      + 'wird nicht rot über einen Fund, sondern weigert sich, wenn ihre Grundlage fehlt. Was '
+      + 'sie ausgibt, ist eine Schätzung mit Herkunft — und eine Schätzung ist kein Befund '
+      + 'über den Bestand, auch wenn sie aus ihm gerechnet ist.',
+  }),
+  /*
+   * **Und der Eintrag, der beim ersten Versuch falsch war.** `pruefe-pruefer`
+   * stand am 11. September für eine halbe Stunde in der Liste oben — er ist
+   * ein Prüfer, er hat eine Gegenprobe, und 113 Sekunden wären im Gesamtlauf
+   * zu verschmerzen. Der Testlauf hat es beantwortet: Er **liest diese
+   * Liste**, um jeden Prüfer aufzurufen. Mit sich selbst darin ruft er sich
+   * selbst, und zwar nicht einmal, sondern immer weiter — im Prozessbaum
+   * standen nach zehn Minuten neun Kopien.
+   *
+   * > **Ein Prüfer, der seine eigene Liste liest, gehört nicht hinein.**
+   * > Dieselbe Gestalt wie der Hakenprüfer, der nicht im Haken läuft — nur
+   * > endet dieser hier nicht langsam, sondern gar nicht.
+   */
+  Object.freeze({
+    name: 'pruefe-pruefer',
+    warum: 'Er ruft jeden Prüfer dieses Registers einmal auf und fragt ihn nach seinem Umfang. '
+      + 'Stünde er selbst darin, riefe er sich selbst — eine Schleife ohne Boden, die nicht '
+      + 'langsam ist, sondern nie endet; gemessen am 11. September mit neun Kopien im '
+      + 'Prozessbaum. Er läuft von Hand und über seine eigene Gegenprobe, und sein Befund '
+      + 'ist ohnehin einer über die Prüfer, nicht über den Bestand.',
+  }),
+]);
+
+/**
+ * Hält dieses Register gegen `package.json` und gegen das Gegenprobenregister
+ * — in beide Richtungen.
+ *
+ * @param {object} lage
+ * @param {string[]} lage.skripte        die Namen aus `package.json`
+ * @param {string[]} lage.ausGegenproben jeder `pruefer`, den eine Gegenprobe nennt
+ * @param {string[]} lage.ohneGegenprobe   jeder Prüfer mit begründetem Verzicht
+ * @param {(werkzeug: string) => boolean} lage.gibtEs  liegt `bin/<werkzeug>`?
+ */
+export function registerbefund({
+  skripte, ausGegenproben, ohneGegenprobe = [], gibtEs,
+  pruefer = [...PRUEFER, ...BROWSERPRUEFER], kein = KEIN_PRUEFER,
+}) {
+  const meldungen = [];
+  const alsSkript = new Set(skripte);
+  const imRegister = new Set(pruefer.map((p) => p.name));
+  const begruendet = new Set(kein.map((e) => e.name));
+
+  for (const p of pruefer) {
+    if (!alsSkript.has(p.name)) {
+      meldungen.push({
+        regel: 'eintrag-ohne-befehl',
+        text: `„${p.name}" steht im Prüferregister und ist kein npm-Befehl`,
+      });
+    }
+    if (!gibtEs(p.werkzeug)) {
+      meldungen.push({
+        regel: 'eintrag-ohne-werkzeug',
+        text: `${p.name}: bin/${p.werkzeug} liegt nicht im Bestand`,
+      });
+    }
+  }
+
+  for (const e of kein) {
+    if (!alsSkript.has(e.name)) {
+      meldungen.push({
+        regel: 'grund-ohne-befehl',
+        text: `KEIN_PRUEFER nennt „${e.name}" — diesen npm-Befehl gibt es nicht`,
+      });
+    }
+    if (imRegister.has(e.name)) {
+      meldungen.push({
+        regel: 'gefuehrt-und-ausgenommen',
+        text: `${e.name} steht im Prüferregister und wird zugleich als kein Prüfer geführt`,
+      });
+    }
+    if (!e.warum || e.warum.length < 80) {
+      meldungen.push({
+        regel: 'grund-zu-duenn',
+        text: `${e.name}: der Grund trägt die Ausnahme nicht`,
+      });
+    }
+  }
+
+  /*
+   * **Die Richtung, wegen der es diese Funktion gibt.** Eine Gegenprobe ist
+   * der Beweis, dass ein Befehl rot werden kann und dass das jemandem wichtig
+   * war. Steht er dann in keinem Lauf, hat der Bestand bewiesen, dass er
+   * anschlägt — und fragt ihn nie.
+   */
+  for (const n of new Set(ausGegenproben)) {
+    if (imRegister.has(n) || begruendet.has(n)) continue;
+    meldungen.push({
+      regel: 'gegenprobe-ohne-platz',
+      text: `„${n}" hat eine Gegenprobe und steht weder im Prüferregister noch mit Grund daneben`,
+    });
+  }
+
+  /*
+   * **Und dieselbe Frage zurück.** Der Bestand sagt seit dem 2. September:
+   * *Eine Gegenprobe, die man nicht anschlagen sieht, ist keine.* Für zwei
+   * Browserproben hatte sie am 11. September nie jemand angesehen — sie
+   * standen weder mit Gegenprobe noch mit begründetem Verzicht da.
+   */
+  const mitProbe = new Set(ausGegenproben);
+  const verzicht = new Set(ohneGegenprobe);
+  for (const p of pruefer) {
+    if (mitProbe.has(p.name) || verzicht.has(p.name)) continue;
+    meldungen.push({
+      regel: 'pruefer-ohne-gegenprobe',
+      text: `${p.name} hat keine Gegenprobe und keinen begründeten Verzicht — `
+        + 'niemand hat ihn je rot gesehen',
+    });
+  }
+
+  return {
+    pruefer: pruefer.length,
+    ausgenommen: kein.length,
+    gemessen: new Set(ausGegenproben).size,
+    meldungen,
+    sauber: meldungen.length === 0,
+  };
+}
