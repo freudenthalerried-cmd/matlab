@@ -104,9 +104,16 @@ const durchschriften = [];
 for (const journalpfad of journaldateien) {
   const jahr = Number(journalpfad.match(/journal-(\d{4})\.jsonl$/)?.[1]);
   const ordner = join(REPO, dirname(journalpfad), belegordner(jahr));
+  // **Gelesen wird der Inhalt, nicht nur der Name — 12. September 2026.**
+  // Die Zahlen der Journalzeile stehen ein zweites Mal auf dem Papier; nur so
+  // fällt eine nachträglich geänderte Zeile auf. Ausgegeben wird davon
+  // nichts: Ein Prüfer, der Kundendaten in sein Protokoll schreibt, verlegt
+  // sie an einen dritten Ort.
   const dateien = existsSync(ordner)
-    ? readdirSync(ordner).filter(istBeleg)
-      .map((name) => ({ name, zeichen: statSync(join(ordner, name)).size }))
+    ? readdirSync(ordner).filter(istBeleg).map((name) => {
+      const voll = join(ordner, name);
+      return { name, zeichen: statSync(voll).size, text: readFileSync(voll, 'utf8') };
+    })
     : [];
   const ablage = ausJournal(readFileSync(join(REPO, journalpfad), 'utf8'));
   const befund = durchschriftenbefund({ eintraege: ablage.eintraege, dateien });

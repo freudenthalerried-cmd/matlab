@@ -39,6 +39,7 @@
  */
 
 import { ARTEN } from './ablage.js';
+import { EUR } from './format.js';
 
 /** Der Ordner, in den die Ablage schreibt — vom Verzeichniswurzel aus. */
 export const ABLAGEORT = 'ablage';
@@ -265,6 +266,55 @@ export function durchschriftenbefund({ eintraege = [], dateien = [] }) {
       meldungen.push({
         regel: 'durchschrift-leer',
         text: `${name} ist leer — eine Datei, die in jeder Liste wie eine Durchschrift aussieht und keine ist`,
+      });
+      continue;
+    }
+
+    /*
+     * **Dieselbe Zahl steht zweimal — 12. September 2026.**
+     *
+     * Die Betriebskette sagt über die Aufbewahrung: *„§ 131 BAO — nur
+     * ergänzen, nie ändern."* Die **Form** hielt das auch: Das Journal ist
+     * eine Datei, an die nur angehängt wird, `lfd` deckt eine gelöschte oder
+     * vertauschte Zeile auf, und `ausJournal` bricht dann ab.
+     *
+     * > **Eine geänderte Zeile deckte nichts auf.** Wer in einem Texteditor
+     * > aus 911,06 die Zahl 91,06 macht, bekam ein Journal, das sauber
+     * > zurückliest. Die Form wächst nur — der Inhalt war ungeschützt.
+     *
+     * Seit es die Durchschrift gibt, steht jede dieser Zahlen **zweimal**:
+     * einmal in der Journalzeile, einmal auf dem Papier, das hinausging. Hier
+     * werden sie gegeneinander gehalten. Das ist keine Fälschungssicherheit —
+     * wer beide Dateien gleichlautend ändert, kommt durch; dagegen hülfe nur
+     * ein Anker außerhalb dieses Rechners. Es ist die Sicherung gegen die
+     * einseitige Änderung, und das ist der Fall, der vorkommt.
+     *
+     * Gemeldet wird **ohne den Inhalt**: Eine Prüfung, die den Betrag oder
+     * den Namen in ihr Protokoll schreibt, verlegt Kundendaten an einen
+     * dritten Ort.
+     */
+    const text = datei.text ?? null;
+    if (text === null) continue;
+
+    if (eintrag.nummer && !text.includes(eintrag.nummer)) {
+      meldungen.push({
+        regel: 'nummer-weicht-ab',
+        text: `${name}: die Belegnummer der Journalzeile steht nicht auf dem Papier `
+          + '— eine der beiden Angaben ist nachträglich geändert worden',
+      });
+    }
+    if (eintrag.zeitpunkt && !text.includes(eintrag.zeitpunkt)) {
+      meldungen.push({
+        regel: 'zeitpunkt-weicht-ab',
+        text: `${name}: der Zeitpunkt der Journalzeile steht nicht auf dem Papier `
+          + '— § 131 Abs 1 Z 2 BAO verlangt die Zeitfolge, und sie steht hier zweimal verschieden',
+      });
+    }
+    if (typeof eintrag.betragBrutto === 'number' && !text.includes(EUR(eintrag.betragBrutto))) {
+      meldungen.push({
+        regel: 'betrag-weicht-ab',
+        text: `${name}: der Bruttobetrag der Journalzeile steht nicht auf dem Papier `
+          + '— die Zahl, aus der die Umsatzsteuer folgt, sagt hier zweierlei',
       });
     }
   }

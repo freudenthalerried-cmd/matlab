@@ -5,9 +5,26 @@
  * Nach einem Neuladen beginnt die Rechnungsnummer wieder bei eins, und § 11
  * UStG verlangt Einmaligkeit. Diese Datei gibt der Ablage ihr Gedächtnis: ein
  * **Journal aus Zeilen, das nur wächst** — dieselbe Eigenschaft, die § 131 BAO
- * vom Inhalt verlangt, hier auf die Form übertragen. Eine Datei, an die nur
- * angehängt wird, kennt kein Ändern und kein Löschen; genau deshalb ist sie
- * der richtige Speicherort.
+ * vom Inhalt verlangt, hier auf die Form übertragen.
+ *
+ * **Berichtigt am 12. September 2026.** Hier stand: *„Eine Datei, an die nur
+ * angehängt wird, kennt kein Ändern und kein Löschen."* Das ist zu viel
+ * gesagt. Die Datei kennt gar nichts — **angehängt** wird nur, weil der
+ * Schreiber es so tut. Was diese Form wirklich leistet, ist eng und lässt
+ * sich benennen:
+ *
+ * - Eine **gelöschte oder vertauschte** Zeile bricht das Zurücklesen: `lfd`
+ *   muss lückenlos aufsteigen.
+ * - Eine **geänderte** Zeile bricht nichts. Wer im Texteditor aus 911,06 die
+ *   Zahl 91,06 macht, bekommt ein Journal, das sauber zurückliest.
+ *
+ * Dagegen steht seit dem 12. September nicht die Form, sondern das zweite
+ * Papier: Seit es die Durchschrift gibt (`ablageort.js`), steht jede dieser
+ * Zahlen zweimal, und `npm run pruefe-ablage` hält sie gegeneinander. Das ist
+ * keine Fälschungssicherheit — wer beide Dateien gleichlautend ändert, kommt
+ * durch, und dagegen hülfe nur ein Anker außerhalb dieses Rechners. Es ist
+ * die Sicherung gegen die einseitige Änderung, und das ist der Fall, der
+ * vorkommt.
  *
  * Drei Entscheidungen tragen diese Datei:
  *

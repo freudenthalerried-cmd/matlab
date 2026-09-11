@@ -3432,6 +3432,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'und der von außen wie eine gepflegte Ablage aussieht.',
   }),
   Object.freeze({
+    id: 'geaenderte-journalzeile',
+    pruefer: 'test',
+    was: 'Die Zahlen der Journalzeile werden nicht gegen das Papier gehalten',
+    datei: 'shop/src/ablageort.js',
+    art: 'ersetzen',
+    suchen: "    if (typeof eintrag.betragBrutto === 'number' && !text.includes(EUR(eintrag.betragBrutto))) {",
+    ersetzen: "    if (typeof eintrag.betragBrutto === 'string') {",
+    erwartet: /ein geänderter Betrag blieb unbemerkt|betrag-weicht-ab/,
+    warum: 'Die Betriebskette sagt über die Aufbewahrung „§ 131 BAO — nur ergänzen, nie '
+      + 'ändern", und die Form hielt das auch: Das Journal wächst nur, und eine gelöschte oder '
+      + 'vertauschte Zeile deckt `lfd` auf. Eine **geänderte** deckte nichts auf — wer im '
+      + 'Texteditor aus 911,06 die Zahl 91,06 macht, bekam ein Journal, das sauber '
+      + 'zurückliest. Seit es die Durchschrift gibt, steht dieselbe Zahl zweimal; diese '
+      + 'Mutation nimmt den Vergleich wieder heraus und verlangt, dass es auffällt.',
+  }),
+  Object.freeze({
     id: 'luecke-in-der-rechnungsakte',
     pruefer: 'test',
     was: 'Die Rechnung wird abgelegt, obwohl sie eine Lückenmarke trägt',

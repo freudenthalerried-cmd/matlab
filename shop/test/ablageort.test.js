@@ -204,3 +204,82 @@ test('eine getrackte Durchschrift ist derselbe Fall wie ein getracktes Journal',
   const regeln = b.meldungen.map((m) => m.regel);
   assert.deepEqual(regeln, ['beleg-im-verzeichnis', 'beleg-am-falschen-ort']);
 });
+
+
+/* ------------------------------------------------------------------ *
+ * Dieselbe Zahl, zweimal geschrieben (12. September 2026)
+ *
+ * Das Journal wächst nur, und eine gelöschte oder vertauschte Zeile deckt
+ * `lfd` auf. Eine **geänderte** deckte nichts auf — bis es die Durchschrift
+ * gibt, auf der dieselben Zahlen ein zweites Mal stehen.
+ * ------------------------------------------------------------------ */
+
+const PAPIER = [
+  'Rechnung RE-2026-0001',
+  'Ausstellungsdatum: 2026-09-11',
+  'Lieferdatum: 2026-09-09',
+  'Gesamtbetrag             911,06 €',
+].join('\n');
+
+const ZEILE = {
+  lfd: 1,
+  art: 'rechnung',
+  nummer: 'RE-2026-0001',
+  zeitpunkt: '2026-09-11',
+  vorgang: '2026-0110',
+  betragBrutto: 911.06,
+};
+
+test('Journalzeile und Durchschrift sagen dasselbe: keine Meldung', () => {
+  const b = durchschriftenbefund({
+    eintraege: [ZEILE],
+    dateien: [{ name: 'RE-2026-0001.txt', zeichen: PAPIER.length, text: PAPIER }],
+  });
+  assert.equal(b.sauber, true, JSON.stringify(b.meldungen));
+});
+
+test('ein nachträglich geänderter Betrag im Journal fällt am Papier auf', () => {
+  // Wer im Texteditor aus 911,06 die Zahl 91,06 macht, bekommt ein Journal,
+  // das sauber zurückliest — die Form wächst ja weiter nur.
+  const b = durchschriftenbefund({
+    eintraege: [{ ...ZEILE, betragBrutto: 91.06 }],
+    dateien: [{ name: 'RE-2026-0001.txt', zeichen: PAPIER.length, text: PAPIER }],
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['betrag-weicht-ab'],
+    'ein geänderter Betrag blieb unbemerkt');
+  // Und der Betrag selbst steht **nicht** in der Meldung: Ein Prüfer, der
+  // Kundendaten protokolliert, verlegt sie an einen dritten Ort.
+  assert.ok(!b.meldungen[0].text.includes('91,06'));
+  assert.ok(!b.meldungen[0].text.includes('911,06'));
+});
+
+test('ein geänderter Zeitpunkt fällt auf — § 131 Abs 1 Z 2 BAO verlangt die Zeitfolge', () => {
+  const b = durchschriftenbefund({
+    eintraege: [{ ...ZEILE, zeitpunkt: '2026-09-10' }],
+    dateien: [{ name: 'RE-2026-0001.txt', zeichen: PAPIER.length, text: PAPIER }],
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['zeitpunkt-weicht-ab']);
+});
+
+test('eine geänderte Nummer auf dem Papier fällt an der Journalzeile auf', () => {
+  // Die andere Richtung: Der Dateiname stimmt weiter, der Text nicht mehr.
+  const b = durchschriftenbefund({
+    eintraege: [ZEILE],
+    dateien: [{
+      name: 'RE-2026-0001.txt',
+      zeichen: PAPIER.length,
+      text: PAPIER.replace('RE-2026-0001', 'RE-2026-0009'),
+    }],
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['nummer-weicht-ab']);
+});
+
+test('ohne gelesenen Text bleibt es beim Namensabgleich', () => {
+  // `dateien` ohne `text` ist der Fall der reinen Dateiliste — sie prüft
+  // weiter, was sie prüfen kann, statt eine Abweichung zu behaupten.
+  const b = durchschriftenbefund({
+    eintraege: [{ ...ZEILE, betragBrutto: 1 }],
+    dateien: [{ name: 'RE-2026-0001.txt', zeichen: 2400 }],
+  });
+  assert.equal(b.sauber, true);
+});
