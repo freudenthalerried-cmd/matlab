@@ -5,6 +5,7 @@
   "scripts": {
     "test": "node --test test/*.test.js",
     "alles": "node bin/gesamtlauf.mjs",
+    "schnelllauf": "node bin/schnelllauf.mjs",
     "build": "node build-demo.mjs",
     "import": "node bin/import.mjs",
     "pruefe-tests": "node bin/testpruefung.mjs",

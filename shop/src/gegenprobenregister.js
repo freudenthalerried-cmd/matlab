@@ -864,6 +864,82 @@ export const GEGENPROBEN = Object.freeze([
       + 'geprüfter Testfall. Ein Prüfer, der eine Zeile prüft, die es nicht gibt, verdeckt die, die es gibt.',
   }),
   Object.freeze({
+    id: 'haken-ohne-schnelllauf',
+    pruefer: 'pruefe-haken',
+    was: 'Der Haken ruft den Schnelllauf nicht mehr auf',
+    datei: 'shop/haken/pre-commit',
+    art: 'ersetzen',
+    suchen: 'if ! node "$WURZEL/shop/bin/schnelllauf.mjs"; then',
+    ersetzen: 'if false; then',
+    // Der Haken selbst ist eine Quelldatei: Wer ihn anfasst, macht das
+    // Erzeugnis veraltet, und der Hakenprüfer weigert sich dann, bevor er
+    // irgendetwas über den Haken sagt. Ohne diesen Bau meldete die Probe
+    // `haken-sperrt-immer` und hätte nur bewiesen, dass die Frischeprüfung
+    // wirkt.
+    baueVorher: true,
+    erwartet: /haken-ruft-nicht/,
+    warum: 'Gate 38 steht und fällt mit dieser einen Zeile. Fällt sie weg, laufen wieder vier '
+      + 'von fünfundfünfzig Prüfern vor einem Commit — und das Register in `src/haken.js` sagt '
+      + 'weiter, es seien dreiundvierzig mehr. Ein Register, das der Haken nicht einlöst, ist '
+      + 'schlimmer als keines: Es sagt, es sei geprüft.',
+  }),
+  Object.freeze({
+    id: 'grund-ohne-pruefer',
+    pruefer: 'test',
+    was: 'Eine Ausnahme vom Haken zeigt auf einen Prüfer, den es nicht gibt',
+    datei: 'shop/src/haken.js',
+    art: 'ersetzen',
+    suchen: "    pruefer: 'pruefe-lesbar', sekunden: 13.8,",
+    ersetzen: "    pruefer: 'pruefe-lesbarkeit', sekunden: 13.8,",
+    erwartet: /grund-ohne-pruefer/,
+    warum: 'Ein Grund, der ins Leere zeigt, deckt keinen Prüfer — er lässt einen ungedeckt. '
+      + 'Der gemeinte Prüfer liefe dann still im Schnelllauf mit, was hier zufällig gutginge; '
+      + 'bei einer teuren Probe wäre es der Commit, der plötzlich eine halbe Minute braucht '
+      + 'und niemand weiß warum.',
+  }),
+  Object.freeze({
+    id: 'weigerung-sperrt-den-commit',
+    pruefer: 'schnelllauf',
+    was: 'Der Schnelllauf hält eine Weigerung für einen Fund',
+    datei: 'shop/bin/schnelllauf.mjs',
+    art: 'ersetzen',
+    suchen: '  if (e.status === 2) {',
+    ersetzen: '  if (e.status === 22) {',
+    erwartet: /pruefe-gebinde/,
+    warum: 'Ausgang 2 heißt: Dem Prüfer fehlt die Grundlage. `pruefe-gebinde` kann seit dem '
+      + 'Verlust von `preise/poschacher-positionen.csv` nichts messen und wird das auch nicht '
+      + 'wieder können, solange die Datei fehlt. Wer die Weigerung wie einen Fund behandelt, '
+      + 'sperrt jeden Commit dieses Bestandes für immer.',
+  }),
+  Object.freeze({
+    id: 'freibrief-ohne-hauptwort',
+    pruefer: 'pruefe-punkte',
+    was: 'Der Freibrief für Gate-Nummern liest die Zahl ohne ihr Hauptwort',
+    datei: 'shop/src/punktezahlen.js',
+    art: 'ersetzen',
+    suchen: '    form: /\\bGate (\\d+)\\b/g,',
+    ersetzen: '    form: /\\bGatter (\\d+)\\b/g,',
+    erwartet: /zahl-ohne-eintrag/,
+    warum: 'Bis zum 11. September standen hier fünf Gate-Nummern als bloße Ziffernfolgen, und '
+      + 'seit Gate 34 war der Prüfer rot. Die Form deckt die Zahl nur neben ihrem Hauptwort — '
+      + 'trifft das Hauptwort nicht mehr, ist jede Gate-Nummer wieder meldepflichtig, und das '
+      + 'ist genau das Verhalten, das den Freibrief von einer Blankovollmacht unterscheidet.',
+  }),
+  Object.freeze({
+    id: 'musterausfuhr-nicht-eingeordnet',
+    pruefer: 'pruefe-umschreibung',
+    was: 'Eine Musterausfuhr der Kundentexte steht in keiner Einordnung',
+    datei: 'shop/src/umschreibung.js',
+    art: 'ersetzen',
+    suchen: "    modul: 'quellenstempel', ausfuhr: 'QUELLENSTEMPEL', behauptung: false,",
+    ersetzen: "    modul: 'quellenstempelchen', ausfuhr: 'QUELLENSTEMPEL', behauptung: false,",
+    erwartet: /regel-nicht-eingeordnet/,
+    warum: 'Genau der Zustand, in dem dieser Prüfer vom 25. August bis zum 11. September rot '
+      + 'stand: drei Musterausfuhren ohne Einordnung, siebzehn Tage lang, und kein Commit hat '
+      + 'es aufgehalten. Ein Register über die Reichweite, das nicht jede Regel kennt, hat die '
+      + 'Lücke, die es misst — eine Ebene höher.',
+  }),
+  Object.freeze({
     id: 'schaufenster-ohne-aussagen',
     pruefer: 'pruefe-schaufenster',
     was: 'Eine Beschreibung, deren Zahlen stimmen und deren Sätze überholt sind',

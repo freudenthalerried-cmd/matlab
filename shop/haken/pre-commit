@@ -79,6 +79,23 @@ fi
 # Mit der übergebenen Zahl sind es 0,6 s. Der Anlass: Zwei Runden nachdem der
 # Prüfer draußen blieb, ging „39 Prüfer" hinaus, während 40 im Register standen
 # — gefunden erst vom 39-Minuten-Gesamtlauf.
+# **Gate 38, 11. September 2026.** Die Begründung steht in `src/haken.js`.
+# Kurz: Der Gesamtlauf dauert 72 Minuten und läuft nie zwischen zwei Commits.
+# In ihm standen drei Prüfer rot, einer seit dem 25. August, und kein Commit
+# hat das aufgehalten.
+#
+#   Ein Prüfer, der rot ist und nichts aufhält, ist kein Prüfer, sondern eine
+#   Notiz.
+#
+# Gemessen: 47 der 55 Prüfer bleiben unter einer Sekunde, zusammen fünf. Wer
+# hier läuft, rechnet der Schnelllauf aus dem Register aus; wer nicht,
+# steht mit Grund und gestoppter Laufzeit in `NICHT_IM_HAKEN`.
+if ! node "$WURZEL/shop/bin/schnelllauf.mjs"; then
+  echo 'Abbruch: Ein Prüfer des Schnelllaufs ist rot — der Commit bleibt stehen.'
+  echo 'Ansehen mit: npm --prefix shop run schnelllauf'
+  exit 1
+fi
+
 ZAHL=$(printf '%s\n' "$TESTAUSGABE" | sed -n 's/^# tests \([0-9]*\)$/\1/p' | tail -1)
 if [ -n "$ZAHL" ] && ! node "$WURZEL/shop/bin/schaufensterpruefung.mjs" "--testfaelle=$ZAHL" >/dev/null 2>&1; then
   echo 'Abbruch: npm run pruefe-schaufenster meldet eine überholte Kennzahl.'

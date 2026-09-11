@@ -553,6 +553,30 @@ export const REGELQUELLEN = Object.freeze([
       + 'richtige Auskunft vor der Meldung schützt. Ihre Reichweite wird über `ZUSAGE` '
       + 'mitgemessen — eine Ausnahme, die zu weit reicht, macht dort einen gefangenen Satz frei.',
   }),
+  // **Nachgetragen am 11. September 2026.** Diese drei standen seit dem 25.
+  // August (`QUELLENSTEMPEL`) und dem 10. September (die beiden aus der
+  // Absage) im Bestand und in keiner Einordnung — `pruefe-umschreibung` war
+  // seither rot, und kein Commit hat das aufgehalten.
+  Object.freeze({
+    modul: 'quellenstempel', ausfuhr: 'QUELLENSTEMPEL', behauptung: false,
+    warum: 'liest eine Form, die dieses Haus selbst schreibt: den Quellenstempel am Fuß einer '
+      + 'Angabe, mit `^` verankert. Verboten ist keine Formulierung — gemessen wird, ob die '
+      + 'Standform (einer, viele, ohne) zu dem passt, was tatsächlich dahintersteht. Eine '
+      + 'Umschreibung gibt es nicht, weil kein Mensch diesen Satz formuliert.',
+  }),
+  Object.freeze({
+    modul: 'absage', ausfuhr: 'ABSAGEGRUENDE', behauptung: false,
+    warum: 'übersetzt statt zu verbieten: Jedes Muster liest eine Meldung der eigenen Prüfer — '
+      + 'Text, den dieses Haus schreibt und nicht ein Kunde. Dass eine umformulierte Meldung '
+      + 'durchfiele, fängt der Abgleich in `gruendeAusQuellen`: Er liest die Gründe aus dem '
+      + 'Quelltext und meldet jeden ohne Satz, statt ihn wegzulassen.',
+  }),
+  Object.freeze({
+    modul: 'absage', ausfuhr: 'NICHT_FUER_DEN_KUNDEN', behauptung: false,
+    warum: 'die Ausnahme zur Zeile darüber: Meldungen, die eine Rechnung aufhalten und nie an '
+      + 'einen Besteller gehen. Auch sie lesen eigenen Text. Eine Ausnahme, die zu weit reicht, '
+      + 'zeigt sich dort, wo sie wirkt — in den Gründen ohne Satz, die `absagegruende` meldet.',
+  }),
 ]);
 
 /**

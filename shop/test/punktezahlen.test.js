@@ -41,13 +41,45 @@ test('jede Kennzahl nennt ihre Quelle und den Punkt, in dem sie steht', () => {
   }
 });
 
-test('jeder Freibrief trägt einen Grund, der trägt', () => {
-  assert.ok(OHNE_MESSUNG.length >= 3);
+test('jeder Freibrief nennt genau einen Gegenstand und einen Grund, der trägt', () => {
+  /**
+   * **Seit dem 11. September zwei Sorten.** Ein Eintrag nennt entweder
+   * `zahlen` — einzelne Beobachtungen, die genau so dastehen — oder `form`,
+   * ein Muster, das die Zahl **mit ihrem Hauptwort** liest. Beides zugleich
+   * wäre zwei Freibriefe unter einem Grund, keines von beiden ein Freibrief
+   * ohne Gegenstand.
+   */
+  assert.ok(OHNE_MESSUNG.length >= 3, `nur ${OHNE_MESSUNG.length} Freibriefe`);
   for (const e of OHNE_MESSUNG) {
-    assert.ok(e.zahlen.length >= 1);
+    const gegenstand = e.form ? `Form ${e.form}` : `Zahlen ${(e.zahlen ?? []).join(', ')}`;
+    assert.equal(Boolean(e.form) !== Boolean(e.zahlen), true,
+      `${gegenstand}: ein Freibrief nennt zahlen oder form, nicht beides und nicht keines`);
+    if (e.zahlen) assert.ok(e.zahlen.length >= 1, `${gegenstand}: leere Zahlenliste`);
+    if (e.form) {
+      assert.ok(e.form.flags.includes('g'), `${gegenstand}: die Form muss global suchen`);
+      assert.ok(/\(/.test(e.form.source), `${gegenstand}: die Form muss die Zahl einklammern`);
+    }
     assert.ok(e.warumOhneMessung.length > 100,
-      `Freibrief für ${e.zahlen.join(', ')}: der Grund ist zu knapp, um in einem Jahr zu tragen`);
+      `Freibrief für ${gegenstand}: der Grund ist zu knapp, um in einem Jahr zu tragen`);
   }
+});
+
+test('eine Form deckt die Zahl nur neben ihrem Hauptwort', () => {
+  /**
+   * **Der Anlass, 11. September 2026.** Hier standen fünf Gate-Nummern als
+   * Ziffernfolgen. Seither sind Gate 34 bis 37 dazugekommen — der Prüfer war
+   * seit dem 8. September rot. Und die Ziffernfolge deckte zu viel: „36" wäre
+   * auch als Kennzahl frei gewesen.
+   */
+  const lage = gut();
+  lage.punkte[0] = { id: 'einkaufspreise-belegen', text: 'Gate 36 hält die Kopfzeilen (46 sind zurückgerechnet)' };
+  const mitWort = punktebefund(lage);
+  assert.deepEqual(mitWort.meldungen, [], JSON.stringify(mitWort.meldungen));
+
+  lage.punkte[0] = { id: 'einkaufspreise-belegen', text: '36 Kennzahlen der Beschreibung (46 sind zurückgerechnet)' };
+  const ohneWort = punktebefund(lage);
+  assert.deepEqual(ohneWort.meldungen.map((m) => m.regel), ['zahl-ohne-eintrag'],
+    'dieselbe Ziffernfolge ohne ihr Hauptwort bleibt meldepflichtig');
 });
 
 test('die heile Lage meldet nichts', () => {
@@ -123,9 +155,19 @@ test('ein Freibrief für eine Zahl, die nirgends mehr steht, ist ein Befund — 
   const lage = gut();
   lage.punkte[1].text = 'der Katalog führt Gewicht für 7 von 46 Artikeln. '
     + 'Macht aus dem Mindestbestellwert (Gate 25, 250 €) eine Rechnung.';
-  // 403 steht in keinem der vier Punkte dieser Lage.
+  /*
+   * **Bis zum 11. September prüfte dieser Fall den Freibrief für den
+   * HTTP-Status 403.** Den gibt es nicht mehr: Der Punkt `google-extended`
+   * nannte die Zahl seit einem Tag nicht mehr, der Prüfer hat das gemeldet,
+   * und der Freibrief ist gestrichen. Geprüft wird jetzt an einer Zahl, die
+   * noch dasteht — und zusätzlich an einer **Form**, denn seit heute kann
+   * auch die ins Leere zeigen.
+   */
   const b = punktebefund({ ...lage, vollstaendig: true });
-  assert.ok(b.meldungen.some((m) => m.regel === 'eintrag-ohne-zahl' && m.text.includes('403')));
+  assert.ok(b.meldungen.some((m) => m.regel === 'eintrag-ohne-zahl' && m.text.includes('32')),
+    JSON.stringify(b.meldungen));
+  assert.ok(b.meldungen.some((m) => m.regel === 'eintrag-ohne-zahl' && m.text.includes('die Form')),
+    'auch eine Form, die nichts mehr trifft, ist ein Freibrief ohne Gegenstand');
 });
 
 test('jedes Werkzeug mit auswärtiger Grundlage nennt Datei und Grund', () => {

@@ -158,6 +158,16 @@ export const LESER = Object.freeze([
     warumOhnePruefung: 'Er ruft die Prüfer, statt selbst zu lesen. Die Weigerung gehört '
       + 'dorthin, wo gemessen wird — sonst stünde sie einmal zu früh und einmal zu spät.',
   }),
+  Object.freeze({
+    werkzeug: 'bin/schnelllauf.mjs',
+    erzeugnis: null,
+    warumOhnePruefung: 'Derselbe Grund wie beim Gesamtlauf: Er ruft dreiundvierzig Prüfer auf '
+      + 'und liest selbst nichts. Jeder von ihnen weigert sich für sich, und im Haken steht '
+      + 'die Frischeprüfung ohnehin schon eine Zeile vorher. Das Wort steht hier, weil eine '
+      + 'Veränderliche die gesammelte Ausgabe eines Prüfers hält — ein Wort im Quelltext ist '
+      + 'kein Zugriff, und der Prüfer kann das nicht unterscheiden. Er soll es auch nicht: '
+      + 'Lieber ein Eintrag zu viel als ein Leser, den niemand kennt.',
+  }),
   // **Berichtigt am 5. September.** Der Grund lautete: „Es schreibt eine
   // Übersicht in `ausgabe/`, es liest dort nichts." Seit heute liest es die
   // Messliste — die Schwelle „Keywords mit gemessenem Suchvolumen" stand bis

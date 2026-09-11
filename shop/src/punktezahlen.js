@@ -101,17 +101,51 @@ export function kennzahlen(m) {
  * ungeprüft weiter). Die dritte ist ein Register mit Pflichtgrund.
  */
 export const OHNE_MESSUNG = Object.freeze([
+  /*
+   * **Formen statt Ziffern — 11. September 2026.**
+   *
+   * Hier standen fünf Gate-Nummern als Ziffernfolgen: `['20','23','25','28','30']`.
+   * Seither sind Gate 34 bis 37 entschieden worden, und drei von ihnen
+   * standen in offenen Punkten — der Prüfer war damit seit dem 8. September
+   * rot, und kein Commit hat das aufgehalten.
+   *
+   * > **Ein Freibrief, der auf eine Ziffernfolge lautet, muss jedem neuen
+   * > Gate hinterhergetragen werden — und gilt außerdem für jede andere
+   * > Zahl, die zufällig gleich aussieht.** „36" wäre ab heute auch als
+   * > Kennzahl, Stückzahl oder Prozentsatz frei.
+   *
+   * Ein Eintrag nennt deshalb entweder `zahlen` (einzelne Beobachtungen, die
+   * genau so dastehen) oder `form` — ein Muster, das die Zahl **mit ihrem
+   * Hauptwort** liest. Die Form deckt nur, was auch wirklich eine Gate-Nummer,
+   * ein Paragraph oder ein Tagesdatum ist.
+   */
   Object.freeze({
-    zahlen: ['20', '23', '25', '28', '30'],
+    form: /\bGate (\d+)\b/g,
     warumOhneMessung: 'Gate-Nummern. Sie bezeichnen eine Entscheidung und ändern sich nie — '
       + 'dass es das Gate gibt und was es sagt, misst npm run pruefe-gates gegen das '
-      + 'Register, und zwar in beide Richtungen.',
+      + 'Register, und zwar in beide Richtungen. Gedeckt ist nur die Zahl hinter dem Wort '
+      + '„Gate"; dieselbe Ziffernfolge als Kennzahl bleibt meldepflichtig.',
+  }),
+  Object.freeze({
+    form: /(?:§+|\bArt\.)\s*(\d+)/g,
+    warumOhneMessung: 'Paragraphen- und Artikelnummern. Sie bezeichnen eine Rechtsnorm — § 132 '
+      + 'BAO, § 11 UStG, § 377 UGB, Art. 28 DSGVO. Was in ihnen steht, misst kein Werkzeug '
+      + 'dieses Hauses, und ändern würde sie nur der Gesetzgeber. Gedeckt ist nur die Zahl '
+      + 'hinter dem Zeichen — die 28 aus Art. 28 war bis heute zufällig gedeckt, weil es auch '
+      + 'ein Gate 28 gibt, und das ist kein Grund, sondern ein Zusammentreffen.',
+  }),
+  Object.freeze({
+    form: /\b(\d{1,2})\.\s?(?:Jänner|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember)\b/g,
+    warumOhneMessung: 'Tagesdaten. Ein Datum ist die Aussage darüber, wann etwas festgestellt '
+      + 'wurde; es gegen den heutigen Bestand zu halten hieße, die Vergangenheit für falsch zu '
+      + 'erklären. Gedeckt ist nur der Tag vor einem Monatsnamen.',
   }),
   Object.freeze({
     zahlen: ['2', '8', '08'],
-    warumOhneMessung: 'Datumsangaben und Tagesnummern. Ein Datum ist die Aussage darüber, wann '
-      + 'etwas festgestellt wurde; es gegen den heutigen Bestand zu halten hieße, die '
-      + 'Vergangenheit für falsch zu erklären.',
+    warumOhneMessung: 'Tagesnummern ohne Monatsnamen, wie sie in Kurzschreibweisen stehen '
+      + '(„08.09."). Sie fallen nicht unter die Form darüber, weil dort der Monatsname fehlt — '
+      + 'und einzeln geführt zu werden ist besser, als das Datumsmuster so weit zu machen, '
+      + 'dass es jede zweistellige Zahl deckt.',
   }),
   Object.freeze({
     zahlen: ['44'],
@@ -135,12 +169,13 @@ export const OHNE_MESSUNG = Object.freeze([
       + 'als solche geschrieben („aus einem Punkt lässt sich keine Regel ziehen"); eine '
       + 'Messung am heutigen Bestand gäbe es dafür nicht.',
   }),
-  Object.freeze({
-    zahlen: ['403'],
-    warumOhneMessung: 'Der HTTP-Status, mit dem der Netzausgang dieser Umgebung die '
-      + 'Crawler-Dokumentation abweist. Er beschreibt die Umgebung, nicht den Bestand, und '
-      + 'ist von hier aus nicht anders festzustellen als durch den Versuch selbst.',
-  }),
+  // **Gestrichen am 11. September 2026.** Hier stand ein Freibrief für den
+  // HTTP-Status 403, mit dem der Netzausgang die Crawler-Dokumentation
+  // abweist. Der Punkt `google-extended` nennt die Zahl nicht mehr, seit er
+  // am 10. September neu geschrieben wurde — der Prüfer hat das als
+  // `eintrag-ohne-zahl` gemeldet und damit recht gehabt. Ein Freibrief für
+  // eine Zahl, die nirgends steht, deckt nur noch die nächste, die zufällig
+  // gleich aussieht.
 ]);
 
 /**
@@ -214,10 +249,19 @@ export function punktebefund({ punkte, messwerte, gibtEs, vollstaendig = false }
     }
   }
 
-  const erlaubt = new Set(OHNE_MESSUNG.flatMap((e) => e.zahlen));
+  const erlaubt = new Set(OHNE_MESSUNG.flatMap((e) => e.zahlen ?? []));
+  const formen = OHNE_MESSUNG.filter((e) => e.form);
+  // Was eine Form deckt, hangt am Text des einzelnen Punktes: `Gate 36` deckt
+  // die 36 dort, wo sie hinter dem Wort steht, und nirgends sonst.
+  const durchForm = (text) => {
+    const gefunden = new Set();
+    for (const e of formen) for (const t of text.matchAll(e.form)) gefunden.add(t[1]);
+    return gefunden;
+  };
   for (const p of punkte) {
+    const ausForm = durchForm(p.text);
     for (const t of p.text.match(ZAHLMUSTER) ?? []) {
-      if (gedeckt.get(p.id).has(t) || erlaubt.has(t)) continue;
+      if (gedeckt.get(p.id).has(t) || erlaubt.has(t) || ausForm.has(t)) continue;
       meldungen.push({
         regel: 'zahl-ohne-eintrag',
         text: `Im Punkt ${p.id} steht die Zahl ${t}, die weder gemessen wird noch einen `
@@ -239,12 +283,46 @@ export function punktebefund({ punkte, messwerte, gibtEs, vollstaendig = false }
     }
   }
 
+  /*
+   * **Die Gegenrichtung, jetzt auch fuer die Formen.** Ein Freibrief, den
+   * nichts mehr braucht, deckt nur noch die naechste Zahl, die zufaellig
+   * gleich aussieht — am 11. September stand genau so einer fuer den
+   * HTTP-Status 403 da, dessen Punkt ihn seit einem Tag nicht mehr nannte.
+   */
   for (const e of vollstaendig ? OHNE_MESSUNG : []) {
+    if (e.form) {
+      if (punkte.some((p) => e.form.test(p.text))) continue;
+      meldungen.push({
+        regel: 'eintrag-ohne-zahl',
+        text: `die Form ${e.form} trifft in keinem offenen Punkt mehr, hat aber weiter einen Freibrief`,
+      });
+      continue;
+    }
     for (const z of e.zahlen) {
       if (punkte.some((p) => (p.text.match(ZAHLMUSTER) ?? []).includes(z))) continue;
       meldungen.push({
         regel: 'eintrag-ohne-zahl',
         text: `${z} steht in keinem offenen Punkt mehr, hat aber weiter einen Freibrief`,
+      });
+    }
+  }
+
+  /*
+   * **Jeder Eintrag nennt genau eines von beiden und einen Grund.** Ohne
+   * diese Zeilen waere ein Eintrag ohne `zahlen` und ohne `form` still: Er
+   * deckte nichts, meldete nichts und saehe aus wie eine Entscheidung.
+   */
+  for (const e of OHNE_MESSUNG) {
+    if (!e.form === !e.zahlen) {
+      meldungen.push({
+        regel: 'freibrief-ohne-gegenstand',
+        text: `Ein Eintrag in OHNE_MESSUNG nennt ${e.form ? 'beides' : 'weder zahlen noch form'}`,
+      });
+    }
+    if (!e.warumOhneMessung || e.warumOhneMessung.length < 80) {
+      meldungen.push({
+        regel: 'freibrief-ohne-grund',
+        text: `Ein Eintrag in OHNE_MESSUNG traegt keinen tragfaehigen Grund`,
       });
     }
   }
