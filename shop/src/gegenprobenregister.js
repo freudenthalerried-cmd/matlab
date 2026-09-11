@@ -3294,6 +3294,37 @@ export const GEGENPROBEN = Object.freeze([
       + 'galt dasselbe — nur wurden die schon gedruckt. Fällt der Aufruf weg, geht der nächste '
       + 'Bezugsweg wieder ungehindert hinaus.',
   }),
+  Object.freeze({
+    id: 'ausgang-ohne-internaprobe',
+    pruefer: 'test',
+    was: 'Ein Ausgang geht an einen Kunden, und kein Fall sieht seinen fertigen Text an',
+    datei: 'shop/src/aussentexte.js',
+    art: 'ersetzen',
+    suchen: "    funktion: 'mailtoWeg',",
+    ersetzen: "    funktion: 'mailtoWegX',",
+    erwartet: /ausgang-ohne-internaprobe|grund-ohne-ausgang/,
+    warum: 'Genau der Zustand vom 10. September: Das Verzeichnis führt sechzehn Ausgänge, neun '
+      + 'davon an einen Kunden oder an jeden Besucher — und der Bezugsweg stand auf dreien von '
+      + 'ihnen, weil niemand ihren fertigen Text angesehen hat. Eine Sperre im Werkzeug gilt '
+      + 'für den Weg durch dieses Werkzeug; ein Ausgang ist aber eine Stelle, keine Strecke.',
+  }),
+  Object.freeze({
+    id: 'internaprobe-sieht-nicht-hin',
+    pruefer: 'test',
+    was: 'Die Probe erzeugt den Text und sieht ihn nicht an',
+    datei: 'shop/test/ausgangsinterna.test.js',
+    art: 'ersetzen',
+    // Mutiert wird die **giftige** Seite: Auf der sauberen ändert ein
+    // leergelegter Fund nichts, weil dort ohnehin nichts steht — und genau
+    // das ist der Grund, aus dem es die giftige Seite gibt.
+    suchen: '    const funde = findeInterna(text);\n    assert.ok(funde.length >= 1,',
+    ersetzen: '    const funde = [];\n    assert.ok(funde.length >= 0,',
+    erwartet: /ausgangsinterna|Internum|untergeschobene/,
+    warum: 'Eine Probe, die den Text erzeugt und nicht hineinsieht, ist teurer als keine: Sie '
+      + 'steht im Verzeichnis, zählt als Deckung und findet nichts. Der Fund vom 10. September '
+      + 'saß in einer Überschrift, die aus zwei Feldern zusammengesetzt wird — an keinem der '
+      + 'beiden Felder wäre er zu sehen gewesen, nur am fertigen Text.',
+  }),
 ]);
 
 /**

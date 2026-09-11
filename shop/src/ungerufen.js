@@ -282,11 +282,16 @@ export const UNGERUFEN = Object.freeze([
   }),
   Object.freeze({
     modul: 'src/aussentexte.js',
-    funktionen: ['ungenannteAusgaenge'],
+    funktionen: ['ungenannteAusgaenge', 'internabefund'],
     warum: 'Die Regel des Ausgangsverzeichnisses steht in `test/aussentexte.test.js` und '
       + 'läuft dort gegen den echten Bestand. Diese Funktion ist ihr Hilfsmittel und kein '
       + 'zweiter Weg — sie an ein Werkzeug zu hängen hieße, dieselbe Prüfung zweimal zu '
-      + 'führen und beim nächsten Umbau eine der beiden zu vergessen.',
+      + 'führen und beim nächsten Umbau eine der beiden zu vergessen. **Seit dem '
+      + '11. September gilt dasselbe für `internabefund`**, und zwar aus einem zwingenderen '
+      + 'Grund: Er hält die Liste der Internaproben gegen das Verzeichnis, und diese Liste '
+      + 'kann nur dort stehen, wo die Texte auch **erzeugt** werden — in '
+      + '`test/ausgangsinterna.test.js`. Ein Werkzeug müsste sie aus dem Quelltext einer '
+      + 'Testdatei lesen; dann prüfte es eine Aufzählung statt einen Text.',
   }),
   Object.freeze({
     modul: 'src/bedarf.js',

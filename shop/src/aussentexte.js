@@ -181,3 +181,136 @@ export function ungenannteAusgaenge(gefunden, ausgaenge = AUSGAENGE, keine = KEI
   }
   return gefunden.filter((g) => !bekannt.has(g.funktion) && !begruendet.has(g.funktion));
 }
+
+/* ------------------------------------------------------------------
+ * **Der Anlass, 11. September 2026 — Runde 32.**
+ *
+ * Am Vortag ist herausgekommen, dass Angebot, Auftragsbestätigung und
+ * Rechnung den Namen des Lieferanten trugen — **drei Nennungen in einem
+ * Angebot von 1.544 Zeichen** —, während `src/interna.js` genau diesen Namen
+ * seit dem 28. August als Bezugsweg führt. Geprüft wurde das über jede
+ * gebaute Seite und jeden Anzeigentext, über die Belege nie.
+ *
+ * Die Sperre steht seither in `bin/vorgang.mjs`, also **im Werkzeug**. Dieses
+ * Verzeichnis zählt aber sechzehn Ausgänge, und **neun** davon gehen an einen
+ * Kunden oder an jeden Besucher. Für die übrigen fünf kundennahen gibt es kein
+ * Werkzeug, das sie aufhielte.
+ *
+ * > **Eine Sperre im Werkzeug gilt für den Weg durch dieses Werkzeug. Ein
+ * > Ausgang ist aber eine Stelle, keine Strecke.**
+ *
+ * Deshalb dieselbe Bauart wie überall hier: eine Aufzählung mit Pflichtgrund,
+ * in beide Richtungen gehalten. Wer einen kundennahen Ausgang baut, trägt
+ * entweder eine Probe ein, die seinen **fertigen Text** durch `findeInterna`
+ * schickt, oder den Grund, warum das nicht geht.
+ * ------------------------------------------------------------------ */
+
+/** Geht dieser Ausgang an einen Kunden oder an jeden Besucher? */
+export function gehtNachDraussen(ausgang) {
+  return /Kunde|Besucher/i.test(ausgang.an);
+}
+
+/**
+ * Kundennahe Ausgänge, deren Text **nicht** durch `findeInterna` läuft —
+ * jeder mit dem Grund.
+ *
+ * Ohne diese Liste hätte die Prüfung zwei Möglichkeiten, und beide wären
+ * falsch: jeden Ausgang zu verlangen (dann scheitert sie an dem einen, der
+ * kein Text ist) oder nur die aufzuzählen, die schon geprüft werden (dann
+ * wächst das Verzeichnis ungeprüft weiter).
+ */
+export const OHNE_INTERNAPROBE = Object.freeze([
+  Object.freeze({
+    funktion: 'jsonFuerSkript',
+    warum: 'Kein eigener Text, sondern eine Einbettung: Die Funktion nimmt entgegen, was ihr '
+      + 'gegeben wird, und macht es skriptsicher. Was an Interna hineingerät, entscheidet der '
+      + 'Aufrufer — und die Aufrufer sind die gebauten Seiten, über die `pruefe-geheimnis` '
+      + 'ohnehin läuft. Eine Probe hier prüfte die eigene Probeneingabe.',
+  }),
+  Object.freeze({
+    funktion: 'baueZip',
+    warum: 'Kein Text, sondern ein Archiv — und es trägt nichts Eigenes hinein, sondern die '
+      + 'Dateien, die `npm run website` gebaut hat. Über genau die läuft `pruefe-geheimnis`, '
+      + 'und `npm run pruefe-paket` hält das Archiv byteweise gegen den Auslieferungsordner. '
+      + 'Eine zweite Prüfung desselben Inhalts fände dasselbe oder wäre falsch.',
+  }),
+  Object.freeze({
+    funktion: 'mailtoWeg',
+    warum: 'Eine Adresse, kein Text: Sie kodiert den Anfragetext für das Mailprogramm. Was '
+      + 'darin steht, kommt aus `baueKundenanfrage`, und genau der Text wird geprüft. Die '
+      + 'Kodierung würde einen Fund außerdem unkenntlich machen — `%20Poschacher` fände kein '
+      + 'Muster, das auf Wortgrenzen sieht.',
+  }),
+]);
+
+/**
+ * Hält die Internaproben gegen das Ausgangsverzeichnis — in beide Richtungen.
+ *
+ * @param {string[]} geprueft  Funktionsnamen, deren Text eine Probe durch
+ *                             `findeInterna` schickt
+ */
+export function internabefund(geprueft, ausgaenge = AUSGAENGE, ohne = OHNE_INTERNAPROBE) {
+  const meldungen = [];
+  const draussen = ausgaenge.filter(gehtNachDraussen);
+  const mitProbe = new Set(geprueft);
+  const begruendet = new Set(ohne.map((o) => o.funktion));
+  const alle = new Set(ausgaenge.map((a) => a.funktion));
+
+  if (!draussen.length) {
+    return {
+      draussen: 0,
+      meldungen: [{
+        regel: 'kein-ausgang-nach-draussen',
+        text: 'Kein einziger Ausgang geht an einen Kunden — dieser Befund prüft nichts',
+      }],
+      sauber: false,
+    };
+  }
+
+  for (const a of draussen) {
+    if (mitProbe.has(a.funktion) || begruendet.has(a.funktion)) continue;
+    meldungen.push({
+      regel: 'ausgang-ohne-internaprobe',
+      text: `${a.funktion} geht an „${a.an}" und kein Fall schickt seinen Text durch `
+        + 'findeInterna',
+    });
+  }
+
+  for (const o of ohne) {
+    if (!alle.has(o.funktion)) {
+      meldungen.push({
+        regel: 'grund-ohne-ausgang',
+        text: `OHNE_INTERNAPROBE nennt ${o.funktion} — diesen Ausgang gibt es nicht`,
+      });
+    }
+    if (mitProbe.has(o.funktion)) {
+      meldungen.push({
+        regel: 'begruendet-und-geprueft',
+        text: `${o.funktion} steht als ungeprüft begründet und wird trotzdem geprüft`,
+      });
+    }
+    if (!o.warum || o.warum.length < 80) {
+      meldungen.push({
+        regel: 'grund-zu-duenn',
+        text: `${o.funktion}: der Grund trägt den Verzicht nicht`,
+      });
+    }
+  }
+
+  for (const f of mitProbe) {
+    if (alle.has(f)) continue;
+    meldungen.push({
+      regel: 'probe-ohne-ausgang',
+      text: `Eine Internaprobe prüft ${f} — dieser Ausgang steht in keinem Verzeichnis`,
+    });
+  }
+
+  return {
+    ausgaenge: ausgaenge.length,
+    draussen: draussen.length,
+    geprueft: mitProbe.size,
+    begruendet: ohne.length,
+    meldungen,
+    sauber: meldungen.length === 0,
+  };
+}
