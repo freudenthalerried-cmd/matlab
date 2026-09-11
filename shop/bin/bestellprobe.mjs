@@ -36,6 +36,7 @@ import { freierPort } from '../src/freierport.js';
 import { pruefeBestelldaten } from '../src/kunde.js';
 import { wegwerfordner } from '../src/wegwerf.js';
 import { betreiberAmTagX } from '../src/tagx.js';
+import { belegordner } from '../src/ablageort.js';
 import { geschaeftsjahr, geschaeftstag, zeitstempel } from '../src/geschaeftszeit.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -386,6 +387,36 @@ try {
         probleme.push(`der Rechnung fehlt: ${pflicht.join(', ')}`);
       } else {
         bestanden.push('Am Tag X entsteht aus derselben Bestellung eine Rechnung nach § 11 UStG');
+      }
+
+      /*
+       * **Und was davon übrig bleibt — 11. September 2026, abends.**
+       *
+       * Bis heute endete die Papierkette auf dem Bildschirm: `--ablegen`
+       * schrieb eine Journalzeile, der Beleg selbst wurde gedruckt und war
+       * danach fort. § 132 BAO verlangt die Belege sieben Jahre, § 11 Abs 2
+       * UStG vom Aussteller eine Durchschrift jeder Rechnung.
+       *
+       * Abgelegt wird in einen Wegwerfordner: `VORGANG_ABLAGE` — eine Probe,
+       * die den Bestand verändert, ist keine. Seit heute hält das Werkzeug
+       * diesen Satz selbst ein und weist `--ablegen` ohne den Schalter ab,
+       * sobald `VORGANG_BETREIBER` gesetzt ist.
+       */
+      const akte = join(ziel, 'akte');
+      const abgelegt = spawnSync(process.execPath, [join(SHOP, 'bin', 'vorgang.mjs'),
+        join(ziel, 'anfrage.txt'), '--kunde', join(ziel, 'kunde.json'), '--nummer', '2026-9001',
+        '--stufe', 'rechnung', '--geliefert', '2026-09-09', '--bezahlt', '2026-09-08', '--ablegen'],
+      { cwd: SHOP, encoding: 'utf8', env: { ...werkzeugumgebung, VORGANG_ABLAGE: akte } });
+      const atext = `${abgelegt.stdout ?? ''}${abgelegt.stderr ?? ''}`;
+      const durchschrift = join(akte, belegordner(2026), 'RE-2026-0001.txt');
+      if (abgelegt.status !== 0) {
+        probleme.push(`die Rechnung lässt sich nicht ablegen: ${atext.trim().split('\n').slice(-4).join(' | ')}`);
+      } else if (!existsSync(durchschrift)) {
+        probleme.push('die Rechnung ist abgelegt, die Durchschrift fehlt (§ 132 BAO)');
+      } else if (!readFileSync(durchschrift, 'utf8').includes('RE-2026-0001')) {
+        probleme.push('die Durchschrift trägt die Rechnungsnummer nicht');
+      } else {
+        bestanden.push('Die Rechnung liegt als Durchschrift in der Akte, nicht nur als Journalzeile');
       }
     }
   }

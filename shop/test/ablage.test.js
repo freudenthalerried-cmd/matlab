@@ -91,6 +91,27 @@ test('Was in der Ablage steht, ändert sich nicht mehr', () => {
   assert.equal(a.eintraege[0].text, 'ursprünglich');
 });
 
+test('Dieselbe Belegnummer kommt kein zweites Mal in die Ablage', () => {
+  /*
+   * § 11 Abs 1 Z 5 UStG verlangt fortlaufend **und einmalig**. Seit die Nummer
+   * auch von außen mitgebracht werden kann (`npm run vorgang -- --ablegen`
+   * legt unter der Nummer ab, die auf dem Papier steht), sichert die
+   * Einmaligkeit nicht mehr `naechsteNummer`, sondern diese Zeile.
+   *
+   * **Ihre Probe fuhr bis zum 11. September über das Werkzeug** — und seit an
+   * dessen Anfang die Durchschrift steht, hält die schon vorher auf. Eine
+   * Sperre, deren einzige Probe an einer anderen Sperre hängen bleibt, ist
+   * ungeprüft.
+   */
+  const a = neueAblage();
+  haltefest(a, { art: 'angebot', nummer: 'AN-2026-0102', zeitpunkt: '2026-09-04' });
+  assert.throws(
+    () => haltefest(a, { art: 'angebot', nummer: 'AN-2026-0102', zeitpunkt: '2026-09-05' }),
+    /AN-2026-0102 steht schon in der Ablage/,
+  );
+  assert.equal(a.eintraege.length, 1);
+});
+
 test('Jeder Eintrag braucht einen Zeitpunkt', () => {
   const a = neueAblage();
   assert.throws(() => haltefest(a, { art: 'vermerk' }), /braucht einen Zeitpunkt/);

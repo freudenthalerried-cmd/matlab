@@ -2,7 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { ABLAGEORT, istJournal, journalpfad, NOETIGE_SPERREN, ortsbefund } from '../src/ablageort.js';
+import {
+  ABLAGEORT, belegname, belegordner, belegpfad, durchschriftenbefund, istBeleg, istJournal,
+  journalpfad, NOETIGE_SPERREN, ortsbefund,
+} from '../src/ablageort.js';
 
 test('das Journal eines Jahres hat einen Pfad, und nur ein Jahr bekommt einen', () => {
   assert.equal(journalpfad(2026), 'ablage/journal-2026.jsonl');
@@ -113,4 +116,91 @@ test('der Bestand steht: keine .gitignore hebt die Sperre auf', async () => {
     ortsbefund({ gitignore: zusammen }).meldungen.filter((m) => m.regel === 'ort-nicht-gesperrt'),
     [],
   );
+});
+
+
+/* ------------------------------------------------------------------ *
+ * Die Durchschrift (11. September 2026)
+ *
+ * Das Journal ist die Aufzeichnung, der Beleg ist der Beleg. § 132 BAO
+ * verlangt beides sieben Jahre; bis heute schrieb `--ablegen` nur die Zeile.
+ * ------------------------------------------------------------------ */
+
+test('die Durchschrift heißt wie die Belegnummer, und ohne Nummer wie der Vorgang', () => {
+  assert.equal(belegname({ art: 'rechnung', nummer: 'RE-2026-0001' }), 'RE-2026-0001.txt');
+  // Die Auftragsbestätigung führt nach ARTEN bewusst keinen Nummernkreis —
+  // rückführbar ist sie über den Vorgang (§ 131 Abs 1 Z 5 BAO).
+  assert.equal(belegname({ art: 'auftragsbestaetigung', vorgang: '2026-0102' }), 'AB-2026-0102.txt');
+  assert.throws(() => belegname({ art: 'auftragsbestaetigung' }), /Vorgangsnummer/);
+  assert.throws(() => belegname({ art: 'erfunden', nummer: 'XX-2026-0001' }), /Unbekannte Vorgangsart/);
+});
+
+test('der Belegordner liegt in der Ablage und lässt sich umlenken', () => {
+  assert.equal(belegordner(2026), 'belege-2026');
+  assert.equal(belegpfad(2026, { art: 'rechnung', nummer: 'RE-2026-0001' }),
+    `${ABLAGEORT}/belege-2026/RE-2026-0001.txt`);
+  assert.throws(() => belegordner('2026'), /Geschäftsjahr/);
+});
+
+test('eine Durchschrift ist an ihrem Namen zu erkennen, gleich wo sie liegt', () => {
+  assert.equal(istBeleg('ablage/belege-2026/RE-2026-0001.txt'), true);
+  assert.equal(istBeleg('/tmp/AB-2026-0102.txt'), true);
+  assert.equal(istBeleg('ablage/journal-2026.jsonl'), false);
+  assert.equal(istBeleg('RECHNUNG.txt'), false);
+  // Kein Kürzel aus ARTEN: keine Durchschrift.
+  assert.equal(istBeleg('XX-2026-0001.txt'), false);
+});
+
+test('ein Eintrag ohne Durchschrift ist ein Befund — § 132 BAO verlangt den Beleg', () => {
+  const b = durchschriftenbefund({
+    eintraege: [{ lfd: 1, art: 'rechnung', nummer: 'RE-2026-0001', vorgang: '2026-0110' }],
+    dateien: [],
+  });
+  assert.equal(b.sauber, false, 'ein Eintrag ohne Durchschrift blieb ohne Befund');
+  assert.equal(b.meldungen.length, 1);
+  assert.equal(b.meldungen[0].regel, 'durchschrift-fehlt');
+  assert.match(b.meldungen[0].text, /RE-2026-0001\.txt/);
+});
+
+test('eine Durchschrift ohne Eintrag ist die schwerere der beiden Richtungen', () => {
+  const b = durchschriftenbefund({
+    eintraege: [],
+    dateien: [{ name: 'RE-2026-0001.txt', zeichen: 2400 }],
+  });
+  assert.equal(b.meldungen.length, 1, 'eine Durchschrift ohne Eintrag blieb ohne Befund');
+  assert.equal(b.meldungen[0].regel, 'durchschrift-ohne-eintrag');
+});
+
+test('eine leere Datei zählt als fehlende Durchschrift', () => {
+  const b = durchschriftenbefund({
+    eintraege: [{ lfd: 1, art: 'rechnung', nummer: 'RE-2026-0001' }],
+    dateien: [{ name: 'RE-2026-0001.txt', zeichen: 0 }],
+  });
+  assert.equal(b.meldungen.length, 1);
+  assert.equal(b.meldungen[0].regel, 'durchschrift-leer');
+});
+
+test('Journal und Durchschriften decken sich: keine Meldung', () => {
+  const eintraege = [
+    { lfd: 1, art: 'angebot', nummer: 'AN-2026-0102', vorgang: '2026-0102' },
+    { lfd: 2, art: 'auftragsbestaetigung', nummer: null, vorgang: '2026-0102' },
+    { lfd: 3, art: 'rechnung', nummer: 'RE-2026-0001', vorgang: '2026-0102' },
+  ];
+  assert.equal(eintraege.length, 3, 'drei Belegarten, zwei Namensregeln');
+  const b = durchschriftenbefund({
+    eintraege,
+    dateien: eintraege.map((e) => ({ name: belegname(e), zeichen: 1800 })),
+  });
+  assert.equal(b.sauber, true, JSON.stringify(b.meldungen));
+  assert.equal(b.geprueft, 6);
+});
+
+test('eine getrackte Durchschrift ist derselbe Fall wie ein getracktes Journal', () => {
+  const b = ortsbefund({
+    gitignore: NOETIGE_SPERREN.join('\n'),
+    getrackt: ['ablage/belege-2026/RE-2026-0001.txt'],
+    belegdateien: ['shop/RE-2026-0002.txt'],
+  });
+  const regeln = b.meldungen.map((m) => m.regel);
+  assert.deepEqual(regeln, ['beleg-im-verzeichnis', 'beleg-am-falschen-ort']);
 });

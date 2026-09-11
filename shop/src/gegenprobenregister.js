@@ -3401,6 +3401,52 @@ export const GEGENPROBEN = Object.freeze([
       + 'die Rechnung hielt sich als einzige nicht daran. Eine Regel, die für zwei von drei '
       + 'Belegarten gilt, ist keine Regel über die Ablage, sondern eine über zwei Belegarten.',
   }),
+  Object.freeze({
+    id: 'beleg-ohne-durchschrift',
+    pruefer: 'test',
+    was: 'Der Beleg wird abgelegt, aber nicht aufbewahrt',
+    datei: 'shop/bin/vorgang.mjs',
+    art: 'ersetzen',
+    suchen: "    writeFileSync(datei, text.endsWith('\\n') ? text : `${text}\\n`, { encoding: 'utf8', flag: 'wx' });",
+    ersetzen: '    void text;',
+    erwartet: /keine Durchschrift abgelegt/,
+    warum: 'Das Journal ist die Aufzeichnung, der Beleg ist der Beleg. § 132 BAO verlangt '
+      + 'beides sieben Jahre, § 11 Abs 2 UStG vom Aussteller eine Durchschrift oder Abschrift '
+      + 'jeder Rechnung. Bis zum 11. September schrieb `--ablegen` die Zeile und druckte den '
+      + 'Beleg auf den Bildschirm — nach dem Schließen des Fensters gab es das Papier nicht '
+      + 'mehr, das der Kunde bekommt. Diese Mutation stellt genau das wieder her: Die '
+      + 'Journalzeile entsteht weiter, die Durchschrift nicht.',
+  }),
+  Object.freeze({
+    id: 'journal-ohne-durchschriftabgleich',
+    pruefer: 'test',
+    was: 'Der Abgleich sieht nur in eine Richtung — Datei zu Eintrag, nicht Eintrag zu Datei',
+    datei: 'shop/src/ablageort.js',
+    art: 'ersetzen',
+    suchen: '  for (const eintrag of eintraege) {\n    const name = belegname(eintrag);',
+    ersetzen: '  for (const eintrag of []) {\n    const name = belegname(eintrag);',
+    erwartet: /ein Eintrag ohne Durchschrift blieb ohne Befund/,
+    warum: 'Ein Register, das nur in eine Richtung prüft, hält die Hälfte fest. Fehlt die '
+      + 'Durchschrift zu einem Eintrag, steht in der Akte eine Aufzeichnung über ein Papier, '
+      + 'das niemand mehr hat — genau der Zustand, den die Runde vom 11. September vorfand, '
+      + 'und der von außen wie eine gepflegte Ablage aussieht.',
+  }),
+  Object.freeze({
+    id: 'probe-in-der-echten-akte',
+    pruefer: 'test',
+    was: 'Ein Lauf mit ausgetauschtem Betreiber legt in der echten Akte ab',
+    datei: 'shop/bin/vorgang.mjs',
+    art: 'ersetzen',
+    suchen: "const PROBENSCHALTER = ['VORGANG_BETREIBER', 'VORGANG_LIEFERANTEN'];",
+    ersetzen: 'const PROBENSCHALTER = [];',
+    erwartet: /der Lauf hat in die echte Akte geschrieben/,
+    warum: 'Gefunden am 11. September, als der neue Abgleich in der echten Akte einen Eintrag '
+      + 'fand: zwei gezogene Rechnungsnummern aus Proben dieses Hauses. § 11 UStG nimmt eine '
+      + 'Belegnummer nicht zurück — RE-2026-0001 wäre verbraucht gewesen, bevor der Betrieb '
+      + 'seine erste Rechnung stellt. Wer die Grundlagen austauscht, probt; diese Mutation '
+      + 'lässt die Probe wieder in den Bestand schreiben, und die Prüfung räumt auf, bevor sie '
+      + 'es meldet.',
+  }),
 ]);
 
 /**

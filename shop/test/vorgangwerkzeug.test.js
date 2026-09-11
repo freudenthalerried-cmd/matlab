@@ -16,7 +16,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -327,7 +327,79 @@ test('dieselbe Belegnummer kommt kein zweites Mal in die Akte',
     assert.equal(lauf(argumente, gemeinsam).code, 0);
     const zweit = lauf(argumente, gemeinsam);
     assert.notEqual(zweit.code, 0, `zweimal dieselbe Nummer durchgelassen:\n${zweit.aus}`);
-    assert.match(zweit.aus, /AN-2026-0107 steht schon in der Ablage/);
+    /*
+     * **Seit dem 11. September hält die Durchschrift auf**, nicht erst das
+     * Journal: Der Beleg wird vor seiner Journalzeile geschrieben, und eine
+     * Datei, die es schon gibt, bricht den Lauf ab. Die Sperre in `haltefest`
+     * steht unverändert dahinter — sie hat seither ihre eigene Probe in
+     * `test/ablage.test.js`, weil sie sonst keine mehr hätte.
+     */
+    assert.match(zweit.aus, /Durchschrift AN-2026-0107\.txt liegt schon in der Ablage/);
+    const zeilen = readFileSync(join(akte, 'journal-2026.jsonl'), 'utf8')
+      .split('\n').filter(Boolean);
+    assert.equal(zeilen.length, 1, 'der zweite Lauf hat trotzdem ins Journal geschrieben');
+  });
+
+test('mit ausgetauschter Grundlage schreibt --ablegen nicht in die echte Akte',
+  { skip: !vorhanden && 'preise/ fehlt' }, () => {
+    /*
+     * **Der zweite Fund vom 11. September.** Der neue Abgleich zwischen
+     * Journal und Durchschriften fand in der **echten** Akte einen Eintrag:
+     * zwei gezogene Rechnungsnummern und eine Zeile mit `betragNetto: null`,
+     * übrig aus den Läufen dieses Hauses vom selben Tag. § 11 UStG nimmt eine
+     * Belegnummer nicht zurück — `RE-2026-0001` wäre verbraucht gewesen,
+     * bevor der Betrieb seine erste Rechnung stellt.
+     */
+    const u = baueUmgebung();
+    const echt = pfad('../../ablage');
+    const vorher = existsSync(echt);
+    const e = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0112',
+      '--stufe', 'rechnung', '--geliefert', '2026-09-09', '--bezahlt', '2026-09-08', '--ablegen'],
+    mitUid(u.ordner));
+    // Aufräumen **vor** der Zusicherung: Schlägt die Sperre fehl, soll die
+    // Probe nicht ihrerseits eine Nummer in der echten Akte verbrauchen.
+    const angelegt = !vorher && existsSync(echt);
+    if (angelegt) rmSync(echt, { recursive: true, force: true });
+
+    assert.equal(angelegt, false, `der Lauf hat in die echte Akte geschrieben:\n${e.aus}`);
+    assert.equal(e.code, 1, e.aus);
+    assert.match(e.aus, /VORGANG_BETREIBER ist gesetzt/);
+  });
+
+test('--ablegen hinterlässt die Durchschrift des Belegs, nicht nur die Zeile darüber',
+  { skip: !vorhanden && 'preise/ fehlt' }, () => {
+    /*
+     * **Der Fund vom 11. September, abends.** Die Runde davor nahm den vollen
+     * Belegtext aus dem Journal — richtig, eine Journalzeile ist keine
+     * Urkunde. Danach landete er **nirgendwo**: `--ablegen` schrieb eine Zeile
+     * und druckte den Beleg auf den Bildschirm. § 132 BAO verlangt die Belege
+     * sieben Jahre, § 11 Abs 2 UStG vom Aussteller eine Durchschrift jeder
+     * Rechnung.
+     */
+    const u = baueUmgebung();
+    const akte = wegwerfordner('akte-');
+    const e = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0111',
+      '--stufe', 'rechnung', '--geliefert', '2026-09-09', '--bezahlt', '2026-09-08', '--ablegen'],
+    { ...mitUid(u.ordner), VORGANG_ABLAGE: akte });
+    assert.equal(e.code, 0, e.aus);
+
+    const datei = join(akte, 'belege-2026', 'RE-2026-0001.txt');
+    assert.equal(existsSync(datei), true, `keine Durchschrift abgelegt:\n${e.aus}`);
+    const durchschrift = readFileSync(datei, 'utf8');
+
+    // **Dasselbe Papier, nicht ein zweites.** Was abgelegt ist, muss das sein,
+    // was hinausgeht — sonst sind es zwei Belege für einen Geschäftsfall.
+    assert.ok(durchschrift.includes('RE-2026-0001'), 'die Nummer fehlt auf der Durchschrift');
+    assert.ok(durchschrift.includes('Baustellenweg'),
+      'ohne Anschrift ist es keine Abschrift der Rechnung');
+    assert.ok(e.aus.includes(durchschrift.trim()),
+      'gedruckt wurde ein anderer Text als abgelegt');
+
+    // Und die Zeile im Journal bleibt der Betreff — die Anschrift steht jetzt
+    // genau einmal in der Akte, nämlich auf der Durchschrift.
+    const eintrag = readFileSync(join(akte, 'journal-2026.jsonl'), 'utf8')
+      .trim().split('\n').map((z) => JSON.parse(z)).find((z) => z.typ === 'eintrag').eintrag;
+    assert.ok(!eintrag.text.includes('Baustellenweg'));
   });
 
 /* ------------------------------------------------------------------ *

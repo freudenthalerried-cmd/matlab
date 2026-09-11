@@ -75,6 +75,16 @@ export function gatesAusRegister(text) {
  */
 export const SPUREN = Object.freeze([
   Object.freeze({
+    gate: 40,
+    datei: 'shop/bin/vorgang.mjs',
+    muster: /legeDurchschriftAb/,
+    warum: 'Zu jedem abgelegten Beleg gehört seine Durchschrift. Die Entscheidung steckt in '
+      + 'dieser Funktion: Vor ihr schrieb `--ablegen` eine Journalzeile und druckte den Beleg '
+      + 'auf den Bildschirm — nach dem Schließen des Fensters gab es das Papier nicht mehr, '
+      + 'das der Kunde bekommt, obwohl § 132 BAO die Belege sieben Jahre verlangt. Nähme '
+      + 'jemand Gate 40 zurück, bliebe von jeder Rechnung die Zeile über sie und sonst nichts.',
+  }),
+  Object.freeze({
     gate: 39,
     datei: 'shop/src/beleg.js',
     muster: /export function lieferungsname/,

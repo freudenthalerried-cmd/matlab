@@ -48,7 +48,7 @@
  * nichts ab und schreibt keine Datei.
  */
 
-import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -68,7 +68,7 @@ import {
   ARTEN, haltefest, naechsteNummer, neueAblage, pruefeNummernkreis, stelleRechnungAus,
 } from '../src/ablage.js';
 import { ausJournal, journalzeile } from '../src/speicher.js';
-import { ABLAGEORT, journalpfad } from '../src/ablageort.js';
+import { ABLAGEORT, belegname, belegordner, belegpfad, journalpfad } from '../src/ablageort.js';
 import { geschaeftstag } from '../src/geschaeftszeit.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -133,6 +133,84 @@ const abbruch = (text, rat = null) => {
   if (rat) console.error(rat);
   process.exit(1);
 };
+
+/**
+ * Legt die **Durchschrift** ab — den Beleg selbst, nicht die Zeile über ihn.
+ *
+ * **Der Fund vom 11. September, abends.** Bis dahin schrieb `--ablegen` eine
+ * Journalzeile und druckte den Beleg auf den Bildschirm. Die Runde davor hatte
+ * den vollen Belegtext aus dem Journal genommen — richtig, eine Journalzeile
+ * ist keine Urkunde —, und damit landete er **nirgendwo** mehr. Nach dem
+ * Schließen des Fensters gab es das Papier nicht mehr, das der Kunde bekommt.
+ *
+ * > **§ 132 BAO verlangt die Belege sieben Jahre, § 11 Abs 2 UStG vom
+ * > Aussteller eine Durchschrift oder Abschrift jeder Rechnung.** Eine
+ * > Aufzeichnung über ein Papier, das niemand mehr hat, erfüllt keines von
+ * > beiden.
+ *
+ * Geschrieben wird mit `flag: 'wx'`: Eine bestehende Datei bricht den Lauf ab,
+ * statt überschrieben zu werden. Eine Durchschrift, die sich überschreiben
+ * lässt, ist keine — § 131 Abs 1 Z 6 BAO verlangt, dass der ursprüngliche
+ * Inhalt feststellbar bleibt.
+ *
+ * **Zuerst die Durchschrift, dann die Journalzeile.** Bricht das Schreiben ab,
+ * steht kein Eintrag über ein Papier in der Akte, das es nicht gibt; bricht
+ * umgekehrt die Journalzeile, liegt eine Durchschrift ohne Eintrag da — und
+ * `npm run pruefe-ablage` meldet beide Richtungen.
+ */
+const legeDurchschriftAb = (wurzel, jahr, eintrag, text) => {
+  const ordner = join(wurzel, belegordner(jahr));
+  mkdirSync(ordner, { recursive: true });
+  const datei = join(ordner, belegname(eintrag));
+  try {
+    writeFileSync(datei, text.endsWith('\n') ? text : `${text}\n`, { encoding: 'utf8', flag: 'wx' });
+  } catch (fehler) {
+    if (fehler.code !== 'EEXIST') throw fehler;
+    abbruch(`Die Durchschrift ${belegname(eintrag)} liegt schon in der Ablage.`,
+      'Nichts abgelegt. Ein zweiter Beleg unter demselben Namen überschriebe den ersten,\n'
+      + 'und § 131 Abs 1 Z 6 BAO verlangt, dass der ursprüngliche Inhalt feststellbar bleibt.');
+  }
+  return datei;
+};
+
+/**
+ * **Eine Probe, die den Bestand verändert, ist keine — 11. September 2026.**
+ *
+ * Gefunden hat das der neue Abgleich zwischen Journal und Durchschriften: In
+ * der **echten** Akte stand ein Eintrag. Er stammte aus den Läufen dieses
+ * Hauses vom selben Tag — zwei gezogene Rechnungsnummern, ein Eintrag mit
+ * `betragNetto: null` und einem Betreff, der eine andere Nummer nennt als der
+ * Eintrag. Kein Geschäftsfall; und trotzdem wären `RE-2026-0001` und
+ * `RE-2026-0002` verbraucht gewesen, bevor der Betrieb seine erste Rechnung
+ * stellt. § 11 Abs 1 Z 5 UStG kennt kein Zurücknehmen einer Nummer.
+ *
+ * Der Satz dazu steht seit dem 4. September im Quelltext dieses Werkzeugs,
+ * über `VORGANG_ABLAGE`: *„Eine Probe, die den Bestand verändert, ist
+ * keine."* Er beschrieb, wofür der Schalter da ist — und hielt niemanden auf,
+ * der ihn vergaß.
+ *
+ * **Woran eine Probe zu erkennen ist:** Sie tauscht die Grundlagen aus. Wer
+ * `VORGANG_BETREIBER` setzt, rechnet mit einem Betrieb, den es so nicht gibt
+ * — heute unvermeidlich, denn dem echten fehlen UID und E-Mail, und ohne UID
+ * sperrt § 11 Abs 1 Z 6 UStG die Rechnung. Wer `VORGANG_LIEFERANTEN` setzt,
+ * rechnet mit Lieferzeiten, die niemand zugesagt hat.
+ *
+ * > **Ein Beleg auf ausgetauschter Grundlage gehört nicht in die Akte, die
+ * > sieben Jahre steht.** Er gehört in einen Wegwerfordner, und dafür gibt es
+ * > `VORGANG_ABLAGE`.
+ */
+const PROBENSCHALTER = ['VORGANG_BETREIBER', 'VORGANG_LIEFERANTEN'];
+
+if (ablegen && !process.env.VORGANG_ABLAGE) {
+  const gesetzt = PROBENSCHALTER.filter((schalter) => process.env[schalter]);
+  if (gesetzt.length) {
+    abbruch(`--ablegen in die echte Akte, aber ${gesetzt.join(' und ')} ist gesetzt.`,
+      'Wer die Grundlagen austauscht, probt — und eine Probe, die den Bestand verändert,\n'
+      + 'ist keine. Der Eintrag stünde nach § 132 BAO sieben Jahre in der echten Akte und\n'
+      + 'verbrauchte eine Belegnummer, die § 11 UStG nicht zurücknimmt.\n'
+      + 'Für Proben: VORGANG_ABLAGE auf einen Wegwerfordner setzen.');
+  }
+}
 
 if (!kundeDatei) {
   abbruch('Ohne --kunde gibt es keinen Empfänger.',
@@ -407,6 +485,13 @@ if (stufe === 'rechnung') {
     process.exit(1);
   }
 
+  // Erst das Papier, dann die Zeile darüber.
+  const durchschrift = legeDurchschriftAb(
+    wurzelDerAkte, jahrDerRechnung,
+    { art: 'rechnung', nummer: rechnungsnummer, vorgang: nummer },
+    ausgestellt.rechnung.text,
+  );
+
   const eintrag = stelleRechnungAus(akte, ausgestellt.rechnung, {
     zeitpunkt: datum,
     jahr: jahrDerRechnung,
@@ -438,8 +523,10 @@ if (stufe === 'rechnung') {
   zeige(ausgestellt.rechnung.text);
   console.log(`\nAbgelegt: Rechnungsnummer ${eintrag.nummer}, laufende Nummer `
     + `${eintrag.eintrag.lfd} im Journal ${jahrDerRechnung}.`);
+  console.log(`Durchschrift: ${process.env.VORGANG_ABLAGE ? durchschrift
+    : belegpfad(jahrDerRechnung, { art: 'rechnung', nummer: eintrag.nummer })}`);
   console.log('Im Journal steht der Betreff, nicht der Belegtext — die Anschrift des Kunden');
-  console.log('steht schon auf der Rechnung und gehört nicht ein zweites Mal in die Akte.');
+  console.log('steht auf der Durchschrift und gehört nicht ein zweites Mal in die Akte.');
   process.exit(0);
 }
 
@@ -663,6 +750,11 @@ const abgelegteArt = stufe === 'angebot' ? 'angebot' : 'auftragsbestaetigung';
  */
 const belegnummer = ARTEN[abgelegteArt].nummernkreis ? beleg.nummer : null;
 
+// Erst das Papier, dann die Zeile darüber — siehe `legeDurchschriftAb`.
+const durchschrift = legeDurchschriftAb(
+  wurzel, jahr, { art: abgelegteArt, nummer: belegnummer, vorgang: nummer }, beleg.text,
+);
+
 const eintrag = haltefest(ablage, {
   art: abgelegteArt,
   nummer: belegnummer,
@@ -683,6 +775,8 @@ const kreis = ARTEN[abgelegteArt].nummernkreis
 
 console.log(`\nAbgelegt: ${abgelegteArt}${belegnummer ? ` ${belegnummer}` : ''}`
   + ` als lfd. ${eintrag.lfd} in ${process.env.VORGANG_ABLAGE ? journal : journalpfad(jahr)}`);
+console.log(`Durchschrift: ${process.env.VORGANG_ABLAGE ? durchschrift
+  : belegpfad(jahr, { art: abgelegteArt, nummer: belegnummer, vorgang: nummer })}`);
 if (!belegnummer) {
   console.log('Ohne Belegnummer — eine fortlaufende Nummer verlangt § 11 UStG für die');
   console.log('Rechnung. Rückführbar bleibt der Eintrag über die Vorgangsnummer.');

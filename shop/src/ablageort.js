@@ -38,6 +38,8 @@
  * oder die mildere. Beides ist falsch.
  */
 
+import { ARTEN } from './ablage.js';
+
 /** Der Ordner, in den die Ablage schreibt — vom Verzeichniswurzel aus. */
 export const ABLAGEORT = 'ablage';
 
@@ -76,7 +78,7 @@ export function istJournal(pfad) {
  * @param {string[]} lage.getrackt       die Pfade, die git kennt
  * @param {string[]} lage.journaldateien alle gefundenen Journaldateien, relativ zur Wurzel
  */
-export function ortsbefund({ gitignore = '', getrackt = [], journaldateien = [] }) {
+export function ortsbefund({ gitignore = '', getrackt = [], journaldateien = [], belegdateien = [] }) {
   const zeilen = gitignore.split('\n').map((z) => z.trim()).filter((z) => z && !z.startsWith('#'));
   const meldungen = [];
 
@@ -119,6 +121,15 @@ export function ortsbefund({ gitignore = '', getrackt = [], journaldateien = [] 
         text: `${pfad} ist getrackt — Kundendaten in einem öffentlichen Verzeichnis, und die Geschichte behält sie`,
       });
     }
+    // Seit dem 11. September liegt neben dem Journal der Beleg selbst, und er
+    // trägt dieselben Daten in Klartext: Name, Anschrift, Betrag. Die Sperre
+    // kannte bis dahin nur die eine der beiden Dateiarten.
+    if (istBeleg(pfad)) {
+      meldungen.push({
+        regel: 'beleg-im-verzeichnis',
+        text: `${pfad} ist getrackt — eine Durchschrift trägt Name und Anschrift des Kunden im Klartext`,
+      });
+    }
   }
 
   for (const pfad of journaldateien) {
@@ -130,5 +141,143 @@ export function ortsbefund({ gitignore = '', getrackt = [], journaldateien = [] 
     }
   }
 
+  for (const pfad of belegdateien) {
+    if (!pfad.startsWith(`${ABLAGEORT}/`)) {
+      meldungen.push({
+        regel: 'beleg-am-falschen-ort',
+        text: `${pfad} liegt außerhalb von ${ABLAGEORT}/ und ist von keiner Sperre gedeckt`,
+      });
+    }
+  }
+
   return { geprueft: getrackt.length, meldungen, sauber: meldungen.length === 0 };
+}
+
+/**
+ * ## Die Durchschrift — 11. September 2026
+ *
+ * Bis heute schrieb `npm run vorgang -- --ablegen` **eine Zeile** ins Journal
+ * und druckte den Beleg auf den Bildschirm. Das Journal ist die Aufzeichnung;
+ * der Beleg ist der Beleg. § 132 BAO verlangt beides sieben Jahre, und § 11
+ * Abs 2 UStG verlangt vom Aussteller ausdrücklich eine **Durchschrift oder
+ * Abschrift jeder Rechnung**.
+ *
+ * > **Die Runde vom Vortag hat den Belegtext aus dem Journal genommen — zu
+ * > Recht, eine Journalzeile ist keine Urkunde. Nur ist er damit nirgendwo
+ * > mehr gelandet.** Was der Kunde bekommt, existierte nach dem Schließen des
+ * > Fensters nicht mehr.
+ *
+ * Seit heute liegt neben dem Journal je Geschäftsjahr ein Ordner
+ * `belege-2026/`, und darin steht je abgelegtem Beleg **eine Datei mit genau
+ * dem Text, der hinausgeht**. Drei Entscheidungen tragen ihn:
+ *
+ * **Der Name ist die Belegnummer.** Wer die Akte nach dem Papier durchsucht,
+ * sucht nach der Nummer, die darauf steht. Für die Auftragsbestätigung, die
+ * nach `ARTEN` bewusst keinen Nummernkreis führt, ist es die
+ * **Vorgangsnummer** — dieselbe Rückführung, die das Verzeichnis dort schon
+ * nennt (§ 131 Abs 1 Z 5 BAO).
+ *
+ * **Geschrieben wird nur, was noch nicht da ist.** Der Aufrufer legt mit
+ * `flag: 'wx'` an; eine bestehende Datei bricht den Lauf ab, statt sie zu
+ * überschreiben. Eine Durchschrift, die sich überschreiben lässt, ist keine.
+ *
+ * **Kein neues Journalfeld.** Der Pfad folgt aus Art, Nummer und Jahr und
+ * steht damit nicht ein zweites Mal irgendwo; `FELDER_DER_ABLAGE` nennt jede
+ * Feldaufnahme eine Migrationsfrage, und diese hier wäre eine ohne Not.
+ */
+
+/**
+ * Der Ordner, in dem die Durchschriften eines Geschäftsjahres liegen —
+ * **relativ zur Ablage**, nicht zur Verzeichniswurzel. `VORGANG_ABLAGE` lenkt
+ * den Ort für Proben um; ein Ordnername, der die Wurzel schon eingebaut hat,
+ * ließe sich nicht umlenken.
+ */
+export function belegordner(jahr) {
+  if (!Number.isInteger(jahr)) throw new Error('Durchschriften gehören zu einem Geschäftsjahr');
+  return `belege-${jahr}`;
+}
+
+/** Die Kürzel kommen aus `ARTEN` — eine zweite Liste wäre eine Abschrift. */
+export const BELEGMUSTER = new RegExp(
+  `^(?:${Object.values(ARTEN).map((a) => a.kuerzel).join('|')})-\\d{4}-\\d{4}\\.txt$`,
+);
+
+/** Ob ein Pfad eine Durchschrift ist — gleich, wo er liegt. */
+export function istBeleg(pfad) {
+  return BELEGMUSTER.test(String(pfad).split('/').at(-1));
+}
+
+/**
+ * Der Dateiname der Durchschrift eines Belegs.
+ *
+ * Ohne Belegnummer greift die Vorgangsnummer. Sie ist keine Notlösung: Die
+ * Auftragsbestätigung führt nach `ARTEN` absichtlich keinen Nummernkreis, und
+ * rückführbar ist sie über den Vorgang. Zwei Bestätigungen zu einem Vorgang
+ * tragen damit denselben Namen — und genau dann soll der Lauf anhalten und
+ * fragen, statt die erste zu überschreiben.
+ */
+export function belegname({ art, nummer = null, vorgang = null }) {
+  const beschreibung = ARTEN[art];
+  if (!beschreibung) throw new Error(`Unbekannte Vorgangsart: ${art}`);
+  if (nummer) return `${nummer}.txt`;
+  if (!vorgang) throw new Error(`${art} ohne Nummer braucht die Vorgangsnummer für die Durchschrift`);
+  return `${beschreibung.kuerzel}-${vorgang}.txt`;
+}
+
+/** Der Pfad der Durchschrift, von der Verzeichniswurzel aus. */
+export function belegpfad(jahr, eintrag) {
+  return `${ABLAGEORT}/${belegordner(jahr)}/${belegname(eintrag)}`;
+}
+
+/**
+ * Journaleinträge gegen Durchschriften — in **beide** Richtungen.
+ *
+ * Ein Eintrag ohne Durchschrift ist eine Aufzeichnung über ein Papier, das
+ * niemand mehr hat. Eine Durchschrift ohne Eintrag ist ein Papier, das
+ * hinausgegangen ist, ohne aufgezeichnet zu werden — die schwerere der
+ * beiden, denn die Aufzeichnung ist die Pflicht, aus der sich der Rest ergibt.
+ *
+ * Eine leere Datei zählt als fehlend: Sie sieht in jeder Dateiliste aus wie
+ * eine Durchschrift und ist keine.
+ *
+ * @param {object} lage
+ * @param {Array} lage.eintraege  die Einträge des Journals eines Jahres
+ * @param {Array} lage.dateien    `{ name, zeichen }` je Datei im Belegordner
+ */
+export function durchschriftenbefund({ eintraege = [], dateien = [] }) {
+  const meldungen = [];
+  const nachName = new Map(dateien.map((d) => [d.name, d]));
+  const erwartet = new Set();
+
+  for (const eintrag of eintraege) {
+    const name = belegname(eintrag);
+    erwartet.add(name);
+    const datei = nachName.get(name);
+    if (!datei) {
+      meldungen.push({
+        regel: 'durchschrift-fehlt',
+        text: `lfd. ${eintrag.lfd ?? '—'} (${eintrag.art}) steht im Journal, ${name} fehlt `
+          + '— § 132 BAO verlangt den Beleg, nicht nur die Zeile darüber',
+      });
+      continue;
+    }
+    if (!datei.zeichen) {
+      meldungen.push({
+        regel: 'durchschrift-leer',
+        text: `${name} ist leer — eine Datei, die in jeder Liste wie eine Durchschrift aussieht und keine ist`,
+      });
+    }
+  }
+
+  for (const datei of dateien) {
+    if (!erwartet.has(datei.name)) {
+      meldungen.push({
+        regel: 'durchschrift-ohne-eintrag',
+        text: `${datei.name} liegt in der Ablage, das Journal kennt ihn nicht `
+          + '— ein Papier, das hinausging, ohne aufgezeichnet zu werden',
+      });
+    }
+  }
+
+  return { geprueft: eintraege.length + dateien.length, meldungen, sauber: meldungen.length === 0 };
 }

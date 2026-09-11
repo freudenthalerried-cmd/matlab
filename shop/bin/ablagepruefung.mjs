@@ -21,7 +21,10 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, relative } from 'node:path';
-import { ABLAGEORT, istJournal, ortsbefund } from '../src/ablageort.js';
+import {
+  ABLAGEORT, belegordner, durchschriftenbefund, istBeleg, istJournal, ortsbefund,
+} from '../src/ablageort.js';
+import { ausJournal } from '../src/speicher.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const REPO = dirname(SHOP);
@@ -29,14 +32,23 @@ const REPO = dirname(SHOP);
 const getrackt = execFileSync('git', ['ls-files'], { cwd: REPO, encoding: 'utf8' })
   .split('\n').filter(Boolean);
 
-/** Auch die ungetrackten Journale finden — sie sind der Fall vor dem Schaden. */
+/**
+ * Auch die ungetrackten Journale finden — sie sind der Fall vor dem Schaden.
+ *
+ * **Und seit dem 11. September die Durchschriften.** Neben dem Journal liegt
+ * je Geschäftsjahr der Beleg selbst, und er trägt dieselben Daten im Klartext:
+ * Name, Anschrift, Betrag. Eine Sperre, die nur die eine der beiden Dateiarten
+ * kennt, deckt die Hälfte.
+ */
 const journaldateien = [];
+const belegdateien = [];
 const gehe = (ordner) => {
   for (const name of readdirSync(ordner)) {
     if (name === 'node_modules' || name === '.git') continue;
     const voll = join(ordner, name);
     if (statSync(voll).isDirectory()) gehe(voll);
     else if (istJournal(name)) journaldateien.push(relative(REPO, voll));
+    else if (istBeleg(name)) belegdateien.push(relative(REPO, voll));
   }
 };
 gehe(REPO);
@@ -74,15 +86,48 @@ const gitignoreDateien = [];
 }
 const gitignore = gitignoreDateien.map((d) => readFileSync(d, 'utf8')).join('\n');
 
-const { geprueft, meldungen } = ortsbefund({ gitignore, getrackt, journaldateien });
+const ort = ortsbefund({ gitignore, getrackt, journaldateien, belegdateien });
+
+/**
+ * **Das Journal gegen die Durchschriften — in beide Richtungen.**
+ *
+ * Bis zum 11. September schrieb `--ablegen` eine Zeile und druckte den Beleg
+ * auf den Bildschirm; nach dem Schließen des Fensters gab es das Papier nicht
+ * mehr. § 132 BAO verlangt die Belege sieben Jahre, § 11 Abs 2 UStG vom
+ * Aussteller eine Durchschrift jeder Rechnung.
+ *
+ * Gelesen wird nur, was in der Ablage liegt, und **ausgegeben wird nichts
+ * daraus** — Belegnummern und Dateinamen, keine Inhalte. Ein Prüfer, der
+ * Kundendaten in sein Protokoll schreibt, verlegt sie an einen dritten Ort.
+ */
+const durchschriften = [];
+for (const journalpfad of journaldateien) {
+  const jahr = Number(journalpfad.match(/journal-(\d{4})\.jsonl$/)?.[1]);
+  const ordner = join(REPO, dirname(journalpfad), belegordner(jahr));
+  const dateien = existsSync(ordner)
+    ? readdirSync(ordner).filter(istBeleg)
+      .map((name) => ({ name, zeichen: statSync(join(ordner, name)).size }))
+    : [];
+  const ablage = ausJournal(readFileSync(join(REPO, journalpfad), 'utf8'));
+  const befund = durchschriftenbefund({ eintraege: ablage.eintraege, dateien });
+  durchschriften.push({ journalpfad, ...befund });
+}
+
+const meldungen = [...ort.meldungen, ...durchschriften.flatMap((d) => d.meldungen)];
+const geprueft = ort.geprueft;
 
 console.log(`Ablageort — ${geprueft} getrackte Dateien angesehen, `
-  + `${journaldateien.length} Journaldateien gefunden\n`);
+  + `${journaldateien.length} Journaldateien und ${belegdateien.length} Durchschriften gefunden\n`);
+for (const d of durchschriften) {
+  console.log(`  ${d.journalpfad}: ${d.geprueft} Eintrag/Datei abgeglichen`);
+}
+if (durchschriften.length) console.log('');
 console.log(`  ${gitignoreDateien.length} .gitignore gelesen: `
   + `${gitignoreDateien.map((d) => relative(REPO, d)).join(', ')}\n`);
 
 if (meldungen.length === 0) {
-  console.log(`Keine Meldung. ${ABLAGEORT}/ ist gesperrt, und kein Journal liegt woanders.`);
+  console.log(`Keine Meldung. ${ABLAGEORT}/ ist gesperrt, kein Journal und keine`);
+  console.log('Durchschrift liegt woanders, und zu jeder Journalzeile gibt es den Beleg.');
   console.log('Eine Sperre, die erst nach dem ersten Datensatz kommt, kommt zu spät.');
   process.exit(0);
 }

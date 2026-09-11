@@ -115,8 +115,15 @@ export const SCHRITTE = Object.freeze([
   }),
   Object.freeze({
     id: 'aufbewahrung',
+    /*
+     * **Der letzte Schritt sagte „Beleg und Journal" und hatte nur das
+     * Journal — 11. September 2026.** Der Beleg wurde gedruckt und war nach
+     * dem Schließen des Fensters fort. Seit heute legt `--ablegen` neben die
+     * Journalzeile die Durchschrift (`ablage/belege-2026/RE-2026-0001.txt`),
+     * und `npm run pruefe-ablage` hält beide Richtungen gegeneinander.
+     */
     was: 'Beleg und Journal bleiben sieben Jahre erhalten',
-    werkzeug: 'ablage/ (gesperrt) und npm run pruefe-ablage',
+    werkzeug: 'ablage/ (gesperrt), Durchschrift je Beleg und npm run pruefe-ablage',
     gate: '§ 132 BAO — sieben Jahre; § 131 BAO — nur ergänzen, nie ändern',
   }),
 ]);

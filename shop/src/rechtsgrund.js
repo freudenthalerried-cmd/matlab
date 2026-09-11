@@ -95,6 +95,17 @@ export const RECHTSGRUENDE = Object.freeze([
     wirkung: 'pflichtgrund',
     belegt: false,
   }),
+  // **Nachgetragen am 11. September 2026, abends**, mit der Durchschrift: Bis
+  // dahin schrieb `--ablegen` eine Journalzeile und druckte den Beleg auf den
+  // Bildschirm. Die Aufbewahrungspflicht trifft den **Aussteller**, nicht nur
+  // den Empfänger — und sie trifft den Beleg, nicht die Zeile über ihn.
+  Object.freeze({
+    zitat: '§ 11 Abs 2 UStG',
+    behauptung: 'Der Aussteller bewahrt eine Durchschrift oder Abschrift jeder von ihm '
+      + 'ausgestellten Rechnung sieben Jahre auf.',
+    wirkung: 'pflichtgrund',
+    belegt: false,
+  }),
   Object.freeze({
     zitat: '§ 11 Abs 6 UStG',
     behauptung: 'Bis 400 € brutto genügt die Kleinbetragsrechnung mit weniger Angaben.',
