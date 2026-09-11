@@ -75,6 +75,16 @@ export function gatesAusRegister(text) {
  */
 export const SPUREN = Object.freeze([
   Object.freeze({
+    gate: 37,
+    datei: 'shop/bestellung.php',
+    muster: /DOPPELFENSTER/,
+    warum: 'Eine wortgleiche Bestellung binnen zehn Minuten wird nicht zweimal verbucht. Die '
+      + 'Entscheidung steckt in dieser Konstante und im Abdruck daneben: Ohne sie ergab '
+      + 'dieselbe Bestellung zwei Journalzeilen und zwei Nummern — gemessen am '
+      + '11. September. Nähme jemand Gate 37 zurück, verschwände der Vergleich aus derselben '
+      + 'Lesung, die die laufende Nummer vergibt.',
+  }),
+  Object.freeze({
     gate: 36,
     datei: 'shop/src/serverkopf.js',
     muster: /<IfModule mod_headers\.c>/,

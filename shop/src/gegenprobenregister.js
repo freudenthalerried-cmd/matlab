@@ -2942,6 +2942,37 @@ export const GEGENPROBEN = Object.freeze([
       + 'stehen; rot wird dann die Hälfte des Prüfers, die **ohne** mod_headers misst — die '
       + 'andere bleibt grün, denn mit Modul wirken die Zeilen ja.',
   }),
+  Object.freeze({
+    id: 'dieselbe-bestellung-zweimal',
+    pruefer: 'test',
+    was: 'Eine Bestellung, die nach einem Abriss ein zweites Mal verbucht wird',
+    datei: 'shop/bestellung.php',
+    art: 'ersetzen',
+    suchen: 'if ($schonDa !== null) {',
+    ersetzen: 'if (false && $schonDa !== null) {',
+    erwartet: /dieselbe Bestellung binnen Minuten|eine Bestellung, eine Zeile/,
+    warum: 'Wörtlich der Zustand bis zum 11. September: Dieselbe Bestellung zweimal geschickt '
+      + 'ergab zwei Journalzeilen und zwei Nummern — zwei Geschäftsfälle, zwei Mails und, '
+      + 'sobald der Shop wirklich verkauft, womöglich zwei Lieferungen derselben Palette auf '
+      + 'dieselbe Baustelle. Der Weg dorthin ist nicht Ungeduld, sondern ein Abriss nach dem '
+      + 'Schreiben. Die Mutation lässt den Abdruck berechnen und schaltet nur die '
+      + 'Entscheidung ab: So bleibt sichtbar, dass der Prüfer das Verbuchen misst und nicht '
+      + 'das Rechnen.',
+  }),
+  Object.freeze({
+    id: 'abdruck-nimmt-die-nummer-mit',
+    pruefer: 'test',
+    was: 'Ein Abdruck, der die vergebene Nummer mitzählt und deshalb nie zweimal gleich ist',
+    datei: 'shop/bestellung.php',
+    art: 'ersetzen',
+    suchen: "    unset($ohne['nummer'], $ohne['zeitpunkt']);",
+    ersetzen: '    unset($ohne[\'zeitpunkt\']);',
+    erwartet: /dieselbe Nummer|binnen Minuten/,
+    warum: 'Der stille Weg, die Sperre unwirksam zu machen: Nummer und Zeitpunkt vergibt das '
+      + 'Skript selbst, und wer sie in den Abdruck nimmt, bekommt für zwei Abschriften '
+      + 'derselben Bestellung immer zwei verschiedene Abdrücke. Der Code sähe vollständig '
+      + 'aus, die Sperre griffe nie. Die Mutation nimmt die Nummer wieder hinein.',
+  }),
 ]);
 
 /**

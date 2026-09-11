@@ -1176,7 +1176,20 @@
                * Betreiberdaten wie oben und fehlt heute noch.
                */
               leere(sendeEcho);
-              sendeEcho.appendChild(el('strong', null, 'Angekommen. Ihre Nummer: ' + antwort.nummer + '. '));
+              /*
+               * **„Lag schon vor" ist etwas anderes als „angekommen" —
+               * 11. September 2026.**
+               *
+               * Seit Gate 37 verbucht das Empfangsskript eine wortgleiche
+               * Bestellung binnen zehn Minuten nicht zweimal, sondern gibt die
+               * alte Nummer zurück. Der Fall entsteht nach einem Abriss: Die
+               * Bestellung liegt, die Antwort kam nie an, der Besteller drückt
+               * noch einmal — und darf dann nicht denken, er habe zwei
+               * Vorgänge.
+               */
+              sendeEcho.appendChild(el('strong', null, antwort.bereits
+                ? 'Lag schon vor. Ihre Nummer bleibt ' + antwort.nummer + '. '
+                : 'Angekommen. Ihre Nummer: ' + antwort.nummer + '. '));
               // Der Satz wird gebaut und nicht aus dem Satz darüber
               // zusammengeschnitten: Zwei Sätze, die durch Ersetzen
               // auseinander hervorgehen, ergeben beim ersten Umbau Kauderwelsch.

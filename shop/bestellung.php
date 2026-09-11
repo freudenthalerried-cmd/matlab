@@ -97,6 +97,58 @@ const ABLAGEORDNER = __DIR__ . '/../bestellungen';
 const HOECHSTENJEFENSTER = 5;
 const FENSTERSEKUNDEN = 60;
 
+/*
+ * **Gate 37, 11. September 2026 — zweimal dasselbe ist einmal.**
+ *
+ * Gemessen an einem laufenden PHP: Dieselbe Bestellung zweimal geschickt
+ * ergibt **zwei Journalzeilen und zwei Nummern**, B-2026-0001 und
+ * B-2026-0002. Zwei Geschäftsfälle, zwei Mails — und wenn der Shop wirklich
+ * verkauft, womöglich zwei Lieferungen derselben Palette auf dieselbe
+ * Baustelle.
+ *
+ * Der Weg dorthin ist der gewöhnliche: Die Oberfläche sperrt den Knopf
+ * während des Absendens und gibt ihn erst bei einer Absage wieder frei. Ein
+ * Doppeleintrag entsteht also nicht durch Ungeduld, sondern durch einen
+ * **Abriss nach dem Schreiben** — die Bestellung liegt, die Antwort kommt nie
+ * an, der Besteller drückt noch einmal. Auf einer Baustelle ist das kein
+ * Sonderfall.
+ *
+ * > **Wer nicht weiß, ob seine Bestellung angekommen ist, schickt sie noch
+ * > einmal — und das ist vernünftig.** Unvernünftig wäre, sie zweimal zu
+ * > verbuchen.
+ *
+ * **Verglichen wird der Inhalt, nicht ein mitgeschickter Schlüssel.** Ein
+ * Schlüssel vom Browser wäre die übliche Lösung und hier die schlechtere: Er
+ * bliebe gleich, wenn der Besteller einen Tippfehler in seiner Anschrift
+ * berichtigt und erneut abschickt — dann ginge die Berichtigung verloren.
+ * Der Abdruck über die eingegangenen Angaben ändert sich mit ihnen.
+ *
+ * **Warum ein Fenster und keine Ewigkeit:** Eine Baustelle, die dieselbe
+ * Palette in vier Wochen noch einmal bestellt, muss eine zweite Nummer
+ * bekommen. Zehn Minuten fangen den Abriss und treffen die Wiederbestellung
+ * praktisch nie.
+ *
+ * **Und es wird nicht verschwiegen:** Die Antwort sagt, dass die Bestellung
+ * schon vorlag, und nennt die alte Nummer. Eine stille Unterdrückung wäre
+ * dieselbe Sorte Fehler wie die stille Kürzung des Warenkorbs vom Vortag.
+ */
+const DOPPELFENSTER = 600;
+
+/**
+ * Der Abdruck einer Bestellung: alles, was der Besteller geschickt hat.
+ *
+ * Nummer und Zeitpunkt gehören nicht dazu — sie vergibt dieses Skript, und
+ * zwei Abschriften derselben Bestellung unterschieden sich sonst immer.
+ * Sortiert, damit die Reihenfolge der Felder keine Rolle spielt.
+ */
+function abdruck(array $angaben): string
+{
+    $ohne = $angaben;
+    unset($ohne['nummer'], $ohne['zeitpunkt']);
+    ksort($ohne);
+    return hash('sha256', json_encode($ohne, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+}
+
 /** Antwortet als JSON und beendet — eine Ausgabe, ein Ausgang. */
 function antworte(int $code, array $daten): void
 {
@@ -244,22 +296,45 @@ if (!flock($griff, LOCK_EX)) {
 
 // Die laufende Nummer entsteht **unter der Sperre**. Wer sie vorher zieht,
 // vergibt bei zwei gleichzeitigen Bestellungen zweimal dieselbe.
+$eigenerAbdruck = abdruck(['bezirk' => $bezirk, 'text' => $text] + $erhoben);
+
 $bestand = 0;
 $imFenster = 0;
+$schonDa = null;
 $grenze = time() - FENSTERSEKUNDEN;
+$doppelgrenze = time() - DOPPELFENSTER;
 rewind($griff);
 while (($zeileAusAblage = fgets($griff)) !== false) {
     $bestand++;
     // Aus derselben Lesung, die ohnehin läuft: Wie viele Einträge sind jünger
-    // als das Fenster? Ein zweiter Durchgang über dieselbe Datei wäre ein
-    // zweiter Weg zur selben Zahl.
+    // als das Fenster, und liegt dieselbe Bestellung schon da? Ein zweiter
+    // Durchgang über dieselbe Datei wäre ein zweiter Weg zur selben Zahl.
     $alt = json_decode($zeileAusAblage, true);
     if (is_array($alt) && isset($alt['zeitpunkt']) && is_string($alt['zeitpunkt'])) {
         $stempel = strtotime($alt['zeitpunkt']);
         if ($stempel !== false && $stempel >= $grenze) {
             $imFenster++;
         }
+        if ($stempel !== false && $stempel >= $doppelgrenze
+            && isset($alt['nummer']) && abdruck($alt) === $eigenerAbdruck) {
+            $schonDa = (string) $alt['nummer'];
+        }
     }
+}
+
+// **Erst antworten, dann zählen.** Eine Bestellung, die schon liegt, zählt
+// nicht gegen die Minutengrenze: Sonst sperrte ein Abriss den Besteller auch
+// noch aus.
+if ($schonDa !== null) {
+    flock($griff, LOCK_UN);
+    fclose($griff);
+    antworte(200, [
+        'ok' => true,
+        'nummer' => $schonDa,
+        'bereits' => true,
+        'gemeldet' => false,
+        'grund' => 'Diese Bestellung liegt bereits vor. Ihre Nummer bleibt ' . $schonDa . '.',
+    ]);
 }
 if ($imFenster >= HOECHSTENJEFENSTER) {
     flock($griff, LOCK_UN);

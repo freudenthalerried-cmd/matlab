@@ -228,3 +228,75 @@ test('mehr als fünf Bestellungen in einer Minute werden abgewiesen, nicht abgel
       assert.equal(letzte.headers.get('retry-after'), '60');
     } finally { s.ende(); }
   });
+
+/* ------------------------------------------------------------------ *
+ * Gate 37 — zweimal dasselbe ist einmal (11. September 2026)
+ *
+ * Gemessen an einem laufenden PHP: Dieselbe Bestellung zweimal geschickt ergab
+ * zwei Journalzeilen und zwei Nummern. Der Weg dorthin ist nicht Ungeduld —
+ * die Oberfläche sperrt den Knopf —, sondern ein Abriss nach dem Schreiben:
+ * Die Bestellung liegt, die Antwort kommt nie an, der Besteller drückt noch
+ * einmal.
+ * ------------------------------------------------------------------ */
+
+test('dieselbe Bestellung binnen Minuten wird einmal verbucht und sagt es',
+  { skip: !vorhanden && 'php fehlt' }, async () => {
+    const s = await server();
+    try {
+      const erste = await (await schicke(s.port, GUELTIG)).json();
+      assert.equal(erste.ok, true);
+      assert.equal(erste.bereits, undefined, 'die erste Bestellung lag noch nicht vor');
+
+      const zweite = await (await schicke(s.port, GUELTIG)).json();
+      assert.equal(zweite.ok, true);
+      assert.equal(zweite.nummer, erste.nummer, 'die zweite bekommt dieselbe Nummer');
+      assert.equal(zweite.bereits, true);
+      // **Nicht stillschweigend.** Eine unterdrückte Bestellung ohne Auskunft
+      // wäre dieselbe Sorte Fehler wie ein still gekürzter Warenkorb.
+      assert.match(zweite.grund, /liegt bereits vor/);
+
+      const journal = join(s.wurzel, 'bestellungen', `journal-${geschaeftsjahr()}.jsonl`);
+      const zeilen = readFileSync(journal, 'utf8').split('\n').filter(Boolean);
+      assert.equal(zeilen.length, 1, 'eine Bestellung, eine Zeile');
+    } finally { s.ende(); }
+  });
+
+test('eine berichtigte Angabe ist eine neue Bestellung',
+  { skip: !vorhanden && 'php fehlt' }, async () => {
+    // Die Gegenrichtung, und der Grund gegen einen mitgeschickten Schlüssel:
+    // Der bliebe gleich, wenn der Besteller einen Tippfehler in seiner
+    // Anschrift berichtigt — dann ginge die Berichtigung verloren.
+    const s = await server();
+    try {
+      const erste = await (await schicke(s.port, GUELTIG)).json();
+      const zweite = await (await schicke(s.port,
+        { ...GUELTIG, email: 'richtig@example.at' })).json();
+      assert.notEqual(zweite.nummer, erste.nummer);
+      assert.equal(zweite.bereits, undefined);
+
+      const dritte = await (await schicke(s.port,
+        { ...GUELTIG, text: 'Position 1: 20 Sack Mörtel' })).json();
+      assert.notEqual(dritte.nummer, zweite.nummer);
+
+      const journal = join(s.wurzel, 'bestellungen', `journal-${geschaeftsjahr()}.jsonl`);
+      assert.equal(readFileSync(journal, 'utf8').split('\n').filter(Boolean).length, 3);
+    } finally { s.ende(); }
+  });
+
+test('eine Wiederholung zählt nicht gegen die Minutengrenze',
+  { skip: !vorhanden && 'php fehlt' }, async () => {
+    // Sonst sperrte ein Abriss den Besteller auch noch aus: Fünf Versuche
+    // derselben Bestellung wären fünf gegen die Grenze, und der sechste käme
+    // mit 429 zurück, obwohl nur eine einzige Bestellung im Spiel ist.
+    const s = await server();
+    try {
+      const stati = [];
+      for (let i = 0; i < 8; i++) {
+        // eslint-disable-next-line no-await-in-loop
+        stati.push((await schicke(s.port, GUELTIG)).status);
+      }
+      assert.deepEqual(stati, [200, 200, 200, 200, 200, 200, 200, 200]);
+      const journal = join(s.wurzel, 'bestellungen', `journal-${geschaeftsjahr()}.jsonl`);
+      assert.equal(readFileSync(journal, 'utf8').split('\n').filter(Boolean).length, 1);
+    } finally { s.ende(); }
+  });

@@ -5069,7 +5069,20 @@ function gruppenbefund(rechnung, text) {
 
 
               leere(sendeEcho);
-              sendeEcho.appendChild(el('strong', null, 'Angekommen. Ihre Nummer: ' + antwort.nummer + '. '));
+              
+
+
+
+
+
+
+
+
+
+
+              sendeEcho.appendChild(el('strong', null, antwort.bereits
+                ? 'Lag schon vor. Ihre Nummer bleibt ' + antwort.nummer + '. '
+                : 'Angekommen. Ihre Nummer: ' + antwort.nummer + '. '));
               
               
               
