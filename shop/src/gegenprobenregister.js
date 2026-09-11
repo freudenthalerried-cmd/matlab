@@ -3184,6 +3184,38 @@ export const GEGENPROBEN = Object.freeze([
       + 'einen von zwei Gründen und hält den zweiten für erledigt. Die Mutation lässt das '
       + 'Weglassen zu; rot werden muss der Fall, der einen unbekannten Grund hineingibt.',
   }),
+  Object.freeze({
+    id: 'weisung-ohne-zeile',
+    pruefer: 'pruefe-weisungen',
+    was: 'Eine Weisung steht im Wortlaut in einem Dokument und in keiner Zeile der Tafel',
+    datei: 'docs/baustoff-shop/PARAMETER.md',
+    art: 'ersetzen',
+    // **Beide Vorkommen zugleich.** Der Dateiname steht zweimal in derselben
+    // Zeile — als Linktext und als Ziel. Nur das Ziel zu ändern hieße, den
+    // Beleg stehen zu lassen, und der Prüfer sucht den Namen, nicht den Link.
+    suchen: '[`systemliste-kellerwand.md`](./systemliste-kellerwand.md)',
+    ersetzen: '[dem Dokument dazu](./systemliste-kellerwand-xx.md)',
+    erwartet: /weisung-ohne-zeile/,
+    warum: 'Genau der Zustand bis zum 11. September: Fünf Weisungen des Auftraggebers standen '
+      + 'in Dokumenten, die sie im Wortlaut festhalten, und in keiner Zeile der Tafel — und '
+      + 'der Prüfer meldete „0 vergessen", weil er die Tafel misst und nicht das, was gesagt '
+      + 'wurde. Eine davon war acht Tage lang weder erfüllt noch geführt: Die Überschrift der '
+      + 'Startseite trug den Satz, der nach Weisung nicht bleiben sollte.',
+  }),
+  Object.freeze({
+    id: 'ausnahme-ohne-dokument',
+    pruefer: 'pruefe-weisungen',
+    was: 'Eine Ausnahme von der Weisungssuche zeigt auf ein Dokument, das es nicht gibt',
+    datei: 'shop/src/weisungsstand.js',
+    art: 'ersetzen',
+    suchen: "    datei: 'die-regel-hielt-sechs-stunden.md',",
+    ersetzen: "    datei: 'die-regel-hielt-sieben-stunden.md',",
+    erwartet: /ausnahme-ohne-dokument/,
+    warum: 'Die eine Ausnahme dieser Suche ist ein Dokument, dessen Kopf die Regel **über** '
+      + 'die Tafel zitiert statt einer Weisung. Zeigt der Eintrag ins Leere, ist die Ausnahme '
+      + 'wirkungslos und das Dokument, das sie meinte, wird wieder gemeldet — oder, schlimmer, '
+      + 'ein anderes bleibt still, weil niemand mehr nachsieht, worauf sie eigentlich zeigt.',
+  }),
 ]);
 
 /**

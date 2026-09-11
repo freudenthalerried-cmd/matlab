@@ -1,9 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 
 import {
-  GRUND_MINDESTLAENGE, QUELLE, WEISUNGEN, weisungenAusParametern, weisungsbefund,
+  GRUND_MINDESTLAENGE, QUELLE, WEISUNGEN, KOPFZEILEN, KEIN_WEISUNGSKOPF,
+  weisungenAusParametern, weisungsbefund, quellenbefund,
 } from '../src/weisungsstand.js';
 
 const WURZEL = new URL('../../', import.meta.url);
@@ -90,4 +91,82 @@ test('Vergessen, verschoben, verschwunden — alle drei fallen auf', () => {
 
 test('Ein anderer Abschnitt liefert keine Weisung — und behauptet keine', () => {
   assert.deepEqual(weisungenAusParametern('## Etwas anderes\n| 01.01. | x | y |\n'), []);
+});
+
+/*
+ * **Die andere Richtung, 11. September 2026.** Dieser Prüfer hielt die Tafel
+ * gegen den Bestand und meldete „0 vergessen". Die Zahl stimmte und sagte
+ * weniger, als sie klang: Er misst die Tafel, nicht das, was der Auftraggeber
+ * gesagt hat. Fünf Weisungen standen in Dokumenten, die sie im Wortlaut
+ * festhalten, und in keiner Zeile.
+ */
+
+test('jedes Dokument, das eine Weisung festhält, hat eine Zeile in der Tafel', () => {
+  const tafel = readFileSync(new URL(`../../${QUELLE}`, import.meta.url), 'utf8');
+  const ordner = new URL('../../docs/baustoff-shop/', import.meta.url);
+  const dokumente = readdirSync(ordner)
+    .filter((n) => n.endsWith('.md'))
+    .map((datei) => ({
+      datei,
+      kopf: readFileSync(new URL(datei, ordner), 'utf8').split('\n').slice(0, KOPFZEILEN).join('\n'),
+    }));
+  assert.ok(dokumente.length >= 200, `nur ${dokumente.length} Dokumente gelesen`);
+  const b = quellenbefund(dokumente, weisungenAusParametern(tafel), tafel);
+  assert.ok(b.quellen >= 5, `nur ${b.quellen} Dokumente halten eine Weisung fest`);
+  assert.deepEqual(b.meldungen, []);
+});
+
+test('ein Dokument ohne Zeile in der Tafel ist ein Befund', () => {
+  const b = quellenbefund(
+    [{ datei: 'x.md', kopf: 'Stand: 2026-09-11. Weisung des Auftraggebers: tu dies.' }],
+    [{ nr: 1, datum: '11.09.', weisung: 'tu dies' }],
+    '| 11.09. | tu dies | ohne Beleg |',
+    [],
+  );
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['weisung-ohne-zeile']);
+});
+
+test('eine Zeile, die das Dokument nennt, schweigt', () => {
+  const b = quellenbefund(
+    [{ datei: 'x.md', kopf: 'Weisung des Auftraggebers: tu dies.' }],
+    [{ nr: 1, datum: '11.09.', weisung: 'tu dies' }],
+    '| 11.09. | tu dies | im Wortlaut in [`x.md`](./x.md) |',
+    [],
+  );
+  assert.deepEqual(b.meldungen, []);
+});
+
+test('kein einziges gefundenes Dokument ist kein grünes Ergebnis', () => {
+  // Ein Prüfer, der nichts findet, hat nichts geprüft — und muss das sagen.
+  const b = quellenbefund([{ datei: 'x.md', kopf: 'ohne die Wendung' }], [], 'Tafel', []);
+  assert.equal(b.sauber, false);
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['keine-quelle-gefunden']);
+});
+
+test('jede Ausnahme zeigt auf ein Dokument und trägt einen Grund', () => {
+  assert.equal(KEIN_WEISUNGSKOPF.length, 1, `${KEIN_WEISUNGSKOPF.length} Ausnahmen`);
+  for (const a of KEIN_WEISUNGSKOPF) {
+    assert.ok(a.warum.length >= 80, `${a.datei}: der Grund trägt die Ausnahme nicht`);
+  }
+  const b = quellenbefund(
+    [{ datei: 'x.md', kopf: 'Weisung des Auftraggebers: tu dies.' }],
+    [], '| x.md |',
+    [{ datei: 'gibts-nicht.md', warum: 'x'.repeat(90) }],
+  );
+  assert.ok(b.meldungen.some((m) => m.regel === 'ausnahme-ohne-dokument'),
+    JSON.stringify(b.meldungen));
+});
+
+test('die Überschrift der Startseite ist geführt, nicht vergessen', () => {
+  /**
+   * **Die teuerste der fünf nachgetragenen Weisungen.** Der Auftraggeber hat
+   * am 3. September gesagt, „Baustoffe zum Baumeisterpreis" solle nicht
+   * bleiben. Am 11. September stand der Satz noch in der `<h1>` — nicht
+   * erfüllt, und in keiner Liste offener Punkte. Vergessen also, und der
+   * Prüfer konnte es nicht sehen, weil die Weisung in keiner Zeile stand.
+   */
+  const w = WEISUNGEN.find((e) => e.stichwort.includes('Baustoffe zum Baumeisterpreis'));
+  assert.ok(w, 'die Weisung fehlt wieder im Register');
+  assert.ok(w.offen, 'sie ist nicht erfüllt und muss als offener Punkt geführt sein');
+  assert.match(w.offen.datei, /offenepunkte/);
 });

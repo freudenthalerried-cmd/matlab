@@ -112,6 +112,23 @@ export const OHNE_WERKZEUG = Object.freeze([
     loest: 'Bestätigt oder widerlegt Gate 23 — heute gilt die vorsichtige Fläche der Kampagne.',
   },
   {
+    id: 'ueberschrift-startseite',
+    titel: 'Die Überschrift der Startseite wählen',
+    zustaendig: 'entscheidung',
+    warumKeinWerkzeug: 'Der Auftraggeber hat am 3. September angeordnet, „Baustoffe zum '
+      + 'Baumeisterpreis" solle nicht bleiben. Drei Fassungen liegen seither vor, mit je einer '
+      + 'anderen Aussage — Liefergebiet, Preis, Zielgruppe. Welche davon oben steht, ist keine '
+      + 'Messung, sondern die erste Zeile, die ein Kunde liest, und sie gehört dem '
+      + 'Auftraggeber. Umgesetzt wird keine, bis er wählt.',
+    loest: 'Führt eine Weisung aus, die acht Tage lang weder erfüllt noch geführt war: Bis zum '
+      + '11. September stand sie in keiner Zeile der Weisungstafel und in keiner Liste offener '
+      + 'Punkte, und die `<h1>` trug genau den Satz, der nicht bleiben soll. Alle vier Orte '
+      + 'derselben Formulierung — Überschrift, Seitentitel, erste Zeile von `llms.txt` und die '
+      + 'Kurzbeschreibung — kommen aus einer Stelle in `bin/website.mjs` und wandern gemeinsam '
+      + 'mit. Empfohlen ist Fassung A („wir liefern hierher"), weil das Liefergebiet die '
+      + 'einzige der drei Aussagen ist, die ein Besucher nirgends sonst herausfindet.',
+  },
+  {
     /*
      * **Neu am 11. September, aus Gate 35.** Das Empfangsskript nimmt seit
      * heute nur von der eigenen Seite an und höchstens fünf Bestellungen je

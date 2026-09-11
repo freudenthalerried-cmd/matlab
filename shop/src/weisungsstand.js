@@ -94,8 +94,51 @@ export const WEISUNGEN = Object.freeze([
       + 'Bis zum 26. August war „regional" an genau einer Stelle umgesetzt — als '
       + 'Zeichenkette in einer Anzeigenzeile, die keine Bestellung aufhält.',
   }),
+  // **Fünf Weisungen nachgetragen am 11. September 2026.** Sie standen in
+  // Dokumenten, die sie im Wortlaut festhalten, und in keiner Zeile der Tafel
+  // — und damit in keinem Prüfer. Der Befund steht in `quellenbefund` unten.
   Object.freeze({
     nr: 3,
+    datum: '22.08.',
+    stichwort: 'Von KI-Assistenten genannt werden',
+    spuren: Object.freeze([
+      Object.freeze({ datei: 'shop/src/maschinenlesbar.js', muster: /llms/i }),
+    ]),
+    warum: 'Die Weisung, die sechs Dokumente als Zweck des ganzen Baus nennen — und die bis '
+      + 'zum 11. September in keiner Zeile dieser Tafel stand. Gebaut ist sie: `llms.txt` als '
+      + 'Datei für Sprachmodelle, strukturierte Daten je Artikel, getrennte Crawler-Kennungen '
+      + 'für Training und KI-Suche. Dass etwas gebaut ist, ersetzt den Eintrag nicht: Ein '
+      + 'Prüfer, der die Tafel liest, kann nur finden, was in der Tafel steht.',
+  }),
+  Object.freeze({
+    nr: 4,
+    datum: '22.08.',
+    stichwort: 'Für KI lesbar, geprüfte Inhalte, eigenes Prüfteam',
+    spuren: Object.freeze([
+      Object.freeze({ datei: 'shop/bin/inhaltspruefung.mjs', muster: /Absätze geprüft/ }),
+    ]),
+    warum: 'Der Auftraggeber hat ein Team verlangt, das die Richtigkeit der Aussagen prüft. '
+      + 'Ein Team gibt es nicht und wird es hier nicht geben; was es gibt, ist eine Prüfkette, '
+      + 'die jede belegpflichtige Aussage der Inhaltsseiten gegen ihren Beleg hält und rot '
+      + 'endet, wenn einer fehlt. Das ist die Sache der Weisung, nicht ihr Wortlaut — und '
+      + 'genau diese Unterscheidung trifft dieser Prüfer: geprüft wird die Sache.',
+  }),
+  Object.freeze({
+    nr: 5,
+    datum: '22.08.',
+    stichwort: 'YouTube zusammenfassen, prüfen, verwenden',
+    spuren: Object.freeze([
+      Object.freeze({ datei: 'shop/src/quellen.js', muster: /export function istBelegt/ }),
+    ]),
+    warum: 'Von drei Schritten ist der mittlere gebaut und die beiden äußeren verweigert, mit '
+      + 'Grund: YouTube ist aus dieser Umgebung gesperrt, und ein fremdes Transkript wäre '
+      + 'urheberrechtlich fremdes Material — beides steht seit dem 22. August im Wortlaut in '
+      + '`videos-als-quelle.md`. Was daraus wurde, ist `npm run pruefe-quellen`: jede '
+      + 'belegpflichtige Aussage gegen ihre Quelle. Eine Weisung, die man teilweise ausführt, '
+      + 'gehört genauso in die Tafel wie eine, die man ganz ausführt.',
+  }),
+  Object.freeze({
+    nr: 6,
     datum: '25.08.',
     stichwort: '25 % ist Marge vom Verkauf, nicht Zuschlag',
     spuren: Object.freeze([
@@ -106,7 +149,7 @@ export const WEISUNGEN = Object.freeze([
       + 'einer Stelle und heißt dort, was sie ist.',
   }),
   Object.freeze({
-    nr: 4,
+    nr: 7,
     datum: '26.08.',
     stichwort: 'Die Firma existiert bereits',
     spuren: Object.freeze([
@@ -117,7 +160,19 @@ export const WEISUNGEN = Object.freeze([
       + 'der Betreiberdatei, nicht als Platzhalter im Bauwerkzeug.',
   }),
   Object.freeze({
-    nr: 5,
+    nr: 8,
+    datum: '26.08.',
+    stichwort: 'Eher auf die Produkte konzentrieren',
+    spuren: Object.freeze([
+      Object.freeze({ datei: 'shop/src/systemlisten.js', muster: /export function systemlistenbefund/ }),
+    ]),
+    warum: 'Die kürzeste Weisung dieser Tafel und die folgenreichste für die Inhalte: Gebaut '
+      + 'sind seither die Systemlisten — keine Wissensseite, sondern eine Bestellung mit '
+      + 'Begründung, vier Listen über fünfunddreißig Positionen. Sie sind der produktnächste '
+      + 'Inhalt, den dieser Shop hat, und sie sind aus dieser einen Zeile entstanden.',
+  }),
+  Object.freeze({
+    nr: 9,
     datum: '28.08.',
     stichwort: 'Keine Spanne ausgeben',
     spuren: Object.freeze([
@@ -129,7 +184,7 @@ export const WEISUNGEN = Object.freeze([
       + 'auch gefunden.',
   }),
   Object.freeze({
-    nr: 6,
+    nr: 10,
     datum: '28.08.',
     stichwort: 'Sortiment auf mindestens 100 Artikel',
     offen: Object.freeze({ datei: 'shop/src/offenepunkte.js', muster: /hundert Artikel/ }),
@@ -140,7 +195,7 @@ export const WEISUNGEN = Object.freeze([
       + 'zwischen „offen" und „vergessen" ist genau diese Zeile.',
   }),
   Object.freeze({
-    nr: 7,
+    nr: 11,
     datum: '31.08.',
     stichwort: 'bauversand.com verwenden',
     spuren: Object.freeze([
@@ -152,7 +207,7 @@ export const WEISUNGEN = Object.freeze([
       + 'Sitemap, `llms.txt` und die finalen URLs der Anzeigen nehmen sie von dort.',
   }),
   Object.freeze({
-    nr: 8,
+    nr: 12,
     datum: '03.09.',
     stichwort: 'Auftritt als „Bauversand"',
     spuren: Object.freeze([
@@ -162,6 +217,19 @@ export const WEISUNGEN = Object.freeze([
       + '`llms.txt`, Absender jedes Belegs. Die Freudenthaler Bau GmbH bleibt daneben die '
       + 'Betreiberin — Impressum, Belege, `seller` und `publisher`. Ein Feld, zwei Rollen, '
       + 'und das Impressum verbindet beide in einer Zeile.',
+  }),
+  Object.freeze({
+    nr: 13,
+    datum: '03.09.',
+    stichwort: '„Baustoffe zum Baumeisterpreis" soll nicht bleiben',
+    offen: Object.freeze({ datei: 'shop/src/offenepunkte.js', muster: /Überschrift der Startseite/ }),
+    warum: 'Die teuerste der fünf nachgetragenen Weisungen. Der Auftraggeber hat am '
+      + '3. September gesagt, die Überschrift solle nicht bleiben; drei Fassungen liegen ihm '
+      + 'seither zur Wahl vor, und umgesetzt wird keine, bis er wählt. Bis zum 11. September '
+      + 'stand sie in keiner Zeile dieser Tafel **und** in keiner Liste offener Punkte — acht '
+      + 'Tage lang trug die `<h1>` der Startseite genau den Satz, der nicht bleiben soll. '
+      + 'Nicht erfüllt und nicht geführt heißt vergessen, und das ist der Zustand, für den es '
+      + 'diesen Prüfer gibt.',
   }),
 ]);
 
@@ -247,6 +315,124 @@ export function weisungsbefund({ weisungen, lies, register = WEISUNGEN }) {
     weisungen: weisungen.length,
     erfuellt: register.filter((w) => w.spuren).length,
     offen: register.filter((w) => w.offen).length,
+    meldungen,
+    sauber: meldungen.length === 0,
+  };
+}
+
+/* ------------------------------------------------------------------
+ * **Der Anlass, 11. September 2026 — Runde 29.**
+ *
+ * Dieser Prüfer hält die Weisungstafel gegen den Bestand und meldet seit vier
+ * Tagen „0 vergessen". Die Zahl stimmt und sagt weniger, als sie klingt:
+ * **Er misst die Tafel, nicht das, was der Auftraggeber gesagt hat.**
+ *
+ * Neun Dokumente halten in ihrem Kopf eine Weisung im Wortlaut fest. Die
+ * Tafel hat acht Zeilen. Gemessen an diesem Tag standen **fünf** dieser
+ * Weisungen in keiner davon:
+ *
+ * | Dokument | Datum | Weisung |
+ * |---|---|---|
+ * | `ki-sichtbarkeit-konzept.md` | 22.08. | von KI-Assistenten genannt werden |
+ * | `inhalte-und-pruefteam.md` | 22.08. | für KI lesbar, geprüfte Inhalte, eigenes Prüfteam |
+ * | `videos-als-quelle.md` | 22.08. | „youtube: fasse zusammen, überprüfe, verwende content" |
+ * | `systemliste-kellerwand.md` | 26.08. | „eher auf die Produkte konzentrieren" |
+ * | `die-ueberschrift-der-startseite.md` | 03.09. | „Baustoffe zum Baumeisterpreis" soll nicht bleiben |
+ *
+ * Die letzte ist die teuerste: Der Auftraggeber hat am 3. September gesagt,
+ * die Überschrift solle **nicht bleiben**. Am 11. September stand sie noch
+ * genauso in der `<h1>` der Startseite — nicht erfüllt, und in keiner Liste
+ * offener Punkte. **Vergessen**, also genau der dritte Zustand, für den es
+ * diesen Prüfer gibt; er konnte sie nur nicht sehen.
+ *
+ * Der Kopf der Tafel sagt seit dem 3. September: *„Diese Tafel ist ab jetzt
+ * der Ort, an dem eine Weisung des Auftraggebers als Erstes landet."* An
+ * demselben Tag ist eine daneben gelandet, zum zweiten Mal.
+ *
+ * > **Ein Prüfer, der eine Liste gegen den Bestand hält, misst die Liste.**
+ * ------------------------------------------------------------------ */
+
+/** Wo eine Weisung im Wortlaut festgehalten wird — Kopfzeilen eines Dokuments. */
+export const KOPFZEILEN = 14;
+
+/** Woran ein solcher Kopf zu erkennen ist. */
+export const WEISUNGSKOPF = /Weisung des Auftraggebers/;
+
+/**
+ * Dokumente, deren Kopf die Wendung trägt und trotzdem **keine** Weisung
+ * festhält — mit Grund.
+ *
+ * Ohne diese Liste hätte der Prüfer zwei Möglichkeiten, und beide wären
+ * falsch: jede Fundstelle als Weisung zählen (dann meldet er Zitate über die
+ * Tafel selbst) oder das Muster enger ziehen, bis es passt (dann übersieht er
+ * die nächste, die anders formuliert ist).
+ */
+export const KEIN_WEISUNGSKOPF = Object.freeze([
+  Object.freeze({
+    datei: 'die-regel-hielt-sechs-stunden.md',
+    warum: 'Der Kopf zitiert die Regel **über** die Tafel — „Diese Tafel ist ab jetzt der Ort, '
+      + 'an dem eine Weisung des Auftraggebers als Erstes landet" —, nicht eine Weisung. Das '
+      + 'Dokument handelt davon, dass genau diese Regel sechs Stunden gehalten hat; es hält '
+      + 'die Markenweisung nicht fest, sondern ihren Weg an der Tafel vorbei.',
+  }),
+]);
+
+/**
+ * Hält die Weisungstafel gegen die Dokumente, die eine Weisung im Wortlaut
+ * festhalten — die Richtung, die bis heute fehlte.
+ *
+ * @param {{datei: string, kopf: string}[]} dokumente  Dateiname und Kopfzeilen
+ * @param {{nr: number, datum: string, weisung: string}[]} weisungen  aus der Tafel
+ * @param {string} tafeltext  die Tafel im Wortlaut — dort stehen die Belege
+ */
+export function quellenbefund(dokumente, weisungen, tafeltext, ausnahmen = KEIN_WEISUNGSKOPF) {
+  const meldungen = [];
+  const ohneGrund = new Set(ausnahmen.map((a) => a.datei));
+
+  for (const a of ausnahmen) {
+    if (!dokumente.some((d) => d.datei === a.datei)) {
+      meldungen.push({
+        regel: 'ausnahme-ohne-dokument',
+        text: `${a.datei} steht als Ausnahme und trägt die Wendung im Kopf nicht (mehr)`,
+      });
+    }
+    if (!a.warum || a.warum.length < 80) {
+      meldungen.push({
+        regel: 'ausnahme-ohne-grund',
+        text: `${a.datei}: der Grund trägt die Ausnahme nicht`,
+      });
+    }
+  }
+
+  const quellen = dokumente.filter((d) => WEISUNGSKOPF.test(d.kopf) && !ohneGrund.has(d.datei));
+  if (!quellen.length) {
+    meldungen.push({
+      regel: 'keine-quelle-gefunden',
+      text: 'Kein einziges Dokument hält eine Weisung im Wortlaut fest — '
+        + 'dieser Befund prüft damit nichts',
+    });
+    return { quellen: 0, meldungen, sauber: false };
+  }
+
+  /*
+   * **Gemessen wird der Beleg, nicht das Datum.** Zwei Weisungen desselben
+   * Tages wären sonst dieselbe Zeile; und ein Dokument, das erst später
+   * entsteht, trüge ein anderes Datum als die Tafel. Die Tafel nennt in ihrer
+   * Folgespalte die Datei — daran hängt der Abgleich.
+   */
+  for (const q of quellen) {
+    if (tafeltext.includes(q.datei)) continue;
+    meldungen.push({
+      regel: 'weisung-ohne-zeile',
+      text: `${q.datei} hält eine Weisung im Wortlaut fest, und keine Zeile der Tafel `
+        + 'nennt das Dokument',
+    });
+  }
+
+  return {
+    quellen: quellen.length,
+    ausnahmen: ausnahmen.length,
+    zeilen: weisungen.length,
     meldungen,
     sauber: meldungen.length === 0,
   };
