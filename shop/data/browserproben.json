@@ -39,6 +39,14 @@
     "grenze-ohne-wort": {
       "am": "2026-09-11",
       "sekunden": 42
+    },
+    "anfragetext-ohne-namen": {
+      "am": "2026-09-11",
+      "sekunden": 36
+    },
+    "meldung-die-niemand-hoert": {
+      "am": "2026-09-11",
+      "sekunden": 35
     }
   }
 }

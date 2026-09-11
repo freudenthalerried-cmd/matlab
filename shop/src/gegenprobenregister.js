@@ -2889,6 +2889,38 @@ export const GEGENPROBEN = Object.freeze([
       + 'Absendeweg setzt den Kopf weiterhin, also bleibt alles andere grün und nur der Fall '
       + 'der fremden Seite fällt um.',
   }),
+  Object.freeze({
+    id: 'anfragetext-ohne-namen',
+    pruefer: 'shopprobe',
+    was: 'Das Textfeld mit der ganzen Bestellung, ohne Beschriftung',
+    datei: 'shop/shop-ui.js',
+    art: 'ersetzen',
+    baueVorher: true,
+    suchen: "      feld.setAttribute('aria-label', 'Ihre Anfrage als Text zum Kopieren');",
+    ersetzen: '      void feld;',
+    erwartet: /ohneNamen=\[TEXTAREA|Bedienelement der Kasse hat einen Namen/,
+    warum: 'Wörtlich der Zustand bis zum 11. September: Alle 712 Bedienelemente der gebauten '
+      + 'Seiten tragen eine Beschriftung, und von den fünf, die die Kasse im Browser erzeugt, '
+      + 'vier — ausgerechnet das fünfte nicht. Es ist das Textfeld, in dem die ganze '
+      + 'Bestellung steht. Der Absatz darüber erklärt es für den, der ihn sieht; ein Absatz '
+      + 'über einem Feld ist aber keine Beschriftung, sondern Nachbarschaft.',
+  }),
+  Object.freeze({
+    id: 'meldung-die-niemand-hoert',
+    pruefer: 'shopprobe',
+    was: 'Eine Auskunft über den eigenen Vorgang, die nur zu sehen ist',
+    datei: 'shop/shop-ui.js',
+    art: 'ersetzen',
+    baueVorher: true,
+    suchen: "    gebietsantwort.setAttribute('role', 'status');",
+    ersetzen: '    void gebietsantwort;',
+    erwartet: /gebiet=null|gebiet=FEHLT|als Meldung ausgewiesen/,
+    warum: 'Die zweite Hälfte desselben Befundes: Im ganzen Shop war kein einziger Bereich als '
+      + 'Statusmeldung ausgewiesen — „Kopiert.", „Wir liefern nach Perg", „Es fehlt noch: …". '
+      + 'Drei Auskünfte über den eigenen Vorgang, die nur zu sehen und nicht zu hören waren. '
+      + 'Die Mutation nimmt eine der drei Rollen heraus und lässt die anderen stehen: So ist '
+      + 'sichtbar, dass die Probe die Rolle misst und nicht das Erscheinen des Absatzes.',
+  }),
 ]);
 
 /**

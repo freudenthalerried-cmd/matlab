@@ -3986,9 +3986,13 @@ function gruppenbefund(rechnung, text) {
     speicherGemeldet = true;
     
     
+    
+    
+    
     var b = el('div', 'antwort', 'Der Warenkorb kann in diesem Browser nicht '
       + 'gespeichert werden — er gilt nur für diese Seite. Meist liegt es an '
       + 'einem privaten Fenster oder an gesperrten Seitendaten.');
+    b.setAttribute('role', 'alert');
     var h = document.querySelector('h1');
     if (h && h.parentNode) h.parentNode.insertBefore(b, h.nextSibling);
   }
@@ -4754,6 +4758,10 @@ function gruppenbefund(rechnung, text) {
     form.appendChild(bezirkWahl);
 
     var gebietsantwort = el('p', 'gebiet');
+    
+    
+    
+    gebietsantwort.setAttribute('role', 'status');
     form.appendChild(gebietsantwort);
 
     form.appendChild(el('h2', null, 'Wie möchten Sie zahlen?'));
@@ -4875,10 +4883,25 @@ function gruppenbefund(rechnung, text) {
         'Diese Liste ist eine Anfrage, keine Bestellung. Kopieren Sie sie in '
         + 'eine Mail' + rueckmeldung));
 
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
       var feld = document.createElement('textarea');
       feld.readOnly = true;
       feld.rows = 14;
       feld.className = 'anfragetext';
+      feld.setAttribute('aria-label', 'Ihre Anfrage als Text zum Kopieren');
       feld.value = a.text;
       anfrageKasten.appendChild(feld);
 
@@ -4886,6 +4909,10 @@ function gruppenbefund(rechnung, text) {
       var kopieren = el('button', 'knopf', 'Text kopieren');
       kopieren.type = 'button';
       var rueckmeldung = el('span', 'anfrage-echo');
+      
+      
+      
+      rueckmeldung.setAttribute('role', 'status');
       kopieren.addEventListener('click', function () {
         
         
@@ -4988,6 +5015,10 @@ function gruppenbefund(rechnung, text) {
         var senden = el('button', 'knopf senden', 'Bestellung abschicken');
         senden.type = 'button';
         var sendeEcho = el('p', 'anfrage-echo');
+        
+        
+        
+        sendeEcho.setAttribute('role', 'status');
         senden.addEventListener('click', function () {
           var offen = [];
           for (var n = 0; n < stand.felder.length; n++) {

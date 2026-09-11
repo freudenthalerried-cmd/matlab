@@ -779,6 +779,71 @@ const SZENARIEN = [
     erwartet: ['treffer=8', 'Mantelstein', 'Kamin'],
   },
   {
+    /*
+     * **Gemessen am 11. September.** Alle 712 Bedienelemente der gebauten
+     * Seiten tragen eine Beschriftung, über `<label>` oder `aria-label`. Von
+     * den fünf, die die Kasse erst im Browser erzeugt, trugen vier eine — und
+     * ausgerechnet das fünfte nicht: **das Textfeld, in dem die ganze
+     * Bestellung steht.**
+     *
+     * Geprüft wird der **berechnete** Name und nicht das Vorhandensein eines
+     * Attributs: Ein Feld in einem `<label>` ist beschriftet, eines mit einem
+     * Absatz darüber nicht.
+     */
+    name: 'Jedes Bedienelement der Kasse hat einen Namen, auch der Anfragetext',
+    // Erst füllen: Die Kasse zeichnet ihre Felder nur über einem Korb mit
+    // Inhalt — der Thermo-Trennstein trägt allein über den Mindestbestellwert.
+    aktionen: `
+      await geheZu('artikel/POS-51967');
+      document.querySelector('[data-legen="POS-51967"]').click();
+      await geheZu('kasse');
+      const sel = document.querySelector('#kasse-ziel select');
+      sel.value = 'Perg';
+      sel.dispatchEvent(new Event('change'));
+      await new Promise((f) => setTimeout(f, 120));
+      const ohne = [];
+      let gezaehlt = 0;
+      document.querySelectorAll('#kasse-ziel input, #kasse-ziel select, #kasse-ziel textarea')
+        .forEach((n) => {
+          gezaehlt++;
+          const name = n.getAttribute('aria-label')
+            || (n.closest('label') ? n.closest('label').textContent.trim() : '')
+            || (n.id && document.querySelector('label[for="' + n.id + '"]')
+              ? document.querySelector('label[for="' + n.id + '"]').textContent.trim() : '');
+          if (!name) ohne.push(n.tagName + '.' + String(n.className || ''));
+        });
+      out = 'elemente=' + gezaehlt + ' ohneNamen=[' + ohne.join(', ') + ']';`,
+    // Der Korb hat zwei Positionen, damit die Kasse überhaupt etwas zeichnet.
+    erwartet: ['ohneNamen=[]'],
+    verboten: ['elemente=0 ', 'elemente=1 '],
+  },
+  {
+    /*
+     * Die zweite Hälfte desselben Befundes: **kein einziger Bereich des Shops
+     * war als Statusmeldung ausgewiesen.** „Kopiert.", „Wir liefern nach
+     * Perg", „Es fehlt noch: …" — drei Auskünfte über den eigenen Vorgang, die
+     * nur zu sehen und nicht zu hören waren.
+     */
+    name: 'Was nach einer Handlung erscheint, ist als Meldung ausgewiesen',
+    aktionen: `
+      await geheZu('artikel/POS-51967');
+      document.querySelector('[data-legen="POS-51967"]').click();
+      await geheZu('kasse');
+      const sel = document.querySelector('#kasse-ziel select');
+      sel.value = 'Perg';
+      sel.dispatchEvent(new Event('change'));
+      await new Promise((f) => setTimeout(f, 120));
+      const gebiet = document.querySelector('#kasse-ziel .gebiet');
+      const echo = document.querySelector('#kasse-ziel .anfrage-echo');
+      out = 'gebiet=' + (gebiet ? gebiet.getAttribute('role') : 'FEHLT')
+        + ' echo=' + (echo ? echo.getAttribute('role') : 'FEHLT')
+        + ' echoLeer=' + (echo ? echo.textContent === '' : 'KEINS');`,
+    // Leer erzeugt und später gefüllt — ein Bereich, der erst mit seinem Text
+    // entsteht, wird von manchen Vorleseprogrammen nicht angesagt.
+    erwartet: ['gebiet=status', 'echo=status', 'echoLeer=true'],
+    verboten: ['gebiet=FEHLT', 'echo=FEHLT'],
+  },
+  {
     name: 'Jedes Bedienelement zeigt, dass es den Fokus hat',
     // Gemessen am 29.08.: Die Artikelkarte trug mit und ohne Fokus denselben
     // Umriss — die Zierlinie des Rasters überschrieb den Fokusring des

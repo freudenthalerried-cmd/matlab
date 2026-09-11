@@ -93,9 +93,13 @@
     speicherGemeldet = true;
     // Still scheitern wäre der schlechtere Weg: Der Kunde legt weiter ein und
     // findet den Korb beim nächsten Aufruf leer.
+    // `alert` und nicht `status`: Wer weiterlegt und beim nächsten Aufruf einen
+    // leeren Korb findet, hat die Auskunft zu spät. Eine Meldung, die den Lauf
+    // unterbrechen darf, ist genau der Fall, für den es diese Rolle gibt.
     var b = el('div', 'antwort', 'Der Warenkorb kann in diesem Browser nicht '
       + 'gespeichert werden — er gilt nur für diese Seite. Meist liegt es an '
       + 'einem privaten Fenster oder an gesperrten Seitendaten.');
+    b.setAttribute('role', 'alert');
     var h = document.querySelector('h1');
     if (h && h.parentNode) h.parentNode.insertBefore(b, h.nextSibling);
   }
@@ -861,6 +865,10 @@
     form.appendChild(bezirkWahl);
 
     var gebietsantwort = el('p', 'gebiet');
+    // Die Antwort auf die Bezirkswahl — „Wir liefern nach Perg" oder die
+    // Absage. Sie entsteht durch eine Handlung des Kunden und steht nicht
+    // dort, wohin der Fokus danach geht.
+    gebietsantwort.setAttribute('role', 'status');
     form.appendChild(gebietsantwort);
 
     form.appendChild(el('h2', null, 'Wie möchten Sie zahlen?'));
@@ -982,10 +990,25 @@
         'Diese Liste ist eine Anfrage, keine Bestellung. Kopieren Sie sie in '
         + 'eine Mail' + rueckmeldung));
 
+      /*
+       * **Der Name des Textfeldes — 11. September 2026.**
+       *
+       * Gemessen an allen 712 Bedienelementen der gebauten Seiten: Jedes
+       * einzelne trägt eine Beschriftung, über `<label>` oder `aria-label`.
+       * Gemessen an den fünf, die die Kasse im Browser erzeugt: vier auch —
+       * und ausgerechnet dieses nicht.
+       *
+       * > **Das einzige unbeschriftete Bedienelement des Shops war das, in dem
+       * > die ganze Bestellung steht.**
+       *
+       * Der Satz darüber erklärt es für den, der ihn sieht; ein Absatz über
+       * einem Feld ist aber keine Beschriftung, sondern Nachbarschaft.
+       */
       var feld = document.createElement('textarea');
       feld.readOnly = true;
       feld.rows = 14;
       feld.className = 'anfragetext';
+      feld.setAttribute('aria-label', 'Ihre Anfrage als Text zum Kopieren');
       feld.value = a.text;
       anfrageKasten.appendChild(feld);
 
@@ -993,6 +1016,10 @@
       var kopieren = el('button', 'knopf', 'Text kopieren');
       kopieren.type = 'button';
       var rueckmeldung = el('span', 'anfrage-echo');
+      // **Leer erzeugt, dann gefüllt** — und deshalb wirkt die Ansage. Ein
+      // Bereich, der erst mit seinem Text entsteht, wird von manchen
+      // Vorleseprogrammen nicht angesagt.
+      rueckmeldung.setAttribute('role', 'status');
       kopieren.addEventListener('click', function () {
         // `select()` und `execCommand` sind der Weg, der ohne Berechtigung
         // und ohne sicheren Ursprung funktioniert. Die Zwischenablage-API
@@ -1095,6 +1122,10 @@
         var senden = el('button', 'knopf senden', 'Bestellung abschicken');
         senden.type = 'button';
         var sendeEcho = el('p', 'anfrage-echo');
+        // Dasselbe für den Bestellweg: „Es fehlt noch: …", „Wird abgeschickt
+        // …", „Angekommen" — drei Auskünfte über den eigenen Vorgang, die
+        // bisher nur zu sehen und nicht zu hören waren.
+        sendeEcho.setAttribute('role', 'status');
         senden.addEventListener('click', function () {
           var offen = [];
           for (var n = 0; n < stand.felder.length; n++) {
