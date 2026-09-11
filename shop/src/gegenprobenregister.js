@@ -2805,6 +2805,27 @@ export const GEGENPROBEN = Object.freeze([
       + 'nachrechnet, hat es umsonst. Die Mutation verfälscht jede Summe um ein Byte, ohne die '
       + 'Dateien selbst anzufassen.',
   }),
+  Object.freeze({
+    id: 'kaufquote-abgeschrieben',
+    pruefer: 'test',
+    was: 'Die Zahl, mit der jedes Höchstgebot multipliziert wird, zweimal im Bestand',
+    datei: 'shop/bin/kampagne.mjs',
+    art: 'ersetzen',
+    suchen: "  const kaufquote = argZahl('kaufquote', annahmewert('umsatzProSession'));",
+    ersetzen: "  const kaufquote = argZahl('kaufquote', 0.03);",
+    erwartet: /Kaufquote|zwei Wege zu derselben Zahl/,
+    warum: 'Der Zustand bis zum 11. September: `bin/kampagne.mjs` hatte für die Kaufquote eine '
+      + 'eigene 0.02 im Quelltext, während dieselbe Zahl als Annahme `umsatzProSession` mit '
+      + 'Herkunft und Konfidenz im Register steht — samt der Zeile „DIESELBE GRÖSSE wie die '
+      + 'Kaufquote der Kampagne". Das stand in einem Satz und nicht in einem Aufruf. Jedes '
+      + 'Höchstgebot je Klick ist der Deckungsbeitrag mal dieser Zahl; wird die Annahme '
+      + 'berichtigt, bewegen sich Kennzahlen und Leitzahlen, und die Gebote blieben als '
+      + 'einzige stehen — obwohl sie die einzige Stelle sind, an der eine Annahme noch am '
+      + 'selben Tag zu einer Zahlung wird. Die Mutation schreibt der Kampagne wieder eine '
+      + 'eigene Zahl in den Quelltext — und zwar eine **andere** als die des Registers, denn '
+      + 'genau darin liegt der Punkt: Mit 0.02 stimmten die beiden zufällig überein, und '
+      + 'dieser Zufall war das, was niemand messen konnte.',
+  }),
 ]);
 
 /**

@@ -964,3 +964,59 @@ test('das Verzeichnis der nicht ausgeschlossenen Wörter ist begründet', () => 
     }
   }
 });
+
+/*
+ * **Die Quote, mit der jedes Gebot multipliziert wird — 11. September 2026.**
+ *
+ * `bin/kampagne.mjs` hatte für die Kaufquote eine eigene `0.02` im Quelltext.
+ * Dieselbe Zahl steht als Annahme `umsatzProSession` in
+ * `src/empfindlichkeit.js` — mit Herkunft, Konfidenz und der Zeile *„DIESELBE
+ * GRÖSSE wie die Kaufquote der Kampagne (bin/kampagne.mjs) — zwei Namen für
+ * eine Zahl"*. Das stand in einem Satz und nicht in einem Aufruf.
+ *
+ * Diese Probe führt das Werkzeug **aus** und hält seine ausgegebene Quote
+ * gegen das Annahmenregister. Sie fällt, sobald die beiden auseinanderlaufen —
+ * also genau dann, wenn jemand die Annahme berichtigt und die Gebote
+ * stehenbleiben.
+ */
+test('Die Kaufquote der Gebote kommt aus dem Annahmenregister', async () => {
+  const { existsSync } = await import('node:fs');
+  const { spawnSync } = await import('node:child_process');
+  const { fileURLToPath } = await import('node:url');
+  const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
+  if (!existsSync(pfad('../../preise/baustoff-preise.json'))) return;
+
+  const { annahmewert } = await import('../src/empfindlichkeit.js');
+  const basis = annahmewert('umsatzProSession');
+  assert.ok(basis > 0 && basis < 1, `die Annahme ist kein Anteil: ${basis}`);
+
+  const lauf = spawnSync(process.execPath, [pfad('../bin/kampagne.mjs')], { encoding: 'utf8' });
+  assert.equal(lauf.status, 0, lauf.stderr);
+
+  const treffer = /Kaufquote ([\d.,]+) %/.exec(lauf.stdout);
+  assert.ok(treffer, 'das Werkzeug nennt seine Kaufquote nicht mehr — dann prüft dieser Fall nichts');
+  const genannt = Number(treffer[1].replace(',', '.')) / 100;
+  assert.ok(
+    Math.abs(genannt - basis) < 1e-9,
+    `die Kampagne rechnet mit ${(genannt * 100).toFixed(2)} %, das Annahmenregister führt `
+    + `${(basis * 100).toFixed(2)} % — zwei Wege zu derselben Zahl, und einer ist alt`,
+  );
+
+  // Und die Gegenrichtung: Der Schalter geht weiterhin vor. Ohne ihn wäre die
+  // Annahme keine Annahme mehr, sondern eine Festlegung.
+  //
+  // **`--nach` ist hier keine Bequemlichkeit.** Der erste Wurf dieser Probe
+  // ließ den Lauf mit halber Quote nach `ausgabe/kampagne/` schreiben — und
+  // machte damit den Prüfer rot, der die Messliste gegen die Keywords hält.
+  // *Eine Probe, die das Erzeugnis verändert, prüft den Bestand nicht mehr,
+  // sie verschiebt ihn.*
+  const { wegwerfordner } = await import('../src/wegwerf.js');
+  const halb = spawnSync(process.execPath, [
+    pfad('../bin/kampagne.mjs'), '--kaufquote', String(basis / 2),
+    '--nach', wegwerfordner('kampagne-probe-'),
+  ], { encoding: 'utf8' });
+  assert.equal(halb.status, 0, halb.stderr);
+  const zweiter = /Kaufquote ([\d.,]+) %/.exec(halb.stdout);
+  assert.ok(zweiter && Number(zweiter[1].replace(',', '.')) / 100 < basis,
+    'der Schalter --kaufquote wirkt nicht mehr');
+});

@@ -23,7 +23,11 @@
  * `ausgabe/kampagne/` und enthalten **keine Einkaufspreise** — nur Gebote,
  * Keywords und Anzeigentexte.
  *
- * Aufruf:  node bin/kampagne.mjs [--kaufquote 0.02] [--budget 10]
+ * Aufruf:  node bin/kampagne.mjs [--kaufquote <Anteil>] [--budget <Euro>] [--nach <Ordner>]
+ *
+ *   Ohne `--kaufquote` gilt der Basiswert der Annahme `umsatzProSession` aus
+ *   `src/empfindlichkeit.js`. Die Zahl stand hier bis zum 11. September zweimal
+ *   abgeschrieben — einmal in dieser Zeile, einmal in der Gebotsrechnung.
  *
  * Geschaltet wird nichts. Eine Kampagne löst Ausgaben aus; das entscheidet
  * der Auftraggeber, nicht dieses Werkzeug.
@@ -52,6 +56,7 @@ import { suchdeckungsbefund } from '../src/suchdeckung.js';
 import { baueSuchindex, suche } from '../src/shopkern.js';
 import { cent } from '../src/preis.js';
 import { traegtSichSelbst } from '../src/kostenbild.js';
+import { annahmewert } from '../src/empfindlichkeit.js';
 import { berechneWarenkorb } from '../src/warenkorb.js';
 
 const HIER = dirname(fileURLToPath(import.meta.url));
@@ -107,7 +112,26 @@ export function ungedeckteWoerter(keyword, seitentext) {
   return keywordWoerter(keyword).filter((w) => !t.includes(w));
 }
 const REPO = join(WURZEL, '..');
-const AUSGABE = join(WURZEL, 'ausgabe', 'kampagne');
+
+/**
+ * Wohin die CSV-Dateien gehen.
+ *
+ * **`--nach` seit dem 11. September 2026.** Bis dahin schrieb dieses Werkzeug
+ * ausschließlich nach `ausgabe/kampagne/`. Wer es mit einer anderen Annahme
+ * durchrechnen wollte — etwa einer halbierten Kaufquote —, überschrieb damit
+ * das ausgelieferte Erzeugnis und ließ es so stehen. Genau das ist beim
+ * Schreiben der Probe zu dieser Runde passiert: Der Lauf mit halber Quote hat
+ * `keywords.csv` ersetzt, und der Prüfer, der die Messliste dagegenhält, wurde
+ * rot — an einer Stelle, die mit der Kaufquote nichts zu tun hat.
+ *
+ * > **Ein Werkzeug, das nur an eine Stelle schreiben kann, lässt sich nicht
+ * > durchrechnen, ohne das Erzeugnis zu ändern.**
+ */
+const AUSGABE = (() => {
+  const i = process.argv.indexOf('--nach');
+  const wahl = i >= 0 ? process.argv[i + 1] : null;
+  return wahl ? (wahl.startsWith('/') ? wahl : join(WURZEL, wahl)) : join(WURZEL, 'ausgabe', 'kampagne');
+})();
 
 /** Marktübliche Klickpreise in Österreich, Bau und Handwerk. */
 export const MARKT_CPC = { unten: 0.5, oben: 2.5 };
@@ -1195,7 +1219,26 @@ function argZahl(name, ersatz) {
 }
 
 function main() {
-  const kaufquote = argZahl('kaufquote', 0.02);
+  /*
+   * **Die Quote kommt aus dem Annahmenregister — 11. September 2026.**
+   *
+   * Hier stand `0.02`. Dieselbe Zahl steht als `umsatzProSession` in
+   * `src/empfindlichkeit.js`, mit Herkunft, Konfidenz und dem Satz, dass ein
+   * Ausbleiben von Bestellungen sie erst nach 299 Klicks ausschließt — und
+   * mit der Zeile *„DIESELBE GRÖSSE wie die Kaufquote der Kampagne"*. Das
+   * stand in einem Satz und nicht in einem Aufruf.
+   *
+   * > **Zwei Wege zu derselben Zahl bedeuten, dass einer davon irgendwann alt
+   * > ist** — der Satz steht siebzig Zeilen tiefer an der Gebotsrechnung, aus
+   * > demselben Anlass vom 28. August.
+   *
+   * Jedes Höchstgebot je Klick ist der Deckungsbeitrag **mal dieser Zahl**.
+   * Wird die Annahme eines Tages berichtigt, bewegen sich Kennzahlen,
+   * Leitzahlen und Empfindlichkeit — und die Gebote wären als einzige
+   * stehengeblieben, obwohl sie die einzige Stelle sind, an der eine Annahme
+   * noch am selben Tag zu einer Zahlung wird.
+   */
+  const kaufquote = argZahl('kaufquote', annahmewert('umsatzProSession'));
   const tagesbudget = argZahl('budget', 10);
 
   const lies = (p) => JSON.parse(readFileSync(p, 'utf8'));
@@ -1751,7 +1794,7 @@ function main() {
     console.log(`  ${name}`);
   };
 
-  console.log('Geschrieben nach shop/ausgabe/kampagne/:');
+  console.log(`Geschrieben nach ${AUSGABE.replace(`${REPO}/`, '')}/:`);
   schreibe('kampagnen.csv', csv(Object.keys(kampagnen[0]), kampagnen));
   schreibe('anzeigengruppen.csv', csv(Object.keys(anzeigengruppen[0]), anzeigengruppen));
   // Auch die Keywords folgen dem ersten Anlauf: Ein Keyword ohne Anzeigengruppe

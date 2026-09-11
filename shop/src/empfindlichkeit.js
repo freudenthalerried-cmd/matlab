@@ -88,6 +88,32 @@ export const ANNAHMEN = [
   },
 ];
 
+/**
+ * Der Basiswert einer Annahme — für Werkzeuge, die mit ihr **rechnen.**
+ *
+ * **Der Anlass, 11. September 2026.** `bin/kampagne.mjs` multipliziert jedes
+ * Höchstgebot je Klick mit der Kaufquote und hatte dafür eine eigene `0.02`
+ * im Quelltext. Dass es dieselbe Zahl ist, stand in der Herkunftszeile von
+ * `umsatzProSession` — *„DIESELBE GRÖSSE wie die Kaufquote der Kampagne
+ * (bin/kampagne.mjs) — zwei Namen für eine Zahl"* —, also in einem Satz und
+ * nicht in einem Aufruf.
+ *
+ * > **Zwei Wege zu derselben Zahl bedeuten, dass einer davon irgendwann alt
+ * > ist** — und es ist immer der, den man beim Ändern vergisst.
+ *
+ * Dieser Satz steht seit dem 28. August dreißig Zeilen über der Gebotsrechnung
+ * selbst, aus demselben Anlass: Damals war es der nachgebaute Warenkorb, jetzt
+ * die nachgeschriebene Quote. Der Unterschied zu allen anderen Kopien dieser
+ * Art ist, dass diese am ersten Tag Geld kostet: Das Gebot ist die einzige
+ * Stelle, an der eine Annahme unmittelbar zu einer Zahlung wird.
+ *
+ * Was der Aufrufer auf der Befehlszeile mitgibt, geht weiterhin vor — ein Lauf
+ * mit `--kaufquote 0.01` ist ja gerade der Zweck der Annahme.
+ */
+export function annahmewert(id) {
+  return findeAnnahme(id).basis;
+}
+
 const findeAnnahme = (id) => {
   const a = ANNAHMEN.find((x) => x.id === id);
   if (!a) throw new Error(`Unbekannte Annahme: ${id}`);
