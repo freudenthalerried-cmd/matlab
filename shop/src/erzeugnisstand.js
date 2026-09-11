@@ -92,6 +92,11 @@ export const LESER = Object.freeze([
   // Erzeugnis wäre die schlimmste Sorte: Es sieht vollständig aus, liegt auf
   // dem Server, und niemand sieht ihm an, dass es von gestern ist.
   Object.freeze({ werkzeug: 'bin/paket.mjs', erzeugnis: 'ausgabe/site' }),
+  // **Ergänzt am 11. September.** Der Prüfer packt dasselbe Archiv und hält es
+  // gegen denselben Ordner. Läuft er gegen ein veraltetes Erzeugnis, bescheinigt
+  // er einem Paket von gestern, dass es zum Bau von gestern passt — richtig und
+  // nutzlos.
+  Object.freeze({ werkzeug: 'bin/paketpruefung.mjs', erzeugnis: 'ausgabe/site' }),
   Object.freeze({ werkzeug: 'bin/verweispruefung.mjs', erzeugnis: 'ausgabe/site' }),
   // **Seit dem 8. September, nachts.** Der Prüfer liest zusätzlich
   // `ausgabe/site/llms.txt` — er hält die Zahl der nicht geführten Positionen

@@ -458,6 +458,21 @@ export const PRUEFER = [
     mindestens: 40,
   },
   {
+    /*
+     * **Aufgenommen am 11. September.** Das Archiv ist das letzte Glied: Alles,
+     * was hier gebaut wird, erreicht die Welt durch diese eine Datei. Geprüft
+     * war davon ein selbstgebautes Archiv aus **zwei** Einträgen; das echte
+     * trägt neunundachtzig. Gezählt werden die Dateien, die ausgepackt gegen
+     * den Bau gehalten wurden — nicht die Läufe: Ein Archiv, das zur
+     * Abnahmeliste schrumpft, fiele bei einer Laufzählung nicht auf.
+     */
+    name: 'pruefe-paket',
+    werkzeug: 'paketpruefung.mjs',
+    muster: /Paketprobe: (\d+) Dateien im Archiv/,
+    einheit: 'Dateien des Archivs gegen den Bau',
+    mindestens: 40,
+  },
+  {
     // **Aufgenommen am 5. September.** Die Systemlisten sind der inhaltliche
     // Kern: Sie sagen, was zu bestellen ist, **und** was dieses Haus davon
     // nicht liefert. Eine von ihnen widersprach sich über genau diese Zahl.

@@ -134,3 +134,106 @@ export function baueZip(eintraege, stand = new Date()) {
 
   return Buffer.concat([...teile, verzeichnisTeile, schluss]);
 }
+
+/* ------------------------------------------------------------------ *
+ * Was im Archiv steht, gegen das, was gebaut wurde — 11. September 2026
+ *
+ * **Der Anlass.** `test/paket.test.js` hält seit dem 8. September ein
+ * **selbstgebautes Archiv aus zwei Einträgen** gegen `unzip -t`. Das ist die
+ * richtige Richtung und die falsche Größe: Das Archiv, das der Auftraggeber
+ * bekommt, trägt 89 Einträge, 3,35 MB, Umlaute in Pfaden und fünf
+ * Ordnerebenen. Ein handgeschriebenes ZIP kann bei zwei kleinen Einträgen
+ * tragen und bei 89 brechen — an Versätzen, am Zentralverzeichnis, an der
+ * Reihenfolge.
+ *
+ * > **Das Paket ist das letzte Glied: Alles, was hier gebaut wird, erreicht
+ * > die Welt durch diese eine Datei.**
+ *
+ * Die Funktionen hier vergleichen, was beim Auspacken herauskommt, mit dem,
+ * was gebaut wurde — **in beide Richtungen**. Eine Datei zu wenig ist ein
+ * halber Shop; eine zu viel ist etwas, das niemand geprüft hat.
+ * ------------------------------------------------------------------ */
+
+/**
+ * Hält zwei Dateibestände gegeneinander: Namen und Inhalt.
+ *
+ * @param {Map<string, Buffer|Uint8Array>} imArchiv  ausgepackt
+ * @param {Map<string, Buffer|Uint8Array>} imBau     gebaut
+ */
+export function archivbefund(imArchiv, imBau) {
+  const meldungen = [];
+  const melde = (regel, wo, text) => meldungen.push({ regel, wo, text });
+  const gleich = (a, b) => a.length === b.length && Buffer.from(a).equals(Buffer.from(b));
+
+  for (const [name, inhalt] of imBau) {
+    if (!imArchiv.has(name)) {
+      melde('fehlt-im-archiv', name,
+        `${name} ist gebaut und liegt nicht im Archiv — hochgeladen wäre der Shop unvollständig`);
+      continue;
+    }
+    if (!gleich(imArchiv.get(name), inhalt)) {
+      melde('inhalt-weicht-ab', name,
+        `${name} liegt im Archiv mit anderem Inhalt als im Bau `
+        + `(${imArchiv.get(name).length} statt ${inhalt.length} Bytes)`);
+    }
+  }
+  for (const name of imArchiv.keys()) {
+    if (!imBau.has(name)) {
+      melde('nicht-gebaut', name,
+        `${name} liegt im Archiv und wurde nicht gebaut — niemand hat es geprüft`);
+    }
+  }
+  return { geprueft: imBau.size, meldungen, sauber: meldungen.length === 0 };
+}
+
+/** Eine Zeile des Inhaltsverzeichnisses: Prüfsumme, Größe, Pfad. */
+const VERZEICHNISZEILE = /^([0-9a-f]{64})\s+(\d+)\s+(.+)$/;
+
+/**
+ * Hält das mitgelieferte Inhaltsverzeichnis gegen die ausgepackten Dateien.
+ *
+ * Auch das in beide Richtungen: Ein Verzeichnis, das eine Datei nicht nennt,
+ * ist so wertlos wie eines, das eine nennt, die es nicht gibt. Wer eine
+ * Prüfsumme nachrechnen will, muss sich auf beides verlassen können.
+ *
+ * @param {string} text  Inhalt von INHALT.txt
+ * @param {Map<string, string>} summen  Pfad → SHA-256 der ausgepackten Datei
+ * @param {Map<string, number>} groessen  Pfad → Bytes
+ */
+export function inhaltsbefund(text, summen, groessen) {
+  const meldungen = [];
+  const melde = (regel, wo, t) => meldungen.push({ regel, wo, text: t });
+  const genannt = new Set();
+  let zeilen = 0;
+
+  for (const zeile of String(text).split('\n')) {
+    const t = VERZEICHNISZEILE.exec(zeile.trimEnd());
+    if (!t) continue;
+    zeilen += 1;
+    const [, summe, groesse, pfad] = t;
+    genannt.add(pfad);
+    if (!summen.has(pfad)) {
+      melde('zeile-ohne-datei', pfad,
+        `das Inhaltsverzeichnis nennt ${pfad}, im Archiv liegt die Datei nicht`);
+      continue;
+    }
+    if (summen.get(pfad) !== summe) {
+      melde('summe-weicht-ab', pfad, `${pfad}: die Prüfsumme im Verzeichnis stimmt nicht`);
+    }
+    if (groessen.get(pfad) !== Number(groesse)) {
+      melde('groesse-weicht-ab', pfad,
+        `${pfad}: das Verzeichnis nennt ${groesse} Bytes, die Datei hat ${groessen.get(pfad)}`);
+    }
+  }
+  for (const pfad of summen.keys()) {
+    if (!genannt.has(pfad)) {
+      melde('datei-ohne-zeile', pfad,
+        `${pfad} liegt im Archiv und steht in keiner Zeile des Inhaltsverzeichnisses`);
+    }
+  }
+  if (!zeilen) {
+    melde('kein-verzeichnis', 'INHALT.txt',
+      'keine einzige lesbare Zeile im Inhaltsverzeichnis — dann prüft dieser Abgleich nichts');
+  }
+  return { zeilen, meldungen, sauber: meldungen.length === 0 };
+}

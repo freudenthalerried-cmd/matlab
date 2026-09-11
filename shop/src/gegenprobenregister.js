@@ -2775,6 +2775,36 @@ export const GEGENPROBEN = Object.freeze([
       + 'erfährt nicht, warum. Die Mutation nimmt den Satz heraus und lässt die richtige Zahl '
       + 'stehen — sie trennt damit die beiden Hälften, statt beide zugleich abzuschalten.',
   }),
+  Object.freeze({
+    id: 'archiv-mit-fehlender-datei',
+    pruefer: 'pruefe-paket',
+    was: 'Ein Archiv, in dem eine gebaute Datei fehlt',
+    datei: 'shop/bin/paket.mjs',
+    art: 'ersetzen',
+    suchen: '  ...dateien.map((d) => ({ name: `site/${d}`, inhalt: inhalte.get(d) })),',
+    ersetzen: '  ...dateien.slice(1).map((d) => ({ name: `site/${d}`, inhalt: inhalte.get(d) })),',
+    erwartet: /fehlt-im-archiv|ist gebaut und liegt nicht im Archiv/,
+    warum: 'Der teuerste denkbare Fehler dieser Kette und zugleich der stillste: Geprüft wird '
+      + 'der Bau, hochgeladen wird das Archiv. Eine Datei zu wenig ist ein halber Shop, und '
+      + 'weder `unzip -t` noch die Abnahmeliste müssten es merken — das Archiv wäre in sich '
+      + 'tadellos. Die Mutation lässt genau eine Datei weg; rot wird dann der Abgleich gegen '
+      + 'den Bau, denn das Archiv selbst ist danach fehlerfrei.',
+  }),
+  Object.freeze({
+    id: 'verzeichnis-mit-falscher-summe',
+    pruefer: 'pruefe-paket',
+    was: 'Ein Inhaltsverzeichnis, dessen Prüfsummen nicht zum Inhalt passen',
+    datei: 'shop/bin/paket.mjs',
+    art: 'ersetzen',
+    suchen: '  ...dateien.map((d) => `${summe(inhalte.get(d))}  ${String(inhalte.get(d).length).padStart(8)}  ${d}`),',
+    ersetzen: '  ...dateien.map((d) => `${summe(Buffer.concat([inhalte.get(d), Buffer.from("x")]))}  ${String(inhalte.get(d).length).padStart(8)}  ${d}`),',
+    erwartet: /summe-weicht-ab|Prüfsumme im Verzeichnis stimmt nicht/,
+    warum: 'Das Inhaltsverzeichnis ist das Versprechen, mit dem sich das Archiv nachrechnen '
+      + 'lässt. Stimmen seine Summen nicht, ist es schlimmer als keines: Wer eine nachrechnet '
+      + 'und eine Abweichung findet, hält ein tadelloses Paket für beschädigt — und wer keine '
+      + 'nachrechnet, hat es umsonst. Die Mutation verfälscht jede Summe um ein Byte, ohne die '
+      + 'Dateien selbst anzufassen.',
+  }),
 ]);
 
 /**

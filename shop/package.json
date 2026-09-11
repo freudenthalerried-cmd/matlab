@@ -76,6 +76,7 @@
     "pruefe-korbtext": "node bin/korbtextpruefung.mjs",
     "pruefe-verweise": "node bin/verweispruefung.mjs",
     "paket": "node bin/paket.mjs",
+    "pruefe-paket": "node bin/paketpruefung.mjs",
     "preise-wiederherstellen": "node bin/preiswiederherstellung.mjs",
     "pruefe-vorbehalte": "node bin/vorbehaltspruefung.mjs",
     "pr-text": "node bin/prtext.mjs",
