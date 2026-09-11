@@ -154,3 +154,77 @@ test('GET wird abgewiesen', { skip: !vorhanden && 'php fehlt' }, async () => {
     assert.equal(antwort.status, 405);
   } finally { s.ende(); }
 });
+
+/* ------------------------------------------------------------------ *
+ * Gate 35 — wer hier schreiben darf und wie oft (11. September 2026)
+ *
+ * Gemessen an einem laufenden PHP: dreißig Bestellungen hintereinander von
+ * derselben Adresse, dreißigmal 200, dreißig Zeilen im Journal. Ein Formular
+ * auf einer fremden Seite kam durch, eine Anfrage mit fremdem `Origin`
+ * ebenfalls. Jede schreibt in die Vorgangsablage und löst eine Mail aus.
+ * ------------------------------------------------------------------ */
+
+/** Wie `schicke`, aber mit eigenen Kopfzeilen — für die Sperren darunter. */
+const schickeMit = (port, kopf, koerper = GUELTIG) => fetch(
+  `http://127.0.0.1:${port}/bestellung.php`,
+  { method: 'POST', headers: kopf, body: JSON.stringify(koerper) },
+);
+
+test('ein Formular auf einer fremden Seite kommt nicht durch',
+  { skip: !vorhanden && 'php fehlt' }, async () => {
+    const s = await server();
+    try {
+      // `text/plain` ist einer der drei Typen, die ein HTML-Formular ohne
+      // Vorabanfrage senden kann. Genau damit ging die Bestellung am
+      // 11. September durch.
+      const antwort = await schickeMit(s.port, { 'Content-Type': 'text/plain' });
+      assert.equal(antwort.status, 415);
+      assert.equal(existsSync(join(s.wurzel, 'bestellungen')), false,
+        'abgewiesen und trotzdem abgelegt wäre schlimmer als angenommen');
+    } finally { s.ende(); }
+  });
+
+test('sagt der Browser selbst, dass die Anfrage von woanders kommt, wird geglaubt',
+  { skip: !vorhanden && 'php fehlt' }, async () => {
+    const s = await server();
+    try {
+      const fremd = await schickeMit(s.port,
+        { 'Content-Type': 'application/json', 'Sec-Fetch-Site': 'cross-site' });
+      assert.equal(fremd.status, 403);
+      // Und die Gegenrichtung: Der eigene Weg sendet `same-origin` und muss
+      // durchkommen. Eine Sperre, die auch den ehrlichen Weg trifft, wird am
+      // zweiten Tag abgeschaltet.
+      const eigen = await schickeMit(s.port,
+        { 'Content-Type': 'application/json', 'Sec-Fetch-Site': 'same-origin' });
+      assert.equal(eigen.status, 200);
+    } finally { s.ende(); }
+  });
+
+test('mehr als fünf Bestellungen in einer Minute werden abgewiesen, nicht abgelegt',
+  { skip: !vorhanden && 'php fehlt' }, async () => {
+    const s = await server();
+    try {
+      const stati = [];
+      for (let i = 0; i < 8; i++) {
+        // Nacheinander und nicht gleichzeitig: Die Zählung entsteht unter der
+        // Dateisperre, und was hier gemessen werden soll, ist die Grenze und
+        // nicht das Verhalten bei Gleichzeitigkeit.
+        // eslint-disable-next-line no-await-in-loop
+        stati.push((await schicke(s.port, { ...GUELTIG, firma: `Firma ${i}` })).status);
+      }
+      assert.deepEqual(stati, [200, 200, 200, 200, 200, 429, 429, 429]);
+
+      const journal = join(s.wurzel, 'bestellungen', `journal-${geschaeftsjahr()}.jsonl`);
+      const zeilen = readFileSync(journal, 'utf8').split('\n').filter(Boolean);
+      assert.equal(zeilen.length, 5,
+        'eine abgewiesene Bestellung darf keine Zeile in der Ablage hinterlassen');
+
+      // Die Absage nennt den Weg zurück. Eine Grenze ohne Auskunft ist für
+      // den Kunden nicht von einem kaputten Shop zu unterscheiden.
+      const letzte = await schicke(s.port, GUELTIG);
+      const d = await letzte.json();
+      assert.equal(d.ok, false);
+      assert.match(d.grund, /noch einmal abschicken/);
+      assert.equal(letzte.headers.get('retry-after'), '60');
+    } finally { s.ende(); }
+  });

@@ -75,6 +75,17 @@ export function gatesAusRegister(text) {
  */
 export const SPUREN = Object.freeze([
   Object.freeze({
+    gate: 35,
+    datei: 'shop/bestellung.php',
+    muster: /HOECHSTENJEFENSTER/,
+    warum: 'Das Empfangsskript nimmt nur von der eigenen Seite an und höchstens fünf '
+      + 'Bestellungen je Minute. Die Entscheidung steckt in dieser Konstante und den beiden '
+      + 'Kopfzeilenprüfungen daneben: Ohne sie nimmt das Skript von jedermann beliebig oft '
+      + 'entgegen — gemessen am 11. September mit dreißig angenommenen Bestellungen '
+      + 'hintereinander. Nähme jemand Gate 35 zurück, verschwände die Zählung aus derselben '
+      + 'Lesung, die die laufende Nummer vergibt.',
+  }),
+  Object.freeze({
     gate: 34,
     datei: 'shop/src/shopkern.js',
     muster: /export\s+const\s+HOECHSTMENGE/,

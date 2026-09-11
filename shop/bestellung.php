@@ -60,6 +60,43 @@ date_default_timezone_set('Europe/Vienna');
 const HOECHSTLAENGE = 65536;
 const ABLAGEORDNER = __DIR__ . '/../bestellungen';
 
+/*
+ * **Gate 35, 11. September 2026 — wer hier schreiben darf und wie oft.**
+ *
+ * Gemessen an einem laufenden PHP: **dreißig Bestellungen hintereinander von
+ * derselben Adresse, dreißigmal 200**, dreißig Zeilen im Journal. Ein
+ * Formular auf einer fremden Seite (`Content-Type: text/plain`) kam durch,
+ * eine Anfrage mit fremdem `Origin` ebenfalls. Jede davon schreibt in die
+ * Vorgangsablage, die nach § 132 BAO sieben Jahre zu führen ist, und löst
+ * eine Mail an den Betrieb aus.
+ *
+ * > **Ein Geschäftsbuch, in das jeder beliebig oft schreiben darf, ist keine
+ * > Ablage, sondern eine Halde.**
+ *
+ * Drei Sperren, alle ohne fremde Bibliothek und ohne neue Daten:
+ *
+ * 1. **Nur `application/json`.** Ein HTML-Formular auf einer fremden Seite
+ *    kann diesen Kopf nicht setzen; ein `fetch` mit ihm löst eine
+ *    Vorabanfrage aus, die hier niemand beantwortet. Der eigene Absendeweg
+ *    (`shop-bestellen.js`) setzt ihn seit jeher — die Sperre kostet den
+ *    ehrlichen Weg nichts.
+ * 2. **Kein `Sec-Fetch-Site: cross-site`.** Wo der Browser selbst sagt, dass
+ *    die Anfrage von woanders kommt, wird geglaubt. Fehlt der Kopf, wird
+ *    nicht geraten — ältere Browser und Werkzeuge senden ihn nicht.
+ * 3. **Eine Obergrenze je Minute, über alle zusammen.** Nicht je Adresse:
+ *    Dafür müsste die IP gespeichert werden, und das wäre ein neuer Zweck,
+ *    eine neue Angabe auf der Datenschutzseite und ein neues Risiko — für
+ *    einen Betrieb mit einer Handvoll Bestellungen je Woche unverhältnismäßig.
+ *    Gezählt wird aus den Zeitstempeln, die das Journal ohnehin führt.
+ *
+ * **Was diese Sperren nicht können:** eine langsame, geduldige Flut. Dagegen
+ * hülfe nur eine Zählung je Adresse oder ein fremder Dienst — das eine kostet
+ * personenbezogene Daten, das andere Geld und einen Auftragsverarbeiter.
+ * Beides ist eine Entscheidung des Auftraggebers und steht als offener Punkt.
+ */
+const HOECHSTENJEFENSTER = 5;
+const FENSTERSEKUNDEN = 60;
+
 /** Antwortet als JSON und beendet — eine Ausgabe, ein Ausgang. */
 function antworte(int $code, array $daten): void
 {
@@ -102,6 +139,15 @@ function textFeld(array $daten, string $name, int $maximum, bool $pflicht = true
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
     header('Allow: POST');
     antworte(405, ['ok' => false, 'grund' => 'Nur POST.']);
+}
+
+$art = strtolower(trim(explode(';', (string) ($_SERVER['CONTENT_TYPE'] ?? ''))[0]));
+if ($art !== 'application/json') {
+    antworte(415, ['ok' => false, 'grund' => 'Erwartet wird application/json.']);
+}
+
+if (strtolower((string) ($_SERVER['HTTP_SEC_FETCH_SITE'] ?? '')) === 'cross-site') {
+    antworte(403, ['ok' => false, 'grund' => 'Diese Bestellung kommt nicht von dieser Seite.']);
 }
 
 $roh = file_get_contents('php://input', false, null, 0, HOECHSTLAENGE + 1);
@@ -199,9 +245,31 @@ if (!flock($griff, LOCK_EX)) {
 // Die laufende Nummer entsteht **unter der Sperre**. Wer sie vorher zieht,
 // vergibt bei zwei gleichzeitigen Bestellungen zweimal dieselbe.
 $bestand = 0;
+$imFenster = 0;
+$grenze = time() - FENSTERSEKUNDEN;
 rewind($griff);
-while (fgets($griff) !== false) {
+while (($zeileAusAblage = fgets($griff)) !== false) {
     $bestand++;
+    // Aus derselben Lesung, die ohnehin läuft: Wie viele Einträge sind jünger
+    // als das Fenster? Ein zweiter Durchgang über dieselbe Datei wäre ein
+    // zweiter Weg zur selben Zahl.
+    $alt = json_decode($zeileAusAblage, true);
+    if (is_array($alt) && isset($alt['zeitpunkt']) && is_string($alt['zeitpunkt'])) {
+        $stempel = strtotime($alt['zeitpunkt']);
+        if ($stempel !== false && $stempel >= $grenze) {
+            $imFenster++;
+        }
+    }
+}
+if ($imFenster >= HOECHSTENJEFENSTER) {
+    flock($griff, LOCK_UN);
+    fclose($griff);
+    header('Retry-After: ' . FENSTERSEKUNDEN);
+    antworte(429, [
+        'ok' => false,
+        'grund' => 'Gerade gehen ungewöhnlich viele Bestellungen ein. Bitte in einer Minute noch '
+            . 'einmal abschicken — der Warenkorb bleibt erhalten.',
+    ]);
 }
 $nummer = sprintf('B-%d-%04d', $jahr, $bestand + 1);
 

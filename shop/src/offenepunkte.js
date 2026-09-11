@@ -112,6 +112,33 @@ export const OHNE_WERKZEUG = Object.freeze([
     loest: 'Bestätigt oder widerlegt Gate 23 — heute gilt die vorsichtige Fläche der Kampagne.',
   },
   {
+    /*
+     * **Neu am 11. September, aus Gate 35.** Das Empfangsskript nimmt seit
+     * heute nur von der eigenen Seite an und höchstens fünf Bestellungen je
+     * Minute. Beides ohne eine einzige neue Angabe über den Besucher — und
+     * beides hilft nicht gegen eine **langsame** Flut: Wer alle zwölf Sekunden
+     * eine Bestellung schickt, bleibt unter der Grenze und füllt die Ablage
+     * trotzdem.
+     *
+     * Ein offener Punkt, der eine getroffene Entscheidung trägt, gehört
+     * aufgeschrieben; sonst steht die Entscheidung da, als wäre sie
+     * vollständig.
+     */
+    id: 'flut-je-adresse',
+    titel: 'Schutz gegen eine langsame Flut auf den Bestellweg',
+    zustaendig: 'entscheidung',
+    warumKeinWerkzeug: 'Beide möglichen Wege kosten etwas, das dieser Loop nicht entscheiden '
+      + 'darf. Eine Zählung **je Adresse** verlangt, die IP des Besuchers zu speichern — ein '
+      + 'neuer Zweck, eine neue Angabe auf der Datenschutzseite und ein neues Risiko. Ein '
+      + 'fremder Dienst (Captcha, Formularfilter) kostet Geld und macht seinen Anbieter zum '
+      + 'Auftragsverarbeiter nach Art. 28 DSGVO. Gate 35 hat deshalb die beiden Sperren '
+      + 'gewählt, die nichts davon brauchen.',
+    loest: 'Entscheidet, ob die Vorgangsablage (§ 132 BAO, sieben Jahre) auch gegen eine '
+      + 'geduldige Flut geschützt wird — heute hält sie fünf Bestellungen je Minute auf und '
+      + 'eine alle zwölf Sekunden nicht. Solange keine Bestellung eingeht, kostet das nichts; '
+      + 'ab dem ersten geschalteten Anzeigentag steht der Bestellweg offen.',
+  },
+  {
     // **Neu am 3. September, aus Gate 25.** Der Mindestbestellwert von 250 €
     // deckt zwei Paletten. Ob eine Bestellung dieser Größe eine, zwei oder
     // drei braucht, ist die eine Angabe, die aus der Grenze eine Rechnung

@@ -2858,6 +2858,37 @@ export const GEGENPROBEN = Object.freeze([
       + 'hält nichts. Mit diesem Satz wird die Zahlungsgebühr auf brutto gestreckt, und daran '
       + 'hängt `noetigerUmsatz`, die Leitzahl, die zehn Werkzeuge lesen.',
   }),
+  Object.freeze({
+    id: 'empfang-ohne-grenze',
+    pruefer: 'test',
+    was: 'Ein Empfangsskript, das beliebig viele Bestellungen hintereinander annimmt',
+    datei: 'shop/bestellung.php',
+    art: 'ersetzen',
+    suchen: 'if ($imFenster >= HOECHSTENJEFENSTER) {',
+    ersetzen: 'if (false && $imFenster >= HOECHSTENJEFENSTER) {',
+    erwartet: /429|fünf Bestellungen in einer Minute/,
+    warum: 'Wörtlich der Zustand bis zum 11. September: dreißig Bestellungen hintereinander von '
+      + 'derselben Adresse, dreißigmal 200, dreißig Zeilen im Journal. Jede schreibt in die '
+      + 'Vorgangsablage, die nach § 132 BAO sieben Jahre zu führen ist, und löst eine Mail an '
+      + 'den Betrieb aus. Die Mutation lässt die Zählung stehen und schaltet nur die '
+      + 'Entscheidung ab — so bleibt sichtbar, dass der Prüfer die Grenze misst und nicht das '
+      + 'Rechnen.',
+  }),
+  Object.freeze({
+    id: 'empfang-nimmt-jeden-typ',
+    pruefer: 'test',
+    was: 'Ein Empfangsskript, das ein Formular von einer fremden Seite annimmt',
+    datei: 'shop/bestellung.php',
+    art: 'ersetzen',
+    suchen: "if ($art !== 'application/json') {",
+    ersetzen: "if (false && $art !== 'application/json') {",
+    erwartet: /415|fremden Seite/,
+    warum: '`text/plain` ist einer der drei Typen, die ein HTML-Formular ohne Vorabanfrage '
+      + 'senden kann — und genau damit ging die Bestellung am 11. September durch, von einer '
+      + 'beliebigen fremden Seite aus. Die Mutation nimmt die Typprüfung heraus; der eigene '
+      + 'Absendeweg setzt den Kopf weiterhin, also bleibt alles andere grün und nur der Fall '
+      + 'der fremden Seite fällt um.',
+  }),
 ]);
 
 /**
