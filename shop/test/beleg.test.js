@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { ladeKatalog, berechneWarenkorb } from '../src/warenkorb.js';
 import {
+  lieferungsname,
   KLEINBETRAG_GRENZE_BRUTTO,
   UID_EMPFAENGER_GRENZE_BRUTTO,
   erforderlicheMerkmale,
@@ -97,9 +98,24 @@ test('Das Angebot trägt eine Bindefrist und weist die Teillieferungen aus', () 
   assert.match(a.text, /Bindefrist: 14 Tage/);
   assert.match(a.text, /Angebot AN-0001/);
   assert.equal(a.bruttobetrag, korb.summeBrutto);
-  assert.ok(korb.teillieferungen.length >= 2, 'sonst prüft die Schleife keinen zweiten Lieferanten');
-  for (const teil of korb.teillieferungen) {
-    assert.ok(a.text.includes(teil.lieferantName), `${teil.lieferantName} fehlt im Angebot`);
+  /**
+   * **Berichtigt am 11. September 2026.** Hier stand, jede Teillieferung müsse
+   * mit dem **Namen ihres Lieferanten** im Angebot stehen — und der Testfall
+   * hat damit genau das festgehalten, was `src/interna.js` seit dem 28. August
+   * verbietet: *Der Bezugsweg. Er steht dem Kunden nicht zu und dem
+   * Wettbewerber schon gar nicht.*
+   *
+   * > **Ein Testfall, der ein Leck zusichert, hält es fest.**
+   *
+   * Ausgewiesen werden die Teillieferungen weiterhin — als „Lieferung 1",
+   * „Lieferung 2". Was den Kunden angeht, ist welche Lieferung wann kommt und
+   * was ihre Fracht kostet, nicht von wem sie stammt.
+   */
+  assert.ok(korb.teillieferungen.length >= 2, 'sonst prüft die Schleife keine zweite Lieferung');
+  for (const [i, teil] of korb.teillieferungen.entries()) {
+    assert.ok(a.text.includes(lieferungsname(i)), `${lieferungsname(i)} fehlt im Angebot`);
+    assert.ok(!a.text.includes(teil.lieferantName),
+      `${teil.lieferantName} steht im Angebot — der Bezugsweg gehört nicht auf einen Kundenbeleg`);
   }
 });
 
@@ -289,9 +305,14 @@ test('Eine unbekannte Lieferzeit steht als Lücke da, nicht als „null Werktage
   assert.ok(!b.text.includes('null Werktage'),
     'die rohe Einsetzung ist zurück — auf einem Beleg an den Kunden');
   assert.ok(!b.text.includes('undefined'));
-  const name = korbOhneLieferzeit.teillieferungen[0].lieferantName;
-  assert.ok(b.text.includes(`[[ Lieferzeit ${name} — FEHLT ]]`),
-    'die Lücke nennt nicht, wessen Lieferzeit fehlt');
+  // **Berichtigt am 11.09.** Die Lücke nannte den Lieferanten beim Namen —
+  // auf einem Beleg an den Kunden. Sie nennt jetzt die Lieferung, und das ist
+  // auch die Auskunft, die der Besteller braucht: **welche** der Lieferungen
+  // noch keinen Termin hat.
+  assert.ok(b.text.includes(`[[ Lieferzeit ${lieferungsname(0)} — FEHLT ]]`),
+    'die Lücke nennt nicht, welche Lieferzeit fehlt');
+  assert.ok(!b.text.includes(korbOhneLieferzeit.teillieferungen[0].lieferantName),
+    'der Bezugsweg gehört nicht auf einen Kundenbeleg');
 });
 
 test('Ohne alle Lieferzeiten gibt es keinen Gesamttermin, auch keinen von null', () => {

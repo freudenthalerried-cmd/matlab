@@ -80,6 +80,15 @@ export const RECHTSGRUENDE = Object.freeze([
     wirkung: 'pflichtgrund',
     belegt: false,
   }),
+  // **Nachgetragen am 11. September 2026**, mit der Rechnungsstufe des
+  // Vorgangswerkzeugs: Ohne die UID-Nummer des Ausstellers darf keine
+  // Rechnung entstehen, und sie fehlt in `data/betreiber.json` bis heute.
+  Object.freeze({
+    zitat: '§ 11 Abs 1 Z 6 UStG',
+    behauptung: 'Die Rechnung trägt die UID-Nummer des Ausstellers.',
+    wirkung: 'pflichtgrund',
+    belegt: false,
+  }),
   Object.freeze({
     zitat: '§ 11 Abs 1 Z 5 UStG',
     behauptung: 'Die Rechnungsnummer ist fortlaufend und einmalig.',

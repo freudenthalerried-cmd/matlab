@@ -92,15 +92,26 @@ export const SCHRITTE = Object.freeze([
     warumOhneWerkzeug: 'Ein Vorgang in der Welt, kein Vorgang im Rechner. Was davon zählt, ist '
       + 'das Lieferdatum, und das trägt der Betreiber ein, wenn es feststeht.',
   }),
+  /*
+   * **Berichtigt am 11. September 2026.** Hier stand, der Befehl fehle, „und
+   * ihm fehlen zwei Angaben, die kein Kommandozeilenwert sind: das
+   * Lieferdatum und der Zahlungseingang".
+   *
+   * Diese Begründung wirft zwei Dinge zusammen. **Festzustellen**, dass
+   * bezahlt wurde, braucht den Kontoauszug — den hat dieses Haus nicht und
+   * soll ihn nicht haben; das steht zu Recht beim Schritt `zahlung`. **Die
+   * Rechnung zu schreiben**, nachdem der Betreiber es festgestellt hat,
+   * braucht nur, dass er es eingibt — genau wie die Anschrift des Kunden, die
+   * auch niemand aus einer Anfrage ableitet.
+   *
+   * > **Eine Angabe, die aus der Welt kommt, ist deshalb kein Hindernis für
+   * > ein Werkzeug — sie ist sein erstes Argument.**
+   */
   Object.freeze({
     id: 'rechnung',
     was: 'Die Rechnung wird ausgestellt und bekommt ihre Nummer',
-    werkzeug: null,
+    werkzeug: 'npm run vorgang -- --stufe rechnung --geliefert … --bezahlt … --ablegen',
     gate: '§ 11 UStG — fortlaufend und einmalig, Pflichtangaben vollständig',
-    warumOhneWerkzeug: '`erzeugeRechnung` und `stelleRechnungAus` sind gebaut und geprüft; die '
-      + 'Nummer fällt erst bei der Ausstellung, damit kein abgebrochener Kauf eine verbrennt. '
-      + 'Was fehlt, ist der Befehl, der beides zusammenführt — und ihm fehlen zwei Angaben, die '
-      + 'kein Kommandozeilenwert sind: das **Lieferdatum** und der **Zahlungseingang**.',
   }),
   Object.freeze({
     id: 'aufbewahrung',

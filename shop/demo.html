@@ -6717,16 +6717,42 @@ function anschriftEinzeilig(daten = {}) {
 
 
 
-function lieferzeitText(teil) {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function lieferungsname(index) {
+  return `Lieferung ${index + 1}`;
+}
+
+function lieferzeitText(teil, index) {
   return gefuellt(teil.lieferzeitWerktage)
     ? `${teil.lieferzeitWerktage} Werktage`
-    : LUECKE(`Lieferzeit ${teil.lieferantName}`);
+    : LUECKE(`Lieferzeit ${lieferungsname(index)}`);
 }
 
 function positionszeilen(warenkorb) {
   const zeilen = [];
-  for (const teil of warenkorb.teillieferungen) {
-    zeilen.push(`${textZeile(teil.lieferantName)} — Direktlieferung, ${lieferzeitText(teil)}`);
+  for (const [i, teil] of warenkorb.teillieferungen.entries()) {
+    zeilen.push(`${lieferungsname(i)} — Direktlieferung, ${lieferzeitText(teil, i)}`);
     for (const p of teil.positionen) {
       zeilen.push(
         
@@ -6737,7 +6763,7 @@ function positionszeilen(warenkorb) {
       );
       zeilen.push(`      à ${EUR(p.vkNetto)} netto = ${EUR(p.zeilensummeNetto)}`);
     }
-    zeilen.push(`  Fracht ${textZeile(teil.lieferantName)}: ${EUR(teil.frachtNetto)} (${textZeile(teil.frachtGrund)})`);
+    zeilen.push(`  Fracht ${lieferungsname(i)}: ${EUR(teil.frachtNetto)} (${textZeile(teil.frachtGrund)})`);
     zeilen.push('');
   }
   return zeilen;
@@ -7050,9 +7076,9 @@ function erzeugeAuftragsbestaetigung(
 
   
   
-  zeilen.push('Lieferzeiten je Hersteller, ab Bestellauslösung:');
-  for (const t of warenkorb.teillieferungen) {
-    zeilen.push(`  ${textZeile(t.lieferantName)}: ${lieferzeitText(t)}`);
+  zeilen.push('Lieferzeiten je Lieferung, ab Bestellauslösung:');
+  for (const [i, t] of warenkorb.teillieferungen.entries()) {
+    zeilen.push(`  ${lieferungsname(i)}: ${lieferzeitText(t, i)}`);
   }
   zeilen.push(
     '',

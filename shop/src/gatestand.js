@@ -75,6 +75,16 @@ export function gatesAusRegister(text) {
  */
 export const SPUREN = Object.freeze([
   Object.freeze({
+    gate: 39,
+    datei: 'shop/src/beleg.js',
+    muster: /export function lieferungsname/,
+    warum: 'Kundenbelege nennen die Lieferung, nicht den Lieferanten. Die Entscheidung steckt '
+      + 'in dieser Funktion: Vor ihr stand in der Überschrift jeder Teillieferung, in der '
+      + 'Frachtzeile und in der Lückenmarke der Name des Lieferanten — auf jedem Blatt, das an '
+      + 'einen Besteller geht, gemessen dreimal in einem Angebot von 1.544 Zeichen. Nähme '
+      + 'jemand Gate 39 zurück, ginge der Bezugsweg wieder mit.',
+  }),
+  Object.freeze({
     gate: 38,
     datei: 'shop/haken/pre-commit',
     muster: /schnelllauf\.mjs/,

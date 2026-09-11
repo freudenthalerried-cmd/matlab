@@ -3263,6 +3263,37 @@ export const GEGENPROBEN = Object.freeze([
       + 'Startseite trug den neuen Markennamen, achtzig Seiten den alten —, und gefunden hat '
       + 'es damals kein Prüfer, sondern ein Blick.',
   }),
+  Object.freeze({
+    id: 'bezugsweg-auf-dem-kundenbeleg',
+    pruefer: 'test',
+    was: 'Der Name des Lieferanten steht wieder auf dem Angebot',
+    datei: 'shop/src/beleg.js',
+    art: 'ersetzen',
+    suchen: '    zeilen.push(`${lieferungsname(i)} — Direktlieferung, ${lieferzeitText(teil, i)}`);',
+    ersetzen: '    zeilen.push(`${textZeile(teil.lieferantName)} — Direktlieferung, ${lieferzeitText(teil, i)}`);',
+    erwartet: /Bezugsweg|lieferantName|Angebot/,
+    warum: 'Genau der Zustand bis zum 11. September: Angebot, Auftragsbestätigung und Rechnung '
+      + 'nannten den Lieferanten beim Namen — auf jedem Blatt, das an einen Besteller geht. '
+      + '`src/interna.js` führt ihn seit dem 28. August als Internum („Der Bezugsweg. Er steht '
+      + 'dem Kunden nicht zu und dem Wettbewerber schon gar nicht"), und geprüft wurde das über '
+      + 'jede gebaute Seite und über die Absage, nie über die drei Belege. Gemessen: drei '
+      + 'Nennungen in einem Angebot von 1.544 Zeichen.',
+  }),
+  Object.freeze({
+    id: 'rechnung-ohne-internapruefung',
+    pruefer: 'test',
+    was: 'Der fertige Beleg geht ungeprüft hinaus',
+    datei: 'shop/bin/vorgang.mjs',
+    art: 'ersetzen',
+    suchen: '  const leck = findeInterna(beleg.text);',
+    ersetzen: '  const leck = [];',
+    erwartet: /Internum geht nicht hinaus/,
+    warum: 'Die Absage bekam diesen Prüfer am 10. September mit dem Satz, geprüft würde sie '
+      + 'sonst von niemandem, „denn die Interna-Prüfung läuft über gebaute Seiten und '
+      + 'Anzeigentexte, nicht über eine Mail von Hand". Für Angebot, Bestätigung und Rechnung '
+      + 'galt dasselbe — nur wurden die schon gedruckt. Fällt der Aufruf weg, geht der nächste '
+      + 'Bezugsweg wieder ungehindert hinaus.',
+  }),
 ]);
 
 /**

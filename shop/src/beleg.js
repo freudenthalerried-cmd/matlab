@@ -164,16 +164,42 @@ export function anschriftEinzeilig(daten = {}) {
  * geht jetzt denselben Weg: Was nicht bekannt ist, sieht auch nicht bekannt
  * aus.
  */
-function lieferzeitText(teil) {
+/**
+ * Wie eine Teillieferung auf einem **Kundenbeleg** heißt.
+ *
+ * **Der Befund, 11. September 2026.** Bis heute stand hier der Name des
+ * Lieferanten — auf dem Angebot, der Auftragsbestätigung und der Rechnung,
+ * also auf jedem Blatt, das an einen Besteller geht. `src/interna.js` führt
+ * genau diesen Namen seit dem 28. August als Internum, mit dem Grund:
+ *
+ * > *Der Bezugsweg. Er steht dem Kunden nicht zu und dem Wettbewerber schon
+ * > gar nicht — die Herstellernamen der Ware sind davon unberührt.*
+ *
+ * Geprüft wurde das über jede gebaute Seite und, seit dem 10. September, über
+ * die Absage. Über die drei Belege nie. Gemessen: Das Angebot nennt ihn
+ * **dreimal** in 1.544 Zeichen.
+ *
+ * > **Eine Regel, die für Seiten gilt und für Briefe nicht, ist keine Regel
+ * > über den Bezugsweg, sondern eine über HTML.**
+ *
+ * Der Kunde verliert dabei nichts: Was ihn angeht, ist **welche** Lieferung
+ * wann kommt und was ihre Fracht kostet, nicht von wem sie stammt. Die
+ * Herstellernamen der Ware stehen unverändert in jeder Positionszeile.
+ */
+export function lieferungsname(index) {
+  return `Lieferung ${index + 1}`;
+}
+
+function lieferzeitText(teil, index) {
   return gefuellt(teil.lieferzeitWerktage)
     ? `${teil.lieferzeitWerktage} Werktage`
-    : LUECKE(`Lieferzeit ${teil.lieferantName}`);
+    : LUECKE(`Lieferzeit ${lieferungsname(index)}`);
 }
 
 function positionszeilen(warenkorb) {
   const zeilen = [];
-  for (const teil of warenkorb.teillieferungen) {
-    zeilen.push(`${textZeile(teil.lieferantName)} — Direktlieferung, ${lieferzeitText(teil)}`);
+  for (const [i, teil] of warenkorb.teillieferungen.entries()) {
+    zeilen.push(`${lieferungsname(i)} — Direktlieferung, ${lieferzeitText(teil, i)}`);
     for (const p of teil.positionen) {
       zeilen.push(
         // Das lesbare Wort, nicht das Kürzel des Lieferanten: Derselbe Kunde
@@ -184,7 +210,7 @@ function positionszeilen(warenkorb) {
       );
       zeilen.push(`      à ${EUR(p.vkNetto)} netto = ${EUR(p.zeilensummeNetto)}`);
     }
-    zeilen.push(`  Fracht ${textZeile(teil.lieferantName)}: ${EUR(teil.frachtNetto)} (${textZeile(teil.frachtGrund)})`);
+    zeilen.push(`  Fracht ${lieferungsname(i)}: ${EUR(teil.frachtNetto)} (${textZeile(teil.frachtGrund)})`);
     zeilen.push('');
   }
   return zeilen;
@@ -497,9 +523,9 @@ export function erzeugeAuftragsbestaetigung(
 
   // Die Lieferzeiten einzeln — und die längste ausdrücklich. Ein Kunde, der
   // drei Zahlen liest und selbst das Maximum bilden soll, bildet es nicht.
-  zeilen.push('Lieferzeiten je Hersteller, ab Bestellauslösung:');
-  for (const t of warenkorb.teillieferungen) {
-    zeilen.push(`  ${textZeile(t.lieferantName)}: ${lieferzeitText(t)}`);
+  zeilen.push('Lieferzeiten je Lieferung, ab Bestellauslösung:');
+  for (const [i, t] of warenkorb.teillieferungen.entries()) {
+    zeilen.push(`  ${lieferungsname(i)}: ${lieferzeitText(t, i)}`);
   }
   zeilen.push(
     '',

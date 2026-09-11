@@ -130,7 +130,7 @@ const QUELLE = readFileSync(new URL('../bin/vorgang.mjs', import.meta.url), 'utf
 
 test('die Karte hat für jede Stufe des Werkzeugs einen Platz', () => {
   const b = stufenbefund(QUELLE);
-  assert.equal(b.stufen.length, 3, `gelesen: ${JSON.stringify(b.stufen)}`);
+  assert.equal(b.stufen.length, 4, `gelesen: ${JSON.stringify(b.stufen)}`);
   assert.deepEqual(b.meldungen, []);
 });
 

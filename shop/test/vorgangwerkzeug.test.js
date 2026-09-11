@@ -165,7 +165,7 @@ test('ohne Vorgangsnummer und ohne Kundendatei endet der Lauf rot', () => {
 });
 
 test('eine unbekannte Stufe wird abgelehnt und die möglichen genannt', () => {
-  const e = lauf(['--kunde', '/dev/null', '--nummer', 'X', '--stufe', 'rechnung']);
+  const e = lauf(['--kunde', '/dev/null', '--nummer', 'X', '--stufe', 'mahnung']);
   assert.equal(e.code, 1);
   assert.match(e.aus, /angebot/);
   assert.match(e.aus, /bestaetigung/);
@@ -361,4 +361,108 @@ test('eine unbekannte Stufe wird abgewiesen', { skip: !vorhanden && 'preise/ feh
     '--stufe', 'gutschrift']);
   assert.notEqual(e.code, 0);
   assert.match(e.aus, /absage/);
+});
+
+/*
+ * **Die vierte Stufe: die Rechnung — 11. September 2026.**
+ *
+ * Sie hätte es seit dem 2. September geben können; was fehlte, war der Befehl.
+ * Die Begründung dafür stand in der Betriebskette und warf zwei Dinge
+ * zusammen: **festzustellen**, dass bezahlt wurde, braucht den Kontoauszug —
+ * **die Rechnung zu schreiben** braucht nur, dass der Betreiber es eingibt.
+ */
+
+test('ohne Lieferdatum und Zahlungseingang entsteht keine Rechnung', { skip: !vorhanden && 'preise/ fehlt' }, () => {
+  const u = baueUmgebung();
+  const e = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0101', '--stufe', 'rechnung']);
+  assert.equal(e.code, 1, e.aus);
+  assert.match(e.aus, /Für eine Rechnung fehlt ein Datum/);
+  assert.match(e.aus, /--geliefert/);
+  assert.match(e.aus, /--bezahlt/);
+});
+
+test('ohne UID des Ausstellers entsteht heute keine Rechnung', { skip: !vorhanden && 'preise/ fehlt' }, () => {
+  /**
+   * **Der heutige Stand, und er ist richtig.** Die UID-Nummer des Ausstellers
+   * ist Pflichtangabe nach § 11 Abs 1 Z 6 UStG und eine der vier Angaben, die
+   * der Auftraggeber noch liefern muss. Dieser Fall wird rot, sobald sie
+   * kommt — und dann gehört er umgeschrieben, nicht gelöscht.
+   */
+  const u = baueUmgebung();
+  const e = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0102',
+    '--stufe', 'rechnung', '--geliefert', '2026-09-09', '--bezahlt', '2026-09-08']);
+  assert.equal(e.code, 1, e.aus);
+  assert.match(e.aus, /UID-Nummer des Ausstellers/);
+});
+
+/** Ein Betreiber mit allen Pflichtangaben — sonst bleibt der Weg ungefahren. */
+function mitUid(ordner) {
+  const datei = join(ordner, 'betreiber.json');
+  writeFileSync(datei, JSON.stringify(
+    { ...lies(pfad('../data/betreiber.json')), uid: 'ATU87654321' }, null, 2,
+  ));
+  return { VORGANG_BETREIBER: datei };
+}
+
+test('mit beiden Daten entsteht eine Rechnung nach § 11 UStG', { skip: !vorhanden && 'preise/ fehlt' }, () => {
+  const u = baueUmgebung();
+  const e = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0102',
+    '--stufe', 'rechnung', '--geliefert', '2026-09-09', '--bezahlt', '2026-09-08'],
+  mitUid(u.ordner));
+  assert.equal(e.code, 0, e.aus);
+  assert.match(e.aus, /Musterbau GmbH/);
+  assert.match(e.aus, /ATU12345675/, 'die UID des Empfängers ist Pflichtangabe');
+  assert.match(e.aus, /ATU87654321/, 'und die des Ausstellers');
+  assert.match(e.aus, /2026-09-09/, 'das Lieferdatum steht auf der Rechnung');
+  assert.match(e.aus, /20 ?%/, 'der Steuersatz steht drauf');
+});
+
+test('die Rechnungsnummer fällt erst beim Ablegen', { skip: !vorhanden && 'preise/ fehlt' }, () => {
+  // Ein abgebrochener Lauf darf keine Nummer aus dem fortlaufenden Kreis
+  // verbrennen — § 11 Abs 1 Z 3 UStG verlangt ihn lückenlos.
+  const u = baueUmgebung();
+  const e = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0103',
+    '--stufe', 'rechnung', '--geliefert', '2026-09-09', '--bezahlt', '2026-09-08'],
+  mitUid(u.ordner));
+  assert.equal(e.code, 0, e.aus);
+  assert.match(e.aus, /fällt erst beim Ablegen/);
+});
+
+test('ein unbekannter Zahlweg hält die Rechnung auf', { skip: !vorhanden && 'preise/ fehlt' }, () => {
+  /**
+   * Der Zahlungsvermerk ist keine Pflichtangabe nach § 11 UStG — er steht in
+   * Punkt 9 der eigenen AGB. Ohne ihn überweist die Buchhaltung des Kunden
+   * ein zweites Mal.
+   */
+  const u = baueUmgebung();
+  const e = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0104',
+    '--stufe', 'rechnung', '--geliefert', '2026-09-09', '--bezahlt', '2026-09-08',
+    '--zahlweg', 'bargeld-in-der-hosentasche'], mitUid(u.ordner));
+  assert.equal(e.code, 1, e.aus);
+  assert.match(e.aus, /darf nicht gestellt werden/);
+  assert.match(e.aus, /Zahlungsvermerk unbrauchbar/);
+});
+
+test('ein Beleg mit einem Internum geht nicht hinaus', { skip: !vorhanden && 'preise/ fehlt' }, () => {
+  /**
+   * **Der Prüfer, den die drei Belege bis zum 11. September nicht hatten.**
+   * Die Absage bekam ihn am 10. September mit dem Satz, geprüft würde sie
+   * sonst von niemandem, „denn die Interna-Prüfung läuft über gebaute Seiten
+   * und Anzeigentexte, nicht über eine Mail von Hand". Für Angebot,
+   * Bestätigung und Rechnung galt dasselbe — nur wurden die schon gedruckt.
+   *
+   * Geprüft wird hier das **Verhalten**, nicht der Quelltext: Trägt der
+   * Aussteller einen Namen, den `src/interna.js` als Bezugsweg führt, muss
+   * der Lauf rot enden statt das Blatt auszugeben.
+   */
+  const u = baueUmgebung();
+  const datei = join(u.ordner, 'betreiber-intern.json');
+  writeFileSync(datei, JSON.stringify(
+    { ...lies(pfad('../data/betreiber.json')), firma: 'Poschacher Handels GmbH' }, null, 2,
+  ));
+  const e = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0105'],
+    { VORGANG_BETREIBER: datei });
+  assert.equal(e.code, 1, e.aus);
+  assert.match(e.aus, /trägt ein Internum/);
+  assert.match(e.aus, /Bezugsweg/);
 });

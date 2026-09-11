@@ -98,6 +98,12 @@ const nummer = wahl('nummer');
 // dort ins Leere (Abs. 3 lit. b). Ein Werkzeug, das bei jedem Probeausdruck
 // ablegt, sammelt erfundene Geschäftsfälle in einer Datei, die nichts vergisst.
 const ablegen = argumente.includes('--ablegen');
+// Die drei Angaben der Rechnungsstufe. Sie kommen aus der Welt und nicht aus
+// der Anfrage — deshalb stehen sie hier als Argumente und nirgends als
+// Vermutung.
+const geliefert = wahl('geliefert');
+const bezahlt = wahl('bezahlt');
+const zahlweg = wahl('zahlweg', 'vorkasse');
 
 /**
  * **Das Feldregister gegen die Prüfung halten — vor allem anderen.**
@@ -136,11 +142,11 @@ if (!nummer) {
     'Sie klammert Angebot, Bestätigung und Rechnung. Zweimal dieselbe Nummer ist\n'
     + 'derselbe Vorgang; eine selbst gezogene wäre bei jedem Ausdruck eine neue.');
 }
-if (!['angebot', 'bestaetigung', 'absage'].includes(stufe)) {
+if (!['angebot', 'bestaetigung', 'absage', 'rechnung'].includes(stufe)) {
   abbruch(`Unbekannte Stufe „${stufe}".`,
-    'Möglich sind „angebot", „bestaetigung" und „absage". Die Rechnung entsteht hier nicht:\n'
-    + 'Sie braucht Lieferdatum und Zahlungseingang, und beides ist kein Kommandozeilenwert,\n'
-    + 'sondern ein Vorgang, den niemand aus einer Anfrage ableiten kann.');
+    'Möglich sind „angebot", „bestaetigung", „absage" und „rechnung".\n'
+    + 'Die Rechnung verlangt zusätzlich --geliefert, --bezahlt und --zahlweg: Beides sind\n'
+    + 'Feststellungen des Betreibers, und dieses Haus erfindet sie nicht.');
 }
 if (!existsSync(kundeDatei)) abbruch(`Die Kundendatei fehlt: ${kundeDatei}`);
 
@@ -155,7 +161,22 @@ if (!existsSync(preisPfad)) {
   abbruch('Die Preisdatei fehlt: preise/baustoff-preise.json.',
     'Ohne sie hat kein Artikel einen Einkaufspreis — und ohne den prüft Gate 20 nichts.');
 }
-const betreiberDatei = lies(SHOP, 'data', 'betreiber.json');
+/*
+ * **`VORGANG_BETREIBER` wie `VORGANG_LIEFERANTEN` — 11. September 2026.**
+ *
+ * Die UID-Nummer des Ausstellers ist Pflichtangabe nach § 11 Abs 1 Z 6 UStG
+ * und eine der vier Angaben, die der Auftraggeber noch liefern muss. Solange
+ * sie fehlt, **darf** keine Rechnung entstehen — und das ist richtig so.
+ *
+ * > **Eine Sperre, die richtig ist, macht den Weg dahinter trotzdem
+ * > ungeprüft.** Ohne diesen Schalter fährt keine Probe je eine Rechnung, und
+ * > was nie gefahren wurde, ist nicht gebaut, sondern behauptet.
+ *
+ * Derselbe Schalter, dieselbe Begründung wie bei den Lieferzeiten.
+ */
+const betreiberDatei = process.env.VORGANG_BETREIBER
+  ? JSON.parse(readFileSync(process.env.VORGANG_BETREIBER, 'utf8'))
+  : lies(SHOP, 'data', 'betreiber.json');
 // `VORGANG_LIEFERANTEN` wie `WEBSITE_LIEFERANTEN`: Die Lieferzeit ist eine der
 // neun offenen Fragen an den Lieferanten, und ohne sie trägt jeder Beleg eine
 // Lücke. Eine Probe, die den Weg **bis in die Akte** fahren will, braucht
@@ -245,6 +266,95 @@ const vorgang = baueVorgang({
  * Bestätigung laufen darf, ist ja oft genau der, für den ein **Angebot** das
  * Richtige ist.
  */
+/*
+ * **Die vierte Stufe: die Rechnung — 11. September 2026.**
+ *
+ * Sie hätte es seit dem 2. September geben können. `erzeugeRechnung` baut sie,
+ * `darfRechnungGestelltWerden` hält sie auf, `stelleRechnungAus` zieht die
+ * Nummer, und `baueVorgang` fügt alle drei längst zusammen. Was fehlte, war
+ * der Befehl — und die Begründung dafür stand seit dem 10. September in der
+ * Betriebskette:
+ *
+ * > *Was fehlt, ist der Befehl, der beides zusammenführt — und ihm fehlen zwei
+ * > Angaben, die kein Kommandozeilenwert sind: das **Lieferdatum** und der
+ * > **Zahlungseingang**.*
+ *
+ * Diese Begründung wirft zwei Dinge zusammen. **Festzustellen**, dass bezahlt
+ * wurde, braucht den Kontoauszug — den hat dieses Haus nicht und soll ihn
+ * nicht haben. **Die Rechnung zu schreiben**, nachdem der Betreiber es
+ * festgestellt hat, braucht nur, dass er es eingibt. Genauso wie die Anschrift
+ * des Kunden, die auch niemand aus einer Anfrage ableitet.
+ *
+ * > **Eine Angabe, die aus der Welt kommt, ist deshalb kein Hindernis für ein
+ * > Werkzeug — sie ist sein erstes Argument.**
+ *
+ * Gesperrt bleibt alles, was gesperrt war: Ohne Lieferdatum und Zahlweg
+ * entsteht nichts, `darfRechnungGestelltWerden` prüft die Pflichtangaben nach
+ * § 11 UStG, die Platzhalterpreise und den Zahlungsvermerk, und die Nummer
+ * fällt erst beim Ablegen — damit kein abgebrochener Lauf eine verbrennt.
+ */
+if (stufe === 'rechnung') {
+  if (!geliefert || !bezahlt) {
+    abbruch('Für eine Rechnung fehlt ein Datum.',
+      'Verlangt sind --geliefert <JJJJ-MM-TT> und --bezahlt <JJJJ-MM-TT>, dazu --zahlweg.\n'
+      + 'Beides sind Feststellungen des Betreibers: Die Lieferung hat er bestätigt bekommen,\n'
+      + 'den Zahlungseingang sieht er auf dem Kontoauszug. Dieses Haus sieht weder das eine\n'
+      + 'noch das andere — und erfindet deshalb keines von beiden.');
+  }
+
+  const mitRechnung = baueVorgang({
+    vorgangsnummer: nummer,
+    kundendaten: lies(kundeDatei),
+    warenkorb: korb,
+    betreiber,
+    datum,
+    lieferdatum: geliefert,
+    zahlung: { weg: zahlweg, datum: bezahlt, betrag: korb.summeBrutto },
+    auftrag: { geliefert: true },
+  });
+
+  /*
+   * **Die fehlende Nummer ist kein Mangel, sondern die Reihenfolge.** Sie
+   * fällt erst beim Ablegen, damit kein abgebrochener Lauf eine aus dem
+   * fortlaufenden Kreis verbrennt (§ 11 Abs 1 Z 3 UStG). Ohne diese
+   * Unterscheidung könnte man die Rechnung nie ansehen, bevor man sie ablegt
+   * — und ein Beleg, den niemand vorher liest, ist der, auf dem der Fehler
+   * steht.
+   */
+  const NUMMERNGRUND = /Fortlaufende Rechnungsnummer/;
+  const gruende = mitRechnung.freigabe.rechnung.gruende
+    .map((g) => g.replace(/(Pflichtangaben nach § 11 UStG fehlen: )(.*)/, (_, kopf, liste) => {
+      const rest = liste.split(', ').filter((x) => !(NUMMERNGRUND.test(x) && !ablegen));
+      return rest.length ? kopf + rest.join(', ') : '';
+    }))
+    .filter(Boolean);
+
+  if (gruende.length) {
+    console.error('\nAbbruch: Diese Rechnung darf nicht gestellt werden.');
+    for (const g of gruende) console.error(`  · ${g}`);
+    console.error('\nEine erfundene Rechnung ist schlimmer als eine fehlende — sie wird bezahlt.');
+    process.exit(1);
+  }
+
+  const text = mitRechnung.rechnung.text;
+  const leck = findeInterna(text);
+  if (leck.length) {
+    console.error('\nAbbruch: Die Rechnung trägt ein Internum — nichts ausgegeben.');
+    for (const l of leck) console.error(`  · ${l.text ?? JSON.stringify(l)}`);
+    process.exit(1);
+  }
+
+  console.log(`\n${'—'.repeat(72)}\n`);
+  console.log(text);
+  console.log(`\n${'—'.repeat(72)}`);
+  console.log('\nDie Rechnungsnummer fällt erst beim Ablegen: Ein abgebrochener Lauf');
+  console.log('verbrennt keine Nummer aus dem fortlaufenden Kreis (§ 11 Abs 1 Z 3 UStG).');
+  if (!ablegen) {
+    console.log('Mit `--ablegen` wird sie gezogen und der Beleg ins Journal geschrieben.');
+  }
+  process.exit(0);
+}
+
 if (stufe === 'absage') {
   const ganzeLage = darfVorgangLaufen(vorgang);
   const gruende = [...ganzeLage.gruende, ...vorgang.kundenpruefung.fehler];
@@ -281,6 +391,28 @@ if (stufe === 'absage') {
 
 const beleg = stufe === 'angebot' ? vorgang.angebot : vorgang.bestaetigung;
 const art = stufe === 'angebot' ? 'Angebot' : 'Auftragsbestätigung';
+
+/*
+ * **Derselbe Prüfer wie über jede gebaute Seite — seit dem 11. September auch
+ * hier.** Die Absage bekam ihn am 10. September, mit dem Satz, geprüft würde
+ * sie sonst von niemandem, „denn die Interna-Prüfung läuft über gebaute
+ * Seiten und Anzeigentexte, nicht über eine Mail von Hand". Genau das galt
+ * für Angebot, Auftragsbestätigung und Rechnung auch — nur wurden die schon
+ * gedruckt. Gemessen am 11. September: **drei Nennungen des Lieferantennamens
+ * in einem Angebot von 1.544 Zeichen.**
+ *
+ * > **Eine Regel, die für Seiten gilt und für Briefe nicht, ist keine Regel
+ * > über den Bezugsweg, sondern eine über HTML.**
+ */
+{
+  const leck = findeInterna(beleg.text);
+  if (leck.length) {
+    console.error(`\nAbbruch: ${art} trägt ein Internum — nichts ausgegeben.`);
+    for (const l of leck) console.error(`  · ${l.fund ?? l.text ?? JSON.stringify(l)} [${l.id}]`);
+    console.error('\nDer Bezugsweg steht dem Kunden nicht zu und dem Wettbewerber schon gar nicht.');
+    process.exit(1);
+  }
+}
 
 // --- 4. Den fertigen Text durch denselben Prüfer wie im Gesamtlauf ----------
 //
