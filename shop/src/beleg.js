@@ -190,16 +190,34 @@ export function lieferungsname(index) {
   return `Lieferung ${index + 1}`;
 }
 
-function lieferzeitText(teil, index) {
+/**
+ * Was in der Kopfzeile einer Teillieferung über ihre Zeit steht.
+ *
+ * **Der Befund, 11. September 2026, nachts.** Auf der **Rechnung** stand hier
+ * `[[ Lieferzeit Lieferung 1 — FEHLT ]]` — die Lückenmarke für eine Angabe,
+ * die auf diesem Beleg gar nichts mehr zu suchen hat: Die Ware **ist**
+ * geliefert, ihr Tag steht drei Zeilen weiter oben, und eine Lieferzeit ist
+ * eine Zusage über die Zukunft.
+ *
+ * > **Eine Lücke, die auf dem falschen Beleg steht, ist schlimmer als keine
+ * > Angabe: Sie behauptet, hier fehle etwas.**
+ *
+ * Ist der Liefertag bekannt, nennt die Zeile ihn — das ist zugleich die
+ * Angabe, die § 11 Abs 1 Z 4 UStG verlangt, hier je Lieferung. Ist er es
+ * nicht (Angebot, Auftragsbestätigung), bleibt es bei der Lieferzeit und, wenn
+ * die unbekannt ist, bei ihrer sichtbaren Lücke.
+ */
+function zeitText(teil, index, geliefertAm) {
+  if (gefuellt(geliefertAm)) return `geliefert am ${textZeile(geliefertAm)}`;
   return gefuellt(teil.lieferzeitWerktage)
     ? `${teil.lieferzeitWerktage} Werktage`
     : LUECKE(`Lieferzeit ${lieferungsname(index)}`);
 }
 
-function positionszeilen(warenkorb) {
+function positionszeilen(warenkorb, { geliefertAm = null } = {}) {
   const zeilen = [];
   for (const [i, teil] of warenkorb.teillieferungen.entries()) {
-    zeilen.push(`${lieferungsname(i)} — Direktlieferung, ${lieferzeitText(teil, i)}`);
+    zeilen.push(`${lieferungsname(i)} — Direktlieferung, ${zeitText(teil, i, geliefertAm)}`);
     for (const p of teil.positionen) {
       zeilen.push(
         // Das lesbare Wort, nicht das Kürzel des Lieferanten: Derselbe Kunde
@@ -525,7 +543,7 @@ export function erzeugeAuftragsbestaetigung(
   // drei Zahlen liest und selbst das Maximum bilden soll, bildet es nicht.
   zeilen.push('Lieferzeiten je Lieferung, ab Bestellauslösung:');
   for (const [i, t] of warenkorb.teillieferungen.entries()) {
-    zeilen.push(`  ${lieferungsname(i)}: ${lieferzeitText(t, i)}`);
+    zeilen.push(`  ${lieferungsname(i)}: ${zeitText(t, i, null)}`);
   }
   zeilen.push(
     '',
@@ -658,7 +676,7 @@ export function erzeugeRechnung(warenkorb, { nummer, datum, lieferdatum, kunde =
     `  ${wert(kunde.plz, 'PLZ')} ${wert(kunde.ort, 'Ort')}`,
     `  UID: ${wert(kunde.uid, 'UID des Leistungsempfängers')}`,
     '',
-    ...positionszeilen(warenkorb),
+    ...positionszeilen(warenkorb, { geliefertAm: lieferdatum }),
     ...summenblock(warenkorb),
     '',
     ...vermerk.zeilen,

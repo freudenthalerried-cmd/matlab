@@ -6743,16 +6743,34 @@ function lieferungsname(index) {
   return `Lieferung ${index + 1}`;
 }
 
-function lieferzeitText(teil, index) {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function zeitText(teil, index, geliefertAm) {
+  if (gefuellt(geliefertAm)) return `geliefert am ${textZeile(geliefertAm)}`;
   return gefuellt(teil.lieferzeitWerktage)
     ? `${teil.lieferzeitWerktage} Werktage`
     : LUECKE(`Lieferzeit ${lieferungsname(index)}`);
 }
 
-function positionszeilen(warenkorb) {
+function positionszeilen(warenkorb, { geliefertAm = null } = {}) {
   const zeilen = [];
   for (const [i, teil] of warenkorb.teillieferungen.entries()) {
-    zeilen.push(`${lieferungsname(i)} — Direktlieferung, ${lieferzeitText(teil, i)}`);
+    zeilen.push(`${lieferungsname(i)} — Direktlieferung, ${zeitText(teil, i, geliefertAm)}`);
     for (const p of teil.positionen) {
       zeilen.push(
         
@@ -7078,7 +7096,7 @@ function erzeugeAuftragsbestaetigung(
   
   zeilen.push('Lieferzeiten je Lieferung, ab Bestellauslösung:');
   for (const [i, t] of warenkorb.teillieferungen.entries()) {
-    zeilen.push(`  ${lieferungsname(i)}: ${lieferzeitText(t, i)}`);
+    zeilen.push(`  ${lieferungsname(i)}: ${zeitText(t, i, null)}`);
   }
   zeilen.push(
     '',
@@ -7211,7 +7229,7 @@ function erzeugeRechnung(warenkorb, { nummer, datum, lieferdatum, kunde = {}, be
     `  ${wert(kunde.plz, 'PLZ')} ${wert(kunde.ort, 'Ort')}`,
     `  UID: ${wert(kunde.uid, 'UID des Leistungsempfängers')}`,
     '',
-    ...positionszeilen(warenkorb),
+    ...positionszeilen(warenkorb, { geliefertAm: lieferdatum }),
     ...summenblock(warenkorb),
     '',
     ...vermerk.zeilen,

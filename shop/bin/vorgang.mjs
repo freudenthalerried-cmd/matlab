@@ -135,6 +135,34 @@ const abbruch = (text, rat = null) => {
 };
 
 /**
+ * Die Lückenmarken eines Belegs — und die Sperre, die sie vor der Akte hält.
+ *
+ * **Der Fund, 11. September 2026, nachts.** Die Sperre gab es seit dem
+ * 4. September, aber nur im Zweig für Angebot und Auftragsbestätigung. Die
+ * Rechnungsstufe kam am 11. September dazu, an anderer Stelle der Datei — und
+ * legte eine Rechnung mit sichtbarer Lückenmarke in die Akte.
+ *
+ * > **Eine Regel, die an zwei von drei Stellen steht, ist keine Regel über
+ * > Belege, sondern eine über zwei Zweige.** Dieselbe Familie wie der
+ * > Journalbetreff am Vormittag; deshalb steht sie ab hier **einmal**.
+ *
+ * `[[ … — FEHLT ]]` heißt: Eine Pflichtangabe ist offen. Sieben Jahre lang
+ * stünde dann ein unvollständiges Papier in der Akte (§ 132 BAO), und die
+ * Marke wäre nicht mehr die Erinnerung an eine offene Frage, sondern ein
+ * Mangel im Beleg.
+ */
+const luecken = (text) => [...text.matchAll(/\[\[ (.+?) — FEHLT \]\]/g)].map((t) => t[1]);
+
+const sperreLuecken = (text, { ausser = null } = {}) => {
+  const offen = ausser ? luecken(text).filter((l) => !ausser.test(l)) : luecken(text);
+  if (!offen.length) return;
+  abbruch(`Nicht abgelegt: ${offen.length} Lücke(n) im Beleg.`,
+    `${[...new Set(offen)].map((l) => `  · ${l}`).join('\n')}\n`
+    + 'Was ins Journal geht, geht nach § 132 BAO für sieben Jahre hinein.\n'
+    + 'Ein Beleg mit offener Pflichtangabe gehört nicht dazu.');
+};
+
+/**
  * Legt die **Durchschrift** ab — den Beleg selbst, nicht die Zeile über ihn.
  *
  * **Der Fund vom 11. September, abends.** Bis dahin schrieb `--ablegen` eine
@@ -423,6 +451,22 @@ if (stufe === 'rechnung') {
   }
 
   const text = mitRechnung.rechnung.text;
+
+  /*
+   * **Die Lücken werden geprüft, bevor die Nummer fällt.**
+   *
+   * Der erste Wurf dieser Sperre stand erst hinter der Nummernvergabe. Er
+   * hielt die Rechnung auf — und ließ eine gezogene Nummer zurück, die kein
+   * Papier je tragen wird. Für einen Mangel, den der Betreiber in einer
+   * Minute behebt (hier: die UID des Empfängers), wäre das ein dauerhafter
+   * Eintrag im fortlaufenden Kreis gewesen.
+   *
+   * Ausgenommen ist die **Rechnungsnummer selbst**: Sie ist an dieser Stelle
+   * noch offen, und zwar absichtlich — dieselbe Ausnahme wie bei den
+   * Freigabegründen zwei Absätze weiter oben.
+   */
+  if (ablegen) sperreLuecken(text, { ausser: /Rechnungsnummer/ });
+
   const leck = findeInterna(text);
   if (leck.length) {
     console.error('\nAbbruch: Die Rechnung trägt ein Internum — nichts ausgegeben.');
@@ -484,6 +528,10 @@ if (stufe === 'rechnung') {
     for (const g of nachtraeglich.gruende) console.error(`  · ${g}`);
     process.exit(1);
   }
+
+  // Dieselbe Sperre wie bei Angebot und Auftragsbestätigung — bis heute stand
+  // sie nur dort, und die Rechnung ging mit ihrer Lückenmarke in die Akte.
+  sperreLuecken(ausgestellt.rechnung.text);
 
   // Erst das Papier, dann die Zeile darüber.
   const durchschrift = legeDurchschriftAb(
@@ -664,10 +712,10 @@ console.log(`\n${'—'.repeat(72)}`);
  * Beleg, wo ihn liest, wer ihn kopieren will — und nicht nur oben im Bericht,
  * den man beim zweiten Mal überspringt.
  */
-const luecken = [...beleg.text.matchAll(/\[\[ (.+?) — FEHLT \]\]/g)].map((t) => t[1]);
-if (luecken.length) {
-  console.log(`\nSo nicht versandfertig — ${luecken.length} Lücke(n) im Text:`);
-  for (const l of new Set(luecken)) console.log(`  · ${l}`);
+const offeneStellen = luecken(beleg.text);
+if (offeneStellen.length) {
+  console.log(`\nSo nicht versandfertig — ${offeneStellen.length} Lücke(n) im Text:`);
+  for (const l of new Set(offeneStellen)) console.log(`  · ${l}`);
   console.log('Die Marke steht absichtlich da. Eine gefüllte Lücke wäre eine erfundene Angabe.');
 }
 /**
@@ -699,11 +747,7 @@ if (!ablegen) {
   process.exit(0);
 }
 
-if (luecken.length) {
-  abbruch(`Nicht abgelegt: ${luecken.length} Lücke(n) im Beleg.`,
-    'Was ins Journal geht, geht nach § 132 BAO für sieben Jahre hinein.\n'
-    + 'Ein Beleg mit offener Pflichtangabe gehört nicht dazu.');
-}
+sperreLuecken(beleg.text);
 if (!befund.sauber) {
   abbruch('Nicht abgelegt: die Belegprüfung hat etwas gefunden.');
 }

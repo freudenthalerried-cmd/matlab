@@ -3269,8 +3269,8 @@ export const GEGENPROBEN = Object.freeze([
     was: 'Der Name des Lieferanten steht wieder auf dem Angebot',
     datei: 'shop/src/beleg.js',
     art: 'ersetzen',
-    suchen: '    zeilen.push(`${lieferungsname(i)} — Direktlieferung, ${lieferzeitText(teil, i)}`);',
-    ersetzen: '    zeilen.push(`${textZeile(teil.lieferantName)} — Direktlieferung, ${lieferzeitText(teil, i)}`);',
+    suchen: '    zeilen.push(`${lieferungsname(i)} — Direktlieferung, ${zeitText(teil, i, geliefertAm)}`);',
+    ersetzen: '    zeilen.push(`${textZeile(teil.lieferantName)} — Direktlieferung, ${zeitText(teil, i, geliefertAm)}`);',
     erwartet: /Bezugsweg|lieferantName|Angebot/,
     warum: 'Genau der Zustand bis zum 11. September: Angebot, Auftragsbestätigung und Rechnung '
       + 'nannten den Lieferanten beim Namen — auf jedem Blatt, das an einen Besteller geht. '
@@ -3430,6 +3430,37 @@ export const GEGENPROBEN = Object.freeze([
       + 'Durchschrift zu einem Eintrag, steht in der Akte eine Aufzeichnung über ein Papier, '
       + 'das niemand mehr hat — genau der Zustand, den die Runde vom 11. September vorfand, '
       + 'und der von außen wie eine gepflegte Ablage aussieht.',
+  }),
+  Object.freeze({
+    id: 'luecke-in-der-rechnungsakte',
+    pruefer: 'test',
+    was: 'Die Rechnung wird abgelegt, obwohl sie eine Lückenmarke trägt',
+    datei: 'shop/bin/vorgang.mjs',
+    art: 'ersetzen',
+    suchen: "  if (ablegen) sperreLuecken(text, { ausser: /Rechnungsnummer/ });",
+    ersetzen: '  void ablegen;',
+    erwartet: /Lücke\(n\) im Beleg|die Rechnung mit der Lücke/,
+    warum: 'Die Sperre gab es seit dem 4. September — aber nur im Zweig für Angebot und '
+      + 'Auftragsbestätigung. Die Rechnungsstufe kam am 11. September dazu, an anderer Stelle '
+      + 'der Datei, und legte ab, was eine Lückenmarke trug: gemessen eine Rechnung ohne UID '
+      + 'des Leistungsempfängers. Was ins Journal geht, steht nach § 132 BAO sieben Jahre; ein '
+      + 'Beleg mit offener Pflichtangabe gehört nicht dazu. Eine Regel, die an zwei von drei '
+      + 'Stellen steht, ist keine Regel über Belege, sondern eine über zwei Zweige.',
+  }),
+  Object.freeze({
+    id: 'lieferzeitluecke-auf-der-rechnung',
+    pruefer: 'test',
+    was: 'Die Rechnung zeigt wieder die Lückenmarke einer Lieferzeit statt des Liefertags',
+    datei: 'shop/src/beleg.js',
+    art: 'ersetzen',
+    suchen: '  if (gefuellt(geliefertAm)) return `geliefert am ${textZeile(geliefertAm)}`;',
+    ersetzen: '  if (false) return String(geliefertAm);',
+    erwartet: /die Rechnung nennt den Liefertag nicht|Lücke, die keine ist|Kopfzeile der Lieferung/,
+    warum: 'Auf der Rechnung stand `[[ Lieferzeit Lieferung 1 — FEHLT ]]` — die Lückenmarke für '
+      + 'eine Angabe, die auf diesem Beleg nichts mehr zu suchen hat: Die Ware ist geliefert, '
+      + 'ihr Tag steht drei Zeilen weiter oben, und eine Lieferzeit ist eine Zusage über die '
+      + 'Zukunft. Eine Lücke, die auf dem falschen Beleg steht, ist schlimmer als keine Angabe: '
+      + 'Sie behauptet, hier fehle etwas — und hielt zugleich die ganze Rechnung aus der Akte.',
   }),
   Object.freeze({
     id: 'probe-in-der-echten-akte',

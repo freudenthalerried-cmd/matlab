@@ -415,6 +415,10 @@ try {
         probleme.push('die Rechnung ist abgelegt, die Durchschrift fehlt (§ 132 BAO)');
       } else if (!readFileSync(durchschrift, 'utf8').includes('RE-2026-0001')) {
         probleme.push('die Durchschrift trägt die Rechnungsnummer nicht');
+      } else if (/— FEHLT \]\]/.test(readFileSync(durchschrift, 'utf8'))) {
+        // Ein Papier mit sichtbarer Lückenmarke stünde sieben Jahre in der
+        // Akte (§ 132 BAO). Bis zum 11. September ging genau das durch.
+        probleme.push('die abgelegte Rechnung trägt eine Lückenmarke');
       } else {
         bestanden.push('Die Rechnung liegt als Durchschrift in der Akte, nicht nur als Journalzeile');
       }

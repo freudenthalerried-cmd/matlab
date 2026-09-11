@@ -366,6 +366,37 @@ test('mit ausgetauschter Grundlage schreibt --ablegen nicht in die echte Akte',
     assert.match(e.aus, /VORGANG_BETREIBER ist gesetzt/);
   });
 
+test('eine Rechnung mit sichtbarer Lücke kommt nicht in die Akte',
+  { skip: !vorhanden && 'preise/ fehlt' }, () => {
+    /*
+     * **Der Fund vom 11. September, nachts.** Die Sperre gibt es seit dem
+     * 4. September — aber nur im Zweig für Angebot und Auftragsbestätigung.
+     * Die Rechnungsstufe kam am 11. September dazu, an anderer Stelle der
+     * Datei, und legte ab, was eine Lückenmarke trug.
+     *
+     * > **Eine Regel, die an zwei von drei Stellen steht, ist keine Regel
+     * > über Belege, sondern eine über zwei Zweige.**
+     */
+    const u = baueUmgebung();
+    const akte = wegwerfordner('akte-');
+    const ohneUid = join(u.ordner, 'kunde-ohne-uid.json');
+    writeFileSync(ohneUid, JSON.stringify(
+      { ...KUNDE, uid: '', unternehmerBestaetigt: false }, null, 2,
+    ));
+    const e = lauf([u.anfrageDatei, '--kunde', ohneUid, '--nummer', '2026-0113',
+      '--stufe', 'rechnung', '--geliefert', '2026-09-09', '--bezahlt', '2026-09-08', '--ablegen'],
+    { ...mitUid(u.ordner), VORGANG_ABLAGE: akte });
+    assert.equal(e.code, 1, e.aus);
+    assert.match(e.aus, /Lücke\(n\) im Beleg/);
+    assert.match(e.aus, /UID des Leistungsempfängers/);
+    // Und nichts ist geschehen: kein Journal, keine Durchschrift, keine
+    // verbrauchte Nummer.
+    assert.equal(existsSync(join(akte, 'journal-2026.jsonl')), false,
+      'die Rechnung mit der Lücke steht im Journal');
+    assert.equal(existsSync(join(akte, 'belege-2026')), false,
+      'die Rechnung mit der Lücke liegt als Durchschrift in der Akte');
+  });
+
 test('--ablegen hinterlässt die Durchschrift des Belegs, nicht nur die Zeile darüber',
   { skip: !vorhanden && 'preise/ fehlt' }, () => {
     /*

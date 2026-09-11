@@ -298,6 +298,25 @@ const korbOhneLieferzeit = {
   )),
 };
 
+test('Auf der Rechnung steht der Liefertag, nicht die Lieferzeit', () => {
+  /*
+   * **Der Befund vom 11. September, nachts.** Auf der Rechnung stand
+   * `[[ Lieferzeit Lieferung 1 — FEHLT ]]` — die Lückenmarke für eine Angabe,
+   * die auf diesem Beleg nichts mehr zu suchen hat: Die Ware **ist** geliefert,
+   * ihr Tag steht oben, und eine Lieferzeit ist eine Zusage über die Zukunft.
+   *
+   * > **Eine Lücke, die auf dem falschen Beleg steht, ist schlimmer als keine
+   * > Angabe: Sie behauptet, hier fehle etwas.**
+   */
+  const r = erzeugeRechnung(korbOhneLieferzeit, {
+    nummer: 'RE-2026-0001', datum: '2026-09-11', lieferdatum: '2026-09-09', kunde, betreiber,
+  });
+  assert.ok(r.text.includes('geliefert am 2026-09-09'),
+    'die Kopfzeile der Lieferung nennt den Liefertag nicht');
+  assert.ok(!/Lieferzeit .* — FEHLT/.test(r.text),
+    'die Rechnung trägt die Lückenmarke einer Angabe, die sie nicht braucht');
+});
+
 test('Eine unbekannte Lieferzeit steht als Lücke da, nicht als „null Werktage"', () => {
   const b = erzeugeAuftragsbestaetigung(korbOhneLieferzeit, {
     nummer: 'AB-1', datum: '2026-08-30', kunde, betreiber,
@@ -348,8 +367,14 @@ test('Auch Angebot und Rechnung setzen die fehlende Lieferzeit nicht roh ein', (
   });
   for (const [name, beleg] of [['Angebot', a], ['Rechnung', r]]) {
     assert.ok(!beleg.text.includes('null Werktage'), `${name} setzt roh ein`);
-    assert.match(beleg.text, /FEHLT \]\]/, `${name} macht die Lücke nicht sichtbar`);
   }
+  // **Getrennt seit dem 11. September:** Das Angebot zeigt die Lücke, denn
+  // seine Lieferzeit ist eine Zusage, die niemand gegeben hat. Die Rechnung
+  // nennt stattdessen den Liefertag — die Ware ist da, und § 11 Abs 1 Z 4
+  // UStG verlangt genau diesen Tag.
+  assert.match(a.text, /Lieferzeit Lieferung 1 — FEHLT \]\]/, 'das Angebot verbirgt die Lücke');
+  assert.ok(!/Lieferzeit .* — FEHLT/.test(r.text), 'die Rechnung zeigt eine Lücke, die keine ist');
+  assert.ok(r.text.includes('geliefert am 2026-08-30'), 'die Rechnung nennt den Liefertag nicht');
 });
 
 test('Ohne bekannte Lieferzeit darf keine Auftragsbestätigung hinaus', () => {
