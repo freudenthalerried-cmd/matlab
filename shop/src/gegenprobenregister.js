@@ -3370,6 +3370,37 @@ export const GEGENPROBEN = Object.freeze([
       + 'nicht; die Rechnung bricht sofort ab. Eine Probe mit zwei Ständen desselben Betriebs '
       + 'prüft keinen von beiden ganz.',
   }),
+  Object.freeze({
+    id: 'rechnung-ohne-nettobetrag',
+    pruefer: 'test',
+    was: 'Die Rechnung gibt ihren Nettobetrag nicht mit — die Bemessungsgrundlage der UVA',
+    datei: 'shop/src/beleg.js',
+    art: 'ersetzen',
+    suchen: '    nettobetrag: warenkorb.summeNetto,\n    bruttobetrag: warenkorb.summeBrutto,\n    zahlungsvermerk: vermerk,',
+    ersetzen: '    bruttobetrag: warenkorb.summeBrutto,\n    zahlungsvermerk: vermerk,',
+    erwartet: /Nettobetrag fehlt im Journal|betragNetto/,
+    warum: 'Genau der Zustand bis zum 11. September: Angebot und Auftragsbestätigung gaben '
+      + 'ihren Nettobetrag mit, die Rechnung nicht — und die Ablage schrieb `betragNetto: '
+      + 'null` ins Journal. Diese Spalte ist die Bemessungsgrundlage der '
+      + 'Umsatzsteuervoranmeldung; der Steuerberater bekäme eine Zeile ohne die Zahl, um die '
+      + 'es ihm geht. Von drei Belegarten führte ausgerechnet die eine, die in die '
+      + 'Steuererklärung geht, ihren Nettobetrag nicht mit.',
+  }),
+  Object.freeze({
+    id: 'belegtext-in-der-akte',
+    pruefer: 'test',
+    was: 'Der ganze Rechnungstext geht ins Journal statt nur der Betreff',
+    datei: 'shop/src/ablage.js',
+    art: 'ersetzen',
+    suchen: "    text: betreff ?? `Rechnung ${nummer} zu Vorgang ${vorgang ?? '—'}`,",
+    ersetzen: '    text: rechnung.text ?? \'\',',
+    erwartet: /Anschrift des Kunden steht ein zweites Mal|Belegtext/,
+    warum: 'Was ins Journal geht, steht nach § 132 BAO sieben Jahre. Der volle Rechnungstext '
+      + 'enthält die Anschrift des Kunden ein zweites Mal — `bin/vorgang.mjs` schreibt genau '
+      + 'das seit dem 4. September bei Angebot und Auftragsbestätigung ausdrücklich dazu, und '
+      + 'die Rechnung hielt sich als einzige nicht daran. Eine Regel, die für zwei von drei '
+      + 'Belegarten gilt, ist keine Regel über die Ablage, sondern eine über zwei Belegarten.',
+  }),
 ]);
 
 /**

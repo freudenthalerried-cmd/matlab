@@ -64,7 +64,9 @@ import { findeInterna } from '../src/interna.js';
 import { pruefeBelege } from '../src/belegpruefung.js';
 import { pruefeAblageAufDrittdaten } from '../src/kontrolle.js';
 import { EUR } from '../src/format.js';
-import { ARTEN, haltefest, naechsteNummer, neueAblage, pruefeNummernkreis } from '../src/ablage.js';
+import {
+  ARTEN, haltefest, naechsteNummer, neueAblage, pruefeNummernkreis, stelleRechnungAus,
+} from '../src/ablage.js';
 import { ausJournal, journalzeile } from '../src/speicher.js';
 import { ABLAGEORT, journalpfad } from '../src/ablageort.js';
 import { geschaeftstag } from '../src/geschaeftszeit.js';
@@ -320,11 +322,17 @@ if (stufe === 'rechnung') {
    * Unterscheidung könnte man die Rechnung nie ansehen, bevor man sie ablegt
    * — und ein Beleg, den niemand vorher liest, ist der, auf dem der Fehler
    * steht.
+   *
+   * **Auch mit `--ablegen` — berichtigt am 11. September, abends.** Hier
+   * stand `&& !ablegen`, und damit verlangte der Lauf die Nummer genau dann,
+   * wenn er sie gleich selbst ziehen würde: Ablegen war unmöglich. Geprüft
+   * wird sie unten ein zweites Mal, nachdem sie gefallen ist — dort gehört
+   * sie hin.
    */
   const NUMMERNGRUND = /Fortlaufende Rechnungsnummer/;
   const gruende = mitRechnung.freigabe.rechnung.gruende
     .map((g) => g.replace(/(Pflichtangaben nach § 11 UStG fehlen: )(.*)/, (_, kopf, liste) => {
-      const rest = liste.split(', ').filter((x) => !(NUMMERNGRUND.test(x) && !ablegen));
+      const rest = liste.split(', ').filter((x) => !NUMMERNGRUND.test(x));
       return rest.length ? kopf + rest.join(', ') : '';
     }))
     .filter(Boolean);
@@ -344,14 +352,94 @@ if (stufe === 'rechnung') {
     process.exit(1);
   }
 
-  console.log(`\n${'—'.repeat(72)}\n`);
-  console.log(text);
-  console.log(`\n${'—'.repeat(72)}`);
-  console.log('\nDie Rechnungsnummer fällt erst beim Ablegen: Ein abgebrochener Lauf');
-  console.log('verbrennt keine Nummer aus dem fortlaufenden Kreis (§ 11 Abs 1 Z 3 UStG).');
+  const zeige = (belegtext) => {
+    console.log(`\n${'—'.repeat(72)}\n`);
+    console.log(belegtext);
+    console.log(`\n${'—'.repeat(72)}`);
+  };
+
   if (!ablegen) {
+    zeige(text);
+    console.log('\nDie Rechnungsnummer fällt erst beim Ablegen: Ein abgebrochener Lauf');
+    console.log('verbrennt keine Nummer aus dem fortlaufenden Kreis (§ 11 Abs 1 Z 3 UStG).');
     console.log('Mit `--ablegen` wird sie gezogen und der Beleg ins Journal geschrieben.');
+    process.exit(0);
   }
+
+  /*
+   * **Der Satz von oben, eingelöst — 11. September 2026, abends.**
+   *
+   * Bis heute endete diese Stufe hier, und der Satz „Mit `--ablegen` wird sie
+   * gezogen und der Beleg ins Journal geschrieben" war eine **Zusage über den
+   * eigenen Betrieb, die nicht stimmte**. Sie ist die teuerste Sorte: Wer sie
+   * liest, legt ab und sieht nicht nach.
+   *
+   * Die Reihenfolge ist die eines Menschen: erst die Nummer ziehen, dann den
+   * Beleg damit bauen, dann prüfen, dann ablegen. Vorher war sie unmöglich —
+   * eine Rechnung ohne Nummer ist nach § 11 Abs 1 Z 3 UStG nicht vollständig,
+   * und ohne Vollständigkeit wies `stelleRechnungAus` sie ab.
+   */
+  const jahrDerRechnung = Number(datum.slice(0, 4));
+  const wurzelDerAkte = process.env.VORGANG_ABLAGE ?? join(REPO, ABLAGEORT);
+  const journaldatei = join(wurzelDerAkte, `journal-${jahrDerRechnung}.jsonl`);
+  mkdirSync(wurzelDerAkte, { recursive: true });
+  const bestandDerAkte = existsSync(journaldatei) ? readFileSync(journaldatei, 'utf8') : '';
+  const akte = ausJournal(bestandDerAkte, {
+    schreibe: (e) => appendFileSync(journaldatei, `${journalzeile(e)}\n`, 'utf8'),
+  });
+
+  const rechnungsnummer = naechsteNummer(akte, 'rechnung', jahrDerRechnung);
+  const ausgestellt = baueVorgang({
+    vorgangsnummer: nummer,
+    kundendaten: lies(kundeDatei),
+    warenkorb: korb,
+    betreiber,
+    datum,
+    lieferdatum: geliefert,
+    zahlung: { weg: zahlweg, datum: bezahlt, betrag: korb.summeBrutto },
+    auftrag: { geliefert: true },
+    rechnungsnummer,
+  });
+  const nachtraeglich = ausgestellt.freigabe.rechnung;
+  if (!nachtraeglich.erlaubt) {
+    console.error('\nAbbruch: Mit der gezogenen Nummer trägt die Rechnung noch immer nicht.');
+    for (const g of nachtraeglich.gruende) console.error(`  · ${g}`);
+    process.exit(1);
+  }
+
+  const eintrag = stelleRechnungAus(akte, ausgestellt.rechnung, {
+    zeitpunkt: datum,
+    jahr: jahrDerRechnung,
+    vorgang: nummer,
+    // **Die gezogene Nummer, nicht eine zweite.** Der erste Wurf verließ sich
+    // darauf, dass der Beleg seine Nummer mitführt; er tut es nicht, und die
+    // Ablage zog daraufhin eine **zweite** — gedruckt stand RE-2026-0001, im
+    // Journal RE-2026-0002. Genau der Fehler, gegen den der Absatz darüber
+    // geschrieben ist.
+    nummer: rechnungsnummer,
+    // Nur der Betreff. Was ins Journal geht, steht sieben Jahre (§ 132 BAO),
+    // und die Anschrift des Kunden steht schon im Beleg.
+    betreff: `Rechnung ${rechnungsnummer} zu Vorgang ${nummer}, `
+      + `${korb.teillieferungen.reduce((n, t) => n + t.positionen.length, 0)} Position(en)`,
+  });
+  if (!eintrag.ausgestellt) {
+    console.error(`\nAbbruch: ${eintrag.grund}`);
+    process.exit(1);
+  }
+
+  /*
+   * **Gezeigt wird der Beleg, der abgelegt wurde.** Der erste Wurf druckte
+   * die Fassung **ohne** Nummer und legte die mit ab — zwei Papiere für einen
+   * Geschäftsfall, und das gedruckte trug an der Stelle der Nummer eine
+   * Lückenmarke. Dieselbe Familie wie der Befund vom 4. September über die
+   * Angebotsnummer: *Ein Beleg, der unter einer anderen Nummer abgelegt ist
+   * als der, die auf ihm steht, ist schlechter als ein nicht abgelegter.*
+   */
+  zeige(ausgestellt.rechnung.text);
+  console.log(`\nAbgelegt: Rechnungsnummer ${eintrag.nummer}, laufende Nummer `
+    + `${eintrag.eintrag.lfd} im Journal ${jahrDerRechnung}.`);
+  console.log('Im Journal steht der Betreff, nicht der Belegtext — die Anschrift des Kunden');
+  console.log('steht schon auf der Rechnung und gehört nicht ein zweites Mal in die Akte.');
   process.exit(0);
 }
 

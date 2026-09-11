@@ -269,16 +269,16 @@ export const UNGERUFEN = Object.freeze([
   Object.freeze({
     modul: 'src/ablage.js',
     funktionen: ['alsCsv', 'aufbewahrungBis', 'pruefeAblagefelder',
-      'stelleRechnungAus', 'storniere', 'vorgangsakte'],
-    warum: 'Seit dem 4. September ist die Ablage in Betrieb — `npm run vorgang --ablegen` '
-      + 'schreibt Angebot und Auftragsbestätigung ins Journal. Was hier bleibt, hängt an der '
-      + '**Rechnung**, und die entsteht in keinem Werkzeug dieses Bestands: Sie braucht '
-      + 'Lieferdatum und Zahlungseingang, also einen Zahlungsanbieter, der eine Ausgabe ist '
-      + 'und beim Auftraggeber liegt. `storniere` und `vorgangsakte` setzen eine ausgestellte '
-      + 'Rechnung voraus, `alsCsv` eine Buchhaltung, die etwas abholt, `aufbewahrungBis` '
-      + 'einen Beleg, dessen Frist zu berechnen wäre. Der frühere Grund an dieser Stelle war '
-      + 'falsch: Er nannte den Zahlungsanbieter für die **ganze** Ablage. Gefehlt hat kein '
-      + 'Anbieter, sondern ein Ort, an dem Kundendaten liegen dürfen.',
+      'storniere', 'vorgangsakte'],
+    warum: 'Seit dem 4. September ist die Ablage in Betrieb, seit dem 11. September legt '
+      + '`npm run vorgang -- --stufe rechnung --ablegen` auch die **Rechnung** ab — '
+      + '`stelleRechnungAus` ist deshalb von hier weg. Der Grund, der bis dahin hier stand, '
+      + 'war schon vorher überholt: Er sagte, die Rechnung entstehe in keinem Werkzeug, weil '
+      + 'sie einen Zahlungsanbieter brauche. Sie braucht keinen — sie braucht das Lieferdatum '
+      + 'und den Zahlungseingang, und beides stellt der Betreiber fest und gibt es ein. '
+      + '`storniere` und `vorgangsakte` setzen eine **stornierte** oder abgeschlossene Akte '
+      + 'voraus, `alsCsv` eine Buchhaltung, die etwas abholt, `aufbewahrungBis` einen Beleg, '
+      + 'dessen Frist zu berechnen wäre.',
   }),
   Object.freeze({
     modul: 'src/aussentexte.js',

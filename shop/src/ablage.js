@@ -203,7 +203,7 @@ export function haltefest(ablage, eintrag) {
  * bekommt keine Nummer, weil eine vergebene Nummer nicht zurückgenommen werden
  * kann; sie wäre dann für immer eine Lücke ohne Beleg.
  */
-export function stelleRechnungAus(ablage, rechnung, { zeitpunkt, jahr, vorgang }) {
+export function stelleRechnungAus(ablage, rechnung, { zeitpunkt, jahr, vorgang, betreff, nummer: gezogen }) {
   if (!rechnung.vollstaendig) {
     return {
       ausgestellt: false,
@@ -211,7 +211,32 @@ export function stelleRechnungAus(ablage, rechnung, { zeitpunkt, jahr, vorgang }
     };
   }
 
-  const nummer = naechsteNummer(ablage, 'rechnung', jahr);
+  /*
+   * **Die Nummer kommt vom Beleg, wenn er schon eine hat — berichtigt am
+   * 11. September 2026.**
+   *
+   * Vorher zog diese Funktion immer selbst eine. Das ging, solange sie
+   * niemand rief: Eine Rechnung ist ohne Nummer **nicht vollständig**, die
+   * Zeile darüber weist sie also ab, und die Nummer entsteht erst hier — ein
+   * Kreis, aus dem kein Aufrufer herauskommt. Wer die Rechnung wirklich
+   * ausstellt, zieht die Nummer **vorher**, baut den Beleg damit und legt ihn
+   * dann ab; das ist auch die Reihenfolge, in der ein Mensch es täte.
+   */
+  const nummer = gezogen ?? rechnung.nummer ?? naechsteNummer(ablage, 'rechnung', jahr);
+
+  /*
+   * **Nur der Betreff, nie der Belegtext — berichtigt am 11. September 2026.**
+   *
+   * Hier stand `text: rechnung.text`, also der **ganze** Rechnungstext. Genau
+   * das verbietet das Felderverzeichnis dieser Ablage, und `bin/vorgang.mjs`
+   * schreibt es bei Angebot und Auftragsbestätigung seit dem 4. September
+   * ausdrücklich dazu: *Was hier steht, steht sieben Jahre. Der volle Text
+   * enthält die Anschrift des Kunden ein zweites Mal und gehört in den Beleg,
+   * nicht ins Journal.*
+   *
+   * > **Eine Regel, die für zwei von drei Belegarten gilt, ist keine Regel
+   * > über die Ablage, sondern eine über zwei Belegarten.**
+   */
   const eintrag = haltefest(ablage, {
     art: 'rechnung',
     nummer,
@@ -219,7 +244,7 @@ export function stelleRechnungAus(ablage, rechnung, { zeitpunkt, jahr, vorgang }
     vorgang,
     betragNetto: rechnung.nettobetrag ?? null,
     betragBrutto: rechnung.bruttobetrag ?? null,
-    text: rechnung.text ?? '',
+    text: betreff ?? `Rechnung ${nummer} zu Vorgang ${vorgang ?? '—'}`,
   });
 
   return { ausgestellt: true, nummer, eintrag };

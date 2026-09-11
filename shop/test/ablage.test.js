@@ -105,7 +105,16 @@ test('Ein Storno ändert die Rechnung nicht, sondern stellt eine Gutschrift dane
   assert.equal(g.nummer, 'GS-2026-0001');
   assert.equal(g.bezugAuf, 'RE-2026-0001');
   assert.equal(g.betragBrutto, -3900.2);
-  assert.equal(a.eintraege[0].text, vollstaendig.text, 'die Rechnung bleibt, wie sie war');
+  // **Berichtigt am 11. September 2026.** Hier stand, der Journaleintrag trage
+  // den **ganzen** Rechnungstext — und damit sicherte dieser Fall genau das
+  // zu, was das Felderverzeichnis der Ablage verbietet: *Was hier steht,
+  // steht sieben Jahre; der volle Text enthält die Anschrift des Kunden ein
+  // zweites Mal.* Geprüft wird jetzt, dass der Eintrag **unverändert** bleibt,
+  // nicht, dass er den Beleg enthält.
+  assert.equal(a.eintraege[0].nummer, 'RE-2026-0001', 'die Rechnung bleibt, wie sie war');
+  assert.equal(a.eintraege[0].betragBrutto, 3900.2);
+  assert.ok(!a.eintraege[0].text.includes('Gesamtbetrag'),
+    'der volle Belegtext gehört nicht ins Journal');
   assert.equal(a.eintraege.length, 2);
 });
 

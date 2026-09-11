@@ -466,3 +466,49 @@ test('ein Beleg mit einem Internum geht nicht hinaus', { skip: !vorhanden && 'pr
   assert.match(e.aus, /trägt ein Internum/);
   assert.match(e.aus, /Bezugsweg/);
 });
+
+
+test('--ablegen zieht bei der Rechnung eine Nummer und schreibt sie ins Journal', { skip: !vorhanden && 'preise/ fehlt' }, () => {
+  /**
+   * **Der Satz, den das Werkzeug über sich selbst sagt.** Ohne `--ablegen`
+   * schreibt es: *„Mit `--ablegen` wird sie gezogen und der Beleg ins Journal
+   * geschrieben."* Am 11. September war das eine Zusage über den eigenen
+   * Betrieb, die nicht stimmte — die Stufe endete vor der Ablage.
+   */
+  const u = baueUmgebung();
+  const akte = join(u.ordner, 'akte');
+  const e = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0110',
+    '--stufe', 'rechnung', '--geliefert', '2026-09-09', '--bezahlt', '2026-09-08', '--ablegen'],
+  { ...mitUid(u.ordner), VORGANG_ABLAGE: akte });
+  assert.equal(e.code, 0, e.aus);
+  assert.match(e.aus, /Abgelegt: Rechnungsnummer RE-2026-0001/);
+
+  /*
+   * **Und im Journal steht der Betreff, nicht der Beleg.** Was dort steht,
+   * steht nach § 132 BAO sieben Jahre; die Anschrift des Kunden steht schon
+   * auf der Rechnung und gehört nicht ein zweites Mal in die Akte.
+   */
+  const zeilen = readFileSync(join(akte, 'journal-2026.jsonl'), 'utf8')
+    .trim().split('\n').map((z) => JSON.parse(z));
+  // Zwei Zeilen: die Nummernvergabe und der Eintrag. Die Vergabe steht
+  // getrennt da, damit sich eine gezogene Nummer auch dann nachweisen lässt,
+  // wenn der Beleg danach nicht zustande kam.
+  assert.equal(zeilen.length, 2, JSON.stringify(zeilen));
+  const vergabe = zeilen.find((z) => z.typ === 'nummernvergabe');
+  const eintrag = zeilen.find((z) => z.typ === 'eintrag')?.eintrag;
+  assert.equal(vergabe.nummer, 'RE-2026-0001');
+  assert.equal(eintrag.nummer, 'RE-2026-0001', 'gedruckt und abgelegt unter derselben Nummer');
+  assert.equal(eintrag.art, 'rechnung');
+  assert.ok(!eintrag.text.includes('Baustellenweg'),
+    'die Anschrift des Kunden steht ein zweites Mal in der Akte');
+  assert.match(eintrag.text, /Position\(en\)/);
+
+  /*
+   * **Und beide Beträge.** Die Nettospalte ist die Bemessungsgrundlage der
+   * Umsatzsteuervoranmeldung; bis zum 11. September stand dort `null`, weil
+   * `erzeugeRechnung` als einzige der drei Belegarten ihren Nettobetrag nicht
+   * mitgab.
+   */
+  assert.equal(typeof eintrag.betragNetto, 'number', 'der Nettobetrag fehlt im Journal');
+  assert.ok(eintrag.betragNetto > 0 && eintrag.betragNetto < eintrag.betragBrutto);
+});

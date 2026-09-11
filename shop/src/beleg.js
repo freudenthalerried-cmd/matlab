@@ -675,9 +675,22 @@ export function erzeugeRechnung(warenkorb, { nummer, datum, lieferdatum, kunde =
     );
   }
 
+  /*
+   * **Der Nettobetrag fehlte — berichtigt am 11. September 2026.**
+   *
+   * Hier stand nur `bruttobetrag`. Angebot und Auftragsbestätigung geben ihn
+   * mit, die Rechnung nicht — und `stelleRechnungAus` schrieb daraufhin
+   * `betragNetto: null` ins Journal. Genau diese Spalte ist die
+   * Bemessungsgrundlage der Umsatzsteuervoranmeldung; der Steuerberater
+   * bekäme eine Zeile ohne die Zahl, um die es ihm geht.
+   *
+   * > **Von drei Belegarten führte ausgerechnet die eine, die in die
+   * > Steuererklärung geht, ihren Nettobetrag nicht mit.**
+   */
   return {
     text: zeilen.join('\n'),
     ...pruefung,
+    nettobetrag: warenkorb.summeNetto,
     bruttobetrag: warenkorb.summeBrutto,
     zahlungsvermerk: vermerk,
   };

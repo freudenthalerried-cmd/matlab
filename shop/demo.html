@@ -7228,9 +7228,22 @@ function erzeugeRechnung(warenkorb, { nummer, datum, lieferdatum, kunde = {}, be
     );
   }
 
+  
+
+
+
+
+
+
+
+
+
+
+
   return {
     text: zeilen.join('\n'),
     ...pruefung,
+    nettobetrag: warenkorb.summeNetto,
     bruttobetrag: warenkorb.summeBrutto,
     zahlungsvermerk: vermerk,
   };
@@ -8266,7 +8279,7 @@ function haltefest(ablage, eintrag) {
 
 
 
-function stelleRechnungAus(ablage, rechnung, { zeitpunkt, jahr, vorgang }) {
+function stelleRechnungAus(ablage, rechnung, { zeitpunkt, jahr, vorgang, betreff, nummer: gezogen }) {
   if (!rechnung.vollstaendig) {
     return {
       ausgestellt: false,
@@ -8274,7 +8287,32 @@ function stelleRechnungAus(ablage, rechnung, { zeitpunkt, jahr, vorgang }) {
     };
   }
 
-  const nummer = naechsteNummer(ablage, 'rechnung', jahr);
+  
+
+
+
+
+
+
+
+
+
+
+  const nummer = gezogen ?? rechnung.nummer ?? naechsteNummer(ablage, 'rechnung', jahr);
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
   const eintrag = haltefest(ablage, {
     art: 'rechnung',
     nummer,
@@ -8282,7 +8320,7 @@ function stelleRechnungAus(ablage, rechnung, { zeitpunkt, jahr, vorgang }) {
     vorgang,
     betragNetto: rechnung.nettobetrag ?? null,
     betragBrutto: rechnung.bruttobetrag ?? null,
-    text: rechnung.text ?? '',
+    text: betreff ?? `Rechnung ${nummer} zu Vorgang ${vorgang ?? '—'}`,
   });
 
   return { ausgestellt: true, nummer, eintrag };
