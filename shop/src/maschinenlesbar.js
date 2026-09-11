@@ -719,3 +719,196 @@ export function robotsTxt({ suche, training, sitemap = null } = {}) {
   if (sitemap) zeilen.push('', `Sitemap: ${textZeile(sitemap)}`);
   return zeilen.join('\n') + '\n';
 }
+
+/* ------------------------------------------------------------------
+ * **Der Anlass, 11. September 2026 — Runde 30.**
+ *
+ * `ki-sichtbarkeit-konzept.md` nennt drei Dinge, aus denen bei diesen Systemen
+ * Vertrauen entsteht. Das erste ist die **Konsistenz der Entität**:
+ *
+ * > *Firmenname, Rechtsform, Adresse, UID, Firmenbuchnummer und Telefonnummer
+ * > müssen überall identisch sein. … Das ist der billigste und
+ * > meistvernachlässigte Hebel.*
+ *
+ * Gemessen am Auslieferungsordner: **71 Organisationsblöcke**, davon tragen
+ * **70 nur `name` und `legalName`** — kein Feld mehr. Der einzige mit einer
+ * Adresse ist der auf der Startseite, und er nennt Ort und Land, nicht Straße
+ * und nicht Postleitzahl.
+ *
+ * Und genau die 70 sind die, auf die es ankommt: Es sind die `seller` der
+ * Artikelseiten — der Seiten, die ein Assistent zitiert.
+ *
+ * | belegt in `data/betreiber.json` | in der Auszeichnung |
+ * |---|---|
+ * | Marwach 5 | — |
+ * | 4312 | — |
+ * | FN 347938z | — |
+ * | Gesellschaft mit beschränkter Haftung | — |
+ *
+ * > **Der billigste Hebel war nicht gezogen — und die Angaben lagen die ganze
+ * > Zeit in der Datei daneben.**
+ *
+ * ## Was hier ausdrücklich nicht passiert
+ *
+ * Ein leeres Feld wird **weggelassen, nicht geschrieben**. `vatID: ""` wäre
+ * keine Angabe, sondern eine Behauptung über eine fehlende — und dieselbe
+ * Linie zieht dieser Bestand seit dem ersten Tag beim Impressum: Eine Lücke,
+ * die sichtbar ist, ist besser als eine, die gefüllt aussieht.
+ * ------------------------------------------------------------------ */
+
+/**
+ * Welche Angabe der Betreiberdatei in welchem schema.org-Feld steht.
+ *
+ * `pflicht` heißt: Sie ist belegt und gehört in jeden Block. Was hier nicht
+ * steht, gehört nicht in die Entität — `mindestbestellwertNetto` etwa ist
+ * eine Konditionsangabe und steht beim Angebot.
+ */
+export const ENTITAETSFELDER = Object.freeze([
+  Object.freeze({ quelle: 'strasse', feld: 'address.streetAddress' }),
+  Object.freeze({ quelle: 'plz', feld: 'address.postalCode' }),
+  Object.freeze({ quelle: 'ort', feld: 'address.addressLocality' }),
+  Object.freeze({ quelle: 'land', feld: 'address.addressCountry' }),
+  Object.freeze({ quelle: 'firmenbuchnummer', feld: 'identifier' }),
+  Object.freeze({ quelle: 'telefon', feld: 'telephone' }),
+  Object.freeze({ quelle: 'email', feld: 'email' }),
+  Object.freeze({ quelle: 'uid', feld: 'vatID' }),
+  Object.freeze({ quelle: 'domain', feld: 'url' }),
+]);
+
+/**
+ * Die Organisation, wie eine Maschine sie lesen soll — einmal, für alle
+ * Seiten und für jeden `seller`.
+ *
+ * @param {object} betreiber  `data/betreiber.json`
+ */
+export function organisationsdaten(betreiber) {
+  const hat = (k) => typeof betreiber[k] === 'string' && betreiber[k].trim() !== '';
+  const firma = betreiber.firma;
+  const marke = betreiber.marke || firma;
+
+  const org = marke === firma
+    ? { '@type': 'Organization', name: firma }
+    : { '@type': 'Organization', name: marke, legalName: firma };
+
+  const adresse = { '@type': 'PostalAddress' };
+  if (hat('strasse')) adresse.streetAddress = betreiber.strasse;
+  if (betreiber.plz) adresse.postalCode = String(betreiber.plz);
+  if (hat('ort')) adresse.addressLocality = betreiber.ort;
+  if (hat('land')) adresse.addressCountry = betreiber.land;
+  if (Object.keys(adresse).length > 1) org.address = adresse;
+
+  // Die Firmenbuchnummer ist kein Name und keine Kennung im Sinne von `sku` —
+  // schema.org sieht dafür `identifier` mit einer benannten Eigenschaft vor.
+  // Ein Assistent, der die Firma im Firmenbuch nachschlägt, sucht genau sie.
+  if (hat('firmenbuchnummer')) {
+    org.identifier = {
+      '@type': 'PropertyValue',
+      propertyID: 'Firmenbuchnummer',
+      value: betreiber.firmenbuchnummer,
+    };
+  }
+  if (hat('telefon')) org.telephone = betreiber.telefon;
+  if (hat('email')) org.email = betreiber.email;
+  if (hat('uid')) org.vatID = betreiber.uid;
+  /*
+   * **Mit Schrägstrich — 11. September 2026.** Die Betreiberdatei führt die
+   * Adresse ohne; die Startseite nennt sich seit dem 7. September kanonisch
+   * **mit**, nachdem drei Schreibweisen derselben Wurzel im Bestand standen.
+   * Beides ist derselbe Ort, und genau deshalb darf hier nicht die zweite
+   * Fassung entstehen: Die Organisation schreibt ihre Adresse so, wie die
+   * Seite sich selbst schreibt.
+   */
+  if (hat('domain')) org.url = betreiber.domain.endsWith('/') ? betreiber.domain : `${betreiber.domain}/`;
+
+  return org;
+}
+
+/**
+ * Hält die ausgezeichnete Entität gegen die Betreiberdatei — in beide
+ * Richtungen und über alle Blöcke zugleich.
+ *
+ * Drei Regeln, und die dritte ist die, um die es dem Konzept geht:
+ *
+ *   1. Jede **belegte** Angabe steht in jedem Block.
+ *   2. Keine Angabe steht dort, die in der Betreiberdatei leer ist.
+ *   3. Alle Blöcke sagen **dasselbe** — eine Entität, nicht einundsiebzig.
+ *
+ * @param {object[]} bloecke  jeder gefundene Organisationsblock
+ * @param {object} betreiber  `data/betreiber.json`
+ */
+export function entitaetsbefund(bloecke, betreiber, felder = ENTITAETSFELDER) {
+  const meldungen = [];
+  if (!bloecke.length) {
+    return {
+      bloecke: 0,
+      meldungen: [{
+        regel: 'keine-entitaet',
+        text: 'Kein einziger Organisationsblock in der Ausgabe — dieser Befund prüft nichts',
+      }],
+      sauber: false,
+    };
+  }
+
+  const hol = (o, pfad) => pfad.split('.').reduce((x, k) => (x == null ? x : x[k]), o);
+  const wert = (o, f) => {
+    const v = hol(o, f);
+    return v && typeof v === 'object' ? v.value : v;
+  };
+
+  for (const f of felder) {
+    const soll = betreiber[f.quelle];
+    const belegt = soll !== null && soll !== undefined && String(soll).trim() !== '';
+    for (const b of bloecke) {
+      const ist = wert(b, f.feld);
+      if (belegt && (ist === undefined || ist === null)) {
+        meldungen.push({
+          regel: 'angabe-fehlt',
+          text: `${f.feld} fehlt in einem Organisationsblock — belegt ist „${soll}"`,
+        });
+        break;
+      }
+      if (!belegt && ist !== undefined && ist !== null) {
+        meldungen.push({
+          regel: 'angabe-ohne-beleg',
+          text: `${f.feld} steht in der Auszeichnung und ist in der Betreiberdatei leer — `
+            + 'eine gefüllte Lücke ist schlimmer als eine sichtbare',
+        });
+        break;
+      }
+      // Ein Schrägstrich am Ende einer Adresse ist keine zweite Schreibweise
+      // einer Firma, sondern dieselbe Wurzel. Verglichen wird ohne ihn.
+      const gleich = (a, c) => String(a).replace(/\/$/, '') === String(c).replace(/\/$/, '');
+      if (belegt && !gleich(ist, soll)) {
+        meldungen.push({
+          regel: 'angabe-weicht-ab',
+          text: `${f.feld} sagt „${ist}", belegt ist „${soll}"`,
+        });
+        break;
+      }
+    }
+  }
+
+  /*
+   * **Die Regel des Konzepts, wörtlich.** Drei Schreibweisen derselben Firma
+   * sind drei schwache Entitäten statt einer starken.
+   *
+   * Verglichen werden die **Entitätsfelder**, nicht der ganze Block: Der auf
+   * der Startseite trägt zusätzlich `@context` und das Liefergebiet, und das
+   * ist richtig so — er ist der Wurzelknoten der Seite. Ein Vergleich über das
+   * ganze Objekt hätte diesen Unterschied gemeldet und den gemeinten
+   * verdeckt.
+   */
+  const fassung = (b) => JSON.stringify([
+    b.name, b.legalName, ...felder.map((f) => wert(b, f.feld) ?? null),
+  ]);
+  const fassungen = new Set(bloecke.map(fassung));
+  if (fassungen.size > 1) {
+    meldungen.push({
+      regel: 'mehrere-fassungen',
+      text: `${fassungen.size} verschiedene Fassungen derselben Organisation in einer Ausgabe — `
+        + 'ein Assistent, der drei Schreibweisen findet, hat drei schwache Entitäten',
+    });
+  }
+
+  return { bloecke: bloecke.length, fassungen: fassungen.size, meldungen, sauber: meldungen.length === 0 };
+}

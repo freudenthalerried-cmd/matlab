@@ -3216,6 +3216,53 @@ export const GEGENPROBEN = Object.freeze([
       + 'wirkungslos und das Dokument, das sie meinte, wird wieder gemeldet — oder, schlimmer, '
       + 'ein anderes bleibt still, weil niemand mehr nachsieht, worauf sie eigentlich zeigt.',
   }),
+  Object.freeze({
+    id: 'entitaet-ohne-adresse',
+    pruefer: 'pruefe-entitaet',
+    was: 'Die Organisation trägt keine Straße mehr, obwohl sie belegt ist',
+    datei: 'shop/src/maschinenlesbar.js',
+    art: 'ersetzen',
+    suchen: "  if (hat('strasse')) adresse.streetAddress = betreiber.strasse;",
+    ersetzen: "  if (false) adresse.streetAddress = betreiber.strasse;",
+    baueVorher: true,
+    erwartet: /angabe-fehlt/,
+    warum: 'Genau der Zustand bis zum 11. September: 71 Organisationsblöcke in der Ausgabe, '
+      + '70 davon nur mit Name und Firmenname, und Straße, Postleitzahl und Firmenbuchnummer '
+      + 'lagen belegt in der Betreiberdatei daneben. Das eigene Sichtbarkeitskonzept nennt die '
+      + 'Konsistenz der Entität „den billigsten und meistvernachlässigten Hebel" — er war nicht '
+      + 'gezogen, und niemand hat es gemessen.',
+  }),
+  Object.freeze({
+    id: 'entitaet-mit-leerer-angabe',
+    pruefer: 'pruefe-entitaet',
+    was: 'Eine Angabe steht gefüllt in der Auszeichnung und ist in der Betreiberdatei leer',
+    datei: 'shop/src/maschinenlesbar.js',
+    art: 'ersetzen',
+    suchen: "  if (hat('uid')) org.vatID = betreiber.uid;",
+    ersetzen: "  org.vatID = betreiber.uid ?? '';",
+    baueVorher: true,
+    erwartet: /angabe-ohne-beleg/,
+    warum: 'Die UID-Nummer ist eine der vier Angaben, die der Auftraggeber noch liefern muss. '
+      + 'Ein leeres `vatID` in der Auszeichnung wäre keine Angabe, sondern eine Behauptung über '
+      + 'eine fehlende — und dieselbe Linie zieht dieser Bestand seit dem ersten Tag beim '
+      + 'Impressum: Eine Lücke, die sichtbar ist, ist besser als eine, die gefüllt aussieht.',
+  }),
+  Object.freeze({
+    id: 'zwei-fassungen-einer-firma',
+    pruefer: 'pruefe-entitaet',
+    was: 'Dieselbe Organisation steht in zwei Fassungen in einer Ausgabe',
+    datei: 'shop/bin/website.mjs',
+    art: 'ersetzen',
+    suchen: '          seller: organisation(),',
+    ersetzen: "          seller: { ...organisation(), name: 'Bauversand Handel' },",
+    baueVorher: true,
+    erwartet: /mehrere-fassungen/,
+    warum: 'Der Satz, um den es dem Sichtbarkeitskonzept geht, steht dort wörtlich: Ein '
+      + 'Assistent, der drei Schreibweisen derselben Firma findet, hat drei schwache Entitäten '
+      + 'statt einer starken. Am 3. September ist genau das schon einmal passiert — die '
+      + 'Startseite trug den neuen Markennamen, achtzig Seiten den alten —, und gefunden hat '
+      + 'es damals kein Prüfer, sondern ein Blick.',
+  }),
 ]);
 
 /**

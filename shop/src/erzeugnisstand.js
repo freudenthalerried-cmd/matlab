@@ -103,6 +103,7 @@ export const LESER = Object.freeze([
   // sie zum Bau von gestern passt — richtig und nutzlos.
   Object.freeze({ werkzeug: 'bin/kopfzeilenpruefung.mjs', erzeugnis: 'ausgabe/site' }),
   Object.freeze({ werkzeug: 'bin/verweispruefung.mjs', erzeugnis: 'ausgabe/site' }),
+  Object.freeze({ werkzeug: 'bin/entitaetspruefung.mjs', erzeugnis: 'ausgabe/site' }),
   // **Seit dem 8. September, nachts.** Der Prüfer liest zusätzlich
   // `ausgabe/site/llms.txt` — er hält die Zahl der nicht geführten Positionen
   // gegen das, was die maschinenlesbare Datei darüber sagt.

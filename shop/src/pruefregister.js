@@ -590,6 +590,16 @@ export const PRUEFER = [
     einheit: 'Abnahmepunkte gegen den Ausgabeordner',
     mindestens: 8,
   },
+  // **Aufgenommen am 11. September 2026.** Die Konsistenz der Entität ist
+  // nach dem eigenen Sichtbarkeitskonzept „der billigste und
+  // meistvernachlässigte Hebel" — gemessen war er nicht gezogen.
+  {
+    name: 'pruefe-entitaet',
+    werkzeug: 'entitaetspruefung.mjs',
+    muster: /Entität — (\d+) Organisationsblöcke/,
+    einheit: 'Organisationsblöcke gegen die Betreiberdatei',
+    mindestens: 40,
+  },
   {
     name: 'pruefe-register',
     werkzeug: 'registerpruefung.mjs',

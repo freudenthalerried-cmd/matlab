@@ -33,7 +33,9 @@ import { dirname, join, resolve } from 'node:path';
 import { ladeBaustoffkatalog, katalogbefund, ZIELMARGE } from '../src/baustoffkatalog.js';
 import { pruefeSeiten } from '../src/interna.js';
 import { artikelBild, gruppenBild, schichten, schichtbild, dickeMm, bauform } from '../src/bilder.js';
-import { VERFUEGBARKEIT, angebotsAuszeichnung, robotsTxt, liefergebietOrte } from '../src/maschinenlesbar.js';
+import {
+  VERFUEGBARKEIT, angebotsAuszeichnung, robotsTxt, liefergebietOrte, organisationsdaten,
+} from '../src/maschinenlesbar.js';
 import { baueKern, BROWSERMODULE } from '../src/buendel.js';
 import { startklar, fehltSatz, betreiberangaben } from '../src/startklar.js';
 import {
@@ -243,9 +245,19 @@ const ORT = BETREIBER.ort || 'Ried in der Riedmark';
  * Deshalb eine Funktion und keine drei Literale. `legalName` ist das Feld, das
  * schema.org dafür vorsieht; fehlt eine Marke, bleibt es bei der Firma allein.
  */
-const organisation = () => (MARKE === FIRMA
-  ? { '@type': 'Organization', name: FIRMA }
-  : { '@type': 'Organization', name: MARKE, legalName: FIRMA });
+/*
+ * **Ergänzt am 11. September 2026 — Runde 30.** Bis heute gab diese Funktion
+ * `name` und `legalName` zurück und sonst nichts. Gemessen: 71 Blöcke in der
+ * Ausgabe, 70 davon nur mit diesen beiden Feldern; der einzige mit einer
+ * Adresse nannte Ort und Land. Straße, Postleitzahl und Firmenbuchnummer
+ * standen belegt in der Betreiberdatei und in keiner Auszeichnung — während
+ * `ki-sichtbarkeit-konzept.md` die Konsistenz der Entität „den billigsten und
+ * meistvernachlässigten Hebel" nennt.
+ *
+ * Gebaut wird sie jetzt in `src/maschinenlesbar.js`, weil sie dort gegen die
+ * Betreiberdatei geprüft werden kann, ohne den ganzen Bau zu fahren.
+ */
+const organisation = () => organisationsdaten(BETREIBER);
 
 /* ------------------------------------------------------------------ *
  * Inhalte einlesen
@@ -1705,13 +1717,24 @@ die vor einer Baustoffbestellung zu klären sind — Untergrund, Mengen, Lagerun
 Jede beantwortet genau eine Frage, und die Antwort steht in den ersten zwei Sätzen.</p>`,
     jsonLd: [{
       '@context': 'https://schema.org',
+      // **Die Adresse kommt seit dem 11.09. aus `organisation()`.** Hier stand
+      // eine zweite, dünnere Fassung — Ort und Land — neben der vollständigen
+      // im Impressum. Zwei Fassungen derselben Entität sind zwei Entitäten.
       ...organisation(),
-      address: { '@type': 'PostalAddress', addressLocality: ORT, addressCountry: 'AT' },
       areaServed: liefergebietOrte({ land: LIEFERGEBIET.land, bezirke: LIEFERGEBIET.bezirke.map((b) => b.name) }),
-      // Dieselbe Schreibweise wie das `rel="canonical"` der Startseite. Hier
-      // stand `BASIS` ohne Schrägstrich — eine dritte Fassung derselben
-      // Adresse neben `/` und `/index.html`.
-      url: kanonisch(BASIS, 'index'),
+      /*
+       * **Kein eigenes `url` mehr — 11. September 2026.** Hier stand
+       * `kanonisch(BASIS, 'index')`, also die Adresse **mit** Schrägstrich,
+       * während dieselbe Organisation als `seller` auf siebzig Seiten die
+       * Adresse ohne trug. Für einen Menschen ist das derselbe Ort; für den
+       * Leser, auf den dieser Shop ausgelegt ist, sind es zwei Angaben über
+       * eine Firma — und genau davor warnt das Sichtbarkeitskonzept.
+       *
+       * Die Wahl fiel auf die belegte Fassung aus `data/betreiber.json`: Was
+       * die Organisation über sich sagt, steht dort und nicht im Bauwerkzeug.
+       * Das `rel="canonical"` der **Seite** bleibt unberührt — die Seite ist
+       * nicht die Firma.
+       */
     },
     /*
      * **Die eigene Suche, angemeldet — 7. September 2026.**
