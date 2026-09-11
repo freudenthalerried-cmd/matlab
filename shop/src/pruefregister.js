@@ -466,6 +466,20 @@ export const PRUEFER = [
      * den Bau gehalten wurden — nicht die Läufe: Ein Archiv, das zur
      * Abnahmeliste schrumpft, fiele bei einer Laufzählung nicht auf.
      */
+    /*
+     * **Aufgenommen am 11. September.** An drei Tagen fiel dreimal dieselbe
+     * Bauart auf — eine Zahl mit einer Heimat, die anderswo noch einmal
+     * dasteht —, und jedes Mal durch Zufall. Gezählt werden die **Fundstellen**
+     * und nicht die geführten Zahlen: Ein Eintrag, dessen Vorkommen alle
+     * verschwinden, fiele bei einer Zählung der Einträge nicht auf.
+     */
+    name: 'pruefe-zwillinge',
+    werkzeug: 'zwillingspruefung.mjs',
+    muster: /Zwillingsabgleich: (\d+) Fundstellen/,
+    einheit: 'Fundstellen geführter Zahlen',
+    mindestens: 8,
+  },
+  {
     name: 'pruefe-paket',
     werkzeug: 'paketpruefung.mjs',
     muster: /Paketprobe: (\d+) Dateien im Archiv/,

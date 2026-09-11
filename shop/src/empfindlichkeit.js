@@ -20,6 +20,7 @@
  */
 
 import { noetigerUmsatz } from './kostenbild.js';
+import { ZIELMARGE } from './baustoffkatalog.js';
 
 /**
  * Die vier Annahmen, mit ihrer Herkunft und ihrer Konfidenz.
@@ -39,7 +40,31 @@ export const ANNAHMEN = [
     // die eine überholte Annahme führt, misst die Empfindlichkeit des
     // falschen Plans — und zwar zu günstig: 35 % statt 25 % ist ein Drittel
     // mehr Luft, als es gibt.
-    basis: 0.25,
+    /*
+     * **Gelesen statt abgeschrieben, seit dem 11. September 2026.**
+     *
+     * Hier stand `0.25`, und die Herkunftszeile darunter sagte, die Zahl sei
+     * *„deckungsgleich mit ZIELMARGE in baustoffkatalog.js"*. Das stand in
+     * einem Satz und nicht in einem Aufruf — dieselbe Bauart wie die
+     * Kaufquote der Kampagne, die am selben Tag aufgefallen ist.
+     *
+     * Der Unterschied ist, dass dieser Zeile genau das schon **passiert
+     * ist**: Bis zum 1. September stand hier 0,35 aus dem verlassenen
+     * Radonmodell, während der Shop längst mit 25 % rechnete. Neun Tage lang
+     * maß die Empfindlichkeitsrechnung damit ein Drittel mehr Luft, als es
+     * gibt.
+     *
+     * > **Eine Zahl, die schon einmal stehengeblieben ist, bleibt an
+     * > derselben Stelle ein zweites Mal stehen.**
+     *
+     * Und sie wiegt schwer: 25 % ist die Weisung des Auftraggebers vom
+     * 25. August, `pruefe-weisungen` führt sie. Wird sie geändert, bewegt
+     * sich jeder Verkaufspreis — und die Rechnung, die sagt, welche Annahme
+     * zuerst gemessen gehört, hätte als einzige weiter mit der alten
+     * gerechnet. Ausgerechnet sie weist die Rohmarge als empfindlichsten
+     * Hebel aus.
+     */
+    basis: ZIELMARGE,
     // **Keine eigene Grenze mehr.** An die Stelle von Gate 1 tritt Gate 20:
     // keine Bestellung ohne positiven Deckungsbeitrag. Das ist keine
     // Prozentschwelle, sondern genau der Punkt, an dem `noetigerUmsatz`
@@ -49,7 +74,7 @@ export const ANNAHMEN = [
     grenze: null,
     schlechterIst: 'kleiner',
     konfidenz: 'Weisung des Auftraggebers vom 25.08.',
-    herkunft: 'PARAMETER.md und marge-25-prozent.md; deckungsgleich mit ZIELMARGE in baustoffkatalog.js',
+    herkunft: 'PARAMETER.md und marge-25-prozent.md; **ist** ZIELMARGE aus baustoffkatalog.js, gelesen und nicht abgeschrieben',
     klaertDurch: 'Ist entschieden. Was offen bleibt, ist die Einkaufsseite — der Preisrhythmus des Lieferanten',
   },
   {

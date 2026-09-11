@@ -14,6 +14,7 @@ import {
   zahlungszielTraegt,
   traegtSichSelbst,
 } from '../src/kostenbild.js';
+import { UST_SATZ } from '../src/preis.js';
 import { cent } from '../src/preis.js';
 
 const lies = (p) => JSON.parse(readFileSync(new URL(p, import.meta.url), 'utf8'));
@@ -129,7 +130,11 @@ test('Von 34 % Mischmarge bleiben nach Werbung und Gebühr rund 22 %', () => {
 });
 
 test('Die Umsatzsteuer steht 20 % und wird nicht als Kosten geführt', () => {
-  assert.equal(UST, 0.20);
+  // **Berichtigt am 11. September.** Hier stand `assert.equal(UST, 0.20)` —
+  // eine Zahl gegen dieselbe Zahl, und damit die einzige der vier Fassungen
+  // des Steuersatzes, die an nichts gebunden war. Geprüft wird jetzt, dass sie
+  // **dieselbe** ist wie die, mit der der Kunde rechnet.
+  assert.equal(UST, UST_SATZ, 'die Gebührenkaskade rechnet mit einem anderen Steuersatz als der Preis');
   const p = proBestellung(referenz, 'vorkasse', 0.10);
   assert.equal(p.umsatzsteuer, referenz.ust);
   assert.ok(Math.abs(p.bleibt - (p.rohertrag - p.werbung)) < 0.005, 'ohne Gebühr bleibt Rohertrag minus Werbung');

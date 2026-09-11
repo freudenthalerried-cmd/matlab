@@ -2826,6 +2826,38 @@ export const GEGENPROBEN = Object.freeze([
       + 'genau darin liegt der Punkt: Mit 0.02 stimmten die beiden zufällig überein, und '
       + 'dieser Zufall war das, was niemand messen konnte.',
   }),
+  Object.freeze({
+    id: 'zielmarge-abgeschrieben',
+    pruefer: 'pruefe-zwillinge',
+    was: 'Die Weisung des Auftraggebers als zweite Zahl im Annahmenregister',
+    datei: 'shop/src/empfindlichkeit.js',
+    art: 'ersetzen',
+    suchen: '    basis: ZIELMARGE,',
+    ersetzen: '    basis: 0.25,',
+    erwartet: /zahl-zweimal|0\.25 als eigenes Literal/,
+    warum: 'Wörtlich der Zustand bis zum 11. September — und an dieser Zeile ist es schon '
+      + 'einmal schiefgegangen: Bis zum 1. September stand hier 0,35 aus dem verlassenen '
+      + 'Radonmodell, während der Shop längst mit 25 % rechnete; neun Tage lang maß die '
+      + 'Empfindlichkeitsrechnung ein Drittel mehr Luft, als es gibt. Die Zahl ist die '
+      + 'Weisung des Auftraggebers vom 25. August und bestimmt jeden Verkaufspreis. Die '
+      + 'Mutation schreibt sie wieder ab; sie bleibt dabei richtig — genau deshalb kann nur '
+      + 'ein Prüfer anschlagen, der die zweite Fundstelle als solche sieht.',
+  }),
+  Object.freeze({
+    id: 'steuersatz-in-vierter-fassung',
+    pruefer: 'pruefe-zwillinge',
+    was: 'Der Umsatzsteuersatz als eigene Zahl in der Gebührenkaskade',
+    datei: 'shop/src/kostenbild.js',
+    art: 'ersetzen',
+    suchen: 'export const UST = UST_SATZ;',
+    ersetzen: 'export const UST = 0.20;',
+    erwartet: /zahl-zweimal|0\.20 als eigenes Literal/,
+    warum: 'Der Zustand bis zum 11. September: vier Fassungen desselben Steuersatzes im '
+      + 'Bestand, drei davon aneinander gebunden — und diese vierte hatte als Zusicherung '
+      + '`assert.equal(UST, 0.20)`. Ein Testfall, der eine Zahl gegen dieselbe Zahl hält, '
+      + 'hält nichts. Mit diesem Satz wird die Zahlungsgebühr auf brutto gestreckt, und daran '
+      + 'hängt `noetigerUmsatz`, die Leitzahl, die zehn Werkzeuge lesen.',
+  }),
 ]);
 
 /**

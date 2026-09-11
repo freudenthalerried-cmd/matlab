@@ -19,7 +19,7 @@
  * man leicht übersieht: Man zahlt Gebühr auf durchlaufende Fracht.
  */
 
-import { cent } from './preis.js';
+import { cent, UST_SATZ } from './preis.js';
 import { ZAHLWEGE, findeZahlweg } from './zahlung.js';
 // Skonto und Gate 21 liegen in einem eigenen Modul, weil `zahlung.js` sie
 // ebenfalls braucht und dieses Modul die Zahlwege liest — die Namen werden
@@ -41,7 +41,26 @@ export function zahlwegGegenSkonto(bestellung, zahlwegId, opt = {}) {
   return skontoGegenGebuehr(bestellung, zahlwegId, { ...opt, zahlweg: findeZahlweg(zahlwegId) });
 }
 
-export const UST = 0.20;
+/**
+ * Der Umsatzsteuersatz, mit dem die Gebührenkaskade rechnet.
+ *
+ * **Gelesen statt abgeschrieben, seit dem 11. September 2026.** Hier stand
+ * `0.20` — die **vierte** Fassung derselben Zahl im Bestand. Drei davon sind
+ * aneinander gebunden: `preis.js` rechnet den Kundenpreis, `shopkern.js` die
+ * Oberfläche, `kontrolle.js` führt bewusst eine eigene (mit ausgeschriebener
+ * Begründung), und `test/kontrolle.test.js` hält alle drei zusammen — es liest
+ * sogar den Quelltext der Kontrolle, um ihr Literal zu vergleichen.
+ *
+ * Diese vierte war die einzige ungebundene, und ihre Zusicherung lautete
+ * `assert.equal(UST, 0.20)`.
+ *
+ * > **Ein Testfall, der eine Zahl gegen dieselbe Zahl hält, hält nichts.**
+ *
+ * Das wiegt hier schwer: Mit diesem Satz wird die Zahlungsgebühr auf brutto
+ * gestreckt, und daran hängt `noetigerUmsatz` — die Leitzahl, die zehn
+ * Werkzeuge lesen.
+ */
+export const UST = UST_SATZ;
 
 /**
  * Anteil der Zahlungsgebühr am **Nettoumsatz** (Warenwert).

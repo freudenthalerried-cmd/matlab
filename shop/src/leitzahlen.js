@@ -270,6 +270,12 @@ export const ZAEHLWOERTER = Object.freeze([
   'Gegenproben', 'Prüfer', 'Testfälle', 'Testfällen', 'Artikel', 'Seiten', 'Dateien',
   'Fundstellen', 'Schritte', 'Schritten', 'Punkte', 'Punkten', 'Szenarien', 'Einträge',
   'Zeilen', 'Kennzahlen', 'Gates', 'Etappen', 'Werkzeuge', 'Sperren', 'Ausnahmen',
+  // **Ergänzt am 11. September.** „57 Karten mit offenem Listenpreis" in der
+  // Aktentabelle traf die abgelöste Plandauer von 57 Tagen. Der Satz hatte
+  // seine Zahl zuvor ohne Hauptwort geführt („57 mit offenem Listenpreis") —
+  // *eine Zahl ohne ihr Hauptwort ist für einen Leser und für einen Prüfer
+  // dasselbe Problem.* Beides berichtigt: erst der Satz, dann das Wort hier.
+  'Karten', 'Karte',
 ]);
 
 const ZAEHLWORTMUSTER = new RegExp(`^\\s*(?:${ZAEHLWOERTER.join('|')})\\b`);
