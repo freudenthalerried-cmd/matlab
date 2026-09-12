@@ -559,7 +559,27 @@ for (const p of proben) {
      * gepflegt wäre dieser Vermerk genau das, wogegen er gebaut ist: ein
      * Handgriff, an den sich niemand erinnert.
      */
-    if (browsernamen.has(p.pruefer)) vermerkeBrowserprobe(p.id, Math.round((Date.now() - seit) / 1000));
+    if (browsernamen.has(p.pruefer)) {
+      vermerkeBrowserprobe(p.id, Math.round((Date.now() - seit) / 1000));
+      /*
+       * **Und den Abdruck gleich nachziehen — 12. September 2026.**
+       *
+       * Der Vermerk ist eine Datei im Bestand (`data/browserproben.json`),
+       * und die nächste Probe vergleicht den Baum mit dem zuletzt genommenen
+       * Abdruck. Ohne diese Zeile sah sie die eigene Buchführung dieses
+       * Läufers als Bewegung und stellte sich zurück: *„der Arbeitsbaum hat
+       * sich unter dem Lauf bewegt."*
+       *
+       * > **Systematisch traf es jede zweite Gegenprobe einer Browserprobe** —
+       * > gemessen bei den beiden zu `bestellprobe`, von denen die zweite bei
+       * > jedem Lauf unmessbar war.
+       *
+       * Nicht der Abdruck wird enger gefasst, sondern der Zeitpunkt richtig
+       * gewählt: Was dieser Läufer selbst schreibt, gehört zum Stand **vor**
+       * der nächsten Messung.
+       */
+      letzterAbdruck = baumabdruck(REPO);
+    }
     // Derselbe Befehl wie der Lauf darüber — auch mit einem Zeugen, der eben
     // erst gefunden wurde. Sonst wäre der gesparte Vorlauf der nächsten Probe
     // ein anderer Lauf als der, den sie braucht.

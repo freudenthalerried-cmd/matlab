@@ -13,12 +13,12 @@
       "sekunden": 56
     },
     "formular-erhebt-zu-wenig": {
-      "am": "2026-09-10",
-      "sekunden": 8
+      "am": "2026-09-12",
+      "sekunden": 5
     },
     "ablage-im-webverzeichnis": {
-      "am": "2026-09-10",
-      "sekunden": 5
+      "am": "2026-09-12",
+      "sekunden": 2
     },
     "absage-ohne-naechsten-schritt": {
       "am": "2026-09-10",
@@ -69,8 +69,8 @@
       "sekunden": 11
     },
     "zwei-staende-desselben-betriebs": {
-      "am": "2026-09-11",
-      "sekunden": 5
+      "am": "2026-09-12",
+      "sekunden": 3
     }
   }
 }

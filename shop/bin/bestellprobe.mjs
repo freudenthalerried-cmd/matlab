@@ -421,6 +421,87 @@ try {
         probleme.push('die abgelegte Rechnung trägt eine Lückenmarke');
       } else {
         bestanden.push('Die Rechnung liegt als Durchschrift in der Akte, nicht nur als Journalzeile');
+
+        /*
+         * **Die vier Schritte nach der Rechnung — 12. September 2026, nachmittags.**
+         *
+         * Seit heute gibt es sie alle: die Akte lesen, eine falsche Rechnung
+         * aufheben, die Periode an die Buchhaltung geben, das Ganze sichern.
+         * Jeder einzelne ist geprüft — **die Reihenfolge war es nicht**, und
+         * genau dort saßen die Funde der letzten Tage: eine Nummer, die
+         * zweimal gezogen wurde, ein Betreff, der den Belegtext mitnahm, ein
+         * Einkaufswert, der als Umsatz gezählt hätte.
+         *
+         * > **Was einzeln läuft, läuft nicht deshalb hintereinander.**
+         *
+         * Sie laufen deshalb hier, in der einen Probe, die den ganzen Weg
+         * fährt — mit echtem PHP, echtem Browser und echter Akte in einem
+         * Wegwerfordner.
+         */
+        const ruf = (werkzeug, argumente) => {
+          const r = spawnSync(process.execPath, [join(SHOP, 'bin', werkzeug), ...argumente],
+            { cwd: SHOP, encoding: 'utf8', env: { ...werkzeugumgebung, VORGANG_ABLAGE: akte } });
+          return { code: r.status, aus: `${r.stdout ?? ''}${r.stderr ?? ''}` };
+        };
+
+        const gelesen = ruf('akte.mjs', ['--vorgang', '2026-9001']);
+        if (gelesen.code !== 0 || !/RE-2026-0001\.txt \(\d+ Zeichen\)/.test(gelesen.aus)) {
+          probleme.push(`die Akte liest den Vorgang nicht zurück: ${gelesen.aus.trim().split('\n').slice(-3).join(' | ')}`);
+        } else if (gelesen.aus.includes('Baustellenweg')) {
+          // Die Übersicht zeigt, **was** abgelegt ist, nicht **was darin steht**.
+          probleme.push('die Aktenübersicht schreibt die Anschrift des Kunden auf den Bildschirm');
+        } else {
+          bestanden.push('Die Akte liest den Vorgang zurück und nennt Beleg und Frist');
+        }
+
+        const vorherRechnung = readFileSync(durchschrift, 'utf8');
+        const storno = ruf('vorgang.mjs', [join(ziel, 'anfrage.txt'),
+          '--kunde', join(ziel, 'kunde.json'), '--nummer', '2026-9001', '--stufe', 'gutschrift',
+          '--storniert', 'RE-2026-0001', '--grund', 'Probelauf', '--ablegen']);
+        const gutschrift = join(akte, belegordner(2026), 'GS-2026-0001.txt');
+        if (storno.code !== 0 || !existsSync(gutschrift)) {
+          probleme.push(`die Rechnung lässt sich nicht aufheben: ${storno.aus.trim().split('\n').slice(-3).join(' | ')}`);
+        } else if (readFileSync(durchschrift, 'utf8') !== vorherRechnung) {
+          // § 131 Abs 1 Z 6 BAO: Der ursprüngliche Inhalt muss feststellbar
+          // bleiben — die Rechnung wird aufgehoben, nicht geändert.
+          probleme.push('das Storno hat die Rechnung geändert statt sie aufzuheben');
+        } else {
+          bestanden.push('Die Gutschrift hebt die Rechnung auf, ohne sie zu ändern');
+        }
+
+        /*
+         * **Die Zahl, an der die ganze Kette hängt.** Rechnung plus Gutschrift
+         * ist null — und zwar netto **und** in der Steuer. Kommt hier etwas
+         * anderes heraus, hat entweder die Gutschrift einen anderen Betrag als
+         * die Rechnung, oder ein Papier ohne Umsatz ist mitgezählt worden.
+         */
+        const buch = ruf('buchhaltung.mjs', ['--jahr', '2026', '--monat', '9']);
+        if (buch.code !== 0) {
+          probleme.push(`der Auszug für die Buchhaltung läuft nicht: ${buch.aus.trim().split('\n').slice(-3).join(' | ')}`);
+        } else if (!/Umsatzbelege \(Rechnung, Gutschrift\)\s+2/.test(buch.aus)) {
+          probleme.push('der Auszug zählt nicht genau zwei Umsatzbelege');
+        } else if (!/Bemessungsgrundlage netto\s+0,00 €/.test(buch.aus)
+          || !/Umsatzsteuer\s+0,00 €/.test(buch.aus)) {
+          probleme.push('Rechnung und Gutschrift heben sich im Auszug nicht auf');
+        } else {
+          bestanden.push('Der Auszug für die Buchhaltung zählt nur Umsätze, und sie heben sich auf');
+        }
+
+        const gesichert = spawnSync(process.execPath, [join(SHOP, 'bin', 'sicherung.mjs')],
+          { cwd: SHOP, encoding: 'utf8', env: { ...werkzeugumgebung, SICHERUNG_ORDNER: akte } });
+        const stext = `${gesichert.stdout ?? ''}${gesichert.stderr ?? ''}`;
+        const kopien = existsSync(join(akte, belegordner(2026), '.sicherung'))
+          ? readdirSync(join(akte, belegordner(2026), '.sicherung')) : [];
+        if (gesichert.status !== 0) {
+          probleme.push(`die Sicherung läuft nicht: ${stext.trim().split('\n').slice(-3).join(' | ')}`);
+        } else if (kopien.length < 2) {
+          // Die Durchschriften liegen in einem **Unterordner**. Eine
+          // Sicherung, die nur die oberste Ebene sieht, meldet trotzdem
+          // „gesichert" — bis zum 12. September tat sie genau das.
+          probleme.push(`die Sicherung erreicht die Durchschriften nicht (${kopien.length} Kopien)`);
+        } else {
+          bestanden.push('Die Sicherung erreicht auch die Durchschriften in den Unterordnern');
+        }
       }
     }
   }
@@ -429,7 +510,7 @@ try {
   // nach dem ersten Schritt abbricht, genauso still aus wie eine bestandene —
   // dieselbe Regel wie im Prüferregister.
   console.log(`Bestellprobe — ${bestanden.length + probleme.length} Prüfungen `
-    + 'von Klick bis Rechnung\n');
+    + 'von Klick bis Sicherung\n');
   for (const b of bestanden) console.log(`  ✓ ${b}`);
   console.log('');
   if (probleme.length) {
@@ -437,9 +518,10 @@ try {
     console.log(`\n${probleme.length} Meldung(en). Der Weg vom Klick bis in die Ablage trägt nicht.`);
     process.exit(1);
   }
-  console.log('Der Weg trägt: Klick, Empfangsskript, Ablage, Posteingang, Angebot, Rechnung.');
-  console.log('Die Papierkette läuft ganz durch — was dazwischen in der Welt geschieht');
-  console.log('(Zahlung, Bestellung beim Lieferanten, Lieferung), steht in der Betriebskette.');
+  console.log('Der Weg trägt: Klick, Empfangsskript, Ablage, Posteingang, Angebot, Rechnung,');
+  console.log('Akte, Gutschrift, Buchhaltung, Sicherung. Die Papierkette läuft ganz durch —');
+  console.log('was dazwischen in der Welt geschieht (Zahlung, Bestellung beim Lieferanten,');
+  console.log('Lieferung), steht in der Betriebskette und bleibt dort stehen.');
 } finally {
   server.kill();
 }

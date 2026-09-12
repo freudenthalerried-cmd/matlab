@@ -685,14 +685,18 @@ export const BROWSERPRUEFER = [
     name: 'bestellprobe',
     werkzeug: 'bestellprobe.mjs',
     muster: /Bestellprobe — (\d+) Prüfungen/,
-    einheit: 'Prüfungen von Klick bis Rechnung',
+    einheit: 'Prüfungen von Klick bis Sicherung',
     // **Am 9. September von 5 auf 6, am 11. September von 6 auf 7 und abends
-    // auf 8.** Ein Mindestmaß, das dem Umfang nicht folgt, verliert seinen
-    // Sinn: Fiele die neue Prüfung wieder heraus, stünde hier wieder die alte
-    // Zahl — und die sähe gesund aus. Die siebte ist die Rechnung, das letzte
-    // Papier der Kette; die achte ist ihre Durchschrift, also das, was von ihr
-    // in der Akte bleibt (§ 132 BAO).
-    mindestens: 8,
+    // auf 8, am 12. September auf 12.** Ein Mindestmaß, das dem Umfang nicht
+    // folgt, verliert seinen Sinn: Fiele eine der neuen Prüfungen wieder
+    // heraus, stünde hier die alte Zahl — und die sähe gesund aus.
+    //
+    // Die siebte ist die Rechnung, die achte ihre Durchschrift. Die vier
+    // neuen sind die Schritte **danach**: die Akte zurücklesen, die Rechnung
+    // aufheben, die Periode an die Buchhaltung geben, das Ganze sichern.
+    // Jeder einzelne ist geprüft — die Reihenfolge war es nicht, und genau
+    // dort saßen die Funde der letzten Tage.
+    mindestens: 12,
   },
   // Der Zensus zählt keine Szenarien, sondern gebaute Seiten. Genau deshalb
   // steht er hier: Zeigt er eines Tages auf einen leeren Ausgabeordner,
