@@ -158,24 +158,48 @@ export function ohneTexte(quelltext) {
 }
 
 /**
- * Unter welchem Namen eine fremde Datei diese Ausfuhr ruft — oder `null`,
- * wenn sie sie gar nicht einführt.
+ * Die Einfuhren einer Datei, einmal gelesen: `woher` → `Name` → `Ortsname`.
  *
- * **Der Anlass, 9. September 2026.** Bis dahin suchte die Messung den bloßen
- * Namen im ganzen Bestand. Ein Name ist aber nur **innerhalb seines Moduls**
- * eindeutig: Acht Namen gibt es im Bestand zweimal, und wurde einer der
- * beiden irgendwo gerufen, galt der andere als gerufen. So blieb
- * `vergleiche` aus `zahlung.js` unsichtbar — die Tafel, auf der Gate 21
- * ruht —, weil `import.js` eine gleichnamige Funktion hat, die gerufen wird.
+ * **Aufgeteilt am 12. September 2026, nachts.** Hier stand `ortsname(text,
+ * …)`, und die Funktion las bei **jedem** Aufruf den ganzen Dateitext nach
+ * `import { … } from '…'` ab. Gerufen wurde sie in der inneren Schleife: je
+ * ausgeführter Funktion einmal für jede Datei.
+ *
+ * > **Rund 300 Ausfuhren × 233 Dateien — siebzigtausend Male derselbe Text.**
+ * > Gemessen: 519 der 678 Millisekunden dieses Prüfers, und damit die eine
+ * > Ursache, warum er beim Commit der Runde davor mit 1,0 s über der Grenze
+ * > aus Gate 38 stand.
+ *
+ * Die Reihenfolge bleibt die der Datei: Wird derselbe Name aus zwei Quellen
+ * eingeführt, gewinnt weiter die erste Zeile — und innerhalb einer Klammer
+ * das erste Stück. Eine Beschleunigung, die nebenbei die Auswahl ändert,
+ * wäre keine.
  */
-function ortsname(text, name, quellen) {
+function einfuhrenVon(text) {
+  const karte = new Map();
   for (const m of text.matchAll(/import\s*\{([^}]*)\}\s*from\s*['"]([^'"]+)['"]/g)) {
     const woher = m[2].split('/').pop();
-    if (!quellen.has(woher)) continue;
+    if (!karte.has(woher)) karte.set(woher, new Map());
+    const namen = karte.get(woher);
     for (const teil of m[1].split(',')) {
       const stuecke = teil.trim().split(/\s+as\s+/).map((x) => x.trim());
-      if (stuecke[0] === name) return stuecke[stuecke.length - 1];
+      if (stuecke[0] && !namen.has(stuecke[0])) namen.set(stuecke[0], stuecke[stuecke.length - 1]);
     }
+  }
+  return karte;
+}
+
+/**
+ * Unter welchem Namen eine Datei eine Ausfuhr führt — oder null.
+ *
+ * Wer `pruefeAbgleich as pruefe` einführt, ruft `pruefe(...)`. Ein Prüfer, der
+ * nur den Ausfuhrnamen sucht, hielte die Funktion für ungerufen.
+ */
+function ortsname(einfuhren, name, quellen) {
+  for (const [woher, namen] of einfuhren) {
+    if (!quellen.has(woher)) continue;
+    const lokal = namen.get(name);
+    if (lokal !== undefined) return lokal;
   }
   return null;
 }
@@ -198,6 +222,7 @@ export function ungerufeneAusfuehrungen(dateien, gebuendelt = GEBUENDELT) {
     name: d.name,
     text: d.text,
     zeilen: ohneTexte(d.text).split('\n'),
+    einfuhren: einfuhrenVon(d.text),
   }));
 
   // Wer einen Namen weiterexportiert, ist eine zweite Quelle für ihn.
@@ -211,21 +236,51 @@ export function ungerufeneAusfuehrungen(dateien, gebuendelt = GEBUENDELT) {
   }
 
   const gefunden = [];
+  /*
+   * **Zwei Zwischenspeicher — 12. September 2026, nachts.**
+   *
+   * Dieser Prüfer stand beim Commit der Runde davor mit **1,0 s** über der
+   * Grenze aus Gate 38 und flackerte von Lauf zu Lauf um sie herum
+   * (gemessen: 843, 944, 1106 ms). Der Grund steht in der Schleife darunter:
+   * Für **jede** ausgeführte Funktion wird **jede** Datei zeilenweise
+   * abgesucht, und für jedes Paar entstand dabei ein frisch übersetztes
+   * Suchmuster.
+   *
+   * > **Der Aufwand wächst mit Funktionen × Dateien × Zeilen** — und alle
+   * > drei wachsen. Eine Grenze, die ein Bestand von heute gerade noch hält,
+   * > hält der von morgen nicht.
+   *
+   * Zwei Dinge ändern das, ohne am Ergebnis etwas zu ändern:
+   *
+   * - Das Suchmuster je Name wird einmal gebaut und behalten.
+   * - Eine Datei, in der der Name **als Zeichenkette** gar nicht vorkommt,
+   *   kann ihn nicht rufen: `aufruf` verlangt ihn wörtlich. Der Vorfilter
+   *   kann deshalb nichts übersehen — er kann nur zu wenig aussieben, und
+   *   dann läuft die Zeilensuche wie zuvor.
+   */
+  const musterZu = new Map();
+  const muster = (name) => {
+    if (!musterZu.has(name)) musterZu.set(name, new RegExp(`\\b${name}\\s*[(,)]`));
+    return musterZu.get(name);
+  };
+  const ganzerText = new Map(ohne.map((d) => [d.name, d.zeilen.join('\n')]));
+
   for (const datei of ohne) {
     if (!datei.name.startsWith('src/')) continue;
     const modul = datei.name.split('/').pop();
     const quellen = new Set([modul, ...(weiter.get(modul) ?? [])]);
     // **Nur am Zeilenanfang.** Ein `export function` mitten in einer Zeile
     // steht in einem Mutationstext oder in einem Beispiel, nicht im Bestand.
-    for (const m of datei.zeilen.join('\n').matchAll(/^export function (\w+)/gm)) {
+    for (const m of ganzerText.get(datei.name).matchAll(/^export function (\w+)/gm)) {
       const name = m[1];
       const definition = new RegExp(`export function ${name}\\b`);
       let gerufen = false;
       for (const d of ohne) {
         const hier = d.name === datei.name || gebuendelt.includes(d.name)
-          ? name : ortsname(d.text, name, quellen);
+          ? name : ortsname(d.einfuhren, name, quellen);
         if (!hier) continue;
-        const aufruf = new RegExp(`\\b${hier}\\s*[(,)]`);
+        if (!d.text.includes(hier)) continue;
+        const aufruf = muster(hier);
         if (d.zeilen.some(
           (zeile) => !definition.test(zeile) && !IST_LISTE.test(zeile) && aufruf.test(zeile))) {
           gerufen = true;

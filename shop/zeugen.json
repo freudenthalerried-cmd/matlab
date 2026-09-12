@@ -87,6 +87,12 @@
   "die-sperre-nimmt-geschwister-aus": [
     "shop/test/mutationsschutz.test.js"
   ],
+  "die-umbenennung-geht-verloren": [
+    "shop/test/ungerufen.test.js"
+  ],
+  "die-zweite-einfuhr-gewinnt": [
+    "shop/test/ungerufen.test.js"
+  ],
   "dieselbe-bestellung-zweimal": [
     "shop/test/bestellungphp.test.js"
   ],

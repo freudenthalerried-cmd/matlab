@@ -198,3 +198,47 @@ test('jeder Registereintrag nennt ein Modul, das es gibt, und einen echten Grund
     assert.ok(u.warum.length >= GRUND_MINDESTLAENGE, `${u.modul}: Grund zu kurz`);
   }
 });
+
+
+test('Wird derselbe Name aus zwei Quellen eingeführt, gilt die erste Zeile', () => {
+  /*
+   * **12. September 2026, nachts.** Die Einfuhren einer Datei werden seit
+   * heute **einmal** gelesen und in einer Karte behalten, statt bei jedem der
+   * rund siebzigtausend Vergleiche neu aus dem Text geholt zu werden
+   * (519 der 678 Millisekunden dieses Prüfers). Die Reihenfolge ist dabei die
+   * Stelle, an der so eine Umstellung lautlos etwas anderes tut: Die Karte
+   * muss die Zeilenfolge der Datei behalten, sonst gewinnt je nach Laune der
+   * zweite Import.
+   */
+  const dateien = [
+    { name: 'src/a.js', text: 'export function gleich() { return 1; }' },
+    // b.js reicht denselben Namen weiter — damit ist es eine zweite Quelle
+    // für ihn, und die Datei unten führt ihn aus **beiden** ein.
+    { name: 'src/b.js', text: "export { gleich } from './a.js';" },
+    {
+      name: 'bin/w.mjs',
+      text: "import { gleich as ausA } from '../src/a.js';\n"
+        + "import { gleich as ausB } from '../src/b.js';\nausB();",
+    },
+  ];
+  const offen = ungerufeneAusfuehrungen(dateien, []).map((x) => `${x.modul}:${x.funktion}`);
+  /*
+   * Gerufen wird `ausB`, der Ortsname aus der **zweiten** Zeile. Maßgeblich
+   * ist die erste: `ausA` — und die ruft niemand. Die Auskunft ist damit
+   * „ungerufen", und sie war es auch vor der Umstellung. Wer die Zeilenfolge
+   * verliert, bekommt hier die andere Antwort.
+   */
+  assert.deepEqual(offen, ['src/a.js:gleich'], offen.join(', '));
+});
+
+test('Ein Aufruf unter dem Ausfuhrnamen zählt nicht, wenn die Datei umbenannt einführt', () => {
+  // Die Umbenennung ist der ganze Grund, warum die Einfuhren überhaupt
+  // gelesen werden: Wer `eng as weit` einführt, ruft `weit()`.
+  const dateien = [
+    { name: 'src/a.js', text: 'export function eng() { return 1; }' },
+    { name: 'bin/w.mjs', text: "import { eng as weit } from '../src/a.js';\neng();" },
+  ];
+  const offen = ungerufeneAusfuehrungen(dateien, []).map((x) => x.funktion);
+  assert.deepEqual(offen, ['eng'],
+    'ein Aufruf unter dem Ausfuhrnamen zählte, obwohl die Datei umbenannt einführt');
+});

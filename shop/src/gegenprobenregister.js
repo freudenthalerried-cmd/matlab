@@ -3654,6 +3654,41 @@ export const GEGENPROBEN = Object.freeze([
       + 'liest zu viel.',
   }),
   Object.freeze({
+    id: 'die-zweite-einfuhr-gewinnt',
+    pruefer: 'test',
+    was: 'Die Karte der Einfuhren verliert die Zeilenfolge der Datei',
+    datei: 'shop/src/ungerufen.js',
+    art: 'ersetzen',
+    suchen: '  for (const [woher, namen] of einfuhren) {\n    if (!quellen.has(woher)) continue;',
+    ersetzen: '  for (const [woher, namen] of [...einfuhren].reverse()) {\n'
+      + '    if (!quellen.has(woher)) continue;',
+    erwartet: /src\/a\.js:gleich/,
+    warum: 'Die Einfuhren einer Datei werden seit dem 12. September einmal gelesen und in einer '
+      + 'Karte behalten, statt bei jedem der rund siebzigtausend Vergleiche neu aus dem Text '
+      + 'geholt zu werden — 519 der 678 Millisekunden dieses Prüfers, und der Grund, warum er '
+      + 'über der Grenze aus Gate 38 stand. **Die Reihenfolge ist die Stelle, an der so eine '
+      + 'Umstellung lautlos etwas anderes tut:** Wird derselbe Name aus zwei Quellen '
+      + 'eingeführt, gewinnt die erste Zeile der Datei. Hält die Karte diese Folge nicht, '
+      + 'sucht der Prüfer den Aufruf unter dem falschen Ortsnamen und meldet eine gerufene '
+      + 'Funktion als ungerufen — oder umgekehrt. Eine Beschleunigung, die nebenbei die '
+      + 'Auswahl ändert, ist keine.',
+  }),
+  Object.freeze({
+    id: 'die-umbenennung-geht-verloren',
+    pruefer: 'test',
+    was: 'Eine umbenannte Einfuhr wird unter ihrem Ausfuhrnamen gesucht',
+    datei: 'shop/src/ungerufen.js',
+    art: 'ersetzen',
+    suchen: '      if (stuecke[0] && !namen.has(stuecke[0])) namen.set(stuecke[0], stuecke[stuecke.length - 1]);',
+    ersetzen: '      if (stuecke[0] && !namen.has(stuecke[0])) namen.set(stuecke[0], stuecke[0]);',
+    erwartet: /ein Aufruf unter dem Ausfuhrnamen zählte, obwohl die Datei umbenannt einführt/,
+    warum: 'Wer `eng as weit` einführt, ruft `weit()` — das Lesen der Einfuhren gibt es allein '
+      + 'deshalb. Geht die Umbenennung verloren, sucht der Prüfer den Aufruf unter `eng` und '
+      + 'findet ihn nicht: Eine gerufene Funktion stünde als ungerufen da und bekäme im '
+      + 'Register einen Grund, der für einen Zustand gilt, den es nicht gibt. Umgekehrt zählt '
+      + 'eine bloße Erwähnung des Ausfuhrnamens dann als Aufruf.',
+  }),
+  Object.freeze({
     id: 'verfallenes-angebot-bindet-weiter',
     pruefer: 'test',
     was: 'Die Akte hält ein abgelaufenes Angebot für bindend',
