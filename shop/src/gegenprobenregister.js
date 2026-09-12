@@ -1542,7 +1542,7 @@ export const GEGENPROBEN = Object.freeze([
   }),
   Object.freeze({
     id: 'einheitenliste-von-gestern',
-    pruefer: 'pruefe-gebinde',
+    pruefer: 'pruefe-einheiten',
     was: 'Eine Einheitenliste, die den Bestand von gestern festhält',
     datei: 'shop/src/gebinde.js',
     art: 'ersetzen',

@@ -14,19 +14,38 @@ import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-import { mengenschritt, einheitenbefund, STUECKEINHEITEN } from '../src/gebinde.js';
+import { mengenschritt } from '../src/gebinde.js';
 import { pruefeGebindeGegenBelege } from '../src/gebindebeleg.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const QUELLE = process.env.KATALOG_QUELLE || join(SHOP, '..', 'preise', 'poschacher-positionen.csv');
 
+const artikel = JSON.parse(readFileSync(join(SHOP, 'data', 'katalog-baustoff.json'), 'utf8')).artikel;
+
+/**
+ * **Zwei Prüfungen hatten hier eine Grundlage zu viel — 12. September 2026.**
+ *
+ * Dieses Werkzeug maß zweierlei: den gelesenen Gebindeschritt gegen die
+ * **fakturierten Mengen** (dafür braucht es die Positionsliste des
+ * Lieferanten) und die **Einheitenliste gegen den Katalog** (dafür braucht es
+ * nur `data/katalog-baustoff.json`). Seit dem Verlust von
+ * `preise/poschacher-positionen.csv` brach es ganz oben ab — und nahm die
+ * zweite Prüfung mit, die von der verlorenen Datei nichts wissen will.
+ *
+ * > **Eine fehlende Grundlage legt die Prüfung still, die auf ihr steht —
+ * > nicht die daneben.**
+ *
+ * Die Einheitenprüfung ist deshalb ein eigenes Werkzeug geworden:
+ * `npm run pruefe-einheiten`. Hier bleibt, was ohne die Positionsliste
+ * wirklich nicht zu messen ist.
+ */
 if (!existsSync(QUELLE)) {
   console.error('preise/poschacher-positionen.csv fehlt — sie liegt außerhalb des Verzeichnisses.');
-  console.error('Ohne sie ist hier nichts zu messen, und ein grüner Lauf über nichts wäre eine Lüge.');
+  console.error('Ohne sie ist hier nichts zu messen, und ein grüner Lauf über nichts wäre eine');
+  console.error('Lüge. Die Einheitenliste prüft seit dem 12.09. `npm run pruefe-einheiten`.');
   process.exit(2);
 }
 
-const artikel = JSON.parse(readFileSync(join(SHOP, 'data', 'katalog-baustoff.json'), 'utf8')).artikel;
 
 const zeilen = readFileSync(QUELLE, 'utf8').trim().split('\n');
 const kopf = zeilen[0].split(';');
@@ -48,31 +67,6 @@ console.log(`  davon mit Schritt aus dem Namen ${e.geprueft}`);
 console.log(`  ohne Schritt im Namen           ${e.ohneSchritt.length}`);
 console.log(`  Gutschriften (negative Mengen)  ${e.gutschriften}`);
 if (e.ohneArtikel) console.log(`  Positionen ohne Artikel im Katalog ${e.ohneArtikel}`);
-
-/*
- * **Die Einheitenliste gegen den Katalog — 5. September 2026.**
- *
- * `STUECKEINHEITEN` in `gebinde.js` führte `PAK`, `KAR` und `ROL`, die im
- * Katalog nicht vorkommen, und kannte `KRT`, `DOS` und `RLL` nicht, die
- * vorkommen. Folgenlos war das nur, weil `preisJeKilo` außerdem ein Kilogramm
- * im Namen braucht und keiner der sechs Artikel eines trägt.
- *
- * Dreißig Zeilen unter dieser Liste steht seit dem 30. August die Lehre aus
- * genau diesem Fehler, gezogen an `GEBINDELESER`: *„Wer eine Einheit ergänzt,
- * ergänzt sie jetzt hier, und beide Seiten wissen davon."* Die Menge daneben
- * blieb, wie sie war — **eine Lehre, die neben der Stelle gezogen wird, an der
- * sie noch einmal gebraucht wird.**
- */
-const eb = einheitenbefund(artikel);
-console.log(`  Einheiten im Katalog            ${eb.einheiten}, `
-  + `${STUECKEINHEITEN.size} davon Stückeinheiten, ${eb.mitWort} mit lesbarem Wort`);
-if (!eb.sauber) {
-  console.log('\n  ✗ Die Einheitenliste passt nicht zum Katalog:');
-  for (const m of eb.meldungen) console.log(`      ${m.text}  (${m.regel})`);
-  console.log('\nEine Einheit, die keiner führt, prüft nichts; eine, die keine Liste kennt,');
-  console.log('fällt still aus jeder Umrechnung. Beides sieht im Lauf gleich aus: grün.');
-  process.exit(1);
-}
 
 if (e.abweichungen.length) {
   console.log('\n  ✗ Der gelesene Schritt passt nicht zu dem, was fakturiert wurde:');

@@ -50,6 +50,7 @@
     "impressum": "node bin/impressum.mjs",
     "rechtstexte-auftrag": "node bin/rechtstexteauftrag.mjs",
     "pruefe-gebinde": "node bin/gebindepruefung.mjs",
+    "pruefe-einheiten": "node bin/einheitenpruefung.mjs",
     "pruefe-dubletten": "node bin/dublettenpruefung.mjs",
     "pruefe-ungerufen": "node bin/ungerufen.mjs",
     "haken": "node bin/hakeneinrichtung.mjs",

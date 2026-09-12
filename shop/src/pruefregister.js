@@ -266,6 +266,26 @@ export const PRUEFER = [
     einheit: 'Artikel gegen fakturierte Mengen',
     mindestens: 10,
   },
+  /*
+   * **Abgetrennt am 12. September 2026.** Die Einheitenprüfung stand in
+   * `gebindepruefung.mjs`, und die weigert sich seit dem Verlust von
+   * `preise/poschacher-positionen.csv` ganz oben. Gemessen wurde damit vier
+   * Tage lang nichts mehr — obwohl diese Hälfte von der verlorenen Datei
+   * nichts wissen will: Sie liest den Katalog.
+   *
+   * > **Eine fehlende Grundlage legt die Prüfung still, die auf ihr steht —
+   * > nicht die daneben.**
+   *
+   * Zwei Grundlagen, zwei Werkzeuge. Und die Gegenprobe, die diese Regel
+   * beweist, ist damit wieder messbar.
+   */
+  {
+    name: 'pruefe-einheiten',
+    werkzeug: 'einheitenpruefung.mjs',
+    muster: /Einheitenprüfung: (\d+) Artikel gegen die Einheitenliste/,
+    einheit: 'Artikel gegen die Einheitenliste',
+    mindestens: 40,
+  },
   // **Aufgenommen am 3. September, nachts.** Der Shop soll über Suche und
   // maschinelle Auskunft gefunden werden — darauf ruht die ganze
   // Kanalrechnung. Ob seine 46 Artikelseiten voneinander unterscheidbar sind,
