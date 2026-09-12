@@ -20,6 +20,9 @@
   "absage-ohne-durchschrift": [
     "shop/test/vorgangwerkzeug.test.js"
   ],
+  "akte-zeigt-den-belegtext": [
+    "shop/test/vorgangwerkzeug.test.js"
+  ],
   "anzeige-verspricht-die-absage": [
     "shop/test/erzeugnisfrische.test.js",
     "shop/test/kampagne.test.js"

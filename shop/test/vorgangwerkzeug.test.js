@@ -441,6 +441,69 @@ test('--ablegen hinterlässt die Durchschrift des Belegs, nicht nur die Zeile da
  * in der Sprache des Betriebs.
  * ------------------------------------------------------------------ */
 
+/* ------------------------------------------------------------------ *
+ * Die Akte lesen (12. September 2026)
+ *
+ * Seit heute früh gehen alle fünf Papiere eines Geschäftsfalls in die Akte —
+ * und es gab keinen Weg, sie zu lesen. § 131 Abs 1 Z 5 BAO verlangt, dass der
+ * Beleg rückführbar bleibt; rückführbar heißt, jemand muss ihn finden.
+ * ------------------------------------------------------------------ */
+
+const aktenwerkzeug = pfad('../bin/akte.mjs');
+
+function leseAkte(argumente, umgebung = {}) {
+  try {
+    return {
+      code: 0,
+      aus: execFileSync(process.execPath, [aktenwerkzeug, ...argumente],
+        { encoding: 'utf8', env: { ...process.env, ...umgebung } }),
+    };
+  } catch (e) {
+    return { code: e.status ?? 1, aus: `${e.stdout ?? ''}${e.stderr ?? ''}` };
+  }
+}
+
+test('die Akte zeigt Journalzeile und Beleg nebeneinander',
+  { skip: !vorhanden && 'preise/ fehlt' }, () => {
+    const u = baueUmgebung();
+    const akte = wegwerfordner('akte-');
+    const gelegt = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0171',
+      '--stufe', 'rechnung', '--geliefert', '2026-09-09', '--bezahlt', '2026-09-08', '--ablegen'],
+    { ...mitUid(u.ordner), VORGANG_ABLAGE: akte });
+    assert.equal(gelegt.code, 0, gelegt.aus);
+
+    const e = leseAkte(['--vorgang', '2026-0171'], { VORGANG_ABLAGE: akte });
+    assert.equal(e.code, 0, e.aus);
+    assert.match(e.aus, /Vorgang 2026-0171/);
+    assert.match(e.aus, /rechnung/);
+    assert.match(e.aus, /RE-2026-0001/);
+    /*
+     * **Der Inhalt der Durchschrift steht ausdrücklich nicht da.** Er trägt
+     * Namen und Anschrift des Kunden; ein Werkzeug, das ihn auf den Bildschirm
+     * schreibt, macht aus einer Übersicht eine zweite Kopie — und die liegt
+     * dann im Terminalpuffer und im Sitzungsprotokoll.
+     *
+     * Diese Zusicherung steht **vor** der über die Form: Wer die Übersicht
+     * umbaut, soll zuerst lesen, was sie nicht enthalten darf.
+     */
+    assert.ok(!e.aus.includes('Baustellenweg'), `die Anschrift steht in der Übersicht:\n${e.aus}`);
+    // Beides nebeneinander: die Zeile sagt, was aufgezeichnet ist, die Datei
+    // daneben ist der Beleg.
+    assert.match(e.aus, /Beleg: RE-2026-0001\.txt \(\d+ Zeichen\)/);
+    // Die Frist steht dabei — sieben Jahre ab Ende des Wirtschaftsjahres.
+    assert.match(e.aus, /aufzubewahren bis 31\.12\.2033/);
+  });
+
+test('ohne Ablage zeigt die Akte keine leere Übersicht, sondern weigert sich',
+  { skip: !vorhanden && 'preise/ fehlt' }, () => {
+    // Ein leerer Bericht sähe aus wie eine Akte ohne Einträge — das ist nicht
+    // dasselbe wie eine Akte, die es nicht gibt.
+    const leer = join(wegwerfordner('leer-'), 'gibtsnicht');
+    const e = leseAkte([], { VORGANG_ABLAGE: leer });
+    assert.equal(e.code, 2, e.aus);
+    assert.match(e.aus, /keine Ablage|Kein Journal/);
+  });
+
 test('die Lieferantenbestellung geht mit ihrer Durchschrift in die Akte',
   { skip: !vorhanden && 'preise/ fehlt' }, () => {
     /*

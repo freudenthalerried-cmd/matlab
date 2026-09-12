@@ -268,17 +268,19 @@ export const UNGERUFEN = Object.freeze([
   }),
   Object.freeze({
     modul: 'src/ablage.js',
-    funktionen: ['alsCsv', 'aufbewahrungBis', 'pruefeAblagefelder',
-      'storniere', 'vorgangsakte'],
+    funktionen: ['alsCsv', 'pruefeAblagefelder', 'storniere'],
     warum: 'Seit dem 4. September ist die Ablage in Betrieb, seit dem 11. September legt '
       + '`npm run vorgang -- --stufe rechnung --ablegen` auch die **Rechnung** ab — '
       + '`stelleRechnungAus` ist deshalb von hier weg. Der Grund, der bis dahin hier stand, '
       + 'war schon vorher überholt: Er sagte, die Rechnung entstehe in keinem Werkzeug, weil '
       + 'sie einen Zahlungsanbieter brauche. Sie braucht keinen — sie braucht das Lieferdatum '
       + 'und den Zahlungseingang, und beides stellt der Betreiber fest und gibt es ein. '
-      + '`storniere` und `vorgangsakte` setzen eine **stornierte** oder abgeschlossene Akte '
-      + 'voraus, `alsCsv` eine Buchhaltung, die etwas abholt, `aufbewahrungBis` einen Beleg, '
-      + 'dessen Frist zu berechnen wäre.',
+      + '**Seit dem 12. September sind `vorgangsakte` und `aufbewahrungBis` von hier weg:** '
+      + '`npm run akte` liest den Geschäftsfall zurück und nennt seine Frist. Der Grund, der '
+      + 'für die beiden hier stand, war eine abgeschlossene Akte — die gibt es, seit alle fünf '
+      + 'Papiere abgelegt werden. `storniere` setzt weiter eine **stornierte** Akte voraus, '
+      + '`alsCsv` eine Buchhaltung, die etwas abholt, und `pruefeAblagefelder` einen Eintrag, '
+      + 'der an `haltefest` vorbeigekommen ist — was das Werkzeug nicht zulässt.',
   }),
   Object.freeze({
     modul: 'src/aussentexte.js',

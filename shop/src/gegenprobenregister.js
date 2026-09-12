@@ -3451,6 +3451,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'und der von außen wie eine gepflegte Ablage aussieht.',
   }),
   Object.freeze({
+    id: 'akte-zeigt-den-belegtext',
+    pruefer: 'test',
+    was: 'Die Aktenübersicht schreibt den Inhalt der Durchschrift auf den Bildschirm',
+    datei: 'shop/bin/akte.mjs',
+    art: 'ersetzen',
+    suchen: "        ? `${name} (${statSync(pfad).size} Zeichen)`",
+    ersetzen: "        ? `${name}: ${readFileSync(pfad, 'utf8')}`",
+    erwartet: /die Anschrift steht in der Übersicht/,
+    warum: 'Die Akte zeigt, **was** abgelegt ist, nicht **was darin steht**. Der Inhalt einer '
+      + 'Durchschrift trägt Namen, Anschrift und Beträge des Kunden; ein Werkzeug, das ihn auf '
+      + 'den Bildschirm schreibt, macht aus einer Übersicht eine zweite Kopie — und die liegt '
+      + 'dann im Terminalpuffer, im Sitzungsprotokoll und im Zweifel in einer '
+      + 'Bildschirmaufnahme. Dieselbe Regel, aus der das Journal seit dem 11. September nur '
+      + 'den Betreff trägt und nicht den Belegtext.',
+  }),
+  Object.freeze({
     id: 'bestellung-ohne-durchschrift',
     pruefer: 'test',
     was: 'Die Lieferantenbestellung geht hinaus, ohne dass etwas von ihr bleibt',

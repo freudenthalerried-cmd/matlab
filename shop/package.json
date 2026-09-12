@@ -26,6 +26,7 @@
     "pruefe-anfrage": "node bin/anfragepruefung.mjs",
     "anfrage-lesen": "node bin/anfrage-lesen.mjs",
     "vorgang": "node bin/vorgang.mjs",
+    "akte": "node bin/akte.mjs",
     "veroeffentlichung": "node bin/veroeffentlichung.mjs",
     "pruefe-quellen": "node bin/quellenpruefung.mjs",
     "pruefe-widerrufe": "node bin/widerrufpruefung.mjs",
