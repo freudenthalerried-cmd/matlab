@@ -2051,6 +2051,24 @@ export const GEGENPROBEN = Object.freeze([
       + 'Bleibt der Prüfer grün, misst er die Berichtigung nur dort, wo sie schon angekommen ist.',
   }),
   Object.freeze({
+    id: 'die-adresse-unter-einer-fremden-endung',
+    pruefer: 'pruefe-grenzen',
+    was: 'Die Endungsliste schließt die Adresse aus, unter der gemessen wurde',
+    datei: 'shop/src/aussenlage.js',
+    art: 'ersetzen',
+    suchen: "      if (/\\.(?:at|com|org|io|net|eu)$/.test(a)) gefunden.add(a);",
+    ersetzen: "      if (/\\.(?:at|com|org|io|net)$/.test(a)) gefunden.add(a);",
+    erwartet: /ablage\.js/,
+    warum: 'Der Versuch `uid-pruefung` vom 10. September nennt als Beleg `ec.europa.eu` — VIES, '
+      + 'das EU-Informationsaustauschsystem, und damit die einzige Adresse, um die es bei der '
+      + 'UID-Abfrage überhaupt geht. Bis zum 12. September endete die Endungsliste bei `at`, '
+      + '`com`, `org`, `io` und `net`; die Messung lag vor und war für diesen Prüfer keine. '
+      + '**Er verlangte für jeden Satz über diese Sperre eine Adresse, die er selbst '
+      + 'ausschloss** — und ein Prüfer, der Unerfüllbares verlangt, wird nicht erfüllt, sondern '
+      + 'umgangen: Der Satz wird ungenau geschrieben, bis er durchkommt. Diese Mutation nimmt '
+      + 'die Endung wieder weg.',
+  }),
+  Object.freeze({
     id: 'eine-zurueckstellung-die-nie-verfaellt',
     pruefer: 'pruefe-browserproben',
     was: 'Eine zurückgestellte Probe, deren letzter Anschlag aus einer anderen Woche stammt',
@@ -3448,13 +3466,31 @@ export const GEGENPROBEN = Object.freeze([
     was: 'Der Abgleich sieht nur in eine Richtung — Datei zu Eintrag, nicht Eintrag zu Datei',
     datei: 'shop/src/ablageort.js',
     art: 'ersetzen',
-    suchen: '  for (const eintrag of eintraege) {\n    const name = belegname(eintrag);',
-    ersetzen: '  for (const eintrag of []) {\n    const name = belegname(eintrag);',
+    suchen: '  for (const eintrag of eintraege) {',
+    ersetzen: '  for (const eintrag of []) {',
     erwartet: /ein Eintrag ohne Durchschrift blieb ohne Befund/,
     warum: 'Ein Register, das nur in eine Richtung prüft, hält die Hälfte fest. Fehlt die '
       + 'Durchschrift zu einem Eintrag, steht in der Akte eine Aufzeichnung über ein Papier, '
       + 'das niemand mehr hat — genau der Zustand, den die Runde vom 11. September vorfand, '
       + 'und der von außen wie eine gepflegte Ablage aussieht.',
+  }),
+  Object.freeze({
+    id: 'durchschrift-fuer-den-vermerk',
+    pruefer: 'test',
+    was: 'Der Abgleich verlangt ein Blatt von den zwei Arten, die keines haben',
+    datei: 'shop/src/ablageort.js',
+    art: 'ersetzen',
+    suchen: '    if (beschreibung && !beschreibung.beleg) {',
+    ersetzen: '    if (false) {',
+    erwartet: /ein Vermerk hat kein Blatt/,
+    warum: 'Sechs der acht Arten sind ein Papier, das hinausgeht; `vermerk` und `uidabfrage` '
+      + 'sind es nicht — sie **sind** die Aufzeichnung (§ 131 Abs 1 Z 5 BAO: wo kein Beleg '
+      + 'entsteht, tritt der Vermerk an seine Stelle). Bis zum 12. September rechnete dieser '
+      + 'Abgleich für jeden Journaleintrag einen Dateinamen aus und meldete ihn als fehlend. '
+      + 'Der erste abgelegte Vermerk hätte `npm run pruefe-ablage` rot gemacht — mit einem '
+      + 'Befund über `VM-2026-0140.txt`, eine Datei, die kein Werkzeug dieses Hauses je '
+      + 'schreibt. **Ein Prüfer, der aus sich heraus rot wird, wird abgeschaltet**, und mit '
+      + 'ihm die neun Regeln, die er sonst hält. Diese Mutation stellt genau das wieder her.',
   }),
   Object.freeze({
     id: 'verfallenes-angebot-bindet-weiter',

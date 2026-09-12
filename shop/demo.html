@@ -8267,10 +8267,25 @@ const AUFBEWAHRUNG_JAHRE = 7;
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const ARTEN = {
-  angebot: { kuerzel: 'AN', nummernkreis: true, umsatz: false },
-  rechnung: { kuerzel: 'RE', nummernkreis: true, umsatz: true },
-  gutschrift: { kuerzel: 'GS', nummernkreis: true, umsatz: true },
+  angebot: { kuerzel: 'AN', nummernkreis: true, umsatz: false, beleg: true },
+  rechnung: { kuerzel: 'RE', nummernkreis: true, umsatz: true, beleg: true },
+  gutschrift: { kuerzel: 'GS', nummernkreis: true, umsatz: true, beleg: true },
   
 
 
@@ -8286,9 +8301,23 @@ const ARTEN = {
 
 
 
-  lieferantenbestellung: { kuerzel: 'LB', nummernkreis: false, umsatz: false },
-  uidabfrage: { kuerzel: 'UP', nummernkreis: false, umsatz: false },
-  vermerk: { kuerzel: 'VM', nummernkreis: false, umsatz: false },
+  lieferantenbestellung: { kuerzel: 'LB', nummernkreis: false, umsatz: false, beleg: true },
+  
+
+
+
+
+
+
+
+  uidabfrage: { kuerzel: 'UP', nummernkreis: false, umsatz: false, beleg: false },
+  
+
+
+
+
+
+  vermerk: { kuerzel: 'VM', nummernkreis: false, umsatz: false, beleg: false },
   
 
 
@@ -8302,7 +8331,7 @@ const ARTEN = {
 
 
 
-  auftragsbestaetigung: { kuerzel: 'AB', nummernkreis: false, umsatz: false },
+  auftragsbestaetigung: { kuerzel: 'AB', nummernkreis: false, umsatz: false, beleg: true },
   
 
 
@@ -8319,7 +8348,7 @@ const ARTEN = {
 
 
 
-  absage: { kuerzel: 'AS', nummernkreis: false, umsatz: false },
+  absage: { kuerzel: 'AS', nummernkreis: false, umsatz: false, beleg: true },
 };
 
 

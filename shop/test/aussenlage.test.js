@@ -303,5 +303,27 @@ test('Der echte Bestand trägt zu jeder Sperraussage eine gemessene Adresse', as
    * etwas geprüft zu haben. Fällt sie wieder, ist das ein Befund und kein Fortschritt.
    */
   assert.ok(b.gefunden >= 15, `nur ${b.gefunden} Sperraussagen — die Schleife prüfte fast nichts`);
-  assert.deepEqual(b.meldungen.map((m) => `${m.pfad}:${m.zeile}`), []);
+  assert.deepEqual(b.meldungen.map((m) => `${m.pfad}:${m.zeile}`), [],
+    'eine Sperraussage im Bestand nennt keine gemessene Adresse');
+});
+
+
+test('Die Adresse der UID-Abfrage liegt unter .eu und zählt trotzdem', () => {
+  /*
+   * **12. September 2026.** Die Endungsliste in `gemesseneAdressen` endete
+   * bei `at`, `com`, `org`, `io` und `net`. Der Versuch `uid-pruefung` vom
+   * 10. September nennt als Beleg `ec.europa.eu` — VIES, das
+   * EU-Informationsaustauschsystem, und damit die **einzige** Adresse, um
+   * die es bei der UID-Abfrage geht. Der Prüfer erkannte sie nicht und
+   * verlangte für jeden Satz über diese Sperre eine Adresse, die er selbst
+   * ausschloss: Die Messung lag vor und war nicht verwendbar.
+   */
+  const a = gemesseneAdressen({
+    uid: { am: '2026-09-10', ergebnis: 'gesperrt', beleg: 'ec.europa.eu (VIES): keine Verbindung' },
+  });
+  assert.ok(a.has('ec.europa.eu'), [...a].join(' '));
+
+  // Und die Liste bleibt eng: Ein Wort mit Punkt ist keine Adresse.
+  const b = gemesseneAdressen({ x: { beleg: 'z.B. kein Weg dorthin' } });
+  assert.equal(b.size, 0, [...b].join(' '));
 });

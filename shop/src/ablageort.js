@@ -292,6 +292,43 @@ export function durchschriftenbefund({ eintraege = [], dateien = [] }) {
   const erwartet = new Set();
 
   for (const eintrag of eintraege) {
+    /*
+     * **Zwei der acht Arten haben kein Blatt — 12. September 2026.**
+     *
+     * Hier stand `belegname(eintrag)` für **jeden** Eintrag, und damit
+     * verlangte diese Prüfung eine Durchschrift auch dort, wo keine
+     * entstehen kann: `ARTEN` führt seit heute `beleg`, und `vermerk` und
+     * `uidabfrage` tragen darin `false`. Sie **sind** die Aufzeichnung.
+     *
+     * > **Der erste abgelegte Vermerk hätte `npm run pruefe-ablage` rot
+     * > gemacht** — mit `durchschrift-fehlt` für `VM-2026-0140.txt`, einer
+     * > Datei, die kein Werkzeug dieses Hauses je schreibt. `--ablegen`
+     * > legt Angebot, Bestätigung, Absage, Bestellung, Rechnung und
+     * > Gutschrift ab; für die beiden anderen gibt es keinen Aufruf.
+     *
+     * Die Gegenrichtung bleibt bestehen und wird **schärfer**: Liegt neben
+     * einem solchen Eintrag doch eine Datei, ist das kein fehlender Beleg,
+     * sondern eine Abschrift von etwas, das nie ein Blatt war — und die
+     * gehört nicht in den Belegordner, sondern in den Vermerk selbst.
+     */
+    const beschreibung = ARTEN[eintrag.art];
+    if (beschreibung && !beschreibung.beleg) {
+      // Ohne Nummer und ohne Vorgang lässt sich kein Name bilden — und für
+      // eine Art ohne Beleg braucht es auch keinen. `belegname` würde hier
+      // werfen, und ein Prüfer, der an einem Vermerk abbricht, prüft nichts.
+      if (!eintrag.nummer && !eintrag.vorgang) continue;
+      const gefunden = belegname(eintrag);
+      if (nachName.has(gefunden)) {
+        meldungen.push({
+          regel: 'durchschrift-ohne-blatt',
+          text: `${gefunden} liegt im Belegordner, ${eintrag.art} hat aber kein Blatt `
+            + '— eine Abschrift von etwas, das nie eines war',
+        });
+        erwartet.add(gefunden);
+      }
+      continue;
+    }
+
     const name = belegname(eintrag);
     erwartet.add(name);
     const datei = nachName.get(name);

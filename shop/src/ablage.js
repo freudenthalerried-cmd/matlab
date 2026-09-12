@@ -47,10 +47,25 @@ export const AUFBEWAHRUNG_JAHRE = 7;
  * wäre er in der Umsatzsteuervoranmeldung gelandet, mit umgekehrtem
  * Vorzeichen zur Wahrheit.
  */
+/**
+ * **`beleg` — aufgenommen am 12. September 2026.**
+ *
+ * Sechs der acht Arten sind ein **Papier**, das hinausgeht, und liegen seit
+ * dem 11. September als Durchschrift in der Akte. Zwei sind es nicht:
+ *
+ * > **Ein Vermerk und eine UID-Abfrage haben keinen Beleg — sie *sind* die
+ * > Aufzeichnung.** Wer für sie eine Durchschrift verlangt, verlangt eine
+ * > Abschrift von etwas, das nie ein Blatt war.
+ *
+ * Gemessen war der Fall heute schon fällig: `durchschriftenbefund` rechnete
+ * für **jeden** Journaleintrag einen Dateinamen aus und meldete ihn als
+ * fehlend. Der erste abgelegte Vermerk hätte `npm run pruefe-ablage` rot
+ * gemacht — und zwar mit einem Befund, der nichts über den Bestand sagt.
+ */
 export const ARTEN = {
-  angebot: { kuerzel: 'AN', nummernkreis: true, umsatz: false },
-  rechnung: { kuerzel: 'RE', nummernkreis: true, umsatz: true },
-  gutschrift: { kuerzel: 'GS', nummernkreis: true, umsatz: true },
+  angebot: { kuerzel: 'AN', nummernkreis: true, umsatz: false, beleg: true },
+  rechnung: { kuerzel: 'RE', nummernkreis: true, umsatz: true, beleg: true },
+  gutschrift: { kuerzel: 'GS', nummernkreis: true, umsatz: true, beleg: true },
   /**
    * **Berichtigt am 12. September 2026.** Hier stand `nummernkreis: true` —
    * ein eigener Kreis für ein Papier, das seine Nummer **mitbringt**:
@@ -66,9 +81,23 @@ export const ARTEN = {
    * Nummer geworden. Fortlaufend und einmalig verlangt § 11 Abs 1 Z 5 UStG
    * ohnehin nur für die Rechnung.
    */
-  lieferantenbestellung: { kuerzel: 'LB', nummernkreis: false, umsatz: false },
-  uidabfrage: { kuerzel: 'UP', nummernkreis: false, umsatz: false },
-  vermerk: { kuerzel: 'VM', nummernkreis: false, umsatz: false },
+  lieferantenbestellung: { kuerzel: 'LB', nummernkreis: false, umsatz: false, beleg: true },
+  /**
+   * Die Abfrage der UID des Kunden beim Finanzamt. Sie geschieht **außerhalb**
+   * — FinanzOnline oder `ec.europa.eu`, das EU-System VIES —, und der
+   * Netzausgang dieser Umgebung ist dorthin gesperrt (`uid-pruefung` in
+   * `data/aussenlage.json`, gemessen am 10. September: keine Verbindung).
+   * Aufzuzeichnen ist ihr **Ergebnis**, und das ist selbst die Aufzeichnung:
+   * Es gibt kein Blatt, von dem eine Abschrift entstünde.
+   */
+  uidabfrage: { kuerzel: 'UP', nummernkreis: false, umsatz: false, beleg: false },
+  /**
+   * Der freie Vermerk zu einem Vorgang — „der Kunde hat telefonisch
+   * verschoben". Er hat keinen Empfänger und kein Papier; er **ist** die
+   * Aufzeichnung (§ 131 Abs 1 Z 5 BAO: zu jedem Geschäftsfall gehört ein
+   * Beleg, und wo keiner entsteht, tritt der Vermerk an seine Stelle).
+   */
+  vermerk: { kuerzel: 'VM', nummernkreis: false, umsatz: false, beleg: false },
   /**
    * **Aufgenommen am 4. September**, als `npm run vorgang` erstmals ablegen
    * sollte. Das Werkzeug erzeugt zwei Papiere — Angebot und
@@ -82,7 +111,7 @@ export const ARTEN = {
    * irgendeine Vorschrift sie verlangt. Rückführbar bleibt sie über
    * `vorgang` — das ist die Vorgangsakte nach § 131 Abs 1 Z 5 BAO.
    */
-  auftragsbestaetigung: { kuerzel: 'AB', nummernkreis: false, umsatz: false },
+  auftragsbestaetigung: { kuerzel: 'AB', nummernkreis: false, umsatz: false, beleg: true },
   /**
    * **Aufgenommen am 12. September**, als die Absage ablegen können sollte.
    * Sie ist der vierte Brief an einen Kunden und war der einzige, von dem
@@ -99,7 +128,7 @@ export const ARTEN = {
    * BAO) — und ein eigener Kreis brächte eine Lückenerklärung ein, die
    * niemand verlangt.
    */
-  absage: { kuerzel: 'AS', nummernkreis: false, umsatz: false },
+  absage: { kuerzel: 'AS', nummernkreis: false, umsatz: false, beleg: true },
 };
 
 /**

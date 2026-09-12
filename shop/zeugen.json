@@ -69,6 +69,9 @@
   "dieselbe-bestellung-zweimal": [
     "shop/test/bestellungphp.test.js"
   ],
+  "durchschrift-fuer-den-vermerk": [
+    "shop/test/ablageort.test.js"
+  ],
   "eigene-uid-ungeprueft": [
     "shop/test/betreiberform.test.js"
   ],

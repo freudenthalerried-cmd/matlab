@@ -393,12 +393,29 @@ export const AUSGANGSWORT = /Netzausgang/g;
  */
 export const UMFELD = 400;
 
-/** Die Adressen, zu denen ein Versuch mit Datum und Beleg vorliegt. */
+/**
+ * Die Adressen, zu denen ein Versuch mit Datum und Beleg vorliegt.
+ *
+ * **`eu` aufgenommen am 12. September 2026.** Die Liste endete bei den
+ * österreichischen und den kommerziellen Endungen — und `uid-pruefung`, der
+ * Versuch vom 10. September, nennt als Beleg `ec.europa.eu`, das
+ * EU-Informationsaustauschsystem VIES. Die eine Adresse, um die es bei der
+ * UID-Abfrage geht, war damit für diesen Prüfer keine.
+ *
+ * > **Ein Satz über die VIES-Sperre ließ sich nicht wahrheitsgemäß
+ * > schreiben**: Die Messung lag vor, der Prüfer erkannte sie nicht und
+ * > verlangte eine Adresse, die er selbst ausschloss. Gefunden hat es die
+ * > Runde vom 12. September beim Aufschreiben von `ARTEN.uidabfrage`.
+ *
+ * Die Liste ist eng gehalten, damit nicht jedes Wort mit Punkt als Adresse
+ * zählt; sie zu erweitern ist kein Nachlassen, solange nur Endungen darin
+ * stehen, unter denen wirklich gemessen wurde.
+ */
 export function gemesseneAdressen(versuche = {}) {
   const gefunden = new Set();
   for (const v of Object.values(versuche ?? {})) {
     for (const a of String(v?.beleg ?? '').match(/[a-z0-9-]+(?:\.[a-z0-9-]+){1,3}/g) ?? []) {
-      if (/\.(?:at|com|org|io|net)$/.test(a)) gefunden.add(a);
+      if (/\.(?:at|com|org|io|net|eu)$/.test(a)) gefunden.add(a);
     }
   }
   return gefunden;

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  ARTEN,
   AUFBEWAHRUNG_JAHRE,
   FELDER_DER_ABLAGE,
   neueAblage,
@@ -291,4 +292,34 @@ test('Nur Rechnung und Gutschrift sind ein Umsatz', () => {
   assert.equal(mitStorno.netto, 0);
   assert.equal(mitStorno.steuer, 0);
   assert.equal(mitStorno.belege, 2);
+});
+
+
+test('Sechs Arten sind ein Papier, zwei sind die Aufzeichnung selbst', () => {
+  /*
+   * **12. September 2026.** `--ablegen` schreibt die Durchschrift für sechs
+   * Arten: Angebot, Auftragsbestätigung, Absage, Lieferantenbestellung,
+   * Rechnung, Gutschrift. Für `vermerk` und `uidabfrage` gibt es keinen
+   * Aufruf — und es kann keinen geben, denn es gibt kein Blatt, von dem eine
+   * Abschrift entstünde (§ 131 Abs 1 Z 5 BAO: wo kein Beleg entsteht, tritt
+   * der Vermerk an seine Stelle).
+   */
+  const mitBeleg = Object.entries(ARTEN).filter(([, a]) => a.beleg).map(([n]) => n);
+  const ohneBeleg = Object.entries(ARTEN).filter(([, a]) => !a.beleg).map(([n]) => n);
+  assert.deepEqual(ohneBeleg, ['uidabfrage', 'vermerk'],
+    'eine dritte Art ohne Blatt — oder eine der beiden hat eines bekommen');
+  assert.equal(mitBeleg.length, 6);
+
+  /*
+   * Kreuzprobe zwischen zwei Feldern desselben Registers: Ein Papier, das
+   * eine fortlaufende Nummer zieht, von dem aber keine Abschrift bleibt,
+   * wäre eine vergebene Nummer ohne Beleg — also für immer eine Lücke, die
+   * niemand erklären kann. § 11 Abs 1 Z 5 UStG verlangt die Nummer und § 11
+   * Abs 2 UStG die Durchschrift, und beide meinen dasselbe Papier.
+   */
+  for (const [name, a] of Object.entries(ARTEN)) {
+    if (a.nummernkreis) {
+      assert.equal(a.beleg, true, `${name} zieht eine Nummer, ohne ein Blatt zu haben`);
+    }
+  }
 });

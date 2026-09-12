@@ -305,3 +305,46 @@ test('der Buchhaltungsauszug fällt unter dieselbe Sperre wie das Journal', () =
   assert.deepEqual(b.meldungen.map((m) => m.regel),
     ['auszug-im-verzeichnis', 'auszug-am-falschen-ort']);
 });
+
+
+test('ein Vermerk hat kein Blatt — der Abgleich verlangt keines', () => {
+  /*
+   * **12. September 2026.** `durchschriftenbefund` rechnete für **jeden**
+   * Journaleintrag einen Dateinamen aus. Zwei der acht Arten haben keinen
+   * Beleg: Der Vermerk und die UID-Abfrage **sind** die Aufzeichnung. Der
+   * erste abgelegte Vermerk hätte diesen Prüfer rot gemacht — mit einem
+   * Befund über `VM-2026-0140.txt`, eine Datei, die kein Werkzeug dieses
+   * Hauses je schreibt.
+   */
+  const b = durchschriftenbefund({
+    eintraege: [
+      { lfd: 1, art: 'vermerk', vorgang: '2026-0140', zeitpunkt: '2026-09-12' },
+      { lfd: 2, art: 'uidabfrage', vorgang: '2026-0140', zeitpunkt: '2026-09-12' },
+    ],
+    dateien: [],
+  });
+  assert.equal(b.sauber, true,
+    `ein Vermerk hat kein Blatt, verlangt wurde eines: ${JSON.stringify(b.meldungen)}`);
+});
+
+test('eine Durchschrift zu einem Vermerk ist eine Abschrift von etwas, das nie eines war', () => {
+  // Gesehen werden muss sie trotzdem: `BELEGMUSTER` führt alle Kürzel, auch
+  // die der beiden Arten ohne Blatt. Eine Datei, die keine Regel erfasst,
+  // wäre der Fund vom 11. September noch einmal.
+  assert.equal(istBeleg('ablage/belege-2026/VM-2026-0140.txt'), true);
+  const b = durchschriftenbefund({
+    eintraege: [{ lfd: 1, art: 'vermerk', vorgang: '2026-0140' }],
+    dateien: [{ name: 'VM-2026-0140.txt', zeichen: 240 }],
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['durchschrift-ohne-blatt']);
+});
+
+test('ein Vermerk ohne Nummer und ohne Vorgang bricht den Abgleich nicht ab', () => {
+  // `belegname` wirft für eine Art ohne Nummer und ohne Vorgangsnummer — und
+  // ein Prüfer, der an einer einzigen Zeile abbricht, prüft keine einzige.
+  const b = durchschriftenbefund({
+    eintraege: [{ lfd: 1, art: 'vermerk', zeitpunkt: '2026-09-12' }],
+    dateien: [],
+  });
+  assert.equal(b.sauber, true);
+});

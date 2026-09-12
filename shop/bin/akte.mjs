@@ -32,7 +32,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-import { aufbewahrungBis, vorgangsakte } from '../src/ablage.js';
+import { ARTEN, aufbewahrungBis, vorgangsakte } from '../src/ablage.js';
 import { ausJournal } from '../src/speicher.js';
 import { ABLAGEORT, belegname, belegordner, istJournal } from '../src/ablageort.js';
 import { EUR } from '../src/format.js';
@@ -86,18 +86,30 @@ for (const datei of journale) {
     gezeigt += 1;
     console.log(`  Vorgang ${vorgang} — ${akte.length} Eintrag/Einträge, Journal ${jahr}`);
     for (const e of akte) {
-      const name = belegname(e);
-      const pfad = join(ordner, name);
       /*
        * **Beides steht nebeneinander, und das ist der Zweck.** Die Zeile sagt,
        * was aufgezeichnet ist; die Datei daneben ist der Beleg. Fehlt sie,
        * steht hier eine Aufzeichnung über ein Papier, das niemand mehr hat —
        * derselbe Befund, den `npm run pruefe-ablage` meldet, nur an der
        * Stelle, an der jemand die Akte tatsächlich liest.
+       *
+       * **Nicht überall — berichtigt am 12. September 2026.** `vermerk` und
+       * `uidabfrage` tragen in `ARTEN` seit heute `beleg: false`: Sie sind
+       * die Aufzeichnung und haben kein Blatt. Hier stand für sie `FEHLT`,
+       * also ein Mangel, wo keiner ist — und wer eine Akte liest, in der ein
+       * Drittel der Zeilen grundlos `FEHLT` sagt, hört auf, es zu lesen.
        */
-      const beleg = existsSync(pfad)
-        ? `${name} (${statSync(pfad).size} Zeichen)`
-        : `${name} FEHLT`;
+      const beschreibung = ARTEN[e.art];
+      let beleg;
+      if (beschreibung && !beschreibung.beleg) {
+        beleg = `kein Blatt — ${e.art} ist selbst die Aufzeichnung`;
+      } else {
+        const name = belegname(e);
+        const pfad = join(ordner, name);
+        beleg = existsSync(pfad)
+          ? `${name} (${statSync(pfad).size} Zeichen)`
+          : `${name} FEHLT`;
+      }
       const betrag = typeof e.betragBrutto === 'number'
         ? EUR(e.betragBrutto)
         : (typeof e.betragNetto === 'number' ? `${EUR(e.betragNetto)} netto` : '—');
