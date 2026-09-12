@@ -40,12 +40,36 @@ import { richteHakenEin } from './hakeneinrichtung.mjs';
 import { PRUEFER, BROWSERPRUEFER } from '../src/pruefregister.js';
 import { LESER } from '../src/erzeugnisstand.js';
 import { einzugsgebiet, mussLaufen } from '../src/einzugsgebiet.js';
+import { alsDatei, befehlFuer, mitZeuge, zeugeAus } from '../src/zeugen.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const REPO = dirname(SHOP);
 
 const laufe = (name) => {
   const r = spawnSync('npm', ['run', '--silent', name], { cwd: SHOP, encoding: 'utf8' });
+  return { gruen: r.status === 0, ausgang: r.status, ausgabe: `${r.stdout ?? ''}${r.stderr ?? ''}` };
+};
+
+/**
+ * **Der Zeugenstand — 12. September 2026.** Wo bekannt ist, welche Testdatei
+ * eine Gegenprobe fängt, läuft nur sie statt der ganzen Reihe. Siehe
+ * `src/zeugen.js`; der Stand steht in `zeugen.json` neben `package.json`.
+ */
+const ZEUGENDATEI = join(SHOP, 'zeugen.json');
+let zeugen = existsSync(ZEUGENDATEI) ? JSON.parse(readFileSync(ZEUGENDATEI, 'utf8')) : {};
+// Ein Zeuge, den es nicht mehr gibt, ist keiner — dann läuft wieder die Reihe.
+zeugen = Object.fromEntries(Object.entries(zeugen)
+  .map(([id, dateien]) => [id, dateien.filter((d) => existsSync(join(REPO, d)))])
+  .filter(([, dateien]) => dateien.length));
+let zeugenGeaendert = false;
+let mitZeugenGelaufen = 0;
+
+/** Läuft die Testreihe — ganz oder, wenn ein Zeuge bekannt ist, nur ihn. */
+const laufeTest = (dateien) => {
+  if (!dateien?.length) return laufe('test');
+  mitZeugenGelaufen += 1;
+  const r = spawnSync(process.execPath, ['--test', ...dateien.map((d) => join(REPO, d))],
+    { cwd: SHOP, encoding: 'utf8' });
   return { gruen: r.status === 0, ausgang: r.status, ausgabe: `${r.stdout ?? ''}${r.stderr ?? ''}` };
 };
 
@@ -99,8 +123,11 @@ const ERZEUGNISLESER = new Set(
 ERZEUGNISLESER.add('test');
 
 /** Läuft den Prüfer — und baut vorher, wenn er ein Erzeugnis liest. */
-const laufeMitBau = (name) => {
+const laufeMitBau = (name, zeugendateien = null) => {
   if (ERZEUGNISLESER.has(name)) baue();
+  // Gebaut wird auch für den Zeugen: Fünfunddreißig Testdateien lesen
+  // `ausgabe/site`, und welche davon der Zeuge ist, weiß hier niemand.
+  if (name === 'test') return laufeTest(zeugendateien);
   return laufe(name);
 };
 
@@ -350,10 +377,13 @@ for (const p of proben) {
     // Über einem Bestand, der sich bewegt, wird gar nicht erst gemessen: Ein
     // Prüferlauf kostet hier bis zu fünfzig Sekunden, und sein Ergebnis wäre
     // eine Aussage über einen Zustand, den es beim Lesen nicht mehr gibt.
-    const wieder = baum.ruhig && vorlaufEntfaellt(voriges, p) ? voriges.zurueck : null;
+    const meinZeuge = p.pruefer === 'test' ? (zeugen[p.id] ?? null) : null;
+    const meinBefehl = befehlFuer(p, zeugen);
+    const wieder = baum.ruhig && vorlaufEntfaellt({ ...voriges }, { ...p, befehl: meinBefehl })
+      ? voriges.zurueck : null;
     if (wieder) gesparteLaeufe += 1;
     const vor = baum.ruhig
-      ? (wieder ?? laufeMitBau(p.pruefer))
+      ? (wieder ?? laufeMitBau(p.pruefer, meinZeuge))
       : { gruen: false, ausgang: -1, ausgabe: '' };
     /*
      * **Weigerung ist kein roter Prüfer — 8. September 2026.**
@@ -445,7 +475,7 @@ for (const p of proben) {
         markiere(pfad, vorher, `gegenprobenlauf.mjs (${p.id})`, p.was);
         writeFileSync(pfad, mutiert);
         if (p.baueVorher) baue();
-        const nach = laufeMitBau(p.pruefer);
+        const nach = laufeMitBau(p.pruefer, meinZeuge);
         if (nach.gruen) {
           schritte.push('meldete trotz Mutation grün');
           urteil = 'schlägt nicht an';
@@ -465,6 +495,20 @@ for (const p of proben) {
           urteil = 'falsche Meldung';
         } else {
           schritte.push('meldete rot an der erwarteten Stelle');
+          /*
+           * **Hier entsteht der Zeuge.** Rot ist der Prüfer, die Erwartung
+           * passt — jetzt steht in der Ausgabe, welche Testdatei ihn gefangen
+           * hat. Beim nächsten Lauf muss dafür nicht die ganze Reihe fahren.
+           */
+          if (p.pruefer === 'test') {
+            const gefunden = zeugeAus(nach.ausgabe);
+            const fort = mitZeuge(zeugen, p.id, gefunden);
+            zeugen = fort.stand;
+            zeugenGeaendert = zeugenGeaendert || fort.geaendert;
+            if (gefunden.length && !meinZeuge) {
+              schritte.push(`Zeuge: ${gefunden.join(', ')}`);
+            }
+          }
         }
       }
     }
@@ -492,12 +536,15 @@ for (const p of proben) {
      * Handgriff, an den sich niemand erinnert.
      */
     if (browsernamen.has(p.pruefer)) vermerkeBrowserprobe(p.id, Math.round((Date.now() - seit) / 1000));
-    const zurueck = laufeMitBau(p.pruefer);
+    // Derselbe Befehl wie der Lauf darüber — auch mit einem Zeugen, der eben
+    // erst gefunden wurde. Sonst wäre der gesparte Vorlauf der nächsten Probe
+    // ein anderer Lauf als der, den sie braucht.
+    const zurueck = laufeMitBau(p.pruefer, p.pruefer === 'test' ? (zeugen[p.id] ?? null) : null);
     if (zurueck.gruen) {
       // Genau dieser Lauf ist der „vorher grün"-Lauf der nächsten Probe am
       // selben Prüfer: Die Datei steht byteweise wieder da, geprüft eine
       // Zeile weiter oben.
-      voriges = { pruefer: p.pruefer, urteil: 'geschlagen', zurueck };
+      voriges = { pruefer: p.pruefer, befehl: befehlFuer(p, zeugen), urteil: 'geschlagen', zurueck };
     } else {
       schritte.push('nach dem Zurücksetzen nicht wieder grün — die Probe hat etwas hinterlassen');
       urteil = 'nicht sauber';
@@ -514,6 +561,24 @@ for (const p of proben) {
   console.log(`      ${p.datei} (${p.art}) · ${ergebnisse[ergebnisse.length - 1].sekunden} s`);
   for (const s of schritte) console.log(`      ${s}`);
   console.log('');
+}
+
+/*
+ * **Der Zeugenstand wird am Ende geschrieben, nicht zwischendurch.** Der
+ * Läufer prüft vor jeder Probe, ob sich der Bestand bewegt hat, und stellt
+ * eine Messung über einem bewegten Bestand zurück. Eine Datei, die er selbst
+ * mitten im Lauf schreibt, wäre genau diese Bewegung.
+ */
+if (zeugenGeaendert) {
+  writeFileSync(ZEUGENDATEI, alsDatei(zeugen), 'utf8');
+  console.log(`Zeugenstand nachgezogen: ${Object.keys(zeugen).length} von `
+    + `${GEGENPROBEN.filter((p) => p.pruefer === 'test').length} Testgegenproben `
+    + 'kennen ihre Testdatei.\n');
+}
+if (mitZeugenGelaufen) {
+  console.log(`${mitZeugenGelaufen} Lauf/Läufe gingen gegen den Zeugen statt gegen die ganze `
+    + 'Testreihe. Fängt den Fall inzwischen ein anderer Testfall, meldet der Zeuge grün —\n'
+    + 'das ist ein falscher Alarm und kein falsches Grün.\n');
 }
 
 const nichtMessbar = ergebnisse.filter((e) => e.urteil === 'nicht messbar');

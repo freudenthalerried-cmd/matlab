@@ -2263,7 +2263,10 @@ export const GEGENPROBEN = Object.freeze([
     was: 'Ein gesparter Vorlauf, der vom Lauf eines anderen Prüfers stammt',
     datei: 'shop/src/gegenprobenplan.js',
     art: 'ersetzen',
-    suchen: "  if (vorige.pruefer !== jetzige.pruefer) return false;",
+    // **Nachgezogen am 12. September**, als der Vergleich vom Prüfernamen auf
+    // den **Befehl** umgestellt wurde: Mit Zeugen ruft nicht jede Testprobe
+    // dieselbe Datei. Gemeldet vom Prüfer der Suchtexte, im selben Lauf.
+    suchen: '  if ((vorige.befehl ?? vorige.pruefer) !== (jetzige.befehl ?? jetzige.pruefer)) return false;',
     ersetzen: '',
     erwartet: /Vorlauf entfällt nur nach einer geschlagenen Probe/,
     warum: 'Seit dem 7. September spart der Läufer den „vorher grün"-Lauf, wenn die vorige '
@@ -3446,6 +3449,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'Durchschrift zu einem Eintrag, steht in der Akte eine Aufzeichnung über ein Papier, '
       + 'das niemand mehr hat — genau der Zustand, den die Runde vom 11. September vorfand, '
       + 'und der von außen wie eine gepflegte Ablage aussieht.',
+  }),
+  Object.freeze({
+    id: 'zeuge-still-verloren',
+    pruefer: 'test',
+    was: 'Ein Lauf ohne genannte Testdatei löscht den bekannten Zeugen',
+    datei: 'shop/src/zeugen.js',
+    art: 'ersetzen',
+    suchen: "  if (!dateien?.length) return { stand, geaendert: false };",
+    ersetzen: '  if (!dateien) return { stand, geaendert: false };',
+    erwartet: /geaendert|Zeuge|stand/,
+    warum: 'Der Zeuge sagt, welche Testdatei eine Gegenprobe fängt; beim nächsten Lauf fährt '
+      + 'nur noch sie statt der ganzen Reihe — gemessen 123 s gegen 16 s. Schlägt eine Probe '
+      + 'an, ohne dass eine Testdatei genannt wird (ein Werkzeug schreibt „not ok" auch in '
+      + 'seine eigene Ausgabe), dann ist das **kein** Grund, den letzten bekannten Zeugen zu '
+      + 'vergessen: Der Stand fiele still auf „unbekannt" zurück, die ganze Reihe liefe wieder, '
+      + 'und niemand sähe, dass etwas verloren ging. Diese Mutation lässt genau das zu.',
   }),
   Object.freeze({
     id: 'absage-ohne-durchschrift',

@@ -1,0 +1,9 @@
+{
+  "belegtext-in-der-akte": [
+    "shop/test/ablage.test.js",
+    "shop/test/vorgangwerkzeug.test.js"
+  ],
+  "zeuge-still-verloren": [
+    "shop/test/zeugen.test.js"
+  ]
+}

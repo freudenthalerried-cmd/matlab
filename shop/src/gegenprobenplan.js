@@ -62,7 +62,21 @@ export function nachPrueferGruppiert(proben) {
  */
 export function vorlaufEntfaellt(vorige, jetzige) {
   if (!vorige) return false;
-  if (vorige.pruefer !== jetzige.pruefer) return false;
+  /*
+   * **Verglichen wird der Befehl, nicht der Prüfername — 12. September 2026.**
+   *
+   * Seit es Zeugen gibt, ruft nicht jede Gegenprobe mit dem Prüfer `test`
+   * denselben Befehl: Die eine fährt `node --test test/ablage.test.js`, die
+   * nächste eine andere Datei. Der gesparte Vorlauf verließ sich auf den
+   * **Namen** des Prüfers und hätte den grünen Lauf der einen Datei als
+   * „vorher grün" der anderen ausgegeben.
+   *
+   * > **Ein gesparter Lauf ist nur dann derselbe Lauf, wenn es derselbe
+   * > Befehl ist.**
+   *
+   * Ohne `befehl` bleibt es beim Prüfernamen — dieselbe Aussage wie vorher.
+   */
+  if ((vorige.befehl ?? vorige.pruefer) !== (jetzige.befehl ?? jetzige.pruefer)) return false;
   return vorige.urteil === 'geschlagen';
 }
 
