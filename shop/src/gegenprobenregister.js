@@ -3457,6 +3457,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'und der von außen wie eine gepflegte Ablage aussieht.',
   }),
   Object.freeze({
+    id: 'einkauf-als-umsatz-gezaehlt',
+    pruefer: 'test',
+    was: 'Der Auszug für die Buchhaltung zählt jedes Papier mit einem Betrag',
+    datei: 'shop/src/ablage.js',
+    art: 'ersetzen',
+    suchen: '  const gezaehlt = eintraege.filter((e) => ARTEN[e.art]?.umsatz);',
+    ersetzen: '  const gezaehlt = eintraege.filter((e) => ARTEN[e.art]);',
+    erwartet: /ein anderes Papier ist als Umsatz gezählt worden/,
+    warum: 'Die Akte sammelt sechs Papierarten, und nur zwei davon sind ein Umsatz: die '
+      + 'Rechnung und die Gutschrift, die sie aufhebt. Am gefährlichsten ist die '
+      + 'Lieferantenbestellung — sie trägt seit dem 12. September einen Nettobetrag, und das '
+      + 'ist der **Einkaufswert**. Ohne diese Unterscheidung stünde er in der '
+      + 'Umsatzsteuervoranmeldung, mit umgekehrtem Vorzeichen zur Wahrheit; das Angebot käme '
+      + 'dazu, obwohl noch gar nichts geschehen ist.',
+  }),
+  Object.freeze({
     id: 'gutschrift-aendert-die-rechnung',
     pruefer: 'test',
     was: 'Das Storno schreibt die Rechnung um, statt sie aufzuheben',

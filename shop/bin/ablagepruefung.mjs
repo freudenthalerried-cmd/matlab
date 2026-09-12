@@ -22,7 +22,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, relative } from 'node:path';
 import {
-  ABLAGEORT, belegordner, durchschriftenbefund, istBeleg, istJournal, ortsbefund,
+  ABLAGEORT, belegordner, durchschriftenbefund, istBeleg, istBuchhaltung, istJournal, ortsbefund,
 } from '../src/ablageort.js';
 import { ausJournal } from '../src/speicher.js';
 
@@ -42,6 +42,9 @@ const getrackt = execFileSync('git', ['ls-files'], { cwd: REPO, encoding: 'utf8'
  */
 const journaldateien = [];
 const belegdateien = [];
+// **Seit dem 12. September auch der Auszug für die Buchhaltung.** Er trägt die
+// Beträge und Betreffs einer ganzen Periode in einer einzigen Datei.
+const auszuege = [];
 const gehe = (ordner) => {
   for (const name of readdirSync(ordner)) {
     if (name === 'node_modules' || name === '.git') continue;
@@ -49,6 +52,7 @@ const gehe = (ordner) => {
     if (statSync(voll).isDirectory()) gehe(voll);
     else if (istJournal(name)) journaldateien.push(relative(REPO, voll));
     else if (istBeleg(name)) belegdateien.push(relative(REPO, voll));
+    else if (istBuchhaltung(name)) auszuege.push(relative(REPO, voll));
   }
 };
 gehe(REPO);
@@ -86,7 +90,7 @@ const gitignoreDateien = [];
 }
 const gitignore = gitignoreDateien.map((d) => readFileSync(d, 'utf8')).join('\n');
 
-const ort = ortsbefund({ gitignore, getrackt, journaldateien, belegdateien });
+const ort = ortsbefund({ gitignore, getrackt, journaldateien, belegdateien, auszuege });
 
 /**
  * **Das Journal gegen die Durchschriften — in beide Richtungen.**
@@ -124,7 +128,8 @@ const meldungen = [...ort.meldungen, ...durchschriften.flatMap((d) => d.meldunge
 const geprueft = ort.geprueft;
 
 console.log(`Ablageort — ${geprueft} getrackte Dateien angesehen, `
-  + `${journaldateien.length} Journaldateien und ${belegdateien.length} Durchschriften gefunden\n`);
+  + `${journaldateien.length} Journaldateien, ${belegdateien.length} Durchschriften und `
+  + `${auszuege.length} Buchhaltungsauszüge gefunden\n`);
 for (const d of durchschriften) {
   console.log(`  ${d.journalpfad}: ${d.geprueft} Eintrag/Datei abgeglichen`);
 }

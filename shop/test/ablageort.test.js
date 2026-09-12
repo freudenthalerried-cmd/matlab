@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import {
-  ABLAGEORT, belegname, belegordner, belegpfad, durchschriftenbefund, istBeleg, istJournal,
-  journalpfad, NOETIGE_SPERREN, ortsbefund,
+  ABLAGEORT, belegname, belegordner, belegpfad, durchschriftenbefund, istBeleg, istBuchhaltung,
+  istJournal, journalpfad, NOETIGE_SPERREN, ortsbefund,
 } from '../src/ablageort.js';
 
 test('das Journal eines Jahres hat einen Pfad, und nur ein Jahr bekommt einen', () => {
@@ -282,4 +282,26 @@ test('ohne gelesenen Text bleibt es beim Namensabgleich', () => {
     dateien: [{ name: 'RE-2026-0001.txt', zeichen: 2400 }],
   });
   assert.equal(b.sauber, true);
+});
+
+
+test('der Buchhaltungsauszug fällt unter dieselbe Sperre wie das Journal', () => {
+  /*
+   * **12. September 2026.** Er trägt Vorgangsnummern, Beträge und Betreffs
+   * einer ganzen Periode in einer einzigen Datei. Eine dritte Dateiart, die
+   * dieselben Daten trägt und von keiner Regel erfasst ist, wäre der Fund vom
+   * 11. September noch einmal.
+   */
+  assert.equal(istBuchhaltung('ablage/buchhaltung/buchhaltung-2026-09.csv'), true);
+  assert.equal(istBuchhaltung('buchhaltung-2026.csv'), true);
+  assert.equal(istBuchhaltung('ablage/journal-2026.jsonl'), false);
+  assert.equal(istBuchhaltung('kampagne.csv'), false);
+
+  const b = ortsbefund({
+    gitignore: NOETIGE_SPERREN.join('\n'),
+    getrackt: ['ablage/buchhaltung/buchhaltung-2026-09.csv'],
+    auszuege: ['shop/buchhaltung-2026.csv'],
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel),
+    ['auszug-im-verzeichnis', 'auszug-am-falschen-ort']);
 });

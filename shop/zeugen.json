@@ -79,6 +79,9 @@
   "eine-aufzaehlung-die-ablaeuft": [
     "shop/test/rollout.test.js"
   ],
+  "einkauf-als-umsatz-gezaehlt": [
+    "shop/test/ablage.test.js"
+  ],
   "empfang-nimmt-jeden-typ": [
     "shop/test/bestellungphp.test.js"
   ],

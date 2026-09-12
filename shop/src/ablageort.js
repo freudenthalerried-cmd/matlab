@@ -79,7 +79,9 @@ export function istJournal(pfad) {
  * @param {string[]} lage.getrackt       die Pfade, die git kennt
  * @param {string[]} lage.journaldateien alle gefundenen Journaldateien, relativ zur Wurzel
  */
-export function ortsbefund({ gitignore = '', getrackt = [], journaldateien = [], belegdateien = [] }) {
+export function ortsbefund({
+  gitignore = '', getrackt = [], journaldateien = [], belegdateien = [], auszuege = [],
+}) {
   const zeilen = gitignore.split('\n').map((z) => z.trim()).filter((z) => z && !z.startsWith('#'));
   const meldungen = [];
 
@@ -125,6 +127,13 @@ export function ortsbefund({ gitignore = '', getrackt = [], journaldateien = [],
     // Seit dem 11. September liegt neben dem Journal der Beleg selbst, und er
     // trägt dieselben Daten in Klartext: Name, Anschrift, Betrag. Die Sperre
     // kannte bis dahin nur die eine der beiden Dateiarten.
+    if (istBuchhaltung(pfad)) {
+      meldungen.push({
+        regel: 'auszug-im-verzeichnis',
+        text: `${pfad} ist getrackt — ein Buchhaltungsauszug trägt die Beträge und Betreffs `
+          + 'einer ganzen Periode',
+      });
+    }
     if (istBeleg(pfad)) {
       meldungen.push({
         regel: 'beleg-im-verzeichnis',
@@ -137,6 +146,15 @@ export function ortsbefund({ gitignore = '', getrackt = [], journaldateien = [],
     if (!pfad.startsWith(`${ABLAGEORT}/`)) {
       meldungen.push({
         regel: 'journal-am-falschen-ort',
+        text: `${pfad} liegt außerhalb von ${ABLAGEORT}/ und ist von keiner Sperre gedeckt`,
+      });
+    }
+  }
+
+  for (const pfad of auszuege) {
+    if (!pfad.startsWith(`${ABLAGEORT}/`)) {
+      meldungen.push({
+        regel: 'auszug-am-falschen-ort',
         text: `${pfad} liegt außerhalb von ${ABLAGEORT}/ und ist von keiner Sperre gedeckt`,
       });
     }
@@ -202,6 +220,21 @@ export function belegordner(jahr) {
 export const BELEGMUSTER = new RegExp(
   `^(?:${Object.values(ARTEN).map((a) => a.kuerzel).join('|')})-\\d{4}-\\d{4}(?:-\\d{2})?\\.txt$`,
 );
+
+/**
+ * **Der Auszug für die Buchhaltung — 12. September 2026.**
+ *
+ * Er trägt Vorgangsnummern, Beträge und Betreffs einer ganzen Periode und
+ * liegt neben dem Journal. Die Sperre kannte bis heute Journale und
+ * Durchschriften; eine dritte Dateiart, die dieselben Daten trägt und von
+ * keiner Regel erfasst ist, wäre genau der Fund vom 11. September noch einmal.
+ */
+export const BUCHHALTUNGSMUSTER = /^buchhaltung-\d{4}(?:-\d{2})?\.csv$/;
+
+/** Ob ein Pfad ein Buchhaltungsauszug ist — gleich, wo er liegt. */
+export function istBuchhaltung(pfad) {
+  return BUCHHALTUNGSMUSTER.test(String(pfad).split('/').at(-1));
+}
 
 /** Ob ein Pfad eine Durchschrift ist — gleich, wo er liegt. */
 export function istBeleg(pfad) {

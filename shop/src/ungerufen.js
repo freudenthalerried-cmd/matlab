@@ -268,7 +268,7 @@ export const UNGERUFEN = Object.freeze([
   }),
   Object.freeze({
     modul: 'src/ablage.js',
-    funktionen: ['alsCsv', 'pruefeAblagefelder'],
+    funktionen: ['pruefeAblagefelder'],
     warum: 'Seit dem 4. September ist die Ablage in Betrieb, seit dem 11. September legt '
       + '`npm run vorgang -- --stufe rechnung --ablegen` auch die **Rechnung** ab — '
       + '`stelleRechnungAus` ist deshalb von hier weg. Der Grund, der bis dahin hier stand, '
@@ -281,9 +281,12 @@ export const UNGERUFEN = Object.freeze([
       + 'Papiere abgelegt werden. `storniere` setzt weiter eine **stornierte** Akte voraus, '
       + '**Und seit dem Nachmittag ist `storniere` weg:** `npm run vorgang -- --stufe '
       + 'gutschrift` hebt eine falsche Rechnung auf, und dazu gibt es seit heute das Papier. '
-      + 'Was bleibt: `alsCsv` wartet auf eine Buchhaltung, die etwas abholt, und '
-      + '`pruefeAblagefelder` auf einen Eintrag, der an `haltefest` vorbeigekommen ist — was '
-      + 'das Werkzeug nicht zulässt.',
+      + '**Und `alsCsv` seit dem Abend:** `npm run buchhaltung` schreibt den Auszug einer '
+      + 'Periode. Der Grund, der hier stand, lautete „eine Buchhaltung, die etwas abholt" — '
+      + 'sie kommt mit der ersten Rechnung, und dann sofort: Die Voranmeldung ist am 15. des '
+      + 'zweitfolgenden Monats fällig. Was bleibt, ist `pruefeAblagefelder`: Sie wartet auf '
+      + 'einen Eintrag, der an `haltefest` vorbeigekommen ist — was das Werkzeug nicht '
+      + 'zulässt.',
   }),
   Object.freeze({
     modul: 'src/aussentexte.js',

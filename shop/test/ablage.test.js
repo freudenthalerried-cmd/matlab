@@ -10,6 +10,7 @@ import {
   storniere,
   istStorniert,
   vorgangsakte,
+  umsatzsumme,
   pruefeNummernkreis,
   pruefeAblagefelder,
   aufbewahrungBis,
@@ -261,4 +262,33 @@ test('Das Journal geht als CSV hinaus, Semikolon und Umbruch entschärft', () =>
   assert.equal(zeilen.length, 2, 'der Umbruch im Text darf keine zweite Zeile erzeugen');
   assert.match(zeilen[0], /^lfd;art;nummer/);
   assert.match(zeilen[1], /mit,Semikolon und Umbruch/);
+});
+
+
+test('Nur Rechnung und Gutschrift sind ein Umsatz', () => {
+  /*
+   * **12. September 2026.** Die Akte sammelt sechs Papierarten, und nur zwei
+   * davon sind ein Umsatz. Am gefährlichsten ist die Lieferantenbestellung:
+   * Sie trägt seit heute früh einen Nettobetrag — den **Einkaufswert**. Ohne
+   * dieses Feld stünde er in der Umsatzsteuervoranmeldung, mit umgekehrtem
+   * Vorzeichen zur Wahrheit.
+   */
+  const eintraege = [
+    { art: 'rechnung', betragNetto: 759.22, betragBrutto: 911.06 },
+    { art: 'lieferantenbestellung', betragNetto: 600, betragBrutto: null },
+    { art: 'angebot', betragNetto: 759.22, betragBrutto: 911.06 },
+  ];
+  assert.equal(eintraege.length, 3);
+  const s = umsatzsumme(eintraege);
+  assert.equal(s.belege, 1, 'ein anderes Papier ist als Umsatz gezählt worden');
+  assert.equal(s.ohneUmsatz, 2);
+  assert.equal(s.netto, 759.22);
+  assert.equal(s.steuer, 151.84);
+
+  // Die Gutschrift zieht ab — sie hebt die Rechnung auf.
+  const mitStorno = umsatzsumme([...eintraege,
+    { art: 'gutschrift', betragNetto: -759.22, betragBrutto: -911.06 }]);
+  assert.equal(mitStorno.netto, 0);
+  assert.equal(mitStorno.steuer, 0);
+  assert.equal(mitStorno.belege, 2);
 });

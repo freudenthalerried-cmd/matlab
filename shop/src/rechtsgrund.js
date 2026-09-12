@@ -106,6 +106,16 @@ export const RECHTSGRUENDE = Object.freeze([
     wirkung: 'pflichtgrund',
     belegt: false,
   }),
+  // **Nachgetragen am 12. September 2026**, mit dem Auszug für die
+  // Buchhaltung: Die Frist ist der Grund, warum das Werkzeug **vor** der
+  // ersten Rechnung dasteht und nicht danach.
+  Object.freeze({
+    zitat: '§ 21 Abs 1 UStG',
+    behauptung: 'Die Umsatzsteuervoranmeldung ist am 15. des zweitfolgenden Kalendermonats '
+      + 'fällig.',
+    wirkung: 'pflichtgrund',
+    belegt: false,
+  }),
   Object.freeze({
     zitat: '§ 11 Abs 6 UStG',
     behauptung: 'Bis 400 € brutto genügt die Kleinbetragsrechnung mit weniger Angaben.',

@@ -8206,10 +8206,27 @@ function ergaenzeFreigabe(freigabe, auswertung) {
 
 const AUFBEWAHRUNG_JAHRE = 7;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const ARTEN = {
-  angebot: { kuerzel: 'AN', nummernkreis: true },
-  rechnung: { kuerzel: 'RE', nummernkreis: true },
-  gutschrift: { kuerzel: 'GS', nummernkreis: true },
+  angebot: { kuerzel: 'AN', nummernkreis: true, umsatz: false },
+  rechnung: { kuerzel: 'RE', nummernkreis: true, umsatz: true },
+  gutschrift: { kuerzel: 'GS', nummernkreis: true, umsatz: true },
   
 
 
@@ -8225,9 +8242,9 @@ const ARTEN = {
 
 
 
-  lieferantenbestellung: { kuerzel: 'LB', nummernkreis: false },
-  uidabfrage: { kuerzel: 'UP', nummernkreis: false },
-  vermerk: { kuerzel: 'VM', nummernkreis: false },
+  lieferantenbestellung: { kuerzel: 'LB', nummernkreis: false, umsatz: false },
+  uidabfrage: { kuerzel: 'UP', nummernkreis: false, umsatz: false },
+  vermerk: { kuerzel: 'VM', nummernkreis: false, umsatz: false },
   
 
 
@@ -8241,7 +8258,7 @@ const ARTEN = {
 
 
 
-  auftragsbestaetigung: { kuerzel: 'AB', nummernkreis: false },
+  auftragsbestaetigung: { kuerzel: 'AB', nummernkreis: false, umsatz: false },
   
 
 
@@ -8258,7 +8275,7 @@ const ARTEN = {
 
 
 
-  absage: { kuerzel: 'AS', nummernkreis: false },
+  absage: { kuerzel: 'AS', nummernkreis: false, umsatz: false },
 };
 
 
@@ -8576,6 +8593,34 @@ function pruefeAblagefelder(ablage) {
   return { dicht: funde.length === 0, funde, geprueft: ablage.eintraege.length };
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function umsatzsumme(eintraege = []) {
+  const gezaehlt = eintraege.filter((e) => ARTEN[e.art]?.umsatz);
+  const summe = (feld) => gezaehlt.reduce((n, e) => n + (e[feld] ?? 0), 0);
+  const netto = Math.round(summe('betragNetto') * 100) / 100;
+  const brutto = Math.round(summe('betragBrutto') * 100) / 100;
+  return {
+    belege: gezaehlt.length,
+    ohneUmsatz: eintraege.length - gezaehlt.length,
+    netto,
+    brutto,
+    steuer: Math.round((brutto - netto) * 100) / 100,
+  };
+}
 
 function alsCsv(ablage) {
   const kopf = 'lfd;art;nummer;zeitpunkt;vorgang;netto;brutto;bezug;text';
