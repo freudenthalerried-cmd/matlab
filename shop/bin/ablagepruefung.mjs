@@ -22,7 +22,8 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, relative } from 'node:path';
 import {
-  ABLAGEORT, belegordner, durchschriftenbefund, istBeleg, istBuchhaltung, istJournal, ortsbefund,
+  ABLAGEORT, auszugsbefund, auszugszeitraum, belegordner, durchschriftenbefund, istBeleg,
+  istBuchhaltung, istJournal, ortsbefund,
 } from '../src/ablageort.js';
 import { ausJournal } from '../src/speicher.js';
 
@@ -105,6 +106,7 @@ const ort = ortsbefund({ gitignore, getrackt, journaldateien, belegdateien, ausz
  * Kundendaten in sein Protokoll schreibt, verlegt sie an einen dritten Ort.
  */
 const durchschriften = [];
+const eintraegeJeJahr = new Map();
 for (const journalpfad of journaldateien) {
   const jahr = Number(journalpfad.match(/journal-(\d{4})\.jsonl$/)?.[1]);
   const ordner = join(REPO, dirname(journalpfad), belegordner(jahr));
@@ -120,11 +122,37 @@ for (const journalpfad of journaldateien) {
     })
     : [];
   const ablage = ausJournal(readFileSync(join(REPO, journalpfad), 'utf8'));
+  eintraegeJeJahr.set(jahr, [...(eintraegeJeJahr.get(jahr) ?? []), ...ablage.eintraege]);
   const befund = durchschriftenbefund({ eintraege: ablage.eintraege, dateien });
   durchschriften.push({ journalpfad, ...befund });
 }
 
-const meldungen = [...ort.meldungen, ...durchschriften.flatMap((d) => d.meldungen)];
+/**
+ * **Der Auszug gegen das Journal — 12. September 2026, abends.**
+ *
+ * Die dritte Dateiart der Ablage war bis hierher nur auf ihren **Ort**
+ * geprüft. Sie ist die einzige, die das Haus verlässt: Aus ihr entsteht die
+ * Umsatzsteuervoranmeldung (§ 21 Abs 1 UStG). Und sie altert lautlos, weil
+ * das Journal nur wächst.
+ *
+ * Verglichen werden laufende Nummern, und die laufen je Geschäftsjahr neu —
+ * deshalb bekommt jeder Auszug die Einträge **seines** Jahres und nicht alle.
+ */
+const auszugslage = auszuege.map((pfad) => ({
+  name: pfad,
+  text: readFileSync(join(REPO, pfad), 'utf8'),
+  jahr: Number(auszugszeitraum(pfad)?.slice(0, 4)),
+}));
+const auszugsmeldungen = auszugslage.flatMap((a) => auszugsbefund({
+  auszuege: [a],
+  eintraege: eintraegeJeJahr.get(a.jahr) ?? [],
+}).meldungen);
+
+const meldungen = [
+  ...ort.meldungen,
+  ...durchschriften.flatMap((d) => d.meldungen),
+  ...auszugsmeldungen,
+];
 const geprueft = ort.geprueft;
 
 console.log(`Ablageort — ${geprueft} getrackte Dateien angesehen, `
@@ -133,13 +161,17 @@ console.log(`Ablageort — ${geprueft} getrackte Dateien angesehen, `
 for (const d of durchschriften) {
   console.log(`  ${d.journalpfad}: ${d.geprueft} Eintrag/Datei abgeglichen`);
 }
-if (durchschriften.length) console.log('');
+for (const a of auszugslage) {
+  console.log(`  ${a.name}: gegen das Journal ${a.jahr} gehalten`);
+}
+if (durchschriften.length || auszugslage.length) console.log('');
 console.log(`  ${gitignoreDateien.length} .gitignore gelesen: `
   + `${gitignoreDateien.map((d) => relative(REPO, d)).join(', ')}\n`);
 
 if (meldungen.length === 0) {
   console.log(`Keine Meldung. ${ABLAGEORT}/ ist gesperrt, kein Journal und keine`);
-  console.log('Durchschrift liegt woanders, und zu jeder Journalzeile gibt es den Beleg.');
+  console.log('Durchschrift liegt woanders, zu jeder Journalzeile gibt es den Beleg, und');
+  console.log('jeder Buchhaltungsauszug deckt sich mit dem Journal seiner Periode.');
   console.log('Eine Sperre, die erst nach dem ersten Datensatz kommt, kommt zu spät.');
   process.exit(0);
 }

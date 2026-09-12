@@ -3493,6 +3493,44 @@ export const GEGENPROBEN = Object.freeze([
       + 'ihm die neun Regeln, die er sonst hält. Diese Mutation stellt genau das wieder her.',
   }),
   Object.freeze({
+    id: 'der-auszug-ohne-abgleich',
+    pruefer: 'test',
+    was: 'Der Auszug wird nicht dagegen gehalten, was das Journal inzwischen führt',
+    datei: 'shop/src/ablageort.js',
+    art: 'ersetzen',
+    suchen: '    const fehlen = [...imJournal].filter((lfd) => !imAuszug.has(lfd));',
+    ersetzen: '    const fehlen = [];',
+    erwartet: /ein Auszug, der eine Rechnung nicht kennt, blieb ohne Befund/,
+    warum: 'Der Buchhaltungsauszug ist die einzige Datei der Akte, die das Haus verlässt: Aus '
+      + 'ihm entsteht die Umsatzsteuervoranmeldung, fällig am 15. des zweitfolgenden Monats '
+      + '(§ 21 Abs 1 UStG). Bis zum 12. September wurde er nur auf seinen **Ort** geprüft, '
+      + 'während Journal und Durchschrift seit dem 11. in beide Richtungen gegeneinander '
+      + 'stehen. Er altert lautlos, weil das Journal nur wächst (§ 131 BAO) — gemessen an '
+      + 'einem Probejournal: Auszug mit zwei Zeilen geschrieben, dritte Rechnung eingetragen, '
+      + '`npm run pruefe-ablage` blieb grün. **Die Richtung ist die schlechtere von zwei: Ein '
+      + 'veralteter Auszug meldet zu wenig Umsatz**, und das ist keine Ungenauigkeit, sondern '
+      + 'eine zu niedrige Voranmeldung.',
+  }),
+  Object.freeze({
+    id: 'die-csv-nennt-alles-umsatz',
+    pruefer: 'test',
+    was: 'Jede Zeile der CSV trägt `ja`, auch die Lieferantenbestellung',
+    datei: 'shop/src/ablage.js',
+    art: 'ersetzen',
+    suchen: "      ARTEN[e.art]?.umsatz ? 'ja' : 'nein',",
+    ersetzen: "      'ja',",
+    erwartet: /der Einkaufswert der Lieferantenbestellung steht als Umsatz in der Datei/,
+    warum: 'Die Unterscheidung zwischen Umsatz und Ausgabe entstand am Vormittag des '
+      + '12. September und stand bis zum Abend nur auf dem Bildschirm. In der Datei trugen '
+      + 'der Umsatz der Rechnung und der Einkaufswert der Lieferantenbestellung dieselbe '
+      + 'Spalte `netto`. **Wer sie zusammenzählt — und genau dafür öffnet ein Steuerberater '
+      + 'eine CSV — bekommt am Probejournal 1.359,22 € statt 759,22 €**, also 79 % zu viel, '
+      + 'und die Umsatzsteuer daraus wandert in die Voranmeldung. Die Vorsteuer aus dem '
+      + 'Einkauf steht auf der Rechnung des Lieferanten und nicht auf dieser Bestellung. '
+      + 'Dieselbe Familie wie der Zahlenpunkt am 2. September: Die Datei war für sich richtig '
+      + 'und wurde beim Lesen falsch.',
+  }),
+  Object.freeze({
     id: 'verfallenes-angebot-bindet-weiter',
     pruefer: 'test',
     was: 'Die Akte hält ein abgelaufenes Angebot für bindend',

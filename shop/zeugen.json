@@ -63,6 +63,12 @@
     "shop/test/beleg.test.js",
     "shop/test/vorgangwerkzeug.test.js"
   ],
+  "der-auszug-ohne-abgleich": [
+    "shop/test/ablageort.test.js"
+  ],
+  "die-csv-nennt-alles-umsatz": [
+    "shop/test/ablage.test.js"
+  ],
   "die-sperre-nimmt-geschwister-aus": [
     "shop/test/mutationsschutz.test.js"
   ],

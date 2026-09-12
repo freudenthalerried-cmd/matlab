@@ -475,12 +475,38 @@ export function umsatzsumme(eintraege = []) {
   };
 }
 
+/**
+ * Der Auszug als CSV — die Datei, die zum Steuerberater geht.
+ *
+ * **Die Spalte `umsatz` kam am 12. September 2026, abends.** Seit dem
+ * Vormittag weiß `ARTEN`, welche Papierart ein Umsatz ist, und
+ * `npm run buchhaltung` rechnet damit die Bemessungsgrundlage. Auf dem
+ * Bildschirm. **In die Datei ging die Unterscheidung nicht mit.**
+ *
+ * Gemessen an einem Probejournal aus zwei Zeilen:
+ *
+ * ```
+ * 1;rechnung;RE-2026-0001;…;759,22;911,06;;Rechnung an Muster GmbH
+ * 2;lieferantenbestellung;2026-0101-01;…;600,00;;;Bestellung Poschacher
+ * ```
+ *
+ * > **Beide Beträge stehen in derselben Spalte `netto`.** Wer sie
+ * > zusammenzählt — und genau dafür öffnet ein Steuerberater eine CSV —
+ * > bekommt 1.359,22 € statt 759,22 €. Das sind 79 % zu viel, und die
+ * > Umsatzsteuer daraus wandert in die Voranmeldung.
+ *
+ * Der Einkaufswert der Lieferantenbestellung ist die **Ausgabe** dieses
+ * Betriebs; die Vorsteuer daraus steht auf der Rechnung des Lieferanten und
+ * nicht auf dieser Bestellung. Dieselbe Familie wie der Zahlenpunkt am
+ * 2. September: Die Datei war für sich richtig und wurde beim Lesen falsch.
+ */
 export function alsCsv(ablage) {
-  const kopf = 'lfd;art;nummer;zeitpunkt;vorgang;netto;brutto;bezug;text';
+  const kopf = 'lfd;art;umsatz;nummer;zeitpunkt;vorgang;netto;brutto;bezug;text';
   const zeilen = ablage.eintraege.map((e) =>
     [
       e.lfd,
       e.art,
+      ARTEN[e.art]?.umsatz ? 'ja' : 'nein',
       e.nummer ?? '',
       e.zeitpunkt,
       e.vorgang ?? '',

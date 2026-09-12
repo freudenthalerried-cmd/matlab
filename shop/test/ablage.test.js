@@ -261,7 +261,7 @@ test('Das Journal geht als CSV hinaus, Semikolon und Umbruch entschärft', () =>
 
   const zeilen = csv.split('\n');
   assert.equal(zeilen.length, 2, 'der Umbruch im Text darf keine zweite Zeile erzeugen');
-  assert.match(zeilen[0], /^lfd;art;nummer/);
+  assert.match(zeilen[0], /^lfd;art;umsatz;nummer/);
   assert.match(zeilen[1], /mit,Semikolon und Umbruch/);
 });
 
@@ -322,4 +322,35 @@ test('Sechs Arten sind ein Papier, zwei sind die Aufzeichnung selbst', () => {
       assert.equal(a.beleg, true, `${name} zieht eine Nummer, ohne ein Blatt zu haben`);
     }
   }
+});
+
+
+test('Die CSV sagt je Zeile, ob sie ein Umsatz ist', () => {
+  /*
+   * **12. September 2026, abends.** Die Unterscheidung zwischen Umsatz und
+   * Ausgabe entstand am Vormittag und stand bis zum Abend nur auf dem
+   * Bildschirm. In der Datei trugen der Umsatz der Rechnung und der
+   * Einkaufswert der Lieferantenbestellung dieselbe Spalte `netto`:
+   *
+   *   1;rechnung;…;759,22;911,06;;…
+   *   2;lieferantenbestellung;…;600,00;;;…
+   *
+   * Wer sie zusammenzählt — und genau dafür öffnet ein Steuerberater eine
+   * CSV — bekommt 1.359,22 € statt 759,22 €. Das sind 79 % zu viel, und die
+   * Umsatzsteuer daraus wandert in die Voranmeldung.
+   */
+  const zeilen = alsCsv({
+    eintraege: [
+      { lfd: 1, art: 'rechnung', nummer: 'RE-2026-0001', zeitpunkt: '2026-09-02', vorgang: '2026-0101', betragNetto: 759.22, betragBrutto: 911.06, text: 'x' },
+      { lfd: 2, art: 'lieferantenbestellung', nummer: '2026-0101-01', zeitpunkt: '2026-09-02', vorgang: '2026-0101', betragNetto: 600, betragBrutto: null, text: 'y' },
+      { lfd: 3, art: 'vermerk', nummer: null, zeitpunkt: '2026-09-02', vorgang: '2026-0101', betragNetto: null, betragBrutto: null, text: 'z' },
+    ],
+  }).split('\n');
+
+  const spalte = (zeile) => zeile.split(';')[2];
+  assert.equal(spalte(zeilen[0]), 'umsatz', zeilen[0]);
+  assert.equal(spalte(zeilen[1]), 'ja', 'die Rechnung ist der Umsatz');
+  assert.equal(spalte(zeilen[2]), 'nein',
+    'der Einkaufswert der Lieferantenbestellung steht als Umsatz in der Datei');
+  assert.equal(spalte(zeilen[3]), 'nein', 'der Vermerk ist kein Umsatz');
 });

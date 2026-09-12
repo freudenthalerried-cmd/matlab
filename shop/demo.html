@@ -8695,12 +8695,38 @@ function umsatzsumme(eintraege = []) {
   };
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function alsCsv(ablage) {
-  const kopf = 'lfd;art;nummer;zeitpunkt;vorgang;netto;brutto;bezug;text';
+  const kopf = 'lfd;art;umsatz;nummer;zeitpunkt;vorgang;netto;brutto;bezug;text';
   const zeilen = ablage.eintraege.map((e) =>
     [
       e.lfd,
       e.art,
+      ARTEN[e.art]?.umsatz ? 'ja' : 'nein',
       e.nummer ?? '',
       e.zeitpunkt,
       e.vorgang ?? '',

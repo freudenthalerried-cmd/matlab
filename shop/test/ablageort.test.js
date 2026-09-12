@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import {
-  ABLAGEORT, belegname, belegordner, belegpfad, durchschriftenbefund, istBeleg, istBuchhaltung,
+  ABLAGEORT, auszugsbefund, auszugszeitraum, belegname, belegordner, belegpfad,
+  durchschriftenbefund, istBeleg, istBuchhaltung,
   istJournal, journalpfad, NOETIGE_SPERREN, ortsbefund,
 } from '../src/ablageort.js';
 
@@ -347,4 +348,101 @@ test('ein Vermerk ohne Nummer und ohne Vorgang bricht den Abgleich nicht ab', ()
     dateien: [],
   });
   assert.equal(b.sauber, true);
+});
+
+
+const AUSZUGSKOPF = 'lfd;art;umsatz;nummer;zeitpunkt;vorgang;netto;brutto;bezug;text';
+const AUSZUGSZEILE = (lfd, tag) =>
+  `${lfd};rechnung;ja;RE-2026-000${lfd};2026-09-${tag}T09:00:00+02:00;2026-010${lfd};759,22;911,06;;x`;
+const JOURNALZEILE = (lfd, tag) => ({ lfd, zeitpunkt: `2026-09-${tag}T09:00:00+02:00` });
+
+test('Die Periode eines Auszugs steht in seinem Namen', () => {
+  assert.equal(auszugszeitraum('ablage/buchhaltung/buchhaltung-2026-09.csv'), '2026-09');
+  assert.equal(auszugszeitraum('buchhaltung-2026.csv'), '2026');
+  assert.equal(auszugszeitraum('ablage/journal-2026.jsonl'), null);
+});
+
+test('Ein veralteter Auszug meldet zu wenig Umsatz — und das fällt jetzt auf', () => {
+  /*
+   * **12. September 2026, abends.** Die Ablage führt drei Dateiarten. Journal
+   * und Durchschrift werden seit dem 11. September gegeneinander gehalten;
+   * der Auszug wurde nur auf seinen **Ort** geprüft. Er ist die einzige
+   * Datei der Akte, die das Haus verlässt: Aus ihm entsteht die
+   * Umsatzsteuervoranmeldung (§ 21 Abs 1 UStG). Und er altert lautlos, weil
+   * das Journal nur wächst.
+   */
+  const b = auszugsbefund({
+    auszuege: [{
+      name: 'ablage/buchhaltung/buchhaltung-2026-09.csv',
+      text: [AUSZUGSKOPF, AUSZUGSZEILE(1, '02')].join('\n'),
+    }],
+    eintraege: [JOURNALZEILE(1, '02'), JOURNALZEILE(2, '11')],
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['auszug-veraltet'],
+    `ein Auszug, der eine Rechnung nicht kennt, blieb ohne Befund: ${JSON.stringify(b.meldungen)}`);
+  // Gemeldet wird die Anzahl, nicht der Inhalt: Ein Prüfer, der Beträge oder
+  // Namen protokolliert, verlegt Kundendaten an einen dritten Ort.
+  assert.ok(!b.meldungen[0].text.includes('759'));
+  assert.ok(!b.meldungen[0].text.includes('RE-2026-0002'));
+});
+
+test('Ein Auszug, der eine fremde laufende Nummer nennt, ist die andere Richtung', () => {
+  // Entweder stammt er aus einer anderen Periode, oder das Journal ist
+  // nachträglich geändert worden — § 131 Abs 1 Z 6 BAO.
+  const b = auszugsbefund({
+    auszuege: [{
+      name: 'buchhaltung-2026-09.csv',
+      text: [AUSZUGSKOPF, AUSZUGSZEILE(1, '02'), AUSZUGSZEILE(2, '11')].join('\n'),
+    }],
+    eintraege: [JOURNALZEILE(1, '02')],
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['auszug-kennt-fremde-zeile']);
+});
+
+test('Ein Auszug ohne Spalte `umsatz` ist nicht sicher zu lesen', () => {
+  /*
+   * Ohne sie stehen der Umsatz der Rechnung und der Einkaufswert der
+   * Lieferantenbestellung in derselben Spalte `netto`. Am Probejournal aus
+   * zwei Zeilen ergab die Summe 1.359,22 € statt 759,22 € — 79 % zu viel,
+   * und die Umsatzsteuer daraus wandert in die Voranmeldung.
+   */
+  const b = auszugsbefund({
+    auszuege: [{
+      name: 'buchhaltung-2026-09.csv',
+      text: 'lfd;art;nummer;zeitpunkt;vorgang;netto;brutto;bezug;text\n'
+        + '1;rechnung;RE-2026-0001;2026-09-02T09:00:00+02:00;2026-0101;759,22;911,06;;x',
+    }],
+    eintraege: [JOURNALZEILE(1, '02')],
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['auszug-ohne-umsatzspalte']);
+});
+
+test('Auszug und Journal deckungsgleich: keine Meldung', () => {
+  const b = auszugsbefund({
+    auszuege: [{
+      name: 'ablage/buchhaltung/buchhaltung-2026-09.csv',
+      text: [AUSZUGSKOPF, AUSZUGSZEILE(1, '02'), AUSZUGSZEILE(2, '11')].join('\n'),
+    }],
+    eintraege: [JOURNALZEILE(1, '02'), JOURNALZEILE(2, '11')],
+  });
+  assert.equal(b.sauber, true, JSON.stringify(b.meldungen));
+  assert.equal(b.geprueft, 1);
+});
+
+test('Ein Eintrag aus einer anderen Periode zählt nicht gegen den Auszug', () => {
+  // Der Auszug ist für September geschrieben. Eine Rechnung vom Oktober fehlt
+  // darin zu Recht — ein Prüfer, der sie einfordert, wird jeden Monat rot.
+  const b = auszugsbefund({
+    auszuege: [{
+      name: 'buchhaltung-2026-09.csv',
+      text: [AUSZUGSKOPF, AUSZUGSZEILE(1, '02')].join('\n'),
+    }],
+    eintraege: [JOURNALZEILE(1, '02'), { lfd: 2, zeitpunkt: '2026-10-01T09:00:00+02:00' }],
+  });
+  assert.equal(b.sauber, true, JSON.stringify(b.meldungen));
+});
+
+test('Ein leerer Auszug zählt als keiner', () => {
+  const b = auszugsbefund({ auszuege: [{ name: 'buchhaltung-2026-09.csv', text: '' }] });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['auszug-leer']);
 });

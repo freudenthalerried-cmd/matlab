@@ -24,6 +24,12 @@
  * Betriebs, nicht sein Umsatz; ohne die Unterscheidung stünde er mit
  * umgekehrtem Vorzeichen in der Voranmeldung.
  *
+ * **Und die Unterscheidung geht seit heute abend mit in die Datei.** Bis dahin
+ * stand sie nur auf dem Bildschirm: Die CSV trug beide Beträge in derselben
+ * Spalte `netto`, und wer sie zusammenzählte — genau dafür öffnet ein
+ * Steuerberater eine CSV — bekam am Probejournal 1.359,22 € statt 759,22 €.
+ * Die Spalte `umsatz` sagt jetzt je Zeile `ja` oder `nein`.
+ *
  * ## Was hier nicht auf dem Bildschirm steht
  *
  * Die CSV-Zeilen selbst. Sie tragen Vorgangsnummern, Beträge und Betreffs;
@@ -93,9 +99,30 @@ if (!eintraege.length) {
 const ordner = join(WURZEL, 'buchhaltung');
 mkdirSync(ordner, { recursive: true });
 const ziel = join(ordner, `buchhaltung-${zeitraum}.csv`);
+
+/*
+ * **Was ersetzt wird, wird gesagt — 12. September 2026, abends.**
+ *
+ * Der Auszug ist kein Beleg: Er wird aus dem Journal gerechnet und darf
+ * jederzeit neu entstehen. Überschrieben wird er deshalb absichtlich, anders
+ * als die Durchschrift (`flag: 'wx'`). Was fehlte, ist der Satz darüber —
+ * ein zweiter Lauf ersetzte eine Datei, die vielleicht längst beim
+ * Steuerberater liegt, und sagte nur „Geschrieben".
+ */
+const vorher = existsSync(ziel)
+  ? readFileSync(ziel, 'utf8').split('\n').filter((z) => z.trim()).length - 1
+  : null;
+
 writeFileSync(ziel, `${alsCsv({ eintraege })}\n`, 'utf8');
 
 console.log(`\nGeschrieben: ${ziel}`);
+if (vorher !== null) {
+  console.log(`Ersetzt den vorigen Auszug dieser Periode, der ${vorher} Zeile(n) kannte —`);
+  console.log('wer ihn weitergegeben hat, hat jetzt zwei Fassungen derselben Periode.');
+}
 console.log('Die Zeilen stehen in der Datei und nicht hier: Sie tragen Vorgangsnummern,');
 console.log('Beträge und Betreffs, und der Ordner ist derselbe gesperrte wie das Journal.');
+console.log('Die Spalte `umsatz` sagt je Zeile, ob sie ein Umsatz ist — ohne sie stünde der');
+console.log('Einkaufswert der Lieferantenbestellung in derselben Spalte wie der Umsatz.');
 console.log('Die Voranmeldung ist am 15. des zweitfolgenden Monats fällig (§ 21 Abs 1 UStG).');
+console.log('`npm run pruefe-ablage` hält diese Datei von jetzt an gegen das Journal.');

@@ -409,3 +409,110 @@ export function durchschriftenbefund({ eintraege = [], dateien = [] }) {
 
   return { geprueft: eintraege.length + dateien.length, meldungen, sauber: meldungen.length === 0 };
 }
+
+/** Die Periode, für die ein Auszug geschrieben ist — `2026-09` oder `2026`. */
+export function auszugszeitraum(pfad) {
+  const name = String(pfad).split('/').at(-1);
+  const t = name.match(/^buchhaltung-(\d{4}(?:-\d{2})?)\.csv$/);
+  return t ? t[1] : null;
+}
+
+/**
+ * Der Auszug gegen das Journal — die dritte Dateiart bekommt ihren Abgleich.
+ *
+ * **Der Fund vom 12. September 2026, abends.** In der Ablage liegen drei
+ * Dateiarten. Zwei werden seit dem 11. September gegeneinander gehalten,
+ * Journal und Durchschrift, in beide Richtungen. Die dritte wurde nur auf
+ * ihren **Ort** geprüft:
+ *
+ * > **Der Auszug ist die einzige Datei der Akte, die das Haus verlässt.** Er
+ * > geht zum Steuerberater, und aus ihm entsteht die Umsatzsteuervoranmeldung
+ * > (§ 21 Abs 1 UStG, fällig am 15. des zweitfolgenden Monats).
+ *
+ * Und er **altert lautlos**. Das Journal wächst nur (§ 131 BAO); jeder
+ * Eintrag nach dem Schreiben des Auszugs fehlt darin. Gemessen an einem
+ * Probejournal: Auszug mit zwei Zeilen geschrieben, dritte Rechnung
+ * eingetragen — `npm run pruefe-ablage` blieb grün, und die Datei behauptete
+ * weiter, sie sei der September.
+ *
+ * **Die Richtung des Fehlers ist die schlechtere von zwei:** Ein veralteter
+ * Auszug meldet **zu wenig** Umsatz. Das ist keine Ungenauigkeit, sondern
+ * eine zu niedrige Voranmeldung.
+ *
+ * Verglichen werden **laufende Nummern**, nichts sonst — keine Beträge, keine
+ * Namen, keine Betreffs. Gemeldet werden Anzahlen und der Dateiname. Ein
+ * Prüfer, der den Inhalt in sein Protokoll schreibt, verlegt Kundendaten an
+ * einen dritten Ort; dieselbe Regel wie bei `durchschriftenbefund` und
+ * `npm run akte`.
+ *
+ * @param {object} lage
+ * @param {Array} lage.auszuege   `{ name, text }` je gefundener Auszug
+ * @param {Array} lage.eintraege  alle Einträge der Journale, die dazugehören
+ */
+export function auszugsbefund({ auszuege = [], eintraege = [] }) {
+  const meldungen = [];
+
+  for (const auszug of auszuege) {
+    const zeitraum = auszugszeitraum(auszug.name);
+    if (!zeitraum) continue;
+
+    const zeilen = String(auszug.text ?? '').split('\n').filter((z) => z.trim());
+    if (!zeilen.length) {
+      meldungen.push({
+        regel: 'auszug-leer',
+        text: `${auszug.name} ist leer — eine Datei, die in jeder Liste wie ein Auszug `
+          + 'aussieht und keiner ist',
+      });
+      continue;
+    }
+
+    const [kopf, ...datenzeilen] = zeilen;
+    /*
+     * **Die Spalte `umsatz` ist die eine Angabe, die der Leser braucht.** Ohne
+     * sie stehen der Umsatz der Rechnung und der Einkaufswert der
+     * Lieferantenbestellung in derselben Spalte `netto` — wer sie
+     * zusammenzählt, meldet zu viel. Ein Auszug ohne diese Spalte stammt von
+     * vor dem 12. September und ist nicht sicher zu lesen.
+     */
+    if (!kopf.split(';').includes('umsatz')) {
+      meldungen.push({
+        regel: 'auszug-ohne-umsatzspalte',
+        text: `${auszug.name} nennt keine Spalte \`umsatz\` — Umsatz und Einkaufswert stehen `
+          + 'darin ununterscheidbar in derselben Spalte, und die Summe daraus ist zu hoch',
+      });
+    }
+
+    const imAuszug = new Set(
+      datenzeilen.map((z) => Number(z.split(';')[0])).filter(Number.isInteger),
+    );
+    const imJournal = new Set(
+      eintraege
+        .filter((e) => String(e.zeitpunkt ?? '').startsWith(`${zeitraum}-`))
+        .map((e) => e.lfd)
+        .filter(Number.isInteger),
+    );
+
+    const fehlen = [...imJournal].filter((lfd) => !imAuszug.has(lfd));
+    if (fehlen.length) {
+      meldungen.push({
+        regel: 'auszug-veraltet',
+        text: `${auszug.name} kennt ${imAuszug.size} Zeile(n), das Journal führt in `
+          + `${zeitraum} ${imJournal.size} — ${fehlen.length} Eintrag/Einträge sind nach dem `
+          + 'Auszug dazugekommen, und eine Voranmeldung daraus wäre zu niedrig '
+          + '(§ 21 Abs 1 UStG)',
+      });
+    }
+
+    const fremd = [...imAuszug].filter((lfd) => !imJournal.has(lfd));
+    if (fremd.length) {
+      meldungen.push({
+        regel: 'auszug-kennt-fremde-zeile',
+        text: `${auszug.name} nennt ${fremd.length} laufende Nummer(n), die das Journal in `
+          + `${zeitraum} nicht führt — entweder ist der Auszug aus einer anderen Periode `
+          + 'oder das Journal ist nachträglich geändert worden (§ 131 Abs 1 Z 6 BAO)',
+      });
+    }
+  }
+
+  return { geprueft: auszuege.length, meldungen, sauber: meldungen.length === 0 };
+}
