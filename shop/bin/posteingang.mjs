@@ -32,7 +32,10 @@ import { dirname, join, relative, resolve } from 'node:path';
 import { BESTELLFELDER } from '../src/bestellfelder.js';
 import { pruefeBestelldaten } from '../src/kunde.js';
 import { ABLAGEORT } from '../src/ablageort.js';
-import { kundendatei, leseJournal, posteingangsbefund } from '../src/posteingang.js';
+import {
+  kundendatei, leseJournal, posteingangsbefund, vorgaengeOhneBestellung,
+} from '../src/posteingang.js';
+import { ausJournal } from '../src/speicher.js';
 import { geschaeftsjahr } from '../src/geschaeftszeit.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -60,27 +63,83 @@ if (!existsSync(journal)) {
   process.exit(0);
 }
 
+/**
+ * **Die Vorgangsablage dazu — 12. September 2026, abends.**
+ *
+ * Ohne sie weiß dieses Werkzeug nicht, welche Bestellung schon ein Vorgang
+ * ist, und schlägt an jedem Tag wieder die erste Zeile des Journals vor.
+ * Gelesen werden Nummern und gezählt werden Papiere; kein Inhalt.
+ */
+const aktenwurzel = process.env.VORGANG_ABLAGE ?? join(REPO, ABLAGEORT);
+const aktenjournal = join(aktenwurzel, `journal-${jahr}.jsonl`);
+let vorgaenge = [];
+let akteUnlesbar = null;
+if (existsSync(aktenjournal)) {
+  try {
+    vorgaenge = ausJournal(readFileSync(aktenjournal, 'utf8')).eintraege;
+  } catch (fehler) {
+    /*
+     * **Ein unlesbares Aktenjournal darf den Posteingang nicht schließen.**
+     * `ausJournal` bricht streng ab — zu Recht, dort geht es um § 131 BAO.
+     * Hier ist die Akte aber nur die **Auskunft** darüber, was schon
+     * bearbeitet ist. Wer den Posteingang deshalb gar nicht mehr sieht, sieht
+     * auch die neu eingegangenen Bestellungen nicht.
+     *
+     * Gesagt wird es laut, und die Sperre gegen das zweite Herausschneiden
+     * fällt damit weg — deshalb steht der Satz oben und nicht im Kleingedruckten.
+     */
+    akteUnlesbar = fehler.message;
+  }
+}
+
 const { zeilen, meldungen } = leseJournal(readFileSync(journal, 'utf8'));
-const befund = posteingangsbefund(zeilen, pruefeBestelldaten);
+const befund = posteingangsbefund(zeilen, pruefeBestelldaten, { vorgaenge });
 const bereit = befund.filter((b) => b.bereit);
+const offen = befund.filter((b) => b.offen);
 
-console.log(`Posteingang — ${befund.length} Bestellungen, ${bereit.length} davon angebotsreif\n`);
+console.log(`Posteingang — ${befund.length} Bestellungen, ${bereit.length} angebotsreif, `
+  + `${offen.length} davon noch offen\n`);
 
+if (akteUnlesbar) {
+  console.log(`  ! Das Aktenjournal ${aktenjournal} ist nicht lesbar: ${akteUnlesbar}`);
+  console.log('    Ohne es weiß dieses Werkzeug nicht, was schon bearbeitet ist —');
+  console.log('    und die Sperre gegen ein zweites Herausschneiden fällt weg.\n');
+}
 for (const m of meldungen) console.log(`  ✗ ${m.text}  [${m.regel}]`);
 if (meldungen.length) console.log('');
 
 for (const b of befund) {
-  console.log(`  ${b.bereit ? '✓' : '·'} ${b.nummer}  ${b.zeitpunkt ?? ''}  ${b.firma ?? ''} (${b.bezirk ?? '—'})`);
+  // Drei Zustände, nicht zwei: offen, schon bearbeitet, nicht angebotsreif.
+  const zeichen = b.bearbeitet ? '·' : (b.bereit ? '✓' : '·');
+  console.log(`  ${zeichen} ${b.nummer}  ${b.zeitpunkt ?? ''}  ${b.firma ?? ''} (${b.bezirk ?? '—'})`);
+  if (b.bearbeitet) {
+    console.log(`        schon bearbeitet — Vorgang ${b.vorgang}, ${b.papiere} Papier(e) in der Akte`);
+  }
   for (const h of b.hindernisse) console.log(`        ${h}`);
 }
 console.log('');
 
+/*
+ * Die Gegenrichtung, als **Auskunft** und nicht als Befund: Ein Vorgang ohne
+ * Bestellung im Posteingang ist der telefonische Auftrag, den die
+ * Betriebskette ausdrücklich führt. Sind es viele, ist entweder das Journal
+ * unvollständig heruntergeladen oder jemand hat von Hand angelegt.
+ */
+const ohne = vorgaengeOhneBestellung(zeilen, vorgaenge);
+if (ohne.length) {
+  console.log(`  ${ohne.length} Vorgang/Vorgänge in der Akte ohne Bestellung im Posteingang: `
+    + `${ohne.join(', ')}`);
+  console.log('  Das ist der telefonische Auftrag — oder ein unvollständig geladenes Journal.\n');
+}
+
 // --- Herausschneiden --------------------------------------------------------
 
 if (!nummer) {
-  if (bereit.length) {
+  if (offen.length) {
     console.log('Zum Weiterarbeiten:');
-    console.log(`  npm run posteingang -- --nummer ${bereit[0].nummer} --nach ../vorgaenge/${bereit[0].nummer}`);
+    console.log(`  npm run posteingang -- --nummer ${offen[0].nummer} --nach ../vorgaenge/${offen[0].nummer}`);
+  } else if (bereit.length) {
+    console.log('Nichts offen: Zu jeder angebotsreifen Bestellung liegt ein Vorgang in der Akte.');
   }
   process.exit(meldungen.length ? 1 : 0);
 }
@@ -98,6 +157,40 @@ if (!gewaehlt.bereit) {
   console.error('jemand hat die Zeile bearbeitet.');
   process.exit(1);
 }
+/*
+ * **Zweimal herausgeschnitten heißt zweimal angeboten — 12. September 2026.**
+ *
+ * Dieselbe Bestellung ein zweites Mal durch `npm run vorgang` zu schicken
+ * erzeugt ein zweites Angebot über dieselbe Ware, unter einer zweiten
+ * Vorgangsnummer, an denselben Kunden. Beide Papiere sind für sich tadellos,
+ * und keine Sperre in `vorgang.mjs` sieht etwas: Dort ist es der erste
+ * Vorgang dieser Nummer.
+ *
+ * Gesperrt wird hier und nicht dort — hier ist die Stelle, an der aus einer
+ * Zeile im Posteingang zum zweiten Mal ein Vorgang wird.
+ *
+ * `--erneut` hebt die Sperre auf. Es gibt den Fall: Die beiden Dateien sind
+ * verlorengegangen, der Vorgang läuft weiter. Dann ist es kein zweites
+ * Angebot, sondern dieselbe Arbeitsvorlage noch einmal — und wer sie holt,
+ * weiß das und sagt es.
+ */
+if (gewaehlt.bearbeitet && !argumente.includes('--erneut')) {
+  console.error(`Abbruch: Zu ${nummer} liegt schon Vorgang ${gewaehlt.vorgang} in der Akte, `
+    + `mit ${gewaehlt.papiere} Papier(en).`);
+  console.error('');
+  console.error('Ein zweites Herausschneiden führt zu einem zweiten Angebot über dieselbe');
+  console.error('Ware, unter einer zweiten Vorgangsnummer, an denselben Kunden.');
+  console.error(`Was abgelegt ist, zeigt: npm run akte -- --vorgang ${gewaehlt.vorgang}`);
+  console.error('');
+  console.error('Wenn die Arbeitsdateien verlorengegangen sind und der Vorgang weiterläuft:');
+  console.error('  --erneut hebt diese Sperre auf.');
+  process.exit(1);
+}
+if (gewaehlt.bearbeitet) {
+  console.log(`Hinweis: Zu ${nummer} liegt Vorgang ${gewaehlt.vorgang} mit `
+    + `${gewaehlt.papiere} Papier(en) in der Akte. Mit --erneut trotzdem herausgeschnitten.`);
+}
+
 if (!nach) {
   console.error('Abbruch: Ohne --nach weiß dieses Werkzeug nicht, wohin.');
   console.error('Erwartet wird ein Ordner außerhalb dieses Verzeichnisses — Kundendaten');

@@ -6,7 +6,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { kundendatei, leseJournal, posteingangsbefund } from '../src/posteingang.js';
+import {
+  kundendatei, leseJournal, posteingangsbefund, vorgaengeOhneBestellung, vorgangsnummerZu,
+} from '../src/posteingang.js';
 import { BESTELLFELDER, beispielbestellung } from '../src/bestellfelder.js';
 import { pruefeBestelldaten } from '../src/kunde.js';
 import { wegwerfordner } from '../src/wegwerf.js';
@@ -71,9 +73,13 @@ test('die Kundendatei trägt die Formularfelder und sonst nichts', () => {
  * Das Werkzeug am ganzen Weg
  * ------------------------------------------------------------------ */
 
-const lauf = (args) => {
+const lauf = (args, zusatz = {}) => {
   try {
-    return { code: 0, aus: execFileSync(process.execPath, [werkzeug, ...args], { encoding: 'utf8' }) };
+    return {
+      code: 0,
+      aus: execFileSync(process.execPath, [werkzeug, ...args],
+        { encoding: 'utf8', env: { ...process.env, ...zusatz } }),
+    };
   } catch (e) { return { code: e.status ?? 1, aus: `${e.stdout ?? ''}${e.stderr ?? ''}` }; }
 };
 
@@ -116,4 +122,89 @@ test('in das Verzeichnis selbst wird nicht geschrieben', () => {
   assert.equal(e.code, 2, e.aus);
   assert.match(e.aus, /liegt im Verzeichnis/);
   assert.equal(existsSync(drinnen), false);
+});
+
+
+const PAPIER = (lfd, art, nummer, vorgang) => ({
+  lfd, art, nummer, vorgang,
+  zeitpunkt: `2026-09-05T09:0${lfd}:00+02:00`,
+  betragNetto: null, betragBrutto: null, text: 'Probe', bezugAuf: null,
+});
+const PAPIERE = (vorgang) => [
+  PAPIER(1, 'angebot', `AN-${vorgang}`, vorgang),
+  PAPIER(2, 'auftragsbestaetigung', null, vorgang),
+  PAPIER(3, 'rechnung', `RE-${vorgang}`, vorgang),
+];
+
+test('Die Bestellnummer sagt, welcher Vorgang zu ihr gehört', () => {
+  // Sie stand seit dem 4. September nur in einer Zeichenkette der
+  // Bildschirmausgabe — eine Zuordnung, die sich nicht prüfen lässt.
+  assert.equal(vorgangsnummerZu('B-2026-0001'), '2026-0001');
+  assert.equal(vorgangsnummerZu('2026-0001'), '2026-0001');
+  assert.equal(vorgangsnummerZu(null), '');
+});
+
+test('Eine Bestellung, zu der ein Vorgang in der Akte liegt, ist nicht mehr offen', () => {
+  /*
+   * **12. September 2026, abends.** Der Posteingang las das Journal und
+   * sonst nichts. Das Journal wächst nur; jede eingegangene Bestellung stand
+   * hier für immer als „angebotsreif", und das Werkzeug schlug an jedem Tag
+   * wieder die **erste Zeile** vor — also die älteste, längst bearbeitete.
+   * Wer dem folgt, bekommt ein zweites Angebot über dieselbe Ware, unter
+   * einer zweiten Vorgangsnummer, an denselben Kunden.
+   */
+  const b = posteingangsbefund([VOLL, { ...VOLL, nummer: 'B-2026-0002' }], pruefeBestelldaten,
+    { vorgaenge: PAPIERE('2026-0001') });
+
+  assert.equal(b[0].bereit, true, 'die Angaben taugen weiterhin');
+  assert.equal(b[0].bearbeitet, true, 'eine Bestellung mit drei Papieren gilt als unbearbeitet');
+  assert.equal(b[0].papiere, 3);
+  assert.equal(b[0].offen, false, 'die fertige Bestellung steht weiter als offen');
+  assert.equal(b[1].offen, true, 'die neue Bestellung ist nicht mehr offen');
+  assert.equal(b[1].papiere, 0);
+});
+
+test('Ein Vorgang ohne Bestellung im Posteingang ist eine Auskunft, kein Fehler', () => {
+  // Die Betriebskette führt den telefonischen Auftrag ausdrücklich als Weg.
+  assert.deepEqual(vorgaengeOhneBestellung([VOLL], PAPIERE('2026-0001')), []);
+  assert.deepEqual(vorgaengeOhneBestellung([VOLL], PAPIERE('2026-0099')), ['2026-0099']);
+});
+
+test('Dasselbe zweimal herauszuschneiden wird verweigert — und mit --erneut erlaubt', () => {
+  const ordner = wegwerfordner('posteingang-');
+  const akte = join(ordner, 'akte');
+  const journal = join(ordner, 'journal-2026.jsonl');
+  writeFileSync(journal, `${JSON.stringify(VOLL)}\n`);
+  execFileSync('mkdir', ['-p', akte]);
+  writeFileSync(join(akte, 'journal-2026.jsonl'),
+    `${PAPIERE('2026-0001').map((e) => JSON.stringify({ typ: 'eintrag', eintrag: e })).join('\n')}\n`);
+  const ziel = join(ordner, 'vorgang');
+
+  const nein = lauf(['--journal', journal, '--nummer', 'B-2026-0001', '--nach', ziel],
+    { VORGANG_ABLAGE: akte });
+  assert.notEqual(nein.code, 0,
+    `ein zweites Mal herausgeschnitten, obwohl der Vorgang schon in der Akte liegt: ${nein.aus}`);
+  assert.match(nein.aus, /liegt schon Vorgang 2026-0001 in der Akte/);
+  assert.equal(existsSync(ziel), false, 'verweigert und trotzdem geschrieben');
+
+  const doch = lauf(['--journal', journal, '--nummer', 'B-2026-0001', '--nach', ziel, '--erneut'],
+    { VORGANG_ABLAGE: akte });
+  assert.equal(doch.code, 0, doch.aus);
+  assert.equal(existsSync(join(ziel, 'anfrage.txt')), true);
+});
+
+test('Die Empfehlung nennt die offene Bestellung, nicht die erste Zeile', () => {
+  const ordner = wegwerfordner('posteingang-');
+  const akte = join(ordner, 'akte');
+  const journal = join(ordner, 'journal-2026.jsonl');
+  writeFileSync(journal,
+    `${JSON.stringify(VOLL)}\n${JSON.stringify({ ...VOLL, nummer: 'B-2026-0002' })}\n`);
+  execFileSync('mkdir', ['-p', akte]);
+  writeFileSync(join(akte, 'journal-2026.jsonl'),
+    `${PAPIERE('2026-0001').map((e) => JSON.stringify({ typ: 'eintrag', eintrag: e })).join('\n')}\n`);
+
+  const e = lauf(['--journal', journal], { VORGANG_ABLAGE: akte });
+  assert.match(e.aus, /--nummer B-2026-0002/,
+    'empfohlen wird weiter die erste Zeile statt der offenen Bestellung');
+  assert.match(e.aus, /schon bearbeitet — Vorgang 2026-0001, 3 Papier\(e\)/);
 });

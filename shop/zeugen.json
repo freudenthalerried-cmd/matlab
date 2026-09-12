@@ -66,6 +66,9 @@
   "der-auszug-ohne-abgleich": [
     "shop/test/ablageort.test.js"
   ],
+  "der-posteingang-vergisst-die-akte": [
+    "shop/test/posteingang.test.js"
+  ],
   "die-csv-nennt-alles-umsatz": [
     "shop/test/ablage.test.js"
   ],
@@ -222,5 +225,8 @@
   ],
   "zeuge-still-verloren": [
     "shop/test/zeugen.test.js"
+  ],
+  "zweimal-herausgeschnitten": [
+    "shop/test/posteingang.test.js"
   ]
 }

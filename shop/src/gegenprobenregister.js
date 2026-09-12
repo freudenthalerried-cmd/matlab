@@ -3565,6 +3565,40 @@ export const GEGENPROBEN = Object.freeze([
       + 'selbst erzeugt haben.** Ein Prüfer, der nur Beispiele kennt, prüft Beispiele.',
   }),
   Object.freeze({
+    id: 'der-posteingang-vergisst-die-akte',
+    pruefer: 'test',
+    was: 'Eine längst bearbeitete Bestellung steht weiter als unbearbeitet',
+    datei: 'shop/src/posteingang.js',
+    art: 'ersetzen',
+    suchen: '      bearbeitet: papiere > 0,',
+    ersetzen: '      bearbeitet: false,',
+    erwartet: /eine Bestellung mit drei Papieren gilt als unbearbeitet/,
+    warum: 'Das Posteingangsjournal wächst nur: Jede eingegangene Bestellung steht für immer '
+      + 'darin. Bis zum 12. September las dieses Werkzeug nur diese eine Datei — und meldete '
+      + 'jede Zeile für immer als „angebotsreif". **Die Bestellung, die längst Angebot, '
+      + 'Auftragsbestätigung und Rechnung hat, war die, die es zur Arbeit vorschlug**, und '
+      + 'zwar an jedem Tag wieder, weil die Empfehlung die erste Zeile nimmt. Wer dem folgt, '
+      + 'bekommt ein zweites Angebot über dieselbe Ware, unter einer zweiten Vorgangsnummer, '
+      + 'an denselben Kunden — und keine Sperre in `vorgang.mjs` sieht etwas, denn dort ist es '
+      + 'der erste Vorgang dieser Nummer.',
+  }),
+  Object.freeze({
+    id: 'zweimal-herausgeschnitten',
+    pruefer: 'test',
+    was: 'Dieselbe Bestellung lässt sich ein zweites Mal zu einem Vorgang machen',
+    datei: 'shop/bin/posteingang.mjs',
+    art: 'ersetzen',
+    suchen: "if (gewaehlt.bearbeitet && !argumente.includes('--erneut')) {",
+    ersetzen: 'if (false) {',
+    erwartet: /ein zweites Mal herausgeschnitten, obwohl der Vorgang schon in der Akte liegt/,
+    warum: 'Gesperrt wird an der Stelle, an der aus einer Zeile des Posteingangs zum zweiten '
+      + 'Mal ein Vorgang wird — und nicht in `vorgang.mjs`, wo es der erste Vorgang **dieser '
+      + 'Nummer** ist und deshalb nichts auffällt. Zwei Angebote über dieselbe Ware an '
+      + 'denselben Kunden sind beide für sich tadellos; welches gilt, entscheidet dann der '
+      + 'Kunde. `--erneut` hebt die Sperre auf, denn den Fall gibt es: Die Arbeitsdateien sind '
+      + 'verloren und der Vorgang läuft weiter. Diese Mutation nimmt die Sperre ganz weg.',
+  }),
+  Object.freeze({
     id: 'verfallenes-angebot-bindet-weiter',
     pruefer: 'test',
     was: 'Die Akte hält ein abgelaufenes Angebot für bindend',

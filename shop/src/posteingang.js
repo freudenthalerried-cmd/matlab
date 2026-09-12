@@ -57,27 +57,103 @@ export function leseJournal(inhalt) {
 }
 
 /**
- * Der Befund je Bestellung: Taugt sie zu einem Angebot?
+ * Die Vorgangsnummer zu einer Bestellnummer: `B-2026-0001` → `2026-0001`.
+ *
+ * Sie steht seit dem 4. September in der Empfehlung dieses Werkzeugs
+ * (`--nummer ${nummer.replace(/^B-/, '')}`) und war bis heute nirgends als
+ * Regel aufgeschrieben. Eine Zuordnung, die nur in einer Zeichenkette einer
+ * Bildschirmausgabe steht, lässt sich nicht prüfen.
+ */
+export function vorgangsnummerZu(bestellnummer) {
+  return String(bestellnummer ?? '').replace(/^B-/, '');
+}
+
+/**
+ * Der Befund je Bestellung: Taugt sie zu einem Angebot — **und ist sie es
+ * schon geworden?**
+ *
+ * **Der Fund vom 12. September 2026, abends.** Dieses Werkzeug las das
+ * Posteingangsjournal und sonst nichts. Das Journal wächst nur; jede
+ * eingegangene Bestellung steht für immer darin, und jede stand hier für
+ * immer als „angebotsreif".
+ *
+ * Gemessen an einem Probejournal aus zwei Bestellungen, von denen die erste
+ * längst Angebot, Auftragsbestätigung und Rechnung hat:
+ *
+ * ```
+ * Posteingang — 2 Bestellungen, 2 davon angebotsreif
+ *   ✓ B-2026-0001  …  ✓ B-2026-0002  …
+ * Zum Weiterarbeiten:
+ *   npm run posteingang -- --nummer B-2026-0001 …
+ * ```
+ *
+ * > **Die Bestellung, die fertig ist, war die, die das Werkzeug vorschlug** —
+ * > und zwar an jedem Tag danach wieder, weil es immer die erste Zeile nimmt.
+ *
+ * Wer dem folgt, bekommt ein zweites Angebot über dieselbe Ware, unter einer
+ * zweiten Vorgangsnummer, an denselben Kunden. Beide Papiere sind für sich
+ * tadellos; keine Sperre in `vorgang.mjs` sieht etwas, denn dort ist es der
+ * erste Vorgang dieser Nummer.
+ *
+ * Die Auskunft, die fehlte, liegt in der **Vorgangsablage**: `B-2026-0001`
+ * wird zu Vorgang `2026-0001`, und zu jedem abgelegten Papier steht dort eine
+ * Zeile. Gezählt werden Papiere, gelesen wird kein Inhalt.
  *
  * @param {object[]} zeilen  aus `leseJournal`
  * @param {(daten: object) => {gueltig: boolean, fehler: string[]}} pruefe
+ * @param {object} [lage]
+ * @param {object[]} [lage.vorgaenge]  die Einträge der Vorgangsablage
  */
-export function posteingangsbefund(zeilen, pruefe) {
+export function posteingangsbefund(zeilen, pruefe, { vorgaenge = [] } = {}) {
+  const papiereJeVorgang = new Map();
+  for (const e of vorgaenge) {
+    if (!e?.vorgang) continue;
+    papiereJeVorgang.set(e.vorgang, (papiereJeVorgang.get(e.vorgang) ?? 0) + 1);
+  }
+
   return zeilen.map((z) => {
     const p = pruefe({ ...z, land: z.land ?? 'AT' });
     const fehlt = [];
     if (!z.text || String(z.text).trim() === '') fehlt.push('kein Anfragetext');
     if (!z.bezirk) fehlt.push('kein Bezirk');
+    const bereit = p.gueltig && fehlt.length === 0;
+    const vorgang = vorgangsnummerZu(z.nummer);
+    const papiere = papiereJeVorgang.get(vorgang) ?? 0;
     return {
       nummer: z.nummer,
       zeitpunkt: z.zeitpunkt ?? null,
       firma: z.firma ?? null,
       bezirk: z.bezirk ?? null,
-      bereit: p.gueltig && fehlt.length === 0,
+      bereit,
+      // `bereit` sagt, ob die **Angaben** taugen; `offen` sagt, ob noch etwas
+      // zu tun ist. Zwei Fragen, die bis heute eine waren.
+      vorgang,
+      papiere,
+      bearbeitet: papiere > 0,
+      offen: bereit && papiere === 0,
       hindernisse: [...p.fehler, ...fehlt],
       eintrag: z,
     };
   });
+}
+
+/**
+ * Die Gegenrichtung: Vorgänge der Ablage, zu denen keine Bestellung im
+ * Posteingang steht.
+ *
+ * **Das ist kein Fehler, sondern eine Auskunft.** Die Betriebskette führt den
+ * telefonischen Auftrag ausdrücklich als Weg — wer anruft, steht in keinem
+ * Posteingangsjournal. Gemeldet wird es trotzdem: Sind es plötzlich viele,
+ * ist entweder das Journal unvollständig heruntergeladen oder es wurde von
+ * Hand angelegt, was der Kette nach nicht vorgesehen ist.
+ */
+export function vorgaengeOhneBestellung(zeilen, vorgaenge = []) {
+  const ausDemPosteingang = new Set(zeilen.map((z) => vorgangsnummerZu(z.nummer)));
+  const gefunden = new Set();
+  for (const e of vorgaenge) {
+    if (e?.vorgang && !ausDemPosteingang.has(e.vorgang)) gefunden.add(e.vorgang);
+  }
+  return [...gefunden].sort();
 }
 
 /**
