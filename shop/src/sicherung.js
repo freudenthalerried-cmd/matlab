@@ -68,6 +68,22 @@ export const BEREICHE = Object.freeze([
   }),
 ]);
 
+/**
+ * Die **Form** des Zeitstempels als Suchmuster — `2026-08-30T15-42-07`.
+ *
+ * **Ausgeführt am 12. September 2026.** Sie stand bis dahin nur in
+ * `standmuster()` weiter unten und wurde dort gebraucht, um alte Stände
+ * aufzuräumen. Seit heute abend braucht sie ein Zweiter: `src/ablageort.js`
+ * muss eine datierte Kopie des Journals als Journal **erkennen**, sonst ist
+ * die Sicherungskopie für jede Sperre unsichtbar.
+ *
+ * Sie steht deshalb hier und nicht dort. Zwei Schreibweisen desselben
+ * Stempels wären zwei Begriffe von „Stand dieser Datei" — genau die
+ * Fehlerklasse, an der diese Datei am 7. September schon einmal
+ * hängengeblieben ist (siehe `standmuster`).
+ */
+export const STANDSTEMPEL = String.raw`\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}`;
+
 /** `2026-08-30T15-42-07` — sortierbar und ohne Zeichen, die Dateisysteme ärgern. */
 export function zeitstempel(datum = new Date()) {
   return datum.toISOString().slice(0, 19).replace(/:/g, '-');
@@ -108,7 +124,7 @@ export function sichere(datei, datum = new Date()) {
  */
 function standmuster(stamm, endung) {
   const roh = (t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return new RegExp(`^${roh(stamm)}-\\d{4}-\\d{2}-\\d{2}T\\d{2}-\\d{2}-\\d{2}${roh(endung)}$`);
+  return new RegExp(`^${roh(stamm)}-${STANDSTEMPEL}${roh(endung)}$`);
 }
 
 /**

@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import {
   ABLAGEORT, auszugsbefund, auszugszeitraum, belegname, belegordner, belegpfad,
-  durchschriftenbefund, istBeleg, istBuchhaltung,
+  durchschriftenbefund, istBeleg, istBuchhaltung, istStandkopie,
   istJournal, journalpfad, NOETIGE_SPERREN, ortsbefund,
 } from '../src/ablageort.js';
 
@@ -445,4 +445,53 @@ test('Ein Eintrag aus einer anderen Periode zählt nicht gegen den Auszug', () =
 test('Ein leerer Auszug zählt als keiner', () => {
   const b = auszugsbefund({ auszuege: [{ name: 'buchhaltung-2026-09.csv', text: '' }] });
   assert.deepEqual(b.meldungen.map((m) => m.regel), ['auszug-leer']);
+});
+
+
+test('Die Sicherungskopie einer Akte-Datei ist eine Akte-Datei', () => {
+  /*
+   * **12. September 2026, abends.** `npm run sicherung` legt vor jedem
+   * Überschreiben eine datierte Kopie in `.sicherung` an — Byte für Byte
+   * dasselbe: Namen, Anschriften, Beträge. Keine der drei Sperren sah sie:
+   *
+   *   istJournal('journal-2026-2026-09-12T19-42-04.jsonl')  → false
+   *
+   * Der Ortsbefund fragt, ob eine Datei mit Kundendaten außerhalb von
+   * `ablage/` liegt — und für eine Sicherungskopie war die Antwort immer
+   * nein, gleich wo sie lag.
+   */
+  const stand = '2026-09-12T19-42-04';
+  assert.equal(istJournal(`ablage/.sicherung/journal-2026-${stand}.jsonl`), true,
+    'die Kopie des Journals ist für die Sperre kein Journal');
+  assert.equal(istBeleg(`ablage/belege-2026/.sicherung/RE-2026-0001-${stand}.txt`), true,
+    'die Kopie der Durchschrift ist für die Sperre keine Durchschrift');
+  assert.equal(istBuchhaltung(`ablage/buchhaltung/.sicherung/buchhaltung-2026-09-${stand}.csv`),
+    true, 'die Kopie des Auszugs ist für die Sperre kein Auszug');
+
+  // Und sie bleibt unterscheidbar: Für den **Abgleich** ist eine Kopie des
+  // Journals kein zweites Journal.
+  assert.equal(istStandkopie(`journal-2026-${stand}.jsonl`), true);
+  assert.equal(istStandkopie('journal-2026.jsonl'), false);
+  assert.equal(istStandkopie('RE-2026-0001.txt'), false);
+  assert.equal(auszugszeitraum(`buchhaltung-2026-09-${stand}.csv`), null,
+    'eine Kopie hat keine Periode — sonst würde sie gegen das Journal gehalten');
+  assert.equal(auszugszeitraum('buchhaltung-2026-09.csv'), '2026-09');
+
+  // Was keine Kopie ist, bleibt keine.
+  assert.equal(istJournal('journal-2026-notiz.jsonl'), false);
+  assert.equal(istBeleg('RE-2026-0001-entwurf.txt'), false);
+});
+
+test('Eine getrackte Sicherungskopie ist derselbe Fall wie ein getracktes Journal', () => {
+  const stand = '2026-09-12T19-42-04';
+  const b = ortsbefund({
+    gitignore: NOETIGE_SPERREN.join('\n'),
+    getrackt: [
+      `sicherungen/journal-2026-${stand}.jsonl`,
+      `sicherungen/RE-2026-0001-${stand}.txt`,
+      `sicherungen/buchhaltung-2026-09-${stand}.csv`,
+    ],
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel).sort(),
+    ['auszug-im-verzeichnis', 'beleg-im-verzeichnis', 'journal-im-verzeichnis']);
 });

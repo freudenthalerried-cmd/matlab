@@ -71,6 +71,10 @@
     "zwei-staende-desselben-betriebs": {
       "am": "2026-09-12",
       "sekunden": 3
+    },
+    "die-probeakte-bleibt-ungeprueft": {
+      "am": "2026-09-12",
+      "sekunden": 6
     }
   }
 }

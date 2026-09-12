@@ -23,7 +23,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join, relative } from 'node:path';
 import {
   ABLAGEORT, auszugsbefund, auszugszeitraum, belegordner, durchschriftenbefund, istBeleg,
-  istBuchhaltung, istJournal, ortsbefund,
+  istBuchhaltung, istJournal, istStandkopie, ortsbefund,
 } from '../src/ablageort.js';
 import { ausJournal } from '../src/speicher.js';
 
@@ -46,17 +46,54 @@ const belegdateien = [];
 // **Seit dem 12. September auch der Auszug für die Buchhaltung.** Er trägt die
 // Beträge und Betreffs einer ganzen Periode in einer einzigen Datei.
 const auszuege = [];
-const gehe = (ordner) => {
+const gehe = (ordner, aufnehmen) => {
   for (const name of readdirSync(ordner)) {
     if (name === 'node_modules' || name === '.git') continue;
     const voll = join(ordner, name);
-    if (statSync(voll).isDirectory()) gehe(voll);
-    else if (istJournal(name)) journaldateien.push(relative(REPO, voll));
-    else if (istBeleg(name)) belegdateien.push(relative(REPO, voll));
-    else if (istBuchhaltung(name)) auszuege.push(relative(REPO, voll));
+    if (statSync(voll).isDirectory()) gehe(voll, aufnehmen);
+    else aufnehmen(name, voll);
   }
 };
-gehe(REPO);
+gehe(REPO, (name, voll) => {
+  if (istJournal(name)) journaldateien.push(relative(REPO, voll));
+  else if (istBeleg(name)) belegdateien.push(relative(REPO, voll));
+  else if (istBuchhaltung(name)) auszuege.push(relative(REPO, voll));
+});
+
+/**
+ * **Der Prüfer konnte nie auf eine Probeakte zeigen — 12. September 2026.**
+ *
+ * `npm run bestellprobe` baut seit dem 11. September eine vollständige Akte in
+ * einem Wegwerfordner: Bestellung, Angebot, Rechnung mit Durchschrift,
+ * Gutschrift, Buchhaltungsauszug. Sie entsteht **mit den Werkzeugen dieses
+ * Hauses**, und sie ist die einzige Akte, die es gibt — die echte unter
+ * `ablage/` ist leer, weil noch kein Geschäft stattgefunden hat.
+ *
+ * > **Dieser Prüfer las bis hierher nur das Verzeichnis.** Alle seine Regeln
+ * > sind an von Hand gebauten Beispielen gezeigt worden und noch nie an einer
+ * > Akte, die die Werkzeuge selbst erzeugt haben.
+ *
+ * Das sind die zwei Hälften, die zusammengehören: Die Probe zeigt, dass die
+ * Werkzeuge eine Akte **bauen**; der Prüfer zeigt, dass eine Akte **trägt**.
+ * Solange sie sich nicht treffen, kann die gebaute Akte an jeder Regel
+ * vorbeilaufen, und niemand sähe es.
+ *
+ * Der Ortsbefund bleibt davon unberührt: Er fragt, ob eine Datei mit
+ * Kundendaten außerhalb von `ablage/` **im Verzeichnis** liegt, und ein
+ * Wegwerfordner in `/tmp` liegt dort nicht.
+ */
+const probenwurzel = process.env.VORGANG_ABLAGE && existsSync(process.env.VORGANG_ABLAGE)
+  && !process.env.VORGANG_ABLAGE.startsWith(REPO)
+  ? process.env.VORGANG_ABLAGE
+  : null;
+const probe = { journale: [], belege: [], auszuege: [] };
+if (probenwurzel) {
+  gehe(probenwurzel, (name, voll) => {
+    if (istJournal(name)) probe.journale.push(relative(probenwurzel, voll));
+    else if (istBeleg(name)) probe.belege.push(relative(probenwurzel, voll));
+    else if (istBuchhaltung(name)) probe.auszuege.push(relative(probenwurzel, voll));
+  });
+}
 
 /*
  * **Alle `.gitignore`, nicht nur die der Wurzel — 5. September 2026, abends.**
@@ -105,11 +142,33 @@ const ort = ortsbefund({ gitignore, getrackt, journaldateien, belegdateien, ausz
  * daraus** — Belegnummern und Dateinamen, keine Inhalte. Ein Prüfer, der
  * Kundendaten in sein Protokoll schreibt, verlegt sie an einen dritten Ort.
  */
+/*
+ * **Die datierte Kopie zählt für den Ort, nicht für den Abgleich.**
+ *
+ * Seit heute abend erkennen die drei Muster auch den Stand aus `.sicherung`
+ * — `journal-2026-2026-09-12T19-42-04.jsonl` trägt dieselben Kundendaten und
+ * war bis dahin für jede Sperre unsichtbar. Für den **Ortsbefund** ist das
+ * genau richtig: Er fragt, ob so eine Datei außerhalb von `ablage/` liegt.
+ *
+ * Für den **Abgleich** wäre es falsch: Eine Kopie des Journals ist kein
+ * zweites Journal, und eine Kopie der Durchschrift kein zweites Papier. Wer
+ * sie mitzählt, meldet jede gesicherte Akte als doppelt geführt.
+ */
+const lebend = ({ pfad }) => !istStandkopie(pfad);
+const alleJournale = [
+  ...journaldateien.map((pfad) => ({ basis: REPO, pfad })),
+  ...probe.journale.map((pfad) => ({ basis: probenwurzel, pfad })),
+].filter(lebend);
+const alleAuszuege = [
+  ...auszuege.map((pfad) => ({ basis: REPO, pfad })),
+  ...probe.auszuege.map((pfad) => ({ basis: probenwurzel, pfad })),
+].filter(lebend);
+
 const durchschriften = [];
 const eintraegeJeJahr = new Map();
-for (const journalpfad of journaldateien) {
+for (const { basis, pfad: journalpfad } of alleJournale) {
   const jahr = Number(journalpfad.match(/journal-(\d{4})\.jsonl$/)?.[1]);
-  const ordner = join(REPO, dirname(journalpfad), belegordner(jahr));
+  const ordner = join(basis, dirname(journalpfad), belegordner(jahr));
   // **Gelesen wird der Inhalt, nicht nur der Name — 12. September 2026.**
   // Die Zahlen der Journalzeile stehen ein zweites Mal auf dem Papier; nur so
   // fällt eine nachträglich geänderte Zeile auf. Ausgegeben wird davon
@@ -121,8 +180,13 @@ for (const journalpfad of journaldateien) {
       return { name, zeichen: statSync(voll).size, text: readFileSync(voll, 'utf8') };
     })
     : [];
-  const ablage = ausJournal(readFileSync(join(REPO, journalpfad), 'utf8'));
-  eintraegeJeJahr.set(jahr, [...(eintraegeJeJahr.get(jahr) ?? []), ...ablage.eintraege]);
+  const ablage = ausJournal(readFileSync(join(basis, journalpfad), 'utf8'));
+  // Der Schlüssel trägt die Wurzel mit: Die laufenden Nummern einer Probeakte
+  // und die des Verzeichnisses gehören nicht in denselben Topf.
+  const schluessel = `${basis}|${jahr}`;
+  eintraegeJeJahr.set(schluessel, [
+    ...(eintraegeJeJahr.get(schluessel) ?? []), ...ablage.eintraege,
+  ]);
   const befund = durchschriftenbefund({ eintraege: ablage.eintraege, dateien });
   durchschriften.push({ journalpfad, ...befund });
 }
@@ -136,16 +200,17 @@ for (const journalpfad of journaldateien) {
  * das Journal nur wächst.
  *
  * Verglichen werden laufende Nummern, und die laufen je Geschäftsjahr neu —
- * deshalb bekommt jeder Auszug die Einträge **seines** Jahres und nicht alle.
+ * deshalb bekommt jeder Auszug die Einträge **seines** Jahres.
  */
-const auszugslage = auszuege.map((pfad) => ({
+const auszugslage = alleAuszuege.map(({ basis, pfad }) => ({
   name: pfad,
-  text: readFileSync(join(REPO, pfad), 'utf8'),
+  text: readFileSync(join(basis, pfad), 'utf8'),
   jahr: Number(auszugszeitraum(pfad)?.slice(0, 4)),
+  basis,
 }));
 const auszugsmeldungen = auszugslage.flatMap((a) => auszugsbefund({
   auszuege: [a],
-  eintraege: eintraegeJeJahr.get(a.jahr) ?? [],
+  eintraege: eintraegeJeJahr.get(`${a.basis}|${a.jahr}`) ?? [],
 }).meldungen);
 
 const meldungen = [
@@ -158,6 +223,11 @@ const geprueft = ort.geprueft;
 console.log(`Ablageort — ${geprueft} getrackte Dateien angesehen, `
   + `${journaldateien.length} Journaldateien, ${belegdateien.length} Durchschriften und `
   + `${auszuege.length} Buchhaltungsauszüge gefunden\n`);
+if (probenwurzel) {
+  console.log(`  Dazu eine Probeakte aus VORGANG_ABLAGE: ${probe.journale.length} Journal(e), `
+    + `${probe.belege.length} Durchschrift(en), ${probe.auszuege.length} Auszug/Auszüge.`);
+  console.log('  Sie zählt nicht zum Ortsbefund — sie liegt nicht im Verzeichnis.\n');
+}
 for (const d of durchschriften) {
   console.log(`  ${d.journalpfad}: ${d.geprueft} Eintrag/Datei abgeglichen`);
 }

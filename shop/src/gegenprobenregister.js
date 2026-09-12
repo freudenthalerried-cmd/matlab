@@ -3531,6 +3531,40 @@ export const GEGENPROBEN = Object.freeze([
       + 'und wurde beim Lesen falsch.',
   }),
   Object.freeze({
+    id: 'die-sicherungskopie-bleibt-unsichtbar',
+    pruefer: 'test',
+    was: 'Die datierte Kopie einer Akte-Datei ist für jede Sperre wieder unsichtbar',
+    datei: 'shop/src/ablageort.js',
+    art: 'ersetzen',
+    suchen: 'const STAND = `(?:-${STANDSTEMPEL})?`;',
+    ersetzen: "const STAND = '';",
+    erwartet: /die Kopie des Journals ist für die Sperre kein Journal/,
+    warum: '`npm run sicherung` legt vor jedem Überschreiben eine datierte Kopie in '
+      + '`.sicherung` an — `journal-2026-2026-09-12T19-42-04.jsonl` neben dem Original, Byte '
+      + 'für Byte dasselbe: Namen, Anschriften, Beträge. Bis zum 12. September erkannte sie '
+      + 'keines der drei Muster. **Der Ortsbefund fragt, ob eine Datei mit Kundendaten '
+      + 'außerhalb von `ablage/` liegt — und für eine Sicherungskopie war die Antwort immer '
+      + 'nein, gleich wo sie lag.** Die Sicherung darf an einen anderen Ort zeigen '
+      + '(`SICHERUNG_ORDNER`); zeigt sie ins Verzeichnis, landete die ganze Akte im '
+      + 'öffentlichen Bestand, ohne dass eine Sperre auch nur hinsah.',
+  }),
+  Object.freeze({
+    id: 'die-probeakte-bleibt-ungeprueft',
+    pruefer: 'bestellprobe',
+    was: 'Der Prüfer der Ablage sieht die Akte nicht an, die die Werkzeuge gebaut haben',
+    datei: 'shop/bin/ablagepruefung.mjs',
+    art: 'ersetzen',
+    suchen: 'const probenwurzel = process.env.VORGANG_ABLAGE && existsSync(process.env.VORGANG_ABLAGE)',
+    ersetzen: 'const probenwurzel = false && existsSync(process.env.VORGANG_ABLAGE)',
+    erwartet: /der Prüfer der Ablage sieht die Probeakte nicht an/,
+    warum: 'Zwei Hälften, die sich nie getroffen haben: `npm run bestellprobe` zeigt, dass die '
+      + 'Werkzeuge eine Akte **bauen**, `npm run pruefe-ablage` zeigt, dass eine Akte '
+      + '**trägt**. Der Prüfer las bis zum 12. September nur das Verzeichnis — und die echte '
+      + 'Ablage ist leer, weil noch kein Geschäft stattgefunden hat. **Alle seine Regeln waren '
+      + 'an von Hand gebauten Beispielen gezeigt und noch nie an einer Akte, die die Werkzeuge '
+      + 'selbst erzeugt haben.** Ein Prüfer, der nur Beispiele kennt, prüft Beispiele.',
+  }),
+  Object.freeze({
     id: 'verfallenes-angebot-bindet-weiter',
     pruefer: 'test',
     was: 'Die Akte hält ein abgelaufenes Angebot für bindend',

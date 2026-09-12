@@ -39,13 +39,45 @@
  */
 
 import { ARTEN } from './ablage.js';
+import { STANDSTEMPEL } from './sicherung.js';
 import { EUR } from './format.js';
 
 /** Der Ordner, in den die Ablage schreibt — vom Verzeichniswurzel aus. */
 export const ABLAGEORT = 'ablage';
 
+/**
+ * **Die Sicherungskopie war für jede Sperre unsichtbar — 12. September 2026.**
+ *
+ * `npm run sicherung` legt vor jedem Überschreiben eine datierte Kopie an:
+ * `journal-2026-2026-09-12T19-42-04.jsonl` neben dem Original, im
+ * Unterordner `.sicherung`. Sie ist Byte für Byte dasselbe — Namen,
+ * Anschriften, Beträge.
+ *
+ * Gemessen:
+ *
+ * ```
+ * istJournal('journal-2026-2026-09-12T19-42-04.jsonl')      → false
+ * istBeleg('RE-2026-0001-2026-09-12T19-42-04.txt')          → false
+ * istBuchhaltung('buchhaltung-2026-09-2026-09-12T19-42-04.csv') → false
+ * ```
+ *
+ * > **Keine der drei Sperren sah die Kopie der Datei, die sie bewacht.** Der
+ * > Ortsbefund fragt: „Liegt eine Datei mit Kundendaten außerhalb von
+ * > `ablage/`?" — und für eine Sicherungskopie war die Antwort immer nein,
+ * > gleich wo sie lag.
+ *
+ * Der Stempel kommt aus `src/sicherung.js` und wird nicht abgeschrieben.
+ */
+const STAND = `(?:-${STANDSTEMPEL})?`;
+
+/** Ob ein Name die datierte Kopie einer Akte-Datei ist — der Stand, nicht das Original. */
+export function istStandkopie(pfad) {
+  return new RegExp(`-${STANDSTEMPEL}\\.[A-Za-z0-9]+$`)
+    .test(String(pfad).split('/').at(-1));
+}
+
 /** `journal-2026.jsonl` — eine Datei je Geschäftsjahr, wie `speicher.js` es vorsieht. */
-export const JOURNALMUSTER = /^journal-(\d{4})\.jsonl$/;
+export const JOURNALMUSTER = new RegExp(`^journal-(\\d{4})${STAND}\\.jsonl$`);
 
 /** Die Zeilen, die `.gitignore` tragen muss, damit der Ort gedeckt ist. */
 export const NOETIGE_SPERREN = Object.freeze([`${ABLAGEORT}/`]);
@@ -218,7 +250,8 @@ export function belegordner(jahr) {
 
 /** Die Kürzel kommen aus `ARTEN` — eine zweite Liste wäre eine Abschrift. */
 export const BELEGMUSTER = new RegExp(
-  `^(?:${Object.values(ARTEN).map((a) => a.kuerzel).join('|')})-\\d{4}-\\d{4}(?:-\\d{2})?\\.txt$`,
+  `^(?:${Object.values(ARTEN).map((a) => a.kuerzel).join('|')})`
+  + `-\\d{4}-\\d{4}(?:-\\d{2})?${STAND}\\.txt$`,
 );
 
 /**
@@ -229,7 +262,7 @@ export const BELEGMUSTER = new RegExp(
  * Durchschriften; eine dritte Dateiart, die dieselben Daten trägt und von
  * keiner Regel erfasst ist, wäre genau der Fund vom 11. September noch einmal.
  */
-export const BUCHHALTUNGSMUSTER = /^buchhaltung-\d{4}(?:-\d{2})?\.csv$/;
+export const BUCHHALTUNGSMUSTER = new RegExp(`^buchhaltung-(\\d{4}(?:-\\d{2})?)${STAND}\\.csv$`);
 
 /** Ob ein Pfad ein Buchhaltungsauszug ist — gleich, wo er liegt. */
 export function istBuchhaltung(pfad) {
@@ -413,8 +446,13 @@ export function durchschriftenbefund({ eintraege = [], dateien = [] }) {
 /** Die Periode, für die ein Auszug geschrieben ist — `2026-09` oder `2026`. */
 export function auszugszeitraum(pfad) {
   const name = String(pfad).split('/').at(-1);
-  const t = name.match(/^buchhaltung-(\d{4}(?:-\d{2})?)\.csv$/);
-  return t ? t[1] : null;
+  // **Kein zweites Muster — berichtigt am 12. September, abends.** Hier stand
+  // eine eigene Schreibweise desselben Dateinamens, aufgeschrieben eine Runde
+  // nach `BUCHHALTUNGSMUSTER`. Zwei Muster für einen Namen laufen genau so
+  // lange gleich, bis eines von beiden erweitert wird — und erweitert wurde
+  // eines von beiden noch am selben Tag.
+  if (istStandkopie(name)) return null;
+  return name.match(BUCHHALTUNGSMUSTER)?.[1] ?? null;
 }
 
 /**

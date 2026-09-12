@@ -502,6 +502,39 @@ try {
         } else {
           bestanden.push('Die Sicherung erreicht auch die Durchschriften in den Unterordnern');
         }
+
+        /*
+         * **Die zwei Hälften treffen sich hier — 12. September 2026, abends.**
+         *
+         * Bis zu diesem Schritt zeigt die Probe, dass die Werkzeuge eine Akte
+         * **bauen**; `npm run pruefe-ablage` zeigt, dass eine Akte **trägt**.
+         * Getroffen haben sie sich nie: Der Prüfer las nur das Verzeichnis,
+         * und die einzige Akte, die es gibt, entsteht hier in einem
+         * Wegwerfordner. Alle seine Regeln waren an von Hand gebauten
+         * Beispielen gezeigt und noch nie an einer Akte, die die Werkzeuge
+         * selbst erzeugt haben.
+         *
+         * > **Er läuft absichtlich nach der Sicherung.** Die datierten Kopien
+         * > liegen dann schon in `.sicherung`, und seit heute abend erkennen
+         * > die drei Muster sie — für den Ort. Zählte der Abgleich sie mit,
+         * > meldete er jede gesicherte Akte als doppelt geführt.
+         */
+        const geprueft = spawnSync(process.execPath, [join(SHOP, 'bin', 'ablagepruefung.mjs')],
+          { cwd: SHOP, encoding: 'utf8', env: { ...werkzeugumgebung, VORGANG_ABLAGE: akte } });
+        const ptext = `${geprueft.stdout ?? ''}${geprueft.stderr ?? ''}`;
+        // Geprüft wird, dass er die Akte **angesehen** hat, nicht nur, dass er
+        // still blieb: Ein Prüfer, der nichts findet, weil er nichts liest,
+        // sieht von außen aus wie ein bestandener Lauf. Die Zahl der Journale
+        // steht bewusst nicht fest — seit heute abend zählt der Stand aus
+        // `.sicherung` für den Ort mit.
+        if (!/Probeakte aus VORGANG_ABLAGE: [1-9]\d* Journal/.test(ptext)
+          || !/journal-2026\.jsonl: [1-9]\d* Eintrag\/Datei abgeglichen/.test(ptext)) {
+          probleme.push('der Prüfer der Ablage sieht die Probeakte nicht an');
+        } else if (geprueft.status !== 0) {
+          probleme.push(`die gebaute Akte hält dem Prüfer nicht stand: ${ptext.trim().split('\n').filter((z) => z.includes('✗')).join(' | ')}`);
+        } else {
+          bestanden.push('Die gebaute Akte hält npm run pruefe-ablage stand');
+        }
       }
     }
   }
@@ -519,7 +552,8 @@ try {
     process.exit(1);
   }
   console.log('Der Weg trägt: Klick, Empfangsskript, Ablage, Posteingang, Angebot, Rechnung,');
-  console.log('Akte, Gutschrift, Buchhaltung, Sicherung. Die Papierkette läuft ganz durch —');
+  console.log('Akte, Gutschrift, Buchhaltung, Sicherung, Prüfer. Die Papierkette läuft ganz');
+  console.log('durch, und der Prüfer der Ablage hat die gebaute Akte gesehen —');
   console.log('was dazwischen in der Welt geschieht (Zahlung, Bestellung beim Lieferanten,');
   console.log('Lieferung), steht in der Betriebskette und bleibt dort stehen.');
 } finally {
