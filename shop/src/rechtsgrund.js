@@ -179,6 +179,23 @@ export const RECHTSGRUENDE = Object.freeze([
     wirkung: 'seite',
     belegt: false,
   }),
+  // **Nachgetragen am 12. September 2026**, mit der Ablage der Absage: Die
+  // Aufbewahrungspflicht des UGB trifft ausdrücklich auch die **abgesendeten**
+  // Geschäftsbriefe, nicht nur die empfangenen.
+  Object.freeze({
+    zitat: '§ 212 UGB',
+    behauptung: 'Empfangene Geschäftsbriefe und Wiedergaben der abgesendeten Geschäftsbriefe '
+      + 'sind sieben Jahre aufzubewahren.',
+    wirkung: 'pflichtgrund',
+    belegt: false,
+  }),
+  Object.freeze({
+    zitat: '§ 132 Abs 1 BAO',
+    behauptung: 'Neben Büchern und Belegen sind auch Geschäftspapiere und sonstige Unterlagen, '
+      + 'die für die Abgabenerhebung von Bedeutung sind, sieben Jahre aufzubewahren.',
+    wirkung: 'pflichtgrund',
+    belegt: false,
+  }),
   Object.freeze({
     zitat: '§ 377 UGB',
     behauptung: 'Der unternehmerische Käufer hat die Ware zu untersuchen und Mängel '

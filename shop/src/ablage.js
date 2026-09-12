@@ -51,6 +51,23 @@ export const ARTEN = {
    * `vorgang` — das ist die Vorgangsakte nach § 131 Abs 1 Z 5 BAO.
    */
   auftragsbestaetigung: { kuerzel: 'AB', nummernkreis: false },
+  /**
+   * **Aufgenommen am 12. September**, als die Absage ablegen können sollte.
+   * Sie ist der vierte Brief an einen Kunden und war der einzige, von dem
+   * nichts blieb: gedruckt, versendet, fort. § 132 Abs 1 BAO verlangt die
+   * Geschäftspapiere sieben Jahre, § 212 UGB die Wiedergaben der abgesendeten
+   * Geschäftsbriefe — und die **eingehende** Bestellung wird seit dem
+   * 4. September aufgezeichnet.
+   *
+   * > **Der Brief des Kunden wurde aufgehoben, die Antwort darauf nicht.**
+   *
+   * `nummernkreis: false` aus demselben Grund wie bei der
+   * Auftragsbestätigung: Eine fortlaufende Nummer verlangt § 11 UStG für die
+   * Rechnung. Rückführbar bleibt die Absage über den Vorgang (§ 131 Abs 1 Z 5
+   * BAO) — und ein eigener Kreis brächte eine Lückenerklärung ein, die
+   * niemand verlangt.
+   */
+  absage: { kuerzel: 'AS', nummernkreis: false },
 };
 
 /**

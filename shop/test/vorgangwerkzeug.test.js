@@ -441,6 +441,55 @@ test('--ablegen hinterlässt die Durchschrift des Belegs, nicht nur die Zeile da
  * in der Sprache des Betriebs.
  * ------------------------------------------------------------------ */
 
+test('die Absage geht mit ihrer Durchschrift in die Akte',
+  { skip: !vorhanden && 'preise/ fehlt' }, () => {
+    /*
+     * **Der vierte Brief, von dem nichts blieb — 12. September 2026.**
+     * Angebot, Auftragsbestätigung und Rechnung gehen seit dem 11. September
+     * mit ihrer Durchschrift in die Akte; die Absage ging hinaus und war
+     * fort. Der Brief des Kunden wird seit dem 4. September aufgezeichnet,
+     * die Antwort darauf nicht (§ 132 Abs 1 BAO, § 212 UGB).
+     */
+    const u = baueUmgebung();
+    const akte = wegwerfordner('akte-');
+    const e = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0151',
+      '--stufe', 'absage', '--ablegen'], { VORGANG_ABLAGE: akte });
+    assert.equal(e.code, 0, e.aus);
+    assert.match(e.aus, /Abgelegt: absage als lfd\. 1/);
+
+    // Ohne Nummernkreis: Rückführbar ist sie über den Vorgang
+    // (§ 131 Abs 1 Z 5 BAO), und so heißt auch ihre Durchschrift.
+    const datei = join(akte, 'belege-2026', 'AS-2026-0151.txt');
+    assert.equal(existsSync(datei), true, `keine Durchschrift abgelegt:\n${e.aus}`);
+    const durchschrift = readFileSync(datei, 'utf8');
+    assert.ok(durchschrift.includes('Zu Ihrer Anfrage 2026-0151'));
+    assert.ok(e.aus.includes(durchschrift.trim()), 'gedruckt wurde ein anderer Text als abgelegt');
+
+    const eintrag = readFileSync(join(akte, 'journal-2026.jsonl'), 'utf8')
+      .trim().split('\n').map((z) => JSON.parse(z)).find((z) => z.typ === 'eintrag').eintrag;
+    assert.equal(eintrag.art, 'absage');
+    assert.equal(eintrag.nummer, null);
+    assert.equal(eintrag.vorgang, '2026-0151');
+    // Kein Betrag, und das ist keine Lücke: Die Absage nennt keinen.
+    assert.equal(eintrag.betragBrutto, null);
+    // Im Journal steht die Zahl der Gründe, nicht die Gründe — und nicht die
+    // Anschrift des Kunden.
+    assert.match(eintrag.text, /Grund\/Gründe/);
+    assert.ok(!eintrag.text.includes('Baustellenweg'));
+  });
+
+test('ohne --ablegen bleibt von der Absage nichts liegen',
+  { skip: !vorhanden && 'preise/ fehlt' }, () => {
+    const u = baueUmgebung();
+    const akte = wegwerfordner('akte-');
+    const e = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0152',
+      '--stufe', 'absage'], { VORGANG_ABLAGE: akte });
+    assert.equal(e.code, 0, e.aus);
+    assert.match(e.aus, /Nichts abgelegt/);
+    assert.equal(existsSync(join(akte, 'journal-2026.jsonl')), false);
+    assert.equal(existsSync(join(akte, 'belege-2026')), false);
+  });
+
 test('--stufe absage schreibt den Brief an den Kunden', { skip: !vorhanden && 'preise/ fehlt' }, () => {
   const u = baueUmgebung();
   const e = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0100',

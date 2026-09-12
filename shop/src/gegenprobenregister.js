@@ -840,7 +840,11 @@ export const GEGENPROBEN = Object.freeze([
     // Mutiert wird die Karte und nicht das Werkzeug: Eine Stufe aus
     // `bin/vorgang.mjs` zu entfernen hielte die beiden Seiten wieder in
     // Übereinstimmung — und bewiese nichts.
-    suchen: '    werkzeug: \'npm run vorgang -- --stufe absage\',',
+    // **Nachgezogen am 12. September**, als die Absage `--ablegen` bekam: Der
+    // Suchtext zitiert eine Zeile der Karte, und die hat sich geändert. Der
+    // Prüfer, der jede Mutation daraufhin ansieht, ob ihr Suchtext noch
+    // vorkommt, hat es im selben Lauf gemeldet.
+    suchen: '    werkzeug: \'npm run vorgang -- --stufe absage --ablegen\',',
     ersetzen: '    werkzeug: \'npm run vorgang -- --stufe mahnung\',',
     erwartet: /stufe-ohne-platz/,
     warum: 'Genau der Zustand vom 10. September: `bin/vorgang.mjs` bekam die Stufe `absage`, '
@@ -3442,6 +3446,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'Durchschrift zu einem Eintrag, steht in der Akte eine Aufzeichnung über ein Papier, '
       + 'das niemand mehr hat — genau der Zustand, den die Runde vom 11. September vorfand, '
       + 'und der von außen wie eine gepflegte Ablage aussieht.',
+  }),
+  Object.freeze({
+    id: 'absage-ohne-durchschrift',
+    pruefer: 'test',
+    was: 'Die Absage geht hinaus, ohne dass etwas von ihr bleibt',
+    datei: 'shop/bin/vorgang.mjs',
+    art: 'ersetzen',
+    suchen: '  const absagedurchschrift = legeDurchschriftAb(',
+    ersetzen: '  const absagedurchschrift = String(',
+    erwartet: /keine Durchschrift abgelegt/,
+    warum: 'Die Absage ist der vierte Brief an einen Kunden und war bis zum 12. September der '
+      + 'einzige, von dem nichts blieb: gedruckt, versendet, fort. § 132 Abs 1 BAO verlangt die '
+      + 'Geschäftspapiere sieben Jahre, § 212 UGB die Wiedergaben der abgesendeten '
+      + 'Geschäftsbriefe — und die **eingehende** Bestellung wird seit dem 4. September '
+      + 'aufgezeichnet. Der Brief des Kunden wurde aufgehoben, die Antwort darauf nicht. Sagt '
+      + 'ein Kunde später, er habe nie erfahren, warum, ist die Abschrift das Einzige, was '
+      + 'dagegen steht.',
   }),
   Object.freeze({
     id: 'auswahl-ueberspringt-den-ordnerleser',

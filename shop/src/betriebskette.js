@@ -189,7 +189,12 @@ export const ABZWEIGE = Object.freeze([
     id: 'absage',
     ab: 'posteingang',
     was: 'Der Fall kommt nicht zustande; der Kunde bekommt den Grund im Klartext',
-    werkzeug: 'npm run vorgang -- --stufe absage',
+    // **Seit dem 12. September mit `--ablegen`:** Die Absage ist der vierte
+    // Brief an einen Kunden und war der einzige, von dem nichts blieb.
+    // § 132 Abs 1 BAO verlangt die Geschäftspapiere sieben Jahre, § 212 UGB
+    // die Wiedergaben der abgesendeten Geschäftsbriefe — und die eingehende
+    // Bestellung wird seit dem 4. September aufgezeichnet.
+    werkzeug: 'npm run vorgang -- --stufe absage --ablegen',
     grundlage: 'AGB Punkt 2 — die Bestellung ist das Angebot, der Vertrag entsteht erst mit '
       + 'der Auftragsbestätigung. Die einzelnen Gründe stehen in Punkt 1, 5 und 12.',
   }),

@@ -609,6 +609,60 @@ if (stufe === 'absage') {
   console.log(`\n${'—'.repeat(72)}`);
   console.log('\nDie Absage nennt keinen Betrag und keine Position: Was abgesagt wird,');
   console.log('steht in der Anfrage des Kunden.');
+
+  /*
+   * **Der vierte Brief, von dem nichts blieb — 12. September 2026.**
+   *
+   * Angebot, Auftragsbestätigung und Rechnung gehen seit dem 11. September
+   * mit ihrer Durchschrift in die Akte. Die Absage ging hinaus und war fort.
+   *
+   * > **Der Brief des Kunden wird seit dem 4. September aufgezeichnet, die
+   * > Antwort darauf nicht.** § 132 Abs 1 BAO verlangt die Geschäftspapiere
+   * > sieben Jahre, § 212 UGB die Wiedergaben der abgesendeten
+   * > Geschäftsbriefe. Und wenn ein Kunde später sagt, er habe nie erfahren,
+   * > warum, ist die Abschrift das Einzige, was dagegen steht.
+   *
+   * Ohne `--ablegen` bleibt es beim Ausdruck — dieselbe Entscheidung wie bei
+   * den anderen drei: Was in die Akte geht, geht für sieben Jahre hinein.
+   */
+  if (!ablegen) {
+    console.log('\nNichts abgelegt, nichts versendet. `--ablegen` legt die Durchschrift');
+    console.log('in die Akte; das Absenden entscheidet der Auftraggeber.');
+    process.exit(0);
+  }
+
+  sperreLuecken(absage.text);
+
+  const jahrDerAbsage = Number(datum.slice(0, 4));
+  const wurzelDerAbsage = process.env.VORGANG_ABLAGE ?? join(REPO, ABLAGEORT);
+  const absagejournal = join(wurzelDerAbsage, `journal-${jahrDerAbsage}.jsonl`);
+  mkdirSync(wurzelDerAbsage, { recursive: true });
+  const bestandDerAbsage = existsSync(absagejournal) ? readFileSync(absagejournal, 'utf8') : '';
+  const absageablage = ausJournal(bestandDerAbsage);
+  absageablage.schreibe = (e) => appendFileSync(absagejournal, `${journalzeile(e)}\n`, 'utf8');
+
+  const absagedurchschrift = legeDurchschriftAb(
+    wurzelDerAbsage, jahrDerAbsage, { art: 'absage', vorgang: nummer }, absage.text,
+  );
+  const absageeintrag = haltefest(absageablage, {
+    art: 'absage',
+    nummer: null,
+    zeitpunkt: datum,
+    vorgang: nummer,
+    // Kein Betrag, und das ist keine Lücke: Die Absage nennt keinen. Was
+    // abgesagt wurde, steht in der Anfrage des Kunden.
+    betragNetto: null,
+    betragBrutto: null,
+    // Nur die Zahl der Gründe, nicht die Gründe selbst — sie stehen im Brief.
+    text: `Absage zu Vorgang ${nummer}, ${uebersetzt.saetze.length} Grund/Gründe`,
+  });
+
+  console.log(`\nAbgelegt: absage als lfd. ${absageeintrag.lfd} in `
+    + `${process.env.VORGANG_ABLAGE ? absagejournal : journalpfad(jahrDerAbsage)}`);
+  console.log(`Durchschrift: ${process.env.VORGANG_ABLAGE ? absagedurchschrift
+    : belegpfad(jahrDerAbsage, { art: 'absage', vorgang: nummer })}`);
+  console.log('Ohne Belegnummer — eine fortlaufende Nummer verlangt § 11 UStG für die');
+  console.log('Rechnung. Rückführbar bleibt der Eintrag über die Vorgangsnummer.');
   process.exit(0);
 }
 
