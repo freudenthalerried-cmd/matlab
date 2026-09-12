@@ -63,11 +63,17 @@
     "shop/test/beleg.test.js",
     "shop/test/vorgangwerkzeug.test.js"
   ],
+  "das-verfallene-angebot-wartet-weiter": [
+    "shop/test/vorgangsstand.test.js"
+  ],
   "der-auszug-ohne-abgleich": [
     "shop/test/ablageort.test.js"
   ],
   "der-posteingang-vergisst-die-akte": [
     "shop/test/posteingang.test.js"
+  ],
+  "die-akte-sagt-nicht-was-dran-ist": [
+    "shop/test/vorgangsstand.test.js"
   ],
   "die-csv-nennt-alles-umsatz": [
     "shop/test/ablage.test.js"

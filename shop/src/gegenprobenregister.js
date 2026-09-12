@@ -3599,6 +3599,41 @@ export const GEGENPROBEN = Object.freeze([
       + 'verloren und der Vorgang läuft weiter. Diese Mutation nimmt die Sperre ganz weg.',
   }),
   Object.freeze({
+    id: 'die-akte-sagt-nicht-was-dran-ist',
+    pruefer: 'test',
+    was: 'Nach dem Angebot nennt die Akte einen anderen nächsten Schritt',
+    datei: 'shop/src/vorgangsstand.js',
+    art: 'ersetzen',
+    suchen: '  const naechster = SCHRITTE[erreicht + 1] ?? null;',
+    ersetzen: '  const naechster = SCHRITTE[erreicht] ?? null;',
+    erwartet: /nach dem Angebot kommt etwas anderes/,
+    warum: 'Die Akte sagte bis zum 12. September, **was geschehen ist** — die Zeilen und ihre '
+      + 'Belege. Vier Vorgänge an vier verschiedenen Punkten der Betriebskette bekamen '
+      + 'dieselbe Auskunft: Der Kunde hat angenommen, und niemand erinnerte an den '
+      + 'Zahlungseingang; die Ware ist bestellt, und niemand an das Lieferdatum, ohne das '
+      + 'keine Rechnung entsteht. **Die einzige vorwärts gerichtete Aussage der ganzen Akte '
+      + 'war die Bindefrist.** Ein um eins verschobener Schritt ist der Fehler, der dabei '
+      + 'entsteht: Die Auskunft sieht richtig aus und nennt den Schritt, der gerade fertig '
+      + 'geworden ist.',
+  }),
+  Object.freeze({
+    id: 'das-verfallene-angebot-wartet-weiter',
+    pruefer: 'test',
+    was: 'Ein Vorgang mit abgelaufener Bindefrist wartet weiter auf die Annahme',
+    datei: 'shop/src/vorgangsstand.js',
+    art: 'ersetzen',
+    suchen: '    if (frist.lesbar && frist.abgelaufen) {',
+    ersetzen: '    if (false) {',
+    erwartet: /ein verfallenes Angebot wartet weiter auf Annahme/,
+    warum: 'Nimmt der Kunde am zwanzigsten Tag an, entsteht kein Vertrag zum Preis von damals '
+      + '(§ 862 ABGB), und Baustoffpreise bewegen sich. „Als Nächstes: der Kunde nimmt an" '
+      + 'wäre dann eine Arbeitsanweisung, die ins Verlustgeschäft führt — die Folge des '
+      + 'Ablaufs ist eine Entscheidung des Betreibers, neu rechnen oder ziehen lassen, und '
+      + 'genau das sagt der Abzweig `angebot-verfaellt`. **Ein Angebot fälschlich für '
+      + 'verfallen zu halten kostet eine Rückfrage, umgekehrt kostet es Geld** — dieselbe '
+      + 'Richtung wie bei der Bindefrist selbst.',
+  }),
+  Object.freeze({
     id: 'verfallenes-angebot-bindet-weiter',
     pruefer: 'test',
     was: 'Die Akte hält ein abgelaufenes Angebot für bindend',

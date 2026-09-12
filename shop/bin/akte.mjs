@@ -37,6 +37,7 @@ import { ausJournal } from '../src/speicher.js';
 import { ABLAGEORT, belegname, belegordner, istJournal } from '../src/ablageort.js';
 import { EUR } from '../src/format.js';
 import { bindefrist } from '../src/beleg.js';
+import { vorgangsstand } from '../src/vorgangsstand.js';
 import { geschaeftstag } from '../src/geschaeftszeit.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -47,6 +48,15 @@ const gesucht = (() => {
   const i = process.argv.indexOf('--vorgang');
   return i >= 0 ? (process.argv[i + 1] ?? null) : null;
 })();
+
+/*
+ * **`--offen` macht aus der Akte eine Arbeitsliste.** Die Akte zeigt alles,
+ * und das ist richtig: Sie ist die Auskunft über einen Geschäftsfall. Wer
+ * morgens wissen will, was zu tun ist, braucht die andere Frage — und die
+ * abgeschlossenen Vorgänge stehen ihr im Weg, weil es mit der Zeit die
+ * meisten sind.
+ */
+const nurOffene = process.argv.includes('--offen');
 
 if (!existsSync(WURZEL)) {
   console.error(`Es gibt keine Ablage: ${WURZEL} fehlt.`);
@@ -68,6 +78,8 @@ const heute = geschaeftstag();
 let gezeigt = 0;
 let verfallen = 0;
 let bindend = 0;
+let laufend = 0;
+let geschlossen = 0;
 for (const datei of journale) {
   const jahr = Number(datei.match(/journal-(\d{4})\.jsonl$/)[1]);
   const ablage = ausJournal(readFileSync(join(WURZEL, datei), 'utf8'));
@@ -81,6 +93,11 @@ for (const datei of journale) {
     const akte = vorgangsakte(ablage, vorgang);
     if (!akte.length) {
       if (gesucht) console.log(`  Zu Vorgang ${vorgang} steht nichts im Journal ${jahr}.`);
+      continue;
+    }
+    const stand = vorgangsstand(akte, { heute });
+    if (nurOffene && stand.abgeschlossen) {
+      geschlossen += 1;
       continue;
     }
     gezeigt += 1;
@@ -142,6 +159,31 @@ for (const datei of journale) {
         }
       }
     }
+    /*
+     * **Was als Nächstes zu tun ist — 12. September 2026, abends.**
+     *
+     * Die Akte sagte bis hierher, **was geschehen ist**: die Zeilen und ihre
+     * Belege. Vier Vorgänge an vier verschiedenen Punkten der Betriebskette
+     * bekamen dieselbe Auskunft. Der Kunde hat angenommen — und niemand
+     * erinnerte daran, den Zahlungseingang zu prüfen; die Ware ist bestellt —
+     * und niemand an das Lieferdatum, ohne das keine Rechnung entsteht.
+     *
+     * Der Schritt, sein Werkzeug und sein Gate kommen aus `SCHRITTE` in
+     * `src/betriebskette.js` und werden hier nur abgelesen.
+     */
+    if (stand.abgeschlossen) {
+      geschlossen += 1;
+      console.log(`    Stand: abgeschlossen — ${stand.abgeschlossen}`);
+      if (stand.abzweig) console.log(`           ${stand.abzweig.was}`);
+    } else {
+      laufend += 1;
+      console.log(`    Stand: ${stand.erreicht ? `zuletzt „${stand.erreicht}"` : 'noch kein Papier'}`);
+      if (stand.naechster) {
+        console.log(`    Als Nächstes: ${stand.naechster.was}`);
+        console.log(`           ${stand.naechster.werkzeug ?? 'kein Werkzeug — das geschieht in der Welt'}`);
+        console.log(`           ${stand.naechster.gate}`);
+      }
+    }
     const frist = aufbewahrungBis(jahr);
     console.log(`    aufzubewahren bis ${frist.hinweis}\n`);
   }
@@ -160,6 +202,10 @@ if (bindend || verfallen) {
   }
   console.log('');
 }
+
+console.log(`${laufend} Vorgang/Vorgänge laufen, ${geschlossen} sind abgeschlossen.`);
+console.log('Was als Nächstes zu tun ist, steht bei jedem laufenden — der Schritt, sein');
+console.log('Werkzeug und sein Gate kommen aus der Betriebskette (npm run betriebskette).\n');
 
 console.log(`${gezeigt} Vorgang/Vorgänge gezeigt. Der Inhalt der Durchschriften steht`);
 console.log('absichtlich nicht hier: Er trägt Namen und Anschrift des Kunden, und wer ihn');

@@ -17,6 +17,8 @@
  */
 
 import { readFileSync } from 'node:fs';
+
+import { papierschrittbefund } from '../src/vorgangsstand.js';
 import { fileURLToPath } from 'node:url';
 
 import {
@@ -77,7 +79,18 @@ if (a.ohneGrundlage) {
   console.log('');
 }
 
-const meldungen = [...b.meldungen, ...a.meldungen, ...st.meldungen];
+/*
+ * **Und das Papierregister — 12. September 2026, abends.** `npm run akte`
+ * liest seit heute abend aus den abgelegten Papieren ab, wie weit ein Vorgang
+ * ist und was als Nächstes dran ist. Die Zuordnung Papier → Schritt steht in
+ * `src/vorgangsstand.js`; sie zeigt auf diese Liste hier, und was auf eine
+ * Liste zeigt, gehört von ihr aus gegengeprüft. Beide Richtungen: Jedes
+ * Papier belegt einen Schritt, und jeder genannte Schritt existiert.
+ */
+const ps = papierschrittbefund();
+console.log(`Papiere als Beleg eines Schritts — ${ps.geprueft} Arten abgeglichen.\n`);
+
+const meldungen = [...b.meldungen, ...a.meldungen, ...st.meldungen, ...ps.meldungen];
 
 if (meldungen.length) {
   console.log('');
