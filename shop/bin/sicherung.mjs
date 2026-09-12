@@ -22,39 +22,86 @@
 import { readdirSync, statSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, relative } from 'node:path';
-import { sichere, staende, SICHERUNGSTIEFE } from '../src/sicherung.js';
+import { BEREICHE, sichere, staende, SICHERUNGSTIEFE } from '../src/sicherung.js';
 
 const HIER = dirname(fileURLToPath(import.meta.url));
 const REPO = join(HIER, '..', '..');
-const ORDNER = process.env.SICHERUNG_ORDNER || join(REPO, 'preise');
 
-if (!existsSync(ORDNER)) {
-  console.error(`Nichts zu sichern: ${ORDNER} gibt es nicht.`);
-  console.error('Auf diesem Rechner liegen keine vertraulichen Dateien.');
-  process.exit(0);
+/*
+ * **Ein Ordner war zu wenig — 12. September 2026.**
+ *
+ * Hier stand `SICHERUNG_ORDNER || preise`. Seit dem 11. September liegt neben
+ * `preise/` die **Vorgangsakte**: Journal, Durchschriften, Buchhaltungsauszüge
+ * — und die ist weder erzeugt noch gepflegt, sondern aufgezeichnet. Ein Preis
+ * lässt sich nachrechnen; eine gezogene Rechnungsnummer nicht.
+ *
+ * Die Bereiche stehen mit ihrem Grund in `src/sicherung.js`. `SICHERUNG_ORDNER`
+ * bleibt als einzelner Ordner für Proben.
+ */
+const bereiche = process.env.SICHERUNG_ORDNER
+  ? [{ ordner: process.env.SICHERUNG_ORDNER, was: 'Probe', absolut: true }]
+  : BEREICHE.map((b) => ({ ...b, pfad: join(REPO, b.ordner) }));
+
+/** Alle Dateien eines Bereichs — auch die in Unterordnern, ohne die Kopien. */
+const sammle = (ordner) => {
+  const gefunden = [];
+  const gehe = (wo) => {
+    for (const eintrag of readdirSync(wo, { withFileTypes: true })) {
+      if (eintrag.name === '.sicherung') continue;
+      const voll = join(wo, eintrag.name);
+      if (eintrag.isDirectory()) { gehe(voll); continue; }
+      gefunden.push(voll);
+    }
+  };
+  gehe(ordner);
+  return gefunden.sort();
+};
+
+let gesichertGesamt = 0;
+let angesehen = 0;
+let fehlende = 0;
+
+for (const bereich of bereiche) {
+  const pfad = bereich.absolut ? bereich.ordner : bereich.pfad;
+  if (!existsSync(pfad)) {
+    /*
+     * **Ein fehlender Bereich ist kein Fehler und kein Grund zu schweigen.**
+     * Vor dem ersten Geschäftsfall gibt es `ablage/` nicht; auf einem Rechner
+     * ohne Konditionen fehlt `preise/`. Beides steht hier mit Namen, damit
+     * niemand eine Sicherung für vollständig hält, die einen Bereich gar
+     * nicht gesehen hat.
+     */
+    console.log(`\n${bereich.was}: ${relative(REPO, pfad)} gibt es hier nicht — nichts gesichert.`);
+    fehlende += 1;
+    continue;
+  }
+
+  const dateien = sammle(pfad).filter((d) => statSync(d).isFile());
+  if (!dateien.length) {
+    console.log(`\n${bereich.was}: ${relative(REPO, pfad)} ist leer — nichts gesichert.`);
+    fehlende += 1;
+    continue;
+  }
+
+  console.log(`\n${bereich.was}: ${dateien.length} Datei(en) aus ${relative(REPO, pfad)}\n`);
+  for (const datei of dateien) {
+    angesehen += 1;
+    const kopie = sichere(datei);
+    if (!kopie) continue;
+    gesichertGesamt += 1;
+    console.log(`  ${relative(pfad, datei).padEnd(40)} ${String(staende(datei).length).padStart(2)} Stand(e)`);
+  }
 }
 
-const dateien = readdirSync(ORDNER)
-  .filter((d) => d !== '.sicherung')
-  .map((d) => join(ORDNER, d))
-  .filter((p) => statSync(p).isFile())
-  .sort();
-
-if (dateien.length === 0) {
-  console.error(`\nAbbruch: ${ORDNER} ist leer.`);
+if (!angesehen) {
+  console.error('\nAbbruch: Kein Bereich hat eine Datei hergegeben.');
   console.error('Eine Sicherung von nichts sieht aus wie eine Sicherung.');
   process.exit(2);
 }
 
-console.log(`\nSicherung: ${dateien.length} Datei(en) aus ${relative(REPO, ORDNER)}\n`);
-let gesichert = 0;
-for (const datei of dateien) {
-  const kopie = sichere(datei);
-  if (!kopie) continue;
-  gesichert++;
-  const wieviele = staende(datei).length;
-  console.log(`  ${relative(ORDNER, datei).padEnd(34)} ${String(wieviele).padStart(2)} Stand(e)`);
-}
-console.log(`\n${gesichert} gesichert nach ${relative(REPO, join(ORDNER, '.sicherung'))}`);
+console.log(`\n${gesichertGesamt} von ${angesehen} Datei(en) gesichert, `
+  + `${bereiche.length - fehlende} von ${bereiche.length} Bereich(en) vorhanden.`);
 console.log(`Je Datei werden ${SICHERUNGSTIEFE} Stände aufgehoben, der älteste fällt.`);
-console.log('Der Ordner ist von .gitignore gedeckt — die Kopien bleiben lokal.');
+console.log('Die Kopien liegen neben dem Original, im selben gesperrten Bereich.');
+console.log('Das schützt gegen Überschreiben und versehentliches Löschen — nicht gegen');
+console.log('den Verlust des Rechners. Der Ort außerhalb ist Sache des Auftraggebers.');

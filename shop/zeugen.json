@@ -177,6 +177,9 @@
   "selbstbeschreibung-fuer-alle-behauptet": [
     "shop/test/merkblattverweis.test.js"
   ],
+  "sicherung-sieht-nur-die-oberste-ebene": [
+    "shop/test/sicherung.test.js"
+  ],
   "sitemap-ohne-aenderungsdatum": [
     "shop/test/sitemapstand.test.js"
   ],

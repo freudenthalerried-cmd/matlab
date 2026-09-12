@@ -27,6 +27,47 @@ import { basename, dirname, extname, join } from 'node:path';
 /** Wie viele Stände je Datei aufgehoben werden. */
 export const SICHERUNGSTIEFE = 10;
 
+/**
+ * Die Bereiche, die gesichert werden — und warum.
+ *
+ * **Ergänzt am 12. September 2026.** Bis heute stand hier nur `preise/`, und
+ * die Begründung dieses Moduls lautet: *„Eine Datei, die sich aus ihrer
+ * Quelle neu erzeugen lässt, kann man verlieren. Eine gepflegte Datei nicht."*
+ *
+ * > **Die Vorgangsakte ist weder erzeugt noch gepflegt — sie ist
+ * > aufgezeichnet.** Ein Preis lässt sich nachrechnen, eine Konditionenliste
+ * > neu anfordern. Eine gezogene Rechnungsnummer, eine abgelegte Durchschrift
+ * > und der Tag, an dem sie entstanden ist, lassen sich aus nichts
+ * > wiederherstellen — und § 132 BAO verlangt sie sieben Jahre.
+ *
+ * Gemessen am eigenen Bestand ist das keine Vorsicht auf Vorrat:
+ * `preise/poschacher-positionen.csv` ist am 8. September verloren gegangen,
+ * und seither weigert sich ein Prüfer dauerhaft.
+ *
+ * **Was diese Sicherung nicht ist:** ein Schutz gegen den Verlust des
+ * Rechners. Die Kopien liegen neben dem Original, im selben gesperrten
+ * Bereich — das schützt gegen Überschreiben und versehentliches Löschen, nicht
+ * gegen eine kaputte Platte. Der Ort außerhalb ist Sache des Auftraggebers und
+ * steht als offener Punkt.
+ */
+export const BEREICHE = Object.freeze([
+  Object.freeze({
+    ordner: 'preise',
+    was: 'Konditionen des Lieferanten',
+    warum: 'Von Hand gepflegt oder aus Rechnungen abgetippt, von `.gitignore` gedeckt — kein '
+      + '`git checkout` holt sie zurück. Am 30. August hat eine Gegenprobe die Preisdatei '
+      + 'geleert; gerettet hat damals die Ableitbarkeit, und auf die ist kein Verlass.',
+  }),
+  Object.freeze({
+    ordner: 'ablage',
+    was: 'Vorgangsakte — Journal, Durchschriften, Buchhaltungsauszüge',
+    warum: 'Aufgezeichnet, nicht erzeugt: Eine gezogene Belegnummer, eine abgelegte '
+      + 'Durchschrift und der Tag ihrer Entstehung lassen sich aus nichts wiederherstellen. '
+      + '§ 132 BAO verlangt sie sieben Jahre, § 11 Abs 1 Z 5 UStG nimmt eine Nummer nicht '
+      + 'zurück. Das Journal wächst nur — aber ein `rm` kennt diese Regel nicht.',
+  }),
+]);
+
 /** `2026-08-30T15-42-07` — sortierbar und ohne Zeichen, die Dateisysteme ärgern. */
 export function zeitstempel(datum = new Date()) {
   return datum.toISOString().slice(0, 19).replace(/:/g, '-');

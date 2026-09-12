@@ -3457,6 +3457,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'und der von außen wie eine gepflegte Ablage aussieht.',
   }),
   Object.freeze({
+    id: 'sicherung-sieht-nur-die-oberste-ebene',
+    pruefer: 'test',
+    was: 'Die Sicherung lässt die Dateien in Unterordnern liegen',
+    datei: 'shop/bin/sicherung.mjs',
+    art: 'ersetzen',
+    suchen: "      if (eintrag.isDirectory()) { gehe(voll); continue; }",
+    ersetzen: '      if (eintrag.isDirectory()) continue;',
+    erwartet: /hat keinen Stand|3 Datei/,
+    warum: 'Bis zum 12. September sicherte dieses Werkzeug nur die oberste Ebene eines '
+      + 'Ordners. Für `preise/` genügte das; die Vorgangsakte hat zwei Unterordner, und dort '
+      + 'liegt das Wesentliche: **jede Durchschrift** in `belege-2026/`, der Auszug für die '
+      + 'Buchhaltung in `buchhaltung/`. Eine Sicherung, die nur das Journal mitnimmt, meldet '
+      + 'trotzdem „gesichert" — und der Schaden fällt erst auf, wenn jemand die Belege sucht. '
+      + 'Sie sind nach § 132 BAO sieben Jahre aufzubewahren und lassen sich aus nichts '
+      + 'wiederherstellen.',
+  }),
+  Object.freeze({
     id: 'einkauf-als-umsatz-gezaehlt',
     pruefer: 'test',
     was: 'Der Auszug für die Buchhaltung zählt jedes Papier mit einem Betrag',
