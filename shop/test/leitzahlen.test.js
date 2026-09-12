@@ -248,6 +248,27 @@ test('ein Zählwort deckt, ein Einheitszeichen deckt, das eigene Wort nicht', ()
   assert.equal(fremdeEinheit('Die Kette dauerte 57 Tage.', 'Die Kette dauerte 57'.length, 'tage'), null);
 });
 
+test('Das Zählwort darf ein Bindewort weit weg stehen — aber nicht weiter', () => {
+  /*
+   * **Der Fehlalarm vom 12. September.** Gemeldet wurde ein Satz aus der
+   * Akte: *„57 der 213 Gegenproben haben `test` als Prüfer."* Das Zählwort
+   * `Gegenproben` steht im Verzeichnis — nur drei Wörter weiter, und das
+   * Muster verlangte es unmittelbar hinter der Zahl. Gefunden wurde
+   * stattdessen die abgelöste Plandauer von 57 Tagen.
+   *
+   * > **Ein Prüfer, der vor der Mutation rot ist, macht jede seiner
+   * > Gegenproben unmessbar** — drei Beweise fielen mit diesem einen Satz aus.
+   */
+  assert.equal(fremdeEinheit('57 der 213 Gegenproben haben test', 2, 'tage'),
+    'der 213 Gegenproben');
+  assert.equal(fremdeEinheit('57 von 210 Gegenproben', 2, 'tage'), 'von 210 Gegenproben');
+  assert.equal(fremdeEinheit('60 der Schritte', 2, 'tage'), 'der Schritte');
+  // Und nicht weiter: Je weiter das Hauptwort wegrücken darf, desto eher
+  // deckt es eine Zahl, die gar nicht zu ihm gehört.
+  assert.equal(fremdeEinheit('57 Tage bis zur Entscheidung, 213 Gegenproben', 2, 'tage'), null);
+  assert.equal(fremdeEinheit('57 der Kunden zahlten', 2, 'tage'), null);
+});
+
 test('„Begriffe" steht mit Absicht nicht unter den Zählwörtern', () => {
   // Genau das zählt `keyword-anzahl`. Ein Zählwort, das eine Leitzahl zählt,
   // deckte die Fundstellen zu, für die es den Prüfer gibt.

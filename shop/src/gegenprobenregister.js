@@ -3451,6 +3451,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'und der von außen wie eine gepflegte Ablage aussieht.',
   }),
   Object.freeze({
+    id: 'zaehlwort-nur-direkt-hinter-der-zahl',
+    pruefer: 'test',
+    was: 'Das Zählwort deckt nur noch unmittelbar hinter der Zahl',
+    datei: 'shop/src/leitzahlen.js',
+    art: 'ersetzen',
+    suchen: '  `^\\\\s*(?:(?:der|von|aus|davon|dieser)\\\\s+(?:\\\\d+\\\\s+)?)?(?:${ZAEHLWOERTER.join(\'|\')})\\\\b`,',
+    ersetzen: '  `^\\\\s*(?:${ZAEHLWOERTER.join(\'|\')})\\\\b`,',
+    erwartet: /der 213 Gegenproben|Bindewort/,
+    warum: 'Gemeldet am 12. September aus der eigenen Akte: „57 der 213 Gegenproben haben '
+      + '`test` als Prüfer." Das Zählwort steht seit dem 5. September im Verzeichnis — nur drei '
+      + 'Wörter weiter, und das Muster verlangte es unmittelbar hinter der Zahl. Gefunden wurde '
+      + 'stattdessen die abgelöste Plandauer von 57 Tagen. **Der Fehlalarm war nicht bloß '
+      + 'Lärm:** Ein Prüfer, der vor der Mutation rot ist, macht jede seiner Gegenproben '
+      + 'unmessbar — drei Beweise fielen mit diesem einen Satz aus.',
+  }),
+  Object.freeze({
     id: 'zeuge-still-verloren',
     pruefer: 'test',
     was: 'Ein Lauf ohne genannte Testdatei löscht den bekannten Zeugen',

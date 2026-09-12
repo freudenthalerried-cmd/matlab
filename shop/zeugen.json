@@ -186,6 +186,9 @@
   "weigerung-als-ausgang": [
     "shop/test/prueferurteil.test.js"
   ],
+  "zaehlwort-nur-direkt-hinter-der-zahl": [
+    "shop/test/leitzahlen.test.js"
+  ],
   "zeuge-still-verloren": [
     "shop/test/zeugen.test.js"
   ]

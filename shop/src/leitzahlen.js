@@ -278,7 +278,27 @@ export const ZAEHLWOERTER = Object.freeze([
   'Karten', 'Karte',
 ]);
 
-const ZAEHLWORTMUSTER = new RegExp(`^\\s*(?:${ZAEHLWOERTER.join('|')})\\b`);
+/**
+ * **Das Hauptwort steht nicht immer direkt hinter der Zahl — 12. September 2026.**
+ *
+ * Gemeldet wurde `STATUS.md:1117`: *„57 der 213 Gegenproben haben `test` als
+ * Prüfer."* Das Zählwort `Gegenproben` steht seit dem 5. September im
+ * Verzeichnis, nur stand es hier **drei Wörter weiter** — dazwischen die
+ * Gesamtzahl. Das Muster verlangte es unmittelbar hinter der Zahl und fand
+ * stattdessen die abgelöste Plandauer von 57 Tagen.
+ *
+ * > **Der Fehlalarm war nicht bloß Lärm: Ein Prüfer, der vor der Mutation rot
+ * > ist, macht jede seiner Gegenproben unmessbar.** Drei Beweise fielen mit
+ * > diesem einen Satz aus — „an einem roten Prüfer lässt sich nichts zeigen".
+ *
+ * Zugelassen ist deshalb **ein** Bindewort, wahlweise mit der Gesamtzahl
+ * dahinter: `57 der 213 Gegenproben`, `57 von 210 Gegenproben`. Mehr nicht —
+ * je weiter das Hauptwort wegrücken darf, desto eher deckt es eine Zahl, die
+ * gar nicht zu ihm gehört.
+ */
+const ZAEHLWORTMUSTER = new RegExp(
+  `^\\s*(?:(?:der|von|aus|davon|dieser)\\s+(?:\\d+\\s+)?)?(?:${ZAEHLWOERTER.join('|')})\\b`,
+);
 
 /**
  * Trägt die Fundstelle eine **andere** Einheit als die Leitzahl?
