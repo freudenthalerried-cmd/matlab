@@ -192,6 +192,10 @@
   "suchtext-trifft-die-falsche-stelle": [
     "shop/test/gegenprobenregister.test.js"
   ],
+  "verfallenes-angebot-bindet-weiter": [
+    "shop/test/beleg.test.js",
+    "shop/test/vorgangwerkzeug.test.js"
+  ],
   "vorlage-die-ihr-werkzeug-abweist": [
     "shop/test/vorlagen.test.js"
   ],

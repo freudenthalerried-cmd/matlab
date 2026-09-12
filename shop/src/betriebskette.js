@@ -211,15 +211,22 @@ export const ABZWEIGE = Object.freeze([
     id: 'angebot-verfaellt',
     ab: 'angebot',
     was: 'Die Bindefrist läuft ab, ohne dass der Kunde annimmt',
-    werkzeug: null,
+    /*
+     * **Seit dem 12. September mit Werkzeug.** Hier stand als Grund, ein
+     * Werkzeug müsste täglich über die Ablage laufen, und nichts in diesem
+     * Haus läuft täglich. Der Satz trifft einen **Wächter** und nicht die
+     * **Auskunft**: Wer die Akte aufschlägt, fragt genau das — bindet dieses
+     * Angebot noch? `npm run akte` rechnet es je Angebot aus und zählt am
+     * Ende, wie viele binden und wie viele verfallen sind.
+     *
+     * Was unverändert gilt: Das **Ereignis** bleibt aus. Niemand wird
+     * benachrichtigt, und die Folge des Ablaufs ist eine Entscheidung des
+     * Betreibers — neu rechnen oder ziehen lassen.
+     */
+    werkzeug: 'npm run akte (Bindefrist je Angebot, verfallen oder bindend)',
     grundlage: 'Die Bindefrist von vierzehn Tagen, die `BINDEFRIST` setzt und die auf jedem '
       + 'Angebot mit Datum steht.',
-    warumOhneWerkzeug: 'Der Ablauf einer Frist ist kein Ereignis im Rechner, sondern das '
-      + 'Ausbleiben eines Ereignisses. Ein Werkzeug müsste täglich über die Ablage laufen und '
-      + 'Datum für Datum vergleichen; nichts in diesem Haus läuft täglich. Die Folge des '
-      + 'Ablaufs ist auch keine Nachricht, sondern eine Entscheidung des Betreibers — neu '
-      + 'rechnen oder ziehen lassen. Der Preis von gestern bindet nicht mehr, mehr geschieht nicht.',
-  }),
+      }),
   /*
    * **Aufgenommen am 12. September 2026.** Die Ablage konnte seit dem
    * 4. September stornieren, der Betrieb nicht: Es fehlte das Papier. Ein

@@ -384,6 +384,50 @@ export const BINDEFRIST = Object.freeze({
 /** Die Frist allein — der Name, unter dem der Bestand sie seit dem 6.9. kennt. */
 export const BINDEFRIST_TAGE = BINDEFRIST.tage;
 
+/**
+ * Läuft die Bindefrist eines Angebots noch?
+ *
+ * **Der Anlass, 12. September 2026.** Die Betriebskette führt den Abzweig
+ * „das Angebot verfällt" seit dem 11. September ohne Werkzeug, mit dem Grund:
+ * *„Der Ablauf einer Frist ist kein Ereignis im Rechner, sondern das
+ * Ausbleiben eines Ereignisses. Ein Werkzeug müsste täglich über die Ablage
+ * laufen; nichts in diesem Haus läuft täglich."*
+ *
+ * Der Satz stimmt — und er trifft einen **Wächter**, der von selbst anschlägt.
+ * Er trifft nicht die **Auskunft**:
+ *
+ * > **Wer die Akte aufschlägt, fragt genau das: Bindet dieses Angebot noch?**
+ * > Nimmt der Kunde am zwanzigsten Tag an, entsteht kein Vertrag zum Preis von
+ * > damals (§ 862 ABGB) — und Baustoffpreise bewegen sich.
+ *
+ * Gerechnet wird in Kalendertagen ab dem Angebotsdatum, wie es auf dem Papier
+ * steht: *„Bindefrist: 14 Tage ab Angebotsdatum."* Der letzte Tag zählt mit.
+ *
+ * @param {string} datum  Angebotsdatum, `JJJJ-MM-TT`
+ * @param {string} heute  Geschäftstag, `JJJJ-MM-TT`
+ * @param {number} [tage]
+ */
+export function bindefrist(datum, heute, tage = BINDEFRIST_TAGE) {
+  const alsTag = (t) => {
+    const treffer = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(t ?? ''));
+    return treffer ? Date.UTC(Number(treffer[1]), Number(treffer[2]) - 1, Number(treffer[3])) : null;
+  };
+  const von = alsTag(datum);
+  const jetzt = alsTag(heute);
+  // Ohne lesbares Datum wird nicht geraten: Ein Angebot, dessen Frist niemand
+  // ausrechnen kann, ist nicht „noch gültig", sondern unbekannt.
+  if (von === null || jetzt === null) return { lesbar: false, bis: null, offen: null, abgelaufen: null };
+  const bis = von + tage * 86400000;
+  const offen = Math.round((bis - jetzt) / 86400000);
+  return {
+    lesbar: true,
+    bis: new Date(bis).toISOString().slice(0, 10),
+    offen,
+    abgelaufen: offen < 0,
+    tage,
+  };
+}
+
 export function erzeugeAngebot(warenkorb, { nummer, datum, bindefristTage = BINDEFRIST_TAGE, kunde = {}, betreiber = {} }) {
   const zeilen = [
     `Angebot ${wert(nummer, 'Angebotsnummer')}`,

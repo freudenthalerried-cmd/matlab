@@ -6937,6 +6937,50 @@ const BINDEFRIST = Object.freeze({
 
 const BINDEFRIST_TAGE = BINDEFRIST.tage;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function bindefrist(datum, heute, tage = BINDEFRIST_TAGE) {
+  const alsTag = (t) => {
+    const treffer = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(t ?? ''));
+    return treffer ? Date.UTC(Number(treffer[1]), Number(treffer[2]) - 1, Number(treffer[3])) : null;
+  };
+  const von = alsTag(datum);
+  const jetzt = alsTag(heute);
+  
+  
+  if (von === null || jetzt === null) return { lesbar: false, bis: null, offen: null, abgelaufen: null };
+  const bis = von + tage * 86400000;
+  const offen = Math.round((bis - jetzt) / 86400000);
+  return {
+    lesbar: true,
+    bis: new Date(bis).toISOString().slice(0, 10),
+    offen,
+    abgelaufen: offen < 0,
+    tage,
+  };
+}
+
 function erzeugeAngebot(warenkorb, { nummer, datum, bindefristTage = BINDEFRIST_TAGE, kunde = {}, betreiber = {} }) {
   const zeilen = [
     `Angebot ${wert(nummer, 'Angebotsnummer')}`,

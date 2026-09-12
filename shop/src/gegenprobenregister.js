@@ -3457,6 +3457,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'und der von außen wie eine gepflegte Ablage aussieht.',
   }),
   Object.freeze({
+    id: 'verfallenes-angebot-bindet-weiter',
+    pruefer: 'test',
+    was: 'Die Akte hält ein abgelaufenes Angebot für bindend',
+    datei: 'shop/src/beleg.js',
+    art: 'ersetzen',
+    suchen: '    abgelaufen: offen < 0,',
+    ersetzen: '    abgelaufen: false,',
+    erwartet: /VERFALLEN|abgelaufen/,
+    warum: 'Ein Angebot bindet vierzehn Tage (§ 862 ABGB, und der Satz steht auf jedem '
+      + 'Papier). Nimmt der Kunde am zwanzigsten Tag an, entsteht **kein** Vertrag zum Preis '
+      + 'von damals — und Baustoffpreise bewegen sich. Diese Mutation lässt jedes Angebot als '
+      + 'bindend erscheinen: Der Betreiber liest in der Akte „bindet noch", liefert zum alten '
+      + 'Preis und trägt die Differenz selbst. Die Richtung ist die gefährliche — ein Angebot '
+      + 'fälschlich für verfallen zu halten kostet eine Rückfrage, umgekehrt kostet es Geld.',
+  }),
+  Object.freeze({
     id: 'sicherung-sieht-nur-die-oberste-ebene',
     pruefer: 'test',
     was: 'Die Sicherung lässt die Dateien in Unterordnern liegen',

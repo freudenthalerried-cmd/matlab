@@ -17,6 +17,8 @@ import {
   zahlungsvermerk,
   zahlwegIstVorkasse,
   angeboteneZahlwege,
+  bindefrist,
+  BINDEFRIST,
 } from '../src/beleg.js';
 import { zahlwegName } from '../src/zahlung.js';
 
@@ -740,4 +742,33 @@ test('Mit vollständiger Lage darf auch die Rechnung gestellt werden', () => {
   });
   const f = darfRechnungGestelltWerden(annahmefaehig, r, { geliefert: true });
   assert.equal(f.erlaubt, true, f.gruende.join(' | '));
+});
+
+
+test('Die Bindefrist sagt, ob ein Angebot noch bindet', () => {
+  /*
+   * **12. September 2026.** Die Betriebskette führte den Abzweig „das Angebot
+   * verfällt" ohne Werkzeug, weil ein Wächter täglich laufen müsste. Das
+   * trifft die **Auskunft** nicht: Nimmt der Kunde am zwanzigsten Tag an,
+   * entsteht kein Vertrag zum Preis von damals (§ 862 ABGB).
+   */
+  const frisch = bindefrist('2026-09-10', '2026-09-12');
+  assert.equal(frisch.bis, '2026-09-24');
+  assert.equal(frisch.offen, 12);
+  assert.equal(frisch.abgelaufen, false);
+
+  // Der letzte Tag zählt mit: „14 Tage ab Angebotsdatum" steht so auf dem
+  // Papier, und am vierzehnten bindet es noch.
+  assert.equal(bindefrist('2026-09-12', '2026-09-26').abgelaufen, false);
+  assert.equal(bindefrist('2026-09-12', '2026-09-27').abgelaufen, true);
+  assert.equal(bindefrist('2026-09-12', '2026-09-27').offen, -1);
+
+  // Ohne lesbares Datum wird nicht geraten: unbekannt ist nicht „gültig".
+  const unlesbar = bindefrist('irgendwann', '2026-09-12');
+  assert.equal(unlesbar.lesbar, false);
+  assert.equal(unlesbar.abgelaufen, null);
+
+  // Und die Frist kommt aus dem eingefrorenen Paar, nicht aus einer Zahl
+  // daneben.
+  assert.equal(frisch.tage, BINDEFRIST.tage);
 });

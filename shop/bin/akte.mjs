@@ -36,6 +36,8 @@ import { aufbewahrungBis, vorgangsakte } from '../src/ablage.js';
 import { ausJournal } from '../src/speicher.js';
 import { ABLAGEORT, belegname, belegordner, istJournal } from '../src/ablageort.js';
 import { EUR } from '../src/format.js';
+import { bindefrist } from '../src/beleg.js';
+import { geschaeftstag } from '../src/geschaeftszeit.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const REPO = dirname(SHOP);
@@ -62,7 +64,10 @@ if (!journale.length) {
 
 console.log(`\nAkte — ${journale.length} Geschäftsjahr(e) in ${WURZEL}\n`);
 
+const heute = geschaeftstag();
 let gezeigt = 0;
+let verfallen = 0;
+let bindend = 0;
 for (const datei of journale) {
   const jahr = Number(datei.match(/journal-(\d{4})\.jsonl$/)[1]);
   const ablage = ausJournal(readFileSync(join(WURZEL, datei), 'utf8'));
@@ -100,6 +105,30 @@ for (const datei of journale) {
         + `${(e.nummer ?? '—').padEnd(16)} ${betrag.padStart(12)}`);
       console.log(`         ${e.text}`);
       console.log(`         Beleg: ${beleg}`);
+      /*
+       * **Die Frist, die von selbst abläuft — 12. September 2026.**
+       *
+       * Die Betriebskette führt den Abzweig „das Angebot verfällt" ohne
+       * Werkzeug, weil ein **Wächter** täglich laufen müsste und nichts in
+       * diesem Haus täglich läuft. Das trifft die **Auskunft** nicht: Wer die
+       * Akte aufschlägt, fragt genau das.
+       *
+       * > **Nimmt der Kunde am zwanzigsten Tag an, entsteht kein Vertrag zum
+       * > Preis von damals (§ 862 ABGB)** — und Baustoffpreise bewegen sich.
+       */
+      if (e.art === 'angebot') {
+        const frist = bindefrist(e.zeitpunkt, heute);
+        if (!frist.lesbar) {
+          console.log('         Bindefrist: aus diesem Zeitpunkt nicht zu rechnen');
+        } else if (frist.abgelaufen) {
+          verfallen += 1;
+          console.log(`         Bindefrist: bis ${frist.bis} — VERFALLEN seit `
+            + `${Math.abs(frist.offen)} Tag(en)`);
+        } else {
+          bindend += 1;
+          console.log(`         Bindefrist: bis ${frist.bis} — bindet noch ${frist.offen} Tag(e)`);
+        }
+      }
     }
     const frist = aufbewahrungBis(jahr);
     console.log(`    aufzubewahren bis ${frist.hinweis}\n`);
@@ -109,6 +138,15 @@ for (const datei of journale) {
 if (!gezeigt) {
   console.log('  Kein Eintrag gefunden.\n');
   process.exit(1);
+}
+
+if (bindend || verfallen) {
+  console.log(`Angebote: ${bindend} binden noch, ${verfallen} verfallen (Stand ${heute}).`);
+  if (verfallen) {
+    console.log('Ein verfallenes Angebot bindet nicht mehr — eine Annahme danach ist ein');
+    console.log('neues Angebot des Kunden, und der Preis ist neu zu rechnen (§ 862 ABGB).');
+  }
+  console.log('');
 }
 
 console.log(`${gezeigt} Vorgang/Vorgänge gezeigt. Der Inhalt der Durchschriften steht`);

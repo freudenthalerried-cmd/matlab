@@ -558,6 +558,31 @@ test('die Akte zeigt Journalzeile und Beleg nebeneinander',
     assert.match(e.aus, /aufzubewahren bis 31\.12\.2033/);
   });
 
+test('die Akte sagt je Angebot, ob die Bindefrist noch bindet',
+  { skip: !vorhanden && 'preise/ fehlt' }, () => {
+    /*
+     * **12. September 2026.** Die Betriebskette führte den Abzweig „das
+     * Angebot verfällt" ohne Werkzeug: Ein Wächter müsste täglich laufen, und
+     * nichts in diesem Haus läuft täglich. Das trifft die **Auskunft** nicht —
+     * wer die Akte aufschlägt, fragt genau das.
+     */
+    const u = baueUmgebung();
+    const akte = wegwerfordner('akte-');
+    const umgebung = { VORGANG_ABLAGE: akte, VORGANG_LIEFERANTEN: mitLieferzeit(u.ordner) };
+    // Ein Angebot von vor drei Wochen — die vierzehn Tage sind vorbei.
+    const alt = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0190',
+      '--datum', '2026-08-20', '--ablegen'], umgebung);
+    assert.equal(alt.code, 0, alt.aus);
+
+    const e = leseAkte(['--vorgang', '2026-0190'], umgebung);
+    assert.equal(e.code, 0, e.aus);
+    assert.match(e.aus, /Bindefrist: bis 2026-09-03 — VERFALLEN/);
+    assert.match(e.aus, /verfallen \(Stand/);
+    // Und der Satz dazu, weil die Folge eine Entscheidung ist: Eine Annahme
+    // danach ist ein neues Angebot des Kunden (§ 862 ABGB).
+    assert.match(e.aus, /§ 862 ABGB/);
+  });
+
 test('ohne Ablage zeigt die Akte keine leere Übersicht, sondern weigert sich',
   { skip: !vorhanden && 'preise/ fehlt' }, () => {
     // Ein leerer Bericht sähe aus wie eine Akte ohne Einträge — das ist nicht
