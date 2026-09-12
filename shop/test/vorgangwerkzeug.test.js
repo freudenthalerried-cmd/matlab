@@ -463,6 +463,70 @@ function leseAkte(argumente, umgebung = {}) {
   }
 }
 
+test('die Gutschrift hebt die Rechnung auf, ohne sie zu ändern',
+  { skip: !vorhanden && 'preise/ fehlt' }, () => {
+    /*
+     * **Der Fund vom 12. September.** `storniere` gibt es seit dem
+     * 4. September; gerufen hat sie außerhalb der Tests niemand, und das war
+     * richtig — es fehlte das Papier. *Ein Storno ohne Papier ist eine
+     * Journalzeile über einen Brief, den niemand geschrieben hat.*
+     */
+    const u = baueUmgebung();
+    const akte = wegwerfordner('akte-');
+    const umgebung = { ...mitUid(u.ordner), VORGANG_ABLAGE: akte };
+    const gestellt = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0180',
+      '--stufe', 'rechnung', '--geliefert', '2026-09-09', '--bezahlt', '2026-09-08', '--ablegen'],
+    umgebung);
+    assert.equal(gestellt.code, 0, gestellt.aus);
+    const rechnungVorher = readFileSync(join(akte, 'belege-2026', 'RE-2026-0001.txt'), 'utf8');
+
+    const e = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0180',
+      '--stufe', 'gutschrift', '--storniert', 'RE-2026-0001',
+      '--grund', 'Falscher Steuersatz', '--ablegen'], umgebung);
+    assert.equal(e.code, 0, e.aus);
+    assert.match(e.aus, /Gutschrift GS-2026-0001/);
+    assert.match(e.aus, /Hebt auf: Rechnung RE-2026-0001/);
+    // Die Beträge stehen negativ da — gutzuschreiben ist, was bezahlt wurde.
+    assert.match(e.aus, /Gesamtbetrag\s+-911,06 €/);
+
+    const durchschrift = readFileSync(join(akte, 'belege-2026', 'GS-2026-0001.txt'), 'utf8');
+    assert.ok(durchschrift.includes('GS-2026-0001'));
+    assert.ok(durchschrift.includes('Falscher Steuersatz'), 'der Grund fehlt auf dem Papier');
+
+    /*
+     * **Und die Rechnung bleibt, wie sie war.** § 131 Abs 1 Z 6 BAO verlangt,
+     * dass der ursprüngliche Inhalt feststellbar bleibt — eine falsche
+     * Rechnung wird nicht geändert, sondern aufgehoben.
+     */
+    assert.equal(readFileSync(join(akte, 'belege-2026', 'RE-2026-0001.txt'), 'utf8'),
+      rechnungVorher, 'die Rechnung wurde geändert statt aufgehoben');
+
+    const zeilen = readFileSync(join(akte, 'journal-2026.jsonl'), 'utf8')
+      .trim().split('\n').map((z) => JSON.parse(z));
+    const storno = zeilen.map((z) => z.eintrag).filter(Boolean)
+      .find((x) => x.art === 'gutschrift');
+    assert.equal(storno.bezugAuf, 'RE-2026-0001', 'die Kette zur Rechnung fehlt');
+    assert.equal(storno.betragBrutto, -911.06);
+
+    // Zweimal aufheben heißt einmal zu viel gutschreiben.
+    const zweit = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0180',
+      '--stufe', 'gutschrift', '--storniert', 'RE-2026-0001',
+      '--grund', 'Noch einmal', '--ablegen'], umgebung);
+    assert.equal(zweit.code, 1, zweit.aus);
+    assert.match(zweit.aus, /bereits storniert/);
+  });
+
+test('ohne Akte gibt es keine Gutschrift', { skip: !vorhanden && 'preise/ fehlt' }, () => {
+  // Eine Gutschrift zu einer Rechnung, die in keiner Akte steht, ist keine.
+  const u = baueUmgebung();
+  const akte = wegwerfordner('akte-');
+  const e = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0181',
+    '--stufe', 'gutschrift', '--storniert', 'RE-2026-9999', '--grund', 'Weil'],
+  { ...mitUid(u.ordner), VORGANG_ABLAGE: akte });
+  assert.equal(e.code, 1, e.aus);
+  assert.match(e.aus, /Kein Journal/);
+});
+
 test('die Akte zeigt Journalzeile und Beleg nebeneinander',
   { skip: !vorhanden && 'preise/ fehlt' }, () => {
     const u = baueUmgebung();
@@ -622,9 +686,11 @@ test('--stufe absage schreibt den Brief an den Kunden', { skip: !vorhanden && 'p
 });
 
 test('eine unbekannte Stufe wird abgewiesen', { skip: !vorhanden && 'preise/ fehlt' }, () => {
+  // **Hier stand bis zum 12. September „gutschrift" als Beispiel für eine
+  // Stufe, die es nicht gibt.** Seit heute gibt es sie — die Mahnung nicht.
   const u = baueUmgebung();
   const e = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0101',
-    '--stufe', 'gutschrift']);
+    '--stufe', 'mahnung']);
   assert.notEqual(e.code, 0);
   assert.match(e.aus, /absage/);
 });

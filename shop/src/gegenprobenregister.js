@@ -781,6 +781,12 @@ export const GEGENPROBEN = Object.freeze([
     art: 'ersetzen',
     suchen: "    'Leistungsort Österreich, Steuersatz 20 %.',",
     ersetzen: "    `Wareneinsatz: ${EUR(warenkorb.einkaufNetto)}`,\n    'Leistungsort Österreich, Steuersatz 20 %.',",
+    // **`alle` seit dem 12. September:** Die Zeile steht jetzt zweimal in
+    // `beleg.js` — auf der Rechnung und auf der Gutschrift. Nur die erste zu
+    // mutieren hieße, die Hälfte des Falls zu prüfen und die andere für
+    // sauber zu halten; beide tragen denselben Warenkorb mit seinen
+    // Einkaufszahlen.
+    alle: true,
     erwartet: /Einkaufszahl|Wareneinsatz/i,
     warum: 'Die Weisung vom 28.08. lautet: keine Spanne ausgeben. Die zweite Rechnung '
       + 'liest den fertigen Belegtext und muss die Einkaufszahl darin finden — sonst '
@@ -3449,6 +3455,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'Durchschrift zu einem Eintrag, steht in der Akte eine Aufzeichnung über ein Papier, '
       + 'das niemand mehr hat — genau der Zustand, den die Runde vom 11. September vorfand, '
       + 'und der von außen wie eine gepflegte Ablage aussieht.',
+  }),
+  Object.freeze({
+    id: 'gutschrift-aendert-die-rechnung',
+    pruefer: 'test',
+    was: 'Das Storno schreibt die Rechnung um, statt sie aufzuheben',
+    datei: 'shop/bin/vorgang.mjs',
+    art: 'ersetzen',
+    suchen: '  const wohinGs = legeDurchschriftAb(',
+    ersetzen: "  writeFileSync(join(wurzelDerGutschrift, belegordner(jahrDerGutschrift),"
+      + " `${storniert}.txt`), gutschrift.text, 'utf8');\n  const wohinGs = legeDurchschriftAb(",
+    erwartet: /die Rechnung wurde geändert statt aufgehoben/,
+    warum: '§ 131 Abs 1 Z 6 BAO verlangt, dass der ursprüngliche Inhalt feststellbar bleibt: '
+      + 'Eine falsche Rechnung wird **nicht geändert**, sondern durch eine Gutschrift '
+      + 'aufgehoben. Diese Mutation schreibt den Gutschrifttext über die Durchschrift der '
+      + 'Rechnung — der bequeme Weg, der aussieht, als wäre nie etwas falsch gewesen, und '
+      + 'genau deshalb verboten ist. Was danach in der Akte liegt, ist ein Papier, das der '
+      + 'Kunde nie bekommen hat.',
   }),
   Object.freeze({
     id: 'akte-zeigt-den-belegtext',

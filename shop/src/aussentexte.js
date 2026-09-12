@@ -70,6 +70,10 @@ export const AUSGAENGE = Object.freeze([
   Object.freeze({ modul: 'src/beleg.js', funktion: 'erzeugeAngebot', an: 'Kunde', form: 'Zeilentext' }),
   Object.freeze({ modul: 'src/beleg.js', funktion: 'erzeugeAuftragsbestaetigung', an: 'Kunde', form: 'Zeilentext' }),
   Object.freeze({ modul: 'src/beleg.js', funktion: 'erzeugeRechnung', an: 'Kunde', form: 'Zeilentext' }),
+  // **Ergänzt am 12. September.** Das Papier zum Storno: Es hebt eine
+  // Rechnung auf, trägt dieselben Pflichtangaben nach § 11 UStG und den
+  // Grund. Wie jeder Kundenbeleg geht es durch `findeInterna`.
+  Object.freeze({ modul: 'src/beleg.js', funktion: 'erzeugeGutschrift', an: 'Kunde', form: 'Zeilentext' }),
   // **Ergänzt am 11. September.** Der vierte Beleg — und der einzige, der nein
   // sagt. Er setzt die Anschrift des Kunden ein und die Gründe aus einem
   // Register; die Gründe selbst kommen aus dem Bestand und nicht von außen.

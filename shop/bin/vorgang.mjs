@@ -62,10 +62,12 @@ import { baueVorgang, darfVorgangLaufen } from '../src/vorgang.js';
 import { absagegruende, erzeugeAbsage } from '../src/absage.js';
 import { findeInterna } from '../src/interna.js';
 import { pruefeBelege } from '../src/belegpruefung.js';
+import { erzeugeGutschrift } from '../src/beleg.js';
 import { pruefeAblageAufDrittdaten } from '../src/kontrolle.js';
 import { EUR } from '../src/format.js';
 import {
-  ARTEN, haltefest, naechsteNummer, neueAblage, pruefeNummernkreis, stelleRechnungAus,
+  ARTEN, haltefest, istStorniert, naechsteNummer, neueAblage, pruefeNummernkreis,
+  stelleRechnungAus, storniere,
 } from '../src/ablage.js';
 import { ausJournal, journalzeile } from '../src/speicher.js';
 import { ABLAGEORT, belegname, belegordner, belegpfad, journalpfad } from '../src/ablageort.js';
@@ -104,6 +106,9 @@ const ablegen = argumente.includes('--ablegen');
 // der Anfrage — deshalb stehen sie hier als Argumente und nirgends als
 // Vermutung.
 const geliefert = wahl('geliefert');
+// Die Gutschrift hebt eine Rechnung auf; beide Angaben kommen von außen.
+const storniert = wahl('storniert');
+const stornogrund = wahl('grund');
 const bezahlt = wahl('bezahlt');
 const zahlweg = wahl('zahlweg', 'vorkasse');
 
@@ -250,9 +255,10 @@ if (!nummer) {
     'Sie klammert Angebot, Bestätigung und Rechnung. Zweimal dieselbe Nummer ist\n'
     + 'derselbe Vorgang; eine selbst gezogene wäre bei jedem Ausdruck eine neue.');
 }
-if (!['angebot', 'bestaetigung', 'absage', 'bestellung', 'rechnung'].includes(stufe)) {
+if (!['angebot', 'bestaetigung', 'absage', 'bestellung', 'rechnung', 'gutschrift'].includes(stufe)) {
   abbruch(`Unbekannte Stufe „${stufe}".`,
-    'Möglich sind „angebot", „bestaetigung", „absage", „bestellung" und „rechnung".\n'
+    'Möglich sind „angebot", „bestaetigung", „absage", „bestellung", „rechnung"\n'
+    + 'und „gutschrift".\n'
     + 'Die Rechnung verlangt zusätzlich --geliefert, --bezahlt und --zahlweg: Beides sind\n'
     + 'Feststellungen des Betreibers, und dieses Haus erfindet sie nicht.');
 }
@@ -575,6 +581,120 @@ if (stufe === 'rechnung') {
     : belegpfad(jahrDerRechnung, { art: 'rechnung', nummer: eintrag.nummer })}`);
   console.log('Im Journal steht der Betreff, nicht der Belegtext — die Anschrift des Kunden');
   console.log('steht auf der Durchschrift und gehört nicht ein zweites Mal in die Akte.');
+  process.exit(0);
+}
+
+/*
+ * **Die Gutschrift — 12. September 2026.**
+ *
+ * `src/ablage.js` kann seit dem 4. September stornieren: `storniere` zieht
+ * eine Gutschriftnummer und hängt sie mit `bezugAuf` an die Rechnung. Gerufen
+ * hat sie außerhalb der Tests niemand, und das war richtig — es fehlte das
+ * Entscheidende:
+ *
+ * > **Ein Storno ohne Papier ist eine Journalzeile über einen Brief, den
+ * > niemand geschrieben hat.** Der Kunde hat eine Rechnung in der Hand; was
+ * > sie aufhebt, muss er ebenfalls in der Hand haben.
+ *
+ * § 131 Abs 1 Z 6 BAO verlangt, dass der ursprüngliche Inhalt feststellbar
+ * bleibt: Eine falsche Rechnung wird **nicht geändert**, sondern durch eine
+ * Gutschrift aufgehoben — die Rechnung bleibt unverändert in der Akte.
+ *
+ * Die Stufe liest die Akte in **beiden** Fällen, auch ohne `--ablegen`: Eine
+ * Gutschrift zu einer Rechnung, die in keiner Akte steht, ist keine.
+ */
+if (stufe === 'gutschrift') {
+  if (!storniert) {
+    abbruch('Ohne --storniert gibt es nichts aufzuheben.',
+      'Erwartet wird die Nummer der Rechnung, die aufgehoben werden soll.');
+  }
+  if (!stornogrund) {
+    abbruch('Ohne --grund gibt es keine Gutschrift.',
+      'Der Grund steht auf dem Papier und im Journal. Eine Gutschrift ohne Grund ist\n'
+      + 'gegenüber dem Kunden und gegenüber dem Finanzamt dieselbe Auskunft: keine.');
+  }
+
+  const jahrDerGutschrift = Number(datum.slice(0, 4));
+  const wurzelDerGutschrift = process.env.VORGANG_ABLAGE ?? join(REPO, ABLAGEORT);
+  const gutschriftjournal = join(wurzelDerGutschrift, `journal-${jahrDerGutschrift}.jsonl`);
+  if (!existsSync(gutschriftjournal)) {
+    abbruch(`Kein Journal ${jahrDerGutschrift} in ${wurzelDerGutschrift}.`,
+      'Eine Gutschrift zu einer Rechnung, die in keiner Akte steht, ist keine.');
+  }
+  const gutschriftablage = ausJournal(readFileSync(gutschriftjournal, 'utf8'));
+  const ziel = gutschriftablage.eintraege.find((e) => e.nummer === storniert);
+  if (!ziel) abbruch(`${storniert} steht nicht in der Akte ${jahrDerGutschrift}.`);
+  if (istStorniert(gutschriftablage, storniert)) {
+    abbruch(`${storniert} ist bereits storniert.`,
+      'Zweimal aufheben heißt einmal zu viel gutschreiben.');
+  }
+
+  /*
+   * **Die Gutschrift rechnet mit demselben Betrag wie die Rechnung.** Der
+   * Text entsteht aus dem Warenkorb der Anfrage, die Journalzeile aus dem
+   * Eintrag der Rechnung. Stimmen die beiden nicht überein, stünde auf dem
+   * Papier eine andere Zahl als in der Akte — und der Kunde bekäme mehr oder
+   * weniger gutgeschrieben, als er bezahlt hat.
+   */
+  if (ziel.betragBrutto !== null && Math.abs(ziel.betragBrutto - korb.summeBrutto) > 0.005) {
+    abbruch('Die Gutschrift rechnet mit einem anderen Betrag als die Rechnung.',
+      `Akte: ${EUR(ziel.betragBrutto)} · Anfrage: ${EUR(korb.summeBrutto)}\n`
+      + 'Beides kann richtig sein — dann ist es die falsche Anfrage zu dieser Rechnung.');
+  }
+
+  // Erst die Nummer, dann das Papier damit, dann prüfen, dann ablegen —
+  // dieselbe Reihenfolge wie bei der Rechnung seit dem 11. September.
+  const gutschriftnummer = naechsteNummer(gutschriftablage, 'gutschrift', jahrDerGutschrift);
+  const gutschrift = erzeugeGutschrift(korb, {
+    nummer: gutschriftnummer,
+    datum,
+    bezugAuf: storniert,
+    bezugsdatum: ziel.zeitpunkt,
+    grund: stornogrund,
+    kunde: lies(kundeDatei),
+    betreiber,
+  });
+
+  const leckGs = findeInterna(gutschrift.text);
+  if (leckGs.length) {
+    console.error('\nAbbruch: Die Gutschrift trägt ein Internum — nichts ausgegeben.');
+    for (const l of leckGs) console.error(`  · ${l.fund ?? l.text ?? JSON.stringify(l)}`);
+    process.exit(1);
+  }
+
+  console.log(`\n${'—'.repeat(72)}\n`);
+  console.log(gutschrift.text);
+  console.log(`\n${'—'.repeat(72)}`);
+
+  if (!ablegen) {
+    console.log('\nNichts abgelegt, nichts versendet. Die gezogene Nummer ist noch frei —');
+    console.log('sie fällt erst beim Ablegen. `--ablegen` schreibt die Durchschrift und');
+    console.log('den Storno ins Journal; das Absenden entscheidet der Auftraggeber.');
+    process.exit(0);
+  }
+
+  sperreLuecken(gutschrift.text);
+
+  gutschriftablage.schreibe = (e) => appendFileSync(
+    gutschriftjournal, `${journalzeile(e)}\n`, 'utf8',
+  );
+  const wohinGs = legeDurchschriftAb(
+    wurzelDerGutschrift, jahrDerGutschrift,
+    { art: 'gutschrift', nummer: gutschriftnummer }, gutschrift.text,
+  );
+  const eintragGs = storniere(gutschriftablage, storniert, {
+    grund: stornogrund,
+    zeitpunkt: datum,
+    jahr: jahrDerGutschrift,
+    nummer: gutschriftnummer,
+  });
+
+  console.log(`\nAbgelegt: Gutschrift ${eintragGs.nummer} zu ${storniert}, `
+    + `laufende Nummer ${eintragGs.lfd}.`);
+  console.log(`Durchschrift: ${process.env.VORGANG_ABLAGE ? wohinGs
+    : belegpfad(jahrDerGutschrift, { art: 'gutschrift', nummer: gutschriftnummer })}`);
+  console.log('Die Rechnung bleibt unverändert in der Akte — aufgehoben ist sie durch');
+  console.log('diese Gutschrift, nicht durch eine Änderung (§ 131 Abs 1 Z 6 BAO).');
   process.exit(0);
 }
 

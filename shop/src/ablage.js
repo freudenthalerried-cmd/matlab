@@ -290,14 +290,20 @@ export function stelleRechnungAus(ablage, rechnung, { zeitpunkt, jahr, vorgang, 
  * wird **nicht** wiederverwendet — eine wiederverwendete Rechnungsnummer ist
  * genau das, was § 11 mit „einmalig" ausschließt.
  */
-export function storniere(ablage, nummer, { grund, zeitpunkt, jahr }) {
+export function storniere(ablage, nummer, { grund, zeitpunkt, jahr, nummer: gezogen = null }) {
   const ziel = ablage.eintraege.find((e) => e.nummer === nummer);
   if (!ziel) throw new Error(`Kein Eintrag mit der Nummer ${nummer}`);
   if (istStorniert(ablage, nummer)) {
     throw new Error(`${nummer} ist bereits storniert`);
   }
 
-  const gutschrift = naechsteNummer(ablage, 'gutschrift', jahr);
+  /*
+   * **`gezogen` seit dem 12. September** — dieselbe Ergänzung wie bei
+   * `stelleRechnungAus` am 11.: Wer die Gutschrift **drucken** will, bevor er
+   * sie ablegt, braucht ihre Nummer schon beim Bauen. Zöge diese Zeile dann
+   * eine zweite, trüge das Papier eine andere Nummer als die Akte.
+   */
+  const gutschrift = gezogen ?? naechsteNummer(ablage, 'gutschrift', jahr);
   return haltefest(ablage, {
     art: 'gutschrift',
     nummer: gutschrift,

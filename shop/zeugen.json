@@ -108,6 +108,9 @@
   "grund-ohne-satz-faellt-weg": [
     "shop/test/absage.test.js"
   ],
+  "gutschrift-aendert-die-rechnung": [
+    "shop/test/vorgangwerkzeug.test.js"
+  ],
   "iban-ungeprueft": [
     "shop/test/bankverbindung.test.js",
     "shop/test/ungerufen.test.js"

@@ -26,7 +26,9 @@ import { fileURLToPath } from 'node:url';
 import { internabefund, gehtNachDraussen, AUSGAENGE, OHNE_INTERNAPROBE } from '../src/aussentexte.js';
 import { findeInterna } from '../src/interna.js';
 import { ladeKatalog, berechneWarenkorb } from '../src/warenkorb.js';
-import { erzeugeAngebot, erzeugeAuftragsbestaetigung, erzeugeRechnung } from '../src/beleg.js';
+import {
+  erzeugeAngebot, erzeugeAuftragsbestaetigung, erzeugeGutschrift, erzeugeRechnung,
+} from '../src/beleg.js';
 import { erzeugeAbsage } from '../src/absage.js';
 import { erzeugeImpressum } from '../src/rechtstexte.js';
 import { kundenWarenkorb, oeffentlicherArtikel, oeffentlicherLieferant } from '../src/shopkern.js';
@@ -94,6 +96,17 @@ const AUSGANGSTEXTE = Object.freeze([
     giftig: () => erzeugeRechnung(korb, {
       nummer: 'RE-1', datum: '2026-09-11', lieferdatum: '2026-09-09', kunde: GIFTKUNDE, betreiber,
       zahlung: { weg: 'vorkasse', datum: '2026-09-08', betrag: korb.summeBrutto },
+    }).text,
+  }),
+  Object.freeze({
+    funktion: 'erzeugeGutschrift',
+    text: () => erzeugeGutschrift(korb, {
+      nummer: 'GS-1', datum: '2026-09-12', bezugAuf: 'RE-1', bezugsdatum: '2026-09-09',
+      grund: 'Falscher Steuersatz', kunde, betreiber,
+    }).text,
+    giftig: () => erzeugeGutschrift(korb, {
+      nummer: 'GS-1', datum: '2026-09-12', bezugAuf: 'RE-1', bezugsdatum: '2026-09-09',
+      grund: 'Falscher Steuersatz', kunde: GIFTKUNDE, betreiber,
     }).text,
   }),
   Object.freeze({

@@ -644,6 +644,88 @@ export function darfBestaetigtWerden(warenkorb, auftrag = {}, betreiber = {}) {
  * Lücken ist besser als gar keiner: Er zeigt, welche Angabe fehlt, statt die
  * Rechnung zu verweigern und den Grund für sich zu behalten.
  */
+/**
+ * Die **Gutschrift** zu einer Rechnung — das Papier zum Storno.
+ *
+ * **Der Anlass, 12. September 2026.** `src/ablage.js` kann seit dem
+ * 4. September stornieren: `storniere` zieht eine Gutschriftnummer und hängt
+ * sie mit `bezugAuf` an die Rechnung. Gerufen hat sie außerhalb der Tests
+ * niemand, und das war richtig, denn es fehlte das Entscheidende:
+ *
+ * > **Ein Storno ohne Papier ist eine Journalzeile über einen Brief, den
+ * > niemand geschrieben hat.** Der Kunde hat eine Rechnung in der Hand; was
+ * > sie aufhebt, muss er ebenfalls in der Hand haben.
+ *
+ * § 131 Abs 1 Z 6 BAO verlangt, dass der ursprüngliche Inhalt feststellbar
+ * bleibt — eine falsche Rechnung wird deshalb **nicht geändert**, sondern
+ * durch eine Gutschrift aufgehoben. Sie ist selbst eine Rechnung im Sinne des
+ * § 11 UStG und trägt dieselben Pflichtangaben, dazu den Bezug auf die
+ * Rechnung, die sie aufhebt (§ 11 Abs 1 Z 5 UStG — die Nummer, die den Bezug
+ * herstellt).
+ *
+ * **Was diese Fassung kann und was nicht:** Sie hebt die Rechnung **ganz**
+ * auf. Eine Teilgutschrift bräuchte einen zweiten Warenkorb mit den
+ * verbliebenen Positionen; sie ist nicht gebaut, weil sie nicht gebraucht ist
+ * — und eine halbe Gutschrift, die aussieht wie eine ganze, wäre schlimmer
+ * als keine.
+ */
+export function erzeugeGutschrift(warenkorb, {
+  nummer, datum, bezugAuf, bezugsdatum, grund, kunde = {}, betreiber = {},
+}) {
+  const pruefung = pruefeRechnungsmerkmale({
+    ausstellerName: anschriftEinzeilig(betreiber),
+    ausstellerUid: betreiber.uid,
+    empfaengerName: anschriftEinzeilig(kunde),
+    empfaengerUid: kunde.uid,
+    rechnungsnummer: nummer,
+    ausstellungsdatum: datum,
+    // Der Leistungszeitpunkt der Gutschrift ist der der aufgehobenen
+    // Rechnung: Aufgehoben wird, was damals geliefert wurde.
+    lieferdatum: bezugsdatum,
+    leistung: warenkorb.teillieferungen.length ? 'ja' : '',
+    nettobetrag: warenkorb.summeNetto,
+    bruttobetrag: warenkorb.summeBrutto,
+    steuersatz: '20 %',
+  });
+
+  const zeilen = [
+    `Gutschrift ${wert(nummer, 'Gutschriftnummer')}`,
+    `Ausstellungsdatum: ${wert(datum, 'Ausstellungsdatum')}`,
+    `Hebt auf: Rechnung ${wert(bezugAuf, 'Nummer der aufgehobenen Rechnung')}`
+      + ` vom ${wert(bezugsdatum, 'Datum der aufgehobenen Rechnung')}`,
+    '',
+    ...absenderzeilen(betreiber),
+    `UID: ${wert(betreiber.uid, 'UID des Ausstellers')}`,
+    '',
+    'Gutschriftempfänger:',
+    `  ${wert(kunde.firma, 'Firma des Kunden')}`,
+    `  ${wert(kunde.strasse, 'Anschrift')}`,
+    `  ${wert(kunde.plz, 'PLZ')} ${wert(kunde.ort, 'Ort')}`,
+    `  UID: ${wert(kunde.uid, 'UID des Leistungsempfängers')}`,
+    '',
+    `Grund: ${wert(grund, 'Grund der Gutschrift')}`,
+    '',
+    'Die genannte Rechnung wird in voller Höhe aufgehoben. Die folgenden',
+    'Beträge sind Ihnen gutzuschreiben:',
+    '',
+    ...positionszeilen(warenkorb, { geliefertAm: bezugsdatum }),
+    ...summenblock(warenkorb).map((z) => z.replace(/(\d[\d.,]*) €/g, '-$1 €')),
+    '',
+    'Leistungsort Österreich, Steuersatz 20 %.',
+    'Diese Gutschrift hebt die genannte Rechnung auf; die Rechnung selbst bleibt',
+    'unverändert in der Ablage (§ 131 Abs 1 Z 6 BAO).',
+  ];
+
+  return {
+    nummer,
+    bezugAuf,
+    text: zeilen.join('\n'),
+    nettobetrag: warenkorb.summeNetto,
+    bruttobetrag: warenkorb.summeBrutto,
+    pflichtangaben: pruefung,
+  };
+}
+
 export function erzeugeRechnung(warenkorb, { nummer, datum, lieferdatum, kunde = {}, betreiber = {}, zahlung = {} }) {
   const vermerk = zahlungsvermerk(zahlung);
   const pruefung = pruefeRechnungsmerkmale({

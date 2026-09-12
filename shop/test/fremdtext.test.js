@@ -26,7 +26,9 @@ import { textZeile, csvFeld, hatSteuerzeichen } from '../src/format.js';
 import { ladeKatalog, berechneWarenkorb } from '../src/warenkorb.js';
 import { pruefeBestelldaten, baueAuftrag } from '../src/kunde.js';
 import { erzeugeBestellungen } from '../src/bestellung.js';
-import { erzeugeAngebot, erzeugeRechnung, erzeugeAuftragsbestaetigung } from '../src/beleg.js';
+import {
+  erzeugeAngebot, erzeugeGutschrift, erzeugeRechnung, erzeugeAuftragsbestaetigung,
+} from '../src/beleg.js';
 import { erzeugeRechtstexteauftrag } from '../src/rechtstexteauftrag.js';
 import { erzeugeAbsage } from '../src/absage.js';
 import { kundenWarenkorb } from '../src/shopkern.js';
@@ -261,6 +263,28 @@ test('Ausgang Absage: Gift erzeugt keine zusätzliche Zeile', () => {
 test('Ausgang Rechnung: Gift erzeugt keine zusätzliche Zeile', () => {
   const [harmlos, giftig] = belegPaar(erzeugeRechnung);
   assert.equal(zeilen(giftig.text), zeilen(harmlos.text));
+});
+
+/*
+ * **Ausgang Gutschrift — 12. September 2026.** Das Papier zum Storno, und der
+ * fünfte Kundenbeleg. Es setzt die Anschrift ein wie die anderen und trägt
+ * zusätzlich den **Grund** — eine untergeschobene Zeile darin verschöbe die
+ * Begründung, genau wie bei der Absage.
+ */
+test('Ausgang Gutschrift: Gift erzeugt keine zusätzliche Zeile', () => {
+  const feld = {
+    nummer: 'GS-2026-0001',
+    datum: '2026-09-12',
+    bezugAuf: 'RE-2026-0001',
+    bezugsdatum: '2026-09-09',
+    grund: 'Falscher Steuersatz',
+    betreiber,
+  };
+  const harmlos = erzeugeGutschrift(warenkorb, { ...feld, kunde: harmloserKunde });
+  const giftig = erzeugeGutschrift(warenkorb, { ...feld, kunde: giftigerKunde });
+  assert.equal(zeilen(giftig.text), zeilen(harmlos.text));
+  // Und der Grund bleibt an seinem Platz.
+  assert.match(giftig.text, /Grund: Falscher Steuersatz/);
 });
 
 test('Ausgang Rechnung: die untergeschobene Summenzeile verdrängt die echte nicht', () => {

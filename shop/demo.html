@@ -7197,6 +7197,88 @@ function darfBestaetigtWerden(warenkorb, auftrag = {}, betreiber = {}) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function erzeugeGutschrift(warenkorb, {
+  nummer, datum, bezugAuf, bezugsdatum, grund, kunde = {}, betreiber = {},
+}) {
+  const pruefung = pruefeRechnungsmerkmale({
+    ausstellerName: anschriftEinzeilig(betreiber),
+    ausstellerUid: betreiber.uid,
+    empfaengerName: anschriftEinzeilig(kunde),
+    empfaengerUid: kunde.uid,
+    rechnungsnummer: nummer,
+    ausstellungsdatum: datum,
+    
+    
+    lieferdatum: bezugsdatum,
+    leistung: warenkorb.teillieferungen.length ? 'ja' : '',
+    nettobetrag: warenkorb.summeNetto,
+    bruttobetrag: warenkorb.summeBrutto,
+    steuersatz: '20 %',
+  });
+
+  const zeilen = [
+    `Gutschrift ${wert(nummer, 'Gutschriftnummer')}`,
+    `Ausstellungsdatum: ${wert(datum, 'Ausstellungsdatum')}`,
+    `Hebt auf: Rechnung ${wert(bezugAuf, 'Nummer der aufgehobenen Rechnung')}`
+      + ` vom ${wert(bezugsdatum, 'Datum der aufgehobenen Rechnung')}`,
+    '',
+    ...absenderzeilen(betreiber),
+    `UID: ${wert(betreiber.uid, 'UID des Ausstellers')}`,
+    '',
+    'Gutschriftempfänger:',
+    `  ${wert(kunde.firma, 'Firma des Kunden')}`,
+    `  ${wert(kunde.strasse, 'Anschrift')}`,
+    `  ${wert(kunde.plz, 'PLZ')} ${wert(kunde.ort, 'Ort')}`,
+    `  UID: ${wert(kunde.uid, 'UID des Leistungsempfängers')}`,
+    '',
+    `Grund: ${wert(grund, 'Grund der Gutschrift')}`,
+    '',
+    'Die genannte Rechnung wird in voller Höhe aufgehoben. Die folgenden',
+    'Beträge sind Ihnen gutzuschreiben:',
+    '',
+    ...positionszeilen(warenkorb, { geliefertAm: bezugsdatum }),
+    ...summenblock(warenkorb).map((z) => z.replace(/(\d[\d.,]*) €/g, '-$1 €')),
+    '',
+    'Leistungsort Österreich, Steuersatz 20 %.',
+    'Diese Gutschrift hebt die genannte Rechnung auf; die Rechnung selbst bleibt',
+    'unverändert in der Ablage (§ 131 Abs 1 Z 6 BAO).',
+  ];
+
+  return {
+    nummer,
+    bezugAuf,
+    text: zeilen.join('\n'),
+    nettobetrag: warenkorb.summeNetto,
+    bruttobetrag: warenkorb.summeBrutto,
+    pflichtangaben: pruefung,
+  };
+}
+
 function erzeugeRechnung(warenkorb, { nummer, datum, lieferdatum, kunde = {}, betreiber = {}, zahlung = {} }) {
   const vermerk = zahlungsvermerk(zahlung);
   const pruefung = pruefeRechnungsmerkmale({
@@ -8384,14 +8466,20 @@ function stelleRechnungAus(ablage, rechnung, { zeitpunkt, jahr, vorgang, betreff
 
 
 
-function storniere(ablage, nummer, { grund, zeitpunkt, jahr }) {
+function storniere(ablage, nummer, { grund, zeitpunkt, jahr, nummer: gezogen = null }) {
   const ziel = ablage.eintraege.find((e) => e.nummer === nummer);
   if (!ziel) throw new Error(`Kein Eintrag mit der Nummer ${nummer}`);
   if (istStorniert(ablage, nummer)) {
     throw new Error(`${nummer} ist bereits storniert`);
   }
 
-  const gutschrift = naechsteNummer(ablage, 'gutschrift', jahr);
+  
+
+
+
+
+
+  const gutschrift = gezogen ?? naechsteNummer(ablage, 'gutschrift', jahr);
   return haltefest(ablage, {
     art: 'gutschrift',
     nummer: gutschrift,

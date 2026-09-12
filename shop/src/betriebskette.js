@@ -220,6 +220,21 @@ export const ABZWEIGE = Object.freeze([
       + 'Ablaufs ist auch keine Nachricht, sondern eine Entscheidung des Betreibers — neu '
       + 'rechnen oder ziehen lassen. Der Preis von gestern bindet nicht mehr, mehr geschieht nicht.',
   }),
+  /*
+   * **Aufgenommen am 12. September 2026.** Die Ablage konnte seit dem
+   * 4. September stornieren, der Betrieb nicht: Es fehlte das Papier. Ein
+   * Storno ohne Papier ist eine Journalzeile über einen Brief, den niemand
+   * geschrieben hat.
+   */
+  Object.freeze({
+    id: 'rechnung-falsch',
+    ab: 'rechnung',
+    was: 'Die gestellte Rechnung ist falsch und wird durch eine Gutschrift aufgehoben',
+    werkzeug: 'npm run vorgang -- --stufe gutschrift --storniert … --grund … --ablegen',
+    grundlage: '§ 131 Abs 1 Z 6 BAO — der ursprüngliche Inhalt muss feststellbar bleiben: '
+      + 'Die Rechnung wird nicht geändert, sondern aufgehoben. Die Gutschrift ist selbst eine '
+      + 'Rechnung nach § 11 UStG und trägt dieselben Pflichtangaben.',
+  }),
   Object.freeze({
     id: 'kann-nicht-geliefert-werden',
     ab: 'lieferantenbestellung',

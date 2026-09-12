@@ -79,7 +79,7 @@ test('der Bestand hört bei der Zahlung auf', () => {
  */
 
 test('jeder Abzweig nennt Werkzeug oder Grund und Regel oder Grund', () => {
-  assert.equal(ABZWEIGE.length, 3, `${ABZWEIGE.length} Abzweige — die Liste hat sich geändert`);
+  assert.equal(ABZWEIGE.length, 4, `${ABZWEIGE.length} Abzweige — die Liste hat sich geändert`);
   assert.deepEqual(abzweigbefund().meldungen, []);
 });
 
@@ -133,7 +133,7 @@ test('die Karte hat für jede Stufe des Werkzeugs einen Platz', () => {
   // **Fünf seit dem 12. September**: `bestellung` ist dazugekommen — das
   // fünfte Papier eines Geschäftsfalls, das bis dahin nur auf dem Bildschirm
   // stand.
-  assert.equal(b.stufen.length, 5, `gelesen: ${JSON.stringify(b.stufen)}`);
+  assert.equal(b.stufen.length, 6, `gelesen: ${JSON.stringify(b.stufen)}`);
   assert.deepEqual(b.meldungen, []);
 });
 
