@@ -34,7 +34,7 @@
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { beurteile } from '../src/prueferurteil.js';
+import { ausgang, beurteile } from '../src/prueferurteil.js';
 import { PRUEFER, BROWSERPRUEFER } from '../src/pruefregister.js';
 
 const hier = dirname(fileURLToPath(import.meta.url));
@@ -132,4 +132,16 @@ console.log('steht in ihrer eigenen Ausgabe und gehört einzeln angesehen.');
  *
  * Grün wird davon nichts. Nur die Ursache steht jetzt am richtigen Ort.
  */
-process.exit(gescheitert ? 1 : (abgebrochen ? 2 : 0));
+/*
+ * **Berichtigt am 12. September 2026** — die Regel steht in `ausgang()`, dort
+ * ist sie prüfbar. Kurz: Eine Weigerung wird gemeldet und ist nicht der
+ * Ausgang (Gate 38). Vorher endete dieser Prüfer wegen des einen dauerhaft
+ * abbrechenden Prüfers **immer** mit Ausgang 2 — und seine Gegenprobe, sein
+ * einziger regelmäßiger Lauf, wurde deshalb bei jedem Gesamtlauf
+ * zurückgestellt.
+ */
+if (abgebrochen) {
+  console.log(`\n${abgebrochen} Prüfer können nicht messen — das ist keine Entwarnung:`);
+  console.log('Was nicht gemessen wurde, ist nicht geprüft. Der Grund steht oben bei ihnen.');
+}
+process.exit(ausgang({ gescheitert, abgebrochen }));

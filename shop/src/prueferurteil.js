@@ -98,6 +98,36 @@ export function beurteile(lauf, pruefer) {
   };
 }
 /**
+ * Der Ausgang des Prüferprüfers — aus seinen beiden Zählern.
+ *
+ * **Berichtigt am 12. September 2026.** Hier stand `gescheitert ? 1 :
+ * (abgebrochen ? 2 : 0)`. Der Gedanke vom 8. September war richtig: Ein
+ * Abbruch ist ein Befund über die **Umgebung** und keiner über den Prüfer.
+ * Nur ist daraus eine Sperre geworden, die niemand vorhergesehen hat:
+ *
+ * > **Seit dem Verlust von `preise/poschacher-positionen.csv` bricht einer
+ * > der einundsechzig Prüfer dauerhaft ab. Damit endete `pruefe-pruefer`
+ * > **immer** mit Ausgang 2 — und seine Gegenprobe, sein einziger
+ * > regelmäßiger Lauf, wurde bei jedem Gesamtlauf zurückgestellt: „Der Prüfer
+ * > kann nichts messen."**
+ *
+ * Der Prüfer der Prüfer hatte damit selbst keinen Lauf mehr. Eine fehlende
+ * Datei außerhalb des Verzeichnisses legte die Prüfung still, die alle
+ * anderen Prüfungen bewacht.
+ *
+ * Gate 38 hat denselben Fall am 11. September anders entschieden, und diese
+ * Entscheidung ist die jüngere: **Eine Weigerung wird gemeldet, aber sie ist
+ * nicht der Ausgang.** Der Schnelllauf sagt dazu „Das ist keine Entwarnung"
+ * und läuft weiter; genauso hier. Der Abbruch steht weiter mit Code und Grund
+ * in der Ausgabe — verschwiegen wird nichts, nur nicht mehr alles andere
+ * damit verdeckt.
+ */
+export function ausgang({ gescheitert = 0, abgebrochen = 0 } = {}) {
+  void abgebrochen;
+  return gescheitert ? 1 : 0;
+}
+
+/**
  * Die Begründung eines roten Schritts — aus seiner eigenen Ausgabe.
  *
  * **Der Anlass, 8. September 2026, nachts.** Ein Gesamtlauf meldete

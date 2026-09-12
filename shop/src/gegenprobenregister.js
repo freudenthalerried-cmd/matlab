@@ -2216,7 +2216,19 @@ export const GEGENPROBEN = Object.freeze([
     art: 'ersetzen',
     suchen: 'export const ZIELMARGE = 0.25;',
     ersetzen: 'export const ZIELMARGE = 1 / 4;',
-    erwartet: /Weisung 3/,
+    /*
+     * **Berichtigt am 12. September 2026.** Hier stand `/Weisung 3/`. Am
+     * 9. September ist die Tafel von acht auf dreizehn Weisungen gewachsen und
+     * **neu durchnummeriert** worden; die Marge-Weisung ist seither die
+     * sechste. Die Mutation wurde weiter rot — nur über eine andere Weisung,
+     * und der Läufer sagte es: „meldete rot, aber nicht wegen /Weisung 3/".
+     *
+     * > **Eine Gegenprobe, die auf eine laufende Nummer zeigt, zeigt nach dem
+     * > nächsten Einschub woandershin.** Gesucht wird deshalb die **Spur**,
+     * > die diese Mutation entfernt — sie kann sich nicht verschieben, ohne
+     * > dass sich die Mutation selbst ändert.
+     */
+    erwartet: /trägt \/ZIELMARGE = 0\\\.25\/ nicht mehr/,
     warum: 'Der Befund vom 7. September: Acht Weisungen seit dem 22. August, zwei davon haben '
       + 'frühere Arbeit vollständig umgeworfen — und gehalten hat sie nichts. `pruefe-auftrag` '
       + 'misst den Ursprungsauftrag vom 9. August, dort endet es. Diese Mutation schreibt '
@@ -3430,6 +3442,25 @@ export const GEGENPROBEN = Object.freeze([
       + 'Durchschrift zu einem Eintrag, steht in der Akte eine Aufzeichnung über ein Papier, '
       + 'das niemand mehr hat — genau der Zustand, den die Runde vom 11. September vorfand, '
       + 'und der von außen wie eine gepflegte Ablage aussieht.',
+  }),
+  Object.freeze({
+    id: 'weigerung-als-ausgang',
+    pruefer: 'test',
+    was: 'Eine Weigerung wird wieder zum Ausgang des Prüferprüfers',
+    datei: 'shop/src/prueferurteil.js',
+    art: 'ersetzen',
+    suchen: '  void abgebrochen;\n  return gescheitert ? 1 : 0;',
+    ersetzen: '  return gescheitert ? 1 : (abgebrochen ? 2 : 0);',
+    erwartet: /legt die Gegenprobe still/,
+    warum: 'Der Gedanke vom 8. September war richtig — ein Abbruch ist ein Befund über die '
+      + 'Umgebung und keiner über den Prüfer. Nur wurde daraus eine Sperre: Seit dem Verlust '
+      + 'von `preise/poschacher-positionen.csv` bricht einer der einundsechzig Prüfer dauerhaft '
+      + 'ab, und damit endete `pruefe-pruefer` **immer** mit Ausgang 2. Seine Gegenprobe ist '
+      + 'sein einziger regelmäßiger Lauf (er steht mit Grund in `KEIN_PRUEFER`), und sie wurde '
+      + 'bei jedem Gesamtlauf zurückgestellt: „Der Prüfer kann nichts messen." Eine fehlende '
+      + 'Datei außerhalb des Verzeichnisses legte damit die Prüfung still, die alle anderen '
+      + 'Prüfungen bewacht. Gate 38 entscheidet denselben Fall anders, und es ist die jüngere '
+      + 'Entscheidung: Eine Weigerung wird gemeldet, aber sie ist nicht der Ausgang.',
   }),
   Object.freeze({
     id: 'geaenderte-journalzeile',

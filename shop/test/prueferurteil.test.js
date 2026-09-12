@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { beurteile, abbruchgrund, GELAUFEN, befundzeilen} from '../src/prueferurteil.js';
+import { ausgang, beurteile, abbruchgrund, GELAUFEN, befundzeilen} from '../src/prueferurteil.js';
 
 const PRUEFER = { muster: /(\d+) Dinge geprüft/, mindestens: 20 };
 
@@ -277,4 +277,26 @@ test('eine leere Ausgabe ergibt keine Zeile und keinen Absturz', () => {
   assert.deepEqual(befundzeilen(''), []);
   assert.deepEqual(befundzeilen(null), []);
   assert.deepEqual(befundzeilen('   \n  \n'), []);
+});
+
+
+/* ------------------------------------------------------------------ *
+ * Der Ausgang (12. September 2026)
+ *
+ * Seit dem Verlust von `preise/poschacher-positionen.csv` bricht einer der
+ * einundsechzig Prüfer dauerhaft ab. Mit dem alten Ausgang endete
+ * `pruefe-pruefer` damit **immer** mit Code 2 — und seine Gegenprobe, sein
+ * einziger regelmäßiger Lauf, wurde bei jedem Gesamtlauf zurückgestellt.
+ * ------------------------------------------------------------------ */
+
+test('Ein Befund ist der Ausgang, eine Weigerung nicht', () => {
+  assert.equal(ausgang({ gescheitert: 0, abgebrochen: 0 }), 0);
+  assert.equal(ausgang({ gescheitert: 2, abgebrochen: 0 }), 1);
+  // **Der Fall, der die Gegenprobe stillgelegt hat.** Ein abgebrochener
+  // Prüfer ist ein Befund über die Umgebung; gemeldet wird er weiter, aber
+  // er verdeckt nicht mehr alles andere (Gate 38).
+  assert.equal(ausgang({ gescheitert: 0, abgebrochen: 1 }), 0,
+    'eine Weigerung wird wieder zum Ausgang und legt die Gegenprobe still');
+  assert.equal(ausgang({ gescheitert: 1, abgebrochen: 1 }), 1);
+  assert.equal(ausgang(), 0);
 });
