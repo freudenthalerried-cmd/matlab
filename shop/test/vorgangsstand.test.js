@@ -1,7 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { PAPIERSCHRITT, papierschrittbefund, vorgangsstand } from '../src/vorgangsstand.js';
+import {
+  PAPIERSCHRITT, bindungslage, papierschrittbefund, vorgangsstand,
+} from '../src/vorgangsstand.js';
 import { ARTEN } from '../src/ablage.js';
 import { SCHRITTE, ABZWEIGE } from '../src/betriebskette.js';
 
@@ -92,4 +94,61 @@ test('Ohne Geschäftstag wird keine Frist gerechnet und nichts behauptet', () =>
   const s = vorgangsstand([P('angebot', '2026-08-20T09:00:00+02:00')]);
   assert.equal(s.abgeschlossen, null);
   assert.equal(s.naechster.id, 'annahme');
+});
+
+
+test('Die Bindefrist ist mit der Annahme beantwortet, nicht abgelaufen', () => {
+  /*
+   * **12. September 2026, spät.** `npm run akte` rechnete die Bindefrist zu
+   * **jedem** Angebot aus. Gemessen an einem Vorgang mit Angebot vom
+   * 20. August, Auftragsbestätigung vom 22. und Rechnung vom 29.:
+   *
+   *   Bindefrist: bis 2026-09-03 — VERFALLEN seit 9 Tag(en)
+   *   Stand: zuletzt „rechnung"
+   *   Angebote: 2 binden noch, 1 verfallen
+   *
+   * Ein abgerechneter Vorgang stand als verfallenes Angebot da — und daneben
+   * der Satz, eine Annahme danach sei ein neues Angebot des Kunden. Angewandt
+   * auf eine gestellte Rechnung ist das die Aufforderung, einem Kunden zu
+   * sagen, sein Auftrag sei hinfällig.
+   */
+  const offen = bindungslage([P('angebot', '2026-09-11T09:00:00+02:00')]);
+  assert.equal(offen.offen, true);
+  assert.equal(offen.durch, null);
+
+  // Ohne Rechnung: Allein die Auftragsbestätigung beendet die Bindung.
+  const nurAngenommen = bindungslage([
+    P('angebot', '2026-08-20T09:00:00+02:00'),
+    P('auftragsbestaetigung', '2026-08-22T09:00:00+02:00'),
+  ]);
+  assert.equal(nurAngenommen.offen, false,
+    'ein angenommenes Angebot wird weiter auf seine Bindefrist geprüft');
+
+  const angenommen = bindungslage([
+    P('angebot', '2026-08-20T09:00:00+02:00'),
+    P('auftragsbestaetigung', '2026-08-22T09:00:00+02:00'),
+    P('rechnung', '2026-08-29T09:00:00+02:00'),
+  ]);
+  assert.equal(angenommen.offen, false,
+    'ein abgerechneter Vorgang wird weiter auf seine Bindefrist geprüft');
+  assert.equal(angenommen.durch.art, 'auftragsbestaetigung');
+  assert.equal(angenommen.durch.zeitpunkt, '2026-08-22T09:00:00+02:00');
+
+  // Die Absage beendet sie ebenso.
+  const abgesagt = bindungslage([
+    P('angebot', '2026-08-20T09:00:00+02:00'), P('absage', '2026-08-21T09:00:00+02:00'),
+  ]);
+  assert.equal(abgesagt.offen, false);
+  assert.equal(abgesagt.durch.art, 'absage');
+});
+
+test('Eine Rechnung ohne Auftragsbestätigung beendet die Bindung auch', () => {
+  // Den Fall sollte es nicht geben — die Kette verlangt den Vertragsschluss
+  // vor der Rechnung. Die Akte darf trotzdem nicht behaupten, ein
+  // abgerechneter Vorgang warte noch auf die Annahme.
+  const b = bindungslage([
+    P('angebot', '2026-08-20T09:00:00+02:00'), P('rechnung', '2026-08-29T09:00:00+02:00'),
+  ]);
+  assert.equal(b.offen, false);
+  assert.equal(b.durch.art, 'rechnung');
 });

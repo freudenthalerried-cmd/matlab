@@ -180,3 +180,57 @@ function abschluss(eintraege, wie, abzweigId) {
     naechster: null,
   };
 }
+
+/**
+ * Ist die Bindefrist dieses Vorgangs noch eine Frage?
+ *
+ * **Der Fund vom 12. September 2026, spät.** Seit dem Nachmittag rechnet
+ * `npm run akte` zu jedem Angebot die Bindefrist aus. Sie tat es zu **jedem**
+ * — auch zu einem, das längst angenommen und abgerechnet ist. Gemessen an
+ * einem Vorgang mit Angebot vom 20. August, Auftragsbestätigung vom 22. und
+ * Rechnung vom 29.:
+ *
+ * ```
+ *   Vorgang 2026-0105 — 3 Eintrag/Einträge
+ *          Bindefrist: bis 2026-09-03 — VERFALLEN seit 9 Tag(en)
+ *     Stand: zuletzt „rechnung"
+ *   Angebote: 2 binden noch, 1 verfallen
+ * ```
+ *
+ * > **Ein abgerechneter Vorgang stand als verfallenes Angebot da** — und die
+ * > Schlusszeile zählte ihn mit. Daneben steht der Satz: „Eine Annahme danach
+ * > ist ein neues Angebot des Kunden, und der Preis ist neu zu rechnen."
+ * > Angewandt auf eine gestellte Rechnung ist das eine Aufforderung, einem
+ * > Kunden mitzuteilen, sein Auftrag sei hinfällig.
+ *
+ * Die Bindefrist ist die Antwort auf eine einzige Frage: *Bindet dieses
+ * Angebot noch?* Sobald der Kunde angenommen oder abgesagt hat, ist sie
+ * beantwortet — nicht abgelaufen, sondern **erledigt**. Die Zahl „so viele
+ * binden noch" ist das, woran der Betreiber abliest, wie viel Geschäft in der
+ * Luft ist; wer Angenommenes mitzählt, liest zu viel.
+ *
+ * @param {object[]} eintraege  die Zeilen **eines** Vorgangs
+ * @returns {{offen: boolean, durch: {art: string, zeitpunkt: string}|null}}
+ */
+export function bindungslage(eintraege = []) {
+  /*
+   * Gefragt wird nach dem Papier, das die Bindung beendet, und nicht nach dem
+   * Stand des Vorgangs: Beides läuft heute gleich, aber der Stand kann sich
+   * ändern, ohne dass sich die Antwort auf diese Frage ändert. Die Annahme
+   * beendet die Bindefrist — was danach kommt, ändert daran nichts mehr.
+   */
+  for (const art of ['auftragsbestaetigung', 'absage']) {
+    const papier = eintraege.find((e) => e.art === art);
+    if (papier) return { offen: false, durch: { art, zeitpunkt: papier.zeitpunkt ?? null } };
+  }
+  /*
+   * Der Fall, den es nicht geben sollte: eine Rechnung ohne
+   * Auftragsbestätigung. Die Kette verlangt den Vertragsschluss vor der
+   * Rechnung, aber die Akte darf nicht behaupten, ein abgerechneter Vorgang
+   * warte noch auf die Annahme — die Rechnung ist der stärkere Beweis.
+   */
+  const rechnung = eintraege.find((e) => e.art === 'rechnung');
+  if (rechnung) return { offen: false, durch: { art: 'rechnung', zeitpunkt: rechnung.zeitpunkt ?? null } };
+
+  return { offen: true, durch: null };
+}

@@ -3634,6 +3634,26 @@ export const GEGENPROBEN = Object.freeze([
       + 'Richtung wie bei der Bindefrist selbst.',
   }),
   Object.freeze({
+    id: 'die-frist-laeuft-auch-nach-der-annahme',
+    pruefer: 'test',
+    was: 'Ein angenommenes Angebot wird weiter auf seine Bindefrist geprüft',
+    datei: 'shop/src/vorgangsstand.js',
+    art: 'ersetzen',
+    suchen: "  for (const art of ['auftragsbestaetigung', 'absage']) {",
+    ersetzen: '  for (const art of []) {',
+    erwartet: /ein angenommenes Angebot wird weiter auf seine Bindefrist geprüft/,
+    warum: 'Die Bindefrist beantwortet eine einzige Frage: Bindet dieses Angebot noch? Die '
+      + 'Annahme beantwortet sie — die Frist ist dann nicht abgelaufen, sondern **erledigt**. '
+      + 'Bis zum 12. September rechnete `npm run akte` sie zu jedem Angebot: Ein Vorgang mit '
+      + 'Angebot vom 20. August, Auftragsbestätigung vom 22. und Rechnung vom 29. stand da '
+      + 'als „VERFALLEN seit 9 Tag(en)", und die Schlusszeile zählte ihn mit. **Daneben steht '
+      + 'der Satz, eine Annahme danach sei ein neues Angebot des Kunden und der Preis neu zu '
+      + 'rechnen** — angewandt auf eine gestellte Rechnung ist das die Aufforderung, einem '
+      + 'Kunden zu sagen, sein Auftrag sei hinfällig. Dazu die Zahl „so viele binden noch", '
+      + 'an der abzulesen wäre, wie viel Geschäft in der Luft ist: Wer Angenommenes mitzählt, '
+      + 'liest zu viel.',
+  }),
+  Object.freeze({
     id: 'verfallenes-angebot-bindet-weiter',
     pruefer: 'test',
     was: 'Die Akte hält ein abgelaufenes Angebot für bindend',

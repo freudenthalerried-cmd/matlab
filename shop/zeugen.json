@@ -78,6 +78,9 @@
   "die-csv-nennt-alles-umsatz": [
     "shop/test/ablage.test.js"
   ],
+  "die-frist-laeuft-auch-nach-der-annahme": [
+    "shop/test/vorgangsstand.test.js"
+  ],
   "die-sicherungskopie-bleibt-unsichtbar": [
     "shop/test/ablageort.test.js"
   ],

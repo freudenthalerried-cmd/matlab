@@ -37,7 +37,7 @@ import { ausJournal } from '../src/speicher.js';
 import { ABLAGEORT, belegname, belegordner, istJournal } from '../src/ablageort.js';
 import { EUR } from '../src/format.js';
 import { bindefrist } from '../src/beleg.js';
-import { vorgangsstand } from '../src/vorgangsstand.js';
+import { bindungslage, vorgangsstand } from '../src/vorgangsstand.js';
 import { geschaeftstag } from '../src/geschaeftszeit.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -96,6 +96,7 @@ for (const datei of journale) {
       continue;
     }
     const stand = vorgangsstand(akte, { heute });
+    const bindung = bindungslage(akte);
     if (nurOffene && stand.abgeschlossen) {
       geschlossen += 1;
       continue;
@@ -146,16 +147,30 @@ for (const datei of journale) {
        * > Preis von damals (§ 862 ABGB)** — und Baustoffpreise bewegen sich.
        */
       if (e.art === 'angebot') {
-        const frist = bindefrist(e.zeitpunkt, heute);
-        if (!frist.lesbar) {
-          console.log('         Bindefrist: aus diesem Zeitpunkt nicht zu rechnen');
-        } else if (frist.abgelaufen) {
-          verfallen += 1;
-          console.log(`         Bindefrist: bis ${frist.bis} — VERFALLEN seit `
-            + `${Math.abs(frist.offen)} Tag(en)`);
+        /*
+         * **Nur solange es eine Frage ist — 12. September 2026, spät.**
+         * Gerechnet wurde die Frist zu jedem Angebot, auch zu einem längst
+         * angenommenen und abgerechneten: „VERFALLEN seit 9 Tag(en)" stand
+         * über einem Vorgang mit gestellter Rechnung, und die Schlusszeile
+         * zählte ihn mit. Die Bindefrist beantwortet eine einzige Frage —
+         * bindet dieses Angebot noch? —, und die Annahme beantwortet sie.
+         */
+        if (!bindung.offen) {
+          const wodurch = bindung.durch.art === 'absage' ? 'der Absage' : 'der Annahme';
+          console.log(`         Bindefrist: mit ${wodurch} am `
+            + `${String(bindung.durch.zeitpunkt).slice(0, 10)} erledigt`);
         } else {
-          bindend += 1;
-          console.log(`         Bindefrist: bis ${frist.bis} — bindet noch ${frist.offen} Tag(e)`);
+          const frist = bindefrist(e.zeitpunkt, heute);
+          if (!frist.lesbar) {
+            console.log('         Bindefrist: aus diesem Zeitpunkt nicht zu rechnen');
+          } else if (frist.abgelaufen) {
+            verfallen += 1;
+            console.log(`         Bindefrist: bis ${frist.bis} — VERFALLEN seit `
+              + `${Math.abs(frist.offen)} Tag(en)`);
+          } else {
+            bindend += 1;
+            console.log(`         Bindefrist: bis ${frist.bis} — bindet noch ${frist.offen} Tag(e)`);
+          }
         }
       }
     }
