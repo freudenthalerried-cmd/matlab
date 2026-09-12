@@ -37,7 +37,7 @@ import { ausJournal } from '../src/speicher.js';
 import { ABLAGEORT, belegname, belegordner, istJournal } from '../src/ablageort.js';
 import { EUR } from '../src/format.js';
 import { bindefrist } from '../src/beleg.js';
-import { bindungslage, vorgangsstand } from '../src/vorgangsstand.js';
+import { bindungslage, luecken, vorgangsstand } from '../src/vorgangsstand.js';
 import { geschaeftstag } from '../src/geschaeftszeit.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -80,6 +80,7 @@ let verfallen = 0;
 let bindend = 0;
 let laufend = 0;
 let geschlossen = 0;
+let offeneLuecken = 0;
 for (const datei of journale) {
   const jahr = Number(datei.match(/journal-(\d{4})\.jsonl$/)[1]);
   const ablage = ausJournal(readFileSync(join(WURZEL, datei), 'utf8'));
@@ -186,6 +187,20 @@ for (const datei of journale) {
      * Der Schritt, sein Werkzeug und sein Gate kommen aus `SCHRITTE` in
      * `src/betriebskette.js` und werden hier nur abgelesen.
      */
+    /*
+     * **Was nicht zusammenpasst — 13. September 2026.**
+     *
+     * Der Stand darunter sagt, wie weit der Vorgang ist. Er nimmt dafür den
+     * **höchsten** erreichten Schritt und sah bis heute nicht nach, ob die
+     * davor belegt sind: Ein Vorgang mit Angebot und Lieferantenbestellung,
+     * aber ohne Auftragsbestätigung, stand als „auf Kurs" da — obwohl Ware
+     * bestellt ist, an die kein Kunde gebunden ist (AGB Punkt 2).
+     */
+    for (const l of luecken(akte)) {
+      offeneLuecken += 1;
+      console.log(`    FEHLT: ${l.braucht} — ${l.papier} liegt in der Akte, das Papier davor nicht`);
+      console.log(`           ${l.warum}`);
+    }
     if (stand.abgeschlossen) {
       geschlossen += 1;
       console.log(`    Stand: abgeschlossen — ${stand.abgeschlossen}`);
@@ -219,6 +234,11 @@ if (bindend || verfallen) {
 }
 
 console.log(`${laufend} Vorgang/Vorgänge laufen, ${geschlossen} sind abgeschlossen.`);
+if (offeneLuecken) {
+  console.log(`${offeneLuecken} Papier(e) liegen in der Akte, deren Voraussetzung fehlt —`);
+  console.log('das ist kein Rückstand im Betrieb, sondern eine Aufzeichnung, die nicht');
+  console.log('zusammenpasst. § 131 Abs 1 Z 5 BAO verlangt den Geschäftsfall rückführbar.');
+}
 console.log('Was als Nächstes zu tun ist, steht bei jedem laufenden — der Schritt, sein');
 console.log('Werkzeug und sein Gate kommen aus der Betriebskette (npm run betriebskette).\n');
 

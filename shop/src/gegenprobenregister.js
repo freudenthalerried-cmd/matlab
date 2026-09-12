@@ -3723,6 +3723,42 @@ export const GEGENPROBEN = Object.freeze([
       + 'dann jahrelang im Register, ohne dass irgendwer merkt, dass sie nirgends ankommt.',
   }),
   Object.freeze({
+    id: 'die-ware-ohne-vertrag',
+    pruefer: 'test',
+    was: 'Ein Papier, dessen Voraussetzung fehlt, fällt in der Akte nicht auf',
+    datei: 'shop/src/vorgangsstand.js',
+    art: 'ersetzen',
+    suchen: '    .filter((v) => arten.has(v.papier) && !arten.has(v.braucht))',
+    ersetzen: '    .filter(() => false)',
+    erwartet: /die Ware ist bestellt, der Vertrag fehlt — und niemand sagt es/,
+    warum: '`vorgangsstand` nimmt den **höchsten** erreichten Schritt und sah bis zum '
+      + '13. September nicht nach, ob die davor belegt sind. Ein Vorgang mit Angebot und '
+      + 'Lieferantenbestellung, aber ohne Auftragsbestätigung, stand in der Akte als „zuletzt: '
+      + 'lieferantenbestellung, als Nächstes: die Lieferung" — also auf Kurs. **Er ist es '
+      + 'nicht: Ware ist bei einem Dritten bestellt, an die kein Kunde gebunden ist** (AGB '
+      + 'Punkt 2), und Gate 20 verlangt zusätzlich einen Zahlungseingang, den niemand geleistet '
+      + 'haben kann, ohne angenommen zu haben. Dieselbe Lage bei der Rechnung: ein Entgelt '
+      + 'ohne die Vereinbarung, aus der es folgt.',
+  }),
+  Object.freeze({
+    id: 'bestellen-ohne-vertragspapier',
+    pruefer: 'test',
+    was: 'Ware wird beim Lieferanten bestellt, ohne dass ein Vertrag in der Akte liegt',
+    datei: 'shop/bin/vorgang.mjs',
+    art: 'ersetzen',
+    suchen: "  if (!bisher.some((e) => e.art === 'auftragsbestaetigung')) {",
+    ersetzen: '  if (false) {',
+    erwartet: /beim Lieferanten bestellt, ohne dass ein Vertrag in der Akte liegt/,
+    warum: 'Die Sperre steht bei der **Bestellung** und nicht bei der Rechnung, und das ist '
+      + 'die ganze Entscheidung: Die Bestellung ist eine Zusage nach außen, die sich noch '
+      + 'anhalten lässt; die Rechnung dokumentiert eine Lieferung, die schon geschehen ist — '
+      + 'sie zu verweigern macht sie nicht ungeschehen, sondern nur die Aufzeichnung '
+      + 'unvollständig (§ 131 BAO), und dort meldet `npm run akte` die Lücke. Möglich ist die '
+      + 'Sperre überhaupt erst seit dem 12. September nachts: Bis dahin konnte eine '
+      + 'Auftragsbestätigung gar nicht entstehen, und eine Sperre gegen etwas Unmögliches wäre '
+      + 'von Geburt an rot gewesen.',
+  }),
+  Object.freeze({
     id: 'verfallenes-angebot-bindet-weiter',
     pruefer: 'test',
     was: 'Die Akte hält ein abgelaufenes Angebot für bindend',

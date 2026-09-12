@@ -97,6 +97,35 @@ export function papierschrittbefund() {
     }
   }
 
+  /*
+   * **Und das Voraussetzungsregister — 13. September 2026.** Es nennt Arten
+   * beim Namen; eine Art, die es nicht gibt, wäre eine Regel, die nie greift,
+   * und eine Art ohne Blatt kann nichts belegen.
+   */
+  for (const v of VORAUSGESETZT) {
+    for (const [rolle, art] of [['papier', v.papier], ['braucht', v.braucht]]) {
+      if (!ARTEN[art]) {
+        meldungen.push({
+          regel: 'voraussetzung-ohne-art',
+          text: `Die Voraussetzung ${v.papier} → ${v.braucht} nennt als ${rolle} `
+            + `${art}, und diese Art gibt es nicht`,
+        });
+      } else if (!ARTEN[art].beleg) {
+        meldungen.push({
+          regel: 'voraussetzung-ohne-blatt',
+          text: `Die Voraussetzung ${v.papier} → ${v.braucht} nennt als ${rolle} ${art} `
+            + '— eine Art ohne Blatt belegt nichts und kann nichts voraussetzen',
+        });
+      }
+    }
+    if (v.warum.length < 80) {
+      meldungen.push({
+        regel: 'voraussetzung-ohne-grund',
+        text: `Die Voraussetzung ${v.papier} → ${v.braucht} trägt keinen tragenden Grund`,
+      });
+    }
+  }
+
   return { geprueft: Object.keys(ARTEN).length, meldungen, sauber: meldungen.length === 0 };
 }
 
@@ -233,4 +262,62 @@ export function bindungslage(eintraege = []) {
   if (rechnung) return { offen: false, durch: { art: 'rechnung', zeitpunkt: rechnung.zeitpunkt ?? null } };
 
   return { offen: true, durch: null };
+}
+
+/**
+ * Welches Papier welches andere **voraussetzt** — und warum.
+ *
+ * **Der Anlass, 13. September 2026.** Seit gestern nacht kann eine
+ * Auftragsbestätigung überhaupt entstehen; bis dahin schnitt `bin/vorgang.mjs`
+ * die Bankfelder ab, und der Vertragsschluss war unerreichbar. Damit wird
+ * erst jetzt prüfbar, was die Runde davor als offen benannt hat:
+ *
+ * > **`vorgangsstand` nimmt den höchsten erreichten Schritt und sieht nicht
+ * > nach, ob die davor belegt sind.** Ein Vorgang mit Angebot und
+ * > Lieferantenbestellung, aber ohne Auftragsbestätigung, steht in der Akte
+ * > als „zuletzt: lieferantenbestellung, als Nächstes: die Lieferung" — also
+ * > auf Kurs.
+ *
+ * Er ist es nicht. Nach AGB Punkt 2 entsteht der Vertrag **mit der
+ * Auftragsbestätigung**; ohne sie ist Ware beim Lieferanten bestellt, ohne
+ * dass ein Kunde gebunden wäre. Gate 20 verlangt dafür zusätzlich den
+ * Zahlungseingang, und wer soll gezahlt haben, wenn niemand angenommen hat?
+ *
+ * Die Liste ist **kurz und begründet** und keine Ableitung aus der
+ * Schrittfolge. Das hat einen Grund: Ein fehlendes **Angebot** ist kein
+ * Mangel. Nach AGB Punkt 2 ist die Bestellung des Kunden das Angebot, und die
+ * Auftragsbestätigung nimmt es an — wer über die Kasse bestellt, braucht kein
+ * Papier dieses Hauses davor. Wer aus der Schrittfolge eine Pflichtkette
+ * machte, meldete diesen normalen Weg als Lücke.
+ */
+export const VORAUSGESETZT = Object.freeze([
+  Object.freeze({
+    papier: 'lieferantenbestellung',
+    braucht: 'auftragsbestaetigung',
+    warum: 'Ohne Vertragsschluss ist Ware beim Lieferanten bestellt, an die kein Kunde '
+      + 'gebunden ist (AGB Punkt 2). Gate 20 löst erst nach Zahlungseingang aus — und wer '
+      + 'zahlt, bevor er angenommen hat?',
+  }),
+  Object.freeze({
+    papier: 'rechnung',
+    braucht: 'auftragsbestaetigung',
+    warum: 'Eine Rechnung über etwas, dem niemand zugestimmt hat. Der Vertrag entsteht mit '
+      + 'der Auftragsbestätigung (AGB Punkt 2); fehlt sie, steht in der Akte ein Entgelt '
+      + 'ohne die Vereinbarung, aus der es folgt.',
+  }),
+]);
+
+/**
+ * Die Papiere, deren Voraussetzung in dieser Akte fehlt.
+ *
+ * Gelesen werden **Arten**, kein Inhalt. Gemeldet wird nicht, was der Betrieb
+ * hätte tun sollen — sondern was in der Aufzeichnung nicht zusammenpasst.
+ *
+ * @param {object[]} eintraege  die Zeilen **eines** Vorgangs
+ */
+export function luecken(eintraege = [], register = VORAUSGESETZT) {
+  const arten = new Set(eintraege.map((e) => e.art));
+  return register
+    .filter((v) => arten.has(v.papier) && !arten.has(v.braucht))
+    .map((v) => ({ ...v }));
 }

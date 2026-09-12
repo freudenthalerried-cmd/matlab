@@ -56,6 +56,9 @@
     "shop/test/beleg.test.js",
     "shop/test/vorgang.test.js"
   ],
+  "bestellen-ohne-vertragspapier": [
+    "shop/test/vorgangwerkzeug.test.js"
+  ],
   "bestellung-ohne-durchschrift": [
     "shop/test/vorgangwerkzeug.test.js"
   ],
@@ -95,6 +98,9 @@
   ],
   "die-umbenennung-geht-verloren": [
     "shop/test/ungerufen.test.js"
+  ],
+  "die-ware-ohne-vertrag": [
+    "shop/test/vorgangsstand.test.js"
   ],
   "die-zweite-einfuhr-gewinnt": [
     "shop/test/ungerufen.test.js"

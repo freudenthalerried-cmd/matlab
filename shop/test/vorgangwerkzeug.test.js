@@ -623,6 +623,34 @@ test('ohne Ablage zeigt die Akte keine leere Übersicht, sondern weigert sich',
     assert.match(e.aus, /keine Ablage|Kein Journal/);
   });
 
+test('ohne Auftragsbestätigung wird beim Lieferanten nichts bestellt',
+  { skip: !vorhanden && 'preise/ fehlt' }, () => {
+    /*
+     * **13. September 2026.** Der Vertrag entsteht mit der
+     * Auftragsbestätigung (AGB Punkt 2). Fehlt sie, ginge hier Ware bei einem
+     * Dritten in Bestellung, an die kein Kunde gebunden ist — und Gate 20
+     * verlangt zusätzlich den Zahlungseingang, den niemand geleistet haben
+     * kann, ohne angenommen zu haben.
+     *
+     * Die Sperre steht bei der Bestellung und nicht bei der Rechnung: Die
+     * Bestellung ist eine Zusage nach außen, die sich noch anhalten lässt.
+     */
+    const u = baueUmgebung();
+    const akte = wegwerfordner('akte-');
+    const e = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0162',
+      '--stufe', 'bestellung', '--bezahlt', '2026-09-10', '--ablegen'],
+    {
+      VORGANG_ABLAGE: akte,
+      VORGANG_LIEFERANTEN: mitLieferzeit(u.ordner),
+      VORGANG_BETREIBER: mitBankverbindung(u.ordner),
+    });
+    assert.notEqual(e.code, 0,
+      `beim Lieferanten bestellt, ohne dass ein Vertrag in der Akte liegt:\n${e.aus}`);
+    assert.match(e.aus, /keine Auftragsbestätigung in der Akte/);
+    // Abgewiesen und trotzdem abgelegt wäre das Schlimmere von beidem.
+    assert.equal(existsSync(join(akte, 'belege-2026', 'LB-2026-0162-01.txt')), false, e.aus);
+  });
+
 test('die Lieferantenbestellung geht mit ihrer Durchschrift in die Akte',
   { skip: !vorhanden && 'preise/ fehlt' }, () => {
     /*
@@ -636,9 +664,23 @@ test('die Lieferantenbestellung geht mit ihrer Durchschrift in die Akte',
      */
     const u = baueUmgebung();
     const akte = wegwerfordner('akte-');
+    const umgebung = {
+      VORGANG_ABLAGE: akte,
+      VORGANG_LIEFERANTEN: mitLieferzeit(u.ordner),
+      VORGANG_BETREIBER: mitBankverbindung(u.ordner),
+    };
+    /*
+     * **Erst der Vertrag, dann die Bestellung — seit dem 13. September.**
+     * Ohne Auftragsbestätigung ginge Ware an einen Kunden, der nicht gebunden
+     * ist (AGB Punkt 2); das Werkzeug bricht seither ab. Diese Probe fuhr bis
+     * dahin ohne sie — und war damit selbst der Weg, den es nicht geben soll.
+     */
+    const vertrag = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0161',
+      '--stufe', 'bestaetigung', '--ablegen'], umgebung);
+    assert.equal(vertrag.code, 0, vertrag.aus);
+
     const e = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0161',
-      '--stufe', 'bestellung', '--bezahlt', '2026-09-10', '--ablegen'],
-    { VORGANG_ABLAGE: akte, VORGANG_LIEFERANTEN: mitLieferzeit(u.ordner) });
+      '--stufe', 'bestellung', '--bezahlt', '2026-09-10', '--ablegen'], umgebung);
     assert.equal(e.code, 0, e.aus);
 
     // Die Nummer steht auf dem Papier: Vorgangsnummer plus Teillieferung.
@@ -651,7 +693,8 @@ test('die Lieferantenbestellung geht mit ihrer Durchschrift in die Akte',
     assert.ok(e.aus.includes(durchschrift.trim()), 'gedruckt wurde ein anderer Text als abgelegt');
 
     const eintrag = readFileSync(join(akte, 'journal-2026.jsonl'), 'utf8')
-      .trim().split('\n').map((z) => JSON.parse(z)).find((z) => z.typ === 'eintrag').eintrag;
+      .trim().split('\n').map((z) => JSON.parse(z))
+      .find((z) => z.typ === 'eintrag' && z.eintrag.art === 'lieferantenbestellung').eintrag;
     assert.equal(eintrag.art, 'lieferantenbestellung');
     assert.equal(eintrag.nummer, '2026-0161-01');
     assert.equal(typeof eintrag.betragNetto, 'number', 'der Einkaufswert fehlt');

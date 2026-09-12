@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  PAPIERSCHRITT, bindungslage, papierschrittbefund, vorgangsstand,
+  PAPIERSCHRITT, VORAUSGESETZT, bindungslage, luecken, papierschrittbefund, vorgangsstand,
 } from '../src/vorgangsstand.js';
 import { ARTEN } from '../src/ablage.js';
 import { SCHRITTE, ABZWEIGE } from '../src/betriebskette.js';
@@ -151,4 +151,45 @@ test('Eine Rechnung ohne Auftragsbestätigung beendet die Bindung auch', () => {
   ]);
   assert.equal(b.offen, false);
   assert.equal(b.durch.art, 'rechnung');
+});
+
+
+test('Ein Papier, dessen Voraussetzung fehlt, fällt auf', () => {
+  /*
+   * **13. September 2026.** `vorgangsstand` nimmt den **höchsten** erreichten
+   * Schritt und sah nicht nach, ob die davor belegt sind: Ein Vorgang mit
+   * Angebot und Lieferantenbestellung, aber ohne Auftragsbestätigung, stand
+   * als „zuletzt: lieferantenbestellung, als Nächstes: die Lieferung" da —
+   * also auf Kurs. Er ist es nicht: Ware ist bei einem Dritten bestellt, an
+   * die kein Kunde gebunden ist (AGB Punkt 2).
+   */
+  const ohne = luecken([P('angebot'), P('lieferantenbestellung')]);
+  assert.deepEqual(ohne.map((l) => l.papier), ['lieferantenbestellung'],
+    'die Ware ist bestellt, der Vertrag fehlt — und niemand sagt es');
+  assert.equal(ohne[0].braucht, 'auftragsbestaetigung');
+
+  // Mit dem Vertragspapier ist nichts zu melden.
+  assert.deepEqual(
+    luecken([P('angebot'), P('auftragsbestaetigung'), P('lieferantenbestellung')]), []);
+
+  // Und die Rechnung ebenso: ein Entgelt ohne die Vereinbarung, aus der es folgt.
+  assert.deepEqual(luecken([P('rechnung')]).map((l) => l.papier), ['rechnung']);
+});
+
+test('Ein fehlendes Angebot ist kein Mangel — die Bestellung des Kunden ist das Angebot', () => {
+  /*
+   * Nach AGB Punkt 2 ist die Bestellung des Kunden das Angebot, und die
+   * Auftragsbestätigung nimmt es an. Wer über die Kasse bestellt, braucht
+   * kein Papier dieses Hauses davor. **Wer aus der Schrittfolge eine
+   * Pflichtkette machte, meldete diesen normalen Weg als Lücke** — deshalb
+   * ist `VORAUSGESETZT` eine kurze, begründete Liste und keine Ableitung.
+   */
+  assert.deepEqual(luecken([P('auftragsbestaetigung')]), []);
+  assert.deepEqual(luecken([P('auftragsbestaetigung'), P('lieferantenbestellung')]), []);
+  assert.equal(VORAUSGESETZT.length, 2);
+  for (const v of VORAUSGESETZT) {
+    assert.ok(ARTEN[v.papier]?.beleg, `${v.papier} ist kein Papier`);
+    assert.ok(ARTEN[v.braucht]?.beleg, `${v.braucht} ist kein Papier`);
+    assert.ok(v.warum.length >= 80, `${v.papier}: der Grund trägt nicht`);
+  }
 });

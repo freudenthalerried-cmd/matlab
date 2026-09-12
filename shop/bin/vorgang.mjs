@@ -67,7 +67,7 @@ import { pruefeAblageAufDrittdaten } from '../src/kontrolle.js';
 import { EUR } from '../src/format.js';
 import {
   ARTEN, haltefest, istStorniert, naechsteNummer, neueAblage, pruefeNummernkreis,
-  stelleRechnungAus, storniere,
+  stelleRechnungAus, storniere, vorgangsakte,
 } from '../src/ablage.js';
 import { ausJournal, journalzeile } from '../src/speicher.js';
 import { ABLAGEORT, belegname, belegordner, belegpfad, journalpfad } from '../src/ablageort.js';
@@ -796,6 +796,34 @@ if (stufe === 'bestellung') {
     ? readFileSync(bestelljournal, 'utf8') : '';
   const bestellablage = ausJournal(bestandDerBestellung);
   bestellablage.schreibe = (e) => appendFileSync(bestelljournal, `${journalzeile(e)}\n`, 'utf8');
+
+  /*
+   * **Ohne Vertrag keine Bestellung beim Lieferanten — 13. September 2026.**
+   *
+   * Der Vertrag entsteht mit der Auftragsbestätigung (AGB Punkt 2). Fehlt
+   * sie, wird hier Ware bei einem Dritten bestellt, an die kein Kunde
+   * gebunden ist — und Gate 20 verlangt zusätzlich den Zahlungseingang, den
+   * niemand geleistet haben kann, ohne angenommen zu haben.
+   *
+   * > **Die Sperre steht hier und nicht bei der Rechnung.** Die Bestellung
+   * > ist eine Zusage nach außen, die sich noch anhalten lässt. Die Rechnung
+   * > dokumentiert eine Lieferung, die schon geschehen ist; sie zu verweigern
+   * > macht sie nicht ungeschehen, sondern nur die Aufzeichnung unvollständig
+   * > (§ 131 BAO). Dort meldet `npm run akte` die Lücke, statt zu sperren.
+   *
+   * Möglich ist diese Sperre erst seit gestern nacht: Bis dahin schnitt
+   * dieses Werkzeug die Bankfelder ab, und eine Auftragsbestätigung konnte
+   * gar nicht entstehen. Eine Sperre gegen etwas Unmögliches wäre von Geburt
+   * an rot gewesen und binnen einer Woche abgeschaltet.
+   */
+  const bisher = vorgangsakte(bestellablage, nummer);
+  if (!bisher.some((e) => e.art === 'auftragsbestaetigung')) {
+    abbruch(`Zu Vorgang ${nummer} liegt keine Auftragsbestätigung in der Akte.`,
+      'Ohne sie ist kein Vertrag geschlossen (AGB Punkt 2), und die Ware ginge auf\n'
+      + 'Rechnung dieses Betriebs an einen Kunden, der nicht gebunden ist. Gate 20\n'
+      + 'löst ohnehin erst nach Zahlungseingang aus.\n\n'
+      + `Zuerst: npm run vorgang -- … --nummer ${nummer} --stufe bestaetigung --ablegen`);
+  }
 
   for (const b of mitZahlung.bestellungen) {
     sperreLuecken(b.text);
