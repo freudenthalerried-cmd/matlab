@@ -33,6 +33,7 @@ import {
 } from '../src/rechtstexte.js';
 import { DATENFLUESSE } from '../src/abgleich.js';
 import { erzeugeRechtstexteauftrag } from '../src/rechtstexteauftrag.js';
+import { BANKFELDER } from '../src/bankverbindung.js';
 
 const wurzel = dirname(dirname(fileURLToPath(import.meta.url)));
 const lies = (name) => JSON.parse(readFileSync(join(wurzel, 'data', name), 'utf8'));
@@ -135,6 +136,15 @@ const betreiber = {
   plz: betreiberDatei.plz ?? '',
   ort: betreiberDatei.ort ?? '',
   uid: betreiberDatei.uid ?? '',
+  /*
+   * **Nachgetragen am 12. September 2026, nachts.** Dieselbe Aufzählung stand
+   * in `bin/vorgang.mjs`, und dort hat sie die Bankfelder abgeschnitten,
+   * bevor sie irgendwo ankommen konnten — der Vertragsschluss war dadurch
+   * acht Tage lang unerreichbar. Zwei von Hand geführte Listen über dieselbe
+   * Sache sind zwei Gelegenheiten für denselben Fehler; die Bankfelder kommen
+   * hier wie dort aus `BANKFELDER`.
+   */
+  ...Object.fromEntries(BANKFELDER.map((f) => [f.feld, betreiberDatei[f.feld] ?? ''])),
 };
 const kunde = { firma: 'Musterbau GmbH', strasse: 'Baustellenweg 7', plz: '4600', ort: 'Wels', uid: 'ATU12345675' };
 const gemeinsam = { datum: '01.09.2026', kunde, betreiber };

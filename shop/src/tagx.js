@@ -38,6 +38,46 @@
  * Stellen, an denen er am Tag X stehen **muss**.
  */
 export const OFFENE_ANGABEN = Object.freeze([
+  /*
+   * **Die siebte und achte Angabe — 12. September 2026, nachts.**
+   *
+   * Sie stehen auf keiner Seite und trotzdem hier. Seit dem 4. September
+   * trägt die **Auftragsbestätigung** die Bankverbindung: Gate 21 hat
+   * Vorkasse ab Start entschieden, und eine Bestätigung, die Zahlung sofort
+   * verlangt und kein Konto nennt, ist unbrauchbar. `darfBestaetigtWerden`
+   * weist sie seither ab.
+   *
+   * > **Der Tag X, für den dieses Haus probt, konnte keinen Vertrag
+   * > schließen.** Gemessen: `npm run vorgang -- --stufe bestaetigung
+   * > --ablegen` bricht mit *„Bankverbindung unvollständig (kontoinhaber,
+   * > iban)"* ab — auch mit der Betreiberdatei des Tages X, denn die kannte
+   * > die beiden Felder nicht.
+   *
+   * Die Folge hat acht Tage lang niemand gesehen, weil der eine Testfall, der
+   * diese Stufe fährt, bei einem Abbruch **zurückkehrt** statt zu prüfen. Er
+   * war grün und hatte nie eine abgelegte Auftragsbestätigung gesehen.
+   *
+   * `sichtbarIn` nennt die **Auftragsbestätigung** und keine Seite des Shops:
+   * Beide gehören auf das Papier an den Kunden. Eine Kontonummer im Impressum
+   * ist eine Einladung an jeden Leser.
+   */
+  Object.freeze({
+    feld: 'kontoinhaber',
+    probe: 'Freudenthaler Bau GmbH (Probe)',
+    sichtbarIn: Object.freeze(['bestaetigung']),
+    warum: 'Zahlung per Vorkasse ohne Anbieter braucht ein Konto, und ein Konto braucht einen '
+      + 'Inhaber: Wer überweist, muss wissen, an wen. Gate 21 hat Vorkasse ab Start '
+      + 'entschieden, und die Auftragsbestätigung ist das Papier, auf dem es steht.',
+  }),
+  Object.freeze({
+    feld: 'iban',
+    probe: 'AT611904300234573201',
+    sichtbarIn: Object.freeze(['bestaetigung']),
+    warum: 'Ohne sie kann kein Kunde per Vorkasse zahlen, und ohne Zahlung löst Gate 20 keine '
+      + 'Lieferantenbestellung aus. Der Probewert ist die in der Literatur gebräuchliche '
+      + 'Beispiel-IBAN und gehört keinem Konto dieses Betriebs — er steht hier, damit sich '
+      + 'der Weg bis zum Vertragsschluss überhaupt fahren lässt.',
+  }),
   Object.freeze({
     feld: 'email',
     probe: 'office@bauversand.example',
@@ -218,7 +258,8 @@ export function betreiberAmTagX(heute, angaben = OFFENE_ANGABEN) {
  * @param {string} lage.oberflaeche           das gebaute `shop.js` mit den Betreiberdaten
  */
 export function tagxbefund({
-  impressum, entitaeten, dateien, hinweis, oberflaeche = '', angaben = OFFENE_ANGABEN,
+  impressum, entitaeten, dateien, hinweis, oberflaeche = '', bestaetigung = '',
+  angaben = OFFENE_ANGABEN,
 }) {
   const meldungen = [];
 
@@ -244,6 +285,19 @@ export function tagxbefund({
       meldungen.push({
         regel: 'angabe-erreicht-impressum-nicht',
         text: `${a.feld} steht am Tag X nicht im Impressum — ${a.warum}`,
+      });
+    }
+    /*
+     * **Die Auftragsbestätigung ist auch eine Stelle — 12. September 2026.**
+     * Kontoinhaber und IBAN stehen auf keiner Seite des Shops und trotzdem im
+     * Register: Ohne sie weist `darfBestaetigtWerden` die Bestätigung ab, und
+     * damit kommt kein Vertrag zustande (AGB Punkt 2). Eine offene Angabe
+     * ohne Stelle wäre eine, die niemand vermisst.
+     */
+    if (a.sichtbarIn.includes('bestaetigung') && !String(bestaetigung).includes(String(a.probe))) {
+      meldungen.push({
+        regel: 'angabe-erreicht-bestaetigung-nicht',
+        text: `${a.feld} steht am Tag X nicht auf der Auftragsbestätigung — ${a.warum}`,
       });
     }
     if (a.sichtbarIn.includes('oberflaeche') && !String(oberflaeche).includes(String(a.probe))) {

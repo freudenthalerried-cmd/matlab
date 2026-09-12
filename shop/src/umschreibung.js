@@ -588,6 +588,18 @@ export const REGELQUELLEN = Object.freeze([
  * und eingeordnet worden — nur nicht einzeln begründet.
  */
 export const FORMMUSTER = Object.freeze([
+  /*
+   * **`bankverbindung.AT_IBAN` kam am 12. September 2026 dazu** — nicht weil
+   * das Muster neu wäre, sondern weil `bin/vorgang.mjs` seither `BANKFELDER`
+   * liest und damit das Modul in die Reichweite der Kundentext-Werkzeuge
+   * gerät. Genau dafür gibt es diese Liste: Ein Muster, das die Werkzeuge
+   * erreichen und das niemand eingeordnet hat, ist eine offene Frage.
+   *
+   * Eine Behauptung über den Shop ist es nicht — es liest die **Form** einer
+   * österreichischen IBAN (zwei Buchstaben, achtzehn Ziffern) und sagt über
+   * keinen Text dieses Hauses etwas aus.
+   */
+  'bankverbindung.AT_IBAN',
   'abgrenzung.ABGRENZUNGSMUSTER', 'belegpruefung.SUMMENZEILE', 'geschaeftszeit.KALENDERRUF',
   'geschaeftszeit.ROHGRIFF', 'krume.KRUMENMUSTER', 'merkblattverweis.MERKBLATT',
   'sitemapstand.DATUM', 'sperrguteinstufung.EINSTUFUNGSBLOCK', 'sperrguteinstufung.FLAECHENMUSTER',

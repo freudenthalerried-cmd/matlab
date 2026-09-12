@@ -25,6 +25,7 @@ import { ladeBaustoffkatalog, ZIELMARGE } from '../src/baustoffkatalog.js';
 import { kundenWarenkorb, oeffentlicherArtikel, oeffentlicherLieferant } from '../src/shopkern.js';
 import { baueKundenanfrage } from '../src/kundenanfrage.js';
 import { wegwerfordner } from '../src/wegwerf.js';
+import { betreiberAmTagX } from '../src/tagx.js';
 
 const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
 const werkzeug = pfad('../bin/vorgang.mjs');
@@ -232,6 +233,22 @@ function mitLieferzeit(ordner) {
   return datei;
 }
 
+/**
+ * Ein Betreiber mit Bankverbindung — der Tag X, an dem ein Vertrag zustande
+ * kommen kann.
+ *
+ * **Ohne ihn fuhr keine Probe dieses Hauses bis zum Vertragsschluss.** Seit
+ * dem 4. September trägt die Auftragsbestätigung die Bankverbindung (Gate 21:
+ * Vorkasse ab Start), und `darfBestaetigtWerden` weist sie ohne Konto ab. Der
+ * Testfall darunter fing den Abbruch ab und kehrte zurück — er war grün und
+ * hatte nie eine abgelegte Auftragsbestätigung gesehen.
+ */
+function mitBankverbindung(ordner) {
+  const datei = join(ordner, 'betreiber.json');
+  writeFileSync(datei, JSON.stringify(betreiberAmTagX(lies(pfad('../data/betreiber.json'))), null, 2));
+  return datei;
+}
+
 test('ein Beleg mit offener Pflichtangabe kommt nicht in die Akte',
   { skip: !vorhanden && 'preise/ fehlt' }, () => {
     // Der heutige Bestand: Die Lieferzeit des Lieferanten ist offen, also
@@ -303,15 +320,28 @@ test('die Auftragsbestätigung wird ohne Belegnummer abgelegt',
     const akte = wegwerfordner('akte-');
     const e = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0105',
       '--datum', '2026-09-04', '--stufe', 'bestaetigung', '--ablegen'],
-    { VORGANG_ABLAGE: akte, VORGANG_LIEFERANTEN: mitLieferzeit(u.ordner) });
-    // Läuft die Bestätigung nicht (Freigabe fehlt), sagt das Werkzeug das —
-    // dann darf es aber auch nichts abgelegt haben.
-    if (e.code !== 0) {
-      assert.equal(existsSync(join(akte, 'journal-2026.jsonl')), false, e.aus);
-      return;
-    }
+    {
+      VORGANG_ABLAGE: akte,
+      VORGANG_LIEFERANTEN: mitLieferzeit(u.ordner),
+      VORGANG_BETREIBER: mitBankverbindung(u.ordner),
+    });
+    /*
+     * **Hier stand ein Rückweg — 12. September 2026, nachts.** Lief die
+     * Bestätigung nicht, prüfte dieser Fall nur, dass nichts abgelegt wurde,
+     * und kehrte zurück. Sie lief **nie**: Die Betreiberdatei kannte
+     * `kontoinhaber` und `iban` nicht, und `darfBestaetigtWerden` weist ohne
+     * Konto ab (Gate 21, Vorkasse ab Start). Der Fall war seit dem
+     * 4. September grün und hat nie eine abgelegte Auftragsbestätigung
+     * gesehen — acht Tage lang, und in dieser Zeit ist der Vertragsschluss
+     * zum einzigen Schritt der Kette geworden, den nichts durchspielt.
+     */
+    assert.equal(e.code, 0, e.aus);
     assert.match(e.aus, /Abgelegt: auftragsbestaetigung/);
     assert.match(e.aus, /Ohne Belegnummer/);
+    // Und das Konto steht auf dem Papier, das der Kunde bekommt: Ohne es
+    // verlangt die Bestätigung Zahlung sofort und nennt nicht wohin.
+    const beleg = readFileSync(join(akte, 'belege-2026', 'AB-2026-0105.txt'), 'utf8');
+    assert.ok(beleg.includes('AT611904300234573201'), 'die Bankverbindung fehlt auf dem Beleg');
   });
 
 test('dieselbe Belegnummer kommt kein zweites Mal in die Akte',

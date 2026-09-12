@@ -26,10 +26,13 @@ const gut = () => ({
   dateien: ['index.html', 'bestellung.php'],
   hinweis: 'Vorschau ohne Bestellmöglichkeit — es fehlt die Lieferzeit des Lieferanten.',
   oberflaeche: OFFENE_ANGABEN.map((a) => a.probe).join(' '),
+  // Die Bankverbindung steht auf keiner Seite, sondern auf dem Papier an
+  // den Kunden — seit dem 12. September nennt `sichtbarIn` sie als Stelle.
+  bestaetigung: OFFENE_ANGABEN.map((a) => a.probe).join(' '),
 });
 
 test('jede offene Angabe nennt ein Feld des Betreibers, eine Probe und einen Grund', () => {
-  assert.equal(OFFENE_ANGABEN.length, 6, `${OFFENE_ANGABEN.length} Angaben`);
+  assert.equal(OFFENE_ANGABEN.length, 8, `${OFFENE_ANGABEN.length} Angaben`);
   for (const a of OFFENE_ANGABEN) {
     assert.ok(a.feld in BETREIBER, `${a.feld} gibt es in der Betreiberdatei nicht`);
     assert.ok(String(a.probe).length >= 1, `${a.feld}: die Probe ist leer`);
@@ -45,7 +48,7 @@ test('die Proben stehen in keiner Datei des Bestandes', () => {
    * ist — deshalb dürfen die Probewerte nirgends im Bestand auftauchen.
    */
   const roh = readFileSync(new URL('../data/betreiber.json', import.meta.url), 'utf8');
-  assert.equal(OFFENE_ANGABEN.length, 6, 'sonst prüft die Schleife bei leerer Liste nichts');
+  assert.equal(OFFENE_ANGABEN.length, 8, 'sonst prüft die Schleife bei leerer Liste nichts');
   for (const a of OFFENE_ANGABEN) {
     if (typeof a.probe !== 'string') continue;
     assert.equal(roh.includes(a.probe), false,
@@ -78,8 +81,13 @@ test('die heile Lage meldet nichts', () => {
 });
 
 test('eine Angabe, die das Impressum nicht erreicht, ist ein Befund', () => {
+  // **Nicht die erste des Registers — 12. September 2026.** Seit Kontoinhaber
+  // und IBAN darin stehen, ist die erste eine, die im Impressum nichts zu
+  // suchen hat: Eine Kontonummer im Impressum ist eine Einladung an jeden
+  // Leser. Gesucht wird die erste, die dort wirklich hingehört.
   const lage = gut();
-  lage.impressum = lage.impressum.replace(OFFENE_ANGABEN[0].probe, '');
+  const imImpressum = OFFENE_ANGABEN.find((a) => a.sichtbarIn.includes('impressum'));
+  lage.impressum = lage.impressum.replace(imImpressum.probe, '');
   assert.deepEqual(tagxbefund(lage).meldungen.map((m) => m.regel),
     ['angabe-erreicht-impressum-nicht']);
 });

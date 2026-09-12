@@ -35,6 +35,7 @@ import { fileURLToPath } from 'node:url';
 
 import { OFFENE_ANGABEN, betreiberAmTagX, tagxbefund, betreiberbefund } from '../src/tagx.js';
 import { wegwerfordner } from '../src/wegwerf.js';
+import { bankzeilen } from '../src/bankverbindung.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 
@@ -111,7 +112,19 @@ if (!liste.sauber) {
   process.exit(1);
 }
 
+/*
+ * **Die Auftragsbestätigung, soweit sie hier hingehört — 12. September 2026.**
+ *
+ * Kontoinhaber und IBAN stehen auf keiner gebauten Seite; sie stehen auf dem
+ * Papier an den Kunden. Gebaut wird hier nicht die ganze Bestätigung — dafür
+ * bräuchte dieser Prüfer einen Warenkorb und wäre ein zweiter Belegprüfer —,
+ * sondern genau der Abschnitt, in dem die beiden Felder ankommen.
+ */
+const bankabschnitt = bankzeilen(betreiberAmTagX(heute), 'Tag X', (was) => was)
+  .zeilen.join('\n');
+
 const b = tagxbefund({
+  bestaetigung: bankabschnitt,
   impressum: readFileSync(join(site, 'rechtliches', 'impressum.html'), 'utf8'),
   entitaeten: entitaeten(site),
   dateien: readdirSync(site),

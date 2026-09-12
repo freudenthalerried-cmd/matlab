@@ -72,6 +72,7 @@ import {
 import { ausJournal, journalzeile } from '../src/speicher.js';
 import { ABLAGEORT, belegname, belegordner, belegpfad, journalpfad } from '../src/ablageort.js';
 import { geschaeftstag } from '../src/geschaeftszeit.js';
+import { BANKFELDER } from '../src/bankverbindung.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const REPO = dirname(SHOP);
@@ -344,6 +345,29 @@ if (abweichungen.length) {
 }
 
 // --- 3. Den Vorgang bauen ---------------------------------------------------
+/*
+ * **Die Bankfelder kamen hier nicht durch — 12. September 2026, nachts.**
+ *
+ * Diese Liste war von Hand geschrieben und zählte sechs Felder. Seit dem
+ * 4. September trägt die Auftragsbestätigung die **Bankverbindung**: Gate 21
+ * hat Vorkasse ab Start entschieden, und `darfBestaetigtWerden` weist eine
+ * Bestätigung ab, die Zahlung sofort verlangt und kein Konto nennt.
+ *
+ * > **Die Felder wurden hier abgeschnitten, bevor sie irgendwo ankommen
+ * > konnten.** Keine Betreiberdatei dieser Welt hätte die Bestätigung
+ * > freigegeben — auch die mit Konto nicht, denn `kontoinhaber` und `iban`
+ * > standen nicht in dieser Aufzählung.
+ *
+ * Damit war der **Vertragsschluss** — Schritt 4 von 9 der Betriebskette — der
+ * einzige Schritt mit Werkzeug, den nichts durchspielen konnte. Acht Tage
+ * lang, und gemerkt hat es niemand, weil der eine Testfall, der diese Stufe
+ * fährt, den Abbruch abfing und zurückkehrte.
+ *
+ * Fünfter Fall derselben Familie: Eine Regel wird an der einen Stelle
+ * eingeführt und gilt an der anderen nicht, weil dort eine Liste steht, die
+ * niemand mitgeführt hat. Deshalb kommen die Bankfelder jetzt aus
+ * `BANKFELDER` — dem Register, das auch der Beleg liest.
+ */
 const betreiber = {
   firma: betreiberDatei.firma ?? '',
   marke: betreiberDatei.marke ?? '',
@@ -351,6 +375,7 @@ const betreiber = {
   plz: betreiberDatei.plz ?? '',
   ort: betreiberDatei.ort ?? '',
   uid: betreiberDatei.uid ?? '',
+  ...Object.fromEntries(BANKFELDER.map((f) => [f.feld, betreiberDatei[f.feld] ?? ''])),
 };
 const vorgang = baueVorgang({
   vorgangsnummer: nummer,

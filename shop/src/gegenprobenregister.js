@@ -3689,6 +3689,40 @@ export const GEGENPROBEN = Object.freeze([
       + 'eine bloße Erwähnung des Ausfuhrnamens dann als Aufruf.',
   }),
   Object.freeze({
+    id: 'die-bankfelder-kommen-nicht-durch',
+    pruefer: 'test',
+    was: 'Das Werkzeug schneidet die Bankverbindung aus der Betreiberdatei heraus',
+    datei: 'shop/bin/vorgang.mjs',
+    art: 'ersetzen',
+    suchen: "  ...Object.fromEntries(BANKFELDER.map((f) => [f.feld, betreiberDatei[f.feld] ?? ''])),",
+    ersetzen: '  ...{},',
+    erwartet: /Bankverbindung unvollständig/,
+    warum: 'Seit dem 4. September trägt die Auftragsbestätigung die Bankverbindung — Gate 21 '
+      + 'hat Vorkasse ab Start entschieden, und `darfBestaetigtWerden` weist eine Bestätigung '
+      + 'ab, die Zahlung sofort verlangt und kein Konto nennt. Die Felder kamen aber gar nicht '
+      + 'erst an: `bin/vorgang.mjs` baute den Betreiber aus einer **von Hand geschriebenen '
+      + 'Aufzählung von sechs Feldern**, und `kontoinhaber` und `iban` standen nicht darin. '
+      + '**Keine Betreiberdatei dieser Welt hätte die Bestätigung freigegeben** — auch die mit '
+      + 'Konto nicht. Damit war der Vertragsschluss, Schritt 4 von 9 der Betriebskette, acht '
+      + 'Tage lang der einzige Schritt mit Werkzeug, den nichts durchspielen konnte.',
+  }),
+  Object.freeze({
+    id: 'die-bankverbindung-fehlt-am-tag-x',
+    pruefer: 'test',
+    was: 'Das Register der offenen Angaben kennt die Bankverbindung nicht',
+    datei: 'shop/src/tagx.js',
+    art: 'ersetzen',
+    suchen: "    sichtbarIn: Object.freeze(['bestaetigung']),\n    warum: 'Ohne sie kann kein Kunde per Vorkasse zahlen",
+    ersetzen: "    sichtbarIn: Object.freeze([]),\n    warum: 'Ohne sie kann kein Kunde per Vorkasse zahlen",
+    erwartet: /iban: nennt keine Stelle/,
+    warum: 'Jede offene Angabe nennt die Stelle, an der sie am Tag X ankommen **muss** — sonst '
+      + 'ist sie eine Angabe, die niemand vermisst. Kontoinhaber und IBAN stehen auf keiner '
+      + 'Seite des Shops: Eine Kontonummer im Impressum ist eine Einladung an jeden Leser. '
+      + 'Ihre Stelle ist die **Auftragsbestätigung**, und ohne sie kommt nach AGB Punkt 2 kein '
+      + 'Vertrag zustande. Eine Angabe ohne Stelle fällt aus jeder Prüfung heraus und steht '
+      + 'dann jahrelang im Register, ohne dass irgendwer merkt, dass sie nirgends ankommt.',
+  }),
+  Object.freeze({
     id: 'verfallenes-angebot-bindet-weiter',
     pruefer: 'test',
     was: 'Die Akte hält ein abgelaufenes Angebot für bindend',
