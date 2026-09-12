@@ -34,7 +34,22 @@ export const ARTEN = {
   angebot: { kuerzel: 'AN', nummernkreis: true },
   rechnung: { kuerzel: 'RE', nummernkreis: true },
   gutschrift: { kuerzel: 'GS', nummernkreis: true },
-  lieferantenbestellung: { kuerzel: 'LB', nummernkreis: true },
+  /**
+   * **Berichtigt am 12. September 2026.** Hier stand `nummernkreis: true` —
+   * ein eigener Kreis für ein Papier, das seine Nummer **mitbringt**:
+   * `erzeugeBestellungen` bildet sie seit dem 30. August als Vorgangsnummer
+   * plus laufende Teillieferung (`2026-0110-01`).
+   *
+   * > **Zwei Zahlenreihen für dasselbe Papier** — dieselbe Familie wie am
+   * > 4. September bei der Angebotsnummer und am 11. bei der Rechnung, wo
+   * > gedruckt und abgelegt zwei verschiedene Nummern trugen. Aufgelöst wird
+   * > sie wie dort: zugunsten des Papiers.
+   *
+   * Gerufen hat den Kreis nie jemand; er wäre beim ersten Ablegen zur zweiten
+   * Nummer geworden. Fortlaufend und einmalig verlangt § 11 Abs 1 Z 5 UStG
+   * ohnehin nur für die Rechnung.
+   */
+  lieferantenbestellung: { kuerzel: 'LB', nummernkreis: false },
   uidabfrage: { kuerzel: 'UP', nummernkreis: false },
   vermerk: { kuerzel: 'VM', nummernkreis: false },
   /**

@@ -441,6 +441,57 @@ test('--ablegen hinterlässt die Durchschrift des Belegs, nicht nur die Zeile da
  * in der Sprache des Betriebs.
  * ------------------------------------------------------------------ */
 
+test('die Lieferantenbestellung geht mit ihrer Durchschrift in die Akte',
+  { skip: !vorhanden && 'preise/ fehlt' }, () => {
+    /*
+     * **Der Fund vom 12. September.** `erzeugeBestellungen` baut den Text
+     * seit dem 30. August, und `npm run vorgang` **zeigt** ihn unter jedem
+     * Angebot. Abgelegt wurde er nie: Von den fünf Papieren eines
+     * Geschäftsfalls war er das einzige, das nur auf dem Bildschirm stand.
+     *
+     * > **Wenn die Ware kommt, ist die Bestellung das Papier, gegen das
+     * > jemand sie prüft.**
+     */
+    const u = baueUmgebung();
+    const akte = wegwerfordner('akte-');
+    const e = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0161',
+      '--stufe', 'bestellung', '--bezahlt', '2026-09-10', '--ablegen'],
+    { VORGANG_ABLAGE: akte, VORGANG_LIEFERANTEN: mitLieferzeit(u.ordner) });
+    assert.equal(e.code, 0, e.aus);
+
+    // Die Nummer steht auf dem Papier: Vorgangsnummer plus Teillieferung.
+    // Ein eigener Nummernkreis wäre eine zweite Zahlenreihe für dasselbe
+    // Blatt — `ARTEN` sagt das seit heute ausdrücklich.
+    const datei = join(akte, 'belege-2026', 'LB-2026-0161-01.txt');
+    assert.equal(existsSync(datei), true, `keine Durchschrift abgelegt:\n${e.aus}`);
+    const durchschrift = readFileSync(datei, 'utf8');
+    assert.ok(durchschrift.includes('2026-0161-01'), 'die Bestellnummer fehlt');
+    assert.ok(e.aus.includes(durchschrift.trim()), 'gedruckt wurde ein anderer Text als abgelegt');
+
+    const eintrag = readFileSync(join(akte, 'journal-2026.jsonl'), 'utf8')
+      .trim().split('\n').map((z) => JSON.parse(z)).find((z) => z.typ === 'eintrag').eintrag;
+    assert.equal(eintrag.art, 'lieferantenbestellung');
+    assert.equal(eintrag.nummer, '2026-0161-01');
+    assert.equal(typeof eintrag.betragNetto, 'number', 'der Einkaufswert fehlt');
+    // Kein Lieferantenname im Journal: Gate 39 hält den Bezugsweg von jedem
+    // Kundenbeleg fern, und die Akte ist nicht der Ort, ihn zu wiederholen.
+    assert.ok(!eintrag.text.includes('Poschacher'));
+  });
+
+test('ohne Zahlungseingang gibt es keine Lieferantenbestellung',
+  { skip: !vorhanden && 'preise/ fehlt' }, () => {
+    // Gate 20 lässt sie erst nach dem Zahlungseingang. Den sieht nur, wer den
+    // Kontoauszug liest — dieses Haus sieht ihn nicht und erfindet ihn nicht.
+    const u = baueUmgebung();
+    const akte = wegwerfordner('akte-');
+    const e = lauf([u.anfrageDatei, '--kunde', u.kundeDatei, '--nummer', '2026-0162',
+      '--stufe', 'bestellung', '--ablegen'],
+    { VORGANG_ABLAGE: akte, VORGANG_LIEFERANTEN: mitLieferzeit(u.ordner) });
+    assert.equal(e.code, 1, e.aus);
+    assert.match(e.aus, /fehlt --bezahlt/);
+    assert.equal(existsSync(join(akte, 'belege-2026')), false);
+  });
+
 test('die Absage geht mit ihrer Durchschrift in die Akte',
   { skip: !vorhanden && 'preise/ fehlt' }, () => {
     /*

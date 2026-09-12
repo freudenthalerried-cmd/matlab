@@ -77,12 +77,21 @@ export const SCHRITTE = Object.freeze([
   Object.freeze({
     id: 'lieferantenbestellung',
     was: 'Die Ware wird beim Lieferanten bestellt',
-    werkzeug: null,
+    /*
+     * **Seit dem 12. September mit Werkzeug.** Hier stand als Grund, was
+     * fehle, sei das Absenden — per Mail an einen Dritten, und das ist nach
+     * PARAMETER.md Sache des Auftraggebers. Das stimmt unverändert und ist
+     * kein Grund, **kein** Werkzeug zu haben: Kein Beleg dieses Hauses wird
+     * versendet, und die anderen vier haben trotzdem eines.
+     *
+     * Der Text stand seit dem 30. August und wurde unter jedem Angebot
+     * **gezeigt**; abgelegt wurde er nie — von den fünf Papieren eines
+     * Geschäftsfalls war er das einzige, das nur auf dem Bildschirm stand.
+     * Wenn die Ware kommt, ist die Bestellung das Papier, gegen das jemand
+     * sie prüft.
+     */
+    werkzeug: 'npm run vorgang -- --stufe bestellung --bezahlt … --ablegen',
     gate: 'Gate 20 — erst nach Zahlungseingang, und nur mit bekannter Lieferzeit',
-    warumOhneWerkzeug: '`erzeugeBestellungen` baut den Text seit dem 30. August, und '
-      + '`npm run vorgang` zeigt ihn. Was fehlt, ist das Absenden: Es geht per Mail an einen '
-      + 'Dritten, und das ist nach PARAMETER.md ausdrücklich dem Auftraggeber vorbehalten. '
-      + 'Ein Werkzeug, das versendet, wäre gegen die Weisung gebaut.',
   }),
   Object.freeze({
     id: 'lieferung',

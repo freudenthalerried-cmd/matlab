@@ -53,6 +53,9 @@
     "shop/test/beleg.test.js",
     "shop/test/vorgang.test.js"
   ],
+  "bestellung-ohne-durchschrift": [
+    "shop/test/vorgangwerkzeug.test.js"
+  ],
   "bezugsweg-auf-dem-kundenbeleg": [
     "shop/test/beleg.test.js",
     "shop/test/vorgangwerkzeug.test.js"

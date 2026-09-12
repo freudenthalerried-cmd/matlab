@@ -3451,6 +3451,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'und der von außen wie eine gepflegte Ablage aussieht.',
   }),
   Object.freeze({
+    id: 'bestellung-ohne-durchschrift',
+    pruefer: 'test',
+    was: 'Die Lieferantenbestellung geht hinaus, ohne dass etwas von ihr bleibt',
+    datei: 'shop/bin/vorgang.mjs',
+    art: 'ersetzen',
+    suchen: '    const wohin = legeDurchschriftAb(wurzelDerBestellung, jahrDerBestellung, eintragung, b.text);',
+    ersetzen: "    const wohin = String(eintragung, b.text);",
+    erwartet: /keine Durchschrift abgelegt/,
+    warum: '`erzeugeBestellungen` baut den Text seit dem 30. August, und `npm run vorgang` '
+      + 'zeigt ihn unter jedem Angebot. Abgelegt wurde er bis zum 12. September nie: Von den '
+      + 'fünf Papieren eines Geschäftsfalls war er das einzige, das nur auf dem Bildschirm '
+      + 'stand. **Wenn die Ware kommt, ist die Bestellung das Papier, gegen das jemand sie '
+      + 'prüft** — ohne Durchschrift fällt eine Falschlieferung an nichts auf, und § 132 Abs 1 '
+      + 'BAO verlangt die Geschäftspapiere ohnehin sieben Jahre.',
+  }),
+  Object.freeze({
     id: 'zaehlwort-nur-direkt-hinter-der-zahl',
     pruefer: 'test',
     was: 'Das Zählwort deckt nur noch unmittelbar hinter der Zahl',

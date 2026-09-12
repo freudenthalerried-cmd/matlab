@@ -250,9 +250,9 @@ if (!nummer) {
     'Sie klammert Angebot, Bestätigung und Rechnung. Zweimal dieselbe Nummer ist\n'
     + 'derselbe Vorgang; eine selbst gezogene wäre bei jedem Ausdruck eine neue.');
 }
-if (!['angebot', 'bestaetigung', 'absage', 'rechnung'].includes(stufe)) {
+if (!['angebot', 'bestaetigung', 'absage', 'bestellung', 'rechnung'].includes(stufe)) {
   abbruch(`Unbekannte Stufe „${stufe}".`,
-    'Möglich sind „angebot", „bestaetigung", „absage" und „rechnung".\n'
+    'Möglich sind „angebot", „bestaetigung", „absage", „bestellung" und „rechnung".\n'
     + 'Die Rechnung verlangt zusätzlich --geliefert, --bezahlt und --zahlweg: Beides sind\n'
     + 'Feststellungen des Betreibers, und dieses Haus erfindet sie nicht.');
 }
@@ -575,6 +575,106 @@ if (stufe === 'rechnung') {
     : belegpfad(jahrDerRechnung, { art: 'rechnung', nummer: eintrag.nummer })}`);
   console.log('Im Journal steht der Betreff, nicht der Belegtext — die Anschrift des Kunden');
   console.log('steht auf der Durchschrift und gehört nicht ein zweites Mal in die Akte.');
+  process.exit(0);
+}
+
+/*
+ * **Die Bestellung beim Lieferanten — 12. September 2026.**
+ *
+ * `erzeugeBestellungen` baut ihren Text seit dem 30. August, und
+ * `npm run vorgang` **zeigt** ihn seither unter jedem Angebot. Abgelegt wurde
+ * er nie: Von den fünf Papieren eines Geschäftsfalls war er das einzige, das
+ * nur auf dem Bildschirm stand.
+ *
+ * > **Wenn die Ware kommt, ist die Bestellung das Papier, gegen das jemand
+ * > sie prüft.** Ohne Durchschrift gibt es nichts, woran eine Falschlieferung
+ * > auffällt — und § 132 Abs 1 BAO verlangt die Geschäftspapiere ohnehin
+ * > sieben Jahre.
+ *
+ * **Was hier ausdrücklich nicht läuft, ist die Interna-Prüfung.** Sie hält
+ * seit dem 11. September jeden Kundenbeleg gegen `src/interna.js`, und dort
+ * steht der Einkaufspreis an erster Stelle. Auf einer Bestellung **an den
+ * Lieferanten** ist er keine Verfehlung, sondern der Gegenstand: Es ist sein
+ * eigener Preis. Das Ausgangsverzeichnis trennt die Empfänger seit dem
+ * 11. September genau dafür — `gehtNachDraussen` fragt nach „Kunde" und
+ * „Besucher", nicht nach „Lieferant".
+ *
+ * Das Absenden bleibt beim Auftraggeber: eine Mail an einen Dritten, und die
+ * ist nach PARAMETER.md ausdrücklich seine Sache.
+ */
+if (stufe === 'bestellung') {
+  if (!bezahlt) {
+    abbruch('Für eine Lieferantenbestellung fehlt --bezahlt.',
+      'Gate 20 lässt sie erst nach dem Zahlungseingang, und den sieht nur, wer den\n'
+      + 'Kontoauszug liest. Dieses Haus sieht ihn nicht und erfindet ihn nicht.');
+  }
+
+  const mitZahlung = baueVorgang({
+    vorgangsnummer: nummer,
+    kundendaten: lies(kundeDatei),
+    warenkorb: korb,
+    betreiber,
+    datum,
+    zahlung: { weg: zahlweg, datum: bezahlt, betrag: korb.summeBrutto },
+    // `--bezahlt` ist die Feststellung des Betreibers, und sie ist hier die
+    // Voraussetzung von Gate 20. Erfunden wird sie nicht: Ohne den Schalter
+    // endet der Lauf zwei Absätze weiter oben.
+    zahlungEingegangen: true,
+  });
+
+  const frei = mitZahlung.freigabe.bestellung;
+  if (!frei.erlaubt) {
+    console.error('\nAbbruch: Diese Bestellung darf nicht ausgelöst werden.');
+    for (const g of frei.gruende) console.error(`  · ${g}`);
+    console.error('\nGate 20: erst nach Zahlungseingang, und nur mit bekannter Lieferzeit.');
+    process.exit(1);
+  }
+
+  for (const b of mitZahlung.bestellungen) {
+    console.log(`\n${'—'.repeat(72)}\n`);
+    console.log(b.text);
+  }
+  console.log(`\n${'—'.repeat(72)}`);
+
+  if (!ablegen) {
+    console.log(`\n${mitZahlung.bestellungen.length} Bestellung(en), nichts abgelegt,`);
+    console.log('nichts versendet. `--ablegen` legt die Durchschriften in die Akte;');
+    console.log('das Absenden an den Lieferanten entscheidet der Auftraggeber.');
+    process.exit(0);
+  }
+
+  const jahrDerBestellung = Number(datum.slice(0, 4));
+  const wurzelDerBestellung = process.env.VORGANG_ABLAGE ?? join(REPO, ABLAGEORT);
+  const bestelljournal = join(wurzelDerBestellung, `journal-${jahrDerBestellung}.jsonl`);
+  mkdirSync(wurzelDerBestellung, { recursive: true });
+  const bestandDerBestellung = existsSync(bestelljournal)
+    ? readFileSync(bestelljournal, 'utf8') : '';
+  const bestellablage = ausJournal(bestandDerBestellung);
+  bestellablage.schreibe = (e) => appendFileSync(bestelljournal, `${journalzeile(e)}\n`, 'utf8');
+
+  for (const b of mitZahlung.bestellungen) {
+    sperreLuecken(b.text);
+    // Die Nummer steht auf dem Papier — `2026-0110-01`. Ein eigener Kreis
+    // wäre eine zweite Zahlenreihe für dasselbe Blatt; `ARTEN` sagt das seit
+    // heute ausdrücklich.
+    const eintragung = { art: 'lieferantenbestellung', nummer: b.nummer, vorgang: nummer };
+    const wohin = legeDurchschriftAb(wurzelDerBestellung, jahrDerBestellung, eintragung, b.text);
+    const eintrag = haltefest(bestellablage, {
+      ...eintragung,
+      zeitpunkt: datum,
+      // Der Einkaufswert ist der Betrag dieses Papiers — er steht in der
+      // gesperrten Akte und geht nirgends sonst hin.
+      betragNetto: b.einkaufNetto,
+      betragBrutto: null,
+      // Kein Lieferantenname im Journal: Gate 39 hält den Bezugsweg von jedem
+      // Kundenbeleg fern, und die Akte ist nicht der Ort, ihn zu wiederholen.
+      text: `Lieferantenbestellung ${b.nummer} zu Vorgang ${nummer}`,
+    });
+    console.log(`\nAbgelegt: ${b.nummer} als lfd. ${eintrag.lfd}`);
+    console.log(`Durchschrift: ${process.env.VORGANG_ABLAGE ? wohin
+      : belegpfad(jahrDerBestellung, eintragung)}`);
+  }
+  console.log('\nDas Absenden an den Lieferanten entscheidet der Auftraggeber.');
   process.exit(0);
 }
 

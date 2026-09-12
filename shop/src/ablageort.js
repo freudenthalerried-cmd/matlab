@@ -200,7 +200,7 @@ export function belegordner(jahr) {
 
 /** Die Kürzel kommen aus `ARTEN` — eine zweite Liste wäre eine Abschrift. */
 export const BELEGMUSTER = new RegExp(
-  `^(?:${Object.values(ARTEN).map((a) => a.kuerzel).join('|')})-\\d{4}-\\d{4}\\.txt$`,
+  `^(?:${Object.values(ARTEN).map((a) => a.kuerzel).join('|')})-\\d{4}-\\d{4}(?:-\\d{2})?\\.txt$`,
 );
 
 /** Ob ein Pfad eine Durchschrift ist — gleich, wo er liegt. */
@@ -220,6 +220,14 @@ export function istBeleg(pfad) {
 export function belegname({ art, nummer = null, vorgang = null }) {
   const beschreibung = ARTEN[art];
   if (!beschreibung) throw new Error(`Unbekannte Vorgangsart: ${art}`);
+  /*
+   * **Das Kürzel kommt dazu, wo die Nummer es nicht trägt — 12. September.**
+   * Die Nummern der Nummernkreise nennen ihre Art bereits (`RE-2026-0001`).
+   * Die Lieferantenbestellung bringt ihre Nummer mit, und die ist die
+   * Vorgangsnummer plus Teillieferung (`2026-0110-01`) — ohne Kürzel stünde
+   * sie im Belegordner als Datei, der niemand ansieht, was sie ist.
+   */
+  if (nummer && !beschreibung.nummernkreis) return `${beschreibung.kuerzel}-${nummer}.txt`;
   if (nummer) return `${nummer}.txt`;
   if (!vorgang) throw new Error(`${art} ohne Nummer braucht die Vorgangsnummer für die Durchschrift`);
   return `${beschreibung.kuerzel}-${vorgang}.txt`;
