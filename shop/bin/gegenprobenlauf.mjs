@@ -24,9 +24,9 @@
  * richtig so und keine Fehlfunktion — aber `npm run website` gehört danach.
  */
 
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, readdirSync, writeFileSync, existsSync } from 'node:fs';
 import { geschaeftstag } from '../src/geschaeftszeit.js';
-import { spawnSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import {
@@ -39,6 +39,7 @@ import { markiere, nimmAb, offeneMarken, stelleZurueck } from '../src/mutationss
 import { richteHakenEin } from './hakeneinrichtung.mjs';
 import { PRUEFER, BROWSERPRUEFER } from '../src/pruefregister.js';
 import { LESER } from '../src/erzeugnisstand.js';
+import { einzugsgebiet, mussLaufen } from '../src/einzugsgebiet.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const REPO = dirname(SHOP);
@@ -135,7 +136,12 @@ const baue = () => {
 };
 
 const mitBrowser = process.argv.includes('--mit-browser');
-const nurEine = process.argv.slice(2).find((a) => !a.startsWith('--')) ?? null;
+// `--seit <stand>` trägt einen Wert; er ist kein Gegenprobenname. Ohne diese
+// Zeile las der Läufer „HEAD~1" als gesuchte Kennung und brach ab.
+const argumente = process.argv.slice(2);
+const nurEine = argumente.find(
+  (a, i) => !a.startsWith('--') && argumente[i - 1] !== '--seit',
+) ?? null;
 
 /**
  * **Browserproben bleiben aus dem Regellauf heraus** — dieselbe Regel wie in
@@ -154,13 +160,79 @@ const nurEine = process.argv.slice(2).find((a) => !a.startsWith('--')) ?? null;
  * Mit `--mit-browser` laufen sie mit, und `npm run alles --mit-browser` zieht
  * sie über den Browserprüferzweig ohnehin mit herein.
  */
+/**
+ * **Auswahl nach dem Einzugsgebiet — 12. September 2026.**
+ *
+ * Der Gesamtlauf braucht 109 Minuten, davon 105 hier. Zwischen zwei Runden
+ * fährt ihn niemand, und genau deshalb standen zwei stumpfe Gegenproben zwölf
+ * Runden lang da. Gate 38 hat diese Frage für die Prüfer beantwortet; hier
+ * ist sie es bis heute nicht gewesen.
+ *
+ * `--seit <stand>` fährt nur, was sich seit diesem Stand geändert haben kann.
+ * **Welche Dateien das sind, rechnet `src/einzugsgebiet.js` aus** — aus den
+ * Einfuhren des Prüfers, den Pfaden, die er als Zeichenkette nennt, und der
+ * Frage, ob er einen ganzen Ordner liest. Eine Auswahl nach der mutierten
+ * Datei allein wäre falsch: Die Runde davor hat eine Gegenprobe gefunden, die
+ * stumpf wurde, weil sich eine **andere** Datei des Prüfers geändert hatte.
+ *
+ * Zurückgestellt heißt hier **nicht** grün. Die Auswahl sagt bei jeder Zeile,
+ * warum sie nicht gelaufen ist, und der Gesamtlauf fährt weiter alles.
+ */
+const seitStand = (() => {
+  const i = process.argv.indexOf('--seit');
+  return i >= 0 ? (process.argv[i + 1] ?? 'HEAD') : null;
+})();
+
 const browsernamen = new Set(BROWSERPRUEFER.map((p) => p.name));
 const zurueckgestellt = (!nurEine && !mitBrowser)
   ? GEGENPROBEN.filter((p) => browsernamen.has(p.pruefer))
   : [];
-const gewaehlt = nurEine
+const nachGebiet = nurEine
   ? GEGENPROBEN.filter((p) => p.id === nurEine || p.pruefer === nurEine)
   : GEGENPROBEN.filter((p) => mitBrowser || !browsernamen.has(p.pruefer));
+
+/** Die Gebiete je Prüfer — nur gerechnet, wenn ausgewählt werden soll. */
+const uebersprungen = [];
+const gewaehlt = (() => {
+  if (!seitStand) return nachGebiet;
+  const roh = execFileSync('git', ['diff', '--name-only', seitStand], { cwd: REPO, encoding: 'utf8' });
+  const geaendert = new Set(roh.split('\n').filter(Boolean));
+  console.log(`Auswahl seit ${seitStand}: ${geaendert.size} geänderte Datei(en).\n`);
+
+  const lies = (pfad) => { try { return readFileSync(join(REPO, pfad), 'utf8'); } catch { return null; } };
+  const gibtEs = (pfad) => existsSync(join(REPO, pfad));
+  const gebiete = new Map();
+  for (const p of PRUEFER) {
+    gebiete.set(p.name, einzugsgebiet(`shop/bin/${p.werkzeug}`, lies, { gibtEs }));
+  }
+  /*
+   * **Der Prüfer „test" ist kein Werkzeug, sondern neunzig Dateien.** Sein
+   * Gebiet je Gegenprobe sind genau die Testdateien, die die mutierte Datei
+   * über ihre Einfuhren erreichen — die möglichen Zeugen. Erreicht sie keine,
+   * bleibt das Gebiet unbekannt, und dann läuft sie.
+   */
+  const testdateien = readdirSync(join(SHOP, 'test'))
+    .filter((n) => n.endsWith('.test.js')).map((n) => `shop/test/${n}`);
+  const testgebiete = testdateien.map((d) => [d, einzugsgebiet(d, lies, { gibtEs })]);
+
+  return nachGebiet.filter((p) => {
+    let urteil;
+    if (p.pruefer === 'test') {
+      const zeugen = testgebiete.filter(([, g]) => g.dateien.has(p.datei));
+      const vereint = zeugen.length
+        ? {
+          dateien: new Set(zeugen.flatMap(([d, g]) => [d, ...g.dateien])),
+          offenesGebiet: zeugen.some(([, g]) => g.offenesGebiet),
+        }
+        : null;
+      urteil = mussLaufen(p, geaendert, new Map([['test', vereint]]));
+    } else {
+      urteil = mussLaufen(p, geaendert, gebiete);
+    }
+    if (!urteil.laufen) uebersprungen.push({ ...p, grund: urteil.grund });
+    return urteil.laufen;
+  });
+})();
 // Nach Prüfer gruppiert, damit der „wieder grün"-Lauf der einen Probe der
 // „vorher grün"-Lauf der nächsten sein kann. Siehe `src/gegenprobenplan.js`.
 const proben = nachPrueferGruppiert(gewaehlt);
@@ -466,6 +538,14 @@ console.log(`${ergebnisse.length - gescheitert.length - nichtMessbar.length} von
   + `${ergebnisse.length - nichtMessbar.length} Gegenproben schlagen an `
   + `— ${Math.floor(dauer / 60)} min ${dauer % 60} s, ${gesparteLaeufe} `
   + `${gesparteLaeufe === 1 ? 'Prüferlauf' : 'Prüferläufe'} gespart.\n`);
+
+if (uebersprungen.length) {
+  console.log(`${uebersprungen.length} Gegenprobe(n) übersprungen — ihr Einzugsgebiet ist seit `
+    + `${seitStand} unverändert:`);
+  for (const p of uebersprungen.slice(0, 10)) console.log(`  · ${p.pruefer}: ${p.was}`);
+  if (uebersprungen.length > 10) console.log(`  · … und ${uebersprungen.length - 10} weitere`);
+  console.log('Übersprungen ist nicht grün. Der Gesamtlauf fährt sie alle.\n');
+}
 
 if (zurueckgestellt.length) {
   console.log(`${zurueckgestellt.length} Gegenprobe(n) zu Browserproben zurückgestellt `

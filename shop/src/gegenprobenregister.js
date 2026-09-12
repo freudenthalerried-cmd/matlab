@@ -3444,6 +3444,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'und der von außen wie eine gepflegte Ablage aussieht.',
   }),
   Object.freeze({
+    id: 'auswahl-ueberspringt-den-ordnerleser',
+    pruefer: 'test',
+    was: 'Die Auswahl überspringt einen Prüfer, dessen Gebiet nicht aufzählbar ist',
+    datei: 'shop/src/einzugsgebiet.js',
+    art: 'ersetzen',
+    suchen: "  if (gebiet.offenesGebiet) return { laufen: true, grund: 'liest-einen-ordner' };",
+    ersetzen: '  if (false) return { laufen: true, grund: 0 };',
+    erwartet: /lesen einen Ordner/,
+    warum: 'Die Auswahl `--seit` fährt nur, was sich geändert haben kann. Wer einen ganzen '
+      + 'Ordner liest, hat aber kein aufzählbares Gebiet: `pruefe-stand` zählt die Dateien '
+      + 'unter `docs/baustoff-shop/`, und eine **neue** Datei steht in keiner Einfuhr und in '
+      + 'keiner Zeichenkette. Ohne diese Zeile übersprünge die Auswahl genau die Prüfer, die '
+      + 'am meisten sehen — und zwar schweigend. Gemessen sind es 142 von 210 Gegenproben; '
+      + 'eine Auswahl, die die überspringt, ist keine Beschleunigung, sondern eine zweite '
+      + 'Wahrheit über den Bestand.',
+  }),
+  Object.freeze({
     id: 'weigerung-als-ausgang',
     pruefer: 'test',
     was: 'Eine Weigerung wird wieder zum Ausgang des Prüferprüfers',
