@@ -24,7 +24,7 @@
  * richtig so und keine Fehlfunktion — aber `npm run website` gehört danach.
  */
 
-import { readFileSync, readdirSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, readdirSync, writeFileSync, existsSync, mkdirSync, rmSync } from 'node:fs';
 import { geschaeftstag } from '../src/geschaeftszeit.js';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -56,7 +56,27 @@ const laufe = (name) => {
  * `src/zeugen.js`; der Stand steht in `zeugen.json` neben `package.json`.
  */
 const ZEUGENDATEI = join(SHOP, 'zeugen.json');
+/*
+ * **Und ein Mitschrieb, der einen Abbruch überlebt.** Der Stand wird erst am
+ * Ende geschrieben — eine Datei, die mitten im Lauf entsteht, wäre genau die
+ * Bewegung, über der dieser Läufer nicht messen will. Ein Lauf, der die 57
+ * Testzeugen einsammelt, dauert aber gut anderthalb Stunden, und ein `SIGKILL`
+ * darin verlöre alles.
+ *
+ * Der Mitschrieb liegt deshalb unter `.sicherung/` — demselben Ordner wie die
+ * Zettel des Mutationsschutzes, und der steht in `NICHT_HINEIN`: Der
+ * Baumabdruck sieht ihn nicht.
+ */
+const ZEUGENLAUF = join(SHOP, '.sicherung', 'zeugen-lauf.json');
 let zeugen = existsSync(ZEUGENDATEI) ? JSON.parse(readFileSync(ZEUGENDATEI, 'utf8')) : {};
+if (existsSync(ZEUGENLAUF)) {
+  const mitgeschrieben = JSON.parse(readFileSync(ZEUGENLAUF, 'utf8'));
+  const neue = Object.keys(mitgeschrieben).filter((id) => !zeugen[id]);
+  zeugen = { ...zeugen, ...mitgeschrieben };
+  if (neue.length) {
+    console.log(`Aus einem abgebrochenen Lauf übernommen: ${neue.length} Zeuge(n).\n`);
+  }
+}
 // Ein Zeuge, den es nicht mehr gibt, ist keiner — dann läuft wieder die Reihe.
 zeugen = Object.fromEntries(Object.entries(zeugen)
   .map(([id, dateien]) => [id, dateien.filter((d) => existsSync(join(REPO, d)))])
@@ -505,6 +525,10 @@ for (const p of proben) {
             const fort = mitZeuge(zeugen, p.id, gefunden);
             zeugen = fort.stand;
             zeugenGeaendert = zeugenGeaendert || fort.geaendert;
+            if (fort.geaendert) {
+              mkdirSync(dirname(ZEUGENLAUF), { recursive: true });
+              writeFileSync(ZEUGENLAUF, alsDatei(zeugen), 'utf8');
+            }
             if (gefunden.length && !meinZeuge) {
               schritte.push(`Zeuge: ${gefunden.join(', ')}`);
             }
@@ -571,6 +595,7 @@ for (const p of proben) {
  */
 if (zeugenGeaendert) {
   writeFileSync(ZEUGENDATEI, alsDatei(zeugen), 'utf8');
+  if (existsSync(ZEUGENLAUF)) rmSync(ZEUGENLAUF);
   console.log(`Zeugenstand nachgezogen: ${Object.keys(zeugen).length} von `
     + `${GEGENPROBEN.filter((p) => p.pruefer === 'test').length} Testgegenproben `
     + 'kennen ihre Testdatei.\n');
