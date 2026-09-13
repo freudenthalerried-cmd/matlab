@@ -79,6 +79,9 @@
     "shop/test/kampagne.test.js",
     "shop/test/warenkorb.test.js"
   ],
+  "das-register-vergleicht-wieder-zeichen": [
+    "shop/test/zwillingszahlen.test.js"
+  ],
   "das-verfallene-angebot-wartet-weiter": [
     "shop/test/vorgangsstand.test.js"
   ],
@@ -112,6 +115,9 @@
   ],
   "der-posteingang-vergisst-die-akte": [
     "shop/test/posteingang.test.js"
+  ],
+  "der-steuersatz-steht-wieder-im-vorgabewert": [
+    "shop/test/zwillingszahlen.test.js"
   ],
   "der-vermerk-sucht-im-falschen-jahr": [
     "shop/test/jahreswechsel.test.js"

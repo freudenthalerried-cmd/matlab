@@ -5947,7 +5947,24 @@ function zahlungszielTraegt({ kundenzielTage, skontofristTage = SKONTO_FRIST_TAG
 
 function skontoGegenGebuehr(bestellung, zahlwegId, opt = {}) {
   const { warenwertNetto, frachtNetto = 0, einkaufNetto } = bestellung;
-  const { skontoSatz = SKONTO_SATZ, ust = 0.2, bearbeitungstage = 2 } = opt;
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const { skontoSatz = SKONTO_SATZ, ust = UST_SATZ, bearbeitungstage = 2 } = opt;
   const z = opt.zahlweg ?? null;
   if (!z) throw new Error('skontoGegenGebuehr braucht den Zahlweg als opt.zahlweg');
 

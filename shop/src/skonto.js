@@ -12,7 +12,7 @@
  * Importe gültig bleiben.
  */
 
-import { cent } from './preis.js';
+import { cent, UST_SATZ } from './preis.js';
 
 
 /**
@@ -116,7 +116,24 @@ export function zahlungszielTraegt({ kundenzielTage, skontofristTage = SKONTO_FR
  */
 export function skontoGegenGebuehr(bestellung, zahlwegId, opt = {}) {
   const { warenwertNetto, frachtNetto = 0, einkaufNetto } = bestellung;
-  const { skontoSatz = SKONTO_SATZ, ust = 0.2, bearbeitungstage = 2 } = opt;
+  /*
+   * **`UST_SATZ` statt `0.2` — 13. September 2026.**
+   *
+   * Hier stand der Steuersatz als unbenannter Vorgabewert in einer
+   * Parameterliste. Genau diese Bauart hat `src/shopkern.js` am 30. August bei
+   * sich selbst behoben, und die Notiz steht dort seither:
+   *
+   * > „Bis dahin stand die Zahl als `0.2` im Vorgabewert einer Parameterliste
+   * > — **nicht falsch, aber unauffindbar**."
+   *
+   * Vierzehn Tage lang stand sie unauffindbar in der Nachbardatei weiter. Der
+   * Zwillingsprüfer sah sie nicht, weil er `0.20` sucht und hier `0.2` steht —
+   * dieselbe Zahl, eine andere Schreibweise.
+   *
+   * `preis.js` ist ohnehin schon eingeführt (`cent`); der Steuersatz kostet
+   * hier also nichts als eine Zeile mehr im Import.
+   */
+  const { skontoSatz = SKONTO_SATZ, ust = UST_SATZ, bearbeitungstage = 2 } = opt;
   const z = opt.zahlweg ?? null;
   if (!z) throw new Error('skontoGegenGebuehr braucht den Zahlweg als opt.zahlweg');
 

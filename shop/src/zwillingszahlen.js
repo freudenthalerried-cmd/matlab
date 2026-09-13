@@ -69,6 +69,37 @@ const REDEN_UEBER_DEN_BESTAND = Object.freeze([
   'src/gegenprobenregister.js',
 ]);
 
+/**
+ * Trägt dieser Text die **Zahl** — gleich, wie sie geschrieben ist?
+ *
+ * **Der Fund, 13. September 2026.** Bis dahin verglich dieses Register
+ * Zeichenketten: gesucht wurde `0.20`, und `0.2` fand es nicht.
+ *
+ * > **Zwei Schreibweisen derselben Zahl sind dieselbe Zahl. Ein Register, das
+ * > Zeichen vergleicht statt Werte, führt genau die Zwillinge, die niemand
+ * > versteckt hat.**
+ *
+ * Verborgen blieben dadurch zwei Fundstellen des Steuersatzes, beide als
+ * `0.2`: die begründete in `src/shopkern.js` (`UST_SATZ_KUNDE`, seit dem
+ * 30. August von einem Testfall gehalten) und eine **unbegründete** in
+ * `src/skonto.js` — dort als Vorgabewert einer Parameterliste. Genau die
+ * Bauart, die `shopkern.js` am 30. August bei sich selbst beschrieben hat:
+ * *„nicht falsch, aber unauffindbar."*
+ *
+ * Verglichen werden deshalb **Werte**. Gelesen wird jede Zahl als eigenes
+ * Wort: Vor ihr darf kein Zeichen stehen, das sie fortsetzt (Ziffer,
+ * Buchstabe, Punkt, Unterstrich), und dahinter auch nicht — sonst träfe `0.20`
+ * in `0.255`, in `10.20` und in einem Bezeichner wie `satz0`.
+ */
+export function traegtZahl(text, literal) {
+  const wert = Number(literal);
+  if (!Number.isFinite(wert)) return false;
+  for (const treffer of String(text).matchAll(/(^|[^0-9A-Za-z_.])(-?\d+(?:\.\d+)?)(?![0-9A-Za-z_.])/g)) {
+    if (Number(treffer[2]) === wert) return true;
+  }
+  return false;
+}
+
 /** Die Zahlen mit einer Heimat. */
 export const ZWILLINGE = Object.freeze([
   Object.freeze({
@@ -84,6 +115,15 @@ export const ZWILLINGE = Object.freeze([
           + 'liest wie das Geprüfte — eine Kontrolle, die den Prüfling importiert, prüft sich '
           + 'selbst. Am 30.08. geprüft und stehen gelassen; `test/kontrolle.test.js` liest den '
           + 'Quelltext dieser Datei und hält ihr Literal gegen `preis.js`.',
+      }),
+      Object.freeze({
+        datei: 'src/shopkern.js',
+        warum: '`UST_SATZ_KUNDE = 0.2` — dieselbe Zahl mit weniger Wissen drumherum. Sie kann '
+          + 'die Heimat nicht lesen: `preis.js` trägt die Margenregel und darf nicht ins '
+          + 'Browserbündel. Gehalten wird sie von zwei Testfällen gegen `UST_SATZ` '
+          + '(`test/kontrolle.test.js`, `test/zwillingszahlen.test.js`). **Sichtbar ist sie '
+          + 'erst seit dem 13. September:** Bis dahin verglich dieses Register Zeichenketten '
+          + 'und suchte `0.20`, während hier `0.2` steht — zwei Schreibweisen derselben Zahl.',
       }),
     ]),
   }),
@@ -158,11 +198,7 @@ export function zwillingsbefund(quellen, eintraege = ZWILLINGE) {
     let inHeimat = false;
 
     for (const [pfad, text] of quellen) {
-      // Eine Zahl mit Nachkommastellen soll nicht in `0.255` oder `10.20`
-      // treffen: Vor dem Literal darf keine Ziffer und kein Punkt stehen,
-      // danach keine Ziffer.
-      const muster = new RegExp(`(^|[^0-9.])${e.literal.replace('.', '\\.')}([^0-9]|$)`);
-      if (!muster.test(ohneKommentare(text))) continue;
+      if (!traegtZahl(ohneKommentare(text), e.literal)) continue;
       gesucht += 1;
       if (pfad === e.heimat) { inHeimat = true; continue; }
       gefunden.add(pfad);

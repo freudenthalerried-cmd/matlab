@@ -3976,6 +3976,39 @@ export const GEGENPROBEN = Object.freeze([
       + 'Papieren ist der Nettobetrag die Bemessungsgrundlage der Umsatzsteuervoranmeldung.',
   }),
   Object.freeze({
+    id: 'das-register-vergleicht-wieder-zeichen',
+    pruefer: 'test',
+    was: 'Der Zwillingsabgleich vergleicht Schreibweisen statt Werte',
+    datei: 'shop/src/zwillingszahlen.js',
+    art: 'ersetzen',
+    suchen: '    if (Number(treffer[2]) === wert) return true;',
+    ersetzen: '    if (treffer[2] === literal) return true;',
+    erwartet: /0\.2 und 0\.20 gelten wieder als verschiedene Zahlen/,
+    warum: 'Bis zum 13. September verglich das Register Zeichenketten: gesucht wurde `0.20`, '
+      + 'und `0.2` fand es nicht. **Zwei Schreibweisen derselben Zahl sind dieselbe Zahl** — '
+      + 'ein Register, das Zeichen vergleicht statt Werte, führt genau die Zwillinge, die '
+      + 'niemand versteckt hat. Verborgen blieben zwei Fundstellen des Steuersatzes, beide '
+      + 'als `0.2`: die begründete in `src/shopkern.js` und eine unbegründete in '
+      + '`src/skonto.js`.',
+  }),
+  Object.freeze({
+    id: 'der-steuersatz-steht-wieder-im-vorgabewert',
+    pruefer: 'test',
+    was: 'Der Steuersatz steht wieder als unbenannte Zahl in einer Parameterliste',
+    datei: 'shop/src/skonto.js',
+    art: 'ersetzen',
+    suchen: '  const { skontoSatz = SKONTO_SATZ, ust = UST_SATZ, bearbeitungstage = 2 } = opt;',
+    ersetzen: '  const { skontoSatz = SKONTO_SATZ, ust = 0.2, bearbeitungstage = 2 } = opt;',
+    erwartet: /skonto\.js trägt den Steuersatz wieder als eigene Zahl/,
+    warum: 'Genau die Bauart, die `src/shopkern.js` am 30. August bei sich selbst behoben und '
+      + 'beschrieben hat: „Bis dahin stand die Zahl als `0.2` im Vorgabewert einer '
+      + 'Parameterliste — **nicht falsch, aber unauffindbar**." Vierzehn Tage lang stand sie '
+      + 'unauffindbar in der Nachbardatei weiter, und der Zwillingsprüfer sah sie nicht, weil '
+      + 'er `0.20` suchte. Gemessen wird der Quelltext und nicht das Ergebnis: Dass der '
+      + 'Vorgabewert heute denselben Wert trägt, ist kein Schutz — er ist eine zweite Zahl, '
+      + 'und eine zweite Zahl ist irgendwann alt.',
+  }),
+  Object.freeze({
     id: 'der-zwillingsblick-endet-am-dateityp',
     pruefer: 'pruefe-zwillinge',
     was: 'Der Zwillingsabgleich liest die Datendateien wieder nicht',
