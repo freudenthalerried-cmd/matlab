@@ -79,6 +79,10 @@
     "die-probe-ueberspringt-den-vertrag": {
       "am": "2026-09-13",
       "sekunden": 6
+    },
+    "die-absage-schluckt-den-grund": {
+      "am": "2026-09-13",
+      "sekunden": 7
     }
   }
 }

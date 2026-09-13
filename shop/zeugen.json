@@ -75,6 +75,9 @@
   "der-auszug-ohne-abgleich": [
     "shop/test/ablageort.test.js"
   ],
+  "der-nettobetrag-wird-nicht-gehalten": [
+    "shop/test/ablageort.test.js"
+  ],
   "der-posteingang-sucht-im-falschen-jahr": [
     "shop/test/jahreswechsel.test.js"
   ],

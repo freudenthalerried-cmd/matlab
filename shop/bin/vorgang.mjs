@@ -892,6 +892,34 @@ if (stufe === 'bestellung') {
 }
 
 if (stufe === 'absage') {
+  /*
+   * **`--grund` gehört der Gutschrift — 13. September 2026.**
+   *
+   * Aufgefallen beim Aufnehmen der Absage in die Bestellprobe: Der Aufruf
+   * `--stufe absage --grund "Baustelle außerhalb des Liefergebiets"` lief
+   * durch, und auf dem Brief stand *„Eine Angabe fehlt oder ist nicht
+   * lesbar. Bitte ergänzen Sie sie und schicken Sie die Bestellung noch
+   * einmal."*
+   *
+   * > **Der Kunde bekäme die Aufforderung, dieselbe Bestellung noch einmal zu
+   * > schicken — und dieselbe Absage zurück.** Der Grund, den der Betreiber
+   * > eingetippt hat, stand weder auf dem Papier noch im Journal.
+   *
+   * Das ist kein Fehler der Absage: Sie **erfindet keine Gründe**, sondern
+   * übersetzt die, die `darfVorgangLaufen` und `pruefeBestelldaten` ohnehin
+   * ausrechnen — das ist der ganze Zweck von `src/absage.js`. Der Fehler war,
+   * einen Schalter stillschweigend fallen zu lassen, den eine andere Stufe
+   * verlangt. Ein Werkzeug, das eine Angabe ignoriert, statt sie abzulehnen,
+   * lässt den Aufrufer glauben, sie sei angekommen.
+   */
+  if (stornogrund) {
+    abbruch('`--grund` gehört zur Gutschrift, nicht zur Absage.',
+      'Die Absage erfindet keine Gründe: Sie übersetzt die, die der Bestand ausrechnet —\n'
+      + '`darfVorgangLaufen` und `pruefeBestelldaten` zählen sie einzeln auf, und\n'
+      + '`src/absage.js` gibt jedem einen Satz an den Kunden.\n\n'
+      + 'Ohne --grund aufrufen. Was der Brief sagen wird, steht vorher auf dem Bildschirm.');
+  }
+
   const ganzeLage = darfVorgangLaufen(vorgang);
   const gruende = [...ganzeLage.gruende, ...vorgang.kundenpruefung.fehler];
   if (!gruende.length) {

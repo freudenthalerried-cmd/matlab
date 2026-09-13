@@ -421,6 +421,30 @@ export function durchschriftenbefund({ eintraege = [], dateien = [] }) {
           + '— § 131 Abs 1 Z 2 BAO verlangt die Zeitfolge, und sie steht hier zweimal verschieden',
       });
     }
+    /*
+     * **Auch der Nettobetrag — 13. September 2026.**
+     *
+     * Hier stand nur der Bruttobetrag. Gemessen an der Akte, die
+     * `npm run bestellprobe` baut: Die **Lieferantenbestellung** trägt
+     * `betragBrutto: null` und als einzige Zahl den Einkaufswert netto —
+     * `924,52 €` im Journal, `924,52 €` auf dem Papier.
+     *
+     * > **Die einzige Zahl dieses Belegs stand zweimal da und wurde nie
+     * > gegeneinander gehalten.** Wer sie in einem Texteditor in der
+     * > Journalzeile ändert, bekam ein Journal, das sauber zurückliest.
+     *
+     * Bei den anderen Papieren ist es der Betrag, aus dem die
+     * Bemessungsgrundlage der Umsatzsteuervoranmeldung wird. Der Fund vom
+     * 12. September — „dieselbe Zahl steht zweimal" — war damit nur zur
+     * Hälfte abgesichert.
+     */
+    if (typeof eintrag.betragNetto === 'number' && !text.includes(EUR(eintrag.betragNetto))) {
+      meldungen.push({
+        regel: 'nettobetrag-weicht-ab',
+        text: `${name}: der Nettobetrag der Journalzeile steht nicht auf dem Papier `
+          + '— bei der Lieferantenbestellung ist das die einzige Zahl, die sie trägt',
+      });
+    }
     if (typeof eintrag.betragBrutto === 'number' && !text.includes(EUR(eintrag.betragBrutto))) {
       meldungen.push({
         regel: 'betrag-weicht-ab',

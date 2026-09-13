@@ -3959,6 +3959,42 @@ export const GEGENPROBEN = Object.freeze([
       + 'angefordert wurde.',
   }),
   Object.freeze({
+    id: 'der-nettobetrag-wird-nicht-gehalten',
+    pruefer: 'test',
+    was: 'Nur der Bruttobetrag wird gegen das Papier gehalten',
+    datei: 'shop/src/ablageort.js',
+    art: 'ersetzen',
+    suchen: "    if (typeof eintrag.betragNetto === 'number' && !text.includes(EUR(eintrag.betragNetto))) {",
+    ersetzen: '    if (false) {',
+    erwartet: /der Einkaufswert der Journalzeile wurde nicht gegen das Papier gehalten/,
+    warum: 'Der Fund vom 12. September — dieselbe Zahl steht zweimal, einmal in der '
+      + 'Journalzeile und einmal auf dem Papier — war nur zur Hälfte abgesichert: Verglichen '
+      + 'wurde der **Brutto**betrag. Die Lieferantenbestellung trägt `betragBrutto: null` und '
+      + 'als einzige Zahl den Einkaufswert netto. **Die einzige Zahl dieses Belegs stand '
+      + 'zweimal da und wurde nie gegeneinander gehalten**; wer sie in einem Texteditor in '
+      + 'der Journalzeile ändert, bekam ein Journal, das sauber zurückliest. Bei den übrigen '
+      + 'Papieren ist der Nettobetrag die Bemessungsgrundlage der Umsatzsteuervoranmeldung.',
+  }),
+  Object.freeze({
+    id: 'die-absage-schluckt-den-grund',
+    pruefer: 'bestellprobe',
+    was: '`--grund` wird bei der Absage stillschweigend fallen gelassen',
+    datei: 'shop/bin/vorgang.mjs',
+    art: 'ersetzen',
+    suchen: "  if (stornogrund) {\n    abbruch('`--grund` gehört zur Gutschrift, nicht zur Absage.',",
+    ersetzen: "  if (false) {\n    abbruch('`--grund` gehört zur Gutschrift, nicht zur Absage.',",
+    erwartet: /die Absage nimmt --grund an und schreibt einen anderen Grund auf den Brief/,
+    warum: 'Aufgefallen beim Aufnehmen der Absage in die Bestellprobe: Der Aufruf `--stufe '
+      + 'absage --grund "Baustelle außerhalb des Liefergebiets"` lief durch, und auf dem '
+      + 'Brief stand „Eine Angabe fehlt oder ist nicht lesbar. Bitte ergänzen Sie sie und '
+      + 'schicken Sie die Bestellung noch einmal." **Der Kunde bekäme die Aufforderung, '
+      + 'dieselbe Bestellung noch einmal zu schicken — und dieselbe Absage zurück.** Das ist '
+      + 'kein Fehler der Absage, die keine Gründe erfindet, sondern die des Bestandes '
+      + 'übersetzt; der Fehler war, einen Schalter stillschweigend fallen zu lassen, den eine '
+      + 'andere Stufe verlangt. Ein Werkzeug, das eine Angabe ignoriert statt sie abzulehnen, '
+      + 'lässt den Aufrufer glauben, sie sei angekommen.',
+  }),
+  Object.freeze({
     id: 'verfallenes-angebot-bindet-weiter',
     pruefer: 'test',
     was: 'Die Akte hält ein abgelaufenes Angebot für bindend',

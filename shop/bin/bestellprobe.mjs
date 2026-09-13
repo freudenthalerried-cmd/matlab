@@ -543,6 +543,63 @@ try {
           bestanden.push('Die Akte liest den Vorgang zurück und nennt Beleg und Frist');
         }
 
+        /*
+         * **Das letzte Papier ohne Durchgang — 13. September 2026.**
+         *
+         * Von den sechs Papierarten fuhr diese Probe nach gestern fünf. Die
+         * **Absage** fehlte — der vierte Brief an einen Kunden, und der
+         * einzige, der ein *Nein* ist.
+         *
+         * Sie kann nicht in denselben Vorgang: Seit heute früh schließen
+         * Absage und Auftragsbestätigung einander aus (AGB Punkt 2), und das
+         * Werkzeug bricht ab. Sie bekommt deshalb einen **eigenen Vorgang** —
+         * und das ist keine Krücke, sondern der Fall selbst: Der Abzweig
+         * heißt „Der Fall kommt nicht zustande".
+         */
+        const abgesagt = ruf('vorgang.mjs', [join(ziel, 'anfrage.txt'),
+          '--kunde', join(ziel, 'kunde.json'), '--nummer', '2026-9002',
+          '--datum', '2026-09-13', '--stufe', 'absage', '--ablegen']);
+        const absagedurchschrift = join(akte, belegordner(2026), 'AS-2026-9002.txt');
+        if (abgesagt.code !== 0 || !existsSync(absagedurchschrift)) {
+          probleme.push(`die Absage entsteht nicht: ${abgesagt.aus.trim().split('\n').slice(-3).join(' | ')}`);
+        } else {
+          const text = readFileSync(absagedurchschrift, 'utf8');
+          /*
+           * **Sie erfindet keinen Grund, sie übersetzt einen.** `src/absage.js`
+           * gibt jedem Grund, den `darfVorgangLaufen` ausrechnet, einen Satz
+           * an den Kunden — und dazu, was er tun kann. Eine Absage ohne
+           * nächsten Schritt ist bei einem Kunden, der schon bestellt hat,
+           * teurer als bei einem Besucher.
+           */
+          if (!/Was Sie tun können/.test(text)) {
+            probleme.push('die Absage sagt dem Kunden nicht, was er tun kann');
+          } else if (!/Ein Vertrag ist damit nicht zustande gekommen/.test(text)) {
+            probleme.push('die Absage sagt nicht, dass kein Vertrag zustande gekommen ist');
+          } else {
+            bestanden.push('Die Absage geht als eigener Vorgang hinaus und nennt ihren Grund');
+          }
+        }
+        /*
+         * **Und ein Schalter, den diese Stufe nicht kennt — 13. September 2026.**
+         *
+         * `--grund` gehört zur Gutschrift. Bei der Absage lief er bis heute
+         * stillschweigend durch: Der Brief nannte einen ganz anderen Grund,
+         * und der eingetippte stand weder auf dem Papier noch im Journal.
+         */
+        const mitGrund = ruf('vorgang.mjs', [join(ziel, 'anfrage.txt'),
+          '--kunde', join(ziel, 'kunde.json'), '--nummer', '2026-9003',
+          '--datum', '2026-09-13', '--stufe', 'absage',
+          '--grund', 'Baustelle außerhalb des Liefergebiets', '--ablegen']);
+        if (mitGrund.code === 0) {
+          probleme.push('die Absage nimmt --grund an und schreibt einen anderen Grund auf den Brief');
+        } else if (!/gehört zur Gutschrift/.test(mitGrund.aus)) {
+          probleme.push(`die Absage lehnt --grund ab, sagt aber nicht warum: ${mitGrund.aus.trim().split('\n').slice(-2).join(' | ')}`);
+        } else if (existsSync(join(akte, belegordner(2026), 'AS-2026-9003.txt'))) {
+          probleme.push('abgewiesen und trotzdem abgelegt');
+        } else {
+          bestanden.push('Ein Schalter, den die Absage nicht kennt, wird abgelehnt statt verschluckt');
+        }
+
         const vorherRechnung = readFileSync(durchschrift, 'utf8');
         const storno = ruf('vorgang.mjs', [join(ziel, 'anfrage.txt'),
           '--kunde', join(ziel, 'kunde.json'), '--nummer', '2026-9001', '--stufe', 'gutschrift',
@@ -569,13 +626,14 @@ try {
           probleme.push(`der Auszug für die Buchhaltung läuft nicht: ${buch.aus.trim().split('\n').slice(-3).join(' | ')}`);
         } else if (!/Umsatzbelege \(Rechnung, Gutschrift\)\s+2/.test(buch.aus)) {
           probleme.push('der Auszug zählt nicht genau zwei Umsatzbelege');
-        } else if (!/übrige Papiere ohne Umsatz\s+2/.test(buch.aus)) {
+        } else if (!/übrige Papiere ohne Umsatz\s+3/.test(buch.aus)) {
           /*
            * **Der Einkaufswert darf nicht mitzählen — seit dem 13. September
            * hier geprüft.** In der Akte liegen jetzt zwei Papiere ohne
-           * Umsatz: die Auftragsbestätigung und die Lieferantenbestellung.
-           * Die zweite trägt den **Einkaufswert**; zählte sie mit, stünde der
-           * Einkauf mit umgekehrtem Vorzeichen in der Voranmeldung.
+           * Umsatz: die Auftragsbestätigung, die Lieferantenbestellung und
+           * die Absage. Die zweite trägt den **Einkaufswert**; zählte sie
+           * mit, stünde der Einkauf mit umgekehrtem Vorzeichen in der
+           * Voranmeldung.
            */
           probleme.push('der Auszug zählt die Papiere ohne Umsatz nicht richtig');
         } else if (!/Bemessungsgrundlage netto\s+0,00 €/.test(buch.aus)
@@ -650,8 +708,8 @@ try {
     process.exit(1);
   }
   console.log('Der Weg trägt: Klick, Empfangsskript, Ablage, Posteingang, Angebot,');
-  console.log('Vertrag, Lieferantenbestellung, Rechnung, Akte, Gutschrift, Buchhaltung,');
-  console.log('Sicherung, Prüfer.');
+  console.log('Vertrag, Lieferantenbestellung, Rechnung, Akte, Gutschrift, Absage,');
+  console.log('Buchhaltung, Sicherung, Prüfer.');
   console.log('Die Papierkette läuft ganz durch, und der Prüfer der Ablage hat die');
   console.log('gebaute Akte gesehen —');
   console.log('was dazwischen in der Welt geschieht (der Zahlungseingang und die Lieferung),');

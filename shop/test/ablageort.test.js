@@ -515,3 +515,39 @@ test('Ein Papier ohne seine Voraussetzung ist ein Befund der Ablageprüfung', ()
     luecken([P('angebot', '2026-0201'), P('rechnung', '2026-0201')]).map((l) => l.papier),
     ['rechnung'], 'eine Rechnung ohne Vertragspapier blieb ohne Befund');
 });
+
+
+test('Auch der Nettobetrag steht zweimal — und wird gegengehalten', () => {
+  /*
+   * **13. September 2026.** `durchschriftenbefund` verglich nur den
+   * **Brutto**betrag. Gemessen an der Akte, die `npm run bestellprobe` baut:
+   * Die Lieferantenbestellung trägt `betragBrutto: null` und als einzige Zahl
+   * den Einkaufswert netto — 924,52 € im Journal, 924,52 € auf dem Papier.
+   *
+   * > **Die einzige Zahl dieses Belegs stand zweimal da und wurde nie
+   * > gegeneinander gehalten.**
+   *
+   * Bei den übrigen Papieren ist der Nettobetrag die Bemessungsgrundlage der
+   * Umsatzsteuervoranmeldung. Der Fund vom 12. September — „dieselbe Zahl
+   * steht zweimal" — war damit nur zur Hälfte abgesichert.
+   */
+  const PAPIER = 'Bestellung 2026-0001-01\nBestelldatum: 2026-09-13\n'
+    + 'Warenwert netto laut meiner Kalkulation: 924,52 €';
+  const ZEILE = {
+    lfd: 1, art: 'lieferantenbestellung', nummer: '2026-0001-01',
+    zeitpunkt: '2026-09-13', betragNetto: 924.52,
+  };
+  const datei = { name: 'LB-2026-0001-01.txt', zeichen: PAPIER.length, text: PAPIER };
+
+  assert.equal(durchschriftenbefund({ eintraege: [ZEILE], dateien: [datei] }).sauber, true);
+
+  const geaendert = durchschriftenbefund({
+    eintraege: [{ ...ZEILE, betragNetto: 92.45 }],
+    dateien: [datei],
+  });
+  assert.deepEqual(geaendert.meldungen.map((m) => m.regel), ['nettobetrag-weicht-ab'],
+    'der Einkaufswert der Journalzeile wurde nicht gegen das Papier gehalten');
+  // Und der Betrag selbst steht nicht in der Meldung: Ein Prüfer, der Zahlen
+  // protokolliert, verlegt sie an einen dritten Ort.
+  assert.ok(!geaendert.meldungen[0].text.includes('92,45'));
+});
