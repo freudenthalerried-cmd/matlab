@@ -264,7 +264,7 @@ test('Am Referenzgebäude ändert die Schwellenkorrektur nichts', () => {
  * ------------------------------------------------------------------ */
 
 const mitNebenkosten = {
-  nebenkosten: { paletteOebbNetto: 22, paletteRueckgabeNetto: 20, folierungNetto: 6.5, kranentladungJeHubNetto: 7.5 },
+  nebenkosten: { paletteOebbNetto: 22, paletteRueckgabeNetto: 20, folierungNetto: 6.5 },
 };
 
 test('palettierte Ware bringt mindestens eine Palette und eine Folierung mit', () => {

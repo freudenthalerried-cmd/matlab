@@ -3992,6 +3992,38 @@ export const GEGENPROBEN = Object.freeze([
       + '`src/skonto.js`.',
   }),
   Object.freeze({
+    id: 'die-oberflaeche-tippt-ihre-grenze-wieder',
+    pruefer: 'test',
+    was: 'Das Mengenfeld der Artikelseite traegt die Hoechstmenge wieder als Literal',
+    datei: 'shop/shop-ui.js',
+    art: 'ersetzen',
+    suchen: '    feld.max = String(HOECHSTMENGE);',
+    ersetzen: "    feld.max = '999';",
+    erwartet: /ein Mengenfeld tippt seine Grenze/,
+    warum: 'Genau der Zustand, den Gate 34 beendet haben sollte — und der vom 4. bis zum '
+      + '13. September weiterbestand, zwei Bildschirmzeilen neben einem Knopf, der dieselbe '
+      + 'Zahl liest. Unsichtbar war er, weil der Zwillingspruefer drei Ordner liest und '
+      + '`shop-ui.js` in keinem davon liegt. Solange beide 999 sind, faellt nichts auf; '
+      + 'wanderte die Grenze, bliebe das Feld stehen und der Satz daneben nennte eine Zahl, '
+      + 'die das Feld nicht kennt.',
+  }),
+  Object.freeze({
+    id: 'der-hubsatz-steht-wieder-zweimal-in-der-datei',
+    pruefer: 'test',
+    was: 'Die Lieferantendatei traegt den Kranentladungssatz wieder ein zweites Mal',
+    datei: 'shop/data/lieferanten.json',
+    art: 'ersetzen',
+    suchen: '        "folierungNetto": 6.5,',
+    ersetzen: '        "folierungNetto": 6.5,\n        "kranentladungJeHubNetto": 7.5,',
+    erwartet: /nebenkosten trägt den Hubsatz ein zweites Mal/,
+    warum: 'Die Zahl stand vierzehn Zeilen unter derselben Zahl, unter einem anderen Namen, '
+      + 'und niemand las sie: kein Modul, kein Pruefer, nur eine Testvorrichtung. Der '
+      + 'Testfall, der sie haette halten muessen, heisst seit dem 4. September „der Hubsatz '
+      + 'steht nur an einer Stelle" und zaehlte zwei. Gemessen wird deshalb der ganze '
+      + 'Nebenkostenblock und kein Feldname — ein Name, den niemand vorher aufschreibt, '
+      + 'entgeht einer Gleichheit.',
+  }),
+  Object.freeze({
     id: 'der-steuersatz-steht-wieder-im-vorgabewert',
     pruefer: 'test',
     was: 'Der Steuersatz steht wieder als unbenannte Zahl in einer Parameterliste',

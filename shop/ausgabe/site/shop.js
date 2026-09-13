@@ -4773,7 +4773,18 @@ function gruppenbefund(rechnung, text) {
     
     
     feld.min = String(wert);
-    feld.max = '999';
+    
+
+
+
+
+
+
+
+
+
+
+    feld.max = String(HOECHSTMENGE);
     if (schritt) feld.step = String(wert);
     feld.value = String(wert);
     feld.setAttribute('inputmode', 'decimal');
@@ -5089,7 +5100,10 @@ function gruppenbefund(rechnung, text) {
       var menge = document.createElement('input');
       menge.type = 'number';
       menge.min = String(schritt || 1);
-      menge.max = '999';
+      
+      
+      
+      menge.max = String(HOECHSTMENGE);
       if (schritt) menge.step = String(schritt);
       menge.value = String(p.menge);
       menge.className = 'kz-menge';

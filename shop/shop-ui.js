@@ -463,7 +463,18 @@
     // Zeile. Eine Kennung je Artikel wäre auf einer Seite mit zwei Listen
     // desselben Artikels doppelt.
     feld.min = String(wert);
-    feld.max = '999';
+    /*
+     * **Gelesen, nicht abgeschrieben — 13. September 2026.** Hier stand
+     * `'999'`. Zwei Bildschirmzeilen weiter liest derselbe Knopf
+     * `HOECHSTMENGE`, wenn er sagt, dass gekuerzt wurde. Die Zahl stand also
+     * zweimal in derselben Zeile Arbeit: einmal gelesen, einmal getippt.
+     *
+     * Heute faellt das nicht auf, weil beide 999 sind. Wanderte die Grenze,
+     * bliebe das Feld auf 999 stehen, der Kern kuerzte still auf den neuen
+     * Wert — und der Satz daneben nennte eine Zahl, die das Feld nicht kennt.
+     * Genau das ist der Zustand, den Gate 34 beendet hat.
+     */
+    feld.max = String(HOECHSTMENGE);
     if (schritt) feld.step = String(wert);
     feld.value = String(wert);
     feld.setAttribute('inputmode', 'decimal');
@@ -779,7 +790,10 @@
       var menge = document.createElement('input');
       menge.type = 'number';
       menge.min = String(schritt || 1);
-      menge.max = '999';
+      // Dieselbe Grenze wie auf der Artikelseite, aus derselben Quelle.
+      // Drei Zeilen hoeher steht, warum: „Die Regel steht in gebinde.js,
+      // nicht zweimal." Fuer die Hoechstmenge galt der Satz bis heute nicht.
+      menge.max = String(HOECHSTMENGE);
       if (schritt) menge.step = String(schritt);
       menge.value = String(p.menge);
       menge.className = 'kz-menge';

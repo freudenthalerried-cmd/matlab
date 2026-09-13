@@ -3,7 +3,10 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-import { ZWILLINGE, zwillingsbefund, ohneKommentare, traegtZahl } from '../src/zwillingszahlen.js';
+import {
+  ZWILLINGE, VORSCHLAG_GEPRUEFT, ENGE_SCHWELLE,
+  zwillingsbefund, zwillingsvorschlag, ohneKommentare, traegtZahl,
+} from '../src/zwillingszahlen.js';
 import { UST_SATZ } from '../src/preis.js';
 import { UST } from '../src/kostenbild.js';
 import { UST_SATZ_KUNDE } from '../src/shopkern.js';
@@ -133,4 +136,98 @@ test('der Steuersatz steht in skonto.js nicht mehr als Vorgabewert', () => {
   assert.match(quelle, /ust = UST_SATZ/,
     'skonto.js trägt den Steuersatz wieder als eigene Zahl');
   assert.doesNotMatch(quelle, /ust = 0\.2\b/);
+});
+
+/*
+ * **Was am 13. September dazukam.** Das Register führte drei Zahlen, und jede
+ * davon stand darin, weil sie an einem Tag im September zufällig aufgefallen
+ * war. Am Vortag wurde repariert, **wie** verglichen wird. Womit verglichen
+ * wird, entschied weiter der Zufall.
+ *
+ * > **Ein Register, das nur führt, was jemand eingetragen hat, ist so
+ * > vollständig wie die Aufmerksamkeit des Eintragenden.**
+ */
+test('Eine benannte Zahl mit ganz wenigen Fundstellen wird vorgeschlagen', () => {
+  const quellen = new Map([
+    ['src/heim.js', 'export const SATZ = 7.5;'],
+    ['src/anderswo.js', 'const eigen = 7.5;'],
+  ]);
+  const befund = zwillingsvorschlag(quellen, [], []);
+  assert.equal(befund.meldungen.length, 1, 'die enge Zahl wurde nicht vorgeschlagen');
+  assert.equal(befund.meldungen[0].regel, 'zahl-im-engen-band');
+  assert.match(befund.meldungen[0].text, /anderswo/);
+
+  // Eine geführte Zahl ist kein Vorschlag mehr — sie ist entschieden.
+  const gefuehrt = zwillingsvorschlag(quellen, [{
+    id: 'p', literal: '7.5', heimat: 'src/heim.js', name: 'SATZ', was: 'x', ausnahmen: [],
+  }], []);
+  assert.equal(gefuehrt.sauber, true, 'eine geführte Zahl wird noch einmal vorgeschlagen');
+
+  // Und eine abgehakte auch nicht.
+  const abgehakt = zwillingsvorschlag(quellen, [], [{
+    name: 'SATZ',
+    warum: 'Ein Grund, der lang genug ist, um als Grund zu gelten, und der deshalb '
+      + 'diesen Satz bis über die achtzig Zeichen hinaus fortsetzt.',
+  }]);
+  assert.equal(abgehakt.sauber, true);
+});
+
+test('Rauschen wird nicht vorgeschlagen — eine Zahl in fünfzig Dateien ist Zufall', () => {
+  const viele = new Map([['src/heim.js', 'export const TIEFE = 10;']]);
+  for (let i = 0; i < ENGE_SCHWELLE + 1; i += 1) viele.set(`src/f${i}.js`, 'const x = 10;');
+  assert.equal(zwillingsvorschlag(viele, [], []).sauber, true,
+    `${ENGE_SCHWELLE + 1} Fundstellen gelten noch als enges Band`);
+
+  // Und eine Zahl, die sonst nirgends steht, ist erst recht kein Zwilling.
+  const allein = new Map([['src/heim.js', 'export const TIEFE = 10;']]);
+  assert.equal(zwillingsvorschlag(allein, [], []).sauber, true);
+});
+
+test('Die Gegenrichtung: ein Haken für eine Zahl, die es nicht mehr gibt', () => {
+  const haken = [{
+    name: 'FORT',
+    warum: 'Ein Grund, der lang genug ist, um als Grund zu gelten, und der deshalb '
+      + 'diesen Satz bis über die achtzig Zeichen hinaus fortsetzt.',
+  }];
+  const weg = zwillingsvorschlag(new Map([['src/heim.js', 'export const DA = 7.5;']]), [], haken);
+  assert.equal(weg.meldungen[0].regel, 'haken-ohne-zahl');
+
+  // Und einer für eine Zahl, die das enge Band verlassen hat: Sie steht jetzt
+  // überall, also erklärt der Haken einen Zustand von gestern.
+  const breit = new Map([['src/heim.js', 'export const FORT = 7.5;']]);
+  for (let i = 0; i < ENGE_SCHWELLE + 1; i += 1) breit.set(`src/f${i}.js`, 'const x = 7.5;');
+  assert.equal(zwillingsvorschlag(breit, [], haken).meldungen[0].regel, 'haken-ausserhalb-des-bandes');
+
+  // Ein Haken ohne belastbaren Grund ist kein Haken.
+  const duenn = zwillingsvorschlag(new Map([
+    ['src/heim.js', 'export const KURZ = 7.5;'],
+    ['src/da.js', 'const x = 7.5;'],
+  ]), [], [{ name: 'KURZ', warum: 'zu kurz' }]);
+  assert.ok(duenn.meldungen.some((m) => m.regel === 'haken-ohne-grund'));
+});
+
+test('Jeder geprüfte Vorschlag nennt, warum die Gleichheit Zufall ist', () => {
+  assert.ok(VORSCHLAG_GEPRUEFT.length >= 5,
+    `nur ${VORSCHLAG_GEPRUEFT.length} Haken — ohne Bestand prüft die Schleife darunter nichts`);
+  for (const g of VORSCHLAG_GEPRUEFT) {
+    assert.match(g.name, /^[A-Z][A-Z0-9_]*$/, `${g.name} ist keine Ausfuhr`);
+    assert.ok(g.warum.length >= 80, `${g.name}: Grund zu dünn`);
+  }
+  assert.ok(ENGE_SCHWELLE >= 1 && ENGE_SCHWELLE <= 10,
+    `eine Schwelle von ${ENGE_SCHWELLE} misst nicht mehr das enge Band`);
+});
+
+/*
+ * **Der Fund, der die Messung ausgelöst hat.** `shop-ui.js` liegt in der
+ * Wurzel und in keinem der drei Ordner, die der Prüfer las — für ihn war die
+ * Datei sauber. Sie trug die Höchstmenge zweimal als Literal, zwei
+ * Bildschirmzeilen neben einem Knopf, der die Konstante liest.
+ */
+test('Die Oberfläche liest die Höchstmenge, statt sie zu tippen', () => {
+  const quelle = readFileSync(fileURLToPath(new URL('../shop-ui.js', import.meta.url)), 'utf8');
+  const felder = [...ohneKommentare(quelle).matchAll(/\.max = ([^;]+);/g)].map((m) => m[1].trim());
+  assert.ok(felder.length >= 2, `nur ${felder.length} Mengenfelder gefunden — die Suche greift nicht`);
+  for (const f of felder) {
+    assert.equal(f, 'String(HOECHSTMENGE)', `ein Mengenfeld tippt seine Grenze: .max = ${f}`);
+  }
 });

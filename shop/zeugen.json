@@ -104,6 +104,9 @@
     "shop/test/gebinde.test.js",
     "shop/test/shopkern.test.js"
   ],
+  "der-hubsatz-steht-wieder-zweimal-in-der-datei": [
+    "shop/test/huebe.test.js"
+  ],
   "der-nettobetrag-wird-nicht-gehalten": [
     "shop/test/ablageort.test.js"
   ],
@@ -210,6 +213,9 @@
   ],
   "die-nebenfrage-wiegt-wie-der-titel": [
     "shop/test/shopkern.test.js"
+  ],
+  "die-oberflaeche-tippt-ihre-grenze-wieder": [
+    "shop/test/zwillingszahlen.test.js"
   ],
   "die-oberflaechenprobe-darf-wieder-haengen": [
     "shop/test/pruefregister.test.js"

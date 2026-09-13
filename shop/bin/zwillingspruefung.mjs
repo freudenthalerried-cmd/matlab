@@ -23,7 +23,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-import { ZWILLINGE, zwillingsbefund } from '../src/zwillingszahlen.js';
+import { ZWILLINGE, zwillingsbefund, zwillingsvorschlag, ENGE_SCHWELLE } from '../src/zwillingszahlen.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 
@@ -59,6 +59,23 @@ function quellen() {
       gefunden.set(`${ordner}/${name}`, readFileSync(pfad, 'utf8'));
     }
   }
+  /*
+   * **Und die Oberflaeche, ergaenzt am 13. September 2026.** Am Vortag endete
+   * die Suche am Dateityp und wurde um `data/` erweitert. Sie endete auch am
+   * **Ort**: Gelesen wurden drei Ordner, und `shop-ui.js` liegt in keinem —
+   * es liegt daneben, in der Wurzel, weil es als Ganzes ins Browserbuendel
+   * geht.
+   *
+   * Gemessen, was dort stand: `feld.max = '999'` an zwei Stellen, waehrend
+   * derselbe Knopf zwei Bildschirmzeilen weiter `HOECHSTMENGE` liest. Genau
+   * die Zahl, zu der `src/gatestand.js` bei Gate 34 sagt, sie sei *„eine
+   * benannte Zahl mit Begruendung und kein Literal: Vorher stand 999 an fuenf
+   * Stellen ohne Grund"*.
+   *
+   * > **Eine Datei, die ein Register nicht liest, ist fuer das Register
+   * > sauber.**
+   */
+  gefunden.set('shop-ui.js', readFileSync(join(SHOP, 'shop-ui.js'), 'utf8'));
   return gefunden;
 }
 
@@ -88,7 +105,31 @@ if (befund.meldungen.length) {
   process.exit(1);
 }
 
+/*
+ * Und die Gegenrichtung des Registers selbst: Welche benannte Zahl *gehoerte*
+ * hinein, ohne dass es jemand gemerkt hat? Ohne diese Messung fuehrt das
+ * Register genau das, was jemandem zufaellig aufgefallen ist.
+ */
+const vorschlag = zwillingsvorschlag(dateien);
+
+console.log('');
+console.log(`Enges Band — ${vorschlag.vorschlaege.length} benannte Zahlen stehen in hoechstens `
+  + `${ENGE_SCHWELLE} weiteren Dateien:`);
+for (const v of vorschlag.vorschlaege) {
+  console.log(`  ${String(v.wert).padEnd(8)} ${v.name} (${v.heimat}) — auch in ${v.andere.join(', ')}`);
+}
+
+if (vorschlag.meldungen.length) {
+  console.log('');
+  for (const m of vorschlag.meldungen) console.log(`  ✗ ${m.text}  [${m.regel}]`);
+  console.log('');
+  console.log('Eine Zahl mit ganz wenigen Fundstellen ist kein Zufall, sondern eine Entscheidung —');
+  console.log('und eine Entscheidung, die niemand aufgeschrieben hat, ist keine.');
+  process.exit(1);
+}
+
 console.log('');
 console.log(`Zwillingsabgleich: ${befund.gesucht} Fundstellen, jede gelesen oder begründet`);
+console.log(`Enges Band: ${vorschlag.vorschlaege.length} Zahlen, jede geführt oder abgehakt`);
 console.log('Eine Zahl mit einer Heimat wird gelesen, nicht abgeschrieben.');
 process.exit(0);

@@ -24,6 +24,25 @@ test('der Hubsatz steht nur an einer Stelle', () => {
   const poschacher = lieferanten.find((l) => l.id === 'poschacher');
   assert.equal(JE_HUB_NETTO, poschacher.fracht.sperrgutZuschlagNetto,
     'zwei Zahlen für denselben Satz — eine davon veraltet');
+
+  /*
+   * **Und die dritte, 13. September 2026.** Dieser Testfall heißt seit dem
+   * 4. September „der Hubsatz steht nur an einer Stelle" und hielt zwei
+   * Fassungen gegeneinander. Es gab drei: `nebenkosten.kranentladungJeHubNetto`
+   * trug dieselben 7,50 € vierzehn Zeilen tiefer in derselben Datei — gelesen
+   * von keinem Modul, gehalten von keinem Prüfer.
+   *
+   * > **Ein Testfall, der sagt „nur an einer Stelle", zählt die Stellen, die
+   * > ihm genannt wurden.**
+   *
+   * Gemessen wird deshalb der **ganze Nebenkostenblock** und nicht ein Feld:
+   * Ein Name, den niemand vorher aufschreibt, entgeht einer Gleichheit.
+   */
+  const nebenkosten = poschacher.nebenkosten;
+  const zahlen = Object.entries(nebenkosten)
+    .filter(([, v]) => typeof v === 'number' && v === JE_HUB_NETTO);
+  assert.deepEqual(zahlen, [],
+    `nebenkosten trägt den Hubsatz ein zweites Mal: ${zahlen.map(([k]) => k).join(', ')}`);
 });
 
 test('jeder Beleg trägt seinen Grund', () => {
