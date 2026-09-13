@@ -1219,7 +1219,14 @@ const abgelegteArt = stufe === 'angebot' ? 'angebot' : 'auftragsbestaetigung';
  * meldet `pruefeNummernkreis` unten, was der Bestand hergibt — Lücken sind
  * dann eine Auskunft, keine Zusicherung.
  */
-const belegnummer = ARTEN[abgelegteArt].nummernkreis ? beleg.nummer : null;
+/*
+ * **Gefragt wird seit dem 13. September die Herkunft, nicht der Kreis.** Hier
+ * stand `ARTEN[abgelegteArt].nummernkreis ? beleg.nummer : null` — ein Feld,
+ * das gleichzeitig sagen sollte, ob gezogen wird **und** ob die Journalzeile
+ * die Nummer des Papiers mitnimmt. Das Angebot zieht nicht und trägt trotzdem
+ * eine: `AN-2026-0102`, gebildet aus dem Vorgang. `nummerAus` trennt beides.
+ */
+const belegnummer = ARTEN[abgelegteArt].nummerAus === 'keine' ? null : beleg.nummer;
 
 // Erst das Papier, dann die Zeile darüber — siehe `legeDurchschriftAb`.
 const durchschrift = legeDurchschriftAb(
@@ -1240,7 +1247,18 @@ const eintrag = haltefest(ablage, {
   text: `${art} zu Vorgang ${nummer}, ${gelesen.zeilen.length} Position(en)`,
 });
 
-const kreis = ARTEN[abgelegteArt].nummernkreis
+/*
+ * **Nur über einen gezogenen Kreis — berichtigt am 13. September 2026.**
+ *
+ * Diese drei Zeilen liefen bis heute auch über das Angebot, und das Ergebnis
+ * war jedes Mal falsch: Der Zähler `angebot:2026` stieg beim Zurücklesen auf
+ * die **Vorgangsnummer** (0102), vergeben war genau eine Nummer — also meldete
+ * `pruefeNummernkreis` 101 fehlende und die Zeile darunter druckte sie alle.
+ *
+ * > **Dieselbe Zeile ist der Wächter über den Rechnungskreis (§ 11 Abs 1 Z 5
+ * > UStG).** Wer sie hundertfach ohne Anlass sieht, liest sie nicht mehr.
+ */
+const kreis = ARTEN[abgelegteArt].nummerAus === 'kreis'
   ? pruefeNummernkreis(ablage, abgelegteArt, jahr)
   : null;
 

@@ -13,6 +13,7 @@ import {
   vorgangsakte,
   umsatzsumme,
   pruefeNummernkreis,
+  nummernbefund,
   pruefeAblagefelder,
   aufbewahrungBis,
   alsCsv,
@@ -37,7 +38,7 @@ test('Nummern laufen je Art und Jahr getrennt', () => {
   const a = neueAblage();
   assert.equal(naechsteNummer(a, 'rechnung', 2026), 'RE-2026-0001');
   assert.equal(naechsteNummer(a, 'rechnung', 2026), 'RE-2026-0002');
-  assert.equal(naechsteNummer(a, 'angebot', 2026), 'AN-2026-0001');
+  assert.equal(naechsteNummer(a, 'gutschrift', 2026), 'GS-2026-0001');
   assert.equal(naechsteNummer(a, 'rechnung', 2027), 'RE-2027-0001');
 });
 
@@ -73,8 +74,12 @@ test('Eine unvollständige Rechnung verbraucht keine Nummer', () => {
 
 test('Die Nummer entsteht erst mit der Ausstellung', () => {
   const a = neueAblage();
-  // Ein Angebot vorweg — es darf den Rechnungskreis nicht anfassen.
-  haltefest(a, { art: 'angebot', nummer: naechsteNummer(a, 'angebot', 2026), zeitpunkt: '2026-08-14', vorgang: 'V-1' });
+  /*
+   * Ein Angebot vorweg — es darf den Rechnungskreis nicht anfassen. Seine
+   * eigene Nummer zieht es seit dem 13. September **nicht** aus einem Kreis:
+   * `nummerAus: 'vorgang'`, gebildet als `AN-${Vorgangsnummer}`.
+   */
+  haltefest(a, { art: 'angebot', nummer: 'AN-V-1', zeitpunkt: '2026-08-14', vorgang: 'V-1' });
   assert.equal(a.zaehler['rechnung:2026'], undefined);
 
   const r = stelleRechnungAus(a, vollstaendig, { zeitpunkt: '2026-08-15', jahr: 2026, vorgang: 'V-1' });
@@ -184,7 +189,7 @@ test('Der Nummernkreis meldet Lücken, statt sie zu bewerten', () => {
 test('Die Vorgangsakte sammelt alles zu einem Auftrag in seiner Reihenfolge', () => {
   const a = neueAblage();
   haltefest(a, { art: 'uidabfrage', zeitpunkt: '2026-08-15T09:00', vorgang: 'V-1', text: 'UID ATU… gueltig' });
-  haltefest(a, { art: 'angebot', nummer: naechsteNummer(a, 'angebot', 2026), zeitpunkt: '2026-08-15T09:05', vorgang: 'V-1' });
+  haltefest(a, { art: 'angebot', nummer: 'AN-V-1', zeitpunkt: '2026-08-15T09:05', vorgang: 'V-1' });
   haltefest(a, { art: 'vermerk', zeitpunkt: '2026-08-15T09:10', vorgang: 'V-2', text: 'anderer Vorgang' });
   stelleRechnungAus(a, vollstaendig, { zeitpunkt: '2026-08-22', jahr: 2026, vorgang: 'V-1' });
 
@@ -192,6 +197,65 @@ test('Die Vorgangsakte sammelt alles zu einem Auftrag in seiner Reihenfolge', ()
   assert.deepEqual(akte.map((e) => e.art), ['uidabfrage', 'angebot', 'rechnung']);
   assert.deepEqual(akte.map((e) => e.lfd), [1, 2, 4]);
 });
+
+test('Das Artenverzeichnis sagt, woher jede Nummer kommt — und hält es gegen das Journal', () => {
+  /*
+   * **Der Fund vom 13. September 2026.** `angebot` stand auf
+   * `nummernkreis: true`, und aus diesem Kreis zog nie jemand: `src/vorgang.js`
+   * bildet die Angebotsnummer seit dem 31. August als `AN-${vorgangsnummer}`.
+   * Die Vorgangsnummern beginnen bei 0101 — nach dem ersten zurückgelesenen
+   * Angebot meldete `pruefeNummernkreis` **101 fehlende Nummern**, und
+   * `npm run vorgang` druckte sie unter jedes weitere Angebot.
+   *
+   * > **Dieselbe Zeile ist der Wächter über den Rechnungskreis (§ 11 Abs 1 Z 5
+   * > UStG).** Wer sie hundertfach ohne Anlass sieht, liest sie nicht mehr.
+   */
+  assert.equal(ARTEN.angebot.nummerAus, 'vorgang',
+    'das Angebot zieht seine Nummer wieder aus einem Kreis, aus dem niemand zieht');
+  assert.throws(() => naechsteNummer(neueAblage(), 'angebot', 2026), /führt keinen Nummernkreis/);
+  assert.throws(() => pruefeNummernkreis(neueAblage(), 'angebot', 2026), /zieht keine Nummer/);
+
+  // Das gewöhnliche Journal ist sauber — sonst wäre der Prüfer von Anfang an rot.
+  const gut = [
+    { art: 'angebot', nummer: 'AN-2026-0102', vorgang: '2026-0102' },
+    { art: 'auftragsbestaetigung', nummer: null, vorgang: '2026-0102' },
+    { art: 'lieferantenbestellung', nummer: '2026-0102-01', vorgang: '2026-0102' },
+    { art: 'rechnung', nummer: 'RE-2026-0001', vorgang: '2026-0102' },
+    { art: 'gutschrift', nummer: 'GS-2026-0001', vorgang: '2026-0102' },
+    { art: 'vermerk', nummer: null, vorgang: '2026-0102' },
+  ];
+  assert.equal(nummernbefund({ eintraege: gut }).sauber, true);
+
+  /*
+   * Und die Form, in der der alte Zustand messbar ist: Eine Nummer, die ihre
+   * eigene Vorgangsnummer wiederholt, ist **gebildet** und nicht gezogen — ein
+   * Zähler weiß nichts von dem Vorgang, zu dem das Papier gehört.
+   */
+  const gebildet = nummernbefund({
+    eintraege: [{ art: 'rechnung', nummer: 'RE-2026-0102', vorgang: '2026-0102' }],
+  });
+  assert.deepEqual(gebildet.meldungen.map((m) => m.regel), ['kreisnummer-ist-die-vorgangsnummer'],
+    'eine gebildete Nummer geht als gezogene durch');
+
+  // Beide Gegenrichtungen: eine Nummer, wo keine vorgesehen ist — und keine,
+  // wo der Vorgang sie tragen müsste.
+  assert.deepEqual(
+    nummernbefund({ eintraege: [{ art: 'absage', nummer: 'AS-2026-0007', vorgang: '2026-0102' }] })
+      .meldungen.map((m) => m.regel),
+    ['nummer-wo-keine-vorgesehen-ist'],
+  );
+  assert.deepEqual(
+    nummernbefund({ eintraege: [{ art: 'angebot', nummer: null, vorgang: '2026-0102' }] })
+      .meldungen.map((m) => m.regel),
+    ['vorgangsnummer-fehlt'],
+  );
+  assert.deepEqual(
+    nummernbefund({ eintraege: [{ art: 'rechnung', nummer: null, vorgang: '2026-0102' }] })
+      .meldungen.map((m) => m.regel),
+    ['kreisnummer-fehlt'],
+  );
+});
+
 
 test('Die Aufbewahrungsfrist endet sieben Jahre nach dem Kalenderjahr', () => {
   assert.equal(AUFBEWAHRUNG_JAHRE, 7);
@@ -318,10 +382,22 @@ test('Sechs Arten sind ein Papier, zwei sind die Aufzeichnung selbst', () => {
    * Abs 2 UStG die Durchschrift, und beide meinen dasselbe Papier.
    */
   for (const [name, a] of Object.entries(ARTEN)) {
-    if (a.nummernkreis) {
+    if (a.nummerAus === 'kreis') {
       assert.equal(a.beleg, true, `${name} zieht eine Nummer, ohne ein Blatt zu haben`);
     }
   }
+
+  /*
+   * **Und die dritte Frage desselben Registers — 13. September 2026.** Das
+   * Feld hieß bis heute `nummernkreis` und war ein Ja/Nein über drei Fragen
+   * zugleich. Gezogen wird nur für Rechnung und Gutschrift; alles andere
+   * bringt seine Nummer aus dem Vorgang mit oder trägt keine.
+   */
+  assert.deepEqual(
+    Object.entries(ARTEN).filter(([, a]) => a.nummerAus === 'kreis').map(([n]) => n),
+    ['rechnung', 'gutschrift'],
+    'ein dritter Nummernkreis — oder einer der beiden zieht nicht mehr',
+  );
 });
 
 

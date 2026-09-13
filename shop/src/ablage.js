@@ -62,12 +62,51 @@ export const AUFBEWAHRUNG_JAHRE = 7;
  * fehlend. Der erste abgelegte Vermerk hätte `npm run pruefe-ablage` rot
  * gemacht — und zwar mit einem Befund, der nichts über den Bestand sagt.
  */
+/**
+ * **`nummerAus` statt `nummernkreis` — 13. September 2026.**
+ *
+ * Das Feld hieß `nummernkreis` und war ein Ja/Nein. Es beantwortete damit drei
+ * verschiedene Fragen auf einmal: ob eine Nummer aus dem Zähler **gezogen**
+ * wird, ob der Dateiname der Durchschrift das Kürzel voranstellen muss, und ob
+ * die Journalzeile die Nummer des Papiers überhaupt mitnimmt. Auf zwei davon
+ * gab es für das **Angebot** die falsche Antwort.
+ *
+ * > **`angebot` stand auf `nummernkreis: true`, und gezogen hat diese Nummer
+ * > nie jemand.** `src/vorgang.js` bildet sie seit dem 31. August als
+ * > `AN-${vorgangsnummer}`. Die Vorgangsnummern beginnen bei 0101 — also
+ * > meldete `pruefeNummernkreis` nach dem ersten abgelegten Angebot
+ * > **101 fehlende Nummern**, und `npm run vorgang` druckte sie unter jedes
+ * > weitere Angebot als „Achtung, Lücke im Nummernkreis".
+ *
+ * Dieselbe Zeile ist der echte Wächter über den **Rechnungs**kreis (§ 11
+ * Abs 1 Z 5 UStG). Wer sie hundertfach ohne Anlass sieht, liest sie nicht
+ * mehr, wenn sie einmal recht hat.
+ *
+ * Der Fund ist buchstäblich angekündigt: Die Notiz, die am 12. September
+ * dasselbe an der **Lieferantenbestellung** berichtigte, nennt als Vorbild
+ * „dieselbe Familie wie am 4. September bei der **Angebotsnummer**" — und ließ
+ * die Angebotsnummer stehen.
+ *
+ * Drei Herkünfte, und jede sagt zugleich, was in der Journalzeile steht:
+ *
+ * - `'kreis'` — der Zähler zieht sie (`naechsteNummer`), nur Rechnung und
+ *   Gutschrift. Nur hier ist eine Lücke erklärungsbedürftig.
+ * - `'vorgang'` — das Papier bringt sie mit und bildet sie aus der
+ *   Vorgangsnummer: `AN-2026-0102`, `2026-0110-01`. Sie steht in der
+ *   Journalzeile, gezählt wird an ihr nichts.
+ * - `'keine'` — die Zeile trägt keine Nummer; rückführbar ist sie über den
+ *   Vorgang (§ 131 Abs 1 Z 5 BAO).
+ *
+ * `nummernbefund()` hält das gegen ein Journal, in beide Richtungen.
+ */
+export const NUMMERNHERKUNFT = Object.freeze(['kreis', 'vorgang', 'keine']);
+
 export const ARTEN = {
-  angebot: { kuerzel: 'AN', nummernkreis: true, umsatz: false, beleg: true },
-  rechnung: { kuerzel: 'RE', nummernkreis: true, umsatz: true, beleg: true },
-  gutschrift: { kuerzel: 'GS', nummernkreis: true, umsatz: true, beleg: true },
+  angebot: { kuerzel: 'AN', nummerAus: 'vorgang', umsatz: false, beleg: true },
+  rechnung: { kuerzel: 'RE', nummerAus: 'kreis', umsatz: true, beleg: true },
+  gutschrift: { kuerzel: 'GS', nummerAus: 'kreis', umsatz: true, beleg: true },
   /**
-   * **Berichtigt am 12. September 2026.** Hier stand `nummernkreis: true` —
+   * **Berichtigt am 12. September 2026.** Hier stand ein eigener Kreis —
    * ein eigener Kreis für ein Papier, das seine Nummer **mitbringt**:
    * `erzeugeBestellungen` bildet sie seit dem 30. August als Vorgangsnummer
    * plus laufende Teillieferung (`2026-0110-01`).
@@ -81,7 +120,7 @@ export const ARTEN = {
    * Nummer geworden. Fortlaufend und einmalig verlangt § 11 Abs 1 Z 5 UStG
    * ohnehin nur für die Rechnung.
    */
-  lieferantenbestellung: { kuerzel: 'LB', nummernkreis: false, umsatz: false, beleg: true },
+  lieferantenbestellung: { kuerzel: 'LB', nummerAus: 'vorgang', umsatz: false, beleg: true },
   /**
    * Die Abfrage der UID des Kunden beim Finanzamt. Sie geschieht **außerhalb**
    * — FinanzOnline oder `ec.europa.eu`, das EU-System VIES —, und der
@@ -90,14 +129,14 @@ export const ARTEN = {
    * Aufzuzeichnen ist ihr **Ergebnis**, und das ist selbst die Aufzeichnung:
    * Es gibt kein Blatt, von dem eine Abschrift entstünde.
    */
-  uidabfrage: { kuerzel: 'UP', nummernkreis: false, umsatz: false, beleg: false },
+  uidabfrage: { kuerzel: 'UP', nummerAus: 'keine', umsatz: false, beleg: false },
   /**
    * Der freie Vermerk zu einem Vorgang — „der Kunde hat telefonisch
    * verschoben". Er hat keinen Empfänger und kein Papier; er **ist** die
    * Aufzeichnung (§ 131 Abs 1 Z 5 BAO: zu jedem Geschäftsfall gehört ein
    * Beleg, und wo keiner entsteht, tritt der Vermerk an seine Stelle).
    */
-  vermerk: { kuerzel: 'VM', nummernkreis: false, umsatz: false, beleg: false },
+  vermerk: { kuerzel: 'VM', nummerAus: 'keine', umsatz: false, beleg: false },
   /**
    * **Aufgenommen am 4. September**, als `npm run vorgang` erstmals ablegen
    * sollte. Das Werkzeug erzeugt zwei Papiere — Angebot und
@@ -105,13 +144,13 @@ export const ARTEN = {
    * Ohne Eintrag hätte die Bestätigung als `vermerk` abgelegt werden müssen,
    * also unter einem Namen, der etwas anderes meint.
    *
-   * `nummernkreis: false` ist Absicht: Eine fortlaufende Nummer verlangt § 11
+   * `nummerAus: 'keine'` ist Absicht: Eine fortlaufende Nummer verlangt § 11
    * UStG für die **Rechnung**. Wer für die Auftragsbestätigung einen sechsten
    * Kreis eröffnet, handelt sich dessen Lückenerklärung ein, ohne dass
    * irgendeine Vorschrift sie verlangt. Rückführbar bleibt sie über
    * `vorgang` — das ist die Vorgangsakte nach § 131 Abs 1 Z 5 BAO.
    */
-  auftragsbestaetigung: { kuerzel: 'AB', nummernkreis: false, umsatz: false, beleg: true },
+  auftragsbestaetigung: { kuerzel: 'AB', nummerAus: 'keine', umsatz: false, beleg: true },
   /**
    * **Aufgenommen am 12. September**, als die Absage ablegen können sollte.
    * Sie ist der vierte Brief an einen Kunden und war der einzige, von dem
@@ -122,13 +161,13 @@ export const ARTEN = {
    *
    * > **Der Brief des Kunden wurde aufgehoben, die Antwort darauf nicht.**
    *
-   * `nummernkreis: false` aus demselben Grund wie bei der
+   * `nummerAus: 'keine'` aus demselben Grund wie bei der
    * Auftragsbestätigung: Eine fortlaufende Nummer verlangt § 11 UStG für die
    * Rechnung. Rückführbar bleibt die Absage über den Vorgang (§ 131 Abs 1 Z 5
    * BAO) — und ein eigener Kreis brächte eine Lückenerklärung ein, die
    * niemand verlangt.
    */
-  absage: { kuerzel: 'AS', nummernkreis: false, umsatz: false, beleg: true },
+  absage: { kuerzel: 'AS', nummerAus: 'keine', umsatz: false, beleg: true },
 };
 
 /**
@@ -219,7 +258,7 @@ const schluessel = (art, jahr) => `${art}:${jahr}`;
 export function naechsteNummer(ablage, art, jahr) {
   const beschreibung = ARTEN[art];
   if (!beschreibung) throw new Error(`Unbekannte Vorgangsart: ${art}`);
-  if (!beschreibung.nummernkreis) throw new Error(`${art} führt keinen Nummernkreis`);
+  if (beschreibung.nummerAus !== 'kreis') throw new Error(`${art} führt keinen Nummernkreis`);
   if (!Number.isInteger(jahr)) throw new Error('Die Nummernvergabe braucht ein Jahr');
 
   const k = schluessel(art, jahr);
@@ -395,6 +434,10 @@ export function vorgangsakte(ablage, vorgang) {
 export function pruefeNummernkreis(ablage, art, jahr) {
   const kuerzel = ARTEN[art]?.kuerzel;
   if (!kuerzel) throw new Error(`Unbekannte Vorgangsart: ${art}`);
+  // Eine Lücke gibt es nur dort, wo gezogen wird. Wer diese Funktion auf eine
+  // mitgebrachte Nummer anwendet, misst die Vorgangszählung an einem Zähler,
+  // den niemand hochgezählt hat — genau der Fund vom 13. September.
+  if (ARTEN[art].nummerAus !== 'kreis') throw new Error(`${art} zieht keine Nummer`);
 
   const vorsatz = `${kuerzel}-${jahr}-`;
   const vergeben = ablage.eintraege
@@ -409,6 +452,105 @@ export function pruefeNummernkreis(ablage, art, jahr) {
   }
 
   return { anzahl: vergeben.length, hoechste, fehlend, lueckenlos: fehlend.length === 0 };
+}
+
+/**
+ * Hält `nummerAus` gegen ein Journal — in **beide** Richtungen.
+ *
+ * Richtung eins, über das Register selbst: Eine Art ohne lesbare Herkunft ist
+ * eine Zeile, die nichts sagt.
+ *
+ * Richtung zwei, über die Zeilen: Jede Nummer muss aussehen wie das, was ihre
+ * Art über sie behauptet.
+ *
+ * - `'keine'` und trotzdem eine Nummer — dann ist eine Zahlenreihe entstanden,
+ *   die dieses Verzeichnis nicht kennt und niemand erklärt.
+ * - `'kreis'` ohne Nummer — eine Rechnung ohne fortlaufende Nummer verstößt
+ *   gegen § 11 Abs 1 Z 5 UStG.
+ * - `'kreis'`, und die Nummer **wiederholt die Vorgangsnummer**. Das ist der
+ *   Fund vom 13. September in seiner messbaren Form: Ein gezogener Zähler
+ *   weiß nichts vom Vorgang, zu dem das Papier gehört. Steht die
+ *   Vorgangsnummer drin, ist die Nummer **gebildet** und nicht gezogen — und
+ *   jede Lückenmeldung darüber misst die Vorgangszählung.
+ *
+ *   Erklärungsbedürftig, kein Urteil: Die 102. Rechnung eines Jahres zum
+ *   Vorgang `2026-0102` träfe die Regel zufällig. Dann steht hier eine Frage,
+ *   die einmal zu beantworten ist — und nicht hundertmal eine Lücke, die es
+ *   nicht gibt.
+ * - `'vorgang'` ohne Nummer oder mit einer, die den Vorgang nicht nennt — dann
+ *   ist die Rückführbarkeit über den Vorgang genau das, was sie nicht ist.
+ *
+ * @param {object} lage
+ * @param {Array} lage.eintraege  die Zeilen eines oder mehrerer Journale
+ */
+export function nummernbefund({ eintraege = [] } = {}) {
+  const meldungen = [];
+
+  for (const [art, a] of Object.entries(ARTEN)) {
+    if (!NUMMERNHERKUNFT.includes(a.nummerAus)) {
+      meldungen.push({
+        regel: 'nummernherkunft-unbekannt',
+        text: `${art} führt die Herkunft „${a.nummerAus}", und das Verzeichnis kennt `
+          + `nur ${NUMMERNHERKUNFT.join(', ')}`,
+      });
+    }
+    if (a.nummerAus === 'kreis' && !a.beleg) {
+      meldungen.push({
+        regel: 'gezogen-ohne-blatt',
+        text: `${art} zieht eine Nummer, ohne ein Blatt zu haben — eine vergebene `
+          + 'Nummer ohne Beleg ist für immer eine Lücke, die niemand erklären kann',
+      });
+    }
+  }
+
+  for (const e of eintraege) {
+    const a = ARTEN[e.art];
+    if (!a) continue;
+    const wo = `${e.art} ${e.nummer ?? `zu Vorgang ${e.vorgang}`}`;
+
+    if (a.nummerAus === 'keine' && e.nummer) {
+      meldungen.push({
+        regel: 'nummer-wo-keine-vorgesehen-ist',
+        text: `${wo} trägt eine Nummer, und ${e.art} führt nach dem Verzeichnis keine `
+          + '— eine Zahlenreihe, die niemand erklärt',
+      });
+      continue;
+    }
+    if (a.nummerAus === 'kreis') {
+      if (!e.nummer) {
+        meldungen.push({
+          regel: 'kreisnummer-fehlt',
+          text: `${wo} zieht nach dem Verzeichnis aus einem Nummernkreis und trägt keine `
+            + 'Nummer (§ 11 Abs 1 Z 5 UStG verlangt sie fortlaufend)',
+        });
+      } else if (e.vorgang && String(e.nummer).includes(String(e.vorgang))) {
+        meldungen.push({
+          regel: 'kreisnummer-ist-die-vorgangsnummer',
+          text: `${wo} gehört zu Vorgang ${e.vorgang} und wiederholt dessen Nummer `
+            + '— gezogen ist sie damit nicht, gebildet; jede Lückenmeldung über diesen '
+            + 'Kreis misst die Vorgangszählung',
+        });
+      }
+      continue;
+    }
+    if (a.nummerAus === 'vorgang') {
+      if (!e.nummer) {
+        meldungen.push({
+          regel: 'vorgangsnummer-fehlt',
+          text: `${wo} bringt seine Nummer nach dem Verzeichnis aus dem Vorgang mit und `
+            + 'trägt keine',
+        });
+      } else if (e.vorgang && !String(e.nummer).includes(String(e.vorgang))) {
+        meldungen.push({
+          regel: 'nummer-nennt-den-vorgang-nicht',
+          text: `${wo} gehört zu Vorgang ${e.vorgang} und nennt ihn in seiner Nummer nicht `
+            + '— rückführbar über den Vorgang ist sie damit gerade nicht',
+        });
+      }
+    }
+  }
+
+  return { geprueft: eintraege.length, meldungen, sauber: meldungen.length === 0 };
 }
 
 /**

@@ -8318,10 +8318,49 @@ const AUFBEWAHRUNG_JAHRE = 7;
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const NUMMERNHERKUNFT = Object.freeze(['kreis', 'vorgang', 'keine']);
+
 const ARTEN = {
-  angebot: { kuerzel: 'AN', nummernkreis: true, umsatz: false, beleg: true },
-  rechnung: { kuerzel: 'RE', nummernkreis: true, umsatz: true, beleg: true },
-  gutschrift: { kuerzel: 'GS', nummernkreis: true, umsatz: true, beleg: true },
+  angebot: { kuerzel: 'AN', nummerAus: 'vorgang', umsatz: false, beleg: true },
+  rechnung: { kuerzel: 'RE', nummerAus: 'kreis', umsatz: true, beleg: true },
+  gutschrift: { kuerzel: 'GS', nummerAus: 'kreis', umsatz: true, beleg: true },
   
 
 
@@ -8337,7 +8376,7 @@ const ARTEN = {
 
 
 
-  lieferantenbestellung: { kuerzel: 'LB', nummernkreis: false, umsatz: false, beleg: true },
+  lieferantenbestellung: { kuerzel: 'LB', nummerAus: 'vorgang', umsatz: false, beleg: true },
   
 
 
@@ -8346,28 +8385,14 @@ const ARTEN = {
 
 
 
-  uidabfrage: { kuerzel: 'UP', nummernkreis: false, umsatz: false, beleg: false },
+  uidabfrage: { kuerzel: 'UP', nummerAus: 'keine', umsatz: false, beleg: false },
   
 
 
 
 
 
-  vermerk: { kuerzel: 'VM', nummernkreis: false, umsatz: false, beleg: false },
-  
-
-
-
-
-
-
-
-
-
-
-
-
-  auftragsbestaetigung: { kuerzel: 'AB', nummernkreis: false, umsatz: false, beleg: true },
+  vermerk: { kuerzel: 'VM', nummerAus: 'keine', umsatz: false, beleg: false },
   
 
 
@@ -8381,10 +8406,24 @@ const ARTEN = {
 
 
 
+  auftragsbestaetigung: { kuerzel: 'AB', nummerAus: 'keine', umsatz: false, beleg: true },
+  
 
 
 
-  absage: { kuerzel: 'AS', nummernkreis: false, umsatz: false, beleg: true },
+
+
+
+
+
+
+
+
+
+
+
+
+  absage: { kuerzel: 'AS', nummerAus: 'keine', umsatz: false, beleg: true },
 };
 
 
@@ -8475,7 +8514,7 @@ const schluessel = (art, jahr) => `${art}:${jahr}`;
 function naechsteNummer(ablage, art, jahr) {
   const beschreibung = ARTEN[art];
   if (!beschreibung) throw new Error(`Unbekannte Vorgangsart: ${art}`);
-  if (!beschreibung.nummernkreis) throw new Error(`${art} führt keinen Nummernkreis`);
+  if (beschreibung.nummerAus !== 'kreis') throw new Error(`${art} führt keinen Nummernkreis`);
   if (!Number.isInteger(jahr)) throw new Error('Die Nummernvergabe braucht ein Jahr');
 
   const k = schluessel(art, jahr);
@@ -8651,6 +8690,10 @@ function vorgangsakte(ablage, vorgang) {
 function pruefeNummernkreis(ablage, art, jahr) {
   const kuerzel = ARTEN[art]?.kuerzel;
   if (!kuerzel) throw new Error(`Unbekannte Vorgangsart: ${art}`);
+  
+  
+  
+  if (ARTEN[art].nummerAus !== 'kreis') throw new Error(`${art} zieht keine Nummer`);
 
   const vorsatz = `${kuerzel}-${jahr}-`;
   const vergeben = ablage.eintraege
@@ -8665,6 +8708,105 @@ function pruefeNummernkreis(ablage, art, jahr) {
   }
 
   return { anzahl: vergeben.length, hoechste, fehlend, lueckenlos: fehlend.length === 0 };
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function nummernbefund({ eintraege = [] } = {}) {
+  const meldungen = [];
+
+  for (const [art, a] of Object.entries(ARTEN)) {
+    if (!NUMMERNHERKUNFT.includes(a.nummerAus)) {
+      meldungen.push({
+        regel: 'nummernherkunft-unbekannt',
+        text: `${art} führt die Herkunft „${a.nummerAus}", und das Verzeichnis kennt `
+          + `nur ${NUMMERNHERKUNFT.join(', ')}`,
+      });
+    }
+    if (a.nummerAus === 'kreis' && !a.beleg) {
+      meldungen.push({
+        regel: 'gezogen-ohne-blatt',
+        text: `${art} zieht eine Nummer, ohne ein Blatt zu haben — eine vergebene `
+          + 'Nummer ohne Beleg ist für immer eine Lücke, die niemand erklären kann',
+      });
+    }
+  }
+
+  for (const e of eintraege) {
+    const a = ARTEN[e.art];
+    if (!a) continue;
+    const wo = `${e.art} ${e.nummer ?? `zu Vorgang ${e.vorgang}`}`;
+
+    if (a.nummerAus === 'keine' && e.nummer) {
+      meldungen.push({
+        regel: 'nummer-wo-keine-vorgesehen-ist',
+        text: `${wo} trägt eine Nummer, und ${e.art} führt nach dem Verzeichnis keine `
+          + '— eine Zahlenreihe, die niemand erklärt',
+      });
+      continue;
+    }
+    if (a.nummerAus === 'kreis') {
+      if (!e.nummer) {
+        meldungen.push({
+          regel: 'kreisnummer-fehlt',
+          text: `${wo} zieht nach dem Verzeichnis aus einem Nummernkreis und trägt keine `
+            + 'Nummer (§ 11 Abs 1 Z 5 UStG verlangt sie fortlaufend)',
+        });
+      } else if (e.vorgang && String(e.nummer).includes(String(e.vorgang))) {
+        meldungen.push({
+          regel: 'kreisnummer-ist-die-vorgangsnummer',
+          text: `${wo} gehört zu Vorgang ${e.vorgang} und wiederholt dessen Nummer `
+            + '— gezogen ist sie damit nicht, gebildet; jede Lückenmeldung über diesen '
+            + 'Kreis misst die Vorgangszählung',
+        });
+      }
+      continue;
+    }
+    if (a.nummerAus === 'vorgang') {
+      if (!e.nummer) {
+        meldungen.push({
+          regel: 'vorgangsnummer-fehlt',
+          text: `${wo} bringt seine Nummer nach dem Verzeichnis aus dem Vorgang mit und `
+            + 'trägt keine',
+        });
+      } else if (e.vorgang && !String(e.nummer).includes(String(e.vorgang))) {
+        meldungen.push({
+          regel: 'nummer-nennt-den-vorgang-nicht',
+          text: `${wo} gehört zu Vorgang ${e.vorgang} und nennt ihn in seiner Nummer nicht `
+            + '— rückführbar über den Vorgang ist sie damit gerade nicht',
+        });
+      }
+    }
+  }
+
+  return { geprueft: eintraege.length, meldungen, sauber: meldungen.length === 0 };
 }
 
 
@@ -8954,8 +9096,20 @@ function ausJournal(journal, { schreibe = null } = {}) {
 
       ablage.eintraege.push(Object.freeze({ ...eintrag }));
       
-      
-      if (eintrag.nummer) hebeZaehler(ablage, eintrag.art, eintrag.nummer, nr);
+
+
+
+
+
+
+
+
+
+
+
+      if (eintrag.nummer && ARTEN[eintrag.art].nummerAus === 'kreis') {
+        hebeZaehler(ablage, eintrag.art, eintrag.nummer, nr);
+      }
       continue;
     }
 

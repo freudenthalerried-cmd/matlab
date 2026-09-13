@@ -103,6 +103,9 @@
   "die-akte-sagt-nicht-was-dran-ist": [
     "shop/test/vorgangsstand.test.js"
   ],
+  "die-angebotsnummer-wird-wieder-gezogen": [
+    "shop/test/ablage.test.js"
+  ],
   "die-bankfelder-kommen-nicht-durch": [
     "shop/test/vorgangwerkzeug.test.js"
   ],
@@ -115,8 +118,15 @@
   "die-csv-nennt-alles-umsatz": [
     "shop/test/ablage.test.js"
   ],
+  "die-durchschrift-traegt-ihr-kuerzel-zweimal": [
+    "shop/test/ablageort.test.js",
+    "shop/test/vorgangwerkzeug.test.js"
+  ],
   "die-frist-laeuft-auch-nach-der-annahme": [
     "shop/test/vorgangsstand.test.js"
+  ],
+  "die-gebildete-nummer-geht-als-gezogene-durch": [
+    "shop/test/ablage.test.js"
   ],
   "die-lieferzeit-ab-heute": [
     "shop/test/warenkorb.test.js"

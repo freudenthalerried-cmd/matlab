@@ -135,6 +135,18 @@ test('die Durchschrift heißt wie die Belegnummer, und ohne Nummer wie der Vorga
   assert.equal(belegname({ art: 'auftragsbestaetigung', vorgang: '2026-0102' }), 'AB-2026-0102.txt');
   assert.throws(() => belegname({ art: 'auftragsbestaetigung' }), /Vorgangsnummer/);
   assert.throws(() => belegname({ art: 'erfunden', nummer: 'XX-2026-0001' }), /Unbekannte Vorgangsart/);
+
+  /*
+   * **Das Kürzel kommt dazu, wo die Nummer es nicht trägt — und die Frage gilt
+   * der Nummer, nicht dem Register (13. September 2026).** Hier stand
+   * `!beschreibung.nummernkreis`; das Angebot bringt seine Nummer aus dem
+   * Vorgang mit und trägt das Kürzel trotzdem schon. Unter der alten Frage
+   * hieße seine Durchschrift `AN-AN-2026-0102.txt`.
+   */
+  assert.equal(belegname({ art: 'angebot', nummer: 'AN-2026-0102' }), 'AN-2026-0102.txt',
+    'die Durchschrift des Angebots trägt ihr Kürzel zweimal');
+  assert.equal(belegname({ art: 'lieferantenbestellung', nummer: '2026-0110-01' }),
+    'LB-2026-0110-01.txt', 'die Bestellung nennt im Dateinamen nicht, was sie ist');
 });
 
 test('der Belegordner liegt in der Ablage und lässt sich umlenken', () => {

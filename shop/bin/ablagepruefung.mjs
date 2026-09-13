@@ -25,6 +25,7 @@ import {
   ABLAGEORT, auszugsbefund, auszugszeitraum, belegordner, durchschriftenbefund, istBeleg,
   istBuchhaltung, istJournal, istStandkopie, ortsbefund,
 } from '../src/ablageort.js';
+import { nummernbefund } from '../src/ablage.js';
 import { ausJournal } from '../src/speicher.js';
 import { luecken, widersprueche } from '../src/vorgangsstand.js';
 
@@ -277,11 +278,32 @@ for (const eintraege of jeWurzel.values()) {
   }
 }
 
+/*
+ * **Woher die Nummern kommen — 13. September 2026.**
+ *
+ * `ARTEN` sagt je Art, ob ihre Nummer aus einem Zähler **gezogen** oder aus der
+ * Vorgangsnummer **gebildet** wird. Für das Angebot stand dort bis heute die
+ * falsche Auskunft, und `pruefeNummernkreis` meldete daraufhin 101 Nummern als
+ * fehlend, die nie jemand vergeben hatte.
+ *
+ * > **Ein Register, das niemand gegen den Bestand hält, ist eine Behauptung.**
+ *
+ * Diese Zeilen halten es dagegen — über alle Journale jeder Wurzel, also auch
+ * über die Probeakte aus `VORGANG_ABLAGE`.
+ */
+const nummernmeldungen = nummernbefund({
+  // Ein Lauf über **alle** Zeilen, nicht einer je Wurzel: Die Frage ist je
+  // Zeile zu beantworten, und die Prüfung des Verzeichnisses selbst gehört
+  // genau einmal gemeldet — auch dann, wenn gar keine Ablage vorliegt.
+  eintraege: [...jeWurzel.values()].flat(),
+}).meldungen;
+
 const meldungen = [
   ...ort.meldungen,
   ...durchschriften.flatMap((d) => d.meldungen),
   ...auszugsmeldungen,
   ...luekenmeldungen,
+  ...nummernmeldungen,
 ];
 const geprueft = ort.geprueft;
 
@@ -308,6 +330,7 @@ if (meldungen.length === 0) {
   console.log('Durchschrift liegt woanders, zu jeder Journalzeile gibt es den Beleg, und');
   console.log('jeder Buchhaltungsauszug deckt sich mit dem Journal seiner Periode.');
   console.log('Kein Papier liegt darin, dessen Voraussetzung fehlt.');
+  console.log('Jede Nummer kommt dorther, wo das Artenverzeichnis sie hernimmt.');
   console.log('Eine Sperre, die erst nach dem ersten Datensatz kommt, kommt zu spät.');
   process.exit(0);
 }

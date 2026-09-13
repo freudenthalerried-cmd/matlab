@@ -292,9 +292,19 @@ export function belegname({ art, nummer = null, vorgang = null }) {
    * Die Lieferantenbestellung bringt ihre Nummer mit, und die ist die
    * Vorgangsnummer plus Teillieferung (`2026-0110-01`) — ohne Kürzel stünde
    * sie im Belegordner als Datei, der niemand ansieht, was sie ist.
+   *
+   * **Gefragt wird seit dem 13. September die Nummer selbst.** Hier stand
+   * `!beschreibung.nummernkreis`, und das war die falsche Frage an das
+   * falsche Feld: Ob ein Name sein Kürzel voranstellen muss, hängt daran, ob
+   * er es schon trägt — nicht daran, woher die Nummer kommt. Die
+   * Angebotsnummer `AN-2026-0102` kommt aus dem **Vorgang** und trägt es
+   * trotzdem; unter der alten Frage hieße die Datei `AN-AN-2026-0102.txt`.
    */
-  if (nummer && !beschreibung.nummernkreis) return `${beschreibung.kuerzel}-${nummer}.txt`;
-  if (nummer) return `${nummer}.txt`;
+  if (nummer) {
+    return String(nummer).startsWith(`${beschreibung.kuerzel}-`)
+      ? `${nummer}.txt`
+      : `${beschreibung.kuerzel}-${nummer}.txt`;
+  }
   if (!vorgang) throw new Error(`${art} ohne Nummer braucht die Vorgangsnummer für die Durchschrift`);
   return `${beschreibung.kuerzel}-${vorgang}.txt`;
 }

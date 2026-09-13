@@ -3976,6 +3976,54 @@ export const GEGENPROBEN = Object.freeze([
       + 'Papieren ist der Nettobetrag die Bemessungsgrundlage der Umsatzsteuervoranmeldung.',
   }),
   Object.freeze({
+    id: 'die-angebotsnummer-wird-wieder-gezogen',
+    pruefer: 'test',
+    was: 'Das Angebot behauptet wieder einen eigenen Nummernkreis',
+    datei: 'shop/src/ablage.js',
+    art: 'ersetzen',
+    suchen: "  angebot: { kuerzel: 'AN', nummerAus: 'vorgang', umsatz: false, beleg: true },",
+    ersetzen: "  angebot: { kuerzel: 'AN', nummerAus: 'kreis', umsatz: false, beleg: true },",
+    erwartet: /das Angebot zieht seine Nummer wieder aus einem Kreis, aus dem niemand zieht/,
+    warum: 'Genau der Zustand vom 4. September bis zum 13. September: `nummernkreis: true` '
+      + 'für ein Papier, dessen Nummer `src/vorgang.js` seit dem 31. August als '
+      + '`AN-${vorgangsnummer}` **bildet**. Die Vorgangsnummern beginnen bei 0101, also hob '
+      + 'das Zurücklesen den Zähler `angebot:2026` auf 102 und `pruefeNummernkreis` meldete '
+      + '**101 fehlende Nummern** — gedruckt unter jedem Angebot als „Achtung, Lücke im '
+      + 'Nummernkreis". Dieselbe Zeile ist der einzige Wächter über den Rechnungskreis '
+      + '(§ 11 Abs 1 Z 5 UStG), und wer sie hundertfach ohne Anlass sieht, liest sie nicht '
+      + 'mehr, wenn sie einmal recht hat.',
+  }),
+  Object.freeze({
+    id: 'die-gebildete-nummer-geht-als-gezogene-durch',
+    pruefer: 'test',
+    was: 'Der Prüfer sieht nicht mehr, dass eine Kreisnummer die Vorgangsnummer wiederholt',
+    datei: 'shop/src/ablage.js',
+    art: 'ersetzen',
+    suchen: "      } else if (e.vorgang && String(e.nummer).includes(String(e.vorgang))) {",
+    ersetzen: '      } else if (false) {',
+    erwartet: /eine gebildete Nummer geht als gezogene durch/,
+    warum: 'Das ist die messbare Form des Funds: Ein gezogener Zähler weiß nichts von dem '
+      + 'Vorgang, zu dem das Papier gehört. Steht die Vorgangsnummer in der Nummer, ist sie '
+      + 'gebildet und nicht gezogen — und jede Lückenmeldung über diesen Kreis misst in '
+      + 'Wahrheit die Vorgangszählung. Ohne diese Zeile hält `nummernbefund` das Register '
+      + 'nur noch gegen sich selbst und nicht mehr gegen den Bestand.',
+  }),
+  Object.freeze({
+    id: 'die-durchschrift-traegt-ihr-kuerzel-zweimal',
+    pruefer: 'test',
+    was: 'Der Dateiname fragt wieder das Register statt die Nummer',
+    datei: 'shop/src/ablageort.js',
+    art: 'ersetzen',
+    suchen: "    return String(nummer).startsWith(`${beschreibung.kuerzel}-`)",
+    ersetzen: "    return ARTEN[art].nummerAus === 'kreis'",
+    erwartet: /die Durchschrift des Angebots trägt ihr Kürzel zweimal/,
+    warum: 'Ob ein Dateiname sein Kürzel voranstellen muss, hängt daran, ob er es schon '
+      + 'trägt — nicht daran, woher die Nummer kommt. Die Angebotsnummer `AN-2026-0102` '
+      + 'kommt aus dem Vorgang und trägt es trotzdem; unter der alten Frage hieße die '
+      + 'Durchschrift `AN-AN-2026-0102.txt`, und `pruefe-ablage` fände zu jeder Journalzeile '
+      + 'des Angebots keinen Beleg.',
+  }),
+  Object.freeze({
     id: 'die-absage-schluckt-den-grund',
     pruefer: 'bestellprobe',
     was: '`--grund` wird bei der Absage stillschweigend fallen gelassen',

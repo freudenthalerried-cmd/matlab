@@ -153,9 +153,21 @@ export function ausJournal(journal, { schreibe = null } = {}) {
       }
 
       ablage.eintraege.push(Object.freeze({ ...eintrag }));
-      // Auch ohne Vergabezeile darf ein Journal keine Nummer doppelt vergeben —
-      // der Zähler steigt zusätzlich mit jeder Nummer, die in einem Eintrag steht.
-      if (eintrag.nummer) hebeZaehler(ablage, eintrag.art, eintrag.nummer, nr);
+      /*
+       * Auch ohne Vergabezeile darf ein Journal keine Nummer doppelt vergeben —
+       * der Zähler steigt zusätzlich mit jeder Nummer, die in einem Eintrag steht.
+       *
+       * **Aber nur über einen gezogenen Kreis — 13. September 2026.** Hier
+       * stand `if (eintrag.nummer)`, ohne Rücksicht darauf, woher die Nummer
+       * kommt. Ein Angebot zu Vorgang `2026-0102` hob damit den Zähler
+       * `angebot:2026` auf **102**, obwohl aus diesem Kreis nie jemand zog;
+       * `pruefeNummernkreis` meldete danach 101 fehlende Nummern. Die
+       * Lieferantenbestellung war noch schiefer: Aus `2026-0110-01` las diese
+       * Zeile das Jahr `110` und legte einen Zähler dafür an.
+       */
+      if (eintrag.nummer && ARTEN[eintrag.art].nummerAus === 'kreis') {
+        hebeZaehler(ablage, eintrag.art, eintrag.nummer, nr);
+      }
       continue;
     }
 
