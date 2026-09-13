@@ -73,6 +73,12 @@ export const KERNMODULE = Object.freeze([
   'liefergebiet.js', 'kunde.js', 'messwert.js', 'rechtstexte.js',
   'bestellung.js', 'beleg.js', 'vorgang.js', 'auftragslauf.js', 'vies.js',
   'ablage.js', 'speicher.js', 'skonto.js', 'zahlung.js', 'kostenbild.js',
+  // **Ergänzt am 13. September.** `warenkorb.js` holt die Palettenkosten seit
+  // heute aus dem gemessenen Kreis statt aus dem Pfandbetrag — Pfand ist eine
+  // Auslage und keine Ausgabe. Gehört ins Demobündel, weil `warenkorb.js`
+  // drin ist; es trägt Belegpositionen des eigenen Betriebs und keine
+  // Kondition eines Lieferanten.
+  'palettenkreis.js',
   // **Ergänzt am 4. September.** `rechtstexte.js` holt sich von hier den Satz
   // der Datenschutzseite über den Warenkorb — er hängt am Bestellweg
   // (Gate 26). Der Eintrag steht hier und nicht nur implizit über die

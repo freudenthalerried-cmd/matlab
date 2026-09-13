@@ -188,7 +188,10 @@ test('eine Gruppe mit palettierter Ware trägt die Nebenkosten', async () => {
 
   const artikel = WARENKOERBE['Dämmung'].positionen.map((p) => bySku.get(p.sku)).filter(Boolean);
   assert.ok(artikel.length >= 1);
-  assert.equal(nebenkostenUntergrenze(artikel, lieferant).nebenkostenUntergrenzeNetto, 28.5,
+  // **19,97 statt 28,50 seit dem 13. September**: Die Palette kostet 13,47 €
+  // (2,00 € Pfanddifferenz plus 11,47 € Rückführungsfahrt), nicht 22,00 € —
+  // das Pfand ist eine Auslage. Gerechnet in `src/palettenkreis.js`.
+  assert.equal(nebenkostenUntergrenze(artikel, lieferant).nebenkostenUntergrenzeNetto, 19.97,
     'die Dämmplatte kommt auf der Palette — Palette und Folierung gehören in die Rechnung');
 });
 

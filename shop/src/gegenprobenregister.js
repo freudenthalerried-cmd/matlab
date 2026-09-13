@@ -3976,6 +3976,39 @@ export const GEGENPROBEN = Object.freeze([
       + 'Papieren ist der Nettobetrag die Bemessungsgrundlage der Umsatzsteuervoranmeldung.',
   }),
   Object.freeze({
+    id: 'das-pfand-wird-wieder-als-ausgabe-gebucht',
+    pruefer: 'test',
+    was: 'Der Rechenkern nimmt wieder den Pfandbetrag als Palettenkosten',
+    datei: 'shop/src/warenkorb.js',
+    art: 'ersetzen',
+    suchen: '  const palette = kreis.jePaletteMitFahrt;',
+    ersetzen: '  const palette = Number(n.paletteOebbNetto ?? 0);',
+    erwartet: /das Pfand steht wieder als Ausgabe drin/,
+    warum: 'Am 4. September hat `src/palettenkreis.js` gemessen, dass die alte Rechnung den '
+      + '**Pfandbetrag** als Kosten verbucht: „Pfand ist keine Ausgabe, sondern eine '
+      + 'Auslage." 9 Paletten hinaus zu je 22,00 €, 8 zurück zu je 20,00 € — was hängen '
+      + 'bleibt, sind 2,00 € plus der Anteil an der Rückführungsfahrt, zusammen 13,47 €. '
+      + 'Die Berichtigung erreichte den Dateikopf, das Feld `_gewicht` in '
+      + '`data/lieferanten.json` — **drei Zeilen unter der Zahl, die sie berichtigt** — und '
+      + 'den Text der offenen Punkte. Den Rechenkern, der die Zahl liest und in Gate 20 '
+      + 'trägt, erreichte sie neun Tage lang nicht.',
+  }),
+  Object.freeze({
+    id: 'der-palettenkreis-driftet-von-der-datei',
+    pruefer: 'test',
+    was: 'Die Palettenpreise der Datei werden nicht mehr gegen den Belegkreis gehalten',
+    datei: 'shop/src/warenkorb.js',
+    art: 'ersetzen',
+    suchen: '  if (Number(n.paletteOebbNetto) !== kreis.jeHinaus',
+    ersetzen: '  if (false && Number(n.paletteOebbNetto) !== kreis.jeHinaus',
+    erwartet: /Datei und Belegkreis dürfen wieder auseinanderlaufen/,
+    warum: 'Ohne diese Prüfung läge die Berichtigung wieder an einer Stelle: '
+      + '`palettenkreis` führt die Belegpositionen von Hand, `data/lieferanten.json` führt '
+      + 'die Stückpreise. Driften sie auseinander, rechnet der Kern mit einem Kreis, den es '
+      + 'so nicht gibt — und niemand merkt es, weil beide Zahlen für sich stimmen. '
+      + 'Dieselbe Familie wie „PreOrder gegen InStock" am 28. August.',
+  }),
+  Object.freeze({
     id: 'die-oberflaechenprobe-darf-wieder-haengen',
     pruefer: 'test',
     was: 'Eine Browserprobe startet den Browser ohne Zeitschranke',

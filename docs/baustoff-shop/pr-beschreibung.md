@@ -94,7 +94,7 @@ nachgerechnet. Seit heute misst `npm run pruefe-schaufenster` auch sie.
 
 Grund: Das Skonto rechnet auf den Einkauf netto (484,50 €), die Gebühr auf den Bruttobetrag samt Fracht und Umsatzsteuer (865,80 €). Gleicher Prozentsatz, 79 % größere Grundlage. **Entschieden:** EPS und Vorkasse ab Start, Karte als Zusatz, keine offene Rechnung, Kundenzahlungsziel null Tage.
 
-**Gebote gehören auf die Bestellung gerechnet, nicht auf den Artikel.** Die großen Belege bestehen aus acht bis zwölf Positionen. Zulässiger Klickpreis: Kamin 9,41 €, Dämmung 5,91 €, WDVS 4,19 € gegen einen Markt von 0,50–2,50 €. Kanal 1,38 €, Mörtel 1,85 € und Mauerwerk 1,24 € tragen den Klick nicht verlässlich und sind **zurückgestellt**, bis eine gemessene Kaufquote vorliegt — das Budget zu streuen hieße, es gleichmäßig zu verlieren.
+**Gebote gehören auf die Bestellung gerechnet, nicht auf den Artikel.** Die großen Belege bestehen aus acht bis zwölf Positionen. Zulässiger Klickpreis: Kamin 9,58 €, Dämmung 6,08 €, WDVS 4,19 € gegen einen Markt von 0,50–2,50 €. Kanal 1,38 €, Mörtel 1,85 € und Mauerwerk 1,24 € tragen den Klick nicht verlässlich und sind **zurückgestellt**, bis eine gemessene Kaufquote vorliegt — das Budget zu streuen hieße, es gleichmäßig zu verlieren.
 
 **Auf generische Suchbegriffe ist dieser Shop nicht konkurrenzfähig** und wird es nie sein — dort gewinnen Baumarkt-Eigenmarken. Konkurrenzfähig ist er auf Produktnamen und Fachanforderungen.
 

@@ -1797,6 +1797,122 @@ function paketgroessenbefund(seiten, artikel) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const PALETTENBEWEGUNGEN = Object.freeze([
+  Object.freeze({ rechnung: '262021644', datum: '2026-06-25', paletten: 6, betrag: 132.0, art: 'hinaus' }),
+  Object.freeze({ rechnung: '262021644', datum: '2026-06-25', paletten: -1, betrag: -20.0, art: 'zurueck' }),
+  Object.freeze({ rechnung: '262027463', datum: '2026-07-27', paletten: 3, betrag: 66.0, art: 'hinaus' }),
+  Object.freeze({ rechnung: '262027464', datum: '2026-07-27', paletten: -7, betrag: -140.0, art: 'zurueck' }),
+]);
+
+
+const RUECKFAHRT = Object.freeze({
+  rechnung: '262027464',
+  frachtNetto: 80.26,
+  paletten: 7,
+  warum: 'Am 27. Juli steht neben der Rückgabe von sieben Paletten eine Frachtpauschale '
+    + '„Mauthausen Baustelle" zu 80,26 € — der Satz, den `lieferanten.json` als Retourfahrt '
+    + 'führt. Eine Beobachtung; ob jede Rückführung eine eigene Fahrt kostet oder ob sie '
+    + 'meistens bei der nächsten Lieferung mitgeht, sagt dieser eine Beleg nicht.',
+});
+
+
+
+
+
+
+
+function palettenkreis(bewegungen = PALETTENBEWEGUNGEN, rueckfahrt = RUECKFAHRT) {
+  if (!Array.isArray(bewegungen) || bewegungen.length === 0) {
+    throw new Error('Ohne Bewegung ist kein Kreis zu schließen — ein leerer Befund ist kein grüner.');
+  }
+  const hinaus = bewegungen.filter((b) => b.paletten > 0);
+  const zurueck = bewegungen.filter((b) => b.paletten < 0);
+  const anzahlHinaus = hinaus.reduce((n, b) => n + b.paletten, 0);
+  const anzahlZurueck = -zurueck.reduce((n, b) => n + b.paletten, 0);
+  const betragHinaus = Math.round(hinaus.reduce((n, b) => n + b.betrag, 0) * 100) / 100;
+  const betragZurueck = Math.round(-zurueck.reduce((n, b) => n + b.betrag, 0) * 100) / 100;
+
+  const jeHinaus = anzahlHinaus ? betragHinaus / anzahlHinaus : 0;
+  const jeZurueck = anzahlZurueck ? betragZurueck / anzahlZurueck : 0;
+  const differenzJePalette = Math.round((jeHinaus - jeZurueck) * 100) / 100;
+  const fahrtJePalette = rueckfahrt && rueckfahrt.paletten
+    ? rueckfahrt.frachtNetto / rueckfahrt.paletten : 0;
+
+  return {
+    anzahlHinaus,
+    anzahlZurueck,
+    offen: anzahlHinaus - anzahlZurueck,
+    betragOffen: Math.round((betragHinaus - betragZurueck) * 100) / 100,
+    jeHinaus: Math.round(jeHinaus * 100) / 100,
+    jeZurueck: Math.round(jeZurueck * 100) / 100,
+    differenzJePalette,
+    
+    
+    
+    fahrtJePalette: Math.round(fahrtJePalette * 100) / 100,
+    jePaletteMitFahrt: Math.round((differenzJePalette + fahrtJePalette) * 100) / 100,
+  };
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 function ladeKatalog(daten, zielmarge) {
   const lieferantenById = new Map(daten.lieferanten.lieferanten.map((l) => [l.id, l]));
 
@@ -1957,19 +2073,77 @@ function berechneWarenkorb(zeilen, katalog) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 function nebenkostenUntergrenze(positionen, lieferant) {
   const n = lieferant?.nebenkosten;
   if (!n) return { nebenkostenUntergrenzeNetto: 0 };
   if (!positionen.some((p) => p.sperrgut)) return { nebenkostenUntergrenzeNetto: 0 };
-  const palette = Number(n.paletteOebbNetto ?? 0);
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const kreis = palettenkreis();
+  
+
+
+
+
+
+
+  if (Number(n.paletteOebbNetto) !== kreis.jeHinaus
+    || Number(n.paletteRueckgabeNetto) !== kreis.jeZurueck) {
+    throw new Error(`Palettenpreise weichen ab: Datei ${n.paletteOebbNetto}/`
+      + `${n.paletteRueckgabeNetto}, Belegkreis ${kreis.jeHinaus}/${kreis.jeZurueck}`);
+  }
+
+  const palette = kreis.jePaletteMitFahrt;
   const folierung = Number(n.folierungNetto ?? 0);
   const summe = cent(palette + folierung);
   if (summe <= 0) return { nebenkostenUntergrenzeNetto: 0 };
   return {
     nebenkostenUntergrenzeNetto: summe,
-    nebenkostenGrund: `mindestens eine Palette (${palette.toFixed(2)} €) und Folierung `
-      + `(${folierung.toFixed(2)} €) je Lieferung mit palettierter Ware — Stückzahl unbekannt, `
-      + 'Rückgabegutschrift nicht gegengerechnet',
+    nebenkostenGrund: `mindestens eine Palette (${palette.toFixed(2)} €: `
+      + `${kreis.differenzJePalette.toFixed(2)} € Pfanddifferenz plus `
+      + `${kreis.fahrtJePalette.toFixed(2)} € Rückführungsfahrt) und Folierung `
+      + `(${folierung.toFixed(2)} €) je Lieferung mit palettierter Ware — Stückzahl `
+      + 'unbekannt, das Pfand selbst ist eine Auslage und keine Ausgabe',
   };
 }
 

@@ -269,23 +269,46 @@ const mitNebenkosten = {
 
 test('palettierte Ware bringt mindestens eine Palette und eine Folierung mit', () => {
   const r = nebenkostenUntergrenze([{ sperrgut: true }, { sperrgut: false }], mitNebenkosten);
-  assert.equal(r.nebenkostenUntergrenzeNetto, 28.5, '22,00 Palette plus 6,50 Folierung');
+  assert.equal(r.nebenkostenUntergrenzeNetto, 19.97, '13,47 Palette plus 6,50 Folierung');
   assert.match(r.nebenkostenGrund, /Stückzahl unbekannt/);
 });
 
-test('die Rückgabegutschrift wird nicht gegengerechnet', () => {
-  // Sie fällt nur an, wenn die Palette zurückgeht. Elf von fünfzehn
-  // Rechnungen lauten „Abholung Kunde"; was dabei mit der Palette geschieht,
-  // steht auf keinem Beleg. Die vorsichtige Zahl ist hier die ehrliche.
+test('das Pfand ist eine Auslage und keine Ausgabe', () => {
+  /*
+   * **Berichtigt am 13. September 2026.** Hier stand der Gegenfall: „Die
+   * Rückgabegutschrift wird nicht gegengerechnet … Die vorsichtige Zahl ist
+   * hier die ehrliche." Begründet war das damit, elf von fünfzehn Rechnungen
+   * lauteten „Abholung Kunde" und was dabei mit der Palette geschieht, stehe
+   * auf keinem Beleg.
+   *
+   * `src/palettenkreis.js` hat am 4. September **die Palettenpositionen
+   * selbst** gezählt — 9 hinaus, 8 zurück — und damit eine Messung an die
+   * Stelle einer Vermutung gesetzt. Die Zahl darf weder der Pfandbetrag sein
+   * (22,00 €, eine Auslage als Ausgabe verbucht) noch die reine Differenz
+   * (2,00 €, die Rückführungsfahrt unterschlagen).
+   */
   const r = nebenkostenUntergrenze([{ sperrgut: true }], mitNebenkosten);
-  assert.notEqual(r.nebenkostenUntergrenzeNetto, 8.5, 'die Gutschrift wurde abgezogen');
+  assert.notEqual(r.nebenkostenUntergrenzeNetto, 28.5, 'das Pfand steht wieder als Ausgabe drin');
+  assert.notEqual(r.nebenkostenUntergrenzeNetto, 8.5, 'die Rückführungsfahrt fehlt');
+  assert.match(r.nebenkostenGrund, /Pfanddifferenz plus .* Rückführungsfahrt/);
+});
+
+test('die Palettenpreise der Datei und der Belegkreis müssen sich decken', () => {
+  // Ohne diese Prüfung läge die Berichtigung wieder an einer Stelle:
+  // `palettenkreis` führt die Belegpositionen, die Lieferantendatei die
+  // Stückpreise. Driften sie auseinander, rechnet der Kern mit einem Kreis,
+  // den es so nicht gibt.
+  const verstellt = { nebenkosten: { ...mitNebenkosten.nebenkosten, paletteOebbNetto: 24 } };
+  assert.throws(() => nebenkostenUntergrenze([{ sperrgut: true }], verstellt),
+    /Palettenpreise weichen ab/,
+    'Datei und Belegkreis dürfen wieder auseinanderlaufen, ohne dass es auffällt');
 });
 
 test('die Kranentladung steht nicht in dieser Summe', () => {
   // Sie wird als Sperrgutzuschlag weiterverrechnet und steckt schon in der
   // Fracht. Ein zweites Mal abgezogen wäre sie doppelt bezahlt.
   const r = nebenkostenUntergrenze([{ sperrgut: true }], mitNebenkosten);
-  assert.equal(r.nebenkostenUntergrenzeNetto, 28.5);
+  assert.equal(r.nebenkostenUntergrenzeNetto, 19.97);
   assert.ok(!String(r.nebenkostenGrund).includes('7,50'));
 });
 

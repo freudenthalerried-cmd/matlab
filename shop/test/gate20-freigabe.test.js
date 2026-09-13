@@ -112,13 +112,30 @@ test('eine gesunde Bestellung passiert alle Sperren', () => {
  * ------------------------------------------------------------------ */
 
 test('eine kleine Palettenbestellung trägt sich nicht mehr, auch mit verrechneter Fracht', async () => {
-  // Der Befund vom 28.08., als Probe festgehalten. 50 m² Fassaden-EPS sind
-  // 96,50 € Warenwert; die Fracht zahlt der Kunde. Vor dem Einbau von Palette
-  // und Folierung stand hier ein Deckungsbeitrag von +24,00 €, jetzt −4,50 €.
-  //
-  // Ohne Preisdatei ist dieser Test still: Er prüft eine Zahl, die es dann
-  // nicht gibt — und ein Test, der ohne Daten grün meldet, wäre schlimmer als
-  // keiner.
+  /*
+   * Der Befund vom 28.08., als Probe festgehalten. 50 m² Fassaden-EPS sind
+   * 96,50 € Warenwert; die Fracht zahlt der Kunde. Vor dem Einbau von Palette
+   * und Folierung stand hier ein Deckungsbeitrag von +24,00 €, danach −4,50 €.
+   *
+   * **Berichtigt am 13. September 2026 — und der Befund kippt.** Die −4,50 €
+   * sind mit **22,00 €** je Palette gerechnet, also mit dem Pfandbetrag als
+   * Kosten. `src/palettenkreis.js` hat das am 4. September widerlegt: Pfand ist
+   * eine Auslage; was kostet, sind 2,00 € Differenz plus der Anteil an der
+   * Rückführungsfahrt, zusammen **13,47 €**. Mit der berichtigten Zahl steht
+   * hier **+4,03 €**, und diese Bestellung trägt sich.
+   *
+   * > **Ein Befund, der auf einer berichtigten Zahl ruht, ist mit ihr zu
+   * > berichtigen — auch wenn er dabei sein Vorzeichen wechselt.**
+   *
+   * Die Sache, um die es 28.08. ging, gilt unverändert: Eine kleine
+   * Palettenbestellung trägt ihre Nebenkosten nicht. Nur liegt die Grenze
+   * jetzt bei **rund 41 m²** statt bei rund 53 — der Fall prüft sie weiter
+   * unten mit 40 m², also dort, wo sie heute liegt.
+   *
+   * Ohne Preisdatei ist dieser Test still: Er prüft eine Zahl, die es dann
+   * nicht gibt — und ein Test, der ohne Daten grün meldet, wäre schlimmer als
+   * keiner.
+   */
   const { existsSync, readFileSync } = await import('node:fs');
   const { fileURLToPath } = await import('node:url');
   const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
@@ -133,10 +150,19 @@ test('eine kleine Palettenbestellung trägt sich nicht mehr, auch mit verrechnet
   const k = ladeBaustoffkatalog(lies(pfad('../data/katalog-baustoff.json')), lies(preise), lieferanten);
   const katalog = { artikel: k.artikel, lieferantenById: new Map(lieferanten.lieferanten.map((l) => [l.id, l])) };
 
-  const klein = berechneWarenkorb([{ sku: 'POS-12566', menge: 50 }], katalog);
-  assert.equal(klein.nebenkostenUntergrenzeNetto, 28.5, 'Palette und Folierung stehen im Warenkorb');
+  const klein = berechneWarenkorb([{ sku: 'POS-12566', menge: 40 }], katalog);
+  assert.equal(klein.nebenkostenUntergrenzeNetto, 19.97,
+    'Palette (13,47) und Folierung (6,50) stehen im Warenkorb');
   const kleinDeckung = traegtSichSelbst(klein, { frachtVerrechnet: true, zahlwegId: 'vorkasse' });
   assert.equal(kleinDeckung.traegt, false, 'die kleine Palettenbestellung trägt sich nicht');
+
+  // Der Fall vom 28.08. selbst, mit der berichtigten Zahl: Er kippt, und das
+  // gehört festgehalten statt weggelassen.
+  const damals = berechneWarenkorb([{ sku: 'POS-12566', menge: 50 }], katalog);
+  const damalsDeckung = traegtSichSelbst(damals, { frachtVerrechnet: true, zahlwegId: 'vorkasse' });
+  assert.equal(damalsDeckung.deckungsbeitragNetto, 4.03,
+    'die 50 m² vom 28.08. — mit 22,00 € je Palette waren es −4,50 €');
+  assert.equal(damalsDeckung.traegt, true);
 
   const gross = berechneWarenkorb([{ sku: 'POS-12566', menge: 300 }], katalog);
   const grossDeckung = traegtSichSelbst(gross, { frachtVerrechnet: true, zahlwegId: 'vorkasse' });
