@@ -126,6 +126,35 @@ export function papierschrittbefund() {
     }
   }
 
+  /*
+   * **Und das Ausschlussregister — 13. September 2026.** Dieselben zwei
+   * Fragen wie oben: Gibt es die Art, und hat sie ein Blatt? Eine Art ohne
+   * Papier kann keiner anderen widersprechen.
+   */
+  for (const w of SCHLIESST_AUS) {
+    for (const [rolle, art] of [['papier', w.papier], ['nicht', w.nicht]]) {
+      if (!ARTEN[art]) {
+        meldungen.push({
+          regel: 'ausschluss-ohne-art',
+          text: `Der Ausschluss ${w.papier} ⊥ ${w.nicht} nennt als ${rolle} ${art}, `
+            + 'und diese Art gibt es nicht',
+        });
+      } else if (!ARTEN[art].beleg) {
+        meldungen.push({
+          regel: 'ausschluss-ohne-blatt',
+          text: `Der Ausschluss ${w.papier} ⊥ ${w.nicht} nennt als ${rolle} ${art} `
+            + '— eine Art ohne Blatt geht nicht hinaus und widerspricht keiner anderen',
+        });
+      }
+    }
+    if (w.warum.length < 80) {
+      meldungen.push({
+        regel: 'ausschluss-ohne-grund',
+        text: `Der Ausschluss ${w.papier} ⊥ ${w.nicht} trägt keinen tragenden Grund`,
+      });
+    }
+  }
+
   return { geprueft: Object.keys(ARTEN).length, meldungen, sauber: meldungen.length === 0 };
 }
 
@@ -149,6 +178,33 @@ function schrittIndex(art) {
 export function vorgangsstand(eintraege = [], { heute = null } = {}) {
   const arten = eintraege.map((e) => e.art);
   const hat = (art) => arten.includes(art);
+
+  /*
+   * **Ein widersprüchlicher Fall hat keinen Stand — 13. September 2026.**
+   *
+   * Liegen Auftragsbestätigung und Absage nebeneinander, meldete diese
+   * Funktion „abgeschlossen — abgesagt": Der Abzweig gewinnt, weil er zuerst
+   * geprüft wird. Damit fiel ein Vorgang, aus dem eine **Lieferpflicht**
+   * besteht, von der Arbeitsliste (`npm run akte -- --offen`).
+   *
+   * > **Der Vertrag wurde unsichtbar, weil der Brief, der ihn bestreitet,
+   * > später kam.**
+   *
+   * Die ehrliche Auskunft ist keine der beiden: Der Stand ist **nicht
+   * feststellbar**, solange die Akte sich widerspricht — und der Fall bleibt
+   * offen, denn er gehört auf die Arbeitsliste und nicht von ihr herunter.
+   */
+  const strittig = widersprueche(eintraege);
+  if (strittig.length) {
+    return {
+      papiere: eintraege.length,
+      erreicht: null,
+      abgeschlossen: null,
+      abzweig: null,
+      naechster: null,
+      widerspruch: strittig,
+    };
+  }
 
   /*
    * **Die Abzweige zuerst.** Ein Fall, der die Kette verlassen hat, hat keinen
@@ -187,6 +243,7 @@ export function vorgangsstand(eintraege = [], { heute = null } = {}) {
     erreicht: letzter?.id ?? null,
     abgeschlossen: null,
     abzweig: null,
+    widerspruch: [],
     naechster: naechster
       ? {
         id: naechster.id,
@@ -207,6 +264,7 @@ function abschluss(eintraege, wie, abzweigId) {
     abgeschlossen: wie,
     abzweig: abzweig ? { id: abzweig.id, was: abzweig.was, grundlage: abzweig.grundlage } : null,
     naechster: null,
+    widerspruch: [],
   };
 }
 
@@ -299,6 +357,13 @@ export const VORAUSGESETZT = Object.freeze([
       + 'zahlt, bevor er angenommen hat?',
   }),
   Object.freeze({
+    papier: 'gutschrift',
+    braucht: 'rechnung',
+    warum: 'Eine Gutschrift hebt eine Rechnung auf (§ 131 Abs 1 Z 6 BAO: der ursprüngliche '
+      + 'Inhalt bleibt feststellbar). Liegt keine im selben Vorgang, hebt sie nichts auf — '
+      + 'und in der Umsatzsteuervoranmeldung steht ein negativer Betrag ohne Gegenstück.',
+  }),
+  Object.freeze({
     papier: 'rechnung',
     braucht: 'auftragsbestaetigung',
     warum: 'Eine Rechnung über etwas, dem niemand zugestimmt hat. Der Vertrag entsteht mit '
@@ -320,4 +385,53 @@ export function luecken(eintraege = [], register = VORAUSGESETZT) {
   return register
     .filter((v) => arten.has(v.papier) && !arten.has(v.braucht))
     .map((v) => ({ ...v }));
+}
+
+/**
+ * Papiere, die einander **ausschließen** — und warum.
+ *
+ * **Der Fund, 13. September 2026.** `VORAUSGESETZT` sagt, welches Papier
+ * welches andere braucht. Die Gegenfrage stand nirgends: Welche dürfen nicht
+ * **nebeneinander** liegen? Gemessen an einem Vorgang mit Angebot und
+ * Auftragsbestätigung:
+ *
+ * ```
+ * $ npm run vorgang -- … --stufe absage --grund "Kein Liefergebiet" --ablegen
+ * Abgelegt: absage als lfd. 3
+ *
+ * $ npm run akte
+ *     Stand: abgeschlossen — abgesagt
+ * ```
+ *
+ * > **Ein Brief, der eine Absage ist, wo keine mehr möglich ist.** Nach der
+ * > Auftragsbestätigung besteht ein Vertrag (AGB Punkt 2). Was dann hinausgeht,
+ * > ist keine Ablehnung eines Angebots, sondern ein **Rücktritt** — und der
+ * > Absagetext sagt dem Kunden wörtlich das Gegenteil: dass kein Vertrag
+ * > zustande gekommen sei.
+ *
+ * Dazu die Akte: Sie meldete „abgeschlossen — abgesagt" für einen Fall, aus
+ * dem eine Lieferpflicht besteht, und nahm ihn damit von der Arbeitsliste
+ * (`npm run akte -- --offen`). **Der Vertrag wurde unsichtbar.**
+ */
+export const SCHLIESST_AUS = Object.freeze([
+  Object.freeze({
+    papier: 'absage',
+    nicht: 'auftragsbestaetigung',
+    warum: 'Mit der Auftragsbestätigung ist der Vertrag geschlossen (AGB Punkt 2). Eine Absage '
+      + 'danach ist keine Ablehnung, sondern ein Rücktritt — und ihr Text behauptet dem '
+      + 'Kunden gegenüber, es sei kein Vertrag zustande gekommen.',
+  }),
+]);
+
+/**
+ * Die Papiere dieses Vorgangs, die nicht nebeneinander liegen dürfen.
+ *
+ * Gelesen werden **Arten**, kein Inhalt. Gemeldet wird nicht, was der Betrieb
+ * hätte tun sollen, sondern dass die Aufzeichnung sich widerspricht.
+ */
+export function widersprueche(eintraege = [], register = SCHLIESST_AUS) {
+  const arten = new Set(eintraege.map((e) => e.art));
+  return register
+    .filter((w) => arten.has(w.papier) && arten.has(w.nicht))
+    .map((w) => ({ ...w }));
 }

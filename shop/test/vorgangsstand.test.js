@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   PAPIERSCHRITT, VORAUSGESETZT, bindungslage, luecken, papierschrittbefund, vorgangsstand,
+  widersprueche,
 } from '../src/vorgangsstand.js';
 import { ARTEN } from '../src/ablage.js';
 import { SCHRITTE, ABZWEIGE } from '../src/betriebskette.js';
@@ -186,10 +187,60 @@ test('Ein fehlendes Angebot ist kein Mangel — die Bestellung des Kunden ist da
    */
   assert.deepEqual(luecken([P('auftragsbestaetigung')]), []);
   assert.deepEqual(luecken([P('auftragsbestaetigung'), P('lieferantenbestellung')]), []);
-  assert.equal(VORAUSGESETZT.length, 2);
+  // Drei Einträge seit dem 13.9.: die Gutschrift setzt ihre Rechnung voraus.
+  assert.equal(VORAUSGESETZT.length, 3);
   for (const v of VORAUSGESETZT) {
     assert.ok(ARTEN[v.papier]?.beleg, `${v.papier} ist kein Papier`);
     assert.ok(ARTEN[v.braucht]?.beleg, `${v.braucht} ist kein Papier`);
     assert.ok(v.warum.length >= 80, `${v.papier}: der Grund trägt nicht`);
   }
+});
+
+
+test('Eine Absage neben der Auftragsbestätigung ist ein Widerspruch', () => {
+  /*
+   * **13. September 2026.** `VORAUSGESETZT` sagt, welches Papier welches
+   * andere braucht. Die Gegenfrage stand nirgends. Gemessen: Ein Vorgang mit
+   * Auftragsbestätigung nahm anstandslos eine Absage an, und die Akte meldete
+   * „abgeschlossen — abgesagt".
+   *
+   * Nach der Auftragsbestätigung besteht ein Vertrag (AGB Punkt 2). Was dann
+   * hinausgeht, ist keine Ablehnung, sondern ein Rücktritt — und der
+   * Absagetext sagt dem Kunden wörtlich das Gegenteil.
+   */
+  const w = widersprueche([P('angebot'), P('auftragsbestaetigung'), P('absage')]);
+  assert.deepEqual(w.map((x) => `${x.papier} ⊥ ${x.nicht}`), ['absage ⊥ auftragsbestaetigung'],
+    'Absage und Vertragsschluss liegen nebeneinander und niemand sagt es');
+
+  // Eine Absage für sich ist der gewöhnliche Weg: Der Fall kommt nicht zustande.
+  assert.deepEqual(widersprueche([P('angebot'), P('absage')]), []);
+});
+
+test('Ein widersprüchlicher Vorgang hat keinen Stand und bleibt offen', () => {
+  /*
+   * Der Abzweig wird zuerst geprüft und gewann: „abgeschlossen — abgesagt"
+   * für einen Fall, aus dem eine **Lieferpflicht** besteht. Damit fiel er von
+   * der Arbeitsliste — **der Vertrag wurde unsichtbar, weil der Brief, der
+   * ihn bestreitet, später kam.**
+   */
+  const s = vorgangsstand([P('angebot'), P('auftragsbestaetigung'), P('absage')],
+    { heute: '2026-09-13' });
+  assert.equal(s.abgeschlossen, null,
+    'ein Vorgang mit Vertrag und Absage gilt als abgeschlossen');
+  assert.equal(s.naechster, null);
+  assert.equal(s.widerspruch.length, 1);
+
+  // Ohne Widerspruch bleibt alles, wie es war.
+  assert.equal(vorgangsstand([P('angebot'), P('absage')], { heute: '2026-09-13' }).abgeschlossen,
+    'abgesagt');
+});
+
+test('Eine Gutschrift ohne Rechnung hebt nichts auf', () => {
+  // § 131 Abs 1 Z 6 BAO: Die Rechnung bleibt stehen und wird aufgehoben.
+  // Fehlt sie im selben Vorgang, steht in der Voranmeldung ein negativer
+  // Betrag ohne Gegenstück.
+  assert.deepEqual(luecken([P('auftragsbestaetigung'), P('gutschrift')]).map((l) => l.papier),
+    ['gutschrift']);
+  assert.deepEqual(
+    luecken([P('auftragsbestaetigung'), P('rechnung'), P('gutschrift')]), []);
 });

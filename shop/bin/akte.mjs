@@ -81,6 +81,7 @@ let bindend = 0;
 let laufend = 0;
 let geschlossen = 0;
 let offeneLuecken = 0;
+let widersprichtSich = 0;
 /*
  * **Ein Geschäftsfall ist kein Jahrgang — 13. September 2026.**
  *
@@ -235,12 +236,26 @@ for (const vorgang of vorgaenge) {
      * aber ohne Auftragsbestätigung, stand als „auf Kurs" da — obwohl Ware
      * bestellt ist, an die kein Kunde gebunden ist (AGB Punkt 2).
      */
+    /*
+     * **Der Widerspruch steht vor allem anderen — 13. September 2026.**
+     * Liegen Auftragsbestätigung und Absage nebeneinander, ist der Stand
+     * nicht feststellbar: Der Vertrag besteht (AGB Punkt 2), und ein Brief
+     * daneben behauptet dem Kunden gegenüber das Gegenteil.
+     */
+    for (const w of stand.widerspruch ?? []) {
+      widersprichtSich += 1;
+      console.log(`    WIDERSPRUCH: ${w.papier} und ${w.nicht} liegen nebeneinander`);
+      console.log(`           ${w.warum}`);
+    }
     for (const l of luecken(akte)) {
       offeneLuecken += 1;
       console.log(`    FEHLT: ${l.braucht} — ${l.papier} liegt in der Akte, das Papier davor nicht`);
       console.log(`           ${l.warum}`);
     }
-    if (stand.abgeschlossen) {
+    if (stand.widerspruch?.length) {
+      laufend += 1;
+      console.log('    Stand: nicht feststellbar — die Akte widerspricht sich');
+    } else if (stand.abgeschlossen) {
       geschlossen += 1;
       console.log(`    Stand: abgeschlossen — ${stand.abgeschlossen}`);
       if (stand.abzweig) console.log(`           ${stand.abzweig.was}`);
@@ -279,6 +294,11 @@ if (bindend || verfallen) {
 }
 
 console.log(`${laufend} Vorgang/Vorgänge laufen, ${geschlossen} sind abgeschlossen.`);
+if (widersprichtSich) {
+  console.log(`${widersprichtSich} Vorgang/Vorgänge tragen Papiere, die einander ausschließen.`);
+  console.log('Sie bleiben auf der Arbeitsliste: Ein Fall, dessen Stand nicht feststellbar');
+  console.log('ist, gehört angesehen und nicht abgehakt.');
+}
 if (offeneLuecken) {
   console.log(`${offeneLuecken} Papier(e) liegen in der Akte, deren Voraussetzung fehlt —`);
   console.log('das ist kein Rückstand im Betrieb, sondern eine Aufzeichnung, die nicht');

@@ -3782,8 +3782,8 @@ export const GEGENPROBEN = Object.freeze([
     was: 'Der Prüfer der Ablage liest die Voraussetzungen nicht mit',
     datei: 'shop/src/vorgangsstand.js',
     art: 'ersetzen',
-    suchen: '  const arten = new Set(eintraege.map((e) => e.art));',
-    ersetzen: '  const arten = new Set();',
+    suchen: '  const arten = new Set(eintraege.map((e) => e.art));\n  return register\n    .filter((v) => arten.has(v.papier) && !arten.has(v.braucht))',
+    ersetzen: '  const arten = new Set();\n  return register\n    .filter((v) => arten.has(v.papier) && !arten.has(v.braucht))',
     erwartet: /eine Rechnung ohne Vertragspapier blieb ohne Befund/,
     warum: 'Die Regel stand seit dem 12. September und wurde nur von `npm run akte` gelesen — '
       + 'dem Werkzeug, das jemand **aufschlägt**. Ein Prüfer, den niemand aufschlägt, muss sie '
@@ -3892,6 +3892,38 @@ export const GEGENPROBEN = Object.freeze([
       + 'geschrieben war. **Die schwerere Richtung ist die andere: `istStorniert` sah ein '
       + 'Storno aus dem Vorjahr nicht, und zweimal aufheben heißt einmal zu viel '
       + 'gutschreiben** — mit umgekehrtem Vorzeichen in der Umsatzsteuervoranmeldung.',
+  }),
+  Object.freeze({
+    id: 'der-vertrag-wird-unsichtbar',
+    pruefer: 'test',
+    was: 'Ein Vorgang mit Vertrag und Absage gilt als abgeschlossen',
+    datei: 'shop/src/vorgangsstand.js',
+    art: 'ersetzen',
+    suchen: '  const strittig = widersprueche(eintraege);',
+    ersetzen: '  const strittig = [];',
+    erwartet: /ein Vorgang mit Vertrag und Absage gilt als abgeschlossen/,
+    warum: 'Die Abzweige werden zuerst geprüft, und der Abzweig gewann: „abgeschlossen — '
+      + 'abgesagt" für einen Fall, aus dem nach AGB Punkt 2 eine **Lieferpflicht** besteht. '
+      + 'Damit fiel er von der Arbeitsliste (`npm run akte -- --offen`) — **der Vertrag wurde '
+      + 'unsichtbar, weil der Brief, der ihn bestreitet, später kam.** Die ehrliche Auskunft '
+      + 'ist keine der beiden: Der Stand ist nicht feststellbar, solange die Akte sich '
+      + 'widerspricht, und der Fall bleibt offen, denn er gehört angesehen und nicht abgehakt.',
+  }),
+  Object.freeze({
+    id: 'absage-nach-dem-vertragsschluss',
+    pruefer: 'test',
+    was: 'Eine Absage geht hinaus, obwohl der Vertrag geschlossen ist',
+    datei: 'shop/src/vorgangsstand.js',
+    art: 'ersetzen',
+    suchen: '    .filter((w) => arten.has(w.papier) && arten.has(w.nicht))',
+    ersetzen: '    .filter(() => false)',
+    erwartet: /Absage und Vertragsschluss liegen nebeneinander und niemand sagt es/,
+    warum: 'Mit der Auftragsbestätigung ist der Vertrag geschlossen (AGB Punkt 2). Was danach '
+      + 'hinausgeht, ist keine Ablehnung eines Angebots, sondern ein **Rücktritt** — und der '
+      + 'Absagetext sagt dem Kunden wörtlich das Gegenteil: dass kein Vertrag zustande '
+      + 'gekommen sei. Gesperrt wird beim Schreiben des Briefes, weil er dort noch anzuhalten '
+      + 'ist; was bei einem Rücktritt gilt, steht auf keiner veröffentlichten Seite und bleibt '
+      + 'ein offener Punkt beim Auftraggeber.',
   }),
   Object.freeze({
     id: 'verfallenes-angebot-bindet-weiter',

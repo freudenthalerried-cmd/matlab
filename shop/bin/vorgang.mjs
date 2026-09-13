@@ -954,6 +954,38 @@ if (stufe === 'absage') {
   const absageablage = ausJournal(bestandDerAbsage);
   absageablage.schreibe = (e) => appendFileSync(absagejournal, `${journalzeile(e)}\n`, 'utf8');
 
+  /*
+   * **Keine Absage nach dem Vertragsschluss — 13. September 2026.**
+   *
+   * Mit der Auftragsbestätigung ist der Vertrag geschlossen (AGB Punkt 2).
+   * Was danach hinausgeht, ist keine Ablehnung eines Angebots, sondern ein
+   * **Rücktritt** — und der Absagetext sagt dem Kunden wörtlich das
+   * Gegenteil: dass kein Vertrag zustande gekommen sei.
+   *
+   * > **Gesperrt wird hier, weil der Brief hier noch anzuhalten ist** —
+   * > dieselbe Unterscheidung wie bei der Lieferantenbestellung: eine Zusage
+   * > nach außen lässt sich aufhalten, eine geschehene Lieferung nicht.
+   *
+   * Was stattdessen gilt, sagt dieses Haus nicht: Rücktritt, Nachfrist und
+   * Rückzahlung sind Rechtstexte und ein offener Punkt beim Auftraggeber. Der
+   * Abzweig „Nach Vertragsschluss und Zahlung sagt der Lieferant ab" führt
+   * deshalb bis heute keine veröffentlichte Regel.
+   */
+  const vorherigeZeilen = existsSync(wurzelDerAbsage)
+    ? readdirSync(wurzelDerAbsage).filter(istJournal).sort()
+      .flatMap((d) => ausJournal(readFileSync(join(wurzelDerAbsage, d), 'utf8')).eintraege)
+    : [];
+  if (vorgangsakte({ eintraege: vorherigeZeilen }, nummer)
+    .some((e) => e.art === 'auftragsbestaetigung')) {
+    abbruch(`Zu Vorgang ${nummer} liegt eine Auftragsbestätigung in der Akte.`,
+      'Damit ist der Vertrag geschlossen (AGB Punkt 2). Eine Absage danach ist keine\n'
+      + 'Ablehnung, sondern ein Rücktritt — und der Text dieses Briefes behauptet dem\n'
+      + 'Kunden gegenüber, es sei kein Vertrag zustande gekommen.\n\n'
+      + 'Was bei einem Rücktritt gilt, steht auf keiner veröffentlichten Seite: Nachfrist\n'
+      + 'und Rückzahlung sind Rechtstexte und ein offener Punkt beim Auftraggeber.\n'
+      + `Festhalten lässt sich der Vorgang mit: npm run vermerk -- --vorgang ${nummer} --text "…"`);
+  }
+
   const absagedurchschrift = legeDurchschriftAb(
     wurzelDerAbsage, jahrDerAbsage, { art: 'absage', vorgang: nummer }, absage.text,
   );

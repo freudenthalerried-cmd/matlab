@@ -26,7 +26,7 @@ import {
   istBuchhaltung, istJournal, istStandkopie, ortsbefund,
 } from '../src/ablageort.js';
 import { ausJournal } from '../src/speicher.js';
-import { luecken } from '../src/vorgangsstand.js';
+import { luecken, widersprueche } from '../src/vorgangsstand.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const REPO = dirname(SHOP);
@@ -262,6 +262,16 @@ for (const eintraege of jeWurzel.values()) {
         regel: 'voraussetzung-fehlt',
         text: `Vorgang ${vorgang}: ${l.papier} liegt in der Akte, ${l.braucht} nicht `
           + `— ${l.warum}`,
+      });
+    }
+    // **Und die Gegenfrage — 13. September 2026.** Welche Papiere dürfen
+    // nicht nebeneinander liegen? Eine Absage neben der Auftragsbestätigung
+    // ist ein Brief, der dem Kunden bestreitet, was daneben in der Akte steht.
+    for (const w of widersprueche(zeilen)) {
+      luekenmeldungen.push({
+        regel: 'papiere-widersprechen-sich',
+        text: `Vorgang ${vorgang}: ${w.papier} und ${w.nicht} liegen nebeneinander `
+          + `— ${w.warum}`,
       });
     }
   }

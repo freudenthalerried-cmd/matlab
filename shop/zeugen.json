@@ -17,6 +17,9 @@
   "absage-in-der-sprache-des-betriebs": [
     "shop/test/absage.test.js"
   ],
+  "absage-nach-dem-vertragsschluss": [
+    "shop/test/vorgangsstand.test.js"
+  ],
   "absage-ohne-durchschrift": [
     "shop/test/vorgangwerkzeug.test.js"
   ],
@@ -86,6 +89,9 @@
   ],
   "der-vermerk-zu-keinem-vorgang": [
     "shop/test/vermerk.test.js"
+  ],
+  "der-vertrag-wird-unsichtbar": [
+    "shop/test/vorgangsstand.test.js"
   ],
   "die-ablagepruefung-uebersieht-die-voraussetzung": [
     "shop/test/ablageort.test.js",
