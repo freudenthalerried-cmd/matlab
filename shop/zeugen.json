@@ -75,6 +75,9 @@
   "der-posteingang-vergisst-die-akte": [
     "shop/test/posteingang.test.js"
   ],
+  "der-vermerk-sucht-im-falschen-jahr": [
+    "shop/test/jahreswechsel.test.js"
+  ],
   "der-vermerk-wird-still-gekuerzt": [
     "shop/test/vermerk.test.js"
   ],
@@ -127,6 +130,9 @@
   "eigenes-wort-ausgeschlossen": [
     "shop/test/erzeugnisfrische.test.js",
     "shop/test/kampagne.test.js"
+  ],
+  "ein-fall-zwei-jahrgaenge": [
+    "shop/test/jahreswechsel.test.js"
   ],
   "eine-aufzaehlung-die-ablaeuft": [
     "shop/test/rollout.test.js"

@@ -230,8 +230,27 @@ const auszugsmeldungen = auszugslage.flatMap((a) => auszugsbefund({
  * der ein Entgelt ohne die Vereinbarung steht, aus der es folgt, ist es
  * nicht. Gelesen werden **Arten**, kein Inhalt.
  */
+/*
+ * **Über alle Jahre einer Ablage — 13. September 2026.** Hier stand die
+ * Gruppierung je **Jahr**, und ein Geschäftsfall über den Jahreswechsel
+ * bekam damit einen Fehlalarm: Angebot und Auftragsbestätigung im Dezember,
+ * Rechnung im Jänner — gemeldet wurde „rechnung liegt in der Akte,
+ * auftragsbestaetigung nicht", obwohl sie zwei Zeilen weiter oben steht.
+ *
+ * > **Ein Prüfer, der bei einem gewöhnlichen Geschäftsfall rot wird, wird
+ * > abgeschaltet** — und mit ihm die Regeln, die er sonst hält.
+ *
+ * Die laufende Nummer beginnt je Journal neu, der Belegordner hängt am Jahr,
+ * der Buchhaltungsauszug auch. Der **Geschäftsfall** hängt an keinem von
+ * beiden.
+ */
 const luekenmeldungen = [];
+const jeWurzel = new Map();
 for (const [schluessel, eintraege] of eintraegeJeJahr) {
+  const wurzel = schluessel.split('|')[0];
+  jeWurzel.set(wurzel, [...(jeWurzel.get(wurzel) ?? []), ...eintraege]);
+}
+for (const eintraege of jeWurzel.values()) {
   const jeVorgang = new Map();
   for (const e of eintraege) {
     if (!e.vorgang) continue;
@@ -241,8 +260,8 @@ for (const [schluessel, eintraege] of eintraegeJeJahr) {
     for (const l of luecken(zeilen)) {
       luekenmeldungen.push({
         regel: 'voraussetzung-fehlt',
-        text: `Vorgang ${vorgang} (${schluessel.split('|').at(-1)}): ${l.papier} liegt in der `
-          + `Akte, ${l.braucht} nicht — ${l.warum}`,
+        text: `Vorgang ${vorgang}: ${l.papier} liegt in der Akte, ${l.braucht} nicht `
+          + `— ${l.warum}`,
       });
     }
   }

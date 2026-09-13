@@ -91,7 +91,7 @@ test('ein Vermerk zu einem Vorgang, den die Akte nicht kennt, wird abgewiesen', 
   const akte = akteMitVorgang(JAHR);
   const e = lauf(['--vorgang', `${JAHR}-9999`, '--text', 'Notiz'], { VORGANG_ABLAGE: akte });
   assert.notEqual(e.code, 0, `zu einem unbekannten Vorgang vermerkt:\n${e.aus}`);
-  assert.match(e.aus, /steht nichts im Journal/);
+  assert.match(e.aus, /steht nichts in /);
   assert.equal(zeilen(akte).length, 1, 'abgewiesen und trotzdem geschrieben');
 });
 

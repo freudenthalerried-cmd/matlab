@@ -30,13 +30,13 @@
  * Wer eine anlegte, legte eine Abschrift von etwas ab, das nie ein Blatt war.
  */
 
-import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 import { haltefest, vorgangsakte } from '../src/ablage.js';
 import { ausJournal, journalzeile } from '../src/speicher.js';
-import { ABLAGEORT } from '../src/ablageort.js';
+import { ABLAGEORT, istJournal } from '../src/ablageort.js';
 import { geschaeftstag, geschaeftsjahr } from '../src/geschaeftszeit.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -89,12 +89,35 @@ if (text.length > HOECHSTLAENGE) {
 
 const jahr = geschaeftsjahr();
 const journal = join(WURZEL, `journal-${jahr}.jsonl`);
-if (!existsSync(journal)) {
-  abbruch(`Kein Journal ${jahr} in ${WURZEL}.`,
+
+/*
+ * **Gesucht wird über alle Jahre, geschrieben wird ins laufende — 13. September 2026.**
+ *
+ * Hier stand beides im Journal des laufenden Geschäftsjahres. Ein Vermerk zu
+ * einem Vorgang aus dem Vorjahr — ein Angebot vom 20. Dezember, zu dem der
+ * Kunde im Jänner anruft — war damit unmöglich: „Zu Vorgang 2026-0500 steht
+ * nichts im Journal 2027." Der Fall ist nicht selten, sondern jährlich.
+ *
+ * Geschrieben wird trotzdem ins laufende Jahr: Der Vermerk entsteht **heute**,
+ * und die laufende Nummer beginnt je Journal neu (§ 131 Abs 1 Z 2 BAO
+ * verlangt die Zeitfolge). Dieselbe Trennlinie wie in `bin/akte.mjs`: Was an
+ * der Datei hängt, bleibt beim Jahr; was am Geschäftsfall hängt, gehört zum
+ * Vorgang.
+ */
+const alleJournale = existsSync(WURZEL)
+  ? readdirSync(WURZEL).filter(istJournal).sort()
+  : [];
+if (!alleJournale.length) {
+  abbruch(`Kein Journal in ${WURZEL}.`,
     'Ein Vermerk zu einem Geschäftsfall, den keine Akte kennt, ist ein Zettel.');
 }
+const bekannt = alleJournale.flatMap(
+  (d) => ausJournal(readFileSync(join(WURZEL, d), 'utf8')).eintraege,
+);
 
-const ablage = ausJournal(readFileSync(journal, 'utf8'));
+const ablage = existsSync(journal)
+  ? ausJournal(readFileSync(journal, 'utf8'))
+  : ausJournal('');
 
 /*
  * **Der Vorgang muss es geben.** Ein Vermerk unter einer Nummer, zu der nichts
@@ -103,8 +126,8 @@ const ablage = ausJournal(readFileSync(journal, 'utf8'));
  * Ein Vertipper in der Vorgangsnummer erzeugte sonst eine Aufzeichnung, die
  * niemand je wiederfindet.
  */
-if (vorgangsakte(ablage, vorgang).length === 0) {
-  abbruch(`Zu Vorgang ${vorgang} steht nichts im Journal ${jahr}.`,
+if (vorgangsakte({ eintraege: bekannt }, vorgang).length === 0) {
+  abbruch(`Zu Vorgang ${vorgang} steht nichts in ${WURZEL}.`,
     'Ein Vermerk gehört zu einem Geschäftsfall. Welche Vorgänge es gibt, zeigt\n'
     + 'npm run akte.');
 }

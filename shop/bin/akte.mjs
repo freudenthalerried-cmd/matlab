@@ -81,21 +81,56 @@ let bindend = 0;
 let laufend = 0;
 let geschlossen = 0;
 let offeneLuecken = 0;
+/*
+ * **Ein Geschäftsfall ist kein Jahrgang — 13. September 2026.**
+ *
+ * Hier stand eine Schleife über die Journale, und **in** ihr eine über die
+ * Vorgänge. Ein Geschäftsfall über den Jahreswechsel — Angebot am
+ * 20. Dezember, Annahme am 22., Rechnung am 15. Jänner — war damit zwei
+ * Vorgänge. Gemessen an genau diesem Fall:
+ *
+ * ```
+ *   Vorgang 2026-0500 — 2 Eintrag/Einträge, Journal 2026
+ *     Stand: zuletzt „annahme" · Als Nächstes: Der Kunde zahlt
+ *   Vorgang 2026-0500 — 1 Eintrag/Einträge, Journal 2027
+ *     FEHLT: auftragsbestaetigung — rechnung liegt in der Akte, das Papier davor nicht
+ *   2 Vorgang/Vorgänge laufen
+ * ```
+ *
+ * > **Ein Fall, zweimal gezählt, mit einem Fehlalarm über den schwersten
+ * > Befund dieses Hauses** — die Auftragsbestätigung stand zwei Zeilen weiter
+ * > oben, nur im Journal des Vorjahres. `npm run pruefe-ablage` wurde davon
+ * > rot, und ein Prüfer, der bei einem gewöhnlichen Geschäftsfall rot wird,
+ * > wird abgeschaltet.
+ *
+ * Die Trennlinie, die dabei fehlte:
+ *
+ * > **Was an der Datei hängt, bleibt beim Jahr. Was am Geschäftsfall hängt,
+ * > gehört zum Vorgang.**
+ *
+ * Beim Jahr bleiben: die laufende Nummer (`lfd` beginnt je Journal neu), der
+ * Belegordner, der Abgleich gegen die Durchschriften und der
+ * Buchhaltungsauszug. Zum Vorgang gehören: Stand, nächster Schritt,
+ * Bindefrist und die Voraussetzungen.
+ */
+const alleEintraege = [];
 for (const datei of journale) {
   const jahr = Number(datei.match(/journal-(\d{4})\.jsonl$/)[1]);
   const ablage = ausJournal(readFileSync(join(WURZEL, datei), 'utf8'));
-  const ordner = join(WURZEL, belegordner(jahr));
+  for (const e of ablage.eintraege) alleEintraege.push({ ...e, jahr });
+}
 
-  const vorgaenge = gesucht
-    ? [gesucht]
-    : [...new Set(ablage.eintraege.map((e) => e.vorgang).filter(Boolean))].sort();
+const vorgaenge = gesucht
+  ? [gesucht]
+  : [...new Set(alleEintraege.map((e) => e.vorgang).filter(Boolean))].sort();
 
-  for (const vorgang of vorgaenge) {
-    const akte = vorgangsakte(ablage, vorgang);
-    if (!akte.length) {
-      if (gesucht) console.log(`  Zu Vorgang ${vorgang} steht nichts im Journal ${jahr}.`);
-      continue;
-    }
+for (const vorgang of vorgaenge) {
+  const akte = vorgangsakte({ eintraege: alleEintraege }, vorgang);
+  if (!akte.length) {
+    if (gesucht) console.log(`  Zu Vorgang ${vorgang} steht nichts in dieser Ablage.`);
+    continue;
+  }
+  {
     const stand = vorgangsstand(akte, { heute });
     const bindung = bindungslage(akte);
     if (nurOffene && stand.abgeschlossen) {
@@ -103,7 +138,9 @@ for (const datei of journale) {
       continue;
     }
     gezeigt += 1;
-    console.log(`  Vorgang ${vorgang} — ${akte.length} Eintrag/Einträge, Journal ${jahr}`);
+    const jahre = [...new Set(akte.map((e) => e.jahr))].sort();
+    console.log(`  Vorgang ${vorgang} — ${akte.length} Eintrag/Einträge, `
+      + `Journal ${jahre.join(' und ')}`);
     for (const e of akte) {
       /*
        * **Beides steht nebeneinander, und das ist der Zweck.** Die Zeile sagt,
@@ -124,7 +161,9 @@ for (const datei of journale) {
         beleg = `kein Blatt — ${e.art} ist selbst die Aufzeichnung`;
       } else {
         const name = belegname(e);
-        const pfad = join(ordner, name);
+        // Der Belegordner hängt am **Jahr des Eintrags**, nicht am Vorgang:
+        // Ein Fall über den Jahreswechsel hat Papiere in zwei Ordnern.
+        const pfad = join(WURZEL, belegordner(e.jahr), name);
         beleg = existsSync(pfad)
           ? `${name} (${statSync(pfad).size} Zeichen)`
           : `${name} FEHLT`;
@@ -214,7 +253,13 @@ for (const datei of journale) {
         console.log(`           ${stand.naechster.gate}`);
       }
     }
-    const frist = aufbewahrungBis(jahr);
+    /*
+     * **Die späteste Frist deckt die Akte.** § 132 BAO rechnet ab Ablauf des
+     * Kalenderjahres, in dem der Beleg entstanden ist. Bei einem Fall über
+     * den Jahreswechsel ist das die Frist des jüngsten Eintrags — wer die
+     * Akte so lange behält, behält jeden ihrer Belege lange genug.
+     */
+    const frist = aufbewahrungBis(Math.max(...jahre));
     console.log(`    aufzubewahren bis ${frist.hinweis}\n`);
   }
 }

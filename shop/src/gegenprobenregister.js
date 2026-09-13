@@ -3798,7 +3798,7 @@ export const GEGENPROBEN = Object.freeze([
     was: 'Ein Vermerk landet unter einer Vorgangsnummer, die es nicht gibt',
     datei: 'shop/bin/vermerk.mjs',
     art: 'ersetzen',
-    suchen: 'if (vorgangsakte(ablage, vorgang).length === 0) {',
+    suchen: 'if (vorgangsakte({ eintraege: bekannt }, vorgang).length === 0) {',
     ersetzen: 'if (false) {',
     erwartet: /zu einem unbekannten Vorgang vermerkt/,
     warum: 'Der Vermerk ist die Aufzeichnung, wo kein Papier entsteht (§ 131 Abs 1 Z 5 BAO) — '
@@ -3824,6 +3824,41 @@ export const GEGENPROBEN = Object.freeze([
       + 'Steuerberater lautlos gekürzt, und gemerkt wird so etwas, wenn jemand Jahre später '
       + 'fragt, was damals vereinbart war. Abgewiesen statt gekürzt: Was nicht hineinpasst, '
       + 'gehört in zwei Vermerke, und dann steht beides vollständig da.',
+  }),
+  Object.freeze({
+    id: 'ein-fall-zwei-jahrgaenge',
+    pruefer: 'test',
+    was: 'Die Akte läuft wieder über die Journale und darin über die Vorgänge',
+    datei: 'shop/bin/akte.mjs',
+    art: 'ersetzen',
+    suchen: '  const akte = vorgangsakte({ eintraege: alleEintraege }, vorgang);',
+    ersetzen: '  const akte = vorgangsakte({ eintraege: alleEintraege }, vorgang)\n'
+      + '    .filter((e) => e.jahr === Math.min(...alleEintraege.map((x) => x.jahr)));',
+    erwartet: /derselbe Geschäftsfall steht mehrfach da|3 Eintrag|Journal 2026 und 2027/,
+    warum: 'Ein Geschäftsfall über den Jahreswechsel — Angebot am 20. Dezember, Annahme am '
+      + '22., Rechnung am 15. Jänner — ist der gewöhnlichste Fall am Jahresende und war für '
+      + 'diese Akte **zwei Vorgänge**: zweimal gezählt, zweimal mit halbem Stand, und der '
+      + 'jüngere Teil mit einem Fehlalarm über den schwersten Befund dieses Hauses („die '
+      + 'Auftragsbestätigung fehlt", obwohl sie zwei Zeilen weiter oben steht). Die '
+      + 'Trennlinie, die fehlte: Was an der Datei hängt — laufende Nummer, Belegordner, '
+      + 'Buchhaltungsauszug —, bleibt beim Jahr; was am Geschäftsfall hängt, gehört zum '
+      + 'Vorgang.',
+  }),
+  Object.freeze({
+    id: 'der-vermerk-sucht-im-falschen-jahr',
+    pruefer: 'test',
+    was: 'Der Vermerk sucht den Vorgang nur im Journal des laufenden Jahres',
+    datei: 'shop/bin/vermerk.mjs',
+    art: 'ersetzen',
+    suchen: 'if (vorgangsakte({ eintraege: bekannt }, vorgang).length === 0) {',
+    ersetzen: 'if (vorgangsakte(ablage, vorgang).length === 0) {',
+    erwartet: /der Vorgang steht im Journal eines anderen Jahres/,
+    warum: 'Gesucht wurde, wo geschrieben wird. Ein Angebot vom 20. Dezember, zu dem der Kunde '
+      + 'im Jänner anruft, ließ sich damit nicht vermerken: „Zu Vorgang 2026-0500 steht nichts '
+      + 'im Journal 2027." **Der Fall ist nicht selten, sondern jährlich** — und der Vermerk '
+      + 'ist für sein Ereignis die einzige Quelle (§ 131 Abs 1 Z 5 BAO). Geschrieben wird '
+      + 'weiter ins laufende Jahr: Der Vermerk entsteht heute, und die laufende Nummer beginnt '
+      + 'je Journal neu.',
   }),
   Object.freeze({
     id: 'verfallenes-angebot-bindet-weiter',

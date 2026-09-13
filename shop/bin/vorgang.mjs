@@ -48,7 +48,9 @@
  * nichts ab und schreibt keine Datei.
  */
 
-import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync,
+} from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -70,7 +72,9 @@ import {
   stelleRechnungAus, storniere, vorgangsakte,
 } from '../src/ablage.js';
 import { ausJournal, journalzeile } from '../src/speicher.js';
-import { ABLAGEORT, belegname, belegordner, belegpfad, journalpfad } from '../src/ablageort.js';
+import {
+  ABLAGEORT, belegname, belegordner, belegpfad, istJournal, journalpfad,
+} from '../src/ablageort.js';
 import { geschaeftstag } from '../src/geschaeftszeit.js';
 import { BANKFELDER } from '../src/bankverbindung.js';
 
@@ -816,7 +820,19 @@ if (stufe === 'bestellung') {
    * gar nicht entstehen. Eine Sperre gegen etwas Unmögliches wäre von Geburt
    * an rot gewesen und binnen einer Woche abgeschaltet.
    */
-  const bisher = vorgangsakte(bestellablage, nummer);
+  /*
+   * **Gesucht wird über alle Jahre — 13. September 2026.** Hier stand
+   * `vorgangsakte(bestellablage, nummer)`, also nur das Journal des
+   * Bestelldatums. Eine Auftragsbestätigung vom 22. Dezember und eine
+   * Bestellung im Jänner — der gewöhnlichste Fall am Jahreswechsel — hätte
+   * die Sperre von gestern **zu Unrecht** ausgelöst und eine berechtigte
+   * Bestellung verhindert. Dieselbe Trennlinie wie in `bin/akte.mjs`.
+   */
+  const bekannteEintraege = existsSync(wurzelDerBestellung)
+    ? readdirSync(wurzelDerBestellung).filter(istJournal).sort()
+      .flatMap((d) => ausJournal(readFileSync(join(wurzelDerBestellung, d), 'utf8')).eintraege)
+    : [];
+  const bisher = vorgangsakte({ eintraege: bekannteEintraege }, nummer);
   if (!bisher.some((e) => e.art === 'auftragsbestaetigung')) {
     abbruch(`Zu Vorgang ${nummer} liegt keine Auftragsbestätigung in der Akte.`,
       'Ohne sie ist kein Vertrag geschlossen (AGB Punkt 2), und die Ware ginge auf\n'
