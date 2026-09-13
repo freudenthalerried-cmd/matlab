@@ -100,6 +100,15 @@ export const ZWILLINGE = Object.freeze([
           + 'und kein Anteil. Genau diese Verwechslung hat am 5. September den Geheimnisprüfer '
           + 'in die Irre geführt; sie steht dort im Kopf ausgeschrieben.',
       }),
+      Object.freeze({
+        datei: 'data/zielgroessen.json',
+        warum: '`rohmarge: 0.25` — dieselbe Zahl, und sie kann die Heimat nicht lesen: In JSON '
+          + 'gibt es keinen Import. Gehalten wird sie stattdessen von einem Testfall, der sie '
+          + 'Zeichen für Zeichen gegen `ZIELMARGE` hält (`test/empfindlichkeit.test.js`, '
+          + '„Die Zielgrößen sind vollständig und decken sich mit dem Katalog"). Die Datei '
+          + 'selbst sagt es in ihrer Herkunftsnotiz: „Muss mit ZIELMARGE in '
+          + 'src/baustoffkatalog.js uebereinstimmen."',
+      }),
     ]),
   }),
   Object.freeze({
@@ -120,6 +129,14 @@ export const ZWILLINGE = Object.freeze([
         datei: 'bin/werbeprobe.mjs',
         warum: 'Zwei Szenarienlisten aus demselben Grund wie im Rollout — die Probe rechnet, ab '
           + 'wie vielen Klicks ohne Bestellung sich welche Quote ausschließen lässt.',
+      }),
+      Object.freeze({
+        datei: 'data/zielgroessen.json',
+        warum: '`umsatzProSession: 0.02` — dieselbe Zahl, und die Notiz daneben sagt es seit '
+          + 'dem 1. September wörtlich: „DIESELBE GROESSE wie die Kaufquote der Kampagne." '
+          + '**Eine Notiz, die sagt „dieselbe Größe", ist keine Prüfung, dass es dieselbe Zahl '
+          + 'ist** — bis zum 13. September war nur geprüft, dass die Notiz überhaupt da ist. '
+          + 'Seither hält `test/empfindlichkeit.test.js` den Wert gegen `ANNAHMEN…basis`.',
       }),
     ]),
   }),

@@ -196,6 +196,9 @@
   "die-kasse-bepreist-die-halbe-platte": [
     "shop/test/shopkern.test.js"
   ],
+  "die-kaufquote-laeuft-von-ihrer-heimat-weg": [
+    "shop/test/empfindlichkeit.test.js"
+  ],
   "die-lieferzeit-ab-heute": [
     "shop/test/warenkorb.test.js"
   ],

@@ -3976,6 +3976,40 @@ export const GEGENPROBEN = Object.freeze([
       + 'Papieren ist der Nettobetrag die Bemessungsgrundlage der Umsatzsteuervoranmeldung.',
   }),
   Object.freeze({
+    id: 'der-zwillingsblick-endet-am-dateityp',
+    pruefer: 'pruefe-zwillinge',
+    was: 'Der Zwillingsabgleich liest die Datendateien wieder nicht',
+    datei: 'shop/bin/zwillingspruefung.mjs',
+    art: 'ersetzen',
+    suchen: "  for (const ordner of ['src', 'bin', 'data']) {",
+    ersetzen: "  for (const ordner of ['src', 'bin']) {",
+    erwartet: /data\/zielgroessen\.json steht als begründete Ausnahme/,
+    warum: 'Die Suche endete am Dateityp: gelesen wurden `src/` und `bin/`, also genau die '
+      + 'Orte, an denen eine Zahl einen Namen haben kann. **Eine Zahl in einer Datendatei ist '
+      + 'genauso eine zweite Fassung** — und kann dort sogar schlechter stehen, weil es in '
+      + 'JSON keinen Import gibt, mit dem man die Heimat läse. Gemessen: '
+      + '`data/zielgroessen.json` trägt `rohmarge: 0.25` und `umsatzProSession: 0.02`, beide '
+      + 'mit einem Satz daneben, der die Gleichheit behauptet. Am Vortag hat dieselbe Lücke '
+      + 'Geld gekostet: `paletteOebbNetto: 22` gegen die berichtigten 13,47 €, neun Tage '
+      + 'unbemerkt.',
+  }),
+  Object.freeze({
+    id: 'die-kaufquote-laeuft-von-ihrer-heimat-weg',
+    pruefer: 'test',
+    was: 'Die Kaufquote der Zielgrößen weicht von der Annahme ab',
+    datei: 'shop/data/zielgroessen.json',
+    art: 'ersetzen',
+    suchen: '  "umsatzProSession": 0.02,',
+    ersetzen: '  "umsatzProSession": 0.03,',
+    erwartet: /zielgroessen\.json rechnet mit 0\.03/,
+    warum: 'Von den drei Zielgrößen mit einer Heimat wurden zwei seit jeher gegen sie '
+      + 'gehalten — `rohmarge` gegen `ZIELMARGE`, `frachtProBestellungNetto` gegen die '
+      + 'Pauschale des Lieferanten. Die dritte nicht: Geprüft war nur, dass sie eine '
+      + '**Herkunftsnotiz** trägt. **Eine Notiz, die sagt „dieselbe Größe", ist keine '
+      + 'Prüfung, dass es dieselbe Zahl ist** — und es ist die Zahl, mit der jedes '
+      + 'Höchstgebot je Klick multipliziert wird.',
+  }),
+  Object.freeze({
     id: 'das-pfand-wird-wieder-als-ausgabe-gebucht',
     pruefer: 'test',
     was: 'Der Rechenkern nimmt wieder den Pfandbetrag als Palettenkosten',

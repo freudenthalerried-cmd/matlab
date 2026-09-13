@@ -267,6 +267,25 @@ test('Die Zielgrößen sind vollständig und decken sich mit dem Katalog', async
     assert.ok(LAGE[feld], `zielgroessen.json führt kein ${feld}`);
   }
 
+  /*
+   * **Die Kaufquote gegen ihre Heimat — 13. September 2026.**
+   *
+   * `zielgroessen.json` trägt `umsatzProSession: 0.02` mit der Notiz „DIESELBE
+   * GROESSE wie die Kaufquote der Kampagne". Die Zahl selbst steht als `basis`
+   * in `src/empfindlichkeit.js`. Zwei der drei Zielgrößen mit einer Heimat
+   * werden hier seit jeher dagegen gehalten — `rohmarge` gegen `ZIELMARGE`,
+   * `frachtProBestellungNetto` gegen die Pauschale des Lieferanten. Diese
+   * nicht: Geprüft war nur, dass sie eine **Herkunftsnotiz** trägt.
+   *
+   * > **Eine Notiz, die sagt „dieselbe Größe", ist keine Prüfung, dass es
+   * > dieselbe Zahl ist.**
+   */
+  const kaufquote = ANNAHMEN.find((a) => a.id === 'umsatzProSession');
+  assert.ok(kaufquote, 'die Annahme umsatzProSession gibt es nicht mehr');
+  assert.equal(LAGE.umsatzProSession, kaufquote.basis,
+    `zielgroessen.json rechnet mit ${LAGE.umsatzProSession}, `
+      + `src/empfindlichkeit.js mit ${kaufquote.basis}`);
+
   // Und jede Angabe trägt eine Herkunftsnotiz. Eine Zahl ohne Herkunft ist in
   // dieser Datei genauso wenig wert wie auf einer Kundenseite.
   for (const feld of ['zielgewinn', 'fixkosten', 'rohmarge', 'werbeanteil', 'warenkorbNetto', 'umsatzProSession']) {

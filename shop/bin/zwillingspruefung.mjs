@@ -27,14 +27,35 @@ import { ZWILLINGE, zwillingsbefund } from '../src/zwillingszahlen.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 
-/** Jede Quelldatei des Rechenkerns und der Werkzeuge. */
+/**
+ * Jede Quelldatei des Rechenkerns und der Werkzeuge — **und die Datendateien**.
+ *
+ * **`data/` ergänzt am 13. September 2026.** Die Suche endete am Dateityp:
+ * gelesen wurden `src/` und `bin/`, also genau die Orte, an denen eine Zahl
+ * einen Namen haben kann. Die zweite Fassung stand woanders.
+ *
+ * Gemessen: `data/zielgroessen.json` trägt `rohmarge: 0.25` und
+ * `umsatzProSession: 0.02` — beide mit einem Satz daneben, der die Gleichheit
+ * behauptet („Muss mit ZIELMARGE in src/baustoffkatalog.js uebereinstimmen",
+ * „DIESELBE GROESSE wie die Kaufquote der Kampagne"). Genau die Bauart, für
+ * die dieses Register gebaut wurde: *Die Gleichheit stand in einem Satz und
+ * nicht in einem Aufruf.*
+ *
+ * > **Eine Zahl in einer Datendatei ist genauso eine zweite Fassung wie eine
+ * > im Quelltext.** Sie kann dort sogar schlechter stehen: In JSON gibt es
+ * > keinen Import, mit dem man sie lesen könnte.
+ *
+ * Am Vortag hat dieselbe Lücke Geld gekostet: `paletteOebbNetto: 22` in
+ * `data/lieferanten.json` gegen die berichtigten 13,47 € in
+ * `src/palettenkreis.js` — neun Tage lang, unbemerkt.
+ */
 function quellen() {
   const gefunden = new Map();
-  for (const ordner of ['src', 'bin']) {
+  for (const ordner of ['src', 'bin', 'data']) {
     const voll = join(SHOP, ordner);
     for (const name of readdirSync(voll).sort()) {
       const pfad = join(voll, name);
-      if (!statSync(pfad).isFile() || !/\.(js|mjs)$/.test(name)) continue;
+      if (!statSync(pfad).isFile() || !/\.(js|mjs|json)$/.test(name)) continue;
       gefunden.set(`${ordner}/${name}`, readFileSync(pfad, 'utf8'));
     }
   }
