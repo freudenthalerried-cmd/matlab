@@ -409,6 +409,24 @@ export const PRUEFER = [
     mindestens: 200,
   },
   {
+    /*
+     * **Aufgenommen am 13. September 2026.** `npm run anfrage-lesen` rechnet
+     * seit dem 3. September nach, ob die **Summen** stimmen. Nicht geprüft war
+     * der Fall, in dem sie stimmen und die Menge trotzdem eine andere ist:
+     * `POS-53402`, bestellt 302,50 LFM, zurückgelesen 302,51 — ein Fehler
+     * kleiner als ein Cent in Geld und trotzdem eine andere Ware.
+     *
+     * Gemessen wird die Zahl der Mengen, die hin und zurück gerechnet wurden.
+     * Der gesunde Zustand ist null Funde, und eine Prüfung ohne Fundstellen
+     * meldet sauber über nichts.
+     */
+    name: 'pruefe-rueckweg',
+    werkzeug: 'rueckwegpruefung.mjs',
+    muster: /Rückweg der Anfrage — (\d+) bestellbare Mengen/,
+    einheit: 'bestellbare Mengen hin und zurück',
+    mindestens: 2000,
+  },
+  {
     // **Aufgenommen am 4. September**, mit dem ersten Werkzeug, das ablegt.
     // Auch hier ist der gesunde Zustand null Funde — gemessen wird deshalb die
     // Zahl der getrackten Dateien, die angesehen wurden.

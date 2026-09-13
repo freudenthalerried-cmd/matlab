@@ -17,7 +17,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-import { lesePositionen, leseAnfrage } from '../src/anfragelesen.js';
+import { lesePositionen, leseAnfrage, rueckwegbefund } from '../src/anfragelesen.js';
+import { mengenschritt } from '../src/gebinde.js';
 import { kundenWarenkorb } from '../src/shopkern.js';
 import { baueKundenanfrage } from '../src/kundenanfrage.js';
 
@@ -51,6 +52,82 @@ function anfragetext(zeilen) {
   assert.equal(a.moeglich, true, a.hindernis);
   return a.text;
 }
+
+/**
+ * Der billige Artikel mit gebrochenem Gebinde — der Fall vom 13. September.
+ *
+ * `Capatect Kantenschutz … 2,5 m`, 0,95 € je laufendem Meter, abgegeben in
+ * Stangen zu 2,5 m. Bestellt 302,50 LFM sind 121 ganze Stangen; die
+ * Positionszeile druckt 287,38 €, und `287,38 ÷ 0,95` sind 302,5052…
+ */
+const kantenschutz = {
+  sku: 'POS-53402', bezeichnung: 'Capatect Kantenschutz mit Gewebe Carbon 11,5 13,5 cm 2,5 m',
+  gruppe: 'Fassade', einheit: 'LFM', lieferantId: 'poschacher', sperrgut: false,
+  vkNetto: 0.95, ekNetto: 0.71, preisStand: '2026-06-25',
+};
+const mitKantenschutz = { artikel: [...artikel, kantenschutz], lieferanten, mindestbestellwertNetto: 250 };
+const rechneMit = (zeilen) => kundenWarenkorb(zeilen, mitKantenschutz);
+const schritteMit = (sku) => mengenschritt(mitKantenschutz.artikel.find((a) => a.sku === sku));
+
+test('eine Menge, die kein ganzes Gebinde ist, entsteht hier nicht', () => {
+  const bestellt = [{ sku: 'POS-53402', menge: 302.5 }];
+  const a = baueKundenanfrage({
+    rechnung: rechneMit(bestellt),
+    bezirk: 'Perg',
+    betreiber: { firma: 'Freudenthaler Bau GmbH', ort: 'Ried in der Riedmark', email: '' },
+    datum: '2026-09-13',
+  });
+  assert.equal(a.moeglich, true, a.hindernis);
+
+  /*
+   * **Ohne den Gebindeschritt liest die Teilung daneben** — und zwar so, dass
+   * die Nachrechnung es nicht sieht: `302,51 × 0,95` sind auf Cent gerundet
+   * dieselben 287,38 €, die im Text stehen. Der Leser meldete deshalb
+   * `gelesen: true` und gab eine Ware zurück, die niemand liefern kann.
+   */
+  const ohne = leseAnfrage(a.text, rechneMit);
+  assert.equal(ohne.gelesen, true, 'die Summenprobe sieht den Fehler nicht — darum geht es');
+  assert.deepEqual(ohne.zeilen, [{ sku: 'POS-53402', menge: 302.51 }]);
+
+  const mit = leseAnfrage(a.text, rechneMit, { schrittFuer: schritteMit });
+  assert.equal(mit.gelesen, true, mit.grund);
+  assert.deepEqual(mit.zeilen, bestellt, 'die bestellte Menge kommt nicht unverändert zurück');
+});
+
+test('trifft kein ganzes Gebinde die Zeilensumme, wird nicht geraten', () => {
+  // Eine Zeilensumme, die zu keinem Vielfachen von 2,5 LFM passt: 121,5 Stangen
+  // gibt es nicht, und 115,52 € sind weder 302,50 noch 305,00 LFM.
+  const gelesen = lesePositionen('  POS-53402   0,95 €   115,52 €', { schrittFuer: schritteMit });
+  assert.deepEqual(gelesen.zeilen, []);
+  assert.match(gelesen.meldungen[0], /kein ganzes Gebinde zu 2\.5/);
+});
+
+test('der Rückweg gilt für jede Menge, die die Oberfläche bilden kann', () => {
+  /*
+   * Die Prüfung, die den Fund festhält: Hin und zurück über alle Artikel und
+   * alle Vielfachen ihres Gebindes. Der gesunde Zustand ist null Meldungen —
+   * und die Zahl der gerechneten Mengen sagt, dass etwas gemessen wurde.
+   */
+  const befund = rueckwegbefund(mitKantenschutz.artikel, schritteMit, { bis: 200 });
+  assert.equal(befund.sauber, true,
+    `der Rückweg verliert Mengen: ${befund.meldungen.slice(0, 2).map((m) => m.text).join(' | ')}`);
+  assert.equal(befund.mengen, mitKantenschutz.artikel.length * 200);
+
+  /*
+   * **Und die Gegenrichtung, sonst misst der Fall nichts.** Dieselbe Prüfung
+   * über einen Leser **ohne** Gebindeschritt muss rot werden — läuft sie auch
+   * dann grün, deckt der Fall oben eine Strecke ab, auf der es nichts zu
+   * finden gibt. Der Sweep baut seine Mengen weiter aus dem Gebinde; nur das
+   * Zurücklesen ist blindgestellt.
+   */
+  const blind = rueckwegbefund(mitKantenschutz.artikel, schritteMit, { bis: 200, leseMit: null });
+  assert.ok(blind.meldungen.length > 0,
+    'ohne Gebindeschritt fällt keine einzige Menge auf — dann prüft der Fall oben nichts');
+  assert.equal(blind.meldungen[0].sku, 'POS-53402');
+  assert.match(blind.meldungen[0].text, /bestellt 2\.5, .* zurückgelesen 2\.51/,
+    'schon die kleinste bestellbare Menge dieses Artikels kommt anders zurück');
+});
+
 
 test('der zurückgelesene Warenkorb ist der abgeschickte', () => {
   const zeilen = [{ sku: 'POS-51967', menge: 1 }, { sku: 'POS-12476', menge: 2 }];

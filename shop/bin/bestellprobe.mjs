@@ -108,7 +108,22 @@ if (!existsSync(join(site, 'bestellung.php'))) {
 // und bedient die Oberfläche. Ein einziges Skript am Ende käme zu spät für
 // den Korb und zu früh für die Seite.
 
-const KORB = [{ sku: 'POS-12569', menge: 40 }, { sku: 'POS-51967', menge: 4 }];
+/*
+ * **39,75 statt 40 m² — berichtigt am 13. September 2026.**
+ *
+ * `POS-12569` ist `XPS glatt SF 30 mm **0,75 m2**`: Die Platte wird in Stücken
+ * zu 0,75 m² abgegeben, und 40 m² sind 53,33 Platten. Beide Wege der
+ * Oberfläche runden auf ganze Stücke auf — der Knopf auf der Artikelseite seit
+ * dem 29. August, das Mengenfeld im Korb seit dem 5. September.
+ *
+ * > **Diese Probe legte ihren Korb am Speicher vorbei hinein und fuhr damit
+ * > die ganze Papierkette über eine Menge, die kein Kunde bestellen kann.**
+ *
+ * Aufgefallen ist es, als `anfrage-lesen` am 13. September auf ganze Gebinde
+ * einzurasten begann: Der Leser weigerte sich, 40 m² zu übernehmen, und hatte
+ * recht damit. 39,75 m² sind 53 Platten.
+ */
+const KORB = [{ sku: 'POS-12569', menge: 39.75 }, { sku: 'POS-51967', menge: 4 }];
 const kasse = readFileSync(join(site, 'kasse.html'), 'utf8');
 // **Der Schlüssel wird aus dem Bündel gelesen, nicht hier notiert.** Ein
 // zweiter Ort für denselben Namen wäre am Tag der nächsten Fassung (`-v2`)

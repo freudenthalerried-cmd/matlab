@@ -22,6 +22,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 import { leseAnfrage } from '../src/anfragelesen.js';
+import { mengenschritt } from '../src/gebinde.js';
 import { kundenWarenkorb } from '../src/shopkern.js';
 import { ladeBaustoffkatalog } from '../src/baustoffkatalog.js';
 import { oeffentlicherArtikel, oeffentlicherLieferant } from '../src/shopkern.js';
@@ -53,7 +54,18 @@ const daten = {
   mindestbestellwertNetto: betreiber.mindestbestellwertNetto ?? null,
 };
 
-const e = leseAnfrage(text, (zeilen) => kundenWarenkorb(zeilen, daten));
+/*
+ * **`schrittFuer` seit dem 13. September 2026.** Die Menge kommt aus
+ * `Zeilensumme ÷ Einzelpreis`, und beide sind auf Cent gedruckt. Ohne den
+ * Gebindeschritt las dieser Leser aus 287,38 € bei 0,95 € je laufendem Meter
+ * `302,51 LFM` statt der bestellten 302,50 — 121 Stangen zu 2,5 m, und die
+ * gelesene Zahl ist kein ganzes Stück. Der Schritt wird hereingereicht wie die
+ * Rechenfunktion: Der Leser soll keinen zweiten Katalog kennen.
+ */
+const nachSku = new Map(daten.artikel.map((a) => [a.sku, a]));
+const e = leseAnfrage(text, (zeilen) => kundenWarenkorb(zeilen, daten), {
+  schrittFuer: (sku) => mengenschritt(nachSku.get(sku)),
+});
 
 console.log(`\nAnfrage zurückgelesen — ${e.zeilen.length} Position(en)`);
 if (e.bezirk) console.log(`Baustelle im Bezirk: ${e.bezirk}`);

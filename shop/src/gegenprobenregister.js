@@ -3976,6 +3976,41 @@ export const GEGENPROBEN = Object.freeze([
       + 'Papieren ist der Nettobetrag die Bemessungsgrundlage der Umsatzsteuervoranmeldung.',
   }),
   Object.freeze({
+    id: 'der-leser-rastet-nicht-mehr-ein',
+    pruefer: 'pruefe-rueckweg',
+    was: 'Die zurückgelesene Menge wird wieder bloß geteilt und gerundet',
+    datei: 'shop/src/anfragelesen.js',
+    art: 'ersetzen',
+    suchen: '    if (schritt > 0) {',
+    ersetzen: '    if (false) {',
+    erwartet: /menge-kommt-anders-zurueck/,
+    warum: 'Der Zustand bis zum 13. September. Die Menge kommt aus '
+      + '`Zeilensumme ÷ Einzelpreis`, und beide sind auf Cent gedruckt — die Teilung gibt '
+      + 'sie nur bis auf `0,005 ÷ Einzelpreis` her. Gemessen am Bestand: POS-53402, '
+      + 'Kantenschutz in Stangen zu 2,5 m, 0,95 € je laufendem Meter; bestellt 302,50 LFM, '
+      + 'zurückgelesen 302,51 — **kein ganzes Stück und damit nicht lieferbar**. Die '
+      + 'Nachrechnung sah nichts: 302,51 × 0,95 sind auf Cent wieder 287,38 €, also genau '
+      + 'die Zahl im Text. Der Fehler war kleiner als ein Cent in Geld und trotzdem eine '
+      + 'andere Ware, und von dort lief er weiter bis in die Bestellung beim Lieferanten.',
+  }),
+  Object.freeze({
+    id: 'der-leser-raet-beim-krummen-betrag',
+    pruefer: 'pruefe-rueckweg',
+    was: 'Eine Zeilensumme, die kein ganzes Gebinde trifft, wird trotzdem übernommen',
+    datei: 'shop/src/anfragelesen.js',
+    art: 'ersetzen',
+    suchen: '      if (Math.abs(cent(menge * einzel) - summe) > 0.005) {',
+    ersetzen: '      if (false) {',
+    erwartet: /krummer-betrag-wird-uebernommen/,
+    warum: 'Das Einrasten aufs Gebinde ist eine Annahme über die Zeile, und eine Annahme '
+      + 'gehört geprüft: Nur eine Menge, die die **gedruckte** Zeilensumme auf den Cent '
+      + 'wiederherstellt, ist die gemeinte. Ohne diese Zeile rundete der Leser jede '
+      + 'beliebige Zeilensumme auf das nächste Vielfache — aus einem geänderten Preis oder '
+      + 'einem fremden Text würde stillschweigend eine Bestellmenge. Genau der Satz, den '
+      + 'dieser Leser über sich trägt: Wer bei Abweichung rät, ist schlimmer als das '
+      + 'Abtippen.',
+  }),
+  Object.freeze({
     id: 'die-angebotsnummer-wird-wieder-gezogen',
     pruefer: 'test',
     was: 'Das Angebot behauptet wieder einen eigenen Nummernkreis',

@@ -55,6 +55,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 import { leseAnfrage } from '../src/anfragelesen.js';
+import { mengenschritt } from '../src/gebinde.js';
 import { pruefeBestellfelder } from '../src/bestellfelder.js';
 import { pruefeBestelldaten } from '../src/kunde.js';
 import { kundenWarenkorb, oeffentlicherArtikel, oeffentlicherLieferant } from '../src/shopkern.js';
@@ -317,7 +318,18 @@ const kundensicht = {
   lieferanten: [...katalog.lieferantenById.values()].map(oeffentlicherLieferant),
   mindestbestellwertNetto: betreiberDatei.mindestbestellwertNetto ?? null,
 };
-const gelesen = leseAnfrage(text, (zeilen) => kundenWarenkorb(zeilen, kundensicht));
+/*
+ * **`schrittFuer` seit dem 13. September 2026** — derselbe Grund wie in
+ * `bin/anfrage-lesen.mjs`: Ohne den Gebindeschritt gibt die Teilung
+ * `Zeilensumme ÷ Einzelpreis` bei billiger Ware eine Menge zurück, die kein
+ * ganzes Gebinde ist, und die Nachrechnung sieht es nicht — der Unterschied
+ * bleibt unter einem Cent. Von hier aus liefe diese Menge weiter bis in die
+ * Bestellung beim Lieferanten.
+ */
+const artikelNachSku = new Map(kundensicht.artikel.map((a) => [a.sku, a]));
+const gelesen = leseAnfrage(text, (zeilen) => kundenWarenkorb(zeilen, kundensicht), {
+  schrittFuer: (sku) => mengenschritt(artikelNachSku.get(sku)),
+});
 if (!gelesen.gelesen) {
   abbruch(`Die Anfrage ließ sich nicht übernehmen — ${gelesen.grund}`,
     'Ein Leser, der bei Abweichung weitermacht, hat die Autorität einer Maschine\n'
