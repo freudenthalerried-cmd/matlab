@@ -10,9 +10,8 @@ import {
   fracht,
   mindestbestellwertErfuellt,
   MARGENUNTERGRENZE,
-  FRACHTMODELL,
-  frachtsatzbefund,
 } from '../src/preis.js';
+import { FRACHTMODELL, frachtbetrag, frachtsatzbefund } from '../src/frachtsatz.js';
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { ladeBaustoffkatalog, ZIELMARGE } from '../src/baustoffkatalog.js';
@@ -373,4 +372,51 @@ test('ein Lieferant ohne Frachtsatz wird benannt, nicht auf null gesetzt', () =>
 
   // `null` heißt „es gibt keine Schwelle" — das ist ein Befund, keine Lücke.
   assert.equal(frachtsatzbefund([{ id: 'z', name: 'Z', fracht: { modell: 'pauschale', pauschaleNetto: 75.5, sperrgutZuschlagNetto: 7.5, freiHausAbNetto: null } }]).sauber, true);
+});
+
+test('die Frachtzahl steht an einer Stelle — außer in der Kontrolle', () => {
+  /*
+   * **Der Fund vom 13. September 2026.** `frachttext.js` gibt es seit dem
+   * 5. September, weil der **Satz** an der Frachtzeile zweimal stand. Sein
+   * Kopf sagt: *„Eine Probe, die zwei Fassungen vergleicht, ist besser als
+   * nichts und schlechter als eine Fassung."*
+   *
+   * > **Für den Satz wurde eine Datei gebaut. Die Zahl daneben blieb stehen.**
+   *
+   * Sie stand in `fracht()` und in `kundenWarenkorb()` — zwei Fassungen, die
+   * eine Fassung sein sollen; genau die beiden, für die `frachttext.js`
+   * gebaut wurde.
+   *
+   * **`kontrolle.js` zählt nicht dazu.** Ihr Kopf sagt seit dem Bau: *„Sie ist
+   * unabhängig. Sie kennt weder `warenkorb.js` noch `preis.js`, sondern nur
+   * Text und die vier Grundrechenarten."* Dort ist die dritte Fassung keine
+   * Abschrift, sondern die Gegenrechnung — sie zusammenzulegen hätte genau
+   * die Eigenschaft zerstört, für die es das Modul gibt.
+   */
+  const formel = /pauschaleNetto \+ sperrgut/i;
+  const quelle = (n) => readFileSync(pfad(`../src/${n}`), 'utf8');
+
+  assert.match(quelle('frachtsatz.js'), formel, 'die eine Stelle rechnet nicht mehr');
+  for (const modul of ['preis.js', 'shopkern.js']) {
+    assert.doesNotMatch(quelle(modul), formel,
+      `${modul} rechnet die Frachtzeile wieder selbst`);
+  }
+  assert.match(quelle('kontrolle.js'), formel,
+    'die unabhängige Gegenrechnung ist verschwunden — sie ist keine Abschrift');
+
+  // Und die Sache selbst, damit der Fall nicht nur Text zählt.
+  const satz = { modell: 'pauschale', pauschaleNetto: 75.5, sperrgutZuschlagNetto: 7.5, freiHausAbNetto: 1500 };
+  assert.deepEqual(frachtbetrag(satz, { bestellwertNetto: 200, sperrgutPositionen: 2 }),
+    { betragNetto: 90.5, frachtfrei: false, schwelleNetto: 1500 });
+  assert.equal(frachtbetrag(satz, { bestellwertNetto: 1500 }).betragNetto, 0);
+
+  /*
+   * **Ohne Bestellwert gibt es keine Frachtfreiheit** — das ist der Fall des
+   * Browsers. Er kennt keine Einkaufspreise und soll keine kennen; die
+   * Schwelle misst am Einkauf. Kein Ausschluss, sondern eine
+   * Nichtfeststellbarkeit, und der Satz an der Frachtzeile sagt sie.
+   */
+  assert.equal(frachtbetrag(satz, { sperrgutPositionen: 0 }).betragNetto, 75.5);
+  assert.equal(frachtbetrag(satz, { sperrgutPositionen: 0 }).frachtfrei, false);
+  assert.throws(() => frachtbetrag(null), /ohne Frachtsatz/);
 });

@@ -3976,6 +3976,43 @@ export const GEGENPROBEN = Object.freeze([
       + 'Papieren ist der Nettobetrag die Bemessungsgrundlage der Umsatzsteuervoranmeldung.',
   }),
   Object.freeze({
+    id: 'das-buendel-traegt-wieder-eine-modulzeile',
+    pruefer: 'test',
+    was: 'Eine Weiterausfuhr bleibt im gebündelten Skript stehen',
+    datei: 'shop/src/buendel.js',
+    art: 'ersetzen',
+    suchen: "    .filter(({ text }) => /^(import|export)\\s/.test(text));",
+    ersetzen: '    .filter(() => false);',
+    erwartet: /eine Weiterausfuhr im Bündel fällt nicht auf/,
+    warum: 'Am 13. September landete `export { … } from \'./frachtsatz.js\';` wörtlich im '
+      + 'gebündelten Skript. Beide Bauwerke prüfen mit `node --check`, und beide fanden '
+      + 'nichts: `shop.js` wurde als **Modul** geprüft und als klassisches Skript '
+      + 'ausgeliefert; `demo.html` **ist** ein Modul, und die Zeile verlangte eine Datei, '
+      + 'die daneben nicht liegt. **Eine Syntaxprüfung fragt, ob der Text ein Programm ist. '
+      + 'Sie fragt nicht, ob es dasselbe Programm ist, das ausgeliefert wird.** Gefunden hat '
+      + 'es keine Prüfung, sondern ein Zeitablauf: Die Oberflächenprobe wartete zwanzig '
+      + 'Minuten auf eine Seite, deren Skript nie anlief.',
+  }),
+  Object.freeze({
+    id: 'die-frachtzahl-steht-wieder-zweimal',
+    pruefer: 'test',
+    was: 'Der Kundenwarenkorb rechnet die Frachtzeile wieder selbst',
+    datei: 'shop/src/shopkern.js',
+    art: 'ersetzen',
+    suchen: '    const { betragNetto: frachtNetto } = frachtbetrag(l.fracht, { sperrgutPositionen });',
+    ersetzen: '    const frachtNetto = runde(l.fracht.pauschaleNetto + sperrgutPositionen '
+      + '* l.fracht.sperrgutZuschlagNetto);',
+    erwartet: /shopkern\.js rechnet die Frachtzeile wieder selbst/,
+    warum: '`frachttext.js` gibt es seit dem 5. September, weil der **Satz** an der '
+      + 'Frachtzeile zweimal stand — sein Kopf sagt: „Eine Probe, die zwei Fassungen '
+      + 'vergleicht, ist besser als nichts und schlechter als eine Fassung." **Für den Satz '
+      + 'wurde eine Datei gebaut; die Zahl daneben blieb stehen**, in `fracht()` und in '
+      + '`kundenWarenkorb()`. Die dritte Fassung in `kontrolle.js` bleibt bewusst stehen: '
+      + 'Dieses Modul ist die unabhängige Gegenrechnung und kennt weder `preis.js` noch '
+      + '`warenkorb.js` — sie zusammenzulegen zerstörte die Eigenschaft, für die es das '
+      + 'Modul gibt.',
+  }),
+  Object.freeze({
     id: 'die-fracht-faellt-wieder-auf-null',
     pruefer: 'test',
     was: 'Ein Lieferant ohne Frachtsatz wird auf der Kundenseite zu frei Haus',
@@ -3996,7 +4033,7 @@ export const GEGENPROBEN = Object.freeze([
     id: 'das-frachtmodell-wird-wieder-nicht-gelesen',
     pruefer: 'test',
     was: 'Ein Frachtmodell, das diese Rechnung nicht kann, geht durch',
-    datei: 'shop/src/preis.js',
+    datei: 'shop/src/frachtsatz.js',
     art: 'ersetzen',
     suchen: '    if (f.modell !== FRACHTMODELL) {',
     ersetzen: '    if (false) {',

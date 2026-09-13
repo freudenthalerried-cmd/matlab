@@ -71,7 +71,9 @@ import {
 import { LIEFERGEBIET } from '../src/liefergebiet.js';
 import { htaccessText } from '../src/serverkopf.js';
 import { zahlwegName } from '../src/zahlung.js';
-import { fracht, frachtsatzbefund } from '../src/preis.js';
+import { fracht } from '../src/preis.js';
+import { frachtsatzbefund } from '../src/frachtsatz.js';
+import { fremdeModulzeilen } from '../src/buendel.js';
 import { lesKopf, alsHtml, alsText, alsListe, esc } from '../src/markdown.js';
 import { wegwerfordner } from '../src/wegwerf.js';
 import { HANDGEWICHT_KG } from '../src/sperrguteinstufung.js';
@@ -137,9 +139,38 @@ const SCHRIFTEINBINDUNG = '';
  * statt die Seite.
  */
 function pruefeSkript(quelle, name) {
+  /*
+   * **Zuerst die Frage, die `node --check` nicht stellt — 13. September 2026.**
+   * Ein fertiges Bündel ist geschlossen; jede `import`- oder `export`-Zeile
+   * darin ist eine Zeile, die der Bauer nicht verstanden hat. Die Syntaxprüfung
+   * darunter fand sie nicht: Sie prüfte als Modul, wo `export` gültig ist.
+   */
+  const fremd = fremdeModulzeilen(quelle);
+  if (fremd.length) {
+    console.error(`${name} trägt ${fremd.length} Modulzeile(n), die der Bündelbauer`);
+    console.error('nicht aufgelöst hat — der Bau wird abgebrochen.');
+    for (const f of fremd) console.error(`  Zeile ${f.nr}: ${f.text}`);
+    process.exit(2);
+  }
   const ordner = wegwerfordner('skriptpruefung-');
   try {
-    const datei = join(ordner, 'skript.mjs');
+    /*
+     * **`.js` statt `.mjs` — 13. September 2026.**
+     *
+     * Geprüft wurde als **Modul**, ausgeliefert wird als klassisches Skript in
+     * einem `<script>`-Tag. In einem Modul ist `export { … } from '…'` gültig;
+     * im Browser ist es ein Syntaxfehler, und ein Syntaxfehler nimmt **das
+     * ganze Skript** mit.
+     *
+     * > **Der Bau prüfte das Skript als Modul und lieferte es als Skript aus.**
+     *
+     * Gefunden am 13. September, als eine Weiterausfuhr aus `preis.js`
+     * wörtlich in `demo.html` landete: Der Bau lief grün, `npm test` lief
+     * grün, und die Oberflächenprobe **hing** — sie wartete auf eine Seite,
+     * deren Skript nie angelaufen war. Die einzige Stelle, an der es auffiel,
+     * war ein Zeitablauf.
+     */
+    const datei = join(ordner, 'skript.js');
     writeFileSync(datei, quelle, 'utf8');
     const lauf = spawnSync(process.execPath, ['--check', datei], { encoding: 'utf8' });
     if (lauf.status !== 0) {

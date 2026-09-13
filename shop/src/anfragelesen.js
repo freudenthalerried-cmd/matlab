@@ -65,16 +65,14 @@
  * hat die Autorität einer Maschine und die Verlässlichkeit einer Vermutung.
  */
 
-import { EUR, zahlAusText } from './format.js';
-
 /*
- * Kaufmännisch auf Cent runden. **Bewusst hier und nicht aus `preis.js`**:
- * Dieser Leser hängt an keiner Kalkulation — er reicht `rechne` und
- * `schrittFuer` von außen herein. Ein Import zöge `preis.js` mit, und
- * `gebinde.js` trägt seit dem 29. August die Notiz, warum das ein Fehler
- * ist: Vier Zeilen Regel zwangen damals das ganze Modul ins Browserbündel.
+ * **`cent` kam am 13. September aus `format.js` hierher — und ging am selben
+ * Tag dorthin zurück.** Die Begründung für die eigene Fassung war richtig und
+ * zielte auf die falsche Datei: Dieser Leser darf nicht an `preis.js` hängen,
+ * denn das zöge die Einkaufsrechnung ins Browserbündel. `format.js` hängt er
+ * ohnehin schon an — von dort kommen `EUR` und `zahlAusText`.
  */
-const cent = (b) => Math.round((b + Number.EPSILON) * 100) / 100;
+import { EUR, cent, zahlAusText } from './format.js';
 
 /** Eine Artikelnummer, wie dieser Shop sie schreibt: Buchstaben, Bindestrich, Ziffern. */
 const ARTIKELNUMMER = /\b([A-Z][A-Z0-9]*-[A-Z0-9]+(?:-[A-Z0-9]+)*)\b/;

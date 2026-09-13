@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
-import { BROWSERMODULE, KERNMODULE, SHOPMODULE, importhuelle, baueKern, reihenfolge, pruefeNamenskollisionen } from '../src/buendel.js';
+import { BROWSERMODULE, KERNMODULE, SHOPMODULE, importhuelle, baueKern, reihenfolge, pruefeNamenskollisionen, fremdeModulzeilen } from '../src/buendel.js';
 
 const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
 const src = pfad('../src');
@@ -137,4 +137,44 @@ test('Gleichnamige Namen in verschiedenen Modulen sind erlaubt, solange sie es b
     'const EUR = 1;\nfunction zeige() { return EUR + EUR; }\n  const EUR = 2;',
   ));
   assert.doesNotThrow(() => pruefeNamenskollisionen('const a = 1;\nconst b = 2;\nlet c;'));
+});
+
+test('ein fertiges Bündel trägt keine Modulzeile mehr', () => {
+  /*
+   * **Der Fund vom 13. September 2026.** Eine Weiterausfuhr in `preis.js` —
+   * `export { … } from './frachtsatz.js';` — landete wörtlich im gebündelten
+   * Skript. Der Bündelbauer entfernt `export ` **vor einer Deklaration** und
+   * kannte die Weiterausfuhr nicht.
+   *
+   * Beide Bauwerke prüfen mit `node --check`, und beide fanden nichts:
+   * `shop.js` wurde als Modul geprüft (dort ist `export` gültig) und als
+   * klassisches Skript ausgeliefert; `demo.html` **ist** ein Modul, und die
+   * Zeile verlangte eine Datei, die daneben nicht liegt.
+   *
+   * > **Eine Syntaxprüfung fragt, ob der Text ein Programm ist. Sie fragt
+   * > nicht, ob es dasselbe Programm ist, das ausgeliefert wird.**
+   *
+   * Gefunden hat es keine Prüfung, sondern ein Zeitablauf: Die
+   * Oberflächenprobe wartete auf eine Seite, deren Skript nie anlief.
+   */
+  assert.deepEqual(fremdeModulzeilen('const a = 1;\nfunction f() {}\n'), []);
+  assert.deepEqual(
+    fremdeModulzeilen("const a = 1;\nexport { X } from './y.js';\n").map((f) => f.nr), [2],
+    'eine Weiterausfuhr im Bündel fällt nicht auf');
+  assert.deepEqual(fremdeModulzeilen("import { x } from './y.js';").map((f) => f.nr), [1]);
+
+  // Ein Wort, das nur so anfängt, ist keine Modulzeile.
+  assert.deepEqual(fremdeModulzeilen('const exportieren = 1;\nimporte.push(2);'), []);
+
+  // Und die beiden wirklich ausgelieferten Skripte, damit der Fall nicht nur
+  // seine eigene Hilfsfunktion prüft.
+  for (const datei of ['../demo.html', '../ausgabe/site/shop.js']) {
+    const pfad = fileURLToPath(new URL(datei, import.meta.url));
+    if (!existsSync(pfad)) continue; // ohne Bau keine Aussage
+    const text = readFileSync(pfad, 'utf8');
+    const skript = datei.endsWith('.js') ? text
+      : text.slice(text.indexOf('<script type="module">'), text.indexOf('</script>'));
+    assert.deepEqual(fremdeModulzeilen(skript).map((f) => f.text), [],
+      `${datei} trägt eine Modulzeile, die der Bündelbauer nicht aufgelöst hat`);
+  }
 });

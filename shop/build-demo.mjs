@@ -10,7 +10,7 @@ import { readFileSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { baueKern, KERNMODULE, SHOPMODULE } from './src/buendel.js';
+import { baueKern, fremdeModulzeilen, KERNMODULE, SHOPMODULE } from './src/buendel.js';
 import { jsonFuerSkript } from './src/format.js';
 import { ohneKommentare } from './src/entkommentieren.js';
 
@@ -59,8 +59,23 @@ const skriptAnfang = html.indexOf('<script type="module">') + '<script type="mod
 const skriptEnde = html.indexOf('</script>', skriptAnfang);
 const pruefverzeichnis = mkdtempSync(join(tmpdir(), 'demo-pruefung-'));
 try {
+  const skript = html.slice(skriptAnfang, skriptEnde);
+  /*
+   * **Zuerst die Frage, die `node --check` nicht stellt — 13. September 2026.**
+   * Eine Weiterausfuhr aus `preis.js` landete wörtlich hier drin. Syntaktisch
+   * war sie in Ordnung — dieses Skript ist ein Modul —, und sie verlangte eine
+   * Datei `./frachtsatz.js`, die neben `demo.html` nicht liegt. Das Modul lud
+   * nicht, die Seite hatte kein Skript, und `--check` löst keine Einfuhren auf.
+   * Gefunden hat es ein Zeitablauf in der Oberflächenprobe.
+   */
+  const fremd = fremdeModulzeilen(skript);
+  if (fremd.length) {
+    throw new Error(`Das zusammengefügte Skript trägt ${fremd.length} Modulzeile(n), die der `
+      + `Bündelbauer nicht aufgelöst hat:\n`
+      + fremd.map((f) => `  Zeile ${f.nr}: ${f.text}`).join('\n'));
+  }
   const pruefdatei = join(pruefverzeichnis, 'skript.mjs');
-  writeFileSync(pruefdatei, html.slice(skriptAnfang, skriptEnde));
+  writeFileSync(pruefdatei, skript);
   const pruefung = spawnSync(process.execPath, ['--check', pruefdatei], { encoding: 'utf8' });
   if (pruefung.status !== 0) {
     throw new Error('Das zusammengefügte Skript parst nicht:\n' + pruefung.stderr);

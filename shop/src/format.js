@@ -9,6 +9,33 @@
  */
 
 /** Betrag in österreichischer Schreibweise. */
+/**
+ * Kaufmännisch auf Cent runden — **die** Rundungsregel dieses Hauses.
+ *
+ * **Hierher gezogen am 13. September 2026.** Sie stand viermal: als `cent` in
+ * `preis.js`, als `rund` in `kontrolle.js`, als `runde` in `shopkern.js` und
+ * noch einmal als `cent` in `anfragelesen.js`. Zwei der vier trugen das
+ * `Number.EPSILON`, zwei nicht — und das ist kein Schönheitsfehler:
+ *
+ * ```
+ * 1,005  →  mit EPSILON 1,01   ohne 1,00
+ * 0,575  →  mit EPSILON 0,58   ohne 0,57
+ * ```
+ *
+ * Über zwei Millionen dreistellige Werte gemessen: **31 Unterschiede.** Über
+ * den echten Katalog — 46 Artikel, 400 bestellbare Mengen je Artikel, Ein- und
+ * Verkaufspreis — **keiner**. Der Unterschied ist also heute nicht im Geld;
+ * gefunden wurde er, weil die Frachtformel nebenan dreimal stand und beim
+ * Zusammenlegen auffiel, dass auch die Rundung mehrfach dastand.
+ *
+ * > **Zwei Rundungsregeln für dieselbe Währung sind zwei Antworten auf eine
+ * > Frage, und welche gilt, entscheidet der Aufrufer — ohne es zu wissen.**
+ *
+ * Gerundet wird mit `Number.EPSILON`: Die Hälfte eines Cents gehört nach oben,
+ * und `1,005 * 100` ist in Gleitkomma knapp darunter.
+ */
+export const cent = (betrag) => Math.round((betrag + Number.EPSILON) * 100) / 100;
+
 export const EUR = (n) => n.toFixed(2).replace('.', ',') + ' €';
 
 /*

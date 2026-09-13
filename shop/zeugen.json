@@ -68,6 +68,9 @@
     "shop/test/beleg.test.js",
     "shop/test/vorgangwerkzeug.test.js"
   ],
+  "das-buendel-traegt-wieder-eine-modulzeile": [
+    "shop/test/buendel.test.js"
+  ],
   "das-frachtmodell-wird-wieder-nicht-gelesen": [
     "shop/test/preis.test.js"
   ],
@@ -172,6 +175,9 @@
   ],
   "die-fracht-faellt-wieder-auf-null": [
     "shop/test/shopkern.test.js"
+  ],
+  "die-frachtzahl-steht-wieder-zweimal": [
+    "shop/test/preis.test.js"
   ],
   "die-frist-laeuft-auch-nach-der-annahme": [
     "shop/test/vorgangsstand.test.js"

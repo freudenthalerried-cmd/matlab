@@ -89,6 +89,18 @@ export const KERNMODULE = Object.freeze([
   // ohne Zahl und ohne Wissen: `preis.js` selbst darf nicht ins Bündel, es
   // trägt die Einkaufsrechnung.
   'frachttext.js',
+  /*
+   * **Ergänzt am 13. September.** Dasselbe noch einmal, eine Ebene tiefer:
+   * Am 5. September wurde der **Satz** an der Frachtzeile zusammengelegt, die
+   * **Zahl** daneben blieb zweimal stehen — in `fracht()` und in
+   * `kundenWarenkorb()`. Sie steht jetzt einmal.
+   *
+   * Sie darf in den Browser, weil sie keine Einkaufszahl trägt: Gerechnet wird
+   * aus Pauschale, Zuschlag und der Zahl der Sperrgutpositionen. Die
+   * Frei-Haus-Schwelle misst am Einkauf und bleibt draußen — der Browser ruft
+   * ohne Bestellwert, und ohne ihn gibt es keine Frachtfreiheit.
+   */
+  'frachtsatz.js',
   // **Ergänzt am 8. September.** Die Systemtreue eines WDVS — welche Schicht
   // zu welchem Hersteller gehört und dass Mischen die Zulassung verlässt.
   // Sie darf in den Browser: Sie trägt keine Zahl und keine Rechnung, sondern
@@ -148,6 +160,10 @@ export const BROWSERMODULE = Object.freeze([
   // **Ergänzt am 5. September.** Ein Satz, keine Zahl, kein Wissen — der Satz
   // an der Frachtzeile, den `shopkern.js` und `preis.js` gemeinsam brauchen.
   'frachttext.js',
+  // **Ergänzt am 13. September.** Die Zahl zu diesem Satz — dieselbe
+  // Begründung, eine Ebene tiefer. Keine Einkaufszahl, nur Pauschale,
+  // Zuschlag und die Zahl der Sperrgutpositionen.
+  'frachtsatz.js',
 ]);
 
 /**
@@ -220,3 +236,40 @@ export function baueKern(lies, module = KERNMODULE) {
 // Erzeugnis aus welchen Quellen entsteht und wer es liest. Zwei Werkzeuge
 // riefen sie mit je eigener Quellenliste; sieben weitere lasen dasselbe
 // Erzeugnis und riefen sie gar nicht.
+
+/**
+ * Modulzeilen, die im gebündelten Skript stehengeblieben sind.
+ *
+ * **Der Fund vom 13. September 2026.** Eine Weiterausfuhr in `preis.js` —
+ * `export { … } from './frachtsatz.js';` — landete wörtlich im gebündelten
+ * Skript. Der Bündelbauer ist ein Scanner ohne Parser: Er entfernt `export `
+ * **vor einer Deklaration** und kannte die Weiterausfuhr nicht.
+ *
+ * Beide Bauwerke prüfen das Ergebnis mit `node --check`. Das fand nichts, und
+ * zwar aus zwei verschiedenen Gründen:
+ *
+ * - `ausgabe/site/shop.js` wurde als `skript.mjs` geprüft, also als **Modul** —
+ *   dort ist `export` gültige Syntax. Ausgeliefert wird es als klassisches
+ *   Skript, wo es ein Syntaxfehler ist. *Der Bau prüfte das Skript als Modul
+ *   und lieferte es als Skript aus.*
+ * - `demo.html` trägt `<script type="module">`. Dort ist die Zeile syntaktisch
+ *   in Ordnung — und verlangt eine Datei `./frachtsatz.js`, die neben
+ *   `demo.html` nicht liegt. Das Modul lädt nicht, die Seite hat kein Skript,
+ *   und `node --check` löst keine Einfuhren auf.
+ *
+ * > **Eine Syntaxprüfung fragt, ob der Text ein Programm ist. Sie fragt nicht,
+ * > ob es dasselbe Programm ist, das ausgeliefert wird.**
+ *
+ * Gefunden hat es keine Prüfung, sondern ein **Zeitablauf**: Die
+ * Oberflächenprobe wartete zwanzig Minuten auf eine Seite, deren Skript nie
+ * angelaufen war.
+ *
+ * Diese Funktion stellt die Frage direkt: Ein fertiges Bündel ist
+ * geschlossen — jede `import`- oder `export`-Zeile darin ist eine Zeile, die
+ * der Bauer nicht verstanden hat.
+ */
+export function fremdeModulzeilen(quelle) {
+  return String(quelle ?? '').split('\n')
+    .map((zeile, i) => ({ nr: i + 1, text: zeile.trim() }))
+    .filter(({ text }) => /^(import|export)\s/.test(text));
+}

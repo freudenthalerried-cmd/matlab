@@ -18,6 +18,19 @@
  */
 
 import { frachtGrundText, frachtfreiText } from './frachttext.js';
+import { cent } from './format.js';
+import { frachtbetrag } from './frachtsatz.js';
+/*
+ * **Kein Weiterexport — 13. September 2026.** Hier stand
+ * `export { FRACHTMODELL, frachtbetrag, frachtsatzbefund } from './frachtsatz.js';`,
+ * damit die alten Aufrufer nichts ändern müssen. Der Bündelbauer ist ein
+ * Scanner ohne Parser: Er entfernt `export ` vor einer Deklaration und ließ
+ * die **Weiterausfuhr** stehen. Sie landete wörtlich in `demo.html`, und
+ * ein klassisches Skript bricht an `export` — die ganze Seite war tot.
+ *
+ * Wer die drei braucht, holt sie aus `frachtsatz.js`. Das ist ohnehin die
+ * ehrlichere Zeile: Eine Quelle für jede Zahl.
+ */
 
 /**
  * **Zwei Margen, die nicht dasselbe messen** — und die zu verwechseln kostet
@@ -41,10 +54,13 @@ import { frachtGrundText, frachtfreiText } from './frachttext.js';
 export const MARGENUNTERGRENZE = 0.32;
 export const UST_SATZ = 0.20;
 
-/** Kaufmännisch auf Cent runden. */
-export function cent(betrag) {
-  return Math.round((betrag + Number.EPSILON) * 100) / 100;
-}
+/*
+ * **Die Rundungsregel steht seit dem 13. September in `format.js`** — sie
+ * stand viermal im Bestand, zweimal mit `Number.EPSILON` und zweimal ohne.
+ * Hier bleibt nur die Ausfuhr, damit die sieben Module, die sie von hier
+ * holen, sie weiter von hier holen können.
+ */
+export { cent };
 
 /**
  * Einkaufspreis aus UVP und Händlerrabatt.
@@ -192,7 +208,7 @@ export function fracht(positionen, lieferant) {
   // Begründung steht dort; kurz: Ein Satz „frei Haus ab 1500 € Bestellwert"
   // neben einer Frachtzeile von 0,00 € sagt dem Leser, dass unser Einkauf
   // mindestens so hoch ist — und der Warenwert steht auf demselben Blatt.
-  if (regel.freiHausAbNetto != null && bestellwertNetto >= regel.freiHausAbNetto) {
+  if (frachtbetrag(regel, { bestellwertNetto }).frachtfrei) {
     return {
       betragNetto: 0,
       grund: frachtfreiText(),
@@ -203,9 +219,10 @@ export function fracht(positionen, lieferant) {
   }
 
   const sperrgutPositionen = positionen.filter((p) => p.sperrgut).length;
-  const betragNetto = cent(
-    regel.pauschaleNetto + sperrgutPositionen * (regel.sperrgutZuschlagNetto ?? 0),
-  );
+  // **Die Zahl kommt seit dem 13. September aus `frachtsatz.js`.** Sie stand
+  // dreimal: hier, in `kundenWarenkorb` und — am schlimmsten — in dem Prüfer,
+  // der die beiden gegeneinander hält.
+  const { betragNetto } = frachtbetrag(regel, { bestellwertNetto, sperrgutPositionen });
 
   return {
     betragNetto,
@@ -224,89 +241,6 @@ export function fracht(positionen, lieferant) {
     // gibt — nicht 0: Eine Schwelle von null wäre eine Schwelle.
     schwelleNetto: regel.freiHausAbNetto ?? null,
   };
-}
-
-/**
- * Was diese Rechnung von einem Frachtsatz verlangt — und ob er es hergibt.
- *
- * **Zwei Funde vom 13. September 2026, beide am selben Objekt.**
- *
- * **Erstens: die stille Null.** `oeffentlicherLieferant` schrieb
- * `pauschaleNetto: l.fracht?.pauschaleNetto ?? 0`. Ein Lieferant ohne
- * Frachtsatz wurde damit auf der **Kundenseite** zu frei Haus:
- *
- * ```
- * Kasse:  Warenwert 300,00 €   Fracht 0,00 €   offen: []
- * intern: Cannot read properties of undefined (reading 'freiHausAbNetto')
- * ```
- *
- * > **Derselbe fehlende Wert bricht den internen Weg laut ab und macht auf dem
- * > Kundenweg lautlos ein Geschenk.**
- *
- * Zwei Zeilen darüber steht im selben Objekt `lieferzeitWerktage: … ?? null`,
- * und `beleg.js` trägt seit dem 30. August die Notiz, `?? 0` sei dort „die
- * teuerste Zeile des Moduls" gewesen: *Unbekannt plus bekannt ergibt
- * unbekannt.* Der Satz stand da und galt zwei Zeilen weit.
- *
- * **Zweitens: das ungelesene Feld.** Alle vier Lieferanten tragen
- * `fracht.modell: "pauschale"`, und **keine Zeile dieses Bestands liest es**.
- * Ein Feld, das ein Modell benennt, sagt: Es gibt mehr als eines. Diese
- * Rechnung kann genau eines — Pauschale plus Zuschlag je Sperrgutposition.
- * Eine Staffel nach Gewicht oder Entfernung würde sie still falsch rechnen.
- *
- * > **Ein Feld, das eine Wahl behauptet, die niemand trifft, ist eine Zusage
- * > an den nächsten Datensatz.**
- *
- * Deshalb wird es hier gelesen — als Bedingung und nicht als Schalter.
- */
-export const FRACHTMODELL = 'pauschale';
-
-export function frachtsatzbefund(lieferanten = []) {
-  const meldungen = [];
-  for (const l of lieferanten) {
-    const wo = l?.name ?? l?.id ?? '(ohne Kennung)';
-    const f = l?.fracht;
-    if (!f) {
-      meldungen.push({
-        regel: 'ohne-frachtsatz',
-        text: `${wo}: kein Frachtsatz hinterlegt — auf der Kundenseite würde daraus `
-          + 'frei Haus, und bezahlt hätte es dieses Haus',
-      });
-      continue;
-    }
-    if (f.modell !== FRACHTMODELL) {
-      meldungen.push({
-        regel: 'fremdes-frachtmodell',
-        text: `${wo}: Frachtmodell „${f.modell}" — gerechnet wird ausschließlich `
-          + `„${FRACHTMODELL}" (Pauschale je Lieferung plus Zuschlag je Sperrgutposition). `
-          + 'Eine Staffel nach Gewicht oder Entfernung rechnete diese Funktion still falsch',
-      });
-    }
-    for (const [feld, wert] of [['pauschaleNetto', f.pauschaleNetto],
-      ['sperrgutZuschlagNetto', f.sperrgutZuschlagNetto]]) {
-      if (typeof wert !== 'number' || !Number.isFinite(wert) || wert < 0) {
-        meldungen.push({
-          regel: 'frachtsatz-unlesbar',
-          text: `${wo}: ${feld} ist ${JSON.stringify(wert)} — daraus lässt sich keine `
-            + 'Frachtzeile rechnen, und null wäre die optimistischste aller Annahmen',
-        });
-      }
-    }
-    /*
-     * Die Frei-Haus-Schwelle darf fehlen — Poschacher hat keine erkennbare,
-     * und das ist ein **Befund** aus fünfzehn Rechnungen und keine Lücke.
-     * `null` heißt hier „es gibt keine", nicht „wir wissen es nicht".
-     */
-    if (f.freiHausAbNetto !== null && f.freiHausAbNetto !== undefined
-      && !(typeof f.freiHausAbNetto === 'number' && f.freiHausAbNetto > 0)) {
-      meldungen.push({
-        regel: 'schwelle-unlesbar',
-        text: `${wo}: freiHausAbNetto ist ${JSON.stringify(f.freiHausAbNetto)} — `
-          + 'zulässig sind eine positive Zahl oder `null` für „es gibt keine"',
-      });
-    }
-  }
-  return { geprueft: lieferanten.length, meldungen, sauber: meldungen.length === 0 };
 }
 
 /**

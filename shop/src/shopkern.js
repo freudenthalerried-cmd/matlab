@@ -25,7 +25,8 @@ import { systembruch, systembruchsatz } from './systemtreue.js';
 // eine Probe hielt beide gegeneinander. Eine Probe, die zwei Fassungen
 // vergleicht, ist besser als nichts und schlechter als eine Fassung.
 import { frachtGrundText } from './frachttext.js';
-import { einheitText, zahlText } from './format.js';
+import { cent, einheitText, zahlText } from './format.js';
+import { frachtbetrag } from './frachtsatz.js';
 
 /**
  * Zerlegt Text in vergleichbare Wortstämme.
@@ -1066,7 +1067,12 @@ export const UST_SATZ_KUNDE = 0.2;
 export const ustText = (satz = UST_SATZ_KUNDE) =>
   `${String(Math.round(satz * 1000) / 10).replace('.', ',')} %`;
 
-const runde = (n) => Math.round(n * 100) / 100;
+// **Eine Rundungsregel — 13. September 2026.** Hier stand sie zum dritten
+// Mal im Bestand, und zwar ohne das `Number.EPSILON`, das `preis.js`
+// trug. Gemessen: 31 Unterschiede auf zwei Millionen dreistellige Werte,
+// über den echten Katalog keiner. Zwei Regeln für dieselbe Währung sind
+// trotzdem zwei Antworten auf eine Frage.
+const runde = cent;
 
 /**
  * Der Mindestbestellwert je Lieferung — **Gate 25, entschieden am 3. September
@@ -1165,7 +1171,18 @@ export function kundenWarenkorb(zeilen, { artikel, lieferanten, mindestbestellwe
     }
     const warenwertNetto = runde(positionen.reduce((s, p) => s + p.zeilensummeNetto, 0));
     const sperrgutPositionen = positionen.filter((p) => p.sperrgut).length;
-    const frachtNetto = runde(l.fracht.pauschaleNetto + sperrgutPositionen * l.fracht.sperrgutZuschlagNetto);
+    /*
+     * **Die Zahl kommt seit dem 13. September aus `frachtsatz.js`.** Sie stand
+     * dreimal: hier, in `fracht()` und in dem Prüfer, der die beiden
+     * gegeneinander hält. `frachttext.js` hat dasselbe am 5. September für den
+     * **Satz** getan; die Zahl daneben blieb stehen.
+     *
+     * Ohne Bestellwert gerufen — der Browser kennt keine Einkaufspreise und
+     * soll keine kennen. Ohne ihn gibt es keine Frachtfreiheit, und das ist
+     * kein Ausschluss, sondern eine Nichtfeststellbarkeit; der Satz darunter
+     * sagt sie dem Kunden.
+     */
+    const { betragNetto: frachtNetto } = frachtbetrag(l.fracht, { sperrgutPositionen });
 
     if (l.fracht.freiHausMoeglich) {
       offen.push('Dieser Hersteller liefert ab einem bestimmten Bestellwert frachtfrei. '
