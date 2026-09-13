@@ -482,3 +482,38 @@ test('eine Seite ohne Paketgröße wird gezählt und nicht beurteilt', () => {
   assert.equal(b.geprueft, 2);
   assert.equal(b.sauber, true);
 });
+
+test('die Aufrundung aufs Gebinde steht an genau einer Stelle', () => {
+  /*
+   * **Der Fund vom 13. September 2026.** `gebindezahl` rechnet die
+   * aufgerundete Menge (`gedeckteMenge`), und `shop-ui.js` hat sie **zweimal
+   * von Hand** nachgerechnet: am Korbknopf der Artikelseite und am Mengenfeld
+   * im Korb. Dreimal dieselbe Formel im Bestand — und die beiden
+   * handgeschriebenen entschieden, was der Kunde kauft, während die hiesige
+   * nur anzeigte, was dahintersteckt.
+   *
+   * Erklärt hat das der Satz über `gebindezahl`: *„Für die Anzeige gedacht,
+   * nicht für die Rechnung."*
+   *
+   * > **Eine Regel, die an drei Stellen steht, ist drei Regeln, sobald eine
+   * > davon geändert wird.**
+   *
+   * Gemessen wird die Formel selbst, nicht ihr Ergebnis: Wer sie neu
+   * hinschreibt, bekommt heute dieselbe Zahl — und morgen nicht mehr.
+   */
+  const formel = /Math\.ceil\(Math\.round\(/g;
+  const quelle = fileURLToPath(new URL('../src/gebinde.js', import.meta.url));
+  const oberflaeche = fileURLToPath(new URL('../shop-ui.js', import.meta.url));
+
+  const inGebinde = (readFileSync(quelle, 'utf8').match(formel) ?? []).length;
+  assert.equal(inGebinde, 1, 'die Formel steht in gebinde.js nicht mehr genau einmal');
+
+  const inOberflaeche = (readFileSync(oberflaeche, 'utf8').match(formel) ?? []).length;
+  assert.equal(inOberflaeche, 0,
+    'shop-ui.js rechnet die Aufrundung wieder selbst, statt gebindezahl zu rufen');
+
+  // Und die Sache selbst, damit der Fall nicht nur Text zählt: Was
+  // `gebindezahl` liefert, ist die Menge, die in den Korb gehört.
+  assert.deepEqual(gebindezahl(40, 0.75), { stueck: 54, gedeckteMenge: 40.5, gehtAuf: false });
+  assert.deepEqual(gebindezahl(39.75, 0.75), { stueck: 53, gedeckteMenge: 39.75, gehtAuf: true });
+});

@@ -798,6 +798,19 @@ function einheitenbefund(artikel = [], woerter = EINHEITEN) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 function gebindezahl(menge, schritt) {
   if (!(schritt > 0) || !(menge > 0)) return null;
   const stueck = Math.ceil(Math.round((menge / schritt) * 1e6) / 1e6);
@@ -1810,6 +1823,7 @@ function frachtGrundText(sperrgutPositionen) {
 function frachtfreiText() {
   return 'frei Haus — die Frachtfreigrenze dieses Herstellers ist erreicht';
 }
+
 
 
 
@@ -2930,6 +2944,39 @@ function kundenWarenkorb(zeilen, { artikel, lieferanten, mindestbestellwertNetto
   const frachtNetto = runde(teillieferungen.reduce((s, t) => s + t.frachtNetto, 0));
   const nettoGesamt = runde(warenwertNetto + frachtNetto);
   const ustBetrag = runde(nettoGesamt * ust);
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  for (const z of zeilen) {
+    const a = nachId.get(z.sku);
+    const schritt = mengenschritt(a);
+    if (!(schritt > 0)) continue;
+    const zahlwerk = gebindezahl(z.menge, schritt);
+    if (zahlwerk && !zahlwerk.gehtAuf) {
+      const e = einheitText(a.einheit);
+      offen.push(`${a.bezeichnung}: ${zahlText(z.menge)} ${e} sind kein ganzes Gebinde — `
+        + `abgegeben wird in Einheiten zu ${zahlText(schritt)} ${e}, die nächste volle `
+        + `Menge ist ${zahlText(zahlwerk.gedeckteMenge)} ${e} (${zahlwerk.stueck} Stück).`);
+    }
+  }
 
   
   
@@ -4192,7 +4239,12 @@ function gruppenbefund(rechnung, text) {
       var schritt = mengenschritt(artikel) || 1;
       var menge = mengenfeld ? parseFloat(String(mengenfeld.value).replace(',', '.')) : schritt;
       if (!Number.isFinite(menge) || menge <= 0) menge = schritt;
-      menge = Math.round(Math.ceil(Math.round((menge / schritt) * 1e6) / 1e6) * schritt * 100) / 100;
+      
+      
+      
+      
+      
+      menge = gebindezahl(menge, schritt).gedeckteMenge;
       korb = legeInKorb(korb, sku, menge);
       sichern();
       
@@ -4675,11 +4727,11 @@ function gruppenbefund(rechnung, text) {
           
           
           
-          m = Math.ceil(Math.round((m / schritt) * 1e6) / 1e6) * schritt;
+          
+          m = gebindezahl(m, schritt).gedeckteMenge;
         } else {
-          m = Math.ceil(m);
+          m = Math.round(Math.ceil(m) * 100) / 100;
         }
-        m = Math.round(m * 100) / 100;
         korb = setzeMenge(korb, p.sku, m);
         sichern();
         neu();

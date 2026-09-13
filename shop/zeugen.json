@@ -106,6 +106,9 @@
   "die-angebotsnummer-wird-wieder-gezogen": [
     "shop/test/ablage.test.js"
   ],
+  "die-aufrundung-steht-wieder-zweimal": [
+    "shop/test/gebinde.test.js"
+  ],
   "die-bankfelder-kommen-nicht-durch": [
     "shop/test/vorgangwerkzeug.test.js"
   ],
@@ -127,6 +130,9 @@
   ],
   "die-gebildete-nummer-geht-als-gezogene-durch": [
     "shop/test/ablage.test.js"
+  ],
+  "die-kasse-bepreist-die-halbe-platte": [
+    "shop/test/shopkern.test.js"
   ],
   "die-lieferzeit-ab-heute": [
     "shop/test/warenkorb.test.js"

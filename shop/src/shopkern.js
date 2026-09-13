@@ -19,12 +19,13 @@
  * Suche
  * ------------------------------------------------------------------ */
 
-import { istMenge } from './gebinde.js';
+import { gebindezahl, istMenge, mengenschritt } from './gebinde.js';
 import { systembruch, systembruchsatz } from './systemtreue.js';
 // **Seit dem 5. September von dort statt hier.** Der Wortlaut stand zweimal;
 // eine Probe hielt beide gegeneinander. Eine Probe, die zwei Fassungen
 // vergleicht, ist besser als nichts und schlechter als eine Fassung.
 import { frachtGrundText } from './frachttext.js';
+import { einheitText, zahlText } from './format.js';
 
 /**
  * Zerlegt Text in vergleichbare Wortstämme.
@@ -1118,6 +1119,39 @@ export function kundenWarenkorb(zeilen, { artikel, lieferanten, mindestbestellwe
   const frachtNetto = runde(teillieferungen.reduce((s, t) => s + t.frachtNetto, 0));
   const nettoGesamt = runde(warenwertNetto + frachtNetto);
   const ustBetrag = runde(nettoGesamt * ust);
+
+  /*
+   * **Eine Menge, die es nicht gibt — 13. September 2026.**
+   *
+   * Beide Wege der Oberfläche runden auf ganze Gebinde auf: der Korbknopf der
+   * Artikelseite seit dem 29. August, das Mengenfeld im Korb seit dem
+   * 5. September. **Dieser Kern hat es nie gefragt.** Gemessen: ein Korb über
+   * `40 m²` von `XPS glatt SF 30 mm 0,75 m2` — also 53⅓ Platten — kam mit
+   * `offen: []` und einem Warenwert von 209,20 € zurück.
+   *
+   * > **Die Regel bestand nur im Browser, und wer am Speicher vorbei einen
+   * > Korb hineinlegte, bekam einen Preis für Ware, die niemand liefert.**
+   *
+   * Seit dem 12. September widersprechen sich damit zwei Hälften dieses
+   * Hauses: `anfrage-lesen` weigert sich, eine Menge zu übernehmen, die kein
+   * ganzes Gebinde ist — die Kasse zeigte für dieselbe Menge einen Preis.
+   *
+   * Gerundet wird hier **nicht**: Die Menge des Kunden gehört ihm, und ein
+   * Rechenkern, der sie stillschweigend ändert, ist schlimmer als einer, der
+   * sie stillschweigend bepreist. Gesagt wird es.
+   */
+  for (const z of zeilen) {
+    const a = nachId.get(z.sku);
+    const schritt = mengenschritt(a);
+    if (!(schritt > 0)) continue;
+    const zahlwerk = gebindezahl(z.menge, schritt);
+    if (zahlwerk && !zahlwerk.gehtAuf) {
+      const e = einheitText(a.einheit);
+      offen.push(`${a.bezeichnung}: ${zahlText(z.menge)} ${e} sind kein ganzes Gebinde — `
+        + `abgegeben wird in Einheiten zu ${zahlText(schritt)} ${e}, die nächste volle `
+        + `Menge ist ${zahlText(zahlwerk.gedeckteMenge)} ${e} (${zahlwerk.stueck} Stück).`);
+    }
+  }
 
   // **Systemtreue — 8. September 2026.** Zuletzt, damit der Hinweis unter den
   // rechnerischen Punkten steht: Er kostet nichts und hält nichts auf, er

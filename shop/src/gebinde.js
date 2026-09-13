@@ -425,9 +425,22 @@ export function einheitenbefund(artikel = [], woerter = EINHEITEN) {
 /**
  * Wie viele ganze Gebinde eine Menge ergibt — und wie viel dabei herauskommt.
  *
- * Für die Anzeige gedacht, nicht für die Rechnung: Der Warenkorb führt die
- * Menge in der Einheit des Artikels, nicht in Stück. Diese Funktion sagt dem
- * Kunden, was hinter seiner Zahl steckt.
+ * **Berichtigt am 13. September 2026.** Hier stand: *„Für die Anzeige gedacht,
+ * nicht für die Rechnung."* Der Satz war falsch, und zwar in die gefährliche
+ * Richtung — er erklärte, warum niemand diese Funktion benutzen musste.
+ *
+ * `gedeckteMenge` **ist** die aufgerundete Menge, also genau das, was in den
+ * Korb gehört. `shop-ui.js` hat sie trotzdem zweimal von Hand nachgerechnet:
+ * einmal am Korbknopf der Artikelseite, einmal am Mengenfeld im Korb. Dieselbe
+ * Formel dreimal im Bestand, und die beiden handgeschriebenen entschieden,
+ * was der Kunde kauft, während die hiesige nur anzeigte, was dahintersteckt.
+ *
+ * > **Eine Regel, die an drei Stellen steht, ist drei Regeln, sobald eine
+ * > davon geändert wird.**
+ *
+ * Diese Funktion ist seit heute die Stelle. `gehtAuf` sagt dazu, ob die Menge
+ * schon ein ganzes Gebinde war — die Frage, die der rechnende Kern seit heute
+ * ebenfalls stellt, statt eine unlieferbare Menge wortlos zu bepreisen.
  */
 export function gebindezahl(menge, schritt) {
   if (!(schritt > 0) || !(menge > 0)) return null;

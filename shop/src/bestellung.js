@@ -10,6 +10,7 @@
 
 import { EUR, LUECKE, csvFeld, textZeile, zahlText } from './format.js';
 import { traegtSichSelbst } from './kostenbild.js';
+import { gebindezahl, mengenschritt } from './gebinde.js';
 
 /**
  * Erzeugt je Teillieferung eine Bestellung an den Lieferanten.
@@ -245,6 +246,35 @@ export function darfAutomatischAusgeloestWerden(warenkorb, auftrag) {
     .map((t) => t.lieferantName ?? t.lieferantId);
   if (ohneLieferzeit.length) {
     gruende.push(`Lieferzeit unbekannt (${ohneLieferzeit.join(', ')}) — der Termin wäre unbestellt zugesagt`);
+  }
+
+  /*
+   * **Keine Bestellung über eine Menge, die es nicht gibt — 13. September 2026.**
+   *
+   * Die Sperren oben schützen das Geld und die Zustellung. Was fehlte, war der
+   * Schutz der **Ware**: `XPS glatt SF 30 mm 0,75 m2` wird in Platten zu
+   * 0,75 m² abgegeben, und eine Bestellung über 40 m² sind 53⅓ Platten. Beide
+   * Wege der Oberfläche runden auf — der rechnende Kern hat es bis heute nicht
+   * einmal gefragt, und von hier aus ginge die Zahl an den Lieferanten.
+   *
+   * > **Dieselbe Familie wie die Lieferzeit am 1. September: eine Bestellung,
+   * > die beim Lieferanten weder ausführbar noch zuordenbar ist.**
+   *
+   * Gerundet wird auch hier nicht. Was zu bestellen ist, entscheidet der
+   * Betreiber mit dem Kunden; dieses Werkzeug sagt, dass es so nicht geht.
+   */
+  const krummeMengen = warenkorb.teillieferungen.flatMap((t) => t.positionen
+    .map((p) => {
+      const schritt = mengenschritt(p);
+      const zahlwerk = schritt > 0 ? gebindezahl(p.menge, schritt) : null;
+      return zahlwerk && !zahlwerk.gehtAuf
+        ? `${p.sku}: ${zahlText(p.menge)} ist kein ganzes Gebinde zu ${zahlText(schritt)}`
+        : null;
+    })
+    .filter(Boolean));
+  if (krummeMengen.length) {
+    gruende.push(`Unlieferbare Menge (${krummeMengen.join('; ')}) — der Lieferant gibt `
+      + 'die Ware in ganzen Gebinden ab');
   }
 
   // Gate 20: Keine Bestellung ohne positiven Deckungsbeitrag. Der Mindest-

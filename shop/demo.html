@@ -1452,6 +1452,19 @@ function einheitenbefund(artikel = [], woerter = EINHEITEN) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 function gebindezahl(menge, schritt) {
   if (!(schritt > 0) || !(menge > 0)) return null;
   const stueck = Math.ceil(Math.round((menge / schritt) * 1e6) / 1e6);
@@ -2790,6 +2803,7 @@ function artikelseitensystembefund(liesSeite, artikel) {
 
 
 
+
 const MASS = /((?:\d+(?:[.,]\d+)?[\s×x*]+)*\d+(?:[.,]\d+)?)\s*(cm|mm)(?![\p{L}\d])/giu;
 
 function vereinheitlicheMasse(text) {
@@ -3844,6 +3858,39 @@ function kundenWarenkorb(zeilen, { artikel, lieferanten, mindestbestellwertNetto
   const frachtNetto = runde(teillieferungen.reduce((s, t) => s + t.frachtNetto, 0));
   const nettoGesamt = runde(warenwertNetto + frachtNetto);
   const ustBetrag = runde(nettoGesamt * ust);
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  for (const z of zeilen) {
+    const a = nachId.get(z.sku);
+    const schritt = mengenschritt(a);
+    if (!(schritt > 0)) continue;
+    const zahlwerk = gebindezahl(z.menge, schritt);
+    if (zahlwerk && !zahlwerk.gehtAuf) {
+      const e = einheitText(a.einheit);
+      offen.push(`${a.bezeichnung}: ${zahlText(z.menge)} ${e} sind kein ganzes Gebinde — `
+        + `abgegeben wird in Einheiten zu ${zahlText(schritt)} ${e}, die nächste volle `
+        + `Menge ist ${zahlText(zahlwerk.gedeckteMenge)} ${e} (${zahlwerk.stueck} Stück).`);
+    }
+  }
 
   
   
@@ -6233,6 +6280,7 @@ function mindestwarenkorbFreiHaus({ rohmarge, frachtNetto, zahlwegId = 'karte-st
 
 
 
+
 function erzeugeBestellungen(warenkorb, auftrag, { datum = null } = {}) {
   return warenkorb.teillieferungen.map((teil, index) => {
     const nummer = `${auftrag.bestellnummer}-${String(index + 1).padStart(2, '0')}`;
@@ -6439,6 +6487,35 @@ function darfAutomatischAusgeloestWerden(warenkorb, auftrag) {
     .map((t) => t.lieferantName ?? t.lieferantId);
   if (ohneLieferzeit.length) {
     gruende.push(`Lieferzeit unbekannt (${ohneLieferzeit.join(', ')}) — der Termin wäre unbestellt zugesagt`);
+  }
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const krummeMengen = warenkorb.teillieferungen.flatMap((t) => t.positionen
+    .map((p) => {
+      const schritt = mengenschritt(p);
+      const zahlwerk = schritt > 0 ? gebindezahl(p.menge, schritt) : null;
+      return zahlwerk && !zahlwerk.gehtAuf
+        ? `${p.sku}: ${zahlText(p.menge)} ist kein ganzes Gebinde zu ${zahlText(schritt)}`
+        : null;
+    })
+    .filter(Boolean));
+  if (krummeMengen.length) {
+    gruende.push(`Unlieferbare Menge (${krummeMengen.join('; ')}) — der Lieferant gibt `
+      + 'die Ware in ganzen Gebinden ab');
   }
 
   

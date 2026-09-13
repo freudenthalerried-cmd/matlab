@@ -3976,6 +3976,40 @@ export const GEGENPROBEN = Object.freeze([
       + 'Papieren ist der Nettobetrag die Bemessungsgrundlage der Umsatzsteuervoranmeldung.',
   }),
   Object.freeze({
+    id: 'die-kasse-bepreist-die-halbe-platte',
+    pruefer: 'test',
+    was: 'Der Rechenkern schweigt wieder über eine Menge, die kein ganzes Gebinde ist',
+    datei: 'shop/src/shopkern.js',
+    art: 'ersetzen',
+    suchen: '    if (zahlwerk && !zahlwerk.gehtAuf) {',
+    ersetzen: '    if (false) {',
+    erwartet: /der Korb schweigt über eine unlieferbare Menge/,
+    warum: 'Die Regel „nur ganze Gebinde" bestand bis zum 13. September **nur im '
+      + 'Browser** — zweimal, am Korbknopf und am Mengenfeld. Der rechnende Kern gab für '
+      + '40 m² einer Platte zu 0,75 m² einen Preis zurück, mit `offen: []`. Wer am '
+      + 'Speicher vorbei einen Korb hineinlegte, bekam einen Preis für Ware, die niemand '
+      + 'liefert — und seit `anfrage-lesen` am 12. September auf ganze Gebinde einrastet, '
+      + 'widersprachen sich zwei Hälften desselben Hauses: Die Kasse zeigte einen Preis '
+      + 'für eine Menge, die der Leser danach ablehnte.',
+  }),
+  Object.freeze({
+    id: 'die-aufrundung-steht-wieder-zweimal',
+    pruefer: 'test',
+    was: 'Die Oberfläche rechnet die Aufrundung aufs Gebinde wieder selbst',
+    datei: 'shop/shop-ui.js',
+    art: 'ersetzen',
+    suchen: '      menge = gebindezahl(menge, schritt).gedeckteMenge;',
+    ersetzen: '      menge = Math.round(Math.ceil(Math.round((menge / schritt) * 1e6) / 1e6) '
+      + '* schritt * 100) / 100;',
+    erwartet: /shop-ui\.js rechnet die Aufrundung wieder selbst/,
+    warum: '`gebindezahl` rechnet genau diese Zahl, und `shop-ui.js` hat sie trotzdem '
+      + 'zweimal von Hand nachgerechnet. Erklärt hat das der Satz über `gebindezahl`: '
+      + '„Für die Anzeige gedacht, nicht für die Rechnung" — er hat die beiden '
+      + 'Abschriften begründet statt verhindert. Heute liefern alle drei dieselbe Zahl; '
+      + 'wer die Rundung einmal ändert, bekommt eine Korbzeile, die eine Stückzahl '
+      + 'anzeigt, und einen Korb, der eine andere Menge enthält.',
+  }),
+  Object.freeze({
     id: 'der-leser-rastet-nicht-mehr-ein',
     pruefer: 'pruefe-rueckweg',
     was: 'Die zurückgelesene Menge wird wieder bloß geteilt und gerundet',

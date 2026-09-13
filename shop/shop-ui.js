@@ -299,7 +299,12 @@
       var schritt = mengenschritt(artikel) || 1;
       var menge = mengenfeld ? parseFloat(String(mengenfeld.value).replace(',', '.')) : schritt;
       if (!Number.isFinite(menge) || menge <= 0) menge = schritt;
-      menge = Math.round(Math.ceil(Math.round((menge / schritt) * 1e6) / 1e6) * schritt * 100) / 100;
+      // **Eine Regel, ein Ort — 13. September 2026.** Hier stand die
+      // Aufrundung ausgeschrieben, und sieben Zeilen weiter unten im Korb
+      // noch einmal. `gebindezahl` rechnet dieselbe Zahl und hieß bis heute
+      // „für die Anzeige gedacht, nicht für die Rechnung" — der Satz hat die
+      // beiden Abschriften erklärt statt verhindert.
+      menge = gebindezahl(menge, schritt).gedeckteMenge;
       korb = legeInKorb(korb, sku, menge);
       sichern();
       /*
@@ -781,12 +786,12 @@
         if (schritt) {
           // Auf die nächste ganze Einheit aufrunden — nicht ab. Wer 5 m²
           // eintippt und Platten zu 0,75 m² kauft, braucht sieben Platten;
-          // ihm sechs zu geben wäre stillschweigend zu wenig.
-          m = Math.ceil(Math.round((m / schritt) * 1e6) / 1e6) * schritt;
+          // ihm sechs zu geben wäre stillschweigend zu wenig. Gerechnet wird
+          // das seit dem 13. September an einer Stelle, in `gebindezahl`.
+          m = gebindezahl(m, schritt).gedeckteMenge;
         } else {
-          m = Math.ceil(m);
+          m = Math.round(Math.ceil(m) * 100) / 100;
         }
-        m = Math.round(m * 100) / 100;
         korb = setzeMenge(korb, p.sku, m);
         sichern();
         neu();

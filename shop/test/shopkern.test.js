@@ -284,6 +284,48 @@ test('eine Frei-Haus-Schwelle wird gemeldet statt verschwiegen — ohne ihre Zah
     { artikel: beispiel, lieferanten: [oeffentlicherLieferant(lieferantProbe)] }).offen.length, 0);
 });
 
+test('eine Menge, die kein ganzes Gebinde ist, wird benannt statt bepreist', () => {
+  /*
+   * **Der Fund vom 13. September 2026.** Artikel `C` ist
+   * `XPS glatt SF 50 mm **0,75 m2**` — abgegeben in Platten zu 0,75 m². Beide
+   * Wege der Oberfläche runden auf ganze Platten auf; dieser Kern hat es bis
+   * dahin nicht einmal gefragt und gab für 40 m² einen Preis zurück.
+   *
+   * > **Die Regel bestand nur im Browser.** Und seit `anfrage-lesen` am
+   * > 12. September auf ganze Gebinde einrastet, widersprachen sich zwei
+   * > Hälften desselben Hauses: Die Kasse zeigte einen Preis für eine Menge,
+   * > die der Leser danach ablehnte.
+   */
+  const l = [oeffentlicherLieferant(lieferantProbe)];
+  const krumm = kundenWarenkorb([{ sku: 'C', menge: 40 }], { artikel: beispiel, lieferanten: l });
+  assert.equal(krumm.offen.length, 1, 'der Korb schweigt über eine unlieferbare Menge');
+  assert.match(krumm.offen[0], /kein ganzes Gebinde/);
+  assert.match(krumm.offen[0], /40,5 m² \(54 Stück\)/, 'die nächste volle Menge gehört dazu');
+
+  // **Gerundet wird nicht.** Die Menge des Kunden gehört ihm; ein Rechenkern,
+  // der sie stillschweigend ändert, ist schlimmer als einer, der schweigt.
+  assert.equal(krumm.teillieferungen[0].positionen[0].menge, 40);
+
+  // Und die Gegenrichtung: Ein ganzes Vielfaches sagt nichts.
+  const glatt = kundenWarenkorb([{ sku: 'C', menge: 39.75 }], { artikel: beispiel, lieferanten: l });
+  assert.equal(glatt.offen.length, 0, `ein ganzes Gebinde wird gemeldet: ${glatt.offen[0]}`);
+
+  /*
+   * Ware, deren Gebinde diese Seite nicht lesen kann, hat keines: Artikel `A`
+   * ist in **Säcken** geführt (`SCK`), und `mengenschritt` liest nur Kilo,
+   * Quadratmeter und laufende Meter. Wo kein Schritt bekannt ist, gibt es
+   * nichts zu melden — und geraten wird nichts.
+   */
+  const ohneGebinde = kundenWarenkorb([{ sku: 'A', menge: 1.5 }], { artikel: beispiel, lieferanten: l });
+  assert.equal(ohneGebinde.offen.length, 0);
+
+  // Und Kiloware mit gelesenem Gebinde fällt genauso auf: 30 kg sind kein
+  // ganzer Sack zu 25 kg.
+  const kilo = kundenWarenkorb([{ sku: 'B', menge: 30 }], { artikel: beispiel, lieferanten: l });
+  assert.match(kilo.offen[0] ?? '', /Einheiten zu 25 kg/);
+});
+
+
 test('unbekannte Artikel und Artikel ohne Preis werfen', () => {
   const l = [oeffentlicherLieferant(lieferantProbe)];
   assert.throws(() => kundenWarenkorb([{ sku: 'WEG', menge: 1 }], { artikel: beispiel, lieferanten: l }), /Unbekannte Artikelnummer/);

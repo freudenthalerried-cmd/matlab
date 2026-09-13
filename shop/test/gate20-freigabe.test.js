@@ -29,6 +29,44 @@ const auftrag = (zusatz = {}) => ({
   ...zusatz,
 });
 
+test('keine Bestellung über eine Menge, die es nicht gibt', () => {
+  /*
+   * **13. September 2026.** Die Sperren dieser Funktion schützen das Geld
+   * (Zahlung, Marge, Konditionen) und seit dem 1. September die Zustellung
+   * (Telefon, Absenderfirma). Was fehlte, war der Schutz der **Ware**:
+   * `XPS glatt SF 30 mm 0,75 m2` wird in Platten zu 0,75 m² abgegeben, und
+   * 40 m² sind 53⅓ Platten. Beide Wege der Oberfläche runden auf — von hier
+   * aus ginge die krumme Zahl an den Lieferanten.
+   */
+  const mitMenge = (menge) => ({
+    bestellbar: true,
+    warenwertNetto: 4000,
+    einkaufNetto: 3000,
+    frachtNetto: 0,
+    teillieferungen: [{
+      lieferantName: 'Testlieferant',
+      lieferzeitWerktage: 5,
+      positionen: [{
+        sku: 'POS-12569',
+        bezeichnung: 'XPS glatt SF 30 mm 0,75 m2',
+        einheit: 'M2',
+        menge,
+        ekIstPlatzhalter: false,
+      }],
+    }],
+  });
+
+  const krumm = darfAutomatischAusgeloestWerden(mitMenge(40), auftrag());
+  assert.equal(krumm.erlaubt, false, 'eine unlieferbare Menge geht an den Lieferanten');
+  assert.ok(krumm.gruende.some((g) => /Unlieferbare Menge/.test(g)), krumm.gruende.join(' | '));
+
+  // Und die Gegenrichtung, sonst prüft der Fall die falsche Sperre: 53 Platten
+  // sind 39,75 m², und daran ist nichts auszusetzen.
+  const glatt = darfAutomatischAusgeloestWerden(mitMenge(39.75), auftrag());
+  assert.deepEqual(glatt.gruende.filter((g) => /Unlieferbare Menge/.test(g)), []);
+});
+
+
 test('Gate 20 sperrt eine Bestellung, die ihre Fracht nicht trägt', () => {
   // 50 € Warenkorb, 20 % Rohmarge, 25 € Fracht frei Haus.
   const freigabe = darfAutomatischAusgeloestWerden(korb(50, 40, 25), auftrag({ frachtVerrechnet: false }));
