@@ -1,0 +1,296 @@
+{
+  "abdruck-nimmt-die-nummer-mit": [
+    "shop/test/bestellungphp.test.js"
+  ],
+  "abgeschriebene-schwelle": [
+    "shop/test/kennzahlen.test.js"
+  ],
+  "abholsuche-wieder-beworben": [
+    "shop/test/kampagne.test.js"
+  ],
+  "abholung-an-einer-adresse-ohne-lager": [
+    "shop/test/abholung.test.js"
+  ],
+  "abnahme-fragt-ins-leere": [
+    "shop/test/abnahme.test.js"
+  ],
+  "absage-in-der-sprache-des-betriebs": [
+    "shop/test/absage.test.js"
+  ],
+  "absage-nach-dem-vertragsschluss": [
+    "shop/test/vorgangsstand.test.js"
+  ],
+  "absage-ohne-durchschrift": [
+    "shop/test/vorgangwerkzeug.test.js"
+  ],
+  "akte-zeigt-den-belegtext": [
+    "shop/test/vorgangwerkzeug.test.js"
+  ],
+  "anzeige-verspricht-die-absage": [
+    "shop/test/erzeugnisfrische.test.js",
+    "shop/test/kampagne.test.js"
+  ],
+  "archiv-das-kein-fremdes-programm-oeffnet": [
+    "shop/test/paket.test.js"
+  ],
+  "ausgang-ohne-internaprobe": [
+    "shop/test/ausgangsinterna.test.js"
+  ],
+  "auswahl-ueberspringt-den-ordnerleser": [
+    "shop/test/einzugsgebiet.test.js"
+  ],
+  "auszeichnung-ohne-ablauf": [
+    "shop/test/maschinenlesbar.test.js"
+  ],
+  "befund-von-vorgestern": [
+    "shop/test/bestellweg.test.js"
+  ],
+  "beleg-ohne-durchschrift": [
+    "shop/test/vorgangwerkzeug.test.js"
+  ],
+  "belegtext-in-der-akte": [
+    "shop/test/ablage.test.js",
+    "shop/test/vorgangwerkzeug.test.js"
+  ],
+  "bereitschaft-liest-die-halbe-oberflaeche": [
+    "shop/test/bestellwegbau.test.js"
+  ],
+  "bestaetigung-ohne-konto": [
+    "shop/test/beleg.test.js",
+    "shop/test/vorgang.test.js"
+  ],
+  "bestellen-ohne-vertragspapier": [
+    "shop/test/vorgangwerkzeug.test.js"
+  ],
+  "bestellung-ohne-durchschrift": [
+    "shop/test/vorgangwerkzeug.test.js"
+  ],
+  "bezugsweg-auf-dem-kundenbeleg": [
+    "shop/test/beleg.test.js",
+    "shop/test/vorgangwerkzeug.test.js"
+  ],
+  "das-verfallene-angebot-wartet-weiter": [
+    "shop/test/vorgangsstand.test.js"
+  ],
+  "der-auszug-ohne-abgleich": [
+    "shop/test/ablageort.test.js"
+  ],
+  "der-nettobetrag-wird-nicht-gehalten": [
+    "shop/test/ablageort.test.js"
+  ],
+  "der-posteingang-sucht-im-falschen-jahr": [
+    "shop/test/jahreswechsel.test.js"
+  ],
+  "der-posteingang-vergisst-die-akte": [
+    "shop/test/posteingang.test.js"
+  ],
+  "der-vermerk-sucht-im-falschen-jahr": [
+    "shop/test/jahreswechsel.test.js"
+  ],
+  "der-vermerk-wird-still-gekuerzt": [
+    "shop/test/vermerk.test.js"
+  ],
+  "der-vermerk-zu-keinem-vorgang": [
+    "shop/test/vermerk.test.js"
+  ],
+  "der-vertrag-wird-unsichtbar": [
+    "shop/test/vorgangsstand.test.js"
+  ],
+  "die-ablagepruefung-uebersieht-die-voraussetzung": [
+    "shop/test/ablageort.test.js",
+    "shop/test/vorgangsstand.test.js"
+  ],
+  "die-akte-sagt-nicht-was-dran-ist": [
+    "shop/test/vorgangsstand.test.js"
+  ],
+  "die-bankfelder-kommen-nicht-durch": [
+    "shop/test/vorgangwerkzeug.test.js"
+  ],
+  "die-bankverbindung-fehlt-am-tag-x": [
+    "shop/test/tagx.test.js"
+  ],
+  "die-bestellung-ohne-datum": [
+    "shop/test/warenkorb.test.js"
+  ],
+  "die-csv-nennt-alles-umsatz": [
+    "shop/test/ablage.test.js"
+  ],
+  "die-frist-laeuft-auch-nach-der-annahme": [
+    "shop/test/vorgangsstand.test.js"
+  ],
+  "die-lieferzeit-ab-heute": [
+    "shop/test/warenkorb.test.js"
+  ],
+  "die-sicherungskopie-bleibt-unsichtbar": [
+    "shop/test/ablageort.test.js"
+  ],
+  "die-sperre-nimmt-geschwister-aus": [
+    "shop/test/mutationsschutz.test.js"
+  ],
+  "die-umbenennung-geht-verloren": [
+    "shop/test/ungerufen.test.js"
+  ],
+  "die-ware-ohne-vertrag": [
+    "shop/test/vorgangsstand.test.js"
+  ],
+  "die-zweite-einfuhr-gewinnt": [
+    "shop/test/ungerufen.test.js"
+  ],
+  "dieselbe-bestellung-zweimal": [
+    "shop/test/bestellungphp.test.js"
+  ],
+  "durchschrift-fuer-den-vermerk": [
+    "shop/test/ablageort.test.js"
+  ],
+  "eigene-uid-ungeprueft": [
+    "shop/test/betreiberform.test.js"
+  ],
+  "eigenes-wort-ausgeschlossen": [
+    "shop/test/erzeugnisfrische.test.js",
+    "shop/test/kampagne.test.js"
+  ],
+  "ein-fall-zwei-jahrgaenge": [
+    "shop/test/jahreswechsel.test.js"
+  ],
+  "eine-aufzaehlung-die-ablaeuft": [
+    "shop/test/rollout.test.js"
+  ],
+  "einkauf-als-umsatz-gezaehlt": [
+    "shop/test/ablage.test.js"
+  ],
+  "empfang-nimmt-jeden-typ": [
+    "shop/test/bestellungphp.test.js"
+  ],
+  "empfang-ohne-grenze": [
+    "shop/test/bestellungphp.test.js"
+  ],
+  "erwartung-gegen-die-ganze-ausgabe": [
+    "shop/test/gegenprobenregister.test.js"
+  ],
+  "fehlerseite-ohne-auslieferung": [
+    "shop/test/website.test.js"
+  ],
+  "geaenderte-journalzeile": [
+    "shop/test/ablageort.test.js"
+  ],
+  "gebot-auf-die-absage": [
+    "shop/test/abgrenzung.test.js",
+    "shop/test/kampagne-texte.test.js"
+  ],
+  "gebot-auf-die-leere-trefferliste": [
+    "shop/test/erzeugnisfrische.test.js",
+    "shop/test/kampagne.test.js"
+  ],
+  "grund-ohne-pruefer": [
+    "shop/test/haken.test.js"
+  ],
+  "grund-ohne-satz-faellt-weg": [
+    "shop/test/absage.test.js"
+  ],
+  "gutschrift-aendert-die-rechnung": [
+    "shop/test/vorgangwerkzeug.test.js"
+  ],
+  "iban-ungeprueft": [
+    "shop/test/bankverbindung.test.js",
+    "shop/test/ungerufen.test.js"
+  ],
+  "internaprobe-sieht-nicht-hin": [
+    "shop/test/ausgangsinterna.test.js"
+  ],
+  "journal-ohne-durchschriftabgleich": [
+    "shop/test/ablageort.test.js"
+  ],
+  "kaufquote-abgeschrieben": [
+    "shop/test/kampagne.test.js",
+    "shop/test/ungerufen.test.js"
+  ],
+  "keywords-der-zurueckgestellten-gruppen-ungeprueft": [
+    "shop/test/kampagne.test.js"
+  ],
+  "lieferzeitluecke-auf-der-rechnung": [
+    "shop/test/beleg.test.js",
+    "shop/test/vorgangwerkzeug.test.js"
+  ],
+  "liegen-gebliebene-mutation-uebersehen": [
+    "shop/test/mutationsschutz.test.js"
+  ],
+  "luecke-in-der-rechnungsakte": [
+    "shop/test/vorgangwerkzeug.test.js"
+  ],
+  "mehr-lieferungen-als-lieferanten": [
+    "shop/test/lieferungen.test.js"
+  ],
+  "merkblatt-ohne-weg-dorthin": [
+    "shop/test/merkblattverweis.test.js"
+  ],
+  "navigation-als-inhalt": [
+    "shop/test/seitenaehnlichkeit.test.js"
+  ],
+  "nicht-gefuehrt-und-trotzdem-beworben": [
+    "shop/test/nichtgefuehrt.test.js"
+  ],
+  "pfad-auf-der-seite-ohne-auszeichnung": [
+    "shop/test/krume.test.js"
+  ],
+  "preisstand-ohne-alter": [
+    "shop/test/preisstand-auf-der-seite.test.js"
+  ],
+  "probe-in-der-echten-akte": [
+    "shop/test/vorgangwerkzeug.test.js"
+  ],
+  "produktseite-ohne-eignungsgrenzen": [
+    "shop/test/eignungsgrenzen.test.js"
+  ],
+  "rechnung-ohne-internapruefung": [
+    "shop/test/vorgangwerkzeug.test.js"
+  ],
+  "rechnung-ohne-nettobetrag": [
+    "shop/test/vorgangwerkzeug.test.js"
+  ],
+  "seiten-die-der-assistent-nie-sieht": [
+    "shop/test/llmsdeckung.test.js"
+  ],
+  "selbstbeschreibung-fuer-alle-behauptet": [
+    "shop/test/merkblattverweis.test.js"
+  ],
+  "sicherung-sieht-nur-die-oberste-ebene": [
+    "shop/test/sicherung.test.js"
+  ],
+  "sitemap-ohne-aenderungsdatum": [
+    "shop/test/sitemapstand.test.js"
+  ],
+  "stand-aus-dem-gedaechtnis": [
+    "shop/test/inhaltsstand.test.js"
+  ],
+  "suche-ohne-die-dienstseiten": [
+    "shop/test/dienstseiten.test.js"
+  ],
+  "suchtext-trifft-die-falsche-stelle": [
+    "shop/test/gegenprobenregister.test.js"
+  ],
+  "verfallenes-angebot-bindet-weiter": [
+    "shop/test/beleg.test.js",
+    "shop/test/vorgangwerkzeug.test.js"
+  ],
+  "vorlage-die-ihr-werkzeug-abweist": [
+    "shop/test/vorlagen.test.js"
+  ],
+  "vorlauf-vom-fremden-pruefer": [
+    "shop/test/gegenprobenplan.test.js"
+  ],
+  "weigerung-als-ausgang": [
+    "shop/test/prueferurteil.test.js"
+  ],
+  "zaehlwort-nur-direkt-hinter-der-zahl": [
+    "shop/test/leitzahlen.test.js"
+  ],
+  "zeuge-still-verloren": [
+    "shop/test/zeugen.test.js"
+  ],
+  "zweimal-aufgehoben-ueber-den-jahreswechsel": [
+    "shop/test/jahreswechsel.test.js"
+  ],
+  "zweimal-herausgeschnitten": [
+    "shop/test/posteingang.test.js"
+  ]
+}

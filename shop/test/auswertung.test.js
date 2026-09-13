@@ -1,0 +1,215 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {
+  GATE2_BEDINGUNGEN,
+  BOGEN,
+  margenspielraum,
+  nettopreisSpielraum,
+  margeAusAntwort,
+  werteAntwortAus,
+  werteRundeAus,
+  pruefeBogen,
+} from '../src/auswertung.js';
+
+const LAGE = {
+  zielgewinn: 5374,
+  fixkosten: 650,
+  werbeanteil: 0.10,
+  warenkorbNetto: 650,
+  umsatzProSession: 0.02,
+  zahlweg: 'karte-stripe',
+};
+
+const guteAntwort = {
+  hersteller: 'Muster Bahnen GmbH',
+  sortiment: 'Bahnen',
+  streckengeschaeft: true,
+  haendlerrabatt: 0.38,
+  frachtmodell: 'pauschale',
+  produktdaten: 'csv',
+  preisrhythmus: 'jährlich zum 1. März',
+  fakturierendesLand: 'DE',
+};
+
+test('Gate 2 hat genau vier Bedingungen', () => {
+  assert.equal(GATE2_BEDINGUNGEN.length, 4);
+  assert.ok(GATE2_BEDINGUNGEN.some((b) => b.id === 'streckengeschaeft'));
+  assert.ok(GATE2_BEDINGUNGEN.some((b) => b.id === 'produktdaten'));
+});
+
+test('Eine vollständige Zusage besteht', () => {
+  const e = werteAntwortAus(guteAntwort);
+  assert.equal(e.bestanden, true);
+  assert.equal(e.erfuellt, 4);
+  assert.deepEqual(e.fehlend, []);
+});
+
+test('Drei von vier ist nicht bestanden', () => {
+  const e = werteAntwortAus({ ...guteAntwort, frachtmodell: 'nachAufwand' });
+  assert.equal(e.bestanden, false);
+  assert.equal(e.erfuellt, 3);
+  assert.ok(e.fehlend.some((f) => /Frachtregelung/.test(f)));
+});
+
+test('Was der Hersteller nicht sagt, gilt als nicht zugesagt', () => {
+  const e = werteAntwortAus({ hersteller: 'Schweigsam AG' });
+  assert.equal(e.bestanden, false);
+  assert.equal(e.erfuellt, 0);
+  assert.equal(e.beziffert, false);
+  assert.equal(e.spielraum, null);
+});
+
+test('Eine Preisliste ohne angekündigten Rhythmus reicht nicht', () => {
+  const e = werteAntwortAus({ ...guteAntwort, preisrhythmus: '' });
+  assert.equal(e.bestanden, false);
+  assert.ok(e.fehlend.some((f) => /Produktdaten/.test(f)));
+});
+
+test('Ein Katalog ohne Datei ist keine maschinenlesbare Preisliste', () => {
+  const e = werteAntwortAus({ ...guteAntwort, produktdaten: 'katalog' });
+  assert.equal(e.bestanden, false);
+});
+
+test('Genau an der Untergrenze bleibt kein Preisspielraum', () => {
+  const s = margenspielraum(0.32);
+  assert.equal(s.reichtOhneNachlass, true);
+  assert.equal(s.maxNachlass, 0);
+  assert.match(s.hinweis, /Kein Preisspielraum/);
+});
+
+test('Erst über der Untergrenze entsteht Luft für Nachlässe', () => {
+  const s = margenspielraum(0.38);
+  assert.ok(s.maxNachlass > 0.08 && s.maxNachlass < 0.10, `${s.maxNachlass}`);
+  assert.match(s.hinweis, /Nachlass auf die UVP/);
+});
+
+test('Unter der Untergrenze reicht der Rabatt nicht', () => {
+  const s = margenspielraum(0.30);
+  assert.equal(s.reichtOhneNachlass, false);
+  assert.equal(s.maxNachlass, 0);
+});
+
+test('Nicht der Sitz entscheidet, sondern wer fakturiert', () => {
+  assert.equal(werteAntwortAus({ ...guteAntwort, fakturierendesLand: 'AT' }).reihengeschaeft, false);
+  assert.equal(werteAntwortAus({ ...guteAntwort, fakturierendesLand: 'DE' }).reihengeschaeft, true);
+  assert.equal(werteAntwortAus({ hersteller: 'X' }).reihengeschaeft, null, 'ohne Angabe wird nichts unterstellt');
+});
+
+test('Ein einzelner bestandener Hersteller reicht nicht', () => {
+  const r = werteRundeAus([guteAntwort, { hersteller: 'Absage GmbH', streckengeschaeft: false }], LAGE);
+  assert.equal(r.bestanden, 1);
+  assert.equal(r.pruefungA, false);
+  assert.match(r.grund, /ein einzelner Lieferant ist kein Sortiment/);
+});
+
+test('Zwei vollständige Zusagen lassen Prüfung A bestehen', () => {
+  const zweiter = { ...guteAntwort, hersteller: 'Muster Rohr GmbH', sortiment: 'Rohr', haendlerrabatt: 0.34 };
+  const r = werteRundeAus([guteAntwort, zweiter], LAGE);
+
+  assert.equal(r.pruefungA, true);
+  assert.equal(r.bestanden, 2);
+  assert.equal(r.tragendeMarge, 0.34, 'der schwächere der beiden begrenzt die Mischmarge');
+});
+
+test('Aus der tragenden Marge folgt unmittelbar der Besucherbedarf', () => {
+  const zweiter = { ...guteAntwort, hersteller: 'Muster Rohr GmbH', haendlerrabatt: 0.34 };
+  const r = werteRundeAus([guteAntwort, zweiter], LAGE);
+
+  assert.equal(r.folgen.tragfaehig, true);
+  assert.ok(r.folgen.sessions > 2000, `Sessions: ${r.folgen.sessions}`);
+  assert.equal(r.folgen.bestellungen, Math.ceil(r.folgen.umsatzNetto / 650));
+});
+
+test('Ohne Lage wird keine Planungsfolge erfunden', () => {
+  const zweiter = { ...guteAntwort, hersteller: 'Zwei' };
+  const r = werteRundeAus([guteAntwort, zweiter], null);
+  assert.equal(r.pruefungA, true);
+  assert.equal(r.folgen, null);
+});
+
+test('Ohne Absagen gezählt wird nichts beschönigt', () => {
+  const r = werteRundeAus([{ hersteller: 'A' }, { hersteller: 'B' }, { hersteller: 'C' }], LAGE);
+  assert.equal(r.antworten, 3);
+  assert.equal(r.beziffert, 0);
+  assert.equal(r.pruefungA, false);
+  assert.match(r.grund, /Kein Hersteller/);
+});
+
+test('Der Bogen nennt jedes Pflichtfeld, das fehlt', () => {
+  const p = pruefeBogen({ hersteller: 'Nur der Name' });
+  assert.equal(p.vollstaendig, false);
+  assert.ok(p.fehlend.some((f) => /Händlerrabatt/.test(f)));
+  assert.ok(p.fehlend.some((f) => /fakturiert/.test(f)));
+
+  assert.equal(pruefeBogen(guteAntwort).vollstaendig, true);
+});
+
+test('Jedes Bogenfeld trägt eine Frage', () => {
+  assert.ok(BOGEN.length >= 9, `nur ${BOGEN.length} Felder im Bogen`);
+  for (const f of BOGEN) {
+    assert.ok(f.frage.length > 5, `${f.feld} ohne Frage`);
+  }
+});
+
+test('Eine Antwort ohne Hersteller wird zurückgewiesen', () => {
+  assert.throws(() => werteAntwortAus({ haendlerrabatt: 0.4 }), /braucht einen Hersteller/);
+});
+
+// --- Der Großhandelsweg (Entwurf C): Nettopreis gegen den Straßenpreis-Deckel ---
+
+const grosshaendlerAntwort = {
+  hersteller: 'Muster Baustoffgroßhandel',
+  sortiment: 'Bahnen',
+  streckengeschaeft: true,
+  einkaufNetto: 5.5,
+  strassenpreisDeckelNetto: 10.0,
+  frachtmodell: 'staffel',
+  produktdaten: 'csv',
+  preisrhythmus: 'IDS Connect, tagesaktuell',
+  fakturierendesLand: 'AT',
+};
+
+test('Der Nettopreis-Spielraum rechnet gegen den Deckel, nicht gegen eine Liste', () => {
+  const s = nettopreisSpielraum(5.5, 10.0);
+  assert.equal(s.art, 'nettopreis');
+  assert.ok(Math.abs(s.marge - 0.45) < 1e-9, 'EK 5,50 am Deckel 10,00 sind 45 % Marge');
+  assert.equal(s.reichtAmDeckel, true);
+  assert.ok(s.maxNachlass > 0.19 && s.maxNachlass < 0.2, 'bis ~19,1 % unter den Deckel hält die Untergrenze');
+  assert.throws(() => nettopreisSpielraum(5.5, 0), /Straßenpreis-Deckel/);
+});
+
+test('Eine Großhändlerantwort ohne Rabattsatz besteht die Konditionsbedingung', () => {
+  const e = werteAntwortAus(grosshaendlerAntwort);
+  assert.equal(e.beziffert, true);
+  assert.equal(e.bestanden, true);
+  assert.equal(e.spielraum.art, 'nettopreis');
+});
+
+test('Ein Einkaufspreis über dem tragfähigen Deckelanteil fällt durch', () => {
+  const e = werteAntwortAus({ ...grosshaendlerAntwort, einkaufNetto: 7.5 });
+  assert.equal(e.bestanden, false, 'EK 7,50 am Deckel 10,00 sind nur 25 % — unter der Untergrenze');
+  assert.ok(e.fehlend.some((f) => /Kondition/.test(f)));
+});
+
+test('Nennt eine Antwort beide Wege, gilt der schlechtere', () => {
+  const marge = margeAusAntwort({ haendlerrabatt: 0.5, einkaufNetto: 7.0, strassenpreisDeckelNetto: 10.0 });
+  assert.ok(Math.abs(marge - 0.3) < 1e-9, 'nicht die geschmückten 50 %, sondern die 30 % vom Deckel');
+});
+
+test('Ein Einkaufspreis ohne Deckel ist keine Kondition', () => {
+  assert.equal(margeAusAntwort({ einkaufNetto: 5.5 }), null);
+  const p = pruefeBogen({ ...grosshaendlerAntwort, strassenpreisDeckelNetto: undefined });
+  assert.equal(p.vollstaendig, false);
+  assert.ok(p.fehlend.some((f) => /samt Straßenpreis-Deckel/.test(f)));
+});
+
+test('Der Bogen ist mit dem Großhandelsweg vollständig — ganz ohne Rabattfeld', () => {
+  assert.equal(pruefeBogen(grosshaendlerAntwort).vollstaendig, true);
+});
+
+test('Eine gemischte Runde besteht, und der schwächere Weg trägt die Planung', () => {
+  const r = werteRundeAus([guteAntwort, grosshaendlerAntwort], LAGE);
+  assert.equal(r.pruefungA, true);
+  assert.ok(Math.abs(r.tragendeMarge - 0.38) < 1e-9, 'Rabattweg 38 % ist schwächer als Großhandelsweg 45 %');
+  assert.ok(r.folgen, 'die Kaskade rechnet mit der tragenden Marge weiter');
+});

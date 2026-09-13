@@ -1,0 +1,912 @@
+/**
+ * Das Register der Prüfer — wer geprüft wird, wenn `npm run pruefe-pruefer` läuft.
+ *
+ * **Hierher verlegt am 01.09.** Es stand in `bin/prueferpruefung.mjs`, also in
+ * einem Skript, das beim Laden losläuft — und war damit von keiner Probe
+ * erreichbar. Am selben Tag ist genau das eingetreten: `pruefe-preisalter` kam
+ * dazu, das Register nicht, und der Prüfer der Prüfer meldete weiter „8 Prüfer
+ * befragt, 0 ohne belastbaren Umfang". Ein vollständiges Ergebnis über eine
+ * unvollständige Liste.
+ *
+ * Dieselbe Familie wie der Widerrufsprüfer zwei Tage davor: **Nicht das
+ * Urteil war falsch, sondern die Menge, über die geurteilt wurde.**
+ *
+ * `mindestens` ist kein Bestandsmaß, sondern eine Untergrenze der
+ * Belastbarkeit: Sie sagt, ab welchem Umfang die Aussage eines Prüfers
+ * überhaupt etwas wert ist. Ein Prüfer, der „0 von 0 geprüft" meldet, ist
+ * grün und nutzlos.
+ */
+export const PRUEFER = [
+  {
+    // **Ganz vorne, seit dem 5. September.** `bin/shopprobe.mjs` und
+    // `bin/oberflaechenprobe.mjs` trugen fünfzehn Stunden lang je eine
+    // geschweifte Klammer zu viel — 64 Browserszenarien, und die beiden
+    // Dateien ließen sich nicht einmal einlesen. Elf Gesamtläufe, jeder grün.
+    //
+    // Diese Prüfung ist die unterste Stufe und die einzige, die **jede** Datei
+    // erreicht — auch die, die aus Kostengründen aus dem Regellauf
+    // herausbleiben. Sie steht deshalb vor allen anderen: Wer sie nicht
+    // besteht, ist kein Werkzeug, sondern Text.
+    name: 'pruefe-lesbar',
+    werkzeug: 'lesbarkeitspruefung.mjs',
+    muster: /Lesbarkeit: (\d+) Quelldateien/,
+    einheit: 'Quelldateien mit dem Übersetzer eingelesen',
+    mindestens: 200,
+  },
+  {
+    name: 'pruefe-inhalte',
+    werkzeug: 'inhaltspruefung.mjs',
+    muster: /(\d+) Dateien, (\d+) Absätze geprüft/,
+    einheit: 'Inhaltsseiten',
+    mindestens: 20,
+  },
+  {
+    name: 'pruefe-seiten',
+    werkzeug: 'inhaltspruefung.mjs',
+    argumente: ['--seiten'],
+    muster: /(\d+) Seiten, (\d+) Fließtextabsätze geprüft/,
+    einheit: 'gebaute Seiten',
+    mindestens: 40,
+  },
+  {
+    name: 'pruefe-quellen',
+    werkzeug: 'quellenpruefung.mjs',
+    muster: /Aussagen: \d+ von (\d+) belegt/,
+    einheit: 'belegpflichtige Aussagen',
+    mindestens: 5,
+  },
+  {
+    name: 'pruefe-widerrufe',
+    werkzeug: 'widerrufpruefung.mjs',
+    muster: /(\d+) Dateien, (\d+) Fundstellen/,
+    einheit: 'Verzeichnisdateien',
+    mindestens: 90,
+  },
+  {
+    // Dreiundzwanzig Sätze aus `shop-ui.js`. `mindestens: 10`, weil eine
+    // Auslese, die nichts mehr findet, „0 mit Verdacht" meldet und nichts
+    // angesehen hat — das Werkzeug bricht davor selbst ab.
+    name: 'pruefe-oberflaeche',
+    werkzeug: 'inhaltspruefung.mjs',
+    argumente: ['--oberflaeche'],
+    muster: /(\d+) Sätze der Oberfläche geprüft/,
+    einheit: 'Oberflächensätze',
+    mindestens: 10,
+  },
+  {
+    // Zwölf Kennungen, sechs Anbieter. `mindestens: 8`, weil ein geschrumpftes
+    // Register „keine Meldung" meldete und damit aussähe wie ein geprüftes.
+    name: 'pruefe-crawler',
+    werkzeug: 'crawlerpruefung.mjs',
+    muster: /Crawler-Register — (\d+) Kennungen/,
+    einheit: 'Crawler-Kennungen',
+    mindestens: 8,
+  },
+  {
+    // Fünf Fragen für neun offene Punkte (Stand 3.9.). `mindestens: 3`, weil eine leere
+    // Fragenliste „keine Meldung" meldete: Ohne Frage bleibt kein Punkt
+    // ungefragt, und der Prüfer wäre grün und nutzlos.
+    name: 'pruefe-anfrage',
+    werkzeug: 'anfragepruefung.mjs',
+    muster: /Lieferantenanfrage — (\d+) Fragen/,
+    einheit: 'Fragen an den Lieferanten',
+    mindestens: 3,
+  },
+  {
+    // Sechs Zusagen der Datenschutzseite, fünf davon messbar. `mindestens: 5`,
+    // weil eine geschrumpfte Liste „keine Meldung" meldete und nichts gemessen
+    // hätte — dieselbe Falle wie bei jedem anderen Bestandsprüfer.
+    name: 'pruefe-datenschutz',
+    werkzeug: 'datenschutzpruefung.mjs',
+    muster: /Datenschutzzusagen — (\d+) auf der Seite/,
+    einheit: 'Zusagen über den Code',
+    mindestens: 5,
+    // Kein `zweite: true` — das Muster hat eine Klammer. Es stand hier vom
+    // 2. bis 3. September und ließ den Prüfer mit „NaN Zusagen" grün durch.
+  },
+  {
+    // Sieben Kontrollen an einem gebauten Vorgang. `mindestens: 7`, weil eine
+    // fehlende Kontrolle sonst als „alle bestanden" durchliefe — der Prüfer
+    // meldete dann sechs von sechs.
+    name: 'pruefe-kontrolle',
+    werkzeug: 'kontrolllauf.mjs',
+    muster: /(\d+) von (\d+) Kontrollen ohne Abweichung/,
+    einheit: 'Kontrollen',
+    mindestens: 7,
+    zweite: true,
+  },
+  {
+    // Drei Leitzahlen, 274 Dateien. `mindestens: 3`, damit ein leeres Register
+    // auffällt — ein Prüfer ohne Einträge meldet „keine Meldung" und meint
+    // „nichts im Register".
+    name: 'pruefe-leitzahlen',
+    werkzeug: 'leitzahlpruefung.mjs',
+    muster: /Leitzahlen — (\d+) im Register/,
+    einheit: 'Leitzahlen',
+    mindestens: 3,
+  },
+  {
+    // Fünf Außentexte, ein Durchlauf. `mindestens: 5`, damit ein stillgelegter
+    // Beleg auffällt: Der Prüfer, dem sein Prüfobjekt abhandenkommt, meldet
+    // sonst „keine Meldung" und meint „nichts angesehen".
+    name: 'pruefe-belege',
+    werkzeug: 'belegpruefung.mjs',
+    muster: /Belege geprüft: (\d+)/,
+    einheit: 'Außentexte',
+    mindestens: 5,
+  },
+  {
+    name: 'pruefe-geheimnis',
+    werkzeug: 'geheimnispruefung.mjs',
+    muster: /(\d+) von (\d+) Einkaufspreisen/,
+    einheit: 'Artikel',
+    mindestens: 40,
+    zweite: true,
+  },
+  {
+    name: 'pruefe-tests',
+    werkzeug: 'testpruefung.mjs',
+    muster: /(\d+) Testfälle geprüft/,
+    einheit: 'Testfälle',
+    mindestens: 500,
+  },
+  // Der Preisabgleich zählt Artikel über vier Ausgaben. Zeigt er eines Tages
+  // auf einen leeren Katalog, meldet er „0 Artikel geprüft" — ohne
+  // Mindestmaß sähe das wie Grün aus.
+  {
+    name: 'pruefe-preise',
+    werkzeug: 'preisabgleich.mjs',
+    muster: /(\d+) Artikel geprüft/,
+    einheit: 'Artikel über vier Ausgaben',
+    mindestens: 30,
+  },
+  {
+    name: 'pruefe-stand',
+    werkzeug: 'standpruefung.mjs',
+    muster: /(\d+) von (\d+) Dateien sind in STATUS\.md genannt/,
+    einheit: 'Arbeitsdateien',
+    mindestens: 100,
+    zweite: true,
+  },
+  {
+    name: 'pruefe-preisalter',
+    werkzeug: 'preisalterpruefung.mjs',
+    muster: /Preisalter am \d{4}-\d{2}-\d{2} — (\d+) Artikel/,
+    einheit: 'Artikel mit Preisstand',
+    mindestens: 40,
+  },
+  {
+    name: 'pruefe-auftrag',
+    werkzeug: 'auftragspruefung.mjs',
+    muster: /Auftragsabgleich — (\d+) Ergebnisse/,
+    einheit: 'Ergebnisse des Ursprungsauftrags',
+    mindestens: 8,
+  },
+  {
+    name: 'pruefe-schaufenster',
+    werkzeug: 'schaufensterpruefung.mjs',
+    muster: /Schaufensterabgleich: (\d+) Kennzahlen/,
+    einheit: 'Kennzahlen der PR-Beschreibung',
+    mindestens: 12,
+  },
+  /*
+   * **Aufgenommen am 10. September 2026.** Die veröffentlichte Beschreibung
+   * trägt seither ihren eigenen Fingerabdruck als letzte Zeile. Dieser Prüfer
+   * hält sie dagegen — ohne Datei die Werkzeugausgabe, mit Datei eine
+   * zurückgelesene Veröffentlichung. Gemessen wird die Zahl der gedeckten
+   * Zeichen: Sie sagt, wie viel Text die Marke tatsächlich trägt, und eine
+   * Marke über nichts wäre grün und leer.
+   */
+  {
+    name: 'pruefe-marke',
+    werkzeug: 'markenpruefung.mjs',
+    muster: /über (\d+) Zeichen/,
+    einheit: 'Zeichen, die die Marke der Beschreibung deckt',
+    mindestens: 10000,
+  },
+  /*
+   * **Aufgenommen am 10. September 2026.** Vier Gegenproben laufen aus gutem
+   * Grund nicht im Regellauf mit — zwei von ihnen meldeten unter Last etwas
+   * anderes als allein. Der Lauf druckte ihre Namen seither als Zeile, und
+   * niemand ließ sie mitlaufen: Zwischen dem 5. und dem 10. September lief
+   * keine von ihnen. Dieser Prüfer startet keinen Browser, er liest ein Datum.
+   */
+  {
+    name: 'pruefe-browserproben',
+    werkzeug: 'browserprobenpruefung.mjs',
+    muster: /(\d+) zurückgestellt/,
+    einheit: 'zurückgestellte Browsergegenproben mit Datum',
+    mindestens: 4,
+  },
+  /*
+   * **Aufgenommen am 10. September 2026.** Am selben Tag führte die
+   * Aufgabenliste 25 offene Punkte, und kein einziger lag bei mir. Sieben
+   * kosten nichts und verteilten sich über vier Werkzeugausgaben. Dieser
+   * Prüfer hält den Zettel gegen `data/betreiber.json` — in beide Richtungen,
+   * damit er weder nach Ausgefülltem fragt noch ein leeres Feld verschweigt.
+   */
+  {
+    name: 'zettel',
+    werkzeug: 'zettel.mjs',
+    muster: /(\d+) von \d+ offen/,
+    einheit: 'Zulieferungen ohne Ausgabe, noch offen',
+    mindestens: 0,
+  },
+  /*
+   * **Aufgenommen am 10. September 2026, und er braucht Netz.** Er holt die
+   * veröffentlichte Beschreibung von `api.github.com` und hält sie gegen
+   * `npm run pr-text` — der erste Prüfer dieses Bestands, der nach draußen
+   * sieht. Ohne Netz weigert er sich mit Ausgang 2; das ist der richtige
+   * Ausgang und kein Fehler im Lauf. Bis zu diesem Tag stand in
+   * `data/aussenlage.json`, der Netzausgang sei gesperrt — gemessen an drei
+   * Adressen, die es sind, und nie an dieser.
+   */
+  {
+    name: 'abgleich-veroeffentlichung',
+    werkzeug: 'veroeffentlichungsabgleich.mjs',
+    muster: /eigenen Marke \((\d+) Zeichen\)/,
+    einheit: 'Zeichen der veröffentlichten Beschreibung, gegen die Quelle gerechnet',
+    mindestens: 10000,
+  },
+  // **Aufgenommen am 3. September**, nachdem an einem Tag zweimal dasselbe
+  // aufgefallen ist: eine Funktion, die gebaut, geprüft und nie angeschlossen
+  // wurde (`erzeugeAngebot`, dann `pruefeAnfrageAufGeheimnis`). Beide Male hat
+  // es ein Mensch beim Hinsehen gefunden. Die Zahl darf nicht auf null fallen,
+  // ohne dass es auffällt: Ein leeres Ergebnis hieße hier nicht „alles
+  // angeschlossen", sondern „die Messung hat nichts mehr gelesen".
+  // **Aufgenommen am 4. September.** Der Gebindeschritt wird aus dem
+  // Artikelnamen **gelesen** und trägt fünf Rechnungen: kleinste Bestellmenge,
+  // Preis je Gebinde, Aufrunden im Warenkorb, Frachtschwelle und den Satz
+  // „angenommen wird eine Anfrage ab 450 kg". Er gehört gegen etwas gehalten,
+  // das nicht dieselbe Zeichenkette ist — die fakturierten Mengen.
+  {
+    name: 'pruefe-gebinde',
+    werkzeug: 'gebindepruefung.mjs',
+    muster: /Gebindeprüfung: (\d+) Artikel mit Gebindeschritt/,
+    einheit: 'Artikel gegen fakturierte Mengen',
+    mindestens: 10,
+  },
+  /*
+   * **Abgetrennt am 12. September 2026.** Die Einheitenprüfung stand in
+   * `gebindepruefung.mjs`, und die weigert sich seit dem Verlust von
+   * `preise/poschacher-positionen.csv` ganz oben. Gemessen wurde damit vier
+   * Tage lang nichts mehr — obwohl diese Hälfte von der verlorenen Datei
+   * nichts wissen will: Sie liest den Katalog.
+   *
+   * > **Eine fehlende Grundlage legt die Prüfung still, die auf ihr steht —
+   * > nicht die daneben.**
+   *
+   * Zwei Grundlagen, zwei Werkzeuge. Und die Gegenprobe, die diese Regel
+   * beweist, ist damit wieder messbar.
+   */
+  {
+    name: 'pruefe-einheiten',
+    werkzeug: 'einheitenpruefung.mjs',
+    muster: /Einheitenprüfung: (\d+) Artikel gegen die Einheitenliste/,
+    einheit: 'Artikel gegen die Einheitenliste',
+    mindestens: 40,
+  },
+  // **Aufgenommen am 3. September, nachts.** Der Shop soll über Suche und
+  // maschinelle Auskunft gefunden werden — darauf ruht die ganze
+  // Kanalrechnung. Ob seine 46 Artikelseiten voneinander unterscheidbar sind,
+  // hat nie jemand gemessen; der erste Lauf fand vier Paare bei 0,99.
+  {
+    name: 'pruefe-dubletten',
+    werkzeug: 'dublettenpruefung.mjs',
+    muster: /Dublettenprüfung: (\d+) Artikelseiten/,
+    einheit: 'Artikelseiten gegeneinander',
+    mindestens: 30,
+  },
+  {
+    name: 'pruefe-ungerufen',
+    werkzeug: 'ungerufen.mjs',
+    muster: /Ungerufene Ausfuhren — (\d+) gefunden/,
+    einheit: 'ungerufene Ausfuhren mit Grund',
+    mindestens: 5,
+  },
+  {
+    // **Aufgenommen am 8. September.** Die eigene Wissensseite sagt seit dem
+    // ersten Tag, dass ein WDVS als Kombination geprüft wird und Mischen die
+    // Zulassung verlässt; der Katalog führt Gewebe und Klebe-Spachtelmasse
+    // zweier Hersteller, und der Warenkorb rechnete beides anstandslos
+    // zusammen. Gemessen wird die Zahl der **angesehenen** Artikel, nicht die
+    // der Funde: Der gesunde Zustand ist null Meldungen.
+    name: 'pruefe-systemtreue',
+    werkzeug: 'systemtreuepruefung.mjs',
+    muster: /Systemtreue — (\d+) Artikel mit Systembindung/,
+    einheit: 'Artikel mit Systembindung gegen ihr System',
+    mindestens: 8,
+  },
+  {
+    // **Aufgenommen am 8. September.** `src/offenepunkte.js` sagt in seinem
+    // eigenen Kopf, warum es das Modul gibt: Eine von Hand fortgeschriebene
+    // Liste ist an dem Tag falsch, an dem jemand einen Punkt schließt und die
+    // Liste nicht anfasst. Das galt für die **Punkte** und nicht für die
+    // **Sätze über die Punkte** — ein Punkt hieß „Suchvolumen der 32 Keywords
+    // messen", während die Messliste seit dem 6. September 29 führt.
+    //
+    // Gemessen wird die Zahl der **lebenden Zahlen**, nicht die der Funde:
+    // Der gesunde Zustand ist null Meldungen, und eine Fundzahl könnte hier
+    // nicht zwischen „keine Zahl veraltet" und „keine Zahl angesehen"
+    // unterscheiden.
+    name: 'pruefe-punkte',
+    werkzeug: 'punktepruefung.mjs',
+    muster: /Offene Punkte — (\d+) lebende Zahlen/,
+    einheit: 'lebende Zahlen der offenen Punkte',
+    mindestens: 5,
+  },
+  {
+    // **Aufgenommen am 8. September**, nachdem ein Commit dieses Loops eine
+    // laufende Gegenprobe mitgenommen und damit `pruefe-schaufenster`
+    // blindgestellt hatte. Gemessen wird die Zahl der **angeordneten** Haken,
+    // nicht der Funde: Der gesunde Zustand ist null Meldungen, und „kein Haken
+    // hat gefehlt" darf nicht aussehen wie „es gibt keinen Haken".
+    name: 'pruefe-haken',
+    werkzeug: 'hakenpruefung.mjs',
+    muster: /Haken — (\d+) angeordnete Haken/,
+    einheit: 'angeordnete Haken, mit und ohne offenen Zettel gerufen',
+    mindestens: 1,
+  },
+  {
+    // **Aufgenommen am 9. September 2026**, nachdem die Kachel der Warengruppe
+    // Mauerwerk auf der Startseite „Ziegel N+F 25 cm" zeigte und der einzige
+    // Artikel dieser Gruppe 23,8 cm hat. Gemessen wird die Zahl der
+    // **angesehenen** Warengruppen, nicht der Funde: Der gesunde Zustand ist
+    // null Meldungen, und „kein Maß daneben" darf nicht aussehen wie „kein Maß
+    // angesehen".
+    name: 'pruefe-sinnbilder',
+    werkzeug: 'sinnbildpruefung.mjs',
+    muster: /Sinnbilder — (\d+) Warengruppen/,
+    einheit: 'Warengruppen, ihre Maße gegen den Katalog',
+    mindestens: 1,
+  },
+  {
+    // **Aufgenommen am 9. September 2026, nachts.** Die Runde davor hat
+    // gemessen, dass das Rechtsinformationssystem des Bundes gesperrt ist —
+    // damit ist keine Paragraphenangabe dieses Bestands am Volltext belegt.
+    // Gemessen wird die Zahl der **Fundstellen**, nicht der Funde: „keine
+    // unbelegte Behauptung" darf nicht aussehen wie „keine angesehen".
+    name: 'pruefe-recht',
+    werkzeug: 'rechtspruefung.mjs',
+    muster: /Rechtsgründe — (\d+) Fundstellen/,
+    einheit: 'Fundstellen mit ihrer Behauptung',
+    mindestens: 15,
+  },
+  {
+    // **Aufgenommen am 9. September 2026, spät.** Zweimal an einem Abend hat
+    // sich eine behauptete Grenze als zu weit gezogen erwiesen — beide Male
+    // hatte niemand es versucht. Gemessen wird die Zahl der **angesehenen**
+    // Grenzen: „keine ungeprüfte Behauptung" darf nicht aussehen wie „keine
+    // Behauptung angesehen".
+    name: 'pruefe-grenzen',
+    werkzeug: 'grenzenpruefung.mjs',
+    muster: /Außengrenzen — (\d+) behauptete Grenzen/,
+    einheit: 'behauptete Grenzen gegen die Versuche, sie zu überschreiten',
+    mindestens: 5,
+  },
+  {
+    // **Aufgenommen am 9. September 2026.** `bestellung.php` wählte die
+    // Journaldatei aus der ungesetzten Zeitzone des Hosts und stempelte den
+    // Eintrag in UTC — zwei Uhren in einem Beleg, und keine davon die
+    // österreichische. Gemessen wird die Zahl der **angesehenen**
+    // Quelldateien: „keine fremde Uhr" darf nicht aussehen wie „keine Uhr
+    // angesehen".
+    name: 'pruefe-zeit',
+    werkzeug: 'zeitpruefung.mjs',
+    muster: /Uhrenabgleich — (\d+) Quelldateien/,
+    einheit: 'Quelldateien auf die Uhr, aus der ihre Daten kommen',
+    mindestens: 50,
+  },
+  {
+    name: 'pruefe-mutationen',
+    werkzeug: 'mutationspruefung.mjs',
+    // Gemessen wird das **Angesehene**. Der gesunde Zustand dieses Prüfers ist
+    // null Funde, und eine Fundzahl könnte hier nicht zwischen „keine Mutation
+    // liegen geblieben" und „gar nicht nachgesehen" unterscheiden — die Frage,
+    // für die es dieses Register gibt.
+    muster: /Mutationsschutz — (\d+) Einträge angesehen/,
+    einheit: 'Einträge auf liegen gebliebene Mutationen',
+    mindestens: 200,
+  },
+  {
+    // **Aufgenommen am 4. September**, mit dem ersten Werkzeug, das ablegt.
+    // Auch hier ist der gesunde Zustand null Funde — gemessen wird deshalb die
+    // Zahl der getrackten Dateien, die angesehen wurden.
+    name: 'pruefe-ablage',
+    werkzeug: 'ablagepruefung.mjs',
+    muster: /Ablageort — (\d+) getrackte Dateien angesehen/,
+    einheit: 'getrackte Dateien auf Kundendaten',
+    mindestens: 300,
+  },
+  {
+    // **Aufgenommen am 4. September.** Zwei von neun Werkzeugen, die ein
+    // gebautes Erzeugnis lesen, weigerten sich über einem veralteten; die
+    // anderen sieben fragten nur, ob es da ist.
+    name: 'pruefe-erzeugnis',
+    werkzeug: 'erzeugnispruefung.mjs',
+    muster: /Erzeugnisstand — (\d+) Werkzeuge angesehen/,
+    einheit: 'Werkzeuge auf ihre Frischeprüfung',
+    mindestens: 30,
+  },
+  {
+    // **Aufgenommen am 4. September, abends.** Der Rolloutplan endet beim
+    // ersten Kunden; was danach kommt, stand nirgends. Die Zahl darf nicht
+    // schrumpfen, ohne dass es auffällt: Ein Schritt, den jemand aus der Liste
+    // nimmt, ist ein Schritt, den niemand mehr vermisst.
+    name: 'pruefe-betriebskette',
+    werkzeug: 'betriebskette.mjs',
+    muster: /Betriebskette — (\d+) Schritte/,
+    einheit: 'Schritte eines Geschäftsfalls',
+    mindestens: 8,
+  },
+  /*
+   * **Aufgenommen am 10. September 2026.** Er prüft keinen Bestand, sondern
+   * die **Reichweite** der Textprüfer: Fängt jedes Register die Behauptung
+   * auch dann, wenn sie anders formuliert ist? Der Anlass war `BEHAUPTUNG` in
+   * `src/lieferungen.js`, die genau ihren eigenen Beispielsatz kannte und
+   * vier Tage lang grün war, während dieselbe Behauptung an sieben Stellen in
+   * anderen Worten stand.
+   */
+  {
+    name: 'pruefe-umschreibung',
+    werkzeug: 'umschreibungspruefung.mjs',
+    muster: /Reichweite der Textprüfer: \d+ Regeln, (\d+) Umschreibungen/,
+    einheit: 'Umschreibungen gegen die Textregister gehalten',
+    mindestens: 20,
+  },
+  {
+    // **Aufgenommen am 5. September.** Die Sperren entscheiden, ob ein Papier
+    // hinausgeht. Zwei von sieben hatten keinen Nachweis, dass sie je
+    // aufmachen — eine davon wurde nie aufgerufen. Die Zahl darf nicht
+    // schrumpfen: Eine Sperre, die aus der Liste fällt, ist eine, die niemand
+    // mehr prüft.
+    name: 'pruefe-sperren',
+    werkzeug: 'sperrenpruefung.mjs',
+    muster: /Sperrenabgleich: (\d+) Sperren/,
+    einheit: 'Sperren auf ihren grünen Fall',
+    mindestens: 5,
+  },
+  {
+    // **Aufgenommen am 5. September.** Die Einstufung entscheidet 7,50 € je
+    // Position auf der Kundenrechnung und stammt aus der Warengruppe. Die Zahl
+    // darf nicht schrumpfen: Ein Artikel, der aus der Prüfung fällt, ist einer,
+    // dessen Widerspruch niemand mehr sieht.
+    name: 'pruefe-sperrgut',
+    werkzeug: 'sperrgutpruefung.mjs',
+    muster: /Sperrguteinstufung: (\d+) Artikel/,
+    einheit: 'Artikel auf ihre Sperrguteinstufung',
+    mindestens: 40,
+  },
+  {
+    /*
+     * **Aufgenommen am 11. September.** Das Archiv ist das letzte Glied: Alles,
+     * was hier gebaut wird, erreicht die Welt durch diese eine Datei. Geprüft
+     * war davon ein selbstgebautes Archiv aus **zwei** Einträgen; das echte
+     * trägt neunundachtzig. Gezählt werden die Dateien, die ausgepackt gegen
+     * den Bau gehalten wurden — nicht die Läufe: Ein Archiv, das zur
+     * Abnahmeliste schrumpft, fiele bei einer Laufzählung nicht auf.
+     */
+    /*
+     * **Aufgenommen am 11. September.** An drei Tagen fiel dreimal dieselbe
+     * Bauart auf — eine Zahl mit einer Heimat, die anderswo noch einmal
+     * dasteht —, und jedes Mal durch Zufall. Gezählt werden die **Fundstellen**
+     * und nicht die geführten Zahlen: Ein Eintrag, dessen Vorkommen alle
+     * verschwinden, fiele bei einer Zählung der Einträge nicht auf.
+     */
+    /*
+     * **Aufgenommen am 11. September.** Er braucht einen Apache und weigert
+     * sich ohne einen — in einer Umgebung ohne ihn steht er als Abbruch da,
+     * und das ist die ehrliche Anzeige: Eine Serverkonfiguration, die kein
+     * Server gelesen hat, ist eine Behauptung. Gezählt werden die Kopfzeilen,
+     * nicht die Läufe.
+     */
+    name: 'pruefe-kopfzeilen',
+    werkzeug: 'kopfzeilenpruefung.mjs',
+    muster: /Kopfzeilenprobe: (\d+) Kopfzeilen/,
+    einheit: 'Kopfzeilen an einem Apache gemessen',
+    mindestens: 3,
+  },
+  {
+    name: 'pruefe-zwillinge',
+    werkzeug: 'zwillingspruefung.mjs',
+    muster: /Zwillingsabgleich: (\d+) Fundstellen/,
+    einheit: 'Fundstellen geführter Zahlen',
+    mindestens: 8,
+  },
+  {
+    name: 'pruefe-paket',
+    werkzeug: 'paketpruefung.mjs',
+    muster: /Paketprobe: (\d+) Dateien im Archiv/,
+    einheit: 'Dateien des Archivs gegen den Bau',
+    mindestens: 40,
+  },
+  {
+    // **Aufgenommen am 5. September.** Die Systemlisten sind der inhaltliche
+    // Kern: Sie sagen, was zu bestellen ist, **und** was dieses Haus davon
+    // nicht liefert. Eine von ihnen widersprach sich über genau diese Zahl.
+    // Gezählt werden die Positionen, nicht die Listen: Eine Liste, die zur
+    // Überschrift schrumpft, fiele bei einer Listenzählung nicht auf.
+    name: 'pruefe-systemlisten',
+    werkzeug: 'systemlistenpruefung.mjs',
+    muster: /Systemlisten: \d+ Listen mit (\d+) Positionen/,
+    einheit: 'Positionen der Stücklisten',
+    mindestens: 20,
+  },
+  {
+    // **Aufgenommen am 5. September, nachts.** `LIEFERGEBIET.vorbehalt` stand
+    // seit dem 26. August im Rechenkern und in keiner Ausgabedatei, während
+    // 81 von 81 Seiten das Gebiet als feststehende Tatsache nannten. Gezählt
+    // werden die **Quelldateien**, nicht die Einträge: Ein Register, das
+    // seine eigene Länge meldet, sagt nichts über den Bestand, den es prüft.
+    // **Aufgenommen am 6. September 2026.** Der Referenzwarenkorb trägt den
+    // Deckungsbeitrag und damit das Gebot. Bei „Dämmung" lag eine von vier
+    // geführten Positionen darin — das Gebot war 14 % zu klein, und ein zu
+    // kleines Gebot verliert Auktionen, ohne dass eine Abrechnung es zeigt.
+    // Gezählt werden die **Systemlisten**, nicht die Körbe: Eine Liste ohne
+    // Korb ist der Fall, den diese Prüfung finden soll.
+    name: 'pruefe-koerbe',
+    werkzeug: 'koerbepruefung.mjs',
+    muster: /Referenzwarenkörbe — (\d+) Systemlisten/,
+    einheit: 'Systemlisten gegen ihre Warenkörbe',
+    mindestens: 3,
+  },
+  {
+    name: 'pruefe-gates',
+    werkzeug: 'gatepruefung.mjs',
+    muster: /Gate-Stand — (\d+) Gates/,
+    einheit: 'Gate-Entscheidungen gegen den Bestand',
+    mindestens: 20,
+  },
+  {
+    name: 'pruefe-weisungen',
+    werkzeug: 'weisungspruefung.mjs',
+    muster: /Weisungsstand — (\d+) Weisungen/,
+    einheit: 'Weisungen des Auftraggebers gegen den Bestand',
+    mindestens: 5,
+  },
+  {
+    name: 'pruefe-zahlen',
+    werkzeug: 'zahlenpruefung.mjs',
+    muster: /Inhaltsseiten — \d+ Seiten, (\d+) Zahlen mit Einheit/,
+    einheit: 'Zahlen der Inhaltsseiten gegen ihre Fundstelle',
+    mindestens: 10,
+  },
+  {
+    name: 'pruefe-korbtext',
+    werkzeug: 'korbtextpruefung.mjs',
+    muster: /Korbtexte — \d+ Referenzwarenkörbe, (\d+) Positionen/,
+    einheit: 'Korbpositionen gegen ihren Klartext',
+    mindestens: 10,
+  },
+  {
+    name: 'pruefe-verweise',
+    werkzeug: 'verweispruefung.mjs',
+    muster: /Verweise — \d+ gebaute Seiten, (\d+) interne Verweise/,
+    einheit: 'interne Verweise der gebauten Seiten',
+    mindestens: 500,
+  },
+  {
+    name: 'pruefe-vorbehalte',
+    werkzeug: 'vorbehaltspruefung.mjs',
+    muster: /(\d+) Quelldateien angesehen/,
+    einheit: 'Quelldateien auf mitgeführte Vorbehalte',
+    mindestens: 40,
+  },
+  // **Aufgenommen am 11. September 2026 — Runde 28.** Diese vier standen in
+  // keinem Lauf. Drei von ihnen hatten sogar Gegenproben: Es war bewiesen,
+  // dass sie anschlagen, und niemand hat sie je gefragt. Die Laufzeiten sind
+  // am selben Tag gestoppt.
+  {
+    name: 'rollout',
+    werkzeug: 'rollout.mjs',
+    muster: /Weg bis zur Entscheidung — (\d+) Etappen/,
+    einheit: 'Etappen bis zur Entscheidung',
+    mindestens: 12,
+  },
+  {
+    name: 'abnahme',
+    werkzeug: 'abnahmeliste.mjs',
+    muster: /Abnahme nach dem Hochladen — (\d+) Punkte/,
+    einheit: 'Abnahmepunkte gegen den Ausgabeordner',
+    mindestens: 8,
+  },
+  // **Aufgenommen am 11. September 2026.** Jeder andere Prüfer misst den
+  // Zustand von heute; dieser baut den Shop mit vollständiger Betreiberdatei
+  // und sieht nach, ob die Angaben dort ankommen, wo sie hingehören.
+  {
+    name: 'pruefe-tagx',
+    werkzeug: 'tagxpruefung.mjs',
+    muster: /Tag X — (\d+) offene Angaben/,
+    einheit: 'offene Angaben des Auftraggebers eingesetzt',
+    mindestens: 4,
+  },
+  // **Aufgenommen am 11. September 2026.** Die Konsistenz der Entität ist
+  // nach dem eigenen Sichtbarkeitskonzept „der billigste und
+  // meistvernachlässigte Hebel" — gemessen war er nicht gezogen.
+  {
+    name: 'pruefe-entitaet',
+    werkzeug: 'entitaetspruefung.mjs',
+    muster: /Entität — (\d+) Organisationsblöcke/,
+    einheit: 'Organisationsblöcke gegen die Betreiberdatei',
+    mindestens: 40,
+  },
+  {
+    name: 'pruefe-register',
+    werkzeug: 'registerpruefung.mjs',
+    muster: /Registerabgleich — (\d+) Prüfer/,
+    einheit: 'Prüfer gegen beide Register gehalten',
+    mindestens: 40,
+  },
+];
+
+/**
+ * Die Browserproben.
+ *
+ * **Seit Gate 27 (5. September) laufen sie mit.** Bis dahin standen sie
+ * draußen, weil jede einen Chromium-Start je Einheit kostet — „zusammen gut
+ * eine Minute". Das stimmte am 1. September, als der Lauf zwanzig Schritte
+ * hatte; nachgemessen sind es **37 Sekunden** gegen 820 bis 1.259 Sekunden
+ * Lauf.
+ *
+ * > **Die Begründung ist nicht falsch geworden, sie ist abgelaufen.**
+ *
+ * `--ohne-browser` lässt sie weg und sagt es dazu. Geprüft wird auch hier nur
+ * der **Umfang**: Eine gelöschte Datei mit Szenarien fiele sonst niemandem
+ * auf.
+ *
+ * Für die Frage, ob ein einzelnes Szenario etwas gesehen hat, ist dieses
+ * Werkzeug der falsche Ort. Das muss jedes Szenario selbst beweisen — durch
+ * eine Erwartung, die auf einer leeren Seite nicht erfüllbar ist (die
+ * Überschrift, die Zahl der gefundenen Elemente, der Zustand **vor** der
+ * geprüften Handlung).
+ */
+export const BROWSERPRUEFER = [
+  {
+    name: 'oberflaechenprobe',
+    werkzeug: 'oberflaechenprobe.mjs',
+    muster: /(\d+) Szenarien/,
+    einheit: 'Szenarien',
+    mindestens: 9,
+  },
+  {
+    name: 'shopprobe',
+    werkzeug: 'shopprobe.mjs',
+    muster: /(\d+) Szenarien/,
+    einheit: 'Szenarien',
+    mindestens: 18,
+  },
+  // **Aufgenommen am 4. September**, mit dem Bestellweg. Sie ist die einzige
+  // Probe des Bestandes, die **beide** Hälften zugleich fährt: echter Bau mit
+  // eingeschaltetem Weg, echtes PHP, echter Browser, echte Zeile in der
+  // Ablage. Die Zahl darf nicht auf null fallen, ohne dass es auffällt — eine
+  // Probe, die nach dem ersten Schritt abbricht, sähe sonst still aus wie eine
+  // bestandene.
+  {
+    name: 'bestellprobe',
+    werkzeug: 'bestellprobe.mjs',
+    muster: /Bestellprobe — (\d+) Prüfungen/,
+    einheit: 'Prüfungen von Klick bis Sicherung',
+    // **Am 9. September von 5 auf 6, am 11. September von 6 auf 7 und abends
+    // auf 8, am 12. September auf 12.** Ein Mindestmaß, das dem Umfang nicht
+    // folgt, verliert seinen Sinn: Fiele eine der neuen Prüfungen wieder
+    // heraus, stünde hier die alte Zahl — und die sähe gesund aus.
+    //
+    // Die siebte ist die Rechnung, die achte ihre Durchschrift. Die vier
+    // neuen sind die Schritte **danach**: die Akte zurücklesen, die Rechnung
+    // aufheben, die Periode an die Buchhaltung geben, das Ganze sichern.
+    // Jeder einzelne ist geprüft — die Reihenfolge war es nicht, und genau
+    // dort saßen die Funde der letzten Tage.
+    mindestens: 12,
+  },
+  // Der Zensus zählt keine Szenarien, sondern gebaute Seiten. Genau deshalb
+  // steht er hier: Zeigt er eines Tages auf einen leeren Ausgabeordner,
+  // meldet er „0 von 0 Seiten" — und das sähe ohne Mindestmaß wie Grün aus.
+  {
+    name: 'rahmenzensus',
+    werkzeug: 'rahmenzensus.mjs',
+    muster: /(\d+) von (\d+) Seiten rollen/,
+    einheit: 'gebaute Seiten im 390-px-Rahmen',
+    mindestens: 40,
+    zweite: true,
+  },
+  // **Aufgenommen am 11. September 2026.** Sie stand in keinem Lauf, hatte
+  // aber drei Gegenproben — der Bestand hat also dreimal bewiesen, dass sie
+  // anschlägt, und niemand hat sie je gefragt, ob sie schweigt. Sie ist die
+  // einzige Probe, die den Weg **von der Anzeige** bis zur fertigen Anfrage
+  // geht, und misst damit genau das, was das ganze Werbebudget kauft.
+  {
+    name: 'wegprobe',
+    werkzeug: 'wegprobe.mjs',
+    muster: /^(\d+) Schritte, kein Textfeld/m,
+    einheit: 'Schritte vom Anzeigenklick bis zur fertigen Anfrage',
+    mindestens: 4,
+  },
+];
+
+/* ------------------------------------------------------------------
+ * **Der Anlass, 11. September 2026 — Runde 28.**
+ *
+ * Zwei Register dieses Bestandes beschreiben dieselbe Sache: was rot werden
+ * kann. Hier stehen die Prüfer, in `src/gegenprobenregister.js` steht je
+ * Prüfer die Mutation, die ihn rot machen muss.
+ *
+ * Das Gegenprobenregister verlangt von jedem genannten Namen, dass es ihn als
+ * npm-Befehl gibt — ein Tippfehler wäre sonst eine Gegenprobe, die es nicht
+ * gibt. **Keines der beiden Register fragt das andere.** Gemessen an diesem
+ * Tag, in beide Richtungen:
+ *
+ * | Richtung | gefunden |
+ * |---|---|
+ * | Gegenprobe da, Prüfer nicht im Register | **acht** Namen, darunter `wegprobe` mit drei Gegenproben |
+ * | Prüfer im Register, keine Gegenprobe und kein Verzicht | **zwei**: `oberflaechenprobe`, `rahmenzensus` |
+ *
+ * > **Bei `wegprobe` lief der Bestand in die Umkehrung eines Prüfers ohne
+ * > Gegenprobe: Man hatte dreimal gesehen, dass sie anschlägt, und nie, dass
+ * > sie schweigt.** Sie stand in keinem Lauf — weder im Gesamtlauf noch im
+ * > Haken —, und ausgeführt wurde sie nur als Nebenwirkung ihrer eigenen
+ * > Gegenproben.
+ *
+ * `wegprobe`, `rollout`, `abnahme` und `pruefe-pruefer` stehen seit heute im
+ * Register oben. Was übrig bleibt, steht hier — mit Grund.
+ * ------------------------------------------------------------------ */
+
+/**
+ * Befehle, die eine Gegenprobe haben und trotzdem **kein Prüfer** sind.
+ *
+ * Der Unterschied ist nicht die Farbe, sondern der Gegenstand: Ein Prüfer
+ * wird rot über den **Bestand**, ein Werkzeug über seine **eigene Eingabe
+ * oder Handlung**. Ein Bauwerkzeug, das abbricht statt Unsinn zu schreiben,
+ * ist kein Prüfer — aber seine Weigerung ist eine Gegenprobe wert.
+ */
+export const KEIN_PRUEFER = Object.freeze([
+  Object.freeze({
+    name: 'test',
+    warum: 'Der Testlauf. Er hat im Gesamtlauf und im Haken einen eigenen Schritt mit einer '
+      + 'eigenen Untergrenze und eine andere Zählweise als ein Prüfer: Er zählt ausgeführte '
+      + 'Fälle, das Prüferregister zählt angesehene Einheiten. Als Registereintrag stünde '
+      + 'dieselbe Prüfung zweimal im Lauf.',
+  }),
+  Object.freeze({
+    name: 'kampagne',
+    warum: 'Ein Bauwerkzeug: Es schreibt die Anzeigendateien. Rot wird es nur über die eigene '
+      + 'Handlung — es bricht ab, statt eine Landeseite ohne Hauptbereich oder eine Gruppe '
+      + 'ohne Seitenkennung auszuliefern. Was es gebaut hat, prüfen die Prüfer danach; wäre '
+      + 'es selbst einer, prüfte es sein eigenes Erzeugnis.',
+  }),
+  Object.freeze({
+    name: 'website',
+    warum: 'Derselbe Fall wie bei der Kampagne: Es baut den Auslieferungsordner und weigert '
+      + 'sich, einen unvollständigen zu schreiben. Ein Bauwerkzeug im Prüferregister hieße, '
+      + 'den Bau vor jedem Commit noch einmal zu fahren — der Haken tut das schon eine Zeile '
+      + 'vorher über die Frischeprüfung.',
+  }),
+  Object.freeze({
+    name: 'schnelllauf',
+    warum: 'Er **ruft** die Prüfer, statt selbst zu messen. Im Prüferregister stünde er in '
+      + 'seiner eigenen Liste und riefe sich selbst — eine Schleife ohne Boden, derselbe '
+      + 'Grund, aus dem der Hakenprüfer nicht im Haken läuft.',
+  }),
+  Object.freeze({
+    name: 'aufwand',
+    warum: 'Eine Rechnung über den Restaufwand im Monat, aus dem Auftragslauf abgeleitet. Sie '
+      + 'wird nicht rot über einen Fund, sondern weigert sich, wenn ihre Grundlage fehlt. Was '
+      + 'sie ausgibt, ist eine Schätzung mit Herkunft — und eine Schätzung ist kein Befund '
+      + 'über den Bestand, auch wenn sie aus ihm gerechnet ist.',
+  }),
+  /*
+   * **Und der Eintrag, der beim ersten Versuch falsch war.** `pruefe-pruefer`
+   * stand am 11. September für eine halbe Stunde in der Liste oben — er ist
+   * ein Prüfer, er hat eine Gegenprobe, und 113 Sekunden wären im Gesamtlauf
+   * zu verschmerzen. Der Testlauf hat es beantwortet: Er **liest diese
+   * Liste**, um jeden Prüfer aufzurufen. Mit sich selbst darin ruft er sich
+   * selbst, und zwar nicht einmal, sondern immer weiter — im Prozessbaum
+   * standen nach zehn Minuten neun Kopien.
+   *
+   * > **Ein Prüfer, der seine eigene Liste liest, gehört nicht hinein.**
+   * > Dieselbe Gestalt wie der Hakenprüfer, der nicht im Haken läuft — nur
+   * > endet dieser hier nicht langsam, sondern gar nicht.
+   */
+  Object.freeze({
+    name: 'pruefe-pruefer',
+    warum: 'Er ruft jeden Prüfer dieses Registers einmal auf und fragt ihn nach seinem Umfang. '
+      + 'Stünde er selbst darin, riefe er sich selbst — eine Schleife ohne Boden, die nicht '
+      + 'langsam ist, sondern nie endet; gemessen am 11. September mit neun Kopien im '
+      + 'Prozessbaum. Er läuft von Hand und über seine eigene Gegenprobe, und sein Befund '
+      + 'ist ohnehin einer über die Prüfer, nicht über den Bestand.',
+  }),
+]);
+
+/**
+ * Hält dieses Register gegen `package.json` und gegen das Gegenprobenregister
+ * — in beide Richtungen.
+ *
+ * @param {object} lage
+ * @param {string[]} lage.skripte        die Namen aus `package.json`
+ * @param {string[]} lage.ausGegenproben jeder `pruefer`, den eine Gegenprobe nennt
+ * @param {string[]} lage.ohneGegenprobe   jeder Prüfer mit begründetem Verzicht
+ * @param {(werkzeug: string) => boolean} lage.gibtEs  liegt `bin/<werkzeug>`?
+ */
+export function registerbefund({
+  skripte, ausGegenproben, ohneGegenprobe = [], gibtEs,
+  pruefer = [...PRUEFER, ...BROWSERPRUEFER], kein = KEIN_PRUEFER,
+}) {
+  const meldungen = [];
+  const alsSkript = new Set(skripte);
+  const imRegister = new Set(pruefer.map((p) => p.name));
+  const begruendet = new Set(kein.map((e) => e.name));
+
+  for (const p of pruefer) {
+    if (!alsSkript.has(p.name)) {
+      meldungen.push({
+        regel: 'eintrag-ohne-befehl',
+        text: `„${p.name}" steht im Prüferregister und ist kein npm-Befehl`,
+      });
+    }
+    if (!gibtEs(p.werkzeug)) {
+      meldungen.push({
+        regel: 'eintrag-ohne-werkzeug',
+        text: `${p.name}: bin/${p.werkzeug} liegt nicht im Bestand`,
+      });
+    }
+  }
+
+  for (const e of kein) {
+    if (!alsSkript.has(e.name)) {
+      meldungen.push({
+        regel: 'grund-ohne-befehl',
+        text: `KEIN_PRUEFER nennt „${e.name}" — diesen npm-Befehl gibt es nicht`,
+      });
+    }
+    if (imRegister.has(e.name)) {
+      meldungen.push({
+        regel: 'gefuehrt-und-ausgenommen',
+        text: `${e.name} steht im Prüferregister und wird zugleich als kein Prüfer geführt`,
+      });
+    }
+    if (!e.warum || e.warum.length < 80) {
+      meldungen.push({
+        regel: 'grund-zu-duenn',
+        text: `${e.name}: der Grund trägt die Ausnahme nicht`,
+      });
+    }
+  }
+
+  /*
+   * **Die Richtung, wegen der es diese Funktion gibt.** Eine Gegenprobe ist
+   * der Beweis, dass ein Befehl rot werden kann und dass das jemandem wichtig
+   * war. Steht er dann in keinem Lauf, hat der Bestand bewiesen, dass er
+   * anschlägt — und fragt ihn nie.
+   */
+  for (const n of new Set(ausGegenproben)) {
+    if (imRegister.has(n) || begruendet.has(n)) continue;
+    meldungen.push({
+      regel: 'gegenprobe-ohne-platz',
+      text: `„${n}" hat eine Gegenprobe und steht weder im Prüferregister noch mit Grund daneben`,
+    });
+  }
+
+  /*
+   * **Und dieselbe Frage zurück.** Der Bestand sagt seit dem 2. September:
+   * *Eine Gegenprobe, die man nicht anschlagen sieht, ist keine.* Für zwei
+   * Browserproben hatte sie am 11. September nie jemand angesehen — sie
+   * standen weder mit Gegenprobe noch mit begründetem Verzicht da.
+   */
+  const mitProbe = new Set(ausGegenproben);
+  const verzicht = new Set(ohneGegenprobe);
+  for (const p of pruefer) {
+    if (mitProbe.has(p.name) || verzicht.has(p.name)) continue;
+    meldungen.push({
+      regel: 'pruefer-ohne-gegenprobe',
+      text: `${p.name} hat keine Gegenprobe und keinen begründeten Verzicht — `
+        + 'niemand hat ihn je rot gesehen',
+    });
+  }
+
+  return {
+    pruefer: pruefer.length,
+    ausgenommen: kein.length,
+    gemessen: new Set(ausGegenproben).size,
+    meldungen,
+    sauber: meldungen.length === 0,
+  };
+}

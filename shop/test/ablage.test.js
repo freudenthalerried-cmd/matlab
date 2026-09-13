@@ -1,0 +1,356 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {
+  ARTEN,
+  AUFBEWAHRUNG_JAHRE,
+  FELDER_DER_ABLAGE,
+  neueAblage,
+  naechsteNummer,
+  haltefest,
+  stelleRechnungAus,
+  storniere,
+  istStorniert,
+  vorgangsakte,
+  umsatzsumme,
+  pruefeNummernkreis,
+  pruefeAblagefelder,
+  aufbewahrungBis,
+  alsCsv,
+} from '../src/ablage.js';
+
+const vollstaendig = {
+  vollstaendig: true,
+  fehlend: [],
+  nettobetrag: 3250.17,
+  bruttobetrag: 3900.2,
+  text: 'Rechnung … Gesamtbetrag 3.900,20 €',
+};
+
+const unvollstaendig = {
+  vollstaendig: false,
+  fehlend: ['UID-Nummer des Ausstellers'],
+  nettobetrag: 3250.17,
+  bruttobetrag: 3900.2,
+};
+
+test('Nummern laufen je Art und Jahr getrennt', () => {
+  const a = neueAblage();
+  assert.equal(naechsteNummer(a, 'rechnung', 2026), 'RE-2026-0001');
+  assert.equal(naechsteNummer(a, 'rechnung', 2026), 'RE-2026-0002');
+  assert.equal(naechsteNummer(a, 'angebot', 2026), 'AN-2026-0001');
+  assert.equal(naechsteNummer(a, 'rechnung', 2027), 'RE-2027-0001');
+});
+
+test('Über den Jahreswechsel bleibt jede Nummer einmalig', () => {
+  const a = neueAblage();
+  const alle = new Set();
+  for (const jahr of [2026, 2027]) {
+    for (let i = 0; i < 3; i++) alle.add(naechsteNummer(a, 'rechnung', jahr));
+  }
+  assert.equal(alle.size, 6, 'der Zähler beginnt neu, die Jahreszahl hält sie auseinander');
+});
+
+test('Ein Bestand lässt sich fortschreiben', () => {
+  const a = neueAblage({ zaehler: { 'rechnung:2026': 41 } });
+  assert.equal(naechsteNummer(a, 'rechnung', 2026), 'RE-2026-0042');
+});
+
+test('Arten ohne Nummernkreis bekommen keine Nummer', () => {
+  const a = neueAblage();
+  assert.throws(() => naechsteNummer(a, 'uidabfrage', 2026), /führt keinen Nummernkreis/);
+  assert.throws(() => naechsteNummer(a, 'erfunden', 2026), /Unbekannte Vorgangsart/);
+});
+
+test('Eine unvollständige Rechnung verbraucht keine Nummer', () => {
+  const a = neueAblage();
+  const versuch = stelleRechnungAus(a, unvollstaendig, { zeitpunkt: '2026-08-15', jahr: 2026, vorgang: 'V-1' });
+
+  assert.equal(versuch.ausgestellt, false);
+  assert.match(versuch.grund, /keine Nummer vergeben/);
+  assert.equal(a.eintraege.length, 0);
+  assert.equal(naechsteNummer(a, 'rechnung', 2026), 'RE-2026-0001', 'die Eins ist noch frei');
+});
+
+test('Die Nummer entsteht erst mit der Ausstellung', () => {
+  const a = neueAblage();
+  // Ein Angebot vorweg — es darf den Rechnungskreis nicht anfassen.
+  haltefest(a, { art: 'angebot', nummer: naechsteNummer(a, 'angebot', 2026), zeitpunkt: '2026-08-14', vorgang: 'V-1' });
+  assert.equal(a.zaehler['rechnung:2026'], undefined);
+
+  const r = stelleRechnungAus(a, vollstaendig, { zeitpunkt: '2026-08-15', jahr: 2026, vorgang: 'V-1' });
+  assert.equal(r.ausgestellt, true);
+  assert.equal(r.nummer, 'RE-2026-0001');
+});
+
+test('Was in der Ablage steht, ändert sich nicht mehr', () => {
+  const a = neueAblage();
+  const e = haltefest(a, { art: 'vermerk', zeitpunkt: '2026-08-15', text: 'ursprünglich' });
+
+  assert.throws(() => {
+    'use strict';
+    e.text = 'geändert';
+  }, TypeError);
+  assert.equal(a.eintraege[0].text, 'ursprünglich');
+});
+
+test('Dieselbe Belegnummer kommt kein zweites Mal in die Ablage', () => {
+  /*
+   * § 11 Abs 1 Z 5 UStG verlangt fortlaufend **und einmalig**. Seit die Nummer
+   * auch von außen mitgebracht werden kann (`npm run vorgang -- --ablegen`
+   * legt unter der Nummer ab, die auf dem Papier steht), sichert die
+   * Einmaligkeit nicht mehr `naechsteNummer`, sondern diese Zeile.
+   *
+   * **Ihre Probe fuhr bis zum 11. September über das Werkzeug** — und seit an
+   * dessen Anfang die Durchschrift steht, hält die schon vorher auf. Eine
+   * Sperre, deren einzige Probe an einer anderen Sperre hängen bleibt, ist
+   * ungeprüft.
+   */
+  const a = neueAblage();
+  haltefest(a, { art: 'angebot', nummer: 'AN-2026-0102', zeitpunkt: '2026-09-04' });
+  assert.throws(
+    () => haltefest(a, { art: 'angebot', nummer: 'AN-2026-0102', zeitpunkt: '2026-09-05' }),
+    /AN-2026-0102 steht schon in der Ablage/,
+  );
+  assert.equal(a.eintraege.length, 1);
+});
+
+test('Jeder Eintrag braucht einen Zeitpunkt', () => {
+  const a = neueAblage();
+  assert.throws(() => haltefest(a, { art: 'vermerk' }), /braucht einen Zeitpunkt/);
+});
+
+test('Ein Storno ändert die Rechnung nicht, sondern stellt eine Gutschrift daneben', () => {
+  const a = neueAblage();
+  const r = stelleRechnungAus(a, vollstaendig, { zeitpunkt: '2026-08-15', jahr: 2026, vorgang: 'V-1' });
+
+  const g = storniere(a, r.nummer, { grund: 'Lieferung storniert', zeitpunkt: '2026-08-20', jahr: 2026 });
+
+  assert.equal(g.nummer, 'GS-2026-0001');
+  assert.equal(g.bezugAuf, 'RE-2026-0001');
+  assert.equal(g.betragBrutto, -3900.2);
+  // **Berichtigt am 11. September 2026.** Hier stand, der Journaleintrag trage
+  // den **ganzen** Rechnungstext — und damit sicherte dieser Fall genau das
+  // zu, was das Felderverzeichnis der Ablage verbietet: *Was hier steht,
+  // steht sieben Jahre; der volle Text enthält die Anschrift des Kunden ein
+  // zweites Mal.* Geprüft wird jetzt, dass der Eintrag **unverändert** bleibt,
+  // nicht, dass er den Beleg enthält.
+  assert.equal(a.eintraege[0].nummer, 'RE-2026-0001', 'die Rechnung bleibt, wie sie war');
+  assert.equal(a.eintraege[0].betragBrutto, 3900.2);
+  assert.ok(!a.eintraege[0].text.includes('Gesamtbetrag'),
+    'der volle Belegtext gehört nicht ins Journal');
+  assert.equal(a.eintraege.length, 2);
+});
+
+test('Eine stornierte Nummer wird nicht wiederverwendet', () => {
+  const a = neueAblage();
+  const r = stelleRechnungAus(a, vollstaendig, { zeitpunkt: '2026-08-15', jahr: 2026, vorgang: 'V-1' });
+  storniere(a, r.nummer, { grund: 'Irrtum', zeitpunkt: '2026-08-16', jahr: 2026 });
+
+  const zweite = stelleRechnungAus(a, vollstaendig, { zeitpunkt: '2026-08-17', jahr: 2026, vorgang: 'V-2' });
+  assert.equal(zweite.nummer, 'RE-2026-0002');
+});
+
+test('Zweimal stornieren geht nicht', () => {
+  const a = neueAblage();
+  const r = stelleRechnungAus(a, vollstaendig, { zeitpunkt: '2026-08-15', jahr: 2026, vorgang: 'V-1' });
+  storniere(a, r.nummer, { grund: 'Irrtum', zeitpunkt: '2026-08-16', jahr: 2026 });
+
+  assert.throws(
+    () => storniere(a, r.nummer, { grund: 'nochmal', zeitpunkt: '2026-08-17', jahr: 2026 }),
+    /bereits storniert/,
+  );
+});
+
+test('Eine unbekannte Nummer lässt sich nicht stornieren', () => {
+  const a = neueAblage();
+  assert.throws(() => storniere(a, 'RE-2026-9999', { grund: 'x', zeitpunkt: '2026-08-15', jahr: 2026 }), /Kein Eintrag/);
+});
+
+test('Der Nummernkreis meldet Lücken, statt sie zu bewerten', () => {
+  const a = neueAblage();
+  stelleRechnungAus(a, vollstaendig, { zeitpunkt: '2026-08-15', jahr: 2026, vorgang: 'V-1' });
+  assert.equal(pruefeNummernkreis(a, 'rechnung', 2026).lueckenlos, true);
+
+  // Eine Nummer ziehen, ohne den Beleg abzulegen — genau der Fall, der nicht
+  // passieren darf und den die Prüfung deshalb finden muss.
+  naechsteNummer(a, 'rechnung', 2026);
+  const p = pruefeNummernkreis(a, 'rechnung', 2026);
+  assert.equal(p.lueckenlos, false);
+  assert.deepEqual(p.fehlend, ['RE-2026-0002']);
+  assert.equal(p.hoechste, 2);
+  assert.equal(p.anzahl, 1);
+});
+
+test('Die Vorgangsakte sammelt alles zu einem Auftrag in seiner Reihenfolge', () => {
+  const a = neueAblage();
+  haltefest(a, { art: 'uidabfrage', zeitpunkt: '2026-08-15T09:00', vorgang: 'V-1', text: 'UID ATU… gueltig' });
+  haltefest(a, { art: 'angebot', nummer: naechsteNummer(a, 'angebot', 2026), zeitpunkt: '2026-08-15T09:05', vorgang: 'V-1' });
+  haltefest(a, { art: 'vermerk', zeitpunkt: '2026-08-15T09:10', vorgang: 'V-2', text: 'anderer Vorgang' });
+  stelleRechnungAus(a, vollstaendig, { zeitpunkt: '2026-08-22', jahr: 2026, vorgang: 'V-1' });
+
+  const akte = vorgangsakte(a, 'V-1');
+  assert.deepEqual(akte.map((e) => e.art), ['uidabfrage', 'angebot', 'rechnung']);
+  assert.deepEqual(akte.map((e) => e.lfd), [1, 2, 4]);
+});
+
+test('Die Aufbewahrungsfrist endet sieben Jahre nach dem Kalenderjahr', () => {
+  assert.equal(AUFBEWAHRUNG_JAHRE, 7);
+  assert.equal(aufbewahrungBis(2026).jahr, 2033);
+  assert.match(aufbewahrungBis(2026).hinweis, /31\.12\.2033.*§ 132 BAO/);
+  assert.throws(() => aufbewahrungBis('2026'), /braucht ein Jahr/);
+});
+
+test('Das Verzeichnis begründet jedes Feld — Grundlage, Zweck, Klasse', () => {
+  const felder = Object.entries(FELDER_DER_ABLAGE);
+  assert.equal(felder.length, 9, 'neun Felder — jede Änderung dieser Zahl ist eine bewusste Entscheidung');
+  for (const [name, f] of felder) {
+    assert.ok(f.grundlage.length >= 3, `${name}: ohne Grundlage kein Verzeichniseintrag`);
+    assert.ok(f.zweck.length >= 10, `${name}: ohne Zweck kein Verzeichniseintrag`);
+    assert.equal(typeof f.verlangt, 'boolean', `${name}: verlangt oder betrieblich, eines von beiden`);
+  }
+});
+
+test('Jedes Journalfeld steht im Verzeichnis und jedes Verzeichnisfeld im Journal', () => {
+  const a = neueAblage();
+  haltefest(a, { art: 'vermerk', zeitpunkt: '2026-08-16', text: 'Vermerk' });
+  stelleRechnungAus(a, vollstaendig, { zeitpunkt: '2026-08-16', jahr: 2026, vorgang: 'V-1' });
+
+  const p = pruefeAblagefelder(a);
+  assert.equal(p.geprueft, 2);
+  assert.deepEqual(p.funde, []);
+  assert.equal(p.dicht, true);
+});
+
+test('Ein Feld ohne Verzeichniseintrag ist ein Befund — auch ein leeres', () => {
+  const a = neueAblage();
+  haltefest(a, { art: 'vermerk', zeitpunkt: '2026-08-16', text: 'Vermerk' });
+  // Am Riegel vorbei, wie es nur direkter Code kann — genau der Weg, den ein
+  // künftiges „nur ein Feld dazu" nähme:
+  a.eintraege.push({ ...a.eintraege[0], lfd: 2, storniert: false });
+
+  const p = pruefeAblagefelder(a);
+  assert.equal(p.dicht, false);
+  assert.equal(p.funde.length, 1);
+  assert.match(p.funde[0], /„storniert“|„storniert"/);
+});
+
+test('Ein Eintrag, der an haltefest vorbeikam, fällt an den fehlenden Feldern auf', () => {
+  const a = neueAblage();
+  a.eintraege.push({ lfd: 1, art: 'vermerk', zeitpunkt: '2026-08-16', text: 'nur vier Felder' });
+
+  const p = pruefeAblagefelder(a);
+  assert.equal(p.dicht, false);
+  assert.equal(p.funde.length, 5, 'nummer, vorgang, betragNetto, betragBrutto, bezugAuf');
+  for (const fund of p.funde) assert.match(fund, /fehlt/);
+});
+
+test('Der Storno steht in der Gutschriftkette, nicht in einer Zelle', () => {
+  const a = neueAblage();
+  const r = stelleRechnungAus(a, vollstaendig, { zeitpunkt: '2026-08-15', jahr: 2026, vorgang: 'V-1' });
+
+  assert.equal(istStorniert(a, r.nummer), false);
+  storniere(a, r.nummer, { grund: 'Irrtum', zeitpunkt: '2026-08-16', jahr: 2026 });
+  assert.equal(istStorniert(a, r.nummer), true);
+  assert.equal('storniert' in a.eintraege[0], false, 'kein totes Feld mehr im eingefrorenen Eintrag');
+});
+
+test('Das Journal geht als CSV hinaus, Semikolon und Umbruch entschärft', () => {
+  const a = neueAblage();
+  haltefest(a, { art: 'vermerk', zeitpunkt: '2026-08-15', text: 'mit;Semikolon\nund Umbruch' });
+  const csv = alsCsv(a);
+
+  const zeilen = csv.split('\n');
+  assert.equal(zeilen.length, 2, 'der Umbruch im Text darf keine zweite Zeile erzeugen');
+  assert.match(zeilen[0], /^lfd;art;umsatz;nummer/);
+  assert.match(zeilen[1], /mit,Semikolon und Umbruch/);
+});
+
+
+test('Nur Rechnung und Gutschrift sind ein Umsatz', () => {
+  /*
+   * **12. September 2026.** Die Akte sammelt sechs Papierarten, und nur zwei
+   * davon sind ein Umsatz. Am gefährlichsten ist die Lieferantenbestellung:
+   * Sie trägt seit heute früh einen Nettobetrag — den **Einkaufswert**. Ohne
+   * dieses Feld stünde er in der Umsatzsteuervoranmeldung, mit umgekehrtem
+   * Vorzeichen zur Wahrheit.
+   */
+  const eintraege = [
+    { art: 'rechnung', betragNetto: 759.22, betragBrutto: 911.06 },
+    { art: 'lieferantenbestellung', betragNetto: 600, betragBrutto: null },
+    { art: 'angebot', betragNetto: 759.22, betragBrutto: 911.06 },
+  ];
+  assert.equal(eintraege.length, 3);
+  const s = umsatzsumme(eintraege);
+  assert.equal(s.belege, 1, 'ein anderes Papier ist als Umsatz gezählt worden');
+  assert.equal(s.ohneUmsatz, 2);
+  assert.equal(s.netto, 759.22);
+  assert.equal(s.steuer, 151.84);
+
+  // Die Gutschrift zieht ab — sie hebt die Rechnung auf.
+  const mitStorno = umsatzsumme([...eintraege,
+    { art: 'gutschrift', betragNetto: -759.22, betragBrutto: -911.06 }]);
+  assert.equal(mitStorno.netto, 0);
+  assert.equal(mitStorno.steuer, 0);
+  assert.equal(mitStorno.belege, 2);
+});
+
+
+test('Sechs Arten sind ein Papier, zwei sind die Aufzeichnung selbst', () => {
+  /*
+   * **12. September 2026.** `--ablegen` schreibt die Durchschrift für sechs
+   * Arten: Angebot, Auftragsbestätigung, Absage, Lieferantenbestellung,
+   * Rechnung, Gutschrift. Für `vermerk` und `uidabfrage` gibt es keinen
+   * Aufruf — und es kann keinen geben, denn es gibt kein Blatt, von dem eine
+   * Abschrift entstünde (§ 131 Abs 1 Z 5 BAO: wo kein Beleg entsteht, tritt
+   * der Vermerk an seine Stelle).
+   */
+  const mitBeleg = Object.entries(ARTEN).filter(([, a]) => a.beleg).map(([n]) => n);
+  const ohneBeleg = Object.entries(ARTEN).filter(([, a]) => !a.beleg).map(([n]) => n);
+  assert.deepEqual(ohneBeleg, ['uidabfrage', 'vermerk'],
+    'eine dritte Art ohne Blatt — oder eine der beiden hat eines bekommen');
+  assert.equal(mitBeleg.length, 6);
+
+  /*
+   * Kreuzprobe zwischen zwei Feldern desselben Registers: Ein Papier, das
+   * eine fortlaufende Nummer zieht, von dem aber keine Abschrift bleibt,
+   * wäre eine vergebene Nummer ohne Beleg — also für immer eine Lücke, die
+   * niemand erklären kann. § 11 Abs 1 Z 5 UStG verlangt die Nummer und § 11
+   * Abs 2 UStG die Durchschrift, und beide meinen dasselbe Papier.
+   */
+  for (const [name, a] of Object.entries(ARTEN)) {
+    if (a.nummernkreis) {
+      assert.equal(a.beleg, true, `${name} zieht eine Nummer, ohne ein Blatt zu haben`);
+    }
+  }
+});
+
+
+test('Die CSV sagt je Zeile, ob sie ein Umsatz ist', () => {
+  /*
+   * **12. September 2026, abends.** Die Unterscheidung zwischen Umsatz und
+   * Ausgabe entstand am Vormittag und stand bis zum Abend nur auf dem
+   * Bildschirm. In der Datei trugen der Umsatz der Rechnung und der
+   * Einkaufswert der Lieferantenbestellung dieselbe Spalte `netto`:
+   *
+   *   1;rechnung;…;759,22;911,06;;…
+   *   2;lieferantenbestellung;…;600,00;;;…
+   *
+   * Wer sie zusammenzählt — und genau dafür öffnet ein Steuerberater eine
+   * CSV — bekommt 1.359,22 € statt 759,22 €. Das sind 79 % zu viel, und die
+   * Umsatzsteuer daraus wandert in die Voranmeldung.
+   */
+  const zeilen = alsCsv({
+    eintraege: [
+      { lfd: 1, art: 'rechnung', nummer: 'RE-2026-0001', zeitpunkt: '2026-09-02', vorgang: '2026-0101', betragNetto: 759.22, betragBrutto: 911.06, text: 'x' },
+      { lfd: 2, art: 'lieferantenbestellung', nummer: '2026-0101-01', zeitpunkt: '2026-09-02', vorgang: '2026-0101', betragNetto: 600, betragBrutto: null, text: 'y' },
+      { lfd: 3, art: 'vermerk', nummer: null, zeitpunkt: '2026-09-02', vorgang: '2026-0101', betragNetto: null, betragBrutto: null, text: 'z' },
+    ],
+  }).split('\n');
+
+  const spalte = (zeile) => zeile.split(';')[2];
+  assert.equal(spalte(zeilen[0]), 'umsatz', zeilen[0]);
+  assert.equal(spalte(zeilen[1]), 'ja', 'die Rechnung ist der Umsatz');
+  assert.equal(spalte(zeilen[2]), 'nein',
+    'der Einkaufswert der Lieferantenbestellung steht als Umsatz in der Datei');
+  assert.equal(spalte(zeilen[3]), 'nein', 'der Vermerk ist kein Umsatz');
+});

@@ -1,0 +1,78 @@
+{
+  "_hinweis": "FIKTIVE Antworten als Vorlage für den Freigabetag. Erfundene Namen, erfundene Konditionen — sie belegen nichts. Echte Antworten in eine Kopie dieser Datei eintragen und mit npm run auswerten -- <datei> auswerten.",
+  "lage": {
+    "zielgewinn": 5374,
+    "fixkosten": 650,
+    "rohmarge": 0.35,
+    "werbeanteil": 0.1,
+    "warenkorbNetto": 650,
+    "frachtProBestellungNetto": 34.1,
+    "umsatzProSession": 0.02,
+    "zahlweg": "karte-stripe"
+  },
+  "lieferanten": [
+    {
+      "hersteller": "FIKTIV Bahnen GmbH",
+      "sortiment": "Bahnen",
+      "streckengeschaeft": true,
+      "haendlerrabatt": 0.40,
+      "frachtmodell": "freiHausAb",
+      "produktdaten": "csv",
+      "preisrhythmus": "jährlich zum 1. Februar",
+      "fakturierendesLand": "DE"
+    },
+    {
+      "hersteller": "FIKTIV Rohr GmbH",
+      "sortiment": "Rohr",
+      "streckengeschaeft": true,
+      "haendlerrabatt": 0.36,
+      "frachtmodell": "staffel",
+      "produktdaten": "excel",
+      "preisrhythmus": "halbjährlich",
+      "fakturierendesLand": "AT"
+    },
+    {
+      "hersteller": "FIKTIV Baustoffgroßhandel eGen",
+      "sortiment": "Bahnen",
+      "streckengeschaeft": true,
+      "einkaufNetto": 6.2,
+      "strassenpreisDeckelNetto": 10.5,
+      "frachtmodell": "pauschale",
+      "produktdaten": "csv",
+      "preisrhythmus": "IDS Connect, tagesaktuell",
+      "fakturierendesLand": "AT"
+    },
+    {
+      "hersteller": "FIKTIV Schweigsam AG"
+    }
+  ],
+  "partner": [
+    {
+      "betrieb": "FIKTIV Abdichtung Nord",
+      "bezirk": "Braunau am Inn",
+      "feuchteArbeiten": true,
+      "namentlicheNennung": true,
+      "leadpreis": 180,
+      "rueckmeldefrist24h": true,
+      "exklusivitaetLeistungsgebunden": true
+    },
+    {
+      "betrieb": "FIKTIV Keller & Co",
+      "bezirk": "Schärding",
+      "feuchteArbeiten": true,
+      "namentlicheNennung": true,
+      "leadpreis": 150,
+      "rueckmeldefrist24h": true,
+      "exklusivitaetLeistungsgebunden": true
+    },
+    {
+      "betrieb": "FIKTIV Sanierung Süd",
+      "bezirk": "Vöcklabruck",
+      "feuchteArbeiten": true,
+      "namentlicheNennung": false,
+      "leadpreis": 150,
+      "rueckmeldefrist24h": true,
+      "exklusivitaetLeistungsgebunden": true
+    }
+  ]
+}

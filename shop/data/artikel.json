@@ -1,0 +1,115 @@
+{
+  "_datenstand": "PLATZHALTER — keine Preise sind von einem Lieferanten bestätigt.",
+  "_hinweis": "UVP-Spannen stammen aus der Stückliste in docs/baustoff-shop/phase4-sortiment-und-materialwert.md und sind öffentliche Listenpreisniveaus, keine Einkaufspreise. Der Einkaufspreis ergibt sich hier rechnerisch aus UVP × (1 − Händlerrabatt) und ist damit ebenfalls Platzhalter.",
+  "sortiment": "Radonvorsorge, mittlerer Warenkorb nach Gate 5",
+  "artikel": [
+    {
+      "sku": "DR-100-050",
+      "bezeichnung": "Drainagerohr perforiert DN100, Ringbund 50 m",
+      "gruppe": "Drainage",
+      "lieferantId": "rohr-at",
+      "einheit": "Ringbund",
+      "menge": "50 m",
+      "uvpNetto": 165.0,
+      "gewichtKg": 22.0,
+      "sperrgut": true,
+      "ekQuelle": "platzhalter"
+    },
+    {
+      "sku": "DR-FT-SET",
+      "bezeichnung": "Formteilset Radondrainage: Bögen, Muffen, Anschlüsse",
+      "gruppe": "Drainage",
+      "lieferantId": "rohr-at",
+      "einheit": "Set",
+      "menge": "1 Gebäude",
+      "uvpNetto": 145.0,
+      "gewichtKg": 6.5,
+      "sperrgut": false,
+      "ekQuelle": "platzhalter"
+    },
+    {
+      "sku": "DR-KS-100",
+      "bezeichnung": "Kontroll- und Sammelschacht DN100",
+      "gruppe": "Drainage",
+      "lieferantId": "rohr-at",
+      "einheit": "Stück",
+      "menge": "1",
+      "uvpNetto": 118.0,
+      "gewichtKg": 9.0,
+      "sperrgut": true,
+      "ekQuelle": "platzhalter"
+    },
+    {
+      "sku": "DR-SL-100",
+      "bezeichnung": "Steigleitung DN100 inkl. Halterungen, 3 m",
+      "gruppe": "Drainage",
+      "lieferantId": "rohr-at",
+      "einheit": "Stück",
+      "menge": "3 m",
+      "uvpNetto": 42.0,
+      "gewichtKg": 4.0,
+      "sperrgut": true,
+      "ekQuelle": "platzhalter"
+    },
+    {
+      "sku": "AB-RD-375",
+      "bezeichnung": "Radondichte Abdichtungsbahn, Rolle 37,5 m²",
+      "gruppe": "Abdichtung",
+      "lieferantId": "bahnen-de",
+      "einheit": "Rolle",
+      "menge": "37,5 m²",
+      "uvpNetto": 398.0,
+      "gewichtKg": 20.0,
+      "sperrgut": true,
+      "ekQuelle": "platzhalter"
+    },
+    {
+      "sku": "AB-PR-010",
+      "bezeichnung": "Voranstrich / Primer, 10 l",
+      "gruppe": "Abdichtung",
+      "lieferantId": "bahnen-de",
+      "einheit": "Gebinde",
+      "menge": "10 l",
+      "uvpNetto": 96.0,
+      "gewichtKg": 11.0,
+      "sperrgut": false,
+      "ekQuelle": "platzhalter"
+    },
+    {
+      "sku": "ZB-DB-150",
+      "bezeichnung": "Dichtband gasdicht, 150 mm × 25 m",
+      "gruppe": "Zubehör",
+      "lieferantId": "zubehoer-de",
+      "einheit": "Rolle",
+      "menge": "25 m",
+      "uvpNetto": 78.0,
+      "gewichtKg": 2.2,
+      "sperrgut": false,
+      "ekQuelle": "platzhalter"
+    },
+    {
+      "sku": "ZB-MA-SET",
+      "bezeichnung": "Manschettenset Innen- und Außenecken",
+      "gruppe": "Zubehör",
+      "lieferantId": "zubehoer-de",
+      "einheit": "Set",
+      "menge": "1 Gebäude",
+      "uvpNetto": 112.0,
+      "gewichtKg": 1.8,
+      "sperrgut": false,
+      "ekQuelle": "platzhalter"
+    },
+    {
+      "sku": "ZB-RR-125",
+      "bezeichnung": "Ringraumdichtung DN125 für Einzelleitung",
+      "gruppe": "Zubehör",
+      "lieferantId": "zubehoer-de",
+      "einheit": "Stück",
+      "menge": "1",
+      "uvpNetto": 64.0,
+      "gewichtKg": 0.9,
+      "sperrgut": false,
+      "ekQuelle": "platzhalter"
+    }
+  ]
+}

@@ -1,0 +1,528 @@
+/**
+ * Prüft dieser Prüfer das Erzeugnis von heute?
+ *
+ * **Der Anlass, 4. September 2026, Mittag.** `npm run alles` meldete 26 von 26
+ * grün. Unmittelbar danach weigerten sich beide Browserproben, überhaupt zu
+ * starten:
+ *
+ * ```
+ * Abbruch: ausgabe/website.html ist älter als 3 Quelldatei(en) — zuerst npm run website.
+ *   src/pruefregister.js, src/rechtstexte.js, src/ungerufen.js
+ * ```
+ *
+ * Die Weigerung ist richtig. Sie steht seit dem 29. August in `shopprobe.mjs`
+ * und `oberflaechenprobe.mjs`, und zwar weil an dem Tag eine Probe gegen eine
+ * `demo.html` lief, die zu ihrem Quelltext nicht mehr passte — grün, während
+ * das Skript der neu gebauten Seite beim Laden starb.
+ *
+ * > **Fünf weitere Prüfer lesen dasselbe Erzeugnis und haben diese Weigerung
+ * > nicht.** `pruefe-seiten`, `pruefe-crawler`, `pruefe-datenschutz`,
+ * > `pruefe-dubletten` und `pruefe-geheimnis` fragen, **ob** `ausgabe/site`
+ * > da ist. Nicht, ob es das ist, was die Quelle heute sagt.
+ *
+ * Am teuersten ist dabei `pruefe-geheimnis`: Er misst, ob aus den
+ * veröffentlichten Verkaufspreisen die Einkaufspreise zurückzurechnen sind.
+ * Über einem veralteten Erzeugnis meldet er das über die Seiten von gestern.
+ *
+ * Dieselbe Familie wie der Impressumspunkt vom Vormittag: **Anwesend ist nicht
+ * dasselbe wie richtig.** Hier: vorhanden ist nicht dasselbe wie aktuell.
+ *
+ * ## Warum ein Register und nicht fünf Kopien
+ *
+ * Die beiden vorhandenen Prüfungen sind Kopien voneinander — dieselbe
+ * Quellenliste, derselbe Text, zwei Fassungen. Eine sechste Kopie wäre eine
+ * sechste Stelle, an der die Quellenliste altert. Deshalb steht hier, welches
+ * Erzeugnis aus welchen Quellen entsteht, und daneben, **wer es liest**. Ein
+ * Werkzeug, das `ausgabe/` anfasst und nicht im Register steht, ist der Fund.
+ */
+
+import { readdirSync, statSync } from 'node:fs';
+import { join } from 'node:path';
+
+/**
+ * Die Erzeugnisse und woraus sie entstehen.
+ *
+ * `quellordner` wird zur Laufzeit aufgelistet — eine fest eingetragene
+ * Dateiliste wäre am Tag der nächsten neuen Quelldatei still veraltet, und
+ * still veraltete Listen sind der Grund, warum es dieses Register gibt.
+ */
+export const ERZEUGNISSE = Object.freeze({
+  'ausgabe/site': Object.freeze({
+    baubefehl: 'npm run website',
+    quellordner: Object.freeze([['src', '.js'], ['data', '.json']]),
+    quelldateien: Object.freeze(['bin/website.mjs', 'shop-ui.js']),
+  }),
+  'ausgabe/website.html': Object.freeze({
+    baubefehl: 'npm run website',
+    quellordner: Object.freeze([['src', '.js'], ['data', '.json']]),
+    quelldateien: Object.freeze(['bin/website.mjs', 'shop-ui.js']),
+  }),
+  'demo.html': Object.freeze({
+    baubefehl: 'npm run build',
+    quellordner: Object.freeze([['src', '.js'], ['data', '.json']]),
+    quelldateien: Object.freeze(['demo-template.html', 'build-demo.mjs', 'shop-ui.js']),
+  }),
+  'ausgabe/kampagne': Object.freeze({
+    baubefehl: 'npm run kampagne',
+    quellordner: Object.freeze([['src', '.js'], ['data', '.json']]),
+    quelldateien: Object.freeze(['bin/kampagne.mjs']),
+  }),
+});
+
+/**
+ * Wer ein Erzeugnis liest — und wer ausdrücklich ohne Frischeprüfung auskommt.
+ *
+ * `warumOhnePruefung` ist Pflicht, wo `erzeugnis` fehlt. Ein Werkzeug, das
+ * `ausgabe/` anfasst und keines von beidem trägt, ist genau der Fall, den
+ * `leserbefund` melden soll.
+ */
+export const LESER = Object.freeze([
+  Object.freeze({ werkzeug: 'bin/inhaltspruefung.mjs', erzeugnis: 'ausgabe/site' }),
+  Object.freeze({ werkzeug: 'bin/crawlerpruefung.mjs', erzeugnis: 'ausgabe/site' }),
+  Object.freeze({ werkzeug: 'bin/datenschutzpruefung.mjs', erzeugnis: 'ausgabe/site' }),
+  Object.freeze({ werkzeug: 'bin/dublettenpruefung.mjs', erzeugnis: 'ausgabe/site' }),
+  // **Ergänzt am 5. September.** Sie hält seither auch die gebauten Flächen
+  // gegen die Einstufung: Sagt llms.txt "palettiert", muss dort stehen, woher
+  // die Einstufung kommt. Gegen eine Fläche von gestern zu prüfen hieße, die
+  // Auskunft von gestern für heute grün zu melden.
+  Object.freeze({ werkzeug: 'bin/sperrgutpruefung.mjs', erzeugnis: 'ausgabe/site' }),
+  Object.freeze({ werkzeug: 'bin/geheimnispruefung.mjs', erzeugnis: 'ausgabe/site' }),
+  // **Ergänzt am 8. September.** `npm run paket` packt genau diesen Ordner in
+  // ein Archiv, das der Auftraggeber hochlädt. Ein Paket aus einem veralteten
+  // Erzeugnis wäre die schlimmste Sorte: Es sieht vollständig aus, liegt auf
+  // dem Server, und niemand sieht ihm an, dass es von gestern ist.
+  Object.freeze({ werkzeug: 'bin/paket.mjs', erzeugnis: 'ausgabe/site' }),
+  // **Ergänzt am 11. September.** Der Prüfer packt dasselbe Archiv und hält es
+  // gegen denselben Ordner. Läuft er gegen ein veraltetes Erzeugnis, bescheinigt
+  // er einem Paket von gestern, dass es zum Bau von gestern passt — richtig und
+  // nutzlos.
+  Object.freeze({ werkzeug: 'bin/paketpruefung.mjs', erzeugnis: 'ausgabe/site' }),
+  // **Ergänzt am 11. September.** Der Kopfzeilenprüfer stellt einen Apache
+  // über genau diesen Ordner und misst, was er ausliefert. Läuft er gegen ein
+  // veraltetes Erzeugnis, bescheinigt er einer `.htaccess` von gestern, dass
+  // sie zum Bau von gestern passt — richtig und nutzlos.
+  Object.freeze({ werkzeug: 'bin/kopfzeilenpruefung.mjs', erzeugnis: 'ausgabe/site' }),
+  Object.freeze({ werkzeug: 'bin/verweispruefung.mjs', erzeugnis: 'ausgabe/site' }),
+  Object.freeze({ werkzeug: 'bin/entitaetspruefung.mjs', erzeugnis: 'ausgabe/site' }),
+  // **Seit dem 8. September, nachts.** Der Prüfer liest zusätzlich
+  // `ausgabe/site/llms.txt` — er hält die Zahl der nicht geführten Positionen
+  // gegen das, was die maschinenlesbare Datei darüber sagt.
+  Object.freeze({ werkzeug: 'bin/systemlistenpruefung.mjs', erzeugnis: 'ausgabe/site' }),
+  // **Seit dem 9. September.** Der Prüfer liest zusätzlich
+  // `ausgabe/site/llms.txt` — er hält die Systemzuordnung der Artikelzeilen
+  // gegen den Katalog. Gegen eine Datei von gestern zu prüfen hieße, ein
+  // Schweigen für behoben zu erklären, das im heutigen Erzeugnis noch steht.
+  Object.freeze({ werkzeug: 'bin/systemtreuepruefung.mjs', erzeugnis: 'ausgabe/site' }),
+  // **Seit dem 9. September.** Sie liest das Erzeugnis nicht selbst — sie ruft
+  // den Haken, und der ruft `npm test`, und fünfunddreißig Testdateien lesen
+  // `ausgabe/site`. Ohne Eintrag maß sie den Haken in einem Zustand, in dem
+  // jede Sperre richtig ist: Bei veraltetem Erzeugnis sperrt er zu Recht, und
+  // die Messung nannte das `haken-sperrt-immer`. Ein Prüfer, der durch ein
+  // anderes Werkzeug hindurch liest, liest.
+  Object.freeze({ werkzeug: 'bin/hakenpruefung.mjs', erzeugnis: 'ausgabe/site' }),
+  Object.freeze({
+    werkzeug: 'bin/preiswiederherstellung.mjs',
+    erzeugnis: null,
+    warumOhnePruefung: 'Sie liest das Erzeugnis, **weil sonst nichts mehr da ist**: Nach dem '
+      + 'Verlust der Preisdatei am 8. September ist die gebaute Ausgabe die letzte Quelle '
+      + 'der Einkaufspreise. Sich über einem veralteten Stand zu weigern hieße hier, den '
+      + 'Rettungsweg genau dann zu sperren, wenn er gebraucht wird — neu bauen kann man '
+      + 'ohne Preise nicht. Wie alt die Ausgabe ist, steht im Kopf der geschriebenen Datei.',
+  }),
+  Object.freeze({ werkzeug: 'bin/shopprobe.mjs', erzeugnis: 'ausgabe/website.html' }),
+  Object.freeze({ werkzeug: 'bin/wegprobe.mjs', erzeugnis: 'ausgabe/website.html' }),
+  Object.freeze({ werkzeug: 'bin/werbeprobe.mjs', erzeugnis: 'ausgabe/kampagne' }),
+  Object.freeze({ werkzeug: 'bin/oberflaechenprobe.mjs', erzeugnis: 'demo.html' }),
+  Object.freeze({
+    werkzeug: 'bin/website.mjs',
+    erzeugnis: null,
+    warumOhnePruefung: 'Es **erzeugt** die Ausgabe. Ein Bauwerkzeug, das sich weigert zu '
+      + 'bauen, weil das Gebaute veraltet ist, käme nie wieder aus dieser Lage heraus.',
+  }),
+  Object.freeze({
+    werkzeug: 'bin/gegenprobenlauf.mjs',
+    erzeugnis: null,
+    warumOhnePruefung: 'Er baut selbst neu, wo ein Eintrag `baueVorher` trägt, und macht das '
+      + 'Erzeugnis zwischendurch absichtlich falsch. Eine Frischeprüfung würde hier genau das '
+      + 'melden, was die Probe gerade tut.',
+  }),
+  Object.freeze({
+    werkzeug: 'bin/erzeugnispruefung.mjs',
+    erzeugnis: null,
+    warumOhnePruefung: 'Er **ist** die Frischeprüfung. Sein Befund über ein veraltetes '
+      + 'Erzeugnis ist ein Hinweis und kein Abbruch: Rot wird er über das Register, also '
+      + 'darüber, ob ein Leser ohne Weigerung liest — nicht darüber, wann zuletzt gebaut wurde.',
+  }),
+  Object.freeze({
+    werkzeug: 'bin/gesamtlauf.mjs',
+    erzeugnis: null,
+    warumOhnePruefung: 'Er ruft die Prüfer, statt selbst zu lesen. Die Weigerung gehört '
+      + 'dorthin, wo gemessen wird — sonst stünde sie einmal zu früh und einmal zu spät.',
+  }),
+  /*
+   * **Ergänzt am 11. September 2026.** Dieser Prüfer liest `ausgabe/` nicht,
+   * er **schreibt** eines: einen zweiten Bau mit vollständiger
+   * Betreiberdatei, in einen Wegwerfordner. Eine Frischeprüfung wäre hier
+   * sinnlos — er prüft ausdrücklich einen Stand, den der Auslieferungsordner
+   * heute nicht haben darf.
+   */
+  Object.freeze({
+    werkzeug: 'bin/tagxpruefung.mjs',
+    erzeugnis: null,
+    warumOhnePruefung: 'Er baut selbst, und zwar bewusst an `ausgabe/` vorbei: Der Bau des '
+      + 'Tages X geht nach `WEBSITE_AUSGABE` in einen Wegwerfordner, damit keine erfundene '
+      + 'UID je in den Auslieferungsordner gerät. Was er prüft, ist ein Stand, den es heute '
+      + 'nicht geben darf — eine Frage nach der Frische des echten Erzeugnisses ginge daran '
+      + 'vorbei.',
+  }),
+  Object.freeze({
+    werkzeug: 'bin/schnelllauf.mjs',
+    erzeugnis: null,
+    warumOhnePruefung: 'Derselbe Grund wie beim Gesamtlauf: Er ruft dreiundvierzig Prüfer auf '
+      + 'und liest selbst nichts. Jeder von ihnen weigert sich für sich, und im Haken steht '
+      + 'die Frischeprüfung ohnehin schon eine Zeile vorher. Das Wort steht hier, weil eine '
+      + 'Veränderliche die gesammelte Ausgabe eines Prüfers hält — ein Wort im Quelltext ist '
+      + 'kein Zugriff, und der Prüfer kann das nicht unterscheiden. Er soll es auch nicht: '
+      + 'Lieber ein Eintrag zu viel als ein Leser, den niemand kennt.',
+  }),
+  // **Berichtigt am 5. September.** Der Grund lautete: „Es schreibt eine
+  // Übersicht in `ausgabe/`, es liest dort nichts." Seit heute liest es die
+  // Messliste — die Schwelle „Keywords mit gemessenem Suchvolumen" stand bis
+  // dahin als abgeschriebene 33 im Quelltext, während die Liste 32 führt.
+  // Ein Grund, der einmal stimmte, gilt nicht weiter, wenn das Werkzeug
+  // etwas Neues tut.
+  Object.freeze({ werkzeug: 'bin/kennzahlen.mjs', erzeugnis: 'ausgabe/kampagne' }),
+  Object.freeze({
+    werkzeug: 'bin/kampagne.mjs',
+    erzeugnis: null,
+    warumOhnePruefung: 'Es schreibt die Anzeigendateien nach `ausgabe/kampagne/` und liest '
+      + 'die gebauten Seiten nicht — seine eigene Frischeprüfung gilt den Warenkörben, nicht '
+      + 'dem Erzeugnis der Website.',
+  }),
+  Object.freeze({
+    werkzeug: 'bin/messliste.mjs',
+    erzeugnis: null,
+    warumOhnePruefung: 'Schreibt die Messliste nach `ausgabe/`, liest von dort nichts.',
+  }),
+  Object.freeze({
+    werkzeug: 'bin/preisabgleich.mjs',
+    erzeugnis: null,
+    warumOhnePruefung: 'Er hält die vier **Ausgaben** gegeneinander und gegen die Quelle — '
+      + 'das Veraltetsein einer davon ist sein Befund und nicht sein Abbruchgrund.',
+  }),
+  Object.freeze({
+    werkzeug: 'bin/veroeffentlichung.mjs',
+    erzeugnis: null,
+    warumOhnePruefung: 'Es baut den Produktfeed aus dem Katalog, nicht aus den Seiten.',
+  }),
+  Object.freeze({
+    werkzeug: 'bin/punktepruefung.mjs',
+    erzeugnis: 'ausgabe/kampagne',
+    // Sie misst die Zahl der Begriffe gegen `ausgabe/messliste-baustoff.json`,
+    // und die schreibt `npm run messliste` aus derselben Quelle wie die
+    // Anzeigendateien. Über einer veralteten Kampagne bestätigte sie die
+    // Aufgabenliste von gestern.
+  }),
+  Object.freeze({
+    werkzeug: 'bin/offenepunkte.mjs',
+    erzeugnis: null,
+    warumOhnePruefung: 'Es fasst zusammen, was andere Werkzeuge melden, und liest deren '
+      + 'Ausgabe — nicht das Erzeugnis.',
+  }),
+  Object.freeze({
+    werkzeug: 'bin/preisalterpruefung.mjs',
+    erzeugnis: 'ausgabe/site',
+    // **Berichtigt am 8. September.** Hier stand: „Sie misst das Alter der
+    // Einkaufspreise gegen den Kalender. Mit dem gebauten Erzeugnis hat sie
+    // nichts zu tun." Das galt bis zu diesem Tag. Seit Gate 29 fragt sie die
+    // **eigene Suche**, welche Artikel die geschalteten Keywords treffen, und
+    // liest dafür `ausgabe/site/shop.js` — dieselben Daten wie der Browser des
+    // Besuchers. Gegen einen alten Index geprüft, ruhte das Gebot auf der
+    // Trefferliste von gestern.
+  }),
+  /**
+   * **Zwei Werkzeuge lesen das Erzeugnis und weigern sich ausdrücklich nicht.**
+   * `weigertSich: false` sagt das: Für sie ist ein veralteter Stand der
+   * **Befund**, nicht der Abbruchgrund — die Seitenzahl ist ihr Messwert, und
+   * der Prüferprüfer misst, was die anderen melden.
+   *
+   * Sie stehen trotzdem mit `erzeugnis` da, und das ist der Zweck des Feldes:
+   * `bin/gegenprobenlauf.mjs` baut vor **jedem** Erzeugnisleser neu. Ohne den
+   * Eintrag meldeten ihre Gegenproben „war schon vorher rot" und
+   * beschuldigten damit Prüfer, die nichts falsch gemacht haben — genau der
+   * Fehler, den der Läufer beim ignorierten `baueVorher` schon einmal gemacht
+   * hat.
+   */
+  Object.freeze({
+    werkzeug: 'bin/schaufensterpruefung.mjs',
+    erzeugnis: 'ausgabe/site',
+    weigertSich: false,
+    warumOhnePruefung: 'Sie hält die Kennzahlen der PR-Beschreibung gegen den Bestand. Wo sie '
+      + 'gebaute Seiten zählt, ist deren Zahl der Messwert — ein veraltetes Erzeugnis wäre '
+      + 'genau die Abweichung, die sie melden soll, und kein Grund abzubrechen.',
+  }),
+  Object.freeze({
+    werkzeug: 'bin/rahmenzensus.mjs',
+    erzeugnis: null,
+    warumOhnePruefung: 'Er zählt die Rahmen der Quelltexte, nicht die der gebauten Seiten.',
+  }),
+  // **Aufgenommen am 5. September, abends** — von `pruefe-erzeugnis` selbst
+  // gemeldet, in derselben Minute, in der der Durchgang über die Ausgabe
+  // eingebaut war. Genau dafür gibt es das Register.
+  Object.freeze({
+    werkzeug: 'bin/widerrufpruefung.mjs',
+    erzeugnis: null,
+    warumOhnePruefung: 'Ihr Bestand ist die Akte; die gebaute Seite ist ein zusätzlicher '
+      + 'Fundort, den sie prüft, weil der Grund für ihren Ausschluss eine Behauptung über den '
+      + 'Erzeugungsweg ist. Ein veraltetes Erzeugnis macht diesen Durchgang wertlos, nicht die '
+      + '514 Verzeichnisdateien — sie nennt den Stand deshalb, statt abzubrechen.',
+  }),
+  Object.freeze({
+    werkzeug: 'bin/leitzahlpruefung.mjs',
+    erzeugnis: null,
+    warumOhnePruefung: 'Sie liest den Fließtext des Verzeichnisses. Die gebauten Seiten kommen '
+      + 'nur als Fundort vor, und eine abgelöste Zahl darin ist ein Befund, kein Abbruchgrund.',
+  }),
+  /*
+   * **Aufgenommen am 5. September, spätabends.** Beide nennen `ausgabe` genau
+   * einmal, und beide nennen es, um es **auszulassen**. Das Register meldet
+   * sie trotzdem, und das ist richtig so: Es sucht das Wort, weil es die
+   * Absicht dahinter nicht kennt — die steht hier.
+   */
+  Object.freeze({
+    werkzeug: 'bin/ablagepruefung.mjs',
+    erzeugnis: null,
+    warumOhnePruefung: 'Sie geht das Verzeichnis nach `.gitignore`-Dateien ab und überspringt '
+      + 'dabei `ausgabe/` — das Gebaute enthält keine Sperren, sondern ist selbst gesperrt. '
+      + 'Gelesen wird von dort nichts; ihr Bestand sind die getrackten Dateien und die Journale.',
+  }),
+  /*
+   * **Aufgenommen am 5. September, nachts.** Er liest `ausgabe/site` und muss
+   * es: Sein Befund ist, ob ein Vorbehalt aus dem Rechenkern die Ausgabe
+   * erreicht. Über einem veralteten Erzeugnis stünde die Frage falsch — er
+   * sagt den Stand deshalb im Kopf an, statt abzubrechen.
+   */
+  /*
+   * **Aufgenommen am 6. September 2026.** Sie liest `ausgabe/site` und leitet
+   * daraus die Abnahmeliste ab — die Liste **ist** eine Aussage über das
+   * Erzeugnis. Eine Weigerung wäre hier trotzdem falsch, siehe Grund.
+   */
+  Object.freeze({
+    werkzeug: 'bin/rollout.mjs',
+    erzeugnis: null,
+    warumOhnePruefung: 'Der Plan liest seit dem 7. September `ausgabe/messliste-baustoff.json` — '
+      + 'aber nur, um die Zahl der Begriffe zu **nennen**, statt sie im Titel der Etappe '
+      + 'mitzuführen, wo sie ablief. Eine Weigerung über einer alten Messliste ließe den '
+      + 'Auftraggeber ohne Plan dastehen, und der Plan hängt an keiner ihrer Zahlen: Fehlt die '
+      + 'Datei oder ist sie unlesbar, entfällt die eine Zeile und der Rest steht. Wie frisch '
+      + 'der Bau ist, sagt `pruefe-erzeugnis` im selben Lauf.',
+  }),
+  Object.freeze({
+    werkzeug: 'bin/abnahmeliste.mjs',
+    erzeugnis: null,
+    warumOhnePruefung: 'Sie druckt, was nach dem Hochladen im Browser nachzusehen ist — und '
+      + 'nachgesehen wird an dem Ordner, der hochgeladen wurde. Wer eine veraltete Ausgabe '
+      + 'hochlädt, braucht die Liste zu **dieser** Ausgabe; eine Weigerung ließe ihn ohne '
+      + 'Liste dastehen. Sie nennt stattdessen die Zahl der Dateien, aus denen sie abgeleitet '
+      + 'ist, und `pruefe-erzeugnis` sagt im selben Lauf, ob der Bau frisch war.',
+  }),
+  Object.freeze({
+    werkzeug: 'bin/vorbehaltspruefung.mjs',
+    erzeugnis: null,
+    warumOhnePruefung: 'Sie misst, ob ein Vorbehalt aus `src/` in der gebauten Ausgabe steht. '
+      + 'Ein veraltetes Erzeugnis kann diese Frage in beide Richtungen verfälschen — deshalb '
+      + 'läuft sie im Gesamtlauf hinter dem Bauschritt und nennt die Zahl der Ausgabedateien, '
+      + 'aus denen sie geurteilt hat. Ein Abbruch wäre hier kein Schutz, sondern ein Schweigen.',
+  }),
+  Object.freeze({
+    werkzeug: 'bin/reichweite.mjs',
+    erzeugnis: null,
+    warumOhnePruefung: 'Es misst, welche **geführten** Dateien ein Prüfer öffnet, und lässt '
+      + '`ausgabe/` aus der Vergleichsmenge heraus, weil dort nichts liegt, was `git ls-files` '
+      + 'kennt. Ein veraltetes Erzeugnis verschiebt keinen einzigen seiner Messwerte.',
+  }),
+  Object.freeze({
+    werkzeug: 'bin/prueferpruefung.mjs',
+    erzeugnis: 'ausgabe/site',
+    weigertSich: false,
+    warumOhnePruefung: 'Sie befragt die Prüfer und liest deren Ausgabe. Weigert sich einer '
+      + 'wegen eines veralteten Erzeugnisses, ist das ihr Messwert und nicht ihr Abbruch.',
+  }),
+]);
+
+/**
+ * Welche Quellen sind jünger als das Erzeugnis?
+ *
+ * **Stand bis zum 4. September in `src/buendel.js`.** Ihr Anlass: Am 29.08.
+ * bekam `rechtstexte.js` eine Abhängigkeit, die das Bündel zerriss — und
+ * niemand merkte es, weil `demo.html` seit dem 28.08. nicht neu gebaut worden
+ * war. Die Oberflächenprobe lief grün gegen eine Datei, die zu ihrem
+ * Quelltext nicht mehr passte.
+ *
+ * Bewusst ohne Dateizugriff: Sie bekommt Zeitstempel und gibt Namen zurück.
+ * Damit lässt sie sich prüfen, ohne Dateien anzulegen.
+ */
+export function juengereQuellen(zielZeit, quellen) {
+  return quellen.filter((q) => q.zeit > zielZeit).map((q) => q.name);
+}
+
+/**
+ * Der Frischebefund eines Erzeugnisses, gelesen von der Platte.
+ *
+ * @param {string} wurzel  das Verzeichnis `shop/`
+ * @param {string} name    ein Schlüssel aus `ERZEUGNISSE`
+ */
+/**
+ * Wie alt ist ein Erzeugnis — und was heißt „das Erzeugnis" bei einem Ordner?
+ *
+ * **Berichtigt am 5. September 2026.** Hier stand `statSync(ziel).mtimeMs`.
+ * Bei einer Datei ist das richtig. Bei einem **Ordner** ist es die Zeit, zu
+ * der zuletzt ein Eintrag dazukam oder wegfiel — nicht die Zeit, zu der sein
+ * Inhalt entstanden ist.
+ *
+ * Aufgefallen an `ausgabe/kampagne`: `npm run kampagne` überschreibt die vier
+ * Dateien darin, legt aber keine neue an. Der Ordner behielt seine Zeit von
+ * 00:41, die Dateien darin trugen 06:39 — und das Werkzeug meldete
+ * unverdrossen „älter als 70 Quelldateien", nach jedem Neubau wieder.
+ *
+ * > **Die Weigerung, gegen ein veraltetes Erzeugnis zu prüfen, hat das
+ * > falsche Alter gemessen.** In die eine Richtung ist das lästig: Sie
+ * > verweigert die Arbeit über einem frischen Stand. In die andere ist es
+ * > gefährlich: `ausgabe/site` hat fünf Unterordner, und die Zeit des
+ * > obersten sagt nichts über die Seiten darin.
+ *
+ * Gemessen wird deshalb die **älteste** Datei des Erzeugnisses, rekursiv. Ein
+ * Erzeugnis ist so frisch wie sein ältester Teil — alles andere hieße, einen
+ * halb gebauten Stand für gebaut zu erklären.
+ *
+ * @returns {number|null} Millisekunden, oder `null` bei einem leeren Ordner
+ */
+export function zielzeit(pfad) {
+  const stand = statSync(pfad);
+  if (!stand.isDirectory()) return stand.mtimeMs;
+
+  let aeltester = null;
+  const rand = [pfad];
+  while (rand.length) {
+    const ordner = rand.pop();
+    for (const eintrag of readdirSync(ordner, { withFileTypes: true })) {
+      const voll = join(ordner, eintrag.name);
+      if (eintrag.isDirectory()) { rand.push(voll); continue; }
+      const zeit = statSync(voll).mtimeMs;
+      if (aeltester === null || zeit < aeltester) aeltester = zeit;
+    }
+  }
+  return aeltester;
+}
+
+export function frischebefund(wurzel, name) {
+  const e = ERZEUGNISSE[name];
+  if (!e) throw new Error(`Unbekanntes Erzeugnis: ${name}`);
+
+  const ziel = join(wurzel, name);
+  let zielZeit;
+  try {
+    zielZeit = zielzeit(ziel);
+  } catch {
+    return { name, baubefehl: e.baubefehl, fehlt: true, juenger: [], frisch: false };
+  }
+  if (zielZeit === null) {
+    // Ein Ordner ohne eine einzige Datei ist kein Erzeugnis, sondern ein Ordner.
+    return { name, baubefehl: e.baubefehl, fehlt: true, juenger: [], frisch: false };
+  }
+
+  const quellen = [];
+  for (const [ordner, endung] of e.quellordner) {
+    for (const d of readdirSync(join(wurzel, ordner))) {
+      if (!d.endsWith(endung)) continue;
+      quellen.push({ name: `${ordner}/${d}`, zeit: statSync(join(wurzel, ordner, d)).mtimeMs });
+    }
+  }
+  for (const d of e.quelldateien) {
+    quellen.push({ name: d, zeit: statSync(join(wurzel, d)).mtimeMs });
+  }
+
+  const juenger = juengereQuellen(zielZeit, quellen);
+  return { name, baubefehl: e.baubefehl, fehlt: false, juenger, frisch: juenger.length === 0 };
+}
+
+/**
+ * Der Abbruchtext — **eine** Fassung für alle.
+ *
+ * Bis heute stand er zweimal im Bestand, in zwei Schreibweisen. Zwei Fassungen
+ * desselben Satzes sind eine Fassung, die niemand pflegt.
+ */
+export function abbruchtext(befund) {
+  if (befund.fehlt) {
+    return [`Abbruch: ${befund.name} fehlt — zuerst ${befund.baubefehl}.`];
+  }
+  return [
+    `Abbruch: ${befund.name} ist älter als ${befund.juenger.length} Quelldatei(en)`
+      + ` — zuerst ${befund.baubefehl}.`,
+    `  ${befund.juenger.slice(0, 5).join(', ')}${befund.juenger.length > 5 ? ' …' : ''}`,
+    'Eine Probe gegen ein veraltetes Erzeugnis prüft die Vergangenheit.',
+  ];
+}
+
+/**
+ * Hält das Register gegen die Wirklichkeit — in beide Richtungen.
+ *
+ * @param {{name: string, text: string}[]} dateien  die Werkzeuge, Quelltext ohne Kommentare
+ */
+export function leserbefund(dateien, leser = LESER) {
+  const meldungen = [];
+  const gefuehrt = new Map(leser.map((l) => [l.werkzeug, l]));
+
+  for (const l of leser) {
+    // Ein Eintrag braucht seinen Grund, sobald er **nicht** selbst weigert —
+    // gleich ob er gar kein Erzeugnis führt oder eines mit `weigertSich: false`.
+    if (l.weigertSich === false || !l.erzeugnis) {
+      if (!l.warumOhnePruefung || l.warumOhnePruefung.length < 60) {
+        meldungen.push({
+          regel: 'ohne-grund',
+          text: `${l.werkzeug} weigert sich nicht und nennt keinen tragfähigen Grund dafür`,
+        });
+      }
+    }
+    if (l.erzeugnis && !ERZEUGNISSE[l.erzeugnis]) {
+      meldungen.push({
+        regel: 'unbekanntes-erzeugnis',
+        text: `${l.werkzeug} nennt „${l.erzeugnis}", und das führt ERZEUGNISSE nicht`,
+      });
+    }
+    const datei = dateien.find((d) => d.name === l.werkzeug);
+    if (!datei) {
+      meldungen.push({
+        regel: 'werkzeug-gibt-es-nicht',
+        text: `${l.werkzeug} steht im Register und liegt nicht (mehr) im Bestand`,
+      });
+      continue;
+    }
+    // **Vom Eintrag aus, nicht vom Wort `ausgabe` aus.** Der erste Wurf prüfte
+    // diese Regel nur an Dateien, in denen `ausgabe` vorkommt — und ließ
+    // `oberflaechenprobe.mjs` durch, die `demo.html` liest und das Wort nicht
+    // braucht. Wer ein Erzeugnis führt, führt auch die Weigerung.
+    // **Der Aufruf, nicht der Name.** Die erste Fassung suchte `frischebefund`
+    // irgendwo im Text — und fand ihn in der Importzeile. Die Gegenprobe nahm
+    // den Aufruf heraus und der Prüfer meldete weiter grün: Er hat geprüft,
+    // ob das Werkzeug die Prüfung **kennt**, nicht ob es sie ruft.
+    if (l.erzeugnis && l.weigertSich !== false && !/frischebefund\s*\(/.test(datei.text)) {
+      meldungen.push({
+        regel: 'eintrag-ohne-pruefung',
+        text: `${l.werkzeug} liest ${l.erzeugnis} und ruft keine Frischeprüfung`,
+      });
+    }
+  }
+
+  for (const d of dateien) {
+    if (!/\bausgabe\b/.test(d.text)) continue;
+    if (!gefuehrt.has(d.name)) {
+      meldungen.push({
+        regel: 'leser-ohne-eintrag',
+        text: `${d.name} fasst ausgabe/ an und steht in keinem Eintrag`,
+      });
+    }
+  }
+
+  return { geprueft: dateien.length, meldungen, sauber: meldungen.length === 0 };
+}

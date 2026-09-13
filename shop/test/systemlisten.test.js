@@ -1,0 +1,256 @@
+/**
+ * Die Stücklisten und das, was sie über sich selbst sagen.
+ *
+ * **Der Anlass, 5. September 2026.** `kellerwand-perimeter` versprach im
+ * Vorspann „fünf davon aus unserem Sortiment" und schrieb zwanzig Zeilen
+ * weiter „Drei der sieben Positionen führen wir nicht".
+ *
+ * > **Dieselbe Seite, zwei Zahlen** — und die fünfte war ausgerechnet die
+ * > Position, die die Tabelle als „nicht im Sortiment" führt und die
+ * > zugleich unter „wird oft vergessen" steht.
+ */
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync, readdirSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+
+import {
+  NICHT_GEFUEHRT, llmsqualifikation, liesSystemliste, listenbefund, systemlistenbefund, WORTLUECKEN, zuordnungsbefund } from '../src/systemlisten.js';
+// **Am 8. September verlegt**: Die Zahlwörter stehen jetzt in src/format.js,
+// weil dieselbe Tabelle auch in src/inhaltspruefung.js stand.
+import { ZAHLWORT } from '../src/format.js';
+
+const wurzel = join(dirname(fileURLToPath(import.meta.url)), '..');
+const katalog = JSON.parse(readFileSync(join(wurzel, 'data', 'katalog-baustoff.json'), 'utf8'));
+const katalogSkus = new Set(katalog.artikel.map((a) => a.sku));
+const ordner = join(wurzel, 'inhalte', 'system');
+const listen = readdirSync(ordner).filter((d) => d.endsWith('.md')).sort()
+  .map((d) => ({ name: d, gelesen: liesSystemliste(readFileSync(join(ordner, d), 'utf8')) }));
+
+test('der Bestand sagt über sich selbst die Wahrheit', () => {
+  const b = systemlistenbefund(listen, katalogSkus);
+  assert.deepEqual(b.meldungen, [], b.meldungen.map((m) => m.text).join('\n'));
+  assert.equal(b.listen, 4);
+  assert.ok(b.positionen >= 30, `nur ${b.positionen} Positionen — dann prüft das hier wenig`);
+});
+
+/**
+ * Der Zweck dieser Listen steht auf einer eigenen Wissensseite: **was fehlt,
+ * hält die Baustelle auf.** Eine Liste ohne nicht geführte Position wäre
+ * verdächtig — sie zeigte nur, was im Regal liegt.
+ */
+test('jede Liste führt auch, was dieses Haus nicht liefert', () => {
+  assert.ok(listen.length >= 3, 'zu wenige Listen');
+  for (const l of listen) {
+    // Zwei Arten von Kennzeichnung: gar nicht geführt, oder eingeschränkt
+    // („nicht in Flächenstärke"). Die zweite kam am 5. September dazu, nachdem
+    // ein Testfall vom 30. August die Gleichsetzung zurückgewiesen hat.
+    assert.ok(l.gelesen.ohneSortiment + l.gelesen.eingeschraenkt >= 1,
+      `${l.name}: keine einzige gekennzeichnete Lücke — eine Liste, die nur das Regal zeigt`);
+    assert.ok(l.gelesen.positionen - l.gelesen.ohneSortiment >= 1, `${l.name}: nichts lieferbar`);
+    assert.ok(l.gelesen.skus.length >= 1, `${l.name}: nennt keinen Artikel`);
+  }
+});
+
+/* ------------------------------------------------------------------ *
+ * Die Regeln einzeln
+ * ------------------------------------------------------------------ */
+
+const seite = (zeilen, text = '') => `---\nskus: POS-1\n---\n\n${text}\n\n`
+  + '| # | Position | Menge nach | oft vergessen |\n|---|---|---|---|\n'
+  + zeilen.map((z, i) => `| ${i + 1} | ${z} | x | — |`).join('\n');
+
+test('eine Zahl im Text gegen die Tabelle', () => {
+  const g = liesSystemliste(seite(['A', 'B'], 'Sieben Positionen bilden das Bauteil.'));
+  assert.equal(g.positionen, 2);
+  const b = listenbefund('probe.md', g, new Set(['POS-1']));
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['zahl-widerspricht']);
+});
+
+test('die Zahl der nicht geführten Positionen gegen die Kennzeichnungen', () => {
+  // Genau der Fall vom 5. September: Der Text sagt drei, gekennzeichnet ist eine.
+  const g = liesSystemliste(seite(
+    ['A *(nicht im Sortiment)*', 'B', 'C'],
+    'Drei der drei Positionen führen wir nicht.',
+  ));
+  const b = listenbefund('probe.md', g, new Set(['POS-1']));
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['nicht-gefuehrt-zahl']);
+  assert.match(b.meldungen[0].text, /3 nicht geführte Position\(en\), gekennzeichnet sind 1/);
+});
+
+test('stimmen beide Zahlen, schweigt der Prüfer', () => {
+  const g = liesSystemliste(seite(
+    ['A *(nicht im Sortiment)*', 'B', 'C'],
+    'Drei Positionen bilden das Bauteil. Eine der drei Positionen führen wir nicht.',
+  ));
+  assert.deepEqual(listenbefund('probe.md', g, new Set(['POS-1'])).meldungen, []);
+});
+
+test('ein Artikel der Kopfzeile, den es nicht gibt', () => {
+  const g = liesSystemliste(seite(['A *(nicht im Sortiment)*', 'B']));
+  const b = listenbefund('probe.md', g, new Set());
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['sku-gibt-es-nicht']);
+});
+
+test('eine Liste ohne Tabelle ist keine Liste', () => {
+  const b = listenbefund('probe.md', liesSystemliste('---\nskus: POS-1\n---\nNur Text.'), new Set(['POS-1']));
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['keine-position']);
+});
+
+test('eine Liste, von der nichts lieferbar ist', () => {
+  const g = liesSystemliste(seite(['A *(nicht im Sortiment)*', 'B *(nicht im Sortiment)*']));
+  const b = listenbefund('probe.md', g, new Set(['POS-1']));
+  assert.ok(b.meldungen.some((m) => m.regel === 'alles-fremd'));
+});
+
+test('ein Lauf über zu wenige Listen ist kein grüner', () => {
+  const b = systemlistenbefund([listen[0]], katalogSkus, 3);
+  assert.ok(b.meldungen.some((m) => m.regel === 'zu-wenig-listen'));
+});
+
+test('Zahlwörter und Ziffern werden gleich gelesen', () => {
+  assert.equal(ZAHLWORT.sieben, 7);
+  const mitZiffer = liesSystemliste(seite(['A'], '2 Positionen bilden das Bauteil.'));
+  assert.deepEqual(mitZiffer.gesamtaussagen, [{ wort: '2', wert: 2 }]);
+});
+
+test('die Kennzeichnung steht in der Positionsspalte, nicht irgendwo', () => {
+  // „eigenes Gewerk" in der letzten Spalte sagt, **wer** es macht — nicht, ob
+  // wir es führen. Die Kanalliste führt eine Position, die beides ist: fremdes
+  // Gewerk und trotzdem im Sortiment.
+  assert.equal(NICHT_GEFUEHRT.test('Grundmauerschutzbahn'), false);
+  assert.equal(NICHT_GEFUEHRT.test('Abschlussschiene *(nicht im Sortiment)*'), true);
+});
+
+/**
+ * Die Unterscheidung, die ein Testfall vom 30. August erzwungen hat.
+ *
+ * > **Eine Kennzeichnung, die zu viel behauptet, ist so falsch wie eine, die
+ * > fehlt** — und die falsche Richtung ist die teurere: Sie schickt den
+ * > Kunden von einer Ware weg, die es gibt.
+ */
+test('„nicht im Sortiment" und „nicht in Flächenstärke" sind zweierlei', async () => {
+  const { EINGESCHRAENKT } = await import('../src/systemlisten.js');
+  assert.equal(NICHT_GEFUEHRT.test('Dämmplatten *(nicht in Flächenstärke)*'), false);
+  assert.equal(EINGESCHRAENKT.test('Dämmplatten *(nicht in Flächenstärke)*'), true);
+  assert.equal(EINGESCHRAENKT.test('Abschlussschiene *(nicht im Sortiment)*'), false);
+  assert.equal(NICHT_GEFUEHRT.test('Abschlussschiene *(nicht im Sortiment)*'), true);
+});
+
+test('Jede lieferbare Position trägt den Namen eines Artikels — und jeder Artikel eine Zeile', async () => {
+  const { readFileSync, readdirSync } = await import('node:fs');
+  const { fileURLToPath } = await import('node:url');
+  const { join } = await import('node:path');
+  const { wortstaemme } = await import('../src/shopkern.js');
+  const wurzel = fileURLToPath(new URL('..', import.meta.url));
+  const ordner = join(wurzel, 'inhalte', 'system');
+
+  const dateien = readdirSync(ordner).filter((d) => d.endsWith('.md'));
+  assert.ok(dateien.length >= 3, `nur ${dateien.length} Systemlisten`);
+  const listen = Object.fromEntries(dateien.map((d) => [
+    d, liesSystemliste(readFileSync(join(ordner, d), 'utf8')),
+  ]));
+  const katalog = JSON.parse(readFileSync(join(wurzel, 'data', 'katalog-baustoff.json'), 'utf8'));
+
+  const b = zuordnungsbefund({
+    listen,
+    bezeichnungJeSku: new Map(katalog.artikel.map((a) => [a.sku, a.bezeichnung])),
+    staemme: wortstaemme,
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.text), []);
+  assert.ok(b.positionen >= 15, `nur ${b.positionen} Positionen geprüft`);
+});
+
+test('Ein Artikel ohne Zeile und eine Zeile ohne Artikel fallen beide auf', () => {
+  const liste = {
+    zeilen: [{ nr: 1, position: 'Kanalrohr', gefuehrt: true, eingeschraenkt: false }],
+    skus: ['POS-1', 'POS-2'],
+  };
+  const b = zuordnungsbefund({
+    listen: { 'x.md': liste },
+    bezeichnungJeSku: new Map([['POS-1', 'PVC Kanalrohr NW 100'], ['POS-2', 'PAE-Folie T 100']]),
+    staemme: (t) => t.toLowerCase().split(/[^a-zäöüß]+/).filter(Boolean),
+    wortluecken: [],
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['artikel-ohne-position']);
+  assert.match(b.meldungen[0].text, /POS-2/);
+
+  const ohne = zuordnungsbefund({
+    listen: { 'x.md': { zeilen: [{ nr: 1, position: 'Gleitmittel', gefuehrt: true, eingeschraenkt: false }], skus: [] } },
+    bezeichnungJeSku: new Map(),
+    staemme: (t) => t.toLowerCase().split(/[^a-zäöüß]+/).filter(Boolean),
+    wortluecken: [],
+  });
+  assert.deepEqual(ohne.meldungen.map((m) => m.regel), ['position-ohne-artikel']);
+});
+
+test('Eine Position mit eigener Einschränkung braucht keinen Artikel', () => {
+  // „Dämmplatten *(nicht in Flächenstärke)*" sagt selbst, dass der Artikel in
+  // dieser Form nicht kommt. Sie ist geführt und trägt zu Recht keinen.
+  const b = zuordnungsbefund({
+    listen: { 'x.md': { zeilen: [{ nr: 2, position: 'Dämmplatten *(nicht in Flächenstärke)*', gefuehrt: true, eingeschraenkt: true }], skus: [] } },
+    bezeichnungJeSku: new Map(),
+    staemme: (t) => [t],
+    wortluecken: [],
+  });
+  assert.equal(b.sauber, true);
+  assert.equal(b.positionen, 0);
+});
+
+test('Jede Wortlücke nennt einen Grund und kommt in einer Liste vor', () => {
+  assert.ok(WORTLUECKEN.length >= 2, 'leeres Register — die Schleife prüft nichts');
+  for (const l of WORTLUECKEN) {
+    assert.match(l.sku, /^POS-\d+$/, `„${l.position}" nennt keine Artikelnummer`);
+    assert.ok(l.warum.length >= 150, `„${l.position}": der Grund ist zu knapp`);
+  }
+
+  const b = zuordnungsbefund({
+    listen: {},
+    bezeichnungJeSku: new Map(),
+    staemme: (t) => [t],
+    wortluecken: [{ position: 'Gibt es nicht', sku: 'POS-9', warum: 'x'.repeat(150) }],
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['wortluecke-ohne-fall']);
+});
+
+/**
+ * **Der Befund vom 8. September, nachts.** `llms.txt` führte die vier
+ * Systemseiten mit ihrer Frage und sagte nicht, dass drei von acht Positionen
+ * der Grundleitung nicht im Sortiment sind. Ein Assistent liest die Liste dann
+ * als vollständig bestellbar.
+ */
+test('eine Systemliste mit Lücke, die llms.txt nicht qualifiziert, ist ein Befund', () => {
+  const listen = [{ slug: 'kanal-dn100', titel: 'Grundleitung DN 100', gelesen: { positionen: 8, ohneSortiment: 3 } }];
+  const b = llmsqualifikation(listen, '- [Grundleitung DN 100](https://x/system/kanal-dn100.html): Welche Teile?');
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['system-unqualifiziert']);
+  assert.match(b.meldungen[0].text, /3 von 8/);
+});
+
+test('mit dem Zusatz meldet sie nichts', () => {
+  const listen = [{ slug: 'kanal-dn100', titel: 'Grundleitung DN 100', gelesen: { positionen: 8, ohneSortiment: 3 } }];
+  const zeile = '- [Grundleitung DN 100](https://x/system/kanal-dn100.html): Welche Teile?'
+    + ' — davon liefern wir 3 von 8 Positionen nicht';
+  assert.deepEqual(llmsqualifikation(listen, zeile).meldungen, []);
+});
+
+test('eine Liste ohne Lücke braucht keinen Zusatz', () => {
+  const listen = [{ slug: 'fassade-100-qm', titel: 'Fassade', gelesen: { positionen: 10, ohneSortiment: 0 } }];
+  assert.deepEqual(llmsqualifikation(listen, '- [Fassade](https://x/system/fassade-100-qm.html): Was?').meldungen, []);
+});
+
+test('eine Liste mit Lücke, die gar nicht in llms.txt steht, ist ein eigener Befund', () => {
+  const listen = [{ slug: 'kanal-dn100', titel: 'Grundleitung DN 100', gelesen: { positionen: 8, ohneSortiment: 3 } }];
+  assert.deepEqual(llmsqualifikation(listen, '## Systemlisten\n').meldungen.map((m) => m.regel),
+    ['system-fehlt-in-llms']);
+});
+
+/**
+ * Verlangt wird die **Zahl**, nicht ein Wort: „unvollständig" könnte alles
+ * heißen, „3 von 8" nicht.
+ */
+test('ein unbestimmtes Wort genügt nicht', () => {
+  const listen = [{ slug: 'kanal-dn100', titel: 'Grundleitung DN 100', gelesen: { positionen: 8, ohneSortiment: 3 } }];
+  const zeile = '- [Grundleitung](https://x/system/kanal-dn100.html): Welche Teile? — teilweise lieferbar';
+  assert.deepEqual(llmsqualifikation(listen, zeile).meldungen.map((m) => m.regel), ['system-unqualifiziert']);
+});

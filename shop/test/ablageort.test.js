@@ -1,0 +1,553 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import {
+  ABLAGEORT, auszugsbefund, auszugszeitraum, belegname, belegordner, belegpfad,
+  durchschriftenbefund, istBeleg, istBuchhaltung, istStandkopie,
+  istJournal, journalpfad, NOETIGE_SPERREN, ortsbefund,
+} from '../src/ablageort.js';
+import { luecken } from '../src/vorgangsstand.js';
+
+test('das Journal eines Jahres hat einen Pfad, und nur ein Jahr bekommt einen', () => {
+  assert.equal(journalpfad(2026), 'ablage/journal-2026.jsonl');
+  assert.throws(() => journalpfad('2026'), /Geschäftsjahr/);
+});
+
+test('ein Journal ist an seinem Namen zu erkennen, gleich wo es liegt', () => {
+  assert.equal(istJournal('ablage/journal-2026.jsonl'), true);
+  assert.equal(istJournal('irgendwo/tief/journal-2031.jsonl'), true);
+  assert.equal(istJournal('journal.jsonl'), false, 'ohne Jahr ist es kein Geschäftsjahrjournal');
+  assert.equal(istJournal('data/katalog-baustoff.json'), false);
+});
+
+test('eine .gitignore ohne die Sperre ist der Befund', () => {
+  assert.ok(NOETIGE_SPERREN.length > 0, 'ohne nötige Sperre prüft diese Probe nichts');
+  const b = ortsbefund({ gitignore: 'preise/\n', getrackt: ['a.js'], journaldateien: [] });
+  assert.equal(b.sauber, false);
+  assert.equal(b.meldungen[0].regel, 'ort-nicht-gesperrt');
+  // Der gesunde Zustand ist null Funde; die geprüfte Menge muss deshalb
+  // mitgemeldet werden, sonst sieht „nichts gefunden" aus wie „nichts angesehen".
+  assert.equal(b.geprueft, 1);
+});
+
+test('ein Kommentar in der .gitignore deckt nichts', () => {
+  const b = ortsbefund({ gitignore: `# ${ABLAGEORT}/\n`, getrackt: [], journaldateien: [] });
+  assert.equal(b.meldungen[0].regel, 'ort-nicht-gesperrt');
+});
+
+test('mit der Sperre und ohne Journal ist es still', () => {
+  const b = ortsbefund({
+    gitignore: `preise/\n${ABLAGEORT}/\n`,
+    getrackt: ['shop/src/ablage.js'],
+    journaldateien: [`${ABLAGEORT}/journal-2026.jsonl`],
+  });
+  assert.equal(b.sauber, true, JSON.stringify(b.meldungen));
+});
+
+test('ein getracktes Journal ist der Fall, der nicht mehr abzuwenden ist', () => {
+  const b = ortsbefund({
+    gitignore: `${ABLAGEORT}/\n`,
+    getrackt: ['shop/ausgabe/journal-2026.jsonl'],
+    journaldateien: ['shop/ausgabe/journal-2026.jsonl'],
+  });
+  const regeln = b.meldungen.map((m) => m.regel);
+  assert.ok(regeln.includes('journal-im-verzeichnis'), JSON.stringify(regeln));
+  // Es liegt zugleich am falschen Ort — beide Meldungen gehören genannt,
+  // weil sie verschiedene Dinge verlangen: aufräumen und umziehen.
+  assert.ok(regeln.includes('journal-am-falschen-ort'), JSON.stringify(regeln));
+});
+
+test('ein Journal außerhalb des Ortes ist der Fall vor dem Schaden', () => {
+  const b = ortsbefund({
+    gitignore: `${ABLAGEORT}/\n`,
+    getrackt: [],
+    journaldateien: ['shop/journal-2026.jsonl'],
+  });
+  assert.equal(b.meldungen.length, 1);
+  assert.equal(b.meldungen[0].regel, 'journal-am-falschen-ort');
+});
+
+/* ------------------------------------------------------------------ *
+ * Die Zeile, die die Sperre aufhebt — 5. September 2026, abends
+ *
+ * `npm run reichweite` fand, dass `shop/.gitignore` von keinem Prüfer
+ * geöffnet wird. Beim Nachziehen fiel das Schwerere auf: Die Prüfung suchte
+ * die **Zeile**, nicht ihre **Wirkung**.
+ *
+ * > **Eine Sperre, die an ihrem Wortlaut geprüft wird und nicht an ihrer
+ * > Wirkung, ist so gut wie die Zeile, die sie aufhebt.**
+ * ------------------------------------------------------------------ */
+
+test('eine Aufhebung hebt die Sperre auf — und fällt auf', () => {
+  const mit = ortsbefund({ gitignore: `${ABLAGEORT}/\n` });
+  assert.deepEqual(mit.meldungen.filter((m) => m.regel === 'ort-nicht-gesperrt'), []);
+
+  // Genau der Fall: Die Zeile steht weiter da, und `includes` bleibt wahr.
+  const aufgehoben = ortsbefund({ gitignore: `${ABLAGEORT}/\n!${ABLAGEORT}/\n` });
+  const m = aufgehoben.meldungen.filter((x) => x.regel === 'ort-nicht-gesperrt');
+  assert.equal(m.length, 1, JSON.stringify(aufgehoben.meldungen));
+  assert.match(m[0].text, /wieder auf/);
+
+  // Auch ohne Schrägstrich — git nimmt beide Formen.
+  assert.equal(
+    ortsbefund({ gitignore: `${ABLAGEORT}/\n!${ABLAGEORT}\n` })
+      .meldungen.filter((x) => x.regel === 'ort-nicht-gesperrt').length,
+    1,
+  );
+});
+
+test('der Bestand steht: keine .gitignore hebt die Sperre auf', async () => {
+  const { readdirSync } = await import('node:fs');
+  const repo = fileURLToPath(new URL('../../', import.meta.url));
+  const gefunden = [];
+  const suche = (ordner) => {
+    for (const e of readdirSync(ordner, { withFileTypes: true })) {
+      if (['node_modules', '.git', 'ausgabe'].includes(e.name)) continue;
+      const voll = `${ordner}${e.name}`;
+      if (e.isDirectory()) { suche(`${voll}/`); continue; }
+      if (e.name === '.gitignore') gefunden.push(voll);
+    }
+  };
+  suche(repo);
+  // Ein leerer Lauf ist kein grüner.
+  assert.ok(gefunden.length >= 2, `nur ${gefunden.length} .gitignore gefunden`);
+
+  const zusammen = gefunden.map((d) => readFileSync(d, 'utf8')).join('\n');
+  assert.deepEqual(
+    ortsbefund({ gitignore: zusammen }).meldungen.filter((m) => m.regel === 'ort-nicht-gesperrt'),
+    [],
+  );
+});
+
+
+/* ------------------------------------------------------------------ *
+ * Die Durchschrift (11. September 2026)
+ *
+ * Das Journal ist die Aufzeichnung, der Beleg ist der Beleg. § 132 BAO
+ * verlangt beides sieben Jahre; bis heute schrieb `--ablegen` nur die Zeile.
+ * ------------------------------------------------------------------ */
+
+test('die Durchschrift heißt wie die Belegnummer, und ohne Nummer wie der Vorgang', () => {
+  assert.equal(belegname({ art: 'rechnung', nummer: 'RE-2026-0001' }), 'RE-2026-0001.txt');
+  // Die Auftragsbestätigung führt nach ARTEN bewusst keinen Nummernkreis —
+  // rückführbar ist sie über den Vorgang (§ 131 Abs 1 Z 5 BAO).
+  assert.equal(belegname({ art: 'auftragsbestaetigung', vorgang: '2026-0102' }), 'AB-2026-0102.txt');
+  assert.throws(() => belegname({ art: 'auftragsbestaetigung' }), /Vorgangsnummer/);
+  assert.throws(() => belegname({ art: 'erfunden', nummer: 'XX-2026-0001' }), /Unbekannte Vorgangsart/);
+});
+
+test('der Belegordner liegt in der Ablage und lässt sich umlenken', () => {
+  assert.equal(belegordner(2026), 'belege-2026');
+  assert.equal(belegpfad(2026, { art: 'rechnung', nummer: 'RE-2026-0001' }),
+    `${ABLAGEORT}/belege-2026/RE-2026-0001.txt`);
+  assert.throws(() => belegordner('2026'), /Geschäftsjahr/);
+});
+
+test('eine Durchschrift ist an ihrem Namen zu erkennen, gleich wo sie liegt', () => {
+  assert.equal(istBeleg('ablage/belege-2026/RE-2026-0001.txt'), true);
+  assert.equal(istBeleg('/tmp/AB-2026-0102.txt'), true);
+  assert.equal(istBeleg('ablage/journal-2026.jsonl'), false);
+  assert.equal(istBeleg('RECHNUNG.txt'), false);
+  // Kein Kürzel aus ARTEN: keine Durchschrift.
+  assert.equal(istBeleg('XX-2026-0001.txt'), false);
+});
+
+test('ein Eintrag ohne Durchschrift ist ein Befund — § 132 BAO verlangt den Beleg', () => {
+  const b = durchschriftenbefund({
+    eintraege: [{ lfd: 1, art: 'rechnung', nummer: 'RE-2026-0001', vorgang: '2026-0110' }],
+    dateien: [],
+  });
+  assert.equal(b.sauber, false, 'ein Eintrag ohne Durchschrift blieb ohne Befund');
+  assert.equal(b.meldungen.length, 1);
+  assert.equal(b.meldungen[0].regel, 'durchschrift-fehlt');
+  assert.match(b.meldungen[0].text, /RE-2026-0001\.txt/);
+});
+
+test('eine Durchschrift ohne Eintrag ist die schwerere der beiden Richtungen', () => {
+  const b = durchschriftenbefund({
+    eintraege: [],
+    dateien: [{ name: 'RE-2026-0001.txt', zeichen: 2400 }],
+  });
+  assert.equal(b.meldungen.length, 1, 'eine Durchschrift ohne Eintrag blieb ohne Befund');
+  assert.equal(b.meldungen[0].regel, 'durchschrift-ohne-eintrag');
+});
+
+test('eine leere Datei zählt als fehlende Durchschrift', () => {
+  const b = durchschriftenbefund({
+    eintraege: [{ lfd: 1, art: 'rechnung', nummer: 'RE-2026-0001' }],
+    dateien: [{ name: 'RE-2026-0001.txt', zeichen: 0 }],
+  });
+  assert.equal(b.meldungen.length, 1);
+  assert.equal(b.meldungen[0].regel, 'durchschrift-leer');
+});
+
+test('Journal und Durchschriften decken sich: keine Meldung', () => {
+  const eintraege = [
+    { lfd: 1, art: 'angebot', nummer: 'AN-2026-0102', vorgang: '2026-0102' },
+    { lfd: 2, art: 'auftragsbestaetigung', nummer: null, vorgang: '2026-0102' },
+    { lfd: 3, art: 'rechnung', nummer: 'RE-2026-0001', vorgang: '2026-0102' },
+  ];
+  assert.equal(eintraege.length, 3, 'drei Belegarten, zwei Namensregeln');
+  const b = durchschriftenbefund({
+    eintraege,
+    dateien: eintraege.map((e) => ({ name: belegname(e), zeichen: 1800 })),
+  });
+  assert.equal(b.sauber, true, JSON.stringify(b.meldungen));
+  assert.equal(b.geprueft, 6);
+});
+
+test('eine getrackte Durchschrift ist derselbe Fall wie ein getracktes Journal', () => {
+  const b = ortsbefund({
+    gitignore: NOETIGE_SPERREN.join('\n'),
+    getrackt: ['ablage/belege-2026/RE-2026-0001.txt'],
+    belegdateien: ['shop/RE-2026-0002.txt'],
+  });
+  const regeln = b.meldungen.map((m) => m.regel);
+  assert.deepEqual(regeln, ['beleg-im-verzeichnis', 'beleg-am-falschen-ort']);
+});
+
+
+/* ------------------------------------------------------------------ *
+ * Dieselbe Zahl, zweimal geschrieben (12. September 2026)
+ *
+ * Das Journal wächst nur, und eine gelöschte oder vertauschte Zeile deckt
+ * `lfd` auf. Eine **geänderte** deckte nichts auf — bis es die Durchschrift
+ * gibt, auf der dieselben Zahlen ein zweites Mal stehen.
+ * ------------------------------------------------------------------ */
+
+const PAPIER = [
+  'Rechnung RE-2026-0001',
+  'Ausstellungsdatum: 2026-09-11',
+  'Lieferdatum: 2026-09-09',
+  'Gesamtbetrag             911,06 €',
+].join('\n');
+
+const ZEILE = {
+  lfd: 1,
+  art: 'rechnung',
+  nummer: 'RE-2026-0001',
+  zeitpunkt: '2026-09-11',
+  vorgang: '2026-0110',
+  betragBrutto: 911.06,
+};
+
+test('Journalzeile und Durchschrift sagen dasselbe: keine Meldung', () => {
+  const b = durchschriftenbefund({
+    eintraege: [ZEILE],
+    dateien: [{ name: 'RE-2026-0001.txt', zeichen: PAPIER.length, text: PAPIER }],
+  });
+  assert.equal(b.sauber, true, JSON.stringify(b.meldungen));
+});
+
+test('ein nachträglich geänderter Betrag im Journal fällt am Papier auf', () => {
+  // Wer im Texteditor aus 911,06 die Zahl 91,06 macht, bekommt ein Journal,
+  // das sauber zurückliest — die Form wächst ja weiter nur.
+  const b = durchschriftenbefund({
+    eintraege: [{ ...ZEILE, betragBrutto: 91.06 }],
+    dateien: [{ name: 'RE-2026-0001.txt', zeichen: PAPIER.length, text: PAPIER }],
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['betrag-weicht-ab'],
+    'ein geänderter Betrag blieb unbemerkt');
+  // Und der Betrag selbst steht **nicht** in der Meldung: Ein Prüfer, der
+  // Kundendaten protokolliert, verlegt sie an einen dritten Ort.
+  assert.ok(!b.meldungen[0].text.includes('91,06'));
+  assert.ok(!b.meldungen[0].text.includes('911,06'));
+});
+
+test('ein geänderter Zeitpunkt fällt auf — § 131 Abs 1 Z 2 BAO verlangt die Zeitfolge', () => {
+  const b = durchschriftenbefund({
+    eintraege: [{ ...ZEILE, zeitpunkt: '2026-09-10' }],
+    dateien: [{ name: 'RE-2026-0001.txt', zeichen: PAPIER.length, text: PAPIER }],
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['zeitpunkt-weicht-ab']);
+});
+
+test('eine geänderte Nummer auf dem Papier fällt an der Journalzeile auf', () => {
+  // Die andere Richtung: Der Dateiname stimmt weiter, der Text nicht mehr.
+  const b = durchschriftenbefund({
+    eintraege: [ZEILE],
+    dateien: [{
+      name: 'RE-2026-0001.txt',
+      zeichen: PAPIER.length,
+      text: PAPIER.replace('RE-2026-0001', 'RE-2026-0009'),
+    }],
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['nummer-weicht-ab']);
+});
+
+test('ohne gelesenen Text bleibt es beim Namensabgleich', () => {
+  // `dateien` ohne `text` ist der Fall der reinen Dateiliste — sie prüft
+  // weiter, was sie prüfen kann, statt eine Abweichung zu behaupten.
+  const b = durchschriftenbefund({
+    eintraege: [{ ...ZEILE, betragBrutto: 1 }],
+    dateien: [{ name: 'RE-2026-0001.txt', zeichen: 2400 }],
+  });
+  assert.equal(b.sauber, true);
+});
+
+
+test('der Buchhaltungsauszug fällt unter dieselbe Sperre wie das Journal', () => {
+  /*
+   * **12. September 2026.** Er trägt Vorgangsnummern, Beträge und Betreffs
+   * einer ganzen Periode in einer einzigen Datei. Eine dritte Dateiart, die
+   * dieselben Daten trägt und von keiner Regel erfasst ist, wäre der Fund vom
+   * 11. September noch einmal.
+   */
+  assert.equal(istBuchhaltung('ablage/buchhaltung/buchhaltung-2026-09.csv'), true);
+  assert.equal(istBuchhaltung('buchhaltung-2026.csv'), true);
+  assert.equal(istBuchhaltung('ablage/journal-2026.jsonl'), false);
+  assert.equal(istBuchhaltung('kampagne.csv'), false);
+
+  const b = ortsbefund({
+    gitignore: NOETIGE_SPERREN.join('\n'),
+    getrackt: ['ablage/buchhaltung/buchhaltung-2026-09.csv'],
+    auszuege: ['shop/buchhaltung-2026.csv'],
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel),
+    ['auszug-im-verzeichnis', 'auszug-am-falschen-ort']);
+});
+
+
+test('ein Vermerk hat kein Blatt — der Abgleich verlangt keines', () => {
+  /*
+   * **12. September 2026.** `durchschriftenbefund` rechnete für **jeden**
+   * Journaleintrag einen Dateinamen aus. Zwei der acht Arten haben keinen
+   * Beleg: Der Vermerk und die UID-Abfrage **sind** die Aufzeichnung. Der
+   * erste abgelegte Vermerk hätte diesen Prüfer rot gemacht — mit einem
+   * Befund über `VM-2026-0140.txt`, eine Datei, die kein Werkzeug dieses
+   * Hauses je schreibt.
+   */
+  const b = durchschriftenbefund({
+    eintraege: [
+      { lfd: 1, art: 'vermerk', vorgang: '2026-0140', zeitpunkt: '2026-09-12' },
+      { lfd: 2, art: 'uidabfrage', vorgang: '2026-0140', zeitpunkt: '2026-09-12' },
+    ],
+    dateien: [],
+  });
+  assert.equal(b.sauber, true,
+    `ein Vermerk hat kein Blatt, verlangt wurde eines: ${JSON.stringify(b.meldungen)}`);
+});
+
+test('eine Durchschrift zu einem Vermerk ist eine Abschrift von etwas, das nie eines war', () => {
+  // Gesehen werden muss sie trotzdem: `BELEGMUSTER` führt alle Kürzel, auch
+  // die der beiden Arten ohne Blatt. Eine Datei, die keine Regel erfasst,
+  // wäre der Fund vom 11. September noch einmal.
+  assert.equal(istBeleg('ablage/belege-2026/VM-2026-0140.txt'), true);
+  const b = durchschriftenbefund({
+    eintraege: [{ lfd: 1, art: 'vermerk', vorgang: '2026-0140' }],
+    dateien: [{ name: 'VM-2026-0140.txt', zeichen: 240 }],
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['durchschrift-ohne-blatt']);
+});
+
+test('ein Vermerk ohne Nummer und ohne Vorgang bricht den Abgleich nicht ab', () => {
+  // `belegname` wirft für eine Art ohne Nummer und ohne Vorgangsnummer — und
+  // ein Prüfer, der an einer einzigen Zeile abbricht, prüft keine einzige.
+  const b = durchschriftenbefund({
+    eintraege: [{ lfd: 1, art: 'vermerk', zeitpunkt: '2026-09-12' }],
+    dateien: [],
+  });
+  assert.equal(b.sauber, true);
+});
+
+
+const AUSZUGSKOPF = 'lfd;art;umsatz;nummer;zeitpunkt;vorgang;netto;brutto;bezug;text';
+const AUSZUGSZEILE = (lfd, tag) =>
+  `${lfd};rechnung;ja;RE-2026-000${lfd};2026-09-${tag}T09:00:00+02:00;2026-010${lfd};759,22;911,06;;x`;
+const JOURNALZEILE = (lfd, tag) => ({ lfd, zeitpunkt: `2026-09-${tag}T09:00:00+02:00` });
+
+test('Die Periode eines Auszugs steht in seinem Namen', () => {
+  assert.equal(auszugszeitraum('ablage/buchhaltung/buchhaltung-2026-09.csv'), '2026-09');
+  assert.equal(auszugszeitraum('buchhaltung-2026.csv'), '2026');
+  assert.equal(auszugszeitraum('ablage/journal-2026.jsonl'), null);
+});
+
+test('Ein veralteter Auszug meldet zu wenig Umsatz — und das fällt jetzt auf', () => {
+  /*
+   * **12. September 2026, abends.** Die Ablage führt drei Dateiarten. Journal
+   * und Durchschrift werden seit dem 11. September gegeneinander gehalten;
+   * der Auszug wurde nur auf seinen **Ort** geprüft. Er ist die einzige
+   * Datei der Akte, die das Haus verlässt: Aus ihm entsteht die
+   * Umsatzsteuervoranmeldung (§ 21 Abs 1 UStG). Und er altert lautlos, weil
+   * das Journal nur wächst.
+   */
+  const b = auszugsbefund({
+    auszuege: [{
+      name: 'ablage/buchhaltung/buchhaltung-2026-09.csv',
+      text: [AUSZUGSKOPF, AUSZUGSZEILE(1, '02')].join('\n'),
+    }],
+    eintraege: [JOURNALZEILE(1, '02'), JOURNALZEILE(2, '11')],
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['auszug-veraltet'],
+    `ein Auszug, der eine Rechnung nicht kennt, blieb ohne Befund: ${JSON.stringify(b.meldungen)}`);
+  // Gemeldet wird die Anzahl, nicht der Inhalt: Ein Prüfer, der Beträge oder
+  // Namen protokolliert, verlegt Kundendaten an einen dritten Ort.
+  assert.ok(!b.meldungen[0].text.includes('759'));
+  assert.ok(!b.meldungen[0].text.includes('RE-2026-0002'));
+});
+
+test('Ein Auszug, der eine fremde laufende Nummer nennt, ist die andere Richtung', () => {
+  // Entweder stammt er aus einer anderen Periode, oder das Journal ist
+  // nachträglich geändert worden — § 131 Abs 1 Z 6 BAO.
+  const b = auszugsbefund({
+    auszuege: [{
+      name: 'buchhaltung-2026-09.csv',
+      text: [AUSZUGSKOPF, AUSZUGSZEILE(1, '02'), AUSZUGSZEILE(2, '11')].join('\n'),
+    }],
+    eintraege: [JOURNALZEILE(1, '02')],
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['auszug-kennt-fremde-zeile']);
+});
+
+test('Ein Auszug ohne Spalte `umsatz` ist nicht sicher zu lesen', () => {
+  /*
+   * Ohne sie stehen der Umsatz der Rechnung und der Einkaufswert der
+   * Lieferantenbestellung in derselben Spalte `netto`. Am Probejournal aus
+   * zwei Zeilen ergab die Summe 1.359,22 € statt 759,22 € — 79 % zu viel,
+   * und die Umsatzsteuer daraus wandert in die Voranmeldung.
+   */
+  const b = auszugsbefund({
+    auszuege: [{
+      name: 'buchhaltung-2026-09.csv',
+      text: 'lfd;art;nummer;zeitpunkt;vorgang;netto;brutto;bezug;text\n'
+        + '1;rechnung;RE-2026-0001;2026-09-02T09:00:00+02:00;2026-0101;759,22;911,06;;x',
+    }],
+    eintraege: [JOURNALZEILE(1, '02')],
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['auszug-ohne-umsatzspalte']);
+});
+
+test('Auszug und Journal deckungsgleich: keine Meldung', () => {
+  const b = auszugsbefund({
+    auszuege: [{
+      name: 'ablage/buchhaltung/buchhaltung-2026-09.csv',
+      text: [AUSZUGSKOPF, AUSZUGSZEILE(1, '02'), AUSZUGSZEILE(2, '11')].join('\n'),
+    }],
+    eintraege: [JOURNALZEILE(1, '02'), JOURNALZEILE(2, '11')],
+  });
+  assert.equal(b.sauber, true, JSON.stringify(b.meldungen));
+  assert.equal(b.geprueft, 1);
+});
+
+test('Ein Eintrag aus einer anderen Periode zählt nicht gegen den Auszug', () => {
+  // Der Auszug ist für September geschrieben. Eine Rechnung vom Oktober fehlt
+  // darin zu Recht — ein Prüfer, der sie einfordert, wird jeden Monat rot.
+  const b = auszugsbefund({
+    auszuege: [{
+      name: 'buchhaltung-2026-09.csv',
+      text: [AUSZUGSKOPF, AUSZUGSZEILE(1, '02')].join('\n'),
+    }],
+    eintraege: [JOURNALZEILE(1, '02'), { lfd: 2, zeitpunkt: '2026-10-01T09:00:00+02:00' }],
+  });
+  assert.equal(b.sauber, true, JSON.stringify(b.meldungen));
+});
+
+test('Ein leerer Auszug zählt als keiner', () => {
+  const b = auszugsbefund({ auszuege: [{ name: 'buchhaltung-2026-09.csv', text: '' }] });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['auszug-leer']);
+});
+
+
+test('Die Sicherungskopie einer Akte-Datei ist eine Akte-Datei', () => {
+  /*
+   * **12. September 2026, abends.** `npm run sicherung` legt vor jedem
+   * Überschreiben eine datierte Kopie in `.sicherung` an — Byte für Byte
+   * dasselbe: Namen, Anschriften, Beträge. Keine der drei Sperren sah sie:
+   *
+   *   istJournal('journal-2026-2026-09-12T19-42-04.jsonl')  → false
+   *
+   * Der Ortsbefund fragt, ob eine Datei mit Kundendaten außerhalb von
+   * `ablage/` liegt — und für eine Sicherungskopie war die Antwort immer
+   * nein, gleich wo sie lag.
+   */
+  const stand = '2026-09-12T19-42-04';
+  assert.equal(istJournal(`ablage/.sicherung/journal-2026-${stand}.jsonl`), true,
+    'die Kopie des Journals ist für die Sperre kein Journal');
+  assert.equal(istBeleg(`ablage/belege-2026/.sicherung/RE-2026-0001-${stand}.txt`), true,
+    'die Kopie der Durchschrift ist für die Sperre keine Durchschrift');
+  assert.equal(istBuchhaltung(`ablage/buchhaltung/.sicherung/buchhaltung-2026-09-${stand}.csv`),
+    true, 'die Kopie des Auszugs ist für die Sperre kein Auszug');
+
+  // Und sie bleibt unterscheidbar: Für den **Abgleich** ist eine Kopie des
+  // Journals kein zweites Journal.
+  assert.equal(istStandkopie(`journal-2026-${stand}.jsonl`), true);
+  assert.equal(istStandkopie('journal-2026.jsonl'), false);
+  assert.equal(istStandkopie('RE-2026-0001.txt'), false);
+  assert.equal(auszugszeitraum(`buchhaltung-2026-09-${stand}.csv`), null,
+    'eine Kopie hat keine Periode — sonst würde sie gegen das Journal gehalten');
+  assert.equal(auszugszeitraum('buchhaltung-2026-09.csv'), '2026-09');
+
+  // Was keine Kopie ist, bleibt keine.
+  assert.equal(istJournal('journal-2026-notiz.jsonl'), false);
+  assert.equal(istBeleg('RE-2026-0001-entwurf.txt'), false);
+});
+
+test('Eine getrackte Sicherungskopie ist derselbe Fall wie ein getracktes Journal', () => {
+  const stand = '2026-09-12T19-42-04';
+  const b = ortsbefund({
+    gitignore: NOETIGE_SPERREN.join('\n'),
+    getrackt: [
+      `sicherungen/journal-2026-${stand}.jsonl`,
+      `sicherungen/RE-2026-0001-${stand}.txt`,
+      `sicherungen/buchhaltung-2026-09-${stand}.csv`,
+    ],
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel).sort(),
+    ['auszug-im-verzeichnis', 'beleg-im-verzeichnis', 'journal-im-verzeichnis']);
+});
+
+
+test('Ein Papier ohne seine Voraussetzung ist ein Befund der Ablageprüfung', () => {
+  /*
+   * **13. September 2026.** Die Regel gab es seit gestern, gelesen hat sie
+   * nur `npm run akte` — das Werkzeug, das jemand aufschlägt. Der Prüfer der
+   * Ablage verglich Journal, Durchschriften und Auszug und wusste von
+   * Voraussetzungen nichts. Die Bestellprobe baute daraufhin eine Akte mit
+   * einer Rechnung ohne Auftragsbestätigung und meldete „der Weg trägt".
+   *
+   * Der Abgleich selbst steht in `src/vorgangsstand.js`; hier wird nur
+   * festgehalten, dass er in der Ablageprüfung ankommt — über
+   * `bin/ablagepruefung.mjs`, das je Vorgang gruppiert.
+   */
+  const P = (art, vorgang) => ({ art, vorgang, zeitpunkt: '2026-09-12T09:00:00+02:00' });
+  assert.deepEqual(
+    luecken([P('angebot', '2026-0201'), P('rechnung', '2026-0201')]).map((l) => l.papier),
+    ['rechnung'], 'eine Rechnung ohne Vertragspapier blieb ohne Befund');
+});
+
+
+test('Auch der Nettobetrag steht zweimal — und wird gegengehalten', () => {
+  /*
+   * **13. September 2026.** `durchschriftenbefund` verglich nur den
+   * **Brutto**betrag. Gemessen an der Akte, die `npm run bestellprobe` baut:
+   * Die Lieferantenbestellung trägt `betragBrutto: null` und als einzige Zahl
+   * den Einkaufswert netto — 924,52 € im Journal, 924,52 € auf dem Papier.
+   *
+   * > **Die einzige Zahl dieses Belegs stand zweimal da und wurde nie
+   * > gegeneinander gehalten.**
+   *
+   * Bei den übrigen Papieren ist der Nettobetrag die Bemessungsgrundlage der
+   * Umsatzsteuervoranmeldung. Der Fund vom 12. September — „dieselbe Zahl
+   * steht zweimal" — war damit nur zur Hälfte abgesichert.
+   */
+  const PAPIER = 'Bestellung 2026-0001-01\nBestelldatum: 2026-09-13\n'
+    + 'Warenwert netto laut meiner Kalkulation: 924,52 €';
+  const ZEILE = {
+    lfd: 1, art: 'lieferantenbestellung', nummer: '2026-0001-01',
+    zeitpunkt: '2026-09-13', betragNetto: 924.52,
+  };
+  const datei = { name: 'LB-2026-0001-01.txt', zeichen: PAPIER.length, text: PAPIER };
+
+  assert.equal(durchschriftenbefund({ eintraege: [ZEILE], dateien: [datei] }).sauber, true);
+
+  const geaendert = durchschriftenbefund({
+    eintraege: [{ ...ZEILE, betragNetto: 92.45 }],
+    dateien: [datei],
+  });
+  assert.deepEqual(geaendert.meldungen.map((m) => m.regel), ['nettobetrag-weicht-ab'],
+    'der Einkaufswert der Journalzeile wurde nicht gegen das Papier gehalten');
+  // Und der Betrag selbst steht nicht in der Meldung: Ein Prüfer, der Zahlen
+  // protokolliert, verlegt sie an einen dritten Ort.
+  assert.ok(!geaendert.meldungen[0].text.includes('92,45'));
+});

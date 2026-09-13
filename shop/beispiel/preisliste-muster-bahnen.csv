@@ -1,0 +1,5 @@
+sku;bezeichnung;gruppe;einheit;menge;uvp_netto;ek_netto;gewicht_kg;sperrgut
+AB-RD-375;Radondichte Abdichtungsbahn, Rolle 37,5 m²;Abdichtung;Rolle;37,5 m²;398,00;230,84;20;ja
+AB-RD-750;Radondichte Abdichtungsbahn, Rolle 75 m²;Abdichtung;Rolle;75 m²;760,00;440,80;39;ja
+AB-PR-010;Voranstrich / Primer, 10 l;Abdichtung;Gebinde;10 l;96,00;55,68;11;nein
+AB-KL-005;Kaltkleber für Anschlüsse, 5 kg;Abdichtung;Gebinde;5 kg;64,00;41,60;5,4;nein

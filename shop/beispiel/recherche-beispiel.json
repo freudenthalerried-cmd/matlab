@@ -1,0 +1,62 @@
+{
+  "_hinweis": "VORLAGE für die Recherche zu einem Thema. Die Quellen sind erfunden und belegen nichts — sie zeigen den Aufbau. Echte Recherche in eine Kopie eintragen und mit npm run pruefe-quellen -- <datei> prüfen. Regel: Ein Video ist ein Hinweis, keine Fundstelle; Kennwerte brauchen Norm oder Datenblatt.",
+  "thema": "FIKTIV Spachtelmasse verarbeiten",
+  "quellen": [
+    {
+      "id": "v-kanal-a",
+      "art": "video",
+      "titel": "FIKTIV Spachteln Schritt für Schritt",
+      "urheber": "FIKTIV Kanal A",
+      "url": "https://www.youtube.com/watch?v=FIKTIV1",
+      "stand": "2025-03",
+      "notiz": "Hinweis auf zweilagigen Auftrag und Untergrundvorbereitung. Nicht zitiert, nur als Rechercheanstoß verwendet."
+    },
+    {
+      "id": "v-kanal-b",
+      "art": "video",
+      "titel": "FIKTIV Typische Fehler beim Spachteln",
+      "urheber": "FIKTIV Kanal B",
+      "url": "https://www.youtube.com/watch?v=FIKTIV2",
+      "stand": "2025-09",
+      "notiz": "Unabhängige zweite Stimme zum selben Punkt."
+    },
+    {
+      "id": "db-hersteller",
+      "art": "datenblatt",
+      "titel": "FIKTIV Technisches Merkblatt Spachtelmasse",
+      "urheber": "FIKTIV Hersteller GmbH",
+      "url": "https://example.at/fiktiv-merkblatt.pdf",
+      "stand": "2026-01",
+      "notiz": "Trägt die Kennwerte. Wird verlinkt, nicht gespiegelt."
+    },
+    {
+      "id": "norm",
+      "art": "norm",
+      "titel": "FIKTIV ÖNORM B 0000, Ausgabe 2020",
+      "urheber": "Austrian Standards",
+      "stand": "2020",
+      "notiz": "Nur als Fundstelle wiedergegeben, nicht ausgelegt."
+    }
+  ],
+  "aussagen": [
+    {
+      "id": "a-zweilagig",
+      "text": "Zweilagiger Auftrag ist bei größeren Unebenheiten üblich.",
+      "quellen": ["v-kanal-a", "v-kanal-b"],
+      "notiz": "Einordnung, kein Kennwert — zwei unabhängige Hinweise tragen sie."
+    },
+    {
+      "id": "a-verbrauch",
+      "text": "Der Verbrauch liegt bei FIKTIV kg/m² je Millimeter Schichtdicke.",
+      "kennwert": true,
+      "quellen": ["db-hersteller"],
+      "notiz": "Kennwert — trägt nur mit Datenblatt."
+    },
+    {
+      "id": "a-untergrund",
+      "text": "Der Untergrund muss tragfähig, trocken und staubfrei sein.",
+      "quellen": ["norm"],
+      "notiz": "Wiedergabe der Fundstelle, keine Auslegung."
+    }
+  ]
+}

@@ -1,0 +1,234 @@
+/**
+ * Import von Lieferanten-Preislisten.
+ *
+ * Gate 6 nennt die Bestellübergabe den Bruchpunkt des Modells. Der Import ist
+ * der zweite: Wenn eine neue Preisliste von Hand in den Katalog getippt werden
+ * muss, ist der Shop genau so lange aktuell, wie jemand Zeit hat. Deshalb liest
+ * diese Datei die Liste, prüft sie und meldet, was sich geändert hat.
+ *
+ * Bewusst tolerant beim Format — Hersteller liefern, was ihr System hergibt —
+ * und bewusst streng bei den Werten: Was nicht eindeutig ist, wird abgewiesen
+ * statt geraten. Ein falsch geratener Einkaufspreis fällt erst bei der
+ * Jahresabrechnung auf.
+ */
+
+import { cent, einkaufspreis, verkaufspreis, rohmarge } from './preis.js';
+import { ZIELMARGE } from './baustoffkatalog.js';
+
+const PFLICHTSPALTEN = ['sku', 'bezeichnung'];
+
+/** Zahl aus deutscher oder englischer Schreibweise. Leer bleibt leer. */
+export function zahl(roh) {
+  if (roh == null) return null;
+  const s = String(roh).trim().replace(/\s|€/g, '');
+  if (s === '') return null;
+
+  // `1.234` kann 1234 bedeuten (deutsche Tausendergruppe) oder 1,234
+  // (englische Dezimalzahl mit drei Stellen). Eindeutig ist das nicht — und
+  // die Kopfzeile dieser Datei verspricht: abweisen statt raten. Ein
+  // geratener Einkaufspreis wäre um den Faktor 1.000 falsch und fiele erst
+  // bei der Jahresabrechnung auf. `0,500` bleibt lesbar: Eine Tausendergruppe
+  // beginnt nie mit einer einzelnen Null, die Lesart ist eindeutig deutsch.
+  if (/^[1-9]\d{0,2}[.,]\d{3}$/.test(s)) return NaN;
+
+  // 1.234,56 → 1234.56   |   1,234.56 → 1234.56   |   1234.56 → 1234.56
+  const normalisiert =
+    s.includes(',') && s.lastIndexOf(',') > s.lastIndexOf('.')
+      ? s.replaceAll('.', '').replace(',', '.')
+      : s.replaceAll(',', '');
+  const n = Number(normalisiert);
+  return Number.isFinite(n) ? n : NaN;
+}
+
+export function jaNein(roh) {
+  const s = String(roh ?? '').trim().toLowerCase();
+  return ['ja', 'j', 'true', '1', 'x', 'yes'].includes(s);
+}
+
+/** Zerlegt CSV-Text. Erkennt Semikolon oder Komma als Trenner, entfernt BOM. */
+export function leseCsv(text) {
+  const sauber = text.replace(/^﻿/, '').trim();
+  if (sauber === '') return { kopf: [], zeilen: [] };
+
+  const zeilenRoh = sauber.split(/\r?\n/).filter((z) => z.trim() !== '');
+  const trenner = (zeilenRoh[0].match(/;/g) ?? []).length >= (zeilenRoh[0].match(/,/g) ?? []).length ? ';' : ',';
+
+  const kopf = zeilenRoh[0].split(trenner).map((f) => f.trim().toLowerCase().replace(/\s+/g, '_'));
+  const zeilen = zeilenRoh.slice(1).map((zeile, i) => {
+    const felder = zeile.split(trenner);
+    const satz = { _zeile: i + 2 };
+    kopf.forEach((spalte, k) => {
+      satz[spalte] = (felder[k] ?? '').trim();
+    });
+    return satz;
+  });
+
+  return { kopf, zeilen };
+}
+
+/**
+ * Prüft und wandelt eine Preisliste in Katalogartikel.
+ *
+ * @param {string} csvText  Inhalt der Lieferantendatei
+ * @param {object} lieferant  Lieferantensatz aus lieferanten.json
+ * @returns {{artikel: Array, fehler: Array, warnungen: Array}}
+ */
+/**
+ * **Berichtigt am 30.08.** Der Vorgabewert war `0.35` — die Zielmarge des
+ * abgelösten Radon-Modells. Seit dem 22.08. gilt `ZIELMARGE = 0.25`.
+ *
+ * Der Verkaufspreis wird hier nur für die Warnung gerechnet und **nicht**
+ * gespeichert; die falsche Zahl hätte also falsche Warnungen erzeugt, keine
+ * falschen Preise. Das ist der Unterschied zwischen einem teuren und einem
+ * lästigen Fehler — und keiner von beiden gehört stehen gelassen.
+ *
+ * Eine Zahl in einem Vorgabewert ist der stillste Ort, an dem eine abgelöste
+ * Entscheidung weiterleben kann.
+ */
+export function importierePreisliste(csvText, lieferant, zielmarge = ZIELMARGE) {
+  const { kopf, zeilen } = leseCsv(csvText);
+  const fehler = [];
+  const warnungen = [];
+
+  for (const pflicht of PFLICHTSPALTEN) {
+    if (!kopf.includes(pflicht)) fehler.push(`Pflichtspalte fehlt: ${pflicht}`);
+  }
+  if (!kopf.includes('uvp_netto') && !kopf.includes('ek_netto')) {
+    fehler.push('Es fehlt eine Preisspalte: uvp_netto oder ek_netto');
+  }
+  if (fehler.length > 0) return { artikel: [], fehler, warnungen };
+
+  const artikel = [];
+  const gesehen = new Set();
+
+  for (const satz of zeilen) {
+    const ort = `Zeile ${satz._zeile}`;
+    const sku = satz.sku;
+
+    if (!sku) { fehler.push(`${ort}: SKU fehlt`); continue; }
+    if (gesehen.has(sku)) { fehler.push(`${ort}: SKU ${sku} kommt mehrfach vor`); continue; }
+    gesehen.add(sku);
+    if (!satz.bezeichnung) { fehler.push(`${ort}: Bezeichnung fehlt für ${sku}`); continue; }
+
+    const uvp = zahl(satz.uvp_netto);
+    const ekGeliefert = zahl(satz.ek_netto);
+    const gewicht = zahl(satz.gewicht_kg);
+
+    if (Number.isNaN(uvp) || Number.isNaN(ekGeliefert) || Number.isNaN(gewicht)) {
+      fehler.push(`${ort}: Zahl nicht lesbar bei ${sku}`);
+      continue;
+    }
+
+    let ekNetto;
+    let ekQuelle;
+    if (ekGeliefert != null) {
+      if (ekGeliefert <= 0) { fehler.push(`${ort}: Einkaufspreis muss positiv sein (${sku})`); continue; }
+      ekNetto = cent(ekGeliefert);
+      ekQuelle = 'bestaetigt';
+    } else {
+      if (uvp == null || uvp <= 0) { fehler.push(`${ort}: Weder Einkaufspreis noch UVP brauchbar (${sku})`); continue; }
+      ekNetto = einkaufspreis(uvp, lieferant.haendlerrabattAufUvp);
+      ekQuelle = 'platzhalter';
+      warnungen.push(`${ort}: ${sku} ohne Einkaufspreis — aus UVP und Rabatt gerechnet, bleibt Platzhalter`);
+    }
+
+    const uvpNetto = uvp != null && uvp > 0 ? cent(uvp) : cent(ekNetto / (1 - lieferant.haendlerrabattAufUvp));
+
+    if (ekNetto >= uvpNetto) {
+      fehler.push(`${ort}: Einkaufspreis ist nicht kleiner als UVP (${sku}) — Liste prüfen`);
+      continue;
+    }
+
+    const vkNetto = verkaufspreis(ekNetto, zielmarge, uvpNetto);
+    const marge = rohmarge(ekNetto, vkNetto);
+    /**
+     * **Berichtigt am 30.08.** Hier stand die Untergrenze von 32 % aus
+     * `MARGENUNTERGRENZE` — die Regel des abgelösten Modells, seit dem
+     * 22.08. durch Gate 20 ersetzt (positiver Deckungsbeitrag je Bestellung,
+     * in Euro geprüft). Mit der heutigen Zielmarge von 25 % hätte **jeder
+     * Artikel jeder Liste** diese Warnung ausgelöst.
+     *
+     * Ein Werkzeug, das alles meldet, meldet nichts: Am Tag der
+     * Lieferantenliste wäre die Warnung überblättert worden — samt der
+     * Zeilen, bei denen sie stimmt.
+     *
+     * Gemeldet wird jetzt der Fall, den es wirklich gibt: Der Listenpreis
+     * deckelt den Verkaufspreis, die Zielmarge wird nicht erreicht
+     * (Gate 22). `MARGENUNTERGRENZE` bleibt, wo sie hingehört — in der
+     * Bewertung von Lieferantenkonditionen (`auswertung.js`).
+     *
+     * Verglichen wird der **Preis**, nicht die Marge. Der erste Wurf prüfte
+     * `marge < zielmarge` mit einem Epsilon von 1e-9 und meldete deshalb
+     * auch ungedeckelte Artikel: Der auf Cent gerundete Verkaufspreis
+     * erreicht die Zielmarge um Bruchteile eines Prozentpunkts nicht. Ein
+     * Rundungsrest ist kein Befund.
+     */
+    const ungedeckelt = cent(ekNetto / (1 - zielmarge));
+    if (vkNetto < ungedeckelt - 0.005) {
+      warnungen.push(
+        `${ort}: ${sku} erreicht nur ${(marge * 100).toFixed(1)} % statt ${(zielmarge * 100).toFixed(0)} % Marge`
+        + ' — der Listenpreis deckelt den Verkaufspreis (Gate 22)',
+      );
+    }
+
+    artikel.push({
+      sku,
+      bezeichnung: satz.bezeichnung,
+      gruppe: satz.gruppe || 'Sonstiges',
+      lieferantId: lieferant.id,
+      einheit: satz.einheit || 'Stück',
+      menge: satz.menge || '1',
+      uvpNetto,
+      ekNetto: ekQuelle === 'bestaetigt' ? ekNetto : undefined,
+      // **Berichtigt am 31.08.** Hier stand `gewicht ?? 0`. Ein unbekanntes
+      // Gewicht wurde damit zu null Kilogramm — nicht zu irgendeinem Wert,
+      // sondern zum leichtestmöglichen. Und weil `0` eine Zahl ist, zählte
+      // der Warenkorb die Position als **belegt**: Statt „0 kg · 1 Position
+      // ohne belegtes Gewicht" stand dort „0 kg · aus den Lieferscheinen",
+      // also eine Behauptung statt einer Lücke. Das Gewicht entscheidet, wie
+      // geliefert wird — Palette, Kranhub, Sperrgutzuschlag.
+      //
+      // Die drei anderen Einleser (`artikelliste.js`, `preisliste.js`,
+      // `katalog-aus-rechnungen.mjs`) lassen das Feld weg, wenn sie nichts
+      // wissen. Dieser war der letzte, der eine Null einsetzte.
+      ...(gewicht != null && gewicht > 0 ? { gewichtKg: gewicht } : {}),
+      sperrgut: jaNein(satz.sperrgut),
+      ekQuelle,
+    });
+  }
+
+  return { artikel, fehler, warnungen };
+}
+
+/**
+ * Vergleicht eine importierte Liste mit dem bisherigen Katalog.
+ * Das ist die monatliche Pflegearbeit aus phase6-automatisierung.md — hier
+ * erledigt sie sich beim Einlesen selbst.
+ */
+export function vergleiche(alt, neu) {
+  const altById = new Map(alt.map((a) => [a.sku, a]));
+  const neuById = new Map(neu.map((a) => [a.sku, a]));
+
+  const neuzugaenge = neu.filter((a) => !altById.has(a.sku)).map((a) => a.sku);
+  const entfallen = alt.filter((a) => !neuById.has(a.sku)).map((a) => a.sku);
+
+  const preisaenderungen = [];
+  for (const [sku, n] of neuById) {
+    const a = altById.get(sku);
+    if (!a) continue;
+    const alterEk = a.ekNetto ?? null;
+    const neuerEk = n.ekNetto ?? null;
+    if (alterEk != null && neuerEk != null && Math.abs(alterEk - neuerEk) >= 0.01) {
+      preisaenderungen.push({
+        sku,
+        vorher: alterEk,
+        nachher: neuerEk,
+        veraenderung: (neuerEk - alterEk) / alterEk,
+      });
+    }
+  }
+
+  preisaenderungen.sort((x, y) => Math.abs(y.veraenderung) - Math.abs(x.veraenderung));
+
+  return { neuzugaenge, entfallen, preisaenderungen };
+}
