@@ -75,6 +75,12 @@
   "der-posteingang-vergisst-die-akte": [
     "shop/test/posteingang.test.js"
   ],
+  "der-vermerk-wird-still-gekuerzt": [
+    "shop/test/vermerk.test.js"
+  ],
+  "der-vermerk-zu-keinem-vorgang": [
+    "shop/test/vermerk.test.js"
+  ],
   "die-ablagepruefung-uebersieht-die-voraussetzung": [
     "shop/test/ablageort.test.js",
     "shop/test/vorgangsstand.test.js"

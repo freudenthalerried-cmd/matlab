@@ -3793,6 +3793,39 @@ export const GEGENPROBEN = Object.freeze([
       + 'zwar in beiden Werkzeugen zugleich.',
   }),
   Object.freeze({
+    id: 'der-vermerk-zu-keinem-vorgang',
+    pruefer: 'test',
+    was: 'Ein Vermerk landet unter einer Vorgangsnummer, die es nicht gibt',
+    datei: 'shop/bin/vermerk.mjs',
+    art: 'ersetzen',
+    suchen: 'if (vorgangsakte(ablage, vorgang).length === 0) {',
+    ersetzen: 'if (false) {',
+    erwartet: /zu einem unbekannten Vorgang vermerkt/,
+    warum: 'Der Vermerk ist die Aufzeichnung, wo kein Papier entsteht (§ 131 Abs 1 Z 5 BAO) — '
+      + 'und damit für sein Ereignis die **einzige** Quelle. Ein Vertipper in der '
+      + 'Vorgangsnummer erzeugt eine Zeile, die zu keinem Geschäftsfall gehört und die '
+      + 'niemand je wiederfindet: `npm run akte` zeigt sie unter einem Vorgang, den sonst '
+      + 'nichts füllt, und der Fall, zu dem sie gehört hätte, steht weiter ohne sie da. '
+      + 'Verlangt ist die Rückführbarkeit zum Geschäftsfall, nicht eine Zeile mit einer '
+      + 'Nummer darauf.',
+  }),
+  Object.freeze({
+    id: 'der-vermerk-wird-still-gekuerzt',
+    pruefer: 'test',
+    was: 'Ein Vermerk über der Grenze kommt durch und wird im Auszug abgeschnitten',
+    datei: 'shop/bin/vermerk.mjs',
+    art: 'ersetzen',
+    suchen: 'if (text.length > HOECHSTLAENGE) {',
+    ersetzen: 'if (false) {',
+    erwartet: /ein Vermerk über der Grenze ist durchgegangen/,
+    warum: '`alsCsv` schneidet das Textfeld bei 200 Zeichen ab. Für einen Beleg ist das '
+      + 'harmlos: Dort steht ein **Betreff**, und das Papier daneben trägt den Inhalt. '
+      + '**Beim Vermerk ist der Text die Aufzeichnung selbst** — er würde auf dem Weg zum '
+      + 'Steuerberater lautlos gekürzt, und gemerkt wird so etwas, wenn jemand Jahre später '
+      + 'fragt, was damals vereinbart war. Abgewiesen statt gekürzt: Was nicht hineinpasst, '
+      + 'gehört in zwei Vermerke, und dann steht beides vollständig da.',
+  }),
+  Object.freeze({
     id: 'verfallenes-angebot-bindet-weiter',
     pruefer: 'test',
     was: 'Die Akte hält ein abgelaufenes Angebot für bindend',
