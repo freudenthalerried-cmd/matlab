@@ -294,3 +294,36 @@ test('ohne palettierte Ware und ohne Sätze bleibt es bei null', () => {
   assert.equal(nebenkostenUntergrenze([{ sperrgut: true }], {}).nebenkostenUntergrenzeNetto, 0);
   assert.equal(nebenkostenUntergrenze([], mitNebenkosten).nebenkostenUntergrenzeNetto, 0);
 });
+
+
+test('Die Bestellung trägt ihr Datum und bezieht die Lieferzeit darauf', () => {
+  /*
+   * **13. September 2026.** Die Lieferantenbestellung war das einzige der
+   * sechs Papiere **ohne Datum**. Aufgefallen ist es, als `npm run
+   * bestellprobe` den Schritt zum ersten Mal mitfuhr: `npm run pruefe-ablage`
+   * meldete sofort „der Zeitpunkt der Journalzeile steht nicht auf dem
+   * Papier" (§ 131 Abs 1 Z 2 BAO). Den Prüfer gibt es seit dem 12. September;
+   * gefragt hatte ihn nur nie jemand, weil eine Lieferantenbestellung in
+   * keiner durchgefahrenen Akte lag.
+   *
+   * Schwerer als die Formalie ist der Satz darunter: „6 Werktage **ab
+   * heute**". „Heute" ist der Tag, an dem jemand das Blatt liest. Bleibt die
+   * Ware aus und fragt jemand, ab wann die Frist lief, sagt das Papier es
+   * nicht — § 212 UGB verlangt die Wiedergabe der abgesendeten
+   * Geschäftsbriefe, und ein Brief ohne Datum lässt sich keiner Frist
+   * zuordnen.
+   */
+  const wk = berechneWarenkorb([{ sku: 'DR-100-050', menge: 2 }], katalog);
+  const [mitDatum] = erzeugeBestellungen(wk, auftrag, { datum: '2026-09-13' });
+
+  assert.ok(mitDatum.text.includes('2026-09-13'),
+    `die Bestellung trägt kein Datum:\n${mitDatum.text}`);
+  assert.match(mitDatum.text, /Bestelldatum: 2026-09-13/);
+  assert.doesNotMatch(mitDatum.text, /ab heute/,
+    'die Lieferzeit hängt an einem „heute", das jeder Leser anders liest');
+
+  // Ohne Datum bleibt die Lücke sichtbar, statt still zu fehlen — dieselbe
+  // Marke wie bei jeder anderen offenen Pflichtangabe.
+  const [ohne] = erzeugeBestellungen(wk, auftrag);
+  assert.match(ohne.text, /Bestelldatum: \[\[/);
+});

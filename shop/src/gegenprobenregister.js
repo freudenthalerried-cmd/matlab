@@ -3926,6 +3926,39 @@ export const GEGENPROBEN = Object.freeze([
       + 'ein offener Punkt beim Auftraggeber.',
   }),
   Object.freeze({
+    id: 'die-bestellung-ohne-datum',
+    pruefer: 'test',
+    was: 'Die Lieferantenbestellung geht ohne Datum hinaus',
+    datei: 'shop/src/bestellung.js',
+    art: 'ersetzen',
+    suchen: "    `Bestelldatum: ${feld(datum, 'Bestelldatum')}`,",
+    ersetzen: '    ``,',
+    erwartet: /die Bestellung trägt kein Datum/,
+    warum: 'Die Lieferantenbestellung war bis zum 13. September das einzige der sechs Papiere '
+      + 'ohne Datum. Aufgefallen ist es, als die Bestellprobe den Schritt zum ersten Mal '
+      + 'mitfuhr: `pruefe-ablage` meldete sofort „der Zeitpunkt der Journalzeile steht nicht '
+      + 'auf dem Papier" (§ 131 Abs 1 Z 2 BAO). **Den Prüfer gab es seit dem 12. September; '
+      + 'gefragt hatte ihn nur nie jemand, weil eine Bestellung in keiner durchgefahrenen '
+      + 'Akte lag.** § 212 UGB verlangt die Wiedergabe der abgesendeten Geschäftsbriefe, und '
+      + 'ein Brief ohne Datum lässt sich keiner Frist zuordnen.',
+  }),
+  Object.freeze({
+    id: 'die-lieferzeit-ab-heute',
+    pruefer: 'test',
+    was: 'Die Lieferzeit hängt wieder an einem „heute" ohne Anker',
+    datei: 'shop/src/bestellung.js',
+    art: 'ersetzen',
+    suchen: '      ? `${teil.lieferzeitWerktage} Werktage ab Bestelldatum`',
+    ersetzen: '      ? `${teil.lieferzeitWerktage} Werktage ab heute`',
+    erwartet: /die Lieferzeit hängt an einem „heute", das jeder Leser anders liest/,
+    warum: '„Heute" ist der Tag, an dem jemand das Blatt liest — nicht der Tag, an dem '
+      + 'bestellt wurde. Das Papier liegt sieben Jahre in der Akte (§ 132 BAO); bleibt die '
+      + 'Ware aus und fragt jemand, **ab wann die sechs Werktage liefen**, sagt es nichts. '
+      + 'Und der Termin ist keine Nebensache: Die Auftragsbestätigung sagt ihn dem Kunden '
+      + 'gegenüber zu, und die Bestellung ist das Papier, mit dem er beim Lieferanten '
+      + 'angefordert wurde.',
+  }),
+  Object.freeze({
     id: 'verfallenes-angebot-bindet-weiter',
     pruefer: 'test',
     was: 'Die Akte hält ein abgelaufenes Angebot für bindend',

@@ -11,8 +11,35 @@
 import { EUR, LUECKE, csvFeld, textZeile, zahlText } from './format.js';
 import { traegtSichSelbst } from './kostenbild.js';
 
-/** Erzeugt je Teillieferung eine Bestellung an den Lieferanten. */
-export function erzeugeBestellungen(warenkorb, auftrag) {
+/**
+ * Erzeugt je Teillieferung eine Bestellung an den Lieferanten.
+ *
+ * **`datum` kam am 13. September 2026 dazu — und es war überfällig.**
+ *
+ * Die Bestellung war das einzige der sechs Papiere, das **kein Datum** trug.
+ * Aufgefallen ist es, als `npm run bestellprobe` den Schritt zum ersten Mal
+ * mitfuhr: `npm run pruefe-ablage` meldete sofort
+ *
+ * > *„LB-2026-9001-01.txt: der Zeitpunkt der Journalzeile steht nicht auf dem
+ * > Papier — § 131 Abs 1 Z 2 BAO verlangt die Zeitfolge, und sie steht hier
+ * > zweimal verschieden."*
+ *
+ * Der Prüfer gibt es seit dem 12. September und hatte recht; gefragt hat ihn
+ * nur nie jemand, weil eine Lieferantenbestellung in keiner durchgefahrenen
+ * Akte lag.
+ *
+ * Schwerer als die Formalie ist der Satz darunter: *„Gewünschte Lieferzeit:
+ * 6 Werktage **ab heute**."* „Heute" ist der Tag, an dem jemand das Blatt
+ * liest — nicht der Tag, an dem bestellt wurde. Bleibt die Ware aus und
+ * fragt jemand, ab wann die sechs Werktage liefen, sagt das Papier es nicht.
+ * § 212 UGB verlangt die Wiedergabe der abgesendeten Geschäftsbriefe; ein
+ * Brief ohne Datum lässt sich keiner Frist zuordnen.
+ *
+ * Das Datum wird **hereingereicht**, nicht hier gelesen: Ein Beleg, der
+ * selbst auf die Uhr sieht, lässt sich nicht prüfen und nicht wiederholen —
+ * dieselbe Regel wie bei Angebot, Bestätigung und Rechnung.
+ */
+export function erzeugeBestellungen(warenkorb, auftrag, { datum = null } = {}) {
   return warenkorb.teillieferungen.map((teil, index) => {
     const nummer = `${auftrag.bestellnummer}-${String(index + 1).padStart(2, '0')}`;
     return {
@@ -20,7 +47,7 @@ export function erzeugeBestellungen(warenkorb, auftrag) {
       lieferantId: teil.lieferantId,
       lieferantName: teil.lieferantName,
       betreff: `Bestellung ${nummer} — Streckengeschäft, Direktversand an Endkunden`,
-      text: bestelltext(nummer, teil, auftrag),
+      text: bestelltext(nummer, teil, auftrag, datum),
       csv: bestellCsv(nummer, teil, auftrag),
       warenwertNetto: teil.warenwertNetto,
       einkaufNetto: teil.einkaufNetto,
@@ -92,7 +119,7 @@ function kranzeile(teil) {
   ];
 }
 
-function bestelltext(nummer, teil, auftrag) {
+function bestelltext(nummer, teil, auftrag, datum = null) {
   // Die Menge in hiesiger Schreibweise: „0,75", nicht „0.75". Der Shop gibt
   // Platten zu 0,75 m² und Rollen zu 55 m² ab; ein Lieferant, der „0.75" liest,
   // liest im Zweifel 75.
@@ -110,12 +137,19 @@ function bestelltext(nummer, teil, auftrag) {
   // Lieferzeit aus den Stammdaten und forderte sie beim Lieferanten nie an.
   // Ein zugesagter Termin, den niemand bestellt hat, ist eine Hoffnung.
   const termin = feld(
-    teil.lieferzeitWerktage != null ? `${teil.lieferzeitWerktage} Werktage ab heute` : null,
+    // **„ab heute" war kein Anker — 13. September 2026.** „Heute" ist der Tag,
+    // an dem jemand das Blatt liest. Steht das Bestelldatum dabei, ist die
+    // Frist auch in sieben Jahren noch zu rechnen; fehlt es, sagt das Papier
+    // nichts darüber, ab wann sie lief.
+    teil.lieferzeitWerktage != null
+      ? `${teil.lieferzeitWerktage} Werktage ab Bestelldatum`
+      : null,
     `Lieferzeit ${teil.lieferantName ?? teil.lieferantId}`,
   );
 
   return [
     `Bestellung ${nummer}`,
+    `Bestelldatum: ${feld(datum, 'Bestelldatum')}`,
     ``,
     `Sehr geehrte Damen und Herren,`,
     ``,

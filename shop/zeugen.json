@@ -106,11 +106,17 @@
   "die-bankverbindung-fehlt-am-tag-x": [
     "shop/test/tagx.test.js"
   ],
+  "die-bestellung-ohne-datum": [
+    "shop/test/warenkorb.test.js"
+  ],
   "die-csv-nennt-alles-umsatz": [
     "shop/test/ablage.test.js"
   ],
   "die-frist-laeuft-auch-nach-der-annahme": [
     "shop/test/vorgangsstand.test.js"
+  ],
+  "die-lieferzeit-ab-heute": [
+    "shop/test/warenkorb.test.js"
   ],
   "die-sicherungskopie-bleibt-unsichtbar": [
     "shop/test/ablageort.test.js"

@@ -74,7 +74,9 @@ export function baueVorgang({
   // Punkt dieser Datei: Es gibt nur einen, also kann nur einer verwendet werden.
   const kunde = { ...kundenpruefung.normalisiert };
 
-  const bestellungen = erzeugeBestellungen(warenkorb, auftrag);
+  // Das Datum geht mit: Die Bestellung war bis zum 13. September das einzige
+  // der sechs Papiere ohne eines.
+  const bestellungen = erzeugeBestellungen(warenkorb, auftrag, { datum });
   const angebot = erzeugeAngebot(warenkorb, {
     nummer: `AN-${vorgangsnummer}`,
     datum,

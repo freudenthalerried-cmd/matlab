@@ -459,6 +459,39 @@ try {
        * diesen Satz selbst ein und weist `--ablegen` ohne den Schalter ab,
        * sobald `VORGANG_BETREIBER` gesetzt ist.
        */
+
+      /*
+       * **Das sechste Papier — 13. September 2026.**
+       *
+       * Die Kette hat sechs Papierarten; diese Probe fuhr fünf. Es fehlte
+       * ausgerechnet die **Lieferantenbestellung** — der Schritt, an dem Geld
+       * aus dem Haus geht und den Gate 20 bewacht.
+       *
+       * > **Damit hatte die eine Probe, die den ganzen Weg fährt, noch nie
+       * > einen Einkaufswert in der Akte.** Die Regel vom 12. September —
+       * > nur Rechnung und Gutschrift sind ein Umsatz, die
+       * > Lieferantenbestellung trägt die **Ausgabe** — war im Durchgang nie
+       * > geprüft worden, obwohl sie der gefährlichste Punkt des
+       * > Buchhaltungsauszugs ist: Ohne sie stünde der Einkauf mit
+       * > umgekehrtem Vorzeichen in der Umsatzsteuervoranmeldung.
+       *
+       * Fahrbar ist der Schritt erst seit gestern: Ohne Auftragsbestätigung
+       * in der Akte bricht er ab (AGB Punkt 2, Gate 20).
+       */
+      const bestellt = spawnSync(process.execPath, [join(SHOP, 'bin', 'vorgang.mjs'),
+        join(ziel, 'anfrage.txt'), '--kunde', join(ziel, 'kunde.json'), '--nummer', '2026-9001',
+        '--stufe', 'bestellung', '--bezahlt', '2026-09-08', '--ablegen'],
+      { cwd: SHOP, encoding: 'utf8', env: { ...werkzeugumgebung, VORGANG_ABLAGE: akte } });
+      const btext = `${bestellt.stdout ?? ''}${bestellt.stderr ?? ''}`;
+      const bestelldurchschrift = join(akte, belegordner(2026), 'LB-2026-9001-01.txt');
+      if (bestellt.status !== 0 || !existsSync(bestelldurchschrift)) {
+        probleme.push(`die Ware wird nicht bestellt: ${btext.trim().split('\n').slice(-3).join(' | ')}`);
+      } else if (!readFileSync(bestelldurchschrift, 'utf8').includes('2026-9001-01')) {
+        probleme.push('die Durchschrift der Bestellung nennt ihre Nummer nicht');
+      } else {
+        bestanden.push('Die Ware wird beim Lieferanten bestellt, mit Durchschrift in der Akte');
+      }
+
       const abgelegt = spawnSync(process.execPath, [join(SHOP, 'bin', 'vorgang.mjs'),
         join(ziel, 'anfrage.txt'), '--kunde', join(ziel, 'kunde.json'), '--nummer', '2026-9001',
         '--stufe', 'rechnung', '--geliefert', '2026-09-09', '--bezahlt', '2026-09-08', '--ablegen'],
@@ -536,6 +569,15 @@ try {
           probleme.push(`der Auszug für die Buchhaltung läuft nicht: ${buch.aus.trim().split('\n').slice(-3).join(' | ')}`);
         } else if (!/Umsatzbelege \(Rechnung, Gutschrift\)\s+2/.test(buch.aus)) {
           probleme.push('der Auszug zählt nicht genau zwei Umsatzbelege');
+        } else if (!/übrige Papiere ohne Umsatz\s+2/.test(buch.aus)) {
+          /*
+           * **Der Einkaufswert darf nicht mitzählen — seit dem 13. September
+           * hier geprüft.** In der Akte liegen jetzt zwei Papiere ohne
+           * Umsatz: die Auftragsbestätigung und die Lieferantenbestellung.
+           * Die zweite trägt den **Einkaufswert**; zählte sie mit, stünde der
+           * Einkauf mit umgekehrtem Vorzeichen in der Voranmeldung.
+           */
+          probleme.push('der Auszug zählt die Papiere ohne Umsatz nicht richtig');
         } else if (!/Bemessungsgrundlage netto\s+0,00 €/.test(buch.aus)
           || !/Umsatzsteuer\s+0,00 €/.test(buch.aus)) {
           probleme.push('Rechnung und Gutschrift heben sich im Auszug nicht auf');
@@ -608,11 +650,12 @@ try {
     process.exit(1);
   }
   console.log('Der Weg trägt: Klick, Empfangsskript, Ablage, Posteingang, Angebot,');
-  console.log('Vertrag, Rechnung, Akte, Gutschrift, Buchhaltung, Sicherung, Prüfer.');
+  console.log('Vertrag, Lieferantenbestellung, Rechnung, Akte, Gutschrift, Buchhaltung,');
+  console.log('Sicherung, Prüfer.');
   console.log('Die Papierkette läuft ganz durch, und der Prüfer der Ablage hat die');
   console.log('gebaute Akte gesehen —');
-  console.log('was dazwischen in der Welt geschieht (Zahlung, Bestellung beim Lieferanten,');
-  console.log('Lieferung), steht in der Betriebskette und bleibt dort stehen.');
+  console.log('was dazwischen in der Welt geschieht (der Zahlungseingang und die Lieferung),');
+  console.log('steht in der Betriebskette und bleibt dort stehen.');
 } finally {
   server.kill();
 }
