@@ -5,7 +5,8 @@ import { fileURLToPath } from 'node:url';
 
 import {
   ZWILLINGE, VORSCHLAG_GEPRUEFT, ENGE_SCHWELLE,
-  zwillingsbefund, zwillingsvorschlag, ohneKommentare, traegtZahl,
+  KENNUNGSFELDER,
+  zwillingsbefund, zwillingsvorschlag, benannteZahlen, zahlenIn, ohneKommentare, traegtZahl,
 } from '../src/zwillingszahlen.js';
 import { UST_SATZ } from '../src/preis.js';
 import { UST } from '../src/kostenbild.js';
@@ -166,6 +167,7 @@ test('Eine benannte Zahl mit ganz wenigen Fundstellen wird vorgeschlagen', () =>
   // Und eine abgehakte auch nicht.
   const abgehakt = zwillingsvorschlag(quellen, [], [{
     name: 'SATZ',
+    wert: 7.5,
     warum: 'Ein Grund, der lang genug ist, um als Grund zu gelten, und der deshalb '
       + 'diesen Satz bis über die achtzig Zeichen hinaus fortsetzt.',
   }]);
@@ -186,6 +188,7 @@ test('Rauschen wird nicht vorgeschlagen — eine Zahl in fünfzig Dateien ist Zu
 test('Die Gegenrichtung: ein Haken für eine Zahl, die es nicht mehr gibt', () => {
   const haken = [{
     name: 'FORT',
+    wert: 7.5,
     warum: 'Ein Grund, der lang genug ist, um als Grund zu gelten, und der deshalb '
       + 'diesen Satz bis über die achtzig Zeichen hinaus fortsetzt.',
   }];
@@ -202,7 +205,7 @@ test('Die Gegenrichtung: ein Haken für eine Zahl, die es nicht mehr gibt', () =
   const duenn = zwillingsvorschlag(new Map([
     ['src/heim.js', 'export const KURZ = 7.5;'],
     ['src/da.js', 'const x = 7.5;'],
-  ]), [], [{ name: 'KURZ', warum: 'zu kurz' }]);
+  ]), [], [{ name: 'KURZ', wert: 7.5, warum: 'zu kurz' }]);
   assert.ok(duenn.meldungen.some((m) => m.regel === 'haken-ohne-grund'));
 });
 
@@ -210,7 +213,8 @@ test('Jeder geprüfte Vorschlag nennt, warum die Gleichheit Zufall ist', () => {
   assert.ok(VORSCHLAG_GEPRUEFT.length >= 5,
     `nur ${VORSCHLAG_GEPRUEFT.length} Haken — ohne Bestand prüft die Schleife darunter nichts`);
   for (const g of VORSCHLAG_GEPRUEFT) {
-    assert.match(g.name, /^[A-Z][A-Z0-9_]*$/, `${g.name} ist keine Ausfuhr`);
+    assert.match(g.name, /^[a-zA-Z][a-zA-Z0-9_]*$/, `${g.name} ist kein Bezeichner`);
+    assert.equal(typeof g.wert, 'number', `${g.name} hakt keinen bestimmten Wert ab`);
     assert.ok(g.warum.length >= 80, `${g.name}: Grund zu dünn`);
   }
   assert.ok(ENGE_SCHWELLE >= 1 && ENGE_SCHWELLE <= 10,
@@ -229,5 +233,107 @@ test('Die Oberfläche liest die Höchstmenge, statt sie zu tippen', () => {
   assert.ok(felder.length >= 2, `nur ${felder.length} Mengenfelder gefunden — die Suche greift nicht`);
   for (const f of felder) {
     assert.equal(f, 'String(HOECHSTMENGE)', `ein Mengenfeld tippt seine Grenze: .max = ${f}`);
+  }
+});
+
+/*
+ * **Was am 13. September nachmittags dazukam.** Die Messung vom Vormittag las
+ * `export const NAME = 0.25;`. Gemessen über denselben Bestand: 59 Zahlen
+ * stehen so — und 218 in einem Objektfeld.
+ *
+ * > **Eine Messung, die nur eine Schreibweise liest, misst nicht den Bestand,
+ * > sondern die Schreibweise.**
+ *
+ * Beweisbar an diesem Register selbst: Sein Eintrag `ANNAHMEN.umsatzProSession`
+ * steht als `basis: 0.02` in einem Objekt. Die Messung hätte ihren eigenen
+ * Eintrag nicht gefunden.
+ */
+test('Eine Zahl in einem Objektfeld ist eine benannte Zahl', () => {
+  const gefunden = benannteZahlen([
+    'export const AUSFUHR = 7.5;',
+    '  basis: 0.02,',
+    '    schwelle: 0.23',
+    '  gate: 34,',
+    '  summe: a + 5,',
+    'nichtEingerueckt: 9,',
+  ].join('\n'));
+  assert.deepEqual(gefunden.map((g) => `${g.form}:${g.name}=${g.wert}`),
+    ['ausfuhr:AUSFUHR=7.5', 'feld:basis=0.02', 'feld:schwelle=0.23'],
+    'die Messung liest die falschen Zeilen');
+
+  // Und der eigene dritte Eintrag ist damit auffindbar.
+  const kaufquote = ZWILLINGE.find((z) => z.id === 'kaufquote');
+  assert.ok(kaufquote, 'die Kaufquote steht nicht mehr im Register');
+  assert.ok(benannteZahlen('  basis: 0.02,').some((g) => g.wert === Number(kaufquote.literal)),
+    'die Messung findet den eigenen Eintrag des Registers nicht');
+});
+
+test('Eine fortlaufende Nummer ist kein Zwilling, sondern ein Name aus Ziffern', () => {
+  assert.ok(KENNUNGSFELDER.includes('gate'), 'die Gate-Nummer zählt wieder als Größe');
+  assert.ok(KENNUNGSFELDER.length >= 1,
+    'die Kennungsliste ist leer — dann prüft die Schleife darunter nichts');
+  for (const feld of KENNUNGSFELDER) {
+    assert.deepEqual(benannteZahlen(`  ${feld}: 34,`), [],
+      `${feld} wird als Größe gelesen`);
+  }
+  // Gegenprobe zur Ausnahme: Ein Feld, das nicht in der Liste steht, zählt.
+  assert.equal(benannteZahlen('  schwelle: 34,').length, 1);
+});
+
+/*
+ * Objektfelder heißen `basis`, `wert`, `mindestens`. In
+ * `src/empfindlichkeit.js` tragen drei Annahmen ein Feld `basis` mit drei
+ * verschiedenen Zahlen — ein Haken auf den Namen allein häkte alle drei ab.
+ */
+test('Ein Haken gilt für eine Zahl, nicht für einen Feldnamen', () => {
+  const quellen = new Map([
+    ['src/heim.js', '  basis: 7.5,\n  basis: 4.25,'],
+    ['src/da.js', 'const a = 7.5; const b = 4.25;'],
+  ]);
+  const haken = [{
+    name: 'basis',
+    wert: 7.5,
+    warum: 'Ein Grund, der lang genug ist, um als Grund zu gelten, und der deshalb '
+      + 'diesen Satz bis über die achtzig Zeichen hinaus fortsetzt.',
+  }];
+  const befund = zwillingsvorschlag(quellen, [], haken);
+  const offen = befund.meldungen.filter((m) => m.regel === 'zahl-im-engen-band');
+  assert.equal(offen.length, 1, 'der Haken auf den Namen hat beide Zahlen abgehakt');
+  assert.match(offen[0].text, /4\.25/);
+});
+
+/*
+ * `zahlenIn` beantwortet auf einmal, was `traegtZahl` einzeln beantwortet.
+ * Zwei Lesarten derselben Sache sind zwei Lesarten — gemessen wird, dass sie
+ * dieselbe bleiben.
+ */
+test('Die Mengenlesart und die Einzelfrage lesen dieselben Zahlen', () => {
+  const proben = [
+    'const a = 0.2; const b = 10.20; const c = satz0; const d = -3;',
+    '  basis: 0.02,\n  gate: 34,\n  x: 2.49',
+    'https://www.w3.org/2000/svg',
+    '',
+  ];
+  assert.ok(proben.length >= 3, 'zu wenige Proben — dann prüft die Schleife darunter nichts');
+
+  // Erst einsammeln, dann prüfen: Eine leere Probe gehört dazu (sie darf keine
+  // Zahl tragen), und über eine leere Schleife lässt sich nichts zusichern.
+  const gefunden = proben.flatMap((text) => [...zahlenIn(text)].map((zahl) => ({ text, zahl })));
+  assert.ok(gefunden.length >= 7, `nur ${gefunden.length} Zahlen gelesen — die Proben tragen zu wenig`);
+  for (const { text, zahl } of gefunden) {
+    assert.equal(traegtZahl(text, zahl), true,
+      `zahlenIn findet ${zahl}, traegtZahl nicht — in: ${text}`);
+  }
+
+  // Und die Gegenrichtung, an festen Kandidaten: Was die eine Lesart nicht
+  // findet, darf die andere auch nicht finden.
+  const kandidaten = [0.2, 0.02, 34, 2000, 2.49, -3, 999];
+  assert.ok(kandidaten.length >= 5, 'zu wenige Kandidaten');
+  for (const text of proben) {
+    const menge = zahlenIn(text);
+    for (const zahl of kandidaten) {
+      assert.equal(menge.has(zahl), traegtZahl(text, zahl),
+        `die beiden Lesarten sind bei ${zahl} uneins — in: ${text}`);
+    }
   }
 });

@@ -243,10 +243,38 @@ export function leistbarerKlickpreis({ werbebudgetJeMonat, bestellungen, quote }
  * Die Kaufquote, unter der das Modell den **günstigsten** Marktklick nicht
  * mehr trägt. Gelöst statt gesucht — die Beziehung ist linear in der Quote.
  */
-export function quoteAmMarktboden({ werbebudgetJeMonat, bestellungen, marktUnten }) {
+/**
+ * Marktuebliche Klickpreise in Oesterreich, Bau und Handwerk — die Heimat.
+ *
+ * **Hierher gezogen am 13. September 2026.** Die Zahl stand als
+ * `export const MARKT_CPC` in `bin/kampagne.mjs`, also in einem Werkzeug, und
+ * zwei Module des Rechenkerns schrieben sie deshalb von Hand ab:
+ * `src/kennzahlen.js` und `src/leitzahlen.js` riefen beide
+ * `quoteAmMarktboden({ …, marktUnten: 0.5 })`.
+ *
+ * > **Ein Haus, dessen Heimat in einem Werkzeug liegt, hat keine Heimat — der
+ * > Kern darf das Werkzeug nicht lesen.**
+ *
+ * Die Spanne selbst steht im Kopf dieser Datei: *„Der Markt kostet 0,50 bis
+ * 2,50 € je Klick."* Sie gehoert dorthin, wo die Rechnung steht, die sie
+ * braucht.
+ */
+export const MARKT_CPC = Object.freeze({ unten: 0.5, oben: 2.5 });
+
+/*
+ * Der Stuetzpunkt, an dem die lineare Beziehung ausgewertet wird — eine
+ * **Quote**, keine Waehrung. Sie steht hier benannt, seit aufgefallen ist,
+ * dass in `quoteAmMarktboden` zweimal `0.5` stand und die beiden Zahlen nichts
+ * miteinander zu tun haben: einmal fuenfzig Prozent, einmal fuenfzig Cent.
+ * Welche Zahl der Marktpreis war, liess sich nur am Namen des Arguments
+ * ablesen.
+ */
+const STUETZQUOTE = 0.5;
+
+export function quoteAmMarktboden({ werbebudgetJeMonat, bestellungen, marktUnten = MARKT_CPC.unten }) {
   if (!(marktUnten > 0)) throw new Error(`Der untere Marktklickpreis muss positiv sein, ist ${marktUnten}`);
-  const { klickpreis } = leistbarerKlickpreis({ werbebudgetJeMonat, bestellungen, quote: 0.5 });
+  const { klickpreis } = leistbarerKlickpreis({ werbebudgetJeMonat, bestellungen, quote: STUETZQUOTE });
   // klickpreis(q) = Budget · q / Bestellungen — also linear; aus einem
   // Stützpunkt lässt sich die Nullstelle direkt bestimmen.
-  return marktUnten * 0.5 / klickpreis;
+  return marktUnten * STUETZQUOTE / klickpreis;
 }

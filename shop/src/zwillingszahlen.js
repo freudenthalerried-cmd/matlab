@@ -173,13 +173,6 @@ export const ZWILLINGE = Object.freeze([
           + 'aus dem Prüfling liest, prüft nichts.** Genau diese vier Zeichenketten sind der '
           + 'Nachweis, dass die Oberfläche die Konstante wirklich erreicht.',
       }),
-      Object.freeze({
-        datei: 'bin/wegprobe.mjs',
-        warum: 'Die Wegprobe tippt `999` ins Mengenfeld des Korbs, um den Mindestbestellwert '
-          + 'sicher zu überschreiten. Sie braucht dafür die **größte annehmbare** Menge, und '
-          + 'das ist die Höchstmenge — eine größere Zahl würde stillschweigend gekürzt und die '
-          + 'Probe prüfte dann etwas anderes als das, was sie eingetippt hat.',
-      }),
     ]),
   }),
   Object.freeze({
@@ -197,6 +190,24 @@ export const ZWILLINGE = Object.freeze([
           + '**Bis zum 13. September stand die Zahl in dieser Datei zweimal**: noch einmal als '
           + '`nebenkosten.kranentladungJeHubNetto`, gelesen von niemandem und gehalten von '
           + 'niemandem. Sie ist entfernt; die Notiz an ihrer Stelle sagt warum.',
+      }),
+    ]),
+  }),
+  Object.freeze({
+    id: 'warenkorb',
+    literal: '650',
+    heimat: 'src/empfindlichkeit.js',
+    name: 'ANNAHMEN.warenkorbNetto',
+    was: 'der angenommene Warenkorb netto, aus der Stückliste hergeleitet — Nenner jeder Bestellzahl',
+    ausnahmen: Object.freeze([
+      Object.freeze({
+        datei: 'data/zielgroessen.json',
+        warum: '`warenkorbNetto: 650` — dieselbe Zahl, und in JSON gibt es keinen Import. '
+          + '**Gehalten wird sie seit dem 13. September nachmittags**, und zwar nicht einzeln: '
+          + 'Die Schleife in `test/empfindlichkeit.test.js` lief schon vorher über alle vier '
+          + 'Annahmen und verglich den **Typ**; sie vergleicht jetzt den Wert. Dieselbe Datei '
+          + 'trägt außerdem `fixkosten: 650` — eine andere Größe mit derselben Zahl, weshalb '
+          + 'die Zählung nur eine Fremddatei sieht.',
       }),
     ]),
   }),
@@ -317,7 +328,92 @@ export const ENGE_SCHWELLE = 5;
  */
 export const VORSCHLAG_GEPRUEFT = Object.freeze([
   Object.freeze({
+    name: 'ueberlappung', wert: 0.1,
+    warum: 'Zehn Prozent Ueberlappung im Bedarfsrechner. Sie trifft die drei Gebinde-'
+      + 'untergrenzen (ein Zehntel Kilogramm, Quadratmeter, Laufmeter) und vier weitere '
+      + 'Zehntel-Prozent-Angaben. Dass die Messung sie zusammenwirft, ist der Preis des '
+      + 'Wertevergleichs vom 13.09. vormittags: `0.10` und `0.1` sind dieselbe Zahl.',
+  }),
+  Object.freeze({
+    name: 'basis', wert: 0.1,
+    warum: 'Der Werbekostenanteil der Empfindlichkeitsrechnung — zehn Prozent. Gegen seine '
+      + 'zweite Fassung in `data/zielgroessen.json` **ist** er gehalten, seit dem 13.09. '
+      + 'nachmittags durch die Wertschleife in `test/empfindlichkeit.test.js`. Der Rest des '
+      + 'engen Bandes sind fremde Zehntel: Ueberlappung, Verschnittstaffel, Gebindeuntergrenzen.',
+  }),
+  Object.freeze({
+    name: 'verschnitt', wert: 0.05,
+    warum: 'Fuenf Prozent Verschnitt auf der Baustelle. Die beiden anderen Vorkommen sind die '
+      + 'mittlere Klickrate einer Suchanzeige (`src/suchbedarf.js`) und ein Element der '
+      + 'Nachlassstaffel `[0, 0.05, 0.10, 0.15]` (`src/verhandlung.js`). Drei Prozentsaetze '
+      + 'aus drei Welten, die zufaellig alle fuenf Prozent sind.',
+  }),
+  Object.freeze({
+    name: 'mittel', wert: 0.05,
+    warum: 'Die mittlere Klickrate des Klickratenbandes — ausdruecklich ein Band und kein '
+      + 'Wert, weil es keine geschaltete Anzeige gibt. Die beiden anderen Vorkommen sind der '
+      + 'Baustellenverschnitt und ein Glied der Nachlassstaffel; keines hat mit Suchanzeigen '
+      + 'zu tun.',
+  }),
+  Object.freeze({
+    name: 'aufkantungHoehe', wert: 0.3,
+    warum: 'Dreissig **Zentimeter** Aufkantung, in Metern geschrieben. Das einzige andere '
+      + 'Vorkommen ist `haendlerrabattAufUvp: 0.3` in `data/lieferanten.json` — dreissig '
+      + '**Prozent** Rabatt. Eine Laenge und ein Anteil, dieselbe Ziffernfolge.',
+  }),
+  Object.freeze({
+    name: 'primerProM2', wert: 0.3,
+    warum: 'Drei Zehntel **Liter** Primer je Quadratmeter. Dasselbe andere Vorkommen wie bei '
+      + 'der Aufkantung: dreissig Prozent Haendlerrabatt. Ein Volumen je Flaeche und ein '
+      + 'Anteil — die Messung liest Ziffern und keine Einheiten.',
+  }),
+  Object.freeze({
+    name: 'rohrZuschlag', wert: 0.15,
+    warum: 'Fuenfzehn Prozent Zuschlag auf die gerechnete Rohrlaenge fuer Bogen und Anbindung. '
+      + 'Das einzige andere Vorkommen ist das letzte Glied der Nachlassstaffel `[0, 0.05, '
+      + '0.10, 0.15]` in `src/verhandlung.js` — eine Szenarienliste, kein Satz.',
+  }),
+  Object.freeze({
+    name: 'wert', wert: 33,
+    warum: 'Eine **abgeloeste** Leitzahl: 33 Keywords vor dem 1. September, mit einem `weil` '
+      + 'daneben. Ein historischer Stand ist keine geltende Groesse — er soll gerade nicht '
+      + 'mitwandern, wenn die heutige Zahl wandert. Die Kollision ist Gate 33.',
+  }),
+  Object.freeze({
+    name: 'wert', wert: 57,
+    warum: 'Dieselbe Bauart: 57 Plantage vor der Etappe „Search Console einrichten", am 3.9. '
+      + 'eingefuegt. Das andere Vorkommen ist der Satz in `data/auftragszuordnung.json`, der '
+      + 'genau diesen abgeloesten Stand beschreibt — zwei Aufzeichnungen desselben vergangenen '
+      + 'Befunds, nicht zwei Fassungen einer geltenden Zahl.',
+  }),
+  Object.freeze({
+    name: 'mindestens', wert: 10000,
+    warum: 'Die Mindestzeilenzahl, unter der ein Prueflauf nichts aussagt — zweimal im '
+      + 'Pruefregister, fuer zwei Prueflaeufe. Die anderen Vorkommen sind die UID-Schwelle in '
+      + '`src/beleg.js` (ein Bruttobetrag) und ein Rundungsfaktor `* 10000`. Drei Dinge, eine '
+      + 'Ziffernfolge.',
+  }),
+  Object.freeze({
+    name: 'mindestens', wert: 8000,
+    warum: 'Dieselbe Bauart eine Groessenordnung tiefer: eine Mindestzeilenzahl. Das einzige '
+      + 'andere Vorkommen ist das letzte Glied der Szenarienliste `[500, 1000, 2000, 4000, '
+      + '8000]` in `bin/messliste.mjs` — eine Staffel und keine Schwelle.',
+  }),
+  Object.freeze({
+    name: 'vorsichtig', wert: 0.03,
+    warum: 'Der untere Rand des Klickratenbandes. Dieselben drei fremden Fundstellen wie beim '
+      + 'Skontosatz: die Gebuehr des Rechnungskaufs, der Skontosatz selbst und eine '
+      + 'Szenarienliste. Vier Prozentsaetze aus vier Welten, alle drei Prozent.',
+  }),
+  Object.freeze({
+    name: 'prozent', wert: 0.03,
+    warum: 'Die Gebuehr des B2B-Rechnungskaufs, Spanne 2–4 %, hier mit drei gerechnet — die '
+      + 'Herkunftsnotiz daneben sagt es. Dieselben drei fremden Fundstellen wie beim '
+      + 'Skontosatz und beim unteren Klickratenrand.',
+  }),
+  Object.freeze({
     name: 'UID_EMPFAENGER_GRENZE_BRUTTO',
+    wert: 10000,
     warum: 'Die beiden anderen Vorkommen von 10000 sind `mindestens: 10000` in '
       + '`src/pruefregister.js` (zweimal, eine Mindestzeilenzahl für einen Prüflauf) und ein '
       + 'Rundungsfaktor `* 10000` in `bin/preiswiederherstellung.mjs`. Weder Betrag noch '
@@ -325,6 +421,7 @@ export const VORSCHLAG_GEPRUEFT = Object.freeze([
   }),
   Object.freeze({
     name: 'KLEINSTES_GEBINDE_KG',
+    wert: 0.1,
     warum: 'Alle fuenf anderen Vorkommen sind `0.10` — zehn **Prozent**, in fuenf Bedeutungen: '
       + 'die Ueberlappung im Bedarfsrechner, die Basisannahme der Empfindlichkeit, der '
       + 'Schritt der Elastizitaet, eine Nachlassstaffel und der Werbeanteil der Zielgroessen. '
@@ -335,6 +432,7 @@ export const VORSCHLAG_GEPRUEFT = Object.freeze([
   }),
   Object.freeze({
     name: 'KLEINSTES_GEBINDE_M2',
+    wert: 0.1,
     warum: 'Dieselben fuenf Vorkommen von zehn Prozent wie bei `KLEINSTES_GEBINDE_KG`, und '
       + 'hier steht ein Zehntel **Quadratmeter**. Die drei Gebindeuntergrenzen sind absichtlich '
       + 'drei Zahlen und nicht eine: Sie messen Gewicht, Flaeche und Laenge, und dass alle drei '
@@ -343,6 +441,7 @@ export const VORSCHLAG_GEPRUEFT = Object.freeze([
   }),
   Object.freeze({
     name: 'KLEINSTES_GEBINDE_LFM',
+    wert: 0.1,
     warum: 'Dieselben fuenf Vorkommen von zehn Prozent, und hier steht ein Zehntel '
       + '**Laufmeter**. Waeren die drei zusammengelegt, hiesse das: Wer die Untergrenze fuer '
       + 'Gewicht verschiebt, verschiebt die fuer Flaeche und Laenge mit. Genau das soll nicht '
@@ -350,6 +449,7 @@ export const VORSCHLAG_GEPRUEFT = Object.freeze([
   }),
   Object.freeze({
     name: 'KUMULIERT_MINDESTENS',
+    wert: 2000,
     warum: 'Die drei anderen Vorkommen von 2000 sind zweimal `www.w3.org/2000/svg` in '
       + '`src/bilder.js` (eine Jahreszahl in einer Namensraum-Adresse), eine Szenarienliste '
       + '`[500, 1000, 2000, 4000, 8000]` in `bin/messliste.mjs` und die absichtlich zu grosse '
@@ -359,6 +459,7 @@ export const VORSCHLAG_GEPRUEFT = Object.freeze([
   }),
   Object.freeze({
     name: 'KD_NIEDRIG_BIS',
+    wert: 29,
     warum: 'Alle vier anderen Vorkommen von 29 sind **Gate 29** oder die **29 Begriffe der '
       + 'Messliste**: `gate: 29` in `src/gatestand.js`, zwei Saetze ueber die Messliste in '
       + '`src/aussenlage.js` und `src/offenepunkte.js`, und die Gate-Meldung in '
@@ -367,6 +468,7 @@ export const VORSCHLAG_GEPRUEFT = Object.freeze([
   }),
   Object.freeze({
     name: 'KD_MITTEL_BIS',
+    wert: 49,
     warum: 'Das einzige andere Vorkommen von 49 steht in `src/zahlung.js` im Satz '
       + '„Listenpreis Groessenordnung 2,49 % + 0,35 Euro" — die Gebuehr von PayPal. Gelesen '
       + 'wird sie nur, weil das deutsche Dezimalkomma die Zahl in `2` und `49` zerlegt. Ein '
@@ -374,6 +476,7 @@ export const VORSCHLAG_GEPRUEFT = Object.freeze([
   }),
   Object.freeze({
     name: 'SKONTO_SATZ',
+    wert: 0.03,
     warum: 'Die drei anderen Vorkommen von 0.03 sind `KLICKRATE.vorsichtig` in '
       + '`src/suchbedarf.js` (der untere Rand einer Anzeigen-Klickrate), `prozent: 0.03` beim '
       + 'Rechnungskauf in `src/zahlung.js` (die Gebühr eines Zahlungsanbieters, Spanne 2–4 %) '
@@ -381,6 +484,75 @@ export const VORSCHLAG_GEPRUEFT = Object.freeze([
       + 'die zufällig alle drei Prozent sind — keiner hängt am Skonto.',
   }),
 ]);
+
+/**
+ * Feldnamen, die eine **Kennung** tragen und keine Größe.
+ *
+ * **Gemessen am 13. September 2026**, als die Messung von den benannten Zahlen
+ * auf die Objektfelder ausgedehnt wurde: 34 Felder lagen im engen Band, und
+ * **elf davon waren `gate:`** — die laufenden Nummern der Gates 19 bis 39.
+ *
+ * Eine Gate-Nummer ist keine Größe. Sie steht in jeder Datei, die das Gate
+ * erwähnt, sie kollidiert mit jedem Schwellenwert im selben Zahlenbereich, und
+ * sie hat gar keine Heimat, die man lesen könnte — sie **ist** die Kennung.
+ *
+ * > **Eine fortlaufende Nummer ist kein Zwilling, sondern ein Name aus
+ * > Ziffern.**
+ *
+ * Diese Liste ist bewusst kurz und wird durch die Messung gehalten: Steht ein
+ * Name hier, der im Bestand gar nicht mehr als Zahlfeld vorkommt, wird er
+ * gemeldet.
+ */
+export const KENNUNGSFELDER = Object.freeze(['gate', 'nummer', 'jahr']);
+
+/**
+ * Jede benannte Zahl einer Datei — als Ausfuhr **und** als Objektfeld.
+ *
+ * **Der Fund, 13. September 2026 nachmittags.** Die Vorschlagsmessung vom
+ * Vormittag las `export const NAME = 0.25;`. Gemessen über denselben Bestand:
+ * **59** Zahlen stehen so — und **218** stehen in einem Objektfeld.
+ *
+ * > **Eine Messung, die nur eine Schreibweise liest, misst nicht den Bestand,
+ * > sondern die Schreibweise.**
+ *
+ * Beweisbar an diesem Register selbst: Sein dritter Eintrag heißt
+ * `ANNAHMEN.umsatzProSession` und steht als `basis: 0.02` in einem Objekt. Die
+ * Messung, die Zwillinge vorschlagen soll, hätte **ihren eigenen Eintrag nicht
+ * gefunden**.
+ */
+export function benannteZahlen(quelltext) {
+  const gefunden = [];
+  for (const m of quelltext.matchAll(/export const ([A-Z][A-Z0-9_]*)\s*=\s*(-?\d+(?:\.\d+)?)\s*;/g)) {
+    gefunden.push({ name: m[1], wert: Number(m[2]), form: 'ausfuhr' });
+  }
+  /*
+   * Objektfelder: eingerueckt, ein Name, ein Doppelpunkt, eine Zahl und sonst
+   * nichts bis zum Zeilenende. Die Einrueckung ist das Merkmal, das ein Feld
+   * von einer Zuweisung trennt; das Zeilenende schliesst Ausdruecke aus, in
+   * denen die Zahl nur ein Summand ist.
+   */
+  for (const m of quelltext.matchAll(/^\s{2,}([a-zA-Z][a-zA-Z0-9_]*):\s*(-?\d+(?:\.\d+)?)\s*,?\s*$/gm)) {
+    if (KENNUNGSFELDER.includes(m[1])) continue;
+    gefunden.push({ name: m[1], wert: Number(m[2]), form: 'feld' });
+  }
+  return gefunden;
+}
+
+/**
+ * Alle Zahlen eines Quelltexts als Menge — dieselbe Lesart wie `traegtZahl`.
+ *
+ * Beide lesen jede Zahl als eigenes Wort: Vor ihr darf kein Zeichen stehen,
+ * das sie fortsetzt, und dahinter auch nicht. `traegtZahl` beantwortet eine
+ * Frage, diese Funktion beantwortet alle auf einmal — gebraucht, sobald nicht
+ * mehr drei Zahlen gesucht werden, sondern zweihundert.
+ */
+export function zahlenIn(quelltext) {
+  const gefunden = new Set();
+  for (const t of String(quelltext).matchAll(/(^|[^0-9A-Za-z_.])(-?\d+(?:\.\d+)?)(?![0-9A-Za-z_.])/g)) {
+    gefunden.add(Number(t[2]));
+  }
+  return gefunden;
+}
 
 /**
  * Welche benannten Zahlen ins Register **gehörten**, ohne dass es jemand merkt.
@@ -402,8 +574,28 @@ export const VORSCHLAG_GEPRUEFT = Object.freeze([
  */
 export function zwillingsvorschlag(quellen, eintraege = ZWILLINGE, geprueft = VORSCHLAG_GEPRUEFT) {
   const ohne = new Map([...quellen].map(([p, t]) => [p, ohneKommentare(t)]));
+  /*
+   * **Einmal lesen statt je Kandidat suchen — 13. September 2026.** Mit den
+   * Objektfeldern stieg die Zahl der Kandidaten von 59 auf 218, und der
+   * Prüfer lief über die Sekunde aus Gate 38 (1,5 s). Er suchte je Kandidat
+   * in jeder Datei neu: 218 × 247 Durchläufe desselben Musters.
+   *
+   * Gesammelt wird jetzt einmal je Datei, welche Zahlen darin vorkommen —
+   * danach ist jede Frage ein Nachschlagen. Gemessen: 1,5 s auf 0,2 s.
+   */
+  const zahlenJeDatei = new Map([...ohne].map(([p, t]) => [p, zahlenIn(t)]));
   const gefuehrt = new Set(eintraege.map((e) => Number(e.literal)));
-  const abgehakt = new Map(geprueft.map((g) => [g.name, g]));
+  /*
+   * **Schluessel ist Name **und** Wert — 13. September 2026.** Solange die
+   * Messung nur `export const NAME` las, war der Name eindeutig. Objektfelder
+   * heissen `basis`, `wert`, `mindestens`: In `src/empfindlichkeit.js` tragen
+   * drei Annahmen ein Feld `basis` mit drei verschiedenen Zahlen.
+   *
+   * > **Ein Haken, der nur den Namen kennt, hakt drei Zahlen mit einem Satz
+   * > ab.**
+   */
+  const schluessel = (name, wert) => `${name}=${wert}`;
+  const abgehakt = new Map(geprueft.map((g) => [schluessel(g.name, g.wert), g]));
   const meldungen = [];
   const vorschlaege = [];
   const gesehen = new Set();
@@ -417,9 +609,9 @@ export function zwillingsvorschlag(quellen, eintraege = ZWILLINGE, geprueft = VO
      * eine zitierte ist.
      */
     if (!pfad.startsWith('src/') || REDEN_UEBER_DEN_BESTAND.includes(pfad)) continue;
-    for (const m of text.matchAll(/export const ([A-Z][A-Z0-9_]*)\s*=\s*(-?\d+(?:\.\d+)?)\s*;/g)) {
-      const name = m[1];
-      const wert = Number(m[2]);
+    for (const m of benannteZahlen(text)) {
+      const name = m.name;
+      const wert = m.wert;
       /*
        * Zahlen ohne Aussagekraft heraus. 0, 1 und 2 stehen in jeder zweiten
        * Zeile dieses Bestandes; 100 und 1000 sind Rundungs- und
@@ -428,15 +620,15 @@ export function zwillingsvorschlag(quellen, eintraege = ZWILLINGE, geprueft = VO
        * die Schwelle gebaut ist.
        */
       if ([0, 1, 2, 3, 100, 1000].includes(wert)) continue;
-      gesehen.add(name);
+      gesehen.add(schluessel(name, wert));
       const andere = [];
-      for (const [p, t] of ohne) {
+      for (const [p, zahlen] of zahlenJeDatei) {
         if (p === pfad || REDEN_UEBER_DEN_BESTAND.includes(p)) continue;
-        if (traegtZahl(t, wert)) andere.push(p);
+        if (zahlen.has(wert)) andere.push(p);
       }
       if (andere.length === 0 || andere.length > ENGE_SCHWELLE) continue;
       vorschlaege.push({ name, wert, heimat: pfad, andere });
-      if (gefuehrt.has(wert) || abgehakt.has(name)) continue;
+      if (gefuehrt.has(wert) || abgehakt.has(schluessel(name, wert))) continue;
       meldungen.push({
         regel: 'zahl-im-engen-band',
         wo: `${pfad} · ${name}`,
@@ -450,12 +642,12 @@ export function zwillingsvorschlag(quellen, eintraege = ZWILLINGE, geprueft = VO
 
   // Die Gegenrichtung: Ein Haken für eine Zahl, die es nicht mehr gibt oder
   // die das enge Band längst verlassen hat, erklärt einen Zustand von gestern.
-  const imBand = new Set(vorschlaege.map((v) => v.name));
+  const imBand = new Set(vorschlaege.map((v) => schluessel(v.name, v.wert)));
   for (const g of geprueft) {
-    if (!gesehen.has(g.name)) {
+    if (!gesehen.has(schluessel(g.name, g.wert))) {
       meldungen.push({ regel: 'haken-ohne-zahl', wo: g.name,
         text: `${g.name} steht als geprüfter Vorschlag und ist als benannte Zahl in src/ nicht mehr da` });
-    } else if (!imBand.has(g.name)) {
+    } else if (!imBand.has(schluessel(g.name, g.wert))) {
       meldungen.push({ regel: 'haken-ausserhalb-des-bandes', wo: g.name,
         text: `${g.name} steht als geprüfter Vorschlag, liegt aber nicht mehr im engen Band — `
           + 'der Haken erklärt einen Zustand, den es nicht mehr gibt' });

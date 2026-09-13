@@ -133,8 +133,14 @@ const AUSGABE = (() => {
   return wahl ? (wahl.startsWith('/') ? wahl : join(WURZEL, wahl)) : join(WURZEL, 'ausgabe', 'kampagne');
 })();
 
-/** Marktübliche Klickpreise in Österreich, Bau und Handwerk. */
-export const MARKT_CPC = { unten: 0.5, oben: 2.5 };
+/*
+ * Marktübliche Klickpreise — **seit 13.09. in `src/werbewirkung.js`**, wo die
+ * Rechnung steht, die sie braucht. Hier stand die Heimat, und zwei Module des
+ * Kerns schrieben die 0,50 € deshalb ab, statt sie zu lesen.
+ */
+import { MARKT_CPC } from '../src/werbewirkung.js';
+
+export { MARKT_CPC };
 
 /** Grenzen des Anzeigenformats. Zu lange Texte weist Google beim Import ab. */
 const MAX_UEBERSCHRIFT = 30;

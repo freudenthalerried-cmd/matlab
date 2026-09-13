@@ -39,6 +39,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
 import { wegwerfordner } from '../src/wegwerf.js';
+import { HOECHSTMENGE } from '../src/shopkern.js';
 
 const fuehreAus = promisify(execFile);
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -148,7 +149,17 @@ const SONDE = `
       .test(korbBereich ? korbBereich.textContent : '');
     const mengenfeld = document.querySelector('.korbzeile input[type=number]');
     if (merkmale.mindestwertHinweis && mengenfeld) {
-      mengenfeld.value = '999';
+      // **Gelesen statt getippt, 13. September 2026.** Hier stand '999'.
+      // Gebraucht wird die groesste annehmbare Menge — eine groessere wuerde
+      // die Oberflaeche still kuerzen, und die Probe pruefte dann etwas
+      // anderes als das, was sie eingetippt hat. Die Einsetzung unten
+      // geschieht schon in Node, weil dieser Block ein Template-Literal ist.
+      //
+      // Der Kopf warnt vor Backslashes und Backticks. Er haette auch vor der
+      // Einsetzungsklammer warnen muessen: Ein Kommentar mit einer leeren
+      // davon stand hier zuerst und machte die ganze Datei unlesbar. In
+      // einem Template-Literal ist auch ein Kommentar noch Text.
+      mengenfeld.value = '${HOECHSTMENGE}';
       mengenfeld.dispatchEvent(new Event('change'));
       await warte();
       schritt('Menge erhöhen');

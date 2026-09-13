@@ -262,6 +262,24 @@ test('Die Zielgrößen sind vollständig und decken sich mit dem Katalog', async
   assert.ok(ANNAHMEN.length > 0, 'keine Annahmen — die Schleife prüft nichts');
   for (const a of ANNAHMEN) {
     assert.equal(typeof LAGE[a.id], 'number', `zielgroessen.json führt keinen Wert für ${a.id}`);
+    /*
+     * **Und der Wert, nicht nur der Typ — 13. September 2026, nachmittags.**
+     *
+     * Am Vormittag wurde die Kaufquote gegen ihre Heimat gehalten, weil sie
+     * aufgefallen war. Der Satz dazu steht ein Stück weiter unten: *„Eine
+     * Notiz, die sagt ‚dieselbe Größe', ist keine Prüfung, dass es dieselbe
+     * Zahl ist."* Er galt ab da für **eine** Annahme.
+     *
+     * Diese Schleife lief schon vorher über alle vier und verglich den
+     * **Typ**. Vier Zahlen standen zweimal; eine war gehalten, drei waren es
+     * nicht (`rohmarge` mittelbar über `ZIELMARGE`, `werbeanteil` und
+     * `warenkorbNetto` gar nicht).
+     *
+     * > **Eine Berichtigung, die eine Stelle erreicht, gilt für eine Stelle —
+     * > auch dann, wenn die Schleife über alle daneben steht.**
+     */
+    assert.equal(LAGE[a.id], a.basis,
+      `zielgroessen.json rechnet ${a.id} mit ${LAGE[a.id]}, src/empfindlichkeit.js mit ${a.basis}`);
   }
   for (const feld of ['zielgewinn', 'fixkosten', 'zahlweg']) {
     assert.ok(LAGE[feld], `zielgroessen.json führt kein ${feld}`);

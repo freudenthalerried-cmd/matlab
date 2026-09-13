@@ -176,7 +176,6 @@ export const LEITZAHLEN = Object.freeze([
       const q = quoteAmMarktboden({
         werbebudgetJeMonat: u.umsatzNetto * ziel.werbeanteil,
         bestellungen: u.bestellungen,
-        marktUnten: 0.5,
       });
       return Number((q * 100).toFixed(2));
     },

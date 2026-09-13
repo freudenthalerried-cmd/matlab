@@ -3992,6 +3992,50 @@ export const GEGENPROBEN = Object.freeze([
       + '`src/skonto.js`.',
   }),
   Object.freeze({
+    id: 'die-messung-liest-nur-eine-schreibweise',
+    pruefer: 'test',
+    was: 'Die Vorschlagsmessung liest wieder nur `export const`, keine Objektfelder',
+    datei: 'shop/src/zwillingszahlen.js',
+    art: 'ersetzen',
+    suchen: "    if (KENNUNGSFELDER.includes(m[1])) continue;",
+    ersetzen: '    if (m[1]) continue;',
+    erwartet: /die Messung liest die falschen Zeilen/,
+    warum: 'Gemessen ueber denselben Bestand: 59 Zahlen stehen als `export const`, **218** in '
+      + 'einem Objektfeld. Die Messung vom Vormittag deckte ein Fuenftel ab — und haette den '
+      + 'eigenen dritten Registereintrag `ANNAHMEN.umsatzProSession` nicht gefunden, weil der '
+      + 'als `basis: 0.02` in einem Objekt steht. Eine Messung, die nur eine Schreibweise '
+      + 'liest, misst nicht den Bestand, sondern die Schreibweise.',
+  }),
+  Object.freeze({
+    id: 'die-kennzahl-schreibt-die-grenze-wieder-ab',
+    pruefer: 'pruefe-zwillinge',
+    was: 'Die Tragfaehigkeitsgrenze steht wieder als Zahl in der Kennzahlenliste',
+    datei: 'shop/src/kennzahlen.js',
+    art: 'ersetzen',
+    suchen: "      schwelle: annahmewert('werbeanteil', 'grenze'),",
+    ersetzen: '      schwelle: 0.23,',
+    erwartet: /schwelle = 0\.23/,
+    warum: 'Die Herkunftsnotiz eine Zeile darunter nannte die Datei, aus der die Zahl stammt — '
+      + 'genau die Bauart, fuer die das Zwillingsregister gebaut wurde: die Gleichheit stand in '
+      + 'einem Satz und nicht in einem Aufruf. Unsichtbar blieb sie, weil die Zahl in einem '
+      + 'Objektfeld steht und die Messung nur Ausfuhren las.',
+  }),
+  Object.freeze({
+    id: 'die-zielgroessen-werden-wieder-nur-auf-den-typ-geprueft',
+    pruefer: 'test',
+    was: 'Die Schleife ueber die Annahmen vergleicht wieder den Typ statt den Wert',
+    datei: 'shop/data/zielgroessen.json',
+    art: 'ersetzen',
+    suchen: '  "warenkorbNetto": 650,',
+    ersetzen: '  "warenkorbNetto": 640,',
+    erwartet: /zielgroessen\.json rechnet warenkorbNetto mit 640/,
+    warum: 'Vier Annahmen stehen zweimal — einmal als `basis` in `src/empfindlichkeit.js`, '
+      + 'einmal in `data/zielgroessen.json`. Die Schleife lief seit jeher ueber alle vier und '
+      + 'verglich `typeof`. Am 13.09. vormittags bekam **eine** davon einen Wertvergleich, weil '
+      + 'sie aufgefallen war. Eine Berichtigung, die eine Stelle erreicht, gilt fuer eine '
+      + 'Stelle — auch dann, wenn die Schleife ueber alle daneben steht.',
+  }),
+  Object.freeze({
     id: 'die-oberflaeche-tippt-ihre-grenze-wieder',
     pruefer: 'test',
     was: 'Das Mengenfeld der Artikelseite traegt die Hoechstmenge wieder als Literal',

@@ -135,8 +135,20 @@ export const ANNAHMEN = [
  * Was der Aufrufer auf der Befehlszeile mitgibt, geht weiterhin vor — ein Lauf
  * mit `--kaufquote 0.01` ist ja gerade der Zweck der Annahme.
  */
-export function annahmewert(id) {
-  return findeAnnahme(id).basis;
+export function annahmewert(id, feld = 'basis') {
+  /*
+   * **`feld` ergaenzt am 13. September 2026.** Bis dahin gab diese Funktion
+   * nur die `basis` heraus, und wer die **Grenze** einer Annahme brauchte,
+   * schrieb sie ab. `src/kennzahlen.js` tat genau das: `schwelle: 0.23`, mit
+   * einer Herkunftsnotiz, die diese Datei namentlich nennt.
+   *
+   * > **Ein Leseweg, der nur ein Feld herausgibt, macht aus jedem anderen
+   * > Feld eine Abschrift.**
+   */
+  const a = findeAnnahme(id);
+  if (!(feld in a)) throw new Error(`Annahme ${id} fuehrt kein Feld ${feld}`);
+  if (typeof a[feld] !== 'number') throw new Error(`Annahme ${id}.${feld} ist keine Zahl`);
+  return a[feld];
 }
 
 const findeAnnahme = (id) => {

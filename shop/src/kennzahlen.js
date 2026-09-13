@@ -27,6 +27,7 @@
  */
 
 import { noetigerUmsatz } from './kostenbild.js';
+import { annahmewert } from './empfindlichkeit.js';
 import { abbruchschwelle, leistbarerKlickpreis, quoteAmMarktboden } from './werbewirkung.js';
 
 /** Wohin die Kennzahl laufen soll, damit sie die Schwelle „hält". */
@@ -98,7 +99,6 @@ export function kennzahlen({
   const bodenQuote = quoteAmMarktboden({
     werbebudgetJeMonat: budgetJeMonat,
     bestellungen: umsatz.bestellungen,
-    marktUnten: 0.5,
   });
 
   const liste = [
@@ -182,7 +182,19 @@ export function kennzahlen({
       abschnitt: 'betrieb',
       name: 'Werbeanteil am Umsatz',
       einheit: '%',
-      schwelle: 0.23,
+      /*
+       * **Gelesen, nicht abgeschrieben — 13. September 2026.** Hier stand
+       * `0.23`, und die Herkunftsnotiz eine Zeile darunter nannte die Datei,
+       * aus der die Zahl stammt. Genau die Bauart, für die das
+       * Zwillingsregister am 11. September gebaut wurde:
+       *
+       * > **Die Gleichheit stand in einem Satz und nicht in einem Aufruf.**
+       *
+       * Unsichtbar blieb sie, weil die Vorschlagsmessung vom Vortag nur
+       * `export const NAME = …` liest. Diese Zahl steht in einem Objektfeld,
+       * und davon gibt es im Bestand 218 gegen 59 benannte.
+       */
+      schwelle: annahmewert('werbeanteil', 'grenze'),
       richtung: 'hoechstens',
       herkunft: 'Tragfähigkeitsgrenze bei 25 % Rohmarge — empfindlichkeit.js',
       entscheidung: 'Darüber frisst die Werbung den Deckungsbeitrag auf.',

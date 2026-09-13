@@ -211,6 +211,9 @@
   "die-lieferzeit-ab-heute": [
     "shop/test/warenkorb.test.js"
   ],
+  "die-messung-liest-nur-eine-schreibweise": [
+    "shop/test/zwillingszahlen.test.js"
+  ],
   "die-nebenfrage-wiegt-wie-der-titel": [
     "shop/test/shopkern.test.js"
   ],
@@ -231,6 +234,9 @@
   ],
   "die-ware-ohne-vertrag": [
     "shop/test/vorgangsstand.test.js"
+  ],
+  "die-zielgroessen-werden-wieder-nur-auf-den-typ-geprueft": [
+    "shop/test/empfindlichkeit.test.js"
   ],
   "die-zweite-einfuhr-gewinnt": [
     "shop/test/ungerufen.test.js"
