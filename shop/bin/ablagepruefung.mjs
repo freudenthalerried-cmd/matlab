@@ -26,6 +26,7 @@ import {
   istBuchhaltung, istJournal, istStandkopie, ortsbefund,
 } from '../src/ablageort.js';
 import { ausJournal } from '../src/speicher.js';
+import { luecken } from '../src/vorgangsstand.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const REPO = dirname(SHOP);
@@ -213,10 +214,45 @@ const auszugsmeldungen = auszugslage.flatMap((a) => auszugsbefund({
   eintraege: eintraegeJeJahr.get(`${a.basis}|${a.jahr}`) ?? [],
 }).meldungen);
 
+/**
+ * **Die Voraussetzungen, je Vorgang — 13. September 2026.**
+ *
+ * Seit gestern gibt es die Regel, dass eine Lieferantenbestellung und eine
+ * Rechnung den Vertragsschluss voraussetzen (AGB Punkt 2). Gelesen hat sie
+ * bis heute nur `npm run akte` — also das Werkzeug, das jemand **aufschlägt**.
+ *
+ * > **Die Bestellprobe baute eine Akte mit genau dieser Lücke und meldete
+ * > „der Weg trägt".** Ihr dreizehnter Schritt fragt diesen Prüfer, und der
+ * > verglich Journal, Durchschriften und Auszug — von Voraussetzungen wusste
+ * > er nichts.
+ *
+ * § 131 Abs 1 Z 5 BAO verlangt den Geschäftsfall rückführbar. Eine Akte, in
+ * der ein Entgelt ohne die Vereinbarung steht, aus der es folgt, ist es
+ * nicht. Gelesen werden **Arten**, kein Inhalt.
+ */
+const luekenmeldungen = [];
+for (const [schluessel, eintraege] of eintraegeJeJahr) {
+  const jeVorgang = new Map();
+  for (const e of eintraege) {
+    if (!e.vorgang) continue;
+    jeVorgang.set(e.vorgang, [...(jeVorgang.get(e.vorgang) ?? []), e]);
+  }
+  for (const [vorgang, zeilen] of jeVorgang) {
+    for (const l of luecken(zeilen)) {
+      luekenmeldungen.push({
+        regel: 'voraussetzung-fehlt',
+        text: `Vorgang ${vorgang} (${schluessel.split('|').at(-1)}): ${l.papier} liegt in der `
+          + `Akte, ${l.braucht} nicht — ${l.warum}`,
+      });
+    }
+  }
+}
+
 const meldungen = [
   ...ort.meldungen,
   ...durchschriften.flatMap((d) => d.meldungen),
   ...auszugsmeldungen,
+  ...luekenmeldungen,
 ];
 const geprueft = ort.geprueft;
 
@@ -242,6 +278,7 @@ if (meldungen.length === 0) {
   console.log(`Keine Meldung. ${ABLAGEORT}/ ist gesperrt, kein Journal und keine`);
   console.log('Durchschrift liegt woanders, zu jeder Journalzeile gibt es den Beleg, und');
   console.log('jeder Buchhaltungsauszug deckt sich mit dem Journal seiner Periode.');
+  console.log('Kein Papier liegt darin, dessen Voraussetzung fehlt.');
   console.log('Eine Sperre, die erst nach dem ersten Datensatz kommt, kommt zu spät.');
   process.exit(0);
 }

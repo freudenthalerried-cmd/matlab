@@ -3759,6 +3759,40 @@ export const GEGENPROBEN = Object.freeze([
       + 'von Geburt an rot gewesen.',
   }),
   Object.freeze({
+    id: 'die-probe-ueberspringt-den-vertrag',
+    pruefer: 'bestellprobe',
+    was: 'Die Probe geht vom Angebot zur Rechnung und schließt keinen Vertrag',
+    datei: 'shop/bin/bestellprobe.mjs',
+    art: 'ersetzen',
+    suchen: "        '--stufe', 'bestaetigung', '--ablegen'],",
+    ersetzen: "        '--stufe', 'angebot'],",
+    erwartet: /der Vertrag kommt nicht zustande|Auftragsbestätigung/,
+    warum: 'Die Bestellprobe ist der eine Lauf, der die ganze Kette mit echtem PHP, echtem '
+      + 'Browser und echter Akte fährt — und sie ging vom Angebot direkt zur Rechnung. **Sie '
+      + 'baute damit eine Akte, in der eine Rechnung ohne Auftragsbestätigung liegt**, also '
+      + 'genau die Lücke, gegen die es seit dem 12. September eine Regel gibt, und meldete '
+      + 'dazu „der Weg trägt". Ihr Prüferschritt blieb grün, weil `pruefe-ablage` Journal, '
+      + 'Durchschriften und Auszug vergleicht und von Voraussetzungen nichts wusste. Möglich '
+      + 'ist der Vertragsschluss erst seit dem 12. September nachts, als die Bankfelder das '
+      + 'Werkzeug zum ersten Mal erreichten.',
+  }),
+  Object.freeze({
+    id: 'die-ablagepruefung-uebersieht-die-voraussetzung',
+    pruefer: 'test',
+    was: 'Der Prüfer der Ablage liest die Voraussetzungen nicht mit',
+    datei: 'shop/src/vorgangsstand.js',
+    art: 'ersetzen',
+    suchen: '  const arten = new Set(eintraege.map((e) => e.art));',
+    ersetzen: '  const arten = new Set();',
+    erwartet: /eine Rechnung ohne Vertragspapier blieb ohne Befund/,
+    warum: 'Die Regel stand seit dem 12. September und wurde nur von `npm run akte` gelesen — '
+      + 'dem Werkzeug, das jemand **aufschlägt**. Ein Prüfer, den niemand aufschlägt, muss sie '
+      + 'ebenso kennen: § 131 Abs 1 Z 5 BAO verlangt den Geschäftsfall rückführbar, und eine '
+      + 'Akte, in der ein Entgelt ohne die Vereinbarung steht, aus der es folgt, ist es nicht. '
+      + 'Diese Mutation nimmt dem Abgleich seine Eingabe: Er findet dann nie eine Lücke, und '
+      + 'zwar in beiden Werkzeugen zugleich.',
+  }),
+  Object.freeze({
     id: 'verfallenes-angebot-bindet-weiter',
     pruefer: 'test',
     was: 'Die Akte hält ein abgelaufenes Angebot für bindend',

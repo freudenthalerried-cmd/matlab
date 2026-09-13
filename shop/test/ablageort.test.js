@@ -7,6 +7,7 @@ import {
   durchschriftenbefund, istBeleg, istBuchhaltung, istStandkopie,
   istJournal, journalpfad, NOETIGE_SPERREN, ortsbefund,
 } from '../src/ablageort.js';
+import { luecken } from '../src/vorgangsstand.js';
 
 test('das Journal eines Jahres hat einen Pfad, und nur ein Jahr bekommt einen', () => {
   assert.equal(journalpfad(2026), 'ablage/journal-2026.jsonl');
@@ -494,4 +495,23 @@ test('Eine getrackte Sicherungskopie ist derselbe Fall wie ein getracktes Journa
   });
   assert.deepEqual(b.meldungen.map((m) => m.regel).sort(),
     ['auszug-im-verzeichnis', 'beleg-im-verzeichnis', 'journal-im-verzeichnis']);
+});
+
+
+test('Ein Papier ohne seine Voraussetzung ist ein Befund der Ablageprüfung', () => {
+  /*
+   * **13. September 2026.** Die Regel gab es seit gestern, gelesen hat sie
+   * nur `npm run akte` — das Werkzeug, das jemand aufschlägt. Der Prüfer der
+   * Ablage verglich Journal, Durchschriften und Auszug und wusste von
+   * Voraussetzungen nichts. Die Bestellprobe baute daraufhin eine Akte mit
+   * einer Rechnung ohne Auftragsbestätigung und meldete „der Weg trägt".
+   *
+   * Der Abgleich selbst steht in `src/vorgangsstand.js`; hier wird nur
+   * festgehalten, dass er in der Ablageprüfung ankommt — über
+   * `bin/ablagepruefung.mjs`, das je Vorgang gruppiert.
+   */
+  const P = (art, vorgang) => ({ art, vorgang, zeitpunkt: '2026-09-12T09:00:00+02:00' });
+  assert.deepEqual(
+    luecken([P('angebot', '2026-0201'), P('rechnung', '2026-0201')]).map((l) => l.papier),
+    ['rechnung'], 'eine Rechnung ohne Vertragspapier blieb ohne Befund');
 });

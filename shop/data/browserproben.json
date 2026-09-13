@@ -75,6 +75,10 @@
     "die-probeakte-bleibt-ungeprueft": {
       "am": "2026-09-12",
       "sekunden": 6
+    },
+    "die-probe-ueberspringt-den-vertrag": {
+      "am": "2026-09-13",
+      "sekunden": 6
     }
   }
 }

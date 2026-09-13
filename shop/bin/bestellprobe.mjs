@@ -358,6 +358,63 @@ try {
       }
 
       /*
+       * **Der Vertragsschluss — 13. September 2026.**
+       *
+       * Diese Probe ging bisher vom Angebot direkt zur Rechnung. Sie baute
+       * damit eine Akte, in der eine Rechnung ohne Auftragsbestätigung liegt
+       * — genau die Lücke, gegen die es seit gestern eine Regel gibt:
+       *
+       * ```
+       * FEHLT: auftragsbestaetigung — rechnung liegt in der Akte,
+       *        das Papier davor nicht
+       * ```
+       *
+       * > **Die Probe, die sagt „der Weg trägt", baute eine Akte, die nicht
+       * > zusammenpasst.** Der dreizehnte Schritt blieb grün, weil
+       * > `pruefe-ablage` Journal und Durchschriften vergleicht und von
+       * > Voraussetzungen nichts wusste.
+       *
+       * Möglich ist der Schritt erst seit gestern nacht: Bis dahin schnitt
+       * `bin/vorgang.mjs` die Bankfelder ab, und ohne Konto weist
+       * `darfBestaetigtWerden` die Bestätigung ab. Die Lieferzeit braucht sie
+       * zusätzlich — sie ist eine offene Frage an den Lieferanten, und für die
+       * Probe steht sie in einer eigenen Datei. Eine erfundene Lieferzeit im
+       * echten Bestand wäre eine Zusage an Kunden; hier ist sie ein Wert, mit
+       * dem sich der Weg fahren lässt.
+       */
+      // Der Wegwerfordner der Akte — eine Probe, die den Bestand verändert,
+      // ist keine. Seit dem Vertragsschluss weiter oben wird er früher
+      // gebraucht als bei der Rechnung.
+      const akte = join(ziel, 'akte');
+
+      const lieferantenDatei = join(ablage, 'lieferanten.json');
+      {
+        const echt = JSON.parse(readFileSync(join(SHOP, 'data', 'lieferanten.json'), 'utf8'));
+        writeFileSync(lieferantenDatei, JSON.stringify({
+          ...echt,
+          lieferanten: echt.lieferanten.map((l) => ({
+            ...l, lieferzeitWerktage: l.lieferzeitWerktage ?? 6,
+          })),
+        }, null, 2));
+      }
+      werkzeugumgebung.VORGANG_LIEFERANTEN = lieferantenDatei;
+
+      const vertrag = spawnSync(process.execPath, [join(SHOP, 'bin', 'vorgang.mjs'),
+        join(ziel, 'anfrage.txt'), '--kunde', join(ziel, 'kunde.json'), '--nummer', '2026-9001',
+        '--stufe', 'bestaetigung', '--ablegen'],
+      { cwd: SHOP, encoding: 'utf8', env: { ...werkzeugumgebung, VORGANG_ABLAGE: akte } });
+      const vtext = `${vertrag.stdout ?? ''}${vertrag.stderr ?? ''}`;
+      if (vertrag.status !== 0 || !/Abgelegt: auftragsbestaetigung/.test(vtext)) {
+        probleme.push(`der Vertrag kommt nicht zustande: ${vtext.trim().split('\n').slice(-3).join(' | ')}`);
+      } else if (!readFileSync(join(akte, belegordner(2026), 'AB-2026-9001.txt'), 'utf8')
+        .includes('IBAN')) {
+        // Ohne Konto verlangt die Bestätigung Zahlung sofort und sagt nicht wohin.
+        probleme.push('die Auftragsbestätigung nennt keine Bankverbindung');
+      } else {
+        bestanden.push('Die Auftragsbestätigung schließt den Vertrag und nennt das Konto');
+      }
+
+      /*
        * **Und das letzte Papier — 11. September 2026.**
        *
        * Die Betriebskette führt neun Schritte; das Angebot ist der dritte.
@@ -402,7 +459,6 @@ try {
        * diesen Satz selbst ein und weist `--ablegen` ohne den Schalter ab,
        * sobald `VORGANG_BETREIBER` gesetzt ist.
        */
-      const akte = join(ziel, 'akte');
       const abgelegt = spawnSync(process.execPath, [join(SHOP, 'bin', 'vorgang.mjs'),
         join(ziel, 'anfrage.txt'), '--kunde', join(ziel, 'kunde.json'), '--nummer', '2026-9001',
         '--stufe', 'rechnung', '--geliefert', '2026-09-09', '--bezahlt', '2026-09-08', '--ablegen'],
@@ -551,9 +607,10 @@ try {
     console.log(`\n${probleme.length} Meldung(en). Der Weg vom Klick bis in die Ablage trägt nicht.`);
     process.exit(1);
   }
-  console.log('Der Weg trägt: Klick, Empfangsskript, Ablage, Posteingang, Angebot, Rechnung,');
-  console.log('Akte, Gutschrift, Buchhaltung, Sicherung, Prüfer. Die Papierkette läuft ganz');
-  console.log('durch, und der Prüfer der Ablage hat die gebaute Akte gesehen —');
+  console.log('Der Weg trägt: Klick, Empfangsskript, Ablage, Posteingang, Angebot,');
+  console.log('Vertrag, Rechnung, Akte, Gutschrift, Buchhaltung, Sicherung, Prüfer.');
+  console.log('Die Papierkette läuft ganz durch, und der Prüfer der Ablage hat die');
+  console.log('gebaute Akte gesehen —');
   console.log('was dazwischen in der Welt geschieht (Zahlung, Bestellung beim Lieferanten,');
   console.log('Lieferung), steht in der Betriebskette und bleibt dort stehen.');
 } finally {
