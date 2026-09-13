@@ -71,7 +71,7 @@ import {
 import { LIEFERGEBIET } from '../src/liefergebiet.js';
 import { htaccessText } from '../src/serverkopf.js';
 import { zahlwegName } from '../src/zahlung.js';
-import { fracht } from '../src/preis.js';
+import { fracht, frachtsatzbefund } from '../src/preis.js';
 import { lesKopf, alsHtml, alsText, alsListe, esc } from '../src/markdown.js';
 import { wegwerfordner } from '../src/wegwerf.js';
 import { HANDGEWICHT_KG } from '../src/sperrguteinstufung.js';
@@ -2953,6 +2953,21 @@ function main() {
    * > Wer eine neue Seitenart baut, erfährt es beim Bauen und nicht dadurch,
    * > dass sie in der Suche hinten steht.
    */
+  /*
+   * **Und jeder Lieferant braucht seinen Frachtsatz — 13. September 2026.**
+   * `oeffentlicherLieferant` machte aus einem fehlenden Satz null Euro, und
+   * die Kasse zeigte dem Kunden frei Haus. Geprüft wird an der **Quelle**, vor
+   * dem Zuschnitt fürs Bündel: Was hier fehlt, fehlt in jeder Ausgabe.
+   */
+  {
+    const f = frachtsatzbefund(lieferantenDatei.lieferanten ?? []);
+    if (!f.sauber) {
+      console.error('\nAbbruch: ein Lieferant trägt keinen brauchbaren Frachtsatz.');
+      for (const m of f.meldungen) console.error(`  · ${m.text}  [${m.regel}]`);
+      console.error('Null Euro Fracht wäre die optimistischste aller Annahmen — bezahlt von hier.');
+      process.exit(1);
+    }
+  }
   {
     const g = gewichtsbefund(baueSuchindex(nutzdaten));
     if (!g.sauber) {

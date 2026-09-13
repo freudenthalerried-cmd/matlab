@@ -3976,6 +3976,39 @@ export const GEGENPROBEN = Object.freeze([
       + 'Papieren ist der Nettobetrag die Bemessungsgrundlage der Umsatzsteuervoranmeldung.',
   }),
   Object.freeze({
+    id: 'die-fracht-faellt-wieder-auf-null',
+    pruefer: 'test',
+    was: 'Ein Lieferant ohne Frachtsatz wird auf der Kundenseite zu frei Haus',
+    datei: 'shop/src/shopkern.js',
+    art: 'ersetzen',
+    suchen: '      pauschaleNetto: l.fracht?.pauschaleNetto ?? null,',
+    ersetzen: '      pauschaleNetto: l.fracht?.pauschaleNetto ?? 0,',
+    erwartet: /aus einem fehlenden Frachtsatz werden wieder null Euro/,
+    warum: 'Gemessen am 13. September: Ein Lieferant ohne Frachtsatz ergab auf der Kasse '
+      + '`Warenwert 300,00 €, Fracht 0,00 €, offen: []`, während der interne Weg beim '
+      + 'selben fehlenden Wert laut abbrach. **Derselbe fehlende Wert bricht den einen Weg '
+      + 'laut ab und macht auf dem anderen lautlos ein Geschenk** — bezahlt von diesem '
+      + 'Haus. Zwei Zeilen darüber steht `lieferzeitWerktage: … ?? null`, und `beleg.js` '
+      + 'trägt seit dem 30. August die Notiz, `?? 0` sei dort „die teuerste Zeile des '
+      + 'Moduls" gewesen: Unbekannt plus bekannt ergibt unbekannt.',
+  }),
+  Object.freeze({
+    id: 'das-frachtmodell-wird-wieder-nicht-gelesen',
+    pruefer: 'test',
+    was: 'Ein Frachtmodell, das diese Rechnung nicht kann, geht durch',
+    datei: 'shop/src/preis.js',
+    art: 'ersetzen',
+    suchen: '    if (f.modell !== FRACHTMODELL) {',
+    ersetzen: '    if (false) {',
+    erwartet: /ein Frachtmodell, das diese Rechnung nicht kann, geht durch/,
+    warum: 'Alle vier Lieferanten tragen `fracht.modell: "pauschale"`, und bis zum '
+      + '13. September hat **keine Zeile dieses Bestands es gelesen**. Ein Feld, das ein '
+      + 'Modell benennt, sagt: Es gibt mehr als eines. `fracht()` kann genau eines — '
+      + 'Pauschale je Lieferung plus Zuschlag je Sperrgutposition; eine Staffel nach '
+      + 'Gewicht oder Entfernung rechnete sie still falsch. **Ein Feld, das eine Wahl '
+      + 'behauptet, die niemand trifft, ist eine Zusage an den nächsten Datensatz.**',
+  }),
+  Object.freeze({
     id: 'der-frischewaechter-wird-wieder-zeuge',
     pruefer: 'test',
     was: 'Der Frischewächter steht wieder in der Zeugenliste einer Gegenprobe',

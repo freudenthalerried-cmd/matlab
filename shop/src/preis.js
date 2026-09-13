@@ -227,6 +227,89 @@ export function fracht(positionen, lieferant) {
 }
 
 /**
+ * Was diese Rechnung von einem Frachtsatz verlangt — und ob er es hergibt.
+ *
+ * **Zwei Funde vom 13. September 2026, beide am selben Objekt.**
+ *
+ * **Erstens: die stille Null.** `oeffentlicherLieferant` schrieb
+ * `pauschaleNetto: l.fracht?.pauschaleNetto ?? 0`. Ein Lieferant ohne
+ * Frachtsatz wurde damit auf der **Kundenseite** zu frei Haus:
+ *
+ * ```
+ * Kasse:  Warenwert 300,00 €   Fracht 0,00 €   offen: []
+ * intern: Cannot read properties of undefined (reading 'freiHausAbNetto')
+ * ```
+ *
+ * > **Derselbe fehlende Wert bricht den internen Weg laut ab und macht auf dem
+ * > Kundenweg lautlos ein Geschenk.**
+ *
+ * Zwei Zeilen darüber steht im selben Objekt `lieferzeitWerktage: … ?? null`,
+ * und `beleg.js` trägt seit dem 30. August die Notiz, `?? 0` sei dort „die
+ * teuerste Zeile des Moduls" gewesen: *Unbekannt plus bekannt ergibt
+ * unbekannt.* Der Satz stand da und galt zwei Zeilen weit.
+ *
+ * **Zweitens: das ungelesene Feld.** Alle vier Lieferanten tragen
+ * `fracht.modell: "pauschale"`, und **keine Zeile dieses Bestands liest es**.
+ * Ein Feld, das ein Modell benennt, sagt: Es gibt mehr als eines. Diese
+ * Rechnung kann genau eines — Pauschale plus Zuschlag je Sperrgutposition.
+ * Eine Staffel nach Gewicht oder Entfernung würde sie still falsch rechnen.
+ *
+ * > **Ein Feld, das eine Wahl behauptet, die niemand trifft, ist eine Zusage
+ * > an den nächsten Datensatz.**
+ *
+ * Deshalb wird es hier gelesen — als Bedingung und nicht als Schalter.
+ */
+export const FRACHTMODELL = 'pauschale';
+
+export function frachtsatzbefund(lieferanten = []) {
+  const meldungen = [];
+  for (const l of lieferanten) {
+    const wo = l?.name ?? l?.id ?? '(ohne Kennung)';
+    const f = l?.fracht;
+    if (!f) {
+      meldungen.push({
+        regel: 'ohne-frachtsatz',
+        text: `${wo}: kein Frachtsatz hinterlegt — auf der Kundenseite würde daraus `
+          + 'frei Haus, und bezahlt hätte es dieses Haus',
+      });
+      continue;
+    }
+    if (f.modell !== FRACHTMODELL) {
+      meldungen.push({
+        regel: 'fremdes-frachtmodell',
+        text: `${wo}: Frachtmodell „${f.modell}" — gerechnet wird ausschließlich `
+          + `„${FRACHTMODELL}" (Pauschale je Lieferung plus Zuschlag je Sperrgutposition). `
+          + 'Eine Staffel nach Gewicht oder Entfernung rechnete diese Funktion still falsch',
+      });
+    }
+    for (const [feld, wert] of [['pauschaleNetto', f.pauschaleNetto],
+      ['sperrgutZuschlagNetto', f.sperrgutZuschlagNetto]]) {
+      if (typeof wert !== 'number' || !Number.isFinite(wert) || wert < 0) {
+        meldungen.push({
+          regel: 'frachtsatz-unlesbar',
+          text: `${wo}: ${feld} ist ${JSON.stringify(wert)} — daraus lässt sich keine `
+            + 'Frachtzeile rechnen, und null wäre die optimistischste aller Annahmen',
+        });
+      }
+    }
+    /*
+     * Die Frei-Haus-Schwelle darf fehlen — Poschacher hat keine erkennbare,
+     * und das ist ein **Befund** aus fünfzehn Rechnungen und keine Lücke.
+     * `null` heißt hier „es gibt keine", nicht „wir wissen es nicht".
+     */
+    if (f.freiHausAbNetto !== null && f.freiHausAbNetto !== undefined
+      && !(typeof f.freiHausAbNetto === 'number' && f.freiHausAbNetto > 0)) {
+      meldungen.push({
+        regel: 'schwelle-unlesbar',
+        text: `${wo}: freiHausAbNetto ist ${JSON.stringify(f.freiHausAbNetto)} — `
+          + 'zulässig sind eine positive Zahl oder `null` für „es gibt keine"',
+      });
+    }
+  }
+  return { geprueft: lieferanten.length, meldungen, sauber: meldungen.length === 0 };
+}
+
+/**
  * Prüft den Mindestbestellwert eines Lieferanten.
  *
  * Gemessen wird am **Bestellwert**, also an dem, was wir beim Lieferanten

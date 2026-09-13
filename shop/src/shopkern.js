@@ -990,8 +990,22 @@ export function oeffentlicherLieferant(l) {
     // Konditionen.** Diese Zeile schützt die zweite.
     lieferzeitWerktage: l.lieferzeitWerktage ?? null,
     fracht: {
-      pauschaleNetto: l.fracht?.pauschaleNetto ?? 0,
-      sperrgutZuschlagNetto: l.fracht?.sperrgutZuschlagNetto ?? 0,
+      /*
+       * **`?? null` statt `?? 0` — 13. September 2026.** Hier stand die Null,
+       * und ein Lieferant ohne Frachtsatz wurde damit auf der Kundenseite zu
+       * frei Haus: Warenwert 300,00 €, **Fracht 0,00 €**, `offen: []`. Der
+       * interne Weg bricht beim selben fehlenden Wert laut ab.
+       *
+       * > **Derselbe fehlende Wert bricht den einen Weg laut ab und macht auf
+       * > dem anderen lautlos ein Geschenk.**
+       *
+       * Zwei Zeilen darüber steht `lieferzeitWerktage: … ?? null`, und
+       * `beleg.js` trägt seit dem 30. August die Notiz, `?? 0` sei dort „die
+       * teuerste Zeile des Moduls" gewesen. Der Satz stand da und galt zwei
+       * Zeilen weit.
+       */
+      pauschaleNetto: l.fracht?.pauschaleNetto ?? null,
+      sperrgutZuschlagNetto: l.fracht?.sperrgutZuschlagNetto ?? null,
       // Die Frei-Haus-Schwelle misst am **Bestellwert**, also am Einkauf.
       // Der Browser kennt keine Einkaufspreise und kann sie deshalb nicht
       // prüfen. Statt sie zu verschweigen, wird sie als offen gemeldet.
@@ -1140,6 +1154,15 @@ export function kundenWarenkorb(zeilen, { artikel, lieferanten, mindestbestellwe
   for (const [lieferantId, positionen] of [...gruppen].sort((a, b) => a[0].localeCompare(b[0]))) {
     const l = lieferantById.get(lieferantId);
     if (!l) throw new Error(`Unbekannter Lieferant: ${lieferantId}`);
+    /*
+     * Dieselbe Sorte Weigerung wie „Artikel ohne Preis" zwei Bildschirme
+     * weiter oben: Ohne Frachtsatz lässt sich keine Zeile nennen, und die
+     * Null wäre die optimistischste aller Annahmen — bezahlt von diesem Haus.
+     */
+    if (typeof l.fracht?.pauschaleNetto !== 'number'
+      || typeof l.fracht?.sperrgutZuschlagNetto !== 'number') {
+      throw new Error(`Lieferant ohne Frachtsatz: ${lieferantId}`);
+    }
     const warenwertNetto = runde(positionen.reduce((s, p) => s + p.zeilensummeNetto, 0));
     const sperrgutPositionen = positionen.filter((p) => p.sperrgut).length;
     const frachtNetto = runde(l.fracht.pauschaleNetto + sperrgutPositionen * l.fracht.sperrgutZuschlagNetto);

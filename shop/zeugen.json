@@ -68,6 +68,9 @@
     "shop/test/beleg.test.js",
     "shop/test/vorgangwerkzeug.test.js"
   ],
+  "das-frachtmodell-wird-wieder-nicht-gelesen": [
+    "shop/test/preis.test.js"
+  ],
   "das-verfallene-angebot-wartet-weiter": [
     "shop/test/vorgangsstand.test.js"
   ],
@@ -166,6 +169,9 @@
   "die-durchschrift-traegt-ihr-kuerzel-zweimal": [
     "shop/test/ablageort.test.js",
     "shop/test/vorgangwerkzeug.test.js"
+  ],
+  "die-fracht-faellt-wieder-auf-null": [
+    "shop/test/shopkern.test.js"
   ],
   "die-frist-laeuft-auch-nach-der-annahme": [
     "shop/test/vorgangsstand.test.js"

@@ -10,6 +10,8 @@ import {
   fracht,
   mindestbestellwertErfuellt,
   MARGENUNTERGRENZE,
+  FRACHTMODELL,
+  frachtsatzbefund,
 } from '../src/preis.js';
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -324,4 +326,51 @@ test('die erzielte Marge des Bestands ist die Zielmarge, nicht die Untergrenze',
   const medianRabatt = rabatte[Math.floor(rabatte.length / 2)];
   assert.ok(medianRabatt >= MARGENUNTERGRENZE,
     `Median-Rabatt ${(medianRabatt * 100).toFixed(1)} % — unter der Untergrenze wäre der Lieferant das Problem`);
+});
+
+test('ein Lieferant ohne Frachtsatz wird benannt, nicht auf null gesetzt', () => {
+  /*
+   * **Der Fund vom 13. September 2026.** `oeffentlicherLieferant` schrieb
+   * `pauschaleNetto: l.fracht?.pauschaleNetto ?? 0`. Ein Lieferant ohne
+   * Frachtsatz wurde damit auf der **Kundenseite** zu frei Haus:
+   *
+   * ```
+   * Kasse:  Warenwert 300,00 €   Fracht 0,00 €   offen: []
+   * intern: Cannot read properties of undefined (reading 'freiHausAbNetto')
+   * ```
+   *
+   * > **Derselbe fehlende Wert bricht den einen Weg laut ab und macht auf dem
+   * > anderen lautlos ein Geschenk.**
+   *
+   * Zwei Zeilen darüber steht im selben Objekt `lieferzeitWerktage: … ?? null`,
+   * und `beleg.js` trägt seit dem 30. August die Notiz, `?? 0` sei dort „die
+   * teuerste Zeile des Moduls" gewesen.
+   */
+  const echt = JSON.parse(readFileSync(pfad('../data/lieferanten.json'), 'utf8')).lieferanten;
+  const b = frachtsatzbefund(echt);
+  assert.deepEqual(b.meldungen.map((m) => m.text), []);
+  assert.equal(b.geprueft, 4, 'die Zahl der Lieferanten hat sich geändert');
+
+  assert.deepEqual(frachtsatzbefund([{ id: 'neu', name: 'Neuer' }]).meldungen.map((m) => m.regel),
+    ['ohne-frachtsatz'], 'ein Lieferant ohne Frachtsatz fällt nicht auf');
+
+  /*
+   * **Und das Feld, das niemand las.** Alle vier Lieferanten tragen
+   * `fracht.modell: "pauschale"`, und keine Zeile des Bestands hat es gelesen.
+   * Ein Feld, das ein Modell benennt, sagt: Es gibt mehr als eines. Diese
+   * Rechnung kann genau eines; eine Staffel nach Gewicht oder Entfernung
+   * rechnete sie still falsch.
+   */
+  assert.equal(FRACHTMODELL, 'pauschale');
+  const staffel = frachtsatzbefund([{ id: 'x', name: 'X', fracht: { modell: 'staffel', pauschaleNetto: 12, sperrgutZuschlagNetto: 0, freiHausAbNetto: null } }]);
+  assert.deepEqual(staffel.meldungen.map((m) => m.regel), ['fremdes-frachtmodell'],
+    'ein Frachtmodell, das diese Rechnung nicht kann, geht durch');
+
+  // Unlesbare Sätze, beide Felder, und beide Richtungen der Schwelle.
+  const krumm = frachtsatzbefund([{ id: 'y', name: 'Y', fracht: { modell: 'pauschale', pauschaleNetto: '75,50', sperrgutZuschlagNetto: -1, freiHausAbNetto: 0 } }]);
+  assert.deepEqual(krumm.meldungen.map((m) => m.regel),
+    ['frachtsatz-unlesbar', 'frachtsatz-unlesbar', 'schwelle-unlesbar']);
+
+  // `null` heißt „es gibt keine Schwelle" — das ist ein Befund, keine Lücke.
+  assert.equal(frachtsatzbefund([{ id: 'z', name: 'Z', fracht: { modell: 'pauschale', pauschaleNetto: 75.5, sperrgutZuschlagNetto: 7.5, freiHausAbNetto: null } }]).sauber, true);
 });

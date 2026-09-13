@@ -21740,8 +21740,22 @@ function oeffentlicherLieferant(l) {
     
     lieferzeitWerktage: l.lieferzeitWerktage ?? null,
     fracht: {
-      pauschaleNetto: l.fracht?.pauschaleNetto ?? 0,
-      sperrgutZuschlagNetto: l.fracht?.sperrgutZuschlagNetto ?? 0,
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+      pauschaleNetto: l.fracht?.pauschaleNetto ?? null,
+      sperrgutZuschlagNetto: l.fracht?.sperrgutZuschlagNetto ?? null,
       
       
       
@@ -21890,6 +21904,15 @@ function kundenWarenkorb(zeilen, { artikel, lieferanten, mindestbestellwertNetto
   for (const [lieferantId, positionen] of [...gruppen].sort((a, b) => a[0].localeCompare(b[0]))) {
     const l = lieferantById.get(lieferantId);
     if (!l) throw new Error(`Unbekannter Lieferant: ${lieferantId}`);
+    
+
+
+
+
+    if (typeof l.fracht?.pauschaleNetto !== 'number'
+      || typeof l.fracht?.sperrgutZuschlagNetto !== 'number') {
+      throw new Error(`Lieferant ohne Frachtsatz: ${lieferantId}`);
+    }
     const warenwertNetto = runde(positionen.reduce((s, p) => s + p.zeilensummeNetto, 0));
     const sperrgutPositionen = positionen.filter((p) => p.sperrgut).length;
     const frachtNetto = runde(l.fracht.pauschaleNetto + sperrgutPositionen * l.fracht.sperrgutZuschlagNetto);

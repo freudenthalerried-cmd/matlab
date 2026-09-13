@@ -405,6 +405,19 @@ test('unbekannte Artikel und Artikel ohne Preis werfen', () => {
   assert.throws(() => kundenWarenkorb([{ sku: 'WEG', menge: 1 }], { artikel: beispiel, lieferanten: l }), /Unbekannte Artikelnummer/);
   const ohnePreis = [{ ...beispiel[0], vkNetto: null }];
   assert.throws(() => kundenWarenkorb([{ sku: 'A', menge: 1 }], { artikel: ohnePreis, lieferanten: l }), /ohne Preis/);
+
+  /*
+   * **Und ein Lieferant ohne Frachtsatz — 13. September 2026.** Hier stand
+   * `pauschaleNetto: l.fracht?.pauschaleNetto ?? 0`, und die Kasse zeigte
+   * dafür `Fracht 0,00 €` mit `offen: []`. Der interne Weg brach beim selben
+   * fehlenden Wert laut ab. Dieselbe Sorte Weigerung wie zwei Zeilen darüber:
+   * Ohne Frachtsatz lässt sich keine Zeile nennen.
+   */
+  const ohneSatz = oeffentlicherLieferant({ id: 'p', name: 'Ohne Fracht' });
+  assert.equal(ohneSatz.fracht.pauschaleNetto, null,
+    'aus einem fehlenden Frachtsatz werden wieder null Euro');
+  assert.throws(() => kundenWarenkorb([{ sku: 'A', menge: 1 }],
+    { artikel: beispiel, lieferanten: [ohneSatz] }), /ohne Frachtsatz/);
 });
 
 /* ------------------------------------------------------------------ *

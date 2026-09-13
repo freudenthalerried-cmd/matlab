@@ -1012,6 +1012,89 @@ function fracht(positionen, lieferant) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const FRACHTMODELL = 'pauschale';
+
+function frachtsatzbefund(lieferanten = []) {
+  const meldungen = [];
+  for (const l of lieferanten) {
+    const wo = l?.name ?? l?.id ?? '(ohne Kennung)';
+    const f = l?.fracht;
+    if (!f) {
+      meldungen.push({
+        regel: 'ohne-frachtsatz',
+        text: `${wo}: kein Frachtsatz hinterlegt — auf der Kundenseite würde daraus `
+          + 'frei Haus, und bezahlt hätte es dieses Haus',
+      });
+      continue;
+    }
+    if (f.modell !== FRACHTMODELL) {
+      meldungen.push({
+        regel: 'fremdes-frachtmodell',
+        text: `${wo}: Frachtmodell „${f.modell}" — gerechnet wird ausschließlich `
+          + `„${FRACHTMODELL}" (Pauschale je Lieferung plus Zuschlag je Sperrgutposition). `
+          + 'Eine Staffel nach Gewicht oder Entfernung rechnete diese Funktion still falsch',
+      });
+    }
+    for (const [feld, wert] of [['pauschaleNetto', f.pauschaleNetto],
+      ['sperrgutZuschlagNetto', f.sperrgutZuschlagNetto]]) {
+      if (typeof wert !== 'number' || !Number.isFinite(wert) || wert < 0) {
+        meldungen.push({
+          regel: 'frachtsatz-unlesbar',
+          text: `${wo}: ${feld} ist ${JSON.stringify(wert)} — daraus lässt sich keine `
+            + 'Frachtzeile rechnen, und null wäre die optimistischste aller Annahmen',
+        });
+      }
+    }
+    
+
+
+
+
+    if (f.freiHausAbNetto !== null && f.freiHausAbNetto !== undefined
+      && !(typeof f.freiHausAbNetto === 'number' && f.freiHausAbNetto > 0)) {
+      meldungen.push({
+        regel: 'schwelle-unlesbar',
+        text: `${wo}: freiHausAbNetto ist ${JSON.stringify(f.freiHausAbNetto)} — `
+          + 'zulässig sind eine positive Zahl oder `null` für „es gibt keine"',
+      });
+    }
+  }
+  return { geprueft: lieferanten.length, meldungen, sauber: meldungen.length === 0 };
+}
+
+
+
+
+
+
+
+
+
+
 function mindestbestellwertErfuellt(bestellwertNetto, lieferant) {
   const grenze = lieferant.mindestbestellwertNetto ?? 0;
   return {
@@ -3779,8 +3862,22 @@ function oeffentlicherLieferant(l) {
     
     lieferzeitWerktage: l.lieferzeitWerktage ?? null,
     fracht: {
-      pauschaleNetto: l.fracht?.pauschaleNetto ?? 0,
-      sperrgutZuschlagNetto: l.fracht?.sperrgutZuschlagNetto ?? 0,
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+      pauschaleNetto: l.fracht?.pauschaleNetto ?? null,
+      sperrgutZuschlagNetto: l.fracht?.sperrgutZuschlagNetto ?? null,
       
       
       
@@ -3929,6 +4026,15 @@ function kundenWarenkorb(zeilen, { artikel, lieferanten, mindestbestellwertNetto
   for (const [lieferantId, positionen] of [...gruppen].sort((a, b) => a[0].localeCompare(b[0]))) {
     const l = lieferantById.get(lieferantId);
     if (!l) throw new Error(`Unbekannter Lieferant: ${lieferantId}`);
+    
+
+
+
+
+    if (typeof l.fracht?.pauschaleNetto !== 'number'
+      || typeof l.fracht?.sperrgutZuschlagNetto !== 'number') {
+      throw new Error(`Lieferant ohne Frachtsatz: ${lieferantId}`);
+    }
     const warenwertNetto = runde(positionen.reduce((s, p) => s + p.zeilensummeNetto, 0));
     const sperrgutPositionen = positionen.filter((p) => p.sperrgut).length;
     const frachtNetto = runde(l.fracht.pauschaleNetto + sperrgutPositionen * l.fracht.sperrgutZuschlagNetto);
