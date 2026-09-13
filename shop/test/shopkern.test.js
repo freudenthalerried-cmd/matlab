@@ -310,19 +310,35 @@ test('eine Menge, die kein ganzes Gebinde ist, wird benannt statt bepreist', () 
   const glatt = kundenWarenkorb([{ sku: 'C', menge: 39.75 }], { artikel: beispiel, lieferanten: l });
   assert.equal(glatt.offen.length, 0, `ein ganzes Gebinde wird gemeldet: ${glatt.offen[0]}`);
 
-  /*
-   * Ware, deren Gebinde diese Seite nicht lesen kann, hat keines: Artikel `A`
-   * ist in **Säcken** geführt (`SCK`), und `mengenschritt` liest nur Kilo,
-   * Quadratmeter und laufende Meter. Wo kein Schritt bekannt ist, gibt es
-   * nichts zu melden — und geraten wird nichts.
-   */
-  const ohneGebinde = kundenWarenkorb([{ sku: 'A', menge: 1.5 }], { artikel: beispiel, lieferanten: l });
-  assert.equal(ohneGebinde.offen.length, 0);
-
-  // Und Kiloware mit gelesenem Gebinde fällt genauso auf: 30 kg sind kein
-  // ganzer Sack zu 25 kg.
+  // Kiloware mit gelesenem Gebinde fällt genauso auf: 30 kg sind kein ganzer
+  // Sack zu 25 kg.
   const kilo = kundenWarenkorb([{ sku: 'B', menge: 30 }], { artikel: beispiel, lieferanten: l });
   assert.match(kilo.offen[0] ?? '', /Einheiten zu 25 kg/);
+
+  /*
+   * **Und Stückgut seit dem 13. September.** Bis dahin stand hier, Artikel `A`
+   * (Säcke) habe kein Gebinde und `1,5` sei deshalb nichts zu melden — das war
+   * die Lücke: Der Wächter vom Vortag deckte 18 von 46 Artikeln, weil
+   * `mengenschritt` die Größe aus der **Bezeichnung** liest und bei Stück,
+   * Sack, Eimer, Karton, Dose und Rolle nichts findet. Einen halben Sack gibt
+   * es trotzdem nicht, und das muss in keiner Bezeichnung stehen.
+   */
+  const halberSack = kundenWarenkorb([{ sku: 'A', menge: 1.5 }], { artikel: beispiel, lieferanten: l });
+  assert.equal(halberSack.offen.length, 1, 'ein halber Sack geht wortlos durch');
+  assert.match(halberSack.offen[0], /1,5 Sack gibt es nicht/);
+  assert.doesNotMatch(halberSack.offen[0], /Einheiten zu 1/,
+    'bei Stückgut ist die Einheit das Gebinde — der Satz sagte dieselbe Zahl dreimal');
+
+  /*
+   * Wo auch das nicht gilt, wird nichts behauptet: Messware, deren Bezeichnung
+   * keine Größe nennt. `Grundmauerschutz 20 1,5 m` trägt Meter, keine
+   * Quadratmeter — daraus eine Fläche zu rechnen hieße, die zweite Kante zu
+   * erfinden.
+   */
+  const unlesbar = [{ ...beispiel[2], sku: 'D', bezeichnung: 'Grundmauerschutz 20 1,5 m' }];
+  const ohneGebinde = kundenWarenkorb([{ sku: 'D', menge: 1.5 }],
+    { artikel: unlesbar, lieferanten: l });
+  assert.equal(ohneGebinde.offen.length, 0, 'geraten wird nichts');
 });
 
 

@@ -811,6 +811,56 @@ function einheitenbefund(artikel = [], woerter = EINHEITEN) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function bestellschritt(artikel) {
+  if (!artikel) return null;
+  const einheit = String(artikel.einheit ?? '').toUpperCase();
+  if (STUECKEINHEITEN.has(einheit)) return 1;
+  return mengenschritt(artikel);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function gebindezahl(menge, schritt) {
   if (!(schritt > 0) || !(menge > 0)) return null;
   const stueck = Math.ceil(Math.round((menge / schritt) * 1e6) / 1e6);
@@ -2967,14 +3017,31 @@ function kundenWarenkorb(zeilen, { artikel, lieferanten, mindestbestellwertNetto
 
   for (const z of zeilen) {
     const a = nachId.get(z.sku);
-    const schritt = mengenschritt(a);
+    
+
+
+
+
+
+
+
+    const schritt = bestellschritt(a);
     if (!(schritt > 0)) continue;
     const zahlwerk = gebindezahl(z.menge, schritt);
     if (zahlwerk && !zahlwerk.gehtAuf) {
       const e = einheitText(a.einheit);
-      offen.push(`${a.bezeichnung}: ${zahlText(z.menge)} ${e} sind kein ganzes Gebinde — `
-        + `abgegeben wird in Einheiten zu ${zahlText(schritt)} ${e}, die nächste volle `
-        + `Menge ist ${zahlText(zahlwerk.gedeckteMenge)} ${e} (${zahlwerk.stueck} Stück).`);
+      
+
+
+
+
+
+      offen.push(schritt === 1
+        ? `${a.bezeichnung}: ${zahlText(z.menge)} ${e} gibt es nicht — abgegeben wird in `
+          + `ganzen Einheiten, die nächste volle Menge ist ${zahlText(zahlwerk.gedeckteMenge)} ${e}.`
+        : `${a.bezeichnung}: ${zahlText(z.menge)} ${e} sind kein ganzes Gebinde — abgegeben `
+          + `wird in Einheiten zu ${zahlText(schritt)} ${e}, die nächste volle Menge ist `
+          + `${zahlText(zahlwerk.gedeckteMenge)} ${e} (${zahlwerk.stueck} Stück).`);
     }
   }
 
@@ -4236,7 +4303,12 @@ function gruppenbefund(rechnung, text) {
       
       
       var artikel = (D.artikel || []).filter(function (x) { return x.sku === sku; })[0];
-      var schritt = mengenschritt(artikel) || 1;
+      
+      
+      
+      
+      
+      var schritt = bestellschritt(artikel);
       var menge = mengenfeld ? parseFloat(String(mengenfeld.value).replace(',', '.')) : schritt;
       if (!Number.isFinite(menge) || menge <= 0) menge = schritt;
       
@@ -4720,18 +4792,25 @@ function gruppenbefund(rechnung, text) {
       menge.className = 'kz-menge';
       menge.setAttribute('aria-label', 'Menge ' + p.bezeichnung
         + (schritt ? ', ganze Einheiten zu ' + String(schritt).replace('.', ',') + ' ' + einheitText : ''));
+      
+      
+      var bestellbar = bestellschritt(p);
       menge.addEventListener('change', function () {
         var m = parseFloat(String(menge.value).replace(',', '.'));
-        if (!Number.isFinite(m) || m <= 0) m = schritt || 1;
-        if (schritt) {
-          
-          
-          
-          
-          m = gebindezahl(m, schritt).gedeckteMenge;
-        } else {
-          m = Math.round(Math.ceil(m) * 100) / 100;
-        }
+        if (!Number.isFinite(m) || m <= 0) m = bestellbar || 1;
+        
+
+
+
+
+
+
+
+
+
+
+
+        if (bestellbar) m = gebindezahl(m, bestellbar).gedeckteMenge;
         korb = setzeMenge(korb, p.sku, m);
         sichern();
         neu();

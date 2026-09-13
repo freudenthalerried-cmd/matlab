@@ -75,6 +75,16 @@
   "der-auszug-ohne-abgleich": [
     "shop/test/ablageort.test.js"
   ],
+  "der-bestellschritt-redet-in-die-artikelseite": [
+    "shop/test/gebinde.test.js",
+    "shop/test/gebindebeleg.test.js",
+    "shop/test/maschinenlesbar.test.js",
+    "shop/test/website.test.js"
+  ],
+  "der-halbe-eimer-geht-wieder-durch": [
+    "shop/test/gebinde.test.js",
+    "shop/test/shopkern.test.js"
+  ],
   "der-nettobetrag-wird-nicht-gehalten": [
     "shop/test/ablageort.test.js"
   ],

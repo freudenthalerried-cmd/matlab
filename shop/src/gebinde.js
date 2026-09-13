@@ -423,6 +423,56 @@ export function einheitenbefund(artikel = [], woerter = EINHEITEN) {
 }
 
 /**
+ * Die kleinste Menge, in der ein Artikel überhaupt bestellbar ist.
+ *
+ * **Der Anlass, 13. September 2026.** Seit gestern sagt der Rechenkern, wenn
+ * eine Menge kein ganzes Gebinde ist. Nachgemessen, wie weit das trägt:
+ *
+ * ```
+ * Artikel gesamt: 46 | mit lesbarem Gebinde: 18
+ *   M2  11 von 12    KG  5 von 5    LFM 2 von 2
+ *   STK  0 von 18    KRT 0 von 3    SCK 0 von 2    DOS 0 von 2
+ *   EIM  0 von 1     RLL 0 von 1
+ * ```
+ *
+ * > **Der Wächter deckte achtzehn von sechsundvierzig.** Für die übrigen
+ * > achtundzwanzig ging eine halbe Einheit weiter wortlos durch: `1,5` von
+ * > `Mantelstein MSTS EZ 16-18 SIKM` — ein halber Betonstein — wurde mit
+ * > 34,88 € bepreist, `offen: []`.
+ *
+ * Die Ursache steht seit dem 29. August in `istMenge()`, im eigenen Text:
+ * *„Hier stand `Number.isInteger`. Für Stückgut ist das richtig — für
+ * Flächenware nicht."* Die Lockerung war für die Platte richtig und wurde für
+ * **alles** ausgesprochen.
+ *
+ * > **Eine Grenze, die für einen Fall zu eng war, wurde für alle Fälle
+ * > aufgehoben.**
+ *
+ * ## Warum das nicht `mengenschritt` ist
+ *
+ * `mengenschritt` beantwortet eine Frage über die **Bezeichnung**: Welche
+ * Gebindegröße steht im Namen? Für einen Stein steht dort keine, und das ist
+ * richtig so — die Artikelseite und die strukturierten Daten sollen nicht
+ * „Abgabe ab 1 Stück" behaupten, wo niemand etwas abgemessen hat.
+ *
+ * Diese Funktion beantwortet eine Frage über die **Ware**: Was ist die
+ * kleinste Menge, die ein Lieferant herausgibt? Und die hat für Stückgut eine
+ * Antwort, die in keiner Bezeichnung stehen muss:
+ *
+ * > **Einen halben Eimer gibt es nicht.**
+ *
+ * Deshalb `1` für jede Stückeinheit — Stück, Sack, Eimer, Karton, Dose,
+ * Rolle. Messware ist dagegen teilbar; bei ihr sagt erst die Gebindegröße,
+ * dass sie es nicht ist, und ohne sie wird nichts behauptet.
+ */
+export function bestellschritt(artikel) {
+  if (!artikel) return null;
+  const einheit = String(artikel.einheit ?? '').toUpperCase();
+  if (STUECKEINHEITEN.has(einheit)) return 1;
+  return mengenschritt(artikel);
+}
+
+/**
  * Wie viele ganze Gebinde eine Menge ergibt — und wie viel dabei herauskommt.
  *
  * **Berichtigt am 13. September 2026.** Hier stand: *„Für die Anzeige gedacht,

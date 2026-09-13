@@ -3976,6 +3976,39 @@ export const GEGENPROBEN = Object.freeze([
       + 'Papieren ist der Nettobetrag die Bemessungsgrundlage der Umsatzsteuervoranmeldung.',
   }),
   Object.freeze({
+    id: 'der-halbe-eimer-geht-wieder-durch',
+    pruefer: 'test',
+    was: 'Stückgut hat wieder keinen Bestellschritt',
+    datei: 'shop/src/gebinde.js',
+    art: 'ersetzen',
+    suchen: '  if (STUECKEINHEITEN.has(einheit)) return 1;',
+    ersetzen: '  if (false) return 1;',
+    erwartet: /eine halbe Einheit gilt wieder als bestellbar/,
+    warum: 'Der Zustand bis zum 13. September. `mengenschritt` liest die Gebindegröße aus '
+      + 'der Bezeichnung und fand sie bei **18 von 46** Artikeln; für die übrigen 28 — '
+      + 'Stück, Sack, Eimer, Karton, Dose, Rolle — ging eine halbe Einheit wortlos durch '
+      + 'den Rechenkern (1,5 Mantelsteine, 34,88 €, `offen: []`). Einen halben Eimer gibt '
+      + 'es nicht, und das muss in keiner Bezeichnung stehen. Ursache war die Lockerung vom '
+      + '29. August: `Number.isInteger` war für Stückgut richtig und für Flächenware falsch '
+      + '— aufgehoben wurde sie für beide.',
+  }),
+  Object.freeze({
+    id: 'der-bestellschritt-redet-in-die-artikelseite',
+    pruefer: 'test',
+    was: 'Der Bestellschritt wird zur Auskunft über die Bezeichnung',
+    datei: 'shop/src/gebinde.js',
+    art: 'ersetzen',
+    suchen: '  if (einheit === \'KG\') return gebindeKg(artikel.bezeichnung);',
+    ersetzen: '  if (STUECKEINHEITEN.has(einheit)) return 1;\n'
+      + '  if (einheit === \'KG\') return gebindeKg(artikel.bezeichnung);',
+    erwartet: /die Gebindegröße wird jetzt behauptet, wo die Bezeichnung keine nennt/,
+    warum: 'Die beiden Funktionen beantworten verschiedene Fragen, und die Trennung ist der '
+      + 'ganze Punkt: `mengenschritt` sagt, welche Gebindegröße in der **Bezeichnung** '
+      + 'steht — daraus entstehen die Artikelseite und die strukturierten Daten. Stünde '
+      + 'dort 1 für jeden Stein, behauptete die Seite „Abgabe ab 1 Stück", wo niemand etwas '
+      + 'abgemessen hat, und der Produktfeed trüge eine erfundene Packungsgröße.',
+  }),
+  Object.freeze({
     id: 'die-kasse-bepreist-die-halbe-platte',
     pruefer: 'test',
     was: 'Der Rechenkern schweigt wieder über eine Menge, die kein ganzes Gebinde ist',

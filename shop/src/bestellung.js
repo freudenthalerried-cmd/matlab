@@ -10,7 +10,7 @@
 
 import { EUR, LUECKE, csvFeld, textZeile, zahlText } from './format.js';
 import { traegtSichSelbst } from './kostenbild.js';
-import { gebindezahl, mengenschritt } from './gebinde.js';
+import { bestellschritt, gebindezahl } from './gebinde.js';
 
 /**
  * Erzeugt je Teillieferung eine Bestellung an den Lieferanten.
@@ -265,7 +265,7 @@ export function darfAutomatischAusgeloestWerden(warenkorb, auftrag) {
    */
   const krummeMengen = warenkorb.teillieferungen.flatMap((t) => t.positionen
     .map((p) => {
-      const schritt = mengenschritt(p);
+      const schritt = bestellschritt(p);
       const zahlwerk = schritt > 0 ? gebindezahl(p.menge, schritt) : null;
       return zahlwerk && !zahlwerk.gehtAuf
         ? `${p.sku}: ${zahlText(p.menge)} ist kein ganzes Gebinde zu ${zahlText(schritt)}`

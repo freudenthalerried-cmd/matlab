@@ -1465,6 +1465,56 @@ function einheitenbefund(artikel = [], woerter = EINHEITEN) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function bestellschritt(artikel) {
+  if (!artikel) return null;
+  const einheit = String(artikel.einheit ?? '').toUpperCase();
+  if (STUECKEINHEITEN.has(einheit)) return 1;
+  return mengenschritt(artikel);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function gebindezahl(menge, schritt) {
   if (!(schritt > 0) || !(menge > 0)) return null;
   const stueck = Math.ceil(Math.round((menge / schritt) * 1e6) / 1e6);
@@ -3881,14 +3931,31 @@ function kundenWarenkorb(zeilen, { artikel, lieferanten, mindestbestellwertNetto
 
   for (const z of zeilen) {
     const a = nachId.get(z.sku);
-    const schritt = mengenschritt(a);
+    
+
+
+
+
+
+
+
+    const schritt = bestellschritt(a);
     if (!(schritt > 0)) continue;
     const zahlwerk = gebindezahl(z.menge, schritt);
     if (zahlwerk && !zahlwerk.gehtAuf) {
       const e = einheitText(a.einheit);
-      offen.push(`${a.bezeichnung}: ${zahlText(z.menge)} ${e} sind kein ganzes Gebinde — `
-        + `abgegeben wird in Einheiten zu ${zahlText(schritt)} ${e}, die nächste volle `
-        + `Menge ist ${zahlText(zahlwerk.gedeckteMenge)} ${e} (${zahlwerk.stueck} Stück).`);
+      
+
+
+
+
+
+      offen.push(schritt === 1
+        ? `${a.bezeichnung}: ${zahlText(z.menge)} ${e} gibt es nicht — abgegeben wird in `
+          + `ganzen Einheiten, die nächste volle Menge ist ${zahlText(zahlwerk.gedeckteMenge)} ${e}.`
+        : `${a.bezeichnung}: ${zahlText(z.menge)} ${e} sind kein ganzes Gebinde — abgegeben `
+          + `wird in Einheiten zu ${zahlText(schritt)} ${e}, die nächste volle Menge ist `
+          + `${zahlText(zahlwerk.gedeckteMenge)} ${e} (${zahlwerk.stueck} Stück).`);
     }
   }
 
@@ -6506,7 +6573,7 @@ function darfAutomatischAusgeloestWerden(warenkorb, auftrag) {
 
   const krummeMengen = warenkorb.teillieferungen.flatMap((t) => t.positionen
     .map((p) => {
-      const schritt = mengenschritt(p);
+      const schritt = bestellschritt(p);
       const zahlwerk = schritt > 0 ? gebindezahl(p.menge, schritt) : null;
       return zahlwerk && !zahlwerk.gehtAuf
         ? `${p.sku}: ${zahlText(p.menge)} ist kein ganzes Gebinde zu ${zahlText(schritt)}`

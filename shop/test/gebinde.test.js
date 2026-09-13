@@ -4,7 +4,7 @@ import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { EINHEITEN, einheitText } from '../src/format.js';
-import { gebindeKg, gebindeM2, gebindezahl, preisJeKilo, kilotafel, mengenschritt, GROESSTES_GEBINDE_KG, gebindeLfm, GEBINDELESER, rollenmass, packungsgewichtKg, einheitenbefund, STUECKEINHEITEN, paketgroessenbefund } from '../src/gebinde.js';
+import { bestellschritt, gebindeKg, gebindeM2, gebindezahl, preisJeKilo, kilotafel, mengenschritt, GROESSTES_GEBINDE_KG, gebindeLfm, GEBINDELESER, rollenmass, packungsgewichtKg, einheitenbefund, STUECKEINHEITEN, paketgroessenbefund } from '../src/gebinde.js';
 
 const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
 
@@ -516,4 +516,42 @@ test('die Aufrundung aufs Gebinde steht an genau einer Stelle', () => {
   // `gebindezahl` liefert, ist die Menge, die in den Korb gehört.
   assert.deepEqual(gebindezahl(40, 0.75), { stueck: 54, gedeckteMenge: 40.5, gehtAuf: false });
   assert.deepEqual(gebindezahl(39.75, 0.75), { stueck: 53, gedeckteMenge: 39.75, gehtAuf: true });
+});
+
+test('ein halber Eimer ist keine Menge — und das steht in keiner Bezeichnung', () => {
+  /*
+   * **Der Fund vom 13. September 2026.** `mengenschritt` liest die
+   * Gebindegröße aus der **Bezeichnung**; im Bestand fand sie sie bei 18 von
+   * 46 Artikeln. Für die übrigen 28 — Stück, Sack, Eimer, Karton, Dose,
+   * Rolle — ging eine halbe Einheit wortlos durch den Rechenkern: `1,5` von
+   * `Mantelstein MSTS EZ 16-18 SIKM` wurden mit 34,88 € bepreist.
+   *
+   * Die Ursache steht seit dem 29. August im Text von `istMenge` selbst:
+   * *„Hier stand `Number.isInteger`. Für Stückgut ist das richtig — für
+   * Flächenware nicht."* Die Lockerung war für die Platte richtig und wurde
+   * für alles ausgesprochen.
+   *
+   * > **Eine Grenze, die für einen Fall zu eng war, wurde für alle Fälle
+   * > aufgehoben.**
+   */
+  // Eine Schleife über eine leere Liste prüft nichts und meldet grün.
+  assert.equal(STUECKEINHEITEN.size, 6,
+    'die Stückeinheiten haben sich geändert — dann gilt dieser Fall für andere Ware');
+  for (const einheit of STUECKEINHEITEN) {
+    assert.equal(bestellschritt({ einheit, bezeichnung: 'irgendetwas ohne Größe' }), 1,
+      `${einheit}: eine halbe Einheit gilt wieder als bestellbar`);
+    // Und die Trennung zur Nachbarfunktion: Über die Bezeichnung sagt sie
+    // weiterhin nichts — sonst behauptete die Artikelseite „Abgabe ab 1 Stück".
+    assert.equal(mengenschritt({ einheit, bezeichnung: 'irgendetwas ohne Größe' }), null,
+      `${einheit}: die Gebindegröße wird jetzt behauptet, wo die Bezeichnung keine nennt `
+      + '— die Artikelseite schriebe „Abgabe ab 1 Stück" und der Feed eine erfundene Packung');
+  }
+
+  // Messware ist teilbar; erst die Gebindegröße sagt, dass sie es nicht ist.
+  assert.equal(bestellschritt({ einheit: 'M2', bezeichnung: 'XPS glatt SF 30 mm 0,75 m2' }), 0.75);
+  assert.equal(bestellschritt({ einheit: 'KG', bezeichnung: 'Baumit KlebeSpachtel 25 kg' }), 25);
+
+  // Und wo die Bezeichnung nichts hergibt, wird nichts behauptet.
+  assert.equal(bestellschritt({ einheit: 'M2', bezeichnung: 'Grundmauerschutz 20 1,5 m' }), null);
+  assert.equal(bestellschritt(null), null);
 });

@@ -19,7 +19,7 @@
  * Suche
  * ------------------------------------------------------------------ */
 
-import { gebindezahl, istMenge, mengenschritt } from './gebinde.js';
+import { bestellschritt, gebindezahl, istMenge } from './gebinde.js';
 import { systembruch, systembruchsatz } from './systemtreue.js';
 // **Seit dem 5. September von dort statt hier.** Der Wortlaut stand zweimal;
 // eine Probe hielt beide gegeneinander. Eine Probe, die zwei Fassungen
@@ -1142,14 +1142,31 @@ export function kundenWarenkorb(zeilen, { artikel, lieferanten, mindestbestellwe
    */
   for (const z of zeilen) {
     const a = nachId.get(z.sku);
-    const schritt = mengenschritt(a);
+    /*
+     * **`bestellschritt` statt `mengenschritt` — 13. September 2026.**
+     * `mengenschritt` liest die Gebindegröße aus der Bezeichnung und fand
+     * sie bei 18 von 46 Artikeln. Für die übrigen 28 — Stück, Sack, Eimer,
+     * Karton, Dose, Rolle — ging eine halbe Einheit weiter wortlos durch.
+     * Einen halben Eimer gibt es nicht, und das muss in keiner Bezeichnung
+     * stehen.
+     */
+    const schritt = bestellschritt(a);
     if (!(schritt > 0)) continue;
     const zahlwerk = gebindezahl(z.menge, schritt);
     if (zahlwerk && !zahlwerk.gehtAuf) {
       const e = einheitText(a.einheit);
-      offen.push(`${a.bezeichnung}: ${zahlText(z.menge)} ${e} sind kein ganzes Gebinde — `
-        + `abgegeben wird in Einheiten zu ${zahlText(schritt)} ${e}, die nächste volle `
-        + `Menge ist ${zahlText(zahlwerk.gedeckteMenge)} ${e} (${zahlwerk.stueck} Stück).`);
+      /*
+       * Zwei Sätze, weil es zwei Sachverhalte sind. Bei Stückgut ist die
+       * Einheit schon das Gebinde — „in Einheiten zu 1 Stück (2 Stück)" sagte
+       * dieselbe Zahl dreimal. Bei Messware trägt die Stückzahl die Auskunft,
+       * die der Kunde braucht: wie viele Platten das sind.
+       */
+      offen.push(schritt === 1
+        ? `${a.bezeichnung}: ${zahlText(z.menge)} ${e} gibt es nicht — abgegeben wird in `
+          + `ganzen Einheiten, die nächste volle Menge ist ${zahlText(zahlwerk.gedeckteMenge)} ${e}.`
+        : `${a.bezeichnung}: ${zahlText(z.menge)} ${e} sind kein ganzes Gebinde — abgegeben `
+          + `wird in Einheiten zu ${zahlText(schritt)} ${e}, die nächste volle Menge ist `
+          + `${zahlText(zahlwerk.gedeckteMenge)} ${e} (${zahlwerk.stueck} Stück).`);
     }
   }
 

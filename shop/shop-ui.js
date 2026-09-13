@@ -296,7 +296,12 @@
       // 0 gemacht, die dann auf 1 gehoben wurde: Der Knopf legte einen
       // ganzen Quadratmeter in den Korb, den es als Platte nicht gibt.
       var artikel = (D.artikel || []).filter(function (x) { return x.sku === sku; })[0];
-      var schritt = mengenschritt(artikel) || 1;
+      // **`bestellschritt` seit dem 13. September.** Hier stand
+      // `mengenschritt(artikel) || 1` — das `|| 1` war die Regel „ein Stück ist
+      // sein eigenes Gebinde", ausgeschrieben als Rückfall. Sie steht jetzt an
+      // derselben Stelle wie die Gebindegrößen, und der Rechenkern liest sie
+      // von dort ebenfalls.
+      var schritt = bestellschritt(artikel);
       var menge = mengenfeld ? parseFloat(String(mengenfeld.value).replace(',', '.')) : schritt;
       if (!Number.isFinite(menge) || menge <= 0) menge = schritt;
       // **Eine Regel, ein Ort — 13. September 2026.** Hier stand die
@@ -780,18 +785,25 @@
       menge.className = 'kz-menge';
       menge.setAttribute('aria-label', 'Menge ' + p.bezeichnung
         + (schritt ? ', ganze Einheiten zu ' + String(schritt).replace('.', ',') + ' ' + einheitText : ''));
+      // Der Schritt der **Bestellung** — `schritt` oben ist der der Anzeige und
+      // ist bei Stückgut absichtlich leer (dort steckt hinter der Zahl nichts).
+      var bestellbar = bestellschritt(p);
       menge.addEventListener('change', function () {
         var m = parseFloat(String(menge.value).replace(',', '.'));
-        if (!Number.isFinite(m) || m <= 0) m = schritt || 1;
-        if (schritt) {
-          // Auf die nächste ganze Einheit aufrunden — nicht ab. Wer 5 m²
-          // eintippt und Platten zu 0,75 m² kauft, braucht sieben Platten;
-          // ihm sechs zu geben wäre stillschweigend zu wenig. Gerechnet wird
-          // das seit dem 13. September an einer Stelle, in `gebindezahl`.
-          m = gebindezahl(m, schritt).gedeckteMenge;
-        } else {
-          m = Math.round(Math.ceil(m) * 100) / 100;
-        }
+        if (!Number.isFinite(m) || m <= 0) m = bestellbar || 1;
+        /*
+         * Auf die nächste ganze Einheit aufrunden — nicht ab. Wer 5 m²
+         * eintippt und Platten zu 0,75 m² kauft, braucht sieben Platten; ihm
+         * sechs zu geben wäre stillschweigend zu wenig. Gerechnet wird das
+         * seit dem 13. September an einer Stelle, in `gebindezahl`.
+         *
+         * **Und der zweite Zweig ist am selben Tag weggefallen.** Er rundete
+         * auf ganze Zahlen, wenn kein Gebinde bekannt war — also die Regel
+         * „ein Stück ist sein eigenes Gebinde", ein drittes Mal ausgeschrieben.
+         * `bestellschritt` sagt sie jetzt; wo auch die `null` zurückgibt, ist
+         * nichts bekannt, und dann wird nichts gerundet.
+         */
+        if (bestellbar) m = gebindezahl(m, bestellbar).gedeckteMenge;
         korb = setzeMenge(korb, p.sku, m);
         sichern();
         neu();
