@@ -224,6 +224,27 @@ ${s.aktionen}
       '--proxy-bypass-list=127.0.0.1', '--dump-dom', pathToFileURL(variante).href], {
       encoding: 'utf8',
       maxBuffer: 64 * 1024 * 1024,
+      /*
+       * **Zeitschranke — 13. September 2026.**
+       *
+       * Diese Zeile fehlte, und ihre beiden Geschwister hatten sie: `shopprobe`
+       * seit jeher 90 s, `bestellprobe` 120 s. Gemessen dauert ein Lauf über
+       * die echte Seite **664 ms**; am 13. September hat derselbe Aufruf
+       * **zwanzig Minuten** gewartet und nie geantwortet.
+       *
+       * Der Grund war eine Weiterausfuhr, die im gebündelten Skript
+       * stehengeblieben war: Das Modul lud nicht, die Seite bekam nie ein
+       * Skript, und `--dump-dom` wartete auf einen Zustand, der nicht mehr
+       * eintreten konnte.
+       *
+       * > **Eine Probe ohne Zeitschranke meldet nicht „langsam", sondern gar
+       * > nichts — und wer sie abbricht, hat den Befund weggeworfen.**
+       *
+       * 60 s sind das Neunzigfache des gemessenen Laufs. Sie sind nicht dazu
+       * da, eine langsame Maschine aufzuhalten, sondern dazu, aus einem Warten
+       * einen **Befund** zu machen.
+       */
+      timeout: 60_000,
     });
     const dom = lauf.stdout ?? '';
     const von = dom.indexOf(ANFANG);
@@ -231,7 +252,21 @@ ${s.aktionen}
     const gerendert = von >= 0 && bis > von ? dom.slice(von + ANFANG.length, bis) : null;
 
     const probleme = [];
-    if (lauf.status !== 0) probleme.push(`Browser-Exit ${lauf.status}: ${(lauf.stderr ?? '').slice(0, 200)}`);
+    /*
+     * **Was ein Zeitablauf bedeutet, gehört dazugesagt.** `spawnSync` setzt bei
+     * Ablauf `error.code === 'ETIMEDOUT'` und tötet den Browser; ohne diesen
+     * Zweig stünde hier „Browser-Exit null" und niemand wüsste, wonach zu
+     * suchen ist. In fast allen Fällen ist die Ursache dieselbe: Die Seite hat
+     * kein laufendes Skript bekommen.
+     */
+    if (lauf.error?.code === 'ETIMEDOUT') {
+      probleme.push('der Browser hat nach 60 s nicht geantwortet — ein Lauf über die echte '
+        + 'Seite dauert unter einer Sekunde. Fast immer heißt das: Das Skript der Seite ist '
+        + 'nicht angelaufen. Zuerst ansehen, ob das Bündel geschlossen ist '
+        + '(`fremdeModulzeilen` in src/buendel.js) und ob demo.html überhaupt parst');
+    } else if (lauf.status !== 0) {
+      probleme.push(`Browser-Exit ${lauf.status}: ${(lauf.stderr ?? '').slice(0, 200)}`);
+    }
     if (gerendert === null) probleme.push('die Sonde ist nicht gelaufen — kein Marker in der Seite');
     else {
       for (const text of s.erwartet ?? []) {

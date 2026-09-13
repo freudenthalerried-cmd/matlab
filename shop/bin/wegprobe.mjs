@@ -219,7 +219,15 @@ try {
   const { stdout } = await fuehreAus(chromium, [
     '--headless', '--disable-gpu', '--no-sandbox', '--virtual-time-budget=5000',
     '--dump-dom', pathToFileURL(variante).href,
-  ], { maxBuffer: 64 * 1024 * 1024 });
+  ], {
+    maxBuffer: 64 * 1024 * 1024,
+    // **Zeitschranke — 13. September 2026**, aus demselben Grund wie in
+    // `oberflaechenprobe`. `--virtual-time-budget` deckelt die Uhr der Seite,
+    // nicht den Prozess: Lädt das Skript gar nicht, wartet `--dump-dom`
+    // trotzdem. Eine Probe ohne Zeitschranke meldet nicht „langsam", sondern
+    // gar nichts.
+    timeout: 60_000,
+  });
   dom = stdout ?? '';
 } catch (e) {
   dom = e.stdout ?? '';

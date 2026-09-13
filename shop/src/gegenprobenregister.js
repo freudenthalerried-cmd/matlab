@@ -3976,6 +3976,24 @@ export const GEGENPROBEN = Object.freeze([
       + 'Papieren ist der Nettobetrag die Bemessungsgrundlage der Umsatzsteuervoranmeldung.',
   }),
   Object.freeze({
+    id: 'die-oberflaechenprobe-darf-wieder-haengen',
+    pruefer: 'test',
+    was: 'Eine Browserprobe startet den Browser ohne Zeitschranke',
+    datei: 'shop/bin/oberflaechenprobe.mjs',
+    art: 'ersetzen',
+    suchen: '      timeout: 60_000,',
+    ersetzen: '      // keine Zeitschranke',
+    erwartet: /startet einen Browser ohne Zeitschranke/,
+    warum: 'Am 13. September blieb eine Weiterausfuhr im gebündelten Skript stehen; die '
+      + 'Seite bekam kein laufendes Skript, und `--dump-dom` wartete auf einen Zustand, der '
+      + 'nicht mehr eintreten konnte. Ein Lauf über die echte Seite dauert **664 ms** — '
+      + 'dieser wartete **über zwanzig Minuten** und gab keine Zeile aus. `shopprobe` trug '
+      + 'seit jeher 90 s, `bestellprobe` 120 s; ausgerechnet die beiden ohne Schranke waren '
+      + 'die Stelle, an der der tote Shop auffiel. **Eine Probe ohne Zeitschranke meldet '
+      + 'nicht „langsam", sondern gar nichts — und wer sie abbricht, hat den Befund '
+      + 'weggeworfen.**',
+  }),
+  Object.freeze({
     id: 'das-buendel-traegt-wieder-eine-modulzeile',
     pruefer: 'test',
     was: 'Eine Weiterausfuhr bleibt im gebündelten Skript stehen',

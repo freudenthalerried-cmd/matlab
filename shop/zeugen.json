@@ -194,6 +194,9 @@
   "die-nebenfrage-wiegt-wie-der-titel": [
     "shop/test/shopkern.test.js"
   ],
+  "die-oberflaechenprobe-darf-wieder-haengen": [
+    "shop/test/pruefregister.test.js"
+  ],
   "die-sicherungskopie-bleibt-unsichtbar": [
     "shop/test/ablageort.test.js"
   ],

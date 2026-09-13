@@ -12,7 +12,7 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -134,4 +134,57 @@ test('der Prüfer der Prüfer steht nicht in seiner eigenen Liste', () => {
   const eintrag = KEIN_PRUEFER.find((e) => e.name === 'pruefe-pruefer');
   assert.ok(eintrag, 'und er steht mit Grund daneben, statt still zu fehlen');
   assert.match(eintrag.warum, /Schleife ohne Boden/);
+});
+
+test('jede Browserprobe hat eine Zeitschranke — und jede, die einen Browser startet, steht im Register', () => {
+  /*
+   * **Der Fund vom 13. September 2026.** Eine Weiterausfuhr blieb im
+   * gebündelten Skript stehen; die Seite bekam kein laufendes Skript, und
+   * `--dump-dom` wartete auf einen Zustand, der nicht mehr eintreten konnte.
+   *
+   * ```
+   * ein Lauf über die echte Seite:   664 ms
+   * derselbe Aufruf an jenem Tag:    > 20 Minuten, keine Zeile Ausgabe
+   * ```
+   *
+   * `shopprobe` trug seit jeher 90 s, `bestellprobe` 120 s — `oberflaechenprobe`
+   * und `wegprobe` trugen **keine**. Ausgerechnet die ohne Schranke war die
+   * einzige Stelle, an der der tote Shop auffiel.
+   *
+   * > **Eine Probe ohne Zeitschranke meldet nicht „langsam", sondern gar
+   * > nichts — und wer sie abbricht, hat den Befund weggeworfen.**
+   *
+   * Gemessen wird der **Quelltext** und nicht das Verhalten: Ein Lauf, der
+   * heute schnell ist, ist keine Zusage über morgen.
+   */
+  const bin = join(SHOP, 'bin');
+  const startetBrowser = (text) => /spawnSync\(chromium|fuehreAus\(chromium/.test(text);
+  // Eine Schleife über eine leere Liste prüft nichts und meldet grün.
+  assert.ok(BROWSERPRUEFER.length >= 4,
+    `nur ${BROWSERPRUEFER.length} Browserprüfer im Register — dann misst dieser Fall zu wenig`);
+
+  let geprueft = 0;
+  for (const p of BROWSERPRUEFER) {
+    const datei = join(bin, p.werkzeug);
+    if (!existsSync(datei)) continue;
+    const text = readFileSync(datei, 'utf8');
+    if (!startetBrowser(text)) continue;
+    geprueft += 1;
+    assert.match(text, /timeout:\s*\d/,
+      `${p.werkzeug} startet einen Browser ohne Zeitschranke — ein Hänger sieht dann aus wie eine langsame Maschine`);
+  }
+  assert.ok(geprueft >= 2, `nur ${geprueft} Browserproben angesehen — das misst zu wenig`);
+
+  /*
+   * Und die Gegenrichtung: Ein Werkzeug, das einen Browser startet und **nicht**
+   * im Register steht, läuft in keinem Gesamtlauf mit — und niemand hält seine
+   * Zahl gegen ein Mindestmaß.
+   */
+  const imRegister = new Set(BROWSERPRUEFER.map((p) => p.werkzeug));
+  const draussen = readdirSync(bin)
+    .filter((n) => n.endsWith('.mjs') && !imRegister.has(n))
+    .filter((n) => startetBrowser(readFileSync(join(bin, n), 'utf8')));
+  assert.deepEqual(draussen, [],
+    'ein Werkzeug startet einen Browser und steht in keinem Register — es läuft in keinem '
+    + 'Gesamtlauf mit, und niemand hält seine Zahl gegen ein Mindestmaß');
 });
