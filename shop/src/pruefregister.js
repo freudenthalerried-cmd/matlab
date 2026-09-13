@@ -424,7 +424,16 @@ export const PRUEFER = [
     werkzeug: 'rueckwegpruefung.mjs',
     muster: /Rückweg der Anfrage — (\d+) bestellbare Mengen/,
     einheit: 'bestellbare Mengen hin und zurück',
-    mindestens: 2000,
+    /*
+     * **Von 2000 auf 8000 — 13. September 2026, dritte Runde.** Die Untergrenze
+     * ist hier keine Schmuckzahl, sondern der Wächter über die **Reichweite**:
+     * Der Sweep fährt 200 Mengen je Artikel mit bekanntem Bestellschritt. Mit
+     * `bestellschritt` sind das 45 von 46 Artikeln, also 9000; mit dem alten
+     * `mengenschritt` waren es 18, also 3600. Wer den Maßstab zurückdreht,
+     * bekommt nicht stillschweigend eine kleinere Prüfung, sondern ein
+     * „zu wenig gemessen".
+     */
+    mindestens: 8000,
   },
   {
     // **Aufgenommen am 4. September**, mit dem ersten Werkzeug, das ablegt.

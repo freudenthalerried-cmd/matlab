@@ -264,17 +264,28 @@ export function rueckwegbefund(artikel = [], schrittFuer = null, lage = {}) {
   let mengen = 0;
   let krumme = 0;
   let ohnePreis = 0;
+  const ohneSchritt = [];
 
   for (const a of artikel) {
     if (!(a.vkNetto > 0)) { ohnePreis += 1; continue; }
     /*
-     * `gebinde` ist der **bekannte** Schritt oder `null`; `schritt` ist das,
-     * woraus der Sweep seine Mengen baut. Bei Ware ohne Packungsangabe ist
-     * jede ganze Einheit bestellbar — dort gibt es kein Gebinde, an dem
-     * einzurasten wäre, und der Leser rundet auf zwei Nachkommastellen.
+     * **Kein Rückfall auf 1 — 13. September 2026, dritte Runde.** Hier stand
+     * `const schritt = gebinde || 1`, und das war eine Annahme über die Ware:
+     * Wo kein Schritt bekannt war, rechnete der Sweep mit ganzen Einheiten
+     * weiter und **übersprang die Gegenrichtung**. Solange `mengenschritt`
+     * hereingereicht wurde, traf das 28 von 46 Artikeln — die Prüfung meldete
+     * grün über eine Strecke, die sie nicht gefahren war.
+     *
+     * `bestellschritt` beantwortet die Frage jetzt für 45 von 46. Der eine
+     * übrige wird **gezählt und genannt**, nicht geraten: Nicht messbar ist
+     * nicht grün.
      */
-    const gebinde = schrittFuer ? schrittFuer(a.sku) : null;
-    const schritt = gebinde || 1;
+    const schritt = schrittFuer ? schrittFuer(a.sku) : null;
+    if (!(schritt > 0)) {
+      ohneSchritt.push(a.sku);
+      continue;
+    }
+    const gebinde = schritt;
     for (let n = 1; n <= bis; n++) {
       const menge = cent(n * schritt);
       const summe = cent(a.vkNetto * menge);
@@ -334,6 +345,7 @@ export function rueckwegbefund(artikel = [], schrittFuer = null, lage = {}) {
   return {
     artikel: artikel.length,
     ohnePreis,
+    ohneSchritt,
     mengen,
     krumme,
     meldungen,

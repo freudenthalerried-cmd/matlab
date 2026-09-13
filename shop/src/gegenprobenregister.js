@@ -3976,6 +3976,40 @@ export const GEGENPROBEN = Object.freeze([
       + 'Papieren ist der Nettobetrag die Bemessungsgrundlage der Umsatzsteuervoranmeldung.',
   }),
   Object.freeze({
+    id: 'das-werkzeug-legt-den-massstab-nicht-an',
+    pruefer: 'test',
+    was: 'Ein Werkzeug reicht wieder die Bezeichnung statt den Bestellschritt herein',
+    datei: 'shop/bin/anfrage-lesen.mjs',
+    art: 'ersetzen',
+    suchen: '  schrittFuer: (sku) => bestellschritt(nachSku.get(sku)),',
+    ersetzen: '  schrittFuer: (sku) => mengenschritt(nachSku.get(sku)),',
+    erwartet: /reicht keinen Bestellschritt herein — Stückgut bleibt ungeschützt/,
+    warum: 'Ein Maßstab, der im Haus liegt und nicht angelegt wird, ist keiner. Gemessen '
+      + 'wird die **Verdrahtung**, nicht ihr Ergebnis: Dass die heutigen Preise zufällig zu '
+      + 'keiner gebrochenen Stückzahl führen, ist kein Schutz — der Preis ändert sich, die '
+      + 'Frage bleibt. Am 13. September gab der Leser aus `POS-53215  0,67 €  1,01 €` '
+      + '**1,51 Rahmenschrauben** zurück, und die Sperre dagegen lag seit dem Vormittag '
+      + 'im Haus.',
+  }),
+  Object.freeze({
+    id: 'der-leser-fragt-wieder-die-bezeichnung',
+    pruefer: 'pruefe-pruefer',
+    was: 'Der Rückwegprüfer misst wieder nur die Artikel mit lesbarer Gebindegröße',
+    datei: 'shop/bin/rueckwegpruefung.mjs',
+    art: 'ersetzen',
+    suchen: 'const schrittFuer = (sku) => bestellschritt(nachSku.get(sku));',
+    ersetzen: 'const schrittFuer = (sku) => nachSku.get(sku)?.bezeichnung?.match(/([\\d.,]+)\\s*m2/)'
+      + ' ? Number(RegExp.$1.replace(\',\', \'.\')) : null;',
+    erwartet: /pruefe-rueckweg/,
+    warum: 'Der Einrastschutz kam am 12. September, der `bestellschritt` am 13. — '
+      + 'angeschlossen an den **Leser** war er nicht. `mengenschritt` liest die '
+      + 'Gebindegröße aus der Bezeichnung und findet bei Stück, Sack, Eimer, Karton, Dose '
+      + 'und Rolle keine; das waren 28 von 46 Artikeln. Aus `POS-53215  0,67 €  1,01 €` '
+      + 'kamen **1,51 Rahmenschrauben** zurück. Und der Prüfer selbst rechnete mit einem '
+      + 'geratenen Schritt von 1 weiter und übersprang dabei die Gegenrichtung — er meldete '
+      + 'grün über eine Strecke, die er nicht gefahren war.',
+  }),
+  Object.freeze({
     id: 'der-halbe-eimer-geht-wieder-durch',
     pruefer: 'test',
     was: 'Stückgut hat wieder keinen Bestellschritt',

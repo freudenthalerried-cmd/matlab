@@ -34,7 +34,7 @@ import { dirname, join } from 'node:path';
 import { rueckwegbefund } from '../src/anfragelesen.js';
 import { ladeBaustoffkatalog } from '../src/baustoffkatalog.js';
 import { oeffentlicherArtikel } from '../src/shopkern.js';
-import { mengenschritt } from '../src/gebinde.js';
+import { bestellschritt } from '../src/gebinde.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const REPO = dirname(SHOP);
@@ -67,7 +67,7 @@ const katalog = ladeBaustoffkatalog(
 // ein Kunde geht, nicht der, den ein Testfall baut.
 const artikel = katalog.artikel.map(oeffentlicherArtikel);
 const nachSku = new Map(artikel.map((a) => [a.sku, a]));
-const schrittFuer = (sku) => mengenschritt(nachSku.get(sku));
+const schrittFuer = (sku) => bestellschritt(nachSku.get(sku));
 
 const befund = rueckwegbefund(artikel, schrittFuer);
 
@@ -78,6 +78,19 @@ console.log(`  Dazu ${befund.krumme} Zeilensummen zwischen zwei Gebinden — sie
 
 if (befund.ohnePreis) {
   console.log(`  ${befund.ohnePreis} Artikel ohne Verkaufspreis — sie haben keine Zeilensumme.`);
+}
+/*
+ * **Was nicht gefahren wurde, wird genannt — 13. September 2026.** Bis heute
+ * rechnete dieser Sweep mit einem Schritt von 1 weiter, wo keiner bekannt war,
+ * und übersprang dabei stillschweigend die Gegenrichtung. Mit `mengenschritt`
+ * betraf das 28 von 46 Artikeln: eine Prüfung, die über eine nicht gefahrene
+ * Strecke grün meldete.
+ */
+if (befund.ohneSchritt.length) {
+  console.log(`  ${befund.ohneSchritt.length} Artikel ohne Bestellschritt, nicht gefahren: `
+    + `${befund.ohneSchritt.join(', ')}`);
+  console.log('  Ihre Bezeichnung nennt keine Gebindegröße, und ihre Einheit ist teilbar —');
+  console.log('  geraten wird nichts, aber geprüft ist dort auch nichts.');
 }
 
 if (befund.sauber) {

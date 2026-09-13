@@ -18,7 +18,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 import { lesePositionen, leseAnfrage, rueckwegbefund } from '../src/anfragelesen.js';
-import { mengenschritt } from '../src/gebinde.js';
+import { bestellschritt, mengenschritt } from '../src/gebinde.js';
 import { kundenWarenkorb } from '../src/shopkern.js';
 import { baueKundenanfrage } from '../src/kundenanfrage.js';
 
@@ -67,7 +67,10 @@ const kantenschutz = {
 };
 const mitKantenschutz = { artikel: [...artikel, kantenschutz], lieferanten, mindestbestellwertNetto: 250 };
 const rechneMit = (zeilen) => kundenWarenkorb(zeilen, mitKantenschutz);
-const schritteMit = (sku) => mengenschritt(mitKantenschutz.artikel.find((a) => a.sku === sku));
+// **`bestellschritt`, nicht `mengenschritt` — 13. September, dritte Runde.**
+// Der Betrieb fragt seit heute nach dem Bestellschritt; eine Probe, die noch die
+// Bezeichnung fragt, prüft einen Weg, den niemand mehr geht.
+const schritteMit = (sku) => bestellschritt(mitKantenschutz.artikel.find((a) => a.sku === sku));
 
 test('eine Menge, die kein ganzes Gebinde ist, entsteht hier nicht', () => {
   const bestellt = [{ sku: 'POS-53402', menge: 302.5 }];
@@ -102,6 +105,40 @@ test('trifft kein ganzes Gebinde die Zeilensumme, wird nicht geraten', () => {
   assert.match(gelesen.meldungen[0], /kein ganzes Gebinde zu 2\.5/);
 });
 
+test('Stückgut ist dabei — der Leser fragt nach dem Bestellschritt, nicht nach der Bezeichnung', () => {
+  /*
+   * **13. September 2026, dritte Runde.** Der Einrastschutz kam am 12., der
+   * `bestellschritt` am 13. — angeschlossen an den **Leser** war er nicht.
+   * `mengenschritt` liest die Gebindegröße aus der Bezeichnung und findet sie
+   * bei Stück, Sack, Eimer, Karton, Dose und Rolle nicht; im Bestand waren das
+   * 28 von 46 Artikeln.
+   *
+   * ```
+   * POS-53215  Rahmenschraube …  STK  0,67 €
+   *   Zeile „0,67 €  1,01 €"  →  gelesen 1,51 Stück
+   * ```
+   *
+   * > **Anderthalb Schrauben, und die Sperre dagegen lag seit dem Vormittag
+   * > im Haus.**
+   */
+  const schraube = {
+    sku: 'POS-53215', bezeichnung: 'Rahmenschraube Zylinderkopf vz 7,5x182 mm lose',
+    gruppe: 'Zubehör', einheit: 'STK', lieferantId: 'poschacher', sperrgut: false,
+    vkNetto: 0.67, ekNetto: 0.5, preisStand: '2026-06-25',
+  };
+  const zeile = '  POS-53215   0,67 €   1,01 €';
+
+  const nachBezeichnung = lesePositionen(zeile, { schrittFuer: () => mengenschritt(schraube) });
+  assert.deepEqual(nachBezeichnung.zeilen, [{ sku: 'POS-53215', menge: 1.51 }],
+    'ohne Bestellschritt kommt eine gebrochene Stückzahl zurück — das ist der Fund');
+
+  const nachBestellschritt = lesePositionen(zeile, { schrittFuer: () => bestellschritt(schraube) });
+  assert.deepEqual(nachBestellschritt.zeilen, [],
+    'anderthalb Schrauben gehen weiterhin durch');
+  assert.match(nachBestellschritt.meldungen[0], /kein ganzes Gebinde zu 1/);
+});
+
+
 test('der Rückweg gilt für jede Menge, die die Oberfläche bilden kann', () => {
   /*
    * Die Prüfung, die den Fund festhält: Hin und zurück über alle Artikel und
@@ -112,6 +149,21 @@ test('der Rückweg gilt für jede Menge, die die Oberfläche bilden kann', () =>
   assert.equal(befund.sauber, true,
     `der Rückweg verliert Mengen: ${befund.meldungen.slice(0, 2).map((m) => m.text).join(' | ')}`);
   assert.equal(befund.mengen, mitKantenschutz.artikel.length * 200);
+
+  /*
+   * **Und was nicht gefahren wurde, wird gezählt — 13. September, dritte
+   * Runde.** Hier rechnete der Sweep mit einem Schritt von 1 weiter, wo keiner
+   * bekannt war, und übersprang dabei die Gegenrichtung. Ein Artikel ohne
+   * Bestellschritt fällt jetzt aus der Zählung heraus und steht namentlich da.
+   */
+  const unlesbar = { ...kantenschutz, sku: 'POS-21382', bezeichnung: 'Grundmauerschutz 20 1,5 m', einheit: 'M2' };
+  const mitLuecke = rueckwegbefund([...mitKantenschutz.artikel, unlesbar],
+    (sku) => bestellschritt([...mitKantenschutz.artikel, unlesbar].find((a) => a.sku === sku)),
+    { bis: 200 });
+  assert.deepEqual(mitLuecke.ohneSchritt, ['POS-21382'],
+    'ein Artikel ohne Bestellschritt wird mit einem geratenen Schritt gefahren');
+  assert.equal(mitLuecke.mengen, mitKantenschutz.artikel.length * 200,
+    'die nicht gefahrene Strecke zählt mit');
 
   /*
    * **Und die Gegenrichtung, sonst misst der Fall nichts.** Dieselbe Prüfung
@@ -192,4 +244,27 @@ test('Summenzeilen werden nicht für Positionen gehalten', () => {
   const gelesen = lesePositionen(text);
   assert.equal(gelesen.zeilen.length, 2, `${gelesen.zeilen.length} Positionen statt zwei`);
   assert.deepEqual(gelesen.meldungen, [], gelesen.meldungen.join(' | '));
+});
+
+test('die Werkzeuge, die eine Anfrage lesen, fragen nach dem Bestellschritt', () => {
+  /*
+   * **13. September 2026, dritte Runde.** Der Einrastschutz kam am 12., der
+   * `bestellschritt` am 13. — angeschlossen an die **Werkzeuge** war er nicht.
+   * Beide reichten weiter `mengenschritt` herein, und der liest die
+   * Gebindegröße aus der Bezeichnung: Bei Stück, Sack, Eimer, Karton, Dose und
+   * Rolle steht dort keine, im Bestand bei 28 von 46 Artikeln.
+   *
+   * > **Ein Maßstab, der im Haus liegt und nicht angelegt wird, ist keiner.**
+   *
+   * Gemessen wird deshalb die Verdrahtung, nicht ihr Ergebnis: Dass die
+   * heutigen Preise zufällig zu keiner gebrochenen Stückzahl führen, ist kein
+   * Schutz — der Preis ändert sich, die Frage bleibt.
+   */
+  for (const werkzeug of ['../bin/anfrage-lesen.mjs', '../bin/vorgang.mjs', '../bin/rueckwegpruefung.mjs']) {
+    const quelle = readFileSync(fileURLToPath(new URL(werkzeug, import.meta.url)), 'utf8');
+    assert.ok(/bestellschritt\(/.test(quelle),
+      `${werkzeug} reicht keinen Bestellschritt herein — Stückgut bleibt ungeschützt`);
+    assert.ok(!/mengenschritt\(/.test(quelle),
+      `${werkzeug} fragt wieder die Bezeichnung statt die Ware`);
+  }
 });

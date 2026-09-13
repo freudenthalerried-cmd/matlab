@@ -22,7 +22,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 import { leseAnfrage } from '../src/anfragelesen.js';
-import { mengenschritt } from '../src/gebinde.js';
+import { bestellschritt } from '../src/gebinde.js';
 import { kundenWarenkorb } from '../src/shopkern.js';
 import { ladeBaustoffkatalog } from '../src/baustoffkatalog.js';
 import { oeffentlicherArtikel, oeffentlicherLieferant } from '../src/shopkern.js';
@@ -61,10 +61,15 @@ const daten = {
  * `302,51 LFM` statt der bestellten 302,50 — 121 Stangen zu 2,5 m, und die
  * gelesene Zahl ist kein ganzes Stück. Der Schritt wird hereingereicht wie die
  * Rechenfunktion: Der Leser soll keinen zweiten Katalog kennen.
+ *
+ * **`bestellschritt` statt `mengenschritt` — 13. September, dritte Runde.**
+ * `mengenschritt` liest die Gebindegröße aus der Bezeichnung und fand sie bei
+ * 18 von 46 Artikeln. Für die übrigen 28 blieb der Leser ungeschützt: Aus
+ * `POS-53215  0,67 €  1,01 €` kamen **1,51 Rahmenschrauben** zurück.
  */
 const nachSku = new Map(daten.artikel.map((a) => [a.sku, a]));
 const e = leseAnfrage(text, (zeilen) => kundenWarenkorb(zeilen, daten), {
-  schrittFuer: (sku) => mengenschritt(nachSku.get(sku)),
+  schrittFuer: (sku) => bestellschritt(nachSku.get(sku)),
 });
 
 console.log(`\nAnfrage zurückgelesen — ${e.zeilen.length} Position(en)`);

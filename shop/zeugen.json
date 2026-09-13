@@ -72,6 +72,9 @@
   "das-verfallene-angebot-wartet-weiter": [
     "shop/test/vorgangsstand.test.js"
   ],
+  "das-werkzeug-legt-den-massstab-nicht-an": [
+    "shop/test/anfragelesen.test.js"
+  ],
   "der-auszug-ohne-abgleich": [
     "shop/test/ablageort.test.js"
   ],

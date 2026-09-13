@@ -55,7 +55,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 import { leseAnfrage } from '../src/anfragelesen.js';
-import { mengenschritt } from '../src/gebinde.js';
+import { bestellschritt } from '../src/gebinde.js';
 import { pruefeBestellfelder } from '../src/bestellfelder.js';
 import { pruefeBestelldaten } from '../src/kunde.js';
 import { kundenWarenkorb, oeffentlicherArtikel, oeffentlicherLieferant } from '../src/shopkern.js';
@@ -328,7 +328,7 @@ const kundensicht = {
  */
 const artikelNachSku = new Map(kundensicht.artikel.map((a) => [a.sku, a]));
 const gelesen = leseAnfrage(text, (zeilen) => kundenWarenkorb(zeilen, kundensicht), {
-  schrittFuer: (sku) => mengenschritt(artikelNachSku.get(sku)),
+  schrittFuer: (sku) => bestellschritt(artikelNachSku.get(sku)),
 });
 if (!gelesen.gelesen) {
   abbruch(`Die Anfrage ließ sich nicht übernehmen — ${gelesen.grund}`,
