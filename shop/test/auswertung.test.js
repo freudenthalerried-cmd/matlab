@@ -138,6 +138,17 @@ test('Ohne Absagen gezählt wird nichts beschönigt', () => {
 test('Der Bogen nennt jedes Pflichtfeld, das fehlt', () => {
   const p = pruefeBogen({ hersteller: 'Nur der Name' });
   assert.equal(p.vollstaendig, false);
+  /*
+   * **Erweitert am 14. September 2026.** Hier standen zwei Stichproben. Der
+   * Name sagt „jedes Pflichtfeld" — gezählt wird deshalb gegen das Register,
+   * aus dem die Meldungen kommen: Ein Feld, das der Bogen führt und die
+   * Prüfung verschweigt, fällt jetzt auf, statt still durchzugehen.
+   */
+  const pflicht = BOGEN.filter((f) => f.pflicht && f.feld !== 'hersteller');
+  assert.ok(pflicht.length >= 4, `nur ${pflicht.length} Pflichtfelder — die Schleife prüft wenig`);
+  for (const f of pflicht) {
+    assert.ok(p.fehlend.includes(f.frage), `${f.feld} fehlt und wird nicht genannt`);
+  }
   assert.ok(p.fehlend.some((f) => /Händlerrabatt/.test(f)));
   assert.ok(p.fehlend.some((f) => /fakturiert/.test(f)));
 

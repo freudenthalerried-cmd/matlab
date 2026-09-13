@@ -120,8 +120,20 @@ test('Dieselbe Belegnummer kommt kein zweites Mal in die Ablage', () => {
 });
 
 test('Jeder Eintrag braucht einen Zeitpunkt', () => {
-  const a = neueAblage();
-  assert.throws(() => haltefest(a, { art: 'vermerk' }), /braucht einen Zeitpunkt/);
+  /*
+   * **Erweitert am 14. September 2026.** Hier stand eine Art: `vermerk`. Der
+   * Name sagt „jeder Eintrag", und `ARTEN` führt acht — prüfte `haltefest`
+   * den Zeitpunkt nur für manche, sähe dieser Testfall es nicht.
+   *
+   * > **Zwei Stichproben sind keine Allaussage — eine erst recht nicht.**
+   */
+  const arten = Object.keys(ARTEN);
+  assert.ok(arten.length >= 6, `nur ${arten.length} Arten — dann prüft die Schleife wenig`);
+  for (const art of arten) {
+    const a = neueAblage();
+    assert.throws(() => haltefest(a, { art }), /braucht einen Zeitpunkt/,
+      `${art} kommt ohne Zeitpunkt durch`);
+  }
 });
 
 test('Ein Storno ändert die Rechnung nicht, sondern stellt eine Gutschrift daneben', () => {

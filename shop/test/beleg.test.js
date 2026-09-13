@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { ladeKatalog, berechneWarenkorb } from '../src/warenkorb.js';
 import {
+  RECHNUNGSMERKMALE,
   lieferungsname,
   KLEINBETRAG_GRENZE_BRUTTO,
   UID_EMPFAENGER_GRENZE_BRUTTO,
@@ -84,6 +85,16 @@ test('Die Prüfung benennt jede fehlende Pflichtangabe einzeln', () => {
   assert.equal(p.vollstaendig, false);
   assert.equal(p.kleinbetrag, false);
   assert.equal(p.empfaengerUidNoetig, false);
+  /*
+   * Gegen das Register der Pflichtangaben gehalten: „jede" heißt jede, und
+   * eine verschwiegene Pflichtangabe auf einer Rechnung ist ein Formfehler,
+   * den erst die Betriebsprüfung findet.
+   */
+  const offen = RECHNUNGSMERKMALE.filter((m) => m.ab <= 3900 && m.feld !== 'bruttobetrag');
+  assert.ok(offen.length >= 4, `nur ${offen.length} Pflichtangaben — die Schleife prüft wenig`);
+  for (const m of offen) {
+    assert.ok(p.fehlendeFelder.includes(m.feld), `${m.feld} fehlt und wird nicht genannt`);
+  }
   assert.ok(p.fehlendeFelder.includes('rechnungsnummer'));
   assert.ok(p.fehlendeFelder.includes('ausstellerUid'));
 });

@@ -85,6 +85,13 @@ test('Ein Preis über dem Band macht machbar, fällt aber aus dem Band', () => {
 test('Der Partnerbogen nennt jedes fehlende Pflichtfeld', () => {
   const p = pruefePartnerbogen({ betrieb: 'Nur der Name' });
   assert.equal(p.vollstaendig, false);
+  // Gegen das Register gehalten, aus dem die Meldungen kommen — sonst zeigen
+  // zwei Stichproben nur, dass zwei von zehn Feldern genannt werden.
+  const pflicht = PARTNER_BOGEN.filter((f) => f.pflicht && f.feld !== 'betrieb');
+  assert.ok(pflicht.length >= 4, `nur ${pflicht.length} Pflichtfelder — die Schleife prüft wenig`);
+  for (const f of pflicht) {
+    assert.ok(p.fehlend.includes(f.frage), `${f.feld} fehlt und wird nicht genannt`);
+  }
   assert.ok(p.fehlend.some((f) => /Einwilligungstext/.test(f)));
   assert.ok(p.fehlend.some((f) => /Leadpreis/.test(f)));
   assert.equal(pruefePartnerbogen(guterPartner).vollstaendig, true);

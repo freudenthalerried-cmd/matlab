@@ -69,6 +69,14 @@ test('Leerzeichen zählen nicht als ausgefülltes Feld', () => {
 test('Das Impressum macht jede Lücke sichtbar statt sie zu verschweigen', () => {
   const { text, vollstaendig: v } = erzeugeImpressum({ firma: 'Nur die Firma' });
   assert.equal(v, false);
+  /*
+   * **Gezählt am 14. September 2026.** Hier standen zwei Lückenmarken. „Jede
+   * Lücke sichtbar" heißt jede — eine Pflichtangabe, die der Text stillschweigend
+   * wegließe, wäre genau der Fall, den dieser Satz ausschließt.
+   */
+  const marken = text.match(/\[\[ [^\]]+ — FEHLT \]\]/g) ?? [];
+  assert.equal(marken.length, pruefeBetreiberdaten({ firma: 'Nur die Firma' }).fehlend.length,
+    `${marken.length} Lückenmarken für ${pruefeBetreiberdaten({ firma: 'Nur die Firma' }).fehlend.length} fehlende Angaben`);
   assert.match(text, /\[\[ E-Mail — FEHLT \]\]/);
   assert.match(text, /\[\[ Gewerbebehörde — FEHLT \]\]/);
   assert.match(text, /Nur die Firma/);

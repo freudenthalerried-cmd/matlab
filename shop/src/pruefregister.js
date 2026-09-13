@@ -297,6 +297,19 @@ export const PRUEFER = [
     einheit: 'Artikelseiten gegeneinander',
     mindestens: 30,
   },
+  // **Aufgenommen am 14. September.** Am Vortag ist dreimal dieselbe Bauart
+  // aufgefallen: eine Zusicherung, deren Name mehr sagt als ihr Rumpf hält.
+  // Maschinell entscheidbar ist davon der Allquantor — sagt ein Testname
+  // „jede" oder „alle", behauptet er eine Aussage über eine Menge, und zwei
+  // Stichproben sind keine. Gemessen wird die Zahl der **angesehenen**
+  // Testnamen, nicht die der beanstandeten.
+  {
+    name: 'pruefe-allaussagen',
+    werkzeug: 'allaussagenpruefung.mjs',
+    muster: /Allaussagen — (\d+) von \d+ Testnamen/,
+    einheit: 'Testnamen mit Allquantor',
+    mindestens: 100,
+  },
   // **Aufgenommen am 13. September.** Die Runde davor hat beziffert, dass 21
   // von 46 maschinenlesbaren Beschreibungen über die Ware nichts sagen, und den
   // naheliegenden Ausweg — die Maße aus den Bezeichnungen lesen — mit einer

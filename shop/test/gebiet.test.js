@@ -61,10 +61,20 @@ test('Jede Auskunft nennt die Schutzgebiets-Grenze der eigenen Aussage', () => {
 });
 
 test('Jede Auskunft trägt Stand, Quelle und den Gegenprüf-Vorbehalt', () => {
-  const a = vorsorgeauskunft('Wien');
-  assert.equal(a.stand, GEBIETSSTAND.stand);
-  assert.match(a.quelle, /Sekundärquelle/);
-  assert.match(a.vorbehalt, /am Verordnungstext gegenzuprüfen/);
+  /*
+   * **Erweitert am 14. September 2026.** Hier stand eine einzige Eingabe:
+   * „Wien". Der Name sagt „jede Auskunft" — und gerade die Auskunft über ein
+   * unbekanntes Gebiet oder über eine leere Eingabe ist die, bei der ein
+   * fehlender Vorbehalt gefährlich wäre.
+   */
+  const eingaben = ['Wien', 'Perg', 'Ein Ort, den es nicht gibt', '', '   '];
+  assert.ok(eingaben.length >= 4, 'zu wenige Eingaben für eine Allaussage');
+  for (const eingabe of eingaben) {
+    const a = vorsorgeauskunft(eingabe);
+    assert.equal(a.stand, GEBIETSSTAND.stand, `„${eingabe}" ohne Stand`);
+    assert.match(a.quelle, /Sekundärquelle/, `„${eingabe}" ohne Quelle`);
+    assert.match(a.vorbehalt, /am Verordnungstext gegenzuprüfen/, `„${eingabe}" ohne Vorbehalt`);
+  }
 });
 
 test('Fremdtext in der Eingabe bleibt eine Zeile in der Auskunft', () => {

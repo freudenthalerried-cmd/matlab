@@ -862,7 +862,11 @@ export const GEGENPROBEN = Object.freeze([
     id: 'methodenaufruf-als-testfall',
     pruefer: 'pruefe-tests',
     was: 'Der Prüfer hält `muster.test(`…`)` für die Erklärung eines Testfalls',
-    datei: 'shop/bin/testpruefung.mjs',
+    // **Umgezogen am 14. September 2026** von `bin/testpruefung.mjs` nach
+    // `src/testzerlegung.js`: Die Zerlegung ist zweimal berichtigt worden und
+    // wird seither von zwei Prüfern gelesen — eine zweite Fassung hätte beide
+    // Berichtigungen noch einmal verdient.
+    datei: 'shop/src/testzerlegung.js',
     art: 'ersetzen',
     suchen: '  const muster = /(?<![.\\w$])test\\(',
     ersetzen: '  const muster = /\\btest\\(',
@@ -3990,6 +3994,36 @@ export const GEGENPROBEN = Object.freeze([
       + 'niemand versteckt hat. Verborgen blieben zwei Fundstellen des Steuersatzes, beide '
       + 'als `0.2`: die begründete in `src/shopkern.js` und eine unbegründete in '
       + '`src/skonto.js`.',
+  }),
+  Object.freeze({
+    id: 'deepEqual-zaehlt-nicht-mehr-als-mengenzusicherung',
+    pruefer: 'pruefe-allaussagen',
+    was: 'Ein deepEqual gegen die ganze Menge gilt nicht mehr als Zusicherung',
+    datei: 'shop/src/allaussage.js',
+    art: 'ersetzen',
+    suchen: "  if (/\\bdeepEqual\\s*\\(/.test(text)) return 'deepEqual';",
+    ersetzen: "  if (false) return 'deepEqual';",
+    erwartet: /Allaussagen ohne Mengenzusicherung — erlaubt sind 0/,
+    warum: 'Ein `deepEqual` gegen die ganze erwartete Menge ist die staerkste der drei Formen: '
+      + 'Es sichert nicht nur zu, dass jedes erwartete Glied da ist, sondern auch, dass kein '
+      + 'unerwartetes dazukommt. Faellt es aus der Lesart, meldet der Pruefer genau die '
+      + 'Testfaelle als offen, die am besten zusichern — und die Schranke, die auf null steht, '
+      + 'reisst.',
+  }),
+  Object.freeze({
+    id: 'die-meldung-gilt-wieder-als-zusicherung',
+    pruefer: 'test',
+    was: 'Ein .length in der Fehlermeldung zaehlt wieder als Mengenzusicherung',
+    datei: 'shop/src/allaussage.js',
+    art: 'ersetzen',
+    suchen: "    const bis = zeile.slice(stelle).replace(/,\\s*[`'\"].*$/, '');",
+    ersetzen: '    const bis = zeile.slice(stelle);',
+    erwartet: /die Meldung gilt als Zusicherung/,
+    warum: 'Eine Stichprobe mit einer guten Fehlermeldung traegt fast immer ein `.length` — '
+      + '„nur ${x.length} Felder gefunden". Zaehlte es mit, ginge jede Stichprobe als '
+      + 'Allaussage durch, und der Pruefer meldete genau die Faelle nicht mehr, fuer die er '
+      + 'gebaut ist. Gelesen wird deshalb nur bis zum Komma vor der Meldung: Was schiefging, '
+      + 'sagt ueber das Geprueste nichts.',
   }),
   Object.freeze({
     id: 'die-x-form-zaehlt-wieder-als-ein-mass',

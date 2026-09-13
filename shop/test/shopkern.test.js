@@ -531,10 +531,21 @@ const bestandsindex = () => baueSuchindex({
 test('jedes Kundenwort findet genau die Artikel, für die es eingetragen ist', () => {
   const index = bestandsindex();
   assert.ok(suchwoerterDatei.woerter.length >= 30, 'ohne Register prüft diese Schleife nichts');
+  let mitKennung = 0;
   for (const e of suchwoerterDatei.woerter) {
     const treffer = suche(index, e.wort).filter((x) => x.art === 'artikel');
     assert.ok(treffer.length > 0, `„${e.wort}" findet nichts`);
-    for (const sku of e.skus ?? []) {
+    /*
+     * **Aufgefallen am 14. September 2026**, als der Prüfer der Tests aufhörte,
+     * in Anführungszeichen hineinzulesen — und dabei eine Schleife sichtbar
+     * wurde, die er vorher übersehen hatte. `e.skus` ist wahlfrei: Ein Eintrag
+     * ohne Kennungen läuft hier durch, ohne etwas zu prüfen. Gezählt wird
+     * deshalb, wie viele Einträge überhaupt Kennungen führen — sonst wäre ein
+     * Register aus lauter kennungslosen Wörtern grün.
+     */
+    const kennungen = e.skus ?? [];
+    mitKennung += kennungen.length > 0 ? 1 : 0;
+    for (const sku of kennungen) {
       assert.ok(treffer.some((x) => x.sku === sku), `„${e.wort}" findet ${sku} nicht`);
     }
     if (e.gruppe) {
@@ -542,6 +553,8 @@ test('jedes Kundenwort findet genau die Artikel, für die es eingetragen ist', (
         `„${e.wort}" führt nicht zuerst in die Gruppe ${e.gruppe}`);
     }
   }
+  assert.ok(mitKennung >= 5,
+    `nur ${mitKennung} Wörter führen Kennungen — dann prüft die innere Schleife fast nichts`);
 });
 
 /**

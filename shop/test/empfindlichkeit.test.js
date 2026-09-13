@@ -30,11 +30,21 @@ test('Die vier Annahmen tragen Herkunft, Konfidenz und den Weg zur Klärung', ()
 });
 
 test('Verschlechtern heißt bei jeder Annahme etwas anderes', () => {
-  const m = verschlechtere(LAGE, 'rohmarge', 0.10);
-  assert.ok(m.rohmarge < LAGE.rohmarge, 'weniger Marge ist schlechter');
-
-  const w = verschlechtere(LAGE, 'werbeanteil', 0.10);
-  assert.ok(w.werbeanteil > LAGE.werbeanteil, 'mehr Werbekosten sind schlechter');
+  /*
+   * **Erweitert am 14. September 2026.** Hier standen zwei der vier Annahmen.
+   * Die Richtung steht je Annahme im Feld `schlechterIst`, und genau sie ist
+   * das Zugesicherte — eine Annahme mit falscher Richtung machte die
+   * Empfindlichkeitsrechnung still optimistisch.
+   */
+  assert.ok(ANNAHMEN.length >= 4, `nur ${ANNAHMEN.length} Annahmen — die Schleife prüft wenig`);
+  for (const a of ANNAHMEN) {
+    const m = verschlechtere(LAGE, a.id, 0.10);
+    if (a.schlechterIst === 'kleiner') {
+      assert.ok(m[a.id] < LAGE[a.id], `${a.id}: schlechter müsste kleiner sein`);
+    } else {
+      assert.ok(m[a.id] > LAGE[a.id], `${a.id}: schlechter müsste größer sein`);
+    }
+  }
 });
 
 test('Eine Annahme, die in der Lage fehlt, wird nicht erfunden', () => {
