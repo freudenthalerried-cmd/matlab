@@ -22,6 +22,7 @@ import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
 import { OHNE_WERKZEUG } from '../src/offenepunkte.js';
 import { GRENZE_TAGE } from '../src/preisalter.js';
 import { punktebefund } from '../src/punktezahlen.js';
+import { beschreibungsbefund } from '../src/maschinenlesbar.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const REPO = dirname(SHOP);
@@ -63,6 +64,10 @@ const messwerte = {
   mindestbestellwert: betreiber.mindestbestellwertNetto,
   grenzeTage: GRENZE_TAGE,
   begriffe: messliste.gruppen.reduce((n, g) => n + g.keywords.length, 0),
+  ...(() => {
+    const b = beschreibungsbefund(katalog.artikel);
+    return { ohneWareneigenschaft: b.ohneWareneigenschaft, nurDatensatz: b.nurDatensatz };
+  })(),
 };
 
 // Der Punkt ist das, was der Auftraggeber liest: Titel, Grund und

@@ -92,6 +92,8 @@ console.log(`  Auf jeder Seite      ${e.gemeinsameWorte} von ${e.mittlereLaenge.
 console.log(`  Kürzeste Seite       ${e.kuerzeste}`);
 if (bb) {
   console.log(`  Beschreibungen (JSON-LD) ${bb.verschieden} eigene Beiträge über ${bb.artikel} Artikel`);
+  console.log(`  davon ohne Angabe über die Ware  ${bb.ohneWareneigenschaft} von ${bb.artikel}`
+    + ' — Preisstand und Palettierung sind keine');
 } else {
   console.log('  Beschreibungen (JSON-LD) nicht geprüft — die vertrauliche Preisdatei liegt hier nicht');
 }

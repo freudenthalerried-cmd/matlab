@@ -84,6 +84,27 @@ export function kennzahlen(m) {
      * `npm run messliste` — die Liste, aus der die Zahl käme, wenn jemand
      * fragte.
      */
+    /*
+     * **Seit 13. September.** Der Punkt beziffert, was die maschinenlesbare
+     * Beschreibung ueber die Ware sagt — und das ist eine Zahl aus dem
+     * Bestand, kein Freibrief. Beide Zahlen misst `beschreibungsbefund` in
+     * `src/maschinenlesbar.js`.
+     */
+    {
+      name: 'Beschreibungen ohne Angabe ueber die Ware', wo: 'artikelliste',
+      wie: 'src/maschinenlesbar.js (beschreibungsbefund)',
+      muster: /Beschreibung: (\d+) von \d+ sagen/, soll: m.ohneWareneigenschaft,
+    },
+    {
+      name: 'Artikel im Katalog, im Beschreibungssatz', wo: 'artikelliste',
+      wie: 'data/katalog-baustoff.json',
+      muster: /Beschreibung: \d+ von (\d+) sagen/, soll: m.artikel,
+    },
+    {
+      name: 'Beschreibungen mit nichts als einem Preisstand', wo: 'artikelliste',
+      wie: 'src/maschinenlesbar.js (beschreibungsbefund)',
+      muster: /bei (\d+) davon der Preisstand allein/, soll: m.nurDatensatz,
+    },
     {
       name: 'Begriffe der Messliste', wo: 'suchvolumen',
       wie: 'ausgabe/messliste-baustoff.json (npm run messliste)',

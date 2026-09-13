@@ -224,8 +224,16 @@ export const OHNE_WERKZEUG = Object.freeze([
     loest: 'Löst auf einmal: GTIN, Marke und Bild im Feed — und die Weisung, das Sortiment auf '
       + 'mindestens hundert Artikel zu erweitern. Ein Viertes betrifft die Auffindbarkeit, aber '
       + 'kleiner als bisher hier stand: Der Abschnitt „Technische Kennwerte" trägt auf allen 46 '
-      + 'Artikelseiten nur sechs verschiedene Fassungen, die größte auf 22 — lauter '
-      + 'Platzhaltersätze statt Kennwerten (`npm run pruefe-dubletten`). Der größte gleiche '
+      + 'Artikelseiten nur sechs verschiedene Fassungen, die größte auf 22 (`npm run '
+      + 'pruefe-dubletten`). **BERICHTIGT 13.09.:** Hier stand „lauter Platzhaltersätze statt '
+      + 'Kennwerten". Das ist unfair gegen den eigenen Text — die sechs Fassungen sagen '
+      + 'ausdrücklich, warum dort keine Kennwerte stehen, und verweisen auf das Merkblatt des '
+      + 'Herstellers. Eine leere Tabelle wäre schlimmer. **Beziffert ist seit dem 13.09. '
+      + 'stattdessen die maschinenlesbare Beschreibung: 21 von 46 sagen über die Ware selbst '
+      + 'nichts** — ihr ganzer eigener Beitrag ist „Palettierte Ware" und ein Preisstand, bei '
+      + '13 davon der Preisstand allein. Weder Versandart noch Preisdatum ist eine '
+      + 'Eigenschaft der Ware; die Zahl steht als Sperrklinke in '
+      + '`OHNE_WARENEIGENSCHAFT_HOECHSTENS` und darf fallen, nicht steigen. Der größte gleiche '
       + 'Block der Seiten ist dagegen unser eigener Lieferabsatz und bleibt es auch mit dieser '
       + 'Liste.',
   },

@@ -5,6 +5,7 @@ import { OHNE_MESSUNG, WERKZEUGE_MIT_GRUNDLAGE, kennzahlen, punktebefund } from 
 
 const MESSWERTE = {
   artikel: 46, mitGewicht: 7, mindestbestellwert: 250, grenzeTage: 90, begriffe: 29,
+  ohneWareneigenschaft: 21, nurDatensatz: 13,
 };
 
 /**
@@ -25,6 +26,11 @@ const gut = () => ({
         + 'Entscheidet, ob die 90-Tage-Grenze die richtige ist.',
     },
     { id: 'suchvolumen', text: 'Suchvolumen der 29 Keywords im Liefergebiet messen' },
+    {
+      id: 'artikelliste',
+      text: 'Beschreibung: 21 von 46 sagen über die Ware selbst nichts, '
+        + 'bei 13 davon der Preisstand allein.',
+    },
   ],
   messwerte: MESSWERTE,
   gibtEs: () => true,

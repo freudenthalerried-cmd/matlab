@@ -3992,6 +3992,35 @@ export const GEGENPROBEN = Object.freeze([
       + '`src/skonto.js`.',
   }),
   Object.freeze({
+    id: 'die-zahl-im-offenen-punkt-wird-wieder-nur-behauptet',
+    pruefer: 'pruefe-punkte',
+    was: 'Die Beschreibungszahl im offenen Punkt geht nicht mehr gegen den Bestand',
+    datei: 'shop/src/offenepunkte.js',
+    art: 'ersetzen',
+    suchen: "      + 'stattdessen die maschinenlesbare Beschreibung: 21 von 46 sagen über die Ware selbst '",
+    ersetzen: "      + 'stattdessen die maschinenlesbare Beschreibung: 19 von 46 sagen über die Ware selbst '",
+    erwartet: /der Text sagt 19, gemessen sind 21/,
+    warum: 'Die Liste fragt die Werkzeuge, welche Punkte offen sind — was in den Punkten steht, '
+      + 'schreibt sie selbst. Genau daran ist am 8. September eine Aufgabe an den Auftraggeber '
+      + 'gegangen, die es so nicht mehr gab. Die beiden Zahlen dieses Punktes stehen deshalb '
+      + 'nicht als Freibrief in OHNE_MESSUNG, sondern gehen gegen `beschreibungsbefund`.',
+  }),
+  Object.freeze({
+    id: 'der-preisstand-gilt-wieder-als-wareneigenschaft',
+    pruefer: 'test',
+    was: 'Ein Preisstand zaehlt wieder als Angabe ueber die Ware',
+    datei: 'shop/src/maschinenlesbar.js',
+    art: 'ersetzen',
+    suchen: "  if (/^Preisstand /.test(satz)) return 'datensatz';",
+    ersetzen: "  if (/^Preisstand /.test(satz)) return 'ware';",
+    erwartet: /die Palettierung gilt wieder als Wareneigenschaft/,
+    warum: 'Gemessen am Bestand: 21 von 46 Beschreibungen sagen ueber die Ware nichts, bei '
+      + 'dreizehn davon besteht der ganze eigene Beitrag aus einem Preisstand. Der Pruefer '
+      + 'zaehlte ihn als eigenen Beitrag, weil er in keinem Nachbarfeld steht — „eigen" hiess: '
+      + 'steht nirgends sonst, und nicht: sagt etwas ueber die Ware. Ein Preisstand ist eine '
+      + 'Eigenschaft des Datensatzes, die Palettierung eine des Versands.',
+  }),
+  Object.freeze({
     id: 'die-messung-liest-nur-eine-schreibweise',
     pruefer: 'test',
     was: 'Die Vorschlagsmessung liest wieder nur `export const`, keine Objektfelder',

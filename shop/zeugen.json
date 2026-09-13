@@ -119,6 +119,9 @@
   "der-posteingang-vergisst-die-akte": [
     "shop/test/posteingang.test.js"
   ],
+  "der-preisstand-gilt-wieder-als-wareneigenschaft": [
+    "shop/test/maschinenlesbar.test.js"
+  ],
   "der-steuersatz-steht-wieder-im-vorgabewert": [
     "shop/test/zwillingszahlen.test.js"
   ],

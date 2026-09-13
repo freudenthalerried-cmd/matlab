@@ -318,9 +318,61 @@ export function feedbeschreibung(artikel, einheiten = EINHEITEN) {
  * @param {object[]} artikel
  * @param {number} mindestens  weniger Artikel prüfen nichts
  */
-export function beschreibungsbefund(artikel = [], mindestens = 20) {
+/**
+ * Woruber ein Satz der Beschreibung **spricht**.
+ *
+ * **Der Fund, 13. September 2026.** Der Prüfer unter dieser Funktion zählt
+ * einen Satz als eigenen Beitrag, wenn er in keinem Nachbarfeld des
+ * Datensatzes steht. Gemessen, was dabei durchging:
+ *
+ * | Gruppe | Artikel | ihr ganzer eigener Beitrag |
+ * |---|---|---|
+ * | 1 | 8 | „Palettierte Ware … Preisstand 2026-07-27" |
+ * | 2 | 7 | „Palettierte Ware … Preisstand 2026-06-25" |
+ * | 3 | 5 | **„Preisstand 2026-08-12"** |
+ *
+ * Ein Preisstand steht in keinem Nachbarfeld — und sagt über die Ware nichts.
+ * „Palettierte Ware" sagt etwas über den **Versand** und gilt für jede
+ * palettierte Ware gleich.
+ *
+ * > **„Eigen" hieß: steht in keinem Nachbarfeld. Es hieß nicht: sagt etwas
+ * > über die Ware.**
+ *
+ * Die erste Gruppe trägt eine Fassadendämmplatte, drei XPS-Platten, einen
+ * Mantelstein, ein Kaminrohr, einen Schachtring und einen Hohlblockziegel. Die
+ * Verteidigung dieses Prüfers — *„ihr Unterschied ist die Dicke, und die steht
+ * im Namen"* — trägt für die drei XPS. Für die anderen fünf trägt sie nicht.
+ */
+export function satzGehtUeber(satz) {
+  if (/^Kleinste Abgabemenge |^Verkaufseinheit .*Abgabe ab /.test(satz)) return 'ware';
+  if (/^Palettierte Ware/.test(satz)) return 'versand';
+  if (/^Preisstand /.test(satz)) return 'datensatz';
+  return 'sonstiges';
+}
+
+/**
+ * Wie viele Beschreibungen ohne eine Angabe über die Ware hinausgehen dürfen.
+ *
+ * **Eine Sperrklinke, keine Zielgröße.** Gemessen am 13. September 2026: 21 von
+ * 46. Die Abhilfe liegt beim Lieferanten — die Artikelliste mit EAN,
+ * Herstellername und Merkmalen ist ein offener Punkt und freigabepflichtig.
+ * Ein Prüfer, der heute rot wird für etwas, das dieser Loop nicht beheben
+ * kann, wird abgeschaltet; einer, der gar nichts sagt, merkt die
+ * Verschlechterung nicht.
+ *
+ * > **Eine Zahl, die nur berichtet wird, ist eine Zahl, die steigen darf.**
+ *
+ * Diese Schranke darf deshalb **fallen und nie steigen**. Wird sie
+ * unterschritten, gehört sie nachgezogen — und der Prüfer sagt es.
+ */
+export const OHNE_WARENEIGENSCHAFT_HOECHSTENS = 21;
+
+export function beschreibungsbefund(artikel = [], mindestens = 20,
+  hoechstens = OHNE_WARENEIGENSCHAFT_HOECHSTENS) {
   const meldungen = [];
   const kerne = new Set();
+  const ohneWare = [];
+  const nurDatensatz = [];
 
   for (const a of artikel) {
     const text = feedbeschreibung(a);
@@ -343,6 +395,17 @@ export function beschreibungsbefund(artikel = [], mindestens = 20) {
       && !satz.startsWith('Preis netto für Unternehmer'));
     kerne.add(eigen.join('. '));
 
+    /*
+     * Und woruber der eigene Beitrag spricht. Gezaehlt wird nicht, ob er da
+     * ist, sondern ob er von der Ware handelt: Ein Preisstand ist eine
+     * Eigenschaft des Datensatzes, die Palettierung eine des Versands.
+     */
+    if (!saetze.some((satz) => satzGehtUeber(satz) === 'ware')) ohneWare.push(a.sku);
+    // Und die schaerfere Zahl: wessen ganzer eigener Beitrag ein Datum ist.
+    if (eigen.length > 0 && eigen.every((satz) => satzGehtUeber(satz) === 'datensatz')) {
+      nurDatensatz.push(a.sku);
+    }
+
     if (eigen.length === 0) {
       meldungen.push({
         regel: 'nichts-eigenes',
@@ -351,6 +414,23 @@ export function beschreibungsbefund(artikel = [], mindestens = 20) {
           + 'und den Preisfeldern danebensteht',
       });
     }
+  }
+
+  if (ohneWare.length > hoechstens) {
+    meldungen.push({
+      regel: 'mehr-ohne-wareneigenschaft-als-erlaubt',
+      text: `${ohneWare.length} von ${artikel.length} Beschreibungen sagen nichts über die Ware `
+        + `selbst — erlaubt sind ${hoechstens}. Weder Preisstand noch Palettierung ist eine `
+        + `Eigenschaft der Ware: ${ohneWare.slice(0, 6).join(', ')}`,
+    });
+  }
+  if (ohneWare.length < hoechstens) {
+    meldungen.push({
+      regel: 'sperrklinke-nachziehen',
+      text: `nur noch ${ohneWare.length} von ${artikel.length} Beschreibungen ohne Angabe über `
+        + `die Ware — die Schranke steht auf ${hoechstens} und gehört nachgezogen `
+        + '(OHNE_WARENEIGENSCHAFT_HOECHSTENS in src/maschinenlesbar.js)',
+    });
   }
 
   if (artikel.length < mindestens) {
@@ -363,6 +443,9 @@ export function beschreibungsbefund(artikel = [], mindestens = 20) {
   return {
     artikel: artikel.length,
     verschieden: kerne.size,
+    ohneWareneigenschaft: ohneWare.length,
+    ohneWareneigenschaftSkus: ohneWare,
+    nurDatensatz: nurDatensatz.length,
     meldungen,
     sauber: meldungen.length === 0,
   };

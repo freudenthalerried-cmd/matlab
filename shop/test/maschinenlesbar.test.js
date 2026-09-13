@@ -648,9 +648,88 @@ test('jede Beschreibung sagt etwas, was kein anderes Feld sagt', async () => {
     sku: `A-${i}`, bezeichnung: `Platte ${i} 0,75 m2`, gruppe: 'Dämmung',
     einheit: 'M2', preisStand: '2026-08-17',
   }));
-  const b = beschreibungsbefund(artikel);
+  // Eigene Schranke: Diese fünfundzwanzig sind nachgebaut und nicht der
+  // Katalog. Die Sperrklinke aus `maschinenlesbar.js` misst den Bestand, und
+  // ein Vorrat, der sie unterschreitet, sagt darüber nichts.
+  const b = beschreibungsbefund(artikel, 20, 0);
   assert.deepEqual(b.meldungen, [], b.meldungen.map((m) => m.text).join('\n'));
   assert.equal(b.artikel, 25);
+});
+
+/*
+ * **Der Fund vom 13. September 2026.** Der Prüfer daneben zählt einen Satz als
+ * eigenen Beitrag, wenn er in keinem Nachbarfeld steht. Gemessen am Bestand
+ * gingen damit 21 von 46 Beschreibungen durch, deren ganzer eigener Beitrag
+ * aus „Palettierte Ware …" und einem Preisstand bestand — bei dreizehn davon
+ * aus dem Preisstand allein.
+ *
+ * > **„Eigen" hieß: steht in keinem Nachbarfeld. Es hieß nicht: sagt etwas
+ * > über die Ware.**
+ */
+test('Ein Preisstand ist keine Eigenschaft der Ware', async () => {
+  const { satzGehtUeber } = await import('../src/maschinenlesbar.js');
+  const proben = [
+    ['Kleinste Abgabemenge 25 kg', 'ware'],
+    ['Verkaufseinheit Quadratmeter, Abgabe ab 0,75 Quadratmeter', 'ware'],
+    ['Verkaufseinheit Stück', 'sonstiges'],
+    ['Palettierte Ware, Kranentladung je Hub — die Einstufung folgt aus der Warengruppe', 'versand'],
+    ['Preisstand 2026-08-12', 'datensatz'],
+  ];
+  assert.ok(proben.length >= 5, 'zu wenige Proben');
+  for (const [satz, erwartet] of proben) {
+    assert.equal(satzGehtUeber(satz), erwartet, `„${satz}" gilt als ${satzGehtUeber(satz)}`);
+  }
+});
+
+test('Eine Beschreibung aus Preisstand und Palettierung sagt nichts über die Ware', async () => {
+  const { beschreibungsbefund } = await import('../src/maschinenlesbar.js');
+  // Stückgut ohne Gebindegewicht: Der eigene Beitrag ist genau das, was der
+  // Bestand am 13.09. bei einundzwanzig Artikeln trug.
+  const artikel = Array.from({ length: 25 }, (_, i) => ({
+    sku: `A-${i}`, bezeichnung: `Formstück ${i}`, gruppe: 'Kamin', einheit: 'STK',
+    sperrgut: true, preisStand: '2026-08-17',
+  }));
+  const b = beschreibungsbefund(artikel, 20, 0);
+  assert.equal(b.ohneWareneigenschaft, 25, 'die Palettierung gilt wieder als Wareneigenschaft');
+  assert.ok(b.meldungen.some((m) => m.regel === 'mehr-ohne-wareneigenschaft-als-erlaubt'));
+
+  // Und die Gegenrichtung: Ein Gebindegewicht ist eine Angabe über die Ware.
+  const sackware = artikel.map((a) => ({ ...a, bezeichnung: `${a.bezeichnung} 25 kg`, einheit: 'SCK' }));
+  assert.equal(beschreibungsbefund(sackware, 20, 25).ohneWareneigenschaft, 0);
+});
+
+/*
+ * Die Schranke ist eine Sperrklinke: Sie darf fallen und nie steigen. Wird sie
+ * unterschritten, sagt der Prüfer, dass sie nachgezogen gehört — sonst wäre
+ * eine erreichte Verbesserung wieder aufgebbar, ohne dass es jemand merkt.
+ */
+test('Eine unterschrittene Sperrklinke gehört nachgezogen', async () => {
+  const { beschreibungsbefund, OHNE_WARENEIGENSCHAFT_HOECHSTENS } = await import('../src/maschinenlesbar.js');
+  const artikel = Array.from({ length: 25 }, (_, i) => ({
+    sku: `A-${i}`, bezeichnung: `Sack ${i} 25 kg`, gruppe: 'Mörtel', einheit: 'SCK',
+    preisStand: '2026-08-17',
+  }));
+  const b = beschreibungsbefund(artikel, 20, 3);
+  assert.equal(b.ohneWareneigenschaft, 0);
+  assert.ok(b.meldungen.some((m) => m.regel === 'sperrklinke-nachziehen'));
+  assert.ok(OHNE_WARENEIGENSCHAFT_HOECHSTENS >= 0 && OHNE_WARENEIGENSCHAFT_HOECHSTENS <= 46,
+    `eine Schranke von ${OHNE_WARENEIGENSCHAFT_HOECHSTENS} misst nicht diesen Katalog`);
+});
+
+/*
+ * Und der Bestand selbst gegen die Schranke — ohne das prüft alles darüber
+ * nur nachgebaute Artikel.
+ */
+test('Der Katalog steht genau auf der Sperrklinke', async () => {
+  const { beschreibungsbefund } = await import('../src/maschinenlesbar.js');
+  const { readFileSync } = await import('node:fs');
+  const { fileURLToPath } = await import('node:url');
+  const katalog = JSON.parse(readFileSync(
+    fileURLToPath(new URL('../data/katalog-baustoff.json', import.meta.url)), 'utf8'));
+  const liste = katalog.artikel ?? katalog;
+  const b = beschreibungsbefund(liste);
+  assert.deepEqual(b.meldungen, [], b.meldungen.map((m) => m.text).join('\n'));
+  assert.ok(b.artikel >= 40, `nur ${b.artikel} Artikel — dann prüft das hier wenig`);
 });
 
 test('eine Beschreibung, die nur wiederholt, was danebensteht, fällt auf', async () => {
@@ -660,7 +739,7 @@ test('eine Beschreibung, die nur wiederholt, was danebensteht, fällt auf', asyn
   const artikel = Array.from({ length: 25 }, (_, i) => ({
     sku: `A-${i}`, bezeichnung: `Dose ${i}`, gruppe: 'Zubehör', einheit: 'DOS',
   }));
-  const b = beschreibungsbefund(artikel);
+  const b = beschreibungsbefund(artikel, 20, 25);
   assert.equal(b.meldungen.length, 25);
   assert.ok(b.meldungen.every((m) => m.regel === 'nichts-eigenes'));
 });
@@ -670,7 +749,7 @@ test('Sperrgut ohne die Herkunft der Einstufung fällt auf', async () => {
   const b = beschreibungsbefund([{
     sku: 'A-1', bezeichnung: 'Rohr', gruppe: 'Kanal', einheit: 'STK',
     sperrgut: true, preisStand: '2026-08-17',
-  }], 0);
+  }], 0, 1);
   // Der gebaute Satz trägt sie — diese Probe hält fest, dass die Regel
   // überhaupt greifen kann, und prüft den Normalfall grün.
   assert.ok(!b.meldungen.some((m) => m.regel === 'einstufung-ohne-herkunft'));
