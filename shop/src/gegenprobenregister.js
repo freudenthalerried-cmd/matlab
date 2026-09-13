@@ -3976,6 +3976,55 @@ export const GEGENPROBEN = Object.freeze([
       + 'Papieren ist der Nettobetrag die Bemessungsgrundlage der Umsatzsteuervoranmeldung.',
   }),
   Object.freeze({
+    id: 'der-frischewaechter-wird-wieder-zeuge',
+    pruefer: 'test',
+    was: 'Der Frischewächter steht wieder in der Zeugenliste einer Gegenprobe',
+    datei: 'shop/src/zeugen.js',
+    art: 'ersetzen',
+    suchen: '  for (const aus of KEINE_ZEUGEN) dateien.delete(aus);',
+    ersetzen: '  for (const aus of []) dateien.delete(aus);',
+    erwartet: /der Frischewächter steht wieder in der Zeugenliste/,
+    warum: 'Drei Gegenproben des 13. September meldeten „nach dem Zurücksetzen nicht wieder '
+      + 'grün — die Probe hat etwas hinterlassen", und keine hatte etwas hinterlassen. '
+      + '`erzeugnisfrische.test.js` prüft, ob die gebauten Erzeugnisse jünger sind als ihre '
+      + 'Quellen; eine Mutation an einer Quelldatei des Bündels macht ihn durch ihre bloße '
+      + 'Existenz rot, und das Zurücksetzen macht ihn nicht wieder grün. **Ein Wächter über '
+      + 'die Frische der Erzeugnisse kann kein Zeuge einer Mutation sein.** Er wird von '
+      + 'jeder rot, und nach dem Zurücksetzen bleibt er es, bis jemand neu baut.',
+  }),
+  Object.freeze({
+    id: 'die-nebenfrage-wiegt-wie-der-titel',
+    pruefer: 'test',
+    was: 'Titel und Frage einer Seite liegen wieder in einem Topf',
+    datei: 'shop/src/shopkern.js',
+    art: 'ersetzen',
+    suchen: "      stark: indexwoerter(s.titel),",
+    ersetzen: "      stark: indexwoerter(`${s.titel} ${s.frage ?? ''}`),",
+    erwartet: /die Seite, die so heißt, steht hinter der, die das Wort beiläufig erwähnt/,
+    warum: 'Der Zustand bis zum 13. September. Ein Wort in der **Nebenfrage** einer fremden '
+      + 'Seite wog so viel wie derselbe Titel; entschieden hat dann der Längenabzug für den '
+      + 'kürzeren Titel. Gemessen an der Suche „lieferung": `Geschäftsbedingungen` (11,0) '
+      + 'stand über `Lieferung und Frachtkosten` (10,7) — die AGB erwähnen das Wort einmal '
+      + 'beiläufig in ihrer Frage. Über alle 353 Wörter des ausgelieferten Index kostet die '
+      + 'Trennung nichts: 299 erste Treffer unverändert, 23 besser, 0 schlechter.',
+  }),
+  Object.freeze({
+    id: 'die-dienstseiten-fallen-wieder-aus-dem-verzeichnis',
+    pruefer: 'test',
+    was: 'Eine Art des Suchindex hat kein Gewicht mehr',
+    datei: 'shop/src/shopkern.js',
+    art: 'ersetzen',
+    suchen: "const GEWICHT = Object.freeze({ artikel: 3, gruppe: 2, system: 2, wissen: 1, dienst: 1 });",
+    ersetzen: "const GEWICHT = Object.freeze({ artikel: 3, gruppe: 2, system: 2, wissen: 1 });",
+    erwartet: /der Index führt eine andere Zahl von Arten als das Verzeichnis|art-ohne-gewicht/,
+    warum: 'Das Verzeichnis kannte vier Arten, der ausgelieferte Index führt fünf: Die sechs '
+      + 'Dienstseiten — Lieferung, Impressum, AGB, Datenschutz, Rechtliches, Abnahme — '
+      + 'standen in keiner Zeile und bekamen ihr Gewicht aus dem `?? 1` der Rechenzeile. '
+      + 'Sechs von sechsundsiebzig Einträgen wurden von einem Rückfall gewichtet, und '
+      + 'niemand hätte es gemerkt. Geprüft wird am **ausgelieferten** Index: Ein Verzeichnis '
+      + 'gegen erfundene Arten zu halten, hätte den Fund nicht gemacht.',
+  }),
+  Object.freeze({
     id: 'das-werkzeug-legt-den-massstab-nicht-an',
     pruefer: 'test',
     was: 'Ein Werkzeug reicht wieder die Bezeichnung statt den Bestellschritt herein',

@@ -8,7 +8,7 @@ import {
   ladeKorb, speichereKorb, legeInKorb, setzeMenge, korbPositionen, bereinige,
   merkeEntfallen, holeEntfallen, vergissEntfallen, entfallensatz, ENTFALLENSCHLUESSEL,
   HOECHSTMENGE,
-  kundenWarenkorb, oeffentlicherArtikel, oeffentlicherLieferant, kundenwoerter,
+  kundenWarenkorb, oeffentlicherArtikel, oeffentlicherLieferant, kundenwoerter, gewichtsbefund,
   abstand, erlaubterAbstand, meintenSie, KORBSCHLUESSEL, stamm, indexwoerter,
 } from '../src/shopkern.js';
 import { berechneWarenkorb } from '../src/warenkorb.js';
@@ -339,6 +339,64 @@ test('eine Menge, die kein ganzes Gebinde ist, wird benannt statt bepreist', () 
   const ohneGebinde = kundenWarenkorb([{ sku: 'D', menge: 1.5 }],
     { artikel: unlesbar, lieferanten: l });
   assert.equal(ohneGebinde.offen.length, 0, 'geraten wird nichts');
+});
+
+
+test('der Name einer Seite wiegt schwerer als ein Wort in ihrer Frage', () => {
+  /*
+   * **Der Fund vom 13. September 2026.** `stark` trug bis dahin Titel **und**
+   * Frage in einem Topf. Ein Wort in der Nebenfrage einer fremden Seite wog
+   * damit so viel wie derselbe Titel. Gemessen an der Suche nach „lieferung":
+   *
+   * ```
+   *   11,0  Geschäftsbedingungen        (Frage: „… welche Lieferung …")
+   *   10,7  Lieferung und Frachtkosten  (Titel)
+   * ```
+   *
+   * > **Die Seite, die so heißt, stand hinter der, die das Wort beiläufig
+   * > erwähnt** — entschieden hat der Längenabzug für den kürzeren Titel.
+   *
+   * Über alle 353 Wörter des ausgelieferten Index gemessen: 299 erste Treffer
+   * unverändert, 23 besser (das Wort steht jetzt im Titel des ersten
+   * Treffers), 0 schlechter, kein Treffer verloren.
+   */
+  const seiten = [
+    { id: 'lieferung', art: 'dienst', titel: 'Lieferung und Frachtkosten', frage: 'Was kostet die Lieferung?', kurz: '', text: '' },
+    { id: 'agb', art: 'dienst', titel: 'Geschäftsbedingungen', frage: 'Welche Zahlungsarten, welche Lieferung?', kurz: '', text: '' },
+  ];
+  const index = baueSuchindex({ artikel: [], seiten, suchwoerter: [] });
+  const treffer = suche(index, 'lieferung', { grenze: 5 });
+  assert.equal(treffer[0].id, 'lieferung',
+    'die Seite, die so heißt, steht hinter der, die das Wort beiläufig erwähnt');
+  assert.ok(treffer[0].punkte > treffer[1].punkte * 2,
+    'Titel und Nebenfrage wiegen wieder gleich schwer');
+
+  // Und die Frage bleibt mehr als Fließtext: Ohne Titeltreffer findet sie noch.
+  const nurFrage = suche(index, 'zahlungsarten', { grenze: 5 });
+  assert.equal(nurFrage.length, 1);
+  assert.equal(nurFrage[0].id, 'agb');
+});
+
+
+test('jede Art des Index trägt ein Gewicht — und jedes Gewicht eine Art', () => {
+  /*
+   * Das Verzeichnis kannte vier Arten, der Index führt fünf. Die sechs
+   * Dienstseiten bekamen ihr Gewicht aus dem `?? 1` der Rechenzeile — dieselbe
+   * Familie wie `gebinde || 1` im Rückwegprüfer am selben Tag: ein geratener
+   * Wert, der als Bequemlichkeit beginnt und als Auskunft endet.
+   */
+  assert.equal(gewichtsbefund([{ art: 'artikel' }, { art: 'wissen' }]).meldungen
+    .map((m) => m.regel).filter((r) => r === 'art-ohne-gewicht').length, 0);
+
+  const fremd = gewichtsbefund([{ art: 'artikel' }, { art: 'ausgedacht' }]);
+  assert.deepEqual(fremd.meldungen.filter((m) => m.regel === 'art-ohne-gewicht')
+    .map((m) => m.regel), ['art-ohne-gewicht'],
+  'eine Art ohne Gewicht fällt nicht auf — sie wird vom Rückfall bewertet');
+
+  // Und die Gegenrichtung: ein Gewicht, dem keine Art mehr entspricht.
+  const leer = gewichtsbefund([{ art: 'artikel' }]);
+  assert.ok(leer.meldungen.some((m) => m.regel === 'gewicht-ohne-art'),
+    'ein Gewicht ohne Art altert unbemerkt weiter');
 });
 
 

@@ -285,6 +285,10 @@ export function baueSuchindex({ artikel = [], seiten = [], suchwoerter = [] } = 
       vkNetto: a.vkNetto ?? null,
       einheit: a.einheit,
       stark: indexwoerter(a.bezeichnung),
+      // Ein Artikel hat keine Frage — das Feld bleibt leer und nicht undefined:
+      // `suche` liest es ohne Rückfall, und ein Rückfall wäre wieder eine
+      // Annahme (siehe `der-massstab-lag-im-haus.md`).
+      mittel: [],
       schwach: [...new Set([
         ...indexwoerter(`${a.gruppe} ${a.lieferantenArtikelnummer ?? ''}`),
         ...kundenwoerter(a, suchwoerter),
@@ -304,7 +308,23 @@ export function baueSuchindex({ artikel = [], seiten = [], suchwoerter = [] } = 
       titel: s.titel,
       zusatz: s.kurz ?? '',
       gruppe: s.gruppe ?? null,
-      stark: indexwoerter(`${s.titel} ${s.frage ?? ''}`),
+      /*
+       * **Titel und Frage getrennt — 13. September 2026.** Hier stand
+       * `indexwoerter(\`${s.titel} ${s.frage}\`)`: Ein Wort in der Nebenfrage
+       * einer fremden Seite wog damit so viel wie derselbe Titel. Gemessen an
+       * der Suche nach „lieferung":
+       *
+       * ```
+       *   11,0  Geschäftsbedingungen          (Frage: „… welche Lieferung …")
+       *   10,7  Lieferung und Frachtkosten    (Titel)
+       * ```
+       *
+       * Die AGB gewannen, weil ihr Titel kürzer ist — der Längenabzug war der
+       * einzige Unterschied. **Die Seite, die so heißt, stand hinter der, die
+       * das Wort beiläufig erwähnt.**
+       */
+      stark: indexwoerter(s.titel),
+      mittel: indexwoerter(s.frage ?? '').filter((w) => !indexwoerter(s.titel).includes(w)),
       schwach: indexwoerter(`${s.kurz ?? ''} ${s.text ?? ''}`),
     });
   }
@@ -313,7 +333,61 @@ export function baueSuchindex({ artikel = [], seiten = [], suchwoerter = [] } = 
 }
 
 /** Gewichte der Trefferarten. Artikel vor Seite — der Shop verkauft Ware. */
-const GEWICHT = Object.freeze({ artikel: 3, gruppe: 2, system: 2, wissen: 1 });
+/**
+ * **`dienst` ergänzt am 13. September 2026.** Das Verzeichnis kannte vier
+ * Arten, der Suchindex führt fünf: Die sechs **Dienstseiten** — Lieferung,
+ * Impressum, AGB, Datenschutz, Rechtliches, Abnahme — standen in keiner Zeile
+ * und bekamen ihr Gewicht aus dem `?? 1` der Rechenzeile.
+ *
+ * > **Sechs von sechsundsiebzig Einträgen wurden von einem Rückfall gewichtet,
+ * > und niemand hätte es gemerkt.**
+ *
+ * Dieselbe Familie wie `gebinde || 1` im Rückwegprüfer am selben Tag: Ein
+ * geratener Wert, der als Bequemlichkeit beginnt und als Auskunft endet.
+ *
+ * Die **1** ist gemessen und nicht gesetzt: Ein Versuch mit 2 verschob
+ * 26 Ergebnisse, und in mehreren davon stand danach „Abnahme und Rügefrist"
+ * über „Untergrund prüfen, bevor geklebt wird" — für die Frage „prüfen" die
+ * falsche Seite. Dienstseiten und Wissensseiten sind beides Text; was sie
+ * trennt, gehört in den Treffer und nicht in die Art.
+ *
+ * `gewichtsbefund()` hält das Verzeichnis gegen einen Index — in beide
+ * Richtungen.
+ */
+const GEWICHT = Object.freeze({ artikel: 3, gruppe: 2, system: 2, wissen: 1, dienst: 1 });
+
+/**
+ * Hält `GEWICHT` gegen die Arten, die der Index wirklich führt.
+ *
+ * Richtung eins: Eine Art ohne Gewicht wird vom Rückfall bewertet — das war
+ * der Fund. Richtung zwei: Ein Gewicht ohne Art ist eine Zeile, die nichts
+ * mehr tut, und altert unbemerkt weiter.
+ */
+export function gewichtsbefund(index = []) {
+  const meldungen = [];
+  const arten = new Map();
+  for (const e of index) arten.set(e.art, (arten.get(e.art) ?? 0) + 1);
+
+  for (const [art, anzahl] of arten) {
+    if (!(art in GEWICHT)) {
+      meldungen.push({
+        regel: 'art-ohne-gewicht',
+        text: `${art}: ${anzahl} Eintrag/Einträge im Suchindex, und das Gewichtsverzeichnis `
+          + 'kennt die Art nicht — sie wird vom Rückfall bewertet',
+      });
+    }
+  }
+  for (const art of Object.keys(GEWICHT)) {
+    if (!arten.has(art)) {
+      meldungen.push({
+        regel: 'gewicht-ohne-art',
+        text: `${art}: das Gewichtsverzeichnis führt die Art, der Suchindex kennt sie nicht `
+          + '— eine Zeile, die nichts mehr tut',
+      });
+    }
+  }
+  return { arten: arten.size, eintraege: index.length, meldungen, sauber: meldungen.length === 0 };
+}
 
 /**
  * Sucht im Index.
@@ -382,10 +456,19 @@ export function suche(index, frage, { grenze = 40 } = {}) {
       const genau = e.stark.includes(w);
       const anfang = !genau && e.stark.some((s) => s.startsWith(w));
       const mitte = !genau && !anfang && innen && e.stark.some((s) => s.includes(w));
-      const schwach = !genau && !anfang && !mitte
+      /*
+       * **Die Frage ist ein eigener Rang — 13. September 2026.** Sie stand bis
+       * heute mit dem Titel in `stark`, und damit wog „… welche Lieferung …"
+       * in der Frage der AGB so viel wie der Titel „Lieferung und
+       * Frachtkosten". Sie ist mehr als Fließtext und weniger als der Name der
+       * Seite; genau dazwischen steht sie jetzt.
+       */
+      const ausFrage = !genau && !anfang && !mitte
+        && e.mittel.some((s) => s.startsWith(w) || (innen && s.includes(w)));
+      const schwach = !genau && !anfang && !mitte && !ausFrage
         && e.schwach.some((s) => s.startsWith(w) || (innen && s.includes(w)));
-      if (!genau && !anfang && !mitte && !schwach) { alleGetroffen = false; break; }
-      punkte += genau ? 12 : anfang ? 8 : mitte ? 6 : 3;
+      if (!genau && !anfang && !mitte && !ausFrage && !schwach) { alleGetroffen = false; break; }
+      punkte += genau ? 12 : anfang ? 8 : mitte ? 6 : ausFrage ? 5 : 3;
     }
     if (!alleGetroffen) continue;
 

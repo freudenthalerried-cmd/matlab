@@ -66,6 +66,7 @@ import { brotkrume, krumeAusHtml } from '../src/krume.js';
 import { HERSTELLER, marke } from '../src/hersteller.js';
 import {
   oeffentlicherArtikel, oeffentlicherLieferant, vorteil, ustText, KORBSCHLUESSEL, HOECHSTMENGE,
+  baueSuchindex, gewichtsbefund,
 } from '../src/shopkern.js';
 import { LIEFERGEBIET } from '../src/liefergebiet.js';
 import { htaccessText } from '../src/serverkopf.js';
@@ -2941,6 +2942,26 @@ function main() {
   mkdirSync(site, { recursive: true });
   const dateiSeiten = bauen(pfadVerweis);
   const nutzdaten = shopdaten(katalog, befund, seiten, lieferantenDatei, suchwoerterDatei, betreiber, bereitschaft);
+  /*
+   * **Jede Art des Suchindex braucht ein Gewicht — 13. September 2026.**
+   *
+   * `GEWICHT` kannte vier Arten, der ausgelieferte Index führte fünf: Die
+   * sechs Dienstseiten bekamen ihr Gewicht aus dem `?? 1` der Rechenzeile.
+   * Sechs von sechsundsiebzig Einträgen, von einem Rückfall bewertet.
+   *
+   * > **Geprüft wird hier und nicht später, weil der Index **hier** entsteht.**
+   * > Wer eine neue Seitenart baut, erfährt es beim Bauen und nicht dadurch,
+   * > dass sie in der Suche hinten steht.
+   */
+  {
+    const g = gewichtsbefund(baueSuchindex(nutzdaten));
+    if (!g.sauber) {
+      console.error('\nAbbruch: der Suchindex und das Gewichtsverzeichnis passen nicht zusammen.');
+      for (const m of g.meldungen) console.error(`  · ${m.text}  [${m.regel}]`);
+      console.error('Eine Art ohne Gewicht wird vom Rückfall bewertet und fällt niemandem auf.');
+      process.exit(1);
+    }
+  }
   const shopskriptQuelle = `window.__SHOP__=${jsonFuerSkript(nutzdaten)};\n`
     + `window.__SHOP__.adressform=window.__SHOP_ADRESSFORM__||'datei';\n`
     + `window.__SHOP__.tiefe=!!window.__SHOP_TIEFE__;\n`

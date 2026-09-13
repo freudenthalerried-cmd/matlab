@@ -34,6 +34,29 @@
  * roten Dateien und nicht nur die erste — fängt den Fall mehr als eine, sind
  * sie alle Zeugen, und keine davon darf beim nächsten Mal fehlen.
  */
+/**
+ * Testdateien, die **kein** Zeuge sein können.
+ *
+ * **Der Fund, 13. September 2026.** Drei Gegenproben desselben Tages meldeten
+ * „nach dem Zurücksetzen nicht wieder grün — die Probe hat etwas
+ * hinterlassen", und keine davon hatte etwas hinterlassen.
+ *
+ * `test/erzeugnisfrische.test.js` prüft, ob die gebauten Erzeugnisse jünger
+ * sind als ihre Quellen. Eine Mutation an einer Quelldatei des Bündels macht
+ * ihn **durch ihre bloße Existenz** rot — und das Zurücksetzen macht ihn nicht
+ * wieder grün, denn die Datei ist danach wieder jünger als der letzte Bau.
+ *
+ * > **Ein Wächter über die Frische der Erzeugnisse kann kein Zeuge einer
+ * > Mutation sein: Er wird von jeder rot, und nach dem Zurücksetzen bleibt er
+ * > es, bis jemand neu baut.**
+ *
+ * Er wird deshalb aus der Zeugenliste genommen. Was er misst, bleibt richtig
+ * und bleibt im Gesamtlauf; er sagt nur nichts darüber, ob eine Mutation
+ * gefangen wurde. Bleibt nach dem Aussortieren kein Zeuge übrig, läuft beim
+ * nächsten Mal die ganze Reihe — das ist der sichere Ausgang.
+ */
+export const KEINE_ZEUGEN = Object.freeze(['shop/test/erzeugnisfrische.test.js']);
+
 export function zeugeAus(ausgabe) {
   const zeilen = String(ausgabe ?? '').split('\n');
   const dateien = new Set();
@@ -45,6 +68,7 @@ export function zeugeAus(ausgabe) {
       if (t) { dateien.add(`shop/${t[2]}`); break; }
     }
   }
+  for (const aus of KEINE_ZEUGEN) dateien.delete(aus);
   return [...dateien].sort();
 }
 

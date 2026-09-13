@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 import { suchdeckungsbefund } from '../src/suchdeckung.js';
-import { baueSuchindex, suche } from '../src/shopkern.js';
+import { baueSuchindex, gewichtsbefund, suche } from '../src/shopkern.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const SKRIPT = join(SHOP, 'ausgabe', 'site', 'shop.js');
@@ -86,6 +86,26 @@ test('jedes geführte Keyword findet im ausgelieferten Index etwas', () => {
   const b = suchdeckungsbefund({ keywords, finde: (f) => suche(index, f, { grenze: 20 }) });
   assert.deepEqual(b.meldungen.map((m) => m.text), []);
   assert.ok(b.geprueft >= 20, `nur ${b.geprueft} Keywords — das misst nichts`);
+
+  /*
+   * **Und jede Art im Index hat ein Gewicht — 13. September 2026.**
+   *
+   * Das Verzeichnis `GEWICHT` kannte vier Arten, der ausgelieferte Index führt
+   * fünf: Die sechs **Dienstseiten** — Lieferung, Impressum, AGB, Datenschutz,
+   * Rechtliches, Abnahme — standen in keiner Zeile und wurden vom `?? 1` der
+   * Rechenzeile bewertet.
+   *
+   * > **Sechs von sechsundsiebzig Einträgen wurden von einem Rückfall
+   * > gewichtet, und niemand hätte es gemerkt.**
+   *
+   * Geprüft wird hier am **ausgelieferten** Index und nicht an einem gebauten:
+   * Ein Verzeichnis gegen erfundene Arten zu halten, hätte den Fund nicht
+   * gemacht — die Art heißt `dienst`, und darauf wäre niemand gekommen.
+   */
+  const g = gewichtsbefund(index);
+  assert.deepEqual(g.meldungen.map((m) => m.text), []);
+  assert.equal(g.arten, 5, 'der Index führt eine andere Zahl von Arten als das Verzeichnis');
+  assert.ok(g.eintraege >= 60, `nur ${g.eintraege} Indexeinträge — das misst nichts`);
 });
 
 test('Ein Wort mehr, ein Treffer weniger — das ist keine Systemfrage', () => {

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { alsDatei, befehlFuer, mitZeuge, zeugeAus } from '../src/zeugen.js';
+import { KEINE_ZEUGEN, alsDatei, befehlFuer, mitZeuge, zeugeAus } from '../src/zeugen.js';
 
 const TAP = [
   'TAP version 13',
@@ -65,4 +65,48 @@ test('Der Stand steht sortiert in der Datei — ein Abdruck, der sich nicht bewe
   assert.ok(text.indexOf('erstens') < text.indexOf('zweitens'));
   assert.ok(text.endsWith('\n'));
   assert.deepEqual(JSON.parse(text).erstens, ['shop/test/a.test.js']);
+});
+
+test('der Frischewächter ist kein Zeuge', () => {
+  /*
+   * **Der Fund vom 13. September 2026.** Drei Gegenproben desselben Tages
+   * meldeten „nach dem Zurücksetzen nicht wieder grün — die Probe hat etwas
+   * hinterlassen", und keine davon hatte etwas hinterlassen.
+   *
+   * `erzeugnisfrische.test.js` prüft, ob die gebauten Erzeugnisse jünger sind
+   * als ihre Quellen. Eine Mutation an einer Quelldatei des Bündels macht ihn
+   * **durch ihre bloße Existenz** rot — und das Zurücksetzen macht ihn nicht
+   * wieder grün: Die Datei ist danach wieder jünger als der letzte Bau.
+   *
+   * > **Ein Wächter über die Frische der Erzeugnisse kann kein Zeuge einer
+   * > Mutation sein.** Er wird von jeder rot, und nach dem Zurücksetzen bleibt
+   * > er es, bis jemand neu baut.
+   */
+  const tap = [
+    'not ok 1 - der Bestand steht',
+    '  ---',
+    "  location: '/home/user/matlab/shop/test/erzeugnisfrische.test.js:42:1'",
+    '  ...',
+    'not ok 2 - die Nebenfrage wiegt wie der Titel',
+    '  ---',
+    "  location: '/home/user/matlab/shop/test/shopkern.test.js:288:1'",
+    '  ...',
+  ].join('\n');
+  assert.deepEqual(zeugeAus(tap), ['shop/test/shopkern.test.js'],
+    'der Frischewächter steht wieder in der Zeugenliste');
+
+  // Bleibt nichts übrig, gibt es keinen Zeugen — und die ganze Reihe läuft.
+  // Das ist der sichere Ausgang: ein falscher Alarm, kein falsches Grün.
+  const nurFrische = [
+    'not ok 1 - der Bestand steht',
+    '  ---',
+    "  location: '/home/user/matlab/shop/test/erzeugnisfrische.test.js:42:1'",
+    '  ...',
+  ].join('\n');
+  assert.deepEqual(zeugeAus(nurFrische), []);
+  assert.deepEqual(befehlFuer({ id: 'x', pruefer: 'test' }, { x: [] }), 'npm test');
+
+  assert.ok(KEINE_ZEUGEN.includes('shop/test/erzeugnisfrische.test.js'));
+  assert.equal(KEINE_ZEUGEN.length, 1,
+    'eine zweite Datei ohne Zeugenkraft — dann gehört ihr Grund danebengeschrieben');
 });

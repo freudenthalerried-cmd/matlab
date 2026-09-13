@@ -2160,6 +2160,10 @@ function baueSuchindex({ artikel = [], seiten = [], suchwoerter = [] } = {}) {
       vkNetto: a.vkNetto ?? null,
       einheit: a.einheit,
       stark: indexwoerter(a.bezeichnung),
+      
+      
+      
+      mittel: [],
       schwach: [...new Set([
         ...indexwoerter(`${a.gruppe} ${a.lieferantenArtikelnummer ?? ''}`),
         ...kundenwoerter(a, suchwoerter),
@@ -2179,7 +2183,23 @@ function baueSuchindex({ artikel = [], seiten = [], suchwoerter = [] } = {}) {
       titel: s.titel,
       zusatz: s.kurz ?? '',
       gruppe: s.gruppe ?? null,
-      stark: indexwoerter(`${s.titel} ${s.frage ?? ''}`),
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      stark: indexwoerter(s.titel),
+      mittel: indexwoerter(s.frage ?? '').filter((w) => !indexwoerter(s.titel).includes(w)),
       schwach: indexwoerter(`${s.kurz ?? ''} ${s.text ?? ''}`),
     });
   }
@@ -2188,7 +2208,61 @@ function baueSuchindex({ artikel = [], seiten = [], suchwoerter = [] } = {}) {
 }
 
 
-const GEWICHT = Object.freeze({ artikel: 3, gruppe: 2, system: 2, wissen: 1 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const GEWICHT = Object.freeze({ artikel: 3, gruppe: 2, system: 2, wissen: 1, dienst: 1 });
+
+
+
+
+
+
+
+
+function gewichtsbefund(index = []) {
+  const meldungen = [];
+  const arten = new Map();
+  for (const e of index) arten.set(e.art, (arten.get(e.art) ?? 0) + 1);
+
+  for (const [art, anzahl] of arten) {
+    if (!(art in GEWICHT)) {
+      meldungen.push({
+        regel: 'art-ohne-gewicht',
+        text: `${art}: ${anzahl} Eintrag/Einträge im Suchindex, und das Gewichtsverzeichnis `
+          + 'kennt die Art nicht — sie wird vom Rückfall bewertet',
+      });
+    }
+  }
+  for (const art of Object.keys(GEWICHT)) {
+    if (!arten.has(art)) {
+      meldungen.push({
+        regel: 'gewicht-ohne-art',
+        text: `${art}: das Gewichtsverzeichnis führt die Art, der Suchindex kennt sie nicht `
+          + '— eine Zeile, die nichts mehr tut',
+      });
+    }
+  }
+  return { arten: arten.size, eintraege: index.length, meldungen, sauber: meldungen.length === 0 };
+}
 
 
 
@@ -2257,10 +2331,19 @@ function suche(index, frage, { grenze = 40 } = {}) {
       const genau = e.stark.includes(w);
       const anfang = !genau && e.stark.some((s) => s.startsWith(w));
       const mitte = !genau && !anfang && innen && e.stark.some((s) => s.includes(w));
-      const schwach = !genau && !anfang && !mitte
+      
+
+
+
+
+
+
+      const ausFrage = !genau && !anfang && !mitte
+        && e.mittel.some((s) => s.startsWith(w) || (innen && s.includes(w)));
+      const schwach = !genau && !anfang && !mitte && !ausFrage
         && e.schwach.some((s) => s.startsWith(w) || (innen && s.includes(w)));
-      if (!genau && !anfang && !mitte && !schwach) { alleGetroffen = false; break; }
-      punkte += genau ? 12 : anfang ? 8 : mitte ? 6 : 3;
+      if (!genau && !anfang && !mitte && !ausFrage && !schwach) { alleGetroffen = false; break; }
+      punkte += genau ? 12 : anfang ? 8 : mitte ? 6 : ausFrage ? 5 : 3;
     }
     if (!alleGetroffen) continue;
 
