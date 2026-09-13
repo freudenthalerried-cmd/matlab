@@ -23,6 +23,7 @@ import { OHNE_WERKZEUG } from '../src/offenepunkte.js';
 import { GRENZE_TAGE } from '../src/preisalter.js';
 import { punktebefund } from '../src/punktezahlen.js';
 import { beschreibungsbefund } from '../src/maschinenlesbar.js';
+import { massbefund } from '../src/bezeichnungsmass.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const REPO = dirname(SHOP);
@@ -66,7 +67,14 @@ const messwerte = {
   begriffe: messliste.gruppen.reduce((n, g) => n + g.keywords.length, 0),
   ...(() => {
     const b = beschreibungsbefund(katalog.artikel);
-    return { ohneWareneigenschaft: b.ohneWareneigenschaft, nurDatensatz: b.nurDatensatz };
+    const m = massbefund(katalog.artikel);
+    const ohne = new Set(b.ohneWareneigenschaftSkus);
+    return {
+      ohneWareneigenschaft: b.ohneWareneigenschaft,
+      nurDatensatz: b.nurDatensatz,
+      eindeutigeNamen: m.eindeutig,
+      namensleserGewinn: m.skus.eindeutig.filter((sku) => ohne.has(sku)).length,
+    };
   })(),
 };
 

@@ -3992,6 +3992,21 @@ export const GEGENPROBEN = Object.freeze([
       + '`src/skonto.js`.',
   }),
   Object.freeze({
+    id: 'die-x-form-zaehlt-wieder-als-ein-mass',
+    pruefer: 'pruefe-masse',
+    was: 'Zwei Zahlen unter einer Einheit zaehlen wieder als ein Mass',
+    datei: 'shop/src/bezeichnungsmass.js',
+    art: 'ersetzen',
+    suchen: "    masse.push({ zahl: t[1], einheit: t[3], form: 'x' });\n    masse.push({ zahl: t[2], einheit: t[3], form: 'x' });",
+    ersetzen: "    masse.push({ zahl: t[2], einheit: t[3], form: 'x' });",
+    erwartet: /eindeutig: gemessen 10, festgehalten 8/,
+    warum: '`Baumit TextilglasGitter 1,1x50 m` und `Rahmenschraube Zylinderkopf vz 7,5x182 mm` '
+      + 'standen in der ersten Messung in der Spalte „eindeutig", weil der Leser genau **ein** '
+      + 'Paar aus Zahl und Einheit fand. Der Name traegt zwei: Breite mal Laenge, Durchmesser '
+      + 'mal Laenge. „Eindeutig" hiess: Der Leser findet genau eine Zahl — es hiess nicht: Der '
+      + 'Name traegt genau eine. Ohne diese Lesung meldete die Messung zehn statt acht.',
+  }),
+  Object.freeze({
     id: 'die-zahl-im-offenen-punkt-wird-wieder-nur-behauptet',
     pruefer: 'pruefe-punkte',
     was: 'Die Beschreibungszahl im offenen Punkt geht nicht mehr gegen den Bestand',

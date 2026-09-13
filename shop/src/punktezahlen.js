@@ -105,6 +105,31 @@ export function kennzahlen(m) {
       wie: 'src/maschinenlesbar.js (beschreibungsbefund)',
       muster: /bei (\d+) davon der Preisstand allein/, soll: m.nurDatensatz,
     },
+    /*
+     * **Seit 13. September, spaetabends.** Das Urteil ueber einen Namensleser
+     * ist eine Aussage ueber diesen Katalog — `npm run pruefe-masse` misst sie,
+     * und `GEMESSEN` in `src/bezeichnungsmass.js` haelt sie fest.
+     */
+    {
+      name: 'Namen mit eindeutigem Mass', wo: 'artikelliste',
+      wie: 'src/bezeichnungsmass.js (massbefund)',
+      muster: /eindeutigem Maß: (\d+) von \d+/, soll: m.eindeutigeNamen,
+    },
+    {
+      name: 'Artikel im Katalog, im Massesatz', wo: 'artikelliste',
+      wie: 'data/katalog-baustoff.json',
+      muster: /eindeutigem Maß: \d+ von (\d+)/, soll: m.artikel,
+    },
+    {
+      name: 'Beschreibungen, die ein Namensleser erreichte', wo: 'artikelliste',
+      wie: 'src/bezeichnungsmass.js gegen src/maschinenlesbar.js',
+      muster: /senkte die \d+ um (\d+)/, soll: m.namensleserGewinn,
+    },
+    {
+      name: 'Beschreibungen ohne Ware, im Massesatz', wo: 'artikelliste',
+      wie: 'src/maschinenlesbar.js (beschreibungsbefund)',
+      muster: /senkte die (\d+) um \d+/, soll: m.ohneWareneigenschaft,
+    },
     {
       name: 'Begriffe der Messliste', wo: 'suchvolumen',
       wie: 'ausgabe/messliste-baustoff.json (npm run messliste)',

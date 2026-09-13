@@ -6,6 +6,7 @@ import { OHNE_MESSUNG, WERKZEUGE_MIT_GRUNDLAGE, kennzahlen, punktebefund } from 
 const MESSWERTE = {
   artikel: 46, mitGewicht: 7, mindestbestellwert: 250, grenzeTage: 90, begriffe: 29,
   ohneWareneigenschaft: 21, nurDatensatz: 13,
+  eindeutigeNamen: 8, namensleserGewinn: 3,
 };
 
 /**
@@ -29,7 +30,8 @@ const gut = () => ({
     {
       id: 'artikelliste',
       text: 'Beschreibung: 21 von 46 sagen über die Ware selbst nichts, '
-        + 'bei 13 davon der Preisstand allein.',
+        + 'bei 13 davon der Preisstand allein. Namen mit eindeutigem Maß: 8 von 46. '
+        + 'Ein Namensleser senkte die 21 um 3.',
     },
   ],
   messwerte: MESSWERTE,

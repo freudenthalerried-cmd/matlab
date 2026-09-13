@@ -106,6 +106,7 @@
     "rollout": "node bin/rollout.mjs",
     "kennzahlen": "node bin/kennzahlen.mjs",
     "pruefe-auftrag": "node bin/auftragspruefung.mjs",
-    "reichweite": "node bin/reichweite.mjs"
+    "reichweite": "node bin/reichweite.mjs",
+    "pruefe-masse": "node bin/massprobe.mjs"
   }
 }

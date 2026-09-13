@@ -233,7 +233,15 @@ export const OHNE_WERKZEUG = Object.freeze([
       + 'nichts** — ihr ganzer eigener Beitrag ist „Palettierte Ware" und ein Preisstand, bei '
       + '13 davon der Preisstand allein. Weder Versandart noch Preisdatum ist eine '
       + 'Eigenschaft der Ware; die Zahl steht als Sperrklinke in '
-      + '`OHNE_WARENEIGENSCHAFT_HOECHSTENS` und darf fallen, nicht steigen. Der größte gleiche '
+      + '`OHNE_WARENEIGENSCHAFT_HOECHSTENS` und darf fallen, nicht steigen. **Gemessen 13.09. '
+      + 'spätabends, warum das nur diese Liste löst:** Die Maße stehen in den Bezeichnungen, '
+      + 'aber lesbar sind sie selten — Namen mit eindeutigem Maß: 8 von 46 (`npm run '
+      + 'pruefe-masse`). Die übrigen drei Bauarten: ein Schachtring, dessen Name Durchmesser, '
+      + 'Höhe und Wandstärke ohne Rolle aneinanderreiht; eine Spachtelmasse, deren '
+      + 'Produktkennung auf ein M endet — ein Leser macht daraus Meter und hängt sie an einen '
+      + 'Sack Klebemörtel; ein Gittergewebe, dessen Breite und Länge unter einer Einheit '
+      + 'stehen. Und von den acht lesbaren nennen fünf ihr Maß schon: Ein Namensleser senkte '
+      + 'die 21 um 3. Der größte gleiche '
       + 'Block der Seiten ist dagegen unser eigener Lieferabsatz und bleibt es auch mit dieser '
       + 'Liste.',
   },

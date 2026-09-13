@@ -297,6 +297,20 @@ export const PRUEFER = [
     einheit: 'Artikelseiten gegeneinander',
     mindestens: 30,
   },
+  // **Aufgenommen am 13. September.** Die Runde davor hat beziffert, dass 21
+  // von 46 maschinenlesbaren Beschreibungen über die Ware nichts sagen, und den
+  // naheliegenden Ausweg — die Maße aus den Bezeichnungen lesen — mit einer
+  // Bedingung versehen: erst messen, wie viele Namen eindeutig sind. Das misst
+  // dieser Lauf, und er baut nichts. Gemessen wird die Zahl der **gelesenen
+  // Namen**, nicht die der lesbaren: Ein Lauf über vierzig Namen, der acht für
+  // eindeutig hält, hat vierzig angesehen.
+  {
+    name: 'pruefe-masse',
+    werkzeug: 'massprobe.mjs',
+    muster: /Maße in den Bezeichnungen — (\d+) Artikelnamen gelesen/,
+    einheit: 'Artikelnamen auf ein eindeutiges Maß',
+    mindestens: 30,
+  },
   {
     name: 'pruefe-ungerufen',
     werkzeug: 'ungerufen.mjs',
