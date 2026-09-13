@@ -336,10 +336,29 @@ export function stelleRechnungAus(ablage, rechnung, { zeitpunkt, jahr, vorgang, 
  * wird **nicht** wiederverwendet — eine wiederverwendete Rechnungsnummer ist
  * genau das, was § 11 mit „einmalig" ausschließt.
  */
-export function storniere(ablage, nummer, { grund, zeitpunkt, jahr, nummer: gezogen = null }) {
-  const ziel = ablage.eintraege.find((e) => e.nummer === nummer);
+export function storniere(ablage, nummer, {
+  grund, zeitpunkt, jahr, nummer: gezogen = null, bezug = null, bekannt = null,
+}) {
+  /*
+   * **`bezug` und `bekannt` seit dem 13. September 2026.**
+   *
+   * Diese Funktion suchte die aufzuhebende Rechnung in **der Ablage, in die
+   * sie schreibt** — also im Journal des laufenden Geschäftsjahres. Eine
+   * Rechnung vom 20. Dezember, die im Jänner aufgehoben wird, stand dort
+   * nicht, und der Lauf brach mit einer ungefangenen Ausnahme ab —
+   * **nachdem** die Durchschrift der Gutschrift schon geschrieben war.
+   *
+   * > **Und die schwerere Richtung: `istStorniert` sah ein Storno aus dem
+   * > Vorjahr nicht.** Zweimal aufheben heißt einmal zu viel gutschreiben.
+   *
+   * Die Nummer zieht weiterhin der Kreis des Jahres, in das geschrieben wird
+   * (§ 11 Abs 1 Z 5 UStG, fortlaufend und einmalig je Geschäftsjahr). Gesucht
+   * wird über alles, was der Aufrufer kennt.
+   */
+  const bestand = bekannt ?? ablage.eintraege;
+  const ziel = bezug ?? bestand.find((e) => e.nummer === nummer);
   if (!ziel) throw new Error(`Kein Eintrag mit der Nummer ${nummer}`);
-  if (istStorniert(ablage, nummer)) {
+  if (istStorniert({ eintraege: bestand }, nummer)) {
     throw new Error(`${nummer} ist bereits storniert`);
   }
 

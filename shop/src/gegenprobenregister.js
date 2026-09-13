@@ -3861,6 +3861,39 @@ export const GEGENPROBEN = Object.freeze([
       + 'je Journal neu.',
   }),
   Object.freeze({
+    id: 'der-posteingang-sucht-im-falschen-jahr',
+    pruefer: 'test',
+    was: 'Der Posteingang sucht die Papiere im Journal des Posteingangsjahres',
+    datei: 'shop/bin/posteingang.mjs',
+    art: 'ersetzen',
+    suchen: "  ? readdirSync(aktenwurzel).filter(istJournal).sort()\n  : [];",
+    ersetzen: "  ? readdirSync(aktenwurzel).filter(istJournal).sort()\n    .filter((d) => d.includes(String(jahr)))\n  : [];",
+    erwartet: /die Bestellung ist im Folgejahr bearbeitet und gilt als offen/,
+    warum: 'Eine Bestellung vom 20. Dezember, die im Jänner zum Vorgang wurde, hat ihre '
+      + 'Papiere im Journal des Folgejahres. Gesucht wurde im Jahr des **Posteingangs** — die '
+      + 'Bestellung galt als offen, und das Werkzeug schlug sie zur Arbeit vor. **Das ist der '
+      + 'Fund vom 12. September, wiederhergestellt durch den Jahreswechsel:** Wer folgt, macht '
+      + 'ein zweites Angebot über dieselbe Ware, unter einer zweiten Vorgangsnummer, an '
+      + 'denselben Kunden — und zwar in den Tagen, in denen ohnehin niemand in der Routine ist.',
+  }),
+  Object.freeze({
+    id: 'zweimal-aufgehoben-ueber-den-jahreswechsel',
+    pruefer: 'test',
+    was: 'Ein Storno aus einem anderen Jahr zählt nicht als Storno',
+    datei: 'shop/src/ablage.js',
+    art: 'ersetzen',
+    suchen: '  if (istStorniert({ eintraege: bestand }, nummer)) {',
+    ersetzen: '  if (istStorniert(ablage, nummer)) {',
+    erwartet: /dieselbe Rechnung ließ sich über den Jahreswechsel zweimal aufheben/,
+    warum: '`storniere` suchte die aufzuhebende Rechnung in der Ablage, **in die sie '
+      + 'schreibt** — also im Journal des laufenden Geschäftsjahres. Eine Rechnung vom '
+      + '20. Dezember, die im Jänner aufgehoben wird, stand dort nicht: Der Lauf brach mit '
+      + 'einer ungefangenen Ausnahme ab, nachdem die Durchschrift der Gutschrift schon '
+      + 'geschrieben war. **Die schwerere Richtung ist die andere: `istStorniert` sah ein '
+      + 'Storno aus dem Vorjahr nicht, und zweimal aufheben heißt einmal zu viel '
+      + 'gutschreiben** — mit umgekehrtem Vorzeichen in der Umsatzsteuervoranmeldung.',
+  }),
+  Object.freeze({
     id: 'verfallenes-angebot-bindet-weiter',
     pruefer: 'test',
     was: 'Die Akte hält ein abgelaufenes Angebot für bindend',

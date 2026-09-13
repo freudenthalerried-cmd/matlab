@@ -646,14 +646,35 @@ if (stufe === 'gutschrift') {
   const jahrDerGutschrift = Number(datum.slice(0, 4));
   const wurzelDerGutschrift = process.env.VORGANG_ABLAGE ?? join(REPO, ABLAGEORT);
   const gutschriftjournal = join(wurzelDerGutschrift, `journal-${jahrDerGutschrift}.jsonl`);
-  if (!existsSync(gutschriftjournal)) {
-    abbruch(`Kein Journal ${jahrDerGutschrift} in ${wurzelDerGutschrift}.`,
+
+  /*
+   * **Gesucht wird über alle Jahre, gezogen wird im laufenden — 13. September 2026.**
+   *
+   * Hier stand beides im Journal des Gutschriftdatums. Eine Rechnung vom
+   * 20. Dezember, die im Jänner aufgehoben wird, war damit nicht zu finden:
+   * „RE-2026-0007 steht nicht in der Akte 2027." Und schlimmer in die andere
+   * Richtung — `istStorniert` sah ein Storno aus dem Vorjahr nicht und hätte
+   * **zweimal gutgeschrieben**, was einmal zu viel ist.
+   *
+   * Die Nummer der Gutschrift zieht weiter der Nummernkreis des laufenden
+   * Jahres: § 11 Abs 1 Z 5 UStG verlangt fortlaufend und einmalig, und der
+   * Kreis beginnt je Geschäftsjahr neu. Dieselbe Trennlinie wie in
+   * `bin/akte.mjs`.
+   */
+  const bekannteZeilen = existsSync(wurzelDerGutschrift)
+    ? readdirSync(wurzelDerGutschrift).filter(istJournal).sort()
+      .flatMap((d) => ausJournal(readFileSync(join(wurzelDerGutschrift, d), 'utf8')).eintraege)
+    : [];
+  if (!bekannteZeilen.length) {
+    abbruch(`Kein Journal in ${wurzelDerGutschrift}.`,
       'Eine Gutschrift zu einer Rechnung, die in keiner Akte steht, ist keine.');
   }
-  const gutschriftablage = ausJournal(readFileSync(gutschriftjournal, 'utf8'));
-  const ziel = gutschriftablage.eintraege.find((e) => e.nummer === storniert);
-  if (!ziel) abbruch(`${storniert} steht nicht in der Akte ${jahrDerGutschrift}.`);
-  if (istStorniert(gutschriftablage, storniert)) {
+  const gutschriftablage = existsSync(gutschriftjournal)
+    ? ausJournal(readFileSync(gutschriftjournal, 'utf8'))
+    : ausJournal('');
+  const ziel = bekannteZeilen.find((e) => e.nummer === storniert);
+  if (!ziel) abbruch(`${storniert} steht nicht in ${wurzelDerGutschrift}.`);
+  if (istStorniert({ eintraege: bekannteZeilen }, storniert)) {
     abbruch(`${storniert} ist bereits storniert.`,
       'Zweimal aufheben heißt einmal zu viel gutschreiben.');
   }
@@ -716,6 +737,9 @@ if (stufe === 'gutschrift') {
     zeitpunkt: datum,
     jahr: jahrDerGutschrift,
     nummer: gutschriftnummer,
+    // Gesucht wird über alle Jahre, geschrieben wird ins laufende.
+    bezug: ziel,
+    bekannt: bekannteZeilen,
   });
 
   console.log(`\nAbgelegt: Gutschrift ${eintragGs.nummer} zu ${storniert}, `

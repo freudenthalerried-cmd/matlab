@@ -72,6 +72,9 @@
   "der-auszug-ohne-abgleich": [
     "shop/test/ablageort.test.js"
   ],
+  "der-posteingang-sucht-im-falschen-jahr": [
+    "shop/test/jahreswechsel.test.js"
+  ],
   "der-posteingang-vergisst-die-akte": [
     "shop/test/posteingang.test.js"
   ],
@@ -268,6 +271,9 @@
   ],
   "zeuge-still-verloren": [
     "shop/test/zeugen.test.js"
+  ],
+  "zweimal-aufgehoben-ueber-den-jahreswechsel": [
+    "shop/test/jahreswechsel.test.js"
   ],
   "zweimal-herausgeschnitten": [
     "shop/test/posteingang.test.js"

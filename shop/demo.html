@@ -8556,10 +8556,29 @@ function stelleRechnungAus(ablage, rechnung, { zeitpunkt, jahr, vorgang, betreff
 
 
 
-function storniere(ablage, nummer, { grund, zeitpunkt, jahr, nummer: gezogen = null }) {
-  const ziel = ablage.eintraege.find((e) => e.nummer === nummer);
+function storniere(ablage, nummer, {
+  grund, zeitpunkt, jahr, nummer: gezogen = null, bezug = null, bekannt = null,
+}) {
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const bestand = bekannt ?? ablage.eintraege;
+  const ziel = bezug ?? bestand.find((e) => e.nummer === nummer);
   if (!ziel) throw new Error(`Kein Eintrag mit der Nummer ${nummer}`);
-  if (istStorniert(ablage, nummer)) {
+  if (istStorniert({ eintraege: bestand }, nummer)) {
     throw new Error(`${nummer} ist bereits storniert`);
   }
 

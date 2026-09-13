@@ -25,13 +25,13 @@
  * zweite Nachrechnung hier wären zwei Rechnungen über denselben Warenkorb.
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, relative, resolve } from 'node:path';
 
 import { BESTELLFELDER } from '../src/bestellfelder.js';
 import { pruefeBestelldaten } from '../src/kunde.js';
-import { ABLAGEORT } from '../src/ablageort.js';
+import { ABLAGEORT, istJournal } from '../src/ablageort.js';
 import {
   kundendatei, leseJournal, posteingangsbefund, vorgaengeOhneBestellung,
 } from '../src/posteingang.js';
@@ -71,12 +71,37 @@ if (!existsSync(journal)) {
  * Gelesen werden Nummern und gezählt werden Papiere; kein Inhalt.
  */
 const aktenwurzel = process.env.VORGANG_ABLAGE ?? join(REPO, ABLAGEORT);
-const aktenjournal = join(aktenwurzel, `journal-${jahr}.jsonl`);
+
+/*
+ * **Über alle Jahre — 13. September 2026.** Hier stand
+ * `journal-${jahr}.jsonl`, und `jahr` ist das Jahr des **Posteingangs**. Eine
+ * Bestellung vom 20. Dezember, die im Jänner zum Vorgang wurde, hat ihre
+ * Papiere im Journal des Folgejahres — gesucht wurde im alten. Gemessen:
+ *
+ * ```
+ * Posteingang — 1 Bestellungen, 1 angebotsreif, 1 davon noch offen
+ *   ✓ B-2026-0500  2026-12-20  Musterbau GmbH (Perg)
+ * Zum Weiterarbeiten:
+ *   npm run posteingang -- --nummer B-2026-0500 …
+ * ```
+ *
+ * > **Die Bestellung war längst bearbeitet, und das Werkzeug schlug sie zur
+ * > Arbeit vor** — also genau der Fund vom 12. September, wiederhergestellt
+ * > durch den Jahreswechsel. Wer folgt, macht ein zweites Angebot über
+ * > dieselbe Ware, und zwar in den Tagen, in denen ohnehin niemand in der
+ * > Routine ist.
+ *
+ * Dieselbe Trennlinie wie in `bin/akte.mjs`: Was an der Datei hängt, bleibt
+ * beim Jahr; was am Geschäftsfall hängt, gehört zum Vorgang.
+ */
 let vorgaenge = [];
 let akteUnlesbar = null;
-if (existsSync(aktenjournal)) {
+const aktenjournale = existsSync(aktenwurzel)
+  ? readdirSync(aktenwurzel).filter(istJournal).sort()
+  : [];
+for (const datei of aktenjournale) {
   try {
-    vorgaenge = ausJournal(readFileSync(aktenjournal, 'utf8')).eintraege;
+    vorgaenge.push(...ausJournal(readFileSync(join(aktenwurzel, datei), 'utf8')).eintraege);
   } catch (fehler) {
     /*
      * **Ein unlesbares Aktenjournal darf den Posteingang nicht schließen.**
@@ -88,7 +113,9 @@ if (existsSync(aktenjournal)) {
      * Gesagt wird es laut, und die Sperre gegen das zweite Herausschneiden
      * fällt damit weg — deshalb steht der Satz oben und nicht im Kleingedruckten.
      */
-    akteUnlesbar = fehler.message;
+    akteUnlesbar = `${datei}: ${fehler.message}`;
+    vorgaenge = [];
+    break;
   }
 }
 
@@ -101,7 +128,7 @@ console.log(`Posteingang — ${befund.length} Bestellungen, ${bereit.length} ang
   + `${offen.length} davon noch offen\n`);
 
 if (akteUnlesbar) {
-  console.log(`  ! Das Aktenjournal ${aktenjournal} ist nicht lesbar: ${akteUnlesbar}`);
+  console.log(`  ! Ein Aktenjournal in ${aktenwurzel} ist nicht lesbar: ${akteUnlesbar}`);
   console.log('    Ohne es weiß dieses Werkzeug nicht, was schon bearbeitet ist —');
   console.log('    und die Sperre gegen ein zweites Herausschneiden fällt weg.\n');
 }
