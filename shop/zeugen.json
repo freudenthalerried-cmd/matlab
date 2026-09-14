@@ -103,6 +103,9 @@
   "der-fehlschlag-des-pr-textes-sieht-aus-wie-ein-erfolg": [
     "shop/test/schaufenster.test.js"
   ],
+  "der-fremde-leser-wird-nur-noch-nach-dem-code-gefragt": [
+    "shop/test/paket.test.js"
+  ],
   "der-frischewaechter-wird-wieder-zeuge": [
     "shop/test/zeugen.test.js"
   ],

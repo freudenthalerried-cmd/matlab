@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto';
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { baueZip, crc32, dosZeit, archivbefund, inhaltsbefund } from '../src/paket.js';
+import { baueZip, crc32, dosZeit, archivbefund, inhaltsbefund, fremdleserbefund, beilagenbefund } from '../src/paket.js';
 import { wegwerfordner } from '../src/wegwerf.js';
 
 test('Die Prüfsumme stimmt mit der bekannten Probe überein', () => {
@@ -134,4 +134,55 @@ test('Das Inhaltsverzeichnis wird in beide Richtungen nachgerechnet', () => {
 
   const ohneDatei = inhaltsbefund(`${summe}  5  gibt-es-nicht.html`, summen, groessen);
   assert.ok(ohneDatei.meldungen.some((m) => m.regel === 'zeile-ohne-datei'));
+});
+
+/*
+ * ## Vier Regeln, die das Archiv angeblich verhinderte
+ *
+ * **14. September 2026, abends.** Sie standen in der Zählung der Regelnamen
+ * als „nie gesehen", und der naheliegende Grund war derselbe wie bei der
+ * Kopfzeilenprobe: Die Probe braucht ein echtes `unzip` und ein ausgepacktes
+ * Archiv. Der Läufer packt weiter mit einem fremden Programm aus — er
+ * entscheidet nur nicht mehr selbst.
+ */
+test('Ein fremder Leser, der das Archiv annimmt, und einer, der sich weigert', () => {
+  assert.deepEqual(fremdleserbefund({ status: 0, ausgabe: 'No errors detected in a.zip' }).meldungen, []);
+  const kaputt = fremdleserbefund({ status: 2, ausgabe: 'zipfile is corrupt' });
+  assert.deepEqual(kaputt.meldungen.map((m) => m.regel), ['unzip-weigert-sich'],
+    JSON.stringify(kaputt.meldungen));
+  // Code 0 und trotzdem kein „No errors detected" zählt ebenfalls: Ein Leser,
+  // der schweigt, hat nichts bestätigt.
+  assert.deepEqual(fremdleserbefund({ status: 0, ausgabe: '' }).meldungen.map((m) => m.regel),
+    ['unzip-weigert-sich']);
+});
+
+test('Die beiden Beilagen des Archivs', () => {
+  const punkte = [{ erwartet: 'Punkt eins' }, { erwartet: 'Punkt zwei' }];
+  const gut = beilagenbefund({
+    inhaltDa: true, abnahmeDa: true, abnahmetext: 'Punkt eins\nPunkt zwei', punkte,
+  });
+  assert.deepEqual(gut.meldungen, [], JSON.stringify(gut.meldungen));
+
+  assert.deepEqual(
+    beilagenbefund({ inhaltDa: false, abnahmeDa: true, abnahmetext: 'Punkt eins\nPunkt zwei', punkte })
+      .meldungen.map((m) => m.regel),
+    ['ohne-verzeichnis'],
+  );
+  assert.deepEqual(
+    beilagenbefund({ inhaltDa: true, abnahmeDa: false, punkte }).meldungen.map((m) => m.regel),
+    ['ohne-abnahmeliste'],
+  );
+});
+
+/*
+ * Eine Liste, die neben dem Paket entstand, beschreibt beim zweiten Lauf ein
+ * anderes — deshalb wird sie gegen die **gerade gerechneten** Punkte gehalten
+ * und nicht gegen sich selbst.
+ */
+test('Eine Abnahmeliste, die ein anderes Paket beschreibt', () => {
+  const punkte = [{ erwartet: 'Punkt eins' }, { erwartet: 'Punkt zwei' }];
+  const b = beilagenbefund({ inhaltDa: true, abnahmeDa: true, abnahmetext: 'Punkt eins', punkte });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['punkt-nicht-in-der-liste'],
+    JSON.stringify(b.meldungen));
+  assert.match(b.meldungen[0].text, /Punkt zwei/);
 });

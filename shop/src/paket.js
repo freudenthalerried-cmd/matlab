@@ -237,3 +237,70 @@ export function inhaltsbefund(text, summen, groessen) {
   }
   return { zeilen, meldungen, sauber: meldungen.length === 0 };
 }
+
+/* ------------------------------------------------------------------ *
+ * Was ein fremder Leser sagt — und was im Archiv danebenliegt
+ * ------------------------------------------------------------------ */
+
+/**
+ * Hat der fremde Leser das Archiv angenommen?
+ *
+ * **Der Anlass, 14. September 2026, abends.** Vier Regeln dieser Probe standen
+ * in der Zählung der Regelnamen als „nie gesehen", und der naheliegende Grund
+ * war derselbe wie bei der Kopfzeilenprobe am selben Abend: Sie braucht ein
+ * echtes `unzip` und ein ausgepacktes Archiv, also könne kein Testfall sie
+ * sehen.
+ *
+ * > **Was ein Prüfer misst und was er daraus schließt, sind zwei Dinge — und
+ * > nur das erste braucht das Archiv.**
+ *
+ * Der Läufer packt weiter mit einem **fremden** Programm aus; das ist der Sinn
+ * dieser Probe, denn ein grüner Lauf über den eigenen Nachbau wäre die eine
+ * Aussage, die sie nicht machen darf. Er entscheidet nur nicht mehr selbst.
+ *
+ * @param {{status: number, ausgabe: string}} lauf  was `unzip -t` zurückgab
+ */
+export function fremdleserbefund({ status, ausgabe = '' }) {
+  const meldungen = [];
+  if (status !== 0 || !/No errors detected/.test(String(ausgabe))) {
+    meldungen.push({
+      regel: 'unzip-weigert-sich',
+      text: `unzip -t endet mit Code ${status}: ${String(ausgabe).trim().split('\n').pop()}`,
+    });
+  }
+  return { meldungen, sauber: meldungen.length === 0 };
+}
+
+/**
+ * Liegen die beiden Beilagen im Archiv — und beschreiben sie **dieses** Paket?
+ *
+ * `INHALT.txt` trägt die Prüfsummen, `ABNAHME.txt` die Punkte, an denen der
+ * Auftraggeber das Paket abnimmt. Eine Liste, die neben dem Paket entstand,
+ * beschreibt beim zweiten Lauf ein anderes — deshalb wird sie gegen die
+ * **gerade gerechneten** Punkte gehalten und nicht gegen sich selbst.
+ *
+ * @param {object} lage
+ * @param {boolean} lage.inhaltDa     liegt `INHALT.txt` im Archiv?
+ * @param {boolean} lage.abnahmeDa    liegt `ABNAHME.txt` im Archiv?
+ * @param {string} [lage.abnahmetext] ihr Inhalt, wenn sie daliegt
+ * @param {{erwartet: string}[]} [lage.punkte]  die gerade gerechneten Punkte
+ */
+export function beilagenbefund({ inhaltDa, abnahmeDa, abnahmetext = '', punkte = [] }) {
+  const meldungen = [];
+  if (!inhaltDa) {
+    meldungen.push({ regel: 'ohne-verzeichnis', text: 'INHALT.txt liegt nicht im Archiv' });
+  }
+  if (!abnahmeDa) {
+    meldungen.push({ regel: 'ohne-abnahmeliste', text: 'ABNAHME.txt liegt nicht im Archiv' });
+    return { meldungen, sauber: false };
+  }
+  for (const p of punkte) {
+    if (!String(abnahmetext).includes(p.erwartet)) {
+      meldungen.push({
+        regel: 'punkt-nicht-in-der-liste',
+        text: `die Abnahmeliste im Archiv nennt „${p.erwartet}" nicht — sie beschreibt ein anderes Paket`,
+      });
+    }
+  }
+  return { meldungen, sauber: meldungen.length === 0 };
+}

@@ -39,7 +39,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, relative } from 'node:path';
 
-import { archivbefund, inhaltsbefund } from '../src/paket.js';
+import { archivbefund, inhaltsbefund, fremdleserbefund, beilagenbefund } from '../src/paket.js';
 import { wegwerfordner } from '../src/wegwerf.js';
 import { abnahmebefund, abnahmeplan } from '../src/abnahme.js';
 import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
@@ -110,14 +110,11 @@ const ablage = wegwerfordner('paketprobe-');
 {
   /* --- 2. Ein fremder Leser --------------------------------------------- */
   const test = spawnSync('unzip', ['-t', archiv], { encoding: 'utf8' });
-  if (test.status !== 0 || !/No errors detected/.test(test.stdout ?? '')) {
-    meldungen.push({
-      regel: 'unzip-weigert-sich',
-      text: `unzip -t endet mit Code ${test.status}: ${(test.stdout ?? '').trim().split('\n').pop()}`,
-    });
-  } else {
-    console.log('  ✓ unzip -t: keine Fehler in den Daten');
-  }
+  // Gemessen wird hier mit einem fremden Programm, entschieden in
+  // `src/paket.js` — dort lässt sich die Regel zeigen, ohne ein Archiv.
+  const fremd = fremdleserbefund({ status: test.status, ausgabe: test.stdout ?? '' });
+  meldungen = meldungen.concat(fremd.meldungen);
+  if (fremd.sauber) console.log('  ✓ unzip -t: keine Fehler in den Daten');
 
   /* --- 3. Auspacken und Byte für Byte vergleichen ------------------------ */
   const aus = spawnSync('unzip', ['-q', archiv, '-d', ablage], { encoding: 'utf8' });
@@ -144,9 +141,8 @@ const ablage = wegwerfordner('paketprobe-');
     groessen.set(name, inhalt.length);
   }
   const verzeichnis = join(ablage, 'INHALT.txt');
-  if (!existsSync(verzeichnis)) {
-    meldungen.push({ regel: 'ohne-verzeichnis', text: 'INHALT.txt liegt nicht im Archiv' });
-  } else {
+  const abnahmeliste = join(ablage, 'ABNAHME.txt');
+  if (existsSync(verzeichnis)) {
     const befund = inhaltsbefund(readFileSync(verzeichnis, 'utf8'), summen, groessen);
     meldungen = meldungen.concat(befund.meldungen);
     if (befund.sauber) {
@@ -155,9 +151,7 @@ const ablage = wegwerfordner('paketprobe-');
   }
 
   /* --- 5. Die Abnahmeliste gegen das Ausgepackte ------------------------- */
-  if (!existsSync(join(ablage, 'ABNAHME.txt'))) {
-    meldungen.push({ regel: 'ohne-abnahmeliste', text: 'ABNAHME.txt liegt nicht im Archiv' });
-  } else {
+  {
     const betreiber = JSON.parse(readFileSync(join(SHOP, 'data', 'betreiber.json'), 'utf8'));
     const alsText = Object.fromEntries([...ausgepackt].map(([n, b]) => [n, b.toString('utf8')]));
     const punkte = abnahmeplan({ ausgabe: alsText, marke: String(betreiber.marke ?? betreiber.firma ?? '') });
@@ -166,15 +160,12 @@ const ablage = wegwerfordner('paketprobe-');
     // Und die Liste im Archiv muss dieselben Punkte nennen wie die gerade
     // gerechnete — eine Liste, die neben dem Paket entstand, beschreibt beim
     // zweiten Lauf ein anderes.
-    const liste = readFileSync(join(ablage, 'ABNAHME.txt'), 'utf8');
-    for (const p of punkte) {
-      if (!liste.includes(p.erwartet)) {
-        meldungen.push({
-          regel: 'punkt-nicht-in-der-liste',
-          text: `die Abnahmeliste im Archiv nennt „${p.erwartet}" nicht — sie beschreibt ein anderes Paket`,
-        });
-      }
-    }
+    meldungen = meldungen.concat(beilagenbefund({
+      inhaltDa: existsSync(verzeichnis),
+      abnahmeDa: existsSync(abnahmeliste),
+      abnahmetext: existsSync(abnahmeliste) ? readFileSync(abnahmeliste, 'utf8') : '',
+      punkte,
+    }).meldungen);
     if (!meldungen.some((m) => m.regel === 'abnahme' || m.regel === 'punkt-nicht-in-der-liste')) {
       console.log(`  ✓ ABNAHME.txt: ${punkte.length} Punkte, jeder im ausgepackten Bestand belegt`);
     }

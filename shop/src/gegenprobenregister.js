@@ -4048,6 +4048,21 @@ export const GEGENPROBEN = Object.freeze([
       + 'liest sich wie ein Erfolg.',
   }),
   Object.freeze({
+    id: 'der-fremde-leser-wird-nur-noch-nach-dem-code-gefragt',
+    pruefer: 'test',
+    was: 'Die Paketprobe nimmt einen schweigenden Auspacker als Bestaetigung',
+    datei: 'shop/src/paket.js',
+    art: 'ersetzen',
+    suchen: "  if (status !== 0 || !/No errors detected/.test(String(ausgabe))) {",
+    ersetzen: '  if (status !== 0) {',
+    erwartet: /Ein fremder Leser, der das Archiv annimmt, und einer, der sich weigert/,
+    warum: 'Der Sinn dieser Probe ist, dass ein **fremdes** Programm das Archiv oeffnet — ein '
+      + 'gruener Lauf ueber den eigenen Nachbau waere die eine Aussage, die sie nicht machen '
+      + 'darf. Dann muss aber auch gelten, dass der fremde Leser wirklich etwas bestaetigt hat: '
+      + 'Ein Auspacker, der mit Code 0 endet und nichts sagt, hat nicht geprueft, sondern '
+      + 'geschwiegen. Die Mutation nimmt genau diese Haelfte weg.',
+  }),
+  Object.freeze({
     id: 'die-kopfzeilenprobe-nimmt-eine-fremde-fehlerseite-hin',
     pruefer: 'test',
     was: 'Die Fehlerseitenprobe fragt nur noch nach der Antwortnummer',
