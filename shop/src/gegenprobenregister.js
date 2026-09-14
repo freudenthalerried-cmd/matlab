@@ -3996,6 +3996,23 @@ export const GEGENPROBEN = Object.freeze([
       + '`src/skonto.js`.',
   }),
   Object.freeze({
+    id: 'das-volle-chromium-geht-wieder-vor',
+    pruefer: 'test',
+    was: 'Die Browsersuche nimmt wieder das volle Chromium statt des Headless-Shell',
+    datei: 'shop/src/browsersuche.js',
+    art: 'ersetzen',
+    suchen: "  const schale = unterWurzeln(['chrome-linux', 'headless_shell']);\n  if (schale) return { pfad: schale, art: 'Headless-Shell' };",
+    ersetzen: "  const schale = null;",
+    erwartet: /in dieser Umgebung läuft die Oberflächenprobe nur im Shell/,
+    warum: 'Mein erster Entwurf gab dem vollen Chromium den Vorzug — es sei der naehere '
+      + 'Verwandte des Kundenbrowsers, ein Headless-Shell lasse Teile weg. Das klingt richtig '
+      + 'und ist hier falsch: Die Oberflaechenprobe meldete 11 von 11 Szenarien '
+      + 'fehlgeschlagen, weil das volle Chromium einen D-Bus verlangt, den dieser Behaelter '
+      + 'nicht hat. Drei der fuenf Proben liefen trotzdem — die vierte nicht, und sie hat es '
+      + 'gesagt. Die Probe entscheidet, welcher Browser der richtige ist, und nicht die '
+      + 'Ueberlegung darueber, welcher der echtere waere.',
+  }),
+  Object.freeze({
     id: 'der-fehlschlag-des-pr-textes-sieht-aus-wie-ein-erfolg',
     pruefer: 'test',
     was: 'Ein misslungener Lauf von pr-text gibt einen leeren Text statt eines Grundes',

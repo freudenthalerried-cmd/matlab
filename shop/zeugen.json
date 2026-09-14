@@ -85,6 +85,9 @@
   "das-verfallene-angebot-wartet-weiter": [
     "shop/test/vorgangsstand.test.js"
   ],
+  "das-volle-chromium-geht-wieder-vor": [
+    "shop/test/browsersuche.test.js"
+  ],
   "das-werkzeug-legt-den-massstab-nicht-an": [
     "shop/test/anfragelesen.test.js"
   ],

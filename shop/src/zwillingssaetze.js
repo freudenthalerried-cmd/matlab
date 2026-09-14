@@ -228,6 +228,36 @@ export const WIEDERHOLUNG_GEPRUEFT = Object.freeze([
       + 'Befehlszeile.',
   }),
   Object.freeze({
+    anfang: 'September stand die Suche hier — fünfmal, in zwei Fassungen',
+    hoechstens: 5,
+    warum: 'Der Verweis auf `src/browsersuche.js` an den fünf Stellen, an denen eine Probe '
+      + 'einen Browser startet. Vorher stand dort die Suche selbst — fünfmal, in zwei '
+      + 'Fassungen, die zwei verschiedene Browser fanden. Zwei Zeilen mit dem Weg sind der '
+      + 'Preis dafür, dass es die Suche nur noch einmal gibt.',
+  }),
+  Object.freeze({
+    anfang: 'Ein Befund über eine Oberfläche gilt für den Browser',
+    hoechstens: 5,
+    warum: 'Die Begründung für die Zeile, mit der jede Probe ihren Browser nennt. Sie steht '
+      + 'neben der Ausgabe und nicht im Kopf: Wer die Ausgabe streicht, liest den Grund dafür, '
+      + 'warum sie da ist. Fünf Proben, fünf Ausgaben, fünf Gründe an ihrem Ort — eine '
+      + 'gemeinsame Fassung gäbe es nur als Verweis auf einen Verweis.',
+  }),
+  Object.freeze({
+    anfang: 'Der Browser, in dem diese Probe läuft:',
+    hoechstens: 5,
+    warum: 'Der Verweis selbst, an den fünf Stellen, an denen eine Probe einen Browser '
+      + 'startet. Vorher stand dort die Suche — fünfmal und in zwei Fassungen. Zwei Zeilen mit '
+      + 'dem Weg sind der Preis dafür, dass es die Suche nur noch einmal gibt.',
+  }),
+  Object.freeze({
+    anfang: 'Fünf Proben nahmen zwei verschiedene, und keine sagte es',
+    hoechstens: 5,
+    warum: 'Der zweite Satz derselben Begründung, an denselben fünf Stellen. Er nennt den '
+      + 'Befund, aus dem die Ausgabe entstanden ist — und ohne ihn läse der nächste die Zeile '
+      + 'als Ausschmückung statt als Antwort auf einen gemessenen Fehler.',
+  }),
+  Object.freeze({
     anfang: '§ 132 BAO verlangt die Belege sieben Jahre',
     hoechstens: 3,
     warum: 'Eine Rechtsstelle gehört dorthin, wo sie wirkt: in die Ablageprüfung, in die '

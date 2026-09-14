@@ -38,6 +38,7 @@ import { wegwerfordner } from '../src/wegwerf.js';
 import { betreiberAmTagX } from '../src/tagx.js';
 import { belegordner } from '../src/ablageort.js';
 import { geschaeftsjahr, geschaeftstag, zeitstempel } from '../src/geschaeftszeit.js';
+import { findeChromium, browserzeile } from '../src/browsersuche.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const REPO = dirname(SHOP);
@@ -51,15 +52,20 @@ if (spawnSync('php', ['-v'], { encoding: 'utf8' }).status !== 0) {
 }
 
 /** Chromium dort suchen, wo die Umgebung ihn hinlegt. */
-function findeChromium() {
-  for (const p of [process.env.CHROME_PFAD, '/opt/pw-browsers/chromium',
-    '/usr/bin/chromium', '/usr/bin/chromium-browser', '/usr/bin/google-chrome']) {
-    if (p && existsSync(p)) return p;
-  }
-  const wo = spawnSync('which', ['chromium'], { encoding: 'utf8' });
-  return wo.status === 0 ? wo.stdout.trim() : null;
-}
-const chromium = findeChromium();
+// Der Browser, in dem diese Probe läuft: `src/browsersuche.js`. Bis zum
+// 14. September stand die Suche hier — fünfmal, in zwei Fassungen, die zwei
+// verschiedene Browser fanden.
+const browser = findeChromium();
+const chromium = browser?.pfad ?? null;
+/*
+ * **Welcher Browser — seit 14. September 2026.** Ein Befund über eine
+ * Oberfläche gilt für den Browser, in dem er entstanden ist. Fünf Proben
+ * nahmen zwei verschiedene, und keine sagte es.
+ *
+ * > **Eine Messung, die ihr Messgerät nicht nennt, ist eine Behauptung
+ * > über das Messgerät.**
+ */
+console.log(browserzeile(browser));
 if (!chromium) abbruch('Kein Chromium gefunden.');
 
 // --- 1. Bauen, mit eingeschaltetem Bestellweg -------------------------------

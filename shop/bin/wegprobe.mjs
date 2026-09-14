@@ -40,6 +40,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
 import { wegwerfordner } from '../src/wegwerf.js';
 import { HOECHSTMENGE } from '../src/shopkern.js';
+import { findeChromium, browserzeile } from '../src/browsersuche.js';
 
 const fuehreAus = promisify(execFile);
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -61,21 +62,21 @@ const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 /** Wie viele Schritte höchstens — überschritten heißt: nachsehen, nicht nachziehen. */
 export const HOECHSTENS_SCHRITTE = 5;
 
-function findeChromium() {
-  const wurzeln = [process.env.PLAYWRIGHT_BROWSERS_PATH, '/opt/pw-browsers'].filter(Boolean);
-  for (const wurzel of wurzeln) {
-    if (!existsSync(wurzel)) continue;
-    for (const eintrag of readdirSync(wurzel).sort().reverse()) {
-      for (const rest of [['chrome-linux', 'headless_shell'], ['chrome-linux', 'chrome']]) {
-        const pfad = join(wurzel, eintrag, ...rest);
-        if (existsSync(pfad)) return pfad;
-      }
-    }
-  }
-  return null;
-}
+// Der Browser, in dem diese Probe läuft: `src/browsersuche.js`. Bis zum
+// 14. September stand die Suche hier — fünfmal, in zwei Fassungen, die zwei
+// verschiedene Browser fanden.
+const browser = findeChromium();
 
-const chromium = findeChromium();
+const chromium = browser?.pfad ?? null;
+/*
+ * **Welcher Browser — seit 14. September 2026.** Ein Befund über eine
+ * Oberfläche gilt für den Browser, in dem er entstanden ist. Fünf Proben
+ * nahmen zwei verschiedene, und keine sagte es.
+ *
+ * > **Eine Messung, die ihr Messgerät nicht nennt, ist eine Behauptung
+ * > über das Messgerät.**
+ */
+console.log(browserzeile(browser));
 if (!chromium) {
   console.error('Kein Chromium gefunden — die Wegprobe braucht einen Browser.');
   process.exit(2);
