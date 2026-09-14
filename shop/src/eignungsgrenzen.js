@@ -43,6 +43,8 @@
  * Grenzen.
  */
 
+import { nichtsAussagbar } from './prueferurteil.js';
+
 /** Überschrift des Abschnitts — einmal geschrieben, von Prüfer und Bau gelesen. */
 export const UEBERSCHRIFT = 'Wofür dieser Artikel nicht gedacht ist';
 
@@ -78,7 +80,7 @@ export function grenzenbefund({ seiten, mindestens = 20 }) {
   if (gepruefte.length < mindestens) {
     meldungen.push({
       regel: 'zu-wenig-seiten',
-      text: `nur ${gepruefte.length} Artikelseiten gemessen — darüber lässt sich nichts aussagen`,
+      text: nichtsAussagbar(gepruefte.length, 'Artikelseiten'),
     });
   }
 

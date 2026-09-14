@@ -4048,20 +4048,26 @@ export const GEGENPROBEN = Object.freeze([
       + 'liest sich wie ein Erfolg.',
   }),
   Object.freeze({
-    id: 'der-satzleser-laesst-zeichenketten-wieder-ueber-zeilen',
+    id: 'der-leser-erkennt-keine-muster-mehr',
     pruefer: 'test',
-    was: 'Das Zeichenkettenmuster des Satzlesers erlaubt wieder den Zeilenumbruch',
-    datei: 'shop/src/zwillingssaetze.js',
+    was: 'Der Leser erkennt keine regulären Ausdrücke mehr',
+    // **Umgehängt am 14. September, nachmittags.** Bis dahin nahm diese
+    // Gegenprobe dem Satzleser die Zeilenregel weg. Seit das Lesen in
+    // `src/quelltext.js` steht, hält nicht mehr sie den Apostroph auf,
+    // sondern die Reihenfolge: Ein Kommentar ist ein Stück, bevor irgendein
+    // Anführungszeichen gelesen wird. Gemutiert wird deshalb das, was diese
+    // Runde **neu** kann — die Erkennung regulärer Ausdrücke.
+    datei: 'shop/src/quelltext.js',
     art: 'ersetzen',
-    suchen: "const ZEICHENKETTE = /'(?:[^'\\\\\\n]|\\\\[\\s\\S])*'",
-    ersetzen: "const ZEICHENKETTE = /'(?:[^']|\\\\[\\s\\S])*'",
-    erwartet: /nur 1 Sätze/,
-    warum: 'Bis zum 14. September stand hier ein Muster, das den Zeilenumbruch erlaubte. Ein '
-      + 'Apostroph in einem Kommentar paarte sich mit dem naechsten Apostroph im Code — und ab '
-      + 'dort las der Leser Code als Text und Text als Zwischenraum, bis zum Dateiende. '
-      + 'Gemessen: 182 von 249 Quelldateien betroffen, 2244 von 13197 Saetzen Kunstprodukte. '
-      + 'Der Pruefer war gruen, weil der Filter gegen Codezeichen die meisten Kunstprodukte '
-      + 'wegwarf — er las falsch und meldete nichts.',
+    suchen: '      if (VOR_MUSTER.has(vor) || VOR_MUSTER_WORT.has(wort)) {',
+    ersetzen: '      if (false) {',
+    erwartet: /Ein Anführungszeichen in einem Muster beginnt keine Zeichenkette/,
+    warum: 'Ein Anfuehrungszeichen in einem regulaeren Ausdruck — `/[\'"]/` — beginnt fuer '
+      + 'einen Leser ohne Musterkenntnis eine Zeichenkette, und ab dort liest er Code als Text '
+      + 'und Text als Zwischenraum. Gemessen, bevor umgestellt wurde: **415 Saetze, die es '
+      + 'nicht gibt, und 163, die es gibt und die er uebersah** — in 58 von 255 Dateien. Wer '
+      + 'Quelltext mit Mustern liest, liest ihn irgendwann falsch; die Frage ist nur, an '
+      + 'welchem Zeichen.',
   }),
   Object.freeze({
     id: 'der-regelzaehler-kennt-nur-eine-schreibweise',
@@ -4197,11 +4203,14 @@ export const GEGENPROBEN = Object.freeze([
     id: 'der-satzleser-streicht-den-code-wieder-weg',
     pruefer: 'pruefe-saetze',
     was: 'Der Satzleser streicht den Code weg, statt die Kommentare herauszuschneiden',
-    datei: 'shop/src/zwillingssaetze.js',
+    // **Nachgezogen am 14. September, nachmittags**, mit dem Umzug des Lesens
+    // nach `src/quelltext.js`. Die Mutation nimmt jetzt dort den Inhalt des
+    // Blockkommentars und lässt seine Zeichen stehen.
+    datei: 'shop/src/quelltext.js',
     art: 'ersetzen',
-    suchen: "  for (const t of text.matchAll(/\\/\\*[\\s\\S]*?\\*\\//g)) stuecke.push(t[0].slice(2, -2));",
-    ersetzen: "  for (const t of text.matchAll(/\\/\\*[\\s\\S]*?\\*\\//g)) stuecke.push(t[0].replace(/[/*]/g, ' '));",
-    erwartet: /Sätze stehen in mehr als einer Datei — erlaubt sind 40/,
+    suchen: "      schiebe('block', i, ende + 2, i + 2, ende);",
+    ersetzen: "      schiebe('block', i, ende + 2, i, ende + 2);",
+    erwartet: /Sätze stehen in mehr als einer Datei — erlaubt sind \d+/,
     warum: 'Der erste Entwurf hat die Kommentarzeichen durch Leerzeichen ersetzt und den Rest '
       + 'stehen lassen. Damit lief der letzte Satz eines Blockkommentars in die Codezeile '
       + 'darunter, und ein Satz, der mit `const hier = dirname(…);` beginnt, faellt durch den '

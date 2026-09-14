@@ -24,6 +24,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 import { ZWILLINGE, zwillingsbefund, zwillingsvorschlag, ENGE_SCHWELLE } from '../src/zwillingszahlen.js';
+import { zuWenigQuellen } from '../src/prueferurteil.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 
@@ -81,7 +82,7 @@ function quellen() {
 
 const dateien = quellen();
 if (dateien.size < 50) {
-  console.error(`Abbruch: nur ${dateien.size} Quelldateien gelesen — die Suche sagt dann nichts.`);
+  console.error(zuWenigQuellen(dateien.size));
   process.exit(2);
 }
 

@@ -22,6 +22,7 @@ import { noetigerUmsatz } from '../src/kostenbild.js';
 import { rolloutplan, HAUPTFALL } from '../src/rollout.js';
 import { bestellwegBefund, VORAUSSETZUNGEN } from '../src/bestellweg.js';
 import { bestellwegAktiv, oberflaeche } from '../src/bestellwegbau.js';
+import { OHNE_GEGENSTAND } from '../src/prueferurteil.js';
 
 const SHOP = fileURLToPath(new URL('..', import.meta.url));
 const REPO = join(SHOP, '..');
@@ -34,7 +35,7 @@ const kampagne = join(SHOP, 'ausgabe', 'kampagne');
 for (const [pfad, wie] of [[beschreibung, ''], [site, 'npm run website'], [kampagne, 'npm run kampagne']]) {
   if (existsSync(pfad)) continue;
   console.error(`Abbruch: ${pfad} fehlt.${wie ? ` Zuerst \`${wie}\`.` : ''}`);
-  console.error('Eine Messung ohne Gegenstand meldet Grün und hat nichts geprüft.');
+  console.error(OHNE_GEGENSTAND);
   process.exit(2);
 }
 

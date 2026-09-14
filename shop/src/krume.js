@@ -27,6 +27,8 @@
  * Behauptung an eine Maschine.**
  */
 
+import { nichtsAussagbar } from './prueferurteil.js';
+
 /** Die Krume einer gebauten Seite: `<p class="krume">Start › Wissen › …</p>`. */
 export const KRUMENMUSTER = /<p class="krume">([\s\S]*?)<\/p>/;
 
@@ -106,7 +108,7 @@ export function krumenbefund({ seiten, mindestens = 40 }) {
   if (liste.length < mindestens) {
     meldungen.push({
       regel: 'zu-wenig-seiten',
-      text: `nur ${liste.length} Seiten gemessen — darüber lässt sich nichts aussagen`,
+      text: nichtsAussagbar(liste.length, 'Seiten'),
     });
   }
 

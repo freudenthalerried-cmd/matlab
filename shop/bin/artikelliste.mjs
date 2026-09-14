@@ -26,6 +26,7 @@ import { dirname, join } from 'node:path';
 import { leseArtikelliste, fuehreZusammen, WARENGRUPPEN } from '../src/artikelliste.js';
 import { sichere } from '../src/sicherung.js';
 import { zieleHalb, ZIELE_HALB_SATZ } from '../src/katalogziele.js';
+import { OHNE_ARTIKEL } from '../src/prueferurteil.js';
 
 const HIER = dirname(fileURLToPath(import.meta.url));
 const WURZEL = join(HIER, '..');
@@ -123,7 +124,7 @@ if (offeneSparten.size) {
 }
 
 if (artikel.length === 0) {
-  console.error('\nAbbruch: kein einziger Artikel gelesen — es wird nichts geschrieben.');
+  console.error(OHNE_ARTIKEL);
   process.exit(2);
 }
 

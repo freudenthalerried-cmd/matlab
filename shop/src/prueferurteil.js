@@ -52,6 +52,42 @@ export const GELAUFEN = [0, 1];
 export const OHNE_FUNDSTELLEN = 'ein Prüfer ohne Fundstellen meldet sauber über nichts';
 
 /**
+ * Der Abbruch, wenn zu wenige Quelldateien gelesen wurden.
+ *
+ * **Hierher gezogen am 14. September 2026, nachmittags.** Der Satz stand in
+ * vier Werkzeugen, dreimal wortgleich und einmal mit „Suche" statt „Messung" —
+ * und gefunden hat ihn erst der Satzleser, nachdem er reguläre Ausdrücke
+ * gelernt hatte. Drei der vier habe **ich** an diesem Tag geschrieben, jeden
+ * beim Bau seines Prüfers, jeden abgeschrieben vom vorigen.
+ *
+ * > **Wer einen Prüfer nach dem Muster des letzten baut, schreibt auch dessen
+ * > Sätze ab.**
+ */
+export const zuWenigQuellen = (anzahl) => `Abbruch: nur ${anzahl} Quelldateien gelesen `
+  + '— die Messung sagt dann nichts.';
+
+/** Der Kopf über den Prüfern, die gar nicht messen konnten. */
+export const NICHT_MESSBAR = 'Prüfer können nicht messen — das ist keine Entwarnung:';
+
+/** Und der Satz darunter, wenn ein einzelner Prüfer keinen Gegenstand fand. */
+export const OHNE_GEGENSTAND = 'Eine Messung ohne Gegenstand meldet Grün und hat nichts geprüft.';
+
+/**
+ * „37 Seiten gemessen — darüber lässt sich nichts aussagen."
+ *
+ * Derselbe Gedanke wie `OHNE_FUNDSTELLEN`, nur mit Zahl und Gegenstand: Eine
+ * Stichprobe unter der Mindestgröße ist kein Befund.
+ */
+/** Der Abbruch, wenn ein Erzeuger keine einzige Zeile gelesen hat. */
+export const OHNE_ARTIKEL = '\nAbbruch: kein einziger Artikel gelesen — es wird nichts geschrieben.';
+
+/** „X steht im Register und liegt nicht (mehr) im Bestand." */
+export const IM_REGISTER_NICHT_IM_BESTAND = 'steht im Register und liegt nicht (mehr) im Bestand';
+
+export const nichtsAussagbar = (anzahl, einheit) => `nur ${anzahl} ${einheit} gemessen `
+  + '— darüber lässt sich nichts aussagen';
+
+/**
  * Die letzten Zeilen, die ein Prüfer beim Abbruch geschrieben hat.
  *
  * Drei, nicht alle: Die Abbruchmeldungen im Bestand sind dreizeilig — Ursache,

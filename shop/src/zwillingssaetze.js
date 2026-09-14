@@ -44,6 +44,7 @@
  */
 
 import { KOPFZEILEN } from './kopfmass.js';
+import { stuecke as quellstuecke } from './quelltext.js';
 
 /** Dateien, die über den Bestand reden und ihn deshalb zitieren. */
 export const REDEN_UEBER_DEN_BESTAND = Object.freeze([
@@ -61,41 +62,21 @@ export const REDEN_UEBER_DEN_BESTAND = Object.freeze([
  * aussieht; ein kopiertes Stück Code ist eine andere Frage als ein kopierter
  * Satz, und für sie gibt es andere Werkzeuge.
  */
-/**
- * Eine Zeichenkette, wie Javascript sie liest.
+/*
+ * **Der Gang durch die Quelle steht seit dem 14. September 2026, nachmittags,
+ * in `src/quelltext.js`.** Hier stand davor ein eigenes Muster für
+ * Zeichenketten — am Vormittag repariert, weil es den Zeilenumbruch erlaubte
+ * und ein Apostroph in einem Kommentar den Leser kippte. Es kannte aber
+ * weiterhin keine **regulären Ausdrücke**, und ein Anführungszeichen darin
+ * (`/['"]/`) kippte ihn genauso.
  *
- * **Der Fund, 14. September 2026, nachts.** Hier stand seit dem 88. Lauf
- * `` /(['"`])((?:\\.|(?!\1)[\s\S])*)\1/g ``. Das Muster ist für einfache
- * Fälle richtig und für einen einzigen nicht: `(?!\1)[\s\S]` erlaubt den
- * **Zeilenumbruch**. Eine einfach begrenzte Zeichenkette darf in Javascript
- * über keine Zeile gehen — ein Apostroph in einem Kommentar aber schon:
+ * Gemessen, bevor umgestellt wurde: **415 Sätze, die es nicht gibt, und 163,
+ * die es gibt und die er übersah** — in 58 von 255 Dateien.
  *
- * ```
- * /* Ein Satz mit Apostroph: der's trägt. *\/
- * const a = 'eins';
- * const b = 'zwei';
- *
- * altes Muster liest:  "s trägt. *\/\nconst a = "   und   ";\nconst b = "
- * neues Muster liest:  'eins'                        und   'zwei'
- * ```
- *
- * > **Ein Apostroph in einem Kommentar kippt den Leser für den Rest der
- * > Datei: Ab dort liest er Code als Text und Text als Zwischenraum.**
- *
- * Gemessen über den Bestand: **182 von 249 Quelldateien** laufen zwischen den
- * beiden Mustern auseinander, 43 tragen einen Apostroph in einem
- * Blockkommentar. Von 13 197 gelesenen Sätzen waren **2 244 Kunstprodukte**
- * dieses Kippens — Sätze mit `//` mitten drin, Sätze, die in einer Codezeile
- * beginnen.
- *
- * Und das Muster war zugleich der ganze Zeitverbrauch dieses Prüfers: Der
- * Rückverfolger braucht **1 088 der 1 094 ms**; die beiden Kommentarmuster
- * daneben je 3 ms. Das neue Muster braucht **9 ms**.
- *
- * **Das sind zwei Änderungen in einer Zeile**, und deshalb steht beides
- * gemessen da: was sie am Lesen ändert und was an der Zeit.
+ * > **Wer Quelltext mit Mustern liest, liest ihn irgendwann falsch. Die Frage
+ * > ist nur, an welchem Zeichen.**
  */
-const ZEICHENKETTE = /'(?:[^'\\\n]|\\[\s\S])*'|"(?:[^"\\\n]|\\[\s\S])*"|`(?:[^`\\]|\\[\s\S])*`/g;
+
 
 export function saetzeDerQuelle(quelltext) {
   const text = String(quelltext ?? '');
@@ -113,9 +94,10 @@ export function saetzeDerQuelle(quelltext) {
    * Genommen wird deshalb, was gesucht ist: Blockkommentare, Zeilenkommentare
    * und Zeichenketten. Was dazwischen steht, kommt gar nicht erst mit.
    */
-  for (const t of text.matchAll(/\/\*[\s\S]*?\*\//g)) stuecke.push(t[0].slice(2, -2));
-  for (const t of text.matchAll(/(^|[^:\\])\/\/([^\n]*)/g)) stuecke.push(t[2]);
-  for (const t of text.matchAll(ZEICHENKETTE)) stuecke.push(t[0].slice(1, -1));
+  for (const st of quellstuecke(text)) {
+    if (st.art === 'code' || st.art === 'muster') continue;
+    stuecke.push(st.text);
+  }
 
   const saetze = new Set();
   for (const stueck of stuecke) {

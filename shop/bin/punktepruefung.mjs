@@ -24,6 +24,7 @@ import { GRENZE_TAGE } from '../src/preisalter.js';
 import { punktebefund } from '../src/punktezahlen.js';
 import { beschreibungsbefund } from '../src/maschinenlesbar.js';
 import { massbefund } from '../src/bezeichnungsmass.js';
+import { OHNE_GEGENSTAND } from '../src/prueferurteil.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const REPO = dirname(SHOP);
@@ -36,7 +37,7 @@ const lies = (p) => JSON.parse(readFileSync(p, 'utf8'));
 const messlistendatei = join(SHOP, 'ausgabe', 'messliste-baustoff.json');
 if (!existsSync(messlistendatei)) {
   console.error(`Abbruch: ${messlistendatei} fehlt — zuerst \`npm run messliste\`.`);
-  console.error('Eine Messung ohne Gegenstand meldet Grün und hat nichts geprüft.');
+  console.error(OHNE_GEGENSTAND);
   process.exit(2);
 }
 const stand = frischebefund(SHOP, 'ausgabe/kampagne');

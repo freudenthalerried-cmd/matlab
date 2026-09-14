@@ -30,6 +30,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { sperrgutAusGruppe } from '../src/sperrguteinstufung.js';
 import { zieleHalb, ZIELE_HALB_SATZ } from '../src/katalogziele.js';
+import { OHNE_ARTIKEL } from '../src/prueferurteil.js';
 
 const HIER = dirname(fileURLToPath(import.meta.url));
 const WURZEL = join(HIER, '..');
@@ -348,7 +349,7 @@ function main() {
    * Ein Erzeuger, dessen Ausgabe leer ist, hat nicht gearbeitet.
    */
   if (sortiert.length === 0) {
-    console.error('\nAbbruch: kein einziger Artikel gelesen — es wird nichts geschrieben.');
+    console.error(OHNE_ARTIKEL);
     console.error(`Quelle: ${QUELLE}`);
     process.exit(2);
   }

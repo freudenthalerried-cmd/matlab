@@ -1,4 +1,5 @@
 import { saetzeVon } from './markdown.js';
+import { nichtsAussagbar } from './prueferurteil.js';
 /**
  * Selbstabholung — eine Zusage ohne Ort.
  *
@@ -134,7 +135,7 @@ export function abholungsbefund({ texte, zugesagt, mindestens = 3 }) {
   if (gepruefte.length < mindestens) {
     meldungen.push({
       regel: 'zu-wenig-texte',
-      text: `nur ${gepruefte.length} Texte gemessen — darüber lässt sich nichts aussagen`,
+      text: nichtsAussagbar(gepruefte.length, 'Texte'),
     });
   }
 

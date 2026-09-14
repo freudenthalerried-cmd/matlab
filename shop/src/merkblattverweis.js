@@ -35,6 +35,7 @@
  */
 
 import { HERSTELLER, marke } from './hersteller.js';
+import { nichtsAussagbar } from './prueferurteil.js';
 
 /** Erwähnt ein Text ein Merkblatt? */
 export const MERKBLATT = /\bMerkbl(?:a|ä)tt|\bDatenbl(?:a|ä)tt|\btechnische[ns]? Merkblatt/i;
@@ -85,7 +86,7 @@ export function merkblattbefund({ seiten, hersteller, mindestens = 10 }) {
   if (gepruefte.length < mindestens) {
     meldungen.push({
       regel: 'zu-wenig-seiten',
-      text: `nur ${gepruefte.length} Seiten gemessen — darüber lässt sich nichts aussagen`,
+      text: nichtsAussagbar(gepruefte.length, 'Seiten'),
     });
   }
 

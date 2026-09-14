@@ -33,6 +33,7 @@ import { fileURLToPath } from 'node:url';
 import { imSchnelllauf, auswahlbefund } from '../src/haken.js';
 import { PRUEFER, BROWSERPRUEFER } from '../src/pruefregister.js';
 import { befundzeilen } from '../src/prueferurteil.js';
+import { NICHT_MESSBAR } from '../src/prueferurteil.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const ALLE = [...PRUEFER, ...BROWSERPRUEFER];
@@ -136,7 +137,7 @@ for (const p of laeufer) {
 const dauer = ((Date.now() - begonnen) / 1000).toFixed(1);
 
 if (weigerungen.length) {
-  console.log(`${weigerungen.length} Prüfer können nicht messen — das ist keine Entwarnung:`);
+  console.log(`${weigerungen.length} ${NICHT_MESSBAR}`);
   for (const w of weigerungen) console.log(`  ⃠ ${w}`);
   console.log('');
 }

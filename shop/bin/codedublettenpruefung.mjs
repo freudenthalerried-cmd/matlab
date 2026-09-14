@@ -16,6 +16,7 @@ import {
   codedublettenbefund, DUBLETTE_GEPRUEFT, DUBLETTEN_HOECHSTENS, MINDESTLAENGE,
   GESTALT_GEPRUEFT, GESTALTEN_HOECHSTENS,
 } from '../src/codedubletten.js';
+import { zuWenigQuellen } from '../src/prueferurteil.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 
@@ -29,7 +30,7 @@ for (const ordner of ['src', 'bin']) {
 }
 
 if (quellen.size < 80) {
-  console.error(`Abbruch: nur ${quellen.size} Quelldateien gelesen — die Messung sagt dann nichts.`);
+  console.error(zuWenigQuellen(quellen.size));
   process.exit(2);
 }
 

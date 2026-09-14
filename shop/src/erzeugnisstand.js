@@ -38,6 +38,7 @@
 
 import { readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { IM_REGISTER_NICHT_IM_BESTAND } from './prueferurteil.js';
 
 /**
  * Die Erzeugnisse und woraus sie entstehen.
@@ -525,7 +526,7 @@ export function leserbefund(dateien, leser = LESER) {
     if (!datei) {
       meldungen.push({
         regel: 'werkzeug-gibt-es-nicht',
-        text: `${l.werkzeug} steht im Register und liegt nicht (mehr) im Bestand`,
+        text: `${l.werkzeug} ${IM_REGISTER_NICHT_IM_BESTAND}`,
       });
       continue;
     }

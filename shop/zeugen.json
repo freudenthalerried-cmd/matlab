@@ -131,8 +131,8 @@
   "der-preisstand-gilt-wieder-als-wareneigenschaft": [
     "shop/test/maschinenlesbar.test.js"
   ],
-  "der-satzleser-laesst-zeichenketten-wieder-ueber-zeilen": [
-    "shop/test/zwillingssaetze.test.js"
+  "der-leser-erkennt-keine-muster-mehr": [
+    "shop/test/quelltext.test.js"
   ],
   "der-steuersatz-steht-wieder-im-vorgabewert": [
     "shop/test/zwillingszahlen.test.js"

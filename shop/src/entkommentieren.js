@@ -30,153 +30,41 @@
  * Seite. Ein Scannerfehler bricht den Bau ab, statt still auszuliefern.
  */
 
-/** Zeichen, nach denen ein `/` einen regulären Ausdruck beginnt, keine Division. */
-const VOR_REGEX = new Set(['(', ',', '=', ':', '[', '!', '&', '|', '?', '{', '}',
-  ';', '+', '-', '*', '%', '~', '^', '<', '>', '\n']);
-
-/** Schlüsselwörter, nach denen ein `/` ebenfalls einen regulären Ausdruck beginnt. */
-const VOR_REGEX_WORT = new Set(['return', 'typeof', 'instanceof', 'in', 'of', 'new',
-  'delete', 'void', 'do', 'else', 'case', 'yield', 'await']);
-
-function letztesWort(text, bis) {
-  let e = bis;
-  while (e > 0 && /\s/.test(text[e - 1])) e--;
-  let a = e;
-  while (a > 0 && /[A-Za-z_$]/.test(text[a - 1])) a--;
-  return text.slice(a, e);
-}
+import { stuecke } from './quelltext.js';
 
 /**
  * @param {string} quelle
  * @returns {{ text: string, entfernt: number, zeichen: number }}
+ *
+ * **Der Gang durch die Quelle steht seit dem 14. September 2026 in
+ * `src/quelltext.js`.** Er stand hier, und er stand ein zweites Mal in
+ * `src/testzerlegung.js`, und drei weitere Stellen lasen denselben Quelltext
+ * mit regulären Ausdrücken — und lasen ihn falsch. Diese Datei behält ihre
+ * Aufgabe (Kommentare heraus, Zeilen erhalten) und gibt das Lesen ab.
+ *
+ * **`streng` bleibt hier eingeschaltet.** Das Ergebnis geht an jeden
+ * Besucher: Ein Scanner, der über einem unvollständigen Literal rät, macht
+ * aus gültigem Code Bruch, und das fiele erst im Browser des Kunden auf.
  */
 export function ohneKommentare(quelle) {
-  const s = String(quelle);
-  let aus = '';
-  let i = 0;
+  let text = '';
   let entfernt = 0;
   let zeichen = 0;
-  // Schachtelung der Vorlagenliterale: je offenem `${` ein Eintrag.
-  const vorlagen = [];
-  let klammern = 0;
-
-  const letztesBedeutende = () => {
-    for (let k = aus.length - 1; k >= 0; k--) {
-      if (!/\s/.test(aus[k])) return aus[k];
-    }
-    return '\n';
-  };
-
-  while (i < s.length) {
-    const c = s[i];
-    const d = s[i + 1];
-
-    // --- Kommentare ---
-    if (c === '/' && d === '/') {
-      const ende = s.indexOf('\n', i);
-      const bis = ende === -1 ? s.length : ende;
-      entfernt++;
-      zeichen += bis - i;
-      i = bis; // der Zeilenumbruch bleibt stehen
-      continue;
-    }
-    if (c === '/' && d === '*') {
-      const ende = s.indexOf('*/', i + 2);
-      if (ende === -1) throw new Error('Blockkommentar ohne Ende — der Scanner bricht ab, statt zu raten.');
-      entfernt++;
-      zeichen += ende + 2 - i;
+  for (const st of stuecke(String(quelle), { streng: true })) {
+    if (st.art === 'block') {
+      entfernt += 1;
+      zeichen += st.roh.length;
       // Zeilenumbrüche des Blocks erhalten, damit Zeilennummern in
       // Fehlermeldungen weiter zur Quelle passen.
-      const umbrueche = s.slice(i, ende + 2).split('\n').length - 1;
-      aus += '\n'.repeat(umbrueche);
-      i = ende + 2;
+      text += st.roh.replace(/[^\n]/g, '');
       continue;
     }
-
-    // --- Zeichenketten ---
-    if (c === "'" || c === '"') {
-      let j = i + 1;
-      while (j < s.length) {
-        if (s[j] === '\\') { j += 2; continue; }
-        if (s[j] === c) break;
-        if (s[j] === '\n') throw new Error(`Zeichenkette ohne Ende in Zeile ${s.slice(0, j).split('\n').length}.`);
-        j++;
-      }
-      if (j >= s.length) throw new Error('Zeichenkette ohne Ende.');
-      aus += s.slice(i, j + 1);
-      i = j + 1;
+    if (st.art === 'zeile') {
+      entfernt += 1;
+      zeichen += st.roh.length; // der Zeilenumbruch bleibt stehen
       continue;
     }
-
-    // --- Vorlagenliterale ---
-    if (c === '`') {
-      vorlagen.push(klammern);
-      klammern = 0;
-      let j = i + 1;
-      for (;;) {
-        if (j >= s.length) throw new Error('Vorlagenliteral ohne Ende.');
-        if (s[j] === '\\') { j += 2; continue; }
-        if (s[j] === '`') { aus += s.slice(i, j + 1); i = j + 1; klammern = vorlagen.pop(); break; }
-        if (s[j] === '$' && s[j + 1] === '{') {
-          // Der eingebettete Ausdruck wird normal weiterverarbeitet — er kann
-          // selbst Zeichenketten, Vorlagen und Kommentare enthalten.
-          aus += s.slice(i, j + 2);
-          i = j + 2;
-          klammern = 1;
-          break;
-        }
-        j++;
-      }
-      continue;
-    }
-
-    // Ende eines `${…}` — zurück in das umgebende Vorlagenliteral.
-    if (c === '}' && vorlagen.length && klammern === 1) {
-      aus += c;
-      i++;
-      let j = i;
-      for (;;) {
-        if (j >= s.length) throw new Error('Vorlagenliteral ohne Ende.');
-        if (s[j] === '\\') { j += 2; continue; }
-        if (s[j] === '`') { aus += s.slice(i, j + 1); i = j + 1; klammern = vorlagen.pop(); break; }
-        if (s[j] === '$' && s[j + 1] === '{') { aus += s.slice(i, j + 2); i = j + 2; klammern = 1; break; }
-        j++;
-      }
-      continue;
-    }
-    if (vorlagen.length) {
-      if (c === '{') klammern++;
-      else if (c === '}') klammern--;
-    }
-
-    // --- Reguläre Ausdrücke ---
-    if (c === '/') {
-      const vor = letztesBedeutende();
-      const wort = letztesWort(aus, aus.length);
-      if (VOR_REGEX.has(vor) || VOR_REGEX_WORT.has(wort)) {
-        let j = i + 1;
-        let inKlasse = false;
-        for (;;) {
-          if (j >= s.length || s[j] === '\n') {
-            throw new Error(`Regulärer Ausdruck ohne Ende in Zeile ${s.slice(0, i).split('\n').length}.`);
-          }
-          if (s[j] === '\\') { j += 2; continue; }
-          if (s[j] === '[') inKlasse = true;
-          else if (s[j] === ']') inKlasse = false;
-          else if (s[j] === '/' && !inKlasse) break;
-          j++;
-        }
-        j++;
-        while (j < s.length && /[a-z]/.test(s[j])) j++; // Kennzeichen
-        aus += s.slice(i, j);
-        i = j;
-        continue;
-      }
-    }
-
-    aus += c;
-    i++;
+    text += st.roh;
   }
-
-  return { text: aus, entfernt, zeichen };
+  return { text, entfernt, zeichen };
 }

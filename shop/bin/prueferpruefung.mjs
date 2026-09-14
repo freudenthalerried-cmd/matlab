@@ -36,6 +36,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { ausgang, beurteile } from '../src/prueferurteil.js';
 import { PRUEFER, BROWSERPRUEFER } from '../src/pruefregister.js';
+import { NICHT_MESSBAR } from '../src/prueferurteil.js';
 
 const hier = dirname(fileURLToPath(import.meta.url));
 
@@ -141,7 +142,7 @@ console.log('steht in ihrer eigenen Ausgabe und gehört einzeln angesehen.');
  * zurückgestellt.
  */
 if (abgebrochen) {
-  console.log(`\n${abgebrochen} Prüfer können nicht messen — das ist keine Entwarnung:`);
+  console.log(`\n${abgebrochen} ${NICHT_MESSBAR}`);
   console.log('Was nicht gemessen wurde, ist nicht geprüft. Der Grund steht oben bei ihnen.');
 }
 process.exit(ausgang({ gescheitert, abgebrochen }));

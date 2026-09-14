@@ -44,6 +44,8 @@
  * kennt, ist kein Fehler, solange jemand weiß, dass es ihn gibt.
  */
 
+import { ohneKommentare } from './entkommentieren.js';
+
 /** Woran ein örtlicher Melder erkannt wird: erster Parameter `regel`. */
 const MELDERKOPF = /(?:const\s+([A-Za-z_$][\w$]*)\s*=\s*\(\s*regel\s*[,)]|function\s+([A-Za-z_$][\w$]*)\s*\(\s*regel\s*[,)])/g;
 
@@ -75,7 +77,14 @@ export function melderNamen(quelltext) {
  * @returns {{pfad: string, regel: string, art: 'feld'|'melder'|'wahl'}[]}
  */
 export function regelstellen(pfad, quelltext) {
-  const text = String(quelltext);
+  // **Gelesen wird der Code, nicht die Prosa — 14. September 2026,
+  // nachmittags.** Vorher lief die Suche über den Rohtext, und die Tafel im
+  // Kopf dieser Datei zählte als drei Regelstellen: `kopf-ohne-stand`,
+  // `leicht-und-sperrgut`, `schwer-und-frei` stehen dort als **Beispiele**.
+  //
+  // > **Ein Verzeichnis, das seine eigene Erklärung mitzählt, meldet sich
+  // > selbst als Bestand.**
+  const text = ohneKommentare(String(quelltext ?? '')).text;
   const drin = new Map();
   const nimm = (regel, art) => { if (!drin.has(regel)) drin.set(regel, art); };
   for (const m of text.matchAll(/regel:\s*'([a-z0-9-]+)'/g)) nimm(m[1], 'feld');

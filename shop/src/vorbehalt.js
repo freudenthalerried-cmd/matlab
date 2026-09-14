@@ -61,6 +61,7 @@
  */
 
 import { GRUND_MINDESTLAENGE } from './grundmass.js';
+import { IM_REGISTER_NICHT_IM_BESTAND } from './prueferurteil.js';
 
 
 /**
@@ -117,7 +118,7 @@ export function vorbehaltsbefund({ quellen, ausgabe, register = VORBEHALTE }) {
     if (!quelle) {
       meldungen.push({
         regel: 'quelle-gibt-es-nicht',
-        text: `${e.id}: ${e.quelle} steht im Register und liegt nicht (mehr) im Bestand`,
+        text: `${e.id}: ${e.quelle} ${IM_REGISTER_NICHT_IM_BESTAND}`,
       });
       continue;
     }

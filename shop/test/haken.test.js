@@ -8,6 +8,7 @@ import {
 } from '../src/haken.js';
 import { PRUEFER, BROWSERPRUEFER } from '../src/pruefregister.js';
 import { LESER } from '../src/erzeugnisstand.js';
+import { NICHT_MESSBAR } from '../src/prueferurteil.js';
 
 /**
  * Die Lage, in der alles stimmt. Jeder Testfall verbiegt genau eine Sache
@@ -219,7 +220,12 @@ test('der Schnelllauf lässt eine Weigerung durch und einen Fund nicht', () => {
   const quelle = readFileSync(new URL('../bin/schnelllauf.mjs', import.meta.url), 'utf8');
   assert.match(quelle, /e\.status === 2/, 'die Weigerung hat einen eigenen Zweig');
   assert.match(quelle, /weigerungen\.push/, 'und wird gemeldet statt verschluckt');
-  assert.match(quelle, /keine Entwarnung/, 'die Meldung sagt, dass sie keine ist');
+  // **Nachgezogen am 14. September 2026, nachmittags.** Der Satz stand hier
+  // wörtlich und in `bin/prueferpruefung.mjs` noch einmal; seit dem Umzug
+  // nach `src/prueferurteil.js` steht er einmal. Geprüft wird deshalb, dass
+  // dieses Werkzeug ihn **benutzt** — und dass er sagt, was er sagen soll.
+  assert.match(quelle, /NICHT_MESSBAR/, 'die Weigerung wird ohne den gemeinsamen Satz gemeldet');
+  assert.match(NICHT_MESSBAR, /keine Entwarnung/, 'die Meldung sagt nicht mehr, dass sie keine ist');
 });
 
 test('der Schnelllauf misst seine eigene Grenze nach', () => {

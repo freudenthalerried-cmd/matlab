@@ -13,6 +13,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join, relative } from 'node:path';
 
 import { namensbefund, NAME_GEPRUEFT, NAMEN_HOECHSTENS } from '../src/namensregister.js';
+import { zuWenigQuellen } from '../src/prueferurteil.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 
@@ -26,7 +27,7 @@ for (const [ordner, muster] of [['src', /\.js$/], ['bin', /\.mjs$/]]) {
 }
 
 if (quellen.size < 80) {
-  console.error(`Abbruch: nur ${quellen.size} Quelldateien gelesen — die Messung sagt dann nichts.`);
+  console.error(zuWenigQuellen(quellen.size));
   process.exit(2);
 }
 
