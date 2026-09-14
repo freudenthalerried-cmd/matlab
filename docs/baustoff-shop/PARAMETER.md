@@ -3,6 +3,17 @@
 Stand: **2026-09-03**. Diese Werte sind vom Auftraggeber entschieden und nicht
 mehr zur Diskussion gestellt. Änderungen nur mit ausdrücklicher Freigabe.
 
+> **Was dieses Datum heißt — seit 14. September 2026.** Es nennt den Tag der
+> **jüngsten Weisung** in der Tafel unten, nicht den Tag des letzten Blicks.
+> Ein altes Datum heißt hier also „seither nichts" und nicht „niemand hat
+> nachgesehen" — und `npm run pruefe-weisungen` hält beides gegeneinander.
+>
+> Ohne diese Festlegung sagte ein elf Tage altes Datum beides zugleich, und
+> wer eine Zeile in die Tafel einfügt, ohne den Kopf mitzuziehen, bliebe
+> unbemerkt. Dieselbe Bauart wie `npm run pruefe-stand` für `STATUS.md`, wo
+> genau das am 5. September teuer geworden ist: 183 Dateien und sechs Tage
+> daneben, im Kopf des Dokuments, das von sich sagt, es sei zuerst zu lesen.
+
 > **Diese Datei rangiert über dem Gate-Register.** Was hier steht, gilt —
 > und deshalb ist es teuer, wenn hier etwas Überholtes steht. Am 28. August
 > stand hier noch die harte Untergrenze von 32 % Rohmarge aus dem

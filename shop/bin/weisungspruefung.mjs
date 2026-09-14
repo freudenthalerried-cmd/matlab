@@ -22,6 +22,7 @@ import { dirname, join } from 'node:path';
 
 import {
   QUELLE, WEISUNGEN, KOPFZEILEN, weisungenAusParametern, weisungsbefund, quellenbefund,
+  kopfbefund,
 } from '../src/weisungsstand.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -90,7 +91,19 @@ console.log(`  ${q.quellen} Dokumente halten eine Weisung im Wortlaut fest, `
  * > **Ein Prüfer, der einen Fund ausgibt und grün endet, ist schlimmer als
  * > einer, der nichts findet: Man liest ihn und glaubt, es sei nichts.**
  */
-const meldungen = [...b.meldungen, ...q.meldungen];
+/*
+ * **Und der Kopf der Tafel — seit 14. September 2026.** `PARAMETER.md` trägt
+ * oben ein Datum und in ihrem eigenen Kopf die Warnung, warum ein überholtes
+ * teuer ist. Nur konnte niemand sehen, ob ein elf Tage altes Datum „seither
+ * nichts" heißt oder „niemand hat nachgesehen".
+ *
+ * > **Ein Datum, das elf Tage alt ist, sagt nicht, ob nichts geschehen ist
+ * > oder ob niemand nachgesehen hat.**
+ */
+const k = kopfbefund(parameter, weisungen);
+console.log(`  Kopf: „Stand ${k.kopfstand ?? '—'}", jüngste Weisung der Tafel ${k.juengste ?? '—'}\n`);
+
+const meldungen = [...b.meldungen, ...q.meldungen, ...k.meldungen];
 
 if (!meldungen.length) {
   console.log('Jede Weisung wirkt an einer Stelle — oder steht als offener Punkt in der Liste.');

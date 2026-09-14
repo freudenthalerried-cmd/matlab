@@ -170,3 +170,66 @@ test('die Überschrift der Startseite ist geführt, nicht vergessen', () => {
   assert.ok(w.offen, 'sie ist nicht erfüllt und muss als offener Punkt geführt sein');
   assert.match(w.offen.datei, /offenepunkte/);
 });
+
+/*
+ * **Der Kopf gegen die Tafel — 14. September 2026.** `PARAMETER.md` trägt oben
+ * ein Datum und in ihrem eigenen Kopf die Warnung, warum ein überholtes teuer
+ * ist. Nur konnte niemand sehen, ob ein elf Tage altes Datum „seither nichts"
+ * heißt oder „niemand hat nachgesehen".
+ *
+ * > **Ein Datum, das elf Tage alt ist, sagt nicht, ob nichts geschehen ist
+ * > oder ob niemand nachgesehen hat.**
+ */
+test('Der Kopf nennt den Tag der jüngsten Weisung', async () => {
+  const { kopfbefund } = await import('../src/weisungsstand.js');
+  const kopf = '# Festgelegte Projektparameter\n\nStand: **2026-09-03**. Diese Werte …\n';
+  const weisungen = [{ datum: '22.08.' }, { datum: '03.09.' }, { datum: '28.08.' }];
+  const b = kopfbefund(kopf, weisungen);
+  assert.equal(b.sauber, true, JSON.stringify(b.meldungen));
+  assert.equal(b.kopfstand, '03.09.');
+  assert.equal(b.juengste, '03.09.');
+});
+
+test('Ein Kopf, der der Tafel hinterherhinkt, fällt auf', async () => {
+  const { kopfbefund } = await import('../src/weisungsstand.js');
+  const kopf = 'Stand: **2026-08-28**.\n';
+  const b = kopfbefund(kopf, [{ datum: '22.08.' }, { datum: '03.09.' }]);
+  assert.equal(b.meldungen[0].regel, 'kopf-nicht-bei-der-juengsten-weisung');
+  assert.match(b.meldungen[0].text, /28\.08\..*03\.09\./);
+});
+
+/*
+ * Gesucht wird das **größte** Datum, nicht das letzte: Eine Zeile, die jemand
+ * oben in die Tafel einfügt, wäre sonst unsichtbar.
+ */
+test('Die jüngste Weisung wird gesucht, nicht die letzte Zeile genommen', async () => {
+  const { kopfbefund } = await import('../src/weisungsstand.js');
+  const unsortiert = [{ datum: '10.09.' }, { datum: '22.08.' }];
+  assert.equal(kopfbefund('Stand: **2026-09-10**.\n', unsortiert).sauber, true,
+    'die Tafel wird als sortiert angenommen');
+  assert.equal(kopfbefund('Stand: **2026-08-22**.\n', unsortiert).sauber, false);
+});
+
+test('Ein Kopf ohne Datum und eine leere Tafel fallen beide auf', async () => {
+  const { kopfbefund } = await import('../src/weisungsstand.js');
+  assert.equal(kopfbefund('# Ohne Datum\n', [{ datum: '03.09.' }]).meldungen[0].regel,
+    'kopf-ohne-stand');
+  assert.equal(kopfbefund('Stand: **2026-09-03**.\n', []).meldungen[0].regel,
+    'tafel-ohne-weisung');
+});
+
+/*
+ * Und der Bestand selbst: Ohne diese Zusicherung prüfte alles darüber nur
+ * nachgebaute Köpfe.
+ */
+test('Der Kopf von PARAMETER.md deckt sich mit seiner Tafel', async () => {
+  const { kopfbefund, weisungenAusParametern } = await import('../src/weisungsstand.js');
+  const { readFileSync } = await import('node:fs');
+  const { fileURLToPath } = await import('node:url');
+  const text = readFileSync(
+    fileURLToPath(new URL('../../docs/baustoff-shop/PARAMETER.md', import.meta.url)), 'utf8');
+  const weisungen = weisungenAusParametern(text);
+  assert.ok(weisungen.length >= 10, `nur ${weisungen.length} Weisungen gelesen`);
+  const b = kopfbefund(text, weisungen);
+  assert.deepEqual(b.meldungen, [], b.meldungen.map((m) => m.text).join('\n'));
+});

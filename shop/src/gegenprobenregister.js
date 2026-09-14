@@ -3996,6 +3996,23 @@ export const GEGENPROBEN = Object.freeze([
       + '`src/skonto.js`.',
   }),
   Object.freeze({
+    id: 'der-kopf-der-weisungstafel-haengt-hinterher',
+    pruefer: 'pruefe-weisungen',
+    was: 'Der Kopf von PARAMETER.md nennt einen aelteren Tag als die juengste Weisung',
+    datei: 'docs/baustoff-shop/PARAMETER.md',
+    art: 'ersetzen',
+    suchen: 'Stand: **2026-09-03**. Diese Werte sind vom Auftraggeber entschieden',
+    ersetzen: 'Stand: **2026-08-28**. Diese Werte sind vom Auftraggeber entschieden',
+    erwartet: /der Kopf nennt 28\.08\., die jüngste Weisung der Tafel ist vom 03\.09\./,
+    warum: 'Die Datei sagt in ihrem eigenen Kopf, sie rangiere ueber dem Gate-Register und es '
+      + 'sei teuer, wenn hier etwas Ueberholtes stehe. Ihr Datum war elf Tage alt und richtig — '
+      + 'nur konnte das niemand sehen: Ein altes Datum sagt nicht, ob nichts geschehen ist oder '
+      + 'ob niemand nachgesehen hat. Seit dem 14. September nennt es den Tag der juengsten '
+      + 'Weisung, und wer eine Zeile in die Tafel einfuegt, ohne den Kopf mitzuziehen, faellt '
+      + 'auf. Dieselbe Bauart wie `pruefe-stand` fuer STATUS.md, wo genau das am 5. September '
+      + 'teuer geworden ist.',
+  }),
+  Object.freeze({
     id: 'die-zeitmeldung-wird-nicht-mehr-nachgemessen',
     pruefer: 'test',
     was: 'Der Schnelllauf meldet einen Pruefer als langsam, ohne ein zweites Mal zu messen',

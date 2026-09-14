@@ -62,6 +62,72 @@ export function weisungenAusParametern(text) {
 }
 
 /**
+ * Deckt sich der Kopf von `PARAMETER.md` mit seiner Tafel?
+ *
+ * **Der Anlass, 14. September 2026.** Die Datei trägt oben `Stand: 2026-09-03`
+ * und in ihrem eigenen Kopf die Warnung, warum das teuer ist:
+ *
+ * > *„Diese Datei rangiert über dem Gate-Register. Was hier steht, gilt — und
+ * > deshalb ist es teuer, wenn hier etwas Überholtes steht."*
+ *
+ * Nachgesehen war der Stand **richtig**: Die jüngste Weisung der Tafel ist vom
+ * 3. September, und seither hat der Auftraggeber keine gegeben. Nur konnte das
+ * niemand sehen.
+ *
+ * > **Ein Datum, das elf Tage alt ist, sagt nicht, ob nichts geschehen ist
+ * > oder ob niemand nachgesehen hat.**
+ *
+ * Gehalten wird deshalb das eine gegen das andere: Der Kopf nennt den Tag der
+ * **jüngsten Weisung**, nicht den Tag des letzten Blicks. Damit heißt ein
+ * altes Datum „seither nichts", und ein eingefügter Eintrag, dessen Kopf
+ * nicht mitwandert, fällt auf.
+ *
+ * Dieselbe Bauart wie `npm run pruefe-stand` für `STATUS.md` — dort ist es am
+ * 5. September teuer geworden: 183 Dateien und sechs Tage daneben, im Kopf des
+ * Dokuments, das von sich sagt, es sei zuerst zu lesen.
+ *
+ * @param {string} text  der Inhalt von `PARAMETER.md`
+ * @param {{datum: string}[]} weisungen  aus `weisungenAusParametern`
+ */
+export function kopfbefund(text, weisungen) {
+  const meldungen = [];
+  const kopf = String(text).split('\n').slice(0, 6).join(' ');
+  const treffer = kopf.match(/Stand:\s*\*{0,2}(\d{4})-(\d{2})-(\d{2})/);
+  if (!treffer) {
+    meldungen.push({
+      regel: 'kopf-ohne-stand',
+      text: 'der Kopf von PARAMETER.md nennt kein Datum — dann sagt er nichts darüber, '
+        + 'ob die Tafel darunter noch die jüngste ist',
+    });
+    return { meldungen, sauber: false, kopfstand: null, juengste: null };
+  }
+  const kopfstand = `${treffer[3]}.${treffer[2]}.`;
+  if (!weisungen.length) {
+    meldungen.push({ regel: 'tafel-ohne-weisung', text: 'die Weisungstafel ist leer — dann ist am Kopf nichts zu messen' });
+    return { meldungen, sauber: false, kopfstand, juengste: null };
+  }
+
+  /*
+   * Die Tafel steht nach Datum sortiert, und der Prüfer verlässt sich nicht
+   * darauf: Gesucht wird das **größte** Datum, nicht das letzte. Eine Zeile,
+   * die jemand oben einfügt, wäre sonst unsichtbar.
+   */
+  const alsZahl = (d) => {
+    const [tag, monat] = d.split('.');
+    return Number(monat) * 100 + Number(tag);
+  };
+  const juengste = weisungen.map((w) => w.datum).sort((a, b) => alsZahl(b) - alsZahl(a))[0];
+  if (kopfstand !== juengste) {
+    meldungen.push({
+      regel: 'kopf-nicht-bei-der-juengsten-weisung',
+      text: `der Kopf nennt ${kopfstand}, die jüngste Weisung der Tafel ist vom ${juengste} — `
+        + 'der Kopf nennt den Tag der jüngsten Weisung und nicht den des letzten Blicks',
+    });
+  }
+  return { meldungen, sauber: meldungen.length === 0, kopfstand, juengste };
+}
+
+/**
  * Was jede Weisung im Bestand bewirkt hat.
  *
  * `nr` ist die Zeilennummer in der Tabelle, `datum` steht daneben und wird
