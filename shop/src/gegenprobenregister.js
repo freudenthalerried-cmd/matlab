@@ -4032,6 +4032,37 @@ export const GEGENPROBEN = Object.freeze([
       + 'Pruefung nicht auf dieselbe Wackelei stellen.',
   }),
   Object.freeze({
+    id: 'der-regelzaehler-kennt-nur-eine-schreibweise',
+    pruefer: 'pruefe-regeln',
+    was: 'Die Regelzaehlung liest nur das Feld und nicht mehr den oertlichen Melder',
+    datei: 'shop/src/regelnamen.js',
+    art: 'ersetzen',
+    suchen: '  for (const name of melderNamen(text)) {',
+    ersetzen: '  for (const name of []) {',
+    erwartet: /wird in test\/[a-z]+\.test\.js behauptet und steht in keiner Quelle/,
+    warum: '„Hier entsteht eine Regel" steht in drei Schreibweisen: als Feld (400 Stellen), '
+      + 'ueber einen oertlichen Melder (67) und als Fallunterscheidung (6). Mein erster '
+      + 'Zaehler kannte nur die erste. Er meldete 347 statt 412 Namen — und in der '
+      + 'Gegenrichtung zehn Namen, die ein Testfall behauptet und die es angeblich nicht '
+      + 'gibt. Alle zehn gab es. Ein Verzeichnis, das eine von drei Schreibweisen kennt, '
+      + 'meldet die anderen beiden als fehlend und liest sich dabei wie ein Fund.',
+  }),
+  Object.freeze({
+    id: 'der-papierschrittbefund-liest-wieder-nur-sich-selbst',
+    pruefer: 'test',
+    was: 'Der Papierschrittbefund nimmt seine Register wieder unveraenderlich aus dem Modul',
+    datei: 'shop/src/vorgangsstand.js',
+    art: 'ersetzen',
+    suchen: '  for (const [art, beschreibung] of Object.entries(arten)) {',
+    ersetzen: '  for (const [art, beschreibung] of Object.entries(ARTEN)) {',
+    erwartet: /papier-ohne-schritt|schritt-ohne-papier/,
+    warum: 'Elf Regeln standen in diesem Befund, und keine einzige liess sich feuern: Er las '
+      + 'seine sechs Register unmittelbar aus dem Modul und nahm keinen Parameter. Ein '
+      + 'Pruefer, dessen Gegenstand unveraenderlich neben ihm steht, ist gruen, weil nichts '
+      + 'kaputt ist — und waere gruen, wenn er kaputt waere. Die Register stehen jetzt als '
+      + 'Vorgabewerte in der Signatur; diese Gegenprobe nimmt das erste wieder heraus.',
+  }),
+  Object.freeze({
     id: 'der-gestaltvergleich-meldet-das-schon-beurteilte',
     pruefer: 'pruefe-codedubletten',
     was: 'Der zweite Durchgang meldet auch, was der erste schon beurteilt hat',

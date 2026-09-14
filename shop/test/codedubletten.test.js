@@ -194,3 +194,30 @@ test('Jeder Eintrag im Gestaltregister trägt einen Grund', () => {
   }
   assert.equal(GESTALTEN_HOECHSTENS, 0, 'die Schranke für ungeführte Gestalten ist gelockert');
 });
+
+/*
+ * Zwei Regeln des Gestaltregisters hatte nach der Runde vom 14. September
+ * kein Testfall je feuern sehen — gefunden hat das die Zählung der
+ * Regelnamen am selben Abend.
+ */
+test('Ein Grund für eine Gestalt, die keine mehr ist', () => {
+  const quellen = new Map([
+    ['src/a.js', 'export function a() { return eins + zwei + drei + vier + fuenf + sechs; }'],
+  ]);
+  const gefuehrt = [{ namen: ['a', 'b'], bisZeichen: 99, warum: 'x'.repeat(90) }];
+  const b = codedublettenbefund(quellen, [], null, MINDESTLAENGE, gefuehrt, null);
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['grund-ohne-gestalt'], JSON.stringify(b.meldungen));
+});
+
+test('Mehr Gestalten als erlaubt', () => {
+  const rumpf = 'return eins + zwei + drei + vier + fuenf + sechs + sieben + acht;';
+  assert.ok(rumpf.length >= MINDESTLAENGE, 'die Probe ist kürzer als die Grenze');
+  const quellen = new Map([
+    ['src/a.js', `export function a() { ${rumpf} }`],
+    ['src/b.js', `export function b() { ${rumpf.replace(/eins/g, 'Eins')} }`],
+  ]);
+  const b = codedublettenbefund(quellen, [], null, MINDESTLAENGE, [], 0);
+  assert.equal(b.gestalten.length, 1, JSON.stringify(b.gestalten));
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['mehr-gestalten-als-erlaubt'],
+    JSON.stringify(b.meldungen));
+});

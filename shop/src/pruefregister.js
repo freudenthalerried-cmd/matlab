@@ -308,6 +308,17 @@ export const PRUEFER = [
     einheit: 'Funktionsrümpfe auf Dubletten',
     mindestens: 300,
   },
+  // **Aufgenommen am 14. September, abends.** Jeder Prüfer meldet in der Form
+  // `{ regel, text }`, und an dem Namen hängt alles Weitere — der
+  // Gegenprobenlauf sucht ihn, ein Testfall behauptet ihn. Gezählt wurde er
+  // nie. Gemessen wird die Zahl der **angesehenen** Regelstellen.
+  {
+    name: 'pruefe-regeln',
+    werkzeug: 'regelpruefung.mjs',
+    muster: /Regelnamen — (\d+) Stellen/,
+    einheit: 'Regelstellen auf Testfälle',
+    mindestens: 300,
+  },
   // **Aufgenommen am 14. September, nachts.** Der Satz „Eine Berichtigung, die
   // eine Stelle erreicht, gilt für eine Stelle" ist an vier Tagen durch Zufall
   // wiedergefunden worden. Für Zahlen gibt es das Zwillingsregister seit dem

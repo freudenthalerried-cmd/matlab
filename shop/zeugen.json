@@ -119,6 +119,9 @@
   "der-palettenkreis-driftet-von-der-datei": [
     "shop/test/warenkorb.test.js"
   ],
+  "der-papierschrittbefund-liest-wieder-nur-sich-selbst": [
+    "shop/test/vorgangsstand.test.js"
+  ],
   "der-posteingang-sucht-im-falschen-jahr": [
     "shop/test/jahreswechsel.test.js"
   ],

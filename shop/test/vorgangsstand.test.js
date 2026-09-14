@@ -244,3 +244,95 @@ test('Eine Gutschrift ohne Rechnung hebt nichts auf', () => {
   assert.deepEqual(
     luecken([P('auftragsbestaetigung'), P('rechnung'), P('gutschrift')]), []);
 });
+
+/*
+ * ## Die elf Regeln des Papierschrittbefunds — gesehen statt behauptet
+ *
+ * **14. September 2026.** Der Befund las seine sechs Register unmittelbar aus
+ * dem Modul und nahm keinen Parameter. Elf Regeln standen darin, und keine
+ * ließ sich feuern. Ein Prüfer, dessen Gegenstand unveränderlich neben ihm
+ * steht, ist grün, weil nichts kaputt ist — und wäre grün, wenn er kaputt wäre.
+ *
+ * Die Register kommen jetzt herein. Diese Reihe sieht jede der elf Regeln
+ * einmal anschlagen.
+ */
+
+const regelnVon = (b) => b.meldungen.map((m) => m.regel);
+
+const BLATT = Object.freeze({ beleg: true });
+const ZETTEL = Object.freeze({ beleg: false });
+const GRUND = 'x'.repeat(90);
+
+test('Ein Papier, das keinen Schritt belegt, und ein Schritt ohne Papier', () => {
+  const b = papierschrittbefund({
+    arten: { rechnung: BLATT, vermerk: ZETTEL },
+    papierschritt: { vermerk: { schritt: SCHRITTE[0].id } },
+    vorausgesetzt: [], schliesstAus: [],
+  });
+  assert.deepEqual(regelnVon(b).sort(), ['papier-ohne-schritt', 'schritt-ohne-papier'],
+    JSON.stringify(b.meldungen));
+  assert.equal(b.sauber, false);
+});
+
+test('Das Papierregister zeigt auf eine Art, einen Schritt und einen Abzweig, die es nicht gibt', () => {
+  const b = papierschrittbefund({
+    arten: {},
+    papierschritt: { gibtsnicht: { schritt: 'kein-schritt', abzweig: 'kein-abzweig' } },
+    vorausgesetzt: [], schliesstAus: [],
+  });
+  assert.deepEqual(regelnVon(b).sort(),
+    ['abzweig-gibt-es-nicht', 'art-gibt-es-nicht', 'schritt-gibt-es-nicht'],
+    JSON.stringify(b.meldungen));
+});
+
+test('Die Betriebskette wird gelesen, nicht angenommen', () => {
+  const b = papierschrittbefund({
+    arten: { rechnung: BLATT },
+    papierschritt: { rechnung: { schritt: SCHRITTE[0].id, abzweig: ABZWEIGE[0].id } },
+    vorausgesetzt: [], schliesstAus: [],
+  });
+  assert.deepEqual(b.meldungen, [], JSON.stringify(b.meldungen));
+  assert.equal(b.geprueft, 1, 'gezählt wurden nicht die hereingereichten Arten');
+});
+
+test('Eine Voraussetzung nennt eine Art ohne Blatt, eine ohne Dasein und keinen Grund', () => {
+  const b = papierschrittbefund({
+    arten: { rechnung: BLATT, vermerk: ZETTEL },
+    papierschritt: { rechnung: { schritt: SCHRITTE[0].id } },
+    vorausgesetzt: [
+      { papier: 'rechnung', braucht: 'vermerk', warum: GRUND },
+      { papier: 'rechnung', braucht: 'gibtsnicht', warum: GRUND },
+      { papier: 'rechnung', braucht: 'rechnung', warum: 'zu kurz' },
+    ],
+    schliesstAus: [],
+  });
+  assert.deepEqual(regelnVon(b).sort(),
+    ['voraussetzung-ohne-art', 'voraussetzung-ohne-blatt', 'voraussetzung-ohne-grund'],
+    JSON.stringify(b.meldungen));
+});
+
+test('Ein Ausschluss nennt eine Art ohne Blatt, eine ohne Dasein und keinen Grund', () => {
+  const b = papierschrittbefund({
+    arten: { rechnung: BLATT, vermerk: ZETTEL },
+    papierschritt: { rechnung: { schritt: SCHRITTE[0].id } },
+    vorausgesetzt: [],
+    schliesstAus: [
+      { papier: 'rechnung', nicht: 'vermerk', warum: GRUND },
+      { papier: 'rechnung', nicht: 'gibtsnicht', warum: GRUND },
+      { papier: 'rechnung', nicht: 'rechnung', warum: 'zu kurz' },
+    ],
+  });
+  assert.deepEqual(regelnVon(b).sort(),
+    ['ausschluss-ohne-art', 'ausschluss-ohne-blatt', 'ausschluss-ohne-grund'],
+    JSON.stringify(b.meldungen));
+});
+
+/*
+ * Und die Gegenprobe der Gegenprobe: Ohne Register gilt das Haus, und das
+ * Haus ist in Ordnung. Sonst prüfte diese Reihe nur ihre eigenen Attrappen.
+ */
+test('Ohne Parameter stehen die Register dieses Hauses', () => {
+  const b = papierschrittbefund();
+  assert.deepEqual(b.meldungen, [], JSON.stringify(b.meldungen));
+  assert.equal(b.geprueft, Object.keys(ARTEN).length);
+});

@@ -110,6 +110,7 @@
     "pruefe-masse": "node bin/massprobe.mjs",
     "pruefe-allaussagen": "node bin/allaussagenpruefung.mjs",
     "pruefe-saetze": "node bin/satzpruefung.mjs",
-    "pruefe-codedubletten": "node bin/codedublettenpruefung.mjs"
+    "pruefe-codedubletten": "node bin/codedublettenpruefung.mjs",
+    "pruefe-regeln": "node bin/regelpruefung.mjs"
   }
 }

@@ -53,13 +53,35 @@ export const PAPIERSCHRITT = Object.freeze({
 });
 
 /** Hält `PAPIERSCHRITT` gegen `ARTEN` und die Betriebskette — in beide Richtungen. */
-export function papierschrittbefund() {
+/**
+ * Halten die vier Register zusammen, die die Akte tragen?
+ *
+ * **Die Register kommen herein — 14. September 2026.** Bis heute las diese
+ * Funktion `ARTEN`, `PAPIERSCHRITT`, `SCHRITTE`, `ABZWEIGE`, `VORAUSGESETZT`
+ * und `SCHLIESST_AUS` unmittelbar aus dem Modul und nahm keinen Parameter.
+ * Sie war damit **nicht prüfbar**: Elf Regeln, und keine einzige ließ sich
+ * feuern, ohne eine eingefrorene Liste im Modul zu verbiegen.
+ *
+ * > **Ein Prüfer, dessen Gegenstand unveränderlich neben ihm steht, kann nie
+ * > jemand anschlagen sehen.** Er ist grün, weil nichts kaputt ist, und er
+ * > wäre grün, wenn er kaputt wäre.
+ *
+ * Die Register stehen jetzt als Vorgabewerte in der Signatur. Für jeden
+ * Aufrufer ändert sich nichts; für einen Testfall alles.
+ *
+ * @param {object} [register]  zum Prüfen; sonst die Register dieses Moduls
+ */
+export function papierschrittbefund(register = {}) {
+  const {
+    arten = ARTEN, papierschritt = PAPIERSCHRITT, schrittliste = SCHRITTE,
+    abzweigliste = ABZWEIGE, vorausgesetzt = VORAUSGESETZT, schliesstAus = SCHLIESST_AUS,
+  } = register;
   const meldungen = [];
-  const schritte = new Set(SCHRITTE.map((s) => s.id));
-  const abzweige = new Set(ABZWEIGE.map((a) => a.id));
+  const schritte = new Set(schrittliste.map((s) => s.id));
+  const abzweige = new Set(abzweigliste.map((a) => a.id));
 
-  for (const [art, beschreibung] of Object.entries(ARTEN)) {
-    const zuordnung = PAPIERSCHRITT[art];
+  for (const [art, beschreibung] of Object.entries(arten)) {
+    const zuordnung = papierschritt[art];
     if (beschreibung.beleg && !zuordnung) {
       meldungen.push({
         regel: 'papier-ohne-schritt',
@@ -76,8 +98,8 @@ export function papierschrittbefund() {
     }
   }
 
-  for (const [art, zuordnung] of Object.entries(PAPIERSCHRITT)) {
-    if (!ARTEN[art]) {
+  for (const [art, zuordnung] of Object.entries(papierschritt)) {
+    if (!arten[art]) {
       meldungen.push({
         regel: 'art-gibt-es-nicht',
         text: `${art} steht im Papierregister und in ARTEN nicht`,
@@ -102,15 +124,15 @@ export function papierschrittbefund() {
    * beim Namen; eine Art, die es nicht gibt, wäre eine Regel, die nie greift,
    * und eine Art ohne Blatt kann nichts belegen.
    */
-  for (const v of VORAUSGESETZT) {
+  for (const v of vorausgesetzt) {
     for (const [rolle, art] of [['papier', v.papier], ['braucht', v.braucht]]) {
-      if (!ARTEN[art]) {
+      if (!arten[art]) {
         meldungen.push({
           regel: 'voraussetzung-ohne-art',
           text: `Die Voraussetzung ${v.papier} → ${v.braucht} nennt als ${rolle} `
             + `${art}, und diese Art gibt es nicht`,
         });
-      } else if (!ARTEN[art].beleg) {
+      } else if (!arten[art].beleg) {
         meldungen.push({
           regel: 'voraussetzung-ohne-blatt',
           text: `Die Voraussetzung ${v.papier} → ${v.braucht} nennt als ${rolle} ${art} `
@@ -131,15 +153,15 @@ export function papierschrittbefund() {
    * Fragen wie oben: Gibt es die Art, und hat sie ein Blatt? Eine Art ohne
    * Papier kann keiner anderen widersprechen.
    */
-  for (const w of SCHLIESST_AUS) {
+  for (const w of schliesstAus) {
     for (const [rolle, art] of [['papier', w.papier], ['nicht', w.nicht]]) {
-      if (!ARTEN[art]) {
+      if (!arten[art]) {
         meldungen.push({
           regel: 'ausschluss-ohne-art',
           text: `Der Ausschluss ${w.papier} ⊥ ${w.nicht} nennt als ${rolle} ${art}, `
             + 'und diese Art gibt es nicht',
         });
-      } else if (!ARTEN[art].beleg) {
+      } else if (!arten[art].beleg) {
         meldungen.push({
           regel: 'ausschluss-ohne-blatt',
           text: `Der Ausschluss ${w.papier} ⊥ ${w.nicht} nennt als ${rolle} ${art} `
@@ -155,7 +177,7 @@ export function papierschrittbefund() {
     }
   }
 
-  return { geprueft: Object.keys(ARTEN).length, meldungen, sauber: meldungen.length === 0 };
+  return { geprueft: Object.keys(arten).length, meldungen, sauber: meldungen.length === 0 };
 }
 
 /** Der Schritt der Kette, den ein Papier belegt — oder null. */

@@ -328,6 +328,14 @@ export const ENGE_SCHWELLE = 5;
  */
 export const VORSCHLAG_GEPRUEFT = Object.freeze([
   Object.freeze({
+    name: 'UNGESEHENE_HOECHSTENS', wert: 67,
+    warum: 'Die Sperrklinke der Regelzaehlung in `src/regelnamen.js` — so viele Regelstellen '
+      + 'hat am 14. September kein Testfall je feuern sehen. Das zweite Vorkommen ist eine '
+      + 'Zielgroesse in `data/zielgroessen.json`; eine Zahl offener Prueffaelle und eine '
+      + 'Geschaeftszahl haben nichts miteinander zu tun, und die eine faellt mit jeder Runde, '
+      + 'waehrend die andere stehen bleibt.',
+  }),
+  Object.freeze({
     name: 'bisZeichen', wert: 63,
     warum: 'Die gemessene Rumpflaenge der drei Ablageort-Praedikate im Gestaltregister '
       + '(`src/codedubletten.js`). Das zweite Vorkommen ist die Zahl der Oberflaechen-'
