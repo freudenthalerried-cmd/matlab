@@ -19,7 +19,7 @@
  * | Dateien | Satz |
  * |---|---|
  * | 6 | der Absatz über die Frischeweigerung — **samt des Satzes, der Text stehe „dort eine Fassung für alle"** |
- * | 7 | „Wie lang eine Begründung mindestens sein muss, um eine zu sein." |
+ * | 7 | „Wie lang eine Begründung mindestens sein muss, um eine zu sein." (am 14.09. mittags aufgelöst: `src/grundmass.js`) |
  * | 3 | § 132 BAO und die Durchschriftpflicht |
  *
  * > **Ein Satz, der sagt, es gebe ihn nur einmal, stand sechsmal.**
@@ -42,6 +42,8 @@
  * Register mit Pflichtgrund und eine Sperrklinke, die fallen darf und nicht
  * steigen.
  */
+
+import { KOPFZEILEN } from './kopfmass.js';
 
 /** Dateien, die über den Bestand reden und ihn deshalb zitieren. */
 export const REDEN_UEBER_DEN_BESTAND = Object.freeze([
@@ -129,29 +131,6 @@ export function saetzeDerQuelle(quelltext) {
   return saetze;
 }
 
-/**
- * Steht der Satz in beiden Dateien **ganz oben** — als das, worum es geht?
- *
- * **Die Bauart, gemessen am 14. September 2026.** Von 40 wiederholten Sätzen
- * gehören sechzehn derselben Form an: Ein Modul und sein Prüfer tragen
- * dieselbe **Leitfrage** in der ersten Zeile ihres Dateikopfs.
- *
- * > *„Steht jede Gate-Entscheidung noch im Bestand — oder nur noch im
- * > Dokument?"* — `src/gatestand.js` und `bin/gatepruefung.mjs`
- *
- * Das ist keine Abschrift, sondern zweimal dieselbe Auskunft an zwei
- * Leserinnen: Wer das Modul öffnet, will wissen, was es entscheidet; wer das
- * Werkzeug öffnet, was es prüft. Ein Verweis statt der Frage machte beide
- * Dateien schlechter lesbar und spart nichts.
- *
- * > **Zwei Hälften einer Sache dürfen denselben Namen tragen.**
- *
- * Die Regel ist eng gefasst und deshalb entscheidbar: **genau zwei** Dateien,
- * **eine** davon aus `src/` und **eine** aus `bin/`, und der Satz steht in
- * beiden im **Kopf** — innerhalb der ersten Zeilen. Ein Absatz, der irgendwo
- * in der Mitte zweimal steht, ist keine Leitfrage, sondern eine Kopie.
- */
-export const KOPFZEILEN = 6;
 
 export function istLeitfrage(satz, dateien, quellen) {
   if (dateien.length !== 2) return false;
@@ -173,15 +152,6 @@ export function istLeitfrage(satz, dateien, quellen) {
  * ist.
  */
 export const WIEDERHOLUNG_GEPRUEFT = Object.freeze([
-  Object.freeze({
-    anfang: 'Wie lang eine Begründung mindestens sein muss',
-    hoechstens: 8,
-    warum: 'Sieben Module führen eine eigene `GRUND_MINDESTLAENGE`, und jedes mit derselben '
-      + 'Zeile darüber. Die Zahl selbst ist bewusst je Register verschieden — ein Grund für '
-      + 'eine Gate-Entscheidung wiegt anders als einer für einen Korbtext —, und der erklärende '
-      + 'Satz ist derselbe, weil der Begriff derselbe ist. Ihn zu vereinheitlichen hieße, sieben '
-      + 'verschiedene Zahlen unter einen Namen zu zwingen.',
-  }),
   Object.freeze({
     anfang: 'Vorhanden ist nicht dasselbe wie aktuell.',
     hoechstens: 8,

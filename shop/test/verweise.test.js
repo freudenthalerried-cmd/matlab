@@ -1,7 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { GRUND_MINDESTLAENGE, OHNE_EINGANG, verweisbefund } from '../src/verweise.js';
+import {
+  OHNE_EINGANG,
+  verweisbefund,
+} from '../src/verweise.js';
+import { GRUND_MINDESTLAENGE } from '../src/grundmass.js';
 
 const seite = (titel, inhalt = '') => `<title>${titel}</title>`
   + `<meta name="description" content="Beschreibung ${titel}">`

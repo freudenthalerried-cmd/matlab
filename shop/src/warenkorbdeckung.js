@@ -45,8 +45,8 @@
  * > **Eine geratene Menge im Korb ergäbe ein geratenes Gebot.**
  */
 
-/** Wie lang eine Begründung mindestens sein muss, um eine zu sein. */
-export const MINDESTGRUND = 40;
+import { KURZGRUND_MINDESTLAENGE } from './grundmass.js';
+
 
 /**
  * **Die Gegenrichtung, aufgenommen am 6. September, nachmittags.**
@@ -129,7 +129,7 @@ export function korbbefund({ koerbe, systemlisten }) {
     for (const p of gefuehrt) {
       if (imKorb.has(p)) continue;
       const grund = begruendet.get(p);
-      if (!grund || grund.length < MINDESTGRUND) {
+      if (!grund || grund.length < KURZGRUND_MINDESTLAENGE) {
         meldungen.push({
           regel: 'position-ohne-grund',
           gruppe,
@@ -168,7 +168,7 @@ export function korbbefund({ koerbe, systemlisten }) {
   for (const [gruppe, korb] of Object.entries(koerbe)) {
     if (systemlisten[gruppe] !== undefined) continue;
     const grund = korb?.[OHNE_LISTE];
-    if (!grund || grund.length < MINDESTGRUND) {
+    if (!grund || grund.length < KURZGRUND_MINDESTLAENGE) {
       meldungen.push({
         regel: 'korb-ohne-liste-und-ohne-grund',
         gruppe,

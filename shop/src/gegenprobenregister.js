@@ -4032,6 +4032,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'Pruefung nicht auf dieselbe Wackelei stellen.',
   }),
   Object.freeze({
+    id: 'der-namensabgleich-liest-nur-funktionen',
+    pruefer: 'pruefe-namen',
+    was: 'Der Namensabgleich liest nur `export function` und keine Konstanten mehr',
+    datei: 'shop/src/namensregister.js',
+    art: 'ersetzen',
+    suchen: "const AUSFUHR = /^export\\s+(?:async\\s+)?(?:function|const|let|class)\\s+([A-Za-z_$][\\w$]*)/gm;",
+    ersetzen: "const AUSFUHR = /^export\\s+(?:async\\s+)?(?:function)\\s+([A-Za-z_$][\\w$]*)/gm;",
+    erwartet: /steht als begründeter Doppelname und steht nicht mehr in zwei Modulen|sperrklinke-nachziehen|nur noch \d+ ungeführte Doppelnamen/,
+    warum: 'Die schwersten Doppelnamen dieses Hauses waren **Konstanten**, nicht Funktionen: '
+      + 'GRUND_MINDESTLAENGE mit vier Werten unter einem Namen, KOPFZEILEN mit fuenf '
+      + 'Bedeutungen, darunter einmal eine Liste statt einer Zahl. Ein Abgleich, der nur '
+      + 'Funktionen liest, sieht genau die Haelfte nicht, die weh tut — und er meldet dabei '
+      + 'nicht zu wenig, sondern gar nichts: Die Sperrklinke faellt, und der Prueferlauf '
+      + 'liest sich wie ein Erfolg.',
+  }),
+  Object.freeze({
     id: 'der-satzleser-laesst-zeichenketten-wieder-ueber-zeilen',
     pruefer: 'test',
     was: 'Das Zeichenkettenmuster des Satzlesers erlaubt wieder den Zeilenumbruch',
@@ -4161,11 +4177,15 @@ export const GEGENPROBEN = Object.freeze([
     id: 'die-leitfrage-gilt-wieder-ueberall-im-text',
     pruefer: 'pruefe-saetze',
     was: 'Ein kopierter Absatz gilt wieder als Leitfrage, wo immer er steht',
-    datei: 'shop/src/zwillingssaetze.js',
+    // **Nachgezogen am 14. September, mittags**, mit dem Umzug der Sechs nach
+    // `src/kopfmass.js`: `KOPFZEILEN` stand unter demselben Namen in fünf
+    // Modulen mit fünf Bedeutungen. Der Testfall „Jeder Suchtext trifft genau
+    // die Stelle, die gemeint ist" hat den Umzug sofort gemeldet.
+    datei: 'shop/src/kopfmass.js',
     art: 'ersetzen',
     suchen: 'export const KOPFZEILEN = 6;',
     ersetzen: 'export const KOPFZEILEN = 4000;',
-    erwartet: /wiederholte Sätze — die Schranke steht auf 30/,
+    erwartet: /wiederholte Sätze — die Schranke steht auf \d+ und gehört nachgezogen/,
     warum: 'Die Regel deckt sieben Wiederholungen mit **einem** Grund: Ein Modul und sein '
       + 'Pruefer duerfen dieselbe Leitfrage im Kopf tragen. Sie traegt nur, weil sie eng '
       + 'gefasst ist — genau zwei Dateien, eine aus `src/` und eine aus `bin/`, und der Satz '

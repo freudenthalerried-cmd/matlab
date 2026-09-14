@@ -31,7 +31,7 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-import { KOPFZEILEN, NICHT_GESETZT } from '../src/serverkopf.js';
+import { SICHERHEITSKOPFZEILEN, NICHT_GESETZT } from '../src/serverkopf.js';
 import { freierPort } from '../src/freierport.js';
 import { wegwerfordner } from '../src/wegwerf.js';
 import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
@@ -127,7 +127,7 @@ console.log('\nKopfzeilenprobe — die .htaccess an einem laufenden Apache\n');
   try {
     const antwort = await hole(s.adresse, '/index.html');
     if (antwort.status !== 200) melde('startseite-nicht-200', `die Startseite kommt mit ${antwort.status}`);
-    for (const k of KOPFZEILEN) {
+    for (const k of SICHERHEITSKOPFZEILEN) {
       const wert = antwort.headers.get(k.name);
       if (wert === null) {
         melde('kopfzeile-fehlt', `${k.name} kommt nicht an — ${k.warum.slice(0, 80)}…`);
@@ -141,7 +141,7 @@ console.log('\nKopfzeilenprobe — die .htaccess an einem laufenden Apache\n');
           `${n.name} steht als ausdrücklich nicht gesetzt im Register und kommt trotzdem an`);
       }
     }
-    console.log(`  ✓ ${KOPFZEILEN.length} Kopfzeilen kommen an, `
+    console.log(`  ✓ ${SICHERHEITSKOPFZEILEN.length} Kopfzeilen kommen an, `
       + `${NICHT_GESETZT.length} ausdrücklich nicht gesetzte fehlen`);
 
     // Die Fehlerseite — Punkt 2 der Abnahmeliste, bis heute nie an einem
@@ -172,7 +172,7 @@ console.log('\nKopfzeilenprobe — die .htaccess an einem laufenden Apache\n');
     } else {
       console.log(`  ✓ ohne mod_headers: 200 und ${laenge} Zeichen — der <IfModule> trägt`);
     }
-    if (antwort.headers.get(KOPFZEILEN[0].name) !== null) {
+    if (antwort.headers.get(SICHERHEITSKOPFZEILEN[0].name) !== null) {
       melde('ohne-modul-und-doch-kopfzeile',
         'ohne mod_headers kommt trotzdem eine Kopfzeile — dann misst dieser Lauf nicht, was er soll');
     }
@@ -188,6 +188,6 @@ if (meldungen.length) {
 }
 
 console.log('');
-console.log(`Kopfzeilenprobe: ${KOPFZEILEN.length} Kopfzeilen an einem Apache gemessen`);
+console.log(`Kopfzeilenprobe: ${SICHERHEITSKOPFZEILEN.length} Kopfzeilen an einem Apache gemessen`);
 console.log('Der schlimmste Fall ist „die Kopfzeilen fehlen", nicht „die Seite ist weg".');
 process.exit(0);

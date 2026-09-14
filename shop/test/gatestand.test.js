@@ -3,9 +3,14 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 import {
-  GRUND_MINDESTLAENGE, OHNE_SPUR, QUELLE, SPUREN, gatebefund, gatesAusRegister,
+  OHNE_SPUR,
+  QUELLE,
+  SPUREN,
+  gatebefund,
+  gatesAusRegister,
   registerkopfbefund,
 } from '../src/gatestand.js';
+import { GRUND_MINDESTLAENGE } from '../src/grundmass.js';
 
 const WURZEL = new URL('../../', import.meta.url);
 const lies = (datei) => {

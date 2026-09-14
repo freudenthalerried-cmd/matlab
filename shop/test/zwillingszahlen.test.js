@@ -6,8 +6,11 @@ import { fileURLToPath } from 'node:url';
 import {
   ZWILLINGE, VORSCHLAG_GEPRUEFT, ENGE_SCHWELLE,
   KENNUNGSFELDER,
-  zwillingsbefund, zwillingsvorschlag, benannteZahlen, zahlenIn, ohneKommentare, traegtZahl,
+  zwillingsbefund, zwillingsvorschlag, benannteZahlen, zahlenIn, traegtZahl,
 } from '../src/zwillingszahlen.js';
+import { ohneKommentare as entkommentiere } from '../src/entkommentieren.js';
+
+const ohneKommentare = (t) => entkommentiere(t).text;
 import { UST_SATZ } from '../src/preis.js';
 import { UST } from '../src/kostenbild.js';
 import { UST_SATZ_KUNDE } from '../src/shopkern.js';

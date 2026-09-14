@@ -62,6 +62,8 @@
  * es nicht gibt.
  */
 
+import { GRUND_MINDESTLAENGE } from './grundmass.js';
+
 /** Zeilen, die keinen Aufruf enthalten können, auch wenn der Name darin steht. */
 const IST_LISTE = /^\s*(import|export)\s*\{|^\s*\w+,\s*$|^\s*\w+\s*$/;
 
@@ -555,8 +557,6 @@ export const UNGERUFEN = Object.freeze([
   }),
 ]);
 
-/** Kürzester Grund, der noch einer ist. */
-export const GRUND_MINDESTLAENGE = 120;
 
 /**
  * Hält das Register gegen die Wirklichkeit — in beide Richtungen.

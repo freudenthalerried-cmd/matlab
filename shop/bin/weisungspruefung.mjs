@@ -21,7 +21,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 import {
-  QUELLE, WEISUNGEN, KOPFZEILEN, weisungenAusParametern, weisungsbefund, quellenbefund,
+  QUELLE, WEISUNGEN, WEISUNGSKOPF_ZEILEN, weisungenAusParametern, weisungsbefund, quellenbefund,
   kopfbefund,
 } from '../src/weisungsstand.js';
 
@@ -76,7 +76,7 @@ const dokumente = readdirSync(DOKUMENTE)
   .filter((n) => n.endsWith('.md'))
   .map((datei) => ({
     datei,
-    kopf: readFileSync(join(DOKUMENTE, datei), 'utf8').split('\n').slice(0, KOPFZEILEN).join('\n'),
+    kopf: readFileSync(join(DOKUMENTE, datei), 'utf8').split('\n').slice(0, WEISUNGSKOPF_ZEILEN).join('\n'),
   }));
 
 const q = quellenbefund(dokumente, weisungen, parameter);

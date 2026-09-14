@@ -38,7 +38,17 @@
  */
 
 /** Die Kopfzeilen, jede mit ihrem Grund. */
-export const KOPFZEILEN = Object.freeze([
+/*
+ * **Umbenannt am 14. September 2026, mittags.** Sie hiess `KOPFZEILEN` — wie
+ * fuenf andere Ausfuhren in diesem Haus, und die meinen etwas voellig
+ * anderes: `src/statuskopf.js`, `src/gatestand.js` und `src/zwillingssaetze.js`
+ * fuehren darunter eine **Zeilenzahl** (6), `src/weisungsstand.js` 14,
+ * `src/widerruf.js` 15. Hier steht eine **Liste von HTTP-Kopfzeilen**.
+ *
+ * > **Ein Name, unter dem einmal eine Zahl und einmal eine Liste steht, ist
+ * > kein Name, sondern eine Verwechslung mit Anlauf.**
+ */
+export const SICHERHEITSKOPFZEILEN = Object.freeze([
   Object.freeze({
     name: 'X-Content-Type-Options',
     wert: 'nosniff',
@@ -118,7 +128,7 @@ export function htaccessText(fehlerseite) {
     '# übersprungen und die Seite kommt wie vorher. Eine unbekannte Direktive ohne',
     '# diesen Rahmen beantwortet Apache mit 500 — für die ganze Seite, gemessen.',
     '<IfModule mod_headers.c>',
-    ...KOPFZEILEN.map((k) => `  Header always set ${k.name} "${k.wert}"`),
+    ...SICHERHEITSKOPFZEILEN.map((k) => `  Header always set ${k.name} "${k.wert}"`),
     '</IfModule>',
     '',
     ...NICHT_GESETZT.map((n) => `# Nicht gesetzt: ${n.name} — Grund in src/serverkopf.js`),

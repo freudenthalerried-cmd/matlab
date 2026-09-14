@@ -3,7 +3,12 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-import { GRUND_MINDESTLAENGE, OHNE_WORTDECKUNG, doppeltesWort, korbtextbefund } from '../src/korbtext.js';
+import {
+  OHNE_WORTDECKUNG,
+  doppeltesWort,
+  korbtextbefund,
+} from '../src/korbtext.js';
+import { GRUND_MINDESTLAENGE } from '../src/grundmass.js';
 import { wortstaemme } from '../src/shopkern.js';
 import { WARENKOERBE, warenkorbText } from '../bin/kampagne.mjs';
 

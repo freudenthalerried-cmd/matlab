@@ -1,7 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { KOPFZEILEN, kopfbefund } from '../src/statuskopf.js';
+import {
+  kopfbefund,
+} from '../src/statuskopf.js';
+import { KOPFZEILEN } from '../src/kopfmass.js';
 
 const kopf = (stand, n) => `# Status und Einstieg\n\n`
   + `Stand: ${stand}. **Dieses Dokument zuerst lesen.** ${n} Arbeitsdateien\n`

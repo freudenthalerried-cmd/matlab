@@ -22,6 +22,8 @@
  * Endziele bezahlter Anzeigen zu 4,19 € bis 8,22 € je Klick.
  */
 
+import { GRUND_MINDESTLAENGE } from './grundmass.js';
+
 /** Verweise, die nicht ins eigene Verzeichnis zeigen. */
 const AUSWAERTS = /^(https?:|mailto:|tel:|#|data:|\/\/)/;
 
@@ -48,8 +50,6 @@ export const OHNE_EINGANG = Object.freeze([
   }),
 ]);
 
-/** Wie lang eine Begründung mindestens sein muss, um eine zu sein. */
-export const GRUND_MINDESTLAENGE = 150;
 
 const werte = (text, muster) => [...text.matchAll(muster)].map((m) => m[1]);
 

@@ -26,6 +26,8 @@
 
 /** Woher die Gates kommen — gemessen, nicht abgeschrieben. */
 import { wortzahl } from './format.js';
+import { GRUND_MINDESTLAENGE } from './grundmass.js';
+import { KOPFZEILEN } from './kopfmass.js';
 
 export const QUELLE = 'docs/baustoff-shop/gate-register.md';
 
@@ -328,8 +330,6 @@ export const OHNE_SPUR = Object.freeze([
   }),
 ]);
 
-/** Wie lang eine Begründung mindestens sein muss, um eine zu sein. */
-export const GRUND_MINDESTLAENGE = 120;
 
 /**
  * Hält das Gate-Register gegen den Bestand — in beide Richtungen.
@@ -411,41 +411,6 @@ export function gatebefund({ gates, lies, spuren = SPUREN, ohneSpur = OHNE_SPUR 
   };
 }
 
-/**
- * Stimmt, was das Gate-Register über sich selbst sagt?
- *
- * **Der Anlass, 9. September 2026.** Die dritte Zeile von `gate-register.md`
- * lautete „Stand: 2026-08-27. **Maßgeblich für alle Gate-Fragen.**
- * Vierundzwanzig Entscheidungen sind über die Phasen verteilt gefallen." —
- * und siebenunddreißig Zeilen tiefer stand die Überschrift „Die einunddreißig
- * Gates". Dasselbe Dokument, sieben Gates Unterschied, zwölf Tage.
- *
- * Es ist die Datei, auf die die PR-Beschreibung mit „Bei Gate-Fragen gilt"
- * zeigt. Wer sie öffnet und nach drei Zeilen weiß, was er wissen wollte, geht
- * mit der falschen Zahl.
- *
- * > **Ein Dokument, das „maßgeblich" von sich sagt, wird oben gelesen und
- * > nicht ganz.**
- *
- * Der Prüfer zählt die Gates ohnehin — `gatesAusRegister` liest die Tabelle.
- * Er hielt seine Zahl nur nie gegen die, die das Dokument über sich druckt.
- * Genau derselbe Schnitt wie bei `src/statuskopf.js` am 5. September, eine
- * Datei weiter: **die Aussagen eines Dokuments über genau das, was der Prüfer
- * ohnehin misst, sind ohne jedes Textverständnis prüfbar.**
- *
- * Geprüft werden drei Angaben und keine vierte:
- *
- * | Angabe | Gemessen an |
- * |---|---|
- * | das Zahlwort im Kopf | den gezählten Gates |
- * | die Zahl in der Überschrift „Die N Gates" | den gezählten Gates |
- * | `Stand: JJJJ-MM-TT` im Kopf | dem jüngsten Datum, das das Dokument selbst nennt |
- *
- * Das Datum wird **gegen den eigenen Inhalt** gemessen und nicht gegen den
- * Kalender: Ein Register darf alt sein, solange nichts dazukam. Falsch wird
- * es, wenn es selbst von etwas Späterem erzählt.
- */
-export const KOPFZEILEN = 6;
 
 /** `Stand: 2026-08-27` — die Form, in der der Kopf sein Datum trägt. */
 export const KOPFSTAND = /^Stand:\s*(\d{4})-(\d{2})-(\d{2})\./m;

@@ -10140,7 +10140,25 @@ const KALENDERRUF = /\b(geschaeftstag|geschaeftsjahr|zeitstempel)\s*\(/;
 
 
 
-function ohneKommentare(quelltext, php = false) {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function ohneZeilenkommentare(quelltext, php = false) {
   let t = String(quelltext ?? '').replace(/\/\*[\s\S]*?\*\//g, '');
   t = t.replace(/^\s*\/\/.*$/gm, '');
   if (php) t = t.replace(/^\s*#.*$/gm, '');
@@ -10149,7 +10167,7 @@ function ohneKommentare(quelltext, php = false) {
 
 
 function rohgriffe(quelltext, php = false) {
-  return (ohneKommentare(quelltext, php).match(ROHGRIFF) ?? []).length;
+  return (ohneZeilenkommentare(quelltext, php).match(ROHGRIFF) ?? []).length;
 }
 
 
@@ -10211,13 +10229,13 @@ function zeitbefund(dateien, register = UHRSTELLEN) {
     if (eintrag.uhr === 'geschaeft' && eintrag.datei !== 'src/geschaeftszeit.js') {
       const ruft = php
         ? /date_default_timezone_set\(\s*'Europe\/Vienna'\s*\)/.test(text)
-        : KALENDERRUF.test(ohneKommentare(text));
+        : KALENDERRUF.test(ohneZeilenkommentare(text));
       if (!ruft) {
         melde('beleguhr-nicht-verwendet',
           `${pfad} soll den Geschäftskalender führen und ruft ihn nicht auf — `
           + 'die Absicht steht im Register, im Code steht sie nicht');
       }
-      if (php && /\bgmdate\s*\(/.test(ohneKommentare(text, true))) {
+      if (php && /\bgmdate\s*\(/.test(ohneZeilenkommentare(text, true))) {
         melde('utc-stempel-im-beleg',
           `${pfad} stempelt einen Beleg in UTC — gesetzte Zeitzone hin oder her, `
           + 'gmdate geht an ihr vorbei');

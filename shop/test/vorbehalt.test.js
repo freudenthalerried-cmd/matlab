@@ -4,7 +4,12 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-import { FELD, MINDESTGRUND, VORBEHALTE, vorbehaltsbefund } from '../src/vorbehalt.js';
+import {
+  FELD,
+  VORBEHALTE,
+  vorbehaltsbefund,
+} from '../src/vorbehalt.js';
+import { GRUND_MINDESTLAENGE } from '../src/grundmass.js';
 import { ohneKommentare } from '../src/entkommentieren.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -48,7 +53,7 @@ test('ein Vorbehalt ohne Ausgabe braucht einen tragfähigen Grund', () => {
   const b = vorbehaltsbefund({ quellen: [quelle('src/b.js', mitFeld())], ausgabe: {}, register: knapp });
   assert.deepEqual(b.meldungen.map((m) => m.regel), ['ohne-leser-und-ohne-grund']);
 
-  const lang = [{ ...knapp[0], warumOhneAusgabe: 'x'.repeat(MINDESTGRUND) }];
+  const lang = [{ ...knapp[0], warumOhneAusgabe: 'x'.repeat(GRUND_MINDESTLAENGE) }];
   assert.equal(vorbehaltsbefund({ quellen: [quelle('src/b.js', mitFeld())], ausgabe: {}, register: lang }).sauber, true);
 });
 

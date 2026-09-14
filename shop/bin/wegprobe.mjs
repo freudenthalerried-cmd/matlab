@@ -148,7 +148,7 @@ const SONDE = `
       .test(korbBereich ? korbBereich.textContent : '');
     const mengenfeld = document.querySelector('.korbzeile input[type=number]');
     if (merkmale.mindestwertHinweis && mengenfeld) {
-      // **Gelesen statt getippt, 13. September 2026.** Hier stand '999'.
+      // **Gelesen statt getippt, 13. September 2026.** Hier stand die Zahl selbst.
       // Gebraucht wird die groesste annehmbare Menge — eine groessere wuerde
       // die Oberflaeche still kuerzen, und die Probe pruefte dann etwas
       // anderes als das, was sie eingetippt hat. Die Einsetzung unten

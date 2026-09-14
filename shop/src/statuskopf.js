@@ -54,8 +54,8 @@
  * mit — ein Lauf, der nur nachsieht, muss nichts anfassen.
  */
 
-/** Wie weit oben der Kopf endet. Was danach kommt, ist Fließtext mit eigenen Daten. */
-export const KOPFZEILEN = 6;
+import { KOPFZEILEN } from './kopfmass.js';
+
 
 /** `Stand: 2026-08-30` — die Form, in der der Kopf sein Datum trägt. */
 export const STANDMUSTER = /^Stand:\s*(\d{4})-(\d{2})-(\d{2})\./m;

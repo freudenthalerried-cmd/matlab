@@ -13,8 +13,13 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 import {
-  MINDESTGRUND, OHNE_LISTE, korbbefund, nichtGefuehrt, positionen, positionsname,
+  OHNE_LISTE,
+  korbbefund,
+  nichtGefuehrt,
+  positionen,
+  positionsname,
 } from '../src/warenkorbdeckung.js';
+import { KURZGRUND_MINDESTLAENGE } from '../src/grundmass.js';
 import { WARENKOERBE } from '../bin/kampagne.mjs';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -52,14 +57,14 @@ test('eine fehlende Position ohne Grund ist der Fund — der Fall vom 6. Septemb
 test('ein knapper Grund ist keiner', () => {
   const knapp = { positionen: [{ position: 'Platte' }], ohne: [{ position: 'Bahn', warum: 'zu kurz' }] };
   assert.equal(korbbefund({ koerbe: { G: knapp }, systemlisten: { G: liste } }).sauber, false);
-  const lang = { positionen: [{ position: 'Platte' }], ohne: [{ position: 'Bahn', warum: 'x'.repeat(MINDESTGRUND) }] };
+  const lang = { positionen: [{ position: 'Platte' }], ohne: [{ position: 'Bahn', warum: 'x'.repeat(KURZGRUND_MINDESTLAENGE) }] };
   assert.equal(korbbefund({ koerbe: { G: lang }, systemlisten: { G: liste } }).sauber, true);
 });
 
 test('ein Grund für etwas, das im Korb liegt, wird gemeldet', () => {
   const korb = {
     positionen: [{ position: 'Platte' }, { position: 'Bahn' }],
-    ohne: [{ position: 'Bahn', warum: 'x'.repeat(MINDESTGRUND) }],
+    ohne: [{ position: 'Bahn', warum: 'x'.repeat(KURZGRUND_MINDESTLAENGE) }],
   };
   const b = korbbefund({ koerbe: { G: korb }, systemlisten: { G: liste } });
   assert.ok(b.meldungen.some((m) => m.regel === 'grund-fuer-etwas-im-korb'));
@@ -120,7 +125,7 @@ test('ein Korb ohne Systemliste und ohne Grund ist ein Fund', () => {
 
 test('ein Korb ohne Systemliste mit tragfähigem Grund geht durch', () => {
   const b = korbbefund({
-    koerbe: { Ohne: { positionen: [{ position: null }], [OHNE_LISTE]: 'x'.repeat(MINDESTGRUND) } },
+    koerbe: { Ohne: { positionen: [{ position: null }], [OHNE_LISTE]: 'x'.repeat(KURZGRUND_MINDESTLAENGE) } },
     systemlisten: {},
   });
   assert.deepEqual(b.meldungen, []);

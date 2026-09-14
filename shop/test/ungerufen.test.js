@@ -18,8 +18,11 @@ import { fileURLToPath } from 'node:url';
 
 import { ohneKommentare } from '../src/entkommentieren.js';
 import {
-  UNGERUFEN, GRUND_MINDESTLAENGE, ungerufeneAusfuehrungen, pruefeUngerufen,
+  UNGERUFEN,
+  ungerufeneAusfuehrungen,
+  pruefeUngerufen,
 } from '../src/ungerufen.js';
+import { GRUND_MINDESTLAENGE } from '../src/grundmass.js';
 
 const SHOP = fileURLToPath(new URL('..', import.meta.url));
 

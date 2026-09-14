@@ -11,7 +11,7 @@ import assert from 'node:assert/strict';
 
 import {
   ZEITZONE, geschaeftstag, geschaeftsjahr, zeitstempel,
-  ohneKommentare, rohgriffe, zeitbefund, UHRSTELLEN,
+  ohneZeilenkommentare, rohgriffe, zeitbefund, UHRSTELLEN,
 } from '../src/geschaeftszeit.js';
 
 /* ------------------------------------------------------------------ *
@@ -72,7 +72,7 @@ test('der Zeitstempel lässt das übergebene Datum in Ruhe', () => {
 test('ein Uhrgriff im Kommentar ist keiner', () => {
   const quelle = '/* new Date() im Block */\n// new Date() in der Zeile\nconst a = new Date();\n';
   assert.equal(rohgriffe(quelle), 1);
-  assert.match(ohneKommentare(quelle), /const a = new Date\(\);/);
+  assert.match(ohneZeilenkommentare(quelle), /const a = new Date\(\);/);
 });
 
 test('PHP-Rauten zählen als Kommentar, Code daneben nicht', () => {

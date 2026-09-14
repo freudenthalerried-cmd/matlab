@@ -37,18 +37,36 @@
  * mehr gibt, wächst und sagt immer weniger.
  */
 
+import { ohneKommentare as entkommentiere } from './entkommentieren.js';
+
 /**
  * Kommentare heraus, bevor gesucht wird.
  *
  * Ohne diesen Schritt fände der Prüfer jede Zahl, über die irgendwo ein Satz
  * geschrieben steht — und dieser Bestand schreibt viele Sätze über seine
  * Zahlen. Gemessen wird der Code, nicht die Begründung.
+ *
+ * **Bis zum 14. September, mittags, stand hier eine eigene Fassung** aus zwei
+ * Ersetzungen: Blockkommentare weg, `//…` weg (mit einer Wache gegen `://`). Sie
+ * kannte weder Zeichenketten noch reguläre Ausdrücke und **löschte damit
+ * Code** — überall dort, wo ein `//` in einem Muster steht:
+ *
+ * ```
+ * /^shop\//        /https?:\/\//        fehlerpfad.replace(/^\//, '')
+ * ```
+ *
+ * Gemessen: **20 von 252 Quelldateien** verloren so echten Code, darunter
+ * `src/codedubletten.js`, `src/zwillingssaetze.js` und diese Datei selbst —
+ * jeweils an dem regulären Ausdruck, mit dem sie Kommentare entfernen.
+ *
+ * > **Ein Leser, der Code löscht, macht aus einem Fund ein Schweigen.** Eine
+ * > Zahl in einem gelöschten Stück ist für diesen Prüfer nicht vorhanden.
+ *
+ * Gelesen wird jetzt mit dem Scanner aus `src/entkommentieren.js`, der
+ * Zeichenketten, Vorlagenliterale samt `${…}` und Muster kennt — und der seit
+ * dem 29. August täglich gegen `node --check` und 39 Browserszenarien läuft.
  */
-export function ohneKommentare(quelltext) {
-  return String(quelltext ?? '')
-    .replace(/\/\*[\s\S]*?\*\//g, ' ')
-    .replace(/(^|[^:])\/\/[^\n]*/g, '$1');
-}
+const ohneKommentare = (quelltext) => entkommentiere(String(quelltext ?? '')).text;
 
 /**
  * Dateien, die über den Bestand **reden**, statt mit ihm zu rechnen.

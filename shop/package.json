@@ -111,6 +111,7 @@
     "pruefe-allaussagen": "node bin/allaussagenpruefung.mjs",
     "pruefe-saetze": "node bin/satzpruefung.mjs",
     "pruefe-codedubletten": "node bin/codedublettenpruefung.mjs",
-    "pruefe-regeln": "node bin/regelpruefung.mjs"
+    "pruefe-regeln": "node bin/regelpruefung.mjs",
+    "pruefe-namen": "node bin/namenspruefung.mjs"
   }
 }

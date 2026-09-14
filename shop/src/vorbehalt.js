@@ -60,8 +60,8 @@
  * JavaScript — sie steht hier, damit sie jemand widerlegen kann.
  */
 
-/** Wie lang eine Begründung mindestens sein muss, um eine zu sein. */
-export const MINDESTGRUND = 60;
+import { GRUND_MINDESTLAENGE } from './grundmass.js';
+
 
 /**
  * Woran ein Vorbehaltsfeld erkannt wird: am **Zeilenanfang**, wie eine
@@ -129,7 +129,7 @@ export function vorbehaltsbefund({ quellen, ausgabe, register = VORBEHALTE }) {
     }
     const orte = e.stehtIn ?? [];
     if (orte.length === 0) {
-      if (!e.warumOhneAusgabe || e.warumOhneAusgabe.length < MINDESTGRUND) {
+      if (!e.warumOhneAusgabe || e.warumOhneAusgabe.length < GRUND_MINDESTLAENGE) {
         meldungen.push({
           regel: 'ohne-leser-und-ohne-grund',
           text: `${e.id}: nennt keine Ausgabedatei und keinen tragfähigen Grund, warum keine`,

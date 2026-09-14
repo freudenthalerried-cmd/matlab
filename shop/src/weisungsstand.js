@@ -28,6 +28,8 @@
  * sucht, misst, ob jemand das Datum in einen Kommentar geschrieben hat.
  */
 
+import { GRUND_MINDESTLAENGE } from './grundmass.js';
+
 /** Woher die Weisungen kommen — gemessen, nicht abgeschrieben. */
 export const QUELLE = 'docs/baustoff-shop/PARAMETER.md';
 
@@ -299,8 +301,6 @@ export const WEISUNGEN = Object.freeze([
   }),
 ]);
 
-/** Wie lang eine Begründung mindestens sein muss, um eine zu sein. */
-export const GRUND_MINDESTLAENGE = 150;
 
 /**
  * Hält die Weisungen gegen den Bestand — in beide Richtungen.
@@ -418,8 +418,16 @@ export function weisungsbefund({ weisungen, lies, register = WEISUNGEN }) {
  * > **Ein Prüfer, der eine Liste gegen den Bestand hält, misst die Liste.**
  * ------------------------------------------------------------------ */
 
-/** Wo eine Weisung im Wortlaut festgehalten wird — Kopfzeilen eines Dokuments. */
-export const KOPFZEILEN = 14;
+/**
+ * Wo eine Weisung im Wortlaut festgehalten wird — so weit reicht der Kopf
+ * eines Weisungsdokuments.
+ *
+ * **Umbenannt am 14. September 2026, mittags**, von `WEISUNGSKOPF_ZEILEN`: Unter dem
+ * Namen standen in diesem Haus fünf Bedeutungen. Diese ist nicht der Kopf aus
+ * `src/kopfmass.js` (sechs Zeilen), sondern der längere Vorspann eines
+ * Dokuments, das eine Weisung wörtlich festhält.
+ */
+export const WEISUNGSKOPF_ZEILEN = 14;
 
 /** Woran ein solcher Kopf zu erkennen ist. */
 export const WEISUNGSKOPF = /Weisung des Auftraggebers/;

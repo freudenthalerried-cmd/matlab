@@ -19,7 +19,11 @@ import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-import { MINDESTGRUND, OHNE_EINTRAG, llmsbefund } from '../src/llmsdeckung.js';
+import {
+  OHNE_EINTRAG,
+  llmsbefund,
+} from '../src/llmsdeckung.js';
+import { KURZGRUND_MINDESTLAENGE } from '../src/grundmass.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const SITE = join(SHOP, 'ausgabe', 'site');
@@ -69,7 +73,7 @@ test('zu wenige Seiten sind kein grüner Befund', () => {
 test('jeder Grund im Register trägt seine Begründung', () => {
   assert.ok(OHNE_EINTRAG.length > 0, 'ohne Einträge prüft die Schleife darunter nichts');
   for (const o of OHNE_EINTRAG) {
-    assert.ok(o.warum.length >= MINDESTGRUND, `„${o.seite}" ohne brauchbaren Grund`);
+    assert.ok(o.warum.length >= KURZGRUND_MINDESTLAENGE, `„${o.seite}" ohne brauchbaren Grund`);
   }
 });
 

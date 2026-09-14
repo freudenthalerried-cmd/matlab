@@ -29,6 +29,8 @@
  * die es nicht mehr gibt, ist derselbe Fehler wie eine Seite ohne Eintrag.
  */
 
+import { KURZGRUND_MINDESTLAENGE } from './grundmass.js';
+
 /**
  * Seiten, die absichtlich nicht in `llms.txt` stehen — mit dem Grund.
  *
@@ -69,8 +71,6 @@ export const OHNE_EINTRAG = Object.freeze([
   }),
 ]);
 
-/** Ab wann ein Grund einer ist. */
-export const MINDESTGRUND = 40;
 
 /**
  * @param {object} eingabe
@@ -111,7 +111,7 @@ export function llmsbefund({ seiten, genannt, ohneEintrag, mindestens = 40 }) {
       });
       continue;
     }
-    if (!grund.warum || grund.warum.length < MINDESTGRUND) {
+    if (!grund.warum || grund.warum.length < KURZGRUND_MINDESTLAENGE) {
       meldungen.push({
         regel: 'auslassung-ohne-grund',
         seite,

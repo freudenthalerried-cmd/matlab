@@ -5,8 +5,12 @@ import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
-  AUSSER, GRUND_MINDESTLAENGE, OHNE_FUNDSTELLE, ZAHLMUSTER, zahlenbefund,
+  AUSSER,
+  OHNE_FUNDSTELLE,
+  ZAHLMUSTER,
+  zahlenbefund,
 } from '../src/zahlenherkunft.js';
+import { GRUND_MINDESTLAENGE } from '../src/grundmass.js';
 
 const ORDNER = fileURLToPath(new URL('../inhalte', import.meta.url));
 

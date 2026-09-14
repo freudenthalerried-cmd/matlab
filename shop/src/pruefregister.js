@@ -308,6 +308,17 @@ export const PRUEFER = [
     einheit: 'Funktionsrümpfe auf Dubletten',
     mindestens: 300,
   },
+  // **Aufgenommen am 14. September, mittags.** „Derselbe Name für einen anderen
+  // Vertrag ist schlimmer als zwei Fassungen" ist an vier Tagen durch Zufall
+  // wiedergefunden worden — jedes Mal von einem Werkzeug, das nach etwas
+  // anderem suchte. Gemessen wird die Zahl der **exportierten** Namen.
+  {
+    name: 'pruefe-namen',
+    werkzeug: 'namenspruefung.mjs',
+    muster: /Namensabgleich — (\d+) exportierte Namen/,
+    einheit: 'exportierte Namen auf Doppelung',
+    mindestens: 500,
+  },
   // **Aufgenommen am 14. September, abends.** Jeder Prüfer meldet in der Form
   // `{ regel, text }`, und an dem Namen hängt alles Weitere — der
   // Gegenprobenlauf sucht ihn, ein Testfall behauptet ihn. Gezählt wurde er

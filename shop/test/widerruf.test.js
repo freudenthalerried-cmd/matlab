@@ -5,7 +5,7 @@ import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  WIDERRUFE, WIDERRUFSMERKMAL, SICHTWEITE, KOPFZEILEN,
+  WIDERRUFE, WIDERRUFSMERKMAL, SICHTWEITE, WIDERRUFSKOPF_ZEILEN,
   findeWiderrufe, pruefeBestand, kopfwiderruf, sichtfeld, noetigeSichtweite,
   BESTAENDE, AUSGENOMMEN, bestandsdateien,
 } from '../src/widerruf.js';
@@ -86,7 +86,7 @@ test('ein Kopfvermerk im Zitatblock deckt die ganze Datei', () => {
 test('ein Kopfvermerk unterhalb der Kopfzeilen deckt nicht mehr', () => {
   const text = [
     '# Titel',
-    ...Array.from({ length: KOPFZEILEN }, (_, i) => `Füllzeile ${i}`),
+    ...Array.from({ length: WIDERRUFSKOPF_ZEILEN }, (_, i) => `Füllzeile ${i}`),
     '> **Überholt:** gemeint ist Marge.',
     '',
     'Erstens: 25 % Zuschlag sind 20 % Rohmarge.',

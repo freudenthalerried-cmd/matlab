@@ -3,9 +3,15 @@ import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 
 import {
-  GRUND_MINDESTLAENGE, QUELLE, WEISUNGEN, KOPFZEILEN, KEIN_WEISUNGSKOPF,
-  weisungenAusParametern, weisungsbefund, quellenbefund,
+  QUELLE,
+  WEISUNGEN,
+  WEISUNGSKOPF_ZEILEN,
+  KEIN_WEISUNGSKOPF,
+  weisungenAusParametern,
+  weisungsbefund,
+  quellenbefund,
 } from '../src/weisungsstand.js';
+import { GRUND_MINDESTLAENGE } from '../src/grundmass.js';
 
 const WURZEL = new URL('../../', import.meta.url);
 const lies = (datei) => {
@@ -108,7 +114,7 @@ test('jedes Dokument, das eine Weisung festhält, hat eine Zeile in der Tafel', 
     .filter((n) => n.endsWith('.md'))
     .map((datei) => ({
       datei,
-      kopf: readFileSync(new URL(datei, ordner), 'utf8').split('\n').slice(0, KOPFZEILEN).join('\n'),
+      kopf: readFileSync(new URL(datei, ordner), 'utf8').split('\n').slice(0, WEISUNGSKOPF_ZEILEN).join('\n'),
     }));
   assert.ok(dokumente.length >= 200, `nur ${dokumente.length} Dokumente gelesen`);
   const b = quellenbefund(dokumente, weisungenAusParametern(tafel), tafel);

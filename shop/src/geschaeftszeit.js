@@ -313,7 +313,25 @@ export const KALENDERRUF = /\b(geschaeftstag|geschaeftsjahr|zeitstempel)\s*\(/;
  * das Entfernen nicht zu viel wegnehmen — sonst verschwindet echter Code,
  * und der Prüfer wird still.
  */
-export function ohneKommentare(quelltext, php = false) {
+/**
+ * Ganze Kommentarzeilen heraus — **nicht** der Scanner aus `entkommentieren.js`.
+ *
+ * **Umbenannt am 14. September 2026, mittags.** Sie hieß `ohneKommentare` wie
+ * zwei weitere Ausfuhren dieses Hauses, und alle drei taten etwas anderes:
+ * `src/entkommentieren.js` liefert einen vollständigen Scanner mit
+ * `{ text, entfernt, zeichen }`, `src/zwillingszahlen.js` trug bis heute zwei
+ * reguläre Ausdrücke.
+ *
+ * > **Drei Versprechen unter einem Namen sind zwei zu viel.**
+ *
+ * Diese Fassung bleibt eigen, und der Grund steht in ihrer Signatur: `php`.
+ * Sie liest auch PHP-Dateien, und der Scanner aus `entkommentieren.js` ist ein
+ * Javascript-Scanner — er bricht über einem `<?php` ab, statt zu raten. Sie
+ * entfernt außerdem nur **ganze** Kommentarzeilen; ein `//` am Zeilenende
+ * bleibt stehen, weil hier gezählt wird, wie oft eine Datei auf die Uhr sieht,
+ * und nicht, was sie sonst sagt.
+ */
+export function ohneZeilenkommentare(quelltext, php = false) {
   let t = String(quelltext ?? '').replace(/\/\*[\s\S]*?\*\//g, '');
   t = t.replace(/^\s*\/\/.*$/gm, '');
   if (php) t = t.replace(/^\s*#.*$/gm, '');
@@ -322,7 +340,7 @@ export function ohneKommentare(quelltext, php = false) {
 
 /** Wie oft eine Datei roh auf die Uhr sieht. */
 export function rohgriffe(quelltext, php = false) {
-  return (ohneKommentare(quelltext, php).match(ROHGRIFF) ?? []).length;
+  return (ohneZeilenkommentare(quelltext, php).match(ROHGRIFF) ?? []).length;
 }
 
 /**
@@ -384,13 +402,13 @@ export function zeitbefund(dateien, register = UHRSTELLEN) {
     if (eintrag.uhr === 'geschaeft' && eintrag.datei !== 'src/geschaeftszeit.js') {
       const ruft = php
         ? /date_default_timezone_set\(\s*'Europe\/Vienna'\s*\)/.test(text)
-        : KALENDERRUF.test(ohneKommentare(text));
+        : KALENDERRUF.test(ohneZeilenkommentare(text));
       if (!ruft) {
         melde('beleguhr-nicht-verwendet',
           `${pfad} soll den Geschäftskalender führen und ruft ihn nicht auf — `
           + 'die Absicht steht im Register, im Code steht sie nicht');
       }
-      if (php && /\bgmdate\s*\(/.test(ohneKommentare(text, true))) {
+      if (php && /\bgmdate\s*\(/.test(ohneZeilenkommentare(text, true))) {
         melde('utc-stempel-im-beleg',
           `${pfad} stempelt einen Beleg in UTC — gesetzte Zeitzone hin oder her, `
           + 'gmdate geht an ihr vorbei');

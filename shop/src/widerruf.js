@@ -65,7 +65,15 @@ export const SICHTWEITE = 8;
  * Änderung nimmt also nichts weg, was heute trägt — sie nimmt weg, was
  * jederzeit zufällig hätte tragen können.
  */
-export const KOPFZEILEN = 15;
+/**
+ * So weit oben muss ein Widerrufsvermerk stehen, damit er für das ganze
+ * Dokument gilt.
+ *
+ * **Umbenannt am 14. September 2026, mittags**, von `WIDERRUFSKOPF_ZEILEN` — der Name
+ * trug in diesem Haus fünf Bedeutungen. Diese ist keine Kopfgrenze im Sinne
+ * von `src/kopfmass.js`, sondern die Reichweite einer Rücknahme.
+ */
+export const WIDERRUFSKOPF_ZEILEN = 15;
 
 /**
  * Wörter, die einen Widerruf kenntlich machen.
@@ -238,7 +246,7 @@ export const WIDERRUFE = Object.freeze([
  *
  * Dann gilt er für das ganze Dokument.
  */
-export function kopfwiderruf(text, { kopfzeilen = KOPFZEILEN } = {}) {
+export function kopfwiderruf(text, { kopfzeilen = WIDERRUFSKOPF_ZEILEN } = {}) {
   return text.split('\n').slice(0, kopfzeilen).some(
     (z) => /^\s*>/.test(z) && WIDERRUFSMERKMAL.test(z),
   );
@@ -316,7 +324,7 @@ function tabellensichtfeld(zeilen, i, sichtweite) {
  * zurückgibt, kann später nicht mehr sagen, wie oft ein Widerruf richtig
  * mitgeführt wurde.
  */
-export function findeWiderrufe(text, { register = WIDERRUFE, sichtweite = SICHTWEITE, kopfzeilen = KOPFZEILEN } = {}) {
+export function findeWiderrufe(text, { register = WIDERRUFE, sichtweite = SICHTWEITE, kopfzeilen = WIDERRUFSKOPF_ZEILEN } = {}) {
   const funde = [];
   for (const eintrag of register) {
     const imKopf = kopfwiderruf(text, { kopfzeilen });

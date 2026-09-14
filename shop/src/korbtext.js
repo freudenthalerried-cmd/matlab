@@ -22,6 +22,8 @@
  * wiederzufinden ist, und dass der fertige Satz sich nicht wiederholt.
  */
 
+import { GRUND_MINDESTLAENGE } from './grundmass.js';
+
 /**
  * Klartexte, die im Artikelnamen nicht vorkommen — mit dem Grund.
  *
@@ -48,8 +50,6 @@ export const OHNE_WORTDECKUNG = Object.freeze([
   }),
 ]);
 
-/** Wie lang eine Begründung mindestens sein muss, um eine zu sein. */
-export const GRUND_MINDESTLAENGE = 150;
 
 /**
  * Hält jeden Klartext des Korbs gegen den Artikel, den er benennt.

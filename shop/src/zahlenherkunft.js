@@ -22,6 +22,8 @@
  * falscher Gefällewert kostet eine Kanalleitung.
  */
 
+import { GRUND_MINDESTLAENGE } from './grundmass.js';
+
 /** Zahlen mit Einheit — das, was man nachrechnen oder nachschlagen kann. */
 export const ZAHLMUSTER = /(\d[\d.]*(?:,\d+)?)\s*(€|%|Tage|Werktage|mm|cm|m²|kg|°)/g;
 
@@ -82,8 +84,6 @@ export const OHNE_FUNDSTELLE = Object.freeze([
   }),
 ]);
 
-/** Wie lang eine Begründung mindestens sein muss, um eine zu sein. */
-export const GRUND_MINDESTLAENGE = 150;
 
 /**
  * Hält jede Zahl der Inhaltsseiten gegen das Quellenregister — in beide
