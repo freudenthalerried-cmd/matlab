@@ -3996,6 +3996,22 @@ export const GEGENPROBEN = Object.freeze([
       + '`src/skonto.js`.',
   }),
   Object.freeze({
+    id: 'die-leitfrage-gilt-wieder-ueberall-im-text',
+    pruefer: 'pruefe-saetze',
+    was: 'Ein kopierter Absatz gilt wieder als Leitfrage, wo immer er steht',
+    datei: 'shop/src/zwillingssaetze.js',
+    art: 'ersetzen',
+    suchen: 'export const KOPFZEILEN = 6;',
+    ersetzen: 'export const KOPFZEILEN = 4000;',
+    erwartet: /wiederholte Sätze — die Schranke steht auf 30/,
+    warum: 'Die Regel deckt sieben Wiederholungen mit **einem** Grund: Ein Modul und sein '
+      + 'Pruefer duerfen dieselbe Leitfrage im Kopf tragen. Sie traegt nur, weil sie eng '
+      + 'gefasst ist — genau zwei Dateien, eine aus `src/` und eine aus `bin/`, und der Satz '
+      + 'im **Kopf** beider. Reicht der Kopf bis ans Dateiende, deckt dieselbe Regel jeden '
+      + 'kopierten Absatz zwischen einem Modul und seinem Pruefer, und die Zahl faellt still '
+      + 'unter die Sperrklinke.',
+  }),
+  Object.freeze({
     id: 'der-satzleser-streicht-den-code-wieder-weg',
     pruefer: 'pruefe-saetze',
     was: 'Der Satzleser streicht den Code weg, statt die Kommentare herauszuschneiden',

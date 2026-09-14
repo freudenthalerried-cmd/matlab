@@ -489,6 +489,26 @@ export const REGELQUELLEN = Object.freeze([
   Object.freeze({
     modul: 'aussagen', ausfuhr: 'VORRATSWORTE', behauptung: true, umschrieben: 'vorrat-in-der-anzeige',
   }),
+  /*
+   * **Seit 14. September in Reichweite.** `bin/website.mjs` liest die Außenlage
+   * seit dieser Runde über `liesAussenlage` aus `src/aussenlage.js`, statt die
+   * Datei selbst zu öffnen — damit erreicht das Modul die Kundentext-Werkzeuge,
+   * und dieser Prüfer hat sofort verlangt, dass seine beiden Muster
+   * eingeordnet werden. Genau dafür ist er da.
+   */
+  Object.freeze({
+    modul: 'aussenlage', ausfuhr: 'SPERRWORT', behauptung: false,
+    warum: 'liest in den eigenen Messvermerken, ob ein Versuch als gesperrt beschrieben ist — '
+      + 'eine Eigenschaft einer Messung dieses Hauses und keine Aussage an den Kunden. Kein '
+      + 'Kundentext trägt diese Wörter, und träte einer sie, wäre das kein Befund dieses '
+      + 'Musters.',
+  }),
+  Object.freeze({
+    modul: 'aussenlage', ausfuhr: 'AUSGANGSWORT', behauptung: false,
+    warum: 'dasselbe eine Ebene enger: Es zählt, wie oft das Wort „Netzausgang" in einem '
+      + 'Vermerk steht, und dient der Prüfung, ob eine Grenze zu weit gezogen ist. Auch das '
+      + 'ist eine Aussage über die Umgebung, nicht über die Ware.',
+  }),
   Object.freeze({
     modul: 'bestellweg', ausfuhr: 'ABSENDEWEGE', behauptung: false,
     warum: 'sucht im Quelltext nach Wegen, die etwas absenden — eine Eigenschaft des Programms, '

@@ -14,7 +14,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { startklar, betreiberangaben } from '../src/startklar.js';
 import { geschaeftstag } from '../src/geschaeftszeit.js';
-import { aussenlage as ausAussenlage, widerspruchsbefund } from '../src/aussenlage.js';
+import { aussenlage as ausAussenlage, widerspruchsbefund, liesAussenlage } from '../src/aussenlage.js';
 import { IMPRESSUMSFELDER } from '../src/rechtstexte.js';
 import { ladeBaustoffkatalog, ZIELMARGE } from '../src/baustoffkatalog.js';
 import { bestellwegAktiv, oberflaeche } from '../src/bestellwegbau.js';
@@ -24,17 +24,12 @@ const HIER = dirname(fileURLToPath(import.meta.url));
 const WURZEL = join(HIER, '..');
 
 /*
- * **Die Außenlage — gemessen, nicht erklärt.** Sie steht in einer eigenen
- * Datei, weil sie einen Handgriff braucht: Für bauversand.com ist der
- * Netzausgang dieser Umgebung gesperrt, und die Sichtbarkeit über
- * api.github.com abzufragen hieße, einen Prüferlauf vom Netz abhängig zu
- * machen. Fehlt die Datei,
- * bleibt der Repositorypunkt eine Frage — und sagt das auch.
+ ***Die Außenlage — gemessen, nicht erklärt.** Warum sie in einer eigenen
+ * Datei steht und was ein fehlendes `null` bedeutet, steht in
+ * `src/aussenlage.js` bei `liesAussenlage` — dort einmal für alle drei
+ * Werkzeuge, die sie lesen.
  */
-const AUSSENLAGEPFAD = process.env.STARTKLAR_AUSSENLAGE
-  || join(WURZEL, 'data', 'aussenlage.json');
-const AUSSENLAGE = existsSync(AUSSENLAGEPFAD)
-  ? JSON.parse(readFileSync(AUSSENLAGEPFAD, 'utf8')) : null;
+const AUSSENLAGE = liesAussenlage(WURZEL);
 const REPO = join(WURZEL, '..');
 const lies = (p) => JSON.parse(readFileSync(p, 'utf8'));
 

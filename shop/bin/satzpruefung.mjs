@@ -49,6 +49,7 @@ if (quellen.size < 80) {
 const b = satzbefund(quellen);
 
 console.log(`\nZwillingssätze — ${b.saetze} Sätze ab acht Wörtern in ${quellen.size} Quelldateien\n`);
+console.log(`  Leitfragen (Modul + Prüfer) ${String(b.leitfragen.length).padStart(4)}`);
 console.log(`  begründete Wiederholungen   ${String(WIEDERHOLUNG_GEPRUEFT.length).padStart(4)}`);
 console.log(`  in mehr als einer Datei     ${String(b.mehrfach.length).padStart(4)}`
   + `   (Schranke ${WIEDERHOLUNGEN_HOECHSTENS})`);

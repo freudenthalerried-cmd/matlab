@@ -41,6 +41,9 @@
  * unbemerkt bleibt, und lang genug, dass der Handgriff nicht zur Zeremonie
  * wird.
  */
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 export const GRENZE_TAGE = 14;
 
 const TAG_MS = 24 * 60 * 60 * 1000;
@@ -467,4 +470,39 @@ export function aussagenbefund(dateien, versuche = {}) {
     adressen: bekannt.size,
     sauber: meldungen.length === 0,
   };
+}
+
+/**
+ * Die Außenlage lesen — **an einer Stelle**.
+ *
+ * **Der Anlass, 14. September 2026.** Das Satzregister hat gemeldet, dass zwei
+ * Sätze in drei Werkzeugen wörtlich gleich stehen. Nachgesehen war es nicht
+ * nur der Absatz: `bin/offenepunkte.mjs`, `bin/startklar.mjs` und
+ * `bin/website.mjs` trugen **denselben Ladecode** — denselben Pfad, dieselbe
+ * Umgebungsvariable, dieselbe Behandlung der fehlenden Datei.
+ *
+ * > **Ein Register für Sätze hat drei Kopien eines Ladewegs gefunden.**
+ *
+ * Und der Absatz selbst, der jetzt hier steht:
+ *
+ * > **Die Außenlage — gemessen, nicht erklärt.** Sie steht in einer eigenen
+ * > Datei, weil sie einen Handgriff braucht: Für bauversand.com ist der
+ * > Netzausgang dieser Umgebung gesperrt, und die Sichtbarkeit über
+ * > api.github.com abzufragen hieße, einen Prüferlauf vom Netz abhängig zu
+ * > machen. Fehlt die Datei, bleibt der Repositorypunkt eine Frage — und sagt
+ * > das auch.
+ *
+ * `null` heißt **keine Datei** und damit keine Auskunft — nicht „nichts
+ * gemessen". Die Werkzeuge unterscheiden das, und deshalb wird hier nicht auf
+ * ein leeres Objekt ausgewichen.
+ *
+ * @param {string} shopWurzel  das Verzeichnis `shop/`
+ */
+export function aussenlagePfad(shopWurzel) {
+  return process.env.STARTKLAR_AUSSENLAGE || join(shopWurzel, 'data', 'aussenlage.json');
+}
+
+export function liesAussenlage(shopWurzel) {
+  const pfad = aussenlagePfad(shopWurzel);
+  return existsSync(pfad) ? JSON.parse(readFileSync(pfad, 'utf8')) : null;
 }

@@ -118,3 +118,38 @@ test('Jede begründete Wiederholung nennt Anfang, Zahl und einen tragfähigen Gr
   assert.ok(WIEDERHOLUNGEN_HOECHSTENS >= 0 && WIEDERHOLUNGEN_HOECHSTENS <= 200,
     `eine Schranke von ${WIEDERHOLUNGEN_HOECHSTENS} misst nicht diesen Bestand`);
 });
+
+/*
+ * **Die Bauart, gemessen am 14. September 2026.** Von 40 wiederholten Sätzen
+ * gehören sieben derselben Form an: Ein Modul und sein Prüfer tragen dieselbe
+ * Leitfrage in der ersten Zeile ihres Dateikopfs.
+ *
+ * > **Zwei Hälften einer Sache dürfen denselben Namen tragen.**
+ */
+test('Ein Modul und sein Prüfer dürfen dieselbe Leitfrage im Kopf tragen', async () => {
+  const { istLeitfrage, satzbefund } = await import('../src/zwillingssaetze.js');
+  const frage = 'Steht jede Entscheidung noch im Bestand oder nur im Dokument?';
+  const quellen = new Map([
+    ['src/a.js', `/**\n * ${frage}\n */\nexport const X = 1;`],
+    ['bin/a.mjs', `#!/usr/bin/env node\n/**\n * ${frage}\n */\n`],
+  ]);
+  assert.equal(istLeitfrage(frage, ['src/a.js', 'bin/a.mjs'], quellen), true);
+  assert.equal(satzbefund(quellen, [], null).mehrfach.length, 0, 'die Leitfrage wurde gemeldet');
+  assert.equal(satzbefund(quellen, [], null).leitfragen.length, 1);
+});
+
+test('Ein Absatz mitten in der Datei ist keine Leitfrage', async () => {
+  const { istLeitfrage } = await import('../src/zwillingssaetze.js');
+  const satz = 'Ein Absatz, der irgendwo in der Mitte zweimal steht und kopiert ist.';
+  const tief = `${'\n'.repeat(40)}// ${satz}`;
+  const quellen = new Map([['src/a.js', tief], ['bin/a.mjs', tief]]);
+  assert.equal(istLeitfrage(satz, ['src/a.js', 'bin/a.mjs'], quellen), false,
+    'ein kopierter Absatz gilt als Leitfrage');
+
+  // Und die engen Bedingungen: drei Dateien, oder beide aus demselben Ordner.
+  const kopf = `/**\n * ${satz}\n */`;
+  const drei = new Map([['src/a.js', kopf], ['bin/a.mjs', kopf], ['bin/b.mjs', kopf]]);
+  assert.equal(istLeitfrage(satz, [...drei.keys()], drei), false, 'drei Dateien');
+  const zweiSrc = new Map([['src/a.js', kopf], ['src/b.js', kopf]]);
+  assert.equal(istLeitfrage(satz, [...zweiSrc.keys()], zweiSrc), false, 'beide aus src/');
+});

@@ -94,6 +94,42 @@ export function saetzeDerQuelle(quelltext) {
 }
 
 /**
+ * Steht der Satz in beiden Dateien **ganz oben** — als das, worum es geht?
+ *
+ * **Die Bauart, gemessen am 14. September 2026.** Von 40 wiederholten Sätzen
+ * gehören sechzehn derselben Form an: Ein Modul und sein Prüfer tragen
+ * dieselbe **Leitfrage** in der ersten Zeile ihres Dateikopfs.
+ *
+ * > *„Steht jede Gate-Entscheidung noch im Bestand — oder nur noch im
+ * > Dokument?"* — `src/gatestand.js` und `bin/gatepruefung.mjs`
+ *
+ * Das ist keine Abschrift, sondern zweimal dieselbe Auskunft an zwei
+ * Leserinnen: Wer das Modul öffnet, will wissen, was es entscheidet; wer das
+ * Werkzeug öffnet, was es prüft. Ein Verweis statt der Frage machte beide
+ * Dateien schlechter lesbar und spart nichts.
+ *
+ * > **Zwei Hälften einer Sache dürfen denselben Namen tragen.**
+ *
+ * Die Regel ist eng gefasst und deshalb entscheidbar: **genau zwei** Dateien,
+ * **eine** davon aus `src/` und **eine** aus `bin/`, und der Satz steht in
+ * beiden im **Kopf** — innerhalb der ersten Zeilen. Ein Absatz, der irgendwo
+ * in der Mitte zweimal steht, ist keine Leitfrage, sondern eine Kopie.
+ */
+export const KOPFZEILEN = 6;
+
+export function istLeitfrage(satz, dateien, quellen) {
+  if (dateien.length !== 2) return false;
+  const ausSrc = dateien.filter((d) => d.startsWith('src/'));
+  const ausBin = dateien.filter((d) => d.startsWith('bin/'));
+  if (ausSrc.length !== 1 || ausBin.length !== 1) return false;
+  const anfang = satz.split(' ').slice(0, 6).join(' ');
+  return dateien.every((d) => {
+    const kopf = String(quellen.get(d) ?? '').split('\n').slice(0, KOPFZEILEN).join(' ');
+    return kopf.includes(anfang);
+  });
+}
+
+/**
  * Wiederholungen, die mit Grund stehen dürfen.
  *
  * Geführt wird ein **Anfang** und die Zahl der Dateien, in denen der Satz
@@ -129,6 +165,21 @@ export const WIEDERHOLUNG_GEPRUEFT = Object.freeze([
       + 'verschiedene Gegenstände.',
   }),
   Object.freeze({
+    anfang: 'ist der Selbstnachweis über eine absichtlich fehlerhafte Datei',
+    hoechstens: 3,
+    warum: 'Drei Werkzeuge behandeln `--probe` selbst, jedes an seiner eigenen Abbruchstelle, '
+      + 'und der Zweisatz steht dort, wo die Schaltung steht. Er erklärt eine Ausnahme, die '
+      + 'ohne Erklärung wie ein Fehler aussieht — ein Prüfer, der bei Funden gruen bleibt. Ein '
+      + 'Verweis auf eine vierte Datei machte alle drei schlechter lesbar und spart nichts.',
+  }),
+  Object.freeze({
+    anfang: 'Er soll finden und melden, nicht sperren',
+    hoechstens: 3,
+    warum: 'Die zweite Zeile desselben Zweisatzes, aus demselben Grund. Sie steht neben der '
+      + 'Bedingung, die sie begründet, und gehört dorthin — getrennt von ihr wäre sie eine '
+      + 'Regel ohne Ort.',
+  }),
+  Object.freeze({
     anfang: '§ 132 BAO verlangt die Belege sieben Jahre',
     hoechstens: 3,
     warum: 'Eine Rechtsstelle gehört dorthin, wo sie wirkt: in die Ablageprüfung, in die '
@@ -146,7 +197,7 @@ export const WIEDERHOLUNG_GEPRUEFT = Object.freeze([
 ]);
 
 /** Wie viele Sätze in mehr als einer Datei stehen dürfen. */
-export const WIEDERHOLUNGEN_HOECHSTENS = 40;
+export const WIEDERHOLUNGEN_HOECHSTENS = 30;
 
 /**
  * Hält die Sätze gegen den Bestand.
@@ -168,6 +219,7 @@ export function satzbefund(quellen, gefuehrt = WIEDERHOLUNG_GEPRUEFT,
 
   const meldungen = [];
   const mehrfach = [];
+  const leitfragen = [];
   const getroffen = new Set();
 
   for (const [satz, dateien] of wo) {
@@ -179,6 +231,13 @@ export function satzbefund(quellen, gefuehrt = WIEDERHOLUNG_GEPRUEFT,
      * träfe ihn nicht. Gesucht wird deshalb das kennzeichnende Stück; dass es
      * kennzeichnend genug ist, hält `test/zwillingssaetze.test.js`.
      */
+    /*
+     * Zuerst die **Bauart**: Ein Modul und sein Prüfer dürfen dieselbe
+     * Leitfrage im Kopf tragen. Eine Regel mit einem Grund deckt hier sieben
+     * Fälle — sieben einzelne Gründe wären siebenmal derselbe Satz und damit
+     * genau das, was dieser Prüfer sucht.
+     */
+    if (istLeitfrage(satz, dateien, quellen)) { leitfragen.push({ satz, dateien }); continue; }
     const eintrag = gefuehrt.find((g) => satz.includes(g.anfang));
     if (eintrag) {
       getroffen.add(eintrag);
@@ -226,6 +285,7 @@ export function satzbefund(quellen, gefuehrt = WIEDERHOLUNG_GEPRUEFT,
 
   return {
     saetze: wo.size,
+    leitfragen,
     mehrfach,
     meldungen,
     sauber: meldungen.length === 0,
