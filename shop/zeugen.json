@@ -244,6 +244,9 @@
   "die-ware-ohne-vertrag": [
     "shop/test/vorgangsstand.test.js"
   ],
+  "die-zeitmeldung-wird-nicht-mehr-nachgemessen": [
+    "shop/test/schnelllaufzeit.test.js"
+  ],
   "die-zielgroessen-werden-wieder-nur-auf-den-typ-geprueft": [
     "shop/test/empfindlichkeit.test.js"
   ],

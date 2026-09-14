@@ -75,15 +75,54 @@ const weigerungen = [];
  * eine Sperre über eine Laufzeit hielte irgendwann einen Commit auf, weil der
  * Rechner gerade beschäftigt war. Gemeldet wird er.
  */
-const GRENZE_MS = 1000;
+/*
+ * Die Grenze aus Gate 38. **`SCHNELLLAUF_GRENZE_MS` ist eine Naht zum Prüfen**
+ * und keine Stellschraube: Sie kann die Grenze nur **senken**, nie heben —
+ * sonst wäre der Gate-Wert eine Umgebungsvariable und keine Entscheidung.
+ */
+const GRENZE_MS = Math.min(1000, Number(process.env.SCHNELLLAUF_GRENZE_MS) || 1000);
 const langsame = [];
+
+/*
+ * **Und die Meldung selbst wird nachgemessen — 14. September 2026.**
+ *
+ * Dieser Lauf ist eine Kette und kein Wettrennen: Ein Prüfer nach dem
+ * anderen. Die gemessene Zeit ist trotzdem **Uhrzeit** und keine Rechenzeit,
+ * und sie enthält alles, was der Rechner sonst gerade tut. Heute früh hat sie
+ * drei Prüfer angezeigt:
+ *
+ * | Prüfer | im Lauf | allein gemessen |
+ * |---|---|---|
+ * | `pruefe-widerrufe` | 13,1 s | **0,75 s** |
+ * | `pruefe-inhalte` | 1,8 s | **0,53 s** |
+ * | `pruefe-allaussagen` | 3,8 s | **0,24 s** |
+ *
+ * Keiner davon ist langsam. Der Behälter war beschäftigt.
+ *
+ * > **Eine Meldung, die bei Last erscheint und bei Ruhe nicht, sagt etwas über
+ * > die Last.**
+ *
+ * Und eine Meldung, die zufällig erscheint, wird gelesen wie keine — dieselbe
+ * Lehre wie beim Prüfer, der Lärm macht. Gemessen wird deshalb ein zweites
+ * Mal, und nur wer **zweimal** über der Grenze liegt, steht in der Meldung.
+ * Der zweite Lauf kostet nur dort, wo der erste angeschlagen hat.
+ */
+function nachgemessen(p) {
+  const seit = Date.now();
+  spawnSync(process.execPath, [join(SHOP, 'bin', p.werkzeug), ...(p.argumente ?? [])],
+    { cwd: SHOP, encoding: 'utf8' });
+  return Date.now() - seit;
+}
 
 for (const p of laeufer) {
   const seitPruefer = Date.now();
   const e = spawnSync(process.execPath, [join(SHOP, 'bin', p.werkzeug), ...(p.argumente ?? [])],
     { cwd: SHOP, encoding: 'utf8' });
   const gebraucht = Date.now() - seitPruefer;
-  if (gebraucht > GRENZE_MS) langsame.push({ name: p.name, ms: gebraucht });
+  if (gebraucht > GRENZE_MS) {
+    const zweitens = nachgemessen(p);
+    if (zweitens > GRENZE_MS) langsame.push({ name: p.name, ms: zweitens, zuerst: gebraucht });
+  }
   const ausgabe = `${e.stdout ?? ''}${e.stderr ?? ''}`;
   if (e.status === 2) {
     weigerungen.push(`${p.name}: ${ausgabe.trim().split('\n')[0] || 'ohne Angabe'}`);
@@ -103,9 +142,12 @@ if (weigerungen.length) {
 }
 
 if (langsame.length) {
-  console.log(`${langsame.length} Prüfer über der Sekunde aus Gate 38 — sie gehören `
-    + 'angesehen und entweder beschleunigt oder mit Grund nach NICHT_IM_HAKEN:');
-  for (const l of langsame) console.log(`  ! ${l.name} — ${(l.ms / 1000).toFixed(1)} s`);
+  console.log(`${langsame.length} Prüfer über der Sekunde aus Gate 38 — **zweimal gemessen** und `
+    + 'beide Male darüber. Sie gehören angesehen und entweder beschleunigt oder mit Grund '
+    + 'nach NICHT_IM_HAKEN:');
+  for (const l of langsame) {
+    console.log(`  ! ${l.name} — ${(l.ms / 1000).toFixed(1)} s (zuerst ${(l.zuerst / 1000).toFixed(1)} s)`);
+  }
   console.log('');
 }
 

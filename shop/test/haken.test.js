@@ -237,7 +237,13 @@ test('der Schnelllauf misst seine eigene Grenze nach', () => {
    * einen Commit auf, weil der Rechner beschäftigt war. Gemeldet wird sie.
    */
   const quelle = readFileSync(new URL('../bin/schnelllauf.mjs', import.meta.url), 'utf8');
-  assert.match(quelle, /GRENZE_MS = 1000/, 'die Grenze steht als Zahl da');
+  /*
+   * **Ergänzt am 14. September 2026.** Hier stand `GRENZE_MS = 1000`. Seit
+   * derselben Runde steht dort `Math.min(1000, …)`: Eine Naht zum Prüfen darf
+   * die Grenze **senken**, nie heben. Die tausend stehen weiter da, und zwar
+   * als die Zahl, die nicht überschritten werden kann.
+   */
+  assert.match(quelle, /Math\.min\(1000,/, 'die Grenze steht nicht mehr als Obergrenze da');
   assert.match(quelle, /langsame\.push/, 'und wird je Prüfer nachgemessen');
   assert.match(quelle, /NICHT_IM_HAKEN/, 'die Meldung nennt den Weg heraus');
   assert.ok(!/langsame\.length[^]{0,200}process\.exit\(1\)/.test(quelle),

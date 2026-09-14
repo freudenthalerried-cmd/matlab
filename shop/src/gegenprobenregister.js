@@ -3996,6 +3996,25 @@ export const GEGENPROBEN = Object.freeze([
       + '`src/skonto.js`.',
   }),
   Object.freeze({
+    id: 'die-zeitmeldung-wird-nicht-mehr-nachgemessen',
+    pruefer: 'test',
+    was: 'Der Schnelllauf meldet einen Pruefer als langsam, ohne ein zweites Mal zu messen',
+    datei: 'shop/bin/schnelllauf.mjs',
+    art: 'ersetzen',
+    suchen: "    const zweitens = nachgemessen(p);\n    if (zweitens > GRENZE_MS) langsame.push({ name: p.name, ms: zweitens, zuerst: gebraucht });",
+    ersetzen: '    langsame.push({ name: p.name, ms: gebraucht, zuerst: gebraucht });',
+    erwartet: /die zweite Messung fehlt — dann meldet eine einzelne Uhrzeit/,
+    warum: 'Die gemessene Zeit ist Uhrzeit und keine Rechenzeit; sie enthaelt alles, was der '
+      + 'Rechner sonst gerade tut. Am 14. September meldete der Lauf drei Pruefer ueber der '
+      + 'Sekunde, die allein gemessen 0,75 s, 0,53 s und 0,24 s brauchten. Eine Meldung, die '
+      + 'bei Last erscheint und bei Ruhe nicht, sagt etwas ueber die Last — und wird gelesen '
+      + 'wie keine. Gemessen wird deshalb ein zweites Mal, und nur wer zweimal darueber liegt, '
+      + 'steht in der Meldung. Geprueft wird das am Quelltext und nicht an einer Laufzeit — '
+      + 'mein erster Entwurf sicherte die **Abwesenheit** der Meldung zu und fiel prompt um, '
+      + 'als die Gegenprobe unter Last lief. Wer eine wackelige Messung prueft, darf die '
+      + 'Pruefung nicht auf dieselbe Wackelei stellen.',
+  }),
+  Object.freeze({
     id: 'kontrollstrukturen-zaehlen-wieder-als-methoden',
     pruefer: 'pruefe-codedubletten',
     was: 'Der Dublettenleser liest `if` und `for` wieder als Methoden',
