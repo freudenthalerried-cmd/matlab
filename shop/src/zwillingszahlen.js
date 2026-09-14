@@ -394,6 +394,14 @@ export const VORSCHLAG_GEPRUEFT = Object.freeze([
       + 'Ziffernfolge.',
   }),
   Object.freeze({
+    name: 'mindestens', wert: 2000,
+    warum: 'Die Mindestzahl angesehener Saetze, unter der `pruefe-saetze` nichts aussagt — seit '
+      + 'dem 14. September. Die anderen Vorkommen von 2000 sind zweimal die Jahreszahl in der '
+      + 'SVG-Namensraumadresse, ein Glied der Szenarienliste in `bin/messliste.mjs`, die '
+      + 'absichtlich zu grosse Eingabe der Hoechstmengenprobe und `KUMULIERT_MINDESTENS`. '
+      + 'Fuenf Dinge, eine Ziffernfolge.',
+  }),
+  Object.freeze({
     name: 'mindestens', wert: 8000,
     warum: 'Dieselbe Bauart eine Groessenordnung tiefer: eine Mindestzeilenzahl. Das einzige '
       + 'andere Vorkommen ist das letzte Glied der Szenarienliste `[500, 1000, 2000, 4000, '

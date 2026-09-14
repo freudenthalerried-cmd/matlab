@@ -297,6 +297,18 @@ export const PRUEFER = [
     einheit: 'Artikelseiten gegeneinander',
     mindestens: 30,
   },
+  // **Aufgenommen am 14. September, nachts.** Der Satz „Eine Berichtigung, die
+  // eine Stelle erreicht, gilt für eine Stelle" ist an vier Tagen durch Zufall
+  // wiedergefunden worden. Für Zahlen gibt es das Zwillingsregister seit dem
+  // 11. September, für Sätze gab es keines — und Sätze sind der häufigere
+  // Fall. Gemessen wird die Zahl der **angesehenen** Sätze.
+  {
+    name: 'pruefe-saetze',
+    werkzeug: 'satzpruefung.mjs',
+    muster: /Zwillingssätze — (\d+) Sätze ab acht Wörtern/,
+    einheit: 'Sätze auf Wiederholung',
+    mindestens: 2000,
+  },
   // **Aufgenommen am 14. September.** Am Vortag ist dreimal dieselbe Bauart
   // aufgefallen: eine Zusicherung, deren Name mehr sagt als ihr Rumpf hält.
   // Maschinell entscheidbar ist davon der Allquantor — sagt ein Testname

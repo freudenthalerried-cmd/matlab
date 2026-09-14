@@ -38,11 +38,9 @@ const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const SITE = join(SHOP, 'ausgabe', 'site');
 
 /**
- * **Vorhanden ist nicht dasselbe wie aktuell.** Ergänzt am 4. September: Die
- * Weigerung, gegen ein veraltetes Erzeugnis zu prüfen, stand seit dem
- * 29. August in zwei von neun Werkzeugen, die eines lesen. Die anderen sieben
- * fragten nur, ob es da ist. Das Register dazu steht in
- * `src/erzeugnisstand.js`; der Text ist dort **eine** Fassung für alle.
+ ***Vorhanden ist nicht dasselbe wie aktuell.** Warum diese Weigerung hier
+ * steht und was sie prüft, steht in `src/erzeugnisstand.js` — dort einmal
+ * für alle Werkzeuge, die ein Erzeugnis lesen.
  */
 {
   const stand = frischebefund(SHOP, 'ausgabe/site');

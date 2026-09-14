@@ -415,6 +415,27 @@ export function zielzeit(pfad) {
   return aeltester;
 }
 
+/**
+ * Ist das Erzeugnis frisch genug, um darüber zu prüfen?
+ *
+ * **Vorhanden ist nicht dasselbe wie aktuell.** Ergänzt am 4. September 2026:
+ * Die Weigerung, gegen ein veraltetes Erzeugnis zu prüfen, stand seit dem
+ * 29. August in **zwei von neun** Werkzeugen, die eines lesen. Die anderen
+ * sieben fragten nur, ob es da ist.
+ *
+ * > **Eine Probe gegen ein veraltetes Erzeugnis prüft die Vergangenheit.**
+ *
+ * **Und der Text steht seit dem 14. September auch nur einmal.** Bis dahin
+ * trugen sechs Werkzeuge diesen Absatz wörtlich im Kopf — samt des Satzes, der
+ * Text sei „dort **eine** Fassung für alle". Er war es, der *Abbruchtext*; die
+ * Begründung dafür stand sechsmal.
+ *
+ * > **Ein Satz, der sagt, es gebe ihn nur einmal, stand sechsmal.**
+ *
+ * Die sechs tragen jetzt einen Zweizeiler, der hierher verweist. Wer die Regel
+ * ändert, ändert sie an einer Stelle — und findet die Begründung dort, wo sie
+ * gilt.
+ */
 export function frischebefund(wurzel, name) {
   const e = ERZEUGNISSE[name];
   if (!e) throw new Error(`Unbekanntes Erzeugnis: ${name}`);

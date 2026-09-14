@@ -3996,6 +3996,23 @@ export const GEGENPROBEN = Object.freeze([
       + '`src/skonto.js`.',
   }),
   Object.freeze({
+    id: 'der-satzleser-streicht-den-code-wieder-weg',
+    pruefer: 'pruefe-saetze',
+    was: 'Der Satzleser streicht den Code weg, statt die Kommentare herauszuschneiden',
+    datei: 'shop/src/zwillingssaetze.js',
+    art: 'ersetzen',
+    suchen: "  for (const t of text.matchAll(/\\/\\*[\\s\\S]*?\\*\\//g)) stuecke.push(t[0].slice(2, -2));",
+    ersetzen: "  for (const t of text.matchAll(/\\/\\*[\\s\\S]*?\\*\\//g)) stuecke.push(t[0].replace(/[/*]/g, ' '));",
+    erwartet: /Sätze stehen in mehr als einer Datei — erlaubt sind 40/,
+    warum: 'Der erste Entwurf hat die Kommentarzeichen durch Leerzeichen ersetzt und den Rest '
+      + 'stehen lassen. Damit lief der letzte Satz eines Blockkommentars in die Codezeile '
+      + 'darunter, und ein Satz, der mit `const hier = dirname(…);` beginnt, faellt durch den '
+      + 'Filter, der Code aussortiert: Der Absatz war unsichtbar, statt gezaehlt zu werden. '
+      + 'Gemessen verfaelscht das die Zahl in beide Richtungen zugleich — echte Absaetze '
+      + 'verschwinden, und aus zerschnittenen Kommentarresten entstehen neue Scheinzwillinge '
+      + '(48 statt 40). Ein Leser, der den Code wegstreicht, liest immer noch den Code.',
+  }),
+  Object.freeze({
     id: 'ein-geteilter-satz-braucht-keinen-grund-mehr',
     pruefer: 'pruefe-dubletten',
     was: 'Ein Satz auf jeder Artikelseite kommt wieder ohne Grund durch',
