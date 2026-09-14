@@ -36,7 +36,7 @@ import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
 import { wegwerfordner } from '../src/wegwerf.js';
-import { findeChromium, browserzeile } from '../src/browsersuche.js';
+import { findeChromium, browserzeile, SONDE_STUMM } from '../src/browsersuche.js';
 
 const hier = fileURLToPath(new URL('.', import.meta.url));
 const demoDatei = join(hier, '..', 'demo.html');
@@ -268,7 +268,7 @@ ${s.aktionen}
     } else if (lauf.status !== 0) {
       probleme.push(`Browser-Exit ${lauf.status}: ${(lauf.stderr ?? '').slice(0, 200)}`);
     }
-    if (gerendert === null) probleme.push('die Sonde ist nicht gelaufen — kein Marker in der Seite');
+    if (gerendert === null) probleme.push(SONDE_STUMM);
     else {
       for (const text of s.erwartet ?? []) {
         if (!gerendert.includes(text)) probleme.push(`fehlt im gerenderten Ergebnis: „${text}"`);

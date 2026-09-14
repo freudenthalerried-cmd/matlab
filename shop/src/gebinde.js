@@ -34,6 +34,17 @@
  *   die Seite sagt das, statt zu schätzen.
  */
 
+/**
+ * Warum die Gebindeprüfung seit dem 8. September nicht messen kann.
+ *
+ * **Hierher gezogen am 14. September 2026, nachts.** Der Satz stand in
+ * `bin/gebindepruefung.mjs` und `bin/preiswechsel.mjs` — beide brauchen die
+ * Positionsliste des Lieferanten, und beide sagen dasselbe, wenn sie fehlt.
+ * Sie liegt außerhalb des Verzeichnisses, weil sie Einkaufspreise trägt; ein
+ * Neu-Ausspielen kann nur der Auftraggeber.
+ */
+export const POSITIONSLISTE_FEHLT = 'preise/poschacher-positionen.csv fehlt — sie liegt außerhalb des Verzeichnisses.';
+
 /** Was als Gebinde in Frage kommt, in Kilogramm. */
 export const KLEINSTES_GEBINDE_KG = 0.1;
 export const GROESSTES_GEBINDE_KG = 50;

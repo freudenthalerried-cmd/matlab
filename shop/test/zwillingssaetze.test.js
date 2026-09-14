@@ -153,3 +153,41 @@ test('Ein Absatz mitten in der Datei ist keine Leitfrage', async () => {
   const zweiSrc = new Map([['src/a.js', kopf], ['src/b.js', kopf]]);
   assert.equal(istLeitfrage(satz, [...zweiSrc.keys()], zweiSrc), false, 'beide aus src/');
 });
+
+/*
+ * ## Ein Apostroph in einem Kommentar
+ *
+ * **14. September 2026, nachts.** Das alte Zeichenkettenmuster erlaubte den
+ * Zeilenumbruch — `(?!\1)[\s\S]`. Ein Apostroph in einem Kommentar paarte sich
+ * deshalb mit dem nächsten Apostroph im Code, und ab dort las der Leser Code
+ * als Text und Text als Zwischenraum, bis zum Dateiende.
+ */
+test('Ein Apostroph im Kommentar kippt den Leser nicht mehr', () => {
+  const quelle = [
+    "/* Ein Satz mit Apostroph: der's trägt und acht Wörter hat. */",
+    "const a = 'Ein Satz in einer Zeichenkette mit mindestens acht Wörtern.';",
+    "const b = 'Ein zweiter Satz in einer Zeichenkette mit acht Wörtern.';",
+  ].join('\n');
+  const saetze = [...saetzeDerQuelle(quelle)];
+  assert.ok(saetze.length >= 2, `nur ${saetze.length} Sätze: ${JSON.stringify(saetze)}`);
+  for (const s of saetze) {
+    assert.ok(!s.includes('const '), `eine Codezeile ist als Text gelesen worden: ${s}`);
+    assert.ok(!s.includes('*/'), `ein Kommentarende steht mitten im Satz: ${s}`);
+  }
+  assert.ok(saetze.some((s) => s.startsWith('Ein Satz in einer Zeichenkette')),
+    `die erste Zeichenkette fehlt: ${JSON.stringify(saetze)}`);
+  assert.ok(saetze.some((s) => s.startsWith('Ein zweiter Satz')),
+    `die zweite Zeichenkette fehlt: ${JSON.stringify(saetze)}`);
+});
+
+/*
+ * Und die Gegenrichtung: Ein Schrägstrichliteral **darf** über Zeilen gehen,
+ * eine einfach begrenzte Zeichenkette nicht. Wer beides gleich behandelt,
+ * verliert entweder die mehrzeiligen Texte oder kippt wieder.
+ */
+test('Ein Schrägstrichliteral darf über Zeilen gehen', () => {
+  const quelle = 'const a = `Ein mehrzeiliger Satz in einem Literal,\nder über zwei Zeilen geht.`;';
+  const saetze = [...saetzeDerQuelle(quelle)];
+  assert.equal(saetze.length, 1, JSON.stringify(saetze));
+  assert.ok(saetze[0].includes('über zwei Zeilen geht'), saetze[0]);
+});

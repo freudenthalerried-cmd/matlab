@@ -26,6 +26,8 @@
  * nicht zu viel auf der Seite, sondern zu wenig.
  */
 
+import { OHNE_FUNDSTELLEN } from './prueferurteil.js';
+
 /** Die drei Auskünfte, von denen eine auf jeder Artikelfläche stehen muss. */
 export const AUSKUENFTE = Object.freeze([
   Object.freeze({
@@ -88,7 +90,7 @@ export function vorteilsangabebefund(seiten = [], mindestens = 40) {
       regel: 'zu-wenig-karten',
       wo: '—',
       text: `nur ${gesamt} Artikelkarten gefunden, erwartet mindestens ${mindestens} — `
-        + 'ein Prüfer ohne Fundstellen meldet sauber über nichts',
+        + OHNE_FUNDSTELLEN,
     });
   }
   return { gesamt, nach: Object.fromEntries(nach), meldungen, sauber: meldungen.length === 0 };

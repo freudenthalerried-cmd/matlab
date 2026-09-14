@@ -45,12 +45,13 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { POSITIONSLISTE_FEHLT } from '../src/gebinde.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const QUELLE = join(SHOP, '..', 'preise', 'poschacher-positionen.csv');
 
 if (!existsSync(QUELLE)) {
-  console.error('preise/poschacher-positionen.csv fehlt — sie liegt außerhalb des Verzeichnisses.');
+  console.error(POSITIONSLISTE_FEHLT);
   console.error('Ohne sie ist hier nichts zu messen, und eine Aussage ohne Grundlage wäre geraten.');
   process.exit(2);
 }

@@ -38,6 +38,20 @@
 export const GELAUFEN = [0, 1];
 
 /**
+ * Der Satz, mit dem ein Prüfer sagt, dass er nichts angesehen hat.
+ *
+ * **Hierher gezogen am 14. September 2026, nachts.** Er stand wörtlich in
+ * `src/normstelle.js`, `src/quellenstempel.js`, `src/untergrenze.js` und
+ * `src/vorteilsangabe.js` — vier Prüfer, ein Satz, und gefunden hat ihn erst
+ * der Satzvergleich, nachdem sein Leser repariert war.
+ *
+ * > **Ein grüner Lauf über null Fundstellen ist kein Befund, sondern eine
+ * > Auskunft über den Prüfer.** Genau das sagt dieser Satz, und er gehört
+ * > überall gleich zu lauten, weil er überall dasselbe heißt.
+ */
+export const OHNE_FUNDSTELLEN = 'ein Prüfer ohne Fundstellen meldet sauber über nichts';
+
+/**
  * Die letzten Zeilen, die ein Prüfer beim Abbruch geschrieben hat.
  *
  * Drei, nicht alle: Die Abbruchmeldungen im Bestand sind dreizeilig — Ursache,

@@ -473,6 +473,16 @@ export function frischebefund(wurzel, name) {
  * Bis heute stand er zweimal im Bestand, in zwei Schreibweisen. Zwei Fassungen
  * desselben Satzes sind eine Fassung, die niemand pflegt.
  */
+/**
+ * Der Satz, mit dem ein Werkzeug einen veralteten Stand ablehnt.
+ *
+ * **Hierher gezogen am 14. September 2026, nachts.** Er stand dreimal: hier
+ * im Abbruchtext, in `bin/erzeugnispruefung.mjs` als grüner Schlusssatz und
+ * in `bin/punktepruefung.mjs` vor einem eigenen Abbruch. Die beiden Werkzeuge
+ * schreiben ihn jetzt nicht mehr ab.
+ */
+export const VERALTET_SATZ = 'Eine Probe gegen ein veraltetes Erzeugnis prüft die Vergangenheit.';
+
 export function abbruchtext(befund) {
   if (befund.fehlt) {
     return [`Abbruch: ${befund.name} fehlt — zuerst ${befund.baubefehl}.`];
@@ -481,7 +491,7 @@ export function abbruchtext(befund) {
     `Abbruch: ${befund.name} ist älter als ${befund.juenger.length} Quelldatei(en)`
       + ` — zuerst ${befund.baubefehl}.`,
     `  ${befund.juenger.slice(0, 5).join(', ')}${befund.juenger.length > 5 ? ' …' : ''}`,
-    'Eine Probe gegen ein veraltetes Erzeugnis prüft die Vergangenheit.',
+    VERALTET_SATZ,
   ];
 }
 

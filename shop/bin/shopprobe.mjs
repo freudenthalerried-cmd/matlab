@@ -37,7 +37,7 @@ import { KORBSCHLUESSEL } from '../src/shopkern.js';
 import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
 import { extname } from 'node:path';
 import { wegwerfordner } from '../src/wegwerf.js';
-import { findeChromium, browserzeile } from '../src/browsersuche.js';
+import { findeChromium, browserzeile, SONDE_STUMM } from '../src/browsersuche.js';
 
 const hier = fileURLToPath(new URL('.', import.meta.url));
 const shopDatei = join(hier, '..', 'ausgabe', 'website.html');
@@ -1365,7 +1365,7 @@ async function laufe(s, i) {
 
   const probleme = [];
   if (fehler && gerendert === null) probleme.push(`Browser gescheitert: ${String(fehler.message).slice(0, 200)}`);
-  if (gerendert === null) probleme.push('die Sonde ist nicht gelaufen — kein Marker in der Seite');
+  if (gerendert === null) probleme.push(SONDE_STUMM);
   else if (gerendert.includes('[[SONDE GESTOLPERT')) probleme.push(gerendert);
   else {
     for (const text of s.erwartet ?? []) {

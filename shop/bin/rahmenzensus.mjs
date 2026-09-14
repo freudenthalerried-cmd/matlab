@@ -191,8 +191,8 @@ const fuehreAus = promisify(execFile);
 const GLEICHZEITIG = 6;
 
 const seiten = alleSeiten(siteOrdner).filter((k) => !NUR || NUR.includes(k));
-// Ein Prüfer, dessen Voreinstellung nicht auf den Bestand zeigt, meldet
-// „alles in Ordnung", weil er nichts gefunden hat. Leer ist ein Fehler.
+// Warum leer ein Fehler ist und kein grüner Lauf: `OHNE_FUNDSTELLEN` in
+// `src/prueferurteil.js` — dort einmal.
 if (seiten.length === 0) {
   console.error('Keine Seite gefunden. Ein Zensus über null Seiten ist kein Befund.');
   process.exit(2);

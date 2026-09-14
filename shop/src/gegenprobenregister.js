@@ -4032,6 +4032,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'Pruefung nicht auf dieselbe Wackelei stellen.',
   }),
   Object.freeze({
+    id: 'der-satzleser-laesst-zeichenketten-wieder-ueber-zeilen',
+    pruefer: 'test',
+    was: 'Das Zeichenkettenmuster des Satzlesers erlaubt wieder den Zeilenumbruch',
+    datei: 'shop/src/zwillingssaetze.js',
+    art: 'ersetzen',
+    suchen: "const ZEICHENKETTE = /'(?:[^'\\\\\\n]|\\\\[\\s\\S])*'",
+    ersetzen: "const ZEICHENKETTE = /'(?:[^']|\\\\[\\s\\S])*'",
+    erwartet: /nur 1 Sätze/,
+    warum: 'Bis zum 14. September stand hier ein Muster, das den Zeilenumbruch erlaubte. Ein '
+      + 'Apostroph in einem Kommentar paarte sich mit dem naechsten Apostroph im Code — und ab '
+      + 'dort las der Leser Code als Text und Text als Zwischenraum, bis zum Dateiende. '
+      + 'Gemessen: 182 von 249 Quelldateien betroffen, 2244 von 13197 Saetzen Kunstprodukte. '
+      + 'Der Pruefer war gruen, weil der Filter gegen Codezeichen die meisten Kunstprodukte '
+      + 'wegwarf — er las falsch und meldete nichts.',
+  }),
+  Object.freeze({
     id: 'der-regelzaehler-kennt-nur-eine-schreibweise',
     pruefer: 'pruefe-regeln',
     was: 'Die Regelzaehlung liest nur das Feld und nicht mehr den oertlichen Melder',

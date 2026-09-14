@@ -32,7 +32,7 @@ const e = erzeugeRechtstexteauftrag({
   pflichttexte: PFLICHTTEXTE,
   agbGliederung: AGB_GLIEDERUNG,
   datenschutzGliederung: DATENSCHUTZ_GLIEDERUNG,
-      // **Seit Gate 26 eine Funktion.** Der Auftrag an den Rechtstexteanbieter
+    // **Seit Gate 26 eine Funktion.** Der Auftrag an den Rechtstexteanbieter
     // beschreibt den Stand, in dem die Seite **heute** online ginge — und
     // heute ist der Bestellweg aus. Steht er eines Tages an, gehört der
     // Schalter hier durchgereicht; ein festes `true` wäre eine Zusage über

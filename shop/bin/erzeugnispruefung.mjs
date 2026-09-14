@@ -22,7 +22,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 import { ohneKommentare } from '../src/entkommentieren.js';
-import { ERZEUGNISSE, frischebefund, leserbefund } from '../src/erzeugnisstand.js';
+import { ERZEUGNISSE, frischebefund, leserbefund, VERALTET_SATZ } from '../src/erzeugnisstand.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 
@@ -61,7 +61,7 @@ if (alt.length) console.log('');
 
 if (meldungen.length === 0) {
   console.log('Jedes Werkzeug, das ausgabe/ liest, weigert sich über einem veralteten Stand.');
-  console.log('Eine Probe gegen ein veraltetes Erzeugnis prüft die Vergangenheit.');
+  console.log(VERALTET_SATZ);
   process.exit(0);
 }
 

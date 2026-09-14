@@ -61,6 +61,7 @@
  */
 
 import { nurText } from './format.js';
+import { OHNE_FUNDSTELLEN } from './prueferurteil.js';
 
 /**
  * Ein Quellenstempel besteht aus dem Wort „Quelle" und allem bis zur
@@ -221,7 +222,7 @@ export function stempelbefund(seiten = [], mindestens = 100) {
   if (gesamt < mindestens) {
     melde('zu-wenig-stempel', '—',
       `nur ${gesamt} Quellenangaben gefunden, erwartet mindestens ${mindestens} — `
-      + 'ein Prüfer ohne Fundstellen meldet sauber über nichts');
+      + OHNE_FUNDSTELLEN);
   }
 
   return {

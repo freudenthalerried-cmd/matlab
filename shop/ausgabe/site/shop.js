@@ -464,6 +464,17 @@ function nurText(html) {
 
 
 
+
+
+
+
+
+
+
+
+const POSITIONSLISTE_FEHLT = 'preise/poschacher-positionen.csv fehlt — sie liegt außerhalb des Verzeichnisses.';
+
+
 const KLEINSTES_GEBINDE_KG = 0.1;
 const GROESSTES_GEBINDE_KG = 50;
 

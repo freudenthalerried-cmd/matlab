@@ -59,6 +59,42 @@ export const REDEN_UEBER_DEN_BESTAND = Object.freeze([
  * aussieht; ein kopiertes Stück Code ist eine andere Frage als ein kopierter
  * Satz, und für sie gibt es andere Werkzeuge.
  */
+/**
+ * Eine Zeichenkette, wie Javascript sie liest.
+ *
+ * **Der Fund, 14. September 2026, nachts.** Hier stand seit dem 88. Lauf
+ * `` /(['"`])((?:\\.|(?!\1)[\s\S])*)\1/g ``. Das Muster ist für einfache
+ * Fälle richtig und für einen einzigen nicht: `(?!\1)[\s\S]` erlaubt den
+ * **Zeilenumbruch**. Eine einfach begrenzte Zeichenkette darf in Javascript
+ * über keine Zeile gehen — ein Apostroph in einem Kommentar aber schon:
+ *
+ * ```
+ * /* Ein Satz mit Apostroph: der's trägt. *\/
+ * const a = 'eins';
+ * const b = 'zwei';
+ *
+ * altes Muster liest:  "s trägt. *\/\nconst a = "   und   ";\nconst b = "
+ * neues Muster liest:  'eins'                        und   'zwei'
+ * ```
+ *
+ * > **Ein Apostroph in einem Kommentar kippt den Leser für den Rest der
+ * > Datei: Ab dort liest er Code als Text und Text als Zwischenraum.**
+ *
+ * Gemessen über den Bestand: **182 von 249 Quelldateien** laufen zwischen den
+ * beiden Mustern auseinander, 43 tragen einen Apostroph in einem
+ * Blockkommentar. Von 13 197 gelesenen Sätzen waren **2 244 Kunstprodukte**
+ * dieses Kippens — Sätze mit `//` mitten drin, Sätze, die in einer Codezeile
+ * beginnen.
+ *
+ * Und das Muster war zugleich der ganze Zeitverbrauch dieses Prüfers: Der
+ * Rückverfolger braucht **1 088 der 1 094 ms**; die beiden Kommentarmuster
+ * daneben je 3 ms. Das neue Muster braucht **9 ms**.
+ *
+ * **Das sind zwei Änderungen in einer Zeile**, und deshalb steht beides
+ * gemessen da: was sie am Lesen ändert und was an der Zeit.
+ */
+const ZEICHENKETTE = /'(?:[^'\\\n]|\\[\s\S])*'|"(?:[^"\\\n]|\\[\s\S])*"|`(?:[^`\\]|\\[\s\S])*`/g;
+
 export function saetzeDerQuelle(quelltext) {
   const text = String(quelltext ?? '');
   const stuecke = [];
@@ -77,7 +113,7 @@ export function saetzeDerQuelle(quelltext) {
    */
   for (const t of text.matchAll(/\/\*[\s\S]*?\*\//g)) stuecke.push(t[0].slice(2, -2));
   for (const t of text.matchAll(/(^|[^:\\])\/\/([^\n]*)/g)) stuecke.push(t[2]);
-  for (const t of text.matchAll(/(['"`])((?:\\.|(?!\1)[\s\S])*)\1/g)) stuecke.push(t[2]);
+  for (const t of text.matchAll(ZEICHENKETTE)) stuecke.push(t[0].slice(1, -1));
 
   const saetze = new Set();
   for (const stueck of stuecke) {
@@ -275,7 +311,7 @@ export const WIEDERHOLUNG_GEPRUEFT = Object.freeze([
 ]);
 
 /** Wie viele Sätze in mehr als einer Datei stehen dürfen. */
-export const WIEDERHOLUNGEN_HOECHSTENS = 27;
+export const WIEDERHOLUNGEN_HOECHSTENS = 26;
 
 /**
  * Hält die Sätze gegen den Bestand.

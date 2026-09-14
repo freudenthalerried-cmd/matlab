@@ -38,7 +38,7 @@ import { wegwerfordner } from '../src/wegwerf.js';
 import { betreiberAmTagX } from '../src/tagx.js';
 import { belegordner } from '../src/ablageort.js';
 import { geschaeftsjahr, geschaeftstag, zeitstempel } from '../src/geschaeftszeit.js';
-import { findeChromium, browserzeile } from '../src/browsersuche.js';
+import { findeChromium, browserzeile, SONDE_STUMM } from '../src/browsersuche.js';
 import { abbruchmelder, ABBRUCH_PRUEFER } from '../src/werkzeugabbruch.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -222,7 +222,7 @@ try {
 
   const probleme = [];
   const bestanden = [];
-  if (gemeldet === null) probleme.push('die Sonde ist nicht gelaufen — kein Marker in der Seite');
+  if (gemeldet === null) probleme.push(SONDE_STUMM);
   else if (gemeldet.includes('[[SONDE GESTOLPERT')) probleme.push(gemeldet);
   else {
     /**

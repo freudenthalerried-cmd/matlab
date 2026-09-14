@@ -10,8 +10,8 @@
  */
 
 import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { importierePreisliste, vergleiche } from '../src/import.js';
+import { istMusterpfad, MUSTER_SATZ } from '../src/musterpfad.js';
 
 const [, , lieferantId, datei, ...rest] = process.argv;
 const schreiben = rest.includes('--schreiben');
@@ -95,9 +95,9 @@ if (!schreiben) {
 // der Shop hielte erfundene Konditionen für echte. Deshalb hier ein Riegel.
 // Geprüft wird der aufgelöste Pfad, nicht das Argument: ein relativer Name aus
 // beispiel/ heraus trüge das Verzeichnis sonst nicht im Text.
-if (/muster|beispiel|demo/i.test(resolve(datei))) {
+if (istMusterpfad(datei)) {
   console.error('\nAbbruch: Diese Datei ist als Muster gekennzeichnet.');
-  console.error('Muster enthalten erfundene Preise und dürfen nicht als bestätigt in den Katalog.');
+  console.error(MUSTER_SATZ);
   console.error('Echte Preislisten außerhalb von beispiel/ ablegen.');
   process.exit(3);
 }

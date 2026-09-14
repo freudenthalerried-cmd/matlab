@@ -54,7 +54,7 @@ import {
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-import { leseAnfrage } from '../src/anfragelesen.js';
+import { leseAnfrage, OHNE_ANFRAGETEXT } from '../src/anfragelesen.js';
 import { bestellschritt } from '../src/gebinde.js';
 import { pruefeBestellfelder } from '../src/bestellfelder.js';
 import { pruefeBestelldaten } from '../src/kunde.js';
@@ -267,7 +267,7 @@ if (!existsSync(kundeDatei)) abbruch(`Die Kundendatei fehlt: ${kundeDatei}`);
 
 const text = anfrageDatei ? readFileSync(anfrageDatei, 'utf8') : readFileSync(0, 'utf8');
 if (!text.trim()) {
-  abbruch('Kein Anfragetext.', 'Entweder eine Datei angeben oder den Mailtext hereinleiten.');
+  abbruch('Kein Anfragetext.', OHNE_ANFRAGETEXT);
 }
 
 // --- Bestand laden ----------------------------------------------------------

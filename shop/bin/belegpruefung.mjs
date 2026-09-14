@@ -285,11 +285,8 @@ belege.push({
     pflichttexte: PFLICHTTEXTE,
     agbGliederung: AGB_GLIEDERUNG,
     datenschutzGliederung: DATENSCHUTZ_GLIEDERUNG,
-        // **Seit Gate 26 eine Funktion.** Der Auftrag an den Rechtstexteanbieter
-    // beschreibt den Stand, in dem die Seite **heute** online ginge — und
-    // heute ist der Bestellweg aus. Steht er eines Tages an, gehört der
-    // Schalter hier durchgereicht; ein festes `true` wäre eine Zusage über
-    // einen Zustand, den dieses Werkzeug nicht kennt.
+    // Warum hier `false` steht und kein festes `true`: siehe den Kopf von
+    // `bin/rechtstexteauftrag.mjs` — dort einmal.
     websiteVerarbeitung: websiteVerarbeitung(false),
     b2b: B2B_ABGRENZUNG,
     datenfluesse: DATENFLUESSE,

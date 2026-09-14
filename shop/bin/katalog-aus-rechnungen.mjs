@@ -29,6 +29,7 @@ import { sichere } from '../src/sicherung.js';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { sperrgutAusGruppe } from '../src/sperrguteinstufung.js';
+import { zieleHalb, ZIELE_HALB_SATZ } from '../src/katalogziele.js';
 
 const HIER = dirname(fileURLToPath(import.meta.url));
 const WURZEL = join(HIER, '..');
@@ -83,8 +84,8 @@ const PREISE_ZIEL = process.env.KATALOG_PREISE_ZIEL || join(REPO, 'preise', 'bau
  * andere in den Bestand schreibt, ist eine Falle. Wer eine umlenkt, lenkt
  * beide um.
  */
-if (Boolean(process.env.KATALOG_ZIEL) !== Boolean(process.env.KATALOG_PREISE_ZIEL)) {
-  console.error('\nAbbruch: Nur eines der beiden Ziele ist umgelenkt.');
+if (zieleHalb()) {
+  console.error(ZIELE_HALB_SATZ);
   console.error(`  KATALOG_ZIEL:        ${process.env.KATALOG_ZIEL ?? '(nicht gesetzt)'}`);
   console.error(`  KATALOG_PREISE_ZIEL: ${process.env.KATALOG_PREISE_ZIEL ?? '(nicht gesetzt)'}`);
   console.error('\nDie beiden Ausgaben gehören zusammen. Ein Lauf, der den Katalog');

@@ -97,18 +97,11 @@ const feld = (v, bezeichnung) =>
  * Die Kranentladung, die dem Kunden verrechnet wurde — beim Lieferanten
  * bestellt.
  *
- * **Der Befund vom 2. September.** Der Warenkorb rechnet je palettierter
- * Position 7,50 € Kranentladung und weist sie dem Kunden aus. Die Bestellung
- * an den Lieferanten sagte davon nichts. Der Lastwagen wäre ohne Kran
- * gekommen, und der Kunde hätte für zwei Hübe bezahlt, die niemand bestellt
- * hat.
- *
  * > **Was dem Kunden verrechnet wird, muss beim Lieferanten bestellt sein.**
  *
- * Dieselbe Familie wie der Termin, der bis zum 1. September nur auf der
- * Auftragsbestätigung stand und nie angefordert wurde. Zugesagt und nicht
- * bestellt ist eine Hoffnung; verrechnet und nicht bestellt ist eine
- * Rechnung über nichts.
+ * Der Befund vom 2. September, der diese Zeile erzwungen hat, steht im Kopf
+ * von `VERRECHNET_UND_BESTELLT` in `src/belegpruefung.js` — dort einmal, bei dem
+ * Prüfer, der die Regel durchsetzt.
  */
 function kranzeile(teil) {
   const hübe = teil.positionen.filter((p) => p.sperrgut).length;

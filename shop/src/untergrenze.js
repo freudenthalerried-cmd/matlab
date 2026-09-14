@@ -54,6 +54,7 @@
  */
 
 import { deutscheZahl } from './format.js';
+import { OHNE_FUNDSTELLEN } from './prueferurteil.js';
 
 /**
  * Die Formen, in denen eine untere Bestellgrenze auf einer Seite steht.
@@ -166,7 +167,7 @@ export function untergrenzenbefund(dateien, grenzeNetto, mindestens = 1) {
       wert: null,
       auszug: '',
       text: `nur ${gefunden} Grenzaussage(n) gefunden, erwartet mindestens ${mindestens} — `
-        + 'ein Prüfer ohne Fundstellen meldet sauber über nichts',
+        + OHNE_FUNDSTELLEN,
     });
   }
   return {

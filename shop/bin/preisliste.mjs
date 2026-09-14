@@ -24,9 +24,10 @@
 
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join } from 'node:path';
 import { lesePreisliste, fuegeZusammen } from '../src/preisliste.js';
 import { geschaeftstag } from '../src/geschaeftszeit.js';
+import { istMusterpfad, MUSTER_SATZ } from '../src/musterpfad.js';
 
 const HIER = dirname(fileURLToPath(import.meta.url));
 const WURZEL = join(HIER, '..');
@@ -46,9 +47,9 @@ if (!datei) {
 
 // Derselbe Riegel wie im Preislisten-Import: Eine als Muster gekennzeichnete
 // Datei enthält erfundene Preise und darf nicht als bestätigt in den Katalog.
-if (/muster|beispiel|demo|probe/i.test(resolve(datei))) {
+if (istMusterpfad(datei)) {
   console.error('\nAbbruch: Diese Datei ist als Muster gekennzeichnet.');
-  console.error('Muster enthalten erfundene Preise und dürfen nicht als bestätigt in den Katalog.');
+  console.error(MUSTER_SATZ);
   console.error('Echte Listen außerhalb von beispiel/ ablegen.');
   process.exit(3);
 }

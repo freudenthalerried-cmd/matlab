@@ -21,7 +21,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-import { leseAnfrage } from '../src/anfragelesen.js';
+import { leseAnfrage, OHNE_ANFRAGETEXT } from '../src/anfragelesen.js';
 import { bestellschritt } from '../src/gebinde.js';
 import { kundenWarenkorb } from '../src/shopkern.js';
 import { ladeBaustoffkatalog } from '../src/baustoffkatalog.js';
@@ -36,7 +36,7 @@ const euro = (n) => n.toLocaleString('de-AT', { minimumFractionDigits: 2, maximu
 const datei = process.argv[2];
 const text = datei ? readFileSync(datei, 'utf8') : readFileSync(0, 'utf8');
 if (!text.trim()) {
-  console.error('Kein Text. Entweder eine Datei angeben oder den Mailtext hereinleiten.');
+  console.error(`Kein Text. ${OHNE_ANFRAGETEXT}`);
   process.exit(2);
 }
 

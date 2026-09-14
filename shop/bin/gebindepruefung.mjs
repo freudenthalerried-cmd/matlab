@@ -14,7 +14,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-import { mengenschritt } from '../src/gebinde.js';
+import { mengenschritt, POSITIONSLISTE_FEHLT } from '../src/gebinde.js';
 import { pruefeGebindeGegenBelege } from '../src/gebindebeleg.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -40,7 +40,7 @@ const artikel = JSON.parse(readFileSync(join(SHOP, 'data', 'katalog-baustoff.jso
  * wirklich nicht zu messen ist.
  */
 if (!existsSync(QUELLE)) {
-  console.error('preise/poschacher-positionen.csv fehlt — sie liegt außerhalb des Verzeichnisses.');
+  console.error(POSITIONSLISTE_FEHLT);
   console.error('Ohne sie ist hier nichts zu messen, und ein grüner Lauf über nichts wäre eine');
   console.error('Lüge. Die Einheitenliste prüft seit dem 12.09. `npm run pruefe-einheiten`.');
   process.exit(2);

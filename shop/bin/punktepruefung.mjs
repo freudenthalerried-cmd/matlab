@@ -18,7 +18,7 @@ import { existsSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
+import { abbruchtext, frischebefund, VERALTET_SATZ } from '../src/erzeugnisstand.js';
 import { OHNE_WERKZEUG } from '../src/offenepunkte.js';
 import { GRENZE_TAGE } from '../src/preisalter.js';
 import { punktebefund } from '../src/punktezahlen.js';
@@ -51,7 +51,7 @@ if (!stand.frisch) {
 if (statSync(messlistendatei).mtimeMs < statSync(join(SHOP, 'ausgabe', 'kampagne')).mtimeMs) {
   console.error('Abbruch: ausgabe/messliste-baustoff.json ist älter als ausgabe/kampagne'
     + ' — zuerst `npm run messliste`.');
-  console.error('Eine Probe gegen ein veraltetes Erzeugnis prüft die Vergangenheit.');
+  console.error(VERALTET_SATZ);
   process.exit(2);
 }
 

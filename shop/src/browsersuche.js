@@ -80,6 +80,19 @@ function unterWurzeln(rest) {
  *
  * @returns {{pfad: string, art: string}|null}
  */
+/**
+ * Der Satz, mit dem eine Browserprobe sagt, dass ihre Sonde stumm blieb.
+ *
+ * **Hierher gezogen am 14. September 2026, nachts.** Er stand wörtlich in
+ * `bin/bestellprobe.mjs`, `bin/oberflaechenprobe.mjs` und `bin/shopprobe.mjs`.
+ * Die drei Proben setzen einen Marker in die Seite und lesen ihn zurück; fehlt
+ * er, hat nicht die Seite versagt, sondern die Messung.
+ *
+ * > **Eine Probe, deren Sonde nicht gelaufen ist, hat nichts gemessen — und
+ * > das ist etwas anderes als ein Fehlschlag der Seite.**
+ */
+export const SONDE_STUMM = 'die Sonde ist nicht gelaufen — kein Marker in der Seite';
+
 export function findeChromium() {
   if (process.env.CHROME_PFAD && existsSync(process.env.CHROME_PFAD)) {
     return { pfad: process.env.CHROME_PFAD, art: 'vom Aufrufer genannt' };

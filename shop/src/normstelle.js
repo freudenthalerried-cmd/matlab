@@ -46,6 +46,8 @@
  * zugleich das, was ein Leser sucht, wenn er die Norm nachschlägt.
  */
 
+import { OHNE_FUNDSTELLEN } from './prueferurteil.js';
+
 /** Ein Normbezug mit Nummer. Ohne Nummer meldet `pruefe-inhalte` ihn schon. */
 export const NORMBEZUG = /(?:ÖNORM|DIN|EN)\s+[A-Z]?\s?[0-9]{3,5}(?:-[0-9]+)?/g;
 
@@ -111,7 +113,7 @@ export function normstellenbefund(seiten = [], mindestens = 3) {
       wo: '—',
       norm: null,
       text: `nur ${geprueft} Erstnennungen gefunden, erwartet mindestens ${mindestens} — `
-        + 'ein Prüfer ohne Fundstellen meldet sauber über nichts',
+        + OHNE_FUNDSTELLEN,
     });
   }
   return { geprueft, meldungen, sauber: meldungen.length === 0 };

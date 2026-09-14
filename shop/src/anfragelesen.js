@@ -65,6 +65,15 @@
  * hat die Autorität einer Maschine und die Verlässlichkeit einer Vermutung.
  */
 
+/**
+ * Der Rat, wenn kein Anfragetext dasteht.
+ *
+ * **Hierher gezogen am 14. September 2026, nachts.** `bin/anfrage-lesen.mjs`
+ * und `bin/vorgang.mjs` nehmen beide eine Kundenanfrage entgegen — als Datei
+ * oder über die Standardeingabe — und sagten dasselbe, wenn beides fehlte.
+ */
+export const OHNE_ANFRAGETEXT = 'Entweder eine Datei angeben oder den Mailtext hereinleiten.';
+
 /*
  * **`cent` kam am 13. September aus `format.js` hierher — und ging am selben
  * Tag dorthin zurück.** Die Begründung für die eigene Fassung war richtig und
