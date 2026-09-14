@@ -5148,6 +5148,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'Sie behauptet, hier fehle etwas — und hielt zugleich die ganze Rechnung aus der Akte.',
   }),
   Object.freeze({
+    id: 'der-freibrief-prueft-sich-selbst-nicht-mehr',
+    pruefer: 'test',
+    was: 'Die Wächter über OHNE_MESSUNG lesen ihr Register wieder unmittelbar aus dem Modul',
+    datei: 'shop/src/punktezahlen.js',
+    art: 'ersetzen',
+    suchen: '  for (const e of ohneMessung) {',
+    ersetzen: '  for (const e of OHNE_MESSUNG) {',
+    erwartet: /ein Eintrag ohne zahlen und ohne form deckt nichts/,
+    warum: 'Der Fund vom 15. September: `freibrief-ohne-gegenstand` und `freibrief-ohne-grund` '
+      + 'bewachen das Register `OHNE_MESSUNG`, und `punktebefund` las es unmittelbar aus dem '
+      + 'Modul. Im Bestand ist jeder Eintrag in Ordnung — also konnte keine der beiden Regeln '
+      + 'je feuern, und niemand haette gemerkt, wenn sie falsch gebaut waeren. Diese Mutation '
+      + 'nimmt den Beiwert wieder heraus und macht beide Regeln erneut unerreichbar: Der Pruefer '
+      + 'bleibt gruen und misst dabei nur noch sich selbst.',
+  }),
+  Object.freeze({
     id: 'probe-in-der-echten-akte',
     pruefer: 'test',
     was: 'Ein Lauf mit ausgetauschtem Betreiber legt in der echten Akte ab',

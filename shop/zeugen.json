@@ -431,5 +431,8 @@
   ],
   "zweimal-herausgeschnitten": [
     "shop/test/posteingang.test.js"
+  ],
+  "der-freibrief-prueft-sich-selbst-nicht-mehr": [
+    "shop/test/punktezahlen.test.js"
   ]
 }

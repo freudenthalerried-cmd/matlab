@@ -104,3 +104,35 @@ test('Derselbe Grund zweimal ergibt einen Satz', () => {
   });
   assert.equal(a.gruende.length, 1);
 });
+
+/*
+ * **Zwei Regeln über das Register selbst — 15. September 2026.** `ohne-satz`
+ * und `ohne-herkunft` sehen nicht die Gründe des Bestandes an, sondern jeden
+ * Eintrag in `ABSAGEGRUENDE`. Dort ist seit dem ersten Tag jeder Eintrag
+ * vollständig; die beiden konnten nie feuern. `absagebefund` nimmt die
+ * Einträge als zweiten Beiwert — genau dafür steht er da.
+ */
+const nurEigene = (eintraege) => absagebefund(['PROBEGRUND'], eintraege)
+  .meldungen.map((m) => m.regel).filter((r) => r === 'ohne-satz' || r === 'ohne-herkunft');
+
+const eintrag = (mehr) => ({
+  id: 'probe',
+  muster: /PROBEGRUND/,
+  kunde: 'Die bestellte Menge steht so nicht zur Verfügung.',
+  woher: 'bin/probepruefung.mjs',
+  ...mehr,
+});
+
+test('ein Absagegrund ohne Satz für den Kunden ist ein Befund', () => {
+  assert.deepEqual(nurEigene([eintrag({})]), [], 'der vollständige Eintrag meldet nichts');
+  assert.deepEqual(nurEigene([eintrag({ kunde: 'geht nicht' })]), ['ohne-satz'],
+    'zwei Wörter sind keine Auskunft, sondern eine Abfertigung');
+  assert.deepEqual(nurEigene([eintrag({ kunde: '' })]), ['ohne-satz'],
+    'ohne Satz bekäme der Kunde den internen Grund zu lesen');
+});
+
+test('ein Absagegrund ohne Herkunft ist ein Befund', () => {
+  assert.deepEqual(nurEigene([eintrag({ woher: 'irgendwo' })]), ['ohne-herkunft'],
+    'wer den Satz ändern will, müsste die Prüfung suchen, die ihn auslöst');
+  assert.deepEqual(nurEigene([eintrag({ woher: '' })]), ['ohne-herkunft']);
+});

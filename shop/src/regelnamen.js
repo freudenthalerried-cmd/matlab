@@ -216,16 +216,21 @@ export const ERFUNDEN_GEPRUEFT = Object.freeze([
  * Wie viele Regelstellen ohne einen Testfall stehen bleiben dürfen.
  *
  * **Eine Sperrklinke, gesetzt auf den gemessenen Stand.** Sie darf fallen und
- * nie steigen. Gemessen am 14./15. September: 80 → 67 → 56 → 47 → 43 → 38 → **31**
- * von 484
- * Stellen. Die letzten elf sind an einem Abend gefallen, und zwar nicht durch
- * Fleiß: Zwei Befunde lasen ihre Register **unmittelbar aus dem Modul** und
- * waren damit unerreichbar, genau wie `papierschrittbefund()` am Vormittag.
+ * nie steigen. Gemessen am 14./15. September: 80 → 67 → 56 → 47 → 43 → 38 → 31
+ * → **19** von 484 Stellen.
+ *
+ * Der Schritt von 31 auf 19 kostete zwölf Testfälle und **keine einzige neue
+ * Regel**: Sechs Befunde prüfen ihr eigenes Register — die Freibriefe in
+ * `punktezahlen.js`, die Zettelzeilen, die beiden Listen des Tages X, die
+ * Korbgründe, die Absagegründe, die Markenlisten —, und im Bestand ist jeder
+ * Eintrag in Ordnung. Ein Register, das stimmt, macht seinen eigenen Wächter
+ * unsichtbar; erreichbar wird er erst, wenn das Register als Beiwert
+ * hereinkommt.
  *
  * > **Wer dreimal am selben Tag dieselbe Bauart findet, hat keine drei Funde,
  * > sondern eine Gewohnheit gefunden.**
  */
-export const UNGESEHENE_HOECHSTENS = 31;
+export const UNGESEHENE_HOECHSTENS = 19;
 
 /**
  * @param {Map<string, string>} quellen  Pfad (repo-relativ) → Quelltext

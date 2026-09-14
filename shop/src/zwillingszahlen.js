@@ -379,11 +379,12 @@ export const ENGE_SCHWELLE = 5;
  */
 export const VORSCHLAG_GEPRUEFT = Object.freeze([
   Object.freeze({
-    name: 'UNGESEHENE_HOECHSTENS', wert: 31,
-    warum: 'Die Sperrklinke der Regelzaehlung in `src/regelnamen.js`, am 14. September von 80 '
-      + 'ueber 67, 56, 47, 43 und 38 auf 31 gefallen. Die anderen Vorkommen von 31 sind ein '
-      + 'Gate und eine Bildmasszahl; eine Gate-Nummer ist ein Name aus Ziffern, und eine Zahl '
-      + 'offener Pruefstellen faellt mit jeder Runde weiter.',
+    name: 'UNGESEHENE_HOECHSTENS', wert: 19,
+    warum: 'Die Sperrklinke der Regelzaehlung in `src/regelnamen.js`, am 14./15. September von '
+      + '80 ueber 67, 56, 47, 43, 38 und 31 auf 19 gefallen. Die anderen Vorkommen von 19 '
+      + 'sind eine Gate-Nummer und eine Zeilenzahl; eine Gate-Nummer ist ein Name aus '
+      + 'Ziffern, und eine Zahl offener Pruefstellen faellt mit jeder Runde weiter. Sie '
+      + 'wandert deshalb nie mit einer der anderen mit.',
   }),
   Object.freeze({
     name: 'bisZeichen', wert: 63,

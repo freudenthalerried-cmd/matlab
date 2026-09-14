@@ -147,3 +147,35 @@ test('ein Korb mit Systemliste braucht diesen Grund nicht', () => {
   });
   assert.deepEqual(b.meldungen, []);
 });
+
+/*
+ * **Zwei Regeln, die nie gefeuert haben — 15. September 2026.** Die Körbe des
+ * Bestandes nennen zu jeder Position einen Namen, und jeder Grund zeigt auf
+ * eine geführte Zeile. `korbposition-ohne-namen` und
+ * `grund-fuer-etwas-ausserhalb` standen deshalb seit dem 6. September da,
+ * ohne dass je gemessen wurde, ob sie treffen. Ein Befund ohne roten Fall ist
+ * kein Prüfsatz, sondern ein Vorsatz.
+ */
+test('eine Korbposition ohne Namen ist ein Befund — sie deckt nichts', () => {
+  const b = korbbefund({
+    koerbe: { G: { positionen: [{ position: 'Platte' }, { menge: 3 }], ohne: [{ position: 'Bahn', warum: 'x'.repeat(KURZGRUND_MINDESTLAENGE) }] } },
+    systemlisten: { G: liste },
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['korbposition-ohne-namen'],
+    'eine Zeile ohne Position lässt sich keiner Systemliste zuordnen und deckt nichts ab');
+});
+
+test('ein Grund für etwas, das die Systemliste nicht führt, ist ein Befund', () => {
+  const b = korbbefund({
+    koerbe: {
+      G: {
+        positionen: [{ position: 'Platte' }, { position: 'Bahn' }],
+        ohne: [{ position: 'Dübel', warum: 'x'.repeat(KURZGRUND_MINDESTLAENGE) }],
+      },
+    },
+    systemlisten: { G: liste },
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['grund-fuer-etwas-ausserhalb'],
+    'ein Grund, der auf keine geführte Zeile zeigt, blieb von einer Umbenennung übrig');
+  assert.match(b.meldungen[0].text, /Dübel/);
+});

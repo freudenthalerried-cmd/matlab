@@ -186,3 +186,42 @@ test('eine Angabe, die die Oberfläche nicht erreicht, ist ein Befund', () => {
   assert.deepEqual(tagxbefund({ ...lage, angaben: mitOberflaeche }).meldungen.map((m) => m.regel),
     ['angabe-erreicht-oberflaeche-nicht']);
 });
+
+/*
+ * **Zwei Regeln, die die beiden Listen gegeneinander halten — 15. September
+ * 2026.** `gefuehrt-und-ohne-wirkung` und `angabe-erreicht-bestaetigung-nicht`
+ * greifen erst, wenn dieselbe Angabe zweimal steht oder die
+ * Auftragsbestätigung sie nicht trägt. Im Bestand tritt beides nicht ein — die
+ * Regeln haben deshalb nie gefeuert, und ob sie überhaupt treffen, war bis
+ * heute unbekannt. Beide Funktionen nehmen ihre Register als Beiwert; genau
+ * dafür stehen sie da.
+ */
+test('eine Angabe in beiden Listen ist ein Befund — ein Feld, zwei Antworten', () => {
+  const grund = 'Ein Grund, der lang genug ist, um in einem Jahr noch zu tragen, und der '
+    + 'deshalb an dieser Stelle absichtlich weit über achtzig Zeichen hinausgeht.';
+  const b = betreiberbefund(
+    { firma: 'X', telefon: '' },
+    [{ feld: 'telefon', probe: 'p', sichtbarIn: ['impressum'], warum: grund }],
+    [{ feld: 'telefon', warum: grund }],
+  );
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['gefuehrt-und-ohne-wirkung'],
+    'ein Feld, das offen geführt wird und zugleich als wirkungslos gilt, hat zwei Antworten');
+});
+
+test('eine Angabe, die die Auftragsbestätigung nicht erreicht, ist ein Befund', () => {
+  const nurBestaetigung = [{
+    feld: 'iban',
+    probe: 'AT00-PROBE-IBAN',
+    sichtbarIn: ['bestaetigung'],
+    warum: 'Ohne IBAN weist darfBestaetigtWerden die Bestätigung ab, und damit kommt nach '
+      + 'AGB Punkt 2 kein Vertrag zustande — die Bestätigung ist die Stelle, nicht die Seite.',
+  }];
+  const lage = { ...gut(), angaben: nurBestaetigung };
+  assert.deepEqual(tagxbefund({ ...lage, bestaetigung: 'AT00-PROBE-IBAN' }).meldungen, [],
+    'steht die Probe auf der Bestätigung, meldet nichts');
+  assert.deepEqual(
+    tagxbefund({ ...lage, bestaetigung: 'Zahlbar sofort.' }).meldungen.map((m) => m.regel),
+    ['angabe-erreicht-bestaetigung-nicht'],
+    'eine Bestätigung, die nicht sagt wohin, verlangt Geld ohne Konto',
+  );
+});

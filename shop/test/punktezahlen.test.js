@@ -186,3 +186,45 @@ test('jedes Werkzeug mit auswärtiger Grundlage nennt Datei und Grund', () => {
     assert.ok(w.warum.length > 80, `${w.befehl}: der Grund ist zu knapp`);
   }
 });
+
+/*
+ * **Zwei Regeln, die den Freibrief selbst prüfen — 15. September 2026.**
+ * `freibrief-ohne-gegenstand` und `freibrief-ohne-grund` bewachen das Register
+ * `OHNE_MESSUNG`, und `punktebefund` las es bis heute unmittelbar aus dem
+ * Modul: Im Bestand ist jeder Eintrag in Ordnung, also konnte keine der beiden
+ * Regeln je feuern, und niemand hätte gemerkt, wenn sie falsch gebaut wären.
+ * Seit das Register als Beiwert hereinkommt, sind sie erreichbar. Gemessen
+ * wird nur die eigene Regel — die übrigen Meldungen der Lage gehören zu den
+ * Zahlen im Punkttext und sind hier nicht der Gegenstand.
+ */
+const freibriefe = (lage) => punktebefund(lage).meldungen
+  .map((m) => m.regel).filter((r) => r.startsWith('freibrief-'));
+
+test('ein Freibrief ohne Gegenstand ist ein Befund — in beide Richtungen', () => {
+  const grund = 'Ein Grund, der lang genug ist, um in einem Jahr noch zu tragen, und der '
+    + 'deshalb an dieser Stelle absichtlich über achtzig Zeichen hinausgeht.';
+
+  const weder = { ...gut(), ohneMessung: [{ warumOhneMessung: grund }] };
+  assert.deepEqual(freibriefe(weder), ['freibrief-ohne-gegenstand'],
+    'ein Eintrag ohne zahlen und ohne form deckt nichts und muss auffallen');
+
+  const beides = {
+    ...gut(),
+    ohneMessung: [{ zahlen: ['7'], form: /Gate (\d+)/g, warumOhneMessung: grund }],
+  };
+  assert.deepEqual(freibriefe(beides), ['freibrief-ohne-gegenstand'],
+    'beides zugleich wären zwei Freibriefe unter einem Grund');
+
+  const nurZahlen = { ...gut(), ohneMessung: [{ zahlen: ['7'], warumOhneMessung: grund }] };
+  assert.deepEqual(freibriefe(nurZahlen), [], 'genau eines von beiden ist der gute Fall');
+});
+
+test('ein Freibrief ohne tragfähigen Grund ist ein Befund', () => {
+  const kurz = { ...gut(), ohneMessung: [{ zahlen: ['7'], warumOhneMessung: 'historisch so' }] };
+  assert.deepEqual(freibriefe(kurz), ['freibrief-ohne-grund'],
+    'ein Grund von zwei Wörtern erklärt in einem Jahr nichts mehr');
+
+  const keiner = { ...gut(), ohneMessung: [{ zahlen: ['7'] }] };
+  assert.deepEqual(freibriefe(keiner), ['freibrief-ohne-grund'],
+    'gar kein Grund ist derselbe Befund wie ein zu knapper');
+});

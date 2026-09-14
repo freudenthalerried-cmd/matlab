@@ -261,7 +261,16 @@ const ZUGEGEBEN = /misst seither nichts|weigert|nicht messbar|verloren|fehlt|nic
  * vorliegen. Über einem Ausschnitt wäre dieselbe Meldung eine Aussage über den
  * Ausschnitt — und damit falsch.
  */
-export function punktebefund({ punkte, messwerte, gibtEs, vollstaendig = false }) {
+export function punktebefund({
+  punkte, messwerte, gibtEs, vollstaendig = false, ohneMessung = OHNE_MESSUNG,
+}) {
+  /*
+   * **Das Register kommt herein — 15. September 2026.** Die beiden Regeln
+   * ueber `OHNE_MESSUNG` las diese Funktion unmittelbar aus dem Modul und war
+   * damit nicht zu erreichen. Es ist das **vierte** Mal an zwei Tagen, dass
+   * dieselbe Bauart einen Befund unsichtbar gemacht hat — nach
+   * `papierschrittbefund`, `nummernbefund` und `stempelbefund`.
+   */
   const meldungen = [];
   const tafel = kennzahlen(messwerte);
   const gedeckt = new Map(punkte.map((p) => [p.id, new Set()]));
@@ -295,8 +304,8 @@ export function punktebefund({ punkte, messwerte, gibtEs, vollstaendig = false }
     }
   }
 
-  const erlaubt = new Set(OHNE_MESSUNG.flatMap((e) => e.zahlen ?? []));
-  const formen = OHNE_MESSUNG.filter((e) => e.form);
+  const erlaubt = new Set(ohneMessung.flatMap((e) => e.zahlen ?? []));
+  const formen = ohneMessung.filter((e) => e.form);
   // Was eine Form deckt, hangt am Text des einzelnen Punktes: `Gate 36` deckt
   // die 36 dort, wo sie hinter dem Wort steht, und nirgends sonst.
   const durchForm = (text) => {
@@ -335,7 +344,7 @@ export function punktebefund({ punkte, messwerte, gibtEs, vollstaendig = false }
    * gleich aussieht — am 11. September stand genau so einer fuer den
    * HTTP-Status 403 da, dessen Punkt ihn seit einem Tag nicht mehr nannte.
    */
-  for (const e of vollstaendig ? OHNE_MESSUNG : []) {
+  for (const e of vollstaendig ? ohneMessung : []) {
     if (e.form) {
       if (punkte.some((p) => e.form.test(p.text))) continue;
       meldungen.push({
@@ -358,7 +367,7 @@ export function punktebefund({ punkte, messwerte, gibtEs, vollstaendig = false }
    * diese Zeilen waere ein Eintrag ohne `zahlen` und ohne `form` still: Er
    * deckte nichts, meldete nichts und saehe aus wie eine Entscheidung.
    */
-  for (const e of OHNE_MESSUNG) {
+  for (const e of ohneMessung) {
     if (!e.form === !e.zahlen) {
       meldungen.push({
         regel: 'freibrief-ohne-gegenstand',

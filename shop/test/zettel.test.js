@@ -107,3 +107,37 @@ test('Der Zettel zeigt auf die Datei, in die eingetragen wird', () => {
   assert.match(ZIELDATEI, /betreiber\.json$/);
   assert.ok(FORMREGELN.length >= 7, `nur ${FORMREGELN.length} Formregeln`);
 });
+
+/*
+ * **Drei Regeln, die den Zettel gegen sich selbst halten — 15. September
+ * 2026.** `ohne-wofuer`, `ohne-grund` und `ohne-form` sehen nicht die
+ * Betreiberdatei an, sondern das Register `ZULIEFERUNGEN`. Im Bestand ist
+ * jede Zeile vollständig — die drei konnten deshalb nie feuern, und ob sie
+ * überhaupt treffen, war bis heute nicht gemessen. `zettelbefund` nimmt das
+ * Register als dritten Beiwert; genau dafür steht er da.
+ */
+const zeile = (mehr) => ({
+  feld: 'email',
+  bezeichnung: 'E-Mail-Adresse des Betriebs',
+  rechtsgrund: '§ 5 ECG — Angaben zur raschen Kontaktaufnahme',
+  loest: 'Ein Satz, der lang genug ist, um zu sagen, wofür die Angabe gebraucht wird.',
+  ...mehr,
+});
+const regeln = (z) => zettelbefund({}, [], [zeile(z)]).meldungen.map((m) => m.regel);
+
+test('Eine Zeile ohne Wofür ist eine Bitte, keine Entscheidung', () => {
+  assert.deepEqual(regeln({ loest: 'wichtig' }), ['ohne-wofuer'],
+    'ein Satz von einem Wort sagt nicht, was die Angabe freigibt');
+  assert.deepEqual(regeln({ loest: '' }), ['ohne-wofuer'], 'gar kein Satz ist derselbe Befund');
+  assert.deepEqual(regeln({}), [], 'die vollständige Zeile meldet nichts');
+});
+
+test('Eine Zeile ohne Grundlage verschweigt, worauf die Pflicht beruht', () => {
+  assert.deepEqual(regeln({ rechtsgrund: '' }), ['ohne-grund'],
+    'auch „keine Vorschrift" ist eine Auskunft — Schweigen ist keine');
+});
+
+test('Eine Zeile ohne Form und Beispiel lässt den Lieferanten raten', () => {
+  assert.deepEqual(regeln({ feld: 'lieblingsfarbe' }), ['ohne-form'],
+    'ein Feld, das kein Formregister kennt, kann niemand richtig ausfüllen');
+});
