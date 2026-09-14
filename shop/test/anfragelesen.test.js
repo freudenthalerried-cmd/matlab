@@ -268,3 +268,37 @@ test('die Werkzeuge, die eine Anfrage lesen, fragen nach dem Bestellschritt', ()
       `${werkzeug} fragt wieder die Bezeichnung statt die Ware`);
   }
 });
+
+/*
+ * ## Drei Regeln, die niemand hat feuern sehen
+ *
+ * **14. September 2026, abends.** Der Rückweg prüft, ob aus einer Zeile des
+ * erzeugten Anfragetexts dieselbe Menge zurückkommt, die bestellt wurde. Alle
+ * drei Regeln greifen erst, wenn der **Leser** sich ändert — und dann geht es
+ * nicht um einen Zahlendreher, sondern darum, dass der Beleg eine andere Ware
+ * nennt als die bestellte.
+ */
+const ware = { sku: 'POS-77010', vkNetto: 10, einheit: 'M2' };
+
+test('Eine Menge, die nicht zurückkommt', () => {
+  // Ein Leser, der auf ein doppelt so großes Gebinde einrastet: Die Zeile zu
+  // einer einzelnen Einheit trifft dann kein ganzes Gebinde mehr.
+  const b = rueckwegbefund([ware], () => 1, { bis: 2, leseMit: () => 2 });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['menge-nicht-lesbar'],
+    JSON.stringify(b.meldungen));
+});
+
+/*
+ * Die beiden anderen Regeln des Rückwegs — `menge-kommt-anders-zurueck` und
+ * `krummer-betrag-wird-uebernommen` — lassen sich von hier aus **nicht**
+ * zeigen, und der Grund ist ihr Gegenstand: Sie bewachen ein **Paar** aus
+ * Schreiber und Leser, und die Prüfung des Lesers auf eine halbe Cent-Abweichung
+ * weist heute schon alles ab, was sie melden würden.
+ *
+ * > **Eine Regel, die eine zweite Sperre bewacht, schweigt, solange die erste
+ * > hält — und wird gebraucht, wenn jemand die erste lockert.**
+ *
+ * Gemessen: Mit abgeschalteter Cent-Prüfung feuern beide sofort. Sie stehen
+ * deshalb mit diesem Grund in `REGEL_GEPRUEFT`, und die Gegenprobe
+ * `der-leser-nimmt-jede-zeilensumme-hin` schaltet genau diese Sperre ab.
+ */

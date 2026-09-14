@@ -379,6 +379,14 @@ export const ENGE_SCHWELLE = 5;
  */
 export const VORSCHLAG_GEPRUEFT = Object.freeze([
   Object.freeze({
+    name: 'UNGESEHENE_HOECHSTENS', wert: 38,
+    warum: 'Die Sperrklinke der Regelzaehlung in `src/regelnamen.js`, am 14. September von 80 '
+      + 'ueber 67, 56, 47 und 43 auf 38 gefallen. Die anderen Vorkommen von 38 sind die '
+      + 'Gate-Nummer 38 (die Sekundengrenze des Schnelllaufs) und eine Bildmasszahl im '
+      + 'Seitenbau; eine Gate-Nummer ist ein Name aus Ziffern, und eine Zahl offener '
+      + 'Pruefstellen faellt mit jeder Runde weiter.',
+  }),
+  Object.freeze({
     name: 'bisZeichen', wert: 63,
     warum: 'Die gemessene Rumpflaenge der drei Ablageort-Praedikate im Gestaltregister '
       + '(`src/codedubletten.js`). Das zweite Vorkommen ist die Zahl der Oberflaechen-'

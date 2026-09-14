@@ -135,7 +135,29 @@ export const GEBAUT_GEPRUEFT = Object.freeze([
  * Der Grund muss sagen, **warum nicht**, nicht bloß, dass es aufwendig wäre.
  * Eine Regel, die nur mühsam zu sehen ist, gehört gesehen.
  */
-export const REGEL_GEPRUEFT = Object.freeze([]);
+export const REGEL_GEPRUEFT = Object.freeze([
+  Object.freeze({
+    regel: 'menge-kommt-anders-zurueck',
+    pfad: 'src/anfragelesen.js',
+    warum: 'Sie bewacht ein **Paar** aus Schreiber und Leser: Kommt aus einer Zeile des '
+      + 'Anfragetexts eine andere Menge zurück, als bestellt wurde, nennt der Beleg eine andere '
+      + 'Ware als die bestellte — und in Geld ist der Unterschied kleiner als ein Cent. Sie '
+      + 'schweigt heute, weil `lesePositionen` eine Zeile schon verwirft, deren Summe um mehr '
+      + 'als einen halben Cent von einem ganzen Gebinde abweicht. Gemessen am 14. September: '
+      + 'Mit abgeschalteter Cent-Prüfung feuert sie sofort. Die Gegenprobe '
+      + '`der-leser-nimmt-jede-zeilensumme-hin` schaltet genau diese Sperre ab.',
+  }),
+  Object.freeze({
+    regel: 'krummer-betrag-wird-uebernommen',
+    pfad: 'src/anfragelesen.js',
+    warum: 'Die Gegenrichtung derselben Bewachung: Eine Zeilensumme **zwischen** zwei ganzen '
+      + 'Gebinden darf der Leser nicht auf eines davon runden — sonst bestünde auch eine '
+      + 'Fassung den Rückweg, die jede Zahl rundet. Auch sie schweigt, solange die Cent-Prüfung '
+      + 'in `lesePositionen` hält, und feuert sofort, wenn man sie abschaltet. '
+      + 'Eine Regel, die eine zweite Sperre bewacht, schweigt, solange die erste hält — und '
+      + 'wird gebraucht, wenn jemand die erste lockert.',
+  }),
+]);
 
 /**
  * Namen, die ein Testfall **erfindet** — mit Grund.
@@ -166,7 +188,7 @@ export const ERFUNDEN_GEPRUEFT = Object.freeze([
  * Wie viele Regelstellen ohne einen Testfall stehen bleiben dürfen.
  *
  * **Eine Sperrklinke, gesetzt auf den gemessenen Stand.** Sie darf fallen und
- * nie steigen. Gemessen am 14. September: 80 → 67 → 56 → 47 → **43** von 486
+ * nie steigen. Gemessen am 14. September: 80 → 67 → 56 → 47 → 43 → **38** von 486
  * Stellen. Die letzten elf sind an einem Abend gefallen, und zwar nicht durch
  * Fleiß: Zwei Befunde lasen ihre Register **unmittelbar aus dem Modul** und
  * waren damit unerreichbar, genau wie `papierschrittbefund()` am Vormittag.
@@ -174,7 +196,7 @@ export const ERFUNDEN_GEPRUEFT = Object.freeze([
  * > **Wer dreimal am selben Tag dieselbe Bauart findet, hat keine drei Funde,
  * > sondern eine Gewohnheit gefunden.**
  */
-export const UNGESEHENE_HOECHSTENS = 43;
+export const UNGESEHENE_HOECHSTENS = 38;
 
 /**
  * @param {Map<string, string>} quellen  Pfad (repo-relativ) → Quelltext

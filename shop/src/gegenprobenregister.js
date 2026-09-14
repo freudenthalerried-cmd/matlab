@@ -4048,6 +4048,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'liest sich wie ein Erfolg.',
   }),
   Object.freeze({
+    id: 'der-leser-nimmt-jede-zeilensumme-hin',
+    pruefer: 'pruefe-rueckweg',
+    was: 'Der Positionsleser verwirft keine Zeilensumme mehr, die kein ganzes Gebinde trifft',
+    datei: 'shop/src/anfragelesen.js',
+    art: 'ersetzen',
+    suchen: '      if (Math.abs(cent(menge * einzel) - summe) > 0.005) {',
+    ersetzen: '      if (false) {',
+    erwartet: /menge-kommt-anders-zurueck|krummer-betrag-wird-uebernommen|kein ganzes Gebinde/,
+    warum: 'Zwei Regeln des Rueckwegs bewachen ein **Paar** aus Schreiber und Leser und '
+      + 'schweigen, solange diese eine Zeile haelt: Eine Zeilensumme, die um mehr als einen '
+      + 'halben Cent von einem ganzen Gebinde abweicht, wird verworfen. Ohne sie nimmt der '
+      + 'Leser jede Summe hin und rundet auf das naechste Gebinde — der Beleg nennt dann eine '
+      + 'andere Ware als die bestellte, und in Geld ist der Unterschied kleiner als ein Cent. '
+      + 'Gemessen am 14. September: Mit abgeschalteter Pruefung feuern beide Regeln sofort.',
+  }),
+  Object.freeze({
     id: 'der-fremde-leser-wird-nur-noch-nach-dem-code-gefragt',
     pruefer: 'test',
     was: 'Die Paketprobe nimmt einen schweigenden Auspacker als Bestaetigung',

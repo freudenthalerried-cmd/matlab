@@ -49,3 +49,34 @@ test('jedes Feld nennt Beschriftung, Feldtyp und Grund', () => {
     assert.ok(f.warum.length >= 60, `${f.name}: Grund zu kurz`);
   }
 });
+
+/*
+ * ## Zwei Regeln, die niemand hat feuern sehen
+ *
+ * **14. September 2026, abends.** Beide halten das Formularregister gegen die
+ * Eingabeprüfung — und beide greifen erst, wenn eines von beiden sich ändert.
+ * Sie stehen vor dem Formular, das die Bestellung eines Kunden aufnimmt: Ein
+ * Feld ohne Beschriftung ist eine Zeile, die niemand ausfüllen kann, und ein
+ * Feld ohne Wirkung ist eine Angabe, die der Beleg braucht und die niemand
+ * einfordert.
+ */
+test('Ein Feld ohne Beschriftung oder Feldtyp', () => {
+  const felder = [{ name: 'probe', warum: 'x'.repeat(70) }];
+  const b = pruefeBestellfelder(() => ({ gueltig: false, fehler: ['probe fehlt'] }), felder);
+  assert.ok(b.meldungen.some((m) => m.regel === 'feld-unvollstaendig'), JSON.stringify(b.meldungen));
+});
+
+test('Ein Feld, dessen Fehlen die Prüfung nicht stört', () => {
+  const felder = [{
+    name: 'probe', beschriftung: 'Probe', art: 'text', beispiel: 'x', warum: 'y'.repeat(70),
+  }];
+  // Eine Prüfung, die alles durchlässt: Dann fehlt jedes Feld folgenlos.
+  const b = pruefeBestellfelder(() => ({ gueltig: true, fehler: [] }), felder);
+  assert.ok(b.meldungen.some((m) => m.regel === 'feld-ohne-wirkung'), JSON.stringify(b.meldungen));
+  // Und eine, die das Feld einfordert: dann ist nichts zu melden.
+  const streng = pruefeBestellfelder(
+    (satz) => ({ gueltig: satz.probe !== undefined, fehler: ['probe fehlt'] }), felder,
+  );
+  assert.ok(!streng.meldungen.some((m) => m.regel === 'feld-ohne-wirkung'),
+    JSON.stringify(streng.meldungen));
+});

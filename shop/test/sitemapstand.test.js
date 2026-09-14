@@ -150,3 +150,49 @@ test('jedes ausgegebene Datum hat Datumsform', () => {
     if (e.lastmod) assert.match(e.lastmod, DATUM, `${e.id}: „${e.lastmod}"`);
   }
 });
+
+/*
+ * ## Zwei Regeln, die niemand hat feuern sehen
+ *
+ * **14. September 2026, abends.** Beide greifen erst, wenn der Bau ein
+ * kaputtes `lastmod` schreibt — und beide entscheiden über etwas, das ein
+ * Suchdienst liest, nicht ein Mensch: Ein Datum in der Zukunft ist für einen
+ * Crawler kein Tippfehler, sondern die Ansage „diese Seite ist neuer als
+ * alles, was du kennst".
+ */
+test('Ein lastmod, das kein Datum ist', () => {
+  const b = sitemapbefund({
+    eintraege: [{ id: 'x', lastmod: 'gestern' }],
+    erwartet: () => null,
+    heute: '2026-09-14',
+    mindestens: 0,
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['lastmod-ohne-quelle'],
+    JSON.stringify(b.meldungen));
+  const mitQuelle = sitemapbefund({
+    eintraege: [{ id: 'x', lastmod: 'gestern' }],
+    erwartet: () => 'gestern',
+    heute: '2026-09-14',
+    mindestens: 0,
+  });
+  assert.deepEqual(mitQuelle.meldungen.map((m) => m.regel), ['lastmod-unbrauchbar'],
+    JSON.stringify(mitQuelle.meldungen));
+});
+
+test('Ein lastmod, das nach heute liegt', () => {
+  const b = sitemapbefund({
+    eintraege: [{ id: 'x', lastmod: '2026-12-31' }],
+    erwartet: () => '2026-12-31',
+    heute: '2026-09-14',
+    mindestens: 0,
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['lastmod-in-der-zukunft'],
+    JSON.stringify(b.meldungen));
+  const heutig = sitemapbefund({
+    eintraege: [{ id: 'x', lastmod: '2026-09-14' }],
+    erwartet: () => '2026-09-14',
+    heute: '2026-09-14',
+    mindestens: 0,
+  });
+  assert.deepEqual(heutig.meldungen, [], 'der heutige Tag liegt nicht nach heute');
+});
