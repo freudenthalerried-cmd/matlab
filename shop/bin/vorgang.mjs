@@ -78,6 +78,7 @@ import {
 } from '../src/ablageort.js';
 import { geschaeftstag } from '../src/geschaeftszeit.js';
 import { BANKFELDER } from '../src/bankverbindung.js';
+import { argWort } from '../src/argumente.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const REPO = dirname(SHOP);
@@ -85,24 +86,21 @@ const lies = (...t) => JSON.parse(readFileSync(join(...t), 'utf8'));
 
 // --- Aufruf lesen -----------------------------------------------------------
 const argumente = process.argv.slice(2);
-const wahl = (name, ersatz = null) => {
-  const i = argumente.indexOf(`--${name}`);
-  return i >= 0 && argumente[i + 1] ? argumente[i + 1] : ersatz;
-};
+// `--name <Wort>` lesen: die Fassung des Hauses steht in `src/argumente.js`.
 const frei = argumente.filter((a, i) => !a.startsWith('--') && !argumente[i - 1]?.startsWith('--'));
 
 const anfrageDatei = frei[0] ?? null;
-const kundeDatei = wahl('kunde');
-const stufe = wahl('stufe', 'angebot');
+const kundeDatei = argWort('kunde');
+const stufe = argWort('stufe', 'angebot');
 // Der Kalender des Betriebs, nicht die Uhr des Rechners: § 11 Abs 1 Z 4
 // UStG verlangt das Ausstellungsdatum, und das ist der Tag am Sitz.
 const heute = geschaeftstag();
-const datum = wahl('datum', heute);
+const datum = argWort('datum', heute);
 // Die Vorgangsnummer klammert Angebot, Bestätigung, Bestellungen und Rechnung.
 // Sie wird **nicht** hier erzeugt: Ein Werkzeug, das selbst Nummern zieht,
 // vergibt bei jedem Lauf eine neue und macht aus einem zweiten Ausdruck einen
 // zweiten Vorgang. Ohne Angabe endet der Lauf und sagt das.
-const nummer = wahl('nummer');
+const nummer = argWort('nummer');
 // **Ablegen ist eine eigene Entscheidung.** Was ins Journal geht, geht nach
 // § 132 BAO für sieben Jahre hinein; eine Löschung nach Art. 17 DSGVO läuft
 // dort ins Leere (Abs. 3 lit. b). Ein Werkzeug, das bei jedem Probeausdruck
@@ -111,12 +109,12 @@ const ablegen = argumente.includes('--ablegen');
 // Die drei Angaben der Rechnungsstufe. Sie kommen aus der Welt und nicht aus
 // der Anfrage — deshalb stehen sie hier als Argumente und nirgends als
 // Vermutung.
-const geliefert = wahl('geliefert');
+const geliefert = argWort('geliefert');
 // Die Gutschrift hebt eine Rechnung auf; beide Angaben kommen von außen.
-const storniert = wahl('storniert');
-const stornogrund = wahl('grund');
-const bezahlt = wahl('bezahlt');
-const zahlweg = wahl('zahlweg', 'vorkasse');
+const storniert = argWort('storniert');
+const stornogrund = argWort('grund');
+const bezahlt = argWort('bezahlt');
+const zahlweg = argWort('zahlweg', 'vorkasse');
 
 /**
  * **Das Feldregister gegen die Prüfung halten — vor allem anderen.**

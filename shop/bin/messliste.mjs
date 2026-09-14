@@ -28,21 +28,13 @@ import { fileURLToPath } from 'node:url';
 import { LIEFERGEBIET } from '../src/liefergebiet.js';
 import { abbruchschwelle } from '../src/werbewirkung.js';
 import { volumenbedarf, versuchsdauer, KLICKRATE, TAGE_JE_MONAT } from '../src/suchbedarf.js';
+import { argZahl } from '../src/argumente.js';
 
 const SHOP = fileURLToPath(new URL('..', import.meta.url));
 const keywordDatei = join(SHOP, 'ausgabe', 'kampagne', 'keywords.csv');
 const ziel = join(SHOP, 'ausgabe', 'messliste-baustoff.json');
 
-const argZahl = (name, vor) => {
-  const i = process.argv.indexOf(`--${name}`);
-  if (i === -1) return vor;
-  const wert = Number(process.argv[i + 1]);
-  if (!Number.isFinite(wert)) {
-    console.error(`--${name} braucht eine Zahl, bekommen: ${process.argv[i + 1]}`);
-    process.exit(2);
-  }
-  return wert;
-};
+// `--name <Zahl>` lesen: die Fassung des Hauses steht in `src/argumente.js`.
 
 if (!existsSync(keywordDatei)) {
   console.error(`Abbruch: ${keywordDatei} fehlt — zuerst \`npm run kampagne\`.`);

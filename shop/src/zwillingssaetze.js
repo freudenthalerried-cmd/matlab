@@ -210,7 +210,7 @@ export const WIEDERHOLUNG_GEPRUEFT = Object.freeze([
       + 'sagt, wo.',
   }),
   Object.freeze({
-    anfang: 'Gelesen **und** weitergegeben — ein blosses',
+    anfang: 'Gelesen **und** weitergegeben, weil ein blosses',
     hoechstens: 2,
     warum: 'Die zweite Zeile desselben Verweises, und sie steht dort aus einem eigenen Grund: '
       + 'Ein blosses `export … from` bindet den Namen in der Datei nicht, und die Funktion '

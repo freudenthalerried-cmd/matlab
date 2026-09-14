@@ -297,6 +297,17 @@ export const PRUEFER = [
     einheit: 'Artikelseiten gegeneinander',
     mindestens: 30,
   },
+  // **Aufgenommen am 14. September, morgens.** Drei Runden lang hat das
+  // Satzregister doppelten Code gefunden, weil wer eine Funktion kopiert, den
+  // Absatz darüber mitkopiert. Dieser Prüfer fragt direkt und liest auch, was
+  // keinen Kommentar trägt. Gemessen wird die Zahl der **angesehenen** Rümpfe.
+  {
+    name: 'pruefe-codedubletten',
+    werkzeug: 'codedublettenpruefung.mjs',
+    muster: /Codedubletten — (\d+) Rümpfe/,
+    einheit: 'Funktionsrümpfe auf Dubletten',
+    mindestens: 300,
+  },
   // **Aufgenommen am 14. September, nachts.** Der Satz „Eine Berichtigung, die
   // eine Stelle erreicht, gilt für eine Stelle" ist an vier Tagen durch Zufall
   // wiedergefunden worden. Für Zahlen gibt es das Zwillingsregister seit dem

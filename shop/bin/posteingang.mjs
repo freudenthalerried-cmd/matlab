@@ -37,23 +37,21 @@ import {
 } from '../src/posteingang.js';
 import { ausJournal } from '../src/speicher.js';
 import { geschaeftsjahr } from '../src/geschaeftszeit.js';
+import { argWort } from '../src/argumente.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const REPO = dirname(SHOP);
 
 const argumente = process.argv.slice(2);
-const wahl = (name, ersatz = null) => {
-  const i = argumente.indexOf(`--${name}`);
-  return i >= 0 && argumente[i + 1] ? argumente[i + 1] : ersatz;
-};
+// `--name <Wort>` lesen: die Fassung des Hauses steht in `src/argumente.js`.
 
 // Das Wirtschaftsjahr entscheidet die Journaldatei. Am 1. Jänner um
 // 00:30 Uhr ist das schon das neue — die Rechneruhr in UTC sagt noch
 // das alte und fände die erste Bestellung des Jahres nicht.
-const jahr = Number(wahl('jahr', String(geschaeftsjahr())));
-const journal = wahl('journal', join(REPO, ABLAGEORT, 'posteingang', `journal-${jahr}.jsonl`));
-const nummer = wahl('nummer');
-const nach = wahl('nach');
+const jahr = Number(argWort('jahr', String(geschaeftsjahr())));
+const journal = argWort('journal', join(REPO, ABLAGEORT, 'posteingang', `journal-${jahr}.jsonl`));
+const nummer = argWort('nummer');
+const nach = argWort('nach');
 
 if (!existsSync(journal)) {
   console.log(`Kein Posteingang unter ${relative(REPO, journal)}.\n`);

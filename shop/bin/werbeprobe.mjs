@@ -17,6 +17,7 @@ import { versuchsplan, nochPlausibleQuote, TAGE_JE_MONAT, SICHERHEIT,
 import { noetigerUmsatz } from '../src/kostenbild.js';
 import { MARKT_CPC } from './kampagne.mjs';
 import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
+import { argZahl } from '../src/argumente.js';
 
 const SHOP = fileURLToPath(new URL('..', import.meta.url));
 
@@ -35,16 +36,7 @@ const SHOP = fileURLToPath(new URL('..', import.meta.url));
 
 const kampagne = join(SHOP, 'ausgabe', 'kampagne');
 
-const argZahl = (name, vor) => {
-  const i = process.argv.indexOf(`--${name}`);
-  if (i === -1) return vor;
-  const wert = Number(process.argv[i + 1]);
-  if (!Number.isFinite(wert)) {
-    console.error(`--${name} braucht eine Zahl, bekommen: ${process.argv[i + 1]}`);
-    process.exit(2);
-  }
-  return wert;
-};
+// `--name <Zahl>` lesen: die Fassung des Hauses steht in `src/argumente.js`.
 
 for (const datei of ['kampagnen.csv', 'anzeigengruppen.csv']) {
   if (existsSync(join(kampagne, datei))) continue;

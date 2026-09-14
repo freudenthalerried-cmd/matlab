@@ -117,8 +117,8 @@ export const ZUSAGE = /(?:Abholung|abholen)[^.!?]{0,60}(?:ausdrücklich vorgeseh
 export const VERNEINT = /\b(?:nicht|kein|keine|keinen|keinem|keiner|weder|ohne|offen|angefragt|unbeantwortet)\b[^.!?]{0,80}$/i;
 
 // Sätze eines Textes: die Fassung des Hauses steht in `src/markdown.js`.
-// Gelesen **und** weitergegeben — ein blosses `export … from` bindet den
-// Namen in dieser Datei nicht, und die Funktion darunter braucht ihn.
+// Gelesen **und** weitergegeben, weil ein blosses `export … from` den Namen
+// in dieser Datei nicht bindet und die Funktion darunter ihn braucht.
 export { saetzeVon };
 
 /**

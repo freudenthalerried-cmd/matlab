@@ -198,8 +198,8 @@ export const FLAECHENBEDINGUNG =
   /zweite[rn]?\s+Lieferant|zweiten\s+Lieferanten|von\s+einem\s+Lieferanten|(?:ü|ue)ber\s+einen\s+Lieferanten/i;
 
 // Sätze eines Textes: die Fassung des Hauses steht in `src/markdown.js`.
-// Gelesen **und** weitergegeben — ein blosses `export … from` bindet den
-// Namen in dieser Datei nicht, und die Funktion darunter braucht ihn.
+// Gelesen **und** weitergegeben, weil ein blosses `export … from` den Namen
+// in dieser Datei nicht bindet und die Funktion darunter ihn braucht.
 export { saetzeVon };
 
 /**

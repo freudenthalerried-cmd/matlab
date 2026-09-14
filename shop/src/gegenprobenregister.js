@@ -3996,6 +3996,21 @@ export const GEGENPROBEN = Object.freeze([
       + '`src/skonto.js`.',
   }),
   Object.freeze({
+    id: 'kontrollstrukturen-zaehlen-wieder-als-methoden',
+    pruefer: 'pruefe-codedubletten',
+    was: 'Der Dublettenleser liest `if` und `for` wieder als Methoden',
+    datei: 'shop/src/codedubletten.js',
+    art: 'ersetzen',
+    suchen: "      if (art === 'methode' && KEINE_METHODE.includes(m[1])) continue;",
+    ersetzen: "      if (art === 'methode' && false) continue;",
+    erwartet: /gleiche Rümpfe ab 60 Zeichen — erlaubt sind 0/,
+    warum: 'Der erste Entwurf las `if (…) {` und `for (…) {` als Methoden und meldete siebzehn '
+      + 'Fundstellen des Frischeabbruchs — der in siebzehn Werkzeugen gleich aussieht, weil er '
+      + 'dasselbe tut. Ein Aufruf, der ueberall gleich aussieht, ist kein kopierter Code, '
+      + 'sondern eine benutzte Funktion. Ohne diese Zeile ertrinkt der echte Fund im Laerm, '
+      + 'und ein Pruefer, der Laerm macht, wird ruhiggestellt statt befolgt.',
+  }),
+  Object.freeze({
     id: 'das-volle-chromium-geht-wieder-vor',
     pruefer: 'test',
     was: 'Die Browsersuche nimmt wieder das volle Chromium statt des Headless-Shell',
