@@ -4048,6 +4048,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'liest sich wie ein Erfolg.',
   }),
   Object.freeze({
+    id: 'die-regelzaehlung-zaehlt-ihr-eigenes-verzeichnis-mit',
+    pruefer: 'pruefe-regeln',
+    was: 'Ein Verzeichnis, das Regelnamen fuehrt, gilt wieder als Quelle von Regeln',
+    datei: 'shop/src/regelnamen.js',
+    art: 'ersetzen',
+    suchen: '    if (!istMeldung(text, m.index)) continue;',
+    ersetzen: '    if (false) continue;',
+    erwartet: /nur noch \d+ ungesehene Regelstellen|mehr-ungesehene-als-erlaubt|Regelstellen hat kein Testfall/,
+    warum: 'Die Zaehlung fuehrte zwei Regeln dieses Moduls selbst als „nie gesehen": Es gibt '
+      + 'sie hier nicht, sie stehen in `REGEL_GEPRUEFT` — also in dem Verzeichnis, das '
+      + 'begruendet, warum man sie **anderswo** nicht sieht. Ein Verzeichnis, das Regelnamen '
+      + 'fuehrt, erzeugt keine Regeln; dieselbe Lehre wie beim Zahlenregister, das sich am '
+      + '11. September dreimal selbst meldete. Unterschieden wird am Nachbarn: Ein Eintrag mit '
+      + '`warum:` ist ein Grund, keine Meldung.',
+  }),
+  Object.freeze({
     id: 'der-leser-nimmt-jede-zeilensumme-hin',
     pruefer: 'pruefe-rueckweg',
     was: 'Der Positionsleser verwirft keine Zeilensumme mehr, die kein ganzes Gebinde trifft',

@@ -802,3 +802,23 @@ test('ein überalterter Preisstand ergibt ein abgelaufenes Gültigkeitsdatum', (
     'ein Preisstand von Januar kann im September nicht mehr gültig sein');
   assert.equal(alt.daten.offers.priceValidUntil, preisGueltigBis('2026-01-01', GRENZE_TAGE));
 });
+
+/*
+ * ## Ein Artikel ohne Beschreibung
+ *
+ * **14. September 2026, nachts.** Die Zählung der Regelnamen führte
+ * `ohne-beschreibung` als „nie gesehen". Sie ist die Sperre davor, dass ein
+ * Artikel ohne Beschreibung in den Produktfeed geht: Ein Feedeintrag ohne
+ * Beschreibung wird nicht teilweise angenommen, sondern abgelehnt — und was
+ * ein Assistent über diesen Artikel sagt, käme dann aus der Bezeichnung
+ * allein.
+ */
+test('ein Artikel ohne Bezeichnung hat keine Beschreibung — und das ist ein Befund', async () => {
+  const { beschreibungsbefund, feedbeschreibung } = await import('../src/maschinenlesbar.js');
+  assert.equal(feedbeschreibung({ sku: 'A-0', bezeichnung: '' }), null,
+    'ohne Bezeichnung entsteht trotzdem ein Text');
+  const b = beschreibungsbefund([{ sku: 'A-0', bezeichnung: '', gruppe: 'Dämmung', einheit: 'M2' }],
+    0, null);
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['ohne-beschreibung'],
+    JSON.stringify(b.meldungen));
+});

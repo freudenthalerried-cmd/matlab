@@ -3,7 +3,9 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
-import { AUSGAENGE, KEIN_AUSGANG, NAMENSMUSTER, ungenannteAusgaenge } from '../src/aussentexte.js';
+import {
+  AUSGAENGE, KEIN_AUSGANG, NAMENSMUSTER, ungenannteAusgaenge, internabefund,
+} from '../src/aussentexte.js';
 
 const SRC = fileURLToPath(new URL('../src', import.meta.url));
 
@@ -84,4 +86,43 @@ test('Ein Nicht-Ausgang ohne Grund wird abgewiesen', () => {
 test('Eine neue textbauende Funktion fällt auf', () => {
   const neu = [{ modul: 'src/erfunden.js', funktion: 'erzeugeMahnung' }];
   assert.deepEqual(ungenannteAusgaenge(neu), neu);
+});
+
+/*
+ * ## Drei Regeln, die das Verzeichnis gegen sich selbst halten
+ *
+ * **14. September 2026, nachts.** Alle drei standen als „nie gesehen" in der
+ * Zählung der Regelnamen, und alle drei greifen erst, wenn jemand am
+ * Verzeichnis arbeitet — genau dann also, wenn ein Fehler am leichtesten
+ * durchgeht. Was sie bewachen: Kein Text, der an einen Kunden geht, verlässt
+ * das Haus ungeprüft auf Interna.
+ */
+const ausgang = (funktion, an = 'Kunde') => ({ funktion, an, art: 'text' });
+
+test('Ein Grund für einen Ausgang, den es nicht gibt', () => {
+  const b = internabefund(['schreibA'], [ausgang('schreibA')],
+    [{ funktion: 'gibtsNichtMehr', warum: 'x'.repeat(90) }]);
+  assert.ok(b.meldungen.some((m) => m.regel === 'grund-ohne-ausgang'), JSON.stringify(b.meldungen));
+});
+
+/*
+ * Und die Gegenrichtung: Ein Ausgang, der als ungeprüft begründet **und**
+ * geprüft wird. Dann ist der Grund gegenstandslos — und ein Grund, der stehen
+ * bleibt, deckt beim nächsten Mal etwas, das er nie decken sollte.
+ */
+test('Ein Ausgang, der begründet ungeprüft ist und trotzdem geprüft wird', () => {
+  const b = internabefund(['schreibA'], [ausgang('schreibA')],
+    [{ funktion: 'schreibA', warum: 'x'.repeat(90) }]);
+  assert.ok(b.meldungen.some((m) => m.regel === 'begruendet-und-geprueft'), JSON.stringify(b.meldungen));
+});
+
+test('Eine Probe, die einen Ausgang prüft, den kein Verzeichnis führt', () => {
+  const b = internabefund(['schreibA', 'fremd'], [ausgang('schreibA')], []);
+  assert.ok(b.meldungen.some((m) => m.regel === 'probe-ohne-ausgang'), JSON.stringify(b.meldungen));
+});
+
+test('Ohne Ausgang nach draußen prüft dieser Befund nichts — und sagt es', () => {
+  const b = internabefund([], [ausgang('nurIntern', 'Ablage')], []);
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['kein-ausgang-nach-draussen'],
+    JSON.stringify(b.meldungen));
 });

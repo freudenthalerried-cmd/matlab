@@ -87,7 +87,10 @@ export function regelstellen(pfad, quelltext) {
   const text = ohneKommentare(String(quelltext ?? '')).text;
   const drin = new Map();
   const nimm = (regel, art) => { if (!drin.has(regel)) drin.set(regel, art); };
-  for (const m of text.matchAll(/regel:\s*'([a-z0-9-]+)'/g)) nimm(m[1], 'feld');
+  for (const m of text.matchAll(/regel:\s*'([a-z0-9-]+)'/g)) {
+    if (!istMeldung(text, m.index)) continue;
+    nimm(m[1], 'feld');
+  }
   for (const m of text.matchAll(/regel:\s*[^,\n]*\?\s*'([a-z0-9-]+)'\s*:\s*'([a-z0-9-]+)'/g)) {
     nimm(m[1], 'wahl');
     nimm(m[2], 'wahl');
@@ -96,6 +99,31 @@ export function regelstellen(pfad, quelltext) {
     for (const m of text.matchAll(new RegExp(`\\b${name}\\(\\s*'([a-z0-9-]+)'`, 'g'))) nimm(m[1], 'melder');
   }
   return [...drin].map(([regel, art]) => ({ pfad, regel, art }));
+}
+
+/**
+ * Steht dieses `regel:` in einer **Meldung** — oder in einem Verzeichnis
+ * **über** Meldungen?
+ *
+ * **Der Fund, 14. September 2026, nachts.** Die Zählung führte zwei Regeln
+ * dieses Moduls selbst als „nie gesehen": `menge-kommt-anders-zurueck` und
+ * `krummer-betrag-wird-uebernommen`. Es gibt sie hier nicht — sie stehen in
+ * `REGEL_GEPRUEFT`, also in dem Verzeichnis, das begründet, warum man sie
+ * **anderswo** nicht sieht.
+ *
+ * > **Ein Verzeichnis, das Regelnamen führt, erzeugt keine Regeln.** Dieselbe
+ * > Lehre wie beim Zahlenregister, das sich am 11. September dreimal selbst
+ * > meldete, weil es jede geführte Zahl im Feld `literal` mitträgt.
+ *
+ * Unterschieden wird am Nachbarn: Ein Eintrag, der ein `warum:` trägt, ist ein
+ * **Grund**, keine Meldung. Gemessen über den Bestand trifft das genau vier
+ * Stellen — zwei hier und zwei in `src/gegenprobenregister.js`, wo der
+ * Suchtext einer Gegenprobe eine Meldezeile **zitiert**.
+ */
+function istMeldung(text, stelle) {
+  const bis = text.slice(stelle, stelle + 500);
+  const ende = bis.indexOf('}),');
+  return !/\bwarum:/.test(ende > 0 ? bis.slice(0, ende) : bis);
 }
 
 /** Regelnamen, die erst zur Laufzeit entstehen. */
@@ -188,7 +216,8 @@ export const ERFUNDEN_GEPRUEFT = Object.freeze([
  * Wie viele Regelstellen ohne einen Testfall stehen bleiben dürfen.
  *
  * **Eine Sperrklinke, gesetzt auf den gemessenen Stand.** Sie darf fallen und
- * nie steigen. Gemessen am 14. September: 80 → 67 → 56 → 47 → 43 → **38** von 486
+ * nie steigen. Gemessen am 14./15. September: 80 → 67 → 56 → 47 → 43 → 38 → **31**
+ * von 484
  * Stellen. Die letzten elf sind an einem Abend gefallen, und zwar nicht durch
  * Fleiß: Zwei Befunde lasen ihre Register **unmittelbar aus dem Modul** und
  * waren damit unerreichbar, genau wie `papierschrittbefund()` am Vormittag.
@@ -196,7 +225,7 @@ export const ERFUNDEN_GEPRUEFT = Object.freeze([
  * > **Wer dreimal am selben Tag dieselbe Bauart findet, hat keine drei Funde,
  * > sondern eine Gewohnheit gefunden.**
  */
-export const UNGESEHENE_HOECHSTENS = 38;
+export const UNGESEHENE_HOECHSTENS = 31;
 
 /**
  * @param {Map<string, string>} quellen  Pfad (repo-relativ) → Quelltext

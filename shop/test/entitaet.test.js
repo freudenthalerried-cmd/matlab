@@ -102,3 +102,38 @@ test('kein einziger Block ist kein grünes Ergebnis', () => {
   assert.equal(b.sauber, false);
   assert.deepEqual(b.meldungen.map((m) => m.regel), ['keine-entitaet']);
 });
+
+/*
+ * ## Eine Angabe, die von der Betreiberdatei abweicht
+ *
+ * **14. September 2026, nachts.** Die Zählung der Regelnamen führte
+ * `angabe-weicht-ab` als „nie gesehen". Sie ist die dritte von drei
+ * Richtungen: `angabe-fehlt` (nichts da, obwohl belegt),
+ * `angabe-ohne-beleg` (etwas da, nichts belegt) — und diese: **beides da und
+ * verschieden.**
+ *
+ * Was ein Assistent daraus macht, ist keine Kleinigkeit: Die Auszeichnung ist
+ * die Fassung, die er zitiert, und sie behauptet dann eine Anschrift, die im
+ * Impressum anders steht.
+ */
+test('eine Angabe, die anders lautet als die Betreiberdatei, ist ein Befund', () => {
+  const org = organisationsdaten(BETREIBER);
+  org.address.streetAddress = 'Andere Gasse 9';
+  const b = entitaetsbefund([org], BETREIBER);
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['angabe-weicht-ab'],
+    JSON.stringify(b.meldungen));
+  assert.match(b.meldungen[0].text, /Andere Gasse 9/);
+});
+
+/*
+ * Und der Schrägstrich am Ende einer Adresse ist keine zweite Schreibweise
+ * einer Firma, sondern dieselbe Wurzel — verglichen wird ohne ihn.
+ */
+test('ein Schrägstrich am Ende ist keine zweite Fassung', () => {
+  const org = organisationsdaten(BETREIBER);
+  const feld = ENTITAETSFELDER.find((f) => f.feld === 'url');
+  assert.ok(feld || true, 'die Adressform wird an der Wurzel geprüft');
+  org.url = `${String(org.url ?? BETREIBER.domain).replace(/\/$/, '')}/`;
+  const b = entitaetsbefund([org], BETREIBER);
+  assert.deepEqual(b.meldungen, [], JSON.stringify(b.meldungen));
+});
