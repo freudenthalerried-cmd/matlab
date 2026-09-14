@@ -249,8 +249,8 @@ test('Jede genannte Zahlweg-Kennung gibt es auch im Rechenkern', async () => {
     ...ZAHLUNGSBEDINGUNGEN.ausgeschlossen,
     ...ZAHLUNGSBEDINGUNGEN.zurueckgestellt,
   ];
-  for (const z of alle) assert.ok(bekannt.has(z.id), `unbekannter Zahlweg: ${z.id}`);
   assert.ok(alle.length >= 6, 'die Entscheidung verschweigt keinen der gerechneten Wege');
+  for (const z of alle) assert.ok(bekannt.has(z.id), `unbekannter Zahlweg: ${z.id}`);
 });
 
 test('Kein Zahlweg steht in zwei Töpfen', () => {

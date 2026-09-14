@@ -57,16 +57,49 @@ function letztesWort(text, bis) {
 /**
  * Die Stücke einer Quelle, in ihrer Reihenfolge.
  *
- * Jedes Stück trägt `art`, den vollen Text `roh` (mit Begrenzern) und den
- * Inhalt `text` (ohne sie). Aneinandergehängt ergibt `roh` wieder genau die
- * Quelle — daran hängt, dass `entkommentiere` zeichengleich bleibt.
+ * Jedes Stück trägt `art`, den vollen Text `roh` (mit Begrenzern), den Inhalt
+ * `text` (ohne sie) und `von` — seine Stelle in der Quelle. Aneinandergehängt
+ * ergibt `roh` wieder genau die Quelle; daran hängt, dass `entkommentiere`
+ * zeichengleich bleibt, und `von` daran, dass ein Aufrufer, der mit Stellen
+ * rechnet, dieselben behält.
  *
  * @param {string} quelle
  * @param {{streng?: boolean}} [wahl]  `streng` bricht bei unvollständigen
  *   Literalen ab, statt sie bis zum Dateiende zu nehmen.
- * @returns {{art: 'code'|'block'|'zeile'|'kette'|'muster', roh: string, text: string}[]}
+ * @returns {{art: 'code'|'block'|'zeile'|'kette'|'muster', roh: string, text: string, von: number}[]}
  */
+/**
+ * Die letzten Zerlegungen — ein Gedächtnis von vier Einträgen.
+ *
+ * **14. September 2026, nachmittags.** Diese Funktion ist rein, und ihre
+ * Aufrufer rufen sie hintereinander für **denselben** Text: `bisSchliessend`
+ * einmal je Funktionsrumpf, `zerlege` einmal je Testfall. Über 256 Dateien mit
+ * 740 Rümpfen sind das Hunderte Gänge durch dieselbe Quelle, und zwei Prüfer
+ * rissen damit die Sekunde aus Gate 38.
+ *
+ * > **Ein genauerer Leser ist teurer, und wer ihn in eine Schleife stellt,
+ * > bezahlt die Genauigkeit je Durchgang.**
+ *
+ * Vier Einträge reichen: Die Aufrufer arbeiten eine Datei zu Ende, bevor sie
+ * die nächste nehmen. Mehr zu behalten hieße, den ganzen Bestand im
+ * Arbeitsspeicher zu halten, ohne dass es einen weiteren Treffer brächte.
+ */
+const GEDAECHTNIS = new Map();
+const GEDAECHTNIS_HOECHSTENS = 4;
+
 export function stuecke(quelle, { streng = false } = {}) {
+  const schluessel = `${streng ? 's' : 'n'}\u0000${quelle}`;
+  const bekannt = GEDAECHTNIS.get(schluessel);
+  if (bekannt) return bekannt;
+  const frisch = zerlegeQuelle(quelle, streng);
+  GEDAECHTNIS.set(schluessel, frisch);
+  if (GEDAECHTNIS.size > GEDAECHTNIS_HOECHSTENS) {
+    GEDAECHTNIS.delete(GEDAECHTNIS.keys().next().value);
+  }
+  return frisch;
+}
+
+function zerlegeQuelle(quelle, streng) {
   const s = String(quelle ?? '');
   const raus = [];
   let code = '';
@@ -80,11 +113,15 @@ export function stuecke(quelle, { streng = false } = {}) {
   // nach `(` beginnt es ein Muster. `sicht` führt deshalb mit, was ein Leser
   // sähe, der Kommentare überspringt und Literale stehen lässt.
   let sicht = '';
-  const nimmCode = () => { if (code) { raus.push({ art: 'code', roh: code, text: code }); code = ''; } };
+  let codeVon = 0;
+  const nimmCode = () => {
+    if (code) { raus.push({ art: 'code', roh: code, text: code, von: codeVon }); code = ''; }
+  };
   const schiebe = (art, von, bis, innenVon, innenBis) => {
     nimmCode();
     const roh = s.slice(von, bis);
-    raus.push({ art, roh, text: s.slice(innenVon, innenBis) });
+    raus.push({ art, roh, text: s.slice(innenVon, innenBis), von });
+    codeVon = bis;
     // Ein Kommentar hinterlässt nur seine Zeilenumbrüche: Ein `/` dahinter
     // steht so vor demselben Zeichen wie ohne ihn.
     sicht += (art === 'block' || art === 'zeile') ? roh.replace(/[^\n]/g, '') : roh;
@@ -131,6 +168,7 @@ export function stuecke(quelle, { streng = false } = {}) {
       if (offen) {
         if (streng) throw new Error(`Zeichenkette ohne Ende in Zeile ${zeileVon(j)}.`);
         // Nachsichtig: Das Anführungszeichen war keines — es gehört zum Code.
+        if (!code) codeVon = i;
         code += c;
         sicht += c;
         i += 1;
@@ -209,6 +247,7 @@ export function stuecke(quelle, { streng = false } = {}) {
         }
         if (offen) {
           if (streng) throw new Error(`Regulärer Ausdruck ohne Ende in Zeile ${zeileVon(i)}.`);
+          if (!code) codeVon = i;
           code += c;
           sicht += c;
           i += 1;
@@ -222,6 +261,7 @@ export function stuecke(quelle, { streng = false } = {}) {
       }
     }
 
+    if (!code) codeVon = i;
     code += c;
     sicht += c;
     i += 1;

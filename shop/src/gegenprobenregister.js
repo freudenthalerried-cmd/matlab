@@ -4048,6 +4048,21 @@ export const GEGENPROBEN = Object.freeze([
       + 'liest sich wie ein Erfolg.',
   }),
   Object.freeze({
+    id: 'die-klammersuche-liest-wieder-in-zeichenketten',
+    pruefer: 'test',
+    was: 'Die Klammersuche zählt wieder Klammern in Zeichenketten und Kommentaren mit',
+    datei: 'shop/src/testzerlegung.js',
+    art: 'ersetzen',
+    suchen: "    if (st.art !== 'code') continue;",
+    ersetzen: '    if (false) continue;',
+    erwartet: /der Prüfer findet in der Probedatei jedes Muster und schweigt beim sauberen Fall/,
+    warum: 'Diese Suche findet das Ende eines Funktionsrumpfs und muss dafür Klammern in '
+      + 'Zeichenketten, Kommentaren und regulaeren Ausdruecken uebergehen. Sie tat das bis '
+      + 'zum 14. September mit einem eigenen Gang durch die Quelle — dem dritten in diesem '
+      + 'Haus. Zaehlt sie wieder alles mit, endet ein Rumpf an der erstbesten Klammer in '
+      + 'einem Kommentar, und der Dublettenvergleich vergleicht Stuecke statt Funktionen.',
+  }),
+  Object.freeze({
     id: 'der-leser-erkennt-keine-muster-mehr',
     pruefer: 'test',
     was: 'Der Leser erkennt keine regulären Ausdrücke mehr',

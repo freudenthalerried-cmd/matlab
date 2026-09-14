@@ -23,7 +23,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-import { ZWILLINGE, zwillingsbefund, zwillingsvorschlag, ENGE_SCHWELLE } from '../src/zwillingszahlen.js';
+import { ZWILLINGE, zwillingsbefund, zwillingsvorschlag, ENGE_SCHWELLE, entkommentierteQuellen } from '../src/zwillingszahlen.js';
 import { zuWenigQuellen } from '../src/prueferurteil.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -86,7 +86,8 @@ if (dateien.size < 50) {
   process.exit(2);
 }
 
-const befund = zwillingsbefund(dateien);
+const entkommentiert = entkommentierteQuellen(dateien);
+const befund = zwillingsbefund(dateien, undefined, entkommentiert);
 
 console.log(`\nZwillingszahlen — ${ZWILLINGE.length} Zahlen mit einer Heimat, `
   + `${befund.gesucht} Fundstellen in ${dateien.size} Quelldateien\n`);
@@ -111,7 +112,7 @@ if (befund.meldungen.length) {
  * hinein, ohne dass es jemand gemerkt hat? Ohne diese Messung fuehrt das
  * Register genau das, was jemandem zufaellig aufgefallen ist.
  */
-const vorschlag = zwillingsvorschlag(dateien);
+const vorschlag = zwillingsvorschlag(dateien, undefined, undefined, entkommentiert);
 
 console.log('');
 console.log(`Enges Band — ${vorschlag.vorschlaege.length} benannte Zahlen stehen in hoechstens `

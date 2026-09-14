@@ -15,56 +15,10 @@
  * noch einmal zu verdienen.
  */
 
-/**
- * Das Ende einer Zeichenkette, die bei `start` mit ihrem Anführungszeichen
- * beginnt — Rückstriche übersprungen. -1, wenn sie nicht geschlossen wird.
- */
-export function endeDerZeichenkette(text, start) {
-  const anfuehrung = text[start];
-  for (let i = start + 1; i < text.length; i++) {
-    if (text[i] === '\\') { i++; continue; }
-    if (text[i] === anfuehrung) return i;
-  }
-  return -1;
-}
+import { stuecke } from './quelltext.js';
 
-/**
- * Steht das `/` bei `start` am Anfang eines Muster-Literals — oder ist es eine
- * Division?
- *
- * Zu unterscheiden sind die beiden nur am Zeichen davor: Nach einem Wert
- * (`a / b`, `zahl) / 2`) teilt es, nach einem Operator oder einer öffnenden
- * Klammer beginnt es ein Muster. Diese Liste ist die übliche Heuristik; sie
- * deckt jede Schreibweise ab, die im Testbestand vorkommt.
- */
-export function istMusteranfang(text, start) {
-  let i = start - 1;
-  while (i >= 0 && /\s/.test(text[i])) i--;
-  if (i < 0) return true;
-  // Der Pfeil ist der häufigste Fall im Bestand: `(m) => /muster/.test(m)`.
-  // Ein einzelnes `>` ist dagegen ein Vergleich, hinter dem geteilt wird.
-  if (text[i] === '>' && text[i - 1] === '=') return true;
-  if ('(,=:[!&|?+-*%^~{};'.includes(text[i])) return true;
-  return /\b(return|typeof|case|in|of|do|else|yield|await|new|delete|void|instanceof)$/
-    .test(text.slice(0, i + 1));
-}
 
-/**
- * Das Ende eines Muster-Literals, das bei `start` beginnt. Zeichenklassen
- * zählen mit: In `[^/]` schließt der Schrägstrich das Muster nicht.
- */
-export function endeDesMusters(text, start) {
-  let inKlasse = false;
-  for (let i = start + 1; i < text.length; i++) {
-    const z = text[i];
-    if (z === '\\') { i++; continue; }
-    if (z === '\n') return -1;
-    if (inKlasse) { if (z === ']') inKlasse = false; continue; }
-    if (z === '[') { inKlasse = true; continue; }
-    if (z === '/') return i;
-  }
-  return -1;
-}
+
 
 /**
  * Die passende schließende Klammer — **ohne** Klammern in Zeichenketten,
@@ -95,39 +49,23 @@ export function endeDesMusters(text, start) {
  * Optionsobjekt am 28.08., einen Stock tiefer.
  */
 export function bisSchliessend(text, start, auf = '{', zu = '}') {
+  // **Gelesen mit `src/quelltext.js` seit dem 14. September 2026,
+  // nachmittags.** Hier stand der dritte Gang durch eine Quelle in diesem
+  // Haus — Kommentare, Zeichenketten und Muster überspringen —, und er hatte
+  // dieselben Sonderfälle noch einmal selbst zu kennen.
   let tiefe = 0;
-  for (let i = start; i < text.length; i++) {
-    const zeichen = text[i];
-
-    if (zeichen === '/' && text[i + 1] === '/') {
-      const ende = text.indexOf('\n', i);
-      if (ende === -1) return -1;
-      i = ende;
-      continue;
-    }
-    if (zeichen === '/' && text[i + 1] === '*') {
-      const ende = text.indexOf('*/', i + 2);
-      if (ende === -1) return -1;
-      i = ende + 1;
-      continue;
-    }
-    if (zeichen === "'" || zeichen === '"' || zeichen === '`') {
-      const ende = endeDerZeichenkette(text, i);
-      if (ende === -1) return -1;
-      i = ende;
-      continue;
-    }
-    if (zeichen === '/' && istMusteranfang(text, i)) {
-      const ende = endeDesMusters(text, i);
-      if (ende === -1) return -1;
-      i = ende;
-      continue;
-    }
-
-    if (zeichen === auf) tiefe++;
-    else if (zeichen === zu) {
-      tiefe--;
-      if (tiefe === 0) return i;
+  for (const st of stuecke(String(text))) {
+    if (st.von + st.roh.length <= start) continue;
+    if (st.art !== 'code') continue;
+    for (let k = 0; k < st.roh.length; k++) {
+      const stelle = st.von + k;
+      if (stelle < start) continue;
+      const zeichen = st.roh[k];
+      if (zeichen === auf) tiefe++;
+      else if (zeichen === zu) {
+        tiefe--;
+        if (tiefe === 0) return stelle;
+      }
     }
   }
   return -1;
@@ -193,7 +131,7 @@ export function zerlege(quelle) {
 }
 
 /**
- * Zeichenketten durch Leerzeichen ersetzen — Länge und Zeilen bleiben gleich.
+ * Alles zu Leerzeichen, **was nicht läuft** — Länge und Zeilen bleiben gleich.
  *
  * **Der Anlass, 14. September 2026.** `test/allaussage.test.js` prüft einen
  * Leser, der Testrümpfe liest, und führt dafür Rümpfe als **Zeichenketten**
@@ -201,33 +139,41 @@ export function zerlege(quelle) {
  * las sie als Schleifen und meldete zwei hohle Testfälle, die keine sind.
  *
  * > **Ein Prüfer, der in Anführungszeichen hineinliest, prüft eine Zeile, die
- * > nie läuft** — und dieselbe Lehre steht seit dem 11. September in seinem
- * > eigenen Kopf, nur für einen anderen Fall.
+ * > nie läuft.**
  *
- * Ersetzt wird zeichenweise, damit jede Fundstelle danach an derselben Stelle
- * steht wie vorher: Die Regeln daneben rechnen mit Positionen im Rumpf.
+ * **Und derselbe Satz gilt für Kommentare — nachmittags nachgetragen.** Die
+ * Fassung von damals hieß `ohneZeichenketten` und tat trotzdem mehr: Sie
+ * löschte auch Blockkommentare, aber **aus Versehen.** Ihr Musterleser hielt
+ * das `/` in `/* -----` für den Anfang eines regulären Ausdrucks — nach einem
+ * Zeilenumbruch beginnt dort einer — und blankte bis zum nächsten `/`.
+ *
+ * > **Ein Werkzeug, das aus einem Irrtum heraus das Richtige tut, tut es beim
+ * > nächsten Umbau nicht mehr.** Beim Umstellen auf den gemeinsamen Leser
+ * > fiel es weg, und vier Schleifen in Kommentaren standen als Verdacht da.
+ *
+ * Jetzt steht es im Namen und im Vertrag: Zeichenketten, reguläre Ausdrücke
+ * und Kommentare werden zu Leerzeichen. Ersetzt wird zeichenweise, damit jede
+ * Fundstelle danach an derselben Stelle steht wie vorher — die Regeln daneben
+ * rechnen mit Positionen im Rumpf.
  */
-export function ohneZeichenketten(quelle) {
-  const text = String(quelle ?? '');
+export function nurCode(quelle) {
   let aus = '';
-  for (let i = 0; i < text.length;) {
-    const z = text[i];
-    if (z === "'" || z === '"' || z === '`') {
-      const ende = endeDerZeichenkette(text, i);
-      const bis = ende === -1 ? text.length - 1 : ende;
-      aus += z + ' '.repeat(bis - i - 1) + (ende === -1 ? '' : text[bis]);
-      i = bis + 1;
+  for (const st of stuecke(String(quelle ?? ''))) {
+    if (st.art === 'kette') {
+      // Die Begrenzer bleiben stehen: Eine Zeile, die vorher eine
+      // Zeichenkette **hatte**, soll danach noch erkennbar eine haben.
+      const erstes = st.roh[0];
+      const letztes = st.roh.length > 1 ? st.roh[st.roh.length - 1] : '';
+      aus += erstes + ' '.repeat(Math.max(0, st.roh.length - 1 - letztes.length)) + letztes;
       continue;
     }
-    if (z === '/' && istMusteranfang(text, i)) {
-      const ende = endeDesMusters(text, i);
-      const bis = ende === -1 ? text.length - 1 : ende;
-      aus += ' '.repeat(bis - i + 1);
-      i = bis + 1;
+    if (st.art === 'muster') { aus += ' '.repeat(st.roh.length); continue; }
+    if (st.art === 'block' || st.art === 'zeile') {
+      // Die Zeilenumbrüche bleiben, damit Zeilennummern weiter stimmen.
+      aus += st.roh.replace(/[^\n]/g, ' ');
       continue;
     }
-    aus += z;
-    i += 1;
+    aus += st.roh;
   }
   return aus;
 }

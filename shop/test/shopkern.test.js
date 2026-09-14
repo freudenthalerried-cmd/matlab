@@ -545,6 +545,10 @@ test('jedes Kundenwort findet genau die Artikel, für die es eingetragen ist', (
      */
     const kennungen = e.skus ?? [];
     mitKennung += kennungen.length > 0 ? 1 : 0;
+    // pruefung: begruendet — `e.skus` ist wahlfrei, ein einzelner Eintrag darf
+    // ohne Kennungen stehen. Dass nicht **alle** so stehen, sichert die Zählung
+    // `mitKennung` unter der Schleife zu; eine Zusicherung je Eintrag wäre
+    // falsch und nicht bloß streng.
     for (const sku of kennungen) {
       assert.ok(treffer.some((x) => x.sku === sku), `„${e.wort}" findet ${sku} nicht`);
     }
@@ -786,6 +790,10 @@ test('kein Vorschlag ist ein Wortstamm', () => {
   // des Shops.
   const index = bestandsindex();
   const bestand = new Set();
+  assert.ok(index.length >= 40, `nur ${index.length} Einträge im Index — die Schleife prüft zu wenig`);
+  // pruefung: begruendet — `e.formen` ist wahlfrei; ein Eintrag ohne Formen
+  // trägt nichts bei, und das ist erlaubt. Dass zusammen genug zusammenkommt,
+  // steht in der Zusicherung darunter.
   for (const e of index) for (const f of e.formen ?? []) bestand.add(f);
   assert.ok(bestand.size >= 100, `nur ${bestand.size} Wörter im Bestand — die Schleife prüft zu wenig`);
   const vertipper = ['kanalror', 'dämmplate', 'rauchfng', 'styropr', 'kantenschuz', 'schachtrng', 'gewbe', 'spachtl'];

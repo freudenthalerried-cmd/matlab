@@ -99,6 +99,7 @@ test('der Satz nennt jede Lücke mit ihrer Liste und schreibt die Zahl aus', () 
   const satz = lueckensatz(luecken);
   for (const l of luecken) {
     assert.ok(satz.includes(l.position), `${l.position} fehlt im Satz`);
+    assert.ok(l.listen.length >= 1, `${l.position} steht auf keiner Liste`);
     for (const n of l.listen) assert.ok(satz.includes(n), `${n} fehlt im Satz`);
   }
   assert.doesNotMatch(satz, /\d+ Positionen bekommen/, 'die Zahl gehört ausgeschrieben');

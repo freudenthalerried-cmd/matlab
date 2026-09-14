@@ -31,7 +31,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-import { zerlege, bisSchliessend, ohneZeichenketten } from '../src/testzerlegung.js';
+import { zerlege, bisSchliessend, nurCode } from '../src/testzerlegung.js';
 
 const hier = dirname(fileURLToPath(import.meta.url));
 // Ein Ordner lässt sich übergeben — sonst wäre nicht nachweisbar, dass der
@@ -142,7 +142,7 @@ function pruefeFall(fall) {
    * einen Leser prüft, der Rümpfe liest. Diese Regel las sie als Schleifen.
    * Eine Schleife in Anführungszeichen läuft nie.
    */
-  const code = ohneZeichenketten(fall.rumpf);
+  const code = nurCode(fall.rumpf);
   for (const schleife of code.matchAll(/\bfor\s*\(\s*(?:const|let)\s+\w+\s+of\s+([^)]+)\)/g)) {
     const ueber = schleife[1].trim();
 

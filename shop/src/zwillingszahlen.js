@@ -69,6 +69,23 @@ import { ohneKommentare as entkommentiere } from './entkommentieren.js';
 const ohneKommentare = (quelltext) => entkommentiere(String(quelltext ?? '')).text;
 
 /**
+ * Jede Quelle einmal entkommentiert — und **einmal** heißt einmal.
+ *
+ * **14. September 2026, nachmittags.** Beide Messungen dieses Moduls bauen
+ * dieselbe Tafel, und der Prüfer ruft beide nacheinander: 512 Gänge durch
+ * 256 Dateien. Mit den zwei regulären Ausdrücken von früher fiel das nicht
+ * auf; seit hier ein vollständiger Scanner läuft, kostet es eine Sekunde.
+ *
+ * > **Eine Wiederholung wird nicht dadurch richtig, dass sie lange billig
+ * > war.**
+ *
+ * Wer beide Messungen fährt, reicht die Tafel weiter.
+ */
+export function entkommentierteQuellen(quellen) {
+  return new Map([...quellen].map(([p, t]) => [p, ohneKommentare(t)]));
+}
+
+/**
  * Dateien, die über den Bestand **reden**, statt mit ihm zu rechnen.
  *
  * Beide zitieren Quelltext und beschreiben Befunde — in Zeichenketten, nicht
@@ -265,10 +282,26 @@ export const ZWILLINGE = Object.freeze([
  *
  * @param {Map<string, string>} quellen  Pfad (repo-relativ) → Quelltext
  */
-export function zwillingsbefund(quellen, eintraege = ZWILLINGE) {
+export function zwillingsbefund(quellen, eintraege = ZWILLINGE, ohneVorgabe = null) {
   const meldungen = [];
   const melde = (regel, wo, text) => meldungen.push({ regel, wo, text });
   let gesucht = 0;
+
+  /*
+   * **Einmal je Datei entkommentieren — 14. September 2026, nachmittags.**
+   * Bis eben stand der Aufruf **in** der inneren Schleife: sechs geführte
+   * Zahlen × 256 Dateien = 1 536 Läufe über denselben Text. Mit den beiden
+   * regulären Ausdrücken von früher fiel das nicht auf; seit hier ein
+   * vollständiger Gang durch die Quelle läuft, kostete es 1,7 s und riss die
+   * Sekunde aus Gate 38.
+   *
+   * > **Ein Leser, der genauer wurde, wurde auch teurer — und der Aufrufer
+   * > rief ihn sechsmal für dieselbe Datei.**
+   *
+   * Die Wiederholung stand vorher schon da und war nur billig genug, um
+   * niemandem aufzufallen.
+   */
+  const ohne = ohneVorgabe ?? entkommentierteQuellen(quellen);
 
   for (const e of eintraege) {
     const erlaubt = new Set([e.heimat, ...REDEN_UEBER_DEN_BESTAND, ...e.ausnahmen.map((a) => a.datei)]);
@@ -276,7 +309,7 @@ export function zwillingsbefund(quellen, eintraege = ZWILLINGE) {
     let inHeimat = false;
 
     for (const [pfad, text] of quellen) {
-      if (!traegtZahl(ohneKommentare(text), e.literal)) continue;
+      if (!traegtZahl(ohne.get(pfad) ?? ohneKommentare(text), e.literal)) continue;
       gesucht += 1;
       if (pfad === e.heimat) { inHeimat = true; continue; }
       gefunden.add(pfad);
@@ -622,8 +655,9 @@ export function zahlenIn(quelltext) {
  *
  * @param {Map<string, string>} quellen  Pfad (repo-relativ) → Quelltext
  */
-export function zwillingsvorschlag(quellen, eintraege = ZWILLINGE, geprueft = VORSCHLAG_GEPRUEFT) {
-  const ohne = new Map([...quellen].map(([p, t]) => [p, ohneKommentare(t)]));
+export function zwillingsvorschlag(quellen, eintraege = ZWILLINGE, geprueft = VORSCHLAG_GEPRUEFT,
+  ohneVorgabe = null) {
+  const ohne = ohneVorgabe ?? entkommentierteQuellen(quellen);
   /*
    * **Einmal lesen statt je Kandidat suchen — 13. September 2026.** Mit den
    * Objektfeldern stieg die Zahl der Kandidaten von 59 auf 218, und der
