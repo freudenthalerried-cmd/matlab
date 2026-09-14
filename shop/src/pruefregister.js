@@ -323,6 +323,18 @@ export const PRUEFER = [
   // `{ regel, text }`, und an dem Namen hängt alles Weitere — der
   // Gegenprobenlauf sucht ihn, ein Testfall behauptet ihn. Gezählt wurde er
   // nie. Gemessen wird die Zahl der **angesehenen** Regelstellen.
+  // **Aufgenommen am 15. September 2026.** Am Abend zuvor sind zwölf Regeln
+  // erreichbar geworden, weil ihr Register als Beiwert hereinkommt. Bei einer
+  // Funktion trug die Kopfzeile den Beiwert schon und der Rumpf las an vier
+  // Stellen weiter das Modul — aufgefallen beim Lesen, nicht beim Messen.
+  // Gemessen wird die Zahl der **angesehenen** Registervorgaben.
+  {
+    name: 'pruefe-beiwerte',
+    werkzeug: 'beiwertpruefung.mjs',
+    muster: /Beiwerte — (\d+) Registervorgaben/,
+    einheit: 'Registervorgaben auf Umgehung',
+    mindestens: 100,
+  },
   {
     name: 'pruefe-regeln',
     werkzeug: 'regelpruefung.mjs',

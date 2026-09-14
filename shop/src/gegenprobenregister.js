@@ -5148,6 +5148,21 @@ export const GEGENPROBEN = Object.freeze([
       + 'Sie behauptet, hier fehle etwas — und hielt zugleich die ganze Rechnung aus der Akte.',
   }),
   Object.freeze({
+    id: 'die-tuer-wird-wieder-umgangen',
+    pruefer: 'pruefe-beiwerte',
+    was: 'Eine Funktion nimmt ihr Register herein und liest es im Rumpf trotzdem aus dem Modul',
+    datei: 'shop/src/zettel.js',
+    art: 'ersetzen',
+    suchen: '  const aufDemZettel = new Set(register.map((z) => z.feld));',
+    ersetzen: '  const aufDemZettel = new Set(ZULIEFERUNGEN.map((z) => z.feld));',
+    erwartet: /zettelbefund\(\) nimmt ZULIEFERUNGEN als `register` herein/,
+    warum: 'Der Fund vom 15. September: `punktebefund` trug den Beiwert `ohneMessung` in der '
+      + 'Kopfzeile und nannte `OHNE_MESSUNG` im Rumpf an vier Stellen weiter. Von aussen war '
+      + 'nichts zu erreichen, von innen sah alles offen aus — aufgefallen ist es beim Lesen, '
+      + 'nicht beim Messen. Diese Mutation baut genau diese Bauart in eine zweite Funktion '
+      + 'ein, deren Beiwert seit dem 10. September dasteht.',
+  }),
+  Object.freeze({
     id: 'der-freibrief-prueft-sich-selbst-nicht-mehr',
     pruefer: 'test',
     was: 'Die Wächter über OHNE_MESSUNG lesen ihr Register wieder unmittelbar aus dem Modul',
