@@ -3,15 +3,16 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { zahlAus, kennzahlen, pruefeSchaufenster, veroeffentlichungsbefund } from '../src/schaufenster.js';
+import { kennzahlen, pruefeSchaufenster, veroeffentlichungsbefund } from '../src/schaufenster.js';
+import { deutscheZahl } from '../src/format.js';
 
 const pfad = (p) => fileURLToPath(new URL(p, import.meta.url));
 
-test('zahlAus liest deutsche Schreibweise', () => {
-  assert.equal(zahlAus('46'), 46);
-  assert.equal(zahlAus('1.059'), 1059);
-  assert.equal(zahlAus('8,22'), 8.22);
-  assert.equal(zahlAus('132'), 132);
+test('deutscheZahl liest deutsche Schreibweise', () => {
+  assert.equal(deutscheZahl('46'), 46);
+  assert.equal(deutscheZahl('1.059'), 1059);
+  assert.equal(deutscheZahl('8,22'), 8.22);
+  assert.equal(deutscheZahl('132'), 132);
 });
 
 /**
@@ -120,7 +121,7 @@ test('Beschreibung und Startseite nennen denselben Listenpreisabstand', () => {
   const ausSeite = seite.match(/im Median<\/span><span class="w">([\d,]+) %/);
   assert.ok(ausSeite, 'die Startseite nennt keinen Median mehr');
 
-  assert.equal(zahlAus(ausBeschreibung[1]), zahlAus(ausSeite[1]),
+  assert.equal(deutscheZahl(ausBeschreibung[1]), deutscheZahl(ausSeite[1]),
     `Beschreibung sagt ${ausBeschreibung[1]}, die Seite sagt ${ausSeite[1]}`);
 
   // Und dieselbe Zahl steht in beiden Sätzen über die Artikelzahl.
@@ -163,7 +164,7 @@ test('Das Muster der Leitzahl trifft die Zeile der Beschreibung', () => {
   const k = kennzahlen({}).find((x) => x.name === 'Nötiger Monatsumsatz');
   const treffer = zeile.match(k.muster);
   assert.ok(treffer, 'das Muster findet die Zeile nicht');
-  assert.equal(zahlAus(treffer[1]), 43396);
+  assert.equal(deutscheZahl(treffer[1]), 43396);
 });
 
 /**
@@ -180,13 +181,13 @@ test('Das Muster der Leitzahl trifft die Zeile der Beschreibung', () => {
 test('die Zahl der Lieferantenbelege wird gemessen', () => {
   const k = kennzahlen({ belege: 15 }).find((x) => x.name === 'Lieferantenbelege');
   assert.ok(k, 'kein Anker für die Belege');
-  assert.equal(zahlAus(k.muster.exec('Katalog | **46 echte Artikel** aus 15 Lieferantenbelegen')[1]), 15);
+  assert.equal(deutscheZahl(k.muster.exec('Katalog | **46 echte Artikel** aus 15 Lieferantenbelegen')[1]), 15);
 });
 
 test('die Zahl der gerechneten Kampagnen wird gemessen', () => {
   const k = kennzahlen({ kampagnen: 6 }).find((x) => x.name === 'Gerechnete Kampagnen');
   assert.ok(k, 'kein Anker für die Kampagnen');
-  assert.equal(zahlAus(k.muster.exec('| Kampagne | 6 Suchkampagnen gerechnet, **3 im ersten Anlauf** |')[1]), 6);
+  assert.equal(deutscheZahl(k.muster.exec('| Kampagne | 6 Suchkampagnen gerechnet, **3 im ersten Anlauf** |')[1]), 6);
 });
 
 test('beide Anker greifen nur auf ihre eigene Zeile', () => {

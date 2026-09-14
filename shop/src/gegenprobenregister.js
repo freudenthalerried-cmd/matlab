@@ -4032,6 +4032,37 @@ export const GEGENPROBEN = Object.freeze([
       + 'Pruefung nicht auf dieselbe Wackelei stellen.',
   }),
   Object.freeze({
+    id: 'der-gestaltvergleich-meldet-das-schon-beurteilte',
+    pruefer: 'pruefe-codedubletten',
+    was: 'Der zweite Durchgang meldet auch, was der erste schon beurteilt hat',
+    datei: 'shop/src/codedubletten.js',
+    art: 'ersetzen',
+    suchen: '    if (new Set(stellen.map((st) => st.code)).size < 2) continue;',
+    ersetzen: '    if (false) continue;',
+    erwartet: /Gruppen gleicher Gestalt ab 50 Zeichen — erlaubt sind 0/,
+    warum: 'Der Vergleich der Gestalt findet alles, was der Zeichenvergleich findet, und mehr. '
+      + 'Ohne diese Zeile meldet er `zahlAusText` und `lies` ein zweites Mal — beide sind in '
+      + '`DUBLETTE_GEPRUEFT` begruendet, aber das Gestaltregister kennt sie nicht, und so '
+      + 'stuenden zwei begruendete Kopien als ungefuehrt da. Ein Pruefer, der denselben Fund '
+      + 'zweimal meldet, verlangt zweimal einen Grund fuer dieselbe Sache — und der zweite '
+      + 'Grund waere eine Abschrift des ersten.',
+  }),
+  Object.freeze({
+    id: 'ein-pruefer-bricht-wieder-mit-der-urteilsziffer-ab',
+    pruefer: 'test',
+    was: 'Der Abbruch eines Pruefers traegt wieder die Ziffer seines Urteils',
+    datei: 'shop/src/werkzeugabbruch.js',
+    art: 'ersetzen',
+    suchen: 'export const ABBRUCH_PRUEFER = 2;',
+    ersetzen: 'export const ABBRUCH_PRUEFER = 1;',
+    erwartet: /ein Prüfer bräche mit einer Ziffer ab, die sein Urteil trägt/,
+    warum: 'Fuenf Werkzeuge trugen eine eigene Funktion `abbruch`, drei davon mit `exit(2)`, '
+      + 'zwei mit `exit(1)`. `src/prueferurteil.js` liest die Ziffer: 0 heisst „ohne Treffer", '
+      + '1 heisst „mit Treffern", alles andere heisst „gar nicht erst gemessen". Ein Pruefer, '
+      + 'der mit 1 abbricht, meldet damit einen Befund, den er nie erhoben hat — und der '
+      + 'Gesamtlauf zaehlt ihn als gelaufen und rot statt als nicht messbar.',
+  }),
+  Object.freeze({
     id: 'kontrollstrukturen-zaehlen-wieder-als-methoden',
     pruefer: 'pruefe-codedubletten',
     was: 'Der Dublettenleser liest `if` und `for` wieder als Methoden',
@@ -4039,7 +4070,7 @@ export const GEGENPROBEN = Object.freeze([
     art: 'ersetzen',
     suchen: "      if (art === 'methode' && KEINE_METHODE.includes(m[1])) continue;",
     ersetzen: "      if (art === 'methode' && false) continue;",
-    erwartet: /gleiche Rümpfe ab 60 Zeichen — erlaubt sind 0/,
+    erwartet: /gleiche Rümpfe ab 50 Zeichen — erlaubt sind 0/,
     warum: 'Der erste Entwurf las `if (…) {` und `for (…) {` als Methoden und meldete siebzehn '
       + 'Fundstellen des Frischeabbruchs — der in siebzehn Werkzeugen gleich aussieht, weil er '
       + 'dasselbe tut. Ein Aufruf, der ueberall gleich aussieht, ist kein kopierter Code, '

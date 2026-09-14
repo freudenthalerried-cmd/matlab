@@ -35,6 +35,7 @@ import { KOPFZEILEN, NICHT_GESETZT } from '../src/serverkopf.js';
 import { freierPort } from '../src/freierport.js';
 import { wegwerfordner } from '../src/wegwerf.js';
 import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
+import { abbruchmelder, ABBRUCH_PRUEFER } from '../src/werkzeugabbruch.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const SITE = join(SHOP, 'ausgabe', 'site');
@@ -42,10 +43,7 @@ const SITE = join(SHOP, 'ausgabe', 'site');
 /** Wo die Module eines Apache liegen — je Verteilung anders benannt. */
 const MODULORTE = ['/usr/lib/apache2/modules', '/usr/lib64/httpd/modules', '/usr/lib/httpd/modules'];
 
-function abbruch(...zeilen) {
-  for (const z of zeilen) console.error(z);
-  process.exit(2);
-}
+const abbruch = abbruchmelder(ABBRUCH_PRUEFER);
 
 {
   const stand = frischebefund(SHOP, 'ausgabe/site');
@@ -54,18 +52,18 @@ function abbruch(...zeilen) {
     process.exit(2);
   }
 }
-if (!existsSync(join(SITE, '.htaccess'))) abbruch('Abbruch: ausgabe/site/.htaccess fehlt.');
+if (!existsSync(join(SITE, '.htaccess'))) abbruch('ausgabe/site/.htaccess fehlt.');
 
 const apache = ['apache2', 'httpd'].find((n) => spawnSync('which', [n], { encoding: 'utf8' }).status === 0);
 if (!apache) {
   abbruch(
-    'Abbruch: kein Apache vorhanden (apache2 oder httpd).',
+    'kein Apache vorhanden (apache2 oder httpd).',
     'Dieser Prüfer misst eine Serverkonfiguration — ohne Server bliebe nur die Behauptung,',
     'sie wirke. Genau die stand bis zum 11. September als Grund dafür, gar keine zu schreiben.',
   );
 }
 const modulordner = MODULORTE.find((o) => existsSync(o));
-if (!modulordner) abbruch(`Abbruch: kein Modulordner gefunden (${MODULORTE.join(', ')}).`);
+if (!modulordner) abbruch(`kein Modulordner gefunden (${MODULORTE.join(', ')}).`);
 
 /** Die Module, die der Lauf braucht — ohne sie startet kein Apache. */
 function modul(name) {
@@ -75,8 +73,8 @@ function modul(name) {
 }
 const GRUNDMODULE = ['mpm_event', 'authz_core', 'mime', 'dir'];
 const fehlend = GRUNDMODULE.filter((m) => !modul(m));
-if (fehlend.length) abbruch(`Abbruch: es fehlen Apache-Module: ${fehlend.join(', ')}.`);
-if (!modul('headers')) abbruch('Abbruch: mod_headers fehlt — dann ist die erste Hälfte nicht messbar.');
+if (fehlend.length) abbruch(`es fehlen Apache-Module: ${fehlend.join(', ')}.`);
+if (!modul('headers')) abbruch('mod_headers fehlt — dann ist die erste Hälfte nicht messbar.');
 
 /** Startet einen Apache über dem gebauten Ordner. */
 async function starte(mitHeaders) {
@@ -100,7 +98,7 @@ async function starte(mitHeaders) {
   ].join('\n'), 'utf8');
   const lauf = spawnSync(apache, ['-f', konf, '-k', 'start'], { encoding: 'utf8' });
   if (lauf.status !== 0) {
-    abbruch(`Abbruch: Apache startete nicht (${lauf.status}).`, lauf.stderr ?? '');
+    abbruch(`Apache startete nicht (${lauf.status}).`, lauf.stderr ?? '');
   }
   const halt = () => spawnSync(apache, ['-f', konf, '-k', 'stop'], { encoding: 'utf8' });
   return { adresse: `http://127.0.0.1:${port}`, halt };

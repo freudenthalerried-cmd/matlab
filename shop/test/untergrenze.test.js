@@ -16,15 +16,16 @@ import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-import { untergrenzenbefund, betragAlsZahl, GRENZAUSSAGEN } from '../src/untergrenze.js';
+import { untergrenzenbefund, GRENZAUSSAGEN } from '../src/untergrenze.js';
+import { deutscheZahl } from '../src/format.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 
 test('ein deutscher Betrag wird als Zahl gelesen, nicht als Kommazahl', () => {
-  assert.equal(betragAlsZahl('250'), 250);
-  assert.equal(betragAlsZahl('250,00'), 250);
-  assert.equal(betragAlsZahl('1.250,00'), 1250);
-  assert.equal(betragAlsZahl('1.250'), 1250);
+  assert.equal(deutscheZahl('250'), 250);
+  assert.equal(deutscheZahl('250,00'), 250);
+  assert.equal(deutscheZahl('1.250,00'), 1250);
+  assert.equal(deutscheZahl('1.250'), 1250);
 });
 
 test('eine abweichende Grenze ist ein Befund', () => {

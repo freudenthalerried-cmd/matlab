@@ -223,20 +223,35 @@ export function wortformen(text) {
  * der das Wort im eigenen Namen trägt, steht immer davor.
  */
 export function kundenwoerter(artikel, suchwoerter = []) {
-  const raus = [];
-  for (const e of suchwoerter) {
-    const passt = (e.skus ?? []).includes(artikel.sku) || (e.gruppe && e.gruppe === artikel.gruppe);
-    if (passt) raus.push(...wortstaemme(e.wort));
-  }
-  return raus;
+  return kundenwortteile(artikel, suchwoerter, wortstaemme);
 }
 
 /** Dieselben Kundenwörter, ungestutzt — für den Vorschlag. */
 export function kundenformen(artikel, suchwoerter = []) {
+  return kundenwortteile(artikel, suchwoerter, wortformen);
+}
+
+/**
+ * Welche Kundenwörter zu einem Artikel gehören — und wie sie zerlegt werden.
+ *
+ * **Zusammengelegt am 14. September 2026.** `kundenwoerter` und
+ * `kundenformen` standen als zwei Funktionen da, die sich in **einem Wort**
+ * unterschieden: `wortstaemme` gegen `wortformen`. Alles andere war
+ * Zeichen für Zeichen gleich — auch die Auswahlregel, und die trägt die
+ * Entscheidung: Ein Kundenwort gehört zu einem Artikel, wenn es seine Kennung
+ * nennt **oder** seine Warengruppe.
+ *
+ * Gefunden hat das kein Auge, sondern ein Vergleich, der die Bezeichner
+ * wegnormiert — die Zeichenkette war ja verschieden.
+ *
+ * > **Zwei Funktionen, die sich in einem Wort unterscheiden, tragen dieselbe
+ * > Entscheidung zweimal.**
+ */
+function kundenwortteile(artikel, suchwoerter, zerlege) {
   const raus = [];
   for (const e of suchwoerter) {
     const passt = (e.skus ?? []).includes(artikel.sku) || (e.gruppe && e.gruppe === artikel.gruppe);
-    if (passt) raus.push(...wortformen(e.wort));
+    if (passt) raus.push(...zerlege(e.wort));
   }
   return raus;
 }

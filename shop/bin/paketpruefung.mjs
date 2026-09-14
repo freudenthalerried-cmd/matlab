@@ -43,6 +43,7 @@ import { archivbefund, inhaltsbefund } from '../src/paket.js';
 import { wegwerfordner } from '../src/wegwerf.js';
 import { abnahmebefund, abnahmeplan } from '../src/abnahme.js';
 import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
+import { abbruchmelder, ABBRUCH_PRUEFER } from '../src/werkzeugabbruch.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const SITE = join(SHOP, 'ausgabe', 'site');
@@ -62,10 +63,7 @@ function dateienUnter(wurzel) {
   return gefunden;
 }
 
-function abbruch(...zeilen) {
-  for (const z of zeilen) console.error(z);
-  process.exit(2);
-}
+const abbruch = abbruchmelder(ABBRUCH_PRUEFER);
 
 {
   const stand = frischebefund(SHOP, 'ausgabe/site');
@@ -74,11 +72,11 @@ function abbruch(...zeilen) {
     process.exit(2);
   }
 }
-if (!existsSync(SITE)) abbruch('Abbruch: ausgabe/site liegt nicht vor — erst `npm run website`.');
+if (!existsSync(SITE)) abbruch('ausgabe/site liegt nicht vor — erst `npm run website`.');
 
 if (spawnSync('which', ['unzip'], { encoding: 'utf8' }).status !== 0) {
   abbruch(
-    'Abbruch: `unzip` ist hier nicht vorhanden.',
+    '`unzip` ist hier nicht vorhanden.',
     'Dieser Prüfer lebt davon, dass ein **fremder** Leser das Archiv öffnet.',
     'Ohne ihn bliebe nur der eigene Nachbau — und ein grüner Lauf darüber wäre',
     'die eine Aussage, die dieses Werkzeug nicht machen darf.',
@@ -90,12 +88,12 @@ console.log('\nPaketprobe — das Archiv, das hochgeladen wird\n');
 /* --- 1. Das Werkzeug selbst laufen lassen -------------------------------- */
 const bau = spawnSync('node', [join(SHOP, 'bin', 'paket.mjs')], { encoding: 'utf8', cwd: SHOP });
 if (bau.status !== 0) {
-  abbruch('Abbruch: `npm run paket` ist gescheitert.', bau.stdout ?? '', bau.stderr ?? '');
+  abbruch('`npm run paket` ist gescheitert.', bau.stdout ?? '', bau.stderr ?? '');
 }
 const geschrieben = /Paket geschrieben: (ausgabe\/\S+\.zip)/.exec(bau.stdout ?? '');
-if (!geschrieben) abbruch('Abbruch: das Werkzeug nennt keinen geschriebenen Pfad.', bau.stdout ?? '');
+if (!geschrieben) abbruch('das Werkzeug nennt keinen geschriebenen Pfad.', bau.stdout ?? '');
 const archiv = join(SHOP, geschrieben[1]);
-if (!existsSync(archiv)) abbruch(`Abbruch: ${geschrieben[1]} wurde genannt und liegt nicht vor.`);
+if (!existsSync(archiv)) abbruch(`${geschrieben[1]} wurde genannt und liegt nicht vor.`);
 const bytes = statSync(archiv).size;
 console.log(`  ✓ ${geschrieben[1]} geschrieben, ${(bytes / 1024 / 1024).toFixed(2)} MB`);
 
@@ -124,12 +122,12 @@ const ablage = wegwerfordner('paketprobe-');
   /* --- 3. Auspacken und Byte für Byte vergleichen ------------------------ */
   const aus = spawnSync('unzip', ['-q', archiv, '-d', ablage], { encoding: 'utf8' });
   if (aus.status !== 0) {
-    abbruch(`Abbruch: das Archiv ließ sich nicht auspacken (Code ${aus.status}).`, aus.stderr ?? '');
+    abbruch(`das Archiv ließ sich nicht auspacken (Code ${aus.status}).`, aus.stderr ?? '');
   }
   const ausgepackt = dateienUnter(join(ablage, 'site'));
   const gebaut = dateienUnter(SITE);
   if (gebaut.size < 20) {
-    abbruch(`Abbruch: nur ${gebaut.size} gebaute Dateien — dieser Abgleich sagt dann nichts.`);
+    abbruch(`nur ${gebaut.size} gebaute Dateien — dieser Abgleich sagt dann nichts.`);
   }
   dateienImBau = gebaut.size;
   const gleichstand = archivbefund(ausgepackt, gebaut);

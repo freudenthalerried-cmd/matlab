@@ -38,6 +38,7 @@ import { haltefest, vorgangsakte } from '../src/ablage.js';
 import { ausJournal, journalzeile } from '../src/speicher.js';
 import { ABLAGEORT, istJournal } from '../src/ablageort.js';
 import { geschaeftstag, geschaeftsjahr } from '../src/geschaeftszeit.js';
+import { abbruchmelder, ABBRUCH_WERKZEUG } from '../src/werkzeugabbruch.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const REPO = dirname(SHOP);
@@ -62,11 +63,7 @@ const wahl = (name) => {
   return i >= 0 && argumente[i + 1] ? argumente[i + 1] : null;
 };
 
-const abbruch = (satz, nachsatz = '') => {
-  console.error(`\nAbbruch: ${satz}`);
-  if (nachsatz) console.error(nachsatz);
-  process.exit(1);
-};
+const abbruch = abbruchmelder(ABBRUCH_WERKZEUG);
 
 const vorgang = wahl('vorgang');
 const text = wahl('text');

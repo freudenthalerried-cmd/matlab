@@ -268,6 +268,9 @@
   "ein-fall-zwei-jahrgaenge": [
     "shop/test/jahreswechsel.test.js"
   ],
+  "ein-pruefer-bricht-wieder-mit-der-urteilsziffer-ab": [
+    "shop/test/werkzeugabbruch.test.js"
+  ],
   "eine-aufzaehlung-die-ablaeuft": [
     "shop/test/rollout.test.js"
   ],

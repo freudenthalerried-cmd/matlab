@@ -53,6 +53,8 @@
  * Berichtigungswörter hätte den Fund **gedeckt** statt gefunden.
  */
 
+import { deutscheZahl } from './format.js';
+
 /**
  * Die Formen, in denen eine untere Bestellgrenze auf einer Seite steht.
  *
@@ -106,13 +108,6 @@ export const GRENZAUSSAGEN = Object.freeze([
   }),
 ]);
 
-/**
- * Ein deutscher Betrag als Zahl. `1.250,00` sind tausendzweihundertfünfzig,
- * nicht eins Komma zwei fünf.
- */
-export function betragAlsZahl(roh) {
-  return Number(String(roh).replace(/\./g, '').replace(',', '.'));
-}
 
 /** Die Zeile, in der eine Fundstelle steht — aus dem Text, nicht aus einem Zähler. */
 function zeileVon(text, index) {
@@ -147,7 +142,7 @@ export function untergrenzenbefund(dateien, grenzeNetto, mindestens = 1) {
       while ((treffer = muster.exec(text)) !== null) {
         gefunden += 1;
         flaechen.add(name);
-        const wert = betragAlsZahl(treffer[1]);
+        const wert = deutscheZahl(treffer[1]);
         if (wert === grenzeNetto) continue;
         meldungen.push({
           regel: 'abweichende-grenze',

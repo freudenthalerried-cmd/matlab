@@ -14,6 +14,7 @@ import { dirname, join, relative } from 'node:path';
 
 import {
   codedublettenbefund, DUBLETTE_GEPRUEFT, DUBLETTEN_HOECHSTENS, MINDESTLAENGE,
+  GESTALT_GEPRUEFT, GESTALTEN_HOECHSTENS,
 } from '../src/codedubletten.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -38,9 +39,15 @@ console.log(`\nCodedubletten — ${b.gelesen} Rümpfe in ${quellen.size} Quellda
   + `gezählt ab ${MINDESTLAENGE} Zeichen\n`);
 console.log(`  begründete Dubletten   ${String(DUBLETTE_GEPRUEFT.length).padStart(3)}`);
 console.log(`  ungeführt              ${String(b.offen.length).padStart(3)}   (Schranke ${DUBLETTEN_HOECHSTENS})`);
+console.log(`  begründete Gestalten   ${String(GESTALT_GEPRUEFT.length).padStart(3)}`);
+console.log(`  ungeführt              ${String(b.gestalten.length).padStart(3)}   (Schranke ${GESTALTEN_HOECHSTENS})`);
 
 for (const stellen of b.offen) {
-  console.log(`\n    [${stellen.length}] ${stellen[0].art}, ${stellen[0].code.length} Zeichen`);
+  console.log(`\n    [${stellen.length}] zeichengleich, ${stellen[0].art}, ${stellen[0].code.length} Zeichen`);
+  for (const s of stellen) console.log(`         ${s.pfad}:${s.name}`);
+}
+for (const stellen of b.gestalten) {
+  console.log(`\n    [${stellen.length}] gestaltgleich, ${stellen[0].art}, ${stellen[0].code.length} Zeichen`);
   for (const s of stellen) console.log(`         ${s.pfad}:${s.name}`);
 }
 
@@ -53,6 +60,7 @@ if (b.meldungen.length) {
 }
 
 console.log('');
-console.log(`Codedublettenabgleich: ${b.offen.length} ungeführt, ${DUBLETTE_GEPRUEFT.length} mit Grund`);
+console.log(`Codedublettenabgleich: ${b.offen.length + b.gestalten.length} ungeführt, `
+  + `${DUBLETTE_GEPRUEFT.length + GESTALT_GEPRUEFT.length} mit Grund`);
 console.log('Wer eine Funktion kopiert, kopiert die Zeile darüber mit — und irgendwann nur eine von beiden.');
 process.exit(0);

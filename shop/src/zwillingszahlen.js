@@ -328,6 +328,22 @@ export const ENGE_SCHWELLE = 5;
  */
 export const VORSCHLAG_GEPRUEFT = Object.freeze([
   Object.freeze({
+    name: 'bisZeichen', wert: 63,
+    warum: 'Die gemessene Rumpflaenge der drei Ablageort-Praedikate im Gestaltregister '
+      + '(`src/codedubletten.js`). Das zweite Vorkommen ist die Zahl der Oberflaechen-'
+      + 'szenarien in einer Hakenbeschreibung (`src/haken.js`) — eine Zahl von Proben und '
+      + 'eine Zahl von Zeichen. Beide wandern, wenn sich ihre Seite aendert, und keine '
+      + 'wandert mit der anderen.',
+  }),
+  Object.freeze({
+    name: 'bisZeichen', wert: 58,
+    warum: 'Die gemessene Rumpflaenge der beiden Weiterreichungen in `src/shopkern.js`, '
+      + 'gefuehrt im Gestaltregister. Das zweite Vorkommen ist eine Bildkoordinate in '
+      + '`src/bilder.js` (`const y = 58 - d;` im gezeichneten Diagramm) — ein Punkt auf '
+      + 'einer Leinwand und eine Anzahl Zeichen in einem Funktionsrumpf. Zufall, und einer, '
+      + 'der sich bei der naechsten Messung von selbst aufloest.',
+  }),
+  Object.freeze({
     name: 'ueberlappung', wert: 0.1,
     warum: 'Zehn Prozent Ueberlappung im Bedarfsrechner. Sie trifft die drei Gebinde-'
       + 'untergrenzen (ein Zehntel Kilogramm, Quadratmeter, Laufmeter) und vier weitere '

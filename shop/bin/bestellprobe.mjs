@@ -39,13 +39,14 @@ import { betreiberAmTagX } from '../src/tagx.js';
 import { belegordner } from '../src/ablageort.js';
 import { geschaeftsjahr, geschaeftstag, zeitstempel } from '../src/geschaeftszeit.js';
 import { findeChromium, browserzeile } from '../src/browsersuche.js';
+import { abbruchmelder, ABBRUCH_PRUEFER } from '../src/werkzeugabbruch.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const REPO = dirname(SHOP);
 const ANFANG = '[[PROBE-ANFANG]]';
 const ENDE = '[[PROBE-ENDE]]';
 
-const abbruch = (text, code = 2) => { console.error(`\nAbbruch: ${text}`); process.exit(code); };
+const abbruch = abbruchmelder(ABBRUCH_PRUEFER);
 
 if (spawnSync('php', ['-v'], { encoding: 'utf8' }).status !== 0) {
   abbruch('Ohne PHP kann diese Probe nichts fahren. Sie sagt das, statt still grün zu sein.');

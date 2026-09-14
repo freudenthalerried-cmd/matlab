@@ -145,6 +145,38 @@ const zahlAusText = (wert) => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const deutscheZahl = (roh) => Number(String(roh).replace(/\./g, '').replace(',', '.'));
+
+
+
+
+
+
+
+
+
+
+
 const hatSteuerzeichen = (wert) => STEUERZEICHEN.test(String(wert ?? ''));
 
 
@@ -2278,20 +2310,35 @@ function wortformen(text) {
 
 
 function kundenwoerter(artikel, suchwoerter = []) {
-  const raus = [];
-  for (const e of suchwoerter) {
-    const passt = (e.skus ?? []).includes(artikel.sku) || (e.gruppe && e.gruppe === artikel.gruppe);
-    if (passt) raus.push(...wortstaemme(e.wort));
-  }
-  return raus;
+  return kundenwortteile(artikel, suchwoerter, wortstaemme);
 }
 
 
 function kundenformen(artikel, suchwoerter = []) {
+  return kundenwortteile(artikel, suchwoerter, wortformen);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function kundenwortteile(artikel, suchwoerter, zerlege) {
   const raus = [];
   for (const e of suchwoerter) {
     const passt = (e.skus ?? []).includes(artikel.sku) || (e.gruppe && e.gruppe === artikel.gruppe);
-    if (passt) raus.push(...wortformen(e.wort));
+    if (passt) raus.push(...zerlege(e.wort));
   }
   return raus;
 }

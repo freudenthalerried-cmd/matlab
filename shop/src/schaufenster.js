@@ -1,6 +1,8 @@
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
+
+import { deutscheZahl } from './format.js';
 /**
  * Die Kennzahlen der PR-Beschreibung — und wie man sie nachmisst.
  *
@@ -75,10 +77,6 @@ import { join } from 'node:path';
  * ausdrücklich — siehe die beiden Browserproben unten.
  */
 
-/** Eine Zahl aus dem Text — mit Beistrich als Dezimaltrennzeichen. */
-export function zahlAus(text) {
-  return Number(String(text).replace(/\./g, '').replace(',', '.'));
-}
 
 /**
  * @param {object} messwerte die am Verzeichnis gemessenen Werte
@@ -263,7 +261,7 @@ export function pruefeSchaufenster(text, messwerte) {
         grund: `das Muster ${k.muster} findet in der Beschreibung nichts mehr` });
       continue;
     }
-    const ist = zahlAus(treffer[1]);
+    const ist = deutscheZahl(treffer[1]);
     if (k.art === 'mindestens') {
       if (k.soll <= ist) {
         meddung(meldungen, k, ist, `die Beschreibung sagt „über ${treffer[1]}", gemessen sind nur ${k.soll} (${k.wie})`);

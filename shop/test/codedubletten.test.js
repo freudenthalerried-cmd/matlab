@@ -10,7 +10,8 @@ import assert from 'node:assert/strict';
 
 import {
   KEINE_METHODE, MINDESTLAENGE, DUBLETTE_GEPRUEFT, DUBLETTEN_HOECHSTENS,
-  rumpfVon, rumpfstellen, codedublettenbefund,
+  GESTALT_GEPRUEFT, GESTALTEN_HOECHSTENS, FESTE_WOERTER,
+  rumpfVon, rumpfstellen, codedublettenbefund, gerippeVon,
 } from '../src/codedubletten.js';
 
 test('Gelesen werden Funktionen, Pfeilfunktionen und Methoden', () => {
@@ -109,4 +110,87 @@ test('Jede begründete Dublette nennt Name, Zahl und einen tragfähigen Grund', 
   }
   assert.equal(DUBLETTEN_HOECHSTENS, 0,
     'die Schranke steht über null — dann liegt ein Vorrat da, den niemand ansieht');
+});
+
+/*
+ * ## Der zweite Vergleich: die Gestalt
+ *
+ * **Der offene Punkt vom 14. September, mittags.** „Zwei Funktionen, die
+ * dasselbe tun und sich in einem Variablennamen unterscheiden, sind für sie
+ * verschieden." Diese Tests halten den zweiten Durchgang.
+ */
+
+test('Gleiche Gestalt trotz anderer Bezeichner', () => {
+  const eins = gerippeVon('const a = ANNAHMEN.find((x) => x.id === id); return a;');
+  const zwei = gerippeVon('const z = ZAHLWEGE.find((w) => w.id === id); return z;');
+  assert.equal(eins, zwei, `${eins}\n${zwei}`);
+  assert.ok(eins.includes('#1'), 'es wurde gar nichts nummeriert');
+});
+
+test('Eigenschaften hinter dem Punkt bleiben stehen', () => {
+  const eins = gerippeVon('return a.sku + b.gruppe;');
+  const zwei = gerippeVon('return x.gruppe + y.sku;');
+  assert.notEqual(eins, zwei, 'zwei verschiedene Felder gelten als dieselbe Gestalt');
+  assert.ok(eins.includes('.sku'), `der Feldname fehlt: ${eins}`);
+});
+
+/*
+ * Im Zeichenkettenteil steht Text, in `${…}` steht **Code**. Ohne diese
+ * Unterscheidung wären die beiden Abbruchmelder verschieden gewesen — und
+ * genau sie zu finden war der Anlass.
+ */
+test('Im Inneren von ${} wird nummeriert, im Text daneben nicht', () => {
+  const eins = gerippeVon('console.error(`Abbruch: ${satz}`);');
+  const zwei = gerippeVon('console.error(`Abbruch: ${text}`);');
+  assert.equal(eins, zwei, `${eins}\n${zwei}`);
+  assert.ok(eins.includes('Abbruch: '), `der Text wurde mitnummeriert: ${eins}`);
+  const drei = gerippeVon("console.error('Abbruch: eins');");
+  const vier = gerippeVon("console.error('Abbruch: zwei');");
+  assert.notEqual(drei, vier, 'zwei verschiedene Meldungen gelten als dieselbe Gestalt');
+});
+
+test('Feste Wörter werden nicht nummeriert', () => {
+  assert.ok(FESTE_WOERTER.length >= 20, `nur ${FESTE_WOERTER.length} feste Wörter`);
+  for (const wort of ['const', 'return', 'console', 'process', 'Error', 'Number']) {
+    assert.ok(FESTE_WOERTER.includes(wort), `${wort} fehlt unter den festen Wörtern`);
+    assert.ok(gerippeVon(`${wort};`).startsWith(wort), `${wort} wurde nummeriert`);
+  }
+});
+
+test('Zeichengleiches meldet der zweite Durchgang nicht noch einmal', () => {
+  const rumpf = 'return eins + zwei + drei + vier + fuenf + sechs + sieben + acht + neun;';
+  assert.ok(rumpf.length >= MINDESTLAENGE, 'die Probe ist kürzer als die Grenze');
+  const quellen = new Map([
+    ['src/a.js', `export function a() { ${rumpf} }`],
+    ['src/b.js', `export function b() { ${rumpf} }`],
+  ]);
+  const b = codedublettenbefund(quellen, [], null, MINDESTLAENGE, [], null);
+  assert.equal(b.offen.length, 1, JSON.stringify(b.offen));
+  assert.equal(b.gestalten.length, 0, 'derselbe Fund steht zweimal im Befund');
+});
+
+test('Ein Grund gilt bis zu der Länge, für die er geschrieben wurde', () => {
+  const kurz = 'return eins + zwei + drei + vier + fuenf + sechs + sieben;';
+  const lang = `${kurz.slice(0, -1)} + acht + neun + zehn + elf + zwoelf + dreizehn;`;
+  assert.ok(lang.length > kurz.length, 'die lange Probe ist nicht länger');
+  const gefuehrt = [{ namen: ['a', 'b'], bisZeichen: kurz.length, warum: 'x'.repeat(90) }];
+  const mache = (rumpf) => new Map([
+    ['src/a.js', `export function a() { ${rumpf} }`],
+    ['src/b.js', `export function b() { ${rumpf.replace(/eins/g, 'Eins')} }`],
+  ]);
+  const still = codedublettenbefund(mache(kurz), [], null, MINDESTLAENGE, gefuehrt, null);
+  assert.deepEqual(still.meldungen, [], JSON.stringify(still.meldungen));
+  const laut = codedublettenbefund(mache(lang), [], null, MINDESTLAENGE, gefuehrt, null);
+  assert.ok(laut.meldungen.some((m) => m.regel === 'gestalt-groesser-als-begruendet'),
+    JSON.stringify(laut.meldungen));
+});
+
+test('Jeder Eintrag im Gestaltregister trägt einen Grund', () => {
+  assert.ok(GESTALT_GEPRUEFT.length >= 1, 'das Register ist leer — die Schleife prüft nichts');
+  for (const g of GESTALT_GEPRUEFT) {
+    assert.ok(g.namen.length >= 2, `${g.namen.join(', ')}: eine Gestalt braucht zwei Stellen`);
+    assert.ok(g.warum.length >= 80, `${g.namen.join(', ')}: Grund zu dünn`);
+    assert.ok(Number.isInteger(g.bisZeichen) && g.bisZeichen > 0, `${g.namen.join(', ')}: keine gemessene Länge`);
+  }
+  assert.equal(GESTALTEN_HOECHSTENS, 0, 'die Schranke für ungeführte Gestalten ist gelockert');
 });

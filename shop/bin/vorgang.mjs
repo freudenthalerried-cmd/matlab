@@ -79,6 +79,7 @@ import {
 import { geschaeftstag } from '../src/geschaeftszeit.js';
 import { BANKFELDER } from '../src/bankverbindung.js';
 import { argWort } from '../src/argumente.js';
+import { abbruchmelder, ABBRUCH_WERKZEUG } from '../src/werkzeugabbruch.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const REPO = dirname(SHOP);
@@ -137,11 +138,7 @@ if (!registerbefund.sauber) {
   process.exit(2);
 }
 
-const abbruch = (text, rat = null) => {
-  console.error(`\nAbbruch: ${text}`);
-  if (rat) console.error(rat);
-  process.exit(1);
-};
+const abbruch = abbruchmelder(ABBRUCH_WERKZEUG);
 
 /**
  * Die Lückenmarken eines Belegs — und die Sperre, die sie vor der Akte hält.

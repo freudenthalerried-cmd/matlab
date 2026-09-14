@@ -133,6 +133,38 @@ export const zahlAusText = (wert) => {
 };
 
 /**
+ * Zurück aus der **deutschen** Schreibweise mit Tausenderpunkt.
+ *
+ * **Hierher gezogen am 14. September 2026.** Sie stand zweimal: als `zahlAus`
+ * in `src/schaufenster.js` und als `betragAlsZahl` in `src/untergrenze.js` —
+ * Zeichen für Zeichen dasselbe, unter zwei Namen. Gefunden hat sie nicht die
+ * Dublettensuche, die Zeichen vergleicht, sondern erst der Vergleich der
+ * **Gestalt**: Sie standen nebeneinander in einer Liste von Rümpfen, die sich
+ * nur in Bezeichnern unterscheiden.
+ *
+ * ## Der Unterschied zu `zahlAusText` — und warum beide bleiben
+ *
+ * ```
+ *                 '1.250'      '0.75'
+ * zahlAusText     1.25         0.75
+ * deutscheZahl    1250         75
+ * ```
+ *
+ * `zahlAusText` liest, was dieses Haus **schreibt**: Komma oder Punkt als
+ * Dezimaltrennzeichen, nie ein Tausenderpunkt — `csvBetrag` setzt keinen.
+ * `deutscheZahl` liest, was in **Fließtext** steht: „1.250,00 €" auf einer
+ * Seite ist tausendzweihundertfünfzig.
+ *
+ * > **Zwei Leser für zwei Schreibweisen sind richtig; zwei Leser für
+ * > dieselbe Schreibweise sind eine Entscheidung, die zweimal fallen kann.**
+ *
+ * Wer sie verwechselt, bekommt keinen Fehler, sondern eine Zahl: den Preis
+ * durch tausend. Deshalb steht der Unterschied hier und nicht im Kopf des
+ * Aufrufers.
+ */
+export const deutscheZahl = (roh) => Number(String(roh).replace(/\./g, '').replace(',', '.'));
+
+/**
  * Findet Zeichen, die `textZeile` entfernen würde.
  *
  * Das Gegenstück für den **Eingang**: Am Ausgang wird entschärft, am Eingang
