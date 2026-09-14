@@ -18,7 +18,8 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 import {
-  seitenbefund, eigenerText, abschnitte, abschnittsbefund, DUBLETTENGRENZE,
+  seitenbefund, eigenerText, abschnitte, abschnittsbefund, gemeinsameSaetze, geteiltebefund,
+  DUBLETTENGRENZE,
 } from '../src/seitenaehnlichkeit.js';
 import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
 import { beschreibungsbefund } from '../src/maschinenlesbar.js';
@@ -158,14 +159,73 @@ console.log(`\nKein Paar erreicht ${DUBLETTENGRENZE}. Der gemeinsame Anteil ist 
  * > Haus liegt, macht aus einer lösbaren Aufgabe eine blockierte.**
  */
 const groesster = abschnittsteile[0];
+
+/*
+ * **Und welche Sätze das sind — seit 14. September 2026.**
+ *
+ * Hier stand bis dahin: *„nur ein Absatz, der je Artikel etwas anderes sagt."*
+ * Das war eine Empfehlung, und sie war so wenig gemessen wie die, die am
+ * 5. September abgelöst wurde — nur eine Ebene tiefer.
+ *
+ * > **Dieselbe Zuschreibung, eine Ebene tiefer — und wieder nicht gemessen.**
+ *
+ * Gemessen stehen im größten Block fünf Sätze von 105 auf allen Seiten, und
+ * alle fünf sind Bedingungen oder Verweise. Sie stehen hier jetzt ausgedruckt:
+ * Wer den Anteil senken will, sieht, woraus er besteht, statt eine Empfehlung
+ * zu lesen, die ihn nur anders formulieren hieße.
+ */
+const alleSaetze = gemeinsameSaetze(roh.map((h) => abschnitte(h)));
+const saetze = alleSaetze.find((z) => z.titel === groesster.titel);
+const geteilt = geteiltebefund(alleSaetze);
+
 console.log(`aber er sitzt nicht überall gleich. Der größte Block ist „${groesster.titel}":`);
 console.log(`${groesster.gemeinsameWorte} von ${groesster.mittlereLaenge.toFixed(0)} Wörtern stehen `
-  + 'auf jeder Seite. Das ist eigener Text; keine');
-console.log('Lieferantenliste macht ihn kürzer — nur ein Absatz, der je Artikel etwas');
-console.log('anderes sagt. Was die Artikelliste löst, sind die Kennwerte: dort stehen');
+  + 'auf jeder Seite — das ist eigener Text,');
+console.log('und keine Lieferantenliste macht ihn kürzer.');
+
+if (saetze) {
+  console.log(`\n  Wörtlich auf allen ${saetze.seiten} Seiten — ${saetze.aufJederSeite.length} Sätze von ${saetze.saetze}:\n`);
+  for (const satz of saetze.aufJederSeite) {
+    console.log(`    · ${satz.length > 96 ? `${satz.slice(0, 95)}…` : satz}`);
+  }
+  console.log(`\n  Jeder davon steht mit Grund in GETEILTE_SAETZE (${geteilt.gefuehrt} über alle Abschnitte):`);
+  console.log('  eine Bedingung oder ein Verweis. Sie sind gleich, weil die Bedingung auf allen');
+  console.log('  Seiten gilt — in 46 Fassungen geschrieben sagten sie dasselbe schlechter. Der');
+  console.log('  Anteil sänke durch einen zweiten Lieferanten mit anderen Sätzen, nicht durch');
+  console.log('  andere Worte.');
+}
+
+/*
+ * Und die Liste gegen den Bestand — in beide Richtungen. Ein neuer Satz auf
+ * allen Seiten ist entweder eine Bedingung und gehört begründet, oder er ist
+ * Füllung und gehört weg; ein Eintrag ohne Satz erklärt einen Zustand von
+ * gestern. Ohne diesen Abgleich wäre der Absatz darüber wieder das, was er bis
+ * heute war: eine Zuschreibung, die niemand misst.
+ */
+if (!geteilt.sauber) {
+  console.log('');
+  for (const m of geteilt.meldungen) console.log(`  ✗ ${m.text}  [${m.regel}]`);
+  console.log('');
+  console.log('Ein Satz über eine Messung, den niemand hält, ist die nächste ungemessene');
+  console.log('Zuschreibung.');
+  process.exit(1);
+}
+
 const kennwerte = abschnittsteile.find((a) => /kennwert/i.test(a.titel));
 if (kennwerte) {
-  console.log(`${kennwerte.fassungen} Fassungen auf ${seiten.length} Seiten, die größte auf `
-    + `${kennwerte.groessteFassung} — lauter Platzhaltersätze statt Kennwerten.`);
+  /*
+   * **Berichtigt am 14. September 2026.** Hier stand „lauter Platzhaltersätze
+   * statt Kennwerten". Am 13. September ist genau dieser Satz im offenen Punkt
+   * `artikelliste` berichtigt worden — die sechs Fassungen sagen ausdrücklich,
+   * warum dort keine Kennwerte stehen, und verweisen auf das Merkblatt des
+   * Herstellers. Die Berichtigung erreichte den offenen Punkt und nicht diesen
+   * Prüfer, obwohl sie aus seiner Zahl stammte.
+   *
+   * > **Eine Berichtigung, die eine Stelle erreicht, gilt für eine Stelle.**
+   */
+  console.log(`\n  Was die Artikelliste löst, sind die Kennwerte: ${kennwerte.fassungen} Fassungen auf `
+    + `${seiten.length} Seiten, die größte auf ${kennwerte.groessteFassung}.`);
+  console.log('  Sie sagen, warum dort nichts steht, und verweisen auf das Merkblatt —');
+  console.log('  eine erfundene Kennwerttabelle wäre schlimmer als eine leere.');
 }
 process.exit(0);

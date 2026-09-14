@@ -173,3 +173,77 @@ test('ein Abschnitt, der überall wortgleich ist, kommt auf Anteil 1', () => {
 test('unter zwei Seiten wird nicht gemessen, sondern abgebrochen', () => {
   assert.throws(() => abschnittsbefund([[{ titel: 'A', text: 'x' }]]), /zwei Seiten/);
 });
+
+/*
+ * **Welche Sätze stehen auf jeder Seite? — 14. September 2026.**
+ *
+ * `abschnittsbefund` beantwortet seit dem 5. September, *wo* die Gleichheit
+ * sitzt. Unter seine Zahl schrieb der Prüfer aber weiter eine Empfehlung, die
+ * so wenig gemessen war wie die, die er damals abgelöst hat:
+ *
+ * > **Dieselbe Zuschreibung, eine Ebene tiefer — und wieder nicht gemessen.**
+ */
+test('Die Sätze auf jeder Seite werden benannt, nicht nur gezählt', async () => {
+  const { gemeinsameSaetze } = await import('../src/seitenaehnlichkeit.js');
+  const seite = (eigen) => [{ titel: 'Lieferung', text: `Der Mindestbestellwert ist 250 €. ${eigen}` }];
+  const befund = gemeinsameSaetze([seite('Palettierte Ware.'), seite('Paketware.'), seite('Palettierte Ware.')]);
+  assert.equal(befund.length, 1);
+  assert.deepEqual(befund[0].aufJederSeite, ['Der Mindestbestellwert ist 250 €.']);
+  assert.equal(befund[0].saetze, 3, 'drei verschiedene Sätze über drei Seiten');
+  assert.equal(befund[0].seiten, 3);
+});
+
+test('Ein Abschnitt, den es nicht auf jeder Seite gibt, wird nicht gemessen', async () => {
+  const { gemeinsameSaetze } = await import('../src/seitenaehnlichkeit.js');
+  const befund = gemeinsameSaetze([
+    [{ titel: 'A', text: 'Gleich.' }, { titel: 'B', text: 'Nur hier.' }],
+    [{ titel: 'A', text: 'Gleich.' }],
+  ]);
+  assert.deepEqual(befund.map((z) => z.titel), ['A'],
+    'ein Abschnitt auf der Hälfte der Seiten ergibt eine Zahl, die etwas anderes bedeutet');
+  assert.throws(() => gemeinsameSaetze([[]]), /Unter zwei Seiten/);
+});
+
+/*
+ * Die Liste wird in beide Richtungen gehalten — und hat beim Schreiben sofort
+ * berichtigt, wer sie schreibt: Der erste Entwurf trug einen Eintrag, der
+ * keinen Satz traf, und übersah drei Sätze, die keinen Eintrag hatten.
+ */
+test('Ein geteilter Satz ohne Grund und ein Grund ohne Satz fallen beide auf', async () => {
+  const { geteiltebefund } = await import('../src/seitenaehnlichkeit.js');
+  const gefuehrt = [{
+    abschnitt: 'Lieferung',
+    anfang: 'Der Mindestbestellwert',
+    art: 'bedingung',
+    warum: 'Ein Grund, der lang genug ist, um als Grund zu gelten, und der deshalb diesen Satz '
+      + 'bis über die achtzig Zeichen hinaus fortsetzt.',
+  }];
+  const gedeckt = [{ titel: 'Lieferung', aufJederSeite: ['Der Mindestbestellwert ist 250 €.'] }];
+  assert.equal(geteiltebefund(gedeckt, gefuehrt).sauber, true);
+
+  const neuerSatz = [{ titel: 'Lieferung', aufJederSeite: ['Der Mindestbestellwert ist 250 €.', 'Füllung.'] }];
+  assert.equal(geteiltebefund(neuerSatz, gefuehrt).meldungen[0].regel, 'satz-ohne-grund');
+
+  const weg = [{ titel: 'Lieferung', aufJederSeite: [] }];
+  assert.equal(geteiltebefund(weg, gefuehrt).meldungen[0].regel, 'grund-ohne-satz');
+
+  // Und ein Eintrag im falschen Abschnitt trifft seinen Satz nicht.
+  const woanders = [{ titel: 'Kopf', aufJederSeite: ['Der Mindestbestellwert ist 250 €.'] }];
+  assert.ok(geteiltebefund(woanders, gefuehrt).meldungen.some((m) => m.regel === 'grund-ohne-satz'));
+
+  const duenn = [{ titel: 'Lieferung', aufJederSeite: ['X.'] }];
+  assert.ok(geteiltebefund(duenn, [{ abschnitt: 'Lieferung', anfang: 'X', warum: 'kurz' }])
+    .meldungen.some((m) => m.regel === 'grund-zu-duenn'));
+});
+
+test('Jeder geführte Satz nennt Abschnitt, Anfang, Art und einen tragfähigen Grund', async () => {
+  const { GETEILTE_SAETZE } = await import('../src/seitenaehnlichkeit.js');
+  assert.ok(GETEILTE_SAETZE.length >= 5,
+    `nur ${GETEILTE_SAETZE.length} Einträge — ohne Bestand prüft die Schleife nichts`);
+  for (const g of GETEILTE_SAETZE) {
+    assert.ok(g.abschnitt.length > 2, `${g.anfang}: ohne Abschnitt trifft der Anfang irgendwo`);
+    assert.ok(g.anfang.length >= 15, `${g.anfang}: zu kurzer Anfang trifft zu viel`);
+    assert.ok(['verweis', 'bedingung'].includes(g.art), `${g.anfang}: unbekannte Art ${g.art}`);
+    assert.ok(g.warum.length >= 80, `${g.anfang}: Grund zu dünn`);
+  }
+});

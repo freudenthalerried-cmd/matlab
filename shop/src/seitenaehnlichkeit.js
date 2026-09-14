@@ -269,3 +269,216 @@ export function abschnittsbefund(proSeite) {
   zeilen.sort((a, b) => b.gemeinsameWorte - a.gemeinsameWorte);
   return zeilen;
 }
+
+/**
+ * Welche **Sätze** stehen auf jeder Seite? — je Abschnitt.
+ *
+ * **Der Anlass, 14. September 2026.** `abschnittsbefund` beantwortet seit dem
+ * 5. September die Frage, *wo* die Gleichheit sitzt, und sein eigener Kopf
+ * sagt, warum es ihn gibt:
+ *
+ * > *„Eine Gesamtzahl sagt, wie viel gleich ist. Sie sagt nicht, wessen
+ * > Gleichheit es ist — und damit auch nicht, wer sie ändern kann."*
+ *
+ * Damals war die ungemessene Zuschreibung, den Anteil senke die Artikelliste
+ * des Lieferanten. Sie wurde je Abschnitt widerlegt — und durch eine zweite
+ * ersetzt, die genauso ungemessen war: *„nur ein Absatz, der je Artikel etwas
+ * anderes sagt."*
+ *
+ * > **Dieselbe Zuschreibung, eine Ebene tiefer — und wieder nicht gemessen.**
+ *
+ * Gemessen, was im größten Block („Lieferung", 93 von 124 Wörtern) wirklich
+ * auf allen 46 Seiten steht: **fünf Sätze von 105.** Zwei davon sind Verweise
+ * auf die Lieferseite, drei sind Bedingungen — Mindestbestellwert samt Quelle
+ * und Stand, der Grund gegen „frei Haus", und dass die Grenze je Lieferung
+ * gilt.
+ *
+ * > **Ein Satz, der eine Bedingung nennt, ist auf allen Seiten gleich, weil
+ * > die Bedingung auf allen Seiten gilt.** Ihn in 46 Fassungen zu schreiben,
+ * > sagt nichts Neues — es sagt dasselbe schlechter.
+ *
+ * Gezählt wird ein Satz als derselbe, wenn er nach Zusammenziehen der
+ * Leerzeichen Zeichen für Zeichen gleich ist. Zwei Sätze, die dasselbe anders
+ * sagen, gelten damit als verschieden — und das ist die richtige Härte: Genau
+ * solche Fassungen sollen sichtbar werden und nicht als Gleichheit gelten.
+ *
+ * @param {{titel: string, text: string}[][]} proSeite  je Seite ihre Abschnitte
+ * @returns {{titel: string, seiten: number, saetze: number, aufJederSeite: string[]}[]}
+ */
+export function gemeinsameSaetze(proSeite) {
+  if (!Array.isArray(proSeite) || proSeite.length < 2) {
+    throw new Error('Unter zwei Seiten gibt es nichts zu vergleichen — ein leerer Lauf ist kein grüner.');
+  }
+  const nachTitel = new Map();
+  for (const seite of proSeite) {
+    for (const a of seite) {
+      if (!nachTitel.has(a.titel)) nachTitel.set(a.titel, []);
+      nachTitel.get(a.titel).push(saetzeVon(a.text));
+    }
+  }
+
+  const zeilen = [];
+  for (const [titel, mengen] of nachTitel) {
+    if (mengen.length !== proSeite.length) continue;
+    const gemeinsam = mengen.reduce((s, m) => new Set([...s].filter((x) => m.has(x))), mengen[0]);
+    const alle = new Set(mengen.flatMap((m) => [...m]));
+    zeilen.push({
+      titel,
+      seiten: mengen.length,
+      saetze: alle.size,
+      aufJederSeite: [...gemeinsam],
+    });
+  }
+  return zeilen;
+}
+
+/**
+ * Ein Text in seine Sätze.
+ *
+ * Getrennt wird nach Punkt, Ruf- und Fragezeichen samt folgendem Leerraum. Das
+ * ist grob — „z. B." trennt mit —, aber es trennt **auf jeder Seite gleich**,
+ * und verglichen werden Seiten gegeneinander und nicht gegen eine Grammatik.
+ */
+export function saetzeVon(text) {
+  return new Set(String(text ?? '')
+    .split(/(?<=[.!?])\s+/)
+    .map((s) => s.replace(/\s+/g, ' ').trim())
+    .filter(Boolean));
+}
+
+/**
+ * Die Sätze, die auf **jeder** Artikelseite stehen — mit dem Grund, warum.
+ *
+ * **Warum es diese Liste gibt, 14. September 2026.** Der Prüfer schreibt unter
+ * seine Zahl, die geteilten Sätze seien Bedingungen und Verweise, und in 46
+ * Fassungen geschrieben sagten sie dasselbe schlechter. Das ist ein Urteil,
+ * und ein Urteil, das nur dasteht, ist am nächsten Tag eine Behauptung.
+ *
+ * > **Ein Satz über eine Messung, den niemand hält, ist die nächste
+ * > ungemessene Zuschreibung.**
+ *
+ * Geführt wird deshalb jeder geteilte Satz mit seinem Grund, und der Prüfer
+ * hält die Liste in **beide** Richtungen: Ein neuer Satz, der auf allen Seiten
+ * auftaucht, wird gemeldet — er ist entweder eine Bedingung und gehört hier
+ * begründet, oder er ist Füllung und gehört weg. Ein Eintrag, dessen Satz
+ * verschwunden ist, wird ebenso gemeldet.
+ *
+ * Geführt wird der **Anfang** des Satzes und nicht der ganze: Drei der fünf
+ * tragen eine Zahl oder ein Datum aus den Daten, und die wandern.
+ */
+export const GETEILTE_SAETZE = Object.freeze([
+  Object.freeze({
+    abschnitt: 'Lieferung',
+    anfang: 'Die Frachtsätze stehen unter',
+    art: 'verweis',
+    warum: 'Ein Verweis auf die Seite, die die Sätze führt. Er steht auf jeder Artikelseite, '
+      + 'weil jede Artikelseite zu derselben Seite verweist — ihn zu variieren hieße, denselben '
+      + 'Weg sechsundvierzigmal anders zu beschreiben.',
+  }),
+  Object.freeze({
+    abschnitt: 'Lieferung',
+    anfang: 'Warum die Fracht getrennt ausgewiesen wird',
+    art: 'verweis',
+    warum: 'Derselbe Fall: ein Verweis auf die Seite „Warum es keine Gratislieferung gibt". Der '
+      + 'Grund gegen „frei Haus" gehört ausgeschrieben an eine Stelle und nicht in '
+      + 'sechsundvierzig Kurzfassungen.',
+  }),
+  Object.freeze({
+    abschnitt: 'Lieferung',
+    anfang: 'Die Fahrt kostet dasselbe, ob ein Sack draufsteht',
+    art: 'bedingung',
+    warum: 'Der Satz begründet, warum die Frachtpauschale nicht mit der Ware wächst — eine '
+      + 'Eigenschaft des Frachtmodells `pauschale`, nicht des Artikels. Er stünde auf jeder '
+      + 'Seite gleich, solange dieses Modell gilt, und änderte sich für alle zugleich, wenn es '
+      + 'ein anderes wäre.',
+  }),
+  Object.freeze({
+    abschnitt: 'Lieferung',
+    anfang: 'Der Mindestbestellwert beträgt',
+    art: 'bedingung',
+    warum: 'Der Mindestbestellwert samt Quelle und Stand. Er steht in `data/betreiber.json` und '
+      + 'gilt je Lieferung — also für jeden Artikel derselbe. Ihn je Artikel anders zu '
+      + 'formulieren hieße, eine geprüfte Zahl in sechsundvierzig ungeprüfte Sätze zu streuen.',
+  }),
+  Object.freeze({
+    abschnitt: 'Lieferung',
+    anfang: 'Wer mehrere Artikel desselben Lieferanten sammelt',
+    art: 'bedingung',
+    warum: 'Die Regel, dass die Grenze je Lieferung und nicht je Position gilt. Sie ist genau '
+      + 'die Auskunft, die ein Kunde auf der Artikelseite braucht, auf der er steht — und sie '
+      + 'ist für jeden Artikel dieselbe, weil die Grenze für jeden dieselbe ist.',
+  }),
+  /*
+   * **Und drei, die ich beim ersten Schreiben dieser Liste übersehen habe.**
+   * Eingetragen stand hier „Preis netto …", geraten aus dem Gedächtnis. Der
+   * Prüfer hat es in derselben Minute gemeldet — der Eintrag traf keinen Satz,
+   * und drei Sätze hatten keinen Eintrag.
+   *
+   * > **Eine Liste, die in beide Richtungen gehalten wird, berichtigt den, der
+   * > sie schreibt.**
+   */
+  Object.freeze({
+    abschnitt: 'Kopf und Preistafel',
+    anfang: 'Er nennt den Tag, von dem die Grundlage dieses Preises stammt',
+    art: 'bedingung',
+    warum: 'Die Erklärung des Preisstands. Sie steht neben einem Datum, das je Artikel ein '
+      + 'anderes ist — der erklärende Satz aber ist derselbe, weil der Begriff derselbe ist. '
+      + 'Sechsundvierzig Fassungen einer Begriffserklärung wären sechsundvierzig Gelegenheiten, '
+      + 'sie verschieden zu erklären.',
+  }),
+  Object.freeze({
+    abschnitt: 'Kopf und Preistafel',
+    anfang: 'Verbindlich wird der Preis nicht hier, sondern mit dem Angebot',
+    art: 'bedingung',
+    warum: 'Der Vorbehalt, dass der ausgewiesene Preis keine Zusage ist. Er trägt die '
+      + 'Bindefrist und gilt für jeden Artikel gleich; ihn zu variieren hieße, eine '
+      + 'rechtserhebliche Aussage in sechsundvierzig Fassungen zu führen.',
+  }),
+  Object.freeze({
+    abschnitt: 'Kopf und Preistafel',
+    anfang: 'Bis dahin ist die Zahl eine Auskunft und keine Zusage',
+    art: 'bedingung',
+    warum: 'Der Schlusssatz desselben Vorbehalts. Er gehört zum vorigen und teilt dessen Grund '
+      + '— und gerade weil er kurz und deutlich ist, wäre jede zweite Fassung davon eine '
+      + 'Abschwächung.',
+  }),
+]);
+
+/**
+ * Hält die geteilten Sätze gegen die Liste — in beide Richtungen.
+ *
+ * @param {{titel: string, aufJederSeite: string[]}[]} befund  aus `gemeinsameSaetze`
+ * @param {object[]} gefuehrt
+ */
+export function geteiltebefund(befund, gefuehrt = GETEILTE_SAETZE) {
+  const meldungen = [];
+  const getroffen = new Set();
+
+  for (const abschnitt of befund) {
+    for (const satz of abschnitt.aufJederSeite) {
+      const eintrag = gefuehrt.find((g) => g.abschnitt === abschnitt.titel && satz.startsWith(g.anfang));
+      if (eintrag) { getroffen.add(eintrag); continue; }
+      meldungen.push({
+        regel: 'satz-ohne-grund',
+        wo: abschnitt.titel,
+        text: `„${satz.slice(0, 70)}…" steht auf jeder Seite und hat keinen Grund — entweder `
+          + 'nennt er eine Bedingung und gehört in GETEILTE_SAETZE, oder er ist Füllung',
+      });
+    }
+  }
+
+  for (const g of gefuehrt) {
+    if (!getroffen.has(g)) {
+      meldungen.push({
+        regel: 'grund-ohne-satz',
+        wo: g.abschnitt,
+        text: `„${g.anfang}…" steht als geteilter Satz mit Grund und steht nicht mehr auf jeder Seite`,
+      });
+    }
+    if (!g.warum || g.warum.length < 80) {
+      meldungen.push({ regel: 'grund-zu-duenn', wo: g.abschnitt, text: `„${g.anfang}…": Grund zu dünn` });
+    }
+  }
+
+  return { gefuehrt: gefuehrt.length, meldungen, sauber: meldungen.length === 0 };
+}

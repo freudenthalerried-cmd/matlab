@@ -3996,6 +3996,21 @@ export const GEGENPROBEN = Object.freeze([
       + '`src/skonto.js`.',
   }),
   Object.freeze({
+    id: 'ein-geteilter-satz-braucht-keinen-grund-mehr',
+    pruefer: 'pruefe-dubletten',
+    was: 'Ein Satz auf jeder Artikelseite kommt wieder ohne Grund durch',
+    datei: 'shop/src/seitenaehnlichkeit.js',
+    art: 'ersetzen',
+    suchen: "    anfang: 'Der Mindestbestellwert beträgt',",
+    ersetzen: "    anfang: 'Der Mindestbestellwert stand',",
+    erwartet: /steht auf jeder Seite und hat keinen Grund/,
+    warum: 'Der Pruefer schrieb bis zum 14. September unter seine Zahl eine Empfehlung — „nur '
+      + 'ein Absatz, der je Artikel etwas anderes sagt" —, die so wenig gemessen war wie die, '
+      + 'die er am 5. September abgeloest hat. Gemessen stehen fuenf Saetze von 105 auf allen '
+      + '46 Seiten, und alle fuenf sind Bedingungen oder Verweise. Ohne die Liste waere der '
+      + 'Absatz darueber wieder das, was er war: eine Zuschreibung, die niemand misst.',
+  }),
+  Object.freeze({
     id: 'deepEqual-zaehlt-nicht-mehr-als-mengenzusicherung',
     pruefer: 'pruefe-allaussagen',
     was: 'Ein deepEqual gegen die ganze Menge gilt nicht mehr als Zusicherung',
