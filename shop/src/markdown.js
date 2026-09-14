@@ -209,3 +209,31 @@ export function alsText(markdown) {
     .replace(/\s+/g, ' ')
     .trim();
 }
+
+/**
+ * Sätze eines Textes — über Zeilenumbrüche hinweg, wie im Markdown üblich.
+ *
+ * **Hierher gezogen am 14. September 2026.** Das Satzregister hat gemeldet,
+ * dass dieser Kommentar in `src/abholung.js` und `src/lieferungen.js` wörtlich
+ * gleich steht. Nachgesehen war auch die Funktion darunter Zeichen für Zeichen
+ * dieselbe — zum zweiten Mal an einem Tag hat ein Register für **Sätze**
+ * doppelten **Code** gefunden.
+ *
+ * > **Wer eine Funktion kopiert, kopiert die Zeile darüber mit.**
+ *
+ * Sie steht hier, weil der Umbruch der Grund ist: In Markdown wird ein Satz
+ * über mehrere Zeilen geschrieben, und ein Leser, der am Zeilenende trennt,
+ * zerschneidet ihn. Genau das ist die Entscheidung dieser Funktion, und sie
+ * gehört zum Markdown und nicht zur Abholung oder zur Lieferung.
+ *
+ * **Was sie nicht ist:** `satzmenge` in `src/seitenaehnlichkeit.js` trennt
+ * ebenso, gibt aber eine **Menge** getrimmter Sätze zurück und nicht eine
+ * Liste; `src/abgrenzung.js` trennt zusätzlich am Gedankenstrich, weil dort
+ * Bauteilnamen aneinandergereiht stehen; `saetzeDerQuelle` in
+ * `src/zwillingssaetze.js` trennt auch an Leerzeilen, weil ein Absatz im
+ * Quelltext ohne Punkt enden darf. Drei bewusste Abweichungen, jede mit ihrem
+ * Grund — und keine davon heißt mehr wie diese hier.
+ */
+export function saetzeVon(text) {
+  return String(text ?? '').replace(/\s+/g, ' ').split(/(?<=[.!?])\s+/);
+}

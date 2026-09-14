@@ -271,3 +271,48 @@ test('der Vermerk hält fest, wann zuletzt zurückgelesen wurde', () => {
   assert.doesNotMatch(v._grenze, /erlaubt keine Prüfung der Veröffentlichung selbst/);
   assert.match(v._zurueckgelesen, /api\.github\.com/);
 });
+
+/*
+ * **Ein Aufruf, zwei Fassungen — 14. September 2026.** Das Satzregister hat
+ * gemeldet, dass die Abbruchmeldung in zwei Werkzeugen wörtlich gleich steht.
+ * Nachgesehen war auch der Aufruf derselbe — und doch nicht ganz: einmal
+ * `['bin/prtext.mjs']` relativ, einmal absolut.
+ *
+ * > **Zwei Kopien, die sich schon unterscheiden, sind keine Kopien mehr —
+ * > sondern zwei Fassungen, von denen eine irgendwann die falsche ist.**
+ */
+test('Die PR-Ausgabe wird mit absolutem Pfad geholt, nicht aus dem Arbeitsverzeichnis', async () => {
+  const { prTextAusgabe } = await import('../src/schaufenster.js');
+  const { fileURLToPath } = await import('node:url');
+  const shop = fileURLToPath(new URL('..', import.meta.url));
+
+  const ausgabe = prTextAusgabe(shop);
+  assert.ok(!ausgabe.fehler, ausgabe.fehler);
+  assert.ok(ausgabe.text.length > 1000, `nur ${ausgabe.text.length} Zeichen — das ist kein PR-Text`);
+
+  /*
+   * **Und aus einem fremden Arbeitsverzeichnis.** Diese Zusicherung stand
+   * zuerst mit der Begründung da, der relative Pfad hinge am Arbeits-
+   * verzeichnis. Das stimmt nicht — `cwd` wird mitgegeben, und `spawnSync`
+   * löst im Kind auf. Sie bleibt trotzdem stehen: Sie sichert zu, dass der
+   * Aufruf **unabhängig** ist, und das ist die Eigenschaft, auf die sich zwei
+   * Aufrufer verlassen.
+   */
+  const vorher = process.cwd();
+  try {
+    process.chdir('/');
+    const vonWoanders = prTextAusgabe(shop);
+    assert.ok(!vonWoanders.fehler, vonWoanders.fehler);
+    assert.equal(vonWoanders.text, ausgabe.text, 'der Aufruf hängt am Arbeitsverzeichnis');
+  } finally {
+    process.chdir(vorher);
+  }
+});
+
+test('Ein Fehlschlag gibt einen Grund zurück, statt zu beenden', async () => {
+  const { prTextAusgabe } = await import('../src/schaufenster.js');
+  const ausgabe = prTextAusgabe('/verzeichnis/das/es/nicht/gibt');
+  assert.ok(ausgabe.fehler, 'ein fehlender Pfad gilt als Erfolg');
+  assert.match(ausgabe.fehler, /pr-text` lief nicht/);
+  assert.equal(ausgabe.text, undefined);
+});

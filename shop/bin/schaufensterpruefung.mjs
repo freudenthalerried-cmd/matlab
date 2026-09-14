@@ -13,7 +13,7 @@ import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
-import { pruefeSchaufenster, veroeffentlichungsbefund } from '../src/schaufenster.js';
+import { pruefeSchaufenster, veroeffentlichungsbefund, prTextAusgabe } from '../src/schaufenster.js';
 import { PRUEFER, BROWSERPRUEFER } from '../src/pruefregister.js';
 import { FRAGEN } from '../src/lieferantenanfrage.js';
 import { ladeBaustoffkatalog } from '../src/baustoffkatalog.js';
@@ -239,11 +239,8 @@ const e = pruefeSchaufenster(readFileSync(beschreibung, 'utf8'), messwerte);
  * Werkzeug.
  */
 const vermerkPfad = join(SHOP, '..', 'docs', 'baustoff-shop', 'pr-veroeffentlicht.json');
-const prText = spawnSync('node', ['bin/prtext.mjs'], { cwd: SHOP, encoding: 'utf8' });
-if (prText.status !== 0) {
-  console.error('Abbruch: `npm run pr-text` lief nicht — ohne seine Ausgabe ist nichts zu vergleichen.');
-  process.exit(2);
-}
+const prText = prTextAusgabe(SHOP);
+if (prText.fehler) { console.error(prText.fehler); process.exit(2); }
 const vermerk = existsSync(vermerkPfad)
   ? JSON.parse(readFileSync(vermerkPfad, 'utf8')) : null;
 if (!vermerk) {
@@ -251,7 +248,7 @@ if (!vermerk) {
   console.error('Veröffentlichung ließe sich nicht sagen, ob eine aussteht.');
   process.exit(2);
 }
-const v = veroeffentlichungsbefund(prText.stdout, vermerk);
+const v = veroeffentlichungsbefund(prText.text, vermerk);
 console.log(`  Veröffentlichte Fassung: Fingerabdruck vom ${vermerk.stand} verglichen`);
 
 console.log(`\nSchaufensterabgleich: ${e.geprueft} Kennzahlen der PR-Beschreibung`);

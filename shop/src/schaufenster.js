@@ -1,4 +1,6 @@
 import { createHash } from 'node:crypto';
+import { spawnSync } from 'node:child_process';
+import { join } from 'node:path';
 /**
  * Die Kennzahlen der PR-Beschreibung — und wie man sie nachmisst.
  *
@@ -370,4 +372,43 @@ export function veroeffentlichungsbefund(text, vermerk) {
     });
   }
   return { meldungen, sauber: meldungen.length === 0, ist };
+}
+
+/**
+ * Die Ausgabe von `npm run pr-text` — **an einer Stelle**.
+ *
+ * **Der Anlass, 14. September 2026.** Das Satzregister hat gemeldet, dass die
+ * Abbruchmeldung *„`npm run pr-text` lief nicht — ohne seine Ausgabe ist
+ * nichts zu vergleichen"* in zwei Werkzeugen wörtlich gleich steht. Nachgesehen
+ * war auch der Aufruf darunter derselbe — **und doch nicht ganz**:
+ *
+ * | Werkzeug | Aufruf |
+ * |---|---|
+ * | `bin/schaufensterpruefung.mjs` | `spawnSync('node', ['bin/prtext.mjs'], { cwd: SHOP })` |
+ * | `bin/veroeffentlichungsabgleich.mjs` | `spawnSync('node', [join(SHOP, 'bin', 'prtext.mjs')], { cwd: SHOP })` |
+ *
+ * Einmal relativ, einmal absolut.
+ *
+ * **Berichtigt, noch in derselben Runde.** Mein erster Satz dazu lautete, der
+ * relative Aufruf hänge an dem Verzeichnis, aus dem gerufen wird. Das stimmt
+ * nicht: Beide geben `cwd` mit, und `spawnSync` löst den Pfad im **Kind** auf.
+ * Die Gegenprobe hat es gezeigt — sie blieb grün, wo sie rot sein sollte.
+ *
+ * > **Eine Gegenprobe, die nicht anschlägt, widerlegt nicht sich selbst,
+ * > sondern den Satz, für den sie gebaut wurde.**
+ *
+ * Was bleibt, ist kleiner und wahr: Zwei Fassungen desselben Aufrufs sind
+ * zwei Stellen, an denen dasselbe stehen muss. Fiele in einer das `cwd` weg,
+ * bräche nur sie — und die andere bliebe grün und sagte nichts.
+ *
+ * @param {string} shopWurzel  das Verzeichnis `shop/`
+ * @returns {{text: string}|{fehler: string}}
+ */
+export function prTextAusgabe(shopWurzel) {
+  const lauf = spawnSync('node', [join(shopWurzel, 'bin', 'prtext.mjs')],
+    { cwd: shopWurzel, encoding: 'utf8' });
+  if (lauf.status !== 0) {
+    return { fehler: 'Abbruch: `npm run pr-text` lief nicht — ohne seine Ausgabe ist nichts zu vergleichen.' };
+  }
+  return { text: lauf.stdout };
 }

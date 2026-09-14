@@ -1,3 +1,4 @@
+import { saetzeVon } from './markdown.js';
 /**
  * Selbstabholung — eine Zusage ohne Ort.
  *
@@ -115,10 +116,10 @@ export const ZUSAGE = /(?:Abholung|abholen)[^.!?]{0,60}(?:ausdrücklich vorgeseh
  */
 export const VERNEINT = /\b(?:nicht|kein|keine|keinen|keinem|keiner|weder|ohne|offen|angefragt|unbeantwortet)\b[^.!?]{0,80}$/i;
 
-/** Sätze eines Textes — über Zeilenumbrüche hinweg, wie im Markdown üblich. */
-export function saetzeVon(text) {
-  return String(text ?? '').replace(/\s+/g, ' ').split(/(?<=[.!?])\s+/);
-}
+// Sätze eines Textes: die Fassung des Hauses steht in `src/markdown.js`.
+// Gelesen **und** weitergegeben — ein blosses `export … from` bindet den
+// Namen in dieser Datei nicht, und die Funktion darunter braucht ihn.
+export { saetzeVon };
 
 /**
  * @param {object} eingabe

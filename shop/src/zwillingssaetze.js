@@ -179,6 +179,54 @@ export const WIEDERHOLUNG_GEPRUEFT = Object.freeze([
       + 'Bedingung, die sie begründet, und gehört dorthin — getrennt von ihr wäre sie eine '
       + 'Regel ohne Ort.',
   }),
+  /*
+   * **Die Verweise selbst — und warum sie hier stehen dürfen.**
+   *
+   * Jedes Mal, wenn eine Erklärung nach Hause zieht, bleibt an ihrer Stelle ein
+   * Zweizeiler mit dem Weg dorthin. Der steht dann in so vielen Dateien, wie
+   * der Absatz vorher stand — und der Prüfer meldet ihn. Das ist richtig so:
+   * Ein Verweis ist auch eine Wiederholung, nur eine viel billigere.
+   *
+   * > **Ein Verweis kostet zwei Zeilen und wird nie falsch; ein Absatz kostet
+   * > zehn und wird es irgendwann.**
+   *
+   * Geführt wird er trotzdem, weil sonst niemand merkt, wenn aus zwei Zeilen
+   * wieder zehn werden.
+   */
+  Object.freeze({
+    anfang: 'Warum sie in einer eigenen Datei steht und was ein',
+    hoechstens: 3,
+    warum: 'Der Verweis auf `liesAussenlage` in `src/aussenlage.js`, an den drei Stellen, an '
+      + 'denen die Außenlage gelesen wird. Vorher stand dort der ganze Absatz **und** derselbe '
+      + 'Ladecode dreimal; seit dem 14. September steht die Begründung einmal und hier der Weg '
+      + 'dorthin.',
+  }),
+  Object.freeze({
+    anfang: 'Sätze eines Textes: die Fassung des Hauses steht in',
+    hoechstens: 2,
+    warum: 'Derselbe Fall eine Runde später: `saetzeVon` stand in `src/abholung.js` und '
+      + '`src/lieferungen.js` Zeichen für Zeichen gleich. Die Funktion steht jetzt in '
+      + '`src/markdown.js`, wo der Zeilenumbruch hingehört, und beide lesen sie — der Zweizeiler '
+      + 'sagt, wo.',
+  }),
+  Object.freeze({
+    anfang: 'Gelesen **und** weitergegeben — ein blosses',
+    hoechstens: 2,
+    warum: 'Die zweite Zeile desselben Verweises, und sie steht dort aus einem eigenen Grund: '
+      + 'Ein blosses `export … from` bindet den Namen in der Datei nicht, und die Funktion '
+      + 'darunter braucht ihn. Genau dieser Fehler ist beim Umzug passiert und hat drei '
+      + 'Testfälle rot gemacht — die Zeile ist die Narbe davon.',
+  }),
+  Object.freeze({
+    anfang: 'ausgabe/site liegt nicht vor — erst',
+    hoechstens: 2,
+    warum: 'Dieselbe **Meldung** in zwei Werkzeugen, aber nicht derselbe Code: '
+      + '`bin/paketpruefung.mjs` ruft seinen eigenen `abbruch()`-Helfer, '
+      + '`bin/verweispruefung.mjs` schreibt zwei Zeilen und beendet. Der Satz sagt dem '
+      + 'Aufrufer, was zu tun ist, und ist deshalb absichtlich gleich — dieselbe Lage, '
+      + 'dieselbe Anweisung. Ein Verweis statt der Anweisung hülfe niemandem an der '
+      + 'Befehlszeile.',
+  }),
   Object.freeze({
     anfang: '§ 132 BAO verlangt die Belege sieben Jahre',
     hoechstens: 3,
@@ -197,7 +245,7 @@ export const WIEDERHOLUNG_GEPRUEFT = Object.freeze([
 ]);
 
 /** Wie viele Sätze in mehr als einer Datei stehen dürfen. */
-export const WIEDERHOLUNGEN_HOECHSTENS = 30;
+export const WIEDERHOLUNGEN_HOECHSTENS = 27;
 
 /**
  * Hält die Sätze gegen den Bestand.

@@ -394,6 +394,14 @@ export const VORSCHLAG_GEPRUEFT = Object.freeze([
       + 'Ziffernfolge.',
   }),
   Object.freeze({
+    name: 'WIEDERHOLUNGEN_HOECHSTENS', wert: 27,
+    warum: 'Die Sperrklinke des Satzregisters, seit dem 14. September. Die anderen Vorkommen '
+      + 'von 27 sind die **Gate-Nummer** 27 in vier Dateien (`src/gatestand.js`, '
+      + '`src/palettenkreis.js`, `src/rechtstexte.js`, `src/widerruf.js`) und ein Betrag im '
+      + 'Katalog. Eine Gate-Nummer ist ein Name aus Ziffern — sie steht in `KENNUNGSFELDER`, '
+      + 'aber nur als Feld, nicht als Fließtext.',
+  }),
+  Object.freeze({
     name: 'mindestens', wert: 2000,
     warum: 'Die Mindestzahl angesehener Saetze, unter der `pruefe-saetze` nichts aussagt — seit '
       + 'dem 14. September. Die anderen Vorkommen von 2000 sind zweimal die Jahreszahl in der '

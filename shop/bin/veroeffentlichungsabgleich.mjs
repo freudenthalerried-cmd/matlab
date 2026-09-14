@@ -31,16 +31,14 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { markenbefund, WEGZUSATZ } from '../src/veroeffentlichung.js';
+import { prTextAusgabe } from '../src/schaufenster.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const PR = 'https://api.github.com/repos/freudenthalerried-cmd/matlab/pulls/14';
 
-const eigen = spawnSync('node', [join(SHOP, 'bin', 'prtext.mjs')], { cwd: SHOP, encoding: 'utf8' });
-if (eigen.status !== 0) {
-  console.error('Abbruch: `npm run pr-text` lief nicht — ohne seine Ausgabe ist nichts zu vergleichen.');
-  process.exit(2);
-}
-const soll = eigen.stdout.replace(/\n$/, '');
+const eigen = prTextAusgabe(SHOP);
+if (eigen.fehler) { console.error(eigen.fehler); process.exit(2); }
+const soll = eigen.text.replace(/\n$/, '');
 
 const holen = spawnSync('curl', ['-sS', '--max-time', '25', PR], { encoding: 'utf8' });
 if (holen.status !== 0 || !holen.stdout) {

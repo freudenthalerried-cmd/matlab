@@ -313,7 +313,7 @@ export function gemeinsameSaetze(proSeite) {
   for (const seite of proSeite) {
     for (const a of seite) {
       if (!nachTitel.has(a.titel)) nachTitel.set(a.titel, []);
-      nachTitel.get(a.titel).push(saetzeVon(a.text));
+      nachTitel.get(a.titel).push(satzmenge(a.text));
     }
   }
 
@@ -333,13 +333,21 @@ export function gemeinsameSaetze(proSeite) {
 }
 
 /**
- * Ein Text in seine Sätze.
+ * Ein Text in seine **Menge** von Sätzen.
+ *
+ * **Umbenannt am 14. September 2026.** Sie hieß `saetzeVon` wie die Funktion
+ * in `src/markdown.js` — und gab etwas anderes zurück: eine Menge getrimmter
+ * Sätze statt einer Liste. Zwei Namen für zwei Verträge, und der gleiche Name
+ * für beide.
+ *
+ * > **Derselbe Name für einen anderen Vertrag ist schlimmer als zwei
+ * > Fassungen** — zwei Fassungen fallen auf, ein Name nicht.
  *
  * Getrennt wird nach Punkt, Ruf- und Fragezeichen samt folgendem Leerraum. Das
  * ist grob — „z. B." trennt mit —, aber es trennt **auf jeder Seite gleich**,
  * und verglichen werden Seiten gegeneinander und nicht gegen eine Grammatik.
  */
-export function saetzeVon(text) {
+export function satzmenge(text) {
   return new Set(String(text ?? '')
     .split(/(?<=[.!?])\s+/)
     .map((s) => s.replace(/\s+/g, ' ').trim())

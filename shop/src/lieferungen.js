@@ -1,3 +1,4 @@
+import { saetzeVon } from './markdown.js';
 /**
  * Wie viele Lieferungen aus einem Warenkorb werden — und was der Kunde liest.
  *
@@ -196,10 +197,10 @@ export const SATZBEDINGUNG =
 export const FLAECHENBEDINGUNG =
   /zweite[rn]?\s+Lieferant|zweiten\s+Lieferanten|von\s+einem\s+Lieferanten|(?:ü|ue)ber\s+einen\s+Lieferanten/i;
 
-/** Sätze eines Textes — über Zeilenumbrüche hinweg, wie im Markdown üblich. */
-export function saetzeVon(text) {
-  return String(text ?? '').replace(/\s+/g, ' ').split(/(?<=[.!?])\s+/);
-}
+// Sätze eines Textes: die Fassung des Hauses steht in `src/markdown.js`.
+// Gelesen **und** weitergegeben — ein blosses `export … from` bindet den
+// Namen in dieser Datei nicht, und die Funktion darunter braucht ihn.
+export { saetzeVon };
 
 /**
  * Behauptet eine Fläche mehrere Lieferungen, ohne zu sagen, wovon sie abhängen?

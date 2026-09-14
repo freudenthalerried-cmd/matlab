@@ -3996,6 +3996,22 @@ export const GEGENPROBEN = Object.freeze([
       + '`src/skonto.js`.',
   }),
   Object.freeze({
+    id: 'der-fehlschlag-des-pr-textes-sieht-aus-wie-ein-erfolg',
+    pruefer: 'test',
+    was: 'Ein misslungener Lauf von pr-text gibt einen leeren Text statt eines Grundes',
+    datei: 'shop/src/schaufenster.js',
+    art: 'ersetzen',
+    suchen: "    return { fehler: 'Abbruch: `npm run pr-text` lief nicht — ohne seine Ausgabe ist nichts zu vergleichen.' };",
+    ersetzen: '    return { text: lauf.stdout };',
+    erwartet: /ein fehlender Pfad gilt als Erfolg/,
+    warum: 'Zwei Werkzeuge holten dieselbe Ausgabe mit derselben Abbruchmeldung; seit dem '
+      + '14. September holt sie eine Funktion. Ihr ganzer Vertrag ist die Unterscheidung '
+      + 'zwischen Text und Grund — gibt sie bei einem misslungenen Lauf einen leeren Text '
+      + 'zurueck, vergleicht der Schaufensterpruefer die veroeffentlichte Fassung gegen nichts '
+      + 'und meldet jede Kennzahl als abweichend. Ein Fehlschlag, der aussieht wie ein Erfolg, '
+      + 'ist teurer als ein Abbruch.',
+  }),
+  Object.freeze({
     id: 'die-leitfrage-gilt-wieder-ueberall-im-text',
     pruefer: 'pruefe-saetze',
     was: 'Ein kopierter Absatz gilt wieder als Leitfrage, wo immer er steht',

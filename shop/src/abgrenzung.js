@@ -70,6 +70,9 @@ export const stamm = (wort) => String(wort ?? '')
 
 /** Die Sätze eines Textes — grob am Punkt getrennt, das genügt hier. */
 export const saetze = (text) => String(text ?? '')
+  // Getrennt auch am Umbruch und am Gedankenstrich — hier stehen
+  // Bauteilnamen aneinandergereiht, und `saetzeVon` in `src/markdown.js`
+  // liefe über sie hinweg. Eine bewusste Abweichung, kein zweiter Leser.
   .split(/(?<=[.!?])\s+|\n+|—/)
   .map((s) => s.trim())
   .filter(Boolean);
