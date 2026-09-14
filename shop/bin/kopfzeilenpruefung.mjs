@@ -31,7 +31,10 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-import { SICHERHEITSKOPFZEILEN, NICHT_GESETZT } from '../src/serverkopf.js';
+import {
+  SICHERHEITSKOPFZEILEN, NICHT_GESETZT,
+  kopfzeilenbefund, fehlerseitenbefund, ohneModulbefund,
+} from '../src/serverkopf.js';
 import { freierPort } from '../src/freierport.js';
 import { wegwerfordner } from '../src/wegwerf.js';
 import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
@@ -117,7 +120,6 @@ async function hole(adresse, pfad) {
 }
 
 const meldungen = [];
-const melde = (regel, text) => meldungen.push({ regel, text });
 
 console.log('\nKopfzeilenprobe — die .htaccess an einem laufenden Apache\n');
 
@@ -126,21 +128,9 @@ console.log('\nKopfzeilenprobe — die .htaccess an einem laufenden Apache\n');
   const s = await starte(true);
   try {
     const antwort = await hole(s.adresse, '/index.html');
-    if (antwort.status !== 200) melde('startseite-nicht-200', `die Startseite kommt mit ${antwort.status}`);
-    for (const k of SICHERHEITSKOPFZEILEN) {
-      const wert = antwort.headers.get(k.name);
-      if (wert === null) {
-        melde('kopfzeile-fehlt', `${k.name} kommt nicht an — ${k.warum.slice(0, 80)}…`);
-      } else if (wert !== k.wert) {
-        melde('kopfzeile-weicht-ab', `${k.name} kommt als „${wert}" an, geführt ist „${k.wert}"`);
-      }
-    }
-    for (const n of NICHT_GESETZT) {
-      if (antwort.headers.get(n.name) !== null) {
-        melde('nicht-gesetzt-und-doch-da',
-          `${n.name} steht als ausdrücklich nicht gesetzt im Register und kommt trotzdem an`);
-      }
-    }
+    // Gemessen wird hier, entschieden in `src/serverkopf.js` — dort lässt
+    // sich jede der Regeln einzeln zeigen, ohne einen Apache nachzubauen.
+    meldungen.push(...kopfzeilenbefund({ status: antwort.status, kopfzeilen: antwort.headers }).meldungen);
     console.log(`  ✓ ${SICHERHEITSKOPFZEILEN.length} Kopfzeilen kommen an, `
       + `${NICHT_GESETZT.length} ausdrücklich nicht gesetzte fehlen`);
 
@@ -148,11 +138,9 @@ console.log('\nKopfzeilenprobe — die .htaccess an einem laufenden Apache\n');
     // Apache gemessen.
     const fehler = await hole(s.adresse, '/gibt-es-nicht-abnahme.html');
     const text = await fehler.text();
-    if (fehler.status !== 404) melde('fehlerseite-falscher-code', `sie kommt mit ${fehler.status}`);
-    if (!text.includes('Diese Seite gibt es nicht')) {
-      melde('fehlerseite-fremd', 'die Fehlerseite ist nicht unsere — ErrorDocument greift nicht');
-    }
-    if (fehler.status === 404 && text.includes('Diese Seite gibt es nicht')) {
+    const fehlerbefund = fehlerseitenbefund(fehler.status, text);
+    meldungen.push(...fehlerbefund.meldungen);
+    if (fehlerbefund.sauber) {
       console.log('  ✓ ErrorDocument greift: 404 mit der eigenen Fehlerseite');
     }
   } finally { s.halt(); }
@@ -164,17 +152,14 @@ console.log('\nKopfzeilenprobe — die .htaccess an einem laufenden Apache\n');
   try {
     const antwort = await hole(s.adresse, '/index.html');
     const laenge = (await antwort.text()).length;
-    if (antwort.status !== 200) {
-      melde('ohne-modul-kaputt',
-        `ohne mod_headers kommt die Startseite mit ${antwort.status} — der <IfModule> trägt nicht`);
-    } else if (laenge < 1000) {
-      melde('ohne-modul-leer', `ohne mod_headers kommt die Seite mit ${laenge} Zeichen`);
-    } else {
+    const ohne = ohneModulbefund({
+      status: antwort.status,
+      laenge,
+      kopfzeile: antwort.headers.get(SICHERHEITSKOPFZEILEN[0].name),
+    });
+    meldungen.push(...ohne.meldungen);
+    if (ohne.sauber) {
       console.log(`  ✓ ohne mod_headers: 200 und ${laenge} Zeichen — der <IfModule> trägt`);
-    }
-    if (antwort.headers.get(SICHERHEITSKOPFZEILEN[0].name) !== null) {
-      melde('ohne-modul-und-doch-kopfzeile',
-        'ohne mod_headers kommt trotzdem eine Kopfzeile — dann misst dieser Lauf nicht, was er soll');
     }
   } finally { s.halt(); }
 }

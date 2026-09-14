@@ -4048,6 +4048,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'liest sich wie ein Erfolg.',
   }),
   Object.freeze({
+    id: 'die-kopfzeilenprobe-nimmt-eine-fremde-fehlerseite-hin',
+    pruefer: 'test',
+    was: 'Die Fehlerseitenprobe fragt nur noch nach der Antwortnummer',
+    datei: 'shop/src/serverkopf.js',
+    art: 'ersetzen',
+    suchen: '  if (!String(text ?? \'\').includes(satz)) {',
+    ersetzen: '  if (false) {',
+    erwartet: /Die Fehlerseite: falscher Code und fremde Seite zählen einzeln/,
+    warum: 'Eine fremde Fehlerseite mit richtigem Code ist die des Hosters: ohne Marke, ohne '
+      + 'Kopfleiste, ohne Weg ins Sortiment — und mit 404 sieht sie fuer jede Messung richtig '
+      + 'aus, die nur die Nummer liest. Die neun Regeln dieser Probe standen bis zum '
+      + '14. September als „nie gesehen" in der Regelzaehlung, weil sie in einem Werkzeug '
+      + 'wohnten, das einen Apache startet. Gemessen wird der Server, entschieden wird hier — '
+      + 'und nur das Erste braucht ihn.',
+  }),
+  Object.freeze({
     id: 'der-nummernbefund-liest-wieder-nur-sich-selbst',
     pruefer: 'test',
     was: 'Der Nummernbefund nimmt seine Register wieder unveraenderlich aus dem Modul',

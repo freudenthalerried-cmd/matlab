@@ -232,6 +232,9 @@
   "die-klammersuche-liest-wieder-in-zeichenketten": [
     "shop/test/testpruefung-werkzeug.test.js"
   ],
+  "die-kopfzeilenprobe-nimmt-eine-fremde-fehlerseite-hin": [
+    "shop/test/serverkopf.test.js"
+  ],
   "die-lieferzeit-ab-heute": [
     "shop/test/warenkorb.test.js"
   ],

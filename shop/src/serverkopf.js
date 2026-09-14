@@ -135,3 +135,118 @@ export function htaccessText(fehlerseite) {
     '',
   ].join('\n');
 }
+
+/* ------------------------------------------------------------------ *
+ * Was an einem laufenden Apache herauskommt — und was es bedeutet
+ * ------------------------------------------------------------------ */
+
+/**
+ * Die Entscheidungen der Kopfzeilenprobe, **ohne Apache.**
+ *
+ * **Der Anlass, 14. September 2026, abends.** Die Zählung der Regelnamen führt
+ * neun Stellen aus `bin/kopfzeilenpruefung.mjs` als „nie gesehen" — mehr als
+ * aus jeder anderen Datei. Der Grund lag nahe und war trotzdem falsch: Sie
+ * messen an einem laufenden Apache, also könne ein Testfall sie nicht sehen.
+ *
+ * Messen tut das der **Läufer**. Die Regeln daneben entscheiden nur über das,
+ * was er mitbringt: eine Antwortnummer, eine Kopfzeilentafel, einen Text.
+ *
+ * > **Was ein Prüfer misst und was er daraus schließt, sind zwei Dinge — und
+ * > nur das erste braucht den Server.**
+ *
+ * Die drei Befunde hier nehmen das Mitgebrachte entgegen. Der Läufer startet
+ * weiter zwei Apaches, holt zwei Seiten und reicht sie herein; keine Zeile
+ * seiner Messung ist nachgebaut.
+ */
+
+/** @param {{status: number, kopfzeilen: Map<string,string>|Headers}} antwort */
+export function kopfzeilenbefund(antwort, kopfzeilen = SICHERHEITSKOPFZEILEN,
+  nichtGesetzt = NICHT_GESETZT) {
+  const meldungen = [];
+  const melde = (regel, text) => meldungen.push({ regel, text });
+  const lies = (name) => (typeof antwort.kopfzeilen?.get === 'function'
+    ? antwort.kopfzeilen.get(name) : (antwort.kopfzeilen?.[name] ?? null));
+
+  if (antwort.status !== 200) melde('startseite-nicht-200', `die Startseite kommt mit ${antwort.status}`);
+  for (const k of kopfzeilen) {
+    const wert = lies(k.name);
+    if (wert === null || wert === undefined) {
+      melde('kopfzeile-fehlt', `${k.name} kommt nicht an — ${String(k.warum).slice(0, 80)}…`);
+    } else if (wert !== k.wert) {
+      melde('kopfzeile-weicht-ab', `${k.name} kommt als „${wert}" an, geführt ist „${k.wert}"`);
+    }
+  }
+  for (const n of nichtGesetzt) {
+    if (lies(n.name) !== null && lies(n.name) !== undefined) {
+      melde('nicht-gesetzt-und-doch-da',
+        `${n.name} steht als ausdrücklich nicht gesetzt im Register und kommt trotzdem an`);
+    }
+  }
+  return { geprueft: kopfzeilen.length, meldungen, sauber: meldungen.length === 0 };
+}
+
+/** Der Satz, an dem die eigene Fehlerseite zu erkennen ist. */
+export const FEHLERSEITENSATZ = 'Diese Seite gibt es nicht';
+
+/**
+ * Greift `ErrorDocument`?
+ *
+ * Zwei Fragen, und beide zählen einzeln: Kommt die Antwort mit 404 — und ist
+ * es **unsere** Seite? Eine fremde Fehlerseite mit richtigem Code ist die des
+ * Hosters: ohne Marke, ohne Kopfleiste, ohne Weg ins Sortiment.
+ */
+export function fehlerseitenbefund(status, text, satz = FEHLERSEITENSATZ) {
+  const meldungen = [];
+  if (status !== 404) {
+    meldungen.push({ regel: 'fehlerseite-falscher-code', text: `sie kommt mit ${status}` });
+  }
+  if (!String(text ?? '').includes(satz)) {
+    meldungen.push({
+      regel: 'fehlerseite-fremd',
+      text: 'die Fehlerseite ist nicht unsere — ErrorDocument greift nicht',
+    });
+  }
+  return { meldungen, sauber: meldungen.length === 0 };
+}
+
+/**
+ * Trägt der `<IfModule>`-Rahmen, wenn das Modul fehlt?
+ *
+ * **Am 11. September an einem laufenden Apache gemessen:** Eine Direktive,
+ * deren Modul fehlt, beantwortet Apache mit **500 für die ganze Seite** —
+ * dieselbe Zeile in einem `<IfModule>` mit 200. Genau diese Gefahr war bis
+ * dahin der Grund, gar keine Kopfzeilen zu schreiben.
+ *
+ * Die dritte Regel prüft die Messung selbst: Kommt ohne das Modul trotzdem
+ * eine Kopfzeile an, misst der Lauf nicht, was er soll.
+ */
+export function ohneModulbefund({ status, laenge, kopfzeile = null },
+  mindestzeichen = MINDESTZEICHEN) {
+  const meldungen = [];
+  if (status !== 200) {
+    meldungen.push({
+      regel: 'ohne-modul-kaputt',
+      text: `ohne mod_headers kommt die Startseite mit ${status} — der <IfModule> trägt nicht`,
+    });
+  } else if (laenge < mindestzeichen) {
+    meldungen.push({
+      regel: 'ohne-modul-leer',
+      text: `ohne mod_headers kommt die Seite mit ${laenge} Zeichen`,
+    });
+  }
+  if (kopfzeile !== null && kopfzeile !== undefined) {
+    meldungen.push({
+      regel: 'ohne-modul-und-doch-kopfzeile',
+      text: 'ohne mod_headers kommt trotzdem eine Kopfzeile — dann misst dieser Lauf nicht, was er soll',
+    });
+  }
+  return { meldungen, sauber: meldungen.length === 0 };
+}
+
+/**
+ * Ab wie vielen Zeichen eine ausgelieferte Startseite als ausgeliefert gilt.
+ *
+ * Tausend: Die gebaute Startseite hat über hunderttausend. Was darunter
+ * ankommt, ist keine Seite, sondern eine Fehlermeldung mit Status 200.
+ */
+export const MINDESTZEICHEN = 1000;

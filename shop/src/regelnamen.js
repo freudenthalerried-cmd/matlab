@@ -166,7 +166,7 @@ export const ERFUNDEN_GEPRUEFT = Object.freeze([
  * Wie viele Regelstellen ohne einen Testfall stehen bleiben dürfen.
  *
  * **Eine Sperrklinke, gesetzt auf den gemessenen Stand.** Sie darf fallen und
- * nie steigen. Gemessen am 14. September, abends: 80 → 67 → **56** von 486
+ * nie steigen. Gemessen am 14. September, abends: 80 → 67 → 56 → **47** von 486
  * Stellen. Die letzten elf sind an einem Abend gefallen, und zwar nicht durch
  * Fleiß: Zwei Befunde lasen ihre Register **unmittelbar aus dem Modul** und
  * waren damit unerreichbar, genau wie `papierschrittbefund()` am Vormittag.
@@ -174,7 +174,7 @@ export const ERFUNDEN_GEPRUEFT = Object.freeze([
  * > **Wer dreimal am selben Tag dieselbe Bauart findet, hat keine drei Funde,
  * > sondern eine Gewohnheit gefunden.**
  */
-export const UNGESEHENE_HOECHSTENS = 56;
+export const UNGESEHENE_HOECHSTENS = 47;
 
 /**
  * @param {Map<string, string>} quellen  Pfad (repo-relativ) → Quelltext
