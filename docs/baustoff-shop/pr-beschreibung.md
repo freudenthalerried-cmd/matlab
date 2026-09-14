@@ -38,7 +38,7 @@ Ursprünglich ein Streckenhandel für Radonvorsorge auf **unbelegten** Platzhalt
 | | Stand |
 |---|---|
 | Katalog | **46 echte Artikel** aus 15 Lieferantenbelegen; die Einkaufspreise sind seit dem 8. September **rekonstruiert statt belegt** (Gate 30) |
-| Website | **82 Seiten** — 46 Artikel, 14 Wissensseiten, 4 Systemlisten, 7 Gruppen, 5 Rechtsseiten, 6 im Wurzelverzeichnis (darunter die Fehlerseite) |
+| Website | **83 Seiten** — 46 Artikel, 15 Wissensseiten, 4 Systemlisten, 7 Gruppen, 5 Rechtsseiten, 6 im Wurzelverzeichnis (darunter die Fehlerseite) |
 | Kampagne | 6 Suchkampagnen gerechnet, **3 im ersten Anlauf**, alle **pausiert** |
 | Produktfeed | 43 Einträge — **nicht einreichbar**, GTIN fehlt bei allen 46 Artikeln |
 | Testbestand | **über 2.000 Testfälle**, alle grün, dazu 11 Oberflächenszenarien und 63 Shopszenarien im Browser |
@@ -100,7 +100,7 @@ Grund: Das Skonto rechnet auf den Einkauf netto (484,50 €), die Gebühr auf de
 
 ## Die Website
 
-82 Seiten aus `npm run website`, zwei Ausgaben aus einer Quelle: `ausgabe/site/` zum Hochladen (robots.txt, llms.txt, sitemap.xml, JSON-LD je Seite) und `ausgabe/website.html` als Einzeldatei zum Ansehen ohne Server. Zieladresse ist **bauversand.com** bei All-Inkl; sie steht in `data/betreiber.json` und wird von dort in Seiten *und* Anzeigen eingesetzt.
+83 Seiten aus `npm run website`, zwei Ausgaben aus einer Quelle: `ausgabe/site/` zum Hochladen (robots.txt, llms.txt, sitemap.xml, JSON-LD je Seite) und `ausgabe/website.html` als Einzeldatei zum Ansehen ohne Server. Zieladresse ist **bauversand.com** bei All-Inkl; sie steht in `data/betreiber.json` und wird von dort in Seiten *und* Anzeigen eingesetzt.
 
 Die Inhaltsseiten sind nach den eigenen Redaktionsprinzipien gebaut, die selbst eine Seite sind: **eine Frage je Seite, Antwort in den ersten zwei Sätzen, jede Zahl mit Herkunft.**
 
