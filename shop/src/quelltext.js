@@ -85,12 +85,41 @@ function letztesWort(text, bis) {
  * Arbeitsspeicher zu halten, ohne dass es einen weiteren Treffer brächte.
  */
 const GEDAECHTNIS = new Map();
-const GEDAECHTNIS_HOECHSTENS = 4;
+export const GEDAECHTNIS_HOECHSTENS = 4;
+let treffer = 0;
+let fehlschlaege = 0;
+
+/**
+ * Wie oft das Gedächtnis getroffen hat — und wie oft nicht.
+ *
+ * **Der offene Punkt vom 14. September, nachmittags.** Vier Einträge reichen,
+ * **solange niemand zwei Dateien verschränkt liest.** Nichts prüfte das, und
+ * wer es täte, bekäme keinen Fehler, sondern die alte Laufzeit zurück.
+ *
+ * > **Eine Annahme über den Aufrufer, die niemand misst, ist eine Hoffnung
+ * > mit Laufzeitfolgen.**
+ *
+ * Gemessen wird deshalb die Trefferquote und nicht die Zeit: Zeit hängt an
+ * der Last der Maschine, die Quote nicht. Dieselbe Unterscheidung wie beim
+ * Schnelllauf am 13. September, der über einer geschäftigen Maschine drei
+ * Prüfer für langsam hielt.
+ */
+export function gedaechtnisstand() {
+  return { treffer, fehlschlaege, groesse: GEDAECHTNIS.size };
+}
+
+/** Setzt die Zählung zurück — für eine Messung, die bei null anfängt. */
+export function gedaechtnisVergessen() {
+  GEDAECHTNIS.clear();
+  treffer = 0;
+  fehlschlaege = 0;
+}
 
 export function stuecke(quelle, { streng = false } = {}) {
   const schluessel = `${streng ? 's' : 'n'}\u0000${quelle}`;
   const bekannt = GEDAECHTNIS.get(schluessel);
-  if (bekannt) return bekannt;
+  if (bekannt) { treffer += 1; return bekannt; }
+  fehlschlaege += 1;
   const frisch = zerlegeQuelle(quelle, streng);
   GEDAECHTNIS.set(schluessel, frisch);
   if (GEDAECHTNIS.size > GEDAECHTNIS_HOECHSTENS) {

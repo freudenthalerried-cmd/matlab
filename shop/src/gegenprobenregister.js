@@ -4048,6 +4048,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'liest sich wie ein Erfolg.',
   }),
   Object.freeze({
+    id: 'der-leser-vergisst-jede-zerlegung-sofort',
+    pruefer: 'test',
+    was: 'Das Gedächtnis des Quelltextlesers trifft nie mehr',
+    datei: 'shop/src/quelltext.js',
+    art: 'ersetzen',
+    suchen: '  if (bekannt) { treffer += 1; return bekannt; }',
+    ersetzen: '  if (false) { treffer += 1; return bekannt; }',
+    erwartet: /Derselbe Text wird ein zweites Mal nicht mehr zerlegt/,
+    warum: 'Der gemeinsame Leser braucht 1,7 ms je Datei, die abgeloesten regulaeren Ausdruecke '
+      + 'brauchten 0,02 ms. Drei Aufrufer riefen ihn in einer Schleife — 1536, 512 und 740 Mal — '
+      + 'und rissen die Sekunde aus Gate 38. Ohne das Gedaechtnis kommt diese Laufzeit zurueck, '
+      + 'und zwar **ohne Fehler**: Jeder Pruefer bleibt gruen, nur langsam. Gemessen wird '
+      + 'deshalb die Zahl der Zerlegungen und nicht die Zeit — Zeit haengt an der Last der '
+      + 'Maschine, diese Zahl nicht.',
+  }),
+  Object.freeze({
     id: 'die-klammersuche-liest-wieder-in-zeichenketten',
     pruefer: 'test',
     was: 'Die Klammersuche zählt wieder Klammern in Zeichenketten und Kommentaren mit',

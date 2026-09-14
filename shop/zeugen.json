@@ -116,6 +116,9 @@
   "der-leser-erkennt-keine-muster-mehr": [
     "shop/test/quelltext.test.js"
   ],
+  "der-leser-vergisst-jede-zerlegung-sofort": [
+    "shop/test/quelltext.test.js"
+  ],
   "der-nettobetrag-wird-nicht-gehalten": [
     "shop/test/ablageort.test.js"
   ],

@@ -306,6 +306,17 @@ export function ungerufeneAusfuehrungen(dateien, gebuendelt = GEBUENDELT) {
  */
 export const UNGERUFEN = Object.freeze([
   Object.freeze({
+    modul: 'src/quelltext.js',
+    funktionen: ['gedaechtnisstand', 'gedaechtnisVergessen'],
+    warum: 'Die Auskunft über das Gedächtnis des Quelltextlesers — wie oft es getroffen hat '
+      + 'und wie oft nicht. Sie gehört in keinen Prüfer und in kein Werkzeug: Vier Plätze '
+      + 'reichen nur, solange die Aufrufer eine Datei zu Ende lesen, bevor sie die nächste '
+      + 'nehmen, und genau diese Annahme hält `test/quelltext.test.js` am echten Bestand fest. '
+      + 'Gemessen wird die Zahl der Zerlegungen, nicht die Zeit — Zeit hängt an der Last der '
+      + 'Maschine, diese Zahl nicht. Ein Werkzeug, das dieselbe Zahl im Betrieb ausgäbe, '
+      + 'meldete etwas, das niemand liest.',
+  }),
+  Object.freeze({
     modul: 'src/abgleich.js',
     funktionen: ['alsUebersicht', 'pruefeAbgleich', 'pruefeDatenfluesse'],
     warum: 'Ein Prüfer, der in den Testfällen wohnt statt in einem Werkzeug. '
