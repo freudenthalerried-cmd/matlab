@@ -122,6 +122,9 @@
   "der-nettobetrag-wird-nicht-gehalten": [
     "shop/test/ablageort.test.js"
   ],
+  "der-nummernbefund-liest-wieder-nur-sich-selbst": [
+    "shop/test/ablage.test.js"
+  ],
   "der-palettenkreis-driftet-von-der-datei": [
     "shop/test/warenkorb.test.js"
   ],

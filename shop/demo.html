@@ -9445,15 +9445,27 @@ function pruefeNummernkreis(ablage, art, jahr) {
 
 
 
-function nummernbefund({ eintraege = [] } = {}) {
+function nummernbefund({ eintraege = [], arten = ARTEN, herkuenfte = NUMMERNHERKUNFT } = {}) {
+  
+
+
+
+
+
+
+
+
+
+
+
   const meldungen = [];
 
-  for (const [art, a] of Object.entries(ARTEN)) {
-    if (!NUMMERNHERKUNFT.includes(a.nummerAus)) {
+  for (const [art, a] of Object.entries(arten)) {
+    if (!herkuenfte.includes(a.nummerAus)) {
       meldungen.push({
         regel: 'nummernherkunft-unbekannt',
         text: `${art} führt die Herkunft „${a.nummerAus}", und das Verzeichnis kennt `
-          + `nur ${NUMMERNHERKUNFT.join(', ')}`,
+          + `nur ${herkuenfte.join(', ')}`,
       });
     }
     if (a.nummerAus === 'kreis' && !a.beleg) {
@@ -9466,7 +9478,7 @@ function nummernbefund({ eintraege = [] } = {}) {
   }
 
   for (const e of eintraege) {
-    const a = ARTEN[e.art];
+    const a = arten[e.art];
     if (!a) continue;
     const wo = `${e.art} ${e.nummer ?? `zu Vorgang ${e.vorgang}`}`;
 

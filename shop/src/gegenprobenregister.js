@@ -4048,6 +4048,21 @@ export const GEGENPROBEN = Object.freeze([
       + 'liest sich wie ein Erfolg.',
   }),
   Object.freeze({
+    id: 'der-nummernbefund-liest-wieder-nur-sich-selbst',
+    pruefer: 'test',
+    was: 'Der Nummernbefund nimmt seine Register wieder unveraenderlich aus dem Modul',
+    datei: 'shop/src/ablage.js',
+    art: 'ersetzen',
+    suchen: '  for (const [art, a] of Object.entries(arten)) {',
+    ersetzen: '  for (const [art, a] of Object.entries(ARTEN)) {',
+    erwartet: /Eine Art mit unbekannter Nummernherkunft|Eine Art, die eine Nummer zieht und kein Blatt hat/,
+    warum: 'Zwei Regeln halten `ARTEN` gegen `NUMMERNHERKUNFT`, und beide las diese Funktion '
+      + 'unmittelbar aus dem Modul. Damit war keine der beiden je zu sehen: Sie greifen nur, '
+      + 'wenn eine eingefrorene Liste falsch ist. Dieselbe Bauart wie `papierschrittbefund()` '
+      + 'am Vormittag und `stempelbefund()` am Abend — dreimal an einem Tag, und jedes Mal '
+      + 'war der Pruefer gruen, weil nichts kaputt ist, und waere gruen, wenn er kaputt waere.',
+  }),
+  Object.freeze({
     id: 'der-leser-vergisst-jede-zerlegung-sofort',
     pruefer: 'test',
     was: 'Das Gedächtnis des Quelltextlesers trifft nie mehr',

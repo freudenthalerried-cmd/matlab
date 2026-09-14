@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 import {
   OHNE_SCHICHT, SCHICHTEN, SYSTEM_UNBEKANNT,
-  einordnung, systembruch, systembruchsatz, zuordnungsbefund,
+  einordnung, systembruch, systembruchsatz, zuordnungsbefund, gewerkbefund,
   artikelseitensystembefund,
 } from '../src/systemtreue.js';
 
@@ -330,4 +330,51 @@ test('ein Artikel ohne Systembindung wird nicht verlangt', () => {
   const b = artikelseitensystembefund(() => '<p>Nichts.</p>', artikel);
   assert.equal(b.schichten, 0);
   assert.deepEqual(b.meldungen, []);
+});
+
+/*
+ * ## Vier Regeln, die niemand hat feuern sehen
+ *
+ * **14. September 2026, abends.** Die Zählung der Regelnamen vom Vormittag
+ * führt 67 Stellen, deren Name in keinem Testfall vorkommt. Vier davon stehen
+ * in diesem Modul, und alle vier halten ein **Register gegen den Katalog** —
+ * die Sorte Regel, die erst greift, wenn sich der Katalog ändert, und die
+ * deshalb am ehesten unbemerkt kaputtgeht.
+ */
+test('Ein befreiter Artikel, der doch eine Schicht trifft', () => {
+  const befreit = [{ sku: 'POS-77001', was: 'Probe', warum: 'x'.repeat(90) }];
+  const b = zuordnungsbefund([artikel('POS-77001', 'Capatect Klebespachtel 25 kg')], befreit, []);
+  assert.ok(b.meldungen.some((m) => m.regel === 'befreiter-artikel-ist-schicht'),
+    JSON.stringify(b.meldungen));
+});
+
+test('Ein System-unbekannter Artikel, der gar keine Schicht mehr ist', () => {
+  const unbekannt = [{ sku: 'POS-77002', was: 'Probe', warum: 'x'.repeat(90) }];
+  const b = zuordnungsbefund([artikel('POS-77002', 'Schubkarre 80 Liter')], [], unbekannt);
+  assert.ok(b.meldungen.some((m) => m.regel === 'unbekannt-ohne-schicht'),
+    JSON.stringify(b.meldungen));
+});
+
+test('Ein Gewerk ohne Artikel und ein verschwundener Blockierer', () => {
+  const leer = gewerkbefund([], [{ gruppe: 'WDVS', seite: 'x', messbar: true }]);
+  assert.deepEqual(leer.meldungen.map((m) => m.regel), ['gewerk-ohne-artikel'],
+    JSON.stringify(leer.meldungen));
+
+  const gewerk = [{ gruppe: 'Kamin', seite: 'x', messbar: false, blockiert: 'POS-77003' }];
+  const ohneBlockierer = gewerkbefund(
+    [{ sku: 'POS-77004', bezeichnung: 'Mantelstein MSTS EZ 16-18 SIKM', gruppe: 'Kamin' }], gewerk,
+  );
+  assert.deepEqual(ohneBlockierer.meldungen.map((m) => m.regel), ['blockierer-verschwunden'],
+    JSON.stringify(ohneBlockierer.meldungen));
+
+  const mitBlockierer = gewerkbefund(
+    [{ sku: 'POS-77003', bezeichnung: 'Mantelsteinkleber RMRTL', gruppe: 'Kamin' }], gewerk,
+  );
+  assert.deepEqual(mitBlockierer.meldungen, [], JSON.stringify(mitBlockierer.meldungen));
+});
+
+test('Die Gewerkeliste dieses Hauses ist in Ordnung', () => {
+  const b = gewerkbefund(KATALOG.artikel);
+  assert.deepEqual(b.meldungen, [], JSON.stringify(b.meldungen));
+  assert.ok(b.gewerke >= 2, `nur ${b.gewerke} Gewerke — die Messung sagt dann wenig`);
 });

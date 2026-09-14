@@ -483,15 +483,27 @@ export function pruefeNummernkreis(ablage, art, jahr) {
  * @param {object} lage
  * @param {Array} lage.eintraege  die Zeilen eines oder mehrerer Journale
  */
-export function nummernbefund({ eintraege = [] } = {}) {
+export function nummernbefund({ eintraege = [], arten = ARTEN, herkuenfte = NUMMERNHERKUNFT } = {}) {
+  /*
+   * **Die Register kommen herein — 14. September 2026, abends.** Zwei der
+   * Regeln hier halten `ARTEN` gegen `NUMMERNHERKUNFT`, und beide las diese
+   * Funktion unmittelbar aus dem Modul. Damit war keine der beiden je zu
+   * sehen: Sie greifen nur, wenn eine eingefrorene Liste falsch ist.
+   *
+   * > **Ein Prüfer, dessen Gegenstand unveränderlich neben ihm steht, ist
+   * > grün, weil nichts kaputt ist — und wäre grün, wenn er kaputt wäre.**
+   *
+   * Dieselbe Umstellung wie bei `papierschrittbefund()` am Vormittag. Für
+   * jeden Aufrufer ändert sich nichts, für einen Testfall alles.
+   */
   const meldungen = [];
 
-  for (const [art, a] of Object.entries(ARTEN)) {
-    if (!NUMMERNHERKUNFT.includes(a.nummerAus)) {
+  for (const [art, a] of Object.entries(arten)) {
+    if (!herkuenfte.includes(a.nummerAus)) {
       meldungen.push({
         regel: 'nummernherkunft-unbekannt',
         text: `${art} führt die Herkunft „${a.nummerAus}", und das Verzeichnis kennt `
-          + `nur ${NUMMERNHERKUNFT.join(', ')}`,
+          + `nur ${herkuenfte.join(', ')}`,
       });
     }
     if (a.nummerAus === 'kreis' && !a.beleg) {
@@ -504,7 +516,7 @@ export function nummernbefund({ eintraege = [] } = {}) {
   }
 
   for (const e of eintraege) {
-    const a = ARTEN[e.art];
+    const a = arten[e.art];
     if (!a) continue;
     const wo = `${e.art} ${e.nummer ?? `zu Vorgang ${e.vorgang}`}`;
 

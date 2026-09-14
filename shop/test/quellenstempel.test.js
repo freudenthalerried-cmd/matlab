@@ -116,3 +116,51 @@ test('Die Artikelseiten belegen die Bindefrist mit dem Stand der Regel', () => {
     `${s.name} belegt die Bindefrist nicht mit dem Stand der Regel`);
   }
 });
+
+/*
+ * ## Vier Regeln, die niemand hat feuern sehen
+ *
+ * **14. September 2026, abends.** Sie halten das Register gegen die gebauten
+ * Seiten und greifen nur, wenn eine Vorlage oder ein Eintrag sich ändert. Seit
+ * das Register hereingereicht wird, lässt sich jede einzeln zeigen — ohne eine
+ * Seite zu bauen.
+ */
+const eintrag = (zusatz = {}) => ({
+  id: 'probe',
+  muster: /Quelle: Probe/,
+  standform: 'einer',
+  woher: 'aus der Probe, zehn Zeichen und mehr',
+  tatsache: 'dass diese Probe eine Tatsache belegt',
+  ...zusatz,
+});
+const seite = (text) => [{ name: 'probe.html', html: `<p>(${text})</p>` }];
+
+test('Ein Eintrag, der auf keiner gebauten Seite steht', () => {
+  const b = stempelbefund([], 0, [eintrag()]);
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['eintrag-ohne-stempel'],
+    JSON.stringify(b.meldungen));
+});
+
+test('Eine Fundstelle ohne Datum lässt sich nicht nachschlagen', () => {
+  const b = stempelbefund(seite('Quelle: Probe'), 0, [eintrag()]);
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['stand-fehlt'], JSON.stringify(b.meldungen));
+  const mitStand = stempelbefund(seite('Quelle: Probe, Stand: 2026-09-14'), 0, [eintrag()]);
+  assert.deepEqual(mitStand.meldungen, [], JSON.stringify(mitStand.meldungen));
+});
+
+/*
+ * Und die Gegenrichtung: Ein Eintrag, der „ohne Stand" geführt ist und doch
+ * einen trägt. Dann gehört der Eintrag geändert, nicht die Meldung.
+ */
+test('Ein Stand, wo keiner erwartet wird', () => {
+  const b = stempelbefund(seite('Quelle: Probe, Stand: 2026-09-14'), 0,
+    [eintrag({ standform: 'ohne' })]);
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['stand-wo-keiner-erwartet'],
+    JSON.stringify(b.meldungen));
+});
+
+test('Ein Registereintrag ohne Tatsache belegt nichts', () => {
+  const b = registerbefund([eintrag({ tatsache: 'kurz' })]);
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['ohne-tatsache'], JSON.stringify(b.meldungen));
+  assert.deepEqual(registerbefund([eintrag()]).meldungen, []);
+});

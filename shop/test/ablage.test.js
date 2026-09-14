@@ -442,3 +442,56 @@ test('Die CSV sagt je Zeile, ob sie ein Umsatz ist', () => {
     'der Einkaufswert der Lieferantenbestellung steht als Umsatz in der Datei');
   assert.equal(spalte(zeilen[3]), 'nein', 'der Vermerk ist kein Umsatz');
 });
+
+/*
+ * ## Drei Regeln, die niemand hat feuern sehen
+ *
+ * **14. September 2026, abends.** Zwei davon halten `ARTEN` gegen
+ * `NUMMERNHERKUNFT` und waren bis heute nicht zu erreichen: Die Funktion las
+ * beide Register unmittelbar aus dem Modul. Seit sie hereingereicht werden,
+ * lässt sich zeigen, dass sie anschlagen.
+ */
+test('Eine Art mit unbekannter Nummernherkunft', () => {
+  const b = nummernbefund({
+    arten: { probe: { nummerAus: 'wuerfel', beleg: true } },
+    herkuenfte: ['kreis', 'vorgang'],
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['nummernherkunft-unbekannt'],
+    JSON.stringify(b.meldungen));
+});
+
+/*
+ * Eine gezogene Nummer ohne Blatt ist für immer eine Lücke, die niemand
+ * erklären kann — § 131 Abs 1 Z 2 BAO verlangt die lückenlose Folge.
+ */
+test('Eine Art, die eine Nummer zieht und kein Blatt hat', () => {
+  const b = nummernbefund({
+    arten: { probe: { nummerAus: 'kreis', beleg: false } },
+    herkuenfte: ['kreis'],
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['gezogen-ohne-blatt'],
+    JSON.stringify(b.meldungen));
+});
+
+test('Eine Nummer, die ihren Vorgang nicht nennt', () => {
+  const arten = { probe: { nummerAus: 'vorgang', beleg: true } };
+  const schlecht = nummernbefund({
+    arten,
+    herkuenfte: ['vorgang'],
+    eintraege: [{ art: 'probe', nummer: 'XX-0001', vorgang: '2026-0110' }],
+  });
+  assert.deepEqual(schlecht.meldungen.map((m) => m.regel), ['nummer-nennt-den-vorgang-nicht'],
+    JSON.stringify(schlecht.meldungen));
+  const gut = nummernbefund({
+    arten,
+    herkuenfte: ['vorgang'],
+    eintraege: [{ art: 'probe', nummer: 'RE-2026-0110-01', vorgang: '2026-0110' }],
+  });
+  assert.deepEqual(gut.meldungen, [], JSON.stringify(gut.meldungen));
+});
+
+test('Die Arten dieses Hauses führen nur bekannte Herkünfte', () => {
+  const b = nummernbefund({});
+  assert.ok(!b.meldungen.some((m) => m.regel === 'nummernherkunft-unbekannt'
+    || m.regel === 'gezogen-ohne-blatt'), JSON.stringify(b.meldungen));
+});

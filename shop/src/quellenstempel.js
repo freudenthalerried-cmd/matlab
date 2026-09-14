@@ -165,18 +165,25 @@ export const QUELLENSTEMPEL = Object.freeze([
  * @param {number} mindestens  wie viele Stempel mindestens zu finden sein
  *   müssen. Ein Prüfer, der über null Fundstellen sauber meldet, sagt nichts.
  */
-export function stempelbefund(seiten = [], mindestens = 100) {
+export function stempelbefund(seiten = [], mindestens = 100, register = QUELLENSTEMPEL) {
+  /*
+   * **Das Register kommt herein — 14. September 2026, abends.** Drei der
+   * Regeln hier halten das Register gegen die gebauten Seiten, und drei hat
+   * nie ein Testfall feuern sehen: Sie greifen nur, wenn eine Vorlage oder
+   * ein Eintrag sich ändert. Mit dem Register in der Signatur lässt sich jede
+   * einzeln zeigen, ohne eine Seite zu bauen.
+   */
   const meldungen = [];
   const melde = (regel, wo, text) => meldungen.push({ regel, wo, text });
   /** id → Map(Stand → Beispielseite) */
-  const staende = new Map(QUELLENSTEMPEL.map((s) => [s.id, new Map()]));
-  const zahl = new Map(QUELLENSTEMPEL.map((s) => [s.id, 0]));
+  const staende = new Map(register.map((s) => [s.id, new Map()]));
+  const zahl = new Map(register.map((s) => [s.id, 0]));
   let gesamt = 0;
 
   for (const { name, html } of seiten) {
     for (const stempel of sichtbarerText(html).match(STEMPELMUSTER) ?? []) {
       gesamt += 1;
-      const eintrag = QUELLENSTEMPEL.find((s) => s.muster.test(stempel));
+      const eintrag = register.find((s) => s.muster.test(stempel));
       if (!eintrag) {
         melde('stempel-nicht-gefuehrt', name,
           `${name} trägt eine Quellenangabe, die das Register nicht führt: ${stempel.slice(0, 120)}`);
@@ -203,7 +210,7 @@ export function stempelbefund(seiten = [], mindestens = 100) {
     }
   }
 
-  for (const eintrag of QUELLENSTEMPEL) {
+  for (const eintrag of register) {
     const gesehen = staende.get(eintrag.id);
     if (!zahl.get(eintrag.id)) {
       melde('eintrag-ohne-stempel', eintrag.id,
