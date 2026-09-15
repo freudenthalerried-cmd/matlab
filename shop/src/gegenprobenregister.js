@@ -5148,6 +5148,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'Sie behauptet, hier fehle etwas — und hielt zugleich die ganze Rechnung aus der Akte.',
   }),
   Object.freeze({
+    id: 'das-formular-schweigt-wieder',
+    pruefer: 'test',
+    was: 'Der Satz für den Kunden verschwindet aus den Feldern, die das Formular baut',
+    datei: 'shop/bin/website.mjs',
+    art: 'ersetzen',
+    suchen: '        hinweis: f.hinweis ?? null,',
+    ersetzen: '        hinweis: null,',
+    erwartet: /das Formular gibt den Satz f(ü|ue)r den Kunden nicht hinaus/,
+    warum: 'Der Fund vom 15. September: Jedes der acht Bestellfelder trug seit dem '
+      + '4. September einen sorgfaeltig geschriebenen Grund, und keiner davon erreichte je den '
+      + 'Kunden — die Oberflaeche bekam Name, Beschriftung, Feldtyp und Beispiel. Aufgefallen '
+      + 'ist es an der Telefonnummer: Die Wissensseite verlangt eine Nummer, unter der jemand '
+      + 'auf der Baustelle erreichbar ist, und das Formular sagte „Telefon". Diese Mutation '
+      + 'kappt den Weg nach draussen wieder; das Register bleibt vollstaendig, und genau '
+      + 'deshalb faellt es ohne diesen Testfall niemandem auf.',
+  }),
+  Object.freeze({
     id: 'die-kopfzeile-liest-die-naechste-zeile-mit',
     pruefer: 'test',
     was: 'Ein leeres `skus:` in einer Systemliste liest den Trennstrich als Artikelnummer',

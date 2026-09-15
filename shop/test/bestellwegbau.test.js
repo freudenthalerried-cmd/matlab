@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
   ABSENDEDATEI, baubefund, bestellwegAktiv, EMPFANGSSKRIPT, oberflaeche, warenkorbZusage,
 } from '../src/bestellwegbau.js';
@@ -82,4 +83,30 @@ test('die ausgelieferte Oberfläche trägt den Absendeweg genau dann, wenn er an
   // Und die Grundoberfläche geht in beiden Fällen mit.
   assert.match(oberflaeche(lies, false), /var a = 1;/);
   assert.match(oberflaeche(lies, true), /var a = 1;/);
+});
+
+/*
+ * **Der Weg nach draußen — 15. September 2026.** Das Register der
+ * Bestellfelder ist vollständig geprüft; ob sein Satz für den Kunden die
+ * Oberfläche **erreicht**, prüfte nichts. Genau diese Lücke hat den `warum`
+ * seit dem 4. September im Modul festgehalten.
+ */
+test('das Formular gibt den Satz für den Kunden hinaus', async () => {
+  const quelle = readFileSync(new URL('../bin/website.mjs', import.meta.url), 'utf8');
+  const { BESTELLFELDER } = await import('../src/bestellfelder.js');
+
+  const stelle = /felder:\s*WEG\.aktiv\s*\?\s*BESTELLFELDER\.map\(\(f\) => \(\{([\s\S]*?)\}\)\)/
+    .exec(quelle);
+  assert.ok(stelle, 'die Stelle, an der die Felder hinausgehen, ist nicht mehr zu finden');
+  assert.match(stelle[1], /hinweis:\s*f\.hinweis/,
+    'das Formular gibt den Satz für den Kunden nicht hinaus — ein Pflichtfeld ohne Grund '
+    + 'wird irgendwie ausgefüllt');
+
+  // Und die Oberfläche zeigt ihn auch an, statt ihn nur zu empfangen.
+  const ui = readFileSync(new URL('../shop-ui.js', import.meta.url), 'utf8');
+  assert.match(ui, /vorgabe\.hinweis/, 'die Oberfläche liest den Satz nicht');
+  assert.match(ui, /aria-describedby/,
+    'ohne aria-describedby hört ein Screenreader den Satz gar nicht');
+  assert.ok(BESTELLFELDER.length >= 8, `nur ${BESTELLFELDER.length} Felder`);
+  assert.ok(BESTELLFELDER.every((f) => f.hinweis), 'ein Feld ohne Satz für den Kunden');
 });

@@ -437,5 +437,8 @@
   ],
   "die-kopfzeile-liest-die-naechste-zeile-mit": [
     "shop/test/systemlisten.test.js"
+  ],
+  "das-formular-schweigt-wieder": [
+    "shop/test/bestellwegbau.test.js"
   ]
 }

@@ -5534,6 +5534,28 @@ function gruppenbefund(rechnung, text) {
           if (vorgabe.art !== 'checkbox') zeile.appendChild(eingabe);
           felder[vorgabe.name] = eingabe;
           form.appendChild(zeile);
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          if (vorgabe.hinweis) {
+            var hinweis = el('p', 'feldhinweis', vorgabe.hinweis);
+            hinweis.id = 'hinweis-' + vorgabe.name;
+            eingabe.setAttribute('aria-describedby', hinweis.id);
+            form.appendChild(hinweis);
+          }
         }
 
         var senden = el('button', 'knopf senden', 'Bestellung abschicken');

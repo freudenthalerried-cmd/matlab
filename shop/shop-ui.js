@@ -1148,6 +1148,28 @@
           if (vorgabe.art !== 'checkbox') zeile.appendChild(eingabe);
           felder[vorgabe.name] = eingabe;
           form.appendChild(zeile);
+          /**
+           * **Der Satz für den Kunden — 15. September 2026.**
+           *
+           * Jedes dieser Felder trug seit dem 4. September einen Grund, und
+           * keiner davon erreichte je den Kunden. An der Telefonnummer fiel
+           * es auf: Die Wissensseite verlangt eine Nummer, unter der jemand
+           * **auf der Baustelle** erreichbar ist — das Formular sagte
+           * „Telefon", und wer das liest, trägt die Büronummer ein.
+           *
+           * > **Ein Pflichtfeld ohne Grund wird irgendwie ausgefüllt, ein
+           * > Pflichtfeld mit einem Satz daneben richtig.**
+           *
+           * Der Hinweis steht **nach** der Zeile und nicht darin: Im `label`
+           * läse ihn jeder Screenreader als Teil der Beschriftung vor, und
+           * aus „Telefon" würden vier Sätze.
+           */
+          if (vorgabe.hinweis) {
+            var hinweis = el('p', 'feldhinweis', vorgabe.hinweis);
+            hinweis.id = 'hinweis-' + vorgabe.name;
+            eingabe.setAttribute('aria-describedby', hinweis.id);
+            form.appendChild(hinweis);
+          }
         }
 
         var senden = el('button', 'knopf senden', 'Bestellung abschicken');
