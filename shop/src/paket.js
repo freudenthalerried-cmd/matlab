@@ -272,6 +272,79 @@ export function fremdleserbefund({ status, ausgabe = '' }) {
 }
 
 /**
+ * Was dem Hochladen heute im Weg steht — und was es kostet, es zu übergehen.
+ *
+ * **Der Anlass, 15. September 2026.** Der Auftraggeber hat gefragt, ob ihn
+ * schon eine KI erreichen kann, und ich habe geantwortet: hochladen und die
+ * E-Mail-Adresse eintragen, in dieser Reihenfolge. Das war falsch herum, und
+ * der Bestand sagt es selbst an zwei Stellen:
+ *
+ * - Die gebaute Impressumsseite trägt einen Kasten: *„Solange eine Marke
+ *   sichtbar ist, darf diese Seite nicht online gehen — ein unvollständiges
+ *   Impressum ist im Merchant Center der häufigste Ablehnungsgrund und
+ *   außerhalb davon abmahnfähig."*
+ * - `npm run startklar` endet mit **NICHT STARTKLAR**.
+ *
+ * Und `ABNAHME.txt` im Archiv beginnt mit *„Abnahme **nach** dem Hochladen"*
+ * und sagt von alledem kein Wort. Wer das Paket bekommt, bekommt eine
+ * Anleitung zum Hochladen und keine Auskunft darüber, ob er darf.
+ *
+ * > **Ein Paket, das eine Abnahme mitliefert und keine Sperre, liest sich wie
+ * > eine Freigabe.**
+ *
+ * Gemeint sind ausdrücklich **nicht** alle offenen Punkte: Ein fehlender
+ * Zahlungsanbieter hält die Bestellung auf, nicht die Seite. Gesperrt ist,
+ * was **ab dem ersten Aufruf** gilt — das Impressum nach § 5 ECG und die
+ * Texte, die `vorDemHochladen` führt.
+ *
+ * @param {object} lage
+ * @param {string[]} lage.impressumFehlt  fehlende Pflichtangaben
+ * @param {{id: string}[]} lage.texteOhneWortlaut
+ */
+export function hochladesperren({ impressumFehlt = [], texteOhneWortlaut = [] } = {}) {
+  const sperren = [];
+  if (impressumFehlt.length) {
+    sperren.push({
+      id: 'impressum',
+      was: `${impressumFehlt.length} Pflichtangabe(n) fehlen im Impressum: ${impressumFehlt.join(', ')}`,
+      kostet: 'Ein unvollstaendiges Impressum ist im Merchant Center der haeufigste '
+        + 'Ablehnungsgrund und ausserhalb davon abmahnfaehig (§ 5 ECG, § 14 UGB).',
+    });
+  }
+  if (texteOhneWortlaut.length) {
+    sperren.push({
+      id: 'rechtstexte',
+      was: `${texteOhneWortlaut.length} Rechtstext(e) gelten ab dem ersten Aufruf und stehen `
+        + `als Gliederung ohne verbindlichen Wortlaut: ${texteOhneWortlaut.map((t) => t.id).join(', ')}`,
+      kostet: 'Sie gelten gegenueber jedem Besucher, auch ohne Bestellung — eine Gliederung '
+        + 'ist keine Erklaerung.',
+    });
+  }
+  return sperren;
+}
+
+/**
+ * Der Kopf der Abnahmeliste: erst die Sperre, dann die Anleitung.
+ *
+ * Ohne Sperre steht hier ein Satz und kein Kasten — eine Warnung, die immer
+ * dasteht, liest nach dem dritten Mal niemand mehr.
+ */
+export function sperrentext(sperren = []) {
+  if (!sperren.length) {
+    return ['Nichts haelt das Hochladen auf: Impressum vollstaendig, die ab dem ersten',
+      'Aufruf geltenden Rechtstexte haben einen verbindlichen Wortlaut.'];
+  }
+  return [
+    'NICHT HOCHLADEN, SOLANGE DAS HIER STEHT',
+    '',
+    ...sperren.flatMap((s) => [`  * ${s.was}`, `    ${s.kostet}`, '']),
+    'Das Archiv ist trotzdem vollstaendig und richtig — es ist zum Vorbereiten da.',
+    'Was oben steht, sperrt die Seite, nicht das Paket. Gegengeprueft mit',
+    'npm run startklar.',
+  ];
+}
+
+/**
  * Liegen die beiden Beilagen im Archiv — und beschreiben sie **dieses** Paket?
  *
  * `INHALT.txt` trägt die Prüfsummen, `ABNAHME.txt` die Punkte, an denen der
@@ -285,7 +358,9 @@ export function fremdleserbefund({ status, ausgabe = '' }) {
  * @param {string} [lage.abnahmetext] ihr Inhalt, wenn sie daliegt
  * @param {{erwartet: string}[]} [lage.punkte]  die gerade gerechneten Punkte
  */
-export function beilagenbefund({ inhaltDa, abnahmeDa, abnahmetext = '', punkte = [] }) {
+export function beilagenbefund({
+  inhaltDa, abnahmeDa, abnahmetext = '', punkte = [], sperren = [],
+}) {
   const meldungen = [];
   if (!inhaltDa) {
     meldungen.push({ regel: 'ohne-verzeichnis', text: 'INHALT.txt liegt nicht im Archiv' });
@@ -302,5 +377,30 @@ export function beilagenbefund({ inhaltDa, abnahmeDa, abnahmetext = '', punkte =
       });
     }
   }
+  /*
+   * **Und die Sperre — 15. September 2026.** Eine Abnahmeliste, die nur sagt,
+   * wie man hochlädt, liest sich wie eine Freigabe. Geprüft wird der erste
+   * Satz und jeder Grund: Ein Kasten ohne seine Gründe wäre eine Warnung ohne
+   * Auskunft, und die überliest man zuerst.
+   */
+  if (abnahmeDa && sperren.length) {
+    if (!String(abnahmetext).includes('NICHT HOCHLADEN')) {
+      meldungen.push({
+        regel: 'abnahme-ohne-sperre',
+        text: `${sperren.length} Sperre(n) halten das Hochladen auf, und ABNAHME.txt sagt es `
+          + 'nicht — ein Paket, das eine Abnahme mitliefert und keine Sperre, liest sich wie '
+          + 'eine Freigabe',
+      });
+    }
+    for (const sp of sperren) {
+      if (String(abnahmetext).includes(sp.was)) continue;
+      meldungen.push({
+        regel: 'sperre-ohne-grund-in-der-liste',
+        text: `die Sperre „${sp.id}" steht nicht in ABNAHME.txt — eine Warnung ohne ihre `
+          + 'Gründe überliest man zuerst',
+      });
+    }
+  }
+
   return { meldungen, sauber: meldungen.length === 0 };
 }

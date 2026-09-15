@@ -39,9 +39,12 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, relative } from 'node:path';
 
-import { archivbefund, inhaltsbefund, fremdleserbefund, beilagenbefund } from '../src/paket.js';
+import {
+  archivbefund, inhaltsbefund, fremdleserbefund, beilagenbefund, hochladesperren,
+} from '../src/paket.js';
 import { wegwerfordner } from '../src/wegwerf.js';
 import { abnahmebefund, abnahmeplan } from '../src/abnahme.js';
+import { erzeugeImpressum, vorDemHochladen } from '../src/rechtstexte.js';
 import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
 import { abbruchmelder, ABBRUCH_PRUEFER } from '../src/werkzeugabbruch.js';
 
@@ -165,6 +168,16 @@ const ablage = wegwerfordner('paketprobe-');
       abnahmeDa: existsSync(abnahmeliste),
       abnahmetext: existsSync(abnahmeliste) ? readFileSync(abnahmeliste, 'utf8') : '',
       punkte,
+      /*
+       * **Und die Sperre — 15. September 2026.** Gerechnet aus **diesem**
+       * Bestand, nicht aus dem Archiv: Eine Sperre, die aus der Beilage
+       * gelesen wird, prüft ihre eigene Abschrift. Die Begründung steht bei
+       * `hochladesperren`.
+       */
+      sperren: hochladesperren({
+        impressumFehlt: erzeugeImpressum(betreiber).fehlend,
+        texteOhneWortlaut: betreiber.rechtstexteFundstelle ? [] : vorDemHochladen(),
+      }),
     }).meldungen);
     if (!meldungen.some((m) => m.regel === 'abnahme' || m.regel === 'punkt-nicht-in-der-liste')) {
       console.log(`  ✓ ABNAHME.txt: ${punkte.length} Punkte, jeder im ausgepackten Bestand belegt`);

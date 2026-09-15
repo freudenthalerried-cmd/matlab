@@ -5148,6 +5148,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'Sie behauptet, hier fehle etwas — und hielt zugleich die ganze Rechnung aus der Akte.',
   }),
   Object.freeze({
+    id: 'das-paket-liest-sich-wieder-wie-eine-freigabe',
+    pruefer: 'pruefe-paket',
+    was: 'Die Abnahmeliste im Archiv verliert die Sperre und beginnt wieder mit der Anleitung',
+    datei: 'shop/bin/paket.mjs',
+    art: 'ersetzen',
+    suchen: '  ...sperrentext(sperren),',
+    ersetzen: '  ...[],',
+    erwartet: /abnahme-ohne-sperre|liest sich wie eine Freigabe/,
+    warum: 'Der Fund vom 15. September: Die gebaute Impressumsseite sagt „Solange eine Marke '
+      + 'sichtbar ist, darf diese Seite nicht online gehen", `npm run startklar` endet mit '
+      + 'NICHT STARTKLAR — und `ABNAHME.txt` im Archiv begann mit „Abnahme nach dem '
+      + 'Hochladen" und sagte von alledem kein Wort. Wer das Paket bekommt, bekommt eine '
+      + 'Anleitung zum Hochladen und keine Auskunft darueber, ob er darf. Diese Mutation '
+      + 'nimmt die Sperre wieder heraus; das Archiv bleibt dabei vollstaendig und richtig, '
+      + 'und genau deshalb faellt es ohne diese Pruefung niemandem auf.',
+  }),
+  Object.freeze({
     id: 'die-kasse-schickt-wieder-ins-leere-impressum',
     pruefer: 'pruefe-kanaele',
     was: 'Der Rueckweg der Kasse zeigt wieder auf das Impressum, in dem dieselbe Luecke steht',

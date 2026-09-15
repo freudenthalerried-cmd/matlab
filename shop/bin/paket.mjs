@@ -28,7 +28,8 @@ import { dirname, join, relative } from 'node:path';
 
 import { abnahmebefund, abnahmeplan } from '../src/abnahme.js';
 import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
-import { baueZip } from '../src/paket.js';
+import { baueZip, hochladesperren, sperrentext } from '../src/paket.js';
+import { erzeugeImpressum, vorDemHochladen } from '../src/rechtstexte.js';
 
 const SHOP = dirname(dirname(fileURLToPath(import.meta.url)));
 const SITE = join(SHOP, 'ausgabe', 'site');
@@ -89,7 +90,25 @@ if (!plan.sauber) {
   console.error('Wer sie abhakt, hält den Shop für geprüft.');
   process.exit(1);
 }
+/*
+ * **Die Sperre steht vor der Anleitung — 15. September 2026.** Bis heute
+ * begann diese Datei mit „Abnahme nach dem Hochladen" und sagte kein Wort
+ * darüber, ob hochgeladen werden **darf**. Die Begründung steht bei
+ * `hochladesperren`, dort einmal.
+ */
+const sperren = hochladesperren({
+  impressumFehlt: erzeugeImpressum(betreiber).fehlend,
+  // Dieselbe Frage wie in `npm run startklar`: Eine Fundstelle in der
+  // Betreiberdatei heißt, dass ein Anbieter den Wortlaut geliefert hat. Ohne
+  // sie steht **jeder** dieser Texte als Gliederung da.
+  texteOhneWortlaut: betreiber.rechtstexteFundstelle ? [] : vorDemHochladen(),
+});
+
 const abnahme = [
+  ...sperrentext(sperren),
+  '',
+  '-----------------------------------------------------------------------',
+  '',
   `Abnahme nach dem Hochladen — ${punkte.length} Punkte`,
   `Ziel: ${BASIS || '[[ Domain fehlt in data/betreiber.json ]]'}`,
   '',
@@ -137,3 +156,11 @@ console.log('Ordner site/ selbst, sonst liegt der Shop unter /site/ statt unter 
 // Punkte", und mit dem neunten wurde der Satz falsch. Eine Zahl, die einen
 // Bestand nennt und von Hand dasteht, ist die nächste, die veraltet.
 console.log(`Danach die ${punkte.length} Punkte aus ABNAHME.txt im Browser durchgehen.`);
+// **Und die Sperre auch auf der Konsole.** Wer das Paket schreibt, sieht sie
+// hier; wer es bekommt, liest sie oben in ABNAHME.txt. Beide Wege führen an
+// derselben Auskunft vorbei, und keiner an ihr herum.
+if (sperren.length) {
+  console.log('');
+  console.log(`  ⚠ ${sperren.length} Sperre(n) stehen dem Hochladen im Weg — sie stehen oben in`);
+  console.log('    ABNAHME.txt. Das Paket ist zum Vorbereiten da, nicht zum Hochladen.');
+}

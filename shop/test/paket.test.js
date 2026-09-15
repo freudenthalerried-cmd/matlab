@@ -5,7 +5,10 @@ import { createHash } from 'node:crypto';
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { baueZip, crc32, dosZeit, archivbefund, inhaltsbefund, fremdleserbefund, beilagenbefund } from '../src/paket.js';
+import {
+  baueZip, crc32, dosZeit, archivbefund, inhaltsbefund, fremdleserbefund, beilagenbefund,
+  hochladesperren, sperrentext,
+} from '../src/paket.js';
 import { wegwerfordner } from '../src/wegwerf.js';
 
 test('Die Prüfsumme stimmt mit der bekannten Probe überein', () => {
@@ -185,4 +188,81 @@ test('Eine Abnahmeliste, die ein anderes Paket beschreibt', () => {
   assert.deepEqual(b.meldungen.map((m) => m.regel), ['punkt-nicht-in-der-liste'],
     JSON.stringify(b.meldungen));
   assert.match(b.meldungen[0].text, /Punkt zwei/);
+});
+
+/*
+ * **Die Sperre vor der Anleitung — 15. September 2026.** `ABNAHME.txt` begann
+ * mit „Abnahme nach dem Hochladen" und sagte kein Wort darüber, ob
+ * hochgeladen werden **darf**. Die gebaute Impressumsseite sagt es seit dem
+ * ersten Tag: *„Solange eine Marke sichtbar ist, darf diese Seite nicht
+ * online gehen."*
+ */
+test('die Sperren nennen, was fehlt, und was es kostet', () => {
+  assert.deepEqual(hochladesperren({}), [], 'ohne Lücke keine Sperre');
+
+  const beide = hochladesperren({
+    impressumFehlt: ['E-Mail-Adresse', 'Telefonnummer'],
+    texteOhneWortlaut: [{ id: 'impressum' }, { id: 'datenschutz' }],
+  });
+  assert.deepEqual(beide.map((s) => s.id), ['impressum', 'rechtstexte']);
+  assert.equal(beide.length, 2, `${beide.length} Sperren — die Schleife prüfte dann weniger`);
+  for (const s of beide) {
+    assert.match(s.was, /\d/, `${s.id}: nennt keine Zahl`);
+    assert.ok(s.kostet.length >= 40, `${s.id}: sagt nicht, was es kostet`);
+  }
+  assert.match(beide[0].kostet, /abmahnfaehig/,
+    'ohne die Folge liest sich die Sperre wie eine Formsache');
+});
+
+test('ohne Sperre steht ein Satz und kein Kasten', () => {
+  // Eine Warnung, die immer dasteht, liest nach dem dritten Mal niemand mehr.
+  const frei = sperrentext([]);
+  assert.ok(frei.length <= 3, `${frei.length} Zeilen für „nichts hält auf"`);
+  assert.equal(frei.some((z) => z.includes('NICHT HOCHLADEN')), false);
+
+  const gesperrt = sperrentext(hochladesperren({ impressumFehlt: ['E-Mail'] }));
+  assert.equal(gesperrt[0], 'NICHT HOCHLADEN, SOLANGE DAS HIER STEHT');
+  assert.ok(gesperrt.some((z) => z.includes('sperrt die Seite, nicht das Paket')),
+    'das Archiv ist zum Vorbereiten da und bleibt richtig');
+});
+
+test('eine Abnahmeliste ohne ihre Sperre ist ein Befund', () => {
+  const sperren = hochladesperren({ impressumFehlt: ['E-Mail-Adresse'] });
+  const ohne = beilagenbefund({
+    inhaltDa: true, abnahmeDa: true, abnahmetext: 'Abnahme nach dem Hochladen — 9 Punkte',
+    punkte: [], sperren,
+  });
+  assert.deepEqual(ohne.meldungen.map((m) => m.regel),
+    ['abnahme-ohne-sperre', 'sperre-ohne-grund-in-der-liste'],
+    'ein Paket, das eine Abnahme mitliefert und keine Sperre, liest sich wie eine Freigabe');
+
+  const mit = beilagenbefund({
+    inhaltDa: true, abnahmeDa: true,
+    abnahmetext: sperrentext(sperren).join('\n'),
+    punkte: [], sperren,
+  });
+  assert.deepEqual(mit.meldungen, []);
+});
+
+test('ein Kasten ohne seine Gründe ist eine Warnung ohne Auskunft', () => {
+  const sperren = hochladesperren({
+    impressumFehlt: ['E-Mail-Adresse'], texteOhneWortlaut: [{ id: 'datenschutz' }],
+  });
+  const halb = beilagenbefund({
+    inhaltDa: true,
+    abnahmeDa: true,
+    abnahmetext: `NICHT HOCHLADEN, SOLANGE DAS HIER STEHT\n\n  * ${sperren[0].was}`,
+    punkte: [],
+    sperren,
+  });
+  assert.deepEqual(halb.meldungen.map((m) => m.regel), ['sperre-ohne-grund-in-der-liste'],
+    'die zweite Sperre fehlt, und niemand sieht sie');
+});
+
+test('ohne Sperre verlangt der Befund keine', () => {
+  const b = beilagenbefund({
+    inhaltDa: true, abnahmeDa: true, abnahmetext: 'Abnahme nach dem Hochladen', punkte: [],
+    sperren: [],
+  });
+  assert.deepEqual(b.meldungen, []);
 });

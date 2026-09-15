@@ -98,6 +98,10 @@ export const AUSGAENGE = Object.freeze([
   // `data/betreiber.json` — eine Adresse, die dort steht, wird eingesetzt und
   // nicht geprüft. Die Begründung steht im Kopf von `src/rueckweg.js`.
   Object.freeze({ modul: 'src/rueckweg.js', funktion: 'rueckwegsatz', an: 'jeder Besucher der Kasse', form: 'Satz' }),
+  // **Ergänzt am 15. September.** Der Kopf der Abnahmeliste im Archiv. Er geht
+  // an den Auftraggeber und sagt ihm, ob er hochladen darf; gebaut wird er aus
+  // dem Impressumsbefund und dem Rechtstexteregister dieses Hauses.
+  Object.freeze({ modul: 'src/paket.js', funktion: 'sperrentext', an: 'Auftraggeber', form: 'Zeilen in ABNAHME.txt' }),
   Object.freeze({ modul: 'src/vies.js', funktion: 'belegzeile', an: 'die eigene Ablage', form: 'Zeile' }),
   Object.freeze({ modul: 'src/ablage.js', funktion: 'alsCsv', an: 'Buchhaltung', form: 'CSV' }),
   Object.freeze({ modul: 'src/speicher.js', funktion: 'journalzeile', an: 'Buchhaltung', form: 'JSONL' }),

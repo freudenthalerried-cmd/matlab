@@ -36,6 +36,7 @@ import { baueKundenanfrage, mailtoWeg } from '../src/kundenanfrage.js';
 import { erzeugeImpressum } from '../src/rechtstexte.js';
 import { robotsTxt, herkunftssatz } from '../src/maschinenlesbar.js';
 import { rueckwegsatz } from '../src/rueckweg.js';
+import { hochladesperren, sperrentext } from '../src/paket.js';
 import { erzeugeLieferantenanfrage } from '../src/lieferantenanfrage.js';
 import { jsonFuerSkript } from '../src/format.js';
 import { belegzeile } from '../src/vies.js';
@@ -681,4 +682,29 @@ test('Ausgang Rückweg: ohne Kanal steht kein Kanal da', () => {
   assert.equal(leer.feld, null);
   assert.equal(hatSteuerzeichen(leer.text), false);
   assert.doesNotMatch(leer.text, /@/, 'ohne Adresse steht keine da');
+});
+
+/* ------------------------------------------------------------------ *
+ * Ausgang 14: der Kopf der Abnahmeliste
+ *
+ * Am 15. September nachgetragen. Er geht mit dem Archiv an den Auftraggeber
+ * und sagt ihm, ob er hochladen darf. Sein einziger eingesetzter Text sind
+ * die Bezeichnungen der fehlenden Impressumsangaben — aus dem eigenen
+ * Register, aber eingesetzt ist eingesetzt.
+ * ------------------------------------------------------------------ */
+
+test('Ausgang Sperrentext: Gift in einer Feldbezeichnung erzeugt keine zweite Sperre', () => {
+  const harmlos = sperrentext(hochladesperren({ impressumFehlt: ['Telefonnummer'] }));
+  const giftig = sperrentext(hochladesperren({ impressumFehlt: [`Telefonnummer${GIFT}`] }));
+  assert.equal(
+    harmlos.filter((z) => z.startsWith('  * ')).length,
+    giftig.filter((z) => z.startsWith('  * ')).length,
+    'ein Umbruch in einer Bezeichnung macht aus einer Sperre keine zwei',
+  );
+});
+
+test('Ausgang Sperrentext: ohne Sperre steht keine da', () => {
+  const frei = sperrentext(hochladesperren({}));
+  assert.equal(frei.some((z) => z.includes('NICHT HOCHLADEN')), false);
+  assert.ok(frei.length >= 1, 'auch der freie Fall sagt etwas');
 });
