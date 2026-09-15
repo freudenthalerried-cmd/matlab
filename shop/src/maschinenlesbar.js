@@ -33,6 +33,7 @@ import { HERSTELLER, marke } from './hersteller.js';
 import { mengenschritt, packungsgewichtKg } from './gebinde.js';
 import { KENNUNGEN } from './crawler.js';
 import { GRENZE_TAGE, preisGueltigBis } from './preisalter.js';
+import { lesbarkeit, masseImNamen } from './bezeichnungsmass.js';
 
 /** Wie lange eine ausgezeichnete Preisangabe als gültig gilt (Tage). */
 export const PREIS_GUELTIG_TAGE = 7;
@@ -273,6 +274,51 @@ export function feedbeschreibung(artikel, einheiten = EINHEITEN) {
   const gewicht = packungsgewichtKg(artikel);
   if (gewicht != null) {
     teile.push(`Kleinste Abgabemenge ${String(gewicht).replace('.', ',')} kg`);
+  } else {
+    /*
+     * **Das Maß aus dem Namen — 15. September 2026.** Wo kein Gebindegewicht
+     * belegt ist, steht die Menge manchmal in der Bezeichnung: drei
+     * Soudal-Dosen zu je 750 ml. Gelesen wird sie **nur**, wenn der Name
+     * genau ein Maß trägt und keine blanke Zahl daneben — `lesbarkeit` sagt
+     * dann `eindeutig`, und das trifft im Bestand acht von 46 Namen.
+     *
+     * Der Rest bleibt ungelesen, und zwar mit Absicht: Ein Schachtring, dessen
+     * Name Durchmesser, Höhe und Wandstärke ohne Rolle aneinanderreiht, und
+     * eine Spachtelmasse, deren Produktkennung auf ein M endet, waren am
+     * 13. September die beiden Fälle, an denen ein gieriger Leser Meter aus
+     * einer Artikelnummer gemacht hätte.
+     *
+     * > **Die Herkunft steht dabei**: Diese Zahl kommt aus dem Namen und
+     * > nicht aus einer Angabe des Lieferanten, und ein Assistent, der sie
+     * > weitergibt, soll den Unterschied nennen können.
+     */
+    const [mass] = lesbarkeit(name) === 'eindeutig' ? masseImNamen(name).masse : [];
+    if (mass) {
+      teile.push(`Kleinste Abgabemenge ${mass.zahl} ${mass.einheit} `
+        + '— aus der Bezeichnung gelesen, nicht aus einer Angabe des Lieferanten');
+    }
+  }
+
+  /*
+   * **Wer sie herstellt und wo das Merkblatt liegt — 15. September 2026.**
+   *
+   * Die nützlichste Zeile für einen Assistenten, der eine Bestellliste
+   * zusammenstellt, ist nicht das Gewicht, sondern die Stelle, an der die
+   * Verarbeitungsvorschrift steht. Sie steht in **keinem** Nachbarfeld des
+   * Datensatzes und ist ohne diese Zeile nirgends maschinenlesbar.
+   *
+   * **Sie zählt trotzdem nicht als Wareneigenschaft.** Wer herstellt, ist die
+   * Herkunft der Ware und nicht ihre Beschaffenheit; `satzGehtUeber` gibt
+   * dafür `herkunft` zurück. Die Schranke `OHNE_WARENEIGENSCHAFT_HOECHSTENS`
+   * fällt davon nicht — eine Begriffsgrenze, die man verschiebt, bis die Zahl
+   * stimmt, ist keine Messung mehr.
+   */
+  const herstellermarke = marke(name);
+  const hersteller = herstellermarke ? HERSTELLER[herstellermarke] : null;
+  if (hersteller) {
+    teile.push(hersteller.url
+      ? `Hersteller ${hersteller.name}, technisches Merkblatt über ${hersteller.url}`
+      : `Hersteller ${hersteller.name}, ein technisches Merkblatt liegt uns nicht vor`);
   }
 
   // **Mit ihrer Herkunft, nicht ohne.** Dieselbe Auskunft wie auf der
@@ -347,6 +393,11 @@ export function satzGehtUeber(satz) {
   if (/^Kleinste Abgabemenge |^Verkaufseinheit .*Abgabe ab /.test(satz)) return 'ware';
   if (/^Palettierte Ware/.test(satz)) return 'versand';
   if (/^Preisstand /.test(satz)) return 'datensatz';
+  // **Seit dem 15. September.** Wer die Ware herstellt und wo ihr Merkblatt
+  // liegt, ist die nützlichste Zeile für einen Assistenten — und trotzdem
+  // keine Eigenschaft der Ware, sondern ihrer Herkunft. Eine Begriffsgrenze,
+  // die man verschiebt, bis die Zahl stimmt, ist keine Messung mehr.
+  if (/^Hersteller /.test(satz)) return 'herkunft';
   return 'sonstiges';
 }
 
@@ -354,18 +405,29 @@ export function satzGehtUeber(satz) {
  * Wie viele Beschreibungen ohne eine Angabe über die Ware hinausgehen dürfen.
  *
  * **Eine Sperrklinke, keine Zielgröße.** Gemessen am 13. September 2026: 21 von
- * 46. Die Abhilfe liegt beim Lieferanten — die Artikelliste mit EAN,
- * Herstellername und Merkmalen ist ein offener Punkt und freigabepflichtig.
- * Ein Prüfer, der heute rot wird für etwas, das dieser Loop nicht beheben
- * kann, wird abgeschaltet; einer, der gar nichts sagt, merkt die
- * Verschlechterung nicht.
+ * 46, am 15. September **18**. Die volle Abhilfe liegt weiter beim
+ * Lieferanten — die Artikelliste mit EAN, Herstellername und Merkmalen ist ein
+ * offener Punkt und freigabepflichtig. Ein Prüfer, der heute rot wird für
+ * etwas, das dieser Loop nicht beheben kann, wird abgeschaltet; einer, der gar
+ * nichts sagt, merkt die Verschlechterung nicht.
  *
  * > **Eine Zahl, die nur berichtet wird, ist eine Zahl, die steigen darf.**
  *
  * Diese Schranke darf deshalb **fallen und nie steigen**. Wird sie
  * unterschritten, gehört sie nachgezogen — und der Prüfer sagt es.
+ *
+ * **Warum es genau drei sind und nicht fünfzehn.** Am 15. September ist die
+ * Herstellerzeile dazugekommen — wer die Ware macht und wo ihr Merkblatt
+ * liegt. Sie steht in keinem Nachbarfeld, ist für einen Assistenten die
+ * nützlichste Zeile des ganzen Datensatzes und senkt diese Zahl **um
+ * nichts**: Wer herstellt, ist die Herkunft der Ware und nicht ihre
+ * Beschaffenheit. Gefallen ist die Zahl allein durch die drei Soudal-Dosen,
+ * deren Name genau ein Maß trägt.
+ *
+ * > **Eine Begriffsgrenze, die man verschiebt, bis die Zahl stimmt, ist keine
+ * > Messung mehr.**
  */
-export const OHNE_WARENEIGENSCHAFT_HOECHSTENS = 21;
+export const OHNE_WARENEIGENSCHAFT_HOECHSTENS = 18;
 
 export function beschreibungsbefund(artikel = [], mindestens = 20,
   hoechstens = OHNE_WARENEIGENSCHAFT_HOECHSTENS) {

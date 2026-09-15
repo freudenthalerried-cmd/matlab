@@ -120,15 +120,21 @@ export function kennzahlen(m) {
       wie: 'data/katalog-baustoff.json',
       muster: /eindeutigem Maß: \d+ von (\d+)/, soll: m.artikel,
     },
+    /*
+     * **Umgeschrieben am 15. September.** Bis heute stand hier ein Urteil ueber
+     * einen Namensleser, den es nicht gab: „Ein Namensleser senkte die 21 um
+     * 3." Seit er eingebaut ist, ist die Zahl keine Vorhersage mehr, sondern
+     * ein Ergebnis — und der Rest, den er noch erreichen koennte, ist 0.
+     */
     {
-      name: 'Beschreibungen, die ein Namensleser erreichte', wo: 'artikelliste',
+      name: 'Beschreibungen, die der Namensleser noch erreicht', wo: 'artikelliste',
       wie: 'src/bezeichnungsmass.js gegen src/maschinenlesbar.js',
-      muster: /senkte die \d+ um (\d+)/, soll: m.namensleserGewinn,
+      muster: /weiter erreichbar ist damit (\d+)/, soll: m.namensleserGewinn,
     },
     {
       name: 'Beschreibungen ohne Ware, im Massesatz', wo: 'artikelliste',
       wie: 'src/maschinenlesbar.js (beschreibungsbefund)',
-      muster: /senkte die (\d+) um \d+/, soll: m.ohneWareneigenschaft,
+      muster: /Er hat sie auf (\d+) gesenkt/, soll: m.ohneWareneigenschaft,
     },
     {
       name: 'Begriffe der Messliste', wo: 'suchvolumen',
@@ -187,11 +193,31 @@ export const OHNE_MESSUNG = Object.freeze([
       + 'erklären. Gedeckt ist nur der Tag vor einem Monatsnamen.',
   }),
   Object.freeze({
-    zahlen: ['2', '8', '08'],
-    warumOhneMessung: 'Tagesnummern ohne Monatsnamen, wie sie in Kurzschreibweisen stehen '
-      + '(„08.09."). Sie fallen nicht unter die Form darüber, weil dort der Monatsname fehlt — '
-      + 'und einzeln geführt zu werden ist besser, als das Datumsmuster so weit zu machen, '
-      + 'dass es jede zweistellige Zahl deckt.',
+    /*
+     * **Aus drei Ziffernfolgen wurde eine Form — 15. September 2026.**
+     *
+     * Hier stand `zahlen: ['2', '8', '08']` mit der Begruendung, einzeln
+     * gefuehrt zu werden sei besser, „als das Datumsmuster so weit zu machen,
+     * dass es jede zweistellige Zahl deckt". Der Satz stimmt gegen ein loses
+     * Muster — und er hat einen dritten Weg uebersehen.
+     *
+     * Heute ist die 13 aufgeschlagen: Der Punkt `artikelliste` nennt „13.09."
+     * dreimal als Datum, und die 13 war nur so lange gedeckt, wie sie
+     * zufaellig auch eine gemessene Kennzahl war. Mit dem Einbau des
+     * Namenslesers ist diese Kennzahl 3 geworden, und drei Meldungen standen
+     * da.
+     *
+     * > **Ein Freibrief, der aus Versehen gilt, faellt weg, sobald die Zahl
+     * > daneben sich aendert.**
+     *
+     * `DD.MM.` ist keine lose Form: Sie verlangt Punkt, zwei Ziffern und noch
+     * einen Punkt. Eine blanke 13 bleibt meldepflichtig.
+     */
+    form: /\b(\d{1,2})\.\d{2}\.(?!\d)/g,
+    warumOhneMessung: 'Tagesnummern in der Kurzschreibweise („08.09.", „13.09."). Sie fallen '
+      + 'nicht unter die Datumsform darueber, weil dort der Monatsname steht. Gedeckt ist nur '
+      + 'der Tag vor einer zweistelligen Monatszahl mit Punkt — dieselbe Ziffernfolge als '
+      + 'Kennzahl bleibt meldepflichtig.',
   }),
   Object.freeze({
     zahlen: ['44'],

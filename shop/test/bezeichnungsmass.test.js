@@ -98,16 +98,29 @@ test('Acht von sechsundvierzig Namen sind eindeutig lesbar', () => {
 /*
  * Die Zahl, wegen der die Messung gemacht wurde: Was brächte ein Leser
  * wirklich? Ein Name, dessen Maß die Beschreibung schon nennt, bringt nichts.
+ *
+ * **Umgeschrieben am 15. September 2026.** Bis heute stand hier „Ein
+ * Namensleser senkte die einundzwanzig um drei" — eine Vorhersage über einen
+ * Leser, den es nicht gab. Seit `feedbeschreibung` das Maß aus eindeutigen
+ * Namen liest, ist die Vorhersage eingetreten, und der Rest ist **null**.
+ *
+ * > **Eine Vorhersage, die eingetreten ist, gehört umgeschrieben und nicht
+ * > weiter als Vorhersage geführt.**
+ *
+ * Was der Testfall seither hält, ist die Gegenrichtung: Kein Name mit
+ * eindeutigem Maß steht mehr unter denen ohne Angabe über die Ware. Fällt
+ * einer zurück, ist der Leser kaputt.
  */
-test('Ein Namensleser senkte die einundzwanzig um drei', () => {
+test('der Namensleser hat alles erreicht, was er erreichen konnte', () => {
   const b = massbefund(KATALOG.artikel);
   const ohne = new Set(beschreibungsbefund(KATALOG.artikel).ohneWareneigenschaftSkus);
   assert.ok(ohne.size >= 1, 'ohne Bestand prüft der Vergleich darunter nichts');
-  const gewinn = b.skus.eindeutig.filter((sku) => ohne.has(sku));
-  assert.equal(gewinn.length, 3,
-    `ein Namensleser erreichte ${gewinn.length} Beschreibungen, gemessen waren drei`);
-  // Fünf der acht sagen ihr Maß schon — `packungsgewichtKg` liest die Kilogramm.
-  assert.equal(b.eindeutig - gewinn.length, 5);
+  assert.ok(b.skus.eindeutig.length >= 3, `nur ${b.skus.eindeutig.length} eindeutige Namen`);
+  const offen = b.skus.eindeutig.filter((sku) => ohne.has(sku));
+  assert.deepEqual(offen, [],
+    `${offen.join(', ')}: der Name trägt ein eindeutiges Maß und die Beschreibung sagt es nicht`);
+  // Alle acht sagen ihr Maß: fünf über `packungsgewichtKg`, drei über den Namen.
+  assert.equal(b.eindeutig, 8, `${b.eindeutig} Namen mit eindeutigem Maß`);
 });
 
 /*

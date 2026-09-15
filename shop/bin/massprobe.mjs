@@ -66,8 +66,15 @@ if (b.meldungen.length) {
 }
 
 console.log('');
-console.log(`Ein Leser über die Namen wäre für ${b.eindeutig} von ${b.artikel} richtig und senkte die`);
-console.log(`${beschreibung.ohneWareneigenschaft} um ${gewinn.length}. Die übrigen ${b.mehrdeutig} Namen tragen mehrere Zahlen ohne Rolle,`);
-console.log('Typenbezeichnungen, die wie Maße aussehen, oder zwei Zahlen unter einer Einheit.');
-console.log('Ein Werkzeug, das in 17 von 100 Fällen recht hat, ist keine Datenquelle.');
+// **Seit dem 15. September steht der Leser im Bau.** Bis dahin war diese Zahl
+// eine Vorhersage — „senkte die 21 um 3" —, jetzt ist sie ein Rest: Was der
+// Leser erreichen konnte, hat er erreicht, und `gewinn` sagt, was noch offen
+// wäre. Eine Vorhersage, die eingetreten ist, gehört umgeschrieben und nicht
+// weiter als Vorhersage geführt.
+console.log(`Ein Leser über die Namen ist für ${b.eindeutig} von ${b.artikel} richtig und steht seit dem`);
+console.log(`15. September im Bau. Offen sind noch ${gewinn.length} von ${beschreibung.ohneWareneigenschaft}`);
+console.log(`Beschreibungen ohne Angabe über die Ware. Die übrigen ${b.mehrdeutig} Namen tragen mehrere`);
+console.log('Zahlen ohne Rolle, Typenbezeichnungen, die wie Maße aussehen, oder zwei Zahlen');
+console.log('unter einer Einheit. Ein Werkzeug, das in 17 von 100 Fällen recht hat, ist keine');
+console.log('Datenquelle — deshalb liest der Bau nur die eindeutigen.');
 process.exit(0);

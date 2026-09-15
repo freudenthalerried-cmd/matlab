@@ -15,6 +15,8 @@ import {
   TRAININGS_CRAWLER,
   VERFUEGBARKEIT,
   liefergebietOrte,
+  feedbeschreibung,
+  satzGehtUeber,
 } from '../src/maschinenlesbar.js';
 import { existsSync } from 'node:fs';
 import { ladeKatalog } from '../src/warenkorb.js';
@@ -821,4 +823,58 @@ test('ein Artikel ohne Bezeichnung hat keine Beschreibung — und das ist ein Be
     0, null);
   assert.deepEqual(b.meldungen.map((m) => m.regel), ['ohne-beschreibung'],
     JSON.stringify(b.meldungen));
+});
+
+/*
+ * **Die Herkunft ist keine Wareneigenschaft — 15. September 2026.**
+ *
+ * An diesem Tag ist die Herstellerzeile in die Feedbeschreibung gekommen: wer
+ * die Ware macht und wo ihr technisches Merkblatt liegt. Sie steht in keinem
+ * Nachbarfeld des Datensatzes und ist für einen Assistenten, der eine
+ * Bestellliste zusammenstellt, die nützlichste Zeile überhaupt.
+ *
+ * Sie senkt `OHNE_WARENEIGENSCHAFT_HOECHSTENS` trotzdem nicht. Wer herstellt,
+ * ist die Herkunft der Ware und nicht ihre Beschaffenheit — und die Schranke
+ * misst die Beschaffenheit.
+ *
+ * > **Eine Begriffsgrenze, die man verschiebt, bis die Zahl stimmt, ist keine
+ * > Messung mehr.**
+ */
+test('die Herstellerzeile ist Herkunft und keine Angabe über die Ware', () => {
+  assert.equal(satzGehtUeber('Hersteller Soudal, technisches Merkblatt über https://www.soudal.com/'),
+    'herkunft');
+  assert.equal(satzGehtUeber('Hersteller Ökotherm, ein technisches Merkblatt liegt uns nicht vor'),
+    'herkunft');
+  assert.equal(satzGehtUeber('Kleinste Abgabemenge 25 kg'), 'ware');
+  assert.equal(satzGehtUeber('Palettierte Ware, Kranentladung je Hub'), 'versand');
+  assert.equal(satzGehtUeber('Preisstand 2026-07-27'), 'datensatz');
+});
+
+test('das Maß aus dem Namen kommt nur, wenn der Name genau eines trägt', () => {
+  /*
+   * Die drei Soudal-Dosen tragen „750 ml" und sonst keine Zahl. Der
+   * Schachtring „800 300 80 mm" trägt drei ohne Rolle, und die Spachtelmasse
+   * mit der Produktkennung auf M wäre am 13. September zu Metern geworden.
+   */
+  const dose = feedbeschreibung({
+    sku: 'X', bezeichnung: 'Soudal Perimeterkleber B3 750 ml', gruppe: 'Zubehör', einheit: 'DOS',
+  });
+  assert.match(dose, /Kleinste Abgabemenge 750 ml/);
+  assert.match(dose, /aus der Bezeichnung gelesen, nicht aus einer Angabe des Lieferanten/,
+    'eine Zahl aus dem Namen ist etwas anderes als eine Angabe des Lieferanten');
+
+  const ring = feedbeschreibung({
+    sku: 'Y', bezeichnung: 'Schachtring 800 300 80 mm', gruppe: 'Kanal', einheit: 'STK',
+  });
+  assert.doesNotMatch(ring, /Kleinste Abgabemenge/,
+    'drei Zahlen ohne Rolle sind kein Maß, sondern eine Aufzählung');
+});
+
+test('die Herstellerzeile nennt die Marke, für die kein Merkblatt belegt ist, auch so', () => {
+  const ohne = feedbeschreibung({
+    sku: 'Z', bezeichnung: 'Ökotherm HL N+F 10 50 23,8 cm', gruppe: 'Mauerwerk', einheit: 'STK',
+  });
+  assert.match(ohne, /ein technisches Merkblatt liegt uns nicht vor/,
+    'eine geratene Adresse wäre eine erfundene Quelle');
+  assert.doesNotMatch(ohne, /https/, 'für diese Marke ist keine Adresse belegt');
 });

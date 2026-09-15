@@ -229,9 +229,9 @@ export const OHNE_WERKZEUG = Object.freeze([
       + 'Kennwerten". Das ist unfair gegen den eigenen Text — die sechs Fassungen sagen '
       + 'ausdrücklich, warum dort keine Kennwerte stehen, und verweisen auf das Merkblatt des '
       + 'Herstellers. Eine leere Tabelle wäre schlimmer. **Beziffert ist seit dem 13.09. '
-      + 'stattdessen die maschinenlesbare Beschreibung: 21 von 46 sagen über die Ware selbst '
+      + 'stattdessen die maschinenlesbare Beschreibung: 18 von 46 sagen über die Ware selbst '
       + 'nichts** — ihr ganzer eigener Beitrag ist „Palettierte Ware" und ein Preisstand, bei '
-      + '13 davon der Preisstand allein. Weder Versandart noch Preisdatum ist eine '
+      + '3 davon der Preisstand allein. Weder Versandart noch Preisdatum ist eine '
       + 'Eigenschaft der Ware; die Zahl steht als Sperrklinke in '
       + '`OHNE_WARENEIGENSCHAFT_HOECHSTENS` und darf fallen, nicht steigen. **Gemessen 13.09. '
       + 'spätabends, warum das nur diese Liste löst:** Die Maße stehen in den Bezeichnungen, '
@@ -240,10 +240,14 @@ export const OHNE_WERKZEUG = Object.freeze([
       + 'Höhe und Wandstärke ohne Rolle aneinanderreiht; eine Spachtelmasse, deren '
       + 'Produktkennung auf ein M endet — ein Leser macht daraus Meter und hängt sie an einen '
       + 'Sack Klebemörtel; ein Gittergewebe, dessen Breite und Länge unter einer Einheit '
-      + 'stehen. Und von den acht lesbaren nennen fünf ihr Maß schon: Ein Namensleser senkte '
-      + 'die 21 um 3. Der größte gleiche '
-      + 'Block der Seiten ist dagegen unser eigener Lieferabsatz und bleibt es auch mit dieser '
-      + 'Liste.',
+      + 'stehen. **Am 15.09. ist der Namensleser eingebaut**, und zwar nur für die Namen mit '
+      + 'genau einem Maß: Er hat sie auf 18 gesenkt, und weiter erreichbar ist damit 0. '
+      + 'Am selben Tag ist die Herstellerzeile dazugekommen — wer die Ware macht und wo ihr '
+      + 'Merkblatt liegt, steht in keinem Nachbarfeld und ist für einen Assistenten die '
+      + 'nützlichste Zeile des Datensatzes. Sie senkt diese Zahl **um nichts**: Wer '
+      + 'herstellt, ist die Herkunft der Ware und nicht ihre Beschaffenheit. Der größte '
+      + 'gleiche Block der Seiten ist dagegen unser eigener Lieferabsatz und bleibt es auch '
+      + 'mit dieser Liste.',
   },
   {
     id: 'suchvolumen',

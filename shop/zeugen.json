@@ -440,5 +440,8 @@
   ],
   "das-formular-schweigt-wieder": [
     "shop/test/bestellwegbau.test.js"
+  ],
+  "die-herkunft-zaehlt-wieder-als-wareneigenschaft": [
+    "shop/test/maschinenlesbar.test.js"
   ]
 }

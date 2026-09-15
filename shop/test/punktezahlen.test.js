@@ -31,7 +31,7 @@ const gut = () => ({
       id: 'artikelliste',
       text: 'Beschreibung: 21 von 46 sagen über die Ware selbst nichts, '
         + 'bei 13 davon der Preisstand allein. Namen mit eindeutigem Maß: 8 von 46. '
-        + 'Ein Namensleser senkte die 21 um 3.',
+        + 'Er hat sie auf 21 gesenkt, und weiter erreichbar ist damit 3.',
     },
   ],
   messwerte: MESSWERTE,

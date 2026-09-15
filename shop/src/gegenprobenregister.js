@@ -4394,9 +4394,9 @@ export const GEGENPROBEN = Object.freeze([
     was: 'Die Beschreibungszahl im offenen Punkt geht nicht mehr gegen den Bestand',
     datei: 'shop/src/offenepunkte.js',
     art: 'ersetzen',
-    suchen: "      + 'stattdessen die maschinenlesbare Beschreibung: 21 von 46 sagen über die Ware selbst '",
+    suchen: "      + 'stattdessen die maschinenlesbare Beschreibung: 18 von 46 sagen über die Ware selbst '",
     ersetzen: "      + 'stattdessen die maschinenlesbare Beschreibung: 19 von 46 sagen über die Ware selbst '",
-    erwartet: /der Text sagt 19, gemessen sind 21/,
+    erwartet: /der Text sagt 19, gemessen sind 18/,
     warum: 'Die Liste fragt die Werkzeuge, welche Punkte offen sind — was in den Punkten steht, '
       + 'schreibt sie selbst. Genau daran ist am 8. September eine Aufgabe an den Auftraggeber '
       + 'gegangen, die es so nicht mehr gab. Die beiden Zahlen dieses Punktes stehen deshalb '
@@ -5146,6 +5146,23 @@ export const GEGENPROBEN = Object.freeze([
       + 'ihr Tag steht drei Zeilen weiter oben, und eine Lieferzeit ist eine Zusage über die '
       + 'Zukunft. Eine Lücke, die auf dem falschen Beleg steht, ist schlimmer als keine Angabe: '
       + 'Sie behauptet, hier fehle etwas — und hielt zugleich die ganze Rechnung aus der Akte.',
+  }),
+  Object.freeze({
+    id: 'die-herkunft-zaehlt-wieder-als-wareneigenschaft',
+    pruefer: 'test',
+    was: 'Die Herstellerzeile gilt wieder als Angabe ueber die Ware und senkt die Sperrklinke',
+    datei: 'shop/src/maschinenlesbar.js',
+    art: 'ersetzen',
+    suchen: "  if (/^Hersteller /.test(satz)) return 'herkunft';",
+    ersetzen: "  if (/^Hersteller /.test(satz)) return 'ware';",
+    erwartet: /Herkunft der Ware und nicht ihre Beschaffenheit|18 von 46|sperrklinke/i,
+    warum: 'Am 15. September ist die Herstellerzeile dazugekommen — wer die Ware macht und wo '
+      + 'ihr Merkblatt liegt. Sie steht in keinem Nachbarfeld und ist fuer einen Assistenten '
+      + 'die nuetzlichste Zeile des Datensatzes; sie ist trotzdem keine Eigenschaft der Ware, '
+      + 'sondern ihrer Herkunft. Diese Mutation zaehlt sie doch dazu, und die Schranke '
+      + 'OHNE_WARENEIGENSCHAFT_HOECHSTENS faellt von 18 auf drei — ohne dass eine einzige '
+      + 'Beschreibung mehr ueber die Ware saegte. Eine Begriffsgrenze, die man verschiebt, bis '
+      + 'die Zahl stimmt, ist keine Messung mehr.',
   }),
   Object.freeze({
     id: 'die-ablage-wird-wieder-dem-kunden-angelastet',
