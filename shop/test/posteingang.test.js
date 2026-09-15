@@ -28,6 +28,16 @@ test('ein Journal wird zeilenweise gelesen, Fehler mit Zeilennummer', () => {
   assert.equal(zeilen.length, 1);
   assert.equal(zeilen[0].zeile, 1);
   assert.equal(meldungen.length, 2);
+  /*
+   * **Der Regelname steht hier seit dem 15. September.** Dieser Fall löste
+   * `zeile-unlesbar` von Anfang an aus und prüfte nur die Zeilennummer im
+   * Text — `pruefe-regeln` führte die Regel deshalb als Stelle, die kein
+   * Testfall je hat feuern sehen.
+   *
+   * > **Ein Testfall, der eine Regel auslöst und nicht nennt, hat sie
+   * > geprüft und nicht bezeugt.**
+   */
+  assert.equal(meldungen[0].regel, 'zeile-unlesbar');
   assert.match(meldungen[0].text, /Zeile 2/);
   assert.equal(meldungen[1].regel, 'ohne-nummer');
 });

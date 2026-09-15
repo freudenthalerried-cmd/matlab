@@ -109,3 +109,37 @@ test('Ein Namensleser senkte die einundzwanzig um drei', () => {
   // Fünf der acht sagen ihr Maß schon — `packungsgewichtKg` liest die Kilogramm.
   assert.equal(b.eindeutig - gewinn.length, 5);
 });
+
+/*
+ * **Die Regel, die den Bestand festhält — gemessen am 15. September 2026.**
+ * `bestand-gewandert` ist die Zeile, auf der das ganze Modul ruht: Der Satz
+ * *„ein Leser über die Namen wäre für 8 von 46 richtig"* ist eine Aussage über
+ * **diesen** Katalog, und der Auftraggeber hat die Erweiterung auf mindestens
+ * hundert Artikel angeordnet. Sie hat nie gefeuert, weil der Katalog seit der
+ * Messung derselbe ist — was sie zur unwichtigsten Regel des Bestandes machte
+ * und zur wichtigsten des Tages, an dem der Katalog wächst.
+ */
+test('ein gewachsener Bestand meldet sich, bevor das Urteil weitergilt', () => {
+  const artikel = [
+    { sku: 'A', bezeichnung: 'Sack Zement 25 kg' },
+    { sku: 'B', bezeichnung: 'Platte' },
+  ];
+  const erwartet = { artikel: 3, ohne: 1, eindeutig: 1, mehrdeutig: 1 };
+  const b = massbefund(artikel, 0, erwartet);
+  const gewandert = b.meldungen.filter((m) => m.regel === 'bestand-gewandert');
+  assert.ok(gewandert.length >= 1, 'ein anderer Bestand als der gemessene muss auffallen');
+  assert.match(gewandert[0].text, /gemessen 2, festgehalten 3/);
+});
+
+test('deckt sich die Messung, meldet die Regel nichts — und null schaltet sie ab', () => {
+  const artikel = [
+    { sku: 'A', bezeichnung: 'Sack Zement 25 kg' },
+    { sku: 'B', bezeichnung: 'Platte' },
+  ];
+  const ist = massbefund(artikel, 0, null);
+  const deckt = massbefund(artikel, 0, {
+    artikel: ist.artikel, ohne: ist.ohne, eindeutig: ist.eindeutig, mehrdeutig: ist.mehrdeutig,
+  });
+  assert.deepEqual(deckt.meldungen, [], JSON.stringify(deckt.meldungen));
+  assert.deepEqual(ist.meldungen, [], 'ohne festgehaltene Messung gibt es nichts zu vergleichen');
+});

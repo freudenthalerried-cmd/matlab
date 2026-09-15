@@ -254,3 +254,28 @@ test('ein unbestimmtes Wort genügt nicht', () => {
   const zeile = '- [Grundleitung](https://x/system/kanal-dn100.html): Welche Teile? — teilweise lieferbar';
   assert.deepEqual(llmsqualifikation(listen, zeile).meldungen.map((m) => m.regel), ['system-unqualifiziert']);
 });
+
+/*
+ * **Die letzte ungesehene Regel dieses Moduls — 15. September 2026.** Jede
+ * Systemliste des Bestandes nennt in ihrer Kopfzeile mindestens einen Artikel;
+ * `ohne-artikel` hat deshalb nie gefeuert. Sie ist die Zeile, die den
+ * Unterschied zwischen einer Stückliste und einem Merkblatt hält: Eine Liste
+ * ohne einen einzigen Artikel verspricht auf ihrer Seite Lieferbarkeit und
+ * zeigt nichts, was man bestellen könnte.
+ */
+test('eine Systemliste ohne einen einzigen Artikel ist ein Befund', () => {
+  const g = liesSystemliste('---\nskus:\n---\n\n'
+    + '| # | Position | Menge nach | oft vergessen |\n|---|---|---|---|\n'
+    + '| 1 | Kanalrohr | x | — |');
+  /*
+   * **Und warum sie über diesen Leser gar nicht zu erreichen war.** In
+   * `liesSystemliste` stand `/^skus:\s*(.+)$/m`, und `\s` schließt den
+   * Zeilenumbruch ein: Bei leerem `skus:` las die Suche den Trennstrich `---`
+   * der nächsten Zeile als Artikelnummer. Gemeldet wurde dann
+   * `sku-gibt-es-nicht` — eine richtige Meldung mit dem falschen Grund.
+   */
+  assert.deepEqual(g.skus, [], 'ein `\\s` am Zeilenende liest die nächste Zeile mit');
+  const b = listenbefund('probe.md', g, new Set(['POS-1']));
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['ohne-artikel'],
+    'eine Liste ohne Artikel ist ein Merkblatt und keine Stückliste');
+});

@@ -164,6 +164,74 @@ export const GEBAUT_GEPRUEFT = Object.freeze([
  * Eine Regel, die nur mühsam zu sehen ist, gehört gesehen.
  */
 export const REGEL_GEPRUEFT = Object.freeze([
+  /*
+   * **Die sechs Etiketten — eingetragen am 15. September 2026.** Sie sind der
+   * ganze Rest: Nach diesem Tag ist jede andere der 487 Regelstellen von einem
+   * Testfall rot gesehen worden. Diese sechs stehen in `bin/`-Werkzeugen und
+   * **entscheiden nichts.** Sie kleben einen Regelnamen auf eine Antwort, die
+   * eine Funktion in `src/` gegeben hat — und die ist gemessen.
+   *
+   * Man koennte jede einzelne erreichbar machen, indem man den Aufruf in eine
+   * Funktion in `src/` hebt. Der Zaehler fiele um sechs, und geprueft waere
+   * nichts, was nicht schon geprueft ist.
+   *
+   * > **Ein Pruefer, der einen Messwert nur verschiebt, hat ihn nicht
+   * > verbessert.**
+   *
+   * Die Entscheidung steht am 14. September in
+   * `docs/baustoff-shop/sechs-waechter-ueber-ihr-eigenes-register.md`. Sie
+   * gehoert hierher, weil ein Grund, der nur in einem Dokument steht, von
+   * keinem Pruefer gelesen wird.
+   */
+  Object.freeze({
+    regel: 'voraussetzung-fehlt',
+    pfad: 'bin/ablagepruefung.mjs',
+    warum: 'Ein Etikett auf der Antwort von `luecken()` aus `src/vorgangsstand.js`. Die '
+      + 'Entscheidung, ob ein Papier seine Voraussetzung hat, faellt dort und ist in '
+      + '`test/vorgangsstand.test.js` ab Zeile 167 in beide Richtungen gemessen — mit Luecke '
+      + 'und ohne. Das Werkzeug schreibt den Namen davor und sonst nichts.',
+  }),
+  Object.freeze({
+    regel: 'papiere-widersprechen-sich',
+    pfad: 'bin/ablagepruefung.mjs',
+    warum: 'Dasselbe fuer `widersprueche()` aus `src/vorgangsstand.js`, geprueft in '
+      + '`test/vorgangsstand.test.js`. Ein zweiter Testfall hier pruefte, ob ich den Namen '
+      + 'richtig abgeschrieben habe, und nicht, ob ein Widerspruch erkannt wird.',
+  }),
+  Object.freeze({
+    regel: 'geheimnis-im-aussentext',
+    pfad: 'bin/belegpruefung.mjs',
+    warum: 'Ein Etikett auf jeder Zeile, die `pruefeAnfrageAufGeheimnis()` aus '
+      + '`src/kundenanfrage.js` zurueckgibt — der Einkaufspreis oder das Wort „Marge" im Text '
+      + 'an den Lieferanten. Gemessen ist das in `test/kundenanfrage.test.js` ab Zeile 133, '
+      + 'gruen wie rot. Das Werkzeug bildet die Texte auf `{ regel, text }` ab.',
+  }),
+  Object.freeze({
+    regel: 'bruch-nicht-erkannt',
+    pfad: 'bin/systemtreuepruefung.mjs',
+    warum: 'Der Name fuer den Fall, dass `systembruch()` aus `src/systemtreue.js` einen '
+      + 'gemischten Korb nicht meldet. Die Funktion selbst ist in `test/systemtreue.test.js` '
+      + 'ab Zeile 72 an einem gemischten und an einem reinen Korb gemessen. Feuern koennte '
+      + 'diese Zeile nur, wenn der Katalog die beiden genannten Artikelnummern verliert — '
+      + 'dann meldete sie zu Recht nichts mehr, und `zuordnungsbefund` daneben schlaegt an.',
+  }),
+  Object.freeze({
+    regel: 'bruch-ohne-bruch',
+    pfad: 'bin/systemtreuepruefung.mjs',
+    warum: 'Die Gegenrichtung desselben Aufrufs: ein reiner Korb, der als gemischt gilt. Auch '
+      + 'sie ist in `test/systemtreue.test.js` an der Funktion gemessen, die entscheidet — eine '
+      + 'Warnung, die bei jedem Korb angeht, liest nach dem dritten Mal niemand mehr.',
+  }),
+  Object.freeze({
+    regel: 'kasse-schweigt',
+    pfad: 'bin/systemtreuepruefung.mjs',
+    warum: 'Dieser Aufruf ist der einzige der sechs, der zwei Dinge zusammenbringt: '
+      + '`kundenWarenkorb()` aus `src/shopkern.js` und den Satz ueber Systemtreue in seinen '
+      + 'offenen Punkten. Beide Haelften sind gemessen — der Korb in `test/shopkern.test.js`, '
+      + 'der Systembruch in `test/systemtreue.test.js`. Was hier zusaetzlich gemessen wird, '
+      + 'ist der Bestand selbst: ob **dieser** Katalog zwei Artikel hat, an denen es sich '
+      + 'zeigt. Das ist eine Messung und kein Prueffall.',
+  }),
   Object.freeze({
     regel: 'menge-kommt-anders-zurueck',
     pfad: 'src/anfragelesen.js',
@@ -217,20 +285,21 @@ export const ERFUNDEN_GEPRUEFT = Object.freeze([
  *
  * **Eine Sperrklinke, gesetzt auf den gemessenen Stand.** Sie darf fallen und
  * nie steigen. Gemessen am 14./15. September: 80 → 67 → 56 → 47 → 43 → 38 → 31
- * → **19** von 484 Stellen.
+ * → 19 → **0** von 487 Stellen.
  *
- * Der Schritt von 31 auf 19 kostete zwölf Testfälle und **keine einzige neue
- * Regel**: Sechs Befunde prüfen ihr eigenes Register — die Freibriefe in
- * `punktezahlen.js`, die Zettelzeilen, die beiden Listen des Tages X, die
- * Korbgründe, die Absagegründe, die Markenlisten —, und im Bestand ist jeder
- * Eintrag in Ordnung. Ein Register, das stimmt, macht seinen eigenen Wächter
- * unsichtbar; erreichbar wird er erst, wenn das Register als Beiwert
- * hereinkommt.
+ * **Null heißt nicht „fertig".** Es heißt: Jede Regelstelle dieses Bestandes
+ * ist entweder von einem Testfall rot gesehen worden oder steht in
+ * `REGEL_GEPRUEFT` mit einem Grund. Die nächste geschriebene Regel bricht
+ * diese Sperre sofort — und genau dafür steht sie auf null und nicht auf
+ * einem bequemen Wert.
+ *
+ * Der Weg von 31 auf 0 kostete dreiundzwanzig Testfälle, **eine** Berichtigung
+ * an einem Leser und sechs Einträge mit Grund. Keine einzige neue Regel.
  *
  * > **Wer dreimal am selben Tag dieselbe Bauart findet, hat keine drei Funde,
  * > sondern eine Gewohnheit gefunden.**
  */
-export const UNGESEHENE_HOECHSTENS = 19;
+export const UNGESEHENE_HOECHSTENS = 0;
 
 /**
  * @param {Map<string, string>} quellen  Pfad (repo-relativ) → Quelltext

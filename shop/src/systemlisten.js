@@ -78,7 +78,17 @@ export function liesSystemliste(text) {
   const zeilen = [...text.matchAll(/^\| (\d+) \| (.+?) \|(.*)$/gm)]
     .map((m) => ({ nr: Number(m[1]), position: m[2], rest: m[3] }));
 
-  const skuZeile = /^skus:\s*(.+)$/m.exec(text);
+  /*
+   * **`[ \t]` und nicht `\s` — 15. September 2026.** Hier stand `/^skus:\s*(.+)$/m`,
+   * und `\s` schliesst den Zeilenumbruch ein: Bei einer leeren Kopfzeile
+   * `skus:` sprang die Suche in die naechste Zeile und las den Trennstrich
+   * `---` als Artikelnummer. Gemeldet wurde dann `sku-gibt-es-nicht` — eine
+   * richtige Meldung mit dem falschen Grund, und `ohne-artikel` war ueber
+   * diesen Leser ueberhaupt nicht zu erreichen.
+   *
+   * > **Ein `\s` am Zeilenende liest die naechste Zeile mit.**
+   */
+  const skuZeile = /^skus:[ \t]*(.*)$/m.exec(text);
   const skus = skuZeile
     ? skuZeile[1].split(',').map((s) => s.trim()).filter(Boolean)
     : [];

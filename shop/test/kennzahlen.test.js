@@ -184,3 +184,25 @@ test('jeder Eintrag im Verzeichnis trägt einen tragfähigen Grund', () => {
     assert.ok(e.warum.length >= 80, `${e.id}: Grund zu kurz`);
   }
 });
+
+/*
+ * **Die letzte ungesehene Regel dieses Moduls — 15. September 2026.** Beide
+ * Läufe rechnen dieselbe Kennzahlenliste, nur mit anderen Eingaben; dass eine
+ * Kennzahl im zweiten Lauf fehlt, ist im Bestand nie vorgekommen.
+ * `kennzahl-verschwindet` ist trotzdem die Zeile, die den ganzen Vergleich
+ * trägt: Ohne sie fiele eine Kennzahl, die nur unter bestimmten Eingaben
+ * entsteht, aus **beiden** Richtungen heraus — sie gälte weder als starr noch
+ * als beweglich und wäre einfach nicht mehr da.
+ */
+test('eine Kennzahl, die nur in einem der beiden Läufe entsteht, ist ein Befund', () => {
+  let lauf = 0;
+  const b = schwellenbefund(() => {
+    lauf += 1;
+    return lauf === 1
+      ? [{ id: 'immer', schwelle: 1 }, { id: 'nur-beim-ersten', schwelle: 2 }]
+      : [{ id: 'immer', schwelle: 9 }];
+  }, []);
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['kennzahl-verschwindet'],
+    'sie gälte sonst weder als starr noch als beweglich und wäre einfach nicht mehr da');
+  assert.equal(b.meldungen[0].id, 'nur-beim-ersten');
+});

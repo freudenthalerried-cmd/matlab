@@ -327,3 +327,26 @@ test('Die Adresse der UID-Abfrage liegt unter .eu und zählt trotzdem', () => {
   const b = gemesseneAdressen({ x: { beleg: 'z.B. kein Weg dorthin' } });
   assert.equal(b.size, 0, [...b].join(' '));
 });
+
+/*
+ * **Die letzte ungesehene Regel dieses Moduls — 15. September 2026.** Jeder
+ * Versuch im Vermerk trägt ein lesbares Datum; `versuch-ohne-datum` hat
+ * deshalb nie gefeuert. Sie ist aber die Regel, die verhindert, dass ein
+ * Tippfehler im Datum als *frischer* Versuch durchgeht: `tageSeit` gibt dann
+ * `null` zurück, und ohne diese Zeile fiele der Versuch durch keine der
+ * beiden Altersprüfungen.
+ */
+test('ein Versuch ohne brauchbares Datum ist ein Befund', () => {
+  const regeln = (am) => aussengrenzenbefund(
+    { versuche: { x: { am, ergebnis: 'gesperrt', beleg: 'a'.repeat(30) } } },
+    '2026-09-09', [{ id: 'x', was: 'irgendwas', wie: 'curl' }],
+  ).meldungen.map((m) => m.regel);
+
+  assert.deepEqual(regeln('vorgestern'), ['versuch-ohne-datum'],
+    'ein Wort ist kein Datum, und ohne diese Zeile ginge es als frisch durch');
+  assert.deepEqual(regeln('2026-13-45'), ['versuch-ohne-datum'],
+    'ein Datum, das es nicht gibt, ist so unbrauchbar wie keines');
+  assert.deepEqual(regeln('2026-09-10'), ['versuch-ohne-datum'],
+    'ein Versuch von morgen ist nicht frisch, sondern unbrauchbar — die Regel deckt beides');
+  assert.deepEqual(regeln('2026-09-09'), [], 'der heutige Versuch meldet nichts');
+});

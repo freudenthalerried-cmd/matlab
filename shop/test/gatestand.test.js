@@ -191,3 +191,33 @@ test('das echte Register hält seinen eigenen Kopf', () => {
   const b = registerkopfbefund({ text, gates: gatesAusRegister(text).length });
   assert.deepEqual(b.meldungen, []);
 });
+
+/*
+ * **Die eine Regel dieses Moduls, die nie gefeuert hat — 15. September 2026.**
+ * `ueberschrift-ohne-zahl` greift, wenn die Zeile `## Die <Zahlwort> Gates`
+ * gar nicht dasteht oder ihr Zahlwort nicht zu lesen ist. Ihre Nachbarin
+ * `ueberschrift-abgeloest` (die Zahl stimmt nicht) ist seit dem 9. September
+ * geprüft; diese hier nicht — und sie ist die schärfere: Fällt die Überschrift
+ * weg, ist gar nichts mehr zu vergleichen, und der Abgleich schwiege still.
+ */
+test('eine fehlende Gate-Überschrift ist ein Befund, kein stiller Verzicht', () => {
+  const ohne = ['# Gate-Register', '', 'Stand: 2026-08-27. **Maßgeblich für alle Gate-Fragen.** '
+    + 'Vierundzwanzig', 'Entscheidungen sind über die Phasen verteilt gefallen.', '', '',
+    '## Die Gates im Überblick', '', 'Nachgetragen am 26. August.'].join('\n');
+  const b = registerkopfbefund({ text: ohne, gates: 24 });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['ueberschrift-ohne-zahl'],
+    'ohne Überschrift ist nichts zu vergleichen, und der Abgleich schwiege still');
+});
+
+test('eine Überschrift mit Ziffern statt Zahlwort ist nicht lesbar', () => {
+  const b = registerkopfbefund({ text: kopftext('2026-08-27', 'Vierundzwanzig', '24'), gates: 24 });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['ueberschrift-ohne-zahl'],
+    'das Muster liest ein Zahlwort — „24" trifft es nicht, und das ist zu melden');
+});
+
+test('ein unbekanntes Zahlwort in der Überschrift ist nicht lesbar', () => {
+  const b = registerkopfbefund({
+    text: kopftext('2026-08-27', 'Vierundzwanzig', 'unzählige'), gates: 24,
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['ueberschrift-ohne-zahl']);
+});

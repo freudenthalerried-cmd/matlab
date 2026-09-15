@@ -183,7 +183,16 @@ test('die Fläche darf tragen, was der Satz nicht sagt', () => {
     { name: 'agb', text: 'Teillieferungen je Lieferant sind der Regelfall.' },
     { name: 'index', text: 'nichts dazu' },
   ], 1, 3);
-  assert.equal(b.meldungen.length, 1);
+  /*
+   * **Der Regelname steht hier seit dem 15. September.** Bis dahin zählte
+   * dieser Fall nur die Meldungen und nannte die Regel nie — `pruefe-regeln`
+   * führte `mehrlieferung-ohne-bedingung` deshalb als Stelle, die kein
+   * Testfall je hat feuern sehen, obwohl er sie die ganze Zeit auslöste.
+   *
+   * > **Ein Testfall, der eine Regel auslöst und nicht nennt, hat sie
+   * > geprüft und nicht bezeugt.**
+   */
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['mehrlieferung-ohne-bedingung']);
   assert.equal(b.meldungen[0].wo, 'agb');
   assert.equal(b.gesehen, 2, 'beide Aussagen gehören gesehen, nur eine gemeldet');
 });

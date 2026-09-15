@@ -188,3 +188,27 @@ test('jede Browserprobe hat eine Zeitschranke — und jede, die einen Browser st
     'ein Werkzeug startet einen Browser und steht in keinem Register — es läuft in keinem '
     + 'Gesamtlauf mit, und niemand hält seine Zahl gegen ein Mindestmaß');
 });
+
+/*
+ * **Die letzte ungesehene Regel dieses Moduls — 15. September 2026.**
+ * `KEIN_PRUEFER` führt die npm-Befehle, die ausdrücklich keine Prüfer sind
+ * (`build`, `website`, …), jeweils mit Grund. Jeder von ihnen steht in
+ * `package.json` — `grund-ohne-befehl` hat deshalb nie gefeuert. Sie ist die
+ * Gegenrichtung des Registers: Wird ein Befehl umbenannt oder entfernt, bliebe
+ * sein Verzicht stehen und nähme beim nächsten Namensgleichen einen echten
+ * Prüfer aus der Messung.
+ */
+test('ein Verzicht auf einen Befehl, den es nicht gibt, ist ein Befund', () => {
+  const grund = 'Ein Grund, der lang genug ist, um in einem Jahr noch zu tragen, und der '
+    + 'deshalb an dieser Stelle absichtlich weit über achtzig Zeichen hinausgeht.';
+  const b = registerbefund({
+    ...echteLage(),
+    ausGegenproben: [],
+    ohneGegenprobe: [],
+    pruefer: [],
+    kein: [{ name: 'laengst-umbenannt', warum: grund }],
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['grund-ohne-befehl'],
+    'ein Verzicht, der auf nichts zeigt, nimmt beim nächsten Namensgleichen einen echten Prüfer aus der Messung');
+  assert.match(b.meldungen[0].text, /laengst-umbenannt/);
+});

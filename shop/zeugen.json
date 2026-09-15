@@ -434,5 +434,8 @@
   ],
   "der-freibrief-prueft-sich-selbst-nicht-mehr": [
     "shop/test/punktezahlen.test.js"
+  ],
+  "die-kopfzeile-liest-die-naechste-zeile-mit": [
+    "shop/test/systemlisten.test.js"
   ]
 }

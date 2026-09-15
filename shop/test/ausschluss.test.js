@@ -84,3 +84,42 @@ test('kein Ausschluss der Kampagne steht häufig im eigenen Seitentext', () => {
   // der Vergleich darüber stumm.
   assert.ok(b.gezaehlt.length >= 50, `nur ${b.gezaehlt.length} einwortige Ausschlüsse`);
 });
+
+/*
+ * **Die Regel selbst, gemessen — 15. September 2026.** `pruefe-regeln` führt
+ * `eigenes-wort-ausgeschlossen` seit dem 6. September als Stelle, die kein
+ * Testfall je hat feuern sehen: Im Bestand steht kein Ausschlusswort öfter im
+ * eigenen Seitentext als die Grenze erlaubt — genau deshalb ist der Prüfer
+ * grün, und genau deshalb sagt sein grünes Ergebnis nichts über die Regel.
+ */
+test('ein Ausschlusswort, das die eigenen Seiten oft benutzen, ist ein Befund', () => {
+  const seitentext = 'Vergleich '.repeat(EIGENWORTGRENZE + 1);
+  const b = ausschlussbefund({
+    ausschluesse: [{ thema: 'Suche ohne Kaufabsicht', wort: 'vergleich' }],
+    seitentext,
+    mindestens: 1,
+  });
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['eigenes-wort-ausgeschlossen'],
+    'ein Wort, das die eigenen Seiten so oft benutzen, trägt nicht die Absicht seines Themas');
+  assert.equal(b.meldungen[0].wort, 'vergleich');
+  assert.equal(b.gezaehlt[0].n, EIGENWORTGRENZE + 1);
+});
+
+test('genau an der Grenze ist noch kein Befund', () => {
+  const b = ausschlussbefund({
+    ausschluesse: [{ thema: 'Suche ohne Kaufabsicht', wort: 'vergleich' }],
+    seitentext: 'Vergleich '.repeat(EIGENWORTGRENZE),
+    mindestens: 1,
+  });
+  assert.deepEqual(b.meldungen, [], 'die Grenze ist das letzte erlaubte Vorkommen, nicht das erste verbotene');
+});
+
+test('ein mehrwortiger Ausschluss wird gar nicht gezählt', () => {
+  const b = ausschlussbefund({
+    ausschluesse: [{ thema: 'Fremdmarke', wort: 'baumit direkt' }],
+    seitentext: 'Baumit direkt '.repeat(50),
+    mindestens: 0,
+  });
+  assert.deepEqual(b.meldungen, [], 'eine Wendung trägt ihre Absicht in der Wendung');
+  assert.equal(b.gezaehlt.length, 0);
+});

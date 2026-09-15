@@ -340,3 +340,32 @@ test('Die Mengenlesart und die Einzelfrage lesen dieselben Zahlen', () => {
     }
   }
 });
+
+/*
+ * **Die letzte ungesehene Regel dieses Moduls — 15. September 2026.**
+ * `ausnahme-ohne-grund` ist die dritte Richtung des Registers: Die erste hält
+ * die Zahl gegen den Bestand, die zweite die Ausnahme gegen ihre Fundstelle,
+ * die dritte die Ausnahme gegen sich selbst. Die ersten beiden sind seit dem
+ * 11. September geprüft; diese nicht, weil jede Ausnahme des Bestandes einen
+ * belastbaren Grund trägt.
+ */
+test('eine Ausnahme ohne belastbaren Grund ist ein Befund', () => {
+  const quellen = new Map([
+    ['src/heim.js', 'export const WERT = 0.42;'],
+    ['src/anderswo.js', 'const eigen = 0.42;'],
+  ]);
+  const regeln = (warum) => zwillingsbefund(quellen, [{
+    id: 'probe',
+    literal: '0.42',
+    heimat: 'src/heim.js',
+    name: 'WERT',
+    was: 'eine Probe',
+    warum: 'x'.repeat(90),
+    ausnahmen: [{ datei: 'src/anderswo.js', warum }],
+  }]).meldungen.map((m) => m.regel);
+
+  assert.deepEqual(regeln('x'.repeat(50)), [], 'ein belastbarer Grund schweigt');
+  assert.deepEqual(regeln('geht nicht anders'), ['ausnahme-ohne-grund'],
+    'drei Wörter erklären in einem Jahr nicht mehr, warum diese Datei die Zahl tragen darf');
+  assert.deepEqual(regeln(''), ['ausnahme-ohne-grund'], 'gar kein Grund ist derselbe Befund');
+});

@@ -5148,6 +5148,21 @@ export const GEGENPROBEN = Object.freeze([
       + 'Sie behauptet, hier fehle etwas — und hielt zugleich die ganze Rechnung aus der Akte.',
   }),
   Object.freeze({
+    id: 'die-kopfzeile-liest-die-naechste-zeile-mit',
+    pruefer: 'test',
+    was: 'Ein leeres `skus:` in einer Systemliste liest den Trennstrich als Artikelnummer',
+    datei: 'shop/src/systemlisten.js',
+    art: 'ersetzen',
+    suchen: "  const skuZeile = /^skus:[ \\t]*(.*)$/m.exec(text);",
+    ersetzen: "  const skuZeile = /^skus:\\s*(.+)$/m.exec(text);",
+    erwartet: /ein `\\s` am Zeilenende liest die n(ä|ae)chste Zeile mit/,
+    warum: 'Gefunden am 15. September beim Versuch, `ohne-artikel` anschlagen zu sehen: `\\s` '
+      + 'schliesst den Zeilenumbruch ein, und bei leerer Kopfzeile `skus:` sprang die Suche in '
+      + 'die naechste Zeile und las den Trennstrich `---` als Artikelnummer. Gemeldet wurde '
+      + 'dann `sku-gibt-es-nicht` — eine richtige Meldung mit dem falschen Grund, und die '
+      + 'Regel ueber die Liste ohne Artikel war ueber diesen Leser nicht zu erreichen.',
+  }),
+  Object.freeze({
     id: 'die-tuer-wird-wieder-umgangen',
     pruefer: 'pruefe-beiwerte',
     was: 'Eine Funktion nimmt ihr Register herein und liest es im Rumpf trotzdem aus dem Modul',

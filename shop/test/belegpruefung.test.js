@@ -254,3 +254,58 @@ test('Jeder Eintrag des Verweisregisters nennt seinen Grund', () => {
     assert.ok(punkt.titel.toLowerCase().includes(v.erwartetImTitel.toLowerCase()), `Punkt ${v.nr}`);
   }
 });
+
+/*
+ * **Zwei Regeln über den gedruckten Beleg — gemessen am 15. September 2026.**
+ * Beide stehen seit dem 2. September und haben nie gefeuert: Die Belege dieses
+ * Hauses drucken, was geprüft wurde, und schreiben die Einheit aus. Grün ist
+ * deshalb eine Aussage über den Bestand, keine über die Regeln.
+ */
+test('was geprüft wurde und im Text nicht steht, ist ein Befund', () => {
+  /*
+   * Der Fall vom 2. September: `pruefeRechnungsmerkmale` prüft die Eingaben,
+   * `pruefeBeleg` den Text. Die Rechnung galt nach § 11 UStG als vollständig,
+   * während im gedruckten Beleg die Anschrift des Ausstellers fehlte. Beide
+   * Prüfungen waren grün und meinten verschiedene Dinge.
+   */
+  const text = mitSumme('Bereits bezahlt am 30.08.2026 über EPS.\nBauversand, 4770 Andorf');
+  const fehlt = pruefeBeleg({
+    art: 'Rechnung',
+    text,
+    mussEnthalten: [{ was: 'Anschrift des Ausstellers', wert: 'Marktplatz 3, 4910 Ried' }],
+  });
+  assert.deepEqual(fehlt.meldungen.map((m) => m.regel), ['geprueft-aber-nicht-gedruckt'],
+    'zwei grüne Prüfungen über verschiedene Dinge sind keine grüne Prüfung');
+
+  const da = pruefeBeleg({
+    art: 'Rechnung',
+    text,
+    mussEnthalten: [{ was: 'Anschrift des Ausstellers', wert: '4770 Andorf' }],
+  });
+  assert.deepEqual(da.meldungen, [], 'steht der geprüfte Wert im Text, meldet nichts');
+
+  const leer = pruefeBeleg({
+    art: 'Rechnung',
+    text,
+    mussEnthalten: [{ was: 'UID', wert: '' }],
+  });
+  assert.deepEqual(leer.meldungen, [],
+    'eine fehlende Angabe ist im Text schon als sichtbare Lücke markiert — zweimal dasselbe zu melden macht keine Meldung besser');
+});
+
+test('eine Mengenzeile mit Kürzel statt Wort ist ein Befund', () => {
+  // Eine eingetragene Belegart, sonst meldete zuerst `belegart-unbekannt` —
+  // und gemessen werden soll diese Regel, nicht ihre Nachbarin.
+  // Gemessen wird nur diese Regel; die Zustandsaussage des Betrags ist eine
+  // Nachbarin mit eigenem Testfall weiter oben.
+  const beleg = (zeile) => pruefeBeleg({
+    art: 'Angebot',
+    text: `Angebot AN-0001\n\n${zeile}\n`,
+  }).meldungen.map((m) => m.regel).filter((r) => r === 'kuerzel-statt-wort');
+
+  assert.deepEqual(beleg('  12 STK    Dübel'), ['kuerzel-statt-wort'],
+    'auf einem Beleg an den Kunden steht die Einheit ausgeschrieben');
+  assert.deepEqual(beleg('  12 Stück    Dübel'), []);
+  assert.deepEqual(beleg('  1 Karton    Dübel 100 STK, 1 KAR'), [],
+    'der Name kommt vom Lieferanten und wird nicht umgeschrieben');
+});

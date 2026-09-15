@@ -239,3 +239,28 @@ test('Der Kopf von PARAMETER.md deckt sich mit seiner Tafel', async () => {
   const b = kopfbefund(text, weisungen);
   assert.deepEqual(b.meldungen, [], b.meldungen.map((m) => m.text).join('\n'));
 });
+
+/*
+ * **Die letzte ungesehene Regel dieses Moduls — 15. September 2026.**
+ * `ausnahme-ohne-grund` ist die Nachbarin von `ausnahme-ohne-dokument`: Die
+ * eine hält die Ausnahme gegen den Bestand, die andere gegen sich selbst. Die
+ * eine ist seit dem 11. September geprüft, die andere nicht — weil die eine
+ * Ausnahme dieses Hauses seit dem ersten Tag einen ganzen Grund trägt.
+ */
+test('eine Ausnahme ohne tragfähigen Grund ist ein Befund', () => {
+  // `y.md` trägt die Wendung und steht in keiner Ausnahme — sonst meldete
+  // zuerst `keine-quelle-gefunden`, und gemessen werden soll diese Regel.
+  const regeln = (warum) => quellenbefund(
+    [
+      { datei: 'x.md', kopf: 'Weisung des Auftraggebers: tu dies.' },
+      { datei: 'y.md', kopf: 'Weisung des Auftraggebers: tu jenes.' },
+    ],
+    [], '| x.md | y.md |',
+    [{ datei: 'x.md', warum }],
+  ).meldungen.map((m) => m.regel);
+
+  assert.deepEqual(regeln('x'.repeat(90)), [], 'ein ganzer Grund schweigt');
+  assert.deepEqual(regeln('historisch so'), ['ausnahme-ohne-grund'],
+    'zwei Wörter erklären in einem Jahr nicht mehr, warum dieses Dokument keinen Kopf trägt');
+  assert.deepEqual(regeln(''), ['ausnahme-ohne-grund'], 'gar kein Grund ist derselbe Befund');
+});
