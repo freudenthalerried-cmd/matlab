@@ -328,6 +328,18 @@ export const PRUEFER = [
   // Funktion trug die Kopfzeile den Beiwert schon und der Rumpf las an vier
   // Stellen weiter das Modul — aufgefallen beim Lesen, nicht beim Messen.
   // Gemessen wird die Zahl der **angesehenen** Registervorgaben.
+  // **Aufgenommen am 15. September 2026.** Gestern haben die acht Eingabefelder
+  // einen Satz für den Kunden bekommen — die Frage. Die Antwort blieb, wie sie
+  // war: „Ablage belegt.", „Kein lesbares JSON.", „Feld fehlt oder ist leer:
+  // unternehmerBestaetigt". Gemessen wird die Zahl der **Stellen**, an denen
+  // das Empfangsskript eine Bestellung abweist.
+  {
+    name: 'pruefe-abweisungen',
+    werkzeug: 'abweisungspruefung.mjs',
+    muster: /Abweisungen — (\d+) Stellen/,
+    einheit: 'Abweisungen des Empfangsskripts',
+    mindestens: 10,
+  },
   {
     name: 'pruefe-beiwerte',
     werkzeug: 'beiwertpruefung.mjs',

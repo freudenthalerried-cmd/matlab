@@ -57,6 +57,22 @@ declare(strict_types=1);
  */
 date_default_timezone_set('Europe/Vienna');
 
+/**
+ * Der Satz für die drei Fälle, in denen **wir** es sind und nicht der Kunde.
+ *
+ * **Der Anlass, 15. September 2026.** Hier standen „Ablage nicht erreichbar.",
+ * „Ablage nicht beschreibbar." und „Ablage belegt." — drei Sätze über unser
+ * Journal, hingestellt vor einen Menschen, der gerade bestellen wollte. Der
+ * Unterschied ist nicht sprachlich: Wer glaubt, er sei schuld, versucht es
+ * anders; wer weiß, dass es an uns liegt, ruft an.
+ *
+ * Welcher der drei Fälle eingetreten ist, gehört ins Protokoll des Servers und
+ * nicht in die Antwort — für den Besteller ist es dieselbe Lage.
+ */
+const ABLAGE_FEHLT = 'Ihre Bestellung konnte bei uns nicht gespeichert werden. Das liegt an uns '
+    . 'und nicht an Ihrer Eingabe. Bitte versuchen Sie es in einigen Minuten noch einmal oder '
+    . 'rufen Sie uns an.';
+
 const HOECHSTLAENGE = 65536;
 const ABLAGEORDNER = __DIR__ . '/../bestellungen';
 
@@ -170,18 +186,38 @@ function istKopfsicher(string $wert): bool
     return !preg_match('/[\r\n\0]/', $wert);
 }
 
+/**
+ * Wie das Feld auf dem Formular heißt.
+ *
+ * **Der Anlass, 15. September 2026.** Die Meldung lautete „Feld fehlt oder ist
+ * leer: unternehmerBestaetigt". Unter diesem Namen hat der Besteller nie etwas
+ * gesehen; auf dem Formular steht „Ich bestelle für ein Unternehmen".
+ *
+ * Die Beschriftungen kommen aus derselben Quelle wie die Felder selbst
+ * (`src/bestellfelder.js`) und werden von `npm run website` mitgeschrieben.
+ * Fehlt eine, steht der technische Name da — das ist schlechter als die
+ * Beschriftung und besser als gar nichts.
+ */
+function beschriftung(string $name): string
+{
+    global $beschriftungen;
+    return is_array($beschriftungen) && isset($beschriftungen[$name])
+        ? (string) $beschriftungen[$name]
+        : $name;
+}
+
 function textFeld(array $daten, string $name, int $maximum, bool $pflicht = true): ?string
 {
     $wert = $daten[$name] ?? null;
     if (!is_string($wert) || trim($wert) === '') {
         if ($pflicht) {
-            antworte(400, ['ok' => false, 'grund' => "Feld fehlt oder ist leer: $name"]);
+            antworte(400, ['ok' => false, 'grund' => 'Bitte ergänzen Sie noch: ' . beschriftung($name) . '. Die Angabe steht auf dem Formular unter diesem Namen.']);
         }
         return null;
     }
     $wert = trim($wert);
     if (mb_strlen($wert) > $maximum) {
-        antworte(400, ['ok' => false, 'grund' => "Feld zu lang: $name"]);
+        antworte(400, ['ok' => false, 'grund' => 'Diese Angabe ist länger, als das Formular annehmen kann: ' . beschriftung($name) . '. Bitte kürzen Sie sie.']);
     }
     return $wert;
 }
@@ -190,29 +226,29 @@ function textFeld(array $daten, string $name, int $maximum, bool $pflicht = true
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
     header('Allow: POST');
-    antworte(405, ['ok' => false, 'grund' => 'Nur POST.']);
+    antworte(405, ['ok' => false, 'grund' => 'Diese Seite nimmt Bestellungen nur über das Formular der Kasse an. Bitte schicken Sie die Bestellung über die Kasse ab.']);
 }
 
 $art = strtolower(trim(explode(';', (string) ($_SERVER['CONTENT_TYPE'] ?? ''))[0]));
 if ($art !== 'application/json') {
-    antworte(415, ['ok' => false, 'grund' => 'Erwartet wird application/json.']);
+    antworte(415, ['ok' => false, 'grund' => 'Die Bestellung ist nicht in der erwarteten Form angekommen. Bitte laden Sie die Seite neu und schicken Sie die Bestellung noch einmal ab.']);
 }
 
 if (strtolower((string) ($_SERVER['HTTP_SEC_FETCH_SITE'] ?? '')) === 'cross-site') {
-    antworte(403, ['ok' => false, 'grund' => 'Diese Bestellung kommt nicht von dieser Seite.']);
+    antworte(403, ['ok' => false, 'grund' => 'Diese Bestellung wurde nicht auf dieser Seite ausgefüllt. Bitte öffnen Sie die Kasse erneut und schicken Sie die Bestellung von dort ab.']);
 }
 
 $roh = file_get_contents('php://input', false, null, 0, HOECHSTLAENGE + 1);
 if ($roh === false) {
-    antworte(400, ['ok' => false, 'grund' => 'Kein Inhalt.']);
+    antworte(400, ['ok' => false, 'grund' => 'Die Bestellung ist unvollständig bei uns angekommen. Bitte laden Sie die Seite neu und schicken Sie die Bestellung noch einmal ab.']);
 }
 if (strlen($roh) > HOECHSTLAENGE) {
-    antworte(413, ['ok' => false, 'grund' => 'Inhalt zu lang.']);
+    antworte(413, ['ok' => false, 'grund' => 'Die Bestellung ist zu umfangreich für einen Vorgang. Bitte teilen Sie sie in zwei Bestellungen oder rufen Sie uns an.']);
 }
 
 $daten = json_decode($roh, true);
 if (!is_array($daten)) {
-    antworte(400, ['ok' => false, 'grund' => 'Kein lesbares JSON.']);
+    antworte(400, ['ok' => false, 'grund' => 'Die Bestellung ist unvollständig bei uns angekommen. Bitte laden Sie die Seite neu und schicken Sie die Bestellung noch einmal ab.']);
 }
 
 // --- 2. Der Empfänger und die Feldliste, beide aus der Konfiguration --------
@@ -234,8 +270,11 @@ $k = is_file(__DIR__ . '/bestellung-konfiguration.php')
     : null;
 $empfaenger = is_array($k) ? ($k['empfaenger'] ?? null) : null;
 $felder = is_array($k) && isset($k['felder']) && is_array($k['felder']) ? $k['felder'] : [];
+$beschriftungen = is_array($k) && isset($k['beschriftungen']) && is_array($k['beschriftungen'])
+    ? $k['beschriftungen']
+    : [];
 if (!is_string($empfaenger) || !filter_var($empfaenger, FILTER_VALIDATE_EMAIL) || $felder === []) {
-    antworte(503, ['ok' => false, 'grund' => 'Der Bestellweg ist noch nicht eingerichtet.']);
+    antworte(503, ['ok' => false, 'grund' => 'Der Bestellweg ist gerade nicht in Betrieb. Das liegt an uns. Bitte schicken Sie uns die Liste als Anfrage — die Schaltfläche daneben tut das.']);
 }
 
 // --- 3. Die Angaben, jede mit Grenze ----------------------------------------
@@ -243,7 +282,7 @@ if (!is_string($empfaenger) || !filter_var($empfaenger, FILTER_VALIDATE_EMAIL) |
 $text   = textFeld($daten, 'text', 20000);
 $bezirk = textFeld($daten, 'bezirk', 100);
 if (!istKopfsicher($bezirk)) {
-    antworte(400, ['ok' => false, 'grund' => 'Unerlaubtes Zeichen in: bezirk']);
+    antworte(400, ['ok' => false, 'grund' => 'Diese Angabe enthält ein Zeichen, das hier nicht stehen darf: ' . beschriftung('bezirk') . '. Bitte ohne Zeilenumbrüche eintragen.']);
 }
 
 $erhoben = [];
@@ -252,17 +291,17 @@ foreach ($felder as $name => $art) {
         // Eine Bestätigung ist entweder erklärt oder nicht. `false` ist keine
         // fehlende Angabe, sondern eine Verneinung — und die hält Gate 7 auf.
         if (($daten[$name] ?? null) !== true) {
-            antworte(400, ['ok' => false, 'grund' => "Bestätigung fehlt: $name"]);
+            antworte(400, ['ok' => false, 'grund' => 'Bitte setzen Sie noch das Häkchen bei: ' . beschriftung($name) . '. Ohne diese Erklärung können wir keine Nettorechnung ausstellen.']);
         }
         $erhoben[$name] = true;
         continue;
     }
     $wert = textFeld($daten, $name, 200);
     if (!istKopfsicher($wert)) {
-        antworte(400, ['ok' => false, 'grund' => "Unerlaubtes Zeichen in: $name"]);
+        antworte(400, ['ok' => false, 'grund' => 'Diese Angabe enthält ein Zeichen, das hier nicht stehen darf: ' . beschriftung($name) . '. Bitte ohne Zeilenumbrüche eintragen.']);
     }
     if ($art === 'email' && !filter_var($wert, FILTER_VALIDATE_EMAIL)) {
-        antworte(400, ['ok' => false, 'grund' => 'Die E-Mail-Adresse ist nicht lesbar.']);
+        antworte(400, ['ok' => false, 'grund' => 'Die E-Mail-Adresse ist nicht lesbar. Bitte prüfen Sie die Schreibweise — dorthin geht Ihr Angebot.']);
     }
     $erhoben[$name] = $wert;
 }
@@ -279,7 +318,7 @@ foreach ($felder as $name => $art) {
 // ist kein Journal, sondern eine Veröffentlichung.
 
 if (!is_dir(ABLAGEORDNER) && !@mkdir(ABLAGEORDNER, 0700, true) && !is_dir(ABLAGEORDNER)) {
-    antworte(500, ['ok' => false, 'grund' => 'Ablage nicht erreichbar.']);
+    antworte(500, ['ok' => false, 'grund' => ABLAGE_FEHLT]);
 }
 
 $jahr  = (int) date('Y');
@@ -287,11 +326,11 @@ $datei = ABLAGEORDNER . "/journal-$jahr.jsonl";
 
 $griff = @fopen($datei, 'c+');
 if ($griff === false) {
-    antworte(500, ['ok' => false, 'grund' => 'Ablage nicht beschreibbar.']);
+    antworte(500, ['ok' => false, 'grund' => ABLAGE_FEHLT]);
 }
 if (!flock($griff, LOCK_EX)) {
     fclose($griff);
-    antworte(500, ['ok' => false, 'grund' => 'Ablage belegt.']);
+    antworte(500, ['ok' => false, 'grund' => ABLAGE_FEHLT]);
 }
 
 // Die laufende Nummer entsteht **unter der Sperre**. Wer sie vorher zieht,
@@ -362,7 +401,7 @@ flock($griff, LOCK_UN);
 fclose($griff);
 
 if ($geschrieben === false) {
-    antworte(500, ['ok' => false, 'grund' => 'Ablage nicht beschreibbar.']);
+    antworte(500, ['ok' => false, 'grund' => ABLAGE_FEHLT]);
 }
 
 // --- 5. Bescheid geben ------------------------------------------------------

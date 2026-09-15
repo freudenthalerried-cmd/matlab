@@ -3370,7 +3370,15 @@ function main() {
       `<?php\n// Erzeugt von npm run website aus data/betreiber.json und src/bestellfelder.js.\n`
       + `return [\n  'empfaenger' => ${JSON.stringify(String(betreiberDaten.email))},\n`
       + `  'felder' => [${BESTELLFELDER.map((f) => `\n    ${JSON.stringify(f.name)} => `
-        + `${JSON.stringify(f.art)},`).join('')}\n  ],\n];\n`, 'utf8');
+        + `${JSON.stringify(f.art)},`).join('')}\n  ],\n`
+      // **Und die Beschriftungen — 15. September 2026.** Die Abweisung sagte
+      // „Feld fehlt oder ist leer: unternehmerBestaetigt"; unter dem Namen hat
+      // der Besteller nie etwas gesehen. Sie kommen aus derselben Quelle wie
+      // die Felder, damit keine zweite Liste entsteht.
+      + `  'beschriftungen' => [${BESTELLFELDER.map((f) => `\n    ${JSON.stringify(f.name)} => `
+        + `${JSON.stringify(f.beschriftung)},`).join('')}\n`
+      + `    ${JSON.stringify('bezirk')} => ${JSON.stringify('Bezirk der Baustelle')},\n`
+      + `    ${JSON.stringify('text')} => ${JSON.stringify('Warenkorb')},\n  ],\n];\n`, 'utf8');
   }
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>

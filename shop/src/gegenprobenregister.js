@@ -5148,6 +5148,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'Sie behauptet, hier fehle etwas — und hielt zugleich die ganze Rechnung aus der Akte.',
   }),
   Object.freeze({
+    id: 'die-ablage-wird-wieder-dem-kunden-angelastet',
+    pruefer: 'pruefe-abweisungen',
+    was: 'Der eigene Fehler steht wieder als Meldung ueber unser Journal vor dem Besteller',
+    datei: 'shop/bestellung.php',
+    art: 'ersetzen',
+    suchen: "const ABLAGE_FEHLT = 'Ihre Bestellung konnte bei uns nicht gespeichert werden. Das liegt an uns '",
+    ersetzen: "const ABLAGE_FEHLT = 'Ablage nicht erreichbar.' . ('",
+    erwartet: /satz-ohne-stelle/,
+    warum: 'Der Fund vom 15. September: Drei der achtzehn Abweisungen des Empfangsskripts '
+      + 'lauteten „Ablage nicht erreichbar.", „Ablage nicht beschreibbar." und „Ablage '
+      + 'belegt." — drei Saetze ueber unser Journal, hingestellt vor einen Menschen, der '
+      + 'gerade bestellen wollte, und alle drei sind **unsere** Fehler. Wer glaubt, er sei '
+      + 'schuld, versucht es anders; wer weiss, dass es an uns liegt, ruft an. Diese Mutation '
+      + 'stellt den alten Satz wieder her.',
+  }),
+  Object.freeze({
     id: 'das-formular-schweigt-wieder',
     pruefer: 'test',
     was: 'Der Satz für den Kunden verschwindet aus den Feldern, die das Formular baut',

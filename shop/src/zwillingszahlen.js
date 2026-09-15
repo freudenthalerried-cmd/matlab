@@ -379,6 +379,15 @@ export const ENGE_SCHWELLE = 5;
  */
 export const VORSCHLAG_GEPRUEFT = Object.freeze([
   Object.freeze({
+    name: 'status', wert: 403,
+    warum: 'Ein HTTP-Statuscode im Abweisungsregister (`src/abweisung.js`) — „verboten". Die '
+      + 'anderen beiden Fundstellen sind derselbe Code an anderer Stelle: der erwartete Status '
+      + 'eines Crawler-Versuchs in `src/startklar.js` und das Ergebnis eines solchen Versuchs '
+      + 'im Vermerk `data/aussenlage.json`. Ein Statuscode ist ein Name aus Ziffern und gehoert '
+      + 'keiner Heimat: Er kommt aus RFC 9110 und wandert nie, weil sich hier etwas aendert. '
+      + 'Eine gemeinsame Konstante verbaende drei Stellen, die nichts miteinander zu tun haben.',
+  }),
+  Object.freeze({
     name: 'bisZeichen', wert: 63,
     warum: 'Die gemessene Rumpflaenge der drei Ablageort-Praedikate im Gestaltregister '
       + '(`src/codedubletten.js`). Das zweite Vorkommen ist die Zahl der Oberflaechen-'

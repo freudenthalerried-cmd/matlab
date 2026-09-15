@@ -113,6 +113,7 @@
     "pruefe-codedubletten": "node bin/codedublettenpruefung.mjs",
     "pruefe-regeln": "node bin/regelpruefung.mjs",
     "pruefe-namen": "node bin/namenspruefung.mjs",
-    "pruefe-beiwerte": "node bin/beiwertpruefung.mjs"
+    "pruefe-beiwerte": "node bin/beiwertpruefung.mjs",
+    "pruefe-abweisungen": "node bin/abweisungspruefung.mjs"
   }
 }

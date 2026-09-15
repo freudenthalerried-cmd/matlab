@@ -44,8 +44,14 @@ async function server({ konfiguriert = true } = {}) {
     // Probe prüfte das Skript gegen etwas, das der Bau nie ausliefert.
     const felder = BESTELLFELDER.map((f) => `    ${JSON.stringify(f.name)} => `
       + `${JSON.stringify(f.art)},`).join('\n');
+    // **Und die Beschriftungen — 15. September 2026.** Ohne sie stünde in der
+    // Abweisung der technische Feldname; unter dem hat der Besteller nie
+    // etwas gesehen. Der Bau schreibt sie seit heute mit, diese Probe auch.
+    const namen = BESTELLFELDER.map((f) => `    ${JSON.stringify(f.name)} => `
+      + `${JSON.stringify(f.beschriftung)},`).join('\n');
     writeFileSync(join(site, 'bestellung-konfiguration.php'),
-      `<?php return [\n  'empfaenger' => 'office@example.at',\n  'felder' => [\n${felder}\n  ],\n];\n`);
+      `<?php return [\n  'empfaenger' => 'office@example.at',\n  'felder' => [\n${felder}\n  ],\n`
+      + `  'beschriftungen' => [\n${namen}\n  ],\n];\n`);
   }
   const port = await freierPort();
   const kind = spawn('php', ['-S', `127.0.0.1:${port}`, '-t', site], { stdio: 'ignore' });
@@ -114,7 +120,16 @@ test('ein Zeilenumbruch in einer Angabe kommt nicht durch',
     try {
       const antwort = await schicke(s.port, { ...GUELTIG, firma: 'A\nBcc: opfer@example.at' });
       assert.equal(antwort.status, 400);
-      assert.match((await antwort.json()).grund, /Unerlaubtes Zeichen/);
+      /*
+       * **Der Satz für den Kunden, seit 15. September 2026.** Hier stand
+       * „Unerlaubtes Zeichen in: firma" — ein Wort über unsere Prüfung und
+       * der technische Feldname. Geprüft wird jetzt beides: dass der Satz
+       * sagt, was zu tun ist, und dass er das Feld so nennt, wie es auf dem
+       * Formular steht.
+       */
+      const grund = (await antwort.json()).grund;
+      assert.match(grund, /Zeichen, das hier nicht stehen darf/);
+      assert.match(grund, /Firma/, 'die Abweisung nennt den technischen Namen statt der Beschriftung');
       assert.equal(existsSync(join(s.wurzel, 'bestellungen')), false, 'abgewiesen und trotzdem abgelegt');
     } finally { s.ende(); }
   });
@@ -124,9 +139,10 @@ test('eine unlesbare Adresse, ein fehlendes Feld und kein JSON werden abgewiesen
     const s = await server();
     try {
       for (const [koerper, muster] of [
-        [{ ...GUELTIG, email: 'keine-adresse' }, /E-Mail-Adresse/],
-        [{ ...GUELTIG, ort: '' }, /ort/],
-        ['kein json', /JSON/],
+        [{ ...GUELTIG, email: 'keine-adresse' }, /E-Mail-Adresse ist nicht lesbar/],
+        // Nicht „ort", sondern „Ort" — die Beschriftung des Formulars.
+        [{ ...GUELTIG, ort: '' }, /Bitte ergänzen Sie noch: Ort/],
+        ['kein json', /unvollständig bei uns angekommen/],
       ]) {
         const antwort = await schicke(s.port, koerper);
         assert.equal(antwort.status, 400, JSON.stringify(koerper));
@@ -143,7 +159,9 @@ test('ohne Konfiguration nimmt das Skript nichts an',
     try {
       const antwort = await schicke(s.port, GUELTIG);
       assert.equal(antwort.status, 503);
-      assert.match((await antwort.json()).grund, /noch nicht eingerichtet/);
+      const grund = (await antwort.json()).grund;
+      assert.match(grund, /nicht in Betrieb/);
+      assert.match(grund, /liegt an uns/, 'unser Fehler, und der Satz sagt es');
     } finally { s.ende(); }
   });
 
