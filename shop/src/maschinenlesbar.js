@@ -251,6 +251,30 @@ export function herstellerNameAus(bezeichnung) {
  * Katalogfeld oder aus einer Funktion, die schon die Seite füttert.
  * ------------------------------------------------------------------ */
 
+/**
+ * Wer die Ware herstellt und wo ihr Merkblatt liegt — an **einer** Stelle.
+ *
+ * **Warum als eigene Funktion, 15. September 2026.** Dieselbe Auskunft steht
+ * an drei Orten: in der Feedbeschreibung, in `llms.txt` und auf der
+ * Artikelseite. Zwei Fassungen derselben Auskunft sind in diesem Haus der
+ * häufigste Befund überhaupt — deshalb steht der Satz einmal und wird von dort
+ * geholt.
+ *
+ * `null` heißt: Die Bezeichnung nennt keine Marke, die das Register kennt. Das
+ * trifft 18 von 46 Artikeln, und für sie wäre jede Angabe geraten.
+ *
+ * @param {{bezeichnung?: string}} artikel
+ * @param {Record<string, {name: string, url: string|null}>} [register]
+ */
+export function herkunftssatz(artikel, register = HERSTELLER) {
+  const kuerzel = marke(textZeile(artikel?.bezeichnung ?? ''), register);
+  const h = kuerzel ? register[kuerzel] : null;
+  if (!h) return null;
+  return h.url
+    ? `Hersteller ${h.name}, technisches Merkblatt über ${h.url}`
+    : `Hersteller ${h.name}, ein technisches Merkblatt liegt uns nicht vor`;
+}
+
 export function feedbeschreibung(artikel, einheiten = EINHEITEN) {
   const name = textZeile(artikel.bezeichnung ?? '');
   if (!name) return null;
@@ -313,13 +337,8 @@ export function feedbeschreibung(artikel, einheiten = EINHEITEN) {
    * fällt davon nicht — eine Begriffsgrenze, die man verschiebt, bis die Zahl
    * stimmt, ist keine Messung mehr.
    */
-  const herstellermarke = marke(name);
-  const hersteller = herstellermarke ? HERSTELLER[herstellermarke] : null;
-  if (hersteller) {
-    teile.push(hersteller.url
-      ? `Hersteller ${hersteller.name}, technisches Merkblatt über ${hersteller.url}`
-      : `Hersteller ${hersteller.name}, ein technisches Merkblatt liegt uns nicht vor`);
-  }
+  const herkunft = herkunftssatz(artikel);
+  if (herkunft) teile.push(herkunft);
 
   // **Mit ihrer Herkunft, nicht ohne.** Dieselbe Auskunft wie auf der
   // Artikelseite, in `llms.txt`, in der Kasse und seit heute auf der
@@ -336,6 +355,63 @@ export function feedbeschreibung(artikel, einheiten = EINHEITEN) {
 
   teile.push('Preis netto für Unternehmer, Umsatzsteuer wird getrennt ausgewiesen');
   return `${teile.join('. ')}.`;
+}
+
+/**
+ * Hält `llms.txt` gegen die Herkunftsangabe der Feedbeschreibung.
+ *
+ * **Der Anlass, 15. September 2026.** Seit gestern trägt die Feedbeschreibung
+ * Hersteller und Merkblattadresse. `llms.txt` — die Datei, die es **für**
+ * Assistenten gibt — trug sie nicht: Sie nannte Preis, Abgabemenge, Gruppe und
+ * System. Für einen Assistenten, der eine Bestellliste zusammenstellt, ist die
+ * Stelle mit der Verarbeitungsvorschrift die nützlichste Angabe überhaupt.
+ *
+ * Geprüft wird die **Adresse**, nicht der Satz: In der Zeile steht er gekürzt,
+ * weil der Markenname schon in der Bezeichnung steht. Wo keine Adresse belegt
+ * ist, muss die Zeile das sagen — sonst sieht die Lücke aus wie eine
+ * Auslassung.
+ *
+ * > **Eine Datei für Assistenten, die weniger sagt als der Feed, schickt den
+ * > Assistenten auf die schlechtere Quelle.**
+ *
+ * @param {string} llms  der Inhalt von `ausgabe/site/llms.txt`
+ * @param {{sku: string, bezeichnung: string}[]} artikel
+ */
+export function llmsherkunftbefund(llms, artikel, register = HERSTELLER) {
+  const meldungen = [];
+  const zeilen = String(llms ?? '').split('\n');
+  let geprueft = 0;
+  let ohneAdresse = 0;
+
+  for (const a of artikel) {
+    const satz = herkunftssatz(a, register);
+    if (!satz) continue;
+    const zeile = zeilen.find((z) => z.includes(`/artikel/${a.sku}.html`));
+    if (!zeile) continue;
+    geprueft += 1;
+    const adresse = /über (\S+)$/.exec(satz)?.[1];
+    if (adresse) {
+      if (!zeile.includes(adresse)) {
+        meldungen.push({
+          regel: 'merkblatt-fehlt-in-llms',
+          text: `${a.sku}: die Feedbeschreibung nennt ${adresse}, die Zeile in llms.txt nicht — `
+            + 'ein Assistent liest diese Datei und nicht den Feed',
+        });
+      }
+      continue;
+    }
+    ohneAdresse += 1;
+    if (!/Merkblatt liegt uns nicht vor/.test(zeile)) {
+      meldungen.push({
+        regel: 'luecke-sieht-aus-wie-auslassung',
+        text: `${a.sku}: für diese Marke ist keine Merkblattadresse belegt, und die Zeile in `
+          + 'llms.txt sagt es nicht — eine Lücke, die sichtbar ist, ist besser als eine, die '
+          + 'gefüllt aussieht',
+      });
+    }
+  }
+
+  return { geprueft, ohneAdresse, meldungen, sauber: meldungen.length === 0 };
 }
 
 /**

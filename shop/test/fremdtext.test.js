@@ -34,7 +34,7 @@ import { erzeugeAbsage } from '../src/absage.js';
 import { kundenWarenkorb } from '../src/shopkern.js';
 import { baueKundenanfrage, mailtoWeg } from '../src/kundenanfrage.js';
 import { erzeugeImpressum } from '../src/rechtstexte.js';
-import { robotsTxt } from '../src/maschinenlesbar.js';
+import { robotsTxt, herkunftssatz } from '../src/maschinenlesbar.js';
 import { erzeugeLieferantenanfrage } from '../src/lieferantenanfrage.js';
 import { jsonFuerSkript } from '../src/format.js';
 import { belegzeile } from '../src/vies.js';
@@ -528,7 +528,33 @@ test('Ausgang robots.txt: Gift in der Sitemap-Adresse erzeugt keine zusätzliche
 });
 
 /* ------------------------------------------------------------------ *
- * Ausgang 11: die Oberfläche
+ * Ausgang 11: der Satz über Hersteller und Merkblatt
+ *
+ * Am 15. September nachgetragen, zusammen mit dem Satz selbst. Er geht an zwei
+ * Stellen hinaus, an denen kein Mensch mehr hinsieht: in die Feedbeschreibung
+ * und in `llms.txt`. Sein Fremdtext ist die **Artikelbezeichnung** des
+ * Lieferanten — aus ihr wird die Marke gelesen.
+ * ------------------------------------------------------------------ */
+
+test('Ausgang Herkunft: Gift in der Bezeichnung erzeugt keine zweite Zeile', () => {
+  const harmlos = herkunftssatz({ bezeichnung: 'Soudal Perimeterkleber B3 750 ml' });
+  const giftig = herkunftssatz({ bezeichnung: `Soudal Perimeterkleber${GIFT} 750 ml` });
+  assert.equal(harmlos, giftig,
+    'die Bezeichnung wird gelesen und nicht eingesetzt — der Satz kommt aus dem Register');
+  assert.equal(hatSteuerzeichen(giftig), false);
+});
+
+test('Ausgang Herkunft: eine erfundene Marke erzeugt keinen Satz', () => {
+  // Der Satz entsteht nur aus dem Register. Eine Bezeichnung, die eine Marke
+  // *behauptet*, bekommt keine Merkblattadresse angehängt — sonst wäre die
+  // Artikelliste des Lieferanten ein Weg, fremde Adressen in unseren Feed zu
+  // schreiben.
+  assert.equal(herkunftssatz({ bezeichnung: 'Superkleber von https://fremd.example/' }), null);
+  assert.equal(herkunftssatz({ bezeichnung: '' }), null);
+});
+
+/* ------------------------------------------------------------------ *
+ * Ausgang 12: die Oberfläche
  * ------------------------------------------------------------------ */
 
 test('Ausgang Oberfläche: kein Quelltext schreibt fremden Text als HTML', () => {

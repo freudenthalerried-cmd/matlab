@@ -17,6 +17,8 @@ import {
   liefergebietOrte,
   feedbeschreibung,
   satzGehtUeber,
+  herkunftssatz,
+  llmsherkunftbefund,
 } from '../src/maschinenlesbar.js';
 import { existsSync } from 'node:fs';
 import { ladeKatalog } from '../src/warenkorb.js';
@@ -877,4 +879,80 @@ test('die Herstellerzeile nennt die Marke, für die kein Merkblatt belegt ist, a
   assert.match(ohne, /ein technisches Merkblatt liegt uns nicht vor/,
     'eine geratene Adresse wäre eine erfundene Quelle');
   assert.doesNotMatch(ohne, /https/, 'für diese Marke ist keine Adresse belegt');
+});
+
+/*
+ * **Der Weg nach draußen, zum zweiten Mal — 15. September 2026.** Gestern
+ * bekam die Feedbeschreibung Hersteller und Merkblattadresse. `llms.txt`, die
+ * Datei, die es **für** Assistenten gibt, trug sie nicht — sie nannte Preis,
+ * Abgabemenge, Gruppe und System.
+ *
+ * > **Eine Datei für Assistenten, die weniger sagt als der Feed, schickt den
+ * > Assistenten auf die schlechtere Quelle.**
+ *
+ * Derselbe Befund wie am 13. September beim Bestellformular: Das Register war
+ * vollständig, und die Ausgabe holte nur die Hälfte ab.
+ */
+const REGISTER = Object.freeze({
+  Mit: { name: 'Mit Adresse', url: 'https://beispiel.example/' },
+  Ohne: { name: 'Ohne Adresse', url: null },
+});
+const zeile = (sku, rest) => `- [x](https://bauversand.com/artikel/${sku}.html): 1,00 €${rest}`;
+
+test('herkunftssatz steht an einer Stelle und nennt die Lücke beim Namen', () => {
+  assert.equal(herkunftssatz({ bezeichnung: 'Mit Ware' }, REGISTER),
+    'Hersteller Mit Adresse, technisches Merkblatt über https://beispiel.example/');
+  assert.equal(herkunftssatz({ bezeichnung: 'Ohne Ware' }, REGISTER),
+    'Hersteller Ohne Adresse, ein technisches Merkblatt liegt uns nicht vor');
+  assert.equal(herkunftssatz({ bezeichnung: 'Kennt keiner' }, REGISTER), null,
+    'ohne bekannte Marke wäre jede Angabe geraten');
+});
+
+test('eine Zeile in llms.txt ohne die Merkblattadresse ist ein Befund', () => {
+  const artikel = [{ sku: 'POS-1', bezeichnung: 'Mit Ware' }];
+  const gut = llmsherkunftbefund(zeile('POS-1', ' · technisches Merkblatt über https://beispiel.example/'),
+    artikel, REGISTER);
+  assert.deepEqual(gut.meldungen, []);
+  assert.equal(gut.geprueft, 1);
+
+  const stumm = llmsherkunftbefund(zeile('POS-1', ' · Zubehör'), artikel, REGISTER);
+  assert.deepEqual(stumm.meldungen.map((m) => m.regel), ['merkblatt-fehlt-in-llms'],
+    'ein Assistent liest diese Datei und nicht den Feed');
+});
+
+test('eine Lücke, die nicht als Lücke dasteht, ist ein Befund', () => {
+  const artikel = [{ sku: 'POS-2', bezeichnung: 'Ohne Ware' }];
+  const gesagt = llmsherkunftbefund(zeile('POS-2', ' · ein technisches Merkblatt liegt uns nicht vor'),
+    artikel, REGISTER);
+  assert.deepEqual(gesagt.meldungen, []);
+  assert.equal(gesagt.ohneAdresse, 1);
+
+  const stumm = llmsherkunftbefund(zeile('POS-2', ' · Zubehör'), artikel, REGISTER);
+  assert.deepEqual(stumm.meldungen.map((m) => m.regel), ['luecke-sieht-aus-wie-auslassung'],
+    'eine Lücke, die sichtbar ist, ist besser als eine, die gefüllt aussieht');
+});
+
+test('ein Artikel ohne Zeile in llms.txt wird nicht gezählt', () => {
+  // Nicht jeder Artikel steht in der Liste — wer keinen kalkulierbaren
+  // Einkaufspreis hat, fehlt dort mit Grund. Über ihn ist hier nichts zu sagen.
+  const b = llmsherkunftbefund('- nichts hier', [{ sku: 'POS-3', bezeichnung: 'Mit Ware' }], REGISTER);
+  assert.deepEqual(b.meldungen, []);
+  assert.equal(b.geprueft, 0);
+});
+
+test('der Bau gibt die Merkblattadresse in die llms.txt-Zeile', () => {
+  /*
+   * **Der Weg nach draußen, gehalten an der Quelle — 15. September 2026.**
+   * `pruefe-preise` hält die **gebaute** `llms.txt` gegen den Feed und ist
+   * damit auf einen frischen Bau angewiesen. Dieser Testfall hält die Stelle,
+   * an der die Zeile entsteht: Wer sie herausnimmt, bekommt es sofort gesagt
+   * und nicht erst beim nächsten `npm run website`.
+   */
+  const quelle = readFileSync(new URL('../bin/website.mjs', import.meta.url), 'utf8');
+  const stelle = /const herkunft = herkunftssatz\(a\);[\s\S]{0,400}?\n/.exec(quelle);
+  assert.ok(stelle, 'die Stelle, an der die Zeile die Herkunft bekommt, ist nicht mehr zu finden');
+  assert.match(quelle, /const merkblatt = herkunft \?/,
+    'die llms.txt-Zeile gibt die Merkblattadresse nicht hinaus — ein Assistent liest diese '
+    + 'Datei und nicht den Feed');
+  assert.match(quelle, /\+ merkblatt;/, 'der Satz wird gebaut und nicht angehängt');
 });

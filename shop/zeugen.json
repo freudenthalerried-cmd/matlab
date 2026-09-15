@@ -443,5 +443,8 @@
   ],
   "die-herkunft-zaehlt-wieder-als-wareneigenschaft": [
     "shop/test/maschinenlesbar.test.js"
+  ],
+  "llms-txt-schweigt-wieder-ueber-das-merkblatt": [
+    "shop/test/maschinenlesbar.test.js"
   ]
 }

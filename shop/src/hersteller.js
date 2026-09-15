@@ -68,7 +68,15 @@ export const HERSTELLER = {
  * fände „SIK" das Wort „Sikkativ" und „Absolut" das Adverb. Die längste
  * Marke gewinnt, damit „SIKM" nicht von „SIK" verdeckt wird.
  */
-export const marke = (bez) => Object.keys(HERSTELLER)
+/*
+ * **Das Register kommt herein — 15. September 2026.** Diese Funktion las die
+ * Markenliste unmittelbar aus dem Modul und war damit von aussen nicht zu
+ * erreichen: Ein Testfall konnte sie nur mit den Marken dieses Hauses fahren.
+ * Es ist derselbe Griff wie am 14. September bei den zwoelf Waechtern ueber
+ * ihr eigenes Register — und `pruefe-beiwerte` haelt seit demselben Tag fest,
+ * dass ein hereingereichtes Register im Rumpf auch gezogen wird.
+ */
+export const marke = (bez, register = HERSTELLER) => Object.keys(register)
   .sort((a, b) => b.length - a.length)
   .find((m) => new RegExp(`(?<![\\p{L}\\d])${m}(?![\\p{L}\\d])`, 'u').test(bez)) ?? null;
 /**

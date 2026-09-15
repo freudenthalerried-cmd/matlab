@@ -5148,6 +5148,21 @@ export const GEGENPROBEN = Object.freeze([
       + 'Sie behauptet, hier fehle etwas — und hielt zugleich die ganze Rechnung aus der Akte.',
   }),
   Object.freeze({
+    id: 'llms-txt-schweigt-wieder-ueber-das-merkblatt',
+    pruefer: 'test',
+    was: 'Die Zeile in llms.txt verliert die Merkblattadresse, die der Feed nennt',
+    datei: 'shop/bin/website.mjs',
+    art: 'ersetzen',
+    suchen: "        const merkblatt = herkunft ? ` · ${herkunft.replace(/^Hersteller [^,]+, /, '')}` : '';",
+    ersetzen: "        const merkblatt = '';",
+    erwartet: /die llms.txt-Zeile gibt die Merkblattadresse nicht hinaus/,
+    warum: 'Der Fund vom 15. September: Seit dem 14. traegt die Feedbeschreibung Hersteller und '
+      + 'Merkblattadresse; `llms.txt` — die Datei, die es **fuer** Assistenten gibt — trug sie '
+      + 'nicht und nannte Preis, Abgabemenge, Gruppe und System. Diese Mutation nimmt sie '
+      + 'wieder heraus. Der Feed bleibt dabei vollstaendig, und genau deshalb faellt die '
+      + 'Luecke ohne diesen Abgleich niemandem auf.',
+  }),
+  Object.freeze({
     id: 'die-herkunft-zaehlt-wieder-als-wareneigenschaft',
     pruefer: 'test',
     was: 'Die Herstellerzeile gilt wieder als Angabe ueber die Ware und senkt die Sperrklinke',

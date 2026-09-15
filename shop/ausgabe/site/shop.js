@@ -1211,7 +1211,15 @@ const HERSTELLER = {
 
 
 
-const marke = (bez) => Object.keys(HERSTELLER)
+
+
+
+
+
+
+
+
+const marke = (bez, register = HERSTELLER) => Object.keys(register)
   .sort((a, b) => b.length - a.length)
   .find((m) => new RegExp(`(?<![\\p{L}\\d])${m}(?![\\p{L}\\d])`, 'u').test(bez)) ?? null;
 

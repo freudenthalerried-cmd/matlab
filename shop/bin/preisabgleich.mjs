@@ -49,6 +49,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { ladeBaustoffkatalog, ZIELMARGE } from '../src/baustoffkatalog.js';
 import { mengenschritt } from '../src/gebinde.js';
+import { llmsherkunftbefund } from '../src/maschinenlesbar.js';
 
 const HIER = dirname(fileURLToPath(import.meta.url));
 const WURZEL = join(HIER, '..');
@@ -254,10 +255,26 @@ for (const a of artikel) {
   }
 }
 
+/*
+ * **Und die Herkunft — 15. September 2026.** Dieselbe Frage wie beim Preis,
+ * nur für eine andere Angabe: Seit dem 14. September trägt die
+ * Feedbeschreibung Hersteller und Merkblattadresse, und `llms.txt` — die
+ * Datei, die es **für** Assistenten gibt — trug sie nicht. Warum das zählt,
+ * steht im Kopf von `llmsherkunftbefund`, dort einmal.
+ *
+ * Die Prüfung steht hier und nicht in einem eigenen Werkzeug: Sie hält zwei
+ * Ausgaben derselben Quelle gegeneinander, und genau dafür gibt es diesen
+ * Befehl.
+ */
+const herkunft = llmsherkunftbefund(llms, artikel);
+for (const m of herkunft.meldungen) befunde.push(m.text);
+
 // Gezählt, nicht geschrieben: Die Vier stand hier als Wort, während die
 // fünfte Ausgabe dazukam. Dieselbe Sorte Zahl wie im Rolloutplan.
 console.log(`\nPreisabgleich: ${geprueft} Artikel über ${4 + shopdaten.length} Ausgaben, `
-  + `${mitSchritt} davon mit Gebindebindung\n`);
+  + `${mitSchritt} davon mit Gebindebindung`);
+console.log(`Herkunft: ${herkunft.geprueft} Artikel mit bekannter Marke, `
+  + `${herkunft.ohneAdresse} davon ohne belegte Merkblattadresse\n`);
 for (const b of befunde) console.log(`  ✗ ${b}`);
 if (!befunde.length) {
   console.log('  Jede Ausgabe nennt denselben Preis, und wo es ein Gebinde gibt, nennen ihn alle.');

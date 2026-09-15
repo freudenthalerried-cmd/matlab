@@ -35,6 +35,7 @@ import { pruefeSeiten } from '../src/interna.js';
 import { artikelBild, gruppenBild, schichten, schichtbild, dickeMm, bauform } from '../src/bilder.js';
 import {
   VERFUEGBARKEIT, angebotsAuszeichnung, robotsTxt, liefergebietOrte, organisationsdaten,
+  herkunftssatz,
 } from '../src/maschinenlesbar.js';
 import { baueKern, BROWSERMODULE } from '../src/buendel.js';
 import { startklar, fehltSatz, betreiberangaben } from '../src/startklar.js';
@@ -3311,13 +3312,31 @@ function main() {
          */
         const e = einordnung(a);
         const system = e.schicht && e.system ? ` · ${e.schicht} des Systems ${e.system}` : '';
+        /*
+         * **Und wo das Merkblatt liegt — 15. September 2026.** Seit gestern
+         * trägt die Feedbeschreibung Hersteller und Merkblattadresse; diese
+         * Datei, die es **für** Assistenten gibt, trug sie nicht. Warum diese
+         * Angabe zählt, steht im Kopf von `herkunftssatz` — dort einmal.
+         *
+         * > **Zwei Fassungen derselben Auskunft sind in diesem Haus der
+         * > häufigste Befund.** Der Satz kommt deshalb aus `herkunftssatz`
+         * > und nicht aus einer zweiten Formulierung hier.
+         *
+         * Gekürzt wird nur die Anrede: Die Zeile nennt den Hersteller schon
+         * über den Markennamen in der Bezeichnung, und 46 Zeilen mit
+         * „Hersteller X, technisches Merkblatt über …" wären doppelt so lang
+         * für dieselbe Auskunft.
+         */
+        const herkunft = herkunftssatz(a);
+        const merkblatt = herkunft ? ` · ${herkunft.replace(/^Hersteller [^,]+, /, '')}` : '';
         return `- [${a.bezeichnung}](${BASIS}/artikel/${a.sku}.html): `
         + `${euro(a.vkNetto)} € je ${eh}, netto`
         + (schritt ? ` · Abgabe ab ${String(schritt).replace('.', ',')} ${eh}`
             + ` (${euro(a.vkNetto * schritt)} €)` : '')
         + ` · ${a.gruppe}${system}`
         + (typeof a.gewichtKg === 'number' ? ` · ${String(a.gewichtKg).replace('.', ',')} kg je Einheit` : '')
-        + (a.sperrgut ? ' · palettiert' : '');
+        + (a.sperrgut ? ' · palettiert' : '')
+        + merkblatt;
       }),
     '',
     (() => {

@@ -86,6 +86,13 @@ export const AUSGAENGE = Object.freeze([
   Object.freeze({ modul: 'src/kundenanfrage.js', funktion: 'mailtoWeg', an: 'das Mailprogramm des Kunden', form: 'URL' }),
   Object.freeze({ modul: 'src/rechtstexte.js', funktion: 'erzeugeImpressum', an: 'jeder Besucher', form: 'Zeilentext' }),
   Object.freeze({ modul: 'src/maschinenlesbar.js', funktion: 'robotsTxt', an: 'jeder Crawler', form: 'robots.txt' }),
+  // **Ergänzt am 15. September.** Der Satz über Hersteller und Merkblatt. Er
+  // geht an zwei Stellen hinaus, an denen kein Mensch mehr hinsieht: in die
+  // Feedbeschreibung und in `llms.txt`. Gebaut wird er aus dem
+  // Herstellerregister dieses Hauses und aus der Artikelbezeichnung des
+  // Lieferanten — die steht ohnehin auf jeder Seite, geht aber durch dieselbe
+  // Prüfung wie jeder andere Text nach draußen.
+  Object.freeze({ modul: 'src/maschinenlesbar.js', funktion: 'herkunftssatz', an: 'jeder Assistent und Crawler', form: 'Satz in Feed und llms.txt' }),
   Object.freeze({ modul: 'src/vies.js', funktion: 'belegzeile', an: 'die eigene Ablage', form: 'Zeile' }),
   Object.freeze({ modul: 'src/ablage.js', funktion: 'alsCsv', an: 'Buchhaltung', form: 'CSV' }),
   Object.freeze({ modul: 'src/speicher.js', funktion: 'journalzeile', an: 'Buchhaltung', form: 'JSONL' }),
