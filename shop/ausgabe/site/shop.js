@@ -1792,6 +1792,33 @@ function gewerkbefund(artikel, gewerke = GEWERKE) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function systemkurz(system) {
+  const text = String(system ?? '').trim();
+  if (!text) return null;
+  return /\(([^)]+)\)/.exec(text)?.[1]?.trim() || text.split(/\s+/)[0];
+}
+
 function llmssystembefund(llms, artikel) {
   const text = String(llms ?? '');
   const schichten = artikel.map(einordnung).filter((e) => e.schicht && e.system);
@@ -1872,6 +1899,75 @@ function artikelseitensystembefund(liesSeite, artikel) {
     });
   }
   return { schichten: schichten.length, gelesen, meldungen, sauber: meldungen.length === 0 };
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function kartensystembefund(liesKarte, artikel) {
+  const meldungen = [];
+  let gelesen = 0;
+  let mitMarke = 0;
+
+  for (const a of artikel) {
+    const e = einordnung(a);
+    const karte = liesKarte(a.sku);
+    const gebunden = Boolean(e.schicht && e.system);
+    if (karte === null || karte === undefined) {
+      if (!gebunden) continue;
+      meldungen.push({
+        regel: 'karte-fehlt',
+        sku: a.sku,
+        text: `${a.sku} ist ${e.schicht} des Systems ${e.system}, und seine Karte auf der `
+          + 'Gruppenseite ist nicht lesbar — ob die Marke dort steht, ließ sich nicht feststellen',
+      });
+      continue;
+    }
+    gelesen += 1;
+    const kurz = gebunden ? systemkurz(e.system) : null;
+    const traegt = /<span class="marker system">([^<]*)-System<\/span>/.exec(karte)?.[1] ?? null;
+    if (traegt) mitMarke += 1;
+
+    if (gebunden && traegt !== kurz) {
+      meldungen.push({
+        regel: 'karte-ohne-system',
+        sku: a.sku,
+        text: `${a.sku} ist ${e.schicht} des Systems ${e.system}; die Karte sagt `
+          + `${traegt ? `„${traegt}-System"` : 'nichts davon'} — dort wird ausgewählt, und eine `
+          + 'Warnung in der Kasse kommt nach der Entscheidung',
+      });
+    }
+    if (!gebunden && traegt) {
+      meldungen.push({
+        regel: 'karte-behauptet-system',
+        sku: a.sku,
+        text: `${a.sku} trägt die Marke „${traegt}-System" und ist keine gebundene Schicht — `
+          + 'Dübel und Zubehör tragen eine eigene Zulassung, und eine Marke, die überall steht, '
+          + 'liest niemand mehr',
+      });
+    }
+  }
+
+  return { gelesen, mitMarke, meldungen, sauber: meldungen.length === 0 };
 }
 
 

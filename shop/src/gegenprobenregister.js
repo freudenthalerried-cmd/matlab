@@ -5148,6 +5148,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'Sie behauptet, hier fehle etwas — und hielt zugleich die ganze Rechnung aus der Akte.',
   }),
   Object.freeze({
+    id: 'die-karte-schweigt-wieder-ueber-das-system',
+    pruefer: 'pruefe-systemtreue',
+    was: 'Die Gruppenkarte verliert die Systemmarke, die die Artikelseite traegt',
+    datei: 'shop/bin/website.mjs',
+    art: 'ersetzen',
+    suchen: '  const einbau = einordnung(a);',
+    ersetzen: '  const einbau = { schicht: null, system: null };',
+    erwartet: /karte-ohne-system|die Karte sagt nichts davon/,
+    warum: 'Der Fund vom 15. September: Die Kasse warnt seit dem 8. September vor einem Korb '
+      + 'aus zwei Systemen, die Artikelseite sagt es, `llms.txt` seit dem 9. September auch — '
+      + 'die Gruppenseite sagte es bei keinem der zehn gebundenen Artikel. Und sie ist die '
+      + 'erste Flaeche, die ein Besucher sieht: Dort steht ein Baumit-Gewebe neben einer '
+      + 'Capatect-Klebespachtel, mit Mengenfeld und „In den Warenkorb" daneben. Eine Warnung, '
+      + 'die erst in der Kasse kommt, kommt nach der Entscheidung.',
+  }),
+  Object.freeze({
     id: 'llms-txt-schweigt-wieder-ueber-das-merkblatt',
     pruefer: 'test',
     was: 'Die Zeile in llms.txt verliert die Merkblattadresse, die der Feed nennt',

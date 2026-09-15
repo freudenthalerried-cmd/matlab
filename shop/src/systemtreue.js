@@ -470,6 +470,33 @@ export function gewerkbefund(artikel, gewerke = GEWERKE) {
  * @param {string} llms      der gebaute Text
  * @param {object[]} artikel alle Artikel des Katalogs
  */
+/**
+ * Der Systemname, wie er auf eine Artikelkarte passt.
+ *
+ * **Der Anlass, 15. September 2026.** Die Gruppenseite ist die Fläche, auf der
+ * eine Schicht **ausgewählt** wird — und sie sagte von den zehn
+ * systemgebundenen Artikeln bei keinem, dass er zu einem System gehört. Die
+ * Kasse warnt, die Artikelseite sagt es, `llms.txt` sagt es; die Karte, die
+ * ein Besucher zuerst sieht, schwieg.
+ *
+ * Auf der Karte steht kein ganzer Satz, sondern eine Marke von zwei Wörtern.
+ * Der volle Systemname („Synthesa (Capatect)", „Baumit Österreich") sprengt
+ * sie, und abschneiden hieße raten. Genommen wird deshalb der Name in der
+ * Klammer, sonst das erste Wort:
+ *
+ *     Synthesa (Capatect)  →  Capatect
+ *     Baumit Österreich    →  Baumit
+ *     Schiedel Österreich  →  Schiedel
+ *
+ * Genau so nennt der Kunde die Marke auch, und genau so steht sie in der
+ * Artikelbezeichnung daneben.
+ */
+export function systemkurz(system) {
+  const text = String(system ?? '').trim();
+  if (!text) return null;
+  return /\(([^)]+)\)/.exec(text)?.[1]?.trim() || text.split(/\s+/)[0];
+}
+
 export function llmssystembefund(llms, artikel) {
   const text = String(llms ?? '');
   const schichten = artikel.map(einordnung).filter((e) => e.schicht && e.system);
@@ -550,4 +577,73 @@ export function artikelseitensystembefund(liesSeite, artikel) {
     });
   }
   return { schichten: schichten.length, gelesen, meldungen, sauber: meldungen.length === 0 };
+}
+
+/**
+ * Dieselbe Frage an die **Gruppenkarte** — die Fläche vor der Artikelseite.
+ *
+ * **Der Anlass, 15. September 2026.** Drei Stellen sagen inzwischen, dass die
+ * Schichten eines Aufbaus zu **einem** System gehören: die Kasse seit dem
+ * 8. September, die Artikelseite, `llms.txt` seit dem 9. September. Die
+ * Gruppenseite sagte es bei **keinem** der zehn systemgebundenen Artikel — und
+ * sie ist die erste Fläche, die ein Besucher sieht: Dort steht ein
+ * Baumit-Gewebe neben einer Capatect-Klebespachtel, mit Mengenfeld und
+ * „In den Warenkorb" daneben.
+ *
+ * > **Eine Warnung, die erst in der Kasse kommt, kommt nach der
+ * > Entscheidung.**
+ *
+ * Geprüft wird die Kurzform, weil auf einer Karte kein Satz steht: `Capatect`
+ * statt `Synthesa (Capatect)`. Und in beide Richtungen — eine Karte, die eine
+ * Systemmarke trägt, ohne dass der Artikel eine Schicht ist, behauptet eine
+ * Bindung, die es nicht gibt. Dübel und Zubehör tragen eine eigene Zulassung.
+ *
+ * @param {(sku: string) => string|null} liesKarte  der Kartenblock der Gruppenseite
+ * @param {{sku: string, bezeichnung: string, gruppe?: string}[]} artikel
+ */
+export function kartensystembefund(liesKarte, artikel) {
+  const meldungen = [];
+  let gelesen = 0;
+  let mitMarke = 0;
+
+  for (const a of artikel) {
+    const e = einordnung(a);
+    const karte = liesKarte(a.sku);
+    const gebunden = Boolean(e.schicht && e.system);
+    if (karte === null || karte === undefined) {
+      if (!gebunden) continue;
+      meldungen.push({
+        regel: 'karte-fehlt',
+        sku: a.sku,
+        text: `${a.sku} ist ${e.schicht} des Systems ${e.system}, und seine Karte auf der `
+          + 'Gruppenseite ist nicht lesbar — ob die Marke dort steht, ließ sich nicht feststellen',
+      });
+      continue;
+    }
+    gelesen += 1;
+    const kurz = gebunden ? systemkurz(e.system) : null;
+    const traegt = /<span class="marker system">([^<]*)-System<\/span>/.exec(karte)?.[1] ?? null;
+    if (traegt) mitMarke += 1;
+
+    if (gebunden && traegt !== kurz) {
+      meldungen.push({
+        regel: 'karte-ohne-system',
+        sku: a.sku,
+        text: `${a.sku} ist ${e.schicht} des Systems ${e.system}; die Karte sagt `
+          + `${traegt ? `„${traegt}-System"` : 'nichts davon'} — dort wird ausgewählt, und eine `
+          + 'Warnung in der Kasse kommt nach der Entscheidung',
+      });
+    }
+    if (!gebunden && traegt) {
+      meldungen.push({
+        regel: 'karte-behauptet-system',
+        sku: a.sku,
+        text: `${a.sku} trägt die Marke „${traegt}-System" und ist keine gebundene Schicht — `
+          + 'Dübel und Zubehör tragen eine eigene Zulassung, und eine Marke, die überall steht, '
+          + 'liest niemand mehr',
+      });
+    }
+  }
+
+  return { gelesen, mitMarke, meldungen, sauber: meldungen.length === 0 };
 }

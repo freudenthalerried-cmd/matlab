@@ -61,7 +61,7 @@ import {
 } from '../src/merkblattverweis.js';
 import { liesSystemliste } from '../src/systemlisten.js';
 import { DIENSTSEITEN } from '../src/dienstseiten.js';
-import { GEWERKE, einordnung } from '../src/systemtreue.js';
+import { GEWERKE, einordnung, systemkurz } from '../src/systemtreue.js';
 import { lastmodFuer } from '../src/sitemapstand.js';
 import { brotkrume, krumeAusHtml } from '../src/krume.js';
 import { HERSTELLER, marke } from '../src/hersteller.js';
@@ -578,6 +578,7 @@ padding:.6rem 1rem;z-index:10;text-decoration:none}
 .marker.vorteil{background:var(--gruen-weich);color:var(--gruen)}
 .marker.beipack{background:var(--ziegel-weich);color:var(--ziegel)}
 .marker.sperrig{background:var(--flaeche-2);color:var(--tinte-2)}
+.marker.system{background:var(--grund);color:var(--tinte-2);border:1px solid var(--linie-stark)}
 /* Zurückhaltend und nicht alarmierend: Ein fehlender Listenpreis ist kein
    Mangel des Artikels, sondern eine Angabe, die wir nicht haben. */
 .marker.offen{background:var(--flaeche-2);color:var(--gedaempft)}
@@ -769,6 +770,22 @@ function artikelKarte(a, befund, verweis) {
     marker.push('<span class="marker offen">Listenpreis nicht bekannt</span>');
   }
   if (beipack) marker.push('<span class="marker beipack">Beipack</span>');
+  /*
+   * **Die Systemmarke — 15. September 2026.**
+   *
+   * Warum die Gruppenkarte sie braucht, steht bei `kartensystembefund` in
+   * `src/systemtreue.js` — dort einmal.
+   *
+   * Auf der Karte steht kein Satz, sondern eine Marke: `Capatect-System`. Wer
+   * darauf klickt, liest auf der Artikelseite den ganzen Grund (ETAG 004,
+   * ÖNORM B 6400). Dübel und Zubehör tragen eine eigene Zulassung und bekommen
+   * sie deshalb nicht — dort wäre sie falsch.
+   */
+  const einbau = einordnung(a);
+  const systemname = einbau.schicht && einbau.system ? systemkurz(einbau.system) : null;
+  if (systemname) {
+    marker.push(`<span class="marker system">${esc(systemname)}-System</span>`);
+  }
   const einheit = esc(EINHEITEN[a.einheit] ?? a.einheit);
   const schritt = mengenschritt(a);
   // Der Punkt bleibt im Attribut — `step="0,75"` ist für den Browser kein

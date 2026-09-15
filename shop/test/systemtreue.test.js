@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import {
   OHNE_SCHICHT, SCHICHTEN, SYSTEM_UNBEKANNT,
   einordnung, systembruch, systembruchsatz, zuordnungsbefund, gewerkbefund,
-  artikelseitensystembefund,
+  artikelseitensystembefund, kartensystembefund, systemkurz,
 } from '../src/systemtreue.js';
 
 const KATALOG = JSON.parse(readFileSync(
@@ -377,4 +377,79 @@ test('Die Gewerkeliste dieses Hauses ist in Ordnung', () => {
   const b = gewerkbefund(KATALOG.artikel);
   assert.deepEqual(b.meldungen, [], JSON.stringify(b.meldungen));
   assert.ok(b.gewerke >= 2, `nur ${b.gewerke} Gewerke — die Messung sagt dann wenig`);
+});
+
+/*
+ * **Die Fläche vor der Artikelseite — 15. September 2026.** Die Kasse warnt
+ * seit dem 8. September, die Artikelseite sagt es, `llms.txt` seit dem
+ * 9. September auch. Die Gruppenseite sagte es bei keinem der zehn gebundenen
+ * Artikel — und sie ist die erste, die ein Besucher sieht.
+ *
+ * > **Eine Warnung, die erst in der Kasse kommt, kommt nach der Entscheidung.**
+ */
+test('der Systemname wird auf Kartenlänge gekürzt, nicht abgeschnitten', () => {
+  assert.equal(systemkurz('Synthesa (Capatect)'), 'Capatect');
+  assert.equal(systemkurz('Baumit Österreich'), 'Baumit');
+  assert.equal(systemkurz('Schiedel Österreich'), 'Schiedel');
+  assert.equal(systemkurz(''), null, 'ohne System gibt es nichts zu kürzen');
+  assert.equal(systemkurz(null), null);
+});
+
+test('eine Karte ohne Systemmarke ist ein Befund', () => {
+  const gebunden = KATALOG.artikel.filter((a) => {
+    const e = einordnung(a);
+    return e.schicht && e.system;
+  });
+  assert.ok(gebunden.length >= 3, `nur ${gebunden.length} gebundene Schichten im Katalog`);
+  const [erste] = gebunden;
+  const kurz = systemkurz(einordnung(erste).system);
+
+  const gut = kartensystembefund(
+    () => `<span class="marker system">${kurz}-System</span>`, [erste],
+  );
+  assert.deepEqual(gut.meldungen, [], JSON.stringify(gut.meldungen));
+  assert.equal(gut.mitMarke, 1);
+
+  const stumm = kartensystembefund(() => '<span class="preis">1,00 €</span>', [erste]);
+  assert.deepEqual(stumm.meldungen.map((m) => m.regel), ['karte-ohne-system'],
+    'dort wird ausgewählt, und eine Warnung in der Kasse kommt nach der Entscheidung');
+
+  const falsch = kartensystembefund(
+    () => '<span class="marker system">Irgendwer-System</span>', [erste],
+  );
+  assert.deepEqual(falsch.meldungen.map((m) => m.regel), ['karte-ohne-system'],
+    'die falsche Marke ist schlimmer als keine');
+});
+
+test('eine Karte, die ein System behauptet, das der Artikel nicht hat, ist ein Befund', () => {
+  const frei = KATALOG.artikel.find((a) => {
+    const e = einordnung(a);
+    return !(e.schicht && e.system);
+  });
+  assert.ok(frei, 'kein ungebundener Artikel im Katalog — die Gegenrichtung prüft dann nichts');
+
+  const b = kartensystembefund(() => '<span class="marker system">Capatect-System</span>', [frei]);
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['karte-behauptet-system'],
+    'Dübel und Zubehör tragen eine eigene Zulassung');
+
+  const ohne = kartensystembefund(() => '<span class="preis">1,00 €</span>', [frei]);
+  assert.deepEqual(ohne.meldungen, []);
+});
+
+test('eine fehlende Karte ist kein grünes Ergebnis — aber nur, wo eine gehört', () => {
+  const gebunden = KATALOG.artikel.filter((a) => {
+    const e = einordnung(a);
+    return e.schicht && e.system;
+  });
+  assert.ok(gebunden.length >= 1, 'ohne gebundene Schicht prüft dieser Fall nichts');
+  const b = kartensystembefund(() => null, [gebunden[0]]);
+  assert.deepEqual(b.meldungen.map((m) => m.regel), ['karte-fehlt'],
+    'eine fehlende Karte ist kein Beleg dafür, dass die Marke dort steht');
+
+  const frei = KATALOG.artikel.find((a) => {
+    const e = einordnung(a);
+    return !(e.schicht && e.system);
+  });
+  assert.deepEqual(kartensystembefund(() => null, [frei]).meldungen, [],
+    'wo keine Marke hingehört, ist eine fehlende Karte kein Befund dieses Prüfers');
 });

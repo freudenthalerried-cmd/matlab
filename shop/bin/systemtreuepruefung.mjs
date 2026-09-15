@@ -31,8 +31,8 @@ import { ladeBaustoffkatalog } from '../src/baustoffkatalog.js';
 import { HERSTELLER, markenlistenbefund, ohneKommentarzeilen } from '../src/hersteller.js';
 import { kundenWarenkorb } from '../src/shopkern.js';
 import {
-    GEWERKE, SCHICHTEN, artikelseitensystembefund, gewerkbefund, llmssystembefund, systembruch,
-  zuordnungsbefund,
+    GEWERKE, SCHICHTEN, artikelseitensystembefund, gewerkbefund, kartensystembefund,
+  llmssystembefund, systembruch, zuordnungsbefund,
 } from '../src/systemtreue.js';
 import { abbruchtext, frischebefund } from '../src/erzeugnisstand.js';
 
@@ -146,6 +146,29 @@ if (existsSync(llmsDatei)) {
   meldungen.push(...seiten.meldungen);
   console.log(`  ${seiten.gelesen} von ${seiten.schichten} Artikelseiten systemgebundener `
     + 'Schichten gelesen');
+
+  /*
+   * **Und die Fläche davor — 15. September 2026.** Die Gruppenseite ist die
+   * erste, die ein Besucher sieht: Dort steht ein Baumit-Gewebe neben einer
+   * Capatect-Klebespachtel, mit Mengenfeld und „In den Warenkorb" daneben. Sie
+   * sagte bei keinem der zehn gebundenen Artikel etwas davon. Die Begründung
+   * steht bei `kartensystembefund`, dort einmal.
+   */
+  const karten = new Map();
+  const gruppenordner = join(SHOP, 'ausgabe', 'site', 'gruppe');
+  if (existsSync(gruppenordner)) {
+    for (const datei of readdirSync(gruppenordner).filter((d) => d.endsWith('.html'))) {
+      const html = readFileSync(join(gruppenordner, datei), 'utf8');
+      for (const block of html.split('<div class="karte"').slice(1)) {
+        const sku = block.match(/artikel\/([A-Za-z0-9-]+)\.html/)?.[1];
+        if (sku && !karten.has(sku)) karten.set(sku, block);
+      }
+    }
+  }
+  const kartenbefund = kartensystembefund((sku) => karten.get(sku) ?? null, katalog.artikel);
+  meldungen.push(...kartenbefund.meldungen);
+  console.log(`  ${kartenbefund.gelesen} Artikelkarten gelesen, `
+    + `${kartenbefund.mitMarke} davon mit Systemmarke`);
 }
 const messbar = GEWERKE.filter((g) => g.messbar).length;
 console.log(`Systemtreue — ${befund.geprueft} Artikel mit Systembindung, `
