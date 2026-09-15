@@ -93,6 +93,11 @@ export const AUSGAENGE = Object.freeze([
   // Lieferanten — die steht ohnehin auf jeder Seite, geht aber durch dieselbe
   // Prüfung wie jeder andere Text nach draußen.
   Object.freeze({ modul: 'src/maschinenlesbar.js', funktion: 'herkunftssatz', an: 'jeder Assistent und Crawler', form: 'Satz in Feed und llms.txt' }),
+  // **Ergänzt am 15. September.** Der Satz, den die Kasse zeigt, solange kein
+  // Kanal hinterlegt ist. Er trägt **unsere** Angaben aus
+  // `data/betreiber.json` — eine Adresse, die dort steht, wird eingesetzt und
+  // nicht geprüft. Die Begründung steht im Kopf von `src/rueckweg.js`.
+  Object.freeze({ modul: 'src/rueckweg.js', funktion: 'rueckwegsatz', an: 'jeder Besucher der Kasse', form: 'Satz' }),
   Object.freeze({ modul: 'src/vies.js', funktion: 'belegzeile', an: 'die eigene Ablage', form: 'Zeile' }),
   Object.freeze({ modul: 'src/ablage.js', funktion: 'alsCsv', an: 'Buchhaltung', form: 'CSV' }),
   Object.freeze({ modul: 'src/speicher.js', funktion: 'journalzeile', an: 'Buchhaltung', form: 'JSONL' }),

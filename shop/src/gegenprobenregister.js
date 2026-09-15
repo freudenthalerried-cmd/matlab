@@ -5148,6 +5148,22 @@ export const GEGENPROBEN = Object.freeze([
       + 'Sie behauptet, hier fehle etwas — und hielt zugleich die ganze Rechnung aus der Akte.',
   }),
   Object.freeze({
+    id: 'die-kasse-schickt-wieder-ins-leere-impressum',
+    pruefer: 'pruefe-kanaele',
+    was: 'Der Rueckweg der Kasse zeigt wieder auf das Impressum, in dem dieselbe Luecke steht',
+    datei: 'shop/src/kundenanfrage.js',
+    art: 'ersetzen',
+    suchen: '      text: `Bitte kopieren Sie den Text. ${rueckwegsatz(anfrage.betreiber ?? {}).text}`,',
+    ersetzen: "      text: 'Bitte den Text kopieren und an die Adresse aus dem Impressum schicken.',",
+    erwartet: /verweis-auf-dieselbe-luecke|rueckweg-nicht-aus-der-quelle/,
+    warum: 'Der Fund vom 15. September, aus der Frage des Auftraggebers heraus, ob ihn schon '
+      + 'eine KI erreichen kann: Die Kasse sagte, wenn keine Mailadresse hinterlegt ist, man '
+      + 'moege den Text „an die Adresse aus dem Impressum" schicken — und im Impressum steht '
+      + 'dieselbe Luecke. Ein Kunde, der eine fertig gerechnete Positionsliste kopiert und '
+      + 'dann nirgends hinschicken kann, hat mehr Zeit verloren als einer, dem man es vorher '
+      + 'sagt. Und er sagt es niemandem.',
+  }),
+  Object.freeze({
     id: 'die-karte-schweigt-wieder-ueber-das-system',
     pruefer: 'pruefe-systemtreue',
     was: 'Die Gruppenkarte verliert die Systemmarke, die die Artikelseite traegt',

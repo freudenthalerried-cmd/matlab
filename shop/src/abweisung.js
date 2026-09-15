@@ -17,6 +17,13 @@
  * > **Eine Abweisung, die nur sagt, was schiefging, lässt den Kunden mit
  * > seinem Geld in der Hand stehen.**
  *
+ * **Berichtigt am 15. September 2026.** Zwei dieser Sätze endeten auf „…oder
+ * rufen Sie uns an" — und eine Telefonnummer führt dieser Betrieb heute
+ * nirgends. Ein Rückweg, der auf eine leere Stelle zeigt, ist kein Rückweg
+ * (siehe `src/rueckweg.js`); beide Sätze stehen jetzt ohne ihn und bleiben
+ * vollständig. Kommt die Nummer, gehört sie hinein — und `kanalbefund`
+ * sagt es.
+ *
  * Drei davon — die drei Ablagefälle — sind **unsere** Fehler und wurden dem
  * Kunden hingestellt, als hätte er etwas falsch gemacht. Das ist der teuerste
  * Fall: Wer glaubt, er sei schuld, versucht es anders; wer weiß, dass es an
@@ -96,7 +103,7 @@ export const ABWEISUNGEN = Object.freeze([
     id: 'zu-umfangreich',
     status: 413,
     satz: 'Die Bestellung ist zu umfangreich für einen Vorgang.',
-    weiter: 'Bitte teilen Sie sie in zwei Bestellungen oder rufen Sie uns an.',
+    weiter: 'Bitte teilen Sie sie in zwei Bestellungen.',
     unsereSchuld: false,
   }),
   Object.freeze({
@@ -146,7 +153,7 @@ export const ABWEISUNGEN = Object.freeze([
     status: 500,
     satz: 'Ihre Bestellung konnte bei uns nicht gespeichert werden. Das liegt an uns und '
       + 'nicht an Ihrer Eingabe.',
-    weiter: 'Bitte versuchen Sie es in einigen Minuten noch einmal oder rufen Sie uns an.',
+    weiter: 'Bitte versuchen Sie es in einigen Minuten noch einmal.',
     unsereSchuld: true,
   }),
   Object.freeze({

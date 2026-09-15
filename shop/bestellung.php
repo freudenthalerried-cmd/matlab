@@ -70,8 +70,7 @@ date_default_timezone_set('Europe/Vienna');
  * nicht in die Antwort — für den Besteller ist es dieselbe Lage.
  */
 const ABLAGE_FEHLT = 'Ihre Bestellung konnte bei uns nicht gespeichert werden. Das liegt an uns '
-    . 'und nicht an Ihrer Eingabe. Bitte versuchen Sie es in einigen Minuten noch einmal oder '
-    . 'rufen Sie uns an.';
+    . 'und nicht an Ihrer Eingabe. Bitte versuchen Sie es in einigen Minuten noch einmal.';
 
 const HOECHSTLAENGE = 65536;
 const ABLAGEORDNER = __DIR__ . '/../bestellungen';
@@ -243,7 +242,7 @@ if ($roh === false) {
     antworte(400, ['ok' => false, 'grund' => 'Die Bestellung ist unvollständig bei uns angekommen. Bitte laden Sie die Seite neu und schicken Sie die Bestellung noch einmal ab.']);
 }
 if (strlen($roh) > HOECHSTLAENGE) {
-    antworte(413, ['ok' => false, 'grund' => 'Die Bestellung ist zu umfangreich für einen Vorgang. Bitte teilen Sie sie in zwei Bestellungen oder rufen Sie uns an.']);
+    antworte(413, ['ok' => false, 'grund' => 'Die Bestellung ist zu umfangreich für einen Vorgang. Bitte teilen Sie sie in zwei Bestellungen.']);
 }
 
 $daten = json_decode($roh, true);

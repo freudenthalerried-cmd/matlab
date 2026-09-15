@@ -56,7 +56,41 @@ export const INTERNA = Object.freeze([
   {
     id: 'lieferantenname',
     muster: /Poschacher|Pramer|Peither|Lagerhaus Eferding/g,
-    warum: 'Der Bezugsweg. Er steht dem Kunden nicht zu und dem Wettbewerber schon gar nicht — die Herstellernamen der Ware sind davon unberührt.',
+    /*
+     * **Berichtigt am 15. September 2026 — zwei Sätze, die sich widersprachen.**
+     *
+     * Hier stand: *„Der Bezugsweg. Er steht dem Kunden nicht zu und dem
+     * Wettbewerber schon gar nicht."* In `src/shopkern.js` steht seit dem
+     * 30. August daneben: *„Vollständig verbergen lässt er sich nicht: Die
+     * Artikelnummern tragen das Kürzel des Lieferanten (`POS-…`), und die
+     * Seiten weisen seine Artikelnummer bewusst aus, damit ein Kunde
+     * nachbestellen kann. **Geheim ist nicht die Geschäftsbeziehung, geheim
+     * sind die Konditionen.**"*
+     *
+     * Beides zugleich geht nicht. Gemessen am 15. September: Das ausgelieferte
+     * `shop.js` trägt **47-mal** `"lieferantId":"poschacher"` — klein
+     * geschrieben, und deshalb von diesem Muster nie gesehen.
+     *
+     * Der erste Griff war, das Muster auf `/i` zu stellen. Er wäre falsch
+     * gewesen: Dann meldete der Prüfer 47-mal etwas, das dieses Haus
+     * **absichtlich** ausliefert, und die Ausnahme dafür stünde am Ende genau
+     * dort, wo heute das Muster steht.
+     *
+     * > **Wenn zwei Sätze eines Bestandes sich widersprechen, ist der Prüfer
+     * > nicht die Stelle, an der man sich entscheidet.**
+     *
+     * Entschieden wird hier, und zwar für den konkreteren der beiden:
+     * Geheim sind die Konditionen. Der **Name** bleibt trotzdem draußen — er
+     * wird auf keiner Kundenseite gebraucht, und was nicht gebraucht wird,
+     * wird nicht ausgeliefert. Das Muster bleibt deshalb groß geschrieben: Es
+     * sucht den Namen im Fließtext, nicht die Kennung im Datensatz.
+     */
+    warum: 'Der Lieferantenname im Fließtext. Er wird auf keiner Kundenseite gebraucht, und was '
+      + 'nicht gebraucht wird, wird nicht ausgeliefert. **Nicht** gemeint ist die Kennung im '
+      + 'Datensatz (`lieferantId`, `POS-…`): Die Geschäftsbeziehung ist nicht geheim, die '
+      + 'Konditionen sind es — so steht es in `oeffentlicherLieferant` in `src/shopkern.js`, '
+      + 'und die Artikelnummern weist dieser Shop bewusst aus, damit ein Kunde nachbestellen '
+      + 'kann. Die Herstellernamen der Ware sind ohnehin unberührt.',
   },
   {
     id: 'kalkulationsgroesse',

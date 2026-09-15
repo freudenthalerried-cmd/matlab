@@ -25,6 +25,7 @@ import { fileURLToPath } from 'node:url';
 
 import { internabefund, gehtNachDraussen, AUSGAENGE, OHNE_INTERNAPROBE } from '../src/aussentexte.js';
 import { findeInterna } from '../src/interna.js';
+import { rueckwegsatz } from '../src/rueckweg.js';
 import { ladeKatalog, berechneWarenkorb } from '../src/warenkorb.js';
 import {
   erzeugeAngebot, erzeugeAuftragsbestaetigung, erzeugeGutschrift, erzeugeRechnung,
@@ -163,6 +164,27 @@ const AUSGANGSTEXTE = Object.freeze([
       return a.text;
     },
     giftig: () => (preiseDa ? `${betreiber.firma} — Poschacher Baustoffhandel liefert direkt` : null),
+  }),
+  Object.freeze({
+    /*
+     * **Ergänzt am 15. September.** Der Rückweg der Kasse. Er setzt **unsere**
+     * Angaben ein — eine Mailadresse oder eine Telefonnummer, wie sie in
+     * `data/betreiber.json` steht. Genau das ist der Weg, auf dem ein
+     * Internum hinausginge: Wer eine interne Adresse in das Feld schreibt,
+     * setzt sie in einen Satz an jeden Besucher der Kasse.
+     */
+    funktion: 'rueckwegsatz',
+    text: () => `${rueckwegsatz({ email: 'office@bauversand.com' }).text} `
+      + `${rueckwegsatz({ email: '', telefon: '+43 7752 12345' }).text} `
+      + `${rueckwegsatz({ email: '', telefon: '' }).text}`,
+    /*
+     * **Der Name, nicht die Kennung.** Der erste Wurf schob
+     * `einkauf@poschacher-baustoffhandel.example` unter und fand nichts — das
+     * Muster ist groß geschrieben, und zwar seit dem 15. September mit Grund:
+     * Die Geschäftsbeziehung ist nicht geheim, die Konditionen sind es. Was
+     * hier nicht hinausgehen darf, ist der **Name im Text**.
+     */
+    giftig: () => rueckwegsatz({ email: 'Poschacher Baustoffhandel <a@b.at>' }).text,
   }),
 ]);
 

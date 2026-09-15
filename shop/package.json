@@ -114,6 +114,7 @@
     "pruefe-regeln": "node bin/regelpruefung.mjs",
     "pruefe-namen": "node bin/namenspruefung.mjs",
     "pruefe-beiwerte": "node bin/beiwertpruefung.mjs",
-    "pruefe-abweisungen": "node bin/abweisungspruefung.mjs"
+    "pruefe-abweisungen": "node bin/abweisungspruefung.mjs",
+    "pruefe-kanaele": "node bin/kanalpruefung.mjs"
   }
 }

@@ -9985,6 +9985,195 @@ function ausJournal(journal, { schreibe = null } = {}) {
 
 
 
+const KANAELE = Object.freeze([
+  Object.freeze({
+    feld: 'email',
+    wort: 'Mailadresse',
+    satz: (wert) => `Bitte schicken Sie uns den Text an ${wert}.`,
+  }),
+  Object.freeze({
+    feld: 'telefon',
+    wort: 'Telefonnummer',
+    satz: (wert) => `Bitte rufen Sie uns an: ${wert}.`,
+  }),
+]);
+
+
+
+
+
+
+
+
+
+
+const kanalGefuellt = (wert) => typeof wert === 'string' && wert.trim() !== '';
+
+
+
+
+
+
+
+
+function rueckwegsatz(betreiber = {}, kanaele = KANAELE) {
+  for (const k of kanaele) {
+    const wert = betreiber?.[k.feld];
+    
+
+
+
+
+
+
+
+    if (kanalGefuellt(wert)) return { feld: k.feld, text: k.satz(textZeile(wert)) };
+  }
+  return {
+    feld: null,
+    text: 'Eine Mailadresse und eine Telefonnummer sind noch nicht hinterlegt — '
+      + 'dieser Shop kann Ihre Anfrage deshalb noch nicht entgegennehmen.',
+  };
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function kanalbefund(gezeigt, betreiber = {}, wo = 'ein Satz', kanaele = KANAELE) {
+  const meldungen = [];
+  const text = String(gezeigt ?? '');
+  const soll = rueckwegsatz(betreiber, kanaele);
+
+  if (!text.includes(soll.text)) {
+    meldungen.push({
+      regel: 'rueckweg-nicht-aus-der-quelle',
+      text: `${wo} zeigt einen anderen Rückweg als den, der heute stimmt — erwartet war `
+        + `„${soll.text}"`,
+    });
+  }
+
+  
+
+
+
+
+
+  if (/Impressum/i.test(text) && soll.feld === null) {
+    meldungen.push({
+      regel: 'verweis-auf-dieselbe-luecke',
+      text: `${wo} schickt den Kunden ins Impressum, und dort steht dieselbe Lücke — `
+        + 'ein zweiter Verweis auf eine leere Stelle ist eine Ausrede mit Fußnote',
+    });
+  }
+
+  return { erwartet: soll.text, kanal: soll.feld, meldungen, sauber: meldungen.length === 0 };
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function abweisungskanalbefund(eintraege = [], betreiber = {}, kanaele = KANAELE) {
+  const meldungen = [];
+  for (const e of eintraege) {
+    if (!e.nenntKanal) continue;
+    const kanal = kanaele.find((k) => k.feld === e.nenntKanal);
+    if (!kanal) {
+      meldungen.push({
+        regel: 'kanal-gibt-es-nicht',
+        text: `Abweisung „${e.id}" nennt den Kanal „${e.nenntKanal}", und den führt KANAELE nicht`,
+      });
+      continue;
+    }
+    if (kanalGefuellt(betreiber?.[kanal.feld])) continue;
+    meldungen.push({
+      regel: 'rueckweg-ins-leere',
+      text: `Abweisung „${e.id}" zeigt auf die ${kanal.wort}, und ${kanal.feld} ist in der `
+        + 'Betreiberdatei leer — ein Rückweg, der auf eine leere Stelle zeigt, ist kein Rückweg',
+    });
+  }
+  return { gefuehrt: eintraege.filter((e) => e.nenntKanal).length, meldungen, sauber: meldungen.length === 0 };
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -10413,6 +10602,7 @@ function zeitbefund(dateien, register = UHRSTELLEN) {
 
 
 
+
 const anfrageEuro = (n) => `${n.toFixed(2).replace('.', ',')} €`;
 
 
@@ -10677,6 +10867,9 @@ function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = null }) {
     betreff,
     text: zeilen.join('\n'),
     empfaenger: betreiber.email || null,
+    
+    
+    betreiber,
     firma,
     hinweise,
   };
@@ -10735,11 +10928,16 @@ function mailtoWeg(anfrage) {
     return { adresse: null, grund: 'keine-anfrage', text: '' };
   }
   if (!anfrage.empfaenger) {
+    
+
+
+
+
+
     return {
       adresse: null,
       grund: 'keine-adresse',
-      text: 'Eine Mailadresse ist noch nicht hinterlegt. Bitte den Text kopieren '
-        + 'und an die Adresse aus dem Impressum schicken.',
+      text: `Bitte kopieren Sie den Text. ${rueckwegsatz(anfrage.betreiber ?? {}).text}`,
     };
   }
   const adresse = `mailto:${encodeURIComponent(anfrage.empfaenger)}`

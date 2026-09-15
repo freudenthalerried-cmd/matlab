@@ -35,6 +35,7 @@ import { kundenWarenkorb } from '../src/shopkern.js';
 import { baueKundenanfrage, mailtoWeg } from '../src/kundenanfrage.js';
 import { erzeugeImpressum } from '../src/rechtstexte.js';
 import { robotsTxt, herkunftssatz } from '../src/maschinenlesbar.js';
+import { rueckwegsatz } from '../src/rueckweg.js';
 import { erzeugeLieferantenanfrage } from '../src/lieferantenanfrage.js';
 import { jsonFuerSkript } from '../src/format.js';
 import { belegzeile } from '../src/vies.js';
@@ -653,4 +654,31 @@ test('Ausgang Archiv: ein Name, der aus dem Ziel hinausführt, kommt nicht ins P
   // einer Stelle, die kein Mensch liest.
   assert.throws(() => baueZip([{ name: 'a\nb.html', inhalt: Buffer.from('x') }]), /Steuerzeichen/);
   assert.throws(() => baueZip([{ name: '', inhalt: Buffer.from('x') }]), /ohne Namen/);
+});
+
+/* ------------------------------------------------------------------ *
+ * Ausgang 13: der Rückweg der Kasse
+ *
+ * Am 15. September nachgetragen. Er trägt **unsere** Angaben aus
+ * `data/betreiber.json` — eine Mailadresse oder eine Telefonnummer, wie sie
+ * dort steht. Fremdtext im engeren Sinn ist das nicht; eine Angabe, die in
+ * einen Satz an jeden Besucher eingesetzt wird, gehört trotzdem geprüft.
+ * ------------------------------------------------------------------ */
+
+test('Ausgang Rückweg: Gift in der eigenen Adresse erzeugt keine zweite Zeile', () => {
+  const harmlos = rueckwegsatz({ email: 'office@bauversand.com' });
+  const giftig = rueckwegsatz({ email: `office@bauversand.com${GIFT}` });
+  assert.equal(zeilen(giftig.text), zeilen(harmlos.text),
+    'ein Umbruch in der eigenen Adresse macht aus einem Satz keine zwei');
+  assert.equal(hatSteuerzeichen(giftig.text), false);
+});
+
+test('Ausgang Rückweg: ohne Kanal steht kein Kanal da', () => {
+  // Der Fall von heute: Weder Mailadresse noch Telefonnummer sind hinterlegt.
+  // Dann nennt der Satz keine — und verweist auch nicht aufs Impressum, wo
+  // dieselbe Lücke steht.
+  const leer = rueckwegsatz({ email: '', telefon: '' });
+  assert.equal(leer.feld, null);
+  assert.equal(hatSteuerzeichen(leer.text), false);
+  assert.doesNotMatch(leer.text, /@/, 'ohne Adresse steht keine da');
 });

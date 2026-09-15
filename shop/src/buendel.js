@@ -95,6 +95,11 @@ export const KERNMODULE = Object.freeze([
   // ohne Zahl und ohne Wissen: `preis.js` selbst darf nicht ins Bündel, es
   // trägt die Einkaufsrechnung.
   'frachttext.js',
+  // **Ergänzt am 15. September.** Der Rückweg: Was der Kunde liest, wenn keine
+  // Mailadresse hinterlegt ist. `kundenanfrage.js` holt ihn von hier, und die
+  // Liste nennt alles, was im Bündel landet — zwei Sätze und ein Feldname,
+  // weder Zahl noch Methode.
+  'rueckweg.js',
   /*
    * **Ergänzt am 13. September.** Dasselbe noch einmal, eine Ebene tiefer:
    * Am 5. September wurde der **Satz** an der Frachtzeile zusammengelegt, die
@@ -157,6 +162,9 @@ export const BROWSERMODULE = Object.freeze([
   // **`systemtreue.js` vor `shopkern.js`** — es wird von dort gerufen, und im
   // Bündel steht jede Abhängigkeit vor ihrem Nutzer.
   'format.js', 'gebinde.js', 'liefergebiet.js', 'hersteller.js', 'systemtreue.js',
+  // **Ergänzt am 15. September.** Der Rückweg steht auch in `KERNMODULE`; hier
+  // nennt ihn die Importhülle des Browsers, weil `kundenanfrage.js` ihn ruft.
+  'rueckweg.js',
   'shopkern.js', 'kundenanfrage.js',
   // **Ergänzt am 9. September.** Der Kalender des Betriebs. `kundenanfrage.js`
   // datiert den Anfragetext, und das Datum darauf ist **unseres**, nicht das

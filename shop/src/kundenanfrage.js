@@ -33,6 +33,7 @@ import { pruefeLieferort } from './liefergebiet.js';
 // tat `bin/belegpruefung.mjs`, der einzige Prüfer über diesen Text.
 import { einheitText } from './format.js';
 import { geschaeftstag } from './geschaeftszeit.js';
+import { rueckwegsatz } from './rueckweg.js';
 
 // Heißt `anfrageEuro` und nicht `eur`: Ein Modul dieses Bündels wandert auch
 // in die Demo-Einzeldatei, und deren Vorlage führt dort bereits ein `const
@@ -302,6 +303,9 @@ export function baueKundenanfrage({ rechnung, bezirk, betreiber = {}, datum = nu
     betreff,
     text: zeilen.join('\n'),
     empfaenger: betreiber.email || null,
+    // **Der Rückweg braucht die Betreiberdaten, nicht nur die Adresse.**
+    // `mailtoWeg` baut daraus den Satz für den Fall, dass keine da ist.
+    betreiber,
     firma,
     hinweise,
   };
@@ -360,11 +364,16 @@ export function mailtoWeg(anfrage) {
     return { adresse: null, grund: 'keine-anfrage', text: '' };
   }
   if (!anfrage.empfaenger) {
+    /*
+     * **Berichtigt am 15. September 2026.** Hier stand *„Bitte den Text
+     * kopieren und an die Adresse aus dem Impressum schicken."* — und im
+     * Impressum steht dieselbe Lücke. Der Satz kommt jetzt aus
+     * `rueckwegsatz`; warum, steht im Kopf von `src/rueckweg.js`.
+     */
     return {
       adresse: null,
       grund: 'keine-adresse',
-      text: 'Eine Mailadresse ist noch nicht hinterlegt. Bitte den Text kopieren '
-        + 'und an die Adresse aus dem Impressum schicken.',
+      text: `Bitte kopieren Sie den Text. ${rueckwegsatz(anfrage.betreiber ?? {}).text}`,
     };
   }
   const adresse = `mailto:${encodeURIComponent(anfrage.empfaenger)}`

@@ -333,6 +333,17 @@ export const PRUEFER = [
   // war: „Ablage belegt.", „Kein lesbares JSON.", „Feld fehlt oder ist leer:
   // unternehmerBestaetigt". Gemessen wird die Zahl der **Stellen**, an denen
   // das Empfangsskript eine Bestellung abweist.
+  // **Aufgenommen am 15. September 2026.** Der Auftraggeber hat gefragt, ob ihn
+  // schon eine KI erreichen kann. Beim Nachsehen kam heraus: Die Kasse schickt
+  // den Kunden ins Impressum, und dort steht dieselbe Lücke. Gemessen wird die
+  // Zahl der **Kanäle**, über die ein Kunde uns erreichen könnte.
+  {
+    name: 'pruefe-kanaele',
+    werkzeug: 'kanalpruefung.mjs',
+    muster: /Rückwege — (\d+) Kanäle/,
+    einheit: 'Rückwege an den Kunden',
+    mindestens: 2,
+  },
   {
     name: 'pruefe-abweisungen',
     werkzeug: 'abweisungspruefung.mjs',
