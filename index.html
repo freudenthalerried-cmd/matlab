@@ -1,193 +1,421 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Baustellen</title>
-  <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BauVisite – Baustellenprotokolle direkt vor Ort</title>
+<meta name="description" content="BauVisite: Baustellenbesuchsprotokolle nach BauKG direkt am Handy. Foto, Textbaustein, fertiges PDF – noch auf der Baustelle. Preis auf Anfrage. Auf Wunsch bauen wir auch Ihre eigene App und passen die KI auf Ihre Fachsprache an.">
+<link rel="canonical" href="https://bauvisite.com/">
+<meta property="og:title" content="BauVisite – Baustellenprotokolle direkt vor Ort">
+<meta property="og:description" content="Baustellenbesuchsprotokolle nach BauKG direkt am Handy. Foto, Textbaustein, fertiges PDF – noch auf der Baustelle.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://bauvisite.com/">
+<style>
+  :root {
+    --gruen: #1e7a3c;
+    --gruen-dunkel: #14532d;
+    --text: #1f2328;
+    --muted: #5b6470;
+    --rand: #d9dee4;
+    --bg: #ffffff;
+    --flaeche: #f4f7f5;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.6;
+    font-size: 17px;
+  }
+
+  a { color: var(--gruen-dunkel); }
+
+  .inhalt {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* Kopf */
+  .kopf {
+    background: var(--gruen-dunkel);
+    color: #fff;
+    padding: 14px 0;
+  }
+
+  .kopf .inhalt {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .marke {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+  }
+
+  .marke span { opacity: 0.75; font-weight: 400; }
+
+  .kopf nav { display: flex; gap: 18px; flex-wrap: wrap; font-size: 15px; }
+  .kopf nav a { color: #fff; text-decoration: none; opacity: 0.9; }
+  .kopf nav a:hover { opacity: 1; text-decoration: underline; }
+
+  /* Aufmacher */
+  .aufmacher {
+    background: linear-gradient(180deg, var(--flaeche), var(--bg));
+    padding: 56px 0 44px;
+    border-bottom: 1px solid var(--rand);
+  }
+
+  h1 {
+    font-size: 38px;
+    line-height: 1.2;
+    margin: 0 0 14px;
+    letter-spacing: -0.5px;
+  }
+
+  .vorspann {
+    font-size: 20px;
+    color: var(--muted);
+    margin: 0 0 26px;
+    max-width: 640px;
+  }
+
+  .knoepfe { display: flex; gap: 12px; flex-wrap: wrap; }
+
+  .knopf {
+    display: inline-block;
+    padding: 13px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid var(--gruen);
+  }
+
+  .knopf-voll { background: var(--gruen); color: #fff; }
+  .knopf-voll:hover { background: var(--gruen-dunkel); border-color: var(--gruen-dunkel); }
+  .knopf-leer { background: #fff; color: var(--gruen-dunkel); }
+  .knopf-leer:hover { background: var(--flaeche); }
+
+  /* Abschnitte */
+  section { padding: 48px 0; }
+  section + section { border-top: 1px solid var(--rand); }
+
+  h2 {
+    font-size: 27px;
+    margin: 0 0 8px;
+    letter-spacing: -0.3px;
+  }
+
+  .abschnitt-vorspann {
+    color: var(--muted);
+    margin: 0 0 28px;
+    max-width: 620px;
+  }
+
+  /* Funktionen */
+  .raster {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+  }
+
+  .karte {
+    border: 1px solid var(--rand);
+    border-radius: 10px;
+    padding: 20px;
+    background: var(--bg);
+  }
+
+  .karte h3 {
+    font-size: 17px;
+    margin: 0 0 6px;
+    color: var(--gruen-dunkel);
+  }
+
+  .karte p { margin: 0; color: var(--muted); font-size: 15px; }
+
+  /* Ablauf */
+  ol.ablauf {
+    counter-reset: schritt;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+  }
+
+  ol.ablauf li {
+    counter-increment: schritt;
+    padding-top: 44px;
+    position: relative;
+    font-size: 15px;
+    color: var(--muted);
+  }
+
+  ol.ablauf li::before {
+    content: counter(schritt);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--gruen);
+    color: #fff;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  ol.ablauf strong { display: block; color: var(--text); margin-bottom: 4px; }
+
+  /* Preis */
+  .preis-karte {
+    border: 2px solid var(--gruen);
+    border-radius: 12px;
+    padding: 28px;
+    background: var(--flaeche);
+    max-width: 520px;
+  }
+
+  .preis {
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--gruen-dunkel);
+    margin: 0 0 6px;
+  }
+
+  .preis-karte ul { margin: 18px 0; padding-left: 20px; color: var(--muted); font-size: 15px; }
+  .preis-karte li { margin-bottom: 5px; }
+
+  /* Kontakt */
+  .kontakt-liste { list-style: none; padding: 0; margin: 0 0 24px; }
+  .kontakt-liste li { margin-bottom: 6px; }
+  .kontakt-liste .bez { display: inline-block; min-width: 90px; color: var(--muted); }
+
+  /* Fuß */
+  .fuss {
+    background: var(--flaeche);
+    border-top: 1px solid var(--rand);
+    padding: 28px 0;
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  .fuss h2 { font-size: 16px; color: var(--text); margin-bottom: 6px; }
+  .fuss p { margin: 0 0 10px; }
+
+  @media (max-width: 600px) {
+    h1 { font-size: 30px; }
+    .vorspann { font-size: 18px; }
+    section { padding: 36px 0; }
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --text: #e8eaed;
+      --muted: #a4adb8;
+      --rand: #333b45;
+      --bg: #16191d;
+      --flaeche: #1e2329;
+      --gruen: #3fa05f;
+      --gruen-dunkel: #6fc98a;
+    }
+    .kopf { background: #0f2e1c; }
+    .knopf-voll { color: #08130c; }
+    .knopf-leer { background: var(--flaeche); }
+    .knopf-leer:hover { background: var(--bg); }
+    .karte { background: var(--flaeche); }
+  }
+</style>
 </head>
 <body>
 
-  <!-- Ansicht 1: Baustellen-Liste -->
-  <main id="view-liste" class="liste">
-    <header class="gruen-kopf">
-      <h1>Baustellen</h1>
-      <div class="kopf-knoepfe">
-        <button id="liste-drucken" class="kopf-knopf" type="button" title="Drucken">&#128424;&#65039;</button>
-        <button id="liste-bausteine" class="kopf-knopf" type="button" title="Textbausteine">&#128218;</button>
-        <button id="neu-button" class="kopf-knopf kopf-knopf-text" type="button" title="Neue Baustelle">+ Neu</button>
-        <button id="ortung-button" class="kopf-knopf" type="button" title="Baustelle per GPS erkennen">&#128205;</button>
-      </div>
-    </header>
-
-    <div class="liste-inhalt">
-      <div class="suche-feld">
-        <span>&#128269;</span>
-        <input id="suche-input" type="search" placeholder="Baustelle suchen&hellip;" aria-label="Baustelle suchen">
-      </div>
-
-      <div id="standort-banner" class="standort-banner" hidden>
-        <span id="standort-text"></span>
-        <span class="standort-aktionen">
-          <button id="standort-uebernehmen" type="button" class="chip">Öffnen</button>
-          <a id="standort-ordner" href="#" target="_blank" rel="noopener" class="chip chip-kategorie">Ordner</a>
-          <button id="standort-schliessen" type="button" class="eintrag-knopf" aria-label="Schließen">&times;</button>
-        </span>
-      </div>
-
-      <form id="neu-form" class="neu-form" hidden>
-        <input id="neu-name" type="text" placeholder="Name der Baustelle" required>
-        <input id="neu-ort" type="text" placeholder="Ort">
-        <select id="neu-gruppe" aria-label="Gruppe"></select>
-        <div class="neu-aktionen">
-          <button type="submit" class="chip">Speichern</button>
-          <button type="button" id="neu-abbrechen" class="chip chip-kategorie">Abbrechen</button>
-        </div>
-      </form>
-
-      <div id="gruppen"></div>
-    </div>
-  </main>
-
-  <!-- Ansicht 2: Protokoll einer Baustelle -->
-  <main id="view-protokoll" class="chat" hidden>
-    <header class="gruen-kopf">
-      <button id="zurueck-button" class="kopf-knopf" type="button" aria-label="Zurück">&#8249;</button>
-      <h1 id="protokoll-titel">Protokoll Nr. 1</h1>
-      <div class="kopf-knoepfe">
-        <button id="bausteine-button" class="kopf-knopf" type="button" title="Textbausteine">&#128218;</button>
-      </div>
-    </header>
-
-    <div class="protokoll-scroll">
-
-      <div class="kopf-karte">
-        <div class="feld-reihe">
-          <label class="feld feld-datum">Datum
-            <input id="kopf-datum" type="date">
-          </label>
-          <label class="feld feld-zeit">Uhrzeit
-            <input id="kopf-uhrzeit" type="time">
-          </label>
-          <label class="feld feld-nr">Nr.
-            <input id="kopf-nr" type="number" min="1" inputmode="numeric">
-          </label>
-        </div>
-        <label class="feld">Anwesend
-          <input id="kopf-anwesend" type="text">
-        </label>
-        <label class="feld">Wetter
-          <input id="kopf-wetter" type="text" placeholder="z. B. sonnig, 24 &deg;C">
-        </label>
-        <label class="feld">Allgemeines / Baustand
-          <textarea id="kopf-allgemein" rows="3"></textarea>
-        </label>
-      </div>
-
-      <div class="foto-knoepfe">
-        <label class="gross-knopf gross-gruen" for="foto-input">&#128247; Foto aufnehmen</label>
-        <label class="gross-knopf gross-grau" for="galerie-input">&#128444;&#65039; Galerie</label>
-      </div>
-      <input id="foto-input" type="file" accept="image/*" capture="environment" hidden>
-      <input id="galerie-input" type="file" accept="image/*" hidden>
-
-      <div id="foto-hinweis" class="foto-hinweis">
-        Noch keine Fotos.<br>Mit &bdquo;&#128247; Foto aufnehmen&ldquo; geht die Kamera direkt auf.
-      </div>
-
-      <div id="foto-preview" class="foto-preview" hidden>
-        <img id="foto-preview-img" alt="Foto-Vorschau">
-        <button id="foto-remove" class="foto-remove" type="button" aria-label="Foto entfernen">&times;</button>
-      </div>
-
-      <ul id="messages" class="messages" aria-live="polite"></ul>
-
-      <div id="foto-kategorien" class="foto-kategorien" hidden>
-        <div class="panel-hint">Was ist am Foto zu sehen?</div>
-        <div id="foto-kategorien-chips" class="chips"></div>
-      </div>
-
-      <div id="allgemein-panel" class="allgemein-panel" hidden>
-        <div class="panel-hint">Allgemeine Punkte für den Bericht auswählen:</div>
-        <div id="allgemein-liste" class="allgemein-liste"></div>
-        <div class="allgemein-aktionen">
-          <button id="allgemein-einfuegen" class="chip" type="button">Ausgewählte einfügen</button>
-          <button id="allgemein-abbrechen" class="chip chip-kategorie" type="button">Abbrechen</button>
-        </div>
-      </div>
-
-      <div id="ki-vorschlaege" class="ki-vorschlaege" hidden>
-        <div class="panel-hint ki-kopf">
-          <span>KI-Vorschlag (nur Sicherheit) – tippen zum Einfügen:</span>
-          <span class="detail-regler">
-            <button id="detail-minus" class="detail-button" type="button" title="Kürzere Antwort">&minus;</button>
-            <span id="detail-label">Normal</span>
-            <button id="detail-plus" class="detail-button" type="button" title="Längere Antwort mit Gesetzestext">+</button>
-          </span>
-        </div>
-        <div id="ki-chips" class="chips"></div>
-      </div>
-
-      <div class="typ-reihe">
-        <div class="typ-schalter" role="group" aria-label="Eintragstyp">
-          <button id="typ-hinweis" class="typ-knopf typ-aktiv" type="button">Hinweis</button>
-          <button id="typ-mangel" class="typ-knopf" type="button">Mangel</button>
-        </div>
-        <button id="allgemein-button" class="chip chip-kategorie" type="button">Allg. Punkte</button>
-      </div>
-
-      <div id="bearbeiten-hinweis" class="bearbeiten-hinweis" hidden>
-        Eintrag wird bearbeitet – Senden speichert die Änderung.
-        <button id="bearbeiten-abbrechen" type="button">Abbrechen</button>
-      </div>
-
-      <form id="chat-form" class="chat-form" autocomplete="off">
-        <textarea
-          id="chat-input"
-          class="chat-input"
-          rows="1"
-          placeholder="Feststellung eingeben&hellip; (Kürzel: helm, gas, wehren &hellip;)"
-          aria-label="Feststellung"
-        ></textarea>
-        <button
-          id="send-button"
-          class="send-button"
-          type="submit"
-          aria-label="Eintrag speichern"
-          disabled
-        >&#10148;</button>
-      </form>
-
-      <div class="pdf-karte">
-        <button id="print-button" class="gross-knopf gross-grau breit" type="button">&#128196; PDF ansehen</button>
-        <div class="pdf-neben">
-          <button id="mail-button" class="chip chip-kategorie" type="button">&#9993;&#65039; Mail senden</button>
-          <button id="info-button" class="chip chip-kategorie" type="button">&#8505;&#65039; Verteiler / Protokolle</button>
-        </div>
-      </div>
-
-      <div id="info-panel" class="info-panel" hidden>
-        <div class="panel-hint">Verteiler dieser Baustelle:</div>
-        <input id="info-verteiler" class="verteiler-input" type="text" placeholder="z. B. Bauleitung, polier@baufirma.at">
-        <div id="info-protokolle"></div>
-        <button id="info-position" class="chip chip-kategorie position-knopf" type="button">Aktuelle Position speichern</button>
-      </div>
-
-    </div>
-
-    <input id="ort-input" type="hidden">
-  </main>
-
-  <div id="bausteine-panel" class="bausteine-panel" hidden>
-    <div class="panel-header">
-      <span>Textbausteine (nach Häufigkeit)</span>
-      <button id="bausteine-close" class="tool-button" type="button" aria-label="Schließen">&times;</button>
-    </div>
-    <ul id="bausteine-liste" class="bausteine-liste"></ul>
+<header class="kopf">
+  <div class="inhalt">
+    <div class="marke">BauVisite <span>· Baustellenprotokolle</span></div>
+    <nav>
+      <a href="#funktionen">Funktionen</a>
+      <a href="#ablauf">Ablauf</a>
+      <a href="#preis">Preis</a>
+      <a href="#eigene-app">Eigene App</a>
+      <a href="#kontakt">Kontakt</a>
+    </nav>
   </div>
+</header>
 
-  <script src="textbausteine.js"></script>
-  <script src="baustellen.js"></script>
-  <script src="script.js"></script>
+<div class="aufmacher">
+  <div class="inhalt">
+    <h1>Das Baustellenprotokoll ist fertig,<br>bevor Sie im Auto sitzen.</h1>
+    <p class="vorspann">
+      BauVisite ist die Protokoll-App für Baustellenkoordination nach BauKG.
+      Foto machen, Textbaustein antippen, PDF verschicken – alles am Handy,
+      direkt auf der Baustelle.
+    </p>
+    <div class="knoepfe">
+      <a class="knopf knopf-voll" href="app/">App öffnen</a>
+      <a class="knopf knopf-leer" href="#kontakt">Preis anfragen</a>
+    </div>
+  </div>
+</div>
+
+<section id="funktionen">
+  <div class="inhalt">
+    <h2>Was die App kann</h2>
+    <p class="abschnitt-vorspann">
+      Gebaut aus der täglichen Arbeit eines Baukoordinators – nicht aus einem Lastenheft.
+    </p>
+
+    <div class="raster">
+      <div class="karte">
+        <h3>Baustelle wird erkannt</h3>
+        <p>Sie kommen an, die App erkennt per GPS welche Baustelle es ist und
+           öffnet das passende Protokoll. Ohne Suchen in Listen.</p>
+      </div>
+      <div class="karte">
+        <h3>Foto und Vorschlag</h3>
+        <p>Foto aufnehmen, und die App schlägt passende Formulierungen vor –
+           kurz und in der Sprache, die ins Protokoll gehört.</p>
+      </div>
+      <div class="karte">
+        <h3>Textbausteine mit Gesetzestext</h3>
+        <p>Geprüfte Formulierungen für die häufigen Feststellungen, auf Wunsch
+           mit dem passenden Verweis auf ASchG und Bauarbeiterschutzverordnung.</p>
+      </div>
+      <div class="karte">
+        <h3>Hinweis oder Mangel</h3>
+        <p>Ein Umschalter, zwei Tonlagen: der freundliche Hinweis oder die
+           klare Mängelfeststellung – derselbe Baustein, andere Formulierung.</p>
+      </div>
+      <div class="karte">
+        <h3>PDF und Mail</h3>
+        <p>Fertiges Protokoll als PDF, mit einem Griff an den hinterlegten
+           Verteiler der Baustelle geschickt.</p>
+      </div>
+      <div class="karte">
+        <h3>Läuft ohne Empfang</h3>
+        <p>Die App läuft im Browser des Handys, die Daten bleiben am Gerät.
+           Kein Login, kein Konto, keine fremde Cloud.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="ablauf">
+  <div class="inhalt">
+    <h2>Ein Baustellenbesuch</h2>
+    <p class="abschnitt-vorspann">Vier Schritte, meist unter zehn Minuten.</p>
+
+    <ol class="ablauf">
+      <li><strong>Ankommen</strong>Die App erkennt die Baustelle und öffnet das Protokoll mit Datum, Nummer und Verteiler.</li>
+      <li><strong>Aufnehmen</strong>Foto machen, Vorschlag antippen oder eigenen Text schreiben. Hinweis oder Mangel wählen.</li>
+      <li><strong>Ergänzen</strong>Wetter, Anwesende, Baustand – die allgemeinen Punkte per Auswahl statt Tippen.</li>
+      <li><strong>Verschicken</strong>PDF ansehen, an den Verteiler mailen. Fertig, noch am Bauplatz.</li>
+    </ol>
+  </div>
+</section>
+
+<section id="preis">
+  <div class="inhalt">
+    <h2>Preis</h2>
+    <p class="abschnitt-vorspann">
+      Jedes Büro arbeitet anders – deshalb machen wir Ihnen ein Angebot,
+      das zu Ihrer Größe und Ihren Baustellen passt.
+    </p>
+
+    <div class="preis-karte">
+      <p class="preis">Preis auf Anfrage</p>
+      <p style="margin:0;color:var(--muted)">Individuelles Angebot, abgestimmt auf Anzahl der Nutzer und Baustellen.</p>
+      <ul>
+        <li>Einrichtung mit Ihren Baustellen und Verteilern</li>
+        <li>Textbausteine auf Ihr Büro abgestimmt</li>
+        <li>Protokollkopf mit Ihrem Logo</li>
+        <li>Schulung und Unterstützung beim Start</li>
+      </ul>
+      <a class="knopf knopf-voll" href="#kontakt">Angebot anfordern</a>
+    </div>
+  </div>
+</section>
+
+<section id="eigene-app">
+  <div class="inhalt">
+    <h2>Sie haben ein anderes Problem?</h2>
+    <p class="abschnitt-vorspann">
+      BauVisite ist aus einer ganz konkreten Aufgabe entstanden: Protokolle
+      schreiben, ohne abends noch am Schreibtisch zu sitzen. Dieselbe Arbeit
+      machen wir auch für Ihre Aufgabe.
+    </p>
+
+    <div class="raster">
+      <div class="karte">
+        <h3>BauVisite für Ihr Büro</h3>
+        <p>Ihre Textbausteine, Ihre Baustellen, Ihr Protokollkopf. Die App
+           spricht die Sprache, die in Ihren Berichten üblich ist.</p>
+      </div>
+      <div class="karte">
+        <h3>Eine eigene App</h3>
+        <p>Abnahmen, Wartungsprotokolle, Checklisten, Angebote – wenn Sie eine
+           App für Ihren Ablauf brauchen, bauen wir sie Ihnen.</p>
+      </div>
+      <div class="karte">
+        <h3>KI, die Ihre Fachsprache kennt</h3>
+        <p>Vorschläge, Auswertungen und Zusammenfassungen, trainiert auf Ihre
+           Unterlagen und Ihre Normen – nicht auf allgemeine Floskeln.</p>
+      </div>
+    </div>
+
+    <p style="margin:26px 0 18px;max-width:620px">
+      Erzählen Sie uns, was bei Ihnen jede Woche Zeit frisst. Wir schauen es
+      uns an und sagen Ihnen ehrlich, ob sich eine Lösung dafür rechnet.
+    </p>
+
+    <a class="knopf knopf-voll" href="mailto:stefan.freudenthaler@aon.at?subject=Eigene%20App%20%2F%20KI-L%C3%B6sung">Idee besprechen</a>
+  </div>
+</section>
+
+<section id="kontakt">
+  <div class="inhalt">
+    <h2>Kontakt</h2>
+    <p class="abschnitt-vorspann">
+      Schreiben Sie kurz, wie viele Baustellen Sie betreuen – dann bekommen Sie
+      ein passendes Angebot statt einer Preisliste.
+    </p>
+
+    <ul class="kontakt-liste">
+      <li><span class="bez">Ansprechpartner</span> Bmst. Ing. Stefan Freudenthaler</li>
+      <li><span class="bez">E-Mail</span> <a href="mailto:stefan.freudenthaler@aon.at?subject=BauVisite%20%E2%80%93%20Angebot">stefan.freudenthaler@aon.at</a></li>
+      <li><span class="bez">Telefon</span> <a href="tel:+436645103676">0664 5103676</a></li>
+    </ul>
+
+    <a class="knopf knopf-voll" href="mailto:stefan.freudenthaler@aon.at?subject=BauVisite%20%E2%80%93%20Angebot">E-Mail schreiben</a>
+  </div>
+</section>
+
+<footer class="fuss">
+  <div class="inhalt">
+    <h2>Impressum</h2>
+    <p>
+      Freudenthaler Bau GmbH · Bmst. Ing. Stefan Freudenthaler<br>
+      E-Mail: <a href="mailto:stefan.freudenthaler@aon.at">stefan.freudenthaler@aon.at</a> ·
+      Telefon: 0664 5103676
+    </p>
+    <p>© <span id="jahr">2026</span> Freudenthaler Bau GmbH · <a href="app/">Zur App</a></p>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('jahr').textContent = new Date().getFullYear();
+</script>
+
 </body>
 </html>

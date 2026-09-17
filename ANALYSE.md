@@ -58,11 +58,16 @@ Jeder Bericht besteht aus Einträgen mit **Foto + Zeitstempel + Text**.
   „Die persönliche Schutzausrüstung, einschließlich des Tragens eines
   Schutzhelmes, ist erforderlich." Weitere: `gas`, `wehren`, `wege`, `gerüst`,
   `leiter`, `dach`, `zaun`, `winter`, `kmf`, `kran`, `polier`, `gut` …
-- **KI-Vorschlag**: beim Tippen werden passende Bausteine als Chips
-  vorgeschlagen (Stichwort-Treffer + Häufigkeit + eigene Nutzung); verknüpfte
-  Bausteine werden mit vorgeschlagen.
-- **Foto-Kategorien**: nach dem Anhängen eines Fotos „Was ist am Foto?" –
-  die Kategorie liefert die passenden Bausteine (gelernt aus obiger Tabelle).
+- **KI-Vorschlag**: läuft über ein Vorschaufenster mit Eingabefeld oben.
+  Steht Text im Feld, liefert er die Vorschläge (Stichwort-Treffer +
+  Häufigkeit + eigene Nutzung, verknüpfte Bausteine kommen mit); ist das Feld
+  leer, wird das Foto ausgewertet. Höchstens drei Vorschläge zu je höchstens
+  drei Sätzen. Das Fenster öffnet sich nach der Foto-Aufnahme automatisch,
+  über „KI-Vorschlag" auch mit Foto und über „KI nur Text" ohne Foto.
+- **Geotag**: die Ortung läuft fortlaufend (`watchPosition`). Unter 250 m
+  Entfernung wird das Protokoll der Baustelle direkt geöffnet, bis 5 km nur
+  vorgeschlagen. Baustellen ohne Koordinaten bekommen sie über das Adressfeld
+  (OpenStreetMap) oder über „Aktuelle Position speichern" vor Ort.
 - **Lernen aus Nutzung**: jede Verwendung eines Bausteins erhöht dessen Rang
   (localStorage), die Liste sortiert sich mit der Zeit nach dem eigenen Gebrauch.
 
@@ -94,3 +99,10 @@ Bau / AUVA / BUAK, Ausgabe 2010, aus Google Drive). Daraus übernommen:
   merkt sich die App die eigene Formulierung (`bp_varianten`) und verwendet
   sie künftig; alle Änderungen landen zusätzlich im Log `bp_aenderungen`
   (Basis für eine spätere echte Datenbank).
+
+## Aufbau des Repos
+
+- `index.html` – Homepage zur Vermarktung (bauvisite.com), Preis auf Anfrage.
+- `CNAME` – die Domain für GitHub Pages.
+- `app/` – die Protokoll-App selbst (bauvisite.com/app/). Das gedruckte
+  Protokoll trägt eine Fußzeile, die im PDF auf bauvisite.com verlinkt.
