@@ -134,6 +134,49 @@
     return b.freq + (nutzung[b.id] || 0) * 2;
   }
 
+  // ---------- Ebenen: Zurueck-Taste geht eine Ebene zurueck ----------
+
+  // Jede geoeffnete Ebene (Protokoll, Panel, Fenster) legt einen Eintrag in der
+  // Browser-History an. Die Zurueck-Taste des Handys schliesst dann die oberste
+  // Ebene, statt die App zu verlassen. Erst auf der Baustellen-Liste beendet
+  // Zurueck die App. Auch die Knoepfe in der App gehen ueber ebeneVerlassen(),
+  // damit History und Ansicht nicht auseinanderlaufen.
+
+  const ebenen = [];   // offene Ebenen, unterste zuerst
+
+  function ebeneOffen(name) {
+    return ebenen.some(function (e) { return e.name === name; });
+  }
+
+  function ebeneOeffnen(name, schliessen) {
+    if (ebeneOffen(name)) return;
+    ebenen.push({ name: name, schliessen: schliessen });
+    history.pushState({ bp: ebenen.length }, '');
+  }
+
+  // Schliesst die Ebene ueber die History, damit ihr Eintrag mitgeht.
+  // Die eigentliche Arbeit macht der popstate-Handler.
+  function ebeneVerlassen(name) {
+    if (ebeneOffen(name)) history.back();
+  }
+
+  // Oeffnen und Schliessen in einem – fuer Knoepfe, die ein Panel umschalten.
+  function ebeneUmschalten(name, oeffnen, schliessen) {
+    if (ebeneOffen(name)) {
+      ebeneVerlassen(name);
+    } else {
+      oeffnen();
+      ebeneOeffnen(name, schliessen);
+    }
+  }
+
+  window.addEventListener('popstate', function () {
+    const e = ebenen.pop();
+    if (e) e.schliessen();
+  });
+
+  history.replaceState({ bp: 0 }, '');
+
   // ---------- Baustellen-Daten ----------
 
   function alleBaustellen() {
@@ -222,10 +265,13 @@
         neuGruppe.appendChild(o);
       });
       neuName.focus();
+      ebeneOeffnen('neu', function () { neuForm.hidden = true; });
+    } else {
+      ebeneVerlassen('neu');
     }
   });
 
-  neuAbbrechen.addEventListener('click', function () { neuForm.hidden = true; });
+  neuAbbrechen.addEventListener('click', function () { ebeneVerlassen('neu'); });
 
   neuForm.addEventListener('submit', function (event) {
     event.preventDefault();
@@ -244,14 +290,16 @@
     speichereJson('bp_gruppen_offen', gruppenOffen);
     neuName.value = '';
     neuOrt.value = '';
-    neuForm.hidden = true;
+    ebeneVerlassen('neu');
     renderGruppen();
   });
 
   listeDrucken.addEventListener('click', function () { window.print(); });
   listeBausteine.addEventListener('click', function () {
-    bausteinePanel.hidden = false;
-    renderBausteine();
+    ebeneUmschalten('bausteine', function () {
+      bausteinePanel.hidden = false;
+      renderBausteine();
+    }, function () { bausteinePanel.hidden = true; });
   });
 
   // ---------- Ansicht 2: Protokoll ----------
@@ -316,6 +364,7 @@
     infoPanel.hidden = true;
     standortBanner.hidden = true;
     renderAlleEintraege();
+    ebeneOeffnen('protokoll', zurueckZurListe);
   }
 
   function zurueckZurListe() {
@@ -327,11 +376,15 @@
     renderGruppen();
   }
 
-  zurueckButton.addEventListener('click', zurueckZurListe);
+  zurueckButton.addEventListener('click', function () {
+    ebeneVerlassen('protokoll');
+  });
 
   infoButton.addEventListener('click', function () {
-    infoPanel.hidden = !infoPanel.hidden;
-    if (!infoPanel.hidden) renderInfo();
+    ebeneUmschalten('info', function () {
+      infoPanel.hidden = false;
+      renderInfo();
+    }, function () { infoPanel.hidden = true; });
   });
 
   function renderInfo() {
@@ -630,7 +683,7 @@
     knopf.appendChild(document.createTextNode(dreiSaetze(bausteinText(b))));
     knopf.addEventListener('click', function () {
       fuegeTextEin(b);
-      schliesseKiFenster();
+      ebeneVerlassen('ki');
     });
     return knopf;
   }
@@ -674,6 +727,7 @@
     rendereKiSaetze();
     kiFenster.hidden = false;
     kiEingabe.focus();
+    ebeneOeffnen('ki', schliesseKiFenster);
   }
 
   function schliesseKiFenster() {
@@ -683,12 +737,12 @@
   kiEingabe.addEventListener('input', rendereKiSaetze);
   kiButton.addEventListener('click', function () { oeffneKiFenster(false); });
   kiTextButton.addEventListener('click', function () { oeffneKiFenster(true); });
-  kiSchliessen.addEventListener('click', schliesseKiFenster);
+  kiSchliessen.addEventListener('click', function () { ebeneVerlassen('ki'); });
   kiFenster.addEventListener('click', function (event) {
-    if (event.target === kiFenster) schliesseKiFenster();
+    if (event.target === kiFenster) ebeneVerlassen('ki');
   });
   document.addEventListener('keydown', function (event) {
-    if (event.key === 'Escape' && !kiFenster.hidden) schliesseKiFenster();
+    if (event.key === 'Escape' && !kiFenster.hidden) ebeneVerlassen('ki');
   });
 
   function fuegeTextEin(b) {
@@ -721,12 +775,14 @@
   }
 
   allgemeinButton.addEventListener('click', function () {
-    allgemeinPanel.hidden = !allgemeinPanel.hidden;
-    if (!allgemeinPanel.hidden) renderAllgemein();
+    ebeneUmschalten('allgemein', function () {
+      allgemeinPanel.hidden = false;
+      renderAllgemein();
+    }, function () { allgemeinPanel.hidden = true; });
   });
 
   allgemeinAbbrechen.addEventListener('click', function () {
-    allgemeinPanel.hidden = true;
+    ebeneVerlassen('allgemein');
   });
 
   allgemeinEinfuegen.addEventListener('click', function () {
@@ -747,7 +803,7 @@
       speichereJson('bp_eintraege', eintraege);
       renderAlleEintraege();
     }
-    allgemeinPanel.hidden = true;
+    ebeneVerlassen('allgemein');
   });
 
   // ---------- Foto ----------
@@ -804,18 +860,20 @@
       li.addEventListener('click', function () {
         if (viewProtokoll.hidden) return; // aus der Liste heraus nur ansehen
         fuegeTextEin(b);
-        bausteinePanel.hidden = true;
+        ebeneVerlassen('bausteine');
       });
       bausteineListe.appendChild(li);
     });
   }
 
   bausteineButton.addEventListener('click', function () {
-    bausteinePanel.hidden = !bausteinePanel.hidden;
-    if (!bausteinePanel.hidden) renderBausteine();
+    ebeneUmschalten('bausteine', function () {
+      bausteinePanel.hidden = false;
+      renderBausteine();
+    }, function () { bausteinePanel.hidden = true; });
   });
   bausteineClose.addEventListener('click', function () {
-    bausteinePanel.hidden = true;
+    ebeneVerlassen('bausteine');
   });
 
   // ---------- Einträge ----------
@@ -845,6 +903,7 @@
     input.value = eintrag.text;
     bearbeitenHinweis.hidden = false;
     input.classList.add('bearbeitet');
+    ebeneOeffnen('bearbeiten', beendeBearbeitung);
     updateSendState();
     autoGrow();
     input.focus();
@@ -857,9 +916,12 @@
     input.value = '';
     updateSendState();
     autoGrow();
+    ebeneVerlassen('bearbeiten');
   }
 
-  bearbeitenAbbrechen.addEventListener('click', beendeBearbeitung);
+  bearbeitenAbbrechen.addEventListener('click', function () {
+    ebeneVerlassen('bearbeiten');
+  });
 
   function renderEintrag(e) {
     const li = document.createElement('li');
@@ -1092,7 +1154,7 @@
     fotoInput.value = '';
     galerieInput.value = '';
     fotoPreview.hidden = true;
-    schliesseKiFenster();
+    ebeneVerlassen('ki');
     input.value = '';
     setzeTyp('hinweis');
     updateSendState();
