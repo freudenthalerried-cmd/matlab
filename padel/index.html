@@ -37,13 +37,7 @@ button:focus-visible{outline:2px solid var(--ball);outline-offset:2px}
 #msg span{display:block;margin-top:8px;font-size:18px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
 #hint{position:fixed;left:16px;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);text-align:center;font-size:16px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);pointer-events:none;z-index:2}
 
-#joy{position:fixed;width:112px;height:112px;margin:-56px 0 0 -56px;border-radius:50%;border:2px solid rgba(255,255,255,.22);background:rgba(255,255,255,.05);pointer-events:none;z-index:3}
-#knob{position:absolute;left:50%;top:50%;width:48px;height:48px;margin:-24px 0 0 -24px;border-radius:50%;background:rgba(255,255,255,.35)}
-#btns{position:fixed;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);display:flex;gap:14px;align-items:flex-end;z-index:3}
-.pb{width:84px;height:84px;border-radius:50%;border:2px solid rgba(255,255,255,.3);background:rgba(255,107,74,.85);font-weight:800;font-size:17px;letter-spacing:.08em;text-transform:uppercase;touch-action:none;box-shadow:0 6px 24px rgba(0,0,0,.4)}
-.pb.lob{width:66px;height:66px;background:rgba(40,70,140,.85);font-size:15px}
-.pb.down{transform:scale(.92);filter:brightness(1.25)}
-#zone{position:fixed;left:0;top:0;bottom:0;width:58%;z-index:1}
+#zone{position:fixed;inset:0;z-index:1}
 
 .ov{position:fixed;inset:0;display:grid;place-items:center;padding:16px;z-index:5;background:radial-gradient(ellipse at center,rgba(5,9,21,.35),rgba(5,9,21,.75))}
 .card{width:min(380px,100%);max-height:calc(100% - 24px);overflow:auto;background:var(--panel);border:1px solid var(--edge);border-radius:10px;padding:22px 22px 20px;display:grid;gap:14px;backdrop-filter:blur(8px);box-shadow:0 20px 60px rgba(0,0,0,.5)}
@@ -68,7 +62,6 @@ h2{margin:0;font-size:44px;line-height:.9;font-weight:800;text-transform:upperca
 
 <canvas id="cv"></canvas>
 <div id="zone" hidden></div>
-<div id="joy" hidden><div id="knob"></div></div>
 
 <div class="hud">
   <div id="board">
@@ -85,10 +78,6 @@ h2{margin:0;font-size:44px;line-height:.9;font-weight:800;text-transform:upperca
 <div id="msg"><b id="mT"></b><span id="mS"></span></div>
 <div id="hint" hidden></div>
 
-<div id="btns" hidden>
-  <button class="pb lob" id="bLob">Lob</button>
-  <button class="pb" id="bHit">Schlag</button>
-</div>
 
 <div id="menu" class="ov">
   <div class="card">
@@ -109,9 +98,10 @@ h2{margin:0;font-size:44px;line-height:.9;font-weight:800;text-transform:upperca
       <li>Beim Schlag links/rechts halten = Richtung</li>
     </ul>
     <ul class="keys" id="keysTouch" hidden>
-      <li>Linke Hälfte ziehen: laufen</li>
-      <li><kbd>Schlag</kbd> tippen, wenn der Ring grün leuchtet</li>
-      <li>Joystick seitlich halten = Schlagrichtung</li>
+      <li>Auf den Platz tippen oder halten: dorthin laufen</li>
+      <li>Nach oben wischen: Schlag · bei hohem Ball Smash</li>
+      <li>Nach unten wischen: Lob</li>
+      <li>Schräg wischen = Richtung, am besten wenn der Ring grün ist</li>
     </ul>
     <p class="small">Goldener Punkt bei 40:40. Auf „Leicht“ schlägst du automatisch, sobald der Ball in Reichweite ist.</p>
   </div>
@@ -198,7 +188,7 @@ const S={phase:'serve',timer:1,demo:true,paused:false,diff:1,target:3,serveTeam:
   rs:{hit:0,bounced:0,serve:false,net:false},server:null,receiver:null,depth:[3,3],cands:[],marker:null,
   trail:[],fx:[],shake:0,time:0,pending:null,auto:false,stats:{rallies:0,longest:0,shots:0,cur:0}};
 const keys=new Set();
-const joy={id:null,ox:0,oy:0,x:0,y:0};
+const tp={id:null,x0:0,y0:0,t0:0,x:0,y:0,hold:false,tgt:null,aim:null,swipe:null};
 
 const homeX=p=>p.col?7.5:2.5;
 const side=y=>y<10?0:1;
@@ -317,12 +307,12 @@ function aiShot(p){
   else if(!nearNet&&Math.random()<.1)type='l';
   shoot(p,type,gapX(opp)+rnd(-.8,.8),L.q,L.err,L.miss);
 }
-function inX(){let x=joy.x;if(keys.has('ArrowLeft')||keys.has('KeyA'))x-=1;if(keys.has('ArrowRight')||keys.has('KeyD'))x+=1;return clamp(x,-1,1);}
-function inY(){let y=joy.y;if(keys.has('ArrowUp')||keys.has('KeyW'))y+=1;if(keys.has('ArrowDown')||keys.has('KeyS'))y-=1;return clamp(y,-1,1);}
+function inX(){let x=0;if(keys.has('ArrowLeft')||keys.has('KeyA'))x-=1;if(keys.has('ArrowRight')||keys.has('KeyD'))x+=1;return clamp(x,-1,1);}
+function inY(){let y=0;if(keys.has('ArrowUp')||keys.has('KeyW'))y+=1;if(keys.has('ArrowDown')||keys.has('KeyS'))y-=1;return clamp(y,-1,1);}
 function humanShot(p,d){
   const q=1.12-.4*(d/1.35);
   let type=p.winType;if(type==='d'&&b.z>1.85)type='s';
-  const ax=inX(),opp=P.filter(o=>o.team!==p.team);
+  const ax=tp.aim!==null?tp.aim:inX(),opp=P.filter(o=>o.team!==p.team);
   const tx=Math.abs(ax)>.3?5+ax*3.7:gapX(opp);
   shoot(p,type,tx,q,.25+(1-q)*.9,0);
 }
@@ -341,11 +331,11 @@ function setupServe(){
     else{p.x=homeX(p);p.y=near?2.8:17.2;}
     p.vx=p.vy=0;p.swing=0;p.cool=0;p.win=0;
   }
-  S.depth=[3,3];S.depth[1-st]=7.5;
+  S.depth=[3,3];S.depth[1-st]=7.5;tp.tgt=null;
   S.phase='serve';S.timer=S.demo?.9:1.2;S.trail=[];S.cands=[];S.marker=null;
   b.out=false;b.rolling=false;
   const hs=!S.demo&&S.server===P[0];
-  setHint(hs?(touch?'Aufschlag: Schlag tippen':'Aufschlag: Leertaste'):'');
+  setHint(hs?(touch?'Aufschlag: nach oben wischen':'Aufschlag: Leertaste'):'');
   updateBoard();
 }
 function serveNow(aim){
@@ -427,7 +417,9 @@ function update(dt){
   if(S.paused||S.phase==='over'){fxUpdate(dt);return;}
   const h=P[0];
   if(!h.ai){
-    let ix=inX(),iy=inY();const m=Math.hypot(ix,iy);if(m>1){ix/=m;iy/=m;}
+    let ix=inX(),iy=inY();
+    if(!ix&&!iy&&tp.tgt){const dx=tp.tgt.x-h.x,dy=tp.tgt.y-h.y,d=Math.hypot(dx,dy);if(d>.08){const s=Math.min(1,d*2.2)/d;ix=dx*s;iy=dy*s;}else if(!tp.hold)tp.tgt=null;}
+    const m=Math.hypot(ix,iy);if(m>1){ix/=m;iy/=m;}
     if(S.phase==='serve'&&S.server===h){ix=0;iy=0;}
     const k=Math.min(1,dt*14);h.vx+=(ix*HSPD-h.vx)*k;h.vy+=(iy*HSPD-h.vy)*k;
   }
@@ -508,6 +500,7 @@ function onEvent(e){
   if(S.phase==='play'){const r=rule(S.rs,e,b);if(r)endPoint(r);}
 }
 function fxUpdate(dt){
+  if(tp.swipe)tp.swipe.t+=dt;
   for(const f of S.fx)f.t+=dt;
   S.fx=S.fx.filter(f=>f.t<f.d);
   S.shake=Math.max(0,S.shake-dt*1.6);
@@ -720,6 +713,8 @@ function render(){
   drawFx();
   // human tag
   if(!S.demo){const h=P[0],t=pj(h.x,h.y,2.25);ctx.fillStyle='#ff6b4a';ctx.beginPath();ctx.moveTo(t.x-7,t.y-9);ctx.lineTo(t.x+7,t.y-9);ctx.lineTo(t.x,t.y);ctx.closePath();ctx.fill();}
+  if(!S.demo&&tp.tgt&&!P[0].ai){const f=pj(tp.tgt.x,tp.tgt.y,0);ctx.strokeStyle='rgba(255,255,255,.5)';ctx.lineWidth=1.5;ell(f.x,f.y,.25*f.s,.1*f.s);ctx.stroke();}
+  if(tp.swipe&&tp.swipe.t<.35){const w=tp.swipe,u=w.t/.35;ctx.strokeStyle='rgba(227,255,60,'+(.8*(1-u))+')';ctx.lineWidth=6*(1-u)+1;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(w.x0,w.y0);ctx.lineTo(w.x1,w.y1);ctx.stroke();}
   // vignette
   const v=ctx.createRadialGradient(W/2,H*.55,Math.min(W,H)*.35,W/2,H*.55,Math.max(W,H)*.8);
   v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,.45)');ctx.fillStyle=v;ctx.fillRect(-20,-20,W+40,H+40);
@@ -735,11 +730,12 @@ function frame(now){
 }
 
 /* ---------- input & UI ---------- */
-function press(type){
+function press(type,aim=null){
+  tp.aim=aim;
   ac();
   if(S.demo||S.paused)return;
   const h=P[0];
-  if(S.phase==='serve'&&S.server===h){serveNow(inX());return;}
+  if(S.phase==='serve'&&S.server===h){serveNow(aim!==null?aim:inX());return;}
   if(h.win>0&&h.winType===type)return;
   h.win=.3;h.winType=type;
   if(h.swing<=0){h.swing=.001;h.swingType=type==='l'?'l':(b.z>1.85?'s':'d');snd('whoosh');}
@@ -754,24 +750,38 @@ addEventListener('keydown',e=>{
 });
 addEventListener('keyup',e=>keys.delete(e.code));
 addEventListener('blur',()=>{keys.clear();if(!S.demo&&S.phase!=='over')setPause(true);});
-const zone=$('zone'),jb=$('joy'),kn=$('knob');
-zone.addEventListener('pointerdown',e=>{ac();joy.id=e.pointerId;joy.ox=e.clientX;joy.oy=e.clientY;joy.x=joy.y=0;jb.style.left=e.clientX+'px';jb.style.top=e.clientY+'px';kn.style.transform='';jb.hidden=false;zone.setPointerCapture(e.pointerId);});
-zone.addEventListener('pointermove',e=>{
-  if(e.pointerId!==joy.id)return;
-  let dx=e.clientX-joy.ox,dy=e.clientY-joy.oy;const d=Math.hypot(dx,dy),R0=50;
-  if(d>R0){dx*=R0/d;dy*=R0/d;}
-  joy.x=dx/R0;joy.y=-dy/R0;kn.style.transform='translate('+dx+'px,'+dy+'px)';
-});
-const endJoy=e=>{if(e.pointerId!==joy.id)return;joy.id=null;joy.x=joy.y=0;jb.hidden=true;};
-zone.addEventListener('pointerup',endJoy);zone.addEventListener('pointercancel',endJoy);
-for(const [id,t] of[['bHit','d'],['bLob','l']]){
-  const el=$(id);
-  el.addEventListener('pointerdown',e=>{e.preventDefault();el.classList.add('down');press(t);});
-  for(const ev of['pointerup','pointerleave','pointercancel'])el.addEventListener(ev,()=>el.classList.remove('down'));
+const zone=$('zone');
+function toCourt(sx,sy){
+  const y=clamp(CH*F/Math.max(1,sy-HZ)-CD,.3,9.5);
+  return{x:clamp(5+(sx-W/2)*(y+CD)/F,.3,9.7),y};
 }
+zone.addEventListener('pointerdown',e=>{
+  ac();if(tp.id!==null)return;
+  tp.id=e.pointerId;tp.x0=tp.x=e.clientX;tp.y0=tp.y=e.clientY;tp.t0=performance.now();tp.hold=false;
+  zone.setPointerCapture(e.pointerId);
+});
+zone.addEventListener('pointermove',e=>{
+  if(e.pointerId!==tp.id)return;
+  tp.x=e.clientX;tp.y=e.clientY;
+  const dt=performance.now()-tp.t0,d=Math.hypot(tp.x-tp.x0,tp.y-tp.y0);
+  if(!tp.hold&&dt>200&&d<30)tp.hold=true;
+  if(tp.hold)tp.tgt=toCourt(tp.x,tp.y);
+});
+function endTouch(e){
+  if(e.pointerId!==tp.id)return;
+  const dx=e.clientX-tp.x0,dy=e.clientY-tp.y0,d=Math.hypot(dx,dy),dt=performance.now()-tp.t0;
+  tp.id=null;
+  if(e.type==='pointerup'&&!tp.hold&&d>35&&dt<450){
+    const aim=clamp(dx/Math.max(40,Math.abs(dy))*1.4,-1,1);
+    tp.swipe={x0:tp.x0,y0:tp.y0,x1:e.clientX,y1:e.clientY,t:0};
+    press(dy<0?'d':'l',Math.abs(aim)>.2?aim:null);
+  }else if(e.type==='pointerup'&&!tp.hold){tp.tgt=toCourt(e.clientX,e.clientY);}
+  tp.hold=false;
+}
+zone.addEventListener('pointerup',endTouch);zone.addEventListener('pointercancel',endTouch);
 function seg2(id,cb){const box=$(id);box.addEventListener('click',e=>{const t=e.target.closest('button');if(!t)return;for(const x of box.children)x.setAttribute('aria-pressed',x===t?'true':'false');cb(+t.dataset.v);});}
 seg2('segDiff',v=>S.diff=v);seg2('segLen',v=>S.target=v);
-function showControls(on){$('btns').hidden=!(on&&touch);$('zone').hidden=!(on&&touch);$('bPause').hidden=!on;}
+function showControls(on){$('zone').hidden=!(on&&touch);tp.tgt=null;$('bPause').hidden=!on;}
 function startMatch(){
   ac();
   S.demo=false;S.paused=false;P[0].ai=false;S.auto=S.diff===0;
