@@ -17,11 +17,23 @@
 
   input.addEventListener('input', updateSendState);
 
+  // Zieladresse für Kontaktanfragen aus dem Chat.
+  const CONTACT_EMAIL = 'office365@aon.at';
+
   form.addEventListener('submit', function (event) {
     event.preventDefault();
     const text = input.value.trim();
     if (!text) return;
     appendMessage(text);
+
+    // Nachricht tatsächlich zustellen: E-Mail-Programm mit vorausgefülltem Text öffnen.
+    const subject = 'Nachricht über Lager-Enns-Website';
+    const mailto =
+      'mailto:' + CONTACT_EMAIL +
+      '?subject=' + encodeURIComponent(subject) +
+      '&body=' + encodeURIComponent(text);
+    window.location.href = mailto;
+
     input.value = '';
     updateSendState();
     input.focus();

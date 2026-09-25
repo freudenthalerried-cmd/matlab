@@ -32,6 +32,8 @@ html, body {
   margin: 0 0 12px 0;
   flex: 1;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .messages li {
