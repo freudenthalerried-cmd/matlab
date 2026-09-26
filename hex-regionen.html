@@ -263,15 +263,35 @@
       for (const [a, b] of segs) { ctx.moveTo(...a); ctx.lineTo(...b); }
       ctx.stroke();
     }
-    // Ziel-Hervorhebung beim Ziehen
+    // laufende Angriffe: breite Spur mit Pfeil
+    for (const q of queues) arrow(q.a.x * S + OX, q.a.y * S + OY, px(q.t.x), py(q.t.y), OWN[q.owner].fill, 0.35);
+    // Ziehen: Zielregion hervorheben + dicker Pfeil
     if (drag && drag.sel.length) {
       const targets = new Set(); drag.sel.forEach(b => regions[b.id].adj.forEach(t => targets.add(t)));
-      ctx.fillStyle = '#ffffff30';
-      for (const c of cells) if (targets.has(c.reg)) { hexPath(px(c.x), py(c.y), S * 0.8); ctx.fill(); }
+      const hov = regionAt(drag.x, drag.y);
+      const ok = hov && targets.has(hov.id) && !(drag.sel.length === 1 && drag.sel[0] === hov);
+      const pulse = 0.5 + 0.5 * Math.sin(time * 8);
+      for (const c of cells) if (targets.has(c.reg)) {
+        hexPath(px(c.x), py(c.y), S * 0.86);
+        ctx.fillStyle = ok && c.reg === hov.id ? `rgba(255,255,255,${0.35 + 0.25 * pulse})` : '#ffffff26'; ctx.fill();
+      }
       for (const b of drag.sel) {
-        ctx.strokeStyle = '#fff'; ctx.lineWidth = 4; ctx.setLineDash([8, 6]);
-        ctx.beginPath(); ctx.moveTo(px(b.x), py(b.y)); ctx.lineTo(drag.x, drag.y); ctx.stroke(); ctx.setLineDash([]);
-        ctx.beginPath(); ctx.arc(px(b.x), py(b.y), S * 0.75, 0, 7); ctx.stroke();
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.arc(px(b.x), py(b.y), S * (0.8 + 0.06 * pulse), 0, 7); ctx.stroke();
+      }
+      let n = 0;
+      for (const b of drag.sel) {
+        if (ok && b === hov) continue;
+        const tx = ok ? px(hov.x) : drag.x, ty = ok ? py(hov.y) : drag.y;
+        arrow(px(b.x), py(b.y), tx, ty, ok ? OWN[1].fill : '#9aa3b5', 1);
+        if (ok && regions[b.id].adj.has(hov.id)) n += Math.floor(b.count / 2);
+      }
+      if (ok) {
+        const lx = px(hov.x), ly = py(hov.y) - S * 1.05;
+        ctx.font = `900 ${Math.round(S * 0.5)}px "Trebuchet MS", sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        const txt = '⚔ ' + n, w = ctx.measureText(txt).width + S * 0.5;
+        rr(lx - w / 2, ly - S * 0.34, w, S * 0.68, S * 0.34, '#1f56a8');
+        ctx.fillStyle = '#fff'; ctx.fillText(txt, lx, ly + 1);
       }
     }
     for (const b of B) drawBuilding(b);
@@ -329,11 +349,39 @@
     ctx.strokeText(t, x, y + 1); ctx.fillStyle = b.owner ? '#fff' : '#555a70'; ctx.fillText(t, x, y + 1);
   }
   function drawUnit(u) {
-    const k = S * 0.16, o = OWN[u.owner];
+    const k = S * 0.2, o = OWN[u.owner];
     ctx.save(); ctx.translate(px(u.x), py(u.y)); ctx.rotate(u.a);
-    rr(-k * 1.2, -k, k * 2.4, k * 2, k * 0.4, o.dark);
-    rr(-k, -k * 0.7, k * 1.8, k * 1.4, k * 0.3, o.fill);
-    ctx.fillStyle = o.dark; ctx.fillRect(0, -k * 0.2, k * 1.6, k * 0.4);
+    ctx.fillStyle = '#0003'; ctx.beginPath(); ctx.ellipse(k * 0.2, k * 0.3, k * 1.4, k * 1.1, 0, 0, 7); ctx.fill();
+    ctx.lineWidth = 2; ctx.strokeStyle = '#fff';
+    ctx.beginPath(); ctx.roundRect(-k * 1.3, -k * 1.05, k * 2.6, k * 2.1, k * 0.4); ctx.stroke();
+    rr(-k * 1.3, -k * 1.05, k * 2.6, k * 0.5, k * 0.2, '#3c4150');           // Ketten
+    rr(-k * 1.3, k * 0.55, k * 2.6, k * 0.5, k * 0.2, '#3c4150');
+    rr(-k * 1.1, -k * 0.7, k * 2.2, k * 1.4, k * 0.3, o.fill);              // Wanne
+    rr(0, -k * 0.16, k * 1.9, k * 0.32, k * 0.1, o.dark);                   // Rohr
+    ctx.fillStyle = o.dark; ctx.beginPath(); ctx.arc(-k * 0.1, 0, k * 0.55, 0, 7); ctx.fill();
+    ctx.fillStyle = o.fill; ctx.beginPath(); ctx.arc(-k * 0.1, 0, k * 0.35, 0, 7); ctx.fill();
+    ctx.restore();
+  }
+  function arrow(x1, y1, x2, y2, col, alpha) {
+    const dx = x2 - x1, dy = y2 - y1, d = Math.hypot(dx, dy);
+    if (d < S * 0.6) return;
+    const ux = dx / d, uy = dy / d, nx = -uy, ny = ux;
+    const bend = Math.min(d * 0.18, S * 0.8);
+    const sx = x1 + ux * S * 0.55, sy = y1 + uy * S * 0.55;           // Start außerhalb des Gebäudes
+    const ex = x2 - ux * S * 0.55, ey = y2 - uy * S * 0.55;           // Spitze vor dem Ziel
+    const cx = (sx + ex) / 2 + nx * bend, cy = (sy + ey) / 2 + ny * bend;
+    const ang = Math.atan2(ey - cy, ex - cx), h = S * 0.55, w = S * 0.42;
+    const bx = ex - Math.cos(ang) * h * 0.8, by = ey - Math.sin(ang) * h * 0.8;
+    ctx.save(); ctx.globalAlpha = alpha; ctx.lineCap = 'round';
+    for (const [lw, c] of [[S * 0.34, '#ffffff'], [S * 0.2, col]]) {
+      ctx.strokeStyle = c; ctx.lineWidth = lw;
+      ctx.beginPath(); ctx.moveTo(sx, sy); ctx.quadraticCurveTo(cx, cy, bx, by); ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.moveTo(ex + Math.cos(ang) * 4, ey + Math.sin(ang) * 4);
+    ctx.lineTo(bx + Math.cos(ang + Math.PI / 2) * w, by + Math.sin(ang + Math.PI / 2) * w);
+    ctx.lineTo(bx + Math.cos(ang - Math.PI / 2) * w, by + Math.sin(ang - Math.PI / 2) * w);
+    ctx.closePath(); ctx.fillStyle = col; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.stroke();
     ctx.restore();
   }
   function rr(x, y, w, h, r, col) { ctx.fillStyle = col; ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.fill(); }
@@ -361,17 +409,19 @@
       q.tm -= dt;
       while (q.tm <= 0 && q.left > 0) {
         if (q.a.owner !== q.owner) { q.left = 0; break; }
-        const j = (Math.random() - 0.5) * 0.3;
-        units.push({ x: q.a.x + j, y: q.a.y + j, t: q.t, owner: q.owner, a: Math.atan2(q.t.y - q.a.y, q.t.x - q.a.x) });
-        q.left--; q.tm += 0.07;
+        const a = Math.atan2(q.t.y - q.a.y, q.t.x - q.a.x), nx = -Math.sin(a), ny = Math.cos(a);
+        const lane = [0, -1, 1][(q.sent = (q.sent || 0) + 1) % 3] * 0.4;
+        units.push({ x: q.a.x + nx * lane, y: q.a.y + ny * lane, ox: nx * lane * 0.5, oy: ny * lane * 0.5, t: q.t, owner: q.owner, a, q });
+        q.alive = (q.alive || 0) + 1;
+        q.left--; q.tm += q.sent % 3 ? 0 : 0.4;
       }
     }
-    queues = queues.filter(q => q.left > 0);
+    queues = queues.filter(q => q.left > 0 || q.alive > 0);
     // Bewegung + Ankunft
     const speed = 1.7;
     for (const u of units) {
-      const dx = u.t.x - u.x, dy = u.t.y - u.y, d = Math.hypot(dx, dy);
-      if (d < 0.25) { arrive(u); u.dead = true; continue; }
+      const dx = u.t.x + u.ox - u.x, dy = u.t.y + u.oy - u.y, d = Math.hypot(dx, dy);
+      if (d < 0.3) { arrive(u); u.dead = true; continue; }
       u.a = Math.atan2(dy, dx);
       u.x += dx / d * speed * dt; u.y += dy / d * speed * dt;
     }
@@ -381,7 +431,7 @@
       for (let j = i + 1; j < units.length; j++) {
         const b = units[j];
         if (b.dead || b.owner === a.owner) continue;
-        if (Math.abs(a.x - b.x) < 0.2 && Math.abs(a.y - b.y) < 0.2) { a.dead = b.dead = true; break; }
+        if (Math.abs(a.x - b.x) < 0.3 && Math.abs(a.y - b.y) < 0.3) { a.dead = b.dead = true; break; }
       }
     }
     // Geschütztürme
@@ -397,7 +447,7 @@
         shots.push({ x1: b.x, y1: b.y - 0.05, x2: tgt.x, y2: tgt.y, life: 0.15 });
       }
     }
-    units = units.filter(u => !u.dead);
+    units = units.filter(u => !u.dead || (u.q.alive--, false));
     shots.forEach(s => s.life -= dt); shots = shots.filter(s => s.life > 0);
     pops.forEach(p => p.life -= dt * 1.5); pops = pops.filter(p => p.life > 0);
 
@@ -540,7 +590,7 @@
   }
   window.addEventListener('resize', resize);
   resize(); showMenu(); requestAnimationFrame(loop);
-  window.__game = { get B() { return B; }, adj: b => regions[b.id].adj, send, get mode() { return mode; } };
+  window.__game = { get B() { return B; }, adj: b => regions[b.id].adj, scr: b => [px(b.x), py(b.y)], send, get mode() { return mode; } };
 })();
 </script>
 </body>
