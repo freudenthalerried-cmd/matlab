@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fallschach</title>
+<style>
+:root{--bg:#1d2129;--panel:#2a2f3a;--txt:#eef1f6;--mut:#9aa3b2;--light:#e9d8b4;--dark:#b58863;--sel:#f6d04d;--mv:rgba(40,160,80,.55);--cap:rgba(210,50,50,.6);--acc:#4fa3ff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font:15px/1.4 system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;padding:10px 16px}
+h1{font-size:20px;margin:4px 0}
+.hud{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin:4px 0 8px;font-variant-numeric:tabular-nums}
+.hud b{color:var(--sel)}
+#wrap{position:relative;overflow:hidden;border:3px solid #555;border-top:3px dashed var(--acc);border-bottom:3px dashed #d33;border-radius:4px}
+#board{display:grid;grid-template-columns:repeat(8,var(--c));will-change:transform}
+#board.anim{transition:transform .28s ease-in}
+.sq{width:var(--c);height:var(--c);display:flex;align-items:center;justify-content:center;font-size:calc(var(--c)*.78);line-height:1;position:relative;cursor:pointer;user-select:none}
+.l{background:var(--light)}.d{background:var(--dark)}
+.w{color:#fff;text-shadow:0 0 2px #000,0 0 2px #000,0 1px 3px #000}
+.b{color:#111;text-shadow:0 0 1px #fff8}
+.dot::after{content:"";width:28%;height:28%;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff6a0,#e0a800);box-shadow:0 0 6px #ffcc00}
+.edge{box-shadow:inset 0 0 0 999px rgba(220,40,40,.28)}
+.selc{box-shadow:inset 0 0 0 4px var(--sel)}
+.mv::before{content:"";position:absolute;width:30%;height:30%;border-radius:50%;background:var(--mv)}
+.cp{box-shadow:inset 0 0 0 4px var(--cap)}
+.hit{animation:hit .5s}
+@keyframes hit{0%{background:#f55}}
+.bar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:10px 0}
+button,label.t{background:var(--panel);color:var(--txt);border:1px solid #444;border-radius:6px;padding:7px 12px;font:inherit;cursor:pointer}
+#msg{min-height:1.4em;color:var(--sel);text-align:center;margin-top:6px}
+details{max-width:560px;background:var(--panel);border-radius:8px;padding:8px 12px;margin-top:6px}
+summary{cursor:pointer;font-weight:600}
+#over{position:absolute;inset:0;background:rgba(0,0,0,.75);display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;padding:16px}
+#over.on{display:flex}
+</style>
+</head>
+<body>
+<h1>♞ Fallschach</h1>
+<div class="hud">
+  <span>Punkte <b id="sc">0</b></span>
+  <span>Züge <b id="tn">0</b></span>
+  <span>Level <b id="lv">1</b></span>
+  <span>Figuren <b id="pc">16</b></span>
+  <span>Rekord <b id="hs">0</b></span>
+</div>
+<div id="wrap"><div id="board"></div>
+  <div id="over"><h2 id="ot">Spiel vorbei</h2><div id="od"></div><button onclick="neu()">Neues Spiel</button></div>
+</div>
+<div id="msg">Weiß zieht – bewege die Bauern nach oben!</div>
+<div class="bar">
+  <button onclick="neu()">Neues Spiel</button>
+  <label class="t"><input type="checkbox" id="kb" checked> Schwarz schlägt zurück</label>
+</div>
+<details>
+<summary>Regeln</summary>
+<ul>
+<li>Echte Startaufstellung. Unter Weiß liegen <b>5 Pufferreihen</b>.</li>
+<li>Nach <b>jedem Zug fällt das ganze Brett eine Reihe nach unten</b>. Oben kommt eine neue Reihe mit schwarzen Figuren und Goldpunkten herein.</li>
+<li>Was unten über die rote Linie fällt, ist weg – <b>auch deine eigenen Figuren</b>. Fällt dein König raus oder wird geschlagen, ist das Spiel aus.</li>
+<li>Ziel: oben liegende Figuren schlagen und Goldpunkte <b>durchfahren</b> (Läufer, Turm, Dame und Bauern sammeln alle Punkte auf ihrem Weg, Springer/König nur auf dem Zielfeld).</li>
+<li>Punkte: Gold 5 · Bauer 10 · Springer/Läufer 30 · Turm 50 · Dame 90 · König 200.</li>
+<li>„Schwarz schlägt zurück“: Kann eine schwarze Figur nach deinem Zug etwas schlagen, tut sie es (wertvollstes Ziel zuerst). Sonst steht Schwarz still.</li>
+<li>Kein Schach-Zwang, keine Rochade. Unbewegte Bauern dürfen 2 Felder ziehen. Bauer auf der obersten Reihe wird zur Dame.</li>
+</ul>
+</details>
+<script>
+const W=8,H=16,BUF=5;
+const SYM={w:{K:'♔',Q:'♕',R:'♖',B:'♗',N:'♘',P:'♙'},b:{K:'♚',Q:'♛',R:'♜',B:'♝',N:'♞',P:'♟'}};
+const VAL={P:10,N:30,B:30,R:50,Q:90,K:200},DOT=5;
+const BACK=['R','N','B','Q','K','B','N','R'];
+const DIRS={R:[[1,0],[-1,0],[0,1],[0,-1]],B:[[1,1],[1,-1],[-1,1],[-1,-1]]};
+DIRS.Q=DIRS.R.concat(DIRS.B);DIRS.K=DIRS.Q;
+const NJ=[[1,2],[2,1],[-1,2],[-2,1],[1,-2],[2,-1],[-1,-2],[-2,-1]];
+let bd,score,turn,sh=0,sel,moves,queue,busy,over,hi=0;
+const $=id=>document.getElementById(id);
+try{hi=+localStorage.getItem('fallschach_hi')||0}catch(e){}
+
+const P=(t,c)=>({t,c,m:false});
+const isPc=x=>x&&x.t!=='dot';
+const inB=(r,c)=>r>=0&&r<H&&c>=0&&c<W;
+
+function neu(){
+  bd=Array.from({length:H},()=>Array(W).fill(null));
+  BACK.forEach((t,c)=>{bd[0][c]=P(t,'b');bd[1][c]=P('P','b');bd[H-BUF-2][c]=P('P','w');bd[H-BUF-1][c]=P(t,'w')});
+  for(let r=2;r<H-BUF-2;r++)for(let c=0;c<W;c++)if(Math.random()<.2)bd[r][c]={t:'dot'};
+  score=0;turn=0;sel=null;moves=[];queue=[];busy=false;over=false;
+  $('over').classList.remove('on');msg('Weiß zieht – bewege die Bauern nach oben!');draw();
+}
+
+// Züge einer Figur; path = Felder, die durchfahren werden (für Goldpunkte)
+function gen(r,c,capOnly){
+  const p=bd[r][c],out=[],f=p.c==='w'?-1:1;
+  const add=(tr,tc,path)=>out.push({r:tr,c:tc,path:path||[]});
+  const enemy=(x)=>isPc(x)&&x.c!==p.c;
+  if(p.t==='P'){
+    if(!capOnly&&inB(r+f,c)&&!isPc(bd[r+f][c])){
+      add(r+f,c);
+      if(!p.m&&inB(r+2*f,c)&&!isPc(bd[r+2*f][c]))add(r+2*f,c,[[r+f,c]]);
+    }
+    for(const dc of[-1,1]){const tr=r+f,tc=c+dc;if(inB(tr,tc)&&enemy(bd[tr][tc]))add(tr,tc)}
+  }else if(p.t==='N'){
+    for(const[dr,dc]of NJ){const tr=r+dr,tc=c+dc;if(inB(tr,tc)&&(!isPc(bd[tr][tc])||enemy(bd[tr][tc])))add(tr,tc)}
+  }else{
+    for(const[dr,dc]of DIRS[p.t]){
+      let tr=r+dr,tc=c+dc;const path=[];
+      while(inB(tr,tc)){
+        const x=bd[tr][tc];
+        if(isPc(x)){if(x.c!==p.c)add(tr,tc,path.slice());break}
+        add(tr,tc,path.slice());path.push([tr,tc]);
+        if(p.t==='K')break;
+        tr+=dr;tc+=dc;
+      }
+    }
+  }
+  return capOnly?out.filter(m=>isPc(bd[m.r][m.c])):out;
+}
+
+function click(r,c){
+  if(busy||over)return;
+  const x=bd[r][c];
+  if(sel){
+    const m=moves.find(m=>m.r===r&&m.c===c);
+    if(m)return play(sel[0],sel[1],m);
+  }
+  if(isPc(x)&&x.c==='w'){sel=[r,c];moves=gen(r,c)}else{sel=null;moves=[]}
+  draw();
+}
+
+function play(fr,fc,m){
+  const p=bd[fr][fc];let gain=0,txt=[];
+  for(const[pr,pc]of m.path)if(bd[pr][pc]&&bd[pr][pc].t==='dot'){bd[pr][pc]=null;gain+=DOT}
+  const tgt=bd[m.r][m.c];
+  if(tgt&&tgt.t==='dot')gain+=DOT;
+  if(isPc(tgt)){gain+=VAL[tgt.t];txt.push(SYM.b[tgt.t]+' geschlagen')}
+  bd[m.r][m.c]=p;bd[fr][fc]=null;p.m=true;
+  if(p.t==='P'&&m.r===0){p.t='Q';txt.push('Umwandlung zur Dame!')}
+  score+=gain;turn++;sel=null;moves=[];
+  if(gain)txt.unshift('+'+gain);
+  const hit=[];
+  if($('kb').checked){const b=blackReply();if(b){txt.push(b.txt);hit.push(b.at)}}
+  msg(txt.join(' · ')||'…');
+  draw(hit);
+  if(!king())return end('Dein König wurde geschlagen!');
+  busy=true;setTimeout(fall,260);
+}
+
+// Schwarz schlägt die wertvollste erreichbare weiße Figur
+function blackReply(){
+  let best=null;
+  for(let r=0;r<H;r++)for(let c=0;c<W;c++){
+    const x=bd[r][c];if(!isPc(x)||x.c!=='b')continue;
+    for(const m of gen(r,c,true)){
+      const v=VAL[bd[m.r][m.c].t]*10-VAL[x.t];
+      if(!best||v>best.v)best={v,r,c,m};
+    }
+  }
+  if(!best)return null;
+  const x=bd[best.r][best.c],t=bd[best.m.r][best.m.c];
+  bd[best.m.r][best.m.c]=x;bd[best.r][best.c]=null;x.m=true;
+  if(x.t==='P'&&best.m.r===H-1)x.t='Q';
+  return{txt:SYM.b[x.t]+' schlägt '+SYM.w[t.t],at:[best.m.r,best.m.c]};
+}
+
+function level(){return 1+Math.floor(turn/15)}
+function newRow(){
+  if(!queue.length){
+    if(turn>0&&turn%24===0){ // Welle: komplette schwarze Armee
+      queue.push(Array.from({length:W},()=>P('P','b')));
+      queue.push(BACK.map(t=>P(t,'b')));
+    }else{
+      const lv=level(),pp=Math.min(.1+.03*lv,.45),row=[];
+      const bag=['P','P','P','P','P','N','N','B','B','R'].concat(lv>2?['Q','R']:[]);
+      for(let c=0;c<W;c++){
+        const q=Math.random();
+        row.push(q<pp?P(bag[Math.random()*bag.length|0],'b'):q<pp+.22?{t:'dot'}:null);
+      }
+      queue.push(row);
+    }
+  }
+  return queue.shift();
+}
+
+function fall(){
+  const row=newRow();
+  draw([],row);
+  const b=$('board');b.getBoundingClientRect();
+  b.classList.add('anim');b.style.transform='translateY(var(--c))';
+  setTimeout(()=>{
+    const gone=bd.pop();bd.unshift(row);sh++;
+    const lost=gone.filter(x=>isPc(x)&&x.c==='w');
+    busy=false;draw();
+    if(lost.length){
+      msg($('msg').textContent+' · rausgefallen: '+lost.map(x=>SYM.w[x.t]).join(''));
+      if(lost.some(x=>x.t==='K'))return end('Dein König ist rausgefallen!');
+    }
+  },290);
+}
+
+function king(){return bd.some(row=>row.some(x=>isPc(x)&&x.c==='w'&&x.t==='K'))}
+function end(t){
+  over=true;busy=false;
+  if(score>hi){hi=score;try{localStorage.setItem('fallschach_hi',hi)}catch(e){}}
+  $('ot').textContent=t;$('od').innerHTML='Punkte: <b>'+score+'</b> nach '+turn+' Zügen'+(score>=hi?'<br>🏆 Neuer Rekord!':'');
+  $('over').classList.add('on');draw();
+}
+function msg(t){$('msg').textContent=t}
+
+function draw(hit=[],extra=null){
+  const b=$('board');b.classList.remove('anim');
+  b.style.transform='';b.style.marginTop=extra?'calc(var(--c)*-1)':'0';
+  const rows=extra?[extra].concat(bd):bd,off=extra?1:0;
+  let h='';
+  rows.forEach((row,ri)=>{const r=ri-off;row.forEach((x,c)=>{
+    let cl='sq '+((r-sh+c+64)%2?'d':'l');
+    if(r===H-1)cl+=' edge';
+    if(sel&&sel[0]===r&&sel[1]===c)cl+=' selc';
+    const m=moves.find(m=>m.r===r&&m.c===c);
+    if(m)cl+=isPc(x)?' cp':' mv';
+    if(hit.some(q=>q[0]===r&&q[1]===c))cl+=' hit';
+    let s='';
+    if(x&&x.t==='dot')cl+=' dot';
+    else if(x){cl+=' '+x.c;s=SYM[x.c][x.t]}
+    h+=`<div class="${cl}" data-r="${r}" data-c="${c}">${s}</div>`;
+  })});
+  b.innerHTML=h;
+  $('sc').textContent=score;$('tn').textContent=turn;$('lv').textContent=level();
+  $('pc').textContent=bd.flat().filter(x=>isPc(x)&&x.c==='w').length;$('hs').textContent=Math.max(hi,score);
+}
+
+function size(){
+  const c=Math.floor(Math.min((innerWidth-38)/W,(innerHeight-190)/H,56));
+  document.documentElement.style.setProperty('--c',Math.max(c,18)+'px');
+  $('wrap').style.height=Math.max(c,18)*H+6+'px';
+}
+$('board').addEventListener('click',e=>{const s=e.target.closest('.sq');if(s)click(+s.dataset.r,+s.dataset.c)});
+addEventListener('resize',size);
+size();neu();
+</script>
+</body>
+</html>
