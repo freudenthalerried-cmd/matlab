@@ -125,7 +125,11 @@
     kaserne: { rate: 1.0, cap: 40 },
     turm:    { rate: 0.5, cap: 25 },
     reaktor: { rate: 0.6, cap: 30 },
+    hafen:   { rate: 0.8, cap: 35 },
+    flugplatz: { rate: 0.6, cap: 30 },
+    wachturm: { rate: 0, cap: 99 },
   };
+  const SPEED = { tank: 1.7, boat: 2.1, plane: 3.0 };
   const $ = id => document.getElementById(id);
   const rnd = k => Math.floor(Math.random() * k);
   const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -138,14 +142,14 @@
   const persist = () => { try { localStorage.setItem('hexreg', JSON.stringify(save)); } catch (e) {} };
 
   // ---------- Karte ----------
-  let cells, cellMap, regions, B, units, queues, shots, pops, mode = 'menu', time = 0, aiT = {}, endT = 0;
+  let cells, cellMap, waterMap, pathCache, regions, B, units, queues, shots, pops, mode = 'menu', time = 0, aiT = {}, endT = 0;
 
   function genMap(level) {
     for (;;) {
       cellMap = new Map(); cells = [];
       for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
         const edge = r === 0 || r === ROWS - 1 || c === 0 || c === COLS - 1;
-        if (Math.random() < (edge ? 0.35 : 0.06)) continue;
+        if (Math.random() < (edge ? 0.35 : level >= 2 ? 0.1 : 0.06)) continue;
         const q = c - (r >> 1);
         const cell = { q, r, x: SQ3 * (q + r / 2), y: 1.5 * r, reg: -1 };
         cells.push(cell); cellMap.set(key(q, r), cell);
@@ -183,6 +187,34 @@
         }
       }
       for (const c of cells) for (const n of nbrs(c)) if (n.reg !== c.reg) regions[c.reg].adj.add(n.reg);
+
+      // Wachturm-Inseln in Wasserlöchern (ab Level 2)
+      if (level >= 2) {
+        const holes = [];
+        for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+          const q = c - (r >> 1);
+          if (cellMap.has(key(q, r))) continue;
+          const h = { q, r, x: SQ3 * (q + r / 2), y: 1.5 * r };
+          if (nbrs(h).length >= 3) holes.push(h);
+        }
+        let want = Math.min(3, 1 + Math.floor(level / 4));
+        for (const h of shuffle(holes)) {
+          if (!want) break;
+          const nb = nbrs(h);
+          if (nb.some(n => regions[n.reg].tower)) continue;
+          const R = { id: regions.length, cells: [h], adj: new Set(), tower: true };
+          h.reg = R.id; regions.push(R); cells.push(h); cellMap.set(key(h.q, h.r), h);
+          for (const n of nb) { R.adj.add(n.reg); regions[n.reg].adj.add(R.id); }
+          want--;
+        }
+      }
+      for (const R of regions) R.coast = R.cells.some(c => DIRS.some(([dq, dr]) => !cellMap.has(key(c.q + dq, c.r + dr))));
+      // Wasserfelder rund um die Insel (für Boote)
+      waterMap = new Map(); pathCache = new Map();
+      for (let r = -1; r <= ROWS; r++) for (let c = -1; c <= COLS; c++) {
+        const q = c - (r >> 1);
+        if (!cellMap.has(key(q, r))) waterMap.set(key(q, r), { q, r, x: SQ3 * (q + r / 2), y: 1.5 * r });
+      }
       return;
     }
   }
@@ -198,19 +230,32 @@
       let bc = R.cells[0], bs = 1e9;
       for (const c of R.cells) { const s = R.cells.reduce((t, o) => t + hexDist(c, o), 0); if (s < bs) { bs = s; bc = c; } }
       const roll = Math.random();
-      const type = roll < 0.55 ? 'kaserne' : roll < 0.8 ? 'turm' : 'reaktor';
-      return { id: R.id, x: bc.x, y: bc.y, type, owner: 0, count: 5 * rnd(3) + Math.min(10, Math.floor(level / 3)), cd: 0, ang: -Math.PI / 2, flash: 0 };
+      let type = roll < 0.55 ? 'kaserne' : roll < 0.8 ? 'turm' : 'reaktor';
+      if (level >= 2 && R.coast && Math.random() < 0.25) type = 'hafen';
+      if (level >= 3 && Math.random() < 0.12) type = 'flugplatz';
+      if (R.tower) type = 'wachturm';
+      const count = R.tower ? 6 + Math.min(20, level) : 5 * rnd(3) + Math.min(10, Math.floor(level / 3));
+      return { id: R.id, x: bc.x, y: bc.y, type, owner: 0, count, cd: 0, ang: -Math.PI / 2, flash: 0 };
     });
+    const land = B.filter(b => b.type !== 'wachturm');
     // Spieler unten, Gegner möglichst weit weg
     const enemies = level < 3 ? 1 : level < 8 ? 2 : 3;
-    const pl = B.reduce((a, b) => b.y > a.y ? b : a);
+    const pl = land.reduce((a, b) => b.y > a.y ? b : a);
     pl.owner = 1; pl.count = 15; pl.type = 'kaserne';
     const taken = [pl];
     for (let e = 0; e < enemies; e++) {
-      const far = B.filter(b => !taken.includes(b))
+      const far = land.filter(b => !taken.includes(b))
         .sort((a, b) => Math.min(...taken.map(t => Math.hypot(b.x - t.x, b.y - t.y))) - Math.min(...taken.map(t => Math.hypot(a.x - t.x, a.y - t.y))))[0];
       far.owner = 2 + e; far.count = 10 + Math.min(20, level); far.type = 'kaserne';
       taken.push(far); aiT[far.owner] = 2 + Math.random();
+    }
+    // garantiert mindestens ein Hafen (ab L2) und ein Flugplatz (ab L3)
+    const free = land.filter(b => !b.owner);
+    if (level >= 2 && !B.some(b => b.type === 'hafen')) {
+      const c = shuffle(free.filter(b => regions[b.id].coast))[0]; if (c) c.type = 'hafen';
+    }
+    if (level >= 3 && !B.some(b => b.type === 'flugplatz')) {
+      const c = shuffle(free.filter(b => b.type !== 'hafen'))[0]; if (c) c.type = 'flugplatz';
     }
     units = []; queues = []; shots = []; pops = []; time = 0; endT = 0;
   }
@@ -223,7 +268,8 @@
     cv.width = r.width * DPR; cv.height = r.height * DPR;
     const topPad = 125, botPad = 130;
     const w = SQ3 * (COLS + 0.5), h = 1.5 * (ROWS - 1) + 2;
-    S = Math.min(r.width / (w + 0.4), (r.height - topPad - botPad) / h);
+    // Rand für den Wasserring (Bootswege) mit einplanen
+    S = Math.min(r.width / (w + SQ3 * 1.6), (r.height - topPad - botPad) / (h + 1.6));
     OX = (r.width - w * S) / 2 + SQ3 / 2 * S;
     OY = topPad + ((r.height - topPad - botPad) - h * S) / 2 + S;
   }
@@ -264,10 +310,10 @@
       ctx.stroke();
     }
     // laufende Angriffe: breite Spur mit Pfeil
-    for (const q of queues) arrow(q.a.x * S + OX, q.a.y * S + OY, px(q.t.x), py(q.t.y), OWN[q.owner].fill, 0.35);
+    for (const q of queues) route(q.a, q.t, q.kind, q.path, OWN[q.owner].fill, 0.35);
     // Ziehen: Zielregion hervorheben + dicker Pfeil
     if (drag && drag.sel.length) {
-      const targets = new Set(); drag.sel.forEach(b => regions[b.id].adj.forEach(t => targets.add(t)));
+      const targets = new Set(); drag.sel.forEach(b => B.forEach(t => t !== b && reach(b, t) && targets.add(t.id)));
       const hov = regionAt(drag.x, drag.y);
       const ok = hov && targets.has(hov.id) && !(drag.sel.length === 1 && drag.sel[0] === hov);
       const pulse = 0.5 + 0.5 * Math.sin(time * 8);
@@ -282,9 +328,9 @@
       let n = 0;
       for (const b of drag.sel) {
         if (ok && b === hov) continue;
-        const tx = ok ? px(hov.x) : drag.x, ty = ok ? py(hov.y) : drag.y;
-        arrow(px(b.x), py(b.y), tx, ty, ok ? OWN[1].fill : '#9aa3b5', 1);
-        if (ok && regions[b.id].adj.has(hov.id)) n += Math.floor(b.count / 2);
+        const r = ok && reach(b, hov);
+        if (r) { route(b, hov, r.kind, r.path, OWN[1].fill, 1); n += Math.floor(b.count / 2); }
+        else arrow(px(b.x), py(b.y), drag.x, drag.y, '#9aa3b5', 1);
       }
       if (ok) {
         const lx = px(hov.x), ly = py(hov.y) - S * 1.05;
@@ -295,7 +341,7 @@
       }
     }
     for (const b of B) drawBuilding(b);
-    for (const u of units) drawUnit(u);
+    for (const u of units) if (u.kind !== 'plane') drawUnit(u);
     for (const s of shots) {
       ctx.strokeStyle = `rgba(255,240,150,${s.life / 0.15})`; ctx.lineWidth = 3;
       ctx.beginPath(); ctx.moveTo(px(s.x1), py(s.y1)); ctx.lineTo(px(s.x2), py(s.y2)); ctx.stroke();
@@ -305,6 +351,20 @@
       ctx.beginPath(); ctx.arc(px(p.x), py(p.y), S * (1.8 - p.life), 0, 7); ctx.stroke();
     }
     for (const b of B) drawBadge(b);
+    for (const u of units) if (u.kind === 'plane') drawUnit(u);
+  }
+  // Pfeil für Land/Luft direkt, für Boote entlang des Wasserwegs
+  function route(a, t, kind, path, col, alpha) {
+    if (kind !== 'boat' || !path || !path.length) return arrow(px(a.x), py(a.y), px(t.x), py(t.y), col, alpha, kind === 'plane');
+    const pts = [a, ...path];
+    ctx.save(); ctx.globalAlpha = alpha; ctx.lineCap = ctx.lineJoin = 'round';
+    for (const [lw, c] of [[S * 0.34, '#ffffff'], [S * 0.2, col]]) {
+      ctx.strokeStyle = c; ctx.lineWidth = lw; ctx.setLineDash([S * 0.35, S * 0.25]);
+      ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(px(p.x), py(p.y)) : ctx.moveTo(px(p.x), py(p.y))); ctx.stroke();
+    }
+    ctx.restore();
+    const l = path[path.length - 1];
+    arrow(px(l.x) - (px(t.x) - px(l.x)), py(l.y) - (py(t.y) - py(l.y)), px(t.x), py(t.y), col, alpha);
   }
 
   function drawBuilding(b) {
@@ -328,6 +388,36 @@
       ctx.restore();
       ctx.fillStyle = roof; ctx.beginPath(); ctx.arc(x, y - k * 0.1, k * 0.5, 0, 7); ctx.fill();
       ctx.fillStyle = roofD; ctx.beginPath(); ctx.arc(x, y - k * 0.1, k * 0.25, 0, 7); ctx.fill();
+    } else if (b.type === 'hafen') {
+      rr(x - k * 1.05, y - k * 0.1, k * 2.1, k * 0.9, k * 0.2, '#8a6a45');                 // Steg
+      ctx.strokeStyle = '#6b5033'; ctx.lineWidth = 2;
+      for (let i = 1; i < 6; i++) { ctx.beginPath(); ctx.moveTo(x - k * 1.05 + i * k * 0.35, y - k * 0.1); ctx.lineTo(x - k * 1.05 + i * k * 0.35, y + k * 0.8); ctx.stroke(); }
+      rr(x - k * 0.9, y - k * 0.75, k * 1.1, k * 0.8, k * 0.15, roof);                     // Lagerhaus
+      rr(x - k * 0.9, y - k * 0.75, k * 1.1, k * 0.25, k * 0.1, roofD);
+      ctx.strokeStyle = '#5d6270'; ctx.lineWidth = k * 0.14;                               // Kran
+      ctx.beginPath(); ctx.moveTo(x + k * 0.55, y + k * 0.2); ctx.lineTo(x + k * 0.55, y - k * 0.95); ctx.lineTo(x + k * 1.1, y - k * 0.6); ctx.stroke();
+      ctx.font = `${Math.round(k * 0.7)}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#fff'; ctx.fillText('⚓', x - k * 0.35, y - k * 0.3);
+    } else if (b.type === 'flugplatz') {
+      ctx.save(); ctx.translate(x, y); ctx.rotate(-0.35);
+      rr(-k * 1.15, -k * 0.35, k * 2.3, k * 0.7, k * 0.12, '#4b5060');                    // Piste
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.setLineDash([k * 0.2, k * 0.15]);
+      ctx.beginPath(); ctx.moveTo(-k, 0); ctx.lineTo(k, 0); ctx.stroke(); ctx.setLineDash([]);
+      ctx.restore();
+      rr(x - k * 0.95, y - k * 0.95, k * 0.8, k * 0.55, k * 0.25, roof);                   // Hangar
+      rr(x - k * 0.8, y - k * 0.6, k * 0.5, k * 0.2, k * 0.05, roofD);
+      plane(x + k * 0.35, y - k * 0.2, k * 0.55, -0.35, roof, roofD);
+    } else if (b.type === 'wachturm') {
+      ctx.fillStyle = '#7d8394'; ctx.beginPath(); ctx.ellipse(x, y + k * 0.55, k * 0.7, k * 0.3, 0, 0, 7); ctx.fill();
+      rr(x - k * 0.45, y - k * 1.1, k * 0.9, k * 1.7, k * 0.1, '#b5bac6');                 // Schaft
+      rr(x - k * 0.45, y - k * 1.1, k * 0.9, k * 0.25, 0, '#8d93a3');
+      for (let i = 0; i < 3; i++) rr(x - k * 0.62 + i * k * 0.47, y - k * 1.4, k * 0.3, k * 0.35, k * 0.05, '#8d93a3'); // Zinnen
+      ctx.save(); ctx.translate(x, y - k * 0.75); ctx.rotate(b.ang);
+      rr(0, -k * 0.1, k * 0.85, k * 0.2, k * 0.06, '#4b5060'); ctx.restore();
+      ctx.strokeStyle = '#555'; ctx.lineWidth = 2;                                         // Fahne
+      ctx.beginPath(); ctx.moveTo(x, y - k * 1.4); ctx.lineTo(x, y - k * 2.1); ctx.stroke();
+      ctx.fillStyle = b.owner ? o.fill : '#fff';
+      ctx.beginPath(); ctx.moveTo(x, y - k * 2.1); ctx.lineTo(x + k * 0.6 + Math.sin(time * 5) * k * 0.05, y - k * 1.9); ctx.lineTo(x, y - k * 1.7); ctx.fill();
     } else {
       ctx.fillStyle = '#8d93a3'; ctx.beginPath(); ctx.ellipse(x, y + k * 0.25, k * 0.95, k * 0.6, 0, 0, 7); ctx.fill();
       ctx.fillStyle = roof; ctx.beginPath(); ctx.ellipse(x, y, k * 0.95, k * 0.6, 0, 0, 7); ctx.fill();
@@ -348,8 +438,38 @@
     ctx.lineWidth = 4; ctx.strokeStyle = b.owner ? '#0008' : '#fff';
     ctx.strokeText(t, x, y + 1); ctx.fillStyle = b.owner ? '#fff' : '#555a70'; ctx.fillText(t, x, y + 1);
   }
+  function plane(x, y, k, a, col, dark) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(a);
+    ctx.fillStyle = dark;
+    ctx.beginPath(); ctx.moveTo(k * 0.2, 0); ctx.lineTo(-k * 0.3, -k * 1.1); ctx.lineTo(-k * 0.55, -k * 1.1); ctx.lineTo(-k * 0.35, 0);
+    ctx.lineTo(-k * 0.55, k * 1.1); ctx.lineTo(-k * 0.3, k * 1.1); ctx.closePath(); ctx.fill();                // Flügel
+    ctx.beginPath(); ctx.moveTo(-k * 0.8, 0); ctx.lineTo(-k * 1.1, -k * 0.45); ctx.lineTo(-k * 1.2, k * 0.45); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = col; ctx.beginPath(); ctx.ellipse(-k * 0.2, 0, k * 1.05, k * 0.24, 0, 0, 7); ctx.fill();   // Rumpf
+    ctx.fillStyle = '#cfe8ff'; ctx.beginPath(); ctx.ellipse(k * 0.45, 0, k * 0.22, k * 0.13, 0, 0, 7); ctx.fill();
+    ctx.restore();
+  }
   function drawUnit(u) {
     const k = S * 0.2, o = OWN[u.owner];
+    if (u.kind === 'plane') {
+      ctx.fillStyle = '#0003'; ctx.beginPath(); ctx.ellipse(px(u.x) + S * 0.35, py(u.y) + S * 0.5, k * 1.2, k * 0.6, 0, 0, 7); ctx.fill();
+      ctx.save(); ctx.shadowColor = '#fff'; ctx.shadowBlur = 4;
+      plane(px(u.x), py(u.y), k * 1.5, u.a, o.fill, o.dark); ctx.restore();
+      return;
+    }
+    if (u.kind === 'boat') {
+      ctx.save(); ctx.translate(px(u.x), py(u.y)); ctx.rotate(u.a);
+      ctx.strokeStyle = '#ffffffaa'; ctx.lineWidth = 2;                                     // Bugwelle
+      ctx.beginPath(); ctx.moveTo(-k * 1.4, -k * 0.9); ctx.lineTo(k * 1.5, 0); ctx.lineTo(-k * 1.4, k * 0.9); ctx.stroke();
+      ctx.fillStyle = '#fff'; ctx.beginPath();
+      ctx.moveTo(k * 1.7, 0); ctx.quadraticCurveTo(k * 0.6, -k * 0.95, -k * 1.3, -k * 0.75); ctx.lineTo(-k * 1.3, k * 0.75);
+      ctx.quadraticCurveTo(k * 0.6, k * 0.95, k * 1.7, 0); ctx.fill();
+      ctx.fillStyle = o.fill; ctx.beginPath();
+      ctx.moveTo(k * 1.45, 0); ctx.quadraticCurveTo(k * 0.5, -k * 0.75, -k * 1.1, -k * 0.58); ctx.lineTo(-k * 1.1, k * 0.58);
+      ctx.quadraticCurveTo(k * 0.5, k * 0.75, k * 1.45, 0); ctx.fill();
+      rr(-k * 0.7, -k * 0.35, k * 0.9, k * 0.7, k * 0.15, o.dark);                           // Kajüte
+      ctx.restore();
+      return;
+    }
     ctx.save(); ctx.translate(px(u.x), py(u.y)); ctx.rotate(u.a);
     ctx.fillStyle = '#0003'; ctx.beginPath(); ctx.ellipse(k * 0.2, k * 0.3, k * 1.4, k * 1.1, 0, 0, 7); ctx.fill();
     ctx.lineWidth = 2; ctx.strokeStyle = '#fff';
@@ -362,7 +482,7 @@
     ctx.fillStyle = o.fill; ctx.beginPath(); ctx.arc(-k * 0.1, 0, k * 0.35, 0, 7); ctx.fill();
     ctx.restore();
   }
-  function arrow(x1, y1, x2, y2, col, alpha) {
+  function arrow(x1, y1, x2, y2, col, alpha, dashed) {
     const dx = x2 - x1, dy = y2 - y1, d = Math.hypot(dx, dy);
     if (d < S * 0.6) return;
     const ux = dx / d, uy = dy / d, nx = -uy, ny = ux;
@@ -374,9 +494,10 @@
     const bx = ex - Math.cos(ang) * h * 0.8, by = ey - Math.sin(ang) * h * 0.8;
     ctx.save(); ctx.globalAlpha = alpha; ctx.lineCap = 'round';
     for (const [lw, c] of [[S * 0.34, '#ffffff'], [S * 0.2, col]]) {
-      ctx.strokeStyle = c; ctx.lineWidth = lw;
+      ctx.strokeStyle = c; ctx.lineWidth = lw; if (dashed) ctx.setLineDash([S * 0.2, S * 0.3]);
       ctx.beginPath(); ctx.moveTo(sx, sy); ctx.quadraticCurveTo(cx, cy, bx, by); ctx.stroke();
     }
+    ctx.setLineDash([]);
     ctx.beginPath();
     ctx.moveTo(ex + Math.cos(ang) * 4, ey + Math.sin(ang) * 4);
     ctx.lineTo(bx + Math.cos(ang + Math.PI / 2) * w, by + Math.sin(ang + Math.PI / 2) * w);
@@ -387,11 +508,36 @@
   function rr(x, y, w, h, r, col) { ctx.fillStyle = col; ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.fill(); }
 
   // ---------- Simulation ----------
+  // Wer kann wen erreichen? Panzer: Nachbarn, Hafen: Boote über Wasser, Flugplatz: überall
+  function reach(a, t) {
+    if (a === t) return null;
+    if (a.type === 'flugplatz') return { kind: 'plane' };
+    if (regions[a.id].adj.has(t.id)) return { kind: 'tank' };
+    if (a.type === 'hafen') { const path = waterPath(a.id, t.id); if (path) return { kind: 'boat', path }; }
+    return null;
+  }
+  function waterPath(from, to) {
+    const k = from + '>' + to;
+    if (pathCache.has(k)) return pathCache.get(k);
+    const touch = id => { const s = new Set(); for (const c of regions[id].cells) for (const [dq, dr] of DIRS) { const w = waterMap.get(key(c.q + dq, c.r + dr)); if (w) s.add(w); } return s; };
+    const goal = touch(to), prev = new Map(), queue = [];
+    for (const w of touch(from)) { prev.set(w, null); queue.push(w); }
+    let hit = null;
+    for (let i = 0; i < queue.length && !hit; i++) {
+      const w = queue[i];
+      if (goal.has(w)) { hit = w; break; }
+      for (const [dq, dr] of DIRS) { const n = waterMap.get(key(w.q + dq, w.r + dr)); if (n && !prev.has(n)) { prev.set(n, w); queue.push(n); } }
+    }
+    let path = null;
+    if (hit) { path = []; for (let w = hit; w; w = prev.get(w)) path.unshift(w); }
+    pathCache.set(k, path);
+    return path;
+  }
   function send(a, t) {
-    const n = Math.floor(a.count / 2);
-    if (n < 1 || a.id === t.id || !regions[a.id].adj.has(t.id)) return;
+    const n = Math.floor(a.count / 2), r = reach(a, t);
+    if (n < 1 || !r) return;
     a.count -= n;
-    queues.push({ a, t, owner: a.owner, left: n, tm: 0 });
+    queues.push({ a, t, owner: a.owner, left: n, tm: 0, kind: r.kind, path: r.path });
   }
 
   function step(dt) {
@@ -409,19 +555,24 @@
       q.tm -= dt;
       while (q.tm <= 0 && q.left > 0) {
         if (q.a.owner !== q.owner) { q.left = 0; break; }
-        const a = Math.atan2(q.t.y - q.a.y, q.t.x - q.a.x), nx = -Math.sin(a), ny = Math.cos(a);
-        const lane = [0, -1, 1][(q.sent = (q.sent || 0) + 1) % 3] * 0.4;
-        units.push({ x: q.a.x + nx * lane, y: q.a.y + ny * lane, ox: nx * lane * 0.5, oy: ny * lane * 0.5, t: q.t, owner: q.owner, a, q });
+        const first = q.path ? q.path[0] : q.t;
+        const a = Math.atan2(first.y - q.a.y, first.x - q.a.x), nx = -Math.sin(a), ny = Math.cos(a);
+        const per = q.kind === 'boat' ? 1 : 3;
+        const lane = per === 1 ? 0 : [0, -1, 1][(q.sent = (q.sent || 0) + 1) % 3] * 0.4;
+        units.push({ x: q.a.x + nx * lane, y: q.a.y + ny * lane, ox: nx * lane * 0.5, oy: ny * lane * 0.5, t: q.t, owner: q.owner, a, q,
+          kind: q.kind, wp: q.path ? q.path.slice() : [] });
         q.alive = (q.alive || 0) + 1;
-        q.left--; q.tm += q.sent % 3 ? 0 : 0.4;
+        q.left--; q.tm += per === 1 ? 0.3 : q.sent % 3 ? 0 : q.kind === 'plane' ? 0.3 : 0.4;
       }
     }
     queues = queues.filter(q => q.left > 0 || q.alive > 0);
     // Bewegung + Ankunft
-    const speed = 1.7;
     for (const u of units) {
-      const dx = u.t.x + u.ox - u.x, dy = u.t.y + u.oy - u.y, d = Math.hypot(dx, dy);
-      if (d < 0.3) { arrive(u); u.dead = true; continue; }
+      const speed = SPEED[u.kind], wp = u.wp[0];
+      const gx = wp ? wp.x : u.t.x + u.ox, gy = wp ? wp.y : u.t.y + u.oy;
+      const dx = gx - u.x, dy = gy - u.y, d = Math.hypot(dx, dy);
+      if (wp && d < 0.2) { u.wp.shift(); continue; }
+      if (!wp && d < 0.3) { arrive(u); u.dead = true; continue; }
       u.a = Math.atan2(dy, dx);
       u.x += dx / d * speed * dt; u.y += dy / d * speed * dt;
     }
@@ -430,21 +581,22 @@
       const a = units[i]; if (a.dead) continue;
       for (let j = i + 1; j < units.length; j++) {
         const b = units[j];
-        if (b.dead || b.owner === a.owner) continue;
+        if (b.dead || b.owner === a.owner || b.kind !== a.kind) continue;
         if (Math.abs(a.x - b.x) < 0.3 && Math.abs(a.y - b.y) < 0.3) { a.dead = b.dead = true; break; }
       }
     }
     // Geschütztürme
     for (const b of B) {
-      if (b.type !== 'turm' || !b.owner) continue;
+      if ((b.type !== 'turm' && b.type !== 'wachturm') || !b.owner) continue;
       b.cd -= dt; if (b.cd > 0) continue;
-      let tgt = null, td = 2.6;
+      const big = b.type === 'wachturm';
+      let tgt = null, td = big ? 3.2 : 2.6;
       for (const u of units) if (!u.dead && u.owner !== b.owner) {
         const d = Math.hypot(u.x - b.x, u.y - b.y); if (d < td) { td = d; tgt = u; }
       }
       if (tgt) {
-        tgt.dead = true; b.cd = 0.45; b.ang = Math.atan2(tgt.y - b.y, tgt.x - b.x);
-        shots.push({ x1: b.x, y1: b.y - 0.05, x2: tgt.x, y2: tgt.y, life: 0.15 });
+        tgt.dead = true; b.cd = big ? 0.35 : 0.45; b.ang = Math.atan2(tgt.y - b.y, tgt.x - b.x);
+        shots.push({ x1: b.x, y1: b.y - (big ? 0.4 : 0.05), x2: tgt.x, y2: tgt.y, life: 0.15 });
       }
     }
     units = units.filter(u => !u.dead || (u.q.alive--, false));
@@ -475,11 +627,12 @@
     for (const b of shuffle(B.filter(b => b.owner === o))) {
       if (b.count < 6 || Math.random() > aggr) continue;
       const nb = [...regions[b.id].adj].map(i => B[i]);
-      const foes = nb.filter(t => t.owner !== o);
+      const foes = B.filter(t => t.owner !== o && reach(b, t));
       if (foes.length) {
         let best = null, bs = 1;
         for (const t of foes) {
-          const s = b.count / 2 - t.count - (t.type === 'turm' && t.owner ? 4 : 0) + (t.owner === 1 ? 2 : 0) + (t.type === 'reaktor' ? 2 : 0);
+          const s = b.count / 2 - t.count - ((t.type === 'turm' || t.type === 'wachturm') && t.owner ? 4 : 0) + (t.owner === 1 ? 2 : 0)
+            + (t.type === 'reaktor' || t.type === 'wachturm' ? 2 : 0) - Math.hypot(t.x - b.x, t.y - b.y) * 0.3;
           if (s > bs) { bs = s; best = t; }
         }
         if (best) send(b, best);
@@ -553,7 +706,13 @@
     mode = 'battle';
     $('menu').style.display = 'none'; $('hud').style.display = 'block'; $('giveup').style.display = 'block';
     $('lvlTitle').textContent = 'Level ' + save.level;
-    $('hint').style.display = save.level <= 2 ? 'block' : 'none';
+    const tips = {
+      1: 'Ziehe von deiner blauen Basis auf eine Nachbar-Region, um Truppen zu schicken.',
+      2: 'NEU: 🗼 Wachtürme auf Inseln – besetze sie, dann schießen sie für dich! ⚓ Häfen schicken Boote übers Wasser.',
+      3: 'NEU: ✈️ Flugplätze – Flieger erreichen jede Region auf der Karte!',
+    };
+    $('hint').textContent = tips[save.level] || '';
+    $('hint').style.display = tips[save.level] ? 'block' : 'none';
   }
   function end(win) {
     endT = 1; mode = 'end'; drag = null;
@@ -590,7 +749,7 @@
   }
   window.addEventListener('resize', resize);
   resize(); showMenu(); requestAnimationFrame(loop);
-  window.__game = { get B() { return B; }, adj: b => regions[b.id].adj, scr: b => [px(b.x), py(b.y)], send, get mode() { return mode; } };
+  window.__game = { get B() { return B; }, adj: b => regions[b.id].adj, reach: (a, t) => reach(a, t), scr: b => [px(b.x), py(b.y)], send, get mode() { return mode; } };
 })();
 </script>
 </body>
