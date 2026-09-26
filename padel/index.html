@@ -157,25 +157,57 @@ const touch=matchMedia('(pointer:coarse)').matches;
 let W=innerWidth,H=innerHeight;
 
 /* ---------- audio ---------- */
-let AC=null,muted=false,NB=null;
+let AC=null,muted=false,NB=null,BUS=null,RV=null,AMB=null;
 function ac(){
-  if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)();const n=AC.sampleRate;NB=AC.createBuffer(1,n,n);const d=NB.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1;}catch(e){AC=null}}
+  if(!AC){try{
+    AC=new(window.AudioContext||window.webkitAudioContext)();
+    const n=AC.sampleRate;NB=AC.createBuffer(1,n*2,n);const d=NB.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+    // Master: Kompressor + Stadion-Hall
+    const comp=AC.createDynamicsCompressor();comp.threshold.value=-14;comp.ratio.value=4;
+    BUS=AC.createGain();BUS.gain.value=muted?0:.9;BUS.connect(comp).connect(AC.destination);
+    const ir=AC.createBuffer(2,n*1.8|0,n);
+    for(let c=0;c<2;c++){const x=ir.getChannelData(c);for(let i=0;i<x.length;i++)x[i]=(Math.random()*2-1)*Math.pow(1-i/x.length,3.2);}
+    const cv=AC.createConvolver();cv.buffer=ir;RV=AC.createGain();RV.gain.value=.22;RV.connect(cv).connect(BUS);
+    // Zuschauer-Atmosphäre
+    const src=AC.createBufferSource();src.buffer=NB;src.loop=true;
+    const bp=AC.createBiquadFilter();bp.type='bandpass';bp.frequency.value=520;bp.Q.value=.6;
+    const lp=AC.createBiquadFilter();lp.type='lowpass';lp.frequency.value=1400;
+    AMB=AC.createGain();AMB.gain.value=.05;
+    const lfo=AC.createOscillator(),lg=AC.createGain();lfo.frequency.value=.13;lg.gain.value=.015;lfo.connect(lg).connect(AMB.gain);lfo.start();
+    src.connect(bp).connect(lp).connect(AMB).connect(BUS);src.start();
+  }catch(e){AC=null}}
   if(AC&&AC.state==='suspended')AC.resume();
 }
-function env(g,t,a,peak,d){g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(peak,t+a);g.gain.exponentialRampToValueAtTime(0.0001,t+a+d);}
-function tone(type,f0,f1,peak,d){const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f1,t+d);env(g,t,.004,peak,d);o.connect(g).connect(AC.destination);o.start(t);o.stop(t+d+.05);}
-function noise(ft,f,q,peak,a,d){const t=AC.currentTime,s=AC.createBufferSource(),bf=AC.createBiquadFilter(),g=AC.createGain();s.buffer=NB;bf.type=ft;bf.frequency.value=f;bf.Q.value=q;env(g,t,a,peak,d);s.connect(bf).connect(g).connect(AC.destination);s.start(t,Math.random()*.5);s.stop(t+a+d+.05);}
+function out(node,wet=.3){node.connect(BUS);if(wet){const g=AC.createGain();g.gain.value=wet;node.connect(g).connect(RV);}}
+function vca(t,peak,a,d,shape='exp'){const g=AC.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(peak,t+a);g.gain.exponentialRampToValueAtTime(.0001,t+a+d);return g;}
+function osc(type,f0,f1,t,peak,a,d,wet){const o=AC.createOscillator();o.type=type;o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f1,t+a+d);const g=vca(t,peak,a,d);o.connect(g);out(g,wet);o.start(t);o.stop(t+a+d+.05);}
+function nz(ft,f,q,t,peak,a,d,wet,f1){const s=AC.createBufferSource(),bf=AC.createBiquadFilter();s.buffer=NB;bf.type=ft;bf.frequency.setValueAtTime(f,t);if(f1)bf.frequency.exponentialRampToValueAtTime(f1,t+a+d);bf.Q.value=q;const g=vca(t,peak,a,d);s.connect(bf).connect(g);out(g,wet);s.start(t,Math.random()*1.5);s.stop(t+a+d+.05);}
 function snd(k,v=1){
-  if(muted||!AC)return;v=clamp(v,.15,1);
-  if(k==='hit'){tone('triangle',760,280,.45*v,.07);noise('bandpass',2600,1.2,.35*v,.002,.05);}
-  else if(k==='smash'){tone('triangle',520,160,.6,.1);noise('bandpass',1800,.8,.5,.002,.09);}
-  else if(k==='bounce'){tone('sine',170,80,.35*v,.09);}
-  else if(k==='glass'){noise('bandpass',4200,5,.35*v,.002,.2);tone('sine',1900,1500,.07*v,.18);}
-  else if(k==='net'){noise('lowpass',700,.7,.4,.005,.15);}
-  else if(k==='cheer'){noise('bandpass',1100,.4,.22*v,.25,1.3);}
-  else if(k==='whoosh'){noise('bandpass',900,1,.12,.03,.12);}
+  if(muted||!AC)return;v=clamp(v,.15,1.2);const t=AC.currentTime+.005,j=1+(Math.random()-.5)*.08;
+  if(k==='hit'||k==='smash'){
+    // hohles "Pock" des Padelschlägers: Klick + zwei Resonanzen + Körper
+    const hard=k==='smash'?1.3:1;
+    nz('highpass',2200,.7,t,.5*v*hard,.001,.012,.1);
+    osc('sine',1180*j*hard,1050*j,t,.42*v,.001,.07,.25);
+    osc('sine',1870*j,1700*j,t,.22*v,.001,.045,.2);
+    osc('triangle',260,150,t,.35*v*hard,.002,.05,.15);
+    if(k==='smash')nz('bandpass',3200,1.5,t,.35,.001,.06,.4);
+  }
+  else if(k==='bounce'){osc('sine',150*j,70,t,.45*v,.002,.07,.08);nz('lowpass',500,.8,t,.25*v,.001,.035,.05);nz('highpass',3000,.5,t,.05*v,.001,.03,0);}
+  else if(k==='glass'){
+    nz('highpass',1800,.7,t,.4*v,.001,.01,.2);
+    for(const[f,a,d]of[[2150,.18,.3],[3420,.12,.22],[5230,.08,.16],[1380,.1,.35]])nz('bandpass',f*j,30,t,a*v*2.2,.001,d,.6);
+    osc('sine',180,110,t,.2*v,.002,.08,.2);
+  }
+  else if(k==='net'){osc('sine',110,60,t,.3,.004,.12,.1);nz('bandpass',900,.8,t,.18,.005,.15,.1);}
+  else if(k==='whoosh'){nz('bandpass',400,1.4,t,.14*v,.03,.12,.05,1800);}
+  else if(k==='squeak'){osc('sine',1900*j,2700*j,t,.05,.005,.06,.2);}
+  else if(k==='cheer'||k==='aww'){
+    const good=k==='cheer';
+    nz('bandpass',good?900:450,.5,t,.3*v,.25,good?1.6:1.1,.5,good?1200:320);
+    if(good)for(let i=0;i<70;i++){const tt=t+.1+Math.random()*1.5;nz('bandpass',1400+Math.random()*1500,1.2,tt,.07*v*Math.random()+.02,.001,.025,.3);}
+  }
 }
-
 /* ---------- state ---------- */
 function mkP(team,col,human,skin){return{team,col,human,ai:true,x:col?7.5:2.5,y:team?17:3,vx:0,vy:0,spd:0,phase:0,swing:0,swingType:'d',cool:0,win:0,winType:'d',skin};}
 const P=[mkP(0,1,true,'#e9b690'),mkP(0,0,false,'#b98058'),mkP(1,1,false,'#f1c9a2'),mkP(1,0,false,'#8e5a3c')];
@@ -360,7 +392,7 @@ function endPoint(r){
   if(!S.demo){
     const mine=r.w===0;
     showMsg(mine?'Punkt!':'Punkt CPU',r.why,mine?TEAMC[0]:TEAMC[1]);
-    if(mine)snd('cheer');
+    snd(mine?'cheer':'aww',mine?1:.7);
   }
 }
 function afterPoint(){
@@ -673,58 +705,100 @@ function crowdUpdate(t,amp){
 crowdUpdate(0,0);
 
 /* players */
-function shirtTex(p){return ctex(256,128,(c,w,h)=>{
-  c.fillStyle=TEAMC[p.team];c.fillRect(0,0,w,h);
-  c.fillStyle=TEAMD[p.team];c.fillRect(0,h*.78,w,h*.1);
-  c.fillStyle='rgba(255,255,255,.9)';c.fillRect(0,h*.06,w,h*.05);
-  c.font='800 64px "Barlow Condensed",Arial Narrow,sans-serif';c.textAlign='center';c.textBaseline='middle';
-  c.fillStyle='#fff';c.fillText(p.human?'1':'2',w*.75,h*.5);
-  c.font='800 26px "Barlow Condensed",Arial Narrow,sans-serif';c.fillText(p.team?'GOLD':'CORAL',w*.25,h*.36);
+function shirtTex(p){return ctex(512,256,(c,w,h)=>{
+  const g=c.createLinearGradient(0,0,0,h);g.addColorStop(0,TEAMC[p.team]);g.addColorStop(1,TEAMD[p.team]);
+  c.fillStyle=g;c.fillRect(0,0,w,h);
+  // Stoffstruktur
+  for(let i=0;i<5000;i++){c.fillStyle=Math.random()<.5?'rgba(255,255,255,.05)':'rgba(0,0,0,.06)';c.fillRect(Math.random()*w,Math.random()*h,2,2);}
+  c.fillStyle='rgba(255,255,255,.85)';c.fillRect(0,h*.04,w,h*.05);
+  c.fillStyle='rgba(0,0,0,.18)';c.fillRect(w*.2,0,w*.03,h);c.fillRect(w*.77,0,w*.03,h);
+  c.textAlign='center';c.textBaseline='middle';c.fillStyle='#fff';
+  c.font='800 110px "Barlow Condensed",Arial Narrow,sans-serif';c.fillText(p.human?'1':p.team?(p.col?'7':'9'):'2',w*.5,h*.52);
+  c.font='800 30px "Barlow Condensed",Arial Narrow,sans-serif';c.fillText(p.team?'GOLD':'CORAL',w*.5,h*.2);
+  c.font='800 34px "Barlow Condensed",Arial Narrow,sans-serif';c.fillText(p.team?'GOLD':'CORAL',0,h*.4);c.fillText(p.team?'GOLD':'CORAL',w,h*.4);
 });}
-function mkBody(p){
-  const g=new T3.Group(),M=(o)=>new T3.MeshStandardMaterial(o);
-  const skin=M({color:p.skin,roughness:.65}),shirt=M({map:shirtTex(p),roughness:.75});
-  const dark=M({color:0x141b2c,roughness:.8}),white=M({color:0xf2f4f8,roughness:.55}),hair=M({color:0x1d1612,roughness:.9});
-  const add=(par,geo,mat,x,y,z)=>{const m=new T3.Mesh(geo,mat);m.position.set(x,y,z);m.castShadow=true;par.add(m);return m;};
-  const body=new T3.Group();g.add(body);
+const V2=(x,y)=>new T3.Vector2(x,y);
+const TORSO_G=new T3.LatheGeometry([V2(.001,-.02),V2(.15,0),V2(.165,.07),V2(.158,.18),V2(.182,.32),V2(.205,.44),V2(.2,.52),V2(.15,.58),V2(.07,.61)],20);
+const SHORTS_G=new T3.LatheGeometry([V2(.06,.07),V2(.16,.05),V2(.185,-.02),V2(.2,-.14),V2(.215,-.24)],18,0,Math.PI*2);
+const CAPS=(r,l)=>{const g=new T3.CylinderGeometry(r*.92,r,l,10);g.translate(0,-l/2,0);return g;};
+const THIGH_G=CAPS(.075,.44),SHIN_G=CAPS(.058,.42),UARM_G=CAPS(.05,.29),FARM_G=CAPS(.042,.26);
+const JOINT_G=new T3.SphereGeometry(1,12,8);
+const HAIRC=[0x1d1612,0x3b2616,0x6b4a2a,0x0f0f12];
+function mkBody(p,idx){
+  const g=new T3.Group(),M=o=>new T3.MeshStandardMaterial(o);
+  const skin=M({color:p.skin,roughness:.62,metalness:0}),shirt=M({map:shirtTex(p),roughness:.8});
+  const dark=M({color:0x151a28,roughness:.85}),white=M({color:0xf2f4f8,roughness:.5}),sole=M({color:0x2a2f3a,roughness:.9});
+  const hairM=M({color:HAIRC[idx%4],roughness:.95}),accent=M({color:TEAMC[p.team],roughness:.5});
+  const add=(par,geo,mat,x=0,y=0,z=0,sx=1,sy=1,sz=1)=>{const m=new T3.Mesh(geo,mat);m.position.set(x,y,z);m.scale.set(sx,sy,sz);m.castShadow=true;par.add(m);return m;};
+  const pelvis=new T3.Group();pelvis.position.y=.92;g.add(pelvis);
+  add(pelvis,SHORTS_G,dark);
+  // Beine mit Knie
   const legs=[-1,1].map(sx=>{
-    const pv=new T3.Group();pv.position.set(sx*.1,.9,0);body.add(pv);
-    add(pv,new T3.CylinderGeometry(.075,.06,.82,8),skin,0,-.42,0);
-    add(pv,new T3.CylinderGeometry(.078,.07,.12,8),white,0,-.76,0);
-    add(pv,new T3.BoxGeometry(.13,.09,.28),white,0,-.86,.05);
-    return pv;
+    const hip=new T3.Group();hip.position.set(sx*.1,-.04,0);pelvis.add(hip);
+    add(hip,THIGH_G,skin);
+    const knee=new T3.Group();knee.position.y=-.44;hip.add(knee);
+    add(knee,JOINT_G,skin,0,0,0,.062,.062,.062);
+    add(knee,SHIN_G,skin);
+    add(knee,CAPS(.06,.11),white,0,-.3,0);          // Socke
+    add(knee,new T3.BoxGeometry(.12,.035,.29),sole,0,-.445,.045);
+    add(knee,new T3.SphereGeometry(1,12,8),white,0,-.405,.05,.065,.05,.145);
+    add(knee,new T3.BoxGeometry(.06,.012,.08),accent,sx*.045,-.4,.05);
+    return{hip,knee};
   });
-  add(body,new T3.CylinderGeometry(.2,.21,.28,12),dark,0,.86,0);
-  const torso=add(body,new T3.CylinderGeometry(.23,.19,.62,14,1,false,-Math.PI/2),shirt,0,1.27,0);torso.scale.z=.72;
-  add(body,new T3.CylinderGeometry(.05,.05,.08,8),skin,0,1.61,0);
-  add(body,new T3.SphereGeometry(.125,16,12),skin,0,1.73,0);
-  add(body,new T3.SphereGeometry(.13,16,10,0,6.283,0,1.55),hair,0,1.75,-.012);
-  add(body,new T3.CylinderGeometry(.131,.131,.04,16,1,true),white,0,1.76,0);
+  // Oberkörper (Rotation für Ausholbewegung)
+  const spine=new T3.Group();spine.position.y=.03;pelvis.add(spine);
+  const torso=add(spine,TORSO_G,shirt,0,0,0,1,1,.74);
+  const neck=add(spine,CAPS(.052,.1),skin,0,.68,0);
+  const head=new T3.Group();head.position.y=.76;spine.add(head);
+  add(head,new T3.SphereGeometry(.118,20,16),skin,0,0,0,1,1.12,1.05);
+  add(head,new T3.SphereGeometry(.018,8,6),skin,0,-.005,.12);                 // Nase
+  for(const ex of[-.04,.04]){add(head,new T3.SphereGeometry(.011,6,4),M({color:0x1a1a1a}),ex,.025,.108);add(head,JOINT_G,skin,ex*2.9,0,0,.022,.035,.018);}
+  const hs=idx%4;
+  add(head,new T3.SphereGeometry(.125,20,12,0,6.283,0,1.45),hairM,0,.02,-.012,1,1.1,1.06);
+  if(hs===1){ // Kappe mit Schirm
+    add(head,new T3.SphereGeometry(.128,20,10,0,6.283,0,1.3),accent,0,.03,0,1,1.05,1.05);
+    const vis=add(head,new T3.CylinderGeometry(.11,.11,.012,20,1,false,0,Math.PI),accent,0,.05,.09);vis.rotation.y=-Math.PI/2;vis.scale.set(1,1,.8);
+  }else if(hs===2){ // Pferdeschwanz
+    const pt=add(head,CAPS(.035,.2),hairM,0,.04,-.12);pt.rotation.x=-.5;
+  }else add(head,new T3.CylinderGeometry(.126,.126,.035,20,1,true),white,0,.045,0,1,1,1.03); // Stirnband
+  // Arme mit Ellbogen
   const arms=[1,-1].map(sx=>{
-    const pv=new T3.Group();pv.position.set(sx*.27,1.5,0);pv.rotation.order='YXZ';body.add(pv);
-    add(pv,new T3.CylinderGeometry(.055,.045,.6,8),skin,0,-.3,0);
-    return pv;
+    const sh=new T3.Group();sh.position.set(sx*.225,.5,0);sh.rotation.order='YXZ';spine.add(sh);
+    add(sh,JOINT_G,shirt,0,0,0,.075,.07,.07);
+    add(sh,UARM_G,skin);
+    const el=new T3.Group();el.position.y=-.29;sh.add(el);
+    add(el,JOINT_G,skin,0,0,0,.045,.045,.045);
+    add(el,FARM_G,skin);
+    add(el,CAPS(.046,.06),white,0,-.19,0);                           // Schweißband
+    const hand=new T3.Group();hand.position.y=-.27;el.add(hand);
+    add(hand,JOINT_G,skin,0,-.02,0,.045,.055,.035);
+    return{sh,el,hand};
   });
-  const pad=new T3.Group();pad.position.set(0,-.6,0);arms[1].add(pad);
-  add(pad,new T3.CylinderGeometry(.02,.022,.16,8),M({color:0x0d111b,roughness:.6}),0,-.08,0);
-  const face=add(pad,new T3.CylinderGeometry(.17,.17,.035,28),M({color:0x1b2233,metalness:.4,roughness:.3}),0,-.33,0);
-  face.rotation.x=Math.PI/2;face.scale.set(1,1,1.12);
-  const rim=add(pad,new T3.TorusGeometry(.172,.014,6,28),M({color:TEAMC[p.team],roughness:.4}),0,-.33,0);rim.scale.set(1,1.12,1);
+  // Schläger in der rechten Hand
+  const pad=new T3.Group();pad.position.set(0,-.03,0);arms[1].hand.add(pad);
+  add(pad,new T3.CylinderGeometry(.018,.02,.15,10),M({color:0x0d111b,roughness:.7}),0,-.07,0);
+  const faceM=M({color:0x1b2233,metalness:.5,roughness:.28});
+  const face=add(pad,new T3.CylinderGeometry(.17,.17,.034,32),faceM,0,-.32,0);face.rotation.x=Math.PI/2;face.scale.set(1,1,1.12);
+  const rim=add(pad,new T3.TorusGeometry(.172,.014,8,32),accent,0,-.32,0);rim.scale.set(1,1.12,1);
+  for(let i=-2;i<=2;i++)for(let k=-2;k<=2;k++){if(i*i+k*k>6)continue;add(pad,new T3.CircleGeometry(.009,6),M({color:0x05070c}),i*.05,-.32+k*.05,.0175);}
   let tag=null;
   if(p.human){tag=new T3.Mesh(new T3.ConeGeometry(.13,.26,4),new T3.MeshBasicMaterial({color:0xff6b4a}));tag.rotation.x=Math.PI;tag.position.y=2.3;g.add(tag);}
   scene.add(g);
-  return{g,body,legs,arms,tag,yaw:p.team===0?Math.PI:0};
+  return{g,pelvis,spine,head,legs,arms,tag,yaw:p.team===0?Math.PI:0,ready:0,lvx:0,lvy:0,sq:0};
 }
-const bodies=P.map(mkBody);
-function swingPose(p,arm){
-  let ez=-.75,ry=.55,rx=0;
+const bodies=P.map((p,i)=>mkBody(p,i));
+function swingPose(p,B,ready){
+  const R=B.arms[1],L=B.arms[0];
+  let ez=-.28,ry=.15,rx=0,el=-.35,tw=0,lean=0,lx=0,lz=.18,lel=-.3;
   if(p.swing>0){
     const u=Math.min(1,p.swing/.3),e=1-Math.pow(1-u,3);
-    if(p.swingType==='s'){ez=-2.85;rx=-1+2.7*e;ry=0;}
-    else if(p.swingType==='l'){ez=-.4-1.7*e;ry=.6;rx=.3;}
-    else{ez=-1.25;ry=-1.5+3.1*e;rx=0;}
-  }else if(!(S.phase==='play'&&S.rs.hit!==p.team))ez=-.3,ry=.2;
-  arm.rotation.set(rx,ry,ez);
+    if(p.swingType==='s'){ez=-2.9;rx=-1.1+2.8*e;ry=0;el=-(1-e)*1.4-.1;tw=-.4+.8*e;lean=-.2+.5*e;lx=-2.4*(1-e)-.3;lel=-.2;}
+    else if(p.swingType==='l'){ez=-.35-1.5*e;ry=.6;rx=.25;el=-.35;tw=-.25+.35*e;lx=-.4;}
+    else{ez=-1.15;ry=-1.7+3.3*e;el=-(1-e)*1-.15;tw=-.75+1.4*e;lx=-.9*(1-e)-.1;lz=.5;lel=-.6;}
+  }else if(ready>.5){ez=-.55;ry=.9;rx=-.45;el=-1.25;lx=-.55;lz=.3;lel=-1.1;}
+  R.sh.rotation.set(rx,ry,ez);R.el.rotation.x=el;R.hand.rotation.x=el*.3;
+  B.spine.rotation.y=tw;
+  return{lx,lz,lel,lean};
 }
 function updBody(p,B,dt){
   B.g.position.copy(V(p.x,p.y,0));
@@ -735,12 +809,23 @@ function updBody(p,B,dt){
   }
   let d=want-B.yaw;d=Math.atan2(Math.sin(d),Math.cos(d));B.yaw+=d*Math.min(1,dt*8);
   B.g.rotation.y=B.yaw;
-  const k=Math.min(1,p.spd/2.5),sw=Math.sin(p.phase*1.5);
-  B.legs[0].rotation.x=sw*.7*k;B.legs[1].rotation.x=-sw*.7*k;
-  B.arms[0].rotation.set(-sw*.5*k,0,.15);
-  B.body.position.y=Math.abs(Math.cos(p.phase*1.5))*.05*k-.04*k;
-  B.body.rotation.x=.12*k;
-  swingPose(p,B.arms[1]);
+  const k=Math.min(1,p.spd/3),ph=p.phase*1.5,s=Math.sin(ph);
+  const rdy=(S.phase==='play'&&S.rs.hit!==p.team)?1:.25;B.ready+=(rdy-B.ready)*Math.min(1,dt*5);
+  const cr=B.ready*(1-k*.6);
+  B.legs.forEach(({hip,knee},i)=>{
+    const a=(i?-1:1)*s;
+    hip.rotation.x=-a*.8*k-.35*cr;
+    hip.rotation.z=(i?1:-1)*.1*cr;
+    knee.rotation.x=Math.max(0,-a)*1.3*k+.1+.62*cr;
+  });
+  B.pelvis.position.y=.92-.08*cr-.02*k+Math.abs(Math.cos(ph))*.045*k;
+  const o=swingPose(p,B,B.ready);
+  B.spine.rotation.x=.12*k+.16*cr+o.lean;
+  B.arms[0].sh.rotation.set(o.lx+s*.6*k*(p.swing>0?0:1),0,o.lz);B.arms[0].el.rotation.x=o.lel-.3*k;
+  B.head.rotation.x=-.15*cr-o.lean*.5;
+  // Schuh-Quietschen bei starkem Richtungswechsel (nur eigener Spieler)
+  if(!p.ai&&AC){const ax=(p.vx-B.lvx)/Math.max(dt,.001),ay=(p.vy-B.lvy)/Math.max(dt,.001);B.sq-=dt;if(Math.hypot(ax,ay)>38&&p.spd>2&&B.sq<=0){snd('squeak');B.sq=.45;}}
+  B.lvx=p.vx;B.lvy=p.vy;
   if(B.tag){B.tag.visible=!S.demo;B.tag.position.y=2.3+Math.sin(S.time*4)*.06;B.tag.rotation.y+=dt*2;}
 }
 
@@ -912,7 +997,7 @@ function setPause(on){S.paused=on;$('pause').hidden=!on;}
 $('bPlay').onclick=startMatch;$('bAgain').onclick=startMatch;
 $('bMenu').onclick=toMenu;$('bQuit').onclick=toMenu;
 $('bResume').onclick=()=>setPause(false);$('bPause').onclick=()=>setPause(true);
-$('bSound').onclick=()=>{ac();muted=!muted;$('wave').style.display=muted?'none':'';};
+$('bSound').onclick=()=>{ac();muted=!muted;if(BUS)BUS.gain.value=muted?0:.9;$('wave').style.display=muted?'none':'';};
 if(touch){$('keysDesk').hidden=true;$('keysTouch').hidden=false;}
 
 addEventListener('resize',resize);
