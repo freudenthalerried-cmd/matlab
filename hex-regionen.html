@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Hex-Regionen</title>
+<style>
+  :root {
+    --water: #2e6cb3; --panel: #2b3a67; --panel2: #3b4c85; --green: #7ed321; --green-d: #4e9a06;
+    --gold: #ffcc33; --txt: #fff;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; background: var(--water); overflow: hidden; }
+  body { font-family: "Trebuchet MS", system-ui, sans-serif; color: var(--txt); user-select: none; }
+  #app { position: relative; height: 100dvh; max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; }
+  #stage { position: relative; flex: 1; min-height: 0; }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; }
+  .stroke { text-shadow: 0 2px 0 #0007, 0 0 2px #000a; font-weight: 900; }
+
+  /* Kopfzeile */
+  #top { position: absolute; top: 8px; left: 8px; right: 8px; display: flex; gap: 8px; align-items: center; z-index: 5; pointer-events: none; }
+  .profile { display: flex; align-items: center; gap: 6px; background: #1e2a4dcc; border-radius: 12px; padding: 4px 10px 4px 4px; }
+  .avatar { position: relative; width: 46px; height: 46px; border-radius: 10px; background: linear-gradient(#6fb1ff, #2a62b8); border: 3px solid #fff; display: grid; place-items: center; font-size: 26px; }
+  .rank { position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); background: #2a62b8; border: 2px solid #fff; border-radius: 8px; font-size: 11px; padding: 0 5px; }
+  .pname { font-size: 15px; }
+  .xpbar { width: 90px; height: 12px; background: #0006; border-radius: 6px; overflow: hidden; margin-top: 2px; position: relative; }
+  .xpbar i { position: absolute; inset: 0 auto 0 0; background: #58a6ff; }
+  .xpbar span { position: absolute; inset: 0; font-size: 9px; text-align: center; line-height: 12px; }
+  .cur { margin-left: auto; display: flex; gap: 6px; }
+  .pill { display: flex; align-items: center; gap: 4px; background: #1e2a4dcc; border-radius: 20px; padding: 3px 10px 3px 4px; font-size: 14px; }
+  .pill b { font-size: 20px; }
+
+  /* Menü */
+  #menu { position: absolute; left: 0; right: 0; bottom: 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; z-index: 5; }
+  .streak { background: linear-gradient(#8a5cf6, #5b32c9); border: 3px solid #2d176e; border-radius: 20px; padding: 3px 16px; font-size: 16px; }
+  .bigbtn { font: inherit; font-size: 40px; color: #fff; padding: 10px 44px; border-radius: 16px; cursor: pointer;
+    background: linear-gradient(#9be83e, #5cb71b); border: 4px solid #2f5f0c; box-shadow: 0 6px 0 #2f5f0c; }
+  #play { animation: pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse { 50% { transform: scale(1.05); } }
+  #snd { position: absolute; bottom: 10px; right: 10px; z-index: 5; font-size: 22px; background: #0006; color: #fff; border: 2px solid #fff6; border-radius: 10px; padding: 4px 10px; }
+  #result .card { animation: popin .35s cubic-bezier(.2,1.6,.4,1) both; }
+  @keyframes popin { from { transform: scale(.4); opacity: 0; } }
+  .bigbtn:active { transform: translateY(4px); box-shadow: 0 2px 0 #2f5f0c; }
+
+  /* Kampf-HUD */
+  #hud { position: absolute; top: 70px; left: 12px; right: 12px; z-index: 5; display: none; }
+  #power { display: flex; height: 14px; border-radius: 7px; overflow: hidden; border: 2px solid #fff8; background: #0004; }
+  #power div { transition: width .3s; }
+  #lvlTitle { text-align: center; font-size: 18px; margin-bottom: 4px; }
+  #hint { position: fixed; left: 50%; transform: translateX(-50%); bottom: 150px; width: min(90vw, 460px); text-align: center; font-size: 14px; background: #0005; border-radius: 10px; padding: 4px 8px; }
+  #giveup { position: absolute; bottom: 10px; left: 10px; z-index: 5; display: none; font: inherit; background: #0006; color: #fff; border: 2px solid #fff6; border-radius: 10px; padding: 6px 12px; }
+
+  /* Ergebnis */
+  #result { position: absolute; inset: 0; z-index: 10; display: none; place-items: center; background: #0009; }
+  .card { background: linear-gradient(var(--panel2), var(--panel)); border: 4px solid #fff; border-radius: 20px; padding: 24px 30px; text-align: center; min-width: 260px; }
+  .card h2 { font-size: 40px; margin: 0 0 8px; }
+  .card p { font-size: 18px; margin: 6px 0 18px; }
+  .card .bigbtn { font-size: 26px; padding: 8px 30px; }
+
+  /* Navigation */
+  #nav { display: grid; grid-template-columns: 1fr 1fr 1.6fr 1fr 1fr; background: #1b2548; border-top: 3px solid #0d1330; height: 74px; }
+  #nav button { font: inherit; color: #fff; background: #26335f; border: 0; border-right: 2px solid #0d1330; font-size: 28px; cursor: pointer; }
+  #nav button.on { background: linear-gradient(#5f7fd8, #3a55a8); font-size: 20px; }
+  #nav button.on span { display: block; font-size: 28px; }
+  #toast { position: absolute; left: 50%; bottom: 90px; transform: translateX(-50%); background: #000c; padding: 8px 14px; border-radius: 10px; z-index: 20; display: none; font-size: 14px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="stage">
+    <canvas id="cv"></canvas>
+
+    <div id="top">
+      <div class="profile">
+        <div class="avatar">🪖<span class="rank stroke" id="rank">1</span></div>
+        <div>
+          <div class="pname stroke">Kommandant</div>
+          <div class="xpbar"><i id="xpfill"></i><span class="stroke" id="xptxt">0/100</span></div>
+        </div>
+      </div>
+      <div class="cur">
+        <div class="pill stroke"><b>🪙</b><span id="coins">0</span></div>
+        <div class="pill stroke"><b>💎</b><span id="gems">0</span></div>
+      </div>
+    </div>
+
+    <div id="hud">
+      <div id="lvlTitle" class="stroke"></div>
+      <div id="power"></div>
+      <div id="hint" class="stroke">Ziehe von deiner blauen Basis auf eine Nachbar-Region, um Truppen zu schicken.</div>
+    </div>
+    <button id="giveup">🏳️ Aufgeben</button>
+    <button id="snd" aria-label="Ton und Vibration">🔊</button>
+
+    <div id="menu">
+      <div class="streak stroke">Siegesserie 🏆 x<span id="streak">0</span></div>
+      <button class="bigbtn stroke" id="play">LEVEL 1</button>
+    </div>
+
+    <div id="result"><div class="card">
+      <h2 class="stroke" id="resT"></h2>
+      <p class="stroke" id="resP"></p>
+      <button class="bigbtn stroke" id="resB">Weiter</button>
+    </div></div>
+    <div id="toast"></div>
+  </div>
+
+  <nav id="nav">
+    <button data-soon>🎁</button>
+    <button data-soon>🎒</button>
+    <button class="on stroke"><span>⚔️</span>STARTEN</button>
+    <button data-soon>🃏</button>
+    <button data-soon>🛡️</button>
+  </nav>
+</div>
+
+<script>
+(() => {
+  // ---------- Grundlagen ----------
+  const SQ3 = Math.sqrt(3);
+  const DIRS = [[1,0],[0,1],[-1,1],[-1,0],[0,-1],[1,-1]]; // Kante i gehört zu Richtung i
+  const COLS = 7, ROWS = 11;
+  const OWN = [
+    { fill: '#dcd7f2', dark: '#a9a1d4', name: 'Neutral' },
+    { fill: '#3f86e8', dark: '#1f56a8', name: 'Du' },
+    { fill: '#e5483f', dark: '#a82a22', name: 'Rot' },
+    { fill: '#f5c93a', dark: '#c48f08', name: 'Gelb' },
+    { fill: '#57b85a', dark: '#2f7f32', name: 'Grün' },
+  ];
+  const TYPES = {
+    kaserne: { rate: 1.0, cap: 40 },
+    turm:    { rate: 0.5, cap: 25 },
+    reaktor: { rate: 0.6, cap: 30 },
+    hafen:   { rate: 0.8, cap: 35 },
+    flugplatz: { rate: 0.6, cap: 30 },
+    wachturm: { rate: 0, cap: 99 },
+  };
+  const SPEED = { tank: 1.7, boat: 2.1, plane: 3.0 };
+  const $ = id => document.getElementById(id);
+  const rnd = k => Math.floor(Math.random() * k);
+  const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const key = (q, r) => q + ',' + r;
+  const hexDist = (a, b) => (Math.abs(a.q - b.q) + Math.abs(a.r - b.r) + Math.abs(a.q + a.r - b.q - b.r)) / 2;
+
+  // ---------- Spielstand ----------
+  const save = { level: 1, coins: 0, gems: 0, streak: 0, xp: 0 };
+  try { Object.assign(save, JSON.parse(localStorage.getItem('hexreg') || '{}')); } catch (e) {}
+  const persist = () => { try { localStorage.setItem('hexreg', JSON.stringify(save)); } catch (e) {} };
+
+  // ---------- Karte ----------
+  let parts = [], shake = 0, cells, cellMap, waterMap, pathCache, regions, B, units, queues, shots, pops, mode = 'menu', time = 0, aiT = {}, endT = 0;
+
+  function genMap(level) {
+    for (;;) {
+      cellMap = new Map(); cells = [];
+      for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+        const edge = r === 0 || r === ROWS - 1 || c === 0 || c === COLS - 1;
+        if (Math.random() < (edge ? 0.35 : level >= 2 ? 0.1 : 0.06)) continue;
+        const q = c - (r >> 1);
+        const cell = { q, r, x: SQ3 * (q + r / 2), y: 1.5 * r, reg: -1 };
+        cells.push(cell); cellMap.set(key(q, r), cell);
+      }
+      // größte zusammenhängende Insel behalten
+      let best = [], seen = new Set();
+      for (const c of cells) {
+        if (seen.has(c)) continue;
+        const comp = [c]; seen.add(c);
+        for (let i = 0; i < comp.length; i++) for (const n of nbrs(comp[i])) if (!seen.has(n)) { seen.add(n); comp.push(n); }
+        if (comp.length > best.length) best = comp;
+      }
+      cells = best; cellMap = new Map(cells.map(c => [key(c.q, c.r), c]));
+      const K = Math.min(14, 8 + Math.floor(level / 4));
+      if (cells.length < K * 4) continue;
+
+      // Startpunkte weit verteilt
+      const seeds = [cells[rnd(cells.length)]];
+      while (seeds.length < K) {
+        const cand = cells.filter(c => !seeds.includes(c))
+          .map(c => [c, Math.min(...seeds.map(s => hexDist(c, s)))])
+          .sort((a, b) => b[1] - a[1]).slice(0, 3);
+        seeds.push(cand[rnd(cand.length)][0]);
+      }
+      regions = seeds.map((s, i) => { s.reg = i; return { id: i, cells: [s], adj: new Set() }; });
+      // gleichmäßiges Zufallswachstum
+      let left = cells.length - K;
+      while (left) {
+        const order = shuffle(regions.slice()).sort((a, b) => a.cells.length - b.cells.length);
+        for (const R of order) {
+          const front = [];
+          for (const c of R.cells) for (const n of nbrs(c)) if (n.reg === -1) front.push(n);
+          if (!front.length) continue;
+          const n = front[rnd(front.length)]; n.reg = R.id; R.cells.push(n); left--; break;
+        }
+      }
+      for (const c of cells) for (const n of nbrs(c)) if (n.reg !== c.reg) regions[c.reg].adj.add(n.reg);
+
+      // Wachturm-Inseln in Wasserlöchern (ab Level 2)
+      if (level >= 2) {
+        const holes = [];
+        for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+          const q = c - (r >> 1);
+          if (cellMap.has(key(q, r))) continue;
+          const h = { q, r, x: SQ3 * (q + r / 2), y: 1.5 * r };
+          if (nbrs(h).length >= 3) holes.push(h);
+        }
+        let want = Math.min(3, 1 + Math.floor(level / 4));
+        for (const h of shuffle(holes)) {
+          if (!want) break;
+          const nb = nbrs(h);
+          if (nb.some(n => regions[n.reg].tower)) continue;
+          const R = { id: regions.length, cells: [h], adj: new Set(), tower: true };
+          h.reg = R.id; regions.push(R); cells.push(h); cellMap.set(key(h.q, h.r), h);
+          for (const n of nb) { R.adj.add(n.reg); regions[n.reg].adj.add(R.id); }
+          want--;
+        }
+      }
+      for (const R of regions) R.coast = R.cells.some(c => DIRS.some(([dq, dr]) => !cellMap.has(key(c.q + dq, c.r + dr))));
+      // Wasserfelder rund um die Insel (für Boote)
+      waterMap = new Map(); pathCache = new Map();
+      for (let r = -1; r <= ROWS; r++) for (let c = -1; c <= COLS; c++) {
+        const q = c - (r >> 1);
+        if (!cellMap.has(key(q, r))) waterMap.set(key(q, r), { q, r, x: SQ3 * (q + r / 2), y: 1.5 * r });
+      }
+      return;
+    }
+  }
+  function nbrs(c) {
+    const out = [];
+    for (const [dq, dr] of DIRS) { const n = cellMap.get(key(c.q + dq, c.r + dr)); if (n) out.push(n); }
+    return out;
+  }
+
+  function setupLevel(level) {
+    genMap(level);
+    B = regions.map(R => {
+      let bc = R.cells[0], bs = 1e9;
+      for (const c of R.cells) { const s = R.cells.reduce((t, o) => t + hexDist(c, o), 0); if (s < bs) { bs = s; bc = c; } }
+      const roll = Math.random();
+      let type = roll < 0.55 ? 'kaserne' : roll < 0.8 ? 'turm' : 'reaktor';
+      if (level >= 2 && R.coast && Math.random() < 0.25) type = 'hafen';
+      if (level >= 3 && Math.random() < 0.12) type = 'flugplatz';
+      if (R.tower) type = 'wachturm';
+      const count = R.tower ? 6 + Math.min(20, level) : 5 * rnd(3) + Math.min(10, Math.floor(level / 3));
+      return { id: R.id, x: bc.x, y: bc.y, type, owner: 0, count, cd: 0, ang: -Math.PI / 2, flash: 0, bump: 0 };
+    });
+    const land = B.filter(b => b.type !== 'wachturm');
+    // Spieler unten, Gegner möglichst weit weg
+    const enemies = level < 3 ? 1 : level < 8 ? 2 : 3;
+    const pl = land.reduce((a, b) => b.y > a.y ? b : a);
+    pl.owner = 1; pl.count = 15; pl.type = 'kaserne';
+    const taken = [pl];
+    for (let e = 0; e < enemies; e++) {
+      const far = land.filter(b => !taken.includes(b))
+        .sort((a, b) => Math.min(...taken.map(t => Math.hypot(b.x - t.x, b.y - t.y))) - Math.min(...taken.map(t => Math.hypot(a.x - t.x, a.y - t.y))))[0];
+      far.owner = 2 + e; far.count = 10 + Math.min(20, level); far.type = 'kaserne';
+      taken.push(far); aiT[far.owner] = 2 + Math.random();
+    }
+    // garantiert mindestens ein Hafen (ab L2) und ein Flugplatz (ab L3)
+    const free = land.filter(b => !b.owner);
+    if (level >= 2 && !B.some(b => b.type === 'hafen')) {
+      const c = shuffle(free.filter(b => regions[b.id].coast))[0]; if (c) c.type = 'hafen';
+    }
+    if (level >= 3 && !B.some(b => b.type === 'flugplatz')) {
+      const c = shuffle(free.filter(b => b.type !== 'hafen'))[0]; if (c) c.type = 'flugplatz';
+    }
+    units = []; queues = []; shots = []; pops = []; parts = []; time = 0; endT = 0;
+  }
+
+  // ---------- Darstellung ----------
+  const cv = $('cv'), ctx = cv.getContext('2d');
+  let S = 30, OX = 0, OY = 0, DPR = 1;
+  function resize() {
+    const r = cv.getBoundingClientRect(); DPR = window.devicePixelRatio || 1;
+    cv.width = r.width * DPR; cv.height = r.height * DPR;
+    const topPad = 125, botPad = 130;
+    const w = SQ3 * (COLS + 0.5), h = 1.5 * (ROWS - 1) + 2;
+    // Rand für den Wasserring (Bootswege) mit einplanen
+    S = Math.min(r.width / (w + SQ3 * 1.6), (r.height - topPad - botPad) / (h + 1.6));
+    OX = (r.width - w * S) / 2 + SQ3 / 2 * S;
+    OY = topPad + ((r.height - topPad - botPad) - h * S) / 2 + S;
+  }
+  const px = x => OX + x * S, py = y => OY + y * S;
+  function hexPath(cx, cy, s) {
+    ctx.beginPath();
+    for (let i = 0; i < 6; i++) { const a = Math.PI / 180 * (60 * i - 30); ctx.lineTo(cx + s * Math.cos(a), cy + s * Math.sin(a)); }
+    ctx.closePath();
+  }
+  function corner(c, i) { const a = Math.PI / 180 * (60 * i - 30); return [px(c.x) + S * Math.cos(a), py(c.y) + S * Math.sin(a)]; }
+
+  function draw() {
+    const W = cv.width / DPR, H = cv.height / DPR;
+    const sh = shake > 0 ? shake * 6 : 0;
+    ctx.setTransform(DPR, 0, 0, DPR, (Math.random() - 0.5) * sh * DPR, (Math.random() - 0.5) * sh * DPR);
+    const wg = ctx.createLinearGradient(0, 0, 0, H);
+    wg.addColorStop(0, '#3b86d4'); wg.addColorStop(1, '#23599c');
+    ctx.fillStyle = wg; ctx.fillRect(0, 0, W, H);
+    // Glitzern im Wasser
+    for (let i = 0; i < 24; i++) {
+      const a = 0.5 + 0.5 * Math.sin(time * 2 + i * 1.7);
+      ctx.fillStyle = `rgba(255,255,255,${0.08 + 0.15 * a})`;
+      ctx.beginPath(); ctx.ellipse((i * 97 + time * 6) % W, (i * 173) % H, 6 + 4 * a, 1.5, 0, 0, 7); ctx.fill();
+    }
+    // Wellen
+    ctx.strokeStyle = '#ffffff14'; ctx.lineWidth = 2;
+    for (let i = 0; i < 14; i++) {
+      const y = (i * 67 + time * 8) % H, x = (i * 131) % W;
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x + 15, y - 6, x + 30, y); ctx.stroke();
+    }
+    // Zellen – Seitenwand (3D) zuerst, dann Oberseite mit Lichtverlauf
+    ctx.fillStyle = '#0000002a';
+    for (const c of cells) { hexPath(px(c.x) + S * 0.08, py(c.y) + S * 0.6, S * 1.02); ctx.fill(); }
+    for (const c of cells) {
+      const o = OWN[B[c.reg].owner];
+      hexPath(px(c.x), py(c.y) + S * 0.4, S * 1.02); ctx.fillStyle = o.dark; ctx.fill();
+    }
+    for (const c of cells) {
+      const o = OWN[B[c.reg].owner], X = px(c.x), Y = py(c.y);
+      const g = ctx.createLinearGradient(X, Y - S, X, Y + S);
+      g.addColorStop(0, shade(o.fill, 0.25)); g.addColorStop(1, o.fill);
+      hexPath(X, Y, S * 1.02); ctx.fillStyle = g; ctx.fill();
+      hexPath(px(c.x), py(c.y), S * 0.97); ctx.strokeStyle = '#ffffff40'; ctx.lineWidth = S * 0.04; ctx.stroke();
+    }
+    // Regionsgrenzen: heller Eisrand + Wasserkanal
+    const segs = [];
+    for (const c of cells) DIRS.forEach(([dq, dr], i) => {
+      const n = cellMap.get(key(c.q + dq, c.r + dr));
+      if (!n || n.reg !== c.reg) segs.push([corner(c, i), corner(c, i + 1), !n]);
+    });
+    ctx.lineCap = 'round';
+    for (const [w, col] of [[0.36, '#e8f4ffcc'], [0.2, '#2e6cb3']]) {
+      ctx.lineWidth = S * w; ctx.strokeStyle = col; ctx.beginPath();
+      for (const [a, b] of segs) { ctx.moveTo(...a); ctx.lineTo(...b); }
+      ctx.stroke();
+    }
+    // laufende Angriffe: breite Spur mit Pfeil
+    for (const q of queues) route(q.a, q.t, q.kind, q.path, OWN[q.owner].fill, 0.35);
+    // Ziehen: Zielregion hervorheben + dicker Pfeil
+    if (drag && drag.sel.length) {
+      const targets = new Set(); drag.sel.forEach(b => B.forEach(t => t !== b && reach(b, t) && targets.add(t.id)));
+      const hov = regionAt(drag.x, drag.y);
+      const ok = hov && targets.has(hov.id) && !(drag.sel.length === 1 && drag.sel[0] === hov);
+      const pulse = 0.5 + 0.5 * Math.sin(time * 8);
+      for (const c of cells) if (targets.has(c.reg)) {
+        hexPath(px(c.x), py(c.y), S * 0.86);
+        ctx.fillStyle = ok && c.reg === hov.id ? `rgba(255,255,255,${0.35 + 0.25 * pulse})` : '#ffffff26'; ctx.fill();
+      }
+      for (const b of drag.sel) {
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.arc(px(b.x), py(b.y), S * (0.8 + 0.06 * pulse), 0, 7); ctx.stroke();
+      }
+      let n = 0;
+      for (const b of drag.sel) {
+        if (ok && b === hov) continue;
+        const r = ok && reach(b, hov);
+        if (r) { route(b, hov, r.kind, r.path, OWN[1].fill, 1); n += Math.floor(b.count / 2); }
+        else arrow(px(b.x), py(b.y), drag.x, drag.y, '#9aa3b5', 1);
+      }
+      if (ok) {
+        const lx = px(hov.x), ly = py(hov.y) - S * 1.05;
+        ctx.font = `900 ${Math.round(S * 0.5)}px "Trebuchet MS", sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        const txt = '⚔ ' + n, w = ctx.measureText(txt).width + S * 0.5;
+        rr(lx - w / 2, ly - S * 0.34, w, S * 0.68, S * 0.34, '#1f56a8');
+        ctx.fillStyle = '#fff'; ctx.fillText(txt, lx, ly + 1);
+      }
+    }
+    for (const b of B) drawBuilding(b);
+    for (const u of units) if (u.kind !== 'plane') drawUnit(u);
+    for (const s of shots) {
+      ctx.strokeStyle = `rgba(255,240,150,${s.life / 0.15})`; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(px(s.x1), py(s.y1)); ctx.lineTo(px(s.x2), py(s.y2)); ctx.stroke();
+    }
+    for (const p of pops) {
+      ctx.strokeStyle = `rgba(255,255,255,${p.life})`; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.arc(px(p.x), py(p.y), S * (1.8 - p.life), 0, 7); ctx.stroke();
+    }
+    for (const b of B) drawBadge(b);
+    for (const u of units) if (u.kind === 'plane') drawUnit(u);
+    for (const p of parts) {
+      ctx.globalAlpha = Math.max(0, p.life / p.max);
+      ctx.fillStyle = p.col; ctx.beginPath(); ctx.arc(px(p.x), py(p.y), p.r * S * (0.4 + 0.6 * p.life / p.max), 0, 7); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+  // Pfeil für Land/Luft direkt, für Boote entlang des Wasserwegs
+  function route(a, t, kind, path, col, alpha) {
+    if (kind !== 'boat' || !path || !path.length) return arrow(px(a.x), py(a.y), px(t.x), py(t.y), col, alpha, kind === 'plane');
+    const pts = [a, ...path];
+    ctx.save(); ctx.globalAlpha = alpha; ctx.lineCap = ctx.lineJoin = 'round';
+    for (const [lw, c] of [[S * 0.34, '#ffffff'], [S * 0.2, col]]) {
+      ctx.strokeStyle = c; ctx.lineWidth = lw; ctx.setLineDash([S * 0.35, S * 0.25]);
+      ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(px(p.x), py(p.y)) : ctx.moveTo(px(p.x), py(p.y))); ctx.stroke();
+    }
+    ctx.restore();
+    const l = path[path.length - 1];
+    arrow(px(l.x) - (px(t.x) - px(l.x)), py(l.y) - (py(t.y) - py(l.y)), px(t.x), py(t.y), col, alpha);
+  }
+
+  function drawBuilding(b) {
+    const sel = drag && drag.sel.includes(b);
+    const x = px(b.x), y = py(b.y) - S * 0.1 - S * 0.25 * Math.sin(Math.min(1, b.flash) * Math.PI) - (sel ? S * 0.08 : 0);
+    const k = S * 0.5 * (sel ? 1.12 : 1), o = OWN[b.owner];
+    const roof = b.owner ? o.fill : '#c9ccd6', roofD = b.owner ? o.dark : '#9097a8';
+    ctx.fillStyle = '#0003'; ctx.beginPath(); ctx.ellipse(x, y + k * 0.75, k * 1.1, k * 0.45, 0, 0, 7); ctx.fill();
+    if (b.type === 'kaserne') {
+      rr(x - k, y - k * 0.3, k * 2, k * 1.1, k * 0.25, '#8d93a3');
+      rr(x - k, y - k * 0.6, k * 2, k * 0.9, k * 0.25, roof);
+      rr(x - k * 0.7, y - k * 0.35, k * 1.1, k * 0.45, k * 0.1, roofD);
+      for (let i = 0; i < 3; i++) {
+        const cx = x + k * (0.2 + i * 0.28), cy = y - k * (0.75 + i * 0.12);
+        rr(cx - k * 0.12, cy, k * 0.24, k * 0.5, k * 0.1, '#b5bac6');
+        ctx.fillStyle = '#6b7080'; ctx.beginPath(); ctx.ellipse(cx, cy, k * 0.12, k * 0.06, 0, 0, 7); ctx.fill();
+      }
+    } else if (b.type === 'turm') {
+      ctx.fillStyle = '#8d93a3'; hexPath(x, y + k * 0.2, k * 0.9); ctx.fill();
+      ctx.fillStyle = '#b5bac6'; hexPath(x, y, k * 0.85); ctx.fill();
+      ctx.save(); ctx.translate(x, y - k * 0.1); ctx.rotate(b.ang);
+      rr(0, -k * 0.13, k * 1.1, k * 0.26, k * 0.08, '#5d6270');
+      ctx.restore();
+      ctx.fillStyle = roof; ctx.beginPath(); ctx.arc(x, y - k * 0.1, k * 0.5, 0, 7); ctx.fill();
+      ctx.fillStyle = roofD; ctx.beginPath(); ctx.arc(x, y - k * 0.1, k * 0.25, 0, 7); ctx.fill();
+    } else if (b.type === 'hafen') {
+      rr(x - k * 1.05, y - k * 0.1, k * 2.1, k * 0.9, k * 0.2, '#8a6a45');                 // Steg
+      ctx.strokeStyle = '#6b5033'; ctx.lineWidth = 2;
+      for (let i = 1; i < 6; i++) { ctx.beginPath(); ctx.moveTo(x - k * 1.05 + i * k * 0.35, y - k * 0.1); ctx.lineTo(x - k * 1.05 + i * k * 0.35, y + k * 0.8); ctx.stroke(); }
+      rr(x - k * 0.9, y - k * 0.75, k * 1.1, k * 0.8, k * 0.15, roof);                     // Lagerhaus
+      rr(x - k * 0.9, y - k * 0.75, k * 1.1, k * 0.25, k * 0.1, roofD);
+      ctx.strokeStyle = '#5d6270'; ctx.lineWidth = k * 0.14;                               // Kran
+      ctx.beginPath(); ctx.moveTo(x + k * 0.55, y + k * 0.2); ctx.lineTo(x + k * 0.55, y - k * 0.95); ctx.lineTo(x + k * 1.1, y - k * 0.6); ctx.stroke();
+      ctx.font = `${Math.round(k * 0.7)}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#fff'; ctx.fillText('⚓', x - k * 0.35, y - k * 0.3);
+    } else if (b.type === 'flugplatz') {
+      ctx.save(); ctx.translate(x, y); ctx.rotate(-0.35);
+      rr(-k * 1.15, -k * 0.35, k * 2.3, k * 0.7, k * 0.12, '#4b5060');                    // Piste
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.setLineDash([k * 0.2, k * 0.15]);
+      ctx.beginPath(); ctx.moveTo(-k, 0); ctx.lineTo(k, 0); ctx.stroke(); ctx.setLineDash([]);
+      ctx.restore();
+      rr(x - k * 0.95, y - k * 0.95, k * 0.8, k * 0.55, k * 0.25, roof);                   // Hangar
+      rr(x - k * 0.8, y - k * 0.6, k * 0.5, k * 0.2, k * 0.05, roofD);
+      plane(x + k * 0.35, y - k * 0.2, k * 0.55, -0.35, roof, roofD);
+    } else if (b.type === 'wachturm') {
+      ctx.fillStyle = '#7d8394'; ctx.beginPath(); ctx.ellipse(x, y + k * 0.55, k * 0.7, k * 0.3, 0, 0, 7); ctx.fill();
+      rr(x - k * 0.45, y - k * 1.1, k * 0.9, k * 1.7, k * 0.1, '#b5bac6');                 // Schaft
+      rr(x - k * 0.45, y - k * 1.1, k * 0.9, k * 0.25, 0, '#8d93a3');
+      for (let i = 0; i < 3; i++) rr(x - k * 0.62 + i * k * 0.47, y - k * 1.4, k * 0.3, k * 0.35, k * 0.05, '#8d93a3'); // Zinnen
+      ctx.save(); ctx.translate(x, y - k * 0.75); ctx.rotate(b.ang);
+      rr(0, -k * 0.1, k * 0.85, k * 0.2, k * 0.06, '#4b5060'); ctx.restore();
+      ctx.strokeStyle = '#555'; ctx.lineWidth = 2;                                         // Fahne
+      ctx.beginPath(); ctx.moveTo(x, y - k * 1.4); ctx.lineTo(x, y - k * 2.1); ctx.stroke();
+      ctx.fillStyle = b.owner ? o.fill : '#fff';
+      ctx.beginPath(); ctx.moveTo(x, y - k * 2.1); ctx.lineTo(x + k * 0.6 + Math.sin(time * 5) * k * 0.05, y - k * 1.9); ctx.lineTo(x, y - k * 1.7); ctx.fill();
+    } else {
+      ctx.fillStyle = '#8d93a3'; ctx.beginPath(); ctx.ellipse(x, y + k * 0.25, k * 0.95, k * 0.6, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = roof; ctx.beginPath(); ctx.ellipse(x, y, k * 0.95, k * 0.6, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = '#e8eaf0'; ctx.beginPath(); ctx.ellipse(x, y - k * 0.1, k * 0.6, k * 0.42, 0, 0, 7); ctx.fill();
+      ctx.save(); ctx.translate(x, y - k * 0.1); ctx.scale(1, 0.7); ctx.rotate(time * (b.owner ? 6 : 1));
+      ctx.fillStyle = '#8d93a3';
+      for (let i = 0; i < 6; i++) { ctx.rotate(Math.PI / 3); ctx.beginPath(); ctx.ellipse(k * 0.28, 0, k * 0.26, k * 0.09, 0.5, 0, 7); ctx.fill(); }
+      ctx.restore();
+    }
+    if (b.flash > 0) { ctx.fillStyle = `rgba(255,255,255,${b.flash})`; ctx.beginPath(); ctx.arc(x, y, k * 1.1, 0, 7); ctx.fill(); }
+  }
+  function shade(hex, f) {
+    const n = parseInt(hex.slice(1), 16), m = v => Math.round(v + (255 - v) * f);
+    return `rgb(${m(n >> 16)},${m((n >> 8) & 255)},${m(n & 255)})`;
+  }
+  function drawBadge(b) {
+    const t = String(Math.floor(b.count));
+    const x = px(b.x) + S * 0.45, y = py(b.y) + S * 0.4, r = Math.max(14, S * 0.5) * (1 + 0.3 * b.bump);
+    ctx.fillStyle = b.owner ? OWN[b.owner].dark : '#707694'; ctx.beginPath(); ctx.arc(x, y, r + 3, 0, 7); ctx.fill();
+    ctx.fillStyle = b.owner ? OWN[b.owner].fill : '#e9e8f3'; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
+    ctx.font = `900 ${Math.round(r * (t.length > 2 ? 0.95 : 1.25))}px "Trebuchet MS", sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.lineWidth = 4; ctx.strokeStyle = b.owner ? '#0008' : '#fff';
+    ctx.strokeText(t, x, y + 1); ctx.fillStyle = b.owner ? '#fff' : '#555a70'; ctx.fillText(t, x, y + 1);
+  }
+  function plane(x, y, k, a, col, dark) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(a);
+    ctx.fillStyle = dark;
+    ctx.beginPath(); ctx.moveTo(k * 0.2, 0); ctx.lineTo(-k * 0.3, -k * 1.1); ctx.lineTo(-k * 0.55, -k * 1.1); ctx.lineTo(-k * 0.35, 0);
+    ctx.lineTo(-k * 0.55, k * 1.1); ctx.lineTo(-k * 0.3, k * 1.1); ctx.closePath(); ctx.fill();                // Flügel
+    ctx.beginPath(); ctx.moveTo(-k * 0.8, 0); ctx.lineTo(-k * 1.1, -k * 0.45); ctx.lineTo(-k * 1.2, k * 0.45); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = col; ctx.beginPath(); ctx.ellipse(-k * 0.2, 0, k * 1.05, k * 0.24, 0, 0, 7); ctx.fill();   // Rumpf
+    ctx.fillStyle = '#cfe8ff'; ctx.beginPath(); ctx.ellipse(k * 0.45, 0, k * 0.22, k * 0.13, 0, 0, 7); ctx.fill();
+    ctx.restore();
+  }
+  function drawUnit(u) {
+    const k = S * 0.2, o = OWN[u.owner];
+    if (u.kind === 'plane') {
+      ctx.fillStyle = '#0003'; ctx.beginPath(); ctx.ellipse(px(u.x) + S * 0.35, py(u.y) + S * 0.5, k * 1.2, k * 0.6, 0, 0, 7); ctx.fill();
+      ctx.save(); ctx.shadowColor = '#fff'; ctx.shadowBlur = 4;
+      plane(px(u.x), py(u.y), k * 1.5, u.a, o.fill, o.dark); ctx.restore();
+      return;
+    }
+    if (u.kind === 'boat') {
+      ctx.save(); ctx.translate(px(u.x), py(u.y)); ctx.rotate(u.a);
+      ctx.strokeStyle = '#ffffffaa'; ctx.lineWidth = 2;                                     // Bugwelle
+      ctx.beginPath(); ctx.moveTo(-k * 1.4, -k * 0.9); ctx.lineTo(k * 1.5, 0); ctx.lineTo(-k * 1.4, k * 0.9); ctx.stroke();
+      ctx.fillStyle = '#fff'; ctx.beginPath();
+      ctx.moveTo(k * 1.7, 0); ctx.quadraticCurveTo(k * 0.6, -k * 0.95, -k * 1.3, -k * 0.75); ctx.lineTo(-k * 1.3, k * 0.75);
+      ctx.quadraticCurveTo(k * 0.6, k * 0.95, k * 1.7, 0); ctx.fill();
+      ctx.fillStyle = o.fill; ctx.beginPath();
+      ctx.moveTo(k * 1.45, 0); ctx.quadraticCurveTo(k * 0.5, -k * 0.75, -k * 1.1, -k * 0.58); ctx.lineTo(-k * 1.1, k * 0.58);
+      ctx.quadraticCurveTo(k * 0.5, k * 0.75, k * 1.45, 0); ctx.fill();
+      rr(-k * 0.7, -k * 0.35, k * 0.9, k * 0.7, k * 0.15, o.dark);                           // Kajüte
+      ctx.restore();
+      return;
+    }
+    ctx.save(); ctx.translate(px(u.x), py(u.y)); ctx.rotate(u.a);
+    ctx.fillStyle = '#0003'; ctx.beginPath(); ctx.ellipse(k * 0.2, k * 0.3, k * 1.4, k * 1.1, 0, 0, 7); ctx.fill();
+    ctx.lineWidth = 2; ctx.strokeStyle = '#fff';
+    ctx.beginPath(); ctx.roundRect(-k * 1.3, -k * 1.05, k * 2.6, k * 2.1, k * 0.4); ctx.stroke();
+    rr(-k * 1.3, -k * 1.05, k * 2.6, k * 0.5, k * 0.2, '#3c4150');           // Ketten
+    rr(-k * 1.3, k * 0.55, k * 2.6, k * 0.5, k * 0.2, '#3c4150');
+    rr(-k * 1.1, -k * 0.7, k * 2.2, k * 1.4, k * 0.3, o.fill);              // Wanne
+    rr(0, -k * 0.16, k * 1.9, k * 0.32, k * 0.1, o.dark);                   // Rohr
+    ctx.fillStyle = o.dark; ctx.beginPath(); ctx.arc(-k * 0.1, 0, k * 0.55, 0, 7); ctx.fill();
+    ctx.fillStyle = o.fill; ctx.beginPath(); ctx.arc(-k * 0.1, 0, k * 0.35, 0, 7); ctx.fill();
+    ctx.restore();
+  }
+  function arrow(x1, y1, x2, y2, col, alpha, dashed) {
+    const dx = x2 - x1, dy = y2 - y1, d = Math.hypot(dx, dy);
+    if (d < S * 0.6) return;
+    const ux = dx / d, uy = dy / d, nx = -uy, ny = ux;
+    const bend = Math.min(d * 0.18, S * 0.8);
+    const sx = x1 + ux * S * 0.55, sy = y1 + uy * S * 0.55;           // Start außerhalb des Gebäudes
+    const ex = x2 - ux * S * 0.55, ey = y2 - uy * S * 0.55;           // Spitze vor dem Ziel
+    const cx = (sx + ex) / 2 + nx * bend, cy = (sy + ey) / 2 + ny * bend;
+    const ang = Math.atan2(ey - cy, ex - cx), h = S * 0.55, w = S * 0.42;
+    const bx = ex - Math.cos(ang) * h * 0.8, by = ey - Math.sin(ang) * h * 0.8;
+    ctx.save(); ctx.globalAlpha = alpha; ctx.lineCap = 'round';
+    for (const [lw, c] of [[S * 0.34, '#ffffff'], [S * 0.2, col]]) {
+      ctx.strokeStyle = c; ctx.lineWidth = lw; if (dashed) ctx.setLineDash([S * 0.2, S * 0.3]);
+      ctx.beginPath(); ctx.moveTo(sx, sy); ctx.quadraticCurveTo(cx, cy, bx, by); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(ex + Math.cos(ang) * 4, ey + Math.sin(ang) * 4);
+    ctx.lineTo(bx + Math.cos(ang + Math.PI / 2) * w, by + Math.sin(ang + Math.PI / 2) * w);
+    ctx.lineTo(bx + Math.cos(ang - Math.PI / 2) * w, by + Math.sin(ang - Math.PI / 2) * w);
+    ctx.closePath(); ctx.fillStyle = col; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.stroke();
+    ctx.restore();
+  }
+  function rr(x, y, w, h, r, col) { ctx.fillStyle = col; ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.fill(); }
+
+  // ---------- Simulation ----------
+  // Wer kann wen erreichen? Panzer: Nachbarn, Hafen: Boote über Wasser, Flugplatz: überall
+  function reach(a, t) {
+    if (a === t) return null;
+    if (a.type === 'flugplatz') return { kind: 'plane' };
+    if (regions[a.id].adj.has(t.id)) return { kind: 'tank' };
+    if (a.type === 'hafen') { const path = waterPath(a.id, t.id); if (path) return { kind: 'boat', path }; }
+    return null;
+  }
+  function waterPath(from, to) {
+    const k = from + '>' + to;
+    if (pathCache.has(k)) return pathCache.get(k);
+    const touch = id => { const s = new Set(); for (const c of regions[id].cells) for (const [dq, dr] of DIRS) { const w = waterMap.get(key(c.q + dq, c.r + dr)); if (w) s.add(w); } return s; };
+    const goal = touch(to), prev = new Map(), queue = [];
+    for (const w of touch(from)) { prev.set(w, null); queue.push(w); }
+    let hit = null;
+    for (let i = 0; i < queue.length && !hit; i++) {
+      const w = queue[i];
+      if (goal.has(w)) { hit = w; break; }
+      for (const [dq, dr] of DIRS) { const n = waterMap.get(key(w.q + dq, w.r + dr)); if (n && !prev.has(n)) { prev.set(n, w); queue.push(n); } }
+    }
+    let path = null;
+    if (hit) { path = []; for (let w = hit; w; w = prev.get(w)) path.unshift(w); }
+    pathCache.set(k, path);
+    return path;
+  }
+  function send(a, t) {
+    const n = Math.floor(a.count / 2), r = reach(a, t);
+    if (n < 1 || !r) return;
+    a.count -= n;
+    queues.push({ a, t, owner: a.owner, left: n, tm: 0, kind: r.kind, path: r.path });
+  }
+
+  function step(dt) {
+    time += dt;
+    const boost = {};
+    for (const b of B) if (b.type === 'reaktor' && b.owner) boost[b.owner] = (boost[b.owner] || 0) + 0.25;
+    for (const b of B) {
+      b.flash = Math.max(0, b.flash - dt * 2);
+      if (!b.owner) continue;
+      const T = TYPES[b.type];
+      if (b.count < T.cap) b.count = Math.min(T.cap, b.count + T.rate * (1 + (boost[b.owner] || 0)) * dt);
+    }
+    // Truppen ausschicken
+    for (const q of queues) {
+      q.tm -= dt;
+      while (q.tm <= 0 && q.left > 0) {
+        if (q.a.owner !== q.owner) { q.left = 0; break; }
+        const first = q.path ? q.path[0] : q.t;
+        const a = Math.atan2(first.y - q.a.y, first.x - q.a.x), nx = -Math.sin(a), ny = Math.cos(a);
+        const per = q.kind === 'boat' ? 1 : 3;
+        const lane = per === 1 ? 0 : [0, -1, 1][(q.sent = (q.sent || 0) + 1) % 3] * 0.4;
+        units.push({ x: q.a.x + nx * lane, y: q.a.y + ny * lane, ox: nx * lane * 0.5, oy: ny * lane * 0.5, t: q.t, owner: q.owner, a, q,
+          kind: q.kind, wp: q.path ? q.path.slice() : [] });
+        q.alive = (q.alive || 0) + 1;
+        q.left--; q.tm += per === 1 ? 0.3 : q.sent % 3 ? 0 : q.kind === 'plane' ? 0.3 : 0.4;
+      }
+    }
+    queues = queues.filter(q => q.left > 0 || q.alive > 0);
+    // Bewegung + Ankunft
+    for (const u of units) {
+      const speed = SPEED[u.kind], wp = u.wp[0];
+      const gx = wp ? wp.x : u.t.x + u.ox, gy = wp ? wp.y : u.t.y + u.oy;
+      const dx = gx - u.x, dy = gy - u.y, d = Math.hypot(dx, dy);
+      if (wp && d < 0.2) { u.wp.shift(); continue; }
+      if (!wp && d < 0.3) { arrive(u); u.dead = true; continue; }
+      u.a = Math.atan2(dy, dx);
+      u.x += dx / d * speed * dt; u.y += dy / d * speed * dt;
+    }
+    // Zusammenstöße
+    for (let i = 0; i < units.length; i++) {
+      const a = units[i]; if (a.dead) continue;
+      for (let j = i + 1; j < units.length; j++) {
+        const b = units[j];
+        if (b.dead || b.owner === a.owner || b.kind !== a.kind) continue;
+        if (Math.abs(a.x - b.x) < 0.3 && Math.abs(a.y - b.y) < 0.3) {
+          a.dead = b.dead = true; burst((a.x + b.x) / 2, (a.y + b.y) / 2, '#ffb030', 7);
+          if (a.owner === 1 || b.owner === 1) sfx('hit');
+          break;
+        }
+      }
+    }
+    // Geschütztürme
+    for (const b of B) {
+      if ((b.type !== 'turm' && b.type !== 'wachturm') || !b.owner) continue;
+      b.cd -= dt; if (b.cd > 0) continue;
+      const big = b.type === 'wachturm';
+      let tgt = null, td = big ? 3.2 : 2.6;
+      for (const u of units) if (!u.dead && u.owner !== b.owner) {
+        const d = Math.hypot(u.x - b.x, u.y - b.y); if (d < td) { td = d; tgt = u; }
+      }
+      if (tgt) {
+        tgt.dead = true; burst(tgt.x, tgt.y, '#ffd24a', 6); sfx('shot');
+        b.cd = big ? 0.35 : 0.45; b.ang = Math.atan2(tgt.y - b.y, tgt.x - b.x);
+        shots.push({ x1: b.x, y1: b.y - (big ? 0.4 : 0.05), x2: tgt.x, y2: tgt.y, life: 0.15 });
+      }
+    }
+    units = units.filter(u => !u.dead || (u.q.alive--, false));
+    shots.forEach(s => s.life -= dt); shots = shots.filter(s => s.life > 0);
+    pops.forEach(p => p.life -= dt * 1.5); pops = pops.filter(p => p.life > 0);
+    for (const p of parts) { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 2 * dt; p.life -= dt; }
+    parts = parts.filter(p => p.life > 0);
+    shake = Math.max(0, shake - dt * 3);
+    for (const b of B) b.bump = Math.max(0, b.bump - dt * 4);
+
+    // KI
+    for (const o in aiT) { aiT[o] -= dt; if (aiT[o] <= 0) { aiThink(+o); aiT[o] = Math.max(1.1, 3 - save.level * 0.06) + Math.random(); } }
+
+    // Sieg / Niederlage
+    if (!endT) {
+      const alive = new Set(); B.forEach(b => b.owner && alive.add(b.owner)); units.forEach(u => alive.add(u.owner));
+      if (!alive.has(1)) end(false);
+      else if (alive.size === 1) end(true);
+    }
+    updatePower();
+  }
+
+  function burst(x, y, col, n, sp = 1.4) {
+    for (let i = 0; i < n; i++) {
+      const a = Math.random() * 7, v = sp * (0.3 + Math.random());
+      const life = 0.35 + Math.random() * 0.4;
+      parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 0.6, life, max: life, col, r: 0.06 + Math.random() * 0.08 });
+    }
+  }
+  // Ton (WebAudio, ohne Dateien) + Vibration
+  let AC = null, lastSfx = {};
+  function sfx(kind) {
+    if (save.mute) return;
+    try {
+      AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+      const now = AC.currentTime;
+      if (lastSfx[kind] && now - lastSfx[kind] < 0.06) return; lastSfx[kind] = now;
+      const P = { tap: [660, 880, 0.06, 'triangle', 0.15], send: [300, 520, 0.14, 'sawtooth', 0.08], shot: [900, 300, 0.07, 'square', 0.04],
+        hit: [180, 60, 0.12, 'square', 0.05], capture: [520, 1040, 0.25, 'triangle', 0.2], lost: [300, 90, 0.35, 'sawtooth', 0.12],
+        win: [523, 1046, 0.5, 'triangle', 0.22], lose: [330, 110, 0.6, 'sawtooth', 0.15] }[kind];
+      const o = AC.createOscillator(), g = AC.createGain();
+      o.type = P[3]; o.frequency.setValueAtTime(P[0], now); o.frequency.exponentialRampToValueAtTime(P[1], now + P[2]);
+      g.gain.setValueAtTime(P[4], now); g.gain.exponentialRampToValueAtTime(0.001, now + P[2]);
+      o.connect(g).connect(AC.destination); o.start(now); o.stop(now + P[2] + 0.02);
+    } catch (e) {}
+  }
+  const buzz = p => { if (!save.mute && navigator.vibrate) try { navigator.vibrate(p); } catch (e) {} };
+
+  function arrive(u) {
+    const b = u.t;
+    b.bump = 1;
+    if (b.owner === u.owner) { b.count += 1; return; }
+    b.count -= 1;
+    if (b.count < 0) {
+      const lost = b.owner === 1, won = u.owner === 1;
+      b.owner = u.owner; b.count = -b.count; b.flash = 1; pops.push({ x: b.x, y: b.y, life: 1 });
+      burst(b.x, b.y, OWN[u.owner].fill, 22, 2.2); burst(b.x, b.y, '#ffffff', 10, 1.6);
+      if (won) { sfx('capture'); buzz([30, 40, 60]); }
+      if (lost) { sfx('lost'); buzz(120); shake = 1; }
+    }
+  }
+
+  function aiThink(o) {
+    const aggr = Math.min(0.9, 0.35 + save.level * 0.03);
+    for (const b of shuffle(B.filter(b => b.owner === o))) {
+      if (b.count < 6 || Math.random() > aggr) continue;
+      const nb = [...regions[b.id].adj].map(i => B[i]);
+      const foes = B.filter(t => t.owner !== o && reach(b, t));
+      if (foes.length) {
+        let best = null, bs = 1;
+        for (const t of foes) {
+          const s = b.count / 2 - t.count - ((t.type === 'turm' || t.type === 'wachturm') && t.owner ? 4 : 0) + (t.owner === 1 ? 2 : 0)
+            + (t.type === 'reaktor' || t.type === 'wachturm' ? 2 : 0) - Math.hypot(t.x - b.x, t.y - b.y) * 0.3;
+          if (s > bs) { bs = s; best = t; }
+        }
+        if (best) send(b, best);
+      } else if (b.count > 15) {
+        const front = nb.filter(t => [...regions[t.id].adj].some(i => B[i].owner !== o));
+        if (front.length) send(b, front.sort((a, c) => a.count - c.count)[0]);
+      }
+    }
+  }
+
+  function updatePower() {
+    const tot = [0, 0, 0, 0, 0];
+    B.forEach(b => b.owner && (tot[b.owner] += b.count));
+    units.forEach(u => tot[u.owner]++);
+    const sum = tot.reduce((a, b) => a + b, 0) || 1;
+    $('power').innerHTML = tot.map((v, i) => i && v ? `<div style="width:${v / sum * 100}%;background:${OWN[i].fill}"></div>` : '').join('');
+  }
+
+  // ---------- Eingabe ----------
+  let drag = null;
+  const regionAt = (x, y) => {
+    const lx = (x - OX) / S, ly = (y - OY) / S;
+    let q = (SQ3 / 3 * lx - ly / 3), r = 2 / 3 * ly, s = -q - r;
+    let rq = Math.round(q), rr_ = Math.round(r), rs = Math.round(s);
+    const dq = Math.abs(rq - q), dr = Math.abs(rr_ - r), ds = Math.abs(rs - s);
+    if (dq > dr && dq > ds) rq = -rr_ - rs; else if (dr > ds) rr_ = -rq - rs;
+    const c = cellMap.get(key(rq, rr_));
+    return c ? B[c.reg] : null;
+  };
+  const pos = e => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  cv.addEventListener('pointerdown', e => {
+    if (mode !== 'battle') return;
+    const [x, y] = pos(e), b = regionAt(x, y);
+    if (b && b.owner === 1) { drag = { sel: [b], x, y }; cv.setPointerCapture(e.pointerId); sfx('tap'); buzz(12); }
+  });
+  cv.addEventListener('pointermove', e => {
+    if (!drag) return;
+    const [x, y] = pos(e); drag.x = x; drag.y = y;
+    const b = regionAt(x, y);
+    if (b && b.owner === 1 && !drag.sel.includes(b)) {
+      // eigene Basen beim Drüberziehen mit auswählen – außer sie ist das Ziel eines Nachbarn
+      drag.sel.push(b); sfx('tap'); buzz(12);
+    }
+  });
+  cv.addEventListener('pointerup', e => {
+    if (!drag) return;
+    const [x, y] = pos(e), t = regionAt(x, y);
+    if (t) {
+      const from = drag.sel.filter(b => b !== t);
+      from.forEach(b => send(b, t));
+      if (from.some(b => reach(b, t))) { sfx('send'); buzz(25); }
+      if (from.length) $('hint').style.display = 'none';
+    }
+    drag = null;
+  });
+
+  // ---------- Ablauf ----------
+  function refreshHud() {
+    $('coins').textContent = save.coins; $('gems').textContent = save.gems;
+    $('streak').textContent = save.streak; $('play').textContent = 'LEVEL ' + save.level;
+    const need = 100 + Math.floor(save.level / 10) * 50;
+    $('rank').textContent = Math.floor(save.level / 10) + 1;
+    $('xpfill').style.width = Math.min(100, save.xp / need * 100) + '%';
+    $('xptxt').textContent = `${save.xp}/${need}`;
+  }
+  function showMenu() {
+    mode = 'menu'; setupLevel(save.level);
+    $('menu').style.display = 'flex'; $('hud').style.display = 'none'; $('giveup').style.display = 'none';
+    $('result').style.display = 'none'; refreshHud();
+  }
+  function startBattle() {
+    mode = 'battle';
+    $('menu').style.display = 'none'; $('hud').style.display = 'block'; $('giveup').style.display = 'block';
+    $('lvlTitle').textContent = 'Level ' + save.level;
+    const tips = {
+      1: 'Ziehe von deiner blauen Basis auf eine Nachbar-Region, um Truppen zu schicken.',
+      2: 'NEU: 🗼 Wachtürme auf Inseln – besetze sie, dann schießen sie für dich! ⚓ Häfen schicken Boote übers Wasser.',
+      3: 'NEU: ✈️ Flugplätze – Flieger erreichen jede Region auf der Karte!',
+    };
+    $('hint').textContent = tips[save.level] || '';
+    $('hint').style.display = tips[save.level] ? 'block' : 'none';
+  }
+  function end(win) {
+    endT = 1; mode = 'end'; drag = null;
+    if (win) { sfx('win'); buzz([40, 60, 40, 60, 120]); for (const b of B) burst(b.x, b.y, OWN[1 + rnd(4)].fill, 14, 2.5); }
+    else { sfx('lose'); buzz(300); shake = 1.2; }
+    setTimeout(() => {
+      let txt;
+      if (win) {
+        const c = 50 + save.level * 5, g = save.level % 5 === 0 ? 5 : 0;
+        save.coins += c; save.gems += g; save.streak++; save.xp += 20;
+        const need = 100 + Math.floor(save.level / 10) * 50;
+        if (save.xp >= need) save.xp -= need;
+        save.level++;
+        txt = `+${c} 🪙${g ? `  +${g} 💎` : ''}<br>Siegesserie x${save.streak}`;
+      } else { save.streak = 0; txt = 'Deine Basen wurden erobert.'; }
+      persist();
+      $('resT').textContent = win ? '🏆 SIEG!' : '💥 NIEDERLAGE';
+      $('resP').innerHTML = txt; $('resB').textContent = win ? 'Weiter' : 'Nochmal';
+      $('result').style.display = 'grid';
+    }, 300);
+  }
+  $('play').onclick = () => { sfx('tap'); buzz(15); startBattle(); };
+  const sndIcon = () => $('snd').textContent = save.mute ? '🔇' : '🔊';
+  $('snd').onclick = () => { save.mute = !save.mute; persist(); sndIcon(); sfx('tap'); };
+  sndIcon();
+  $('resB').onclick = () => { showMenu(); startBattle(); };   // direkt ins nächste Level
+  $('giveup').onclick = () => { if (mode === 'battle') end(false); };
+  document.querySelectorAll('[data-soon]').forEach(b => b.onclick = () => {
+    const t = $('toast'); t.textContent = 'Bald verfügbar'; t.style.display = 'block';
+    clearTimeout(t._h); t._h = setTimeout(() => t.style.display = 'none', 1200);
+  });
+
+  let last = performance.now();
+  function loop(now) {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    if (mode === 'battle' || mode === 'end') step(dt); else time += dt;
+    draw();
+    requestAnimationFrame(loop);
+  }
+  window.addEventListener('resize', resize);
+  resize(); showMenu(); requestAnimationFrame(loop);
+  window.__game = { get B() { return B; }, adj: b => regions[b.id].adj, reach: (a, t) => reach(a, t), scr: b => [px(b.x), py(b.y)], send, get mode() { return mode; } };
+})();
+</script>
+</body>
+</html>
