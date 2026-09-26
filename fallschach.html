@@ -263,7 +263,7 @@ function neu(){
   fld=Array.from({length:N},()=>Array(N).fill(null));
   wave=0;mana=0;kills=0;rnd=1;over=false;sel=null;moves=[];
   nextWave();newPlan();
-  spawnField('heal');spawnField('atk');spawnField('def');spawnField('evo');spawnField();
+  spawnField('atk');spawnField('def');
   $('ov').classList.add('hide');startMusic();startTurn();
 }
 function newPlan(){const pool=PLANS.filter(p=>p.c<=6+wave*2);plan=pool[Math.random()*pool.length|0]}
@@ -279,8 +279,9 @@ function nextWave(){
 }
 function emptyCells(r0=0,r1=N-1){const a=[];for(let r=r0;r<=r1;r++)for(let c=0;c<N;c++)if(!at(r,c)&&!fld[r][c])a.push([r,c]);return a}
 function spawnField(k){
+  if(fld.flat().filter(Boolean).length>=3)return; // höchstens 3 Felder gleichzeitig
   const e=emptyCells(2,6);if(!e.length)return;const[r,c]=e[Math.random()*e.length|0];
-  if(!k){const q=Math.random();k=q<.4?'heal':q<.65?'atk':q<.9?'def':'evo'}
+  if(!k){const q=Math.random();k=q<.25?'heal':q<.55?'atk':q<.85?'def':'evo'}
   fld[r][c]={k};
 }
 
@@ -351,7 +352,7 @@ function act(p,m){
 function waveClear(){
   mine().forEach(p=>p.hp=Math.min(p.max,p.hp+3));
   banner('Welle geschafft!','var(--heal)');log('Alle Figuren +3 ❤ · neue Felder erscheinen');sfx('wave');
-  setTimeout(()=>{nextWave();spawnField();spawnField();spawnField('evo');startTurn()},1300);
+  setTimeout(()=>{nextWave();spawnField('evo');startTurn()},1300);
 }
 
 // ---- Gegner ----
@@ -365,7 +366,7 @@ function enemyTurn(){
     if(!king())return end();
     if(n--<=0||!foes().length){
       if(!foes().length)return setTimeout(waveClear,400);
-      if(Math.random()<.55)spawnField();
+      if(Math.random()<.2)spawnField();
       rnd++;return startTurn();
     }
     enemyMove();render();
