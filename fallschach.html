@@ -4,94 +4,140 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Fallschach</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#1d2129;--panel:#2a2f3a;--txt:#eef1f6;--mut:#9aa3b2;--light:#e9d8b4;--dark:#b58863;--sel:#f6d04d;--mv:rgba(40,160,80,.55);--cap:rgba(210,50,50,.6);--acc:#4fa3ff}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--txt);font:15px/1.4 system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;padding:10px 16px}
-h1{font-size:20px;margin:4px 0}
-.hud{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin:4px 0 8px;font-variant-numeric:tabular-nums}
-.hud b{color:var(--sel)}
-#wrap{position:relative;overflow:hidden;border:3px solid #555;border-top:3px dashed var(--acc);border-bottom:3px dashed #d33;border-radius:4px}
-#board{display:grid;grid-template-columns:repeat(8,var(--c));will-change:transform}
-#board.anim{transition:transform .28s ease-in}
-.sq{width:var(--c);height:var(--c);display:flex;align-items:center;justify-content:center;font-size:calc(var(--c)*.78);line-height:1;position:relative;cursor:pointer;user-select:none}
-.l{background:var(--light)}.d{background:var(--dark)}
-.w{color:#fff;text-shadow:0 0 2px #000,0 0 2px #000,0 1px 3px #000}
-.b{color:#111;text-shadow:0 0 1px #fff8}
-.dot::after{content:"";width:28%;height:28%;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff6a0,#e0a800);box-shadow:0 0 6px #ffcc00}
-.edge{box-shadow:inset 0 0 0 999px rgba(220,40,40,.28)}
-.selc{box-shadow:inset 0 0 0 4px var(--sel)}
-.mv::before{content:"";position:absolute;width:30%;height:30%;border-radius:50%;background:var(--mv)}
-.cp{box-shadow:inset 0 0 0 4px var(--cap)}
-.hit{animation:hit .5s}
-@keyframes hit{0%{background:#f55}}
-.bar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:10px 0}
-button,label.t{background:var(--panel);color:var(--txt);border:1px solid #444;border-radius:6px;padding:7px 12px;font:inherit;cursor:pointer}
-#msg{min-height:1.4em;color:var(--sel);text-align:center;margin-top:6px}
-details{max-width:560px;background:var(--panel);border-radius:8px;padding:8px 12px;margin-top:6px}
-summary{cursor:pointer;font-weight:600}
-#over{position:absolute;inset:0;background:rgba(0,0,0,.75);display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;padding:16px}
-#over.on{display:flex}
+:root{--bg:#07060f;--ice:#38e8ff;--mag:#ff2e88;--gold:#ffd23f;--lava:#ff4b1f;--tile1:#141029;--tile2:#1c1740;--grid:rgba(56,232,255,.18);--txt:#e8f6ff}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{background:radial-gradient(ellipse at 50% -10%,#2a1260 0%,var(--bg) 60%) fixed;color:var(--txt);font-family:Orbitron,system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;overflow-x:hidden;padding:8px 16px 16px}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background-image:radial-gradient(1px 1px at 20% 30%,#fff8,transparent),radial-gradient(1px 1px at 70% 10%,#fff6,transparent),radial-gradient(1.5px 1.5px at 85% 60%,#fff5,transparent),radial-gradient(1px 1px at 40% 80%,#fff5,transparent),radial-gradient(1px 1px at 10% 70%,#fff6,transparent);z-index:-1}
+.top{width:100%;max-width:560px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:6px}
+.stat{background:linear-gradient(180deg,#ffffff10,#ffffff04);border:1px solid #ffffff1c;border-radius:10px;padding:4px 6px;text-align:center}
+.stat small{display:block;font-size:9px;letter-spacing:.15em;opacity:.6}
+.stat b{font-size:18px;color:var(--ice);text-shadow:0 0 10px var(--ice)}
+.stat.sc b{color:var(--gold);text-shadow:0 0 12px var(--gold)}
+#stage{perspective:900px;perspective-origin:50% 0;margin-top:4px}
+#plane{position:relative;overflow:hidden;transform:rotateX(24deg);transform-origin:50% 100%;border-radius:6px;box-shadow:0 0 0 2px #38e8ff55,0 0 40px #38e8ff33,0 30px 60px #000}
+#plane::before{content:"";position:absolute;left:0;right:0;top:0;height:calc(var(--c)*2.2);background:linear-gradient(#07060f,transparent);z-index:3;pointer-events:none}
+#plane::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--lava);box-shadow:0 0 18px 4px var(--lava);z-index:3;pointer-events:none;animation:pulse 1.2s infinite alternate}
+@keyframes pulse{to{opacity:.45}}
+#board{display:grid;grid-template-columns:repeat(8,var(--c))}
+#board.anim{transition:transform .3s cubic-bezier(.5,0,.9,.4)}
+.sq{width:var(--c);height:var(--c);position:relative;display:flex;align-items:flex-end;justify-content:center;cursor:pointer;user-select:none;box-shadow:inset 0 0 0 .5px var(--grid)}
+.l{background:var(--tile1)}.d{background:var(--tile2)}
+.edge{background:linear-gradient(0deg,#ff4b1f55,#ff4b1f18)!important;animation:crack 1s infinite alternate}
+@keyframes crack{to{box-shadow:inset 0 0 12px #ff4b1f88}}
+.pc{font-size:calc(var(--c)*.82);line-height:1;transform:scaleY(1.28) translateY(-4%);transform-origin:50% 100%;pointer-events:none;transition:filter .2s}
+.w .pc{color:#dffbff;text-shadow:0 0 6px var(--ice),0 0 14px var(--ice)}
+.b .pc{color:#ffd0e4;text-shadow:0 0 6px var(--mag),0 0 14px var(--mag)}
+.b .pc{opacity:.95}
+.gem{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.gem i{width:32%;height:32%;background:linear-gradient(135deg,#fff7c2,var(--gold) 50%,#b8860b);transform:rotate(45deg);box-shadow:0 0 10px var(--gold);animation:spin 2.4s linear infinite}
+@keyframes spin{0%{transform:rotate(45deg) scale(1)}50%{transform:rotate(225deg) scale(.8)}100%{transform:rotate(405deg) scale(1)}}
+.selc{box-shadow:inset 0 0 0 3px var(--gold),0 0 16px var(--gold);z-index:2}
+.selc .pc{filter:brightness(1.4)}
+.mv::before{content:"";position:absolute;left:50%;top:50%;width:26%;height:26%;margin:-13% 0 0 -13%;border-radius:50%;background:var(--ice);box-shadow:0 0 10px var(--ice);opacity:.8}
+.cp{box-shadow:inset 0 0 0 3px var(--mag),inset 0 0 18px var(--mag)}
+.hit{animation:flash .6s}
+@keyframes flash{0%{background:#ff2e88}}
+.spark{position:absolute;left:50%;top:50%;width:6px;height:6px;border-radius:50%;pointer-events:none;z-index:5;animation:boom .7s ease-out forwards}
+@keyframes boom{to{transform:translate(var(--x),var(--y)) scale(.2);opacity:0}}
+.float{position:absolute;left:50%;top:10%;transform:translateX(-50%);font-size:14px;font-weight:800;color:var(--gold);text-shadow:0 0 8px var(--gold);pointer-events:none;z-index:6;animation:up 1s ease-out forwards}
+@keyframes up{to{transform:translate(-50%,-160%);opacity:0}}
+.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-6px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
+#log{min-height:22px;margin-top:10px;font-size:12px;letter-spacing:.05em;color:var(--ice);text-align:center;max-width:560px}
+.ctl{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;justify-content:center}
+.btn{font:inherit;font-size:12px;letter-spacing:.1em;color:var(--txt);background:#ffffff0c;border:1px solid #38e8ff66;border-radius:30px;padding:9px 16px;cursor:pointer}
+.btn.on{background:#38e8ff26;box-shadow:0 0 12px #38e8ff55}
+.big{font-size:16px;padding:14px 34px;background:linear-gradient(90deg,var(--mag),#8a2eff);border:0;box-shadow:0 0 24px #ff2e8888}
+#ov{position:fixed;inset:0;background:rgba(5,3,14,.88);backdrop-filter:blur(6px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:16px;z-index:20}
+#ov.hide{display:none}
+#ov h1{margin:0;font-size:clamp(34px,10vw,64px);font-weight:800;letter-spacing:.08em;background:linear-gradient(180deg,#fff,var(--ice) 45%,var(--mag));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 16px #38e8ff88)}
+#ov p{max-width:420px;margin:0;font-family:system-ui,sans-serif;font-size:14px;line-height:1.5;opacity:.85}
+#ov .res{font-size:22px;color:var(--gold);text-shadow:0 0 12px var(--gold)}
+#rules{max-width:460px;font-family:system-ui,sans-serif;font-size:13px;line-height:1.5;text-align:left;background:#ffffff08;border:1px solid #ffffff1a;border-radius:12px;padding:10px 14px 10px 28px;margin:0}
+#rules.hide{display:none}
 </style>
 </head>
 <body>
-<h1>♞ Fallschach</h1>
-<div class="hud">
-  <span>Punkte <b id="sc">0</b></span>
-  <span>Züge <b id="tn">0</b></span>
-  <span>Level <b id="lv">1</b></span>
-  <span>Figuren <b id="pc">16</b></span>
-  <span>Rekord <b id="hs">0</b></span>
+<div class="top">
+  <div class="stat sc"><small>PUNKTE</small><b id="sc">0</b></div>
+  <div class="stat"><small>ZÜGE</small><b id="tn">0</b></div>
+  <div class="stat"><small>LEVEL</small><b id="lv">1</b></div>
+  <div class="stat"><small>FIGUREN</small><b id="pc">16</b></div>
 </div>
-<div id="wrap"><div id="board"></div>
-  <div id="over"><h2 id="ot">Spiel vorbei</h2><div id="od"></div><button onclick="neu()">Neues Spiel</button></div>
+<div id="stage"><div id="plane"><div id="board"></div></div></div>
+<div id="log"></div>
+<div class="ctl">
+  <button class="btn" onclick="neu()">↻ NEU</button>
+  <button class="btn on" id="kb" onclick="tog(this)">SCHWARZ SCHLÄGT</button>
+  <button class="btn on" id="snd" onclick="tog(this)">♪ TON</button>
+  <button class="btn" onclick="show('rules')">? REGELN</button>
 </div>
-<div id="msg">Weiß zieht – bewege die Bauern nach oben!</div>
-<div class="bar">
-  <button onclick="neu()">Neues Spiel</button>
-  <label class="t"><input type="checkbox" id="kb" checked> Schwarz schlägt zurück</label>
+
+<div id="ov">
+  <h1 id="ot">FALLSCHACH</h1>
+  <div class="res" id="od"></div>
+  <p id="intro">Das Brett stürzt nach jedem Zug eine Reihe in die Tiefe. Schlag dich nach oben durch, sammle Gold – und lass deinen König nicht fallen.</p>
+  <ul id="rules" class="hide">
+    <li>Echte Startaufstellung, darunter <b>5 Pufferreihen</b>.</li>
+    <li>Nach <b>jedem Zug fällt das Brett eine Reihe</b>. Oben kommt eine neue Reihe mit schwarzen Figuren und Gold.</li>
+    <li>Was über die glühende Kante fällt, ist weg – <b>auch deine Figuren</b>. König weg = Spielende.</li>
+    <li><b>Durchfahren</b>: Läufer, Turm, Dame und Bauern sammeln jedes Gold auf ihrem Weg, Springer/König nur am Zielfeld.</li>
+    <li>Gold 5 · Bauer 10 · Springer/Läufer 30 · Turm 50 · Dame 90 · König 200.</li>
+    <li>„Schwarz schlägt“: Schwarz schlägt nach deinem Zug die wertvollste erreichbare Figur, sonst steht es still. Alle 24 Züge rückt eine ganze Armee an.</li>
+    <li>Keine Schachpflicht, keine Rochade. Unbewegte Bauern: 2 Felder. Bauer ganz oben → Dame.</li>
+  </ul>
+  <div class="ctl">
+    <button class="btn big" id="go" onclick="neu()">START</button>
+    <button class="btn" onclick="document.getElementById('rules').classList.toggle('hide')">REGELN</button>
+  </div>
+  <p id="hsl"></p>
 </div>
-<details>
-<summary>Regeln</summary>
-<ul>
-<li>Echte Startaufstellung. Unter Weiß liegen <b>5 Pufferreihen</b>.</li>
-<li>Nach <b>jedem Zug fällt das ganze Brett eine Reihe nach unten</b>. Oben kommt eine neue Reihe mit schwarzen Figuren und Goldpunkten herein.</li>
-<li>Was unten über die rote Linie fällt, ist weg – <b>auch deine eigenen Figuren</b>. Fällt dein König raus oder wird geschlagen, ist das Spiel aus.</li>
-<li>Ziel: oben liegende Figuren schlagen und Goldpunkte <b>durchfahren</b> (Läufer, Turm, Dame und Bauern sammeln alle Punkte auf ihrem Weg, Springer/König nur auf dem Zielfeld).</li>
-<li>Punkte: Gold 5 · Bauer 10 · Springer/Läufer 30 · Turm 50 · Dame 90 · König 200.</li>
-<li>„Schwarz schlägt zurück“: Kann eine schwarze Figur nach deinem Zug etwas schlagen, tut sie es (wertvollstes Ziel zuerst). Sonst steht Schwarz still.</li>
-<li>Kein Schach-Zwang, keine Rochade. Unbewegte Bauern dürfen 2 Felder ziehen. Bauer auf der obersten Reihe wird zur Dame.</li>
-</ul>
-</details>
+
 <script>
 const W=8,H=16,BUF=5;
-const SYM={w:{K:'♔',Q:'♕',R:'♖',B:'♗',N:'♘',P:'♙'},b:{K:'♚',Q:'♛',R:'♜',B:'♝',N:'♞',P:'♟'}};
+const SYM={K:'♚',Q:'♛',R:'♜',B:'♝',N:'♞',P:'♟'};
 const VAL={P:10,N:30,B:30,R:50,Q:90,K:200},DOT=5;
 const BACK=['R','N','B','Q','K','B','N','R'];
 const DIRS={R:[[1,0],[-1,0],[0,1],[0,-1]],B:[[1,1],[1,-1],[-1,1],[-1,-1]]};
 DIRS.Q=DIRS.R.concat(DIRS.B);DIRS.K=DIRS.Q;
 const NJ=[[1,2],[2,1],[-1,2],[-2,1],[1,-2],[2,-1],[-1,-2],[-2,-1]];
-let bd,score,turn,sh=0,sel,moves,queue,busy,over,hi=0;
+let bd,score=0,turn=0,sh=0,sel,moves=[],queue,busy,over=true,hi=0;
 const $=id=>document.getElementById(id);
 try{hi=+localStorage.getItem('fallschach_hi')||0}catch(e){}
+$('hsl').textContent=hi?'Rekord: '+hi:'';
 
 const P=(t,c)=>({t,c,m:false});
 const isPc=x=>x&&x.t!=='dot';
 const inB=(r,c)=>r>=0&&r<H&&c>=0&&c<W;
+const on=id=>$(id).classList.contains('on');
+function tog(b){b.classList.toggle('on')}
+function show(){$('ov').classList.remove('hide');$('ot').textContent='FALLSCHACH';$('od').textContent='';$('intro').style.display='none';$('rules').classList.remove('hide');$('go').textContent=over?'START':'WEITER';$('go').onclick=over?neu:()=>$('ov').classList.add('hide')}
+
+// --- Ton ---
+let ac;
+function beep(f,d=.08,type='square',v=.05,slide=0){
+  if(!on('snd'))return;
+  try{ac=ac||new AudioContext();const o=ac.createOscillator(),g=ac.createGain(),t=ac.currentTime;
+  o.type=type;o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(slide,t+d);
+  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(ac.destination);o.start(t);o.stop(t+d)}catch(e){}
+}
 
 function neu(){
   bd=Array.from({length:H},()=>Array(W).fill(null));
   BACK.forEach((t,c)=>{bd[0][c]=P(t,'b');bd[1][c]=P('P','b');bd[H-BUF-2][c]=P('P','w');bd[H-BUF-1][c]=P(t,'w')});
   for(let r=2;r<H-BUF-2;r++)for(let c=0;c<W;c++)if(Math.random()<.2)bd[r][c]={t:'dot'};
   score=0;turn=0;sel=null;moves=[];queue=[];busy=false;over=false;
-  $('over').classList.remove('on');msg('Weiß zieht – bewege die Bauern nach oben!');draw();
+  $('ov').classList.add('hide');log('Bring deine Bauern nach oben – die Tiefe wartet.');draw();beep(440,.15,'triangle',.06,880);
 }
 
-// Züge einer Figur; path = Felder, die durchfahren werden (für Goldpunkte)
+// Züge einer Figur; path = durchfahrene Felder (für Gold)
 function gen(r,c,capOnly){
   const p=bd[r][c],out=[],f=p.c==='w'?-1:1;
   const add=(tr,tc,path)=>out.push({r:tr,c:tc,path:path||[]});
-  const enemy=(x)=>isPc(x)&&x.c!==p.c;
+  const enemy=x=>isPc(x)&&x.c!==p.c;
   if(p.t==='P'){
     if(!capOnly&&inB(r+f,c)&&!isPc(bd[r+f][c])){
       add(r+f,c);
@@ -118,30 +164,30 @@ function gen(r,c,capOnly){
 function click(r,c){
   if(busy||over)return;
   const x=bd[r][c];
-  if(sel){
-    const m=moves.find(m=>m.r===r&&m.c===c);
-    if(m)return play(sel[0],sel[1],m);
-  }
-  if(isPc(x)&&x.c==='w'){sel=[r,c];moves=gen(r,c)}else{sel=null;moves=[]}
+  if(sel){const m=moves.find(m=>m.r===r&&m.c===c);if(m)return play(sel[0],sel[1],m)}
+  if(isPc(x)&&x.c==='w'){sel=[r,c];moves=gen(r,c);beep(660,.04,'sine',.04)}else{sel=null;moves=[]}
   draw();
 }
 
 function play(fr,fc,m){
-  const p=bd[fr][fc];let gain=0,txt=[];
-  for(const[pr,pc]of m.path)if(bd[pr][pc]&&bd[pr][pc].t==='dot'){bd[pr][pc]=null;gain+=DOT}
+  const p=bd[fr][fc];let gain=0,txt=[],fx=[];
+  for(const[pr,pc]of m.path)if(bd[pr][pc]&&bd[pr][pc].t==='dot'){bd[pr][pc]=null;gain+=DOT;fx.push([pr,pc,'gold'])}
   const tgt=bd[m.r][m.c];
-  if(tgt&&tgt.t==='dot')gain+=DOT;
-  if(isPc(tgt)){gain+=VAL[tgt.t];txt.push(SYM.b[tgt.t]+' geschlagen')}
+  if(tgt&&tgt.t==='dot'){gain+=DOT;fx.push([m.r,m.c,'gold'])}
+  if(isPc(tgt)){gain+=VAL[tgt.t];txt.push(SYM[tgt.t]+' zerstört');fx.push([m.r,m.c,'mag'])}
   bd[m.r][m.c]=p;bd[fr][fc]=null;p.m=true;
-  if(p.t==='P'&&m.r===0){p.t='Q';txt.push('Umwandlung zur Dame!')}
+  if(p.t==='P'&&m.r===0){p.t='Q';txt.push('Aufstieg zur Dame!')}
   score+=gain;turn++;sel=null;moves=[];
   if(gain)txt.unshift('+'+gain);
   const hit=[];
-  if($('kb').checked){const b=blackReply();if(b){txt.push(b.txt);hit.push(b.at)}}
-  msg(txt.join(' · ')||'…');
+  if(on('kb')){const b=blackReply();if(b){txt.push(b.txt);hit.push(b.at);fx.push([b.at[0],b.at[1],'ice'])}}
+  log(txt.join('  ·  ')||'…');
   draw(hit);
-  if(!king())return end('Dein König wurde geschlagen!');
-  busy=true;setTimeout(fall,260);
+  isPc(tgt)?beep(220,.25,'sawtooth',.06,60):gain?beep(1200,.1,'triangle',.05,1800):beep(330,.06,'square',.03);
+  if(hit.length)setTimeout(()=>beep(140,.3,'sawtooth',.07,50),120);
+  fx.forEach(([r,c,k])=>burst(r,c,k,k==='gold'?DOT:k==='mag'?VAL[tgt.t]:0));
+  if(!king())return end('König geschlagen');
+  busy=true;setTimeout(fall,300);
 }
 
 // Schwarz schlägt die wertvollste erreichbare weiße Figur
@@ -158,15 +204,16 @@ function blackReply(){
   const x=bd[best.r][best.c],t=bd[best.m.r][best.m.c];
   bd[best.m.r][best.m.c]=x;bd[best.r][best.c]=null;x.m=true;
   if(x.t==='P'&&best.m.r===H-1)x.t='Q';
-  return{txt:SYM.b[x.t]+' schlägt '+SYM.w[t.t],at:[best.m.r,best.m.c]};
+  return{txt:'Schwarz '+SYM[x.t]+' schlägt '+SYM[t.t],at:[best.m.r,best.m.c]};
 }
 
 function level(){return 1+Math.floor(turn/15)}
 function newRow(){
   if(!queue.length){
-    if(turn>0&&turn%24===0){ // Welle: komplette schwarze Armee
+    if(turn>0&&turn%24===0){ // Welle: ganze schwarze Armee
       queue.push(Array.from({length:W},()=>P('P','b')));
       queue.push(BACK.map(t=>P(t,'b')));
+      log('⚠ Eine schwarze Armee rückt an!');
     }else{
       const lv=level(),pp=Math.min(.1+.03*lv,.45),row=[];
       const bag=['P','P','P','P','P','N','N','B','B','R'].concat(lv>2?['Q','R']:[]);
@@ -185,25 +232,45 @@ function fall(){
   draw([],row);
   const b=$('board');b.getBoundingClientRect();
   b.classList.add('anim');b.style.transform='translateY(var(--c))';
+  beep(180,.25,'sine',.04,90);
   setTimeout(()=>{
     const gone=bd.pop();bd.unshift(row);sh++;
     const lost=gone.filter(x=>isPc(x)&&x.c==='w');
     busy=false;draw();
     if(lost.length){
-      msg($('msg').textContent+' · rausgefallen: '+lost.map(x=>SYM.w[x.t]).join(''));
-      if(lost.some(x=>x.t==='K'))return end('Dein König ist rausgefallen!');
+      $('stage').classList.remove('shake');void $('stage').offsetWidth;$('stage').classList.add('shake');
+      beep(90,.4,'sawtooth',.08,40);
+      log($('log').textContent+'  ·  in die Tiefe: '+lost.map(x=>SYM[x.t]).join(''));
+      if(lost.some(x=>x.t==='K'))return end('König abgestürzt');
     }
-  },290);
+  },310);
 }
 
 function king(){return bd.some(row=>row.some(x=>isPc(x)&&x.c==='w'&&x.t==='K'))}
 function end(t){
-  over=true;busy=false;
-  if(score>hi){hi=score;try{localStorage.setItem('fallschach_hi',hi)}catch(e){}}
-  $('ot').textContent=t;$('od').innerHTML='Punkte: <b>'+score+'</b> nach '+turn+' Zügen'+(score>=hi?'<br>🏆 Neuer Rekord!':'');
-  $('over').classList.add('on');draw();
+  over=true;busy=false;const rec=score>hi;
+  if(rec){hi=score;try{localStorage.setItem('fallschach_hi',hi)}catch(e){}}
+  setTimeout(()=>{
+    $('ot').textContent=t.toUpperCase();$('od').textContent=score+' Punkte · '+turn+' Züge'+(rec?' · NEUER REKORD':'');
+    $('intro').style.display='none';$('rules').classList.add('hide');$('hsl').textContent='Rekord: '+hi;
+    $('go').textContent='NOCHMAL';$('go').onclick=neu;$('ov').classList.remove('hide');
+  },500);
+  beep(300,.8,'sawtooth',.07,40);draw();
 }
-function msg(t){$('msg').textContent=t}
+function log(t){$('log').textContent=t}
+
+function cell(r,c){return $('board').querySelector(`[data-r="${r}"][data-c="${c}"]`)}
+function burst(r,c,kind,pts){
+  const el=cell(r,c);if(!el)return;
+  const col={gold:'var(--gold)',mag:'var(--mag)',ice:'var(--ice)'}[kind];
+  for(let i=0;i<10;i++){
+    const s=document.createElement('span'),a=Math.random()*6.28,d=20+Math.random()*30;
+    s.className='spark';s.style.background=col;s.style.boxShadow='0 0 8px '+col;
+    s.style.setProperty('--x',Math.cos(a)*d+'px');s.style.setProperty('--y',Math.sin(a)*d+'px');
+    el.appendChild(s);
+  }
+  if(pts){const f=document.createElement('span');f.className='float';f.textContent='+'+pts;el.appendChild(f)}
+}
 
 function draw(hit=[],extra=null){
   const b=$('board');b.classList.remove('anim');
@@ -211,30 +278,32 @@ function draw(hit=[],extra=null){
   const rows=extra?[extra].concat(bd):bd,off=extra?1:0;
   let h='';
   rows.forEach((row,ri)=>{const r=ri-off;row.forEach((x,c)=>{
-    let cl='sq '+((r-sh+c+64)%2?'d':'l');
+    let cl='sq '+((r-sh+c+64)%2?'d':'l'),s='';
     if(r===H-1)cl+=' edge';
     if(sel&&sel[0]===r&&sel[1]===c)cl+=' selc';
-    const m=moves.find(m=>m.r===r&&m.c===c);
-    if(m)cl+=isPc(x)?' cp':' mv';
+    if(moves.some(m=>m.r===r&&m.c===c))cl+=isPc(x)?' cp':' mv';
     if(hit.some(q=>q[0]===r&&q[1]===c))cl+=' hit';
-    let s='';
-    if(x&&x.t==='dot')cl+=' dot';
-    else if(x){cl+=' '+x.c;s=SYM[x.c][x.t]}
+    if(x&&x.t==='dot')s='<span class="gem"><i></i></span>';
+    else if(x){cl+=' '+x.c;s=`<span class="pc">${SYM[x.t]}</span>`}
     h+=`<div class="${cl}" data-r="${r}" data-c="${c}">${s}</div>`;
   })});
   b.innerHTML=h;
   $('sc').textContent=score;$('tn').textContent=turn;$('lv').textContent=level();
-  $('pc').textContent=bd.flat().filter(x=>isPc(x)&&x.c==='w').length;$('hs').textContent=Math.max(hi,score);
+  $('pc').textContent=bd?bd.flat().filter(x=>isPc(x)&&x.c==='w').length:16;
 }
 
 function size(){
-  const c=Math.floor(Math.min((innerWidth-38)/W,(innerHeight-190)/H,56));
-  document.documentElement.style.setProperty('--c',Math.max(c,18)+'px');
-  $('wrap').style.height=Math.max(c,18)*H+6+'px';
+  const c=Math.max(18,Math.floor(Math.min((innerWidth-36)/W,(innerHeight-200)/(H*.92),54)));
+  document.documentElement.style.setProperty('--c',c+'px');
+  $('plane').style.height=c*H+'px';$('plane').style.width=c*W+'px';
 }
 $('board').addEventListener('click',e=>{const s=e.target.closest('.sq');if(s)click(+s.dataset.r,+s.dataset.c)});
 addEventListener('resize',size);
-size();neu();
+size();
+// Vorschau-Brett hinter dem Startbildschirm
+bd=Array.from({length:H},()=>Array(W).fill(null));
+BACK.forEach((t,c)=>{bd[0][c]=P(t,'b');bd[1][c]=P('P','b');bd[H-BUF-2][c]=P('P','w');bd[H-BUF-1][c]=P(t,'w')});
+draw();
 </script>
 </body>
 </html>
