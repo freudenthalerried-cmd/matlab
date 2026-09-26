@@ -6,81 +6,66 @@
 <title>Manaschach</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0d0a12;--panel:#1a1422;--line:#3a2c48;--gold:#f2c14e;--gold2:#a8741a;--crys:#5ee0ff;--mana:#b44dff;--red:#ff4d5e;--blue:#4da3ff;--hp:#4ade80;--txt:#f1e9dc;--mut:#a89bb5}
+:root{--bg:#0d0a12;--panel:#1a1422;--line:#3a2c48;--gold:#f2c14e;--gold2:#a8741a;--mana:#b44dff;--red:#ff4d5e;--atk:#ff8a3d;--def:#4da3ff;--heal:#3ddc84;--evo:#5ee0ff;--txt:#f1e9dc;--mut:#a89bb5}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;background:radial-gradient(ellipse at 50% 0%,#2a1838,var(--bg) 70%) fixed;color:var(--txt);font:14px/1.4 Inter,system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;padding:10px 16px 20px;min-height:100vh}
 .wrap{width:100%;max-width:480px;display:flex;flex-direction:column;gap:8px}
 .bar{display:flex;gap:6px}
-.chip{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:5px 8px;display:flex;align-items:center;gap:6px;font-weight:700;font-size:15px}
+.chip{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:5px 10px;font-weight:700;font-size:16px}
 .chip small{display:block;font-size:10px;color:var(--mut);font-weight:400;letter-spacing:.05em}
-.ico{width:20px;height:20px;flex:none}
-#manaBox{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:7px 10px}
-.mtop{display:flex;justify-content:space-between;font-size:12px;color:var(--mut);margin-bottom:5px;gap:8px}
-.mtop b{color:#e3b8ff}
-#mbar{position:relative;height:10px;border-radius:8px;background:#0006;overflow:hidden}
-#mfill{height:100%;width:0;background:linear-gradient(90deg,#6b21a8,var(--mana),#ff7bf2);box-shadow:0 0 12px var(--mana);transition:width .4s}
+.chip.m{flex:2.4}
+.chip.m b{color:#e3b8ff}
+#mbar{position:relative;height:6px;border-radius:6px;background:#0006;overflow:hidden;margin-top:4px}
+#mfill{height:100%;width:0;background:linear-gradient(90deg,#6b21a8,var(--mana),#ff7bf2);box-shadow:0 0 10px var(--mana);transition:width .4s}
 #turn{font-size:12px;text-align:center;font-weight:700;letter-spacing:.04em}
 #boardWrap{position:relative;align-self:center;border-radius:10px;padding:6px;background:linear-gradient(145deg,#4a3520,#23180d);box-shadow:0 12px 40px #000c,inset 0 0 0 2px #7a5a30}
 #board{display:grid;grid-template-columns:repeat(8,var(--c));border-radius:4px;overflow:hidden}
 .t{width:var(--c);height:var(--c);position:relative;cursor:pointer}
 .t.a{background:#6b5a4a}.t.b{background:#3d3129}
+.t.f-heal{background:radial-gradient(circle,#3ddc8455,#3ddc8418 70%),#2f3a2f}
+.t.f-atk{background:radial-gradient(circle,#ff8a3d55,#ff8a3d18 70%),#3d2a22}
+.t.f-def{background:radial-gradient(circle,#4da3ff55,#4da3ff18 70%),#243044}
+.t.f-evo{background:radial-gradient(circle,#5ee0ff66,#b44dff22 70%),#262a44}
 .t.sel{box-shadow:inset 0 0 0 3px var(--gold),inset 0 0 14px var(--gold)}
-.t.mv::after{content:"";position:absolute;left:35%;top:35%;width:30%;height:30%;border-radius:50%;background:#7fffa0aa;box-shadow:0 0 8px #7fffa0}
+.t.mv::after{content:"";position:absolute;left:35%;top:35%;width:30%;height:30%;border-radius:50%;background:#ffffffaa;box-shadow:0 0 8px #fff}
 .t.at{box-shadow:inset 0 0 0 3px var(--red),inset 0 0 18px #ff4d5eaa}
 .t.cast{animation:castf .7s}
 @keyframes castf{0%{background:var(--mana)}}
-.res{position:absolute;inset:24%;animation:bob 1.8s ease-in-out infinite;pointer-events:none}
-.res b{position:absolute;right:-14%;bottom:-14%;font-size:calc(var(--c)*.24);color:#fff;text-shadow:0 0 3px #000,0 0 3px #000}
-@keyframes bob{50%{transform:translateY(-8%)}}
+.fi{position:absolute;inset:20%;pointer-events:none;animation:bob 2s ease-in-out infinite}
+.fi svg{width:100%;height:100%}
+@keyframes bob{50%{transform:scale(1.1)}}
 #layer{position:absolute;left:6px;top:6px;width:calc(var(--c)*8);height:calc(var(--c)*8);pointer-events:none}
 .pc{position:absolute;left:0;top:0;width:var(--c);height:var(--c);transition:transform .3s cubic-bezier(.3,.7,.3,1)}
-.pc::before{content:"";position:absolute;left:10%;right:10%;bottom:7%;height:26%;border-radius:50%;background:radial-gradient(ellipse,#0000 40%,var(--ring) 42%,var(--ring) 58%,#0000 62%),radial-gradient(ellipse,var(--ring2),#0000 70%)}
-.pc.p{--ring:#4da3ff;--ring2:#4da3ff55}
+.pc::before{content:"";position:absolute;left:10%;right:10%;bottom:8%;height:26%;border-radius:50%;background:radial-gradient(ellipse,#0000 40%,var(--ring) 42%,var(--ring) 58%,#0000 62%),radial-gradient(ellipse,var(--ring2),#0000 70%)}
+.pc.p{--ring:#9fd0ff;--ring2:#4da3ff55}
 .pc.p.k{--ring:#f2c14e;--ring2:#f2c14e66}
 .pc.e{--ring:#ff4d5e;--ring2:#ff4d5e55}
 .pc.e.k{--ring:#ff9a3c;--ring2:#ff4d1e77}
-.pc svg{position:absolute;left:4%;top:-4%;width:92%;height:92%;filter:drop-shadow(0 3px 2px #000c)}
-.pc.p svg{filter:drop-shadow(0 3px 2px #000c) drop-shadow(0 0 3px #9fd0ff)}
-.pc.p.k svg{filter:drop-shadow(0 3px 2px #000c) drop-shadow(0 0 6px #ffd76a)}
-.pc.e svg{filter:drop-shadow(0 3px 2px #000c) drop-shadow(0 0 4px #ff3b55)}
+.pc svg.fig{position:absolute;left:8%;top:0;width:84%;height:84%;filter:drop-shadow(0 3px 2px #000c)}
+.pc.p .fig{filter:drop-shadow(0 3px 2px #000c) drop-shadow(0 0 3px #9fd0ff)}
+.pc.p.k .fig{filter:drop-shadow(0 3px 2px #000c) drop-shadow(0 0 6px #ffd76a)}
+.pc.e .fig{filter:drop-shadow(0 3px 2px #000c) drop-shadow(0 0 4px #ff3b55)}
 .hpb{position:absolute;left:14%;right:14%;bottom:2%;height:5px;background:#000c;border-radius:3px;overflow:hidden}
-.hpb i{display:block;height:100%;background:var(--hp)}
+.hpb i{display:block;height:100%;background:var(--heal)}
 .pc.e .hpb i{background:var(--red)}
-.atk{position:absolute;right:1%;top:1%;min-width:16px;height:16px;padding:0 3px;border-radius:8px;font-size:10px;font-weight:700;line-height:15px;text-align:center;background:#000d;color:#ffd9a0;border:1px solid #ffffff40}
-.stars{position:absolute;left:3%;top:1%;font-size:9px;color:var(--crys);text-shadow:0 0 4px var(--crys);letter-spacing:-1px}
+.bd{position:absolute;top:1%;min-width:17px;height:17px;padding:0 3px;border-radius:9px;font-size:10.5px;font-weight:800;line-height:15px;text-align:center;color:#fff;border:1.5px solid #0008;text-shadow:0 1px 1px #0008}
+.bd.a{right:0;background:linear-gradient(#ff9d52,#d9531e)}
+.bd.d{left:0;background:linear-gradient(#6fb6ff,#2a6fd1)}
+.stars{position:absolute;left:0;right:0;bottom:9%;text-align:center;font-size:9px;color:var(--evo);text-shadow:0 0 4px var(--evo)}
 .pc.hurt{animation:hurt .35s}
 @keyframes hurt{25%{margin-left:-4px;filter:brightness(2.5) saturate(0)}75%{margin-left:4px}}
-.fl{position:absolute;width:70px;text-align:center;font-weight:800;font-size:15px;pointer-events:none;z-index:9;animation:fl 1s ease-out forwards;text-shadow:0 0 4px #000,0 0 4px #000}
-@keyframes fl{to{transform:translateY(-36px);opacity:0}}
+.fl{position:absolute;width:90px;text-align:center;font-weight:800;font-size:14px;pointer-events:none;z-index:9;animation:fl 1.1s ease-out forwards;text-shadow:0 0 4px #000,0 0 4px #000}
+@keyframes fl{to{transform:translateY(-38px);opacity:0}}
 #banner{position:absolute;left:0;right:0;top:40%;text-align:center;font-family:Cinzel,serif;font-weight:800;font-size:clamp(22px,7vw,32px);pointer-events:none;opacity:0;z-index:10;text-shadow:0 0 16px #000,0 0 6px #000}
 #banner.go{animation:ban 1.6s ease-out}
 @keyframes ban{0%{opacity:0;transform:scale(.6)}15%{opacity:1;transform:scale(1.05)}25%{transform:scale(1)}80%{opacity:1}100%{opacity:0}}
-#roster{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
-.rc{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:4px;text-align:center;cursor:pointer;position:relative}
-.rc.on{border-color:var(--gold);box-shadow:0 0 12px #f2c14e55}
-.rc.dead{opacity:.3;cursor:default}
-.rc svg{width:38px;height:38px}
-.rc .n{font-size:10px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rc .h{height:4px;background:#0008;border-radius:2px;margin-top:2px;overflow:hidden}.rc .h i{display:block;height:100%;background:var(--hp)}
-.rc .dot{position:absolute;right:4px;top:3px;width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 6px var(--gold)}
-#panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px}
-.ph{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-.ph svg{width:46px;height:46px;flex:none}
-.nm{font-family:Cinzel,serif;font-size:17px}
-.st{font-size:12px;color:var(--mut)}
-.row{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid #ffffff10}
-.row .lab{flex:1;min-width:0}
-.row .lab b{display:block;font-size:13px}
-.row .lab span{font-size:11.5px;color:var(--mut)}
-.pips{display:flex;gap:3px;margin-top:3px}
-.pips i{width:12px;height:6px;border-radius:2px;background:#ffffff18}
-.pips i.f{background:var(--gold);box-shadow:0 0 4px var(--gold)}
-.pips.c i.f{background:var(--crys);box-shadow:0 0 4px var(--crys)}
-.buy{font:700 12px Inter,sans-serif;color:#1a1000;background:linear-gradient(180deg,#ffe08a,var(--gold));border:0;border-radius:8px;padding:7px 10px;cursor:pointer;white-space:nowrap;min-width:64px}
-.buy.c{background:linear-gradient(180deg,#bff4ff,var(--crys))}
-.buy:disabled{filter:grayscale(1) brightness(.55);cursor:default}
-.max{font-size:11px;color:var(--hp);font-weight:700;min-width:64px;text-align:center}
-#log{font-size:12px;color:var(--mut);min-height:17px;text-align:center}
+#info{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 10px;min-height:44px;font-size:13px;display:flex;align-items:center;gap:10px}
+#info svg{width:34px;height:34px;flex:none}
+#info .nm{font-family:Cinzel,serif;font-size:15px}
+#info .st{color:var(--mut);font-size:12px}
+.leg{display:flex;flex-wrap:wrap;gap:6px 12px;justify-content:center;font-size:11.5px;color:var(--mut)}
+.leg span{display:flex;align-items:center;gap:4px}
+.leg svg{width:16px;height:16px}
 #ov{position:fixed;inset:0;background:#0a0710ee;backdrop-filter:blur(5px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px;z-index:20;text-align:center;overflow:auto}
 #ov.hide{display:none}
 #ov h1{margin:0;font-family:Cinzel,serif;font-size:clamp(34px,10vw,56px);background:linear-gradient(180deg,#fff3c4,var(--gold) 50%,var(--gold2));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 14px #f2c14e55)}
@@ -98,39 +83,32 @@ body{margin:0;background:radial-gradient(ellipse at 50% 0%,#2a1838,var(--bg) 70%
   <linearGradient id="gk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6d0"/><stop offset=".45" stop-color="#ffcc33"/><stop offset="1" stop-color="#b3700a"/></linearGradient>
   <linearGradient id="ge" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6e2a3a"/><stop offset=".55" stop-color="#2e0d18"/><stop offset="1" stop-color="#12040a"/></linearGradient>
   <linearGradient id="gek" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7a3c"/><stop offset=".5" stop-color="#b3141f"/><stop offset="1" stop-color="#3a0508"/></linearGradient>
-  <radialGradient id="gc" cx=".35" cy=".3"><stop offset="0" stop-color="#e6fbff"/><stop offset=".5" stop-color="#5ee0ff"/><stop offset="1" stop-color="#1b6f9a"/></radialGradient>
-  <radialGradient id="gg" cx=".35" cy=".3"><stop offset="0" stop-color="#fff3b0"/><stop offset=".6" stop-color="#f2c14e"/><stop offset="1" stop-color="#8a5a12"/></radialGradient>
  </defs>
 </svg>
 
 <div class="wrap">
   <div class="bar">
-    <div class="chip"><svg class="ico" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="url(#gg)" stroke="#6b440c"/></svg><div><small>GOLD</small><span id="gold">0</span></div></div>
-    <div class="chip"><svg class="ico" viewBox="0 0 20 20"><path d="M10 1l7 7-7 11-7-11z" fill="url(#gc)" stroke="#1b6f9a"/></svg><div><small>KRISTALLE</small><span id="crys">0</span></div></div>
-    <div class="chip"><div><small>WELLE</small><span id="wave">1</span></div></div>
-    <div class="chip"><div><small>ZUG</small><span id="rnd">1</span></div></div>
-  </div>
-  <div id="manaBox">
-    <div class="mtop"><span>Gegner-Mana <b id="mana">0</b> <span style="opacity:.7">(+2 pro Runde)</span></span><span>nächster Zauber: <b id="plan">–</b></span></div>
-    <div id="mbar"><div id="mfill"></div></div>
+    <div class="chip"><small>WELLE</small><span id="wave">1</span></div>
+    <div class="chip"><small>ZUG</small><span id="rnd">1</span></div>
+    <div class="chip m"><small>GEGNER-MANA <span id="mana">0</span> · +2/Runde</small><b id="plan">–</b><div id="mbar"><div id="mfill"></div></div></div>
   </div>
   <div id="turn"></div>
   <div id="boardWrap"><div id="board"></div><div id="layer"></div><div id="banner"></div></div>
-  <div id="log"></div>
-  <div id="roster"></div>
-  <div id="panel"></div>
-  <div style="display:flex;gap:8px;justify-content:center"><button class="sm" onclick="help()">? Regeln</button><button class="sm" id="snd" onclick="sound=!sound;this.textContent=sound?'♪ Ton an':'♪ Ton aus'">♪ Ton an</button></div>
+  <div id="info"></div>
+  <div class="leg" id="leg"></div>
+  <div style="display:flex;gap:8px;justify-content:center"><button class="sm" onclick="help()">? Regeln</button><button class="sm" onclick="sound=!sound;this.textContent=sound?'♪ Ton an':'♪ Ton aus'">♪ Ton an</button></div>
 </div>
 
 <div id="ov">
   <h1 id="ot">Manaschach</h1>
   <div class="res2" id="od"></div>
   <ul class="rules" id="rules">
-    <li>👑 Du führst deinen <b style="color:var(--gold)">goldenen König</b> und <b style="color:var(--blue)">3 Figuren</b> (Turm, Läufer, Springer). Sie ziehen wie im Schach, haben aber <b>Leben ❤</b> und <b>Angriff ⚔</b>.</li>
-    <li>⚔ Ein Angriff zieht Leben ab. Erst bei 0 ist eine Figur besiegt, dann rückt der Angreifer nach.</li>
-    <li>💰 Sammle Gold und ◆ Kristalle auf dem Brett. Turm und Läufer sammeln alles auf ihrem Weg ein. Besiegte Gegner lassen Gold fallen.</li>
-    <li>⬆ <b>Upgrade-Baum</b> je Figur: Angriff und Leben mit Gold (5 Stufen), dazu 2 Entwicklungsstufen mit Kristallen: neue Zugmöglichkeiten und eine Spezialfähigkeit.</li>
-    <li>🔮 Der Gegner sammelt jede Runde Mana und wirkt Zauber. Du siehst immer, was als Nächstes kommt.</li>
+    <li>👑 Du führst deinen <b style="color:var(--gold)">goldenen König</b> und <b style="color:var(--def)">3 Figuren</b>. Sie ziehen wie im Schach.</li>
+    <li>Jede Figur hat <b style="color:var(--atk)">Angriff</b> (orange Zahl, rechts), <b style="color:var(--def)">Verteidigung</b> (blaue Zahl, links) und Leben (Balken). <b>Schaden = Angriff − Verteidigung</b>, mindestens 1.</li>
+    <li>Ein Angriff zieht Leben ab. Erst bei 0 ist die Figur besiegt, dann rückt der Angreifer nach.</li>
+    <li>Die Felder wirken, wenn deine Figur darauf landet. Turm und Läufer nutzen auch alle Felder auf ihrem Weg:<br>
+      <b style="color:var(--heal)">✚ Heilung</b> +4 Leben · <b style="color:var(--atk)">⚔ Angriff</b> +1 · <b style="color:var(--def)">🛡 Verteidigung</b> +1 · <b style="color:var(--evo)">✦ Entwicklung</b> neue Zugart bzw. Spezialfähigkeit</li>
+    <li>🔮 Der Gegner sammelt jede Runde Mana und wirkt Zauber. Oben steht, was als Nächstes kommt.</li>
     <li>☠ Besiege alle Gegner einer Welle. Fällt dein König, ist das Spiel aus.</li>
   </ul>
   <button class="big" id="go" onclick="neu()">Spiel starten</button>
@@ -139,7 +117,7 @@ body{margin:0;background:radial-gradient(ellipse at 50% 0%,#2a1838,var(--bg) 70%
 
 <script>
 const N=8;
-// ---- Figuren-Grafik ----
+// ---- Grafik ----
 const BASE='<path d="M18 94h64a4 4 0 0 0 0-9H18a4 4 0 0 0 0 9z"/><path d="M26 85h48l-5-9H31z"/>';
 const SHAPE={
  K:BASE+'<path d="M34 76h32l-4-29H38z"/><path d="M29 48h42c6-12-2-22-12-22-4 0-8 2-9 6-1-4-5-6-9-6-10 0-18 10-12 22z"/><path d="M45.5 2h9v7h8v9h-8v9h-9v-9h-8V9h8z"/>',
@@ -150,42 +128,44 @@ const SHAPE={
  S:'<path d="M26 90V46a24 24 0 0 1 48 0v44l-8-8-8 8-8-8-8 8-8-8z"/><circle cx="41" cy="46" r="5" fill="#ff3355"/><circle cx="59" cy="46" r="5" fill="#ff3355"/>'
 };
 function svg(g,side){
-  const k=g==='K';
-  const f=side==='p'?(k?'url(#gk)':'url(#gp)'):(k?'url(#gek)':'url(#ge)');
-  const s=side==='p'?(k?'#6b3f00':'#1b2d52'):(k?'#ffb347':'#ff5a6e');
-  return `<svg viewBox="0 0 100 100"><g fill="${f}" stroke="${s}" stroke-width="3" stroke-linejoin="round">${SHAPE[g]}</g></svg>`;
+  const k=g==='K',f=side==='p'?(k?'url(#gk)':'url(#gp)'):(k?'url(#gek)':'url(#ge)'),s=side==='p'?(k?'#6b3f00':'#1b2d52'):(k?'#ffb347':'#ff5a6e');
+  return `<svg class="fig" viewBox="0 0 100 100"><g fill="${f}" stroke="${s}" stroke-width="3" stroke-linejoin="round">${SHAPE[g]}</g></svg>`;
 }
-// ---- Figurentypen + Upgrade-Baum ----
-const T={
- K:{n:'König',mv:[['O',1],['D',1]],hp:9,atk:2,
-    t1:{n:'Hochkönig',d:'zieht bis zu 2 Felder weit',mv:[['O',2],['D',2]]},
-    t2:{n:'Königsaura',d:'Figuren neben dem König +1 ⚔'}},
- R:{n:'Turm',mv:[['O',8]],hp:8,atk:2,
-    t1:{n:'Zitadelle',d:'zusätzlich 1 Feld diagonal',mv:[['O',8],['D',1]]},
-    t2:{n:'Schildwall',d:'nimmt 1 Schaden weniger'}},
- B:{n:'Läufer',mv:[['D',8]],hp:6,atk:2,
-    t1:{n:'Erzmagier',d:'springt zusätzlich wie ein Springer',mv:[['D',8],['N']]},
-    t2:{n:'Segen',d:'heilt sich & Nachbarn jede Runde +1 ❤'}},
- N:{n:'Springer',mv:[['N']],hp:6,atk:3,
-    t1:{n:'Paladin',d:'zieht zusätzlich wie ein König',mv:[['N'],['O',1],['D',1]]},
-    t2:{n:'Sturmangriff',d:'nach einem Sieg sofort nochmal ziehen'}},
+const FICON={
+ heal:'<svg viewBox="0 0 20 20"><path d="M7 2h6v5h5v6h-5v5H7v-5H2V7h5z" fill="#3ddc84" stroke="#0d5a2c" stroke-width="1"/></svg>',
+ atk:'<svg viewBox="0 0 20 20"><path d="M16 1l3 0 0 3-9 9-3-3z" fill="#ffd1a8" stroke="#7a2e08"/><path d="M4 11l5 5-2 1-1-1-3 3-2-2 3-3-1-1z" fill="#ff8a3d" stroke="#7a2e08"/></svg>',
+ def:'<svg viewBox="0 0 20 20"><path d="M10 1l8 3v6c0 5-4 8-8 9-4-1-8-4-8-9V4z" fill="#4da3ff" stroke="#123e7a"/><path d="M10 4v12" stroke="#cfe6ff" stroke-width="1.5"/></svg>',
+ evo:'<svg viewBox="0 0 20 20"><path d="M10 1l2.6 6.4L19 8l-5 4.3L15.6 19 10 15.4 4.4 19 6 12.3 1 8l6.4-.6z" fill="#5ee0ff" stroke="#1b4f7a"/></svg>',
 };
-const E={ // [Name, Grafik, Züge, LP-Basis, ATK]
- S:['Schatten','S',[['O',1],['D',1]],3,1],
- N:['Nachtreiter','N',[['N']],4,2],
- B:['Hexer','B',[['D',8]],4,2],
- R:['Golem','R',[['O',8]],6,2],
- Q:['Hexenkönigin','Q',[['O',8],['D',8]],6,3],
- K:['Dunkler König','K',[['O',1],['D',1]],9,2],
+const FNAME={heal:'Heilung +4',atk:'Angriff +1',def:'Verteidigung +1',evo:'Entwicklung'};
+// ---- Figuren ----
+const T={
+ K:{n:'König',mv:[['O',1],['D',1]],hp:10,atk:2,def:1,
+    t1:{n:'Hochkönig',d:'zieht bis zu 2 Felder',mv:[['O',2],['D',2]]},t2:{n:'Königsaura',d:'Nachbarn +1 Angriff'}},
+ R:{n:'Turm',mv:[['O',8]],hp:9,atk:2,def:1,
+    t1:{n:'Zitadelle',d:'zusätzlich 1 Feld diagonal',mv:[['O',8],['D',1]]},t2:{n:'Schildwall',d:'+2 Verteidigung'}},
+ B:{n:'Läufer',mv:[['D',8]],hp:7,atk:2,def:0,
+    t1:{n:'Erzmagier',d:'springt zusätzlich wie ein Springer',mv:[['D',8],['N']]},t2:{n:'Segen',d:'heilt sich & Nachbarn jede Runde +1'}},
+ N:{n:'Springer',mv:[['N']],hp:7,atk:3,def:0,
+    t1:{n:'Paladin',d:'zieht zusätzlich wie ein König',mv:[['N'],['O',1],['D',1]]},t2:{n:'Sturmangriff',d:'nach einem Sieg nochmal ziehen'}},
+};
+const E={ // Name, Grafik, Züge, LP, ATK, DEF
+ S:['Schatten','S',[['O',1],['D',1]],3,2,0],
+ N:['Nachtreiter','N',[['N']],4,2,0],
+ B:['Hexer','B',[['D',8]],4,2,0],
+ R:['Golem','R',[['O',8]],6,2,1],
+ Q:['Hexenkönigin','Q',[['O',8],['D',8]],6,3,1],
+ K:['Dunkler König','K',[['O',1],['D',1]],9,3,1],
 };
 const PLANS=[{n:'Schatten rufen',c:4},{n:'Fluchblitz',c:6},{n:'Dunkle Heilung',c:8},{n:'Raserei',c:10}];
 const DIR={O:[[1,0],[-1,0],[0,1],[0,-1]],D:[[1,1],[1,-1],[-1,1],[-1,-1]]};
 const JUMP=[[1,2],[2,1],[-1,2],[-2,1],[1,-2],[2,-1],[-1,-2],[-2,-1]];
 
-let P=[],res,gold=0,crys=0,wave=0,mana=0,plan=null,phase='x',sel=null,moves=[],over=true,uid=0,sound=true,hi=0,kills=0,rnd=1;
+let P=[],fld,wave=0,mana=0,plan=null,phase='x',sel=null,moves=[],over=true,uid=0,sound=true,hi=0,kills=0,rnd=1;
 const $=id=>document.getElementById(id);
 try{hi=+localStorage.getItem('manaschach_hi')||0}catch(e){}
 if(hi)$('hsl').textContent='Rekord: Welle '+hi;
+$('leg').innerHTML=Object.keys(FICON).map(k=>`<span>${FICON[k]}${FNAME[k]}</span>`).join('');
 
 const inB=(r,c)=>r>=0&&r<N&&c>=0&&c<N;
 const at=(r,c)=>P.find(p=>p.r===r&&p.c===c);
@@ -202,16 +182,16 @@ function beep(f,d=.08,type='triangle',v=.05,slide=0){
   g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(ac.destination);o.start(t);o.stop(t+d)}catch(e){}
 }
 
-function mkP(t,r,c){const d=T[t];return{id:++uid,side:'p',t,g:t,name:d.n,mv:d.mv,r,c,hp:d.hp,max:d.hp,atk:d.atk,tier:0,lvA:0,lvH:0}}
-function mkE(t,r,c){const d=E[t],w=wave-1,hp=d[3]+Math.floor(w*(t==='K'?2:1.2));
-  return{id:++uid,side:'e',t,g:d[1],name:d[0],mv:d[2],r,c,hp,max:hp,atk:d[4]+Math.floor(w/(t==='K'?2:3))}}
+function mkP(t,r,c){const d=T[t];return{id:++uid,side:'p',t,g:t,name:d.n,mv:d.mv,r,c,hp:d.hp,max:d.hp,atk:d.atk,def:d.def,tier:0}}
+function mkE(t,r,c){const d=E[t],w=wave-1,hp=d[3]+Math.floor(w*(t==='K'?2:1.3));
+  return{id:++uid,side:'e',t,g:d[1],name:d[0],mv:d[2],r,c,hp,max:hp,atk:d[4]+Math.floor(w/2),def:d[5]+Math.floor(w/3)}}
 
 function neu(){
   P=[mkP('R',7,1),mkP('K',7,4),mkP('B',7,5),mkP('N',7,6)];
-  res=Array.from({length:N},()=>Array(N).fill(null));
-  gold=4;crys=1;wave=0;mana=0;kills=0;rnd=1;over=false;sel=null;moves=[];
+  fld=Array.from({length:N},()=>Array(N).fill(null));
+  wave=0;mana=0;kills=0;rnd=1;over=false;sel=null;moves=[];
   nextWave();newPlan();
-  for(let i=0;i<5;i++)spawnRes();
+  spawnField('heal');spawnField('atk');spawnField('def');spawnField('evo');spawnField();
   $('ov').classList.add('hide');startTurn();
 }
 function newPlan(){const pool=PLANS.filter(p=>p.c<=6+wave*2);plan=pool[Math.random()*pool.length|0]}
@@ -225,10 +205,11 @@ function nextWave(){
   for(let i=0;i<3;i++){const s=spots.pop();P.push(mkE(pool[Math.random()*pool.length|0],s[0],s[1]))}
   banner('Welle '+wave,'var(--gold)');
 }
-function emptyCells(r0=0,r1=N-1){const a=[];for(let r=r0;r<=r1;r++)for(let c=0;c<N;c++)if(!at(r,c)&&!res[r][c])a.push([r,c]);return a}
-function spawnRes(){
-  const e=emptyCells(1,6);if(!e.length)return;const[r,c]=e[Math.random()*e.length|0];
-  res[r][c]=Math.random()<.25?{k:'c',n:1}:{k:'g',n:1+(Math.random()*3|0)};
+function emptyCells(r0=0,r1=N-1){const a=[];for(let r=r0;r<=r1;r++)for(let c=0;c<N;c++)if(!at(r,c)&&!fld[r][c])a.push([r,c]);return a}
+function spawnField(k){
+  const e=emptyCells(2,6);if(!e.length)return;const[r,c]=e[Math.random()*e.length|0];
+  if(!k){const q=Math.random();k=q<.4?'heal':q<.65?'atk':q<.9?'def':'evo'}
+  fld[r][c]={k};
 }
 
 // ---- Züge ----
@@ -247,77 +228,58 @@ function gen(p){
   }
   const seen=new Set();return out.filter(m=>{const k=m.r*8+m.c;if(seen.has(k))return false;seen.add(k);return true});
 }
-function dmgOf(a,d){
-  let x=a.atk;const k=king();
-  if(a.side==='p'&&k&&k.tier>=2&&a!==k&&dist(a,k)<=1)x++;
-  if(d.side==='p'&&d.t==='R'&&d.tier>=2)x=Math.max(1,x-1);
-  return x;
-}
+function atkOf(a){const k=king();return a.atk+(a.side==='p'&&k&&k.tier>=2&&a!==k&&dist(a,k)<=1?1:0)}
+const dmgOf=(a,d)=>Math.max(1,atkOf(a)-d.def);
 
 // ---- Spieler ----
 function startTurn(){
   phase='p';
-  for(const b of mine())if(b.t==='B'&&b.tier>=2)for(const q of mine())if(dist(q,b)<=1&&q.hp<q.max){q.hp++;float(q.r,q.c,'+1 ❤','var(--hp)')}
+  for(const b of mine())if(b.t==='B'&&b.tier>=2)for(const q of mine())if(dist(q,b)<=1&&q.hp<q.max){q.hp++;float(q.r,q.c,'+1 ❤','var(--heal)')}
   mine().forEach(p=>p.bonus=false);
   $('turn').textContent='Dein Zug';$('turn').style.color='var(--gold)';
   if(sel&&!P.includes(sel))sel=null;
-  if(sel)moves=gen(sel);
+  moves=sel&&sel.side==='p'?gen(sel):[];
   render();
 }
-function pick(p){if(over)return;sel=p;moves=phase==='p'?gen(p):[];beep(700,.04,'sine',.04);render()}
 function click(r,c){
-  if(phase!=='p'||over)return;
+  if(over)return;
   const x=at(r,c);
-  if(sel){const m=moves.find(m=>m.r===r&&m.c===c);if(m)return act(sel,m)}
-  if(x&&x.side==='p')return pick(x);
-  if(x){sel=x;moves=[]}else{sel=null;moves=[]}
+  if(phase==='p'&&sel&&sel.side==='p'){const m=moves.find(m=>m.r===r&&m.c===c);if(m)return act(sel,m)}
+  sel=x||null;moves=x&&x.side==='p'&&phase==='p'?gen(x):[];
+  if(x)beep(700,.04,'sine',.04);
   render();
 }
-function collect(cells){
-  for(const[r,c]of cells){const x=res[r][c];if(!x)continue;res[r][c]=null;
-    if(x.k==='g'){gold+=x.n;float(r,c,'+'+x.n+' 💰','var(--gold)')}else{crys+=x.n;float(r,c,'+1 ◆','var(--crys)')}
-    beep(1300,.08,'triangle',.05,1900);
+function useFields(p,cells){
+  for(const[r,c]of cells){const f=fld[r][c];if(!f)continue;fld[r][c]=null;
+    if(f.k==='heal'){const h=Math.min(4,p.max-p.hp);p.hp+=h;float(r,c,'+'+h+' ❤','var(--heal)')}
+    if(f.k==='atk'){p.atk++;float(r,c,'+1 ⚔','var(--atk)')}
+    if(f.k==='def'){p.def++;float(r,c,'+1 🛡','var(--def)')}
+    if(f.k==='evo'){
+      if(p.tier<2){p.tier++;const d=T[p.t]['t'+p.tier];if(d.mv)p.mv=d.mv;if(p.tier===1)p.name=d.n;if(p.t==='R'&&p.tier===2)p.def+=2;
+        p.max+=2;p.hp+=2;banner(d.n+'!','var(--evo)');log('✦ '+d.n+': '+d.d)}
+      else{p.atk++;p.def++;float(r,c,'+1 ⚔ +1 🛡','var(--evo)')}
+    }
+    beep(1100,.14,'triangle',.05,1700);
   }
 }
 function hit(a,d){
   const x=dmgOf(a,d);d.hp-=x;float(d.r,d.c,'-'+x,'var(--red)');hurt(d);beep(160,.18,'sawtooth',.06,70);
-  if(d.hp<=0){
-    P=P.filter(p=>p!==d);
-    if(d.side==='e'){kills++;const g=Math.ceil(d.max/2);gold+=g;if(d.t==='K')crys+=2;
-      setTimeout(()=>float(d.r,d.c,'+'+g+' 💰'+(d.t==='K'?' +2◆':''),'var(--gold)'),250)}
-    return true;
-  }
+  if(d.hp<=0){P=P.filter(p=>p!==d);if(d.side==='e')kills++;return true}
   return false;
 }
 function act(p,m){
   let killed=false;
-  if(m.hit){killed=hit(p,m.hit);if(killed){collect(m.path);p.r=m.r;p.c=m.c;collect([[m.r,m.c]])}}
-  else{collect(m.path.concat([[m.r,m.c]]));p.r=m.r;p.c=m.c;beep(420,.06,'triangle',.04)}
+  if(m.hit){killed=hit(p,m.hit);if(killed){useFields(p,m.path);p.r=m.r;p.c=m.c;useFields(p,[[m.r,m.c]])}}
+  else{useFields(p,m.path);p.r=m.r;p.c=m.c;useFields(p,[[m.r,m.c]]);beep(420,.06,'triangle',.04)}
   if(!foes().length){phase='wait';moves=[];render();return setTimeout(waveClear,500)}
-  if(killed&&p.t==='N'&&p.tier>=2&&!p.bonus){p.bonus=true;banner('Sturmangriff!','var(--blue)');moves=gen(p);render();return}
+  if(killed&&p.t==='N'&&p.tier>=2&&!p.bonus){p.bonus=true;banner('Sturmangriff!','var(--def)');moves=gen(p);render();return}
   phase='wait';moves=[];render();
   setTimeout(enemyTurn,450);
 }
 function waveClear(){
-  gold+=6;crys+=1;mine().forEach(p=>p.hp=Math.min(p.max,p.hp+3));
-  banner('Welle geschafft!','var(--hp)');log('Belohnung: +6 💰 +1 ◆, alle Figuren +3 ❤');beep(520,.4,'triangle',.06,1040);
-  setTimeout(()=>{nextWave();spawnRes();spawnRes();startTurn()},1300);
-}
-
-// ---- Upgrade-Baum ----
-const costA=p=>3+p.lvA*2, costH=p=>2+p.lvH*2, costT=p=>p.tier===0?2:4;
-function up(kind){
-  const p=sel;if(!p||p.side!=='p')return;
-  if(kind==='A'&&p.lvA<5&&gold>=costA(p)){gold-=costA(p);p.lvA++;p.atk++;float(p.r,p.c,'+1 ⚔','var(--gold)')}
-  else if(kind==='H'&&p.lvH<5&&gold>=costH(p)){gold-=costH(p);p.lvH++;p.max+=2;p.hp+=2;float(p.r,p.c,'+2 ❤','var(--hp)')}
-  else if(kind==='X'&&p.hp<p.max&&gold>=2){gold-=2;p.hp=p.max;float(p.r,p.c,'geheilt','var(--hp)')}
-  else if(kind==='T'&&p.tier<2&&crys>=costT(p)){
-    crys-=costT(p);p.tier++;const d=T[p.t]['t'+p.tier];
-    if(d.mv)p.mv=d.mv;if(p.tier===1)p.name=d.n;
-    p.max+=2;p.hp+=2;banner(d.n+'!','var(--crys)');
-  }else return;
-  beep(880,.15,'triangle',.05,1320);
-  if(phase==='p')moves=gen(p);render();
+  mine().forEach(p=>p.hp=Math.min(p.max,p.hp+3));
+  banner('Welle geschafft!','var(--heal)');log('Alle Figuren +3 ❤ · neue Felder erscheinen');beep(520,.4,'triangle',.06,1040);
+  setTimeout(()=>{nextWave();spawnField();spawnField();spawnField('evo');startTurn()},1300);
 }
 
 // ---- Gegner ----
@@ -331,7 +293,7 @@ function enemyTurn(){
     if(!king())return end();
     if(n--<=0||!foes().length){
       if(!foes().length)return setTimeout(waveClear,400);
-      if(Math.random()<.6)spawnRes();
+      if(Math.random()<.55)spawnField();
       rnd++;return startTurn();
     }
     enemyMove();render();
@@ -347,7 +309,7 @@ function cast(pl){
     const tg=mine().sort((a,b)=>a.hp-b.hp)[0];
     if(tg){const d=2+Math.floor(wave/3);tg.hp-=d;flashT(tg.r,tg.c);float(tg.r,tg.c,'-'+d+' Fluch','var(--mana)');hurt(tg);if(tg.hp<=0)P=P.filter(p=>p!==tg)}
   }
-  if(pl.n==='Dunkle Heilung')foes().forEach(f=>{f.hp=Math.min(f.max,f.hp+3);float(f.r,f.c,'+3','var(--hp)')});
+  if(pl.n==='Dunkle Heilung')foes().forEach(f=>{f.hp=Math.min(f.max,f.hp+3);float(f.r,f.c,'+3','var(--heal)')});
   return pl.n==='Raserei';
 }
 function enemyMove(){
@@ -380,43 +342,28 @@ function help(){
 }
 
 // ---- Anzeige ----
-function log(t){$('log').textContent=t}
+let logT='';
+function log(t){logT=t;info()}
 function banner(t,col){const b=$('banner');b.textContent=t;b.style.color=col;b.classList.remove('go');void b.offsetWidth;b.classList.add('go')}
 function float(r,c,t,col){const d=document.createElement('div');d.className='fl';d.textContent=t;d.style.color=col;
   const cs=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--c'));
-  d.style.left=(6+c*cs+cs/2-35)+'px';d.style.top=(6+r*cs)+'px';$('boardWrap').appendChild(d);setTimeout(()=>d.remove(),1000)}
+  d.style.left=(6+c*cs+cs/2-45)+'px';d.style.top=(6+r*cs)+'px';$('boardWrap').appendChild(d);setTimeout(()=>d.remove(),1100)}
 function hurt(p){setTimeout(()=>{const e=$('layer').querySelector('[data-id="'+p.id+'"]');if(e){e.classList.remove('hurt');void e.offsetWidth;e.classList.add('hurt')}},20)}
 function flashT(r,c){setTimeout(()=>{const t=$('board').children[r*8+c];if(t){t.classList.remove('cast');void t.offsetWidth;t.classList.add('cast')}},30)}
-function resSvg(x){return x.k==='g'?`<svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="url(#gg)" stroke="#6b440c"/><circle cx="10" cy="10" r="5" fill="none" stroke="#a8741a"/></svg>`:`<svg viewBox="0 0 20 20"><path d="M10 1l7 7-7 11-7-11z" fill="url(#gc)" stroke="#1b6f9a"/><path d="M3 8h14M10 1l-3 7 3 11 3-11z" fill="none" stroke="#e6fbff" stroke-width=".6"/></svg>`}
-const pips=(n,m,c)=>`<div class="pips ${c||''}">${Array.from({length:m},(_,i)=>`<i class="${i<n?'f':''}"></i>`).join('')}</div>`;
-
-function panel(){
-  const pn=$('panel'),p=sel;
-  if(!p){pn.innerHTML='<div class="st">Tippe eine Figur (oder ihre Karte oben) an, um sie zu ziehen und aufzuwerten.</div>';return}
-  if(p.side==='e'){pn.innerHTML=`<div class="ph">${svg(p.g,'e')}<div><div class="nm">${p.name}</div><div class="st">Gegner · ❤ ${p.hp}/${p.max} · ⚔ ${p.atk}</div></div></div>`;return}
-  const d=T[p.t],nt=p.tier<2?d['t'+(p.tier+1)]:null;
-  const btn=(k,cost,cur,ok,label)=>`<button class="buy ${cur==='c'?'c':''}" ${ok?'':'disabled'} onclick="up('${k}')">${label||cost+(cur==='c'?' ◆':' 💰')}</button>`;
-  pn.innerHTML=`<div class="ph">${svg(p.g,'p')}<div><div class="nm">${p.name}</div><div class="st">❤ ${p.hp}/${p.max} · ⚔ ${p.atk}${p.tier>=2?' · '+d.t2.n:''}</div></div></div>
-  <div class="row"><div class="lab"><b>⚔ Angriff</b><span>+1 Schaden pro Stufe</span>${pips(p.lvA,5)}</div>${p.lvA<5?btn('A',costA(p),'g',gold>=costA(p)):'<span class="max">MAX</span>'}</div>
-  <div class="row"><div class="lab"><b>❤ Leben</b><span>+2 Max-Leben pro Stufe</span>${pips(p.lvH,5)}</div>${p.lvH<5?btn('H',costH(p),'g',gold>=costH(p)):'<span class="max">MAX</span>'}</div>
-  <div class="row"><div class="lab"><b>✦ Entwicklung${nt?': '+nt.n:''}</b><span>${nt?nt.d:'voll entwickelt: '+d.t1.n+' + '+d.t2.n}</span>${pips(p.tier,2,'c')}</div>${nt?btn('T',costT(p),'c',crys>=costT(p)):'<span class="max">MAX</span>'}</div>
-  <div class="row"><div class="lab"><b>✚ Voll heilen</b><span>Leben sofort auffüllen</span></div>${btn('X',2,'g',gold>=2&&p.hp<p.max)}</div>`;
-}
-function canUp(p){return (p.lvA<5&&gold>=costA(p))||(p.lvH<5&&gold>=costH(p))||(p.tier<2&&crys>=costT(p))}
-function roster(){
-  const order=['K','R','B','N'];
-  $('roster').innerHTML=order.map(t=>{
-    const p=P.find(q=>q.side==='p'&&q.t===t);
-    if(!p)return `<div class="rc dead">${svg(t,'p')}<div class="n">${T[t].n} ✝</div></div>`;
-    return `<div class="rc ${sel===p?'on':''}" onclick="pick(P.find(q=>q.id===${p.id}))">${canUp(p)?'<span class="dot"></span>':''}${svg(t,'p')}<div class="n">${p.name}</div><div class="h"><i style="width:${p.hp/p.max*100}%"></i></div></div>`;
-  }).join('');
+function info(){
+  const p=sel&&P.includes(sel)?sel:null,el=$('info');
+  if(!p){el.innerHTML=`<div class="st">${logT||'Tippe eine Figur an, um sie zu ziehen oder ihre Werte zu sehen.'}</div>`;return}
+  let ex='';
+  if(p.side==='p'){const d=T[p.t],nt=p.tier<2?d['t'+(p.tier+1)]:null;ex=nt?`Nächste Entwicklung ✦: ${nt.n} – ${nt.d}`:`Voll entwickelt ✦✦ (${d.t2.n})`}
+  else ex='Gegner';
+  el.innerHTML=`${svg(p.g,p.side)}<div><div class="nm">${p.name}</div><div class="st"><b style="color:var(--atk)">⚔ ${atkOf(p)}</b> · <b style="color:var(--def)">🛡 ${p.def}</b> · <b style="color:var(--heal)">❤ ${p.hp}/${p.max}</b></div><div class="st">${ex}</div></div>`;
 }
 function render(){
   const b=$('board');
-  if(!b.children.length){let h='';for(let r=0;r<N;r++)for(let c=0;c<N;c++)h+=`<div class="t ${(r+c)%2?'b':'a'}" data-r="${r}" data-c="${c}"></div>`;b.innerHTML=h}
-  [...b.children].forEach((t,i)=>{const r=i>>3,c=i&7,m=moves.find(m=>m.r===r&&m.c===c),x=res&&res[r][c];
-    t.className='t '+((r+c)%2?'b':'a')+(sel&&sel.r===r&&sel.c===c&&P.includes(sel)?' sel':'')+(m?(m.hit?' at':' mv'):'');
-    const want=x?x.k+x.n:'';if(t.dataset.res!==want){t.dataset.res=want;t.innerHTML=x?`<div class="res">${resSvg(x)}${x.n>1?'<b>'+x.n+'</b>':''}</div>`:''}
+  if(!b.children.length){let h='';for(let r=0;r<N;r++)for(let c=0;c<N;c++)h+=`<div class="t" data-r="${r}" data-c="${c}"></div>`;b.innerHTML=h}
+  [...b.children].forEach((t,i)=>{const r=i>>3,c=i&7,m=moves.find(m=>m.r===r&&m.c===c),f=fld&&fld[r][c];
+    t.className='t '+((r+c)%2?'b':'a')+(f?' f-'+f.k:'')+(sel&&sel.r===r&&sel.c===c&&P.includes(sel)?' sel':'')+(m?(m.hit?' at':' mv'):'');
+    const want=f?f.k:'';if(t.dataset.f!==want){t.dataset.f=want;t.innerHTML=f?`<div class="fi">${FICON[f.k]}</div>`:''}
   });
   const L=$('layer'),cs='var(--c)',have=new Set(P.map(p=>p.id));
   [...L.children].forEach(e=>{if(!have.has(+e.dataset.id))e.remove()});
@@ -424,14 +371,13 @@ function render(){
     let e=L.querySelector('[data-id="'+p.id+'"]');
     if(!e){e=document.createElement('div');e.dataset.id=p.id;L.appendChild(e);e.style.transition='none';e.style.transform=`translate(calc(${cs}*${p.c}),calc(${cs}*${p.r}))`;void e.offsetWidth;e.style.transition=''}
     e.className='pc '+p.side+(p.g==='K'?' k':'');
-    const key=[p.g,p.hp,p.max,p.atk,p.tier].join();
-    if(e.dataset.k!==key){e.dataset.k=key;e.innerHTML=svg(p.g,p.side)+(p.tier?`<div class="stars">${'✦'.repeat(p.tier)}</div>`:'')+`<div class="atk">${p.atk}</div><div class="hpb"><i style="width:${Math.max(0,p.hp/p.max*100)}%"></i></div>`}
+    const a=atkOf(p),key=[p.g,p.hp,p.max,a,p.def,p.tier].join();
+    if(e.dataset.k!==key){e.dataset.k=key;e.innerHTML=svg(p.g,p.side)+(p.tier?`<div class="stars">${'✦'.repeat(p.tier)}</div>`:'')+`<div class="bd d">${p.def}</div><div class="bd a">${a}</div><div class="hpb"><i style="width:${Math.max(0,p.hp/p.max*100)}%"></i></div>`}
     e.style.transform=`translate(calc(${cs}*${p.c}),calc(${cs}*${p.r}))`;
   }
-  $('gold').textContent=gold;$('crys').textContent=crys;$('wave').textContent=wave||1;$('rnd').textContent=rnd;
-  $('mana').textContent=mana;
+  $('wave').textContent=wave||1;$('rnd').textContent=rnd;$('mana').textContent=mana;
   if(plan){const left=Math.max(0,Math.ceil((plan.c-mana)/2));$('plan').textContent=plan.n+(left?' in '+left+' Rd.':' – jetzt!');$('mfill').style.width=Math.min(100,mana/plan.c*100)+'%'}
-  if(P.length)roster();panel();
+  info();
 }
 function size(){
   const c=Math.max(36,Math.floor(Math.min((Math.min(innerWidth,512)-44)/N,62)));
