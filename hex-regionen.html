@@ -730,10 +730,10 @@
       $('resT').textContent = win ? '🏆 SIEG!' : '💥 NIEDERLAGE';
       $('resP').innerHTML = txt; $('resB').textContent = win ? 'Weiter' : 'Nochmal';
       $('result').style.display = 'grid';
-    }, 700);
+    }, 300);
   }
   $('play').onclick = startBattle;
-  $('resB').onclick = showMenu;
+  $('resB').onclick = () => { showMenu(); startBattle(); };   // direkt ins nächste Level
   $('giveup').onclick = () => { if (mode === 'battle') end(false); };
   document.querySelectorAll('[data-soon]').forEach(b => b.onclick = () => {
     const t = $('toast'); t.textContent = 'Bald verfügbar'; t.style.display = 'block';
