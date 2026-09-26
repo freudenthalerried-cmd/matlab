@@ -320,12 +320,12 @@
     if (b.flash > 0) { ctx.fillStyle = `rgba(255,255,255,${b.flash})`; ctx.beginPath(); ctx.arc(x, y, k * 1.1, 0, 7); ctx.fill(); }
   }
   function drawBadge(b) {
-    const x = px(b.x) + S * 0.5, y = py(b.y) + S * 0.4, r = S * 0.34;
+    const t = String(Math.floor(b.count));
+    const x = px(b.x) + S * 0.45, y = py(b.y) + S * 0.4, r = Math.max(14, S * 0.5);
     ctx.fillStyle = b.owner ? OWN[b.owner].dark : '#707694'; ctx.beginPath(); ctx.arc(x, y, r + 3, 0, 7); ctx.fill();
     ctx.fillStyle = b.owner ? OWN[b.owner].fill : '#e9e8f3'; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
-    ctx.font = `900 ${Math.round(r * 1.15)}px "Trebuchet MS", sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.lineWidth = 3; ctx.strokeStyle = b.owner ? '#0008' : '#fff';
-    const t = String(Math.floor(b.count));
+    ctx.font = `900 ${Math.round(r * (t.length > 2 ? 0.95 : 1.25))}px "Trebuchet MS", sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.lineWidth = 4; ctx.strokeStyle = b.owner ? '#0008' : '#fff';
     ctx.strokeText(t, x, y + 1); ctx.fillStyle = b.owner ? '#fff' : '#555a70'; ctx.fillText(t, x, y + 1);
   }
   function drawUnit(u) {
