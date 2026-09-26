@@ -36,6 +36,9 @@ button:focus-visible{outline:2px solid var(--ball);outline-offset:2px}
 #msg.show{opacity:1;transform:none}
 #msg b{display:block;font-size:clamp(42px,9vw,86px);font-weight:800;text-transform:uppercase;line-height:.9;text-shadow:0 4px 30px rgba(0,0,0,.6)}
 #msg span{display:block;margin-top:8px;font-size:18px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+#shotlbl{position:fixed;left:0;right:0;top:22%;text-align:center;font-weight:800;font-size:clamp(28px,6vw,44px);letter-spacing:.06em;text-transform:uppercase;color:#ffb070;text-shadow:0 3px 18px rgba(0,0,0,.6);pointer-events:none;z-index:2;opacity:0}
+#shotlbl.pop{animation:lbl .7s ease-out}
+@keyframes lbl{0%{opacity:0;transform:scale(.7)}20%{opacity:1;transform:scale(1.08)}100%{opacity:0;transform:scale(1) translateY(-14px)}}
 #hint{position:fixed;left:16px;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);text-align:center;font-size:16px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);pointer-events:none;z-index:2}
 
 #zone{position:fixed;inset:0;z-index:1}
@@ -79,6 +82,7 @@ h2{margin:0;font-size:44px;line-height:.9;font-weight:800;text-transform:upperca
 
 <div id="msg"><b id="mT"></b><span id="mS"></span></div>
 <div id="hint" hidden></div>
+<div id="shotlbl"></div>
 
 
 <div id="menu" class="ov">
@@ -96,12 +100,13 @@ h2{margin:0;font-size:44px;line-height:.9;font-weight:800;text-transform:upperca
     <ul class="keys" id="keysDesk">
       <li><kbd>WASD</kbd> / <kbd>Pfeile</kbd> laufen</li>
       <li><kbd>Leertaste</kbd> Schlag · Smash bei hohem Ball</li>
-      <li><kbd>K</kbd> Lob · <kbd>P</kbd> Pause</li>
+      <li><kbd>I</kbd> Loop · <kbd>O</kbd> Power · <kbd>K</kbd> Lob · <kbd>P</kbd> Pause</li>
       <li>Beim Schlag links/rechts halten = Richtung</li>
     </ul>
     <ul class="keys" id="keysTouch" hidden>
       <li>Auf den Platz tippen oder halten: dorthin laufen</li>
-      <li>Nach oben wischen: Schlag · bei hohem Ball Smash</li>
+      <li>Nach oben wischen: Schlag · schneller wischen = härter</li>
+      <li>Im Bogen nach oben wischen: Loop mit Drall und Kurve</li>
       <li>Nach unten wischen: Lob</li>
       <li>Schräg wischen = Richtung, am besten wenn der Ring grün ist</li>
     </ul>
@@ -174,7 +179,7 @@ function snd(k,v=1){
 /* ---------- state ---------- */
 function mkP(team,col,human,skin){return{team,col,human,ai:true,x:col?7.5:2.5,y:team?17:3,vx:0,vy:0,spd:0,phase:0,swing:0,swingType:'d',cool:0,win:0,winType:'d',skin};}
 const P=[mkP(0,1,true,'#e9b690'),mkP(0,0,false,'#b98058'),mkP(1,1,false,'#f1c9a2'),mkP(1,0,false,'#8e5a3c')];
-const b={x:5,y:5,z:1,vx:0,vy:0,vz:0,out:false,rolling:false};
+const b={x:5,y:5,z:1,vx:0,vy:0,vz:0,out:false,rolling:false,spin:0,curve:0};
 const S={phase:'serve',timer:1,demo:true,paused:false,diff:1,target:3,serveTeam:0,pts:[0,0],games:[0,0],second:false,
   rs:{hit:0,bounced:0,serve:false,net:false},server:null,receiver:null,depth:[3,3],cands:[],marker:null,
   trail:[],fx:[],shake:0,time:0,pending:null,auto:false,stats:{rallies:0,longest:0,shots:0,cur:0}};
@@ -188,14 +193,14 @@ const spdOf=p=>(!p.ai)?HSPD:lvlOf(p).spd;
 
 /* ---------- physics & rules ---------- */
 function stepBall(c,dt,ev){
-  if(!c.rolling)c.vz-=G*dt;
+  if(!c.rolling){c.vz-=G*(1+.5*(c.spin||0))*dt;if(c.curve)c.vx+=c.curve*dt;}
   const py=c.y;
   c.x+=c.vx*dt;c.y+=c.vy*dt;c.z+=c.vz*dt;
   if((py-10)*(c.y-10)<=0&&py!==c.y&&c.z<NETH&&c.z>0){
     c.y=py<10?9.94:10.06;c.vy*=-.18;c.vx*=.5;c.vz*=.3;ev.push('net');
   }
   if(c.z<R&&c.vz<0){
-    c.z=R;const imp=-c.vz;c.vz=imp*.68;c.vx*=.84;c.vy*=.84;
+    c.z=R;const imp=-c.vz,sp=c.spin||0;c.vz=imp*.68*(1-.12*sp);c.vx*=.84;c.vy*=.84*(1+.22*sp);c.spin=sp*.3;c.curve=(c.curve||0)*.3;
     if(c.vz<.35){c.vz=0;c.rolling=true;}
     ev.push('floor');
   }
@@ -226,7 +231,7 @@ const canHitR=(t,rs,c)=>t!==rs.hit&&side(c.y)===t&&rs.bounced<=1&&!(rs.serve&&!r
 const canHit=t=>S.phase==='play'&&canHitR(t,S.rs,b);
 
 function predict(team){
-  const c={x:b.x,y:b.y,z:b.z,vx:b.vx,vy:b.vy,vz:b.vz,out:b.out,rolling:b.rolling};
+  const c={x:b.x,y:b.y,z:b.z,vx:b.vx,vy:b.vy,vz:b.vz,out:b.out,rolling:b.rolling,spin:b.spin,curve:b.curve};
   const r={...S.rs},out=[];let t=0;
   for(let i=0;i<300;i++){
     const ev=[];stepBall(c,.01,ev);t+=.01;
@@ -249,13 +254,13 @@ function choose(p,cands){
 }
 
 /* ---------- shots ---------- */
-function solve(x,y,z,tx,ty,T,minNet){
+function solve(x,y,z,tx,ty,T,minNet,g=G,ax=0){
   let v;
   for(let k=0;k<45;k++){
-    v={vx:(tx-x)/T,vy:(ty-y)/T,vz:(G*T*T/2-z)/T};
+    v={vx:(tx-x-ax*T*T/2)/T,vy:(ty-y)/T,vz:(g*T*T/2-z)/T};
     const tn=(10-y)/v.vy;
     if(!(tn>0&&tn<T))return v;
-    if(z+v.vz*tn-G*tn*tn/2>=minNet)return v;
+    if(z+v.vz*tn-g*tn*tn/2>=minNet)return v;
     T+=.04;
   }
   return v;
@@ -265,7 +270,8 @@ function gapX(opp){
   for(const x of[1.3,3.1,5,6.9,8.7]){const d=Math.min(...opp.map(o=>Math.abs(o.x-x)));if(d>bd){bd=d;best=x;}}
   return best;
 }
-function shoot(p,type,tx,q,err,miss){
+function shoot(p,type,tx,q,err,miss,o={}){
+  const pow=o.pow||1,spin=o.spin||0,curve=o.curve||0,g=G*(1+.5*spin);
   const dir=p.team===0?1:-1;
   const x=b.x,y=b.y,z=Math.max(b.z,.3);
   let ty;
@@ -275,17 +281,19 @@ function shoot(p,type,tx,q,err,miss){
   let netMiss=false;
   if(Math.random()<miss){if(Math.random()<.55)ty=10+dir*rnd(10.6,12);else netMiss=true;}
   const dist=Math.hypot(tx-x,ty-y);
-  let T=type==='s'?dist/(22*q):type==='l'?rnd(1.75,2.05):dist/((14+Math.random()*4)*q);
+  let T=type==='s'?dist/(22*q*pow):type==='l'?rnd(1.75,2.05)/Math.sqrt(pow):dist/((14+Math.random()*4)*q*pow*(1+.12*spin));
   T=Math.max(T,.3);
   let v;
   if(netMiss){const vx=(tx-x)/T,vy=(ty-y)/T,tn=(10-y)/vy;v={vx,vy,vz:(.45-z+G*tn*tn/2)/tn};}
-  else v=solve(x,y,z,tx,ty,T,type==='s'?NETH+.08:NETH+.3);
-  Object.assign(b,{z,vx:v.vx,vy:v.vy,vz:v.vz,rolling:false});
+  else v=solve(x,y,z,tx,ty,T,type==='s'?NETH+.08:NETH+.3,g,curve);
+  Object.assign(b,{z,vx:v.vx,vy:v.vy,vz:v.vz,rolling:false,spin:netMiss?0:spin,curve:netMiss?0:curve});
   S.rs={hit:p.team,bounced:0,serve:false,net:false};
   p.swing=.001;p.swingType=type;p.cool=.5;p.win=0;
   S.depth[p.team]=Math.abs(p.y-10)<4.5?3:type==='l'?3.2:(Math.random()<.35?3.2:7.5);
   S.fx.push({k:'burst',x,y,z,t:0,d:.28,big:type==='s'});
-  if(type==='s'){S.shake=.4;snd('smash');}else snd('hit',type==='l'?.6:1);
+  const hard=type==='s'||pow>1.2;
+  if(type==='s'){S.shake=.4;snd('smash');}else snd(hard?'smash':'hit',type==='l'?.6:Math.min(1,pow));
+  if(!p.ai){buzz(hard?35:15);if(spin>.3)shotLabel('Loop!');else if(type==='s')shotLabel('Smash!');else if(pow>1.25)shotLabel('Power!');}
   S.stats.cur++;
 }
 function aiShot(p){
@@ -296,7 +304,8 @@ function aiShot(p){
   else if(b.z>2.2)type='l';
   else if(opp.every(o=>Math.abs(o.y-10)<5)&&Math.random()<.45)type='l';
   else if(!nearNet&&Math.random()<.1)type='l';
-  shoot(p,type,gapX(opp)+rnd(-.8,.8),L.q,L.err,L.miss);
+  const sp=type==='d'&&Math.random()<L.q-.6?rnd(.3,.8):0;
+  shoot(p,type,gapX(opp)+rnd(-.8,.8),L.q,L.err,L.miss,{spin:sp,curve:sp?rnd(-2,2):0});
 }
 function inX(){let x=0;if(keys.has('ArrowLeft')||keys.has('KeyA'))x-=1;if(keys.has('ArrowRight')||keys.has('KeyD'))x+=1;return clamp(x,-1,1);}
 function inY(){let y=0;if(keys.has('ArrowUp')||keys.has('KeyW'))y+=1;if(keys.has('ArrowDown')||keys.has('KeyS'))y-=1;return clamp(y,-1,1);}
@@ -305,7 +314,8 @@ function humanShot(p,d){
   let type=p.winType;if(type==='d'&&b.z>1.85)type='s';
   const ax=tp.aim!==null?tp.aim:inX(),opp=P.filter(o=>o.team!==p.team);
   const tx=Math.abs(ax)>.3?5+ax*3.7:gapX(opp);
-  shoot(p,type,tx,q,.25+(1-q)*.9,0);
+  const o=p.winOpt||{};
+  shoot(p,type,tx,q,.25+(1-q)*.9,0,type==='s'?{pow:o.pow}:o);
 }
 
 /* ---------- serve & scoring ---------- */
@@ -338,7 +348,7 @@ function serveNow(aim){
   if(s.ai&&Math.random()<lvlOf(s).sf)ty=10+dir*rnd(7.3,8.2);
   const T=Math.hypot(tx-b.x,ty-b.y)/rnd(12,15);
   const v=solve(b.x,b.y,b.z,tx,ty,T,NETH+.3);
-  Object.assign(b,{vx:v.vx,vy:v.vy,vz:v.vz,out:false,rolling:false});
+  Object.assign(b,{vx:v.vx,vy:v.vy,vz:v.vz,out:false,rolling:false,spin:0,curve:0});
   S.rs={hit:s.team,bounced:0,serve:true,net:false,box};
   s.swing=.001;s.swingType='l';
   S.phase='play';S.stats.cur=1;setHint('');snd('hit',.7);
@@ -386,7 +396,9 @@ function updateBoard(){
   $('n0').textContent=S.demo?'Coral':'Du & Partner';
   $('n1').textContent=S.demo?'Gold':'CPU · '+['Leicht','Mittel','Profi'][S.diff];
 }
-let msgTimer=0;
+let msgTimer=0,lblT=0;
+function buzz(ms){try{navigator.vibrate&&navigator.vibrate(ms);}catch(e){}}
+function shotLabel(t){const el=$('shotlbl');el.textContent=t;el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop');}
 function showMsg(t,s,col){const m=$('msg');$('mT').textContent=t;$('mT').style.color=col||'';$('mS').textContent=s||'';m.classList.add('show');msgTimer=1.3;}
 function setHint(t){$('hint').textContent=t;$('hint').hidden=!t;}
 
@@ -802,7 +814,8 @@ function render(dt=.016){
   ballM.visible=ballGlow.visible=blob.visible=vis;
   ballM.position.copy(V(b.x,b.y,b.z));ballGlow.position.copy(ballM.position);
   blob.position.copy(V(b.x,b.y,.008));const bs=1+b.z*.25;blob.scale.set(bs,bs,bs);blob.material.opacity=clamp(.55-b.z*.09,.1,.55);
-  trail.forEach((s,i)=>{const t=S.trail[S.trail.length-1-i-1];if(!t||!vis||S.phase==='serve'){s.material.opacity=0;return;}
+  const tc=(b.spin||0)>.3?0xff9a3c:0xe3ff3c;
+  trail.forEach((s,i)=>{s.material.color.setHex(tc);const t=S.trail[S.trail.length-1-i-1];if(!t||!vis||S.phase==='serve'){s.material.opacity=0;return;}
     s.position.copy(V(t.x,t.y,t.z));const k=1-i/10;s.scale.set(.22*k+.05,.22*k+.05,1);s.material.opacity=.4*k;});
   // floor marks
   const human=!S.demo&&!h.ai;
@@ -817,7 +830,7 @@ function render(dt=.016){
   ren.render(scene,cam);
   // swipe overlay
   octx.clearRect(0,0,W,H);
-  if(tp.swipe&&tp.swipe.t<.35){const w=tp.swipe,u=w.t/.35;octx.strokeStyle='rgba(227,255,60,'+(.8*(1-u))+')';octx.lineWidth=6*(1-u)+1;octx.lineCap='round';octx.beginPath();octx.moveTo(w.x0,w.y0);octx.lineTo(w.x1,w.y1);octx.stroke();}
+  if(tp.swipe&&tp.swipe.t<.35){const w=tp.swipe,u=w.t/.35;octx.strokeStyle='rgba(227,255,60,'+(.8*(1-u))+')';octx.lineWidth=6*(1-u)+1;octx.lineCap='round';octx.strokeStyle=(w.loop?'rgba(255,140,60,':'rgba(227,255,60,')+(.85*(1-u))+')';octx.beginPath();const pp=w.pts&&w.pts.length>1?w.pts:[[w.x0,w.y0],[w.x1,w.y1]];pp.forEach(([x,y],i)=>i?octx.lineTo(x,y):octx.moveTo(x,y));octx.stroke();}
 }
 
 /* ---------- loop ---------- */
@@ -829,8 +842,8 @@ function frame(now){
 }
 
 /* ---------- input & UI ---------- */
-function press(type,aim=null){
-  tp.aim=aim;
+function press(type,aim=null,opt={}){
+  tp.aim=aim;P[0].winOpt=opt;
   ac();
   if(S.demo||S.paused)return;
   const h=P[0];
@@ -845,6 +858,8 @@ addEventListener('keydown',e=>{
   keys.add(e.code);
   if(e.code==='Space'||e.code==='KeyJ')press('d');
   else if(e.code==='KeyK'||e.code==='KeyL')press('l');
+  else if(e.code==='KeyI'||e.code==='KeyU')press('d',null,{spin:1,curve:inX()*4});
+  else if(e.code==='KeyO')press('d',null,{pow:1.4});
   else if(e.code==='KeyP'||e.code==='Escape'){if(!S.demo&&S.phase!=='over')setPause(!S.paused);}
 });
 addEventListener('keyup',e=>keys.delete(e.code));
@@ -852,24 +867,29 @@ addEventListener('blur',()=>{keys.clear();if(!S.demo&&S.phase!=='over')setPause(
 const zone=$('zone');
 zone.addEventListener('pointerdown',e=>{
   ac();if(tp.id!==null)return;
-  tp.id=e.pointerId;tp.x0=tp.x=e.clientX;tp.y0=tp.y=e.clientY;tp.t0=performance.now();tp.hold=false;
-  zone.setPointerCapture(e.pointerId);
+  tp.id=e.pointerId;tp.x0=tp.x=e.clientX;tp.y0=tp.y=e.clientY;tp.t0=performance.now();tp.hold=false;tp.pts=[[e.clientX,e.clientY]];
+  try{zone.setPointerCapture(e.pointerId);}catch(_){}
 });
 zone.addEventListener('pointermove',e=>{
   if(e.pointerId!==tp.id)return;
-  tp.x=e.clientX;tp.y=e.clientY;
+  tp.x=e.clientX;tp.y=e.clientY;if(tp.pts)tp.pts.push([tp.x,tp.y]);
   const dt=performance.now()-tp.t0,d=Math.hypot(tp.x-tp.x0,tp.y-tp.y0);
-  if(!tp.hold&&dt>200&&d<30)tp.hold=true;
+  if(!tp.hold&&dt>260&&d<14)tp.hold=true;
   if(tp.hold)tp.tgt=toCourt(tp.x,tp.y);
 });
 function endTouch(e){
   if(e.pointerId!==tp.id)return;
   const dx=e.clientX-tp.x0,dy=e.clientY-tp.y0,d=Math.hypot(dx,dy),dt=performance.now()-tp.t0;
   tp.id=null;
-  if(e.type==='pointerup'&&!tp.hold&&d>35&&dt<450){
+  if(e.type==='pointerup'&&!tp.hold&&d>35&&dt<700){
     const aim=clamp(dx/Math.max(40,Math.abs(dy))*1.4,-1,1);
-    tp.swipe={x0:tp.x0,y0:tp.y0,x1:e.clientX,y1:e.clientY,t:0};
-    press(dy<0?'d':'l',Math.abs(aim)>.2?aim:null);
+    // Tempo -> Härte, Krümmung -> Loop (Topspin + Kurve)
+    const vel=d/Math.max(dt,16),pow=clamp(.75+(vel-.5)*.4,.75,1.5);
+    let dev=0;for(const[px,py]of tp.pts||[]){const c=((px-tp.x0)*dy-(py-tp.y0)*dx)/d;if(Math.abs(c)>Math.abs(dev))dev=c;}
+    const curl=dev/d,loop=dy<0&&Math.abs(curl)>.12;
+    const opt=loop?{pow:pow*.95,spin:1,curve:clamp(-curl*14,-4,4)}:{pow};
+    tp.swipe={x0:tp.x0,y0:tp.y0,x1:e.clientX,y1:e.clientY,t:0,pts:(tp.pts||[]).slice(),loop};
+    press(dy<0?'d':'l',Math.abs(aim)>.2?aim:null,opt);
   }else if(e.type==='pointerup'&&!tp.hold){tp.tgt=toCourt(e.clientX,e.clientY);}
   tp.hold=false;
 }
