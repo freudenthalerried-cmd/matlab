@@ -3,137 +3,152 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Fallschach</title>
+<title>Schachsturz</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#07060f;--ice:#38e8ff;--mag:#ff2e88;--gold:#ffd23f;--lava:#ff4b1f;--tile1:#141029;--tile2:#1c1740;--grid:rgba(56,232,255,.18);--txt:#e8f6ff}
+:root{--bg:#07060f;--ice:#38e8ff;--mag:#ff2e88;--gold:#ffd23f;--lava:#ff4b1f;--frost:#9fe7ff;--tile1:#141029;--tile2:#1c1740;--grid:rgba(56,232,255,.16);--txt:#e8f6ff}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%}
+html,body{margin:0;min-height:100%}
 body{background:radial-gradient(ellipse at 50% -10%,#2a1260 0%,var(--bg) 60%) fixed;color:var(--txt);font-family:Orbitron,system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;overflow-x:hidden;padding:8px 16px 16px}
-body::before{content:"";position:fixed;inset:0;pointer-events:none;background-image:radial-gradient(1px 1px at 20% 30%,#fff8,transparent),radial-gradient(1px 1px at 70% 10%,#fff6,transparent),radial-gradient(1.5px 1.5px at 85% 60%,#fff5,transparent),radial-gradient(1px 1px at 40% 80%,#fff5,transparent),radial-gradient(1px 1px at 10% 70%,#fff6,transparent);z-index:-1}
-.top{width:100%;max-width:560px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:6px}
-.stat{background:linear-gradient(180deg,#ffffff10,#ffffff04);border:1px solid #ffffff1c;border-radius:10px;padding:4px 6px;text-align:center}
+.top{width:100%;max-width:520px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.stat{background:#ffffff0a;border:1px solid #ffffff1c;border-radius:10px;padding:3px 6px;text-align:center}
 .stat small{display:block;font-size:9px;letter-spacing:.15em;opacity:.6}
 .stat b{font-size:18px;color:var(--ice);text-shadow:0 0 10px var(--ice)}
 .stat.sc b{color:var(--gold);text-shadow:0 0 12px var(--gold)}
-#stage{perspective:900px;perspective-origin:50% 0;margin-top:4px}
-#plane{position:relative;overflow:hidden;transform:rotateX(24deg);transform-origin:50% 100%;border-radius:6px;box-shadow:0 0 0 2px #38e8ff55,0 0 40px #38e8ff33,0 30px 60px #000}
-#plane::before{content:"";position:absolute;left:0;right:0;top:0;height:calc(var(--c)*2.2);background:linear-gradient(#07060f,transparent);z-index:3;pointer-events:none}
+.stat.cb b{color:var(--mag);text-shadow:0 0 12px var(--mag)}
+#timer{width:100%;max-width:520px;height:8px;border-radius:8px;background:#ffffff12;margin:7px 0 2px;overflow:hidden;position:relative}
+#tfill{height:100%;width:0;background:linear-gradient(90deg,var(--ice),var(--gold),var(--lava));box-shadow:0 0 10px var(--lava)}
+#timer.frz #tfill{background:var(--frost);box-shadow:0 0 12px var(--frost)}
+#tlab{font-size:10px;letter-spacing:.12em;opacity:.7;height:14px}
+#stage{perspective:900px;perspective-origin:50% 0;position:relative}
+#plane{position:relative;overflow:hidden;transform:rotateX(22deg);transform-origin:50% 100%;border-radius:6px;box-shadow:0 0 0 2px #38e8ff55,0 0 40px #38e8ff33,0 30px 60px #000}
+#plane.frz{box-shadow:0 0 0 2px var(--frost),0 0 50px var(--frost)}
+#plane::before{content:"";position:absolute;left:0;right:0;top:0;height:calc(var(--c)*2);background:linear-gradient(#07060f,transparent);z-index:3;pointer-events:none}
 #plane::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--lava);box-shadow:0 0 18px 4px var(--lava);z-index:3;pointer-events:none;animation:pulse 1.2s infinite alternate}
 @keyframes pulse{to{opacity:.45}}
 #board{display:grid;grid-template-columns:repeat(8,var(--c))}
-#board.anim{transition:transform .3s cubic-bezier(.5,0,.9,.4)}
+#board.anim{transition:transform .26s cubic-bezier(.5,0,.9,.4)}
 .sq{width:var(--c);height:var(--c);position:relative;display:flex;align-items:flex-end;justify-content:center;cursor:pointer;user-select:none;box-shadow:inset 0 0 0 .5px var(--grid)}
 .l{background:var(--tile1)}.d{background:var(--tile2)}
-.edge{background:linear-gradient(0deg,#ff4b1f55,#ff4b1f18)!important;animation:crack 1s infinite alternate}
-@keyframes crack{to{box-shadow:inset 0 0 12px #ff4b1f88}}
-.pc{font-size:calc(var(--c)*.82);line-height:1;transform:scaleY(1.28) translateY(-4%);transform-origin:50% 100%;pointer-events:none;transition:filter .2s}
+.edge{background:linear-gradient(0deg,#ff4b1f66,#ff4b1f18)!important}
+.pc{font-size:calc(var(--c)*.82);line-height:1;transform:scaleY(1.25) translateY(-4%);transform-origin:50% 100%;pointer-events:none}
 .w .pc{color:#dffbff;text-shadow:0 0 6px var(--ice),0 0 14px var(--ice)}
 .b .pc{color:#ffd0e4;text-shadow:0 0 6px var(--mag),0 0 14px var(--mag)}
-.b .pc{opacity:.95}
-.gem{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
-.gem i{width:32%;height:32%;background:linear-gradient(135deg,#fff7c2,var(--gold) 50%,#b8860b);transform:rotate(45deg);box-shadow:0 0 10px var(--gold);animation:spin 2.4s linear infinite}
-@keyframes spin{0%{transform:rotate(45deg) scale(1)}50%{transform:rotate(225deg) scale(.8)}100%{transform:rotate(405deg) scale(1)}}
+.it{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;font-size:calc(var(--c)*.5);animation:bob 1.6s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-10%) scale(1.08)}}
+.it.gem i{width:32%;height:32%;background:linear-gradient(135deg,#fff7c2,var(--gold) 50%,#b8860b);transform:rotate(45deg);box-shadow:0 0 10px var(--gold)}
+.it.blitz{color:#fff36b;text-shadow:0 0 10px #ffe600,0 0 20px #ffae00}
+.it.frost{color:var(--frost);text-shadow:0 0 10px var(--frost),0 0 20px #3cf}
+.it.crown{color:var(--gold);text-shadow:0 0 10px var(--gold)}
 .selc{box-shadow:inset 0 0 0 3px var(--gold),0 0 16px var(--gold);z-index:2}
-.selc .pc{filter:brightness(1.4)}
-.mv::before{content:"";position:absolute;left:50%;top:50%;width:26%;height:26%;margin:-13% 0 0 -13%;border-radius:50%;background:var(--ice);box-shadow:0 0 10px var(--ice);opacity:.8}
+.chain{box-shadow:inset 0 0 0 3px var(--mag),0 0 22px var(--mag);z-index:2;animation:chain .5s infinite alternate}
+@keyframes chain{to{box-shadow:inset 0 0 0 3px #fff,0 0 30px var(--mag)}}
+.mv::before{content:"";position:absolute;left:50%;top:50%;width:24%;height:24%;margin:-12% 0 0 -12%;border-radius:50%;background:var(--ice);box-shadow:0 0 10px var(--ice);opacity:.8}
 .cp{box-shadow:inset 0 0 0 3px var(--mag),inset 0 0 18px var(--mag)}
 .hit{animation:flash .6s}
 @keyframes flash{0%{background:#ff2e88}}
+.rowblast{animation:rb .6s}
+@keyframes rb{0%{background:#fff}40%{background:var(--gold)}}
 .spark{position:absolute;left:50%;top:50%;width:6px;height:6px;border-radius:50%;pointer-events:none;z-index:5;animation:boom .7s ease-out forwards}
 @keyframes boom{to{transform:translate(var(--x),var(--y)) scale(.2);opacity:0}}
-.float{position:absolute;left:50%;top:10%;transform:translateX(-50%);font-size:14px;font-weight:800;color:var(--gold);text-shadow:0 0 8px var(--gold);pointer-events:none;z-index:6;animation:up 1s ease-out forwards}
-@keyframes up{to{transform:translate(-50%,-160%);opacity:0}}
+#pop{position:absolute;left:0;right:0;top:38%;text-align:center;pointer-events:none;z-index:8;font-weight:800;font-size:clamp(22px,7vw,40px);letter-spacing:.06em;opacity:0}
+#pop.go{animation:pop 1s ease-out}
+@keyframes pop{0%{opacity:0;transform:scale(.4)}15%{opacity:1;transform:scale(1.15)}30%{transform:scale(1)}80%{opacity:1}100%{opacity:0;transform:translateY(-40px)}}
 .shake{animation:shake .35s}
 @keyframes shake{25%{transform:translateX(-6px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
-#log{min-height:22px;margin-top:10px;font-size:12px;letter-spacing:.05em;color:var(--ice);text-align:center;max-width:560px}
+#log{min-height:20px;margin-top:10px;font-size:12px;color:var(--ice);text-align:center;max-width:520px}
 .ctl{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;justify-content:center}
 .btn{font:inherit;font-size:12px;letter-spacing:.1em;color:var(--txt);background:#ffffff0c;border:1px solid #38e8ff66;border-radius:30px;padding:9px 16px;cursor:pointer}
 .btn.on{background:#38e8ff26;box-shadow:0 0 12px #38e8ff55}
 .big{font-size:16px;padding:14px 34px;background:linear-gradient(90deg,var(--mag),#8a2eff);border:0;box-shadow:0 0 24px #ff2e8888}
-#ov{position:fixed;inset:0;background:rgba(5,3,14,.88);backdrop-filter:blur(6px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:16px;z-index:20}
+#ov{position:fixed;inset:0;background:rgba(5,3,14,.9);backdrop-filter:blur(6px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:16px;z-index:20;overflow:auto}
 #ov.hide{display:none}
-#ov h1{margin:0;font-size:clamp(34px,10vw,64px);font-weight:800;letter-spacing:.08em;background:linear-gradient(180deg,#fff,var(--ice) 45%,var(--mag));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 16px #38e8ff88)}
-#ov p{max-width:420px;margin:0;font-family:system-ui,sans-serif;font-size:14px;line-height:1.5;opacity:.85}
-#ov .res{font-size:22px;color:var(--gold);text-shadow:0 0 12px var(--gold)}
-#rules{max-width:460px;font-family:system-ui,sans-serif;font-size:13px;line-height:1.5;text-align:left;background:#ffffff08;border:1px solid #ffffff1a;border-radius:12px;padding:10px 14px 10px 28px;margin:0}
-#rules.hide{display:none}
+#ov h1{margin:0;font-size:clamp(32px,10vw,60px);font-weight:800;letter-spacing:.06em;background:linear-gradient(180deg,#fff,var(--ice) 45%,var(--mag));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 16px #38e8ff88)}
+#ov .res{font-size:20px;color:var(--gold);text-shadow:0 0 12px var(--gold)}
+.rules{max-width:440px;font-family:system-ui,sans-serif;font-size:13.5px;line-height:1.5;text-align:left;background:#ffffff08;border:1px solid #ffffff1a;border-radius:12px;padding:10px 14px;margin:0;list-style:none}
+.rules li{margin:5px 0}
+.rules b{color:var(--gold)}
+#hsl{font-size:12px;opacity:.7}
 </style>
 </head>
 <body>
 <div class="top">
   <div class="stat sc"><small>PUNKTE</small><b id="sc">0</b></div>
-  <div class="stat"><small>ZÜGE</small><b id="tn">0</b></div>
+  <div class="stat cb"><small>KOMBO</small><b id="cb">–</b></div>
   <div class="stat"><small>LEVEL</small><b id="lv">1</b></div>
-  <div class="stat"><small>FIGUREN</small><b id="pc">16</b></div>
+  <div class="stat"><small>REIHEN</small><b id="rw">0</b></div>
 </div>
-<div id="stage"><div id="plane"><div id="board"></div></div></div>
+<div id="timer"><div id="tfill"></div></div>
+<div id="tlab"></div>
+<div id="stage"><div id="plane"><div id="board"></div></div><div id="pop"></div></div>
 <div id="log"></div>
 <div class="ctl">
-  <button class="btn" onclick="neu()">↻ NEU</button>
-  <button class="btn on" id="kb" onclick="tog(this)">SCHWARZ SCHLÄGT</button>
-  <button class="btn on" id="snd" onclick="tog(this)">♪ TON</button>
-  <button class="btn" onclick="show('rules')">? REGELN</button>
+  <button class="btn" onclick="pause()">❚❚ PAUSE</button>
+  <button class="btn on" id="snd" onclick="this.classList.toggle('on')">♪ TON</button>
 </div>
 
 <div id="ov">
-  <h1 id="ot">FALLSCHACH</h1>
+  <h1 id="ot">SCHACHSTURZ</h1>
   <div class="res" id="od"></div>
-  <p id="intro">Das Brett stürzt nach jedem Zug eine Reihe in die Tiefe. Schlag dich nach oben durch, sammle Gold – und lass deinen König nicht fallen.</p>
-  <ul id="rules" class="hide">
-    <li>Echte Startaufstellung, darunter <b>5 Pufferreihen</b>.</li>
-    <li>Nach <b>jedem Zug fällt das Brett eine Reihe</b>. Oben kommt eine neue Reihe mit schwarzen Figuren und Gold.</li>
-    <li>Was über die glühende Kante fällt, ist weg – <b>auch deine Figuren</b>. König weg = Spielende.</li>
-    <li><b>Durchfahren</b>: Läufer, Turm, Dame und Bauern sammeln jedes Gold auf ihrem Weg, Springer/König nur am Zielfeld.</li>
-    <li>Gold 5 · Bauer 10 · Springer/Läufer 30 · Turm 50 · Dame 90 · König 200.</li>
-    <li>„Schwarz schlägt“: Schwarz schlägt nach deinem Zug die wertvollste erreichbare Figur, sonst steht es still. Alle 24 Züge rückt eine ganze Armee an.</li>
-    <li>Keine Schachpflicht, keine Rochade. Unbewegte Bauern: 2 Felder. Bauer ganz oben → Dame.</li>
+  <ul class="rules" id="rules">
+    <li>⏱ <b>Das Brett stürzt ständig.</b> Läuft der Balken voll oder ziehst du ohne zu schlagen, fällt alles eine Reihe tiefer. Was über die Lavakante fällt, ist weg, auch deine Figuren.</li>
+    <li>🔥 <b>Kombo-Kette:</b> Schlägst du, fällt nichts, und <b>dieselbe Figur darf sofort weiter</b>. Jeder weitere Schlag zählt ×2, ×3, ×4 …</li>
+    <li>💥 <b>Reihe sprengen:</b> Räumst du alle schwarzen Figuren einer Reihe ab, gibt es einen dicken Bonus.</li>
+    <li>🏃 <b>Durchfahren:</b> Läufer, Turm, Dame und Bauern sammeln alles auf ihrem Weg ein. <span style="color:var(--gold)">◆</span> Gold · <span style="color:#fff36b">⚡</span> Blitz sprengt die ganze Reihe · <span style="color:var(--frost)">❄</span> Eis stoppt den Sturz für 3 Züge · <span style="color:var(--gold)">♛</span> Krone macht die Figur zur Dame.</li>
+    <li>☠ Schwarz schlägt bei jedem Sturz zu, wenn es kann. <b>Verlierst du den König, ist das Spiel aus.</b></li>
   </ul>
-  <div class="ctl">
-    <button class="btn big" id="go" onclick="neu()">START</button>
-    <button class="btn" onclick="document.getElementById('rules').classList.toggle('hide')">REGELN</button>
-  </div>
-  <p id="hsl"></p>
+  <button class="btn big" id="go" onclick="neu()">START</button>
+  <div id="hsl"></div>
 </div>
 
 <script>
 const W=8,H=16,BUF=5;
 const SYM={K:'♚',Q:'♛',R:'♜',B:'♝',N:'♞',P:'♟'};
-const VAL={P:10,N:30,B:30,R:50,Q:90,K:200},DOT=5;
+const VAL={P:10,N:30,B:30,R:50,Q:90,K:200},GEM=5,ROWBONUS=100;
+const ITEM={gem:'<i></i>',blitz:'⚡',frost:'❄',crown:'♛'};
 const BACK=['R','N','B','Q','K','B','N','R'];
 const DIRS={R:[[1,0],[-1,0],[0,1],[0,-1]],B:[[1,1],[1,-1],[-1,1],[-1,-1]]};
 DIRS.Q=DIRS.R.concat(DIRS.B);DIRS.K=DIRS.Q;
 const NJ=[[1,2],[2,1],[-1,2],[-2,1],[1,-2],[2,-1],[-1,-2],[-2,-1]];
-let bd,score=0,turn=0,sh=0,sel,moves=[],queue,busy,over=true,hi=0;
+let bd,score=0,rows=0,sh=0,sel=null,moves=[],queue=[],busy=false,over=true,paused=false;
+let combo=0,chain=null,frost=0,tAcc=0,tLast=0,hi=0;
 const $=id=>document.getElementById(id);
-try{hi=+localStorage.getItem('fallschach_hi')||0}catch(e){}
+try{hi=+localStorage.getItem('schachsturz_hi')||0}catch(e){}
 $('hsl').textContent=hi?'Rekord: '+hi:'';
 
 const P=(t,c)=>({t,c,m:false});
-const isPc=x=>x&&x.t!=='dot';
+const isPc=x=>x&&x.c;
+const isIt=x=>x&&x.k;
 const inB=(r,c)=>r>=0&&r<H&&c>=0&&c<W;
-const on=id=>$(id).classList.contains('on');
-function tog(b){b.classList.toggle('on')}
-function show(){$('ov').classList.remove('hide');$('ot').textContent='FALLSCHACH';$('od').textContent='';$('intro').style.display='none';$('rules').classList.remove('hide');$('go').textContent=over?'START':'WEITER';$('go').onclick=over?neu:()=>$('ov').classList.add('hide')}
+const level=()=>1+Math.floor(rows/12);
+const interval=()=>Math.max(2200,8000-(level()-1)*650);
 
 // --- Ton ---
 let ac;
 function beep(f,d=.08,type='square',v=.05,slide=0){
-  if(!on('snd'))return;
+  if(!$('snd').classList.contains('on'))return;
   try{ac=ac||new AudioContext();const o=ac.createOscillator(),g=ac.createGain(),t=ac.currentTime;
   o.type=type;o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(slide,t+d);
   g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(ac.destination);o.start(t);o.stop(t+d)}catch(e){}
 }
 
-function neu(){
+function setup(){
   bd=Array.from({length:H},()=>Array(W).fill(null));
   BACK.forEach((t,c)=>{bd[0][c]=P(t,'b');bd[1][c]=P('P','b');bd[H-BUF-2][c]=P('P','w');bd[H-BUF-1][c]=P(t,'w')});
-  for(let r=2;r<H-BUF-2;r++)for(let c=0;c<W;c++)if(Math.random()<.2)bd[r][c]={t:'dot'};
-  score=0;turn=0;sel=null;moves=[];queue=[];busy=false;over=false;
-  $('ov').classList.add('hide');log('Bring deine Bauern nach oben – die Tiefe wartet.');draw();beep(440,.15,'triangle',.06,880);
+}
+function neu(){
+  setup();
+  for(let r=2;r<H-BUF-2;r++)for(let c=0;c<W;c++)if(Math.random()<.18)bd[r][c]={k:Math.random()<.12?'blitz':'gem'};
+  score=0;rows=0;sel=null;moves=[];queue=[];busy=false;over=false;paused=false;combo=0;chain=null;frost=0;tAcc=0;
+  $('ov').classList.add('hide');log('Schnell! Das Brett stürzt, sobald der Balken voll ist.');draw();beep(440,.15,'triangle',.06,880);
+}
+function pause(){
+  if(over)return;paused=true;
+  $('ot').textContent='PAUSE';$('od').textContent='';$('go').textContent='WEITER';
+  $('go').onclick=()=>{paused=false;$('ov').classList.add('hide')};$('ov').classList.remove('hide');
 }
 
-// Züge einer Figur; path = durchfahrene Felder (für Gold)
+// Züge einer Figur; path = durchfahrene Felder
 function gen(r,c,capOnly){
   const p=bd[r][c],out=[],f=p.c==='w'?-1:1;
   const add=(tr,tc,path)=>out.push({r:tr,c:tc,path:path||[]});
@@ -162,32 +177,59 @@ function gen(r,c,capOnly){
 }
 
 function click(r,c){
-  if(busy||over)return;
+  if(busy||over||paused)return;
   const x=bd[r][c];
   if(sel){const m=moves.find(m=>m.r===r&&m.c===c);if(m)return play(sel[0],sel[1],m)}
   if(isPc(x)&&x.c==='w'){sel=[r,c];moves=gen(r,c);beep(660,.04,'sine',.04)}else{sel=null;moves=[]}
   draw();
 }
 
+const hasBlack=r=>bd[r].some(x=>isPc(x)&&x.c==='b');
+
 function play(fr,fc,m){
-  const p=bd[fr][fc];let gain=0,txt=[],fx=[];
-  for(const[pr,pc]of m.path)if(bd[pr][pc]&&bd[pr][pc].t==='dot'){bd[pr][pc]=null;gain+=DOT;fx.push([pr,pc,'gold'])}
+  const p=bd[fr][fc],fx=[],txt=[];
+  if(chain&&(chain[0]!==fr||chain[1]!==fc)){combo=0;chain=null} // andere Figur beendet Kette
+  const mult=combo+1;let gain=0,crown=false,blitzRows=[];
+  const cells=m.path.concat([[m.r,m.c]]);
+  const blackBefore=new Set();for(let r=0;r<H;r++)if(hasBlack(r))blackBefore.add(r);
+  for(const[r,c]of cells){
+    const x=bd[r][c];if(!isIt(x))continue;
+    bd[r][c]=null;
+    if(x.k==='gem'){gain+=GEM*mult;fx.push([r,c,'gold'])}
+    if(x.k==='blitz'){blitzRows.push(r);fx.push([r,c,'gold'])}
+    if(x.k==='frost'){frost=3;txt.push('❄ Eis: 3 Züge kein Sturz');popup('EISZEIT','var(--frost)');beep(1500,.4,'sine',.05,600)}
+    if(x.k==='crown')crown=true;
+  }
   const tgt=bd[m.r][m.c];
-  if(tgt&&tgt.t==='dot'){gain+=DOT;fx.push([m.r,m.c,'gold'])}
-  if(isPc(tgt)){gain+=VAL[tgt.t];txt.push(SYM[tgt.t]+' zerstört');fx.push([m.r,m.c,'mag'])}
+  const cap=isPc(tgt);
+  if(cap){gain+=VAL[tgt.t]*mult;fx.push([m.r,m.c,'mag',VAL[tgt.t]*mult])}
   bd[m.r][m.c]=p;bd[fr][fc]=null;p.m=true;
-  if(p.t==='P'&&m.r===0){p.t='Q';txt.push('Aufstieg zur Dame!')}
-  score+=gain;turn++;sel=null;moves=[];
-  if(gain)txt.unshift('+'+gain);
-  const hit=[];
-  if(on('kb')){const b=blackReply();if(b){txt.push(b.txt);hit.push(b.at);fx.push([b.at[0],b.at[1],'ice'])}}
-  log(txt.join('  ·  ')||'…');
-  draw(hit);
-  isPc(tgt)?beep(220,.25,'sawtooth',.06,60):gain?beep(1200,.1,'triangle',.05,1800):beep(330,.06,'square',.03);
-  if(hit.length)setTimeout(()=>beep(140,.3,'sawtooth',.07,50),120);
-  fx.forEach(([r,c,k])=>burst(r,c,k,k==='gold'?DOT:k==='mag'?VAL[tgt.t]:0));
-  if(!king())return end('König geschlagen');
-  busy=true;setTimeout(fall,300);
+  if(p.t==='P'&&m.r===0)crown=true;
+  if(crown&&p.t!=='K'&&p.t!=='Q'){p.t='Q';txt.push('♛ Aufstieg zur Dame');popup('DAME!','var(--gold)')}
+  for(const r of blitzRows){
+    let k=0;for(let c=0;c<W;c++){const x=bd[r][c];if(isPc(x)&&x.c==='b'){gain+=VAL[x.t]*mult;bd[r][c]=null;k++;fx.push([r,c,'gold'])}}
+    txt.push('⚡ Blitz: '+k+' Figuren');popup('BLITZ!','#fff36b');beep(80,.5,'sawtooth',.08,1200);
+  }
+  // Reihe gesprengt?
+  const blasted=[...blackBefore].filter(r=>!hasBlack(r));
+  if(blasted.length){gain+=ROWBONUS*blasted.length*mult;txt.push('💥 Reihe gesprengt');popup('REIHE GESPRENGT','var(--gold)');setTimeout(()=>blasted.forEach(r=>{for(let c=0;c<W;c++){const e=cell(r,c);if(e)e.classList.add('rowblast')}}),10)}
+  score+=gain;if(gain)txt.unshift('+'+gain);
+  sel=null;moves=[];
+  if(cap){
+    combo++;chain=[m.r,m.c];
+    if(combo>1){popup('KOMBO ×'+combo,'var(--mag)');}
+    beep(220+combo*90,.2,'sawtooth',.06,90+combo*60);
+    // Kette: dieselbe Figur ist gleich wieder ausgewählt
+    sel=[m.r,m.c];moves=gen(m.r,m.c);
+    log(txt.join('  ·  ')+'  ·  weiter mit derselben Figur!');
+    draw();fxAll(fx);return;
+  }
+  combo=0;chain=null;
+  gain?beep(1200,.1,'triangle',.05,1800):beep(330,.06,'square',.03);
+  log(txt.join('  ·  ')||'');
+  draw();fxAll(fx);
+  if(frost>0){frost--;tAcc=0;draw();return}
+  fall();
 }
 
 // Schwarz schlägt die wertvollste erreichbare weiße Figur
@@ -195,31 +237,31 @@ function blackReply(){
   let best=null;
   for(let r=0;r<H;r++)for(let c=0;c<W;c++){
     const x=bd[r][c];if(!isPc(x)||x.c!=='b')continue;
-    for(const m of gen(r,c,true)){
-      const v=VAL[bd[m.r][m.c].t]*10-VAL[x.t];
-      if(!best||v>best.v)best={v,r,c,m};
-    }
+    for(const m of gen(r,c,true)){const v=VAL[bd[m.r][m.c].t]*10-VAL[x.t];if(!best||v>best.v)best={v,r,c,m}}
   }
   if(!best)return null;
   const x=bd[best.r][best.c],t=bd[best.m.r][best.m.c];
   bd[best.m.r][best.m.c]=x;bd[best.r][best.c]=null;x.m=true;
   if(x.t==='P'&&best.m.r===H-1)x.t='Q';
-  return{txt:'Schwarz '+SYM[x.t]+' schlägt '+SYM[t.t],at:[best.m.r,best.m.c]};
+  return{txt:'☠ '+SYM[x.t]+' schlägt '+SYM[t.t],at:[best.m.r,best.m.c],k:t.t==='K'};
 }
 
-function level(){return 1+Math.floor(turn/15)}
 function newRow(){
   if(!queue.length){
-    if(turn>0&&turn%24===0){ // Welle: ganze schwarze Armee
-      queue.push(Array.from({length:W},()=>P('P','b')));
-      queue.push(BACK.map(t=>P(t,'b')));
-      log('⚠ Eine schwarze Armee rückt an!');
+    if(rows>0&&rows%30===0){
+      queue.push(Array.from({length:W},()=>P('P','b')),BACK.map(t=>P(t,'b')));
+      popup('ARMEE RÜCKT AN','var(--mag)');
     }else{
-      const lv=level(),pp=Math.min(.1+.03*lv,.45),row=[];
-      const bag=['P','P','P','P','P','N','N','B','B','R'].concat(lv>2?['Q','R']:[]);
+      const lv=level(),pp=Math.min(.14+.035*lv,.5),row=[];
+      const bag=['P','P','P','P','N','N','B','B','R'].concat(lv>2?['Q','R']:[]);
       for(let c=0;c<W;c++){
         const q=Math.random();
-        row.push(q<pp?P(bag[Math.random()*bag.length|0],'b'):q<pp+.22?{t:'dot'}:null);
+        if(q<pp)row.push(P(bag[Math.random()*bag.length|0],'b'));
+        else if(q<pp+.14)row.push({k:'gem'});
+        else if(q<pp+.165)row.push({k:'blitz'});
+        else if(q<pp+.18)row.push({k:'frost'});
+        else if(q<pp+.19)row.push({k:'crown'});
+        else row.push(null);
       }
       queue.push(row);
     }
@@ -228,82 +270,100 @@ function newRow(){
 }
 
 function fall(){
+  if(over)return;
+  busy=true;combo=0;chain=null;sel=null;moves=[];tAcc=0;
+  const b0=blackReply();
+  if(b0){log(b0.txt);beep(140,.3,'sawtooth',.07,50)}
+  if(b0&&b0.k){draw([b0.at]);return end('König geschlagen')}
   const row=newRow();
-  draw([],row);
+  draw(b0?[b0.at]:[],row);
   const b=$('board');b.getBoundingClientRect();
   b.classList.add('anim');b.style.transform='translateY(var(--c))';
-  beep(180,.25,'sine',.04,90);
+  beep(170,.22,'sine',.04,90);
   setTimeout(()=>{
-    const gone=bd.pop();bd.unshift(row);sh++;
+    const gone=bd.pop();bd.unshift(row);sh++;rows++;
     const lost=gone.filter(x=>isPc(x)&&x.c==='w');
     busy=false;draw();
     if(lost.length){
       $('stage').classList.remove('shake');void $('stage').offsetWidth;$('stage').classList.add('shake');
       beep(90,.4,'sawtooth',.08,40);
-      log($('log').textContent+'  ·  in die Tiefe: '+lost.map(x=>SYM[x.t]).join(''));
-      if(lost.some(x=>x.t==='K'))return end('König abgestürzt');
+      log('🔻 in die Lava: '+lost.map(x=>SYM[x.t]).join(''));
+      if(lost.some(x=>x.t==='K'))return end('König in der Lava');
     }
-  },310);
+  },280);
 }
 
-function king(){return bd.some(row=>row.some(x=>isPc(x)&&x.c==='w'&&x.t==='K'))}
 function end(t){
   over=true;busy=false;const rec=score>hi;
-  if(rec){hi=score;try{localStorage.setItem('fallschach_hi',hi)}catch(e){}}
+  if(rec){hi=score;try{localStorage.setItem('schachsturz_hi',hi)}catch(e){}}
+  beep(300,.8,'sawtooth',.07,40);
   setTimeout(()=>{
-    $('ot').textContent=t.toUpperCase();$('od').textContent=score+' Punkte · '+turn+' Züge'+(rec?' · NEUER REKORD':'');
-    $('intro').style.display='none';$('rules').classList.add('hide');$('hsl').textContent='Rekord: '+hi;
+    $('ot').textContent=t.toUpperCase();$('od').textContent=score+' Punkte · '+rows+' Reihen'+(rec?' · NEUER REKORD':'');
+    $('rules').style.display='none';$('hsl').textContent='Rekord: '+hi;
     $('go').textContent='NOCHMAL';$('go').onclick=neu;$('ov').classList.remove('hide');
-  },500);
-  beep(300,.8,'sawtooth',.07,40);draw();
+  },700);
 }
 function log(t){$('log').textContent=t}
+function popup(t,col){const p=$('pop');p.textContent=t;p.style.color=col;p.style.textShadow='0 0 18px '+col;p.classList.remove('go');void p.offsetWidth;p.classList.add('go')}
 
 function cell(r,c){return $('board').querySelector(`[data-r="${r}"][data-c="${c}"]`)}
+function fxAll(fx){fx.forEach(([r,c,k,pts])=>burst(r,c,k,pts))}
 function burst(r,c,kind,pts){
   const el=cell(r,c);if(!el)return;
-  const col={gold:'var(--gold)',mag:'var(--mag)',ice:'var(--ice)'}[kind];
+  const col={gold:'var(--gold)',mag:'var(--mag)'}[kind];
   for(let i=0;i<10;i++){
-    const s=document.createElement('span'),a=Math.random()*6.28,d=20+Math.random()*30;
+    const s=document.createElement('span'),a=Math.random()*6.28,d=18+Math.random()*30;
     s.className='spark';s.style.background=col;s.style.boxShadow='0 0 8px '+col;
     s.style.setProperty('--x',Math.cos(a)*d+'px');s.style.setProperty('--y',Math.sin(a)*d+'px');
     el.appendChild(s);
   }
-  if(pts){const f=document.createElement('span');f.className='float';f.textContent='+'+pts;el.appendChild(f)}
 }
 
 function draw(hit=[],extra=null){
   const b=$('board');b.classList.remove('anim');
   b.style.transform='';b.style.marginTop=extra?'calc(var(--c)*-1)':'0';
-  const rows=extra?[extra].concat(bd):bd,off=extra?1:0;
+  const rs=extra?[extra].concat(bd):bd,off=extra?1:0;
   let h='';
-  rows.forEach((row,ri)=>{const r=ri-off;row.forEach((x,c)=>{
+  rs.forEach((row,ri)=>{const r=ri-off;row.forEach((x,c)=>{
     let cl='sq '+((r-sh+c+64)%2?'d':'l'),s='';
     if(r===H-1)cl+=' edge';
-    if(sel&&sel[0]===r&&sel[1]===c)cl+=' selc';
+    if(sel&&sel[0]===r&&sel[1]===c)cl+=chain?' chain':' selc';
     if(moves.some(m=>m.r===r&&m.c===c))cl+=isPc(x)?' cp':' mv';
     if(hit.some(q=>q[0]===r&&q[1]===c))cl+=' hit';
-    if(x&&x.t==='dot')s='<span class="gem"><i></i></span>';
+    if(isIt(x))s=`<span class="it ${x.k}">${ITEM[x.k]}</span>`;
     else if(x){cl+=' '+x.c;s=`<span class="pc">${SYM[x.t]}</span>`}
     h+=`<div class="${cl}" data-r="${r}" data-c="${c}">${s}</div>`;
   })});
   b.innerHTML=h;
-  $('sc').textContent=score;$('tn').textContent=turn;$('lv').textContent=level();
-  $('pc').textContent=bd?bd.flat().filter(x=>isPc(x)&&x.c==='w').length:16;
+  $('sc').textContent=score;$('lv').textContent=level();$('rw').textContent=rows;
+  $('cb').textContent=combo?'×'+(combo+1):'–';
+  $('plane').classList.toggle('frz',frost>0);$('timer').classList.toggle('frz',frost>0);
+}
+
+// Echtzeit-Sturz
+function loop(t){
+  const dt=Math.min(100,t-(tLast||t));tLast=t;
+  if(!over&&!paused&&!busy&&bd){
+    if(frost>0){$('tlab').textContent='❄ EIS – noch '+frost+' Züge ohne Sturz'}
+    else{
+      tAcc+=dt;const iv=interval();
+      $('tlab').textContent='STURZ IN '+Math.max(0,(iv-tAcc)/1000).toFixed(1)+' s';
+      if(tAcc>=iv)fall();
+    }
+  }
+  $('tfill').style.width=(frost>0?100:Math.min(100,tAcc/interval()*100))+'%';
+  requestAnimationFrame(loop);
 }
 
 function size(){
-  const c=Math.max(18,Math.floor(Math.min((innerWidth-36)/W,(innerHeight-200)/(H*.92),54)));
+  const c=Math.max(18,Math.floor(Math.min((innerWidth-36)/W,(innerHeight-210)/(H*.93),52)));
   document.documentElement.style.setProperty('--c',c+'px');
   $('plane').style.height=c*H+'px';$('plane').style.width=c*W+'px';
 }
 $('board').addEventListener('click',e=>{const s=e.target.closest('.sq');if(s)click(+s.dataset.r,+s.dataset.c)});
 addEventListener('resize',size);
-size();
-// Vorschau-Brett hinter dem Startbildschirm
-bd=Array.from({length:H},()=>Array(W).fill(null));
-BACK.forEach((t,c)=>{bd[0][c]=P(t,'b');bd[1][c]=P('P','b');bd[H-BUF-2][c]=P('P','w');bd[H-BUF-1][c]=P(t,'w')});
-draw();
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&!over&&!paused)pause()});
+size();setup();draw();requestAnimationFrame(loop);
 </script>
 </body>
 </html>
