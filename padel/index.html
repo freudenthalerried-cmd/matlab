@@ -39,6 +39,8 @@ button:focus-visible{outline:2px solid var(--ball);outline-offset:2px}
 #shotlbl{position:fixed;left:0;right:0;top:22%;text-align:center;font-weight:800;font-size:clamp(28px,6vw,44px);letter-spacing:.06em;text-transform:uppercase;color:#ffb070;text-shadow:0 3px 18px rgba(0,0,0,.6);pointer-events:none;z-index:2;opacity:0}
 #shotlbl.pop{animation:lbl .7s ease-out}
 @keyframes lbl{0%{opacity:0;transform:scale(.7)}20%{opacity:1;transform:scale(1.08)}100%{opacity:0;transform:scale(1) translateY(-14px)}}
+#bLoop{position:fixed;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);z-index:3;width:74px;height:74px;border-radius:50%;border:2px solid rgba(255,176,112,.6);background:rgba(9,15,34,.7);color:#ffb070;font-weight:800;font-size:17px;letter-spacing:.08em;text-transform:uppercase;touch-action:none;backdrop-filter:blur(4px)}
+#bLoop[aria-pressed="true"]{background:#ff8a3c;color:#1a0d05;border-color:#ffd0a8;box-shadow:0 0 22px rgba(255,138,60,.7)}
 #hint{position:fixed;left:16px;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);text-align:center;font-size:16px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);pointer-events:none;z-index:2}
 
 #zone{position:fixed;inset:0;z-index:1}
@@ -83,6 +85,7 @@ h2{margin:0;font-size:44px;line-height:.9;font-weight:800;text-transform:upperca
 <div id="msg"><b id="mT"></b><span id="mS"></span></div>
 <div id="hint" hidden></div>
 <div id="shotlbl"></div>
+<button id="bLoop" hidden aria-pressed="false">Loop</button>
 
 
 <div id="menu" class="ov">
@@ -106,7 +109,7 @@ h2{margin:0;font-size:44px;line-height:.9;font-weight:800;text-transform:upperca
     <ul class="keys" id="keysTouch" hidden>
       <li>Auf den Platz tippen oder halten: dorthin laufen</li>
       <li>Nach oben wischen: Schlag · schneller wischen = härter</li>
-      <li>Im Bogen nach oben wischen: Loop mit Drall und Kurve</li>
+      <li>Loop: im Bogen nach oben wischen oder LOOP-Knopf einschalten</li>
       <li>Nach unten wischen: Lob</li>
       <li>Schräg wischen = Richtung, am besten wenn der Ring grün ist</li>
     </ul>
@@ -971,8 +974,8 @@ function endTouch(e){
     // Tempo -> Härte, Krümmung -> Loop (Topspin + Kurve)
     const vel=d/Math.max(dt,16),pow=clamp(.75+(vel-.5)*.4,.75,1.5);
     let dev=0;for(const[px,py]of tp.pts||[]){const c=((px-tp.x0)*dy-(py-tp.y0)*dx)/d;if(Math.abs(c)>Math.abs(dev))dev=c;}
-    const curl=dev/d,loop=dy<0&&Math.abs(curl)>.12;
-    const opt=loop?{pow:pow*.95,spin:1,curve:clamp(-curl*14,-4,4)}:{pow};
+    const curl=dev/d,loop=dy<0&&(Math.abs(curl)>.07||S.loopArm);
+    const opt=loop?{pow:pow*.95,spin:1,curve:Math.abs(curl)>.07?clamp(-curl*14,-4,4):aim*3}:{pow};
     tp.swipe={x0:tp.x0,y0:tp.y0,x1:e.clientX,y1:e.clientY,t:0,pts:(tp.pts||[]).slice(),loop};
     press(dy<0?'d':'l',Math.abs(aim)>.2?aim:null,opt);
   }else if(e.type==='pointerup'&&!tp.hold){tp.tgt=toCourt(e.clientX,e.clientY);}
@@ -981,7 +984,7 @@ function endTouch(e){
 zone.addEventListener('pointerup',endTouch);zone.addEventListener('pointercancel',endTouch);
 function seg2(id,cb){const box=$(id);box.addEventListener('click',e=>{const t=e.target.closest('button');if(!t)return;for(const x of box.children)x.setAttribute('aria-pressed',x===t?'true':'false');cb(+t.dataset.v);});}
 seg2('segDiff',v=>S.diff=v);seg2('segLen',v=>S.target=v);
-function showControls(on){$('zone').hidden=!(on&&touch);tp.tgt=null;$('bPause').hidden=!on;}
+function showControls(on){$('zone').hidden=!(on&&touch);$('bLoop').hidden=!(on&&touch);tp.tgt=null;$('bPause').hidden=!on;}
 function startMatch(){
   ac();
   S.demo=false;S.paused=false;P[0].ai=false;S.auto=S.diff===0;
@@ -996,6 +999,7 @@ function toMenu(){
 function setPause(on){S.paused=on;$('pause').hidden=!on;}
 $('bPlay').onclick=startMatch;$('bAgain').onclick=startMatch;
 $('bMenu').onclick=toMenu;$('bQuit').onclick=toMenu;
+$('bLoop').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();ac();S.loopArm=!S.loopArm;$('bLoop').setAttribute('aria-pressed',S.loopArm);buzz(10);});
 $('bResume').onclick=()=>setPause(false);$('bPause').onclick=()=>setPause(true);
 $('bSound').onclick=()=>{ac();muted=!muted;if(BUS)BUS.gain.value=muted?0:.9;$('wave').style.display=muted?'none':'';};
 if(touch){$('keysDesk').hidden=true;$('keysTouch').hidden=false;}
