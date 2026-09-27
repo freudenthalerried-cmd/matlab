@@ -163,7 +163,7 @@ const BASE='<path d="M18 94h64a4 4 0 0 0 0-9H18a4 4 0 0 0 0 9z"/><path d="M26 85
 const SHAPE={
  K:BASE+'<path d="M34 76h32l-4-29H38z"/><path d="M29 48h42c6-12-2-22-12-22-4 0-8 2-9 6-1-4-5-6-9-6-10 0-18 10-12 22z"/><path d="M45.5 2h9v7h8v9h-8v9h-9v-9h-8V9h8z"/>',
  Q:BASE+'<path d="M34 76h32l-4-27H38z"/><path d="M28 50h44l8-30-14 14-6-20-10 18-10-18-6 20-14-14z"/><circle cx="20" cy="18" r="5"/><circle cx="40" cy="11" r="5"/><circle cx="60" cy="11" r="5"/><circle cx="80" cy="18" r="5"/>',
- R:BASE+'<path d="M32 76h36l-3-33H35z"/><path d="M26 44h48V17h-10v9h-8v-9H44v9h-8v-9H26z"/>',
+ R:'<path d="M18 94h64v-7c0-3-3-6-6-6H24c-3 0-6 3-6 6z"/><path d="M26 81h48l-4-7H30z"/><path d="M33 74h34l-3-30H36z"/><path d="M29 44h42l-3-7H32z"/><path d="M27 37h46V15h-10v8h-7v-8H44v8h-7v-8H27z"/><path d="M37 54h26M36 64h28M50 44v10M43 54v10M57 54v10M50 64v10" fill="none" stroke-width="1.6" opacity=".55"/>',
  B:BASE+'<path d="M36 76h28l-5-15H41z"/><path d="M50 13C35 24 29 38 35 52c3 8 27 8 30 0 6-14 0-28-15-39z"/><circle cx="50" cy="9" r="6"/><path d="M55 24L43 42" stroke-width="5" fill="none"/>',
  N:BASE+'<path d="M30 76h40c1-18-1-35-10-48-5-8-13-14-23-15l-2 8-9 5c-8 8-12 16-13 24l8 6 10-7c6 0 10-2 13-5-3 13-11 19-14 32z"/><circle cx="41" cy="27" r="3.2" fill="#000"/>',
  S:'<path d="M26 90V46a24 24 0 0 1 48 0v44l-8-8-8 8-8-8-8 8-8-8z"/><circle cx="41" cy="46" r="5" fill="#ff3355"/><circle cx="59" cy="46" r="5" fill="#ff3355"/>'
@@ -184,7 +184,7 @@ const T={
  K:{n:'König',mv:[['O',1],['D',1]],hp:10,atk:2,def:1,
     t1:{n:'Hochkönig',d:'zieht bis zu 2 Felder',mv:[['O',2],['D',2]]},t2:{n:'Königsaura',d:'Nachbarn +1 Angriff'}},
  R:{n:'Turm',mv:[['O',8]],hp:9,atk:2,def:1,
-    t1:{n:'Zitadelle',d:'zusätzlich 1 Feld diagonal',mv:[['O',8],['D',1]]},t2:{n:'Schildwall',d:'+2 Verteidigung'}},
+    t1:{n:'Festungsturm',d:'zusätzlich 1 Feld diagonal',mv:[['O',8],['D',1]]},t2:{n:'Schildwall',d:'+2 Verteidigung'}},
  B:{n:'Läufer',mv:[['D',8]],hp:7,atk:2,def:0,
     t1:{n:'Erzmagier',d:'springt zusätzlich wie ein Springer',mv:[['D',8],['N']]},t2:{n:'Segen',d:'heilt sich & Nachbarn jede Runde +1'}},
  N:{n:'Springer',mv:[['N']],hp:7,atk:3,def:0,
