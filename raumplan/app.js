@@ -135,7 +135,7 @@ async function pgFrames(files, step, prog) { // -> {frames, W, H}
   return { frames, W, H, video, imgs: files.filter(f => f.type.startsWith('image')) };
 }
 /* Video: nur Bilder verwenden, in denen die Kamera (fast) stillsteht – Rolling Shutter verzerrt sonst um mm–cm */
-function selectStill(frames, W) {
+function selectStill(frames, W, H) {
   const k = 1920 / Math.max(W, H), ctr = d => [(d.c[0][0] + d.c[2][0]) / 2, (d.c[0][1] + d.c[2][1]) / 2];
   const speed = (a, b) => { if (!a || !b) return null; const v = []; a.dets.forEach(d => { const e = b.dets.find(x => x.id === d.id); if (e) { const p = ctr(d), q = ctr(e); v.push(Math.hypot(p[0] - q[0], p[1] - q[1]) / Math.abs(b.t - a.t)); } }); return v.length ? v.reduce((s, x) => s + x, 0) / v.length * k : null; };
   frames.forEach((f, i) => { const s = [speed(frames[i - 1], f), speed(f, frames[i + 1])].filter(x => x !== null); f.speed = s.length ? Math.max(...s) : Infinity; });
@@ -157,7 +157,7 @@ $('#pgRun').onclick = async () => {
   try {
     const isVid = pgFiles.some(f => f.type.startsWith('video'));
     let { frames, W, H, video, imgs } = await pgFrames(pgFiles, +$('#pgStep').value, (f, t) => { pr.value = f * 0.8; $('#pgSrc').textContent = t; });
-    if (isVid) { const all = frames.length; frames = selectStill(frames, W); pgLog(`Ruhige Bilder ausgewählt: ${frames.length} von ${all} (Rolling-Shutter-Schutz)`); }
+    if (isVid) { const all = frames.length; frames = selectStill(frames, W, H); pgLog(`Ruhige Bilder ausgewählt: ${frames.length} von ${all} (Rolling-Shutter-Schutz)`); }
     const nd = frames.reduce((s, f) => s + f.dets.length, 0);
     pgLog(`Erkennung fertig: ${nd} Markensichtungen in ${frames.length} Bildern (${((performance.now() - t0) / 1000).toFixed(0)} s)`);
     await tick();
