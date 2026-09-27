@@ -167,6 +167,21 @@ const PG = (() => {
       ...[0, 1, 2].map(q => ({ f: Q => ctrOf(Q, k0)[q], v: 0, s: 1e-7, idx: idx(k0) })),
       ...[1, 2].map(q => ({ f: Q => ctrOf(Q, k1)[q], v: 0, s: 1e-7, idx: idx(k1) })),
       { f: Q => ctrOf(Q, k2)[2], v: 0, s: 1e-7, idx: idx(k2) }];
+    // Starre Marken: eben, quadratisch, alle gleich groß gedruckt (weiche Bedingungen, σ 0,3 mm) – erst in Stufe 2
+    const rigidCons = [];
+    if (opt.rigid !== false) {
+      const d3 = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]), sR = opt.rigidSigma || 0.0003;
+      const side = (Q, k) => d3(Q[4 * k], Q[4 * k + 1]);
+      used.forEach((id, k) => {
+        const ix = idx(k), C = q => Q => Q[4 * k + q];
+        rigidCons.push({ f: Q => { const a = C(0)(Q), b = C(1)(Q), c = C(2)(Q), d = C(3)(Q), n = nrm(cross(sub(b, a), sub(c, a))); return dot(n, sub(d, a)); }, v: 0, s: sR, idx: ix });
+        rigidCons.push({ f: Q => d3(C(0)(Q), C(2)(Q)) - d3(C(1)(Q), C(3)(Q)), v: 0, s: sR, idx: ix });
+        rigidCons.push({ f: Q => d3(C(0)(Q), C(1)(Q)) - d3(C(3)(Q), C(2)(Q)), v: 0, s: sR, idx: ix });
+        rigidCons.push({ f: Q => d3(C(0)(Q), C(3)(Q)) - d3(C(1)(Q), C(2)(Q)), v: 0, s: sR, idx: ix });
+        rigidCons.push({ f: Q => d3(C(0)(Q), C(1)(Q)) - d3(C(0)(Q), C(3)(Q)), v: 0, s: sR, idx: ix });
+        if (k !== k0) rigidCons.push({ f: Q => side(Q, k) - side(Q, k0), v: 0, s: 2 * sR, idx: [...ix, ...idx(k0)] });
+      });
+    }
     if (opt.scaleDist2 > 0 && kU.has(3)) { const k3 = kU.get(3); cons.push({ f: Q => Math.hypot(...sub(ctrOf(Q, k3), ctrOf(Q, k2))), v: opt.scaleDist2, s: st, idx: [...idx(k2), ...idx(k3)] }); }
     log(`Startwerte: ${camIdx.length} Bilder, ${used.length} Marken, ${obs.length / 4} Sichtungen, f ≈ ${it0[0].toFixed(0)} px`);
     let r = BAm.solve({ it: it0.slice(), cams, pts, obs, cons }, { iters: opt.iters || 60, log: (it, c) => { if (it % 5 === 4) log(`Ausgleich Iteration ${it + 1}: Kosten ${c.toExponential(2)}`); } });
@@ -178,11 +193,15 @@ const PG = (() => {
     }
     // grobe Fehlerkennungen (z. B. Spiegelung/Fehlerkennung) entfernen und neu rechnen
     const bad = new Set(); obs.forEach((o, k) => { const p = BAm.project(r.it, r.cams[o.c], r.pts[o.p], o.tau); if (Math.hypot(p[0] - o.u, p[1] - o.v) > Math.max(2, 8 * r.rms)) bad.add(Math.floor(k / 4)); });
-    let res = r;
+    let res = r, obsUse = obs;
     if (bad.size) {
-      const obs2 = obs.filter((_, k) => !bad.has(Math.floor(k / 4)));
+      const obs2 = obsUse = obs.filter((_, k) => !bad.has(Math.floor(k / 4)));
       log(`${bad.size} fehlerhafte Markensichtungen entfernt, neu ausgleichen…`);
       res = BAm.solve({ it: r.it, cams: r.cams, pts: r.pts, obs: obs2, cons }, { iters: 30, rs: r.cams[0].length > 6, rsCam: r.cams.map(c => c.length > 6 && c.slice(6).some(v => Math.abs(v) > 1e-6)), rsSigma: opt.rsSigma || [0.02, 0.02, 0.02, 1e-6, 1e-6, 1e-6] });
+    }
+    if (rigidCons.length && res.rms < 1) { // Stufe 2: starre Marken
+      const rr = BAm.solve({ it: res.it, cams: res.cams, pts: res.pts, obs: obsUse, cons: cons.concat(rigidCons) }, { iters: 25, rs: res.cams[0].length > 6, rsCam: res.cams.map(c => c.length > 6 && c.slice(6).some(v => Math.abs(v) > 1e-6)), rsSigma: opt.rsSigma || [0.02, 0.02, 0.02, 1e-6, 1e-6, 1e-6] });
+      if (isFinite(rr.rms) && rr.rms < res.rms * 1.15 + 0.02) { res = rr; log(`Starre Marken: Bildfehler ${rr.rms.toFixed(2)} px`); }
     }
     const sus = [2, 3].filter(id => kU.has(id) && Math.abs(ctrOf(res.pts, kU.get(id))[2]) > 0.02).map(id => `Bodenmarke ${id} liegt ${Math.round(ctrOf(res.pts, kU.get(id))[2] * 1000)} mm über/unter dem Boden`);
     const sScale = res.sigmaOf(Q => Math.hypot(...sub(ctrOf(Q, kU.get(1)), ctrOf(Q, kU.get(0)))));
@@ -247,17 +266,28 @@ const PG = (() => {
       const q = []; g.m.forEach(m => { for (let j = 0; j < 4; j++) q.push(Q[4 * m.k + j]); });
       const mu = [0, 1].map(k => q.reduce((s, p) => s + p[k], 0) / q.length); let sxx = 0, sxy = 0, syy = 0;
       q.forEach(p => { const a = p[0] - mu[0], b = p[1] - mu[1]; sxx += a * a; sxy += a * b; syy += b * b; });
-      let th = 0.5 * Math.atan2(2 * sxy, sxx - syy); if (g.m.length === 1) th = Math.atan2(g.n[0], -g.n[1]); // eine Marke: Richtung aus Normale
+      let th = 0.5 * Math.atan2(2 * sxy, sxx - syy); if (g.m.length === 1) th = g.fixTh !== undefined ? g.fixTh : Math.atan2(g.n[0], -g.n[1]); // eine Marke: Richtung aus Normale bzw. rechtwinklig zu den Nachbarn
       return { mu, d: [Math.cos(th), Math.sin(th)] };
     };
     const inter = (A, B) => { const det = A.d[0] * -B.d[1] + A.d[1] * B.d[0]; if (Math.abs(det) < 1e-9) return null; const dx = B.mu[0] - A.mu[0], dy = B.mu[1] - A.mu[1], t = (dx * -B.d[1] + dy * B.d[0]) / det; return [A.mu[0] + A.d[0] * t, A.mu[1] + A.d[1] * t]; };
     const poly = Q => { const Ls = G.map(g => line(Q, g)); return Ls.map((L, i) => inter(Ls[(i - 1 + Ls.length) % Ls.length], L)); };
+    // Ein-Marken-Wände: Richtung der Markennormale ist unsicher (±1–2°) -> bei fast rechtem Winkel zu den Nachbarn rechtwinklig annehmen
+    const snapped = [];
+    G.forEach((g, i) => {
+      if (g.m.length !== 1) return; const own = Math.atan2(g.n[0], -g.n[1]), nb = [G[(i - 1 + G.length) % G.length], G[(i + 1) % G.length]].filter(h => h.m.length > 1);
+      if (!nb.length) return;
+      const cands = nb.map(h => { const L = line(P, h), t = Math.atan2(L.d[1], L.d[0]); return [t + Math.PI / 2, t - Math.PI / 2, t, t + Math.PI]; }).flat();
+      const df = t => Math.abs(Math.atan2(Math.sin(t - own), Math.cos(t - own)) % Math.PI);
+      const best = cands.reduce((a, t) => df(t) < df(a) ? t : a);
+      if (df(best) < 2 * Math.PI / 180) { g.fixTh = best; snapped.push(g.m[0].id); }
+    });
     const Pg = poly(P); if (Pg.some(p => !p)) return { ok: false, msg: 'Benachbarte Wände parallel – Wandzuordnung prüfen.' };
     const n = Pg.length, len = (Q, i) => { const p = poly(Q); return Math.hypot(p[(i + 1) % n][0] - p[i][0], p[(i + 1) % n][1] - p[i][1]); };
     const sig = Pg.map((_, i) => rec.res.sigmaOf(Q => len(Q, i)));
     // Wandlinie i verläuft zwischen Ecke i und i+1: Ecke i = Schnitt (Wand i-1, Wand i)
     const warn = G.filter(g => g.m.length < 2).map(g => `Wand mit Marke ${g.m[0].id} hat nur 1 Marke – Richtung unsicher, besser ≥ 2 Marken je Wand.`);
     if (sig.some(v => v !== null && v > 0.05)) warn.push('Raum unvollständig: mindestens eine Wand ist kaum bestimmt (±-Wert sehr groß) – vermutlich wurde eine Wand zu selten fotografiert. Diesen Bereich aus 2–3 weiteren Positionen aufnehmen und neu auswerten.');
+    if (snapped.length) warn.push(`Wand mit Marke ${snapped.join(', ')}: nur 1 Marke – Richtung rechtwinklig zu den Nachbarwänden angenommen. Für Altbau besser 2 Marken je Wand.`);
     if (weak.length) warn.push(`Marken ${weak.join(', ')} zu selten/zu ähnlich gesehen (Lage > ±1 cm) – nicht verwendet. Diese aus weiteren Positionen aufnehmen.`);
     // Raumhöhe aus Deckenmarken (waagrecht, oberhalb 1,8 m) über dem Boden (z = 0 aus Bodenmarken)
     const ceil = rec.ids.filter(id => id >= 4 && (!opt.ids || opt.ids.has(id))).map(id => { const k = rec.kU.get(id), Q = [0, 1, 2, 3].map(q => P[4 * k + q]), n = nrm(cross(sub(Q[2], Q[0]), sub(Q[3], Q[1]))); return { k, z: ctrOf(P, k)[2], hz: Math.abs(n[2]) }; }).filter(m => m.hz > 0.9 && m.z > 1.8);
