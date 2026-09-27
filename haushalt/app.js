@@ -176,7 +176,7 @@ async function recognize(dataUrl, room, place, opt = {}) {
           input_schema: {
             type: 'object',
             properties: {
-              raum: { type: 'string', description: 'Vermuteter Raum im Haus, z. B. "Küche", "Bad", "Garage", "Keller"' },
+              raum: { type: 'string', description: 'Wahrscheinlichster Raum im Haus, z. B. "Küche", "Bad", "Garage", "Keller", "Büro" – immer einen konkreten Raum raten, nie "unbekannt"' },
               ...(opt.current ? { gleicher_ort: { type: 'boolean', description: `true, wenn das Bild noch denselben Behälter/Ort zeigt wie "${opt.current}"; false, wenn eine andere Kiste/Lade/Regal zu sehen ist` } } : {}),
               ort: { type: 'string', description: 'Kurze Bezeichnung des Behälters/Orts, z. B. "Besteckschublade", "Werkzeugkiste"' },
               items: {
@@ -187,7 +187,7 @@ async function recognize(dataUrl, room, place, opt = {}) {
                     name: { type: 'string', description: 'Kurzer deutscher Name, z. B. "Schere"' },
                     anzahl: { type: 'integer' },
                     suchbegriffe: { type: 'array', items: { type: 'string' }, description: 'Synonyme, Oberbegriffe, österr. Begriffe (z. B. Klebeband → Tixo, Tesa)' },
-                    ...(opt.boxes ? { box: { type: 'array', items: { type: 'integer' }, description: 'Position im Bild als [x, y, breite, höhe], Werte 0–1000 relativ zur Bildgröße' } } : {})
+                    ...(opt.boxes ? { box: { type: 'array', items: { type: 'integer' }, description: `Position im Bild in Pixel als [x, y, breite, höhe]; das Bild ist ${opt.size?.[0] || 1280} × ${opt.size?.[1] || 960} Pixel groß` } } : {})
                   },
                   required: ['name', 'suchbegriffe']
                 }
@@ -213,9 +213,11 @@ async function recognize(dataUrl, room, place, opt = {}) {
   if (!r.ok) throw new Error(j.error?.message || `API-Fehler ${r.status}`);
   if (!opt.boxes) stats.bump();
   const inp = j.content?.find(c => c.type === 'tool_use')?.input || {};
+  // Platzhalter wie "<UNKNOWN>", "unbekannt", "?" nicht als Namen übernehmen
+  const clean = v => { const s = String(v || '').trim(); return /^[<(\[]?\s*(unknown|unbekannt|n\/a|none|null|keine?r?|\?+)\s*[>)\]]?$/i.test(s) ? '' : s; };
   return {
-    raum: (inp.raum || '').trim(),
-    ort: (inp.ort || '').trim(),
+    raum: clean(inp.raum),
+    ort: clean(inp.ort),
     gleich: inp.gleicher_ort !== false,
     items: (inp.items || []).filter(i => i?.name).map(i => ({
       name: i.anzahl > 1 ? `${i.name} (${i.anzahl}×)` : i.name,
@@ -575,9 +577,10 @@ function signature(canvas) {
   return out;
 }
 const sigDiff = (a, b) => a.reduce((s, v, i) => s + Math.abs(v - b[i]), 0) / a.length;
-// Produkt aus dem Bild ausschneiden (box = [x, y, b, h] in 0–1000)
+// Produkt aus dem Bild ausschneiden (box = [x, y, b, h] in Pixel des übergebenen Bildes)
 function cropItem(canvas, box) {
-  let [x, y, w, h] = box ? box.map(v => Math.max(0, Math.min(1000, v)) / 1000) : [0, 0, 1, 1];
+  const W = canvas.width, H = canvas.height;
+  let [x, y, w, h] = box ? [box[0] / W, box[1] / H, box[2] / W, box[3] / H].map(v => Math.max(0, Math.min(1, v))) : [0, 0, 1, 1];
   const pad = 0.08;
   x = Math.max(0, x - w * pad); y = Math.max(0, y - h * pad);
   w = Math.min(1 - x, w * (1 + 2 * pad)); h = Math.min(1 - y, h * (1 + 2 * pad));
@@ -611,7 +614,7 @@ async function filmProcess(canvas) {
   const current = film.autoPlace && film.spot ? film.spot.place : '';
   filmStatus('🔎 Erkenne …');
   let res;
-  try { res = await recognize(dataUrl, film.room, film.autoPlace ? current : film.place, { boxes: true, known, current }); }
+  try { res = await recognize(dataUrl, film.room, film.autoPlace ? current : film.place, { boxes: true, known, current, size: [canvas.width, canvas.height] }); }
   catch (e) { filmStatus('⚠️ ' + e.message); return; }
   film.sent++; stats.bump();
   if (!film.room) {                       // Raum von der KI geschätzt, gilt für den ganzen Durchgang
