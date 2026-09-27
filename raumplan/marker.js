@@ -53,21 +53,24 @@ const MK = (() => {
 
   /* Erkennung. gray: Float32Array/Uint8 (W*H). opt.maxW: Arbeitsbreite. Rückgabe [{id, c:[[x,y]*4], sharp}] in Vollbild-Pixeln */
   function detect(gray, W, H, opt = {}) {
+    const st = opt.stats || null, inc = k => { if (st) st[k] = (st[k] || 0) + 1; };
     const f = Math.max(1, Math.round(W / (opt.maxW || 1600))), D = downscale(gray, W, H, f), g = D.g, w = D.W, h = D.H;
     // adaptive Schwelle (Integralbild)
     const I = new Float64Array((w + 1) * (h + 1));
     for (let y = 0; y < h; y++) { let s = 0; for (let x = 0; x < w; x++) { s += g[y * w + x]; I[(y + 1) * (w + 1) + x + 1] = I[y * (w + 1) + x + 1] + s; } }
-    const R = Math.max(7, Math.round(w / 50)), bin = new Uint8Array(w * h);
+    const out = [], seen = new Map();
+    for (const [Rf, C] of opt.passes || [[1, 6], [2.5, 3]]) {
+    const R = Math.max(7, Math.round(w / 50 * Rf)), bin = new Uint8Array(w * h);
     for (let y = 0; y < h; y++) {
       const y0 = Math.max(0, y - R), y1 = Math.min(h, y + R + 1);
       for (let x = 0; x < w; x++) {
         const x0 = Math.max(0, x - R), x1 = Math.min(w, x + R + 1), n = (y1 - y0) * (x1 - x0);
         const m = (I[y1 * (w + 1) + x1] - I[y0 * (w + 1) + x1] - I[y1 * (w + 1) + x0] + I[y0 * (w + 1) + x0]) / n;
-        bin[y * w + x] = g[y * w + x] < m - 6 ? 1 : 0;
+        bin[y * w + x] = g[y * w + x] < m - C ? 1 : 0;
       }
     }
     // Zusammenhangskomponenten (dunkel), je Zeile linke/rechte Grenze für die Hülle
-    const lab = new Int32Array(w * h), stack = new Int32Array(w * h), out = [];
+    const lab = new Int32Array(w * h), stack = new Int32Array(w * h);
     let nl = 0;
     for (let s0 = 0; s0 < w * h; s0++) {
       if (!bin[s0] || lab[s0]) continue;
@@ -83,19 +86,24 @@ const MK = (() => {
         if (y < h - 1 && bin[p + w] && !lab[p + w]) { lab[p + w] = nl; stack[sp++] = p + w; }
       }
       const bw = bx1 - bx0 + 1, bh = by1 - by0 + 1;
-      if (bw < 14 || bh < 14 || bw > w / 2 || bh > h / 1.2 || bw / bh > 6 || bh / bw > 6 || cnt < 0.2 * bw * bh) continue;
+      if (bw < 14 || bh < 14 || bw > w / 2 || bh > h / 1.2 || bw / bh > 6 || bh / bw > 6 || cnt < 0.08 * bw * bh) continue;
       if (bx0 < 2 || by0 < 2 || bx1 > w - 3 || by1 > h - 3) continue; // am Bildrand angeschnitten
       const pts = []; rows.forEach((r, y) => { pts.push([r[0], y + 0.5], [r[1] + 1, y + 0.5]); });
-      const q = quadOf(pts); if (!q) continue;
-      const dec = decode(g, w, h, q); if (!dec) continue;
+      inc('komponenten'); const q = quadOf(pts); if (!q) continue; inc('vierecke');
+      const dec = decode(g, w, h, q, inc); if (!dec) continue; inc('decodiert');
       // Ecken in Vollbild-Koordinaten, Reihenfolge nach Markenorientierung
       let C = q.map(p => [p[0] * f, p[1] * f]); for (let k = 0; k < dec.rot; k++) C = [C[3], C[0], C[1], C[2]];
       const ref = refine(gray, W, H, C, f);
-      if (ref) out.push({ id: dec.id, c: ref.c, sharp: ref.sharp, res: ref.res });
+      if (!ref) { inc('kante_fehlt'); continue; }
+      const prev = seen.get(dec.id), cand = { id: dec.id, c: ref.c, sharp: ref.sharp, res: ref.res };
+      if (!prev) { seen.set(dec.id, cand); out.push(cand); }
+      else if (Math.hypot(prev.c[0][0] - cand.c[0][0], prev.c[0][1] - cand.c[0][1]) > 3 * f + 3) prev.dup = true; // gleiche ID an anderer Stelle
+      else if (cand.res < prev.res) Object.assign(prev, cand);
     }
-    // Doppelte IDs (Fehldetektion) -> beide verwerfen
-    const cnt = {}; out.forEach(m => cnt[m.id] = (cnt[m.id] || 0) + 1);
-    return out.filter(m => cnt[m.id] === 1);
+    if (out.length && opt.fast) break;
+    }
+    // Doppelte IDs an verschiedenen Stellen (Fehldetektion) -> verwerfen
+    return out.filter(m => !m.dup).map(({ dup, ...m }) => m);
   }
   function hull(P) {
     P = P.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]);
@@ -115,12 +123,12 @@ const MK = (() => {
     if (!r1 || !r2) return null;
     let Q = [p, r1, q, r2]; if (area(Q) < 0) Q = [p, r2, q, r1]; // im Bild (y nach unten) im Uhrzeigersinn
     const ah = Math.abs(area(Hh)), aq = Math.abs(area(Q));
-    if (aq < 0.88 * ah || aq < 150) return null;
+    if (aq < 0.78 * ah || aq < 150) return null; // Unschärfe rundet Ecken ab; genaue Ecken kommen aus dem Kantenfit
     const L = Q.map((a, i) => Math.hypot(Q[(i + 1) % 4][0] - a[0], Q[(i + 1) % 4][1] - a[1]));
     if (Math.min(...L) < 10 || Math.max(...L) / Math.min(...L) > 5) return null;
     return Q;
   }
-  function decode(g, w, h, Q) {
+  function decode(g, w, h, Q, inc = () => { }) {
     const Hm = homog([[0, 0], [G, 0], [G, G], [0, G]], Q); if (!Hm) return null;
     const v = [];
     for (let r = 0; r < G; r++) for (let k = 0; k < G; k++) {
@@ -136,11 +144,11 @@ const MK = (() => {
       else if (dark) code |= 1 << ((r - 1) * N + (k - 1));
     }
     code >>>= 0;
-    if (bad > 2) return null;
+    if (bad > 2) { inc('rand_falsch'); return null; }
     // Außen muss hell sein (Ruhezone)
     let outs = 0, on = 0; for (const [x, y] of [[-.5, G / 2], [G + .5, G / 2], [G / 2, -.5], [G / 2, G + .5]]) { const p = Hm(x, y), val = bil(g, w, h, p[0], p[1]); if (!isNaN(val)) { on++; if (val > t) outs++; } }
-    if (on && outs < on - 1) return null;
-    return decodeBits(code);
+    if (on && outs < on - 1) { inc('ruhezone_falsch'); return null; }
+    const r = decodeBits(code); if (!r) inc('code_unbekannt'); return r;
   }
   /* Kanten subpixelgenau: entlang jeder Seite Gradientenmaximum in Normalenrichtung, Linienfit, Ecken = Schnittpunkte */
   function refine(g, W, H, C, f) {
