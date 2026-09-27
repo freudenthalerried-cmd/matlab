@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, interactive-widget=resizes-content">
 <title>Wortreise – Englisch lernen wie ein Spiel</title>
 <meta name="description" content="Lerne Englisch spielerisch: Level, Sterne, Münzen, Streaks und Mini-Spiele.">
 <style>
@@ -16,10 +16,10 @@ html,body{margin:0;padding:0;height:100%;}
 body{
   font-family:'Baloo 2','Segoe UI',system-ui,sans-serif;
   background:linear-gradient(160deg,var(--bg1),var(--bg2) 60%,#134e5e);
-  min-height:100vh;color:var(--text);overflow-x:hidden;
+  min-height:100vh;min-height:100dvh;color:var(--text);overflow-x:hidden;
   -webkit-font-smoothing:antialiased;
 }
-#app{max-width:480px;margin:0 auto;min-height:100vh;position:relative;padding-bottom:24px;}
+#app{max-width:480px;margin:0 auto;min-height:100vh;min-height:100dvh;position:relative;padding-bottom:24px;}
 
 /* ---------- TOPBAR ---------- */
 .topbar{
@@ -533,6 +533,9 @@ function renderQuestion(){
       </div>`;
     const input = document.getElementById('typeInput');
     input.focus();
+    input.addEventListener('focus', ()=>{
+      setTimeout(()=>input.scrollIntoView({block:'center', behavior:'smooth'}), 300);
+    });
     input.addEventListener('keydown', e=>{ if(e.key==='Enter') submitTyped(en); });
     document.getElementById('submitTypeBtn').addEventListener('click', ()=>submitTyped(en));
   }
