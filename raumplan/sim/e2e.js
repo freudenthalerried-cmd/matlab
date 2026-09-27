@@ -1,6 +1,6 @@
 // Ende-zu-Ende-Test im Browser: synthetisches Foto rendern -> Referenz + Ecken (mit Eckenfang) -> Raum -> Maßband -> Ausgleich
 const {chromium}=require(process.env.NP+'/playwright');
-(async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:1100,height:900}});
+(async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:+(process.env.VW||1100),height:900}});
 const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('console',m=>m.type()=='error'&&errs.push(m.text()));
 await p.goto('file://'+process.cwd()+'/index.html');
 const out=await p.evaluate(()=>{

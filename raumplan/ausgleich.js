@@ -112,7 +112,9 @@ const AG = (() => {
     const blunder = worst && Math.abs(worst.w) > 3.29;
     if (blunder) warn.push(realRed >= 2 ? `Vermutlich grober Messfehler bei „${worst.o.typ} ${worst.o.i + 1}${worst.o.j != null ? '–' + (worst.o.j + 1) : ''}“ (Tipp-/Ablesefehler) – nachmessen.`
       : 'Die Maße widersprechen sich (grober Fehler), der Fehler ist aber nicht eindeutig zuordenbar – zusätzliche Kontrollmaße (Diagonale/Eckwinkel) messen.');
-    if (s0 && s0 > 2) warn.push(`Maße passen schlechter zusammen als erwartet (σ₀ = ${s0.toFixed(1)}). Maßband-Genauigkeit zu optimistisch oder Messfehler.`);
+    // Globaltest: vᵀPv ~ χ²(r); Grenze 99 % (Wilson-Hilferty)
+    const chi2 = r => r * (1 - 2 / (9 * r) + 2.326 * Math.sqrt(2 / (9 * r))) ** 3;
+    if (s0 && vpv > chi2(red)) warn.push(`Maße passen schlechter zusammen als erwartet (σ₀ = ${s0.toFixed(1)}). Maßband-Genauigkeit zu optimistisch oder Messfehler.`);
     return { ok: true, P: Pn, res, s0, red, wallSigma, cornerSigma, warn, worst: blunder && realRed >= 2 ? worst : null, realRed };
   }
 

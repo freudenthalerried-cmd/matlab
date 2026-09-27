@@ -10,7 +10,7 @@ const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
 const R2D = 180 / Math.PI;
 
 const DEF = {
-  project: { bv: '', bh: '', adr: '', gst: '', kg: '', pv: '', inhalt: 'Grundriss Erdgeschoß – Bestand', nr: '01', datum: new Date().toLocaleDateString('de-AT'), nord: 0 },
+  project: { bv: '', bh: '', adr: '', gst: '', kg: '', pv: '', inhalt: 'Grundriss Erdgeschoß – Bestand', nr: '01', ax: '', ay: '', datum: new Date().toLocaleDateString('de-AT'), nord: 0 },
   scale: 100, paper: 'A3', wallT: 0.30, innerT: 0.12, target: 3, dimFmt: 'mm', floorS: 2, cam: null, rooms: [], meas: []
 };
 let S;
@@ -18,7 +18,8 @@ try { S = JSON.parse(localStorage.getItem(KEY)); } catch (e) { }
 if (!S || !Array.isArray(S.rooms)) S = structuredClone(DEF);
 S = { ...structuredClone(DEF), ...S, project: { ...DEF.project, ...S.project } };
 let saveT;
-function save() { clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { } }, 300); }
+const ser = () => JSON.stringify(S, (k, v) => k === '_link' ? undefined : v);
+function save() { clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(KEY, ser()); } catch (e) { } }, 300); }
 
 let snaps = [], cur = null, mode = 'ref', selPt = -1, zoom = 1, selRoom = null;
 
@@ -379,6 +380,11 @@ function dimTxt(p, L, rot) { // 4,21⁵ = 4,215 m (österr. Schreibweise)
 const dimStr = L => S.dimFmt === 'cm' ? f2(L) : f2(L, 3);
 function rdAngle(d) { let a = -Math.atan2(d[1], d[0]) * R2D; if (a > 90.01) a -= 180; if (a <= -89.99) a += 180; return a; }
 function line(a, b, w, c = '#000', extra = '') { return `<line x1="${X(a)}" y1="${Y(a)}" x2="${X(b)}" y2="${Y(b)}" stroke="${c}" stroke-width="${mm(w).toFixed(2)}" ${extra}/>`; }
+function inPoly(pt, P) { let c = false; for (let i = 0, j = P.length - 1; i < P.length; j = i++) if ((P[i][1] > pt[1]) !== (P[j][1] > pt[1]) && pt[0] < (P[j][0] - P[i][0]) * (pt[1] - P[i][1]) / (P[j][1] - P[i][1]) + P[i][0]) c = !c; return c; }
+function innerWall(ri, e) { // liegt hinter der Wand ein anderer Raum?
+  const q = add(mid(e.p, e.q), mul(e.n, e.t + 0.05));
+  return S.rooms.some((o, k) => k !== ri && o.segs.length > 2 && inPoly(q, geo(o).P));
+}
 function planSVG(sel) {
   let o = '';
   S.rooms.forEach((r, ri) => {
@@ -393,6 +399,7 @@ function planSVG(sel) {
       const s0 = add(e.p, mul(e.d, op.pos)), s1 = add(s0, mul(e.d, op.w)), nt = mul(e.n, e.t), eps = mul(e.n, -0.01), ept = mul(e.n, e.t + 0.01);
       o += `<path d="M${[add(s0, eps), add(s1, eps), add(s1, ept), add(s0, ept)].map(T).join('L')}Z" fill="#fff"/>`;
       o += line(s0, add(s0, nt), .35) + line(s1, add(s1, nt), .35);
+      if (op.pair) return; // Gegenstück einer Tür im Nachbarraum: nur Wandöffnung
       const mids = add(mid(s0, s1), mul(e.n, e.t / 2)), ang = rdAngle(e.d);
       if (op.type === 'fenster') {
         [0, .45, .55, 1].forEach(f => o += line(add(s0, mul(e.n, e.t * f)), add(s1, mul(e.n, e.t * f)), f % 1 ? .18 : .25));
@@ -414,6 +421,12 @@ function planSVG(sel) {
     });
     // Bemaßung (lichte Maße)
     if (r.dims !== false) g.E.forEach(e => {
+      if (innerWall(ri, e)) { // Innenwand: Maßkette im Raum
+        const off = -mm(5) / 100, a = add(e.p, mul(e.n, off)), b = add(e.q, mul(e.n, off)), tk = mul(add(e.d, e.n), mm(1.3) / 100);
+        o += line(a, b, .18) + line(add(a, tk), add(a, mul(tk, -1)), .35) + line(add(b, tk), add(b, mul(tk, -1)), .35);
+        o += dimTxt(add(mid(a, b), mul(e.n, -mm(2.2) / 100)), e.L, rdAngle(e.d));
+        return;
+      }
       const off = e.t + mm(7) / 100, a = add(e.p, mul(e.n, off)), b = add(e.q, mul(e.n, off)), tk = mul(add(e.d, e.n), mm(1.3) / 100);
       o += line(add(e.p, mul(e.n, e.t + mm(1.5) / 100)), add(a, mul(e.n, mm(1.5) / 100)), .13) + line(add(e.q, mul(e.n, e.t + mm(1.5) / 100)), add(b, mul(e.n, mm(1.5) / 100)), .13);
       o += line(a, b, .18) + line(add(a, tk), add(a, mul(tk, -1)), .35) + line(add(b, tk), add(b, mul(tk, -1)), .35);
@@ -542,8 +555,45 @@ function roomPanel() {
     <td class="hide-s"><button data-a="flip" data-oi="${i}" title="Anschlag links/rechts">⇆</button><button data-a="aus" data-oi="${i}" title="Aufschlag innen/außen">⇅</button></td>
     <td><button data-a="delop" data-oi="${i}" class="danger">×</button></td></tr>`).join('') || '<tr><td colspan="8" class="hint">Keine – bei einer Wand „+ Öffnung“ tippen. Abstand = vom Wandanfang (Ecke mit gleicher Nummer).</td></tr>'}
   </table>
-  ${obsPanel(r)}`;
+  ${obsPanel(r)}
+  ${linkPanel(r)}`;
   rstat();
+}
+function linkPanel(r) {
+  const others = S.rooms.map((o, k) => [o, k]).filter(([o]) => o !== r);
+  if (!others.length) return '';
+  const L = r._link || (r._link = { wall: 0, room: others[0][1], wall2: 0, t: '', mode: 'tuer', opA: 0, opB: 0, off: 0 }), B = S.rooms[L.room] || others[0][0];
+  const sel = (f, opts, v) => `<select data-lk="${f}">${opts.map(([val, lab]) => `<option value="${val}" ${val == v ? 'selected' : ''}>${esc(lab)}</option>`).join('')}</select>`;
+  const walls = rr => rr.segs.map((_, k) => [k, `Wand ${k + 1}`]), ops = rr => (rr.ops || []).map((o, k) => [k, `${o.type === 'fenster' ? 'Fenster' : o.type === 'tuer' ? 'Tür' : 'Durchgang'} (Wand ${o.wall + 1}, ${f2(o.w)})`]);
+  return `<h4>Nachbarraum exakt anschließen</h4>
+  <div class="grid">
+    <label>Diese Wand${sel('wall', walls(r), L.wall)}</label>
+    <label>Nachbarraum${sel('room', others.map(([o, k]) => [k, o.name]), L.room)}</label>
+    <label>dessen Wand${sel('wall2', walls(B), L.wall2)}</label>
+    <label>Wandstärke (m/cm)<input data-lk="t" inputmode="decimal" value="${esc(L.t)}" placeholder="an Tür-Leibung messen"></label>
+    <label>Lage entlang der Wand${sel('mode', [['tuer', 'über gemeinsame Öffnung'], ['off', 'über Versatz']], L.mode)}</label>
+    ${L.mode === 'tuer' ? `<label>Öffnung hier${sel('opA', ops(r), L.opA)}</label><label>Öffnung dort${sel('opB', ops(B), L.opB)}</label>`
+      : `<label>Versatz m <input data-lk="off" inputmode="decimal" value="${esc(L.off)}" title="Abstand Ecke (Wandanfang hier) bis Ecke (Wandende dort), entlang der Wand"></label>`}
+  </div>
+  <div class="row"><button data-a="link" class="pri">Nachbarraum anschließen</button><span class="hint">Der Nachbarraum wird gedreht und verschoben, sodass die Wände parallel im Abstand der Wandstärke liegen.</span></div>`;
+}
+function linkRooms(A, B, L) {
+  const tv = num(L.t), t = tv >= 2 ? tv / 100 : tv; if (!(t > 0 && t < 2)) return 'Wandstärke eingeben (z. B. 0,12 oder 12).';
+  const gA = geo(A), eA = gA.E[L.wall]; if (!eA) return 'Wand wählen.';
+  let off;
+  if (L.mode === 'tuer') {
+    const oa = (A.ops || [])[L.opA], ob = (B.ops || [])[L.opB];
+    if (!oa || !ob || oa.wall !== +L.wall || ob.wall !== +L.wall2) return 'Gemeinsame Öffnung muss in den gewählten Wänden liegen (Wandnummer der Öffnungen prüfen).';
+    off = oa.pos + oa.w / 2 - geo(B).E[L.wall2].L + ob.pos + ob.w / 2;
+  } else off = num(L.off);
+  // Drehen: Wand dort antiparallel zu Wand hier
+  const dB = geo(B).E[L.wall2].d, want = Math.atan2(-eA.d[1], -eA.d[0]), has = Math.atan2(dB[1], dB[0]);
+  B.rot = normA((B.rot || 0) + (want - has) * R2D);
+  const eB = geo(B).E[L.wall2], target = add(add(eA.p, mul(eA.d, off)), mul(eA.n, t));
+  B.x += target[0] - eB.q[0]; B.y += target[1] - eB.q[1];
+  A.segs[L.wall].t = t; B.segs[L.wall2].t = t;
+  if (L.mode === 'tuer') { B.ops.forEach(o => { if (o.pair === A.name) delete o.pair; }); B.ops[L.opB].pair = A.name || true; }
+  return null;
 }
 const OBS_T = { wand: 'Wand', diag: 'Diagonale', sehne: 'Eckwinkel (Sehne)', winkel: 'Winkel °', foto: 'Foto-Strecke', fotowinkel: 'Foto-Winkel °' };
 function obsPanel(r) {
@@ -616,6 +666,7 @@ $('#rpanel').addEventListener('input', e => {
   if (d.k) r[d.k] = d.k === 'dims' ? t.value === '1' : NUMK.includes(d.k) ? num(t.value) : t.value;
   if (d.s != null) r.segs[d.s][d.f] = num(t.value);
   if (d.o != null) r.ops[d.o][d.f] = d.f === 'type' ? t.value : d.f === 'wall' ? +t.value : num(t.value);
+  if (d.lk != null) { r._link[d.lk] = ['room', 'wall', 'wall2', 'opA', 'opB'].includes(d.lk) ? +t.value : t.value; if (['room', 'mode'].includes(d.lk)) roomPanel(); return; }
   if (d.ob != null) { const o = r.obs[d.ob]; o[d.f] = d.f === 'i' || d.f === 'j' ? +t.value : d.f === 's' ? (o.typ === 'winkel' ? num(t.value) : num(t.value) / 1000) : o.typ === 'winkel' ? num(t.value) : parseLen(t.value); }
   if (d.s != null || d.ob != null) r.adj = null;
   save(); renderPlan(); rstat();
@@ -640,6 +691,7 @@ $('#rpanel').addEventListener('click', e => {
     case 'obsChord': (r.obs = r.obs || []).push({ typ: 'sehne', i: 0, a: 1.5, b: 1.5, c: '', s: 0.0015 }); break;
     case 'obsAng': (r.obs = r.obs || []).push({ typ: 'winkel', i: 0, v: 90, s: 0.5 }); break;
     case 'adjust': doAdjust(r); break;
+    case 'link': { const m = linkRooms(r, S.rooms[r._link.room], r._link); if (m) return alert(m); break; }
     case 'flip': r.ops[oi].flip = !r.ops[oi].flip; break;
     case 'aus': r.ops[oi].aus = !r.ops[oi].aus; break;
   }
@@ -659,7 +711,12 @@ $('#pform').addEventListener('input', e => {
   else S[n] = n === 'paper' || n === 'dimFmt' ? v : num(v);
   save(); preview();
 });
-function preview() { $('#preview').innerHTML = pageSVG(); }
+function preview() { $('#preview').innerHTML = pageSVG(); axCheck(); }
+function axCheck() { // Außenmaß-Kontrolle: Plan-Außenkanten (achsparallel) gegen gemessenes Außenmaß
+  const b = allBB(), m = [['X', b.x1 - b.x0, parseLen(S.project.ax)], ['Y', b.y1 - b.y0, parseLen(S.project.ay)]].filter(e => e[2] > 0);
+  $('#axMsg').innerHTML = m.map(([k, pl, me]) => { const d = (pl - me) * 1000; return `Außenmaß ${k}: Plan ${f2(pl, 3)} m, gemessen ${f2(me, 3)} m → <span class="${Math.abs(d) > (S.target || 3) * 2 ? 'warn' : 'ok'}">${d > 0 ? '+' : ''}${f2(d, 1)} mm</span>`; }).join('<br>') +
+    (m.length ? '<br><span class="hint">Nur bei achsparallelem Gebäude aussagekräftig. Abweichung = Summe aus Raum-, Wandstärken- und Außenwandfehlern (Außenwände an Fenstern messen).</span>' : '');
+}
 function pageSVG() {
   const [PW, PH] = PAPER[S.paper] || PAPER.A3, k = 10 / S.scale, P = S.project;
   const b = allBB(), m = 1.2, bw = (b.x1 - b.x0 + 2 * m) * 100 * k, bh = (b.y1 - b.y0 + 2 * m) * 100 * k;
@@ -729,7 +786,7 @@ $('#xDxf').onclick = () => {
   const dxf = ['0', 'SECTION', '2', 'HEADER', '9', '$INSUNITS', '70', '6', '0', 'ENDSEC', '0', 'SECTION', '2', 'ENTITIES', ...L, '0', 'ENDSEC', '0', 'EOF'].join('\r\n');
   download(fname('dxf'), dxf, 'application/dxf');
 };
-$('#xJson').onclick = () => download(fname('json'), JSON.stringify(S, null, 1), 'application/json');
+$('#xJson').onclick = () => download(fname('json'), ser(), 'application/json');
 $('#xLoad').onchange = e => {
   const f = e.target.files[0]; if (!f) return;
   f.text().then(t => { const d = JSON.parse(t); if (!Array.isArray(d.rooms)) throw 0; S = { ...structuredClone(DEF), ...d, project: { ...DEF.project, ...d.project } }; selRoom = null; save(); fillProj(); listMeas(); })

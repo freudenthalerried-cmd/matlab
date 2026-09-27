@@ -133,10 +133,12 @@
       <label>Blattgröße<select name="paper"><option>A3</option><option>A4</option><option>A2</option></select></label>
       <label>Standard Außenwand m<input name="wallT" inputmode="decimal"></label>
       <label>Innenwand (Fang-Abstand) m<input name="innerT" inputmode="decimal"></label>
+      <label>Außenmaß gemessen X (m/cm)<input name="ax" inputmode="decimal"></label>
+      <label>Außenmaß gemessen Y (m/cm)<input name="ay" inputmode="decimal"></label>
       <label>Genauigkeitsziel ±mm<input name="target" inputmode="decimal"></label>
       <label>Maßangabe<select name="dimFmt"><option value="mm">m mit mm hochgestellt (4,21⁵)</option><option value="cm">m auf cm (4,22)</option></select></label>
     </form>
-    <p id="fitMsg" class="hint"></p>
+    <p id="fitMsg" class="hint"></p><p id="axMsg"></p>
     <div class="row">
       <button id="xPrint" class="pri">🖨 PDF / Drucken</button>
       <button id="xSvg">SVG</button>
