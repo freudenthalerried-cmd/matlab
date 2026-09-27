@@ -58,13 +58,15 @@ body{margin:0;background:radial-gradient(ellipse at 50% 0%,#2a1838,var(--bg) 70%
 .pc.p .fig{filter:drop-shadow(0 3px 2px #000c) drop-shadow(0 0 3px #9fd0ff)}
 .pc.p.k .fig{filter:drop-shadow(0 3px 2px #000c) drop-shadow(0 0 6px #ffd76a)}
 .pc.e .fig{filter:drop-shadow(0 3px 2px #000c) drop-shadow(0 0 4px #ff3b55)}
-.hpb{position:absolute;left:10%;right:10%;bottom:2%;height:calc(var(--c)*.1);background:#000c;border-radius:3px;overflow:hidden}
-.hpb i{display:block;height:100%;background:var(--heal)}
-.pc.e .hpb i{background:var(--red)}
+.hpb{position:absolute;left:6%;right:6%;bottom:-2%;height:calc(var(--c)*.22);background:#000d;border-radius:calc(var(--c)*.11);overflow:hidden;border:1.5px solid #9fd0ff99}
+.pc.e .hpb{border-color:#ff4d5e99}
+.hpb span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:calc(var(--c)*.17);font-weight:900;color:#fff;text-shadow:0 0 2px #000,0 1px 2px #000;letter-spacing:.02em}
+.hpb i{display:block;height:100%;transition:width .3s}
+
 .bd{position:absolute;top:-4%;min-width:calc(var(--c)*.44);height:calc(var(--c)*.44);padding:0 2px;border-radius:50%;font-size:calc(var(--c)*.32);font-weight:900;line-height:calc(var(--c)*.44 - 3px);text-align:center;color:#fff;border:2px solid #000a;text-shadow:0 1px 2px #000c}
 .bd.a{right:-3%;background:linear-gradient(#ff9d52,#d9531e)}
 .bd.d{left:-3%;background:linear-gradient(#6fb6ff,#2a6fd1)}
-.stars{position:absolute;left:0;right:0;bottom:12%;text-align:center;font-size:calc(var(--c)*.2);color:var(--evo);text-shadow:0 0 4px var(--evo)}
+.stars{position:absolute;left:0;right:0;bottom:22%;text-align:center;font-size:calc(var(--c)*.2);color:var(--evo);text-shadow:0 0 4px var(--evo)}
 .pc.hurt{animation:hurt .35s}
 @keyframes hurt{25%{margin-left:-4px;filter:brightness(2.5) saturate(0)}75%{margin-left:4px}}
 .fl{position:absolute;width:120px;text-align:center;font-weight:900;font-size:26px;pointer-events:none;z-index:9;animation:fl 1.1s ease-out forwards;text-shadow:0 0 4px #000,0 0 4px #000}
@@ -636,6 +638,7 @@ function info(){
   else ex='Gegner – '+EDESC[p.t];
   el.innerHTML=`${svg(p.g,p.side)}<div><div class="nm">${p.name}</div><div class="st"><b style="color:var(--atk)">⚔ ${atkOf(p)}</b> · <b style="color:var(--def)">🛡 ${p.def}</b> · <b style="color:var(--heal)">❤ ${p.hp}/${p.max}</b></div><div class="st">${ex}</div>${logT?`<div class="st" style="color:#ffb3ba">${logT}</div>`:''}</div>`;
 }
+function hpCol(p){const q=p.hp/p.max;return q>.6?'#3ddc84':q>.3?'#f2c14e':'#ff4d5e'}
 function render(){
   const b=$('board');
   if(!b.children.length){let h='';for(let r=0;r<N;r++)for(let c=0;c<N;c++)h+=`<div class="t" data-r="${r}" data-c="${c}"></div>`;b.innerHTML=h}
@@ -650,7 +653,7 @@ function render(){
     if(!e){e=document.createElement('div');e.dataset.id=p.id;L.appendChild(e);e.style.transition='none';e.style.transform=`translate(calc(${cs}*${p.c}),calc(${cs}*${p.r}))`;void e.offsetWidth;e.style.transition=''}
     e.className='pc '+p.side+(p.g==='K'?' k':'')+(p.shield?' sh':'')+(p.frz?' fz':'');
     const a=atkOf(p),key=[p.g,p.hp,p.max,a,p.def,p.tier].join();
-    if(e.dataset.k!==key){e.dataset.k=key;e.innerHTML=svg(p.g,p.side)+(p.tier?`<div class="stars">${'✦'.repeat(p.tier)}</div>`:'')+`<div class="bd d">${p.def}</div><div class="bd a">${a}</div><div class="hpb"><i style="width:${Math.max(0,p.hp/p.max*100)}%"></i></div>`}
+    if(e.dataset.k!==key){e.dataset.k=key;e.innerHTML=svg(p.g,p.side)+(p.tier?`<div class="stars">${'✦'.repeat(p.tier)}</div>`:'')+`<div class="bd d">${p.def}</div><div class="bd a">${a}</div><div class="hpb"><i style="width:${Math.max(0,p.hp/p.max*100)}%;background:${hpCol(p)}"></i><span>${Math.max(0,p.hp)}/${p.max}</span></div>`}
     e.style.transform=`translate(calc(${cs}*${p.c}),calc(${cs}*${p.r}))`;
   }
   $('wave').textContent=wave||1;$('mana').textContent=mana;
