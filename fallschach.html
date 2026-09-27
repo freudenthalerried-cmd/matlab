@@ -170,7 +170,8 @@ body{margin:0;background:radial-gradient(ellipse at 50% 0%,#2a1838,var(--bg) 70%
     <li>💧 <b>Deine Zauber:</b> Du startest mit 0 Mana und bekommst +1 pro Runde. Unter dem Brett wählst du einen Zauber (einer pro Runde, kostet keinen Zug): ✚ Heilung, ⚡ Blitz, 🛡 Schild, ❄ Frost.</li>
     <li>🔮 Der Gegner sammelt jede Runde Mana und wirkt Zauber. Oben steht, was als Nächstes kommt.</li>
     <li>👑 Der <b>Dunkle König</b> schlägt im Nahkampf zurück, wenn er überlebt – Turm und Läufer greifen gefahrlos aus der Ferne an. Ist er allein, flieht er und ruft Schatten, die verschwinden, sobald er fällt.</li>
-    <li>⚔ In der Schmiede kannst du auch <b>zusätzliche Figuren kaufen</b> (Springer, Läufer, Turm, Dame – bis zu 4), die ab dann in jedem Level mitspielen.</li>
+    <li>⚔ In der Schmiede kannst du auch <b>zusätzliche Figuren kaufen</b> (Springer, Läufer, Turm, Dame – bis zu 2), die ab dann in jedem Level mitspielen.</li>
+    <li>⚖ <b>Balance:</b> Jede Zusatzfigur bringt einen zusätzlichen Gegner, und je mehr du aufrüstest, desto mehr Leben und Angriff bekommen die Gegner. Verteidigung hält höchstens zwei Drittel eines Angriffs ab.</li>
     <li>🪙 <b>Belohnung:</b> Jedes geschaffte Level bringt Münzen (mehr bei höheren Levels und für jede überlebende Figur, bei Wiederholung die Hälfte) und bis zu 3 ⭐. In der ⚒ Schmiede im Hauptmenü verbesserst du damit deine Figuren dauerhaft.</li>
     <li>👥 <b>2 Spieler:</b> Spielt abwechselnd am selben Gerät – Gold unten, Rot oben. Beide haben eigenes Mana (+1 pro Zug) und Zauber. Wer den gegnerischen König besiegt, gewinnt.</li>
     <li>☠ Jedes Level ist abgeschlossen: Du startest immer mit allen Figuren und 0 Mana. Besiege alle Gegner, um das nächste Level freizuschalten. Fällt dein König, spielst du das Level einfach nochmal – über die Levelauswahl kannst du jedes freigeschaltete Level wählen.</li>
@@ -240,13 +241,20 @@ function importCode(c){try{c=(c||'').trim();if(!c.startsWith('MS1-'))throw 0;con
   unl=Math.max(1,x.unl||1);saveUnl();saveSV();sfx('wave');return true}catch(e){return false}}
 function copyCode(){const t=$('scode');t.select();try{navigator.clipboard.writeText(t.value)}catch(e){try{document.execCommand('copy')}catch(e2){}}$('smsg').textContent='Code kopiert – schick ihn dir z. B. per WhatsApp.'}
 function loadCode(){$('smsg').textContent=importCode($('icode').value)?'Spielstand geladen! Level 1–'+unl+', '+SV.coins+' Münzen.':'Ungültiger Code – bitte ganz kopieren.'}
-const UPMAX=5,UPC={a:l=>10+l*10,d:l=>10+l*10,h:l=>8+l*6},MANAC=l=>20+l*20;
+// Balance: Angriff/Verteidigung nur 3 Stufen, steigende Preise; Leben 5 Stufen
+const UPMAX={a:3,d:3,h:5},MANAMAX=2,UPC={a:l=>20+l*25,d:l=>20+l*25,h:l=>12+l*10},MANAC=l=>40+l*40;
+// Stärke deiner Armee → Gegner wachsen mit (damit es nicht zu leicht wird)
+function power(){let p=0;for(const t in SV.up){if(t==='Q'&&!SV.army.includes('Q'))continue;const u=SV.up[t];p+=u.a*2+u.d*2+u.h}return p+SV.army.length*4+SV.mana*2}
 let lastRew=null;
-function buyUp(t,k){const u=SV.up[t],c=price(UPC[k](u[k]));if(u[k]>=UPMAX||SV.coins<c)return;SV.coins-=c;u[k]++;SV.disc=false;saveSV();sfx('evo');menu('shop')}
+function buyUp(t,k){const u=SV.up[t],c=price(UPC[k](u[k]));if(u[k]>=UPMAX[k]||SV.coins<c)return;SV.coins-=c;u[k]++;SV.disc=false;saveSV();sfx('evo');menu('shop')}
 // Zusätzliche Figuren kaufen (spielen in jedem Level mit)
-const BUY={N:60,B:60,R:80,Q:150},ARMYMAX=4;
+const BUY={N:120,B:120,R:160,Q:300},ARMYMAX=2;
 function buyPiece(t){const c=price(BUY[t]);if(SV.army.length>=ARMYMAX||SV.coins<c)return;SV.coins-=c;SV.army.push(t);SV.disc=false;saveSV();sfx('wave');menu('shop')}
 const XSPOT=[[7,0],[7,2],[7,3],[7,7]];
+(function rebalance(){let ref=0;for(const t in SV.up){const u=SV.up[t];for(const k of ['a','d','h'])while(u[k]>UPMAX[k]){u[k]--;ref+=UPC[k](u[k])}}
+  while(SV.army.length>ARMYMAX){const t=SV.army.pop();ref+=BUY[t]}
+  while(SV.mana>MANAMAX){SV.mana--;ref+=MANAC(SV.mana)}
+  if(ref){SV.coins+=ref;saveSV()}})();
 // ---- Werbung (Platzhalter) & Münzkauf (Stripe-Zahlungslinks) ----
 // Hier deine Stripe-Payment-Links eintragen (Stripe-Dashboard → Zahlungslinks).
 // Erfolgs-Weiterleitung im Stripe-Link: <Spiel-URL>#paket=p100&session_id={CHECKOUT_SESSION_ID}
@@ -273,7 +281,7 @@ function buyCoins(k){const u=STRIPE[k];if(!u)return;window.open(u,'_blank','noop
 // Rückkehr von Stripe: #paket=p100&session_id=cs_...  (jede Sitzung nur einmal gutgeschrieben)
 function checkPurchase(){try{const q=new URLSearchParams(location.hash.slice(1));const pk=q.get('paket'),sid=q.get('session_id');
   if(pk&&PAKETE[pk]&&sid&&!SV.used.includes(sid)){SV.used.push(sid);SV.coins+=PAKETE[pk].c;saveSV();history.replaceState(null,'',location.pathname+location.search);setTimeout(()=>banner('+'+PAKETE[pk].c+' 🪙 – danke für deinen Kauf!','var(--gold)'),600)}}catch(e){}}
-function buyMana(){const c=price(MANAC(SV.mana));if(SV.mana>=3||SV.coins<c)return;SV.coins-=c;SV.mana++;SV.disc=false;saveSV();sfx('evo');menu('shop')}
+function buyMana(){const c=price(MANAC(SV.mana));if(SV.mana>=MANAMAX||SV.coins<c)return;SV.coins-=c;SV.mana++;SV.disc=false;saveSV();sfx('evo');menu('shop')}
 
 
 
@@ -367,9 +375,9 @@ function stopMusic(){clearInterval(musTimer);musTimer=null}
 function togMusic(){music=!music;music?startMusic():stopMusic()}
 document.addEventListener('visibilitychange',()=>{if(!ac)return;document.hidden?ac.suspend():ac.resume()});
 
-function mkP(t,r,c){const d=T[t],u=SV.up[t],hp=d.hp+2*u.h;return{id:++uid,side:'p',t,g:t,name:d.n,mv:d.mv,r,c,hp,max:hp,atk:d.atk+u.a,def:d.def+u.d,tier:0}}
-function mkE(t,r,c){const d=E[t],w=wave-1,hp=d[3]+Math.floor(w*(t==='K'?2:1.3));
-  return{id:++uid,side:'e',t,g:d[1],name:d[0],mv:d[2],r,c,hp,max:hp,atk:d[4]+Math.floor(w/2),def:d[5]+Math.floor(w/3)}}
+function mkP(t,r,c){const d=T[t],u=SV.up[t],hp=d.hp+2*Math.min(u.h,UPMAX.h);return{id:++uid,side:'p',t,g:t,name:d.n,mv:d.mv,r,c,hp,max:hp,atk:d.atk+Math.min(u.a,UPMAX.a),def:d.def+Math.min(u.d,UPMAX.d),tier:0}}
+function mkE(t,r,c){const d=E[t],w=wave-1,pw=duo?0:power(),hp=d[3]+Math.floor(w*(t==='K'?2:1.3))+Math.floor(pw/12);
+  return{id:++uid,side:'e',t,g:d[1],name:d[0],mv:d[2],r,c,hp,max:hp,atk:d[4]+Math.floor(w/2)+Math.floor(pw/35),def:d[5]+Math.floor(w/3)}}
 
 function neu(){startLevel(unl)}
 // Jedes Level ist abgeschlossen: frische Figuren, Mana 0
@@ -412,7 +420,8 @@ function nextWave(){
   spots.sort(()=>Math.random()-.5);
   const[b]=spots.splice(spots.findIndex(s=>s[0]===0),1);
   P.push(mkE('K',b[0],b[1]));
-  for(let i=0;i<3;i++){const s=spots.pop();P.push(mkE(pool[Math.random()*pool.length|0],s[0],s[1]))}
+  const cnt=Math.min(7,3+Math.floor((wave-1)/3)+SV.army.length);
+  for(let i=0;i<cnt&&spots.length;i++){const s=spots.pop();P.push(mkE(pool[Math.random()*pool.length|0],s[0],s[1]))}
   terrain();
 }
 function emptyCells(r0=0,r1=N-1){const a=[];for(let r=r0;r<=r1;r++)for(let c=0;c<N;c++)if(!at(r,c)&&!fld[r][c]&&!ter[r][c])a.push([r,c]);return a}
@@ -441,7 +450,7 @@ function gen(p){
   const seen=new Set();return out.filter(m=>{const k=m.r*8+m.c;if(seen.has(k))return false;seen.add(k);return true});
 }
 function atkOf(a){const k=P.find(q=>q.side===a.side&&q.t==='K');return a.atk+((a.side==='p'||duo)&&k&&k.tier>=2&&a!==k&&dist(a,k)<=1?1:0)}
-const dmgOf=(a,d)=>Math.max(1,atkOf(a)-d.def);
+const dmgOf=(a,d)=>Math.max(1,Math.ceil(atkOf(a)/3),atkOf(a)-d.def);
 
 // ---- Spieler ----
 function startTurn(){
@@ -493,7 +502,7 @@ function act(p,m){
   if(duo&&duoCheck())return;
   if(!king()){phase='x';render();return later(end,600)}
   if(!foes().length){phase='wait';moves=[];render();return later(waveClear,500)}
-  if(killed&&P.includes(p)&&p.t==='N'&&p.tier>=2&&!p.bonus){p.bonus=true;banner('Sturmangriff!','var(--def)');moves=gen(p);render();return}
+  if(killed&&P.includes(p)&&p.t==='N'&&p.tier>=2&&!p.bonus){p.bonus=true;banner('Sturmangriff!','var(--def)');sel=p;moves=gen(p);render();return}
   phase='wait';moves=[];render();
   if(duo)return later(switchSide,350);
   later(enemyTurn,450);
@@ -587,13 +596,13 @@ function menu(k){
   if(k==='start')h=`<h1>Manaschach</h1><div class="tag">Besiege die Dunklen Könige – Level für Level.</div>${mb('▶ Spielen: Level '+unl,'neu()','big')}${mb('👥 2 Spieler','startDuo()')}${lvsel}${shop}${mb('🪙 Münzen & 🎬 Werbung',"menu('coins')")}${mb('💾 Spielstand sichern / laden',"menu('save')")}${mb('📖 Regeln',"menu('rules')")}${set}<div class="tag" style="font-size:13px">${unl>1?'Freigeschaltet: Level 1–'+unl:''}</div>`;
   if(k==='opt')h=`<h2>Optionen</h2>${mb('▶ Weiter','closeMenu()','big')}${mb('📖 Regeln',"menu('rules')")}${set}${duo?mb('↻ Neue Partie','startDuo()'):mb('↻ Level neu starten','startLevel(wave)')}${lvsel}${mb('⌂ Hauptmenü',"quit()")}`;
   if(k==='shop'){
-    const row=t=>{const u=SV.up[t],d=T[t];const b=(k,ic,val)=>{const l=u[k],c=price(UPC[k](l));return l>=UPMAX?`<button class="ub" disabled>${ic} MAX</button>`:`<button class="ub" ${SV.coins<c?'disabled':''} onclick="buyUp('${t}','${k}')">${ic} ${val}<small>🪙 ${c}</small></button>`};
+    const row=t=>{const u=SV.up[t],d=T[t];const b=(k,ic,val)=>{const l=u[k],c=price(UPC[k](l));return l>=UPMAX[k]?`<button class="ub" disabled>${ic} MAX</button>`:`<button class="ub" ${SV.coins<c?'disabled':''} onclick="buyUp('${t}','${k}')">${ic} ${val}<small>🪙 ${c}</small></button>`};
       return `<div class="srow">${svg(t,'p')}<div class="sinf"><b>${d.n}</b><span>⚔ ${d.atk+u.a} · 🛡 ${d.def+u.d} · ❤ ${d.hp+2*u.h}</span></div>${b('a','⚔','+1')}${b('d','🛡','+1')}${b('h','❤','+2')}</div>`};
     const mc=price(MANAC(SV.mana));
-    h=`<h2>⚒ Schmiede</h2><div class="res2">🪙 ${SV.coins} Münzen</div><div class="tag" style="font-size:13px">Dauerhafte Verbesserungen für jedes Level</div>${['K','R','B','N'].concat(SV.army.includes('Q')?['Q']:[]).map(row).join('')}
+    h=`<h2>⚒ Schmiede</h2><div class="res2">🪙 ${SV.coins} Münzen</div><div class="tag" style="font-size:13px">Dauerhafte Verbesserungen für jedes Level.<br>⚖ Je stärker deine Armee, desto stärker werden auch die Gegner.</div>${['K','R','B','N'].concat(SV.army.includes('Q')?['Q']:[]).map(row).join('')}
     <h2 style="font-size:20px;margin-top:8px">⚔ Figuren kaufen</h2><div class="tag" style="font-size:13px">Armee: ${SV.army.length?SV.army.map(t=>T[t].n).join(', '):'noch keine Zusatzfiguren'} (${SV.army.length}/${ARMYMAX})</div>
     ${Object.keys(BUY).map(t=>`<div class="srow">${svg(t,'p')}<div class="sinf"><b>${T[t].n}</b><span>⚔ ${T[t].atk} · 🛡 ${T[t].def} · ❤ ${T[t].hp} · spielt in jedem Level mit</span></div><button class="ub" style="width:64px" ${SV.coins<price(BUY[t])||SV.army.length>=ARMYMAX?'disabled':''} onclick="buyPiece('${t}')">Kaufen<small>🪙 ${price(BUY[t])}</small></button></div>`).join('')}
-    <div class="srow"><span style="font-size:30px;width:40px;text-align:center">💧</span><div class="sinf"><b>Start-Mana</b><span>jedes Level mit ${SV.mana} Mana beginnen</span></div>${SV.mana>=3?'<button class="ub" disabled>MAX</button>':`<button class="ub" ${SV.coins<mc?'disabled':''} onclick="buyMana()">+1<small>🪙 ${mc}</small></button>`}</div>
+    <div class="srow"><span style="font-size:30px;width:40px;text-align:center">💧</span><div class="sinf"><b>Start-Mana</b><span>jedes Level mit ${SV.mana} Mana beginnen</span></div>${SV.mana>=MANAMAX?'<button class="ub" disabled>MAX</button>':`<button class="ub" ${SV.coins<mc?'disabled':''} onclick="buyMana()">+1<small>🪙 ${mc}</small></button>`}</div>
     ${mb('← Zurück',`menu('${over?'start':'opt'}')`,'big')}`}
   if(k==='duo')h=`<h1>${winner==='p'?'Spieler 1 (Gold)':'Spieler 2 (Rot)'} gewinnt!</h1><div class="res2">Der gegnerische König ist gefallen.</div>${mb('↻ Revanche','startDuo()','big')}${mb('⌂ Hauptmenü',"menu('start')")}`;
   if(k==='coins'){const al=adsLeft();
@@ -769,7 +778,7 @@ function render(){
   const b=$('board');
   if(!b.children.length){let h='';for(let r=0;r<N;r++)for(let c=0;c<N;c++)h+=`<div class="t" data-r="${r}" data-c="${c}"></div>`;b.innerHTML=h}
   [...b.children].forEach((t,i)=>{const r=i>>3,c=i&7,m=moves.find(m=>m.r===r&&m.c===c),f=fld&&fld[r][c];
-    const g=ter[r]&&ter[r][c];t.className='t '+((r+c)%2?'b':'a')+(g?' g-'+g.k:'')+(f?' f-'+f.k:'')+(sel&&sel.r===r&&sel.c===c&&P.includes(sel)?' sel':'')+(m?(m.hit?' at':(sel.side!==cur?' th':' mv')):'')+(spk&&at(r,c)&&at(r,c).side===(SP[spk].t==='p'?cur:opp(cur))?' tg':'');
+    const g=ter[r]&&ter[r][c];t.className='t '+((r+c)%2?'b':'a')+(g?' g-'+g.k:'')+(f?' f-'+f.k:'')+(sel&&sel.r===r&&sel.c===c&&P.includes(sel)?' sel':'')+(m?(m.hit?' at':(sel&&sel.side!==cur?' th':' mv')):'')+(spk&&at(r,c)&&at(r,c).side===(SP[spk].t==='p'?cur:opp(cur))?' tg':'');
     const want=(f?f.k:'')+'|'+(g?g.k+(g.t??'')+(g.d??''):'');if(t.dataset.f!==want){t.dataset.f=want;t.innerHTML=(g?terHtml(g):'')+(f?`<div class="fi">${FICON[f.k]}</div>`:'')}
   });
   const L=$('layer'),cs='var(--c)',have=new Set(P.map(p=>p.id));
