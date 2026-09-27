@@ -174,7 +174,7 @@ body{margin:0;background:radial-gradient(ellipse at 50% 0%,#2a1838,var(--bg) 70%
     <li>⚖ <b>Balance:</b> Jede Zusatzfigur bringt einen zusätzlichen Gegner, und je mehr du aufrüstest, desto mehr Leben und Angriff bekommen die Gegner. Verteidigung hält höchstens zwei Drittel eines Angriffs ab.</li>
     <li>🪙 <b>Belohnung:</b> Jedes geschaffte Level bringt Münzen (mehr bei höheren Levels und für jede überlebende Figur, bei Wiederholung die Hälfte) und bis zu 3 ⭐. In der ⚒ Schmiede im Hauptmenü verbesserst du damit deine Figuren dauerhaft.</li>
     <li>👥 <b>2 Spieler:</b> Spielt abwechselnd am selben Gerät – Gold unten, Rot oben. Beide haben eigenes Mana (+1 pro Zug) und Zauber. Wer den gegnerischen König besiegt, gewinnt.</li>
-    <li>☠ Jedes Level ist abgeschlossen: Du startest immer mit allen Figuren und 0 Mana. Besiege alle Gegner, um das nächste Level freizuschalten. Fällt dein König, spielst du das Level einfach nochmal – über die Levelauswahl kannst du jedes freigeschaltete Level wählen.</li>
+    <li>☠ Jedes Level ist abgeschlossen: Du startest immer mit allen Figuren und 0 Mana. Besiege den Dunklen König, um das nächste Level freizuschalten – dann fliehen alle übrigen Gegner. Fällt dein König, spielst du das Level einfach nochmal – über die Levelauswahl kannst du jedes freigeschaltete Level wählen.</li>
   </ul></template>
 
 <script>
@@ -631,14 +631,15 @@ function help(){menu('rules')}
 // ---- Kurzbeschreibungen beim Antippen ----
 const DESC={heal:'Heilfeld: deine Figur bekommt beim Betreten +4 Leben.',atk:'Angriffsfeld: +1 Angriff für die Figur, dauerhaft.',def:'Verteidigungsfeld: +1 Verteidigung, die Figur nimmt weniger Schaden.',evo:'Entwicklungsfeld: neue Zugart, beim 2. Mal eine Spezialfähigkeit.',
  lava:'Lava: 2 Schaden beim Betreten und jede Runde – für alle Figuren.',tur:'Pfeilturm: schießt jede Runde in Pfeilrichtung auf die erste Figur und dreht sich dann weiter. Blockiert.',bomb:'Bombe: explodiert bei 0 oder beim Betreten und trifft alle Figuren rundherum.',rock:'Felsen: blockiert den Weg.',
- wave:'Level: Besiege alle Gegner, um das nächste Level freizuschalten. Jedes Level startet mit allen Figuren.',rnd:'Zug: Anzahl der gespielten Runden in diesem Spiel.',pm:'Dein Mana: startet bei 0, +1 pro Runde (max. 10). Damit wirkst du Zauber aus der Leiste unter dem Brett – einen pro Runde.',mana:'Gegner-Mana: +2 pro Runde. Ist genug da, wirkt der Gegner den angezeigten Zauber.'};
-const EDESC={S:'zieht 1 Feld in jede Richtung',N:'springt im L wie ein Springer',B:'zieht diagonal wie ein Läufer – auch über weite Strecken',R:'zieht gerade wie ein Turm – auch über weite Strecken',Q:'zieht wie eine Dame – gerade und diagonal',K:'Anführer, zieht 1 Feld. Schlägt im Nahkampf zurück – greif ihn aus der Ferne an. Allein ruft er Schatten und flieht.'};
+ wave:'Level: Besiege den Dunklen König, um das nächste Level freizuschalten. Jedes Level startet mit allen Figuren.',rnd:'Zug: Anzahl der gespielten Runden in diesem Spiel.',pm:'Dein Mana: startet bei 0, +1 pro Runde (max. 10). Damit wirkst du Zauber aus der Leiste unter dem Brett – einen pro Runde.',mana:'Gegner-Mana: +2 pro Runde. Ist genug da, wirkt der Gegner den angezeigten Zauber.'};
+const EDESC={S:'zieht 1 Feld in jede Richtung',N:'springt im L wie ein Springer',B:'zieht diagonal wie ein Läufer – auch über weite Strecken',R:'zieht gerade wie ein Turm – auch über weite Strecken',Q:'zieht wie eine Dame – gerade und diagonal',K:'Anführer – fällt er, ist das Level gewonnen. Zieht 1 Feld. Schlägt im Nahkampf zurück – greif ihn aus der Ferne an. Allein ruft er Schatten und flieht.'};
 let dk=null,pmana=0,spk=null,castUsed=false,gid=0;
 function later(fn,ms){const g=gid;setTimeout(()=>{if(g===gid)fn()},ms)}
 // Gemeinsame Behandlung, wenn eine Figur fällt
 function onDeath(d,byPlayer){
   if(d.side==='e')kills++;
-  if(d.side==='e'&&d.t==='K'&&P.some(q=>q.sum)){P=P.filter(q=>!q.sum);setTimeout(()=>log('Die gerufenen Schatten vergehen mit ihrem König.'),300)}
+  // Wie beim Schach: fällt der Dunkle König, ist das Level gewonnen – die übrigen Gegner fliehen
+  if(d.side==='e'&&d.t==='K'&&!duo&&foes().length){P=P.filter(q=>q.side!=='e');banner('König besiegt!','var(--gold)');setTimeout(()=>log('Der Dunkle König ist gefallen – seine Truppen fliehen!'),300)}
 }
 // ---- Eigene Zauber ----
 const SP={
