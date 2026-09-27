@@ -114,7 +114,8 @@ body{margin:0;background:radial-gradient(ellipse at 50% 0%,#2a1838,var(--bg) 70%
 <div id="ov">
   <h1 id="ot">Manaschach</h1>
   <div class="res2" id="od"></div>
-  <ul class="rules" id="rules">
+  <div id="tag" style="font-size:17px;color:var(--mut)">Besiege die Dunklen Könige – Welle für Welle.</div>
+  <ul class="rules" id="rules" style="display:none">
     <li>👑 Du führst deinen <b style="color:var(--gold)">goldenen König</b> und <b style="color:var(--def)">3 Figuren</b>. Sie ziehen wie im Schach.</li>
     <li>Jede Figur hat <b style="color:var(--atk)">Angriff</b> (orange Zahl, rechts), <b style="color:var(--def)">Verteidigung</b> (blaue Zahl, links) und Leben (Balken). <b>Schaden = Angriff − Verteidigung</b>, mindestens 1.</li>
     <li>Ein Angriff zieht Leben ab. Erst bei 0 ist die Figur besiegt, dann rückt der Angreifer nach.</li>
@@ -129,6 +130,7 @@ body{margin:0;background:radial-gradient(ellipse at 50% 0%,#2a1838,var(--bg) 70%
     <li>☠ Besiege alle Gegner einer Welle. Fällt dein König, ist das Spiel aus.</li>
   </ul>
   <button class="big" id="go" onclick="neu()">Spiel starten</button>
+  <button class="sm" id="rb" onclick="const r=document.getElementById('rules');r.style.display=r.style.display?'':'none'">? Regeln</button>
   <div id="hsl" style="font-size:12px;color:var(--mut)"></div>
 </div>
 
@@ -429,12 +431,12 @@ function end(){
   sfx('lose');render();
   setTimeout(()=>{
     $('ot').textContent='König gefallen';$('od').textContent='Welle '+wave+' · '+kills+' Gegner besiegt'+(rec?' · Neuer Rekord!':'');
-    $('rules').style.display='none';$('hsl').textContent='Rekord: Welle '+hi;
+    $('rules').style.display='none';$('tag').style.display='none';$('hsl').textContent='Rekord: Welle '+hi;
     $('go').textContent='Nochmal';$('go').onclick=neu;$('ov').classList.remove('hide');
   },900);
 }
 function help(){
-  $('ot').textContent='Manaschach';$('od').textContent='';$('rules').style.display='';
+  $('ot').textContent='Manaschach';$('od').textContent='';$('rules').style.display='';$('tag').style.display='none';
   $('go').textContent=over?'Spiel starten':'Weiter';$('go').onclick=over?neu:()=>$('ov').classList.add('hide');$('ov').classList.remove('hide');
 }
 
