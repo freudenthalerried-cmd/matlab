@@ -199,8 +199,17 @@ body{
     </div>
   </div>
 
+  <!-- ===== SPRACH-AUSWAHL ===== -->
+  <section class="screen active" id="screen-language">
+    <div class="card">
+      <div class="intro-title">Welche Sprache willst du lernen? 🌍</div>
+      <div class="intro-desc">Du kannst das später jederzeit ändern</div>
+      <div class="diff-list" id="langList"></div>
+    </div>
+  </section>
+
   <!-- ===== SCHWIERIGKEITS-AUSWAHL ===== -->
-  <section class="screen active" id="screen-difficulty">
+  <section class="screen" id="screen-difficulty">
     <div class="card">
       <div class="intro-title">Wähle dein Level 🎯</div>
       <div class="intro-desc">Die Aufgaben passen sich an dein Können an</div>
@@ -275,6 +284,7 @@ body{
       <div class="result-stat-row"><span>🪙 Münzen</span><span id="statCoins">0</span></div>
       <div class="result-stat-row"><span>✅ Level abgeschlossen</span><span id="statLevels">0</span></div>
       <div class="result-stat-row"><span>⭐ Sterne gesamt</span><span id="statStars">0</span></div>
+      <button class="btn btn-secondary" id="changeLangBtn">🌍 Sprache ändern</button>
       <button class="btn btn-secondary" id="changeDiffBtn">🎯 Level ändern</button>
       <button class="btn btn-secondary" id="resetProgressBtn">Fortschritt zurücksetzen</button>
     </div>
@@ -295,48 +305,123 @@ body{
    ========================================================= */
 
 /* ---------- VOKABEL-DATEN (10 Level à 8 Wörter) ---------- */
-const LEVELS = [
+/* Sprachen, die man zum Deutschen lernen kann */
+const LANGS = {
+  en:{ label:'🇬🇧 Englisch', name:'Englische', adj:'englische', code:'en-US' },
+  es:{ label:'🇪🇸 Spanisch', name:'Spanische', adj:'spanische', code:'es-ES' },
+  fr:{ label:'🇫🇷 Französisch', name:'Französische', adj:'französische', code:'fr-FR' },
+  it:{ label:'🇮🇹 Italienisch', name:'Italienische', adj:'italienische', code:'it-IT' },
+};
+
+/* RAW_LEVELS: jedes Wort mit deutschem Begriff + Übersetzung je Sprache */
+const RAW_LEVELS = [
   {icon:'🐾', title:'Tiere', words:[
-    ['der Hund','dog'],['die Katze','cat'],['der Vogel','bird'],['der Fisch','fish'],
-    ['das Pferd','horse'],['die Kuh','cow'],['der Löwe','lion'],['der Bär','bear']
+    {de:'der Hund', en:'dog', es:'perro', fr:'chien', it:'cane'},
+    {de:'die Katze', en:'cat', es:'gato', fr:'chat', it:'gatto'},
+    {de:'der Vogel', en:'bird', es:'pájaro', fr:'oiseau', it:'uccello'},
+    {de:'der Fisch', en:'fish', es:'pez', fr:'poisson', it:'pesce'},
+    {de:'das Pferd', en:'horse', es:'caballo', fr:'cheval', it:'cavallo'},
+    {de:'die Kuh', en:'cow', es:'vaca', fr:'vache', it:'mucca'},
+    {de:'der Löwe', en:'lion', es:'león', fr:'lion', it:'leone'},
+    {de:'der Bär', en:'bear', es:'oso', fr:'ours', it:'orso'},
   ]},
   {icon:'🍎', title:'Essen', words:[
-    ['der Apfel','apple'],['das Brot','bread'],['der Käse','cheese'],['die Milch','milk'],
-    ['das Wasser','water'],['der Reis','rice'],['das Ei','egg'],['der Kuchen','cake']
+    {de:'der Apfel', en:'apple', es:'manzana', fr:'pomme', it:'mela'},
+    {de:'das Brot', en:'bread', es:'pan', fr:'pain', it:'pane'},
+    {de:'der Käse', en:'cheese', es:'queso', fr:'fromage', it:'formaggio'},
+    {de:'die Milch', en:'milk', es:'leche', fr:'lait', it:'latte'},
+    {de:'das Wasser', en:'water', es:'agua', fr:'eau', it:'acqua'},
+    {de:'der Reis', en:'rice', es:'arroz', fr:'riz', it:'riso'},
+    {de:'das Ei', en:'egg', es:'huevo', fr:'œuf', it:'uovo'},
+    {de:'der Kuchen', en:'cake', es:'pastel', fr:'gâteau', it:'torta'},
   ]},
   {icon:'👨‍👩‍👧', title:'Familie', words:[
-    ['die Mutter','mother'],['der Vater','father'],['die Schwester','sister'],['der Bruder','brother'],
-    ['die Großmutter','grandmother'],['der Großvater','grandfather'],['das Kind','child'],['die Tante','aunt']
+    {de:'die Mutter', en:'mother', es:'madre', fr:'mère', it:'madre'},
+    {de:'der Vater', en:'father', es:'padre', fr:'père', it:'padre'},
+    {de:'die Schwester', en:'sister', es:'hermana', fr:'sœur', it:'sorella'},
+    {de:'der Bruder', en:'brother', es:'hermano', fr:'frère', it:'fratello'},
+    {de:'die Großmutter', en:'grandmother', es:'abuela', fr:'grand-mère', it:'nonna'},
+    {de:'der Großvater', en:'grandfather', es:'abuelo', fr:'grand-père', it:'nonno'},
+    {de:'das Kind', en:'child', es:'niño', fr:'enfant', it:'bambino'},
+    {de:'die Tante', en:'aunt', es:'tía', fr:'tante', it:'zia'},
   ]},
   {icon:'🎨', title:'Farben', words:[
-    ['rot','red'],['blau','blue'],['grün','green'],['gelb','yellow'],
-    ['schwarz','black'],['weiß','white'],['orange','orange'],['lila','purple']
+    {de:'rot', en:'red', es:'rojo', fr:'rouge', it:'rosso'},
+    {de:'blau', en:'blue', es:'azul', fr:'bleu', it:'blu'},
+    {de:'grün', en:'green', es:'verde', fr:'vert', it:'verde'},
+    {de:'gelb', en:'yellow', es:'amarillo', fr:'jaune', it:'giallo'},
+    {de:'schwarz', en:'black', es:'negro', fr:'noir', it:'nero'},
+    {de:'weiß', en:'white', es:'blanco', fr:'blanc', it:'bianco'},
+    {de:'orange', en:'orange', es:'naranja', fr:'orange', it:'arancione'},
+    {de:'lila', en:'purple', es:'morado', fr:'violet', it:'viola'},
   ]},
   {icon:'🔢', title:'Zahlen', words:[
-    ['eins','one'],['zwei','two'],['drei','three'],['vier','four'],
-    ['fünf','five'],['sechs','six'],['sieben','seven'],['acht','eight']
+    {de:'eins', en:'one', es:'uno', fr:'un', it:'uno'},
+    {de:'zwei', en:'two', es:'dos', fr:'deux', it:'due'},
+    {de:'drei', en:'three', es:'tres', fr:'trois', it:'tre'},
+    {de:'vier', en:'four', es:'cuatro', fr:'quatre', it:'quattro'},
+    {de:'fünf', en:'five', es:'cinco', fr:'cinq', it:'cinque'},
+    {de:'sechs', en:'six', es:'seis', fr:'six', it:'sei'},
+    {de:'sieben', en:'seven', es:'siete', fr:'sept', it:'sette'},
+    {de:'acht', en:'eight', es:'ocho', fr:'huit', it:'otto'},
   ]},
   {icon:'⏰', title:'Zeit', words:[
-    ['heute','today'],['morgen','tomorrow'],['gestern','yesterday'],['die Woche','week'],
-    ['der Monat','month'],['das Jahr','year'],['die Stunde','hour'],['die Minute','minute']
+    {de:'heute', en:'today', es:'hoy', fr:"aujourd'hui", it:'oggi'},
+    {de:'morgen', en:'tomorrow', es:'mañana', fr:'demain', it:'domani'},
+    {de:'gestern', en:'yesterday', es:'ayer', fr:'hier', it:'ieri'},
+    {de:'die Woche', en:'week', es:'semana', fr:'semaine', it:'settimana'},
+    {de:'der Monat', en:'month', es:'mes', fr:'mois', it:'mese'},
+    {de:'das Jahr', en:'year', es:'año', fr:'année', it:'anno'},
+    {de:'die Stunde', en:'hour', es:'hora', fr:'heure', it:'ora'},
+    {de:'die Minute', en:'minute', es:'minuto', fr:'minute', it:'minuto'},
   ]},
   {icon:'✈️', title:'Reisen', words:[
-    ['der Flughafen','airport'],['der Koffer','suitcase'],['das Hotel','hotel'],['die Straße','street'],
-    ['die Karte','map'],['der Zug','train'],['das Auto','car'],['der Pass','passport']
+    {de:'der Flughafen', en:'airport', es:'aeropuerto', fr:'aéroport', it:'aeroporto'},
+    {de:'der Koffer', en:'suitcase', es:'maleta', fr:'valise', it:'valigia'},
+    {de:'das Hotel', en:'hotel', es:'hotel', fr:'hôtel', it:'hotel'},
+    {de:'die Straße', en:'street', es:'calle', fr:'rue', it:'strada'},
+    {de:'die Karte', en:'map', es:'mapa', fr:'carte', it:'mappa'},
+    {de:'der Zug', en:'train', es:'tren', fr:'train', it:'treno'},
+    {de:'das Auto', en:'car', es:'coche', fr:'voiture', it:'macchina'},
+    {de:'der Pass', en:'passport', es:'pasaporte', fr:'passeport', it:'passaporto'},
   ]},
   {icon:'🏫', title:'Schule', words:[
-    ['das Buch','book'],['der Stift','pen'],['der Lehrer','teacher'],['die Schule','school'],
-    ['die Prüfung','exam'],['die Tafel','board'],['der Freund','friend'],['die Klasse','classroom']
+    {de:'das Buch', en:'book', es:'libro', fr:'livre', it:'libro'},
+    {de:'der Stift', en:'pen', es:'bolígrafo', fr:'stylo', it:'penna'},
+    {de:'der Lehrer', en:'teacher', es:'profesor', fr:'professeur', it:'insegnante'},
+    {de:'die Schule', en:'school', es:'escuela', fr:'école', it:'scuola'},
+    {de:'die Prüfung', en:'exam', es:'examen', fr:'examen', it:'esame'},
+    {de:'die Tafel', en:'board', es:'pizarra', fr:'tableau', it:'lavagna'},
+    {de:'der Freund', en:'friend', es:'amigo', fr:'ami', it:'amico'},
+    {de:'die Klasse', en:'classroom', es:'aula', fr:'classe', it:'classe'},
   ]},
   {icon:'💼', title:'Beruf', words:[
-    ['die Arbeit','work'],['das Büro','office'],['der Arzt','doctor'],['der Koch','cook'],
-    ['der Lohn','salary'],['das Team','team'],['der Chef','boss'],['das Meeting','meeting']
+    {de:'die Arbeit', en:'work', es:'trabajo', fr:'travail', it:'lavoro'},
+    {de:'das Büro', en:'office', es:'oficina', fr:'bureau', it:'ufficio'},
+    {de:'der Arzt', en:'doctor', es:'médico', fr:'médecin', it:'medico'},
+    {de:'der Koch', en:'cook', es:'cocinero', fr:'cuisinier', it:'cuoco'},
+    {de:'der Lohn', en:'salary', es:'salario', fr:'salaire', it:'stipendio'},
+    {de:'das Team', en:'team', es:'equipo', fr:'équipe', it:'squadra'},
+    {de:'der Chef', en:'boss', es:'jefe', fr:'patron', it:'capo'},
+    {de:'das Meeting', en:'meeting', es:'reunión', fr:'réunion', it:'riunione'},
   ]},
   {icon:'😊', title:'Gefühle', words:[
-    ['glücklich','happy'],['traurig','sad'],['müde','tired'],['wütend','angry'],
-    ['aufgeregt','excited'],['ängstlich','scared'],['stolz','proud'],['ruhig','calm']
+    {de:'glücklich', en:'happy', es:'feliz', fr:'heureux', it:'felice'},
+    {de:'traurig', en:'sad', es:'triste', fr:'triste', it:'triste'},
+    {de:'müde', en:'tired', es:'cansado', fr:'fatigué', it:'stanco'},
+    {de:'wütend', en:'angry', es:'enfadado', fr:'en colère', it:'arrabbiato'},
+    {de:'aufgeregt', en:'excited', es:'emocionado', fr:'excité', it:'eccitato'},
+    {de:'ängstlich', en:'scared', es:'asustado', fr:'effrayé', it:'spaventato'},
+    {de:'stolz', en:'proud', es:'orgulloso', fr:'fier', it:'orgoglioso'},
+    {de:'ruhig', en:'calm', es:'tranquilo', fr:'calme', it:'calmo'},
   ]},
 ];
+const LEVELS = RAW_LEVELS.map(l=>({icon:l.icon, title:l.title}));
+function currentLang(){ return state.language || 'en'; }
+function levelWords(levelIdx){
+  const lang = currentLang();
+  return RAW_LEVELS[levelIdx].words.map(w=>[w.de, w[lang]]);
+}
 
 const MAX_HEARTS = 5;
 const HEART_REGEN_MINUTES = 20; // 1 Herz alle 20 Minuten
@@ -349,7 +434,7 @@ let session = null; // aktueller Levellauf
 function defaultState(){
   return {
     xp:0, coins:20, hearts:MAX_HEARTS, lastHeartLoss:null,
-    streak:0, lastPlayDate:null, difficulty:null,
+    streak:0, lastPlayDate:null, difficulty:null, language:null,
     levelProgress: LEVELS.map(()=>({stars:0, bestCorrect:0})),
     totalLevelsCompleted:0
   };
@@ -448,6 +533,29 @@ document.getElementById('changeDiffBtn').addEventListener('click', ()=>{
   showScreen('screen-difficulty');
 });
 
+/* ---------- SPRACHAUSWAHL ---------- */
+function populateLanguageList(){
+  const box = document.getElementById('langList');
+  box.innerHTML='';
+  Object.entries(LANGS).forEach(([key,l])=>{
+    const el = document.createElement('div');
+    el.className='diff-option';
+    el.innerHTML = `<b>${l.label}</b>`;
+    el.addEventListener('click', ()=>{
+      sndTap();
+      state.language = key;
+      saveState();
+      if(state.difficulty){ renderMap(); showScreen('screen-map'); }
+      else { populateDifficultyList(); showScreen('screen-difficulty'); }
+    });
+    box.appendChild(el);
+  });
+}
+document.getElementById('changeLangBtn').addEventListener('click', ()=>{
+  populateLanguageList();
+  showScreen('screen-language');
+});
+
 /* ---------- NAVIGATION ---------- */
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -543,7 +651,7 @@ const PER_WORD_GAMES = [
 ];
 
 function buildQuestions(levelIdx){
-  const words = LEVELS[levelIdx].words;
+  const words = levelWords(levelIdx);
   const diffKey = state.difficulty || 'anfaenger';
   const diff = DIFFICULTIES[diffKey];
   const tiers = diff.tiers;
@@ -576,9 +684,10 @@ function stripArticle(deWord){
   return m ? {article:m[1], noun:m[2]} : {article:null, noun:deWord};
 }
 function randForeignWord(levelIdx){
-  const otherLevels = LEVELS.filter((l,i)=>i!==levelIdx);
-  const lvl = otherLevels[Math.floor(Math.random()*otherLevels.length)];
-  return lvl.words[Math.floor(Math.random()*lvl.words.length)];
+  const otherIdxs = RAW_LEVELS.map((_,i)=>i).filter(i=>i!==levelIdx);
+  const foreignIdx = otherIdxs[Math.floor(Math.random()*otherIdxs.length)];
+  const fwords = levelWords(foreignIdx);
+  return fwords[Math.floor(Math.random()*fwords.length)];
 }
 
 function startLevel(levelIdx){
@@ -608,18 +717,20 @@ function renderQuestion(){
   updateGameHeader();
   session.answered = false;
   const q = session.questions[session.qi];
-  const words = LEVELS[session.levelIdx].words;
+  const words = levelWords(session.levelIdx);
 
   if(q.type==='match_round'){ renderMatchRound(q.words); return; }
   if(q.type==='memory_round'){ renderMemoryRound(q.words); return; }
 
   const [de, en] = q.word;
   const {article, noun:deNoun} = stripArticle(de);
+  const langInfo = LANGS[currentLang()];
+  const langCode = langInfo.code, langName = langInfo.name, langAdj = langInfo.adj;
 
   switch(q.type){
     case 'mc_de_en': {
       const opts = shuffle([en, ...randOthers(words,q.idx,3).map(i=>words[i][1])]);
-      renderMC(`<div class="q-hint">Übersetze ins Englische</div><div class="q-word">${de}</div>`, opts, en);
+      renderMC(`<div class="q-hint">Übersetze ins ${langName}</div><div class="q-word">${de}</div>`, opts, en);
       break;
     }
     case 'mc_en_de': {
@@ -630,7 +741,7 @@ function renderQuestion(){
     case 'listen_en': {
       const opts = shuffle([en, ...randOthers(words,q.idx,3).map(i=>words[i][1])]);
       renderMC(`<div class="q-hint">Höre zu und wähle das richtige Wort</div>
-        <button class="q-sound-btn" id="playSoundBtn">🔊</button>`, opts, en, ()=>speak(en,'en-US'));
+        <button class="q-sound-btn" id="playSoundBtn">🔊</button>`, opts, en, ()=>speak(en,langCode));
       break;
     }
     case 'listen_de': {
@@ -640,7 +751,7 @@ function renderQuestion(){
       break;
     }
     case 'type_de_en':
-      renderType(`<div class="q-hint">Tippe die englische Übersetzung</div><div class="q-word">${de}</div>`, en, 'Auf Englisch schreiben...');
+      renderType(`<div class="q-hint">Tippe die ${langAdj} Übersetzung</div><div class="q-word">${de}</div>`, en, `Auf ${langName} schreiben...`);
       break;
     case 'type_en_de':
       renderType(`<div class="q-hint">Tippe die deutsche Übersetzung</div><div class="q-word">${en}</div>`, de, 'Auf Deutsch schreiben...', true);
@@ -666,7 +777,7 @@ function renderQuestion(){
       renderMissingLetter(deNoun, `<div class="q-hint">Welcher Buchstabe fehlt? (${en})</div>`, article);
       break;
     case 'scramble_en':
-      renderScramble(en, `<div class="q-hint">Baue das englische Wort für „${de}“</div>`);
+      renderScramble(en, `<div class="q-hint">Baue das ${langAdj} Wort für „${de}“</div>`);
       break;
     case 'scramble_de':
       renderScramble(deNoun, `<div class="q-hint">Baue das deutsche Wort für „${en}“</div>`, article);
@@ -687,7 +798,7 @@ function renderQuestion(){
     }
     case 'speed_de_en': {
       const opts = shuffle([en, ...randOthers(words,q.idx,3).map(i=>words[i][1])]);
-      renderMC(`<div class="q-hint">⏱️ Schnell! Übersetze ins Englische</div><div class="q-word">${de}</div>`, opts, en, null, 6);
+      renderMC(`<div class="q-hint">⏱️ Schnell! Übersetze ins ${langName}</div><div class="q-word">${de}</div>`, opts, en, null, 6);
       break;
     }
     case 'speed_en_de': {
@@ -696,7 +807,7 @@ function renderQuestion(){
       break;
     }
     case 'dictation_en':
-      renderDictation(en, en, 'en-US', 'Auf Englisch schreiben...');
+      renderDictation(en, en, langCode, `Auf ${langName} schreiben...`);
       break;
     case 'dictation_de':
       renderDictation(deNoun, deNoun, 'de-DE', 'Auf Deutsch schreiben...');
@@ -1157,12 +1268,15 @@ document.getElementById('resetProgressBtn').addEventListener('click', ()=>{
 });
 
 /* ---------- INIT ---------- */
-if(state.difficulty){
+if(state.language && state.difficulty){
   renderMap();
   showScreen('screen-map');
-} else {
+} else if(state.language){
   populateDifficultyList();
   showScreen('screen-difficulty');
+} else {
+  populateLanguageList();
+  showScreen('screen-language');
 }
 </script>
 </body>
