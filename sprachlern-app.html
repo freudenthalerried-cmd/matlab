@@ -619,7 +619,7 @@ function openIntro(i){
   const lvl = LEVELS[i];
   document.getElementById('introIcon').textContent = lvl.icon;
   document.getElementById('introTitle').textContent = lvl.title;
-  document.getElementById('introDesc').textContent = `${lvl.words.length} Wörter · Mix aus vielen Mini-Spielen`;
+  document.getElementById('introDesc').textContent = `${RAW_LEVELS[i].words.length} Wörter · Mix aus vielen Mini-Spielen`;
   showScreen('screen-intro');
 }
 document.getElementById('backToMapBtn').addEventListener('click', ()=>{ renderMap(); showScreen('screen-map'); });
