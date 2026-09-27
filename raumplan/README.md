@@ -1,6 +1,29 @@
-# Raumplan – 2D-Grundriss aus Handyvideo
+# Raumplan – 2D-Grundriss / Einreichplan aus Fotos oder Video
 
-Browser-App (keine Installation, läuft offline am Handy): `raumplan/index.html` öffnen.
+Browser-App (keine Installation, läuft am Handy): `raumplan/index.html` öffnen.
+
+## A · Automatisch mit Zielmarken – ohne Handmessung (empfohlen, ±1–3 mm)
+
+1. **Marken drucken** (Tab „Aufnahme“ → 🖨): Bodenmarken 0–3, Wandmarken ab 4 (A4, 100 %).
+2. **Maßband** am Boden auslegen, Marke 0 mit der Mitte auf 0 cm, Marke 1 auf 300 cm (einziger Maßstab – nichts ablesen). Marken 2, 3 flach auf den Boden (optional zweites Maßband-Paar im Nebenraum).
+3. **Wandmarken** glatt an jede Wand kleben, 3–4 je Wand, verschiedene Höhen.
+4. **Fotoserie** (am genauesten): in jeder Ecke 8–10 Fotos über den Raum, auch auf die Bodenmarken, ca. 40 Fotos. Oder **Video** mit kurzen Pausen (die App verwendet nur ruhige Momente).
+5. **Auswerten** – Markenerkennung (Subpixel), Bündelausgleich mit Selbstkalibrierung der Kamera, Wände als Ebenen durch ihre Marken → Raumpolygon mit ±mm je Wand → in den Plan übernehmen.
+   Mehrere Räume in einem Durchgang (Nummernbereiche je Raum): Wandstärken ergeben sich automatisch.
+
+### Ergebnisse (synthetische Aufnahmen, echte Erkennung + Ausgleich)
+
+| Szenario | Wandfehler |
+|---|---|
+| Rechteckraum, 48 Fotos 1280×720 | −0,5 / +1,4 / +0,8 / −0,5 mm |
+| L-Raum (6 Wände) | ≤ 5,5 mm |
+| 2 Räume über Tür | Raum 1 ≤ 4 mm, Raum 2 ≤ 6 mm, Innenwand 117–121 mm (Soll 120), 6 von 8 Läufen; sonst Warnung |
+| Video 21 s mit Pausen (Browser, WebM) | 0 bis 7 mm, App zeigt ±8–10 mm (zu wenige Blickpositionen) |
+| Video mit Schwenk 30°/s ohne Pausen | 27 mm (Rolling Shutter) → nur ruhige Bilder verwenden |
+
+Physik dahinter: Handykameras lesen das Bild zeilenweise aus (Rolling Shutter, ~30 ms) – beim Schwenken verzerrt das um viele Pixel. Ein Rolling-Shutter-Modell ist im Bündelausgleich enthalten, ist bei ~4 Marken je Bild aber nicht stabil bestimmbar und daher nur aktiv, wenn es den Bildfehler deutlich senkt.
+
+## B · Manuell (Fotos antippen, Maßband)
 
 1. **Aufnahme** – Kreppband-Rechteck (z. B. 2,00 × 1,00 m, mit Maßband abgemessen) auf den Boden kleben, Raum filmen, Standbilder übernehmen (oder Fotos laden).
 2. **Vermessen** – Ecken A-B-C-D des Rechtecks antippen → perspektivische Entzerrung des Bodens (Homographie). Dann Raumecken am Übergang Wand/Boden antippen → echte Maße in m. „Punkte → neuer Raum“ oder Strecken in die Messliste.
@@ -25,7 +48,7 @@ Fazit: ±3 mm nur mit Maßband-Längen; Fotos liefern Form, Lage und Kontrolle. 
 zeigt für jede Wand die erreichte Genauigkeit (±mm) und erkennt Tipp-/Ablesefehler
 (Baarda-Test). Gedruckte Zielmarken werden auf ~0,05 px gefunden, Kreppband-Kreuze nicht.
 
-Tests: `node sim/test_ausgleich.js`, `node sim/test_boden.js`, `node sim/test_subpixel.js`,
+Tests: `node sim/test_ba.js` (Bündelausgleich, RS), `node sim/test_pg.js` (Raytracing → Erkennung → Ausgleich), `node sim/test_pg_geo.js` (L-Raum, 2 Räume), `sim/e2e_pg.js` (Browser, Fotos/Video), `node sim/test_ausgleich.js`, `node sim/test_boden.js`, `node sim/test_subpixel.js`,
 `node sim/test_kalib.js`, `python3 sim/genauigkeit.py`, Browser: `sim/e2e.js` (Playwright).
 
 ## Messregeln für ±3 mm mit Maßband (Altbau, möbliert)
