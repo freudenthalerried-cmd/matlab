@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, interactive-widget=resizes-content">
 <title>Wortreise – Englisch lernen wie ein Spiel</title>
 <meta name="description" content="Lerne Englisch spielerisch: Level, Sterne, Münzen, Streaks und Mini-Spiele.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg1:#0f2027; --bg2:#2c5364; --accent:#ffd23f; --accent2:#06d6a0;
@@ -22,6 +25,32 @@ body{
 #app{
   max-width:480px;margin:0 auto;height:100vh;height:100dvh;position:relative;
   display:flex;flex-direction:column;overflow:hidden;
+  background-image:
+    radial-gradient(circle at 15% 12%, rgba(255,255,255,0.06) 0, transparent 40%),
+    radial-gradient(circle at 85% 78%, rgba(255,255,255,0.05) 0, transparent 45%),
+    radial-gradient(circle at 75% 15%, rgba(255,255,255,0.05) 2px, transparent 3px),
+    radial-gradient(circle at 25% 70%, rgba(255,255,255,0.05) 2px, transparent 3px),
+    radial-gradient(circle at 55% 40%, rgba(255,255,255,0.04) 2px, transparent 3px);
+}
+
+/* ---------- MASKOTTCHEN ---------- */
+.mascot-wrap{display:flex;flex-direction:column;align-items:center;flex-shrink:0;margin-bottom:4px;}
+.mascot{
+  font-size:58px;line-height:1;display:inline-block;
+  animation:mascotBounce 2.4s ease-in-out infinite;
+  filter:drop-shadow(0 8px 10px rgba(0,0,0,0.3));
+}
+.mascot.small{font-size:34px;}
+@keyframes mascotBounce{0%,100%{transform:translateY(0) rotate(-3deg);}50%{transform:translateY(-7px) rotate(3deg);}}
+.mascot-shadow{width:34px;height:9px;background:rgba(0,0,0,0.25);border-radius:50%;margin:0 auto;animation:shadowPulse 2.4s ease-in-out infinite;filter:blur(1px);}
+@keyframes shadowPulse{0%,100%{transform:scale(1);opacity:.5;}50%{transform:scale(0.65);opacity:.25;}}
+.speech-bubble{
+  background:#fff;color:var(--text);border-radius:14px;padding:8px 14px;font-size:13px;font-weight:700;
+  position:relative;margin-top:10px;box-shadow:0 4px 12px rgba(0,0,0,0.18);text-align:center;max-width:260px;
+}
+.speech-bubble:after{
+  content:'';position:absolute;top:-6px;left:50%;transform:translateX(-50%);
+  border-width:0 7px 7px 7px;border-style:solid;border-color:transparent transparent #fff transparent;
 }
 
 /* ---------- TOPBAR ---------- */
@@ -56,6 +85,10 @@ body{
   flex-direction:column;font-weight:800;font-size:20px;color:#fff;position:relative;cursor:pointer;
   border:4px solid rgba(255,255,255,0.25);box-shadow:0 6px 0 rgba(0,0,0,0.18);
   transition:transform .15s ease;user-select:none;
+}
+.level-node::before{
+  content:'';position:absolute;top:5px;left:9px;width:44%;height:32%;border-radius:50%;
+  background:linear-gradient(160deg,rgba(255,255,255,0.55),rgba(255,255,255,0));pointer-events:none;
 }
 .level-node:active{transform:scale(0.92) translateY(3px);box-shadow:0 3px 0 rgba(0,0,0,0.18);}
 .level-node.locked{background:#3b4c5a;color:#7c8b98;cursor:not-allowed;box-shadow:0 6px 0 rgba(0,0,0,0.1);}
@@ -202,7 +235,12 @@ body{
   <!-- ===== SPRACH-AUSWAHL ===== -->
   <section class="screen active" id="screen-language">
     <div class="card">
-      <div class="intro-title">Welche Sprache willst du lernen? 🌍</div>
+      <div class="mascot-wrap">
+        <div class="mascot">🦉</div>
+        <div class="mascot-shadow"></div>
+        <div class="speech-bubble">Hallo! Ich bin Flügo 👋 Welche Sprache lernen wir?</div>
+      </div>
+      <div class="intro-title">Sprache wählen 🌍</div>
       <div class="intro-desc">Du kannst das später jederzeit ändern</div>
       <div class="diff-list" id="langList"></div>
     </div>
@@ -211,7 +249,12 @@ body{
   <!-- ===== SCHWIERIGKEITS-AUSWAHL ===== -->
   <section class="screen" id="screen-difficulty">
     <div class="card">
-      <div class="intro-title">Wähle dein Level 🎯</div>
+      <div class="mascot-wrap">
+        <div class="mascot">🦉</div>
+        <div class="mascot-shadow"></div>
+        <div class="speech-bubble">Wie sehr willst du gefordert werden?</div>
+      </div>
+      <div class="intro-title">Level wählen 🎯</div>
       <div class="intro-desc">Die Aufgaben passen sich an dein Können an</div>
       <div class="diff-list" id="diffList"></div>
     </div>
@@ -249,6 +292,10 @@ body{
   <!-- ===== RESULT SCREEN ===== -->
   <section class="screen" id="screen-result">
     <div class="card">
+      <div class="mascot-wrap">
+        <div class="mascot" id="resultMascot">🥳</div>
+        <div class="mascot-shadow"></div>
+      </div>
       <div class="result-stars" id="resultStars">⭐⭐⭐</div>
       <div class="intro-title" id="resultTitle">Level geschafft!</div>
       <div class="intro-desc" id="resultDesc">Super gemacht!</div>
@@ -262,7 +309,11 @@ body{
   <!-- ===== GAME OVER (no hearts) ===== -->
   <section class="screen" id="screen-gameover">
     <div class="card">
-      <div class="gameover-icon">💔</div>
+      <div class="mascot-wrap">
+        <div class="mascot">😿</div>
+        <div class="mascot-shadow"></div>
+        <div class="speech-bubble">Kopf hoch, wir schaffen das!</div>
+      </div>
       <div class="intro-title">Keine Herzen mehr!</div>
       <div class="intro-desc">Warte, bis deine Herzen sich erholen, oder starte den Level erneut.</div>
       <button class="btn btn-yellow" id="retryBtn">🔁 Level neu starten (Herzen auffrischen)</button>
@@ -508,7 +559,7 @@ function speak(text, lang='en-US'){
 /* ---------- SCHWIERIGKEITSGRADE ---------- */
 const DIFFICULTIES = {
   anfaenger:{ label:'🌱 Anfänger', desc:'Einfacher Einstieg mit Zuordnen, Memory & Auswahl', tiers:['easy','medium'] },
-  mittel:{ label:'⚡ Mittel', desc:'Ohne Kinderspiele – Auswahl, Hören, Tippen & mehr', tiers:['medium','hard'] },
+  mittel:{ label:'⚡ Mittel', desc:'Auswahl, Hören, Tippen, Wahr/Falsch & mehr', tiers:['medium','hard'] },
   fortgeschritten:{ label:'🔥 Fortgeschritten', desc:'Anspruchsvoll: Zeitdruck, Buchstabensalat, Diktat', tiers:['medium','hard'], hardWeight:0.65 },
 };
 function populateDifficultyList(){
@@ -1197,6 +1248,7 @@ function finishLevel(){
   }
   saveState();
 
+  document.getElementById('resultMascot').textContent = stars===3?'🥳':stars===2?'😄':stars===1?'🙂':'😅';
   document.getElementById('resultStars').textContent = '⭐'.repeat(stars) + '☆'.repeat(3-stars);
   document.getElementById('resultTitle').textContent = stars>=2 ? 'Level geschafft! 🎉' : 'Fast geschafft!';
   document.getElementById('resultDesc').textContent = stars>=2 ? 'Du wirst immer besser!' : 'Übe weiter, du schaffst 3 Sterne!';
