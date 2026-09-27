@@ -15,5 +15,5 @@ for(const s of sessions){
 const out=await p.evaluate(()=>S.rooms.map(r=>({name:r.name,P:geo(r).P,L:geo(r).E.map(e=>e.L)})));
 out.forEach(r=>console.log(r.name,'Ecken',r.P.map(q=>q.map(v=>v.toFixed(3)).join('/')).join('  '),'| Wände',r.L.map(v=>v.toFixed(4)).join(' ')));
 const xr=Math.max(...out[0].P.map(q=>q[0])),xl=Math.min(...out[1].P.map(q=>q[0]));console.log('Innenwand im Plan:',((xl-xr)*1000).toFixed(1),'mm (soll 120)');
-await p.evaluate(()=>{selRoom=null;showTab('plan');renderPlan(true);});await p.screenshot({path:process.env.SP+'/merge.png'});
+console.log('Projektgröße (localStorage):',await p.evaluate(()=>{const j=ser();return j.length+' Zeichen; je Raum '+S.rooms.map(r=>JSON.stringify(r).length).join('/')+', davon Marken '+S.rooms.map(r=>JSON.stringify(r.pgM||{}).length).join('/');}));await p.evaluate(()=>{selRoom=null;showTab('plan');renderPlan(true);});await p.screenshot({path:process.env.SP+'/merge.png'});
 console.log('errs',errs);await b.close();})();

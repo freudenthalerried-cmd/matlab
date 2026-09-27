@@ -18,7 +18,8 @@ try { S = JSON.parse(localStorage.getItem(KEY)); } catch (e) { }
 if (!S || !Array.isArray(S.rooms)) S = structuredClone(DEF);
 S = { ...structuredClone(DEF), ...S, project: { ...DEF.project, ...S.project } };
 let saveT;
-const ser = () => JSON.stringify(S, (k, v) => k === '_link' ? undefined : v);
+// Speichern: Hilfsdaten weglassen, Zahlen auf 1 µm runden (spart Platz, kein Einfluss auf mm-Genauigkeit)
+const ser = () => JSON.stringify(S, (k, v) => k === '_link' ? undefined : typeof v === 'number' && !Number.isInteger(v) ? +v.toFixed(6) : v);
 function save() { clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(KEY, ser()); } catch (e) { } }, 300); }
 
 let snaps = [], cur = null, mode = 'ref', selPt = -1, zoom = 1, selRoom = null;
@@ -128,8 +129,8 @@ async function pgFrames(files, step, prog) { // -> {frames, W, H}
     for (let k = 0; k < imgs.length; k++) {
       const b = await createImageBitmap(imgs[k]);
       if (!W) { W = cv.width = b.width; H = cv.height = b.height; buf = new Float32Array(W * H); }
-      if (b.width !== W || b.height !== H) { pgLog(`${imgs[k].name}: andere Bildgröße – übersprungen`); continue; }
-      ctx.drawImage(b, 0, 0); const dets = MK.detect(toGray(ctx, W, H, buf), W, H).filter(d => d.res < 0.8);
+      if (b.width !== W || b.height !== H) { b.close(); pgLog(`${imgs[k].name}: andere Bildgröße – übersprungen`); continue; }
+      ctx.drawImage(b, 0, 0); b.close(); const dets = MK.detect(toGray(ctx, W, H, buf), W, H).filter(d => d.res < 0.8);
       frames.push({ t: k, fi: k, dets }); prog((k + 1) / imgs.length, `Foto ${k + 1}/${imgs.length}: ${dets.length} Marken`); await tick();
     }
   }
@@ -186,7 +187,7 @@ $('#pgRun').onclick = async () => {
 let opSt = null;
 async function loadFrameCanvas(fr) {
   const L = pgLast, cv = document.createElement('canvas'); cv.width = L.W; cv.height = L.H; const ctx = cv.getContext('2d', { willReadFrequently: true });
-  if (fr.fi !== undefined) ctx.drawImage(await createImageBitmap(L.imgs[fr.fi]), 0, 0);
+  if (fr.fi !== undefined) { const bm = await createImageBitmap(L.imgs[fr.fi]); ctx.drawImage(bm, 0, 0); bm.close(); }
   else { const v = document.createElement('video'); v.muted = true; v.src = URL.createObjectURL(L.video); await new Promise(r => v.onloadeddata = r); v.currentTime = fr.vt; await new Promise(r => v.onseeked = r); ctx.drawImage(v, 0, 0, L.W, L.H); URL.revokeObjectURL(v.src); }
   return cv;
 }
@@ -278,7 +279,7 @@ function pgTake() {
   let shift = [0, 0];
   if (!T && S.rooms.length) { const b = allBB(), pb = bb(res.filter(d => d.w.ok).flatMap(d => d.w.poly)); shift = [b.x1 + 1 - pb.x0, b.y0 - pb.y0]; }
   const G = p => { const q = F(p); return [q[0] + shift[0], q[1] + shift[1]]; };
-  const mPlan = {}; for (const id in fresh) mPlan[id] = { c: fresh[id].c.map(G), s: fresh[id].s };
+  const mPlan = {}; for (const id in fresh) if (fresh[id].s <= 0.005) mPlan[id] = { c: fresh[id].c.map(p => G(p).map(v => +v.toFixed(4))), s: +fresh[id].s.toFixed(4) }; // nur brauchbare Marken, 0,1 mm
   res.forEach(d => {
     if (!d.w.ok) return;
     const r = newRoom(d.name, [], 0, 0); Object.assign(r, fromPoly(d.w.poly.map(G), r));
