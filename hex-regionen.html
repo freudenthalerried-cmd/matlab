@@ -352,7 +352,7 @@
       for (const b of drag.sel) {
         if (ok && b === hov) continue;
         const r = ok && reach(b, hov);
-        if (r) { route(b, hov, r.kind, r.path, OWN[1].fill, 1); n += Math.floor(b.count / 2); }
+        if (r) { route(b, hov, r.kind, r.path, OWN[1].fill, 1); n += Math.floor(b.count); }
         else arrow(px(b.x), py(b.y), drag.x, drag.y, '#9aa3b5', 1);
       }
       if (ok) {
@@ -568,7 +568,7 @@
     return path;
   }
   function send(a, t) {
-    const n = Math.floor(a.count / 2), r = reach(a, t);
+    const n = Math.floor(a.owner === 1 ? a.count : a.count / 2), r = reach(a, t);   // Spieler schickt alle Truppen
     if (n < 1 || !r) return;
     a.count -= n;
     queues.push({ a, t, owner: a.owner, left: n, tm: 0, kind: r.kind, path: r.path });
