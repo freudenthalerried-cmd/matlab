@@ -989,3 +989,6 @@ $('#xNew').onclick = () => { if (confirm('Neues Projekt beginnen? Alle Räume, M
 
 addEventListener('resize', () => { if (!$('#plan').hidden) renderPlan(); });
 listMeas();
+
+// Offline nutzbar (PWA): nur über https bzw. localhost
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('sw.js').catch(() => { });
