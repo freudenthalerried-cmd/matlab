@@ -9,7 +9,7 @@
 :root{--bg:#0d0a12;--panel:#1a1422;--line:#3a2c48;--gold:#f2c14e;--gold2:#a8741a;--mana:#b44dff;--red:#ff4d5e;--atk:#ff8a3d;--def:#4da3ff;--heal:#3ddc84;--evo:#5ee0ff;--txt:#f1e9dc;--mut:#a89bb5}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;background:radial-gradient(ellipse at 50% 0%,#2a1838,var(--bg) 70%) fixed;color:var(--txt);font:16px/1.45 Inter,system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;padding:10px 16px 20px;min-height:100vh}
-.wrap{width:100%;max-width:640px;display:flex;flex-direction:column;gap:10px}
+.wrap{width:100%;max-width:640px;display:flex;flex-direction:column;gap:12px}
 .bar{display:flex;gap:6px}
 .chip{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:7px 12px;font-weight:800;font-size:22px}
 .chip small{display:block;font-size:11.5px;color:var(--mut);font-weight:400;letter-spacing:.05em}
@@ -72,10 +72,26 @@ body{margin:0;background:radial-gradient(ellipse at 50% 0%,#2a1838,var(--bg) 70%
 #banner{position:absolute;left:0;right:0;top:40%;text-align:center;font-family:Cinzel,serif;font-weight:800;font-size:clamp(22px,7vw,32px);pointer-events:none;opacity:0;z-index:10;text-shadow:0 0 16px #000,0 0 6px #000}
 #banner.go{animation:ban 1.6s ease-out}
 @keyframes ban{0%{opacity:0;transform:scale(.6)}15%{opacity:1;transform:scale(1.05)}25%{transform:scale(1)}80%{opacity:1}100%{opacity:0}}
-#info{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px;min-height:64px;font-size:15px;display:flex;align-items:center;gap:10px}
-#info svg{width:48px;height:48px;flex:none}
-#info .nm{font-family:Cinzel,serif;font-size:19px}
-#info .st{color:var(--mut);font-size:15px}#info .st b{font-size:19px}
+.bar{display:flex;gap:6px;align-items:stretch}
+.hud{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:3px 10px;font-weight:800;font-size:18px;line-height:1.2;cursor:pointer}
+.hud small{display:block;font-size:10px;color:var(--mut);font-weight:600;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hud.m{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center}
+.pl{font-size:13px;color:#e3b8ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
+#mbar{height:5px!important;margin-top:3px}
+.gear{width:46px;flex:none;font-size:24px;line-height:1;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--gold);cursor:pointer}
+#turn{position:absolute;top:-9px;left:50%;transform:translateX(-50%);z-index:11;font-size:11px;font-weight:800;letter-spacing:.05em;padding:1px 12px;border-radius:10px;background:#1a1422;border:1px solid currentColor;white-space:nowrap}
+#ovc{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;max-width:360px}
+#ovc h2{margin:0 0 4px;font-family:Cinzel,serif;color:var(--gold);font-size:26px}
+#ovc .tag{font-size:16px;color:var(--mut);margin-bottom:6px}
+#ovc .big{width:100%}
+.mb{width:100%;font:600 16px Inter,sans-serif;color:var(--txt);background:#ffffff0d;border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer}
+.legg{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;width:100%;font-size:13px;text-align:left}
+.legg span{display:flex;align-items:center;gap:6px}.legg svg{width:22px;height:22px;flex:none}
+.di{width:40px;height:40px;flex:none}.di svg{width:100%;height:100%}
+#info{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 12px;min-height:58px;font-size:14px;display:flex;align-items:center;gap:10px}
+#info svg{width:40px;height:40px;flex:none}
+#info .nm{font-family:Cinzel,serif;font-size:17px;line-height:1.1}
+#info .st{color:var(--mut);font-size:13.5px;line-height:1.3}#info .st b{font-size:16px}
 .leg{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;font-size:14px;color:var(--txt);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
 .leg span{display:flex;align-items:center;gap:4px}
 .leg span{gap:8px}.leg svg{width:24px;height:24px;flex:none}
@@ -101,22 +117,17 @@ body{margin:0;background:radial-gradient(ellipse at 50% 0%,#2a1838,var(--bg) 70%
 
 <div class="wrap">
   <div class="bar">
-    <div class="chip"><small>WELLE</small><span id="wave">1</span></div>
-    <div class="chip"><small>ZUG</small><span id="rnd">1</span></div>
-    <div class="chip m"><small>GEGNER-MANA <span id="mana">0</span> (+2/Rd.)</small><b id="plan">–</b><div id="mbar"><div id="mfill"></div></div></div>
+    <div class="hud" onclick="desc('wave')"><small>WELLE</small><span id="wave">1</span></div>
+    <div class="hud" onclick="desc('rnd')"><small>ZUG</small><span id="rnd">1</span></div>
+    <div class="hud m" onclick="desc('mana')"><small>🔮 GEGNER-MANA <span id="mana">0</span></small><b id="plan" class="pl">–</b><div id="mbar"><div id="mfill"></div></div></div>
+    <button class="gear" onclick="menu('opt')" aria-label="Optionen">⚙</button>
   </div>
-  <div id="turn"></div>
-  <div id="boardWrap"><div id="board"></div><div id="layer"></div><div id="banner"></div></div>
+  <div id="boardWrap"><div id="turn"></div><div id="board"></div><div id="layer"></div><div id="banner"></div></div>
   <div id="info"></div>
-  <div class="leg" id="leg"></div>
-  <div style="display:flex;gap:8px;justify-content:center"><button class="sm" onclick="help()">? Regeln</button><button class="sm" onclick="sound=!sound;this.textContent=sound?'♪ Effekte an':'♪ Effekte aus'">♪ Effekte an</button><button class="sm" onclick="togMusic(this)">♫ Musik an</button></div>
 </div>
 
-<div id="ov">
-  <h1 id="ot">Manaschach</h1>
-  <div class="res2" id="od"></div>
-  <div id="tag" style="font-size:17px;color:var(--mut)">Besiege die Dunklen Könige – Welle für Welle.</div>
-  <ul class="rules" id="rules" style="display:none">
+<div id="ov"><div id="ovc"></div></div>
+<template id="rulesT"><ul class="rules">
     <li>👑 Du führst deinen <b style="color:var(--gold)">goldenen König</b> und <b style="color:var(--def)">3 Figuren</b>. Sie ziehen wie im Schach.</li>
     <li>Jede Figur hat <b style="color:var(--atk)">Angriff</b> (orange Zahl, rechts), <b style="color:var(--def)">Verteidigung</b> (blaue Zahl, links) und Leben (Balken). <b>Schaden = Angriff − Verteidigung</b>, mindestens 1.</li>
     <li>Ein Angriff zieht Leben ab. Erst bei 0 ist die Figur besiegt, dann rückt der Angreifer nach.</li>
@@ -129,11 +140,7 @@ body{margin:0;background:radial-gradient(ellipse at 50% 0%,#2a1838,var(--bg) 70%
       <b>Felsen</b>: blockiert den Weg.</li>
     <li>🔮 Der Gegner sammelt jede Runde Mana und wirkt Zauber. Oben steht, was als Nächstes kommt.</li>
     <li>☠ Besiege alle Gegner einer Welle. Fällt dein König, ist das Spiel aus.</li>
-  </ul>
-  <button class="big" id="go" onclick="neu()">Spiel starten</button>
-  <button class="sm" id="rb" onclick="const r=document.getElementById('rules');r.style.display=r.style.display?'':'none'">? Regeln</button>
-  <div id="hsl" style="font-size:12px;color:var(--mut)"></div>
-</div>
+  </ul></template>
 
 <script>
 const N=8;
@@ -184,7 +191,7 @@ const JUMP=[[1,2],[2,1],[-1,2],[-2,1],[1,-2],[2,-1],[-1,-2],[-2,-1]];
 let P=[],fld,ter=[],feats={},wave=0,mana=0,plan=null,phase='x',sel=null,moves=[],over=true,uid=0,sound=true,hi=0,kills=0,rnd=1;
 const $=id=>document.getElementById(id);
 try{hi=+localStorage.getItem('manaschach_hi')||0}catch(e){}
-if(hi)$('hsl').textContent='Rekord: Welle '+hi;
+
 
 
 const inB=(r,c)=>r>=0&&r<N&&c>=0&&c<N;
@@ -274,7 +281,7 @@ function startMusic(){
   musTimer=setInterval(()=>{while(nextT<ac.currentTime+.25){musStep(nextT);nextT+=EIGHTH}},60);
 }
 function stopMusic(){clearInterval(musTimer);musTimer=null}
-function togMusic(b){music=!music;b.textContent=music?'♫ Musik an':'♫ Musik aus';music?startMusic():stopMusic()}
+function togMusic(){music=!music;music?startMusic():stopMusic()}
 document.addEventListener('visibilitychange',()=>{if(!ac)return;document.hidden?ac.suspend():ac.resume()});
 
 function mkP(t,r,c){const d=T[t];return{id:++uid,side:'p',t,g:t,name:d.n,mv:d.mv,r,c,hp:d.hp,max:d.hp,atk:d.atk,def:d.def,tier:0}}
@@ -287,7 +294,7 @@ function neu(){
   wave=0;mana=0;kills=0;rnd=1;over=false;sel=null;moves=[];
   nextWave();newPlan();
   spawnField('atk');spawnField('def');
-  $('ov').classList.add('hide');startMusic();startTurn();
+  closeMenu();startMusic();startTurn();
 }
 function newPlan(){const pool=PLANS.filter(p=>p.c<=6+wave*2);plan=pool[Math.random()*pool.length|0]}
 function nextWave(){
@@ -333,7 +340,7 @@ function startTurn(){
   phase='p';
   for(const b of mine())if(b.t==='B'&&b.tier>=2)for(const q of mine())if(dist(q,b)<=1&&q.hp<q.max){q.hp++;float(q.r,q.c,'+1 ❤','var(--heal)')}
   mine().forEach(p=>p.bonus=false);
-  $('turn').textContent='Dein Zug';$('turn').style.color='var(--gold)';
+  $('turn').textContent='DEIN ZUG';$('turn').style.color='var(--gold)';
   if(sel&&!P.includes(sel))sel=null;
   moves=sel&&sel.side==='p'?gen(sel):[];
   render();
@@ -343,6 +350,7 @@ function click(r,c){
   const x=at(r,c);
   if(phase==='p'&&sel&&sel.side==='p'){const m=moves.find(m=>m.r===r&&m.c===c);if(m)return act(sel,m)}
   sel=x||null;moves=x&&(x.side==='e'||phase==='p')?gen(x):[];
+  dk=x?null:((ter[r][c]&&ter[r][c].k)||(fld[r][c]&&fld[r][c].k)||null);
   if(x&&x.side==='e')log('Rote Punkte = Reichweite von '+x.name);
   if(x)sfx('select');
   render();
@@ -384,7 +392,7 @@ function waveClear(){
 
 // ---- Gegner ----
 function enemyTurn(){
-  phase='e';$('turn').textContent='Gegner ist am Zug …';$('turn').style.color='var(--red)';
+  phase='e';$('turn').textContent='GEGNER AM ZUG';$('turn').style.color='var(--red)';
   mana+=2;let n=1;
   if(mana>=plan.c){mana-=plan.c;if(cast(plan))n+=1;newPlan()}
   render();
@@ -431,16 +439,31 @@ function end(){
   if(over)return;over=true;phase='x';
   const rec=wave>hi;if(rec){hi=wave;try{localStorage.setItem('manaschach_hi',hi)}catch(e){}}
   sfx('lose');render();
-  setTimeout(()=>{
-    $('ot').textContent='König gefallen';$('od').textContent='Welle '+wave+' · '+kills+' Gegner besiegt'+(rec?' · Neuer Rekord!':'');
-    $('rules').style.display='none';$('tag').style.display='none';$('hsl').textContent='Rekord: Welle '+hi;
-    $('go').textContent='Nochmal';$('go').onclick=neu;$('ov').classList.remove('hide');
-  },900);
+  endD='Welle '+wave+' · '+kills+' Gegner besiegt'+(rec?' · Neuer Rekord!':'');
+  setTimeout(()=>menu('end'),900);
 }
-function help(){
-  $('ot').textContent='Manaschach';$('od').textContent='';$('rules').style.display='';$('tag').style.display='none';
-  $('go').textContent=over?'Spiel starten':'Weiter';$('go').onclick=over?neu:()=>$('ov').classList.add('hide');$('ov').classList.remove('hide');
+// ---- Menüs ----
+let endD='';
+const mb=(l,fn,c='mb')=>`<button class="${c}" onclick="${fn}">${l}</button>`;
+function menu(k){
+  const set=mb('♪ Effekte: '+(sound?'an':'aus'),`sound=!sound;menu('${k}')`)+mb('♫ Musik: '+(music?'an':'aus'),`togMusic();menu('${k}')`);
+  let h='';
+  if(k==='start')h=`<h1>Manaschach</h1><div class="tag">Besiege die Dunklen Könige – Welle für Welle.</div>${mb('▶ Spielen','neu()','big')}${mb('📖 Regeln',"menu('rules')")}${set}<div class="tag" style="font-size:13px">${hi?'Rekord: Welle '+hi:''}</div>`;
+  if(k==='opt')h=`<h2>Optionen</h2>${mb('▶ Weiter','closeMenu()','big')}${mb('📖 Regeln',"menu('rules')")}${set}${mb('↻ Neues Spiel','neu()')}${mb('⌂ Hauptmenü',"quit()")}`;
+  if(k==='rules')h=`<h2>Regeln</h2>${$('rulesT').innerHTML}<div class="legg">${Object.keys(FICON).map(x=>`<span>${FICON[x]}${FNAME[x]}</span>`).join('')}${Object.keys(TSVG).map(x=>`<span>${TSVG[x]}${TNAME[x]}</span>`).join('')}</div>${mb('← Zurück',`menu('${over?'start':'opt'}')`,'big')}`;
+  if(k==='end')h=`<h1>König gefallen</h1><div class="res2">${endD}</div>${mb('↻ Nochmal','neu()','big')}${mb('⌂ Hauptmenü',"menu('start')")}`;
+  $('ovc').innerHTML=h;$('ov').classList.remove('hide');$('ov').scrollTop=0;
 }
+function closeMenu(){$('ov').classList.add('hide')}
+function quit(){over=true;phase='x';stopMusic();menu('start')}
+function help(){menu('rules')}
+// ---- Kurzbeschreibungen beim Antippen ----
+const DESC={heal:'Heilfeld: deine Figur bekommt beim Betreten +4 Leben.',atk:'Angriffsfeld: +1 Angriff für die Figur, dauerhaft.',def:'Verteidigungsfeld: +1 Verteidigung, die Figur nimmt weniger Schaden.',evo:'Entwicklungsfeld: neue Zugart, beim 2. Mal eine Spezialfähigkeit.',
+ lava:'Lava: 2 Schaden beim Betreten und jede Runde – für alle Figuren.',tur:'Pfeilturm: schießt jede Runde in Pfeilrichtung auf die erste Figur und dreht sich dann weiter. Blockiert.',bomb:'Bombe: explodiert bei 0 oder beim Betreten und trifft alle Figuren rundherum.',rock:'Felsen: blockiert den Weg.',
+ wave:'Welle: Besiege alle Gegner, dann kommt die nächste, stärkere Welle.',rnd:'Zug: Anzahl der gespielten Runden in diesem Spiel.',mana:'Gegner-Mana: +2 pro Runde. Ist genug da, wirkt der Gegner den angezeigten Zauber.'};
+const EDESC={S:'zieht 1 Feld in jede Richtung',N:'springt im L wie ein Springer',B:'zieht diagonal wie ein Läufer – auch über weite Strecken',R:'zieht gerade wie ein Turm – auch über weite Strecken',Q:'zieht wie eine Dame – gerade und diagonal',K:'Anführer, zieht 1 Feld in jede Richtung'};
+let dk=null;
+function desc(k){dk=k;sel=null;moves=[];render()}
 
 
 // ---- Level-Gefahren ----
@@ -538,10 +561,11 @@ function hurt(p){setTimeout(()=>{const e=$('layer').querySelector('[data-id="'+p
 function flashT(r,c){setTimeout(()=>{const t=$('board').children[r*8+c];if(t){t.classList.remove('cast');void t.offsetWidth;t.classList.add('cast')}},30)}
 function info(){
   const p=sel&&P.includes(sel)?sel:null,el=$('info');
-  if(!p){el.innerHTML=`<div class="st">${logT||'Tippe eine Figur an, um sie zu ziehen oder ihre Werte zu sehen.'}</div>`;return}
+  if(!p){if(dk&&DESC[dk]){el.innerHTML=`<span class="di">${FICON[dk]||TSVG[dk]||''}</span><div class="st" style="color:var(--txt)">${DESC[dk]}</div>`;return}
+    el.innerHTML=`<div class="st">${logT||'Tippe eine Figur oder ein Symbol an, um mehr zu erfahren.'}</div>`;return}
   let ex='';
   if(p.side==='p'){const d=T[p.t],nt=p.tier<2?d['t'+(p.tier+1)]:null;ex=nt?`Nächste Entwicklung ✦: ${nt.n} – ${nt.d}`:`Voll entwickelt ✦✦ (${d.t2.n})`}
-  else ex='Gegner';
+  else ex='Gegner – '+EDESC[p.t];
   el.innerHTML=`${svg(p.g,p.side)}<div><div class="nm">${p.name}</div><div class="st"><b style="color:var(--atk)">⚔ ${atkOf(p)}</b> · <b style="color:var(--def)">🛡 ${p.def}</b> · <b style="color:var(--heal)">❤ ${p.hp}/${p.max}</b></div><div class="st">${ex}</div>${logT?`<div class="st" style="color:#ffb3ba">${logT}</div>`:''}</div>`;
 }
 function render(){
@@ -563,15 +587,15 @@ function render(){
   }
   $('wave').textContent=wave||1;$('rnd').textContent=rnd;$('mana').textContent=mana;
   if(plan){const left=Math.max(0,Math.ceil((plan.c-mana)/2));$('plan').textContent=plan.n+(left?' in '+left+' Rd.':' – jetzt!');$('mfill').style.width=Math.min(100,mana/plan.c*100)+'%'}
-  legend();info();
+  info();
 }
 function size(){
-  const c=Math.max(40,Math.floor(Math.min((Math.min(innerWidth,672)-46)/N,(innerHeight-120)/N,78)));
+  const c=Math.max(34,Math.floor(Math.min((Math.min(innerWidth,672)-46)/N,(innerHeight-150)/N,78)));
   document.documentElement.style.setProperty('--c',c+'px');
 }
 $('board').addEventListener('click',e=>{const t=e.target.closest('.t');if(t)click(+t.dataset.r,+t.dataset.c)});
 addEventListener('resize',()=>{size();render()});
-size();render();
+size();render();menu('start');
 </script>
 </body>
 </html>
