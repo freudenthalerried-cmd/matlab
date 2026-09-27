@@ -39,6 +39,7 @@ body{margin:0;background:radial-gradient(ellipse at 50% 0%,#2a1838,var(--bg) 70%
 .t.boom{animation:boomf .7s}
 @keyframes boomf{0%{background:#fff}35%{background:#ff9a3c}}
 .t.sel{box-shadow:inset 0 0 0 4px var(--gold),inset 0 0 14px var(--gold)}
+.t.th::after{content:"";position:absolute;left:35%;top:35%;width:30%;height:30%;border-radius:50%;background:#ff4d5eaa;box-shadow:0 0 8px #ff4d5e}
 .t.mv::after{content:"";position:absolute;left:35%;top:35%;width:30%;height:30%;border-radius:50%;background:#ffffffaa;box-shadow:0 0 8px #fff}
 .t.at{box-shadow:inset 0 0 0 4px var(--red),inset 0 0 18px #ff4d5eaa}
 .t.cast{animation:castf .7s}
@@ -341,7 +342,8 @@ function click(r,c){
   if(over)return;
   const x=at(r,c);
   if(phase==='p'&&sel&&sel.side==='p'){const m=moves.find(m=>m.r===r&&m.c===c);if(m)return act(sel,m)}
-  sel=x||null;moves=x&&x.side==='p'&&phase==='p'?gen(x):[];
+  sel=x||null;moves=x&&(x.side==='e'||phase==='p')?gen(x):[];
+  if(x&&x.side==='e')log('Rote Punkte = Reichweite von '+x.name);
   if(x)sfx('select');
   render();
 }
@@ -359,7 +361,7 @@ function useFields(p,cells){
   }
 }
 function hit(a,d){
-  const x=dmgOf(a,d);d.hp-=x;float(d.r,d.c,'-'+x,'var(--red)');hurt(d);sfx(d.hp<=0?'kill':'hit');
+  const x=dmgOf(a,d);beam(a.r,a.c,d.r,d.c,a.side==='e'?'#ff4d5e':'#9fd0ff');log((a.side==='e'?'⚠ ':'')+a.name+' greift '+d.name+' an: −'+x);d.hp-=x;float(d.r,d.c,'-'+x,'var(--red)');hurt(d);sfx(d.hp<=0?'kill':'hit');
   if(d.hp<=0){P=P.filter(p=>p!==d);if(d.side==='e')kills++;return true}
   return false;
 }
@@ -405,7 +407,7 @@ function cast(pl){
   if(pl.n==='Schatten rufen'){const e=emptyCells(0,2);if(e.length){const[r,c]=e[Math.random()*e.length|0];P.push(mkE('S',r,c));flashT(r,c)}}
   if(pl.n==='Fluchblitz'){
     const tg=mine().sort((a,b)=>a.hp-b.hp)[0];
-    if(tg){const d=2+Math.floor(wave/3);tg.hp-=d;flashT(tg.r,tg.c);float(tg.r,tg.c,'-'+d+' Fluch','var(--mana)');hurt(tg);if(tg.hp<=0)P=P.filter(p=>p!==tg)}
+    if(tg){const d=2+Math.floor(wave/3);tg.hp-=d;flashT(tg.r,tg.c);float(tg.r,tg.c,'-'+d+' Fluch','var(--mana)');log('🔮 Fluchblitz trifft '+tg.name+': −'+d);hurt(tg);if(tg.hp<=0)P=P.filter(p=>p!==tg)}
   }
   if(pl.n==='Dunkle Heilung')foes().forEach(f=>{f.hp=Math.min(f.max,f.hp+3);float(f.r,f.c,'+3','var(--heal)')});
   return pl.n==='Raserei';
@@ -491,10 +493,10 @@ function explode(r,c){
   }
   const bw=$('boardWrap');bw.style.animation='none';void bw.offsetWidth;bw.style.animation='hurt .35s';
 }
-function beam(r0,c0,r1,c1){
+function beam(r0,c0,r1,c1,col){
   const cs=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--c'));
   const x0=6+c0*cs+cs/2,y0=6+r0*cs+cs/2,x1=6+c1*cs+cs/2,y1=6+r1*cs+cs/2;
-  const d=document.createElement('div');d.className='beam';d.style.left=x0+'px';d.style.top=y0+'px';
+  const d=document.createElement('div');d.className='beam';if(col){d.style.background=`linear-gradient(90deg,${col}55,${col})`;d.style.boxShadow='0 0 12px '+col}d.style.left=x0+'px';d.style.top=y0+'px';
   d.style.width=Math.hypot(x1-x0,y1-y0)+'px';d.style.transform=`rotate(${Math.atan2(y1-y0,x1-x0)}rad)`;
   $('boardWrap').appendChild(d);setTimeout(()=>d.remove(),520);
 }
@@ -540,13 +542,13 @@ function info(){
   let ex='';
   if(p.side==='p'){const d=T[p.t],nt=p.tier<2?d['t'+(p.tier+1)]:null;ex=nt?`Nächste Entwicklung ✦: ${nt.n} – ${nt.d}`:`Voll entwickelt ✦✦ (${d.t2.n})`}
   else ex='Gegner';
-  el.innerHTML=`${svg(p.g,p.side)}<div><div class="nm">${p.name}</div><div class="st"><b style="color:var(--atk)">⚔ ${atkOf(p)}</b> · <b style="color:var(--def)">🛡 ${p.def}</b> · <b style="color:var(--heal)">❤ ${p.hp}/${p.max}</b></div><div class="st">${ex}</div></div>`;
+  el.innerHTML=`${svg(p.g,p.side)}<div><div class="nm">${p.name}</div><div class="st"><b style="color:var(--atk)">⚔ ${atkOf(p)}</b> · <b style="color:var(--def)">🛡 ${p.def}</b> · <b style="color:var(--heal)">❤ ${p.hp}/${p.max}</b></div><div class="st">${ex}</div>${logT?`<div class="st" style="color:#ffb3ba">${logT}</div>`:''}</div>`;
 }
 function render(){
   const b=$('board');
   if(!b.children.length){let h='';for(let r=0;r<N;r++)for(let c=0;c<N;c++)h+=`<div class="t" data-r="${r}" data-c="${c}"></div>`;b.innerHTML=h}
   [...b.children].forEach((t,i)=>{const r=i>>3,c=i&7,m=moves.find(m=>m.r===r&&m.c===c),f=fld&&fld[r][c];
-    const g=ter[r]&&ter[r][c];t.className='t '+((r+c)%2?'b':'a')+(g?' g-'+g.k:'')+(f?' f-'+f.k:'')+(sel&&sel.r===r&&sel.c===c&&P.includes(sel)?' sel':'')+(m?(m.hit?' at':' mv'):'');
+    const g=ter[r]&&ter[r][c];t.className='t '+((r+c)%2?'b':'a')+(g?' g-'+g.k:'')+(f?' f-'+f.k:'')+(sel&&sel.r===r&&sel.c===c&&P.includes(sel)?' sel':'')+(m?(m.hit?' at':(sel.side==='e'?' th':' mv')):'');
     const want=(f?f.k:'')+'|'+(g?g.k+(g.t??'')+(g.d??''):'');if(t.dataset.f!==want){t.dataset.f=want;t.innerHTML=(g?terHtml(g):'')+(f?`<div class="fi">${FICON[f.k]}</div>`:'')}
   });
   const L=$('layer'),cs='var(--c)',have=new Set(P.map(p=>p.id));
