@@ -150,7 +150,9 @@ const BA = (() => {
         const cols = loc[i], m = cols.length, Y = Hcy[i];
         for (let q = 0; q < m; q++) for (let t = 0; t < m; t++) { let z = 0; for (let a = 0; a < CB; a++) for (let b = 0; b < CB; b++) z += Y[a * m + q] * Ai[b][a] * Y[b * m + t]; Sd[cols[q] * ny + cols[t]] -= z; }
       }
-      const ch = cholSolve(Sd, ny); if (ch) covSolve = ch.solve;
+      let ch = cholSolve(Sd, ny);
+      if (!ch) { let mx = 0; for (let q = 0; q < ny; q++) mx = Math.max(mx, Sd[q * ny + q]); for (let q = 0; q < ny; q++) Sd[q * ny + q] += 1e-9 * mx; ch = cholSolve(Sd, ny); }
+      if (ch) covSolve = ch.solve;
     }
     // Varianz einer Funktion g(pts): Gradient -> gᵀ Q g · s0²
     function sigmaOf(g) {

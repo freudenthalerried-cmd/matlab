@@ -160,7 +160,7 @@ $('#pgRun').onclick = async () => {
     const nd = frames.reduce((s, f) => s + f.dets.length, 0);
     pgLog(`Erkennung fertig: ${nd} Markensichtungen in ${frames.length} Bildern (${((performance.now() - t0) / 1000).toFixed(0)} s)`);
     await tick();
-    const rec = PG.reconstruct(frames, { W, H, size: num($('#pgSize').value) / 1000 || 0.16, scaleDist: parseLen($('#pgDist').value) || 3, sigPx: 0.3, log: pgLog });
+    const rec = PG.reconstruct(frames, { W, H, size: num($('#pgSize').value) / 1000 || 0.16, scaleDist: parseLen($('#pgDist').value) || 3, scaleDist2: parseLen($('#pgDist2').value) || 0, sigPx: 0.3, log: pgLog });
     pr.value = 0.95; await tick();
     if (!rec.ok) throw new Error(rec.msg);
     pgLog(`Ausgleich: ${rec.nImg} Bilder, ${rec.ids.length} Marken, Bildfehler rms ${rec.res.rms.toFixed(2)} px, f = ${rec.res.it[0].toFixed(0)} px, k1 = ${rec.res.it[3].toFixed(3)}${rec.dropped ? `, ${rec.dropped} Fehlsichtungen entfernt` : ''}`);
@@ -172,7 +172,8 @@ $('#pgRun').onclick = async () => {
       r.w.lengths.map((L, i) => `<tr><td>${i + 1}</td><td><b>${f2(L, 3)} m</b></td><td class="${r.w.sigma[i] * 1000 > tgt ? 'warn' : 'ok'}">${r.w.sigma[i] == null ? '–' : f2(r.w.sigma[i] * 1000, 1)}</td><td>${r.w.groups[i].join(', ')}</td></tr>`).join('') +
       `</table>${r.w.warn.map(x => `<p class="warn">${esc(x)}</p>`).join('')}`).join('') +
       (res.some(r => r.w.ok) ? `<div class="row"><button id="pgTake" class="pri">Räume in den Plan übernehmen</button></div>` : '') +
-      `<p class="hint">Bildfehler ${rec.res.rms.toFixed(2)} px (gut: &lt; 0,5 px). Ist ein ±-Wert rot, mehr Bilder aus den Ecken oder weitere Marken an dieser Wand.</p>`;
+      (rec.res.rms > 0.6 ? `<p class="warn">⚠ Bildfehler ${rec.res.rms.toFixed(2)} px ist zu hoch – Ergebnis unsicher. Mehr Fotos aus den Ecken (bei mehreren Räumen: mehrere Fotos durch die Tür, auf denen Marken beider Räume zu sehen sind) und erneut auswerten.</p>` : '') +
+      `<p class="hint">Bildfehler ${rec.res.rms.toFixed(2)} px (gut: &lt; 0,5 px). Ist ein ±-Wert rot, mehr Bilder aus den Ecken oder weitere Marken an dieser Wand. Eine „Wand“ mit nur 1 Marke ist meist eine Fehlzuordnung – Marke prüfen.</p>`;
     const tk = $('#pgTake'); if (tk) tk.onclick = pgTake;
   } catch (e) { pgLog('Fehler: ' + e.message); $('#pgRes').innerHTML = `<p class="warn">${esc(e.message)}</p>`; }
   pr.value = 1; btn.disabled = false;
