@@ -166,6 +166,7 @@ body{margin:0;background:radial-gradient(ellipse at 50% 0%,#2a1838,var(--bg) 70%
     <li>💧 <b>Deine Zauber:</b> Du startest mit 0 Mana und bekommst +1 pro Runde. Unter dem Brett wählst du einen Zauber (einer pro Runde, kostet keinen Zug): ✚ Heilung, ⚡ Blitz, 🛡 Schild, ❄ Frost.</li>
     <li>🔮 Der Gegner sammelt jede Runde Mana und wirkt Zauber. Oben steht, was als Nächstes kommt.</li>
     <li>👑 Der <b>Dunkle König</b> schlägt im Nahkampf zurück, wenn er überlebt – Turm und Läufer greifen gefahrlos aus der Ferne an. Ist er allein, flieht er und ruft Schatten, die verschwinden, sobald er fällt.</li>
+    <li>⚔ In der Schmiede kannst du auch <b>zusätzliche Figuren kaufen</b> (Springer, Läufer, Turm, Dame – bis zu 4), die ab dann in jedem Level mitspielen.</li>
     <li>🪙 <b>Belohnung:</b> Jedes geschaffte Level bringt Münzen (mehr bei höheren Levels und für jede überlebende Figur, bei Wiederholung die Hälfte) und bis zu 3 ⭐. In der ⚒ Schmiede im Hauptmenü verbesserst du damit deine Figuren dauerhaft.</li>
     <li>👥 <b>2 Spieler:</b> Spielt abwechselnd am selben Gerät – Gold unten, Rot oben. Beide haben eigenes Mana (+1 pro Zug) und Zauber. Wer den gegnerischen König besiegt, gewinnt.</li>
     <li>☠ Jedes Level ist abgeschlossen: Du startest immer mit allen Figuren und 0 Mana. Besiege alle Gegner, um das nächste Level freizuschalten. Fällt dein König, spielst du das Level einfach nochmal – über die Levelauswahl kannst du jedes freigeschaltete Level wählen.</li>
@@ -204,6 +205,8 @@ const T={
     t1:{n:'Erzmagier',d:'springt zusätzlich wie ein Springer',mv:[['D',8],['N']]},t2:{n:'Segen',d:'heilt sich & Nachbarn jede Runde +1'}},
  N:{n:'Springer',mv:[['N']],hp:7,atk:3,def:0,
     t1:{n:'Paladin',d:'zieht zusätzlich wie ein König',mv:[['N'],['O',1],['D',1]]},t2:{n:'Sturmangriff',d:'nach einem Sieg nochmal ziehen'}},
+ Q:{n:'Dame',mv:[['O',8],['D',8]],hp:8,atk:3,def:1,
+    t1:{n:'Kaiserin',d:'springt zusätzlich wie ein Springer',mv:[['O',8],['D',8],['N']]},t2:{n:'Majestät',d:'+1 Angriff'}},
 };
 const E={ // Name, Grafik, Züge, LP, ATK, DEF
  S:['Schatten','S',[['O',1],['D',1]],3,2,0],
@@ -222,12 +225,16 @@ const $=id=>document.getElementById(id);
 let unl=1;try{unl=Math.max(1,+localStorage.getItem('manaschach_lvl')||1)}catch(e){}
 function saveUnl(){try{localStorage.setItem('manaschach_lvl',unl)}catch(e){}}
 // ---- Fortschritt: Münzen, Sterne, dauerhafte Upgrades ----
-let SV={coins:0,up:{K:{a:0,d:0,h:0},R:{a:0,d:0,h:0},B:{a:0,d:0,h:0},N:{a:0,d:0,h:0}},mana:0,stars:{}};
-try{const x=JSON.parse(localStorage.getItem('manaschach_save')||'null');if(x)SV=Object.assign(SV,x)}catch(e){}
+let SV={coins:0,up:{K:{a:0,d:0,h:0},R:{a:0,d:0,h:0},B:{a:0,d:0,h:0},N:{a:0,d:0,h:0},Q:{a:0,d:0,h:0}},mana:0,stars:{},army:[]};
+try{const x=JSON.parse(localStorage.getItem('manaschach_save')||'null');if(x){const up=SV.up;SV=Object.assign(SV,x);SV.up=Object.assign(up,x.up||{});SV.army=x.army||[]}}catch(e){}
 function saveSV(){try{localStorage.setItem('manaschach_save',JSON.stringify(SV))}catch(e){}}
 const UPMAX=5,UPC={a:l=>10+l*10,d:l=>10+l*10,h:l=>8+l*6},MANAC=l=>20+l*20;
 let lastRew=null;
 function buyUp(t,k){const u=SV.up[t],c=UPC[k](u[k]);if(u[k]>=UPMAX||SV.coins<c)return;SV.coins-=c;u[k]++;saveSV();sfx('evo');menu('shop')}
+// Zusätzliche Figuren kaufen (spielen in jedem Level mit)
+const BUY={N:60,B:60,R:80,Q:150},ARMYMAX=4;
+function buyPiece(t){if(SV.army.length>=ARMYMAX||SV.coins<BUY[t])return;SV.coins-=BUY[t];SV.army.push(t);saveSV();sfx('wave');menu('shop')}
+const XSPOT=[[7,0],[7,2],[7,3],[7,7]];
 function buyMana(){const c=MANAC(SV.mana);if(SV.mana>=3||SV.coins<c)return;SV.coins-=c;SV.mana++;saveSV();sfx('evo');menu('shop')}
 
 
@@ -352,7 +359,7 @@ function duoCheck(){
 }
 function startLevel(n){
   gid++;duo=false;cur='p';
-  P=[mkP('R',7,1),mkP('K',7,4),mkP('B',7,5),mkP('N',7,6)];
+  P=[mkP('R',7,1),mkP('K',7,4),mkP('B',7,5),mkP('N',7,6)].concat(SV.army.slice(0,ARMYMAX).map((t,i)=>mkP(t,XSPOT[i][0],XSPOT[i][1])));
   fld=Array.from({length:N},()=>Array(N).fill(null));ter=Array.from({length:N},()=>Array(N).fill(null));
   wave=n-1;mana=0;pmana=SV.mana;spk=null;castUsed=false;kills=0;rnd=1;over=false;sel=null;moves=[];dk=null;logT='';
   nextWave();newPlan();
@@ -426,7 +433,7 @@ function useFields(p,cells){
     if(f.k==='atk'){p.atk++;float(r,c,'+1 ⚔','var(--atk)')}
     if(f.k==='def'){p.def++;float(r,c,'+1 🛡','var(--def)')}
     if(f.k==='evo'){
-      if(p.tier<2){p.tier++;const d=T[p.t]['t'+p.tier];if(d.mv)p.mv=d.mv;if(p.tier===1)p.name=d.n;if(p.t==='R'&&p.tier===2)p.def+=2;
+      if(p.tier<2){p.tier++;const d=T[p.t]['t'+p.tier];if(d.mv)p.mv=d.mv;if(p.tier===1)p.name=d.n;if(p.t==='R'&&p.tier===2)p.def+=2;if(p.t==='Q'&&p.tier===2)p.atk++;
         p.max+=2;p.hp+=2;banner(d.n+'!','var(--evo)');log('✦ '+d.n+': '+d.d)}
       else{p.atk++;p.def++;float(r,c,'+1 ⚔ +1 🛡','var(--evo)')}
     }
@@ -545,7 +552,9 @@ function menu(k){
     const row=t=>{const u=SV.up[t],d=T[t];const b=(k,ic,val)=>{const l=u[k],c=UPC[k](l);return l>=UPMAX?`<button class="ub" disabled>${ic} MAX</button>`:`<button class="ub" ${SV.coins<c?'disabled':''} onclick="buyUp('${t}','${k}')">${ic} ${val}<small>🪙 ${c}</small></button>`};
       return `<div class="srow">${svg(t,'p')}<div class="sinf"><b>${d.n}</b><span>⚔ ${d.atk+u.a} · 🛡 ${d.def+u.d} · ❤ ${d.hp+2*u.h}</span></div>${b('a','⚔','+1')}${b('d','🛡','+1')}${b('h','❤','+2')}</div>`};
     const mc=MANAC(SV.mana);
-    h=`<h2>⚒ Schmiede</h2><div class="res2">🪙 ${SV.coins} Münzen</div><div class="tag" style="font-size:13px">Dauerhafte Verbesserungen für jedes Level</div>${['K','R','B','N'].map(row).join('')}
+    h=`<h2>⚒ Schmiede</h2><div class="res2">🪙 ${SV.coins} Münzen</div><div class="tag" style="font-size:13px">Dauerhafte Verbesserungen für jedes Level</div>${['K','R','B','N'].concat(SV.army.includes('Q')?['Q']:[]).map(row).join('')}
+    <h2 style="font-size:20px;margin-top:8px">⚔ Figuren kaufen</h2><div class="tag" style="font-size:13px">Armee: ${SV.army.length?SV.army.map(t=>T[t].n).join(', '):'noch keine Zusatzfiguren'} (${SV.army.length}/${ARMYMAX})</div>
+    ${Object.keys(BUY).map(t=>`<div class="srow">${svg(t,'p')}<div class="sinf"><b>${T[t].n}</b><span>⚔ ${T[t].atk} · 🛡 ${T[t].def} · ❤ ${T[t].hp} · spielt in jedem Level mit</span></div><button class="ub" style="width:64px" ${SV.coins<BUY[t]||SV.army.length>=ARMYMAX?'disabled':''} onclick="buyPiece('${t}')">Kaufen<small>🪙 ${BUY[t]}</small></button></div>`).join('')}
     <div class="srow"><span style="font-size:30px;width:40px;text-align:center">💧</span><div class="sinf"><b>Start-Mana</b><span>jedes Level mit ${SV.mana} Mana beginnen</span></div>${SV.mana>=3?'<button class="ub" disabled>MAX</button>':`<button class="ub" ${SV.coins<mc?'disabled':''} onclick="buyMana()">+1<small>🪙 ${mc}</small></button>`}</div>
     ${mb('← Zurück',`menu('${over?'start':'opt'}')`,'big')}`}
   if(k==='duo')h=`<h1>${winner==='p'?'Spieler 1 (Gold)':'Spieler 2 (Rot)'} gewinnt!</h1><div class="res2">Der gegnerische König ist gefallen.</div>${mb('↻ Revanche','startDuo()','big')}${mb('⌂ Hauptmenü',"menu('start')")}`;
