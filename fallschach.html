@@ -153,7 +153,7 @@ body{margin:0;background:radial-gradient(ellipse at 50% 0%,#2a1838,var(--bg) 70%
       <b style="color:#ffcf6b">Pfeilturm</b>: schießt jede Runde in Pfeilrichtung auf die erste Figur und dreht sich dann weiter.
       <b>Bombe</b>: explodiert, wenn der Zähler abläuft oder jemand darauf tritt, und trifft alle Figuren rundherum.
       <b>Felsen</b>: blockiert den Weg.</li>
-    <li>💧 <b>Deine Zauber:</b> Du bekommst +2 Mana pro Runde und +1 pro besiegtem Gegner. Unter dem Brett wählst du einen Zauber (einer pro Runde, kostet keinen Zug): ✚ Heilung, ⚡ Blitz, 🛡 Schild, ❄ Frost.</li>
+    <li>💧 <b>Deine Zauber:</b> Du startest mit 0 Mana und bekommst +1 pro Runde. Unter dem Brett wählst du einen Zauber (einer pro Runde, kostet keinen Zug): ✚ Heilung, ⚡ Blitz, 🛡 Schild, ❄ Frost.</li>
     <li>🔮 Der Gegner sammelt jede Runde Mana und wirkt Zauber. Oben steht, was als Nächstes kommt.</li>
     <li>👑 Der <b>Dunkle König</b> schlägt im Nahkampf zurück, wenn er überlebt – Turm und Läufer greifen gefahrlos aus der Ferne an. Ist er allein, flieht er und ruft Schatten, die verschwinden, sobald er fällt.</li>
     <li>☠ Besiege alle Gegner einer Welle. Fällt dein König, ist das Spiel aus.</li>
@@ -309,7 +309,7 @@ function neu(){
   gid++;
   P=[mkP('R',7,1),mkP('K',7,4),mkP('B',7,5),mkP('N',7,6)];
   fld=Array.from({length:N},()=>Array(N).fill(null));ter=Array.from({length:N},()=>Array(N).fill(null));
-  wave=0;mana=0;pmana=3;spk=null;castUsed=false;kills=0;rnd=1;over=false;sel=null;moves=[];
+  wave=0;mana=0;pmana=0;spk=null;castUsed=false;kills=0;rnd=1;over=false;sel=null;moves=[];
   nextWave();newPlan();
   spawnField('atk');spawnField('def');
   closeMenu();startMusic();startTurn();
@@ -355,7 +355,7 @@ const dmgOf=(a,d)=>Math.max(1,atkOf(a)-d.def);
 
 // ---- Spieler ----
 function startTurn(){
-  phase='p';castUsed=false;spk=null;if(rnd>1)pmana=Math.min(10,pmana+2);
+  phase='p';castUsed=false;spk=null;if(rnd>1)pmana=Math.min(10,pmana+1);
   for(const b of mine())if(b.t==='B'&&b.tier>=2)for(const q of mine())if(dist(q,b)<=1&&q.hp<q.max){q.hp++;float(q.r,q.c,'+1 ❤','var(--heal)')}
   mine().forEach(p=>p.bonus=false);
   $('turn').textContent='DEIN ZUG';$('turn').style.color='var(--gold)';
@@ -497,13 +497,13 @@ function help(){menu('rules')}
 // ---- Kurzbeschreibungen beim Antippen ----
 const DESC={heal:'Heilfeld: deine Figur bekommt beim Betreten +4 Leben.',atk:'Angriffsfeld: +1 Angriff für die Figur, dauerhaft.',def:'Verteidigungsfeld: +1 Verteidigung, die Figur nimmt weniger Schaden.',evo:'Entwicklungsfeld: neue Zugart, beim 2. Mal eine Spezialfähigkeit.',
  lava:'Lava: 2 Schaden beim Betreten und jede Runde – für alle Figuren.',tur:'Pfeilturm: schießt jede Runde in Pfeilrichtung auf die erste Figur und dreht sich dann weiter. Blockiert.',bomb:'Bombe: explodiert bei 0 oder beim Betreten und trifft alle Figuren rundherum.',rock:'Felsen: blockiert den Weg.',
- wave:'Welle: Besiege alle Gegner, dann kommt die nächste, stärkere Welle.',rnd:'Zug: Anzahl der gespielten Runden in diesem Spiel.',pm:'Dein Mana: +2 pro Runde, +1 pro besiegtem Gegner (max. 10). Damit wirkst du Zauber aus der Leiste unter dem Brett – einen pro Runde.',mana:'Gegner-Mana: +2 pro Runde. Ist genug da, wirkt der Gegner den angezeigten Zauber.'};
+ wave:'Welle: Besiege alle Gegner, dann kommt die nächste, stärkere Welle.',rnd:'Zug: Anzahl der gespielten Runden in diesem Spiel.',pm:'Dein Mana: startet bei 0, +1 pro Runde (max. 10). Damit wirkst du Zauber aus der Leiste unter dem Brett – einen pro Runde.',mana:'Gegner-Mana: +2 pro Runde. Ist genug da, wirkt der Gegner den angezeigten Zauber.'};
 const EDESC={S:'zieht 1 Feld in jede Richtung',N:'springt im L wie ein Springer',B:'zieht diagonal wie ein Läufer – auch über weite Strecken',R:'zieht gerade wie ein Turm – auch über weite Strecken',Q:'zieht wie eine Dame – gerade und diagonal',K:'Anführer, zieht 1 Feld. Schlägt im Nahkampf zurück – greif ihn aus der Ferne an. Allein ruft er Schatten und flieht.'};
 let dk=null,pmana=0,spk=null,castUsed=false,gid=0;
 function later(fn,ms){const g=gid;setTimeout(()=>{if(g===gid)fn()},ms)}
 // Gemeinsame Behandlung, wenn eine Figur fällt
 function onDeath(d,byPlayer){
-  if(d.side==='e'){kills++;if(byPlayer)pmana=Math.min(10,pmana+1)}
+  if(d.side==='e')kills++;
   if(d.side==='e'&&d.t==='K'&&P.some(q=>q.sum)){P=P.filter(q=>!q.sum);setTimeout(()=>log('Die gerufenen Schatten vergehen mit ihrem König.'),300)}
 }
 // ---- Eigene Zauber ----
@@ -528,7 +528,7 @@ function castAt(r,c){
   if(k==='heal'){const h=Math.min(4,x.max-x.hp);x.hp+=h;float(r,c,'+'+h+' ❤','var(--heal)')}
   if(k==='shield'){x.shield=true;float(r,c,'Schild!','#7fd4ff')}
   if(k==='frost'){x.frz=1;float(r,c,'Eingefroren','#bff4ff')}
-  if(k==='bolt'){beam(7.5,3.5,r,c,'#7fd4ff');dmgRaw(x,3,' ⚡','#7fd4ff');if(!P.includes(x))pmana=Math.min(10,pmana+1)}
+  if(k==='bolt'){beam(7.5,3.5,r,c,'#7fd4ff');dmgRaw(x,3,' ⚡','#7fd4ff')}
   log(s.i+' '+s.n+' gewirkt.');render();
   if(!foes().length){phase='wait';render();later(waveClear,500)}
 }
