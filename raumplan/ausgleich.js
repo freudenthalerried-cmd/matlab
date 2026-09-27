@@ -59,7 +59,7 @@ const AG = (() => {
       case 'wand': return { f: x => dist(x, i, (i + 1) % n), v: o.v, s: o.s };
       case 'diag': case 'strecke': case 'foto': return { f: x => dist(x, i, j), v: o.v, s: o.s };
       case 'sehne': { const r = chordAngle(o.a, o.b, o.c, o.s); return { f: x => cornerAngle(x, i, n), v: r.th, s: r.s, ang: 1 }; }
-      case 'winkel': case 'fotowinkel': return { f: x => cornerAngle(x, i, n), v: o.v * Math.PI / 180, s: o.s * Math.PI / 180, ang: 1 };
+      case 'winkel': case 'fotowinkel': return { f: x => cornerAngle(x, i, n), v: (o.v > 180 ? 360 - o.v : o.v) * Math.PI / 180, s: o.s * Math.PI / 180, ang: 1 };
     }
     return null;
   }

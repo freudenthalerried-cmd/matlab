@@ -136,7 +136,7 @@ async function pgFrames(files, step, prog) { // -> {frames, W, H}
 }
 /* Video: nur Bilder verwenden, in denen die Kamera (fast) stillsteht – Rolling Shutter verzerrt sonst um mm–cm */
 function selectStill(frames, W) {
-  const k = 1920 / W, ctr = d => [(d.c[0][0] + d.c[2][0]) / 2, (d.c[0][1] + d.c[2][1]) / 2];
+  const k = 1920 / Math.max(W, H), ctr = d => [(d.c[0][0] + d.c[2][0]) / 2, (d.c[0][1] + d.c[2][1]) / 2];
   const speed = (a, b) => { if (!a || !b) return null; const v = []; a.dets.forEach(d => { const e = b.dets.find(x => x.id === d.id); if (e) { const p = ctr(d), q = ctr(e); v.push(Math.hypot(p[0] - q[0], p[1] - q[1]) / Math.abs(b.t - a.t)); } }); return v.length ? v.reduce((s, x) => s + x, 0) / v.length * k : null; };
   frames.forEach((f, i) => { const s = [speed(frames[i - 1], f), speed(f, frames[i + 1])].filter(x => x !== null); f.speed = s.length ? Math.max(...s) : Infinity; });
   let sel = [];
@@ -151,6 +151,7 @@ function pgRoomDefs(txt, ids) { // "Name: 4-19" -> [{name, ids:Set}]
 }
 $('#pgRun').onclick = async () => {
   if (!pgFiles || !pgFiles.length) return alert('Zuerst ein Video (oder eine Fotoserie) aufnehmen oder wählen.');
+  const ob = $('#opBox'); if (ob) ob.remove(); opSt = null;
   const btn = $('#pgRun'), pr = $('#pgProg'); btn.disabled = true; pr.hidden = false; $('#pgLog').textContent = ''; $('#pgRes').innerHTML = '';
   const t0 = performance.now();
   try {
@@ -172,6 +173,7 @@ $('#pgRun').onclick = async () => {
       r.w.lengths.map((L, i) => `<tr><td>${i + 1}</td><td><b>${f2(L, 3)} m</b></td><td class="${r.w.sigma[i] * 1000 > tgt ? 'warn' : 'ok'}">${r.w.sigma[i] == null ? '–' : f2(r.w.sigma[i] * 1000, 1)}</td><td>${r.w.groups[i].join(', ')}</td><td><button data-op="${res.indexOf(r)},${i}" title="Fenster/Tür in einem Foto antippen">📐 Öffnung</button></td></tr>`).join('') +
       `</table>${r.w.height ? (r.w.hSig !== null && r.w.hSig < 0.005 ? `<p>Raumhöhe (Deckenmarke): <b>${f2(r.w.height, 3)} m</b> ±${f2(r.w.hSig * 1000, 1)} mm</p>` : `<p class="warn">Raumhöhe unsicher (${f2(r.w.height, 2)} m) – Deckenmarke aus mindestens 3 Ecken fotografieren.</p>`) : ''}${r.w.warn.map(x => `<p class="warn">${esc(x)}</p>`).join('')}`).join('') +
       (res.some(r => r.w.ok) ? `<div class="row"><button id="pgTake" class="pri">Räume in den Plan übernehmen</button></div>` : '') +
+      (rec.suspect ? `<p class="warn">⚠ ${esc(rec.suspect)} Ergebnis unsicher – mehr Fotos aus verschiedenen Positionen (auch zum Boden) aufnehmen.</p>` : '') +
       (rec.res.rms > 0.6 ? `<p class="warn">⚠ Bildfehler ${rec.res.rms.toFixed(2)} px ist zu hoch – Ergebnis unsicher. Mehr Fotos aus den Ecken (bei mehreren Räumen: mehrere Fotos durch die Tür, auf denen Marken beider Räume zu sehen sind) und erneut auswerten.</p>` : '') +
       `<p class="hint">Bildfehler ${rec.res.rms.toFixed(2)} px (gut: &lt; 0,5 px). Ist ein ±-Wert rot, mehr Bilder aus den Ecken oder weitere Marken an dieser Wand. Eine „Wand“ mit nur 1 Marke ist meist eine Fehlzuordnung – Marke prüfen.</p>`;
     const tk = $('#pgTake'); if (tk) tk.onclick = pgTake;
@@ -373,7 +375,7 @@ function drawMeas(keepInputs) {
   const s = cur;
   $('#snapSel').innerHTML = snaps.map((x, i) => `<option value="${i}" ${x === s ? 'selected' : ''}>${esc(x.name)}</option>`).join('');
   $('#tgtRoom').innerHTML = S.rooms.map((r, i) => `<option value="${i}">${esc(r.name)}</option>`).join('') || '<option value="">(kein Raum)</option>';
-  $('#floorS').value = f2(S.floorS ?? 2, 1);
+  if (!keepInputs) $('#floorS').value = f2(S.floorS ?? 2, 1);
   $$('.seg button').forEach(x => x.classList.toggle('on', x.dataset.m === mode));
   $('#refRow').hidden = mode !== 'ref'; $('#kalRow').hidden = mode !== 'kal';
   $('#kInfo').textContent = S.cam ? `Kalibriert: k1 = ${S.cam.k1} (${S.cam.W}×${S.cam.H})` : 'Nicht kalibriert.';
@@ -735,7 +737,9 @@ function roomPanel() {
 function linkPanel(r) {
   const others = S.rooms.map((o, k) => [o, k]).filter(([o]) => o !== r);
   if (!others.length) return '';
-  const L = r._link || (r._link = { wall: 0, room: others[0][1], wall2: 0, t: '', mode: 'tuer', opA: 0, opB: 0, off: 0 }), B = S.rooms[L.room] || others[0][0];
+  const L = r._link || (r._link = { wall: 0, room: others[0][1], wall2: 0, t: '', mode: 'tuer', opA: 0, opB: 0, off: 0 });
+  if (!S.rooms[L.room] || S.rooms[L.room] === r) L.room = others[0][1];
+  const B = S.rooms[L.room];
   const sel = (f, opts, v) => `<select data-lk="${f}">${opts.map(([val, lab]) => `<option value="${val}" ${val == v ? 'selected' : ''}>${esc(lab)}</option>`).join('')}</select>`;
   const walls = rr => rr.segs.map((_, k) => [k, `Wand ${k + 1}`]), ops = rr => (rr.ops || []).map((o, k) => [k, `${o.type === 'fenster' ? 'Fenster' : o.type === 'tuer' ? 'Tür' : 'Durchgang'} (Wand ${o.wall + 1}, ${f2(o.w)})`]);
   return `<h4>Nachbarraum exakt anschließen</h4>
@@ -850,7 +854,7 @@ $('#rpanel').addEventListener('click', e => {
   switch (a) {
     case 'rot90': r.rot = normA((r.rot || 0) - 90); break;
     case 'mirror': r.mirror = !r.mirror; break;
-    case 'ortho': r.segs.forEach(s => { const q = Math.round(s.turn / 90) * 90; if (Math.abs(s.turn - q) < 15) s.turn = q; }); { const q = Math.round(r.rot / 90) * 90; if (Math.abs(r.rot - q) < 15) r.rot = q; } break;
+    case 'ortho': r.segs.forEach(s => { const q = Math.round(s.turn / 90) * 90; if (Math.abs(s.turn - q) < 15) s.turn = q; }); { const q = Math.round(r.rot / 90) * 90; if (Math.abs(r.rot - q) < 15) r.rot = q; } r.adj = null; break;
     case 'close': { const g = geo(r); Object.assign(r, fromPoly(g.P, r)); r.adj = null; break; }
     case 'dup': { const c = structuredClone(r); c.name += ' (Kopie)'; placeFree(c); S.rooms.push(c); selRoom = S.rooms.length - 1; break; }
     case 'del': if (!confirm(`Raum „${r.name}“ löschen?`)) return; S.rooms.splice(selRoom, 1); selRoom = null; break;
@@ -864,7 +868,7 @@ $('#rpanel').addEventListener('click', e => {
     case 'obsChord': (r.obs = r.obs || []).push({ typ: 'sehne', i: 0, a: 1.5, b: 1.5, c: '', s: 0.0015 }); break;
     case 'obsAng': (r.obs = r.obs || []).push({ typ: 'winkel', i: 0, v: 90, s: 0.5 }); break;
     case 'adjust': doAdjust(r); break;
-    case 'link': { const m = linkRooms(r, S.rooms[r._link.room], r._link); if (m) return alert(m); break; }
+    case 'link': { const B = S.rooms[r._link.room]; if (!B || B === r) return alert('Nachbarraum wählen.'); const m = linkRooms(r, B, r._link); if (m) return alert(m); break; }
     case 'flip': r.ops[oi].flip = !r.ops[oi].flip; break;
     case 'aus': r.ops[oi].aus = !r.ops[oi].aus; break;
   }

@@ -37,14 +37,15 @@ const PG = (() => {
   /* frames: [{dets:[{id, c:[[x,y]*4]}]}], opt: {W,H,size (m), scaleDist (m), sigTape, sigPx, log, progress} */
   function reconstruct(frames, opt) { // mit Neustarts von anderen Startmarken, falls der Bildfehler zu hoch ist
     let best = reconstructOnce(frames, opt, 0);
-    if (!best.ok || best.res.rms <= (opt.goodRms || 0.5)) return best;
+    const good = r => r.ok && r.res.rms <= (opt.goodRms || 0.5) && !r.suspect, score = r => r.ok ? r.res.rms + (r.suspect ? 10 : 0) : Infinity;
+    if (good(best)) return best;
     const cnt = {}; frames.forEach(fr => fr.dets.forEach(d => cnt[d.id] = (cnt[d.id] || 0) + 1));
     const roots = Object.keys(cnt).map(Number).filter(id => id !== 0).sort((a, b) => cnt[b] - cnt[a]).slice(0, opt.restarts ?? 3);
     for (const r of roots) {
-      (opt.log || (() => { }))(`Bildfehler ${best.res.rms.toFixed(2)} px zu hoch – Neustart ab Marke ${r}…`);
+      (opt.log || (() => { }))(`${best.ok ? (best.suspect || `Bildfehler ${best.res.rms.toFixed(2)} px zu hoch`) : best.msg} – Neustart ab Marke ${r}…`);
       const t = reconstructOnce(frames, opt, r);
-      if (t.ok && t.res.rms < best.res.rms) best = t;
-      if (best.res.rms <= (opt.goodRms || 0.5)) break;
+      if (score(t) < score(best) || (!best.ok && t.ok)) best = t;
+      if (good(best)) break;
     }
     return best;
   }
@@ -143,6 +144,7 @@ const PG = (() => {
     const used = ids.filter(id => mPose.has(id)), camIdx = [...cPose.keys()].sort((a, b) => a - b);
     if (camIdx.length < 5) return { ok: false, msg: 'Zu wenige zusammenhängende Bilder. Langsamer filmen, mehr Marken gleichzeitig ins Bild.' };
     const kU = new Map(used.map((id, k) => [id, k]));
+    for (const need of [0, 1, 2]) if (!kU.has(need)) return { ok: false, msg: `Bodenmarke ${need} konnte nicht mit den übrigen Bildern verknüpft werden – Fotos machen, auf denen Marke ${need} zusammen mit anderen Marken zu sehen ist.` };
     let pts = []; used.forEach(id => { const M = mPose.get(id); local(s).forEach(L => pts.push(addv(T3(M.R, L), M.p))); });
     // In Bodensystem drehen: Ebene durch Bodenmarken 0,1,2 -> z=0, Marke 0 = Ursprung, x Richtung Marke 1
     const c0 = ctrOf(pts, kU.get(0)), c1 = ctrOf(pts, kU.get(1)), c2 = ctrOf(pts, kU.get(2));
@@ -182,7 +184,9 @@ const PG = (() => {
       log(`${bad.size} fehlerhafte Markensichtungen entfernt, neu ausgleichen…`);
       res = BAm.solve({ it: r.it, cams: r.cams, pts: r.pts, obs: obs2, cons }, { iters: 30, rs: r.cams[0].length > 6, rsCam: r.cams.map(c => c.length > 6 && c.slice(6).some(v => Math.abs(v) > 1e-6)), rsSigma: opt.rsSigma || [0.02, 0.02, 0.02, 1e-6, 1e-6, 1e-6] });
     }
-    return { ok: true, ids: used, kU, res, camFrames: camIdx, nImg: camIdx.length, nObs: obs.length / 4, dropped: bad.size, size: s };
+    const sus = [2, 3].filter(id => kU.has(id) && Math.abs(ctrOf(res.pts, kU.get(id))[2]) > 0.02).map(id => `Bodenmarke ${id} liegt ${Math.round(ctrOf(res.pts, kU.get(id))[2] * 1000)} mm über/unter dem Boden`);
+    const sScale = res.sigmaOf(Q => Math.hypot(...sub(ctrOf(Q, kU.get(1)), ctrOf(Q, kU.get(0)))));
+    return { ok: true, suspect: sus.length ? sus.join('; ') + ' – Aufnahmegeometrie schwach.' : null, ids: used, kU, res, camFrames: camIdx, nImg: camIdx.length, nObs: obs.length / 4, dropped: bad.size, size: s };
   }
   function areaOf(c) { let a = 0; c.forEach((p, i) => { const q = c[(i + 1) % c.length]; a += p[0] * q[1] - q[0] * p[1]; }); return a / 2; }
 
