@@ -85,7 +85,7 @@ const PG = (() => {
       ...[1, 2].map(q => ({ f: Q => ctrOf(Q, k1)[q], v: 0, s: 1e-7, idx: idx(k1) })),
       { f: Q => ctrOf(Q, k2)[2], v: 0, s: 1e-7, idx: idx(k2) }];
     log(`Startwerte: ${camIdx.length} Bilder, ${used.length} Marken, ${obs.length / 4} Sichtungen`);
-    const r = BAm.solve({ it: [f0, cx, cy, 0, 0], cams, pts, obs, cons }, { iters: opt.iters || 60, log: (it, c) => log(`Ausgleich Iteration ${it + 1}: Kosten ${c.toExponential(2)}`) });
+    const r = BAm.solve({ it: [f0, cx, cy, 0, 0], cams, pts, obs, cons }, { iters: opt.iters || 60, log: (it, c) => { if (it % 5 === 4) log(`Ausgleich Iteration ${it + 1}: Kosten ${c.toExponential(2)}`); } });
     // grobe Fehlerkennungen (z. B. Spiegelung/Fehlerkennung) entfernen und neu rechnen
     const bad = new Set(); obs.forEach((o, k) => { const p = BAm.project(r.it, r.cams[o.c], r.pts[o.p]); if (Math.hypot(p[0] - o.u, p[1] - o.v) > Math.max(2, 8 * r.rms)) bad.add(Math.floor(k / 4)); });
     let res = r;
@@ -100,7 +100,7 @@ const PG = (() => {
 
   /* Wände aus Wandmarken (ID ≥ 4): Gruppierung nach Ebene, Raumpolygon, σ je Wand */
   function walls(rec, opt = {}) {
-    const P = rec.res.pts, mk = rec.ids.filter(id => id >= 4).map(id => {
+    const P = rec.res.pts, mk = rec.ids.filter(id => id >= 4 && (!opt.ids || opt.ids.has(id))).map(id => {
       const k = rec.kU.get(id), Q = [0, 1, 2, 3].map(q => P[4 * k + q]), n = nrm(cross(sub(Q[2], Q[0]), sub(Q[3], Q[1])));
       const c = ctrOf(P, k), nh = nrm([n[0], n[1], 0]); return { id, k, c, n: nh, vert: Math.abs(n[2]) };
     }).filter(m => m.vert < 0.35);
@@ -124,7 +124,8 @@ const PG = (() => {
     const n = Pg.length, len = (Q, i) => { const p = poly(Q); return Math.hypot(p[(i + 1) % n][0] - p[i][0], p[(i + 1) % n][1] - p[i][1]); };
     const sig = Pg.map((_, i) => rec.res.sigmaOf(Q => len(Q, i)));
     // Wandlinie i verläuft zwischen Ecke i und i+1: Ecke i = Schnitt (Wand i-1, Wand i)
-    return { ok: true, poly: Pg, sigma: sig, groups: G.map(g => g.m.map(m => m.id)), lengths: Pg.map((_, i) => len(P, i)) };
+    const warn = G.filter(g => g.m.length < 2).map(g => `Wand mit Marke ${g.m[0].id} hat nur 1 Marke – Richtung unsicher, besser ≥ 2 Marken je Wand.`);
+    return { ok: true, poly: Pg, sigma: sig, groups: G.map(g => g.m.map(m => m.id)), lengths: Pg.map((_, i) => len(P, i)), warn };
   }
   return { reconstruct, walls, poseFromCorners, local };
 })();

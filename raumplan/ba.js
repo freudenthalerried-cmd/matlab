@@ -148,7 +148,7 @@ const BA = (() => {
       const grad = new Float64Array(ny);
       for (let j = 0; j < np; j++) for (let k = 0; k < 3; k++) { const a = pts.map(p => p.slice()), b = pts.map(p => p.slice()); a[j][k] += 1e-6; b[j][k] -= 1e-6; grad[5 + 3 * j + k] = (g(a) - g(b)) / 2e-6; }
       const x = covSolve(grad); let s = 0; for (let q = 0; q < ny; q++) s += grad[q] * x[q];
-      return Math.sqrt(Math.max(0, s)) * Math.max(1, s0);
+      return Math.sqrt(Math.max(0, s)) * (nobs - npar > 200 ? Math.max(0.5, s0) : Math.max(1, s0));
     }
     let se = 0; obs.forEach(o => { const p = project(it, cams[o.c], pts[o.p]); se += (p[0] - o.u) ** 2 + (p[1] - o.v) ** 2; });
     return { it, cams, pts, rms: Math.sqrt(se / (2 * obs.length)), s0, cost: cur, sigmaOf, lam, unseen: [...seen.keys()].filter(j => !seen[j]) };

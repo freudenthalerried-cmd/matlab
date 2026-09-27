@@ -84,6 +84,99 @@ $('#targets').onclick = () => {
   w.document.close();
 };
 
+/* ---------- Photogrammetrie: Zielmarken-Video -> Räume (ohne Handmessung) ---------- */
+let pgFiles = null, pgLast = null;
+$('#pgPrint').onclick = () => {
+  const n = Math.max(0, Math.min(96, Math.round(num($('#pgN').value)))), size = Math.max(60, Math.min(190, num($('#pgSize').value) || 160));
+  const lab = ['Boden – Mitte auf Maßband 0 cm', 'Boden – Mitte auf Maßband 300 cm', 'Boden', 'Boden'];
+  const pages = [0, 1, 2, 3].map(id => MK.markerSVG(id, size, lab[id])).concat(Array.from({ length: n }, (_, k) => MK.markerSVG(4 + k, size, 'Wand')));
+  const w = open('', '_blank'); if (!w) return alert('Pop-up wurde blockiert – bitte erlauben.');
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Raumplan-Marken</title><style>@page{size:A4 portrait;margin:0}body{margin:0}svg{display:block;page-break-after:always}</style></head><body>${pages.join('')}<script>onload=()=>setTimeout(()=>print(),400)<\/script></body></html>`);
+  w.document.close();
+};
+function pgSetFiles(fl) { pgFiles = [...fl]; $('#pgSrc').textContent = pgFiles.length === 1 ? pgFiles[0].name : `${pgFiles.length} Dateien`; }
+$('#pgCam').onchange = e => pgSetFiles(e.target.files);
+$('#pgFile').onchange = e => pgSetFiles(e.target.files);
+const pgLog = t => { const el = $('#pgLog'); el.hidden = false; el.textContent += t + '\n'; el.scrollTop = 1e9; };
+const tick = () => new Promise(r => setTimeout(r, 0));
+function toGray(ctx, W, H, buf) {
+  const d = ctx.getImageData(0, 0, W, H).data;
+  for (let i = 0, j = 0; i < W * H; i++, j += 4) buf[i] = 0.299 * d[j] + 0.587 * d[j + 1] + 0.114 * d[j + 2];
+  return buf;
+}
+async function pgFrames(files, step, prog) { // -> {frames, W, H}
+  const cv = document.createElement('canvas'), ctx = cv.getContext('2d', { willReadFrequently: true }), frames = [];
+  let W = 0, H = 0, buf = null;
+  const video = files.find(f => f.type.startsWith('video'));
+  if (video) {
+    const v = document.createElement('video'); v.muted = true; v.playsInline = true; v.preload = 'auto'; v.src = URL.createObjectURL(video);
+    await new Promise((res, rej) => { v.onloadedmetadata = res; v.onerror = () => rej(new Error('Video kann nicht gelesen werden (Format?).')); });
+    W = cv.width = v.videoWidth; H = cv.height = v.videoHeight; buf = new Float32Array(W * H);
+    const n = Math.floor(v.duration / step);
+    pgLog(`Video ${W}×${H}, ${v.duration.toFixed(1)} s → ${n} Bilder`);
+    for (let k = 0; k < n; k++) {
+      v.currentTime = (k + 0.5) * step;
+      await new Promise(r => { v.onseeked = r; });
+      ctx.drawImage(v, 0, 0, W, H);
+      const dets = MK.detect(toGray(ctx, W, H, buf), W, H).filter(d => d.res < 0.8);
+      frames.push({ t: v.currentTime, dets }); prog((k + 1) / n, `Bild ${k + 1}/${n}: ${dets.length} Marken`); await tick();
+    }
+    URL.revokeObjectURL(v.src);
+  } else {
+    const imgs = files.filter(f => f.type.startsWith('image'));
+    for (let k = 0; k < imgs.length; k++) {
+      const b = await createImageBitmap(imgs[k]);
+      if (!W) { W = cv.width = b.width; H = cv.height = b.height; buf = new Float32Array(W * H); }
+      if (b.width !== W || b.height !== H) { pgLog(`${imgs[k].name}: andere Bildgröße – übersprungen`); continue; }
+      ctx.drawImage(b, 0, 0); const dets = MK.detect(toGray(ctx, W, H, buf), W, H).filter(d => d.res < 0.8);
+      frames.push({ t: k, dets }); prog((k + 1) / imgs.length, `Foto ${k + 1}/${imgs.length}: ${dets.length} Marken`); await tick();
+    }
+  }
+  return { frames, W, H };
+}
+function pgRoomDefs(txt, ids) { // "Name: 4-19" -> [{name, ids:Set}]
+  const defs = String(txt || '').split('\n').map(l => l.match(/^\s*(.+?)\s*:\s*(\d+)\s*[-–]\s*(\d+)\s*$/)).filter(Boolean)
+    .map(m => ({ name: m[1], ids: new Set(ids.filter(i => i >= +m[2] && i <= +m[3])) }));
+  return defs.length ? defs : [{ name: 'Raum ' + (S.rooms.length + 1), ids: null }];
+}
+$('#pgRun').onclick = async () => {
+  if (!pgFiles || !pgFiles.length) return alert('Zuerst ein Video (oder eine Fotoserie) aufnehmen oder wählen.');
+  const btn = $('#pgRun'), pr = $('#pgProg'); btn.disabled = true; pr.hidden = false; $('#pgLog').textContent = ''; $('#pgRes').innerHTML = '';
+  const t0 = performance.now();
+  try {
+    const { frames, W, H } = await pgFrames(pgFiles, +$('#pgStep').value, (f, t) => { pr.value = f * 0.8; $('#pgSrc').textContent = t; });
+    const nd = frames.reduce((s, f) => s + f.dets.length, 0);
+    pgLog(`Erkennung fertig: ${nd} Markensichtungen in ${frames.length} Bildern (${((performance.now() - t0) / 1000).toFixed(0)} s)`);
+    await tick();
+    const rec = PG.reconstruct(frames, { W, H, size: num($('#pgSize').value) / 1000 || 0.16, scaleDist: parseLen($('#pgDist').value) || 3, sigPx: 0.3, log: pgLog });
+    pr.value = 0.95; await tick();
+    if (!rec.ok) throw new Error(rec.msg);
+    pgLog(`Ausgleich: ${rec.nImg} Bilder, ${rec.ids.length} Marken, Bildfehler rms ${rec.res.rms.toFixed(2)} px, f = ${rec.res.it[0].toFixed(0)} px, k1 = ${rec.res.it[3].toFixed(3)}${rec.dropped ? `, ${rec.dropped} Fehlsichtungen entfernt` : ''}`);
+    const res = pgRoomDefs($('#pgRooms').value, rec.ids).map(d => ({ ...d, w: PG.walls(rec, { ids: d.ids }) }));
+    pgLast = { rec, res };
+    const tgt = S.target || 3;
+    $('#pgRes').innerHTML = res.map(r => !r.w.ok ? `<p class="warn">${esc(r.name)}: ${esc(r.w.msg)}</p>` :
+      `<h4>${esc(r.name)}</h4><table class="pgt"><tr><th>Wand</th><th>Länge</th><th>±mm (1σ)</th><th>Marken</th></tr>` +
+      r.w.lengths.map((L, i) => `<tr><td>${i + 1}</td><td><b>${f2(L, 3)} m</b></td><td class="${r.w.sigma[i] * 1000 > tgt ? 'warn' : 'ok'}">${r.w.sigma[i] == null ? '–' : f2(r.w.sigma[i] * 1000, 1)}</td><td>${r.w.groups[i].join(', ')}</td></tr>`).join('') +
+      `</table>${r.w.warn.map(x => `<p class="warn">${esc(x)}</p>`).join('')}`).join('') +
+      (res.some(r => r.w.ok) ? `<div class="row"><button id="pgTake" class="pri">Räume in den Plan übernehmen</button></div>` : '') +
+      `<p class="hint">Bildfehler ${rec.res.rms.toFixed(2)} px (gut: &lt; 0,5 px). Ist ein ±-Wert rot, mehr Bilder aus den Ecken oder weitere Marken an dieser Wand.</p>`;
+    const tk = $('#pgTake'); if (tk) tk.onclick = pgTake;
+  } catch (e) { pgLog('Fehler: ' + e.message); $('#pgRes').innerHTML = `<p class="warn">${esc(e.message)}</p>`; }
+  pr.value = 1; btn.disabled = false;
+};
+function pgTake() {
+  const { rec, res } = pgLast; let first = null;
+  res.forEach(d => {
+    if (!d.w.ok) return;
+    const r = newRoom(d.name, [], 0, 0); Object.assign(r, fromPoly(d.w.poly, r));
+    // Wand i im Plan = Kante Ecke i -> i+1; Sigma gleich indiziert
+    r.adj = { wallSigma: d.w.sigma.map(v => v ?? 0.01), cornerMax: 0, s0: rec.res.s0, red: rec.nObs, warn: d.w.warn, v: [], pg: { rms: rec.res.rms, nImg: rec.nImg } };
+    r.src = 'Photogrammetrie'; S.rooms.push(r); if (first === null) first = S.rooms.length - 1;
+  });
+  selRoom = first; save(); showTab('plan');
+}
+
 /* ---------- 2 Vermessen ---------- */
 const parseLen = v => { const n = num(v); return n > 20 ? n / 100 : n; }; // > 20 -> Eingabe in cm
 const ptSigma = () => $('#snapOn').checked ? 0.5 : 1.5; // Tippgenauigkeit Raumecken px
@@ -616,7 +709,7 @@ function obsPanel(r) {
   if (A) {
     const mx = A.wallSigma ? Math.max(...A.wallSigma) * 1000 : null, tgt = S.target || 3;
     rep = `<div class="adj ${mx !== null && mx <= tgt && !A.warn.length ? 'good' : 'badbox'}">` +
-      (mx !== null ? `<b>${mx <= tgt ? '✔' : '⚠'} Wandlängen ±${f2(mx, 1)} mm</b> (1σ, schlechteste Wand) · Ecklage ±${f2(A.cornerMax * 1000, 1)} mm · Überbestimmung ${A.red}${A.s0 != null ? ` · σ₀ ${f2(A.s0, 2)}` : ''}<br>` : '') +
+      (mx !== null ? `<b>${mx <= tgt ? '✔' : '⚠'} Wandlängen ±${f2(mx, 1)} mm</b> (1σ, schlechteste Wand) · ` + (A.pg ? `Photogrammetrie: ${A.pg.nImg} Bilder, Bildfehler ${f2(A.pg.rms, 2)} px<br>` : `Ecklage ±${f2(A.cornerMax * 1000, 1)} mm · Überbestimmung ${A.red}${A.s0 != null ? ` · σ₀ ${f2(A.s0, 2)}` : ''}<br>`) : '') +
       A.warn.map(w => `<span class="warn">${esc(w)}</span>`).join('<br>') + '</div>';
   }
   return `<h4>Maßband-Messungen &amp; Ausgleich <small class="hint">(Ecken-Nummern siehe Plan)</small></h4>
