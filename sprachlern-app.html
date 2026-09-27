@@ -235,6 +235,7 @@ body{
   <!-- ===== SPRACH-AUSWAHL ===== -->
   <section class="screen active" id="screen-language">
     <div class="card">
+      <button class="btn btn-secondary hidden" id="langBackBtn" style="margin:0 0 12px;">‹ Zurück</button>
       <div class="mascot-wrap">
         <div class="mascot">🦉</div>
         <div class="mascot-shadow"></div>
@@ -249,6 +250,7 @@ body{
   <!-- ===== SCHWIERIGKEITS-AUSWAHL ===== -->
   <section class="screen" id="screen-difficulty">
     <div class="card">
+      <button class="btn btn-secondary" id="diffBackBtn" style="margin:0 0 12px;">‹ Zurück</button>
       <div class="mascot-wrap">
         <div class="mascot">🦉</div>
         <div class="mascot-shadow"></div>
@@ -583,8 +585,17 @@ document.getElementById('changeDiffBtn').addEventListener('click', ()=>{
   populateDifficultyList();
   showScreen('screen-difficulty');
 });
+document.getElementById('diffBackBtn').addEventListener('click', ()=>{
+  sndTap();
+  showLanguageScreen();
+});
 
 /* ---------- SPRACHAUSWAHL ---------- */
+function showLanguageScreen(){
+  populateLanguageList();
+  document.getElementById('langBackBtn').classList.toggle('hidden', !state.difficulty);
+  showScreen('screen-language');
+}
 function populateLanguageList(){
   const box = document.getElementById('langList');
   box.innerHTML='';
@@ -603,8 +614,12 @@ function populateLanguageList(){
   });
 }
 document.getElementById('changeLangBtn').addEventListener('click', ()=>{
-  populateLanguageList();
-  showScreen('screen-language');
+  showLanguageScreen();
+});
+document.getElementById('langBackBtn').addEventListener('click', ()=>{
+  sndTap();
+  renderStats();
+  showScreen('screen-stats');
 });
 
 /* ---------- NAVIGATION ---------- */
@@ -1313,8 +1328,7 @@ document.getElementById('resetProgressBtn').addEventListener('click', ()=>{
     saveState();
     document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
     document.querySelector('.nav-btn[data-nav="map"]').classList.add('active');
-    populateLanguageList();
-    showScreen('screen-language');
+    showLanguageScreen();
   }
 });
 
@@ -1326,8 +1340,7 @@ if(state.language && state.difficulty){
   populateDifficultyList();
   showScreen('screen-difficulty');
 } else {
-  populateLanguageList();
-  showScreen('screen-language');
+  showLanguageScreen();
 }
 </script>
 </body>
