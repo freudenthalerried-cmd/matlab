@@ -16,7 +16,7 @@ Browser-App (keine Installation, läuft am Handy): `raumplan/index.html` öffnen
 
 | Szenario | Wandfehler |
 |---|---|
-| Rechteckraum, 48 Fotos 1280×720 | −0,5 / +1,4 / +0,8 / −0,5 mm |
+| Rechteckraum, 48 Fotos 1280×720 | +0,1 / +0,4 / +0,5 / +0,5 mm (±1,1 mm) |
 | L-Raum (6 Wände) | ≤ 5,5 mm |
 | 2 Räume über Tür | Raum 1 ≤ 4 mm, Raum 2 ≤ 6 mm, Innenwand 117–121 mm (Soll 120), 6 von 8 Läufen; sonst Warnung |
 | Video 21 s mit Pausen (Browser, WebM) | 0 bis 7 mm, App zeigt ±8–10 mm (zu wenige Blickpositionen) |
