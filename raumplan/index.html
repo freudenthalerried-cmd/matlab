@@ -23,14 +23,17 @@
     <details class="tip" open>
       <summary>So geht's</summary>
       <ol>
-        <li>Mit Kreppband ein <b>Referenz-Rechteck</b> am Boden kleben (z.&nbsp;B. 2,00 × 1,00 m, mit Maßband genau abmessen, rechte Winkel über Diagonale prüfen: 2,236 m).</li>
+        <li>Mit Kreppband ein <b>Referenz-Rechteck</b> am Boden kleben (z.&nbsp;B. 2,00 × 1,00 m, mit Maßband genau abmessen, rechte Winkel über Diagonale prüfen: 2,236 m). Am genauesten: an die 4 Ecken die <b>gedruckten Zielmarken</b> (🎯) legen – deren Kreuzmitte findet die App auf 1/20 Pixel genau; das Rechteck zwischen den Kreuzmitten mit dem Maßband abmessen. Weitere Marken entlang der Kanten (z. B. alle 50 cm) erhöhen die Genauigkeit. Einfaches Kreppband-Kreuz geht auch, ist aber ungenauer.</li>
         <li>Langsam durch den Raum filmen, Kamera leicht nach unten – Referenz-Rechteck <b>und</b> die Raumecken am Boden (Übergang Wand/Boden) sollen gut sichtbar sein.</li>
+        <li><b>Für ±3 mm:</b> Wandlängen mit dem Maßband messen (in ca. 1 m Höhe, über den Möbeln) und je Raum 2 Diagonalen oder Eckwinkel über Sehne – Eingabe unter „3 Plan“ → Raum → „Maßband-Messungen“. Die Fotos liefern Form, Lage und Kontrolle.</li>
+        <li>Für Messungen im Foto: besser <b>Fotos (volle Auflösung)</b> statt Video; wenn Video, dann 4K. Einmalig die Kamera kalibrieren (Modus „Kamera kalibrieren“).</li>
         <li>Pro Raum 1–3 Standbilder übernehmen, auf denen Rechteck und Ecken zu sehen sind. Das Rechteck kann für jedes Bild neu im Raum platziert werden.</li>
       </ol>
     </details>
     <div class="row">
       <label class="btn">🎥 Video aufnehmen<input id="camIn" type="file" accept="video/*" capture="environment" hidden></label>
       <label class="btn">📁 Video / Fotos wählen<input id="fileIn" type="file" accept="video/*,image/*" multiple hidden></label>
+      <button id="targets">🎯 Zielmarken drucken</button>
     </div>
     <video id="vid" playsinline muted controls></video>
     <div class="row">
@@ -48,7 +51,8 @@
       <select id="snapSel"></select>
       <div class="seg">
         <button data-m="ref" class="on">A Referenz</button>
-        <button data-m="pts">B Messpunkte</button>
+        <button data-m="pts">B Raumecken</button>
+        <button data-m="kal">Kamera kalibrieren</button>
       </div>
     </div>
     <div class="row" id="refRow">
@@ -60,10 +64,19 @@
       <label id="lD">Tiefe B–C m <input id="refD" inputmode="decimal" size="5"></label>
       <label id="lL">Länge m <input id="refL" inputmode="decimal" size="5"></label>
     </div>
+    <div class="row" id="optRow">
+      <label><input type="checkbox" id="snapOn" checked> Subpixel-Eckenfang</label>
+      <label>Sockelleiste mm <input id="skirt" inputmode="decimal" size="3"></label>
+      <label>Boden uneben ±mm <input id="floorS" inputmode="decimal" size="3"></label>
+    </div>
+    <div class="row" id="kalRow" hidden>
+      <button id="kNew">Neue Linie</button><button id="kRun" class="pri">k1 berechnen</button><button id="kClr" class="danger">Linien löschen</button>
+      <span id="kInfo" class="hint"></span>
+    </div>
     <p id="mstat" class="hint"></p>
     <div id="mwrap"><canvas id="mc"></canvas></div>
     <div class="row">
-      <label>Zoom <input id="zoom" type="range" min="1" max="6" step="0.25" value="1"></label>
+      <label>Zoom <input id="zoom" type="range" min="1" max="8" step="0.25" value="1"></label>
       <button data-n="-1,0">←</button><button data-n="0,-1">↑</button><button data-n="0,1">↓</button><button data-n="1,0">→</button>
       <button id="ptDel">Punkt löschen</button>
       <button id="ptClr" class="danger">Alle löschen</button>
@@ -71,13 +84,18 @@
     <canvas id="loupe" width="160" height="160" hidden></canvas>
     <div id="mres"></div>
     <div class="row">
+      <label><input type="checkbox" id="closed" checked> Punkte bilden geschlossenen Raum</label>
+    </div>
+    <div class="row">
+      <button id="toRoom" class="pri">→ neuer Raum</button>
+      <select id="tgtRoom"></select><label>ab Ecke <input id="tgtCorner" inputmode="numeric" size="2" value="1"></label>
+      <button id="toExist">→ zu Raum hinzufügen</button>
       <button id="toMeas">Strecken → Messliste</button>
-      <button id="toRoom" class="pri">Punkte → neuer Raum</button>
     </div>
     <h3>Messliste</h3>
     <div class="row">
       <input id="mName" placeholder="Bezeichnung (z. B. Küche Wand Nord)">
-      <input id="mVal" inputmode="decimal" placeholder="m" size="6">
+      <input id="mVal" inputmode="decimal" placeholder="m oder cm" size="7">
       <button id="mAdd">+ manuell</button>
     </div>
     <ul id="mlist"></ul>
@@ -115,6 +133,8 @@
       <label>Blattgröße<select name="paper"><option>A3</option><option>A4</option><option>A2</option></select></label>
       <label>Standard Außenwand m<input name="wallT" inputmode="decimal"></label>
       <label>Innenwand (Fang-Abstand) m<input name="innerT" inputmode="decimal"></label>
+      <label>Genauigkeitsziel ±mm<input name="target" inputmode="decimal"></label>
+      <label>Maßangabe<select name="dimFmt"><option value="mm">m mit mm hochgestellt (4,21⁵)</option><option value="cm">m auf cm (4,22)</option></select></label>
     </form>
     <p id="fitMsg" class="hint"></p>
     <div class="row">
@@ -129,6 +149,7 @@
     <p class="hint">Hinweis: Ein Einreichplan muss in Österreich in der Regel von einer befugten Person (Baumeister/Architekt) als Planverfasser unterfertigt werden. Die App liefert die Bestandsaufnahme und Planvorlage.</p>
   </section>
 </main>
+<script src="ausgleich.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

@@ -43,3 +43,12 @@ video{width:100%;max-height:55vh;background:#000;border-radius:8px}
 .grid input,.grid select{color:var(--fg);margin-top:2px}
 #preview svg{width:100%;height:auto;background:#fff;border:1px solid var(--line);margin-top:8px}
 @media (max-width:600px){#rpanel .hide-s{display:none}}
+.ok{color:#2e7d32;font-weight:600}
+table.obs td{vertical-align:top}
+table.obs .tri{display:flex;gap:3px}
+table.obs tr.bad td{background:#fdecea}
+.adj{border-radius:8px;padding:6px 10px;margin:6px 0}
+.adj.good{background:#e8f5e9;color:#1b5e20}.adj.badbox{background:#fff4e5;color:#6d4c00}
+@media (prefers-color-scheme:dark){.adj.good{background:#1b3a20;color:#c8e6c9}.adj.badbox{background:#3d2e10;color:#ffe0b2}table.obs tr.bad td{background:#4a1c1c}}
+table.obs tr.off td{opacity:.45;text-decoration:line-through}
+[hidden]{display:none!important}

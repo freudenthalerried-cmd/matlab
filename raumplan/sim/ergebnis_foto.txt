@@ -1,0 +1,8 @@
+A Video 1080p, Rechteck 2x1m, Tippen ±1,5px                median   53.2  95%  189.4
+B Foto 12MP, Rechteck, ±1,5px, unkalibriert                median   36.4  95%  120.8
+C + Kamera kalibriert (Lotlinien)                          median   17.2  95%   60.7
+D + Maßband-Zusatzpunkte                                   median    9.9  95%   30.7
+E + Subpixel-Eckenfang ±0,4px                              median    4.3  95%   13.0
+F + 3 Fotos gemittelt (Ausgleich)                          median    2.4  95%    6.6
+G wie F, Altbau-Boden ±2mm uneben                          median    5.0  95%   14.5
+H Video 4K, sonst wie F                                    median    3.0  95%   10.2

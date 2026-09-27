@@ -8,3 +8,22 @@ Browser-App (keine Installation, läuft offline am Handy): `raumplan/index.html`
 4. **Einreichung** – Plankopf, Nordpfeil, Maßstab 1:50/100/200, A4–A2, Raumliste mit Nutzfläche. Export PDF (Drucken), SVG, DXF (CAD), Projekt als JSON.
 
 Genauigkeit: nur Punkte **auf dem Boden** messen; Referenz-Rechteck möglichst groß und nahe an den Messpunkten; Kontrollmaß mit dem Maßband empfohlen.
+
+## Genauigkeit (Ziel ±3 mm)
+
+Simulation + Browser-Test (`sim/`), 95%-Fehler je Wandlänge, Raum 4,2 × 3,6 m:
+
+| Variante | 95 % |
+|---|---|
+| Video 1080p, Kreppband-Rechteck, Tippen | 189 mm |
+| Foto 12 MP, Kamera kalibriert | 61 mm |
+| + Zusatz-Referenzpunkte + Subpixel-Eckenfang | 13 mm |
+| + 3 Fotos per Ausgleich | 6,6 mm (Altbau-Boden ±2 mm: 14 mm) |
+| **Maßband 4 Wände + Eckwinkel über Sehne/Diagonalen + Ausgleich** | **Wandlänge ±1,5 mm (1σ), Ecklage ≈ 5 mm** |
+
+Fazit: ±3 mm nur mit Maßband-Längen; Fotos liefern Form, Lage und Kontrolle. Die App
+zeigt für jede Wand die erreichte Genauigkeit (±mm) und erkennt Tipp-/Ablesefehler
+(Baarda-Test). Gedruckte Zielmarken werden auf ~0,05 px gefunden, Kreppband-Kreuze nicht.
+
+Tests: `node sim/test_ausgleich.js`, `node sim/test_boden.js`, `node sim/test_subpixel.js`,
+`node sim/test_kalib.js`, `python3 sim/genauigkeit.py`, Browser: `sim/e2e.js` (Playwright).
