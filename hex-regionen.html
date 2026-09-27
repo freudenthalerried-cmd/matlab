@@ -31,6 +31,19 @@
   .pill b { font-size: 20px; }
 
   /* Menü */
+  #lvlName { font-size: 15px; opacity: .9; }
+  #lvlBtn { font: inherit; background: #0006; color: #fff; border: 2px solid #fff6; border-radius: 10px; padding: 6px 14px; }
+  #levels { position: absolute; inset: 0; z-index: 12; display: none; flex-direction: column; background: #1b2548f2; padding: 14px; }
+  #levels h2 { margin: 6px 0 10px; text-align: center; font-size: 26px; }
+  #lvGrid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; overflow-y: auto; flex: 1; padding: 4px; }
+  .lv { aspect-ratio: 1; border-radius: 12px; border: 2px solid #fff4; background: #26335f; color: #fff; font: inherit; font-size: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+  .lv small { font-size: 11px; opacity: .85; }
+  .lv.won { background: linear-gradient(#9be83e, #5cb71b); border-color: #2f5f0c; }
+  .lv.cur { border: 3px solid var(--gold); box-shadow: 0 0 10px var(--gold); }
+  .lv.lock { opacity: .35; }
+  .lv.boss { background: linear-gradient(#e5483f, #a82a22); }
+  .lv.boss.won { background: linear-gradient(#f5c93a, #c48f08); }
+  #lvClose { margin-top: 10px; font: inherit; font-size: 18px; padding: 8px; border-radius: 10px; border: 0; background: #5f7fd8; color: #fff; }
   #menu { position: absolute; left: 0; right: 0; bottom: 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; z-index: 5; }
   .streak { background: linear-gradient(#8a5cf6, #5b32c9); border: 3px solid #2d176e; border-radius: 20px; padding: 3px 16px; font-size: 16px; }
   .bigbtn { font: inherit; font-size: 40px; color: #fff; padding: 10px 44px; border-radius: 16px; cursor: pointer;
@@ -95,6 +108,13 @@
     <div id="menu">
       <div class="streak stroke">Siegesserie 🏆 x<span id="streak">0</span></div>
       <button class="bigbtn stroke" id="play">LEVEL 1</button>
+      <div id="lvlName" class="stroke"></div>
+      <button id="lvlBtn">📋 Alle Level</button>
+    </div>
+    <div id="levels">
+      <h2 class="stroke">50 Level</h2>
+      <div id="lvGrid"></div>
+      <button id="lvClose">Schließen</button>
     </div>
 
     <div id="result"><div class="card">
@@ -137,25 +157,58 @@
   };
   const SPEED = { tank: 2.6, boat: 3.0, plane: 4.2 };
   const $ = id => document.getElementById(id);
-  const rnd = k => Math.floor(Math.random() * k);
+  let rand = Math.random;
+  const seeded = seed => () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  const rnd = k => Math.floor(rand() * k);
+
+  // ---------- 50 Level ----------
+  // [Name, Gegner, Regionen, Wasser, Wachtürme, Häfen, Flugplätze, Gegner-Start, Aggressivität]
+  const LEVELS = [
+    ['Erste Schritte', 1, 8, .05, 0, 0, 0, 8, .3], ['Nachbarn', 1, 8, .06, 0, 0, 0, 10, .35], ['Zwei Fronten', 2, 9, .06, 0, 0, 0, 10, .35],
+    ['Die Küste', 1, 9, .10, 0, 1, 0, 12, .4], ['Inselwacht', 1, 9, .10, 1, 1, 0, 12, .4], ['Hafenstadt', 2, 9, .12, 1, 1, 0, 12, .4],
+    ['Luftbrücke', 1, 9, .08, 0, 0, 1, 14, .45], ['Zange', 2, 10, .08, 1, 1, 1, 14, .45], ['Dreikampf', 3, 10, .08, 0, 0, 0, 12, .45],
+    ['⚔ Boss: Der General', 1, 10, .06, 0, 0, 0, 30, .7],
+    ['Archipel', 2, 10, .16, 2, 1, 0, 14, .5], ['Nebelmeer', 2, 10, .14, 1, 1, 1, 15, .5], ['Sturmflut', 3, 10, .12, 1, 1, 0, 14, .5],
+    ['Festung', 2, 11, .08, 3, 0, 0, 16, .5], ['Hinterhalt', 3, 11, .10, 1, 1, 1, 15, .55], ['Brückenkopf', 2, 11, .12, 2, 1, 0, 17, .55],
+    ['Fliegerstaffel', 2, 11, .08, 0, 0, 2, 16, .55], ['Kesselschlacht', 3, 11, .08, 1, 0, 1, 16, .6], ['Eiserner Ring', 3, 12, .10, 2, 1, 1, 17, .6],
+    ['⚔ Boss: Die Admiralin', 2, 11, .18, 2, 2, 0, 26, .75],
+    ['Vorposten', 2, 12, .08, 1, 1, 1, 18, .6], ['Wüstenmarsch', 3, 12, .06, 0, 0, 1, 18, .6], ['Seeblockade', 2, 12, .16, 2, 2, 0, 19, .6],
+    ['Bergpass', 3, 12, .10, 2, 0, 1, 18, .65], ['Lange Nacht', 3, 12, .10, 1, 1, 1, 20, .65], ['Der Damm', 2, 13, .14, 2, 1, 1, 21, .65],
+    ['Feuerlinie', 3, 13, .08, 3, 0, 1, 20, .7], ['Meerenge', 3, 13, .16, 2, 2, 1, 20, .7], ['Wolkenbruch', 3, 13, .10, 1, 1, 2, 21, .7],
+    ['⚔ Boss: Der Fliegerkönig', 2, 13, .10, 1, 1, 3, 30, .8],
+    ['Zerklüftet', 3, 13, .16, 3, 2, 1, 22, .7], ['Doppelinsel', 2, 13, .20, 2, 2, 1, 24, .7], ['Belagerung', 3, 14, .08, 3, 1, 1, 22, .75],
+    ['Küstenwache', 3, 14, .14, 3, 2, 1, 23, .75], ['Grenzland', 3, 14, .10, 2, 1, 2, 24, .75], ['Tiefsee', 3, 14, .18, 3, 3, 1, 24, .75],
+    ['Sperrfeuer', 3, 14, .10, 3, 1, 2, 25, .8], ['Zwischen den Fronten', 3, 14, .12, 2, 2, 2, 25, .8], ['Nordwind', 3, 14, .14, 3, 2, 2, 26, .8],
+    ['⚔ Boss: Der Turmherr', 3, 14, .12, 3, 2, 1, 28, .85],
+    ['Endspiel I', 3, 14, .12, 2, 2, 2, 26, .8], ['Endspiel II', 3, 14, .16, 3, 2, 2, 27, .8], ['Inselkette', 3, 14, .20, 3, 3, 2, 27, .85],
+    ['Stahlgewitter', 3, 14, .08, 3, 1, 3, 28, .85], ['Hohe See', 3, 14, .18, 3, 3, 1, 28, .85], ['Letzte Bastion', 3, 14, .12, 3, 2, 2, 29, .85],
+    ['Feuersturm', 3, 14, .10, 3, 2, 3, 30, .9], ['Weltenbrand', 3, 14, .14, 3, 3, 3, 30, .9], ['Vor dem Ende', 3, 14, .12, 3, 2, 3, 32, .9],
+    ['⚔ Finale: Der Imperator', 3, 14, .14, 3, 3, 3, 40, .95],
+  ];
+  function levelCfg(L) {
+    const row = LEVELS[Math.min(L, 50) - 1], x = Math.max(0, L - 50);   // ab 51: Endlos, immer härter
+    return { name: L > 50 ? `Endlos ${x}` : row[0], enemies: row[1], regions: row[2], water: row[3], towers: row[4],
+      ports: row[5], air: row[6], enemyStart: row[7] + x * 2, aggr: Math.min(.95, row[8] + x * .01), boss: L <= 50 && L % 10 === 0 };
+  }
+  let LV = levelCfg(1);
   const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
   const key = (q, r) => q + ',' + r;
   const hexDist = (a, b) => (Math.abs(a.q - b.q) + Math.abs(a.r - b.r) + Math.abs(a.q + a.r - b.q - b.r)) / 2;
 
   // ---------- Spielstand ----------
-  const save = { level: 1, coins: 0, gems: 0, streak: 0, xp: 0 };
+  const save = { level: 1, maxLevel: 1, won: {}, coins: 0, gems: 0, streak: 0, xp: 0 };
   try { Object.assign(save, JSON.parse(localStorage.getItem('hexreg') || '{}')); } catch (e) {}
   const persist = () => { try { localStorage.setItem('hexreg', JSON.stringify(save)); } catch (e) {} };
 
   // ---------- Karte ----------
   let parts = [], shake = 0, cells, cellMap, waterMap, pathCache, regions, B, units, queues, shots, pops, mode = 'menu', time = 0, aiT = {}, endT = 0;
 
-  function genMap(level) {
+  function genMap(cfg) {
     for (;;) {
       cellMap = new Map(); cells = [];
       for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
         const edge = r === 0 || r === ROWS - 1 || c === 0 || c === COLS - 1;
-        if (Math.random() < (edge ? 0.35 : level >= 2 ? 0.1 : 0.06)) continue;
+        if (rand() < (edge ? 0.35 : cfg.water)) continue;
         const q = c - (r >> 1);
         const cell = { q, r, x: SQ3 * (q + r / 2), y: 1.5 * r, reg: -1 };
         cells.push(cell); cellMap.set(key(q, r), cell);
@@ -169,7 +222,7 @@
         if (comp.length > best.length) best = comp;
       }
       cells = best; cellMap = new Map(cells.map(c => [key(c.q, c.r), c]));
-      const K = Math.min(14, 8 + Math.floor(level / 4));
+      const K = cfg.regions;
       if (cells.length < K * 4) continue;
 
       // Startpunkte weit verteilt
@@ -195,7 +248,7 @@
       for (const c of cells) for (const n of nbrs(c)) if (n.reg !== c.reg) regions[c.reg].adj.add(n.reg);
 
       // Wachturm-Inseln in Wasserlöchern (ab Level 2)
-      if (level >= 2) {
+      if (cfg.towers) {
         const holes = [];
         for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
           const q = c - (r >> 1);
@@ -203,7 +256,7 @@
           const h = { q, r, x: SQ3 * (q + r / 2), y: 1.5 * r };
           if (nbrs(h).length >= 3) holes.push(h);
         }
-        let want = Math.min(3, 1 + Math.floor(level / 4));
+        let want = cfg.towers;
         for (const h of shuffle(holes)) {
           if (!want) break;
           const nb = nbrs(h);
@@ -231,38 +284,38 @@
   }
 
   function setupLevel(level) {
-    genMap(level);
+    const cfg = LV = levelCfg(level);
+    rand = seeded(level * 7919 + 13);          // gleiche Karte bei jedem Versuch
+    genMap(cfg);
     B = regions.map(R => {
       let bc = R.cells[0], bs = 1e9;
       for (const c of R.cells) { const s = R.cells.reduce((t, o) => t + hexDist(c, o), 0); if (s < bs) { bs = s; bc = c; } }
-      const roll = Math.random();
+      const roll = rand();
       let type = roll < 0.55 ? 'kaserne' : roll < 0.8 ? 'turm' : 'reaktor';
-      if (level >= 2 && R.coast && Math.random() < 0.25) type = 'hafen';
-      if (level >= 3 && Math.random() < 0.12) type = 'flugplatz';
       if (R.tower) type = 'wachturm';
       const count = R.tower ? 6 + Math.min(20, level) : 5 * rnd(3) + Math.min(10, Math.floor(level / 3));
       return { id: R.id, x: bc.x, y: bc.y, type, owner: 0, count, cd: 0, ang: -Math.PI / 2, flash: 0, bump: 0 };
     });
     const land = B.filter(b => b.type !== 'wachturm');
     // Spieler unten, Gegner möglichst weit weg
-    const enemies = level < 3 ? 1 : level < 8 ? 2 : 3;
+    const enemies = cfg.enemies;
     const pl = land.reduce((a, b) => b.y > a.y ? b : a);
     pl.owner = 1; pl.count = 15; pl.type = 'kaserne';
     const taken = [pl];
     for (let e = 0; e < enemies; e++) {
       const far = land.filter(b => !taken.includes(b))
         .sort((a, b) => Math.min(...taken.map(t => Math.hypot(b.x - t.x, b.y - t.y))) - Math.min(...taken.map(t => Math.hypot(a.x - t.x, a.y - t.y))))[0];
-      far.owner = 2 + e; far.count = 10 + Math.min(20, level); far.type = 'kaserne';
-      taken.push(far); aiT[far.owner] = 2 + Math.random();
+      far.owner = 2 + e; far.count = cfg.enemyStart; far.type = 'kaserne';
+      taken.push(far); aiT[far.owner] = 2 + rand();
     }
-    // garantiert mindestens ein Hafen (ab L2) und ein Flugplatz (ab L3)
-    const free = land.filter(b => !b.owner);
-    if (level >= 2 && !B.some(b => b.type === 'hafen')) {
-      const c = shuffle(free.filter(b => regions[b.id].coast))[0]; if (c) c.type = 'hafen';
+    // Häfen und Flugplätze laut Level-Tabelle
+    const free = shuffle(land.filter(b => !b.owner));
+    let ports = cfg.ports, air = cfg.air;
+    for (const b of free) {
+      if (ports && regions[b.id].coast && b.type !== 'flugplatz') { b.type = 'hafen'; ports--; }
+      else if (air && b.type !== 'hafen') { b.type = 'flugplatz'; air--; }
     }
-    if (level >= 3 && !B.some(b => b.type === 'flugplatz')) {
-      const c = shuffle(free.filter(b => b.type !== 'hafen'))[0]; if (c) c.type = 'flugplatz';
-    }
+    rand = Math.random;
     units = []; queues = []; shots = []; pops = []; parts = []; time = 0; endT = 0;
   }
 
@@ -660,7 +713,7 @@
     for (const b of B) b.bump = Math.max(0, b.bump - dt * 4);
 
     // KI
-    for (const o in aiT) { aiT[o] -= dt; if (aiT[o] <= 0) { aiThink(+o); aiT[o] = Math.max(0.8, 2.2 - save.level * 0.06) + Math.random() * 0.7; } }
+    for (const o in aiT) { aiT[o] -= dt; if (aiT[o] <= 0) { aiThink(+o); aiT[o] = Math.max(0.8, 2.4 - LV.aggr * 1.6) + Math.random() * 0.7; } }
 
     // Sieg / Niederlage
     if (!endT) {
@@ -712,7 +765,7 @@
   }
 
   function aiThink(o) {
-    const aggr = Math.min(0.9, 0.35 + save.level * 0.03);
+    const aggr = LV.aggr;
     for (const b of shuffle(B.filter(b => b.owner === o))) {
       if (b.count < 6 || Math.random() > aggr) continue;
       const nb = [...regions[b.id].adj].map(i => B[i]);
@@ -801,6 +854,7 @@
   function refreshHud() {
     $('coins').textContent = save.coins; $('gems').textContent = save.gems;
     $('streak').textContent = save.streak; $('play').textContent = 'LEVEL ' + save.level;
+    $('lvlName').textContent = (LV.boss ? '' : '') + LV.name + (LV.boss ? '' : ` · ${LV.enemies} Gegner`);
     const need = 100 + Math.floor(save.level / 10) * 50;
     $('rank').textContent = Math.floor(save.level / 10) + 1;
     $('xpfill').style.width = Math.min(100, save.xp / need * 100) + '%';
@@ -814,7 +868,7 @@
   function startBattle() {
     mode = 'battle';
     $('menu').style.display = 'none'; $('hud').style.display = 'block'; $('giveup').style.display = 'block';
-    $('lvlTitle').textContent = 'Level ' + save.level;
+    $('lvlTitle').textContent = `Level ${save.level} · ${LV.name}`;
     const tips = {
       1: 'Ziehe von deiner blauen Basis auf eine Nachbar-Region, um Truppen zu schicken.',
       2: 'NEU: 🗼 Wachtürme auf Inseln – besetze sie, dann schießen sie für dich! ⚓ Häfen schicken Boote übers Wasser.',
@@ -834,8 +888,11 @@
         save.coins += c; save.gems += g; save.streak++; save.xp += 20;
         const need = 100 + Math.floor(save.level / 10) * 50;
         if (save.xp >= need) save.xp -= need;
-        save.level++;
+        save.won[save.level] = true;
+        const done50 = save.level === 50;
+        save.level++; save.maxLevel = Math.max(save.maxLevel, save.level);
         txt = `+${c} 🪙${g ? `  +${g} 💎` : ''}<br>Siegesserie x${save.streak}`;
+        if (done50) txt = '🎉 Alle 50 Level geschafft!<br>Ab jetzt: Endlos-Modus.<br>' + txt;
       } else { save.streak = 0; txt = 'Deine Basen wurden erobert.'; }
       persist();
       $('resT').textContent = win ? '🏆 SIEG!' : '💥 NIEDERLAGE';
@@ -844,6 +901,21 @@
     }, 300);
   }
   $('play').onclick = () => { sfx('tap'); buzz(15); startBattle(); };
+  function showLevels() {
+    const g = $('lvGrid'); g.innerHTML = '';
+    for (let L = 1; L <= 50; L++) {
+      const c = levelCfg(L), b = document.createElement('button');
+      const lock = L > save.maxLevel;
+      b.className = 'lv' + (save.won[L] ? ' won' : '') + (L === save.level ? ' cur' : '') + (lock ? ' lock' : '') + (c.boss ? ' boss' : '');
+      b.innerHTML = `<span class="stroke">${lock ? '🔒' : save.won[L] ? '⭐' : L}</span><small>${lock ? L : c.name.replace(/^⚔ (Boss|Finale): /, '')}</small>`;
+      b.title = c.name;
+      if (!lock) b.onclick = () => { save.level = L; persist(); sfx('tap'); buzz(12); $('levels').style.display = 'none'; showMenu(); };
+      g.appendChild(b);
+    }
+    $('levels').style.display = 'flex';
+  }
+  $('lvlBtn').onclick = () => { sfx('tap'); showLevels(); };
+  $('lvClose').onclick = () => { sfx('tap'); $('levels').style.display = 'none'; };
   const sndIcon = () => $('snd').textContent = save.mute ? '🔇' : '🔊';
   $('snd').onclick = () => { save.mute = !save.mute; persist(); sndIcon(); sfx('tap'); };
   sndIcon();
