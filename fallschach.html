@@ -97,6 +97,16 @@ body{margin:0;background:radial-gradient(ellipse at 50% 0%,#2a1838,var(--bg) 70%
 #ovc h2{margin:0 0 4px;font-family:Cinzel,serif;color:var(--gold);font-size:26px}
 #ovc .tag{font-size:16px;color:var(--mut);margin-bottom:6px}
 #ovc .big{width:100%}
+.lvg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%}
+.lv{aspect-ratio:1;border-radius:12px;border:1px solid var(--gold);background:linear-gradient(180deg,#3a2c1a,#231a10);color:var(--gold);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.lv b{font:800 22px Cinzel,serif}.lv small{font-size:10px;color:var(--mut)}
+.lv.dn{border-color:var(--heal)}.lv.dn b{color:var(--heal)}
+.lv.lk{border-color:var(--line);background:#ffffff08;color:var(--mut);cursor:default}
+.srow{display:flex;align-items:center;gap:6px;width:100%;background:#ffffff08;border:1px solid var(--line);border-radius:12px;padding:6px 8px}
+.srow svg{width:40px;height:40px;flex:none}
+.sinf{flex:1;min-width:0;text-align:left;display:flex;flex-direction:column}.sinf b{font:600 14px Cinzel,serif;color:var(--gold)}.sinf span{font-size:11.5px;color:var(--mut)}
+.ub{flex:none;width:52px;border-radius:9px;border:1px solid var(--gold);background:#3a2c1a;color:var(--txt);font:700 12px Inter,sans-serif;padding:5px 2px;cursor:pointer;display:flex;flex-direction:column;align-items:center}
+.ub small{font-size:10px;color:var(--gold);font-weight:600}.ub:disabled{opacity:.4;cursor:default}
 .mb{width:100%;font:600 16px Inter,sans-serif;color:var(--txt);background:#ffffff0d;border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer}
 .legg{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;width:100%;font-size:13px;text-align:left}
 .legg span{display:flex;align-items:center;gap:6px}.legg svg{width:22px;height:22px;flex:none}
@@ -130,9 +140,9 @@ body{margin:0;background:radial-gradient(ellipse at 50% 0%,#2a1838,var(--bg) 70%
 
 <div class="wrap">
   <div class="bar">
-    <div class="hud" onclick="desc('wave')"><small>WELLE</small><span id="wave">1</span></div>
-    <div class="hud" onclick="desc('pm')"><small>💧 MANA</small><span id="pm" style="color:#7fd4ff">0</span></div>
-    <div class="hud m" onclick="desc('mana')"><small>🔮 GEGNER-MANA <span id="mana">0</span></small><b id="plan" class="pl">–</b><div id="mbar"><div id="mfill"></div></div></div>
+    <div class="hud" onclick="desc('wave')"><small>LEVEL</small><span id="wave">1</span></div>
+    <div class="hud" onclick="desc('pm')"><small id="plab">💧 MANA</small><span id="pm" style="color:#7fd4ff">0</span></div>
+    <div class="hud m" onclick="desc('mana')"><small><span id="mlab">🔮 GEGNER-MANA</span> <span id="mana">0</span></small><b id="plan" class="pl">–</b><div id="mbar"><div id="mfill"></div></div></div>
     <button class="gear" onclick="menu('opt')" aria-label="Optionen">⚙</button>
   </div>
   <div id="turn"></div>
@@ -156,7 +166,10 @@ body{margin:0;background:radial-gradient(ellipse at 50% 0%,#2a1838,var(--bg) 70%
     <li>💧 <b>Deine Zauber:</b> Du startest mit 0 Mana und bekommst +1 pro Runde. Unter dem Brett wählst du einen Zauber (einer pro Runde, kostet keinen Zug): ✚ Heilung, ⚡ Blitz, 🛡 Schild, ❄ Frost.</li>
     <li>🔮 Der Gegner sammelt jede Runde Mana und wirkt Zauber. Oben steht, was als Nächstes kommt.</li>
     <li>👑 Der <b>Dunkle König</b> schlägt im Nahkampf zurück, wenn er überlebt – Turm und Läufer greifen gefahrlos aus der Ferne an. Ist er allein, flieht er und ruft Schatten, die verschwinden, sobald er fällt.</li>
-    <li>☠ Besiege alle Gegner einer Welle. Fällt dein König, ist das Spiel aus.</li>
+    <li>⚔ In der Schmiede kannst du auch <b>zusätzliche Figuren kaufen</b> (Springer, Läufer, Turm, Dame – bis zu 4), die ab dann in jedem Level mitspielen.</li>
+    <li>🪙 <b>Belohnung:</b> Jedes geschaffte Level bringt Münzen (mehr bei höheren Levels und für jede überlebende Figur, bei Wiederholung die Hälfte) und bis zu 3 ⭐. In der ⚒ Schmiede im Hauptmenü verbesserst du damit deine Figuren dauerhaft.</li>
+    <li>👥 <b>2 Spieler:</b> Spielt abwechselnd am selben Gerät – Gold unten, Rot oben. Beide haben eigenes Mana (+1 pro Zug) und Zauber. Wer den gegnerischen König besiegt, gewinnt.</li>
+    <li>☠ Jedes Level ist abgeschlossen: Du startest immer mit allen Figuren und 0 Mana. Besiege alle Gegner, um das nächste Level freizuschalten. Fällt dein König, spielst du das Level einfach nochmal – über die Levelauswahl kannst du jedes freigeschaltete Level wählen.</li>
   </ul></template>
 
 <script>
@@ -192,6 +205,8 @@ const T={
     t1:{n:'Erzmagier',d:'springt zusätzlich wie ein Springer',mv:[['D',8],['N']]},t2:{n:'Segen',d:'heilt sich & Nachbarn jede Runde +1'}},
  N:{n:'Springer',mv:[['N']],hp:7,atk:3,def:0,
     t1:{n:'Paladin',d:'zieht zusätzlich wie ein König',mv:[['N'],['O',1],['D',1]]},t2:{n:'Sturmangriff',d:'nach einem Sieg nochmal ziehen'}},
+ Q:{n:'Dame',mv:[['O',8],['D',8]],hp:8,atk:3,def:1,
+    t1:{n:'Kaiserin',d:'springt zusätzlich wie ein Springer',mv:[['O',8],['D',8],['N']]},t2:{n:'Majestät',d:'+1 Angriff'}},
 };
 const E={ // Name, Grafik, Züge, LP, ATK, DEF
  S:['Schatten','S',[['O',1],['D',1]],3,2,0],
@@ -207,7 +222,20 @@ const JUMP=[[1,2],[2,1],[-1,2],[-2,1],[1,-2],[2,-1],[-1,-2],[-2,-1]];
 
 let P=[],fld,ter=[],feats={},wave=0,mana=0,plan=null,phase='x',sel=null,moves=[],over=true,uid=0,sound=true,hi=0,kills=0,rnd=1;
 const $=id=>document.getElementById(id);
-try{hi=+localStorage.getItem('manaschach_hi')||0}catch(e){}
+let unl=1;try{unl=Math.max(1,+localStorage.getItem('manaschach_lvl')||1)}catch(e){}
+function saveUnl(){try{localStorage.setItem('manaschach_lvl',unl)}catch(e){}}
+// ---- Fortschritt: Münzen, Sterne, dauerhafte Upgrades ----
+let SV={coins:0,up:{K:{a:0,d:0,h:0},R:{a:0,d:0,h:0},B:{a:0,d:0,h:0},N:{a:0,d:0,h:0},Q:{a:0,d:0,h:0}},mana:0,stars:{},army:[]};
+try{const x=JSON.parse(localStorage.getItem('manaschach_save')||'null');if(x){const up=SV.up;SV=Object.assign(SV,x);SV.up=Object.assign(up,x.up||{});SV.army=x.army||[]}}catch(e){}
+function saveSV(){try{localStorage.setItem('manaschach_save',JSON.stringify(SV))}catch(e){}}
+const UPMAX=5,UPC={a:l=>10+l*10,d:l=>10+l*10,h:l=>8+l*6},MANAC=l=>20+l*20;
+let lastRew=null;
+function buyUp(t,k){const u=SV.up[t],c=UPC[k](u[k]);if(u[k]>=UPMAX||SV.coins<c)return;SV.coins-=c;u[k]++;saveSV();sfx('evo');menu('shop')}
+// Zusätzliche Figuren kaufen (spielen in jedem Level mit)
+const BUY={N:60,B:60,R:80,Q:150},ARMYMAX=4;
+function buyPiece(t){if(SV.army.length>=ARMYMAX||SV.coins<BUY[t])return;SV.coins-=BUY[t];SV.army.push(t);saveSV();sfx('wave');menu('shop')}
+const XSPOT=[[7,0],[7,2],[7,3],[7,7]];
+function buyMana(){const c=MANAC(SV.mana);if(SV.mana>=3||SV.coins<c)return;SV.coins-=c;SV.mana++;saveSV();sfx('evo');menu('shop')}
 
 
 
@@ -301,15 +329,39 @@ function stopMusic(){clearInterval(musTimer);musTimer=null}
 function togMusic(){music=!music;music?startMusic():stopMusic()}
 document.addEventListener('visibilitychange',()=>{if(!ac)return;document.hidden?ac.suspend():ac.resume()});
 
-function mkP(t,r,c){const d=T[t];return{id:++uid,side:'p',t,g:t,name:d.n,mv:d.mv,r,c,hp:d.hp,max:d.hp,atk:d.atk,def:d.def,tier:0}}
+function mkP(t,r,c){const d=T[t],u=SV.up[t],hp=d.hp+2*u.h;return{id:++uid,side:'p',t,g:t,name:d.n,mv:d.mv,r,c,hp,max:hp,atk:d.atk+u.a,def:d.def+u.d,tier:0}}
 function mkE(t,r,c){const d=E[t],w=wave-1,hp=d[3]+Math.floor(w*(t==='K'?2:1.3));
   return{id:++uid,side:'e',t,g:d[1],name:d[0],mv:d[2],r,c,hp,max:hp,atk:d[4]+Math.floor(w/2),def:d[5]+Math.floor(w/3)}}
 
-function neu(){
-  gid++;
-  P=[mkP('R',7,1),mkP('K',7,4),mkP('B',7,5),mkP('N',7,6)];
+function neu(){startLevel(unl)}
+// Jedes Level ist abgeschlossen: frische Figuren, Mana 0
+// ---- 2-Spieler-Modus (abwechselnd am selben Gerät) ----
+let duo=false,cur='p',omana=0,winner='p';
+const opp=sd=>sd==='p'?'e':'p';
+function mk2(t,r,c,side){const d=T[t];return{id:++uid,side,t,g:t,name:d.n,mv:d.mv,r,c,hp:d.hp,max:d.hp,atk:d.atk,def:d.def,tier:0}}
+function startDuo(){
+  gid++;duo=true;cur='p';
+  P=[mk2('R',7,1,'p'),mk2('K',7,4,'p'),mk2('B',7,5,'p'),mk2('N',7,6,'p'),mk2('N',0,1,'e'),mk2('B',0,2,'e'),mk2('K',0,3,'e'),mk2('R',0,6,'e')];
+  fld=Array.from({length:N},()=>Array(N).fill(null));ter=Array.from({length:N},()=>Array(N).fill(null));feats={};
+  wave=0;mana=0;plan=null;pmana=0;omana=0;spk=null;castUsed=false;kills=0;rnd=1;over=false;sel=null;moves=[];dk=null;logT='';
+  spawnField('atk');spawnField('def');spawnField('heal');
+  closeMenu();startMusic();banner('2 Spieler','var(--gold)');startTurn();
+}
+function switchSide(){
+  cur=opp(cur);[pmana,omana]=[omana,pmana];rnd++;
+  if(Math.random()<.25)spawnField();
+  sel=null;moves=[];startTurn();
+}
+function duoCheck(){
+  const pk=P.some(q=>q.side==='p'&&q.t==='K'),ek=P.some(q=>q.side==='e'&&q.t==='K');
+  if(pk&&ek)return false;
+  over=true;phase='x';winner=pk?'p':'e';sfx('wave');render();later(()=>menu('duo'),900);return true;
+}
+function startLevel(n){
+  gid++;duo=false;cur='p';
+  P=[mkP('R',7,1),mkP('K',7,4),mkP('B',7,5),mkP('N',7,6)].concat(SV.army.slice(0,ARMYMAX).map((t,i)=>mkP(t,XSPOT[i][0],XSPOT[i][1])));
   fld=Array.from({length:N},()=>Array(N).fill(null));ter=Array.from({length:N},()=>Array(N).fill(null));
-  wave=0;mana=0;pmana=0;spk=null;castUsed=false;kills=0;rnd=1;over=false;sel=null;moves=[];
+  wave=n-1;mana=0;pmana=SV.mana;spk=null;castUsed=false;kills=0;rnd=1;over=false;sel=null;moves=[];dk=null;logT='';
   nextWave();newPlan();
   spawnField('atk');spawnField('def');
   closeMenu();startMusic();startTurn();
@@ -350,15 +402,16 @@ function gen(p){
   }
   const seen=new Set();return out.filter(m=>{const k=m.r*8+m.c;if(seen.has(k))return false;seen.add(k);return true});
 }
-function atkOf(a){const k=king();return a.atk+(a.side==='p'&&k&&k.tier>=2&&a!==k&&dist(a,k)<=1?1:0)}
+function atkOf(a){const k=P.find(q=>q.side===a.side&&q.t==='K');return a.atk+((a.side==='p'||duo)&&k&&k.tier>=2&&a!==k&&dist(a,k)<=1?1:0)}
 const dmgOf=(a,d)=>Math.max(1,atkOf(a)-d.def);
 
 // ---- Spieler ----
 function startTurn(){
   phase='p';castUsed=false;spk=null;if(rnd>1)pmana=Math.min(10,pmana+1);
-  for(const b of mine())if(b.t==='B'&&b.tier>=2)for(const q of mine())if(dist(q,b)<=1&&q.hp<q.max){q.hp++;float(q.r,q.c,'+1 ❤','var(--heal)')}
-  mine().forEach(p=>p.bonus=false);
-  $('turn').textContent='DEIN ZUG';$('turn').style.color='var(--gold)';
+  const own=P.filter(q=>q.side===cur);
+  for(const b of own)if(b.t==='B'&&b.tier>=2)for(const q of own)if(dist(q,b)<=1&&q.hp<q.max){q.hp++;float(q.r,q.c,'+1 ❤','var(--heal)')}
+  P.forEach(p=>p.bonus=false);
+  $('turn').textContent=duo?(cur==='p'?'SPIELER 1 · GOLD':'SPIELER 2 · ROT'):'DEIN ZUG';$('turn').style.color=cur==='p'?'var(--gold)':'var(--red)';
   if(sel&&!P.includes(sel))sel=null;
   moves=sel&&sel.side==='p'?gen(sel):[];
   render();
@@ -367,8 +420,8 @@ function click(r,c){
   if(over)return;
   if(spk&&phase==='p')return castAt(r,c);
   const x=at(r,c);
-  if(phase==='p'&&sel&&sel.side==='p'){const m=moves.find(m=>m.r===r&&m.c===c);if(m)return act(sel,m)}
-  sel=x||null;moves=x&&(x.side==='e'||phase==='p')?gen(x):[];
+  if(phase==='p'&&sel&&sel.side===cur){const m=moves.find(m=>m.r===r&&m.c===c);if(m)return act(sel,m)}
+  sel=x||null;moves=x&&(x.side!==cur||phase==='p')?gen(x):[];
   dk=x?null:((ter[r][c]&&ter[r][c].k)||(fld[r][c]&&fld[r][c].k)||null);
   if(x&&x.side==='e')log('Rote Punkte = Reichweite von '+x.name);
   if(x)sfx('select');
@@ -380,7 +433,7 @@ function useFields(p,cells){
     if(f.k==='atk'){p.atk++;float(r,c,'+1 ⚔','var(--atk)')}
     if(f.k==='def'){p.def++;float(r,c,'+1 🛡','var(--def)')}
     if(f.k==='evo'){
-      if(p.tier<2){p.tier++;const d=T[p.t]['t'+p.tier];if(d.mv)p.mv=d.mv;if(p.tier===1)p.name=d.n;if(p.t==='R'&&p.tier===2)p.def+=2;
+      if(p.tier<2){p.tier++;const d=T[p.t]['t'+p.tier];if(d.mv)p.mv=d.mv;if(p.tier===1)p.name=d.n;if(p.t==='R'&&p.tier===2)p.def+=2;if(p.t==='Q'&&p.tier===2)p.atk++;
         p.max+=2;p.hp+=2;banner(d.n+'!','var(--evo)');log('✦ '+d.n+': '+d.d)}
       else{p.atk++;p.def++;float(r,c,'+1 ⚔ +1 🛡','var(--evo)')}
     }
@@ -396,19 +449,25 @@ function hit(a,d){
 function act(p,m){
   let killed=false;
   if(m.hit){killed=hit(p,m.hit);if(killed){useFields(p,m.path);p.r=m.r;p.c=m.c;useFields(p,[[m.r,m.c]])}
-    else if(m.hit.side==='e'&&m.hit.t==='K'&&!m.hit.frz&&dist(p,m.hit)<=1){banner('Gegenschlag!','var(--red)');hit(m.hit,p)}}
+    else if(m.hit.side==='e'&&!duo&&m.hit.t==='K'&&!m.hit.frz&&dist(p,m.hit)<=1){banner('Gegenschlag!','var(--red)');hit(m.hit,p)}}
   else{useFields(p,m.path);p.r=m.r;p.c=m.c;useFields(p,[[m.r,m.c]]);sfx('move')}
   if(P.includes(p))land(p);
+  if(duo&&duoCheck())return;
   if(!king()){phase='x';render();return later(end,600)}
   if(!foes().length){phase='wait';moves=[];render();return later(waveClear,500)}
   if(killed&&P.includes(p)&&p.t==='N'&&p.tier>=2&&!p.bonus){p.bonus=true;banner('Sturmangriff!','var(--def)');moves=gen(p);render();return}
   phase='wait';moves=[];render();
+  if(duo)return later(switchSide,350);
   later(enemyTurn,450);
 }
 function waveClear(){
-  mine().forEach(p=>p.hp=Math.min(p.max,p.hp+3));
-  banner('Welle geschafft!','var(--heal)');log('Alle Figuren +3 ❤ · neue Felder erscheinen');sfx('wave');
-  later(()=>{nextWave();spawnField('evo');startTurn()},1300);
+  if(over)return;over=true;phase='x';
+  const alive=mine().length,st=alive>=4?3:alive===3?2:1,first=wave>=unl;
+  let rew=10+5*wave+3*alive;if(!first)rew=Math.ceil(rew/2);
+  SV.coins+=rew;SV.stars[wave]=Math.max(SV.stars[wave]||0,st);saveSV();lastRew={rew,st,first};
+  if(first){unl=wave+1;saveUnl()}
+  banner('Level geschafft!','var(--heal)');sfx('wave');render();
+  later(()=>menu('won'),1400);
 }
 
 // ---- Gegner ----
@@ -474,21 +533,36 @@ function enemyMove(){
 
 function end(){
   if(over)return;over=true;phase='x';
-  const rec=wave>hi;if(rec){hi=wave;try{localStorage.setItem('manaschach_hi',hi)}catch(e){}}
   sfx('lose');render();
-  endD='Welle '+wave+' · '+kills+' Gegner besiegt'+(rec?' · Neuer Rekord!':'');
+  endD='Level '+wave+' · '+kills+' Gegner besiegt';
   later(()=>menu('end'),900);
 }
 // ---- Menüs ----
 let endD='';
+const LVN=i=>i===1?'Einstieg':i===2?'Lava':i===3?'Pfeiltürme':i===4?'Bomben':'Mix';
 const mb=(l,fn,c='mb')=>`<button class="${c}" onclick="${fn}">${l}</button>`;
 function menu(k){
   const set=mb('♪ Effekte: '+(sound?'an':'aus'),`sound=!sound;menu('${k}')`)+mb('♫ Musik: '+(music?'an':'aus'),`togMusic();menu('${k}')`);
   let h='';
-  if(k==='start')h=`<h1>Manaschach</h1><div class="tag">Besiege die Dunklen Könige – Welle für Welle.</div>${mb('▶ Spielen','neu()','big')}${mb('📖 Regeln',"menu('rules')")}${set}<div class="tag" style="font-size:13px">${hi?'Rekord: Welle '+hi:''}</div>`;
-  if(k==='opt')h=`<h2>Optionen</h2>${mb('▶ Weiter','closeMenu()','big')}${mb('📖 Regeln',"menu('rules')")}${set}${mb('↻ Neues Spiel','neu()')}${mb('⌂ Hauptmenü',"quit()")}`;
+  const lvsel=mb('🗺 Levelauswahl',"menu('levels')"),shop=mb('⚒ Schmiede · 🪙 '+SV.coins,"menu('shop')");
+  const stars=n=>'⭐'.repeat(n)+'<span style="opacity:.25">'+'⭐'.repeat(3-n)+'</span>';
+  if(k==='start')h=`<h1>Manaschach</h1><div class="tag">Besiege die Dunklen Könige – Level für Level.</div>${mb('▶ Spielen: Level '+unl,'neu()','big')}${mb('👥 2 Spieler','startDuo()')}${lvsel}${shop}${mb('📖 Regeln',"menu('rules')")}${set}<div class="tag" style="font-size:13px">${unl>1?'Freigeschaltet: Level 1–'+unl:''}</div>`;
+  if(k==='opt')h=`<h2>Optionen</h2>${mb('▶ Weiter','closeMenu()','big')}${mb('📖 Regeln',"menu('rules')")}${set}${duo?mb('↻ Neue Partie','startDuo()'):mb('↻ Level neu starten','startLevel(wave)')}${lvsel}${mb('⌂ Hauptmenü',"quit()")}`;
+  if(k==='shop'){
+    const row=t=>{const u=SV.up[t],d=T[t];const b=(k,ic,val)=>{const l=u[k],c=UPC[k](l);return l>=UPMAX?`<button class="ub" disabled>${ic} MAX</button>`:`<button class="ub" ${SV.coins<c?'disabled':''} onclick="buyUp('${t}','${k}')">${ic} ${val}<small>🪙 ${c}</small></button>`};
+      return `<div class="srow">${svg(t,'p')}<div class="sinf"><b>${d.n}</b><span>⚔ ${d.atk+u.a} · 🛡 ${d.def+u.d} · ❤ ${d.hp+2*u.h}</span></div>${b('a','⚔','+1')}${b('d','🛡','+1')}${b('h','❤','+2')}</div>`};
+    const mc=MANAC(SV.mana);
+    h=`<h2>⚒ Schmiede</h2><div class="res2">🪙 ${SV.coins} Münzen</div><div class="tag" style="font-size:13px">Dauerhafte Verbesserungen für jedes Level</div>${['K','R','B','N'].concat(SV.army.includes('Q')?['Q']:[]).map(row).join('')}
+    <h2 style="font-size:20px;margin-top:8px">⚔ Figuren kaufen</h2><div class="tag" style="font-size:13px">Armee: ${SV.army.length?SV.army.map(t=>T[t].n).join(', '):'noch keine Zusatzfiguren'} (${SV.army.length}/${ARMYMAX})</div>
+    ${Object.keys(BUY).map(t=>`<div class="srow">${svg(t,'p')}<div class="sinf"><b>${T[t].n}</b><span>⚔ ${T[t].atk} · 🛡 ${T[t].def} · ❤ ${T[t].hp} · spielt in jedem Level mit</span></div><button class="ub" style="width:64px" ${SV.coins<BUY[t]||SV.army.length>=ARMYMAX?'disabled':''} onclick="buyPiece('${t}')">Kaufen<small>🪙 ${BUY[t]}</small></button></div>`).join('')}
+    <div class="srow"><span style="font-size:30px;width:40px;text-align:center">💧</span><div class="sinf"><b>Start-Mana</b><span>jedes Level mit ${SV.mana} Mana beginnen</span></div>${SV.mana>=3?'<button class="ub" disabled>MAX</button>':`<button class="ub" ${SV.coins<mc?'disabled':''} onclick="buyMana()">+1<small>🪙 ${mc}</small></button>`}</div>
+    ${mb('← Zurück',`menu('${over?'start':'opt'}')`,'big')}`}
+  if(k==='duo')h=`<h1>${winner==='p'?'Spieler 1 (Gold)':'Spieler 2 (Rot)'} gewinnt!</h1><div class="res2">Der gegnerische König ist gefallen.</div>${mb('↻ Revanche','startDuo()','big')}${mb('⌂ Hauptmenü',"menu('start')")}`;
+  if(k==='levels'){const top=Math.max(12,unl+3);let g='';for(let i=1;i<=top;i++){const ok=i<=unl;g+=`<button class="lv${ok?'':' lk'}${i<unl?' dn':''}" ${ok?`onclick="startLevel(${i})"`:'disabled'}><b>${ok?i:'🔒'}</b><small>${i<unl&&SV.stars[i]?stars(SV.stars[i]):LVN(i)}</small></button>`}
+    h=`<h2>Levelauswahl</h2><div class="lvg">${g}</div>${mb('← Zurück',`menu('${over?'start':'opt'}')`,'big')}`}
+  if(k==='won')h=`<h1>Level ${wave} geschafft!</h1><div class="res2" style="font-size:26px">${stars(lastRew?lastRew.st:1)}</div><div class="res2">+${lastRew?lastRew.rew:0} 🪙${lastRew&&!lastRew.first?' (Wiederholung: halbe Belohnung)':''}</div>${shop}${mb('▶ Level '+(wave+1),'startLevel('+(wave+1)+')','big')}${mb('↻ Level '+wave+' wiederholen','startLevel('+wave+')')}${lvsel}${mb('⌂ Hauptmenü',"menu('start')")}`;
   if(k==='rules')h=`<h2>Regeln</h2>${$('rulesT').innerHTML}<div class="legg">${Object.keys(FICON).map(x=>`<span>${FICON[x]}${FNAME[x]}</span>`).join('')}${Object.keys(TSVG).map(x=>`<span>${TSVG[x]}${TNAME[x]}</span>`).join('')}</div>${mb('← Zurück',`menu('${over?'start':'opt'}')`,'big')}`;
-  if(k==='end')h=`<h1>König gefallen</h1><div class="res2">${endD}</div>${mb('↻ Nochmal','neu()','big')}${mb('⌂ Hauptmenü',"menu('start')")}`;
+  if(k==='end')h=`<h1>König gefallen</h1><div class="res2">${endD}</div>${mb('↻ Level '+wave+' nochmal','startLevel('+wave+')','big')}${lvsel}${mb('⌂ Hauptmenü',"menu('start')")}`;
   $('ovc').innerHTML=h;$('ov').classList.remove('hide');$('ov').scrollTop=0;
 }
 function closeMenu(){$('ov').classList.add('hide')}
@@ -497,7 +571,7 @@ function help(){menu('rules')}
 // ---- Kurzbeschreibungen beim Antippen ----
 const DESC={heal:'Heilfeld: deine Figur bekommt beim Betreten +4 Leben.',atk:'Angriffsfeld: +1 Angriff für die Figur, dauerhaft.',def:'Verteidigungsfeld: +1 Verteidigung, die Figur nimmt weniger Schaden.',evo:'Entwicklungsfeld: neue Zugart, beim 2. Mal eine Spezialfähigkeit.',
  lava:'Lava: 2 Schaden beim Betreten und jede Runde – für alle Figuren.',tur:'Pfeilturm: schießt jede Runde in Pfeilrichtung auf die erste Figur und dreht sich dann weiter. Blockiert.',bomb:'Bombe: explodiert bei 0 oder beim Betreten und trifft alle Figuren rundherum.',rock:'Felsen: blockiert den Weg.',
- wave:'Welle: Besiege alle Gegner, dann kommt die nächste, stärkere Welle.',rnd:'Zug: Anzahl der gespielten Runden in diesem Spiel.',pm:'Dein Mana: startet bei 0, +1 pro Runde (max. 10). Damit wirkst du Zauber aus der Leiste unter dem Brett – einen pro Runde.',mana:'Gegner-Mana: +2 pro Runde. Ist genug da, wirkt der Gegner den angezeigten Zauber.'};
+ wave:'Level: Besiege alle Gegner, um das nächste Level freizuschalten. Jedes Level startet mit allen Figuren.',rnd:'Zug: Anzahl der gespielten Runden in diesem Spiel.',pm:'Dein Mana: startet bei 0, +1 pro Runde (max. 10). Damit wirkst du Zauber aus der Leiste unter dem Brett – einen pro Runde.',mana:'Gegner-Mana: +2 pro Runde. Ist genug da, wirkt der Gegner den angezeigten Zauber.'};
 const EDESC={S:'zieht 1 Feld in jede Richtung',N:'springt im L wie ein Springer',B:'zieht diagonal wie ein Läufer – auch über weite Strecken',R:'zieht gerade wie ein Turm – auch über weite Strecken',Q:'zieht wie eine Dame – gerade und diagonal',K:'Anführer, zieht 1 Feld. Schlägt im Nahkampf zurück – greif ihn aus der Ferne an. Allein ruft er Schatten und flieht.'};
 let dk=null,pmana=0,spk=null,castUsed=false,gid=0;
 function later(fn,ms){const g=gid;setTimeout(()=>{if(g===gid)fn()},ms)}
@@ -522,7 +596,7 @@ function pickSpell(k){spk=spk===k?null:k;sel=null;moves=[];dk=null;
   sfx('select');render()}
 function castAt(r,c){
   const x=at(r,c),s=SP[spk];
-  if(!x||x.side!==s.t||pmana<s.c||castUsed){spk=null;log('Zauber abgebrochen.');render();return}
+  if(!x||x.side!==(s.t==='p'?cur:opp(cur))||pmana<s.c||castUsed){spk=null;log('Zauber abgebrochen.');render();return}
   if(spk==='heal'&&x.hp>=x.max){log(x.name+' hat schon volles Leben – wähle eine verletzte Figur.');return}
   pmana-=s.c;castUsed=true;const k=spk;spk=null;flashT(r,c);sfx(k==='bolt'?'hit':'evo');
   if(k==='heal'){const h=Math.min(4,x.max-x.hp);x.hp+=h;float(r,c,'+'+h+' ❤','var(--heal)')}
@@ -530,6 +604,7 @@ function castAt(r,c){
   if(k==='frost'){x.frz=1;float(r,c,'Eingefroren','#bff4ff')}
   if(k==='bolt'){beam(7.5,3.5,r,c,'#7fd4ff');dmgRaw(x,3,' ⚡','#7fd4ff')}
   log(s.i+' '+s.n+' gewirkt.');render();
+  if(duo){duoCheck();return}
   if(!foes().length){phase='wait';render();later(waveClear,500)}
 }
 function blocked(d){if(!d.shield)return false;d.shield=false;float(d.r,d.c,'Geblockt!','#7fd4ff');return true}
@@ -564,7 +639,7 @@ function terrain(){
   if(feats.rock)for(let i=0;i<3;i++){const s=freeCell(2,5);if(s)ter[s[0]][s[1]]={k:'rock'}}
   if(feats.bomb)for(let i=0;i<2;i++)placeBomb();
   const names={lava:'Lavafelder',tur:'Pfeiltürme',bomb:'Bomben',rock:'Felsen'};
-  banner('Welle '+wave+(list.length?' · '+list.map(k=>names[k]).join(' & '):''),'var(--gold)');
+  banner('Level '+wave+(list.length?' · '+list.map(k=>names[k]).join(' & '):''),'var(--gold)');
 }
 function placeBomb(){const s=freeCell(2,6);if(s){ter[s[0]][s[1]]={k:'bomb',t:3};flashT(s[0],s[1])}}
 function dmgRaw(p,x,lab,col='var(--atk)'){
@@ -634,7 +709,7 @@ function info(){
   if(!p){if(dk&&DESC[dk]){el.innerHTML=`<span class="di">${FICON[dk]||TSVG[dk]||''}</span><div class="st" style="color:var(--txt)">${DESC[dk]}</div>`;return}
     el.innerHTML=`<div class="st">${logT||'Tippe eine Figur oder ein Symbol an, um mehr zu erfahren.'}</div>`;return}
   let ex='';
-  if(p.side==='p'){const d=T[p.t],nt=p.tier<2?d['t'+(p.tier+1)]:null;ex=nt?`Nächste Entwicklung ✦: ${nt.n} – ${nt.d}`:`Voll entwickelt ✦✦ (${d.t2.n})`}
+  if(p.side==='p'||duo){const d=T[p.t],nt=p.tier<2?d['t'+(p.tier+1)]:null;ex=(duo?(p.side==='p'?'Spieler 1 · ':'Spieler 2 · '):'')+(nt?`Nächste Entwicklung ✦: ${nt.n} – ${nt.d}`:`Voll entwickelt ✦✦ (${d.t2.n})`)}
   else ex='Gegner – '+EDESC[p.t];
   el.innerHTML=`${svg(p.g,p.side)}<div><div class="nm">${p.name}</div><div class="st"><b style="color:var(--atk)">⚔ ${atkOf(p)}</b> · <b style="color:var(--def)">🛡 ${p.def}</b> · <b style="color:var(--heal)">❤ ${p.hp}/${p.max}</b></div><div class="st">${ex}</div>${logT?`<div class="st" style="color:#ffb3ba">${logT}</div>`:''}</div>`;
 }
@@ -643,7 +718,7 @@ function render(){
   const b=$('board');
   if(!b.children.length){let h='';for(let r=0;r<N;r++)for(let c=0;c<N;c++)h+=`<div class="t" data-r="${r}" data-c="${c}"></div>`;b.innerHTML=h}
   [...b.children].forEach((t,i)=>{const r=i>>3,c=i&7,m=moves.find(m=>m.r===r&&m.c===c),f=fld&&fld[r][c];
-    const g=ter[r]&&ter[r][c];t.className='t '+((r+c)%2?'b':'a')+(g?' g-'+g.k:'')+(f?' f-'+f.k:'')+(sel&&sel.r===r&&sel.c===c&&P.includes(sel)?' sel':'')+(m?(m.hit?' at':(sel.side==='e'?' th':' mv')):'')+(spk&&at(r,c)&&at(r,c).side===SP[spk].t?' tg':'');
+    const g=ter[r]&&ter[r][c];t.className='t '+((r+c)%2?'b':'a')+(g?' g-'+g.k:'')+(f?' f-'+f.k:'')+(sel&&sel.r===r&&sel.c===c&&P.includes(sel)?' sel':'')+(m?(m.hit?' at':(sel.side!==cur?' th':' mv')):'')+(spk&&at(r,c)&&at(r,c).side===(SP[spk].t==='p'?cur:opp(cur))?' tg':'');
     const want=(f?f.k:'')+'|'+(g?g.k+(g.t??'')+(g.d??''):'');if(t.dataset.f!==want){t.dataset.f=want;t.innerHTML=(g?terHtml(g):'')+(f?`<div class="fi">${FICON[f.k]}</div>`:'')}
   });
   const L=$('layer'),cs='var(--c)',have=new Set(P.map(p=>p.id));
@@ -656,9 +731,11 @@ function render(){
     if(e.dataset.k!==key){e.dataset.k=key;e.innerHTML=svg(p.g,p.side)+(p.tier?`<div class="stars">${'✦'.repeat(p.tier)}</div>`:'')+`<div class="bd d">${p.def}</div><div class="bd a">${a}</div><div class="hpb"><i style="width:${Math.max(0,p.hp/p.max*100)}%;background:${hpCol(p)}"></i><span>${Math.max(0,p.hp)}/${p.max}</span></div>`}
     e.style.transform=`translate(calc(${cs}*${p.c}),calc(${cs}*${p.r}))`;
   }
-  $('wave').textContent=wave||1;$('mana').textContent=mana;
+  $('wave').textContent=duo?'2P':wave||1;$('mana').textContent=duo?'':mana;
   if(plan){const left=Math.max(0,Math.ceil((plan.c-mana)/2));$('plan').textContent=plan.n+(left?' in '+left+' Rd.':' – jetzt!');$('mfill').style.width=Math.min(100,mana/plan.c*100)+'%'}
-  $('pm').textContent=pmana;spells();info();
+  $('mlab').textContent=duo?'🔴 SPIELER 2':'🔮 GEGNER-MANA';$('plab').textContent=duo?'🟡 SPIELER 1':'💧 MANA';
+  if(duo){$('plan').textContent='💧 Mana '+(cur==='e'?pmana:omana);$('mfill').style.width='0'}
+  $('pm').textContent=duo&&cur==='e'?omana:pmana;spells();info();
 }
 function size(){
   const c=Math.max(34,Math.floor(Math.min((Math.min(innerWidth,672)-46)/N,(innerHeight-225)/N,78)));
