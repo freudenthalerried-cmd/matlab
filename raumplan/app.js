@@ -172,15 +172,16 @@ $('#pgRun').onclick = async () => {
     pgLast = { rec, res, frames, W, H, video, imgs };
     const tgt = S.target || 3;
     $('#pgRes').innerHTML = res.map(r => !r.w.ok ? `<p class="warn">${esc(r.name)}: ${esc(r.w.msg)}</p>` :
-      `<h4>${esc(r.name)}</h4><table class="pgt"><tr><th>Wand</th><th>Länge</th><th>±mm (1σ)</th><th>Marken</th><th>Kontrolle (Maßband)</th><th></th></tr>` +
-      r.w.lengths.map((L, i) => `<tr><td>${i + 1}</td><td><b>${f2(L, 3)} m</b></td><td class="${r.w.sigma[i] * 1000 > tgt ? 'warn' : 'ok'}">${r.w.sigma[i] == null ? '–' : f2(r.w.sigma[i] * 1000, 1)}</td><td>${r.w.groups[i].join(', ')}</td><td><input class="chk" data-ck="${res.indexOf(r)},${i}" inputmode="decimal" size="6" placeholder="m/cm"> <span id="ck${res.indexOf(r)}_${i}"></span></td><td><button data-op="${res.indexOf(r)},${i}" title="Fenster/Tür in einem Foto antippen">📐 Öffnung</button></td></tr>`).join('') +
+      `<h4>${esc(r.name)}</h4><table class="pgt"><tr><th>Wand</th><th>Länge</th><th>±mm (1σ)</th><th>Marken</th><th class="ckcol" hidden>Kontrolle (Maßband)</th><th></th></tr>` +
+      r.w.lengths.map((L, i) => `<tr><td>${i + 1}</td><td><b>${f2(L, 3)} m</b></td><td class="${r.w.sigma[i] * 1000 > tgt ? 'warn' : 'ok'}">${r.w.sigma[i] == null ? '–' : f2(r.w.sigma[i] * 1000, 1)}</td><td>${r.w.groups[i].join(', ')}</td><td class="ckcol" hidden><input class="chk" data-ck="${res.indexOf(r)},${i}" inputmode="decimal" size="6" placeholder="m/cm"> <span id="ck${res.indexOf(r)}_${i}"></span></td><td><button data-op="${res.indexOf(r)},${i}" title="Fenster/Tür in einem Foto antippen">📐 Öffnung</button></td></tr>`).join('') +
       `</table>${r.w.height ? (r.w.hSig !== null && r.w.hSig < 0.005 ? `<p>Raumhöhe (Deckenmarke): <b>${f2(r.w.height, 3)} m</b> ±${f2(r.w.hSig * 1000, 1)} mm</p>` : `<p class="warn">Raumhöhe unsicher (${f2(r.w.height, 2)} m) – Deckenmarke aus mindestens 3 Ecken fotografieren.</p>`) : ''}${r.w.warn.map(x => `<p class="warn">${esc(x)}</p>`).join('')}`).join('') +
-      (res.some(r => r.w.ok) ? `<div class="row"><button id="pgTake" class="pri">Räume in den Plan übernehmen</button></div>` : '') +
+      (res.some(r => r.w.ok) ? `<div class="row"><button id="pgTake" class="pri">Räume in den Plan übernehmen</button><button id="ckShow">Kontrollmaß eingeben (optional)</button></div>` : '') +
       (rec.suspect ? `<p class="warn">⚠ ${esc(rec.suspect)} Ergebnis unsicher – mehr Fotos aus verschiedenen Positionen (auch zum Boden) aufnehmen.</p>` : '') +
       (rec.res.rms > 0.6 ? `<p class="warn">⚠ Bildfehler ${rec.res.rms.toFixed(2)} px ist zu hoch – Ergebnis unsicher. Mehr Fotos aus den Ecken (bei mehreren Räumen: mehrere Fotos durch die Tür, auf denen Marken beider Räume zu sehen sind) und erneut auswerten.</p>` : '') +
       `<p class="hint">Bildfehler ${rec.res.rms.toFixed(2)} px (gut: &lt; 0,5 px). Ist ein ±-Wert rot, mehr Bilder aus den Ecken oder weitere Marken an dieser Wand. Eine „Wand“ mit nur 1 Marke ist meist eine Fehlzuordnung – Marke prüfen.</p>`;
     const tk = $('#pgTake'); if (tk) tk.onclick = pgTake;
     $$('#pgRes [data-op]').forEach(b => b.onclick = () => { const [ri, wi] = b.dataset.op.split(',').map(Number); opStart(ri, wi); });
+    const cks = $('#ckShow'); if (cks) cks.onclick = () => { $$('#pgRes .ckcol').forEach(e => e.hidden = false); cks.remove(); };
     $$('#pgRes [data-ck]').forEach(inp => inp.oninput = () => { const [ri, wi] = inp.dataset.ck.split(',').map(Number), d = pgLast.res[ri], v = parseLen(inp.value);
       (d.checks = d.checks || {})[wi] = v || undefined; $(`#ck${ri}_${wi}`).innerHTML = v ? chkText(d.w.lengths[wi] - v, d.w.sigma[wi]) : ''; });
   } catch (e) { pgLog('Fehler: ' + e.message); $('#pgRes').innerHTML = `<p class="warn">${esc(e.message)}</p>`; }
@@ -835,11 +836,11 @@ function roomPanel() {
 }
 function checkPanel(r) {
   const g = geo(r), C = r.checks || [];
-  return `<h4>Kontrollmaße <small class="hint">(Maßband, nur Vergleich – verändern den Plan nicht)</small></h4>
+  return `<details ${C.length ? 'open' : ''}><summary><b>Kontrollmaße (optional)</b> <small class="hint">Maßband, nur Vergleich – verändert den Plan nicht</small></summary>
   <table>${C.map((c, k) => `<tr><td>Wand <select data-ckw="${k}">${r.segs.map((_, i) => `<option value="${i}" ${i === c.wall ? 'selected' : ''}>${i + 1}</option>`).join('')}</select></td>
     <td><input data-ckv="${k}" inputmode="decimal" value="${f2(c.v, 3)}"></td><td>${g.E[c.wall] ? chkText(g.E[c.wall].L - c.v, r.adj && r.adj.wallSigma ? r.adj.wallSigma[c.wall] : null) : ''}</td>
     <td><button data-a="delck" data-oi="${k}" class="danger">×</button></td></tr>`).join('') || '<tr><td class="hint">Ein einziges Maßbandmaß genügt als Nachweis der Genauigkeit.</td></tr>'}</table>
-  <div class="row"><button data-a="addck">+ Kontrollmaß</button></div>`;
+  <div class="row"><button data-a="addck">+ Kontrollmaß</button></div></details>`;
 }
 function linkPanel(r) {
   const others = S.rooms.map((o, k) => [o, k]).filter(([o]) => o !== r);
