@@ -139,6 +139,7 @@ body{margin:0;background:radial-gradient(ellipse at 50% 0%,#2a1838,var(--bg) 70%
       <b>Bombe</b>: explodiert, wenn der Zähler abläuft oder jemand darauf tritt, und trifft alle Figuren rundherum.
       <b>Felsen</b>: blockiert den Weg.</li>
     <li>🔮 Der Gegner sammelt jede Runde Mana und wirkt Zauber. Oben steht, was als Nächstes kommt.</li>
+    <li>👑 Der <b>Dunkle König</b> schlägt im Nahkampf zurück, wenn er überlebt – Turm und Läufer greifen gefahrlos aus der Ferne an. Ist er allein, flieht er und ruft Schatten, die verschwinden, sobald er fällt.</li>
     <li>☠ Besiege alle Gegner einer Welle. Fällt dein König, ist das Spiel aus.</li>
   </ul></template>
 
@@ -370,12 +371,15 @@ function useFields(p,cells){
 }
 function hit(a,d){
   const x=dmgOf(a,d);beam(a.r,a.c,d.r,d.c,a.side==='e'?'#ff4d5e':'#9fd0ff');log((a.side==='e'?'⚠ ':'')+a.name+' greift '+d.name+' an: −'+x);d.hp-=x;float(d.r,d.c,'-'+x,'var(--red)');hurt(d);sfx(d.hp<=0?'kill':'hit');
-  if(d.hp<=0){P=P.filter(p=>p!==d);if(d.side==='e')kills++;return true}
+  if(d.hp<=0){P=P.filter(p=>p!==d);if(d.side==='e')kills++;
+    if(d.side==='e'&&d.t==='K'&&P.some(q=>q.sum)){P=P.filter(q=>!q.sum);setTimeout(()=>log('Die gerufenen Schatten vergehen mit ihrem König.'),300)}
+    return true}
   return false;
 }
 function act(p,m){
   let killed=false;
-  if(m.hit){killed=hit(p,m.hit);if(killed){useFields(p,m.path);p.r=m.r;p.c=m.c;useFields(p,[[m.r,m.c]])}}
+  if(m.hit){killed=hit(p,m.hit);if(killed){useFields(p,m.path);p.r=m.r;p.c=m.c;useFields(p,[[m.r,m.c]])}
+    else if(m.hit.side==='e'&&m.hit.t==='K'&&dist(p,m.hit)<=1){banner('Gegenschlag!','var(--red)');hit(m.hit,p)}}
   else{useFields(p,m.path);p.r=m.r;p.c=m.c;useFields(p,[[m.r,m.c]]);sfx('move')}
   if(P.includes(p))land(p);
   if(!king()){phase='x';render();return setTimeout(end,600)}
@@ -394,6 +398,10 @@ function waveClear(){
 function enemyTurn(){
   phase='e';$('turn').textContent='GEGNER AM ZUG';$('turn').style.color='var(--red)';
   mana+=2;let n=1;
+  const fs=foes();
+  if(fs.length===1&&fs[0].t==='K'){const K=fs[0];
+    if(!K.last){K.last=true;K.def++;banner('Letztes Aufgebot!','var(--red)');log('Der Dunkle König ruft Schatten und schlägt zurück!');summonNear(K,2);sfx('cast')}
+    else if(rnd%3===0){summonNear(K,1);log('Der Dunkle König ruft einen Schatten.')}}
   if(mana>=plan.c){mana-=plan.c;if(cast(plan))n+=1;newPlan()}
   render();
   const step=()=>{
@@ -420,16 +428,27 @@ function cast(pl){
   if(pl.n==='Dunkle Heilung')foes().forEach(f=>{f.hp=Math.min(f.max,f.hp+3);float(f.r,f.c,'+3','var(--heal)')});
   return pl.n==='Raserei';
 }
+function threat(){const s=new Set();for(const p of mine())for(const m of gen(p))s.add(m.r*8+m.c);return s}
+function summonNear(K,n){
+  const c=[];for(const[dr,dc]of DIR.O.concat(DIR.D)){const r=K.r+dr,cc=K.c+dc;if(inB(r,cc)&&!at(r,cc)&&!blk(r,cc)&&!(ter[r][cc]&&ter[r][cc].k==='lava'))c.push([r,cc])}
+  c.sort(()=>Math.random()-.5);
+  for(let i=0;i<n&&i<c.length;i++){const e=mkE('S',c[i][0],c[i][1]);e.sum=true;P.push(e);flashT(c[i][0],c[i][1])}
+}
 function enemyMove(){
   const k=king();if(!k)return;let best=null;
+  const th=threat(),alone=foes().length===1;
+  // Königs-Sicherheit: Abstand zu deinen Figuren, bedrohte Felder meiden
+  const safe=(q,r,c)=>Math.min(...mine().map(p=>Math.max(Math.abs(p.r-r),Math.abs(p.c-c))))*3-(th.has(r*8+c)?30:0);
   for(const f of foes())for(const m of gen(f)){
     let s;
     if(m.hit){const d=dmgOf(f,m.hit);s=100+(m.hit.hp<=d?60+(m.hit.t==='K'?500:m.hit.atk*10):d*5)}
-    else s=-dist(m,k)*3+dist(f,k)+Math.random()*2;
-    if(f.t==='K'&&!m.hit)s-=6;
+    else if(f.t==='K')s=safe(f,m.r,m.c)-(alone?0:6)+Math.random();
+    else s=-dist(m,k)*3+dist(f,k)+Math.random()*2-(th.has(m.r*8+m.c)?6:0);
     const tt=ter[m.r][m.c];if(tt&&tt.k==='lava')s-=15;if(tt&&tt.k==='bomb')s-=12;
     if(!best||s>best.s)best={s,f,m};
   }
+  // Allein gelassener König bleibt lieber stehen, wenn Ziehen unsicherer wäre
+  if(alone){const K=foes()[0];if(K.t==='K'&&(!best||(!best.m.hit&&best.s<safe(K,K.r,K.c))))return}
   if(!best)return;
   const{f,m}=best;
   if(m.hit){if(hit(f,m.hit)){f.r=m.r;f.c=m.c;land(f)}}else{f.r=m.r;f.c=m.c;land(f)}
@@ -461,7 +480,7 @@ function help(){menu('rules')}
 const DESC={heal:'Heilfeld: deine Figur bekommt beim Betreten +4 Leben.',atk:'Angriffsfeld: +1 Angriff für die Figur, dauerhaft.',def:'Verteidigungsfeld: +1 Verteidigung, die Figur nimmt weniger Schaden.',evo:'Entwicklungsfeld: neue Zugart, beim 2. Mal eine Spezialfähigkeit.',
  lava:'Lava: 2 Schaden beim Betreten und jede Runde – für alle Figuren.',tur:'Pfeilturm: schießt jede Runde in Pfeilrichtung auf die erste Figur und dreht sich dann weiter. Blockiert.',bomb:'Bombe: explodiert bei 0 oder beim Betreten und trifft alle Figuren rundherum.',rock:'Felsen: blockiert den Weg.',
  wave:'Welle: Besiege alle Gegner, dann kommt die nächste, stärkere Welle.',rnd:'Zug: Anzahl der gespielten Runden in diesem Spiel.',mana:'Gegner-Mana: +2 pro Runde. Ist genug da, wirkt der Gegner den angezeigten Zauber.'};
-const EDESC={S:'zieht 1 Feld in jede Richtung',N:'springt im L wie ein Springer',B:'zieht diagonal wie ein Läufer – auch über weite Strecken',R:'zieht gerade wie ein Turm – auch über weite Strecken',Q:'zieht wie eine Dame – gerade und diagonal',K:'Anführer, zieht 1 Feld in jede Richtung'};
+const EDESC={S:'zieht 1 Feld in jede Richtung',N:'springt im L wie ein Springer',B:'zieht diagonal wie ein Läufer – auch über weite Strecken',R:'zieht gerade wie ein Turm – auch über weite Strecken',Q:'zieht wie eine Dame – gerade und diagonal',K:'Anführer, zieht 1 Feld. Schlägt im Nahkampf zurück – greif ihn aus der Ferne an. Allein ruft er Schatten und flieht.'};
 let dk=null;
 function desc(k){dk=k;sel=null;moves=[];render()}
 
