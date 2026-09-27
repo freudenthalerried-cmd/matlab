@@ -35,9 +35,9 @@
   #lvlBtn { font: inherit; background: #0006; color: #fff; border: 2px solid #fff6; border-radius: 10px; padding: 6px 14px; }
   #levels { position: absolute; inset: 0; z-index: 12; display: none; flex-direction: column; background: #1b2548f2; padding: 14px; }
   #levels h2 { margin: 6px 0 10px; text-align: center; font-size: 26px; }
-  #lvGrid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; overflow-y: auto; flex: 1; padding: 4px; }
-  .lv { aspect-ratio: 1; border-radius: 12px; border: 2px solid #fff4; background: #26335f; color: #fff; font: inherit; font-size: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
-  .lv small { font-size: 11px; opacity: .85; }
+  #lvGrid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; overflow-y: auto; flex: 1; padding: 2px; align-content: start; }
+  .lv { aspect-ratio: 1; min-width: 0; overflow: hidden; padding: 2px; border-radius: 12px; border: 2px solid #fff4; background: #26335f; color: #fff; font: inherit; font-size: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+  .lv small { font-size: 9px; opacity: .85; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .lv.won { background: linear-gradient(#9be83e, #5cb71b); border-color: #2f5f0c; }
   .lv.cur { border: 3px solid var(--gold); box-shadow: 0 0 10px var(--gold); }
   .lv.lock { opacity: .35; }
