@@ -324,7 +324,7 @@ function fromPoly(Q, old) {
   const ang = Q.map((p, i) => { const q = Q[(i + 1) % n]; return Math.atan2(q[1] - p[1], q[0] - p[0]) * R2D; });
   return {
     x: Q[0][0], y: Q[0][1], rot: ang[0],
-    segs: Q.map((p, i) => ({ len: +dist(p, Q[(i + 1) % n]).toFixed(3), turn: +(sg * normA(ang[(i + 1) % n] - ang[i])).toFixed(2), t: old && old.segs[i] ? old.segs[i].t : undefined }))
+    segs: Q.map((p, i) => ({ len: dist(p, Q[(i + 1) % n]), turn: sg * normA(ang[(i + 1) % n] - ang[i]), /* ungerundet */ t: old && old.segs[i] ? old.segs[i].t : undefined }))
   };
 }
 function isect(p1, d1, p2, d2) {
@@ -785,6 +785,25 @@ $('#xDxf').onclick = () => {
   });
   const dxf = ['0', 'SECTION', '2', 'HEADER', '9', '$INSUNITS', '70', '6', '0', 'ENDSEC', '0', 'SECTION', '2', 'ENTITIES', ...L, '0', 'ENDSEC', '0', 'EOF'].join('\r\n');
   download(fname('dxf'), dxf, 'application/dxf');
+};
+$('#xCsv').onclick = () => {
+  const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`, n3 = v => v === '' || v == null || !isFinite(v) ? '' : (+v).toFixed(4).replace('.', ','), L = [];
+  L.push(['Aufmaßprotokoll', S.project.bv, S.project.adr, S.project.datum].map(q).join(';'));
+  L.push(['Raum', 'Art', 'Ecken', 'Messwert', 'σ', 'Verbesserung', 'normiert', 'Quelle', 'Status'].map(q).join(';'));
+  S.rooms.forEach(r => {
+    const n = r.segs.length;
+    (r.obs || []).forEach((o, k) => {
+      const V = r.adj && r.adj.v && r.adj.v[k], ang = /winkel|sehne/.test(o.typ);
+      const val = o.typ === 'sehne' ? `a=${n3(o.a)} b=${n3(o.b)} c=${n3(o.c)} m` : ang ? n3(o.v) + ' °' : n3(o.v) + ' m';
+      const sig = o.typ === 'winkel' || o.typ === 'fotowinkel' ? n3(o.s) + ' °' : n3(o.s * 1000) + ' mm';
+      const ec = o.j != null ? `${o.i + 1}-${o.j + 1}` : o.typ === 'wand' ? `${o.i + 1}-${(o.i + 1) % n + 1}` : `${o.i + 1}`;
+      L.push([r.name, OBS_T[o.typ], ec, val, sig, V ? (V.ang ? n3(V.v * R2D) + ' °' : n3(V.v * 1000) + ' mm') : '', V ? n3(V.w) : '', o.src || 'Maßband', o.off ? 'ausgeschlossen' : V && Math.abs(V.w) > 3.29 ? 'GROBER FEHLER?' : ''].map(q).join(';'));
+    });
+    const g = geo(r);
+    g.E.forEach((e, i) => L.push([r.name, 'Ergebnis Wand', `${i + 1}-${(i + 1) % n + 1}`, n3(e.L) + ' m', r.adj && r.adj.wallSigma ? n3(r.adj.wallSigma[i] * 1000) + ' mm' : 'nicht ausgeglichen', '', '', 'Plan', ''].map(q).join(';')));
+    L.push([r.name, 'Ergebnis Fläche', '', n3(g.area) + ' m²', '', '', '', 'Plan', r.adj && r.adj.s0 != null ? 'σ0=' + n3(r.adj.s0) : ''].map(q).join(';'));
+  });
+  download(fname('csv'), '\ufeff' + L.join('\r\n'), 'text/csv');
 };
 $('#xJson').onclick = () => download(fname('json'), ser(), 'application/json');
 $('#xLoad').onchange = e => {
