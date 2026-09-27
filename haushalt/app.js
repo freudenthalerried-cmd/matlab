@@ -20,9 +20,18 @@ async function tx(mode, fn) {
     t.onerror = () => rej(t.error);
   });
 }
-const allSpots = () => tx('readonly', s => s.getAll());
-const putSpot = spot => tx('readwrite', s => s.put(spot));
-const delSpot = id => tx('readwrite', s => s.delete(id));
+let cache = null;   // alle Orte im Speicher; wird bei jedem Schreiben aktualisiert
+const allSpots = async () => cache ? cache.slice() : (cache = await tx('readonly', s => s.getAll())).slice();
+const putSpot = async spot => {
+  await tx('readwrite', s => s.put(spot));
+  if (cache) { const i = cache.findIndex(x => x.id === spot.id); i >= 0 ? cache[i] = spot : cache.push(spot); }
+};
+const delSpot = async id => { await tx('readwrite', s => s.delete(id)); if (cache) cache = cache.filter(x => x.id !== id); };
+// Statistik: Zahl der ausgewerteten Bilder für die Kostenschätzung
+const stats = {
+  get calls() { return +store.get('calls', '0'); },
+  bump() { store.set('calls', String(this.calls + 1)); }
+};
 
 // ---------- Hilfen ----------
 const $ = id => document.getElementById(id);
@@ -39,7 +48,7 @@ const store = {
 };
 const settings = {
   get key() { return store.get('apikey'); },
-  get model() { return store.get('model', 'claude-haiku-4-5-20251001'); },
+  get model() { const m = store.get('model', 'claude-haiku-4-5'); return m === 'claude-haiku-4-5-20251001' ? 'claude-haiku-4-5' : m; },
   get auto() { return store.get('auto', '1') === '1'; },
   get gps() { return store.get('gps', '1') === '1'; }
 };
@@ -202,6 +211,7 @@ async function recognize(dataUrl, room, place, opt = {}) {
   }
   const j = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(j.error?.message || `API-Fehler ${r.status}`);
+  if (!opt.boxes) stats.bump();
   const inp = j.content?.find(c => c.type === 'tool_use')?.input || {};
   return {
     raum: (inp.raum || '').trim(),
@@ -222,12 +232,26 @@ function show(v) {
   if (v === 'rooms') renderRooms();
   if (v === 'search') renderSearch();
   if (v === 'add') fillLists();
-  if (v === 'settings') { $('apikey').value = settings.key; $('model').value = settings.model; $('gps').checked = settings.gps; }
+  if (v === 'settings') { $('apikey').value = settings.key; $('model').value = settings.model; $('gps').checked = settings.gps; renderInfo(); }
   if (v === 'add') { renderSiteLine(); locate(); }
 }
 document.querySelectorAll('nav button').forEach(b => b.onclick = () => show(b.dataset.v));
 
 // ---------- Suche ----------
+// Ähnlichkeit zweier Wörter über Buchstabenpaare (0–1); fängt Tippfehler und Diktierfehler ab
+function similar(a, b) {
+  if (a.length < 3 || b.length < 3) return 0;
+  const grams = s => { const m = new Map(); for (let i = 0; i < s.length - 1; i++) { const g = s.slice(i, i + 2); m.set(g, (m.get(g) || 0) + 1); } return m; };
+  const ga = grams(a), gb = grams(b);
+  let hit = 0;
+  for (const [g, n] of ga) hit += Math.min(n, gb.get(g) || 0);
+  return 2 * hit / (a.length - 1 + b.length - 1);
+}
+function fuzzyIn(w, text) {
+  // Wort gegen alle Wörter (und zusammengesetzte Namen) des Textes prüfen
+  for (const t of text.split(/[\s()/,+-]+/)) if (t && similar(w, t) >= 0.6) return true;
+  return text.length >= w.length && similar(w, text) >= 0.6;
+}
 function score(words, spot, item) {
   const name = skey(item.name), tags = (item.tags || []).map(skey).join(' ');
   const ctx = skey(spot.room + ' ' + spot.place);
@@ -238,9 +262,16 @@ function score(words, spot, item) {
     else if (name.includes(w)) s += 4;
     else if (tags.includes(w)) s += 3;
     else if (ctx.includes(w)) s += 1;
+    else if (fuzzyIn(w, name)) s += 2;          // ähnlich geschrieben
+    else if (fuzzyIn(w, tags)) s += 1;
     else return 0;
   }
   return s;
+}
+function fillSuggest(spots) {
+  const names = new Set();
+  for (const s of spots) for (const i of s.items) names.add((i.base || i.name).replace(/\s*\(\d+×\)$/, ''));
+  $('suggest').innerHTML = [...names].sort().slice(0, 300).map(n => `<option value="${esc(n)}">`).join('');
 }
 function hl(text, q) {
   let out = esc(text);
@@ -252,16 +283,18 @@ function hl(text, q) {
 const thumb = s => s.photo ? `<img src="${s.photo}" alt="" data-open="${esc(s.id)}">` : '<div class="thumb"></div>';
 async function renderSearch() {
   const q = $('q').value.trim(), spots = await allSpots(), el = $('results');
+  fillSuggest(spots);
   const pending = spots.filter(s => s.status === 'pending').length;
+  const keyNote = settings.key ? '' : `<div class="status">🔑 Für die automatische Erkennung fehlt noch der API-Schlüssel. <a href="#" id="setup-key">Jetzt eintragen</a></div>`;
   const pendNote = pending ? `<div class="status">⏳ ${pending} Foto(s) warten auf Erkennung. <a href="#" id="retry-link">Jetzt erkennen</a></div>` : '';
   if (!spots.length) {
-    el.innerHTML = `<div class="card"><b>Noch nichts erfasst.</b><p class="muted">Tippe unten auf 📷 Foto → <b>🎥 Filmen</b> und geh einmal durch den Raum: Kisten und Laden öffnen, Inhalt kurz filmen. Raum, Kisten und Produkte werden automatisch erkannt. Danach einfach hier suchen, z. B. „Zahnpasta“.</p></div>`;
+    el.innerHTML = keyNote + `<div class="card"><b>Noch nichts erfasst.</b><p class="muted">Tippe unten auf 📷 Foto → <b>🎥 Filmen</b> und geh einmal durch den Raum: Kisten und Laden öffnen, Inhalt kurz filmen. Raum, Kisten und Produkte werden automatisch erkannt. Danach einfach hier suchen, z. B. „Zahnpasta“.</p></div>`;
     return;
   }
   if (!q) {
     const n = spots.reduce((a, s) => a + s.items.length, 0);
     const recent = [...spots].sort((a, b) => b.updated - a.updated).slice(0, 5);
-    el.innerHTML = `${pendNote}<p class="muted">${n} Gegenstände an ${spots.length} Orten erfasst. Oben eintippen oder 🎤 antippen.</p>
+    el.innerHTML = `${keyNote}${pendNote}<p class="muted">${n} Gegenstände an ${spots.length} Orten erfasst. Oben eintippen oder 🎤 antippen.</p>
       <h2>Zuletzt erfasst</h2>${recent.map(s => `
       <div class="card hit">${thumb(s)}<div><div class="path">📍 ${esc(s.room)} → ${esc(s.place)}</div>
       <div class="muted">${s.status === 'pending' ? '⏳ wartet auf Erkennung' : esc(s.items.slice(0, 6).map(i => i.name).join(', '))}</div></div></div>`).join('')}`;
@@ -277,18 +310,45 @@ async function renderSearch() {
   const multiSite = new Set(spots.map(s => s.site || '')).size > 1;
   const where = s => `${multiSite && s.site ? esc(s.site) + ' → ' : ''}${esc(s.room)} → ${esc(s.place)}`;
   const nSpots = new Set(hits.map(h => h.sp.id)).size;
-  el.innerHTML = pendNote + (hits.length ? `<p class="muted">„${esc(q)}“: ${hits.length} Treffer an ${nSpots} ${nSpots === 1 ? 'Ort' : 'Orten'}</p>` : '') + (hits.length ? hits.slice(0, 50).map(h => `
-    <div class="card hit">
+  const onlyFuzzy = hits.length && hits[0].s < 3;
+  el.innerHTML = pendNote + (hits.length ? `<p class="muted">„${esc(q)}“: ${hits.length} Treffer an ${nSpots} ${nSpots === 1 ? 'Ort' : 'Orten'}${onlyFuzzy ? ' – meintest du:' : ''}</p>` : '') + (hits.length ? hits.slice(0, 50).map(h => `
+    <div class="card hit" data-spot="${esc(h.sp.id)}" data-item="${h.sp.items.indexOf(h.it)}">
       ${h.it.photo ? `<img src="${h.it.photo}" alt="" data-open="${esc(h.sp.id)}">` : thumb(h.sp)}
-      <div>
+      <div style="flex:1">
         <div>${hl(h.it.name, q)}</div>
         <div class="path">📍 ${where(h.sp)}</div>
       </div>
-    </div>`).join('') : `<div class="card">Nichts gefunden für „${esc(q)}“.</div>`);
+      <div class="acts">
+        <button class="ghost mini" data-act="rename" title="Umbenennen">✏️</button>
+        <button class="ghost mini" data-act="take" title="Entnommen / verbraucht">✓</button>
+      </div>
+    </div>`).join('') : `<div class="card">Nichts gefunden für „${esc(q)}“.<br><span class="muted">Tipp: anders schreiben oder Oberbegriff probieren (z. B. „Werkzeug“).</span></div>`);
+}
+// Gegenstand aus einem Ort entfernen (entnommen/verbraucht) oder umbenennen
+async function itemAction(act, spotId, idx) {
+  const spots = await allSpots(), s = spots.find(x => x.id === spotId);
+  if (!s || !s.items[idx]) return;
+  const it = s.items[idx];
+  if (act === 'take') {
+    const prev = { ...s, items: [...s.items] };
+    const items = s.items.filter((_, i) => i !== idx);
+    await putSpot({ ...s, items, updated: Date.now() });
+    toast(`✓ „${it.name}“ aus ${s.place} entfernt`, 'Rückgängig', async () => { await putSpot(prev); renderSearch(); });
+  } else {
+    const name = prompt('Neuer Name:', it.name)?.trim();
+    if (!name || name === it.name) return;
+    const items = s.items.map((x, i) => i === idx ? { ...x, name, base: name.replace(/\s*\(\d+×\)$/, '') } : x);
+    await putSpot({ ...s, items, updated: Date.now() });
+  }
+  renderSearch();
+  if (!$('v-rooms').classList.contains('hidden')) renderRooms();
 }
 $('q').addEventListener('input', () => show('search'));
 $('results').onclick = e => {
   if (e.target.id === 'retry-link') { e.preventDefault(); retryPending(true); return; }
+  if (e.target.id === 'setup-key') { show('settings'); return; }
+  const act = e.target.dataset.act;
+  if (act) { const c = e.target.closest('.hit'); return itemAction(act, c.dataset.spot, +c.dataset.item); }
   const id = e.target.dataset.open;
   if (!id) return;
   show('rooms');
@@ -553,7 +613,7 @@ async function filmProcess(canvas) {
   let res;
   try { res = await recognize(dataUrl, film.room, film.autoPlace ? current : film.place, { boxes: true, known, current }); }
   catch (e) { filmStatus('⚠️ ' + e.message); return; }
-  film.sent++;
+  film.sent++; stats.bump();
   if (!film.room) {                       // Raum von der KI geschätzt, gilt für den ganzen Durchgang
     film.room = res.raum || 'Unsortiert';
     $('room').value = film.room; store.set('room', film.room);
@@ -649,6 +709,9 @@ async function startFilm() {
   const v = $('film-video');
   v.srcObject = film.stream;
   await v.play().catch(() => {});
+  const track = film.stream.getVideoTracks()[0];
+  film.torch = false;
+  $('film-torch').classList.toggle('hidden', !track?.getCapabilities?.().torch);
   filmStatus('Langsam über den Inhalt schwenken …');
   film.timer = setInterval(filmTick, FILM_INTERVAL);
   setTimeout(filmTick, 800);
@@ -705,6 +768,13 @@ $('btn-video').onclick = () => $('f-video').click();
 $('f-video').onchange = e => { const f = e.target.files[0]; e.target.value = ''; if (f) processVideoFile(f); };
 $('film-done').onclick = stopFilm;
 $('film-where').onclick = filmEdit;
+$('film-torch').onclick = async () => {
+  const track = film.stream?.getVideoTracks()[0];
+  if (!track) return;
+  film.torch = !film.torch;
+  try { await track.applyConstraints({ advanced: [{ torch: film.torch }] }); } catch { film.torch = false; }
+  $('film-torch').classList.toggle('on', film.torch);
+};
 $('film-pause').onclick = () => {
   film.paused = !film.paused;
   $('film-pause').textContent = film.paused ? '▶️' : '⏸';
@@ -763,7 +833,7 @@ async function renderRooms() {
       <details class="card" id="spot-${esc(s.id)}">
         <summary>📦 ${esc(s.place)} <span class="muted">· ${s.status === 'pending' ? '⏳ wartet auf Erkennung' : s.items.length + (s.items.length === 1 ? ' Gegenstand' : ' Gegenstände')}</span></summary>
         ${s.photo ? `<img class="preview" src="${s.photo}" alt="" style="margin-top:10px">` : ''}
-        <div class="chips">${s.items.map(i => `<span class="chip">${i.photo ? `<img src="${i.photo}" alt="">` : ''}${esc(i.name)}</span>`).join('')}</div>
+        <div class="chips">${s.items.map((i, k) => `<span class="chip pick" data-item="${k}" data-spot="${esc(s.id)}" title="Antippen zum Bearbeiten">${i.photo ? `<img src="${i.photo}" alt="">` : ''}${esc(i.name)}</span>`).join('')}</div>
         <p class="muted">Aktualisiert: ${new Date(s.updated).toLocaleString('de-AT')}</p>
         <div class="row">
           <button class="ghost" data-edit="${esc(s.id)}">✏️ Bearbeiten / verschieben</button>
@@ -790,6 +860,17 @@ async function renameSite(site) {
   toast(`Standort „${site}“ → „${name}“`); renderRooms();
 }
 $('room-list').onclick = async e => {
+  const chip = e.target.closest('.chip[data-item]');
+  if (chip) {
+    const spots = await allSpots(), s = spots.find(x => x.id === chip.dataset.spot), it = s?.items[+chip.dataset.item];
+    if (!it) return;
+    const v = prompt(`„${it.name}“ – neuer Name (leer lassen = entfernen):`, it.name);
+    if (v === null) return;
+    const name = v.trim();
+    const items = name ? s.items.map((x, i) => i === +chip.dataset.item ? { ...x, name, base: name.replace(/\s*\(\d+×\)$/, '') } : x) : s.items.filter((_, i) => i !== +chip.dataset.item);
+    await putSpot({ ...s, items, updated: Date.now() });
+    return renderRooms();
+  }
   const { edit, del, renameRoom: rr, renameSite: rs } = e.target.dataset;
   if (rr) return renameRoom(rr);
   if (rs) return renameSite(rs);
@@ -819,7 +900,25 @@ $('btn-save-settings').onclick = () => {
   toast('Gespeichert.');
   retryPending();
 };
+// Kostenschätzung: ~1.800 Token pro Bild (Foto + Anweisung) + ~400 Token Antwort
+const PRICE = { 'claude-haiku-4-5': [1, 5], 'claude-sonnet-5': [2, 10] };   // $ pro Mio. Token (Eingabe, Ausgabe)
+const costPerImage = m => { const [i, o] = PRICE[m] || PRICE['claude-haiku-4-5']; return (1800 * i + 400 * o) / 1e6; };
+async function renderInfo() {
+  const spots = await allSpots();
+  const n = spots.reduce((a, s) => a + s.items.length, 0);
+  let storage = '';
+  try {
+    const est = await navigator.storage?.estimate?.();
+    if (est?.usage) storage = ` · Speicher: ${(est.usage / 1048576).toFixed(1)} MB` + (est.quota ? ` von ${Math.round(est.quota / 1048576)} MB` : '');
+  } catch {}
+  const last = store.get('lastExport');
+  const days = last ? Math.floor((Date.now() - +last) / 864e5) : null;
+  $('info').innerHTML = `${spots.length} Orte, ${n} Gegenstände${storage}<br>
+    Bilder ausgewertet: ${stats.calls} (≈ ${(stats.calls * costPerImage(settings.model) * 100).toFixed(1)} Cent, grobe Schätzung; ${settings.model.includes('sonnet') ? 'Sonnet' : 'Haiku'} ≈ ${(costPerImage(settings.model) * 100).toFixed(2)} Cent pro Bild)<br>
+    Letzte Sicherung: ${last ? new Date(+last).toLocaleDateString('de-AT') + (days > 14 ? ' ⚠️ schon ' + days + ' Tage her' : '') : '⚠️ noch nie'}`;
+}
 $('btn-export').onclick = async () => {
+  store.set('lastExport', String(Date.now()));
   const blob = new Blob([JSON.stringify(await allSpots())], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -842,6 +941,8 @@ $('f-import').onchange = async e => {
 
 // ---------- Start ----------
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+// Browser bitten, die Daten nicht bei Speicherknappheit zu löschen
+navigator.storage?.persist?.().catch(() => {});
 renderSearch();
 renderDraftItems();
 retryPending();

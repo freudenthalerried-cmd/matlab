@@ -72,6 +72,9 @@ button.mini{padding:2px 8px;font-size:.85rem;vertical-align:middle}
 .film-item img{width:76px;height:76px;object-fit:cover;border-radius:8px;display:block;margin-bottom:2px;background:#333}
 .film-bar{position:relative;display:flex;gap:8px;padding:10px 16px calc(12px + env(safe-area-inset-bottom));background:#000c}
 .film-bar button{flex:1}
+#film-torch.on{background:#ffd54a;color:#000}
+.acts{display:flex;flex-direction:column;gap:6px;flex:none}
+.acts button{padding:4px 8px}
 .chip img{width:22px;height:22px;object-fit:cover;border-radius:50%;margin-left:-6px}
 </style>
 </head>
@@ -79,7 +82,8 @@ button.mini{padding:2px 8px;font-size:.85rem;vertical-align:middle}
 <header>
   <h1>🏠 Wo ist was?</h1>
   <div class="searchrow">
-    <input id="q" type="search" placeholder="Was suchst du? z. B. Schere, Batterien …" autocomplete="off">
+    <input id="q" type="search" list="suggest" placeholder="Was suchst du? z. B. Schere, Batterien …" autocomplete="off">
+    <datalist id="suggest"></datalist>
     <button id="mic" class="ghost hidden" title="Sprachsuche" aria-label="Sprachsuche">🎤</button>
   </div>
 </header>
@@ -149,7 +153,7 @@ button.mini{padding:2px 8px;font-size:.85rem;vertical-align:middle}
       <input id="apikey" type="password" placeholder="sk-ant-…" autocomplete="off">
       <label for="model">Modell</label>
       <select id="model">
-        <option value="claude-haiku-4-5-20251001">Haiku 4.5 – günstig &amp; schnell</option>
+        <option value="claude-haiku-4-5">Haiku 4.5 – günstig &amp; schnell</option>
         <option value="claude-sonnet-5">Sonnet 5 – genauer</option>
       </select>
       <label class="switch" for="gps" style="margin-top:12px"><span>📍 Standort per GPS erkennen<br><span class="muted">unterscheidet Gebäude (Haus, Lager …), nicht einzelne Räume</span></span><input id="gps" type="checkbox"></label>
@@ -163,6 +167,10 @@ button.mini{padding:2px 8px;font-size:.85rem;vertical-align:middle}
       </div>
       <input id="f-import" type="file" accept="application/json" class="hidden">
       <p class="muted">Alle Daten (inkl. Fotos) liegen lokal im Browser. Regelmäßig sichern!</p>
+    </div>
+    <div class="card">
+      <b>Übersicht</b>
+      <p id="info" class="muted" style="margin:6px 0 0"></p>
     </div>
   </section>
 </main>
@@ -183,6 +191,7 @@ button.mini{padding:2px 8px;font-size:.85rem;vertical-align:middle}
   <div id="film-items" class="film-items"></div>
   <div class="film-bar">
     <button class="ghost" id="film-next">➡️ Nächster Ort</button>
+    <button class="ghost hidden" id="film-torch" style="flex:none" title="Taschenlampe">🔦</button>
     <button class="ghost" id="film-pause" style="flex:none">⏸</button>
     <button id="film-done">✓ Fertig</button>
   </div>
