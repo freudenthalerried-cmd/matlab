@@ -87,9 +87,10 @@ $('#targets').onclick = () => {
 /* ---------- Photogrammetrie: Zielmarken-Video -> Räume (ohne Handmessung) ---------- */
 let pgFiles = null, pgLast = null;
 $('#pgPrint').onclick = () => {
-  const n = Math.max(0, Math.min(96, Math.round(num($('#pgN').value)))), size = Math.max(60, Math.min(190, num($('#pgSize').value) || 160));
+  const n = Math.max(0, Math.min(86, Math.round(num($('#pgN').value)))), from = Math.max(4, Math.min(89, Math.round(num($('#pgFrom').value) || 4))), size = Math.max(60, Math.min(190, num($('#pgSize').value) || 160));
   const lab = ['Boden – Mitte auf Maßband 0 cm', 'Boden – Mitte auf Maßband 300 cm', 'Boden', 'Boden'];
-  const pages = [0, 1, 2, 3].map(id => MK.markerSVG(id, size, lab[id])).concat(Array.from({ length: n }, (_, k) => MK.markerSVG(4 + k, size, 'Wand')));
+  const pages = [0, 1, 2, 3].map(id => MK.markerSVG(id, size, lab[id])).concat(Array.from({ length: Math.min(n, 90 - from) }, (_, k) => MK.markerSVG(from + k, size, 'Wand')))
+    .concat($('#pgConn').checked ? [90, 91, 92, 93].map(id => MK.markerSVG(id, size, 'Verbindung – im Türbereich am Boden liegen lassen')) : []);
   const w = open('', '_blank'); if (!w) return alert('Pop-up wurde blockiert – bitte erlauben.');
   w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Raumplan-Marken</title><style>@page{size:A4 portrait;margin:0}body{margin:0}svg{display:block;page-break-after:always}</style></head><body>${pages.join('')}<script>onload=()=>setTimeout(()=>print(),400)<\/script></body></html>`);
   w.document.close();
@@ -245,18 +246,52 @@ function opAdd() {
   if (d.planRoom && S.rooms.includes(d.planRoom)) { d.planRoom.ops.push({ ...op }); save(); }
   opSt.results = []; opSt.pts = []; opDraw(); $('#opOut').innerHTML = `<span class="ok">✔ ${t === 'fenster' ? 'Fenster' : t === 'tuer' ? 'Tür' : 'Durchgang'} ${Math.round(op.w * 100)}/${Math.round(op.h * 100)} übernommen${d.planRoom ? '' : ' (wird mit „Räume übernehmen“ in den Plan gelegt)'}.</span>`;
 }
+// Marken eines Raums in aktueller Planlage (Raum kann nach der Übernahme verschoben/gedreht worden sein)
+function roomMarkersPlan(r) {
+  if (!r.pgM) return {}; const d = ((r.rot || 0) - r.pgM.rot0) / R2D, c = Math.cos(d), sn = Math.sin(d);
+  const f = p => [c * (p[0] - r.pgM.x0) - sn * (p[1] - r.pgM.y0) + r.x, sn * (p[0] - r.pgM.x0) + c * (p[1] - r.pgM.y0) + r.y];
+  const o = {}; for (const id in r.pgM.m) o[id] = { c: r.pgM.m[id].c.map(f), s: r.pgM.m[id].s }; return o;
+}
+/* Innenwände: gegenüberliegende parallele Wände zweier Räume (< 60 cm) -> gemessener Abstand = Wandstärke */
+function autoWallThickness() {
+  const G2 = S.rooms.map(r => r.segs.length > 2 ? geo(r) : null); let n = 0;
+  S.rooms.forEach((A, ia) => { if (!G2[ia]) return; G2[ia].E.forEach((e, i) => {
+    S.rooms.forEach((B, ib) => { if (ib === ia || !G2[ib]) return; G2[ib].E.forEach((f, j) => {
+      if (e.d[0] * f.d[0] + e.d[1] * f.d[1] > -0.995) return; // antiparallel
+      const dd = (f.p[0] - e.p[0]) * e.n[0] + (f.p[1] - e.p[1]) * e.n[1]; if (dd <= 0.02 || dd > 0.6) return;
+      const s0 = (f.p[0] - e.p[0]) * e.d[0] + (f.p[1] - e.p[1]) * e.d[1], s1 = (f.q[0] - e.p[0]) * e.d[0] + (f.q[1] - e.p[1]) * e.d[1];
+      if (Math.min(e.L, Math.max(s0, s1)) - Math.max(0, Math.min(s0, s1)) < 0.3) return; // zu wenig Überdeckung
+      A.segs[i].t = +dd.toFixed(4); B.segs[j].t = +dd.toFixed(4); n++;
+    }); });
+  }); });
+  return n / 2;
+}
+function planMarkers() { const all = {}; S.rooms.forEach(r => { const m = roomMarkersPlan(r); for (const id in m) if (!all[id] || m[id].s < all[id].s) all[id] = m[id]; }); return all; }
 function pgTake() {
   const { rec, res } = pgLast; let first = null;
+  // An bestehenden Plan anschließen: gemeinsame Marken (z. B. Verbindungsmarken im Türbereich)
+  const fresh = PG.markerMap(rec), existing = planMarkers(), hadPg = Object.keys(existing).length > 0;
+  let T = hadPg ? PG.alignTo(existing, fresh) : null, msg = '';
+  if (T && T.rms < 0.01) msg = `An den bestehenden Plan angeschlossen über Marken ${T.ids.join(', ')} – Passfehler ${f2(T.rms * 1000, 1)} mm (max. ${f2(T.max * 1000, 1)} mm).${T.rejected.length ? ` Nicht verwendet (ungenau/verschoben): ${T.rejected.join(', ')}.` : ''}`;
+  else if (hadPg) { msg = T ? `Gemeinsame Marken passen nicht zusammen (Passfehler ${f2(T.rms * 1000, 0)} mm) – wurde eine Marke verschoben? Raum frei platziert.` : 'Keine gemeinsamen Marken mit dem bestehenden Plan – Raum frei platziert. Für den Gesamtplan 2–3 Verbindungsmarken im Türbereich in beiden Fotoserien fotografieren oder „Nachbarraum anschließen“ verwenden.'; T = null; }
+  const F = T ? T.f : p => p;
+  let shift = [0, 0];
+  if (!T && S.rooms.length) { const b = allBB(), pb = bb(res.filter(d => d.w.ok).flatMap(d => d.w.poly)); shift = [b.x1 + 1 - pb.x0, b.y0 - pb.y0]; }
+  const G = p => { const q = F(p); return [q[0] + shift[0], q[1] + shift[1]]; };
+  const mPlan = {}; for (const id in fresh) mPlan[id] = { c: fresh[id].c.map(G), s: fresh[id].s };
   res.forEach(d => {
     if (!d.w.ok) return;
-    const r = newRoom(d.name, [], 0, 0); Object.assign(r, fromPoly(d.w.poly, r));
+    const r = newRoom(d.name, [], 0, 0); Object.assign(r, fromPoly(d.w.poly.map(G), r));
+    r.pgM = { x0: r.x, y0: r.y, rot0: r.rot, m: mPlan };
     // Wand i im Plan = Kante Ecke i -> i+1; Sigma gleich indiziert
     r.adj = { wallSigma: d.w.sigma.map(v => v ?? 0.01), cornerMax: 0, s0: rec.res.s0, red: rec.nObs, warn: d.w.warn, v: [], pg: { rms: rec.res.rms, nImg: rec.nImg } };
     if (d.w.height && d.w.hSig !== null && d.w.hSig < 0.005) r.h = +d.w.height.toFixed(3);
     r.ops = (d.ops || []).slice(); d.planRoom = r;
     r.src = 'Photogrammetrie'; S.rooms.push(r); if (first === null) first = S.rooms.length - 1;
   });
-  selRoom = first; save(); showTab('plan');
+  const nw = autoWallThickness(); if (nw && T) msg += ` Innenwandstärke(n) aus der Messung gesetzt.`;
+  selRoom = first; save(); showTab('plan'); renderPlan(true);
+  if (msg) setTimeout(() => alert(msg), 50);
 }
 
 /* ---------- 2 Vermessen ---------- */

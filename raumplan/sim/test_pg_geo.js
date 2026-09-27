@@ -15,7 +15,7 @@ function frames(M,rooms,stations,door){let walls=rooms.flatMap(r=>r.poly.map((a,
   M.forEach(m=>{const X=[[-1,-1],[1,-1],[1,1],[-1,1]].map(([p,q])=>[0,1,2].map(j=>m.c[j]+MS/2*(p*m.u[j]+q*m.v[j]))),uv=X.map(x=>BA.project(it,cam,x));
    if(uv.some(p=>p[2]<0.3||p[0]<5||p[0]>W-5||p[1]<5||p[1]>H-5))return;
    const toC=[C[0]-m.c[0],C[1]-m.c[1],C[2]-m.c[2]],nv=m.room===-2?[0,0,-1]:m.room<0?[0,0,1]:[m.nin[0],m.nin[1],0],cs=(toC[0]*nv[0]+toC[1]*nv[1]+toC[2]*nv[2])/Math.hypot(...toC);if(cs<0.3)return;
-   if(m.room>=0&&m.nin&&walls.some(w=>segX([C[0],C[1]],[m.c[0]-m.nin[0]*.01+m.nin[0]*.02,m.c[1]+m.nin[1]*.02],w[0],w[1])))return;
+   if((m.room>=0&&m.nin||m.room===-1)&&walls.some(w=>segX([C[0],C[1]],m.nin?[m.c[0]-m.nin[0]*.01+m.nin[0]*.02,m.c[1]+m.nin[1]*.02]:[m.c[0],m.c[1]],w[0],w[1])))return;
    dets.push({id:m.id,c:uv.map(p=>[p[0]+g()*SP,p[1]+g()*SP])});});F.push({t:F.length,dets});}});return F;}
 function check(name,rooms,floor,stations,door,ceil){const M=scene(rooms,floor,ceil),F=frames(M,rooms,stations,door);if(ceil&&process.env.GRP)console.log('Deckenmarken-Sichtungen',M.filter(m=>m.room===-2).map(m=>m.id+':'+F.reduce((a,f)=>a+f.dets.filter(d=>d.id===m.id).length,0)).join(' '));const nd=F.reduce((s,f)=>s+f.dets.length,0);
  const rec=PG.reconstruct(F,{W,H,size:MS,scaleDist:Math.hypot(floor[1][0]-floor[0][0],floor[1][1]-floor[0][1]),sigPx:0.3,scaleDist2:process.env.S2?Math.hypot(floor[3][0]-floor[2][0],floor[3][1]-floor[2][1]):0,log:process.env.LOG?(t=>{if(!/Iteration/.test(t))console.log('  >',t)}):undefined});if(!rec.ok){console.log(name,rec.msg);return;}

@@ -315,6 +315,44 @@ const PG = (() => {
   function framesForWall(rec, frames, w, i) {
     const ids = new Set(w.groups[i]); return rec.camFrames.map((fi, ci) => ({ ci, fi, n: frames[fi].dets.filter(d => ids.has(d.id)).length })).filter(x => x.n).sort((a, b) => b.n - a.n);
   }
-  return { reconstruct, walls, poseFromCorners, local, rayToWall, opening, framesForWall };
+  /* Marken einer Rekonstruktion im Grundriss (x,y je Ecke), ohne Bodenmarken 0–3 (werden je Raum neu gelegt) */
+  function markerMap(rec) { // mit Lagegenauigkeit (1σ, m) der Markenmitte
+    const M = {}; rec.ids.forEach(id => { if (id < 4) return; const k = rec.kU.get(id), c = [0, 1, 2, 3].map(q => [rec.res.pts[4 * k + q][0], rec.res.pts[4 * k + q][1]]);
+      const sx = rec.res.sigmaOf(Q => (Q[4 * k][0] + Q[4 * k + 1][0] + Q[4 * k + 2][0] + Q[4 * k + 3][0]) / 4), sy = rec.res.sigmaOf(Q => (Q[4 * k][1] + Q[4 * k + 1][1] + Q[4 * k + 2][1] + Q[4 * k + 3][1]) / 4);
+      M[id] = { c, s: sx === null || sy === null ? 1 : Math.hypot(sx, sy) }; }); return M;
+  }
+  /* Starre 2D-Transformation (Drehung + Verschiebung) von Punkten A auf B, kleinste Quadrate */
+  function rigid2D(A, B) {
+    const n = A.length, ca = [0, 1].map(q => A.reduce((s2, p) => s2 + p[q], 0) / n), cb = [0, 1].map(q => B.reduce((s2, p) => s2 + p[q], 0) / n);
+    let sc = 0, ss = 0; A.forEach((a, i) => { const ax = a[0] - ca[0], ay = a[1] - ca[1], bx = B[i][0] - cb[0], by = B[i][1] - cb[1]; sc += ax * bx + ay * by; ss += ax * by - ay * bx; });
+    const th = Math.atan2(ss, sc), c = Math.cos(th), sn = Math.sin(th), t = [cb[0] - (c * ca[0] - sn * ca[1]), cb[1] - (sn * ca[0] + c * ca[1])];
+    const f = p => [c * p[0] - sn * p[1] + t[0], sn * p[0] + c * p[1] + t[1]];
+    const res = A.map((a, i) => Math.hypot(f(a)[0] - B[i][0], f(a)[1] - B[i][1]));
+    const span = Math.max(...A.map(a => Math.hypot(a[0] - ca[0], a[1] - ca[1])));
+    return { th, t, f, rms: Math.sqrt(res.reduce((s2, e) => s2 + e * e, 0) / n), max: Math.max(...res), n, span };
+  }
+  /* Neue Aufnahme an bestehende Marken (Planlage) anschließen: gemeinsame Marken-IDs -> Transformation.
+     Robust (RANSAC über einzelne Marken): durch Türen schlecht gesehene Marken dürfen die Lage nicht verfälschen. */
+  function alignTo(existing, fresh, maxSig = 0.005) {
+    const all = Object.keys(fresh).filter(id => existing[id]); if (!all.length) return null;
+    const good = all.filter(id => fresh[id].s <= maxSig && existing[id].s <= maxSig), ids = good.length ? good : all;
+    const ctr = P => [(P[0][0] + P[1][0] + P[2][0] + P[3][0]) / 4, (P[0][1] + P[1][1] + P[2][1] + P[3][1]) / 4];
+    const fit = sel => { const A = [], B = []; // ≥ 2 Marken: Mitten (robust), 1 Marke: Ecken
+      if (sel.length >= 2) sel.forEach(id => { A.push(ctr(fresh[id].c)); B.push(ctr(existing[id].c)); });
+      else sel.forEach(id => fresh[id].c.forEach((p, q) => { A.push(p); B.push(existing[id].c[q]); }));
+      return rigid2D(A, B); };
+    const errOf = (T, id) => { const a = T.f(ctr(fresh[id].c)), b = ctr(existing[id].c); return Math.hypot(a[0] - b[0], a[1] - b[1]); };
+    let best = null;
+    const cands = ids.map(id => [id]); for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) cands.push([ids[i], ids[j]]);
+    for (const c of cands) {
+      const T = fit(c), inl = ids.filter(id => errOf(T, id) < 0.03);
+      if (!best || inl.length > best.inl.length || (inl.length === best.inl.length && T.rms < best.T.rms)) best = { T, inl };
+    }
+    let inl = best.inl, T = fit(inl);
+    for (let k = 0; k < 3; k++) { const n = ids.filter(id => errOf(T, id) < 0.01); if (n.length < 1 || n.join() === inl.join()) break; inl = n; T = fit(inl); }
+    T.ids = inl.map(Number); T.rejected = all.filter(id => !inl.includes(id)).map(Number);
+    return T;
+  }
+  return { reconstruct, walls, poseFromCorners, local, rayToWall, opening, framesForWall, markerMap, rigid2D, alignTo };
 })();
 if (typeof module !== 'undefined') module.exports = PG;
