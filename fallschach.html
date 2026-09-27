@@ -97,6 +97,11 @@ body{margin:0;background:radial-gradient(ellipse at 50% 0%,#2a1838,var(--bg) 70%
 #ovc h2{margin:0 0 4px;font-family:Cinzel,serif;color:var(--gold);font-size:26px}
 #ovc .tag{font-size:16px;color:var(--mut);margin-bottom:6px}
 #ovc .big{width:100%}
+.lvg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%}
+.lv{aspect-ratio:1;border-radius:12px;border:1px solid var(--gold);background:linear-gradient(180deg,#3a2c1a,#231a10);color:var(--gold);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.lv b{font:800 22px Cinzel,serif}.lv small{font-size:10px;color:var(--mut)}
+.lv.dn{border-color:var(--heal)}.lv.dn b{color:var(--heal)}
+.lv.lk{border-color:var(--line);background:#ffffff08;color:var(--mut);cursor:default}
 .mb{width:100%;font:600 16px Inter,sans-serif;color:var(--txt);background:#ffffff0d;border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer}
 .legg{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;width:100%;font-size:13px;text-align:left}
 .legg span{display:flex;align-items:center;gap:6px}.legg svg{width:22px;height:22px;flex:none}
@@ -130,7 +135,7 @@ body{margin:0;background:radial-gradient(ellipse at 50% 0%,#2a1838,var(--bg) 70%
 
 <div class="wrap">
   <div class="bar">
-    <div class="hud" onclick="desc('wave')"><small>WELLE</small><span id="wave">1</span></div>
+    <div class="hud" onclick="desc('wave')"><small>LEVEL</small><span id="wave">1</span></div>
     <div class="hud" onclick="desc('pm')"><small>💧 MANA</small><span id="pm" style="color:#7fd4ff">0</span></div>
     <div class="hud m" onclick="desc('mana')"><small>🔮 GEGNER-MANA <span id="mana">0</span></small><b id="plan" class="pl">–</b><div id="mbar"><div id="mfill"></div></div></div>
     <button class="gear" onclick="menu('opt')" aria-label="Optionen">⚙</button>
@@ -156,7 +161,7 @@ body{margin:0;background:radial-gradient(ellipse at 50% 0%,#2a1838,var(--bg) 70%
     <li>💧 <b>Deine Zauber:</b> Du startest mit 0 Mana und bekommst +1 pro Runde. Unter dem Brett wählst du einen Zauber (einer pro Runde, kostet keinen Zug): ✚ Heilung, ⚡ Blitz, 🛡 Schild, ❄ Frost.</li>
     <li>🔮 Der Gegner sammelt jede Runde Mana und wirkt Zauber. Oben steht, was als Nächstes kommt.</li>
     <li>👑 Der <b>Dunkle König</b> schlägt im Nahkampf zurück, wenn er überlebt – Turm und Läufer greifen gefahrlos aus der Ferne an. Ist er allein, flieht er und ruft Schatten, die verschwinden, sobald er fällt.</li>
-    <li>☠ Besiege alle Gegner einer Welle. Fällt dein König, ist das Spiel aus.</li>
+    <li>☠ Jedes Level ist abgeschlossen: Du startest immer mit allen Figuren und 0 Mana. Besiege alle Gegner, um das nächste Level freizuschalten. Fällt dein König, spielst du das Level einfach nochmal – über die Levelauswahl kannst du jedes freigeschaltete Level wählen.</li>
   </ul></template>
 
 <script>
@@ -207,7 +212,8 @@ const JUMP=[[1,2],[2,1],[-1,2],[-2,1],[1,-2],[2,-1],[-1,-2],[-2,-1]];
 
 let P=[],fld,ter=[],feats={},wave=0,mana=0,plan=null,phase='x',sel=null,moves=[],over=true,uid=0,sound=true,hi=0,kills=0,rnd=1;
 const $=id=>document.getElementById(id);
-try{hi=+localStorage.getItem('manaschach_hi')||0}catch(e){}
+let unl=1;try{unl=Math.max(1,+localStorage.getItem('manaschach_lvl')||1)}catch(e){}
+function saveUnl(){try{localStorage.setItem('manaschach_lvl',unl)}catch(e){}}
 
 
 
@@ -305,11 +311,13 @@ function mkP(t,r,c){const d=T[t];return{id:++uid,side:'p',t,g:t,name:d.n,mv:d.mv
 function mkE(t,r,c){const d=E[t],w=wave-1,hp=d[3]+Math.floor(w*(t==='K'?2:1.3));
   return{id:++uid,side:'e',t,g:d[1],name:d[0],mv:d[2],r,c,hp,max:hp,atk:d[4]+Math.floor(w/2),def:d[5]+Math.floor(w/3)}}
 
-function neu(){
+function neu(){startLevel(unl)}
+// Jedes Level ist abgeschlossen: frische Figuren, Mana 0
+function startLevel(n){
   gid++;
   P=[mkP('R',7,1),mkP('K',7,4),mkP('B',7,5),mkP('N',7,6)];
   fld=Array.from({length:N},()=>Array(N).fill(null));ter=Array.from({length:N},()=>Array(N).fill(null));
-  wave=0;mana=0;pmana=0;spk=null;castUsed=false;kills=0;rnd=1;over=false;sel=null;moves=[];
+  wave=n-1;mana=0;pmana=0;spk=null;castUsed=false;kills=0;rnd=1;over=false;sel=null;moves=[];dk=null;logT='';
   nextWave();newPlan();
   spawnField('atk');spawnField('def');
   closeMenu();startMusic();startTurn();
@@ -406,9 +414,10 @@ function act(p,m){
   later(enemyTurn,450);
 }
 function waveClear(){
-  mine().forEach(p=>p.hp=Math.min(p.max,p.hp+3));
-  banner('Welle geschafft!','var(--heal)');log('Alle Figuren +3 ❤ · neue Felder erscheinen');sfx('wave');
-  later(()=>{nextWave();spawnField('evo');startTurn()},1300);
+  if(over)return;over=true;phase='x';
+  if(wave>=unl){unl=wave+1;saveUnl()}
+  banner('Level geschafft!','var(--heal)');sfx('wave');render();
+  later(()=>menu('won'),1400);
 }
 
 // ---- Gegner ----
@@ -474,21 +483,25 @@ function enemyMove(){
 
 function end(){
   if(over)return;over=true;phase='x';
-  const rec=wave>hi;if(rec){hi=wave;try{localStorage.setItem('manaschach_hi',hi)}catch(e){}}
   sfx('lose');render();
-  endD='Welle '+wave+' · '+kills+' Gegner besiegt'+(rec?' · Neuer Rekord!':'');
+  endD='Level '+wave+' · '+kills+' Gegner besiegt';
   later(()=>menu('end'),900);
 }
 // ---- Menüs ----
 let endD='';
+const LVN=i=>i===1?'Einstieg':i===2?'Lava':i===3?'Pfeiltürme':i===4?'Bomben':'Mix';
 const mb=(l,fn,c='mb')=>`<button class="${c}" onclick="${fn}">${l}</button>`;
 function menu(k){
   const set=mb('♪ Effekte: '+(sound?'an':'aus'),`sound=!sound;menu('${k}')`)+mb('♫ Musik: '+(music?'an':'aus'),`togMusic();menu('${k}')`);
   let h='';
-  if(k==='start')h=`<h1>Manaschach</h1><div class="tag">Besiege die Dunklen Könige – Welle für Welle.</div>${mb('▶ Spielen','neu()','big')}${mb('📖 Regeln',"menu('rules')")}${set}<div class="tag" style="font-size:13px">${hi?'Rekord: Welle '+hi:''}</div>`;
-  if(k==='opt')h=`<h2>Optionen</h2>${mb('▶ Weiter','closeMenu()','big')}${mb('📖 Regeln',"menu('rules')")}${set}${mb('↻ Neues Spiel','neu()')}${mb('⌂ Hauptmenü',"quit()")}`;
+  const lvsel=mb('🗺 Levelauswahl',"menu('levels')");
+  if(k==='start')h=`<h1>Manaschach</h1><div class="tag">Besiege die Dunklen Könige – Level für Level.</div>${mb('▶ Spielen: Level '+unl,'neu()','big')}${lvsel}${mb('📖 Regeln',"menu('rules')")}${set}<div class="tag" style="font-size:13px">${unl>1?'Freigeschaltet: Level 1–'+unl:''}</div>`;
+  if(k==='opt')h=`<h2>Optionen</h2>${mb('▶ Weiter','closeMenu()','big')}${mb('📖 Regeln',"menu('rules')")}${set}${mb('↻ Level neu starten','startLevel(wave)')}${lvsel}${mb('⌂ Hauptmenü',"quit()")}`;
+  if(k==='levels'){const top=Math.max(12,unl+3);let g='';for(let i=1;i<=top;i++){const ok=i<=unl;g+=`<button class="lv${ok?'':' lk'}${i<unl?' dn':''}" ${ok?`onclick="startLevel(${i})"`:'disabled'}><b>${ok?i:'🔒'}</b><small>${LVN(i)}</small></button>`}
+    h=`<h2>Levelauswahl</h2><div class="lvg">${g}</div>${mb('← Zurück',`menu('${over?'start':'opt'}')`,'big')}`}
+  if(k==='won')h=`<h1>Level ${wave} geschafft!</h1><div class="res2">${kills} Gegner besiegt</div>${mb('▶ Level '+(wave+1),'startLevel('+(wave+1)+')','big')}${mb('↻ Level '+wave+' wiederholen','startLevel('+wave+')')}${lvsel}${mb('⌂ Hauptmenü',"menu('start')")}`;
   if(k==='rules')h=`<h2>Regeln</h2>${$('rulesT').innerHTML}<div class="legg">${Object.keys(FICON).map(x=>`<span>${FICON[x]}${FNAME[x]}</span>`).join('')}${Object.keys(TSVG).map(x=>`<span>${TSVG[x]}${TNAME[x]}</span>`).join('')}</div>${mb('← Zurück',`menu('${over?'start':'opt'}')`,'big')}`;
-  if(k==='end')h=`<h1>König gefallen</h1><div class="res2">${endD}</div>${mb('↻ Nochmal','neu()','big')}${mb('⌂ Hauptmenü',"menu('start')")}`;
+  if(k==='end')h=`<h1>König gefallen</h1><div class="res2">${endD}</div>${mb('↻ Level '+wave+' nochmal','startLevel('+wave+')','big')}${lvsel}${mb('⌂ Hauptmenü',"menu('start')")}`;
   $('ovc').innerHTML=h;$('ov').classList.remove('hide');$('ov').scrollTop=0;
 }
 function closeMenu(){$('ov').classList.add('hide')}
@@ -497,7 +510,7 @@ function help(){menu('rules')}
 // ---- Kurzbeschreibungen beim Antippen ----
 const DESC={heal:'Heilfeld: deine Figur bekommt beim Betreten +4 Leben.',atk:'Angriffsfeld: +1 Angriff für die Figur, dauerhaft.',def:'Verteidigungsfeld: +1 Verteidigung, die Figur nimmt weniger Schaden.',evo:'Entwicklungsfeld: neue Zugart, beim 2. Mal eine Spezialfähigkeit.',
  lava:'Lava: 2 Schaden beim Betreten und jede Runde – für alle Figuren.',tur:'Pfeilturm: schießt jede Runde in Pfeilrichtung auf die erste Figur und dreht sich dann weiter. Blockiert.',bomb:'Bombe: explodiert bei 0 oder beim Betreten und trifft alle Figuren rundherum.',rock:'Felsen: blockiert den Weg.',
- wave:'Welle: Besiege alle Gegner, dann kommt die nächste, stärkere Welle.',rnd:'Zug: Anzahl der gespielten Runden in diesem Spiel.',pm:'Dein Mana: startet bei 0, +1 pro Runde (max. 10). Damit wirkst du Zauber aus der Leiste unter dem Brett – einen pro Runde.',mana:'Gegner-Mana: +2 pro Runde. Ist genug da, wirkt der Gegner den angezeigten Zauber.'};
+ wave:'Level: Besiege alle Gegner, um das nächste Level freizuschalten. Jedes Level startet mit allen Figuren.',rnd:'Zug: Anzahl der gespielten Runden in diesem Spiel.',pm:'Dein Mana: startet bei 0, +1 pro Runde (max. 10). Damit wirkst du Zauber aus der Leiste unter dem Brett – einen pro Runde.',mana:'Gegner-Mana: +2 pro Runde. Ist genug da, wirkt der Gegner den angezeigten Zauber.'};
 const EDESC={S:'zieht 1 Feld in jede Richtung',N:'springt im L wie ein Springer',B:'zieht diagonal wie ein Läufer – auch über weite Strecken',R:'zieht gerade wie ein Turm – auch über weite Strecken',Q:'zieht wie eine Dame – gerade und diagonal',K:'Anführer, zieht 1 Feld. Schlägt im Nahkampf zurück – greif ihn aus der Ferne an. Allein ruft er Schatten und flieht.'};
 let dk=null,pmana=0,spk=null,castUsed=false,gid=0;
 function later(fn,ms){const g=gid;setTimeout(()=>{if(g===gid)fn()},ms)}
@@ -564,7 +577,7 @@ function terrain(){
   if(feats.rock)for(let i=0;i<3;i++){const s=freeCell(2,5);if(s)ter[s[0]][s[1]]={k:'rock'}}
   if(feats.bomb)for(let i=0;i<2;i++)placeBomb();
   const names={lava:'Lavafelder',tur:'Pfeiltürme',bomb:'Bomben',rock:'Felsen'};
-  banner('Welle '+wave+(list.length?' · '+list.map(k=>names[k]).join(' & '):''),'var(--gold)');
+  banner('Level '+wave+(list.length?' · '+list.map(k=>names[k]).join(' & '):''),'var(--gold)');
 }
 function placeBomb(){const s=freeCell(2,6);if(s){ter[s[0]][s[1]]={k:'bomb',t:3};flashT(s[0],s[1])}}
 function dmgRaw(p,x,lab,col='var(--atk)'){
