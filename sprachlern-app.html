@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Wortreise – Englisch lernen wie ein Spiel</title>
+<meta name="description" content="Lerne Englisch spielerisch: Level, Sterne, Münzen, Streaks und Mini-Spiele.">
+<style>
+:root{
+  --bg1:#0f2027; --bg2:#2c5364; --accent:#ffd23f; --accent2:#06d6a0;
+  --danger:#ff5d5d; --card:#ffffff; --text:#1b2733; --muted:#6b7a8d;
+  --purple:#7b5bff; --pink:#ff6fb0;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;height:100%;}
+body{
+  font-family:'Baloo 2','Segoe UI',system-ui,sans-serif;
+  background:linear-gradient(160deg,var(--bg1),var(--bg2) 60%,#134e5e);
+  min-height:100vh;color:var(--text);overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+#app{max-width:480px;margin:0 auto;min-height:100vh;position:relative;padding-bottom:24px;}
+
+/* ---------- TOPBAR ---------- */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;color:#fff;position:sticky;top:0;z-index:20;
+  background:rgba(15,32,39,0.65);backdrop-filter:blur(8px);
+}
+.stat-pill{
+  display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.12);
+  border-radius:20px;padding:6px 12px;font-weight:700;font-size:14px;
+}
+.stat-pill.hearts{color:var(--danger);}
+.stat-pill.coins{color:var(--accent);}
+.stat-pill.streak{color:#ff9d4d;}
+.brand{font-size:20px;font-weight:800;letter-spacing:0.5px;display:flex;align-items:center;gap:6px;}
+
+/* ---------- SCREENS ---------- */
+.screen{display:none;padding:16px;animation:fadeIn .35s ease;}
+.screen.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* ---------- MAP ---------- */
+.map-title{color:#fff;text-align:center;margin:6px 0 18px;font-size:22px;font-weight:800;}
+.map-sub{color:#bfe3ea;text-align:center;margin-top:-14px;margin-bottom:18px;font-size:13px;}
+.path{
+  position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;
+  padding:10px 0 30px;
+}
+.level-node{
+  width:84px;height:84px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;font-weight:800;font-size:26px;color:#fff;position:relative;cursor:pointer;
+  border:5px solid rgba(255,255,255,0.25);box-shadow:0 8px 0 rgba(0,0,0,0.18);
+  transition:transform .15s ease;user-select:none;
+}
+.level-node:active{transform:scale(0.92) translateY(4px);box-shadow:0 3px 0 rgba(0,0,0,0.18);}
+.level-node.locked{background:#3b4c5a;color:#7c8b98;cursor:not-allowed;box-shadow:0 8px 0 rgba(0,0,0,0.1);}
+.level-node.locked:active{transform:none;}
+.level-node.unlocked{background:linear-gradient(145deg,var(--accent2),#02b48b);}
+.level-node.current{background:linear-gradient(145deg,var(--purple),#5a3fd9);animation:pulse 1.6s infinite;}
+.level-node.perfect{background:linear-gradient(145deg,var(--accent),#ff9f1c);}
+@keyframes pulse{0%,100%{box-shadow:0 8px 0 rgba(0,0,0,0.18),0 0 0 0 rgba(123,91,255,0.5);}50%{box-shadow:0 8px 0 rgba(0,0,0,0.18),0 0 0 14px rgba(123,91,255,0);}}
+.node-stars{position:absolute;bottom:-14px;display:flex;gap:2px;}
+.node-stars span{font-size:14px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.4));}
+.node-label{position:absolute;top:-26px;font-size:11px;color:#cfe8ee;white-space:nowrap;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+.node-lock-icon{font-size:22px;}
+.connector{width:6px;height:26px;background:rgba(255,255,255,0.25);border-radius:3px;}
+
+/* ---------- LEVEL INTRO / GAME ---------- */
+.card{background:var(--card);border-radius:20px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,0.25);}
+.intro-icon{font-size:56px;text-align:center;}
+.intro-title{font-size:22px;font-weight:800;text-align:center;margin:6px 0 2px;}
+.intro-desc{color:var(--muted);text-align:center;font-size:14px;margin-bottom:16px;}
+.btn{
+  display:block;width:100%;border:none;border-radius:16px;padding:16px;font-size:17px;font-weight:800;
+  color:#fff;cursor:pointer;box-shadow:0 6px 0 rgba(0,0,0,0.15);transition:transform .1s;
+}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(0,0,0,0.15);}
+.btn-primary{background:linear-gradient(145deg,var(--accent2),#02b48b);}
+.btn-secondary{background:linear-gradient(145deg,#8fa3b3,#6b7f8f);margin-top:10px;}
+.btn-yellow{background:linear-gradient(145deg,var(--accent),#ff9f1c);color:#3a2a00;}
+
+.progressbar-wrap{background:rgba(255,255,255,0.2);border-radius:20px;height:16px;margin:0 16px 6px;overflow:hidden;position:relative;}
+.progressbar-fill{background:linear-gradient(90deg,var(--accent2),#06d6a0);height:100%;border-radius:20px;transition:width .4s ease;}
+.game-header{display:flex;align-items:center;gap:10px;padding:6px 16px 14px;}
+.close-x{color:#fff;font-size:24px;cursor:pointer;font-weight:700;}
+.hearts-mini{color:var(--danger);font-weight:800;display:flex;gap:2px;font-size:16px;}
+
+.q-wrap{padding:10px 4px 4px;}
+.q-word{font-size:32px;font-weight:800;text-align:center;color:#fff;margin:18px 0 4px;text-shadow:0 2px 8px rgba(0,0,0,0.25);}
+.q-hint{text-align:center;color:#bfe3ea;font-size:13px;margin-bottom:20px;}
+.q-sound-btn{display:block;margin:0 auto 20px;width:64px;height:64px;border-radius:50%;background:#fff;border:none;font-size:28px;box-shadow:0 6px 0 rgba(0,0,0,0.15);cursor:pointer;}
+.q-sound-btn:active{transform:translateY(3px);box-shadow:0 3px 0 rgba(0,0,0,0.15);}
+
+.options{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 4px;}
+.opt{
+  background:#fff;border:3px solid #e6ecf0;border-radius:14px;padding:16px 10px;text-align:center;
+  font-weight:700;font-size:16px;cursor:pointer;transition:all .15s;color:var(--text);
+}
+.opt:active{transform:scale(0.96);}
+.opt.correct{background:#e3fbf0;border-color:var(--accent2);color:#02845f;animation:pop .3s;}
+.opt.wrong{background:#ffe9e9;border-color:var(--danger);color:#c22;animation:shake .3s;}
+.opt.disabled{opacity:.55;pointer-events:none;}
+@keyframes pop{0%{transform:scale(1);}50%{transform:scale(1.08);}100%{transform:scale(1);}}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+
+.type-wrap{padding:8px 4px;}
+.type-input{
+  width:100%;padding:16px;font-size:18px;border-radius:14px;border:3px solid #e6ecf0;text-align:center;
+  font-weight:700;box-sizing:border-box;
+}
+.type-input.correct{border-color:var(--accent2);background:#e3fbf0;}
+.type-input.wrong{border-color:var(--danger);background:#ffe9e9;}
+
+.match-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 4px;}
+.match-item{background:#fff;border:3px solid #e6ecf0;border-radius:12px;padding:14px 6px;text-align:center;font-weight:700;font-size:14px;cursor:pointer;}
+.match-item.selected{border-color:var(--purple);background:#efe9ff;}
+.match-item.matched{background:#e3fbf0;border-color:var(--accent2);opacity:.6;pointer-events:none;}
+.match-item.wrongflash{animation:shake .3s;border-color:var(--danger);}
+
+.feedback-bar{
+  position:fixed;left:0;right:0;bottom:0;max-width:480px;margin:0 auto;padding:16px;color:#fff;
+  font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:space-between;
+  transform:translateY(120%);transition:transform .25s ease;z-index:30;
+}
+.feedback-bar.show{transform:translateY(0);}
+.feedback-bar.ok{background:#02b48b;}
+.feedback-bar.no{background:#ff5d5d;}
+.feedback-next{background:#fff;color:inherit;border:none;padding:10px 18px;border-radius:12px;font-weight:800;cursor:pointer;}
+
+/* ---------- RESULT ---------- */
+.result-stars{text-align:center;font-size:44px;margin:10px 0;letter-spacing:8px;}
+.result-stat-row{display:flex;justify-content:space-between;background:#f4f7f9;border-radius:14px;padding:14px 18px;margin:8px 0;font-weight:700;}
+.result-stat-row span:last-child{color:var(--accent2);}
+
+/* ---------- HOME OVERLAY ---------- */
+.gameover-icon{font-size:60px;text-align:center;}
+
+/* confetti */
+.confetti{position:fixed;top:-10px;width:8px;height:14px;z-index:50;pointer-events:none;border-radius:2px;}
+
+/* combo toast */
+.combo-toast{
+  position:fixed;top:70px;left:50%;transform:translateX(-50%) scale(0.8);background:var(--accent);
+  color:#3a2a00;font-weight:800;padding:8px 16px;border-radius:20px;font-size:14px;z-index:40;
+  opacity:0;transition:all .25s ease;box-shadow:0 4px 14px rgba(0,0,0,0.25);
+}
+.combo-toast.show{opacity:1;transform:translateX(-50%) scale(1);}
+
+.bottom-nav{display:flex;justify-content:space-around;position:sticky;bottom:0;background:rgba(15,32,39,0.85);backdrop-filter:blur(8px);padding:10px 0;z-index:20;}
+.nav-btn{background:none;border:none;color:#9fb8c4;font-size:12px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;}
+.nav-btn.active{color:var(--accent);}
+.nav-btn .icon{font-size:22px;}
+
+.hidden{display:none!important;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="topbar">
+    <div class="brand">🦉 Wortreise</div>
+    <div style="display:flex;gap:8px;">
+      <div class="stat-pill streak">🔥 <span id="streakVal">0</span></div>
+      <div class="stat-pill coins">🪙 <span id="coinsVal">0</span></div>
+      <div class="stat-pill hearts">❤️ <span id="heartsVal">5</span></div>
+    </div>
+  </div>
+
+  <!-- ===== MAP SCREEN ===== -->
+  <section class="screen active" id="screen-map">
+    <div class="map-title">Deine Wortreise 🗺️</div>
+    <div class="map-sub" id="xpSummary">Level 1 · 0 XP</div>
+    <div class="progressbar-wrap"><div class="progressbar-fill" id="xpBarFill" style="width:0%"></div></div>
+    <div class="path" id="pathContainer"></div>
+  </section>
+
+  <!-- ===== LEVEL INTRO ===== -->
+  <section class="screen" id="screen-intro">
+    <div class="card">
+      <div class="intro-icon" id="introIcon">🐾</div>
+      <div class="intro-title" id="introTitle">Tiere</div>
+      <div class="intro-desc" id="introDesc">8 neue Wörter · Mehrfachauswahl, Hören &amp; Tippen</div>
+      <button class="btn btn-primary" id="startLevelBtn">▶ Level starten</button>
+      <button class="btn btn-secondary" id="backToMapBtn">Zurück zur Karte</button>
+    </div>
+  </section>
+
+  <!-- ===== GAME SCREEN ===== -->
+  <section class="screen" id="screen-game">
+    <div class="game-header">
+      <span class="close-x" id="quitGameBtn">✕</span>
+      <div class="progressbar-wrap" style="flex:1;margin:0;"><div class="progressbar-fill" id="gameProgressFill" style="width:0%"></div></div>
+      <span class="hearts-mini" id="gameHearts">❤️❤️❤️❤️❤️</span>
+    </div>
+    <div class="q-wrap" id="questionArea"></div>
+  </section>
+
+  <!-- ===== RESULT SCREEN ===== -->
+  <section class="screen" id="screen-result">
+    <div class="card">
+      <div class="result-stars" id="resultStars">⭐⭐⭐</div>
+      <div class="intro-title" id="resultTitle">Level geschafft!</div>
+      <div class="intro-desc" id="resultDesc">Super gemacht!</div>
+      <div class="result-stat-row"><span>✅ Richtig</span><span id="resCorrect">0/8</span></div>
+      <div class="result-stat-row"><span>🪙 Münzen verdient</span><span id="resCoins">+0</span></div>
+      <div class="result-stat-row"><span>⭐ XP</span><span id="resXp">+0</span></div>
+      <button class="btn btn-primary" id="continueBtn">Weiter zur Karte 🗺️</button>
+    </div>
+  </section>
+
+  <!-- ===== GAME OVER (no hearts) ===== -->
+  <section class="screen" id="screen-gameover">
+    <div class="card">
+      <div class="gameover-icon">💔</div>
+      <div class="intro-title">Keine Herzen mehr!</div>
+      <div class="intro-desc">Warte, bis deine Herzen sich erholen, oder starte den Level erneut.</div>
+      <button class="btn btn-yellow" id="retryBtn">🔁 Level neu starten (Herzen auffrischen)</button>
+      <button class="btn btn-secondary" id="gameoverMapBtn">Zurück zur Karte</button>
+    </div>
+  </section>
+
+  <div class="bottom-nav">
+    <button class="nav-btn active" data-nav="map"><span class="icon">🗺️</span>Karte</button>
+    <button class="nav-btn" data-nav="stats"><span class="icon">📊</span>Statistik</button>
+  </div>
+
+  <!-- ===== STATS SCREEN (modal-ish, reuses screen system) ===== -->
+  <section class="screen" id="screen-stats">
+    <div class="card">
+      <div class="intro-title" style="text-align:left;">📊 Deine Statistik</div>
+      <div class="result-stat-row"><span>🏆 Gesamt-XP</span><span id="statXp">0</span></div>
+      <div class="result-stat-row"><span>🔥 Tages-Streak</span><span id="statStreak">0</span></div>
+      <div class="result-stat-row"><span>🪙 Münzen</span><span id="statCoins">0</span></div>
+      <div class="result-stat-row"><span>✅ Level abgeschlossen</span><span id="statLevels">0</span></div>
+      <div class="result-stat-row"><span>⭐ Sterne gesamt</span><span id="statStars">0</span></div>
+      <button class="btn btn-secondary" id="resetProgressBtn">Fortschritt zurücksetzen</button>
+    </div>
+  </section>
+
+</div>
+
+<div class="feedback-bar" id="feedbackBar">
+  <span id="feedbackText"></span>
+  <button class="feedback-next" id="feedbackNextBtn">Weiter</button>
+</div>
+<div class="combo-toast" id="comboToast"></div>
+
+<script>
+/* =========================================================
+   WORTREISE – Gamified Englisch-Lern-App
+   Alles läuft lokal (localStorage), keine externen Assets.
+   ========================================================= */
+
+/* ---------- VOKABEL-DATEN (10 Level à 8 Wörter) ---------- */
+const LEVELS = [
+  {icon:'🐾', title:'Tiere', words:[
+    ['der Hund','dog'],['die Katze','cat'],['der Vogel','bird'],['der Fisch','fish'],
+    ['das Pferd','horse'],['die Kuh','cow'],['der Löwe','lion'],['der Bär','bear']
+  ]},
+  {icon:'🍎', title:'Essen', words:[
+    ['der Apfel','apple'],['das Brot','bread'],['der Käse','cheese'],['die Milch','milk'],
+    ['das Wasser','water'],['der Reis','rice'],['das Ei','egg'],['der Kuchen','cake']
+  ]},
+  {icon:'👨‍👩‍👧', title:'Familie', words:[
+    ['die Mutter','mother'],['der Vater','father'],['die Schwester','sister'],['der Bruder','brother'],
+    ['die Großmutter','grandmother'],['der Großvater','grandfather'],['das Kind','child'],['die Tante','aunt']
+  ]},
+  {icon:'🎨', title:'Farben', words:[
+    ['rot','red'],['blau','blue'],['grün','green'],['gelb','yellow'],
+    ['schwarz','black'],['weiß','white'],['orange','orange'],['lila','purple']
+  ]},
+  {icon:'🔢', title:'Zahlen', words:[
+    ['eins','one'],['zwei','two'],['drei','three'],['vier','four'],
+    ['fünf','five'],['sechs','six'],['sieben','seven'],['acht','eight']
+  ]},
+  {icon:'⏰', title:'Zeit', words:[
+    ['heute','today'],['morgen','tomorrow'],['gestern','yesterday'],['die Woche','week'],
+    ['der Monat','month'],['das Jahr','year'],['die Stunde','hour'],['die Minute','minute']
+  ]},
+  {icon:'✈️', title:'Reisen', words:[
+    ['der Flughafen','airport'],['der Koffer','suitcase'],['das Hotel','hotel'],['die Straße','street'],
+    ['die Karte','map'],['der Zug','train'],['das Auto','car'],['der Pass','passport']
+  ]},
+  {icon:'🏫', title:'Schule', words:[
+    ['das Buch','book'],['der Stift','pen'],['der Lehrer','teacher'],['die Schule','school'],
+    ['die Prüfung','exam'],['die Tafel','board'],['der Freund','friend'],['die Klasse','classroom']
+  ]},
+  {icon:'💼', title:'Beruf', words:[
+    ['die Arbeit','work'],['das Büro','office'],['der Arzt','doctor'],['der Koch','cook'],
+    ['der Lohn','salary'],['das Team','team'],['der Chef','boss'],['das Meeting','meeting']
+  ]},
+  {icon:'😊', title:'Gefühle', words:[
+    ['glücklich','happy'],['traurig','sad'],['müde','tired'],['wütend','angry'],
+    ['aufgeregt','excited'],['ängstlich','scared'],['stolz','proud'],['ruhig','calm']
+  ]},
+];
+
+const MAX_HEARTS = 5;
+const HEART_REGEN_MINUTES = 20; // 1 Herz alle 20 Minuten
+const STORAGE_KEY = 'wortreise_save_v1';
+
+/* ---------- STATE ---------- */
+let state = loadState();
+let session = null; // aktueller Levellauf
+
+function defaultState(){
+  return {
+    xp:0, coins:20, hearts:MAX_HEARTS, lastHeartLoss:null,
+    streak:0, lastPlayDate:null,
+    levelProgress: LEVELS.map(()=>({stars:0, bestCorrect:0})),
+    totalLevelsCompleted:0
+  };
+}
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return defaultState();
+    const parsed = JSON.parse(raw);
+    const d = defaultState();
+    return Object.assign(d, parsed, {
+      levelProgress: parsed.levelProgress && parsed.levelProgress.length===LEVELS.length ? parsed.levelProgress : d.levelProgress
+    });
+  }catch(e){ return defaultState(); }
+}
+function saveState(){
+  regenHearts();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+function regenHearts(){
+  if(state.hearts>=MAX_HEARTS) return;
+  if(!state.lastHeartLoss) return;
+  const mins = (Date.now()-state.lastHeartLoss)/60000;
+  const gained = Math.floor(mins/HEART_REGEN_MINUTES);
+  if(gained>0){
+    state.hearts = Math.min(MAX_HEARTS, state.hearts+gained);
+    state.lastHeartLoss = state.hearts>=MAX_HEARTS ? null : Date.now() - ((mins - gained*HEART_REGEN_MINUTES)*60000);
+  }
+}
+function touchStreak(){
+  const today = new Date().toDateString();
+  if(state.lastPlayDate === today) return;
+  const yesterday = new Date(Date.now()-86400000).toDateString();
+  if(state.lastPlayDate === yesterday){ state.streak += 1; }
+  else { state.streak = 1; }
+  state.lastPlayDate = today;
+}
+
+/* ---------- SOUND (Web Audio, keine Dateien nötig) ---------- */
+let actx;
+function ctx(){ if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)(); return actx; }
+function beep(freq, dur, type='sine', vol=0.2, delay=0){
+  try{
+    const c = ctx();
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.value = vol;
+    o.connect(g); g.connect(c.destination);
+    const t0 = c.currentTime + delay;
+    o.start(t0);
+    g.gain.setValueAtTime(vol, t0);
+    g.gain.exponentialRampToValueAtTime(0.001, t0+dur);
+    o.stop(t0+dur);
+  }catch(e){}
+}
+function sndCorrect(){ beep(660,0.12,'sine',0.25); beep(880,0.14,'sine',0.22,0.09); }
+function sndWrong(){ beep(180,0.25,'sawtooth',0.2); }
+function sndLevelUp(){ [523,659,784,1046].forEach((f,i)=>beep(f,0.18,'triangle',0.22,i*0.11)); }
+function sndTap(){ beep(440,0.05,'square',0.06); }
+function sndCombo(){ beep(1200,0.08,'sine',0.15); }
+function speak(text){
+  try{
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-US'; u.rate = 0.9;
+    speechSynthesis.cancel();
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+/* ---------- NAVIGATION ---------- */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+/* ---------- MAP RENDER ---------- */
+function levelStatus(i){
+  const prog = state.levelProgress[i];
+  if(prog.stars>0) return prog.stars>=3?'perfect':'unlocked';
+  if(i===0) return 'current';
+  const prev = state.levelProgress[i-1];
+  return prev.stars>0 ? 'current' : 'locked';
+}
+function renderMap(){
+  regenHearts(); saveState();
+  document.getElementById('streakVal').textContent = state.streak;
+  document.getElementById('coinsVal').textContent = state.coins;
+  document.getElementById('heartsVal').textContent = state.hearts;
+
+  const totalXpForNext = 100;
+  const lvlNum = Math.floor(state.xp/totalXpForNext)+1;
+  const xpInLevel = state.xp % totalXpForNext;
+  document.getElementById('xpSummary').textContent = `Level ${lvlNum} · ${state.xp} XP gesamt`;
+  document.getElementById('xpBarFill').style.width = (xpInLevel/totalXpForNext*100)+'%';
+
+  const container = document.getElementById('pathContainer');
+  container.innerHTML = '';
+  LEVELS.forEach((lvl, i)=>{
+    if(i>0){
+      const c = document.createElement('div'); c.className='connector'; container.appendChild(c);
+    }
+    const status = levelStatus(i);
+    const node = document.createElement('div');
+    node.className = 'level-node ' + status;
+    const label = document.createElement('div'); label.className='node-label'; label.textContent = lvl.title;
+    node.appendChild(label);
+    if(status==='locked'){
+      node.innerHTML += '<span class="node-lock-icon">🔒</span>';
+    } else {
+      node.innerHTML += `<span>${lvl.icon}</span>`;
+      const starsRow = document.createElement('div'); starsRow.className='node-stars';
+      const st = state.levelProgress[i].stars;
+      for(let s=1;s<=3;s++){
+        const sp = document.createElement('span'); sp.textContent = s<=st ? '⭐':'☆';
+        starsRow.appendChild(sp);
+      }
+      node.appendChild(starsRow);
+    }
+    node.addEventListener('click', ()=>{
+      sndTap();
+      if(status==='locked'){ return; }
+      openIntro(i);
+    });
+    container.appendChild(node);
+  });
+}
+
+/* ---------- LEVEL INTRO ---------- */
+let pendingLevel = 0;
+function openIntro(i){
+  pendingLevel = i;
+  const lvl = LEVELS[i];
+  document.getElementById('introIcon').textContent = lvl.icon;
+  document.getElementById('introTitle').textContent = lvl.title;
+  document.getElementById('introDesc').textContent = `${lvl.words.length} Wörter · Mix aus Auswahl, Hören & Tippen`;
+  showScreen('screen-intro');
+}
+document.getElementById('backToMapBtn').addEventListener('click', ()=>{ renderMap(); showScreen('screen-map'); });
+document.getElementById('startLevelBtn').addEventListener('click', ()=>{
+  if(state.hearts<=0){ showScreen('screen-gameover'); return; }
+  startLevel(pendingLevel);
+});
+
+/* ---------- GAME LOGIC ---------- */
+function shuffle(arr){ const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
+function randOthers(words, correctIdx, n){
+  const pool = words.map((w,i)=>i).filter(i=>i!==correctIdx);
+  return shuffle(pool).slice(0,n);
+}
+
+function buildQuestions(levelIdx){
+  const words = LEVELS[levelIdx].words;
+  const qs = [];
+  words.forEach((w,idx)=>{
+    const r = Math.random();
+    let type;
+    if(r<0.4) type='mc_translate';       // DE -> EN Auswahl
+    else if(r<0.65) type='mc_listen';     // Hören -> EN wählen (zeigt DE als Hinweis optional)
+    else type='type_answer';             // EN eintippen
+    qs.push({type, idx, word:w});
+  });
+  return shuffle(qs);
+}
+
+function startLevel(levelIdx){
+  touchStreak();
+  session = {
+    levelIdx,
+    questions: buildQuestions(levelIdx),
+    qi: 0,
+    correct: 0,
+    combo: 0,
+    maxCombo: 0,
+    startHearts: state.hearts,
+    answered:false
+  };
+  showScreen('screen-game');
+  renderQuestion();
+}
+
+function updateGameHeader(){
+  const pct = (session.qi/session.questions.length)*100;
+  document.getElementById('gameProgressFill').style.width = pct+'%';
+  document.getElementById('gameHearts').textContent = '❤️'.repeat(state.hearts) + '🖤'.repeat(MAX_HEARTS-state.hearts);
+}
+
+function renderQuestion(){
+  if(session.qi >= session.questions.length){ finishLevel(); return; }
+  updateGameHeader();
+  session.answered = false;
+  const q = session.questions[session.qi];
+  const words = LEVELS[session.levelIdx].words;
+  const [de, en] = q.word;
+  const area = document.getElementById('questionArea');
+
+  if(q.type==='mc_translate'){
+    const others = randOthers(words, q.idx, 3).map(i=>words[i][1]);
+    const opts = shuffle([en, ...others]);
+    area.innerHTML = `
+      <div class="q-hint">Übersetze ins Englische</div>
+      <div class="q-word">${de}</div>
+      <div class="options" id="optsBox"></div>`;
+    renderOptions(opts, en);
+  } else if(q.type==='mc_listen'){
+    const others = randOthers(words, q.idx, 3).map(i=>words[i][1]);
+    const opts = shuffle([en, ...others]);
+    area.innerHTML = `
+      <div class="q-hint">Höre zu und wähle das richtige Wort</div>
+      <button class="q-sound-btn" id="playSoundBtn">🔊</button>
+      <div class="options" id="optsBox"></div>`;
+    document.getElementById('playSoundBtn').addEventListener('click', ()=>speak(en));
+    renderOptions(opts, en);
+    speak(en);
+  } else { // type_answer
+    area.innerHTML = `
+      <div class="q-hint">Tippe die englische Übersetzung</div>
+      <div class="q-word">${de}</div>
+      <div class="type-wrap">
+        <input type="text" class="type-input" id="typeInput" placeholder="Auf Englisch schreiben..." autocomplete="off" autocapitalize="off" spellcheck="false">
+        <button class="btn btn-primary" style="margin-top:12px;" id="submitTypeBtn">Prüfen ✓</button>
+      </div>`;
+    const input = document.getElementById('typeInput');
+    input.focus();
+    input.addEventListener('keydown', e=>{ if(e.key==='Enter') submitTyped(en); });
+    document.getElementById('submitTypeBtn').addEventListener('click', ()=>submitTyped(en));
+  }
+}
+
+function renderOptions(opts, correctAnswer){
+  const box = document.getElementById('optsBox');
+  box.innerHTML='';
+  opts.forEach(opt=>{
+    const btn = document.createElement('div');
+    btn.className='opt';
+    btn.textContent = opt;
+    btn.addEventListener('click', ()=>{
+      if(session.answered) return;
+      sndTap();
+      handleAnswer(opt===correctAnswer, btn, correctAnswer);
+    });
+    box.appendChild(btn);
+  });
+}
+
+function submitTyped(correctAnswer){
+  if(session.answered) return;
+  const input = document.getElementById('typeInput');
+  const val = input.value.trim().toLowerCase();
+  const ok = val === correctAnswer.toLowerCase();
+  input.classList.add(ok?'correct':'wrong');
+  input.disabled = true;
+  handleAnswer(ok, null, correctAnswer);
+}
+
+function handleAnswer(isCorrect, btnEl, correctAnswer){
+  session.answered = true;
+  if(btnEl){
+    document.querySelectorAll('#optsBox .opt').forEach(o=>{
+      o.classList.add('disabled');
+      if(o.textContent===correctAnswer) o.classList.add('correct');
+    });
+    if(!isCorrect) btnEl.classList.add('wrong');
+  }
+
+  if(isCorrect){
+    session.correct++;
+    session.combo++;
+    session.maxCombo = Math.max(session.maxCombo, session.combo);
+    sndCorrect();
+    if(session.combo>=3){
+      sndCombo();
+      showCombo(session.combo);
+    }
+    showFeedback(true, comboMessage(session.combo));
+  } else {
+    session.combo = 0;
+    sndWrong();
+    state.hearts = Math.max(0, state.hearts-1);
+    if(state.hearts < MAX_HEARTS && !state.lastHeartLoss) state.lastHeartLoss = Date.now();
+    saveState();
+    updateGameHeader();
+    showFeedback(false, `Richtig war: "${correctAnswer}"`);
+  }
+}
+
+function comboMessage(combo){
+  if(combo>=6) return 'Unglaublich! 🔥🔥🔥';
+  if(combo>=3) return `Serie x${combo}! 🔥`;
+  const msgs = ['Super!','Toll!','Genau richtig!','Klasse!','Perfekt!'];
+  return msgs[Math.floor(Math.random()*msgs.length)];
+}
+function showCombo(combo){
+  const el = document.getElementById('comboToast');
+  el.textContent = `🔥 Serie x${combo}!`;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 900);
+}
+
+function showFeedback(ok, text){
+  const bar = document.getElementById('feedbackBar');
+  bar.className = 'feedback-bar show ' + (ok?'ok':'no');
+  document.getElementById('feedbackText').textContent = (ok?'✅ ':'❌ ') + text;
+  const nextBtn = document.getElementById('feedbackNextBtn');
+  nextBtn.onclick = ()=>{
+    bar.classList.remove('show');
+    if(state.hearts<=0){ showScreen('screen-gameover'); return; }
+    session.qi++;
+    renderQuestion();
+  };
+}
+
+document.getElementById('quitGameBtn').addEventListener('click', ()=>{
+  if(confirm('Level wirklich verlassen? Dein Fortschritt in diesem Level geht verloren.')){
+    renderMap(); showScreen('screen-map');
+  }
+});
+
+/* ---------- LEVEL FINISH ---------- */
+function finishLevel(){
+  const total = session.questions.length;
+  const pct = session.correct/total;
+  let stars = 1;
+  if(pct>=0.9) stars = 3;
+  else if(pct>=0.7) stars = 2;
+  else if(pct<0.5) stars = pct===0?0:1;
+
+  const prog = state.levelProgress[session.levelIdx];
+  const improved = stars > prog.stars;
+  if(improved){
+    state.xp += 20 + stars*10;
+  } else {
+    state.xp += 8;
+  }
+  const coinsEarned = 5 + session.correct*2 + session.maxCombo*2;
+  state.coins += coinsEarned;
+  if(improved){
+    prog.stars = stars;
+    if(prog.bestCorrect===0) state.totalLevelsCompleted++;
+    prog.bestCorrect = Math.max(prog.bestCorrect, session.correct);
+  }
+  saveState();
+
+  document.getElementById('resultStars').textContent = '⭐'.repeat(stars) + '☆'.repeat(3-stars);
+  document.getElementById('resultTitle').textContent = stars>=2 ? 'Level geschafft! 🎉' : 'Fast geschafft!';
+  document.getElementById('resultDesc').textContent = stars>=2 ? 'Du wirst immer besser!' : 'Übe weiter, du schaffst 3 Sterne!';
+  document.getElementById('resCorrect').textContent = `${session.correct}/${total}`;
+  document.getElementById('resCoins').textContent = `+${coinsEarned}`;
+  document.getElementById('resXp').textContent = `+${state.xp - (state.xp - (improved? (20+stars*10):8))}`;
+  document.getElementById('resXp').textContent = `+${improved ? 20+stars*10 : 8}`;
+
+  showScreen('screen-result');
+  if(stars>=2){ sndLevelUp(); launchConfetti(); }
+}
+document.getElementById('continueBtn').addEventListener('click', ()=>{ renderMap(); showScreen('screen-map'); });
+
+/* ---------- GAME OVER ---------- */
+document.getElementById('retryBtn').addEventListener('click', ()=>{
+  state.hearts = MAX_HEARTS; state.lastHeartLoss = null; saveState();
+  startLevel(session ? session.levelIdx : pendingLevel);
+});
+document.getElementById('gameoverMapBtn').addEventListener('click', ()=>{ renderMap(); showScreen('screen-map'); });
+
+/* ---------- CONFETTI ---------- */
+function launchConfetti(){
+  const colors = ['#ffd23f','#06d6a0','#7b5bff','#ff6fb0','#ff9f1c'];
+  for(let i=0;i<60;i++){
+    const el = document.createElement('div');
+    el.className='confetti';
+    el.style.left = Math.random()*100+'vw';
+    el.style.background = colors[Math.floor(Math.random()*colors.length)];
+    el.style.transform = `rotate(${Math.random()*360}deg)`;
+    document.body.appendChild(el);
+    const duration = 1800+Math.random()*1200;
+    const drift = (Math.random()-0.5)*200;
+    el.animate([
+      {transform:`translate(0,0) rotate(0deg)`, opacity:1},
+      {transform:`translate(${drift}px, 100vh) rotate(${360+Math.random()*360}deg)`, opacity:0.9}
+    ], {duration, easing:'ease-in'});
+    setTimeout(()=>el.remove(), duration+50);
+  }
+}
+
+/* ---------- BOTTOM NAV / STATS ---------- */
+document.querySelectorAll('.nav-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    sndTap();
+    if(btn.dataset.nav==='map'){ renderMap(); showScreen('screen-map'); }
+    else { renderStats(); showScreen('screen-stats'); }
+  });
+});
+function renderStats(){
+  document.getElementById('statXp').textContent = state.xp;
+  document.getElementById('statStreak').textContent = state.streak + ' Tage';
+  document.getElementById('statCoins').textContent = state.coins;
+  document.getElementById('statLevels').textContent = state.totalLevelsCompleted + '/' + LEVELS.length;
+  const totalStars = state.levelProgress.reduce((s,p)=>s+p.stars,0);
+  document.getElementById('statStars').textContent = totalStars + '/' + (LEVELS.length*3);
+}
+document.getElementById('resetProgressBtn').addEventListener('click', ()=>{
+  if(confirm('Wirklich den GESAMTEN Fortschritt löschen? Das kann nicht rückgängig gemacht werden.')){
+    state = defaultState();
+    saveState();
+    renderStats();
+    renderMap();
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelector('.nav-btn[data-nav="map"]').classList.add('active');
+    showScreen('screen-map');
+  }
+});
+
+/* ---------- INIT ---------- */
+renderMap();
+</script>
+</body>
+</html>
