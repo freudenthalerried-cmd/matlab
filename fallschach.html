@@ -110,6 +110,7 @@ body{margin:0;background:radial-gradient(ellipse at 50% 0%,#2a1838,var(--bg) 70%
 .adbox{width:100%;aspect-ratio:16/9;border-radius:14px;border:2px dashed var(--line);background:repeating-linear-gradient(45deg,#ffffff06 0 12px,#ffffff0c 12px 24px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--mut)}
 .adbox b{font:600 18px Cinzel,serif;color:var(--txt)}.adt{font:800 44px Cinzel,serif;color:var(--gold)}
 .mb:disabled{opacity:.4;cursor:default}
+.code{width:100%;height:64px;border-radius:10px;border:1px solid var(--line);background:#0006;color:var(--txt);font:11px monospace;padding:8px;resize:none;word-break:break-all}
 .mb{width:100%;font:600 16px Inter,sans-serif;color:var(--txt);background:#ffffff0d;border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer}
 .legg{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;width:100%;font-size:13px;text-align:left}
 .legg span{display:flex;align-items:center;gap:6px}.legg svg{width:22px;height:22px;flex:none}
@@ -230,7 +231,15 @@ function saveUnl(){try{localStorage.setItem('manaschach_lvl',unl)}catch(e){}}
 // ---- Fortschritt: Münzen, Sterne, dauerhafte Upgrades ----
 let SV={coins:0,up:{K:{a:0,d:0,h:0},R:{a:0,d:0,h:0},B:{a:0,d:0,h:0},N:{a:0,d:0,h:0},Q:{a:0,d:0,h:0}},mana:0,stars:{},army:[],adDay:'',adCount:0,disc:false,used:[]};
 try{const x=JSON.parse(localStorage.getItem('manaschach_save')||'null');if(x){const up=SV.up;SV=Object.assign(SV,x);SV.up=Object.assign(up,x.up||{});SV.army=x.army||[]}}catch(e){}
-function saveSV(){try{localStorage.setItem('manaschach_save',JSON.stringify(SV))}catch(e){}}
+function saveSV(){SV.unl=unl;try{localStorage.setItem('manaschach_save',JSON.stringify(SV))}catch(e){}}
+if(SV.unl>unl)unl=SV.unl;
+// Spielstand-Code: Fortschritt auf anderes Gerät/Link übertragen
+function exportCode(){SV.unl=unl;return 'MS1-'+btoa(unescape(encodeURIComponent(JSON.stringify(SV))))}
+function importCode(c){try{c=(c||'').trim();if(!c.startsWith('MS1-'))throw 0;const x=JSON.parse(decodeURIComponent(escape(atob(c.slice(4)))));
+  if(typeof x.coins!=='number'||!x.up)throw 0;const up=SV.up;SV=Object.assign(SV,x);SV.up=Object.assign(up,x.up);SV.army=x.army||[];
+  unl=Math.max(1,x.unl||1);saveUnl();saveSV();sfx('wave');return true}catch(e){return false}}
+function copyCode(){const t=$('scode');t.select();try{navigator.clipboard.writeText(t.value)}catch(e){try{document.execCommand('copy')}catch(e2){}}$('smsg').textContent='Code kopiert – schick ihn dir z. B. per WhatsApp.'}
+function loadCode(){$('smsg').textContent=importCode($('icode').value)?'Spielstand geladen! Level 1–'+unl+', '+SV.coins+' Münzen.':'Ungültiger Code – bitte ganz kopieren.'}
 const UPMAX=5,UPC={a:l=>10+l*10,d:l=>10+l*10,h:l=>8+l*6},MANAC=l=>20+l*20;
 let lastRew=null;
 function buyUp(t,k){const u=SV.up[t],c=price(UPC[k](u[k]));if(u[k]>=UPMAX||SV.coins<c)return;SV.coins-=c;u[k]++;SV.disc=false;saveSV();sfx('evo');menu('shop')}
@@ -575,7 +584,7 @@ function menu(k){
   let h='';
   const lvsel=mb('🗺 Levelauswahl',"menu('levels')"),shop=mb('⚒ Schmiede · 🪙 '+SV.coins,"menu('shop')");
   const stars=n=>'⭐'.repeat(n)+'<span style="opacity:.25">'+'⭐'.repeat(3-n)+'</span>';
-  if(k==='start')h=`<h1>Manaschach</h1><div class="tag">Besiege die Dunklen Könige – Level für Level.</div>${mb('▶ Spielen: Level '+unl,'neu()','big')}${mb('👥 2 Spieler','startDuo()')}${lvsel}${shop}${mb('🪙 Münzen & 🎬 Werbung',"menu('coins')")}${mb('📖 Regeln',"menu('rules')")}${set}<div class="tag" style="font-size:13px">${unl>1?'Freigeschaltet: Level 1–'+unl:''}</div>`;
+  if(k==='start')h=`<h1>Manaschach</h1><div class="tag">Besiege die Dunklen Könige – Level für Level.</div>${mb('▶ Spielen: Level '+unl,'neu()','big')}${mb('👥 2 Spieler','startDuo()')}${lvsel}${shop}${mb('🪙 Münzen & 🎬 Werbung',"menu('coins')")}${mb('💾 Spielstand sichern / laden',"menu('save')")}${mb('📖 Regeln',"menu('rules')")}${set}<div class="tag" style="font-size:13px">${unl>1?'Freigeschaltet: Level 1–'+unl:''}</div>`;
   if(k==='opt')h=`<h2>Optionen</h2>${mb('▶ Weiter','closeMenu()','big')}${mb('📖 Regeln',"menu('rules')")}${set}${duo?mb('↻ Neue Partie','startDuo()'):mb('↻ Level neu starten','startLevel(wave)')}${lvsel}${mb('⌂ Hauptmenü',"quit()")}`;
   if(k==='shop'){
     const row=t=>{const u=SV.up[t],d=T[t];const b=(k,ic,val)=>{const l=u[k],c=price(UPC[k](l));return l>=UPMAX?`<button class="ub" disabled>${ic} MAX</button>`:`<button class="ub" ${SV.coins<c?'disabled':''} onclick="buyUp('${t}','${k}')">${ic} ${val}<small>🪙 ${c}</small></button>`};
@@ -595,6 +604,11 @@ function menu(k){
     <h2 style="font-size:19px;margin-top:6px">💳 Münzen kaufen</h2>${pk}<div class="tag" style="font-size:11.5px">Sichere Zahlung über Stripe (Karte, Apple Pay, Google Pay).</div>
     ${mb('← Zurück',"menu('start')",'big')}`;
     if(!al)h=h.replace(/onclick="showAd\('(coins|disc)'\)"/g,'disabled')}
+  if(k==='save')h=`<h2>💾 Spielstand</h2><div class="tag" style="font-size:13px">Dein Fortschritt wird automatisch in diesem Browser gespeichert: Level 1–${unl}, ${SV.coins} 🪙, Sterne, Upgrades und gekaufte Figuren.</div>
+    <div class="tag" style="font-size:13px;color:var(--txt)">Für ein anderes Handy oder einen anderen Link: Code kopieren und dort einfügen.</div>
+    <textarea id="scode" class="code" readonly>${exportCode()}</textarea>${mb('📋 Code kopieren','copyCode()')}
+    <textarea id="icode" class="code" placeholder="Hier gesicherten Code einfügen …"></textarea>${mb('📥 Spielstand laden','loadCode()')}
+    <div id="smsg" class="tag" style="color:var(--gold)"></div>${mb('← Zurück',"menu('start')",'big')}`;
   if(k==='levels'){const top=Math.max(12,unl+3);let g='';for(let i=1;i<=top;i++){const ok=i<=unl;g+=`<button class="lv${ok?'':' lk'}${i<unl?' dn':''}" ${ok?`onclick="startLevel(${i})"`:'disabled'}><b>${ok?i:'🔒'}</b><small>${i<unl&&SV.stars[i]?stars(SV.stars[i]):LVN(i)}</small></button>`}
     h=`<h2>Levelauswahl</h2><div class="lvg">${g}</div>${mb('← Zurück',`menu('${over?'start':'opt'}')`,'big')}`}
   if(k==='won')h=`<h1>Level ${wave} geschafft!</h1><div class="res2" style="font-size:26px">${stars(lastRew?lastRew.st:1)}</div><div class="res2">+${lastRew?lastRew.rew:0} 🪙${lastRew&&!lastRew.first?' (Wiederholung: halbe Belohnung)':''}</div>${lastRew&&!lastRew.dbl&&adsLeft()?mb('🎬 Werbung ansehen: Belohnung verdoppeln',"showAd('double')"):''}${shop}${mb('▶ Level '+(wave+1),'startLevel('+(wave+1)+')','big')}${mb('↻ Level '+wave+' wiederholen','startLevel('+wave+')')}${lvsel}${mb('⌂ Hauptmenü',"menu('start')")}`;
