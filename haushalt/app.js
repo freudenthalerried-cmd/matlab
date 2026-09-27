@@ -40,10 +40,55 @@ const store = {
 const settings = {
   get key() { return store.get('apikey'); },
   get model() { return store.get('model', 'claude-haiku-4-5-20251001'); },
-  get auto() { return store.get('auto', '1') === '1'; }
+  get auto() { return store.get('auto', '1') === '1'; },
+  get gps() { return store.get('gps', '1') === '1'; }
 };
 const COMMON_ROOMS = ['Küche', 'Wohnzimmer', 'Schlafzimmer', 'Bad', 'Vorraum', 'Büro', 'Kinderzimmer', 'Keller', 'Garage', 'Dachboden'];
 const PLACE_TYPES = ['Lade', 'Schrank', 'Regal', 'Kiste', 'Fach', 'Box'];
+
+// ---------- Standort per GPS ----------
+// GPS ist im Haus zu ungenau für Räume, unterscheidet aber Gebäude/Standorte (Haus, Lager, Gartenhaus …)
+const geo = { site: store.get('site') || null };
+const sites = {
+  get list() { try { return JSON.parse(store.get('sites', '[]')); } catch { return []; } },
+  save(l) { store.set('sites', JSON.stringify(l)); }
+};
+const curSite = () => geo.site || undefined;
+const sameSite = s => (s.site || '') === (geo.site || '');
+function distM(a, b) {
+  const R = 6371000, r = x => x * Math.PI / 180;
+  const dLat = r(b.lat - a.lat), dLon = r(b.lon - a.lon);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(r(a.lat)) * Math.cos(r(b.lat)) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+let locating = null;
+function locate() {
+  if (!settings.gps || !navigator.geolocation) return Promise.resolve(geo.site);
+  return locating ||= new Promise(res => navigator.geolocation.getCurrentPosition(
+    p => res({ lat: p.coords.latitude, lon: p.coords.longitude }), () => res(null),
+    { enableHighAccuracy: false, timeout: 8000, maximumAge: 0 }
+  )).then(async pos => {
+    locating = null;
+    if (!pos) return geo.site;
+    const list = sites.list;
+    let best = null, bd = Infinity;
+    for (const s of list) { const d = distM(s, pos); if (d < bd) { bd = d; best = s; } }
+    if (!best || bd > 200) {
+      best = { name: list.length ? `Standort ${list.length + 1}` : 'Zuhause', ...pos };
+      list.push(best); sites.save(list);
+      // bisherige Orte ohne Standort gehören zum ersten Standort
+      if (list.length === 1) for (const s of await allSpots()) if (!s.site) await putSpot({ ...s, site: best.name });
+      toast(`📍 Neuer Standort „${best.name}“ – unter 🏠 Räume umbenennbar`);
+    }
+    geo.site = best.name; store.set('site', best.name);
+    renderSiteLine();
+    return geo.site;
+  });
+}
+function renderSiteLine() {
+  const el = $('site-line');
+  if (el) el.textContent = geo.site ? `📍 Standort: ${geo.site}${settings.gps ? ' (GPS)' : ''}` : '';
+}
 
 // „Lade 3“ → „Lade 4“, „Lade links“ → „Lade links 2“
 function nextPlace(p) {
@@ -54,19 +99,19 @@ function nextPlace(p) {
 }
 // nächste freie Nummer für einen Typ („Lade“) im Raum
 function freePlace(spots, room, type) {
-  const used = new Set(spots.filter(s => norm(s.room) === norm(room)).map(s => norm(s.place)));
+  const used = new Set(spots.filter(s => sameSite(s) && norm(s.room) === norm(room)).map(s => norm(s.place)));
   let n = 1;
   while (used.has(norm(`${type} ${n}`))) n++;
   return `${type} ${n}`;
 }
 function uniquePlace(spots, room, place) {
-  const used = new Set(spots.filter(s => norm(s.room) === norm(room)).map(s => norm(s.place)));
+  const used = new Set(spots.filter(s => sameSite(s) && norm(s.room) === norm(room)).map(s => norm(s.place)));
   if (!used.has(norm(place))) return place;
   let n = 2;
   while (used.has(norm(`${place} ${n}`))) n++;
   return `${place} ${n}`;
 }
-const findSpot = (spots, room, place) => spots.find(s => norm(s.room) === norm(room) && norm(s.place) === norm(place));
+const findSpot = (spots, room, place) => spots.find(s => sameSite(s) && norm(s.room) === norm(room) && norm(s.place) === norm(place));
 
 // Bild verkleinern → JPEG-DataURL (spart Speicher & API-Kosten)
 function shrink(file, max = 1280, q = 0.8) {
@@ -122,7 +167,8 @@ async function recognize(dataUrl, room, place, opt = {}) {
           input_schema: {
             type: 'object',
             properties: {
-              raum: { type: 'string', description: 'Vermuteter Raum, z. B. "Küche", "Bad", "Garage"' },
+              raum: { type: 'string', description: 'Vermuteter Raum im Haus, z. B. "Küche", "Bad", "Garage", "Keller"' },
+              ...(opt.current ? { gleicher_ort: { type: 'boolean', description: `true, wenn das Bild noch denselben Behälter/Ort zeigt wie "${opt.current}"; false, wenn eine andere Kiste/Lade/Regal zu sehen ist` } } : {}),
               ort: { type: 'string', description: 'Kurze Bezeichnung des Behälters/Orts, z. B. "Besteckschublade", "Werkzeugkiste"' },
               items: {
                 type: 'array',
@@ -146,7 +192,7 @@ async function recognize(dataUrl, room, place, opt = {}) {
           role: 'user',
           content: [
             { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: dataUrl.split(',')[1] } },
-            { type: 'text', text: `Foto aus dem Haushalt (Raum: ${room || 'unbekannt'}, Ort: ${place || 'unbekannt'}). Liste jeden erkennbaren Gegenstand einzeln auf Deutsch auf, möglichst konkret (z. B. "AA-Batterien" statt "Batterien"). Gleiche Gegenstände zusammenfassen mit Anzahl. Den Behälter/das Möbel selbst nicht als Gegenstand aufzählen, sondern als "ort" benennen.${opt.boxes ? ' Gib zu jedem Gegenstand die Position "box" an.' : ''}${opt.known?.length ? ` Bereits erfasst (für Gleiches exakt diesen Namen verwenden): ${opt.known.join(', ')}.` : ''}` }
+            { type: 'text', text: `Foto aus dem Haushalt (Raum: ${room || 'unbekannt'}, Ort: ${place || 'unbekannt'}). Liste jeden erkennbaren Gegenstand einzeln auf Deutsch auf, möglichst konkret (z. B. "AA-Batterien" statt "Batterien"). Gleiche Gegenstände zusammenfassen mit Anzahl. Den Behälter/das Möbel selbst nicht als Gegenstand aufzählen, sondern als "ort" benennen.${opt.boxes ? ' Gib zu jedem Gegenstand die Position "box" an.' : ''}${opt.current ? ` Bisheriger Behälter: "${opt.current}". Wenn jetzt ein anderer Behälter (andere Kiste, Lade, Regalfach) gezeigt wird, setze gleicher_ort=false und benenne den neuen eindeutig (z. B. "blaue Kiste", "Karton Weihnachtsdeko"). Ist kein Behälter offen, ort="offen im Raum".` : ''}${opt.known?.length ? ` Bereits erfasst (für Gleiches exakt diesen Namen verwenden): ${opt.known.join(', ')}.` : ''}` }
           ]
         }]
       })
@@ -160,6 +206,7 @@ async function recognize(dataUrl, room, place, opt = {}) {
   return {
     raum: (inp.raum || '').trim(),
     ort: (inp.ort || '').trim(),
+    gleich: inp.gleicher_ort !== false,
     items: (inp.items || []).filter(i => i?.name).map(i => ({
       name: i.anzahl > 1 ? `${i.name} (${i.anzahl}×)` : i.name,
       tags: i.suchbegriffe || [],
@@ -175,7 +222,8 @@ function show(v) {
   if (v === 'rooms') renderRooms();
   if (v === 'search') renderSearch();
   if (v === 'add') fillLists();
-  if (v === 'settings') { $('apikey').value = settings.key; $('model').value = settings.model; }
+  if (v === 'settings') { $('apikey').value = settings.key; $('model').value = settings.model; $('gps').checked = settings.gps; }
+  if (v === 'add') { renderSiteLine(); locate(); }
 }
 document.querySelectorAll('nav button').forEach(b => b.onclick = () => show(b.dataset.v));
 
@@ -207,7 +255,7 @@ async function renderSearch() {
   const pending = spots.filter(s => s.status === 'pending').length;
   const pendNote = pending ? `<div class="status">⏳ ${pending} Foto(s) warten auf Erkennung. <a href="#" id="retry-link">Jetzt erkennen</a></div>` : '';
   if (!spots.length) {
-    el.innerHTML = `<div class="card"><b>Noch nichts erfasst.</b><p class="muted">Tippe unten auf 📷 Foto, wähle einen Raum und fotografiere eine Lade nach der anderen. Mit ⚡ Automatik wird jedes Foto sofort erkannt und gespeichert – die Ladennummer zählt automatisch weiter.</p></div>`;
+    el.innerHTML = `<div class="card"><b>Noch nichts erfasst.</b><p class="muted">Tippe unten auf 📷 Foto → <b>🎥 Filmen</b> und geh einmal durch den Raum: Kisten und Laden öffnen, Inhalt kurz filmen. Raum, Kisten und Produkte werden automatisch erkannt. Danach einfach hier suchen, z. B. „Zahnpasta“.</p></div>`;
     return;
   }
   if (!q) {
@@ -226,12 +274,15 @@ async function renderSearch() {
     if (s) hits.push({ s, sp, it });
   }
   hits.sort((a, b) => b.s - a.s);
-  el.innerHTML = pendNote + (hits.length ? hits.slice(0, 50).map(h => `
+  const multiSite = new Set(spots.map(s => s.site || '')).size > 1;
+  const where = s => `${multiSite && s.site ? esc(s.site) + ' → ' : ''}${esc(s.room)} → ${esc(s.place)}`;
+  const nSpots = new Set(hits.map(h => h.sp.id)).size;
+  el.innerHTML = pendNote + (hits.length ? `<p class="muted">„${esc(q)}“: ${hits.length} Treffer an ${nSpots} ${nSpots === 1 ? 'Ort' : 'Orten'}</p>` : '') + (hits.length ? hits.slice(0, 50).map(h => `
     <div class="card hit">
       ${h.it.photo ? `<img src="${h.it.photo}" alt="" data-open="${esc(h.sp.id)}">` : thumb(h.sp)}
       <div>
         <div>${hl(h.it.name, q)}</div>
-        <div class="path">📍 ${esc(h.sp.room)} → ${esc(h.sp.place)}</div>
+        <div class="path">📍 ${where(h.sp)}</div>
       </div>
     </div>`).join('') : `<div class="card">Nichts gefunden für „${esc(q)}“.</div>`);
 }
@@ -312,7 +363,7 @@ async function autoSave(photo, room, place) {
   const existing = place ? findSpot(spots, finalRoom, place) : null;
   const finalPlace = place || uniquePlace(spots, finalRoom, res?.ort || 'Ort 1');
   const spot = {
-    id: existing?.id || uid(), room: existing?.room || finalRoom, place: existing?.place || finalPlace,
+    id: existing?.id || uid(), site: existing?.site ?? curSite(), room: existing?.room || finalRoom, place: existing?.place || finalPlace,
     photo, items: res ? res.items : (existing?.items || []),
     status: res ? 'done' : 'pending', updated: Date.now()
   };
@@ -425,7 +476,7 @@ $('btn-save').onclick = async () => {
   const spots = await allSpots();
   const existing = draft.id ? spots.find(s => s.id === draft.id) : findSpot(spots, room, place);
   const spot = {
-    id: existing?.id || uid(), room, place, photo: draft.photo ?? existing?.photo ?? null,
+    id: existing?.id || uid(), site: existing?.site ?? curSite(), room, place, photo: draft.photo ?? existing?.photo ?? null,
     items: draft.items, status: pending && !draft.items.length ? 'pending' : 'done', updated: Date.now()
   };
   await putSpot(spot);
@@ -442,7 +493,7 @@ $('btn-save').onclick = async () => {
 // ---------- Film-Modus: filmen → Produkte einzeln erkennen, mit eigenem Foto speichern ----------
 const FILM_INTERVAL = 2500;   // ms zwischen zwei Bildern
 const FILM_MIN_DIFF = 12;     // Mindest-Bildänderung (0–255), sonst wird nichts gesendet
-const film = { stream: null, timer: null, busy: false, paused: false, sig: null, spot: null, room: '', place: '', aiPlace: false, source: 'cam', frames: 0, sent: 0 };
+const film = { stream: null, timer: null, busy: false, paused: false, sig: null, spot: null, session: [], room: '', place: '', autoPlace: true, source: 'cam', sent: 0 };
 
 // Bild aus dem Video holen (max. 1280 px)
 function grabFrame(video) {
@@ -480,8 +531,9 @@ function cropItem(canvas, box) {
 }
 
 function filmStatus(msg) {
-  $('film-where').textContent = film.spot ? `${film.spot.room} → ${film.spot.place}` : `${film.room || 'Raum?'} → ${film.place || 'Ort wird erkannt …'}`;
-  $('film-stat').textContent = msg ?? `${film.spot?.items.length || 0} Produkte · ${film.sent} Bilder ausgewertet`;
+  $('film-where').textContent = (film.spot ? `${film.spot.room} → ${film.spot.place}` : `${film.room || 'Raum wird erkannt …'} → ${film.place || 'Kiste wird erkannt …'}`) + ' ✏️';
+  const total = film.session.reduce((a, s) => a + s.items.length, 0);
+  $('film-stat').textContent = msg ?? `${film.session.filter(s => s.items.length).length} Orte · ${total} Produkte · ${film.sent} Bilder`;
 }
 function renderFilmItems() {
   const items = film.spot?.items || [];
@@ -496,19 +548,33 @@ async function filmProcess(canvas) {
   film.sig = sig;
   const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
   const known = (film.spot?.items || []).map(i => i.base || i.name);
+  const current = film.autoPlace && film.spot ? film.spot.place : '';
   filmStatus('🔎 Erkenne …');
   let res;
-  try { res = await recognize(dataUrl, film.room, film.place, { boxes: true, known }); }
+  try { res = await recognize(dataUrl, film.room, film.autoPlace ? current : film.place, { boxes: true, known, current }); }
   catch (e) { filmStatus('⚠️ ' + e.message); return; }
   film.sent++;
+  if (!film.room) {                       // Raum von der KI geschätzt, gilt für den ganzen Durchgang
+    film.room = res.raum || 'Unsortiert';
+    $('room').value = film.room; store.set('room', film.room);
+  }
+  // Automatischer Behälterwechsel: KI meldet eine andere Kiste/Lade
+  if (film.autoPlace && film.spot && !res.gleich && res.ort && skey(res.ort) !== skey(film.spot.place)) {
+    await filmCloseSpot();
+    const back = film.session.find(s => skey(s.place) === skey(res.ort));   // zurück zu einer schon gefilmten Kiste
+    if (back) film.spot = back;
+    filmStatus(`📦 Neuer Ort erkannt: ${res.ort}`);
+  }
   if (!film.spot) {
     const spots = await allSpots();
-    const room = film.room || res.raum || 'Unsortiert';
-    const existing = film.place ? findSpot(spots, room, film.place) : null;
-    // gleicher Ort erneut gefilmt → Inhalt wird neu aufgebaut
-    film.spot = { id: existing?.id || uid(), room: existing?.room || room, place: existing?.place || film.place || uniquePlace(spots, room, res.ort || 'Ort 1'), photo: dataUrl, items: [], status: 'done', updated: Date.now() };
-    film.room = film.spot.room; film.place = film.spot.place;
-    $('room').value = film.room; store.set('room', film.room);
+    const existing = !film.autoPlace ? findSpot(spots, film.room, film.place) : null;
+    // bewusst gewählter, schon vorhandener Ort erneut gefilmt → Inhalt wird neu aufgebaut
+    film.spot = {
+      id: existing?.id || uid(), site: existing?.site ?? curSite(), room: existing?.room || film.room,
+      place: existing?.place || (film.autoPlace ? uniquePlace(spots, film.room, res.ort || 'Ort 1') : film.place),
+      photo: dataUrl, items: [], status: 'done', updated: Date.now()
+    };
+    film.session.push(film.spot);
   }
   let added = 0;
   for (const it of res.items) {
@@ -524,9 +590,29 @@ async function filmProcess(canvas) {
     added++;
   }
   film.spot.updated = Date.now();
-  await putSpot(film.spot);   // laufend speichern – nichts geht verloren
+  if (film.spot.items.length) await putSpot(film.spot);   // laufend speichern – nichts geht verloren
   renderFilmItems();
   filmStatus(added ? `➕ ${added} neu · ${film.spot.items.length} Produkte` : undefined);
+}
+// aktuellen Ort abschließen (leere Orte, z. B. Raumübersicht ohne Inhalt, verwerfen)
+async function filmCloseSpot() {
+  const s = film.spot;
+  film.spot = null; film.sig = null;
+  $('film-items').innerHTML = '';
+  if (s && !s.items.length) film.session = film.session.filter(x => x !== s);
+}
+// Raum/Ort während des Filmens korrigieren
+async function filmEdit() {
+  const room = prompt('Raum (für diesen Durchgang):', film.room || '')?.trim();
+  if (room && room !== film.room) {
+    for (const s of film.session) { s.room = room; if (s.items.length) await putSpot(s); }
+    film.room = room; $('room').value = room; store.set('room', room);
+  }
+  if (film.spot) {
+    const place = prompt('Name dieser Kiste / Lade:', film.spot.place)?.trim();
+    if (place && place !== film.spot.place) { film.spot.place = place; if (film.spot.items.length) await putSpot(film.spot); }
+  }
+  filmStatus();
 }
 
 async function filmTick() {
@@ -538,9 +624,10 @@ async function filmTick() {
 }
 
 function filmOpen() {
-  film.spot = null; film.sig = null; film.sent = 0; film.paused = false;
+  film.spot = null; film.sig = null; film.sent = 0; film.paused = false; film.session = [];
   film.room = $('room').value.trim(); film.place = $('place').value.trim();
-  film.aiPlace = !film.place;
+  film.autoPlace = !film.place;   // kein Ort angegeben → KI erkennt Kisten selbst und wechselt automatisch
+  locate();
   $('film-items').innerHTML = '';
   $('film-pause').textContent = '⏸';
   $('film-rec').classList.remove('paused');
@@ -601,9 +688,14 @@ function stopFilm() {
   if (v.src) { URL.revokeObjectURL(v.src); v.removeAttribute('src'); }
   v.srcObject = null;
   $('film').classList.add('hidden');
-  if (film.spot) {
-    toast(`✅ ${film.spot.room} → ${film.spot.place}: ${film.spot.items.length} Produkte gespeichert`);
-    $('place').value = film.aiPlace ? '' : nextPlace(film.spot.place);
+  const saved = film.session.filter(s => s.items.length);
+  if (saved.length) {
+    const n = saved.reduce((a, s) => a + s.items.length, 0);
+    toast(`✅ ${saved.length} ${saved.length === 1 ? 'Ort' : 'Orte'} mit ${n} Produkten archiviert – unter 🏠 Räume prüfen/umbenennen`);
+    $('place').value = film.autoPlace ? '' : nextPlace(saved.at(-1).place);
+    film.session = [];
+    fillLists(); show('rooms');
+    return;
   }
   fillLists(); renderSearch();
 }
@@ -612,6 +704,7 @@ $('btn-film').onclick = startFilm;
 $('btn-video').onclick = () => $('f-video').click();
 $('f-video').onchange = e => { const f = e.target.files[0]; e.target.value = ''; if (f) processVideoFile(f); };
 $('film-done').onclick = stopFilm;
+$('film-where').onclick = filmEdit;
 $('film-pause').onclick = () => {
   film.paused = !film.paused;
   $('film-pause').textContent = film.paused ? '▶️' : '⏸';
@@ -621,9 +714,8 @@ $('film-pause').onclick = () => {
 $('film-next').onclick = async () => {
   // nächster Ort: gleicher Raum, Nummer +1 oder neu von der KI benennen lassen
   const prev = film.spot;
-  film.place = film.aiPlace ? '' : nextPlace(prev?.place || film.place || freePlace(await allSpots(), film.room, 'Lade'));
-  film.spot = null; film.sig = null;
-  $('film-items').innerHTML = '';
+  if (!film.autoPlace) film.place = nextPlace(prev?.place || film.place || freePlace(await allSpots(), film.room, 'Lade'));
+  await filmCloseSpot();
   filmStatus(prev ? `✅ ${prev.place}: ${prev.items.length} Produkte gespeichert` : '');
 };
 
@@ -653,26 +745,54 @@ window.addEventListener('online', () => retryPending());
 
 // ---------- Räume ----------
 async function renderRooms() {
-  const spots = (await allSpots()).sort((a, b) => a.room.localeCompare(b.room) || a.place.localeCompare(b.place, 'de', { numeric: true }));
+  const spots = (await allSpots()).sort((a, b) => (a.site || '').localeCompare(b.site || '') || a.room.localeCompare(b.room) || a.place.localeCompare(b.place, 'de', { numeric: true }));
   if (!spots.length) { $('room-list').innerHTML = '<p class="muted">Noch keine Räume erfasst.</p>'; return; }
-  const byRoom = {};
-  for (const s of spots) (byRoom[s.room] ||= []).push(s);
-  $('room-list').innerHTML = Object.entries(byRoom).map(([room, list]) => `
-    <h2>🏠 ${esc(room)} <span class="muted">(${list.length})</span></h2>
+  const multiSite = new Set(spots.map(s => s.site || '')).size > 1;
+  const groups = {};
+  for (const s of spots) (groups[JSON.stringify([s.site || '', s.room])] ||= []).push(s);
+  let lastSite = null, html = '';
+  for (const [k, list] of Object.entries(groups)) {
+    const [site, room] = JSON.parse(k);
+    if (site && site !== lastSite && (multiSite || sites.list.length)) {
+      html += `<h2 class="site-h">📍 ${esc(site)} <button class="ghost mini" data-rename-site="${esc(site)}">✏️</button></h2>`;
+    }
+    lastSite = site;
+    const n = list.reduce((a, s) => a + s.items.length, 0);
+    html += `<h2>🏠 ${esc(room)} <span class="muted">(${list.length} ${list.length === 1 ? 'Ort' : 'Orte'}, ${n} ${n === 1 ? 'Ding' : 'Dinge'})</span> <button class="ghost mini" data-rename-room="${esc(k)}">✏️</button></h2>
     ${list.map(s => `
       <details class="card" id="spot-${esc(s.id)}">
-        <summary>📦 ${esc(s.place)} <span class="muted">· ${s.status === 'pending' ? '⏳ wartet auf Erkennung' : s.items.length + ' Gegenstände'}</span></summary>
+        <summary>📦 ${esc(s.place)} <span class="muted">· ${s.status === 'pending' ? '⏳ wartet auf Erkennung' : s.items.length + (s.items.length === 1 ? ' Gegenstand' : ' Gegenstände')}</span></summary>
         ${s.photo ? `<img class="preview" src="${s.photo}" alt="" style="margin-top:10px">` : ''}
         <div class="chips">${s.items.map(i => `<span class="chip">${i.photo ? `<img src="${i.photo}" alt="">` : ''}${esc(i.name)}</span>`).join('')}</div>
         <p class="muted">Aktualisiert: ${new Date(s.updated).toLocaleString('de-AT')}</p>
         <div class="row">
-          <button class="ghost" data-edit="${esc(s.id)}">✏️ Bearbeiten / neues Foto</button>
+          <button class="ghost" data-edit="${esc(s.id)}">✏️ Bearbeiten / verschieben</button>
           <button class="danger" data-del="${esc(s.id)}" style="flex:none">🗑️</button>
         </div>
-      </details>`).join('')}`).join('');
+      </details>`).join('')}`;
+  }
+  $('room-list').innerHTML = html;
+}
+async function renameRoom(key) {
+  const [site, room] = JSON.parse(key);
+  const name = prompt('Raum umbenennen:', room)?.trim();
+  if (!name || name === room) return;
+  for (const s of await allSpots()) if ((s.site || '') === site && s.room === room) await putSpot({ ...s, room: name });
+  if (store.get('room') === room) { store.set('room', name); $('room').value = name; }
+  toast(`Raum „${room}“ → „${name}“`); renderRooms();
+}
+async function renameSite(site) {
+  const name = prompt('Standort umbenennen (z. B. Haus, Lager, Gartenhaus):', site)?.trim();
+  if (!name || name === site) return;
+  sites.save(sites.list.map(s => s.name === site ? { ...s, name } : s));
+  for (const s of await allSpots()) if (s.site === site) await putSpot({ ...s, site: name });
+  if (geo.site === site) { geo.site = name; store.set('site', name); renderSiteLine(); }
+  toast(`Standort „${site}“ → „${name}“`); renderRooms();
 }
 $('room-list').onclick = async e => {
-  const { edit, del } = e.target.dataset;
+  const { edit, del, renameRoom: rr, renameSite: rs } = e.target.dataset;
+  if (rr) return renameRoom(rr);
+  if (rs) return renameSite(rs);
   if (!edit && !del) return;
   const spots = await allSpots();
   if (del) {
@@ -695,6 +815,7 @@ $('room-list').onclick = async e => {
 $('btn-save-settings').onclick = () => {
   store.set('apikey', $('apikey').value.trim());
   store.set('model', $('model').value);
+  store.set('gps', $('gps').checked ? '1' : '0');
   toast('Gespeichert.');
   retryPending();
 };

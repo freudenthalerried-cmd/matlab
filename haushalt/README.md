@@ -1,5 +1,13 @@
 # Wo ist was? – Haushalts-App
 
+**So geht's am schnellsten:** 📷 Foto → Raum & Ort leer lassen → **🎥 Filmen** → einmal durch den Raum gehen,
+Kisten und Laden öffnen, Inhalt kurz filmen → **✓ Fertig**. Die KI schätzt den Raum, erkennt jede Kiste selbst
+(automatischer Wechsel) und speichert jedes Produkt mit eigenem Foto. Später einfach „Zahnpasta“ suchen →
+alle Orte im Haus. Raum, Kiste und Standort sind jederzeit editierbar (✏️).
+
+**📍 GPS** erkennt den Standort/das Gebäude (Haus, Lager, Gartenhaus – ab ~200 m Abstand). Einzelne Räume
+kann GPS im Haus nicht unterscheiden (zu ungenau, kein Stockwerk) – den Raum schätzt die KI aus dem Bild.
+
 Web-App (PWA) zum Aufräumen und Wiederfinden:
 
 1. **📷 Foto**: Raum + Ort (z. B. „Küche“ / „Lade links oben“) wählen, Inhalt fotografieren.

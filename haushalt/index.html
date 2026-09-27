@@ -57,6 +57,8 @@ label{display:block;margin:10px 0 4px;font-size:.9rem;color:var(--muted)}
 #toast span{flex:1}
 #toast button{flex:none;background:transparent;color:var(--bg);border:1px solid var(--bg);padding:6px 10px}
 .queue{font-size:.9rem;margin-top:8px}
+button.mini{padding:2px 8px;font-size:.85rem;vertical-align:middle}
+#film-where{cursor:pointer}
 #film{position:fixed;inset:0;z-index:20;background:#000;color:#fff;display:flex;flex-direction:column}
 #film.hidden{display:none}
 #film video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -90,16 +92,18 @@ label{display:block;margin:10px 0 4px;font-size:.9rem;color:var(--muted)}
 
   <!-- Foto aufnehmen -->
   <section id="v-add" class="hidden">
-    <h2>Foto aufnehmen</h2>
+    <h2>Erfassen</h2>
+    <p class="muted">Am schnellsten: Raum &amp; Ort leer lassen, <b>🎥 Filmen</b> tippen und einmal durch den Raum gehen – Kisten öffnen, Inhalt kurz filmen. Raum, Kisten und Produkte werden automatisch erkannt und archiviert.</p>
     <div class="card">
       <label class="switch" for="auto"><span><b>⚡ Automatik</b><br><span class="muted">Foto → erkennen → sofort speichern → nächster Ort</span></span><input id="auto" type="checkbox"></label>
     </div>
     <div class="card">
-      <label for="room">Raum</label>
+      <div id="site-line" class="muted"></div>
+      <label for="room">Raum <span class="muted">(leer = KI schätzt ihn)</span></label>
       <input id="room" list="rooms" placeholder="z. B. Küche">
       <datalist id="rooms"></datalist>
       <div id="room-chips" class="chips"></div>
-      <label for="place">Ort / Behälter <span class="muted">(leer = KI benennt ihn)</span></label>
+      <label for="place">Ort / Behälter <span class="muted">(leer = KI erkennt jede Kiste selbst)</span></label>
       <div class="searchrow">
         <input id="place" list="places" placeholder="z. B. Lade 1">
         <button class="ghost" id="btn-next" title="Nächster Ort (Nummer +1)">➡️ Nächster</button>
@@ -107,12 +111,12 @@ label{display:block;margin:10px 0 4px;font-size:.9rem;color:var(--muted)}
       <datalist id="places"></datalist>
       <div id="place-chips" class="chips"></div>
       <div class="row" style="margin-top:12px">
-        <button class="ghost big" id="btn-cam">📷 Kamera</button>
-        <button class="ghost big" id="btn-file">🖼️ Fotos</button>
-      </div>
-      <div class="row" style="margin-top:8px">
         <button class="big" id="btn-film">🎥 Filmen</button>
         <button class="ghost big" id="btn-video">📼 Video</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="ghost big" id="btn-cam">📷 Kamera</button>
+        <button class="ghost big" id="btn-file">🖼️ Fotos</button>
       </div>
       <input id="f-video" type="file" accept="video/*" class="hidden">
       <input id="f-cam" type="file" accept="image/*" capture="environment" class="hidden">
@@ -148,6 +152,7 @@ label{display:block;margin:10px 0 4px;font-size:.9rem;color:var(--muted)}
         <option value="claude-haiku-4-5-20251001">Haiku 4.5 – günstig &amp; schnell</option>
         <option value="claude-sonnet-5">Sonnet 5 – genauer</option>
       </select>
+      <label class="switch" for="gps" style="margin-top:12px"><span>📍 Standort per GPS erkennen<br><span class="muted">unterscheidet Gebäude (Haus, Lager …), nicht einzelne Räume</span></span><input id="gps" type="checkbox"></label>
       <button id="btn-save-settings" style="margin-top:12px">Speichern</button>
       <p class="muted">Der Schlüssel bleibt nur auf diesem Gerät gespeichert und wird ausschließlich an api.anthropic.com gesendet. Ohne Schlüssel kannst du Gegenstände manuell eintragen.</p>
     </div>
