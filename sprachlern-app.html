@@ -466,9 +466,9 @@ function buildQuestions(levelIdx){
   words.forEach((w,idx)=>{
     const r = Math.random();
     let type;
-    if(r<0.4) type='mc_translate';       // DE -> EN Auswahl
-    else if(r<0.65) type='mc_listen';     // Hören -> EN wählen (zeigt DE als Hinweis optional)
-    else type='type_answer';             // EN eintippen
+    if(r<0.5) type='mc_translate';       // DE -> EN Auswahl
+    else if(r<0.85) type='mc_listen';     // Hören -> EN wählen
+    else type='type_answer';             // EN eintippen (seltener)
     qs.push({type, idx, word:w});
   });
   return shuffle(qs);
