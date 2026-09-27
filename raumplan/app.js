@@ -172,8 +172,8 @@ $('#pgRun').onclick = async () => {
     pgLast = { rec, res, frames, W, H, video, imgs };
     const tgt = S.target || 3;
     $('#pgRes').innerHTML = res.map(r => !r.w.ok ? `<p class="warn">${esc(r.name)}: ${esc(r.w.msg)}</p>` :
-      `<h4>${esc(r.name)}</h4><table class="pgt"><tr><th>Wand</th><th>Länge</th><th>±mm (1σ)</th><th>Marken</th><th class="ckcol" hidden>Kontrolle (Maßband)</th><th></th></tr>` +
-      r.w.lengths.map((L, i) => `<tr><td>${i + 1}</td><td><b>${f2(L, 3)} m</b></td><td class="${r.w.sigma[i] * 1000 > tgt ? 'warn' : 'ok'}">${r.w.sigma[i] == null ? '–' : f2(r.w.sigma[i] * 1000, 1)}</td><td>${r.w.groups[i].join(', ')}</td><td class="ckcol" hidden><input class="chk" data-ck="${res.indexOf(r)},${i}" inputmode="decimal" size="6" placeholder="m/cm"> <span id="ck${res.indexOf(r)}_${i}"></span></td><td><button data-op="${res.indexOf(r)},${i}" title="Fenster/Tür in einem Foto antippen">📐 Öffnung</button></td></tr>`).join('') +
+      `<h4>${esc(r.name)}</h4><table class="pgt"><tr><th>Wand</th><th>Länge</th><th>± mm (%)</th><th>Marken</th><th class="ckcol" hidden>Kontrolle (Maßband)</th><th></th></tr>` +
+      r.w.lengths.map((L, i) => `<tr><td>${i + 1}</td><td><b>${f2(L, 3)} m</b></td><td class="${r.w.sigma[i] * 1000 > tgt ? 'warn' : 'ok'}">${r.w.sigma[i] == null ? '–' : f2(r.w.sigma[i] * 1000, 1) + ' <small>(' + pct(r.w.sigma[i], L) + ')</small>'}</td><td>${r.w.groups[i].join(', ')}</td><td class="ckcol" hidden><input class="chk" data-ck="${res.indexOf(r)},${i}" inputmode="decimal" size="6" placeholder="m/cm"> <span id="ck${res.indexOf(r)}_${i}"></span></td><td><button data-op="${res.indexOf(r)},${i}" title="Fenster/Tür in einem Foto antippen">📐 Öffnung</button></td></tr>`).join('') +
       `</table>${r.w.height ? (r.w.hSig !== null && r.w.hSig < 0.005 ? `<p>Raumhöhe (Deckenmarke): <b>${f2(r.w.height, 3)} m</b> ±${f2(r.w.hSig * 1000, 1)} mm</p>` : `<p class="warn">Raumhöhe unsicher (${f2(r.w.height, 2)} m) – Deckenmarke aus mindestens 3 Ecken fotografieren.</p>`) : ''}${r.w.warn.map(x => `<p class="warn">${esc(x)}</p>`).join('')}`).join('') +
       (res.some(r => r.w.ok) ? `<div class="row"><button id="pgTake" class="pri">Räume in den Plan übernehmen</button><button id="ckShow">Kontrollmaß eingeben (optional)</button></div>` : '') +
       (rec.suspect ? `<p class="warn">⚠ ${esc(rec.suspect)} Ergebnis unsicher – mehr Fotos aus verschiedenen Positionen (auch zum Boden) aufnehmen.</p>` : '') +
@@ -273,6 +273,8 @@ function autoWallThickness() {
 }
 function planMarkers() { const all = {}; S.rooms.forEach(r => { const m = roomMarkersPlan(r); for (const id in m) if (!all[id] || m[id].s < all[id].s) all[id] = m[id]; }); return all; }
 // Kontrollmaß: Abweichung Messung − Maßband, bewertet gegen die Unsicherheit (Maßband selbst ±1,5 mm)
+// relative Genauigkeit: ±σ bezogen auf die Länge in %
+const pct = (sig, L) => sig && L ? f2(sig / L * 100, sig / L < 0.001 ? 3 : 2) + ' %' : '';
 function chkText(dv, sig) { const lim = 2 * Math.hypot(sig || 0.002, 0.0015); return `<span class="${Math.abs(dv) <= lim ? 'ok' : 'warn'}">${dv >= 0 ? '+' : ''}${f2(dv * 1000, 1)} mm ${Math.abs(dv) <= lim ? '✔' : '⚠'}</span>`; }
 function pgTake() {
   const { rec, res } = pgLast; let first = null;
@@ -810,7 +812,7 @@ function roomPanel() {
   <table><tr><th>Wand</th><th>Länge m</th><th>±mm</th><th>Knick °</th><th>Stärke m</th><th></th></tr>
   ${r.segs.map((s, i) => `<tr><td>${i + 1}</td>
     <td><input data-s="${i}" data-f="len" list="measList" inputmode="decimal" value="${f2(s.len, 3)}"></td>
-    <td>${r.adj && r.adj.wallSigma ? `<span class="${r.adj.wallSigma[i] * 1000 > (S.target || 3) ? 'warn' : 'ok'}">${f2(r.adj.wallSigma[i] * 1000, 1)}</span>` : '–'}</td>
+    <td>${r.adj && r.adj.wallSigma ? `<span class="${r.adj.wallSigma[i] * 1000 > (S.target || 3) ? 'warn' : 'ok'}">${f2(r.adj.wallSigma[i] * 1000, 1)} <small>${pct(r.adj.wallSigma[i], s.len)}</small></span>` : '–'}</td>
     <td><input data-s="${i}" data-f="turn" inputmode="decimal" value="${f2(s.turn, 1)}"></td>
     <td><input data-s="${i}" data-f="t" inputmode="decimal" value="${f2(s.t ?? S.wallT)}"></td>
     <td><button data-a="addop" data-w="${i}">+ Öffnung</button></td></tr>`).join('')}
@@ -901,7 +903,7 @@ function obsPanel(r) {
   if (A) {
     const mx = A.wallSigma ? Math.max(...A.wallSigma) * 1000 : null, tgt = S.target || 3;
     rep = `<div class="adj ${mx !== null && mx <= tgt && !A.warn.length ? 'good' : 'badbox'}">` +
-      (mx !== null ? `<b>${mx <= tgt ? '✔' : '⚠'} Wandlängen ±${f2(mx, 1)} mm</b> (1σ, schlechteste Wand) · ` + (A.pg ? `Photogrammetrie: ${A.pg.nImg} Bilder, Bildfehler ${f2(A.pg.rms, 2)} px<br>` : `Ecklage ±${f2(A.cornerMax * 1000, 1)} mm · Überbestimmung ${A.red}${A.s0 != null ? ` · σ₀ ${f2(A.s0, 2)}` : ''}<br>`) : '') +
+      (mx !== null ? `<b>${mx <= tgt ? '✔' : '⚠'} Wandlängen ±${f2(mx, 1)} mm (±${pct(Math.max(...A.wallSigma.map((v, i) => v / (r.segs[i] ? r.segs[i].len : 1))), 1)})</b> (1σ, schlechteste Wand) · ` + (A.pg ? `Photogrammetrie: ${A.pg.nImg} Bilder, Bildfehler ${f2(A.pg.rms, 2)} px<br>` : `Ecklage ±${f2(A.cornerMax * 1000, 1)} mm · Überbestimmung ${A.red}${A.s0 != null ? ` · σ₀ ${f2(A.s0, 2)}` : ''}<br>`) : '') +
       A.warn.map(w => `<span class="warn">${esc(w)}</span>`).join('<br>') + '</div>';
   }
   return `<h4>Maßband-Messungen &amp; Ausgleich <small class="hint">(Ecken-Nummern siehe Plan)</small></h4>
@@ -1044,7 +1046,7 @@ function pageSVG() {
   o += cell(x, y + 41, 60, 19, 'Bauwerber (Unterschrift)', '') + cell(x + 60, y + 41, 60, 19, 'Planverfasser: ' + P.pv, '') + cell(x + 120, y + 41, 60, 19, 'Grundeigentümer / Datum', P.datum);
   const adj = S.rooms.filter(r => r.adj && r.adj.wallSigma), mxs = adj.length ? Math.max(...adj.flatMap(r => r.adj.wallSigma)) * 1000 : null;
   o += `<text x="${x + 100}" y="${y + 5}" font-size="2.2">Lichte Maße in m${S.dimFmt === 'cm' ? '' : ', hochgestellt = mm'} · vor Ausführung prüfen</text>`;
-  o += `<text x="${x + 100}" y="${y + 8.5}" font-size="2.2">${mxs !== null ? `Aufmaß ausgeglichen: ${adj.length}/${rooms.length} Räume, Wandlängen ±${f2(mxs, 1)} mm (1σ)` : 'Aufmaß nicht ausgeglichen'}</text>`;
+  o += `<text x="${x + 100}" y="${y + 8.5}" font-size="2.2">${mxs !== null ? `Aufmaß ausgeglichen: ${adj.length}/${rooms.length} Räume, Wandlängen ±${f2(mxs, 1)} mm (1σ, ≈ ±${pct(Math.max(...adj.flatMap(r => r.adj.wallSigma.map((v, i) => v / (r.segs[i] ? r.segs[i].len : 1)))), 1)})` : 'Aufmaß nicht ausgeglichen'}</text>`;
   return o + '</svg>';
 }
 function download(name, data, type) {

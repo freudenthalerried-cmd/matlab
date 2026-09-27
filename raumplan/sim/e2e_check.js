@@ -8,4 +8,4 @@ await p.click('#ckShow');await p.fill('[data-ck="0,1"]','360,2');await p.fill('[
 console.log('Kontrolle Wand 1:',await p.textContent('#ck0_0'),'| Wand 2:',await p.textContent('#ck0_1'));
 await p.click('#pgTake');await p.waitForTimeout(300);await p.evaluate(()=>{selRoom=S.rooms.length-1;roomPanel();});
 console.log('Raum-Kontrollmaße:',JSON.stringify(await p.evaluate(()=>S.rooms[S.rooms.length-1].checks)));
-await p.screenshot({path:process.env.SP+'/check.png',fullPage:true});console.log('errs',errs);await b.close();})();
+console.log('Plankopf:',await p.evaluate(()=>{const s=pageSVG();const m=s.match(/Aufmaß[^<]*/);return m?m[0]:'-';}));console.log('Raum-Panel:',await p.evaluate(()=>{const b=document.querySelector('.adj');return b?b.textContent.slice(0,90):'-';}));await p.screenshot({path:process.env.SP+'/check.png',fullPage:true});console.log('errs',errs);await b.close();})();
