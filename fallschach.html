@@ -141,8 +141,8 @@ body{margin:0;background:radial-gradient(ellipse at 50% 0%,#2a1838,var(--bg) 70%
 <div class="wrap">
   <div class="bar">
     <div class="hud" onclick="desc('wave')"><small>LEVEL</small><span id="wave">1</span></div>
-    <div class="hud" onclick="desc('pm')"><small>💧 MANA</small><span id="pm" style="color:#7fd4ff">0</span></div>
-    <div class="hud m" onclick="desc('mana')"><small>🔮 GEGNER-MANA <span id="mana">0</span></small><b id="plan" class="pl">–</b><div id="mbar"><div id="mfill"></div></div></div>
+    <div class="hud" onclick="desc('pm')"><small id="plab">💧 MANA</small><span id="pm" style="color:#7fd4ff">0</span></div>
+    <div class="hud m" onclick="desc('mana')"><small><span id="mlab">🔮 GEGNER-MANA</span> <span id="mana">0</span></small><b id="plan" class="pl">–</b><div id="mbar"><div id="mfill"></div></div></div>
     <button class="gear" onclick="menu('opt')" aria-label="Optionen">⚙</button>
   </div>
   <div id="turn"></div>
@@ -167,6 +167,7 @@ body{margin:0;background:radial-gradient(ellipse at 50% 0%,#2a1838,var(--bg) 70%
     <li>🔮 Der Gegner sammelt jede Runde Mana und wirkt Zauber. Oben steht, was als Nächstes kommt.</li>
     <li>👑 Der <b>Dunkle König</b> schlägt im Nahkampf zurück, wenn er überlebt – Turm und Läufer greifen gefahrlos aus der Ferne an. Ist er allein, flieht er und ruft Schatten, die verschwinden, sobald er fällt.</li>
     <li>🪙 <b>Belohnung:</b> Jedes geschaffte Level bringt Münzen (mehr bei höheren Levels und für jede überlebende Figur, bei Wiederholung die Hälfte) und bis zu 3 ⭐. In der ⚒ Schmiede im Hauptmenü verbesserst du damit deine Figuren dauerhaft.</li>
+    <li>👥 <b>2 Spieler:</b> Spielt abwechselnd am selben Gerät – Gold unten, Rot oben. Beide haben eigenes Mana (+1 pro Zug) und Zauber. Wer den gegnerischen König besiegt, gewinnt.</li>
     <li>☠ Jedes Level ist abgeschlossen: Du startest immer mit allen Figuren und 0 Mana. Besiege alle Gegner, um das nächste Level freizuschalten. Fällt dein König, spielst du das Level einfach nochmal – über die Levelauswahl kannst du jedes freigeschaltete Level wählen.</li>
   </ul></template>
 
@@ -327,8 +328,30 @@ function mkE(t,r,c){const d=E[t],w=wave-1,hp=d[3]+Math.floor(w*(t==='K'?2:1.3));
 
 function neu(){startLevel(unl)}
 // Jedes Level ist abgeschlossen: frische Figuren, Mana 0
+// ---- 2-Spieler-Modus (abwechselnd am selben Gerät) ----
+let duo=false,cur='p',omana=0,winner='p';
+const opp=sd=>sd==='p'?'e':'p';
+function mk2(t,r,c,side){const d=T[t];return{id:++uid,side,t,g:t,name:d.n,mv:d.mv,r,c,hp:d.hp,max:d.hp,atk:d.atk,def:d.def,tier:0}}
+function startDuo(){
+  gid++;duo=true;cur='p';
+  P=[mk2('R',7,1,'p'),mk2('K',7,4,'p'),mk2('B',7,5,'p'),mk2('N',7,6,'p'),mk2('N',0,1,'e'),mk2('B',0,2,'e'),mk2('K',0,3,'e'),mk2('R',0,6,'e')];
+  fld=Array.from({length:N},()=>Array(N).fill(null));ter=Array.from({length:N},()=>Array(N).fill(null));feats={};
+  wave=0;mana=0;plan=null;pmana=0;omana=0;spk=null;castUsed=false;kills=0;rnd=1;over=false;sel=null;moves=[];dk=null;logT='';
+  spawnField('atk');spawnField('def');spawnField('heal');
+  closeMenu();startMusic();banner('2 Spieler','var(--gold)');startTurn();
+}
+function switchSide(){
+  cur=opp(cur);[pmana,omana]=[omana,pmana];rnd++;
+  if(Math.random()<.25)spawnField();
+  sel=null;moves=[];startTurn();
+}
+function duoCheck(){
+  const pk=P.some(q=>q.side==='p'&&q.t==='K'),ek=P.some(q=>q.side==='e'&&q.t==='K');
+  if(pk&&ek)return false;
+  over=true;phase='x';winner=pk?'p':'e';sfx('wave');render();later(()=>menu('duo'),900);return true;
+}
 function startLevel(n){
-  gid++;
+  gid++;duo=false;cur='p';
   P=[mkP('R',7,1),mkP('K',7,4),mkP('B',7,5),mkP('N',7,6)];
   fld=Array.from({length:N},()=>Array(N).fill(null));ter=Array.from({length:N},()=>Array(N).fill(null));
   wave=n-1;mana=0;pmana=SV.mana;spk=null;castUsed=false;kills=0;rnd=1;over=false;sel=null;moves=[];dk=null;logT='';
@@ -372,15 +395,16 @@ function gen(p){
   }
   const seen=new Set();return out.filter(m=>{const k=m.r*8+m.c;if(seen.has(k))return false;seen.add(k);return true});
 }
-function atkOf(a){const k=king();return a.atk+(a.side==='p'&&k&&k.tier>=2&&a!==k&&dist(a,k)<=1?1:0)}
+function atkOf(a){const k=P.find(q=>q.side===a.side&&q.t==='K');return a.atk+((a.side==='p'||duo)&&k&&k.tier>=2&&a!==k&&dist(a,k)<=1?1:0)}
 const dmgOf=(a,d)=>Math.max(1,atkOf(a)-d.def);
 
 // ---- Spieler ----
 function startTurn(){
   phase='p';castUsed=false;spk=null;if(rnd>1)pmana=Math.min(10,pmana+1);
-  for(const b of mine())if(b.t==='B'&&b.tier>=2)for(const q of mine())if(dist(q,b)<=1&&q.hp<q.max){q.hp++;float(q.r,q.c,'+1 ❤','var(--heal)')}
-  mine().forEach(p=>p.bonus=false);
-  $('turn').textContent='DEIN ZUG';$('turn').style.color='var(--gold)';
+  const own=P.filter(q=>q.side===cur);
+  for(const b of own)if(b.t==='B'&&b.tier>=2)for(const q of own)if(dist(q,b)<=1&&q.hp<q.max){q.hp++;float(q.r,q.c,'+1 ❤','var(--heal)')}
+  P.forEach(p=>p.bonus=false);
+  $('turn').textContent=duo?(cur==='p'?'SPIELER 1 · GOLD':'SPIELER 2 · ROT'):'DEIN ZUG';$('turn').style.color=cur==='p'?'var(--gold)':'var(--red)';
   if(sel&&!P.includes(sel))sel=null;
   moves=sel&&sel.side==='p'?gen(sel):[];
   render();
@@ -389,8 +413,8 @@ function click(r,c){
   if(over)return;
   if(spk&&phase==='p')return castAt(r,c);
   const x=at(r,c);
-  if(phase==='p'&&sel&&sel.side==='p'){const m=moves.find(m=>m.r===r&&m.c===c);if(m)return act(sel,m)}
-  sel=x||null;moves=x&&(x.side==='e'||phase==='p')?gen(x):[];
+  if(phase==='p'&&sel&&sel.side===cur){const m=moves.find(m=>m.r===r&&m.c===c);if(m)return act(sel,m)}
+  sel=x||null;moves=x&&(x.side!==cur||phase==='p')?gen(x):[];
   dk=x?null:((ter[r][c]&&ter[r][c].k)||(fld[r][c]&&fld[r][c].k)||null);
   if(x&&x.side==='e')log('Rote Punkte = Reichweite von '+x.name);
   if(x)sfx('select');
@@ -418,13 +442,15 @@ function hit(a,d){
 function act(p,m){
   let killed=false;
   if(m.hit){killed=hit(p,m.hit);if(killed){useFields(p,m.path);p.r=m.r;p.c=m.c;useFields(p,[[m.r,m.c]])}
-    else if(m.hit.side==='e'&&m.hit.t==='K'&&!m.hit.frz&&dist(p,m.hit)<=1){banner('Gegenschlag!','var(--red)');hit(m.hit,p)}}
+    else if(m.hit.side==='e'&&!duo&&m.hit.t==='K'&&!m.hit.frz&&dist(p,m.hit)<=1){banner('Gegenschlag!','var(--red)');hit(m.hit,p)}}
   else{useFields(p,m.path);p.r=m.r;p.c=m.c;useFields(p,[[m.r,m.c]]);sfx('move')}
   if(P.includes(p))land(p);
+  if(duo&&duoCheck())return;
   if(!king()){phase='x';render();return later(end,600)}
   if(!foes().length){phase='wait';moves=[];render();return later(waveClear,500)}
   if(killed&&P.includes(p)&&p.t==='N'&&p.tier>=2&&!p.bonus){p.bonus=true;banner('Sturmangriff!','var(--def)');moves=gen(p);render();return}
   phase='wait';moves=[];render();
+  if(duo)return later(switchSide,350);
   later(enemyTurn,450);
 }
 function waveClear(){
@@ -513,8 +539,8 @@ function menu(k){
   let h='';
   const lvsel=mb('🗺 Levelauswahl',"menu('levels')"),shop=mb('⚒ Schmiede · 🪙 '+SV.coins,"menu('shop')");
   const stars=n=>'⭐'.repeat(n)+'<span style="opacity:.25">'+'⭐'.repeat(3-n)+'</span>';
-  if(k==='start')h=`<h1>Manaschach</h1><div class="tag">Besiege die Dunklen Könige – Level für Level.</div>${mb('▶ Spielen: Level '+unl,'neu()','big')}${lvsel}${shop}${mb('📖 Regeln',"menu('rules')")}${set}<div class="tag" style="font-size:13px">${unl>1?'Freigeschaltet: Level 1–'+unl:''}</div>`;
-  if(k==='opt')h=`<h2>Optionen</h2>${mb('▶ Weiter','closeMenu()','big')}${mb('📖 Regeln',"menu('rules')")}${set}${mb('↻ Level neu starten','startLevel(wave)')}${lvsel}${mb('⌂ Hauptmenü',"quit()")}`;
+  if(k==='start')h=`<h1>Manaschach</h1><div class="tag">Besiege die Dunklen Könige – Level für Level.</div>${mb('▶ Spielen: Level '+unl,'neu()','big')}${mb('👥 2 Spieler','startDuo()')}${lvsel}${shop}${mb('📖 Regeln',"menu('rules')")}${set}<div class="tag" style="font-size:13px">${unl>1?'Freigeschaltet: Level 1–'+unl:''}</div>`;
+  if(k==='opt')h=`<h2>Optionen</h2>${mb('▶ Weiter','closeMenu()','big')}${mb('📖 Regeln',"menu('rules')")}${set}${duo?mb('↻ Neue Partie','startDuo()'):mb('↻ Level neu starten','startLevel(wave)')}${lvsel}${mb('⌂ Hauptmenü',"quit()")}`;
   if(k==='shop'){
     const row=t=>{const u=SV.up[t],d=T[t];const b=(k,ic,val)=>{const l=u[k],c=UPC[k](l);return l>=UPMAX?`<button class="ub" disabled>${ic} MAX</button>`:`<button class="ub" ${SV.coins<c?'disabled':''} onclick="buyUp('${t}','${k}')">${ic} ${val}<small>🪙 ${c}</small></button>`};
       return `<div class="srow">${svg(t,'p')}<div class="sinf"><b>${d.n}</b><span>⚔ ${d.atk+u.a} · 🛡 ${d.def+u.d} · ❤ ${d.hp+2*u.h}</span></div>${b('a','⚔','+1')}${b('d','🛡','+1')}${b('h','❤','+2')}</div>`};
@@ -522,6 +548,7 @@ function menu(k){
     h=`<h2>⚒ Schmiede</h2><div class="res2">🪙 ${SV.coins} Münzen</div><div class="tag" style="font-size:13px">Dauerhafte Verbesserungen für jedes Level</div>${['K','R','B','N'].map(row).join('')}
     <div class="srow"><span style="font-size:30px;width:40px;text-align:center">💧</span><div class="sinf"><b>Start-Mana</b><span>jedes Level mit ${SV.mana} Mana beginnen</span></div>${SV.mana>=3?'<button class="ub" disabled>MAX</button>':`<button class="ub" ${SV.coins<mc?'disabled':''} onclick="buyMana()">+1<small>🪙 ${mc}</small></button>`}</div>
     ${mb('← Zurück',`menu('${over?'start':'opt'}')`,'big')}`}
+  if(k==='duo')h=`<h1>${winner==='p'?'Spieler 1 (Gold)':'Spieler 2 (Rot)'} gewinnt!</h1><div class="res2">Der gegnerische König ist gefallen.</div>${mb('↻ Revanche','startDuo()','big')}${mb('⌂ Hauptmenü',"menu('start')")}`;
   if(k==='levels'){const top=Math.max(12,unl+3);let g='';for(let i=1;i<=top;i++){const ok=i<=unl;g+=`<button class="lv${ok?'':' lk'}${i<unl?' dn':''}" ${ok?`onclick="startLevel(${i})"`:'disabled'}><b>${ok?i:'🔒'}</b><small>${i<unl&&SV.stars[i]?stars(SV.stars[i]):LVN(i)}</small></button>`}
     h=`<h2>Levelauswahl</h2><div class="lvg">${g}</div>${mb('← Zurück',`menu('${over?'start':'opt'}')`,'big')}`}
   if(k==='won')h=`<h1>Level ${wave} geschafft!</h1><div class="res2" style="font-size:26px">${stars(lastRew?lastRew.st:1)}</div><div class="res2">+${lastRew?lastRew.rew:0} 🪙${lastRew&&!lastRew.first?' (Wiederholung: halbe Belohnung)':''}</div>${shop}${mb('▶ Level '+(wave+1),'startLevel('+(wave+1)+')','big')}${mb('↻ Level '+wave+' wiederholen','startLevel('+wave+')')}${lvsel}${mb('⌂ Hauptmenü',"menu('start')")}`;
@@ -560,7 +587,7 @@ function pickSpell(k){spk=spk===k?null:k;sel=null;moves=[];dk=null;
   sfx('select');render()}
 function castAt(r,c){
   const x=at(r,c),s=SP[spk];
-  if(!x||x.side!==s.t||pmana<s.c||castUsed){spk=null;log('Zauber abgebrochen.');render();return}
+  if(!x||x.side!==(s.t==='p'?cur:opp(cur))||pmana<s.c||castUsed){spk=null;log('Zauber abgebrochen.');render();return}
   if(spk==='heal'&&x.hp>=x.max){log(x.name+' hat schon volles Leben – wähle eine verletzte Figur.');return}
   pmana-=s.c;castUsed=true;const k=spk;spk=null;flashT(r,c);sfx(k==='bolt'?'hit':'evo');
   if(k==='heal'){const h=Math.min(4,x.max-x.hp);x.hp+=h;float(r,c,'+'+h+' ❤','var(--heal)')}
@@ -568,6 +595,7 @@ function castAt(r,c){
   if(k==='frost'){x.frz=1;float(r,c,'Eingefroren','#bff4ff')}
   if(k==='bolt'){beam(7.5,3.5,r,c,'#7fd4ff');dmgRaw(x,3,' ⚡','#7fd4ff')}
   log(s.i+' '+s.n+' gewirkt.');render();
+  if(duo){duoCheck();return}
   if(!foes().length){phase='wait';render();later(waveClear,500)}
 }
 function blocked(d){if(!d.shield)return false;d.shield=false;float(d.r,d.c,'Geblockt!','#7fd4ff');return true}
@@ -672,7 +700,7 @@ function info(){
   if(!p){if(dk&&DESC[dk]){el.innerHTML=`<span class="di">${FICON[dk]||TSVG[dk]||''}</span><div class="st" style="color:var(--txt)">${DESC[dk]}</div>`;return}
     el.innerHTML=`<div class="st">${logT||'Tippe eine Figur oder ein Symbol an, um mehr zu erfahren.'}</div>`;return}
   let ex='';
-  if(p.side==='p'){const d=T[p.t],nt=p.tier<2?d['t'+(p.tier+1)]:null;ex=nt?`Nächste Entwicklung ✦: ${nt.n} – ${nt.d}`:`Voll entwickelt ✦✦ (${d.t2.n})`}
+  if(p.side==='p'||duo){const d=T[p.t],nt=p.tier<2?d['t'+(p.tier+1)]:null;ex=(duo?(p.side==='p'?'Spieler 1 · ':'Spieler 2 · '):'')+(nt?`Nächste Entwicklung ✦: ${nt.n} – ${nt.d}`:`Voll entwickelt ✦✦ (${d.t2.n})`)}
   else ex='Gegner – '+EDESC[p.t];
   el.innerHTML=`${svg(p.g,p.side)}<div><div class="nm">${p.name}</div><div class="st"><b style="color:var(--atk)">⚔ ${atkOf(p)}</b> · <b style="color:var(--def)">🛡 ${p.def}</b> · <b style="color:var(--heal)">❤ ${p.hp}/${p.max}</b></div><div class="st">${ex}</div>${logT?`<div class="st" style="color:#ffb3ba">${logT}</div>`:''}</div>`;
 }
@@ -681,7 +709,7 @@ function render(){
   const b=$('board');
   if(!b.children.length){let h='';for(let r=0;r<N;r++)for(let c=0;c<N;c++)h+=`<div class="t" data-r="${r}" data-c="${c}"></div>`;b.innerHTML=h}
   [...b.children].forEach((t,i)=>{const r=i>>3,c=i&7,m=moves.find(m=>m.r===r&&m.c===c),f=fld&&fld[r][c];
-    const g=ter[r]&&ter[r][c];t.className='t '+((r+c)%2?'b':'a')+(g?' g-'+g.k:'')+(f?' f-'+f.k:'')+(sel&&sel.r===r&&sel.c===c&&P.includes(sel)?' sel':'')+(m?(m.hit?' at':(sel.side==='e'?' th':' mv')):'')+(spk&&at(r,c)&&at(r,c).side===SP[spk].t?' tg':'');
+    const g=ter[r]&&ter[r][c];t.className='t '+((r+c)%2?'b':'a')+(g?' g-'+g.k:'')+(f?' f-'+f.k:'')+(sel&&sel.r===r&&sel.c===c&&P.includes(sel)?' sel':'')+(m?(m.hit?' at':(sel.side!==cur?' th':' mv')):'')+(spk&&at(r,c)&&at(r,c).side===(SP[spk].t==='p'?cur:opp(cur))?' tg':'');
     const want=(f?f.k:'')+'|'+(g?g.k+(g.t??'')+(g.d??''):'');if(t.dataset.f!==want){t.dataset.f=want;t.innerHTML=(g?terHtml(g):'')+(f?`<div class="fi">${FICON[f.k]}</div>`:'')}
   });
   const L=$('layer'),cs='var(--c)',have=new Set(P.map(p=>p.id));
@@ -694,9 +722,11 @@ function render(){
     if(e.dataset.k!==key){e.dataset.k=key;e.innerHTML=svg(p.g,p.side)+(p.tier?`<div class="stars">${'✦'.repeat(p.tier)}</div>`:'')+`<div class="bd d">${p.def}</div><div class="bd a">${a}</div><div class="hpb"><i style="width:${Math.max(0,p.hp/p.max*100)}%;background:${hpCol(p)}"></i><span>${Math.max(0,p.hp)}/${p.max}</span></div>`}
     e.style.transform=`translate(calc(${cs}*${p.c}),calc(${cs}*${p.r}))`;
   }
-  $('wave').textContent=wave||1;$('mana').textContent=mana;
+  $('wave').textContent=duo?'2P':wave||1;$('mana').textContent=duo?'':mana;
   if(plan){const left=Math.max(0,Math.ceil((plan.c-mana)/2));$('plan').textContent=plan.n+(left?' in '+left+' Rd.':' – jetzt!');$('mfill').style.width=Math.min(100,mana/plan.c*100)+'%'}
-  $('pm').textContent=pmana;spells();info();
+  $('mlab').textContent=duo?'🔴 SPIELER 2':'🔮 GEGNER-MANA';$('plab').textContent=duo?'🟡 SPIELER 1':'💧 MANA';
+  if(duo){$('plan').textContent='💧 Mana '+(cur==='e'?pmana:omana);$('mfill').style.width='0'}
+  $('pm').textContent=duo&&cur==='e'?omana:pmana;spells();info();
 }
 function size(){
   const c=Math.max(34,Math.floor(Math.min((Math.min(innerWidth,672)-46)/N,(innerHeight-225)/N,78)));
