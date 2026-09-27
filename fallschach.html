@@ -111,6 +111,16 @@ body{margin:0;background:radial-gradient(ellipse at 50% 0%,#2a1838,var(--bg) 70%
 .adbox b{font:600 18px Cinzel,serif;color:var(--txt)}.adt{font:800 44px Cinzel,serif;color:var(--gold)}
 .mb:disabled{opacity:.4;cursor:default}
 .code{width:100%;height:64px;border-radius:10px;border:1px solid var(--line);background:#0006;color:var(--txt);font:11px monospace;padding:8px;resize:none;word-break:break-all}
+.emb{width:96px;height:96px;border-radius:50%;background:radial-gradient(circle,#f2c14e33,#0000 70%);display:flex;align-items:center;justify-content:center;animation:embf 3s ease-in-out infinite}
+.emb svg{width:78px;height:78px;filter:drop-shadow(0 0 12px #f2c14e88)}
+@keyframes embf{50%{transform:translateY(-6px)}}
+.mstat{display:flex;gap:8px;justify-content:center;margin:2px 0 6px}
+.mstat span{background:#ffffff0d;border:1px solid #f2c14e55;border-radius:20px;padding:4px 12px;font-weight:700;font-size:14px;color:var(--gold)}
+.mtile{width:100%;display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:16px;border:1px solid #f2c14e66;background:linear-gradient(135deg,#3a2c1a,#1d1522);color:var(--txt);cursor:pointer;text-align:left;box-shadow:0 6px 20px #0008,inset 0 1px 0 #ffffff14;transition:transform .15s}
+.mtile:active{transform:scale(.97)}
+.mic{width:52px;height:52px;flex:none;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;background:linear-gradient(180deg,#ffe08a,var(--gold) 50%,var(--gold2));color:#1a1000;box-shadow:0 0 16px #f2c14e55}
+.mtx{flex:1;display:flex;flex-direction:column}.mtx b{font:700 20px Cinzel,serif;color:var(--gold)}.mtx small{font-size:12.5px;color:var(--mut)}
+.marr{font-size:30px;color:var(--gold);opacity:.7}
 .mb{width:100%;font:600 16px Inter,sans-serif;color:var(--txt);background:#ffffff0d;border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer}
 .legg{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;width:100%;font-size:13px;text-align:left}
 .legg span{display:flex;align-items:center;gap:6px}.legg svg{width:22px;height:22px;flex:none}
@@ -122,7 +132,7 @@ body{margin:0;background:radial-gradient(ellipse at 50% 0%,#2a1838,var(--bg) 70%
 .leg{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;font-size:14px;color:var(--txt);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
 .leg span{display:flex;align-items:center;gap:4px}
 .leg span{gap:8px}.leg svg{width:24px;height:24px;flex:none}
-#ov{position:fixed;inset:0;background:#0a0710ee;backdrop-filter:blur(5px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px;z-index:20;text-align:center;overflow:auto}
+#ov{position:fixed;inset:0;background:radial-gradient(ellipse at 50% 20%,#3a1f55ee,#0a0710f5 65%),repeating-conic-gradient(#ffffff05 0 25%,#0000 0 50%) 0 0/56px 56px;backdrop-filter:blur(5px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px;z-index:20;text-align:center;overflow:auto}
 #ov.hide{display:none}
 #ov h1{margin:0;font-family:Cinzel,serif;font-size:clamp(34px,10vw,56px);background:linear-gradient(180deg,#fff3c4,var(--gold) 50%,var(--gold2));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 14px #f2c14e55)}
 #ov .res2{font-size:18px;color:var(--gold)}
@@ -593,13 +603,21 @@ function menu(k){
   let h='';
   const lvsel=mb('🗺 Levelauswahl',"menu('levels')"),shop=mb('⚒ Schmiede · 🪙 '+SV.coins,"menu('shop')");
   const stars=n=>'⭐'.repeat(n)+'<span style="opacity:.25">'+'⭐'.repeat(3-n)+'</span>';
-  if(k==='start')h=`<h1>Manaschach</h1><div class="tag">Besiege die Dunklen Könige – Level für Level.</div>${mb('▶ Spielen: Level '+unl,'neu()','big')}${mb('👥 2 Spieler','startDuo()')}${lvsel}${shop}${mb('🪙 Münzen & 🎬 Werbung',"menu('coins')")}${mb('💾 Spielstand sichern / laden',"menu('save')")}${mb('📖 Regeln',"menu('rules')")}${set}<div class="tag" style="font-size:13px">${unl>1?'Freigeschaltet: Level 1–'+unl:''}</div>`;
+  const tile=(ic,t,sub,fn)=>`<button class="mtile" onclick="${fn}"><span class="mic">${ic}</span><span class="mtx"><b>${t}</b><small>${sub}</small></span><span class="marr">›</span></button>`;
+  const starsTot=Object.values(SV.stars).reduce((a,b)=>a+b,0);
+  if(k==='start')h=`<div class="emb">${svg('K','p')}</div><h1>Manaschach</h1><div class="tag">Besiege die Dunklen Könige – Level für Level.</div>
+    <div class="mstat"><span>🪙 ${SV.coins}</span><span>⭐ ${starsTot}</span><span>🏰 Level ${unl}</span></div>
+    ${tile('▶','Spielen','Level '+unl+' · Levelauswahl · 2 Spieler',"menu('play')")}
+    ${tile('⚒','Schmiede','Upgrades, Figuren & Münzen',"menu('shop')")}
+    ${tile('⚙','Einstellungen','Ton, Regeln & Spielstand',"menu('settings')")}`;
+  if(k==='play')h=`<h2>▶ Spielen</h2>${mb('▶ Weiter: Level '+unl,'neu()','big')}${lvsel}${mb('👥 2 Spieler (am selben Gerät)','startDuo()')}${mb('← Zurück',"menu('start')")}`;
+  if(k==='settings')h=`<h2>⚙ Einstellungen</h2>${set}${mb('📖 Regeln',"menu('rules')")}${mb('💾 Spielstand sichern / laden',"menu('save')")}${mb('← Zurück',"menu('start')",'big')}`;
   if(k==='opt')h=`<h2>Optionen</h2>${mb('▶ Weiter','closeMenu()','big')}${mb('📖 Regeln',"menu('rules')")}${set}${duo?mb('↻ Neue Partie','startDuo()'):mb('↻ Level neu starten','startLevel(wave)')}${lvsel}${mb('⌂ Hauptmenü',"quit()")}`;
   if(k==='shop'){
     const row=t=>{const u=SV.up[t],d=T[t];const b=(k,ic,val)=>{const l=u[k],c=price(UPC[k](l));return l>=UPMAX[k]?`<button class="ub" disabled>${ic} MAX</button>`:`<button class="ub" ${SV.coins<c?'disabled':''} onclick="buyUp('${t}','${k}')">${ic} ${val}<small>🪙 ${c}</small></button>`};
       return `<div class="srow">${svg(t,'p')}<div class="sinf"><b>${d.n}</b><span>⚔ ${d.atk+u.a} · 🛡 ${d.def+u.d} · ❤ ${d.hp+2*u.h}</span></div>${b('a','⚔','+1')}${b('d','🛡','+1')}${b('h','❤','+2')}</div>`};
     const mc=price(MANAC(SV.mana));
-    h=`<h2>⚒ Schmiede</h2><div class="res2">🪙 ${SV.coins} Münzen</div><div class="tag" style="font-size:13px">Dauerhafte Verbesserungen für jedes Level.<br>⚖ Je stärker deine Armee, desto stärker werden auch die Gegner.</div>${['K','R','B','N'].concat(SV.army.includes('Q')?['Q']:[]).map(row).join('')}
+    h=`<h2>⚒ Schmiede</h2><div class="res2">🪙 ${SV.coins} Münzen</div>${mb('🪙 Münzen holen & 🎬 Werbung',"menu('coins')")}<div class="tag" style="font-size:13px">Dauerhafte Verbesserungen für jedes Level.<br>⚖ Je stärker deine Armee, desto stärker werden auch die Gegner.</div>${['K','R','B','N'].concat(SV.army.includes('Q')?['Q']:[]).map(row).join('')}
     <h2 style="font-size:20px;margin-top:8px">⚔ Figuren kaufen</h2><div class="tag" style="font-size:13px">Armee: ${SV.army.length?SV.army.map(t=>T[t].n).join(', '):'noch keine Zusatzfiguren'} (${SV.army.length}/${ARMYMAX})</div>
     ${Object.keys(BUY).map(t=>`<div class="srow">${svg(t,'p')}<div class="sinf"><b>${T[t].n}</b><span>⚔ ${T[t].atk} · 🛡 ${T[t].def} · ❤ ${T[t].hp} · spielt in jedem Level mit</span></div><button class="ub" style="width:64px" ${SV.coins<price(BUY[t])||SV.army.length>=ARMYMAX?'disabled':''} onclick="buyPiece('${t}')">Kaufen<small>🪙 ${price(BUY[t])}</small></button></div>`).join('')}
     <div class="srow"><span style="font-size:30px;width:40px;text-align:center">💧</span><div class="sinf"><b>Start-Mana</b><span>jedes Level mit ${SV.mana} Mana beginnen</span></div>${SV.mana>=MANAMAX?'<button class="ub" disabled>MAX</button>':`<button class="ub" ${SV.coins<mc?'disabled':''} onclick="buyMana()">+1<small>🪙 ${mc}</small></button>`}</div>
@@ -611,17 +629,17 @@ function menu(k){
     <h2 style="font-size:19px;margin-top:6px">🎬 Werbung ansehen</h2><div class="tag" style="font-size:13px">Noch ${al} von ${ADMAX} heute</div>
     ${mb('🎬 +20 Münzen',"showAd('coins')")}${mb('🎬 −30 % auf nächsten Schmiede-Kauf',"showAd('disc')")}
     <h2 style="font-size:19px;margin-top:6px">💳 Münzen kaufen</h2>${pk}<div class="tag" style="font-size:11.5px">Sichere Zahlung über Stripe (Karte, Apple Pay, Google Pay).</div>
-    ${mb('← Zurück',"menu('start')",'big')}`;
+    ${mb('← Zurück',"menu('shop')",'big')}`;
     if(!al)h=h.replace(/onclick="showAd\('(coins|disc)'\)"/g,'disabled')}
   if(k==='save')h=`<h2>💾 Spielstand</h2><div class="tag" style="font-size:13px">Dein Fortschritt wird automatisch in diesem Browser gespeichert: Level 1–${unl}, ${SV.coins} 🪙, Sterne, Upgrades und gekaufte Figuren.</div>
     <div class="tag" style="font-size:13px;color:var(--txt)">Für ein anderes Handy oder einen anderen Link: Code kopieren und dort einfügen.</div>
     <textarea id="scode" class="code" readonly>${exportCode()}</textarea>${mb('📋 Code kopieren','copyCode()')}
     <textarea id="icode" class="code" placeholder="Hier gesicherten Code einfügen …"></textarea>${mb('📥 Spielstand laden','loadCode()')}
-    <div id="smsg" class="tag" style="color:var(--gold)"></div>${mb('← Zurück',"menu('start')",'big')}`;
+    <div id="smsg" class="tag" style="color:var(--gold)"></div>${mb('← Zurück',"menu('settings')",'big')}`;
   if(k==='levels'){const top=Math.max(12,unl+3);let g='';for(let i=1;i<=top;i++){const ok=i<=unl;g+=`<button class="lv${ok?'':' lk'}${i<unl?' dn':''}" ${ok?`onclick="startLevel(${i})"`:'disabled'}><b>${ok?i:'🔒'}</b><small>${i<unl&&SV.stars[i]?stars(SV.stars[i]):LVN(i)}</small></button>`}
-    h=`<h2>Levelauswahl</h2><div class="lvg">${g}</div>${mb('← Zurück',`menu('${over?'start':'opt'}')`,'big')}`}
+    h=`<h2>Levelauswahl</h2><div class="lvg">${g}</div>${mb('← Zurück',`menu('${over?'play':'opt'}')`,'big')}`}
   if(k==='won')h=`<h1>Level ${wave} geschafft!</h1><div class="res2" style="font-size:26px">${stars(lastRew?lastRew.st:1)}</div><div class="res2">+${lastRew?lastRew.rew:0} 🪙${lastRew&&!lastRew.first?' (Wiederholung: halbe Belohnung)':''}</div>${lastRew&&!lastRew.dbl&&adsLeft()?mb('🎬 Werbung ansehen: Belohnung verdoppeln',"showAd('double')"):''}${shop}${mb('▶ Level '+(wave+1),'startLevel('+(wave+1)+')','big')}${mb('↻ Level '+wave+' wiederholen','startLevel('+wave+')')}${lvsel}${mb('⌂ Hauptmenü',"menu('start')")}`;
-  if(k==='rules')h=`<h2>Regeln</h2>${$('rulesT').innerHTML}<div class="legg">${Object.keys(FICON).map(x=>`<span>${FICON[x]}${FNAME[x]}</span>`).join('')}${Object.keys(TSVG).map(x=>`<span>${TSVG[x]}${TNAME[x]}</span>`).join('')}</div>${mb('← Zurück',`menu('${over?'start':'opt'}')`,'big')}`;
+  if(k==='rules')h=`<h2>Regeln</h2>${$('rulesT').innerHTML}<div class="legg">${Object.keys(FICON).map(x=>`<span>${FICON[x]}${FNAME[x]}</span>`).join('')}${Object.keys(TSVG).map(x=>`<span>${TSVG[x]}${TNAME[x]}</span>`).join('')}</div>${mb('← Zurück',`menu('${over?'settings':'opt'}')`,'big')}`;
   if(k==='end')h=`<h1>König gefallen</h1><div class="res2">${endD}</div>${mb('↻ Level '+wave+' nochmal','startLevel('+wave+')','big')}${lvsel}${mb('⌂ Hauptmenü',"menu('start')")}`;
   $('ovc').innerHTML=h;$('ov').classList.remove('hide');$('ov').scrollTop=0;
 }
