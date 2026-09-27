@@ -9,6 +9,7 @@ Browser-App (keine Installation, läuft am Handy): `raumplan/index.html` öffnen
 3. **Wandmarken** glatt an jede Wand kleben, 3–4 je Wand, verschiedene Höhen.
 4. **Fotoserie** (am genauesten): in jeder Ecke 8–10 Fotos über den Raum, auch auf die Bodenmarken, ca. 40 Fotos. Oder **Video** mit kurzen Pausen (die App verwendet nur ruhige Momente).
 5. **Auswerten** – Markenerkennung (Subpixel), Bündelausgleich mit Selbstkalibrierung der Kamera, Wände als Ebenen durch ihre Marken → Raumpolygon mit ±mm je Wand → in den Plan übernehmen.
+   **Fenster/Türen:** je Wand „📐 Öffnung“ → in einem Foto 2 Ecken antippen → Breite, Höhe, Brüstung, Lage (Schnitt mit der Wandebene).
    Mehrere Räume in einem Durchgang (Nummernbereiche je Raum): Wandstärken ergeben sich automatisch.
 
 ### Ergebnisse (synthetische Aufnahmen, echte Erkennung + Ausgleich)
@@ -20,6 +21,9 @@ Browser-App (keine Installation, läuft am Handy): `raumplan/index.html` öffnen
 | 2 Räume über Tür | Raum 1 ≤ 4 mm, Raum 2 ≤ 6 mm, Innenwand 117–121 mm (Soll 120), 6 von 8 Läufen; sonst Warnung |
 | Video 21 s mit Pausen (Browser, WebM) | 0 bis 7 mm, App zeigt ±8–10 mm (zu wenige Blickpositionen) |
 | Video mit Schwenk 30°/s ohne Pausen | 27 mm (Rolling Shutter) → nur ruhige Bilder verwenden |
+| Raumhöhe über Deckenmarke | 2,5991–2,6021 m (Soll 2,600) |
+| Fenster aus 1 Foto (2 Ecken antippen, Browser) | 1,201 × 1,396 m, BRH 0,902, Lage 1,697 (Soll 1,20 × 1,40 / 0,90 / 1,70) |
+| Markenerkennung: Rauschen, Licht, Kontrast, JPEG | ~91 % erkannt, Ecken 0,3 px; Unschärfe σ3 px 52 %, Bewegung 7 px 77 % |
 
 Physik dahinter: Handykameras lesen das Bild zeilenweise aus (Rolling Shutter, ~30 ms) – beim Schwenken verzerrt das um viele Pixel. Ein Rolling-Shutter-Modell ist im Bündelausgleich enthalten, ist bei ~4 Marken je Bild aber nicht stabil bestimmbar und daher nur aktiv, wenn es den Bildfehler deutlich senkt.
 

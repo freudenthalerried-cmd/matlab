@@ -182,7 +182,7 @@ const PG = (() => {
       log(`${bad.size} fehlerhafte Markensichtungen entfernt, neu ausgleichen…`);
       res = BAm.solve({ it: r.it, cams: r.cams, pts: r.pts, obs: obs2, cons }, { iters: 30, rs: r.cams[0].length > 6, rsCam: r.cams.map(c => c.length > 6 && c.slice(6).some(v => Math.abs(v) > 1e-6)), rsSigma: opt.rsSigma || [0.02, 0.02, 0.02, 1e-6, 1e-6, 1e-6] });
     }
-    return { ok: true, ids: used, kU, res, nImg: camIdx.length, nObs: obs.length / 4, dropped: bad.size, size: s };
+    return { ok: true, ids: used, kU, res, camFrames: camIdx, nImg: camIdx.length, nObs: obs.length / 4, dropped: bad.size, size: s };
   }
   function areaOf(c) { let a = 0; c.forEach((p, i) => { const q = c[(i + 1) % c.length]; a += p[0] * q[1] - q[0] * p[1]; }); return a / 2; }
 
@@ -259,8 +259,28 @@ const PG = (() => {
     const ceil = rec.ids.filter(id => id >= 4 && (!opt.ids || opt.ids.has(id))).map(id => { const k = rec.kU.get(id), Q = [0, 1, 2, 3].map(q => P[4 * k + q]), n = nrm(cross(sub(Q[2], Q[0]), sub(Q[3], Q[1]))); return { k, z: ctrOf(P, k)[2], hz: Math.abs(n[2]) }; }).filter(m => m.hz > 0.9 && m.z > 1.8);
     const height = ceil.length ? ceil.reduce((a, m) => a + m.z, 0) / ceil.length : null;
     const hSig = ceil.length ? rec.res.sigmaOf(Q => ceil.reduce((a, m) => a + ctrOf(Q, m.k)[2], 0) / ceil.length) : null;
-    return { ok: true, height, hSig, poly: Pg, sigma: sig, groups: G.map(g => g.m.map(m => m.id)), lengths: Pg.map((_, i) => len(P, i)), warn };
+    return { ok: true, height, hSig, lines: G.map(g => line(P, g)), poly: Pg, sigma: sig, groups: G.map(g => g.m.map(m => m.id)), lengths: Pg.map((_, i) => len(P, i)), warn };
   }
-  return { reconstruct, walls, poseFromCorners, local };
+  /* Bildpunkt (px) eines Bildes -> 3D-Punkt auf einer (senkrechten) Wandebene */
+  function rayToWall(rec, ci, uv, line) {
+    const it = rec.res.it, c = rec.res.cams[ci], xd = (uv[0] - it[1]) / it[0], yd = (uv[1] - it[2]) / it[0];
+    let x = xd, y = yd; for (let k = 0; k < 20; k++) { const r2 = x * x + y * y, d = 1 + it[3] * r2 + it[4] * r2 * r2; x = xd / d; y = yd / d; }
+    const R = BAm.rodr(c), dir = Tt(R, [x, y, 1]), C = Tt(R, c.slice(3, 6)).map(v => -v), n = [-line.d[1], line.d[0], 0];
+    const den = dot(n, dir); if (Math.abs(den) < 1e-9) return null;
+    const t = (n[0] * (line.mu[0] - C[0]) + n[1] * (line.mu[1] - C[1])) / den; if (t <= 0) return null;
+    return [C[0] + dir[0] * t, C[1] + dir[1] * t, C[2] + dir[2] * t];
+  }
+  /* Öffnung aus zwei gegenüberliegenden Ecken (auf der Wand): Lage ab Wandanfang, Breite, Höhe, Brüstung */
+  function opening(w, i, X1, X2) {
+    const a = w.poly[i], b = w.poly[(i + 1) % w.poly.length], L = Math.hypot(b[0] - a[0], b[1] - a[1]), d = [(b[0] - a[0]) / L, (b[1] - a[1]) / L];
+    const s1 = (X1[0] - a[0]) * d[0] + (X1[1] - a[1]) * d[1], s2 = (X2[0] - a[0]) * d[0] + (X2[1] - a[1]) * d[1];
+    const brh = Math.min(X1[2], X2[2]), h = Math.abs(X1[2] - X2[2]);
+    return { pos: Math.min(s1, s2), w: Math.abs(s1 - s2), h, brh, type: brh < 0.1 ? 'tuer' : 'fenster', wallLen: L };
+  }
+  // Bilder, die Marken einer Wand sehen (beste zuerst)
+  function framesForWall(rec, frames, w, i) {
+    const ids = new Set(w.groups[i]); return rec.camFrames.map((fi, ci) => ({ ci, fi, n: frames[fi].dets.filter(d => ids.has(d.id)).length })).filter(x => x.n).sort((a, b) => b.n - a.n);
+  }
+  return { reconstruct, walls, poseFromCorners, local, rayToWall, opening, framesForWall };
 })();
 if (typeof module !== 'undefined') module.exports = PG;

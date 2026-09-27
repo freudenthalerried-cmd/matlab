@@ -13,6 +13,7 @@ function shade(P,surf){for(const s of sheets){const d=[P[0]-s.c[0],P[1]-s.c[1],P
   if(Math.abs(d[0]*nn[0]+d[1]*nn[1]+d[2]*nn[2])>0.002)continue;const a=d[0]*s.u[0]+d[1]*s.u[1]+d[2]*s.u[2],b=d[0]*s.v[0]+d[1]*s.v[1]+d[2]*s.v[2];
   if(Math.abs(a)>0.105||Math.abs(b)>0.1485)continue;if(Math.abs(a)>=MS/2||Math.abs(b)>=MS/2)return 225;
   const G=MK.G,k=Math.floor((a+MS/2)/(MS/G)),r=Math.floor((b+MS/2)/(MS/G));if(r===0||r===G-1||k===0||k===G-1)return 25;return (MK.DICT[s.id]>>>((r-1)*MK.N+(k-1))&1)?25:225;}
+ if(process.env.WIN&&surf===3&&P[0]>1.3&&P[0]<2.5&&P[2]>0.9&&P[2]<2.3)return 45; // Fenster in Wand y=B
  return surf===4?95+15*Math.sin(P[0]*23)*Math.sin(P[1]*19):surf===5?200:160+8*Math.sin(P[2]*7);}
 function render(cam,w=0){const R0=BA.rodr(cam),C=[0,1,2].map(q=>-(R0[q]*cam[3]+R0[3+q]*cam[4]+R0[6+q]*cam[5])),img=new Float32Array(W*H);let R=R0;
  for(let y=0;y<H;y++){if(w){const a=w*(y-H/2)/H*0.03,ca=Math.cos(a),sa=Math.sin(a),Q=[ca,0,sa,0,1,0,-sa,0,ca];R=[0,1,2,3,4,5,6,7,8].map(k=>{const i=Math.floor(k/3),j=k%3;return Q[3*i]*R0[j]+Q[3*i+1]*R0[3+j]+Q[3*i+2]*R0[6+j];});}

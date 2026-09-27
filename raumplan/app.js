@@ -119,7 +119,7 @@ async function pgFrames(files, step, prog) { // -> {frames, W, H}
       await new Promise(r => { v.onseeked = r; });
       ctx.drawImage(v, 0, 0, W, H);
       const dets = MK.detect(toGray(ctx, W, H, buf), W, H).filter(d => d.res < 0.8);
-      frames.push({ t: v.currentTime, dets }); prog((k + 1) / n, `Bild ${k + 1}/${n}: ${dets.length} Marken`); await tick();
+      frames.push({ t: v.currentTime, vt: v.currentTime, dets }); prog((k + 1) / n, `Bild ${k + 1}/${n}: ${dets.length} Marken`); await tick();
     }
     URL.revokeObjectURL(v.src);
   } else {
@@ -129,10 +129,10 @@ async function pgFrames(files, step, prog) { // -> {frames, W, H}
       if (!W) { W = cv.width = b.width; H = cv.height = b.height; buf = new Float32Array(W * H); }
       if (b.width !== W || b.height !== H) { pgLog(`${imgs[k].name}: andere Bildgröße – übersprungen`); continue; }
       ctx.drawImage(b, 0, 0); const dets = MK.detect(toGray(ctx, W, H, buf), W, H).filter(d => d.res < 0.8);
-      frames.push({ t: k, dets }); prog((k + 1) / imgs.length, `Foto ${k + 1}/${imgs.length}: ${dets.length} Marken`); await tick();
+      frames.push({ t: k, fi: k, dets }); prog((k + 1) / imgs.length, `Foto ${k + 1}/${imgs.length}: ${dets.length} Marken`); await tick();
     }
   }
-  return { frames, W, H };
+  return { frames, W, H, video, imgs: files.filter(f => f.type.startsWith('image')) };
 }
 /* Video: nur Bilder verwenden, in denen die Kamera (fast) stillsteht – Rolling Shutter verzerrt sonst um mm–cm */
 function selectStill(frames, W) {
@@ -155,7 +155,7 @@ $('#pgRun').onclick = async () => {
   const t0 = performance.now();
   try {
     const isVid = pgFiles.some(f => f.type.startsWith('video'));
-    let { frames, W, H } = await pgFrames(pgFiles, +$('#pgStep').value, (f, t) => { pr.value = f * 0.8; $('#pgSrc').textContent = t; });
+    let { frames, W, H, video, imgs } = await pgFrames(pgFiles, +$('#pgStep').value, (f, t) => { pr.value = f * 0.8; $('#pgSrc').textContent = t; });
     if (isVid) { const all = frames.length; frames = selectStill(frames, W); pgLog(`Ruhige Bilder ausgewählt: ${frames.length} von ${all} (Rolling-Shutter-Schutz)`); }
     const nd = frames.reduce((s, f) => s + f.dets.length, 0);
     pgLog(`Erkennung fertig: ${nd} Markensichtungen in ${frames.length} Bildern (${((performance.now() - t0) / 1000).toFixed(0)} s)`);
@@ -165,19 +165,84 @@ $('#pgRun').onclick = async () => {
     if (!rec.ok) throw new Error(rec.msg);
     pgLog(`Ausgleich: ${rec.nImg} Bilder, ${rec.ids.length} Marken, Bildfehler rms ${rec.res.rms.toFixed(2)} px, f = ${rec.res.it[0].toFixed(0)} px, k1 = ${rec.res.it[3].toFixed(3)}${rec.dropped ? `, ${rec.dropped} Fehlsichtungen entfernt` : ''}`);
     const res = pgRoomDefs($('#pgRooms').value, rec.ids).map(d => ({ ...d, w: PG.walls(rec, { ids: d.ids }) }));
-    pgLast = { rec, res };
+    pgLast = { rec, res, frames, W, H, video, imgs };
     const tgt = S.target || 3;
     $('#pgRes').innerHTML = res.map(r => !r.w.ok ? `<p class="warn">${esc(r.name)}: ${esc(r.w.msg)}</p>` :
-      `<h4>${esc(r.name)}</h4><table class="pgt"><tr><th>Wand</th><th>Länge</th><th>±mm (1σ)</th><th>Marken</th></tr>` +
-      r.w.lengths.map((L, i) => `<tr><td>${i + 1}</td><td><b>${f2(L, 3)} m</b></td><td class="${r.w.sigma[i] * 1000 > tgt ? 'warn' : 'ok'}">${r.w.sigma[i] == null ? '–' : f2(r.w.sigma[i] * 1000, 1)}</td><td>${r.w.groups[i].join(', ')}</td></tr>`).join('') +
+      `<h4>${esc(r.name)}</h4><table class="pgt"><tr><th>Wand</th><th>Länge</th><th>±mm (1σ)</th><th>Marken</th><th></th></tr>` +
+      r.w.lengths.map((L, i) => `<tr><td>${i + 1}</td><td><b>${f2(L, 3)} m</b></td><td class="${r.w.sigma[i] * 1000 > tgt ? 'warn' : 'ok'}">${r.w.sigma[i] == null ? '–' : f2(r.w.sigma[i] * 1000, 1)}</td><td>${r.w.groups[i].join(', ')}</td><td><button data-op="${res.indexOf(r)},${i}" title="Fenster/Tür in einem Foto antippen">📐 Öffnung</button></td></tr>`).join('') +
       `</table>${r.w.height ? (r.w.hSig !== null && r.w.hSig < 0.005 ? `<p>Raumhöhe (Deckenmarke): <b>${f2(r.w.height, 3)} m</b> ±${f2(r.w.hSig * 1000, 1)} mm</p>` : `<p class="warn">Raumhöhe unsicher (${f2(r.w.height, 2)} m) – Deckenmarke aus mindestens 3 Ecken fotografieren.</p>`) : ''}${r.w.warn.map(x => `<p class="warn">${esc(x)}</p>`).join('')}`).join('') +
       (res.some(r => r.w.ok) ? `<div class="row"><button id="pgTake" class="pri">Räume in den Plan übernehmen</button></div>` : '') +
       (rec.res.rms > 0.6 ? `<p class="warn">⚠ Bildfehler ${rec.res.rms.toFixed(2)} px ist zu hoch – Ergebnis unsicher. Mehr Fotos aus den Ecken (bei mehreren Räumen: mehrere Fotos durch die Tür, auf denen Marken beider Räume zu sehen sind) und erneut auswerten.</p>` : '') +
       `<p class="hint">Bildfehler ${rec.res.rms.toFixed(2)} px (gut: &lt; 0,5 px). Ist ein ±-Wert rot, mehr Bilder aus den Ecken oder weitere Marken an dieser Wand. Eine „Wand“ mit nur 1 Marke ist meist eine Fehlzuordnung – Marke prüfen.</p>`;
     const tk = $('#pgTake'); if (tk) tk.onclick = pgTake;
+    $$('#pgRes [data-op]').forEach(b => b.onclick = () => { const [ri, wi] = b.dataset.op.split(',').map(Number); opStart(ri, wi); });
   } catch (e) { pgLog('Fehler: ' + e.message); $('#pgRes').innerHTML = `<p class="warn">${esc(e.message)}</p>`; }
   pr.value = 1; btn.disabled = false;
 };
+/* Öffnung (Fenster/Tür) im Foto antippen: 2 gegenüberliegende Ecken an der Wandfläche -> Schnitt mit Wandebene */
+let opSt = null;
+async function loadFrameCanvas(fr) {
+  const L = pgLast, cv = document.createElement('canvas'); cv.width = L.W; cv.height = L.H; const ctx = cv.getContext('2d', { willReadFrequently: true });
+  if (fr.fi !== undefined) ctx.drawImage(await createImageBitmap(L.imgs[fr.fi]), 0, 0);
+  else { const v = document.createElement('video'); v.muted = true; v.src = URL.createObjectURL(L.video); await new Promise(r => v.onloadeddata = r); v.currentTime = fr.vt; await new Promise(r => v.onseeked = r); ctx.drawImage(v, 0, 0, L.W, L.H); URL.revokeObjectURL(v.src); }
+  return cv;
+}
+function opStart(ri, wi) {
+  const d = pgLast.res[ri], list = PG.framesForWall(pgLast.rec, pgLast.frames, d.w, wi);
+  if (!list.length) return alert('Kein Foto zeigt Marken dieser Wand.');
+  opSt = { ri, wi, list, k: 0, pts: [], results: [] };
+  let box = $('#opBox'); if (!box) { box = document.createElement('div'); box.id = 'opBox'; box.className = 'card'; $('#pgRes').after(box); }
+  box.innerHTML = `<h4>Öffnung messen – ${esc(d.name)}, Wand ${wi + 1}</h4>
+    <p class="small">Im Foto die <b>linke untere</b> und die <b>rechte obere</b> Ecke der Öffnung an der Wandfläche (Leibungskante) antippen. Bei Türen unten am Boden. Mehrere Fotos → Mittelwert.</p>
+    <div class="row"><select id="opSel">${list.map((x, k) => `<option value="${k}">Foto ${x.fi + 1} (${x.n} Marken dieser Wand)</option>`).join('')}</select>
+    <label>Zoom <input id="opZoom" type="range" min="1" max="6" step="0.5" value="1"></label><button id="opClr">Punkte neu</button></div>
+    <div id="opWrap" style="overflow:auto;max-height:65vh;border:1px solid var(--line);border-radius:8px;touch-action:pan-x pan-y"><canvas id="opCv" style="display:block"></canvas></div>
+    <p id="opOut"></p>
+    <div class="row"><select id="opType"><option value="fenster">Fenster</option><option value="tuer">Tür</option><option value="dg">Durchgang</option></select>
+    <button id="opAdd" class="pri" disabled>Öffnung übernehmen</button><button id="opClose">Schließen</button></div>`;
+  $('#opSel').onchange = e => { opSt.k = +e.target.value; opSt.pts = []; opShow(); };
+  $('#opZoom').oninput = () => opDraw();
+  $('#opClr').onclick = () => { opSt.pts = []; opDraw(); };
+  $('#opClose').onclick = () => { box.remove(); opSt = null; };
+  $('#opAdd').onclick = opAdd;
+  $('#opCv').onclick = e => {
+    if (!opSt.cv || opSt.pts.length >= 2) return; const c = $('#opCv'), r = c.getBoundingClientRect(), k = c.width / r.width;
+    let p = [(e.clientX - r.left) * k, (e.clientY - r.top) * k];
+    const ctx = opSt.cv.getContext('2d', { willReadFrequently: true });
+    p = AG.refineCorner((x0, y0, w, h) => { if (x0 < 0 || y0 < 0 || x0 + w > c.width || y0 + h > c.height) return null; const dd = ctx.getImageData(x0, y0, w, h).data, g = new Float32Array(w * h); for (let i = 0; i < w * h; i++) g[i] = 0.299 * dd[4 * i] + 0.587 * dd[4 * i + 1] + 0.114 * dd[4 * i + 2]; return g; }, p, Math.max(4, Math.round(c.width / 600)));
+    opSt.pts.push(p); if (opSt.pts.length === 2) opCalc(); opDraw();
+  };
+  opShow();
+}
+async function opShow() { $('#opOut').textContent = 'Foto wird geladen…'; opSt.cv = await loadFrameCanvas(pgLast.frames[opSt.list[opSt.k].fi]); opDraw(); opText(); }
+function opDraw() {
+  const c = $('#opCv'); if (!c || !opSt.cv) return; c.width = opSt.cv.width; c.height = opSt.cv.height; const x = c.getContext('2d'); x.drawImage(opSt.cv, 0, 0);
+  c.style.width = ($('#opWrap').clientWidth * +$('#opZoom').value) + 'px';
+  const k = c.width / ($('#opWrap').clientWidth * +$('#opZoom').value);
+  x.strokeStyle = '#19d3ff'; x.lineWidth = 2 * k;
+  opSt.pts.forEach(p => { x.beginPath(); x.moveTo(p[0] - 12 * k, p[1]); x.lineTo(p[0] + 12 * k, p[1]); x.moveTo(p[0], p[1] - 12 * k); x.lineTo(p[0], p[1] + 12 * k); x.stroke(); });
+  if (opSt.pts.length === 2) { const [a, b] = opSt.pts; x.strokeRect(Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.abs(a[0] - b[0]), Math.abs(a[1] - b[1])); }
+}
+function opCalc() {
+  const d = pgLast.res[opSt.ri], ci = opSt.list[opSt.k].ci, line = d.w.lines[opSt.wi];
+  const X = opSt.pts.map(p => PG.rayToWall(pgLast.rec, ci, p, line));
+  if (X.some(v => !v)) { $('#opOut').textContent = 'Punkt liegt nicht auf dieser Wand – andere Wand oder anderes Foto wählen.'; return; }
+  const o = PG.opening(d.w, opSt.wi, X[0], X[1]); opSt.results.push(o); $('#opType').value = o.type; opText();
+}
+function opMean() { const R = opSt.results, m = k => R.reduce((s, r) => s + r[k], 0) / R.length; return R.length ? { pos: m('pos'), w: m('w'), h: m('h'), brh: m('brh') } : null; }
+function opText() {
+  const m = opMean(), R = opSt.results; $('#opAdd').disabled = !m;
+  if (!m) { $('#opOut').innerHTML = `Punkte: ${opSt.pts.length}/2`; return; }
+  const sd = k => R.length > 1 ? ' ±' + f2(Math.sqrt(R.reduce((s, r) => s + (r[k] - m[k]) ** 2, 0) / (R.length - 1)) * 1000, 1) : '';
+  $('#opOut').innerHTML = `<b>${R.length} Messung${R.length > 1 ? 'en (Mittel)' : ''}:</b> Breite ${f2(m.w, 3)} m${sd('w')} · Höhe ${f2(m.h, 3)} m${sd('h')} · Brüstung ${f2(m.brh, 3)} m${sd('brh')} · ab Wandanfang ${f2(m.pos, 3)} m<br><span class="hint">Für den Mittelwert: anderes Foto wählen und erneut 2 Ecken antippen.</span>`;
+}
+function opAdd() {
+  const m = opMean(), d = pgLast.res[opSt.ri], t = $('#opType').value;
+  const op = { type: t, wall: opSt.wi, pos: +m.pos.toFixed(4), w: +m.w.toFixed(4), h: +m.h.toFixed(4), brh: t === 'fenster' ? +m.brh.toFixed(4) : 0 };
+  (d.ops = d.ops || []).push(op);
+  if (d.planRoom && S.rooms.includes(d.planRoom)) { d.planRoom.ops.push({ ...op }); save(); }
+  opSt.results = []; opSt.pts = []; opDraw(); $('#opOut').innerHTML = `<span class="ok">✔ ${t === 'fenster' ? 'Fenster' : t === 'tuer' ? 'Tür' : 'Durchgang'} ${Math.round(op.w * 100)}/${Math.round(op.h * 100)} übernommen${d.planRoom ? '' : ' (wird mit „Räume übernehmen“ in den Plan gelegt)'}.</span>`;
+}
 function pgTake() {
   const { rec, res } = pgLast; let first = null;
   res.forEach(d => {
@@ -186,6 +251,7 @@ function pgTake() {
     // Wand i im Plan = Kante Ecke i -> i+1; Sigma gleich indiziert
     r.adj = { wallSigma: d.w.sigma.map(v => v ?? 0.01), cornerMax: 0, s0: rec.res.s0, red: rec.nObs, warn: d.w.warn, v: [], pg: { rms: rec.res.rms, nImg: rec.nImg } };
     if (d.w.height && d.w.hSig !== null && d.w.hSig < 0.005) r.h = +d.w.height.toFixed(3);
+    r.ops = (d.ops || []).slice(); d.planRoom = r;
     r.src = 'Photogrammetrie'; S.rooms.push(r); if (first === null) first = S.rooms.length - 1;
   });
   selRoom = first; save(); showTab('plan');
@@ -510,8 +576,8 @@ function planSVG(sel) {
       const mids = add(mid(s0, s1), mul(e.n, e.t / 2)), ang = rdAngle(e.d);
       if (op.type === 'fenster') {
         [0, .45, .55, 1].forEach(f => o += line(add(s0, mul(e.n, e.t * f)), add(s1, mul(e.n, e.t * f)), f % 1 ? .18 : .25));
-        o += txt(add(mids, mul(e.n, e.t / 2 + mm(4) / 100)), `FE ${Math.round(op.w * 100)}/${Math.round(op.h * 100)}`, 2.2, ang);
-        o += txt(add(mids, mul(e.n, e.t / 2 + mm(7) / 100)), `BRH ${Math.round((op.brh || 0) * 100)}`, 2, ang);
+        o += txt(add(mids, mul(e.n, -(e.t / 2 + mm(3.5) / 100))), `FE ${Math.round(op.w * 100)}/${Math.round(op.h * 100)}`, 2.2, ang);
+        o += txt(add(mids, mul(e.n, -(e.t / 2 + mm(6.5) / 100))), `BRH ${Math.round((op.brh || 0) * 100)}`, 2, ang);
       } else {
         const inw = op.aus ? 1 : -1, base = op.aus ? e.t : 0;
         const h0 = add(op.flip ? s1 : s0, mul(e.n, base)), o1 = add(op.flip ? s0 : s1, mul(e.n, base));
