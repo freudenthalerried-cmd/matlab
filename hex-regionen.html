@@ -128,14 +128,14 @@
     { fill: '#57b85a', dark: '#2f7f32', name: 'Grün' },
   ];
   const TYPES = {
-    kaserne: { rate: 1.0, cap: 40 },
-    turm:    { rate: 0.5, cap: 25 },
-    reaktor: { rate: 0.6, cap: 30 },
-    hafen:   { rate: 0.8, cap: 35 },
-    flugplatz: { rate: 0.6, cap: 30 },
+    kaserne: { rate: 1.5, cap: 40 },
+    turm:    { rate: 0.75, cap: 25 },
+    reaktor: { rate: 0.9, cap: 30 },
+    hafen:   { rate: 1.2, cap: 35 },
+    flugplatz: { rate: 0.9, cap: 30 },
     wachturm: { rate: 0, cap: 99 },
   };
-  const SPEED = { tank: 1.7, boat: 2.1, plane: 3.0 };
+  const SPEED = { tank: 2.6, boat: 3.0, plane: 4.2 };
   const $ = id => document.getElementById(id);
   const rnd = k => Math.floor(Math.random() * k);
   const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -383,11 +383,11 @@
   }
   // Pfeil für Land/Luft direkt, für Boote entlang des Wasserwegs
   function route(a, t, kind, path, col, alpha) {
-    if (kind !== 'boat' || !path || !path.length) return arrow(px(a.x), py(a.y), px(t.x), py(t.y), col, alpha, kind === 'plane');
+    if (!path || !path.length) return arrow(px(a.x), py(a.y), px(t.x), py(t.y), col, alpha, kind === 'plane');
     const pts = [a, ...path];
     ctx.save(); ctx.globalAlpha = alpha; ctx.lineCap = ctx.lineJoin = 'round';
     for (const [lw, c] of [[S * 0.34, '#ffffff'], [S * 0.2, col]]) {
-      ctx.strokeStyle = c; ctx.lineWidth = lw; ctx.setLineDash([S * 0.35, S * 0.25]);
+      ctx.strokeStyle = c; ctx.lineWidth = lw; ctx.setLineDash(kind === 'boat' ? [S * 0.35, S * 0.25] : []);
       ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(px(p.x), py(p.y)) : ctx.moveTo(px(p.x), py(p.y))); ctx.stroke();
     }
     ctx.restore();
@@ -547,7 +547,20 @@
     if (a === t) return null;
     if (a.type === 'flugplatz') return { kind: 'plane' };
     if (regions[a.id].adj.has(t.id)) return { kind: 'tank' };
+    // Panzer dürfen durch eigenes Gebiet fahren: Ziel muss an eine eigene Region grenzen
+    const land = landPath(a, t); if (land) return { kind: 'tank', path: land };
     if (a.type === 'hafen') { const path = waterPath(a.id, t.id); if (path) return { kind: 'boat', path }; }
+    return null;
+  }
+  function landPath(a, t) {
+    const prev = new Map([[a.id, null]]), queue = [a.id];
+    for (let i = 0; i < queue.length; i++) {
+      const id = queue[i];
+      for (const n of regions[id].adj) {
+        if (n === t.id) { const path = []; for (let c = id; c !== a.id; c = prev.get(c)) path.unshift(B[c]); return path; }
+        if (!prev.has(n) && B[n].owner === a.owner) { prev.set(n, id); queue.push(n); }
+      }
+    }
     return null;
   }
   function waterPath(from, to) {
@@ -596,7 +609,7 @@
         units.push({ x: q.a.x + nx * lane, y: q.a.y + ny * lane, ox: nx * lane * 0.5, oy: ny * lane * 0.5, t: q.t, owner: q.owner, a, q,
           kind: q.kind, wp: q.path ? q.path.slice() : [] });
         q.alive = (q.alive || 0) + 1;
-        q.left--; q.tm += per === 1 ? 0.3 : q.sent % 3 ? 0 : q.kind === 'plane' ? 0.3 : 0.4;
+        q.left--; q.tm += per === 1 ? 0.2 : q.sent % 3 ? 0 : q.kind === 'plane' ? 0.2 : 0.25;
       }
     }
     queues = queues.filter(q => q.left > 0 || q.alive > 0);
@@ -647,7 +660,7 @@
     for (const b of B) b.bump = Math.max(0, b.bump - dt * 4);
 
     // KI
-    for (const o in aiT) { aiT[o] -= dt; if (aiT[o] <= 0) { aiThink(+o); aiT[o] = Math.max(1.1, 3 - save.level * 0.06) + Math.random(); } }
+    for (const o in aiT) { aiT[o] -= dt; if (aiT[o] <= 0) { aiThink(+o); aiT[o] = Math.max(0.8, 2.2 - save.level * 0.06) + Math.random() * 0.7; } }
 
     // Sieg / Niederlage
     if (!endT) {
