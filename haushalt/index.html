@@ -57,6 +57,20 @@ label{display:block;margin:10px 0 4px;font-size:.9rem;color:var(--muted)}
 #toast span{flex:1}
 #toast button{flex:none;background:transparent;color:var(--bg);border:1px solid var(--bg);padding:6px 10px}
 .queue{font-size:.9rem;margin-top:8px}
+#film{position:fixed;inset:0;z-index:20;background:#000;color:#fff;display:flex;flex-direction:column}
+#film.hidden{display:none}
+#film video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.film-top{position:relative;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding:calc(12px + env(safe-area-inset-top)) 16px 12px;background:linear-gradient(#000a,#0000)}
+.film-stat{font-size:.85rem;opacity:.85}
+.film-rec{color:#ff5a5a;font-weight:700;animation:blink 1.2s infinite}
+.film-rec.paused{animation:none;color:#ccc}
+@keyframes blink{50%{opacity:.3}}
+.film-items{position:relative;margin-top:auto;display:flex;gap:8px;overflow-x:auto;padding:8px 16px}
+.film-item{flex:none;width:84px;background:#000b;border-radius:10px;padding:4px;font-size:.75rem;text-align:center}
+.film-item img{width:76px;height:76px;object-fit:cover;border-radius:8px;display:block;margin-bottom:2px;background:#333}
+.film-bar{position:relative;display:flex;gap:8px;padding:10px 16px calc(12px + env(safe-area-inset-bottom));background:#000c}
+.film-bar button{flex:1}
+.chip img{width:22px;height:22px;object-fit:cover;border-radius:50%;margin-left:-6px}
 </style>
 </head>
 <body>
@@ -96,6 +110,11 @@ label{display:block;margin:10px 0 4px;font-size:.9rem;color:var(--muted)}
         <button class="ghost big" id="btn-cam">📷 Kamera</button>
         <button class="ghost big" id="btn-file">🖼️ Fotos</button>
       </div>
+      <div class="row" style="margin-top:8px">
+        <button class="big" id="btn-film">🎥 Filmen</button>
+        <button class="ghost big" id="btn-video">📼 Video</button>
+      </div>
+      <input id="f-video" type="file" accept="video/*" class="hidden">
       <input id="f-cam" type="file" accept="image/*" capture="environment" class="hidden">
       <input id="f-file" type="file" accept="image/*" multiple class="hidden">
       <div id="queue" class="queue muted"></div>
@@ -149,6 +168,20 @@ label{display:block;margin:10px 0 4px;font-size:.9rem;color:var(--muted)}
   <button data-v="rooms"><span>🏠</span>Räume</button>
   <button data-v="settings"><span>⚙️</span>Einstell.</button>
 </nav>
+
+<div id="film" class="hidden" role="dialog" aria-label="Film-Modus">
+  <video id="film-video" playsinline muted autoplay></video>
+  <div class="film-top">
+    <div><b id="film-where"></b><div id="film-stat" class="film-stat"></div></div>
+    <span id="film-rec" class="film-rec">● REC</span>
+  </div>
+  <div id="film-items" class="film-items"></div>
+  <div class="film-bar">
+    <button class="ghost" id="film-next">➡️ Nächster Ort</button>
+    <button class="ghost" id="film-pause" style="flex:none">⏸</button>
+    <button id="film-done">✓ Fertig</button>
+  </div>
+</div>
 
 <div id="toast" class="hidden"><span id="toast-msg"></span><button id="toast-btn" class="hidden"></button></div>
 

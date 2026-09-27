@@ -100,7 +100,7 @@ function toast(msg, action, fn) {
 
 // ---------- Bilderkennung (Claude Vision) ----------
 class NoKeyError extends Error {}
-async function recognize(dataUrl, room, place) {
+async function recognize(dataUrl, room, place, opt = {}) {
   const key = settings.key;
   if (!key) throw new NoKeyError('Kein API-Schlüssel – bitte unter ⚙️ eintragen. Foto wird gemerkt und später erkannt.');
   let r;
@@ -131,7 +131,8 @@ async function recognize(dataUrl, room, place) {
                   properties: {
                     name: { type: 'string', description: 'Kurzer deutscher Name, z. B. "Schere"' },
                     anzahl: { type: 'integer' },
-                    suchbegriffe: { type: 'array', items: { type: 'string' }, description: 'Synonyme, Oberbegriffe, österr. Begriffe (z. B. Klebeband → Tixo, Tesa)' }
+                    suchbegriffe: { type: 'array', items: { type: 'string' }, description: 'Synonyme, Oberbegriffe, österr. Begriffe (z. B. Klebeband → Tixo, Tesa)' },
+                    ...(opt.boxes ? { box: { type: 'array', items: { type: 'integer' }, description: 'Position im Bild als [x, y, breite, höhe], Werte 0–1000 relativ zur Bildgröße' } } : {})
                   },
                   required: ['name', 'suchbegriffe']
                 }
@@ -145,7 +146,7 @@ async function recognize(dataUrl, room, place) {
           role: 'user',
           content: [
             { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: dataUrl.split(',')[1] } },
-            { type: 'text', text: `Foto aus dem Haushalt (Raum: ${room || 'unbekannt'}, Ort: ${place || 'unbekannt'}). Liste jeden erkennbaren Gegenstand einzeln auf Deutsch auf, möglichst konkret (z. B. "AA-Batterien" statt "Batterien"). Gleiche Gegenstände zusammenfassen mit Anzahl. Den Behälter/das Möbel selbst nicht als Gegenstand aufzählen, sondern als "ort" benennen.` }
+            { type: 'text', text: `Foto aus dem Haushalt (Raum: ${room || 'unbekannt'}, Ort: ${place || 'unbekannt'}). Liste jeden erkennbaren Gegenstand einzeln auf Deutsch auf, möglichst konkret (z. B. "AA-Batterien" statt "Batterien"). Gleiche Gegenstände zusammenfassen mit Anzahl. Den Behälter/das Möbel selbst nicht als Gegenstand aufzählen, sondern als "ort" benennen.${opt.boxes ? ' Gib zu jedem Gegenstand die Position "box" an.' : ''}${opt.known?.length ? ` Bereits erfasst (für Gleiches exakt diesen Namen verwenden): ${opt.known.join(', ')}.` : ''}` }
           ]
         }]
       })
@@ -161,7 +162,8 @@ async function recognize(dataUrl, room, place) {
     ort: (inp.ort || '').trim(),
     items: (inp.items || []).filter(i => i?.name).map(i => ({
       name: i.anzahl > 1 ? `${i.name} (${i.anzahl}×)` : i.name,
-      tags: i.suchbegriffe || []
+      tags: i.suchbegriffe || [],
+      ...(opt.boxes ? { base: i.name, anzahl: i.anzahl || 1, box: Array.isArray(i.box) && i.box.length === 4 ? i.box : null } : {})
     }))
   };
 }
@@ -226,7 +228,7 @@ async function renderSearch() {
   hits.sort((a, b) => b.s - a.s);
   el.innerHTML = pendNote + (hits.length ? hits.slice(0, 50).map(h => `
     <div class="card hit">
-      ${thumb(h.sp)}
+      ${h.it.photo ? `<img src="${h.it.photo}" alt="" data-open="${esc(h.sp.id)}">` : thumb(h.sp)}
       <div>
         <div>${hl(h.it.name, q)}</div>
         <div class="path">📍 ${esc(h.sp.room)} → ${esc(h.sp.place)}</div>
@@ -437,6 +439,194 @@ $('btn-save').onclick = async () => {
   fillLists();
 };
 
+// ---------- Film-Modus: filmen → Produkte einzeln erkennen, mit eigenem Foto speichern ----------
+const FILM_INTERVAL = 2500;   // ms zwischen zwei Bildern
+const FILM_MIN_DIFF = 12;     // Mindest-Bildänderung (0–255), sonst wird nichts gesendet
+const film = { stream: null, timer: null, busy: false, paused: false, sig: null, spot: null, room: '', place: '', aiPlace: false, source: 'cam', frames: 0, sent: 0 };
+
+// Bild aus dem Video holen (max. 1280 px)
+function grabFrame(video) {
+  const w = video.videoWidth, h = video.videoHeight;
+  if (!w || !h) return null;
+  const f = Math.min(1, 1280 / Math.max(w, h));
+  const c = document.createElement('canvas');
+  c.width = Math.round(w * f); c.height = Math.round(h * f);
+  c.getContext('2d').drawImage(video, 0, 0, c.width, c.height);
+  return c;
+}
+// kleiner Graustufen-Fingerabdruck, um unveränderte Bilder zu überspringen
+function signature(canvas) {
+  const c = document.createElement('canvas'); c.width = c.height = 16;
+  const g = c.getContext('2d', { willReadFrequently: true });
+  g.drawImage(canvas, 0, 0, 16, 16);
+  const d = g.getImageData(0, 0, 16, 16).data, out = new Uint8Array(256);
+  for (let i = 0; i < 256; i++) out[i] = (d[i * 4] * 3 + d[i * 4 + 1] * 6 + d[i * 4 + 2]) / 10;
+  return out;
+}
+const sigDiff = (a, b) => a.reduce((s, v, i) => s + Math.abs(v - b[i]), 0) / a.length;
+// Produkt aus dem Bild ausschneiden (box = [x, y, b, h] in 0–1000)
+function cropItem(canvas, box) {
+  let [x, y, w, h] = box ? box.map(v => Math.max(0, Math.min(1000, v)) / 1000) : [0, 0, 1, 1];
+  const pad = 0.08;
+  x = Math.max(0, x - w * pad); y = Math.max(0, y - h * pad);
+  w = Math.min(1 - x, w * (1 + 2 * pad)); h = Math.min(1 - y, h * (1 + 2 * pad));
+  if (w < 0.02 || h < 0.02) [x, y, w, h] = [0, 0, 1, 1];
+  const sx = x * canvas.width, sy = y * canvas.height, sw = w * canvas.width, sh = h * canvas.height;
+  const f = Math.min(1, 320 / Math.max(sw, sh));
+  const c = document.createElement('canvas');
+  c.width = Math.max(1, Math.round(sw * f)); c.height = Math.max(1, Math.round(sh * f));
+  c.getContext('2d').drawImage(canvas, sx, sy, sw, sh, 0, 0, c.width, c.height);
+  return c.toDataURL('image/jpeg', 0.75);
+}
+
+function filmStatus(msg) {
+  $('film-where').textContent = film.spot ? `${film.spot.room} → ${film.spot.place}` : `${film.room || 'Raum?'} → ${film.place || 'Ort wird erkannt …'}`;
+  $('film-stat').textContent = msg ?? `${film.spot?.items.length || 0} Produkte · ${film.sent} Bilder ausgewertet`;
+}
+function renderFilmItems() {
+  const items = film.spot?.items || [];
+  $('film-items').innerHTML = items.slice().reverse().map(i =>
+    `<div class="film-item">${i.photo ? `<img src="${i.photo}" alt="">` : ''}${esc(i.name)}</div>`).join('');
+}
+
+// ein Bild auswerten und Produkte in den aktuellen Ort übernehmen
+async function filmProcess(canvas) {
+  const sig = signature(canvas);
+  if (film.sig && sigDiff(sig, film.sig) < FILM_MIN_DIFF) { filmStatus(); return; }
+  film.sig = sig;
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+  const known = (film.spot?.items || []).map(i => i.base || i.name);
+  filmStatus('🔎 Erkenne …');
+  let res;
+  try { res = await recognize(dataUrl, film.room, film.place, { boxes: true, known }); }
+  catch (e) { filmStatus('⚠️ ' + e.message); return; }
+  film.sent++;
+  if (!film.spot) {
+    const spots = await allSpots();
+    const room = film.room || res.raum || 'Unsortiert';
+    const existing = film.place ? findSpot(spots, room, film.place) : null;
+    // gleicher Ort erneut gefilmt → Inhalt wird neu aufgebaut
+    film.spot = { id: existing?.id || uid(), room: existing?.room || room, place: existing?.place || film.place || uniquePlace(spots, room, res.ort || 'Ort 1'), photo: dataUrl, items: [], status: 'done', updated: Date.now() };
+    film.room = film.spot.room; film.place = film.spot.place;
+    $('room').value = film.room; store.set('room', film.room);
+  }
+  let added = 0;
+  for (const it of res.items) {
+    const k = skey(it.base || it.name);
+    const have = film.spot.items.find(x => skey(x.base || x.name) === k);
+    if (have) {
+      // gleiches Produkt: höhere Anzahl übernehmen, fehlendes Foto ergänzen
+      if ((it.anzahl || 1) > (have.anzahl || 1)) { have.anzahl = it.anzahl; have.name = it.name; }
+      if (!have.photo && it.box) have.photo = cropItem(canvas, it.box);
+      continue;
+    }
+    film.spot.items.push({ name: it.name, base: it.base, anzahl: it.anzahl, tags: it.tags, photo: cropItem(canvas, it.box) });
+    added++;
+  }
+  film.spot.updated = Date.now();
+  await putSpot(film.spot);   // laufend speichern – nichts geht verloren
+  renderFilmItems();
+  filmStatus(added ? `➕ ${added} neu · ${film.spot.items.length} Produkte` : undefined);
+}
+
+async function filmTick() {
+  if (film.busy || film.paused) return;
+  const canvas = grabFrame($('film-video'));
+  if (!canvas) return;
+  film.busy = true;
+  try { await filmProcess(canvas); } finally { film.busy = false; }
+}
+
+function filmOpen() {
+  film.spot = null; film.sig = null; film.sent = 0; film.paused = false;
+  film.room = $('room').value.trim(); film.place = $('place').value.trim();
+  film.aiPlace = !film.place;
+  $('film-items').innerHTML = '';
+  $('film-pause').textContent = '⏸';
+  $('film-rec').classList.remove('paused');
+  $('film').classList.remove('hidden');
+  filmStatus('Kamera wird gestartet …');
+}
+
+async function startFilm() {
+  if (!settings.key) return toast('Für den Film-Modus bitte zuerst den API-Schlüssel unter ⚙️ eintragen.');
+  if (!navigator.mediaDevices?.getUserMedia) return toast('Kamera nicht verfügbar (nur über https möglich).');
+  filmOpen();
+  film.source = 'cam';
+  try {
+    film.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false });
+  } catch {
+    $('film').classList.add('hidden');
+    return toast('Kein Kamerazugriff – bitte in den Browser-Einstellungen erlauben.');
+  }
+  const v = $('film-video');
+  v.srcObject = film.stream;
+  await v.play().catch(() => {});
+  filmStatus('Langsam über den Inhalt schwenken …');
+  film.timer = setInterval(filmTick, FILM_INTERVAL);
+  setTimeout(filmTick, 800);
+}
+
+// fertiges Video aus der Galerie: alle 2,5 s ein Bild auswerten
+async function processVideoFile(file) {
+  if (!settings.key) return toast('Bitte zuerst den API-Schlüssel unter ⚙️ eintragen.');
+  filmOpen();
+  film.source = 'file';
+  const v = $('film-video');
+  v.srcObject = null;
+  v.src = URL.createObjectURL(file);
+  try {
+    await new Promise((res, rej) => { v.onloadedmetadata = res; v.onerror = rej; });
+    v.pause();
+    const dur = isFinite(v.duration) ? v.duration : 0;
+    for (let t = 0; t <= dur && !$('film').classList.contains('hidden'); t += FILM_INTERVAL / 1000) {
+      while (film.paused && !$('film').classList.contains('hidden')) await new Promise(r => setTimeout(r, 300));
+      v.currentTime = Math.min(t, Math.max(0, dur - 0.05));
+      await new Promise(r => { v.onseeked = r; setTimeout(r, 1500); });
+      const canvas = grabFrame(v);
+      if (canvas) await filmProcess(canvas);
+      filmStatus(`${film.spot?.items.length || 0} Produkte · ${Math.round(Math.min(t, dur))} / ${Math.round(dur)} s`);
+    }
+    if (!$('film').classList.contains('hidden')) stopFilm();
+  } catch {
+    stopFilm();
+    toast('Video konnte nicht gelesen werden.');
+  }
+}
+
+function stopFilm() {
+  clearInterval(film.timer); film.timer = null;
+  film.stream?.getTracks().forEach(t => t.stop()); film.stream = null;
+  const v = $('film-video');
+  if (v.src) { URL.revokeObjectURL(v.src); v.removeAttribute('src'); }
+  v.srcObject = null;
+  $('film').classList.add('hidden');
+  if (film.spot) {
+    toast(`✅ ${film.spot.room} → ${film.spot.place}: ${film.spot.items.length} Produkte gespeichert`);
+    $('place').value = film.aiPlace ? '' : nextPlace(film.spot.place);
+  }
+  fillLists(); renderSearch();
+}
+
+$('btn-film').onclick = startFilm;
+$('btn-video').onclick = () => $('f-video').click();
+$('f-video').onchange = e => { const f = e.target.files[0]; e.target.value = ''; if (f) processVideoFile(f); };
+$('film-done').onclick = stopFilm;
+$('film-pause').onclick = () => {
+  film.paused = !film.paused;
+  $('film-pause').textContent = film.paused ? '▶️' : '⏸';
+  $('film-rec').classList.toggle('paused', film.paused);
+  $('film-rec').textContent = film.paused ? 'Pause' : '● REC';
+};
+$('film-next').onclick = async () => {
+  // nächster Ort: gleicher Raum, Nummer +1 oder neu von der KI benennen lassen
+  const prev = film.spot;
+  film.place = film.aiPlace ? '' : nextPlace(prev?.place || film.place || freePlace(await allSpots(), film.room, 'Lade'));
+  film.spot = null; film.sig = null;
+  $('film-items').innerHTML = '';
+  filmStatus(prev ? `✅ ${prev.place}: ${prev.items.length} Produkte gespeichert` : '');
+};
+
 // ---------- Warteschlange: gemerkte Fotos nachträglich erkennen ----------
 let retrying = false;
 async function retryPending(verbose) {
@@ -473,7 +663,7 @@ async function renderRooms() {
       <details class="card" id="spot-${esc(s.id)}">
         <summary>📦 ${esc(s.place)} <span class="muted">· ${s.status === 'pending' ? '⏳ wartet auf Erkennung' : s.items.length + ' Gegenstände'}</span></summary>
         ${s.photo ? `<img class="preview" src="${s.photo}" alt="" style="margin-top:10px">` : ''}
-        <div class="chips">${s.items.map(i => `<span class="chip">${esc(i.name)}</span>`).join('')}</div>
+        <div class="chips">${s.items.map(i => `<span class="chip">${i.photo ? `<img src="${i.photo}" alt="">` : ''}${esc(i.name)}</span>`).join('')}</div>
         <p class="muted">Aktualisiert: ${new Date(s.updated).toLocaleString('de-AT')}</p>
         <div class="row">
           <button class="ghost" data-edit="${esc(s.id)}">✏️ Bearbeiten / neues Foto</button>
