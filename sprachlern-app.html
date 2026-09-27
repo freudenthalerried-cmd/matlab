@@ -1311,11 +1311,10 @@ document.getElementById('resetProgressBtn').addEventListener('click', ()=>{
   if(confirm('Wirklich den GESAMTEN Fortschritt löschen? Das kann nicht rückgängig gemacht werden.')){
     state = defaultState();
     saveState();
-    renderStats();
-    renderMap();
     document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
     document.querySelector('.nav-btn[data-nav="map"]').classList.add('active');
-    showScreen('screen-map');
+    populateLanguageList();
+    showScreen('screen-language');
   }
 });
 
