@@ -191,7 +191,11 @@ body{
 .feedback-bar.show{transform:translateY(0);}
 .feedback-bar.ok{background:#02b48b;}
 .feedback-bar.no{background:#ff5d5d;}
-.feedback-next{background:#fff;color:inherit;border:none;padding:10px 18px;border-radius:12px;font-weight:800;cursor:pointer;}
+.feedback-next{background:#fff;color:#1b2733;border:none;padding:10px 18px;border-radius:12px;font-weight:800;cursor:pointer;flex-shrink:0;margin-left:12px;}
+.feedback-bar.ok .feedback-next{color:#02845f;}
+.feedback-bar.no .feedback-next{color:#c22;}
+#feedbackText{flex:1;min-width:0;line-height:1.3;}
+#feedbackText small{display:block;font-size:12px;font-weight:600;opacity:.95;margin-top:3px;}
 
 /* ---------- RESULT ---------- */
 .result-stars{text-align:center;font-size:36px;margin:6px 0;letter-spacing:6px;}
@@ -218,6 +222,19 @@ body{
 .nav-btn .icon{font-size:22px;}
 
 .hidden{display:none!important;}
+
+/* ---------- GRAMMATIK ---------- */
+.q-sentence{font-size:20px;font-weight:800;color:#fff;text-align:center;margin:6px 4px;line-height:1.4;text-shadow:0 2px 8px rgba(0,0,0,0.25);}
+.q-sentence .gap{color:var(--accent);border-bottom:3px dashed var(--accent);padding:0 6px;}
+.q-de{text-align:center;color:#bfe3ea;font-size:12px;font-style:italic;margin-bottom:12px;}
+.word-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:0 4px;}
+.word-chip{background:#fff;border:3px solid #e6ecf0;border-radius:12px;padding:8px 12px;font-weight:800;font-size:15px;cursor:pointer;color:var(--text);}
+.word-chip:active{transform:scale(0.95);}
+.word-chip.used{opacity:.25;pointer-events:none;}
+.word-chip.correct{background:#e3fbf0;border-color:var(--accent2);}
+.word-chip.wrong{background:#ffe9e9;border-color:var(--danger);animation:shake .3s;}
+.word-chip.locked{pointer-events:none;}
+.build-sentence{min-height:54px;background:rgba(255,255,255,0.12);border:2px dashed rgba(255,255,255,0.35);border-radius:14px;padding:8px;margin:4px 4px 12px;color:#fff;font-weight:800;font-size:17px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-items:center;}
 </style>
 </head>
 <body>
@@ -270,12 +287,20 @@ body{
     <div class="path" id="pathContainer"></div>
   </section>
 
+  <!-- ===== GRAMMATIK ===== -->
+  <section class="screen" id="screen-grammar">
+    <div class="map-title">Grammatik-Dschungel 📘</div>
+    <div class="map-sub" id="grammarSub">Lustige Sätze, echte Regeln</div>
+    <div class="path" id="grammarPath"></div>
+  </section>
+
   <!-- ===== LEVEL INTRO ===== -->
   <section class="screen" id="screen-intro">
     <div class="card">
       <div class="intro-icon" id="introIcon">🐾</div>
       <div class="intro-title" id="introTitle">Tiere</div>
       <div class="intro-desc" id="introDesc">8 neue Wörter · Mehrfachauswahl, Hören &amp; Tippen</div>
+      <div class="speech-bubble hidden" id="introTip" style="margin:0 auto 14px;"></div>
       <button class="btn btn-primary" id="startLevelBtn">▶ Level starten</button>
       <button class="btn btn-secondary" id="backToMapBtn">Zurück zur Karte</button>
     </div>
@@ -325,6 +350,7 @@ body{
 
   <div class="bottom-nav">
     <button class="nav-btn active" data-nav="map"><span class="icon">🗺️</span>Karte</button>
+    <button class="nav-btn" data-nav="grammar"><span class="icon">📘</span>Grammatik</button>
     <button class="nav-btn" data-nav="stats"><span class="icon">📊</span>Statistik</button>
   </div>
 
@@ -647,6 +673,194 @@ Object.keys(VOCAB_BY_DIFF).forEach(k=>{
   }));
 });
 
+/* ---------- GRAMMATIK (lustige Sätze) ----------
+   Zeile: Satz mit ___|richtige Lösung|falsch1,falsch2|deutsche Übersetzung */
+const GRAMMAR_RAW = {
+  en: [
+    {icon:'🎭', title:'Sein oder nicht sein', tip:'I am · you/we/they are · he/she/it is', items:`
+My cat ___ a secret agent.|is|are,am|Meine Katze ist eine Geheimagentin.
+I ___ the king of the sofa.|am|is,are|Ich bin der König des Sofas.
+The penguins ___ on holiday.|are|is,am|Die Pinguine sind im Urlaub.
+You ___ a pizza genius.|are|is,am|Du bist ein Pizza-Genie.
+Grandma ___ faster than a rocket.|is|are,am|Oma ist schneller als eine Rakete.
+We ___ totally not aliens.|are|is,am|Wir sind ganz sicher keine Aliens.`},
+    {icon:'🐭', title:'Mäuse-Chaos', tip:'mouse→mice · child→children · foot→feet · tooth→teeth · man→men · sheep→sheep', items:`
+Three ___ are dancing on the table.|mice|mouses,mices|Drei Mäuse tanzen auf dem Tisch.
+The ___ ate all the cookies.|children|childs,childrens|Die Kinder haben alle Kekse gegessen.
+My ___ smell like cheese.|feet|foots,feets|Meine Füße riechen nach Käse.
+The shark has 300 ___.|teeth|tooths,teeths|Der Hai hat 300 Zähne.
+Two ___ are knitting a scarf.|men|mans,mens|Zwei Männer stricken einen Schal.
+The ___ are watching TV.|sheep|sheeps,sheepes|Die Schafe schauen fern.`},
+    {icon:'🦒', title:'Das freche -s', tip:'he/she/it → Verb + s (she swims, he watches)', items:`
+My dog ___ jazz every morning.|sings|sing,singing|Mein Hund singt jeden Morgen Jazz.
+The robot ___ pancakes.|makes|make,making|Der Roboter macht Pfannkuchen.
+She ___ with dolphins on Sundays.|swims|swim,swimming|Sie schwimmt sonntags mit Delfinen.
+Uncle Bob ___ his socks in the fridge.|keeps|keep,keeping|Onkel Bob bewahrt seine Socken im Kühlschrank auf.
+The giraffe ___ TV upside down.|watches|watch,watchs|Die Giraffe schaut kopfüber fern.
+My teacher ___ like a duck.|laughs|laugh,laughing|Meine Lehrerin lacht wie eine Ente.`},
+    {icon:'⏳', title:'Zeitreise', tip:'go→went · eat→ate · see→saw · buy→bought · fly→flew · bring→brought', items:`
+Yesterday I ___ to the moon.|went|goed,gone|Gestern ging ich zum Mond.
+The cat ___ my homework.|ate|eated,eaten|Die Katze hat meine Hausaufgaben gefressen.
+We ___ a dragon at the supermarket.|saw|seed,seen|Wir sahen einen Drachen im Supermarkt.
+Dad ___ a banana-shaped car.|bought|buyed,buy|Papa kaufte ein Auto in Bananenform.
+The cow ___ over the house.|flew|flied,flown|Die Kuh flog über das Haus.
+I ___ my pizza to the party.|brought|bringed,brung|Ich brachte meine Pizza zur Party.`},
+    {icon:'🏎️', title:'Größer, schneller, lustiger', tip:'kurz: -er (faster) · lang: more (more beautiful) · good → better', items:`
+A snail is ___ than a cheetah.|slower|slowlier,more slower|Eine Schnecke ist langsamer als ein Gepard.
+My hamster is ___ than your tiger.|braver|more brave,bravest|Mein Hamster ist mutiger als dein Tiger.
+This pizza is ___ than yesterday's.|better|gooder,more good|Diese Pizza ist besser als die von gestern.
+Math is ___ than a haunted house.|scarier|scaryer,more scarier|Mathe ist gruseliger als ein Geisterhaus.
+The unicorn is ___ than the horse.|more beautiful|beautifuller,beautifulest|Das Einhorn ist schöner als das Pferd.
+Your socks are ___ than cheese.|smellier|smellyer,more smellier|Deine Socken stinken mehr als Käse.`},
+    {icon:'📅', title:'Wann genau?', tip:'at + Uhrzeit · on + Tag · in + Monat/Jahr', items:`
+The aliens arrive ___ Monday.|on|in,at|Die Aliens kommen am Montag an.
+My party starts ___ 7 o'clock.|at|on,in|Meine Party beginnt um 7 Uhr.
+Penguins go skiing ___ December.|in|on,at|Pinguine gehen im Dezember Ski fahren.
+The dinosaur was born ___ 1999.|in|on,at|Der Dinosaurier wurde 1999 geboren.
+We eat cake ___ my birthday.|on|in,at|Wir essen Kuchen an meinem Geburtstag.
+The ghost wakes up ___ midnight.|at|in,on|Das Gespenst wacht um Mitternacht auf.`},
+  ],
+  es: [
+    {icon:'🎭', title:'Ser oder estar?', tip:'ser = Eigenschaft/Herkunft · estar = Zustand & Ort', items:`
+Mi gato ___ muy perezoso.|es|está,son|Meine Katze ist sehr faul.
+La pizza ___ en el tejado.|está|es,están|Die Pizza ist auf dem Dach.
+Nosotros ___ cansados después del baile.|estamos|somos,están|Wir sind nach dem Tanz müde.
+Tú ___ un genio de la guitarra.|eres|estás,es|Du bist ein Gitarrengenie.
+El pingüino ___ en la playa.|está|es,son|Der Pinguin ist am Strand.
+Yo ___ de Marte.|soy|estoy,es|Ich bin vom Mars.`},
+    {icon:'👒', title:'Kleine Wörter: el & la', tip:'el (m) · la (f) · los (m. Plural) · las (f. Plural)', items:`
+___ vaca baila salsa.|La|El,Los|Die Kuh tanzt Salsa.
+___ perros cantan ópera.|Los|Las,El|Die Hunde singen Oper.
+___ abuela conduce un cohete.|La|El,Las|Oma fliegt eine Rakete.
+___ plátanos son mis amigos.|Los|Las,La|Die Bananen sind meine Freunde.
+___ jirafas juegan al fútbol.|Las|Los,La|Die Giraffen spielen Fußball.
+___ robot cocina paella.|El|La,Los|Der Roboter kocht Paella.`},
+    {icon:'💃', title:'Tanz der -ar-Verben', tip:'hablar: hablo, hablas, habla, hablamos, habláis, hablan', items:`
+Yo ___ con mi planta.|hablo|habla,hablas|Ich spreche mit meiner Pflanze.
+Mi perro ___ en la bañera.|canta|canto,cantan|Mein Hund singt in der Badewanne.
+Nosotros ___ con los delfines.|nadamos|nadan,nado|Wir schwimmen mit den Delfinen.
+Tú ___ como un pato.|bailas|baila,bailo|Du tanzt wie eine Ente.
+Los gatos ___ pizza.|cocinan|cocina,cocinamos|Die Katzen kochen Pizza.
+El profesor ___ en la luna.|trabaja|trabajo,trabajan|Der Lehrer arbeitet auf dem Mond.`},
+    {icon:'😋', title:'Me gusta!', tip:'me gusta + Einzahl/Verb · me gustan + Mehrzahl', items:`
+Me ___ el chocolate.|gusta|gustan,gusto|Ich mag Schokolade.
+A mi gato le ___ los calcetines.|gustan|gusta,gusto|Meine Katze mag Socken.
+Nos ___ bailar bajo la lluvia.|gusta|gustan,gustamos|Wir tanzen gern im Regen.
+¿Te ___ las arañas?|gustan|gusta,gustas|Magst du Spinnen?
+A la abuela le ___ el rock.|gusta|gustan,gustas|Oma mag Rock.
+Me ___ los dinosaurios.|gustan|gusta,gusto|Ich mag Dinosaurier.`},
+    {icon:'⏳', title:'Zeitreise', tip:'hablar → hablé, habló · comer → comí, comió · ir → fui, fue', items:`
+Ayer yo ___ un pastel gigante.|comí|como,comió|Gestern aß ich einen Riesenkuchen.
+El gato ___ a la luna.|fue|fui,va|Die Katze ging zum Mond.
+Mi hermano ___ con un tiburón.|habló|hablé,habla|Mein Bruder sprach mit einem Hai.
+Yo ___ a París en bicicleta.|fui|fue,voy|Ich fuhr mit dem Rad nach Paris.
+La vaca ___ toda la noche.|bailó|bailé,baila|Die Kuh tanzte die ganze Nacht.
+Ayer yo ___ español con un loro.|hablé|habló,hablo|Gestern sprach ich Spanisch mit einem Papagei.`},
+    {icon:'🏎️', title:'Más, más, más!', tip:'más + Adjektiv + que · bueno → mejor · malo → peor', items:`
+Un caracol es ___ lento que un tren.|más|muy,mucho|Eine Schnecke ist langsamer als ein Zug.
+Mi pizza es ___ que tu pizza.|mejor|bueno,más bien|Meine Pizza ist besser als deine.
+El elefante es más grande ___ el ratón.|que|como,de|Der Elefant ist größer als die Maus.
+Mi abuela es ___ rápida que un cohete.|más|muy,mucha|Oma ist schneller als eine Rakete.
+Los lunes son ___ que los viernes.|peores|malos,más malo|Montage sind schlechter als Freitage.
+Mi perro es más listo ___ mi profesor.|que|como,de|Mein Hund ist schlauer als mein Lehrer.`},
+  ],
+  fr: [
+    {icon:'🎭', title:'Être oder avoir?', tip:'être: suis, es, est, sommes, êtes, sont · avoir: ai, as, a, avons, avez, ont', items:`
+Je ___ un chat très élégant.|suis|es,ai|Ich bin eine sehr elegante Katze.
+Mon chien ___ trois chapeaux.|a|est,as|Mein Hund hat drei Hüte.
+Nous ___ en vacances sur la lune.|sommes|avons,êtes|Wir sind im Urlaub auf dem Mond.
+Tu ___ un dragon dans ton jardin.|as|es,a|Du hast einen Drachen im Garten.
+Les poules ___ fatiguées.|sont|ont,est|Die Hühner sind müde.
+J'___ faim de croissants.|ai|as,a|Ich habe Hunger auf Croissants.`},
+    {icon:'👒', title:'Le, la, les', tip:'le (m) · la (f) · les (Plural)', items:`
+___ vache fait du ski.|La|Le,Les|Die Kuh fährt Ski.
+___ chat joue du piano.|Le|La,Les|Die Katze spielt Klavier.
+___ pingouins mangent des frites.|Les|Le,La|Die Pinguine essen Pommes.
+___ tortue gagne la course.|La|Le,Les|Die Schildkröte gewinnt das Rennen.
+___ robot fait la vaisselle.|Le|La,Les|Der Roboter spült ab.
+___ grand-mères dansent le rock.|Les|La,Le|Die Omas tanzen Rock'n'Roll.`},
+    {icon:'🎶', title:'Chanson der -er-Verben', tip:'parler: parle, parles, parle, parlons, parlez, parlent', items:`
+Je ___ avec mon poisson.|parle|parles,parlons|Ich spreche mit meinem Fisch.
+Nous ___ sous la pluie.|dansons|dansez,danse|Wir tanzen im Regen.
+Tu ___ comme une sirène.|chantes|chante,chantez|Du singst wie eine Meerjungfrau.
+Les chats ___ des pizzas.|mangent|mange,mangez|Die Katzen essen Pizzas.
+Vous ___ sur le toit ?|jouez|jouons,joue|Spielt ihr auf dem Dach?
+Mon oncle ___ en pyjama.|travaille|travailles,travaillent|Mein Onkel arbeitet im Pyjama.`},
+    {icon:'🙅', title:'Non, non, non!', tip:'ne + Verb + pas · vor Vokal: n\' (je n\'aime pas)', items:`
+Mon chat ne danse ___ le tango.|pas|non,ne|Meine Katze tanzt keinen Tango.
+Je ___ pas le lundi.|n'aime|ne aime,aime ne|Ich mag Montage nicht.
+Nous ___ parlons pas aux fantômes.|ne|n',non|Wir sprechen nicht mit Gespenstern.
+Le robot ne mange ___ de pizza.|pas|non,ne|Der Roboter isst keine Pizza.
+Tu ___ pas ta grand-mère ?|n'écoutes|ne écoutes,écoutes ne|Hörst du nicht auf deine Oma?
+Les vaches ne volent ___.|pas|non,ne|Kühe fliegen nicht.`},
+    {icon:'⏳', title:'Zeitreise', tip:'avoir + Partizip: manger → mangé · voir → vu · acheter → acheté', items:`
+Hier, j'ai ___ un dinosaure.|vu|voir,voit|Gestern habe ich einen Dinosaurier gesehen.
+Le chien a ___ mes chaussettes.|mangé|manger,mange|Der Hund hat meine Socken gefressen.
+Nous ___ fini le gâteau géant.|avons|sommes,avez|Wir haben den Riesenkuchen aufgegessen.
+Tu as ___ avec un pirate ?|dansé|danser,danses|Hast du mit einem Piraten getanzt?
+Ils ___ chanté toute la nuit.|ont|sont,a|Sie haben die ganze Nacht gesungen.
+Mamie a ___ une moto.|acheté|acheter,achète|Oma hat ein Motorrad gekauft.`},
+    {icon:'👗', title:'Adjektive in Mode', tip:'weiblich: + e (grand → grande) · Plural: + s', items:`
+La girafe est très ___.|grande|grand,grands|Die Giraffe ist sehr groß.
+Mes chaussettes sont ___.|vertes|vert,verte|Meine Socken sind grün.
+Le fantôme est ___.|petit|petite,petits|Das Gespenst ist klein.
+Les poules sont ___.|intelligentes|intelligent,intelligente|Die Hühner sind schlau.
+Ma pizza est ___.|délicieuse|délicieux,délicieuses|Meine Pizza ist köstlich.
+Les dragons sont ___.|gentils|gentil,gentille|Die Drachen sind nett.`},
+  ],
+  it: [
+    {icon:'🎭', title:'Essere oder avere?', tip:'essere: sono, sei, è, siamo, siete, sono · avere: ho, hai, ha, abbiamo, avete, hanno', items:`
+Io ___ stanco di mangiare pizza.|sono|ho,è|Ich bin müde vom Pizzaessen.
+Il mio cane ___ tre cappelli.|ha|è,hai|Mein Hund hat drei Hüte.
+Noi ___ in vacanza sulla luna.|siamo|abbiamo,siete|Wir sind im Urlaub auf dem Mond.
+Tu ___ un drago in giardino.|hai|sei,ha|Du hast einen Drachen im Garten.
+Le galline ___ stanche.|sono|hanno,è|Die Hühner sind müde.
+Io ___ fame di gelato.|ho|sono,ha|Ich habe Hunger auf Eis.`},
+    {icon:'👒', title:'Il, lo, la …', tip:'il (m) · lo (vor s+Konsonant, z) · la (f) · i (m. Plural) · le (f. Plural)', items:`
+___ mucca balla il tango.|La|Il,Lo|Die Kuh tanzt Tango.
+___ gatto suona il piano.|Il|La,Lo|Die Katze spielt Klavier.
+___ zio vola in bicicletta.|Lo|Il,La|Der Onkel fliegt mit dem Fahrrad.
+___ pinguini mangiano patatine.|I|Le,Il|Die Pinguine essen Pommes.
+___ nonne ballano il rock.|Le|I,La|Die Omas tanzen Rock.
+___ studente dorme in classe.|Lo|Il,La|Der Schüler schläft in der Klasse.`},
+    {icon:'🍝', title:'Pasta-Verben auf -are', tip:'parlare: parlo, parli, parla, parliamo, parlate, parlano', items:`
+Io ___ con il mio pesce.|parlo|parla,parli|Ich spreche mit meinem Fisch.
+Noi ___ sotto la pioggia.|balliamo|ballate,balla|Wir tanzen im Regen.
+Tu ___ come una sirena.|canti|canta,cantate|Du singst wie eine Meerjungfrau.
+I gatti ___ la pizza.|mangiano|mangia,mangiate|Die Katzen essen Pizza.
+Voi ___ sul tetto?|giocate|giochiamo,gioca|Spielt ihr auf dem Dach?
+Mio zio ___ in pigiama.|lavora|lavori,lavorano|Mein Onkel arbeitet im Pyjama.`},
+    {icon:'😋', title:'Mi piace!', tip:'mi piace + Einzahl/Verb · mi piacciono + Mehrzahl', items:`
+Mi ___ il cioccolato.|piace|piacciono,piaccio|Ich mag Schokolade.
+Al mio gatto ___ i calzini.|piacciono|piace,piacere|Meine Katze mag Socken.
+Ci ___ ballare sotto la pioggia.|piace|piacciono,piacciamo|Wir tanzen gern im Regen.
+Ti ___ i ragni?|piacciono|piace,piaci|Magst du Spinnen?
+Alla nonna ___ il rock.|piace|piacciono,piaci|Oma mag Rock.
+Mi ___ i dinosauri.|piacciono|piace,piaccio|Ich mag Dinosaurier.`},
+    {icon:'⏳', title:'Zeitreise', tip:'avere/essere + Partizip: mangiato · visto · andato/andata', items:`
+Ieri ho ___ un dinosauro.|visto|vedere,vede|Gestern habe ich einen Dinosaurier gesehen.
+Il cane ha ___ i miei calzini.|mangiato|mangiare,mangia|Der Hund hat meine Socken gefressen.
+Noi ___ finito la torta gigante.|abbiamo|siamo,avete|Wir haben die Riesentorte aufgegessen.
+La mucca è ___ sulla luna.|andata|andato,andare|Die Kuh ist auf den Mond gegangen.
+Loro ___ cantato tutta la notte.|hanno|sono,ha|Sie haben die ganze Nacht gesungen.
+Il nonno ___ partito in razzo.|è|ha,sono|Opa ist mit der Rakete abgereist.`},
+    {icon:'👗', title:'Adjektive in Mode', tip:'-o (m) · -a (f) · -i (m. Plural) · -e (f. Plural)', items:`
+La giraffa è molto ___.|alta|alto,alti|Die Giraffe ist sehr groß.
+I miei calzini sono ___.|rossi|rosso,rosse|Meine Socken sind rot.
+Il fantasma è ___.|piccolo|piccola,piccoli|Das Gespenst ist klein.
+Le galline sono ___.|simpatiche|simpatica,simpatici|Die Hühner sind nett.
+La mia pizza è ___.|buonissima|buonissimo,buonissime|Meine Pizza ist superlecker.
+I draghi sono ___.|gentili|gentile,gentila|Die Drachen sind nett.`},
+  ],
+};
+const GRAMMAR = {};
+Object.entries(GRAMMAR_RAW).forEach(([lang, topics])=>{
+  GRAMMAR[lang] = topics.map(t=>({...t, items: t.items.trim().split('\n').map(line=>{
+    const [sent, answer, wrongs, de] = line.split('|');
+    return {sent, answer, wrongs: wrongs.split(','), de};
+  })}));
+});
+
 const LEVELS = RAW_LEVELS.map(l=>({icon:l.icon, title:l.title}));
 function currentLang(){ return state.language || 'en'; }
 function levelWords(levelIdx){
@@ -667,7 +881,7 @@ let session = null; // aktueller Levellauf
 function defaultState(){
   return {
     xp:0, coins:20, hearts:MAX_HEARTS, lastHeartLoss:null,
-    streak:0, lastPlayDate:null, difficulty:null, language:null,
+    streak:0, lastPlayDate:null, difficulty:null, language:null, grammarProgress:{},
     levelProgress: LEVELS.map(()=>({stars:0, bestCorrect:0})),
     totalLevelsCompleted:0
   };
@@ -806,7 +1020,7 @@ document.getElementById('langBackBtn').addEventListener('click', ()=>{
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  document.querySelector('.bottom-nav').style.display = (id==='screen-map'||id==='screen-stats') ? 'flex' : 'none';
+  document.querySelector('.bottom-nav').style.display = (id==='screen-map'||id==='screen-stats'||id==='screen-grammar') ? 'flex' : 'none';
 }
 
 /* ---------- MAP RENDER ---------- */
@@ -860,7 +1074,11 @@ function renderMap(){
 
 /* ---------- LEVEL INTRO ---------- */
 let pendingLevel = 0;
+let pendingMode = 'vocab';
 function openIntro(i){
+  pendingMode = 'vocab';
+  document.getElementById('introTip').classList.add('hidden');
+  document.getElementById('backToMapBtn').textContent = 'Zurück zur Karte';
   pendingLevel = i;
   const lvl = LEVELS[i];
   document.getElementById('introIcon').textContent = lvl.icon;
@@ -868,11 +1086,174 @@ function openIntro(i){
   document.getElementById('introDesc').textContent = `${RAW_LEVELS[i].words.length} Wörter · Mix aus vielen Mini-Spielen`;
   showScreen('screen-intro');
 }
-document.getElementById('backToMapBtn').addEventListener('click', ()=>{ renderMap(); showScreen('screen-map'); });
+document.getElementById('backToMapBtn').addEventListener('click', ()=>goHome());
 document.getElementById('startLevelBtn').addEventListener('click', ()=>{
   if(state.hearts<=0){ showScreen('screen-gameover'); return; }
-  startLevel(pendingLevel);
+  if(pendingMode==='grammar') startGrammar(pendingLevel); else startLevel(pendingLevel);
 });
+
+/* ---------- GRAMMATIK-BEREICH ---------- */
+function grammarTopics(){ return GRAMMAR[currentLang()]; }
+function grammarStars(){
+  const lang = currentLang();
+  if(!state.grammarProgress) state.grammarProgress = {};
+  if(!state.grammarProgress[lang]) state.grammarProgress[lang] = grammarTopics().map(()=>0);
+  return state.grammarProgress[lang];
+}
+function setNav(name){
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active', b.dataset.nav===name));
+}
+function goHome(){
+  if(session && session.speedTimer){ clearInterval(session.speedTimer); session.speedTimer=null; }
+  if(pendingMode==='grammar'){ renderGrammar(); showScreen('screen-grammar'); setNav('grammar'); }
+  else { renderMap(); showScreen('screen-map'); setNav('map'); }
+}
+function renderGrammar(){
+  const stars = grammarStars();
+  const container = document.getElementById('grammarPath');
+  container.innerHTML = '';
+  document.getElementById('grammarSub').textContent = `${LANGS[currentLang()].label} · Lustige Sätze, echte Regeln`;
+  grammarTopics().forEach((t,i)=>{
+    const status = stars[i]>0 ? (stars[i]>=3?'perfect':'unlocked') : (i===0 || stars[i-1]>0 ? 'current' : 'locked');
+    const node = document.createElement('div');
+    node.className = 'level-node ' + status;
+    const label = document.createElement('div'); label.className='node-label'; label.textContent = t.title;
+    node.appendChild(label);
+    if(status==='locked'){
+      node.innerHTML += '<span class="node-lock-icon">🔒</span>';
+    } else {
+      node.innerHTML += `<span>${t.icon}</span>`;
+      const row = document.createElement('div'); row.className='node-stars';
+      for(let s=1;s<=3;s++){ const sp=document.createElement('span'); sp.textContent = s<=stars[i]?'⭐':'☆'; row.appendChild(sp); }
+      node.appendChild(row);
+    }
+    node.addEventListener('click', ()=>{ sndTap(); if(status!=='locked') openGrammarIntro(i); });
+    container.appendChild(node);
+  });
+}
+function openGrammarIntro(i){
+  pendingMode = 'grammar';
+  pendingLevel = i;
+  const t = grammarTopics()[i];
+  document.getElementById('introIcon').textContent = t.icon;
+  document.getElementById('introTitle').textContent = t.title;
+  document.getElementById('introDesc').textContent = 'Lückenfüller · Satzbau · Fehlerjagd · Richtig oder Quatsch?';
+  const tip = document.getElementById('introTip');
+  tip.textContent = '🦉 Flügos Spickzettel: ' + t.tip;
+  tip.classList.remove('hidden');
+  document.getElementById('backToMapBtn').textContent = 'Zurück zum Dschungel';
+  showScreen('screen-intro');
+}
+const GRAMMAR_TYPES = ['gram_gap','gram_order','gram_bug','gram_tf'];
+function buildGrammarQuestions(topicIdx){
+  const items = shuffle(grammarTopics()[topicIdx].items);
+  const types = shuffle(GRAMMAR_TYPES);
+  const qs = items.map((item,i)=>({type:types[i%types.length], item}));
+  // zwei Bonusrunden mit einer anderen Spielart
+  shuffle(items).slice(0,2).forEach(item=>{
+    const used = qs.find(q=>q.item===item).type;
+    qs.push({type: shuffle(GRAMMAR_TYPES.filter(t=>t!==used))[0], item});
+  });
+  return shuffle(qs);
+}
+function startGrammar(topicIdx){
+  touchStreak();
+  pendingMode = 'grammar';
+  session = {
+    mode:'grammar', topicIdx, topic: grammarTopics()[topicIdx],
+    questions: buildGrammarQuestions(topicIdx),
+    qi:0, correct:0, combo:0, maxCombo:0, answered:false
+  };
+  showScreen('screen-game');
+  renderQuestion();
+}
+const GRAMMAR_JOKES_OK = ['Grammatik-Ninja! 🥷','Flügo macht einen Freudentanz 💃','Dein Lehrer weint vor Glück 😭','Satz-Zauberer! 🪄','So elegant wie eine Giraffe im Anzug 🦒','Die Pinguine applaudieren 🐧👏'];
+const GRAMMAR_JOKES_NO = ['Uups, Flügo ist vom Ast gefallen 🦉💫','Die Kuh schüttelt den Kopf 🐄','Knapp daneben ist auch vorbei 🙈','Der Grammatik-Drache kichert 🐉'];
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function escapeHtml(s){ return s.replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function renderGrammarQuestion(q){
+  const {sent, answer, wrongs, de} = q.item;
+  const area = document.getElementById('questionArea');
+  const full = sent.replace('___', answer);
+  session.grammarFix = answer;
+  const deLine = `<div class="q-de">🇩🇪 ${escapeHtml(de)}</div>`;
+
+  if(q.type==='gram_gap'){
+    const gapHtml = escapeHtml(sent).replace('___','<span class="gap">&nbsp;?&nbsp;</span>');
+    renderMC(`<div class="q-hint">Lückenfüller: Welches Wort passt? 🤔</div><div class="q-sentence">${gapHtml}</div>${deLine}`,
+      shuffle([answer, ...wrongs]), answer);
+    return;
+  }
+
+  if(q.type==='gram_tf'){
+    const isRight = Math.random()<0.5;
+    const shown = isRight ? full : sent.replace('___', pick(wrongs));
+    renderTrueFalse(`<div class="q-hint">Richtig oder Quatsch? 🧐</div><div class="q-sentence">${escapeHtml(shown)}</div>${deLine}`, isRight);
+    return;
+  }
+
+  if(q.type==='gram_bug'){
+    const tokens = sent.split(' ');
+    const gapIdx = tokens.findIndex(t=>t.includes('___'));
+    const wrong = pick(wrongs);
+    area.innerHTML = `<div class="q-hint">Fehlerjagd: Tippe das falsche Wort an! 🔍</div>${deLine}<div class="word-chips" id="bugChips"></div>`;
+    const box = document.getElementById('bugChips');
+    tokens.forEach((t,i)=>{
+      const chip = document.createElement('div');
+      chip.className = 'word-chip';
+      chip.textContent = i===gapIdx ? t.replace('___', wrong) : t;
+      chip.addEventListener('click', ()=>{
+        if(session.answered) return;
+        sndTap();
+        const ok = i===gapIdx;
+        box.querySelectorAll('.word-chip').forEach(c=>c.classList.add('locked'));
+        box.children[gapIdx].classList.add('correct');
+        box.children[gapIdx].textContent = tokens[gapIdx].replace('___', answer);
+        if(!ok) chip.classList.add('wrong');
+        handleAnswer(ok, null, answer);
+      });
+      box.appendChild(chip);
+    });
+    return;
+  }
+
+  // gram_order: Satz aus Wörtern bauen
+  const words = full.split(' ');
+  area.innerHTML = `<div class="q-hint">Satzbau: Tippe die Wörter in der richtigen Reihenfolge 🧩</div>${deLine}
+    <div class="build-sentence" id="builtSentence"></div>
+    <div class="word-chips" id="orderChips"></div>
+    <button class="btn btn-secondary" id="orderBack" style="margin-top:12px;">⌫ Zurück</button>`;
+  const built = document.getElementById('builtSentence');
+  const box = document.getElementById('orderChips');
+  const stack = [];
+  shuffle(words.map((w,i)=>({w,i}))).forEach(({w})=>{
+    const chip = document.createElement('div');
+    chip.className = 'word-chip';
+    chip.textContent = w;
+    chip.addEventListener('click', ()=>{
+      if(session.answered || chip.classList.contains('used')) return;
+      sndTap();
+      chip.classList.add('used');
+      stack.push({w, chip});
+      update();
+    });
+    box.appendChild(chip);
+  });
+  function update(){
+    built.textContent = stack.map(s=>s.w).join(' ');
+    if(stack.length===words.length){
+      const ok = built.textContent===full;
+      session.grammarFix = full;
+      handleAnswer(ok, null, full);
+    }
+  }
+  document.getElementById('orderBack').addEventListener('click', ()=>{
+    if(session.answered || !stack.length) return;
+    stack.pop().chip.classList.remove('used');
+    update();
+  });
+}
 
 /* ---------- GAME LOGIC ---------- */
 function shuffle(arr){ const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
@@ -938,7 +1319,9 @@ function randForeignWord(levelIdx){
 
 function startLevel(levelIdx){
   touchStreak();
+  pendingMode = 'vocab';
   session = {
+    mode:'vocab',
     levelIdx,
     questions: buildQuestions(levelIdx),
     qi: 0,
@@ -963,6 +1346,7 @@ function renderQuestion(){
   updateGameHeader();
   session.answered = false;
   const q = session.questions[session.qi];
+  if(session.mode==='grammar'){ renderGrammarQuestion(q); return; }
   const words = levelWords(session.levelIdx);
 
   if(q.type==='match_round'){ renderMatchRound(q.words); return; }
@@ -1379,7 +1763,7 @@ function handleAnswer(isCorrect, btnEl, correctAnswer){
       sndCombo();
       showCombo(session.combo);
     }
-    showFeedback(true, comboMessage(session.combo));
+    showFeedback(true, session.mode==='grammar' && session.combo<3 ? pick(GRAMMAR_JOKES_OK) : comboMessage(session.combo));
   } else {
     session.combo = 0;
     sndWrong();
@@ -1387,7 +1771,11 @@ function handleAnswer(isCorrect, btnEl, correctAnswer){
     if(state.hearts < MAX_HEARTS && !state.lastHeartLoss) state.lastHeartLoss = Date.now();
     saveState();
     updateGameHeader();
-    showFeedback(false, `Richtig war: "${correctAnswer}"`);
+    if(session.mode==='grammar'){
+      showFeedback(false, `${pick(GRAMMAR_JOKES_NO)}`, `Richtig: „${session.grammarFix}“ · 💡 ${session.topic.tip}`);
+    } else {
+      showFeedback(false, `Richtig war: "${correctAnswer}"`);
+    }
   }
 }
 
@@ -1404,10 +1792,12 @@ function showCombo(combo){
   setTimeout(()=>el.classList.remove('show'), 900);
 }
 
-function showFeedback(ok, text){
+function showFeedback(ok, text, detail){
   const bar = document.getElementById('feedbackBar');
   bar.className = 'feedback-bar show ' + (ok?'ok':'no');
-  document.getElementById('feedbackText').textContent = (ok?'✅ ':'❌ ') + text;
+  const ft = document.getElementById('feedbackText');
+  ft.textContent = (ok?'✅ ':'❌ ') + text;
+  if(detail){ const sm = document.createElement('small'); sm.textContent = detail; ft.appendChild(sm); }
   const nextBtn = document.getElementById('feedbackNextBtn');
   nextBtn.onclick = ()=>{
     bar.classList.remove('show');
@@ -1419,8 +1809,7 @@ function showFeedback(ok, text){
 
 document.getElementById('quitGameBtn').addEventListener('click', ()=>{
   if(confirm('Level wirklich verlassen? Dein Fortschritt in diesem Level geht verloren.')){
-    if(session && session.speedTimer){ clearInterval(session.speedTimer); session.speedTimer=null; }
-    renderMap(); showScreen('screen-map');
+    goHome();
   }
 });
 
@@ -1433,8 +1822,11 @@ function finishLevel(){
   else if(pct>=0.7) stars = 2;
   else if(pct<0.5) stars = pct===0?0:1;
 
-  const prog = state.levelProgress[session.levelIdx];
-  const improved = stars > prog.stars;
+  const isGrammar = session.mode==='grammar';
+  const prog = isGrammar ? null : state.levelProgress[session.levelIdx];
+  const gStars = isGrammar ? grammarStars() : null;
+  const prevStars = isGrammar ? gStars[session.topicIdx] : prog.stars;
+  const improved = stars > prevStars;
   if(improved){
     state.xp += 20 + stars*10;
   } else {
@@ -1442,7 +1834,9 @@ function finishLevel(){
   }
   const coinsEarned = 5 + session.correct*2 + session.maxCombo*2;
   state.coins += coinsEarned;
-  if(improved){
+  if(improved && isGrammar){
+    gStars[session.topicIdx] = stars;
+  } else if(improved){
     prog.stars = stars;
     if(prog.bestCorrect===0) state.totalLevelsCompleted++;
     prog.bestCorrect = Math.max(prog.bestCorrect, session.correct);
@@ -1451,7 +1845,8 @@ function finishLevel(){
 
   document.getElementById('resultMascot').textContent = stars===3?'🥳':stars===2?'😄':stars===1?'🙂':'😅';
   document.getElementById('resultStars').textContent = '⭐'.repeat(stars) + '☆'.repeat(3-stars);
-  document.getElementById('resultTitle').textContent = stars>=2 ? 'Level geschafft! 🎉' : 'Fast geschafft!';
+  document.getElementById('resultTitle').textContent = stars>=2 ? (isGrammar?'Grammatik gezähmt! 🧠':'Level geschafft! 🎉') : 'Fast geschafft!';
+  document.getElementById('continueBtn').textContent = isGrammar ? 'Weiter zum Grammatik-Dschungel 📘' : 'Weiter zur Karte 🗺️';
   document.getElementById('resultDesc').textContent = stars>=2 ? 'Du wirst immer besser!' : 'Übe weiter, du schaffst 3 Sterne!';
   document.getElementById('resCorrect').textContent = `${session.correct}/${total}`;
   document.getElementById('resCoins').textContent = `+${coinsEarned}`;
@@ -1461,14 +1856,15 @@ function finishLevel(){
   showScreen('screen-result');
   if(stars>=2){ sndLevelUp(); launchConfetti(); }
 }
-document.getElementById('continueBtn').addEventListener('click', ()=>{ renderMap(); showScreen('screen-map'); });
+document.getElementById('continueBtn').addEventListener('click', ()=>goHome());
 
 /* ---------- GAME OVER ---------- */
 document.getElementById('retryBtn').addEventListener('click', ()=>{
   state.hearts = MAX_HEARTS; state.lastHeartLoss = null; saveState();
-  startLevel(session ? session.levelIdx : pendingLevel);
+  if(session && session.mode==='grammar') startGrammar(session.topicIdx);
+  else startLevel(session ? session.levelIdx : pendingLevel);
 });
-document.getElementById('gameoverMapBtn').addEventListener('click', ()=>{ renderMap(); showScreen('screen-map'); });
+document.getElementById('gameoverMapBtn').addEventListener('click', ()=>goHome());
 
 /* ---------- CONFETTI ---------- */
 function launchConfetti(){
@@ -1496,7 +1892,8 @@ document.querySelectorAll('.nav-btn').forEach(btn=>{
     document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     sndTap();
-    if(btn.dataset.nav==='map'){ renderMap(); showScreen('screen-map'); }
+    if(btn.dataset.nav==='map'){ pendingMode='vocab'; renderMap(); showScreen('screen-map'); }
+    else if(btn.dataset.nav==='grammar'){ pendingMode='grammar'; renderGrammar(); showScreen('screen-grammar'); }
     else { renderStats(); showScreen('screen-stats'); }
   });
 });
