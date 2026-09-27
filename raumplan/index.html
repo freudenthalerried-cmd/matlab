@@ -52,10 +52,11 @@
       <div class="row">
         <label>Maßband Marke 0 → 1 (m) <input id="pgDist" inputmode="decimal" size="6" value="3,000"></label>
         <label>Marke 2 → 3 (m, optional) <input id="pgDist2" inputmode="decimal" size="6" placeholder="z. B. 3,000"></label>
+        <label>Erwartete Wände <input id="pgWalls" inputmode="numeric" size="2" placeholder="z. B. 4"></label>
         <label>Bildabstand <select id="pgStep"><option value="0.1">0,1 s (genau, langsam)</option><option value="0.2" selected>0,2 s</option><option value="0.33">0,33 s (schnell)</option></select></label>
       </div>
       <label class="small">Räume (optional, bei mehreren Räumen in einem Video): je Zeile „Name: Marken von–bis“
-        <textarea id="pgRooms" rows="2" placeholder="Wohnen: 4-19&#10;Küche: 20-31"></textarea></label>
+        <textarea id="pgRooms" rows="2" placeholder="Wohnen: 4-19: 6   (6 = erwartete Wände, optional)&#10;Küche: 20-31: 4"></textarea></label>
       <div class="row"><button id="pgRun" class="pri">▶ Auswerten</button><progress id="pgProg" max="1" value="0" hidden></progress></div>
       <pre id="pgLog" class="log" hidden></pre>
       <div id="pgRes"></div>

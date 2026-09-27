@@ -146,10 +146,10 @@ function selectStill(frames, W, H) {
   if (sel.length < 12) { pgLog('Video zu unruhig: bitte öfter stillhalten oder eine Fotoserie machen. Es werden alle Bilder verwendet.'); sel = frames.filter(f => f.dets.length); }
   return sel;
 }
-function pgRoomDefs(txt, ids) { // "Name: 4-19" -> [{name, ids:Set}]
-  const defs = String(txt || '').split('\n').map(l => l.match(/^\s*(.+?)\s*:\s*(\d+)\s*[-–]\s*(\d+)\s*$/)).filter(Boolean)
-    .map(m => ({ name: m[1], ids: new Set(ids.filter(i => i >= +m[2] && i <= +m[3])) }));
-  return defs.length ? defs : [{ name: 'Raum ' + (S.rooms.length + 1), ids: null }];
+function pgRoomDefs(txt, ids) { // "Name: 4-19" oder "Name: 4-19: 6" (6 Wände erwartet) -> [{name, ids:Set, expect}]
+  const defs = String(txt || '').split('\n').map(l => l.match(/^\s*(.+?)\s*:\s*(\d+)\s*[-–]\s*(\d+)\s*(?::\s*(\d+))?\s*$/)).filter(Boolean)
+    .map(m => ({ name: m[1], ids: new Set(ids.filter(i => i >= +m[2] && i <= +m[3])), expect: m[4] ? +m[4] : 0 }));
+  return defs.length ? defs : [{ name: 'Raum ' + (S.rooms.length + 1), ids: null, expect: Math.round(num($('#pgWalls').value)) || 0 }];
 }
 $('#pgRun').onclick = async () => {
   if (!pgFiles || !pgFiles.length) return alert('Zuerst ein Video (oder eine Fotoserie) aufnehmen oder wählen.');
@@ -168,11 +168,12 @@ $('#pgRun').onclick = async () => {
     if (!rec.ok) throw new Error(rec.msg);
     pgLog(`Ausgleich: ${rec.nImg} Bilder, ${rec.ids.length} Marken, Bildfehler rms ${rec.res.rms.toFixed(2)} px, f = ${rec.res.it[0].toFixed(0)} px, k1 = ${rec.res.it[3].toFixed(3)}${rec.dropped ? `, ${rec.dropped} Fehlsichtungen entfernt` : ''}`);
     const res = pgRoomDefs($('#pgRooms').value, rec.ids).map(d => ({ ...d, w: PG.walls(rec, { ids: d.ids }) }));
+    res.forEach(d => { if (d.w.ok && d.expect && d.w.lengths.length !== d.expect) d.w.warn.unshift(`Erwartet ${d.expect} Wände, gefunden ${d.w.lengths.length}. ${d.w.lengths.length < d.expect ? 'Mindestens eine Wand hat keine (brauchbare) Marke – Marke(n) dort ankleben bzw. öfter fotografieren. Der Raum ist so NICHT vollständig!' : 'Eine Wand wurde doppelt erkannt – Marken prüfen.'}`); });
     pgLast = { rec, res, frames, W, H, video, imgs };
     const tgt = S.target || 3;
     $('#pgRes').innerHTML = res.map(r => !r.w.ok ? `<p class="warn">${esc(r.name)}: ${esc(r.w.msg)}</p>` :
-      `<h4>${esc(r.name)}</h4><table class="pgt"><tr><th>Wand</th><th>Länge</th><th>±mm (1σ)</th><th>Marken</th><th></th></tr>` +
-      r.w.lengths.map((L, i) => `<tr><td>${i + 1}</td><td><b>${f2(L, 3)} m</b></td><td class="${r.w.sigma[i] * 1000 > tgt ? 'warn' : 'ok'}">${r.w.sigma[i] == null ? '–' : f2(r.w.sigma[i] * 1000, 1)}</td><td>${r.w.groups[i].join(', ')}</td><td><button data-op="${res.indexOf(r)},${i}" title="Fenster/Tür in einem Foto antippen">📐 Öffnung</button></td></tr>`).join('') +
+      `<h4>${esc(r.name)}</h4><table class="pgt"><tr><th>Wand</th><th>Länge</th><th>±mm (1σ)</th><th>Marken</th><th>Kontrolle (Maßband)</th><th></th></tr>` +
+      r.w.lengths.map((L, i) => `<tr><td>${i + 1}</td><td><b>${f2(L, 3)} m</b></td><td class="${r.w.sigma[i] * 1000 > tgt ? 'warn' : 'ok'}">${r.w.sigma[i] == null ? '–' : f2(r.w.sigma[i] * 1000, 1)}</td><td>${r.w.groups[i].join(', ')}</td><td><input class="chk" data-ck="${res.indexOf(r)},${i}" inputmode="decimal" size="6" placeholder="m/cm"> <span id="ck${res.indexOf(r)}_${i}"></span></td><td><button data-op="${res.indexOf(r)},${i}" title="Fenster/Tür in einem Foto antippen">📐 Öffnung</button></td></tr>`).join('') +
       `</table>${r.w.height ? (r.w.hSig !== null && r.w.hSig < 0.005 ? `<p>Raumhöhe (Deckenmarke): <b>${f2(r.w.height, 3)} m</b> ±${f2(r.w.hSig * 1000, 1)} mm</p>` : `<p class="warn">Raumhöhe unsicher (${f2(r.w.height, 2)} m) – Deckenmarke aus mindestens 3 Ecken fotografieren.</p>`) : ''}${r.w.warn.map(x => `<p class="warn">${esc(x)}</p>`).join('')}`).join('') +
       (res.some(r => r.w.ok) ? `<div class="row"><button id="pgTake" class="pri">Räume in den Plan übernehmen</button></div>` : '') +
       (rec.suspect ? `<p class="warn">⚠ ${esc(rec.suspect)} Ergebnis unsicher – mehr Fotos aus verschiedenen Positionen (auch zum Boden) aufnehmen.</p>` : '') +
@@ -180,6 +181,8 @@ $('#pgRun').onclick = async () => {
       `<p class="hint">Bildfehler ${rec.res.rms.toFixed(2)} px (gut: &lt; 0,5 px). Ist ein ±-Wert rot, mehr Bilder aus den Ecken oder weitere Marken an dieser Wand. Eine „Wand“ mit nur 1 Marke ist meist eine Fehlzuordnung – Marke prüfen.</p>`;
     const tk = $('#pgTake'); if (tk) tk.onclick = pgTake;
     $$('#pgRes [data-op]').forEach(b => b.onclick = () => { const [ri, wi] = b.dataset.op.split(',').map(Number); opStart(ri, wi); });
+    $$('#pgRes [data-ck]').forEach(inp => inp.oninput = () => { const [ri, wi] = inp.dataset.ck.split(',').map(Number), d = pgLast.res[ri], v = parseLen(inp.value);
+      (d.checks = d.checks || {})[wi] = v || undefined; $(`#ck${ri}_${wi}`).innerHTML = v ? chkText(d.w.lengths[wi] - v, d.w.sigma[wi]) : ''; });
   } catch (e) { pgLog('Fehler: ' + e.message); $('#pgRes').innerHTML = `<p class="warn">${esc(e.message)}</p>`; }
   pr.value = 1; btn.disabled = false;
 };
@@ -268,6 +271,8 @@ function autoWallThickness() {
   return n / 2;
 }
 function planMarkers() { const all = {}; S.rooms.forEach(r => { const m = roomMarkersPlan(r); for (const id in m) if (!all[id] || m[id].s < all[id].s) all[id] = m[id]; }); return all; }
+// Kontrollmaß: Abweichung Messung − Maßband, bewertet gegen die Unsicherheit (Maßband selbst ±1,5 mm)
+function chkText(dv, sig) { const lim = 2 * Math.hypot(sig || 0.002, 0.0015); return `<span class="${Math.abs(dv) <= lim ? 'ok' : 'warn'}">${dv >= 0 ? '+' : ''}${f2(dv * 1000, 1)} mm ${Math.abs(dv) <= lim ? '✔' : '⚠'}</span>`; }
 function pgTake() {
   const { rec, res } = pgLast; let first = null;
   // An bestehenden Plan anschließen: gemeinsame Marken (z. B. Verbindungsmarken im Türbereich)
@@ -287,6 +292,7 @@ function pgTake() {
     // Wand i im Plan = Kante Ecke i -> i+1; Sigma gleich indiziert
     r.adj = { wallSigma: d.w.sigma.map(v => v ?? 0.01), cornerMax: 0, s0: rec.res.s0, red: rec.nObs, warn: d.w.warn, v: [], pg: { rms: rec.res.rms, nImg: rec.nImg } };
     if (d.w.height && d.w.hSig !== null && d.w.hSig < 0.005) r.h = +d.w.height.toFixed(3);
+    r.checks = Object.entries(d.checks || {}).filter(([, v]) => v).map(([w, v]) => ({ wall: +w, v }));
     r.ops = (d.ops || []).slice(); d.planRoom = r;
     r.src = 'Photogrammetrie'; S.rooms.push(r); if (first === null) first = S.rooms.length - 1;
   });
@@ -823,8 +829,17 @@ function roomPanel() {
     <td><button data-a="delop" data-oi="${i}" class="danger">×</button></td></tr>`).join('') || '<tr><td colspan="8" class="hint">Keine – bei einer Wand „+ Öffnung“ tippen. Abstand = vom Wandanfang (Ecke mit gleicher Nummer).</td></tr>'}
   </table>
   ${obsPanel(r)}
+  ${checkPanel(r)}
   ${linkPanel(r)}`;
   rstat();
+}
+function checkPanel(r) {
+  const g = geo(r), C = r.checks || [];
+  return `<h4>Kontrollmaße <small class="hint">(Maßband, nur Vergleich – verändern den Plan nicht)</small></h4>
+  <table>${C.map((c, k) => `<tr><td>Wand <select data-ckw="${k}">${r.segs.map((_, i) => `<option value="${i}" ${i === c.wall ? 'selected' : ''}>${i + 1}</option>`).join('')}</select></td>
+    <td><input data-ckv="${k}" inputmode="decimal" value="${f2(c.v, 3)}"></td><td>${g.E[c.wall] ? chkText(g.E[c.wall].L - c.v, r.adj && r.adj.wallSigma ? r.adj.wallSigma[c.wall] : null) : ''}</td>
+    <td><button data-a="delck" data-oi="${k}" class="danger">×</button></td></tr>`).join('') || '<tr><td class="hint">Ein einziges Maßbandmaß genügt als Nachweis der Genauigkeit.</td></tr>'}</table>
+  <div class="row"><button data-a="addck">+ Kontrollmaß</button></div>`;
 }
 function linkPanel(r) {
   const others = S.rooms.map((o, k) => [o, k]).filter(([o]) => o !== r);
@@ -935,11 +950,13 @@ $('#rpanel').addEventListener('input', e => {
   if (d.k) r[d.k] = d.k === 'dims' ? t.value === '1' : NUMK.includes(d.k) ? num(t.value) : t.value;
   if (d.s != null) r.segs[d.s][d.f] = num(t.value);
   if (d.o != null) r.ops[d.o][d.f] = d.f === 'type' ? t.value : d.f === 'wall' ? +t.value : num(t.value);
+  if (d.ckw != null || d.ckv != null) { const c = r.checks[d.ckw ?? d.ckv]; if (d.ckw != null) c.wall = +t.value; else c.v = parseLen(t.value); save(); return; }
   if (d.lk != null) { r._link[d.lk] = ['room', 'wall', 'wall2', 'opA', 'opB'].includes(d.lk) ? +t.value : t.value; if (['room', 'mode'].includes(d.lk)) roomPanel(); return; }
   if (d.ob != null) { const o = r.obs[d.ob]; o[d.f] = d.f === 'i' || d.f === 'j' ? +t.value : d.f === 's' ? (o.typ === 'winkel' ? num(t.value) : num(t.value) / 1000) : o.typ === 'winkel' ? num(t.value) : parseLen(t.value); }
   if (d.s != null || d.ob != null) r.adj = null;
   save(); renderPlan(); rstat();
 });
+$('#rpanel').addEventListener('change', e => { const d = e.target.dataset; if (d.ckw != null || d.ckv != null) roomPanel(); });
 $('#rpanel').addEventListener('click', e => {
   const a = e.target.dataset.a, r = S.rooms[selRoom]; if (!a || !r) return;
   const oi = e.target.dataset.oi;
@@ -955,6 +972,8 @@ $('#rpanel').addEventListener('click', e => {
     case 'addop': { const w = +e.target.dataset.w, L = r.segs[w].len; r.ops.push({ type: 'fenster', wall: w, pos: +Math.max(0, (L - 1.2) / 2).toFixed(2), w: 1.2, h: 1.4, brh: 0.9 }); break; }
     case 'delop': r.ops.splice(oi, 1); break;
     case 'delob': r.obs.splice(oi, 1); r.adj = null; break;
+    case 'addck': (r.checks = r.checks || []).push({ wall: 0, v: +geo(r).E[0].L.toFixed(3) }); break;
+    case 'delck': r.checks.splice(oi, 1); break;
     case 'obsWalls': r.obs = r.obs || []; r.segs.forEach((_, i) => { if (!r.obs.some(o => o.typ === 'wand' && o.i === i)) r.obs.push({ typ: 'wand', i, v: '', s: 0.0015 }); }); break;
     case 'obsDiag': (r.obs = r.obs || []).push({ typ: 'diag', i: 0, j: Math.min(2, r.segs.length - 1), v: '', s: 0.002 }); break;
     case 'obsChord': (r.obs = r.obs || []).push({ typ: 'sehne', i: 0, a: 1.5, b: 1.5, c: '', s: 0.0015 }); break;
@@ -1070,6 +1089,7 @@ $('#xCsv').onclick = () => {
     });
     const g = geo(r);
     g.E.forEach((e, i) => L.push([r.name, 'Ergebnis Wand', `${i + 1}-${(i + 1) % n + 1}`, n3(e.L) + ' m', r.adj && r.adj.wallSigma ? n3(r.adj.wallSigma[i] * 1000) + ' mm' : 'nicht ausgeglichen', '', '', 'Plan', ''].map(q).join(';')));
+    (r.checks || []).forEach(c => { const e = g.E[c.wall]; if (e) L.push([r.name, 'Kontrollmaß (Maßband)', `${c.wall + 1}-${(c.wall + 1) % n + 1}`, n3(c.v) + ' m', '', n3((e.L - c.v) * 1000) + ' mm', '', 'Maßband', 'Vergleich Plan − Maßband'].map(q).join(';')); });
     L.push([r.name, 'Ergebnis Fläche', '', n3(g.area) + ' m²', '', '', '', 'Plan', r.adj && r.adj.s0 != null ? 'σ0=' + n3(r.adj.s0) : ''].map(q).join(';'));
   });
   download(fname('csv'), '\ufeff' + L.join('\r\n'), 'text/csv');
