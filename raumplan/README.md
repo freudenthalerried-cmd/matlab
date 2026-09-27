@@ -27,3 +27,12 @@ zeigt für jede Wand die erreichte Genauigkeit (±mm) und erkennt Tipp-/Ablesefe
 
 Tests: `node sim/test_ausgleich.js`, `node sim/test_boden.js`, `node sim/test_subpixel.js`,
 `node sim/test_kalib.js`, `python3 sim/genauigkeit.py`, Browser: `sim/e2e.js` (Playwright).
+
+## Messregeln für ±3 mm mit Maßband (Altbau, möbliert)
+
+- **Messhöhe einheitlich 1,00 m** (Schnitthöhe des Grundrisses). Altbauwände sind oft 5–10 mm aus dem Lot – am Boden und in 1 m Höhe gemessen ergibt verschiedene Maße.
+- **Haken-Spiel vermeiden:** vom Anschlag (Band gegen die Wand gedrückt) messen oder ab der 10-cm-Marke messen und 10 cm abziehen.
+- Band straff und gerade: 5 cm Durchhang oder Schräglage auf 4 m ≈ 0,3 mm – unkritisch; ein Knick um ein Möbel dagegen nicht.
+- Je Raum **2 Diagonalen** oder **Eckwinkel über Sehne** (Schenkel 1,50 m) an mind. 2 Ecken. Ohne Formmaß ist im Altbau die Ecklage nur ±3–8 cm genau.
+- **Wandstärken** an Tür- und Fensterleibungen messen, Räume mit „Nachbarraum anschließen“ verbinden, **Außenmaße** am Gebäude zur Kontrolle.
+- Die App meldet Tipp-/Ablesefehler (⚠) – betroffenes Maß nachmessen, nicht löschen.
