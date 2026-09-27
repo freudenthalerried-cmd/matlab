@@ -42,7 +42,8 @@
         <button id="pgPrint">🖨 Marken drucken</button>
       </div>
       <div class="row">
-        <label class="btn pri">📷 Foto aufnehmen<input id="pgCam" type="file" accept="image/*" capture="environment" hidden></label>
+        <button id="liveOpen" class="pri">📷 Live-Aufnahme mit Prüfung</button>
+        <label class="btn">📷 Einzelfoto<input id="pgCam" type="file" accept="image/*" capture="environment" hidden></label>
         <label class="btn">📁 Fotos / Video wählen<input id="pgFile" type="file" accept="video/*,image/*" multiple hidden></label>
         <span id="pgSrc" class="hint"></span>
       </div>
@@ -191,6 +192,12 @@
     <p class="hint">Hinweis: Ein Einreichplan muss in Österreich in der Regel von einer befugten Person (Baumeister/Architekt) als Planverfasser unterfertigt werden. Die App liefert die Bestandsaufnahme und Planvorlage.</p>
   </section>
 </main>
+<div id="live" hidden>
+  <div class="livebar"><b>Live-Aufnahme</b><span id="liveInfo" class="small"></span><span class="sp"></span><button id="liveClose">Fertig</button></div>
+  <div class="livecam"><video id="liveVid" playsinline muted></video><canvas id="liveOv"></canvas></div>
+  <div id="liveChips" class="chips"></div>
+  <div class="livebtns"><button id="liveShot" class="shot" title="Foto">●</button></div>
+</div>
 <script src="ausgleich.js"></script>
 <script src="ba.js"></script>
 <script src="marker.js"></script>

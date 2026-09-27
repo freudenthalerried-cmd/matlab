@@ -295,6 +295,62 @@ function pgTake() {
   if (msg) setTimeout(() => alert(msg), 50);
 }
 
+/* ---------- Live-Aufnahme: Kamera in der App, Marken sofort erkennen, Checkliste je Marke ---------- */
+const live = { stream: null, seen: {}, shots: 0, busy: false, timer: null, now: new Set() };
+function liveExpected() {
+  const n = Math.round(num($('#pgN').value)) || 0, from = Math.round(num($('#pgFrom').value)) || 4;
+  return [0, 1, 2, 3].concat(Array.from({ length: Math.max(0, Math.min(n, 90 - from)) }, (_, k) => from + k)).concat($('#pgConn').checked ? [90, 91, 92, 93] : []);
+}
+function liveChips() {
+  const need = liveExpected(), extra = Object.keys(live.seen).map(Number).filter(id => !need.includes(id));
+  const lab = id => id <= 3 ? `Boden ${id}` : id >= 90 ? `Verb. ${id}` : `${id}`;
+  $('#liveChips').innerHTML = need.concat(extra).map(id => { const c = live.seen[id] || 0; return `<span class="chip ${c >= 3 ? 'ok' : c ? 'part' : ''} ${live.now.has(id) ? 'now' : ''}">${lab(id)}: ${c}</span>`; }).join('');
+  const miss = need.filter(id => id !== 3 && !(id >= 90) && (live.seen[id] || 0) < 3);
+  $('#liveInfo').textContent = ` ${live.shots} Fotos · ` + (miss.length ? `noch zu wenig gesehen: ${miss.slice(0, 8).map(lab).join(', ')}${miss.length > 8 ? ' …' : ''}` : 'alle Marken ≥ 3× ✔');
+}
+async function liveStart() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return alert('Kamera im Browser nicht verfügbar – bitte „Einzelfoto“ oder die Kamera-App verwenden.');
+  try { live.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 3840 }, height: { ideal: 2160 } }, audio: false }); }
+  catch (e) { return alert('Kamera nicht freigegeben: ' + e.message); }
+  const v = $('#liveVid'); v.srcObject = live.stream; await v.play();
+  $('#live').hidden = false; if (!pgFiles || !pgFiles.some(f => f.type.startsWith('image'))) { live.seen = {}; live.shots = 0; } liveChips();
+  const ov = $('#liveOv'), cv = document.createElement('canvas'), ctx = cv.getContext('2d', { willReadFrequently: true });
+  const loop = () => {
+    if (!live.stream) return;
+    if (!live.busy && v.videoWidth) {
+      live.busy = true;
+      const s = Math.min(1, 960 / v.videoWidth); cv.width = Math.round(v.videoWidth * s); cv.height = Math.round(v.videoHeight * s);
+      ctx.drawImage(v, 0, 0, cv.width, cv.height);
+      const g = toGray(ctx, cv.width, cv.height, new Float32Array(cv.width * cv.height)), d = MK.detect(g, cv.width, cv.height, { maxW: 960, xcorners: false });
+      const r = v.getBoundingClientRect(); ov.width = r.width; ov.height = r.height; ov.style.left = v.offsetLeft + 'px'; ov.style.top = v.offsetTop + 'px';
+      // Video wird eingepasst (object-fit: contain) -> Maßstab und Rand berücksichtigen
+      const o = ov.getContext('2d'), k = Math.min(r.width / cv.width, r.height / cv.height), ox = (r.width - cv.width * k) / 2, oy = (r.height - cv.height * k) / 2, X = p => [p[0] * k + ox, p[1] * k + oy];
+      o.clearRect(0, 0, ov.width, ov.height); o.lineWidth = 3; o.font = 'bold 16px sans-serif';
+      d.forEach(m => { o.strokeStyle = (live.seen[m.id] || 0) >= 3 ? '#4caf50' : '#ffb300'; o.beginPath(); m.c.forEach((p, i) => i ? o.lineTo(...X(p)) : o.moveTo(...X(p))); o.closePath(); o.stroke(); o.fillStyle = '#fff'; const t = X(m.c[0]); o.fillText(String(m.id), t[0], t[1] - 4); });
+      live.now = new Set(d.map(m => m.id)); liveChips(); live.busy = false;
+    }
+    live.timer = setTimeout(loop, 350);
+  };
+  loop();
+}
+async function liveShot() {
+  const btn = $('#liveShot'), v = $('#liveVid'); btn.disabled = true;
+  try {
+    let blob = null; const track = live.stream.getVideoTracks()[0];
+    if ('ImageCapture' in window) { try { blob = await new ImageCapture(track).takePhoto(); } catch (e) { blob = null; } } // volle Sensorauflösung
+    if (!blob) { const c = document.createElement('canvas'); c.width = v.videoWidth; c.height = v.videoHeight; c.getContext('2d').drawImage(v, 0, 0); blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.95)); }
+    const file = new File([blob], `live_${String(++live.shots).padStart(3, '0')}.jpg`, { type: 'image/jpeg' });
+    pgSetFiles((pgFiles || []).filter(f => f.type.startsWith('image')).concat([file]));
+    // Zählung aus dem echten Foto (volle Auflösung)
+    const bm = await createImageBitmap(blob), c2 = document.createElement('canvas'); c2.width = bm.width; c2.height = bm.height; const x = c2.getContext('2d', { willReadFrequently: true }); x.drawImage(bm, 0, 0); bm.close();
+    MK.detect(toGray(x, c2.width, c2.height, new Float32Array(c2.width * c2.height)), c2.width, c2.height).forEach(m => live.seen[m.id] = (live.seen[m.id] || 0) + 1);
+    liveChips();
+  } catch (e) { alert('Foto fehlgeschlagen: ' + e.message); }
+  btn.disabled = false;
+}
+function liveStop() { clearTimeout(live.timer); if (live.stream) live.stream.getTracks().forEach(t => t.stop()); live.stream = null; $('#live').hidden = true; }
+$('#liveOpen').onclick = liveStart; $('#liveShot').onclick = liveShot; $('#liveClose').onclick = liveStop;
+
 /* ---------- 2 Vermessen ---------- */
 const parseLen = v => { const n = num(v); return n > 20 ? n / 100 : n; }; // > 20 -> Eingabe in cm
 const ptSigma = () => $('#snapOn').checked ? 0.5 : 1.5; // Tippgenauigkeit Raumecken px
