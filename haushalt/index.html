@@ -44,12 +44,28 @@ nav span{font-size:1.3rem}
 details summary{cursor:pointer;font-weight:600}
 .status{padding:10px;border-radius:10px;background:var(--accent-2);margin:8px 0}
 label{display:block;margin:10px 0 4px;font-size:.9rem;color:var(--muted)}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0}
+.switch input{width:auto;transform:scale(1.4)}
+.chip.pick.active{background:var(--accent);color:#fff}
+.chip.pick{cursor:pointer;border:1px solid var(--border);background:var(--card)}
+.chip.pending{background:#fff3cd;color:#664d03}
+.searchrow{display:flex;gap:8px}
+.searchrow input{flex:1}
+.searchrow button{flex:none;padding:10px 12px}
+#mic.on{background:var(--danger)}
+#toast{position:fixed;left:16px;right:16px;bottom:calc(80px + env(safe-area-inset-bottom));max-width:680px;margin:0 auto;background:var(--text);color:var(--bg);padding:12px 14px;border-radius:12px;display:flex;gap:10px;align-items:center;z-index:9;box-shadow:0 4px 18px rgba(0,0,0,.25)}
+#toast span{flex:1}
+#toast button{flex:none;background:transparent;color:var(--bg);border:1px solid var(--bg);padding:6px 10px}
+.queue{font-size:.9rem;margin-top:8px}
 </style>
 </head>
 <body>
 <header>
   <h1>🏠 Wo ist was?</h1>
-  <input id="q" type="search" placeholder="Was suchst du? z. B. Schere, Batterien …" autocomplete="off">
+  <div class="searchrow">
+    <input id="q" type="search" placeholder="Was suchst du? z. B. Schere, Batterien …" autocomplete="off">
+    <button id="mic" class="ghost hidden" title="Sprachsuche" aria-label="Sprachsuche">🎤</button>
+  </div>
 </header>
 
 <main>
@@ -62,25 +78,34 @@ label{display:block;margin:10px 0 4px;font-size:.9rem;color:var(--muted)}
   <section id="v-add" class="hidden">
     <h2>Foto aufnehmen</h2>
     <div class="card">
+      <label class="switch" for="auto"><span><b>⚡ Automatik</b><br><span class="muted">Foto → erkennen → sofort speichern → nächster Ort</span></span><input id="auto" type="checkbox"></label>
+    </div>
+    <div class="card">
       <label for="room">Raum</label>
       <input id="room" list="rooms" placeholder="z. B. Küche">
       <datalist id="rooms"></datalist>
-      <label for="place">Ort / Behälter</label>
-      <input id="place" list="places" placeholder="z. B. Lade links oben">
+      <div id="room-chips" class="chips"></div>
+      <label for="place">Ort / Behälter <span class="muted">(leer = KI benennt ihn)</span></label>
+      <div class="searchrow">
+        <input id="place" list="places" placeholder="z. B. Lade 1">
+        <button class="ghost" id="btn-next" title="Nächster Ort (Nummer +1)">➡️ Nächster</button>
+      </div>
       <datalist id="places"></datalist>
+      <div id="place-chips" class="chips"></div>
       <div class="row" style="margin-top:12px">
-        <button class="ghost" id="btn-cam">📷 Kamera</button>
-        <button class="ghost" id="btn-file">🖼️ Galerie</button>
+        <button class="ghost big" id="btn-cam">📷 Kamera</button>
+        <button class="ghost big" id="btn-file">🖼️ Fotos</button>
       </div>
       <input id="f-cam" type="file" accept="image/*" capture="environment" class="hidden">
-      <input id="f-file" type="file" accept="image/*" class="hidden">
+      <input id="f-file" type="file" accept="image/*" multiple class="hidden">
+      <div id="queue" class="queue muted"></div>
       <div id="add-preview" style="margin-top:12px">
         <img id="prev-img" class="preview hidden" alt="Vorschau">
         <div id="add-status" class="status hidden"></div>
-        <label>Erkannte Gegenstände (antippen ✕ zum Entfernen)</label>
+        <label>Erkannte Gegenstände (✕ zum Entfernen)</label>
         <div id="add-items" class="chips"></div>
         <div class="row" style="margin-top:8px">
-          <input id="add-manual" placeholder="Gegenstand ergänzen …">
+          <input id="add-manual" placeholder="Gegenstand ergänzen (mehrere mit Komma)">
           <button class="ghost" id="btn-add-manual" style="flex:none">+</button>
         </div>
         <button class="big" id="btn-save" style="margin-top:12px">💾 Speichern</button>
@@ -124,6 +149,8 @@ label{display:block;margin:10px 0 4px;font-size:.9rem;color:var(--muted)}
   <button data-v="rooms"><span>🏠</span>Räume</button>
   <button data-v="settings"><span>⚙️</span>Einstell.</button>
 </nav>
+
+<div id="toast" class="hidden"><span id="toast-msg"></span><button id="toast-btn" class="hidden"></button></div>
 
 <script src="app.js"></script>
 </body>
