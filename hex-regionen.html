@@ -337,7 +337,7 @@
     // Ziehen: Zielregion hervorheben + dicker Pfeil
     if (drag && drag.sel.length) {
       const targets = new Set(); drag.sel.forEach(b => B.forEach(t => t !== b && reach(b, t) && targets.add(t.id)));
-      const hov = regionAt(drag.x, drag.y);
+      const hov = drag.tap ? null : (drag.hov || targetAt(drag.x, drag.y));
       const ok = hov && targets.has(hov.id) && !(drag.sel.length === 1 && drag.sel[0] === hov);
       const pulse = 0.5 + 0.5 * Math.sin(time * 8);
       for (const c of cells) if (targets.has(c.reg)) {
@@ -739,31 +739,50 @@
     return c ? B[c.reg] : null;
   };
   const pos = e => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  // Ziel unter dem Finger – mit Fangradius, falls knapp daneben (Wasser/Rand)
+  function targetAt(x, y) {
+    const r = regionAt(x, y);
+    if (r) return r;
+    let best = null, bd = S * 1.1;
+    for (const b of B) { const d = Math.hypot(px(b.x) - x, py(b.y) - y); if (d < bd) { bd = d; best = b; } }
+    return best;
+  }
+  // Bedienung: Ziehen von EINER eigenen Basis aufs Ziel – oder: Basis antippen, dann Ziel antippen
   cv.addEventListener('pointerdown', e => {
     if (mode !== 'battle') return;
-    const [x, y] = pos(e), b = regionAt(x, y);
-    if (b && b.owner === 1) { drag = { sel: [b], x, y }; cv.setPointerCapture(e.pointerId); sfx('tap'); buzz(12); }
+    e.preventDefault();
+    const [x, y] = pos(e), b = targetAt(x, y);
+    if (drag && drag.tap) {                       // zweiter Tipp: Ziel wählen
+      const src = drag.sel[0];
+      drag = null;
+      if (b && b !== src && reach(src, b)) { fire(src, b); return; }
+      if (!b || b.owner !== 1) return;            // daneben getippt → abbrechen
+    }
+    if (b && b.owner === 1) {
+      drag = { sel: [b], x, y, sx: x, sy: y, moved: false, hov: null };
+      cv.setPointerCapture(e.pointerId); sfx('tap'); buzz(12);
+    }
   });
   cv.addEventListener('pointermove', e => {
-    if (!drag) return;
+    if (!drag || drag.tap) return;
     const [x, y] = pos(e); drag.x = x; drag.y = y;
-    const b = regionAt(x, y);
-    if (b && b.owner === 1 && !drag.sel.includes(b)) {
-      // eigene Basen beim Drüberziehen mit auswählen – außer sie ist das Ziel eines Nachbarn
-      drag.sel.push(b); sfx('tap'); buzz(12);
-    }
+    if (!drag.moved && Math.hypot(x - drag.sx, y - drag.sy) > 12) drag.moved = true;
+    const t = targetAt(x, y), ok = t && t !== drag.sel[0] && reach(drag.sel[0], t);
+    if (ok && t !== drag.hov) { buzz(8); sfx('tap'); }  // spürbares Einrasten
+    drag.hov = ok ? t : null;
   });
   cv.addEventListener('pointerup', e => {
-    if (!drag) return;
-    const [x, y] = pos(e), t = regionAt(x, y);
-    if (t) {
-      const from = drag.sel.filter(b => b !== t);
-      from.forEach(b => send(b, t));
-      if (from.some(b => reach(b, t))) { sfx('send'); buzz(25); }
-      if (from.length) $('hint').style.display = 'none';
-    }
+    if (!drag || drag.tap) return;
+    if (!drag.moved) { drag.tap = true; return; } // nur angetippt → auf Ziel-Tipp warten
+    const src = drag.sel[0], t = drag.hov;
     drag = null;
+    if (t) fire(src, t);
   });
+  cv.addEventListener('pointercancel', () => { if (drag && !drag.tap) drag = null; });
+  function fire(src, t) {
+    send(src, t); sfx('send'); buzz(25);
+    $('hint').style.display = 'none';
+  }
 
   // ---------- Ablauf ----------
   function refreshHud() {
