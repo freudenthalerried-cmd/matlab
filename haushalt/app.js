@@ -240,7 +240,7 @@ document.querySelectorAll('nav button').forEach(b => b.onclick = () => show(b.da
 // ---------- Suche ----------
 // Ähnlichkeit zweier Wörter über Buchstabenpaare (0–1); fängt Tippfehler und Diktierfehler ab
 function similar(a, b) {
-  if (a.length < 3 || b.length < 3) return 0;
+  if (a.length < 3 || b.length < 3 || Math.abs(a.length - b.length) > 2) return 0;   // „pasta“ ≠ „zahnpasta“
   const grams = s => { const m = new Map(); for (let i = 0; i < s.length - 1; i++) { const g = s.slice(i, i + 2); m.set(g, (m.get(g) || 0) + 1); } return m; };
   const ga = grams(a), gb = grams(b);
   let hit = 0;
@@ -250,7 +250,7 @@ function similar(a, b) {
 function fuzzyIn(w, text) {
   // Wort gegen alle Wörter (und zusammengesetzte Namen) des Textes prüfen
   for (const t of text.split(/[\s()/,+-]+/)) if (t && similar(w, t) >= 0.6) return true;
-  return text.length >= w.length && similar(w, text) >= 0.6;
+  return similar(w, text) >= 0.6;
 }
 function score(words, spot, item) {
   const name = skey(item.name), tags = (item.tags || []).map(skey).join(' ');
@@ -823,7 +823,7 @@ async function renderRooms() {
   let lastSite = null, html = '';
   for (const [k, list] of Object.entries(groups)) {
     const [site, room] = JSON.parse(k);
-    if (site && site !== lastSite && (multiSite || sites.list.length)) {
+    if (site && site !== lastSite && multiSite) {
       html += `<h2 class="site-h">📍 ${esc(site)} <button class="ghost mini" data-rename-site="${esc(site)}">✏️</button></h2>`;
     }
     lastSite = site;
@@ -939,10 +939,84 @@ $('f-import').onchange = async e => {
   } catch { toast('Ungültige Sicherungsdatei.'); }
 };
 
+// ---------- Beispielhaus (Demo-Daten zum Ausprobieren) ----------
+const DEMO = [
+  ['Küche', 'Besteckschublade', ['Messer (6×)|Küchenmesser', 'Gabeln (6×)|Besteck', 'Löffel (6×)|Besteck,Esslöffel', 'Teelöffel (8×)|Kaffeelöffel', 'Schere|Küchenschere', 'Flaschenöffner|Kapselheber', 'Korkenzieher|Weinöffner']],
+  ['Küche', 'Gewürzregal', ['Salz|Speisesalz', 'Pfeffer|Pfefferkörner', 'Paprikapulver|edelsüß', 'Oregano|Kräuter', 'Zimt|Gewürz', 'Kümmel|Gewürz', 'Curry|Gewürz', 'Vanillezucker|Backen']],
+  ['Küche', 'Vorratsschrank', ['Nudeln (3×)|Pasta,Spaghetti', 'Reis|Langkornreis', 'Mehl (2×)|Weizenmehl,glatt', 'Zucker|Kristallzucker', 'Passierte Tomaten (4×)|Tomatensauce,Dose', 'Linsen|Hülsenfrüchte', 'Haferflocken|Müsli', 'Olivenöl|Öl']],
+  ['Küche', 'Lade unter Herd', ['Backpapier|Backen', 'Alufolie|Alu', 'Frischhaltefolie|Folie', 'Gefrierbeutel|Sackerl,Tiefkühl', 'Muffinförmchen|Backen']],
+  ['Bad', 'Spiegelschrank', ['Zahnpasta (2×)|Zahncreme,Elmex', 'Zahnbürsten (3×)|Zahnbürste', 'Zahnseide|Zahnpflege', 'Deo|Deodorant', 'Rasierer|Rasierapparat', 'Nagelschere|Nagelpflege', 'Pinzette|Nagelpflege']],
+  ['Bad', 'Kiste unter Waschbecken', ['Zahnpasta (4×)|Vorrat,Zahncreme', 'Duschgel (3×)|Vorrat', 'Shampoo (2×)|Vorrat,Haarwaschmittel', 'Klopapier (12×)|Toilettenpapier,WC-Papier', 'Wattestäbchen|Q-Tips', 'Pflaster|Hansaplast,Verband', 'Fieberthermometer|Thermometer']],
+  ['Bad', 'Waschmaschinenregal', ['Waschmittel|Waschpulver,Persil', 'Weichspüler|Wäsche', 'Fleckenentferner|Vanish', 'Wäscheklammern|Kluppen']],
+  ['Vorraum', 'Schlüsselschublade', ['Ersatzschlüssel Haus|Schlüssel', 'Autoschlüssel Zweitschlüssel|Schlüssel', 'Garagenfernbedienung|Fernbedienung,Garage', 'Taschenlampe|Lampe', 'Batterien AA (8×)|Batterie,Mignon', 'Batterien AAA (4×)|Batterie,Micro', 'Kugelschreiber (5×)|Kuli,Stift']],
+  ['Vorraum', 'Schuhkasten', ['Schuhputzzeug|Schuhcreme,Bürste', 'Regenschirm (2×)|Schirm', 'Einkaufstaschen|Sackerl,Stofftasche', 'Hundeleine|Leine']],
+  ['Schlafzimmer', 'Nachtkästchen links', ['Ladekabel USB-C|Ladegerät,Kabel', 'Ohrstöpsel|Ohropax', 'Lesebrille|Brille', 'Handcreme|Creme', 'Taschentücher|Tempo']],
+  ['Schlafzimmer', 'Kasten oberes Fach', ['Bettwäsche (3×)|Überzug,Leintuch', 'Decke Gäste|Zudecke', 'Polster Gäste (2×)|Kissen', 'Koffer klein|Reisekoffer,Handgepäck']],
+  ['Kinderzimmer', 'Spielzeugkiste', ['Lego|Bausteine', 'Puzzle (4×)|Spiel', 'Malstifte|Buntstifte,Filzstifte', 'Kuscheltier Hase|Stofftier', 'Autos (12×)|Matchbox,Spielzeugauto']],
+  ['Büro', 'Schreibtischlade', ['Tacker|Hefter,Klammermaschine', 'Locher|Büro', 'Tixo|Klebeband,Tesa', 'Büroklammern|Klammern', 'Textmarker (3×)|Leuchtstift', 'Briefmarken|Post', 'Reisepass|Ausweis,Dokument', 'Ladekabel Laptop|Netzteil']],
+  ['Büro', 'Ordnerregal', ['Ordner Versicherungen|Polizze,Unterlagen', 'Ordner Haus|Bauunterlagen,Pläne', 'Ordner Steuer 2025|Finanzamt,Belege', 'Ordner Auto|Zulassung,Service', 'Drucker-Toner|Patrone']],
+  ['Keller', 'Werkzeugkiste', ['Hammer|Werkzeug', 'Schraubenzieher-Set|Schraubendreher,Werkzeug', 'Zange (2×)|Kombizange,Werkzeug', 'Maßband|Meterstab,Rollmeter', 'Wasserwaage|Werkzeug', 'Akkuschrauber|Bohrmaschine,Bosch', 'Schrauben sortiert|Dübel,Nägel', 'Cuttermesser|Stanleymesser,Teppichmesser']],
+  ['Keller', 'Regal Vorräte', ['Mineralwasser (2 Kisten)|Getränke,Wasser', 'Bier (1 Kiste)|Getränke', 'Passata (6×)|Tomaten,Konserve', 'Mais Dosen (4×)|Konserve', 'Marmelade selbstgemacht (9×)|Einmachglas,Konfitüre', 'Apfelsaft (6×)|Saft,Getränke']],
+  ['Keller', 'Karton Weihnachtsdeko', ['Christbaumkugeln|Weihnachten,Deko', 'Lichterkette (3×)|Weihnachten,Beleuchtung', 'Adventkranz-Kerzen|Kerzen', 'Christbaumständer|Weihnachten', 'Krippe|Weihnachten,Figuren']],
+  ['Keller', 'Karton Camping', ['Zelt|Camping', 'Schlafsäcke (2×)|Camping', 'Gaskocher|Camping,Kocher', 'Isomatte (2×)|Camping,Matte', 'Stirnlampe|Lampe,Camping']],
+  ['Garage', 'Regal 1', ['Motoröl|Öl,Auto', 'Scheibenfrostschutz|Frostschutz,Auto', 'Fahrradpumpe|Pumpe,Rad', 'Fahrradschloss|Schloss,Rad', 'Schneeketten|Winter,Auto', 'Eiskratzer (2×)|Winter,Auto']],
+  ['Garage', 'Regal 2', ['Rasenmäher-Benzin|Sprit,Kanister', 'Gartenschere|Schere,Garten', 'Blumenerde (2 Sack)|Erde,Garten', 'Dünger|Garten', 'Gartenhandschuhe|Handschuhe', 'Grillkohle|Grill,Holzkohle', 'Grillanzünder|Grill']],
+  ['Dachboden', 'Kiste Babysachen', ['Babykleidung Gr. 68|Gewand,Baby', 'Babyphone|Baby', 'Wickelauflage|Baby', 'Kinderwagen-Regenschutz|Kinderwagen']],
+  ['Dachboden', 'Kiste Skiausrüstung', ['Skihelm (2×)|Helm,Ski', 'Skibrille (2×)|Brille,Ski', 'Skihandschuhe|Handschuhe,Ski', 'Skisocken|Socken', 'Skiwachs|Ski']]
+];
+const DEMO_COLORS = ['#e57373', '#f06292', '#ba68c8', '#7986cb', '#4fc3f7', '#4db6ac', '#81c784', '#dce775', '#ffd54f', '#ffb74d', '#a1887f', '#90a4ae'];
+// Platzhalterbild mit Text (statt echtem Foto)
+function demoImage(text, color, size = 320, sub = '') {
+  const c = document.createElement('canvas'); c.width = c.height = size;
+  const g = c.getContext('2d');
+  g.fillStyle = color; g.fillRect(0, 0, size, size);
+  g.fillStyle = 'rgba(255,255,255,.25)'; g.beginPath(); g.arc(size * .78, size * .22, size * .3, 0, 7); g.fill();
+  g.fillStyle = '#fff'; g.font = `bold ${size / 9}px system-ui,sans-serif`; g.textAlign = 'center';
+  const words = text.split(' '); let lines = [''];
+  for (const w of words) { if ((lines.at(-1) + ' ' + w).trim().length > 14) lines.push(w); else lines[lines.length - 1] = (lines.at(-1) + ' ' + w).trim(); }
+  lines.slice(0, 3).forEach((l, i) => g.fillText(l, size / 2, size / 2 + (i - (Math.min(lines.length, 3) - 1) / 2) * size / 7));
+  if (sub) { g.font = `${size / 14}px system-ui,sans-serif`; g.fillText(sub, size / 2, size * .9); }
+  return c.toDataURL('image/jpeg', 0.7);
+}
+async function loadDemo(silent) {
+  const spots = await allSpots();
+  if (spots.length && !silent && !confirm(`Es sind schon ${spots.length} Orte gespeichert. Beispielhaus trotzdem dazuladen?`)) return;
+  let n = 0, k = 0;
+  for (const [room, place, items] of DEMO) {
+    const col = DEMO_COLORS[k++ % DEMO_COLORS.length];
+    if (findSpot(spots, room, place)) continue;
+    await putSpot({
+      id: uid(), site: 'Zuhause', room, place, status: 'done', demo: true,
+      photo: demoImage(place, col, 640, room),
+      items: items.map((s, i) => {
+        const [name, tags = ''] = s.split('|');
+        return { name, base: name.replace(/\s*\(.*\)$/, ''), tags: tags.split(',').filter(Boolean), photo: demoImage(name.replace(/\s*\(.*\)$/, ''), DEMO_COLORS[(k + i) % DEMO_COLORS.length], 200) };
+      }),
+      updated: Date.now() - (DEMO.length - n) * 36e5
+    });
+    n++;
+  }
+  if (!sites.list.length) sites.save([{ name: 'Zuhause', lat: 0, lon: 0 }]);
+  if (!geo.site) { geo.site = 'Zuhause'; store.set('site', 'Zuhause'); }
+  toast(`🏠 Beispielhaus geladen: ${n} Orte. Such z. B. „Zahnpasta“, „Tixo“ oder „Batterien“.`);
+  $('q').value = ''; show('search');
+}
+async function removeDemo() {
+  const d = (await allSpots()).filter(s => s.demo);
+  if (!d.length) return toast('Kein Beispielhaus vorhanden.');
+  if (!confirm(`${d.length} Beispiel-Orte löschen? Eigene Daten bleiben.`)) return;
+  for (const s of d) await delSpot(s.id);
+  toast('Beispielhaus entfernt.'); renderInfo(); renderSearch();
+}
+$('btn-demo').onclick = () => loadDemo();
+$('btn-demo-del').onclick = removeDemo;
+
 // ---------- Start ----------
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 // Browser bitten, die Daten nicht bei Speicherknappheit zu löschen
 navigator.storage?.persist?.().catch(() => {});
-renderSearch();
 renderDraftItems();
 retryPending();
+// ?demo in der Adresse lädt das Beispielhaus (zum Ausprobieren)
+if (new URLSearchParams(location.search).has('demo')) allSpots().then(s => s.some(x => x.demo) ? renderSearch() : loadDemo(true));
+else renderSearch();

@@ -29,3 +29,6 @@ Web-App (PWA) zum Aufräumen und Wiederfinden:
 
 Alle Daten und Fotos bleiben lokal im Browser (IndexedDB). Am Handy über „Zum Startbildschirm hinzufügen“
 wie eine App installierbar. Aufruf: `/haushalt/`.
+
+**Ausprobieren ohne eigene Daten:** `/haushalt/?demo` lädt ein Beispielhaus mit 22 Orten und Platzhalterbildern
+(auch über ⚙️ → „Beispielhaus laden“; „Beispiel entfernen“ löscht nur die Demo-Daten).
