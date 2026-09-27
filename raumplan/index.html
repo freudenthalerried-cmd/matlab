@@ -26,7 +26,8 @@
         <li><b>Marken drucken</b> (A4, 100 %): Bodenmarken 0–3 und Wandmarken ab 4.</li>
         <li><b>Maßband</b> am Boden auslegen. Marke 0 mit der Mitte auf <b>0 cm</b>, Marke 1 auf <b>300 cm</b> legen (Striche zeigen die Mitte). Marken 2 und 3 irgendwo flach auf den Boden.</li>
         <li><b>Wandmarken</b> glatt an jede Wand kleben: je Wand 3–4 Stück, verschiedene Höhen und nahe den Ecken. Glaswände: Marke auf Parapet oder Rahmen.</li>
-        <li><b>Filmen</b> (30–60 s, 4K wenn möglich): in jeder Raumecke stehen und langsam über den ganzen Raum schwenken, auch den Boden mit den Marken 0–3. Ruhig bewegen, lieber kurz innehalten.</li>
+        <li><b>Fotografieren (am genauesten, ±0,5–1,5 mm):</b> in jeder Raumecke stehen und 8–10 Fotos über den ganzen Raum verteilt machen, auch auf den Boden mit den Marken 0–3. Jedes Foto ruhig halten. Zusammen ca. 40 Fotos, ca. 1 Minute.<br>
+        <b>Oder Video:</b> gleicher Ablauf, aber nach jedem kleinen Schwenk <b>1 Sekunde stillhalten</b> – die App nimmt nur die ruhigen Momente (beim Schwenken verzerrt der Rolling Shutter der Handykamera um mehrere mm).</li>
         <li><b>Auswerten</b> – dauert je nach Handy 1–5 Minuten.</li>
       </ol>
       <div class="row">
@@ -35,13 +36,15 @@
         <button id="pgPrint">🖨 Marken drucken</button>
       </div>
       <div class="row">
-        <label class="btn pri">🎥 Video aufnehmen<input id="pgCam" type="file" accept="video/*" capture="environment" hidden></label>
-        <label class="btn">📁 Video / Fotoserie wählen<input id="pgFile" type="file" accept="video/*,image/*" multiple hidden></label>
+        <label class="btn pri">📷 Foto aufnehmen<input id="pgCam" type="file" accept="image/*" capture="environment" hidden></label>
+        <label class="btn">📁 Fotos / Video wählen<input id="pgFile" type="file" accept="video/*,image/*" multiple hidden></label>
         <span id="pgSrc" class="hint"></span>
+      </div>
+      <div class="row"><span class="hint">Tipp: Fotos mit der normalen Kamera-App machen und dann alle auf einmal über „Fotos / Video wählen“ laden.</span>
       </div>
       <div class="row">
         <label>Maßband Marke 0 → 1 (m) <input id="pgDist" inputmode="decimal" size="6" value="3,000"></label>
-        <label>Bildabstand <select id="pgStep"><option value="0.2">0,2 s (genau)</option><option value="0.33" selected>0,33 s</option><option value="0.5">0,5 s (schnell)</option></select></label>
+        <label>Bildabstand <select id="pgStep"><option value="0.1">0,1 s (genau, langsam)</option><option value="0.2" selected>0,2 s</option><option value="0.33">0,33 s (schnell)</option></select></label>
       </div>
       <label class="small">Räume (optional, bei mehreren Räumen in einem Video): je Zeile „Name: Marken von–bis“
         <textarea id="pgRooms" rows="2" placeholder="Wohnen: 4-19&#10;Küche: 20-31"></textarea></label>

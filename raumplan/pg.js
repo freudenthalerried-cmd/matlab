@@ -77,7 +77,7 @@ const PG = (() => {
     pts = pts.map(p => p.map(v => v * sc)); cams.forEach(c => { c[3] *= sc; c[4] *= sc; c[5] *= sc; });
     // Beobachtungen
     const sp = opt.sigPx || 0.3, obs = [];
-    camIdx.forEach((i, ci) => det[i].forEach(d => { if (!kU.has(d.id)) return; const k = kU.get(d.id); d.c.forEach((p, q) => obs.push({ c: ci, p: 4 * k + q, u: p[0], v: p[1], s: sp })); }));
+    camIdx.forEach((i, ci) => det[i].forEach(d => { if (!kU.has(d.id)) return; const k = kU.get(d.id); d.c.forEach((p, q) => obs.push({ c: ci, p: 4 * k + q, u: p[0], v: p[1], s: sp, tau: H >= W ? (p[0] - W / 2) / W : (p[1] - H / 2) / H })); }));
     const idx = k => [4 * k, 4 * k + 1, 4 * k + 2, 4 * k + 3], st = opt.sigTape || 0.0005;
     const cons = [
       { f: Q => Math.hypot(...sub(ctrOf(Q, k1), ctrOf(Q, k0))), v: dist, s: st, idx: [...idx(k0), ...idx(k1)] },
@@ -85,14 +85,20 @@ const PG = (() => {
       ...[1, 2].map(q => ({ f: Q => ctrOf(Q, k1)[q], v: 0, s: 1e-7, idx: idx(k1) })),
       { f: Q => ctrOf(Q, k2)[2], v: 0, s: 1e-7, idx: idx(k2) }];
     log(`Startwerte: ${camIdx.length} Bilder, ${used.length} Marken, ${obs.length / 4} Sichtungen`);
-    const r = BAm.solve({ it: [f0, cx, cy, 0, 0], cams, pts, obs, cons }, { iters: opt.iters || 60, log: (it, c) => { if (it % 5 === 4) log(`Ausgleich Iteration ${it + 1}: Kosten ${c.toExponential(2)}`); } });
+    let r = BAm.solve({ it: [f0, cx, cy, 0, 0], cams, pts, obs, cons }, { iters: opt.iters || 60, log: (it, c) => { if (it % 5 === 4) log(`Ausgleich Iteration ${it + 1}: Kosten ${c.toExponential(2)}`); } });
+    if (opt.rs) { // 2. Stufe: Rolling Shutter nur für Bilder mit ≥ 3 Marken
+      const nm = cams.map((_, ci) => new Set(obs.filter(o => o.c === ci).map(o => o.p >> 2)).size);
+      log('Rolling-Shutter-Modell für ' + nm.filter(n => n >= (opt.rsMin || 4)).length + ' Bilder…');
+      const r2 = BAm.solve({ it: r.it, cams: r.cams, pts: r.pts, obs, cons }, { iters: 40, rs: true, rsCam: nm.map(n => n >= (opt.rsMin || 4)), rsSigma: opt.rsSigma || [0.02, 0.02, 0.02, 1e-6, 1e-6, 1e-6] });
+      if (r2.rms < 0.8 * r.rms) { r = r2; log(`Rolling Shutter korrigiert: Bildfehler ${r.rms.toFixed(2)} px`); } else log('Kein nennenswerter Rolling-Shutter-Effekt – Modell nicht verwendet.');
+    }
     // grobe Fehlerkennungen (z. B. Spiegelung/Fehlerkennung) entfernen und neu rechnen
-    const bad = new Set(); obs.forEach((o, k) => { const p = BAm.project(r.it, r.cams[o.c], r.pts[o.p]); if (Math.hypot(p[0] - o.u, p[1] - o.v) > Math.max(2, 8 * r.rms)) bad.add(Math.floor(k / 4)); });
+    const bad = new Set(); obs.forEach((o, k) => { const p = BAm.project(r.it, r.cams[o.c], r.pts[o.p], o.tau); if (Math.hypot(p[0] - o.u, p[1] - o.v) > Math.max(2, 8 * r.rms)) bad.add(Math.floor(k / 4)); });
     let res = r;
     if (bad.size) {
       const obs2 = obs.filter((_, k) => !bad.has(Math.floor(k / 4)));
       log(`${bad.size} fehlerhafte Markensichtungen entfernt, neu ausgleichen…`);
-      res = BAm.solve({ it: r.it, cams: r.cams, pts: r.pts, obs: obs2, cons }, { iters: 30 });
+      res = BAm.solve({ it: r.it, cams: r.cams, pts: r.pts, obs: obs2, cons }, { iters: 30, rs: r.cams[0].length > 6, rsCam: r.cams.map(c => c.length > 6 && c.slice(6).some(v => Math.abs(v) > 1e-6)), rsSigma: opt.rsSigma || [0.02, 0.02, 0.02, 1e-6, 1e-6, 1e-6] });
     }
     return { ok: true, ids: used, kU, res, nImg: camIdx.length, nObs: obs.length / 4, dropped: bad.size, size: s };
   }

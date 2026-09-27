@@ -22,18 +22,24 @@ const BA = (() => {
     const sn = Math.hypot(x, y, z); if (sn < 1e-12) return [2 * x, 2 * y, 2 * z];
     const th = 2 * Math.atan2(sn, w); return [x / sn * th, y / sn * th, z / sn * th];
   }
-  function project(it, c, X) {
-    const R = rodr(c), p0 = R[0] * X[0] + R[1] * X[1] + R[2] * X[2] + c[3], p1 = R[3] * X[0] + R[4] * X[1] + R[5] * X[2] + c[4], p2 = R[6] * X[0] + R[7] * X[1] + R[8] * X[2] + c[5];
+  function project(it, c, X, tau) { // tau: Auslesezeitpunkt relativ, -0,5 … +0,5 (Zeile bzw. bei Hochformat Spalte)
+    const R = rodr(c); let p0 = R[0] * X[0] + R[1] * X[1] + R[2] * X[2] + c[3], p1 = R[3] * X[0] + R[4] * X[1] + R[5] * X[2] + c[4], p2 = R[6] * X[0] + R[7] * X[1] + R[8] * X[2] + c[5];
+    if (c.length > 6 && tau) { // Rolling Shutter: Drehung/Verschiebung während der Auslesung
+      const Q = rodr([c[6] * tau, c[7] * tau, c[8] * tau]);
+      const q0 = Q[0] * p0 + Q[1] * p1 + Q[2] * p2 + c[9] * tau, q1 = Q[3] * p0 + Q[4] * p1 + Q[5] * p2 + c[10] * tau, q2 = Q[6] * p0 + Q[7] * p1 + Q[8] * p2 + c[11] * tau;
+      p0 = q0; p1 = q1; p2 = q2;
+    }
     const x = p0 / p2, y = p1 / p2, r2 = x * x + y * y, d = 1 + it[3] * r2 + it[4] * r2 * r2;
     return [it[0] * x * d + it[1], it[0] * y * d + it[2], p2];
   }
   // numerische Block-Ableitungen (zentral)
-  const HI = [0.05, 0.05, 0.05, 1e-5, 1e-5], HC = [1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6], HX = 1e-6;
-  function jac(it, c, X) {
+  const HI = [0.05, 0.05, 0.05, 1e-5, 1e-5], HX = 1e-6;
+  function jac(it, c, X, tau) {
+    const project2 = (a, b, x) => project(a, b, x, tau);
     const Ji = [], Jc = [], Jx = [];
-    for (let k = 0; k < 5; k++) { const a = it.slice(), b = it.slice(); a[k] += HI[k]; b[k] -= HI[k]; const p = project(a, c, X), q = project(b, c, X); Ji.push([(p[0] - q[0]) / (2 * HI[k]), (p[1] - q[1]) / (2 * HI[k])]); }
-    for (let k = 0; k < 6; k++) { const a = c.slice(), b = c.slice(); a[k] += HC[k]; b[k] -= HC[k]; const p = project(it, a, X), q = project(it, b, X); Jc.push([(p[0] - q[0]) / (2 * HC[k]), (p[1] - q[1]) / (2 * HC[k])]); }
-    for (let k = 0; k < 3; k++) { const a = X.slice(), b = X.slice(); a[k] += HX; b[k] -= HX; const p = project(it, c, a), q = project(it, c, b); Jx.push([(p[0] - q[0]) / (2 * HX), (p[1] - q[1]) / (2 * HX)]); }
+    for (let k = 0; k < 5; k++) { const a = it.slice(), b = it.slice(); a[k] += HI[k]; b[k] -= HI[k]; const p = project2(a, c, X), q = project2(b, c, X); Ji.push([(p[0] - q[0]) / (2 * HI[k]), (p[1] - q[1]) / (2 * HI[k])]); }
+    for (let k = 0; k < c.length; k++) { const a = c.slice(), b = c.slice(); a[k] += 1e-6; b[k] -= 1e-6; const p = project2(it, a, X), q = project2(it, b, X); Jc.push([(p[0] - q[0]) / 2e-6, (p[1] - q[1]) / 2e-6]); }
+    for (let k = 0; k < 3; k++) { const a = X.slice(), b = X.slice(); a[k] += HX; b[k] -= HX; const p = project2(it, c, a), q = project2(it, c, b); Jx.push([(p[0] - q[0]) / (2 * HX), (p[1] - q[1]) / (2 * HX)]); }
     return { Ji, Jc, Jx };
   }
   function cholSolve(A, n, b) { // A symmetrisch pos. def. (Float64Array n*n), löst A x = b; null bei Fehler
@@ -46,12 +52,14 @@ const BA = (() => {
       const x = new Float64Array(n); for (let i = n - 1; i >= 0; i--) { let s = y[i]; for (let k = i + 1; k < n; k++) s -= L[k * n + i] * x[k]; x[i] = s / L[i * n + i]; } return x; };
     return { x: b ? solve(b) : null, solve };
   }
-  function inv6(M) { const r = cholSolve(M, 6); if (!r) return null; const I = []; for (let k = 0; k < 6; k++) { const e = new Float64Array(6); e[k] = 1; I.push(r.solve(e)); } return I; } // Spalten
+  function invN(M, n) { const r = cholSolve(M, n); if (!r) return null; const I = []; for (let k = 0; k < n; k++) { const e = new Float64Array(n); e[k] = 1; I.push(r.solve(e)); } return I; } // Spalten (symmetrisch)
 
   /* data: {it:[5], cams:[[6]], pts:[[3]], obs:[{c,p,u,v,s}], cons:[{f:(pts)=>wert, v, s, idx:[Punktindizes]}], fix:{it:[bool*5]} }
      Rückgabe: {it, cams, pts, rms (px), s0, covPt(j) -> 3x3, cov: Funktion für Linearkombinationen} */
   function solve(data, opt = {}) {
-    let it = data.it.slice(), cams = data.cams.map(c => c.slice()), pts = data.pts.map(p => p.slice());
+    const CB = opt.rs ? 12 : 6, RSS0 = opt.rsSigma || [0.02, 0.02, 0.02, 0.02, 0.02, 0.02]; // Vorinformation Rolling Shutter (rad bzw. m je Auslesezeit)
+    const rsOn = opt.rsCam || null, RSSi = i => rsOn && !rsOn[i] ? [1e-7, 1e-7, 1e-7, 1e-7, 1e-7, 1e-7] : RSS0;
+    let it = data.it.slice(), cams = data.cams.map(c => c.length === CB ? c.slice() : c.slice(0, 6).concat(CB > 6 ? [0, 0, 0, 0, 0, 0] : [])), pts = data.pts.map(p => p.slice());
     const obs = data.obs, cons = data.cons || [], nc = cams.length, np = pts.length, ny = 5 + 3 * np;
     const fixIt = data.fixIt || [false, false, false, false, false], huber = opt.huber ?? 3;
     const log = opt.log || (() => { });
@@ -59,7 +67,8 @@ const BA = (() => {
     const seen = new Uint8Array(np); obs.forEach(o => seen[o.p] = 1); // nie gesehene Punkte bleiben fest
     function cost(it_, cams_, pts_) {
       let s = 0;
-      for (const o of obs) { const p = project(it_, cams_[o.c], pts_[o.p]); const e = Math.hypot(p[0] - o.u, p[1] - o.v) / o.s; s += e <= huber ? e * e : 2 * huber * e - huber * huber; if (p[2] <= 0) s += 1e6; }
+      if (CB > 6) cams_.forEach((c, i) => { const R = RSSi(i); for (let k = 6; k < 12; k++) s += (c[k] / R[k - 6]) ** 2; });
+      for (const o of obs) { const p = project(it_, cams_[o.c], pts_[o.p], o.tau); const e = Math.hypot(p[0] - o.u, p[1] - o.v) / o.s; s += e <= huber ? e * e : 2 * huber * e - huber * huber; if (p[2] <= 0) s += 1e6; }
       for (const q of cons) { const e = (q.f(pts_) - q.v) / q.s; s += e * e; }
       return s;
     }
@@ -70,18 +79,19 @@ const BA = (() => {
       S = new Float64Array(ny * ny); const gy = new Float64Array(ny);
       const Hcc = [], gc = [], Hcy = [], loc = [];
       for (let i = 0; i < nc; i++) {
-        const H = new Float64Array(36), g = new Float64Array(6), map = new Map([[0, 0], [1, 1], [2, 2], [3, 3], [4, 4]]), cols = [0, 1, 2, 3, 4];
+        const H = new Float64Array(CB * CB), g = new Float64Array(CB), map = new Map([[0, 0], [1, 1], [2, 2], [3, 3], [4, 4]]), cols = [0, 1, 2, 3, 4];
         byCam[i].forEach(k => { const j = obs[k].p; if (!map.has(5 + 3 * j)) for (let q = 0; q < 3; q++) { map.set(5 + 3 * j + q, cols.length); cols.push(5 + 3 * j + q); } });
-        const Y = new Float64Array(6 * cols.length);
+        const Y = new Float64Array(CB * cols.length);
+        if (CB > 6) { const R = RSSi(i); for (let k = 6; k < 12; k++) { const w = 1 / R[k - 6] ** 2; H[k * CB + k] += w; g[k] += cams[i][k] * w; } }
         for (const k of byCam[i]) {
-          const o = obs[k], j = o.p, c = cams[i], X = pts[j], p = project(it, c, X), r = [p[0] - o.u, p[1] - o.v];
+          const o = obs[k], j = o.p, c = cams[i], X = pts[j], p = project(it, c, X, o.tau), r = [p[0] - o.u, p[1] - o.v];
           const e = Math.hypot(r[0], r[1]) / o.s, w = (e <= huber ? 1 : huber / e) / (o.s * o.s);
-          const { Ji, Jc, Jx } = jac(it, c, X);
+          const { Ji, Jc, Jx } = jac(it, c, X, o.tau);
           if (fixIt.some(Boolean)) fixIt.forEach((f, q) => { if (f) Ji[q] = [0, 0]; });
           const dot = (a, b) => (a[0] * b[0] + a[1] * b[1]) * w, dr = a => (a[0] * r[0] + a[1] * r[1]) * w;
-          for (let a = 0; a < 6; a++) { g[a] += dr(Jc[a]); for (let b = 0; b < 6; b++) H[a * 6 + b] += dot(Jc[a], Jc[b]); }
+          for (let a = 0; a < CB; a++) { g[a] += dr(Jc[a]); for (let b = 0; b < CB; b++) H[a * CB + b] += dot(Jc[a], Jc[b]); }
           const yi = [0, 1, 2, 3, 4], yx = [5 + 3 * j, 6 + 3 * j, 7 + 3 * j], Jy = Ji.concat(Jx), yidx = yi.concat(yx);
-          for (let a = 0; a < 6; a++) for (let q = 0; q < 8; q++) Y[a * cols.length + map.get(yidx[q])] += dot(Jc[a], Jy[q]);
+          for (let a = 0; a < CB; a++) for (let q = 0; q < 8; q++) Y[a * cols.length + map.get(yidx[q])] += dot(Jc[a], Jy[q]);
           for (let q = 0; q < 8; q++) { gy[yidx[q]] += dr(Jy[q]); for (let s2 = 0; s2 < 8; s2++) S[yidx[q] * ny + yidx[s2]] += dot(Jy[q], Jy[s2]); }
         }
         Hcc.push(H); gc.push(g); Hcy.push(Y); loc.push(cols);
@@ -101,16 +111,16 @@ const BA = (() => {
         const Sd = S.slice(), g2 = gy.slice(), Ainv = [];
         for (let a = 0; a < ny; a++) Sd[a * ny + a] *= 1 + lam;
         for (let i = 0; i < nc; i++) {
-          const A = Hcc[i].slice(); for (let a = 0; a < 6; a++) A[a * 6 + a] = A[a * 6 + a] * (1 + lam) + 1e-12;
-          const Ai = inv6(A); Ainv.push(Ai); if (!Ai) continue;
+          const A = Hcc[i].slice(); for (let a = 0; a < CB; a++) A[a * CB + a] = A[a * CB + a] * (1 + lam) + 1e-12;
+          const Ai = invN(A, CB); Ainv.push(Ai); if (!Ai) continue;
           const cols = loc[i], m = cols.length, Y = Hcy[i];
           // K = A^-1 Y (6 x m)
-          const K = new Float64Array(6 * m);
-          for (let a = 0; a < 6; a++) for (let q = 0; q < m; q++) { let s = 0; for (let b = 0; b < 6; b++) s += Ai[b][a] * Y[b * m + q]; K[a * m + q] = s; }
+          const K = new Float64Array(CB * m), Ag = new Float64Array(CB);
+          for (let a = 0; a < CB; a++) { let s = 0; for (let b = 0; b < CB; b++) s += Ai[b][a] * gc[i][b]; Ag[a] = s; for (let q = 0; q < m; q++) { let z = 0; for (let b = 0; b < CB; b++) z += Ai[b][a] * Y[b * m + q]; K[a * m + q] = z; } }
           for (let q = 0; q < m; q++) {
-            const yq = cols[q]; let s = 0; for (let a = 0; a < 6; a++) s += Y[a * m + q] * (Ai[0][a] * gc[i][0] + Ai[1][a] * gc[i][1] + Ai[2][a] * gc[i][2] + Ai[3][a] * gc[i][3] + Ai[4][a] * gc[i][4] + Ai[5][a] * gc[i][5]);
+            const yq = cols[q]; let s = 0; for (let a = 0; a < CB; a++) s += Y[a * m + q] * Ag[a];
             g2[yq] -= s;
-            for (let t = 0; t < m; t++) { let z = 0; for (let a = 0; a < 6; a++) z += Y[a * m + q] * K[a * m + t]; Sd[yq * ny + cols[t]] -= z; }
+            for (let t = 0; t < m; t++) { let z = 0; for (let a = 0; a < CB; a++) z += Y[a * m + q] * K[a * m + t]; Sd[yq * ny + cols[t]] -= z; }
           }
         }
         const sol = cholSolve(Sd, ny, g2.map(v => -v));
@@ -119,9 +129,9 @@ const BA = (() => {
         const it2 = it.map((v, q) => v + dy[q]), pts2 = pts.map((p, j) => [p[0] + dy[5 + 3 * j], p[1] + dy[6 + 3 * j], p[2] + dy[7 + 3 * j]]);
         const cams2 = cams.map((c, i) => {
           const Ai = Ainv[i]; if (!Ai) return c.slice();
-          const cols = loc[i], m = cols.length, Y = Hcy[i], rhs = new Float64Array(6);
-          for (let a = 0; a < 6; a++) { let s = -gc[i][a]; for (let q = 0; q < m; q++) s -= Y[a * m + q] * dy[cols[q]]; rhs[a] = s; }
-          return c.map((v, a) => { let s = 0; for (let b = 0; b < 6; b++) s += Ai[a][b] * rhs[b]; return v + s; });
+          const cols = loc[i], m = cols.length, Y = Hcy[i], rhs = new Float64Array(CB);
+          for (let a = 0; a < CB; a++) { let s = -gc[i][a]; for (let q = 0; q < m; q++) s -= Y[a * m + q] * dy[cols[q]]; rhs[a] = s; }
+          return c.map((v, a) => { let s = 0; for (let b = 0; b < CB; b++) s += Ai[b][a] * rhs[b]; return v + s; });
         });
         const nw = cost(it2, cams2, pts2);
         if (nw < cur) { const rel = (cur - nw) / cur; it = it2; cams = cams2; pts = pts2; cur = nw; lam = Math.max(lam / 3, 1e-9); accepted = true; log(iter, cur, lam); if (rel < 1e-10) iter = iters; }
@@ -131,14 +141,14 @@ const BA = (() => {
     }
     // Kovarianz der Punkte (reduziertes System ohne Dämpfung)
     let covSolve = null, s0 = null;
-    const nobs = obs.length * 2 + cons.length, npar = 6 * nc + ny;
+    const nobs = obs.length * 2 + cons.length, npar = CB * nc + ny;
     s0 = Math.sqrt(cur / Math.max(1, nobs - npar));
     {
       const { Hcc, gc, Hcy, loc, S0 } = last; const Sd = S0.slice();
       for (let i = 0; i < nc; i++) {
-        const A = Hcc[i].slice(); for (let a = 0; a < 6; a++) A[a * 6 + a] += 1e-12; const Ai = inv6(A); if (!Ai) continue;
+        const A = Hcc[i].slice(); for (let a = 0; a < CB; a++) A[a * CB + a] += 1e-12; const Ai = invN(A, CB); if (!Ai) continue;
         const cols = loc[i], m = cols.length, Y = Hcy[i];
-        for (let q = 0; q < m; q++) for (let t = 0; t < m; t++) { let z = 0; for (let a = 0; a < 6; a++) for (let b = 0; b < 6; b++) z += Y[a * m + q] * Ai[b][a] * Y[b * m + t]; Sd[cols[q] * ny + cols[t]] -= z; }
+        for (let q = 0; q < m; q++) for (let t = 0; t < m; t++) { let z = 0; for (let a = 0; a < CB; a++) for (let b = 0; b < CB; b++) z += Y[a * m + q] * Ai[b][a] * Y[b * m + t]; Sd[cols[q] * ny + cols[t]] -= z; }
       }
       const ch = cholSolve(Sd, ny); if (ch) covSolve = ch.solve;
     }
@@ -150,7 +160,7 @@ const BA = (() => {
       const x = covSolve(grad); let s = 0; for (let q = 0; q < ny; q++) s += grad[q] * x[q];
       return Math.sqrt(Math.max(0, s)) * (nobs - npar > 200 ? Math.max(0.5, s0) : Math.max(1, s0));
     }
-    let se = 0; obs.forEach(o => { const p = project(it, cams[o.c], pts[o.p]); se += (p[0] - o.u) ** 2 + (p[1] - o.v) ** 2; });
+    let se = 0; obs.forEach(o => { const p = project(it, cams[o.c], pts[o.p], o.tau); se += (p[0] - o.u) ** 2 + (p[1] - o.v) ** 2; });
     return { it, cams, pts, rms: Math.sqrt(se / (2 * obs.length)), s0, cost: cur, sigmaOf, lam, unseen: [...seen.keys()].filter(j => !seen[j]) };
   }
   return { solve, project, rodr, rotvec, cholSolve };
