@@ -35,7 +35,20 @@ const PG = (() => {
   const ctrOf = (Q, k) => [0, 1, 2].map(q => (Q[4 * k][q] + Q[4 * k + 1][q] + Q[4 * k + 2][q] + Q[4 * k + 3][q]) / 4);
 
   /* frames: [{dets:[{id, c:[[x,y]*4]}]}], opt: {W,H,size (m), scaleDist (m), sigTape, sigPx, log, progress} */
-  function reconstruct(frames, opt) {
+  function reconstruct(frames, opt) { // mit Neustarts von anderen Startmarken, falls der Bildfehler zu hoch ist
+    let best = reconstructOnce(frames, opt, 0);
+    if (!best.ok || best.res.rms <= (opt.goodRms || 0.5)) return best;
+    const cnt = {}; frames.forEach(fr => fr.dets.forEach(d => cnt[d.id] = (cnt[d.id] || 0) + 1));
+    const roots = Object.keys(cnt).map(Number).filter(id => id !== 0).sort((a, b) => cnt[b] - cnt[a]).slice(0, opt.restarts ?? 3);
+    for (const r of roots) {
+      (opt.log || (() => { }))(`Bildfehler ${best.res.rms.toFixed(2)} px zu hoch – Neustart ab Marke ${r}…`);
+      const t = reconstructOnce(frames, opt, r);
+      if (t.ok && t.res.rms < best.res.rms) best = t;
+      if (best.res.rms <= (opt.goodRms || 0.5)) break;
+    }
+    return best;
+  }
+  function reconstructOnce(frames, opt, root) {
     const W = opt.W, H = opt.H, s = opt.size || 0.16, log = opt.log || (() => { });
     const f0 = opt.f || 0.75 * Math.max(W, H), cx = W / 2, cy = H / 2;
     // Marken-IDs mit genug Sichtungen
@@ -44,7 +57,7 @@ const PG = (() => {
     for (const need of [0, 1, 2]) if (!ids.includes(need)) return { ok: false, msg: `Bodenmarke ${need} wurde nicht (oft genug) erkannt. Marken 0, 1 und 2 müssen im Video mehrmals gut sichtbar sein.` };
     const kOf = new Map(ids.map((id, k) => [id, k]));
     // Startwerte inkrementell: Rückwärtsschnitt (Kamera aus allen bekannten Ecken), Vorwärtsschnitt (Marke aus mehreren Bildern), Zwischenausgleich
-    const mPose = new Map([[0, { R: [1, 0, 0, 0, 1, 0, 0, 0, 1], p: [0, 0, 0] }]]), cPose = new Map();
+    const mPose = new Map([[root, { R: [1, 0, 0, 0, 1, 0, 0, 0, 1], p: [0, 0, 0] }]]), cPose = new Map();
     const det = frames.map(fr => fr.dets.filter(d => kOf.has(d.id)).map(d => ({ ...d, pose: poseFromCorners(d.c, f0, cx, cy, s), area: Math.abs(areaOf(d.c)) })).filter(d => d.pose));
     let it0 = [f0, cx, cy, 0, 0]; const cornersW = id => { const M = mPose.get(id); return local(s).map(L => addv(T3(M.R, L), M.p)); };
     const resect = (ds, C0) => { // Gauß-Newton über 6 Posenparameter
@@ -106,7 +119,7 @@ const PG = (() => {
         lastBA = cPose.size; const idsN = [...mPose.keys()], camsN = [...cPose.keys()], kk = new Map(idsN.map((id, k) => [id, k]));
         const ptsN = []; idsN.forEach(id => cornersW(id).forEach(X => ptsN.push(X)));
         const obsN = []; camsN.forEach((i, ci) => det[i].forEach(d => { if (!kk.has(d.id)) return; d.c.forEach((p, q) => obsN.push({ c: ci, p: 4 * kk.get(d.id) + q, u: p[0], v: p[1], s: 1 })); }));
-        const k0 = kk.get(0), fixc = [0, 1, 2, 3].flatMap(q => [0, 1, 2].map(m => ({ f: Q => Q[q][m], v: ptsN[q][m], s: 1e-6, idx: [q] })));
+        const k0 = kk.get(root), fixc = [0, 1, 2, 3].flatMap(q => [0, 1, 2].map(m => ({ f: Q => Q[q][m], v: ptsN[q][m], s: 1e-6, idx: [q] })));
         const rr = BAm.solve({ it: it0, cams: camsN.map(i => cPose.get(i)), pts: ptsN, obs: obsN, cons: k0 === 0 ? fixc : [], fixIt: camsN.length >= 10 ? [false, true, true, false, true] : [true, true, true, true, true] }, { iters: 20 });
         it0 = rr.it.slice();
         camsN.forEach((i, ci) => cPose.set(i, rr.cams[ci]));
@@ -119,7 +132,7 @@ const PG = (() => {
           (eM.get(id) || eM.set(id, []).get(id)).push(e); (eC.get(ci) || eC.set(ci, []).get(ci)).push(e); });
         const med = a => a.slice().sort((x, y) => x - y)[a.length >> 1];
         let dropM = 0, dropC = 0;
-        eM.forEach((a, id) => { if (id !== 0 && med(a) > 3 && bump('m' + id)) { mPose.delete(id); dropM++; } });
+        eM.forEach((a, id) => { if (id !== root && med(a) > 3 && bump('m' + id)) { mPose.delete(id); dropM++; } });
         eC.forEach((a, ci) => { if (med(a) > 3 && bump('c' + ci)) { cPose.delete(ci); dropC++; } });
         log(`Zwischenausgleich: ${camsN.length} Bilder, ${idsN.length} Marken, rms ${rr.rms.toFixed(1)} px${dropM + dropC ? `, zurückgesetzt: ${dropM} Marken, ${dropC} Bilder` : ''}`);
         if (dropM + dropC) { lastBA = Math.min(lastBA, cPose.size); progress = true; }
@@ -240,8 +253,13 @@ const PG = (() => {
     const sig = Pg.map((_, i) => rec.res.sigmaOf(Q => len(Q, i)));
     // Wandlinie i verläuft zwischen Ecke i und i+1: Ecke i = Schnitt (Wand i-1, Wand i)
     const warn = G.filter(g => g.m.length < 2).map(g => `Wand mit Marke ${g.m[0].id} hat nur 1 Marke – Richtung unsicher, besser ≥ 2 Marken je Wand.`);
+    if (sig.some(v => v !== null && v > 0.05)) warn.push('Raum unvollständig: mindestens eine Wand ist kaum bestimmt (±-Wert sehr groß) – vermutlich wurde eine Wand zu selten fotografiert. Diesen Bereich aus 2–3 weiteren Positionen aufnehmen und neu auswerten.');
     if (weak.length) warn.push(`Marken ${weak.join(', ')} zu selten/zu ähnlich gesehen (Lage > ±1 cm) – nicht verwendet. Diese aus weiteren Positionen aufnehmen.`);
-    return { ok: true, poly: Pg, sigma: sig, groups: G.map(g => g.m.map(m => m.id)), lengths: Pg.map((_, i) => len(P, i)), warn };
+    // Raumhöhe aus Deckenmarken (waagrecht, oberhalb 1,8 m) über dem Boden (z = 0 aus Bodenmarken)
+    const ceil = rec.ids.filter(id => id >= 4 && (!opt.ids || opt.ids.has(id))).map(id => { const k = rec.kU.get(id), Q = [0, 1, 2, 3].map(q => P[4 * k + q]), n = nrm(cross(sub(Q[2], Q[0]), sub(Q[3], Q[1]))); return { k, z: ctrOf(P, k)[2], hz: Math.abs(n[2]) }; }).filter(m => m.hz > 0.9 && m.z > 1.8);
+    const height = ceil.length ? ceil.reduce((a, m) => a + m.z, 0) / ceil.length : null;
+    const hSig = ceil.length ? rec.res.sigmaOf(Q => ceil.reduce((a, m) => a + ctrOf(Q, m.k)[2], 0) / ceil.length) : null;
+    return { ok: true, height, hSig, poly: Pg, sigma: sig, groups: G.map(g => g.m.map(m => m.id)), lengths: Pg.map((_, i) => len(P, i)), warn };
   }
   return { reconstruct, walls, poseFromCorners, local };
 })();
