@@ -469,11 +469,191 @@ const RAW_LEVELS = [
     {de:'ruhig', en:'calm', es:'tranquilo', fr:'calme', it:'calmo'},
   ]},
 ];
+/* Schwierigere Vokabeln für "Mittel" und "Fortgeschritten", gleiche Themen wie RAW_LEVELS.
+   Format je Zeile: Deutsch|Englisch|Spanisch|Französisch|Italienisch */
+const VOCAB_BY_DIFF = {
+  mittel: [
+    `das Eichhörnchen|squirrel|ardilla|écureuil|scoiattolo
+der Igel|hedgehog|erizo|hérisson|riccio
+die Schildkröte|turtle|tortuga|tortue|tartaruga
+der Adler|eagle|águila|aigle|aquila
+der Frosch|frog|rana|grenouille|rana
+die Eule|owl|búho|hibou|gufo
+der Wal|whale|ballena|baleine|balena
+die Ziege|goat|cabra|chèvre|capra`,
+    `die Zwiebel|onion|cebolla|oignon|cipolla
+der Knoblauch|garlic|ajo|ail|aglio
+die Gurke|cucumber|pepino|concombre|cetriolo
+das Rindfleisch|beef|ternera|bœuf|manzo
+der Pilz|mushroom|champiñón|champignon|fungo
+die Erdbeere|strawberry|fresa|fraise|fragola
+der Honig|honey|miel|miel|miele
+das Gewürz|spice|especia|épice|spezia`,
+    `der Onkel|uncle|tío|oncle|zio
+der Cousin|cousin|primo|cousin|cugino
+der Ehemann|husband|marido|mari|marito
+die Ehefrau|wife|esposa|épouse|moglie
+der Enkel|grandson|nieto|petit-fils|nipote
+der Zwilling|twin|gemelo|jumeau|gemello
+die Hochzeit|wedding|boda|mariage|matrimonio
+die Geburt|birth|nacimiento|naissance|nascita`,
+    `grau|grey|gris|gris|grigio
+braun|brown|marrón|marron|marrone
+rosa|pink|rosa|rose|rosa
+golden|golden|dorado|doré|dorato
+silbern|silver|plateado|argenté|argentato
+hell|light|claro|clair|chiaro
+dunkel|dark|oscuro|foncé|scuro
+bunt|colorful|colorido|coloré|colorato`,
+    `zwanzig|twenty|veinte|vingt|venti
+dreißig|thirty|treinta|trente|trenta
+fünfzig|fifty|cincuenta|cinquante|cinquanta
+hundert|hundred|cien|cent|cento
+tausend|thousand|mil|mille|mille
+die Hälfte|half|mitad|moitié|metà
+das Drittel|third|tercio|tiers|terzo
+das Dutzend|dozen|docena|douzaine|dozzina`,
+    `der Frühling|spring|primavera|printemps|primavera
+der Herbst|autumn|otoño|automne|autunno
+der Mittag|noon|mediodía|midi|mezzogiorno
+die Mitternacht|midnight|medianoche|minuit|mezzanotte
+das Wochenende|weekend|fin de semana|week-end|fine settimana
+der Kalender|calendar|calendario|calendrier|calendario
+das Jahrhundert|century|siglo|siècle|secolo
+bald|soon|pronto|bientôt|presto`,
+    `die Abfahrt|departure|salida|départ|partenza
+die Ankunft|arrival|llegada|arrivée|arrivo
+das Gepäck|luggage|equipaje|bagages|bagagli
+die Grenze|border|frontera|frontière|confine
+die Unterkunft|accommodation|alojamiento|hébergement|alloggio
+die Verspätung|delay|retraso|retard|ritardo
+der Fahrplan|timetable|horario|horaire|orario
+die Sehenswürdigkeit|attraction|atracción|attraction|attrazione`,
+    `das Wörterbuch|dictionary|diccionario|dictionnaire|dizionario
+die Hausaufgabe|homework|deberes|devoirs|compiti
+die Note|grade|nota|note|voto
+das Fach|subject|asignatura|matière|materia
+die Pause|break|recreo|récréation|ricreazione
+der Schüler|pupil|alumno|élève|alunno
+das Lineal|ruler|regla|règle|righello
+das Zeugnis|report card|boletín|bulletin|pagella`,
+    `die Bewerbung|application|solicitud|candidature|candidatura
+der Vertrag|contract|contrato|contrat|contratto
+der Kollege|colleague|colega|collègue|collega
+die Firma|company|empresa|entreprise|azienda
+der Kunde|customer|cliente|client|cliente
+die Rechnung|invoice|factura|facture|fattura
+der Urlaub|vacation|vacaciones|vacances|ferie
+die Erfahrung|experience|experiencia|expérience|esperienza`,
+    `neidisch|jealous|celoso|jaloux|geloso
+enttäuscht|disappointed|decepcionado|déçu|deluso
+überrascht|surprised|sorprendido|surpris|sorpreso
+nervös|nervous|nervioso|nerveux|nervoso
+einsam|lonely|solo|seul|solo
+dankbar|grateful|agradecido|reconnaissant|grato
+verlegen|embarrassed|avergonzado|gêné|imbarazzato
+neugierig|curious|curioso|curieux|curioso`,
+  ],
+  fortgeschritten: [
+    `das Faultier|sloth|perezoso|paresseux|bradipo
+der Krake|octopus|pulpo|pieuvre|polpo
+das Nashorn|rhinoceros|rinoceronte|rhinocéros|rinoceronte
+der Specht|woodpecker|pájaro carpintero|pic|picchio
+die Fledermaus|bat|murciélago|chauve-souris|pipistrello
+der Maulwurf|mole|topo|taupe|talpa
+die Heuschrecke|grasshopper|saltamontes|sauterelle|cavalletta
+der Waschbär|raccoon|mapache|raton laveur|procione`,
+    `die Aubergine|eggplant|berenjena|aubergine|melanzana
+der Blumenkohl|cauliflower|coliflor|chou-fleur|cavolfiore
+die Himbeere|raspberry|frambuesa|framboise|lampone
+der Zimt|cinnamon|canela|cannelle|cannella
+die Brühe|broth|caldo|bouillon|brodo
+der Essig|vinegar|vinagre|vinaigre|aceto
+die Mahlzeit|meal|comida|repas|pasto
+die Zutat|ingredient|ingrediente|ingrédient|ingrediente`,
+    `die Schwiegermutter|mother-in-law|suegra|belle-mère|suocera
+der Schwager|brother-in-law|cuñado|beau-frère|cognato
+der Vorfahre|ancestor|antepasado|ancêtre|antenato
+die Scheidung|divorce|divorcio|divorce|divorzio
+das Erbe|inheritance|herencia|héritage|eredità
+die Verlobung|engagement|compromiso|fiançailles|fidanzamento
+der Nachkomme|descendant|descendiente|descendant|discendente
+der Vormund|guardian|tutor|tuteur|tutore`,
+    `türkis|turquoise|turquesa|turquoise|turchese
+scharlachrot|scarlet|escarlata|écarlate|scarlatto
+blass|pale|pálido|pâle|pallido
+durchsichtig|transparent|transparente|transparent|trasparente
+gestreift|striped|rayado|rayé|rigato
+kariert|checkered|cuadriculado|quadrillé|quadrettato
+schimmernd|shimmering|brillante|chatoyant|scintillante
+der Farbton|shade|tono|nuance|tonalità`,
+    `die Million|million|millón|million|milione
+die Milliarde|billion|millardo|milliard|miliardo
+der Bruchteil|fraction|fracción|fraction|frazione
+das Prozent|percent|porcentaje|pourcentage|percentuale
+der Durchschnitt|average|promedio|moyenne|media
+die Summe|sum|suma|somme|somma
+ungerade|odd|impar|impair|dispari
+die Gleichung|equation|ecuación|équation|equazione`,
+    `das Jahrzehnt|decade|década|décennie|decennio
+die Dämmerung|dusk|anochecer|crépuscule|crepuscolo
+die Frist|deadline|plazo|délai|scadenza
+die Gegenwart|present|presente|présent|presente
+die Vergangenheit|past|pasado|passé|passato
+die Zukunft|future|futuro|avenir|futuro
+pünktlich|punctual|puntual|ponctuel|puntuale
+gleichzeitig|simultaneous|simultáneo|simultané|simultaneo`,
+    `der Zoll|customs|aduana|douane|dogana
+die Umleitung|detour|desvío|déviation|deviazione
+der Anschluss|connection|conexión|correspondance|coincidenza
+die Botschaft|embassy|embajada|ambassade|ambasciata
+das Visum|visa|visado|visa|visto
+die Versicherung|insurance|seguro|assurance|assicurazione
+die Rückerstattung|refund|reembolso|remboursement|rimborso
+das Abenteuer|adventure|aventura|aventure|avventura`,
+    `die Vorlesung|lecture|conferencia|conférence|lezione
+das Stipendium|scholarship|beca|bourse|borsa di studio
+die Abhandlung|essay|ensayo|dissertation|saggio
+die Forschung|research|investigación|recherche|ricerca
+der Abschluss|degree|título|diplôme|laurea
+die Hochschule|university|universidad|université|università
+die Einschreibung|enrollment|matrícula|inscription|iscrizione
+das Zitat|quotation|cita|citation|citazione`,
+    `die Kündigung|dismissal|despido|licenciement|licenziamento
+die Beförderung|promotion|ascenso|promotion|promozione
+die Verhandlung|negotiation|negociación|négociation|negoziazione
+der Unternehmer|entrepreneur|empresario|entrepreneur|imprenditore
+die Steuer|tax|impuesto|impôt|tassa
+die Haftung|liability|responsabilidad|responsabilité|responsabilità
+der Aktionär|shareholder|accionista|actionnaire|azionista
+die Gewerkschaft|union|sindicato|syndicat|sindacato`,
+    `erleichtert|relieved|aliviado|soulagé|sollevato
+verzweifelt|desperate|desesperado|désespéré|disperato
+misstrauisch|suspicious|desconfiado|méfiant|sospettoso
+gleichgültig|indifferent|indiferente|indifférent|indifferente
+empört|outraged|indignado|indigné|indignato
+sehnsüchtig|wistful|nostálgico|nostalgique|nostalgico
+zuversichtlich|confident|confiado|confiant|fiducioso
+beschämt|ashamed|avergonzado|honteux|vergognoso`,
+  ],
+};
+const LANG_KEYS = ['en','es','fr','it'];
+Object.keys(VOCAB_BY_DIFF).forEach(k=>{
+  VOCAB_BY_DIFF[k] = VOCAB_BY_DIFF[k].map(block=>block.trim().split('\n').map(line=>{
+    const [de, ...rest] = line.split('|');
+    const w = {de};
+    LANG_KEYS.forEach((l,i)=>w[l]=rest[i]);
+    return w;
+  }));
+});
+
 const LEVELS = RAW_LEVELS.map(l=>({icon:l.icon, title:l.title}));
 function currentLang(){ return state.language || 'en'; }
 function levelWords(levelIdx){
   const lang = currentLang();
-  return RAW_LEVELS[levelIdx].words.map(w=>[w.de, w[lang]]);
+  const set = VOCAB_BY_DIFF[state.difficulty];
+  const words = set ? set[levelIdx] : RAW_LEVELS[levelIdx].words;
+  return words.map(w=>[w.de, w[lang]]);
 }
 
 const MAX_HEARTS = 5;
@@ -560,9 +740,9 @@ function speak(text, lang='en-US'){
 
 /* ---------- SCHWIERIGKEITSGRADE ---------- */
 const DIFFICULTIES = {
-  anfaenger:{ label:'🌱 Anfänger', desc:'Einfacher Einstieg mit Zuordnen, Memory & Auswahl', tiers:['easy','medium'] },
-  mittel:{ label:'⚡ Mittel', desc:'Auswahl, Hören, Tippen, Wahr/Falsch & mehr', tiers:['medium','hard'] },
-  fortgeschritten:{ label:'🔥 Fortgeschritten', desc:'Anspruchsvoll: Zeitdruck, Buchstabensalat, Diktat', tiers:['medium','hard'], hardWeight:0.65 },
+  anfaenger:{ label:'🌱 Anfänger', desc:'Grundwortschatz (Hund, Apfel, rot …) mit Zuordnen & Memory', tiers:['easy','medium'] },
+  mittel:{ label:'⚡ Mittel', desc:'Alltagswortschatz (Igel, Knoblauch, Ankunft …)', tiers:['medium','hard'] },
+  fortgeschritten:{ label:'🔥 Fortgeschritten', desc:'Gehobener Wortschatz (Zoll, Frist, Gewerkschaft …) mit Zeitdruck', tiers:['medium','hard'], hardWeight:0.65 },
 };
 function populateDifficultyList(){
   const box = document.getElementById('diffList');
@@ -793,7 +973,13 @@ function renderQuestion(){
   const langInfo = LANGS[currentLang()];
   const langCode = langInfo.code, langName = langInfo.name, langAdj = langInfo.adj;
 
-  switch(q.type){
+  // Buchstabenspiele nur bei Einzelwörtern ohne Leerzeichen/Bindestrich/Apostroph
+  let type = q.type;
+  const notSingle = s => /[^\p{L}]/u.test(s);
+  if((type==='scramble_en'||type==='missing_en') && notSingle(en)) type = 'mc_de_en';
+  if((type==='scramble_de'||type==='missing_de') && notSingle(deNoun)) type = 'mc_en_de';
+
+  switch(type){
     case 'mc_de_en': {
       const opts = shuffle([en, ...randOthers(words,q.idx,3).map(i=>words[i][1])]);
       renderMC(`<div class="q-hint">Übersetze ins ${langName}</div><div class="q-word">${de}</div>`, opts, en);
