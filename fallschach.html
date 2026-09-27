@@ -79,6 +79,17 @@ body{margin:0;background:radial-gradient(ellipse at 50% 0%,#2a1838,var(--bg) 70%
 .pl{font-size:13px;color:#e3b8ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
 #mbar{height:5px!important;margin-top:3px}
 .gear{width:46px;flex:none;font-size:24px;line-height:1;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--gold);cursor:pointer}
+#spells{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.sp{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:4px 2px;color:var(--txt);font:600 11px Inter,sans-serif;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px}
+.sp i{font-style:normal;font-size:20px;line-height:1.1}
+.sp b{position:absolute;top:2px;right:4px;font-size:11px;color:#7fd4ff}
+.sp:disabled{opacity:.35;cursor:default}
+.sp.on{border-color:#7fd4ff;box-shadow:0 0 12px #7fd4ff88;background:#17304a}
+.t.tg{box-shadow:inset 0 0 0 3px #7fd4ff,inset 0 0 16px #7fd4ffaa}
+.pc.sh .fig{filter:drop-shadow(0 0 6px #7fd4ff) drop-shadow(0 0 2px #fff)!important}
+.pc.sh::after{content:"🛡";position:absolute;left:36%;bottom:16%;font-size:calc(var(--c)*.24)}
+.pc.fz .fig{filter:hue-rotate(180deg) saturate(.4) brightness(1.4) drop-shadow(0 0 6px #9fe7ff)!important}
+.pc.fz::after{content:"❄";position:absolute;left:38%;bottom:16%;font-size:calc(var(--c)*.26);color:#bff4ff}
 #turn{position:absolute;top:-9px;left:50%;transform:translateX(-50%);z-index:11;font-size:11px;font-weight:800;letter-spacing:.05em;padding:1px 12px;border-radius:10px;background:#1a1422;border:1px solid currentColor;white-space:nowrap}
 #ovc{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;max-width:360px}
 #ovc h2{margin:0 0 4px;font-family:Cinzel,serif;color:var(--gold);font-size:26px}
@@ -118,11 +129,12 @@ body{margin:0;background:radial-gradient(ellipse at 50% 0%,#2a1838,var(--bg) 70%
 <div class="wrap">
   <div class="bar">
     <div class="hud" onclick="desc('wave')"><small>WELLE</small><span id="wave">1</span></div>
-    <div class="hud" onclick="desc('rnd')"><small>ZUG</small><span id="rnd">1</span></div>
+    <div class="hud" onclick="desc('pm')"><small>💧 MANA</small><span id="pm" style="color:#7fd4ff">0</span></div>
     <div class="hud m" onclick="desc('mana')"><small>🔮 GEGNER-MANA <span id="mana">0</span></small><b id="plan" class="pl">–</b><div id="mbar"><div id="mfill"></div></div></div>
     <button class="gear" onclick="menu('opt')" aria-label="Optionen">⚙</button>
   </div>
   <div id="boardWrap"><div id="turn"></div><div id="board"></div><div id="layer"></div><div id="banner"></div></div>
+  <div id="spells"></div>
   <div id="info"></div>
 </div>
 
@@ -138,6 +150,7 @@ body{margin:0;background:radial-gradient(ellipse at 50% 0%,#2a1838,var(--bg) 70%
       <b style="color:#ffcf6b">Pfeilturm</b>: schießt jede Runde in Pfeilrichtung auf die erste Figur und dreht sich dann weiter.
       <b>Bombe</b>: explodiert, wenn der Zähler abläuft oder jemand darauf tritt, und trifft alle Figuren rundherum.
       <b>Felsen</b>: blockiert den Weg.</li>
+    <li>💧 <b>Deine Zauber:</b> Du bekommst +2 Mana pro Runde und +1 pro besiegtem Gegner. Unter dem Brett wählst du einen Zauber (einer pro Runde, kostet keinen Zug): ✚ Heilung, ⚡ Blitz, 🛡 Schild, ❄ Frost.</li>
     <li>🔮 Der Gegner sammelt jede Runde Mana und wirkt Zauber. Oben steht, was als Nächstes kommt.</li>
     <li>👑 Der <b>Dunkle König</b> schlägt im Nahkampf zurück, wenn er überlebt – Turm und Läufer greifen gefahrlos aus der Ferne an. Ist er allein, flieht er und ruft Schatten, die verschwinden, sobald er fällt.</li>
     <li>☠ Besiege alle Gegner einer Welle. Fällt dein König, ist das Spiel aus.</li>
@@ -292,7 +305,7 @@ function mkE(t,r,c){const d=E[t],w=wave-1,hp=d[3]+Math.floor(w*(t==='K'?2:1.3));
 function neu(){
   P=[mkP('R',7,1),mkP('K',7,4),mkP('B',7,5),mkP('N',7,6)];
   fld=Array.from({length:N},()=>Array(N).fill(null));ter=Array.from({length:N},()=>Array(N).fill(null));
-  wave=0;mana=0;kills=0;rnd=1;over=false;sel=null;moves=[];
+  wave=0;mana=0;pmana=3;spk=null;castUsed=false;kills=0;rnd=1;over=false;sel=null;moves=[];
   nextWave();newPlan();
   spawnField('atk');spawnField('def');
   closeMenu();startMusic();startTurn();
@@ -338,7 +351,7 @@ const dmgOf=(a,d)=>Math.max(1,atkOf(a)-d.def);
 
 // ---- Spieler ----
 function startTurn(){
-  phase='p';
+  phase='p';castUsed=false;spk=null;if(rnd>1)pmana=Math.min(10,pmana+2);
   for(const b of mine())if(b.t==='B'&&b.tier>=2)for(const q of mine())if(dist(q,b)<=1&&q.hp<q.max){q.hp++;float(q.r,q.c,'+1 ❤','var(--heal)')}
   mine().forEach(p=>p.bonus=false);
   $('turn').textContent='DEIN ZUG';$('turn').style.color='var(--gold)';
@@ -348,6 +361,7 @@ function startTurn(){
 }
 function click(r,c){
   if(over)return;
+  if(spk&&phase==='p')return castAt(r,c);
   const x=at(r,c);
   if(phase==='p'&&sel&&sel.side==='p'){const m=moves.find(m=>m.r===r&&m.c===c);if(m)return act(sel,m)}
   sel=x||null;moves=x&&(x.side==='e'||phase==='p')?gen(x):[];
@@ -370,8 +384,9 @@ function useFields(p,cells){
   }
 }
 function hit(a,d){
+  if(blocked(d)){beam(a.r,a.c,d.r,d.c,'#7fd4ff');return false}
   const x=dmgOf(a,d);beam(a.r,a.c,d.r,d.c,a.side==='e'?'#ff4d5e':'#9fd0ff');log((a.side==='e'?'⚠ ':'')+a.name+' greift '+d.name+' an: −'+x);d.hp-=x;float(d.r,d.c,'-'+x,'var(--red)');hurt(d);sfx(d.hp<=0?'kill':'hit');
-  if(d.hp<=0){P=P.filter(p=>p!==d);if(d.side==='e')kills++;
+  if(d.hp<=0){P=P.filter(p=>p!==d);if(d.side==='e'){kills++;if(a.side==='p')pmana=Math.min(10,pmana+1)}
     if(d.side==='e'&&d.t==='K'&&P.some(q=>q.sum)){P=P.filter(q=>!q.sum);setTimeout(()=>log('Die gerufenen Schatten vergehen mit ihrem König.'),300)}
     return true}
   return false;
@@ -410,6 +425,7 @@ function enemyTurn(){
     if(n--<=0||!foes().length){
       if(!foes().length)return setTimeout(waveClear,400);
       if(Math.random()<.2)spawnField();
+      foes().forEach(f=>{if(f.frz)f.frz--});
       rnd++;return hazards(startTurn);
     }
     enemyMove();render();
@@ -423,7 +439,7 @@ function cast(pl){
   if(pl.n==='Schatten rufen'){const e=emptyCells(0,2);if(e.length){const[r,c]=e[Math.random()*e.length|0];P.push(mkE('S',r,c));flashT(r,c)}}
   if(pl.n==='Fluchblitz'){
     const tg=mine().sort((a,b)=>a.hp-b.hp)[0];
-    if(tg){const d=2+Math.floor(wave/3);tg.hp-=d;flashT(tg.r,tg.c);float(tg.r,tg.c,'-'+d+' Fluch','var(--mana)');log('🔮 Fluchblitz trifft '+tg.name+': −'+d);hurt(tg);if(tg.hp<=0)P=P.filter(p=>p!==tg)}
+    if(tg&&blocked(tg)){}else if(tg){const d=2+Math.floor(wave/3);tg.hp-=d;flashT(tg.r,tg.c);float(tg.r,tg.c,'-'+d+' Fluch','var(--mana)');log('🔮 Fluchblitz trifft '+tg.name+': −'+d);hurt(tg);if(tg.hp<=0)P=P.filter(p=>p!==tg)}
   }
   if(pl.n==='Dunkle Heilung')foes().forEach(f=>{f.hp=Math.min(f.max,f.hp+3);float(f.r,f.c,'+3','var(--heal)')});
   return pl.n==='Raserei';
@@ -439,7 +455,7 @@ function enemyMove(){
   const th=threat(),alone=foes().length===1;
   // Königs-Sicherheit: Abstand zu deinen Figuren, bedrohte Felder meiden
   const safe=(q,r,c)=>Math.min(...mine().map(p=>Math.max(Math.abs(p.r-r),Math.abs(p.c-c))))*3-(th.has(r*8+c)?30:0);
-  for(const f of foes())for(const m of gen(f)){
+  for(const f of foes().filter(f=>!f.frz))for(const m of gen(f)){
     let s;
     if(m.hit){const d=dmgOf(f,m.hit);s=100+(m.hit.hp<=d?60+(m.hit.t==='K'?500:m.hit.atk*10):d*5)}
     else if(f.t==='K')s=safe(f,m.r,m.c)-(alone?0:6)+Math.random();
@@ -479,9 +495,35 @@ function help(){menu('rules')}
 // ---- Kurzbeschreibungen beim Antippen ----
 const DESC={heal:'Heilfeld: deine Figur bekommt beim Betreten +4 Leben.',atk:'Angriffsfeld: +1 Angriff für die Figur, dauerhaft.',def:'Verteidigungsfeld: +1 Verteidigung, die Figur nimmt weniger Schaden.',evo:'Entwicklungsfeld: neue Zugart, beim 2. Mal eine Spezialfähigkeit.',
  lava:'Lava: 2 Schaden beim Betreten und jede Runde – für alle Figuren.',tur:'Pfeilturm: schießt jede Runde in Pfeilrichtung auf die erste Figur und dreht sich dann weiter. Blockiert.',bomb:'Bombe: explodiert bei 0 oder beim Betreten und trifft alle Figuren rundherum.',rock:'Felsen: blockiert den Weg.',
- wave:'Welle: Besiege alle Gegner, dann kommt die nächste, stärkere Welle.',rnd:'Zug: Anzahl der gespielten Runden in diesem Spiel.',mana:'Gegner-Mana: +2 pro Runde. Ist genug da, wirkt der Gegner den angezeigten Zauber.'};
+ wave:'Welle: Besiege alle Gegner, dann kommt die nächste, stärkere Welle.',rnd:'Zug: Anzahl der gespielten Runden in diesem Spiel.',pm:'Dein Mana: +2 pro Runde, +1 pro besiegtem Gegner (max. 10). Damit wirkst du Zauber aus der Leiste unter dem Brett – einen pro Runde.',mana:'Gegner-Mana: +2 pro Runde. Ist genug da, wirkt der Gegner den angezeigten Zauber.'};
 const EDESC={S:'zieht 1 Feld in jede Richtung',N:'springt im L wie ein Springer',B:'zieht diagonal wie ein Läufer – auch über weite Strecken',R:'zieht gerade wie ein Turm – auch über weite Strecken',Q:'zieht wie eine Dame – gerade und diagonal',K:'Anführer, zieht 1 Feld. Schlägt im Nahkampf zurück – greif ihn aus der Ferne an. Allein ruft er Schatten und flieht.'};
-let dk=null;
+let dk=null,pmana=0,spk=null,castUsed=false;
+// ---- Eigene Zauber ----
+const SP={
+ heal:{i:'✚',n:'Heilung',c:3,t:'p',d:'Eigene Figur +4 Leben'},
+ bolt:{i:'⚡',n:'Blitz',c:4,t:'e',d:'Gegner 3 Schaden – ignoriert Verteidigung'},
+ shield:{i:'🛡',n:'Schild',c:3,t:'p',d:'Eigene Figur blockt den nächsten Treffer komplett'},
+ frost:{i:'❄',n:'Frost',c:5,t:'e',d:'Gegner ist 1 Runde eingefroren und kann nichts tun'},
+};
+function spells(){
+  $('spells').innerHTML=Object.keys(SP).map(k=>{const x=SP[k];const ok=phase==='p'&&!over&&!castUsed&&pmana>=x.c;
+    return `<button class="sp${spk===k?' on':''}" ${ok||spk===k?'':'disabled'} onclick="pickSpell('${k}')"><b>${x.c}</b><i>${x.i}</i>${x.n}</button>`}).join('');
+}
+function pickSpell(k){spk=spk===k?null:k;sel=null;moves=[];dk=null;
+  if(spk)log(SP[k].i+' '+SP[k].n+': '+SP[k].d+' – tippe '+(SP[k].t==='p'?'eine eigene Figur':'einen Gegner')+' an.');else log('');
+  sfx('select');render()}
+function castAt(r,c){
+  const x=at(r,c),s=SP[spk];
+  if(!x||x.side!==s.t||pmana<s.c||castUsed){spk=null;log('Zauber abgebrochen.');render();return}
+  pmana-=s.c;castUsed=true;const k=spk;spk=null;flashT(r,c);sfx(k==='bolt'?'hit':'evo');
+  if(k==='heal'){const h=Math.min(4,x.max-x.hp);x.hp+=h;float(r,c,'+'+h+' ❤','var(--heal)')}
+  if(k==='shield'){x.shield=true;float(r,c,'Schild!','#7fd4ff')}
+  if(k==='frost'){x.frz=1;float(r,c,'Eingefroren','#bff4ff')}
+  if(k==='bolt'){beam(7.5,3.5,r,c,'#7fd4ff');dmgRaw(x,3,' ⚡','#7fd4ff');if(!P.includes(x))pmana=Math.min(10,pmana+1)}
+  log(s.i+' '+s.n+' gewirkt.');render();
+  if(!foes().length){phase='wait';render();setTimeout(waveClear,500)}
+}
+function blocked(d){if(!d.shield)return false;d.shield=false;float(d.r,d.c,'Geblockt!','#7fd4ff');return true}
 function desc(k){dk=k;sel=null;moves=[];render()}
 
 
@@ -517,7 +559,7 @@ function terrain(){
 }
 function placeBomb(){const s=freeCell(2,6);if(s){ter[s[0]][s[1]]={k:'bomb',t:3};flashT(s[0],s[1])}}
 function dmgRaw(p,x,lab,col='var(--atk)'){
-  if(!P.includes(p))return;
+  if(!P.includes(p)||blocked(p))return;
   p.hp-=x;float(p.r,p.c,'-'+x+lab,col);hurt(p);
   if(p.hp<=0){P=P.filter(q=>q!==p);if(p.side==='e')kills++}
 }
@@ -591,7 +633,7 @@ function render(){
   const b=$('board');
   if(!b.children.length){let h='';for(let r=0;r<N;r++)for(let c=0;c<N;c++)h+=`<div class="t" data-r="${r}" data-c="${c}"></div>`;b.innerHTML=h}
   [...b.children].forEach((t,i)=>{const r=i>>3,c=i&7,m=moves.find(m=>m.r===r&&m.c===c),f=fld&&fld[r][c];
-    const g=ter[r]&&ter[r][c];t.className='t '+((r+c)%2?'b':'a')+(g?' g-'+g.k:'')+(f?' f-'+f.k:'')+(sel&&sel.r===r&&sel.c===c&&P.includes(sel)?' sel':'')+(m?(m.hit?' at':(sel.side==='e'?' th':' mv')):'');
+    const g=ter[r]&&ter[r][c];t.className='t '+((r+c)%2?'b':'a')+(g?' g-'+g.k:'')+(f?' f-'+f.k:'')+(sel&&sel.r===r&&sel.c===c&&P.includes(sel)?' sel':'')+(m?(m.hit?' at':(sel.side==='e'?' th':' mv')):'')+(spk&&at(r,c)&&at(r,c).side===SP[spk].t?' tg':'');
     const want=(f?f.k:'')+'|'+(g?g.k+(g.t??'')+(g.d??''):'');if(t.dataset.f!==want){t.dataset.f=want;t.innerHTML=(g?terHtml(g):'')+(f?`<div class="fi">${FICON[f.k]}</div>`:'')}
   });
   const L=$('layer'),cs='var(--c)',have=new Set(P.map(p=>p.id));
@@ -599,17 +641,17 @@ function render(){
   for(const p of P){
     let e=L.querySelector('[data-id="'+p.id+'"]');
     if(!e){e=document.createElement('div');e.dataset.id=p.id;L.appendChild(e);e.style.transition='none';e.style.transform=`translate(calc(${cs}*${p.c}),calc(${cs}*${p.r}))`;void e.offsetWidth;e.style.transition=''}
-    e.className='pc '+p.side+(p.g==='K'?' k':'');
+    e.className='pc '+p.side+(p.g==='K'?' k':'')+(p.shield?' sh':'')+(p.frz?' fz':'');
     const a=atkOf(p),key=[p.g,p.hp,p.max,a,p.def,p.tier].join();
     if(e.dataset.k!==key){e.dataset.k=key;e.innerHTML=svg(p.g,p.side)+(p.tier?`<div class="stars">${'✦'.repeat(p.tier)}</div>`:'')+`<div class="bd d">${p.def}</div><div class="bd a">${a}</div><div class="hpb"><i style="width:${Math.max(0,p.hp/p.max*100)}%"></i></div>`}
     e.style.transform=`translate(calc(${cs}*${p.c}),calc(${cs}*${p.r}))`;
   }
-  $('wave').textContent=wave||1;$('rnd').textContent=rnd;$('mana').textContent=mana;
+  $('wave').textContent=wave||1;$('mana').textContent=mana;
   if(plan){const left=Math.max(0,Math.ceil((plan.c-mana)/2));$('plan').textContent=plan.n+(left?' in '+left+' Rd.':' – jetzt!');$('mfill').style.width=Math.min(100,mana/plan.c*100)+'%'}
-  info();
+  $('pm').textContent=pmana;spells();info();
 }
 function size(){
-  const c=Math.max(34,Math.floor(Math.min((Math.min(innerWidth,672)-46)/N,(innerHeight-150)/N,78)));
+  const c=Math.max(34,Math.floor(Math.min((Math.min(innerWidth,672)-46)/N,(innerHeight-205)/N,78)));
   document.documentElement.style.setProperty('--c',c+'px');
 }
 $('board').addEventListener('click',e=>{const t=e.target.closest('.t');if(t)click(+t.dataset.r,+t.dataset.c)});
