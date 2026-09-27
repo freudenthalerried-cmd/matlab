@@ -113,11 +113,13 @@ body{
 .type-input.correct{border-color:var(--accent2);background:#e3fbf0;}
 .type-input.wrong{border-color:var(--danger);background:#ffe9e9;}
 
-.match-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 4px;}
+.match-columns{display:flex;gap:14px;padding:0 4px;}
+.match-col{flex:1;display:flex;flex-direction:column;gap:10px;}
 .match-item{background:#fff;border:3px solid #e6ecf0;border-radius:12px;padding:14px 6px;text-align:center;font-weight:700;font-size:14px;cursor:pointer;}
 .match-item.selected{border-color:var(--purple);background:#efe9ff;}
-.match-item.matched{background:#e3fbf0;border-color:var(--accent2);opacity:.6;pointer-events:none;}
+.match-item.matched{background:#e3fbf0;border-color:var(--accent2);opacity:.5;pointer-events:none;}
 .match-item.wrongflash{animation:shake .3s;border-color:var(--danger);}
+.match-progress{text-align:center;color:#bfe3ea;font-size:13px;margin-bottom:10px;}
 
 .feedback-bar{
   position:fixed;left:0;right:0;bottom:0;max-width:480px;margin:0 auto;padding:16px;color:#fff;
@@ -471,7 +473,10 @@ function buildQuestions(levelIdx){
     else type='type_answer';             // EN eintippen (seltener)
     qs.push({type, idx, word:w});
   });
-  return shuffle(qs);
+  const shuffled = shuffle(qs);
+  // Zuerst ein Zuordnungsspiel mit allen Wörtern des Levels (Fäden verbinden)
+  shuffled.unshift({type:'match_round', words});
+  return shuffled;
 }
 
 function startLevel(levelIdx){
@@ -502,8 +507,14 @@ function renderQuestion(){
   session.answered = false;
   const q = session.questions[session.qi];
   const words = LEVELS[session.levelIdx].words;
-  const [de, en] = q.word;
   const area = document.getElementById('questionArea');
+
+  if(q.type==='match_round'){
+    renderMatchRound(q.words);
+    return;
+  }
+
+  const [de, en] = q.word;
 
   if(q.type==='mc_translate'){
     const others = randOthers(words, q.idx, 3).map(i=>words[i][1]);
@@ -538,6 +549,67 @@ function renderQuestion(){
     });
     input.addEventListener('keydown', e=>{ if(e.key==='Enter') submitTyped(en); });
     document.getElementById('submitTypeBtn').addEventListener('click', ()=>submitTyped(en));
+  }
+}
+
+function renderMatchRound(words){
+  const area = document.getElementById('questionArea');
+  const lefts = shuffle(words.map((w,i)=>({text:w[0], idx:i})));
+  const rights = shuffle(words.map((w,i)=>({text:w[1], idx:i})));
+  area.innerHTML = `
+    <div class="q-hint">Verbinde die passenden Wörter</div>
+    <div class="match-progress" id="matchProgress">0 / ${words.length} Paare</div>
+    <div class="match-columns">
+      <div class="match-col" id="matchLeft"></div>
+      <div class="match-col" id="matchRight"></div>
+    </div>`;
+  const leftBox = document.getElementById('matchLeft');
+  const rightBox = document.getElementById('matchRight');
+  let selLeft=null, selRight=null, matchedCount=0;
+
+  function makeItem(item, col){
+    const el = document.createElement('div');
+    el.className='match-item';
+    el.textContent = item.text;
+    el.addEventListener('click', ()=>{
+      if(el.classList.contains('matched')) return;
+      sndTap();
+      const box = col==='left'?leftBox:rightBox;
+      box.querySelectorAll('.match-item').forEach(e=>e.classList.remove('selected'));
+      el.classList.add('selected');
+      if(col==='left') selLeft = {idx:item.idx, el}; else selRight = {idx:item.idx, el};
+      tryMatch();
+    });
+    return el;
+  }
+  lefts.forEach(item=>leftBox.appendChild(makeItem(item,'left')));
+  rights.forEach(item=>rightBox.appendChild(makeItem(item,'right')));
+
+  function tryMatch(){
+    if(!selLeft || !selRight) return;
+    if(selLeft.idx === selRight.idx){
+      selLeft.el.classList.remove('selected'); selLeft.el.classList.add('matched');
+      selRight.el.classList.remove('selected'); selRight.el.classList.add('matched');
+      sndCorrect();
+      matchedCount++;
+      document.getElementById('matchProgress').textContent = `${matchedCount} / ${words.length} Paare`;
+      selLeft = selRight = null;
+      if(matchedCount === words.length){
+        session.correct++;
+        session.combo++;
+        session.maxCombo = Math.max(session.maxCombo, session.combo);
+        setTimeout(()=>showFeedback(true, 'Alle Paare gefunden! 🎉'), 350);
+      }
+    } else {
+      sndWrong();
+      const l=selLeft.el, r=selRight.el;
+      l.classList.add('wrongflash'); r.classList.add('wrongflash');
+      setTimeout(()=>{
+        l.classList.remove('selected','wrongflash');
+        r.classList.remove('selected','wrongflash');
+      }, 350);
+      selLeft = selRight = null;
+    }
   }
 }
 
