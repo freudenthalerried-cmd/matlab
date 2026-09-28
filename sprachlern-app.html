@@ -222,6 +222,48 @@ body{
 .nav-btn .icon{font-size:22px;}
 
 .hidden{display:none!important;}
+.runner-track{flex:1;position:relative;}
+.runner{position:absolute;top:50%;left:4%;transform:translate(-50%,-55%);font-size:22px;transition:left .5s cubic-bezier(.3,1.5,.5,1);pointer-events:none;filter:drop-shadow(0 2px 3px rgba(0,0,0,.4));}
+.runner.hop{animation:hop .55s ease;}
+.runner.oops{animation:oopsAnim .5s ease;}
+@keyframes hop{0%,100%{transform:translate(-50%,-55%);}40%{transform:translate(-50%,-130%) rotate(-18deg) scale(1.2);}}
+@keyframes oopsAnim{0%,100%{transform:translate(-50%,-55%) rotate(0);}25%{transform:translate(-60%,-55%) rotate(-25deg);}75%{transform:translate(-40%,-55%) rotate(25deg);}}
+.burst{position:fixed;pointer-events:none;font-size:22px;z-index:70;}
+#questionArea.shake{animation:shake .35s;}
+#questionArea > *{animation:popIn .35s both;}
+#questionArea > *:nth-child(2){animation-delay:.06s;} #questionArea > *:nth-child(3){animation-delay:.12s;} #questionArea > *:nth-child(4){animation-delay:.18s;}
+.options .opt{animation:popIn .35s both;}
+.options .opt:nth-child(2){animation-delay:.08s;} .options .opt:nth-child(3){animation-delay:.16s;} .options .opt:nth-child(4){animation-delay:.24s;}
+.options .opt.correct{animation:pop .3s;} .options .opt.wrong{animation:shake .3s;}
+@keyframes popIn{from{opacity:0;transform:translateY(14px) scale(.9);}to{opacity:1;transform:none;}}
+.star-pop{display:inline-block;animation:starPop .5s both cubic-bezier(.3,1.8,.5,1);}
+@keyframes starPop{from{opacity:0;transform:scale(0) rotate(-90deg);}to{opacity:1;transform:scale(1) rotate(0);}}
+.back-link{background:#eef2f5;border:none;border-radius:10px;padding:6px 12px;font-weight:800;font-size:13px;color:var(--muted);cursor:pointer;font-family:inherit;margin-bottom:4px;}
+.brand{white-space:nowrap;}
+.seg{display:flex;background:rgba(255,255,255,0.12);border-radius:14px;padding:4px;gap:4px;margin:2px 0 6px;flex-shrink:0;}
+.seg-btn{flex:1;border:none;background:transparent;color:#cfe8ee;font-weight:800;font-size:14px;padding:8px;border-radius:10px;cursor:pointer;font-family:inherit;}
+.seg-btn.sel{background:#fff;color:var(--text);}
+.fb-timer{position:absolute;left:0;bottom:0;height:4px;background:rgba(255,255,255,0.75);width:0;}
+@media (max-width:380px){
+  .brand{font-size:17px;} .stat-pill{padding:4px 8px;font-size:13px;gap:4px;}
+}
+@media (max-height:740px){
+  .topbar{padding:7px 12px;}
+  .mascot{font-size:40px;} .mascot-shadow{width:26px;height:6px;}
+  .speech-bubble{font-size:12px;padding:6px 10px;margin-top:6px;}
+  .card{padding:14px;}
+  .btn{padding:11px;font-size:15px;}
+  .diff-list{gap:7px;} .diff-option{padding:8px 12px;} .diff-option b{font-size:14px;} .diff-option span{font-size:11px;}
+  .intro-icon{font-size:34px;} .intro-title{font-size:17px;} .intro-desc{margin-bottom:8px;}
+  .result-stars{font-size:28px;margin:2px 0;} .result-stat-row{padding:7px 12px;margin:4px 0;font-size:13px;}
+  .level-node{width:50px;height:50px;font-size:17px;border-width:3px;}
+  .node-label{top:-15px;font-size:8px;} .node-stars{bottom:-10px;} .node-stars span{font-size:9px;}
+  .path{gap:4px 12px;padding-top:14px;}
+  .dash{padding:8px 10px;} .rank-badge{width:40px;height:40px;font-size:22px;} .rank-badge.big{width:52px;height:52px;font-size:30px;}
+  .quest{padding:8px 10px;} .panel{padding:10px;}
+  .q-word{font-size:22px;} .q-sentence{font-size:17px;}
+  .opt{padding:11px 6px;font-size:14px;}
+}
 
 /* ---------- GAMIFICATION ---------- */
 .bottom-nav{order:10;}
@@ -322,7 +364,7 @@ body{
   <!-- ===== SPRACH-AUSWAHL ===== -->
   <section class="screen active" id="screen-language">
     <div class="card">
-      <button class="btn btn-secondary hidden" id="langBackBtn" style="margin:0 0 12px;">‹ Zurück</button>
+      <button class="back-link hidden" id="langBackBtn">‹ Zurück</button>
       <div class="mascot-wrap">
         <div class="mascot">🦉</div>
         <div class="mascot-shadow"></div>
@@ -337,7 +379,7 @@ body{
   <!-- ===== SCHWIERIGKEITS-AUSWAHL ===== -->
   <section class="screen" id="screen-difficulty">
     <div class="card">
-      <button class="btn btn-secondary" id="diffBackBtn" style="margin:0 0 12px;">‹ Zurück</button>
+      <button class="back-link" id="diffBackBtn">‹ Zurück</button>
       <div class="mascot-wrap">
         <div class="mascot">🦉</div>
         <div class="mascot-shadow"></div>
@@ -372,7 +414,7 @@ body{
 
   <!-- ===== GRAMMATIK ===== -->
   <section class="screen" id="screen-grammar">
-    <div class="map-title">Grammatik-Dschungel 📘</div>
+    <div class="seg"><button class="seg-btn sel" id="segGram">📘 Grammatik</button><button class="seg-btn" id="segPhr">💬 Alltagssätze</button></div>
     <div class="map-sub" id="grammarSub">Lustige Sätze, echte Regeln</div>
     <div class="path" id="grammarPath"></div>
   </section>
@@ -414,7 +456,7 @@ body{
   <section class="screen" id="screen-game">
     <div class="game-header">
       <span class="close-x" id="quitGameBtn">✕</span>
-      <div class="progressbar-wrap" style="flex:1;margin:0;"><div class="progressbar-fill" id="gameProgressFill" style="width:0%"></div></div>
+      <div class="runner-track"><div class="progressbar-wrap" style="margin:0;"><div class="progressbar-fill" id="gameProgressFill" style="width:0%"></div></div><span class="runner" id="runner">🦉</span></div>
       <button class="hint-btn hidden" id="hintBtn">💡<span id="hintCount">0</span></button>
       <span class="hearts-mini" id="gameHearts">❤️❤️❤️❤️❤️</span>
     </div>
@@ -461,7 +503,7 @@ body{
 
   <div class="bottom-nav">
     <button class="nav-btn active" data-nav="map"><span class="icon">🗺️</span>Lernen</button>
-    <button class="nav-btn" data-nav="grammar"><span class="icon">📘</span>Grammatik</button>
+    <button class="nav-btn" data-nav="grammar"><span class="icon">📘</span>Üben</button>
     <button class="nav-btn" data-nav="quests"><span class="icon">🎯</span>Quests<span class="nav-dot hidden" id="questDot"></span></button>
     <button class="nav-btn" data-nav="league"><span class="icon">🏆</span>Liga</button>
     <button class="nav-btn" data-nav="stats"><span class="icon">👤</span>Profil</button>
@@ -501,6 +543,7 @@ body{
 </div>
 
 <div class="feedback-bar" id="feedbackBar">
+  <span class="fb-timer" id="fbTimer"></span>
   <span id="feedbackText"></span>
   <button class="feedback-next" id="feedbackNextBtn">Weiter</button>
 </div>
@@ -1259,7 +1302,9 @@ function openIntro(i){
 document.getElementById('backToMapBtn').addEventListener('click', ()=>goHome());
 document.getElementById('startLevelBtn').addEventListener('click', ()=>{
   if(state.hearts<=0){ showScreen('screen-gameover'); return; }
-  if(pendingMode==='grammar') startGrammar(pendingLevel); else startLevel(pendingLevel);
+  if(pendingMode==='grammar') startGrammar(pendingLevel);
+  else if(pendingMode==='phrases') startPhrases(pendingLevel);
+  else startLevel(pendingLevel);
 });
 
 /* ---------- GRAMMATIK-BEREICH ---------- */
@@ -1276,15 +1321,19 @@ function setNav(name){
 function goHome(){
   if(session && session.speedTimer){ clearInterval(session.speedTimer); session.speedTimer=null; }
   if(!state.difficulty){ populateDifficultyList(); showScreen('screen-difficulty'); return; }
-  if(pendingMode==='grammar'){ renderGrammar(); showScreen('screen-grammar'); setNav('grammar'); }
+  clearTimeout(session && session.fbTimer); document.getElementById('feedbackBar').classList.remove('show');
+  if(pendingMode==='grammar' || pendingMode==='phrases'){ practiceTab = pendingMode==='grammar'?'grammar':'phrases'; renderGrammar(); showScreen('screen-grammar'); setNav('grammar'); }
   else { renderMap(); showScreen('screen-map'); setNav('map'); }
 }
 function renderGrammar(){
-  const stars = grammarStars();
+  const isG = practiceTab==='grammar';
+  document.getElementById('segGram').classList.toggle('sel', isG);
+  document.getElementById('segPhr').classList.toggle('sel', !isG);
+  const stars = isG ? grammarStars() : phraseStars();
   const container = document.getElementById('grammarPath');
   container.innerHTML = '';
-  document.getElementById('grammarSub').textContent = `${LANGS[currentLang()].label} · Lustige Sätze, echte Regeln`;
-  grammarTopics().forEach((t,i)=>{
+  document.getElementById('grammarSub').textContent = `${LANGS[currentLang()].label} · ${isG?'Lustige Sätze, echte Regeln':'Hören, Sprechen, Satzbau – für echte Situationen'}`;
+  (isG ? grammarTopics() : phraseTopics()).forEach((t,i)=>{
     const status = stars[i]>0 ? (stars[i]>=3?'perfect':'unlocked') : (i===0 || stars[i-1]>0 ? 'current' : 'locked');
     const node = document.createElement('div');
     node.className = 'level-node ' + status;
@@ -1303,14 +1352,14 @@ function renderGrammar(){
   });
 }
 function openGrammarIntro(i){
-  pendingMode = 'grammar';
+  pendingMode = practiceTab==='grammar' ? 'grammar' : 'phrases';
   pendingLevel = i;
-  const t = grammarTopics()[i];
+  const t = (practiceTab==='grammar' ? grammarTopics() : phraseTopics())[i];
   document.getElementById('introIcon').textContent = t.icon;
   document.getElementById('introTitle').textContent = t.title;
-  document.getElementById('introDesc').textContent = 'Lückenfüller · Satzbau · Fehlerjagd · Richtig oder Quatsch?';
+  document.getElementById('introDesc').textContent = practiceTab==='grammar' ? 'Lückenfüller · Satzbau · Fehlerjagd · Richtig oder Quatsch?' : 'Bedeutung · Übersetzen · Satzbau · Hörverstehen · 🎤 Nachsprechen';
   const tip = document.getElementById('introTip');
-  tip.textContent = '🦉 Flügos Spickzettel: ' + t.tip;
+  tip.textContent = (practiceTab==='grammar' ? '🦉 Flügos Spickzettel: ' : '🦉 ') + t.tip;
   tip.classList.remove('hidden');
   document.getElementById('backToMapBtn').textContent = 'Zurück zum Dschungel';
   showScreen('screen-intro');
@@ -1339,7 +1388,8 @@ function startGrammar(topicIdx){
   renderQuestion();
 }
 const GRAMMAR_JOKES_OK = ['Grammatik-Ninja! 🥷','Flügo macht einen Freudentanz 💃','Dein Lehrer weint vor Glück 😭','Satz-Zauberer! 🪄','So elegant wie eine Giraffe im Anzug 🦒','Die Pinguine applaudieren 🐧👏'];
-const GRAMMAR_JOKES_NO = ['Uups, Flügo ist vom Ast gefallen 🦉💫','Die Kuh schüttelt den Kopf 🐄','Knapp daneben ist auch vorbei 🙈','Der Grammatik-Drache kichert 🐉'];
+const GRAMMAR_JOKES_NO_EXTRA = ['Autsch! Flügo ist gegen eine Scheibe geflogen 🦉🪟','Fast! Nur ein kleiner Fehlflug 🛩️','Hoppla – das war die Nachbarsprache 😅','Kein Stress, das merkst du dir jetzt 🧠'];
+const GRAMMAR_JOKES_NO = [...GRAMMAR_JOKES_NO_EXTRA, 'Uups, Flügo ist vom Ast gefallen 🦉💫','Die Kuh schüttelt den Kopf 🐄','Knapp daneben ist auch vorbei 🙈','Der Grammatik-Drache kichert 🐉'];
 function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 function escapeHtml(s){ return s.replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
@@ -1436,16 +1486,16 @@ function randOthers(words, correctIdx, n){
 /* 20 Minispiele, aufgeteilt in Schwierigkeits-Stufen.
    "easy" = kindgerecht (Zuordnen, Memory) – nur für Anfänger.
    "medium"/"hard" = für alle, hard ist anspruchsvoller (Zeitdruck, Buchstaben). */
+/* Jede Spielart enthält die Fremdsprache – reine Deutsch-Aufgaben gibt es nicht */
 const PER_WORD_GAMES = [
   {type:'mc_de_en', tier:'medium'}, {type:'mc_en_de', tier:'medium'},
-  {type:'listen_en', tier:'medium'}, {type:'listen_de', tier:'medium'},
+  {type:'listen_en', tier:'medium'}, {type:'listen_meaning', tier:'medium'},
   {type:'type_de_en', tier:'medium'}, {type:'type_en_de', tier:'medium'},
   {type:'truefalse_de_en', tier:'medium'}, {type:'truefalse_en_de', tier:'medium'},
-  {type:'missing_en', tier:'medium'}, {type:'missing_de', tier:'medium'},
-  {type:'dictation_en', tier:'medium'}, {type:'dictation_de', tier:'medium'},
-  {type:'scramble_en', tier:'hard'}, {type:'scramble_de', tier:'hard'},
-  {type:'oddoneout_de', tier:'hard'}, {type:'oddoneout_en', tier:'hard'},
-  {type:'speed_de_en', tier:'hard'}, {type:'speed_en_de', tier:'hard'},
+  {type:'missing_en', tier:'medium'}, {type:'pair_pick', tier:'medium'},
+  {type:'dictation_en', tier:'hard'}, {type:'scramble_en', tier:'hard'},
+  {type:'oddoneout_en', tier:'hard'}, {type:'speed_de_en', tier:'hard'},
+  {type:'speed_en_de', tier:'hard'},
 ];
 
 function buildQuestions(levelIdx){
@@ -1517,8 +1567,10 @@ function startLevel(levelIdx){
 }
 
 function updateGameHeader(){
+  if(typeof updateTopbar==='function') updateTopbar();
   const pct = (session.qi/session.questions.length)*100;
   document.getElementById('gameProgressFill').style.width = pct+'%';
+  document.getElementById('runner').style.left = Math.max(4, pct)+'%';
   document.getElementById('gameHearts').textContent = '❤️'.repeat(state.hearts) + '🖤'.repeat(MAX_HEARTS-state.hearts);
 }
 
@@ -1532,7 +1584,8 @@ function renderQuestion(){
   session.currentQ = q;
   session.currentType = q.type;
   updateHintBtn(false);
-  if(session.mode==='grammar'){ renderGrammarQuestion(q); updateHintBtn(true); return; }
+  if(session.mode==='grammar'){ renderGrammarQuestion(q); return; }
+  if(session.mode==='phrases'){ renderPhraseQuestion(q); return; }
   const words = q.pool || levelWords(session.levelIdx);
 
   if(q.type==='match_round'){ renderMatchRound(q.words); return; }
@@ -1566,6 +1619,18 @@ function renderQuestion(){
         <button class="q-sound-btn" id="playSoundBtn">🔊</button>`, opts, en, ()=>speak(en,langCode));
       break;
     }
+    case 'listen_meaning': {
+      const opts = shuffle([de, ...randOthers(words,q.idx,3).map(i=>words[i][0])]);
+      renderMC(`<div class="q-hint">Höre zu – was bedeutet dieses Wort?</div>
+        <button class="q-sound-btn" id="playSoundBtn">🔊</button>`, opts, de, ()=>speak(en,langCode));
+      break;
+    }
+    case 'pair_pick': {
+      const correct = `${de} = ${en}`;
+      const opts = shuffle([correct, ...randOthers(words,q.idx,3).map(i=>`${de} = ${words[i][1]}`)]);
+      renderMC(`<div class="q-hint">Welches Paar stimmt?</div>`, opts, correct);
+      break;
+    }
     case 'listen_de': {
       const opts = shuffle([de, ...randOthers(words,q.idx,3).map(i=>words[i][0])]);
       renderMC(`<div class="q-hint">Höre zu und wähle das richtige Wort</div>
@@ -1573,7 +1638,7 @@ function renderQuestion(){
       break;
     }
     case 'type_de_en':
-      renderType(`<div class="q-hint">Tippe die ${langAdj} Übersetzung</div><div class="q-word">${de}</div>`, en, `Auf ${langName} schreiben...`);
+      renderType(`<div class="q-hint">Tippe die ${langAdj} Übersetzung</div><div class="q-word">${de}</div>`, en, `Auf ${langInfo.label.split(" ")[1]} schreiben...`);
       break;
     case 'type_en_de':
       renderType(`<div class="q-hint">Tippe die deutsche Übersetzung</div><div class="q-word">${en}</div>`, de, 'Auf Deutsch schreiben...', true);
@@ -1629,7 +1694,7 @@ function renderQuestion(){
       break;
     }
     case 'dictation_en':
-      renderDictation(en, en, langCode, `Auf ${langName} schreiben...`);
+      renderDictation(en, en, langCode, `Auf ${langInfo.label.split(" ")[1]} schreiben...`);
       break;
     case 'dictation_de':
       renderDictation(deNoun, deNoun, 'de-DE', 'Auf Deutsch schreiben...');
@@ -1948,6 +2013,7 @@ function handleAnswer(isCorrect, btnEl, correctAnswer){
     session.correct++;
     session.combo++;
     session.maxCombo = Math.max(session.maxCombo, session.combo);
+    celebrate(btnEl);
     const gained = addXP(session.combo>=5 ? 3 : 2);
     session.xpEarned += gained;
     popXP(gained);
@@ -1960,6 +2026,7 @@ function handleAnswer(isCorrect, btnEl, correctAnswer){
   } else {
     session.combo = 0;
     session.wrong++;
+    oops();
     sndWrong();
     if(!['review','placement','jump'].includes(session.mode)){
       state.hearts = Math.max(0, state.hearts-1);
@@ -1970,20 +2037,23 @@ function handleAnswer(isCorrect, btnEl, correctAnswer){
     if(session.mode==='grammar'){
       showFeedback(false, `${pick(GRAMMAR_JOKES_NO)}`, `Richtig: „${session.grammarFix}“ · 💡 ${session.topic.tip}`);
     } else {
-      showFeedback(false, `Richtig war: "${correctAnswer}"`);
+      showFeedback(false, pick(GRAMMAR_JOKES_NO), `Richtig: „${correctAnswer}“`);
     }
   }
 }
 
 function comboMessage(combo){
-  if(combo>=6) return 'Unglaublich! 🔥🔥🔥';
+  if(combo>=10) return 'LEGENDÄR! Flügo verneigt sich 👑';
+  if(combo>=8) return 'UNAUFHALTSAM! ⚡⚡';
+  if(combo>=5) return 'ON FIRE! 🔥🔥🔥';
   if(combo>=3) return `Serie x${combo}! 🔥`;
-  const msgs = ['Super!','Toll!','Genau richtig!','Klasse!','Perfekt!'];
-  return msgs[Math.floor(Math.random()*msgs.length)];
+  return pick(['Super! 🎉','Volltreffer! 🎯','Flügo klatscht mit den Flügeln 👏','Genial! 🤩','Wie ein Profi! 😎','Zack, richtig! ⚡','Du Sprachtalent! 🌟','Die Pinguine jubeln 🐧🎉']);
 }
 function showCombo(combo){
   const el = document.getElementById('comboToast');
-  el.textContent = `🔥 Serie x${combo}!`;
+  el.textContent = combo>=10 ? `👑 x${combo} LEGENDÄR!` : combo>=8 ? `⚡ x${combo} UNAUFHALTSAM!` : combo>=5 ? `🔥 x${combo} ON FIRE!` : `🔥 Serie x${combo}!`;
+  el.style.fontSize = Math.min(22, 14+combo)+'px';
+  if(combo>=5) burstAt(innerWidth/2, 90, ['🔥','⚡','💥'], 10);
   el.classList.add('show');
   setTimeout(()=>el.classList.remove('show'), 900);
 }
@@ -1995,7 +2065,15 @@ function showFeedback(ok, text, detail){
   ft.textContent = (ok?'✅ ':'❌ ') + text;
   if(detail){ const sm = document.createElement('small'); sm.textContent = detail; ft.appendChild(sm); }
   const nextBtn = document.getElementById('feedbackNextBtn');
+  const delay = ok ? 1300 : (detail ? 4500 : 2800);
+  const tb = document.getElementById('fbTimer');
+  tb.getAnimations().forEach(a=>a.cancel());
+  tb.animate([{width:'100%'},{width:'0%'}], {duration:delay, easing:'linear', fill:'forwards'});
+  clearTimeout(session.fbTimer);
+  session.fbTimer = setTimeout(()=>nextBtn.onclick(), delay);
   nextBtn.onclick = ()=>{
+    clearTimeout(session.fbTimer);
+    if(!bar.classList.contains('show')) return;
     bar.classList.remove('show');
     if(session.mode==='jump' && session.wrong>1){ finishLevel(); return; }
     if(state.hearts<=0 && !['review','placement','jump'].includes(session.mode)){ showScreen('screen-gameover'); return; }
@@ -2020,9 +2098,9 @@ function finishLevel(){
   else if(pct>=0.7) stars = 2;
   else if(pct<0.5) stars = pct===0?0:1;
 
-  const isGrammar = session.mode==='grammar';
+  const isGrammar = session.mode==='grammar' || session.mode==='phrases';
   const prog = isGrammar ? null : levelProg()[session.levelIdx];
-  const gStars = isGrammar ? grammarStars() : null;
+  const gStars = isGrammar ? (session.mode==='grammar' ? grammarStars() : phraseStars()) : null;
   const prevStars = isGrammar ? gStars[session.topicIdx] : prog.stars;
   const improved = stars > prevStars;
   const perfect = session.wrong===0;
@@ -2040,18 +2118,21 @@ function finishLevel(){
   state.stats.lessons++;
   if(perfect){ state.stats.perfect++; track('perfect',1); }
   track('lesson',1);
-  if(isGrammar) track('grammar',1);
+  if(session.mode==='grammar') track('grammar',1);
+  if(session.mode==='phrases') track('phrases',1);
   checkAchievements();
   saveState();
 
   document.getElementById('resultMascot').textContent = stars===3?'🥳':stars===2?'😄':stars===1?'🙂':'😅';
-  document.getElementById('resultStars').textContent = '⭐'.repeat(stars) + '☆'.repeat(3-stars);
-  document.getElementById('resultTitle').textContent = stars>=2 ? (isGrammar?'Grammatik gezähmt! 🧠':'Level geschafft! 🎉') : 'Fast geschafft!';
-  document.getElementById('continueBtn').textContent = isGrammar ? 'Weiter zum Grammatik-Dschungel 📘' : 'Weiter zur Karte 🗺️';
+  document.getElementById('resultStars').innerHTML = [0,1,2].map(k=>`<span class="star-pop" style="animation-delay:${0.25+k*0.3}s">${k<stars?'⭐':'☆'}</span>`).join('');
+  for(let k=0;k<stars;k++) setTimeout(()=>beep(700+k*180,0.12,'triangle',0.2), 250+k*300);
+  document.getElementById('resultTitle').textContent = stars>=2 ? (session.mode==='phrases'?'Alltag gemeistert! 💬':isGrammar?'Grammatik gezähmt! 🧠':'Level geschafft! 🎉') : 'Fast geschafft!';
+  document.getElementById('continueBtn').textContent = isGrammar ? 'Weiter zum Üben 📘' : 'Weiter zur Karte 🗺️';
   document.getElementById('resultDesc').textContent = stars>=2 ? 'Du wirst immer besser!' : 'Übe weiter, du schaffst 3 Sterne!';
   document.getElementById('resCorrect').textContent = `${session.correct}/${total}`;
   document.getElementById('resCoins').textContent = `+${coinsEarned}`;
-  document.getElementById('resXp').textContent = `+${session.xpEarned}${boostActive()?' (⚡x2)':''}`;
+  countUp(document.getElementById('resXp'), session.xpEarned, '+', boostActive()?' (⚡x2)':'');
+  countUp(document.getElementById('resCoins'), coinsEarned);
   document.getElementById('resGoal').textContent = `${state.daily.xp}/${state.daily.goal} XP${state.daily.xp>=state.daily.goal?' ✅':''}`;
   document.getElementById('resultDesc').textContent = perfect ? 'Perfekt – kein einziger Fehler! 💎' : document.getElementById('resultDesc').textContent;
   showAdaptSuggestion(isGrammar);
@@ -2067,11 +2148,39 @@ document.getElementById('retryBtn').addEventListener('click', ()=>{
   state.coins -= 30;
   state.hearts = MAX_HEARTS; state.lastHeartLoss = null; saveState();
   if(session && session.mode==='grammar') startGrammar(session.topicIdx);
+  else if(session && session.mode==='phrases') startPhrases(session.topicIdx);
   else startLevel(session ? session.levelIdx : pendingLevel);
 });
 document.getElementById('gameoverMapBtn').addEventListener('click', ()=>goHome());
 
 /* ---------- CONFETTI ---------- */
+function burstAt(x, y, emojis, n){
+  for(let i=0;i<n;i++){
+    const el = document.createElement('div'); el.className='burst'; el.textContent = pick(emojis);
+    el.style.left = x+'px'; el.style.top = y+'px'; document.body.appendChild(el);
+    const ang = Math.random()*Math.PI*2, dist = 50+Math.random()*80;
+    el.animate([{transform:'translate(-50%,-50%) scale(.4)', opacity:1},
+      {transform:`translate(calc(-50% + ${Math.cos(ang)*dist}px), calc(-50% + ${Math.sin(ang)*dist}px)) scale(1.2) rotate(${Math.random()*180-90}deg)`, opacity:0}],
+      {duration:700+Math.random()*300, easing:'cubic-bezier(.2,.8,.3,1)'});
+    setTimeout(()=>el.remove(), 1000);
+  }
+}
+function celebrate(btnEl){
+  const r = btnEl ? btnEl.getBoundingClientRect() : {left:innerWidth/2-20, top:innerHeight/2-20, width:40, height:40};
+  burstAt(r.left+r.width/2, r.top+r.height/2, ['⭐','✨','🎉','💫','🌟'], 9);
+  const run = document.getElementById('runner');
+  run.classList.remove('hop','oops'); void run.offsetWidth; run.classList.add('hop');
+}
+function oops(){
+  const qa = document.getElementById('questionArea');
+  qa.classList.remove('shake'); void qa.offsetWidth; qa.classList.add('shake');
+  const run = document.getElementById('runner');
+  run.classList.remove('hop','oops'); void run.offsetWidth; run.classList.add('oops');
+}
+function countUp(el, to, prefix='+', suffix=''){
+  const t0 = performance.now(), dur = 700;
+  (function step(t){ const k = Math.min(1,(t-t0)/dur); el.textContent = prefix+Math.round(to*k)+suffix; if(k<1) requestAnimationFrame(step); })(t0);
+}
 function launchConfetti(){
   const colors = ['#ffd23f','#06d6a0','#7b5bff','#ff6fb0','#ff9f1c'];
   for(let i=0;i<60;i++){
@@ -2098,7 +2207,7 @@ document.querySelectorAll('.nav-btn').forEach(btn=>{
     btn.classList.add('active');
     sndTap();
     if(btn.dataset.nav==='map'){ pendingMode='vocab'; renderMap(); showScreen('screen-map'); }
-    else if(btn.dataset.nav==='grammar'){ pendingMode='grammar'; renderGrammar(); showScreen('screen-grammar'); }
+    else if(btn.dataset.nav==='grammar'){ pendingMode=practiceTab==='grammar'?'grammar':'phrases'; renderGrammar(); showScreen('screen-grammar'); }
     else if(btn.dataset.nav==='quests'){ renderQuests(); showScreen('screen-quests'); }
     else if(btn.dataset.nav==='league'){ renderLeague(); showScreen('screen-league'); }
     else { renderStats(); showScreen('screen-stats'); }
@@ -2206,6 +2315,7 @@ const QUESTS = [
   {id:'combo8', icon:'⚡', text:'Erreiche eine 8er-Serie', ev:'combo', target:8, reward:25, max:true},
   {id:'cor20', icon:'✅', text:'20 richtige Antworten', ev:'correct', target:20, reward:15},
   {id:'gram', icon:'📘', text:'Spiele ein Grammatik-Thema', ev:'grammar', target:1, reward:15},
+  {id:'phr', icon:'💬', text:'Übe ein Alltagssätze-Thema', ev:'phrases', target:1, reward:15},
   {id:'rev', icon:'💪', text:'Mach ein Fehler-Training', ev:'review', target:1, reward:15},
   {id:'lis5', icon:'🎧', text:'Löse 5 Hör-Aufgaben', ev:'listen', target:5, reward:15},
   {id:'fast5', icon:'⏱️', text:'5 richtige Antworten in unter 4 Sek.', ev:'fast', target:5, reward:20},
@@ -2349,6 +2459,7 @@ const ACHIEVEMENTS = [
   {id:'lv5', icon:'🦜', name:'Aufsteiger', desc:'Spielerlevel 5', test:()=>levelInfo(state.xp).level>=5, reward:30},
   {id:'lv10', icon:'🦅', name:'Überflieger', desc:'Spielerlevel 10', test:()=>levelInfo(state.xp).level>=10, reward:80},
   {id:'gram3', icon:'🧠', name:'Grammatik-Fan', desc:'3 Grammatik-Themen mit Sternen', test:()=>Object.values(state.grammarProgress||{}).flat().filter(x=>x>0).length>=3, reward:30},
+  {id:'phr3', icon:'🧳', name:'Weltenbummler', desc:'3 Alltags-Themen mit Sternen', test:()=>Object.values(state.phraseProgress||{}).flat().filter(x=>x>0).length>=3, reward:30},
   {id:'poly', icon:'🌍', name:'Polyglott', desc:'In 2 Sprachen gelernt', test:()=>Object.keys(state.langsPlayed).length>=2, reward:40},
   {id:'rev20', icon:'💪', name:'Fehlerjäger', desc:'20 Wörter im Training gefestigt', test:()=>state.stats.reviewMastered>=20, reward:40},
   {id:'league', icon:'🏅', name:'Liga-Aufstieg', desc:'In eine höhere Liga aufgestiegen', test:()=>state.stats.promoted, reward:50},
@@ -2629,6 +2740,148 @@ function updateGameoverScreen(){
   b.textContent = `❤️ Auffüllen für 30 🪙 (du hast ${state.coins})`;
   const mins = state.lastHeartLoss ? Math.max(1, Math.ceil(HEART_REGEN_MINUTES - (Date.now()-state.lastHeartLoss)/60000)) : HEART_REGEN_MINUTES;
   document.getElementById('heartInfo').textContent = `Nächstes Herz in ${mins} Min. – oder übe im Fehler-Training, das kostet keine Herzen.`;
+}
+
+/* ---------- ALLTAGSSÄTZE (Übungen für echte Situationen) ---------- */
+const PHRASE_TOPICS = [
+  {icon:'👋', title:'Begrüßung & Smalltalk', de:['Hallo, wie geht\'s?','Freut mich, dich kennenzulernen.','Wie heißt du?','Ich komme aus Österreich.','Bis morgen!','Schönen Tag noch!']},
+  {icon:'🍽️', title:'Im Restaurant', de:['Einen Tisch für zwei, bitte.','Kann ich die Speisekarte sehen?','Ich hätte gern einen Kaffee.','Die Rechnung, bitte.','Das ist köstlich!','Ich bin Vegetarier.']},
+  {icon:'🛍️', title:'Einkaufen', de:['Wie viel kostet das?','Haben Sie das in Blau?','Kann ich mit Karte zahlen?','Das ist zu teuer.','Ich schaue nur.','Ich nehme es.']},
+  {icon:'🧭', title:'Nach dem Weg fragen', de:['Wo ist der Bahnhof?','Biegen Sie an der Ecke links ab.','Ist es weit von hier?','Gehen Sie geradeaus.','Ich habe mich verlaufen.','Welcher Bus fährt ins Zentrum?']},
+  {icon:'🏨', title:'Hotel & Reisen', de:['Ich habe eine Reservierung.','Wann gibt es Frühstück?','Die Dusche funktioniert nicht.','Kann ich den Schlüssel haben?','Wo ist der Aufzug?','Ich möchte auschecken.']},
+  {icon:'🆘', title:'Notfall & Hilfe', de:['Ich brauche einen Arzt.','Rufen Sie die Polizei!','Wo ist das Krankenhaus?','Ich habe meinen Pass verloren.','Es tut hier weh.','Können Sie mir helfen?']},
+];
+const PHRASES_RAW = {
+  en:[
+    ['Hello, how are you?','Nice to meet you.','What\'s your name?','I\'m from Austria.','See you tomorrow!','Have a nice day!'],
+    ['A table for two, please.','Can I see the menu?','I would like a coffee.','The bill, please.','This is delicious!','I am a vegetarian.'],
+    ['How much is this?','Do you have this in blue?','Can I pay by card?','That\'s too expensive.','I\'m just looking.','I\'ll take it.'],
+    ['Where is the train station?','Turn left at the corner.','Is it far from here?','Go straight ahead.','I am lost.','Which bus goes to the center?'],
+    ['I have a reservation.','What time is breakfast?','The shower doesn\'t work.','Can I have the key?','Where is the elevator?','I would like to check out.'],
+    ['I need a doctor.','Call the police!','Where is the hospital?','I lost my passport.','It hurts here.','Can you help me?'],
+  ],
+  es:[
+    ['Hola, ¿qué tal?','Encantado de conocerte.','¿Cómo te llamas?','Soy de Austria.','¡Hasta mañana!','¡Que tengas un buen día!'],
+    ['Una mesa para dos, por favor.','¿Puedo ver la carta?','Quisiera un café.','La cuenta, por favor.','¡Esto está delicioso!','Soy vegetariano.'],
+    ['¿Cuánto cuesta esto?','¿Lo tiene en azul?','¿Puedo pagar con tarjeta?','Es demasiado caro.','Solo estoy mirando.','Me lo llevo.'],
+    ['¿Dónde está la estación de tren?','Gire a la izquierda en la esquina.','¿Está lejos de aquí?','Siga todo recto.','Estoy perdido.','¿Qué autobús va al centro?'],
+    ['Tengo una reserva.','¿A qué hora es el desayuno?','La ducha no funciona.','¿Me da la llave?','¿Dónde está el ascensor?','Quiero dejar la habitación.'],
+    ['Necesito un médico.','¡Llame a la policía!','¿Dónde está el hospital?','He perdido mi pasaporte.','Me duele aquí.','¿Puede ayudarme?'],
+  ],
+  fr:[
+    ['Bonjour, ça va ?','Enchanté de te rencontrer.','Comment tu t\'appelles ?','Je viens d\'Autriche.','À demain !','Bonne journée !'],
+    ['Une table pour deux, s\'il vous plaît.','Je peux voir la carte ?','Je voudrais un café.','L\'addition, s\'il vous plaît.','C\'est délicieux !','Je suis végétarien.'],
+    ['Combien ça coûte ?','Vous l\'avez en bleu ?','Je peux payer par carte ?','C\'est trop cher.','Je regarde seulement.','Je le prends.'],
+    ['Où est la gare ?','Tournez à gauche au coin.','C\'est loin d\'ici ?','Allez tout droit.','Je suis perdu.','Quel bus va au centre ?'],
+    ['J\'ai une réservation.','Le petit-déjeuner est à quelle heure ?','La douche ne marche pas.','Je peux avoir la clé ?','Où est l\'ascenseur ?','Je voudrais régler ma note.'],
+    ['J\'ai besoin d\'un médecin.','Appelez la police !','Où est l\'hôpital ?','J\'ai perdu mon passeport.','J\'ai mal ici.','Pouvez-vous m\'aider ?'],
+  ],
+  it:[
+    ['Ciao, come stai?','Piacere di conoscerti.','Come ti chiami?','Vengo dall\'Austria.','A domani!','Buona giornata!'],
+    ['Un tavolo per due, per favore.','Posso vedere il menù?','Vorrei un caffè.','Il conto, per favore.','È delizioso!','Sono vegetariano.'],
+    ['Quanto costa questo?','Ce l\'ha in blu?','Posso pagare con la carta?','È troppo caro.','Sto solo guardando.','Lo prendo.'],
+    ['Dov\'è la stazione?','Giri a sinistra all\'angolo.','È lontano da qui?','Vada sempre dritto.','Mi sono perso.','Quale autobus va in centro?'],
+    ['Ho una prenotazione.','A che ora è la colazione?','La doccia non funziona.','Posso avere la chiave?','Dov\'è l\'ascensore?','Vorrei lasciare la camera.'],
+    ['Ho bisogno di un medico.','Chiami la polizia!','Dov\'è l\'ospedale?','Ho perso il passaporto.','Mi fa male qui.','Può aiutarmi?'],
+  ],
+};
+let practiceTab = 'grammar';
+document.getElementById('segGram').addEventListener('click', ()=>{ sndTap(); practiceTab='grammar'; pendingMode='grammar'; renderGrammar(); });
+document.getElementById('segPhr').addEventListener('click', ()=>{ sndTap(); practiceTab='phrases'; pendingMode='phrases'; renderGrammar(); });
+function phraseTopics(){
+  const lang = currentLang();
+  return PHRASE_TOPICS.map((t,i)=>({icon:t.icon, title:t.title,
+    tip:`Diese Sätze retten dich im Alltag – z. B. „${PHRASES_RAW[lang][i][0]}“`,
+    items:t.de.map((de,k)=>({t:PHRASES_RAW[lang][i][k], de}))}));
+}
+function phraseStars(){
+  const lang = currentLang();
+  if(!state.phraseProgress) state.phraseProgress = {};
+  if(!state.phraseProgress[lang]) state.phraseProgress[lang] = PHRASE_TOPICS.map(()=>0);
+  return state.phraseProgress[lang];
+}
+const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+const PHRASE_TYPES = ['phr_meaning','phr_translate','phr_order','phr_listen','phr_speak'];
+function startPhrases(topicIdx){
+  touchStreak();
+  pendingMode = 'phrases';
+  const topic = phraseTopics()[topicIdx];
+  const types = shuffle(PHRASE_TYPES);
+  const qs = shuffle(topic.items).map((item,i)=>({type:types[i%types.length], item}));
+  shuffle(topic.items).slice(0,2).forEach(item=>qs.push({type:pick(['phr_translate','phr_order','phr_listen']), item}));
+  session = {mode:'phrases', xpEarned:0, wrong:0, topicIdx, topic, questions:shuffle(qs), qi:0, correct:0, combo:0, maxCombo:0, answered:false};
+  showScreen('screen-game'); renderQuestion();
+}
+function normalizeSpeech(s){ return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9ñ ]/g,' ').replace(/\s+/g,' ').trim(); }
+function speechMatch(said, target){
+  const a = normalizeSpeech(said).split(' '), b = normalizeSpeech(target).split(' ');
+  const hits = b.filter(w=>a.includes(w)).length;
+  return hits / b.length >= 0.6;
+}
+function renderPhraseQuestion(q){
+  const {t, de} = q.item;
+  const others = session.topic.items.filter(x=>x!==q.item);
+  const code = LANGS[currentLang()].code;
+  const area = document.getElementById('questionArea');
+  session.grammarFix = t;
+  let type = q.type;
+  if(type==='phr_speak' && !SpeechRec) type = 'phr_order';
+
+  if(type==='phr_meaning'){
+    renderMC(`<div class="q-hint">Was bedeutet dieser Satz? 🤔</div>
+      <button class="q-sound-btn" id="playSoundBtn">🔊</button><div class="q-sentence">${escapeHtml(t)}</div>`,
+      shuffle([de, ...shuffle(others).slice(0,3).map(x=>x.de)]), de, ()=>speak(t, code));
+    return;
+  }
+  if(type==='phr_listen'){
+    renderMC(`<div class="q-hint">🎧 Hörverstehen: Was wurde gesagt?</div><button class="q-sound-btn" id="playSoundBtn">🔊</button>`,
+      shuffle([de, ...shuffle(others).slice(0,3).map(x=>x.de)]), de, ()=>speak(t, code));
+    return;
+  }
+  if(type==='phr_translate'){
+    renderMC(`<div class="q-hint">Wie sagt man das? 🗣️</div><div class="q-sentence">${escapeHtml(de)}</div>`,
+      shuffle([t, ...shuffle(others).slice(0,3).map(x=>x.t)]), t);
+    return;
+  }
+  if(type==='phr_speak'){
+    area.innerHTML = `<div class="q-hint">🎤 Sprich den Satz laut nach</div>
+      <div class="q-sentence">${escapeHtml(t)}</div><div class="q-de">🇩🇪 ${escapeHtml(de)}</div>
+      <button class="q-sound-btn" id="playSoundBtn">🔊</button>
+      <button class="btn btn-primary" id="micBtn">🎤 Jetzt sprechen</button>
+      <div class="panel-sub" id="micOut" style="text-align:center;min-height:18px;"></div>
+      <button class="btn btn-secondary" id="noMicBtn">Kann gerade nicht sprechen</button>`;
+    document.getElementById('playSoundBtn').onclick = ()=>speak(t, code);
+    speak(t, code);
+    document.getElementById('noMicBtn').onclick = ()=>{ q.type='phr_order'; renderPhraseQuestion(q); };
+    document.getElementById('micBtn').onclick = ()=>{
+      const rec = new SpeechRec(); rec.lang = code; rec.interimResults = false; rec.maxAlternatives = 3;
+      const out = document.getElementById('micOut'); out.textContent = '👂 Ich höre zu …';
+      rec.onresult = e=>{
+        const alts = [...e.results[0]].map(r=>r.transcript);
+        out.textContent = `Verstanden: „${alts[0]}“`;
+        if(!session.answered) handleAnswer(alts.some(a=>speechMatch(a,t)), null, t);
+      };
+      rec.onerror = ()=>{ out.textContent = 'Das hat nicht geklappt – nochmal versuchen oder überspringen.'; };
+      try{ rec.start(); }catch(e){ out.textContent = 'Mikrofon nicht verfügbar.'; }
+    };
+    return;
+  }
+  // phr_order: Satz aus Wörtern bauen
+  const words = t.split(' ');
+  area.innerHTML = `<div class="q-hint">Satzbau: Bring die Wörter in die richtige Reihenfolge 🧩</div><div class="q-de">🇩🇪 ${escapeHtml(de)}</div>
+    <div class="build-sentence" id="builtSentence"></div><div class="word-chips" id="orderChips"></div>
+    <button class="btn btn-secondary" id="orderBack" style="margin-top:12px;">⌫ Zurück</button>`;
+  const built = document.getElementById('builtSentence'), box = document.getElementById('orderChips'); const stack = [];
+  shuffle(words).forEach(w=>{
+    const chip = document.createElement('div'); chip.className='word-chip'; chip.textContent=w;
+    chip.onclick = ()=>{ if(session.answered||chip.classList.contains('used')) return; sndTap(); chip.classList.add('used'); stack.push({w,chip}); upd(); };
+    box.appendChild(chip);
+  });
+  function upd(){
+    built.textContent = stack.map(s=>s.w).join(' ');
+    if(stack.length===words.length) handleAnswer(built.textContent===t, null, t);
+  }
+  document.getElementById('orderBack').onclick = ()=>{ if(session.answered||!stack.length) return; stack.pop().chip.classList.remove('used'); upd(); };
 }
 
 /* ---------- INIT ---------- */
