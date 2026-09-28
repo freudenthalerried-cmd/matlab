@@ -1,0 +1,139 @@
+{
+  "_hinweis": "Zuordnung der zwoelf Ergebnisse aus master-prompt.md zu dem, was tatsaechlich im Verzeichnis liegt. Geprueft mit `npm run pruefe-auftrag`. Die Anforderungen werden aus dem Auftrag GELESEN, nicht hier abgeschrieben — diese Datei antwortet nur.",
+  "_zustaende": "erfuellt = es gibt es unter dem verlangten Namen und in der verlangten Sache. anders = die Sache gibt es unter anderem Namen oder in anderer Form. offen = es gibt sie nicht. Jede Antwort braucht eine Begruendung und Belege, die existieren.",
+  "_ausnahmen": [
+    {
+      "was": "ANNAHMEN.md",
+      "warum": "Wird genannt, WEIL es die Datei nicht gibt: \"Statt einer Datei ANNAHMEN.md fuehren ANNAHMEN in empfindlichkeit.js ...\". Eine geforderte und bewusst nicht gebaute Datei ist der Kern dieser Antwort."
+    },
+    {
+      "was": "nischen-analyse.xlsx",
+      "warum": "Der Name der Anforderung selbst; die Begruendung sagt ausdruecklich, dass es die Datei nirgends gibt. Er steht dort als Zitat, nicht als Beleg."
+    },
+    {
+      "was": "preisrecherche.xlsx",
+      "warum": "Wie oben: der Name aus dem Ursprungsauftrag, genannt in einer Begruendung, die seine Abwesenheit erklaert."
+    },
+    {
+      "was": "unit-economics.xlsx",
+      "warum": "Wie oben: die verlangte Tabellenkalkulation, die als lauffaehiger Code statt als Datei vorliegt."
+    },
+    {
+      "was": "lieferanten.xlsx",
+      "warum": "Wie oben: das verlangte Tabellenblatt, dessen Inhalt in lieferanten.json und im Phasendokument steht."
+    },
+    {
+      "was": "businessplan.docx",
+      "warum": "Wie oben: das verlangte Dokument, dessen Fehlen die Begruendung erklaert."
+    }
+  ],
+  "_stand": "2026-09-01",
+  "1": {
+    "zustand": "anders",
+    "belege": [
+      "docs/baustoff-shop/README.md",
+      "docs/baustoff-shop/STATUS.md",
+      "docs/baustoff-shop/die-drei-groessten-risiken.md"
+    ],
+    "begruendung": "README.md traegt seit 01.09. einen berichtigten Kopf: Es ist ausdruecklich die Denkgrundlage vom Projektbeginn und beschreibt das am 22.08. verlassene Modell; der vorige Vermerk nannte 32 % als gueltige Margenschwelle, was selbst ueberholt war. Der Kopf verweist jetzt auf PARAMETER.md, STATUS.md, das Gate-Register, npm run offenepunkte, die Risikoliste und den Weg zum ersten Verkauf. Die verlangte Liste der DREI GROESSTEN RISIKEN steht in die-drei-groessten-risiken.md, jede mit gemessenen Zahlen. Der Rumpf des Dokuments bleibt unveraendert — er gehoert zum abgeloesten Modell und wird nicht nachgezogen."
+  },
+  "2": {
+    "zustand": "anders",
+    "belege": [
+      "docs/baustoff-shop/empfindlichkeit-der-annahmen.md",
+      "shop/src/empfindlichkeit.js",
+      "shop/data/zielgroessen.json",
+      "docs/baustoff-shop/PARAMETER.md"
+    ],
+    "begruendung": "Statt einer Datei ANNAHMEN.md fuehren ANNAHMEN in empfindlichkeit.js jede Annahme mit Basis, Herkunft, Konfidenz und Klaerungsweg — und rechnen zusaetzlich ihre Elastizitaet. zielgroessen.json traegt je Zahl eine Herkunftsnotiz. Das ist mehr als die Anforderung verlangt, aber unter anderem Namen."
+  },
+  "3": {
+    "zustand": "anders",
+    "belege": [
+      "docs/baustoff-shop/phase1-nischen.md"
+    ],
+    "begruendung": "Die Bewertungsmatrix steht als Tabelle im Phasendokument, nicht als Tabellenkalkulation. Seit dem 22.08. ist sie ausserdem historisch: Der Auftraggeber hat die Nische gewechselt. Eine xlsx-Datei existiert nirgends im Verzeichnis."
+  },
+  "4": {
+    "zustand": "offen",
+    "belege": [
+      "docs/baustoff-shop/phase1-nischen.md"
+    ],
+    "begruendung": "Rohdaten von WETTBEWERBSPREISEN gibt es nicht. Was es gibt, sind die eigenen Einkaufspreise aus fuenfzehn Lieferantenrechnungen und die Listenpreise desselben Lieferanten — der Abstand dazu ist gemessen (39 von 46 darunter, Median 26,7 %). Ein Vergleich mit anderen Anbietern wurde nie erhoben; die Herstellerseiten sind aus dieser Umgebung gesperrt."
+  },
+  "5": {
+    "zustand": "anders",
+    "belege": [
+      "docs/baustoff-shop/phase3-unit-economics.md",
+      "docs/baustoff-shop/marge-25-prozent.md",
+      "shop/src/kostenbild.js",
+      "shop/src/empfindlichkeit.js"
+    ],
+    "begruendung": "Zahlenmodell mit Szenarien und Sensitivitaet — vorhanden, aber als lauffaehiger Code statt als Tabelle: kostenbild.js rechnet die Kaskade und ihre Umkehrung, empfindlichkeit.js Elastizitaeten und Kipppunkte, npm run empfindlichkeit gibt beides aus."
+  },
+  "6": {
+    "zustand": "anders",
+    "belege": [
+      "docs/baustoff-shop/phase2-lieferantenlandkarte.md",
+      "shop/data/lieferanten.json"
+    ],
+    "begruendung": "Bewertung im Phasendokument, Konditionen in lieferanten.json mit Frachtmodell, Sperrgutzuschlag und Belegstand. Kein Tabellenblatt. Die Bewertung ist Schreibtischstand — es wurde bewusst kein Lieferant kontaktiert (freigabepflichtig)."
+  },
+  "7": {
+    "zustand": "offen",
+    "belege": [],
+    "begruendung": "Eine bankfaehige Fassung existiert nicht, in keiner Form. Sie waere auch verfrueht: Ein Businessplan behauptet eine Planung, und die tragende Annahme dieses Modells — die Kaufquote — ist bis heute nicht gemessen. Zu entscheiden, sobald der erste Verkauf die Quote liefert."
+  },
+  "8": {
+    "zustand": "anders",
+    "belege": [
+      "docs/baustoff-shop/phase8-compliance.md",
+      "docs/baustoff-shop/phase8-rechtsform-steuer.md",
+      "shop/src/rechtstexte.js",
+      "docs/baustoff-shop/gate-register.md"
+    ],
+    "begruendung": "Rechtsthemen mit Fundstellen: im Phasendokument und in rechtstexte.js, wo IMPRESSUMSFELDER auf § 5 ECG und § 14 UGB verweisen und die Luecken maschinenpruefbar sind. Freigabebedarf steht im Gate-Register und in npm run offenepunkte."
+  },
+  "9": {
+    "zustand": "anders",
+    "belege": [
+      "docs/baustoff-shop/phase6-automatisierung.md",
+      "docs/baustoff-shop/eine-kontrolle-die-nur-ein-test-aufruft.md",
+      "shop/src/auftragslauf.js",
+      "shop/src/kontrolle.js",
+      "shop/bin/kontrolllauf.mjs"
+    ],
+    "begruendung": "Architektur und Strecken im Phasendokument, Fehlerfaelle und Eskalation im Code: auftragslauf.js fuehrt den Vorgang, darfBestaetigtWerden verweigert die Bestaetigung bei unbekannter Lieferzeit, und kontrolle.js rechnet als zweite, unabhaengige Rechnung ueber den gerenderten Belegtext nach. **Berichtigt am 02.09.:** Hier stand \"kontrolle.js prueft jeden Beleg gegen die Rechnung\" im Praesens — beschrieben war damit ein Vorgang, den es nicht gab. Dreiundfuenfzig Testverweise, kein einziger Aufruf aus dem Betrieb: Der Rechenkern war fertig und unerreichbar. Seit npm run pruefe-kontrolle laufen sieben Kontrollen an einem aus dem echten Katalog gebauten Vorgang; am Tag der ersten Lieferantenrechnung nimmt derselbe Befehl sie entgegen."
+  },
+  "10": {
+    "zustand": "anders",
+    "belege": [
+      "docs/baustoff-shop/phase7-inhalte-und-funnel.md",
+      "docs/baustoff-shop/weg-zum-ersten-verkauf-nachgerechnet.md",
+      "shop/bin/kampagne.mjs",
+      "shop/src/werbewirkung.js",
+      "shop/src/suchbedarf.js"
+    ],
+    "begruendung": "Kanaele, Budget und Kennzahlen — vorhanden, aber fuer den ersten Anlauf statt fuer zwoelf Monate. Eine Zwoelfmonatsplanung ohne gemessene Kaufquote waere eine Hochrechnung auf eine Annahme; werbewirkung.js sagt stattdessen, ab wann die Annahme ueberpruefbar ist."
+  },
+  "11": {
+    "zustand": "erfuellt",
+    "belege": [
+      "docs/baustoff-shop/neun-striche-und-ein-kreuz.md",
+      "shop/src/kennzahlen.js",
+      "shop/bin/kennzahlen.mjs",
+      "shop/ausgabe/kennzahlen.html"
+    ],
+    "begruendung": "Teilbare Seite mit zehn Kennzahlen in drei Abschnitten (vor dem Start, der Versuch, der Betrieb). npm run kennzahlen erzeugt ausgabe/kennzahlen.html als Einzeldatei. Jede Kennzahl traegt Ist, Schwelle, Herkunft der Schwelle und die Entscheidung, die daran haengt; keine Schwelle ist hier gerechnet, jede kommt aus dem Modul, das sie verantwortet. Der frueher genannte Einwand — ein Dashboard ohne Daten taeusche Betrieb vor — trifft die vorgetaeuschte Fassung mit Kurven bei null, nicht die Sache: Was eine solche Seite VOR dem Start leisten kann, ist das Festlegen der Schwellen, bevor man die Zahlen kennt. Heute: 1 von 10 gemessen, neun Striche, ein Kreuz (15 offene Punkte gegen eine Schwelle von 0). Nicht Erhobenes ist null und wird als Strich ausgegeben, nie als Nullwert. Die Seite ist intern und liegt ausserhalb von ausgabe/site/, weil sie Zielgewinn und Rohmarge nennt."
+  },
+  "12": {
+    "zustand": "erfuellt",
+    "belege": [
+      "docs/baustoff-shop/rollout-90-tage.md",
+      "shop/src/rollout.js",
+      "shop/bin/rollout.mjs",
+      "shop/src/werbewirkung.js"
+    ],
+    "begruendung": "Wochenplan mit Gates unter dem verlangten Namen. Elf Etappen mit Abhaengigkeiten, Dauern und Gate-Bezug; npm run rollout rechnet die Kette aus statt sie zu behaupten. Ergebnis im Hauptfall (9,99 EUR Tagesbudget, 1,50 EUR je Klick, 1 % auszuschliessen): 57 Tage bis zur Entscheidung, davon 45 der Versuch, 10 Warten auf Dritte und nur 2 Tage eigene Arbeit im bestimmenden Strang. Die frueher genannte Huerde ist ausgeraeumt, ohne die Datenlage zu beschoenigen: Der Plan haengt an Ereignissen statt an Kalenderdaten, deshalb braucht er die Messung nicht, die er erst herbeifuehren soll. Er sagt zugleich, wo die Frist nicht traegt — eine Kaufquote von 0,5 % ist in 90 Tagen nur am unteren Marktrand ausschliessbar."
+  }
+}

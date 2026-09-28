@@ -1,0 +1,884 @@
+<title>Radonvorsorge Fachhandel</title>
+<style>
+  :root {
+    --ground:#F1F3F0; --surface:#FFFFFF; --surface-2:#E9ECE7;
+    --ink:#171A18; --ink-2:#3E4642; --muted:#6A736E;
+    --line:#D8DCD5; --line-strong:#BEC4BB;
+    --accent:#8A5514; --accent-soft:#F0E3D0;
+    --warn:#8A3324; --ok:#3F5D45;
+    --serif:Georgia,"Iowan Old Style","Palatino Linotype",ui-serif,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --ground:#131614; --surface:#1A1E1B; --surface-2:#222724;
+    --ink:#E9ECE7; --ink-2:#C3C9C4; --muted:#939B95;
+    --line:#2B312D; --line-strong:#3C443E;
+    --accent:#D9A055; --accent-soft:#33291B;
+    --warn:#D98A72; --ok:#8FB398;
+  }}
+  :root[data-theme="dark"]{
+    --ground:#131614; --surface:#1A1E1B; --surface-2:#222724;
+    --ink:#E9ECE7; --ink-2:#C3C9C4; --muted:#939B95;
+    --line:#2B312D; --line-strong:#3C443E;
+    --accent:#D9A055; --accent-soft:#33291B;
+    --warn:#D98A72; --ok:#8FB398;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:74rem;margin:0 auto;padding:clamp(1.5rem,4vw,3rem) clamp(1rem,3vw,2rem) 4rem;display:flex;flex-direction:column;gap:1.75rem}
+  h1{font-family:var(--serif);font-size:clamp(1.7rem,4vw,2.4rem);line-height:1.1;margin:0;letter-spacing:-.015em}
+  h2{font-family:var(--serif);font-size:1.2rem;margin:0;letter-spacing:-.01em}
+  p{margin:0}
+  .eyebrow{font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  header{display:flex;flex-direction:column;gap:.6rem;border-bottom:2px solid var(--line-strong);padding-bottom:1.25rem}
+  .banner{background:var(--accent-soft);border-left:3px solid var(--accent);padding:.85rem 1.1rem;font-size:.93rem}
+  .banner strong{font-weight:650}
+  .layout{display:grid;grid-template-columns:1fr;gap:1.75rem}
+  @media (min-width:62rem){.layout{grid-template-columns:1fr 22rem;align-items:start}}
+  .katalog{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line)}
+  .gruppe{background:var(--surface-2);padding:.45rem 1rem;font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .artikel{background:var(--surface);padding:.9rem 1rem;display:grid;grid-template-columns:1fr auto;gap:.3rem 1rem;align-items:center}
+  .a-name{font-weight:600;font-size:.97rem}
+  .a-meta{font-family:var(--mono);font-size:.78rem;color:var(--muted);grid-column:1}
+  .a-preis{grid-row:1/3;text-align:right;display:flex;flex-direction:column;gap:.3rem;align-items:flex-end}
+  .p-netto{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:1.05rem;font-weight:600}
+  .p-brutto{font-family:var(--mono);font-size:.76rem;color:var(--muted);font-variant-numeric:tabular-nums}
+  .marge{font-family:var(--mono);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;padding:.1rem .35rem;border:1px solid currentColor}
+  .m-ok{color:var(--ok)} .m-warn{color:var(--warn)}
+  button{font:inherit;cursor:pointer;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);padding:.35rem .7rem;border-radius:2px}
+  button:hover{border-color:var(--accent);color:var(--accent)}
+  button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .add{white-space:nowrap}
+  aside{background:var(--surface);border:1px solid var(--line);position:sticky;top:1rem;display:flex;flex-direction:column}
+  .aside-h{padding:.8rem 1rem;border-bottom:1px solid var(--line);background:var(--surface-2);font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .aside-b{padding:1rem;display:flex;flex-direction:column;gap:.9rem}
+  .teil{border:1px solid var(--line);padding:.7rem .8rem;display:flex;flex-direction:column;gap:.4rem}
+  .teil-h{font-size:.82rem;font-weight:650}
+  .zeile{display:flex;justify-content:space-between;gap:.75rem;font-size:.82rem;font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .zeile span:first-child{font-family:var(--sans)}
+  .sum{border-top:2px solid var(--ink);padding-top:.6rem;display:flex;flex-direction:column;gap:.3rem}
+  .sum .zeile{font-size:.9rem}
+  .sum .gross{font-weight:700;font-size:1.05rem}
+  .hinweis{font-size:.8rem;color:var(--warn);border:1px solid currentColor;padding:.5rem .6rem}
+  .leer{color:var(--muted);font-size:.88rem}
+  .qty{width:3.2rem;font:inherit;font-family:var(--mono);padding:.2rem .3rem;border:1px solid var(--line-strong);background:var(--ground);color:var(--ink);text-align:right}
+  .rechner{background:var(--surface);border:1px solid var(--line);padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:.85rem}
+  .r-intro{font-size:.9rem;color:var(--ink-2);max-width:44rem}
+  .r-felder{display:flex;flex-wrap:wrap;gap:.9rem 1.4rem;align-items:flex-end}
+  .r-felder label{display:flex;flex-direction:column;gap:.2rem;font-size:.82rem;color:var(--ink-2)}
+  .r-felder label span{color:var(--muted);font-size:.72rem}
+  .r-felder input[type=number]{font:inherit;font-family:var(--mono);width:6rem;padding:.3rem .4rem;border:1px solid var(--line-strong);background:var(--ground);color:var(--ink)}
+  .r-check{flex-direction:row!important;align-items:center;gap:.45rem!important}
+  .r-check small{color:var(--muted)}
+  .r-liste{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line);margin-top:.3rem}
+  .r-pos{background:var(--surface);padding:.5rem .8rem;display:grid;grid-template-columns:2.5rem 1fr;gap:0 .8rem;font-size:.85rem}
+  .r-pos b{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+  .r-pos em{grid-column:2;font-style:normal;font-size:.76rem;color:var(--muted)}
+  .r-hinweis{font-size:.82rem;color:var(--ink-2);border-left:3px solid var(--accent);padding:.4rem .7rem;background:var(--accent-soft);margin-top:.5rem}
+.mw{background:var(--surface);border:1px solid var(--line);padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:.8rem}
+  .mw-felder{display:flex;flex-wrap:wrap;gap:.9rem 1.4rem;align-items:flex-end}
+  .mw-felder label{display:flex;flex-direction:column;gap:.2rem;font-size:.82rem;color:var(--ink-2)}
+  .mw-felder input{font:inherit;font-family:var(--mono);width:7rem;padding:.3rem .4rem;border:1px solid var(--line-strong);background:var(--ground);color:var(--ink)}
+  .mw-karte{border-left:3px solid var(--line-strong);padding:.7rem .9rem;background:var(--surface-2);display:flex;flex-direction:column;gap:.35rem}
+  .mw-karte[data-stufe="ueber"],.mw-karte[data-stufe="deutlich"]{border-left-color:var(--warn)}
+  .mw-karte[data-stufe="unter"]{border-left-color:var(--ok)}
+  .mw-karte[data-stufe="kurzzeit"]{border-left-color:var(--accent)}
+  .mw-titel{font-weight:650;font-size:.95rem}
+  .mw-text{font-size:.87rem;color:var(--ink-2)}
+  .mw-grenzen{font-size:.78rem;color:var(--muted);display:flex;flex-direction:column;gap:.25rem;margin-top:.3rem;padding-top:.5rem;border-top:1px dotted var(--line-strong)}
+  .kasse{background:var(--surface);border:1px solid var(--line);padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:.85rem}
+  .k-felder{display:grid;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));gap:.8rem 1.2rem}
+  .k-felder label{display:flex;flex-direction:column;gap:.2rem;font-size:.82rem;color:var(--ink-2)}
+  .k-felder input[type=text],.k-felder input[type=email]{font:inherit;padding:.35rem .45rem;border:1px solid var(--line-strong);background:var(--ground);color:var(--ink);width:100%}
+  .k-sim{display:flex;flex-direction:column;gap:.3rem;font-size:.82rem;color:var(--ink-2);border:1px dashed var(--line-strong);padding:.6rem .7rem}
+  .k-sim select{font:inherit;padding:.3rem .4rem;border:1px solid var(--line-strong);background:var(--ground);color:var(--ink);max-width:24rem}
+  .k-sim small{color:var(--muted);font-size:.75rem}
+  .k-gebiet{grid-column:1/-1;color:var(--muted);font-size:.75rem;line-height:1.5}
+  .k-bestaetigung{display:flex;gap:.5rem;align-items:flex-start;font-size:.85rem;border:1px solid var(--line-strong);padding:.6rem .7rem}
+  .k-fehler{border:1px solid var(--warn);color:var(--warn);padding:.5rem .7rem;font-size:.83rem;display:flex;flex-direction:column;gap:.25rem}
+  .k-warn{border:1px solid var(--accent);color:var(--accent);padding:.5rem .7rem;font-size:.83rem}
+  .k-sperre{border-left:3px solid var(--warn);background:var(--surface-2);padding:.7rem .9rem;font-size:.85rem;display:flex;flex-direction:column;gap:.3rem}
+  .k-bestellung{border:1px solid var(--line);margin-top:.5rem}
+  .k-bestellung h3{font-family:var(--sans);font-size:.85rem;padding:.5rem .8rem;background:var(--surface-2);margin:0;border-bottom:1px solid var(--line)}
+  .k-bestellung pre{margin:0;padding:.7rem .8rem;font-family:var(--mono);font-size:.74rem;white-space:pre-wrap;color:var(--ink-2);overflow-x:auto}
+.recht{background:var(--surface);border:1px solid var(--line);padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:.8rem}
+  .recht-status{border-left:3px solid var(--warn);background:var(--surface-2);padding:.7rem .9rem;font-size:.88rem;font-weight:600}
+  .recht-spalten{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1.2rem}
+  .recht-spalten h3{font-family:var(--sans);font-size:.85rem;margin:0 0 .4rem}
+  .recht-spalten ul{margin:0;padding-left:1.1rem;font-size:.83rem;color:var(--ink-2);display:flex;flex-direction:column;gap:.25rem}
+  .lauf-zeile{display:grid;grid-template-columns:7.5rem 1fr auto;gap:.6rem;align-items:baseline;padding:.35rem 0;border-bottom:1px solid var(--line);font-size:.85rem}
+  .lauf-zeile:last-child{border-bottom:0}
+  .lauf-stand{font-family:var(--mono);font-size:.7rem;letter-spacing:.04em;text-transform:uppercase}
+  .lauf-auto{color:var(--ok,#2f7d4f)}
+  .lauf-hand{color:var(--warn)}
+  .lauf-block{color:var(--warn);font-weight:700}
+  .lauf-grund{grid-column:2/4;font-size:.78rem;color:var(--ink-2);margin-top:.15rem}
+  .lauf-min{font-family:var(--mono);font-size:.78rem;color:var(--ink-2)}
+  .recht pre{margin:0;padding:.7rem .8rem;background:var(--ground);border:1px solid var(--line);font-family:var(--mono);font-size:.72rem;white-space:pre-wrap;color:var(--ink-2);overflow-x:auto}
+  footer{border-top:1px solid var(--line);padding-top:1rem;color:var(--muted);font-size:.82rem;display:flex;flex-direction:column;gap:.4rem}
+  code{font-family:var(--mono);font-size:.85em}
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Funktionsmuster · Streckengeschäft Österreich</p>
+    <h1>Radonvorsorge Fachhandel</h1>
+    <p style="color:var(--ink-2)">Katalog, Preis- und Frachtrechnung, Warenkorb und Bestellaufteilung — lauffähig, mit demselben Rechenkern, den die Testfälle prüfen.</p>
+  </header>
+
+  <div class="banner">
+    <strong>Alle Preise sind Platzhalter.</strong> Kein Lieferant hat Konditionen bestätigt.
+    Die Einkaufspreise sind aus öffentlichen Listenpreisniveaus mal einem angenommenen
+    Händlerrabatt gerechnet. Der Shop nimmt keine Bestellungen an und löst nichts aus.
+  </div>
+
+  <form class="mw" id="messwert">
+    <h2>Messwert einordnen</h2>
+    <p class="r-intro">Wer bereits gemessen hat, will zuerst wissen, was der Wert bedeutet. Die Einordnung ist rechtlich und bautechnisch — nicht gesundheitlich.</p>
+    <div class="mw-felder">
+      <label>Messwert <span style="color:var(--muted);font-size:.72rem">Bq/m³</span><input type="number" id="mw-wert" value="450" min="0" step="10"></label>
+      <label>Messdauer <span style="color:var(--muted);font-size:.72rem">Monate</span><input type="number" id="mw-dauer" value="12" min="0.5" step="0.5"></label>
+      <button type="submit">Einordnen</button>
+    </div>
+    <div id="mw-ergebnis"></div>
+  </form>
+
+  <div class="layout">
+    <section style="display:flex;flex-direction:column;gap:1.5rem">
+      <form class="rechner" id="rechner">
+        <h2>Materialbedarf rechnen</h2>
+        <p class="r-intro">Außenmaße eingeben — der Rechner ermittelt die Stückliste und legt sie in den Warenkorb. Er weist dabei aus, wie viel Verschnitt die Rollenbindung erzwingt.</p>
+        <div class="r-felder">
+          <label>Länge <span>m</span><input type="number" id="laenge" value="12" min="1" step="0.5"></label>
+          <label>Breite <span>m</span><input type="number" id="breite" value="10" min="1" step="0.5"></label>
+          <label>Durchführungen<input type="number" id="durchfuehrungen" value="4" min="0" step="1"></label>
+          <label class="r-check"><input type="checkbox" id="drainage" checked> Radondrainage <small>(im Radonschutzgebiet gefordert)</small></label>
+        </div>
+        <button type="submit">Stückliste rechnen</button>
+        <div id="rechner-ergebnis"></div>
+      </form>
+
+      <div class="katalog" id="katalog"></div>
+
+      <form class="kasse" id="kasse">
+        <h2>Bestellung — nur für Unternehmer</h2>
+        <p class="r-intro">Alle Preise sind Nettopreise. Der Verkauf richtet sich ausschließlich an Unternehmer; deshalb sind Firmendaten und UID verpflichtend. Diese Strecke endet vor der Zahlung — es gibt keinen Zahlungsanbieter und es wird nichts ausgelöst.</p>
+        <div class="k-felder">
+          <label>Firma<input type="text" id="k-firma" value="Baumeister Muster GmbH"></label>
+          <label>UID-Nummer<input type="text" id="k-uid" value="ATU12345675" placeholder="ATU12345675"></label>
+          <label>E-Mail<input type="email" id="k-email" value="office@muster.at"></label>
+          <label>Telefon<input type="text" id="k-telefon" value="+43 660 0000000"></label>
+          <label>Straße und Hausnummer<input type="text" id="k-strasse" value="Feldweg 3"></label>
+          <label>PLZ<input type="text" id="k-plz" value="4600" inputmode="numeric"></label>
+          <label>Ort<input type="text" id="k-ort" value="Wels"></label>
+        </div>
+        <label class="k-bestaetigung"><input type="checkbox" id="k-baustelle-an"> Die Ware geht an eine <strong>abweichende Lieferanschrift</strong> (Baustelle).</label>
+        <div class="k-felder" id="k-baustelle-felder" hidden>
+          <label>Baustelle — Bezeichnung<input type="text" id="k-b-name" value="Neubau Familie Berger" placeholder="leer = Ihr Firmenname"></label>
+          <label>Straße und Hausnummer<input type="text" id="k-b-strasse" value="Feldgasse 27"></label>
+          <label>PLZ<input type="text" id="k-b-plz" value="4312" inputmode="numeric"></label>
+          <label>Ort<input type="text" id="k-b-ort" value="Ried in der Riedmark"></label>
+          <label>Land<input type="text" id="k-b-land" value="AT" placeholder="AT"></label>
+          <label>Ansprechpartner vor Ort<input type="text" id="k-b-telefon" value="+43 664 9998877"></label>
+          <label>Hinweis zur Zufahrt<input type="text" id="k-b-hinweis" value="Zufahrt über Baustraße, Kran bis 16 Uhr besetzt"></label>
+          <label>Bezirk der Baustelle<input type="text" id="k-b-bezirk" value="Perg"></label>
+          <small id="k-liefer-auskunft" class="k-gebiet"></small>
+          <small id="k-gebiet-auskunft" class="k-gebiet"></small>
+        </div>
+        <label class="k-bestaetigung" id="k-art14-zeile" hidden><input type="checkbox" id="k-art14"> <span id="k-art14-text"></span></label>
+        <label class="k-bestaetigung"><input type="checkbox" id="k-unternehmer" checked> Ich bestelle als Unternehmer im Rahmen meines Betriebs. Ein Rücktrittsrecht nach FAGG besteht damit nicht.</label>
+        <label class="k-sim">Antwort des EU-Informationsaustauschsystems <em>simulieren</em>
+          <select id="k-vies">
+            <option value="gueltig">bestätigt, mit Abfrage-Identifikation</option>
+            <option value="ohneNachweis">bestätigt, ohne Abfrage-Identifikation</option>
+            <option value="ungueltig">als ungültig gemeldet</option>
+            <option value="dienstAus" selected>Dienst nicht erreichbar</option>
+          </select>
+          <small>Der Dienst ist von hier aus nicht erreichbar. Die Auswahl zeigt, wie der Shop auf jede der Antworten reagiert.</small>
+        </label>
+        <button type="submit">Bestellung prüfen</button>
+        <div id="kasse-ergebnis"></div>
+      </form>
+    </section>
+
+    <aside>
+      <div class="aside-h">Warenkorb — Nettopreise für Unternehmer</div>
+      <div class="aside-b" id="korb"></div>
+    </aside>
+  </div>
+
+  <section class="recht" id="lauf"></section>
+
+  <section class="recht" id="recht"></section>
+
+  <footer>
+    <p>Im Streckengeschäft liefert jeder Hersteller getrennt. Was der Kunde als eine
+      Bestellung aufgibt, wird betrieblich in eine Bestellung <em>je Lieferant</em> zerlegt —
+      mit eigener Fracht, eigenem Mindestbestellwert und eigener Lieferzeit. Genau das zeigt
+      der Warenkorb.</p>
+    <p>Quelltext und Testfälle: <code>shop/</code> im Projektverzeichnis. Rechtstexte,
+      Zahlungsanbieter und Impressum fehlen bewusst — sie brauchen eine reale Firma.</p>
+  </footer>
+</div>
+
+<script type="module">
+/*__KERN__*/
+
+const daten = /*__DATEN__*/;
+const ZIELMARGE = 0.35;
+const katalog = ladeKatalog(daten, ZIELMARGE);
+const korb = new Map();
+
+const eur = (n) => n.toLocaleString('de-AT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+const pct = (n) => (n * 100).toLocaleString('de-AT', { maximumFractionDigits: 1 }) + ' %';
+
+function zeichneKatalog() {
+  const el = document.getElementById('katalog');
+  el.textContent = '';
+  let letzteGruppe = null;
+
+  for (const a of katalog.artikel) {
+    if (a.gruppe !== letzteGruppe) {
+      letzteGruppe = a.gruppe;
+      const g = document.createElement('div');
+      g.className = 'gruppe';
+      g.textContent = a.gruppe;
+      el.append(g);
+    }
+
+    const row = document.createElement('div');
+    row.className = 'artikel';
+
+    const name = document.createElement('div');
+    name.className = 'a-name';
+    name.textContent = a.bezeichnung;
+
+    const meta = document.createElement('div');
+    meta.className = 'a-meta';
+    meta.textContent = a.sku + ' · ' + a.einheit + ' ' + a.menge + ' · ' + a.gewichtKg + ' kg' + (a.sperrgut ? ' · Sperrgut' : '');
+
+    const preis = document.createElement('div');
+    preis.className = 'a-preis';
+
+    const netto = document.createElement('div');
+    netto.className = 'p-netto';
+    netto.textContent = eur(a.vkNetto);
+
+    const brutto = document.createElement('div');
+    brutto.className = 'p-brutto';
+    brutto.textContent = 'inkl. USt ' + eur(a.vkBrutto);
+
+    const marge = document.createElement('span');
+    marge.className = 'marge ' + (a.margeErreicht ? 'm-ok' : 'm-warn');
+    marge.textContent = 'Marge ' + pct(a.rohmarge);
+    marge.title = a.margeErreicht ? 'trägt die Untergrenze von 32 %' : 'unter der Untergrenze von 32 % — Gate 1';
+
+    const btn = document.createElement('button');
+    btn.className = 'add';
+    btn.textContent = 'In den Warenkorb';
+    btn.addEventListener('click', () => {
+      korb.set(a.sku, (korb.get(a.sku) ?? 0) + 1);
+      zeichneKorb();
+    });
+
+    preis.append(netto, brutto, marge, btn);
+    row.append(name, preis, meta);
+    el.append(row);
+  }
+}
+
+function zeichneKorb() {
+  const el = document.getElementById('korb');
+  el.textContent = '';
+
+  if (korb.size === 0) {
+    const p = document.createElement('p');
+    p.className = 'leer';
+    p.textContent = 'Noch nichts ausgewählt. Die Frachtrechnung wird sichtbar, sobald Artikel von mehreren Lieferanten im Korb liegen.';
+    el.append(p);
+    return;
+  }
+
+  const zeilen = [...korb].map(([sku, menge]) => ({ sku, menge }));
+  const wk = berechneWarenkorb(zeilen, katalog);
+
+  for (const teil of wk.teillieferungen) {
+    const box = document.createElement('div');
+    box.className = 'teil';
+
+    const h = document.createElement('div');
+    h.className = 'teil-h';
+    // Eine unbekannte Lieferzeit stand hier als „null Werktage" — im
+    // Demokatalog nicht erreichbar, weil dessen drei Lieferanten alle eine
+    // Zahl tragen, im echten Katalog dagegen bei jedem der 46 Artikel. Ein
+    // Fehler mit bekanntem Auslösetag ist kein latenter, sondern ein
+    // terminierter.
+    h.textContent = teil.lieferantName + ' · ' + (Number.isFinite(teil.lieferzeitWerktage)
+      ? teil.lieferzeitWerktage + ' Werktage'
+      : 'Lieferzeit auf Anfrage');
+    box.append(h);
+
+    for (const p of teil.positionen) {
+      const z = document.createElement('div');
+      z.className = 'zeile';
+      const links = document.createElement('span');
+      const feld = document.createElement('input');
+      feld.type = 'number';
+      feld.min = '1';
+      feld.step = '1';
+      feld.value = String(p.menge);
+      feld.className = 'qty';
+      feld.setAttribute('aria-label', 'Menge ' + p.bezeichnung);
+      feld.addEventListener('change', () => {
+        const n = Math.max(0, Math.floor(Number(feld.value) || 0));
+        if (n === 0) korb.delete(p.sku); else korb.set(p.sku, n);
+        zeichneKorb();
+      });
+      links.append(feld, document.createTextNode(' ' + p.bezeichnung));
+      const rechts = document.createElement('span');
+      rechts.textContent = eur(p.zeilensummeNetto);
+      z.append(links, rechts);
+      box.append(z);
+    }
+
+    const f = document.createElement('div');
+    f.className = 'zeile';
+    f.innerHTML = '';
+    const fl = document.createElement('span');
+    fl.textContent = 'Fracht — ' + teil.frachtGrund;
+    const fr = document.createElement('span');
+    fr.textContent = eur(teil.frachtNetto);
+    f.append(fl, fr);
+    box.append(f);
+
+    if (!teil.mindestbestellwert.erfuellt) {
+      const w = document.createElement('div');
+      w.className = 'hinweis';
+      w.textContent = 'Mindestbestellwert ' + eur(teil.mindestbestellwert.grenze) + ' — es fehlen ' + eur(teil.mindestbestellwert.fehlbetragNetto) + '.';
+      box.append(w);
+    }
+
+    el.append(box);
+  }
+
+  const sum = document.createElement('div');
+  sum.className = 'sum';
+  const zeile = (label, wert, klasse) => {
+    const z = document.createElement('div');
+    z.className = 'zeile' + (klasse ? ' ' + klasse : '');
+    const a = document.createElement('span');
+    a.textContent = label;
+    const b = document.createElement('span');
+    b.textContent = wert;
+    z.append(a, b);
+    return z;
+  };
+
+  sum.append(zeile('Warenwert netto', eur(wk.warenwertNetto)));
+  sum.append(zeile('Fracht netto', eur(wk.frachtNetto)));
+  sum.append(zeile('Summe netto', eur(wk.summeNetto)));
+  sum.append(zeile('Umsatzsteuer 20 %', eur(wk.ust)));
+  sum.append(zeile('Gesamt brutto', eur(wk.summeBrutto), 'gross'));
+  el.append(sum);
+
+  const kennz = document.createElement('div');
+  kennz.className = 'sum';
+  kennz.style.borderTopStyle = 'dotted';
+  kennz.append(zeile('Deckungsbeitrag', eur(wk.deckungsbeitragNetto)));
+  kennz.append(zeile('Mischmarge', pct(wk.mischmarge) + (wk.mischmargeErreicht ? '' : ' — unter 32 %')));
+  kennz.append(zeile('Frachtanteil am Warenwert', pct(wk.frachtanteilAmWarenwert)));
+  el.append(kennz);
+
+  // Zwei Fassungen desselben Hinweises. Diese Tafel ist die Sicht des
+  // Betreibers — sie zeigt ohnehin Deckungsbeitrag und Mischmarge —, deshalb
+  // steht hier die vollständige. Was der Kunde bekommt, steht darunter, damit
+  // der Unterschied sichtbar ist: Der Einkaufswert gehört auf kein Papier, das
+  // hinausgeht.
+  for (const h of wk.hinweiseIntern) {
+    const w = document.createElement('div');
+    w.className = 'hinweis';
+    w.textContent = 'intern: ' + h;
+    el.append(w);
+  }
+  for (const h of wk.hinweise) {
+    const w = document.createElement('div');
+    w.className = 'hinweis';
+    w.textContent = 'an den Kunden: ' + h;
+    el.append(w);
+  }
+}
+
+document.getElementById('messwert').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const ziel = document.getElementById('mw-ergebnis');
+  ziel.textContent = '';
+
+  let e2;
+  try {
+    e2 = ordneEin({
+      wert: Number(document.getElementById('mw-wert').value),
+      messdauerMonate: Number(document.getElementById('mw-dauer').value),
+    });
+  } catch (fehler) {
+    const d = document.createElement('div');
+    d.className = 'hinweis';
+    d.textContent = fehler.message;
+    ziel.append(d);
+    return;
+  }
+
+  const karte = document.createElement('div');
+  karte.className = 'mw-karte';
+  karte.dataset.stufe = e2.stufe;
+
+  const titel = document.createElement('div');
+  titel.className = 'mw-titel';
+  titel.textContent = e2.titel;
+
+  const aussage = document.createElement('div');
+  aussage.className = 'mw-text';
+  aussage.textContent = e2.aussage;
+
+  const massnahme = document.createElement('div');
+  massnahme.className = 'mw-text';
+  massnahme.textContent = e2.massnahme;
+
+  const grenzen = document.createElement('div');
+  grenzen.className = 'mw-grenzen';
+  for (const g of e2.grenzen) {
+    const z = document.createElement('div');
+    z.textContent = '· ' + g;
+    grenzen.append(z);
+  }
+
+  karte.append(titel, aussage, massnahme, grenzen);
+  ziel.append(karte);
+});
+
+document.getElementById('kasse').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const ziel = document.getElementById('kasse-ergebnis');
+  ziel.textContent = '';
+
+  const kasten = (klasse, zeilen) => {
+    const d = document.createElement('div');
+    d.className = klasse;
+    for (const z of [].concat(zeilen)) {
+      const p = document.createElement('div');
+      p.textContent = z;
+      d.append(p);
+    }
+    return d;
+  };
+
+  if (korb.size === 0) {
+    ziel.append(kasten('k-fehler', 'Der Warenkorb ist leer.'));
+    return;
+  }
+
+  const eingabe = {
+    firma: document.getElementById('k-firma').value,
+    uid: document.getElementById('k-uid').value,
+    email: document.getElementById('k-email').value,
+    telefon: document.getElementById('k-telefon').value,
+    strasse: document.getElementById('k-strasse').value,
+    plz: document.getElementById('k-plz').value,
+    ort: document.getElementById('k-ort').value,
+    unternehmerBestaetigt: document.getElementById('k-unternehmer').checked,
+  };
+
+  // Die Baustelle ist freiwillig. Ohne sie geht die Ware an die
+  // Rechnungsanschrift — genau das bisherige Verhalten.
+  if (document.getElementById('k-baustelle-an').checked) {
+    eingabe.baustelle = {
+      name: document.getElementById('k-b-name').value,
+      strasse: document.getElementById('k-b-strasse').value,
+      plz: document.getElementById('k-b-plz').value,
+      ort: document.getElementById('k-b-ort').value,
+      land: document.getElementById('k-b-land').value,
+      telefon: document.getElementById('k-b-telefon').value,
+      hinweis: document.getElementById('k-b-hinweis').value,
+      // Der Bezirk stand seit der Gebietsauskunft im Formular und ging nicht
+      // in die Bestelldaten — er beantwortete nur die Radonfrage. Seit Gate 23
+      // prüft der Rechenkern damit das Liefergebiet; ohne diese Zeile lehnte
+      // die Kasse jede Bestellung mit Baustelle ab, und zwar zu Recht.
+      bezirk: document.getElementById('k-b-bezirk').value,
+    };
+    // Art. 14 DSGVO: Der Ansprechpartner vor Ort ist ein Dritter.
+    eingabe[ZUSICHERUNG_DRITTER.feld] = document.getElementById('k-art14').checked;
+  }
+
+  const geprueft = pruefeBestelldaten(eingabe);
+  if (geprueft.fehler.length) ziel.append(kasten('k-fehler', geprueft.fehler));
+  for (const w of geprueft.warnungen) ziel.append(kasten('k-warn', w));
+  if (!geprueft.gueltig) return;
+
+  const wk = berechneWarenkorb([...korb].map(([sku, menge]) => ({ sku, menge })), katalog);
+  const auftrag = baueAuftrag('MUSTER-0001', eingabe, { zahlungEingegangen: false });
+  let freigabe = darfAutomatischAusgeloestWerden(wk, auftrag);
+
+  // Simulierte Antwort des EU-Dienstes. Von hier aus ist er nicht erreichbar;
+  // gezeigt wird, wie der Shop auf jede der vier Antworten reagiert.
+  const VIES_MUSTER = {
+    gueltig: { isValid: true, requestDate: new Date().toLocaleDateString('de-AT'), userError: 'VALID',
+               name: eingabe.firma, address: eingabe.strasse, requestIdentifier: 'WAPI-MUSTER-0001' },
+    ohneNachweis: { isValid: true, userError: 'VALID', name: eingabe.firma, requestIdentifier: '' },
+    ungueltig: { isValid: false, userError: 'INVALID', name: '---', address: '---' },
+    dienstAus: { isValid: false, userError: 'MS_UNAVAILABLE' },
+  };
+  // Die Hinweise nach § 377 UGB gehören vor die Bestellung, nicht in die
+  // Auftragsbestätigung. Sie sind der Grund, weshalb der Ansprechpartner vor
+  // Ort ein Pflichtfeld ist.
+  ziel.append(
+    kasten(
+      auftrag.lieferungAnRechnungsadresse ? 'k-warn' : 'k-fehler',
+      lieferhinweise(auftrag).map((h) => h.titel + ' — ' + h.text + ' (' + h.grundlage + ')'),
+    ),
+  );
+
+  const uidAuswertung = werteAntwortAus(VIES_MUSTER[document.getElementById('k-vies').value]);
+  freigabe = ergaenzeFreigabe(freigabe, uidAuswertung);
+
+  ziel.append(kasten('k-warn', [
+    'UID-Abfrage (simuliert): ' + belegzeile(uidAuswertung, eingabe.uid),
+  ]));
+
+  ziel.append(
+    kasten('k-sperre', [
+      freigabe.erlaubt
+        ? 'Alle Voraussetzungen erfüllt — im Echtbetrieb ginge die Bestellung jetzt hinaus.'
+        : 'Es geht nichts hinaus. Offen sind:',
+      ...freigabe.gruende.map((g) => '· ' + g),
+    ]),
+  );
+
+  // Belege an den Kunden. Das Datum kommt aus der Anzeige, nicht aus der Rechnung —
+  // der Rechenkern bleibt datumsfrei und damit prüfbar.
+  const heute = new Date().toLocaleDateString('de-AT');
+  const belegKunde = { ...geprueft.normalisiert };
+  const betreiber = {};
+
+  const angebot = erzeugeAngebot(wk, { nummer: 'AN-MUSTER', datum: heute, kunde: belegKunde, betreiber });
+  const rechnung = erzeugeRechnung(wk, {
+    nummer: 'RE-MUSTER',
+    datum: heute,
+    lieferdatum: heute,
+    kunde: belegKunde,
+    betreiber,
+  });
+  const rechnungFrei = darfRechnungGestelltWerden(wk, rechnung, auftrag);
+
+  // Die Auftragsbestätigung — das Papier, mit dem der Vertrag zustande kommt.
+  // Sie trägt dieselben Lieferhinweise, die oben in der Strecke standen.
+  const bestaetigung = erzeugeAuftragsbestaetigung(wk, {
+    nummer: 'AB-MUSTER',
+    datum: heute,
+    kunde: belegKunde,
+    betreiber,
+    auftrag,
+    hinweise: lieferhinweise(auftrag),
+  });
+  const annahmeFrei = darfBestaetigtWerden(wk, auftrag);
+
+  const reihe = reihengeschaeftEinordnung(wk, katalog);
+  if (reihe.reihengeschaeft) {
+    ziel.append(kasten('k-warn', ['Umsatzsteuer im Streckengeschäft:', ...reihe.hinweise.map((h) => '· ' + h)]));
+  }
+
+  ziel.append(
+    kasten('k-sperre', [
+      annahmeFrei.erlaubt
+        ? 'Der Auftrag wäre annehmbar — der Vertrag käme mit der Bestätigung zustande (AGB Punkt 2).'
+        : 'Keine Annahme, also kein Vertrag. Offen sind:',
+      ...annahmeFrei.gruende.map((g) => '· ' + g),
+    ]),
+  );
+
+  ziel.append(
+    kasten('k-sperre', [
+      rechnungFrei.erlaubt ? 'Die Rechnung wäre stellbar.' : 'Keine Rechnung. Offen sind:',
+      ...rechnungFrei.gruende.map((g) => '· ' + g),
+    ]),
+  );
+
+  const belegBox = (titel, text) => {
+    const box = document.createElement('div');
+    box.className = 'k-bestellung';
+    const h3 = document.createElement('h3');
+    h3.textContent = titel;
+    const pre = document.createElement('pre');
+    pre.textContent = text;
+    box.append(h3, pre);
+    return box;
+  };
+
+  ziel.append(belegBox('Angebot an den Kunden — Entwurf', angebot.text));
+  ziel.append(belegBox('Auftragsbestätigung — hiermit käme der Vertrag zustande', bestaetigung.text));
+  ziel.append(belegBox('Rechnung an den Kunden — Entwurf', rechnung.text));
+
+  // Ablage: was im Echtbetrieb aktenkundig würde. Die Rechnungsnummer entsteht
+  // erst mit der Ausstellung — eine unvollständige Rechnung verbraucht keine.
+  const jahr = new Date().getFullYear();
+  const ablage = neueAblage();
+  const vorgang = 'V-MUSTER-0001';
+
+  haltefest(ablage, { art: 'uidabfrage', zeitpunkt: heute, vorgang,
+                      text: belegzeile(uidAuswertung, eingabe.uid) });
+  haltefest(ablage, { art: 'angebot', nummer: naechsteNummer(ablage, 'angebot', jahr),
+                      zeitpunkt: heute, vorgang,
+                      betragNetto: wk.summeNetto, betragBrutto: wk.summeBrutto, text: 'Angebot an den Kunden' });
+  for (const b of erzeugeBestellungen(wk, auftrag)) {
+    haltefest(ablage, { art: 'lieferantenbestellung',
+                        nummer: naechsteNummer(ablage, 'lieferantenbestellung', jahr),
+                        zeitpunkt: heute, vorgang, betragNetto: b.einkaufNetto,
+                        text: 'Entwurf an ' + b.lieferantName });
+  }
+  const ausstellung = stelleRechnungAus(ablage, rechnung, { zeitpunkt: heute, jahr, vorgang });
+
+  const kreis = pruefeNummernkreis(ablage, 'rechnung', jahr);
+  ziel.append(kasten('k-sperre', [
+    ausstellung.ausgestellt
+      ? 'Rechnung ausgestellt unter ' + ausstellung.nummer
+      : 'Keine Rechnungsnummer vergeben. ' + ausstellung.grund,
+    'Nummernkreis Rechnungen ' + jahr + ': ' + kreis.anzahl + ' vergeben, ' +
+      (kreis.lueckenlos ? 'lückenlos' : 'Lücken bei ' + kreis.fehlend.join(', ')),
+    'Aufbewahrung bis ' + aufbewahrungBis(jahr).hinweis,
+  ]));
+
+  // Was der Zahlweg von diesem Warenkorb wegnimmt. Die Gebühr faellt auf brutto
+  // an, der Deckungsbeitrag entsteht nur auf dem Warenwert netto.
+  const zeilenZahlung = ['karte-stripe', 'eps', 'rechnungskauf'].map((id) => {
+    const w = wirkungAufBestellung(wk, id);
+    return ZAHLWEGE.find((z) => z.id === id).name + ': ' + EUR(w.gebuehr) +
+      ' = ' + (w.anteilAmDeckungsbeitrag * 100).toFixed(1) + ' % des Deckungsbeitrags';
+  });
+  const bild = proBestellung(wk, 'karte-stripe', 0.10);
+  ziel.append(kasten('k-warn', [
+    'Zahlungsgebühren auf diesen Warenkorb (Listenpreise, kein Angebot):',
+    ...zeilenZahlung.map((z) => '· ' + z),
+    'Was bleibt, bei Karte und 10 % Werbekostenanteil:',
+    '· Rohertrag ' + EUR(bild.rohertrag) + ' − Werbung ' + EUR(bild.werbung) +
+      ' − Gebühr ' + EUR(bild.gebuehr) + ' = ' + EUR(bild.bleibt) +
+      ' (' + (bild.margeNachAllem * 100).toFixed(1) + ' % statt ' +
+      (wk.mischmarge * 100).toFixed(1) + ' % Mischmarge)',
+  ]));
+
+  ziel.append(belegBox('Vorgangsakte — nur ergänzt, nie geändert', alsCsv(ablage)));
+
+  for (const b of erzeugeBestellungen(wk, auftrag)) {
+    ziel.append(belegBox('Entwurf an ' + b.lieferantName + ' — ' + b.nummer, b.text));
+  }
+});
+
+document.getElementById('rechner').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const ziel = document.getElementById('rechner-ergebnis');
+  ziel.textContent = '';
+
+  const gebaeude = {
+    laenge: Number(document.getElementById('laenge').value),
+    breite: Number(document.getElementById('breite').value),
+    durchfuehrungen: Math.floor(Number(document.getElementById('durchfuehrungen').value) || 0),
+    mitDrainage: document.getElementById('drainage').checked,
+  };
+
+  let bedarf;
+  try {
+    bedarf = berechneBedarf(gebaeude, katalog);
+  } catch (fehler) {
+    const p = document.createElement('div');
+    p.className = 'hinweis';
+    p.textContent = fehler.message;
+    ziel.append(p);
+    return;
+  }
+
+  const kopf = document.createElement('p');
+  kopf.className = 'a-meta';
+  kopf.style.gridColumn = 'auto';
+  kopf.textContent =
+    bedarf.flaeche + ' m² Grundfläche · ' + bedarf.umfang + ' m Umfang · ' +
+    bedarf.bahnBedarfM2 + ' m² Bahnenbedarf inkl. Aufkantung und Verschnitt';
+  ziel.append(kopf);
+
+  const liste = document.createElement('div');
+  liste.className = 'r-liste';
+  for (const p of bedarf.positionen) {
+    const z = document.createElement('div');
+    z.className = 'r-pos';
+    const m = document.createElement('b');
+    m.textContent = p.menge + '×';
+    const n = document.createElement('span');
+    n.textContent = p.bezeichnung;
+    const g = document.createElement('em');
+    g.textContent = p.begruendung;
+    z.append(m, n, g);
+    liste.append(z);
+  }
+  ziel.append(liste);
+
+  for (const h of bedarf.hinweise) {
+    const d = document.createElement('div');
+    d.className = 'r-hinweis';
+    d.textContent = h;
+    ziel.append(d);
+  }
+
+  korb.clear();
+  for (const z of bedarf.warenkorbzeilen) korb.set(z.sku, z.menge);
+  zeichneKorb();
+});
+
+function zeichneLauf() {
+  const el = document.getElementById('lauf');
+  const lauf = trockenlauf(WELT_HEUTE);
+  const monat = aufwandProMonat(WELT_HEUTE, 37);
+
+  const h2 = document.createElement('h2');
+  h2.textContent = 'Läuft die Kette ohne Zutun?';
+
+  const intro = document.createElement('p');
+  intro.className = 'a-meta';
+  intro.style.gridColumn = 'auto';
+  intro.textContent =
+    'Trockenlauf über den ganzen Auftrag. Es wird nichts ausgelöst — für jeden Schritt ' +
+    'wird geprüft, ob er unter den heutigen Voraussetzungen von selbst liefe.';
+
+  const status = document.createElement('div');
+  status.className = 'recht-status';
+  status.textContent = lauf.laeuftDurch
+    ? 'Die Kette läuft ohne einen Handgriff durch.'
+    : 'Die Kette bricht ab bei: ' + lauf.abbruchBei + '. ' +
+      lauf.minutenMensch + ' Minuten Handarbeit je Bestellung, ' +
+      'bei 37 Bestellungen im Monat sind das ' + monat.stundenProMonat + ' Stunden.';
+
+  const liste = document.createElement('div');
+  for (const p of lauf.protokoll) {
+    const z = document.createElement('div');
+    z.className = 'lauf-zeile';
+
+    const stand = document.createElement('span');
+    stand.className = 'lauf-stand ' +
+      (p.stand === 'automatisch' ? 'lauf-auto' : p.stand === 'blockiert' ? 'lauf-block' : 'lauf-hand');
+    stand.textContent = p.stand;
+
+    const name = document.createElement('span');
+    name.textContent = p.name;
+
+    const min = document.createElement('span');
+    min.className = 'lauf-min';
+    min.textContent = p.minuten ? p.minuten + ' min' : '—';
+
+    z.append(stand, name, min);
+    if (p.grund) {
+      const g = document.createElement('div');
+      g.className = 'lauf-grund';
+      g.textContent = p.grund + ' Fehlt: ' + p.fehlend.join(', ') + '.';
+      z.append(g);
+    }
+    liste.append(z);
+  }
+
+  const schluss = document.createElement('p');
+  schluss.className = 'a-meta';
+  schluss.style.gridColumn = 'auto';
+  schluss.textContent =
+    'Im Vollausbau erreicht diese Kette null Minuten. Was dort nicht steht, ist die ' +
+    'fachliche Auskunft vor dem Kauf — sie hängt nicht an der Bestellung und ist der ' +
+    'eigentliche Rest, der nicht verschwindet.';
+
+  el.append(h2, intro, status, liste, schluss);
+}
+
+function zeichneRecht() {
+  const el = document.getElementById('recht');
+  const betreiber = {}; // noch keine Firmendaten hinterlegt
+  const impressum = erzeugeImpressum(betreiber);
+  const pruefung = pruefeBetreiberdaten(betreiber);
+
+  const h2 = document.createElement('h2');
+  h2.textContent = 'Rechtliches';
+
+  const intro = document.createElement('p');
+  intro.className = 'r-intro';
+  intro.textContent =
+    'Kein Ersatz für geprüfte Rechtstexte — vorgesehen ist ein Anbieter mit Aktualisierungsdienst. ' +
+    'Was hier steht, ist die Zuarbeit: jedes Feld, das ohnehin abgefragt wird, und der Nachweis, ' +
+    'welche Angaben noch fehlen.';
+
+  const status = document.createElement('div');
+  status.className = 'recht-status';
+  status.textContent = pruefung.vollstaendig
+    ? 'Alle Pflichtangaben nach § 5 ECG liegen vor.'
+    : 'Impressum unvollständig — ' + pruefung.fehlend.length + ' Pflichtangaben nach § 5 ECG fehlen.';
+
+  const spalten = document.createElement('div');
+  spalten.className = 'recht-spalten';
+
+  const liste = (titel, eintraege) => {
+    const d = document.createElement('div');
+    const h3 = document.createElement('h3');
+    h3.textContent = titel;
+    const ul = document.createElement('ul');
+    for (const e of eintraege) {
+      const li = document.createElement('li');
+      li.textContent = e;
+      ul.append(li);
+    }
+    d.append(h3, ul);
+    return d;
+  };
+
+  spalten.append(liste('Fehlt noch — nur der Betreiber kann es liefern', pruefung.fehlend));
+  spalten.append(liste('Entfällt im reinen B2B-Geschäft', B2B_ABGRENZUNG.entfaellt));
+  spalten.append(liste('Bleibt trotzdem Pflicht', B2B_ABGRENZUNG.bleibt));
+  spalten.append(
+    liste(
+      'AGB-Gliederung, ' + AGB_GLIEDERUNG.length + ' Punkte',
+      AGB_GLIEDERUNG.map((a) => a.nr + '. ' + a.titel),
+    ),
+  );
+
+  const vorschau = document.createElement('pre');
+  vorschau.textContent = impressum.text;
+
+  el.append(h2, intro, status, spalten, vorschau);
+}
+
+// Der Wortlaut steht in rechtstexte.js, nicht hier: Eine Zusicherung, deren
+// Text an zwei Stellen lebt, weicht irgendwann voneinander ab.
+document.getElementById('k-art14-text').textContent = ZUSICHERUNG_DRITTER.text;
+
+document.getElementById('k-baustelle-an').addEventListener('change', (e) => {
+  document.getElementById('k-baustelle-felder').hidden = !e.target.checked;
+  document.getElementById('k-art14-zeile').hidden = !e.target.checked;
+});
+
+// Die Gebietsauskunft ist eine Auskunft, keine Sperre: Sie beantwortet die
+// Vorsorgegebiets-Frage aus der Negativliste und nennt ihre eigene Grenze
+// (Schutzgebiete nur über die amtliche Liste). Text ausschließlich über
+// textContent — wie überall.
+//
+// Seit Gate 23 beantwortet dasselbe Eingabefeld **zwei** Fragen zweier
+// verschiedener Modelle: Liegt der Bezirk im Radonvorsorgegebiet (Auskunft),
+// und liefern wir dorthin (Sperre). Sie stehen deshalb als zwei Zeilen
+// untereinander und nicht als ein Satz — ein Satz, der beides zugleich
+// beantwortet, wird für eine Antwort gehalten.
+const zeichneGebiet = () => {
+  const bezirk = document.getElementById('k-b-bezirk').value;
+  const liefern = pruefeLieferort({ land: document.getElementById('k-b-land').value, bezirk });
+  document.getElementById('k-liefer-auskunft').textContent = liefern.liefern
+    ? `Liefergebiet: ${bezirk} wird beliefert.`
+    : `Liefergebiet: ${liefern.grund}`;
+  document.getElementById('k-gebiet-auskunft').textContent = vorsorgeauskunft(bezirk).text;
+};
+document.getElementById('k-b-bezirk').addEventListener('input', zeichneGebiet);
+document.getElementById('k-b-land').addEventListener('input', zeichneGebiet);
+zeichneGebiet();
+
+zeichneKatalog();
+zeichneKorb();
+zeichneRecht();
+zeichneLauf();
+</script>

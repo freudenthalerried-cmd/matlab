@@ -1,0 +1,104 @@
+#!/bin/sh
+#
+# Bleibt ein Commit stehen, solange der Bestand nicht committierbar ist?
+#
+# **Der Anlass, 8. September 2026.** Ein Commit dieses Loops rief `git add -A`,
+# während im Hintergrund die Gegenproben liefen. Eine davon hielt
+# `src/schaufenster.js` absichtlich falsch — der Sollwert der
+# Lieferantenbelege um eins verschoben. Die Zeile ging mit und stand
+# fünfunddreißig Minuten lang auf dem Zweig: ein Prüfer, der nichts mehr
+# misst, veröffentlicht.
+#
+# Der Satz stand seit dem 4. September im Kopf von `bin/mutationspruefung.mjs`:
+# „Wer währenddessen committet, committet die Mutation." Er stand dort als
+# Warnung an einen Leser. Gelesen hat ihn niemand, denn committet wird hier
+# von einem Programm.
+#
+#   Eine Regel, die nur als Satz dasteht, gilt für den, der sie liest.
+#
+# **Und am selben Abend zum zweiten Mal, eine Ebene daneben.** Ein Commit ging
+# mit zwei roten Testfällen hinaus, weil `npm test | tail -5` den Ausgang von
+# `tail` liefert und nicht den von `npm`. Die Prüfung war gelaufen, das
+# Ergebnis war rot, und die Verkettung las eine Null.
+#
+#   Ein Ausgang, der durch eine Röhre geht, ist der Ausgang der Röhre.
+#
+# Deshalb stehen beide Prüfungen jetzt im Weg statt in einem Kommentar. Die
+# billige zuerst: Wer eine offene Mutation hat, braucht keine Testläufe.
+set -e
+WURZEL=$(git rev-parse --show-toplevel)
+
+node "$WURZEL/shop/bin/mutationspruefung.mjs" || exit 1
+
+# **Ergänzt am 9. September 2026.** Der Haken sperrte bis heute jeden Commit,
+# sobald das Erzeugnis älter war als die Quelle — `npm test` enthält seit dem
+# 8. September `test/erzeugnisfrische.test.js`, und ein `touch` auf eine
+# Quelldatei genügt. Gemeldet hat er dabei „npm test ist rot".
+#
+#   Eine Sperre, die den Anlass nicht nennt, ist von einer Störung nicht zu
+#   unterscheiden.
+#
+# Gesperrt wird weiter, und zwar zu Recht: `ausgabe/site` liegt im
+# Verzeichnis. Ein Commit mit Quelle von jetzt und Erzeugnis von vorhin hält
+# einen Stand fest, den es nie gab. Aber er sagt jetzt, was zu tun ist.
+if ! node "$WURZEL/shop/bin/erzeugnispruefung.mjs" >/dev/null 2>&1; then
+  echo 'Abbruch: Das Erzeugnis ist älter als die Quelle — der Commit hielte einen Stand fest, den es nie gab.'
+  echo 'Bauen mit: npm --prefix shop run website && npm --prefix shop run build && npm --prefix shop run kampagne && npm --prefix shop run messliste'
+  echo 'Was genau veraltet ist: npm --prefix shop run pruefe-erzeugnis'
+  exit 1
+fi
+
+# Die Ausgabe wird festgehalten statt verworfen: Aus ihr kommt die Zahl der
+# Testfälle, die `pruefe-schaufenster` sonst mit einem zweiten Lauf erhebt.
+TESTAUSGABE=$(cd "$WURZEL/shop" && npm test 2>&1) || {
+  echo 'Abbruch: npm test ist rot — der Commit bleibt stehen.'
+  echo 'Ausgabe ansehen mit: npm --prefix shop test'
+  exit 1
+}
+# **Ergänzt am 9. September 2026.** Der Gesamtlauf fand zwei Testfälle, die
+# über eine Liste laufen und bei leerer Liste nichts prüfen — beide aus den
+# zwei Runden davor, beide von mir, beide durch diesen Haken hindurch
+# committet.
+#
+#   Eine Schleife über nichts ist grün. `npm test` kann das nie finden.
+#
+# 215 ms. Draußen bleibt `pruefe-schaufenster`: 23 Sekunden, und sein Befund
+# ist eine veraltete Zahl, kein falsches Verhalten.
+if ! node "$WURZEL/shop/bin/testpruefung.mjs" >/dev/null 2>&1; then
+  echo 'Abbruch: npm run pruefe-tests hat einen Verdacht — der Commit bleibt stehen.'
+  echo 'Ansehen mit: npm --prefix shop run pruefe-tests'
+  exit 1
+fi
+# **Ergänzt am 9. September 2026, nachmittags.** `pruefe-schaufenster` blieb
+# am Vormittag draußen, weil es 24 Sekunden kostete und „jeden Commit
+# verdoppelt" hätte. Die Rechnung stimmte, die Zahl nicht: 97 % davon war ein
+# zweiter Testlauf — unmittelbar nach dem, den dieser Haken ohnehin macht.
+#
+#   Dieselbe Zahl zweimal zu erheben kostet 24 Sekunden und bringt nichts.
+#
+# Mit der übergebenen Zahl sind es 0,6 s. Der Anlass: Zwei Runden nachdem der
+# Prüfer draußen blieb, ging „39 Prüfer" hinaus, während 40 im Register standen
+# — gefunden erst vom 39-Minuten-Gesamtlauf.
+# **Gate 38, 11. September 2026.** Die Begründung steht in `src/haken.js`.
+# Kurz: Der Gesamtlauf dauert 72 Minuten und läuft nie zwischen zwei Commits.
+# In ihm standen drei Prüfer rot, einer seit dem 25. August, und kein Commit
+# hat das aufgehalten.
+#
+#   Ein Prüfer, der rot ist und nichts aufhält, ist kein Prüfer, sondern eine
+#   Notiz.
+#
+# Gemessen: 47 der 55 Prüfer bleiben unter einer Sekunde, zusammen fünf. Wer
+# hier läuft, rechnet der Schnelllauf aus dem Register aus; wer nicht,
+# steht mit Grund und gestoppter Laufzeit in `NICHT_IM_HAKEN`.
+if ! node "$WURZEL/shop/bin/schnelllauf.mjs"; then
+  echo 'Abbruch: Ein Prüfer des Schnelllaufs ist rot — der Commit bleibt stehen.'
+  echo 'Ansehen mit: npm --prefix shop run schnelllauf'
+  exit 1
+fi
+
+ZAHL=$(printf '%s\n' "$TESTAUSGABE" | sed -n 's/^# tests \([0-9]*\)$/\1/p' | tail -1)
+if [ -n "$ZAHL" ] && ! node "$WURZEL/shop/bin/schaufensterpruefung.mjs" "--testfaelle=$ZAHL" >/dev/null 2>&1; then
+  echo 'Abbruch: npm run pruefe-schaufenster meldet eine überholte Kennzahl.'
+  echo "Ansehen mit: npm --prefix shop run pruefe-schaufenster -- --testfaelle=$ZAHL"
+  exit 1
+fi

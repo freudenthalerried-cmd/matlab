@@ -1,0 +1,378 @@
+<title>Der Weg zum ersten Klick</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --ground: #E7E8E3;
+    --surface: #F6F6F3;
+    --surface-2: #DDDFD8;
+    --ink: #191B19;
+    --ink-2: #3F443F;
+    --muted: #6E746C;
+    --line: #C8CBC2;
+    --line-strong: #A9AEA3;
+    --ocker: #8A6A2F;
+    --ocker-soft: #EFE4CC;
+    --moos: #3F6B52;
+    --moos-soft: #DFEAE2;
+    --ziegel: #A33F2A;
+    --ziegel-soft: #F2DCD5;
+    --slab: "Bitter", Georgia, "Iowan Old Style", serif;
+    --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #141614;
+      --surface: #1C1F1C;
+      --surface-2: #262A26;
+      --ink: #E9EBE6;
+      --ink-2: #C2C7BF;
+      --muted: #8D948A;
+      --line: #2E332E;
+      --line-strong: #434941;
+      --ocker: #D3A860;
+      --ocker-soft: #322913;
+      --moos: #86B79A;
+      --moos-soft: #1E2A22;
+      --ziegel: #DE8C74;
+      --ziegel-soft: #35201A;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #141614;
+    --surface: #1C1F1C;
+    --surface-2: #262A26;
+    --ink: #E9EBE6;
+    --ink-2: #C2C7BF;
+    --muted: #8D948A;
+    --line: #2E332E;
+    --line-strong: #434941;
+    --ocker: #D3A860;
+    --ocker-soft: #322913;
+    --moos: #86B79A;
+    --moos-soft: #1E2A22;
+    --ziegel: #DE8C74;
+    --ziegel-soft: #35201A;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 62rem;
+    margin: 0 auto;
+    padding: clamp(2rem, 5vw, 4rem) clamp(1.1rem, 4vw, 2.5rem) 5rem;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(2.2rem, 4vw, 3.2rem);
+  }
+  .prose { max-width: 38rem; }
+  p { margin: 0; }
+  h1, h2, h3 { font-family: var(--slab); font-weight: 600; margin: 0; text-wrap: balance; }
+  h1 { font-size: clamp(2rem, 5vw, 2.8rem); line-height: 1.06; letter-spacing: -0.02em; }
+  h2 { font-size: clamp(1.2rem, 2.5vw, 1.45rem); line-height: 1.2; }
+  h3 { font-family: var(--sans); font-size: 0.98rem; font-weight: 600; }
+
+  header { display: flex; flex-direction: column; gap: 1rem; }
+  .eyebrow {
+    font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .lede { font-size: 1.08rem; color: var(--ink-2); }
+  hr.rule { border: 0; height: 2px; background: var(--line-strong); margin: 0; }
+  section { display: flex; flex-direction: column; gap: 1.1rem; }
+  .note { font-size: 0.87rem; color: var(--muted); }
+
+  /* Sofort — zwei Handgriffe */
+  .sofort { display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: 1px; background: var(--line); border: 2px solid var(--ziegel); }
+  .sofort > div { background: var(--ziegel-soft); padding: 1.2rem 1.3rem; display: flex; flex-direction: column; gap: 0.45rem; }
+  .sofort .dauer { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ziegel); }
+  .sofort p { font-size: 0.92rem; color: var(--ink-2); }
+
+  /* Bauablauf: Stufen mit Spuren */
+  .ablauf { display: flex; flex-direction: column; gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  .stufe { background: var(--surface); display: grid; grid-template-columns: 8.5rem 1fr; gap: 0 1.3rem; padding: 1.2rem 1.3rem; align-items: start; }
+  @media (max-width: 44rem) { .stufe { grid-template-columns: 1fr; gap: 0.7rem; } }
+  .stufe-kopf { display: flex; flex-direction: column; gap: 0.25rem; }
+  .stufe-nr { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ocker); }
+  .stufe-kosten { font-family: var(--mono); font-size: 1.15rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .stufe-dauer { font-size: 0.8rem; color: var(--muted); }
+  .stufe-inhalt { display: flex; flex-direction: column; gap: 0.7rem; }
+  .spuren { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 0.8rem; }
+  .spur { border-left: 3px solid var(--line-strong); padding: 0.15rem 0 0.15rem 0.8rem; display: flex; flex-direction: column; gap: 0.3rem; }
+  .spur.du { border-left-color: var(--ziegel); }
+  .spur.ich { border-left-color: var(--moos); }
+  .spur-wer { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; }
+  .spur.du .spur-wer { color: var(--ziegel); }
+  .spur.ich .spur-wer { color: var(--moos); }
+  .spur ul { margin: 0; padding-left: 1rem; font-size: 0.9rem; color: var(--ink-2); display: flex; flex-direction: column; gap: 0.22rem; }
+  .sperre { font-size: 0.85rem; color: var(--ocker); font-family: var(--mono); }
+
+  /* Offene Fragen */
+  .fragen { display: flex; flex-direction: column; gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  .frage { background: var(--surface); padding: 1rem 1.2rem; display: grid; grid-template-columns: 1fr auto; gap: 0.3rem 1rem; align-items: baseline; }
+  .frage .f { font-weight: 600; font-size: 0.96rem; }
+  .frage .wirkung { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); text-align: right; white-space: nowrap; }
+  .frage .warum { grid-column: 1 / -1; font-size: 0.87rem; color: var(--ink-2); }
+  @media (max-width: 34rem) { .frage { grid-template-columns: 1fr; } .frage .wirkung { text-align: left; } }
+  .frage.erledigt { background: var(--moos-soft); }
+  .frage.erledigt .f { color: var(--ink-2); text-decoration: line-through; text-decoration-color: var(--line-strong); text-decoration-thickness: 1px; }
+  .frage.erledigt .wirkung { color: var(--moos); font-weight: 600; }
+  .frage .antwort { grid-column: 1 / -1; font-size: 0.87rem; color: var(--ink); }
+  .frage .antwort strong { color: var(--moos); }
+
+  .merk { border-left: 3px solid var(--ocker); background: var(--surface); padding: 1rem 1.2rem; font-size: 1rem; }
+  .fertig { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  .fertig > div { background: var(--moos-soft); padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.2rem; }
+  .fertig .was { font-size: 0.9rem; font-weight: 600; }
+  .fertig .zu { font-size: 0.8rem; color: var(--ink-2); }
+  footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--line); padding-top: 1rem; display: flex; flex-direction: column; gap: 0.4rem; }
+  code { font-family: var(--mono); font-size: 0.87em; }
+  strong { font-weight: 600; }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Baustoffhandel · Ablauf ab 22. August 2026</p>
+    <h1>Der Weg zum ersten Klick</h1>
+    <p class="lede prose">Der Shop rechnet, die Kampagne ist geplant, die Prüfwerkzeuge laufen.
+      Was zwischen heute und der ersten bezahlten Anzeige liegt, sind vier Stufen — und zwei
+      Handgriffe, die vor allem anderen kommen.</p>
+    <hr class="rule">
+  </header>
+
+  <section>
+    <h2>Zuerst, heute</h2>
+    <div class="sofort">
+      <div>
+        <span class="dauer">2 Minuten · nur du</span>
+        <h3>Repository auf privat stellen</h3>
+        <p>Es steht auf öffentlich. Sobald echte Einkaufspreise hineinkommen, lesen sie
+          deine Lieferanten und dein Wettbewerb mit. Deshalb steht bis jetzt kein einziger
+          Einkaufspreis darin.</p>
+      </div>
+      <div>
+        <span class="dauer">10 Minuten · nur du</span>
+        <h3>Die 17 Rechnungs-PDFs in Drive ablegen</h3>
+        <p>Aus Gmail bekomme ich Anhänge nicht heraus, aus Drive schon. Diese siebzehn
+          Poschacher-Rechnungen <em>sind</em> dein Katalog — ohne sie steht alles Weitere still.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Vier Stufen bis zur ersten Anzeige</h2>
+    <div class="ablauf">
+
+      <div class="stufe">
+        <div class="stufe-kopf">
+          <span class="stufe-nr">Stufe 1</span>
+          <span class="stufe-kosten">0 €</span>
+          <span class="stufe-dauer">1–2 Tage</span>
+        </div>
+        <div class="stufe-inhalt">
+          <h3>Katalog aus den Rechnungen</h3>
+          <div class="spuren">
+            <div class="spur du">
+              <span class="spur-wer">Du</span>
+              <ul>
+                <li>PDFs ablegen</li>
+                <li>Zuschlagsfrage beantworten</li>
+              </ul>
+            </div>
+            <div class="spur ich">
+              <span class="spur-wer">Ich</span>
+              <ul>
+                <li>Positionen auslesen, Handelsware von Nebenkosten trennen</li>
+                <li>Jeden Artikel gegen den Marktpreis prüfen</li>
+                <li>Sortiment nach Vergleichbarkeit ordnen</li>
+              </ul>
+            </div>
+          </div>
+          <p class="sperre">→ Ergebnis: die Artikel, die sich tragen — und die, die rausfallen.</p>
+        </div>
+      </div>
+
+      <div class="stufe">
+        <div class="stufe-kopf">
+          <span class="stufe-nr">Stufe 2</span>
+          <span class="stufe-kosten">~5 €</span>
+          <span class="stufe-dauer">1 Woche</span>
+        </div>
+        <div class="stufe-inhalt">
+          <h3>Shop erreichbar machen</h3>
+          <div class="spuren">
+            <div class="spur du">
+              <span class="spur-wer">Du</span>
+              <ul>
+                <li>Domain: <code>shop.freudenthaler-bau.at</code> einrichten</li>
+                <li>Firmendaten und UID liefern</li>
+                <li>Liefergebiet beziffern</li>
+                <li>Rechtstexte anwaltlich prüfen lassen</li>
+              </ul>
+            </div>
+            <div class="spur ich">
+              <span class="spur-wer">Ich</span>
+              <ul>
+                <li><s>Artikelseiten mit Preis</s> — 46 Seiten stehen</li>
+                <li><s>Rechtsseiten als Gerüst</s> — 5 Seiten stehen</li>
+                <li>Impressum aus deinen vier Angaben füllen</li>
+                <li>Frachtstaffel für das Liefergebiet</li>
+              </ul>
+            </div>
+          </div>
+          <p class="sperre">→ Sperre: ohne Impressum lehnt Google den Shop ab. Vier Angaben
+            fehlen — E-Mail, Telefon, UID, Gewerbewortlaut. Sie stehen auf der Seite als
+            farbige Marken, damit sie niemand übersieht.</p>
+        </div>
+      </div>
+
+      <div class="stufe">
+        <div class="stufe-kopf">
+          <span class="stufe-nr">Stufe 3</span>
+          <span class="stufe-kosten">0 €</span>
+          <span class="stufe-dauer">1–2 Wochen Wartezeit</span>
+        </div>
+        <div class="stufe-inhalt">
+          <h3>Merchant Center und Produktfeed</h3>
+          <div class="spuren">
+            <div class="spur du">
+              <span class="spur-wer">Du</span>
+              <ul>
+                <li>Merchant-Konto anlegen</li>
+                <li><code>baustoffe-muehlviertel.at</code> prüfen und weiterleiten</li>
+              </ul>
+            </div>
+            <div class="spur ich">
+              <span class="spur-wer">Ich</span>
+              <ul>
+                <li>Feed erzeugen (<code>npm run veroeffentlichung</code>)</li>
+                <li>Artikelkennungen ergänzen</li>
+                <li><code>robots.txt</code> und <code>llms.txt</code> ausliefern</li>
+              </ul>
+            </div>
+          </div>
+          <p class="sperre">→ Google prüft. Ein gesperrtes Konto ist schwerer freizubekommen als eines, das nie eröffnet wurde.</p>
+        </div>
+      </div>
+
+      <div class="stufe">
+        <div class="stufe-kopf">
+          <span class="stufe-nr">Stufe 4</span>
+          <span class="stufe-kosten">300 €</span>
+          <span class="stufe-dauer">4 Wochen</span>
+        </div>
+        <div class="stufe-inhalt">
+          <h3>Messkampagne — der erste Euro, der ausgegeben wird</h3>
+          <div class="spuren">
+            <div class="spur du">
+              <span class="spur-wer">Du</span>
+              <ul>
+                <li>Budget freigeben</li>
+                <li>Konto anlegen und verknüpfen</li>
+              </ul>
+            </div>
+            <div class="spur ich">
+              <span class="spur-wer">Ich</span>
+              <ul>
+                <li>Kampagnen, Anzeigengruppen, Ausschlussliste einrichten</li>
+                <li>Gebote aus dem Deckungsbeitrag ableiten</li>
+                <li>Nach 300 € abrechnen</li>
+              </ul>
+            </div>
+          </div>
+          <p class="sperre">→ Abbruchregel steht vorab: Trägt sie sich nach 300 € nicht, wird abgeschaltet, nicht optimiert.</p>
+        </div>
+      </div>
+
+    </div>
+    <p class="note prose">Die Reihenfolge ist keine Empfehlung, sondern eine Abhängigkeitskette:
+      Jede Stufe braucht das Ergebnis der vorigen. Zusammen ungefähr sechs Wochen, davon zwei
+      reine Wartezeit auf Google.</p>
+  </section>
+
+  <section>
+    <h2>Zwei Fragen offen, zwei beantwortet</h2>
+    <div class="fragen">
+      <div class="frage erledigt">
+        <span class="f">Sind 25 % Zuschlag auf den Einkauf gemeint — oder 25 % Marge?</span>
+        <span class="wirkung">beantwortet</span>
+        <span class="antwort"><strong>25 % Marge</strong>, also 33,3 % Zuschlag. Der nötige Monatsumsatz fällt
+          von 72.740 € auf <strong>45.356 €</strong> (Kartenzahlung; mit dem entschiedenen
+          Zahlweg EPS: 67.826 € auf 43.396 €), die Bestellungen von 112 auf 70 — und der Werbeanteil
+          trägt jetzt bis 23 % statt nur bis 18 %. Das war die Frage mit der größten Wirkung, und sie ist
+          zugunsten des Modells ausgegangen.</span>
+      </div>
+      <div class="frage">
+        <span class="f">Wie weit reicht „umliegender Bereich"?</span>
+        <span class="wirkung">Fracht + Anzeigengebiet</span>
+        <span class="warum">Als Kilometerradius oder Bezirksliste. Daran hängen die Frachtstaffel, die
+          Google-Gebietseinstellung und die maschinenlesbare Liefergebietsangabe.</span>
+      </div>
+      <div class="frage erledigt">
+        <span class="f">Läuft der Shop über die bestehende GmbH?</span>
+        <span class="wirkung">geklärt genug</span>
+        <span class="antwort">Die <strong>Freudenthaler Bau GmbH</strong> (FN 347938z) hat den
+          <strong>Handel mit Baustoffen bereits als Gewerbe eingetragen</strong> — der Shop wäre also kein
+          neues Unternehmen, sondern ein zweiter Vertriebsweg des bestehenden. Damit sind Impressum, UID und
+          Merchant-Konto keine offene Baustelle mehr. Bestätigen musst du es trotzdem einmal ausdrücklich.</span>
+      </div>
+      <div class="frage">
+        <span class="f">Bleibt Radon im Sortiment?</span>
+        <span class="wirkung">Sortiment</span>
+        <span class="warum">Die Radonvorsorge-Analyse liegt fertig vor und war die ursprüngliche Nische.
+          Sie kann als Sortimentsteil weiterlaufen oder ganz entfallen.</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Die Zahl, die alles regiert</h2>
+    <div class="merk">
+      <strong>Rund 400 € Warenkorb, gut zehn Sack.</strong> Darunter trägt eine gelieferte
+      Bestellung ihre Fracht nicht — und darunter ist auch kein Klick bezahlbar, weil der
+      Deckungsbeitrag den Klickpreis nicht deckt. Zwei getrennte Rechnungen, dieselbe
+      Schwelle. Die bessere Marge hat sie von 475 € auf etwa 400 € gedrückt, aber nicht
+      beseitigt. Alles, was der Shop tut, muss auf Bestellungen über dieser Größe zielen:
+      Mindestbestellwert, verrechnete Fracht, Anzeigen für Baustellen statt für Heimwerker.
+    </div>
+  </section>
+
+  <section>
+    <h2>Was schon steht</h2>
+    <div class="fertig">
+      <div><span class="was">Rechenkern</span><span class="zu">566 Testfälle, alle grün</span></div>
+      <div><span class="was">Website</span><span class="zu">77 Seiten, kein toter Link</span></div>
+      <div><span class="was">Katalog</span><span class="zu">46 echte Artikel, Preise bestätigt</span></div>
+      <div><span class="was">Rechtsseiten</span><span class="zu">Gerüst mit sichtbaren Lücken</span></div>
+      <div><span class="was">Gate 20</span><span class="zu">sperrt Verlustbestellungen</span></div>
+      <div><span class="was">Gate 21</span><span class="zu">Zahlungsziel ≤ Skontofrist</span></div>
+      <div><span class="was">Gate 22</span><span class="zu">nur unter Liste kommt in den Shop</span></div>
+      <div><span class="was">Produktfeed</span><span class="zu">43 Einträge, nicht einreichbar</span></div>
+      <div><span class="was">Kampagne</span><span class="zu">importfertig, pausiert</span></div>
+    </div>
+    <p class="note prose">Die Vorarbeit ist gemacht. Was fehlt, sind fast nur noch
+      Entscheidungen und Daten — und die liegen bei dir. <strong>Eine einzige Ausnahme:</strong>
+      die GTIN je Artikel. Sie ist der letzte Punkt, der echte Arbeit ist und nicht nur eine
+      Entscheidung; ohne sie läuft die Suchkampagne, Google Shopping nicht. Sie zu beschaffen
+      heißt eine Anfrage an Lieferant oder Hersteller — und eine erfundene GTIN führt nicht zur
+      Ablehnung des Artikels, sondern zur Sperre des Kontos.</p>
+  </section>
+
+  <footer>
+    <p>Herleitungen im Projektverzeichnis <code>docs/baustoff-shop/</code>: Kalkulation in
+      <code>marge-25-prozent.md</code>, Marktvergleich in <code>erste-echte-zahlen.md</code>,
+      Kampagne in <code>google-kampagne.md</code>, Domain in <code>domainwahl.md</code>.</p>
+    <p>Nichts ist gegründet, verkauft oder eingenommen. Es wurde nichts versendet und nichts
+      ausgegeben. Keine Steuer- oder Rechtsberatung.</p>
+  </footer>
+</div>

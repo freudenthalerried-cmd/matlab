@@ -1,0 +1,203 @@
+{
+  "_hinweis": "FIKTIVE Beispielmessung als Vorlage — erfundene Volumina und Difficulty-Werte, sie belegen nichts. Echte Messwerte in eine Kopie von data/messliste.json eintragen und mit npm run suchvolumen -- <datei> auswerten.",
+  "markt": "AT",
+  "cluster": [
+    {
+      "id": "neubaupflicht",
+      "name": "Neubaupflicht und Norm",
+      "gruppe": "A",
+      "keywords": [
+        {
+          "begriff": "radonvorsorge neubau",
+          "volumen": 90,
+          "kd": 12
+        },
+        {
+          "begriff": "önorm s 5280-2",
+          "volumen": 40,
+          "kd": 5
+        },
+        {
+          "begriff": "radonvorsorgegebiet",
+          "volumen": 70,
+          "kd": 8
+        },
+        {
+          "begriff": "radonschutzgebiet",
+          "volumen": 30,
+          "kd": 7
+        },
+        {
+          "begriff": "radon neubau pflicht",
+          "volumen": 20,
+          "kd": 10
+        },
+        {
+          "begriff": "radonschutz neubau",
+          "volumen": 30,
+          "kd": 11
+        }
+      ]
+    },
+    {
+      "id": "ausfuehrung",
+      "name": "Ausführung und Material",
+      "gruppe": "A",
+      "keywords": [
+        {
+          "begriff": "radondrainage",
+          "volumen": 110,
+          "kd": 14
+        },
+        {
+          "begriff": "radondichte folie",
+          "volumen": 50,
+          "kd": 9
+        },
+        {
+          "begriff": "radon abdichtung",
+          "volumen": 60,
+          "kd": 12
+        },
+        {
+          "begriff": "radonsperre",
+          "volumen": 40,
+          "kd": 10
+        },
+        {
+          "begriff": "gasdichte durchführung",
+          "volumen": 30,
+          "kd": 18
+        },
+        {
+          "begriff": "radonschutz bodenplatte",
+          "volumen": 20,
+          "kd": 8
+        }
+      ]
+    },
+    {
+      "id": "foerderung",
+      "name": "Förderung Oberösterreich",
+      "gruppe": "A",
+      "keywords": [
+        {
+          "begriff": "radon förderung oberösterreich",
+          "volumen": 40,
+          "kd": 6
+        },
+        {
+          "begriff": "radondrainage förderung",
+          "volumen": 20,
+          "kd": 4
+        },
+        {
+          "begriff": "radonschutz förderung",
+          "volumen": 30,
+          "kd": 5
+        }
+      ]
+    },
+    {
+      "id": "messen",
+      "name": "Messen und Einordnen",
+      "gruppe": "B",
+      "keywords": [
+        {
+          "begriff": "radon messen",
+          "volumen": 260,
+          "kd": 22
+        },
+        {
+          "begriff": "radonmessung kosten",
+          "volumen": 90,
+          "kd": 19
+        },
+        {
+          "begriff": "radonmessung österreich",
+          "volumen": 70,
+          "kd": 15
+        },
+        {
+          "begriff": "radon grenzwert österreich",
+          "volumen": 50,
+          "kd": 9
+        },
+        {
+          "begriff": "radonwert einordnen",
+          "volumen": 10,
+          "kd": 3
+        }
+      ]
+    },
+    {
+      "id": "sanierung",
+      "name": "Sanierung im Bestand",
+      "gruppe": "B",
+      "keywords": [
+        {
+          "begriff": "radonsanierung",
+          "volumen": 170,
+          "kd": 24
+        },
+        {
+          "begriff": "radon im keller",
+          "volumen": 120,
+          "kd": 17
+        },
+        {
+          "begriff": "radon absaugung",
+          "volumen": 30,
+          "kd": 12
+        },
+        {
+          "begriff": "radonbrunnen",
+          "volumen": 20,
+          "kd": 8
+        },
+        {
+          "begriff": "radon keller abdichten",
+          "volumen": 40,
+          "kd": 21
+        }
+      ]
+    },
+    {
+      "id": "feuchte",
+      "name": "Kellersanierung und Feuchte (Reichweite)",
+      "gruppe": "C",
+      "keywords": [
+        {
+          "begriff": "kellersanierung",
+          "volumen": 2400,
+          "kd": 55
+        },
+        {
+          "begriff": "kellersanierung kosten",
+          "volumen": 880,
+          "kd": 47
+        },
+        {
+          "begriff": "aufsteigende feuchtigkeit",
+          "volumen": 1300,
+          "kd": 38
+        },
+        {
+          "begriff": "keller abdichten",
+          "volumen": 720,
+          "kd": 44
+        },
+        {
+          "begriff": "bauwerksabdichtung",
+          "volumen": 480,
+          "kd": 41
+        },
+        {
+          "begriff": "keller feucht was tun",
+          "volumen": 590,
+          "kd": 28
+        }
+      ]
+    }
+  ]
+}

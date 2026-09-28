@@ -1,0 +1,10 @@
+{
+  "_hinweis": "Zuordnung der Lieferantensparten auf die sieben Warengruppen des Shops. Sie wird EINMAL von Hand gefüllt, nicht je Artikel: Ein Lieferant gliedert nach seinem Sortiment, dieser Shop nach der Aufgabe auf der Baustelle. Was hier nicht steht, wird beim Einlesen als offene Sparte gemeldet — mit Artikelzahl, damit die Entscheidung nach Gewicht getroffen werden kann.",
+  "_regel": "Eine Sparte ohne Zuordnung ist ein Fehler und kein 'Sonstiges'. Am 29.08. gemessen: Ein Regelwerk erkannte 0 von 16 Warengruppen aus der Artikelbezeichnung; die Gruppe ist eine Entscheidung dieses Shops.",
+  "_datenstand": "Stand 2026-08-30. LEER — die Sparten des Lieferanten sind noch nicht bekannt. Sie stehen in der Artikelliste, um die gebeten wurde; das Werkzeug meldet sie beim ersten Probelauf.",
+  "_beispiel": {
+    "Waermedaemmverbundsysteme": "WDVS",
+    "Kaminsysteme": "Kamin"
+  },
+  "sparten": {}
+}
