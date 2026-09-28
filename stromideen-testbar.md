@@ -29,4 +29,80 @@ Aus der Gesamtliste (`stromideen_alle.csv`, 1.944 Kombinationen) wurde alles ges
 - **Idee 1:** Landstrom-Steckdosen für Kühlauflieger an LKW-Parkplätzen sind in Österreich kaum zu finden. Gleichzeitig kommen **vollelektrische Kühlauflieger** (TIP Group mit SolarEdge und Mitsubishi, Test bei Zippel Fresh). Diese brauchen beim Parken zwingend Strom. Die Nachfrage steigt also. [verkehrsrundschau.de](https://www.verkehrsrundschau.de/nachrichten/nfz-fuhrpark/zippel-testet-e-reefer-3612140)
 - **Idee 4:** Unter Parkplätzen gibt es bisher nur **Niedertemperatur-Erdsondenspeicher** (z. B. Stockton College, USA, 400 Bohrungen unter 1,4 ha Parkplatz, seit 1995). Einen **Hochtemperatur-Schotterspeicher unter einer befestigten Fläche, geladen mit PV-Überschuss**, habe ich nicht gefunden. [pv magazine](https://www.pv-magazine.com/2022/06/30/storing-solar-power-via-borehole-thermal-energy-storage/), [Seasonal thermal energy storage](https://en.wikipedia.org/wiki/Seasonal_thermal_energy_storage)
 
-Wird in weiteren Runden verfeinert (Preise, Testanleitungen).
+## Runde 2: Stücklisten, Testanleitung, Messplan (Ideen 1–4)
+
+Preise sind Richtwerte Österreich 2026 (Baumarkt, Elektro-Großhandel, online), ohne Gewähr.
+
+### Idee 1: Landstrom für Kühlauflieger
+**Technik:** Kühlauflieger mit Electric Standby brauchen eine **CEE-Steckdose 32 A / 400 V, 5-polig** (16 A reicht nicht). Typischer Verbrauch im Stand: ca. 3–6 kW im Mittel, bis ca. 10 kW beim Herunterkühlen. Genaue Werte stehen am Typenschild des Aggregats (Carrier, Thermo King).
+
+| Teil | Menge | ca. Preis |
+|---|---|---|
+| CEE-Säule oder Wandverteiler IP44/IP54, 2 × CEE 32 A | 1 | 300–600 € |
+| FI-Schutzschalter + Leitungsschutz je Abgang | 2 | 200–300 € |
+| MID-geeichter Drehstromzähler je Abgang | 2 | 150–300 € |
+| Kabel NYY-J 5 × 6 mm² (je nach Entfernung) | 30 m | 250–300 € |
+| Elektriker, Prüfprotokoll, Meldung Netz OÖ | – | 800–2.000 € |
+| **Summe Test mit 2 Stellplätzen** | | **ca. 1.700–3.500 €** |
+
+**Test (4 Wochen):**
+1. 2 Stellplätze mit Steckdose ausstatten, am Platz und in der Google-Ads-Kampagne als „LKW-Stellplatz mit Kühlstrom“ bewerben.
+2. Jede Nacht Zählerstand, Belegung und Aggregat-Typ notieren.
+3. **Abrechnung zuerst als Pauschale** in der Stellplatzmiete (z. B. „Stellplatz inkl. Kühlstrom“). Das ist einfacher als kWh-Verkauf. Ob du Strom an Dritte nach kWh weiterverrechnen darfst, vorher mit dem Netzbetreiber bzw. der WKO klären.
+4. Auswertung: kWh je Nacht, Auslastung, Mehrerlös gegenüber Stellplatz ohne Strom.
+
+### Idee 2: Mini-Schotterspeicher 1 m³ (Wiese)
+**Ziel:** Ladeverhalten, Wärmeverlust und abrufbare Wärme messen. Für den ersten Test nur **bis ca. 250 °C**, nicht 500 °C.
+
+| Teil | Menge | ca. Preis |
+|---|---|---|
+| Schotter 16/32, gewaschen | ca. 1,6 t | 30–60 € |
+| Steinwolle-Platten bis 700 °C, 20 cm, allseitig | ca. 8 m² | 150–250 € |
+| Außenhülle: Stahlblechkiste oder Gitterbox mit Blech | 1 | 50–150 € (Werkstatt) |
+| Rohrheizkörper 2 kW 230 V in Stahl-Schutzrohr | 1 | 60–100 € |
+| Temperaturbegrenzer/Sicherheitsthermostat bis 300 °C | 1 | 40–80 € |
+| PV-Überschuss-Schaltung (z. B. Shelly Pro 1PM + Schütz) | 1 | 60–100 € |
+| Thermoelemente Typ K + Datenlogger (5 Kanäle) | 1 Satz | 60–120 € |
+| Lüfter + Luftrohr für Entladung | 1 | 40–80 € |
+| **Summe** | | **ca. 500–950 €** |
+
+**Speicherinhalt (Rechnung):** 1.600 kg × 0,84 kJ/(kg·K) × 200 K ≈ 270 MJ ≈ **75 kWh Wärme**.
+
+**Test:**
+1. Thermoelemente einbauen: Mitte, halber Radius, Rand, Dämmung außen, Luftaustritt.
+2. 3 Sonnentage laden, nur mit PV-Überschuss. Alle 10 Minuten Temperaturen loggen und die zugeführte Energie aus dem Zähler notieren.
+3. 7 Tage **nicht entladen**. Aus der Abkühlkurve den Wärmeverlust (W/K) berechnen.
+4. Entladen: Lüfter an, Luftaustrittstemperatur und Luftmenge messen. Daraus die abgerufene Wärme berechnen und mit der geladenen vergleichen.
+5. **Sicherheit:** nicht brennbare Unterlage, 1 m Abstand zu Holz/Gras, Übertemperaturabschaltung testen, bevor der Speicher unbeaufsichtigt läuft.
+
+### Idee 3: Geopolymer-Superkondensator
+Rezept und Messplan stehen bereits in `beton-superkondensator-versuchsreihe.xlsx` (Blätter „Rezept Geopolymer“ und „Versuchsreihe“).
+
+| Teil | Menge | ca. Preis |
+|---|---|---|
+| Hüttensandmehl (GGBS) | 25 kg | 15–30 € |
+| Wasserglas (Natriumsilikat) | 1 kg | 10–20 € |
+| Natriumhydroxid (NaOH) | 1 kg | 10–15 € |
+| Kaliumhydroxid (KOH) | 0,5 kg | 10–15 € |
+| Ruß Ketjenblack EC-600JD oder Vulcan XC72 | 100–200 g | 40–80 € |
+| SDS (Natriumdodecylsulfat) | 100 g | 10–15 € |
+| Edelstahlgewebe V4A | 0,5 m² | 20–40 € |
+| Agar-Agar, KCl, Filterpapier | – | 20–30 € |
+| Schutzbrille, Nitrilhandschuhe, FFP2 | – | 20 € |
+| **Summe** | | **ca. 160–270 €** |
+
+**Test:** Zuerst die 9 Zellen aus `top10-varianten.md` (Rang 4, Rang 2, CEM-I-Referenz, je 3 Zellen).
+
+### Idee 4: Parkfläche als Speicherdeckel
+**Erst nach Idee 2.** Wenn der Mini-Speicher zeigt, dass Verlust und Aufwand passen:
+1. Hochrechnen auf 10 × 10 × 1 m unter einem Teil der Parkfläche (ca. 12 MWh Wärme, siehe eigener Chat „Sandspeicher im Fundament“).
+2. Statik der Deckschicht (LKW-Achslast 11,5 t) und maximale Temperatur an der Unterseite der Tragschicht prüfen lassen.
+3. Patentrecherche beim Österreichischen Patentamt, bevor gebaut wird.
+
+## Quellen Runde 2
+- [Reefer Trailer Power Requirements (ColdStorageFinder)](https://www.coldstoragefinder.com/guide/reefer-trailer-power-requirements)
+- [Thermo King: Trailer Electrification Position Paper](https://www.thermoking.com/content/dam/thermoking/documents/marketing/Trailer-electrification-position-paper-Thermo-King.pdf)
+- [Thermo King High-Output Electric Standby](https://www.fleetequipmentmag.com/thermo-king-offers-high-output-electric-standby-option/)
+- [Electric-Powered Reefer Units Gaining Momentum (TT)](https://www.ttnews.com/articles/electric-powered-reefer-units-gaining-momentum)
+
+Runde 3 folgt: Wirtschaftlichkeit Landstrom und PV-Carport, endgültige Reihenfolge, Startempfehlung.
