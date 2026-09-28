@@ -12,7 +12,7 @@
 </head>
 <body>
 <header>
-  <h1>Raumplan</h1>
+  <div class="hrow"><h1>Raumplan</h1><button id="helpBtn" class="help">? Anleitung</button></div>
   <nav>
     <button data-t="auf" class="on">1 Aufnahme</button>
     <button data-t="mess">2 Vermessen</button>
@@ -23,6 +23,7 @@
 <main>
   <!-- 1 AUFNAHME -->
   <section id="auf">
+    <p class="intro">Hier nimmst du den Raum auf: Marken drucken und auslegen, fotografieren, auswerten. Unsicher? Oben auf <b>? Anleitung</b> tippen.</p>
     <div class="card pgcard">
       <h3>A · Automatisch mit Zielmarken – ohne Handmessung (±1–3 mm)</h3>
       <ol class="small">
@@ -88,6 +89,7 @@
 
   <!-- 2 VERMESSEN -->
   <section id="mess" hidden>
+    <p class="intro">Nur für den <b>manuellen Weg B</b> (ohne Zielmarken): Standbild wählen, Referenzrechteck und Raumecken antippen. Mit Zielmarken (Weg A) brauchst du diesen Schritt nicht.</p>
     <div class="row">
       <select id="snapSel"></select>
       <div class="seg">
@@ -145,6 +147,7 @@
 
   <!-- 3 PLAN -->
   <section id="plan" hidden>
+    <p class="intro">Dein Grundriss. Raum antippen zum Bearbeiten (Name, Fenster, Türen, Wände), Raum ziehen zum Verschieben. Räume aus den Fotos kommen über „In Plan übernehmen“ hierher.</p>
     <div class="row">
       <input id="nName" placeholder="Raumname" size="10">
       <input id="nW" inputmode="decimal" placeholder="Breite m" size="6">
@@ -159,6 +162,7 @@
 
   <!-- 4 EINREICHUNG -->
   <section id="proj" hidden>
+    <p class="intro">Plankopf ausfüllen und den fertigen Plan als PDF, DXF oder Aufmaßprotokoll ausgeben. Das Projekt bleibt am Handy gespeichert.</p>
     <form id="pform" class="grid">
       <label>Bauvorhaben<input name="bv"></label>
       <label>Bauwerber / Bauherr<input name="bh"></label>
@@ -204,5 +208,6 @@
 <script src="marker.js"></script>
 <script src="pg.js"></script>
 <script src="app.js"></script>
+<script src="guide.js"></script>
 </body>
 </html>
