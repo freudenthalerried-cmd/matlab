@@ -10,7 +10,7 @@
     --gold: #ffcc33; --txt: #fff;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { margin: 0; height: 100%; background: var(--water); overflow: hidden; }
+  html, body { margin: 0; height: 100%; background: var(--water); overflow: hidden; overscroll-behavior: none; -webkit-touch-callout: none; }
   body { font-family: "Trebuchet MS", system-ui, sans-serif; color: var(--txt); user-select: none; }
   #app { position: relative; height: 100dvh; max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; }
   #stage { position: relative; flex: 1; min-height: 0; }
@@ -201,7 +201,7 @@
   const persist = () => { try { localStorage.setItem('hexreg', JSON.stringify(save)); } catch (e) {} };
 
   // ---------- Karte ----------
-  let parts = [], shake = 0, cells, cellMap, waterMap, pathCache, regions, B, units, queues, shots, pops, mode = 'menu', time = 0, aiT = {}, endT = 0;
+  let parts = [], shake = 0, mapDirty = true, mapCv = document.createElement('canvas'), cells, cellMap, waterMap, pathCache, regions, B, units, queues, shots, pops, mode = 'menu', time = 0, aiT = {}, endT = 0;
 
   function genMap(cfg) {
     for (;;) {
@@ -316,14 +316,14 @@
       else if (air && b.type !== 'hafen') { b.type = 'flugplatz'; air--; }
     }
     rand = Math.random;
-    units = []; queues = []; shots = []; pops = []; parts = []; time = 0; endT = 0;
+    units = []; queues = []; shots = []; pops = []; parts = []; time = 0; endT = 0; mapDirty = true;
   }
 
   // ---------- Darstellung ----------
-  const cv = $('cv'), ctx = cv.getContext('2d');
+  const cv = $('cv'); let ctx = cv.getContext('2d');
   let S = 30, OX = 0, OY = 0, DPR = 1;
   function resize() {
-    const r = cv.getBoundingClientRect(); DPR = window.devicePixelRatio || 1;
+    const r = cv.getBoundingClientRect(); DPR = Math.min(2, window.devicePixelRatio || 1); mapDirty = true;
     cv.width = r.width * DPR; cv.height = r.height * DPR;
     const topPad = 125, botPad = 130;
     const w = SQ3 * (COLS + 0.5), h = 1.5 * (ROWS - 1) + 2;
@@ -340,25 +340,11 @@
   }
   function corner(c, i) { const a = Math.PI / 180 * (60 * i - 30); return [px(c.x) + S * Math.cos(a), py(c.y) + S * Math.sin(a)]; }
 
-  function draw() {
+  function renderMap() {
     const W = cv.width / DPR, H = cv.height / DPR;
-    const sh = shake > 0 ? shake * 6 : 0;
-    ctx.setTransform(DPR, 0, 0, DPR, (Math.random() - 0.5) * sh * DPR, (Math.random() - 0.5) * sh * DPR);
-    const wg = ctx.createLinearGradient(0, 0, 0, H);
-    wg.addColorStop(0, '#3b86d4'); wg.addColorStop(1, '#23599c');
-    ctx.fillStyle = wg; ctx.fillRect(0, 0, W, H);
-    // Glitzern im Wasser
-    for (let i = 0; i < 24; i++) {
-      const a = 0.5 + 0.5 * Math.sin(time * 2 + i * 1.7);
-      ctx.fillStyle = `rgba(255,255,255,${0.08 + 0.15 * a})`;
-      ctx.beginPath(); ctx.ellipse((i * 97 + time * 6) % W, (i * 173) % H, 6 + 4 * a, 1.5, 0, 0, 7); ctx.fill();
-    }
-    // Wellen
-    ctx.strokeStyle = '#ffffff14'; ctx.lineWidth = 2;
-    for (let i = 0; i < 14; i++) {
-      const y = (i * 67 + time * 8) % H, x = (i * 131) % W;
-      ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x + 15, y - 6, x + 30, y); ctx.stroke();
-    }
+    mapCv.width = cv.width; mapCv.height = cv.height;
+    const c0 = ctx, m = mapCv.getContext('2d'); ctx = m;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     // Zellen – Seitenwand (3D) zuerst, dann Oberseite mit Lichtverlauf
     ctx.fillStyle = '#0000002a';
     for (const c of cells) { hexPath(px(c.x) + S * 0.08, py(c.y) + S * 0.6, S * 1.02); ctx.fill(); }
@@ -385,36 +371,50 @@
       for (const [a, b] of segs) { ctx.moveTo(...a); ctx.lineTo(...b); }
       ctx.stroke();
     }
+    ctx = c0; mapDirty = false;
+  }
+  function draw() {
+    const W = cv.width / DPR, H = cv.height / DPR;
+    const sh = shake > 0 ? shake * 6 : 0;
+    ctx.setTransform(DPR, 0, 0, DPR, (Math.random() - 0.5) * sh * DPR, (Math.random() - 0.5) * sh * DPR);
+    const wg = ctx.createLinearGradient(0, 0, 0, H);
+    wg.addColorStop(0, '#3b86d4'); wg.addColorStop(1, '#23599c');
+    ctx.fillStyle = wg; ctx.fillRect(0, 0, W, H);
+    // Glitzern im Wasser
+    for (let i = 0; i < 24; i++) {
+      const a = 0.5 + 0.5 * Math.sin(time * 2 + i * 1.7);
+      ctx.fillStyle = `rgba(255,255,255,${0.08 + 0.15 * a})`;
+      ctx.beginPath(); ctx.ellipse((i * 97 + time * 6) % W, (i * 173) % H, 6 + 4 * a, 1.5, 0, 0, 7); ctx.fill();
+    }
+    // Wellen
+    ctx.strokeStyle = '#ffffff14'; ctx.lineWidth = 2;
+    for (let i = 0; i < 14; i++) {
+      const y = (i * 67 + time * 8) % H, x = (i * 131) % W;
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x + 15, y - 6, x + 30, y); ctx.stroke();
+    }
+    // Karte aus dem Zwischenspeicher (wird nur bei Besitzwechsel neu gezeichnet)
+    if (mapDirty) renderMap();
+    ctx.drawImage(mapCv, 0, 0, W, H);
     // laufende Angriffe: breite Spur mit Pfeil
     for (const q of queues) route(q.a, q.t, q.kind, q.path, OWN[q.owner].fill, 0.35);
     // Ziehen: Zielregion hervorheben + dicker Pfeil
-    if (drag && drag.sel.length) {
-      const targets = new Set(); drag.sel.forEach(b => B.forEach(t => t !== b && reach(b, t) && targets.add(t.id)));
-      const hov = drag.tap ? null : (drag.hov || targetAt(drag.x, drag.y));
-      const ok = hov && targets.has(hov.id) && !(drag.sel.length === 1 && drag.sel[0] === hov);
-      const pulse = 0.5 + 0.5 * Math.sin(time * 8);
-      for (const c of cells) if (targets.has(c.reg)) {
+    if (drag) {
+      const src = drag.sel[0], hov = drag.hov, pulse = 0.5 + 0.5 * Math.sin(time * 8);
+      for (const c of cells) if (drag.targets.has(c.reg)) {
         hexPath(px(c.x), py(c.y), S * 0.86);
-        ctx.fillStyle = ok && c.reg === hov.id ? `rgba(255,255,255,${0.35 + 0.25 * pulse})` : '#ffffff26'; ctx.fill();
+        ctx.fillStyle = hov && c.reg === hov.id ? `rgba(255,255,255,${0.35 + 0.25 * pulse})` : '#ffffff26'; ctx.fill();
       }
-      for (const b of drag.sel) {
-        ctx.strokeStyle = '#fff'; ctx.lineWidth = 5;
-        ctx.beginPath(); ctx.arc(px(b.x), py(b.y), S * (0.8 + 0.06 * pulse), 0, 7); ctx.stroke();
-      }
-      let n = 0;
-      for (const b of drag.sel) {
-        if (ok && b === hov) continue;
-        const r = ok && reach(b, hov);
-        if (r) { route(b, hov, r.kind, r.path, OWN[1].fill, 1); n += Math.floor(b.count); }
-        else arrow(px(b.x), py(b.y), drag.x, drag.y, '#9aa3b5', 1);
-      }
-      if (ok) {
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.arc(px(src.x), py(src.y), S * (0.8 + 0.06 * pulse), 0, 7); ctx.stroke();
+      if (hov) {
+        const r = drag.targets.get(hov.id);
+        route(src, hov, r.kind, r.path, OWN[1].fill, 1);
         const lx = px(hov.x), ly = py(hov.y) - S * 1.05;
         ctx.font = `900 ${Math.round(S * 0.5)}px "Trebuchet MS", sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        const txt = '⚔ ' + n, w = ctx.measureText(txt).width + S * 0.5;
+        const txt = '⚔ ' + Math.floor(src.count), w = ctx.measureText(txt).width + S * 0.5;
         rr(lx - w / 2, ly - S * 0.34, w, S * 0.68, S * 0.34, '#1f56a8');
         ctx.fillStyle = '#fff'; ctx.fillText(txt, lx, ly + 1);
-      }
+      } else arrow(px(src.x), py(src.y), drag.x, drag.y, '#9aa3b5', 1);
     }
     for (const b of B) drawBuilding(b);
     for (const u of units) if (u.kind !== 'plane') drawUnit(u);
@@ -757,7 +757,7 @@
     b.count -= 1;
     if (b.count < 0) {
       const lost = b.owner === 1, won = u.owner === 1;
-      b.owner = u.owner; b.count = -b.count; b.flash = 1; pops.push({ x: b.x, y: b.y, life: 1 });
+      b.owner = u.owner; b.count = -b.count; b.flash = 1; mapDirty = true; pops.push({ x: b.x, y: b.y, life: 1 });
       burst(b.x, b.y, OWN[u.owner].fill, 22, 2.2); burst(b.x, b.y, '#ffffff', 10, 1.6);
       if (won) { sfx('capture'); buzz([30, 40, 60]); }
       if (lost) { sfx('lost'); buzz(120); shake = 1; }
@@ -813,38 +813,40 @@
     for (const b of B) { const d = Math.hypot(px(b.x) - x, py(b.y) - y); if (d < bd) { bd = d; best = b; } }
     return best;
   }
-  // Bedienung: Ziehen von EINER eigenen Basis aufs Ziel – oder: Basis antippen, dann Ziel antippen
+  // Bedienung wie im Original: Finger auf eigene Region, zum Ziel ziehen, loslassen → alle Truppen fahren
+  const dragTargets = src => { const m = new Map(); for (const t of B) { if (t === src) continue; const r = reach(src, t); if (r) m.set(t.id, r); } return m; };
+  function moveTo(x, y) {
+    drag.x = x; drag.y = y;
+    const t = targetAt(x, y), ok = t && drag.targets.has(t.id) ? t : null;
+    if (ok && ok !== drag.hov) { buzz(8); sfx('tap'); }   // spürbares Einrasten
+    drag.hov = ok;
+  }
   cv.addEventListener('pointerdown', e => {
     if (mode !== 'battle') return;
     e.preventDefault();
     const [x, y] = pos(e), b = targetAt(x, y);
-    if (drag && drag.tap) {                       // zweiter Tipp: Ziel wählen
-      const src = drag.sel[0];
-      drag = null;
-      if (b && b !== src && reach(src, b)) { fire(src, b); return; }
-      if (!b || b.owner !== 1) return;            // daneben getippt → abbrechen
-    }
     if (b && b.owner === 1) {
-      drag = { sel: [b], x, y, sx: x, sy: y, moved: false, hov: null };
+      drag = { sel: [b], x, y, hov: null, targets: dragTargets(b) };
       cv.setPointerCapture(e.pointerId); sfx('tap'); buzz(12);
     }
-  });
+  }, { passive: false });
   cv.addEventListener('pointermove', e => {
-    if (!drag || drag.tap) return;
-    const [x, y] = pos(e); drag.x = x; drag.y = y;
-    if (!drag.moved && Math.hypot(x - drag.sx, y - drag.sy) > 12) drag.moved = true;
-    const t = targetAt(x, y), ok = t && t !== drag.sel[0] && reach(drag.sel[0], t);
-    if (ok && t !== drag.hov) { buzz(8); sfx('tap'); }  // spürbares Einrasten
-    drag.hov = ok ? t : null;
-  });
+    if (!drag) return;
+    e.preventDefault();
+    // alle Zwischenpositionen auswerten, damit nichts verloren geht
+    const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [];
+    for (const ev of evs) moveTo(...pos(ev));
+    moveTo(...pos(e));
+  }, { passive: false });
   cv.addEventListener('pointerup', e => {
-    if (!drag || drag.tap) return;
-    if (!drag.moved) { drag.tap = true; return; } // nur angetippt → auf Ziel-Tipp warten
+    if (!drag) return;
+    moveTo(...pos(e));
     const src = drag.sel[0], t = drag.hov;
     drag = null;
     if (t) fire(src, t);
   });
-  cv.addEventListener('pointercancel', () => { if (drag && !drag.tap) drag = null; });
+  cv.addEventListener('pointercancel', () => { drag = null; });
+  cv.addEventListener('contextmenu', e => e.preventDefault());
   function fire(src, t) {
     send(src, t); sfx('send'); buzz(25);
     $('hint').style.display = 'none';
