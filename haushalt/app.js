@@ -52,6 +52,8 @@ const settings = {
   get auto() { return store.get('auto', '1') === '1'; },
   get gps() { return store.get('gps', '1') === '1'; }
 };
+const CATS = ['Werkzeug', 'Küche', 'Lebensmittel', 'Hygiene', 'Medikamente', 'Kleidung', 'Elektronik', 'Dokumente', 'Spielzeug', 'Deko', 'Garten & Auto', 'Büro', 'Sonstiges'];
+const CAT_ICON = { Werkzeug: '🔧', Küche: '🍴', Lebensmittel: '🥫', Hygiene: '🧼', Medikamente: '💊', Kleidung: '👕', Elektronik: '🔌', Dokumente: '📄', Spielzeug: '🧸', Deko: '🎄', 'Garten & Auto': '🚗', Büro: '📎', Sonstiges: '📦' };
 const COMMON_ROOMS = ['Küche', 'Wohnzimmer', 'Schlafzimmer', 'Bad', 'Vorraum', 'Büro', 'Kinderzimmer', 'Keller', 'Garage', 'Dachboden'];
 const PLACE_TYPES = ['Lade', 'Schrank', 'Regal', 'Kiste', 'Fach', 'Box'];
 
@@ -186,7 +188,8 @@ async function recognize(dataUrl, room, place, opt = {}) {
                   properties: {
                     name: { type: 'string', description: 'Kurzer deutscher Name, z. B. "Schere"' },
                     anzahl: { type: 'integer' },
-                    suchbegriffe: { type: 'array', items: { type: 'string' }, description: 'Synonyme, Oberbegriffe, österr. Begriffe (z. B. Klebeband → Tixo, Tesa)' },
+                    suchbegriffe: { type: 'array', items: { type: 'string' }, description: 'Höchstens 4 Synonyme/Oberbegriffe, auch österr. (z. B. Klebeband → Tixo, Tesa)' },
+                    kategorie: { type: 'string', enum: CATS, description: 'Kategorie des Gegenstands' },
                     ...(opt.boxes ? { box: { type: 'array', items: { type: 'integer' }, description: `Position im Bild in Pixel als [x, y, breite, höhe]; das Bild ist ${opt.size?.[0] || 1280} × ${opt.size?.[1] || 960} Pixel groß` } } : {})
                   },
                   required: ['name', 'suchbegriffe']
@@ -221,7 +224,8 @@ async function recognize(dataUrl, room, place, opt = {}) {
     gleich: inp.gleicher_ort !== false,
     items: (inp.items || []).filter(i => i?.name).map(i => ({
       name: i.anzahl > 1 ? `${i.name} (${i.anzahl}×)` : i.name,
-      tags: i.suchbegriffe || [],
+      tags: (i.suchbegriffe || []).slice(0, 4),
+      cat: CATS.includes(i.kategorie) ? i.kategorie : 'Sonstiges',
       ...(opt.boxes ? { base: i.name, anzahl: i.anzahl || 1, box: Array.isArray(i.box) && i.box.length === 4 ? i.box : null } : {})
     }))
   };
@@ -229,9 +233,10 @@ async function recognize(dataUrl, room, place, opt = {}) {
 
 // ---------- Navigation ----------
 function show(v) {
-  for (const s of ['search', 'add', 'rooms', 'settings']) $('v-' + s).classList.toggle('hidden', s !== v);
+  for (const s of ['search', 'add', 'rooms', 'list', 'settings']) $('v-' + s).classList.toggle('hidden', s !== v);
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('active', b.dataset.v === v));
   if (v === 'rooms') renderRooms();
+  if (v === 'list') renderList();
   if (v === 'search') renderSearch();
   if (v === 'add') fillLists();
   if (v === 'settings') { $('apikey').value = settings.key; $('model').value = settings.model; $('gps').checked = settings.gps; renderInfo(); }
@@ -293,49 +298,84 @@ async function renderSearch() {
     el.innerHTML = keyNote + `<div class="card"><b>Noch nichts erfasst.</b><p class="muted">Tippe unten auf 📷 Foto → <b>🎥 Filmen</b> und geh einmal durch den Raum: Kisten und Laden öffnen, Inhalt kurz filmen. Raum, Kisten und Produkte werden automatisch erkannt. Danach einfach hier suchen, z. B. „Zahnpasta“.</p></div>`;
     return;
   }
-  if (!q) {
+  const multiSite = new Set(spots.map(s => s.site || '')).size > 1;
+  const where = s => `${multiSite && s.site ? esc(s.site) + ' → ' : ''}${esc(s.room)} → ${esc(s.place)}`;
+  if (!q && !catFilter) {
     const n = spots.reduce((a, s) => a + s.items.length, 0);
     const recent = [...spots].sort((a, b) => b.updated - a.updated).slice(0, 5);
+    const cats = {};
+    for (const s of spots) for (const i of s.items) cats[i.cat || 'Sonstiges'] = (cats[i.cat || 'Sonstiges'] || 0) + 1;
+    const catChips = Object.entries(cats).sort((a, b) => b[1] - a[1]).map(([c, k]) => `<span class="chip pick" data-cat="${esc(c)}">${CAT_ICON[c] || '📦'} ${esc(c)} <span class="muted">${k}</span></span>`).join('');
     el.innerHTML = `${keyNote}${pendNote}<p class="muted">${n} Gegenstände an ${spots.length} Orten erfasst. Oben eintippen oder 🎤 antippen.</p>
+      ${catChips ? `<h2>Nach Kategorie</h2><div class="chips">${catChips}</div>` : ''}
       <h2>Zuletzt erfasst</h2>${recent.map(s => `
       <div class="card hit">${thumb(s)}<div><div class="path">📍 ${esc(s.room)} → ${esc(s.place)}</div>
       <div class="muted">${s.status === 'pending' ? '⏳ wartet auf Erkennung' : esc(s.items.slice(0, 6).map(i => i.name).join(', '))}</div></div></div>`).join('')}`;
     return;
   }
-  const words = skey(q).split(/\s+/).filter(Boolean);
-  const hits = [];
-  for (const sp of spots) for (const it of sp.items) {
-    const s = score(words, sp, it);
-    if (s) hits.push({ s, sp, it });
+  let hits = [], head;
+  if (q) {
+    const words = skey(q).split(/\s+/).filter(Boolean);
+    for (const sp of spots) for (const it of sp.items) {
+      const s = score(words, sp, it);
+      if (s) hits.push({ s, sp, it });
+    }
+    hits.sort((a, b) => b.s - a.s);
+    const nSpots = new Set(hits.map(h => h.sp.id)).size;
+    const onlyFuzzy = hits.length && hits[0].s < 3;
+    head = hits.length ? `„${esc(q)}“: ${hits.length} Treffer an ${nSpots} ${nSpots === 1 ? 'Ort' : 'Orten'}${onlyFuzzy ? ' – meintest du:' : ''}` : '';
+  } else {
+    // Kategorie-Ansicht: alles einer Kategorie, nach Ort sortiert
+    for (const sp of spots) for (const it of sp.items) if ((it.cat || 'Sonstiges') === catFilter) hits.push({ s: 1, sp, it });
+    hits.sort((a, b) => a.sp.room.localeCompare(b.sp.room) || a.sp.place.localeCompare(b.sp.place) || a.it.name.localeCompare(b.it.name));
+    head = `${CAT_ICON[catFilter] || '📦'} ${esc(catFilter)}: ${hits.length} Gegenstände <button class="ghost mini" data-cat="">✕ alle</button>`;
   }
-  hits.sort((a, b) => b.s - a.s);
-  const multiSite = new Set(spots.map(s => s.site || '')).size > 1;
-  const where = s => `${multiSite && s.site ? esc(s.site) + ' → ' : ''}${esc(s.room)} → ${esc(s.place)}`;
-  const nSpots = new Set(hits.map(h => h.sp.id)).size;
-  const onlyFuzzy = hits.length && hits[0].s < 3;
-  el.innerHTML = pendNote + (hits.length ? `<p class="muted">„${esc(q)}“: ${hits.length} Treffer an ${nSpots} ${nSpots === 1 ? 'Ort' : 'Orten'}${onlyFuzzy ? ' – meintest du:' : ''}</p>` : '') + (hits.length ? hits.slice(0, 50).map(h => `
+  lastHits = hits.slice(0, 50).map(h => ({ name: h.it.name, where: `${h.sp.room}, ${h.sp.place}` }));
+  const lent = it => it.lent ? `<div class="muted">📤 verliehen an ${esc(it.lent.to)} seit ${new Date(it.lent.since).toLocaleDateString('de-AT')}</div>` : '';
+  el.innerHTML = pendNote + (hits.length ? `<p class="muted">${head} <button class="ghost mini" id="speak" title="Vorlesen">🔊</button></p>` : '') + (hits.length ? hits.slice(0, 50).map(h => `
     <div class="card hit" data-spot="${esc(h.sp.id)}" data-item="${h.sp.items.indexOf(h.it)}">
       ${h.it.photo ? `<img src="${h.it.photo}" alt="" data-open="${esc(h.sp.id)}">` : thumb(h.sp)}
       <div style="flex:1">
         <div>${hl(h.it.name, q)}</div>
-        <div class="path">📍 ${where(h.sp)}</div>
+        <div class="path">📍 ${where(h.sp)}</div>${lent(h.it)}
       </div>
       <div class="acts">
         <button class="ghost mini" data-act="rename" title="Umbenennen">✏️</button>
-        <button class="ghost mini" data-act="take" title="Entnommen / verbraucht">✓</button>
+        <button class="ghost mini" data-act="${h.it.lent ? 'back' : 'lend'}" title="${h.it.lent ? 'Zurückbekommen' : 'Verleihen'}">${h.it.lent ? '📥' : '📤'}</button>
+        <button class="ghost mini" data-act="take" title="Entnommen">✓</button>
+        <button class="ghost mini" data-act="shop" title="Verbraucht → Einkaufsliste">🛒</button>
       </div>
     </div>`).join('') : `<div class="card">Nichts gefunden für „${esc(q)}“.<br><span class="muted">Tipp: anders schreiben oder Oberbegriff probieren (z. B. „Werkzeug“).</span></div>`);
+}
+let catFilter = '', lastHits = [];
+function speakHits() {
+  if (!('speechSynthesis' in window) || !lastHits.length) return toast('Vorlesen nicht verfügbar.');
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(lastHits.slice(0, 8).map(h => `${h.name}: ${h.where}`).join('. '));
+  u.lang = 'de-AT'; speechSynthesis.speak(u);
 }
 // Gegenstand aus einem Ort entfernen (entnommen/verbraucht) oder umbenennen
 async function itemAction(act, spotId, idx) {
   const spots = await allSpots(), s = spots.find(x => x.id === spotId);
   if (!s || !s.items[idx]) return;
   const it = s.items[idx];
-  if (act === 'take') {
-    const prev = { ...s, items: [...s.items] };
+  const prev = { ...s, items: [...s.items] };
+  if (act === 'take' || act === 'shop') {
     const items = s.items.filter((_, i) => i !== idx);
     await putSpot({ ...s, items, updated: Date.now() });
-    toast(`✓ „${it.name}“ aus ${s.place} entfernt`, 'Rückgängig', async () => { await putSpot(prev); renderSearch(); });
+    if (act === 'shop') shop.add(it.base || it.name.replace(/\s*\(\d+×\)$/, ''), s.place);
+    toast(act === 'shop' ? `🛒 „${it.name}“ verbraucht – steht auf der Einkaufsliste` : `✓ „${it.name}“ aus ${s.place} entfernt`, 'Rückgängig',
+      async () => { await putSpot(prev); if (act === 'shop') shop.removeLast(); renderSearch(); });
+  } else if (act === 'lend') {
+    const to = prompt(`„${it.name}“ verleihen an:`)?.trim();
+    if (!to) return;
+    const items = s.items.map((x, i) => i === idx ? { ...x, lent: { to, since: Date.now() } } : x);
+    await putSpot({ ...s, items, updated: Date.now() });
+    toast(`📤 „${it.name}“ an ${to} verliehen – siehe 🛒 Liste`);
+  } else if (act === 'back') {
+    const items = s.items.map((x, i) => { if (i !== idx) return x; const { lent, ...rest } = x; return rest; });
+    await putSpot({ ...s, items, updated: Date.now() });
+    toast(`📥 „${it.name}“ ist wieder da`);
   } else {
     const name = prompt('Neuer Name:', it.name)?.trim();
     if (!name || name === it.name) return;
@@ -344,17 +384,66 @@ async function itemAction(act, spotId, idx) {
   }
   renderSearch();
   if (!$('v-rooms').classList.contains('hidden')) renderRooms();
+  if (!$('v-list').classList.contains('hidden')) renderList();
 }
-$('q').addEventListener('input', () => show('search'));
+$('q').addEventListener('input', () => { catFilter = ''; show('search'); });
 $('results').onclick = e => {
   if (e.target.id === 'retry-link') { e.preventDefault(); retryPending(true); return; }
   if (e.target.id === 'setup-key') { show('settings'); return; }
+  if (e.target.id === 'speak') return speakHits();
+  const cat = e.target.closest('[data-cat]')?.dataset.cat;
+  if (cat !== undefined) { catFilter = cat; $('q').value = ''; return renderSearch(); }
   const act = e.target.dataset.act;
   if (act) { const c = e.target.closest('.hit'); return itemAction(act, c.dataset.spot, +c.dataset.item); }
   const id = e.target.dataset.open;
   if (!id) return;
   show('rooms');
   setTimeout(() => { const d = document.getElementById('spot-' + id); if (d) { d.open = true; d.scrollIntoView({ behavior: 'smooth' }); } }, 50);
+};
+
+// ---------- 🛒 Einkaufsliste & Verliehenes ----------
+const shop = {
+  get list() { try { return JSON.parse(store.get('shop', '[]')); } catch { return []; } },
+  save(l) { store.set('shop', JSON.stringify(l)); },
+  add(name, from) { const l = this.list; if (!l.some(x => skey(x.name) === skey(name) && !x.done)) l.push({ id: uid(), name, from, done: false, added: Date.now() }); this.save(l); },
+  removeLast() { const l = this.list; l.pop(); this.save(l); }
+};
+async function renderList() {
+  const l = shop.list, open = l.filter(x => !x.done), done = l.filter(x => x.done);
+  $('shop-list').innerHTML = l.length ? [...open, ...done].map(x => `
+    <label class="shop-row${x.done ? ' done' : ''}"><input type="checkbox" data-shop="${x.id}" ${x.done ? 'checked' : ''}> <span>${esc(x.name)}${x.from ? ` <span class="muted">(war in ${esc(x.from)})</span>` : ''}</span></label>`).join('')
+    : '<p class="muted">Leer. Bei einem Suchtreffer 🛒 tippen, wenn etwas verbraucht ist – dann landet es hier.</p>';
+  $('btn-shop-clear').classList.toggle('hidden', !done.length);
+  $('btn-shop-share').classList.toggle('hidden', !open.length);
+  const lent = [];
+  for (const s of await allSpots()) s.items.forEach((it, i) => { if (it.lent) lent.push({ s, it, i }); });
+  lent.sort((a, b) => a.it.lent.since - b.it.lent.since);
+  $('lent-list').innerHTML = lent.length ? lent.map(({ s, it, i }) => `
+    <div class="card hit" data-spot="${esc(s.id)}" data-item="${i}">
+      ${it.photo ? `<img src="${it.photo}" alt="">` : '<div class="thumb"></div>'}
+      <div style="flex:1"><div>${esc(it.name)}</div><div class="muted">📤 an <b>${esc(it.lent.to)}</b> seit ${new Date(it.lent.since).toLocaleDateString('de-AT')} · gehört in ${esc(s.room)} → ${esc(s.place)}</div></div>
+      <button class="ghost mini" data-act="back" title="Zurückbekommen">📥 zurück</button>
+    </div>`).join('') : '<p class="muted">Nichts verliehen. Bei einem Suchtreffer 📤 tippen und den Namen eingeben.</p>';
+}
+$('shop-list').onchange = e => {
+  const id = e.target.dataset.shop; if (!id) return;
+  shop.save(shop.list.map(x => x.id === id ? { ...x, done: e.target.checked } : x)); renderList();
+};
+function addShop() {
+  const v = $('shop-add').value.trim(); if (!v) return;
+  for (const n of v.split(/[,;]/).map(s => s.trim()).filter(Boolean)) shop.add(n);
+  $('shop-add').value = ''; renderList();
+}
+$('btn-shop-add').onclick = addShop;
+$('shop-add').addEventListener('keydown', e => { if (e.key === 'Enter') addShop(); });
+$('btn-shop-clear').onclick = () => { shop.save(shop.list.filter(x => !x.done)); renderList(); };
+$('btn-shop-share').onclick = async () => {
+  const text = 'Einkaufsliste:\n' + shop.list.filter(x => !x.done).map(x => '• ' + x.name).join('\n');
+  try { if (navigator.share) await navigator.share({ text }); else { await navigator.clipboard.writeText(text); toast('Liste kopiert.'); } } catch {}
+};
+$('lent-list').onclick = e => {
+  if (e.target.dataset.act !== 'back') return;
+  const c = e.target.closest('.hit'); itemAction('back', c.dataset.spot, +c.dataset.item);
 };
 
 // Sprachsuche
@@ -836,7 +925,7 @@ async function renderRooms() {
       <details class="card" id="spot-${esc(s.id)}">
         <summary>📦 ${esc(s.place)} <span class="muted">· ${s.status === 'pending' ? '⏳ wartet auf Erkennung' : s.items.length + (s.items.length === 1 ? ' Gegenstand' : ' Gegenstände')}</span></summary>
         ${s.photo ? `<img class="preview" src="${s.photo}" alt="" style="margin-top:10px">` : ''}
-        <div class="chips">${s.items.map((i, k) => `<span class="chip pick" data-item="${k}" data-spot="${esc(s.id)}" title="Antippen zum Bearbeiten">${i.photo ? `<img src="${i.photo}" alt="">` : ''}${esc(i.name)}</span>`).join('')}</div>
+        <div class="chips">${s.items.map((i, k) => `<span class="chip pick" data-item="${k}" data-spot="${esc(s.id)}" title="Antippen zum Bearbeiten">${i.photo ? `<img src="${i.photo}" alt="">` : ''}${i.lent ? '📤 ' : ''}${esc(i.name)}</span>`).join('')}</div>
         <p class="muted">Aktualisiert: ${new Date(s.updated).toLocaleString('de-AT')}</p>
         <div class="row">
           <button class="ghost" data-edit="${esc(s.id)}">✏️ Bearbeiten / verschieben</button>
@@ -951,7 +1040,7 @@ const DEMO = [
   ['Bad', 'Spiegelschrank', ['Zahnpasta (2×)|Zahncreme,Elmex', 'Zahnbürsten (3×)|Zahnbürste', 'Zahnseide|Zahnpflege', 'Deo|Deodorant', 'Rasierer|Rasierapparat', 'Nagelschere|Nagelpflege', 'Pinzette|Nagelpflege']],
   ['Bad', 'Kiste unter Waschbecken', ['Zahnpasta (4×)|Vorrat,Zahncreme', 'Duschgel (3×)|Vorrat', 'Shampoo (2×)|Vorrat,Haarwaschmittel', 'Klopapier (12×)|Toilettenpapier,WC-Papier', 'Wattestäbchen|Q-Tips', 'Pflaster|Hansaplast,Verband', 'Fieberthermometer|Thermometer']],
   ['Bad', 'Waschmaschinenregal', ['Waschmittel|Waschpulver,Persil', 'Weichspüler|Wäsche', 'Fleckenentferner|Vanish', 'Wäscheklammern|Kluppen']],
-  ['Vorraum', 'Schlüsselschublade', ['Ersatzschlüssel Haus|Schlüssel', 'Autoschlüssel Zweitschlüssel|Schlüssel', 'Garagenfernbedienung|Fernbedienung,Garage', 'Taschenlampe|Lampe', 'Batterien AA (8×)|Batterie,Mignon', 'Batterien AAA (4×)|Batterie,Micro', 'Kugelschreiber (5×)|Kuli,Stift']],
+  ['Vorraum', 'Schlüsselschublade', ['Ersatzschlüssel Haus|Schlüssel', 'Autoschlüssel Zweitschlüssel|Schlüssel', 'Garagenfernbedienung|Fernbedienung,Garage', 'Taschenlampe|Lampe,Elektronik', 'Batterien AA (8×)|Batterie,Mignon,Elektronik', 'Batterien AAA (4×)|Batterie,Micro,Elektronik', 'Kugelschreiber (5×)|Kuli,Stift']],
   ['Vorraum', 'Schuhkasten', ['Schuhputzzeug|Schuhcreme,Bürste', 'Regenschirm (2×)|Schirm', 'Einkaufstaschen|Sackerl,Stofftasche', 'Hundeleine|Leine']],
   ['Schlafzimmer', 'Nachtkästchen links', ['Ladekabel USB-C|Ladegerät,Kabel', 'Ohrstöpsel|Ohropax', 'Lesebrille|Brille', 'Handcreme|Creme', 'Taschentücher|Tempo']],
   ['Schlafzimmer', 'Kasten oberes Fach', ['Bettwäsche (3×)|Überzug,Leintuch', 'Decke Gäste|Zudecke', 'Polster Gäste (2×)|Kissen', 'Koffer klein|Reisekoffer,Handgepäck']],
@@ -967,6 +1056,7 @@ const DEMO = [
   ['Dachboden', 'Kiste Babysachen', ['Babykleidung Gr. 68|Gewand,Baby', 'Babyphone|Baby', 'Wickelauflage|Baby', 'Kinderwagen-Regenschutz|Kinderwagen']],
   ['Dachboden', 'Kiste Skiausrüstung', ['Skihelm (2×)|Helm,Ski', 'Skibrille (2×)|Brille,Ski', 'Skihandschuhe|Handschuhe,Ski', 'Skisocken|Socken', 'Skiwachs|Ski']]
 ];
+const DEMO_CAT = { Besteckschublade: 'Küche', Gewürzregal: 'Lebensmittel', Vorratsschrank: 'Lebensmittel', 'Lade unter Herd': 'Küche', Spiegelschrank: 'Hygiene', 'Kiste unter Waschbecken': 'Hygiene', Waschmaschinenregal: 'Hygiene', Schlüsselschublade: 'Sonstiges', Schuhkasten: 'Kleidung', 'Nachtkästchen links': 'Elektronik', 'Kasten oberes Fach': 'Kleidung', Spielzeugkiste: 'Spielzeug', Schreibtischlade: 'Büro', Ordnerregal: 'Dokumente', Werkzeugkiste: 'Werkzeug', 'Regal Vorräte': 'Lebensmittel', 'Karton Weihnachtsdeko': 'Deko', 'Karton Camping': 'Garten & Auto', 'Regal 1': 'Garten & Auto', 'Regal 2': 'Garten & Auto', 'Kiste Babysachen': 'Kleidung', 'Kiste Skiausrüstung': 'Kleidung' };
 const DEMO_COLORS = ['#e57373', '#f06292', '#ba68c8', '#7986cb', '#4fc3f7', '#4db6ac', '#81c784', '#dce775', '#ffd54f', '#ffb74d', '#a1887f', '#90a4ae'];
 // Platzhalterbild mit Text (statt echtem Foto)
 function demoImage(text, color, size = 320, sub = '') {
@@ -993,7 +1083,7 @@ async function loadDemo(silent) {
       photo: demoImage(place, col, 640, room),
       items: items.map((s, i) => {
         const [name, tags = ''] = s.split('|');
-        return { name, base: name.replace(/\s*\(.*\)$/, ''), tags: tags.split(',').filter(Boolean), photo: demoImage(name.replace(/\s*\(.*\)$/, ''), DEMO_COLORS[(k + i) % DEMO_COLORS.length], 200) };
+        return { name, base: name.replace(/\s*\(.*\)$/, ''), cat: DEMO_CAT[place] || 'Sonstiges', tags: tags.split(',').filter(Boolean), photo: demoImage(name.replace(/\s*\(.*\)$/, ''), DEMO_COLORS[(k + i) % DEMO_COLORS.length], 200) };
       }),
       updated: Date.now() - (DEMO.length - n) * 36e5
     });
