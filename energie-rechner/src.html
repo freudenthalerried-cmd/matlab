@@ -1,0 +1,270 @@
+<title>Speicherkompass Österreich</title>
+<meta name="description" content="Stromspeicher-Rechner für Österreich: Förderung je Bundesland, Ersparnis und Amortisation in einer Minute berechnen.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=JetBrains+Mono:wght@500;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+:root{
+  --bg:#F3F5F4;--surface:#FFFFFF;--ink:#15211D;--muted:#56645E;--line:#D9E0DC;
+  --accent:#0E7C66;--accent-ink:#0B5F4F;--accent-soft:#DDF0EA;--on-accent:#FFFFFF;--sun:#C98F00;--sun-soft:#FBF1D2;
+  --good:#1F7A4A;--good-bg:#E0F1E7;--mid:#8A6100;--mid-bg:#F6EDD3;--bad:#A73A2E;--bad-bg:#F6E0DC;
+  --display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --body:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  color-scheme:dark;--bg:#0F1513;--surface:#17201D;--ink:#E3EAE7;--muted:#93A39C;--line:#2A3531;
+  --accent:#3CC4A4;--accent-ink:#7EDCC4;--accent-soft:#133A31;--on-accent:#06201A;--sun:#F2C14E;--sun-soft:#3A3016;
+  --good:#7CD3A0;--good-bg:#173625;--mid:#E8C069;--mid-bg:#3A2F16;--bad:#EE9486;--bad-bg:#3D211C;}}
+:root[data-theme="dark"]{
+  color-scheme:dark;--bg:#0F1513;--surface:#17201D;--ink:#E3EAE7;--muted:#93A39C;--line:#2A3531;
+  --accent:#3CC4A4;--accent-ink:#7EDCC4;--accent-soft:#133A31;--on-accent:#06201A;--sun:#F2C14E;--sun-soft:#3A3016;
+  --good:#7CD3A0;--good-bg:#173625;--mid:#E8C069;--mid-bg:#3A2F16;--bad:#EE9486;--bad-bg:#3D211C;}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--body);margin:0}
+a{color:var(--accent-ink)}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:20px}
+header.top{border-bottom:1px solid var(--line);background:var(--surface)}
+header.top .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;align-items:center;justify-content:space-between;padding-block:14px}
+.brand{font:800 20px/1 var(--display);letter-spacing:-.01em;color:var(--ink);text-decoration:none;display:flex;gap:10px;align-items:center}
+.brand .cell{width:14px;height:22px;border:2px solid var(--accent);border-radius:3px;position:relative}
+.brand .cell::after{content:"";position:absolute;left:2px;right:2px;bottom:2px;height:60%;background:var(--accent);border-radius:1px}
+nav.links{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:15px}
+nav.links a{color:var(--muted);text-decoration:none}
+nav.links a:hover{color:var(--ink)}
+.hero{padding-block:36px 20px;display:grid;gap:10px}
+.eyebrow{font:700 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink)}
+h1{font:800 clamp(30px,4.6vw,48px)/1.05 var(--display);letter-spacing:-.02em;margin:0;max-width:20ch;text-wrap:balance}
+h2{font:700 clamp(22px,3vw,28px)/1.15 var(--display);letter-spacing:-.01em;margin:0;text-wrap:balance}
+.lede{color:var(--muted);max-width:62ch;margin:0;font-size:18px}
+.tool{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start;padding-block:12px 40px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;display:grid;gap:16px}
+.presets{display:flex;flex-wrap:wrap;gap:8px}
+.preset{font:600 14px var(--body);padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.preset[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 16px}
+.field{display:grid;gap:5px}
+.field.full{grid-column:1/-1}
+label.l{font-weight:600;font-size:14px}
+.hint{font-size:13px;color:var(--muted)}
+.inwrap{display:flex;align-items:stretch;border:1px solid var(--line);border-radius:6px;background:var(--bg);overflow:hidden}
+.inwrap input,.inwrap select{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font:500 16px var(--mono);padding:9px 10px}
+.inwrap select{font-family:var(--body);font-weight:600}
+.inwrap .u{display:flex;align-items:center;padding-inline:10px;font:500 13px var(--mono);color:var(--muted);border-left:1px solid var(--line)}
+.inwrap:focus-within{outline:2px solid var(--accent);outline-offset:1px}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:15px}
+.check input{margin-top:4px;width:18px;height:18px;accent-color:var(--accent)}
+.results{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px)}
+.verdict{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.pill{font:700 13px/1 var(--mono);padding:7px 10px;border-radius:999px;letter-spacing:.02em}
+.pill.g{background:var(--good-bg);color:var(--good)}.pill.m{background:var(--mid-bg);color:var(--mid)}.pill.b{background:var(--bad-bg);color:var(--bad)}
+.verdict p{margin:0;color:var(--muted);font-size:15px}
+.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.tile{background:var(--surface);padding:14px 16px;display:grid;gap:4px}
+.tile .k{font-size:13px;color:var(--muted)}
+.tile .v{font:700 clamp(22px,3.2vw,28px)/1.1 var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.tile.hi .v{color:var(--accent-ink)}
+.bar{display:grid;gap:6px}
+.bar .track{height:12px;background:var(--bg);border:1px solid var(--line);border-radius:3px;display:flex;overflow:hidden}
+.bar .seg1{background:var(--sun)}.bar .seg2{background:var(--accent)}
+.bar .legend{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13px;color:var(--muted)}
+.bar .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+details.calc{border-top:1px solid var(--line);padding-top:12px}
+details.calc summary{cursor:pointer;font-weight:600}
+details.calc dl{display:grid;grid-template-columns:1fr auto;gap:6px 16px;margin:10px 0 0;font-size:14px}
+details.calc dt{color:var(--muted)}details.calc dd{margin:0;font:500 14px var(--mono);text-align:right}
+.note{font-size:14px;background:var(--sun-soft);border-radius:6px;padding:10px 12px;margin:0}
+section.block{padding-block:36px;border-top:1px solid var(--line);display:grid;gap:16px}
+.tablebox{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:15px}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:700 12px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+tr:last-child td{border-bottom:0}
+td.num{font:500 15px var(--mono);white-space:nowrap}
+.tag{display:inline-block;font:700 12px var(--mono);padding:3px 8px;border-radius:4px}
+.tag.y{background:var(--good-bg);color:var(--good)}.tag.n{background:var(--bad-bg);color:var(--bad)}.tag.q{background:var(--mid-bg);color:var(--mid)}
+.btn{display:inline-block;font:700 14px var(--body);padding:8px 12px;border-radius:6px;border:1px solid var(--accent);color:var(--accent-ink);background:transparent;text-decoration:none;white-space:nowrap}
+.btn[aria-disabled="true"]{opacity:.6;cursor:not-allowed}
+.prose{max-width:68ch;color:var(--ink)}
+.prose p{margin:0 0 10px}
+.muted{color:var(--muted)}
+footer{border-top:1px solid var(--line);padding-block:28px 40px;color:var(--muted);font-size:14px;display:grid;gap:10px}
+.preset:focus-visible,.btn:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (max-width:860px){.tool{grid-template-columns:1fr}.results{position:static}}
+@media (max-width:480px){.fields{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#rechner"><span class="cell" aria-hidden="true"></span>Speicherkompass</a>
+    <nav class="links" aria-label="Seitenbereiche">
+      <a href="#rechner">Rechner</a><a href="#foerderung">Förderungen</a><a href="#balkon">Balkonspeicher</a><a href="#methode">So rechnen wir</a><a href="#impressum">Impressum</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="hero" id="rechner">
+    <span class="eyebrow">Stromspeicher-Rechner · Österreich · Stand 09/2026</span>
+    <h1>Lohnt sich ein Stromspeicher bei dir?</h1>
+    <p class="lede">Bundesland, Photovoltaik und Verbrauch eingeben. Du siehst sofort, wie viel Förderung dir zusteht, was du pro Jahr sparst und wann sich der Speicher bezahlt macht.</p>
+  </div>
+
+  <div class="tool">
+    <form class="panel" id="f" autocomplete="off">
+      <div class="presets" role="group" aria-label="Beispiel laden">
+        <button type="button" class="preset" data-p="haus" aria-pressed="true">Einfamilienhaus, 10 kWh</button>
+        <button type="button" class="preset" data-p="balkon" aria-pressed="false">Balkonkraftwerk + Speicher</button>
+      </div>
+      <div class="fields">
+        <div class="field full"><label class="l" for="land">Bundesland</label>
+          <div class="inwrap"><select id="land"></select></div></div>
+        <div class="field"><label class="l" for="kwp">Photovoltaik-Leistung</label>
+          <div class="inwrap"><input id="kwp" type="number" min="0.3" max="50" step="0.1" inputmode="decimal"><span class="u">kWp</span></div></div>
+        <div class="field"><label class="l" for="verbrauch">Stromverbrauch im Jahr</label>
+          <div class="inwrap"><input id="verbrauch" type="number" min="500" max="30000" step="100" inputmode="numeric"><span class="u">kWh</span></div></div>
+        <div class="field"><label class="l" for="kap">Speichergröße (nutzbar)</label>
+          <div class="inwrap"><input id="kap" type="number" min="0.5" max="50" step="0.1" inputmode="decimal"><span class="u">kWh</span></div></div>
+        <div class="field"><label class="l" for="preis">Kosten Speicher inkl. Montage</label>
+          <div class="inwrap"><input id="preis" type="number" min="100" max="60000" step="50" inputmode="numeric"><span class="u">€</span></div></div>
+        <div class="field"><label class="l" for="strom">Strompreis (Bezug)</label>
+          <div class="inwrap"><input id="strom" type="number" min="5" max="80" step="0.5" inputmode="decimal"><span class="u">ct/kWh</span></div></div>
+        <div class="field"><label class="l" for="einsp">Einspeisetarif</label>
+          <div class="inwrap"><input id="einsp" type="number" min="0" max="30" step="0.5" inputmode="decimal"><span class="u">ct/kWh</span></div></div>
+        <div class="field full"><label class="check"><input id="neupv" type="checkbox"> <span>Speicher kommt zusammen mit einer <strong>neuen oder erweiterten</strong> PV-Anlage<br><span class="hint">Nur dann gibt es die Bundesförderung (EAG).</span></span></label></div>
+      </div>
+    </form>
+
+    <div class="panel results" aria-live="polite">
+      <div class="verdict"><span class="pill" id="pill"></span><p id="verdict"></p></div>
+      <div class="tiles">
+        <div class="tile hi"><span class="k">Förderung gesamt</span><span class="v" id="t-foerd"></span></div>
+        <div class="tile"><span class="k">Kosten nach Förderung</span><span class="v" id="t-netto"></span></div>
+        <div class="tile"><span class="k">Ersparnis pro Jahr</span><span class="v" id="t-spar"></span></div>
+        <div class="tile hi"><span class="k">Bezahlt sich nach</span><span class="v" id="t-amort"></span></div>
+      </div>
+      <div class="bar">
+        <span class="k muted" style="font-size:13px">Anteil deines Verbrauchs aus eigenem Strom</span>
+        <div class="track" role="img" id="bar-aria"><span class="seg1" id="seg1"></span><span class="seg2" id="seg2"></span></div>
+        <div class="legend"><span><i style="background:var(--sun)"></i>direkt von der PV <b id="l1"></b></span><span><i style="background:var(--accent)"></i>zusätzlich aus dem Speicher <b id="l2"></b></span></div>
+      </div>
+      <p class="note" id="landnote"></p>
+      <details class="calc"><summary>Rechenweg anzeigen</summary><dl id="calc"></dl></details>
+    </div>
+  </div>
+
+  <section class="block" id="foerderung" aria-labelledby="h-foerd">
+    <h2 id="h-foerd">Speicher-Förderungen nach Bundesland</h2>
+    <p class="prose muted">Bund: 150 € pro kWh über die EAG-Investitionsförderung, höchstens 50 kWh und höchstens 30 % der Kosten, nur zusammen mit einer neuen oder erweiterten PV-Anlage. Dazu kommen je nach Land eigene Förderungen. Viele Gemeinden zahlen zusätzlich 200 bis 1.000 €.</p>
+    <div class="tablebox"><table>
+      <thead><tr><th>Bundesland</th><th>Landesförderung Speicher</th><th>Mit Bund kombinierbar</th><th>Hinweis</th></tr></thead>
+      <tbody id="ftab"></tbody>
+    </table></div>
+    <p class="hint">Stand September 2026, ohne Gewähr. Förderungen ändern sich oft und laufen aus, wenn das Budget verbraucht ist. Prüfe vor dem Kauf die Seite deines Landes.</p>
+  </section>
+
+  <section class="block" id="balkon" aria-labelledby="h-balkon">
+    <h2 id="h-balkon">Speicher für Balkonkraftwerke im Vergleich</h2>
+    <p class="prose muted">Diese Geräte steckst du ans Balkonkraftwerk an, ohne Elektriker. Die Bundesförderung gilt dafür meist nicht, weil keine neue PV-Anlage dazukommt.</p>
+    <div class="tablebox"><table>
+      <thead><tr><th>Gerät</th><th>Kapazität</th><th>Preis ab</th><th>Preis pro kWh</th><th>Stärke</th><th></th></tr></thead>
+      <tbody id="ptab"></tbody>
+    </table></div>
+    <p class="hint">Preise laut Testberichten 2026, Stand September 2026, ohne Gewähr. Sortiert nach Preis pro kWh.</p>
+  </section>
+
+  <section class="block" id="methode" aria-labelledby="h-meth">
+    <h2 id="h-meth">So rechnen wir</h2>
+    <div class="prose">
+      <p>PV-Ertrag = Leistung × typischer Jahresertrag im Bundesland (Richtwert zwischen 1.000 und 1.150 kWh pro kWp). Ohne Speicher nutzt du je nach Verhältnis von Ertrag zu Verbrauch 25 bis 90 % des Solarstroms direkt.</p>
+      <p>Der Speicher schafft höchstens 200 volle Ladungen im Jahr bei 90 % Wirkungsgrad. Weil im Winter kaum Überschuss entsteht, rechnen wir mit höchstens 80 % Eigenversorgung. Er kann nur Überschuss speichern, den du später auch verbrauchst. Jede gespeicherte kWh spart den Strompreis und kostet den entgangenen Einspeisetarif.</p>
+      <p class="muted">Das ist ein vereinfachtes Modell für eine erste Einschätzung. Ein Angebot vom Installateur ersetzt es nicht. Gute Heimspeicher halten 6.000 bis 8.000 Ladezyklen, also rund 15 bis 20 Jahre.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap" id="impressum">
+  <p><strong>Transparenz:</strong> Speicherkompass finanziert sich über Partner-Links. Kaufst du über einen Link, erhalten wir eine Provision. Für dich ändert sich der Preis nicht. Die Reihung im Vergleich richtet sich nur nach dem Preis pro kWh.</p>
+  <p><strong>Impressum und Offenlegung:</strong> Medieninhaber, Anschrift und Unternehmensgegenstand werden vor der Veröffentlichung ergänzt (§ 5 ECG, § 25 MedienG).</p>
+  <p>Alle Angaben ohne Gewähr. Keine Rechts-, Steuer- oder Finanzberatung.</p>
+</footer>
+
+<script>
+const LAND={
+ W:{n:"Wien",y:1000,l:null,tab:["keine erfasst","–","Landesförderung noch nicht geprüft"]},
+ NOE:{n:"Niederösterreich",y:1050,l:null,tab:["keine erfasst","ja","Viele Gemeinden zahlen 200–1.000 € extra"]},
+ B:{n:"Burgenland",y:1100,l:null,tab:["keine erfasst","ja","Landesförderung noch nicht geprüft"]},
+ OOE:{n:"Oberösterreich",y:1000,l:{t:"kwh",r:150,comb:false},tab:["150 €/kWh","nein","Land oder Bund, der Rechner nimmt die höhere"]},
+ ST:{n:"Steiermark",y:1100,l:null,tab:["keine erfasst","ja","Viele Gemeinden zahlen 200–1.000 € extra"]},
+ K:{n:"Kärnten",y:1150,l:{t:"paket",a:3000,pv:5,kap:5,comb:true},tab:["bis 3.000 € Paket","ja","PV ab 5 kWp plus Speicher ab 5 kWh, Ein- und Zweifamilienhaus"]},
+ S:{n:"Salzburg",y:1000,l:null,tab:["ausgelaufen","–","Landesförderung endete am 31.12.2025"]},
+ T:{n:"Tirol",y:1050,l:{t:"kwh",r:100,max:10,comb:true},tab:["100 €/kWh, max. 1.000 €","ja","Bis 10 kWh, solange Budget vorhanden"]},
+ V:{n:"Vorarlberg",y:1000,l:null,tab:["keine erfasst","–","Landesförderung noch nicht geprüft"]}
+};
+const PROD=[
+ {n:"Marstek Venus E 3.0",kap:5.12,p:999,s:"Viel Kapazität zum kleinen Preis, nicht erweiterbar"},
+ {n:"Anker SOLIX Solarbank 3 E2700 Pro",kap:2.7,p:819,s:"Notstrom-Ausgang mit 1.200 W"},
+ {n:"Zendure SolarFlow 2400 Pro",kap:null,p:949,s:"Steuereinheit, mit bis zu 5 Zusatzakkus auf 16,8 kWh erweiterbar"}
+];
+const PRE={
+ haus:{land:"OOE",kwp:8,verbrauch:4500,kap:10,preis:8500,strom:28,einsp:6,neupv:true},
+ balkon:{land:"W",kwp:0.8,verbrauch:2500,kap:2.7,preis:819,strom:28,einsp:0,neupv:false}
+};
+const $=id=>document.getElementById(id);
+const eur=v=>new Intl.NumberFormat("de-AT",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(v);
+const num=(v,d=0)=>new Intl.NumberFormat("de-AT",{maximumFractionDigits:d,minimumFractionDigits:d}).format(v);
+const pct=v=>num(v*100)+" %";
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+$("land").innerHTML=Object.entries(LAND).map(([k,v])=>`<option value="${k}">${v.n}</option>`).join("");
+$("ftab").innerHTML=Object.values(LAND).map(v=>{const c=v.tab[1]==="ja"?"y":v.tab[1]==="nein"?"n":"q";
+  return `<tr><td>${v.n}</td><td class="num">${esc(v.tab[0])}</td><td><span class="tag ${c}">${esc(v.tab[1])}</span></td><td>${esc(v.tab[2])}</td></tr>`}).join("");
+$("ptab").innerHTML=PROD.map(p=>({...p,pk:p.kap?p.p/p.kap:Infinity})).sort((a,b)=>a.pk-b.pk).map(p=>
+  `<tr><td><strong>${esc(p.n)}</strong></td><td class="num">${p.kap?num(p.kap,p.kap%1?1:0)+" kWh":"modular"}</td><td class="num">${eur(p.p)}</td><td class="num">${isFinite(p.pk)?eur(p.pk):"je nach Akku"}</td><td>${esc(p.s)}</td><td><a class="btn" aria-disabled="true" href="#balkon">Partner-Link folgt</a></td></tr>`).join("");
+
+function foerderung(L,kap,preis,kwp,neupv){
+  const bund=neupv?Math.min(150*Math.min(kap,50),0.3*preis):0;
+  let land=0,info="";
+  const l=L.l;
+  if(l&&l.t==="kwh")land=l.r*Math.min(kap,l.max||kap);
+  if(l&&l.t==="paket")land=(neupv&&kwp>=l.pv&&kap>=l.kap)?l.a:0;
+  let total,rule;
+  if(l&&!l.comb){total=Math.max(bund,land);rule=bund>=land?"Bund (höher als Land)":"Land (höher als Bund)";}
+  else{total=bund+land;rule=land&&bund?"Bund + Land":land?"nur Land":bund?"nur Bund":"keine";}
+  return {bund,land,total:Math.min(total,preis),rule};
+}
+function calc(){
+  const v={land:$("land").value,kwp:+$("kwp").value||0,verbrauch:+$("verbrauch").value||0,kap:+$("kap").value||0,preis:+$("preis").value||0,strom:+$("strom").value||0,einsp:+$("einsp").value||0,neupv:$("neupv").checked};
+  const L=LAND[v.land];
+  const E=v.kwp*L.y, V=Math.max(v.verbrauch,1), r=E/V;
+  const share=Math.min(0.9,Math.max(0.25,0.3+0.5*(1-r)));
+  const direct=Math.min(E*share,V*0.6);
+  const gain=Math.max(0,Math.min(v.kap*200*0.9,E-direct,V-direct,0.8*V-direct));
+  const spar=gain*Math.max(0,v.strom-v.einsp)/100;
+  const f=foerderung(L,v.kap,v.preis,v.kwp,v.neupv);
+  const netto=Math.max(0,v.preis-f.total);
+  const amort=spar>0?netto/spar:Infinity;
+  $("t-foerd").textContent=eur(f.total);
+  $("t-netto").textContent=eur(netto);
+  $("t-spar").textContent=eur(spar);
+  $("t-amort").textContent=isFinite(amort)?num(amort,1)+" Jahren":"nie";
+  const pill=$("pill");
+  if(amort<=10){pill.className="pill g";pill.textContent="LOHNT SICH";$("verdict").textContent="Der Speicher ist deutlich vor Ende seiner Lebensdauer bezahlt.";}
+  else if(amort<=15){pill.className="pill m";pill.textContent="KNAPP";$("verdict").textContent="Rechnet sich, aber erst spät. Ein günstigerer Preis oder mehr Förderung helfen.";}
+  else{pill.className="pill b";pill.textContent="LOHNT SICH KAUM";$("verdict").textContent="Der Speicher hält wahrscheinlich nicht lange genug, um sich zu bezahlen.";}
+  const a0=direct/V,a1=gain/V;
+  $("seg1").style.width=(a0*100)+"%";$("seg2").style.width=(a1*100)+"%";
+  $("l1").textContent=pct(a0);$("l2").textContent="+"+pct(a1);
+  $("bar-aria").setAttribute("aria-label",`${pct(a0)} direkt, ${pct(a1)} zusätzlich aus dem Speicher`);
+  $("landnote").textContent=`${L.n}: ${L.tab[2]}. Förderregel im Rechner: ${f.rule}.`;
+  const rows=[["PV-Ertrag im Jahr",num(E)+" kWh"],["davon direkt verbraucht",num(direct)+" kWh"],["zusätzlich über den Speicher",num(gain)+" kWh"],["Wert je gespeicherter kWh",num(Math.max(0,v.strom-v.einsp),1)+" ct"],["Förderung Bund (EAG)",eur(f.bund)],["Förderung Land",eur(f.land)],["angerechnet",eur(f.total)]];
+  $("calc").innerHTML=rows.map(([k,x])=>`<dt>${k}</dt><dd>${x}</dd>`).join("");
+}
+function load(p){const d=PRE[p];for(const k in d){const el=$(k);if(el.type==="checkbox")el.checked=d[k];else el.value=d[k];}
+  document.querySelectorAll(".preset").forEach(b=>b.setAttribute("aria-pressed",b.dataset.p===p));calc();}
+document.querySelector(".presets").addEventListener("click",e=>{const b=e.target.closest(".preset");if(b)load(b.dataset.p);});
+$("f").addEventListener("input",()=>{document.querySelectorAll(".preset").forEach(b=>b.setAttribute("aria-pressed","false"));calc();});
+$("f").addEventListener("submit",e=>e.preventDefault());
+load("haus");
+</script>
