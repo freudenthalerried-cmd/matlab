@@ -81,7 +81,11 @@ body{margin:0;background:radial-gradient(ellipse at 50% 0%,#2a1838,var(--bg) 70%
 .pl{font-size:13px;color:#e3b8ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
 #mbar{height:5px!important;margin-top:3px}
 .gear{width:46px;flex:none;font-size:24px;line-height:1;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--gold);cursor:pointer}
-#spells{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+#spells{display:grid;grid-template-columns:repeat(6,1fr);gap:4px}
+#pmbar{display:flex;align-items:center;gap:8px;font:700 13px Inter,sans-serif;color:#7fd4ff;margin-top:-2px}
+#pmbar .pips{flex:1;display:grid;grid-template-columns:repeat(10,1fr);gap:3px}
+#pmbar .pips i{height:9px;border-radius:5px;background:#1b2a3a;border:1px solid #2d4a66;transition:background .3s,box-shadow .3s}
+#pmbar .pips i.on{background:linear-gradient(#9fe0ff,#3d8bd9);box-shadow:0 0 6px #7fd4ff}
 .sp{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:4px 2px;color:var(--txt);font:600 11px Inter,sans-serif;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px}
 .sp i{font-style:normal;font-size:20px;line-height:1.1}
 .sp b{position:absolute;top:2px;right:4px;font-size:11px;color:#7fd4ff}
@@ -140,6 +144,31 @@ body{margin:0;background:radial-gradient(ellipse at 50% 0%,#2a1838,var(--bg) 70%
 .rules li{margin:6px 0}
 .big{font:600 16px Cinzel,serif;color:#1a1000;background:linear-gradient(180deg,#ffe08a,var(--gold) 50%,var(--gold2));border:0;border-radius:30px;padding:12px 36px;cursor:pointer;box-shadow:0 0 22px #f2c14e66}
 .sm{font:inherit;font-size:14px;color:var(--txt);background:#ffffff0a;border:1px solid var(--line);border-radius:20px;padding:6px 12px;cursor:pointer}
+/* Goldanzeige */
+.goldbar{position:sticky;top:-4px;z-index:5;align-self:stretch;text-align:center;padding:8px 12px;border-radius:12px;font-size:20px;color:#2a1a05;background:linear-gradient(#ffe38a,#e0a82e);border:2px solid #fff3;box-shadow:0 4px 14px #000a,inset 0 1px 0 #fff8}
+.goldbar b{font-size:24px}
+.goldbar .gc{display:inline-block;animation:gspin 2.4s ease-in-out infinite}
+@keyframes gspin{50%{transform:rotateY(180deg)}}
+.goldbar.spend{animation:gspend .45s}
+@keyframes gspend{30%{transform:scale(1.08);filter:brightness(1.3)}}
+/* Animationen */
+.pc .fig{transform-origin:50% 85%}
+.pc.die{transition:none}
+.pc.die>*{animation:die .45s ease-in forwards}
+@keyframes die{to{transform:scale(.2) rotate(25deg);opacity:0;filter:brightness(3)}}
+.pc.selp .fig{animation:selp 1.2s ease-in-out infinite}
+@keyframes selp{50%{transform:translateY(-8%) scale(1.05)}}
+.pc.k::before{content:"";position:absolute;inset:8%;border-radius:50%;background:radial-gradient(circle,#ffd86b66,transparent 70%);animation:kglow 2s ease-in-out infinite;pointer-events:none}
+.pc.k.e::before{background:radial-gradient(circle,#ff3b5566,transparent 70%)}
+@keyframes kglow{50%{opacity:.25;transform:scale(1.2)}}
+.ptc{position:absolute;width:8px;height:8px;border-radius:50%;pointer-events:none;z-index:8;animation:ptc .6s ease-out forwards}
+@keyframes ptc{to{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0}}
+.cf{position:fixed;top:-12px;width:9px;height:14px;pointer-events:none;z-index:99;animation:cf linear forwards}
+@keyframes cf{to{transform:translate(var(--dx),110vh) rotate(var(--rt))}}
+#ovc:not(.noan)>*{animation:mIn .35s ease-out backwards}
+#ovc>*:nth-child(2){animation-delay:.05s}#ovc>*:nth-child(3){animation-delay:.1s}#ovc>*:nth-child(4){animation-delay:.15s}#ovc>*:nth-child(5){animation-delay:.2s}#ovc>*:nth-child(6){animation-delay:.25s}#ovc>*:nth-child(n+7){animation-delay:.3s}
+@keyframes mIn{from{opacity:0;transform:translateY(14px) scale(.97)}}
+@media (prefers-reduced-motion:reduce){.pc.selp .fig,.pc.k::before,#ovc>*{animation:none}}
 </style>
 </head>
 <body>
@@ -162,6 +191,7 @@ body{margin:0;background:radial-gradient(ellipse at 50% 0%,#2a1838,var(--bg) 70%
   <div id="turn"></div>
   <div id="boardWrap"><div id="board"></div><div id="layer"></div><div id="banner"></div></div>
   <div id="spells"></div>
+  <div id="pmbar" onclick="desc('pm')"><span>💧 <b id="pm2">0</b>/10</span><div class="pips"></div></div>
   <div id="info"></div>
 </div>
 
@@ -216,8 +246,8 @@ const T={
     t1:{n:'Hochkönig',d:'zieht bis zu 2 Felder',mv:[['O',2],['D',2]]},t2:{n:'Königsaura',d:'Nachbarn +1 Angriff'}},
  R:{n:'Turm',mv:[['O',8]],hp:9,atk:2,def:1,
     t1:{n:'Festungsturm',d:'zusätzlich 1 Feld diagonal',mv:[['O',8],['D',1]]},t2:{n:'Schildwall',d:'+2 Verteidigung'}},
- B:{n:'Läufer',mv:[['D',8]],hp:7,atk:2,def:0,
-    t1:{n:'Erzmagier',d:'springt zusätzlich wie ein Springer',mv:[['D',8],['N']]},t2:{n:'Segen',d:'heilt sich & Nachbarn jede Runde +1'}},
+ B:{n:'Läufer',mv:[['D',8],['O',1]],hp:7,atk:2,def:0,
+    t1:{n:'Erzmagier',d:'springt zusätzlich wie ein Springer',mv:[['D',8],['O',1],['N']]},t2:{n:'Segen',d:'heilt sich & Nachbarn jede Runde +1'}},
  N:{n:'Springer',mv:[['N']],hp:7,atk:3,def:0,
     t1:{n:'Paladin',d:'zieht zusätzlich wie ein König',mv:[['N'],['O',1],['D',1]]},t2:{n:'Sturmangriff',d:'nach einem Sieg nochmal ziehen'}},
  Q:{n:'Dame',mv:[['O',8],['D',8]],hp:8,atk:3,def:1,
@@ -226,12 +256,12 @@ const T={
 const E={ // Name, Grafik, Züge, LP, ATK, DEF
  S:['Schatten','S',[['O',1],['D',1]],3,2,0],
  N:['Nachtreiter','N',[['N']],4,2,0],
- B:['Hexer','B',[['D',8]],4,2,0],
+ B:['Hexer','B',[['D',8],['O',1]],4,2,0],
  R:['Golem','R',[['O',8]],6,2,1],
  Q:['Hexenkönigin','Q',[['O',8],['D',8]],6,3,1],
  K:['Dunkler König','K',[['O',1],['D',1]],9,3,1],
 };
-const PLANS=[{n:'Schatten rufen',c:4},{n:'Fluchblitz',c:6},{n:'Dunkle Heilung',c:8},{n:'Raserei',c:10}];
+const PLANS=[{k:'heal',w:1},{k:'shield',w:1},{k:'frost',w:2},{k:'bolt',w:3}]; // Gegner nutzt nur die Grundzauber (ab Level w)
 const DIR={O:[[1,0],[-1,0],[0,1],[0,-1]],D:[[1,1],[1,-1],[-1,1],[-1,-1]]};
 const JUMP=[[1,2],[2,1],[-1,2],[-2,1],[1,-2],[2,-1],[-1,-2],[-2,-1]];
 
@@ -241,7 +271,7 @@ let unl=1;try{unl=Math.max(1,+localStorage.getItem('manaschach_lvl')||1)}catch(e
 function saveUnl(){try{localStorage.setItem('manaschach_lvl',unl)}catch(e){}}
 // ---- Fortschritt: Münzen, Sterne, dauerhafte Upgrades ----
 let SV={coins:0,up:{K:{a:0,d:0,h:0},R:{a:0,d:0,h:0},B:{a:0,d:0,h:0},N:{a:0,d:0,h:0},Q:{a:0,d:0,h:0}},mana:0,stars:{},army:[],adDay:'',adCount:0,disc:false,used:[]};
-try{const x=JSON.parse(localStorage.getItem('manaschach_save')||'null');if(x){const up=SV.up;SV=Object.assign(SV,x);SV.up=Object.assign(up,x.up||{});SV.army=x.army||[]}}catch(e){}
+try{const x=JSON.parse(localStorage.getItem('manaschach_save')||'null');if(x){const up=SV.up;SV=Object.assign(SV,x);SV.up=Object.assign(up,x.up||{});SV.army=x.army||[];for(const t in up)up[t]=Object.assign({a:0,d:0,h:0},up[t]);if(x.unl)unl=Math.max(unl,x.unl)}}catch(e){}
 function saveSV(){SV.unl=unl;try{localStorage.setItem('manaschach_save',JSON.stringify(SV))}catch(e){}}
 if(SV.unl>unl)unl=SV.unl;
 // Spielstand-Code: Fortschritt auf anderes Gerät/Link übertragen
@@ -404,6 +434,7 @@ function startDuo(){
   closeMenu();startMusic();banner('2 Spieler','var(--gold)');startTurn();
 }
 function switchSide(){
+  P.forEach(q=>{if(q.side===cur&&q.frz)q.frz--});
   cur=opp(cur);[pmana,omana]=[omana,pmana];rnd++;
   if(Math.random()<.25)spawnField();
   sel=null;moves=[];startTurn();
@@ -422,7 +453,7 @@ function startLevel(n){
   spawnField('atk');spawnField('def');
   closeMenu();startMusic();startTurn();
 }
-function newPlan(){const pool=PLANS.filter(p=>p.c<=6+wave*2);plan=pool[Math.random()*pool.length|0]}
+function newPlan(){const pool=PLANS.filter(p=>p.w<=wave),x=pool[Math.random()*pool.length|0];plan={k:x.k,n:SP[x.k].i+' '+SP[x.k].n,c:SP[x.k].c}}
 function nextWave(){
   wave++;
   const pool=['S','N','N'].concat(wave>1?['B']:[],wave>2?['R']:[],wave>3?['Q']:[]);
@@ -478,7 +509,8 @@ function click(r,c){
   if(spk&&phase==='p')return castAt(r,c);
   const x=at(r,c);
   if(phase==='p'&&sel&&sel.side===cur){const m=moves.find(m=>m.r===r&&m.c===c);if(m)return act(sel,m)}
-  sel=x||null;moves=x&&(x.side!==cur||phase==='p')?gen(x):[];
+  sel=x||null;moves=x&&(x.side!==cur||phase==='p')&&!(x.frz&&x.side===cur)?gen(x):[];
+  if(x&&x.frz&&x.side===cur)log('❄ '+x.name+' ist eingefroren und kann diese Runde nicht ziehen.');
   dk=x?null:((ter[r][c]&&ter[r][c].k)||(fld[r][c]&&fld[r][c].k)||null);
   if(x&&x.side==='e')log('Rote Punkte = Reichweite von '+x.name);
   if(x)sfx('select');
@@ -494,12 +526,13 @@ function useFields(p,cells){
         p.max+=2;p.hp+=2;banner(d.n+'!','var(--evo)');log('✦ '+d.n+': '+d.d)}
       else{p.atk++;p.def++;float(r,c,'+1 ⚔ +1 🛡','var(--evo)')}
     }
+    burstAt(r,c,{heal:'#3ddc84',atk:'#ff9d52',def:'#6fb6ff',evo:'#f2c14e'}[f.k]||'#fff',f.k==='evo'?22:12);
     sfx(f.k==='evo'?'evo':'field');
   }
 }
 function hit(a,d){
   if(blocked(d)){beam(a.r,a.c,d.r,d.c,'#7fd4ff');return false}
-  const x=dmgOf(a,d);beam(a.r,a.c,d.r,d.c,a.side==='e'?'#ff4d5e':'#9fd0ff');log((a.side==='e'?'⚠ ':'')+a.name+' greift '+d.name+' an: −'+x);d.hp-=x;float(d.r,d.c,'-'+x,'var(--red)');hurt(d);sfx(d.hp<=0?'kill':'hit');
+  const x=dmgOf(a,d);lunge(a,d);beam(a.r,a.c,d.r,d.c,a.side==='e'?'#ff4d5e':'#9fd0ff');log((a.side==='e'?'⚠ ':'')+a.name+' greift '+d.name+' an: −'+x);d.hp-=x;float(d.r,d.c,'-'+x,'var(--red)');hurt(d);sfx(d.hp<=0?'kill':'hit');
   if(d.hp<=0){P=P.filter(p=>p!==d);onDeath(d,a.side==='p');return true}
   return false;
 }
@@ -523,19 +556,20 @@ function waveClear(){
   let rew=10+5*wave+3*alive;if(!first)rew=Math.ceil(rew/2);
   SV.coins+=rew;SV.stars[wave]=Math.max(SV.stars[wave]||0,st);saveSV();lastRew={rew,st,first};
   if(first){unl=wave+1;saveUnl()}
-  banner('Level geschafft!','var(--heal)');sfx('wave');render();
+  banner('Level geschafft!','var(--heal)');sfx('wave');render();confetti();
   later(()=>menu('won'),1400);
 }
 
 // ---- Gegner ----
 function enemyTurn(){
   phase='e';$('turn').textContent='GEGNER AM ZUG';$('turn').style.color='var(--red)';
-  mana+=2;let n=1;
+  mana=Math.min(12,mana+2);let n=1;
+  mine().forEach(p=>{if(p.frz)p.frz--});
   const fs=foes();
   if(fs.length===1&&fs[0].t==='K'){const K=fs[0];
     if(!K.last){K.last=true;K.def++;banner('Letztes Aufgebot!','var(--red)');log('Der Dunkle König ruft Schatten und schlägt zurück!');summonNear(K,2);sfx('cast')}
     else if(rnd%3===0){summonNear(K,1);log('Der Dunkle König ruft einen Schatten.')}}
-  if(mana>=plan.c){mana-=plan.c;if(cast(plan))n+=1;newPlan()}
+  if(mana>=plan.c){if(cast(plan))newPlan();else if(mana>=12)newPlan()}
   render();
   const step=()=>{
     if(over)return;
@@ -553,14 +587,18 @@ function enemyTurn(){
   later(step,500);
 }
 function cast(pl){
-  banner(pl.n,'var(--mana)');sfx('cast');log('Gegner wirkt: '+pl.n);
-  if(pl.n==='Schatten rufen'){const e=emptyCells(0,2);if(e.length){const[r,c]=e[Math.random()*e.length|0];P.push(mkE('S',r,c));flashT(r,c)}}
-  if(pl.n==='Fluchblitz'){
-    const tg=mine().sort((a,b)=>a.hp-b.hp)[0];
-    if(tg&&blocked(tg)){}else if(tg){const d=2+Math.floor(wave/3);tg.hp-=d;flashT(tg.r,tg.c);float(tg.r,tg.c,'-'+d+' Fluch','var(--mana)');log('🔮 Fluchblitz trifft '+tg.name+': −'+d);hurt(tg);if(tg.hp<=0)P=P.filter(p=>p!==tg)}
-  }
-  if(pl.n==='Dunkle Heilung')foes().forEach(f=>{f.hp=Math.min(f.max,f.hp+3);float(f.r,f.c,'+3','var(--heal)')});
-  return pl.n==='Raserei';
+  const fs=foes(),my=mine();let t=null;
+  if(pl.k==='heal')t=fs.filter(f=>f.max-f.hp>=2).sort((a,b)=>(a.hp-a.max)-(b.hp-b.max))[0];
+  if(pl.k==='shield')t=fs.filter(f=>!f.shield).sort((a,b)=>(b.t==='K')-(a.t==='K')||b.atk-a.atk)[0];
+  if(pl.k==='frost')t=my.filter(p=>!p.frz).sort((a,b)=>atkOf(b)-atkOf(a))[0];
+  if(pl.k==='bolt')t=my.slice().sort((a,b)=>a.hp-b.hp)[0];
+  if(!t)return false;
+  mana-=pl.c;banner('Gegner: '+pl.n,'var(--mana)');sfx('cast');log('🔮 Gegner wirkt '+pl.n+' auf '+t.name);flashT(t.r,t.c);
+  if(pl.k==='heal'){const h=Math.min(4,t.max-t.hp);t.hp+=h;float(t.r,t.c,'+'+h+' ❤','var(--heal)');burstAt(t.r,t.c,'#3ddc84')}
+  if(pl.k==='shield'){t.shield=true;float(t.r,t.c,'Schild!','#ff9daa')}
+  if(pl.k==='frost'){t.frz=1;float(t.r,t.c,'Eingefroren','#bff4ff');burstAt(t.r,t.c,'#bff4ff')}
+  if(pl.k==='bolt'){beam(-.5,3.5,t.r,t.c,'#ff4d5e');dmgRaw(t,3,' ⚡','var(--mana)')}
+  return true;
 }
 function threat(){const s=new Set();for(const p of mine())for(const m of gen(p))s.add(m.r*8+m.c);return s}
 function summonNear(K,n){
@@ -617,7 +655,7 @@ function menu(k){
     const row=t=>{const u=SV.up[t],d=T[t];const b=(k,ic,val)=>{const l=u[k],c=price(UPC[k](l));return l>=UPMAX[k]?`<button class="ub" disabled>${ic} MAX</button>`:`<button class="ub" ${SV.coins<c?'disabled':''} onclick="buyUp('${t}','${k}')">${ic} ${val}<small>🪙 ${c}</small></button>`};
       return `<div class="srow">${svg(t,'p')}<div class="sinf"><b>${d.n}</b><span>⚔ ${d.atk+u.a} · 🛡 ${d.def+u.d} · ❤ ${d.hp+2*u.h}</span></div>${b('a','⚔','+1')}${b('d','🛡','+1')}${b('h','❤','+2')}</div>`};
     const mc=price(MANAC(SV.mana));
-    h=`<h2>⚒ Schmiede</h2><div class="res2">🪙 ${SV.coins} Münzen</div>${mb('🪙 Münzen holen & 🎬 Werbung',"menu('coins')")}<div class="tag" style="font-size:13px">Dauerhafte Verbesserungen für jedes Level.<br>⚖ Je stärker deine Armee, desto stärker werden auch die Gegner.</div>${['K','R','B','N'].concat(SV.army.includes('Q')?['Q']:[]).map(row).join('')}
+    h=`<h2>⚒ Schmiede</h2><div class="goldbar"><span class="gc">🪙</span> <b id="gnum">${SV.coins}</b> Münzen${SV.disc?' · 🏷 −30 %':''}</div>${mb('🪙 Münzen holen & 🎬 Werbung',"menu('coins')")}<div class="tag" style="font-size:13px">Dauerhafte Verbesserungen für jedes Level.<br>⚖ Je stärker deine Armee, desto stärker werden auch die Gegner.</div>${['K','R','B','N'].concat(SV.army.includes('Q')?['Q']:[]).map(row).join('')}
     <h2 style="font-size:20px;margin-top:8px">⚔ Figuren kaufen</h2><div class="tag" style="font-size:13px">Armee: ${SV.army.length?SV.army.map(t=>T[t].n).join(', '):'noch keine Zusatzfiguren'} (${SV.army.length}/${ARMYMAX})</div>
     ${Object.keys(BUY).map(t=>`<div class="srow">${svg(t,'p')}<div class="sinf"><b>${T[t].n}</b><span>⚔ ${T[t].atk} · 🛡 ${T[t].def} · ❤ ${T[t].hp} · spielt in jedem Level mit</span></div><button class="ub" style="width:64px" ${SV.coins<price(BUY[t])||SV.army.length>=ARMYMAX?'disabled':''} onclick="buyPiece('${t}')">Kaufen<small>🪙 ${price(BUY[t])}</small></button></div>`).join('')}
     <div class="srow"><span style="font-size:30px;width:40px;text-align:center">💧</span><div class="sinf"><b>Start-Mana</b><span>jedes Level mit ${SV.mana} Mana beginnen</span></div>${SV.mana>=MANAMAX?'<button class="ub" disabled>MAX</button>':`<button class="ub" ${SV.coins<mc?'disabled':''} onclick="buyMana()">+1<small>🪙 ${mc}</small></button>`}</div>
@@ -638,10 +676,10 @@ function menu(k){
     <div id="smsg" class="tag" style="color:var(--gold)"></div>${mb('← Zurück',"menu('settings')",'big')}`;
   if(k==='levels'){const top=Math.max(12,unl+3);let g='';for(let i=1;i<=top;i++){const ok=i<=unl;g+=`<button class="lv${ok?'':' lk'}${i<unl?' dn':''}" ${ok?`onclick="startLevel(${i})"`:'disabled'}><b>${ok?i:'🔒'}</b><small>${i<unl&&SV.stars[i]?stars(SV.stars[i]):LVN(i)}</small></button>`}
     h=`<h2>Levelauswahl</h2><div class="lvg">${g}</div>${mb('← Zurück',`menu('${over?'play':'opt'}')`,'big')}`}
-  if(k==='won')h=`<h1>Level ${wave} geschafft!</h1><div class="res2" style="font-size:26px">${stars(lastRew?lastRew.st:1)}</div><div class="res2">+${lastRew?lastRew.rew:0} 🪙${lastRew&&!lastRew.first?' (Wiederholung: halbe Belohnung)':''}</div>${lastRew&&!lastRew.dbl&&adsLeft()?mb('🎬 Werbung ansehen: Belohnung verdoppeln',"showAd('double')"):''}${shop}${mb('▶ Level '+(wave+1),'startLevel('+(wave+1)+')','big')}${mb('↻ Level '+wave+' wiederholen','startLevel('+wave+')')}${lvsel}${mb('⌂ Hauptmenü',"menu('start')")}`;
+  if(k==='won')h=`<h1>Level ${wave} geschafft!</h1><div class="res2" style="font-size:26px">${stars(lastRew?lastRew.st:1)}</div><div class="res2">+<span id="rewn">0</span> 🪙${lastRew&&!lastRew.first?' (Wiederholung: halbe Belohnung)':''}</div>${lastRew&&!lastRew.dbl&&adsLeft()?mb('🎬 Werbung ansehen: Belohnung verdoppeln',"showAd('double')"):''}${shop}${mb('▶ Level '+(wave+1),'startLevel('+(wave+1)+')','big')}${mb('↻ Level '+wave+' wiederholen','startLevel('+wave+')')}${lvsel}${mb('⌂ Hauptmenü',"menu('start')")}`;
   if(k==='rules')h=`<h2>Regeln</h2>${$('rulesT').innerHTML}<div class="legg">${Object.keys(FICON).map(x=>`<span>${FICON[x]}${FNAME[x]}</span>`).join('')}${Object.keys(TSVG).map(x=>`<span>${TSVG[x]}${TNAME[x]}</span>`).join('')}</div>${mb('← Zurück',`menu('${over?'settings':'opt'}')`,'big')}`;
   if(k==='end')h=`<h1>König gefallen</h1><div class="res2">${endD}</div>${mb('↻ Level '+wave+' nochmal','startLevel('+wave+')','big')}${lvsel}${mb('⌂ Hauptmenü',"menu('start')")}`;
-  $('ovc').innerHTML=h;$('ov').classList.remove('hide');$('ov').scrollTop=0;
+  const keep=k==='shop'&&menuK==='shop'?$('ov').scrollTop:0,old=SV_prev;menuK=k;SV_prev=SV.coins;$('ovc').innerHTML=h;$('ov').classList.remove('hide');$('ov').scrollTop=keep;if(k==='shop'&&old>SV.coins){const g=document.querySelector('.goldbar');if(g){g.classList.add('spend');countDown($('gnum'),old,SV.coins)}}if(keep)$('ovc').classList.add('noan');else $('ovc').classList.remove('noan');if(k==='won')countUp($('rewn'),lastRew?lastRew.rew:0);
 }
 function closeMenu(){$('ov').classList.add('hide')}
 function quit(){gid++;over=true;phase='x';stopMusic();menu('start')}
@@ -649,8 +687,8 @@ function help(){menu('rules')}
 // ---- Kurzbeschreibungen beim Antippen ----
 const DESC={heal:'Heilfeld: deine Figur bekommt beim Betreten +4 Leben.',atk:'Angriffsfeld: +1 Angriff für die Figur, dauerhaft.',def:'Verteidigungsfeld: +1 Verteidigung, die Figur nimmt weniger Schaden.',evo:'Entwicklungsfeld: neue Zugart, beim 2. Mal eine Spezialfähigkeit.',
  lava:'Lava: 2 Schaden beim Betreten und jede Runde – für alle Figuren.',tur:'Pfeilturm: schießt jede Runde in Pfeilrichtung auf die erste Figur und dreht sich dann weiter. Blockiert.',bomb:'Bombe: explodiert bei 0 oder beim Betreten und trifft alle Figuren rundherum.',rock:'Felsen: blockiert den Weg.',
- wave:'Level: Besiege den Dunklen König, um das nächste Level freizuschalten. Jedes Level startet mit allen Figuren.',rnd:'Zug: Anzahl der gespielten Runden in diesem Spiel.',pm:'Dein Mana: startet bei 0, +1 pro Runde (max. 10). Damit wirkst du Zauber aus der Leiste unter dem Brett – einen pro Runde.',mana:'Gegner-Mana: +2 pro Runde. Ist genug da, wirkt der Gegner den angezeigten Zauber.'};
-const EDESC={S:'zieht 1 Feld in jede Richtung',N:'springt im L wie ein Springer',B:'zieht diagonal wie ein Läufer – auch über weite Strecken',R:'zieht gerade wie ein Turm – auch über weite Strecken',Q:'zieht wie eine Dame – gerade und diagonal',K:'Anführer – fällt er, ist das Level gewonnen. Zieht 1 Feld. Schlägt im Nahkampf zurück – greif ihn aus der Ferne an. Allein ruft er Schatten und flieht.'};
+ wave:'Level: Besiege den Dunklen König, um das nächste Level freizuschalten. Jedes Level startet mit allen Figuren.',rnd:'Zug: Anzahl der gespielten Runden in diesem Spiel.',pm:'Dein Mana: startet bei 0, +1 pro Runde (max. 10). Damit wirkst du Zauber aus der Leiste unter dem Brett – einen pro Runde.',mana:'Gegner-Mana: +2 pro Runde. Der Gegner kennt nur die 4 Grundzauber (Heilung, Schild, Frost, Blitz) – du hast zusätzlich Stärke und Feuerball.'};
+const EDESC={S:'zieht 1 Feld in jede Richtung',N:'springt im L wie ein Springer',B:'zieht diagonal wie ein Läufer – auch über weite Strecken – und 1 Feld gerade',R:'zieht gerade wie ein Turm – auch über weite Strecken',Q:'zieht wie eine Dame – gerade und diagonal',K:'Anführer – fällt er, ist das Level gewonnen. Zieht 1 Feld. Schlägt im Nahkampf zurück – greif ihn aus der Ferne an. Allein ruft er Schatten und flieht.'};
 let dk=null,pmana=0,spk=null,castUsed=false,gid=0;
 function later(fn,ms){const g=gid;setTimeout(()=>{if(g===gid)fn()},ms)}
 // Gemeinsame Behandlung, wenn eine Figur fällt
@@ -665,6 +703,8 @@ const SP={
  bolt:{i:'⚡',n:'Blitz',c:8,t:'e',d:'Gegner 3 Schaden – ignoriert Verteidigung'},
  shield:{i:'🛡',n:'Schild',c:3,t:'p',d:'Eigene Figur blockt den nächsten Treffer komplett'},
  frost:{i:'❄',n:'Frost',c:5,t:'e',d:'Gegner ist 1 Runde eingefroren und kann nichts tun'},
+ power:{i:'💪',n:'Stärke',c:4,t:'p',d:'Eigene Figur dauerhaft +1 Angriff (dieses Level)'},
+ fire:{i:'🔥',n:'Feuerball',c:7,t:'e',d:'2 Schaden am Ziel und an allen Gegnern daneben'},
 };
 function spells(){
   $('spells').innerHTML=Object.keys(SP).map(k=>{const x=SP[k];const ok=phase==='p'&&!over&&!castUsed&&pmana>=x.c;
@@ -682,6 +722,8 @@ function castAt(r,c){
   if(k==='shield'){x.shield=true;float(r,c,'Schild!','#7fd4ff')}
   if(k==='frost'){x.frz=1;float(r,c,'Eingefroren','#bff4ff')}
   if(k==='bolt'){beam(7.5,3.5,r,c,'#7fd4ff');dmgRaw(x,3,' ⚡','#7fd4ff')}
+  if(k==='power'){x.atk++;float(r,c,'+1 ⚔','var(--atk)');burstAt(r,c,'#ff9d52')}
+  if(k==='fire'){const tg=P.filter(q=>q.side===x.side&&dist(q,x)<=1);beam(7.5,3.5,r,c,'#ff9d52');burstAt(r,c,'#ff7a1a',24);tg.forEach(q=>dmgRaw(q,2,' 🔥','#ff9d52'))}
   log(s.i+' '+s.n+' gewirkt.');render();
   if(duo){duoCheck();return}
   if(!foes().length){phase='wait';render();later(waveClear,500)}
@@ -781,6 +823,18 @@ function banner(t,col){const b=$('banner');b.textContent=t;b.style.color=col;b.c
 function float(r,c,t,col){const d=document.createElement('div');d.className='fl';d.textContent=t;d.style.color=col;
   const cs=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--c'));
   d.style.left=(6+c*cs+cs/2-60)+'px';d.style.top=(6+r*cs)+'px';$('boardWrap').appendChild(d);setTimeout(()=>d.remove(),1100)}
+function burstAt(r,c,col,n=12){const cs=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--c')),w=$('boardWrap');
+  for(let i=0;i<n;i++){const d=document.createElement('div'),a=Math.random()*6.28,v=cs*(.35+Math.random()*.5);d.className='ptc';d.style.background=col;
+    d.style.left=(6+c*cs+cs/2-4)+'px';d.style.top=(6+r*cs+cs/2-4)+'px';d.style.setProperty('--dx',Math.cos(a)*v+'px');d.style.setProperty('--dy',Math.sin(a)*v+'px');w.appendChild(d);setTimeout(()=>d.remove(),650)}}
+function confetti(){const C=['#f2c14e','#3ddc84','#6fb6ff','#ff4d5e','#c58bff','#fff'];
+  for(let i=0;i<70;i++){const d=document.createElement('div');d.className='cf';d.style.left=Math.random()*100+'vw';d.style.background=C[i%C.length];
+    const t=1.6+Math.random()*1.6;d.style.animationDuration=t+'s';d.style.animationDelay=Math.random()*.5+'s';d.style.setProperty('--dx',(Math.random()*160-80)+'px');d.style.setProperty('--rt',(Math.random()*1080-540)+'deg');
+    document.body.appendChild(d);setTimeout(()=>d.remove(),(t+.6)*1000)}}
+var menuK='',SV_prev=0;
+function countDown(el,a,b){if(!el)return;let i=a;const st=Math.max(1,Math.ceil((a-b)/15)),iv=setInterval(()=>{i=Math.max(b,i-st);el.textContent=i;if(i<=b)clearInterval(iv)},30)}
+function countUp(el,n){if(!el)return;let i=0;const st=Math.max(1,Math.ceil(n/25)),iv=setInterval(()=>{i=Math.min(n,i+st);el.textContent=i;if(i>=n)clearInterval(iv)},35)}
+function lunge(a,d){const e=$('layer').querySelector('[data-id="'+a.id+'"] .fig');if(!e||!e.animate)return;
+  const dx=Math.sign(d.c-a.c)*18,dy=Math.sign(d.r-a.r)*18;e.animate([{transform:'none'},{transform:`translate(${dx}%,${dy}%) scale(1.12)`},{transform:'none'}],{duration:260,easing:'ease-out'})}
 function hurt(p){setTimeout(()=>{const e=$('layer').querySelector('[data-id="'+p.id+'"]');if(e){e.classList.remove('hurt');void e.offsetWidth;e.classList.add('hurt')}},20)}
 function flashT(r,c){setTimeout(()=>{const t=$('board').children[r*8+c];if(t){t.classList.remove('cast');void t.offsetWidth;t.classList.add('cast')}},30)}
 function info(){
@@ -801,20 +855,24 @@ function render(){
     const want=(f?f.k:'')+'|'+(g?g.k+(g.t??'')+(g.d??''):'');if(t.dataset.f!==want){t.dataset.f=want;t.innerHTML=(g?terHtml(g):'')+(f?`<div class="fi">${FICON[f.k]}</div>`:'')}
   });
   const L=$('layer'),cs='var(--c)',have=new Set(P.map(p=>p.id));
-  [...L.children].forEach(e=>{if(!have.has(+e.dataset.id))e.remove()});
+  [...L.children].forEach(e=>{if(!have.has(+e.dataset.id)&&!e.classList.contains('die')){const r=+e.dataset.r,c=+e.dataset.c;e.className+=' die';if(!isNaN(r))burstAt(r,c,e.classList.contains('e')?'#ff4d5e':'#9fd0ff',16);setTimeout(()=>e.remove(),460)}});
   for(const p of P){
     let e=L.querySelector('[data-id="'+p.id+'"]');
-    if(!e){e=document.createElement('div');e.dataset.id=p.id;L.appendChild(e);e.style.transition='none';e.style.transform=`translate(calc(${cs}*${p.c}),calc(${cs}*${p.r}))`;void e.offsetWidth;e.style.transition=''}
-    e.className='pc '+p.side+(p.g==='K'?' k':'')+(p.shield?' sh':'')+(p.frz?' fz':'');
+    if(!e){e=document.createElement('div');e.dataset.id=p.id;L.appendChild(e);e.style.transition='none';e.style.transform=`translate(calc(${cs}*${p.c}),calc(${cs}*${p.r}))`;void e.offsetWidth;e.style.transition='';e.dataset.pop=1}
+    e.className='pc '+p.side+(p.g==='K'?' k':'')+(p.shield?' sh':'')+(p.frz?' fz':'')+(sel===p?' selp':'');
     const a=atkOf(p),key=[p.g,p.hp,p.max,a,p.def,p.tier].join();
     if(e.dataset.k!==key){e.dataset.k=key;e.innerHTML=svg(p.g,p.side)+(p.tier?`<div class="stars">${'✦'.repeat(p.tier)}</div>`:'')+`<div class="bd d">${p.def}</div><div class="bd a">${a}</div><div class="hpb"><i style="width:${Math.max(0,p.hp/p.max*100)}%;background:${hpCol(p)}"></i><span>${Math.max(0,p.hp)}/${p.max}</span></div>`}
     e.style.transform=`translate(calc(${cs}*${p.c}),calc(${cs}*${p.r}))`;
+    const pos=p.r+','+p.c,fg=e.querySelector('.fig');
+    if(fg&&fg.animate){if(e.dataset.pop){delete e.dataset.pop;fg.animate([{transform:'scale(0)',opacity:0},{transform:'scale(1.2)',opacity:1},{transform:'scale(1)'}],{duration:380,easing:'ease-out'})}
+      else if(e.dataset.pos&&e.dataset.pos!==pos)fg.animate([{transform:'none'},{transform:'translateY(-22%) scale(1.08)'},{transform:'none'}],{duration:300,easing:'ease-out'})}
+    e.dataset.pos=pos;e.dataset.r=p.r;e.dataset.c=p.c;
   }
   $('wave').textContent=duo?'2P':wave||1;$('mana').textContent=duo?'':mana;
   if(plan){const left=Math.max(0,Math.ceil((plan.c-mana)/2));$('plan').textContent=plan.n+(left?' in '+left+' Rd.':' – jetzt!');$('mfill').style.width=Math.min(100,mana/plan.c*100)+'%'}
   $('mlab').textContent=duo?'🔴 SPIELER 2':'🔮 GEGNER-MANA';$('plab').textContent=duo?'🟡 SPIELER 1':'💧 MANA';
   if(duo){$('plan').textContent='💧 Mana '+(cur==='e'?pmana:omana);$('mfill').style.width='0'}
-  $('pm').textContent=duo&&cur==='e'?omana:pmana;spells();info();
+  const pmv=duo&&cur==='e'?omana:pmana;$('pm').textContent=pmv;$('pm2').textContent=pmv;document.querySelector('#pmbar .pips').innerHTML='<i class=on></i>'.repeat(pmv)+'<i></i>'.repeat(Math.max(0,10-pmv));spells();info();
 }
 function size(){
   const c=Math.max(34,Math.floor(Math.min((Math.min(innerWidth,672)-46)/N,(innerHeight-225)/N,78)));
