@@ -105,4 +105,54 @@ Rezept und Messplan stehen bereits in `beton-superkondensator-versuchsreihe.xlsx
 - [Thermo King High-Output Electric Standby](https://www.fleetequipmentmag.com/thermo-king-offers-high-output-electric-standby-option/)
 - [Electric-Powered Reefer Units Gaining Momentum (TT)](https://www.ttnews.com/articles/electric-powered-reefer-units-gaining-momentum)
 
-Runde 3 folgt: Wirtschaftlichkeit Landstrom und PV-Carport, endgültige Reihenfolge, Startempfehlung.
+## Runde 3: Wirtschaftlichkeit, endgültige Reihenfolge, Start
+
+### Idee 1: Landstrom für Kühlauflieger (2 Stellplätze)
+| Annahme | Wert |
+|---|---|
+| Mittlere Leistung Kühlaggregat im Stand | 4 kW |
+| Standzeit | 10 h/Nacht, 20 Nächte/Monat, Auslastung 65 % |
+| Verbrauch je Stellplatz | ca. 6.200 kWh/Jahr |
+| Stromeinkauf Gewerbe (nachts, meist Netz, PV hilft nur am Wochenende/tagsüber) | ca. 20 ct/kWh |
+| Verkaufspreis (Pauschale umgerechnet) | ca. 38 ct/kWh |
+| Vergleich Diesel-Aggregat: ca. 2 l/h × 1,55 € ≈ 3,10 €/h für 4 kW | ≈ 78 ct/kWh |
+
+- **Marge:** 18 ct × 6.200 kWh × 2 Plätze ≈ **2.200 €/Jahr**, plus höhere Stellplatzmiete.
+- **Investition:** ca. 1.700–3.500 €. **Amortisation ca. 1–1,5 Jahre.**
+- **Für den Fahrer ist es halb so teuer wie Diesel**, dazu leise und ohne Abgas. Das ist das Verkaufsargument.
+- **Risiko:** Auslastung. Deshalb zuerst die Nachfrage prüfen (siehe Start).
+
+### Idee 6: PV-Carport über der LKW-Parkfläche (1.000 m²)
+| Annahme | Wert |
+|---|---|
+| Leistung | ca. 180 kWp (5,5 m²/kWp) |
+| Ertrag Enns | ca. 1.050 kWh/kWp → **ca. 190 MWh/Jahr** |
+| Investition LKW-Carport (Durchfahrtshöhe 4,5–5 m, schwerer Stahlbau, Anfahrschutz) | ca. 1.400–1.800 €/kWp → **250.000–320.000 €** |
+| Erlös-Mix: Eigenverbrauch Halle, Landstrom tagsüber, Energiegemeinschaft ca. 12 ct, Rest Einspeisung ca. 6–8 ct | Ø ca. 9 ct/kWh → ca. 17.000 €/Jahr |
+| Überdachter Stellplatz: +20 €/Monat × 20 Plätze | ca. 4.800 €/Jahr |
+
+- **Summe ca. 22.000 €/Jahr → Amortisation ca. 11–15 Jahre ohne Förderung.**
+- Deutlich besser wird es nur mit Förderung (EAG-Investitionszuschuss, prüfen) oder wenn ein großer Teil des Stroms für 30+ ct verkauft wird (Landstrom, E-LKW-Laden).
+- **Fazit:** Nicht jetzt. Erst Landstrom und Stellplatz-Nachfrage aufbauen, dann den Carport darauf auslegen.
+
+### Endgültige Reihenfolge (nach Aufwand, Risiko und Nutzen)
+| # | Idee | Warum an dieser Stelle |
+|---|---|---|
+| 1 | Landstrom für Kühlauflieger | Wenig Geld, schnelle Amortisation, passt zur Parkfläche |
+| 2 | Geopolymer-Superkondensator | Unter 300 €, Werkstatt reicht, Patentchance |
+| 3 | Mini-Schotterspeicher 1 m³ | Unter 1.000 €, Vorstufe zu Idee 9, Patentchance |
+| 4 | Energiegemeinschaft (EEG) | Fast kostenlos, bessere PV-Erlöse sofort |
+| 5 | Kompressor-Abwärme für Halle | Wärme spart sicher Geld, TEG als Nebenexperiment |
+| 6 | Vertikaler PV-Zaun | Zaun und Strom in einem, mittlere Investition |
+| 7 | PV-Carport LKW-Plätze | Lohnt sich erst mit Landstrom-Kunden oder Förderung |
+| 8 | Asphalt-/Schotterkollektor 2 × 2 m | Günstig, liefert Daten für Speicher |
+| 9 | Parkfläche als Speicherdeckel | Erst nach Ergebnis von 3 |
+| 10 | Kompost-/Hackschnitzel-TEG | Nur Experiment, Strom im Wattbereich |
+
+### Start diese Woche
+1. **Nachfrage prüfen:** Die aktuellen und angefragten LKW-Parker fragen: „Habt ihr Kühlauflieger? Würdet ihr für einen Stellplatz mit 400-V-Kühlstrom ca. X € mehr zahlen?“ Drei Zusagen reichen für den Start.
+2. **Elektriker-Angebot** für 2 × CEE 32 A mit FI und geeichten Zählern einholen. Dabei fragen, ob Stromweiterverrechnung an Dritte zulässig ist oder die Pauschale besser ist.
+3. **Material für den Superkondensator bestellen** (ca. 160–270 €, Liste oben) und die ersten 9 Zellen gießen. Die Aushärtung dauert 7 Tage, deshalb früh anfangen.
+
+## Quellen Runde 3
+Wirtschaftlichkeitszahlen sind eigene Überschlagsrechnungen mit oben genannten Annahmen. Dieselverbrauch und Leistungsbedarf von Kühlaggregaten laut [ColdStorageFinder](https://www.coldstoragefinder.com/guide/reefer-trailer-power-requirements) und [Thermo King](https://www.thermoking.com/content/dam/thermoking/documents/marketing/Trailer-electrification-position-paper-Thermo-King.pdf).
