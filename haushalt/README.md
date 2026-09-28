@@ -24,8 +24,8 @@ Web-App (PWA) zum Aufräumen und Wiederfinden:
    gespeichert, Doppelte werden zusammengeführt. „➡️ Nächster Ort“ springt zu Lade 2 usw. Alles wird laufend gespeichert.
    **📼 Video**: ein fertig aufgenommenes Video aus der Galerie wird genauso ausgewertet.
 3. **🎤 Sprachsuche**, Suche tolerant bei Umlauten (Löffel = Loeffel = Loffel).
-4. **🏠 Räume**: Übersicht aller Orte, bearbeiten, neues Foto, löschen.
-5. **⚙️ Einstellungen**: eigenen Anthropic-API-Schlüssel eintragen, Sicherung exportieren/importieren.
+5. **🏠 Räume**: Übersicht aller Orte, bearbeiten, neues Foto, löschen.
+6. **⚙️ Einstellungen**: eigenen Anthropic-API-Schlüssel eintragen, Sicherung exportieren/importieren.
 
 Alle Daten und Fotos bleiben lokal im Browser (IndexedDB). Am Handy über „Zum Startbildschirm hinzufügen“
 wie eine App installierbar. Aufruf: `/haushalt/`.

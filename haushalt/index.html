@@ -73,7 +73,11 @@ button.mini{padding:2px 8px;font-size:.85rem;vertical-align:middle}
 .film-bar{position:relative;display:flex;gap:8px;padding:10px 16px calc(12px + env(safe-area-inset-bottom));background:#000c}
 .film-bar button{flex:1}
 #film-torch.on{background:#ffd54a;color:#000}
-.acts{display:flex;flex-direction:column;gap:6px;flex:none}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:4px;flex:none}
+.shop-row{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);margin:0;color:var(--text);font-size:1rem}
+.shop-row input{width:auto;transform:scale(1.3)}
+.shop-row.done span{text-decoration:line-through;opacity:.5}
+nav button{font-size:.72rem}
 .acts button{padding:4px 8px}
 .chip img{width:22px;height:22px;object-fit:cover;border-radius:50%;margin-left:-6px}
 </style>
@@ -145,6 +149,24 @@ button.mini{padding:2px 8px;font-size:.85rem;vertical-align:middle}
     <div id="room-list"></div>
   </section>
 
+  <!-- Einkaufsliste & Verliehenes -->
+  <section id="v-list" class="hidden">
+    <h2>🛒 Einkaufsliste</h2>
+    <div class="card">
+      <div id="shop-list"></div>
+      <div class="row" style="margin-top:8px">
+        <input id="shop-add" placeholder="Hinzufügen (mehrere mit Komma)">
+        <button class="ghost" id="btn-shop-add" style="flex:none">+</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="ghost" id="btn-shop-share">📤 Teilen</button>
+        <button class="ghost" id="btn-shop-clear">Erledigte entfernen</button>
+      </div>
+    </div>
+    <h2>📤 Verliehen</h2>
+    <div id="lent-list"></div>
+  </section>
+
   <!-- Einstellungen -->
   <section id="v-settings" class="hidden">
     <h2>Einstellungen</h2>
@@ -187,6 +209,7 @@ button.mini{padding:2px 8px;font-size:.85rem;vertical-align:middle}
   <button data-v="search" class="active"><span>🔍</span>Suchen</button>
   <button data-v="add"><span>📷</span>Foto</button>
   <button data-v="rooms"><span>🏠</span>Räume</button>
+  <button data-v="list"><span>🛒</span>Liste</button>
   <button data-v="settings"><span>⚙️</span>Einstell.</button>
 </nav>
 
