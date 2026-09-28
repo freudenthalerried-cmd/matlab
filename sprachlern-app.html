@@ -223,6 +223,76 @@ body{
 
 .hidden{display:none!important;}
 
+/* ---------- GAMIFICATION ---------- */
+.bottom-nav{order:10;}
+.nav-btn{font-size:10px;position:relative;}
+.nav-btn .icon{font-size:20px;}
+.nav-dot{position:absolute;top:0;right:6px;width:9px;height:9px;border-radius:50%;background:var(--danger);box-shadow:0 0 0 2px #0f2027;}
+.dash{background:rgba(255,255,255,0.08);border-radius:16px;padding:10px 12px;margin-bottom:6px;flex-shrink:0;}
+.dash-row{display:flex;gap:10px;align-items:center;}
+.dash-col{flex:1;min-width:0;}
+.dash-label{display:flex;justify-content:space-between;color:#e8f4f7;font-size:12px;font-weight:700;margin:2px 0;}
+.mini-bar{background:rgba(255,255,255,0.18);border-radius:10px;height:8px;overflow:hidden;margin-bottom:4px;}
+.mini-bar.big{height:14px;}
+.mini-fill{height:100%;border-radius:10px;width:0;transition:width .5s ease;}
+.mini-fill.lvl{background:linear-gradient(90deg,var(--purple),#a78bff);}
+.mini-fill.goal{background:linear-gradient(90deg,#ff9f1c,var(--accent));}
+.mini-fill.done{background:linear-gradient(90deg,var(--accent2),#7af0c8);}
+.rank-badge{width:48px;height:48px;border-radius:50%;background:linear-gradient(145deg,#ffe38a,#ffb13b);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;box-shadow:0 4px 0 rgba(0,0,0,0.2);}
+.rank-badge.big{width:64px;height:64px;font-size:38px;}
+.dash-actions{display:flex;gap:8px;margin-top:8px;align-items:center;}
+.chip-btn{white-space:nowrap;border:none;border-radius:12px;padding:7px 10px;font-weight:800;font-size:12px;cursor:pointer;background:#fff;color:var(--text);font-family:inherit;box-shadow:0 3px 0 rgba(0,0,0,0.15);}
+.chip-btn:disabled{opacity:.45;}
+.chip-btn.active-boost{background:var(--accent);}
+.diff-chip{margin-left:auto;color:#bfe3ea;font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.panel{background:rgba(255,255,255,0.1);border-radius:16px;padding:12px;margin-bottom:10px;color:#fff;flex-shrink:0;}
+.panel-title{font-weight:800;font-size:15px;margin-bottom:8px;}
+.panel-title.dark{color:var(--text);}
+.panel-sub{color:#bfe3ea;font-size:12px;font-weight:600;margin-top:4px;}
+.card .panel-sub{color:var(--muted);}
+.goal-chips{display:flex;gap:6px;margin-bottom:10px;}
+.goal-chip{flex:1;border:2px solid rgba(255,255,255,0.3);background:transparent;color:#fff;border-radius:10px;padding:6px 2px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;}
+.goal-chip.sel{background:var(--accent);color:#3a2a00;border-color:var(--accent);}
+.quest{background:#fff;border-radius:14px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.quest-icon{font-size:24px;}
+.quest-body{flex:1;min-width:0;}
+.quest-text{font-weight:800;font-size:13px;}
+.quest .mini-bar{background:#e6ecf0;margin:5px 0 0;}
+.quest-btn{border:none;border-radius:10px;padding:7px 10px;font-weight:800;font-size:12px;background:#e6ecf0;color:var(--muted);font-family:inherit;}
+.quest-btn.ready{background:var(--accent2);color:#fff;cursor:pointer;animation:pulseBtn 1.2s infinite;}
+@keyframes pulseBtn{50%{transform:scale(1.06);}}
+.league-list{display:flex;flex-direction:column;gap:4px;flex:1;min-height:0;}
+.league-row{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.08);border-radius:10px;padding:6px 10px;color:#fff;font-weight:700;font-size:13px;}
+.league-row.me{background:var(--accent);color:#3a2a00;}
+.league-row .pos{width:22px;text-align:center;font-weight:800;}
+.league-row .av{font-size:18px;}
+.league-row .nm{flex:1;}
+.league-row.up{border-left:4px solid var(--accent2);}
+.league-row.down{border-left:4px solid var(--danger);}
+.zone{color:#bfe3ea;font-size:10px;font-weight:800;text-align:center;letter-spacing:.5px;margin:2px 0;}
+.ach-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+.ach{aspect-ratio:1;border-radius:14px;background:#f4f7f9;display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;filter:grayscale(1);opacity:.4;}
+.ach.got{filter:none;opacity:1;background:linear-gradient(145deg,#fff4c2,#ffd96b);}
+.shop-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #eef2f5;}
+.shop-item:last-child{border-bottom:none;}
+.shop-item .si{font-size:26px;}
+.shop-item .st{flex:1;font-weight:700;font-size:13px;}
+.shop-item .st small{display:block;color:var(--muted);font-weight:600;}
+.shop-item button{border:none;border-radius:10px;padding:8px 10px;font-weight:800;background:var(--accent);color:#3a2a00;font-family:inherit;cursor:pointer;}
+.shop-item button:disabled{opacity:.4;}
+.profile-head{display:flex;gap:12px;align-items:center;margin-bottom:10px;}
+.adapt-box{background:#efe9ff;border-radius:14px;padding:10px;margin:8px 0;font-weight:700;font-size:13px;text-align:center;}
+.adapt-btns{display:flex;gap:8px;margin-top:8px;}
+.adapt-btns .btn{padding:9px;font-size:14px;margin:0;}
+.hint-btn{background:#fff;border:none;border-radius:10px;padding:3px 7px;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;}
+.toast{position:fixed;top:12px;left:50%;transform:translate(-50%,-150%);background:#fff;color:var(--text);border-radius:16px;padding:10px 16px;font-weight:800;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,0.3);z-index:60;transition:transform .35s cubic-bezier(.2,1.4,.4,1);max-width:90%;text-align:center;}
+.toast.show{transform:translate(-50%,0);}
+.xp-pop{position:fixed;top:45%;left:50%;transform:translate(-50%,-50%);color:var(--accent);font-size:26px;font-weight:800;text-shadow:0 3px 10px rgba(0,0,0,0.4);pointer-events:none;opacity:0;z-index:55;}
+.xp-pop.go{animation:xpUp 1s ease-out;}
+@keyframes xpUp{0%{opacity:0;transform:translate(-50%,-30%) scale(.7);}20%{opacity:1;transform:translate(-50%,-50%) scale(1.1);}100%{opacity:0;transform:translate(-50%,-160%) scale(1);}}
+#screen-stats{display:none;}
+#screen-stats.active{display:block;}
+
 /* ---------- GRAMMATIK ---------- */
 .q-sentence{font-size:20px;font-weight:800;color:#fff;text-align:center;margin:6px 4px;line-height:1.4;text-shadow:0 2px 8px rgba(0,0,0,0.25);}
 .q-sentence .gap{color:var(--accent);border-bottom:3px dashed var(--accent);padding:0 6px;}
@@ -281,9 +351,22 @@ body{
 
   <!-- ===== MAP SCREEN ===== -->
   <section class="screen" id="screen-map">
-    <div class="map-title">Deine Wortreise 🗺️</div>
-    <div class="map-sub" id="xpSummary">Level 1 · 0 XP</div>
-    <div class="progressbar-wrap"><div class="progressbar-fill" id="xpBarFill" style="width:0%"></div></div>
+    <div class="dash">
+      <div class="dash-row">
+        <div class="rank-badge" id="rankBadge">🥚</div>
+        <div class="dash-col">
+          <div class="dash-label"><span id="rankName">Lv 1 · Ei</span><span id="rankXp">0/50 XP</span></div>
+          <div class="mini-bar"><div class="mini-fill lvl" id="xpBarFill"></div></div>
+          <div class="dash-label"><span id="goalLabel">🎯 Tagesziel</span><span id="goalXp">0/20 XP</span></div>
+          <div class="mini-bar"><div class="mini-fill goal" id="goalFill"></div></div>
+        </div>
+      </div>
+      <div class="dash-actions">
+        <button class="chip-btn" id="trainBtn">💪 Training</button>
+        <button class="chip-btn" id="boostChip">⚡ Doppel-XP</button>
+        <span class="diff-chip" id="diffChip">🌱 Anfänger</span>
+      </div>
+    </div>
     <div class="path" id="pathContainer"></div>
   </section>
 
@@ -292,6 +375,27 @@ body{
     <div class="map-title">Grammatik-Dschungel 📘</div>
     <div class="map-sub" id="grammarSub">Lustige Sätze, echte Regeln</div>
     <div class="path" id="grammarPath"></div>
+  </section>
+
+  <!-- ===== QUESTS ===== -->
+  <section class="screen" id="screen-quests">
+    <div class="map-title">Tagesquests 🎯</div>
+    <div class="map-sub" id="questTimer">Neue Quests um Mitternacht</div>
+    <div class="panel">
+      <div class="panel-title">Tagesziel</div>
+      <div class="goal-chips" id="goalChips"></div>
+      <div class="mini-bar big"><div class="mini-fill goal" id="goalFill2"></div></div>
+      <div class="panel-sub" id="goalText">0 / 20 XP heute</div>
+    </div>
+    <div id="questList"></div>
+    <button class="btn btn-yellow" id="chestBtn">🎁 Truhe: alle 3 Quests schaffen</button>
+  </section>
+
+  <!-- ===== LIGA ===== -->
+  <section class="screen" id="screen-league">
+    <div class="map-title" id="leagueTitle">🥉 Bronze-Liga</div>
+    <div class="map-sub" id="leagueSub">Top 3 steigen auf · Endet in 3 Tagen</div>
+    <div class="league-list" id="leagueList"></div>
   </section>
 
   <!-- ===== LEVEL INTRO ===== -->
@@ -311,6 +415,7 @@ body{
     <div class="game-header">
       <span class="close-x" id="quitGameBtn">✕</span>
       <div class="progressbar-wrap" style="flex:1;margin:0;"><div class="progressbar-fill" id="gameProgressFill" style="width:0%"></div></div>
+      <button class="hint-btn hidden" id="hintBtn">💡<span id="hintCount">0</span></button>
       <span class="hearts-mini" id="gameHearts">❤️❤️❤️❤️❤️</span>
     </div>
     <div class="q-wrap" id="questionArea"></div>
@@ -329,6 +434,11 @@ body{
       <div class="result-stat-row"><span>✅ Richtig</span><span id="resCorrect">0/8</span></div>
       <div class="result-stat-row"><span>🪙 Münzen verdient</span><span id="resCoins">+0</span></div>
       <div class="result-stat-row"><span>⭐ XP</span><span id="resXp">+0</span></div>
+      <div class="result-stat-row"><span>🎯 Tagesziel</span><span id="resGoal">0/20</span></div>
+      <div class="adapt-box hidden" id="adaptBox">
+        <div id="adaptText"></div>
+        <div class="adapt-btns"><button class="btn btn-primary" id="adaptYes">Ja!</button><button class="btn btn-secondary" id="adaptNo">Bleiben</button></div>
+      </div>
       <button class="btn btn-primary" id="continueBtn">Weiter zur Karte 🗺️</button>
     </div>
   </section>
@@ -342,27 +452,46 @@ body{
         <div class="speech-bubble">Kopf hoch, wir schaffen das!</div>
       </div>
       <div class="intro-title">Keine Herzen mehr!</div>
-      <div class="intro-desc">Warte, bis deine Herzen sich erholen, oder starte den Level erneut.</div>
-      <button class="btn btn-yellow" id="retryBtn">🔁 Level neu starten (Herzen auffrischen)</button>
+      <div class="intro-desc" id="heartInfo">Alle 20 Minuten wächst ein Herz nach.</div>
+      <button class="btn btn-yellow" id="retryBtn">❤️ Auffüllen für 30 🪙</button>
+      <button class="btn btn-primary" id="gameoverTrainBtn" style="margin-top:8px;">💪 Fehler-Training (kostet keine Herzen)</button>
       <button class="btn btn-secondary" id="gameoverMapBtn">Zurück zur Karte</button>
     </div>
   </section>
 
   <div class="bottom-nav">
-    <button class="nav-btn active" data-nav="map"><span class="icon">🗺️</span>Karte</button>
+    <button class="nav-btn active" data-nav="map"><span class="icon">🗺️</span>Lernen</button>
     <button class="nav-btn" data-nav="grammar"><span class="icon">📘</span>Grammatik</button>
-    <button class="nav-btn" data-nav="stats"><span class="icon">📊</span>Statistik</button>
+    <button class="nav-btn" data-nav="quests"><span class="icon">🎯</span>Quests<span class="nav-dot hidden" id="questDot"></span></button>
+    <button class="nav-btn" data-nav="league"><span class="icon">🏆</span>Liga</button>
+    <button class="nav-btn" data-nav="stats"><span class="icon">👤</span>Profil</button>
   </div>
 
   <!-- ===== STATS SCREEN (modal-ish, reuses screen system) ===== -->
   <section class="screen" id="screen-stats">
-    <div class="card">
-      <div class="intro-title" style="text-align:left;">📊 Deine Statistik</div>
+    <div class="card" style="margin:0 0 12px;">
+      <div class="profile-head"><div class="rank-badge big" id="profRank">🥚</div>
+        <div><div class="intro-title" style="text-align:left;margin:0;" id="profName">Lv 1 · Ei</div>
+        <div class="panel-sub" id="profNext">50 XP bis Level 2</div></div></div>
       <div class="result-stat-row"><span>🏆 Gesamt-XP</span><span id="statXp">0</span></div>
       <div class="result-stat-row"><span>🔥 Tages-Streak</span><span id="statStreak">0</span></div>
       <div class="result-stat-row"><span>🪙 Münzen</span><span id="statCoins">0</span></div>
       <div class="result-stat-row"><span>✅ Level abgeschlossen</span><span id="statLevels">0</span></div>
       <div class="result-stat-row"><span>⭐ Sterne gesamt</span><span id="statStars">0</span></div>
+      <div class="result-stat-row"><span>🎯 Trefferquote (zuletzt)</span><span id="statAcc">–</span></div>
+    </div>
+    <div class="card" style="margin:0 0 12px;">
+      <div class="panel-title dark">🏅 Erfolge <span id="achCount"></span></div>
+      <div class="ach-grid" id="achGrid"></div>
+    </div>
+    <div class="card" style="margin:0 0 12px;">
+      <div class="panel-title dark">🛒 Shop <span class="panel-sub" style="display:inline">(🪙 <span id="shopCoins">0</span>)</span></div>
+      <div id="shopList"></div>
+    </div>
+    <div class="card" style="margin:0 0 12px;">
+      <div class="panel-title dark">⚙️ Einstellungen</div>
+      <button class="btn btn-secondary" id="soundBtn">🔊 Ton: an</button>
+      <button class="btn btn-secondary" id="placementBtn">🧪 Einstufungstest wiederholen</button>
       <button class="btn btn-secondary" id="changeLangBtn">🌍 Sprache ändern</button>
       <button class="btn btn-secondary" id="changeDiffBtn">🎯 Level ändern</button>
       <button class="btn btn-secondary" id="resetProgressBtn">Fortschritt zurücksetzen</button>
@@ -376,6 +505,8 @@ body{
   <button class="feedback-next" id="feedbackNextBtn">Weiter</button>
 </div>
 <div class="combo-toast" id="comboToast"></div>
+<div class="toast" id="toast"></div>
+<div class="xp-pop" id="xpPop"></div>
 
 <script>
 /* =========================================================
@@ -863,6 +994,24 @@ Object.entries(GRAMMAR_RAW).forEach(([lang, topics])=>{
 
 const LEVELS = RAW_LEVELS.map(l=>({icon:l.icon, title:l.title}));
 function currentLang(){ return state.language || 'en'; }
+function progKey(){ return currentLang()+'|'+(state.difficulty||'anfaenger'); }
+function levelProg(){
+  if(!state.progress) state.progress = {};
+  const k = progKey();
+  if(!state.progress[k]){
+    // alten gemeinsamen Fortschritt einmalig übernehmen
+    const legacy = state.levelProgress && state.levelProgress.some(p=>p.stars>0) && !state.progress._migrated;
+    state.progress[k] = legacy ? state.levelProgress.map(p=>({...p})) : LEVELS.map(()=>({stars:0, bestCorrect:0}));
+    if(legacy) state.progress._migrated = true;
+  }
+  return state.progress[k];
+}
+function wordsFor(diff, levelIdx){
+  const lang = currentLang();
+  const set = VOCAB_BY_DIFF[diff];
+  const words = set ? set[levelIdx] : RAW_LEVELS[levelIdx].words;
+  return words.map(w=>[w.de, w[lang]]);
+}
 function levelWords(levelIdx){
   const lang = currentLang();
   const set = VOCAB_BY_DIFF[state.difficulty];
@@ -883,7 +1032,12 @@ function defaultState(){
     xp:0, coins:20, hearts:MAX_HEARTS, lastHeartLoss:null,
     streak:0, lastPlayDate:null, difficulty:null, language:null, grammarProgress:{},
     levelProgress: LEVELS.map(()=>({stars:0, bestCorrect:0})),
-    totalLevelsCompleted:0
+    totalLevelsCompleted:0,
+    progress:{}, daily:{date:null, xp:0, goal:20, quests:[], chestClaimed:false},
+    inventory:{freeze:0, hints:1}, boostUntil:0,
+    league:{week:null, tier:0, xp:0, bots:[], seed:1},
+    achievements:{}, mastery:{}, recent:[], settings:{sound:true}, langsPlayed:{},
+    stats:{lessons:0, perfect:0, maxCombo:0, reviewMastered:0, night:false, early:false, bought:false, promoted:false}
   };
 }
 function loadState(){
@@ -912,18 +1066,29 @@ function regenHearts(){
   }
 }
 function touchStreak(){
+  const h = new Date().getHours();
+  if(h>=22) state.stats.night = true;
+  if(h<7) state.stats.early = true;
+  state.langsPlayed[currentLang()] = true;
   const today = new Date().toDateString();
   if(state.lastPlayDate === today) return;
-  const yesterday = new Date(Date.now()-86400000).toDateString();
-  if(state.lastPlayDate === yesterday){ state.streak += 1; }
+  const gap = state.lastPlayDate ? Math.round((new Date(today) - new Date(state.lastPlayDate))/86400000) : 0;
+  if(gap===1){ state.streak += 1; }
+  else if(gap>1 && state.inventory.freeze >= gap-1){
+    state.inventory.freeze -= (gap-1);
+    state.streak += 1;
+    toast('🧊 Dein Streak-Schutz hat deinen Streak gerettet!');
+  }
   else { state.streak = 1; }
   state.lastPlayDate = today;
+  toast(`🔥 ${state.streak} ${state.streak===1?'Tag':'Tage'} Streak!`);
 }
 
 /* ---------- SOUND (Web Audio, keine Dateien nötig) ---------- */
 let actx;
 function ctx(){ if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)(); return actx; }
 function beep(freq, dur, type='sine', vol=0.2, delay=0){
+  if(state.settings && state.settings.sound===false) return;
   try{
     const c = ctx();
     const o = c.createOscillator();
@@ -961,6 +1126,12 @@ const DIFFICULTIES = {
 function populateDifficultyList(){
   const box = document.getElementById('diffList');
   box.innerHTML='';
+  const test = document.createElement('div');
+  test.className='diff-option';
+  test.style.borderColor = 'var(--purple)';
+  test.innerHTML = '<b>🧪 Einstufungstest (empfohlen)</b><span>12 Fragen, 2 Minuten – Flügo findet dein Niveau</span>';
+  test.addEventListener('click', ()=>{ sndTap(); startPlacement(); });
+  box.appendChild(test);
   Object.entries(DIFFICULTIES).forEach(([key,d])=>{
     const el = document.createElement('div');
     el.className='diff-option';
@@ -968,6 +1139,7 @@ function populateDifficultyList(){
     el.addEventListener('click', ()=>{
       sndTap();
       state.difficulty = key;
+      state.recent = [];
       saveState();
       renderMap();
       showScreen('screen-map');
@@ -1020,15 +1192,17 @@ document.getElementById('langBackBtn').addEventListener('click', ()=>{
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  document.querySelector('.bottom-nav').style.display = (id==='screen-map'||id==='screen-stats'||id==='screen-grammar') ? 'flex' : 'none';
+  document.querySelector('.bottom-nav').style.display = ['screen-map','screen-stats','screen-grammar','screen-quests','screen-league'].includes(id) ? 'flex' : 'none';
+  if(typeof updateQuestDot==='function') updateQuestDot();
+  if(id==='screen-gameover' && typeof updateGameoverScreen==='function') updateGameoverScreen();
 }
 
 /* ---------- MAP RENDER ---------- */
 function levelStatus(i){
-  const prog = state.levelProgress[i];
+  const prog = levelProg()[i];
   if(prog.stars>0) return prog.stars>=3?'perfect':'unlocked';
   if(i===0) return 'current';
-  const prev = state.levelProgress[i-1];
+  const prev = levelProg()[i-1];
   return prev.stars>0 ? 'current' : 'locked';
 }
 function renderMap(){
@@ -1037,11 +1211,7 @@ function renderMap(){
   document.getElementById('coinsVal').textContent = state.coins;
   document.getElementById('heartsVal').textContent = state.hearts;
 
-  const totalXpForNext = 100;
-  const lvlNum = Math.floor(state.xp/totalXpForNext)+1;
-  const xpInLevel = state.xp % totalXpForNext;
-  document.getElementById('xpSummary').textContent = `Level ${lvlNum} · ${state.xp} XP gesamt`;
-  document.getElementById('xpBarFill').style.width = (xpInLevel/totalXpForNext*100)+'%';
+  renderDashboard();
 
   const container = document.getElementById('pathContainer');
   container.innerHTML = '';
@@ -1056,7 +1226,7 @@ function renderMap(){
     } else {
       node.innerHTML += `<span>${lvl.icon}</span>`;
       const starsRow = document.createElement('div'); starsRow.className='node-stars';
-      const st = state.levelProgress[i].stars;
+      const st = levelProg()[i].stars;
       for(let s=1;s<=3;s++){
         const sp = document.createElement('span'); sp.textContent = s<=st ? '⭐':'☆';
         starsRow.appendChild(sp);
@@ -1065,7 +1235,7 @@ function renderMap(){
     }
     node.addEventListener('click', ()=>{
       sndTap();
-      if(status==='locked'){ return; }
+      if(status==='locked'){ offerJump(i); return; }
       openIntro(i);
     });
     container.appendChild(node);
@@ -1105,6 +1275,7 @@ function setNav(name){
 }
 function goHome(){
   if(session && session.speedTimer){ clearInterval(session.speedTimer); session.speedTimer=null; }
+  if(!state.difficulty){ populateDifficultyList(); showScreen('screen-difficulty'); return; }
   if(pendingMode==='grammar'){ renderGrammar(); showScreen('screen-grammar'); setNav('grammar'); }
   else { renderMap(); showScreen('screen-map'); setNav('map'); }
 }
@@ -1160,7 +1331,7 @@ function startGrammar(topicIdx){
   touchStreak();
   pendingMode = 'grammar';
   session = {
-    mode:'grammar', topicIdx, topic: grammarTopics()[topicIdx],
+    mode:'grammar', xpEarned:0, wrong:0, topicIdx, topic: grammarTopics()[topicIdx],
     questions: buildGrammarQuestions(topicIdx),
     qi:0, correct:0, combo:0, maxCombo:0, answered:false
   };
@@ -1283,7 +1454,17 @@ function buildQuestions(levelIdx){
   const diff = DIFFICULTIES[diffKey];
   const tiers = diff.tiers;
   const pool = PER_WORD_GAMES.filter(g=>tiers.includes(g.tier));
-  const hardWeight = diff.hardWeight || 0.4;
+  let hardWeight = diff.hardWeight || 0.4;
+  const acc = recentAccuracy();
+  if(acc!==null && state.recent.length>=10){
+    if(acc>=0.85) hardWeight += 0.25;
+    else if(acc<0.6) hardWeight -= 0.25;
+  }
+  hardWeight = Math.max(0.1, Math.min(0.9, hardWeight));
+  // starke Anfänger bekommen schon einzelne schwere Spiele
+  if(!tiers.includes('hard') && acc!==null && acc>=0.85 && state.recent.length>=15){
+    pool.push(...PER_WORD_GAMES.filter(g=>g.tier==='hard' && !g.type.startsWith('speed')));
+  }
 
   const qs = [];
   words.forEach((w,idx)=>{
@@ -1298,8 +1479,8 @@ function buildQuestions(levelIdx){
   });
   const shuffled = shuffle(qs);
 
-  // Für Anfänger: kindgerechter Einstieg mit Zuordnen + Memory
-  if(tiers.includes('easy')){
+  // Für Anfänger: Einstieg mit Zuordnen + Memory (fällt weg, wenn es zu leicht wird)
+  if(tiers.includes('easy') && !(acc!==null && acc>=0.9 && state.recent.length>=20)){
     shuffled.unshift({type:'memory_round', words: shuffle(words).slice(0,4)});
     shuffled.unshift({type:'match_round', words});
   }
@@ -1321,7 +1502,7 @@ function startLevel(levelIdx){
   touchStreak();
   pendingMode = 'vocab';
   session = {
-    mode:'vocab',
+    mode:'vocab', xpEarned:0, wrong:0,
     levelIdx,
     questions: buildQuestions(levelIdx),
     qi: 0,
@@ -1346,8 +1527,13 @@ function renderQuestion(){
   updateGameHeader();
   session.answered = false;
   const q = session.questions[session.qi];
-  if(session.mode==='grammar'){ renderGrammarQuestion(q); return; }
-  const words = levelWords(session.levelIdx);
+  session.qStart = Date.now();
+  session.currentWord = q.word || null;
+  session.currentQ = q;
+  session.currentType = q.type;
+  updateHintBtn(false);
+  if(session.mode==='grammar'){ renderGrammarQuestion(q); updateHintBtn(true); return; }
+  const words = q.pool || levelWords(session.levelIdx);
 
   if(q.type==='match_round'){ renderMatchRound(q.words); return; }
   if(q.type==='memory_round'){ renderMemoryRound(q.words); return; }
@@ -1434,12 +1620,12 @@ function renderQuestion(){
     }
     case 'speed_de_en': {
       const opts = shuffle([en, ...randOthers(words,q.idx,3).map(i=>words[i][1])]);
-      renderMC(`<div class="q-hint">⏱️ Schnell! Übersetze ins ${langName}</div><div class="q-word">${de}</div>`, opts, en, null, 6);
+      renderMC(`<div class="q-hint">⏱️ Schnell! Übersetze ins ${langName}</div><div class="q-word">${de}</div>`, opts, en, null, speedSeconds());
       break;
     }
     case 'speed_en_de': {
       const opts = shuffle([de, ...randOthers(words,q.idx,3).map(i=>words[i][0])]);
-      renderMC(`<div class="q-hint">⏱️ Schnell! Übersetze ins Deutsche</div><div class="q-word">${en}</div>`, opts, de, null, 6);
+      renderMC(`<div class="q-hint">⏱️ Schnell! Übersetze ins Deutsche</div><div class="q-word">${en}</div>`, opts, de, null, speedSeconds());
       break;
     }
     case 'dictation_en':
@@ -1715,6 +1901,8 @@ function renderMatchRound(words){
 function renderOptions(opts, correctAnswer){
   const box = document.getElementById('optsBox');
   box.innerHTML='';
+  session.correctOpt = correctAnswer;
+  setTimeout(()=>updateHintBtn(true), 0);
   opts.forEach(opt=>{
     const btn = document.createElement('div');
     btn.className='opt';
@@ -1754,10 +1942,15 @@ function handleAnswer(isCorrect, btnEl, correctAnswer){
     if(!isCorrect) btnEl.classList.add('wrong');
   }
 
+  updateHintBtn(false);
+  onAnswerTracked(isCorrect);
   if(isCorrect){
     session.correct++;
     session.combo++;
     session.maxCombo = Math.max(session.maxCombo, session.combo);
+    const gained = addXP(session.combo>=5 ? 3 : 2);
+    session.xpEarned += gained;
+    popXP(gained);
     sndCorrect();
     if(session.combo>=3){
       sndCombo();
@@ -1766,9 +1959,12 @@ function handleAnswer(isCorrect, btnEl, correctAnswer){
     showFeedback(true, session.mode==='grammar' && session.combo<3 ? pick(GRAMMAR_JOKES_OK) : comboMessage(session.combo));
   } else {
     session.combo = 0;
+    session.wrong++;
     sndWrong();
-    state.hearts = Math.max(0, state.hearts-1);
-    if(state.hearts < MAX_HEARTS && !state.lastHeartLoss) state.lastHeartLoss = Date.now();
+    if(!['review','placement','jump'].includes(session.mode)){
+      state.hearts = Math.max(0, state.hearts-1);
+      if(state.hearts < MAX_HEARTS && !state.lastHeartLoss) state.lastHeartLoss = Date.now();
+    }
     saveState();
     updateGameHeader();
     if(session.mode==='grammar'){
@@ -1801,7 +1997,8 @@ function showFeedback(ok, text, detail){
   const nextBtn = document.getElementById('feedbackNextBtn');
   nextBtn.onclick = ()=>{
     bar.classList.remove('show');
-    if(state.hearts<=0){ showScreen('screen-gameover'); return; }
+    if(session.mode==='jump' && session.wrong>1){ finishLevel(); return; }
+    if(state.hearts<=0 && !['review','placement','jump'].includes(session.mode)){ showScreen('screen-gameover'); return; }
     session.qi++;
     renderQuestion();
   };
@@ -1815,6 +2012,7 @@ document.getElementById('quitGameBtn').addEventListener('click', ()=>{
 
 /* ---------- LEVEL FINISH ---------- */
 function finishLevel(){
+  if(session.mode==='review' || session.mode==='placement' || session.mode==='jump'){ finishSpecial(); return; }
   const total = session.questions.length;
   const pct = session.correct/total;
   let stars = 1;
@@ -1823,16 +2021,14 @@ function finishLevel(){
   else if(pct<0.5) stars = pct===0?0:1;
 
   const isGrammar = session.mode==='grammar';
-  const prog = isGrammar ? null : state.levelProgress[session.levelIdx];
+  const prog = isGrammar ? null : levelProg()[session.levelIdx];
   const gStars = isGrammar ? grammarStars() : null;
   const prevStars = isGrammar ? gStars[session.topicIdx] : prog.stars;
   const improved = stars > prevStars;
-  if(improved){
-    state.xp += 20 + stars*10;
-  } else {
-    state.xp += 8;
-  }
-  const coinsEarned = 5 + session.correct*2 + session.maxCombo*2;
+  const perfect = session.wrong===0;
+  let bonus = 5 + stars*3 + (perfect?10:0) + (improved?10:0);
+  session.xpEarned += addXP(bonus);
+  const coinsEarned = 5 + session.correct*2 + session.maxCombo*2 + (perfect?10:0);
   state.coins += coinsEarned;
   if(improved && isGrammar){
     gStars[session.topicIdx] = stars;
@@ -1841,6 +2037,11 @@ function finishLevel(){
     if(prog.bestCorrect===0) state.totalLevelsCompleted++;
     prog.bestCorrect = Math.max(prog.bestCorrect, session.correct);
   }
+  state.stats.lessons++;
+  if(perfect){ state.stats.perfect++; track('perfect',1); }
+  track('lesson',1);
+  if(isGrammar) track('grammar',1);
+  checkAchievements();
   saveState();
 
   document.getElementById('resultMascot').textContent = stars===3?'🥳':stars===2?'😄':stars===1?'🙂':'😅';
@@ -1850,8 +2051,10 @@ function finishLevel(){
   document.getElementById('resultDesc').textContent = stars>=2 ? 'Du wirst immer besser!' : 'Übe weiter, du schaffst 3 Sterne!';
   document.getElementById('resCorrect').textContent = `${session.correct}/${total}`;
   document.getElementById('resCoins').textContent = `+${coinsEarned}`;
-  document.getElementById('resXp').textContent = `+${state.xp - (state.xp - (improved? (20+stars*10):8))}`;
-  document.getElementById('resXp').textContent = `+${improved ? 20+stars*10 : 8}`;
+  document.getElementById('resXp').textContent = `+${session.xpEarned}${boostActive()?' (⚡x2)':''}`;
+  document.getElementById('resGoal').textContent = `${state.daily.xp}/${state.daily.goal} XP${state.daily.xp>=state.daily.goal?' ✅':''}`;
+  document.getElementById('resultDesc').textContent = perfect ? 'Perfekt – kein einziger Fehler! 💎' : document.getElementById('resultDesc').textContent;
+  showAdaptSuggestion(isGrammar);
 
   showScreen('screen-result');
   if(stars>=2){ sndLevelUp(); launchConfetti(); }
@@ -1860,6 +2063,8 @@ document.getElementById('continueBtn').addEventListener('click', ()=>goHome());
 
 /* ---------- GAME OVER ---------- */
 document.getElementById('retryBtn').addEventListener('click', ()=>{
+  if(state.coins < 30){ toast('Zu wenig Münzen – mach ein Fehler-Training! 💪'); return; }
+  state.coins -= 30;
   state.hearts = MAX_HEARTS; state.lastHeartLoss = null; saveState();
   if(session && session.mode==='grammar') startGrammar(session.topicIdx);
   else startLevel(session ? session.levelIdx : pendingLevel);
@@ -1894,6 +2099,8 @@ document.querySelectorAll('.nav-btn').forEach(btn=>{
     sndTap();
     if(btn.dataset.nav==='map'){ pendingMode='vocab'; renderMap(); showScreen('screen-map'); }
     else if(btn.dataset.nav==='grammar'){ pendingMode='grammar'; renderGrammar(); showScreen('screen-grammar'); }
+    else if(btn.dataset.nav==='quests'){ renderQuests(); showScreen('screen-quests'); }
+    else if(btn.dataset.nav==='league'){ renderLeague(); showScreen('screen-league'); }
     else { renderStats(); showScreen('screen-stats'); }
   });
 });
@@ -1902,8 +2109,9 @@ function renderStats(){
   document.getElementById('statStreak').textContent = state.streak + ' Tage';
   document.getElementById('statCoins').textContent = state.coins;
   document.getElementById('statLevels').textContent = state.totalLevelsCompleted + '/' + LEVELS.length;
-  const totalStars = state.levelProgress.reduce((s,p)=>s+p.stars,0);
+  const totalStars = levelProg().reduce((s,p)=>s+p.stars,0);
   document.getElementById('statStars').textContent = totalStars + '/' + (LEVELS.length*3);
+  renderProfileExtras();
 }
 document.getElementById('resetProgressBtn').addEventListener('click', ()=>{
   if(confirm('Wirklich den GESAMTEN Fortschritt löschen? Das kann nicht rückgängig gemacht werden.')){
@@ -1915,7 +2123,516 @@ document.getElementById('resetProgressBtn').addEventListener('click', ()=>{
   }
 });
 
+/* =========================================================
+   GAMIFICATION: XP-Level, Tagesziel, Quests, Liga, Erfolge,
+   Shop, Fehler-Training (Wiederholungssystem), Sprung- und
+   Einstufungstest, adaptive Schwierigkeit
+   ========================================================= */
+const ORDER = ['anfaenger','mittel','fortgeschritten'];
+const RANKS = [
+  {min:1, icon:'🥚', name:'Ei'}, {min:3, icon:'🐣', name:'Küken'}, {min:5, icon:'🐦', name:'Spatz'},
+  {min:8, icon:'🦜', name:'Papagei'}, {min:11, icon:'🦉', name:'Eule'}, {min:15, icon:'🦅', name:'Adler'},
+  {min:20, icon:'🐉', name:'Drache'}, {min:30, icon:'🔥', name:'Phönix'},
+];
+function xpNeed(L){ return 25*L*(L-1); }
+function levelInfo(xp){
+  let L = 1; while(xp >= xpNeed(L+1)) L++;
+  const rank = RANKS.filter(r=>r.min<=L).pop();
+  return {level:L, cur:xp-xpNeed(L), span:xpNeed(L+1)-xpNeed(L), rank};
+}
+function recentAccuracy(){
+  const r = state.recent || [];
+  return r.length ? r.filter(Boolean).length / r.length : null;
+}
+function speedSeconds(){
+  const acc = recentAccuracy();
+  const base = state.difficulty==='fortgeschritten' ? 5 : 7;
+  if(acc===null) return base;
+  return acc>=0.85 ? base-1 : acc<0.6 ? base+2 : base;
+}
+function boostActive(){ return (state.boostUntil||0) > Date.now(); }
+
+/* ---------- Toasts & XP-Popup ---------- */
+const toastQueue = []; let toastBusy = false;
+function toast(msg){ toastQueue.push(msg); if(!toastBusy) nextToast(); }
+function nextToast(){
+  const el = document.getElementById('toast');
+  if(!toastQueue.length){ toastBusy=false; return; }
+  toastBusy = true;
+  el.textContent = toastQueue.shift();
+  el.classList.add('show');
+  setTimeout(()=>{ el.classList.remove('show'); setTimeout(nextToast, 350); }, 2300);
+}
+function popXP(n){
+  const el = document.getElementById('xpPop');
+  el.textContent = `+${n} XP`;
+  el.classList.remove('go'); void el.offsetWidth; el.classList.add('go');
+}
+function updateTopbar(){
+  document.getElementById('streakVal').textContent = state.streak;
+  document.getElementById('coinsVal').textContent = state.coins;
+  document.getElementById('heartsVal').textContent = state.hearts;
+}
+
+/* ---------- XP ---------- */
+function addXP(n){
+  ensureDaily(); ensureLeague();
+  const g = n * (boostActive() ? 2 : 1);
+  const beforeInfo = levelInfo(state.xp); const before = beforeInfo.level;
+  const goalBefore = state.daily.xp >= state.daily.goal;
+  state.xp += g; state.daily.xp += g; state.league.xp += g;
+  track('xp', g);
+  const after = levelInfo(state.xp);
+  if(after.level > before){
+    toast(after.rank.name!==beforeInfo.rank.name ? `🎉 Level ${after.level}! Neuer Rang: ${after.rank.icon} ${after.rank.name}` : `🎉 Level ${after.level} erreicht!`);
+    sndLevelUp(); launchConfetti();
+  }
+  if(!goalBefore && state.daily.xp >= state.daily.goal){
+    state.coins += 10;
+    toast('🎯 Tagesziel erreicht! +10 🪙');
+  }
+  return g;
+}
+
+/* ---------- Tagesziel & Quests ---------- */
+const GOALS = [{xp:10,label:'Locker'},{xp:20,label:'Normal'},{xp:30,label:'Ernst'},{xp:50,label:'Intensiv'}];
+const QUESTS = [
+  {id:'xp30', icon:'⭐', text:'Sammle 30 XP', ev:'xp', target:30, reward:15},
+  {id:'xp60', icon:'🌟', text:'Sammle 60 XP', ev:'xp', target:60, reward:25},
+  {id:'les2', icon:'📗', text:'Schließe 2 Lektionen ab', ev:'lesson', target:2, reward:15},
+  {id:'les3', icon:'📚', text:'Schließe 3 Lektionen ab', ev:'lesson', target:3, reward:20},
+  {id:'perf', icon:'💎', text:'Eine Lektion ohne Fehler', ev:'perfect', target:1, reward:25},
+  {id:'combo5', icon:'🔥', text:'Erreiche eine 5er-Serie', ev:'combo', target:5, reward:15, max:true},
+  {id:'combo8', icon:'⚡', text:'Erreiche eine 8er-Serie', ev:'combo', target:8, reward:25, max:true},
+  {id:'cor20', icon:'✅', text:'20 richtige Antworten', ev:'correct', target:20, reward:15},
+  {id:'gram', icon:'📘', text:'Spiele ein Grammatik-Thema', ev:'grammar', target:1, reward:15},
+  {id:'rev', icon:'💪', text:'Mach ein Fehler-Training', ev:'review', target:1, reward:15},
+  {id:'lis5', icon:'🎧', text:'Löse 5 Hör-Aufgaben', ev:'listen', target:5, reward:15},
+  {id:'fast5', icon:'⏱️', text:'5 richtige Antworten in unter 4 Sek.', ev:'fast', target:5, reward:20},
+];
+function qDef(id){ return QUESTS.find(q=>q.id===id); }
+function ensureDaily(){
+  const today = new Date().toDateString();
+  if(state.daily.date === today) return;
+  const evs = new Set(); const picks = [];
+  shuffle(QUESTS).forEach(q=>{ if(picks.length<3 && !evs.has(q.ev)){ evs.add(q.ev); picks.push({id:q.id, p:0, claimed:false}); } });
+  state.daily = {date:today, xp:0, goal:state.daily.goal||20, quests:picks, chestClaimed:false};
+}
+function track(ev, amt){
+  ensureDaily();
+  state.daily.quests.forEach(q=>{
+    const d = qDef(q.id);
+    if(!d || d.ev!==ev || q.claimed) return;
+    const was = q.p >= d.target;
+    q.p = d.max ? Math.max(q.p, amt) : q.p + amt;
+    if(!was && q.p >= d.target) toast(`✅ Quest geschafft: ${d.text}`);
+  });
+  updateQuestDot();
+}
+function questReady(){
+  return state.daily.quests.some(q=>!q.claimed && q.p>=qDef(q.id).target)
+    || (state.daily.quests.length && state.daily.quests.every(q=>q.claimed) && !state.daily.chestClaimed);
+}
+function updateQuestDot(){ const d=document.getElementById('questDot'); if(d) d.classList.toggle('hidden', !questReady()); }
+function renderQuests(){
+  ensureDaily(); updateTopbar();
+  const h = 24 - new Date().getHours();
+  document.getElementById('questTimer').textContent = `Neue Quests in ${h} Std`;
+  const chips = document.getElementById('goalChips'); chips.innerHTML='';
+  GOALS.forEach(g=>{
+    const b = document.createElement('button');
+    b.className = 'goal-chip' + (state.daily.goal===g.xp?' sel':'');
+    b.textContent = `${g.label} ${g.xp}`;
+    b.onclick = ()=>{ sndTap(); state.daily.goal=g.xp; saveState(); renderQuests(); };
+    chips.appendChild(b);
+  });
+  const pct = Math.min(1, state.daily.xp/state.daily.goal);
+  const gf = document.getElementById('goalFill2');
+  gf.style.width = (pct*100)+'%'; gf.classList.toggle('done', pct>=1);
+  document.getElementById('goalText').textContent = `${state.daily.xp} / ${state.daily.goal} XP heute${pct>=1?' – geschafft! 🎉':''}`;
+  const list = document.getElementById('questList'); list.innerHTML='';
+  state.daily.quests.forEach(q=>{
+    const d = qDef(q.id); const done = q.p>=d.target;
+    const el = document.createElement('div'); el.className='quest';
+    el.innerHTML = `<div class="quest-icon">${d.icon}</div><div class="quest-body"><div class="quest-text">${d.text}</div>
+      <div class="mini-bar"><div class="mini-fill ${done?'done':'goal'}" style="width:${Math.min(100,q.p/d.target*100)}%"></div></div>
+      <div class="panel-sub" style="color:var(--muted)">${Math.min(q.p,d.target)} / ${d.target}</div></div>`;
+    const btn = document.createElement('button');
+    btn.className = 'quest-btn' + (done && !q.claimed ? ' ready' : '');
+    btn.textContent = q.claimed ? '✔️' : `🪙 ${d.reward}`;
+    if(done && !q.claimed) btn.onclick = ()=>{
+      q.claimed = true; state.coins += d.reward; sndCorrect();
+      toast(`+${d.reward} 🪙 abgeholt!`); saveState(); renderQuests();
+    };
+    el.appendChild(btn); list.appendChild(el);
+  });
+  const chest = document.getElementById('chestBtn');
+  const allClaimed = state.daily.quests.every(q=>q.claimed);
+  chest.disabled = !allClaimed || state.daily.chestClaimed;
+  chest.style.opacity = chest.disabled ? .5 : 1;
+  chest.textContent = state.daily.chestClaimed ? '🎁 Truhe heute schon geöffnet' : allClaimed ? '🎁 Truhe öffnen!' : '🎁 Truhe: alle 3 Quests abholen';
+  updateQuestDot();
+}
+document.getElementById('chestBtn').addEventListener('click', ()=>{
+  if(!state.daily.quests.every(q=>q.claimed) || state.daily.chestClaimed) return;
+  const prizes = [
+    ()=>{ state.coins+=40; return '40 🪙'; },
+    ()=>{ state.inventory.freeze=Math.min(2,state.inventory.freeze+1); return 'einen 🧊 Streak-Schutz'; },
+    ()=>{ state.inventory.hints+=3; return '3 💡 Tipp-Joker'; },
+    ()=>{ state.boostUntil=Math.max(Date.now(),state.boostUntil||0)+15*60000; return '15 Min. ⚡ Doppel-XP'; },
+  ];
+  const won = pick(prizes)();
+  state.daily.chestClaimed = true;
+  sndLevelUp(); launchConfetti();
+  toast(`🎁 In der Truhe: ${won}!`);
+  saveState(); renderQuests();
+});
+
+/* ---------- Liga ---------- */
+const LEAGUES = ['🥉 Bronze','🥈 Silber','🥇 Gold','💠 Saphir','♦️ Rubin','💚 Smaragd','💜 Amethyst','🤍 Perlen','⚫ Obsidian','💎 Diamant'];
+const BOT_NAMES = ['Lena','Carlos','Mia','Tobi','Aiko','Noah','Sofia','Luca','Emma','Jonas','Chloé','Mateo','Hannah','Yuki','Paul','Nina','Omar','Clara','Finn','Lia'];
+const BOT_AV = ['🦊','🐼','🐨','🐯','🐸','🐵','🦁','🐰','🐙','🦄','🐧','🐻'];
+function weekKey(){
+  const d = new Date(); const day = (d.getDay()+6)%7;
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate()-day).toDateString();
+}
+function weekHours(){ return Math.min(168, (Date.now()-new Date(weekKey()).getTime())/3.6e6); }
+function genBots(tier){
+  return shuffle(BOT_NAMES).slice(0,9).map(name=>({
+    name, av:pick(BOT_AV), base:Math.floor(Math.random()*15),
+    rate:(0.15 + Math.random()*1.2) * (1 + tier*0.35)
+  }));
+}
+function botXp(b, hours){ return Math.floor(b.base + b.rate*hours); }
+function ensureLeague(){
+  const L = state.league; const wk = weekKey();
+  if(L.week === wk) return;
+  if(L.week){
+    const rank = 1 + L.bots.filter(b=>botXp(b,168) > L.xp).length;
+    if(rank<=3 && L.tier<LEAGUES.length-1 && L.xp>0){ L.tier++; state.stats.promoted=true; toast(`🎉 Aufstieg in die ${LEAGUES[L.tier]}-Liga! (Platz ${rank})`); }
+    else if(rank>=8 && L.tier>0){ L.tier--; toast(`😿 Abstieg in die ${LEAGUES[L.tier]}-Liga (Platz ${rank})`); }
+    else toast(`🏁 Liga-Woche beendet – Platz ${rank}`);
+  }
+  L.week = wk; L.xp = 0; L.bots = genBots(L.tier);
+}
+function renderLeague(){
+  ensureLeague(); updateTopbar();
+  const L = state.league; const hrs = weekHours();
+  document.getElementById('leagueTitle').textContent = `${LEAGUES[L.tier]}-Liga`;
+  const left = 168-hrs; const dd = Math.floor(left/24), hh = Math.floor(left%24);
+  document.getElementById('leagueSub').textContent = `Top 3 steigen auf${L.tier>0?' · Plätze 8–10 steigen ab':''} · noch ${dd} T ${hh} Std`;
+  const me = levelInfo(state.xp).rank.icon;
+  const rows = L.bots.map(b=>({name:b.name, av:b.av, xp:botXp(b,hrs)})).concat([{name:'Du', av:me, xp:L.xp, me:true}])
+    .sort((a,b)=>b.xp-a.xp || (a.me?-1:1));
+  const list = document.getElementById('leagueList'); list.innerHTML='';
+  rows.forEach((r,i)=>{
+    if(i===3 && L.tier<LEAGUES.length-1) list.insertAdjacentHTML('beforeend','<div class="zone">▲ AUFSTIEGSZONE ▲</div>');
+    if(i===7 && L.tier>0) list.insertAdjacentHTML('beforeend','<div class="zone">▼ ABSTIEGSZONE ▼</div>');
+    const up = i<3 && L.tier<LEAGUES.length-1, down = i>=7 && L.tier>0;
+    list.insertAdjacentHTML('beforeend', `<div class="league-row${r.me?' me':''}${up?' up':''}${down?' down':''}">
+      <span class="pos">${i+1}</span><span class="av">${r.av}</span><span class="nm">${escapeHtml(r.name)}</span><span>${r.xp} XP</span></div>`);
+  });
+}
+
+/* ---------- Erfolge ---------- */
+const ACHIEVEMENTS = [
+  {id:'first', icon:'🎓', name:'Erste Schritte', desc:'Erste Lektion geschafft', test:()=>state.stats.lessons>=1, reward:10},
+  {id:'les10', icon:'📚', name:'Bücherwurm', desc:'10 Lektionen', test:()=>state.stats.lessons>=10, reward:30},
+  {id:'les50', icon:'🏛️', name:'Gelehrter', desc:'50 Lektionen', test:()=>state.stats.lessons>=50, reward:100},
+  {id:'st3', icon:'🔥', name:'Am Ball', desc:'3 Tage Streak', test:()=>state.streak>=3, reward:20},
+  {id:'st7', icon:'📅', name:'Wochenheld', desc:'7 Tage Streak', test:()=>state.streak>=7, reward:50},
+  {id:'st30', icon:'🏆', name:'Unaufhaltsam', desc:'30 Tage Streak', test:()=>state.streak>=30, reward:200},
+  {id:'perf1', icon:'💎', name:'Makellos', desc:'Eine Lektion ohne Fehler', test:()=>state.stats.perfect>=1, reward:20},
+  {id:'perf10', icon:'👑', name:'Perfektionist', desc:'10 fehlerfreie Lektionen', test:()=>state.stats.perfect>=10, reward:80},
+  {id:'combo10', icon:'⚡', name:'Kettenreaktion', desc:'10er-Serie', test:()=>state.stats.maxCombo>=10, reward:30},
+  {id:'xp1000', icon:'🚀', name:'Tausender', desc:'1000 XP gesammelt', test:()=>state.xp>=1000, reward:50},
+  {id:'lv5', icon:'🦜', name:'Aufsteiger', desc:'Spielerlevel 5', test:()=>levelInfo(state.xp).level>=5, reward:30},
+  {id:'lv10', icon:'🦅', name:'Überflieger', desc:'Spielerlevel 10', test:()=>levelInfo(state.xp).level>=10, reward:80},
+  {id:'gram3', icon:'🧠', name:'Grammatik-Fan', desc:'3 Grammatik-Themen mit Sternen', test:()=>Object.values(state.grammarProgress||{}).flat().filter(x=>x>0).length>=3, reward:30},
+  {id:'poly', icon:'🌍', name:'Polyglott', desc:'In 2 Sprachen gelernt', test:()=>Object.keys(state.langsPlayed).length>=2, reward:40},
+  {id:'rev20', icon:'💪', name:'Fehlerjäger', desc:'20 Wörter im Training gefestigt', test:()=>state.stats.reviewMastered>=20, reward:40},
+  {id:'league', icon:'🏅', name:'Liga-Aufstieg', desc:'In eine höhere Liga aufgestiegen', test:()=>state.stats.promoted, reward:50},
+  {id:'night', icon:'🌙', name:'Nachteule', desc:'Nach 22 Uhr gelernt', test:()=>state.stats.night, reward:15},
+  {id:'early', icon:'🌅', name:'Frühaufsteher', desc:'Vor 7 Uhr gelernt', test:()=>state.stats.early, reward:15},
+  {id:'shop', icon:'🛍️', name:'Shopping-Tour', desc:'Erster Einkauf im Shop', test:()=>state.stats.bought, reward:10},
+  {id:'jump', icon:'🦘', name:'Känguru', desc:'Einen Sprungtest bestanden', test:()=>state.stats.jumped, reward:30},
+];
+function checkAchievements(){
+  ACHIEVEMENTS.forEach(a=>{
+    if(state.achievements[a.id] || !a.test()) return;
+    state.achievements[a.id] = Date.now();
+    state.coins += a.reward;
+    toast(`🏅 Erfolg: ${a.icon} ${a.name} (+${a.reward} 🪙)`);
+  });
+}
+
+/* ---------- Shop ---------- */
+const SHOP = [
+  {id:'hearts', icon:'❤️', name:'Herzen auffüllen', desc:'Sofort wieder 5 Herzen', price:30, can:()=>state.hearts<MAX_HEARTS, apply:()=>{ state.hearts=MAX_HEARTS; state.lastHeartLoss=null; }, have:()=>`${state.hearts}/5`},
+  {id:'freeze', icon:'🧊', name:'Streak-Schutz', desc:'Rettet deinen Streak an einem verpassten Tag', price:50, can:()=>state.inventory.freeze<2, apply:()=>{ state.inventory.freeze++; }, have:()=>`${state.inventory.freeze}/2`},
+  {id:'boost', icon:'⚡', name:'Doppel-XP (15 Min.)', desc:'Alle XP zählen doppelt', price:40, can:()=>true, apply:()=>{ state.boostUntil=Math.max(Date.now(),state.boostUntil||0)+15*60000; }, have:()=>boostActive()?`noch ${Math.ceil((state.boostUntil-Date.now())/60000)} Min.`:'–'},
+  {id:'hints', icon:'💡', name:'3 Tipp-Joker', desc:'Entfernt 2 falsche Antworten', price:25, can:()=>true, apply:()=>{ state.inventory.hints+=3; }, have:()=>`${state.inventory.hints}`},
+];
+function buy(item){
+  if(state.coins < item.price){ toast('Zu wenig Münzen 🪙 – Quests bringen welche!'); return; }
+  if(!item.can()){ toast('Das hast du schon voll 👍'); return; }
+  state.coins -= item.price; item.apply(); state.stats.bought = true;
+  sndCorrect(); toast(`${item.icon} ${item.name} gekauft!`);
+  checkAchievements(); saveState(); renderStats();
+}
+function renderProfileExtras(){
+  updateTopbar();
+  const li = levelInfo(state.xp);
+  document.getElementById('profRank').textContent = li.rank.icon;
+  document.getElementById('profName').textContent = `Lv ${li.level} · ${li.rank.name}`;
+  document.getElementById('profNext').textContent = `${li.span-li.cur} XP bis Level ${li.level+1} · ${LEAGUES[state.league.tier]}-Liga`;
+  const acc = recentAccuracy();
+  document.getElementById('statAcc').textContent = acc===null ? '–' : Math.round(acc*100)+'%';
+  const grid = document.getElementById('achGrid'); grid.innerHTML='';
+  ACHIEVEMENTS.forEach(a=>{
+    const got = !!state.achievements[a.id];
+    const el = document.createElement('div'); el.className='ach'+(got?' got':''); el.textContent=a.icon;
+    el.onclick = ()=>toast(`${a.icon} ${a.name}: ${a.desc} ${got?'✅':'🔒'}`);
+    grid.appendChild(el);
+  });
+  document.getElementById('achCount').textContent = `${Object.keys(state.achievements).length}/${ACHIEVEMENTS.length}`;
+  document.getElementById('shopCoins').textContent = state.coins;
+  const list = document.getElementById('shopList'); list.innerHTML='';
+  SHOP.forEach(item=>{
+    const el = document.createElement('div'); el.className='shop-item';
+    el.innerHTML = `<span class="si">${item.icon}</span><span class="st">${item.name}<small>${item.desc} · Du hast: ${item.have()}</small></span>`;
+    const b = document.createElement('button'); b.textContent = `${item.price} 🪙`;
+    b.disabled = state.coins<item.price || !item.can();
+    b.onclick = ()=>buy(item);
+    el.appendChild(b); list.appendChild(el);
+  });
+  document.getElementById('soundBtn').textContent = state.settings.sound===false ? '🔇 Ton: aus' : '🔊 Ton: an';
+}
+document.getElementById('soundBtn').addEventListener('click', ()=>{
+  state.settings.sound = state.settings.sound===false; saveState(); renderProfileExtras(); sndTap();
+});
+document.getElementById('placementBtn').addEventListener('click', ()=>startPlacement());
+
+/* ---------- Dashboard auf der Karte ---------- */
+function renderDashboard(){
+  ensureDaily(); ensureLeague(); updateTopbar();
+  const li = levelInfo(state.xp);
+  document.getElementById('rankBadge').textContent = li.rank.icon;
+  document.getElementById('rankName').textContent = `Lv ${li.level} · ${li.rank.name}`;
+  document.getElementById('rankXp').textContent = `${li.cur}/${li.span} XP`;
+  document.getElementById('xpBarFill').style.width = (li.cur/li.span*100)+'%';
+  const gp = Math.min(1, state.daily.xp/state.daily.goal);
+  document.getElementById('goalXp').textContent = `${state.daily.xp}/${state.daily.goal} XP${gp>=1?' ✅':''}`;
+  const gf = document.getElementById('goalFill');
+  gf.style.width = (gp*100)+'%'; gf.classList.toggle('done', gp>=1);
+  const n = reviewCandidates().length;
+  const tb = document.getElementById('trainBtn');
+  tb.textContent = n ? `💪 Training (${n})` : '💪 Training';
+  tb.style.opacity = seenWords().length < 4 ? .6 : 1;
+  const bc = document.getElementById('boostChip');
+  bc.classList.toggle('active-boost', boostActive());
+  bc.textContent = boostActive() ? `⚡ x2 · ${Math.ceil((state.boostUntil-Date.now())/60000)}′` : '⚡ x2';
+  document.getElementById('diffChip').textContent = `${LANGS[currentLang()].label.split(' ')[0]} ${DIFFICULTIES[state.difficulty||'anfaenger'].label}`;
+  updateQuestDot();
+}
+document.getElementById('trainBtn').addEventListener('click', ()=>{ sndTap(); startReview(); });
+document.getElementById('boostChip').addEventListener('click', ()=>{
+  sndTap(); setNav('stats'); renderStats(); showScreen('screen-stats');
+});
+
+/* ---------- Wiederholungssystem (Leitner) ---------- */
+const INTERVALS = [0, 4*3.6e6, 24*3.6e6, 3*24*3.6e6, 7*24*3.6e6, 21*24*3.6e6];
+function mKey(pair){ return currentLang()+'|'+pair[0]+'|'+pair[1]; }
+function updateMastery(pair, ok){
+  const k = mKey(pair);
+  const q = session.currentQ || {};
+  const e = state.mastery[k] || {de:pair[0], t:pair[1], lang:currentLang(),
+    diff: q.diff || state.difficulty || 'anfaenger', lvl: q.lvl!==undefined ? q.lvl : session.levelIdx, box:0, due:0, right:0, wrong:0};
+  if(ok){
+    const was = e.box; e.box = Math.min(5, e.box+1); e.right++;
+    if(session.mode==='review' && was<2 && e.box>=2) state.stats.reviewMastered++;
+  } else { e.box = 0; e.wrong++; }
+  e.due = Date.now() + INTERVALS[e.box];
+  state.mastery[k] = e;
+}
+function seenWords(){ return Object.values(state.mastery).filter(e=>e.lang===currentLang() && e.lvl!==undefined && e.lvl!==null); }
+function reviewCandidates(){
+  const now = Date.now();
+  const all = seenWords();
+  const weak = all.filter(e=>e.wrong>0 && e.box<2).sort((a,b)=>b.wrong-a.wrong);
+  const due = all.filter(e=>!weak.includes(e) && e.due<=now && e.box<5).sort((a,b)=>a.due-b.due);
+  return weak.concat(due);
+}
+function startReview(){
+  let list = reviewCandidates().slice(0,10);
+  if(list.length < 6){
+    const rest = seenWords().filter(e=>!list.includes(e)).sort((a,b)=>a.box-b.box);
+    list = list.concat(rest.slice(0, 6-list.length));
+  }
+  const types = ['mc_de_en','mc_en_de','type_de_en','listen_en','truefalse_de_en','missing_en','type_en_de'];
+  const qs = [];
+  list.forEach(e=>{
+    const pool = wordsFor(e.diff, e.lvl);
+    const idx = pool.findIndex(w=>w[0]===e.de && w[1]===e.t);
+    if(idx<0) return;
+    const type = e.box===0 ? pick(['mc_de_en','mc_en_de','listen_en']) : pick(types);
+    qs.push({type, idx, word:pool[idx], pool, lvl:e.lvl, diff:e.diff});
+  });
+  if(qs.length < 4){ toast('Spiel erst ein paar Lektionen – dann gibt es hier etwas zu üben! 💪'); return; }
+  touchStreak();
+  session = {mode:'review', xpEarned:0, wrong:0, questions:shuffle(qs), qi:0, correct:0, combo:0, maxCombo:0, answered:false};
+  showScreen('screen-game'); renderQuestion();
+}
+document.getElementById('gameoverTrainBtn').addEventListener('click', ()=>startReview());
+
+/* ---------- Sprungtest ---------- */
+function offerJump(i){
+  if(!confirm(`🔒 „${LEVELS[i].title}“ ist noch gesperrt.\n\n🚀 Sprungtest: 8 Fragen aus den bisherigen Leveln, höchstens 1 Fehler – dann springst du direkt hierher!\n\nJetzt versuchen?`)) return;
+  const qs = [];
+  const types = ['mc_de_en','mc_en_de','type_de_en','listen_en','missing_en','truefalse_en_de'];
+  for(let k=0;k<8;k++){
+    const lvl = Math.floor(Math.random()*i);
+    const pool = levelWords(lvl);
+    const idx = Math.floor(Math.random()*pool.length);
+    if(qs.some(q=>q.word===pool[idx])){ k--; continue; }
+    qs.push({type:pick(types), idx, word:pool[idx], pool, lvl});
+  }
+  touchStreak();
+  session = {mode:'jump', target:i, xpEarned:0, wrong:0, questions:qs, qi:0, correct:0, combo:0, maxCombo:0, answered:false};
+  showScreen('screen-game'); renderQuestion();
+}
+
+/* ---------- Einstufungstest ---------- */
+function startPlacement(){
+  const qs = [];
+  ORDER.forEach(g=>{
+    shuffle([...Array(10).keys()]).slice(0,4).forEach(lvl=>{
+      const pool = wordsFor(g, lvl);
+      const idx = Math.floor(Math.random()*pool.length);
+      qs.push({type: g==='fortgeschritten' && Math.random()<0.5 ? 'mc_en_de' : 'mc_de_en', idx, word:pool[idx], pool, group:g, lvl, diff:g});
+    });
+  });
+  touchStreak();
+  session = {mode:'placement', xpEarned:0, wrong:0, questions:qs, qi:0, correct:0, combo:0, maxCombo:0, answered:false, results:[]};
+  showScreen('screen-game'); renderQuestion();
+}
+
+/* ---------- Tracking pro Antwort ---------- */
+function onAnswerTracked(ok){
+  const q = session.currentQ || {};
+  if(['vocab','grammar','jump'].includes(session.mode)){
+    state.recent.push(ok); if(state.recent.length>30) state.recent.shift();
+  }
+  if(session.mode==='placement') session.results.push({group:q.group, ok});
+  if(session.currentWord && session.mode!=='placement') updateMastery(session.currentWord, ok);
+  if(ok){
+    track('correct',1);
+    track('combo', session.combo+1);
+    state.stats.maxCombo = Math.max(state.stats.maxCombo, session.combo+1);
+    if(Date.now()-session.qStart < 4000) track('fast',1);
+    if(/^(listen|dictation)/.test(session.currentType||'')) track('listen',1);
+  }
+  saveState();
+}
+
+/* ---------- Abschluss der Sondermodi ---------- */
+function finishSpecial(){
+  const total = session.questions.length;
+  const $ = id=>document.getElementById(id);
+  let title, desc, mascot, success = true;
+  if(session.mode==='review'){
+    session.xpEarned += addXP(5);
+    state.coins += 5 + session.correct;
+    state.stats.lessons++; track('review',1); track('lesson',1);
+    title = 'Training geschafft! 💪'; mascot = '💪';
+    desc = `${session.correct} von ${total} Wörtern sitzen jetzt besser.`;
+  } else if(session.mode==='jump'){
+    success = session.wrong<=1 && session.qi>=total-1;
+    if(success){
+      const prog = levelProg();
+      for(let j=0;j<session.target;j++) prog[j].stars = Math.max(prog[j].stars,1);
+      state.stats.jumped = true;
+      session.xpEarned += addXP(15);
+      title = '🦘 Sprung geschafft!'; mascot = '🦘';
+      desc = `„${LEVELS[session.target].title}“ ist jetzt freigeschaltet.`;
+    } else {
+      title = 'Knapp daneben!'; mascot = '🙈';
+      desc = 'Zu viele Fehler – übe die vorherigen Level und versuch es nochmal.';
+    }
+  } else {
+    const score = g => session.results.filter(r=>r.group===g && r.ok).length;
+    const e = score('anfaenger'), m = score('mittel'), h = score('fortgeschritten');
+    const lvl = (h>=3 && m>=3) ? 'fortgeschritten' : (m>=3 || (e>=4 && m>=2)) ? 'mittel' : 'anfaenger';
+    state.difficulty = lvl; state.recent = []; state.placementDone = true;
+    title = `Dein Niveau: ${DIFFICULTIES[lvl].label}`; mascot = '🧪';
+    desc = `Grundwortschatz ${e}/4 · Alltag ${m}/4 · Gehoben ${h}/4 – Flügo passt die Aufgaben jetzt an dich an.`;
+  }
+  checkAchievements(); saveState();
+  pendingMode = 'vocab';
+  const pct = session.correct/Math.max(1,total);
+  const stars = pct>=0.9?3:pct>=0.7?2:pct>0?1:0;
+  $('resultMascot').textContent = mascot;
+  $('resultStars').textContent = '⭐'.repeat(stars)+'☆'.repeat(3-stars);
+  $('resultTitle').textContent = title;
+  $('resultDesc').textContent = desc;
+  $('resCorrect').textContent = `${session.correct}/${total}`;
+  $('resCoins').textContent = session.mode==='review' ? `+${5+session.correct}` : '+0';
+  $('resXp').textContent = `+${session.xpEarned}`;
+  $('resGoal').textContent = `${state.daily.xp}/${state.daily.goal} XP${state.daily.xp>=state.daily.goal?' ✅':''}`;
+  $('adaptBox').classList.add('hidden');
+  $('continueBtn').textContent = 'Weiter 🗺️';
+  showScreen('screen-result');
+  if(success){ sndLevelUp(); launchConfetti(); }
+}
+
+/* ---------- Adaptiver Vorschlag nach der Lektion ---------- */
+function showAdaptSuggestion(isGrammar){
+  const box = document.getElementById('adaptBox');
+  box.classList.add('hidden');
+  if(isGrammar) return;
+  const acc = recentAccuracy(); const n = state.recent.length;
+  const i = ORDER.indexOf(state.difficulty||'anfaenger');
+  let target = null, text = '';
+  if(n>=16 && acc>=0.9 && i<2){ target = ORDER[i+1]; text = `🚀 ${Math.round(acc*100)}% richtig! Du bist zu gut für ${DIFFICULTIES[ORDER[i]].label}. Auf ${DIFFICULTIES[target].label} wechseln?`; }
+  else if(n>=16 && acc<=0.5 && i>0){ target = ORDER[i-1]; text = `🧸 Das war knifflig (${Math.round(acc*100)}%). Eine Stufe leichter mit ${DIFFICULTIES[target].label} üben?`; }
+  if(!target) return;
+  document.getElementById('adaptText').textContent = text;
+  box.classList.remove('hidden');
+  document.getElementById('adaptYes').onclick = ()=>{
+    state.difficulty = target; state.recent = []; saveState();
+    box.classList.add('hidden'); toast(`Neues Niveau: ${DIFFICULTIES[target].label}`);
+  };
+  document.getElementById('adaptNo').onclick = ()=>{ state.recent = []; saveState(); box.classList.add('hidden'); };
+}
+
+/* ---------- Tipp-Joker ---------- */
+function updateHintBtn(show){
+  const b = document.getElementById('hintBtn');
+  const opts = [...document.querySelectorAll('#optsBox .opt')].filter(o=>o.style.visibility!=='hidden' && !o.classList.contains('disabled'));
+  const ok = show && session && !session.answered && state.inventory.hints>0 && opts.length>=3;
+  b.classList.toggle('hidden', !ok);
+  document.getElementById('hintCount').textContent = state.inventory.hints;
+}
+document.getElementById('hintBtn').addEventListener('click', ()=>{
+  if(!session || session.answered || state.inventory.hints<=0) return;
+  const wrong = [...document.querySelectorAll('#optsBox .opt')].filter(o=>o.textContent!==session.correctOpt && o.style.visibility!=='hidden');
+  shuffle(wrong).slice(0,2).forEach(o=>{ o.style.visibility='hidden'; });
+  state.inventory.hints--; saveState(); sndTap();
+  updateHintBtn(false);
+});
+
+/* ---------- Game-Over-Anzeige ---------- */
+function updateGameoverScreen(){
+  regenHearts(); updateTopbar();
+  const b = document.getElementById('retryBtn');
+  b.disabled = state.coins < 30; b.style.opacity = b.disabled ? .5 : 1;
+  b.textContent = `❤️ Auffüllen für 30 🪙 (du hast ${state.coins})`;
+  const mins = state.lastHeartLoss ? Math.max(1, Math.ceil(HEART_REGEN_MINUTES - (Date.now()-state.lastHeartLoss)/60000)) : HEART_REGEN_MINUTES;
+  document.getElementById('heartInfo').textContent = `Nächstes Herz in ${mins} Min. – oder übe im Fehler-Training, das kostet keine Herzen.`;
+}
+
 /* ---------- INIT ---------- */
+ensureDaily(); ensureLeague(); checkAchievements(); saveState();
 if(state.language && state.difficulty){
   renderMap();
   showScreen('screen-map');
