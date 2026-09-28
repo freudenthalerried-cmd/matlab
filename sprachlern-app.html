@@ -191,7 +191,11 @@ body{
 .feedback-bar.show{transform:translateY(0);}
 .feedback-bar.ok{background:#02b48b;}
 .feedback-bar.no{background:#ff5d5d;}
-.feedback-next{background:#fff;color:inherit;border:none;padding:10px 18px;border-radius:12px;font-weight:800;cursor:pointer;}
+.feedback-next{background:#fff;color:#1b2733;border:none;padding:10px 18px;border-radius:12px;font-weight:800;cursor:pointer;flex-shrink:0;margin-left:12px;}
+.feedback-bar.ok .feedback-next{color:#02845f;}
+.feedback-bar.no .feedback-next{color:#c22;}
+#feedbackText{flex:1;min-width:0;line-height:1.3;}
+#feedbackText small{display:block;font-size:12px;font-weight:600;opacity:.95;margin-top:3px;}
 
 /* ---------- RESULT ---------- */
 .result-stars{text-align:center;font-size:36px;margin:6px 0;letter-spacing:6px;}
@@ -218,6 +222,131 @@ body{
 .nav-btn .icon{font-size:22px;}
 
 .hidden{display:none!important;}
+.runner-track{flex:1;position:relative;}
+.runner{position:absolute;top:50%;left:4%;transform:translate(-50%,-55%);font-size:22px;transition:left .5s cubic-bezier(.3,1.5,.5,1);pointer-events:none;filter:drop-shadow(0 2px 3px rgba(0,0,0,.4));}
+.runner.hop{animation:hop .55s ease;}
+.runner.oops{animation:oopsAnim .5s ease;}
+@keyframes hop{0%,100%{transform:translate(-50%,-55%);}40%{transform:translate(-50%,-130%) rotate(-18deg) scale(1.2);}}
+@keyframes oopsAnim{0%,100%{transform:translate(-50%,-55%) rotate(0);}25%{transform:translate(-60%,-55%) rotate(-25deg);}75%{transform:translate(-40%,-55%) rotate(25deg);}}
+.burst{position:fixed;pointer-events:none;font-size:22px;z-index:70;}
+#questionArea.shake{animation:shake .35s;}
+#questionArea > *{animation:popIn .35s both;}
+#questionArea > *:nth-child(2){animation-delay:.06s;} #questionArea > *:nth-child(3){animation-delay:.12s;} #questionArea > *:nth-child(4){animation-delay:.18s;}
+.options .opt{animation:popIn .35s both;}
+.options .opt:nth-child(2){animation-delay:.08s;} .options .opt:nth-child(3){animation-delay:.16s;} .options .opt:nth-child(4){animation-delay:.24s;}
+.options .opt.correct{animation:pop .3s;} .options .opt.wrong{animation:shake .3s;}
+@keyframes popIn{from{opacity:0;transform:translateY(14px) scale(.9);}to{opacity:1;transform:none;}}
+.star-pop{display:inline-block;animation:starPop .5s both cubic-bezier(.3,1.8,.5,1);}
+@keyframes starPop{from{opacity:0;transform:scale(0) rotate(-90deg);}to{opacity:1;transform:scale(1) rotate(0);}}
+.back-link{background:#eef2f5;border:none;border-radius:10px;padding:6px 12px;font-weight:800;font-size:13px;color:var(--muted);cursor:pointer;font-family:inherit;margin-bottom:4px;}
+.brand{white-space:nowrap;}
+.seg{display:flex;background:rgba(255,255,255,0.12);border-radius:14px;padding:4px;gap:4px;margin:2px 0 6px;flex-shrink:0;}
+.seg-btn{flex:1;border:none;background:transparent;color:#cfe8ee;font-weight:800;font-size:14px;padding:8px;border-radius:10px;cursor:pointer;font-family:inherit;}
+.seg-btn.sel{background:#fff;color:var(--text);}
+.fb-timer{position:absolute;left:0;bottom:0;height:4px;background:rgba(255,255,255,0.75);width:0;}
+@media (max-width:380px){
+  .brand{font-size:17px;} .stat-pill{padding:4px 8px;font-size:13px;gap:4px;}
+}
+@media (max-height:740px){
+  .topbar{padding:7px 12px;}
+  .mascot{font-size:40px;} .mascot-shadow{width:26px;height:6px;}
+  .speech-bubble{font-size:12px;padding:6px 10px;margin-top:6px;}
+  .card{padding:14px;}
+  .btn{padding:11px;font-size:15px;}
+  .diff-list{gap:7px;} .diff-option{padding:8px 12px;} .diff-option b{font-size:14px;} .diff-option span{font-size:11px;}
+  .intro-icon{font-size:34px;} .intro-title{font-size:17px;} .intro-desc{margin-bottom:8px;}
+  .result-stars{font-size:28px;margin:2px 0;} .result-stat-row{padding:7px 12px;margin:4px 0;font-size:13px;}
+  .level-node{width:50px;height:50px;font-size:17px;border-width:3px;}
+  .node-label{top:-15px;font-size:8px;} .node-stars{bottom:-10px;} .node-stars span{font-size:9px;}
+  .path{gap:4px 12px;padding-top:14px;}
+  .dash{padding:8px 10px;} .rank-badge{width:40px;height:40px;font-size:22px;} .rank-badge.big{width:52px;height:52px;font-size:30px;}
+  .quest{padding:8px 10px;} .panel{padding:10px;}
+  .q-word{font-size:22px;} .q-sentence{font-size:17px;}
+  .opt{padding:11px 6px;font-size:14px;}
+}
+
+/* ---------- GAMIFICATION ---------- */
+.bottom-nav{order:10;}
+.nav-btn{font-size:10px;position:relative;}
+.nav-btn .icon{font-size:20px;}
+.nav-dot{position:absolute;top:0;right:6px;width:9px;height:9px;border-radius:50%;background:var(--danger);box-shadow:0 0 0 2px #0f2027;}
+.dash{background:rgba(255,255,255,0.08);border-radius:16px;padding:10px 12px;margin-bottom:6px;flex-shrink:0;}
+.dash-row{display:flex;gap:10px;align-items:center;}
+.dash-col{flex:1;min-width:0;}
+.dash-label{display:flex;justify-content:space-between;color:#e8f4f7;font-size:12px;font-weight:700;margin:2px 0;}
+.mini-bar{background:rgba(255,255,255,0.18);border-radius:10px;height:8px;overflow:hidden;margin-bottom:4px;}
+.mini-bar.big{height:14px;}
+.mini-fill{height:100%;border-radius:10px;width:0;transition:width .5s ease;}
+.mini-fill.lvl{background:linear-gradient(90deg,var(--purple),#a78bff);}
+.mini-fill.goal{background:linear-gradient(90deg,#ff9f1c,var(--accent));}
+.mini-fill.done{background:linear-gradient(90deg,var(--accent2),#7af0c8);}
+.rank-badge{width:48px;height:48px;border-radius:50%;background:linear-gradient(145deg,#ffe38a,#ffb13b);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;box-shadow:0 4px 0 rgba(0,0,0,0.2);}
+.rank-badge.big{width:64px;height:64px;font-size:38px;}
+.dash-actions{display:flex;gap:8px;margin-top:8px;align-items:center;}
+.chip-btn{white-space:nowrap;border:none;border-radius:12px;padding:7px 10px;font-weight:800;font-size:12px;cursor:pointer;background:#fff;color:var(--text);font-family:inherit;box-shadow:0 3px 0 rgba(0,0,0,0.15);}
+.chip-btn:disabled{opacity:.45;}
+.chip-btn.active-boost{background:var(--accent);}
+.diff-chip{margin-left:auto;color:#bfe3ea;font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.panel{background:rgba(255,255,255,0.1);border-radius:16px;padding:12px;margin-bottom:10px;color:#fff;flex-shrink:0;}
+.panel-title{font-weight:800;font-size:15px;margin-bottom:8px;}
+.panel-title.dark{color:var(--text);}
+.panel-sub{color:#bfe3ea;font-size:12px;font-weight:600;margin-top:4px;}
+.card .panel-sub{color:var(--muted);}
+.goal-chips{display:flex;gap:6px;margin-bottom:10px;}
+.goal-chip{flex:1;border:2px solid rgba(255,255,255,0.3);background:transparent;color:#fff;border-radius:10px;padding:6px 2px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;}
+.goal-chip.sel{background:var(--accent);color:#3a2a00;border-color:var(--accent);}
+.quest{background:#fff;border-radius:14px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.quest-icon{font-size:24px;}
+.quest-body{flex:1;min-width:0;}
+.quest-text{font-weight:800;font-size:13px;}
+.quest .mini-bar{background:#e6ecf0;margin:5px 0 0;}
+.quest-btn{border:none;border-radius:10px;padding:7px 10px;font-weight:800;font-size:12px;background:#e6ecf0;color:var(--muted);font-family:inherit;}
+.quest-btn.ready{background:var(--accent2);color:#fff;cursor:pointer;animation:pulseBtn 1.2s infinite;}
+@keyframes pulseBtn{50%{transform:scale(1.06);}}
+.league-list{display:flex;flex-direction:column;gap:4px;flex:1;min-height:0;}
+.league-row{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.08);border-radius:10px;padding:6px 10px;color:#fff;font-weight:700;font-size:13px;}
+.league-row.me{background:var(--accent);color:#3a2a00;}
+.league-row .pos{width:22px;text-align:center;font-weight:800;}
+.league-row .av{font-size:18px;}
+.league-row .nm{flex:1;}
+.league-row.up{border-left:4px solid var(--accent2);}
+.league-row.down{border-left:4px solid var(--danger);}
+.zone{color:#bfe3ea;font-size:10px;font-weight:800;text-align:center;letter-spacing:.5px;margin:2px 0;}
+.ach-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+.ach{aspect-ratio:1;border-radius:14px;background:#f4f7f9;display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;filter:grayscale(1);opacity:.4;}
+.ach.got{filter:none;opacity:1;background:linear-gradient(145deg,#fff4c2,#ffd96b);}
+.shop-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #eef2f5;}
+.shop-item:last-child{border-bottom:none;}
+.shop-item .si{font-size:26px;}
+.shop-item .st{flex:1;font-weight:700;font-size:13px;}
+.shop-item .st small{display:block;color:var(--muted);font-weight:600;}
+.shop-item button{border:none;border-radius:10px;padding:8px 10px;font-weight:800;background:var(--accent);color:#3a2a00;font-family:inherit;cursor:pointer;}
+.shop-item button:disabled{opacity:.4;}
+.profile-head{display:flex;gap:12px;align-items:center;margin-bottom:10px;}
+.adapt-box{background:#efe9ff;border-radius:14px;padding:10px;margin:8px 0;font-weight:700;font-size:13px;text-align:center;}
+.adapt-btns{display:flex;gap:8px;margin-top:8px;}
+.adapt-btns .btn{padding:9px;font-size:14px;margin:0;}
+.hint-btn{background:#fff;border:none;border-radius:10px;padding:3px 7px;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;}
+.toast{position:fixed;top:12px;left:50%;transform:translate(-50%,-150%);background:#fff;color:var(--text);border-radius:16px;padding:10px 16px;font-weight:800;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,0.3);z-index:60;transition:transform .35s cubic-bezier(.2,1.4,.4,1);max-width:90%;text-align:center;}
+.toast.show{transform:translate(-50%,0);}
+.xp-pop{position:fixed;top:45%;left:50%;transform:translate(-50%,-50%);color:var(--accent);font-size:26px;font-weight:800;text-shadow:0 3px 10px rgba(0,0,0,0.4);pointer-events:none;opacity:0;z-index:55;}
+.xp-pop.go{animation:xpUp 1s ease-out;}
+@keyframes xpUp{0%{opacity:0;transform:translate(-50%,-30%) scale(.7);}20%{opacity:1;transform:translate(-50%,-50%) scale(1.1);}100%{opacity:0;transform:translate(-50%,-160%) scale(1);}}
+#screen-stats{display:none;}
+#screen-stats.active{display:block;}
+
+/* ---------- GRAMMATIK ---------- */
+.q-sentence{font-size:20px;font-weight:800;color:#fff;text-align:center;margin:6px 4px;line-height:1.4;text-shadow:0 2px 8px rgba(0,0,0,0.25);}
+.q-sentence .gap{color:var(--accent);border-bottom:3px dashed var(--accent);padding:0 6px;}
+.q-de{text-align:center;color:#bfe3ea;font-size:12px;font-style:italic;margin-bottom:12px;}
+.word-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:0 4px;}
+.word-chip{background:#fff;border:3px solid #e6ecf0;border-radius:12px;padding:8px 12px;font-weight:800;font-size:15px;cursor:pointer;color:var(--text);}
+.word-chip:active{transform:scale(0.95);}
+.word-chip.used{opacity:.25;pointer-events:none;}
+.word-chip.correct{background:#e3fbf0;border-color:var(--accent2);}
+.word-chip.wrong{background:#ffe9e9;border-color:var(--danger);animation:shake .3s;}
+.word-chip.locked{pointer-events:none;}
+.build-sentence{min-height:54px;background:rgba(255,255,255,0.12);border:2px dashed rgba(255,255,255,0.35);border-radius:14px;padding:8px;margin:4px 4px 12px;color:#fff;font-weight:800;font-size:17px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-items:center;}
 </style>
 </head>
 <body>
@@ -235,7 +364,7 @@ body{
   <!-- ===== SPRACH-AUSWAHL ===== -->
   <section class="screen active" id="screen-language">
     <div class="card">
-      <button class="btn btn-secondary hidden" id="langBackBtn" style="margin:0 0 12px;">‹ Zurück</button>
+      <button class="back-link hidden" id="langBackBtn">‹ Zurück</button>
       <div class="mascot-wrap">
         <div class="mascot">🦉</div>
         <div class="mascot-shadow"></div>
@@ -250,7 +379,7 @@ body{
   <!-- ===== SCHWIERIGKEITS-AUSWAHL ===== -->
   <section class="screen" id="screen-difficulty">
     <div class="card">
-      <button class="btn btn-secondary" id="diffBackBtn" style="margin:0 0 12px;">‹ Zurück</button>
+      <button class="back-link" id="diffBackBtn">‹ Zurück</button>
       <div class="mascot-wrap">
         <div class="mascot">🦉</div>
         <div class="mascot-shadow"></div>
@@ -264,10 +393,51 @@ body{
 
   <!-- ===== MAP SCREEN ===== -->
   <section class="screen" id="screen-map">
-    <div class="map-title">Deine Wortreise 🗺️</div>
-    <div class="map-sub" id="xpSummary">Level 1 · 0 XP</div>
-    <div class="progressbar-wrap"><div class="progressbar-fill" id="xpBarFill" style="width:0%"></div></div>
+    <div class="dash">
+      <div class="dash-row">
+        <div class="rank-badge" id="rankBadge">🥚</div>
+        <div class="dash-col">
+          <div class="dash-label"><span id="rankName">Lv 1 · Ei</span><span id="rankXp">0/50 XP</span></div>
+          <div class="mini-bar"><div class="mini-fill lvl" id="xpBarFill"></div></div>
+          <div class="dash-label"><span id="goalLabel">🎯 Tagesziel</span><span id="goalXp">0/20 XP</span></div>
+          <div class="mini-bar"><div class="mini-fill goal" id="goalFill"></div></div>
+        </div>
+      </div>
+      <div class="dash-actions">
+        <button class="chip-btn" id="trainBtn">💪 Training</button>
+        <button class="chip-btn" id="boostChip">⚡ Doppel-XP</button>
+        <span class="diff-chip" id="diffChip">🌱 Anfänger</span>
+      </div>
+    </div>
     <div class="path" id="pathContainer"></div>
+  </section>
+
+  <!-- ===== GRAMMATIK ===== -->
+  <section class="screen" id="screen-grammar">
+    <div class="seg"><button class="seg-btn sel" id="segGram">📘 Grammatik</button><button class="seg-btn" id="segPhr">💬 Alltagssätze</button></div>
+    <div class="map-sub" id="grammarSub">Lustige Sätze, echte Regeln</div>
+    <div class="path" id="grammarPath"></div>
+  </section>
+
+  <!-- ===== QUESTS ===== -->
+  <section class="screen" id="screen-quests">
+    <div class="map-title">Tagesquests 🎯</div>
+    <div class="map-sub" id="questTimer">Neue Quests um Mitternacht</div>
+    <div class="panel">
+      <div class="panel-title">Tagesziel</div>
+      <div class="goal-chips" id="goalChips"></div>
+      <div class="mini-bar big"><div class="mini-fill goal" id="goalFill2"></div></div>
+      <div class="panel-sub" id="goalText">0 / 20 XP heute</div>
+    </div>
+    <div id="questList"></div>
+    <button class="btn btn-yellow" id="chestBtn">🎁 Truhe: alle 3 Quests schaffen</button>
+  </section>
+
+  <!-- ===== LIGA ===== -->
+  <section class="screen" id="screen-league">
+    <div class="map-title" id="leagueTitle">🥉 Bronze-Liga</div>
+    <div class="map-sub" id="leagueSub">Top 3 steigen auf · Endet in 3 Tagen</div>
+    <div class="league-list" id="leagueList"></div>
   </section>
 
   <!-- ===== LEVEL INTRO ===== -->
@@ -276,6 +446,7 @@ body{
       <div class="intro-icon" id="introIcon">🐾</div>
       <div class="intro-title" id="introTitle">Tiere</div>
       <div class="intro-desc" id="introDesc">8 neue Wörter · Mehrfachauswahl, Hören &amp; Tippen</div>
+      <div class="speech-bubble hidden" id="introTip" style="margin:0 auto 14px;"></div>
       <button class="btn btn-primary" id="startLevelBtn">▶ Level starten</button>
       <button class="btn btn-secondary" id="backToMapBtn">Zurück zur Karte</button>
     </div>
@@ -285,7 +456,8 @@ body{
   <section class="screen" id="screen-game">
     <div class="game-header">
       <span class="close-x" id="quitGameBtn">✕</span>
-      <div class="progressbar-wrap" style="flex:1;margin:0;"><div class="progressbar-fill" id="gameProgressFill" style="width:0%"></div></div>
+      <div class="runner-track"><div class="progressbar-wrap" style="margin:0;"><div class="progressbar-fill" id="gameProgressFill" style="width:0%"></div></div><span class="runner" id="runner">🦉</span></div>
+      <button class="hint-btn hidden" id="hintBtn">💡<span id="hintCount">0</span></button>
       <span class="hearts-mini" id="gameHearts">❤️❤️❤️❤️❤️</span>
     </div>
     <div class="q-wrap" id="questionArea"></div>
@@ -304,6 +476,11 @@ body{
       <div class="result-stat-row"><span>✅ Richtig</span><span id="resCorrect">0/8</span></div>
       <div class="result-stat-row"><span>🪙 Münzen verdient</span><span id="resCoins">+0</span></div>
       <div class="result-stat-row"><span>⭐ XP</span><span id="resXp">+0</span></div>
+      <div class="result-stat-row"><span>🎯 Tagesziel</span><span id="resGoal">0/20</span></div>
+      <div class="adapt-box hidden" id="adaptBox">
+        <div id="adaptText"></div>
+        <div class="adapt-btns"><button class="btn btn-primary" id="adaptYes">Ja!</button><button class="btn btn-secondary" id="adaptNo">Bleiben</button></div>
+      </div>
       <button class="btn btn-primary" id="continueBtn">Weiter zur Karte 🗺️</button>
     </div>
   </section>
@@ -317,26 +494,46 @@ body{
         <div class="speech-bubble">Kopf hoch, wir schaffen das!</div>
       </div>
       <div class="intro-title">Keine Herzen mehr!</div>
-      <div class="intro-desc">Warte, bis deine Herzen sich erholen, oder starte den Level erneut.</div>
-      <button class="btn btn-yellow" id="retryBtn">🔁 Level neu starten (Herzen auffrischen)</button>
+      <div class="intro-desc" id="heartInfo">Alle 20 Minuten wächst ein Herz nach.</div>
+      <button class="btn btn-yellow" id="retryBtn">❤️ Auffüllen für 30 🪙</button>
+      <button class="btn btn-primary" id="gameoverTrainBtn" style="margin-top:8px;">💪 Fehler-Training (kostet keine Herzen)</button>
       <button class="btn btn-secondary" id="gameoverMapBtn">Zurück zur Karte</button>
     </div>
   </section>
 
   <div class="bottom-nav">
-    <button class="nav-btn active" data-nav="map"><span class="icon">🗺️</span>Karte</button>
-    <button class="nav-btn" data-nav="stats"><span class="icon">📊</span>Statistik</button>
+    <button class="nav-btn active" data-nav="map"><span class="icon">🗺️</span>Lernen</button>
+    <button class="nav-btn" data-nav="grammar"><span class="icon">📘</span>Üben</button>
+    <button class="nav-btn" data-nav="quests"><span class="icon">🎯</span>Quests<span class="nav-dot hidden" id="questDot"></span></button>
+    <button class="nav-btn" data-nav="league"><span class="icon">🏆</span>Liga</button>
+    <button class="nav-btn" data-nav="stats"><span class="icon">👤</span>Profil</button>
   </div>
 
   <!-- ===== STATS SCREEN (modal-ish, reuses screen system) ===== -->
   <section class="screen" id="screen-stats">
-    <div class="card">
-      <div class="intro-title" style="text-align:left;">📊 Deine Statistik</div>
+    <div class="card" style="margin:0 0 12px;">
+      <div class="profile-head"><div class="rank-badge big" id="profRank">🥚</div>
+        <div><div class="intro-title" style="text-align:left;margin:0;" id="profName">Lv 1 · Ei</div>
+        <div class="panel-sub" id="profNext">50 XP bis Level 2</div></div></div>
       <div class="result-stat-row"><span>🏆 Gesamt-XP</span><span id="statXp">0</span></div>
       <div class="result-stat-row"><span>🔥 Tages-Streak</span><span id="statStreak">0</span></div>
       <div class="result-stat-row"><span>🪙 Münzen</span><span id="statCoins">0</span></div>
       <div class="result-stat-row"><span>✅ Level abgeschlossen</span><span id="statLevels">0</span></div>
       <div class="result-stat-row"><span>⭐ Sterne gesamt</span><span id="statStars">0</span></div>
+      <div class="result-stat-row"><span>🎯 Trefferquote (zuletzt)</span><span id="statAcc">–</span></div>
+    </div>
+    <div class="card" style="margin:0 0 12px;">
+      <div class="panel-title dark">🏅 Erfolge <span id="achCount"></span></div>
+      <div class="ach-grid" id="achGrid"></div>
+    </div>
+    <div class="card" style="margin:0 0 12px;">
+      <div class="panel-title dark">🛒 Shop <span class="panel-sub" style="display:inline">(🪙 <span id="shopCoins">0</span>)</span></div>
+      <div id="shopList"></div>
+    </div>
+    <div class="card" style="margin:0 0 12px;">
+      <div class="panel-title dark">⚙️ Einstellungen</div>
+      <button class="btn btn-secondary" id="soundBtn">🔊 Ton: an</button>
+      <button class="btn btn-secondary" id="placementBtn">🧪 Einstufungstest wiederholen</button>
       <button class="btn btn-secondary" id="changeLangBtn">🌍 Sprache ändern</button>
       <button class="btn btn-secondary" id="changeDiffBtn">🎯 Level ändern</button>
       <button class="btn btn-secondary" id="resetProgressBtn">Fortschritt zurücksetzen</button>
@@ -346,10 +543,13 @@ body{
 </div>
 
 <div class="feedback-bar" id="feedbackBar">
+  <span class="fb-timer" id="fbTimer"></span>
   <span id="feedbackText"></span>
   <button class="feedback-next" id="feedbackNextBtn">Weiter</button>
 </div>
 <div class="combo-toast" id="comboToast"></div>
+<div class="toast" id="toast"></div>
+<div class="xp-pop" id="xpPop"></div>
 
 <script>
 /* =========================================================
@@ -469,11 +669,397 @@ const RAW_LEVELS = [
     {de:'ruhig', en:'calm', es:'tranquilo', fr:'calme', it:'calmo'},
   ]},
 ];
+/* Schwierigere Vokabeln für "Mittel" und "Fortgeschritten", gleiche Themen wie RAW_LEVELS.
+   Format je Zeile: Deutsch|Englisch|Spanisch|Französisch|Italienisch */
+const VOCAB_BY_DIFF = {
+  mittel: [
+    `das Eichhörnchen|squirrel|ardilla|écureuil|scoiattolo
+der Igel|hedgehog|erizo|hérisson|riccio
+die Schildkröte|turtle|tortuga|tortue|tartaruga
+der Adler|eagle|águila|aigle|aquila
+der Frosch|frog|rana|grenouille|rana
+die Eule|owl|búho|hibou|gufo
+der Wal|whale|ballena|baleine|balena
+die Ziege|goat|cabra|chèvre|capra`,
+    `die Zwiebel|onion|cebolla|oignon|cipolla
+der Knoblauch|garlic|ajo|ail|aglio
+die Gurke|cucumber|pepino|concombre|cetriolo
+das Rindfleisch|beef|ternera|bœuf|manzo
+der Pilz|mushroom|champiñón|champignon|fungo
+die Erdbeere|strawberry|fresa|fraise|fragola
+der Honig|honey|miel|miel|miele
+das Gewürz|spice|especia|épice|spezia`,
+    `der Onkel|uncle|tío|oncle|zio
+der Cousin|cousin|primo|cousin|cugino
+der Ehemann|husband|marido|mari|marito
+die Ehefrau|wife|esposa|épouse|moglie
+der Enkel|grandson|nieto|petit-fils|nipote
+der Zwilling|twin|gemelo|jumeau|gemello
+die Hochzeit|wedding|boda|mariage|matrimonio
+die Geburt|birth|nacimiento|naissance|nascita`,
+    `grau|grey|gris|gris|grigio
+braun|brown|marrón|marron|marrone
+rosa|pink|rosa|rose|rosa
+golden|golden|dorado|doré|dorato
+silbern|silver|plateado|argenté|argentato
+hell|light|claro|clair|chiaro
+dunkel|dark|oscuro|foncé|scuro
+bunt|colorful|colorido|coloré|colorato`,
+    `zwanzig|twenty|veinte|vingt|venti
+dreißig|thirty|treinta|trente|trenta
+fünfzig|fifty|cincuenta|cinquante|cinquanta
+hundert|hundred|cien|cent|cento
+tausend|thousand|mil|mille|mille
+die Hälfte|half|mitad|moitié|metà
+das Drittel|third|tercio|tiers|terzo
+das Dutzend|dozen|docena|douzaine|dozzina`,
+    `der Frühling|spring|primavera|printemps|primavera
+der Herbst|autumn|otoño|automne|autunno
+der Mittag|noon|mediodía|midi|mezzogiorno
+die Mitternacht|midnight|medianoche|minuit|mezzanotte
+das Wochenende|weekend|fin de semana|week-end|fine settimana
+der Kalender|calendar|calendario|calendrier|calendario
+das Jahrhundert|century|siglo|siècle|secolo
+bald|soon|pronto|bientôt|presto`,
+    `die Abfahrt|departure|salida|départ|partenza
+die Ankunft|arrival|llegada|arrivée|arrivo
+das Gepäck|luggage|equipaje|bagages|bagagli
+die Grenze|border|frontera|frontière|confine
+die Unterkunft|accommodation|alojamiento|hébergement|alloggio
+die Verspätung|delay|retraso|retard|ritardo
+der Fahrplan|timetable|horario|horaire|orario
+die Sehenswürdigkeit|attraction|atracción|attraction|attrazione`,
+    `das Wörterbuch|dictionary|diccionario|dictionnaire|dizionario
+die Hausaufgabe|homework|deberes|devoirs|compiti
+die Note|grade|nota|note|voto
+das Fach|subject|asignatura|matière|materia
+die Pause|break|recreo|récréation|ricreazione
+der Schüler|pupil|alumno|élève|alunno
+das Lineal|ruler|regla|règle|righello
+das Zeugnis|report card|boletín|bulletin|pagella`,
+    `die Bewerbung|application|solicitud|candidature|candidatura
+der Vertrag|contract|contrato|contrat|contratto
+der Kollege|colleague|colega|collègue|collega
+die Firma|company|empresa|entreprise|azienda
+der Kunde|customer|cliente|client|cliente
+die Rechnung|invoice|factura|facture|fattura
+der Urlaub|vacation|vacaciones|vacances|ferie
+die Erfahrung|experience|experiencia|expérience|esperienza`,
+    `neidisch|jealous|celoso|jaloux|geloso
+enttäuscht|disappointed|decepcionado|déçu|deluso
+überrascht|surprised|sorprendido|surpris|sorpreso
+nervös|nervous|nervioso|nerveux|nervoso
+einsam|lonely|solo|seul|solo
+dankbar|grateful|agradecido|reconnaissant|grato
+verlegen|embarrassed|avergonzado|gêné|imbarazzato
+neugierig|curious|curioso|curieux|curioso`,
+  ],
+  fortgeschritten: [
+    `das Faultier|sloth|perezoso|paresseux|bradipo
+der Krake|octopus|pulpo|pieuvre|polpo
+das Nashorn|rhinoceros|rinoceronte|rhinocéros|rinoceronte
+der Specht|woodpecker|pájaro carpintero|pic|picchio
+die Fledermaus|bat|murciélago|chauve-souris|pipistrello
+der Maulwurf|mole|topo|taupe|talpa
+die Heuschrecke|grasshopper|saltamontes|sauterelle|cavalletta
+der Waschbär|raccoon|mapache|raton laveur|procione`,
+    `die Aubergine|eggplant|berenjena|aubergine|melanzana
+der Blumenkohl|cauliflower|coliflor|chou-fleur|cavolfiore
+die Himbeere|raspberry|frambuesa|framboise|lampone
+der Zimt|cinnamon|canela|cannelle|cannella
+die Brühe|broth|caldo|bouillon|brodo
+der Essig|vinegar|vinagre|vinaigre|aceto
+die Mahlzeit|meal|comida|repas|pasto
+die Zutat|ingredient|ingrediente|ingrédient|ingrediente`,
+    `die Schwiegermutter|mother-in-law|suegra|belle-mère|suocera
+der Schwager|brother-in-law|cuñado|beau-frère|cognato
+der Vorfahre|ancestor|antepasado|ancêtre|antenato
+die Scheidung|divorce|divorcio|divorce|divorzio
+das Erbe|inheritance|herencia|héritage|eredità
+die Verlobung|engagement|compromiso|fiançailles|fidanzamento
+der Nachkomme|descendant|descendiente|descendant|discendente
+der Vormund|guardian|tutor|tuteur|tutore`,
+    `türkis|turquoise|turquesa|turquoise|turchese
+scharlachrot|scarlet|escarlata|écarlate|scarlatto
+blass|pale|pálido|pâle|pallido
+durchsichtig|transparent|transparente|transparent|trasparente
+gestreift|striped|rayado|rayé|rigato
+kariert|checkered|cuadriculado|quadrillé|quadrettato
+schimmernd|shimmering|brillante|chatoyant|scintillante
+der Farbton|shade|tono|nuance|tonalità`,
+    `die Million|million|millón|million|milione
+die Milliarde|billion|millardo|milliard|miliardo
+der Bruchteil|fraction|fracción|fraction|frazione
+das Prozent|percent|porcentaje|pourcentage|percentuale
+der Durchschnitt|average|promedio|moyenne|media
+die Summe|sum|suma|somme|somma
+ungerade|odd|impar|impair|dispari
+die Gleichung|equation|ecuación|équation|equazione`,
+    `das Jahrzehnt|decade|década|décennie|decennio
+die Dämmerung|dusk|anochecer|crépuscule|crepuscolo
+die Frist|deadline|plazo|délai|scadenza
+die Gegenwart|present|presente|présent|presente
+die Vergangenheit|past|pasado|passé|passato
+die Zukunft|future|futuro|avenir|futuro
+pünktlich|punctual|puntual|ponctuel|puntuale
+gleichzeitig|simultaneous|simultáneo|simultané|simultaneo`,
+    `der Zoll|customs|aduana|douane|dogana
+die Umleitung|detour|desvío|déviation|deviazione
+der Anschluss|connection|conexión|correspondance|coincidenza
+die Botschaft|embassy|embajada|ambassade|ambasciata
+das Visum|visa|visado|visa|visto
+die Versicherung|insurance|seguro|assurance|assicurazione
+die Rückerstattung|refund|reembolso|remboursement|rimborso
+das Abenteuer|adventure|aventura|aventure|avventura`,
+    `die Vorlesung|lecture|conferencia|conférence|lezione
+das Stipendium|scholarship|beca|bourse|borsa di studio
+die Abhandlung|essay|ensayo|dissertation|saggio
+die Forschung|research|investigación|recherche|ricerca
+der Abschluss|degree|título|diplôme|laurea
+die Hochschule|university|universidad|université|università
+die Einschreibung|enrollment|matrícula|inscription|iscrizione
+das Zitat|quotation|cita|citation|citazione`,
+    `die Kündigung|dismissal|despido|licenciement|licenziamento
+die Beförderung|promotion|ascenso|promotion|promozione
+die Verhandlung|negotiation|negociación|négociation|negoziazione
+der Unternehmer|entrepreneur|empresario|entrepreneur|imprenditore
+die Steuer|tax|impuesto|impôt|tassa
+die Haftung|liability|responsabilidad|responsabilité|responsabilità
+der Aktionär|shareholder|accionista|actionnaire|azionista
+die Gewerkschaft|union|sindicato|syndicat|sindacato`,
+    `erleichtert|relieved|aliviado|soulagé|sollevato
+verzweifelt|desperate|desesperado|désespéré|disperato
+misstrauisch|suspicious|desconfiado|méfiant|sospettoso
+gleichgültig|indifferent|indiferente|indifférent|indifferente
+empört|outraged|indignado|indigné|indignato
+sehnsüchtig|wistful|nostálgico|nostalgique|nostalgico
+zuversichtlich|confident|confiado|confiant|fiducioso
+beschämt|ashamed|avergonzado|honteux|vergognoso`,
+  ],
+};
+const LANG_KEYS = ['en','es','fr','it'];
+Object.keys(VOCAB_BY_DIFF).forEach(k=>{
+  VOCAB_BY_DIFF[k] = VOCAB_BY_DIFF[k].map(block=>block.trim().split('\n').map(line=>{
+    const [de, ...rest] = line.split('|');
+    const w = {de};
+    LANG_KEYS.forEach((l,i)=>w[l]=rest[i]);
+    return w;
+  }));
+});
+
+/* ---------- GRAMMATIK (lustige Sätze) ----------
+   Zeile: Satz mit ___|richtige Lösung|falsch1,falsch2|deutsche Übersetzung */
+const GRAMMAR_RAW = {
+  en: [
+    {icon:'🎭', title:'Sein oder nicht sein', tip:'I am · you/we/they are · he/she/it is', items:`
+My cat ___ a secret agent.|is|are,am|Meine Katze ist eine Geheimagentin.
+I ___ the king of the sofa.|am|is,are|Ich bin der König des Sofas.
+The penguins ___ on holiday.|are|is,am|Die Pinguine sind im Urlaub.
+You ___ a pizza genius.|are|is,am|Du bist ein Pizza-Genie.
+Grandma ___ faster than a rocket.|is|are,am|Oma ist schneller als eine Rakete.
+We ___ totally not aliens.|are|is,am|Wir sind ganz sicher keine Aliens.`},
+    {icon:'🐭', title:'Mäuse-Chaos', tip:'mouse→mice · child→children · foot→feet · tooth→teeth · man→men · sheep→sheep', items:`
+Three ___ are dancing on the table.|mice|mouses,mices|Drei Mäuse tanzen auf dem Tisch.
+The ___ ate all the cookies.|children|childs,childrens|Die Kinder haben alle Kekse gegessen.
+My ___ smell like cheese.|feet|foots,feets|Meine Füße riechen nach Käse.
+The shark has 300 ___.|teeth|tooths,teeths|Der Hai hat 300 Zähne.
+Two ___ are knitting a scarf.|men|mans,mens|Zwei Männer stricken einen Schal.
+The ___ are watching TV.|sheep|sheeps,sheepes|Die Schafe schauen fern.`},
+    {icon:'🦒', title:'Das freche -s', tip:'he/she/it → Verb + s (she swims, he watches)', items:`
+My dog ___ jazz every morning.|sings|sing,singing|Mein Hund singt jeden Morgen Jazz.
+The robot ___ pancakes.|makes|make,making|Der Roboter macht Pfannkuchen.
+She ___ with dolphins on Sundays.|swims|swim,swimming|Sie schwimmt sonntags mit Delfinen.
+Uncle Bob ___ his socks in the fridge.|keeps|keep,keeping|Onkel Bob bewahrt seine Socken im Kühlschrank auf.
+The giraffe ___ TV upside down.|watches|watch,watchs|Die Giraffe schaut kopfüber fern.
+My teacher ___ like a duck.|laughs|laugh,laughing|Meine Lehrerin lacht wie eine Ente.`},
+    {icon:'⏳', title:'Zeitreise', tip:'go→went · eat→ate · see→saw · buy→bought · fly→flew · bring→brought', items:`
+Yesterday I ___ to the moon.|went|goed,gone|Gestern ging ich zum Mond.
+The cat ___ my homework.|ate|eated,eaten|Die Katze hat meine Hausaufgaben gefressen.
+We ___ a dragon at the supermarket.|saw|seed,seen|Wir sahen einen Drachen im Supermarkt.
+Dad ___ a banana-shaped car.|bought|buyed,buy|Papa kaufte ein Auto in Bananenform.
+The cow ___ over the house.|flew|flied,flown|Die Kuh flog über das Haus.
+I ___ my pizza to the party.|brought|bringed,brung|Ich brachte meine Pizza zur Party.`},
+    {icon:'🏎️', title:'Größer, schneller, lustiger', tip:'kurz: -er (faster) · lang: more (more beautiful) · good → better', items:`
+A snail is ___ than a cheetah.|slower|slowlier,more slower|Eine Schnecke ist langsamer als ein Gepard.
+My hamster is ___ than your tiger.|braver|more brave,bravest|Mein Hamster ist mutiger als dein Tiger.
+This pizza is ___ than yesterday's.|better|gooder,more good|Diese Pizza ist besser als die von gestern.
+Math is ___ than a haunted house.|scarier|scaryer,more scarier|Mathe ist gruseliger als ein Geisterhaus.
+The unicorn is ___ than the horse.|more beautiful|beautifuller,beautifulest|Das Einhorn ist schöner als das Pferd.
+Your socks are ___ than cheese.|smellier|smellyer,more smellier|Deine Socken stinken mehr als Käse.`},
+    {icon:'📅', title:'Wann genau?', tip:'at + Uhrzeit · on + Tag · in + Monat/Jahr', items:`
+The aliens arrive ___ Monday.|on|in,at|Die Aliens kommen am Montag an.
+My party starts ___ 7 o'clock.|at|on,in|Meine Party beginnt um 7 Uhr.
+Penguins go skiing ___ December.|in|on,at|Pinguine gehen im Dezember Ski fahren.
+The dinosaur was born ___ 1999.|in|on,at|Der Dinosaurier wurde 1999 geboren.
+We eat cake ___ my birthday.|on|in,at|Wir essen Kuchen an meinem Geburtstag.
+The ghost wakes up ___ midnight.|at|in,on|Das Gespenst wacht um Mitternacht auf.`},
+  ],
+  es: [
+    {icon:'🎭', title:'Ser oder estar?', tip:'ser = Eigenschaft/Herkunft · estar = Zustand & Ort', items:`
+Mi gato ___ muy perezoso.|es|está,son|Meine Katze ist sehr faul.
+La pizza ___ en el tejado.|está|es,están|Die Pizza ist auf dem Dach.
+Nosotros ___ cansados después del baile.|estamos|somos,están|Wir sind nach dem Tanz müde.
+Tú ___ un genio de la guitarra.|eres|estás,es|Du bist ein Gitarrengenie.
+El pingüino ___ en la playa.|está|es,son|Der Pinguin ist am Strand.
+Yo ___ de Marte.|soy|estoy,es|Ich bin vom Mars.`},
+    {icon:'👒', title:'Kleine Wörter: el & la', tip:'el (m) · la (f) · los (m. Plural) · las (f. Plural)', items:`
+___ vaca baila salsa.|La|El,Los|Die Kuh tanzt Salsa.
+___ perros cantan ópera.|Los|Las,El|Die Hunde singen Oper.
+___ abuela conduce un cohete.|La|El,Las|Oma fliegt eine Rakete.
+___ plátanos son mis amigos.|Los|Las,La|Die Bananen sind meine Freunde.
+___ jirafas juegan al fútbol.|Las|Los,La|Die Giraffen spielen Fußball.
+___ robot cocina paella.|El|La,Los|Der Roboter kocht Paella.`},
+    {icon:'💃', title:'Tanz der -ar-Verben', tip:'hablar: hablo, hablas, habla, hablamos, habláis, hablan', items:`
+Yo ___ con mi planta.|hablo|habla,hablas|Ich spreche mit meiner Pflanze.
+Mi perro ___ en la bañera.|canta|canto,cantan|Mein Hund singt in der Badewanne.
+Nosotros ___ con los delfines.|nadamos|nadan,nado|Wir schwimmen mit den Delfinen.
+Tú ___ como un pato.|bailas|baila,bailo|Du tanzt wie eine Ente.
+Los gatos ___ pizza.|cocinan|cocina,cocinamos|Die Katzen kochen Pizza.
+El profesor ___ en la luna.|trabaja|trabajo,trabajan|Der Lehrer arbeitet auf dem Mond.`},
+    {icon:'😋', title:'Me gusta!', tip:'me gusta + Einzahl/Verb · me gustan + Mehrzahl', items:`
+Me ___ el chocolate.|gusta|gustan,gusto|Ich mag Schokolade.
+A mi gato le ___ los calcetines.|gustan|gusta,gusto|Meine Katze mag Socken.
+Nos ___ bailar bajo la lluvia.|gusta|gustan,gustamos|Wir tanzen gern im Regen.
+¿Te ___ las arañas?|gustan|gusta,gustas|Magst du Spinnen?
+A la abuela le ___ el rock.|gusta|gustan,gustas|Oma mag Rock.
+Me ___ los dinosaurios.|gustan|gusta,gusto|Ich mag Dinosaurier.`},
+    {icon:'⏳', title:'Zeitreise', tip:'hablar → hablé, habló · comer → comí, comió · ir → fui, fue', items:`
+Ayer yo ___ un pastel gigante.|comí|como,comió|Gestern aß ich einen Riesenkuchen.
+El gato ___ a la luna.|fue|fui,va|Die Katze ging zum Mond.
+Mi hermano ___ con un tiburón.|habló|hablé,habla|Mein Bruder sprach mit einem Hai.
+Yo ___ a París en bicicleta.|fui|fue,voy|Ich fuhr mit dem Rad nach Paris.
+La vaca ___ toda la noche.|bailó|bailé,baila|Die Kuh tanzte die ganze Nacht.
+Ayer yo ___ español con un loro.|hablé|habló,hablo|Gestern sprach ich Spanisch mit einem Papagei.`},
+    {icon:'🏎️', title:'Más, más, más!', tip:'más + Adjektiv + que · bueno → mejor · malo → peor', items:`
+Un caracol es ___ lento que un tren.|más|muy,mucho|Eine Schnecke ist langsamer als ein Zug.
+Mi pizza es ___ que tu pizza.|mejor|bueno,más bien|Meine Pizza ist besser als deine.
+El elefante es más grande ___ el ratón.|que|como,de|Der Elefant ist größer als die Maus.
+Mi abuela es ___ rápida que un cohete.|más|muy,mucha|Oma ist schneller als eine Rakete.
+Los lunes son ___ que los viernes.|peores|malos,más malo|Montage sind schlechter als Freitage.
+Mi perro es más listo ___ mi profesor.|que|como,de|Mein Hund ist schlauer als mein Lehrer.`},
+  ],
+  fr: [
+    {icon:'🎭', title:'Être oder avoir?', tip:'être: suis, es, est, sommes, êtes, sont · avoir: ai, as, a, avons, avez, ont', items:`
+Je ___ un chat très élégant.|suis|es,ai|Ich bin eine sehr elegante Katze.
+Mon chien ___ trois chapeaux.|a|est,as|Mein Hund hat drei Hüte.
+Nous ___ en vacances sur la lune.|sommes|avons,êtes|Wir sind im Urlaub auf dem Mond.
+Tu ___ un dragon dans ton jardin.|as|es,a|Du hast einen Drachen im Garten.
+Les poules ___ fatiguées.|sont|ont,est|Die Hühner sind müde.
+J'___ faim de croissants.|ai|as,a|Ich habe Hunger auf Croissants.`},
+    {icon:'👒', title:'Le, la, les', tip:'le (m) · la (f) · les (Plural)', items:`
+___ vache fait du ski.|La|Le,Les|Die Kuh fährt Ski.
+___ chat joue du piano.|Le|La,Les|Die Katze spielt Klavier.
+___ pingouins mangent des frites.|Les|Le,La|Die Pinguine essen Pommes.
+___ tortue gagne la course.|La|Le,Les|Die Schildkröte gewinnt das Rennen.
+___ robot fait la vaisselle.|Le|La,Les|Der Roboter spült ab.
+___ grand-mères dansent le rock.|Les|La,Le|Die Omas tanzen Rock'n'Roll.`},
+    {icon:'🎶', title:'Chanson der -er-Verben', tip:'parler: parle, parles, parle, parlons, parlez, parlent', items:`
+Je ___ avec mon poisson.|parle|parles,parlons|Ich spreche mit meinem Fisch.
+Nous ___ sous la pluie.|dansons|dansez,danse|Wir tanzen im Regen.
+Tu ___ comme une sirène.|chantes|chante,chantez|Du singst wie eine Meerjungfrau.
+Les chats ___ des pizzas.|mangent|mange,mangez|Die Katzen essen Pizzas.
+Vous ___ sur le toit ?|jouez|jouons,joue|Spielt ihr auf dem Dach?
+Mon oncle ___ en pyjama.|travaille|travailles,travaillent|Mein Onkel arbeitet im Pyjama.`},
+    {icon:'🙅', title:'Non, non, non!', tip:'ne + Verb + pas · vor Vokal: n\' (je n\'aime pas)', items:`
+Mon chat ne danse ___ le tango.|pas|non,ne|Meine Katze tanzt keinen Tango.
+Je ___ pas le lundi.|n'aime|ne aime,aime ne|Ich mag Montage nicht.
+Nous ___ parlons pas aux fantômes.|ne|n',non|Wir sprechen nicht mit Gespenstern.
+Le robot ne mange ___ de pizza.|pas|non,ne|Der Roboter isst keine Pizza.
+Tu ___ pas ta grand-mère ?|n'écoutes|ne écoutes,écoutes ne|Hörst du nicht auf deine Oma?
+Les vaches ne volent ___.|pas|non,ne|Kühe fliegen nicht.`},
+    {icon:'⏳', title:'Zeitreise', tip:'avoir + Partizip: manger → mangé · voir → vu · acheter → acheté', items:`
+Hier, j'ai ___ un dinosaure.|vu|voir,voit|Gestern habe ich einen Dinosaurier gesehen.
+Le chien a ___ mes chaussettes.|mangé|manger,mange|Der Hund hat meine Socken gefressen.
+Nous ___ fini le gâteau géant.|avons|sommes,avez|Wir haben den Riesenkuchen aufgegessen.
+Tu as ___ avec un pirate ?|dansé|danser,danses|Hast du mit einem Piraten getanzt?
+Ils ___ chanté toute la nuit.|ont|sont,a|Sie haben die ganze Nacht gesungen.
+Mamie a ___ une moto.|acheté|acheter,achète|Oma hat ein Motorrad gekauft.`},
+    {icon:'👗', title:'Adjektive in Mode', tip:'weiblich: + e (grand → grande) · Plural: + s', items:`
+La girafe est très ___.|grande|grand,grands|Die Giraffe ist sehr groß.
+Mes chaussettes sont ___.|vertes|vert,verte|Meine Socken sind grün.
+Le fantôme est ___.|petit|petite,petits|Das Gespenst ist klein.
+Les poules sont ___.|intelligentes|intelligent,intelligente|Die Hühner sind schlau.
+Ma pizza est ___.|délicieuse|délicieux,délicieuses|Meine Pizza ist köstlich.
+Les dragons sont ___.|gentils|gentil,gentille|Die Drachen sind nett.`},
+  ],
+  it: [
+    {icon:'🎭', title:'Essere oder avere?', tip:'essere: sono, sei, è, siamo, siete, sono · avere: ho, hai, ha, abbiamo, avete, hanno', items:`
+Io ___ stanco di mangiare pizza.|sono|ho,è|Ich bin müde vom Pizzaessen.
+Il mio cane ___ tre cappelli.|ha|è,hai|Mein Hund hat drei Hüte.
+Noi ___ in vacanza sulla luna.|siamo|abbiamo,siete|Wir sind im Urlaub auf dem Mond.
+Tu ___ un drago in giardino.|hai|sei,ha|Du hast einen Drachen im Garten.
+Le galline ___ stanche.|sono|hanno,è|Die Hühner sind müde.
+Io ___ fame di gelato.|ho|sono,ha|Ich habe Hunger auf Eis.`},
+    {icon:'👒', title:'Il, lo, la …', tip:'il (m) · lo (vor s+Konsonant, z) · la (f) · i (m. Plural) · le (f. Plural)', items:`
+___ mucca balla il tango.|La|Il,Lo|Die Kuh tanzt Tango.
+___ gatto suona il piano.|Il|La,Lo|Die Katze spielt Klavier.
+___ zio vola in bicicletta.|Lo|Il,La|Der Onkel fliegt mit dem Fahrrad.
+___ pinguini mangiano patatine.|I|Le,Il|Die Pinguine essen Pommes.
+___ nonne ballano il rock.|Le|I,La|Die Omas tanzen Rock.
+___ studente dorme in classe.|Lo|Il,La|Der Schüler schläft in der Klasse.`},
+    {icon:'🍝', title:'Pasta-Verben auf -are', tip:'parlare: parlo, parli, parla, parliamo, parlate, parlano', items:`
+Io ___ con il mio pesce.|parlo|parla,parli|Ich spreche mit meinem Fisch.
+Noi ___ sotto la pioggia.|balliamo|ballate,balla|Wir tanzen im Regen.
+Tu ___ come una sirena.|canti|canta,cantate|Du singst wie eine Meerjungfrau.
+I gatti ___ la pizza.|mangiano|mangia,mangiate|Die Katzen essen Pizza.
+Voi ___ sul tetto?|giocate|giochiamo,gioca|Spielt ihr auf dem Dach?
+Mio zio ___ in pigiama.|lavora|lavori,lavorano|Mein Onkel arbeitet im Pyjama.`},
+    {icon:'😋', title:'Mi piace!', tip:'mi piace + Einzahl/Verb · mi piacciono + Mehrzahl', items:`
+Mi ___ il cioccolato.|piace|piacciono,piaccio|Ich mag Schokolade.
+Al mio gatto ___ i calzini.|piacciono|piace,piacere|Meine Katze mag Socken.
+Ci ___ ballare sotto la pioggia.|piace|piacciono,piacciamo|Wir tanzen gern im Regen.
+Ti ___ i ragni?|piacciono|piace,piaci|Magst du Spinnen?
+Alla nonna ___ il rock.|piace|piacciono,piaci|Oma mag Rock.
+Mi ___ i dinosauri.|piacciono|piace,piaccio|Ich mag Dinosaurier.`},
+    {icon:'⏳', title:'Zeitreise', tip:'avere/essere + Partizip: mangiato · visto · andato/andata', items:`
+Ieri ho ___ un dinosauro.|visto|vedere,vede|Gestern habe ich einen Dinosaurier gesehen.
+Il cane ha ___ i miei calzini.|mangiato|mangiare,mangia|Der Hund hat meine Socken gefressen.
+Noi ___ finito la torta gigante.|abbiamo|siamo,avete|Wir haben die Riesentorte aufgegessen.
+La mucca è ___ sulla luna.|andata|andato,andare|Die Kuh ist auf den Mond gegangen.
+Loro ___ cantato tutta la notte.|hanno|sono,ha|Sie haben die ganze Nacht gesungen.
+Il nonno ___ partito in razzo.|è|ha,sono|Opa ist mit der Rakete abgereist.`},
+    {icon:'👗', title:'Adjektive in Mode', tip:'-o (m) · -a (f) · -i (m. Plural) · -e (f. Plural)', items:`
+La giraffa è molto ___.|alta|alto,alti|Die Giraffe ist sehr groß.
+I miei calzini sono ___.|rossi|rosso,rosse|Meine Socken sind rot.
+Il fantasma è ___.|piccolo|piccola,piccoli|Das Gespenst ist klein.
+Le galline sono ___.|simpatiche|simpatica,simpatici|Die Hühner sind nett.
+La mia pizza è ___.|buonissima|buonissimo,buonissime|Meine Pizza ist superlecker.
+I draghi sono ___.|gentili|gentile,gentila|Die Drachen sind nett.`},
+  ],
+};
+const GRAMMAR = {};
+Object.entries(GRAMMAR_RAW).forEach(([lang, topics])=>{
+  GRAMMAR[lang] = topics.map(t=>({...t, items: t.items.trim().split('\n').map(line=>{
+    const [sent, answer, wrongs, de] = line.split('|');
+    return {sent, answer, wrongs: wrongs.split(','), de};
+  })}));
+});
+
 const LEVELS = RAW_LEVELS.map(l=>({icon:l.icon, title:l.title}));
 function currentLang(){ return state.language || 'en'; }
+function progKey(){ return currentLang()+'|'+(state.difficulty||'anfaenger'); }
+function levelProg(){
+  if(!state.progress) state.progress = {};
+  const k = progKey();
+  if(!state.progress[k]){
+    // alten gemeinsamen Fortschritt einmalig übernehmen
+    const legacy = state.levelProgress && state.levelProgress.some(p=>p.stars>0) && !state.progress._migrated;
+    state.progress[k] = legacy ? state.levelProgress.map(p=>({...p})) : LEVELS.map(()=>({stars:0, bestCorrect:0}));
+    if(legacy) state.progress._migrated = true;
+  }
+  return state.progress[k];
+}
+function wordsFor(diff, levelIdx){
+  const lang = currentLang();
+  const set = VOCAB_BY_DIFF[diff];
+  const words = set ? set[levelIdx] : RAW_LEVELS[levelIdx].words;
+  return words.map(w=>[w.de, w[lang]]);
+}
 function levelWords(levelIdx){
   const lang = currentLang();
-  return RAW_LEVELS[levelIdx].words.map(w=>[w.de, w[lang]]);
+  const set = VOCAB_BY_DIFF[state.difficulty];
+  const words = set ? set[levelIdx] : RAW_LEVELS[levelIdx].words;
+  return words.map(w=>[w.de, w[lang]]);
 }
 
 const MAX_HEARTS = 5;
@@ -487,9 +1073,14 @@ let session = null; // aktueller Levellauf
 function defaultState(){
   return {
     xp:0, coins:20, hearts:MAX_HEARTS, lastHeartLoss:null,
-    streak:0, lastPlayDate:null, difficulty:null, language:null,
+    streak:0, lastPlayDate:null, difficulty:null, language:null, grammarProgress:{},
     levelProgress: LEVELS.map(()=>({stars:0, bestCorrect:0})),
-    totalLevelsCompleted:0
+    totalLevelsCompleted:0,
+    progress:{}, daily:{date:null, xp:0, goal:20, quests:[], chestClaimed:false},
+    inventory:{freeze:0, hints:1}, boostUntil:0,
+    league:{week:null, tier:0, xp:0, bots:[], seed:1},
+    achievements:{}, mastery:{}, recent:[], settings:{sound:true}, langsPlayed:{},
+    stats:{lessons:0, perfect:0, maxCombo:0, reviewMastered:0, night:false, early:false, bought:false, promoted:false}
   };
 }
 function loadState(){
@@ -518,18 +1109,29 @@ function regenHearts(){
   }
 }
 function touchStreak(){
+  const h = new Date().getHours();
+  if(h>=22) state.stats.night = true;
+  if(h<7) state.stats.early = true;
+  state.langsPlayed[currentLang()] = true;
   const today = new Date().toDateString();
   if(state.lastPlayDate === today) return;
-  const yesterday = new Date(Date.now()-86400000).toDateString();
-  if(state.lastPlayDate === yesterday){ state.streak += 1; }
+  const gap = state.lastPlayDate ? Math.round((new Date(today) - new Date(state.lastPlayDate))/86400000) : 0;
+  if(gap===1){ state.streak += 1; }
+  else if(gap>1 && state.inventory.freeze >= gap-1){
+    state.inventory.freeze -= (gap-1);
+    state.streak += 1;
+    toast('🧊 Dein Streak-Schutz hat deinen Streak gerettet!');
+  }
   else { state.streak = 1; }
   state.lastPlayDate = today;
+  toast(`🔥 ${state.streak} ${state.streak===1?'Tag':'Tage'} Streak!`);
 }
 
 /* ---------- SOUND (Web Audio, keine Dateien nötig) ---------- */
 let actx;
 function ctx(){ if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)(); return actx; }
 function beep(freq, dur, type='sine', vol=0.2, delay=0){
+  if(state.settings && state.settings.sound===false) return;
   try{
     const c = ctx();
     const o = c.createOscillator();
@@ -560,13 +1162,19 @@ function speak(text, lang='en-US'){
 
 /* ---------- SCHWIERIGKEITSGRADE ---------- */
 const DIFFICULTIES = {
-  anfaenger:{ label:'🌱 Anfänger', desc:'Einfacher Einstieg mit Zuordnen, Memory & Auswahl', tiers:['easy','medium'] },
-  mittel:{ label:'⚡ Mittel', desc:'Auswahl, Hören, Tippen, Wahr/Falsch & mehr', tiers:['medium','hard'] },
-  fortgeschritten:{ label:'🔥 Fortgeschritten', desc:'Anspruchsvoll: Zeitdruck, Buchstabensalat, Diktat', tiers:['medium','hard'], hardWeight:0.65 },
+  anfaenger:{ label:'🌱 Anfänger', desc:'Grundwortschatz (Hund, Apfel, rot …) mit Zuordnen & Memory', tiers:['easy','medium'] },
+  mittel:{ label:'⚡ Mittel', desc:'Alltagswortschatz (Igel, Knoblauch, Ankunft …)', tiers:['medium','hard'] },
+  fortgeschritten:{ label:'🔥 Fortgeschritten', desc:'Gehobener Wortschatz (Zoll, Frist, Gewerkschaft …) mit Zeitdruck', tiers:['medium','hard'], hardWeight:0.65 },
 };
 function populateDifficultyList(){
   const box = document.getElementById('diffList');
   box.innerHTML='';
+  const test = document.createElement('div');
+  test.className='diff-option';
+  test.style.borderColor = 'var(--purple)';
+  test.innerHTML = '<b>🧪 Einstufungstest (empfohlen)</b><span>12 Fragen, 2 Minuten – Flügo findet dein Niveau</span>';
+  test.addEventListener('click', ()=>{ sndTap(); startPlacement(); });
+  box.appendChild(test);
   Object.entries(DIFFICULTIES).forEach(([key,d])=>{
     const el = document.createElement('div');
     el.className='diff-option';
@@ -574,6 +1182,7 @@ function populateDifficultyList(){
     el.addEventListener('click', ()=>{
       sndTap();
       state.difficulty = key;
+      state.recent = [];
       saveState();
       renderMap();
       showScreen('screen-map');
@@ -626,15 +1235,17 @@ document.getElementById('langBackBtn').addEventListener('click', ()=>{
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  document.querySelector('.bottom-nav').style.display = (id==='screen-map'||id==='screen-stats') ? 'flex' : 'none';
+  document.querySelector('.bottom-nav').style.display = ['screen-map','screen-stats','screen-grammar','screen-quests','screen-league'].includes(id) ? 'flex' : 'none';
+  if(typeof updateQuestDot==='function') updateQuestDot();
+  if(id==='screen-gameover' && typeof updateGameoverScreen==='function') updateGameoverScreen();
 }
 
 /* ---------- MAP RENDER ---------- */
 function levelStatus(i){
-  const prog = state.levelProgress[i];
+  const prog = levelProg()[i];
   if(prog.stars>0) return prog.stars>=3?'perfect':'unlocked';
   if(i===0) return 'current';
-  const prev = state.levelProgress[i-1];
+  const prev = levelProg()[i-1];
   return prev.stars>0 ? 'current' : 'locked';
 }
 function renderMap(){
@@ -643,11 +1254,7 @@ function renderMap(){
   document.getElementById('coinsVal').textContent = state.coins;
   document.getElementById('heartsVal').textContent = state.hearts;
 
-  const totalXpForNext = 100;
-  const lvlNum = Math.floor(state.xp/totalXpForNext)+1;
-  const xpInLevel = state.xp % totalXpForNext;
-  document.getElementById('xpSummary').textContent = `Level ${lvlNum} · ${state.xp} XP gesamt`;
-  document.getElementById('xpBarFill').style.width = (xpInLevel/totalXpForNext*100)+'%';
+  renderDashboard();
 
   const container = document.getElementById('pathContainer');
   container.innerHTML = '';
@@ -662,7 +1269,7 @@ function renderMap(){
     } else {
       node.innerHTML += `<span>${lvl.icon}</span>`;
       const starsRow = document.createElement('div'); starsRow.className='node-stars';
-      const st = state.levelProgress[i].stars;
+      const st = levelProg()[i].stars;
       for(let s=1;s<=3;s++){
         const sp = document.createElement('span'); sp.textContent = s<=st ? '⭐':'☆';
         starsRow.appendChild(sp);
@@ -671,7 +1278,7 @@ function renderMap(){
     }
     node.addEventListener('click', ()=>{
       sndTap();
-      if(status==='locked'){ return; }
+      if(status==='locked'){ offerJump(i); return; }
       openIntro(i);
     });
     container.appendChild(node);
@@ -680,7 +1287,11 @@ function renderMap(){
 
 /* ---------- LEVEL INTRO ---------- */
 let pendingLevel = 0;
+let pendingMode = 'vocab';
 function openIntro(i){
+  pendingMode = 'vocab';
+  document.getElementById('introTip').classList.add('hidden');
+  document.getElementById('backToMapBtn').textContent = 'Zurück zur Karte';
   pendingLevel = i;
   const lvl = LEVELS[i];
   document.getElementById('introIcon').textContent = lvl.icon;
@@ -688,11 +1299,182 @@ function openIntro(i){
   document.getElementById('introDesc').textContent = `${RAW_LEVELS[i].words.length} Wörter · Mix aus vielen Mini-Spielen`;
   showScreen('screen-intro');
 }
-document.getElementById('backToMapBtn').addEventListener('click', ()=>{ renderMap(); showScreen('screen-map'); });
+document.getElementById('backToMapBtn').addEventListener('click', ()=>goHome());
 document.getElementById('startLevelBtn').addEventListener('click', ()=>{
   if(state.hearts<=0){ showScreen('screen-gameover'); return; }
-  startLevel(pendingLevel);
+  if(pendingMode==='grammar') startGrammar(pendingLevel);
+  else if(pendingMode==='phrases') startPhrases(pendingLevel);
+  else startLevel(pendingLevel);
 });
+
+/* ---------- GRAMMATIK-BEREICH ---------- */
+function grammarTopics(){ return GRAMMAR[currentLang()]; }
+function grammarStars(){
+  const lang = currentLang();
+  if(!state.grammarProgress) state.grammarProgress = {};
+  if(!state.grammarProgress[lang]) state.grammarProgress[lang] = grammarTopics().map(()=>0);
+  return state.grammarProgress[lang];
+}
+function setNav(name){
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active', b.dataset.nav===name));
+}
+function goHome(){
+  if(session && session.speedTimer){ clearInterval(session.speedTimer); session.speedTimer=null; }
+  if(!state.difficulty){ populateDifficultyList(); showScreen('screen-difficulty'); return; }
+  clearTimeout(session && session.fbTimer); document.getElementById('feedbackBar').classList.remove('show');
+  if(pendingMode==='grammar' || pendingMode==='phrases'){ practiceTab = pendingMode==='grammar'?'grammar':'phrases'; renderGrammar(); showScreen('screen-grammar'); setNav('grammar'); }
+  else { renderMap(); showScreen('screen-map'); setNav('map'); }
+}
+function renderGrammar(){
+  const isG = practiceTab==='grammar';
+  document.getElementById('segGram').classList.toggle('sel', isG);
+  document.getElementById('segPhr').classList.toggle('sel', !isG);
+  const stars = isG ? grammarStars() : phraseStars();
+  const container = document.getElementById('grammarPath');
+  container.innerHTML = '';
+  document.getElementById('grammarSub').textContent = `${LANGS[currentLang()].label} · ${isG?'Lustige Sätze, echte Regeln':'Hören, Sprechen, Satzbau – für echte Situationen'}`;
+  (isG ? grammarTopics() : phraseTopics()).forEach((t,i)=>{
+    const status = stars[i]>0 ? (stars[i]>=3?'perfect':'unlocked') : (i===0 || stars[i-1]>0 ? 'current' : 'locked');
+    const node = document.createElement('div');
+    node.className = 'level-node ' + status;
+    const label = document.createElement('div'); label.className='node-label'; label.textContent = t.title;
+    node.appendChild(label);
+    if(status==='locked'){
+      node.innerHTML += '<span class="node-lock-icon">🔒</span>';
+    } else {
+      node.innerHTML += `<span>${t.icon}</span>`;
+      const row = document.createElement('div'); row.className='node-stars';
+      for(let s=1;s<=3;s++){ const sp=document.createElement('span'); sp.textContent = s<=stars[i]?'⭐':'☆'; row.appendChild(sp); }
+      node.appendChild(row);
+    }
+    node.addEventListener('click', ()=>{ sndTap(); if(status!=='locked') openGrammarIntro(i); });
+    container.appendChild(node);
+  });
+}
+function openGrammarIntro(i){
+  pendingMode = practiceTab==='grammar' ? 'grammar' : 'phrases';
+  pendingLevel = i;
+  const t = (practiceTab==='grammar' ? grammarTopics() : phraseTopics())[i];
+  document.getElementById('introIcon').textContent = t.icon;
+  document.getElementById('introTitle').textContent = t.title;
+  document.getElementById('introDesc').textContent = practiceTab==='grammar' ? 'Lückenfüller · Satzbau · Fehlerjagd · Richtig oder Quatsch?' : 'Bedeutung · Übersetzen · Satzbau · Hörverstehen · 🎤 Nachsprechen';
+  const tip = document.getElementById('introTip');
+  tip.textContent = (practiceTab==='grammar' ? '🦉 Flügos Spickzettel: ' : '🦉 ') + t.tip;
+  tip.classList.remove('hidden');
+  document.getElementById('backToMapBtn').textContent = 'Zurück zum Dschungel';
+  showScreen('screen-intro');
+}
+const GRAMMAR_TYPES = ['gram_gap','gram_order','gram_bug','gram_tf'];
+function buildGrammarQuestions(topicIdx){
+  const items = shuffle(grammarTopics()[topicIdx].items);
+  const types = shuffle(GRAMMAR_TYPES);
+  const qs = items.map((item,i)=>({type:types[i%types.length], item}));
+  // zwei Bonusrunden mit einer anderen Spielart
+  shuffle(items).slice(0,2).forEach(item=>{
+    const used = qs.find(q=>q.item===item).type;
+    qs.push({type: shuffle(GRAMMAR_TYPES.filter(t=>t!==used))[0], item});
+  });
+  return shuffle(qs);
+}
+function startGrammar(topicIdx){
+  touchStreak();
+  pendingMode = 'grammar';
+  session = {
+    mode:'grammar', xpEarned:0, wrong:0, topicIdx, topic: grammarTopics()[topicIdx],
+    questions: buildGrammarQuestions(topicIdx),
+    qi:0, correct:0, combo:0, maxCombo:0, answered:false
+  };
+  showScreen('screen-game');
+  renderQuestion();
+}
+const GRAMMAR_JOKES_OK = ['Grammatik-Ninja! 🥷','Flügo macht einen Freudentanz 💃','Dein Lehrer weint vor Glück 😭','Satz-Zauberer! 🪄','So elegant wie eine Giraffe im Anzug 🦒','Die Pinguine applaudieren 🐧👏'];
+const GRAMMAR_JOKES_NO_EXTRA = ['Autsch! Flügo ist gegen eine Scheibe geflogen 🦉🪟','Fast! Nur ein kleiner Fehlflug 🛩️','Hoppla – das war die Nachbarsprache 😅','Kein Stress, das merkst du dir jetzt 🧠'];
+const GRAMMAR_JOKES_NO = [...GRAMMAR_JOKES_NO_EXTRA, 'Uups, Flügo ist vom Ast gefallen 🦉💫','Die Kuh schüttelt den Kopf 🐄','Knapp daneben ist auch vorbei 🙈','Der Grammatik-Drache kichert 🐉'];
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function escapeHtml(s){ return s.replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function renderGrammarQuestion(q){
+  const {sent, answer, wrongs, de} = q.item;
+  const area = document.getElementById('questionArea');
+  const full = sent.replace('___', answer);
+  session.grammarFix = answer;
+  const deLine = `<div class="q-de">🇩🇪 ${escapeHtml(de)}</div>`;
+
+  if(q.type==='gram_gap'){
+    const gapHtml = escapeHtml(sent).replace('___','<span class="gap">&nbsp;?&nbsp;</span>');
+    renderMC(`<div class="q-hint">Lückenfüller: Welches Wort passt? 🤔</div><div class="q-sentence">${gapHtml}</div>${deLine}`,
+      shuffle([answer, ...wrongs]), answer);
+    return;
+  }
+
+  if(q.type==='gram_tf'){
+    const isRight = Math.random()<0.5;
+    const shown = isRight ? full : sent.replace('___', pick(wrongs));
+    renderTrueFalse(`<div class="q-hint">Richtig oder Quatsch? 🧐</div><div class="q-sentence">${escapeHtml(shown)}</div>${deLine}`, isRight);
+    return;
+  }
+
+  if(q.type==='gram_bug'){
+    const tokens = sent.split(' ');
+    const gapIdx = tokens.findIndex(t=>t.includes('___'));
+    const wrong = pick(wrongs);
+    area.innerHTML = `<div class="q-hint">Fehlerjagd: Tippe das falsche Wort an! 🔍</div>${deLine}<div class="word-chips" id="bugChips"></div>`;
+    const box = document.getElementById('bugChips');
+    tokens.forEach((t,i)=>{
+      const chip = document.createElement('div');
+      chip.className = 'word-chip';
+      chip.textContent = i===gapIdx ? t.replace('___', wrong) : t;
+      chip.addEventListener('click', ()=>{
+        if(session.answered) return;
+        sndTap();
+        const ok = i===gapIdx;
+        box.querySelectorAll('.word-chip').forEach(c=>c.classList.add('locked'));
+        box.children[gapIdx].classList.add('correct');
+        box.children[gapIdx].textContent = tokens[gapIdx].replace('___', answer);
+        if(!ok) chip.classList.add('wrong');
+        handleAnswer(ok, null, answer);
+      });
+      box.appendChild(chip);
+    });
+    return;
+  }
+
+  // gram_order: Satz aus Wörtern bauen
+  const words = full.split(' ');
+  area.innerHTML = `<div class="q-hint">Satzbau: Tippe die Wörter in der richtigen Reihenfolge 🧩</div>${deLine}
+    <div class="build-sentence" id="builtSentence"></div>
+    <div class="word-chips" id="orderChips"></div>
+    <button class="btn btn-secondary" id="orderBack" style="margin-top:12px;">⌫ Zurück</button>`;
+  const built = document.getElementById('builtSentence');
+  const box = document.getElementById('orderChips');
+  const stack = [];
+  shuffle(words.map((w,i)=>({w,i}))).forEach(({w})=>{
+    const chip = document.createElement('div');
+    chip.className = 'word-chip';
+    chip.textContent = w;
+    chip.addEventListener('click', ()=>{
+      if(session.answered || chip.classList.contains('used')) return;
+      sndTap();
+      chip.classList.add('used');
+      stack.push({w, chip});
+      update();
+    });
+    box.appendChild(chip);
+  });
+  function update(){
+    built.textContent = stack.map(s=>s.w).join(' ');
+    if(stack.length===words.length){
+      const ok = built.textContent===full;
+      session.grammarFix = full;
+      handleAnswer(ok, null, full);
+    }
+  }
+  document.getElementById('orderBack').addEventListener('click', ()=>{
+    if(session.answered || !stack.length) return;
+    stack.pop().chip.classList.remove('used');
+    update();
+  });
+}
 
 /* ---------- GAME LOGIC ---------- */
 function shuffle(arr){ const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
@@ -704,16 +1486,16 @@ function randOthers(words, correctIdx, n){
 /* 20 Minispiele, aufgeteilt in Schwierigkeits-Stufen.
    "easy" = kindgerecht (Zuordnen, Memory) – nur für Anfänger.
    "medium"/"hard" = für alle, hard ist anspruchsvoller (Zeitdruck, Buchstaben). */
+/* Jede Spielart enthält die Fremdsprache – reine Deutsch-Aufgaben gibt es nicht */
 const PER_WORD_GAMES = [
   {type:'mc_de_en', tier:'medium'}, {type:'mc_en_de', tier:'medium'},
-  {type:'listen_en', tier:'medium'}, {type:'listen_de', tier:'medium'},
+  {type:'listen_en', tier:'medium'}, {type:'listen_meaning', tier:'medium'},
   {type:'type_de_en', tier:'medium'}, {type:'type_en_de', tier:'medium'},
   {type:'truefalse_de_en', tier:'medium'}, {type:'truefalse_en_de', tier:'medium'},
-  {type:'missing_en', tier:'medium'}, {type:'missing_de', tier:'medium'},
-  {type:'dictation_en', tier:'medium'}, {type:'dictation_de', tier:'medium'},
-  {type:'scramble_en', tier:'hard'}, {type:'scramble_de', tier:'hard'},
-  {type:'oddoneout_de', tier:'hard'}, {type:'oddoneout_en', tier:'hard'},
-  {type:'speed_de_en', tier:'hard'}, {type:'speed_en_de', tier:'hard'},
+  {type:'missing_en', tier:'medium'}, {type:'pair_pick', tier:'medium'},
+  {type:'dictation_en', tier:'hard'}, {type:'scramble_en', tier:'hard'},
+  {type:'oddoneout_en', tier:'hard'}, {type:'speed_de_en', tier:'hard'},
+  {type:'speed_en_de', tier:'hard'},
 ];
 
 function buildQuestions(levelIdx){
@@ -722,7 +1504,17 @@ function buildQuestions(levelIdx){
   const diff = DIFFICULTIES[diffKey];
   const tiers = diff.tiers;
   const pool = PER_WORD_GAMES.filter(g=>tiers.includes(g.tier));
-  const hardWeight = diff.hardWeight || 0.4;
+  let hardWeight = diff.hardWeight || 0.4;
+  const acc = recentAccuracy();
+  if(acc!==null && state.recent.length>=10){
+    if(acc>=0.85) hardWeight += 0.25;
+    else if(acc<0.6) hardWeight -= 0.25;
+  }
+  hardWeight = Math.max(0.1, Math.min(0.9, hardWeight));
+  // starke Anfänger bekommen schon einzelne schwere Spiele
+  if(!tiers.includes('hard') && acc!==null && acc>=0.85 && state.recent.length>=15){
+    pool.push(...PER_WORD_GAMES.filter(g=>g.tier==='hard' && !g.type.startsWith('speed')));
+  }
 
   const qs = [];
   words.forEach((w,idx)=>{
@@ -737,8 +1529,8 @@ function buildQuestions(levelIdx){
   });
   const shuffled = shuffle(qs);
 
-  // Für Anfänger: kindgerechter Einstieg mit Zuordnen + Memory
-  if(tiers.includes('easy')){
+  // Für Anfänger: Einstieg mit Zuordnen + Memory (fällt weg, wenn es zu leicht wird)
+  if(tiers.includes('easy') && !(acc!==null && acc>=0.9 && state.recent.length>=20)){
     shuffled.unshift({type:'memory_round', words: shuffle(words).slice(0,4)});
     shuffled.unshift({type:'match_round', words});
   }
@@ -758,7 +1550,9 @@ function randForeignWord(levelIdx){
 
 function startLevel(levelIdx){
   touchStreak();
+  pendingMode = 'vocab';
   session = {
+    mode:'vocab', xpEarned:0, wrong:0,
     levelIdx,
     questions: buildQuestions(levelIdx),
     qi: 0,
@@ -773,8 +1567,10 @@ function startLevel(levelIdx){
 }
 
 function updateGameHeader(){
+  if(typeof updateTopbar==='function') updateTopbar();
   const pct = (session.qi/session.questions.length)*100;
   document.getElementById('gameProgressFill').style.width = pct+'%';
+  document.getElementById('runner').style.left = Math.max(4, pct)+'%';
   document.getElementById('gameHearts').textContent = '❤️'.repeat(state.hearts) + '🖤'.repeat(MAX_HEARTS-state.hearts);
 }
 
@@ -783,7 +1579,14 @@ function renderQuestion(){
   updateGameHeader();
   session.answered = false;
   const q = session.questions[session.qi];
-  const words = levelWords(session.levelIdx);
+  session.qStart = Date.now();
+  session.currentWord = q.word || null;
+  session.currentQ = q;
+  session.currentType = q.type;
+  updateHintBtn(false);
+  if(session.mode==='grammar'){ renderGrammarQuestion(q); return; }
+  if(session.mode==='phrases'){ renderPhraseQuestion(q); return; }
+  const words = q.pool || levelWords(session.levelIdx);
 
   if(q.type==='match_round'){ renderMatchRound(q.words); return; }
   if(q.type==='memory_round'){ renderMemoryRound(q.words); return; }
@@ -793,7 +1596,13 @@ function renderQuestion(){
   const langInfo = LANGS[currentLang()];
   const langCode = langInfo.code, langName = langInfo.name, langAdj = langInfo.adj;
 
-  switch(q.type){
+  // Buchstabenspiele nur bei Einzelwörtern ohne Leerzeichen/Bindestrich/Apostroph
+  let type = q.type;
+  const notSingle = s => /[^\p{L}]/u.test(s);
+  if((type==='scramble_en'||type==='missing_en') && notSingle(en)) type = 'mc_de_en';
+  if((type==='scramble_de'||type==='missing_de') && notSingle(deNoun)) type = 'mc_en_de';
+
+  switch(type){
     case 'mc_de_en': {
       const opts = shuffle([en, ...randOthers(words,q.idx,3).map(i=>words[i][1])]);
       renderMC(`<div class="q-hint">Übersetze ins ${langName}</div><div class="q-word">${de}</div>`, opts, en);
@@ -810,6 +1619,18 @@ function renderQuestion(){
         <button class="q-sound-btn" id="playSoundBtn">🔊</button>`, opts, en, ()=>speak(en,langCode));
       break;
     }
+    case 'listen_meaning': {
+      const opts = shuffle([de, ...randOthers(words,q.idx,3).map(i=>words[i][0])]);
+      renderMC(`<div class="q-hint">Höre zu – was bedeutet dieses Wort?</div>
+        <button class="q-sound-btn" id="playSoundBtn">🔊</button>`, opts, de, ()=>speak(en,langCode));
+      break;
+    }
+    case 'pair_pick': {
+      const correct = `${de} = ${en}`;
+      const opts = shuffle([correct, ...randOthers(words,q.idx,3).map(i=>`${de} = ${words[i][1]}`)]);
+      renderMC(`<div class="q-hint">Welches Paar stimmt?</div>`, opts, correct);
+      break;
+    }
     case 'listen_de': {
       const opts = shuffle([de, ...randOthers(words,q.idx,3).map(i=>words[i][0])]);
       renderMC(`<div class="q-hint">Höre zu und wähle das richtige Wort</div>
@@ -817,7 +1638,7 @@ function renderQuestion(){
       break;
     }
     case 'type_de_en':
-      renderType(`<div class="q-hint">Tippe die ${langAdj} Übersetzung</div><div class="q-word">${de}</div>`, en, `Auf ${langName} schreiben...`);
+      renderType(`<div class="q-hint">Tippe die ${langAdj} Übersetzung</div><div class="q-word">${de}</div>`, en, `Auf ${langInfo.label.split(" ")[1]} schreiben...`);
       break;
     case 'type_en_de':
       renderType(`<div class="q-hint">Tippe die deutsche Übersetzung</div><div class="q-word">${en}</div>`, de, 'Auf Deutsch schreiben...', true);
@@ -864,16 +1685,16 @@ function renderQuestion(){
     }
     case 'speed_de_en': {
       const opts = shuffle([en, ...randOthers(words,q.idx,3).map(i=>words[i][1])]);
-      renderMC(`<div class="q-hint">⏱️ Schnell! Übersetze ins ${langName}</div><div class="q-word">${de}</div>`, opts, en, null, 6);
+      renderMC(`<div class="q-hint">⏱️ Schnell! Übersetze ins ${langName}</div><div class="q-word">${de}</div>`, opts, en, null, speedSeconds());
       break;
     }
     case 'speed_en_de': {
       const opts = shuffle([de, ...randOthers(words,q.idx,3).map(i=>words[i][0])]);
-      renderMC(`<div class="q-hint">⏱️ Schnell! Übersetze ins Deutsche</div><div class="q-word">${en}</div>`, opts, de, null, 6);
+      renderMC(`<div class="q-hint">⏱️ Schnell! Übersetze ins Deutsche</div><div class="q-word">${en}</div>`, opts, de, null, speedSeconds());
       break;
     }
     case 'dictation_en':
-      renderDictation(en, en, langCode, `Auf ${langName} schreiben...`);
+      renderDictation(en, en, langCode, `Auf ${langInfo.label.split(" ")[1]} schreiben...`);
       break;
     case 'dictation_de':
       renderDictation(deNoun, deNoun, 'de-DE', 'Auf Deutsch schreiben...');
@@ -1145,6 +1966,8 @@ function renderMatchRound(words){
 function renderOptions(opts, correctAnswer){
   const box = document.getElementById('optsBox');
   box.innerHTML='';
+  session.correctOpt = correctAnswer;
+  setTimeout(()=>updateHintBtn(true), 0);
   opts.forEach(opt=>{
     const btn = document.createElement('div');
     btn.className='opt';
@@ -1184,48 +2007,76 @@ function handleAnswer(isCorrect, btnEl, correctAnswer){
     if(!isCorrect) btnEl.classList.add('wrong');
   }
 
+  updateHintBtn(false);
+  onAnswerTracked(isCorrect);
   if(isCorrect){
     session.correct++;
     session.combo++;
     session.maxCombo = Math.max(session.maxCombo, session.combo);
+    celebrate(btnEl);
+    const gained = addXP(session.combo>=5 ? 3 : 2);
+    session.xpEarned += gained;
+    popXP(gained);
     sndCorrect();
     if(session.combo>=3){
       sndCombo();
       showCombo(session.combo);
     }
-    showFeedback(true, comboMessage(session.combo));
+    showFeedback(true, session.mode==='grammar' && session.combo<3 ? pick(GRAMMAR_JOKES_OK) : comboMessage(session.combo));
   } else {
     session.combo = 0;
+    session.wrong++;
+    oops();
     sndWrong();
-    state.hearts = Math.max(0, state.hearts-1);
-    if(state.hearts < MAX_HEARTS && !state.lastHeartLoss) state.lastHeartLoss = Date.now();
+    if(!['review','placement','jump'].includes(session.mode)){
+      state.hearts = Math.max(0, state.hearts-1);
+      if(state.hearts < MAX_HEARTS && !state.lastHeartLoss) state.lastHeartLoss = Date.now();
+    }
     saveState();
     updateGameHeader();
-    showFeedback(false, `Richtig war: "${correctAnswer}"`);
+    if(session.mode==='grammar'){
+      showFeedback(false, `${pick(GRAMMAR_JOKES_NO)}`, `Richtig: „${session.grammarFix}“ · 💡 ${session.topic.tip}`);
+    } else {
+      showFeedback(false, pick(GRAMMAR_JOKES_NO), `Richtig: „${correctAnswer}“`);
+    }
   }
 }
 
 function comboMessage(combo){
-  if(combo>=6) return 'Unglaublich! 🔥🔥🔥';
+  if(combo>=10) return 'LEGENDÄR! Flügo verneigt sich 👑';
+  if(combo>=8) return 'UNAUFHALTSAM! ⚡⚡';
+  if(combo>=5) return 'ON FIRE! 🔥🔥🔥';
   if(combo>=3) return `Serie x${combo}! 🔥`;
-  const msgs = ['Super!','Toll!','Genau richtig!','Klasse!','Perfekt!'];
-  return msgs[Math.floor(Math.random()*msgs.length)];
+  return pick(['Super! 🎉','Volltreffer! 🎯','Flügo klatscht mit den Flügeln 👏','Genial! 🤩','Wie ein Profi! 😎','Zack, richtig! ⚡','Du Sprachtalent! 🌟','Die Pinguine jubeln 🐧🎉']);
 }
 function showCombo(combo){
   const el = document.getElementById('comboToast');
-  el.textContent = `🔥 Serie x${combo}!`;
+  el.textContent = combo>=10 ? `👑 x${combo} LEGENDÄR!` : combo>=8 ? `⚡ x${combo} UNAUFHALTSAM!` : combo>=5 ? `🔥 x${combo} ON FIRE!` : `🔥 Serie x${combo}!`;
+  el.style.fontSize = Math.min(22, 14+combo)+'px';
+  if(combo>=5) burstAt(innerWidth/2, 90, ['🔥','⚡','💥'], 10);
   el.classList.add('show');
   setTimeout(()=>el.classList.remove('show'), 900);
 }
 
-function showFeedback(ok, text){
+function showFeedback(ok, text, detail){
   const bar = document.getElementById('feedbackBar');
   bar.className = 'feedback-bar show ' + (ok?'ok':'no');
-  document.getElementById('feedbackText').textContent = (ok?'✅ ':'❌ ') + text;
+  const ft = document.getElementById('feedbackText');
+  ft.textContent = (ok?'✅ ':'❌ ') + text;
+  if(detail){ const sm = document.createElement('small'); sm.textContent = detail; ft.appendChild(sm); }
   const nextBtn = document.getElementById('feedbackNextBtn');
+  const delay = ok ? 1300 : (detail ? 4500 : 2800);
+  const tb = document.getElementById('fbTimer');
+  tb.getAnimations().forEach(a=>a.cancel());
+  tb.animate([{width:'100%'},{width:'0%'}], {duration:delay, easing:'linear', fill:'forwards'});
+  clearTimeout(session.fbTimer);
+  session.fbTimer = setTimeout(()=>nextBtn.onclick(), delay);
   nextBtn.onclick = ()=>{
+    clearTimeout(session.fbTimer);
+    if(!bar.classList.contains('show')) return;
     bar.classList.remove('show');
-    if(state.hearts<=0){ showScreen('screen-gameover'); return; }
+    if(session.mode==='jump' && session.wrong>1){ finishLevel(); return; }
+    if(state.hearts<=0 && !['review','placement','jump'].includes(session.mode)){ showScreen('screen-gameover'); return; }
     session.qi++;
     renderQuestion();
   };
@@ -1233,13 +2084,13 @@ function showFeedback(ok, text){
 
 document.getElementById('quitGameBtn').addEventListener('click', ()=>{
   if(confirm('Level wirklich verlassen? Dein Fortschritt in diesem Level geht verloren.')){
-    if(session && session.speedTimer){ clearInterval(session.speedTimer); session.speedTimer=null; }
-    renderMap(); showScreen('screen-map');
+    goHome();
   }
 });
 
 /* ---------- LEVEL FINISH ---------- */
 function finishLevel(){
+  if(session.mode==='review' || session.mode==='placement' || session.mode==='jump'){ finishSpecial(); return; }
   const total = session.questions.length;
   const pct = session.correct/total;
   let stars = 1;
@@ -1247,44 +2098,89 @@ function finishLevel(){
   else if(pct>=0.7) stars = 2;
   else if(pct<0.5) stars = pct===0?0:1;
 
-  const prog = state.levelProgress[session.levelIdx];
-  const improved = stars > prog.stars;
-  if(improved){
-    state.xp += 20 + stars*10;
-  } else {
-    state.xp += 8;
-  }
-  const coinsEarned = 5 + session.correct*2 + session.maxCombo*2;
+  const isGrammar = session.mode==='grammar' || session.mode==='phrases';
+  const prog = isGrammar ? null : levelProg()[session.levelIdx];
+  const gStars = isGrammar ? (session.mode==='grammar' ? grammarStars() : phraseStars()) : null;
+  const prevStars = isGrammar ? gStars[session.topicIdx] : prog.stars;
+  const improved = stars > prevStars;
+  const perfect = session.wrong===0;
+  let bonus = 5 + stars*3 + (perfect?10:0) + (improved?10:0);
+  session.xpEarned += addXP(bonus);
+  const coinsEarned = 5 + session.correct*2 + session.maxCombo*2 + (perfect?10:0);
   state.coins += coinsEarned;
-  if(improved){
+  if(improved && isGrammar){
+    gStars[session.topicIdx] = stars;
+  } else if(improved){
     prog.stars = stars;
     if(prog.bestCorrect===0) state.totalLevelsCompleted++;
     prog.bestCorrect = Math.max(prog.bestCorrect, session.correct);
   }
+  state.stats.lessons++;
+  if(perfect){ state.stats.perfect++; track('perfect',1); }
+  track('lesson',1);
+  if(session.mode==='grammar') track('grammar',1);
+  if(session.mode==='phrases') track('phrases',1);
+  checkAchievements();
   saveState();
 
   document.getElementById('resultMascot').textContent = stars===3?'🥳':stars===2?'😄':stars===1?'🙂':'😅';
-  document.getElementById('resultStars').textContent = '⭐'.repeat(stars) + '☆'.repeat(3-stars);
-  document.getElementById('resultTitle').textContent = stars>=2 ? 'Level geschafft! 🎉' : 'Fast geschafft!';
+  document.getElementById('resultStars').innerHTML = [0,1,2].map(k=>`<span class="star-pop" style="animation-delay:${0.25+k*0.3}s">${k<stars?'⭐':'☆'}</span>`).join('');
+  for(let k=0;k<stars;k++) setTimeout(()=>beep(700+k*180,0.12,'triangle',0.2), 250+k*300);
+  document.getElementById('resultTitle').textContent = stars>=2 ? (session.mode==='phrases'?'Alltag gemeistert! 💬':isGrammar?'Grammatik gezähmt! 🧠':'Level geschafft! 🎉') : 'Fast geschafft!';
+  document.getElementById('continueBtn').textContent = isGrammar ? 'Weiter zum Üben 📘' : 'Weiter zur Karte 🗺️';
   document.getElementById('resultDesc').textContent = stars>=2 ? 'Du wirst immer besser!' : 'Übe weiter, du schaffst 3 Sterne!';
   document.getElementById('resCorrect').textContent = `${session.correct}/${total}`;
   document.getElementById('resCoins').textContent = `+${coinsEarned}`;
-  document.getElementById('resXp').textContent = `+${state.xp - (state.xp - (improved? (20+stars*10):8))}`;
-  document.getElementById('resXp').textContent = `+${improved ? 20+stars*10 : 8}`;
+  countUp(document.getElementById('resXp'), session.xpEarned, '+', boostActive()?' (⚡x2)':'');
+  countUp(document.getElementById('resCoins'), coinsEarned);
+  document.getElementById('resGoal').textContent = `${state.daily.xp}/${state.daily.goal} XP${state.daily.xp>=state.daily.goal?' ✅':''}`;
+  document.getElementById('resultDesc').textContent = perfect ? 'Perfekt – kein einziger Fehler! 💎' : document.getElementById('resultDesc').textContent;
+  showAdaptSuggestion(isGrammar);
 
   showScreen('screen-result');
   if(stars>=2){ sndLevelUp(); launchConfetti(); }
 }
-document.getElementById('continueBtn').addEventListener('click', ()=>{ renderMap(); showScreen('screen-map'); });
+document.getElementById('continueBtn').addEventListener('click', ()=>goHome());
 
 /* ---------- GAME OVER ---------- */
 document.getElementById('retryBtn').addEventListener('click', ()=>{
+  if(state.coins < 30){ toast('Zu wenig Münzen – mach ein Fehler-Training! 💪'); return; }
+  state.coins -= 30;
   state.hearts = MAX_HEARTS; state.lastHeartLoss = null; saveState();
-  startLevel(session ? session.levelIdx : pendingLevel);
+  if(session && session.mode==='grammar') startGrammar(session.topicIdx);
+  else if(session && session.mode==='phrases') startPhrases(session.topicIdx);
+  else startLevel(session ? session.levelIdx : pendingLevel);
 });
-document.getElementById('gameoverMapBtn').addEventListener('click', ()=>{ renderMap(); showScreen('screen-map'); });
+document.getElementById('gameoverMapBtn').addEventListener('click', ()=>goHome());
 
 /* ---------- CONFETTI ---------- */
+function burstAt(x, y, emojis, n){
+  for(let i=0;i<n;i++){
+    const el = document.createElement('div'); el.className='burst'; el.textContent = pick(emojis);
+    el.style.left = x+'px'; el.style.top = y+'px'; document.body.appendChild(el);
+    const ang = Math.random()*Math.PI*2, dist = 50+Math.random()*80;
+    el.animate([{transform:'translate(-50%,-50%) scale(.4)', opacity:1},
+      {transform:`translate(calc(-50% + ${Math.cos(ang)*dist}px), calc(-50% + ${Math.sin(ang)*dist}px)) scale(1.2) rotate(${Math.random()*180-90}deg)`, opacity:0}],
+      {duration:700+Math.random()*300, easing:'cubic-bezier(.2,.8,.3,1)'});
+    setTimeout(()=>el.remove(), 1000);
+  }
+}
+function celebrate(btnEl){
+  const r = btnEl ? btnEl.getBoundingClientRect() : {left:innerWidth/2-20, top:innerHeight/2-20, width:40, height:40};
+  burstAt(r.left+r.width/2, r.top+r.height/2, ['⭐','✨','🎉','💫','🌟'], 9);
+  const run = document.getElementById('runner');
+  run.classList.remove('hop','oops'); void run.offsetWidth; run.classList.add('hop');
+}
+function oops(){
+  const qa = document.getElementById('questionArea');
+  qa.classList.remove('shake'); void qa.offsetWidth; qa.classList.add('shake');
+  const run = document.getElementById('runner');
+  run.classList.remove('hop','oops'); void run.offsetWidth; run.classList.add('oops');
+}
+function countUp(el, to, prefix='+', suffix=''){
+  const t0 = performance.now(), dur = 700;
+  (function step(t){ const k = Math.min(1,(t-t0)/dur); el.textContent = prefix+Math.round(to*k)+suffix; if(k<1) requestAnimationFrame(step); })(t0);
+}
 function launchConfetti(){
   const colors = ['#ffd23f','#06d6a0','#7b5bff','#ff6fb0','#ff9f1c'];
   for(let i=0;i<60;i++){
@@ -1310,7 +2206,10 @@ document.querySelectorAll('.nav-btn').forEach(btn=>{
     document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     sndTap();
-    if(btn.dataset.nav==='map'){ renderMap(); showScreen('screen-map'); }
+    if(btn.dataset.nav==='map'){ pendingMode='vocab'; renderMap(); showScreen('screen-map'); }
+    else if(btn.dataset.nav==='grammar'){ pendingMode=practiceTab==='grammar'?'grammar':'phrases'; renderGrammar(); showScreen('screen-grammar'); }
+    else if(btn.dataset.nav==='quests'){ renderQuests(); showScreen('screen-quests'); }
+    else if(btn.dataset.nav==='league'){ renderLeague(); showScreen('screen-league'); }
     else { renderStats(); showScreen('screen-stats'); }
   });
 });
@@ -1319,8 +2218,9 @@ function renderStats(){
   document.getElementById('statStreak').textContent = state.streak + ' Tage';
   document.getElementById('statCoins').textContent = state.coins;
   document.getElementById('statLevels').textContent = state.totalLevelsCompleted + '/' + LEVELS.length;
-  const totalStars = state.levelProgress.reduce((s,p)=>s+p.stars,0);
+  const totalStars = levelProg().reduce((s,p)=>s+p.stars,0);
   document.getElementById('statStars').textContent = totalStars + '/' + (LEVELS.length*3);
+  renderProfileExtras();
 }
 document.getElementById('resetProgressBtn').addEventListener('click', ()=>{
   if(confirm('Wirklich den GESAMTEN Fortschritt löschen? Das kann nicht rückgängig gemacht werden.')){
@@ -1332,7 +2232,660 @@ document.getElementById('resetProgressBtn').addEventListener('click', ()=>{
   }
 });
 
+/* =========================================================
+   GAMIFICATION: XP-Level, Tagesziel, Quests, Liga, Erfolge,
+   Shop, Fehler-Training (Wiederholungssystem), Sprung- und
+   Einstufungstest, adaptive Schwierigkeit
+   ========================================================= */
+const ORDER = ['anfaenger','mittel','fortgeschritten'];
+const RANKS = [
+  {min:1, icon:'🥚', name:'Ei'}, {min:3, icon:'🐣', name:'Küken'}, {min:5, icon:'🐦', name:'Spatz'},
+  {min:8, icon:'🦜', name:'Papagei'}, {min:11, icon:'🦉', name:'Eule'}, {min:15, icon:'🦅', name:'Adler'},
+  {min:20, icon:'🐉', name:'Drache'}, {min:30, icon:'🔥', name:'Phönix'},
+];
+function xpNeed(L){ return 25*L*(L-1); }
+function levelInfo(xp){
+  let L = 1; while(xp >= xpNeed(L+1)) L++;
+  const rank = RANKS.filter(r=>r.min<=L).pop();
+  return {level:L, cur:xp-xpNeed(L), span:xpNeed(L+1)-xpNeed(L), rank};
+}
+function recentAccuracy(){
+  const r = state.recent || [];
+  return r.length ? r.filter(Boolean).length / r.length : null;
+}
+function speedSeconds(){
+  const acc = recentAccuracy();
+  const base = state.difficulty==='fortgeschritten' ? 5 : 7;
+  if(acc===null) return base;
+  return acc>=0.85 ? base-1 : acc<0.6 ? base+2 : base;
+}
+function boostActive(){ return (state.boostUntil||0) > Date.now(); }
+
+/* ---------- Toasts & XP-Popup ---------- */
+const toastQueue = []; let toastBusy = false;
+function toast(msg){ toastQueue.push(msg); if(!toastBusy) nextToast(); }
+function nextToast(){
+  const el = document.getElementById('toast');
+  if(!toastQueue.length){ toastBusy=false; return; }
+  toastBusy = true;
+  el.textContent = toastQueue.shift();
+  el.classList.add('show');
+  setTimeout(()=>{ el.classList.remove('show'); setTimeout(nextToast, 350); }, 2300);
+}
+function popXP(n){
+  const el = document.getElementById('xpPop');
+  el.textContent = `+${n} XP`;
+  el.classList.remove('go'); void el.offsetWidth; el.classList.add('go');
+}
+function updateTopbar(){
+  document.getElementById('streakVal').textContent = state.streak;
+  document.getElementById('coinsVal').textContent = state.coins;
+  document.getElementById('heartsVal').textContent = state.hearts;
+}
+
+/* ---------- XP ---------- */
+function addXP(n){
+  ensureDaily(); ensureLeague();
+  const g = n * (boostActive() ? 2 : 1);
+  const beforeInfo = levelInfo(state.xp); const before = beforeInfo.level;
+  const goalBefore = state.daily.xp >= state.daily.goal;
+  state.xp += g; state.daily.xp += g; state.league.xp += g;
+  track('xp', g);
+  const after = levelInfo(state.xp);
+  if(after.level > before){
+    toast(after.rank.name!==beforeInfo.rank.name ? `🎉 Level ${after.level}! Neuer Rang: ${after.rank.icon} ${after.rank.name}` : `🎉 Level ${after.level} erreicht!`);
+    sndLevelUp(); launchConfetti();
+  }
+  if(!goalBefore && state.daily.xp >= state.daily.goal){
+    state.coins += 10;
+    toast('🎯 Tagesziel erreicht! +10 🪙');
+  }
+  return g;
+}
+
+/* ---------- Tagesziel & Quests ---------- */
+const GOALS = [{xp:10,label:'Locker'},{xp:20,label:'Normal'},{xp:30,label:'Ernst'},{xp:50,label:'Intensiv'}];
+const QUESTS = [
+  {id:'xp30', icon:'⭐', text:'Sammle 30 XP', ev:'xp', target:30, reward:15},
+  {id:'xp60', icon:'🌟', text:'Sammle 60 XP', ev:'xp', target:60, reward:25},
+  {id:'les2', icon:'📗', text:'Schließe 2 Lektionen ab', ev:'lesson', target:2, reward:15},
+  {id:'les3', icon:'📚', text:'Schließe 3 Lektionen ab', ev:'lesson', target:3, reward:20},
+  {id:'perf', icon:'💎', text:'Eine Lektion ohne Fehler', ev:'perfect', target:1, reward:25},
+  {id:'combo5', icon:'🔥', text:'Erreiche eine 5er-Serie', ev:'combo', target:5, reward:15, max:true},
+  {id:'combo8', icon:'⚡', text:'Erreiche eine 8er-Serie', ev:'combo', target:8, reward:25, max:true},
+  {id:'cor20', icon:'✅', text:'20 richtige Antworten', ev:'correct', target:20, reward:15},
+  {id:'gram', icon:'📘', text:'Spiele ein Grammatik-Thema', ev:'grammar', target:1, reward:15},
+  {id:'phr', icon:'💬', text:'Übe ein Alltagssätze-Thema', ev:'phrases', target:1, reward:15},
+  {id:'rev', icon:'💪', text:'Mach ein Fehler-Training', ev:'review', target:1, reward:15},
+  {id:'lis5', icon:'🎧', text:'Löse 5 Hör-Aufgaben', ev:'listen', target:5, reward:15},
+  {id:'fast5', icon:'⏱️', text:'5 richtige Antworten in unter 4 Sek.', ev:'fast', target:5, reward:20},
+];
+function qDef(id){ return QUESTS.find(q=>q.id===id); }
+function ensureDaily(){
+  const today = new Date().toDateString();
+  if(state.daily.date === today) return;
+  const evs = new Set(); const picks = [];
+  shuffle(QUESTS).forEach(q=>{ if(picks.length<3 && !evs.has(q.ev)){ evs.add(q.ev); picks.push({id:q.id, p:0, claimed:false}); } });
+  state.daily = {date:today, xp:0, goal:state.daily.goal||20, quests:picks, chestClaimed:false};
+}
+function track(ev, amt){
+  ensureDaily();
+  state.daily.quests.forEach(q=>{
+    const d = qDef(q.id);
+    if(!d || d.ev!==ev || q.claimed) return;
+    const was = q.p >= d.target;
+    q.p = d.max ? Math.max(q.p, amt) : q.p + amt;
+    if(!was && q.p >= d.target) toast(`✅ Quest geschafft: ${d.text}`);
+  });
+  updateQuestDot();
+}
+function questReady(){
+  return state.daily.quests.some(q=>!q.claimed && q.p>=qDef(q.id).target)
+    || (state.daily.quests.length && state.daily.quests.every(q=>q.claimed) && !state.daily.chestClaimed);
+}
+function updateQuestDot(){ const d=document.getElementById('questDot'); if(d) d.classList.toggle('hidden', !questReady()); }
+function renderQuests(){
+  ensureDaily(); updateTopbar();
+  const h = 24 - new Date().getHours();
+  document.getElementById('questTimer').textContent = `Neue Quests in ${h} Std`;
+  const chips = document.getElementById('goalChips'); chips.innerHTML='';
+  GOALS.forEach(g=>{
+    const b = document.createElement('button');
+    b.className = 'goal-chip' + (state.daily.goal===g.xp?' sel':'');
+    b.textContent = `${g.label} ${g.xp}`;
+    b.onclick = ()=>{ sndTap(); state.daily.goal=g.xp; saveState(); renderQuests(); };
+    chips.appendChild(b);
+  });
+  const pct = Math.min(1, state.daily.xp/state.daily.goal);
+  const gf = document.getElementById('goalFill2');
+  gf.style.width = (pct*100)+'%'; gf.classList.toggle('done', pct>=1);
+  document.getElementById('goalText').textContent = `${state.daily.xp} / ${state.daily.goal} XP heute${pct>=1?' – geschafft! 🎉':''}`;
+  const list = document.getElementById('questList'); list.innerHTML='';
+  state.daily.quests.forEach(q=>{
+    const d = qDef(q.id); const done = q.p>=d.target;
+    const el = document.createElement('div'); el.className='quest';
+    el.innerHTML = `<div class="quest-icon">${d.icon}</div><div class="quest-body"><div class="quest-text">${d.text}</div>
+      <div class="mini-bar"><div class="mini-fill ${done?'done':'goal'}" style="width:${Math.min(100,q.p/d.target*100)}%"></div></div>
+      <div class="panel-sub" style="color:var(--muted)">${Math.min(q.p,d.target)} / ${d.target}</div></div>`;
+    const btn = document.createElement('button');
+    btn.className = 'quest-btn' + (done && !q.claimed ? ' ready' : '');
+    btn.textContent = q.claimed ? '✔️' : `🪙 ${d.reward}`;
+    if(done && !q.claimed) btn.onclick = ()=>{
+      q.claimed = true; state.coins += d.reward; sndCorrect();
+      toast(`+${d.reward} 🪙 abgeholt!`); saveState(); renderQuests();
+    };
+    el.appendChild(btn); list.appendChild(el);
+  });
+  const chest = document.getElementById('chestBtn');
+  const allClaimed = state.daily.quests.every(q=>q.claimed);
+  chest.disabled = !allClaimed || state.daily.chestClaimed;
+  chest.style.opacity = chest.disabled ? .5 : 1;
+  chest.textContent = state.daily.chestClaimed ? '🎁 Truhe heute schon geöffnet' : allClaimed ? '🎁 Truhe öffnen!' : '🎁 Truhe: alle 3 Quests abholen';
+  updateQuestDot();
+}
+document.getElementById('chestBtn').addEventListener('click', ()=>{
+  if(!state.daily.quests.every(q=>q.claimed) || state.daily.chestClaimed) return;
+  const prizes = [
+    ()=>{ state.coins+=40; return '40 🪙'; },
+    ()=>{ state.inventory.freeze=Math.min(2,state.inventory.freeze+1); return 'einen 🧊 Streak-Schutz'; },
+    ()=>{ state.inventory.hints+=3; return '3 💡 Tipp-Joker'; },
+    ()=>{ state.boostUntil=Math.max(Date.now(),state.boostUntil||0)+15*60000; return '15 Min. ⚡ Doppel-XP'; },
+  ];
+  const won = pick(prizes)();
+  state.daily.chestClaimed = true;
+  sndLevelUp(); launchConfetti();
+  toast(`🎁 In der Truhe: ${won}!`);
+  saveState(); renderQuests();
+});
+
+/* ---------- Liga ---------- */
+const LEAGUES = ['🥉 Bronze','🥈 Silber','🥇 Gold','💠 Saphir','♦️ Rubin','💚 Smaragd','💜 Amethyst','🤍 Perlen','⚫ Obsidian','💎 Diamant'];
+const BOT_NAMES = ['Lena','Carlos','Mia','Tobi','Aiko','Noah','Sofia','Luca','Emma','Jonas','Chloé','Mateo','Hannah','Yuki','Paul','Nina','Omar','Clara','Finn','Lia'];
+const BOT_AV = ['🦊','🐼','🐨','🐯','🐸','🐵','🦁','🐰','🐙','🦄','🐧','🐻'];
+function weekKey(){
+  const d = new Date(); const day = (d.getDay()+6)%7;
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate()-day).toDateString();
+}
+function weekHours(){ return Math.min(168, (Date.now()-new Date(weekKey()).getTime())/3.6e6); }
+function genBots(tier){
+  return shuffle(BOT_NAMES).slice(0,9).map(name=>({
+    name, av:pick(BOT_AV), base:Math.floor(Math.random()*15),
+    rate:(0.15 + Math.random()*1.2) * (1 + tier*0.35)
+  }));
+}
+function botXp(b, hours){ return Math.floor(b.base + b.rate*hours); }
+function ensureLeague(){
+  const L = state.league; const wk = weekKey();
+  if(L.week === wk) return;
+  if(L.week){
+    const rank = 1 + L.bots.filter(b=>botXp(b,168) > L.xp).length;
+    if(rank<=3 && L.tier<LEAGUES.length-1 && L.xp>0){ L.tier++; state.stats.promoted=true; toast(`🎉 Aufstieg in die ${LEAGUES[L.tier]}-Liga! (Platz ${rank})`); }
+    else if(rank>=8 && L.tier>0){ L.tier--; toast(`😿 Abstieg in die ${LEAGUES[L.tier]}-Liga (Platz ${rank})`); }
+    else toast(`🏁 Liga-Woche beendet – Platz ${rank}`);
+  }
+  L.week = wk; L.xp = 0; L.bots = genBots(L.tier);
+}
+function renderLeague(){
+  ensureLeague(); updateTopbar();
+  const L = state.league; const hrs = weekHours();
+  document.getElementById('leagueTitle').textContent = `${LEAGUES[L.tier]}-Liga`;
+  const left = 168-hrs; const dd = Math.floor(left/24), hh = Math.floor(left%24);
+  document.getElementById('leagueSub').textContent = `Top 3 steigen auf${L.tier>0?' · Plätze 8–10 steigen ab':''} · noch ${dd} T ${hh} Std`;
+  const me = levelInfo(state.xp).rank.icon;
+  const rows = L.bots.map(b=>({name:b.name, av:b.av, xp:botXp(b,hrs)})).concat([{name:'Du', av:me, xp:L.xp, me:true}])
+    .sort((a,b)=>b.xp-a.xp || (a.me?-1:1));
+  const list = document.getElementById('leagueList'); list.innerHTML='';
+  rows.forEach((r,i)=>{
+    if(i===3 && L.tier<LEAGUES.length-1) list.insertAdjacentHTML('beforeend','<div class="zone">▲ AUFSTIEGSZONE ▲</div>');
+    if(i===7 && L.tier>0) list.insertAdjacentHTML('beforeend','<div class="zone">▼ ABSTIEGSZONE ▼</div>');
+    const up = i<3 && L.tier<LEAGUES.length-1, down = i>=7 && L.tier>0;
+    list.insertAdjacentHTML('beforeend', `<div class="league-row${r.me?' me':''}${up?' up':''}${down?' down':''}">
+      <span class="pos">${i+1}</span><span class="av">${r.av}</span><span class="nm">${escapeHtml(r.name)}</span><span>${r.xp} XP</span></div>`);
+  });
+}
+
+/* ---------- Erfolge ---------- */
+const ACHIEVEMENTS = [
+  {id:'first', icon:'🎓', name:'Erste Schritte', desc:'Erste Lektion geschafft', test:()=>state.stats.lessons>=1, reward:10},
+  {id:'les10', icon:'📚', name:'Bücherwurm', desc:'10 Lektionen', test:()=>state.stats.lessons>=10, reward:30},
+  {id:'les50', icon:'🏛️', name:'Gelehrter', desc:'50 Lektionen', test:()=>state.stats.lessons>=50, reward:100},
+  {id:'st3', icon:'🔥', name:'Am Ball', desc:'3 Tage Streak', test:()=>state.streak>=3, reward:20},
+  {id:'st7', icon:'📅', name:'Wochenheld', desc:'7 Tage Streak', test:()=>state.streak>=7, reward:50},
+  {id:'st30', icon:'🏆', name:'Unaufhaltsam', desc:'30 Tage Streak', test:()=>state.streak>=30, reward:200},
+  {id:'perf1', icon:'💎', name:'Makellos', desc:'Eine Lektion ohne Fehler', test:()=>state.stats.perfect>=1, reward:20},
+  {id:'perf10', icon:'👑', name:'Perfektionist', desc:'10 fehlerfreie Lektionen', test:()=>state.stats.perfect>=10, reward:80},
+  {id:'combo10', icon:'⚡', name:'Kettenreaktion', desc:'10er-Serie', test:()=>state.stats.maxCombo>=10, reward:30},
+  {id:'xp1000', icon:'🚀', name:'Tausender', desc:'1000 XP gesammelt', test:()=>state.xp>=1000, reward:50},
+  {id:'lv5', icon:'🦜', name:'Aufsteiger', desc:'Spielerlevel 5', test:()=>levelInfo(state.xp).level>=5, reward:30},
+  {id:'lv10', icon:'🦅', name:'Überflieger', desc:'Spielerlevel 10', test:()=>levelInfo(state.xp).level>=10, reward:80},
+  {id:'gram3', icon:'🧠', name:'Grammatik-Fan', desc:'3 Grammatik-Themen mit Sternen', test:()=>Object.values(state.grammarProgress||{}).flat().filter(x=>x>0).length>=3, reward:30},
+  {id:'phr3', icon:'🧳', name:'Weltenbummler', desc:'3 Alltags-Themen mit Sternen', test:()=>Object.values(state.phraseProgress||{}).flat().filter(x=>x>0).length>=3, reward:30},
+  {id:'poly', icon:'🌍', name:'Polyglott', desc:'In 2 Sprachen gelernt', test:()=>Object.keys(state.langsPlayed).length>=2, reward:40},
+  {id:'rev20', icon:'💪', name:'Fehlerjäger', desc:'20 Wörter im Training gefestigt', test:()=>state.stats.reviewMastered>=20, reward:40},
+  {id:'league', icon:'🏅', name:'Liga-Aufstieg', desc:'In eine höhere Liga aufgestiegen', test:()=>state.stats.promoted, reward:50},
+  {id:'night', icon:'🌙', name:'Nachteule', desc:'Nach 22 Uhr gelernt', test:()=>state.stats.night, reward:15},
+  {id:'early', icon:'🌅', name:'Frühaufsteher', desc:'Vor 7 Uhr gelernt', test:()=>state.stats.early, reward:15},
+  {id:'shop', icon:'🛍️', name:'Shopping-Tour', desc:'Erster Einkauf im Shop', test:()=>state.stats.bought, reward:10},
+  {id:'jump', icon:'🦘', name:'Känguru', desc:'Einen Sprungtest bestanden', test:()=>state.stats.jumped, reward:30},
+];
+function checkAchievements(){
+  ACHIEVEMENTS.forEach(a=>{
+    if(state.achievements[a.id] || !a.test()) return;
+    state.achievements[a.id] = Date.now();
+    state.coins += a.reward;
+    toast(`🏅 Erfolg: ${a.icon} ${a.name} (+${a.reward} 🪙)`);
+  });
+}
+
+/* ---------- Shop ---------- */
+const SHOP = [
+  {id:'hearts', icon:'❤️', name:'Herzen auffüllen', desc:'Sofort wieder 5 Herzen', price:30, can:()=>state.hearts<MAX_HEARTS, apply:()=>{ state.hearts=MAX_HEARTS; state.lastHeartLoss=null; }, have:()=>`${state.hearts}/5`},
+  {id:'freeze', icon:'🧊', name:'Streak-Schutz', desc:'Rettet deinen Streak an einem verpassten Tag', price:50, can:()=>state.inventory.freeze<2, apply:()=>{ state.inventory.freeze++; }, have:()=>`${state.inventory.freeze}/2`},
+  {id:'boost', icon:'⚡', name:'Doppel-XP (15 Min.)', desc:'Alle XP zählen doppelt', price:40, can:()=>true, apply:()=>{ state.boostUntil=Math.max(Date.now(),state.boostUntil||0)+15*60000; }, have:()=>boostActive()?`noch ${Math.ceil((state.boostUntil-Date.now())/60000)} Min.`:'–'},
+  {id:'hints', icon:'💡', name:'3 Tipp-Joker', desc:'Entfernt 2 falsche Antworten', price:25, can:()=>true, apply:()=>{ state.inventory.hints+=3; }, have:()=>`${state.inventory.hints}`},
+];
+function buy(item){
+  if(state.coins < item.price){ toast('Zu wenig Münzen 🪙 – Quests bringen welche!'); return; }
+  if(!item.can()){ toast('Das hast du schon voll 👍'); return; }
+  state.coins -= item.price; item.apply(); state.stats.bought = true;
+  sndCorrect(); toast(`${item.icon} ${item.name} gekauft!`);
+  checkAchievements(); saveState(); renderStats();
+}
+function renderProfileExtras(){
+  updateTopbar();
+  const li = levelInfo(state.xp);
+  document.getElementById('profRank').textContent = li.rank.icon;
+  document.getElementById('profName').textContent = `Lv ${li.level} · ${li.rank.name}`;
+  document.getElementById('profNext').textContent = `${li.span-li.cur} XP bis Level ${li.level+1} · ${LEAGUES[state.league.tier]}-Liga`;
+  const acc = recentAccuracy();
+  document.getElementById('statAcc').textContent = acc===null ? '–' : Math.round(acc*100)+'%';
+  const grid = document.getElementById('achGrid'); grid.innerHTML='';
+  ACHIEVEMENTS.forEach(a=>{
+    const got = !!state.achievements[a.id];
+    const el = document.createElement('div'); el.className='ach'+(got?' got':''); el.textContent=a.icon;
+    el.onclick = ()=>toast(`${a.icon} ${a.name}: ${a.desc} ${got?'✅':'🔒'}`);
+    grid.appendChild(el);
+  });
+  document.getElementById('achCount').textContent = `${Object.keys(state.achievements).length}/${ACHIEVEMENTS.length}`;
+  document.getElementById('shopCoins').textContent = state.coins;
+  const list = document.getElementById('shopList'); list.innerHTML='';
+  SHOP.forEach(item=>{
+    const el = document.createElement('div'); el.className='shop-item';
+    el.innerHTML = `<span class="si">${item.icon}</span><span class="st">${item.name}<small>${item.desc} · Du hast: ${item.have()}</small></span>`;
+    const b = document.createElement('button'); b.textContent = `${item.price} 🪙`;
+    b.disabled = state.coins<item.price || !item.can();
+    b.onclick = ()=>buy(item);
+    el.appendChild(b); list.appendChild(el);
+  });
+  document.getElementById('soundBtn').textContent = state.settings.sound===false ? '🔇 Ton: aus' : '🔊 Ton: an';
+}
+document.getElementById('soundBtn').addEventListener('click', ()=>{
+  state.settings.sound = state.settings.sound===false; saveState(); renderProfileExtras(); sndTap();
+});
+document.getElementById('placementBtn').addEventListener('click', ()=>startPlacement());
+
+/* ---------- Dashboard auf der Karte ---------- */
+function renderDashboard(){
+  ensureDaily(); ensureLeague(); updateTopbar();
+  const li = levelInfo(state.xp);
+  document.getElementById('rankBadge').textContent = li.rank.icon;
+  document.getElementById('rankName').textContent = `Lv ${li.level} · ${li.rank.name}`;
+  document.getElementById('rankXp').textContent = `${li.cur}/${li.span} XP`;
+  document.getElementById('xpBarFill').style.width = (li.cur/li.span*100)+'%';
+  const gp = Math.min(1, state.daily.xp/state.daily.goal);
+  document.getElementById('goalXp').textContent = `${state.daily.xp}/${state.daily.goal} XP${gp>=1?' ✅':''}`;
+  const gf = document.getElementById('goalFill');
+  gf.style.width = (gp*100)+'%'; gf.classList.toggle('done', gp>=1);
+  const n = reviewCandidates().length;
+  const tb = document.getElementById('trainBtn');
+  tb.textContent = n ? `💪 Training (${n})` : '💪 Training';
+  tb.style.opacity = seenWords().length < 4 ? .6 : 1;
+  const bc = document.getElementById('boostChip');
+  bc.classList.toggle('active-boost', boostActive());
+  bc.textContent = boostActive() ? `⚡ x2 · ${Math.ceil((state.boostUntil-Date.now())/60000)}′` : '⚡ x2';
+  document.getElementById('diffChip').textContent = `${LANGS[currentLang()].label.split(' ')[0]} ${DIFFICULTIES[state.difficulty||'anfaenger'].label}`;
+  updateQuestDot();
+}
+document.getElementById('trainBtn').addEventListener('click', ()=>{ sndTap(); startReview(); });
+document.getElementById('boostChip').addEventListener('click', ()=>{
+  sndTap(); setNav('stats'); renderStats(); showScreen('screen-stats');
+});
+
+/* ---------- Wiederholungssystem (Leitner) ---------- */
+const INTERVALS = [0, 4*3.6e6, 24*3.6e6, 3*24*3.6e6, 7*24*3.6e6, 21*24*3.6e6];
+function mKey(pair){ return currentLang()+'|'+pair[0]+'|'+pair[1]; }
+function updateMastery(pair, ok){
+  const k = mKey(pair);
+  const q = session.currentQ || {};
+  const e = state.mastery[k] || {de:pair[0], t:pair[1], lang:currentLang(),
+    diff: q.diff || state.difficulty || 'anfaenger', lvl: q.lvl!==undefined ? q.lvl : session.levelIdx, box:0, due:0, right:0, wrong:0};
+  if(ok){
+    const was = e.box; e.box = Math.min(5, e.box+1); e.right++;
+    if(session.mode==='review' && was<2 && e.box>=2) state.stats.reviewMastered++;
+  } else { e.box = 0; e.wrong++; }
+  e.due = Date.now() + INTERVALS[e.box];
+  state.mastery[k] = e;
+}
+function seenWords(){ return Object.values(state.mastery).filter(e=>e.lang===currentLang() && e.lvl!==undefined && e.lvl!==null); }
+function reviewCandidates(){
+  const now = Date.now();
+  const all = seenWords();
+  const weak = all.filter(e=>e.wrong>0 && e.box<2).sort((a,b)=>b.wrong-a.wrong);
+  const due = all.filter(e=>!weak.includes(e) && e.due<=now && e.box<5).sort((a,b)=>a.due-b.due);
+  return weak.concat(due);
+}
+function startReview(){
+  let list = reviewCandidates().slice(0,10);
+  if(list.length < 6){
+    const rest = seenWords().filter(e=>!list.includes(e)).sort((a,b)=>a.box-b.box);
+    list = list.concat(rest.slice(0, 6-list.length));
+  }
+  const types = ['mc_de_en','mc_en_de','type_de_en','listen_en','truefalse_de_en','missing_en','type_en_de'];
+  const qs = [];
+  list.forEach(e=>{
+    const pool = wordsFor(e.diff, e.lvl);
+    const idx = pool.findIndex(w=>w[0]===e.de && w[1]===e.t);
+    if(idx<0) return;
+    const type = e.box===0 ? pick(['mc_de_en','mc_en_de','listen_en']) : pick(types);
+    qs.push({type, idx, word:pool[idx], pool, lvl:e.lvl, diff:e.diff});
+  });
+  if(qs.length < 4){ toast('Spiel erst ein paar Lektionen – dann gibt es hier etwas zu üben! 💪'); return; }
+  touchStreak();
+  session = {mode:'review', xpEarned:0, wrong:0, questions:shuffle(qs), qi:0, correct:0, combo:0, maxCombo:0, answered:false};
+  showScreen('screen-game'); renderQuestion();
+}
+document.getElementById('gameoverTrainBtn').addEventListener('click', ()=>startReview());
+
+/* ---------- Sprungtest ---------- */
+function offerJump(i){
+  if(!confirm(`🔒 „${LEVELS[i].title}“ ist noch gesperrt.\n\n🚀 Sprungtest: 8 Fragen aus den bisherigen Leveln, höchstens 1 Fehler – dann springst du direkt hierher!\n\nJetzt versuchen?`)) return;
+  const qs = [];
+  const types = ['mc_de_en','mc_en_de','type_de_en','listen_en','missing_en','truefalse_en_de'];
+  for(let k=0;k<8;k++){
+    const lvl = Math.floor(Math.random()*i);
+    const pool = levelWords(lvl);
+    const idx = Math.floor(Math.random()*pool.length);
+    if(qs.some(q=>q.word===pool[idx])){ k--; continue; }
+    qs.push({type:pick(types), idx, word:pool[idx], pool, lvl});
+  }
+  touchStreak();
+  session = {mode:'jump', target:i, xpEarned:0, wrong:0, questions:qs, qi:0, correct:0, combo:0, maxCombo:0, answered:false};
+  showScreen('screen-game'); renderQuestion();
+}
+
+/* ---------- Einstufungstest ---------- */
+function startPlacement(){
+  const qs = [];
+  ORDER.forEach(g=>{
+    shuffle([...Array(10).keys()]).slice(0,4).forEach(lvl=>{
+      const pool = wordsFor(g, lvl);
+      const idx = Math.floor(Math.random()*pool.length);
+      qs.push({type: g==='fortgeschritten' && Math.random()<0.5 ? 'mc_en_de' : 'mc_de_en', idx, word:pool[idx], pool, group:g, lvl, diff:g});
+    });
+  });
+  touchStreak();
+  session = {mode:'placement', xpEarned:0, wrong:0, questions:qs, qi:0, correct:0, combo:0, maxCombo:0, answered:false, results:[]};
+  showScreen('screen-game'); renderQuestion();
+}
+
+/* ---------- Tracking pro Antwort ---------- */
+function onAnswerTracked(ok){
+  const q = session.currentQ || {};
+  if(['vocab','grammar','jump'].includes(session.mode)){
+    state.recent.push(ok); if(state.recent.length>30) state.recent.shift();
+  }
+  if(session.mode==='placement') session.results.push({group:q.group, ok});
+  if(session.currentWord && session.mode!=='placement') updateMastery(session.currentWord, ok);
+  if(ok){
+    track('correct',1);
+    track('combo', session.combo+1);
+    state.stats.maxCombo = Math.max(state.stats.maxCombo, session.combo+1);
+    if(Date.now()-session.qStart < 4000) track('fast',1);
+    if(/^(listen|dictation)/.test(session.currentType||'')) track('listen',1);
+  }
+  saveState();
+}
+
+/* ---------- Abschluss der Sondermodi ---------- */
+function finishSpecial(){
+  const total = session.questions.length;
+  const $ = id=>document.getElementById(id);
+  let title, desc, mascot, success = true;
+  if(session.mode==='review'){
+    session.xpEarned += addXP(5);
+    state.coins += 5 + session.correct;
+    state.stats.lessons++; track('review',1); track('lesson',1);
+    title = 'Training geschafft! 💪'; mascot = '💪';
+    desc = `${session.correct} von ${total} Wörtern sitzen jetzt besser.`;
+  } else if(session.mode==='jump'){
+    success = session.wrong<=1 && session.qi>=total-1;
+    if(success){
+      const prog = levelProg();
+      for(let j=0;j<session.target;j++) prog[j].stars = Math.max(prog[j].stars,1);
+      state.stats.jumped = true;
+      session.xpEarned += addXP(15);
+      title = '🦘 Sprung geschafft!'; mascot = '🦘';
+      desc = `„${LEVELS[session.target].title}“ ist jetzt freigeschaltet.`;
+    } else {
+      title = 'Knapp daneben!'; mascot = '🙈';
+      desc = 'Zu viele Fehler – übe die vorherigen Level und versuch es nochmal.';
+    }
+  } else {
+    const score = g => session.results.filter(r=>r.group===g && r.ok).length;
+    const e = score('anfaenger'), m = score('mittel'), h = score('fortgeschritten');
+    const lvl = (h>=3 && m>=3) ? 'fortgeschritten' : (m>=3 || (e>=4 && m>=2)) ? 'mittel' : 'anfaenger';
+    state.difficulty = lvl; state.recent = []; state.placementDone = true;
+    title = `Dein Niveau: ${DIFFICULTIES[lvl].label}`; mascot = '🧪';
+    desc = `Grundwortschatz ${e}/4 · Alltag ${m}/4 · Gehoben ${h}/4 – Flügo passt die Aufgaben jetzt an dich an.`;
+  }
+  checkAchievements(); saveState();
+  pendingMode = 'vocab';
+  const pct = session.correct/Math.max(1,total);
+  const stars = pct>=0.9?3:pct>=0.7?2:pct>0?1:0;
+  $('resultMascot').textContent = mascot;
+  $('resultStars').textContent = '⭐'.repeat(stars)+'☆'.repeat(3-stars);
+  $('resultTitle').textContent = title;
+  $('resultDesc').textContent = desc;
+  $('resCorrect').textContent = `${session.correct}/${total}`;
+  $('resCoins').textContent = session.mode==='review' ? `+${5+session.correct}` : '+0';
+  $('resXp').textContent = `+${session.xpEarned}`;
+  $('resGoal').textContent = `${state.daily.xp}/${state.daily.goal} XP${state.daily.xp>=state.daily.goal?' ✅':''}`;
+  $('adaptBox').classList.add('hidden');
+  $('continueBtn').textContent = 'Weiter 🗺️';
+  showScreen('screen-result');
+  if(success){ sndLevelUp(); launchConfetti(); }
+}
+
+/* ---------- Adaptiver Vorschlag nach der Lektion ---------- */
+function showAdaptSuggestion(isGrammar){
+  const box = document.getElementById('adaptBox');
+  box.classList.add('hidden');
+  if(isGrammar) return;
+  const acc = recentAccuracy(); const n = state.recent.length;
+  const i = ORDER.indexOf(state.difficulty||'anfaenger');
+  let target = null, text = '';
+  if(n>=16 && acc>=0.9 && i<2){ target = ORDER[i+1]; text = `🚀 ${Math.round(acc*100)}% richtig! Du bist zu gut für ${DIFFICULTIES[ORDER[i]].label}. Auf ${DIFFICULTIES[target].label} wechseln?`; }
+  else if(n>=16 && acc<=0.5 && i>0){ target = ORDER[i-1]; text = `🧸 Das war knifflig (${Math.round(acc*100)}%). Eine Stufe leichter mit ${DIFFICULTIES[target].label} üben?`; }
+  if(!target) return;
+  document.getElementById('adaptText').textContent = text;
+  box.classList.remove('hidden');
+  document.getElementById('adaptYes').onclick = ()=>{
+    state.difficulty = target; state.recent = []; saveState();
+    box.classList.add('hidden'); toast(`Neues Niveau: ${DIFFICULTIES[target].label}`);
+  };
+  document.getElementById('adaptNo').onclick = ()=>{ state.recent = []; saveState(); box.classList.add('hidden'); };
+}
+
+/* ---------- Tipp-Joker ---------- */
+function updateHintBtn(show){
+  const b = document.getElementById('hintBtn');
+  const opts = [...document.querySelectorAll('#optsBox .opt')].filter(o=>o.style.visibility!=='hidden' && !o.classList.contains('disabled'));
+  const ok = show && session && !session.answered && state.inventory.hints>0 && opts.length>=3;
+  b.classList.toggle('hidden', !ok);
+  document.getElementById('hintCount').textContent = state.inventory.hints;
+}
+document.getElementById('hintBtn').addEventListener('click', ()=>{
+  if(!session || session.answered || state.inventory.hints<=0) return;
+  const wrong = [...document.querySelectorAll('#optsBox .opt')].filter(o=>o.textContent!==session.correctOpt && o.style.visibility!=='hidden');
+  shuffle(wrong).slice(0,2).forEach(o=>{ o.style.visibility='hidden'; });
+  state.inventory.hints--; saveState(); sndTap();
+  updateHintBtn(false);
+});
+
+/* ---------- Game-Over-Anzeige ---------- */
+function updateGameoverScreen(){
+  regenHearts(); updateTopbar();
+  const b = document.getElementById('retryBtn');
+  b.disabled = state.coins < 30; b.style.opacity = b.disabled ? .5 : 1;
+  b.textContent = `❤️ Auffüllen für 30 🪙 (du hast ${state.coins})`;
+  const mins = state.lastHeartLoss ? Math.max(1, Math.ceil(HEART_REGEN_MINUTES - (Date.now()-state.lastHeartLoss)/60000)) : HEART_REGEN_MINUTES;
+  document.getElementById('heartInfo').textContent = `Nächstes Herz in ${mins} Min. – oder übe im Fehler-Training, das kostet keine Herzen.`;
+}
+
+/* ---------- ALLTAGSSÄTZE (Übungen für echte Situationen) ---------- */
+const PHRASE_TOPICS = [
+  {icon:'👋', title:'Begrüßung & Smalltalk', de:['Hallo, wie geht\'s?','Freut mich, dich kennenzulernen.','Wie heißt du?','Ich komme aus Österreich.','Bis morgen!','Schönen Tag noch!']},
+  {icon:'🍽️', title:'Im Restaurant', de:['Einen Tisch für zwei, bitte.','Kann ich die Speisekarte sehen?','Ich hätte gern einen Kaffee.','Die Rechnung, bitte.','Das ist köstlich!','Ich bin Vegetarier.']},
+  {icon:'🛍️', title:'Einkaufen', de:['Wie viel kostet das?','Haben Sie das in Blau?','Kann ich mit Karte zahlen?','Das ist zu teuer.','Ich schaue nur.','Ich nehme es.']},
+  {icon:'🧭', title:'Nach dem Weg fragen', de:['Wo ist der Bahnhof?','Biegen Sie an der Ecke links ab.','Ist es weit von hier?','Gehen Sie geradeaus.','Ich habe mich verlaufen.','Welcher Bus fährt ins Zentrum?']},
+  {icon:'🏨', title:'Hotel & Reisen', de:['Ich habe eine Reservierung.','Wann gibt es Frühstück?','Die Dusche funktioniert nicht.','Kann ich den Schlüssel haben?','Wo ist der Aufzug?','Ich möchte auschecken.']},
+  {icon:'🆘', title:'Notfall & Hilfe', de:['Ich brauche einen Arzt.','Rufen Sie die Polizei!','Wo ist das Krankenhaus?','Ich habe meinen Pass verloren.','Es tut hier weh.','Können Sie mir helfen?']},
+];
+const PHRASES_RAW = {
+  en:[
+    ['Hello, how are you?','Nice to meet you.','What\'s your name?','I\'m from Austria.','See you tomorrow!','Have a nice day!'],
+    ['A table for two, please.','Can I see the menu?','I would like a coffee.','The bill, please.','This is delicious!','I am a vegetarian.'],
+    ['How much is this?','Do you have this in blue?','Can I pay by card?','That\'s too expensive.','I\'m just looking.','I\'ll take it.'],
+    ['Where is the train station?','Turn left at the corner.','Is it far from here?','Go straight ahead.','I am lost.','Which bus goes to the center?'],
+    ['I have a reservation.','What time is breakfast?','The shower doesn\'t work.','Can I have the key?','Where is the elevator?','I would like to check out.'],
+    ['I need a doctor.','Call the police!','Where is the hospital?','I lost my passport.','It hurts here.','Can you help me?'],
+  ],
+  es:[
+    ['Hola, ¿qué tal?','Encantado de conocerte.','¿Cómo te llamas?','Soy de Austria.','¡Hasta mañana!','¡Que tengas un buen día!'],
+    ['Una mesa para dos, por favor.','¿Puedo ver la carta?','Quisiera un café.','La cuenta, por favor.','¡Esto está delicioso!','Soy vegetariano.'],
+    ['¿Cuánto cuesta esto?','¿Lo tiene en azul?','¿Puedo pagar con tarjeta?','Es demasiado caro.','Solo estoy mirando.','Me lo llevo.'],
+    ['¿Dónde está la estación de tren?','Gire a la izquierda en la esquina.','¿Está lejos de aquí?','Siga todo recto.','Estoy perdido.','¿Qué autobús va al centro?'],
+    ['Tengo una reserva.','¿A qué hora es el desayuno?','La ducha no funciona.','¿Me da la llave?','¿Dónde está el ascensor?','Quiero dejar la habitación.'],
+    ['Necesito un médico.','¡Llame a la policía!','¿Dónde está el hospital?','He perdido mi pasaporte.','Me duele aquí.','¿Puede ayudarme?'],
+  ],
+  fr:[
+    ['Bonjour, ça va ?','Enchanté de te rencontrer.','Comment tu t\'appelles ?','Je viens d\'Autriche.','À demain !','Bonne journée !'],
+    ['Une table pour deux, s\'il vous plaît.','Je peux voir la carte ?','Je voudrais un café.','L\'addition, s\'il vous plaît.','C\'est délicieux !','Je suis végétarien.'],
+    ['Combien ça coûte ?','Vous l\'avez en bleu ?','Je peux payer par carte ?','C\'est trop cher.','Je regarde seulement.','Je le prends.'],
+    ['Où est la gare ?','Tournez à gauche au coin.','C\'est loin d\'ici ?','Allez tout droit.','Je suis perdu.','Quel bus va au centre ?'],
+    ['J\'ai une réservation.','Le petit-déjeuner est à quelle heure ?','La douche ne marche pas.','Je peux avoir la clé ?','Où est l\'ascenseur ?','Je voudrais régler ma note.'],
+    ['J\'ai besoin d\'un médecin.','Appelez la police !','Où est l\'hôpital ?','J\'ai perdu mon passeport.','J\'ai mal ici.','Pouvez-vous m\'aider ?'],
+  ],
+  it:[
+    ['Ciao, come stai?','Piacere di conoscerti.','Come ti chiami?','Vengo dall\'Austria.','A domani!','Buona giornata!'],
+    ['Un tavolo per due, per favore.','Posso vedere il menù?','Vorrei un caffè.','Il conto, per favore.','È delizioso!','Sono vegetariano.'],
+    ['Quanto costa questo?','Ce l\'ha in blu?','Posso pagare con la carta?','È troppo caro.','Sto solo guardando.','Lo prendo.'],
+    ['Dov\'è la stazione?','Giri a sinistra all\'angolo.','È lontano da qui?','Vada sempre dritto.','Mi sono perso.','Quale autobus va in centro?'],
+    ['Ho una prenotazione.','A che ora è la colazione?','La doccia non funziona.','Posso avere la chiave?','Dov\'è l\'ascensore?','Vorrei lasciare la camera.'],
+    ['Ho bisogno di un medico.','Chiami la polizia!','Dov\'è l\'ospedale?','Ho perso il passaporto.','Mi fa male qui.','Può aiutarmi?'],
+  ],
+};
+let practiceTab = 'grammar';
+document.getElementById('segGram').addEventListener('click', ()=>{ sndTap(); practiceTab='grammar'; pendingMode='grammar'; renderGrammar(); });
+document.getElementById('segPhr').addEventListener('click', ()=>{ sndTap(); practiceTab='phrases'; pendingMode='phrases'; renderGrammar(); });
+function phraseTopics(){
+  const lang = currentLang();
+  return PHRASE_TOPICS.map((t,i)=>({icon:t.icon, title:t.title,
+    tip:`Diese Sätze retten dich im Alltag – z. B. „${PHRASES_RAW[lang][i][0]}“`,
+    items:t.de.map((de,k)=>({t:PHRASES_RAW[lang][i][k], de}))}));
+}
+function phraseStars(){
+  const lang = currentLang();
+  if(!state.phraseProgress) state.phraseProgress = {};
+  if(!state.phraseProgress[lang]) state.phraseProgress[lang] = PHRASE_TOPICS.map(()=>0);
+  return state.phraseProgress[lang];
+}
+const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+const PHRASE_TYPES = ['phr_meaning','phr_translate','phr_order','phr_listen','phr_speak'];
+function startPhrases(topicIdx){
+  touchStreak();
+  pendingMode = 'phrases';
+  const topic = phraseTopics()[topicIdx];
+  const types = shuffle(PHRASE_TYPES);
+  const qs = shuffle(topic.items).map((item,i)=>({type:types[i%types.length], item}));
+  shuffle(topic.items).slice(0,2).forEach(item=>qs.push({type:pick(['phr_translate','phr_order','phr_listen']), item}));
+  session = {mode:'phrases', xpEarned:0, wrong:0, topicIdx, topic, questions:shuffle(qs), qi:0, correct:0, combo:0, maxCombo:0, answered:false};
+  showScreen('screen-game'); renderQuestion();
+}
+function normalizeSpeech(s){ return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9ñ ]/g,' ').replace(/\s+/g,' ').trim(); }
+function speechMatch(said, target){
+  const a = normalizeSpeech(said).split(' '), b = normalizeSpeech(target).split(' ');
+  const hits = b.filter(w=>a.includes(w)).length;
+  return hits / b.length >= 0.6;
+}
+function renderPhraseQuestion(q){
+  const {t, de} = q.item;
+  const others = session.topic.items.filter(x=>x!==q.item);
+  const code = LANGS[currentLang()].code;
+  const area = document.getElementById('questionArea');
+  session.grammarFix = t;
+  let type = q.type;
+  if(type==='phr_speak' && !SpeechRec) type = 'phr_order';
+
+  if(type==='phr_meaning'){
+    renderMC(`<div class="q-hint">Was bedeutet dieser Satz? 🤔</div>
+      <button class="q-sound-btn" id="playSoundBtn">🔊</button><div class="q-sentence">${escapeHtml(t)}</div>`,
+      shuffle([de, ...shuffle(others).slice(0,3).map(x=>x.de)]), de, ()=>speak(t, code));
+    return;
+  }
+  if(type==='phr_listen'){
+    renderMC(`<div class="q-hint">🎧 Hörverstehen: Was wurde gesagt?</div><button class="q-sound-btn" id="playSoundBtn">🔊</button>`,
+      shuffle([de, ...shuffle(others).slice(0,3).map(x=>x.de)]), de, ()=>speak(t, code));
+    return;
+  }
+  if(type==='phr_translate'){
+    renderMC(`<div class="q-hint">Wie sagt man das? 🗣️</div><div class="q-sentence">${escapeHtml(de)}</div>`,
+      shuffle([t, ...shuffle(others).slice(0,3).map(x=>x.t)]), t);
+    return;
+  }
+  if(type==='phr_speak'){
+    area.innerHTML = `<div class="q-hint">🎤 Sprich den Satz laut nach</div>
+      <div class="q-sentence">${escapeHtml(t)}</div><div class="q-de">🇩🇪 ${escapeHtml(de)}</div>
+      <button class="q-sound-btn" id="playSoundBtn">🔊</button>
+      <button class="btn btn-primary" id="micBtn">🎤 Jetzt sprechen</button>
+      <div class="panel-sub" id="micOut" style="text-align:center;min-height:18px;"></div>
+      <button class="btn btn-secondary" id="noMicBtn">Kann gerade nicht sprechen</button>`;
+    document.getElementById('playSoundBtn').onclick = ()=>speak(t, code);
+    speak(t, code);
+    document.getElementById('noMicBtn').onclick = ()=>{ q.type='phr_order'; renderPhraseQuestion(q); };
+    document.getElementById('micBtn').onclick = ()=>{
+      const rec = new SpeechRec(); rec.lang = code; rec.interimResults = false; rec.maxAlternatives = 3;
+      const out = document.getElementById('micOut'); out.textContent = '👂 Ich höre zu …';
+      rec.onresult = e=>{
+        const alts = [...e.results[0]].map(r=>r.transcript);
+        out.textContent = `Verstanden: „${alts[0]}“`;
+        if(!session.answered) handleAnswer(alts.some(a=>speechMatch(a,t)), null, t);
+      };
+      rec.onerror = ()=>{ out.textContent = 'Das hat nicht geklappt – nochmal versuchen oder überspringen.'; };
+      try{ rec.start(); }catch(e){ out.textContent = 'Mikrofon nicht verfügbar.'; }
+    };
+    return;
+  }
+  // phr_order: Satz aus Wörtern bauen
+  const words = t.split(' ');
+  area.innerHTML = `<div class="q-hint">Satzbau: Bring die Wörter in die richtige Reihenfolge 🧩</div><div class="q-de">🇩🇪 ${escapeHtml(de)}</div>
+    <div class="build-sentence" id="builtSentence"></div><div class="word-chips" id="orderChips"></div>
+    <button class="btn btn-secondary" id="orderBack" style="margin-top:12px;">⌫ Zurück</button>`;
+  const built = document.getElementById('builtSentence'), box = document.getElementById('orderChips'); const stack = [];
+  shuffle(words).forEach(w=>{
+    const chip = document.createElement('div'); chip.className='word-chip'; chip.textContent=w;
+    chip.onclick = ()=>{ if(session.answered||chip.classList.contains('used')) return; sndTap(); chip.classList.add('used'); stack.push({w,chip}); upd(); };
+    box.appendChild(chip);
+  });
+  function upd(){
+    built.textContent = stack.map(s=>s.w).join(' ');
+    if(stack.length===words.length) handleAnswer(built.textContent===t, null, t);
+  }
+  document.getElementById('orderBack').onclick = ()=>{ if(session.answered||!stack.length) return; stack.pop().chip.classList.remove('used'); upd(); };
+}
+
 /* ---------- INIT ---------- */
+ensureDaily(); ensureLeague(); checkAchievements(); saveState();
 if(state.language && state.difficulty){
   renderMap();
   showScreen('screen-map');
