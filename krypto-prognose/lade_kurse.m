@@ -27,7 +27,12 @@ function daten = lade_binance(symbol, intervall)
   while true
     url = sprintf('%s?symbol=%s&interval=%s&limit=1000&startTime=%d', ...
                   basis, symbol, intervall, start);
-    roh = jsondecode(urlread(url));
+    try
+      roh = jsondecode(urlread(url));
+    catch
+      % Ausweich-Server (gleiche Daten, oft ohne Laender-Sperre)
+      roh = jsondecode(urlread(strrep(url, 'api.binance.com', 'data-api.binance.vision')));
+    end
     if isempty(roh), break; end
     block = kerzen_zu_matrix(roh);
     daten = [daten; block];               %#ok<AGROW>

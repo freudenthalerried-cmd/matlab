@@ -19,7 +19,15 @@ Einstellungen oben in `btc_prognose.m` (Symbol, Intervall, Gebühr, Schwelle …
 | `lade_kurse.m` | Binance-API (paginiert) / CSV / Demo-Daten |
 | `berechne_features.m` | Renditen 1/7/30, Abstand SMA20/50, Volatilität, RSI, Volumen-z |
 | `logreg_fit.m`, `logreg_predict.m` | Logistische Regression mit L2 (Newton) |
+| `korrelation_btc.m` | Korrelation, Beta, Crash-Korrelation, Verzögerung (Lag 1–3) und Treffer von Altcoins zu BTC **je Jahr** + rollierende Korrelation |
+| `lade_coin.m`, `korr.m`, `kovar.m`, `jahr_aus_ms.m`, `mean_ohne_nan.m` | Hilfsfunktionen |
 | `kennzahlen.m` | Rendite, Sharpe, max. Drawdown, Trades |
+
+## Altcoins vs. BTC
+```matlab
+korrelation_btc
+```
+`intervall = '1h'` prüft die kurzfristige Verzögerung. |Lag1| unter ca. 2/√n (Tage: 0,10; Stunden: 0,02) ist Zufall.
 
 ## Auswertung lesen
 - **Trefferquote** mit Baselines vergleichen („steigt immer“, Momentum, Zufall).
