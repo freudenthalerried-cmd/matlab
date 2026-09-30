@@ -20,7 +20,9 @@ Einstellungen oben in `btc_prognose.m` (Symbol, Intervall, Gebühr, Schwelle …
 | `berechne_features.m` | Renditen 1/7/30, Abstand SMA20/50, Volatilität, RSI, Volumen-z |
 | `logreg_fit.m`, `logreg_predict.m` | Logistische Regression mit L2 (Newton) |
 | `korrelation_btc.m` | Korrelation, Beta, Crash-Korrelation, Verzögerung (Lag 1–3) und Treffer von Altcoins zu BTC **je Jahr** + rollierende Korrelation |
-| `lade_coin.m`, `korr.m`, `kovar.m`, `jahr_aus_ms.m`, `mean_ohne_nan.m` | Hilfsfunktionen |
+| `korrelation_minuten.m` | **Minutendaten letztes Jahr**: Verzögerungsprofil ±5 Min., Monatsvergleich, Walk-forward-Modell BTC(t-1..t-5) → Coin(t) inkl. Gebühren |
+| `lade_minuten.m` | 1-Min-Daten von data.binance.vision (Monatsdateien, Cache als .mat) |
+| `verschiebe.m`, `korr_nan.m`, `lade_coin.m`, `korr.m`, `kovar.m`, `jahr_aus_ms.m`, `mean_ohne_nan.m` | Hilfsfunktionen |
 | `kennzahlen.m` | Rendite, Sharpe, max. Drawdown, Trades |
 
 ## Altcoins vs. BTC
