@@ -813,14 +813,46 @@
     if (!file) return;
     const reader = new FileReader();
     reader.onload = function () {
-      aktuellesFoto = reader.result;
-      fotoPreviewImg.src = aktuellesFoto;
-      fotoPreview.hidden = false;
-      updateSendState();
-      fotoHinweis.hidden = true;
-      oeffneKiFenster(false);
+      hochformatFoto(reader.result, function (dataUrl) {
+        aktuellesFoto = dataUrl;
+        fotoPreviewImg.src = aktuellesFoto;
+        fotoPreview.hidden = false;
+        updateSendState();
+        fotoHinweis.hidden = true;
+        oeffneKiFenster(false);
+      });
     };
     reader.readAsDataURL(file);
+  }
+
+  // Querformat-Fotos werden automatisch um 90° ins Hochformat gedreht und
+  // auf max. 1600 px verkleinert (spart Speicher im Browser).
+  function hochformatFoto(dataUrl, fertig) {
+    const bild = new Image();
+    bild.onload = function () {
+      const w = bild.naturalWidth;
+      const h = bild.naturalHeight;
+      const faktor = Math.min(1, 1600 / Math.max(w, h));
+      const sw = Math.round(w * faktor);
+      const sh = Math.round(h * faktor);
+      const quer = w > h;
+      const canvas = document.createElement('canvas');
+      canvas.width = quer ? sh : sw;
+      canvas.height = quer ? sw : sh;
+      const ctx = canvas.getContext('2d');
+      if (quer) {
+        ctx.translate(canvas.width, 0);
+        ctx.rotate(Math.PI / 2);
+      }
+      ctx.drawImage(bild, 0, 0, sw, sh);
+      try {
+        fertig(canvas.toDataURL('image/jpeg', 0.85));
+      } catch (err) {
+        fertig(dataUrl);
+      }
+    };
+    bild.onerror = function () { fertig(dataUrl); };
+    bild.src = dataUrl;
   }
 
   fotoInput.addEventListener('change', function () { verarbeiteFoto(fotoInput); });
@@ -974,18 +1006,27 @@
       li.appendChild(titel);
     }
 
+    // Foto und Text in eigenem Block, damit die Layouts sie anordnen können
+    const body = document.createElement('div');
+    body.className = 'eintrag-body' + (e.foto ? ' mit-foto' : '');
+    li.appendChild(body);
+
     if (e.foto) {
       const img = document.createElement('img');
       img.className = 'eintrag-foto';
       img.src = e.foto;
       img.alt = 'Baustellenfoto';
-      li.appendChild(img);
+      body.appendChild(img);
     }
+
+    const textblock = document.createElement('div');
+    textblock.className = 'eintrag-textblock';
+    body.appendChild(textblock);
 
     const text = document.createElement('div');
     text.className = 'eintrag-text';
     text.textContent = e.text;
-    li.appendChild(text);
+    textblock.appendChild(text);
 
     if (e.icons && e.icons.length) {
       const icons = document.createElement('div');
@@ -997,7 +1038,7 @@
           icons.appendChild(s);
         }
       });
-      li.appendChild(icons);
+      textblock.appendChild(icons);
     }
 
     messages.appendChild(li);
@@ -1162,6 +1203,28 @@
     renderAlleEintraege();
     input.focus();
   });
+
+  // ---------- Layout für Protokoll / PDF ----------
+
+  const LAYOUTS = ['standard', 'neben', 'raster'];
+  let layout = ladeJson('bp_layout', 'standard');
+  if (LAYOUTS.indexOf(layout) === -1) layout = 'standard';
+
+  function setzeLayout(neu) {
+    layout = neu;
+    speichereJson('bp_layout', layout);
+    LAYOUTS.forEach(function (l) {
+      document.body.classList.toggle('layout-' + l, l === layout);
+    });
+    document.querySelectorAll('.layout-knopf').forEach(function (k) {
+      k.classList.toggle('layout-aktiv', k.dataset.layout === layout);
+    });
+  }
+
+  document.querySelectorAll('.layout-knopf').forEach(function (k) {
+    k.addEventListener('click', function () { setzeLayout(k.dataset.layout); });
+  });
+  setzeLayout(layout);
 
   printButton.addEventListener('click', function () {
     window.print();

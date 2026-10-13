@@ -459,10 +459,54 @@ html, body {
 .eintrag-loeschen:hover { color: #c62828; }
 
 .eintrag-foto {
-  max-width: 60%;
+  max-width: 100%;
+  max-height: 75vh;
   border-radius: 8px;
   display: block;
-  margin-bottom: 6px;
+  margin: 0 auto 6px;
+}
+
+/* Layout 2: Foto links, Text rechts */
+.layout-neben .eintrag-body.mit-foto {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 12px;
+  align-items: start;
+}
+.layout-neben .eintrag-foto { margin: 0; width: 100%; max-height: none; }
+
+/* Layout 3: zwei Einträge nebeneinander */
+.layout-raster .messages {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.layout-raster .eintrag { margin-bottom: 0; }
+.layout-raster .eintrag-foto { width: 100%; max-height: 60vh; object-fit: contain; }
+
+/* Layout-Auswahl */
+.layout-wahl {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.layout-label { font-size: 13px; color: var(--muted); }
+.layout-knopf {
+  border: 1px solid var(--border);
+  background: var(--bubble);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.layout-knopf.layout-aktiv {
+  border-color: var(--orange);
+  background: rgba(30, 122, 60, 0.12);
+  color: var(--orange-dark);
+  font-weight: 600;
 }
 
 .eintrag-text {
@@ -1124,6 +1168,11 @@ html, body {
   }
   body { background: #fff; }
   .chat { min-height: auto; max-width: none; }
-  .gruen-kopf { background: #fff; color: #1c1c1c; border-bottom: 2px solid #14532d; }
+  .gruen-kopf { background: #fff; color: #1c1c1c; border-bottom: none; box-shadow: none; }
   .eintrag { break-inside: avoid; }
+
+  /* Fotos im PDF groß, aber höchstens so hoch, dass Text mit auf die Seite passt */
+  .eintrag-foto { width: auto; max-width: 100%; max-height: 110mm; }
+  .layout-neben .eintrag-foto { width: 100%; max-height: 150mm; object-fit: contain; }
+  .layout-raster .eintrag-foto { width: 100%; max-height: 100mm; }
 }
