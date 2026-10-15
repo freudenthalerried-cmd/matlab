@@ -270,6 +270,10 @@ body{
 .pen-row{background:#ffe9e9;color:#a11;border-radius:10px;padding:8px 12px;margin:6px 0;font-weight:800;font-size:14px;text-align:left;}
 .pen-row.good{background:#e3fbf0;color:#02845f;}
 .pen-tip{color:var(--muted);font-size:12px;font-weight:700;margin-top:8px;}
+.player-chips{display:flex;flex-wrap:wrap;gap:6px;}
+.player-chip{border:2px solid #e6ecf0;background:#f4f7f9;border-radius:12px;padding:7px 11px;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;color:var(--text);}
+.player-chip.sel{background:#e3fbf0;border-color:var(--accent2);}
+.player-chip.add{border-style:dashed;color:var(--muted);}
 .account-card{font-size:14px;line-height:1.4;}
 .back-link{background:#eef2f5;border:none;border-radius:10px;padding:6px 12px;font-weight:800;font-size:13px;color:var(--muted);cursor:pointer;font-family:inherit;margin-bottom:4px;}
 .brand{white-space:nowrap;}
@@ -335,7 +339,9 @@ body{
 .quest .mini-bar{background:#e6ecf0;margin:5px 0 0;}
 .quest-btn{border:none;border-radius:10px;padding:7px 10px;font-weight:800;font-size:12px;background:#e6ecf0;color:var(--muted);font-family:inherit;}
 .quest-btn.ready{background:var(--accent2);color:#fff;cursor:pointer;animation:pulseBtn 1.2s infinite;}
-@keyframes pulseBtn{50%{transform:scale(1.06);}}
+@keyframes pulseBtn{50%{box-shadow:0 0 0 6px rgba(6,214,160,.35);}}
+.quest.ready{cursor:pointer;box-shadow:0 0 0 3px var(--accent2);}
+.quest-swap{border:none;background:#eef2f5;border-radius:10px;padding:7px 8px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;color:var(--muted);}
 .league-list{display:flex;flex-direction:column;gap:4px;flex:1;min-height:0;}
 .league-row{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.08);border-radius:10px;padding:6px 10px;color:#fff;font-weight:700;font-size:13px;}
 .league-row.me{background:var(--accent);color:#3a2a00;}
@@ -564,6 +570,8 @@ body{
   <section class="screen" id="screen-stats">
     <div class="card account-card" style="margin:0 0 12px;">
       <div id="accountInfo">📱 Nur auf diesem Gerät gespeichert</div>
+      <div class="panel-title dark" style="margin:12px 0 6px;">👥 Spieler</div>
+      <div class="player-chips" id="playerChips"></div>
       <div class="adapt-btns"><button class="btn btn-secondary" id="exportBtn">📤 Sicherungscode</button><button class="btn btn-secondary" id="importBtn">📥 Code laden</button></div>
     </div>
     <div class="card" style="margin:0 0 12px;">
@@ -588,6 +596,7 @@ body{
     </div>
     <div class="card" style="margin:0 0 12px;">
       <div class="panel-title dark">⚙️ Einstellungen</div>
+      <button class="btn btn-primary" id="ideaBtn">💡 Idee / Fehler melden</button>
       <button class="btn btn-secondary" id="soundBtn">🔊 Ton: an</button>
       <button class="btn btn-secondary" id="placementBtn">🧪 Einstufungstest wiederholen</button>
       <button class="btn btn-secondary" id="changeLangBtn">🌍 Sprache ändern</button>
@@ -1139,7 +1148,10 @@ function levelWords(levelIdx){
 
 const MAX_HEARTS = 5;
 const HEART_REGEN_MINUTES = 20; // 1 Herz alle 20 Minuten
-const STORAGE_KEY = 'wortreise_save_v1';
+const PROFILE_LIST_KEY = 'wortreise_profiles', ACTIVE_KEY = 'wortreise_active';
+function getProfiles(){ try{ return JSON.parse(localStorage.getItem(PROFILE_LIST_KEY)) || [{id:'p1', name:'Spieler 1'}]; }catch(e){ return [{id:'p1', name:'Spieler 1'}]; } }
+function activeProfileId(){ try{ return localStorage.getItem(ACTIVE_KEY) || 'p1'; }catch(e){ return 'p1'; } }
+const STORAGE_KEY = activeProfileId()==='p1' ? 'wortreise_save_v1' : 'wortreise_save_v1_' + activeProfileId();
 
 /* ---------- STATE ---------- */
 let state = loadState();
@@ -1310,6 +1322,7 @@ document.getElementById('langBackBtn').addEventListener('click', ()=>{
 
 /* ---------- NAVIGATION ---------- */
 function showScreen(id){
+  if(id==='screen-stats'){ const cur = document.querySelector('.screen.active'); if(cur && cur.id!=='screen-stats' && typeof lastScreenBeforeProfile!=='undefined') lastScreenBeforeProfile = cur.id; }
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   document.querySelector('.bottom-nav').style.display = ['screen-map','screen-stats','screen-grammar','screen-quests','screen-league'].includes(id) ? 'flex' : 'none';
@@ -2394,8 +2407,8 @@ const QUESTS = [
   {id:'cor20', icon:'✅', text:'20 richtige Antworten', ev:'correct', target:20, reward:15},
   {id:'gram', icon:'📘', text:'Spiele ein Grammatik-Thema', ev:'grammar', target:1, reward:15},
   {id:'phr', icon:'💬', text:'Übe ein Alltagssätze-Thema', ev:'phrases', target:1, reward:15},
-  {id:'spk5', icon:'🚗', text:'Sag 5 Sätze im Fahrmodus', ev:'speak', target:5, reward:20},
-  {id:'rev', icon:'💪', text:'Mach ein Fehler-Training', ev:'review', target:1, reward:15},
+  {id:'spk5', icon:'🚗', text:'Sag 5 Sätze im Fahrmodus', ev:'speak', target:5, reward:20, need:()=> (state.stats.drives||0)>=1},
+  {id:'rev', icon:'💪', text:'Mach ein Fehler-Training', ev:'review', target:1, reward:15, need:()=> seenWords().length>=4},
   {id:'lis5', icon:'🎧', text:'Löse 5 Hör-Aufgaben', ev:'listen', target:5, reward:15},
   {id:'fast5', icon:'⏱️', text:'5 richtige Antworten in unter 4 Sek.', ev:'fast', target:5, reward:20},
 ];
@@ -2404,8 +2417,8 @@ function ensureDaily(){
   const today = new Date().toDateString();
   if(state.daily.date === today) return;
   const evs = new Set(); const picks = [];
-  shuffle(QUESTS).forEach(q=>{ if(picks.length<3 && !evs.has(q.ev)){ evs.add(q.ev); picks.push({id:q.id, p:0, claimed:false}); } });
-  state.daily = {date:today, xp:0, goal:state.daily.goal||20, quests:picks, chestClaimed:false};
+  shuffle(QUESTS).forEach(q=>{ if(picks.length<3 && !evs.has(q.ev) && (!q.need || q.need())){ evs.add(q.ev); picks.push({id:q.id, p:0, claimed:false}); } });
+  state.daily = {date:today, xp:0, goal:state.daily.goal||20, quests:picks, chestClaimed:false, swaps:0, ads:0};
 }
 function track(ev, amt){
   ensureDaily();
@@ -2417,6 +2430,19 @@ function track(ev, amt){
     if(!was && q.p >= d.target) toast(`✅ Quest geschafft: ${d.text}`);
   });
   updateQuestDot();
+}
+function swapQuest(q){
+  const free = (state.daily.swaps||0) < 1;
+  if(!free && state.coins < 10){ toast('Tauschen kostet 10 🪙'); return; }
+  const used = new Set(state.daily.quests.map(x=>qDef(x.id).ev));
+  const options = QUESTS.filter(d=>!used.has(d.ev) && (!d.need || d.need()));
+  if(!options.length){ toast('Keine andere Quest verfügbar'); return; }
+  const nd = pick(options);
+  if(!free) state.coins -= 10;
+  state.daily.swaps = (state.daily.swaps||0) + 1;
+  q.id = nd.id; q.p = 0; q.claimed = false;
+  sndTap(); toast(`🔄 Neue Quest: ${nd.text}`);
+  saveState(); renderQuests();
 }
 function questReady(){
   return state.daily.quests.some(q=>!q.claimed && q.p>=qDef(q.id).target)
@@ -2448,12 +2474,26 @@ function renderQuests(){
       <div class="panel-sub" style="color:var(--muted)">${Math.min(q.p,d.target)} / ${d.target}</div></div>`;
     const btn = document.createElement('button');
     btn.className = 'quest-btn' + (done && !q.claimed ? ' ready' : '');
-    btn.textContent = q.claimed ? '✔️' : `🪙 ${d.reward}`;
-    if(done && !q.claimed) btn.onclick = ()=>{
-      q.claimed = true; state.coins += d.reward; sndCorrect();
-      toast(`+${d.reward} 🪙 abgeholt!`); saveState(); renderQuests();
-    };
-    el.appendChild(btn); list.appendChild(el);
+    btn.textContent = q.claimed ? '✔️' : done ? `Abholen 🪙 ${d.reward}` : `🪙 ${d.reward}`;
+    if(done && !q.claimed){
+      el.classList.add('ready');
+      el.onclick = ()=>{
+        if(q.claimed) return;
+        q.claimed = true; state.coins += d.reward; sndCorrect();
+        burstAt(innerWidth/2, el.getBoundingClientRect().top+30, ['🪙','✨','⭐'], 10);
+        toast(`+${d.reward} 🪙 abgeholt!`); saveState(); renderQuests();
+      };
+    }
+    el.appendChild(btn);
+    if(!done && !q.claimed){
+      const sw = document.createElement('button');
+      sw.className = 'quest-swap';
+      sw.title = 'Quest tauschen';
+      sw.textContent = (state.daily.swaps||0) < 1 ? '🔄' : '🔄10🪙';
+      sw.onclick = e=>{ e.stopPropagation(); swapQuest(q); };
+      el.appendChild(sw);
+    }
+    list.appendChild(el);
   });
   const chest = document.getElementById('chestBtn');
   const allClaimed = state.daily.quests.every(q=>q.claimed);
@@ -2727,7 +2767,7 @@ function onAnswerTracked(ok){
     track('combo', session.combo+1);
     state.stats.maxCombo = Math.max(state.stats.maxCombo, session.combo+1);
     if(Date.now()-session.qStart < 4000) track('fast',1);
-    if(/^(listen|dictation)/.test(session.currentType||'')) track('listen',1);
+    if(/^(listen|dictation|phr_listen|phr_meaning)/.test(session.currentType||'')) track('listen',1);
   }
   saveState();
 }
@@ -3298,7 +3338,7 @@ function adoptState(obj, msg){
     const me = await user.me();
     if(!me || !me.id) return;
     cloud.name = me.name || '';
-    cloud.ref = db.collection('data/users/' + me.id).doc('save');
+    cloud.ref = db.collection('data/users/' + me.id).doc(activeProfileId()==='p1' ? 'save' : 'save_' + activeProfileId());
     const snap = await cloud.ref.get();
     const remote = snap.exists && snap.data && typeof snap.data.state==='string' ? JSON.parse(snap.data.state) : null;
     // Der Stand mit mehr Fortschritt gewinnt – nie einen vollen Stand durch einen leeren ersetzen
@@ -3312,7 +3352,39 @@ function adoptState(obj, msg){
     updateAccountUI();
   }catch(e){ /* kein Konto-Speicher in dieser Ansicht */ }
 })();
+function renderPlayers(){
+  const box = document.getElementById('playerChips'); if(!box) return;
+  const list = getProfiles(), act = activeProfileId();
+  box.innerHTML = '';
+  list.forEach(p=>{
+    const b = document.createElement('button');
+    b.className = 'player-chip' + (p.id===act ? ' sel' : '');
+    b.textContent = (p.id===act ? '✅ ' : '') + p.name;
+    b.onclick = ()=>{
+      if(p.id===act){ const n = (prompt('Neuer Name für diesen Spieler:', p.name)||'').trim(); if(n){ p.name = n.slice(0,20); saveProfiles(list); renderPlayers(); } return; }
+      switchPlayer(p.id);
+    };
+    box.appendChild(b);
+  });
+  const add = document.createElement('button');
+  add.className = 'player-chip add'; add.textContent = '＋ Neuer Spieler';
+  add.onclick = ()=>{
+    const n = (prompt('Name des neuen Spielers:')||'').trim();
+    if(!n) return;
+    const id = 'p' + Date.now().toString(36);
+    list.push({id, name:n.slice(0,20)}); saveProfiles(list);
+    switchPlayer(id);
+  };
+  box.appendChild(add);
+}
+function saveProfiles(list){ try{ localStorage.setItem(PROFILE_LIST_KEY, JSON.stringify(list)); }catch(e){} }
+function switchPlayer(id){
+  saveState();
+  const go = ()=>{ try{ localStorage.setItem(ACTIVE_KEY, id); }catch(e){} location.reload(); };
+  if(cloud.ref){ clearTimeout(cloud.timer); cloudWrite().then(go, go); } else go();
+}
 function updateAccountUI(){
+  renderPlayers();
   const el = document.getElementById('accountInfo'); if(!el) return;
   if(cloud.ref){
     const t = cloud.lastSync ? new Date(cloud.lastSync).toLocaleTimeString('de-AT',{hour:'2-digit',minute:'2-digit'}) : '…';
@@ -3340,6 +3412,26 @@ document.getElementById('importBtn').addEventListener('click', ()=>{
     adoptState(obj, '✅ Spielstand geladen');
     saveState();
   }catch(e){ toast('❌ Ungültiger Sicherungscode'); }
+});
+
+/* ---------- 💡 Verbesserungsideen von unterwegs ---------- */
+let lastScreenBeforeProfile = 'screen-map';
+document.getElementById('ideaBtn').addEventListener('click', async ()=>{
+  const text = (prompt('Was soll besser werden? (Idee oder Fehler – kurz beschreiben)')||'').trim();
+  if(!text) return;
+  const entry = {text:text.slice(0,2000), at:new Date().toISOString(), screen:lastScreenBeforeProfile,
+    lang:currentLang(), difficulty:state.difficulty||'', player:activeProfileId(), level:levelInfo(state.xp).level,
+    ua:navigator.userAgent.slice(0,120)};
+  try{
+    const db = window.claude ? await window.claude.use('db') : null;
+    if(!db) throw 0;
+    await db.collection('feedback').add(entry);
+    toast('💡 Danke! Gespeichert – Claude kann es beim nächsten Update lesen.');
+  }catch(e){
+    const msg = `Idee für die Sprachlern-App: ${entry.text} (Bildschirm: ${entry.screen}, Sprache: ${entry.lang})`;
+    try{ await navigator.clipboard.writeText(msg); toast('📋 Kopiert – füge es im Claude-Chat ein'); }
+    catch(err){ prompt('Kopiere das und schick es im Claude-Chat:', msg); }
+  }
 });
 
 /* =========================================================
