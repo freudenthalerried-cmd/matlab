@@ -26,20 +26,8 @@
       "gruppe": "WDVS",
       "keywords": [
         {
-          "begriff": "Armierungsgewebe",
-          "herkunft": "Gattung",
-          "volumen": null,
-          "kd": null
-        },
-        {
           "begriff": "Armierungsmörtel",
           "herkunft": "Gattung",
-          "volumen": null,
-          "kd": null
-        },
-        {
-          "begriff": "Baumit TextilglasGitter",
-          "herkunft": "Marke",
           "volumen": null,
           "kd": null
         },
@@ -106,55 +94,8 @@
       ]
     },
     {
-      "gruppe": "Dämmung",
-      "keywords": [
-        {
-          "begriff": "Isover TDPT 20",
-          "herkunft": "Typkennung",
-          "volumen": null,
-          "kd": null
-        },
-        {
-          "begriff": "Perimeterdämmung druckfest",
-          "herkunft": "Gattung",
-          "volumen": null,
-          "kd": null
-        },
-        {
-          "begriff": "Perimeterdämmung XPS",
-          "herkunft": "Gattung",
-          "volumen": null,
-          "kd": null
-        },
-        {
-          "begriff": "XPS 100 mm",
-          "herkunft": "Gattung",
-          "volumen": null,
-          "kd": null
-        },
-        {
-          "begriff": "XPS 80 mm",
-          "herkunft": "Gattung",
-          "volumen": null,
-          "kd": null
-        },
-        {
-          "begriff": "XPS Platten kaufen",
-          "herkunft": "Gattung",
-          "volumen": null,
-          "kd": null
-        }
-      ]
-    },
-    {
       "gruppe": "Kamin",
       "keywords": [
-        {
-          "begriff": "Kamin Fertigfuß",
-          "herkunft": "Gattung",
-          "volumen": null,
-          "kd": null
-        },
         {
           "begriff": "Kaminrohr gedämmt",
           "herkunft": "Gattung",
@@ -164,42 +105,6 @@
         {
           "begriff": "Kaminsystem einzügig",
           "herkunft": "Gattung",
-          "volumen": null,
-          "kd": null
-        },
-        {
-          "begriff": "Mantelstein Kamin",
-          "herkunft": "Gattung",
-          "volumen": null,
-          "kd": null
-        },
-        {
-          "begriff": "Schiedel Fugenmasse FM",
-          "herkunft": "Marke",
-          "volumen": null,
-          "kd": null
-        },
-        {
-          "begriff": "Schiedel Kamin",
-          "herkunft": "Gattung",
-          "volumen": null,
-          "kd": null
-        },
-        {
-          "begriff": "SIK Zuluftplatte EZ 16-18",
-          "herkunft": "Marke",
-          "volumen": null,
-          "kd": null
-        },
-        {
-          "begriff": "SIKM Fertigfußpaket",
-          "herkunft": "Marke",
-          "volumen": null,
-          "kd": null
-        },
-        {
-          "begriff": "SIKM Putztüranschlusspaket oben",
-          "herkunft": "Marke",
           "volumen": null,
           "kd": null
         },

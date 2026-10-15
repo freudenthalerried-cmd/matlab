@@ -270,13 +270,53 @@ export const WARENKOERBE = {
     positionen: [
       { sku: 'POS-10837', menge: 13, was: 'Mantelsteine', position: 'Mantelsteine' },
       { sku: 'POS-12476', menge: 4, was: 'gedämmtes Rohr', position: 'Innenrohr gedämmt' },
-      { sku: 'POS-12472', menge: 1, was: 'Fertigfußpaket', position: 'Fertigfußpaket' },
-      { sku: 'POS-12467', menge: 1, was: 'Putztüranschluss', position: 'Putztüranschluss' },
-      { sku: 'POS-51875', menge: 1, was: 'Regenhaube', position: 'Regenhaube mit Sicherung' },
-      // „1 je Zug, am Kopf" — die Systemliste beziffert ihn selbst.
-      { sku: 'POS-51967', menge: 1, was: 'Thermo-Trennstein', position: 'Thermo-Trennstein' },
     ],
+    /*
+     * **Vier Positionen heraus, und zwar von `pruefe-preisalter` — 15. Oktober 2026.**
+     *
+     * Dieselbe Begegnung wie am 6. September im Dämmungskorb, nur breiter:
+     * Fertigfußpaket, Putztüranschluss, Regenhaube und Thermo-Trennstein
+     * stehen auf Einkaufspreisen vom 25. Juni, also 112 Tage alt bei einer
+     * eigenen Grenze von 90. Auf einen solchen Preis darf kein Gebot ruhen.
+     *
+     * > **Zwei richtige Regeln, die sich treffen — und die vorsichtige
+     * > gewinnt.**
+     *
+     * Gefallen sind sie nicht durch eine Entscheidung, sondern durch die
+     * fünf Wochen Pause: Am 15. September waren sie 82 Tage alt und damit
+     * innerhalb der Grenze. **Der Korb ist dadurch kleiner geworden, ohne
+     * dass jemand ihn verkleinert hat** — dasselbe Muster wie bei der
+     * Messliste, die im selben Zeitraum von 29 auf 14 Begriffe gefallen ist.
+     *
+     * Der richtige Ausweg ist der andere, und er gehört dem Auftraggeber:
+     * eine aktuelle Preisliste des Lieferanten. Kommt sie, gehören alle vier
+     * zurück — sie sind nicht falsch, sie sind alt.
+     */
     ohne: [
+      { position: 'Fertigfußpaket',
+        warum: 'Nicht aus dem Bauwerk heraus, sondern aus dem Preisalter: Der Einkaufspreis ist '
+          + 'vom 25. Juni und damit 112 Tage alt, die eigene Grenze liegt bei 90. Ein Gebot auf '
+          + 'einem solchen Preis setzt Geld auf eine Marge, die seit vier Monaten niemand '
+          + 'nachgerechnet hat. Die Position kehrt zurück, sobald eine aktuelle Preisliste des '
+          + 'Lieferanten vorliegt — sie ist nicht falsch, sie ist alt.' },
+      { position: 'Putztüranschluss',
+        warum: 'Dieselbe Begegnung zweier Regeln wie beim Fertigfußpaket, und dieselbe '
+          + 'Entscheidung: 112 Tage Preisalter gegen eine Grenze von 90. Herausgefallen ist die '
+          + 'Position nicht durch eine Wahl, sondern durch fünf Wochen Pause — am 15. September '
+          + 'lag sie mit 82 Tagen innerhalb der Grenze. Mit einer frischen Lieferantenliste '
+          + 'gehört sie wieder in den Korb.' },
+      { position: 'Thermo-Trennstein',
+        warum: 'Auch hier schlägt das Preisalter die Stückliste: Die Systemliste beziffert ihn '
+          + 'mit „1 je Zug, am Kopf", der Einkaufspreis dazu ist 112 Tage alt. Ein zu kleiner '
+          + 'Korb kostet Auktionen, ein Korb auf überalterten Preisen kostet Marge — und von '
+          + 'zwei richtigen Regeln gewinnt die vorsichtige. Rückkehr mit der nächsten '
+          + 'Preisliste.' },
+      { position: 'Regenhaube mit Sicherung',
+        warum: 'Vierte Position desselben Befundes, mit 112 Tagen über der Grenze von 90. Sie '
+          + 'steht hier auch dann, wenn der Prüfer sie nicht einfordert: Ein Korb, der eine '
+          + 'Position ohne Vermerk verliert, sieht nach einem Versehen aus, und beim nächsten '
+          + 'Lauf wäre nicht mehr erkennbar, dass das Preisalter sie herausgenommen hat und '
+          + 'nicht die Stückliste.' },
       { position: 'Dünnbettmörtel',
         warum: 'Menge nach Anzahl der Lagen. Die hängt an der Gesamthöhe des Zuges, und die '
           + 'lässt der Korb offen — er rechnet einen Zug, keine Höhe.' },

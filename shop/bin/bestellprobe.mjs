@@ -423,7 +423,7 @@ try {
 
       const vertrag = spawnSync(process.execPath, [join(SHOP, 'bin', 'vorgang.mjs'),
         join(ziel, 'anfrage.txt'), '--kunde', join(ziel, 'kunde.json'), '--nummer', '2026-9001',
-        '--stufe', 'bestaetigung', '--ablegen'],
+        '--stufe', 'bestaetigung', '--datum', '2026-09-07', '--ablegen'],
       { cwd: SHOP, encoding: 'utf8', env: { ...werkzeugumgebung, VORGANG_ABLAGE: akte } });
       const vtext = `${vertrag.stdout ?? ''}${vertrag.stderr ?? ''}`;
       if (vertrag.status !== 0 || !/Abgelegt: auftragsbestaetigung/.test(vtext)) {
@@ -452,7 +452,7 @@ try {
        */
       const rechnung = spawnSync(process.execPath, [join(SHOP, 'bin', 'vorgang.mjs'),
         join(ziel, 'anfrage.txt'), '--kunde', join(ziel, 'kunde.json'), '--nummer', '2026-9001',
-        '--stufe', 'rechnung', '--geliefert', '2026-09-09', '--bezahlt', '2026-09-08'],
+        '--stufe', 'rechnung', '--datum', '2026-09-10', '--geliefert', '2026-09-09', '--bezahlt', '2026-09-08'],
       { cwd: SHOP, encoding: 'utf8', env: werkzeugumgebung });
       const rtext = `${rechnung.stdout ?? ''}${rechnung.stderr ?? ''}`;
       const pflicht = [
@@ -502,7 +502,7 @@ try {
        */
       const bestellt = spawnSync(process.execPath, [join(SHOP, 'bin', 'vorgang.mjs'),
         join(ziel, 'anfrage.txt'), '--kunde', join(ziel, 'kunde.json'), '--nummer', '2026-9001',
-        '--stufe', 'bestellung', '--bezahlt', '2026-09-08', '--ablegen'],
+        '--stufe', 'bestellung', '--datum', '2026-09-08', '--bezahlt', '2026-09-08', '--ablegen'],
       { cwd: SHOP, encoding: 'utf8', env: { ...werkzeugumgebung, VORGANG_ABLAGE: akte } });
       const btext = `${bestellt.stdout ?? ''}${bestellt.stderr ?? ''}`;
       const bestelldurchschrift = join(akte, belegordner(2026), 'LB-2026-9001-01.txt');
@@ -516,7 +516,7 @@ try {
 
       const abgelegt = spawnSync(process.execPath, [join(SHOP, 'bin', 'vorgang.mjs'),
         join(ziel, 'anfrage.txt'), '--kunde', join(ziel, 'kunde.json'), '--nummer', '2026-9001',
-        '--stufe', 'rechnung', '--geliefert', '2026-09-09', '--bezahlt', '2026-09-08', '--ablegen'],
+        '--stufe', 'rechnung', '--datum', '2026-09-10', '--geliefert', '2026-09-09', '--bezahlt', '2026-09-08', '--ablegen'],
       { cwd: SHOP, encoding: 'utf8', env: { ...werkzeugumgebung, VORGANG_ABLAGE: akte } });
       const atext = `${abgelegt.stdout ?? ''}${abgelegt.stderr ?? ''}`;
       const durchschrift = join(akte, belegordner(2026), 'RE-2026-0001.txt');
@@ -625,7 +625,7 @@ try {
         const vorherRechnung = readFileSync(durchschrift, 'utf8');
         const storno = ruf('vorgang.mjs', [join(ziel, 'anfrage.txt'),
           '--kunde', join(ziel, 'kunde.json'), '--nummer', '2026-9001', '--stufe', 'gutschrift',
-          '--storniert', 'RE-2026-0001', '--grund', 'Probelauf', '--ablegen']);
+          '--datum', '2026-09-14', '--storniert', 'RE-2026-0001', '--grund', 'Probelauf', '--ablegen']);
         const gutschrift = join(akte, belegordner(2026), 'GS-2026-0001.txt');
         if (storno.code !== 0 || !existsSync(gutschrift)) {
           probleme.push(`die Rechnung lässt sich nicht aufheben: ${storno.aus.trim().split('\n').slice(-3).join(' | ')}`);
@@ -642,6 +642,29 @@ try {
          * ist null — und zwar netto **und** in der Steuer. Kommt hier etwas
          * anderes heraus, hat entweder die Gutschrift einen anderen Betrag als
          * die Rechnung, oder ein Papier ohne Umsatz ist mitgezählt worden.
+         */
+        /*
+         * **Der Monat steht fest, das Belegdatum war es nicht — 15. Oktober 2026.**
+         *
+         * Dieser Auszug fragt seit dem 12. September nach `--monat 9`. Die
+         * Belege darüber bekamen aber kein `--datum`, und `bin/vorgang.mjs`
+         * nimmt ohne Angabe `geschaeftstag()` — also **heute**. Fünf Wochen
+         * Pause später lagen Auftragsbestätigung, Lieferantenbestellung,
+         * Rechnung und Gutschrift im Oktober, und der September enthielt
+         * keinen Umsatzbeleg mehr. Die Probe meldete das korrekt und wurde
+         * dafür für kaputt gehalten.
+         *
+         * > **Diese Probe war grün, solange der Kalender September zeigte.**
+         *
+         * Sie hat damit nicht den Weg gemessen, sondern die Übereinstimmung
+         * zweier Zahlen, von denen eine mitwandert. Alle fünf Belege tragen
+         * jetzt ein ausdrückliches Ausstellungsdatum — aus demselben Grund,
+         * aus dem Lieferdatum und Zahlungseingang Argumente sind und keine
+         * Vermutung: Was die Probe behauptet, muss sie setzen.
+         *
+         * Der Reihe nach, damit die Voraussetzungen stimmen: Bestätigung 07.,
+         * Lieferantenbestellung 08., Rechnung 10. (nach der Lieferung am 09.),
+         * Absage 13., Gutschrift 14. September.
          */
         const buch = ruf('buchhaltung.mjs', ['--jahr', '2026', '--monat', '9']);
         if (buch.code !== 0) {

@@ -43,7 +43,7 @@ Ursprünglich ein Streckenhandel für Radonvorsorge auf **unbelegten** Platzhalt
 | Produktfeed | 43 Einträge — **nicht einreichbar**, GTIN fehlt bei allen 46 Artikeln |
 | Testbestand | **über 2.000 Testfälle**, alle grün, dazu 11 Oberflächenszenarien und 63 Shopszenarien im Browser |
 | Prüfwerkzeuge | **67 Prüfer** ohne Browser, 5 Browserproben zusätzlich — einer davon sieht seit dem 10. September nach draußen und hält die **veröffentlichte** Beschreibung gegen diese Quelle |
-| Messliste für Gate 15 | **29 Begriffe** in 3 Anzeigengruppen, Ort = Liefergebiet (am 6. September zwei weniger: die Landeseite verneint sie; am 8. September eines weniger: Gate 29 stellt „Fassadendübel" zurück, weil es auf einen 104 Tage alten Einkaufspreis zeigt) |
+| Messliste für Gate 15 | **14 Begriffe** in 3 Anzeigengruppen, Ort = Liefergebiet (am 6. September zwei weniger: die Landeseite verneint sie; am 8. September eines weniger: Gate 29 stellt „Fassadendübel" zurück, weil es auf einen 104 Tage alten Einkaufspreis zeigt). **Am 15. Oktober 29 → 14**, und zwar ohne dass jemand etwas gestrichen hat: Nach fünf Wochen Pause liegt der Median des Preisalters bei 94 Tagen, und Gate 29 nimmt jeden Begriff heraus, dessen Artikel auf einem zu alten Preis steht. Eine Liste, die kleiner wird, ohne dass jemand etwas gestrichen hat, misst die Zeit und nicht den Markt. |
 | Mindestbestellwert | **250 € netto Warenwert je Lieferung** (Gate 25), gerechnet aus Fracht, Palette und Zielmarge |
 | Bestellweg | **gebaut und ausgeschaltet** (Gate 26) — Formular, Empfangsskript, Ablage, Posteingang; eingeschaltet mit E-Mail und Rechtstextewortlaut |
 
@@ -94,7 +94,7 @@ nachgerechnet. Seit heute misst `npm run pruefe-schaufenster` auch sie.
 
 Grund: Das Skonto rechnet auf den Einkauf netto (484,50 €), die Gebühr auf den Bruttobetrag samt Fracht und Umsatzsteuer (865,80 €). Gleicher Prozentsatz, 79 % größere Grundlage. **Entschieden:** EPS und Vorkasse ab Start, Karte als Zusatz, keine offene Rechnung, Kundenzahlungsziel null Tage.
 
-**Gebote gehören auf die Bestellung gerechnet, nicht auf den Artikel.** Die großen Belege bestehen aus acht bis zwölf Positionen. Zulässiger Klickpreis: Kamin 9,58 €, Dämmung 6,08 €, WDVS 4,19 € gegen einen Markt von 0,50–2,50 €. Kanal 1,38 €, Mörtel 1,85 € und Mauerwerk 1,24 € tragen den Klick nicht verlässlich und sind **zurückgestellt**, bis eine gemessene Kaufquote vorliegt — das Budget zu streuen hieße, es gleichmäßig zu verlieren.
+**Gebote gehören auf die Bestellung gerechnet, nicht auf den Artikel.** Die großen Belege bestehen aus acht bis zwölf Positionen. Zulässiger Klickpreis: Kamin 4,91 €, Dämmung 6,08 €, WDVS 4,19 € gegen einen Markt von 0,50–2,50 €. **Kamin ist am 15. Oktober von 9,58 € auf 4,91 € gefallen**, weil vier der sechs Korbpositionen über die Neunzig-Tage-Grenze des Einkaufspreises gewachsen sind und auf einem solchen Preis kein Gebot ruhen darf — ein zu kleiner Korb ergibt ein zu kleines Gebot, und genau deshalb steht er unter Prüfung. Mit einer aktuellen Lieferantenliste kehren die vier Positionen zurück. Kanal 1,38 €, Mörtel 1,85 € und Mauerwerk 1,24 € tragen den Klick nicht verlässlich und sind **zurückgestellt**, bis eine gemessene Kaufquote vorliegt — das Budget zu streuen hieße, es gleichmäßig zu verlieren.
 
 **Auf generische Suchbegriffe ist dieser Shop nicht konkurrenzfähig** und wird es nie sein — dort gewinnen Baumarkt-Eigenmarken. Konkurrenzfähig ist er auf Produktnamen und Fachanforderungen.
 

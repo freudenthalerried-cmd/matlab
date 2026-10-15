@@ -1,2 +1,17 @@
 Anzeigengruppe,Keyword,Herkunft,Artikel,Ältester Preis (Tage)
-WDVS,Fassadendübel,Gattung,POS-52537,112
+WDVS,Armierungsgewebe,Gattung,POS-52058,94
+WDVS,Fassadendübel,Gattung,POS-52537,142
+WDVS,Baumit TextilglasGitter,Marke,POS-52058,94
+Dämmung,XPS Platten kaufen,Gattung,POS-12580 POS-12596,112
+Dämmung,XPS 80 mm,Gattung,POS-12596,94
+Dämmung,XPS 100 mm,Gattung,POS-12580,112
+Dämmung,Perimeterdämmung XPS,Gattung,POS-12580 POS-12596,112
+Dämmung,Perimeterdämmung druckfest,Gattung,POS-12580 POS-12596,112
+Dämmung,Isover TDPT 20,Typkennung,POS-28415,112
+Kamin,Schiedel Kamin,Gattung,POS-16070,112
+Kamin,Mantelstein Kamin,Gattung,POS-18110,112
+Kamin,Kamin Fertigfuß,Gattung,POS-12472,112
+Kamin,Schiedel Fugenmasse FM,Marke,POS-16070,112
+Kamin,SIK Zuluftplatte EZ 16-18,Marke,POS-12455,112
+Kamin,SIKM Fertigfußpaket,Marke,POS-12472,112
+Kamin,SIKM Putztüranschlusspaket oben,Marke,POS-12467,112

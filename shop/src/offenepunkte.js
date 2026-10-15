@@ -251,7 +251,19 @@ export const OHNE_WERKZEUG = Object.freeze([
   },
   {
     id: 'suchvolumen',
-    titel: 'Suchvolumen der 29 Keywords im Liefergebiet messen',
+    /*
+     * **Die Zahl ist gefallen, nicht gewachsen — 15. Oktober 2026.** Hier
+     * stand 29. Gemessen sind 14: Nach fünf Wochen Pause ist der Median des
+     * Preisalters auf 94 Tage gestiegen, und `npm run messliste` nimmt
+     * Begriffe heraus, deren Artikel auf einem zu alten Preis stehen.
+     *
+     * > **Eine Liste, die kleiner wird, ohne dass jemand etwas gestrichen
+     * > hat, misst die Zeit und nicht den Markt.**
+     *
+     * Die Zahl geht gegen `npm run messliste` und wandert damit von selbst
+     * weiter — sie gehört nicht festgeschrieben, sondern nachgezogen.
+     */
+    titel: 'Suchvolumen der 14 Keywords im Liefergebiet messen',
     zustaendig: 'entscheidung',
     warumKeinWerkzeug: 'Die Zahlen liegen bei Google. Der Keyword-Planer ist kostenlos, ein Ads-Konto '
       + 'ohne geschaltete Kampagne kostet nichts.',

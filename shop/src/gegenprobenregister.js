@@ -260,11 +260,28 @@ export const GEGENPROBEN = Object.freeze([
     // **Nachgezogen am 6. September, eine Stunde nach dem Eintrag.** Der
     // Suchtext war die Zeile der Dosierpistole — sie ist im selben Lauf wieder
     // aus dem Korb gefallen, weil `pruefe-preisalter` sie als 137 Tage alten
-    // Preis meldete, auf dem ein Gebot ruht. Mutiert wird jetzt der
+    // Preis meldete, auf dem ein Gebot ruht. Mutiert wurde dann der
     // Thermo-Trennstein, der aus demselben Grund drinbleiben durfte: 73 Tage.
-    suchen: "      { sku: 'POS-51967', menge: 1, was: 'Thermo-Trennstein', position: 'Thermo-Trennstein' },",
+    //
+    // **Und am 15. Oktober dasselbe ein drittes Mal.** Der Thermo-Trennstein
+    // ist mit 112 Tagen aus dem Kaminkorb gefallen, und zwar ohne dass jemand
+    // etwas entschieden hätte: In den fünf Wochen Pause ist er über die Grenze
+    // gewachsen. `test/gegenprobenregister.test.js` hat es gemeldet, der
+    // Suchtext traf ins Leere.
+    //
+    // > **Eine Stelle, die eine andere Regel wegnehmen kann, ist keine Stelle
+    // > für einen Suchtext.**
+    //
+    // Zweimal auf den jüngeren Preis auszuweichen hat nur die Frist verlängert.
+    // Mutiert wird deshalb jetzt eine Position aus dem **Kanalkorb**: Auf der
+    // Gruppe liegen keine Anzeigen, also eskaliert `pruefe-preisalter` ihre
+    // Preise nicht, und sie bleibt im Korb, auch wenn sie altert — gemessen am
+    // 15. Oktober mit 128 Tagen und ohne Meldung. Schaltet der Auftraggeber
+    // eines Tages Kanalanzeigen, fällt sie aus demselben Grund heraus wie ihre
+    // zwei Vorgänger — und derselbe Test sagt es in derselben Minute.
+    suchen: "      { sku: 'POS-10095', menge: 30, was: 'Rohre', position: 'Kanalrohr' },",
     ersetzen: '',
-    erwartet: /Thermo-Trennstein/,
+    erwartet: /Kanalrohr/,
     warum: 'Der Deckungsbeitrag des Korbs trägt das Gebot. Bis zum 6. September lag im Korb '
       + 'der Gruppe „Dämmung" **eine von vier** geführten Positionen ihrer eigenen '
       + 'Systemliste, und das Gebot war 14 % zu klein. Ein zu kleines Gebot verliert '
@@ -3768,7 +3785,12 @@ export const GEGENPROBEN = Object.freeze([
     was: 'Die Probe geht vom Angebot zur Rechnung und schließt keinen Vertrag',
     datei: 'shop/bin/bestellprobe.mjs',
     art: 'ersetzen',
-    suchen: "        '--stufe', 'bestaetigung', '--ablegen'],",
+    // **Nachgezogen am 15. Oktober 2026**, weil der Beleg ein Datum bekam:
+    // Ohne `--datum` nahm `bin/vorgang.mjs` den Tag des Rechners, und der
+    // Buchhaltungsauszug fragt fest nach September. Der Suchtext trägt die
+    // Angabe deshalb mit — `test/gegenprobenregister.test.js:76` hat den
+    // Bruch in derselben Minute gemeldet, in der er entstand.
+    suchen: "        '--stufe', 'bestaetigung', '--datum', '2026-09-07', '--ablegen'],",
     ersetzen: "        '--stufe', 'angebot'],",
     erwartet: /der Vertrag kommt nicht zustande|Auftragsbestätigung/,
     warum: 'Die Bestellprobe ist der eine Lauf, der die ganze Kette mit echtem PHP, echtem '

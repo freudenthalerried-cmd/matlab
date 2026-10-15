@@ -185,9 +185,28 @@ test('die Antworten kommen aus der Datei, nicht aus dem Werkzeug', async () => {
   // **Seit dem 9. September, nachts.** Auch die Außenlage kommt aus einer
   // Datei — sonst prüfte diese Probe die Messung des echten Verzeichnisses
   // mit und wäre an dem Tag rot, an dem jemand das Repository umstellt.
+  //
+  // **Und die Datei allein genügte nicht — 15. Oktober 2026.** Hier stand ein
+  // festes `gemessenAm: '2026-09-09'`, daneben ein `GESCHAEFTSTAG`-Eintrag in
+  // der Umgebung, der den Tag festhalten sollte. **Diese Umgebungsvariable
+  // liest nirgends im Bestand jemand** — gemessen mit einer Suche über alle
+  // Dateien: ein einziges Vorkommen, nämlich hier. Die Messung galt deshalb
+  // gegen den echten Tag, und `src/aussenlage.js` lässt eine Außenlage nach
+  // vierzehn Tagen verfallen. Nach fünf Wochen Pause war der Vermerk 36 Tage
+  // alt, der Punkt fiel auf die Angabe des Betreibers zurück und sagte
+  // „bestätigt" statt „gemessen am".
+  //
+  // > **Ein Platzhalter, den niemand liest, sieht aus wie eine Vorkehrung.**
+  //
+  // Der Kommentar oben hat die falsche Abhängigkeit gelöst: Er nahm der Probe
+  // den Blick auf das echte Verzeichnis und ließ ihr den Blick auf die Uhr.
+  // Das Datum wird deshalb aus dem Geschäftstag gerechnet und nicht gesetzt —
+  // eine Messung von heute ist nie zu alt, an welchem Tag auch immer.
+  const { geschaeftstag } = await import('../src/geschaeftszeit.js');
+  const heute = geschaeftstag();
   const aussenPfad = join(ordner, 'aussenlage.json');
   writeFileSync(aussenPfad, JSON.stringify({
-    gemessenAm: '2026-09-09', repositoryOeffentlich: false,
+    gemessenAm: heute, repositoryOeffentlich: false,
   }));
 
   const ausgabe = execFileSync(process.execPath, [werkzeug, '--bericht'], {
@@ -196,12 +215,10 @@ test('die Antworten kommen aus der Datei, nicht aus dem Werkzeug', async () => {
       ...process.env,
       STARTKLAR_BETREIBER: pfad,
       STARTKLAR_AUSSENLAGE: aussenPfad,
-      // Der Geschäftstag, gegen den das Alter der Messung gehalten wird.
-      GESCHAEFTSTAG: '2026-09-09',
     },
   });
   assert.match(ausgabe, /gewählt: Anbieter aus der Probe/);
-  assert.match(ausgabe, /Repository ist privat\n\s+gemessen am 2026-09-09/);
+  assert.match(ausgabe, new RegExp(`Repository ist privat\\n\\s+gemessen am ${heute}`));
   // Ein ausdrückliches „nein" ist eine Antwort, kein Fragezeichen.
   assert.match(ausgabe, /ausdrücklich verneint/);
   assert.match(ausgabe, /0 von hier aus nicht feststellbar/);
