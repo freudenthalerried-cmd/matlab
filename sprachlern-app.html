@@ -3261,8 +3261,9 @@ async function cloudWrite(){
   if(cloud.pending){ cloud.pending = false; cloudWrite(); }
   updateAccountUI();
 }
+function progressScore(st){ return st ? (st.xp||0)*10 + (st.language?1:0) + (st.speakHistory ? st.speakHistory.length : 0) : 0; }
 function scheduleCloud(){
-  if(!cloud.ref) return;
+  if(!cloud.ref || progressScore(state)===0) return;   // leere Spielstände nie hochladen
   clearTimeout(cloud.timer);
   cloud.timer = setTimeout(cloudWrite, 4000);
 }
@@ -3286,11 +3287,12 @@ function adoptState(obj, msg){
     cloud.name = me.name || '';
     cloud.ref = db.collection('data/users/' + me.id).doc('save');
     const snap = await cloud.ref.get();
-    const remote = snap.exists && snap.data && typeof snap.data.state==='string' ? snap.data : null;
-    if(remote && (remote.savedAt||0) > (state.savedAt||0)){
-      adoptState(JSON.parse(remote.state), '☁️ Dein Fortschritt wurde aus deinem Konto geladen');
+    const remote = snap.exists && snap.data && typeof snap.data.state==='string' ? JSON.parse(snap.data.state) : null;
+    // Der Stand mit mehr Fortschritt gewinnt – nie einen vollen Stand durch einen leeren ersetzen
+    if(remote && progressScore(remote) > progressScore(state)){
+      adoptState(remote, '☁️ Dein Fortschritt wurde aus deinem Konto geladen');
       cloud.lastSync = Date.now();
-    } else {
+    } else if(progressScore(state) > 0){
       await cloudWrite();
     }
     cloud.ready = true;
