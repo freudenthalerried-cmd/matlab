@@ -99,7 +99,7 @@ footer{border-top:1px solid var(--line);padding-block:28px 40px;color:var(--mute
   <div class="wrap">
     <a class="brand" href="#rechner"><span class="cell" aria-hidden="true"></span>Speicherkompass</a>
     <nav class="links" aria-label="Seitenbereiche">
-      <a href="#rechner">Rechner</a><a href="#foerderung">Förderungen</a><a href="#balkon">Balkonspeicher</a><a href="#anmelden">Anmelden</a><a href="#methode">So rechnen wir</a><a href="#impressum">Impressum</a>
+      <a href="#rechner">Rechner</a><a href="#foerderung">Förderungen</a><a href="#balkon">Balkonspeicher</a><a href="#anmelden">Anmelden</a><a href="#methode">So rechnen wir</a><a href="impressum.html">Impressum</a>
     </nav>
   </div>
 </header>
@@ -171,7 +171,7 @@ footer{border-top:1px solid var(--line);padding-block:28px 40px;color:var(--mute
       <thead><tr><th>Gerät</th><th>Kapazität</th><th>Preis ab</th><th>Preis pro kWh</th><th>Stärke</th><th></th></tr></thead>
       <tbody id="ptab"></tbody>
     </table></div>
-    <p class="hint">Niedrigste Preise laut Testberichten von Mai bis September 2026, ohne Gewähr. Preise schwanken je nach Händler stark. Sortiert nach Preis pro kWh.</p>
+    <p class="hint">* Partner-Link: Kaufst du darüber, erhalten wir eine Provision, dein Preis bleibt gleich. Niedrigste Preise laut Testberichten von Mai bis September 2026, ohne Gewähr. Preise schwanken je nach Händler stark. Sortiert nach Preis pro kWh.</p>
   </section>
 
   <section class="block" id="anmelden" aria-labelledby="h-anm">
@@ -203,7 +203,7 @@ footer{border-top:1px solid var(--line);padding-block:28px 40px;color:var(--mute
 
 <footer class="wrap" id="impressum">
   <p><strong>Transparenz:</strong> Speicherkompass finanziert sich über Partner-Links. Kaufst du über einen Link, erhalten wir eine Provision. Für dich ändert sich der Preis nicht. Die Reihung im Vergleich richtet sich nur nach dem Preis pro kWh.</p>
-  <p><strong>Impressum und Offenlegung:</strong> Medieninhaber, Anschrift und Unternehmensgegenstand werden vor der Veröffentlichung ergänzt (§ 5 ECG, § 25 MedienG).</p>
+  <p><a href="impressum.html">Impressum und Offenlegung</a> · <a href="datenschutz.html">Datenschutz</a></p>
   <p>Alle Angaben ohne Gewähr. Keine Rechts-, Steuer- oder Finanzberatung.</p>
 </footer>
 
@@ -220,13 +220,15 @@ const LAND={
  V:{n:"Vorarlberg",y:1000,l:{t:"kwh",r:50,max:10,comb:true},tab:["VKW-Bonus 50 €/kWh, max. 500 €","ja","Kein Landesgeld: Bonus der VKW, nur mit VKW-Einspeisevertrag"]}
 };
 const PROD=[
- {n:"Marstek Venus E 3.0",kap:5.12,p:1049,s:"Viel Kapazität zum kleinen Preis, nicht erweiterbar"},
- {n:"Jackery SolarVault 3 Pro",kap:2.52,p:599,s:"Erweiterbar bis 15,12 kWh"},
- {n:"EcoFlow STREAM Ultra X",kap:3.84,p:919,s:"Große Grundkapazität, erweiterbar bis 23 kWh"},
- {n:"Anker SOLIX Solarbank 3 E2700 Pro",kap:2.7,p:819,s:"Notstrom-Ausgang mit 1.200 W"},
- {n:"Zendure SolarFlow 800 Pro",kap:1.92,p:599,s:"Feldtest-Sieger bei home&smart (05/2026), erweiterbar bis 11,52 kWh"},
- {n:"Zendure SolarFlow 2400 Pro",kap:null,p:949,s:"Steuereinheit, mit bis zu 5 Zusatzakkus auf 16,8 kWh erweiterbar"}
+ {id:"marstek-venus-e3",n:"Marstek Venus E 3.0",kap:5.12,p:1049,s:"Viel Kapazität zum kleinen Preis, nicht erweiterbar"},
+ {id:"jackery-solarvault3pro",n:"Jackery SolarVault 3 Pro",kap:2.52,p:599,s:"Erweiterbar bis 15,12 kWh"},
+ {id:"ecoflow-stream-ultra-x",n:"EcoFlow STREAM Ultra X",kap:3.84,p:919,s:"Große Grundkapazität, erweiterbar bis 23 kWh"},
+ {id:"anker-e2700pro",n:"Anker SOLIX Solarbank 3 E2700 Pro",kap:2.7,p:819,s:"Notstrom-Ausgang mit 1.200 W"},
+ {id:"zendure-800pro",n:"Zendure SolarFlow 800 Pro",kap:1.92,p:599,s:"Feldtest-Sieger bei home&smart (05/2026), erweiterbar bis 11,52 kWh"},
+ {id:"zendure-2400pro",n:"Zendure SolarFlow 2400 Pro",kap:null,p:949,s:"Steuereinheit, mit bis zu 5 Zusatzakkus auf 16,8 kWh erweiterbar"}
 ];
+// Partner-Links: werden beim Build aus config.json eingesetzt
+const LINKS={};
 const PRE={
  haus:{land:"OOE",kwp:8,verbrauch:4500,kap:10,preis:8500,strom:28,einsp:6,neupv:true},
  balkon:{land:"W",kwp:0.8,verbrauch:2500,kap:2.7,preis:819,strom:28,einsp:0,neupv:false}
@@ -241,7 +243,7 @@ $("land").innerHTML=Object.entries(LAND).map(([k,v])=>`<option value="${k}">${v.
 $("ftab").innerHTML=Object.values(LAND).map(v=>{const c=v.tab[1]==="ja"?"y":v.tab[1]==="nein"?"n":"q";
   return `<tr><td>${v.n}</td><td class="num">${esc(v.tab[0])}</td><td><span class="tag ${c}">${esc(v.tab[1])}</span></td><td>${esc(v.tab[2])}</td></tr>`}).join("");
 $("ptab").innerHTML=PROD.map(p=>({...p,pk:p.kap?p.p/p.kap:Infinity})).sort((a,b)=>a.pk-b.pk).map(p=>
-  `<tr><td><strong>${esc(p.n)}</strong></td><td class="num">${p.kap?num(p.kap,p.kap%1?1:0)+" kWh":"modular"}</td><td class="num">${eur(p.p)}</td><td class="num">${isFinite(p.pk)?eur(p.pk):"je nach Akku"}</td><td>${esc(p.s)}</td><td><a class="btn" aria-disabled="true" href="#balkon">Partner-Link folgt</a></td></tr>`).join("");
+  `<tr><td><strong>${esc(p.n)}</strong></td><td class="num">${p.kap?num(p.kap,p.kap%1?1:0)+" kWh":"modular"}</td><td class="num">${eur(p.p)}</td><td class="num">${isFinite(p.pk)?eur(p.pk):"je nach Akku"}</td><td>${esc(p.s)}</td><td>${LINKS[p.id]?`<a class="btn" href="${esc(LINKS[p.id])}" target="_blank" rel="sponsored nofollow noopener">Zum Angebot*</a>`:`<a class="btn" aria-disabled="true" href="#balkon">Partner-Link folgt</a>`}</td></tr>`).join("");
 
 function foerderung(L,kap,preis,kwp,neupv){
   const bund=neupv?Math.min(150*Math.min(kap,50),0.3*preis):0;

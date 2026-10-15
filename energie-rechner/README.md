@@ -1,17 +1,23 @@
-# Speicherkompass Österreich (Arbeitstitel)
+# Speicherkompass Österreich
 
-Stromspeicher-Rechner für Österreich: Förderung je Bundesland, Ersparnis, Amortisation, Vergleich von Balkonspeichern.
-Teil des gebündelten Portals „Energie-Rechner Österreich“ (siehe `../geschaeftsidee-speicher-rechner.md`).
+Stromspeicher-Rechner für Österreich: Förderung je Bundesland, Ersparnis, Amortisation,
+Vergleich von Balkonspeichern, Anleitung zur Anmeldung beim Netzbetreiber.
+Start-Anleitung für den Betreiber: `SCHRITTE.md`. Hintergrund: `../geschaeftsidee-speicher-rechner.md`.
 
-- `src.html` bearbeiten, dann `./build.sh` ausführen → erzeugt `index.html` (statisch, ohne Server).
-- Hosting: beliebiges statisches Hosting (z. B. Cloudflare Pages aus einem privaten Repo).
+## Aufbau
+- `src.html`: Arbeitsfassung der Startseite (dient auch als Vorschau)
+- `config.json`: Domain, Impressum-Angaben, Partner-IDs
+- `build.py`: baut `dist/` (lokale Schriften, Partner-Links, Impressum, Datenschutz, robots.txt, sitemap.xml, .htaccess)
+- `assets/fonts/`: Schriften (SIL Open Font License), lokal eingebunden, damit keine Daten an Google gehen
+- `../.github/workflows/speicherkompass.yml`: baut bei jedem Push und lädt per FTPS zu All-Inkl hoch,
+  sobald die Secrets `SK_FTP_SERVER`, `SK_FTP_USERNAME`, `SK_FTP_PASSWORD` gesetzt sind
 
-## Offen vor Veröffentlichung
-- [ ] Impressum/Offenlegung ausfüllen (§ 5 ECG, § 25 MedienG), Datenschutzerklärung
-- [ ] Partner-IDs (Awin: Anker SOLIX, Zendure; weitere prüfen) statt „Partner-Link folgt“
-- [ ] Landesförderungen Wien, NÖ, Burgenland, Steiermark, Vorarlberg prüfen
-- [ ] Domain + Markenname festlegen
-- [ ] Eigenes Repo (Anlegen durch Stefan nötig, Claude-Integration darf keine Repos erstellen)
+```
+python3 build.py            # Entwurf
+python3 build.py --strict   # wie im Deployment: bricht ab, wenn Impressum-Angaben fehlen
+```
 
-## Nächste Ausbaustufen
-Solarertrag-Rechner, dynamische Stromtarife, Preisalarm, Wallbox-Rechner, Anleitungen „Balkonkraftwerk anmelden bei …“ je Netzbetreiber.
+## Offen
+- [ ] Impressum-Angaben und Domain-Hosting (siehe `SCHRITTE.md`)
+- [ ] Partner-IDs (Awin, Amazon)
+- [ ] Landesförderungen Wien, Niederösterreich, Steiermark klären
