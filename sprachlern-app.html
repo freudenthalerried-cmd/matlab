@@ -389,6 +389,51 @@ body{
 .word-chip.wrong{background:#ffe9e9;border-color:var(--danger);animation:shake .3s;}
 .word-chip.locked{pointer-events:none;}
 .build-sentence{min-height:54px;background:rgba(255,255,255,0.12);border:2px dashed rgba(255,255,255,0.35);border-radius:14px;padding:8px;margin:4px 4px 12px;color:#fff;font-weight:800;font-size:17px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-items:center;}
+
+/* ===== SPIELE-ECKE ===== */
+.arc-card{width:100%;background:linear-gradient(145deg,#2b6f8a,#1d4e63);border-radius:18px;padding:10px 8px;text-align:center;cursor:pointer;box-shadow:0 4px 0 #123444;transition:transform .1s;}
+.arc-card:active{transform:translateY(3px);box-shadow:0 1px 0 #123444;}
+.arc-icon{font-size:34px;animation:bob 2.4s ease-in-out infinite;}
+.arc-name{font-weight:900;font-size:14px;color:#fff;}
+.arc-desc{font-size:11px;color:#cfe8ee;line-height:1.25;margin:2px 0;}
+.arc-hs{font-size:12px;font-weight:800;color:#ffd23f;}
+@keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);}}
+#screen-arcade{padding:8px 12px;gap:6px;}
+.arc-head{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.arc-head .arc-title{flex:1;color:#fff;font-weight:900;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.arc-score{font-weight:900;color:#ffd23f;font-size:16px;}
+.arc-prompt{text-align:center;color:#fff;font-size:15px;min-height:22px;flex-shrink:0;cursor:pointer;}
+.arc-prompt b{color:#ffd23f;}
+.arena{position:relative;flex:1;min-height:180px;border-radius:18px;overflow:hidden;background:linear-gradient(#7fd3ff,#c9f0ff 70%,#9be38a);}
+.arena.shake{animation:shake .35s;}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-7px);}75%{transform:translateX(7px);}}
+.balloon,.drop{position:absolute;top:0;min-width:84px;padding:12px 10px;text-align:center;font-weight:900;font-size:15px;color:#fff;cursor:pointer;user-select:none;text-shadow:0 1px 2px rgba(0,0,0,.4);}
+.balloon{border-radius:50% 50% 46% 46%;box-shadow:inset -6px -8px 0 rgba(0,0,0,.15);}
+.balloon::after{content:'';position:absolute;left:50%;bottom:-22px;width:1px;height:22px;background:#555;}
+.drop{background:#3ea8ff;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;box-shadow:0 3px 0 #1f6fb3;}
+.popped{animation:popOut .25s forwards;pointer-events:none;}
+@keyframes popOut{to{transform:scale(1.6);opacity:0;}}
+.nope{animation:shake .3s;filter:grayscale(.7);}
+.arc-opts{display:grid;grid-template-columns:1fr 1fr;gap:6px;flex-shrink:0;}
+.arc-opt{border:none;border-radius:14px;padding:12px 6px;font-weight:800;font-size:15px;background:#fff;color:#1d4e63;box-shadow:0 3px 0 #9fb8c4;cursor:pointer;font-family:inherit;}
+.arc-opt:disabled{opacity:.45;}
+.emoji-big{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:120px;animation:pop .5s;}
+.puzzle{position:absolute;inset:8px;margin:auto;aspect-ratio:1;max-height:calc(100% - 16px);display:grid;grid-template-columns:repeat(3,1fr);gap:3px;}
+.pz-tile{background-size:300% 300%;border-radius:6px;position:relative;overflow:hidden;}
+.pz-cover{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,#7b5bff,#4a2fd0);color:#fff;font-weight:900;font-size:26px;transition:transform .4s,opacity .4s;}
+.pz-tile.open .pz-cover{transform:rotateY(90deg);opacity:0;}
+.castle{position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:64px;z-index:2;}
+.lane{position:absolute;left:0;right:0;height:2px;background:rgba(255,255,255,.5);}
+.lane.l0{top:24%;}.lane.l1{top:54%;}.lane.l2{top:84%;}
+.monster{position:absolute;left:0;display:flex;flex-direction:column;align-items:center;transition:filter .2s;}
+.m-body{font-size:38px;animation:bob 1s ease-in-out infinite;}
+.m-word{background:#fff;color:#1d4e63;font-weight:800;font-size:12px;border-radius:8px;padding:1px 6px;white-space:nowrap;}
+.monster.lead{filter:drop-shadow(0 0 8px #ffd23f);}
+.monster.lead .m-word{background:#ffd23f;}
+.shot{position:fixed;font-size:28px;z-index:50;pointer-events:none;}
+.arc-over{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:rgba(255,255,255,.92);color:#1d4e63;padding:12px;text-align:center;}
+.arc-over .btn{width:100%;max-width:260px;}
+.arc-big{font-size:34px;font-weight:900;}
 </style>
 </head>
 <body>
@@ -457,9 +502,17 @@ body{
 
   <!-- ===== GRAMMATIK ===== -->
   <section class="screen" id="screen-grammar">
-    <div class="seg"><button class="seg-btn sel" id="segGram">📘 Grammatik</button><button class="seg-btn" id="segPhr">💬 Alltagssätze</button></div>
+    <div class="seg"><button class="seg-btn sel" id="segGram">📘 Grammatik</button><button class="seg-btn" id="segPhr">💬 Sätze</button><button class="seg-btn" id="segArc">🎮 Spiele</button></div>
     <div class="map-sub" id="grammarSub">Lustige Sätze, echte Regeln</div>
     <div class="path" id="grammarPath"></div>
+  </section>
+
+  <!-- ===== SPIELE-ECKE ===== -->
+  <section class="screen" id="screen-arcade">
+    <div class="arc-head"><button class="back-link" id="arcQuit">‹ Zurück</button><span class="arc-title" id="arcTitle"></span><span id="arcLives"></span><span class="arc-score">⭐ <span id="arcScore">0</span></span></div>
+    <div class="arc-prompt" id="arcPrompt"></div>
+    <div class="arena" id="arena"></div>
+    <div class="arc-opts" id="arcOpts"></div>
   </section>
 
   <!-- ===== FAHRMODUS ===== -->
@@ -1303,12 +1356,12 @@ function populateLanguageList(){
   Object.entries(LANGS).forEach(([key,l])=>{
     const el = document.createElement('div');
     el.className='diff-option';
-    el.innerHTML = `<b>${l.label}</b>`;
+    el.innerHTML = `<b>${l.label}</b>${key===currentLang()?' ✓':''}`;
     el.addEventListener('click', ()=>{
       sndTap();
       state.language = key;
       saveState();
-      if(state.difficulty){ renderMap(); showScreen('screen-map'); }
+      if(state.difficulty){ renderMap(); showScreen('screen-map'); setNav('map'); updateTopbar(); toast(`🌍 Jetzt: ${l.label}`); }
       else { populateDifficultyList(); showScreen('screen-difficulty'); }
     });
     box.appendChild(el);
@@ -1326,6 +1379,7 @@ document.getElementById('langBackBtn').addEventListener('click', ()=>{
 /* ---------- NAVIGATION ---------- */
 function showScreen(id){
   if(id==='screen-stats'){ const cur = document.querySelector('.screen.active'); if(cur && cur.id!=='screen-stats' && typeof lastScreenBeforeProfile!=='undefined') lastScreenBeforeProfile = cur.id; }
+  if(id!=='screen-arcade' && typeof arc!=='undefined' && arc.running) stopArcade();
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   document.querySelector('.bottom-nav').style.display = ['screen-map','screen-stats','screen-grammar','screen-quests','screen-league'].includes(id) ? 'flex' : 'none';
@@ -1415,13 +1469,15 @@ function goHome(){
   if(session && session.speedTimer){ clearInterval(session.speedTimer); session.speedTimer=null; }
   if(!state.difficulty){ populateDifficultyList(); showScreen('screen-difficulty'); return; }
   clearTimeout(session && session.fbTimer); document.getElementById('feedbackBar').classList.remove('show');
-  if(pendingMode==='grammar' || pendingMode==='phrases'){ practiceTab = pendingMode==='grammar'?'grammar':'phrases'; renderGrammar(); showScreen('screen-grammar'); setNav('grammar'); }
+  if(pendingMode==='grammar' || pendingMode==='phrases' || pendingMode==='arcade'){ practiceTab = pendingMode; renderGrammar(); showScreen('screen-grammar'); setNav('grammar'); }
   else { renderMap(); showScreen('screen-map'); setNav('map'); }
 }
 function renderGrammar(){
-  const isG = practiceTab==='grammar';
+  const isG = practiceTab==='grammar', isA = practiceTab==='arcade';
   document.getElementById('segGram').classList.toggle('sel', isG);
-  document.getElementById('segPhr').classList.toggle('sel', !isG);
+  document.getElementById('segPhr').classList.toggle('sel', !isG && !isA);
+  document.getElementById('segArc').classList.toggle('sel', isA);
+  if(isA){ document.getElementById('grammarSub').textContent = `${LANGS[currentLang()].label} · Spielen & dabei Wörter lernen`; renderArcadeList(); return; }
   const stars = isG ? grammarStars() : phraseStars();
   const container = document.getElementById('grammarPath');
   container.innerHTML = '';
@@ -2413,6 +2469,7 @@ const QUESTS = [
   {id:'spk5', icon:'🚗', text:'Sag 5 Sätze im Fahrmodus', ev:'speak', target:5, reward:20, need:()=> (state.stats.drives||0)>=1},
   {id:'rev', icon:'💪', text:'Mach ein Fehler-Training', ev:'review', target:1, reward:15, need:()=> seenWords().length>=4},
   {id:'lis5', icon:'🎧', text:'Löse 5 Hör-Aufgaben', ev:'listen', target:5, reward:15},
+  {id:'arc1', icon:'🎮', text:'Spiele ein Spiel in der Spiele-Ecke', ev:'arcade', target:1, reward:15},
   {id:'fast5', icon:'⏱️', text:'5 richtige Antworten in unter 4 Sek.', ev:'fast', target:5, reward:20},
 ];
 function qDef(id){ return QUESTS.find(q=>q.id===id); }
@@ -2568,6 +2625,7 @@ function renderLeague(){
 
 /* ---------- Erfolge ---------- */
 const ACHIEVEMENTS = [
+  {id:'arc', icon:'🕹️', name:'Zocker', desc:'200 Punkte in einem Spiel', test:()=>Object.values(state.arcade||{}).some(v=>v>=200), reward:30},
   {id:'first', icon:'🎓', name:'Erste Schritte', desc:'Erste Lektion geschafft', test:()=>state.stats.lessons>=1, reward:10},
   {id:'les10', icon:'📚', name:'Bücherwurm', desc:'10 Lektionen', test:()=>state.stats.lessons>=10, reward:30},
   {id:'les50', icon:'🏛️', name:'Gelehrter', desc:'50 Lektionen', test:()=>state.stats.lessons>=50, reward:100},
@@ -2671,7 +2729,7 @@ function renderDashboard(){
   const bc = document.getElementById('boostChip');
   bc.classList.toggle('active-boost', boostActive());
   bc.textContent = boostActive() ? `⚡ x2 · ${Math.ceil((state.boostUntil-Date.now())/60000)}′` : '⚡ x2';
-  document.getElementById('diffChip').textContent = `${LANGS[currentLang()].label.split(' ')[0]} ${DIFFICULTIES[state.difficulty||'anfaenger'].label}`;
+  document.getElementById('diffChip').textContent = `${LANGS[currentLang()].label.split(' ')[0]} ${DIFFICULTIES[state.difficulty||'anfaenger'].label} ⇄`;
   document.getElementById('driveChip').textContent = state.speakLevel ? `🚗 ${state.speakLevel.cefr}·${state.speakLevel.sub}` : '🚗 Fahren';
   updateQuestDot();
 }
@@ -2920,6 +2978,8 @@ const PHRASES_RAW = {
 let practiceTab = 'grammar';
 document.getElementById('segGram').addEventListener('click', ()=>{ sndTap(); practiceTab='grammar'; pendingMode='grammar'; renderGrammar(); });
 document.getElementById('segPhr').addEventListener('click', ()=>{ sndTap(); practiceTab='phrases'; pendingMode='phrases'; renderGrammar(); });
+document.getElementById('segArc').addEventListener('click', ()=>{ sndTap(); practiceTab='arcade'; pendingMode='arcade'; renderGrammar(); });
+document.getElementById('diffChip').addEventListener('click', ()=>{ sndTap(); showLanguageScreen(); });
 function phraseTopics(){
   const lang = currentLang();
   return PHRASE_TOPICS.map((t,i)=>({icon:t.icon, title:t.title,
@@ -3596,6 +3656,347 @@ document.getElementById('penOk').addEventListener('click', ()=>{
   document.getElementById('penaltyOverlay').classList.add('hidden');
   if(document.getElementById('screen-map').classList.contains('active')) renderMap();
 });
+
+/* =========================================================
+   🎮 SPIELE-ECKE: grafische Arcade-Spiele mit Lernwörtern
+   🎈 Ballon-Platzen · 🎧 Hör-Regen · 🖼️ Bilder-Blitz ·
+   🧩 Bild-Puzzle · 🏰 Wort-Verteidigung (Tower Defense)
+   ========================================================= */
+const EMOJI = {
+  'der Hund':'🐶','die Katze':'🐱','der Vogel':'🐦','der Fisch':'🐟','das Pferd':'🐴','die Kuh':'🐮','der Löwe':'🦁','der Bär':'🐻',
+  'das Eichhörnchen':'🐿️','der Igel':'🦔','die Schildkröte':'🐢','der Adler':'🦅','der Frosch':'🐸','die Eule':'🦉','der Wal':'🐋','die Ziege':'🐐',
+  'das Faultier':'🦥','der Krake':'🐙','das Nashorn':'🦏','die Fledermaus':'🦇','die Heuschrecke':'🦗','der Waschbär':'🦝',
+  'der Apfel':'🍎','das Brot':'🍞','der Käse':'🧀','die Milch':'🥛','das Wasser':'💧','der Reis':'🍚','das Ei':'🥚','der Kuchen':'🍰',
+  'die Zwiebel':'🧅','der Knoblauch':'🧄','die Gurke':'🥒','das Rindfleisch':'🥩','der Pilz':'🍄','die Erdbeere':'🍓','der Honig':'🍯',
+  'die Aubergine':'🍆','die Brühe':'🍲','die Mahlzeit':'🍽️',
+  'die Mutter':'👩','der Vater':'👨','die Schwester':'👧','der Bruder':'👦','die Großmutter':'👵','der Großvater':'👴','das Kind':'🧒',
+  'die Hochzeit':'💒','die Geburt':'👶',
+  'rot':'🔴','blau':'🔵','grün':'🟢','gelb':'🟡','schwarz':'⚫','weiß':'⚪','orange':'🟠','lila':'🟣','braun':'🟤',
+  'eins':'1️⃣','zwei':'2️⃣','drei':'3️⃣','vier':'4️⃣','fünf':'5️⃣','sechs':'6️⃣','sieben':'7️⃣','acht':'8️⃣','hundert':'💯',
+  'die Minute':'⏱️','der Frühling':'🌷','der Herbst':'🍂','die Mitternacht':'🌙','der Kalender':'📆',
+  'der Flughafen':'🛫','der Koffer':'🧳','das Hotel':'🏨','die Straße':'🛣️','die Karte':'🗺️','der Zug':'🚆','das Auto':'🚗','der Pass':'🛂',
+  'die Sehenswürdigkeit':'🏰','der Zoll':'🛃',
+  'das Buch':'📖','der Stift':'🖊️','der Lehrer':'🧑‍🏫','die Schule':'🏫','die Prüfung':'📝','das Lineal':'📏','das Wörterbuch':'📕',
+  'die Arbeit':'💼','das Büro':'🏢','der Arzt':'🩺','der Koch':'🧑‍🍳','der Lohn':'💰','der Chef':'👔','der Vertrag':'📄','die Rechnung':'🧾','der Urlaub':'🏖️',
+  'glücklich':'😀','traurig':'😢','müde':'😴','wütend':'😠','aufgeregt':'🤩','ängstlich':'😨','ruhig':'😌',
+  'enttäuscht':'😞','überrascht':'😲','nervös':'😬','dankbar':'🙏','verlegen':'😳','neugierig':'🧐',
+};
+const ARCADE_GAMES = [
+  {id:'balloon', icon:'🎈', name:'Ballon-Platzen', desc:'Platz den Ballon mit der richtigen Übersetzung'},
+  {id:'rain', icon:'🎧', name:'Hör-Regen', desc:'Fang das Wort, das du hörst, bevor es landet'},
+  {id:'emoji', icon:'🖼️', name:'Bilder-Blitz', desc:'Bild erkennen, Wort tippen – 60 Sekunden'},
+  {id:'puzzle', icon:'🧩', name:'Bild-Puzzle', desc:'Jede richtige Antwort deckt ein Teil auf'},
+  {id:'tower', icon:'🏰', name:'Wort-Verteidigung', desc:'Schieß die Wort-Monster vor der Burg ab'},
+];
+const arc = {game:null, running:false, raf:0, score:0, lives:3, combo:0, ents:[], timers:[], target:null, last:0};
+
+function arcadePool(){
+  const prog = levelProg();
+  let max = 0; prog.forEach((p,i)=>{ if(p.stars>0) max = i+1; });
+  const words = [];
+  for(let i=0;i<=Math.min(LEVELS.length-1, Math.max(1,max));i++) words.push(...levelWords(i));
+  return words;
+}
+function emojiPool(){
+  const out = [], seen = new Set();
+  ['anfaenger','mittel','fortgeschritten'].forEach(d=>{ for(let i=0;i<LEVELS.length;i++) wordsFor(d,i).forEach(w=>{
+    if(EMOJI[w[0]] && !seen.has(w[0])){ seen.add(w[0]); out.push({de:w[0], t:w[1], e:EMOJI[w[0]]}); }
+  }); });
+  return out;
+}
+function renderArcadeList(){
+  const box = document.getElementById('grammarPath');
+  box.innerHTML = '';
+  const hs = state.arcade || {};
+  ARCADE_GAMES.forEach(g=>{
+    const el = document.createElement('div'); el.className = 'arc-card';
+    el.innerHTML = `<div class="arc-icon">${g.icon}</div><div class="arc-name">${g.name}</div><div class="arc-desc">${g.desc}</div><div class="arc-hs">🏆 ${hs[g.id]||0}</div>`;
+    el.onclick = ()=>{ sndTap(); startArcade(g.id); };
+    box.appendChild(el);
+  });
+}
+
+/* ---------- gemeinsamer Rahmen ---------- */
+function arcHud(){
+  document.getElementById('arcScore').textContent = arc.score;
+  document.getElementById('arcLives').textContent = arc.game==='emoji' ? `⏱️ ${Math.max(0,Math.ceil(arc.timeLeft))}` : '❤️'.repeat(Math.max(0,arc.lives)) + '🖤'.repeat(Math.max(0,3-arc.lives));
+}
+function arcLater(fn, ms){ const t = setTimeout(fn, ms); arc.timers.push(t); return t; }
+function stopArcade(){
+  arc.running = false; cancelAnimationFrame(arc.raf);
+  arc.timers.forEach(clearTimeout); arc.timers = [];
+  arc.ents.forEach(e=>e.el.remove()); arc.ents = [];
+}
+function startArcade(id){
+  touchStreak();
+  stopArcade();
+  Object.assign(arc, {game:id, running:true, score:0, lives:3, combo:0, ents:[], timers:[], last:performance.now()});
+  const g = ARCADE_GAMES.find(x=>x.id===id);
+  document.getElementById('arcTitle').textContent = g.icon + ' ' + g.name;
+  document.getElementById('arena').innerHTML = '';
+  document.getElementById('arcOpts').innerHTML = '';
+  document.getElementById('arcPrompt').innerHTML = '';
+  showScreen('screen-arcade');
+  arcHud();
+  ({balloon:startFloat, rain:startFloat, emoji:startEmoji, puzzle:startPuzzle, tower:startTower})[id](id);
+}
+function arcHit(x, y, gain){
+  arc.combo++; const pts = gain + Math.min(10, arc.combo)*2;
+  arc.score += pts; arcHud(); sndCorrect();
+  burstAt(x, y, ['⭐','✨','💥','🎉'], 8);
+  if(arc.combo>=3 && arc.combo%3===0) showCombo(arc.combo);
+}
+function arcMiss(){
+  arc.combo = 0; arc.lives--; arcHud(); sndWrong();
+  const a = document.getElementById('arena'); a.classList.remove('shake'); void a.offsetWidth; a.classList.add('shake');
+  if(arc.lives<=0) endArcade();
+}
+function endArcade(){
+  if(!arc.running) return;
+  stopArcade();
+  const id = arc.game;
+  state.arcade = state.arcade || {};
+  const best = state.arcade[id] || 0, rec = arc.score > best;
+  if(rec) state.arcade[id] = arc.score;
+  const xp = addXP(Math.min(30, Math.floor(arc.score/10)));
+  const coins = Math.floor(arc.score/15); state.coins += coins;
+  state.stats.arcade = (state.stats.arcade||0) + 1;
+  track('arcade',1); checkAchievements(); saveState(); updateTopbar();
+  document.getElementById('arcOpts').innerHTML = '';
+  document.getElementById('arena').innerHTML = `<div class="arc-over">
+    <div class="ad-icon">${rec ? '🏆' : '🎮'}</div>
+    <div class="intro-title">${rec ? 'Neuer Rekord!' : 'Spiel vorbei!'}</div>
+    <div class="arc-big">⭐ ${arc.score}</div>
+    <div class="panel-sub" style="color:var(--muted)">Rekord: ${Math.max(best, arc.score)} · +${xp} XP · +${coins} 🪙</div>
+    <button class="btn btn-primary" id="arcAgain">🔁 Nochmal</button>
+    <button class="btn btn-secondary" id="arcBack">Zurück zu den Spielen</button></div>`;
+  if(rec && arc.score>0){ launchConfetti(); sndLevelUp(); }
+  document.getElementById('arcAgain').onclick = ()=>startArcade(id);
+  document.getElementById('arcBack').onclick = ()=>leaveArcade();
+}
+function leaveArcade(){ stopArcade(); practiceTab = 'arcade'; pendingMode = 'arcade'; renderGrammar(); showScreen('screen-grammar'); setNav('grammar'); }
+document.getElementById('arcQuit').addEventListener('click', ()=>{ if(arc.running && arc.score>0) endArcade(); else leaveArcade(); });
+
+/* ---------- 🎈 Ballon-Platzen & 🎧 Hör-Regen (gemeinsamer Motor) ---------- */
+const BALLOON_COLORS = ['#ff5d5d','#ffd23f','#06d6a0','#3ea8ff','#ff6fb0','#7b5bff','#ff9f1c'];
+function startFloat(id){
+  const up = id==='balloon';
+  const pool = arcadePool();
+  const code = LANGS[currentLang()].code;
+  const prompt = document.getElementById('arcPrompt');
+  const newTarget = ()=>{
+    arc.target = pick(pool);
+    if(up) prompt.innerHTML = `Platz: <b>${escapeHtml(arc.target[0])}</b>`;
+    else { prompt.innerHTML = `🔊 <b>Fang das gehörte Wort!</b> <span class="panel-sub">(antippen = nochmal hören)</span>`; speak(arc.target[1], code); }
+  };
+  prompt.onclick = ()=>{ if(!up && arc.target) speak(arc.target[1], code); };
+  newTarget();
+  const arena = document.getElementById('arena');
+  let nextSpawn = 0;
+  const step = now=>{
+    if(!arc.running) return;
+    const dt = Math.min(0.05, (now-arc.last)/1000); arc.last = now;
+    const H = arena.clientHeight, W = arena.clientWidth;
+    if(now > nextSpawn){
+      const hasTarget = arc.ents.some(e=>e.word===arc.target[1]);
+      const word = (!hasTarget || Math.random()<0.3) ? arc.target[1] : pick(pool.filter(w=>w[1]!==arc.target[1]))[1];
+      const el = document.createElement('div');
+      el.className = up ? 'balloon' : 'drop';
+      if(up) el.style.background = pick(BALLOON_COLORS);
+      el.textContent = word;
+      arena.appendChild(el);
+      const ent = {el, word, x: 6 + Math.random()*(W-130), y: up ? H+10 : -60, v: Math.min(150, (up?45:40) + arc.score*0.35)};
+      el.style.left = ent.x+'px';
+      el.onclick = ev=>{
+        ev.stopPropagation();
+        if(!arc.running || ent.dead) return;
+        if(ent.word === arc.target[1]){
+          ent.dead = true; const r = el.getBoundingClientRect();
+          el.classList.add('popped'); setTimeout(()=>el.remove(), 250);
+          arc.ents = arc.ents.filter(x=>x!==ent);
+          arcHit(r.left+r.width/2, r.top+r.height/2, 10);
+          newTarget();
+        } else { el.classList.add('nope'); setTimeout(()=>el.classList.remove('nope'), 300); arcMiss(); }
+      };
+      arc.ents.push(ent);
+      nextSpawn = now + Math.max(550, 1200 - arc.score*3);
+    }
+    arc.ents.forEach(e=>{
+      e.y += (up ? -1 : 1) * e.v * dt;
+      e.el.style.transform = `translateY(${e.y}px)`;
+      const gone = up ? e.y < -90 : e.y > H;
+      if(gone && !e.dead){
+        e.dead = true; e.el.remove();
+        if(e.word === arc.target[1]){ arcMiss(); if(arc.running) newTarget(); }
+      }
+    });
+    arc.ents = arc.ents.filter(e=>!e.dead);
+    arc.raf = requestAnimationFrame(step);
+  };
+  arc.raf = requestAnimationFrame(step);
+}
+
+/* ---------- 🖼️ Bilder-Blitz ---------- */
+function startEmoji(){
+  const pool = emojiPool();
+  arc.timeLeft = 60;
+  const arena = document.getElementById('arena');
+  const opts = document.getElementById('arcOpts');
+  document.getElementById('arcPrompt').innerHTML = 'Was siehst du? Tippe das Wort!';
+  const next = ()=>{
+    const item = pick(pool);
+    arena.innerHTML = `<div class="emoji-big">${item.e}</div>`;
+    const choices = shuffle([item, ...shuffle(pool.filter(p=>p!==item)).slice(0,3)]);
+    opts.innerHTML = '';
+    choices.forEach(c=>{
+      const b = document.createElement('button'); b.className = 'arc-opt'; b.textContent = c.t;
+      b.onclick = ()=>{
+        if(!arc.running) return;
+        if(c===item){ const r = b.getBoundingClientRect(); arcHit(r.left+r.width/2, r.top, 10); next(); }
+        else { arc.combo = 0; arc.timeLeft -= 3; sndWrong(); b.classList.add('nope'); b.disabled = true; arcHud(); }
+      };
+      opts.appendChild(b);
+    });
+  };
+  next();
+  const tick = now=>{
+    if(!arc.running) return;
+    arc.timeLeft -= Math.min(0.1,(now-arc.last)/1000); arc.last = now;
+    arcHud();
+    if(arc.timeLeft<=0){ endArcade(); return; }
+    arc.raf = requestAnimationFrame(tick);
+  };
+  arc.raf = requestAnimationFrame(tick);
+}
+
+/* ---------- 🧩 Bild-Puzzle ---------- */
+function emojiImage(e){
+  const c = document.createElement('canvas'); c.width = c.height = 300;
+  const g = c.getContext('2d');
+  g.fillStyle = '#fff6d6'; g.fillRect(0,0,300,300);
+  g.font = '230px serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText(e, 150, 165);
+  return c.toDataURL();
+}
+function startPuzzle(){
+  const pics = emojiPool(), pool = arcadePool();
+  const arena = document.getElementById('arena'), opts = document.getElementById('arcOpts'), prompt = document.getElementById('arcPrompt');
+  let picsDone = 0;
+  const newPicture = ()=>{
+    const pic = pick(pics); const img = emojiImage(pic.e);
+    arena.innerHTML = '<div class="puzzle"></div>';
+    const grid = arena.firstChild;
+    const tiles = [];
+    for(let i=0;i<9;i++){
+      const t = document.createElement('div'); t.className = 'pz-tile';
+      t.style.backgroundImage = `url(${img})`;
+      t.style.backgroundPosition = `${(i%3)*50}% ${Math.floor(i/3)*50}%`;
+      t.innerHTML = '<span class="pz-cover">?</span>';
+      grid.appendChild(t); tiles.push(t);
+    }
+    let covered = shuffle([...tiles.keys()]);
+    const ask = ()=>{
+      if(!arc.running) return;
+      if(!covered.length){ return finalQuestion(); }
+      const w = pick(pool), toTarget = Math.random()<0.5;
+      prompt.innerHTML = toTarget ? `Übersetze: <b>${escapeHtml(w[0])}</b>` : `Was heißt <b>${escapeHtml(w[1])}</b>?`;
+      const correct = toTarget ? w[1] : w[0];
+      const others = shuffle(pool.filter(x=>x!==w)).slice(0,3).map(x=>toTarget ? x[1] : x[0]);
+      opts.innerHTML = '';
+      shuffle([correct, ...others]).forEach(o=>{
+        const b = document.createElement('button'); b.className = 'arc-opt'; b.textContent = o;
+        b.onclick = ()=>{
+          if(!arc.running) return;
+          if(o===correct){
+            const i = covered.shift(); const t = tiles[i];
+            t.classList.add('open'); const r = t.getBoundingClientRect();
+            arcHit(r.left+r.width/2, r.top+r.height/2, 10); arcLater(ask, 350);
+          } else { b.classList.add('nope'); b.disabled = true; arcMiss(); }
+        };
+        opts.appendChild(b);
+      });
+    };
+    const finalQuestion = ()=>{
+      prompt.innerHTML = '🧩 Fertig! <b>Was ist auf dem Bild?</b>';
+      opts.innerHTML = '';
+      shuffle([pic, ...shuffle(pics.filter(p=>p!==pic)).slice(0,3)]).forEach(c=>{
+        const b = document.createElement('button'); b.className = 'arc-opt'; b.textContent = c.t;
+        b.onclick = ()=>{
+          if(!arc.running) return;
+          if(c===pic){ const r = arena.getBoundingClientRect(); arcHit(r.left+r.width/2, r.top+r.height/2, 30); launchConfetti(); }
+          else { sndWrong(); arc.combo = 0; }
+          picsDone++;
+          if(picsDone>=3) arcLater(endArcade, 600); else arcLater(newPicture, 700);
+          opts.innerHTML = '';
+        };
+        opts.appendChild(b);
+      });
+    };
+    ask();
+  };
+  newPicture();
+}
+
+/* ---------- 🏰 Wort-Verteidigung (Tower Defense) ---------- */
+const MONSTERS = ['👾','👹','🧟','👻','🐲','🦖','🤖','🎃'];
+function startTower(){
+  const pool = arcadePool();
+  const arena = document.getElementById('arena'), opts = document.getElementById('arcOpts');
+  document.getElementById('arcPrompt').innerHTML = 'Tippe die Übersetzung des vordersten Monsters!';
+  arena.innerHTML = '<div class="castle">🏰</div><div class="lane l0"></div><div class="lane l1"></div><div class="lane l2"></div>';
+  let nextSpawn = 0, front = null, wave = 1;
+  const renderOpts = ()=>{
+    opts.innerHTML = '';
+    if(!front) return;
+    const correct = front.word[1];
+    shuffle([correct, ...shuffle(pool.filter(w=>w[1]!==correct)).slice(0,3).map(w=>w[1])]).forEach(o=>{
+      const b = document.createElement('button'); b.className = 'arc-opt'; b.textContent = o;
+      b.onclick = ()=>{
+        if(!arc.running || !front) return;
+        if(o===front.word[1]){
+          const target = front; target.dead = true;
+          const castle = arena.querySelector('.castle').getBoundingClientRect(), r = target.el.getBoundingClientRect();
+          const shot = document.createElement('div'); shot.className = 'shot'; shot.textContent = '⚡';
+          document.body.appendChild(shot);
+          shot.animate([{left:castle.left+'px', top:castle.top+'px'},{left:r.left+'px', top:r.top+'px'}], {duration:220, fill:'forwards'});
+          setTimeout(()=>{ shot.remove(); target.el.classList.add('popped'); setTimeout(()=>target.el.remove(), 250); arcHit(r.left+r.width/2, r.top+r.height/2, 10); }, 220);
+          arc.ents = arc.ents.filter(x=>x!==target); front = null;
+        } else { b.classList.add('nope'); b.disabled = true; arc.combo = 0; sndWrong(); front.v *= 1.25; }
+      };
+      opts.appendChild(b);
+    });
+  };
+  const step = now=>{
+    if(!arc.running) return;
+    const dt = Math.min(0.05, (now-arc.last)/1000); arc.last = now;
+    const W = arena.clientWidth, H = arena.clientHeight;
+    if(now > nextSpawn){
+      const lane = Math.floor(Math.random()*3);
+      const el = document.createElement('div'); el.className = 'monster';
+      const word = pick(pool);
+      el.innerHTML = `<span class="m-body">${pick(MONSTERS)}</span><span class="m-word">${escapeHtml(word[0])}</span>`;
+      el.style.top = (H*(0.12 + lane*0.3)) + 'px';
+      arena.appendChild(el);
+      arc.ents.push({el, word, x:-70, v: Math.min(70, 16 + arc.score*0.12)});
+      wave = 1 + Math.floor(arc.score/100);
+      nextSpawn = now + Math.max(1600, 4200 - arc.score*8);
+    }
+    arc.ents.forEach(e=>{
+      e.x += e.v*dt; e.el.style.transform = `translateX(${e.x}px)`;
+      if(e.x > W-90 && !e.dead){
+        e.dead = true; e.el.classList.add('popped'); setTimeout(()=>e.el.remove(), 250);
+        burstAt(arena.getBoundingClientRect().right-40, e.el.getBoundingClientRect().top+20, ['💥','🔥'], 6);
+        arcMiss();
+      }
+    });
+    arc.ents = arc.ents.filter(e=>!e.dead);
+    const lead = arc.ents.reduce((a,e)=>!a || e.x>a.x ? e : a, null);
+    if(lead !== front){ front = lead; renderOpts(); arc.ents.forEach(e=>e.el.classList.toggle('lead', e===front)); }
+    document.getElementById('arcPrompt').innerHTML = `Welle ${wave} · Tippe die Übersetzung des <b>leuchtenden</b> Monsters!`;
+    arc.raf = requestAnimationFrame(step);
+  };
+  arc.raf = requestAnimationFrame(step);
+}
 
 /* ---------- INIT ---------- */
 ensureDaily(); ensureLeague(); applyAbsencePenalty(); checkAchievements(); saveState();
