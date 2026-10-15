@@ -499,6 +499,43 @@ body{
 .cefr-btn.sel{border-color:#06d6a0;background:#e8fff6;}
 .daily-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .daily-btns .btn{margin:0;padding:10px 6px;font-size:14px;}
+
+/* ===== FREUNDE & CHAT ===== */
+.friend-row{display:flex;align-items:center;gap:10px;background:var(--card);color:#1d4e63;border-radius:16px;padding:10px 12px;margin-bottom:8px;cursor:pointer;}
+.f-ava{font-size:30px;width:40px;text-align:center;}
+.f-main{flex:1;min-width:0;display:flex;flex-direction:column;}
+.f-main b{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.f-main small{font-size:12px;color:var(--muted);font-weight:700;}
+.f-badge{background:#ff5d5d;color:#fff;border-radius:12px;min-width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;}
+.f-go{font-size:20px;}
+.f-add{border:none;background:#06d6a0;color:#fff;font-weight:800;border-radius:12px;padding:8px 10px;cursor:pointer;font-family:inherit;}
+.f-sub{color:#cfe8ee;font-weight:800;font-size:13px;margin:10px 0 6px;}
+.f-hint{text-align:center;margin:10px 0;}
+.f-empty{text-align:center;}
+.f-input,.chat-bar input{width:100%;border:2px solid #e6ecf0;border-radius:14px;padding:12px;font-size:16px;font-family:inherit;margin:8px 0;box-sizing:border-box;}
+#screen-chat{padding:8px 12px;gap:6px;}
+.chat-head{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.chat-who{display:flex;align-items:center;gap:6px;flex:1;min-width:0;color:#fff;cursor:pointer;}
+.chat-who small{color:#cfe8ee;}
+.chat-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding:4px 0;min-height:0;}
+.bubble{max-width:78%;padding:9px 12px;border-radius:18px;font-size:15px;line-height:1.3;word-wrap:break-word;animation:popIn .25s both;}
+.bubble.me{align-self:flex-end;background:#06d6a0;color:#fff;border-bottom-right-radius:6px;}
+.bubble.them{align-self:flex-start;background:#fff;color:#1d4e63;border-bottom-left-radius:6px;}
+.bubble.sys{opacity:.8;font-style:italic;font-size:13px;}
+.bubble.gift,.bubble.brag{display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:linear-gradient(145deg,#ffd23f,#ff9f1c);color:#4a2c00;}
+.bubble.brag{background:linear-gradient(145deg,#c9b6ff,#7b5bff);color:#fff;}
+.g-ico{font-size:28px;}
+.g-claim{width:100%;margin:4px 0 0;padding:8px;}
+.chat-quick,.chat-gifts{display:flex;gap:6px;overflow-x:auto;flex-shrink:0;scrollbar-width:none;}
+.chat-chip{flex-shrink:0;border:none;background:rgba(255,255,255,.15);color:#fff;border-radius:14px;padding:7px 11px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.bubble .chat-chip{background:rgba(255,255,255,.25);}
+.chat-gifts .chat-chip{background:#fff;color:#1d4e63;}
+.chat-bar{display:flex;gap:6px;flex-shrink:0;}
+.chat-bar input{margin:0;}
+.chat-bar button{border:none;background:#06d6a0;color:#fff;font-size:20px;border-radius:14px;width:52px;cursor:pointer;}
+.brag-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:12px 0;max-height:50vh;overflow-y:auto;}
+.brag-item{border:2px solid #e6ecf0;background:#fff;border-radius:14px;padding:8px 4px;cursor:pointer;font-family:inherit;color:#1d4e63;}
+.brag-item span{font-size:28px;display:block;}.brag-item small{font-size:11px;font-weight:800;}
 </style>
 </head>
 <body>
@@ -611,9 +648,23 @@ body{
 
   <!-- ===== LIGA ===== -->
   <section class="screen" id="screen-league">
+    <div class="seg"><button class="seg-btn sel" id="segLeague">🏆 Liga</button><button class="seg-btn" id="segFriends">👥 Freunde</button></div>
+    <div id="leagueBox">
     <div class="map-title" id="leagueTitle">🥉 Bronze-Liga</div>
     <div class="map-sub" id="leagueSub">Top 3 steigen auf · Endet in 3 Tagen</div>
     <div class="league-list" id="leagueList"></div>
+    </div>
+    <div id="friendsBox" class="hidden"></div>
+  </section>
+
+  <!-- ===== CHAT ===== -->
+  <section class="screen" id="screen-chat">
+    <div class="chat-head"><button class="back-link" id="chatBack">‹</button>
+      <div id="chatHead" class="chat-who"><span class="f-ava" id="chatAva">🦉</span><span class="f-main"><b id="chatName"></b><small id="chatSub"></small></span></div></div>
+    <div class="chat-list" id="chatList"></div>
+    <div class="chat-quick" id="chatQuick"></div>
+    <div class="chat-gifts"><button class="chat-chip" id="giftHeart">❤️ Herz schenken</button><button class="chat-chip" id="giftCoins">🪙 20 schenken</button><button class="chat-chip" id="giftBrag">🏅 Erfolg</button></div>
+    <div class="chat-bar"><input id="chatInput" maxlength="500" placeholder="Nachricht …" autocomplete="off"><button id="chatSend">➤</button></div>
   </section>
 
   <!-- ===== LEVEL INTRO ===== -->
@@ -682,7 +733,7 @@ body{
     <button class="nav-btn active" data-nav="map"><span class="icon">🗺️</span>Lernen</button>
     <button class="nav-btn" data-nav="grammar"><span class="icon">📘</span>Üben</button>
     <button class="nav-btn" data-nav="quests"><span class="icon">🎯</span>Quests<span class="nav-dot hidden" id="questDot"></span></button>
-    <button class="nav-btn" data-nav="league"><span class="icon">🏆</span>Liga</button>
+    <button class="nav-btn" data-nav="league"><span class="icon">🏆</span>Liga<span class="nav-dot hidden" id="friendDot"></span></button>
     <button class="nav-btn" data-nav="stats"><span class="icon">👤</span>Profil</button>
   </div>
 
@@ -706,7 +757,7 @@ body{
     <details class="fold"><summary>🛒 Shop <span class="panel-sub">🪙 <span id="shopCoins">0</span> · 💎 <span id="gemCount">0</span></span></summary>
       <div id="shopList"></div><div id="gemShop"></div></details>
     <details class="fold"><summary>🏅 Erfolge <span class="panel-sub" id="achCount"></span></summary>
-      <div class="ach-grid" id="achGrid"></div></details>
+      <div class="ach-grid" id="achGrid"></div><button class="btn btn-secondary" id="shareAchBtn">📤 Erfolg teilen</button></details>
     <details class="fold"><summary>👥 Spieler &amp; Sicherung</summary>
       <div class="account-card"><div id="accountInfo">📱 Nur auf diesem Gerät gespeichert</div>
       <div class="player-chips" id="playerChips" style="margin-top:8px"></div>
@@ -737,6 +788,13 @@ body{
     <div id="penList"></div>
     <button class="btn btn-yellow hidden" id="penRepair">🔧 Streak reparieren</button>
     <button class="btn btn-primary" id="penOk">💪 Jetzt aufholen</button>
+  </div>
+</div>
+<div class="ad-overlay hidden" id="bragOverlay">
+  <div class="ad-card">
+    <div class="intro-title" id="bragTitle">🏅 Erfolg teilen</div>
+    <div class="brag-grid" id="bragList"></div>
+    <button class="btn btn-secondary" id="bragClose">Schließen</button>
   </div>
 </div>
 <div class="ad-overlay hidden" id="wheelOverlay">
@@ -1307,6 +1365,7 @@ function loadState(){
 }
 function saveState(){
   regenHearts();
+  try{ pushMyCard(); }catch(e){}
   state.savedAt = Date.now();
   if(typeof scheduleCloud==='function') scheduleCloud();
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -2441,9 +2500,9 @@ document.querySelectorAll('.nav-btn').forEach(btn=>{
     btn.classList.add('active');
     sndTap();
     if(btn.dataset.nav==='map'){ pendingMode='vocab'; renderMap(); showScreen('screen-map'); }
-    else if(btn.dataset.nav==='grammar'){ pendingMode=practiceTab==='grammar'?'grammar':'phrases'; renderGrammar(); showScreen('screen-grammar'); }
+    else if(btn.dataset.nav==='grammar'){ pendingMode=practiceTab; renderGrammar(); showScreen('screen-grammar'); }
     else if(btn.dataset.nav==='quests'){ renderQuests(); showScreen('screen-quests'); }
-    else if(btn.dataset.nav==='league'){ renderLeague(); showScreen('screen-league'); }
+    else if(btn.dataset.nav==='league'){ renderLeague(); showScreen('screen-league'); renderFriendsIfOpen(); }
     else { renderStats(); showScreen('screen-stats'); }
   });
 });
@@ -3513,7 +3572,8 @@ function adoptState(obj, msg){
     cloud.name = me.name || '';
     cloud.ref = db.collection('data/users/' + me.id).doc(activeProfileId()==='p1' ? 'save' : 'save_' + activeProfileId());
     const snap = await cloud.ref.get();
-    const remote = snap.exists && snap.data && typeof snap.data.state==='string' ? JSON.parse(snap.data.state) : null;
+    const sd = snap.exists ? (typeof snap.data==='function' ? snap.data() : snap.data) : null;
+    const remote = sd && typeof sd.state==='string' ? JSON.parse(sd.state) : null;
     // Der Stand mit mehr Fortschritt gewinnt – nie einen vollen Stand durch einen leeren ersetzen
     if(remote && progressScore(remote) > progressScore(state)){
       adoptState(remote, '☁️ Dein Fortschritt wurde aus deinem Konto geladen');
@@ -4331,6 +4391,252 @@ function startClouds(){
 document.getElementById('goalToggle').addEventListener('click', ()=>document.getElementById('goalChips').classList.toggle('hidden'));
 document.getElementById('inviteBtn').addEventListener('click', ()=>{ sndTap(); inviteWhatsApp(); });
 document.getElementById('gemsPill').addEventListener('click', ()=>{ sndTap(); renderStats(); showScreen('screen-stats'); setNav('stats'); const f = document.getElementById('shopList').closest('details'); f.open = true; setTimeout(()=>f.scrollIntoView({block:'start'}), 50); });
+/* =========================================================
+   👥 FREUNDE: Liste, Chat, Geschenke, Erfolge teilen
+   Gemeinsame Daten im Artifact-Speicher:
+   players/<id>  – öffentliche Spielerkarte (nur man selbst schreibt sie)
+   msgs/<auto>   – Nachrichten {from,to,pair,text,gift,ach,ts,claimed}
+   ========================================================= */
+const ARTIFACT_LINK = 'https://claude.ai/artifact/BSkBh8WuiAroC5Em3R9R2U';
+const fr = {db:null, uid:null, players:{}, msgs:[], open:null, unsubP:null, unsubM:null, ready:false, failed:false, tab:'league'};
+const QUICK = {
+  en:['Great job! 👏','Keep going! 💪','Let\'s practice together!','See you tomorrow! 👋'],
+  es:['¡Buen trabajo! 👏','¡Sigue así! 💪','¡Practiquemos juntos!','¡Hasta mañana! 👋'],
+  fr:['Bravo ! 👏','Continue comme ça ! 💪','On s\'entraîne ensemble ?','À demain ! 👋'],
+  it:['Ottimo lavoro! 👏','Continua così! 💪','Esercitiamoci insieme!','A domani! 👋'],
+};
+function pairId(a,b){ return [a,b].sort().join('~'); }
+function myCard(){
+  const li = levelInfo(state.xp);
+  return {nick: state.nick || 'Spieler', mascot: state.mascot || '🦉', lang: currentLang(), cefr: myCefr(),
+    level: li.level, xp: state.xp, streak: state.streak, ach: Object.keys(state.achievements||{}), ts: Date.now()};
+}
+let frCardTimer = null;
+function pushMyCard(){
+  if(!fr.ready || !state.nick) return;
+  clearTimeout(frCardTimer);
+  frCardTimer = setTimeout(()=>{
+    const c = myCard(), key = JSON.stringify({...c, ts:0});
+    if(key===fr.lastCard) return;
+    fr.lastCard = key; fr.db.doc('players/' + fr.uid).set(c).catch(()=>{ fr.lastCard = null; });
+  }, 1500);
+}
+async function initFriends(){
+  try{
+    if(!window.claude) throw 0;
+    const [db, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
+    const uid = user && await user.id();
+    if(!db || !uid) throw 0;
+    Object.assign(fr, {db, uid, ready:true});
+    fr.unsubP = db.collection('players').onSnapshot(s=>{
+      fr.players = {}; s.docs.forEach(d=>{ if(d.exists) fr.players[d.id] = d.data(); });
+      renderFriendsIfOpen();
+    }, ()=>{});
+    fr.unsubM = db.collection('msgs').orderBy('ts','desc').limit(300).onSnapshot(s=>{
+      fr.msgs = s.docs.map(d=>({id:d.id, ...d.data()})).filter(m=>m.from===uid || m.to===uid).reverse();
+      updateFriendDot(); renderFriendsIfOpen(); if(fr.open) renderChat();
+    }, ()=>{});
+    pushMyCard();
+  }catch(e){ fr.failed = true; }
+  renderFriendsIfOpen();
+}
+function friendIds(){
+  const ids = new Set(state.friends || []);
+  fr.msgs.forEach(m=>{ if(m.to===fr.uid) ids.add(m.from); });   // wer mir schreibt, steht auch in meiner Liste
+  ids.delete(fr.uid);
+  return [...ids].filter(id=>fr.players[id]);
+}
+function unreadFrom(id){ const seen = (state.lastRead||{})[id] || 0; return fr.msgs.filter(m=>m.from===id && m.to===fr.uid && m.ts>seen).length; }
+function updateFriendDot(){
+  const d = document.getElementById('friendDot'); if(!d || !fr.ready) return;
+  d.classList.toggle('hidden', !friendIds().some(id=>unreadFrom(id)>0));
+}
+function renderFriendsIfOpen(){
+  if(document.getElementById('screen-league').classList.contains('active') && fr.tab==='friends') renderFriends();
+}
+function setLeagueTab(t){
+  fr.tab = t;
+  document.getElementById('segLeague').classList.toggle('sel', t==='league');
+  document.getElementById('segFriends').classList.toggle('sel', t==='friends');
+  document.getElementById('leagueBox').classList.toggle('hidden', t!=='league');
+  document.getElementById('friendsBox').classList.toggle('hidden', t!=='friends');
+  if(t==='friends') renderFriends();
+}
+function playerRow(id, p, extra){
+  const el = document.createElement('div'); el.className = 'friend-row';
+  el.innerHTML = `<span class="f-ava">${p.mascot||'🦉'}</span><span class="f-main"><b></b><small>${LANGS[p.lang]?LANGS[p.lang].label.split(' ')[0]:''} ${p.cefr||''} · Lv ${p.level||1} · 🔥 ${p.streak||0}</small></span>${extra||''}`;
+  el.querySelector('b').textContent = p.nick || 'Spieler';
+  return el;
+}
+function renderFriends(){
+  const box = document.getElementById('friendsBox');
+  if(!fr.ready){
+    box.innerHTML = `<div class="panel f-empty">${fr.failed
+      ? '👥 Freunde gibt es in der Claude-App-Version. Öffne die App über den Claude-Link und melde dich an.'
+      : '⏳ Verbinde …'}</div>`;
+    return;
+  }
+  if(!state.nick){
+    box.innerHTML = `<div class="panel f-empty"><div class="panel-title">Wie sollen dich Freunde sehen?</div>
+      <input id="nickIn" class="f-input" maxlength="16" placeholder="Spitzname"><button class="btn btn-primary" id="nickOk">Los geht's</button></div>`;
+    document.getElementById('nickOk').onclick = ()=>{
+      const v = document.getElementById('nickIn').value.trim(); if(!v) return;
+      state.nick = v.slice(0,16); saveState(); pushMyCard(); renderFriends();
+    };
+    return;
+  }
+  box.innerHTML = '';
+  const ids = friendIds();
+  if(!ids.length) box.insertAdjacentHTML('beforeend', '<div class="panel-sub f-hint">Noch keine Freunde – füge unten jemanden hinzu 👇</div>');
+  ids.sort((a,b)=>(fr.players[b].xp||0)-(fr.players[a].xp||0)).forEach(id=>{
+    const n = unreadFrom(id);
+    const el = playerRow(id, fr.players[id], n ? `<span class="f-badge">${n}</span>` : '<span class="f-go">💬</span>');
+    el.onclick = ()=>openChat(id);
+    box.appendChild(el);
+  });
+  const others = Object.keys(fr.players).filter(id=>id!==fr.uid && !ids.includes(id));
+  if(others.length){
+    box.insertAdjacentHTML('beforeend', '<div class="f-sub">➕ Weitere Spieler</div>');
+    others.forEach(id=>{
+      const el = playerRow(id, fr.players[id], '<button class="f-add">+ Freund</button>');
+      el.querySelector('.f-add').onclick = ev=>{ ev.stopPropagation(); addFriend(id); };
+      box.appendChild(el);
+    });
+  }
+  const inv = document.createElement('button'); inv.className = 'btn btn-secondary'; inv.textContent = '📲 Freunde einladen';
+  inv.onclick = inviteFriendsChat; box.appendChild(inv);
+}
+async function sendMsg(to, body){
+  if(!fr.ready) return false;
+  try{
+    await fr.db.collection('msgs').add({from:fr.uid, to, pair:pairId(fr.uid,to), ts:Date.now(), text:'', ...body});
+    return true;
+  }catch(e){ toast('📡 Senden ging nicht – bitte nochmal versuchen'); return false; }
+}
+function addFriend(id){
+  state.friends = [...new Set([...(state.friends||[]), id])]; saveState();
+  sndCorrect(); toast(`👥 ${fr.players[id].nick||'Spieler'} ist jetzt dein Freund!`);
+  sendMsg(id, {text:'👋 hat dich als Freund hinzugefügt!', sys:true});
+  renderFriends();
+}
+function inviteFriendsChat(){
+  const msg = `Hey! 🦉 Lern mit mir Sprachen in Wortreise – wir können uns schreiben und Herzen schenken 😄 👉 ${ARTIFACT_LINK}`;
+  const a = document.createElement('a'); a.href = 'https://wa.me/?text=' + encodeURIComponent(msg); a.target = '_blank'; a.rel = 'noopener';
+  document.body.appendChild(a); a.click(); a.remove();
+  toast('💡 Teile die App zusätzlich in Claude (Teilen → Mitwirkender), damit dein Freund schreiben kann.');
+}
+
+/* ---------- Chat ---------- */
+function openChat(id){
+  fr.open = id; showScreen('screen-chat');
+  const p = fr.players[id] || {};
+  document.getElementById('chatAva').textContent = p.mascot || '🦉';
+  document.getElementById('chatName').textContent = p.nick || 'Spieler';
+  document.getElementById('chatSub').textContent = `Lv ${p.level||1} · 🔥 ${p.streak||0} · 🏅 ${(p.ach||[]).length}`;
+  const q = document.getElementById('chatQuick'); q.innerHTML = '';
+  (QUICK[currentLang()]||QUICK.en).forEach(t=>{
+    const b = document.createElement('button'); b.className = 'chat-chip'; b.textContent = t;
+    b.onclick = ()=>{ sndTap(); sendMsg(id, {text:t}); };
+    q.appendChild(b);
+  });
+  renderChat();
+}
+function giftLabel(g){ return g.hearts ? `❤️ ${g.hearts} Herz` : `🪙 ${g.coins} Münzen`; }
+function renderChat(){
+  const id = fr.open; if(!id) return;
+  const box = document.getElementById('chatList');
+  const list = fr.msgs.filter(m=>m.pair===pairId(fr.uid,id));
+  box.innerHTML = list.length ? '' : '<div class="panel-sub f-hint">Sag Hallo! 👋</div>';
+  list.forEach(m=>{
+    const mine = m.from===fr.uid;
+    const el = document.createElement('div'); el.className = 'bubble ' + (mine ? 'me' : 'them') + (m.sys ? ' sys' : '');
+    if(m.gift){
+      el.classList.add('gift');
+      el.innerHTML = `<div class="g-ico">🎁</div><div>${mine ? 'Du hast geschenkt' : 'Geschenk für dich'}: <b>${giftLabel(m.gift)}</b></div>`;
+      if(!mine && !m.claimed){
+        const b = document.createElement('button'); b.className = 'btn btn-primary g-claim'; b.textContent = 'Auspacken!';
+        b.onclick = ()=>claimGift(m, b); el.appendChild(b);
+      } else if(!mine) el.insertAdjacentHTML('beforeend', '<small>✅ ausgepackt</small>');
+    } else if(m.ach){
+      const a = ACHIEVEMENTS.find(x=>x.id===m.ach);
+      el.classList.add('brag');
+      el.innerHTML = `<div class="g-ico">${a ? a.icon : '🏅'}</div><div><b>${a ? a.name : 'Erfolg'}</b><br><small>${a ? a.desc : ''}</small></div>`;
+      if(!mine){ const b = document.createElement('button'); b.className = 'chat-chip'; b.textContent = '👏 Gratulieren'; b.onclick = ()=>sendMsg(id, {text:'👏 Glückwunsch zu „' + (a?a.name:'') + '“!'}); el.appendChild(b); }
+    } else {
+      el.textContent = m.text;
+    }
+    box.appendChild(el);
+  });
+  box.scrollTop = box.scrollHeight;
+  const last = list.filter(m=>m.from===id).pop();
+  if(last){ state.lastRead = state.lastRead || {}; if((state.lastRead[id]||0) < last.ts){ state.lastRead[id] = last.ts; saveState(); updateFriendDot(); } }
+}
+async function claimGift(m, btn){
+  btn.disabled = true;
+  const claimedLocal = state.claimedGifts || [];
+  if(claimedLocal.includes(m.id)) return;
+  try{ await fr.db.doc('msgs/' + m.id).update({claimed:true}); }catch(e){ btn.disabled = false; toast('📡 Bitte nochmal versuchen'); return; }
+  state.claimedGifts = [...claimedLocal.slice(-200), m.id];
+  if(m.gift.hearts){ state.hearts = Math.min(MAX_HEARTS, state.hearts + m.gift.hearts); if(state.hearts>=MAX_HEARTS) state.lastHeartLoss = null; }
+  if(m.gift.coins) state.coins += m.gift.coins;
+  sndLevelUp(); launchConfetti(); toast(`🎁 ${giftLabel(m.gift)} erhalten!`);
+  saveState(); updateTopbar();
+}
+function sendGift(kind){
+  const id = fr.open; if(!id) return;
+  const today = todayStr();
+  state.giftLog = state.giftLog && state.giftLog.date===today ? state.giftLog : {date:today, hearts:{}};
+  if(kind==='heart'){
+    if(state.giftLog.hearts[id]){ toast('❤️ Heute schon ein Herz geschenkt – morgen wieder!'); return; }
+    state.giftLog.hearts[id] = 1; saveState();
+    sendMsg(id, {gift:{hearts:1}}).then(ok=>{ if(ok){ sndCorrect(); toast('❤️ Herz verschickt! (kostet dich nichts)'); } });
+  } else {
+    if(state.coins < 20){ toast('Zu wenig 🪙'); return; }
+    state.coins -= 20; saveState(); updateTopbar();
+    sendMsg(id, {gift:{coins:20}}).then(ok=>{ if(ok){ sndCorrect(); toast('🪙 20 Münzen verschickt!'); } else { state.coins += 20; saveState(); updateTopbar(); } });
+  }
+}
+function openBrag(){
+  const ov = document.getElementById('bragOverlay'), box = document.getElementById('bragList');
+  box.innerHTML = '';
+  const got = ACHIEVEMENTS.filter(a=>state.achievements[a.id]);
+  if(!got.length) box.innerHTML = '<div class="panel-sub">Noch keine Erfolge – spiel eine Lektion! 🎓</div>';
+  got.forEach(a=>{
+    const b = document.createElement('button'); b.className = 'brag-item';
+    b.innerHTML = `<span>${a.icon}</span><small>${a.name}</small>`;
+    b.onclick = ()=>{ ov.classList.add('hidden'); if(fr.open) sendMsg(fr.open, {ach:a.id}); else shareAchievement(a); };
+    box.appendChild(b);
+  });
+  document.getElementById('bragTitle').textContent = fr.open && document.getElementById('screen-chat').classList.contains('active') ? '🏅 Welchen Erfolg zeigen?' : '🏅 Erfolg teilen';
+  ov.classList.remove('hidden');
+}
+function shareAchievement(a){
+  const text = `🏅 Ich habe in Wortreise den Erfolg „${a.name}“ freigeschaltet: ${a.desc}! ${a.icon} Spiel mit 👉 ${PUBLIC_LINK}`;
+  if(navigator.share){ navigator.share({text}).catch(()=>{}); return; }
+  const l = document.createElement('a'); l.href = 'https://wa.me/?text=' + encodeURIComponent(text); l.target = '_blank'; l.rel = 'noopener';
+  document.body.appendChild(l); l.click(); l.remove();
+}
+function showFriendProfile(){
+  const p = fr.players[fr.open]; if(!p) return;
+  const icons = (p.ach||[]).map(id=>{ const a = ACHIEVEMENTS.find(x=>x.id===id); return a ? a.icon : ''; }).join(' ');
+  toast(`${p.mascot||'🦉'} ${p.nick}: ${p.xp||0} XP · ${icons || 'noch keine Erfolge'}`);
+}
+document.getElementById('segLeague').onclick = ()=>{ sndTap(); setLeagueTab('league'); };
+document.getElementById('segFriends').onclick = ()=>{ sndTap(); setLeagueTab('friends'); };
+document.getElementById('chatBack').onclick = ()=>{ fr.open = null; renderLeague(); showScreen('screen-league'); setNav('league'); setLeagueTab('friends'); };
+document.getElementById('chatHead').onclick = showFriendProfile;
+document.getElementById('chatSend').onclick = ()=>{
+  const i = document.getElementById('chatInput'); const t = i.value.trim(); if(!t || !fr.open) return;
+  i.value = ''; sendMsg(fr.open, {text:t.slice(0,500)});
+};
+document.getElementById('chatInput').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('chatSend').click(); });
+document.getElementById('giftHeart').onclick = ()=>sendGift('heart');
+document.getElementById('giftCoins').onclick = ()=>sendGift('coins');
+document.getElementById('giftBrag').onclick = openBrag;
+document.getElementById('bragClose').onclick = ()=>document.getElementById('bragOverlay').classList.add('hidden');
+document.getElementById('shareAchBtn').onclick = ()=>{ fr.open = null; openBrag(); };
+initFriends();
+
 /* ---------- INIT ---------- */
 ensureDaily(); ensureLeague(); applyAbsencePenalty(); checkAchievements(); saveState(); applyMascot(); updateTopbar();
 if(state.difficulty) setTimeout(maybeShowDaily, 1200);
