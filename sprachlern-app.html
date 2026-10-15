@@ -209,7 +209,7 @@ body{
 .confetti{position:fixed;top:-10px;width:8px;height:14px;z-index:50;pointer-events:none;border-radius:2px;}
 
 /* combo toast */
-.combo-toast{
+.combo-toast{pointer-events:none;
   position:fixed;top:70px;left:50%;transform:translateX(-50%) scale(0.8);background:var(--accent);
   color:#3a2a00;font-weight:800;padding:8px 16px;border-radius:20px;font-size:14px;z-index:40;
   opacity:0;transition:all .25s ease;box-shadow:0 4px 14px rgba(0,0,0,0.25);
@@ -371,7 +371,7 @@ body{
 .hint-btn{background:#fff;border:none;border-radius:10px;padding:3px 7px;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;}
 .toast{position:fixed;top:12px;left:50%;transform:translate(-50%,-150%);background:#fff;color:var(--text);border-radius:16px;padding:10px 16px;font-weight:800;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,0.3);z-index:60;transition:transform .35s cubic-bezier(.2,1.4,.4,1);max-width:90%;text-align:center;}
 .toast.show{transform:translate(-50%,0);}
-.xp-pop{position:fixed;top:45%;left:50%;transform:translate(-50%,-50%);color:var(--accent);font-size:26px;font-weight:800;text-shadow:0 3px 10px rgba(0,0,0,0.4);pointer-events:none;opacity:0;z-index:55;}
+.xp-pop{pointer-events:none;position:fixed;top:45%;left:50%;transform:translate(-50%,-50%);color:var(--accent);font-size:26px;font-weight:800;text-shadow:0 3px 10px rgba(0,0,0,0.4);pointer-events:none;opacity:0;z-index:55;}
 .xp-pop.go{animation:xpUp 1s ease-out;}
 @keyframes xpUp{0%{opacity:0;transform:translate(-50%,-30%) scale(.7);}20%{opacity:1;transform:translate(-50%,-50%) scale(1.1);}100%{opacity:0;transform:translate(-50%,-160%) scale(1);}}
 #screen-stats{display:none;}
@@ -480,6 +480,25 @@ body{
 .gem-pack{position:relative;border:none;border-radius:14px;background:linear-gradient(145deg,#3ea8ff,#7b5bff);color:#fff;padding:12px 4px 8px;font-weight:900;cursor:pointer;font-family:inherit;}
 .gem-pack span{display:block;font-size:15px;}.gem-pack small{opacity:.9;}
 .gem-pack em{position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:#ffd23f;color:#1d4e63;font-size:9px;font-style:normal;border-radius:8px;padding:1px 6px;white-space:nowrap;}
+
+/* ===== AUFGERÄUMT ===== */
+.stat-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px;}
+.stat-tiles div{background:#f1f6f8;border-radius:12px;padding:8px 4px;text-align:center;color:#1d4e63;}
+.stat-tiles b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.stat-tiles small{font-size:11px;color:var(--muted);font-weight:700;}
+.fold{background:var(--card);border-radius:18px;margin:0 0 10px;padding:0 14px;color:#1d4e63;}
+.fold summary{list-style:none;padding:14px 0;font-weight:900;font-size:16px;cursor:pointer;display:flex;align-items:center;gap:8px;}
+.fold summary::-webkit-details-marker{display:none;}
+.fold summary::after{content:'›';margin-left:auto;font-size:22px;transition:transform .2s;}
+.fold[open] summary::after{transform:rotate(90deg);}
+.fold[open]{padding-bottom:10px;}
+.cefr-or{text-align:center;font-size:13px;color:var(--muted);font-weight:700;margin:4px 0;}
+.cefr-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;}
+.cefr-btn{border:2px solid #e6ecf0;background:#fff;border-radius:14px;padding:10px 2px;cursor:pointer;font-family:inherit;color:#1d4e63;}
+.cefr-btn b{display:block;font-size:20px;}.cefr-btn small{font-size:9px;display:block;overflow:hidden;text-overflow:ellipsis;font-weight:700;color:var(--muted);}
+.cefr-btn.sel{border-color:#06d6a0;background:#e8fff6;}
+.daily-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.daily-btns .btn{margin:0;padding:10px 6px;font-size:14px;}
 </style>
 </head>
 <body>
@@ -517,10 +536,8 @@ body{
       <div class="mascot-wrap">
         <div class="mascot">🦉</div>
         <div class="mascot-shadow"></div>
-        <div class="speech-bubble">Wie sehr willst du gefordert werden?</div>
+        <div class="speech-bubble">Wie gut kannst du es schon?</div>
       </div>
-      <div class="intro-title">Level wählen 🎯</div>
-      <div class="intro-desc">Die Aufgaben passen sich an dein Können an</div>
       <div class="diff-list" id="diffList"></div>
     </div>
   </section>
@@ -583,12 +600,11 @@ body{
     <div class="map-sub" id="questTimer">Neue Quests um Mitternacht</div>
     <div class="panel" id="dailyBox"></div>
     <div class="panel">
-      <div class="panel-title">Tagesziel</div>
-      <div class="goal-chips" id="goalChips"></div>
+      <div class="panel-title" id="goalToggle" style="cursor:pointer">🎯 Tagesziel <span class="panel-sub" style="display:inline">✏️</span></div>
+      <div class="goal-chips hidden" id="goalChips"></div>
       <div class="mini-bar big"><div class="mini-fill goal" id="goalFill2"></div></div>
       <div class="panel-sub" id="goalText">0 / 20 XP heute</div>
     </div>
-    <div class="panel-sub" style="text-align:center;margin:-4px 0 8px;">⚠️ Einen Tag auslassen kostet: −15 XP, −10 🪙, −2 ❤️ und den Streak – außer du hast 🧊 Streak-Schutz.</div>
     <div id="questList"></div>
     <button class="btn btn-yellow" id="chestBtn">🎁 Truhe: alle 3 Quests schaffen</button>
   </section>
@@ -672,46 +688,37 @@ body{
 
   <!-- ===== STATS SCREEN (modal-ish, reuses screen system) ===== -->
   <section class="screen" id="screen-stats">
-    <div class="card account-card" style="margin:0 0 12px;">
-      <div id="accountInfo">📱 Nur auf diesem Gerät gespeichert</div>
-      <div class="panel-title dark" style="margin:12px 0 6px;">👥 Spieler</div>
-      <div class="player-chips" id="playerChips"></div>
-      <div class="adapt-btns"><button class="btn btn-secondary" id="exportBtn">📤 Sicherungscode</button><button class="btn btn-secondary" id="importBtn">📥 Code laden</button></div>
-    </div>
-    <div class="card" style="margin:0 0 12px;">
+    <div class="card" style="margin:0 0 10px;">
       <div class="profile-head"><div class="rank-badge big" id="profRank">🥚</div>
         <div><div class="intro-title" style="text-align:left;margin:0;" id="profName">Lv 1 · Ei</div>
         <div class="panel-sub" id="profNext">50 XP bis Level 2</div></div></div>
-      <div class="result-stat-row"><span>🏆 Gesamt-XP</span><span id="statXp">0</span></div>
-      <div class="result-stat-row"><span>🔥 Tages-Streak</span><span id="statStreak">0</span></div>
-      <div class="result-stat-row"><span>🪙 Münzen</span><span id="statCoins">0</span></div>
-      <div class="result-stat-row"><span>✅ Level abgeschlossen</span><span id="statLevels">0</span></div>
-      <div class="result-stat-row"><span>⭐ Sterne gesamt</span><span id="statStars">0</span></div>
-      <div class="result-stat-row"><span>🎯 Trefferquote (zuletzt)</span><span id="statAcc">–</span></div>
-      <div class="result-stat-row"><span>🗣️ Sprechniveau</span><span id="statSpeak">–</span></div>
+      <div class="stat-tiles">
+        <div><b id="statXp">0</b><small>🏆 XP</small></div>
+        <div><b id="statStreak">0</b><small>🔥 Streak</small></div>
+        <div><b id="statStars">0</b><small>⭐ Sterne</small></div>
+        <div><b id="statLevels">0</b><small>✅ Level</small></div>
+        <div><b id="statAcc">–</b><small>🎯 Treffer</small></div>
+        <div><b id="statSpeak">–</b><small>🗣️ Sprechen</small></div>
+      </div>
+      <span id="statCoins" hidden></span>
+      <button class="btn btn-primary" id="inviteBtn" style="margin-top:10px;">📲 Freunde einladen</button>
     </div>
-    <div class="card" style="margin:0 0 12px;">
-      <div class="panel-title dark">🏅 Erfolge <span id="achCount"></span></div>
-      <div class="ach-grid" id="achGrid"></div>
-    </div>
-    <div class="card" style="margin:0 0 12px;">
-      <div class="panel-title dark">🛒 Shop <span class="panel-sub" style="display:inline">(🪙 <span id="shopCoins">0</span>)</span></div>
-      <div id="shopList"></div>
-    </div>
-    <div class="card" style="margin:0 0 12px;">
-      <div class="panel-title dark">💎 Diamanten <span class="panel-sub" style="display:inline">(💎 <span id="gemCount">0</span>)</span></div>
-      <div id="gemShop"></div>
-    </div>
-    <div class="card" style="margin:0 0 12px;">
-      <div class="panel-title dark">⚙️ Einstellungen</div>
-      <button class="btn btn-primary" id="inviteBtn">📲 Freunde per WhatsApp einladen (+3 💎)</button>
-      <button class="btn btn-secondary" id="ideaBtn">💡 Idee / Fehler melden</button>
+    <details class="fold"><summary>🛒 Shop <span class="panel-sub">🪙 <span id="shopCoins">0</span> · 💎 <span id="gemCount">0</span></span></summary>
+      <div id="shopList"></div><div id="gemShop"></div></details>
+    <details class="fold"><summary>🏅 Erfolge <span class="panel-sub" id="achCount"></span></summary>
+      <div class="ach-grid" id="achGrid"></div></details>
+    <details class="fold"><summary>👥 Spieler &amp; Sicherung</summary>
+      <div class="account-card"><div id="accountInfo">📱 Nur auf diesem Gerät gespeichert</div>
+      <div class="player-chips" id="playerChips" style="margin-top:8px"></div>
+      <div class="adapt-btns"><button class="btn btn-secondary" id="exportBtn">📤 Sicherungscode</button><button class="btn btn-secondary" id="importBtn">📥 Code laden</button></div></div></details>
+    <details class="fold"><summary>⚙️ Einstellungen</summary>
+      <button class="btn btn-secondary" id="changeLangBtn">🌍 Sprache ändern</button>
+      <button class="btn btn-secondary" id="changeDiffBtn">🎯 Niveau ändern (A1–C1)</button>
       <button class="btn btn-secondary" id="soundBtn">🔊 Ton: an</button>
       <button class="btn btn-secondary" id="placementBtn">🧪 Einstufungstest wiederholen</button>
-      <button class="btn btn-secondary" id="changeLangBtn">🌍 Sprache ändern</button>
-      <button class="btn btn-secondary" id="changeDiffBtn">🎯 Level ändern</button>
+      <button class="btn btn-secondary" id="ideaBtn">💡 Idee / Fehler melden</button>
       <button class="btn btn-secondary" id="resetProgressBtn">Fortschritt zurücksetzen</button>
-    </div>
+      <div class="panel-sub" style="margin:6px 0 12px;">⚠️ Ein ausgelassener Tag kostet XP, Münzen, 2 ❤️ und den Streak – außer du hast 🧊 Streak-Schutz.</div></details>
   </section>
 
 </div>
@@ -730,6 +737,14 @@ body{
     <div id="penList"></div>
     <button class="btn btn-yellow hidden" id="penRepair">🔧 Streak reparieren</button>
     <button class="btn btn-primary" id="penOk">💪 Jetzt aufholen</button>
+  </div>
+</div>
+<div class="ad-overlay hidden" id="wheelOverlay">
+  <div class="ad-card">
+    <div class="intro-title">🎡 Glücksrad</div>
+    <div id="wheelSlot" style="display:flex;justify-content:center;margin:14px 0;"></div>
+    <button class="btn btn-primary" id="wheelGo">Drehen!</button>
+    <button class="btn btn-secondary" id="wheelClose">Schließen</button>
   </div>
 </div>
 <div class="ad-overlay hidden" id="adOverlay">
@@ -1349,16 +1364,33 @@ function sndWrong(){ beep(180,0.25,'sawtooth',0.2); }
 function sndLevelUp(){ [523,659,784,1046].forEach((f,i)=>beep(f,0.18,'triangle',0.22,i*0.11)); }
 function sndTap(){ beep(440,0.05,'square',0.06); }
 function sndCombo(){ beep(1200,0.08,'sine',0.15); }
+let ttsWarned = false;
 function speak(text, lang='en-US'){
   try{
+    const synth = window.speechSynthesis; if(!synth || !text) return;
     const u = new SpeechSynthesisUtterance(text);
     u.lang = lang; u.rate = 0.9;
-    speechSynthesis.cancel();
-    speechSynthesis.speak(u);
+    const v = typeof pickVoice==='function' ? pickVoice(lang) : null;
+    if(v) u.voice = v;
+    else if(!ttsWarned && synth.getVoices().length){ ttsWarned = true; toast('🔇 Keine Stimme für diese Sprache auf dem Gerät – in den Handy-Einstellungen unter „Sprachausgabe“ nachinstallieren.'); }
+    const go = ()=>{ synth.resume && synth.resume(); synth.speak(u); };
+    if(synth.speaking || synth.pending){ synth.cancel(); setTimeout(go, 80); } else go();
   }catch(e){}
 }
+// Mobile Browser geben die Sprachausgabe erst nach einer Berührung frei
+document.addEventListener('pointerdown', function unlockTTS(){
+  try{ const u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); speechSynthesis.getVoices(); }catch(e){}
+  document.removeEventListener('pointerdown', unlockTTS);
+}, {once:true});
+try{ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = ()=>speechSynthesis.getVoices(); }catch(e){}
 
 /* ---------- SCHWIERIGKEITSGRADE ---------- */
+const CEFR_PICK = {
+  A1:{label:'Einstieg', diff:'anfaenger'}, A2:{label:'Grundlagen', diff:'anfaenger'}, B1:{label:'Alltag', diff:'mittel'},
+  B2:{label:'Fließend', diff:'fortgeschritten'}, C1:{label:'Profi', diff:'fortgeschritten'},
+};
+const DIFF_CEFR = {anfaenger:'A2', mittel:'B1', fortgeschritten:'B2'};
+function myCefr(){ return state.cefr || (state.speakLevel && state.speakLevel.cefr) || DIFF_CEFR[state.difficulty||'anfaenger']; }
 const DIFFICULTIES = {
   anfaenger:{ label:'🌱 Anfänger', desc:'Grundwortschatz (Hund, Apfel, rot …) mit Zuordnen & Memory', tiers:['easy','medium'] },
   mittel:{ label:'⚡ Mittel', desc:'Alltagswortschatz (Igel, Knoblauch, Ankunft …)', tiers:['medium','hard'] },
@@ -1370,23 +1402,23 @@ function populateDifficultyList(){
   const test = document.createElement('div');
   test.className='diff-option';
   test.style.borderColor = 'var(--purple)';
-  test.innerHTML = '<b>🧪 Einstufungstest (empfohlen)</b><span>12 Fragen, 2 Minuten – Flügo findet dein Niveau</span>';
+  test.innerHTML = '<b>🧪 Test machen</b><span>2 Minuten – Flügo findet dein Niveau</span>';
   test.addEventListener('click', ()=>{ sndTap(); startPlacement(); });
   box.appendChild(test);
-  Object.entries(DIFFICULTIES).forEach(([key,d])=>{
-    const el = document.createElement('div');
-    el.className='diff-option';
-    el.innerHTML = `<b>${d.label}</b><span>${d.desc}</span>`;
+  box.insertAdjacentHTML('beforeend', '<div class="cefr-or">oder selbst wählen</div>');
+  const grid = document.createElement('div'); grid.className = 'cefr-grid';
+  Object.entries(CEFR_PICK).forEach(([key,c])=>{
+    const el = document.createElement('button');
+    el.className = 'cefr-btn' + (state.cefr===key ? ' sel' : '');
+    el.innerHTML = `<b>${key}</b><small>${c.label}</small>`;
     el.addEventListener('click', ()=>{
       sndTap();
-      state.difficulty = key;
-      state.recent = [];
-      saveState();
-      renderMap();
-      showScreen('screen-map');
+      state.cefr = key; state.difficulty = c.diff; state.recent = [];
+      saveState(); renderMap(); showScreen('screen-map'); setNav('map');
     });
-    box.appendChild(el);
+    grid.appendChild(el);
   });
+  box.appendChild(grid);
 }
 document.getElementById('changeDiffBtn').addEventListener('click', ()=>{
   populateDifficultyList();
@@ -1536,7 +1568,7 @@ function renderGrammar(){
   container.innerHTML = '';
   document.getElementById('grammarSub').textContent = `${LANGS[currentLang()].label} · ${isG?'Lustige Sätze, echte Regeln':'Hören, Sprechen, Satzbau – für echte Situationen'}`;
   (isG ? grammarTopics() : phraseTopics()).forEach((t,i)=>{
-    const status = stars[i]>0 ? (stars[i]>=3?'perfect':'unlocked') : (i===0 || stars[i-1]>0 ? 'current' : 'locked');
+    const status = stars[i]>0 ? (stars[i]>=3?'perfect':'unlocked') : (i===0 || stars[i-1]>0 || t.style ? 'current' : 'locked');
     const node = document.createElement('div');
     node.className = 'level-node ' + status;
     const label = document.createElement('div'); label.className='node-label'; label.textContent = t.title;
@@ -2303,7 +2335,7 @@ function finishLevel(){
   const isGrammar = session.mode==='grammar' || session.mode==='phrases';
   const prog = isGrammar ? null : levelProg()[session.levelIdx];
   const gStars = isGrammar ? (session.mode==='grammar' ? grammarStars() : phraseStars()) : null;
-  const prevStars = isGrammar ? gStars[session.topicIdx] : prog.stars;
+  const prevStars = (isGrammar ? gStars[session.topicIdx] : prog.stars) || 0;
   const improved = stars > prevStars;
   const perfect = session.wrong===0;
   let bonus = 5 + stars*3 + (perfect?10:0) + (improved?10:0);
@@ -2417,7 +2449,7 @@ document.querySelectorAll('.nav-btn').forEach(btn=>{
 });
 function renderStats(){
   document.getElementById('statXp').textContent = state.xp;
-  document.getElementById('statStreak').textContent = state.streak + ' Tage';
+  document.getElementById('statStreak').textContent = state.streak;
   document.getElementById('statCoins').textContent = state.coins;
   document.getElementById('statLevels').textContent = state.totalLevelsCompleted + '/' + LEVELS.length;
   const totalStars = levelProg().reduce((s,p)=>s+p.stars,0);
@@ -2754,7 +2786,7 @@ function renderProfileExtras(){
   const list = document.getElementById('shopList'); list.innerHTML='';
   SHOP.forEach(item=>{
     const el = document.createElement('div'); el.className='shop-item';
-    el.innerHTML = `<span class="si">${item.icon}</span><span class="st">${item.name}<small>${item.desc} · Du hast: ${item.have()}</small></span>`;
+    el.innerHTML = `<span class="si">${item.icon}</span><span class="st">${item.name}<small>Du hast: ${item.have()}</small></span>`;
     const b = document.createElement('button'); b.textContent = item.price ? `${item.price} 🪙` : 'Gratis';
     b.disabled = state.coins<item.price || !item.can();
     b.onclick = ()=>buy(item);
@@ -2784,9 +2816,9 @@ function renderDashboard(){
   tb.textContent = n ? `💪 Training (${n})` : '💪 Training';
   tb.style.opacity = seenWords().length < 4 ? .6 : 1;
   const bc = document.getElementById('boostChip');
-  bc.classList.toggle('active-boost', boostActive());
+  bc.classList.toggle('active-boost', boostActive()); bc.style.display = boostActive() ? '' : 'none';
   bc.textContent = boostActive() ? `⚡ x2 · ${Math.ceil((state.boostUntil-Date.now())/60000)}′` : '⚡ x2';
-  document.getElementById('diffChip').textContent = `${LANGS[currentLang()].label.split(' ')[0]} ${DIFFICULTIES[state.difficulty||'anfaenger'].label} ⇄`;
+  document.getElementById('diffChip').textContent = `${LANGS[currentLang()].label.split(' ')[0]} ${myCefr()} ⇄`;
   document.getElementById('driveChip').textContent = state.speakLevel ? `🚗 ${state.speakLevel.cefr}·${state.speakLevel.sub}` : '🚗 Fahren';
   updateQuestDot();
 }
@@ -2918,8 +2950,8 @@ function finishSpecial(){
     const score = g => session.results.filter(r=>r.group===g && r.ok).length;
     const e = score('anfaenger'), m = score('mittel'), h = score('fortgeschritten');
     const lvl = (h>=3 && m>=3) ? 'fortgeschritten' : (m>=3 || (e>=4 && m>=2)) ? 'mittel' : 'anfaenger';
-    state.difficulty = lvl; state.recent = []; state.placementDone = true;
-    title = `Dein Niveau: ${DIFFICULTIES[lvl].label}`; mascot = '🧪';
+    state.difficulty = lvl; state.cefr = DIFF_CEFR[lvl]; state.recent = []; state.placementDone = true;
+    title = `Dein Niveau: ${DIFF_CEFR[lvl]}`; mascot = '🧪';
     desc = `Grundwortschatz ${e}/4 · Alltag ${m}/4 · Gehoben ${h}/4 – Flügo passt die Aufgaben jetzt an dich an.`;
   }
   checkAchievements(); saveState();
@@ -3037,11 +3069,19 @@ document.getElementById('segGram').addEventListener('click', ()=>{ sndTap(); pra
 document.getElementById('segPhr').addEventListener('click', ()=>{ sndTap(); practiceTab='phrases'; pendingMode='phrases'; renderGrammar(); });
 document.getElementById('segArc').addEventListener('click', ()=>{ sndTap(); practiceTab='arcade'; pendingMode='arcade'; renderGrammar(); });
 document.getElementById('diffChip').addEventListener('click', ()=>{ sndTap(); showLanguageScreen(); });
+const STYLE_UP = {
+  en:[["I am very tired.","I'm absolutely exhausted.","I'm very exhausting."],["I think that …","In my view, …","In my think, …"],["It is very big.","It's enormous.","It's very enormous big."],["I want to say that …","I'd like to point out that …","I'd like to point that …"],["Can you help me?","Would you mind giving me a hand?","Would you mind to give me a hand?"],["It was very good.","It was outstanding.","It was very outstand."],["I don't like it.","It's not really my cup of tea.","It's not really my cup of coffee."],["We have a problem.","We're facing a challenge.","We're facing at a challenge."]],
+  es:[["Estoy muy cansado.","Estoy agotado.","Estoy muy agotando."],["Creo que …","Desde mi punto de vista, …","Desde mi punto de ver, …"],["Es muy grande.","Es enorme.","Es muy enormemente."],["¿Me ayudas?","¿Te importaría echarme una mano?","¿Te importaría echarme un brazo?"],["Fue muy bueno.","Fue excepcional.","Fue muy excepcionado."],["No me gusta.","No es lo mío.","No es el mío."],["Tenemos un problema.","Nos enfrentamos a un reto.","Nos enfrentamos un reto."],["Quiero decir que …","Me gustaría señalar que …","Me gustaría señalar de que …"]],
+  fr:[["Je suis très fatigué.","Je suis épuisé.","Je suis très épuisant."],["Je pense que …","À mon avis, …","À mon penser, …"],["C'est très grand.","C'est immense.","C'est très immensément."],["Tu peux m'aider ?","Pourrais-tu me donner un coup de main ?","Pourrais-tu me donner un coup de pied ?"],["C'était très bien.","C'était remarquable.","C'était très remarquer."],["Je n'aime pas ça.","Ce n'est pas ma tasse de thé.","Ce n'est pas mon tasse de thé."],["On a un problème.","Nous faisons face à un défi.","Nous faisons face un défi."],["Je veux dire que …","Je tiens à souligner que …","Je tiens souligner que …"]],
+  it:[["Sono molto stanco.","Sono sfinito.","Sono molto sfinente."],["Penso che …","A mio avviso, …","A mio pensiero di, …"],["È molto grande.","È enorme.","È molto enormemente."],["Mi aiuti?","Ti dispiacerebbe darmi una mano?","Ti dispiacerebbe darmi un piede?"],["Era molto buono.","Era eccezionale.","Era molto eccezionato."],["Non mi piace.","Non fa per me.","Non fa a me."],["Abbiamo un problema.","Ci troviamo di fronte a una sfida.","Ci troviamo di fronte una sfida."],["Voglio dire che …","Vorrei sottolineare che …","Vorrei sottolineare di che …"]],
+};
 function phraseTopics(){
   const lang = currentLang();
-  return PHRASE_TOPICS.map((t,i)=>({icon:t.icon, title:t.title,
+  return [...PHRASE_TOPICS.map((t,i)=>({icon:t.icon, title:t.title,
     tip:`Diese Sätze retten dich im Alltag – z. B. „${PHRASES_RAW[lang][i][0]}“`,
-    items:t.de.map((de,k)=>({t:PHRASES_RAW[lang][i][k], de}))}));
+    items:t.de.map((de,k)=>({t:PHRASES_RAW[lang][i][k], de}))})),
+    {icon:'⬆️', title:'Stil-Upgrade', style:true, tip:'Sag es wie ein Profi: einfache Sätze auf höherem Niveau',
+     items:STYLE_UP[lang].map(([simple, better, wrong])=>({t:better, de:simple, wrong, style:true}))}];
 }
 function phraseStars(){
   const lang = currentLang();
@@ -3073,8 +3113,13 @@ function renderPhraseQuestion(q){
   const code = LANGS[currentLang()].code;
   const area = document.getElementById('questionArea');
   session.grammarFix = t;
-  let type = q.type;
+  let type = q.item.style ? (q.type==='phr_speak' && SpeechRec ? 'phr_speak' : 'phr_style') : q.type;
   if(type==='phr_speak' && !SpeechRec) type = 'phr_order';
+  if(type==='phr_style'){
+    renderMC(`<div class="q-hint">⬆️ Sag es eleganter</div><div class="q-sentence">${escapeHtml(de)}</div>`,
+      shuffle([t, q.item.wrong, pick(others).t]), t);
+    return;
+  }
 
   if(type==='phr_meaning'){
     renderMC(`<div class="q-hint">Was bedeutet dieser Satz? 🤔</div>
@@ -3165,14 +3210,15 @@ function driveRules(){
   const L = DRIVE_LANG[currentLang()];
   const lvl = state.speakLevel ? `${state.speakLevel.cefr}, step ${state.speakLevel.sub} of 10` : 'unknown (assume B1)';
   return `You are "Flügo", a warm, witty ${L} conversation partner and tutor for a German-speaking adult from Austria. The learner is DRIVING: every word you write is spoken aloud by text-to-speech; they cannot read or type.
-Learner's current estimated level: ${lvl}. Their goal: B2. Speak slightly above their level: natural, clear, varied; now and then use one useful B2/C1 expression and explain it in a few simple words.
+Learner's current estimated level: ${lvl}. Their goal: ${({A1:'A2',A2:'B1',B1:'B2',B2:'C1',C1:'C2'})[myCefr()]||'B2'}. Speak slightly above their level: natural, clear, varied; now and then use one useful B2/C1 expression and explain it in a few simple words.
 Mode: ${drive.mode==='story'
   ? 'INTERACTIVE STORY. Tell an original, gripping story (mystery, adventure or humour) in short episodes. After each episode let the learner decide what happens next or ask for their opinion, then continue based on their answer.'
   : 'CONVERSATION. Chat about interesting everyday topics (travel, food, work, technology, hobbies, life in Austria, surprising facts). Share something interesting, then ask an open follow-up question about the learner.'}
 Answer format, exactly:
 CORRECTION: <the learner's sentence, corrected> — <reason in at most 10 words>
+UPGRADE: <the same idea said one level higher: more natural, precise vocabulary or a typical B2/C1 phrase>
 REPLY: <your spoken reply>
-Rules: Write the CORRECTION line only if the learner's last message has real mistakes (grammar, tense, word choice, word order); ignore punctuation, capitalisation and obvious speech-recognition glitches; correct at most two things, kindly. The REPLY is 2 to 4 short sentences, at most 60 words, and ends with exactly one question or a choice. No lists, markdown, emojis or brackets. Write in ${L}; only if the learner asks for German, add one short German sentence.
+Rules: Write the UPGRADE line when the learner's sentence was correct but simple (at most every second turn; skip it after a CORRECTION). Write the CORRECTION line only if the learner's last message has real mistakes (grammar, tense, word choice, word order); ignore punctuation, capitalisation and obvious speech-recognition glitches; correct at most two things, kindly. The REPLY is 2 to 4 short sentences, at most 60 words, and ends with exactly one question or a choice. No lists, markdown, emojis or brackets. Write in ${L}; only if the learner asks for German, add one short German sentence.
 Special messages: "[start]" means greet briefly and begin. "[silence]" means the learner did not answer (busy with traffic): do not mention it; continue a little and ask again more simply.`;
 }
 function mergeTurns(turns){
@@ -3200,8 +3246,9 @@ async function askClaude(turns, rules, asJson){
 }
 function parseReply(text){
   const corr = (text.match(/CORRECTION:\s*(.+)/i)||[])[1];
-  let reply = (text.split(/REPLY:/i)[1] || text.replace(/CORRECTION:.*$/im,'')).trim();
-  return {corr: corr ? corr.trim() : null, reply};
+  const up = (text.match(/UPGRADE:\s*(.+)/i)||[])[1];
+  let reply = (text.split(/REPLY:/i)[1] || text.replace(/(CORRECTION|UPGRADE):.*$/gim,'')).trim();
+  return {corr: corr ? corr.trim() : null, up: up ? up.trim() : null, reply};
 }
 
 /* ---------- Sprachausgabe & -erkennung ---------- */
@@ -3269,13 +3316,19 @@ async function driveStep(userText){
   catch(e){ return driveError(e); }
   if(!drive.on || drive.paused) return;
   drive.turns.push({role:'assistant', content:text});
-  const {corr, reply} = parseReply(text);
+  const {corr, up, reply} = parseReply(text);
   const code = LANGS[currentLang()].code;
   if(corr && userText && !userText.startsWith('[')){
     drive.corrections.push({said:userText, fix:corr});
     setDrive('✏️', 'Kleiner Tipp', corr);
     beep(520,0.1,'triangle',0.15);
     await speakAsync('Quick tip: ' + corr.replace(/—/g, ','), code);
+    if(!drive.on || drive.paused) return;
+  } else if(up && userText && !userText.startsWith('[')){
+    drive.corrections.push({said:userText, fix:'⬆️ ' + up});
+    setDrive('⬆️', 'Level-up', up);
+    beep(660,0.1,'triangle',0.15);
+    await speakAsync(({en:'Level up: ', es:'Nivel superior: ', fr:'Niveau supérieur : ', it:'Livello superiore: '})[currentLang()] + up, code);
     if(!drive.on || drive.paused) return;
   }
   drive.lastReply = reply;
@@ -3801,6 +3854,7 @@ function startArcade(id){
   arcHud();
   ({balloon:startFloat, rain:startFloat, emoji:startEmoji, puzzle:startPuzzle, tower:startTower, clouds:startClouds})[id](id);
 }
+function arcSay(w){ speak(w, LANGS[currentLang()].code); }
 function arcHit(x, y, gain){
   arc.combo++; const pts = gain + Math.min(10, arc.combo)*2;
   arc.score += pts; arcHud(); sndCorrect();
@@ -3876,7 +3930,8 @@ function startFloat(id){
           el.classList.add('popped'); setTimeout(()=>el.remove(), 250);
           arc.ents = arc.ents.filter(x=>x!==ent);
           arcHit(r.left+r.width/2, r.top+r.height/2, 10);
-          newTarget();
+          if(up) arcSay(ent.word);
+          if(up) newTarget(); else arcLater(newTarget, 700);
         } else { el.classList.add('nope'); setTimeout(()=>el.classList.remove('nope'), 300); arcMiss(); }
       };
       arc.ents.push(ent);
@@ -3913,7 +3968,7 @@ function startEmoji(){
       const b = document.createElement('button'); b.className = 'arc-opt'; b.textContent = c.t;
       b.onclick = ()=>{
         if(!arc.running) return;
-        if(c===item){ const r = b.getBoundingClientRect(); arcHit(r.left+r.width/2, r.top, 10); next(); }
+        if(c===item){ const r = b.getBoundingClientRect(); arcHit(r.left+r.width/2, r.top, 10); arcSay(item.t); next(); }
         else { arc.combo = 0; arc.timeLeft -= 3; sndWrong(); b.classList.add('nope'); b.disabled = true; arcHud(); }
       };
       opts.appendChild(b);
@@ -3971,7 +4026,7 @@ function startPuzzle(){
           if(o===correct){
             const i = covered.shift(); const t = tiles[i];
             t.classList.add('open'); const r = t.getBoundingClientRect();
-            arcHit(r.left+r.width/2, r.top+r.height/2, 10); arcLater(ask, 350);
+            arcHit(r.left+r.width/2, r.top+r.height/2, 10); arcSay(w[1]); arcLater(ask, 600);
           } else { b.classList.add('nope'); b.disabled = true; arcMiss(); }
         };
         opts.appendChild(b);
@@ -4021,7 +4076,7 @@ function startTower(){
           document.body.appendChild(shot);
           shot.animate([{left:castle.left+'px', top:castle.top+'px'},{left:r.left+'px', top:r.top+'px'}], {duration:220, fill:'forwards'});
           setTimeout(()=>{ shot.remove(); target.el.classList.add('popped'); setTimeout(()=>target.el.remove(), 250); arcHit(r.left+r.width/2, r.top+r.height/2, 10); }, 220);
-          arc.ents = arc.ents.filter(x=>x!==target); front = null;
+          arc.ents = arc.ents.filter(x=>x!==target); front = null; arcSay(target.word[1]);
         } else { b.classList.add('nope'); b.disabled = true; arc.combo = 0; sndWrong(); front.v *= 1.25; }
       };
       opts.appendChild(b);
@@ -4068,7 +4123,6 @@ const MASCOTS = [
   {e:'🐼', name:'Panda-Paul', price:25}, {e:'🦄', name:'Glitzi', price:40}, {e:'🐲', name:'Drako', price:60},
 ];
 const GEM_SHOP = [
-  {id:'g_hearts', icon:'❤️', name:'Herzen sofort voll', price:5, can:()=>state.hearts<MAX_HEARTS, apply:()=>{ state.hearts=MAX_HEARTS; state.lastHeartLoss=null; }},
   {id:'g_coins', icon:'🪙', name:'100 Münzen', price:5, can:()=>true, apply:()=>{ state.coins+=100; }},
   {id:'g_boost', icon:'⚡', name:'Doppel-XP 30 Min.', price:8, can:()=>true, apply:()=>{ state.boostUntil=Math.max(Date.now(),state.boostUntil||0)+30*60000; }},
   {id:'g_freeze', icon:'🧊', name:'Streak-Schutz', price:10, can:()=>state.inventory.freeze<2, apply:()=>{ state.inventory.freeze++; }},
@@ -4124,7 +4178,7 @@ function spinWheel(){
   wh.style.transition = 'transform 3.2s cubic-bezier(.17,.67,.2,1)';
   wh.style.transform = `rotate(${deg}deg)`;
   sndTap();
-  setTimeout(()=>{ const w = WHEEL[i]; w.give(); sndLevelUp(); burstAt(innerWidth/2, innerHeight/2, ['✨','⭐',w.icon], 10); toast(`🎡 Gewonnen: ${w.icon} ${w.text}!`); saveState(); updateTopbar(); renderDaily(); }, 3300);
+  setTimeout(()=>{ const w = WHEEL[i]; w.give(); sndLevelUp(); burstAt(innerWidth/2, innerHeight/2, ['✨','⭐',w.icon], 10); toast(`🎡 Gewonnen: ${w.icon} ${w.text}!`); saveState(); updateTopbar(); renderDaily(); const go = document.getElementById('wheelGo'); go.textContent = `${w.icon} ${w.text}!`; }, 3300);
 }
 function wheelHTML(){
   const seg = 360/WHEEL.length;
@@ -4136,32 +4190,31 @@ function renderDaily(){
   const box = document.getElementById('dailyBox'); if(!box) return;
   const ci = calInfo();
   const days = CAL_REWARDS.map((r,i)=>{
-    const cls = i<ci.day || (i===ci.day && ci.claimedToday) ? 'done' : (i===ci.day ? 'today' : '');
-    return `<div class="cal-day ${cls}"><small>Tag ${i+1}</small><span>${i<ci.day || (i===ci.day&&ci.claimedToday) ? '✅' : r.icon}</span></div>`;
+    const got = i<ci.day || (i===ci.day && ci.claimedToday);
+    return `<div class="cal-day ${got ? 'done' : (i===ci.day ? 'today' : '')}"><small>${i+1}</small><span>${got ? '✅' : r.icon}</span></div>`;
   }).join('');
-  const w = wordOfDay(); const code = LANGS[currentLang()].code;
   const spun = state.wheelDate===todayStr();
-  box.innerHTML = `
-    <div class="panel-title">📅 Login-Kalender <span class="panel-sub" style="display:inline">· jeden Tag mehr, Tag 7 = Mega-Truhe</span></div>
-    <div class="cal-row">${days}</div>
-    ${ci.claimedToday ? `<div class="panel-sub">Morgen wartet: ${CAL_REWARDS[(ci.day+1)%7].icon} ${CAL_REWARDS[(ci.day+1)%7].text} – nicht verpassen!</div>` : `<button class="btn btn-primary pulse" id="calClaim">🎁 Tag ${ci.day+1} abholen: ${CAL_REWARDS[ci.day].text}</button>`}
-    <div class="daily-split">
-      <div class="daily-half"><div class="panel-title">🎡 Glücksrad</div>${wheelHTML()}<button class="btn ${spun?'btn-secondary':'btn-primary'}" id="wheelBtn" ${spun?'disabled':''}>${spun?'Morgen wieder':'Drehen!'}</button></div>
-      <div class="daily-half"><div class="panel-title">💬 Wort des Tages</div>${w ? `<div class="wod" id="wodBtn"><b>${escapeHtml(w[1])}</b><span>🔊</span><small>${escapeHtml(w[0])}</small></div>` : ''}
-        <button class="btn btn-secondary" id="inviteBtn2">📲 Freund einladen</button></div>
+  box.innerHTML = `<div class="cal-row">${days}</div>
+    <div class="daily-btns">
+      <button class="btn ${ci.claimedToday?'btn-secondary':'btn-primary pulse'}" id="calClaim" ${ci.claimedToday?'disabled':''}>${ci.claimedToday?'✅ Abgeholt':'🎁 Geschenk'}</button>
+      <button class="btn ${spun?'btn-secondary':'btn-primary'}" id="wheelBtn" ${spun?'disabled':''}>${spun?'🎡 Morgen':'🎡 Glücksrad'}</button>
     </div>`;
-  const c = document.getElementById('calClaim'); if(c) c.onclick = claimCalendar;
-  const wb = document.getElementById('wheelBtn'); if(wb && !spun) wb.onclick = ()=>{ wb.disabled = true; spinWheel(); };
-  const wd = document.getElementById('wodBtn'); if(wd) wd.onclick = ()=>speak(w[1], code);
-  document.getElementById('inviteBtn2').onclick = inviteWhatsApp;
+  if(!ci.claimedToday) document.getElementById('calClaim').onclick = claimCalendar;
+  if(!spun) document.getElementById('wheelBtn').onclick = openWheel;
 }
+function openWheel(){
+  document.getElementById('wheelSlot').innerHTML = wheelHTML();
+  const go = document.getElementById('wheelGo'); go.disabled = false; go.textContent = 'Drehen!';
+  go.onclick = ()=>{ go.disabled = true; go.textContent = '…'; spinWheel(); };
+  document.getElementById('wheelOverlay').classList.remove('hidden');
+}
+document.getElementById('wheelClose').onclick = ()=>document.getElementById('wheelOverlay').classList.add('hidden');
 function dailyPending(){ return !calInfo().claimedToday || state.wheelDate!==todayStr(); }
 function maybeShowDaily(){
-  if(!state.difficulty || state.dailyShown===todayStr() || !dailyPending()) return;
+  if(!state.difficulty || state.dailyShown===todayStr() || calInfo().claimedToday) return;
   if(!document.getElementById('penaltyOverlay').classList.contains('hidden') || !document.getElementById('screen-map').classList.contains('active')){ setTimeout(maybeShowDaily, 1500); return; }
   state.dailyShown = todayStr(); saveState();
   renderQuests(); showScreen('screen-quests'); setNav('quests');
-  toast('☀️ Guten Tag! Dein Tagesgeschenk wartet 🎁');
 }
 
 /* ---------- 📲 WhatsApp-Einladung ---------- */
@@ -4204,10 +4257,6 @@ function renderGemShop(){
   });
   box.appendChild(Object.assign(document.createElement('div'), {className:'panel-title dark', textContent:'🐾 Begleiter'}));
   box.appendChild(mrow);
-  const ad = document.createElement('div'); ad.className = 'shop-item';
-  ad.innerHTML = `<span class="si">📺</span><span class="st">Werbung schauen<small>+1 💎 · noch ${adsLeft()}× heute</small></span><button class="buy-btn">Gratis</button>`;
-  ad.querySelector('button').onclick = ()=>watchAd(()=>renderStats(), 'gem');
-  box.appendChild(ad);
   const packs = document.createElement('div'); packs.className = 'gem-packs';
   GEM_PACKS.forEach(p=>{
     const b = document.createElement('button'); b.className = 'gem-pack';
@@ -4264,7 +4313,7 @@ function startClouds(){
           });
           const heart = document.createElement('div'); heart.className = 'c-heart'; heart.textContent = '💞';
           heart.style.left = (mx-12)+'px'; heart.style.top = (my-6)+'px'; arena.appendChild(heart);
-          arcHit(ar.left+mx, ar.top+my, 10);
+          arcHit(ar.left+mx, ar.top+my, 10); arcSay(c.w[1]);
           if(done===5){ arc.lives = Math.min(3, arc.lives+1); arcHud(); prompt.innerHTML = '🌈 Alle verbunden! +❤️'; launchConfetti(); arcLater(newRound, 1300); }
         } else {
           [a.el, c.el].forEach(e=>{ e.classList.add('sad'); e.querySelector('.c-face').textContent = '╥﹏╥'; });
@@ -4279,8 +4328,9 @@ function startClouds(){
   newRound();
 }
 
+document.getElementById('goalToggle').addEventListener('click', ()=>document.getElementById('goalChips').classList.toggle('hidden'));
 document.getElementById('inviteBtn').addEventListener('click', ()=>{ sndTap(); inviteWhatsApp(); });
-document.getElementById('gemsPill').addEventListener('click', ()=>{ sndTap(); renderStats(); showScreen('screen-stats'); setNav('stats'); setTimeout(()=>document.getElementById('gemShop').scrollIntoView({block:'start'}), 50); });
+document.getElementById('gemsPill').addEventListener('click', ()=>{ sndTap(); renderStats(); showScreen('screen-stats'); setNav('stats'); const f = document.getElementById('shopList').closest('details'); f.open = true; setTimeout(()=>f.scrollIntoView({block:'start'}), 50); });
 /* ---------- INIT ---------- */
 ensureDaily(); ensureLeague(); applyAbsencePenalty(); checkAchievements(); saveState(); applyMascot(); updateTopbar();
 if(state.difficulty) setTimeout(maybeShowDaily, 1200);
