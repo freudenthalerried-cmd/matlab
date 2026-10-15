@@ -1,0 +1,416 @@
+<title>Was 25 % Marge tragen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --ground: #E7E8E3;
+    --surface: #F6F6F3;
+    --surface-2: #DDDFD8;
+    --ink: #191B19;
+    --ink-2: #3F443F;
+    --muted: #6E746C;
+    --line: #C8CBC2;
+    --line-strong: #A9AEA3;
+    --ocker: #8A6A2F;
+    --ocker-soft: #EFE4CC;
+    --moos: #3F6B52;
+    --ziegel: #A33F2A;
+    --ziegel-soft: #F2DCD5;
+    --slab: "Bitter", Georgia, "Iowan Old Style", serif;
+    --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #141614;
+      --surface: #1C1F1C;
+      --surface-2: #262A26;
+      --ink: #E9EBE6;
+      --ink-2: #C2C7BF;
+      --muted: #8D948A;
+      --line: #2E332E;
+      --line-strong: #434941;
+      --ocker: #D3A860;
+      --ocker-soft: #322913;
+      --moos: #86B79A;
+      --ziegel: #DE8C74;
+      --ziegel-soft: #35201A;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #141614;
+    --surface: #1C1F1C;
+    --surface-2: #262A26;
+    --ink: #E9EBE6;
+    --ink-2: #C2C7BF;
+    --muted: #8D948A;
+    --line: #2E332E;
+    --line-strong: #434941;
+    --ocker: #D3A860;
+    --ocker-soft: #322913;
+    --moos: #86B79A;
+    --ziegel: #DE8C74;
+    --ziegel-soft: #35201A;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 60rem;
+    margin: 0 auto;
+    padding: clamp(2rem, 5vw, 4rem) clamp(1.1rem, 4vw, 2.5rem) 5rem;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(2.2rem, 4vw, 3.4rem);
+  }
+  .prose { max-width: 38rem; }
+  p { margin: 0; }
+  h1, h2, h3 { font-family: var(--slab); font-weight: 600; margin: 0; text-wrap: balance; }
+  h1 { font-size: clamp(2rem, 5vw, 2.9rem); line-height: 1.06; letter-spacing: -0.02em; }
+  h2 { font-size: clamp(1.25rem, 2.6vw, 1.5rem); line-height: 1.2; }
+  h3 { font-size: 1rem; font-family: var(--sans); font-weight: 600; }
+
+  header { display: flex; flex-direction: column; gap: 1.1rem; }
+  .eyebrow {
+    font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .lede { font-size: 1.1rem; color: var(--ink-2); }
+  hr.rule { border: 0; height: 2px; background: var(--line-strong); margin: 0; }
+
+  section { display: flex; flex-direction: column; gap: 1.1rem; }
+
+  /* Die Kernaussage: zwei Zahlen, die verwechselt werden */
+  .kern {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    gap: 1px; background: var(--line); border: 2px solid var(--ink);
+  }
+  .kern > div { background: var(--surface); padding: 1.3rem 1.4rem; display: flex; flex-direction: column; gap: 0.35rem; }
+  .kern .zahl { font-family: var(--mono); font-size: 2.4rem; line-height: 1; font-weight: 600; letter-spacing: -0.03em; }
+  .kern .lab { font-size: 0.9rem; color: var(--muted); }
+  .kern .gleich { color: var(--ocker); }
+
+  .scroll { overflow-x: auto; border: 1px solid var(--line); background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 0.94rem; }
+  th, td { text-align: left; padding: 0.7rem 1rem; border-bottom: 1px solid var(--line); }
+  thead th {
+    font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); font-weight: 500; background: var(--surface-2); white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: 0; }
+  td.num, th.num { font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+  tr.hier td { background: var(--ocker-soft); font-weight: 600; }
+  tr.tot td { color: var(--ziegel); }
+
+  /* Der Kipppunkt bei der Werbung */
+  .klippe { display: flex; flex-direction: column; gap: 0.5rem; }
+  .balken { display: grid; grid-template-columns: 7rem 1fr; gap: 0.9rem; align-items: center; }
+  .balken .wert { font-family: var(--mono); font-size: 0.85rem; font-variant-numeric: tabular-nums; color: var(--ink-2); }
+  .balken .spur { background: var(--surface-2); height: 1.9rem; position: relative; overflow: hidden; border: 1px solid var(--line); }
+  .balken .fuell { height: 100%; background: var(--ocker); opacity: 0.85; }
+  .balken .fuell.warn { background: var(--ziegel); }
+  .balken .zahl {
+    position: absolute; top: 50%; transform: translateY(-50%); left: 0.6rem;
+    font-family: var(--mono); font-size: 0.8rem; font-weight: 600; color: var(--ink);
+    font-variant-numeric: tabular-nums; mix-blend-mode: normal;
+  }
+  .balken .zahl.aussen { left: auto; right: 0.6rem; }
+
+  .karten { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  .karte { background: var(--surface); padding: 1.2rem 1.3rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .karte .kopf { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ocker); }
+  .karte p { font-size: 0.92rem; color: var(--ink-2); }
+
+  .merk { border-left: 3px solid var(--ocker); background: var(--surface); padding: 1rem 1.2rem; font-size: 1rem; }
+  .merk.warnung { border-left-color: var(--ziegel); background: var(--ziegel-soft); }
+  .gate { border: 2px solid var(--ink); background: var(--surface); padding: 1.3rem 1.4rem; display: flex; flex-direction: column; gap: 0.6rem; }
+  .gate .nr { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ocker); }
+  .note { font-size: 0.88rem; color: var(--muted); }
+  strong { font-weight: 600; }
+  footer { color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--line); padding-top: 1.1rem; display: flex; flex-direction: column; gap: 0.4rem; }
+  code { font-family: var(--mono); font-size: 0.87em; }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Kalkulation · Stand 26. August 2026 · Gate 21 entschieden</p>
+    <h1>Was 25 % Marge tragen</h1>
+    <p class="lede prose">Die Kalkulation läuft auf den eigenen Baumeister-Einkaufspreis, und
+      „25 %" ist inzwischen als <em>Marge</em> geklärt, nicht als Zuschlag. Diese Seite rechnet
+      vor, was das für das Ziel von 3.000 € netto im Monat bedeutet — und unter welchen drei
+      Bedingungen es trägt.</p>
+    <hr class="rule">
+  </header>
+
+  <section>
+    <h2>Zuerst: 25 % Marge sind 33 % Zuschlag</h2>
+    <div class="kern">
+      <div>
+        <span class="zahl gleich">25 %</span>
+        <span class="lab">Rohmarge vom Verkauf<br>das ist die Vorgabe</span>
+      </div>
+      <div>
+        <span class="zahl">+33 %</span>
+        <span class="lab">Zuschlag auf den Einkauf<br>100 € Einkauf → 133 € Verkauf</span>
+      </div>
+      <div>
+        <span class="zahl">20 %</span>
+        <span class="lab">wären es bei 25 % <em>Zuschlag</em><br>die frühere, ungünstigere Lesart</span>
+      </div>
+    </div>
+    <p class="prose">Das ist keine Wortklauberei, sondern der folgenreichste Satz der ganzen
+      Rechnung. Alle Zahlen des Vorhabens laufen auf die Rohmarge vom Verkauf, weil Werbung,
+      Zahlungsgebühren und Fracht daran hängen. Der Unterschied zwischen den beiden Lesarten
+      beträgt fünf Prozentpunkte Marge — und entscheidet, ob der Vertriebsweg trägt.</p>
+  </section>
+
+  <section>
+    <h2>Der nötige Umsatz und was er an Bestellungen heißt</h2>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Rohmarge</th>
+            <th scope="col" class="num">bleibt nach Werbung und Gebühren</th>
+            <th scope="col" class="num">nötiger Monatsumsatz</th>
+            <th scope="col" class="num">Bestellungen</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>35 % — bisherige Annahme</td><td class="num">23,3 %</td><td class="num">25.875 €</td><td class="num">40</td></tr>
+          <tr><td>32 % — bisherige Untergrenze</td><td class="num">20,3 %</td><td class="num">29.702 €</td><td class="num">46</td></tr>
+          <tr class="hier"><td>25 % — die Vorgabe</td><td class="num">13,3 %</td><td class="num">45.356 €</td><td class="num">70</td></tr>
+          <tr><td>20 % — die frühere Lesart</td><td class="num">8,3 %</td><td class="num">72.740 €</td><td class="num">112</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="prose"><strong>Alle Zeilen dieser Tabelle rechnen mit Kartenzahlung.</strong>
+      So stand sie am 25. August, zwei Tage bevor Gate 21 <strong>EPS und Vorkasse</strong>
+      entschied. Mit dem entschiedenen Zahlweg lauten die beiden unteren Zeilen
+      <strong>43.396 € / 67</strong> und 67.826 € / 105. Die Reihenfolge und der Befund
+      ändern sich nicht; die Leitzahl war zwei Tage älter als die Entscheidung, die sie
+      bestimmt.</p>
+    <p class="prose">70 Bestellungen im Monat sind gut zwei an jedem Tag — gerechnet mit dem
+      bisherigen Referenzwarenkorb von 650 € netto. Bei der früheren Lesart wären es 112
+      gewesen, also knapp vier täglich ohne Pause. Das ist der Unterschied zwischen einem
+      Vollzeitbetrieb und etwas, das neben dem Baugeschäft laufen kann.</p>
+  </section>
+
+  <section>
+    <h2>Die Werbung ist der Engpass, nicht der Einkauf</h2>
+    <p class="prose">Bei 25 % Rohmarge bleiben nach 10 % Werbung und Gebühren 13,3 % übrig.
+      Jeder weitere Prozentpunkt Werbung frisst ein Dreizehntel des Ertrags — bei 20 % Marge
+      war es ein Achtel. Nötiger Monatsumsatz bei Kartenzahlung, je nach Werbeanteil:</p>
+    <div class="klippe">
+      <div class="balken">
+        <span class="wert">10 % Werbung</span>
+        <span class="spur"><span class="fuell" style="width:3%"></span><span class="zahl aussen">45.356 €</span></span>
+      </div>
+      <div class="balken">
+        <span class="wert">15 % Werbung</span>
+        <span class="spur"><span class="fuell" style="width:4%"></span><span class="zahl aussen">72.740 €</span></span>
+      </div>
+      <div class="balken">
+        <span class="wert">18 % Werbung</span>
+        <span class="spur"><span class="fuell" style="width:6%"></span><span class="zahl aussen">114.058 €</span></span>
+      </div>
+      <div class="balken">
+        <span class="wert">20 % Werbung</span>
+        <span class="spur"><span class="fuell warn" style="width:9%"></span><span class="zahl aussen">183.572 €</span></span>
+      </div>
+      <div class="balken">
+        <span class="wert">23 % Werbung</span>
+        <span class="spur"><span class="fuell warn" style="width:100%"></span><span class="zahl">2.139.672 €</span></span>
+      </div>
+      <div class="balken">
+        <span class="wert">24 % Werbung</span>
+        <span class="spur"><span class="fuell warn" style="width:100%"></span><span class="zahl">rechnerisch unmöglich</span></span>
+      </div>
+    </div>
+    <div class="merk warnung">
+      <strong>Der vorgesehene Vertriebsweg ist Google Shopping</strong> — ein Klickpreis-Kanal.
+      Ein Werbeanteil von 10 % ist dort für einen neuen Anbieter ohne Verkaufshistorie
+      optimistisch. Bei 25 % Rohmarge endet die Tragfähigkeit bei <strong>23 %</strong>
+      Werbeanteil; bei 20 % waren es 18 %. Diese fünf Prozentpunkte Puffer sind es, die den
+      Kanal überhaupt vertretbar machen — sie sind keine Erlaubnis, ihn auszureizen. Die
+      eigentliche Wette dieses Modells bleiben die Klickpreise, nicht der Einkaufsvorteil.
+    </div>
+  </section>
+
+  <section>
+    <h2>Kleine Warenkörbe tragen ihre Fracht nicht</h2>
+    <p class="prose">Was nach Wareneinsatz, Zahlungsgebühr und Fracht übrig bleibt, in Euro
+      je Bestellung — bei 25 % Rohmarge und Lieferung frei Haus:</p>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Fracht je Lieferung</th>
+            <th scope="col" class="num">50 €</th><th scope="col" class="num">100 €</th>
+            <th scope="col" class="num">150 €</th><th scope="col" class="num">250 €</th>
+            <th scope="col" class="num">400 €</th><th scope="col" class="num">650 €</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>15 €</td><td class="num" style="color:var(--ziegel)">−4</td><td class="num">+8</td><td class="num">+20</td><td class="num">+43</td><td class="num">+78</td><td class="num">+136</td></tr>
+          <tr><td>25 €</td><td class="num" style="color:var(--ziegel)">−14</td><td class="num" style="color:var(--ziegel)">−2</td><td class="num">+10</td><td class="num">+33</td><td class="num">+68</td><td class="num">+126</td></tr>
+          <tr><td>40 €</td><td class="num" style="color:var(--ziegel)">−29</td><td class="num" style="color:var(--ziegel)">−17</td><td class="num" style="color:var(--ziegel)">−5</td><td class="num">+18</td><td class="num">+53</td><td class="num">+111</td></tr>
+          <tr><td>60 €</td><td class="num" style="color:var(--ziegel)">−49</td><td class="num" style="color:var(--ziegel)">−37</td><td class="num" style="color:var(--ziegel)">−25</td><td class="num" style="color:var(--ziegel)">−2</td><td class="num">+33</td><td class="num">+91</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="merk">
+      <strong>Ein Sack Spachtelmasse für 25 €, geliefert, bleibt auch bei 25 % Marge ein
+      Verlustgeschäft</strong> — unabhängig davon, wie gut der Einkauf war. Genau solche
+      Bestellungen bringt Google Shopping. Die Schwellen sind um ein Fünftel gesunken, nicht
+      verschwunden: Nulldurchgang bei 15 € Fracht rund 65 € Warenkorb (vorher 83 €), bei 25 €
+      Fracht 108 € (138 €), bei 40 € Fracht 173 € (220 €), bei der echten 80-€-Transport&shy;pauschale
+      344 € (438 €).
+    </div>
+  </section>
+
+  <section>
+    <h2>Der Hebel, der bis zuletzt übersehen wurde</h2>
+    <p class="prose">Beide Lieferanten gewähren <strong>3 % Skonto bei Zahlung binnen
+      14 Tagen</strong>, die Fracht ausdrücklich ausgenommen. Bei 25 % Marge ist der Einkauf
+      drei Viertel des Verkaufspreises — drei Prozent davon sind 2,25 Prozentpunkte Marge.
+      Weil nach Werbung und Gebühren nur 13,3 % übrig bleiben, ist das ein Sechstel des
+      Ertrags.</p>
+
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Lage</th>
+            <th scope="col" class="num">Rohmarge</th>
+            <th scope="col" class="num">bleibt übrig</th>
+            <th scope="col" class="num">nötiger Monatsumsatz</th>
+            <th scope="col" class="num">Bestellungen</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>ohne Skonto</td><td class="num">25,00 %</td><td class="num">13,28 %</td><td class="num">45.356 €</td><td class="num">70</td></tr>
+          <tr class="hier"><td>mit 3 % Skonto</td><td class="num">27,25 %</td><td class="num">15,53 %</td><td class="num">38.786 €</td><td class="num">60</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="merk warnung">
+      <strong>6.571 € weniger Umsatz im Monat für dasselbe Ergebnis</strong> — ein Siebtel,
+      und zehn Bestellungen weniger. Zum Vergleich: Die Zahlungsgebühr bei Karte kostet rund
+      1,7 %. <strong>Das Skonto ist der größere Posten, und es kostet nichts als
+      Pünktlichkeit.</strong>
+    </div>
+
+    <p class="prose">Daraus folgt etwas Unbequemes. Was zählt, ist nicht das Zahlungsziel auf
+      der Kundenrechnung, sondern <strong>wann das Geld im eigenen Konto liegt</strong> — sonst
+      finanziert man die Differenz aus eigener Kasse. Als <strong>Gate 21</strong> festgehalten
+      und im Rechenkern ausführbar.</p>
+
+    <p class="prose">Hier stand bis zum 26. August: <em>„nur der Rechnungskauf verletzt es, und
+      genau der ist im Baustoffhandel üblich."</em> Das wirft zwei Wege zusammen, die sich
+      gegensätzlich verhalten. Der Rechnungskauf <strong>über einen Anbieter</strong> zahlt
+      sofort aus und hält das Gate mühelos; er kostet dafür rund 3 % vom Bruttobetrag. Was das
+      Gate verletzt, ist die <strong>offene Rechnung auf eigenes Risiko</strong>.</p>
+
+    <h3>Der Weg ohne Gebühr ist nicht der günstigste</h3>
+
+    <p class="prose">Referenzbestellung: 646,00 € Ware netto, 75,50 € Fracht, Einkauf 484,50 €.</p>
+
+    <div class="scroll"><table>
+      <thead><tr><th>Zahlweg</th><th>Gebühr</th><th>Skonto</th><th>netto</th><th>Gate 21</th></tr></thead>
+      <tbody>
+        <tr><td>Vorkasse</td><td>0,00 €</td><td>14,54 €</td><td><strong>+14,54 €</strong></td><td>hält</td></tr>
+        <tr><td><strong>EPS-Onlineüberweisung</strong></td><td>8,04 €</td><td>14,54 €</td><td><strong>+6,50 €</strong></td><td>hält</td></tr>
+        <tr><td>Karte (Stripe)</td><td>12,37 €</td><td>14,54 €</td><td>+2,17 €</td><td>hält</td></tr>
+        <tr><td>offene Rechnung, 30 Tage</td><td>0,00 €</td><td><strong>0,00 €</strong></td><td>0,00 €</td><td><strong>reißt</strong></td></tr>
+        <tr><td>PayPal</td><td>21,91 €</td><td>14,54 €</td><td>−7,37 €</td><td>hält</td></tr>
+        <tr><td>Rechnungskauf (Anbieter)</td><td>25,97 €</td><td>14,54 €</td><td><strong>−11,43 €</strong></td><td>hält</td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="merk warnung">
+      <strong>Die offene Rechnung kostet nichts und ist trotzdem der teurere Weg.</strong> Sie
+      verzichtet auf 14,54 € Skonto, um 8,04 € EPS-Gebühr zu sparen — 6,50 € je Bestellung,
+      <strong>390 € im Monat</strong>, bevor ein einziger Kunde nicht zahlt. Der Grund: Das
+      Skonto rechnet auf den Einkauf netto (484,50 €), die Gebühr auf den Bruttobetrag samt
+      Fracht und Umsatzsteuer (865,80 €). Gleicher Prozentsatz, 79 % größere Grundlage.
+    </div>
+
+    <p class="prose"><strong>Entschieden:</strong> EPS und Vorkasse ab Start, Karte als Zusatz,
+      keine offene Rechnung, Kundenzahlungsziel null Tage. Der Rechnungskauf über einen Anbieter
+      bleibt offen — er darf zurückkommen, sobald er <strong>acht zusätzliche Bestellungen im
+      Monat</strong> mitbringt oder die eigene Ausfallquote über <strong>3,2 %</strong> läge.
+      Beide Grenzwerte stehen fest, bevor die Zahlen vorliegen.</p>
+
+    <h2>Drei Bedingungen, unter denen die Marge trägt</h2>
+    <div class="karten">
+      <div class="karte">
+        <span class="kopf">Fracht</span>
+        <h3>Verrechnen, nicht einpreisen</h3>
+        <p>Läuft die Fracht durch, bleibt schon der einzelne Sack im Plus: 9,18 € statt
+          −15,40 € frei Haus. Frei-Haus-Werbung bei kleinen Körben ist die schnellste Art,
+          Geld zu verlieren — auch bei 25 % Marge.</p>
+      </div>
+      <div class="karte">
+        <span class="kopf">Mindestmenge</span>
+        <h3>Untergrenze oder Abholung</h3>
+        <p>Unter rund 110 € netto trägt eine gelieferte Bestellung sich nicht, bei der echten
+          80-€-Pauschale erst ab 344 €. Entweder ein Mindestbestellwert — oder kleine Mengen
+          nur zur Selbstabholung, was bei regionalem Zuschnitt ohnehin naheliegt.</p>
+      </div>
+      <div class="karte">
+        <span class="kopf">Aufschlag</span>
+        <h3>Gestaffelt statt einheitlich</h3>
+        <p>So arbeitet der Baustoffhandel tatsächlich: wenig Aufschlag auf schwere,
+          preisverglichene Massenware, mehr auf Kleinteile, wo niemand vergleicht und die
+          Handhabung teuer ist. Einheitliche 25 % verschenken oben und verlieren unten —
+          dieser Punkt ist durch die Klärung nicht erledigt, sondern erst richtig lohnend.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="gate">
+      <span class="nr">Gate 20 · entschieden</span>
+      <h2>Keine Bestellung ohne positiven Deckungsbeitrag</h2>
+      <p>Die alte Margenuntergrenze von 32 % war für den Streckenhandel mit
+        Herstellerkonditionen gesetzt. Mit eigenem Einkaufsvorteil ist das ein anderes
+        Geschäft — Preisführerschaft statt Margenführerschaft. An die Stelle einer Prozentzahl
+        tritt die härtere Bedingung: <strong>Jede einzelne Bestellung muss nach Wareneinsatz,
+        Gebühren und Fracht über null liegen.</strong></p>
+      <p class="note">Das ist strenger als eine Margenschwelle und zugleich ehrlicher — es
+        lässt eine Marge dort zu, wo sie trägt, und verbietet sie dort, wo sie nicht trägt.
+        Die Regel liegt als Sperre im Rechenkern (<code>traegtSichSelbst</code>), nicht nur
+        in diesem Dokument. Von der Umstellung auf 25 % war sie nicht berührt: Sie prüft Euro,
+        nicht Prozent, und brauchte keine Änderung — nur andere Eingaben.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Was diese Rechnung nicht beantwortet</h2>
+    <p class="prose">Sie rechnet mit dem bisherigen Referenzwarenkorb von 650 € netto. Wie groß
+      der Warenkorb im neuen Modell wirklich ist, weiß niemand — er hängt am Sortiment und am
+      Kanal. Sobald die Rechnungen des Bürozubaus vorliegen, ist der tatsächliche Positionswert
+      die erste Zahl, die zu bestimmen ist. Bis dahin sind alle Bestellzahlen oben
+      Umrechnungen, keine Prognosen.</p>
+  </section>
+
+  <footer>
+    <p>Gerechnet mit der Kostenkaskade des Projekts (<code>shop/src/kostenbild.js</code>),
+      Zielgewinn 5.374 € vor Steuer, Fixkosten 650 €, Zahlung per Karte. Herleitung in
+      <code>docs/baustoff-shop/marge-25-prozent.md</code>.</p>
+    <p>Die Zahlwegtabelle rechnet mit <code>shop/src/skonto.js</code>; Entscheidung und
+      Kippzahlen in <code>docs/baustoff-shop/zahlungsziel-entschieden.md</code>.</p>
+    <p>Nichts ist gegründet, verkauft oder eingenommen. Keine Steuer- oder Rechtsberatung.</p>
+  </footer>
+</div>

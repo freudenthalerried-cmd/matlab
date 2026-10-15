@@ -1,0 +1,79 @@
+{
+  "_hinweis": "Messliste für Prüfung B (Gate 15) — die Keywords sind echte Planungsdaten aus der Inhaltslandkarte (phase7-inhalte-und-funnel.md), die Werte volumen und kd sind LEER und werden am Messtag aus dem Werkzeug (werkzeugwahl-suchvolumen.md) eingetragen: volumen = Suchvolumen Österreich je Monat, kd = Keyword-Difficulty 0-100. Ausgewertet wird die gefüllte Kopie mit npm run suchvolumen -- <datei>.",
+  "markt": "AT",
+  "cluster": [
+    {
+      "id": "neubaupflicht",
+      "name": "Neubaupflicht und Norm",
+      "gruppe": "A",
+      "keywords": [
+        { "begriff": "radonvorsorge neubau", "volumen": null, "kd": null },
+        { "begriff": "önorm s 5280-2", "volumen": null, "kd": null },
+        { "begriff": "radonvorsorgegebiet", "volumen": null, "kd": null },
+        { "begriff": "radonschutzgebiet", "volumen": null, "kd": null },
+        { "begriff": "radon neubau pflicht", "volumen": null, "kd": null },
+        { "begriff": "radonschutz neubau", "volumen": null, "kd": null }
+      ]
+    },
+    {
+      "id": "ausfuehrung",
+      "name": "Ausführung und Material",
+      "gruppe": "A",
+      "keywords": [
+        { "begriff": "radondrainage", "volumen": null, "kd": null },
+        { "begriff": "radondichte folie", "volumen": null, "kd": null },
+        { "begriff": "radon abdichtung", "volumen": null, "kd": null },
+        { "begriff": "radonsperre", "volumen": null, "kd": null },
+        { "begriff": "gasdichte durchführung", "volumen": null, "kd": null },
+        { "begriff": "radonschutz bodenplatte", "volumen": null, "kd": null }
+      ]
+    },
+    {
+      "id": "foerderung",
+      "name": "Förderung Oberösterreich",
+      "gruppe": "A",
+      "keywords": [
+        { "begriff": "radon förderung oberösterreich", "volumen": null, "kd": null },
+        { "begriff": "radondrainage förderung", "volumen": null, "kd": null },
+        { "begriff": "radonschutz förderung", "volumen": null, "kd": null }
+      ]
+    },
+    {
+      "id": "messen",
+      "name": "Messen und Einordnen",
+      "gruppe": "B",
+      "keywords": [
+        { "begriff": "radon messen", "volumen": null, "kd": null },
+        { "begriff": "radonmessung kosten", "volumen": null, "kd": null },
+        { "begriff": "radonmessung österreich", "volumen": null, "kd": null },
+        { "begriff": "radon grenzwert österreich", "volumen": null, "kd": null },
+        { "begriff": "radonwert einordnen", "volumen": null, "kd": null }
+      ]
+    },
+    {
+      "id": "sanierung",
+      "name": "Sanierung im Bestand",
+      "gruppe": "B",
+      "keywords": [
+        { "begriff": "radonsanierung", "volumen": null, "kd": null },
+        { "begriff": "radon im keller", "volumen": null, "kd": null },
+        { "begriff": "radon absaugung", "volumen": null, "kd": null },
+        { "begriff": "radonbrunnen", "volumen": null, "kd": null },
+        { "begriff": "radon keller abdichten", "volumen": null, "kd": null }
+      ]
+    },
+    {
+      "id": "feuchte",
+      "name": "Kellersanierung und Feuchte (Reichweite)",
+      "gruppe": "C",
+      "keywords": [
+        { "begriff": "kellersanierung", "volumen": null, "kd": null },
+        { "begriff": "kellersanierung kosten", "volumen": null, "kd": null },
+        { "begriff": "aufsteigende feuchtigkeit", "volumen": null, "kd": null },
+        { "begriff": "keller abdichten", "volumen": null, "kd": null },
+        { "begriff": "bauwerksabdichtung", "volumen": null, "kd": null },
+        { "begriff": "keller feucht was tun", "volumen": null, "kd": null }
+      ]
+    }
+  ]
+}

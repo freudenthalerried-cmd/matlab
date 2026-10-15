@@ -1,0 +1,54 @@
+{
+ "_zweck": "Was von aussen ueber dieses Vorhaben zu sehen ist — gemessen, nicht angenommen. Die Bereitschaftsliste liest von hier; ohne diese Datei stehen die beiden Punkte wieder als Fragezeichen da.",
+ "_anlass": "Am 9. September stand in src/startklar.js seit dem ersten Bau, ob das Repository privat ist, sei „von hier aus nicht feststellbar\". Nachgesehen hatte das niemand. Der Netzausgang schien gesperrt — das GitHub-Werkzeug war es nicht: Es beantwortet die Frage in einem Aufruf. Am 10. September stellte sich heraus, dass auch der Netzausgang selbst diese eine Adresse durchlaesst; gesperrt ist er fuer die drei Adressen, an denen gemessen wurde, und nicht als solcher. Zwei Runden zuvor war dieselbe Bewegung schon einmal aufgefallen, bei der Grenze des Veroeffentlichungsvermerks. EINE GRENZE, DIE ZU WEIT GEZOGEN IST, DECKT GENAU DAS, WAS SIE AUSSCHLIESST.",
+ "_grenze": "Diese Datei ist ein Vermerk ueber einen Handgriff, kein Messwert, der sich von selbst erneuert. Der Shop kann keines der beiden Felder selbst erheben: Sein Netzausgang ist gesperrt, und das GitHub-Werkzeug gehoert nicht zu ihm. Deshalb traegt jede Zeile ihr Messdatum, und die Bereitschaftsliste laesst eine Messung nach GRENZE_TAGE wieder als Fragezeichen gelten. BERICHTIGT AM 10. SEPTEMBER: Hier stand, der Shop koenne keines der beiden Felder selbst erheben, sein Netzausgang sei gesperrt. Der zweite Halbsatz war zu weit gezogen. Gemessen ist die Sperre an bauversand.com, den Herstellerseiten und dem Rechtsinformationssystem — alle antworten mit CONNECT tunnel failed, response 403. Fuer api.github.com hatte das niemand versucht: Sie antwortet mit 200, und die Sichtbarkeit dieses Repositorys ist damit vom Shop selbst messbar, ohne fremdes Werkzeug. ZUM DRITTEN MAL IN FUENF RUNDEN DECKTE EINE ZU WEIT GEZOGENE GRENZE GENAU DAS, WAS SIE AUSSCHLOSS. Was bleibt: Die Datei ist weiter ein Vermerk mit Messdatum, weil die Messung Netz braucht und ein Prueferlauf ohne Netz sonst raten muesste; die Bereitschaftsliste laesst eine Messung nach GRENZE_TAGE wieder als Fragezeichen gelten.",
+ "_wieGemessen": "repositoryOeffentlich: Feld visibility der Repository-Auskunft — seit dem 10. September auch ohne fremdes Werkzeug: curl https://api.github.com/repos/freudenthalerried-cmd/matlab. domainErreichbar: curl -L https://bauversand.com/ aus dieser Umgebung.",
+ "gemessenAm": "2026-10-15",
+ "repositoryOeffentlich": true,
+ "_repositoryHinweis": "visibility: public, private: false. AM 10. SEPTEMBER GESCHAERFT: Bis dahin war das ein Feldwert der Schnittstelle. Seither ist der Abruf selbst gemessen — eine gebaute Artikelseite kommt ohne jeden Zugangsschluessel mit HTTP 200 herunter. Die Empfehlung „privat stellen\" beruht damit nicht mehr auf einer Folgerung aus einem Feld, sondern auf einer Datei, die jemand ohne Konto in der Hand hatte. Der oeffentliche Katalog traegt weiterhin keinen Einkaufspreis; die Kette laeuft ueber den Verkaufspreis auf der gebauten Seite und die ueberall dokumentierte Zielmarge.",
+ "domainErreichbar": null,
+ "_domainHinweis": "Nicht messbar, und diesmal nachgesehen: Der Ausgang dieser Umgebung antwortet auf den Verbindungsaufbau zu bauversand.com mit „CONNECT tunnel failed, response 403\". Auch die bestehende Firmenseite freudenthaler-bau.at antwortet nicht anders. Die Sperre liegt also am Ausgang und nicht an der Adresse — ein Ergebnis, das die Aussage stuetzt, statt sie zu behaupten.",
+ "_versucheZweck": "Wer eine Grenze behauptet, nennt in src/aussenlage.js den Weg — hier steht, wann jemand ihn gegangen ist und was dabei herauskam. Ein Ergebnis ohne Beleg ist eine Behauptung mit Ziffern; ein Versuch ohne Datum sagt ueber heute nichts.",
+ "versuche": {
+  "eigene-adresse": {
+   "am": "2026-10-15",
+   "ergebnis": "gesperrt",
+   "beleg": "curl -L https://bauversand.com/: keine Verbindung, 403 am Ausgang (CONNECT tunnel failed). In derselben Minute auch all-inkl.com, der Hoster selbst: 403. Zum Vergleich api.github.com: 200. Der Auftraggeber hat am 15. Oktober gesagt, All-Inkl sei offen — gesperrt ist nicht das Webspace, sondern der Netzausgang dieser Umgebung, und das stellt nur er in den Umgebungseinstellungen um."
+  },
+  "repository-sichtbarkeit": {
+   "am": "2026-10-15",
+   "ergebnis": "moeglich",
+   "beleg": "api.github.com/repos/freudenthalerried-cmd/matlab: HTTP 200, \"visibility\": \"public\", \"private\": false. Fuenf Wochen nach der letzten Messung unveraendert — das Verzeichnis ist weiter oeffentlich."
+  },
+  "herstellerseiten": {
+   "am": "2026-10-15",
+   "ergebnis": "gesperrt",
+   "beleg": "baumit.at, www.baumit.at, schiedel.at, www.schiedel.at, isover.at und synthesa.at: alle ohne Verbindung, 403 am Ausgang (CONNECT tunnel failed). Am 15. Oktober erneut versucht, mit demselben Ergebnis wie am 9. September. Zum Vergleich in derselben Minute api.github.com: 200 — die Freigabe umfasst Entwicklerinfrastruktur, nicht das offene Netz."
+  },
+  "rechtsinformationssystem": {
+   "am": "2026-10-15",
+   "ergebnis": "gesperrt",
+   "beleg": "www.ris.bka.gv.at: keine Verbindung. Am 15. Oktober erneut versucht, mit demselben Ergebnis: 403 am Ausgang (CONNECT tunnel failed). Zum Vergleich in derselben Minute api.github.com: 200. Die Freigabe umfasst Entwicklerinfrastruktur, nicht das offene Netz. Der Volltext der Gesetze ist von hier aus auf keinem gemessenen Weg zu haben."
+  },
+  "github-schnittstelle": {
+   "am": "2026-10-15",
+   "ergebnis": "moeglich",
+   "beleg": "curl https://api.github.com/repos/freudenthalerried-cmd/matlab: HTTP 200. Dieselbe Umgebung, dieselbe Minute: bauversand.com und all-inkl.com weiter 403. Die Sperre ist nach Adresse verschieden und nicht der Ausgang als solcher."
+  },
+  "uid-pruefung": {
+   "am": "2026-10-15",
+   "ergebnis": "gesperrt",
+   "beleg": "ec.europa.eu (VIES, das EU-Informationsaustauschsystem): keine Verbindung. Am 15. Oktober erneut versucht, mit demselben Ergebnis: 403 am Ausgang (CONNECT tunnel failed). Zum Vergleich in derselben Minute api.github.com: 200. Die Freigabe umfasst Entwicklerinfrastruktur, nicht das offene Netz."
+  },
+  "crawler-dokumentation": {
+   "am": "2026-10-15",
+   "ergebnis": "gesperrt",
+   "beleg": "developers.google.com und docs.anthropic.com: keine Verbindung. Am 15. Oktober erneut versucht, mit demselben Ergebnis: 403 am Ausgang (CONNECT tunnel failed). Zum Vergleich in derselben Minute api.github.com: 200. Die Freigabe umfasst Entwicklerinfrastruktur, nicht das offene Netz."
+  },
+  "fremder-zugriff": {
+   "am": "2026-10-15",
+   "ergebnis": "moeglich",
+   "beleg": "raw.githubusercontent.com liefert shop/ausgabe/site/artikel/POS-10095.html mit HTTP 200 aus. Am 15. Oktober erneut gemessen, und diesmal mit Folge: Die Preisdatei war mit dem Neuaufsetzen des Containers verloren und ist genau aus diesen oeffentlich abrufbaren Bytes zurueckgerechnet worden. Derselbe Weg ist Rettung und Leck."
+  }
+ }
+}
