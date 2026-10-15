@@ -4283,7 +4283,7 @@ document.getElementById('inviteBtn').addEventListener('click', ()=>{ sndTap(); i
 document.getElementById('gemsPill').addEventListener('click', ()=>{ sndTap(); renderStats(); showScreen('screen-stats'); setNav('stats'); setTimeout(()=>document.getElementById('gemShop').scrollIntoView({block:'start'}), 50); });
 /* ---------- INIT ---------- */
 ensureDaily(); ensureLeague(); applyAbsencePenalty(); checkAchievements(); saveState(); applyMascot(); updateTopbar();
-setTimeout(maybeShowDaily, 1200);
+if(state.difficulty) setTimeout(maybeShowDaily, 1200);
 if(state.language && state.difficulty){
   renderMap();
   showScreen('screen-map');
