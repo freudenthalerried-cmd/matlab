@@ -238,6 +238,29 @@ body{
 @keyframes popIn{from{opacity:0;transform:translateY(14px) scale(.9);}to{opacity:1;transform:none;}}
 .star-pop{display:inline-block;animation:starPop .5s both cubic-bezier(.3,1.8,.5,1);}
 @keyframes starPop{from{opacity:0;transform:scale(0) rotate(-90deg);}to{opacity:1;transform:scale(1) rotate(0);}}
+#screen-drive{background:linear-gradient(180deg,#0b1820,#10232e);text-align:center;color:#fff;}
+.drive-top{display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+.drive-level{font-weight:800;font-size:14px;color:var(--accent);}
+.drive-status{font-size:84px;margin:10px 0 4px;flex-shrink:0;animation:mascotBounce 2.4s ease-in-out infinite;}
+.drive-label{font-size:20px;font-weight:800;flex-shrink:0;}
+.drive-text{font-size:17px;line-height:1.45;color:#cfe8ee;margin:10px 4px;min-height:60px;flex-shrink:1;overflow:auto;}
+.drive-modes{display:flex;gap:10px;margin:6px 0 10px;flex-shrink:0;}
+.drive-mode{flex:1;border:3px solid rgba(255,255,255,.25);background:transparent;color:#fff;border-radius:16px;padding:14px 6px;font-size:16px;font-weight:800;font-family:inherit;cursor:pointer;}
+.drive-mode.sel{background:#fff;color:var(--text);border-color:#fff;}
+.drive-big{border:none;border-radius:22px;padding:22px;font-size:24px;font-weight:800;background:linear-gradient(145deg,var(--accent2),#02b48b);color:#fff;font-family:inherit;box-shadow:0 7px 0 rgba(0,0,0,.25);cursor:pointer;flex-shrink:0;}
+.drive-row{display:flex;gap:10px;flex-shrink:0;}
+.drive-btn{flex:1;border:none;border-radius:18px;padding:20px 6px;font-size:22px;font-weight:800;background:#fff;color:var(--text);font-family:inherit;cursor:pointer;}
+.drive-btn.end{flex:2;font-size:16px;background:var(--danger);color:#fff;}
+.drive-hist{margin-top:12px;flex-shrink:0;}
+.hist-title{font-size:12px;font-weight:800;color:#9fb8c4;margin-bottom:4px;}
+.hist-bars{display:flex;justify-content:center;align-items:flex-end;gap:5px;height:90px;}
+.hist-col{flex:1;max-width:44px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;}
+.hist-bar{width:100%;border-radius:6px 6px 2px 2px;background:linear-gradient(180deg,var(--accent),#ff9f1c);}
+.hist-val{font-size:10px;font-weight:800;color:#fff;}
+.hist-lbl{font-size:9px;color:#9fb8c4;margin-top:2px;}
+.drive-key{margin-top:10px;text-align:left;font-size:12px;color:#9fb8c4;flex-shrink:0;}
+.drive-key input{width:100%;margin-top:6px;padding:10px;border-radius:10px;border:none;font-size:14px;}
+.drive-chip{background:var(--accent2);color:#fff;}
 .back-link{background:#eef2f5;border:none;border-radius:10px;padding:6px 12px;font-weight:800;font-size:13px;color:var(--muted);cursor:pointer;font-family:inherit;margin-bottom:4px;}
 .brand{white-space:nowrap;}
 .seg{display:flex;background:rgba(255,255,255,0.12);border-radius:14px;padding:4px;gap:4px;margin:2px 0 6px;flex-shrink:0;}
@@ -405,6 +428,7 @@ body{
       </div>
       <div class="dash-actions">
         <button class="chip-btn" id="trainBtn">💪 Training</button>
+        <button class="chip-btn drive-chip" id="driveChip">🚗 Fahren</button>
         <button class="chip-btn" id="boostChip">⚡ Doppel-XP</button>
         <span class="diff-chip" id="diffChip">🌱 Anfänger</span>
       </div>
@@ -417,6 +441,21 @@ body{
     <div class="seg"><button class="seg-btn sel" id="segGram">📘 Grammatik</button><button class="seg-btn" id="segPhr">💬 Alltagssätze</button></div>
     <div class="map-sub" id="grammarSub">Lustige Sätze, echte Regeln</div>
     <div class="path" id="grammarPath"></div>
+  </section>
+
+  <!-- ===== FAHRMODUS ===== -->
+  <section class="screen" id="screen-drive">
+    <div class="drive-top"><button class="back-link" id="driveBack">‹ Zurück</button><span class="drive-level" id="driveLevel">🎯 noch nicht eingestuft</span></div>
+    <div class="drive-status" id="driveStatus">🚗</div>
+    <div class="drive-label" id="driveLabel">Fahrmodus</div>
+    <div class="drive-text" id="driveText"></div>
+    <div class="drive-modes" id="driveModes"><button class="drive-mode sel" data-m="story">📖 Geschichte</button><button class="drive-mode" data-m="chat">💬 Gespräch</button></div>
+    <button class="drive-big" id="driveStart">▶ Start</button>
+    <div class="drive-row hidden" id="driveCtrl"><button class="drive-btn" id="drivePause">⏸</button><button class="drive-btn" id="driveRepeat">🔁</button><button class="drive-btn end" id="driveEnd">⏹ Ende &amp; Einstufung</button></div>
+    <div class="drive-hist" id="driveHist"></div>
+    <details class="drive-key" id="driveKeyBox"><summary>🔑 Eigener Claude-API-Schlüssel (nur für den öffentlichen Link)</summary>
+      <input id="driveKey" type="password" autocomplete="off" placeholder="sk-ant-…">
+      <div class="panel-sub">Bleibt nur auf diesem Gerät. Kosten laufen über dein Anthropic-Konto. Im Claude-Artifact nicht nötig.</div></details>
   </section>
 
   <!-- ===== QUESTS ===== -->
@@ -521,6 +560,7 @@ body{
       <div class="result-stat-row"><span>✅ Level abgeschlossen</span><span id="statLevels">0</span></div>
       <div class="result-stat-row"><span>⭐ Sterne gesamt</span><span id="statStars">0</span></div>
       <div class="result-stat-row"><span>🎯 Trefferquote (zuletzt)</span><span id="statAcc">–</span></div>
+      <div class="result-stat-row"><span>🗣️ Sprechniveau</span><span id="statSpeak">–</span></div>
     </div>
     <div class="card" style="margin:0 0 12px;">
       <div class="panel-title dark">🏅 Erfolge <span id="achCount"></span></div>
@@ -2316,6 +2356,7 @@ const QUESTS = [
   {id:'cor20', icon:'✅', text:'20 richtige Antworten', ev:'correct', target:20, reward:15},
   {id:'gram', icon:'📘', text:'Spiele ein Grammatik-Thema', ev:'grammar', target:1, reward:15},
   {id:'phr', icon:'💬', text:'Übe ein Alltagssätze-Thema', ev:'phrases', target:1, reward:15},
+  {id:'spk5', icon:'🚗', text:'Sag 5 Sätze im Fahrmodus', ev:'speak', target:5, reward:20},
   {id:'rev', icon:'💪', text:'Mach ein Fehler-Training', ev:'review', target:1, reward:15},
   {id:'lis5', icon:'🎧', text:'Löse 5 Hör-Aufgaben', ev:'listen', target:5, reward:15},
   {id:'fast5', icon:'⏱️', text:'5 richtige Antworten in unter 4 Sek.', ev:'fast', target:5, reward:20},
@@ -2460,6 +2501,9 @@ const ACHIEVEMENTS = [
   {id:'lv10', icon:'🦅', name:'Überflieger', desc:'Spielerlevel 10', test:()=>levelInfo(state.xp).level>=10, reward:80},
   {id:'gram3', icon:'🧠', name:'Grammatik-Fan', desc:'3 Grammatik-Themen mit Sternen', test:()=>Object.values(state.grammarProgress||{}).flat().filter(x=>x>0).length>=3, reward:30},
   {id:'phr3', icon:'🧳', name:'Weltenbummler', desc:'3 Alltags-Themen mit Sternen', test:()=>Object.values(state.phraseProgress||{}).flat().filter(x=>x>0).length>=3, reward:30},
+  {id:'drive1', icon:'🚗', name:'Roadtrip', desc:'Erstes Fahrmodus-Gespräch mit Einstufung', test:()=>(state.stats.drives||0)>=1, reward:30},
+  {id:'drive10', icon:'🛣️', name:'Vielfahrer', desc:'10 Fahrmodus-Gespräche', test:()=>(state.stats.drives||0)>=10, reward:100},
+  {id:'b2', icon:'🎓', name:'B2 erreicht', desc:'Im Fahrmodus auf B2 eingestuft', test:()=>state.speakLevel && CEFR.indexOf(state.speakLevel.cefr)>=3, reward:150},
   {id:'poly', icon:'🌍', name:'Polyglott', desc:'In 2 Sprachen gelernt', test:()=>Object.keys(state.langsPlayed).length>=2, reward:40},
   {id:'rev20', icon:'💪', name:'Fehlerjäger', desc:'20 Wörter im Training gefestigt', test:()=>state.stats.reviewMastered>=20, reward:40},
   {id:'league', icon:'🏅', name:'Liga-Aufstieg', desc:'In eine höhere Liga aufgestiegen', test:()=>state.stats.promoted, reward:50},
@@ -2499,6 +2543,7 @@ function renderProfileExtras(){
   document.getElementById('profNext').textContent = `${li.span-li.cur} XP bis Level ${li.level+1} · ${LEAGUES[state.league.tier]}-Liga`;
   const acc = recentAccuracy();
   document.getElementById('statAcc').textContent = acc===null ? '–' : Math.round(acc*100)+'%';
+  document.getElementById('statSpeak').textContent = state.speakLevel ? `${state.speakLevel.cefr}·${state.speakLevel.sub}/10 (${pointsOf(state.speakLevel.cefr,state.speakLevel.sub)} P.)` : '–';
   const grid = document.getElementById('achGrid'); grid.innerHTML='';
   ACHIEVEMENTS.forEach(a=>{
     const got = !!state.achievements[a.id];
@@ -2544,6 +2589,7 @@ function renderDashboard(){
   bc.classList.toggle('active-boost', boostActive());
   bc.textContent = boostActive() ? `⚡ x2 · ${Math.ceil((state.boostUntil-Date.now())/60000)}′` : '⚡ x2';
   document.getElementById('diffChip').textContent = `${LANGS[currentLang()].label.split(' ')[0]} ${DIFFICULTIES[state.difficulty||'anfaenger'].label}`;
+  document.getElementById('driveChip').textContent = state.speakLevel ? `🚗 ${state.speakLevel.cefr}·${state.speakLevel.sub}` : '🚗 Fahren';
   updateQuestDot();
 }
 document.getElementById('trainBtn').addEventListener('click', ()=>{ sndTap(); startReview(); });
@@ -2883,6 +2929,281 @@ function renderPhraseQuestion(q){
   }
   document.getElementById('orderBack').onclick = ()=>{ if(session.answered||!stack.length) return; stack.pop().chip.classList.remove('used'); upd(); };
 }
+
+/* =========================================================
+   🚗 FAHRMODUS – freihändiges Gespräch mit Claude
+   Nur Hören & Sprechen: Claude erzählt, fragt, korrigiert
+   und schätzt am Ende das Niveau (z. B. B1 · 7/10).
+   Backend: Artifact-Funktion "sample" (ohne Schlüssel) oder
+   eigener API-Schlüssel des Nutzers (öffentlicher Link).
+   ========================================================= */
+const DRIVE_LANG = {en:'English', es:'Spanish', fr:'French', it:'Italian'};
+const CEFR = ['A1','A2','B1','B2','C1','C2'];
+const KEY_STORE = 'wortreise_api_key';
+const drive = {on:false, paused:false, mode:'story', turns:[], userLines:[], corrections:[], rec:null, silences:0,
+  lastReply:'', rate:0.95, ctl:null, wake:null, micBlocked:false, busy:false};
+let sampleFn = null, anthropicClient = null;
+(async()=>{ try{ if(window.claude) sampleFn = await window.claude.use('sample'); }catch(e){} })();
+
+function apiKey(){ try{ return localStorage.getItem(KEY_STORE)||''; }catch(e){ return ''; } }
+async function getClient(){
+  const key = apiKey(); if(!key) return null;
+  if(!anthropicClient){
+    const mod = await import('https://cdn.jsdelivr.net/npm/@anthropic-ai/sdk/+esm');
+    const Anthropic = mod.default || mod.Anthropic;
+    anthropicClient = new Anthropic({apiKey:key, dangerouslyAllowBrowser:true});
+  }
+  return anthropicClient;
+}
+function pointsOf(cefr, sub){ return CEFR.indexOf(cefr)*10 + sub; }
+function levelLabel(l){ return l ? `${l.cefr} · Stufe ${l.sub}/10` : 'noch nicht eingestuft'; }
+
+function driveRules(){
+  const L = DRIVE_LANG[currentLang()];
+  const lvl = state.speakLevel ? `${state.speakLevel.cefr}, step ${state.speakLevel.sub} of 10` : 'unknown (assume B1)';
+  return `You are "Flügo", a warm, witty ${L} conversation partner and tutor for a German-speaking adult from Austria. The learner is DRIVING: every word you write is spoken aloud by text-to-speech; they cannot read or type.
+Learner's current estimated level: ${lvl}. Their goal: B2. Speak slightly above their level: natural, clear, varied; now and then use one useful B2/C1 expression and explain it in a few simple words.
+Mode: ${drive.mode==='story'
+  ? 'INTERACTIVE STORY. Tell an original, gripping story (mystery, adventure or humour) in short episodes. After each episode let the learner decide what happens next or ask for their opinion, then continue based on their answer.'
+  : 'CONVERSATION. Chat about interesting everyday topics (travel, food, work, technology, hobbies, life in Austria, surprising facts). Share something interesting, then ask an open follow-up question about the learner.'}
+Answer format, exactly:
+CORRECTION: <the learner's sentence, corrected> — <reason in at most 10 words>
+REPLY: <your spoken reply>
+Rules: Write the CORRECTION line only if the learner's last message has real mistakes (grammar, tense, word choice, word order); ignore punctuation, capitalisation and obvious speech-recognition glitches; correct at most two things, kindly. The REPLY is 2 to 4 short sentences, at most 60 words, and ends with exactly one question or a choice. No lists, markdown, emojis or brackets. Write in ${L}; only if the learner asks for German, add one short German sentence.
+Special messages: "[start]" means greet briefly and begin. "[silence]" means the learner did not answer (busy with traffic): do not mention it; continue a little and ask again more simply.`;
+}
+function mergeTurns(turns){
+  const out = [];
+  turns.forEach(t=>{ const last = out[out.length-1]; if(last && last.role===t.role) last.content += '\n' + t.content; else out.push({...t}); });
+  while(out.length && out[0].role!=='user') out.shift();
+  return out;
+}
+async function askClaude(turns, rules, asJson){
+  if(sampleFn){
+    drive.ctl = new AbortController();
+    const input = [{role:'user', content:rules}, ...turns];
+    if(asJson) return await sampleFn.json(input, {cache:false, signal:drive.ctl.signal});
+    return (await sampleFn(input, {cache:false, modelTier:'quick', signal:drive.ctl.signal})).text;
+  }
+  const c = await getClient();
+  if(!c) throw {code:'no_backend'};
+  const res = await c.messages.create({
+    model:'claude-opus-5-5', max_tokens:1024, output_config:{effort:'low'},
+    system:rules, messages:mergeTurns(turns),
+  });
+  const text = res.content.filter(b=>b.type==='text').map(b=>b.text).join('\n');
+  if(!asJson) return text;
+  return JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}')+1));
+}
+function parseReply(text){
+  const corr = (text.match(/CORRECTION:\s*(.+)/i)||[])[1];
+  let reply = (text.split(/REPLY:/i)[1] || text.replace(/CORRECTION:.*$/im,'')).trim();
+  return {corr: corr ? corr.trim() : null, reply};
+}
+
+/* ---------- Sprachausgabe & -erkennung ---------- */
+function pickVoice(code){
+  const vs = speechSynthesis.getVoices().filter(v=>v.lang && v.lang.replace('_','-').startsWith(code.slice(0,2)));
+  return vs.find(v=>/natural|neural|google|premium|enhanced/i.test(v.name)) || vs[0] || null;
+}
+function speakAsync(text, code, rate){
+  return new Promise(resolve=>{
+    try{
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = code; u.rate = rate || drive.rate; const v = pickVoice(code); if(v) u.voice = v;
+      let done = false; const fin = ()=>{ if(!done){ done=true; resolve(); } };
+      u.onend = fin; u.onerror = fin;
+      setTimeout(fin, 4000 + text.length*110);   // falls onend auf manchen Geräten ausbleibt
+      speechSynthesis.speak(u);
+    }catch(e){ resolve(); }
+  });
+}
+function setDrive(icon, label, text){
+  document.getElementById('driveStatus').textContent = icon;
+  document.getElementById('driveLabel').textContent = label;
+  if(text!==undefined) document.getElementById('driveText').textContent = text;
+}
+function listen(){
+  if(!drive.on || drive.paused) return;
+  if(!SpeechRec){ micBlocked('Dieses Gerät/dieser Browser unterstützt keine Spracherkennung.'); return; }
+  setDrive('👂', 'Ich höre zu … sprich einfach');
+  beep(880,0.08,'sine',0.15);
+  const rec = new SpeechRec(); drive.rec = rec;
+  rec.lang = LANGS[currentLang()].code; rec.interimResults = false; rec.continuous = false; rec.maxAlternatives = 1;
+  let got = false;
+  rec.onresult = e=>{ got = true; handleUtterance(e.results[0][0].transcript); };
+  rec.onerror = e=>{ if(['not-allowed','service-not-allowed','audio-capture'].includes(e.error)) micBlocked(); };
+  rec.onend = ()=>{
+    if(got || !drive.on || drive.paused || drive.micBlocked) return;
+    drive.silences++;
+    if(drive.silences>=6) pauseDrive();
+    else if(drive.silences%2===1) listen();          // einmal still: einfach weiter zuhören
+    else driveStep('[silence]');                      // länger still: Flügo erzählt weiter
+  };
+  try{ rec.start(); }catch(e){ micBlocked(); }
+}
+function micBlocked(msg){
+  drive.micBlocked = true; stopAudio();
+  const m = msg || 'Das Mikrofon ist in dieser Ansicht gesperrt. Öffne die App über den öffentlichen Link – dort funktioniert das Mikrofon (mit deinem eigenen API-Schlüssel).';
+  setDrive('🎤🚫', 'Mikrofon nicht verfügbar', m);
+  speakAsync('Das Mikrofon ist hier leider nicht verfügbar.', 'de-DE', 1);
+  drive.on = false; renderDriveControls();
+}
+function stopAudio(){
+  try{ drive.rec && drive.rec.abort(); }catch(e){}
+  try{ speechSynthesis.cancel(); }catch(e){}
+  try{ drive.ctl && drive.ctl.abort(); }catch(e){}
+}
+
+/* ---------- Gesprächsablauf ---------- */
+async function driveStep(userText){
+  if(!drive.on || drive.paused) return;
+  if(userText) drive.turns.push({role:'user', content:userText});
+  drive.turns = drive.turns.slice(-24);
+  setDrive('🤔', 'Flügo denkt …');
+  let text;
+  try{ text = await askClaude(drive.turns, driveRules(), false); }
+  catch(e){ return driveError(e); }
+  if(!drive.on || drive.paused) return;
+  drive.turns.push({role:'assistant', content:text});
+  const {corr, reply} = parseReply(text);
+  const code = LANGS[currentLang()].code;
+  if(corr && userText && !userText.startsWith('[')){
+    drive.corrections.push({said:userText, fix:corr});
+    setDrive('✏️', 'Kleiner Tipp', corr);
+    beep(520,0.1,'triangle',0.15);
+    await speakAsync('Quick tip: ' + corr.replace(/—/g, ','), code);
+    if(!drive.on || drive.paused) return;
+  }
+  drive.lastReply = reply;
+  setDrive('🗣️', 'Flügo spricht', reply);
+  await speakAsync(reply, code);
+  listen();
+}
+function driveError(e){
+  const code = e && e.code;
+  if(code==='cancelled') return;
+  const msg = code==='no_backend' ? 'Kein Zugang zu Claude: Öffne die App als Claude-Artifact oder trage unten deinen eigenen API-Schlüssel ein.'
+    : code==='not_granted' || code==='sampling_disabled' ? 'Claude wurde für diese Seite nicht erlaubt.'
+    : code==='rate_limited' ? 'Gerade zu viele Anfragen – bitte später nochmal.'
+    : 'Verbindung zu Claude fehlgeschlagen. Später nochmal versuchen.';
+  drive.on = false; stopAudio();
+  setDrive('⚠️', 'Unterbrochen', msg);
+  speakAsync(msg, 'de-DE', 1);
+  if(code==='no_backend') document.getElementById('driveKeyBox').open = true;
+  renderDriveControls();
+}
+function handleUtterance(t){
+  drive.silences = 0;
+  const s = t.toLowerCase().trim();
+  setDrive('💬', 'Du hast gesagt', t);
+  if(/^(stop|finish|end|that's all|ende|schluss|beenden)\b/.test(s)) return endDrive(true);
+  if(/^(pause|wait|warte)\b/.test(s)) return pauseDrive();
+  if(/^(repeat|again|say that again|wiederhol|nochmal)/.test(s)){ return speakAsync(drive.lastReply, LANGS[currentLang()].code).then(listen); }
+  if(/(slower|langsamer)/.test(s) && s.split(' ').length<=3){ drive.rate = Math.max(0.6, drive.rate-0.12); return speakAsync('Okay, slower.', LANGS[currentLang()].code).then(listen); }
+  if(/(faster|schneller)/.test(s) && s.split(' ').length<=3){ drive.rate = Math.min(1.3, drive.rate+0.12); return speakAsync('Okay, faster.', LANGS[currentLang()].code).then(listen); }
+  drive.userLines.push(t);
+  popXP(addXP(3));
+  track('speak',1);
+  driveStep(t);
+}
+async function startDrive(){
+  if(!sampleFn && !apiKey()){ driveError({code:'no_backend'}); return; }
+  touchStreak();
+  Object.assign(drive, {on:true, paused:false, turns:[], userLines:[], corrections:[], silences:0, micBlocked:false});
+  try{ drive.wake = await navigator.wakeLock.request('screen'); }catch(e){}
+  renderDriveControls();
+  await speakAsync('Fahrmodus startet. Sag jederzeit „repeat“, „slower“ oder „stop“.', 'de-DE', 1);
+  driveStep('[start]');
+}
+function pauseDrive(){
+  drive.paused = true; stopAudio();
+  setDrive('⏸️', 'Pause – tippe ▶ zum Weitermachen', drive.lastReply);
+  renderDriveControls();
+}
+function resumeDrive(){ drive.paused = false; drive.silences = 0; renderDriveControls(); speakAsync(drive.lastReply||'Let\'s continue.', LANGS[currentLang()].code).then(listen); }
+async function endDrive(assessIt){
+  const wasOn = drive.on;
+  drive.on = false; drive.paused = false; stopAudio(); renderDriveControls();
+  try{ drive.wake && drive.wake.release(); }catch(e){}
+  if(!assessIt || !wasOn) return;
+  if(drive.userLines.length < 4){
+    setDrive('🏁', 'Gespräch beendet', 'Für eine Einstufung brauche ich mindestens 4 Antworten von dir – beim nächsten Mal etwas länger plaudern!');
+    speakAsync('Das Gespräch war noch zu kurz für eine Einstufung. Beim nächsten Mal ein bisschen länger!', 'de-DE', 1);
+    return;
+  }
+  await assessLevel();
+}
+async function assessLevel(){
+  setDrive('📊', 'Flügo bewertet dein Niveau …', '');
+  const L = DRIVE_LANG[currentLang()];
+  const prompt = `You are an experienced CEFR examiner. Rate the SPOKEN ${L} of a German-speaking adult learner from the utterances below (they come from speech recognition: ignore punctuation, capitalisation and obvious recognition glitches). Consider range, accuracy, fluency and how well they interact.
+Learner utterances:
+${drive.userLines.map(l=>'- '+l).join('\n')}
+${drive.corrections.length ? 'Mistakes the tutor noticed:\n'+drive.corrections.map(c=>'- '+c.fix).join('\n') : ''}
+Reply with only JSON: {"cefr": "A1"|"A2"|"B1"|"B2"|"C1"|"C2", "sub": integer 1-10 (1 = just reached this level, 10 = almost the next level), "strengths": [max 2 short German phrases], "focus": [max 2 short German phrases], "tip_de": "one motivating sentence in German"}`;
+  let r;
+  try{ r = await askClaude([{role:'user', content:prompt}], 'You are a precise CEFR language examiner.', true); }
+  catch(e){ return driveError(e); }
+  const cefr = CEFR.includes(r.cefr) ? r.cefr : 'B1';
+  const sub = Math.max(1, Math.min(10, Math.round(Number(r.sub)||5)));
+  const prev = state.speakHistory && state.speakHistory.length ? state.speakHistory[state.speakHistory.length-1] : null;
+  const entry = {date:new Date().toISOString().slice(0,10), cefr, sub, points:pointsOf(cefr,sub)};
+  state.speakHistory = (state.speakHistory||[]).concat([entry]).slice(-30);
+  state.speakLevel = {cefr, sub};
+  state.stats.drives = (state.stats.drives||0) + 1;
+  track('drive',1); checkAchievements(); saveState();
+  const delta = prev ? entry.points - prev.points : null;
+  const strengths = (r.strengths||[]).join(', '), focus = (r.focus||[]).join(', ');
+  const summary = `Dein Niveau: ${cefr}, Stufe ${sub} von 10 – das sind ${entry.points} von 60 Punkten.` +
+    (delta!==null ? (delta>0 ? ` Plus ${delta} seit dem letzten Mal!` : delta<0 ? ` ${-delta} weniger als letztes Mal – kein Stress, Tagesform.` : ' Gleich wie letztes Mal.') : '') +
+    (strengths ? ` Stark: ${strengths}.` : '') + (focus ? ` Üben: ${focus}.` : '') + (r.tip_de ? ' ' + r.tip_de : '');
+  setDrive('🏆', levelLabel(state.speakLevel), summary);
+  renderDriveHistory(); renderDriveControls();
+  launchConfetti(); sndLevelUp();
+  await speakAsync(summary, 'de-DE', 1);
+}
+
+/* ---------- Anzeige ---------- */
+function renderDriveControls(){
+  document.getElementById('driveStart').classList.toggle('hidden', drive.on);
+  document.getElementById('driveModes').classList.toggle('hidden', drive.on);
+  document.getElementById('driveCtrl').classList.toggle('hidden', !drive.on);
+  document.getElementById('drivePause').textContent = drive.paused ? '▶' : '⏸';
+  document.getElementById('driveLevel').textContent = '🎯 ' + levelLabel(state.speakLevel);
+}
+function renderDriveHistory(){
+  const h = (state.speakHistory||[]).slice(-10);
+  const box = document.getElementById('driveHist');
+  if(!h.length){ box.innerHTML = '<div class="panel-sub">Nach dem ersten Gespräch (mind. 4 Antworten) siehst du hier deinen Verlauf.</div>'; return; }
+  box.innerHTML = '<div class="hist-title">Dein Verlauf (Punkte von 60)</div><div class="hist-bars">' +
+    h.map(e=>`<div class="hist-col"><span class="hist-val">${e.points}</span><div class="hist-bar" style="height:${Math.max(6,e.points/60*100)}%"></div><span class="hist-lbl">${e.cefr}·${e.sub}</span></div>`).join('') + '</div>';
+}
+function openDrive(){
+  renderDriveControls(); renderDriveHistory();
+  document.getElementById('driveKey').value = apiKey() ? '••••••••' : '';
+  setDrive('🚗', 'Fahrmodus – nur hören und sprechen', 'Wähle Geschichte oder Gespräch und tippe auf Start. Danach brauchst du keine Hände mehr: Flügo erzählt, fragt, korrigiert dich und stuft dich am Ende ein.');
+  showScreen('screen-drive');
+}
+document.querySelectorAll('.drive-mode').forEach(b=>b.addEventListener('click', ()=>{
+  drive.mode = b.dataset.m;
+  document.querySelectorAll('.drive-mode').forEach(x=>x.classList.toggle('sel', x===b));
+  sndTap();
+}));
+document.getElementById('driveStart').addEventListener('click', startDrive);
+document.getElementById('drivePause').addEventListener('click', ()=> drive.paused ? resumeDrive() : pauseDrive());
+document.getElementById('driveRepeat').addEventListener('click', ()=>{ stopAudio(); speakAsync(drive.lastReply, LANGS[currentLang()].code).then(listen); });
+document.getElementById('driveEnd').addEventListener('click', ()=>endDrive(true));
+document.getElementById('driveBack').addEventListener('click', ()=>{ endDrive(false); goHome(); });
+document.getElementById('driveChip').addEventListener('click', ()=>{ sndTap(); openDrive(); });
+document.getElementById('driveKey').addEventListener('change', e=>{
+  const v = e.target.value.trim();
+  if(v.startsWith('••')) return;
+  try{ v ? localStorage.setItem(KEY_STORE, v) : localStorage.removeItem(KEY_STORE); }catch(err){}
+  anthropicClient = null;
+  e.target.value = v ? '••••••••' : '';
+  toast(v ? '🔑 Schlüssel gespeichert (nur auf diesem Gerät)' : 'Schlüssel entfernt');
+});
 
 /* ---------- INIT ---------- */
 ensureDaily(); ensureLeague(); checkAchievements(); saveState();
