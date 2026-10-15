@@ -434,6 +434,52 @@ body{
 .arc-over{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:rgba(255,255,255,.92);color:#1d4e63;padding:12px;text-align:center;}
 .arc-over .btn{width:100%;max-width:260px;}
 .arc-big{font-size:34px;font-weight:900;}
+
+/* ===== WOLKEN ===== */
+.cloud-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+.rainbow{fill:none;stroke-width:3;stroke-linecap:round;stroke-dasharray:400;stroke-dashoffset:400;animation:draw .6s forwards;}
+@keyframes draw{to{stroke-dashoffset:0;}}
+.sun{position:absolute;left:50%;bottom:4px;margin-left:-15px;font-size:30px;animation:spinSlow 12s linear infinite;opacity:.8;}
+@keyframes spinSlow{to{transform:rotate(360deg);}}
+.cloud{position:absolute;width:37%;transform:translateY(-50%);background:var(--cc);border-radius:40px;padding:6px 6px 8px;text-align:center;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.08);animation:cfloat 3s ease-in-out infinite;color:#4a3b5c;transition:filter .2s;}
+.cloud::before,.cloud::after{content:'';position:absolute;background:var(--cc);border-radius:50%;z-index:-1;}
+.cloud::before{width:38px;height:38px;top:-14px;left:16%;}
+.cloud::after{width:28px;height:28px;top:-9px;right:18%;}
+.cloud.cl{left:3%;}.cloud.cr{right:3%;}
+.c-face{display:block;font-size:11px;font-weight:900;color:#7a5a8a;line-height:1;}
+.c-word{display:block;font-weight:900;font-size:13px;line-height:1.15;word-break:break-word;}
+.cloud.sel{filter:drop-shadow(0 0 6px #ffd23f) brightness(1.05);animation:none;transform:translateY(-50%) scale(1.08);}
+.cloud.happy{opacity:.75;animation:none;filter:saturate(1.4);}
+.cloud.happy .c-face{color:#ff5d8f;}
+.cloud.sad{filter:grayscale(.6);animation:shake .3s;}
+.c-heart{position:absolute;font-size:22px;animation:popIn .4s both;pointer-events:none;}
+@keyframes cfloat{0%,100%{margin-top:0;}50%{margin-top:-4px;}}
+/* ===== TÄGLICH / DIAMANTEN ===== */
+.stat-pill.gems{color:#7fd3ff;}
+.cal-row{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:6px 0;}
+.cal-day{background:rgba(255,255,255,.12);border-radius:10px;text-align:center;padding:4px 0;font-size:18px;}
+.cal-day small{display:block;font-size:9px;color:#cfe8ee;}
+.cal-day.today{background:#ffd23f;color:#1d4e63;animation:pop 1.2s infinite;}
+.cal-day.today small{color:#1d4e63;}
+.cal-day.done{opacity:.55;}
+.daily-split{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+.daily-half{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.daily-half .btn{padding:8px;font-size:13px;margin:0;}
+.wheel-wrap{position:relative;width:140px;height:140px;}
+.wheel{width:140px;height:140px;border-radius:50%;border:4px solid #fff;position:relative;box-shadow:0 4px 0 rgba(0,0,0,.2);}
+.wheel span{position:absolute;left:50%;top:50%;width:24px;height:24px;margin:-12px;font-size:18px;text-align:center;line-height:24px;}
+.wheel-ptr{position:absolute;top:-10px;left:50%;transform:translateX(-50%);z-index:2;color:#fff;font-size:20px;text-shadow:0 2px 2px #000;}
+.wod{background:#fff;color:#1d4e63;border-radius:14px;padding:10px;text-align:center;cursor:pointer;width:100%;}
+.wod b{font-size:18px;display:block;}.wod small{display:block;color:var(--muted);}
+.buy-btn.gem{background:#3ea8ff;}
+.mascot-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:4px 0 8px;}
+.mascot-pick{border:2px solid #e6ecf0;background:#fff;border-radius:14px;padding:6px;cursor:pointer;font-family:inherit;}
+.mascot-pick span{font-size:28px;display:block;}.mascot-pick small{font-size:11px;font-weight:800;color:#1d4e63;}
+.mascot-pick.sel{border-color:#06d6a0;background:#e8fff6;}
+.gem-packs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px;}
+.gem-pack{position:relative;border:none;border-radius:14px;background:linear-gradient(145deg,#3ea8ff,#7b5bff);color:#fff;padding:12px 4px 8px;font-weight:900;cursor:pointer;font-family:inherit;}
+.gem-pack span{display:block;font-size:15px;}.gem-pack small{opacity:.9;}
+.gem-pack em{position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:#ffd23f;color:#1d4e63;font-size:9px;font-style:normal;border-radius:8px;padding:1px 6px;white-space:nowrap;}
 </style>
 </head>
 <body>
@@ -444,6 +490,7 @@ body{
     <div style="display:flex;gap:8px;">
       <div class="stat-pill streak">🔥 <span id="streakVal">0</span></div>
       <div class="stat-pill coins">🪙 <span id="coinsVal">0</span></div>
+      <div class="stat-pill gems" id="gemsPill">💎 <span id="gemsVal">0</span></div>
       <div class="stat-pill hearts" id="heartsPill">❤️ <span id="heartsVal">5</span><span class="heart-timer" id="heartTimer"></span></div>
     </div>
   </div>
@@ -534,6 +581,7 @@ body{
   <section class="screen" id="screen-quests">
     <div class="map-title">Tagesquests 🎯</div>
     <div class="map-sub" id="questTimer">Neue Quests um Mitternacht</div>
+    <div class="panel" id="dailyBox"></div>
     <div class="panel">
       <div class="panel-title">Tagesziel</div>
       <div class="goal-chips" id="goalChips"></div>
@@ -651,8 +699,13 @@ body{
       <div id="shopList"></div>
     </div>
     <div class="card" style="margin:0 0 12px;">
+      <div class="panel-title dark">💎 Diamanten <span class="panel-sub" style="display:inline">(💎 <span id="gemCount">0</span>)</span></div>
+      <div id="gemShop"></div>
+    </div>
+    <div class="card" style="margin:0 0 12px;">
       <div class="panel-title dark">⚙️ Einstellungen</div>
-      <button class="btn btn-primary" id="ideaBtn">💡 Idee / Fehler melden</button>
+      <button class="btn btn-primary" id="inviteBtn">📲 Freunde per WhatsApp einladen (+3 💎)</button>
+      <button class="btn btn-secondary" id="ideaBtn">💡 Idee / Fehler melden</button>
       <button class="btn btn-secondary" id="soundBtn">🔊 Ton: an</button>
       <button class="btn btn-secondary" id="placementBtn">🧪 Einstufungstest wiederholen</button>
       <button class="btn btn-secondary" id="changeLangBtn">🌍 Sprache ändern</button>
@@ -1215,7 +1268,7 @@ let session = null; // aktueller Levellauf
 
 function defaultState(){
   return {
-    xp:0, coins:20, hearts:MAX_HEARTS, lastHeartLoss:null,
+    xp:0, coins:20, gems:5, hearts:MAX_HEARTS, lastHeartLoss:null,
     streak:0, lastPlayDate:null, difficulty:null, language:null, grammarProgress:{},
     levelProgress: LEVELS.map(()=>({stars:0, bestCorrect:0})),
     totalLevelsCompleted:0,
@@ -2431,6 +2484,7 @@ function updateTopbar(){
   document.getElementById('streakVal').textContent = state.streak;
   document.getElementById('coinsVal').textContent = state.coins;
   document.getElementById('heartsVal').textContent = state.hearts;
+  document.getElementById('gemsVal').textContent = state.gems||0;
 }
 
 /* ---------- XP ---------- */
@@ -2508,9 +2562,9 @@ function questReady(){
   return state.daily.quests.some(q=>!q.claimed && q.p>=qDef(q.id).target)
     || (state.daily.quests.length && state.daily.quests.every(q=>q.claimed) && !state.daily.chestClaimed);
 }
-function updateQuestDot(){ const d=document.getElementById('questDot'); if(d) d.classList.toggle('hidden', !questReady()); }
+function updateQuestDot(){ const d=document.getElementById('questDot'); if(d) d.classList.toggle('hidden', !(questReady() || (typeof dailyPending==='function' && state.difficulty && dailyPending()))); }
 function renderQuests(){
-  ensureDaily(); updateTopbar();
+  ensureDaily(); updateTopbar(); renderDaily();
   const h = 24 - new Date().getHours();
   document.getElementById('questTimer').textContent = `Neue Quests in ${h} Std`;
   const chips = document.getElementById('goalChips'); chips.innerHTML='';
@@ -2625,6 +2679,8 @@ function renderLeague(){
 
 /* ---------- Erfolge ---------- */
 const ACHIEVEMENTS = [
+  {id:'inv', icon:'📲', name:'Botschafter', desc:'Einen Freund eingeladen', test:()=>(state.stats.invites||0)>=1, reward:20},
+  {id:'cal7', icon:'📅', name:'Treue Seele', desc:'Login-Kalender bis Tag 7', test:()=>state.cal && state.cal.day===6, reward:50},
   {id:'arc', icon:'🕹️', name:'Zocker', desc:'200 Punkte in einem Spiel', test:()=>Object.values(state.arcade||{}).some(v=>v>=200), reward:30},
   {id:'first', icon:'🎓', name:'Erste Schritte', desc:'Erste Lektion geschafft', test:()=>state.stats.lessons>=1, reward:10},
   {id:'les10', icon:'📚', name:'Bücherwurm', desc:'10 Lektionen', test:()=>state.stats.lessons>=10, reward:30},
@@ -2655,8 +2711,8 @@ function checkAchievements(){
   ACHIEVEMENTS.forEach(a=>{
     if(state.achievements[a.id] || !a.test()) return;
     state.achievements[a.id] = Date.now();
-    state.coins += a.reward;
-    toast(`🏅 Erfolg: ${a.icon} ${a.name} (+${a.reward} 🪙)`);
+    state.coins += a.reward; state.gems = (state.gems||0) + 1;
+    toast(`🏅 Erfolg: ${a.icon} ${a.name} (+${a.reward} 🪙 +1 💎)`);
   });
 }
 
@@ -2694,6 +2750,7 @@ function renderProfileExtras(){
   });
   document.getElementById('achCount').textContent = `${Object.keys(state.achievements).length}/${ACHIEVEMENTS.length}`;
   document.getElementById('shopCoins').textContent = state.coins;
+  renderGemShop();
   const list = document.getElementById('shopList'); list.innerHTML='';
   SHOP.forEach(item=>{
     const el = document.createElement('div'); el.className='shop-item';
@@ -3534,8 +3591,9 @@ const AD_SPOTS = [
   {icon:'💪', title:'Fehler-Training', text:'Wörter, die du falsch hattest, kommen im Training gezielt wieder – und kosten keine Herzen.'},
 ];
 function adsLeft(){ ensureDaily(); return AD_PER_DAY - (state.daily.ads||0); }
-function watchAd(after){
-  if(state.hearts >= MAX_HEARTS){ toast('Du hast schon alle Herzen ❤️'); return; }
+function watchAd(after, reward){
+  const gem = reward==='gem';
+  if(!gem && state.hearts >= MAX_HEARTS){ toast('Du hast schon alle Herzen ❤️'); return; }
   if(adsLeft() <= 0){ toast('Heute keine Werbung mehr – morgen wieder! 📺'); return; }
   const spot = pick(AD_SPOTS);
   const ov = document.getElementById('adOverlay');
@@ -3552,15 +3610,17 @@ function watchAd(after){
     left--;
     if(left>0){ btn.textContent = `Noch ${left} s …`; return; }
     clearInterval(iv);
-    btn.disabled = false; btn.textContent = '❤️ +1 Herz abholen';
+    btn.disabled = false; btn.textContent = gem ? '💎 +1 Diamant abholen' : '❤️ +1 Herz abholen';
   }, 1000);
   btn.onclick = ()=>{
     if(btn.disabled) return;
     ov.classList.add('hidden');
     state.daily.ads = (state.daily.ads||0) + 1;
+    if(gem){ state.gems = (state.gems||0) + 1; sndCorrect(); toast(`💎 +1 Diamant! (heute noch ${adsLeft()}× Werbung möglich)`); }
+    else {
     state.hearts = Math.min(MAX_HEARTS, state.hearts+1);
     if(state.hearts>=MAX_HEARTS) state.lastHeartLoss = null;
-    sndCorrect(); toast(`❤️ +1 Herz! (heute noch ${adsLeft()}× Werbung möglich)`);
+    sndCorrect(); toast(`❤️ +1 Herz! (heute noch ${adsLeft()}× Werbung möglich)`); }
     saveState(); updateTopbar();
     if(after) after();
   };
@@ -3686,6 +3746,7 @@ const ARCADE_GAMES = [
   {id:'rain', icon:'🎧', name:'Hör-Regen', desc:'Fang das Wort, das du hörst, bevor es landet'},
   {id:'emoji', icon:'🖼️', name:'Bilder-Blitz', desc:'Bild erkennen, Wort tippen – 60 Sekunden'},
   {id:'puzzle', icon:'🧩', name:'Bild-Puzzle', desc:'Jede richtige Antwort deckt ein Teil auf'},
+  {id:'clouds', icon:'☁️', name:'Wolken-Verbinden', desc:'Verbinde Wort-Wolken mit Regenbögen'},
   {id:'tower', icon:'🏰', name:'Wort-Verteidigung', desc:'Schieß die Wort-Monster vor der Burg ab'},
 ];
 const arc = {game:null, running:false, raf:0, score:0, lives:3, combo:0, ents:[], timers:[], target:null, last:0};
@@ -3738,7 +3799,7 @@ function startArcade(id){
   document.getElementById('arcPrompt').innerHTML = '';
   showScreen('screen-arcade');
   arcHud();
-  ({balloon:startFloat, rain:startFloat, emoji:startEmoji, puzzle:startPuzzle, tower:startTower})[id](id);
+  ({balloon:startFloat, rain:startFloat, emoji:startEmoji, puzzle:startPuzzle, tower:startTower, clouds:startClouds})[id](id);
 }
 function arcHit(x, y, gain){
   arc.combo++; const pts = gain + Math.min(10, arc.combo)*2;
@@ -3998,8 +4059,231 @@ function startTower(){
   arc.raf = requestAnimationFrame(step);
 }
 
+/* =========================================================
+   💎 DIAMANTEN · 📅 LOGIN-KALENDER · 🎡 GLÜCKSRAD · 💬 WORT DES TAGES · 📲 EINLADEN
+   ========================================================= */
+const PUBLIC_LINK = 'https://htmlpreview.github.io/?https://github.com/freudenthalerried-cmd/matlab/blob/main/sprachlern-app.html';
+const MASCOTS = [
+  {e:'🦉', name:'Flügo', price:0}, {e:'🐧', name:'Pingu', price:15}, {e:'🦊', name:'Fuchsi', price:20},
+  {e:'🐼', name:'Panda-Paul', price:25}, {e:'🦄', name:'Glitzi', price:40}, {e:'🐲', name:'Drako', price:60},
+];
+const GEM_SHOP = [
+  {id:'g_hearts', icon:'❤️', name:'Herzen sofort voll', price:5, can:()=>state.hearts<MAX_HEARTS, apply:()=>{ state.hearts=MAX_HEARTS; state.lastHeartLoss=null; }},
+  {id:'g_coins', icon:'🪙', name:'100 Münzen', price:5, can:()=>true, apply:()=>{ state.coins+=100; }},
+  {id:'g_boost', icon:'⚡', name:'Doppel-XP 30 Min.', price:8, can:()=>true, apply:()=>{ state.boostUntil=Math.max(Date.now(),state.boostUntil||0)+30*60000; }},
+  {id:'g_freeze', icon:'🧊', name:'Streak-Schutz', price:10, can:()=>state.inventory.freeze<2, apply:()=>{ state.inventory.freeze++; }},
+];
+const GEM_PACKS = [{n:80, eur:'1,99 €'}, {n:250, eur:'4,99 €', tag:'Beliebt'}, {n:700, eur:'9,99 €', tag:'Bester Wert'}];
+const CAL_REWARDS = [
+  {icon:'🪙', text:'20 Münzen', give:()=>{ state.coins+=20; }},
+  {icon:'💎', text:'1 Diamant', give:()=>{ state.gems+=1; }},
+  {icon:'🪙', text:'30 Münzen', give:()=>{ state.coins+=30; }},
+  {icon:'💎', text:'2 Diamanten', give:()=>{ state.gems+=2; }},
+  {icon:'⚡', text:'Doppel-XP 15 Min.', give:()=>{ state.boostUntil=Math.max(Date.now(),state.boostUntil||0)+15*60000; }},
+  {icon:'🪙', text:'50 Münzen', give:()=>{ state.coins+=50; }},
+  {icon:'🎁', text:'Mega-Truhe: 10 💎 + 50 🪙', give:()=>{ state.gems+=10; state.coins+=50; }},
+];
+const WHEEL = [
+  {icon:'🪙', text:'10 Münzen', col:'#ffd23f', give:()=>{ state.coins+=10; }},
+  {icon:'💎', text:'1 Diamant', col:'#3ea8ff', give:()=>{ state.gems+=1; }},
+  {icon:'🪙', text:'25 Münzen', col:'#ff9f1c', give:()=>{ state.coins+=25; }},
+  {icon:'❤️', text:'Herzen voll', col:'#ff5d5d', give:()=>{ state.hearts=MAX_HEARTS; state.lastHeartLoss=null; }},
+  {icon:'🪙', text:'15 Münzen', col:'#06d6a0', give:()=>{ state.coins+=15; }},
+  {icon:'⚡', text:'Doppel-XP 15 Min.', col:'#7b5bff', give:()=>{ state.boostUntil=Math.max(Date.now(),state.boostUntil||0)+15*60000; }},
+  {icon:'💎', text:'3 Diamanten', col:'#ff6fb0', give:()=>{ state.gems+=3; }},
+  {icon:'🪙', text:'50 Münzen', col:'#9be38a', give:()=>{ state.coins+=50; }},
+];
+function todayStr(){ return new Date().toDateString(); }
+function calInfo(){
+  const c = state.cal || {day:0, last:null};
+  const y = new Date(Date.now()-864e5).toDateString();
+  const claimedToday = c.last===todayStr();
+  let day = claimedToday ? c.day : (c.last===y ? (c.day+1)%7 : 0);
+  return {day, claimedToday};
+}
+function claimCalendar(){
+  const ci = calInfo(); if(ci.claimedToday) return;
+  const r = CAL_REWARDS[ci.day]; r.give();
+  state.cal = {day:ci.day, last:todayStr()};
+  sndLevelUp(); if(ci.day===6) launchConfetti(); checkAchievements();
+  toast(`📅 Tag ${ci.day+1}: ${r.icon} ${r.text}!`);
+  saveState(); updateTopbar(); renderDaily();
+}
+function wordOfDay(){
+  const pool = arcadePool(); if(!pool.length) return null;
+  const d = new Date(); const h = d.getFullYear()*372 + d.getMonth()*31 + d.getDate();
+  return pool[(h*7919) % pool.length];
+}
+function spinWheel(){
+  if(state.wheelDate===todayStr()){ toast('🎡 Morgen darfst du wieder drehen!'); return; }
+  const i = Math.floor(Math.random()*WHEEL.length);
+  state.wheelDate = todayStr(); saveState();
+  const wh = document.getElementById('wheel');
+  const seg = 360/WHEEL.length;
+  const deg = 360*5 + (360 - (i*seg + seg/2));
+  wh.style.transition = 'transform 3.2s cubic-bezier(.17,.67,.2,1)';
+  wh.style.transform = `rotate(${deg}deg)`;
+  sndTap();
+  setTimeout(()=>{ const w = WHEEL[i]; w.give(); sndLevelUp(); burstAt(innerWidth/2, innerHeight/2, ['✨','⭐',w.icon], 10); toast(`🎡 Gewonnen: ${w.icon} ${w.text}!`); saveState(); updateTopbar(); renderDaily(); }, 3300);
+}
+function wheelHTML(){
+  const seg = 360/WHEEL.length;
+  const grad = WHEEL.map((w,i)=>`${w.col} ${i*seg}deg ${(i+1)*seg}deg`).join(',');
+  const labels = WHEEL.map((w,i)=>`<span style="transform:rotate(${i*seg+seg/2}deg) translateY(-62px)">${w.icon}</span>`).join('');
+  return `<div class="wheel-wrap"><div class="wheel-ptr">▼</div><div class="wheel" id="wheel" style="background:conic-gradient(${grad})">${labels}</div></div>`;
+}
+function renderDaily(){
+  const box = document.getElementById('dailyBox'); if(!box) return;
+  const ci = calInfo();
+  const days = CAL_REWARDS.map((r,i)=>{
+    const cls = i<ci.day || (i===ci.day && ci.claimedToday) ? 'done' : (i===ci.day ? 'today' : '');
+    return `<div class="cal-day ${cls}"><small>Tag ${i+1}</small><span>${i<ci.day || (i===ci.day&&ci.claimedToday) ? '✅' : r.icon}</span></div>`;
+  }).join('');
+  const w = wordOfDay(); const code = LANGS[currentLang()].code;
+  const spun = state.wheelDate===todayStr();
+  box.innerHTML = `
+    <div class="panel-title">📅 Login-Kalender <span class="panel-sub" style="display:inline">· jeden Tag mehr, Tag 7 = Mega-Truhe</span></div>
+    <div class="cal-row">${days}</div>
+    ${ci.claimedToday ? `<div class="panel-sub">Morgen wartet: ${CAL_REWARDS[(ci.day+1)%7].icon} ${CAL_REWARDS[(ci.day+1)%7].text} – nicht verpassen!</div>` : `<button class="btn btn-primary pulse" id="calClaim">🎁 Tag ${ci.day+1} abholen: ${CAL_REWARDS[ci.day].text}</button>`}
+    <div class="daily-split">
+      <div class="daily-half"><div class="panel-title">🎡 Glücksrad</div>${wheelHTML()}<button class="btn ${spun?'btn-secondary':'btn-primary'}" id="wheelBtn" ${spun?'disabled':''}>${spun?'Morgen wieder':'Drehen!'}</button></div>
+      <div class="daily-half"><div class="panel-title">💬 Wort des Tages</div>${w ? `<div class="wod" id="wodBtn"><b>${escapeHtml(w[1])}</b><span>🔊</span><small>${escapeHtml(w[0])}</small></div>` : ''}
+        <button class="btn btn-secondary" id="inviteBtn2">📲 Freund einladen</button></div>
+    </div>`;
+  const c = document.getElementById('calClaim'); if(c) c.onclick = claimCalendar;
+  const wb = document.getElementById('wheelBtn'); if(wb && !spun) wb.onclick = ()=>{ wb.disabled = true; spinWheel(); };
+  const wd = document.getElementById('wodBtn'); if(wd) wd.onclick = ()=>speak(w[1], code);
+  document.getElementById('inviteBtn2').onclick = inviteWhatsApp;
+}
+function dailyPending(){ return !calInfo().claimedToday || state.wheelDate!==todayStr(); }
+function maybeShowDaily(){
+  if(!state.difficulty || state.dailyShown===todayStr() || !dailyPending()) return;
+  if(!document.getElementById('penaltyOverlay').classList.contains('hidden') || !document.getElementById('screen-map').classList.contains('active')){ setTimeout(maybeShowDaily, 1500); return; }
+  state.dailyShown = todayStr(); saveState();
+  renderQuests(); showScreen('screen-quests'); setNav('quests');
+  toast('☀️ Guten Tag! Dein Tagesgeschenk wartet 🎁');
+}
+
+/* ---------- 📲 WhatsApp-Einladung ---------- */
+function inviteWhatsApp(){
+  const li = levelInfo(state.xp);
+  const msg = `Hey! 🦉 Ich lerne ${LANGS[currentLang()].label.replace(/^\S+\s/,'')} mit Wortreise – schon ${state.streak} 🔥 Tage am Stück, Level ${li.level}! Spiel mit und versuch mich in der Liga zu schlagen 😄 👉 ${PUBLIC_LINK}`;
+  const url = 'https://wa.me/?text=' + encodeURIComponent(msg);
+  const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove();
+  if(state.inviteDate !== todayStr()){ state.inviteDate = todayStr(); state.gems += 3; state.stats.invites = (state.stats.invites||0)+1; toast('📲 Danke fürs Einladen! +3 💎'); checkAchievements(); saveState(); updateTopbar(); }
+}
+
+/* ---------- 💎 Diamanten-Shop & Begleiter ---------- */
+function renderGemShop(){
+  const box = document.getElementById('gemShop'); if(!box) return;
+  document.getElementById('gemCount').textContent = state.gems;
+  box.innerHTML = '';
+  GEM_SHOP.forEach(it=>{
+    const el = document.createElement('div'); el.className = 'shop-item';
+    el.innerHTML = `<span class="si">${it.icon}</span><span class="st">${it.name}</span><button class="buy-btn gem">💎 ${it.price}</button>`;
+    el.querySelector('button').onclick = ()=>{
+      if(state.gems < it.price){ toast('Zu wenig 💎 – Kalender, Glücksrad & Einladen bringen welche!'); return; }
+      if(!it.can()){ toast('Das hast du schon voll 👍'); return; }
+      state.gems -= it.price; it.apply(); sndCorrect(); toast(`${it.icon} ${it.name}!`); saveState(); updateTopbar(); renderStats();
+    };
+    box.appendChild(el);
+  });
+  const own = state.mascots || ['🦉'];
+  const mrow = document.createElement('div'); mrow.className = 'mascot-row';
+  MASCOTS.forEach(m=>{
+    const b = document.createElement('button'); b.className = 'mascot-pick' + ((state.mascot||'🦉')===m.e ? ' sel' : '');
+    b.innerHTML = `<span>${m.e}</span><small>${own.includes(m.e) ? m.name : '💎 '+m.price}</small>`;
+    b.onclick = ()=>{
+      if(!own.includes(m.e)){
+        if(state.gems < m.price){ toast(`${m.name} kostet ${m.price} 💎`); return; }
+        state.gems -= m.price; state.mascots = [...own, m.e]; toast(`🎉 ${m.name} ist jetzt dein Begleiter!`); launchConfetti();
+      }
+      state.mascot = m.e; saveState(); applyMascot(); updateTopbar(); renderStats();
+    };
+    mrow.appendChild(b);
+  });
+  box.appendChild(Object.assign(document.createElement('div'), {className:'panel-title dark', textContent:'🐾 Begleiter'}));
+  box.appendChild(mrow);
+  const ad = document.createElement('div'); ad.className = 'shop-item';
+  ad.innerHTML = `<span class="si">📺</span><span class="st">Werbung schauen<small>+1 💎 · noch ${adsLeft()}× heute</small></span><button class="buy-btn">Gratis</button>`;
+  ad.querySelector('button').onclick = ()=>watchAd(()=>renderStats(), 'gem');
+  box.appendChild(ad);
+  const packs = document.createElement('div'); packs.className = 'gem-packs';
+  GEM_PACKS.forEach(p=>{
+    const b = document.createElement('button'); b.className = 'gem-pack';
+    b.innerHTML = `${p.tag ? `<em>${p.tag}</em>` : ''}<span>💎 ${p.n}</span><small>${p.eur}</small>`;
+    b.onclick = ()=>toast('💳 Echtgeld-Käufe sind noch nicht aktiv – sammle 💎 gratis über Kalender, Glücksrad, Werbung & Einladungen!');
+    packs.appendChild(b);
+  });
+  box.appendChild(packs);
+}
+function applyMascot(){ const b = document.querySelector('.brand'); if(b && b.firstChild) b.firstChild.nodeValue = (state.mascot||'🦉') + ' '; }
+
+/* ---------- ☁️ Wolken-Verbinden ---------- */
+const CLOUD_COLS = ['#ffd6e8','#d6ecff','#e6dcff','#d8f7e4','#fff1c9'];
+function startClouds(){
+  const pool = arcadePool();
+  const arena = document.getElementById('arena'), prompt = document.getElementById('arcPrompt');
+  let round = 0;
+  const newRound = ()=>{
+    if(!arc.running) return;
+    round++;
+    const pairs = shuffle([...new Set(pool)]).slice(0,5);
+    prompt.innerHTML = `Runde ${round} · Tippe eine Wolke links, dann die passende rechts ☁️💞☁️`;
+    arena.innerHTML = '<svg class="cloud-svg"></svg><div class="sun">🌞</div>';
+    const svg = arena.querySelector('svg');
+    const left = pairs.map((w,i)=>({w, side:'L', i})), right = shuffle(pairs.map((w,i)=>({w, side:'R', i})));
+    let sel = null, done = 0;
+    const H = arena.clientHeight, rowH = (H-16)/5;
+    const mk = (c, k)=>{
+      const el = document.createElement('div');
+      el.className = 'cloud ' + (c.side==='L' ? 'cl' : 'cr');
+      el.style.top = (8 + k*rowH + rowH/2) + 'px';
+      el.style.setProperty('--cc', CLOUD_COLS[c.i % CLOUD_COLS.length]);
+      el.style.animationDelay = (k*0.3) + 's';
+      el.innerHTML = `<span class="c-face">• ᴗ •</span><span class="c-word">${escapeHtml(c.side==='L' ? c.w[0] : c.w[1])}</span>`;
+      c.el = el;
+      el.onclick = ()=>{
+        if(!arc.running || c.done) return;
+        sndTap();
+        if(!sel || sel.side===c.side){ if(sel) sel.el.classList.remove('sel'); sel = c; el.classList.add('sel'); if(c.side==='R') speak(c.w[1], LANGS[currentLang()].code); return; }
+        const a = sel; sel = null; a.el.classList.remove('sel');
+        if(a.w === c.w){
+          a.done = c.done = true; done++;
+          [a.el, c.el].forEach(e=>{ e.classList.add('happy'); e.querySelector('.c-face').textContent = '^ ᴗ ^'; });
+          const ar = arena.getBoundingClientRect(), r1 = a.el.getBoundingClientRect(), r2 = c.el.getBoundingClientRect();
+          const L = a.side==='L' ? r1 : r2, R = a.side==='L' ? r2 : r1;
+          const x1 = L.right-ar.left-4, y1 = L.top-ar.top+L.height/2, x2 = R.left-ar.left+4, y2 = R.top-ar.top+R.height/2;
+          const mx = (x1+x2)/2, my = (y1+y2)/2;
+          const cols = ['#ff5d5d','#ffd23f','#06d6a0','#3ea8ff','#7b5bff'];
+          cols.forEach((col,k)=>{
+            const p = document.createElementNS('http://www.w3.org/2000/svg','path');
+            const o=(k-2)*3; p.setAttribute('d', `M${x1} ${y1+o} C${mx} ${y1+o} ${mx} ${y2+o} ${x2} ${y2+o}`);
+            p.setAttribute('stroke', col); p.setAttribute('class','rainbow');
+            svg.appendChild(p);
+          });
+          const heart = document.createElement('div'); heart.className = 'c-heart'; heart.textContent = '💞';
+          heart.style.left = (mx-12)+'px'; heart.style.top = (my-6)+'px'; arena.appendChild(heart);
+          arcHit(ar.left+mx, ar.top+my, 10);
+          if(done===5){ arc.lives = Math.min(3, arc.lives+1); arcHud(); prompt.innerHTML = '🌈 Alle verbunden! +❤️'; launchConfetti(); arcLater(newRound, 1300); }
+        } else {
+          [a.el, c.el].forEach(e=>{ e.classList.add('sad'); e.querySelector('.c-face').textContent = '╥﹏╥'; });
+          arcLater(()=>[a.el, c.el].forEach(e=>{ e.classList.remove('sad'); e.querySelector('.c-face').textContent = '• ᴗ •'; }), 900);
+          arcMiss();
+        }
+      };
+      arena.appendChild(el);
+    };
+    left.forEach(mk); right.forEach(mk);
+  };
+  newRound();
+}
+
+document.getElementById('inviteBtn').addEventListener('click', ()=>{ sndTap(); inviteWhatsApp(); });
+document.getElementById('gemsPill').addEventListener('click', ()=>{ sndTap(); renderStats(); showScreen('screen-stats'); setNav('stats'); setTimeout(()=>document.getElementById('gemShop').scrollIntoView({block:'start'}), 50); });
 /* ---------- INIT ---------- */
-ensureDaily(); ensureLeague(); applyAbsencePenalty(); checkAchievements(); saveState();
+ensureDaily(); ensureLeague(); applyAbsencePenalty(); checkAchievements(); saveState(); applyMascot(); updateTopbar();
+setTimeout(maybeShowDaily, 1200);
 if(state.language && state.difficulty){
   renderMap();
   showScreen('screen-map');
