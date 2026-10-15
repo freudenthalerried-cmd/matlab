@@ -1,0 +1,35 @@
+name: Speicherkompass veröffentlichen
+
+on:
+  push:
+    paths:
+      - "energie-rechner/**"
+      - ".github/workflows/speicherkompass.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prüfen, ob der FTP-Zugang hinterlegt ist
+        id: check
+        env:
+          FTP_SERVER: ${{ secrets.SK_FTP_SERVER }}
+        run: echo "ok=$([ -n "$FTP_SERVER" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+      # Ohne FTP-Zugang nur Probe-Build; mit Zugang muss das Impressum vollständig sein
+      - name: Seite bauen
+        run: python3 energie-rechner/build.py ${{ steps.check.outputs.ok == 'true' && '--strict' || '' }}
+
+      - name: Per FTP zu All-Inkl hochladen
+        if: steps.check.outputs.ok == 'true'
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.SK_FTP_SERVER }}
+          username: ${{ secrets.SK_FTP_USERNAME }}
+          password: ${{ secrets.SK_FTP_PASSWORD }}
+          protocol: ftps
+          local-dir: ./energie-rechner/dist/
+          server-dir: ./

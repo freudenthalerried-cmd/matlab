@@ -1,0 +1,33 @@
+{
+  "domain": "speicherkompass.at",
+  "site_name": "Speicherkompass",
+  "impressum": {
+    "name": "",
+    "address": "",
+    "email": "",
+    "gewerbe": "Werbeagentur",
+    "gewerbebehoerde": "",
+    "kammer": "Wirtschaftskammer Oberösterreich",
+    "uid": ""
+  },
+  "log_retention_days": 7,
+  "affiliate": {
+    "awin_publisher_id": "",
+    "amazon_tag": "",
+    "merchants": {
+      "anker": { "awin_mid": "32623", "url": "https://www.ankersolix.com/de" },
+      "zendure": { "awin_mid": "", "url": "https://www.zendure.de" },
+      "ecoflow": { "awin_mid": "", "url": "https://de.ecoflow.com" },
+      "jackery": { "awin_mid": "", "url": "https://de.jackery.com" },
+      "marstek": { "awin_mid": "", "url": "https://www.marstekenergy.com" }
+    },
+    "products": {
+      "anker-e2700pro": "anker",
+      "zendure-800pro": "zendure",
+      "zendure-2400pro": "zendure",
+      "ecoflow-stream-ultra-x": "ecoflow",
+      "jackery-solarvault3pro": "jackery",
+      "marstek-venus-e3": "marstek"
+    }
+  }
+}
