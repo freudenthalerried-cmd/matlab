@@ -41,8 +41,8 @@ Ursprünglich ein Streckenhandel für Radonvorsorge auf **unbelegten** Platzhalt
 | Website | **85 Seiten** — 46 Artikel, 17 Wissensseiten, 4 Systemlisten, 7 Gruppen, 5 Rechtsseiten, 6 im Wurzelverzeichnis (darunter die Fehlerseite) |
 | Kampagne | 6 Suchkampagnen gerechnet, **3 im ersten Anlauf**, alle **pausiert** |
 | Produktfeed | 43 Einträge — **nicht einreichbar**, GTIN fehlt bei allen 46 Artikeln |
-| Testbestand | **über 2.000 Testfälle**, alle grün, dazu 11 Oberflächenszenarien und 63 Shopszenarien im Browser |
-| Prüfwerkzeuge | **67 Prüfer** ohne Browser, 5 Browserproben zusätzlich — einer davon sieht seit dem 10. September nach draußen und hält die **veröffentlichte** Beschreibung gegen diese Quelle |
+| Testbestand | **über 2.000 Testfälle**, alle grün, dazu 11 Oberflächenszenarien und 66 Shopszenarien im Browser — **drei davon seit dem 15. Oktober für die Preisspanne der Filterleiste**: dass sie eingrenzt und der Zähler es sagt, dass eine verdrehte Spanne sich selbst nennt und nicht den Katalog, und dass eine unlesbare Eingabe sagt, dass die Grenze nicht angelegt ist |
+| Prüfwerkzeuge | **68 Prüfer** ohne Browser, 5 Browserproben zusätzlich — einer davon sieht seit dem 10. September nach draußen und hält die **veröffentlichte** Beschreibung gegen diese Quelle |
 | Messliste für Gate 15 | **14 Begriffe** in 3 Anzeigengruppen, Ort = Liefergebiet (am 6. September zwei weniger: die Landeseite verneint sie; am 8. September eines weniger: Gate 29 stellt „Fassadendübel" zurück, weil es auf einen 104 Tage alten Einkaufspreis zeigt). **Am 15. Oktober 29 → 14**, und zwar ohne dass jemand etwas gestrichen hat: Nach fünf Wochen Pause liegt der Median des Preisalters bei 94 Tagen, und Gate 29 nimmt jeden Begriff heraus, dessen Artikel auf einem zu alten Preis steht. Eine Liste, die kleiner wird, ohne dass jemand etwas gestrichen hat, misst die Zeit und nicht den Markt. |
 | Mindestbestellwert | **250 € netto Warenwert je Lieferung** (Gate 25), gerechnet aus Fracht, Palette und Zielmarge |
 | Bestellweg | **gebaut und ausgeschaltet** (Gate 26) — Formular, Empfangsskript, Ablage, Posteingang; eingeschaltet mit E-Mail und Rechtstextewortlaut |

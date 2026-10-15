@@ -98,6 +98,11 @@ export const AUSGAENGE = Object.freeze([
   // `data/betreiber.json` — eine Adresse, die dort steht, wird eingesetzt und
   // nicht geprüft. Die Begründung steht im Kopf von `src/rueckweg.js`.
   Object.freeze({ modul: 'src/rueckweg.js', funktion: 'rueckwegsatz', an: 'jeder Besucher der Kasse', form: 'Satz' }),
+  // **Aufgenommen am 15. Oktober 2026.** Der Satz, den eine Preisspanne
+  // schuldig ist. Er steht im Kern und nicht in der Oberfläche, damit alle
+  // vier Fälle fahrbar sind — einer von ihnen tritt erst ein, wenn ein
+  // Artikel keinen Preis hat, und im Katalog von heute haben alle 46 einen.
+  Object.freeze({ modul: 'src/shopkern.js', funktion: 'preisspannensatz', an: 'jeder Besucher einer Rasterseite', form: 'Satz' }),
   // **Ergänzt am 15. September.** Der Kopf der Abnahmeliste im Archiv. Er geht
   // an den Auftraggeber und sagt ihm, ob er hochladen darf; gebaut wird er aus
   // dem Impressumsbefund und dem Rechtstexteregister dieses Hauses.

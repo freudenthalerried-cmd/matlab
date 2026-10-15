@@ -26,6 +26,7 @@ import { fileURLToPath } from 'node:url';
 import { internabefund, gehtNachDraussen, AUSGAENGE, OHNE_INTERNAPROBE } from '../src/aussentexte.js';
 import { findeInterna } from '../src/interna.js';
 import { rueckwegsatz } from '../src/rueckweg.js';
+import { preisspannensatz } from '../src/shopkern.js';
 import { ladeKatalog, berechneWarenkorb } from '../src/warenkorb.js';
 import {
   erzeugeAngebot, erzeugeAuftragsbestaetigung, erzeugeGutschrift, erzeugeRechnung,
@@ -185,6 +186,35 @@ const AUSGANGSTEXTE = Object.freeze([
      * hier nicht hinausgehen darf, ist der **Name im Text**.
      */
     giftig: () => rueckwegsatz({ email: 'Poschacher Baustoffhandel <a@b.at>' }).text,
+  }),
+  Object.freeze({
+    /*
+     * **Ergänzt am 15. Oktober 2026.** Die Preisspanne der Filterleiste. Ihr
+     * Satz setzt in einem von vier Fällen **die Eingabe des Kunden** ein, und
+     * das ist der Weg, auf dem hier ein Internum hinausginge: nicht aus einer
+     * Datei des Betriebs, sondern durch den Kunden hindurch — wer den Namen
+     * des Lieferanten in das Preisfeld tippt, bekommt ihn zitiert zurück.
+     *
+     * Dass dieser Prüfer nötig ist, hat derselbe Tag gezeigt: Der Stilblock
+     * für diese Leiste trug einen Kommentar mit einer Gate-Nummer, und CSS
+     * wird mitgeliefert. `findeInterna` hat den Bau an 46 Artikelseiten
+     * abgebrochen.
+     */
+    funktion: 'preisspannensatz',
+    text: () => {
+      const geld = (n) => `${n.toFixed(2).replace('.', ',')} €`;
+      return [
+        preisspannensatz({ preisAb: 50, preisBis: 10, unlesbar: '', ohnePreis: 0, geld }),
+        preisspannensatz({ preisAb: null, preisBis: 20, unlesbar: '', ohnePreis: 4, geld }),
+        preisspannensatz({ preisAb: null, preisBis: null, unlesbar: 'zwoelf', ohnePreis: 0, geld }),
+      ].join(' ');
+    },
+    giftig: () => {
+      const geld = (n) => `${n.toFixed(2).replace('.', ',')} €`;
+      return preisspannensatz({
+        preisAb: null, preisBis: null, unlesbar: 'Poschacher Baustoffhandel', ohnePreis: 0, geld,
+      });
+    },
   }),
 ]);
 

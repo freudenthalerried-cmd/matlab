@@ -4059,6 +4059,90 @@ function filtere(artikel, f = {}) {
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function preisspannensatz({ preisAb, preisBis, unlesbar, ohnePreis, geld }) {
+  
+
+
+
+
+
+  if (unlesbar) {
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    const zitat = textZeile(unlesbar);
+    const kurz = zitat.length > 40 ? `${zitat.slice(0, 40)}…` : zitat;
+    return `„${kurz}" ist keine Zahl — diese Grenze ist nicht angelegt. `
+      + 'Preise mit Komma oder Punkt, zum Beispiel 12,50.';
+  }
+  
+
+
+
+
+
+  if (preisAb !== null && preisBis !== null && preisAb > preisBis) {
+    return `Die Spanne ist leer: ab ${geld(preisAb)} ist mehr als bis ${geld(preisBis)}. `
+      + 'Nicht der Katalog ist leer, die Spanne ist es.';
+  }
+  if (preisAb === null && preisBis === null) return '';
+  
+
+
+
+
+
+
+
+  if (!ohnePreis) return '';
+  const einer = ohnePreis === 1;
+  return `${ohnePreis} Artikel auf Anfrage ${einer ? 'ist' : 'sind'} dabei nicht `
+    + 'berücksichtigt: Ohne Preis lässt sich keine Grenze anlegen. Ohne Preisspanne '
+    + `${einer ? 'steht er' : 'stehen sie'} wieder da.`;
+}
+
+
 function filterwerte(artikel) {
   const preise = artikel.map((a) => a.vkNetto).filter((p) => typeof p === 'number');
   return {

@@ -1,6 +1,6 @@
 # Festgelegte Projektparameter
 
-Stand: **2026-09-03**. Diese Werte sind vom Auftraggeber entschieden und nicht
+Stand: **2026-10-15**. Diese Werte sind vom Auftraggeber entschieden und nicht
 mehr zur Diskussion gestellt. Änderungen nur mit ausdrücklicher Freigabe.
 
 > **Was dieses Datum heißt — seit 14. September 2026.** Es nennt den Tag der
@@ -46,6 +46,7 @@ mehr zur Diskussion gestellt. Änderungen nur mit ausdrücklicher Freigabe.
 | 31.08. | **`bauversand.com` verwenden** — die Domain ist bei All-Inkl offen | Steht in `data/betreiber.json`; Seiten, Sitemap, `llms.txt` und die finalen URLs der Anzeigen nehmen sie von dort. **Damit ist die Empfehlung `shop.freudenthaler-bau.at` aus `domainwahl.md` abgelöst** — die Zeile darüber nennt nur noch die bestehende Firmendomain. `bauversand-com.md` |
 | 03.09. | **Der Shop tritt als „Bauversand" auf** — nicht unter dem Firmennamen | Steht als `marke` in `data/betreiber.json` und von dort in Logo, Seitentitel, `llms.txt`, im Absender jedes Belegs („Bauversand — Freudenthaler Bau GmbH") und als `name` jeder Organisation der strukturierten Daten, mit `legalName` daneben. **Die Freudenthaler Bau GmbH bleibt die Betreiberin**: Impressum, Belege, `seller` und `publisher`. Das Impressum verbindet beide in einer Zeile. `bestellt-bei-bauversand-rechnung-von-wem.md`, `wer-ist-bauversand.md` |
 | 03.09. | **„Baustoffe zum Baumeisterpreis" soll nicht bleiben** — die Überschrift der Startseite | Drei Fassungen liegen zur Wahl in [`die-ueberschrift-der-startseite.md`](./die-ueberschrift-der-startseite.md); umgesetzt wird keine, bis der Auftraggeber wählt. **Offen und seit dem 11.09. geführt** — bis dahin stand sie in keiner Zeile und in keiner Liste offener Punkte, und die `<h1>` trug acht Tage lang genau den Satz, der nicht bleiben soll |
+| 15.10. | „**mach weiter mit filter und sortierung**" | Beides war gebaut, angeboten war die Hälfte: `filtere` nahm `preisAb` und `preisBis` seit dem ersten Tag, `filterwerte` rechnete `preisMin` und `preisMax` **nur für diese zwei Felder** aus, und die Leiste bot kein Bedienelement dafür an. Gebaut wurde deshalb zuerst der Prüfer (`npm run pruefe-filter`, `src/filterangebot.js`), der jede Kernfähigkeit gegen die Leiste hält — dann die Preisspanne selbst, mit dem Satz, den sie schuldig ist. Im Wortlaut in [`der-filter-war-schon-da.md`](./der-filter-war-schon-da.md) |
 
 > **Seit dem 7. September wird diese Tabelle gemessen.** `npm run pruefe-weisungen`
 > liest die acht Weisungen von hier und hält jede gegen den Bestand: sieben

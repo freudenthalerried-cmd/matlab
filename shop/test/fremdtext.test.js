@@ -31,7 +31,7 @@ import {
 } from '../src/beleg.js';
 import { erzeugeRechtstexteauftrag } from '../src/rechtstexteauftrag.js';
 import { erzeugeAbsage } from '../src/absage.js';
-import { kundenWarenkorb } from '../src/shopkern.js';
+import { kundenWarenkorb, preisspannensatz } from '../src/shopkern.js';
 import { baueKundenanfrage, mailtoWeg } from '../src/kundenanfrage.js';
 import { erzeugeImpressum } from '../src/rechtstexte.js';
 import { robotsTxt, herkunftssatz } from '../src/maschinenlesbar.js';
@@ -665,6 +665,38 @@ test('Ausgang Archiv: ein Name, der aus dem Ziel hinausführt, kommt nicht ins P
  * dort steht. Fremdtext im engeren Sinn ist das nicht; eine Angabe, die in
  * einen Satz an jeden Besucher eingesetzt wird, gehört trotzdem geprüft.
  * ------------------------------------------------------------------ */
+
+/*
+ * **Der Ausgang Preisspanne — aufgenommen am 15. Oktober 2026.** Anders als
+ * die übrigen Ausgänge dieses Abschnitts zitiert dieser nicht eine Angabe aus
+ * `data/betreiber.json`, sondern **was der Kunde gerade eingetippt hat**. Das
+ * ist Fremdtext im engeren Sinn, und der erste Anlauf hat ihn roh in den Satz
+ * gesetzt.
+ */
+test('Ausgang Preisspanne: Gift in der Eingabe erzeugt keine zweite Zeile', () => {
+  const geld = (n) => `${n.toFixed(2).replace('.', ',')} €`;
+  const lage = { preisAb: null, preisBis: null, ohnePreis: 0, geld };
+  const harmlos = preisspannensatz({ ...lage, unlesbar: 'zwoelf' });
+  const giftig = preisspannensatz({ ...lage, unlesbar: `zwoelf${GIFT}` });
+  assert.equal(zeilen(giftig), zeilen(harmlos),
+    'ein Umbruch in der Eingabe macht aus einem Satz keine zwei');
+  // Und der zweite Satz muss überleben: Eine Kürzung, die den Weg hinaus
+  // abschneidet, nimmt dem Kunden genau die Auskunft, für die der Satz da ist.
+  assert.match(giftig, /Komma oder Punkt/);
+});
+
+test('Ausgang Preisspanne: eine sehr lange Eingabe wird gekürzt', () => {
+  const geld = (n) => `${n.toFixed(2).replace('.', ',')} €`;
+  const satz = preisspannensatz({
+    preisAb: null, preisBis: null, unlesbar: 'x'.repeat(5000), ohnePreis: 0, geld,
+  });
+  // Der Satz steht in einer Leiste, die bei 390 px nicht seitwärts rollen
+  // darf. Gemessen wird die Schranke und nicht die genaue Länge: Ein Test, der
+  // „88 Zeichen" festschreibt, fällt beim nächsten Wort im zweiten Satz um.
+  assert.ok(satz.length < 200, `der Satz ist ${satz.length} Zeichen lang`);
+  assert.match(satz, /…/, 'die Kürzung ist als solche zu erkennen');
+  assert.match(satz, /Komma oder Punkt/);
+});
 
 test('Ausgang Rückweg: Gift in der eigenen Adresse erzeugt keine zweite Zeile', () => {
   const harmlos = rueckwegsatz({ email: 'office@bauversand.com' });

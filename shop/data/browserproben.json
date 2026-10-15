@@ -83,6 +83,10 @@
     "die-absage-schluckt-den-grund": {
       "am": "2026-10-15",
       "sekunden": 8
+    },
+    "preisgrenze-ohne-wort": {
+      "am": "2026-10-15",
+      "sekunden": 40
     }
   }
 }

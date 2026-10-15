@@ -4023,9 +4023,15 @@ export const GEGENPROBEN = Object.freeze([
     was: 'Der Kopf von PARAMETER.md nennt einen aelteren Tag als die juengste Weisung',
     datei: 'docs/baustoff-shop/PARAMETER.md',
     art: 'ersetzen',
-    suchen: 'Stand: **2026-09-03**. Diese Werte sind vom Auftraggeber entschieden',
+    // **Nachgezogen am 15. Oktober 2026.** Der Suchtext trägt das Datum des
+    // Kopfes, und der Kopf ist genau das, was diese Gegenprobe prüft: Mit der
+    // Weisung „mach weiter mit filter und sortierung" kam eine Zeile in die
+    // Tafel, der Kopf musste mitwandern, und damit zeigte der Suchtext ins
+    // Leere. `test/gegenprobenregister.test.js` hat es im selben Lauf
+    // gemeldet — eine Gegenprobe über ein Datum altert mit dem Datum.
+    suchen: 'Stand: **2026-10-15**. Diese Werte sind vom Auftraggeber entschieden',
     ersetzen: 'Stand: **2026-08-28**. Diese Werte sind vom Auftraggeber entschieden',
-    erwartet: /der Kopf nennt 28\.08\., die jüngste Weisung der Tafel ist vom 03\.09\./,
+    erwartet: /der Kopf nennt 28\.08\., die jüngste Weisung der Tafel ist vom 15\.10\./,
     warum: 'Die Datei sagt in ihrem eigenen Kopf, sie rangiere ueber dem Gate-Register und es '
       + 'sei teuer, wenn hier etwas Ueberholtes stehe. Ihr Datum war elf Tage alt und richtig — '
       + 'nur konnte das niemand sehen: Ein altes Datum sagt nicht, ob nichts geschehen ist oder '
@@ -5344,6 +5350,43 @@ export const GEGENPROBEN = Object.freeze([
       + 'seine erste Rechnung stellt. Wer die Grundlagen austauscht, probt; diese Mutation '
       + 'lässt die Probe wieder in den Bestand schreiben, und die Prüfung räumt auf, bevor sie '
       + 'es meldet.',
+  }),
+  Object.freeze({
+    id: 'filter-ohne-bedienelement',
+    pruefer: 'pruefe-filter',
+    was: 'Eine Filterfähigkeit des Kerns, die in der Leiste nicht vorkommt',
+    datei: 'shop/shop-ui.js',
+    art: 'ersetzen',
+    suchen: "    leiste.appendChild(preisfeld('preisBis', 'Preis bis',\n"
+      + "      grenzen === null ? null : 'bis ' + grenzen.bis));",
+    ersetzen: '',
+    erwartet: /Preis bis|bedienelement-fehlt/,
+    warum: 'Wörtlich der Zustand bis zum 15. Oktober, und der Anlass für den Prüfer: `filtere` '
+      + 'nahm `preisAb` und `preisBis` seit dem ersten Tag, `filterwerte` rechnete `preisMin` '
+      + 'und `preisMax` **nur für diese beiden Felder** aus, und der Zustand in '
+      + '`baueRasterfilter` trug sogar ein `preisBis: null` mit. Alles war da außer dem '
+      + 'Bedienelement, und keine Prüfung konnte das sehen — dieselbe Familie wie die acht '
+      + 'Bestellfeldgründe, die im Modul lagen und nie einen Kunden erreichten. Die Mutation '
+      + 'nimmt das Feld wieder heraus und verlangt, dass es auffällt.',
+  }),
+  Object.freeze({
+    id: 'preisgrenze-ohne-wort',
+    pruefer: 'shopprobe',
+    was: 'Eine Preisspanne, die Artikel wegnimmt und nichts dazu sagt',
+    datei: 'shop/src/shopkern.js',
+    art: 'ersetzen',
+    baueVorher: true,
+    suchen: 'export function preisspannensatz({ preisAb, preisBis, unlesbar, ohnePreis, geld }) {',
+    ersetzen: 'export function preisspannensatz({ preisAb, preisBis, unlesbar, ohnePreis, geld }) {\n'
+      + '  if (true) return \'\';',
+    erwartet: /Die Spanne ist leer|ist keine Zahl|nicht angelegt/,
+    warum: 'Dieselbe Hälfte des Befundes wie bei der Höchstmenge: Die Grenze darf greifen, '
+      + 'schweigen darf sie nicht. Drei Wege hat eine Preisspanne, Karten wegzunehmen, und für '
+      + 'den Kunden sehen alle drei gleich aus — es stehen weniger da als vorher. Bei der '
+      + 'verdrehten Spanne läse er die Auskunft daneben als Aussage über das Sortiment, bei der '
+      + 'unlesbaren Eingabe hält er eine Grenze für angelegt, die nie entstanden ist. Die '
+      + 'Mutation schaltet den Satzbau ab und lässt das Filtern stehen: So verschwinden die '
+      + 'Karten weiterhin, nur eben wieder stillschweigend.',
   }),
 ]);
 

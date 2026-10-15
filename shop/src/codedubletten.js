@@ -247,6 +247,25 @@ export const GESTALT_GEPRUEFT = Object.freeze([
       + 'Stelle, an der die beiden Verträge ihre Namen bekommen; sie wegzukürzen hieße, '
       + 'den Aufrufer die Zerlegungsfunktion wählen zu lassen.',
   }),
+  Object.freeze({
+    namen: Object.freeze(['filterangebotbefund', 'zuordnungsbefund']),
+    // **Gemessen, nicht abgeschrieben.** Hier stand zuerst 55 — die Zahl aus
+    // der Meldung, die den Eintrag verlangt hat. Nach dem Entfernen einer
+    // doppelten Konstante im selben Modul war die gestaltgleiche Stelle 61
+    // Zeichen lang, und der Prüfer hat das als Wachstum gemeldet statt es
+    // durchzulassen: Eine Zahl, die man aus einer Fehlermeldung abschreibt,
+    // ist keine Messung.
+    bisZeichen: 61,
+    warum: 'Nicht der Körper ist gleich, sondern die **Signatur**: Beide nehmen vier '
+      + 'benannte Parameter, der letzte mit einem Standardwert, der auf das Register des '
+      + 'eigenen Moduls zeigt. Das ist die Gestalt jedes Registerprüfers in diesem Bestand '
+      + 'und keine Kopie — `zuordnungsbefund` fragt, ob jede Position einer Systemliste '
+      + 'einem Artikel zugeordnet ist, `filterangebotbefund`, ob jede Filterfähigkeit des '
+      + 'Kerns in der Leiste ankommt. Zusammengelegt entstünde eine Funktion, die zwei '
+      + 'Register über zwei Wirklichkeiten hält und keiner von beiden einen Satz geben '
+      + 'kann; der Standardwert ist dabei kein Zierrat, sondern die Stelle, an der ein Test '
+      + 'ein eigenes Register einsetzt.',
+  }),
 ]);
 
 /**

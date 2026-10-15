@@ -3143,6 +3143,90 @@ function filtere(artikel, f = {}) {
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function preisspannensatz({ preisAb, preisBis, unlesbar, ohnePreis, geld }) {
+  
+
+
+
+
+
+  if (unlesbar) {
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    const zitat = textZeile(unlesbar);
+    const kurz = zitat.length > 40 ? `${zitat.slice(0, 40)}…` : zitat;
+    return `„${kurz}" ist keine Zahl — diese Grenze ist nicht angelegt. `
+      + 'Preise mit Komma oder Punkt, zum Beispiel 12,50.';
+  }
+  
+
+
+
+
+
+  if (preisAb !== null && preisBis !== null && preisAb > preisBis) {
+    return `Die Spanne ist leer: ab ${geld(preisAb)} ist mehr als bis ${geld(preisBis)}. `
+      + 'Nicht der Katalog ist leer, die Spanne ist es.';
+  }
+  if (preisAb === null && preisBis === null) return '';
+  
+
+
+
+
+
+
+
+  if (!ohnePreis) return '';
+  const einer = ohnePreis === 1;
+  return `${ohnePreis} Artikel auf Anfrage ${einer ? 'ist' : 'sind'} dabei nicht `
+    + 'berücksichtigt: Ohne Preis lässt sich keine Grenze anlegen. Ohne Preisspanne '
+    + `${einer ? 'steht er' : 'stehen sie'} wieder da.`;
+}
+
+
 function filterwerte(artikel) {
   const preise = artikel.map((a) => a.vkNetto).filter((p) => typeof p === 'number');
   return {
@@ -5043,7 +5127,12 @@ function gruppenbefund(rechnung, text) {
       return !g || a.gruppe === g;
     });
     var werte = filterwerte(alle);
-    var zustand = { gruppe: raster.getAttribute('data-gruppe') || '', suchtauglich: false, ohneSperrgut: false, sortierung: 'name', preisBis: null };
+    var zustand = { gruppe: raster.getAttribute('data-gruppe') || '', suchtauglich: false, ohneSperrgut: false, sortierung: 'name', preisAb: null, preisBis: null };
+    
+    
+    
+    
+    var unlesbar = { preisAb: '', preisBis: '' };
 
     function auswahl(beschriftung, optionen, beiWahl) {
       var wrap = el('label', 'f');
@@ -5069,18 +5158,118 @@ function gruppenbefund(rechnung, text) {
       return wrap;
     }
 
+    
+
+
+
+
+
+
+
+
+
+
+
+
+    function preisfeld(feld, beschriftung, platzhalter) {
+      var wrap = el('label', 'f');
+      wrap.appendChild(el('span', 'f-b', beschriftung));
+      var i = document.createElement('input');
+      i.type = 'text';
+      i.className = 'f-preis';
+      i.setAttribute('inputmode', 'decimal');
+      i.setAttribute('autocomplete', 'off');
+      i.setAttribute('aria-label', beschriftung + ' Euro je Einheit, netto');
+      if (platzhalter !== null) i.placeholder = platzhalter;
+      i.addEventListener('input', function () {
+        var roh = i.value.trim();
+        if (roh === '') {
+          zustand[feld] = null;
+          unlesbar[feld] = '';
+        } else {
+          var z = Number(roh.replace(',', '.'));
+          if (isFinite(z) && z >= 0) {
+            zustand[feld] = z;
+            unlesbar[feld] = '';
+          } else {
+            zustand[feld] = null;
+            unlesbar[feld] = roh;
+          }
+        }
+        zeichne();
+      });
+      wrap.appendChild(i);
+      return wrap;
+    }
+
     if (!raster.getAttribute('data-gruppe')) {
       var gruppen = [{ id: '', text: 'Alle Warengruppen' }].concat(
         werte.gruppen.map(function (g) { return { id: g, text: g }; }));
       leiste.appendChild(auswahl('Warengruppe', gruppen, function (v) { zustand.gruppe = v; }));
     }
     leiste.appendChild(auswahl('Sortierung', SORTIERUNGEN, function (v) { zustand.sortierung = v; }));
+    
+
+
+
+
+
+
+    var grenzen = werte.preisMin === null ? null : {
+      ab: Math.floor(werte.preisMin),
+      bis: Math.ceil(werte.preisMax)
+    };
+    leiste.appendChild(preisfeld('preisAb', 'Preis ab',
+      grenzen === null ? null : 'ab ' + grenzen.ab));
+    leiste.appendChild(preisfeld('preisBis', 'Preis bis',
+      grenzen === null ? null : 'bis ' + grenzen.bis));
     leiste.appendChild(schalter('nur mit Preisvorteil', function (v) { zustand.suchtauglich = v; }));
     if (werte.mitSperrgut) {
       leiste.appendChild(schalter('ohne palettierte Ware', function (v) { zustand.ohneSperrgut = v; }));
     }
     var zaehler = el('span', 'f-zahl');
     leiste.appendChild(zaehler);
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    var spannenwort = el('p', 'f-grenze');
+    leiste.appendChild(spannenwort);
+
+    function grenzensatz() {
+      return preisspannensatz({
+        preisAb: zustand.preisAb,
+        preisBis: zustand.preisBis,
+        unlesbar: unlesbar.preisAb || unlesbar.preisBis,
+        ohnePreis: alle.filter(function (a) { return a.vkNetto === null; }).length,
+        geld: eur
+      });
+    }
 
     function zeichne() {
       var liste = sortiere(filtere(alle, zustand), zustand.sortierung);
@@ -5089,6 +5278,9 @@ function gruppenbefund(rechnung, text) {
       zaehler.textContent = liste.length === alle.length
         ? liste.length + ' Artikel'
         : liste.length + ' von ' + alle.length + ' Artikeln';
+      var satz = grenzensatz();
+      spannenwort.textContent = satz;
+      spannenwort.style.display = satz ? '' : 'none';
       if (!liste.length) {
         var leerHinweis = el('p', 'antwort', 'Kein Artikel passt zu dieser Auswahl. '
           + 'Der Katalog umfasst ' + alle.length + ' Artikel — wir erfinden keine dazu.');

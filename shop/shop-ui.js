@@ -355,7 +355,12 @@
       return !g || a.gruppe === g;
     });
     var werte = filterwerte(alle);
-    var zustand = { gruppe: raster.getAttribute('data-gruppe') || '', suchtauglich: false, ohneSperrgut: false, sortierung: 'name', preisBis: null };
+    var zustand = { gruppe: raster.getAttribute('data-gruppe') || '', suchtauglich: false, ohneSperrgut: false, sortierung: 'name', preisAb: null, preisBis: null };
+    // Was eingetippt wurde und keine Zahl ist. Getrennt vom Zustand: Eine
+    // unlesbare Eingabe darf nicht filtern, und sie darf auch nicht
+    // schweigen — sonst sieht der Kunde alle Artikel und weiss nicht, dass
+    // seine Grenze nie angelegt wurde.
+    var unlesbar = { preisAb: '', preisBis: '' };
 
     function auswahl(beschriftung, optionen, beiWahl) {
       var wrap = el('label', 'f');
@@ -381,18 +386,118 @@
       return wrap;
     }
 
+    /*
+     * Ein Zahlenfeld fuer die Preisspanne.
+     *
+     * **Kein `type=number`.** Wer in Oesterreich einen Preis eintippt,
+     * schreibt „12,50" — und ein Zahlenfeld des Browsers verwirft das Komma
+     * stillschweigend, je nach Spracheinstellung des Geraets. Gelesen werden
+     * deshalb Komma und Punkt, und `inputmode` holt die Zifferntastatur
+     * trotzdem hervor.
+     *
+     * Die Beschriftung nennt die Bezugsgroesse: Die Karte weist den Preis je
+     * Einheit netto aus, und eine Grenze gegen eine Zahl, die nirgends steht,
+     * waere ein Filter auf Zuruf.
+     */
+    function preisfeld(feld, beschriftung, platzhalter) {
+      var wrap = el('label', 'f');
+      wrap.appendChild(el('span', 'f-b', beschriftung));
+      var i = document.createElement('input');
+      i.type = 'text';
+      i.className = 'f-preis';
+      i.setAttribute('inputmode', 'decimal');
+      i.setAttribute('autocomplete', 'off');
+      i.setAttribute('aria-label', beschriftung + ' Euro je Einheit, netto');
+      if (platzhalter !== null) i.placeholder = platzhalter;
+      i.addEventListener('input', function () {
+        var roh = i.value.trim();
+        if (roh === '') {
+          zustand[feld] = null;
+          unlesbar[feld] = '';
+        } else {
+          var z = Number(roh.replace(',', '.'));
+          if (isFinite(z) && z >= 0) {
+            zustand[feld] = z;
+            unlesbar[feld] = '';
+          } else {
+            zustand[feld] = null;
+            unlesbar[feld] = roh;
+          }
+        }
+        zeichne();
+      });
+      wrap.appendChild(i);
+      return wrap;
+    }
+
     if (!raster.getAttribute('data-gruppe')) {
       var gruppen = [{ id: '', text: 'Alle Warengruppen' }].concat(
         werte.gruppen.map(function (g) { return { id: g, text: g }; }));
       leiste.appendChild(auswahl('Warengruppe', gruppen, function (v) { zustand.gruppe = v; }));
     }
     leiste.appendChild(auswahl('Sortierung', SORTIERUNGEN, function (v) { zustand.sortierung = v; }));
+    /*
+     * Die Preisspanne — gebaut am 15. Oktober 2026, nachdem `pruefe-filter`
+     * gemessen hat, dass `filtere` sie seit Wochen kann und die Leiste sie
+     * nicht anbot. Die Platzhalter kommen aus `filterwerte` und damit aus dem
+     * Bestand: Ein Platzhalter mit einer erfundenen runden Zahl waere eine
+     * Preisangabe, die kein Artikel traegt.
+     */
+    var grenzen = werte.preisMin === null ? null : {
+      ab: Math.floor(werte.preisMin),
+      bis: Math.ceil(werte.preisMax)
+    };
+    leiste.appendChild(preisfeld('preisAb', 'Preis ab',
+      grenzen === null ? null : 'ab ' + grenzen.ab));
+    leiste.appendChild(preisfeld('preisBis', 'Preis bis',
+      grenzen === null ? null : 'bis ' + grenzen.bis));
     leiste.appendChild(schalter('nur mit Preisvorteil', function (v) { zustand.suchtauglich = v; }));
     if (werte.mitSperrgut) {
       leiste.appendChild(schalter('ohne palettierte Ware', function (v) { zustand.ohneSperrgut = v; }));
     }
     var zaehler = el('span', 'f-zahl');
     leiste.appendChild(zaehler);
+    /*
+     * **Die Zeile, in der die Grenze redet.** Die Regel des Hauses dazu,
+     * woertlich: Die Grenze darf greifen, schweigen darf sie nicht.
+     *
+     * Ihre Nummer steht hier absichtlich nicht. Der erste Anlauf schrieb sie
+     * in den Stilblock von `bin/website.mjs` — und CSS-Kommentare werden
+     * mitgeliefert. `findeInterna` hat den Bau an 46 Artikelseiten abgebrochen:
+     * *„Gate-Nummern sind die interne Entscheidungsordnung. Fuer den Kunden
+     * sind sie eine Chiffre, fuer den Wettbewerber eine Landkarte."* Gebaut
+     * war die Falle in genau dem Kommentar, der erklaert, dass eine Grenze
+     * reden muss.
+     *
+     * Die Klasse heisst deshalb `f-grenze` und nicht `f-gate34`: **Ein Name,
+     * der eine Nummer traegt, liefert sie mit.**
+     *
+     * Drei Faelle kann eine
+     * Preisspanne erzeugen, und alle drei sehen fuer den Kunden gleich aus —
+     * es stehen weniger Artikel da als vorher:
+     *
+     *   1. Die Spanne ist verdreht („ab 50, bis 10"). Dann ist das Ergebnis
+     *      zwangslaeufig leer, und das liegt nicht am Katalog.
+     *   2. Die Eingabe ist keine Zahl. Dann filtert nichts, und wer „zwoelf"
+     *      getippt hat, sieht alle Artikel und haelt seine Grenze fuer
+     *      angelegt.
+     *   3. Eine Grenze nimmt die Artikel **ohne Preis** mit. `filtere` tut
+     *      das richtig — null ist nicht null Euro —, aber es ist derselbe
+     *      stille Wegfall, den dieser Shop am 10. September im Warenkorb
+     *      gefunden hat: eine Position verschwindet, und niemand sagt es.
+     */
+    var spannenwort = el('p', 'f-grenze');
+    leiste.appendChild(spannenwort);
+
+    function grenzensatz() {
+      return preisspannensatz({
+        preisAb: zustand.preisAb,
+        preisBis: zustand.preisBis,
+        unlesbar: unlesbar.preisAb || unlesbar.preisBis,
+        ohnePreis: alle.filter(function (a) { return a.vkNetto === null; }).length,
+        geld: eur
+      });
+    }
 
     function zeichne() {
       var liste = sortiere(filtere(alle, zustand), zustand.sortierung);
@@ -401,6 +506,9 @@
       zaehler.textContent = liste.length === alle.length
         ? liste.length + ' Artikel'
         : liste.length + ' von ' + alle.length + ' Artikeln';
+      var satz = grenzensatz();
+      spannenwort.textContent = satz;
+      spannenwort.style.display = satz ? '' : 'none';
       if (!liste.length) {
         var leerHinweis = el('p', 'antwort', 'Kein Artikel passt zu dieser Auswahl. '
           + 'Der Katalog umfasst ' + alle.length + ' Artikel — wir erfinden keine dazu.');

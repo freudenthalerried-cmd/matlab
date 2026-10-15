@@ -685,6 +685,25 @@ export const PRUEFER = [
     mindestens: 3,
   },
   {
+    // **Aufgenommen am 15. Oktober 2026**, aus einer Frage des Auftraggebers
+    // heraus: „mach weiter mit filter und sortierung". Beides war gebaut —
+    // `filtere` kannte fünf Felder, `SORTIERUNGEN` vier Ordnungen. Die Leiste
+    // bot vier davon an. Gefehlt hat die **Preisspanne**, und nicht aus
+    // Aufwand: `filterwerte` rechnete `preisMin` und `preisMax` nur für sie
+    // aus, und der Zustand der Leiste trug ein `preisBis: null` mit. Alles
+    // war da außer dem Bedienelement.
+    //
+    // Gezählt werden die **Fähigkeiten des Kerns**, nicht die Bedienelemente:
+    // Eine Fähigkeit ohne Bedienelement ist der Fall, den diese Prüfung
+    // finden soll — und ein Bedienelement ohne Fähigkeit der gefährlichere,
+    // weil es dasteht, nichts tut und daneben eine Zahl meldet.
+    name: 'pruefe-filter',
+    werkzeug: 'filterpruefung.mjs',
+    muster: /Filterangebot — (\d+) Fähigkeiten/,
+    einheit: 'Filter- und Sortierfähigkeiten gegen die Leiste',
+    mindestens: 5,
+  },
+  {
     name: 'pruefe-gates',
     werkzeug: 'gatepruefung.mjs',
     muster: /Gate-Stand — (\d+) Gates/,

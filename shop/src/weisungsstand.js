@@ -299,6 +299,23 @@ export const WEISUNGEN = Object.freeze([
       + 'Nicht erfüllt und nicht geführt heißt vergessen, und das ist der Zustand, für den es '
       + 'diesen Prüfer gibt.',
   }),
+  Object.freeze({
+    nr: 14,
+    datum: '15.10.',
+    stichwort: '„mach weiter mit filter und sortierung"',
+    spuren: Object.freeze([
+      Object.freeze({ datei: 'shop/src/filterangebot.js', muster: /filterangebotbefund/ }),
+      Object.freeze({ datei: 'shop/shop-ui.js', muster: /preisfeld\('preisBis'/ }),
+    ]),
+    warum: 'Erfüllt, aber nicht so, wie die Weisung klingt: Filter und Sortierung waren '
+      + 'gebaut, angeboten war die Hälfte. `filtere` nahm `preisAb` und `preisBis` seit dem '
+      + 'ersten Tag, `filterwerte` rechnete `preisMin` und `preisMax` **nur für diese zwei '
+      + 'Felder** aus, und der Zustand der Leiste trug sogar ein `preisBis: null` mit — alles '
+      + 'da außer dem Bedienelement. Die Spur zeigt deshalb auf zwei Stellen: auf das Feld, '
+      + 'das jetzt in der Leiste steht, und auf den Prüfer, der dafür gebaut wurde. Der '
+      + 'zweite ist der wichtigere, denn die Lücke war nicht das fehlende Feld, sondern dass '
+      + 'sie wochenlang unentdeckt bleiben konnte.',
+  }),
 ]);
 
 

@@ -673,6 +673,69 @@ const SZENARIEN = [
         + ' zahlPasst=' + (gezeigt === nachher[0]);`,
     erwartet: ['grenztEin=true', 'zahlPasst=true'],
   },
+  /*
+   * **Die Preisspanne — gebaut am 15. Oktober 2026.** `filtere` konnte sie
+   * seit Wochen, `filterwerte` rechnete `preisMin` und `preisMax` nur für
+   * sie aus, und kein Bedienelement setzte sie. Gefunden hat das der neue
+   * `npm run pruefe-filter`; ohne die drei Szenarien hier wäre das
+   * Bedienelement gebaut und ungefahren, und das ist in diesem Bestand
+   * dasselbe wie nicht gebaut.
+   */
+  {
+    name: 'Die Preisspanne grenzt ein und der Zähler sagt es',
+    aktionen: `
+      await geheZu('index');
+      const zahlen = () => (text('#filterleiste .f-zahl').match(/[0-9]+/g) || []).map(Number);
+      const vorher = zahlen();
+      const feld = document.querySelectorAll('#filterleiste input.f-preis')[1];
+      feld.value = '20';
+      feld.dispatchEvent(new Event('input'));
+      const nachher = zahlen();
+      const gezeigt = document.querySelectorAll('#warenraster .karte').length;
+      const zahl = (n) => Number(String(n).replace(/[^0-9,.]/g, '').replace(',', '.'));
+      const preise = [...document.querySelectorAll('#warenraster .karte .preis')].map((n) => zahl(n.textContent));
+      let alleDrunter = preise.length > 0;
+      for (let i = 0; i < preise.length; i++) if (preise[i] > 20) alleDrunter = false;
+      out = 'vorher=' + vorher.join('/') + ' nachher=' + nachher.join('/')
+        + ' gezeigt=' + gezeigt
+        + ' grenztEin=' + (nachher[0] < nachher[1])
+        + ' zahlPasst=' + (gezeigt === nachher[0])
+        + ' alleDrunter=' + alleDrunter;`,
+    // `alleDrunter` ist die Zusicherung, die der Zähler nicht gibt: Eine
+    // Leiste, die eine kleinere Zahl meldet und dabei die falschen Artikel
+    // stehen lässt, wäre an `grenztEin` nicht zu erkennen.
+    erwartet: ['grenztEin=true', 'zahlPasst=true', 'alleDrunter=true'],
+  },
+  {
+    name: 'Eine verdrehte Preisspanne nennt sich selbst und nicht den Katalog',
+    aktionen: `
+      await geheZu('index');
+      const felder = document.querySelectorAll('#filterleiste input.f-preis');
+      felder[0].value = '400';
+      felder[0].dispatchEvent(new Event('input'));
+      felder[1].value = '2';
+      felder[1].dispatchEvent(new Event('input'));
+      out = 'karten=' + document.querySelectorAll('#warenraster .karte').length
+        + ' satz=' + JSON.stringify(text('#filterleiste .f-grenze'));`,
+    erwartet: ['karten=0', 'Die Spanne ist leer', 'Nicht der Katalog ist leer'],
+  },
+  {
+    name: 'Eine unlesbare Preisgrenze sagt, dass sie nicht angelegt ist',
+    aktionen: `
+      await geheZu('index');
+      const alle = document.querySelectorAll('#warenraster .karte').length;
+      const feld = document.querySelectorAll('#filterleiste input.f-preis')[1];
+      feld.value = 'zwoelf';
+      feld.dispatchEvent(new Event('input'));
+      out = 'vorher=' + alle
+        + ' nachher=' + document.querySelectorAll('#warenraster .karte').length
+        + ' satz=' + JSON.stringify(text('#filterleiste .f-grenze'));`,
+    // Die Zahl der Karten muss **gleich** bleiben: Eine unlesbare Eingabe
+    // filtert nicht. Genau deshalb braucht sie den Satz — sonst sieht der
+    // Kunde alles und hält seine Grenze für angelegt.
+    erwartet: ['ist keine Zahl', 'nicht angelegt', 'Komma oder Punkt'],
+    verboten: ['nachher=0'],
+  },
   {
     name: 'Die Bedienelemente im Warenkorb sind daumengroß',
     // Gemessen wird hier und nicht im 390-px-Rahmen: Dort führt das

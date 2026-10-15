@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   wortstaemme, baueSuchindex, suche, sortiere, filtere, filterwerte, vorteil,
+  preisspannensatz,
   ladeKorb, speichereKorb, legeInKorb, setzeMenge, korbPositionen, bereinige,
   merkeEntfallen, holeEntfallen, vergissEntfallen, entfallensatz, ENTFALLENSCHLUESSEL,
   HOECHSTMENGE,
@@ -116,6 +117,96 @@ test('filterwerte nennt nur, was im Bestand vorkommt', () => {
   assert.equal(w.preisMin, 12);
   assert.equal(w.preisMax, 40);
   assert.equal(w.mitSperrgut, true);
+});
+
+/* ------------------------------------------------------------------ *
+ * Was eine Preisspanne schuldig ist
+ * ------------------------------------------------------------------ */
+
+/*
+ * **Vier Fälle, und der vierte ist der Grund, dass dieser Satz im Kern steht.**
+ * Er tritt ein, wenn ein Artikel keinen Preis hat — im Katalog von heute haben
+ * alle 46 einen, eine Browserprobe erreicht ihn also nicht. In der Oberfläche
+ * wäre er toter Code mit einem Satz darin, den niemand liest und niemand
+ * prüft.
+ */
+const geld = (n) => `${n.toFixed(2).replace('.', ',')} €`;
+
+test('ohne Grenze sagt die Preisspanne nichts', () => {
+  assert.equal(preisspannensatz({
+    preisAb: null, preisBis: null, unlesbar: '', ohnePreis: 3, geld,
+  }), '');
+});
+
+test('eine unlesbare Eingabe sagt, dass die Grenze nicht angelegt ist', () => {
+  const satz = preisspannensatz({
+    preisAb: null, preisBis: null, unlesbar: 'zwölf', ohnePreis: 0, geld,
+  });
+  assert.match(satz, /„zwölf" ist keine Zahl/);
+  assert.match(satz, /nicht angelegt/);
+  // Der Weg hinaus gehört dazu: Eine Meldung ohne nächsten Schritt ist bei
+  // jemandem, der schon etwas eingetippt hat, teurer als bei einem Besucher.
+  assert.match(satz, /Komma oder Punkt/);
+});
+
+test('die unlesbare Eingabe schlägt die verdrehte Spanne', () => {
+  // Beides zugleich: Wer „ab 50" und „bis zwölf" tippt, hat keine verdrehte
+  // Spanne, sondern eine Grenze, die es nicht gibt. Der Satz über die leere
+  // Spanne wäre hier falsch — er behauptete eine obere Grenze.
+  const satz = preisspannensatz({
+    preisAb: 50, preisBis: null, unlesbar: 'zwölf', ohnePreis: 0, geld,
+  });
+  assert.match(satz, /keine Zahl/);
+  assert.doesNotMatch(satz, /Spanne ist leer/);
+});
+
+test('eine verdrehte Spanne nennt sich selbst und nicht den Katalog', () => {
+  const satz = preisspannensatz({
+    preisAb: 50, preisBis: 10, unlesbar: '', ohnePreis: 0, geld,
+  });
+  assert.match(satz, /Die Spanne ist leer/);
+  assert.match(satz, /50,00 €/);
+  assert.match(satz, /10,00 €/);
+  // Der Kern der Zusage: Die Auskunft daneben („Kein Artikel passt zu dieser
+  // Auswahl") darf nicht als Aussage über das Sortiment gelesen werden.
+  assert.match(satz, /Nicht der Katalog ist leer/);
+});
+
+test('bei Gleichstand ist die Spanne nicht leer', () => {
+  // „ab 10, bis 10" trifft genau die Artikel zu 10 € — das ist eine Spanne
+  // und kein Widerspruch. Ein `>=` hier wäre derselbe Fehler wie der, den
+  // `referenzwert-schon-bei-gleichstand` an der Messwertgrenze festhält.
+  assert.equal(preisspannensatz({
+    preisAb: 10, preisBis: 10, unlesbar: '', ohnePreis: 0, geld,
+  }), '');
+});
+
+test('eine Grenze sagt, dass sie die Artikel ohne Preis mitnimmt', () => {
+  const satz = preisspannensatz({
+    preisAb: null, preisBis: 20, unlesbar: '', ohnePreis: 4, geld,
+  });
+  assert.match(satz, /4 Artikel auf Anfrage sind dabei nicht berücksichtigt/);
+  assert.match(satz, /Ohne Preis lässt sich keine Grenze anlegen/);
+  assert.match(satz, /stehen sie wieder da/);
+});
+
+test('bei einem Artikel ohne Preis steht die Einzahl', () => {
+  const satz = preisspannensatz({
+    preisAb: 5, preisBis: null, unlesbar: '', ohnePreis: 1, geld,
+  });
+  assert.match(satz, /1 Artikel auf Anfrage ist dabei/);
+  assert.match(satz, /steht er wieder da/);
+  // Dieselbe Zusicherung wie im Warenkorbkopf: „1 Artikel … sind" wäre
+  // verboten, und ohne diese Zeile bliebe die Probe grün.
+  assert.doesNotMatch(satz, /Artikel auf Anfrage sind/);
+});
+
+test('ohne Artikel ohne Preis schweigt die greifende Grenze', () => {
+  // Die Grenze greift, nimmt aber nichts Unsichtbares mit — dann ist der
+  // Zähler daneben die ganze Auskunft, und ein Satz wäre Lärm.
+  assert.equal(preisspannensatz({
+    preisAb: null, preisBis: 20, unlesbar: '', ohnePreis: 0, geld,
+  }), '');
 });
 
 /* ------------------------------------------------------------------ *

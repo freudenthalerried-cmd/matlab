@@ -25,7 +25,7 @@ import { systembruch, systembruchsatz } from './systemtreue.js';
 // eine Probe hielt beide gegeneinander. Eine Probe, die zwei Fassungen
 // vergleicht, ist besser als nichts und schlechter als eine Fassung.
 import { frachtGrundText } from './frachttext.js';
-import { cent, einheitText, zahlText } from './format.js';
+import { cent, einheitText, zahlText, textZeile } from './format.js';
 import { frachtbetrag } from './frachtsatz.js';
 
 /**
@@ -749,6 +749,90 @@ export function filtere(artikel, f = {}) {
     if (typeof f.preisAb === 'number' && (a.vkNetto === null || a.vkNetto < f.preisAb)) return false;
     return true;
   });
+}
+
+/**
+ * Der Satz, den eine Preisspanne schuldig ist.
+ *
+ * **Gebaut am 15. Oktober 2026, und zwar hier und nicht in der Oberfläche.**
+ * Der erste Anlauf rechnete ihn in `shop-ui.js` aus. Drei von vier Fällen
+ * waren dort fahrbar, der vierte nicht: Er tritt ein, wenn ein Artikel
+ * **keinen Preis** hat, und im Katalog von heute haben alle 46 einen. Ein
+ * Satz, den keine Probe erreicht, ist genau das, was in diesem Bestand
+ * mehrfach schiefgegangen ist — *nicht gefahren ist nicht grün*.
+ *
+ * Hier ist er eine Funktion über vier Zahlen und damit in jedem Fall fahrbar;
+ * die Oberfläche reicht ihn nur durch. Dasselbe Muster wie `rueckwegsatz` und
+ * `herkunftssatz`: Satzbau im Modul, Oberfläche ohne eigene Formulierung.
+ *
+ * Die Regel des Hauses dahinter, wörtlich: **Die Grenze darf greifen,
+ * schweigen darf sie nicht.** Eine Preisspanne kann auf drei Wegen Artikel
+ * wegnehmen, und für den Kunden sehen alle drei gleich aus — es stehen
+ * weniger Karten da als vorher.
+ *
+ * @param {object} lage
+ * @param {number|null} lage.preisAb   Untere Grenze, oder null
+ * @param {number|null} lage.preisBis  Obere Grenze, oder null
+ * @param {string} lage.unlesbar       Was eingetippt wurde und keine Zahl ist
+ * @param {number} lage.ohnePreis      Artikel im Raster ohne Verkaufspreis
+ * @param {(n:number)=>string} lage.geld  Wie ein Betrag geschrieben wird
+ * @returns {string} Der Satz, oder '' wenn nichts zu sagen ist
+ */
+export function preisspannensatz({ preisAb, preisBis, unlesbar, ohnePreis, geld }) {
+  /*
+   * **Die unlesbare Eingabe zuerst.** Sie ist der einzige Fall, in dem gar
+   * nicht gefiltert wird — und damit der einzige, in dem der Kunde *mehr*
+   * sieht, als er wollte. Wer „zwölf" tippt, hält seine Grenze für angelegt
+   * und bekommt alle Artikel.
+   */
+  if (unlesbar) {
+    /*
+     * **Hier wird die Eingabe des Kunden zitiert, und zwar wörtlich.** Das ist
+     * der einzige Fremdtext in diesem Satz — und der erste Anlauf hat ihn
+     * roh eingesetzt. Gefunden hat das `test/aussentexte.test.js`: Eine
+     * textbauende Funktion gehört ins Verzeichnis, und jeder Eintrag dort
+     * verlangt eine Probe gegen vergifteten Text.
+     *
+     * `textZeile` zwingt ihn in eine Zeile. Ohne das machte ein Umbruch in
+     * der Eingabe aus einem Satz zwei — derselbe Fehler, der am 15. September
+     * aus dem Rückwegsatz vier Zeilen gemacht hat, weil dort eine eingesetzte
+     * Adresse ohne `textZeile` durchlief.
+     *
+     * Und gekürzt wird auch: Eine Eingabe ist unbegrenzt lang, der Satz steht
+     * in einer Leiste, die bei 390 px nicht seitwärts rollen darf. **Vierzig
+     * Zeichen reichen, um die eigene Eingabe wiederzuerkennen** — und wer
+     * zweihundert Zeichen eintippt, braucht nicht sie, sondern den zweiten
+     * Satz.
+     */
+    const zitat = textZeile(unlesbar);
+    const kurz = zitat.length > 40 ? `${zitat.slice(0, 40)}…` : zitat;
+    return `„${kurz}" ist keine Zahl — diese Grenze ist nicht angelegt. `
+      + 'Preise mit Komma oder Punkt, zum Beispiel 12,50.';
+  }
+  /*
+   * **Die verdrehte Spanne.** Das Ergebnis ist zwangsläufig leer, und daran
+   * ist nicht der Katalog schuld. Ohne diesen Satz läse der Kunde die
+   * Auskunft daneben — „Kein Artikel passt zu dieser Auswahl" — als Aussage
+   * über das Sortiment.
+   */
+  if (preisAb !== null && preisBis !== null && preisAb > preisBis) {
+    return `Die Spanne ist leer: ab ${geld(preisAb)} ist mehr als bis ${geld(preisBis)}. `
+      + 'Nicht der Katalog ist leer, die Spanne ist es.';
+  }
+  if (preisAb === null && preisBis === null) return '';
+  /*
+   * **Und die Artikel ohne Preis.** `filtere` nimmt sie bei jeder gesetzten
+   * Grenze heraus, und das ist richtig: null ist nicht null Euro, und ein
+   * Artikel auf Anfrage liegt in keiner Spanne. Gesagt werden muss es
+   * trotzdem — es ist derselbe stille Wegfall, den dieser Shop am
+   * 10. September im Warenkorb gefunden hat: Eine Position verschwindet, die
+   * Summe wird kleiner, und niemand sagt ein Wort dazu.
+   */
+  if (!ohnePreis) return '';
+  const einer = ohnePreis === 1;
+  return `${ohnePreis} Artikel auf Anfrage ${einer ? 'ist' : 'sind'} dabei nicht `
+    + 'berücksichtigt: Ohne Preis lässt sich keine Grenze anlegen. Ohne Preisspanne '
+    + `${einer ? 'steht er' : 'stehen sie'} wieder da.`;
 }
 
 /** Die Filterwerte, die im Bestand überhaupt vorkommen — für die Oberfläche. */
