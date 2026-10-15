@@ -274,6 +274,9 @@ body{
 .player-chip{border:2px solid #e6ecf0;background:#f4f7f9;border-radius:12px;padding:7px 11px;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;color:var(--text);}
 .player-chip.sel{background:#e3fbf0;border-color:var(--accent2);}
 .player-chip.add{border-style:dashed;color:var(--muted);}
+@media (max-width:400px){ .brand-text{display:none;} }
+.heart-timer{font-size:11px;font-weight:800;color:#ffb3b3;}
+#heartsPill{cursor:pointer;}
 .account-card{font-size:14px;line-height:1.4;}
 .back-link{background:#eef2f5;border:none;border-radius:10px;padding:6px 12px;font-weight:800;font-size:13px;color:var(--muted);cursor:pointer;font-family:inherit;margin-bottom:4px;}
 .brand{white-space:nowrap;}
@@ -392,11 +395,11 @@ body{
 <div id="app">
 
   <div class="topbar">
-    <div class="brand">🦉 Wortreise</div>
+    <div class="brand">🦉 <span class="brand-text">Wortreise</span></div>
     <div style="display:flex;gap:8px;">
       <div class="stat-pill streak">🔥 <span id="streakVal">0</span></div>
       <div class="stat-pill coins">🪙 <span id="coinsVal">0</span></div>
-      <div class="stat-pill hearts">❤️ <span id="heartsVal">5</span></div>
+      <div class="stat-pill hearts" id="heartsPill">❤️ <span id="heartsVal">5</span><span class="heart-timer" id="heartTimer"></span></div>
     </div>
   </div>
 
@@ -3412,6 +3415,30 @@ document.getElementById('importBtn').addEventListener('click', ()=>{
     adoptState(obj, '✅ Spielstand geladen');
     saveState();
   }catch(e){ toast('❌ Ungültiger Sicherungscode'); }
+});
+
+/* ---------- ❤️ Herzen: 5 Stück, alle 20 Minuten wächst eines nach (live) ---------- */
+function nextHeartMs(){
+  if(state.hearts >= MAX_HEARTS || !state.lastHeartLoss) return 0;
+  return Math.max(0, state.lastHeartLoss + HEART_REGEN_MINUTES*60000 - Date.now());
+}
+function fmtMs(ms){ const t = Math.ceil(ms/1000); return `${Math.floor(t/60)}:${String(t%60).padStart(2,'0')}`; }
+function tickHearts(){
+  const before = state.hearts;
+  regenHearts();
+  if(state.hearts !== before){
+    saveState(); updateTopbar();
+    if(document.getElementById('screen-game').classList.contains('active')) updateGameHeader();
+    if(document.getElementById('screen-gameover').classList.contains('active')) updateGameoverScreen();
+    toast(`❤️ Ein Herz ist nachgewachsen! (${state.hearts}/${MAX_HEARTS})`);
+  }
+  const ms = nextHeartMs();
+  document.getElementById('heartTimer').textContent = ms ? ' · ' + fmtMs(ms) : '';
+}
+setInterval(tickHearts, 1000);
+document.getElementById('heartsPill').addEventListener('click', ()=>{
+  const ms = nextHeartMs();
+  toast(state.hearts >= MAX_HEARTS ? `❤️ Alle ${MAX_HEARTS} Herzen voll!` : `❤️ ${state.hearts}/${MAX_HEARTS} – nächstes Herz in ${fmtMs(ms)} (alle ${HEART_REGEN_MINUTES} Min. eines)`);
 });
 
 /* ---------- 💡 Verbesserungsideen von unterwegs ---------- */
