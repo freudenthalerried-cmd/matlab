@@ -267,6 +267,9 @@ body{
 .ad-icon{font-size:64px;margin:8px 0;animation:mascotBounce 2s ease-in-out infinite;}
 .ad-card .btn{margin-top:12px;}
 .ad-card .btn:disabled{opacity:.5;}
+.pen-row{background:#ffe9e9;color:#a11;border-radius:10px;padding:8px 12px;margin:6px 0;font-weight:800;font-size:14px;text-align:left;}
+.pen-row.good{background:#e3fbf0;color:#02845f;}
+.pen-tip{color:var(--muted);font-size:12px;font-weight:700;margin-top:8px;}
 .account-card{font-size:14px;line-height:1.4;}
 .back-link{background:#eef2f5;border:none;border-radius:10px;padding:6px 12px;font-weight:800;font-size:13px;color:var(--muted);cursor:pointer;font-family:inherit;margin-bottom:4px;}
 .brand{white-space:nowrap;}
@@ -475,6 +478,7 @@ body{
       <div class="mini-bar big"><div class="mini-fill goal" id="goalFill2"></div></div>
       <div class="panel-sub" id="goalText">0 / 20 XP heute</div>
     </div>
+    <div class="panel-sub" style="text-align:center;margin:-4px 0 8px;">⚠️ Einen Tag auslassen kostet: −15 XP, −10 🪙, −2 ❤️ und den Streak – außer du hast 🧊 Streak-Schutz.</div>
     <div id="questList"></div>
     <button class="btn btn-yellow" id="chestBtn">🎁 Truhe: alle 3 Quests schaffen</button>
   </section>
@@ -601,6 +605,15 @@ body{
 </div>
 <div class="combo-toast" id="comboToast"></div>
 <div class="toast" id="toast"></div>
+<div class="ad-overlay hidden" id="penaltyOverlay">
+  <div class="ad-card">
+    <div class="ad-icon" id="penIcon">😿</div>
+    <div class="intro-title" id="penTitle">Du hast einen Tag verpasst!</div>
+    <div id="penList"></div>
+    <button class="btn btn-yellow hidden" id="penRepair">🔧 Streak reparieren</button>
+    <button class="btn btn-primary" id="penOk">💪 Jetzt aufholen</button>
+  </div>
+</div>
 <div class="ad-overlay hidden" id="adOverlay">
   <div class="ad-card">
     <div class="ad-tag">WERBUNG</div>
@@ -3272,7 +3285,7 @@ function adoptState(obj, msg){
   const d = defaultState();
   state = Object.assign(d, obj);
   try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
-  ensureDaily(); ensureLeague();
+  ensureDaily(); ensureLeague(); applyAbsencePenalty();
   if(state.language && state.difficulty){ goHome(); } else { showLanguageScreen(); }
   updateTopbar();
   if(msg) toast(msg);
@@ -3380,8 +3393,93 @@ document.getElementById('adBtn').addEventListener('click', ()=>watchAd(()=>{
   } else updateGameoverScreen();
 }));
 
+/* =========================================================
+   😿 ABWESENHEITS-STRAFE: Pro verpasstem Tag (max. 7)
+   −15 XP, −10 Münzen, −2 Herzen (mind. 1 bleibt), Streak weg,
+   Wörter rutschen im Wiederholungssystem eine Stufe zurück.
+   🧊 Streak-Schutz verhindert alles; Streak-Reparatur für 100 🪙.
+   ========================================================= */
+const PENALTY = {xp:15, coins:10, hearts:2, maxDays:7, repairPrice:100};
+function dayDiff(a, b){ return Math.round((new Date(b) - new Date(a))/86400000); }
+function applyAbsencePenalty(){
+  const today = new Date().toDateString();
+  if(!state.language || !state.lastPlayDate || state.penaltyCheckedFor===today) return;
+  state.penaltyCheckedFor = today;
+  const missed = dayDiff(state.lastPlayDate, today) - 1;
+  if(missed <= 0){ saveState(); return; }
+  const yesterday = new Date(Date.now()-86400000).toDateString();
+  if(state.inventory.freeze >= missed){
+    state.inventory.freeze -= missed;
+    state.lastPlayDate = yesterday;            // Streak bleibt erhalten
+    saveState();
+    showPenalty({frozen:true, missed});
+    return;
+  }
+  const d = Math.min(missed, PENALTY.maxDays);
+  const loss = {
+    xp: Math.min(state.xp, d*PENALTY.xp),
+    coins: Math.min(state.coins, d*PENALTY.coins),
+    hearts: Math.max(0, state.hearts - Math.max(1, state.hearts - d*PENALTY.hearts)),
+    streak: state.streak,
+  };
+  state.xp -= loss.xp; state.coins -= loss.coins; state.hearts -= loss.hearts;
+  if(state.hearts < MAX_HEARTS && !state.lastHeartLoss) state.lastHeartLoss = Date.now();
+  if(state.league) state.league.xp = Math.max(0, state.league.xp - loss.xp);
+  let faded = 0;
+  Object.values(state.mastery||{}).forEach(e=>{ if(e.box>0){ e.box--; e.due = Date.now(); faded++; } });
+  loss.faded = faded;
+  state.lostStreak = state.streak >= 2 ? {value:state.streak, date:today} : null;
+  state.streak = 0;
+  saveState();
+  showPenalty({missed, loss});
+}
+function showPenalty({frozen, missed, loss}){
+  const ov = document.getElementById('penaltyOverlay');
+  const tage = missed===1 ? '1 Tag' : `${missed} Tage`;
+  document.getElementById('penIcon').textContent = frozen ? '🧊' : '😿';
+  document.getElementById('penTitle').textContent = frozen ? `Puh! ${tage} verpasst – aber geschützt` : `Du hast ${tage} verpasst!`;
+  const list = document.getElementById('penList');
+  const repair = document.getElementById('penRepair');
+  if(frozen){
+    list.innerHTML = `<div class="pen-row good">🧊 Streak-Schutz verbraucht: ${missed}×</div><div class="pen-row good">🔥 Dein Streak bleibt erhalten</div>`;
+    repair.classList.add('hidden');
+  } else {
+    list.innerHTML = [
+      loss.streak ? `🔥 Streak verloren: ${loss.streak} ${loss.streak===1?'Tag':'Tage'}` : '',
+      loss.xp ? `⭐ −${loss.xp} XP` : '',
+      loss.coins ? `🪙 −${loss.coins} Münzen` : '',
+      loss.hearts ? `❤️ −${loss.hearts} Herzen` : '',
+      loss.faded ? `🧠 ${loss.faded===1 ? '1 Wort verblasst' : loss.faded+' Wörter verblassen'} – ab ins Training!` : '',
+    ].filter(Boolean).map(t=>`<div class="pen-row">${t}</div>`).join('') + '<div class="pen-tip">💡 Tipp: Mit 🧊 Streak-Schutz aus dem Shop passiert dir das nicht.</div>';
+    const canRepair = state.lostStreak && state.lostStreak.value>=2;
+    repair.classList.toggle('hidden', !canRepair);
+    if(canRepair){
+      repair.textContent = `🔧 Streak (${state.lostStreak.value}) reparieren für ${PENALTY.repairPrice} 🪙`;
+      repair.disabled = state.coins < PENALTY.repairPrice; repair.style.opacity = repair.disabled ? .5 : 1;
+    }
+  }
+  ov.classList.remove('hidden');
+  sndWrong(); updateTopbar();
+}
+document.getElementById('penRepair').addEventListener('click', ()=>{
+  const ls = state.lostStreak;
+  if(!ls || ls.date!==new Date().toDateString() || state.coins < PENALTY.repairPrice) return;
+  state.coins -= PENALTY.repairPrice;
+  state.streak = ls.value;
+  state.lastPlayDate = new Date(Date.now()-86400000).toDateString();
+  state.lostStreak = null;
+  saveState(); updateTopbar();
+  document.getElementById('penaltyOverlay').classList.add('hidden');
+  sndLevelUp(); toast(`🔧 Streak repariert: ${state.streak} Tage 🔥`);
+  if(document.getElementById('screen-map').classList.contains('active')) renderMap();
+});
+document.getElementById('penOk').addEventListener('click', ()=>{
+  document.getElementById('penaltyOverlay').classList.add('hidden');
+  if(document.getElementById('screen-map').classList.contains('active')) renderMap();
+});
+
 /* ---------- INIT ---------- */
-ensureDaily(); ensureLeague(); checkAchievements(); saveState();
+ensureDaily(); ensureLeague(); applyAbsencePenalty(); checkAchievements(); saveState();
 if(state.language && state.difficulty){
   renderMap();
   showScreen('screen-map');
