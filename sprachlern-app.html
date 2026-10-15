@@ -261,6 +261,13 @@ body{
 .drive-key{margin-top:10px;text-align:left;font-size:12px;color:#9fb8c4;flex-shrink:0;}
 .drive-key input{width:100%;margin-top:6px;padding:10px;border-radius:10px;border:none;font-size:14px;}
 .drive-chip{background:var(--accent2);color:#fff;}
+.ad-overlay{position:fixed;inset:0;background:rgba(8,16,22,.92);z-index:80;display:flex;align-items:center;justify-content:center;padding:20px;}
+.ad-card{background:#fff;border-radius:22px;padding:22px;max-width:400px;width:100%;text-align:center;position:relative;animation:popIn .4s both;}
+.ad-tag{position:absolute;top:10px;left:12px;font-size:10px;font-weight:800;color:var(--muted);letter-spacing:1px;}
+.ad-icon{font-size:64px;margin:8px 0;animation:mascotBounce 2s ease-in-out infinite;}
+.ad-card .btn{margin-top:12px;}
+.ad-card .btn:disabled{opacity:.5;}
+.account-card{font-size:14px;line-height:1.4;}
 .back-link{background:#eef2f5;border:none;border-radius:10px;padding:6px 12px;font-weight:800;font-size:13px;color:var(--muted);cursor:pointer;font-family:inherit;margin-bottom:4px;}
 .brand{white-space:nowrap;}
 .seg{display:flex;background:rgba(255,255,255,0.12);border-radius:14px;padding:4px;gap:4px;margin:2px 0 6px;flex-shrink:0;}
@@ -534,6 +541,7 @@ body{
       </div>
       <div class="intro-title">Keine Herzen mehr!</div>
       <div class="intro-desc" id="heartInfo">Alle 20 Minuten wächst ein Herz nach.</div>
+      <button class="btn btn-primary" id="adBtn" style="margin-bottom:8px;">📺 Werbung schauen: +1 ❤️</button>
       <button class="btn btn-yellow" id="retryBtn">❤️ Auffüllen für 30 🪙</button>
       <button class="btn btn-primary" id="gameoverTrainBtn" style="margin-top:8px;">💪 Fehler-Training (kostet keine Herzen)</button>
       <button class="btn btn-secondary" id="gameoverMapBtn">Zurück zur Karte</button>
@@ -550,6 +558,10 @@ body{
 
   <!-- ===== STATS SCREEN (modal-ish, reuses screen system) ===== -->
   <section class="screen" id="screen-stats">
+    <div class="card account-card" style="margin:0 0 12px;">
+      <div id="accountInfo">📱 Nur auf diesem Gerät gespeichert</div>
+      <div class="adapt-btns"><button class="btn btn-secondary" id="exportBtn">📤 Sicherungscode</button><button class="btn btn-secondary" id="importBtn">📥 Code laden</button></div>
+    </div>
     <div class="card" style="margin:0 0 12px;">
       <div class="profile-head"><div class="rank-badge big" id="profRank">🥚</div>
         <div><div class="intro-title" style="text-align:left;margin:0;" id="profName">Lv 1 · Ei</div>
@@ -589,6 +601,16 @@ body{
 </div>
 <div class="combo-toast" id="comboToast"></div>
 <div class="toast" id="toast"></div>
+<div class="ad-overlay hidden" id="adOverlay">
+  <div class="ad-card">
+    <div class="ad-tag">WERBUNG</div>
+    <div class="ad-icon" id="adIcon">🦉</div>
+    <div class="intro-title" id="adTitle"></div>
+    <div class="intro-desc" id="adText"></div>
+    <div class="mini-bar big" style="background:#e6ecf0"><div class="mini-fill goal" id="adBar"></div></div>
+    <button class="btn btn-primary" id="adClose" disabled>Noch 15 s …</button>
+  </div>
+</div>
 <div class="xp-pop" id="xpPop"></div>
 
 <script>
@@ -1136,6 +1158,8 @@ function loadState(){
 }
 function saveState(){
   regenHearts();
+  state.savedAt = Date.now();
+  if(typeof scheduleCloud==='function') scheduleCloud();
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 function regenHearts(){
@@ -2261,6 +2285,7 @@ function renderStats(){
   const totalStars = levelProg().reduce((s,p)=>s+p.stars,0);
   document.getElementById('statStars').textContent = totalStars + '/' + (LEVELS.length*3);
   renderProfileExtras();
+  if(typeof updateAccountUI==='function') updateAccountUI();
 }
 document.getElementById('resetProgressBtn').addEventListener('click', ()=>{
   if(confirm('Wirklich den GESAMTEN Fortschritt löschen? Das kann nicht rückgängig gemacht werden.')){
@@ -2524,11 +2549,13 @@ function checkAchievements(){
 /* ---------- Shop ---------- */
 const SHOP = [
   {id:'hearts', icon:'❤️', name:'Herzen auffüllen', desc:'Sofort wieder 5 Herzen', price:30, can:()=>state.hearts<MAX_HEARTS, apply:()=>{ state.hearts=MAX_HEARTS; state.lastHeartLoss=null; }, have:()=>`${state.hearts}/5`},
+  {id:'ad', icon:'📺', name:'Werbung schauen', desc:'15 Sekunden → +1 Herz gratis (5× pro Tag)', price:0, can:()=>state.hearts<MAX_HEARTS && adsLeft()>0, apply:()=>{}, have:()=>`noch ${adsLeft()}× heute`},
   {id:'freeze', icon:'🧊', name:'Streak-Schutz', desc:'Rettet deinen Streak an einem verpassten Tag', price:50, can:()=>state.inventory.freeze<2, apply:()=>{ state.inventory.freeze++; }, have:()=>`${state.inventory.freeze}/2`},
   {id:'boost', icon:'⚡', name:'Doppel-XP (15 Min.)', desc:'Alle XP zählen doppelt', price:40, can:()=>true, apply:()=>{ state.boostUntil=Math.max(Date.now(),state.boostUntil||0)+15*60000; }, have:()=>boostActive()?`noch ${Math.ceil((state.boostUntil-Date.now())/60000)} Min.`:'–'},
   {id:'hints', icon:'💡', name:'3 Tipp-Joker', desc:'Entfernt 2 falsche Antworten', price:25, can:()=>true, apply:()=>{ state.inventory.hints+=3; }, have:()=>`${state.inventory.hints}`},
 ];
 function buy(item){
+  if(item.id==='ad'){ watchAd(()=>renderStats()); return; }
   if(state.coins < item.price){ toast('Zu wenig Münzen 🪙 – Quests bringen welche!'); return; }
   if(!item.can()){ toast('Das hast du schon voll 👍'); return; }
   state.coins -= item.price; item.apply(); state.stats.bought = true;
@@ -2557,7 +2584,7 @@ function renderProfileExtras(){
   SHOP.forEach(item=>{
     const el = document.createElement('div'); el.className='shop-item';
     el.innerHTML = `<span class="si">${item.icon}</span><span class="st">${item.name}<small>${item.desc} · Du hast: ${item.have()}</small></span>`;
-    const b = document.createElement('button'); b.textContent = `${item.price} 🪙`;
+    const b = document.createElement('button'); b.textContent = item.price ? `${item.price} 🪙` : 'Gratis';
     b.disabled = state.coins<item.price || !item.can();
     b.onclick = ()=>buy(item);
     el.appendChild(b); list.appendChild(el);
@@ -2784,6 +2811,9 @@ function updateGameoverScreen(){
   const b = document.getElementById('retryBtn');
   b.disabled = state.coins < 30; b.style.opacity = b.disabled ? .5 : 1;
   b.textContent = `❤️ Auffüllen für 30 🪙 (du hast ${state.coins})`;
+  const ad = document.getElementById('adBtn'); const n = adsLeft();
+  ad.disabled = n<=0; ad.style.opacity = n<=0 ? .5 : 1;
+  ad.textContent = n>0 ? `📺 Werbung schauen: +1 ❤️ (noch ${n}× heute)` : '📺 Heute keine Werbung mehr';
   const mins = state.lastHeartLoss ? Math.max(1, Math.ceil(HEART_REGEN_MINUTES - (Date.now()-state.lastHeartLoss)/60000)) : HEART_REGEN_MINUTES;
   document.getElementById('heartInfo').textContent = `Nächstes Herz in ${mins} Min. – oder übe im Fehler-Training, das kostet keine Herzen.`;
 }
@@ -3204,6 +3234,149 @@ document.getElementById('driveKey').addEventListener('change', e=>{
   e.target.value = v ? '••••••••' : '';
   toast(v ? '🔑 Schlüssel gespeichert (nur auf diesem Gerät)' : 'Schlüssel entfernt');
 });
+
+/* =========================================================
+   ☁️ KONTO-SPEICHER: Im Claude-Artifact ist man über das
+   Claude-Konto angemeldet → Fortschritt wird pro Person im
+   privaten Bereich data/users/<id>/save gespeichert und auf
+   allen Geräten geladen. Ohne Konto: Sicherungscode.
+   ========================================================= */
+const cloud = {ref:null, name:'', lastSync:0, timer:null, writing:false, pending:false, ready:false};
+function cloudPayload(){
+  const copy = {...state};
+  let json = JSON.stringify(copy);
+  if(json.length > 230000){   // Platzgrenze: nur die schwächsten Wörter im Wiederholungsspeicher behalten
+    const keep = Object.entries(copy.mastery||{}).sort((a,b)=>a[1].box-b[1].box).slice(0,800);
+    copy.mastery = Object.fromEntries(keep); json = JSON.stringify(copy);
+  }
+  return json;
+}
+async function cloudWrite(){
+  if(!cloud.ref) return;
+  if(cloud.writing){ cloud.pending = true; return; }
+  cloud.writing = true;
+  try{ await cloud.ref.set({state:cloudPayload(), savedAt:state.savedAt||Date.now(), v:1}); cloud.lastSync = Date.now(); }
+  catch(e){ /* offline o. ä.: beim nächsten Speichern erneut */ }
+  cloud.writing = false;
+  if(cloud.pending){ cloud.pending = false; cloudWrite(); }
+  updateAccountUI();
+}
+function scheduleCloud(){
+  if(!cloud.ref) return;
+  clearTimeout(cloud.timer);
+  cloud.timer = setTimeout(cloudWrite, 4000);
+}
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='hidden' && cloud.ref){ clearTimeout(cloud.timer); cloudWrite(); } });
+function adoptState(obj, msg){
+  const d = defaultState();
+  state = Object.assign(d, obj);
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+  ensureDaily(); ensureLeague();
+  if(state.language && state.difficulty){ goHome(); } else { showLanguageScreen(); }
+  updateTopbar();
+  if(msg) toast(msg);
+}
+(async()=>{
+  try{
+    if(!window.claude) return;
+    const [db, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
+    if(!db || !user) return;
+    const me = await user.me();
+    if(!me || !me.id) return;
+    cloud.name = me.name || '';
+    cloud.ref = db.collection('data/users/' + me.id).doc('save');
+    const snap = await cloud.ref.get();
+    const remote = snap.exists && snap.data && typeof snap.data.state==='string' ? snap.data : null;
+    if(remote && (remote.savedAt||0) > (state.savedAt||0)){
+      adoptState(JSON.parse(remote.state), '☁️ Dein Fortschritt wurde aus deinem Konto geladen');
+      cloud.lastSync = Date.now();
+    } else {
+      await cloudWrite();
+    }
+    cloud.ready = true;
+    updateAccountUI();
+  }catch(e){ /* kein Konto-Speicher in dieser Ansicht */ }
+})();
+function updateAccountUI(){
+  const el = document.getElementById('accountInfo'); if(!el) return;
+  if(cloud.ref){
+    const t = cloud.lastSync ? new Date(cloud.lastSync).toLocaleTimeString('de-AT',{hour:'2-digit',minute:'2-digit'}) : '…';
+    el.innerHTML = `☁️ <b>Angemeldet${cloud.name ? ' als '+escapeHtml(cloud.name) : ''}</b> über dein Claude-Konto<br><span class="panel-sub">Sprache, Punkte und Level werden automatisch gespeichert – auf jedem Gerät gleich. Zuletzt: ${t}</span>`;
+  } else {
+    el.innerHTML = `📱 <b>Nur auf diesem Gerät gespeichert</b><br><span class="panel-sub">Öffne die App über deinen Claude-Link, um automatisch mit deinem Konto zu speichern – oder nutze den Sicherungscode zum Übertragen.</span>`;
+  }
+}
+function exportCode(){
+  return 'WR1.' + btoa(unescape(encodeURIComponent(JSON.stringify(state))));
+}
+document.getElementById('exportBtn').addEventListener('click', async ()=>{
+  const code = exportCode();
+  try{ await navigator.clipboard.writeText(code); toast('📋 Sicherungscode kopiert – gut aufheben!'); }
+  catch(e){ prompt('Sicherungscode (kopieren und aufheben):', code); }
+});
+document.getElementById('importBtn').addEventListener('click', ()=>{
+  const code = (prompt('Sicherungscode einfügen:')||'').trim();
+  if(!code) return;
+  try{
+    if(!code.startsWith('WR1.')) throw 0;
+    const obj = JSON.parse(decodeURIComponent(escape(atob(code.slice(4)))));
+    if(!confirm('Spielstand aus dem Code laden? Der aktuelle Stand auf diesem Gerät wird ersetzt.')) return;
+    obj.savedAt = Date.now();
+    adoptState(obj, '✅ Spielstand geladen');
+    saveState();
+  }catch(e){ toast('❌ Ungültiger Sicherungscode'); }
+});
+
+/* =========================================================
+   📺 WERBUNG SCHAUEN → +1 Herz (max. 5 pro Tag)
+   Platzhalter mit eigenen Inhalten; ein echtes Werbenetzwerk
+   (z. B. Google AdSense/AdMob) braucht ein eigenes Konto.
+   ========================================================= */
+const AD_SECONDS = 15, AD_PER_DAY = 5;
+const AD_SPOTS = [
+  {icon:'🚗', title:'Neu: Der Fahrmodus!', text:'Lerne beim Autofahren – nur hören und sprechen. Flügo erzählt Geschichten und korrigiert dich.'},
+  {icon:'🧠', title:'Wusstest du?', text:'Wer jeden Tag 10 Minuten übt, lernt mehr als mit 2 Stunden am Wochenende. Dein Streak ist dein Superpower!'},
+  {icon:'🏆', title:'Wochen-Liga', text:'Die Top 3 steigen auf. Schaffst du es diese Woche in die nächste Liga?'},
+  {icon:'💪', title:'Fehler-Training', text:'Wörter, die du falsch hattest, kommen im Training gezielt wieder – und kosten keine Herzen.'},
+];
+function adsLeft(){ ensureDaily(); return AD_PER_DAY - (state.daily.ads||0); }
+function watchAd(after){
+  if(state.hearts >= MAX_HEARTS){ toast('Du hast schon alle Herzen ❤️'); return; }
+  if(adsLeft() <= 0){ toast('Heute keine Werbung mehr – morgen wieder! 📺'); return; }
+  const spot = pick(AD_SPOTS);
+  const ov = document.getElementById('adOverlay');
+  document.getElementById('adIcon').textContent = spot.icon;
+  document.getElementById('adTitle').textContent = spot.title;
+  document.getElementById('adText').textContent = spot.text;
+  const btn = document.getElementById('adClose'); const bar = document.getElementById('adBar');
+  btn.disabled = true; ov.classList.remove('hidden');
+  let left = AD_SECONDS;
+  btn.textContent = `Noch ${left} s …`;
+  bar.getAnimations().forEach(a=>a.cancel());
+  bar.animate([{width:'0%'},{width:'100%'}], {duration:AD_SECONDS*1000, fill:'forwards'});
+  const iv = setInterval(()=>{
+    left--;
+    if(left>0){ btn.textContent = `Noch ${left} s …`; return; }
+    clearInterval(iv);
+    btn.disabled = false; btn.textContent = '❤️ +1 Herz abholen';
+  }, 1000);
+  btn.onclick = ()=>{
+    if(btn.disabled) return;
+    ov.classList.add('hidden');
+    state.daily.ads = (state.daily.ads||0) + 1;
+    state.hearts = Math.min(MAX_HEARTS, state.hearts+1);
+    if(state.hearts>=MAX_HEARTS) state.lastHeartLoss = null;
+    sndCorrect(); toast(`❤️ +1 Herz! (heute noch ${adsLeft()}× Werbung möglich)`);
+    saveState(); updateTopbar();
+    if(after) after();
+  };
+}
+document.getElementById('adBtn').addEventListener('click', ()=>watchAd(()=>{
+  // zurück ins Spiel, wenn es wieder Herzen gibt
+  if(session && !['review','placement','jump'].includes(session.mode) && state.hearts>0 && session.qi < session.questions.length){
+    showScreen('screen-game'); session.qi++; renderQuestion();
+  } else updateGameoverScreen();
+}));
 
 /* ---------- INIT ---------- */
 ensureDaily(); ensureLeague(); checkAchievements(); saveState();
