@@ -759,6 +759,36 @@ body{background:radial-gradient(ellipse at 50% 0%,#4a331e 0%,#2a1c11 55%,#1c130d
 .sq-q{margin:8px 0;}.sq-opts{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
 .sq-opts .chat-chip{background:#efe0bf;color:#3b2a1a;}
 .tale-entry{background:linear-gradient(160deg,#3f6f8f,#2b4f68);box-shadow:0 4px 0 #1c3446;}
+
+/* ===== DRACHEN-ZENTRALE ===== */
+#screen-hub{position:relative;align-items:center;justify-content:space-between;padding:8px 10px 14px;overflow:hidden;}
+.hub-sky{position:absolute;inset:0;z-index:0;background:linear-gradient(180deg,#1b2442 0%,#3b3560 38%,#8a5a4a 72%,#3a2717 100%);}
+.hub-hills{position:absolute;left:-10%;right:-10%;bottom:0;height:34%;background:radial-gradient(ellipse at 25% 100%,#2f4a24 0 55%,transparent 56%),radial-gradient(ellipse at 75% 100%,#3b5a2c 0 60%,transparent 61%),linear-gradient(#2a3d1e,#1d2b14);border-radius:50% 50% 0 0/30% 30% 0 0;}
+.hub-moon{position:absolute;top:6%;right:9%;font-size:38px;filter:drop-shadow(0 0 14px #fff6cf);}
+.hub-cloud{position:absolute;font-size:34px;opacity:.55;animation:cloudDrift 40s linear infinite;}
+.hub-cloud.c1{top:12%;left:-15%;}.hub-cloud.c2{top:26%;left:-30%;animation-duration:60s;animation-delay:-20s;}
+@keyframes cloudDrift{to{transform:translateX(150vw);}}
+#screen-hub>*:not(.hub-sky){position:relative;z-index:1;}
+.hub-say{max-width:86%;background:#fbf3df;color:#3b2a1a;border:2px solid #c9a86a;border-radius:18px;padding:10px 14px;font-weight:800;font-size:16px;text-align:center;box-shadow:0 6px 16px rgba(0,0,0,.35);margin-top:4px;}
+.hub-say::after{content:'';position:absolute;left:50%;bottom:-10px;margin-left:-9px;border:9px solid transparent;border-top-color:#c9a86a;border-bottom:0;}
+.hub-say.pop{animation:popIn .35s both;}
+.hub-ring{position:relative;width:min(92vw,400px);aspect-ratio:1;max-height:56vh;}
+.hub-dragon{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);cursor:pointer;animation:buddyFloat 3s ease-in-out infinite;filter:drop-shadow(0 12px 14px rgba(0,0,0,.5));}
+.hub-orbs{position:absolute;inset:0;}
+.orb{position:absolute;transform:translate(-50%,-50%);width:74px;height:74px;border-radius:50%;border:3px solid #e0b04a;background:radial-gradient(circle at 35% 30%,#fff6dd,#e8cf95 45%,#a8783a);box-shadow:0 0 18px rgba(224,176,74,.55),0 5px 0 #5a3d1f;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;animation:orbBob 3.2s ease-in-out infinite;padding:0;}
+.orb span{font-size:28px;line-height:1;}
+.orb small{font-size:11px;font-weight:900;color:#3b2a1a;margin-top:2px;}
+.orb:active{transform:translate(-50%,-50%) scale(.93);}
+@keyframes orbBob{0%,100%{margin-top:0;}50%{margin-top:-7px;}}
+.orb-dot{position:absolute;top:2px;right:4px;width:13px;height:13px;border-radius:50%;background:#b8442f;border:2px solid #fff;}
+.hub-name{text-align:center;color:#fbeed0;text-shadow:0 2px 4px #000;}
+.hub-name b{font-family:'Cinzel',Georgia,serif;font-size:22px;display:block;}
+.hub-name small{font-size:13px;font-weight:700;}
+.hub-goal{width:min(80vw,320px);text-align:center;}
+.hub-goal small{color:#e8d6ae;font-weight:800;font-size:13px;}
+.hub-small{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:min(94vw,420px);}
+.hub-sm{position:relative;border:2px solid rgba(201,168,106,.6);border-radius:14px;background:rgba(42,28,17,.75);color:#fbeed0;padding:6px 0;display:flex;flex-direction:column;align-items:center;cursor:pointer;font-family:inherit;}
+.hub-sm span{font-size:22px;}.hub-sm small{font-size:11px;font-weight:800;}
 </style>
 </head>
 <body>
@@ -800,6 +830,19 @@ body{background:radial-gradient(ellipse at 50% 0%,#4a331e 0%,#2a1c11 55%,#1c130d
       </div>
       <div class="diff-list" id="diffList"></div>
     </div>
+  </section>
+
+  <!-- ===== DRACHEN-ZENTRALE ===== -->
+  <section class="screen" id="screen-hub">
+    <div class="hub-sky"><span class="hub-moon">🌙</span><span class="hub-cloud c1">☁️</span><span class="hub-cloud c2">☁️</span><div class="hub-hills"></div></div>
+    <div class="hub-say" id="hubSay"></div>
+    <div class="hub-ring">
+      <div class="hub-orbs" id="hubOrbs"></div>
+      <div class="hub-dragon" id="hubDragon"></div>
+    </div>
+    <div class="hub-name" id="hubName"></div>
+    <div class="hub-goal"><div class="mini-bar"><div class="mini-fill goal" id="hubXp"></div></div><small id="hubXpTxt"></small></div>
+    <div class="hub-small" id="hubSmall"></div>
   </section>
 
   <!-- ===== MAP SCREEN ===== -->
@@ -982,10 +1025,11 @@ body{background:radial-gradient(ellipse at 50% 0%,#4a331e 0%,#2a1c11 55%,#1c130d
   </section>
 
   <div class="bottom-nav">
+    <button class="nav-btn" data-nav="hub"><span class="icon">🐉</span>Flügo</button>
     <button class="nav-btn active" data-nav="map"><span class="icon">🗺️</span>Lernen</button>
     <button class="nav-btn" data-nav="grammar"><span class="icon">📜</span>Üben</button>
     <button class="nav-btn" data-nav="quests"><span class="icon">⚔️</span>Quests<span class="nav-dot hidden" id="questDot"></span></button>
-    <button class="nav-btn" data-nav="league"><span class="icon">🏰</span>Liga<span class="nav-dot hidden" id="friendDot"></span></button>
+    <span class="hidden" id="friendDot"></span>
     <button class="nav-btn" data-nav="stats"><span class="icon">🛡️</span>Profil</button>
   </div>
 
@@ -1793,7 +1837,7 @@ function populateDifficultyList(){
     el.addEventListener('click', ()=>{
       sndTap();
       state.cefr = key; state.difficulty = c.diff; state.recent = [];
-      saveState(); renderMap(); showScreen('screen-map'); setNav('map');
+      saveState(); openHub();
     });
     grid.appendChild(el);
   });
@@ -1825,7 +1869,7 @@ function populateLanguageList(){
       sndTap();
       state.language = key;
       saveState();
-      if(state.difficulty){ renderMap(); showScreen('screen-map'); setNav('map'); updateTopbar(); toast(`🌍 Jetzt: ${l.label}`); }
+      if(state.difficulty){ openHub(); updateTopbar(); toast(`🌍 Jetzt: ${l.label}`); }
       else { populateDifficultyList(); showScreen('screen-difficulty'); }
     });
     box.appendChild(el);
@@ -1847,6 +1891,7 @@ function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   document.querySelector('.bottom-nav').style.display = ['screen-map','screen-stats','screen-grammar','screen-quests','screen-league','screen-campaign'].includes(id) ? 'flex' : 'none';
+  if(id==='screen-hub') try{ renderHub(); }catch(e){}
   try{ placeBuddy(id); }catch(e){}
   try{ if(id!=='screen-story' && story.playing) stopTale(); }catch(e){}
   if(typeof updateQuestDot==='function') updateQuestDot();
@@ -1938,7 +1983,8 @@ function goHome(){
   if(!state.difficulty){ populateDifficultyList(); showScreen('screen-difficulty'); return; }
   clearTimeout(session && session.fbTimer); document.getElementById('feedbackBar').classList.remove('show');
   if(['grammar','phrases','arcade','talk'].includes(pendingMode)){ practiceTab = pendingMode; renderGrammar(); showScreen('screen-grammar'); setNav('grammar'); }
-  else { renderMap(); showScreen('screen-map'); setNav('map'); }
+  else if(pendingMode==='vocab'){ renderMap(); showScreen('screen-map'); setNav('map'); }
+  else openHub();
 }
 function renderGrammar(){
   const isG = practiceTab==='grammar', isA = practiceTab==='arcade', isT = practiceTab==='talk';
@@ -2839,7 +2885,8 @@ document.querySelectorAll('.nav-btn').forEach(btn=>{
     document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     sndTap();
-    if(btn.dataset.nav==='map'){ pendingMode='vocab'; renderMap(); showScreen('screen-map'); }
+    if(btn.dataset.nav==='hub'){ openHub(); }
+    else if(btn.dataset.nav==='map'){ pendingMode='vocab'; renderMap(); showScreen('screen-map'); }
     else if(btn.dataset.nav==='grammar'){ pendingMode=practiceTab; renderGrammar(); showScreen('screen-grammar'); }
     else if(btn.dataset.nav==='quests'){ renderQuests(); showScreen('screen-quests'); }
     else if(btn.dataset.nav==='league'){ renderLeague(); showScreen('screen-league'); renderFriendsIfOpen(); }
@@ -4083,8 +4130,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '3.9';
+const APP_VERSION = '4.0';
 const CHANGELOG = [
+  ['4.0', '🐉 Flügo ist die Startseite: alle Spiele & Bereiche als magische Kugeln um den Drachen'],
   ['3.9', '📚 Märchenstunde: Flügo liest Märchen vor (Satz für Satz, Übersetzung, Quiz) – eingebaut oder neu erfunden'],
   ['3.8', '⚔️ Abenteuer-Kampagne: 5 Kapitel mit Geschichte, Lektionen, Spiele, Gespräche und Boss-Kämpfe'],
   ['3.7', 'Zurück-Taste des Handys geht innerhalb der App zurück (schließt Fenster, zurück zur Karte), zweimal auf der Startseite = verlassen'],
@@ -4702,7 +4750,7 @@ document.getElementById('wheelClose').onclick = ()=>document.getElementById('whe
 function dailyPending(){ return !calInfo().claimedToday || state.wheelDate!==todayStr(); }
 function maybeShowDaily(){
   if(!state.difficulty || state.dailyShown===todayStr() || calInfo().claimedToday) return;
-  if(!document.getElementById('penaltyOverlay').classList.contains('hidden') || !document.getElementById('screen-map').classList.contains('active')){ setTimeout(maybeShowDaily, 1500); return; }
+  if(!document.getElementById('penaltyOverlay').classList.contains('hidden') || !(document.getElementById('screen-map').classList.contains('active') || document.getElementById('screen-hub').classList.contains('active'))){ setTimeout(maybeShowDaily, 1500); return; }
   state.dailyShown = todayStr(); saveState();
   renderQuests(); showScreen('screen-quests'); setNav('quests');
 }
@@ -5702,7 +5750,7 @@ function buddyEl(){ return document.getElementById('buddy'); }
 function placeBuddy(screenId){
   const b = buddyEl(); if(!b) return;
   buddy.screen = screenId;
-  const hide = ['screen-language','screen-difficulty','screen-drive'].includes(screenId) || !state.difficulty;
+  const hide = ['screen-language','screen-difficulty','screen-drive','screen-hub'].includes(screenId) || !state.difficulty;
   b.classList.toggle('hidden', hide);
   b.classList.toggle('small', !NAV_SCREENS.includes(screenId));
   b.innerHTML = dragonSVG({size:BUDDY_SIZE-6, mood: b.dataset.mood || 'happy'});
@@ -5923,7 +5971,7 @@ function handleBack(){
   const cur = (document.querySelector('.screen.active')||{}).id;
   const click = id=>{ const b = document.getElementById(id); if(b){ b.click(); return true; } return false; };
   switch(cur){
-    case 'screen-map': return false;                             // Startseite → zweimal = verlassen
+    case 'screen-hub': return false;                             // Startseite → zweimal = verlassen
     case 'screen-game': return click('quitGameBtn');
     case 'screen-arcade': return click('arcQuit');
     case 'screen-talk': return click('talkBack');
@@ -5932,7 +5980,7 @@ function handleBack(){
     case 'screen-drive': return click('driveBack');
     case 'screen-difficulty': return state.language ? click('diffBackBtn') : false;
     case 'screen-language': if(state.difficulty){ goHome(); return true; } return false;
-    default: pendingMode = 'vocab'; renderMap(); showScreen('screen-map'); setNav('map'); return true;
+    default: openHub(); return true;
   }
 }
 addEventListener('popstate', ()=>{
@@ -6239,6 +6287,77 @@ document.getElementById('storyNext').onclick = ()=>{ story.i = Math.min(story.ta
 document.getElementById('storyDe').onclick = ()=>{ story.showDe = !story.showDe; document.getElementById('storyText').classList.toggle('no-de', !story.showDe); updateStoryBtns(); };
 document.getElementById('storyBack').onclick = ()=>{ stopTale(); if(!document.getElementById('storyStage').classList.contains('hidden')) openStoryShelf(); else { practiceTab = 'talk'; pendingMode = 'talk'; renderGrammar(); showScreen('screen-grammar'); setNav('grammar'); } };
 
+/* =========================================================
+   🐉 DRACHEN-ZENTRALE: Flügo ist die Startseite, alles ist um ihn herum
+   ========================================================= */
+const HUB_ORBS = [
+  {go:'campaign', icon:'⚔️', name:'Abenteuer'},
+  {go:'learn',    icon:'📖', name:'Lernen'},
+  {go:'games',    icon:'🎮', name:'Spiele'},
+  {go:'tales',    icon:'📚', name:'Märchen'},
+  {go:'talk',     icon:'🗣️', name:'Reden'},
+  {go:'quests',   icon:'🎯', name:'Quests'},
+];
+const HUB_SMALL = [
+  {go:'train', icon:'💪', name:'Training'}, {go:'league', icon:'🏰', name:'Liga'},
+  {go:'den', icon:'🏔️', name:'Höhle'}, {go:'profile', icon:'🛡️', name:'Profil'},
+];
+function hubGo(go){
+  sndTap();
+  const tab = t=>{ practiceTab = t; pendingMode = t; renderGrammar(); showScreen('screen-grammar'); setNav('grammar'); };
+  switch(go){
+    case 'campaign': return openCampaign();
+    case 'learn': pendingMode = 'vocab'; renderMap(); showScreen('screen-map'); return setNav('map');
+    case 'games': return tab('arcade');
+    case 'talk': return openBuddy();
+    case 'tales': return openStoryShelf();
+    case 'quests': renderQuests(); showScreen('screen-quests'); return setNav('quests');
+    case 'train': return startReview();
+    case 'league': renderLeague(); showScreen('screen-league'); renderFriendsIfOpen(); return setNav('');
+    case 'den': return openDragonDen();
+    case 'profile': renderStats(); showScreen('screen-stats'); return setNav('stats');
+  }
+}
+function hubTip(){
+  ensureDaily();
+  const left = state.daily.goal - state.daily.xp, played = state.lastPlayDate===new Date().toDateString();
+  const lines = {
+    en:{start:'Hello! Shall we go on an adventure?', goal:`Only ${left} XP left today – let's do it!`, done:'Daily goal done! Want a story or a game?', hearts:'No hearts? Try Training – no hearts needed!'},
+    es:{start:'¡Hola! ¿Vamos de aventura?', goal:`¡Solo faltan ${left} XP hoy!`, done:'¡Meta cumplida! ¿Un cuento o un juego?', hearts:'¿Sin corazones? ¡Prueba el entrenamiento!'},
+    fr:{start:'Salut ! On part à l\'aventure ?', goal:`Plus que ${left} XP aujourd'hui !`, done:'Objectif atteint ! Une histoire ou un jeu ?', hearts:'Plus de cœurs ? Essaie l\'entraînement !'},
+    it:{start:'Ciao! Andiamo all\'avventura?', goal:`Mancano solo ${left} XP oggi!`, done:'Obiettivo raggiunto! Una favola o un gioco?', hearts:'Niente cuori? Prova l\'allenamento!'},
+  }[currentLang()] || {};
+  return state.hearts<=0 ? lines.hearts : !played ? lines.start : left>0 ? lines.goal : lines.done;
+}
+function renderHub(){
+  const d = dragon(), li = levelInfo(state.xp), k = dragonStageIdx();
+  document.getElementById('hubDragon').innerHTML = dragonSVG({size:200, mood: dragonMood()==='sleepy' ? 'sleepy' : 'happy', cls:'hub-svg'});
+  document.getElementById('hubName').innerHTML = `<b></b><small>${DRAGON_STAGES[k].name} · Lv ${li.level} · 🔥 ${state.streak}</small>`;
+  document.getElementById('hubName').querySelector('b').textContent = d.name;
+  document.getElementById('hubXp').style.width = Math.round(100*Math.min(1, state.daily.xp/state.daily.goal)) + '%';
+  document.getElementById('hubXpTxt').textContent = `🎯 ${state.daily.xp}/${state.daily.goal} XP heute`;
+  const say = document.getElementById('hubSay'); say.textContent = hubTip();
+  const ring = document.getElementById('hubOrbs'); ring.innerHTML = '';
+  HUB_ORBS.forEach((o,i)=>{
+    const a = (-90 + i*360/HUB_ORBS.length) * Math.PI/180;
+    const b = document.createElement('button'); b.className = 'orb';
+    b.style.left = (50 + 41*Math.cos(a)) + '%'; b.style.top = (50 + 41*Math.sin(a)) + '%';
+    b.style.animationDelay = (i*0.35) + 's';
+    const dot = (o.go==='quests' && (questReady() || dailyPending())) ? '<i class="orb-dot"></i>' : '';
+    b.innerHTML = `<span>${o.icon}</span><small>${o.name}</small>${dot}`;
+    b.onclick = ()=>hubGo(o.go);
+    ring.appendChild(b);
+  });
+  const row = document.getElementById('hubSmall'); row.innerHTML = '';
+  HUB_SMALL.forEach(o=>{
+    const b = document.createElement('button'); b.className = 'hub-sm';
+    const dot = o.go==='league' && !document.getElementById('friendDot').classList.contains('hidden') ? '<i class="orb-dot"></i>' : '';
+    b.innerHTML = `<span>${o.icon}</span><small>${o.name}</small>${dot}`; b.onclick = ()=>hubGo(o.go); row.appendChild(b);
+  });
+}
+function openHub(){ renderHub(); showScreen('screen-hub'); setNav('hub'); }
+document.getElementById('hubDragon').addEventListener('click', ()=>{ const s = document.getElementById('hubSay'); s.classList.remove('pop'); void s.offsetWidth; s.classList.add('pop'); speak(s.textContent, LANGS[currentLang()].code); setTimeout(openBuddy, 900); });
+
 /* ---------- INIT ---------- */
 importFromLink();
 ensureDaily(); ensureLeague(); applyAbsencePenalty(); checkAchievements(); saveState(); applyMascot(); updateTopbar();
@@ -6247,8 +6366,7 @@ setTimeout(announceVersion, 2500);
 try{ checkDragonGrowth(); }catch(e){}
 document.getElementById('dashTip').addEventListener('click', ()=>{ sndTap(); openDragonDen(); });
 if(state.language && state.difficulty){
-  renderMap();
-  showScreen('screen-map');
+  openHub();
 } else if(state.language){
   populateDifficultyList();
   showScreen('screen-difficulty');
