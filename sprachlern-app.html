@@ -620,11 +620,9 @@ body{
 .dragon{display:block;overflow:visible;}
 .dragon .dr-eyes{animation:blink 4s infinite;transform-origin:60px 46px;}
 @keyframes blink{0%,94%,100%{transform:scaleY(1);}97%{transform:scaleY(.1);}}
-.dragon .dr-wing{animation:flap 1.6s ease-in-out infinite;transform-box:fill-box;}
-.dragon .dr-wing.l{transform-origin:right bottom;}.dragon .dr-wing.r{transform-origin:left bottom;}
-@keyframes flap{0%,100%{transform:rotate(0);}50%{transform:rotate(-8deg);}}
-.dragon .dr-wing.r{animation-name:flapR;}
-@keyframes flapR{0%,100%{transform:rotate(0);}50%{transform:rotate(8deg);}}
+.dragon .dr-wing{animation:flap 1.4s ease-in-out infinite;transform-box:fill-box;transform-origin:0% 100%;}
+@keyframes flap{0%,100%{transform:rotate(0);}50%{transform:rotate(-14deg);}}
+.buddy.flying .dragon .dr-wing{animation-duration:.35s;}
 .rank-badge{background:radial-gradient(circle at 50% 60%,#fff6cf,#ffd36b);cursor:pointer;width:60px;height:60px;}
 .rank-badge.big{width:80px;height:80px;}
 .mascot .dragon{margin:0 auto;animation:mascotBounce 2s ease-in-out infinite;}
@@ -650,16 +648,25 @@ body{
 .den-item small{font-weight:800;font-size:13px;}.den-item em{font-style:normal;font-size:12px;color:var(--muted);font-weight:700;}
 
 /* ===== FLÜGO IMMER DABEI ===== */
-.buddy{position:fixed;right:10px;bottom:84px;z-index:60;border:none;background:radial-gradient(circle at 50% 60%,#fff6cf,#ffd36b);border-radius:50%;width:66px;height:66px;padding:4px;box-shadow:0 6px 16px rgba(0,0,0,.35);cursor:pointer;animation:buddyFloat 3s ease-in-out infinite;}
-.buddy.peek{bottom:auto;top:96px;right:-18px;width:56px;height:56px;opacity:.92;}
-.buddy.peek .dragon{width:48px;height:48px;}
+.buddy{position:fixed;left:0;top:0;z-index:60;border:none;background:none;width:64px;height:64px;padding:0;cursor:pointer;transition:left 2.6s cubic-bezier(.45,.05,.35,1),top 2.6s cubic-bezier(.45,.05,.35,1);filter:drop-shadow(0 6px 8px rgba(0,0,0,.45));}
+.buddy .dragon{animation:buddyFloat 2.4s ease-in-out infinite;}
+.buddy.small{width:50px;height:50px;}.buddy.small .dragon{width:46px;height:46px;}
+.buddy.face-left .dragon{transform:scaleX(-1);}
+.buddy.flying .dragon{animation:buddyFlap .5s ease-in-out infinite;}
 .buddy.jump{animation:buddyJump .6s ease;}
-@keyframes buddyFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
-@keyframes buddyJump{0%{transform:scale(1);}40%{transform:scale(1.25) translateY(-10px);}100%{transform:scale(1);}}
+@keyframes buddyFloat{0%,100%{translate:0 0;}50%{translate:0 -6px;}}
+@keyframes buddyFlap{0%,100%{translate:0 0;rotate:-4deg;}50%{translate:0 -10px;rotate:4deg;}}
+@keyframes buddyJump{0%{scale:1;}40%{scale:1.3;translate:0 -12px;}100%{scale:1;}}
+.buddy-say{position:fixed;z-index:61;max-width:190px;background:#fbf3df;color:#3b2a1a;border:2px solid #c9a86a;border-radius:16px;padding:8px 12px;font-weight:800;font-size:15px;box-shadow:0 6px 16px rgba(0,0,0,.35);animation:popIn .3s both;pointer-events:none;}
+.buddy-say::after{content:'';position:absolute;bottom:-9px;right:18px;border:8px solid transparent;border-top-color:#c9a86a;border-bottom:0;}
+.buddy-say.from-left::after{right:auto;left:18px;}
+.bs-who{display:flex;flex-direction:column;}.bs-who small{font-size:13px;color:#e8d6ae;}
+#buddyMic.live{animation:micPulse 1s infinite;background:#5f9a3e;}
 .buddy-sheet{position:fixed;left:0;right:0;bottom:0;z-index:90;height:72vh;max-width:560px;margin:0 auto;background:#2a1c11;border-radius:22px 22px 0 0;box-shadow:0 -10px 30px rgba(0,0,0,.4);display:flex;flex-direction:column;padding:10px 12px 12px;gap:6px;animation:sheetUp .25s ease;}
 @keyframes sheetUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
 .bs-head{display:flex;align-items:center;gap:8px;color:#fff;font-size:18px;}
-.bs-x{margin-left:auto;border:none;background:rgba(255,255,255,.15);color:#fff;border-radius:50%;width:36px;height:36px;font-size:16px;cursor:pointer;}
+.bs-who{margin-right:auto;}
+.bs-x{margin-left:6px;border:none;background:rgba(255,255,255,.15);color:#fff;border-radius:50%;width:36px;height:36px;font-size:16px;cursor:pointer;}
 .bs-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;min-height:0;}
 .bb{max-width:86%;padding:10px 12px;border-radius:18px;font-size:16px;line-height:1.35;position:relative;word-wrap:break-word;}
 .bb.bot{align-self:flex-start;background:#fbf3df;color:#4a3220;border-bottom-left-radius:6px;padding-right:40px;}
@@ -962,8 +969,9 @@ body{background:radial-gradient(ellipse at 50% 0%,#4a331e 0%,#2a1c11 55%,#1c130d
   </div>
 </div>
 <button class="buddy hidden" id="buddy" aria-label="Mit deinem Drachen sprechen"></button>
+<div class="buddy-say hidden" id="buddySay"></div>
 <div class="buddy-sheet hidden" id="buddySheet">
-  <div class="bs-head"><span id="buddyFace"></span><b id="buddyName">Flügo</b><button class="bs-x" id="buddyClose">✕</button></div>
+  <div class="bs-head"><span id="buddyFace"></span><span class="bs-who"><b id="buddyName">Flügo</b><small id="buddyStatus"></small></span><button class="bs-x" id="buddyDrive" title="Fahrmodus">🚗</button><button class="bs-x" id="buddyClose">✕</button></div>
   <div class="bs-list" id="buddyList"></div>
   <div class="chat-quick" id="buddyQuick"></div>
   <div class="chat-bar"><button id="buddyLang" class="bs-lang" title="Sprache fürs Mikrofon">🇩🇪</button><button id="buddyMic" class="talk-mic">🎤</button><input id="buddyInput" maxlength="500" placeholder="Frag Flügo …" autocomplete="off"><button id="buddySend">➤</button></div>
@@ -3135,7 +3143,7 @@ function renderDashboard(){
   bc.classList.toggle('active-boost', boostActive()); bc.style.display = boostActive() ? '' : 'none';
   bc.textContent = boostActive() ? `⚡ x2 · ${Math.ceil((state.boostUntil-Date.now())/60000)}′` : '⚡ x2';
   document.getElementById('diffChip').textContent = `${LANGS[currentLang()].label.split(' ')[0]} ${myCefr()} ⇄`;
-  document.getElementById('driveChip').textContent = state.speakLevel ? `🚗 ${state.speakLevel.cefr}·${state.speakLevel.sub}` : '🚗 Fahren';
+  document.getElementById('driveChip').textContent = '🐉 Reden';
   updateQuestDot();
 }
 document.getElementById('trainBtn').addEventListener('click', ()=>{ sndTap(); startReview(); });
@@ -3776,7 +3784,7 @@ document.getElementById('drivePause').addEventListener('click', ()=> drive.pause
 document.getElementById('driveRepeat').addEventListener('click', ()=>{ stopAudio(); speakAsync(drive.lastReply, LANGS[currentLang()].code).then(listen); });
 document.getElementById('driveEnd').addEventListener('click', ()=>endDrive(true));
 document.getElementById('driveBack').addEventListener('click', ()=>{ endDrive(false); goHome(); });
-document.getElementById('driveChip').addEventListener('click', ()=>{ sndTap(); openDrive(); });
+document.getElementById('driveChip').addEventListener('click', ()=>{ openBuddy(); });
 document.getElementById('driveKey').addEventListener('change', e=>{
   const v = e.target.value.trim();
   if(v.startsWith('••')) return;
@@ -3988,8 +3996,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '3.5';
+const APP_VERSION = '3.6';
 const CHANGELOG = [
+  ['3.6', 'Neuer Drache mit Flügeln & Schattierung – fliegt am Rand, spricht dich an; Tipp = Sprach-Gespräch mit Korrekturen'],
   ['3.5', 'Mittelalter-Look (Pergament, Holz & Gold), Lauten-Klänge, Vibration, Quests antippen führt direkt zur Aufgabe, API-Schlüssel aus der Haushalt-App wird mitbenutzt'],
   ['3.4', 'Flügo ist immer dabei – tippen und mit ihm reden (sprechen oder schreiben) · Wörter werden nach jeder Antwort vorgesprochen · Sprachausgabe am iPhone repariert'],
   ['3.3', 'Dein Drache Flügo begleitet dich: wächst mit deinem Level, Hüte/Brillen/Farben in der Drachenhöhle'],
@@ -5383,6 +5392,7 @@ function recognizeOnce(code){
   return new Promise((resolve, reject)=>{
     if(!SpeechRec) return reject('unsupported');
     const rec = new SpeechRec(); rec.lang = code; rec.interimResults = false; rec.maxAlternatives = 1;
+    buddy.rec = rec;
     let got = false;
     rec.onresult = e=>{ got = true; resolve(e.results[0][0].transcript); };
     rec.onerror = e=>{ got = true; reject(e.error || 'error'); };
@@ -5442,40 +5452,58 @@ const SLOTS = [['hat','🎩 Kopf'],['eyes','👓 Augen'],['neck','🧣 Hals'],['
 function dragon(){ return state.dragon = Object.assign({name:'Flügo', color:'green', owned:[], colors:['green'], wear:{}}, state.dragon||{}); }
 function dragonStageIdx(){ const lv = levelInfo(state.xp).level; let k = 0; DRAGON_STAGES.forEach((s,i)=>{ if(lv>=s.lv) k = i; }); return k; }
 function dragonMood(){ return state.lastPlayDate===new Date().toDateString() ? 'happy' : 'sleepy'; }
+let drUid = 0;
 function dragonSVG(opts={}){
   const d = dragon(), st = opts.stage!=null ? opts.stage : dragonStageIdx(), col = DRAGON_COLORS[d.color] || DRAGON_COLORS.green;
-  const mood = opts.mood || dragonMood(), sc = DRAGON_STAGES[st].s, w = 12 + st*5;
-  const eyes = mood==='sleepy'
-    ? '<path d="M44 46 q5 4 10 0 M66 46 q5 4 10 0" stroke="#2b2b3a" stroke-width="3" fill="none" stroke-linecap="round"/>'
-    : mood==='sad'
-    ? '<circle cx="49" cy="46" r="5" fill="#2b2b3a"/><circle cx="71" cy="46" r="5" fill="#2b2b3a"/><path d="M42 38 l10 3 M78 38 l-10 3" stroke="#2b2b3a" stroke-width="2.5" stroke-linecap="round"/>'
-    : `<g class="dr-eyes"><circle cx="49" cy="46" r="${mood==='wow'?7:6}" fill="#2b2b3a"/><circle cx="71" cy="46" r="${mood==='wow'?7:6}" fill="#2b2b3a"/><circle cx="51" cy="44" r="2" fill="#fff"/><circle cx="73" cy="44" r="2" fill="#fff"/></g>`;
-  const mouth = mood==='sad' ? '<path d="M54 61 q6 -5 12 0" stroke="#2b2b3a" stroke-width="2.5" fill="none" stroke-linecap="round"/>'
-    : mood==='wow' ? '<ellipse cx="60" cy="61" rx="5" ry="6" fill="#7a2b3a"/>'
-    : '<path d="M53 58 q7 7 14 0" stroke="#2b2b3a" stroke-width="2.5" fill="none" stroke-linecap="round"/>';
-  const horns = st>=1 ? `<path d="M40 24 l-5 -${7+st*2} l11 5 z M80 24 l5 -${7+st*2} l-11 5 z" fill="${col.b}" stroke="${col.d}" stroke-width="1.5"/>` : '';
-  const spikes = st>=3 ? `<path d="M60 14 l4 -7 l4 7 z M52 15 l3 -6 l4 6 z M68 15 l3 -6 l4 6 z" fill="${col.d}"/>` : '';
-  const aura = st>=5 ? '<circle cx="60" cy="62" r="56" fill="url(#drAura)" opacity=".55"/>' : '';
+  const mood = opts.mood || dragonMood(), sc = DRAGON_STAGES[st].s, id = 'dr' + (++drUid);
+  const ws = 0.78 + st*0.07;                                   // Flügelgröße wächst
+  const eye = (x)=> mood==='sleepy'
+    ? `<path d="M${x-7} 49 q7 6 14 0" stroke="#2b1d14" stroke-width="3" fill="none" stroke-linecap="round"/>`
+    : `<g class="dr-eyes"><ellipse cx="${x}" cy="47" rx="8.5" ry="${mood==='wow'?10.5:9.5}" fill="#fff"/>
+        <circle cx="${x+1}" cy="48" r="6" fill="url(#${id}i)"/><circle cx="${x+1}" cy="48.5" r="3.2" fill="#1a120c"/>
+        <circle cx="${x+3}" cy="45" r="2.2" fill="#fff"/><circle cx="${x-1.5}" cy="51" r="1" fill="#fff"/></g>
+       ${mood==='sad' ? `<path d="M${x-8} ${38} l14 ${x<60?4:-4}" stroke="#2b1d14" stroke-width="2.5" stroke-linecap="round" transform="translate(0 ${x<60?0:4})"/>` : ''}`;
+  const mouth = mood==='sad' ? '<path d="M53 66 q7 -5 14 0" stroke="#2b1d14" stroke-width="2.5" fill="none" stroke-linecap="round"/>'
+    : mood==='wow' ? '<ellipse cx="60" cy="66" rx="5.5" ry="6" fill="#6b2230"/><ellipse cx="60" cy="68.5" rx="3" ry="2" fill="#ff8fa3"/>'
+    : '<path d="M51 63 q9 8 18 0" stroke="#2b1d14" stroke-width="2.5" fill="#6b2230" stroke-linecap="round"/><path d="M55 64.5 l2 3 l2 -2.6 M61 64.6 l2 3 l2 -2.8" fill="#fff"/>';
+  const horn = st>=1 ? `<path d="M41 24 q-8 -${8+st*2} -2 -${14+st*3} q2 ${8+st} 10 ${12+st*2} z" fill="url(#${id}h)" stroke="#a88a5a" stroke-width="1"/>
+     <path d="M79 24 q8 -${8+st*2} 2 -${14+st*3} q-2 ${8+st} -10 ${12+st*2} z" fill="url(#${id}h)" stroke="#a88a5a" stroke-width="1"/>`
+    : `<circle cx="44" cy="21" r="3.5" fill="url(#${id}h)"/><circle cx="76" cy="21" r="3.5" fill="url(#${id}h)"/>`;
+  const spikes = st>=2 ? [0,1,2].map(k=>`<path d="M${53+k*7} ${16-k%2} l3.5 -${6+st} l3.5 ${6+st} z" fill="${col.d}"/>`).join('') : '';
+  const aura = st>=5 ? `<circle cx="60" cy="64" r="58" fill="url(#${id}a)"/>` : '';
   const W = d.wear || {};
   const item = (slot, x, y, size)=>{ const it = DRAGON_ITEMS.find(i=>i.id===W[slot]); return it ? `<text x="${x}" y="${y}" font-size="${size}" text-anchor="middle">${it.e}</text>` : ''; };
+  const wing = side=>`<g transform="translate(${side==='l'?36:84} 76) scale(${side==='l'?-ws:ws} ${ws})"><g class="dr-wing">
+      <path d="M0 0 C10 -26 34 -36 46 -30 C40 -22 42 -14 36 -8 C32 -4 26 0 22 -2 C18 4 10 6 0 4 Z" fill="url(#${id}w)" stroke="${col.d}" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M2 0 L44 -29 M4 1 L36 -8 M4 2 L22 -2" stroke="${col.d}" stroke-width="1.6" fill="none" opacity=".7"/></g></g>`;
   return `<svg class="dragon ${opts.cls||''}" viewBox="0 0 120 120" width="${opts.size||64}" height="${opts.size||64}" aria-label="${escapeHtml(d.name)}">
-    <defs><radialGradient id="drAura"><stop offset="0" stop-color="#ffd23f"/><stop offset="1" stop-color="#ffd23f" stop-opacity="0"/></radialGradient></defs>
+    <defs>
+      <radialGradient id="${id}b" cx="40%" cy="30%" r="75%"><stop offset="0" stop-color="${col.b}"/><stop offset=".35" stop-color="${col.c}"/><stop offset="1" stop-color="${col.d}"/></radialGradient>
+      <linearGradient id="${id}w" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="${col.c}"/><stop offset="1" stop-color="${col.b}"/></linearGradient>
+      <linearGradient id="${id}h" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#f3e3bf"/><stop offset="1" stop-color="#fffaf0"/></linearGradient>
+      <radialGradient id="${id}i"><stop offset="0" stop-color="#ffd166"/><stop offset="1" stop-color="#e07a1f"/></radialGradient>
+      <radialGradient id="${id}a"><stop offset="0" stop-color="#ffd23f" stop-opacity=".6"/><stop offset="1" stop-color="#ffd23f" stop-opacity="0"/></radialGradient>
+    </defs>
     ${aura}
-    <g transform="translate(60 112) scale(${sc}) translate(-60 -112)">
-      <path d="M86 92 q24 4 24 -16 q-2 10 -14 8" fill="${col.c}" stroke="${col.d}" stroke-width="2"/>
-      <path d="M38 70 q-${w+14} -${w} -${w+8} -${w+18} q${w/2} ${w/2+6} ${w+12} 10 z" fill="${col.b}" stroke="${col.d}" stroke-width="2" class="dr-wing l"/>
-      <path d="M82 70 q${w+14} -${w} ${w+8} -${w+18} q-${w/2} ${w/2+6} -${w+12} 10 z" fill="${col.b}" stroke="${col.d}" stroke-width="2" class="dr-wing r"/>
-      <ellipse cx="60" cy="88" rx="27" ry="24" fill="${col.c}" stroke="${col.d}" stroke-width="2"/>
-      <ellipse cx="60" cy="93" rx="16" ry="15" fill="${col.b}"/>
-      <ellipse cx="45" cy="110" rx="9" ry="5" fill="${col.d}"/><ellipse cx="75" cy="110" rx="9" ry="5" fill="${col.d}"/>
+    <g transform="translate(60 114) scale(${sc}) translate(-60 -114)">
+      <ellipse cx="60" cy="114" rx="30" ry="4" fill="#000" opacity=".18"/>
+      ${wing('l')}${wing('r')}
+      <path d="M80 98 C100 102 110 92 104 80 C102 74 108 70 112 72 L106 64 L104 74 C96 74 98 86 86 88 Z" fill="url(#${id}b)" stroke="${col.d}" stroke-width="2" stroke-linejoin="round"/>
+      <ellipse cx="60" cy="90" rx="26" ry="23" fill="url(#${id}b)" stroke="${col.d}" stroke-width="2"/>
+      <path d="M48 76 Q60 72 72 76 L70 108 Q60 112 50 108 Z" fill="${col.b}"/>
+      <path d="M50 84 Q60 81 70 84 M50 92 Q60 89 70 92 M51 100 Q60 97 69 100" stroke="${col.d}" stroke-width="1.2" fill="none" opacity=".45"/>
+      <ellipse cx="38" cy="90" rx="6" ry="9" fill="url(#${id}b)" stroke="${col.d}" stroke-width="1.8" transform="rotate(25 38 90)"/>
+      <ellipse cx="82" cy="90" rx="6" ry="9" fill="url(#${id}b)" stroke="${col.d}" stroke-width="1.8" transform="rotate(-25 82 90)"/>
+      <ellipse cx="46" cy="111" rx="10" ry="5.5" fill="${col.d}"/><ellipse cx="74" cy="111" rx="10" ry="5.5" fill="${col.d}"/>
+      <path d="M39 112 h3 M44 113 h3 M71 113 h3 M76 112 h3" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
       ${spikes}
-      <circle cx="60" cy="46" r="31" fill="${col.c}" stroke="${col.d}" stroke-width="2"/>
-      ${horns}
-      <ellipse cx="60" cy="58" rx="15" ry="10" fill="${col.b}"/>
-      <circle cx="54" cy="57" r="1.6" fill="${col.d}"/><circle cx="66" cy="57" r="1.6" fill="${col.d}"/>
-      ${eyes}${mouth}
-      <ellipse cx="39" cy="55" rx="5" ry="3" fill="#ff8fa3" opacity=".6"/><ellipse cx="81" cy="55" rx="5" ry="3" fill="#ff8fa3" opacity=".6"/>
-      ${item('neck', 60, 78, 18)}${item('eyes', 60, 52, 26)}${item('hat', 60, 22, 30)}${item('hand', 92, 98, 20)}
+      <circle cx="60" cy="46" r="31" fill="url(#${id}b)" stroke="${col.d}" stroke-width="2"/>
+      ${horn}
+      <ellipse cx="60" cy="60" rx="16" ry="11" fill="${col.b}" opacity=".9"/>
+      <ellipse cx="54.5" cy="57" rx="1.8" ry="1.3" fill="${col.d}"/><ellipse cx="65.5" cy="57" rx="1.8" ry="1.3" fill="${col.d}"/>
+      ${eye(48)}${eye(72)}${mouth}
+      <ellipse cx="37" cy="57" rx="5.5" ry="3.2" fill="#ff8fa3" opacity=".55"/><ellipse cx="83" cy="57" rx="5.5" ry="3.2" fill="#ff8fa3" opacity=".55"/>
+      ${item('neck', 60, 82, 18)}${item('eyes', 60, 54, 30)}${item('hat', 60, 22, 30)}${item('hand', 90, 100, 20)}
     </g></svg>`;
 }
 function paintDragons(){
@@ -5563,114 +5591,210 @@ function renderDashTip(){
 }
 
 /* =========================================================
-   🐉 FLÜGO IMMER DABEI: schwebender Drache + Chat (Sprechen/Tippen)
+   🐉 FLÜGO IMMER DABEI: fliegt am Rand, spricht dich an, Sprach-Gespräch per Tipp
    ========================================================= */
-const buddy = {turns:[], busy:false, greeted:false};
+const buddy = {turns:[], busy:false, greeted:false, voice:false, micLang:'target', screen:null, x:null, y:null, sayN:0};
 const NAV_SCREENS = ['screen-map','screen-stats','screen-grammar','screen-quests','screen-league'];
+const BUDDY_LINES = {
+  en:['Can I help you?','Need a hint? Tap me!','Let\'s practice together!','You\'re doing great!','Want to chat with me?','Practice makes perfect!','Tap me and let\'s talk!','Shall we learn a new word?','I believe in you!','Ready for an adventure?'],
+  es:['¿Te puedo ayudar?','¿Necesitas una pista? ¡Tócame!','¡Practiquemos juntos!','¡Lo estás haciendo genial!','¿Hablamos un rato?','¡La práctica hace al maestro!'],
+  fr:['Je peux t\'aider ?','Besoin d\'un indice ? Touche-moi !','On s\'entraîne ensemble ?','Tu te débrouilles super bien !','On discute un peu ?','C\'est en forgeant qu\'on devient forgeron !'],
+  it:['Posso aiutarti?','Ti serve un aiuto? Toccami!','Esercitiamoci insieme!','Stai andando alla grande!','Facciamo due chiacchiere?','La pratica rende perfetti!'],
+};
+const BUDDY_SIZE = 64;
+function buddyEl(){ return document.getElementById('buddy'); }
 function placeBuddy(screenId){
-  const b = document.getElementById('buddy'); if(!b) return;
+  const b = buddyEl(); if(!b) return;
+  buddy.screen = screenId;
   const hide = ['screen-language','screen-difficulty','screen-drive'].includes(screenId) || !state.difficulty;
   b.classList.toggle('hidden', hide);
-  b.classList.toggle('peek', !NAV_SCREENS.includes(screenId));
-  b.innerHTML = dragonSVG({size:58, mood: b.dataset.mood || 'happy'});
+  b.classList.toggle('small', !NAV_SCREENS.includes(screenId));
+  b.innerHTML = dragonSVG({size:BUDDY_SIZE-6, mood: b.dataset.mood || 'happy'});
+  if(hide){ hideBuddySay(); return; }
+  if(buddy.x==null){ const r = appRect(); moveBuddy(r.right - BUDDY_SIZE - 10, innerHeight - 160, true); }
+  else buddyFly();
+  scheduleFly(); scheduleSay();
 }
+function appRect(){ const a = document.getElementById('app'); return a ? a.getBoundingClientRect() : {left:0, right:innerWidth, top:0, bottom:innerHeight}; }
+function moveBuddy(x, y, instant){
+  const b = buddyEl(); if(!b) return;
+  if(buddy.x!=null) b.classList.toggle('face-left', x < buddy.x - 4);
+  buddy.x = x; buddy.y = y;
+  b.style.transition = instant ? 'none' : '';
+  b.style.left = x + 'px'; b.style.top = y + 'px';
+  if(!instant){ b.classList.add('flying'); clearTimeout(buddy.flyEnd); buddy.flyEnd = setTimeout(()=>b.classList.remove('flying'), 2600); }
+  positionSay();
+}
+function buddyFly(){
+  const b = buddyEl(); if(!b || b.classList.contains('hidden') || !document.getElementById('buddySheet').classList.contains('hidden')) return;
+  const r = appRect(), H = innerHeight, s = b.classList.contains('small') ? 50 : BUDDY_SIZE;
+  const nav = NAV_SCREENS.includes(buddy.screen), rnd = (a,z)=>a + Math.random()*(z-a);
+  let x, y;
+  if(nav){
+    const side = pick(['l','r','r','t']);
+    if(side==='t'){ x = rnd(r.left+8, r.right-s-8); y = 50; }
+    else { x = side==='l' ? r.left+6 : r.right-s-6; y = rnd(110, H-170); }
+  } else {           // in Spielen nur oben am Rand, damit nichts verdeckt wird
+    x = Math.random()<.5 ? r.left+4 : r.right-s-4; y = rnd(84, 140);
+  }
+  moveBuddy(x, y);
+}
+function scheduleFly(){ clearTimeout(buddy.flyT); buddy.flyT = setTimeout(()=>{ buddyFly(); scheduleFly(); }, 7000 + Math.random()*7000); }
+function positionSay(){
+  const say = document.getElementById('buddySay'); if(!say || say.classList.contains('hidden')) return;
+  const r = appRect(), left = buddy.x < (r.left + r.right)/2;
+  say.classList.toggle('from-left', left);
+  say.style.top = Math.max(48, buddy.y - 46) + 'px';
+  if(left){ say.style.left = (buddy.x + 50) + 'px'; say.style.right = 'auto'; }
+  else { say.style.right = Math.max(6, innerWidth - buddy.x - 14) + 'px'; say.style.left = 'auto'; }
+}
+function hideBuddySay(){ const s = document.getElementById('buddySay'); if(s) s.classList.add('hidden'); }
+function buddySay(text, voice){
+  const b = buddyEl(), say = document.getElementById('buddySay');
+  if(!b || b.classList.contains('hidden') || !say) return;
+  say.textContent = text; say.classList.remove('hidden'); positionSay();
+  clearTimeout(buddy.sayHide); buddy.sayHide = setTimeout(hideBuddySay, 5000);
+  if(voice && state.settings.sound!==false && state.settings.buddyVoice!==false && !(window.speechSynthesis && speechSynthesis.speaking)) speak(text, LANGS[currentLang()].code);
+}
+function scheduleSay(){
+  clearTimeout(buddy.sayT);
+  buddy.sayT = setTimeout(()=>{
+    if(NAV_SCREENS.includes(buddy.screen) && document.getElementById('buddySheet').classList.contains('hidden')){
+      buddy.sayN++;
+      buddySay(pick(BUDDY_LINES[currentLang()] || BUDDY_LINES.en), buddy.sayN % 2 === 1);
+    }
+    scheduleSay();
+  }, buddy.sayN===0 ? 6000 : 25000 + Math.random()*20000);
+}
+addEventListener('resize', ()=>{ buddy.x = null; if(buddy.screen) placeBuddy(buddy.screen); });
 function buddyReact(mood){
-  const b = document.getElementById('buddy'); if(!b || b.classList.contains('hidden')) return;
-  b.dataset.mood = mood; b.innerHTML = dragonSVG({size:58, mood});
+  const b = buddyEl(); if(!b || b.classList.contains('hidden')) return;
+  b.dataset.mood = mood; b.innerHTML = dragonSVG({size:BUDDY_SIZE-6, mood});
   b.classList.remove('jump'); void b.offsetWidth; b.classList.add('jump');
-  clearTimeout(buddy.moodT); buddy.moodT = setTimeout(()=>{ b.dataset.mood = 'happy'; b.innerHTML = dragonSVG({size:58, mood:'happy'}); }, 1600);
+  if(mood==='wow' && Math.random()<.35) buddySay(pick({en:['Great!','Awesome!','Well done!','Yes!'], es:['¡Genial!','¡Muy bien!'], fr:['Super !','Bravo !'], it:['Grande!','Bravo!']}[currentLang()] || ['Great!']));
+  if(mood==='sad' && Math.random()<.35) buddySay(pick({en:['Almost!','Don\'t give up!','Next one!'], es:['¡Casi!','¡Ánimo!'], fr:['Presque !','Courage !'], it:['Quasi!','Coraggio!']}[currentLang()] || ['Almost!']));
+  clearTimeout(buddy.moodT); buddy.moodT = setTimeout(()=>{ b.dataset.mood = 'happy'; b.innerHTML = dragonSVG({size:BUDDY_SIZE-6, mood:'happy'}); }, 1600);
 }
+
+/* ---------- Gespräch mit Flügo ---------- */
 function buddyContext(){
-  const li = levelInfo(state.xp), d = dragon();
-  const wrong = (state.recent||[]).filter(r=>r && r.ok===false && r.w).slice(-6).map(r=>r.w).join(', ');
-  const cur = document.querySelector('.screen.active'); 
-  return `Learner: German-speaking adult from Austria, learning ${DRIVE_LANG[currentLang()]} at level ${myCefr()} (goal B2). App level ${li.level}, streak ${state.streak} days, today ${state.daily.xp}/${state.daily.goal} XP, hearts ${state.hearts}/5, coins ${state.coins}, gems ${state.gems||0}.${wrong ? ' Recently wrong words: ' + wrong + '.' : ''} Current screen: ${cur ? cur.id : '?'}.`;
+  const li = levelInfo(state.xp);
+  const cur = document.querySelector('.screen.active');
+  return `Learner: German-speaking adult from Austria, learning ${DRIVE_LANG[currentLang()]} at level ${myCefr()} (goal B2). App level ${li.level}, streak ${state.streak} days, today ${state.daily.xp}/${state.daily.goal} XP, hearts ${state.hearts}/5. Current screen: ${cur ? cur.id : '?'}.`;
 }
 function buddyRules(){
-  const d = dragon();
-  return `You are "${d.name}", the learner's small, cheerful ${DRAGON_STAGES[dragonStageIdx()].name} (a cute dragon companion) inside the language-learning app "Wortreise".
-${buddyContext()}
-How to answer:
-- Default language: German (casual "du"). If the learner writes or speaks in ${DRIVE_LANG[currentLang()]}, answer in ${DRIVE_LANG[currentLang()]} and add one short gentle correction in German if there was a mistake.
-- Help with: vocabulary ("Was heißt …?"), grammar explanations with one example, pronunciation tips, motivation, and how to use the app.
-- App features you can point to: Lernen (Level-Karte, Training), Üben (Regeln, Sätze, Reden: Missionen & Übungsplatz, Spiele inkl. Aussprache-Coach), Quests (Kalender, Glücksrad), Liga & Freunde, Profil (Shop, Drachenhöhle, Einstellungen, App verbessern), Fahrmodus.
-- Keep it short: at most 3 sentences, warm and a little funny (dragon jokes welcome). No markdown, no lists.`;
+  const d = dragon(), L = DRIVE_LANG[currentLang()];
+  const who = `You are "${d.name}", the learner's small, cheerful ${DRAGON_STAGES[dragonStageIdx()].name} (a cute dragon companion) in the language app "Wortreise". ${buddyContext()}
+App features you may suggest: Lernen (levels, Training), Üben (Regeln, Sätze, Reden, Spiele incl. Aussprache-Coach), Quests, Liga & Freunde, Profil (Shop, Drachenhöhle).`;
+  if(buddy.micLang==='target') return talkRules(`${who}
+This is a spoken, hands-free conversation in ${L}: chat about anything the learner likes, tell little dragon stories, ask about their day. If they ask something about learning, help briefly. Dragon jokes welcome.`);
+  return `${who}
+Answer in German (casual "du"), at most 3 short sentences, warm and a little funny. Help with vocabulary, grammar (one example), pronunciation, motivation and how to use the app. No markdown, no lists.`;
 }
 function buddyBubble(cls, text){
   const list = document.getElementById('buddyList');
   const el = document.createElement('div'); el.className = 'bb ' + cls; el.textContent = text;
-  if(cls==='bot'){ const h = document.createElement('button'); h.className = 'tb-hear'; h.textContent = '🔊'; h.onclick = ()=>speakBuddy(text); el.appendChild(h); }
+  if(cls==='bot'){ const h = document.createElement('button'); h.className = 'tb-hear'; h.textContent = '🔊'; h.onclick = ()=>speak(text, buddyCode()); el.appendChild(h); }
   list.appendChild(el); list.scrollTop = list.scrollHeight; return el;
 }
-function speakBuddy(text){
-  // Deutsch oder Zielsprache erkennen (grob)
-  const de = /[äöüß]|\b(du|ich|und|nicht|das|ist|ein|eine|wie|was)\b/i.test(text);
-  speak(text, de ? 'de-DE' : LANGS[currentLang()].code);
+function buddyCode(){ return buddy.micLang==='target' ? LANGS[currentLang()].code : 'de-DE'; }
+function buddyStatus(t){ document.getElementById('buddyStatus').textContent = t || ''; }
+function updateBuddyControls(){
+  document.getElementById('buddyMic').textContent = buddy.voice ? '⏹' : '🎤';
+  document.getElementById('buddyMic').classList.toggle('live', buddy.voice);
+  document.getElementById('buddyLang').textContent = buddy.micLang==='target' ? LANGS[currentLang()].label.split(' ')[0] : '🇩🇪';
 }
 function openBuddy(){
-  sndTap();
+  sndTap(); hideBuddySay();
   document.getElementById('buddySheet').classList.remove('hidden');
   document.getElementById('buddyFace').innerHTML = dragonSVG({size:54, mood:'wow'});
   document.getElementById('buddyName').textContent = dragon().name;
+  const q = document.getElementById('buddyQuick'); q.innerHTML = '';
+  const quick = buddy.micLang==='target'
+    ? ({en:['How are you?','Tell me a story!','What did you do today?','Teach me a new word!'], es:['¿Qué tal?','¡Cuéntame una historia!'], fr:['Ça va ?','Raconte-moi une histoire !'], it:['Come stai?','Raccontami una storia!']}[currentLang()] || [])
+    : ['Was soll ich heute üben?','Erklär mir eine Grammatikregel','Was heißt „Fernweh“?'];
+  quick.forEach(t=>{ const b = document.createElement('button'); b.className = 'chat-chip'; b.textContent = t; b.onclick = ()=>buddySend(t); q.appendChild(b); });
+  updateBuddyControls();
   if(!buddy.greeted){
     buddy.greeted = true;
-    const left = state.daily.goal - state.daily.xp;
-    buddyBubble('bot', `Hallo, ich bin ${dragon().name}! 🐉 Frag mich alles – Wörter, Grammatik oder wie die App funktioniert. ${left>0 ? `Heute fehlen dir noch ${left} XP – gemeinsam schaffen wir das!` : 'Dein Tagesziel hast du schon – stark!'}`);
+    const hi = buddy.micLang==='target'
+      ? ({en:`Hi, I'm ${dragon().name}! Let's talk. Just speak – I'm listening!`, es:`¡Hola, soy ${dragon().name}! Habla conmigo, te escucho.`, fr:`Salut, je suis ${dragon().name} ! Parle-moi, je t'écoute.`, it:`Ciao, sono ${dragon().name}! Parla con me, ti ascolto.`}[currentLang()])
+      : `Hallo, ich bin ${dragon().name}! Frag mich alles.`;
+    buddyBubble('bot', hi);
+    if(SpeechRec){ buddy.voice = true; updateBuddyControls(); speakAsync(hi, buddyCode()).then(()=>buddyListen()); }
+    else speak(hi, buddyCode());
+  } else if(buddy.voice) buddyListen();
+}
+function closeBuddy(){
+  buddy.voice = false; buddyStatus('');
+  try{ speechSynthesis.cancel(); }catch(e){} try{ buddy.rec && buddy.rec.abort(); }catch(e){}
+  document.getElementById('buddySheet').classList.add('hidden');
+}
+async function buddyListen(){
+  if(!buddy.voice || document.getElementById('buddySheet').classList.contains('hidden') || buddy.busy) return;
+  buddyStatus('🎧 Ich höre zu …');
+  try{
+    const t = await recognizeOnce(buddyCode());
+    buddy.misses = 0; buddyStatus('');
+    await buddySend(t);
+  }catch(err){
+    buddyStatus('');
+    if(['not-allowed','service-not-allowed','start','unsupported'].includes(err)){
+      buddy.voice = false; updateBuddyControls();
+      const el = buddyBubble('bot', '🎤 Hier ist das Mikrofon gesperrt – schreib mir einfach, oder öffne die App im Browser.');
+      if(window.claude){ const ob = document.createElement('button'); ob.className = 'chat-chip ob'; ob.textContent = '🌐 Im Browser öffnen'; ob.onclick = openInBrowser; el.appendChild(ob); }
+      return;
+    }
+    buddy.misses = (buddy.misses||0) + 1;
+    if(buddy.misses >= 3){ buddy.voice = false; updateBuddyControls(); buddyStatus('⏸ Pause – tippe 🎤 zum Weiterreden'); return; }
+    buddyListen();
   }
-  const q = document.getElementById('buddyQuick'); q.innerHTML = '';
-  ['Was soll ich heute üben?','Erklär mir eine Grammatikregel','Was heißt „Fernweh“?','Lass uns auf ' + LANGS[currentLang()].label.split(' ')[1] + ' plaudern!'].forEach(t=>{
-    const b = document.createElement('button'); b.className = 'chat-chip'; b.textContent = t; b.onclick = ()=>buddySend(t); q.appendChild(b);
-  });
 }
 function buddyOffline(text){
   const t = text.toLowerCase();
   if(/üben|heute|was soll/.test(t)) return state.lastPlayDate!==new Date().toDateString() ? 'Starte mit dem leuchtenden Level auf der Karte – 5 Minuten reichen schon! ✨' : 'Probier heute 🗣️ Reden oder den 🎤 Aussprache-Coach unter Üben!';
   if(/herz/.test(t)) return 'Herzen wachsen alle 20 Minuten nach. Im 💪 Training übst du ohne Herzverlust!';
-  if(/drache|hut|kauf/.test(t)) return 'In der Drachenhöhle (tipp im Profil auf mich) kannst du mir Hüte und Farben kaufen 🎩';
-  return 'Für richtige Gespräche brauche ich Claude – öffne die App über den Claude-Link oder trag in Üben → Reden → ⚙️ einen API-Schlüssel ein. 🐉';
+  return 'Zum Reden brauche ich Claude – öffne die App über den Claude-Link oder trag in Üben → Reden → ⚙️ einen API-Schlüssel ein. 🐉';
 }
 async function buddySend(text){
   text = (text||'').trim(); if(!text || buddy.busy) return;
   document.getElementById('buddyInput').value = '';
-  buddyBubble('me', text);
+  const userEl = buddyBubble('me', text);
   buddy.turns.push({role:'user', content:text}); buddy.turns = buddy.turns.slice(-16);
-  buddy.busy = true;
-  const dots = buddyBubble('bot dots', '…');
+  buddy.busy = true; buddyStatus('🤔 …');
+  let reply;
   try{
-    const out = (await askClaude(buddy.turns, buddyRules(), false)).replace(/^REPLY:\s*/i,'').trim();
-    dots.remove(); buddy.busy = false;
+    const out = await askClaude(buddy.turns, buddyRules(), false);
     buddy.turns.push({role:'assistant', content:out});
-    buddyBubble('bot', out); speakBuddy(out);
-    document.getElementById('buddyFace').innerHTML = dragonSVG({size:54, mood:'happy'});
+    if(buddy.micLang==='target'){ const r = parseTalk(out); addFeedback(userEl, r); reply = r.reply; track('talk', 1); }
+    else reply = out.replace(/^REPLY:\s*/i,'').trim();
   }catch(e){
-    dots.remove(); buddy.busy = false;
-    const msg = buddyOffline(text); buddyBubble('bot', msg); speakBuddy(msg);
+    reply = buddyOffline(text); buddy.voice = false; updateBuddyControls();
   }
+  buddy.busy = false;
+  buddyBubble('bot', reply);
+  document.getElementById('buddyFace').innerHTML = dragonSVG({size:54, mood:'happy'});
+  buddyStatus('🗣️ ' + dragon().name + ' spricht …');
+  await speakAsync(reply, buddy.micLang==='target' || !/[äöüß]|\b(du|ich|und|nicht|das|ist)\b/i.test(reply) ? buddyCode() : 'de-DE');
+  buddyStatus('');
+  if(buddy.voice) buddyListen();
 }
 document.getElementById('buddy').addEventListener('click', openBuddy);
-document.getElementById('buddyClose').onclick = ()=>{ try{ speechSynthesis.cancel(); }catch(e){} document.getElementById('buddySheet').classList.add('hidden'); };
+document.getElementById('buddyClose').onclick = closeBuddy;
 document.getElementById('buddySend').onclick = ()=>buddySend(document.getElementById('buddyInput').value);
 document.getElementById('buddyInput').addEventListener('keydown', e=>{ if(e.key==='Enter') buddySend(e.target.value); });
-document.getElementById('buddyMic').addEventListener('click', async ()=>{
-  const b = document.getElementById('buddyMic'); if(b.classList.contains('on')) return;
-  try{ speechSynthesis.cancel(); }catch(e){}
-  b.classList.add('on');
-  // erst Deutsch versuchen; wer in der Zielsprache sprechen will, stellt im Chat um
-  const code = buddy.micLang==='target' ? LANGS[currentLang()].code : 'de-DE';
-  try{ const t = await recognizeOnce(code); b.classList.remove('on'); buddySend(t); }
-  catch(err){
-    b.classList.remove('on');
-    if(['not-allowed','service-not-allowed','start','unsupported'].includes(err)){
-      const el = buddyBubble('bot', '🎤 Hier ist das Mikrofon gesperrt – schreib mir einfach, oder öffne die App im Browser.');
-      if(window.claude){ const ob = document.createElement('button'); ob.className = 'chat-chip ob'; ob.textContent = '🌐 Im Browser öffnen'; ob.onclick = openInBrowser; el.appendChild(ob); }
-    } else toast('🤔 Nichts gehört – nochmal versuchen');
-  }
+document.getElementById('buddyInput').addEventListener('focus', ()=>{ if(buddy.voice){ buddy.voice = false; updateBuddyControls(); try{ buddy.rec && buddy.rec.abort(); }catch(e){} buddyStatus(''); } });
+document.getElementById('buddyMic').addEventListener('click', ()=>{
+  buddy.voice = !buddy.voice; updateBuddyControls();
+  if(buddy.voice){ try{ speechSynthesis.cancel(); }catch(e){} buddy.misses = 0; buddyListen(); }
+  else { try{ buddy.rec && buddy.rec.abort(); }catch(e){} buddyStatus(''); }
 });
 document.getElementById('buddyLang').addEventListener('click', ()=>{
-  buddy.micLang = buddy.micLang==='target' ? 'de' : 'target';
-  document.getElementById('buddyLang').textContent = buddy.micLang==='target' ? LANGS[currentLang()].label.split(' ')[0] : '🇩🇪';
-  toast(buddy.micLang==='target' ? '🎤 Sprich jetzt in deiner Lernsprache' : '🎤 Sprich jetzt Deutsch');
+  buddy.micLang = buddy.micLang==='target' ? 'de' : 'target'; buddy.turns = [];
+  updateBuddyControls(); buddy.greeted = true; openBuddy();
+  toast(buddy.micLang==='target' ? '🗣️ Wir reden jetzt in deiner Lernsprache' : '🇩🇪 Wir reden jetzt Deutsch');
 });
+document.getElementById('buddyDrive').addEventListener('click', ()=>{ closeBuddy(); openDrive(); });
 
 
 /* ---------- Quest antippen → direkt dorthin, wo man sie erfüllt ---------- */
