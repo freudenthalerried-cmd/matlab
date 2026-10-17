@@ -3404,6 +3404,7 @@ function micBlocked(msg){
   drive.micBlocked = true; stopAudio();
   const m = msg || 'Das Mikrofon ist in dieser Ansicht gesperrt. Öffne die App über den öffentlichen Link – dort funktioniert das Mikrofon (mit deinem eigenen API-Schlüssel).';
   setDrive('🎤🚫', 'Mikrofon nicht verfügbar', m);
+  if(window.claude){ const t = document.getElementById('driveText'); const b = document.createElement('button'); b.className = 'btn btn-primary'; b.textContent = '🌐 Im Browser öffnen – mit deinem Fortschritt'; b.onclick = openInBrowser; t.appendChild(document.createElement('br')); t.appendChild(b); }
   speakAsync('Das Mikrofon ist hier leider nicht verfügbar.', 'de-DE', 1);
   drive.on = false; renderDriveControls();
 }
@@ -4779,9 +4780,12 @@ function pronCard(box, target, code, opts={}){
       opts.onResult && opts.onResult(r);
     }catch(err){
       mic.classList.remove('on');
-      out.textContent = err==='not-allowed' || err==='service-not-allowed'
-        ? '🎤 Mikrofon gesperrt – im Browser erlauben (öffentlicher Link funktioniert am besten).'
-        : '🤔 Nichts gehört – nochmal tippen und deutlich sprechen.';
+      if(err==='not-allowed' || err==='service-not-allowed' || err==='start'){
+        out.innerHTML = window.claude
+          ? '🎤 Hier in Claude ist das Mikrofon gesperrt.<br><button class="btn btn-primary" id="openBrowserBtn">🌐 Im Browser öffnen – mit deinem Fortschritt</button>'
+          : '🎤 Mikrofon gesperrt – tippe oben in der Adresszeile auf das 🔒/Mikrofon-Symbol und erlaube es.';
+        const ob = out.querySelector('#openBrowserBtn'); if(ob) ob.onclick = openInBrowser;
+      } else out.textContent = '🤔 Nichts gehört – nochmal tippen und deutlich sprechen.';
     }
   };
 }
@@ -4842,7 +4846,26 @@ document.getElementById('voiceTest').addEventListener('click', ()=>{
 });
 try{ speechSynthesis.addEventListener('voiceschanged', renderVoiceSettings); }catch(e){}
 
+
+/* ---------- 🌐 Im Browser öffnen (Mikrofon) – Fortschritt wandert per Link mit ---------- */
+function openInBrowser(){
+  const a = document.createElement('a');
+  a.href = PUBLIC_LINK + '#wr=' + encodeURIComponent(exportCode()); a.target = '_blank'; a.rel = 'noopener';
+  document.body.appendChild(a); a.click(); a.remove();
+  toast('🌐 Öffnet im Browser – dein Fortschritt kommt mit');
+}
+function importFromLink(){
+  try{
+    const m = location.hash.match(/#wr=(.+)$/); if(!m) return;
+    history.replaceState(null, '', location.href.replace(/#wr=.*$/, ''));
+    const code = decodeURIComponent(m[1]); if(!code.startsWith('WR1.')) return;
+    const obj = JSON.parse(decodeURIComponent(escape(atob(code.slice(4)))));
+    if(progressScore(obj) >= progressScore(state)){ obj.savedAt = Date.now(); adoptState(obj, '✅ Dein Fortschritt wurde übernommen'); saveState(); }
+  }catch(e){}
+}
+
 /* ---------- INIT ---------- */
+importFromLink();
 ensureDaily(); ensureLeague(); applyAbsencePenalty(); checkAchievements(); saveState(); applyMascot(); updateTopbar();
 if(state.difficulty) setTimeout(maybeShowDaily, 1200);
 if(state.language && state.difficulty){
