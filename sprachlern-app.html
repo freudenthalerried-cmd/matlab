@@ -611,6 +611,10 @@ body{
 .fb-seg button{border:2px solid #e6ecf0;background:#fff;border-radius:10px;padding:8px 2px;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;color:#1d4e63;}
 .fb-seg button.sel{border-color:#7b5bff;background:#efeaff;}
 .set-check{display:flex;align-items:center;gap:8px;margin:10px 0;color:#1d4e63;font-weight:700;}
+
+.my-ideas{text-align:left;margin-top:8px;max-height:30vh;overflow-y:auto;}
+.idea-row{border-top:1px solid #e6ecf0;padding:6px 2px;color:#1d4e63;font-size:14px;display:flex;flex-direction:column;}
+.idea-row small{color:var(--muted);font-weight:700;}
 </style>
 </head>
 <body>
@@ -886,8 +890,9 @@ body{
     <div class="intro-title">💡 App verbessern</div>
     <div class="intro-desc">Was soll besser werden? Idee oder Fehler kurz beschreiben.</div>
     <textarea id="improveText" class="f-input" rows="4" maxlength="2000" placeholder="z. B. Bei Hör-Regen fallen die Wörter zu schnell …"></textarea>
-    <button class="btn btn-primary" id="improveSend">📋 Kopieren &amp; zu Claude</button>
-    <div class="panel-sub" style="color:var(--muted);margin:6px 0;">Text wird kopiert, Claude öffnet sich – dort einfügen und senden. Danach kommst du über den App-Link zurück.</div>
+    <button class="btn btn-primary" id="improveSend">✅ Idee senden</button>
+    <div class="panel-sub" style="color:var(--muted);margin:6px 0;">Wird gespeichert – Claude prüft neue Ideen täglich und baut sie ein. Hier siehst du den Stand.</div>
+    <div id="myIdeas" class="my-ideas"></div>
     <button class="btn btn-secondary" id="improveClose">Schließen</button>
   </div>
 </div>
@@ -3804,31 +3809,57 @@ document.getElementById('heartsPill').addEventListener('click', ()=>{
 /* ---------- 💡 Verbesserungsideen von unterwegs ---------- */
 let lastScreenBeforeProfile = 'screen-map';
 /* ---------- 💡 App verbessern → direkt in den Claude-Chat ---------- */
-const CLAUDE_CHAT_LINK = 'https://claude.ai/code/session_01SXtDS9wmzC6a1p1dzLwgNi';
+async function ideaDb(){
+  try{
+    const [db, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
+    const uid = user && await user.id();
+    return db && uid ? {db, uid} : null;
+  }catch(e){ return null; }
+}
+async function renderMyIdeas(){
+  const box = document.getElementById('myIdeas'); box.innerHTML = '';
+  const local = (state.ideas||[]).filter(x=>!x.sent);
+  let rows = [];
+  const c = window.claude ? await ideaDb() : null;
+  if(c){
+    try{ const snap = await c.db.collection('feedback').where('uid','==',c.uid).get(); rows = snap.docs.map(d=>d.data()); }catch(e){}
+  }
+  rows = [...rows, ...local.map(x=>({text:x.text, at:x.at, status:'local'}))].sort((a,b)=>String(b.at).localeCompare(String(a.at))).slice(0,10);
+  if(!rows.length) return;
+  const label = r=> r.status==='done' ? `✅ eingebaut${r.doneIn ? ' in v' + r.doneIn : ''}` : r.status==='wip' ? '🔨 in Arbeit' : r.status==='no' ? '💬 ' + (r.reply||'nicht umgesetzt') : r.status==='local' ? '📱 auf diesem Gerät' : '⏳ offen';
+  box.innerHTML = '<div class="panel-title dark">Meine Ideen</div>' + rows.map(r=>`<div class="idea-row"><span>${escapeHtml(String(r.text).slice(0,90))}</span><small>${label(r)}${r.reply && r.status!=='no' ? ' · ' + escapeHtml(r.reply) : ''}</small></div>`).join('');
+}
+async function flushLocalIdeas(){
+  const pend = (state.ideas||[]).filter(x=>!x.sent); if(!pend.length || !window.claude) return;
+  const c = await ideaDb(); if(!c) return;
+  for(const x of pend){ try{ await c.db.collection('feedback').add({text:x.text, at:x.at, version:x.version, uid:c.uid, status:'open'}); x.sent = true; }catch(e){ return; } }
+  saveState();
+}
 document.getElementById('improveBtn').addEventListener('click', ()=>{
   sndTap(); document.getElementById('improveText').value = state.ideaDraft || '';
   document.getElementById('improveOverlay').classList.remove('hidden');
+  renderMyIdeas();
 });
 document.getElementById('improveClose').onclick = ()=>{ state.ideaDraft = document.getElementById('improveText').value; saveState(); document.getElementById('improveOverlay').classList.add('hidden'); };
 document.getElementById('improveSend').addEventListener('click', async ()=>{
-  const text = document.getElementById('improveText').value.trim();
+  const ta = document.getElementById('improveText'), text = ta.value.trim();
   if(!text){ toast('✏️ Schreib kurz, was besser werden soll'); return; }
-  const msg = `Wortreise v${APP_VERSION} – Verbesserung: ${text}`;
-  try{ await navigator.clipboard.writeText(msg); }catch(e){ try{ const t = document.getElementById('improveText'); t.value = msg; t.select(); document.execCommand('copy'); }catch(e2){} }
-  try{
-    const db = window.claude ? await window.claude.use('db') : null;
-    if(db) db.collection('feedback').add({text:text.slice(0,2000), at:new Date().toISOString(), version:APP_VERSION, lang:currentLang(), level:levelInfo(state.xp).level}).catch(()=>{});
-  }catch(e){}
-  state.ideaDraft = ''; saveState();
-  document.getElementById('improveOverlay').classList.add('hidden');
-  const a = document.createElement('a'); a.href = CLAUDE_CHAT_LINK; a.target = '_blank'; a.rel = 'noopener';
-  document.body.appendChild(a); a.click(); a.remove();
-  toast('📋 Kopiert! Im Claude-Chat einfügen & senden');
+  const entry = {text:text.slice(0,2000), at:new Date().toISOString(), version:APP_VERSION, lang:currentLang(), level:levelInfo(state.xp).level, status:'open'};
+  let saved = false;
+  const c = window.claude ? await ideaDb() : null;
+  if(c){ try{ await c.db.collection('feedback').add({...entry, uid:c.uid}); saved = true; }catch(e){} }
+  if(!saved){ state.ideas = [...(state.ideas||[]).slice(-30), {text:entry.text, at:entry.at, version:APP_VERSION}]; }
+  state.ideaDraft = ''; ta.value = ''; saveState();
+  sndCorrect();
+  toast(saved ? '✅ Danke! Idee gespeichert – wird beim nächsten Update eingebaut' : '📱 Gespeichert – wird übertragen, sobald du die App über den Claude-Link öffnest');
+  renderMyIdeas();
 });
+setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '3.1';
+const APP_VERSION = '3.2';
 const CHANGELOG = [
+  ['3.2', 'App verbessern läuft im Hintergrund: Idee senden, Status sehen (offen · in Arbeit · eingebaut)'],
   ['3.1', 'Neu unter Üben → 🗣️ Reden: Gesprächs-Missionen pro Level (Vokabeln → Zeitung/Radio → Gespräch) und Übungsplatz mit einstellbarer Korrektur'],
   ['3.0', 'App verbessern direkt aus dem Profil · Versionsnummer & „Was ist neu?“'],
   ['2.9', 'Mikrofon gesperrt? „Im Browser öffnen“ nimmt deinen Fortschritt mit'],
