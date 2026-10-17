@@ -563,6 +563,12 @@ body{
 .voice-box .f-input{margin:6px 0;font-size:14px;}
 .rate-row{display:flex;align-items:center;gap:8px;font-size:20px;margin:6px 0;}
 .rate-row input{flex:1;}
+
+.changelog{text-align:left;max-height:55vh;overflow-y:auto;margin:10px 0;}
+.cl-row{display:flex;gap:10px;padding:8px 4px;border-bottom:1px solid #e6ecf0;color:#1d4e63;font-size:15px;line-height:1.3;}
+.cl-row b{flex-shrink:0;width:42px;color:#7b5bff;}
+.cl-row.new{background:#fff8d6;border-radius:10px;}
+#improveText{resize:vertical;}
 </style>
 </head>
 <body>
@@ -780,6 +786,7 @@ body{
       </div>
       <span id="statCoins" hidden></span>
       <button class="btn btn-primary" id="inviteBtn" style="margin-top:10px;">📲 Freunde einladen</button>
+      <div class="adapt-btns"><button class="btn btn-yellow" id="improveBtn">💡 App verbessern</button><button class="btn btn-secondary" id="versionBtn">📜 v<span id="verNum"></span> · Neu</button></div>
     </div>
     <details class="fold"><summary>🛒 Shop <span class="panel-sub">🪙 <span id="shopCoins">0</span> · 💎 <span id="gemCount">0</span></span></summary>
       <div id="shopList"></div><div id="gemShop"></div></details>
@@ -798,7 +805,6 @@ body{
         <button class="btn btn-secondary" id="voiceTest">▶️ Probe hören</button></div>
       <button class="btn btn-secondary" id="soundBtn">🔊 Ton: an</button>
       <button class="btn btn-secondary" id="placementBtn">🧪 Einstufungstest wiederholen</button>
-      <button class="btn btn-secondary" id="ideaBtn">💡 Idee / Fehler melden</button>
       <button class="btn btn-secondary" id="resetProgressBtn">Fortschritt zurücksetzen</button>
       <div class="panel-sub" style="margin:6px 0 12px;color:var(--muted)">⚠️ Ein ausgelassener Tag kostet XP, Münzen, 2 ❤️ und den Streak – außer du hast 🧊 Streak-Schutz.</div></details>
   </section>
@@ -819,6 +825,23 @@ body{
     <div id="penList"></div>
     <button class="btn btn-yellow hidden" id="penRepair">🔧 Streak reparieren</button>
     <button class="btn btn-primary" id="penOk">💪 Jetzt aufholen</button>
+  </div>
+</div>
+<div class="ad-overlay hidden" id="improveOverlay">
+  <div class="ad-card">
+    <div class="intro-title">💡 App verbessern</div>
+    <div class="intro-desc">Was soll besser werden? Idee oder Fehler kurz beschreiben.</div>
+    <textarea id="improveText" class="f-input" rows="4" maxlength="2000" placeholder="z. B. Bei Hör-Regen fallen die Wörter zu schnell …"></textarea>
+    <button class="btn btn-primary" id="improveSend">📋 Kopieren &amp; zu Claude</button>
+    <div class="panel-sub" style="color:var(--muted);margin:6px 0;">Text wird kopiert, Claude öffnet sich – dort einfügen und senden. Danach kommst du über den App-Link zurück.</div>
+    <button class="btn btn-secondary" id="improveClose">Schließen</button>
+  </div>
+</div>
+<div class="ad-overlay hidden" id="versionOverlay">
+  <div class="ad-card">
+    <div class="intro-title">📜 Was ist neu?</div>
+    <div class="changelog" id="changelog"></div>
+    <button class="btn btn-secondary" id="versionClose">Schließen</button>
   </div>
 </div>
 <div class="ad-overlay hidden" id="bragOverlay">
@@ -3723,23 +3746,56 @@ document.getElementById('heartsPill').addEventListener('click', ()=>{
 
 /* ---------- 💡 Verbesserungsideen von unterwegs ---------- */
 let lastScreenBeforeProfile = 'screen-map';
-document.getElementById('ideaBtn').addEventListener('click', async ()=>{
-  const text = (prompt('Was soll besser werden? (Idee oder Fehler – kurz beschreiben)')||'').trim();
-  if(!text) return;
-  const entry = {text:text.slice(0,2000), at:new Date().toISOString(), screen:lastScreenBeforeProfile,
-    lang:currentLang(), difficulty:state.difficulty||'', player:activeProfileId(), level:levelInfo(state.xp).level,
-    ua:navigator.userAgent.slice(0,120)};
+/* ---------- 💡 App verbessern → direkt in den Claude-Chat ---------- */
+const CLAUDE_CHAT_LINK = 'https://claude.ai/code/session_01SXtDS9wmzC6a1p1dzLwgNi';
+document.getElementById('improveBtn').addEventListener('click', ()=>{
+  sndTap(); document.getElementById('improveText').value = state.ideaDraft || '';
+  document.getElementById('improveOverlay').classList.remove('hidden');
+});
+document.getElementById('improveClose').onclick = ()=>{ state.ideaDraft = document.getElementById('improveText').value; saveState(); document.getElementById('improveOverlay').classList.add('hidden'); };
+document.getElementById('improveSend').addEventListener('click', async ()=>{
+  const text = document.getElementById('improveText').value.trim();
+  if(!text){ toast('✏️ Schreib kurz, was besser werden soll'); return; }
+  const msg = `Wortreise v${APP_VERSION} – Verbesserung: ${text}`;
+  try{ await navigator.clipboard.writeText(msg); }catch(e){ try{ const t = document.getElementById('improveText'); t.value = msg; t.select(); document.execCommand('copy'); }catch(e2){} }
   try{
     const db = window.claude ? await window.claude.use('db') : null;
-    if(!db) throw 0;
-    await db.collection('feedback').add(entry);
-    toast('💡 Danke! Gespeichert – Claude kann es beim nächsten Update lesen.');
-  }catch(e){
-    const msg = `Idee für die Sprachlern-App: ${entry.text} (Bildschirm: ${entry.screen}, Sprache: ${entry.lang})`;
-    try{ await navigator.clipboard.writeText(msg); toast('📋 Kopiert – füge es im Claude-Chat ein'); }
-    catch(err){ prompt('Kopiere das und schick es im Claude-Chat:', msg); }
-  }
+    if(db) db.collection('feedback').add({text:text.slice(0,2000), at:new Date().toISOString(), version:APP_VERSION, lang:currentLang(), level:levelInfo(state.xp).level}).catch(()=>{});
+  }catch(e){}
+  state.ideaDraft = ''; saveState();
+  document.getElementById('improveOverlay').classList.add('hidden');
+  const a = document.createElement('a'); a.href = CLAUDE_CHAT_LINK; a.target = '_blank'; a.rel = 'noopener';
+  document.body.appendChild(a); a.click(); a.remove();
+  toast('📋 Kopiert! Im Claude-Chat einfügen & senden');
 });
+
+/* ---------- 📜 Version & Änderungsprotokoll ---------- */
+const APP_VERSION = '3.0';
+const CHANGELOG = [
+  ['3.0', 'App verbessern direkt aus dem Profil · Versionsnummer & „Was ist neu?“'],
+  ['2.9', 'Mikrofon gesperrt? „Im Browser öffnen“ nimmt deinen Fortschritt mit'],
+  ['2.8', 'Bessere Stimmen, keine Emojis/Symbole mehr vorlesen, Stimme & Tempo wählbar'],
+  ['2.7', 'Aussprache-Trainer mit Bewertung pro Wort, eigene Stimme anhören · größere Schrift'],
+  ['2.6', 'Freunde: Chat, Herzen & Münzen schenken, Erfolge zeigen & teilen'],
+  ['2.5', 'Aufgeräumt · Start mit Test oder A1–C1 · Stil-Upgrade · Level-up-Tipps im Fahrmodus'],
+  ['2.4', 'Diamanten, Login-Kalender, Glücksrad, WhatsApp-Einladung, Wolken-Spiel'],
+  ['2.3', 'Spiele-Ecke: Ballon, Hör-Regen, Bilder-Blitz, Puzzle, Tower Defense'],
+  ['2.2', '5 Herzen – alle 20 Minuten wächst eines nach'],
+  ['2.1', 'Spieler-Profile, Speichern im Konto, Strafe bei ausgelassenen Tagen'],
+  ['2.0', 'Fahrmodus: Gespräch & Geschichte, Korrektur, Einstufung B1 · Stufe x/10'],
+  ['1.0', 'Level, 20+ Minispiele, Grammatik, Alltagssätze, Quests, Liga'],
+];
+function renderChangelog(){
+  document.getElementById('changelog').innerHTML = CHANGELOG.map(([v,t],i)=>`<div class="cl-row${i===0?' new':''}"><b>v${v}</b><span>${escapeHtml(t)}</span></div>`).join('');
+}
+document.getElementById('verNum').textContent = APP_VERSION;
+document.getElementById('versionBtn').onclick = ()=>{ sndTap(); renderChangelog(); document.getElementById('versionOverlay').classList.remove('hidden'); };
+document.getElementById('versionClose').onclick = ()=>document.getElementById('versionOverlay').classList.add('hidden');
+function announceVersion(){
+  if(!state.difficulty) return;
+  if(state.seenVersion && state.seenVersion !== APP_VERSION) toast(`✨ Neu in v${APP_VERSION}: ${CHANGELOG[0][1]}`);
+  if(state.seenVersion !== APP_VERSION){ state.seenVersion = APP_VERSION; saveState(); }
+}
 
 /* =========================================================
    📺 WERBUNG SCHAUEN → +1 Herz (max. 5 pro Tag)
@@ -4868,6 +4924,7 @@ function importFromLink(){
 importFromLink();
 ensureDaily(); ensureLeague(); applyAbsencePenalty(); checkAchievements(); saveState(); applyMascot(); updateTopbar();
 if(state.difficulty) setTimeout(maybeShowDaily, 1200);
+setTimeout(announceVersion, 2500);
 if(state.language && state.difficulty){
   renderMap();
   showScreen('screen-map');
