@@ -569,6 +569,48 @@ body{
 .cl-row b{flex-shrink:0;width:42px;color:#7b5bff;}
 .cl-row.new{background:#fff8d6;border-radius:10px;}
 #improveText{resize:vertical;}
+
+/* ===== REDEN ===== */
+.seg-btn{padding:8px 1px;font-size:13.5px;white-space:nowrap;}
+.arc-card.locked{opacity:.5;}
+.talk-free{grid-column:1/-1;background:linear-gradient(145deg,#7b5bff,#4a2fd0);box-shadow:0 4px 0 #2f1c99;}
+#screen-talk{padding:8px 12px;gap:6px;}
+.talk-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:4px 0;min-height:0;}
+.tb{max-width:86%;padding:10px 12px;border-radius:18px;font-size:16px;line-height:1.35;word-wrap:break-word;animation:popIn .25s both;position:relative;}
+.tb.bot{align-self:flex-start;background:#fff;color:#1d4e63;border-bottom-left-radius:6px;padding-right:40px;}
+.tb.me{align-self:flex-end;background:#06d6a0;color:#fff;border-bottom-right-radius:6px;}
+.tb.sys{align-self:center;background:rgba(255,255,255,.14);color:#e8f6ff;font-size:14px;text-align:center;max-width:95%;}
+.tb-hear{position:absolute;right:6px;top:6px;border:none;background:#eef5f8;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:14px;}
+.tb.card{max-width:100%;padding:12px 12px 44px;}
+.tb.card .tb-hear{top:auto;bottom:8px;right:10px;width:auto;border-radius:12px;padding:4px 10px;font-weight:800;}
+.tb.card.article{background:#fffdf5;border:2px solid #e8dfc2;font-family:Georgia,serif;}
+.tb.card.radio{background:linear-gradient(145deg,#e7f1ff,#fff);border:2px solid #bcd6ff;}
+.card-h{font-weight:900;font-size:18px;margin-bottom:6px;}
+.card-t{font-size:16px;line-height:1.45;}
+.tb.quiz{padding-right:12px;}
+.quiz-opts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.quiz-opts .chat-chip{background:#eef5f8;color:#1d4e63;font-size:15px;}
+.chat-chip.right{background:#06d6a0!important;color:#fff!important;}.chat-chip.wrong{background:#ff5d5d!important;color:#fff!important;}
+.fbs{margin-top:8px;display:flex;flex-direction:column;gap:4px;}
+.fb{background:rgba(255,255,255,.95);color:#1d4e63;border-radius:10px;padding:6px 8px;font-size:14px;text-align:left;}
+.fb.g{border-left:4px solid #ff9f1c;}.fb.w{border-left:4px solid #ff5d5d;}.fb.u{border-left:4px solid #7b5bff;}
+.tb.dots{display:flex;gap:5px;padding:14px 16px;}
+.tb.dots span{width:8px;height:8px;border-radius:50%;background:#9fb8c4;animation:bob 1s infinite;}
+.tb.dots span:nth-child(2){animation-delay:.15s;}.tb.dots span:nth-child(3){animation-delay:.3s;}
+.tb.result{align-self:stretch;background:#fff;color:#1d4e63;text-align:center;display:flex;flex-direction:column;gap:6px;}
+.res-stars{font-size:34px;}
+.res-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;}.res-btns .btn{margin:0;}
+.chat-bar .talk-mic{border:none;background:linear-gradient(145deg,#ff6fb0,#ff5d5d);color:#fff;font-size:22px;border-radius:14px;width:52px;cursor:pointer;flex-shrink:0;}
+.chat-bar .talk-mic.on{animation:micPulse 1s infinite;background:#06d6a0;}
+.talk-set{max-height:90vh;overflow-y:auto;text-align:left;}
+.topic-chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0;}
+.topic-chips .chat-chip{background:#eef5f8;color:#1d4e63;}
+.topic-chips .chat-chip.sel{background:#7b5bff;color:#fff;}
+.set-row{margin:10px 0 4px;color:#1d4e63;font-weight:800;font-size:15px;}
+.fb-seg{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:4px;}
+.fb-seg button{border:2px solid #e6ecf0;background:#fff;border-radius:10px;padding:8px 2px;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;color:#1d4e63;}
+.fb-seg button.sel{border-color:#7b5bff;background:#efeaff;}
+.set-check{display:flex;align-items:center;gap:8px;margin:10px 0;color:#1d4e63;font-weight:700;}
 </style>
 </head>
 <body>
@@ -636,7 +678,7 @@ body{
 
   <!-- ===== GRAMMATIK ===== -->
   <section class="screen" id="screen-grammar">
-    <div class="seg"><button class="seg-btn sel" id="segGram">📘 Grammatik</button><button class="seg-btn" id="segPhr">💬 Sätze</button><button class="seg-btn" id="segArc">🎮 Spiele</button></div>
+    <div class="seg"><button class="seg-btn sel" id="segGram">📘 Regeln</button><button class="seg-btn" id="segPhr">💬 Sätze</button><button class="seg-btn" id="segTalk">🗣️ Reden</button><button class="seg-btn" id="segArc">🎮 Spiele</button></div>
     <div class="map-sub" id="grammarSub">Lustige Sätze, echte Regeln</div>
     <div class="path" id="grammarPath"></div>
   </section>
@@ -688,6 +730,15 @@ body{
     <div class="league-list" id="leagueList"></div>
     </div>
     <div id="friendsBox" class="hidden"></div>
+  </section>
+
+  <!-- ===== REDEN ===== -->
+  <section class="screen" id="screen-talk">
+    <div class="chat-head"><button class="back-link" id="talkBack">‹</button>
+      <div class="chat-who"><span class="f-main"><b id="talkTitle"></b><small id="talkStage"></small></span></div>
+      <button class="pron-small" id="talkSet" style="width:44px;height:44px;font-size:20px;">⚙️</button></div>
+    <div class="talk-list" id="talkList"></div>
+    <div class="chat-bar"><button id="talkMic" class="talk-mic">🎤</button><input id="talkInput" maxlength="600" placeholder="Antworten … (oder 🎤)" autocomplete="off"><button id="talkSend">➤</button></div>
   </section>
 
   <!-- ===== CHAT ===== -->
@@ -826,6 +877,9 @@ body{
     <button class="btn btn-yellow hidden" id="penRepair">🔧 Streak reparieren</button>
     <button class="btn btn-primary" id="penOk">💪 Jetzt aufholen</button>
   </div>
+</div>
+<div class="ad-overlay hidden" id="talkSetOverlay">
+  <div class="ad-card talk-set"><div class="intro-title">🎙️ Übungsplatz</div><div id="talkSetBody"></div></div>
 </div>
 <div class="ad-overlay hidden" id="improveOverlay">
   <div class="ad-card">
@@ -1667,14 +1721,16 @@ function goHome(){
   if(session && session.speedTimer){ clearInterval(session.speedTimer); session.speedTimer=null; }
   if(!state.difficulty){ populateDifficultyList(); showScreen('screen-difficulty'); return; }
   clearTimeout(session && session.fbTimer); document.getElementById('feedbackBar').classList.remove('show');
-  if(pendingMode==='grammar' || pendingMode==='phrases' || pendingMode==='arcade'){ practiceTab = pendingMode; renderGrammar(); showScreen('screen-grammar'); setNav('grammar'); }
+  if(['grammar','phrases','arcade','talk'].includes(pendingMode)){ practiceTab = pendingMode; renderGrammar(); showScreen('screen-grammar'); setNav('grammar'); }
   else { renderMap(); showScreen('screen-map'); setNav('map'); }
 }
 function renderGrammar(){
-  const isG = practiceTab==='grammar', isA = practiceTab==='arcade';
+  const isG = practiceTab==='grammar', isA = practiceTab==='arcade', isT = practiceTab==='talk';
   document.getElementById('segGram').classList.toggle('sel', isG);
-  document.getElementById('segPhr').classList.toggle('sel', !isG && !isA);
+  document.getElementById('segPhr').classList.toggle('sel', practiceTab==='phrases');
   document.getElementById('segArc').classList.toggle('sel', isA);
+  document.getElementById('segTalk').classList.toggle('sel', isT);
+  if(isT){ document.getElementById('grammarSub').textContent = `${LANGS[currentLang()].label} · Erst üben, dann reden`; renderTalkList(); return; }
   if(isA){ document.getElementById('grammarSub').textContent = `${LANGS[currentLang()].label} · Spielen & dabei Wörter lernen`; renderArcadeList(); return; }
   const stars = isG ? grammarStars() : phraseStars();
   const container = document.getElementById('grammarPath');
@@ -2678,6 +2734,7 @@ const QUESTS = [
   {id:'lis5', icon:'🎧', text:'Löse 5 Hör-Aufgaben', ev:'listen', target:5, reward:15},
   {id:'arc1', icon:'🎮', text:'Spiele ein Spiel in der Spiele-Ecke', ev:'arcade', target:1, reward:15},
   {id:'pron5', icon:'🎤', text:'Sprich 5 Wörter gut aus (ab 70 %)', ev:'pron', target:5, reward:20, need:()=>!!SpeechRec},
+  {id:'talk3', icon:'🗣️', text:'Sag 3 Sätze am Übungsplatz oder in einer Mission', ev:'talk', target:3, reward:20},
   {id:'fast5', icon:'⏱️', text:'5 richtige Antworten in unter 4 Sek.', ev:'fast', target:5, reward:20},
 ];
 function qDef(id){ return QUESTS.find(q=>q.id===id); }
@@ -3770,8 +3827,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 });
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '3.0';
+const APP_VERSION = '3.1';
 const CHANGELOG = [
+  ['3.1', 'Neu unter Üben → 🗣️ Reden: Gesprächs-Missionen pro Level (Vokabeln → Zeitung/Radio → Gespräch) und Übungsplatz mit einstellbarer Korrektur'],
   ['3.0', 'App verbessern direkt aus dem Profil · Versionsnummer & „Was ist neu?“'],
   ['2.9', 'Mikrofon gesperrt? „Im Browser öffnen“ nimmt deinen Fortschritt mit'],
   ['2.8', 'Bessere Stimmen, keine Emojis/Symbole mehr vorlesen, Stimme & Tempo wählbar'],
@@ -4919,6 +4977,285 @@ function importFromLink(){
     if(progressScore(obj) >= progressScore(state)){ obj.savedAt = Date.now(); adoptState(obj, '✅ Dein Fortschritt wurde übernommen'); saveState(); }
   }catch(e){}
 }
+
+/* =========================================================
+   🗣️ REDEN: Gesprächs-Missionen pro Level & Übungsplatz
+   ========================================================= */
+const TALK_TOPICS = ['📰 Tagesthema','🍝 Essen','✈️ Reisen','💼 Arbeit','⚽ Hobbys','🎬 Filme & Serien','🏡 Österreich','🎲 Überrasch mich'];
+const FB_LEVELS = ['Aus','Selten','Normal','Immer'];
+const FB_POLICY = ['never give this kind of feedback',
+  'only for serious mistakes that make the meaning unclear, at most every fourth turn',
+  'for clear mistakes, at most one item per turn',
+  'for every mistake you notice'];
+const talk = {mode:null, turns:[], mission:null, busy:false, topic:null};
+function talkSettings(){ return state.talkSettings = Object.assign({grammar:2, words:2, upgrade:1, voice:true}, state.talkSettings||{}); }
+function missionStars(){ const l = currentLang(); state.missions = state.missions || {}; return state.missions[l] = state.missions[l] || {}; }
+
+function renderTalkList(){
+  const box = document.getElementById('grammarPath'); box.innerHTML = '';
+  const free = document.createElement('div'); free.className = 'arc-card talk-free';
+  free.innerHTML = '<div class="arc-icon">🎙️</div><div class="arc-name">Übungsplatz</div><div class="arc-desc">Frei reden über jedes Thema – du stellst ein, wie oft korrigiert wird</div>';
+  free.onclick = ()=>{ sndTap(); openTalkSettings(true); };
+  box.appendChild(free);
+  const prog = levelProg(), ms = missionStars();
+  LEVELS.forEach((l,i)=>{
+    const open = prog[i] && prog[i].stars>0;
+    const el = document.createElement('div'); el.className = 'arc-card' + (open ? '' : ' locked');
+    const kind = i%2 ? '📻 Radio' : '📰 Zeitung';
+    el.innerHTML = `<div class="arc-icon">${open ? l.icon : '🔒'}</div><div class="arc-name">${escapeHtml(l.title)}</div><div class="arc-desc">${open ? kind + ' · Gespräch' : 'Erst Level „' + escapeHtml(l.title) + '“ spielen'}</div><div class="arc-hs">${'⭐'.repeat(ms[i]||0) || '☆☆☆'}</div>`;
+    el.onclick = ()=>{ sndTap(); if(!open){ toast('🔒 Spiel zuerst das Level „' + l.title + '“ – dann kannst du darüber reden'); return; } startMission(i); };
+    box.appendChild(el);
+  });
+}
+
+/* ---------- Chat-Bildschirm ---------- */
+function talkOpen(title){
+  talk.turns = []; talk.busy = false;
+  document.getElementById('talkTitle').textContent = title;
+  document.getElementById('talkList').innerHTML = '';
+  document.getElementById('talkStage').textContent = '';
+  showScreen('screen-talk');
+}
+function talkBubble(cls, html){
+  const el = document.createElement('div'); el.className = 'tb ' + cls; el.innerHTML = html;
+  const list = document.getElementById('talkList'); list.appendChild(el); list.scrollTop = list.scrollHeight;
+  return el;
+}
+function talkSay(text, card){
+  const code = LANGS[currentLang()].code;
+  const el = talkBubble('bot' + (card ? ' card ' + card : ''), escapeHtml(text).replace(/\n/g,'<br>') + '<button class="tb-hear">🔊</button>');
+  el.querySelector('.tb-hear').onclick = ()=>speak(text, code);
+  if(talkSettings().voice) speak(text, code);
+  return el;
+}
+function talkThinking(on){
+  let t = document.getElementById('talkDots');
+  if(on && !t){ t = talkBubble('bot dots', '<span></span><span></span><span></span>'); t.id = 'talkDots'; }
+  if(!on && t) t.remove();
+}
+function talkError(e){
+  talkThinking(false); talk.busy = false;
+  const code = e && e.code;
+  const msg = code==='no_backend' ? 'Für Gespräche braucht Flügo Claude: öffne die App als Claude-Link oder trag in ⚙️ deinen eigenen API-Schlüssel ein.'
+    : code==='rate_limited' ? 'Gerade zu viele Anfragen – bitte gleich nochmal.'
+    : code==='not_granted' ? 'Claude wurde für diese Seite nicht erlaubt.'
+    : 'Verbindung zu Claude fehlgeschlagen – nochmal versuchen.';
+  talkBubble('sys', '⚠️ ' + msg);
+}
+function addFeedback(userEl, fb){
+  const items = [];
+  if(fb.grammar) items.push(`<div class="fb g">✏️ <b>Grammatik:</b> ${escapeHtml(fb.grammar)}</div>`);
+  if(fb.word) items.push(`<div class="fb w">🔤 <b>Wort:</b> ${escapeHtml(fb.word)}</div>`);
+  if(fb.upgrade) items.push(`<div class="fb u">⬆️ <b>Eleganter:</b> ${escapeHtml(fb.upgrade)}</div>`);
+  if(items.length) userEl.insertAdjacentHTML('beforeend', '<div class="fbs">' + items.join('') + '</div>');
+}
+function parseTalk(text){
+  const get = k=>{ const m = text.match(new RegExp('^\\s*' + k + ':\\s*(.+)$', 'im')); return m ? m[1].trim() : null; };
+  const reply = (text.split(/REPLY:/i)[1] || text.replace(/^\s*(GRAMMAR|WORD|UPGRADE):.*$/gim,'')).trim();
+  const none = v=> v && !/^(none|-|n\/a|keine?)\.?$/i.test(v) ? v : null;
+  return {grammar:none(get('GRAMMAR')), word:none(get('WORD')), upgrade:none(get('UPGRADE')), reply};
+}
+function talkRules(extra){
+  const L = DRIVE_LANG[currentLang()], s = talkSettings();
+  return `You are "Flügo", a warm, curious ${L} conversation partner for a German-speaking adult from Austria. Learner level: ${myCefr()}. Speak naturally at about that level (a little above is fine).
+${extra}
+Feedback policy for the learner's LAST message:
+- GRAMMAR: ${FB_POLICY[s.grammar]}.
+- WORD (wrong or unnatural word choice): ${FB_POLICY[s.words]}.
+- UPGRADE (same idea said more naturally, one level higher): ${FB_POLICY[s.upgrade]}.
+Ignore punctuation, capitalisation and obvious speech-recognition glitches.
+Answer format, exactly (omit a feedback line when there is nothing to say):
+GRAMMAR: <corrected sentence> — <reason in German, max 10 words>
+WORD: <wrong word> → <better word> — <reason in German, max 10 words>
+UPGRADE: <better phrasing in ${L}>
+REPLY: <your reply in ${L}: 2 to 4 short sentences, at most 60 words, ending with one question>
+No markdown, no emojis, no lists in REPLY.`;
+}
+async function talkSend(text){
+  text = (text||'').trim(); if(!text || talk.busy) return;
+  document.getElementById('talkInput').value = '';
+  const userEl = talkBubble('me', escapeHtml(text));
+  talk.turns.push({role:'user', content:text}); talk.turns = talk.turns.slice(-20);
+  if(talk.mode==='mission') talk.mission.userLines.push(text);
+  talk.busy = true; talkThinking(true);
+  try{
+    const rules = talk.mode==='mission' ? missionRules() : talkRules(`Topic: ${talk.topic}. Today is ${new Date().toDateString()}. Keep a real, relaxed conversation going; share your own opinions and small facts.`);
+    const out = await askClaude(talk.turns, rules, false);
+    talkThinking(false); talk.busy = false;
+    talk.turns.push({role:'assistant', content:out});
+    const r = parseTalk(out);
+    addFeedback(userEl, r);
+    track('talk', 1);
+    if(talk.mode==='mission' && talk.mission.userLines.length >= 3){ talkSay(r.reply.replace(/\?[^?]*$/, '.') ); return finishMission(); }
+    talkSay(r.reply);
+  }catch(e){ talkError(e); }
+}
+
+/* ---------- 🎙️ Übungsplatz ---------- */
+function openTalkSettings(start){
+  const s = talkSettings();
+  const seg = (key)=>`<div class="fb-seg" data-k="${key}">${FB_LEVELS.map((l,i)=>`<button class="${s[key]===i?'sel':''}" data-v="${i}">${l}</button>`).join('')}</div>`;
+  const box = document.getElementById('talkSetBody');
+  box.innerHTML = `
+    ${start ? `<div class="panel-title dark">Worüber reden wir?</div><div class="topic-chips">${TALK_TOPICS.map(t=>`<button class="chat-chip tc">${t}</button>`).join('')}</div>
+      <input id="topicOwn" class="f-input" placeholder="… oder eigenes Thema" maxlength="80">` : ''}
+    <div class="set-row"><span>✏️ Grammatik korrigieren</span>${seg('grammar')}</div>
+    <div class="set-row"><span>🔤 Falsche Wörter</span>${seg('words')}</div>
+    <div class="set-row"><span>⬆️ Eleganter sagen</span>${seg('upgrade')}</div>
+    <label class="set-check"><input type="checkbox" id="talkVoice" ${s.voice?'checked':''}> 🔊 Antworten vorlesen</label>
+    ${!sampleFn ? `<details class="drive-key"><summary>🔑 Eigener Claude-API-Schlüssel</summary><input id="talkKey" type="password" autocomplete="off" placeholder="sk-ant-…" class="f-input"></details>` : ''}
+    <button class="btn btn-primary" id="talkGo">${start ? '🎙️ Los geht\'s' : '✔️ Fertig'}</button>`;
+  box.querySelectorAll('.fb-seg button').forEach(b=>b.onclick = ()=>{
+    const k = b.parentNode.dataset.k; s[k] = +b.dataset.v; saveState();
+    b.parentNode.querySelectorAll('button').forEach(x=>x.classList.toggle('sel', x===b));
+  });
+  let topic = null;
+  box.querySelectorAll('.tc').forEach(b=>b.onclick = ()=>{ topic = b.textContent; box.querySelectorAll('.tc').forEach(x=>x.classList.toggle('sel', x===b)); });
+  document.getElementById('talkVoice').onchange = e=>{ s.voice = e.target.checked; saveState(); };
+  const k = document.getElementById('talkKey');
+  if(k){ k.value = apiKey() || ''; k.onchange = ()=>{ try{ localStorage.setItem(KEY_STORE, k.value.trim()); }catch(e){} anthropicClient = null; }; }
+  document.getElementById('talkGo').onclick = ()=>{
+    document.getElementById('talkSetOverlay').classList.add('hidden');
+    if(!start) return;
+    const own = document.getElementById('topicOwn').value.trim();
+    talk.topic = own || (topic && !topic.includes('Überrasch') ? topic.replace(/^\S+\s/,'') : 'any interesting everyday topic you choose');
+    if(talk.topic==='Tagesthema') talk.topic = 'a typical topic of the day for this date and season (weather, holidays, events, daily life)';
+    startFreeTalk();
+  };
+  document.getElementById('talkSetOverlay').classList.remove('hidden');
+}
+async function startFreeTalk(){
+  touchStreak();
+  talk.mode = 'free'; talk.mission = null;
+  talkOpen('🎙️ Übungsplatz');
+  document.getElementById('talkStage').textContent = 'Frei reden · ' + talk.topic.slice(0,30);
+  talk.busy = true; talkThinking(true);
+  try{
+    const out = await askClaude([{role:'user', content:'[start] Greet me briefly and start the conversation.'}], talkRules(`Topic: ${talk.topic}. Today is ${new Date().toDateString()}.`), false);
+    talkThinking(false); talk.busy = false;
+    talk.turns = [{role:'user', content:'[start]'}, {role:'assistant', content:out}];
+    talkSay(parseTalk(out).reply);
+  }catch(e){ talkError(e); }
+}
+
+/* ---------- 📰 Gesprächs-Mission pro Level ---------- */
+function startMission(i){
+  touchStreak();
+  const words = levelWords(i);
+  talk.mode = 'mission';
+  talk.mission = {i, words, kind: i%2 ? 'radio' : 'article', step:'vocab', vocabOk:0, vocabN:0, userLines:[], story:null};
+  talkOpen('🗣️ ' + LEVELS[i].title);
+  document.getElementById('talkStage').textContent = '① Vokabeln · ② ' + (i%2 ? 'Radio' : 'Zeitung') + ' · ③ Gespräch';
+  talkBubble('sys', '① Kurzer Vokabel-Check – die Wörter brauchst du gleich!');
+  vocabQuestion(shuffle(words).slice(0, Math.min(6, words.length)), 0);
+}
+function vocabQuestion(list, k){
+  const m = talk.mission;
+  if(k >= list.length){
+    talkBubble('sys', `✅ Vokabeln: ${m.vocabOk}/${list.length} richtig`);
+    return loadStory();
+  }
+  const w = list[k], code = LANGS[currentLang()].code;
+  const opts = shuffle([w[0], ...shuffle(m.words.filter(x=>x!==w)).slice(0,2).map(x=>x[0])]);
+  const el = talkBubble('bot quiz', `Was heißt <b>${escapeHtml(w[1])}</b>?<div class="quiz-opts"></div>`);
+  speak(w[1], code);
+  const box = el.querySelector('.quiz-opts');
+  opts.forEach(o=>{
+    const b = document.createElement('button'); b.className = 'chat-chip'; b.textContent = o;
+    b.onclick = ()=>{
+      if(box.dataset.done) return; box.dataset.done = 1; m.vocabN++;
+      const ok = o===w[0]; if(ok){ m.vocabOk++; sndCorrect(); } else sndWrong();
+      b.classList.add(ok ? 'right' : 'wrong');
+      if(!ok) [...box.children].find(x=>x.textContent===w[0]).classList.add('right');
+      setTimeout(()=>vocabQuestion(list, k+1), ok ? 500 : 1200);
+    };
+    box.appendChild(b);
+  });
+}
+async function loadStory(){
+  const m = talk.mission, L = DRIVE_LANG[currentLang()];
+  talkBubble('sys', m.kind==='radio' ? '② 📻 Radio-Durchsage – hör gut zu!' : '② 📰 Zeitungsartikel – lies (oder hör) ihn dir an!');
+  talk.busy = true; talkThinking(true);
+  try{
+    const prompt = `Write a short ${m.kind==='radio' ? 'radio announcement (news, traffic or event announcement, spoken style)' : 'newspaper article (light, interesting local news)'} in ${L} for a learner at level ${myCefr()}.
+Topic area: "${LEVELS[m.i].title}" (German title). It must naturally use at least 5 of these words: ${m.words.map(w=>w[1]).join(', ')}.
+Length: 60 to 100 words. Then one open question that asks the learner's opinion or experience about it.
+Answer as JSON only: {"headline": string, "text": string, "question": string}`;
+    const r = await askClaude([{role:'user', content:prompt}], 'You write short, vivid, level-appropriate learning texts. Reply with JSON only.', true);
+    talkThinking(false); talk.busy = false;
+    m.story = r;
+    const card = talkBubble('bot card ' + m.kind, `<div class="card-h">${m.kind==='radio' ? '📻' : '📰'} ${escapeHtml(r.headline||'')}</div><div class="card-t">${escapeHtml(r.text||'')}</div><button class="tb-hear">🔊 Anhören</button>`);
+    const code = LANGS[currentLang()].code;
+    card.querySelector('.tb-hear').onclick = ()=>speak(r.text, code);
+    if(m.kind==='radio'){ beep(660,0.12,'sine',0.15); setTimeout(()=>speak((r.headline||'') + '. ' + r.text, code), 300); }
+    talkBubble('sys', '③ Jetzt du! Antworte mit 3 Sätzen oder mehr – benutz die neuen Wörter 💬');
+    talk.turns = [{role:'user', content:'[story shown]'}, {role:'assistant', content:'REPLY: ' + r.question}];
+    talkSay(r.question);
+  }catch(e){ talkError(e); }
+}
+function missionRules(){
+  const m = talk.mission, L = DRIVE_LANG[currentLang()];
+  return talkRules(`This is a speaking mission. The learner just read/heard this text:
+"${m.story ? m.story.headline + ': ' + m.story.text : ''}"
+Talk with them about it. Encourage them to use these practised words: ${m.words.map(w=>w[1]).join(', ')}. React to what they say, ask a follow-up question about the text or their own life.`);
+}
+async function finishMission(){
+  const m = talk.mission;
+  talk.busy = true; talkThinking(true);
+  const said = m.userLines.join(' ');
+  const used = m.words.filter(w=>normalizeSpeech(said).includes(normalizeSpeech(w[1]))).map(w=>w[1]);
+  let ev = null;
+  try{
+    ev = await askClaude([{role:'user', content:`Learner level ${myCefr()}. Their ${DRIVE_LANG[currentLang()]} answers in a conversation about a text:\n${m.userLines.map(l=>'- '+l).join('\n')}\nRate communication, grammar and vocabulary. JSON only: {"score": 0-100, "good": "one sentence in German about what went well", "tip": "one concrete tip in German"}`}], 'You are a kind, precise language examiner. JSON only.', true);
+  }catch(e){}
+  talkThinking(false); talk.busy = false;
+  const vocabPct = m.vocabN ? m.vocabOk/m.vocabN : 0;
+  const score = Math.round(((ev && +ev.score) || 60) * 0.6 + vocabPct*20 + Math.min(1, used.length/4)*20);
+  const stars = score>=85 ? 3 : score>=65 ? 2 : 1;
+  const ms = missionStars(); const better = stars > (ms[m.i]||0); if(better) ms[m.i] = stars;
+  const xp = addXP(10 + stars*5); state.coins += 5 + stars*5;
+  track('lesson', 1); checkAchievements(); saveState(); updateTopbar();
+  if(stars===3){ launchConfetti(); sndLevelUp(); }
+  const el = talkBubble('result', `<div class="res-stars">${'⭐'.repeat(stars)}${'☆'.repeat(3-stars)}</div>
+    <div><b>${score} Punkte</b> · +${xp} XP · +${5+stars*5} 🪙</div>
+    <div>📚 Vokabeln ${m.vocabOk}/${m.vocabN} · 💬 Benutzt: ${used.length ? used.map(escapeHtml).join(', ') : '–'}</div>
+    ${ev && ev.good ? `<div>👍 ${escapeHtml(ev.good)}</div>` : ''}${ev && ev.tip ? `<div>💡 ${escapeHtml(ev.tip)}</div>` : ''}
+    <div class="res-btns"><button class="btn btn-primary" id="misAgain">🔁 Nochmal</button><button class="btn btn-secondary" id="misBack">Zurück</button></div>`);
+  el.querySelector('#misAgain').onclick = ()=>startMission(m.i);
+  el.querySelector('#misBack').onclick = leaveTalk;
+}
+
+/* ---------- Eingabe: Sprechen oder Tippen ---------- */
+function recognizeOnce(code){
+  return new Promise((resolve, reject)=>{
+    if(!SpeechRec) return reject('unsupported');
+    const rec = new SpeechRec(); rec.lang = code; rec.interimResults = false; rec.maxAlternatives = 1;
+    let got = false;
+    rec.onresult = e=>{ got = true; resolve(e.results[0][0].transcript); };
+    rec.onerror = e=>{ got = true; reject(e.error || 'error'); };
+    rec.onend = ()=>{ if(!got) reject('no-speech'); };
+    try{ rec.start(); }catch(e){ reject('start'); }
+  });
+}
+document.getElementById('talkMic').addEventListener('click', async ()=>{
+  const b = document.getElementById('talkMic'); if(b.classList.contains('on') || talk.busy) return;
+  try{ speechSynthesis.cancel(); }catch(e){}
+  b.classList.add('on');
+  try{ const t = await recognizeOnce(LANGS[currentLang()].code); b.classList.remove('on'); talkSend(t); }
+  catch(err){
+    b.classList.remove('on');
+    if(err==='not-allowed' || err==='service-not-allowed' || err==='start' || err==='unsupported'){
+      const s = talkBubble('sys', '🎤 Mikrofon hier nicht verfügbar – tippe deine Antwort' + (window.claude ? ' oder <button class="chat-chip ob">🌐 Im Browser öffnen</button>' : '.'));
+      const ob = s.querySelector('.ob'); if(ob) ob.onclick = openInBrowser;
+    } else toast('🤔 Nichts gehört – nochmal versuchen');
+  }
+});
+document.getElementById('talkSend').addEventListener('click', ()=>talkSend(document.getElementById('talkInput').value));
+document.getElementById('talkInput').addEventListener('keydown', e=>{ if(e.key==='Enter') talkSend(e.target.value); });
+document.getElementById('talkSet').addEventListener('click', ()=>openTalkSettings(false));
+function leaveTalk(){ try{ speechSynthesis.cancel(); }catch(e){} talk.busy = false; practiceTab = 'talk'; pendingMode = 'talk'; renderGrammar(); showScreen('screen-grammar'); setNav('grammar'); }
+document.getElementById('talkBack').addEventListener('click', leaveTalk);
+document.getElementById('segTalk').addEventListener('click', ()=>{ sndTap(); practiceTab = 'talk'; pendingMode = 'talk'; renderGrammar(); });
 
 /* ---------- INIT ---------- */
 importFromLink();
