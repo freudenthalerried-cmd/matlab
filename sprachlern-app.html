@@ -730,6 +730,35 @@ body{background:radial-gradient(ellipse at 50% 0%,#4a331e 0%,#2a1c11 55%,#1c130d
 .camp-story{font-style:italic;color:#6b5236;margin:6px 0;line-height:1.35;}
 .camp-say{background:#fbf3df;border:2px solid #c9a86a;border-radius:14px;padding:8px 10px;color:#3b2a1a;margin:8px 0;line-height:1.35;}
 .camp-goal{font-weight:900;color:#8a3b52;margin:6px 0 10px;}
+
+/* ===== MÄRCHENSTUNDE ===== */
+#screen-story{padding:8px 12px;gap:8px;}
+.story-h{color:#f4e7c9;font-family:'Cinzel',Georgia,serif;font-size:18px;}
+.tale-shelf{display:grid;grid-template-columns:1fr 1fr;gap:10px;overflow-y:auto;}
+.tale-card{border:2px solid #c9a86a;border-radius:16px;background:linear-gradient(160deg,#f6ead0,#e9d6ab);color:#3b2a1a;padding:14px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;font-family:inherit;box-shadow:0 4px 0 #8a6a40;}
+.tale-card span{font-size:40px;}.tale-card b{font-family:'Cinzel',Georgia,serif;font-size:14px;text-align:center;}
+.tale-card small{color:#5f9a3e;font-weight:800;}
+.tale-card.new{background:linear-gradient(160deg,#8a3b52,#5e2236);color:#fbeed0;border-color:#3f1524;}
+.tale-card.new small{color:#e8d6ae;}
+.tale-wait{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;gap:8px;color:#f4e7c9;text-align:center;padding:20px;}
+.story-stage{flex:1;display:flex;flex-direction:column;min-height:0;gap:6px;}
+.story-top{display:flex;align-items:center;gap:8px;color:#f4e7c9;font-family:'Cinzel',Georgia,serif;font-size:17px;}
+.story-text{flex:1;overflow-y:auto;background:linear-gradient(160deg,#fbf3df,#efdcb0);border:2px solid #c9a86a;border-radius:16px;padding:12px 14px;color:#3b2a1a;}
+.st-s{margin:0 0 10px;padding:6px 8px;border-radius:10px;cursor:pointer;transition:background .3s;}
+.st-t{display:block;font-size:18px;line-height:1.4;font-family:Georgia,serif;}
+.st-de{display:block;font-size:14px;color:#7d6a52;font-style:italic;margin-top:2px;}
+.no-de .st-de{display:none;}
+.st-s.cur{background:#ffe9a8;box-shadow:0 0 0 2px #e0b04a;}
+.st-s.past{opacity:.6;}
+.story-ctrl{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.story-ctrl button{border:none;border-radius:14px;padding:12px 0;font-size:22px;background:linear-gradient(180deg,#8c6a45,#6b4d2f);color:#fff;box-shadow:0 4px 0 #3e2b19;cursor:pointer;}
+.story-ctrl #storyPlay{background:linear-gradient(180deg,#6fae48,#4b7d30);box-shadow:0 4px 0 #2f4f1d;}
+.story-ctrl #storyDe:not(.on){opacity:.5;}
+.story-quiz{background:#fbf3df;border:2px solid #c9a86a;border-radius:16px;padding:10px;color:#3b2a1a;}
+.sq-end{font-family:'Cinzel',Georgia,serif;font-weight:900;text-align:center;font-size:18px;margin-bottom:6px;}
+.sq-q{margin:8px 0;}.sq-opts{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
+.sq-opts .chat-chip{background:#efe0bf;color:#3b2a1a;}
+.tale-entry{background:linear-gradient(160deg,#3f6f8f,#2b4f68);box-shadow:0 4px 0 #1c3446;}
 </style>
 </head>
 <body>
@@ -857,6 +886,18 @@ body{background:radial-gradient(ellipse at 50% 0%,#4a331e 0%,#2a1c11 55%,#1c130d
   <section class="screen" id="screen-campaign">
     <div class="seg map-seg"><button class="seg-btn" id="segLevels2">🗺️ Level</button><button class="seg-btn sel">⚔️ Abenteuer</button></div>
     <div class="camp-path" id="campPath"></div>
+  </section>
+
+  <!-- ===== MÄRCHENSTUNDE ===== -->
+  <section class="screen" id="screen-story">
+    <div class="chat-head"><button class="back-link" id="storyBack">‹</button><b class="story-h">📚 Märchenstunde</b></div>
+    <div class="tale-shelf" id="storyShelf"></div>
+    <div class="story-stage hidden" id="storyStage">
+      <div class="story-top"><div id="storyDr"></div><b id="storyTitle"></b></div>
+      <div class="story-text" id="storyText"></div>
+      <div class="story-quiz hidden" id="storyQuiz"></div>
+      <div class="story-ctrl"><button id="storyPrev">⏮</button><button id="storyPlay">⏸</button><button id="storyNext">⏭</button><button id="storyDe" class="on">🇩🇪</button></div>
+    </div>
   </section>
 
   <!-- ===== REDEN ===== -->
@@ -1807,6 +1848,7 @@ function showScreen(id){
   document.getElementById(id).classList.add('active');
   document.querySelector('.bottom-nav').style.display = ['screen-map','screen-stats','screen-grammar','screen-quests','screen-league','screen-campaign'].includes(id) ? 'flex' : 'none';
   try{ placeBuddy(id); }catch(e){}
+  try{ if(id!=='screen-story' && story.playing) stopTale(); }catch(e){}
   if(typeof updateQuestDot==='function') updateQuestDot();
   if(id==='screen-gameover' && typeof updateGameoverScreen==='function') updateGameoverScreen();
 }
@@ -4041,8 +4083,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '3.8';
+const APP_VERSION = '3.9';
 const CHANGELOG = [
+  ['3.9', '📚 Märchenstunde: Flügo liest Märchen vor (Satz für Satz, Übersetzung, Quiz) – eingebaut oder neu erfunden'],
   ['3.8', '⚔️ Abenteuer-Kampagne: 5 Kapitel mit Geschichte, Lektionen, Spiele, Gespräche und Boss-Kämpfe'],
   ['3.7', 'Zurück-Taste des Handys geht innerhalb der App zurück (schließt Fenster, zurück zur Karte), zweimal auf der Startseite = verlassen'],
   ['3.6', 'Neuer Drache mit Flügeln & Schattierung – fliegt am Rand, spricht dich an; Tipp = Sprach-Gespräch mit Korrekturen'],
@@ -5206,6 +5249,10 @@ function renderTalkList(){
   free.innerHTML = '<div class="arc-icon">🎙️</div><div class="arc-name">Übungsplatz</div><div class="arc-desc">Frei reden über jedes Thema – du stellst ein, wie oft korrigiert wird</div>';
   free.onclick = ()=>{ sndTap(); openTalkSettings(true); };
   box.appendChild(free);
+  const tale = document.createElement('div'); tale.className = 'arc-card talk-free tale-entry';
+  tale.innerHTML = `<div class="arc-icon">📚</div><div class="arc-name">Märchenstunde</div><div class="arc-desc">${escapeHtml(dragon().name)} liest dir Märchen vor – Satz für Satz, mit Übersetzung</div>`;
+  tale.onclick = ()=>{ sndTap(); openStoryShelf(); };
+  box.appendChild(tale);
   const prog = levelProg(), ms = missionStars();
   LEVELS.forEach((l,i)=>{
     const open = prog[i] && prog[i].stars>0;
@@ -5645,7 +5692,7 @@ function renderDashTip(){
 const buddy = {turns:[], busy:false, greeted:false, voice:false, micLang:'target', screen:null, x:null, y:null, sayN:0};
 const NAV_SCREENS = ['screen-map','screen-stats','screen-grammar','screen-quests','screen-league','screen-campaign'];
 const BUDDY_LINES = {
-  en:['Can I help you?','Need a hint? Tap me!','Let\'s practice together!','You\'re doing great!','Want to chat with me?','Practice makes perfect!','Tap me and let\'s talk!','Shall we learn a new word?','I believe in you!','Ready for an adventure?'],
+  en:['Shall I read you a fairy tale?','Can I help you?','Need a hint? Tap me!','Let\'s practice together!','You\'re doing great!','Want to chat with me?','Practice makes perfect!','Tap me and let\'s talk!','Shall we learn a new word?','I believe in you!','Ready for an adventure?'],
   es:['¿Te puedo ayudar?','¿Necesitas una pista? ¡Tócame!','¡Practiquemos juntos!','¡Lo estás haciendo genial!','¿Hablamos un rato?','¡La práctica hace al maestro!'],
   fr:['Je peux t\'aider ?','Besoin d\'un indice ? Touche-moi !','On s\'entraîne ensemble ?','Tu te débrouilles super bien !','On discute un peu ?','C\'est en forgeant qu\'on devient forgeron !'],
   it:['Posso aiutarti?','Ti serve un aiuto? Toccami!','Esercitiamoci insieme!','Stai andando alla grande!','Facciamo due chiacchiere?','La pratica rende perfetti!'],
@@ -5762,6 +5809,7 @@ function openBuddy(){
   const quick = buddy.micLang==='target'
     ? ({en:['How are you?','Tell me a story!','What did you do today?','Teach me a new word!'], es:['¿Qué tal?','¡Cuéntame una historia!'], fr:['Ça va ?','Raconte-moi une histoire !'], it:['Come stai?','Raccontami una storia!']}[currentLang()] || [])
     : ['Was soll ich heute üben?','Erklär mir eine Grammatikregel','Was heißt „Fernweh“?'];
+  const tb = document.createElement('button'); tb.className = 'chat-chip'; tb.textContent = '📚 Lies mir ein Märchen vor!'; tb.onclick = ()=>{ closeBuddy(); openStoryShelf(); }; q.appendChild(tb);
   quick.forEach(t=>{ const b = document.createElement('button'); b.className = 'chat-chip'; b.textContent = t; b.onclick = ()=>buddySend(t); q.appendChild(b); });
   updateBuddyControls();
   if(!buddy.greeted){
@@ -5880,6 +5928,7 @@ function handleBack(){
     case 'screen-arcade': return click('arcQuit');
     case 'screen-talk': return click('talkBack');
     case 'screen-chat': return click('chatBack');
+    case 'screen-story': return click('storyBack');
     case 'screen-drive': return click('driveBack');
     case 'screen-difficulty': return state.language ? click('diffBackBtn') : false;
     case 'screen-language': if(state.difficulty){ goHome(); return true; } return false;
@@ -6050,6 +6099,145 @@ document.getElementById('segCamp').addEventListener('click', ()=>{ sndTap(); ope
 document.getElementById('segLevels').addEventListener('click', ()=>{ sndTap(); pendingMode = 'vocab'; renderMap(); showScreen('screen-map'); setNav('map'); });
 document.getElementById('segLevels2').addEventListener('click', ()=>{ sndTap(); pendingMode = 'vocab'; renderMap(); showScreen('screen-map'); setNav('map'); });
 addEventListener('resize', ()=>{ if(document.getElementById('screen-campaign').classList.contains('active')) drawCampLine(); });
+
+/* =========================================================
+   📚 MÄRCHENSTUNDE: Flügo liest vor (Satz für Satz, mit Übersetzung & Quiz)
+   ========================================================= */
+const TALES_EN = [
+  {icon:'🐷', title:'The Three Little Pigs', s:[
+    ['Once upon a time, there were three little pigs.','Es waren einmal drei kleine Schweinchen.'],
+    ['The first pig built a house of straw.','Das erste Schweinchen baute ein Haus aus Stroh.'],
+    ['The second pig built a house of sticks.','Das zweite Schweinchen baute ein Haus aus Stöcken.'],
+    ['The third pig worked hard and built a house of bricks.','Das dritte Schweinchen arbeitete fleißig und baute ein Haus aus Ziegeln.'],
+    ['One day, a big bad wolf came along.','Eines Tages kam ein großer böser Wolf vorbei.'],
+    ['He huffed and puffed and blew the straw house down.','Er pustete und blies das Strohhaus um.'],
+    ['Then he blew the house of sticks down, too.','Dann blies er auch das Haus aus Stöcken um.'],
+    ['The two pigs ran to their brother\'s brick house.','Die zwei Schweinchen rannten zum Ziegelhaus ihres Bruders.'],
+    ['The wolf huffed and puffed, but the house did not fall.','Der Wolf pustete und blies, aber das Haus fiel nicht um.'],
+    ['The three little pigs were safe and happy.','Die drei kleinen Schweinchen waren sicher und glücklich.']],
+   q:[['Woraus war das stärkste Haus?',['Ziegel','Stroh','Stöcke'],0],['Wer wollte die Häuser umblasen?',['der Wolf','der Bär','der Fuchs'],0]]},
+  {icon:'🧺', title:'Little Red Riding Hood', s:[
+    ['A little girl always wore a red hood.','Ein kleines Mädchen trug immer eine rote Kapuze.'],
+    ['One morning, she took a basket of cake to her grandmother.','Eines Morgens brachte sie ihrer Großmutter einen Korb mit Kuchen.'],
+    ['In the forest, she met a clever wolf.','Im Wald traf sie einen schlauen Wolf.'],
+    ['The wolf ran ahead to grandmother\'s house.','Der Wolf lief voraus zum Haus der Großmutter.'],
+    ['He put on her nightcap and lay in her bed.','Er setzte ihre Nachtmütze auf und legte sich in ihr Bett.'],
+    ['"Grandmother, what big eyes you have!" said the girl.','„Großmutter, was hast du für große Augen!“, sagte das Mädchen.'],
+    ['"All the better to see you with," said the wolf.','„Damit ich dich besser sehen kann“, sagte der Wolf.'],
+    ['Just then, a brave hunter came in.','Genau da kam ein mutiger Jäger herein.'],
+    ['He chased the wolf far away.','Er jagte den Wolf weit weg.'],
+    ['Grandmother and the girl ate cake together.','Die Großmutter und das Mädchen aßen zusammen Kuchen.']],
+   q:[['Was war im Korb?',['Kuchen','Äpfel','Brot'],0],['Wer hat geholfen?',['ein Jäger','ein Bäcker','ein König'],0]]},
+  {icon:'🐢', title:'The Tortoise and the Hare', s:[
+    ['A fast hare laughed at a slow tortoise.','Ein schneller Hase lachte über eine langsame Schildkröte.'],
+    ['"Let\'s have a race," said the tortoise.','„Lass uns ein Wettrennen machen“, sagte die Schildkröte.'],
+    ['The hare ran very fast and was soon far ahead.','Der Hase rannte sehr schnell und war bald weit vorne.'],
+    ['He felt sure he would win, so he took a nap.','Er war sich sicher zu gewinnen, also machte er ein Nickerchen.'],
+    ['The tortoise walked slowly, step by step.','Die Schildkröte ging langsam, Schritt für Schritt.'],
+    ['She never stopped.','Sie blieb nie stehen.'],
+    ['When the hare woke up, it was too late.','Als der Hase aufwachte, war es zu spät.'],
+    ['The tortoise had already crossed the finish line.','Die Schildkröte war schon durchs Ziel gegangen.'],
+    ['Slow and steady wins the race.','Langsam und beständig gewinnt das Rennen.']],
+   q:[['Warum verlor der Hase?',['Er schlief ein','Er verlief sich','Er war krank'],0],['Wer gewann?',['die Schildkröte','der Hase','der Fuchs'],0]]},
+  {icon:'🐉', title:'The Little Dragon and the Dark', s:[
+    ['High in the mountains lived a little dragon.','Hoch in den Bergen lebte ein kleiner Drache.'],
+    ['He could fly, but he was afraid of the dark.','Er konnte fliegen, aber er hatte Angst im Dunkeln.'],
+    ['Every night, he hid under his wing.','Jede Nacht versteckte er sich unter seinem Flügel.'],
+    ['One night, a small firefly knocked on his cave.','Eines Nachts klopfte ein kleines Glühwürmchen an seine Höhle.'],
+    ['"Come outside," said the firefly. "The night is beautiful!"','„Komm raus“, sagte das Glühwürmchen. „Die Nacht ist wunderschön!“'],
+    ['The little dragon took a deep breath and stepped outside.','Der kleine Drache atmete tief durch und trat hinaus.'],
+    ['The sky was full of stars, and the moon was smiling.','Der Himmel war voller Sterne, und der Mond lächelte.'],
+    ['He breathed a tiny flame and laughed.','Er hauchte eine winzige Flamme und lachte.'],
+    ['From that night on, he loved the dark sky.','Von dieser Nacht an liebte er den dunklen Himmel.']],
+   q:[['Wovor hatte der Drache Angst?',['vor der Dunkelheit','vor Wasser','vor Katzen'],0],['Wer half ihm?',['ein Glühwürmchen','eine Eule','ein Ritter'],0]]},
+];
+const story = {tale:null, i:0, playing:false, showDe:true, token:0};
+function openStoryShelf(){
+  const box = document.getElementById('storyShelf'); box.innerHTML = '';
+  const lang = currentLang();
+  if(lang==='en') TALES_EN.forEach(t=>{
+    const b = document.createElement('button'); b.className = 'tale-card';
+    b.innerHTML = `<span>${t.icon}</span><b>${t.title}</b>${(state.talesRead||[]).includes(t.title) ? '<small>✅ gehört</small>' : ''}`;
+    b.onclick = ()=>startTale(t); box.appendChild(b);
+  });
+  const nb = document.createElement('button'); nb.className = 'tale-card new';
+  nb.innerHTML = `<span>✨</span><b>${lang==='en' ? 'Neues Märchen erfinden' : 'Märchen erfinden lassen'}</b><small>Flügo denkt sich eins aus</small>`;
+  nb.onclick = makeTale; box.appendChild(nb);
+  document.getElementById('storyStage').classList.add('hidden');
+  box.classList.remove('hidden');
+  showScreen('screen-story');
+}
+async function makeTale(){
+  const box = document.getElementById('storyShelf');
+  box.innerHTML = `<div class="tale-wait">${dragonSVG({size:90, mood:'happy'})}<div>📖 ${escapeHtml(dragon().name)} denkt sich ein Märchen aus …</div></div>`;
+  const L = DRIVE_LANG[currentLang()];
+  const words = shuffle(arcadePool()).slice(0,8).map(w=>w[1]).join(', ');
+  try{
+    const r = await askClaude([{role:'user', content:`Write a short, warm children's fairy tale in ${L} for an adult learner at level ${myCefr()}. 9 to 12 short sentences, simple and vivid, with a happy ending. Try to use some of these words: ${words}.
+JSON only: {"title": string, "icon": one emoji, "s": [[sentence in ${L}, German translation], ...], "q": [[question in German, [3 short German answer options], index of correct option], ...2 questions]}`}], 'You write gentle, level-appropriate fairy tales for language learners. JSON only.', true);
+    if(!r || !Array.isArray(r.s) || !r.s.length) throw 0;
+    startTale({icon:r.icon||'📖', title:r.title||'Märchen', s:r.s, q:Array.isArray(r.q) ? r.q : []});
+  }catch(e){
+    box.innerHTML = '<div class="tale-wait">⚠️ Für neue Märchen braucht Flügo Claude (Claude-Link oder API-Schlüssel).</div>';
+    const back = document.createElement('button'); back.className = 'btn btn-secondary'; back.textContent = 'Zurück'; back.onclick = openStoryShelf; box.appendChild(back);
+  }
+}
+function startTale(t){
+  touchStreak();
+  Object.assign(story, {tale:t, i:0, playing:true}); story.token++;
+  document.getElementById('storyShelf').classList.add('hidden');
+  document.getElementById('storyStage').classList.remove('hidden');
+  document.getElementById('storyTitle').textContent = t.icon + ' ' + t.title;
+  document.getElementById('storyDr').innerHTML = dragonSVG({size:84, mood:'happy'});
+  document.getElementById('storyText').innerHTML = t.s.map((p,k)=>`<p class="st-s" data-k="${k}"><span class="st-t"></span><span class="st-de"></span></p>`).join('');
+  document.querySelectorAll('#storyText .st-s').forEach((el,k)=>{
+    el.querySelector('.st-t').textContent = t.s[k][0]; el.querySelector('.st-de').textContent = t.s[k][1] || '';
+    el.onclick = ()=>{ story.i = k; story.playing = true; story.token++; readTale(); };
+  });
+  document.getElementById('storyText').classList.toggle('no-de', !story.showDe);
+  updateStoryBtns(); readTale();
+}
+function updateStoryBtns(){
+  document.getElementById('storyPlay').textContent = story.playing ? '⏸' : '▶️';
+  document.getElementById('storyDe').classList.toggle('on', story.showDe);
+}
+async function readTale(){
+  const t = story.tale, my = ++story.token, code = LANGS[currentLang()].code;
+  while(story.playing && my===story.token && story.i < t.s.length && document.getElementById('screen-story').classList.contains('active')){
+    document.querySelectorAll('#storyText .st-s').forEach((el,k)=>{ el.classList.toggle('cur', k===story.i); el.classList.toggle('past', k<story.i); });
+    const cur = document.querySelector('#storyText .st-s.cur'); if(cur) cur.scrollIntoView({block:'center', behavior:'smooth'});
+    document.getElementById('storyDr').innerHTML = dragonSVG({size:84, mood: story.i%3===2 ? 'wow' : 'happy'});
+    await speakAsync(t.s[story.i][0], code, 0.85);
+    if(my!==story.token || !story.playing) return;
+    await new Promise(r=>setTimeout(r, 450));
+    story.i++;
+  }
+  if(my===story.token && story.i >= t.s.length) taleQuiz();
+}
+function taleQuiz(){
+  const t = story.tale; story.playing = false; updateStoryBtns();
+  state.talesRead = [...new Set([...(state.talesRead||[]), t.title])];
+  const xp = addXP(10); track('listen', 3); saveState(); updateTopbar();
+  const box = document.getElementById('storyQuiz'); box.innerHTML = '';
+  box.classList.remove('hidden');
+  box.insertAdjacentHTML('beforeend', `<div class="sq-end">🌙 The End · +${xp} XP</div>`);
+  (t.q||[]).forEach(([q, opts, a])=>{
+    const row = document.createElement('div'); row.className = 'sq-q';
+    row.innerHTML = `<b></b><div class="sq-opts"></div>`; row.querySelector('b').textContent = q;
+    shuffle(opts.map((o,k)=>[o,k])).forEach(([o,k])=>{ const b = document.createElement('button'); b.className = 'chat-chip'; b.textContent = o; b.dataset.k = k;
+      b.onclick = ()=>{ if(row.dataset.done) return; row.dataset.done = 1; if(k===a){ b.classList.add('right'); sndCorrect(); state.coins += 5; saveState(); updateTopbar(); } else { b.classList.add('wrong'); row.querySelector(`button[data-k="${a}"]`).classList.add('right'); sndWrong(); } };
+      row.querySelector('.sq-opts').appendChild(b); });
+    box.appendChild(row);
+  });
+  const again = document.createElement('button'); again.className = 'btn btn-secondary'; again.textContent = '📚 Noch ein Märchen'; again.onclick = openStoryShelf; box.appendChild(again);
+  box.scrollIntoView({block:'end', behavior:'smooth'});
+}
+function stopTale(){ story.playing = false; story.token++; try{ speechSynthesis.cancel(); }catch(e){} }
+document.getElementById('storyPlay').onclick = ()=>{ story.playing = !story.playing; updateStoryBtns(); if(story.playing){ if(story.i >= story.tale.s.length) story.i = 0; document.getElementById('storyQuiz').classList.add('hidden'); readTale(); } else stopTale(); };
+document.getElementById('storyPrev').onclick = ()=>{ story.i = Math.max(0, story.i-1); story.playing = true; updateStoryBtns(); readTale(); };
+document.getElementById('storyNext').onclick = ()=>{ story.i = Math.min(story.tale.s.length-1, story.i+1); story.playing = true; updateStoryBtns(); readTale(); };
+document.getElementById('storyDe').onclick = ()=>{ story.showDe = !story.showDe; document.getElementById('storyText').classList.toggle('no-de', !story.showDe); updateStoryBtns(); };
+document.getElementById('storyBack').onclick = ()=>{ stopTale(); if(!document.getElementById('storyStage').classList.contains('hidden')) openStoryShelf(); else { practiceTab = 'talk'; pendingMode = 'talk'; renderGrammar(); showScreen('screen-grammar'); setNav('grammar'); } };
 
 /* ---------- INIT ---------- */
 importFromLink();
