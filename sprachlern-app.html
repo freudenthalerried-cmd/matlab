@@ -699,6 +699,37 @@ body{background:radial-gradient(ellipse at 50% 0%,#4a331e 0%,#2a1c11 55%,#1c130d
 .quest.go:active{transform:scale(.98);}
 .toast{background:#f6ead0;border:2px solid #c9a86a;color:#3b2a1a;}
 .tb.bot,.bb.bot,.bubble.them{background:#fbf3df;}
+
+/* ===== ABENTEUER ===== */
+.map-seg{margin:6px 0 2px;}
+.camp-path{position:relative;flex:1;overflow-y:auto;padding:6px 4px 90px;min-height:0;}
+.camp-line{position:absolute;left:0;top:0;pointer-events:none;z-index:0;}
+.camp-line .cl-base{fill:none;stroke:rgba(0,0,0,.35);stroke-width:12;stroke-linecap:round;}
+.camp-line .cl-dash{fill:none;stroke:#e0b04a;stroke-width:4;stroke-dasharray:2 12;stroke-linecap:round;opacity:.8;}
+.camp-ch{position:relative;z-index:1;display:flex;gap:10px;align-items:center;margin:14px 2px 8px;padding:10px 12px;border-radius:16px;background:linear-gradient(160deg,#f6ead0,#e9d6ab);color:#3b2a1a;border:2px solid #c9a86a;box-shadow:0 6px 16px rgba(0,0,0,.35);}
+.camp-ch.locked{filter:grayscale(.7);opacity:.7;}
+.camp-ch b{font-family:'Cinzel',Georgia,serif;font-size:16px;display:block;}
+.camp-ch small{font-size:13px;color:#6b5236;line-height:1.3;display:block;}
+.cc-icon{font-size:34px;}
+.camp-node{position:relative;z-index:1;width:110px;display:flex;flex-direction:column;align-items:center;margin:6px 0;cursor:pointer;}
+.camp-node.pos0{margin-left:6%;}.camp-node.pos1{margin-left:calc(50% - 55px);}.camp-node.pos2{margin-left:calc(94% - 110px);}
+.cn-disc{width:68px;height:68px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;background:radial-gradient(circle at 40% 35%,#f8e7b8,#c9902f);border:4px solid #7a5532;box-shadow:0 5px 0 #3e2b19;}
+.camp-node.done .cn-disc{background:radial-gradient(circle at 40% 35%,#d7f0b8,#5f9a3e);}
+.camp-node.locked .cn-disc{background:#5a4a3a;filter:grayscale(1);opacity:.7;}
+.camp-node.current .cn-disc{animation:campGlow 1.4s ease-in-out infinite;}
+@keyframes campGlow{0%,100%{box-shadow:0 5px 0 #3e2b19,0 0 0 0 rgba(224,176,74,.7);}50%{box-shadow:0 5px 0 #3e2b19,0 0 0 14px rgba(224,176,74,0);}}
+.camp-node.boss .cn-disc{width:84px;height:84px;font-size:42px;background:radial-gradient(circle at 40% 35%,#f3b0a0,#8b2f3a);border-color:#3f1524;}
+.camp-node.boss.done .cn-disc{background:radial-gradient(circle at 40% 35%,#ffe9a8,#c9902f);}
+.camp-node.bonus .cn-disc{width:56px;height:56px;font-size:26px;border-style:dashed;}
+.cn-label{margin-top:4px;font-weight:800;font-size:13px;color:#f4e7c9;text-align:center;text-shadow:0 1px 2px #000;line-height:1.15;}
+.cn-stars{font-size:13px;min-height:16px;}
+.cn-dragon{position:absolute;top:-14px;right:-6px;animation:buddyFloat 2s ease-in-out infinite;}
+.camp-card{text-align:center;max-height:92vh;overflow-y:auto;}
+.camp-dr{display:flex;justify-content:center;}
+.camp-ch-t{font-family:'Cinzel',Georgia,serif;font-weight:900;font-size:18px;color:#4a3220;margin:4px 0;}
+.camp-story{font-style:italic;color:#6b5236;margin:6px 0;line-height:1.35;}
+.camp-say{background:#fbf3df;border:2px solid #c9a86a;border-radius:14px;padding:8px 10px;color:#3b2a1a;margin:8px 0;line-height:1.35;}
+.camp-goal{font-weight:900;color:#8a3b52;margin:6px 0 10px;}
 </style>
 </head>
 <body>
@@ -762,6 +793,7 @@ body{background:radial-gradient(ellipse at 50% 0%,#4a331e 0%,#2a1c11 55%,#1c130d
         <span class="diff-chip" id="diffChip">🌱 Anfänger</span>
       </div>
     </div>
+    <div class="seg map-seg"><button class="seg-btn sel" id="segLevels">🗺️ Level</button><button class="seg-btn" id="segCamp">⚔️ Abenteuer</button></div>
     <div class="path" id="pathContainer"></div>
   </section>
 
@@ -819,6 +851,12 @@ body{background:radial-gradient(ellipse at 50% 0%,#4a331e 0%,#2a1c11 55%,#1c130d
     <div class="league-list" id="leagueList"></div>
     </div>
     <div id="friendsBox" class="hidden"></div>
+  </section>
+
+  <!-- ===== ABENTEUER ===== -->
+  <section class="screen" id="screen-campaign">
+    <div class="seg map-seg"><button class="seg-btn" id="segLevels2">🗺️ Level</button><button class="seg-btn sel">⚔️ Abenteuer</button></div>
+    <div class="camp-path" id="campPath"></div>
   </section>
 
   <!-- ===== REDEN ===== -->
@@ -975,6 +1013,10 @@ body{background:radial-gradient(ellipse at 50% 0%,#4a331e 0%,#2a1c11 55%,#1c130d
   <div class="bs-list" id="buddyList"></div>
   <div class="chat-quick" id="buddyQuick"></div>
   <div class="chat-bar"><button id="buddyLang" class="bs-lang" title="Sprache fürs Mikrofon">🇩🇪</button><button id="buddyMic" class="talk-mic">🎤</button><input id="buddyInput" maxlength="500" placeholder="Frag Flügo …" autocomplete="off"><button id="buddySend">➤</button></div>
+</div>
+<div class="ad-overlay hidden" id="campOverlay">
+  <div class="ad-card camp-card"><div id="campIntro"></div>
+    <button class="btn btn-primary" id="campGo">⚔️ Los geht's!</button><button class="btn btn-secondary" id="campLater">Später</button></div>
 </div>
 <div class="ad-overlay hidden" id="denOverlay">
   <div class="ad-card den-card"><div class="intro-title">🏔️ Drachenhöhle</div>
@@ -1763,7 +1805,7 @@ function showScreen(id){
   if(id!=='screen-arcade' && typeof arc!=='undefined' && arc.running) stopArcade();
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  document.querySelector('.bottom-nav').style.display = ['screen-map','screen-stats','screen-grammar','screen-quests','screen-league'].includes(id) ? 'flex' : 'none';
+  document.querySelector('.bottom-nav').style.display = ['screen-map','screen-stats','screen-grammar','screen-quests','screen-league','screen-campaign'].includes(id) ? 'flex' : 'none';
   try{ placeBuddy(id); }catch(e){}
   if(typeof updateQuestDot==='function') updateQuestDot();
   if(id==='screen-gameover' && typeof updateGameoverScreen==='function') updateGameoverScreen();
@@ -1849,6 +1891,8 @@ function setNav(name){
 }
 function goHome(){
   if(session && session.speedTimer){ clearInterval(session.speedTimer); session.speedTimer=null; }
+  clearTimeout(session && session.fbTimer); document.getElementById('feedbackBar').classList.remove('show');
+  try{ if(campaignReturn()) return; }catch(e){}
   if(!state.difficulty){ populateDifficultyList(); showScreen('screen-difficulty'); return; }
   clearTimeout(session && session.fbTimer); document.getElementById('feedbackBar').classList.remove('show');
   if(['grammar','phrases','arcade','talk'].includes(pendingMode)){ practiceTab = pendingMode; renderGrammar(); showScreen('screen-grammar'); setNav('grammar'); }
@@ -2648,6 +2692,7 @@ function finishLevel(){
   const prog = isGrammar ? null : levelProg()[session.levelIdx];
   const gStars = isGrammar ? (session.mode==='grammar' ? grammarStars() : phraseStars()) : null;
   const prevStars = (isGrammar ? gStars[session.topicIdx] : prog.stars) || 0;
+  if(!isGrammar) campaignCheck('lesson', {level:session.levelIdx, stars});
   const improved = stars > prevStars;
   const perfect = session.wrong===0;
   let bonus = 5 + stars*3 + (perfect?10:0) + (improved?10:0);
@@ -3996,8 +4041,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '3.7';
+const APP_VERSION = '3.8';
 const CHANGELOG = [
+  ['3.8', '⚔️ Abenteuer-Kampagne: 5 Kapitel mit Geschichte, Lektionen, Spiele, Gespräche und Boss-Kämpfe'],
   ['3.7', 'Zurück-Taste des Handys geht innerhalb der App zurück (schließt Fenster, zurück zur Karte), zweimal auf der Startseite = verlassen'],
   ['3.6', 'Neuer Drache mit Flügeln & Schattierung – fliegt am Rand, spricht dich an; Tipp = Sprach-Gespräch mit Korrekturen'],
   ['3.5', 'Mittelalter-Look (Pergament, Holz & Gold), Lauten-Klänge, Vibration, Quests antippen führt direkt zur Aufgabe, API-Schlüssel aus der Haushalt-App wird mitbenutzt'],
@@ -4270,6 +4316,7 @@ function endArcade(){
   if(!arc.running) return;
   stopArcade();
   const id = arc.game;
+  campaignCheck('arcade', {game:id, score:arc.score});
   state.arcade = state.arcade || {};
   const best = state.arcade[id] || 0, rec = arc.score > best;
   if(rec) state.arcade[id] = arc.score;
@@ -4284,12 +4331,12 @@ function endArcade(){
     <div class="arc-big">⭐ ${arc.score}</div>
     <div class="panel-sub" style="color:var(--muted)">Rekord: ${Math.max(best, arc.score)} · +${xp} XP · +${coins} 🪙</div>
     <button class="btn btn-primary" id="arcAgain">🔁 Nochmal</button>
-    <button class="btn btn-secondary" id="arcBack">Zurück zu den Spielen</button></div>`;
+    <button class="btn btn-secondary" id="arcBack">${campaignRun ? '⚔️ Zurück zum Abenteuer' : 'Zurück zu den Spielen'}</button></div>`;
   if(rec && arc.score>0){ launchConfetti(); sndLevelUp(); }
   document.getElementById('arcAgain').onclick = ()=>startArcade(id);
   document.getElementById('arcBack').onclick = ()=>leaveArcade();
 }
-function leaveArcade(){ stopArcade(); practiceTab = 'arcade'; pendingMode = 'arcade'; renderGrammar(); showScreen('screen-grammar'); setNav('grammar'); }
+function leaveArcade(){ stopArcade(); if(campaignReturn()) return; practiceTab = 'arcade'; pendingMode = 'arcade'; renderGrammar(); showScreen('screen-grammar'); setNav('grammar'); }
 document.getElementById('arcQuit').addEventListener('click', ()=>{ if(arc.running && arc.score>0) endArcade(); else leaveArcade(); });
 
 /* ---------- 🎈 Ballon-Platzen & 🎧 Hör-Regen (gemeinsamer Motor) ---------- */
@@ -5376,6 +5423,7 @@ async function finishMission(){
   const score = Math.round(((ev && +ev.score) || 60) * 0.6 + vocabPct*20 + Math.min(1, used.length/4)*20);
   const stars = score>=85 ? 3 : score>=65 ? 2 : 1;
   const ms = missionStars(); const better = stars > (ms[m.i]||0); if(better) ms[m.i] = stars;
+  campaignCheck('talk', {level:m.i, stars});
   const xp = addXP(10 + stars*5); state.coins += 5 + stars*5;
   track('lesson', 1); checkAchievements(); saveState(); updateTopbar();
   if(stars===3){ launchConfetti(); sndLevelUp(); }
@@ -5417,7 +5465,7 @@ document.getElementById('talkMic').addEventListener('click', async ()=>{
 document.getElementById('talkSend').addEventListener('click', ()=>talkSend(document.getElementById('talkInput').value));
 document.getElementById('talkInput').addEventListener('keydown', e=>{ if(e.key==='Enter') talkSend(e.target.value); });
 document.getElementById('talkSet').addEventListener('click', ()=>openTalkSettings(false));
-function leaveTalk(){ try{ speechSynthesis.cancel(); }catch(e){} talk.busy = false; practiceTab = 'talk'; pendingMode = 'talk'; renderGrammar(); showScreen('screen-grammar'); setNav('grammar'); }
+function leaveTalk(){ try{ speechSynthesis.cancel(); }catch(e){} talk.busy = false; if(campaignReturn()) return; practiceTab = 'talk'; pendingMode = 'talk'; renderGrammar(); showScreen('screen-grammar'); setNav('grammar'); }
 document.getElementById('talkBack').addEventListener('click', leaveTalk);
 document.getElementById('segTalk').addEventListener('click', ()=>{ sndTap(); practiceTab = 'talk'; pendingMode = 'talk'; renderGrammar(); });
 
@@ -5595,7 +5643,7 @@ function renderDashTip(){
    🐉 FLÜGO IMMER DABEI: fliegt am Rand, spricht dich an, Sprach-Gespräch per Tipp
    ========================================================= */
 const buddy = {turns:[], busy:false, greeted:false, voice:false, micLang:'target', screen:null, x:null, y:null, sayN:0};
-const NAV_SCREENS = ['screen-map','screen-stats','screen-grammar','screen-quests','screen-league'];
+const NAV_SCREENS = ['screen-map','screen-stats','screen-grammar','screen-quests','screen-league','screen-campaign'];
 const BUDDY_LINES = {
   en:['Can I help you?','Need a hint? Tap me!','Let\'s practice together!','You\'re doing great!','Want to chat with me?','Practice makes perfect!','Tap me and let\'s talk!','Shall we learn a new word?','I believe in you!','Ready for an adventure?'],
   es:['¿Te puedo ayudar?','¿Necesitas una pista? ¡Tócame!','¡Practiquemos juntos!','¡Lo estás haciendo genial!','¿Hablamos un rato?','¡La práctica hace al maestro!'],
@@ -5844,6 +5892,164 @@ addEventListener('popstate', ()=>{
   backNav.exitAsk = Date.now(); toast('👋 Nochmal „Zurück“ zum Verlassen'); armBack();
 });
 armBack();
+
+/* =========================================================
+   ⚔️ ABENTEUER-KAMPAGNE: Kapitel mit Geschichte, verschiedene Spiele, Bosse
+   ========================================================= */
+const CHAPTERS = [
+  {icon:'🏡', title:'Das Dorf am Fluss', lv:[0,1], arc:['balloon','clouds'], boss:{icon:'👺', name:'Der freche Kobold'},
+   story:'Flügo ist gerade geschlüpft! Im Dorf lernt ihr die ersten Wörter – doch ein frecher Kobold hat die Brücke besetzt.', end:'Der Kobold flieht! Das Dorf jubelt euch zu. 🎉'},
+  {icon:'🌲', title:'Der Flüsterwald', lv:[2,3], arc:['rain','emoji'], boss:{icon:'🐺', name:'Der Nebelwolf'},
+   story:'Im Wald flüstern die Bäume in fremden Sprachen. Nur wer gut zuhört, findet den Weg hinaus.', end:'Der Nebel lichtet sich – der Wolf läuft davon!'},
+  {icon:'🏰', title:'Die Ritterburg', lv:[4,5], arc:['puzzle','coach'], boss:{icon:'🛡️', name:'Der schwarze Ritter'},
+   story:'Die Burgwache lässt nur Reisende ein, die die Sprache des Königs sprechen.', end:'Der Ritter verneigt sich: „Willkommen, edle Reisende!“'},
+  {icon:'🌋', title:'Die Feuerberge', lv:[6,7], arc:['clouds','rain'], boss:{icon:'🧌', name:'Der Lava-Troll'},
+   story:'Heiß, steil und gefährlich – hier wächst Flügo über sich hinaus.', end:'Der Troll versinkt in der Lava. Flügos Flügel glühen vor Stolz!'},
+  {icon:'👑', title:'Der Drachenthron', lv:[8,9], arc:['emoji','balloon'], boss:{icon:'🐲', name:'Der Schattendrache'},
+   story:'Am Gipfel wartet der Thron der Drachen. Nur Sprach-Meister dürfen ihn besteigen.', end:'Flügo sitzt auf dem Thron – du bist ein wahrer Sprach-Held! 👑'},
+];
+let campaignRun = null;
+function campState(){ return state.campaign = Object.assign({done:{}}, state.campaign||{}); }
+function chapterStations(ci){
+  const ch = CHAPTERS[ci], g = 50 + ci*25;
+  const ag = id=> id==='coach' ? 60 + ci*10 : id==='puzzle' ? 40 + ci*15 : g;
+  return [
+    {id:`c${ci}s0`, type:'lesson', level:ch.lv[0], icon:'📖', name:LEVELS[ch.lv[0]].title},
+    {id:`c${ci}s1`, type:'arcade', game:ch.arc[0], goal:ag(ch.arc[0])},
+    {id:`c${ci}s2`, type:'lesson', level:ch.lv[1], icon:'📖', name:LEVELS[ch.lv[1]].title},
+    {id:`c${ci}s3`, type:'arcade', game:ch.arc[1], goal:ag(ch.arc[1])},
+    {id:`c${ci}s4`, type:'talk', level:ch.lv[0], icon:'🗣️', name:'Gespräch', bonus:true},
+    {id:`c${ci}s5`, type:'boss', game:'tower', goal:g + 40, icon:ch.boss.icon, name:ch.boss.name},
+  ].map(s=>{ if(s.game && !s.icon){ const a = ARCADE_GAMES.find(x=>x.id===s.game); s.icon = a.icon; s.name = a.name; } return s; });
+}
+function allStations(){ return CHAPTERS.flatMap((c,ci)=>chapterStations(ci).map(s=>({...s, ci}))); }
+function stationOpen(st){
+  const done = campState().done, list = allStations();
+  const i = list.findIndex(s=>s.id===st.id);
+  if(st.bonus) return !!done[list[i-4].id];                       // Bonus: sobald die erste Lektion des Kapitels geschafft ist
+  return list.slice(0,i).filter(s=>!s.bonus).every(s=>done[s.id]);
+}
+function currentStation(){ return allStations().find(s=>!s.bonus && !campState().done[s.id]); }
+function stationGoalText(st){
+  return st.type==='lesson' ? `Schaff die Lektion „${st.name}“ (mind. ⭐)`
+    : st.type==='talk' ? 'Bonus: Rede über das Thema (braucht Claude)'
+    : `Erreiche ${st.goal} Punkte`;
+}
+
+function openCampaign(result){
+  renderCampaign();
+  showScreen('screen-campaign'); setNav('map');
+  const cur = document.querySelector('.camp-node.current') || document.querySelector('.camp-node');
+  if(cur) setTimeout(()=>cur.scrollIntoView({block:'center', behavior: result ? 'smooth' : 'auto'}), 60);
+  if(result) showCampResult(result);
+}
+function renderCampaign(){
+  const box = document.getElementById('campPath'); box.innerHTML = '<svg class="camp-line" id="campLine"></svg>';
+  const done = campState().done, cur = currentStation();
+  let zig = 0;
+  CHAPTERS.forEach((ch,ci)=>{
+    const sts = chapterStations(ci).map(s=>({...s, ci}));
+    const chOpen = stationOpen(sts[0]);
+    const doneAll = sts.filter(s=>!s.bonus).every(s=>done[s.id]);
+    const ban = document.createElement('div'); ban.className = 'camp-ch' + (chOpen ? '' : ' locked');
+    ban.innerHTML = `<div class="cc-icon">${ch.icon}</div><div><b>Kapitel ${ci+1}: ${ch.title}</b><small>${doneAll ? '✅ ' + ch.end : chOpen ? ch.story : '🔒 Schließ das vorige Kapitel ab'}</small></div>`;
+    box.appendChild(ban);
+    sts.forEach(st=>{
+      const open = stationOpen(st), d = done[st.id];
+      const el = document.createElement('div');
+      el.className = `camp-node pos${[1,0,1,2][zig++%4]} ${st.type}` + (d ? ' done' : '') + (open ? '' : ' locked') + (cur && cur.id===st.id ? ' current' : '') + (st.bonus ? ' bonus' : '');
+      el.innerHTML = `<div class="cn-disc">${open ? st.icon : '🔒'}</div><div class="cn-label">${st.bonus ? '✨ ' : ''}${escapeHtml(st.name)}</div><div class="cn-stars">${d ? '⭐'.repeat(d) + '☆'.repeat(3-d) : ''}</div>`;
+      if(cur && cur.id===st.id) el.insertAdjacentHTML('beforeend', `<div class="cn-dragon">${dragonSVG({size:46, mood:'happy'})}</div>`);
+      el.onclick = ()=>{ sndTap(); if(!open){ toast('🔒 Erst die Station davor schaffen!'); return; } openStation(st); };
+      box.appendChild(el);
+    });
+  });
+  requestAnimationFrame(drawCampLine);
+}
+function drawCampLine(){
+  const box = document.getElementById('campPath'), svg = document.getElementById('campLine'); if(!box || !svg) return;
+  const br = box.getBoundingClientRect();
+  const pts = [...box.querySelectorAll('.camp-node .cn-disc')].map(d=>{ const r = d.getBoundingClientRect(); return [r.left - br.left + r.width/2, r.top - br.top + box.scrollTop + r.height/2]; });
+  svg.setAttribute('width', box.scrollWidth); svg.setAttribute('height', box.scrollHeight);
+  if(pts.length < 2) return;
+  let d = `M${pts[0][0]} ${pts[0][1]}`;
+  for(let i=1;i<pts.length;i++){ const [x0,y0] = pts[i-1], [x1,y1] = pts[i], my = (y0+y1)/2; d += ` C${x0} ${my} ${x1} ${my} ${x1} ${y1}`; }
+  svg.innerHTML = `<path d="${d}" class="cl-base"/><path d="${d}" class="cl-dash"/>`;
+}
+function openStation(st){
+  const ch = CHAPTERS[st.ci], first = st.id.endsWith('s0') && !campState().done[st.id];
+  const line = st.type==='lesson' ? `Lerne die Wörter „${st.name}“ – sie öffnen uns den Weg!`
+    : st.type==='arcade' ? `Ein Hindernis! Zeig bei ${st.name}, was du kannst.`
+    : st.type==='talk' ? 'Ein Dorfbewohner möchte mit dir plaudern. (Bonus-Station)'
+    : `${st.name} versperrt den Weg! Besieg ihn in der Wort-Verteidigung!`;
+  document.getElementById('campIntro').innerHTML = `
+    <div class="camp-dr">${dragonSVG({size:110, mood: st.type==='boss' ? 'wow' : 'happy'})}</div>
+    <div class="camp-ch-t">${ch.icon} Kapitel ${st.ci+1}: ${ch.title}</div>
+    ${first ? `<div class="camp-story">${ch.story}</div>` : ''}
+    <div class="camp-say"><b>${escapeHtml(dragon().name)}:</b> ${escapeHtml(line)}</div>
+    <div class="camp-goal">🎯 ${stationGoalText(st)}</div>`;
+  document.getElementById('campGo').onclick = ()=>{ document.getElementById('campOverlay').classList.add('hidden'); startStation(st); };
+  document.getElementById('campOverlay').classList.remove('hidden');
+}
+function startStation(st){
+  campaignRun = {st};
+  if(st.type==='lesson'){
+    if(state.hearts<=0){ campaignRun = null; showScreen('screen-gameover'); return; }
+    pendingMode = 'vocab'; startLevel(st.level);
+  } else if(st.type==='talk'){ startMission(st.level); }
+  else {
+    startArcade(st.game);
+    setTimeout(()=>toast(st.type==='boss' ? `${st.icon} Boss-Kampf! Ziel: ${st.goal} Punkte` : `🎯 Ziel: ${st.goal} Punkte`), 300);
+  }
+}
+// wird von Lektion / Spiel / Gespräch beim Ende aufgerufen
+function campaignCheck(type, data){
+  if(!campaignRun || campaignRun.result) return;
+  const st = campaignRun.st;
+  let ok = false, stars = 0;
+  if(st.type==='lesson' && type==='lesson' && data.level===st.level){ stars = data.stars; ok = stars>=1; }
+  else if((st.type==='arcade' || st.type==='boss') && type==='arcade' && data.game===st.game){
+    ok = data.score >= st.goal; stars = !ok ? 0 : data.score >= st.goal*2 ? 3 : data.score >= st.goal*1.5 ? 2 : 1;
+  } else if(st.type==='talk' && type==='talk' && data.level===st.level){ stars = data.stars; ok = stars>=1; }
+  else return;
+  const done = campState().done, first = ok && !done[st.id];
+  if(ok){ done[st.id] = Math.max(done[st.id]||0, stars); }
+  let reward = '';
+  if(first){
+    const coins = st.type==='boss' ? 60 : 20, gems = st.type==='boss' ? 3 : 0;
+    state.coins += coins; state.gems = (state.gems||0) + gems;
+    reward = `+${coins} 🪙` + (gems ? ` +${gems} 💎` : '');
+  }
+  campaignRun.result = {ok, stars, reward, st, score:data.score};
+  checkAchievements(); saveState(); updateTopbar();
+}
+function campaignReturn(){
+  if(!campaignRun) return false;
+  const res = campaignRun.result; campaignRun = null;
+  openCampaign(res || null);
+  return true;
+}
+function showCampResult(r){
+  const st = r.st, ch = CHAPTERS[st.ci];
+  const chDone = r.ok && st.type==='boss';
+  document.getElementById('campIntro').innerHTML = `
+    <div class="camp-dr">${dragonSVG({size:110, mood: r.ok ? 'wow' : 'sad'})}</div>
+    <div class="camp-ch-t">${r.ok ? (chDone ? '🏆 Kapitel geschafft!' : '✅ Station geschafft!') : '😅 Knapp daneben!'}</div>
+    ${r.ok ? `<div class="res-stars">${'⭐'.repeat(r.stars)}${'☆'.repeat(3-r.stars)}</div>` : ''}
+    <div class="camp-say">${r.ok ? (chDone ? escapeHtml(ch.end) : 'Weiter geht\'s – der nächste Weg ist frei!') : (st.goal ? `Du hattest ${r.score||0} von ${st.goal} Punkten. Versuch's nochmal!` : 'Versuch es nochmal – du schaffst das!')}</div>
+    ${r.reward ? `<div class="camp-goal">🎁 ${r.reward}</div>` : ''}`;
+  const go = document.getElementById('campGo');
+  const next = currentStation();
+  go.textContent = r.ok ? (next ? '➡️ Nächste Station' : '👑 Fertig!') : '🔁 Nochmal';
+  go.onclick = ()=>{ document.getElementById('campOverlay').classList.add('hidden'); if(!r.ok) startStation(st); else if(next) openStation(next); };
+  document.getElementById('campOverlay').classList.remove('hidden');
+  if(r.ok){ sndLevelUp(); if(chDone || r.stars===3) launchConfetti(); } else sndWrong();
+}
+document.getElementById('campLater').onclick = ()=>document.getElementById('campOverlay').classList.add('hidden');
+document.getElementById('segCamp').addEventListener('click', ()=>{ sndTap(); openCampaign(); });
+document.getElementById('segLevels').addEventListener('click', ()=>{ sndTap(); pendingMode = 'vocab'; renderMap(); showScreen('screen-map'); setNav('map'); });
+document.getElementById('segLevels2').addEventListener('click', ()=>{ sndTap(); pendingMode = 'vocab'; renderMap(); showScreen('screen-map'); setNav('map'); });
+addEventListener('resize', ()=>{ if(document.getElementById('screen-campaign').classList.contains('active')) drawCampLine(); });
 
 /* ---------- INIT ---------- */
 importFromLink();
