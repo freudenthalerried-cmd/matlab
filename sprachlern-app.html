@@ -3996,8 +3996,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '3.6';
+const APP_VERSION = '3.7';
 const CHANGELOG = [
+  ['3.7', 'Zurück-Taste des Handys geht innerhalb der App zurück (schließt Fenster, zurück zur Karte), zweimal auf der Startseite = verlassen'],
   ['3.6', 'Neuer Drache mit Flügeln & Schattierung – fliegt am Rand, spricht dich an; Tipp = Sprach-Gespräch mit Korrekturen'],
   ['3.5', 'Mittelalter-Look (Pergament, Holz & Gold), Lauten-Klänge, Vibration, Quests antippen führt direkt zur Aufgabe, API-Schlüssel aus der Haushalt-App wird mitbenutzt'],
   ['3.4', 'Flügo ist immer dabei – tippen und mit ihm reden (sprechen oder schreiben) · Wörter werden nach jeder Antwort vorgesprochen · Sprachausgabe am iPhone repariert'],
@@ -5812,6 +5813,37 @@ function goQuest(d){
     default: toast('⚔️ Auf in den Kampf – starte ein Level!'); return toLevel();
   }
 }
+
+
+/* ---------- 📱 Zurück-Taste des Handys: innerhalb der App zurück, nicht hinaus ---------- */
+const backNav = {armed:false, exitAsk:0};
+function armBack(){ try{ history.pushState({wr:1}, ''); backNav.armed = true; }catch(e){} }
+function handleBack(){
+  // 1) offene Fenster zuerst schließen
+  const ov = [...document.querySelectorAll('.ad-overlay:not(.hidden)')].filter(o=>o.id!=='adOverlay');
+  if(ov.length){ const o = ov[ov.length-1]; const close = o.querySelector('[id$="Close"],#bragClose,.btn-secondary'); if(close) close.click(); else o.classList.add('hidden'); return true; }
+  if(!document.getElementById('buddySheet').classList.contains('hidden')){ closeBuddy(); return true; }
+  // 2) Bildschirm-abhängig zurück
+  const cur = (document.querySelector('.screen.active')||{}).id;
+  const click = id=>{ const b = document.getElementById(id); if(b){ b.click(); return true; } return false; };
+  switch(cur){
+    case 'screen-map': return false;                             // Startseite → zweimal = verlassen
+    case 'screen-game': return click('quitGameBtn');
+    case 'screen-arcade': return click('arcQuit');
+    case 'screen-talk': return click('talkBack');
+    case 'screen-chat': return click('chatBack');
+    case 'screen-drive': return click('driveBack');
+    case 'screen-difficulty': return state.language ? click('diffBackBtn') : false;
+    case 'screen-language': if(state.difficulty){ goHome(); return true; } return false;
+    default: pendingMode = 'vocab'; renderMap(); showScreen('screen-map'); setNav('map'); return true;
+  }
+}
+addEventListener('popstate', ()=>{
+  if(handleBack()){ armBack(); return; }
+  if(Date.now() - backNav.exitAsk < 2500) { history.back(); return; }   // zweites Zurück innerhalb 2,5 s → App verlassen
+  backNav.exitAsk = Date.now(); toast('👋 Nochmal „Zurück“ zum Verlassen'); armBack();
+});
+armBack();
 
 /* ---------- INIT ---------- */
 importFromLink();
