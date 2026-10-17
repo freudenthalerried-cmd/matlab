@@ -558,6 +558,11 @@ body{
 #questionArea .pron-target{color:#fff;font-size:32px;}
 #questionArea .pron-out{color:#e8f6ff;}
 #questionArea .pron-skip{color:#cfe8ee;}
+
+.voice-box{background:#f1f6f8;border-radius:14px;padding:10px;margin-bottom:10px;}
+.voice-box .f-input{margin:6px 0;font-size:14px;}
+.rate-row{display:flex;align-items:center;gap:8px;font-size:20px;margin:6px 0;}
+.rate-row input{flex:1;}
 </style>
 </head>
 <body>
@@ -787,11 +792,15 @@ body{
     <details class="fold"><summary>⚙️ Einstellungen</summary>
       <button class="btn btn-secondary" id="changeLangBtn">🌍 Sprache ändern</button>
       <button class="btn btn-secondary" id="changeDiffBtn">🎯 Niveau ändern (A1–C1)</button>
+      <div class="voice-box"><div class="panel-title dark">🗣️ Stimme</div>
+        <select id="voiceSel" class="f-input"></select>
+        <label class="rate-row">🐢 <input type="range" id="rateSel" min="0.6" max="1.2" step="0.05"> 🐇</label>
+        <button class="btn btn-secondary" id="voiceTest">▶️ Probe hören</button></div>
       <button class="btn btn-secondary" id="soundBtn">🔊 Ton: an</button>
       <button class="btn btn-secondary" id="placementBtn">🧪 Einstufungstest wiederholen</button>
       <button class="btn btn-secondary" id="ideaBtn">💡 Idee / Fehler melden</button>
       <button class="btn btn-secondary" id="resetProgressBtn">Fortschritt zurücksetzen</button>
-      <div class="panel-sub" style="margin:6px 0 12px;">⚠️ Ein ausgelassener Tag kostet XP, Münzen, 2 ❤️ und den Streak – außer du hast 🧊 Streak-Schutz.</div></details>
+      <div class="panel-sub" style="margin:6px 0 12px;color:var(--muted)">⚠️ Ein ausgelassener Tag kostet XP, Münzen, 2 ❤️ und den Streak – außer du hast 🧊 Streak-Schutz.</div></details>
   </section>
 
 </div>
@@ -1448,9 +1457,9 @@ function sndCombo(){ beep(1200,0.08,'sine',0.15); }
 let ttsWarned = false;
 function speak(text, lang='en-US'){
   try{
-    const synth = window.speechSynthesis; if(!synth || !text) return;
+    const synth = window.speechSynthesis; text = cleanForSpeech(text); if(!synth || !text) return;
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = lang; u.rate = 0.9;
+    u.lang = lang; u.rate = speechRate(); u.volume = 1; u.pitch = 1;
     const v = typeof pickVoice==='function' ? pickVoice(lang) : null;
     if(v) u.voice = v;
     else if(!ttsWarned && synth.getVoices().length){ ttsWarned = true; toast('🔇 Keine Stimme für diese Sprache auf dem Gerät – in den Handy-Einstellungen unter „Sprachausgabe“ nachinstallieren.'); }
@@ -2873,6 +2882,7 @@ function renderProfileExtras(){
   });
   document.getElementById('achCount').textContent = `${Object.keys(state.achievements).length}/${ACHIEVEMENTS.length}`;
   document.getElementById('shopCoins').textContent = state.coins;
+  renderVoiceSettings();
   renderGemShop();
   const list = document.getElementById('shopList'); list.innerHTML='';
   SHOP.forEach(item=>{
@@ -3328,15 +3338,37 @@ function parseReply(text){
 }
 
 /* ---------- Sprachausgabe & -erkennung ---------- */
-function pickVoice(code){
-  const vs = speechSynthesis.getVoices().filter(v=>v.lang && v.lang.replace('_','-').startsWith(code.slice(0,2)));
-  return vs.find(v=>/natural|neural|google|premium|enhanced/i.test(v.name)) || vs[0] || null;
+// Emojis und Sonderzeichen nicht vorlesen
+function cleanForSpeech(t){
+  return String(t||'')
+    .replace(/[\p{Extended_Pictographic}\u{1F1E6}-\u{1F1FF}\u{FE0F}\u{200D}\u{20E3}]/gu, '')
+    .replace(/[…—–]/g, ', ').replace(/[*#_~«»"„“”()\[\]{}<>|\\/=+→←↑↓•·]/g, ' ')
+    .replace(/\s+([,.!?;:])/g, '$1').replace(/\s+/g, ' ').trim();
 }
+function voicesFor(code){
+  try{ return speechSynthesis.getVoices().filter(v=>v.lang && v.lang.replace('_','-').toLowerCase().startsWith(code.slice(0,2).toLowerCase())); }catch(e){ return []; }
+}
+function voiceScore(v, code){
+  let s = 0; const n = v.name;
+  if(v.lang.replace('_','-').toLowerCase()===code.toLowerCase()) s += 2;
+  if(/natural|neural|premium|enhanced|siri|wavenet|online/i.test(n)) s += 4;
+  if(/google/i.test(n)) s += 3;
+  if(v.localService===false) s += 1;
+  if(/compact|espeak|robot|novelty|whisper|bad news|bells|zarvox|trinoids|albert|jester|organ|bubbles|boing|cellos|deranged|hysterical|superstar|wobble/i.test(n)) s -= 6;
+  return s;
+}
+function pickVoice(code){
+  const vs = voicesFor(code); if(!vs.length) return null;
+  const chosen = state.settings && state.settings.voices && state.settings.voices[code.slice(0,2)];
+  return (chosen && vs.find(v=>v.name===chosen)) || vs.slice().sort((a,b)=>voiceScore(b,code)-voiceScore(a,code))[0];
+}
+function speechRate(){ return (state.settings && state.settings.rate) || 0.9; }
 function speakAsync(text, code, rate){
   return new Promise(resolve=>{
     try{
+      text = cleanForSpeech(text); if(!text) return resolve();
       const u = new SpeechSynthesisUtterance(text);
-      u.lang = code; u.rate = rate || drive.rate; const v = pickVoice(code); if(v) u.voice = v;
+      u.lang = code; u.rate = rate || drive.rate; u.volume = 1; const v = pickVoice(code); if(v) u.voice = v;
       let done = false; const fin = ()=>{ if(!done){ done=true; resolve(); } };
       u.onend = fin; u.onerror = fin;
       setTimeout(fin, 4000 + text.length*110);   // falls onend auf manchen Geräten ausbleibt
@@ -4788,6 +4820,27 @@ function startCoach(){
   };
   next();
 }
+
+
+/* ---------- 🗣️ Stimmen-Auswahl ---------- */
+function renderVoiceSettings(){
+  const sel = document.getElementById('voiceSel'); if(!sel) return;
+  const code = LANGS[currentLang()].code, vs = voicesFor(code).sort((a,b)=>voiceScore(b,code)-voiceScore(a,code));
+  const cur = pickVoice(code);
+  sel.innerHTML = vs.length ? '' : '<option>Keine Stimme gefunden – in den Handy-Einstellungen installieren</option>';
+  vs.forEach((v,i)=>{ const o = document.createElement('option'); o.value = v.name; o.textContent = (i===0 ? '⭐ ' : '') + v.name + ' (' + v.lang + ')'; if(cur && cur.name===v.name) o.selected = true; sel.appendChild(o); });
+  document.getElementById('rateSel').value = speechRate();
+}
+document.getElementById('voiceSel').addEventListener('change', e=>{
+  state.settings.voices = state.settings.voices || {}; state.settings.voices[currentLang()] = e.target.value; saveState();
+  speak(LANGS[currentLang()].code.startsWith('en') ? 'Hello, nice to meet you!' : wordOfDay() ? wordOfDay()[1] : 'Hello', LANGS[currentLang()].code);
+});
+document.getElementById('rateSel').addEventListener('change', e=>{ state.settings.rate = parseFloat(e.target.value); saveState(); });
+document.getElementById('voiceTest').addEventListener('click', ()=>{
+  const samples = {en:'Hello! Nice to meet you. How are you today?', es:'¡Hola! Encantado de conocerte. ¿Qué tal?', fr:'Bonjour ! Enchanté. Comment ça va ?', it:'Ciao! Piacere di conoscerti. Come stai?'};
+  speak(samples[currentLang()] || samples.en, LANGS[currentLang()].code);
+});
+try{ speechSynthesis.addEventListener('voiceschanged', renderVoiceSettings); }catch(e){}
 
 /* ---------- INIT ---------- */
 ensureDaily(); ensureLeague(); applyAbsencePenalty(); checkAchievements(); saveState(); applyMascot(); updateTopbar();
