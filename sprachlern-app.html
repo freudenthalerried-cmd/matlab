@@ -648,6 +648,25 @@ body{
 .di-ico{font-size:30px;height:36px;display:flex;align-items:center;}
 .di-ico i{display:inline-block;width:30px;height:30px;border-radius:50%;border:2px solid rgba(0,0,0,.15);}
 .den-item small{font-weight:800;font-size:13px;}.den-item em{font-style:normal;font-size:12px;color:var(--muted);font-weight:700;}
+
+/* ===== FLÜGO IMMER DABEI ===== */
+.buddy{position:fixed;right:10px;bottom:84px;z-index:60;border:none;background:radial-gradient(circle at 50% 60%,#fff6cf,#ffd36b);border-radius:50%;width:66px;height:66px;padding:4px;box-shadow:0 6px 16px rgba(0,0,0,.35);cursor:pointer;animation:buddyFloat 3s ease-in-out infinite;}
+.buddy.peek{bottom:auto;top:96px;right:-18px;width:56px;height:56px;opacity:.92;}
+.buddy.peek .dragon{width:48px;height:48px;}
+.buddy.jump{animation:buddyJump .6s ease;}
+@keyframes buddyFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+@keyframes buddyJump{0%{transform:scale(1);}40%{transform:scale(1.25) translateY(-10px);}100%{transform:scale(1);}}
+.buddy-sheet{position:fixed;left:0;right:0;bottom:0;z-index:90;height:72vh;max-width:560px;margin:0 auto;background:#123444;border-radius:22px 22px 0 0;box-shadow:0 -10px 30px rgba(0,0,0,.4);display:flex;flex-direction:column;padding:10px 12px 12px;gap:6px;animation:sheetUp .25s ease;}
+@keyframes sheetUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.bs-head{display:flex;align-items:center;gap:8px;color:#fff;font-size:18px;}
+.bs-x{margin-left:auto;border:none;background:rgba(255,255,255,.15);color:#fff;border-radius:50%;width:36px;height:36px;font-size:16px;cursor:pointer;}
+.bs-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;min-height:0;}
+.bb{max-width:86%;padding:10px 12px;border-radius:18px;font-size:16px;line-height:1.35;position:relative;word-wrap:break-word;}
+.bb.bot{align-self:flex-start;background:#fff;color:#1d4e63;border-bottom-left-radius:6px;padding-right:40px;}
+.bb.me{align-self:flex-end;background:#06d6a0;color:#fff;border-bottom-right-radius:6px;}
+.bb.dots{color:#9fb8c4;}
+.bb .ob{display:block;margin-top:6px;background:#eef5f8;color:#1d4e63;}
+.bs-lang{border:none;background:rgba(255,255,255,.15);border-radius:14px;width:44px;font-size:20px;cursor:pointer;flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -915,6 +934,13 @@ body{
     <button class="btn btn-yellow hidden" id="penRepair">🔧 Streak reparieren</button>
     <button class="btn btn-primary" id="penOk">💪 Jetzt aufholen</button>
   </div>
+</div>
+<button class="buddy hidden" id="buddy" aria-label="Mit deinem Drachen sprechen"></button>
+<div class="buddy-sheet hidden" id="buddySheet">
+  <div class="bs-head"><span id="buddyFace"></span><b id="buddyName">Flügo</b><button class="bs-x" id="buddyClose">✕</button></div>
+  <div class="bs-list" id="buddyList"></div>
+  <div class="chat-quick" id="buddyQuick"></div>
+  <div class="chat-bar"><button id="buddyLang" class="bs-lang" title="Sprache fürs Mikrofon">🇩🇪</button><button id="buddyMic" class="talk-mic">🎤</button><input id="buddyInput" maxlength="500" placeholder="Frag Flügo …" autocomplete="off"><button id="buddySend">➤</button></div>
 </div>
 <div class="ad-overlay hidden" id="denOverlay">
   <div class="ad-card den-card"><div class="intro-title">🏔️ Drachenhöhle</div>
@@ -1584,8 +1610,12 @@ function speak(text, lang='en-US'){
     const v = typeof pickVoice==='function' ? pickVoice(lang) : null;
     if(v) u.voice = v;
     else if(!ttsWarned && synth.getVoices().length){ ttsWarned = true; toast('🔇 Keine Stimme für diese Sprache auf dem Gerät – in den Handy-Einstellungen unter „Sprachausgabe“ nachinstallieren.'); }
-    const go = ()=>{ synth.resume && synth.resume(); synth.speak(u); };
-    if(synth.speaking || synth.pending){ synth.cancel(); setTimeout(go, 80); } else go();
+    // synchron sprechen (iPhone erlaubt Ton nur direkt beim Antippen) + Wächter für hängende Android-Sprachausgabe
+    if(synth.speaking || synth.pending) synth.cancel();
+    try{ synth.resume(); }catch(e){}
+    let started = false; u.onstart = ()=>{ started = true; };
+    synth.speak(u);
+    setTimeout(()=>{ if(!started && !synth.speaking){ try{ synth.cancel(); synth.resume(); const u2 = new SpeechSynthesisUtterance(text); u2.lang = u.lang; u2.rate = u.rate; if(u.voice) u2.voice = u.voice; synth.speak(u2); }catch(e){} } }, 400);
   }catch(e){}
 }
 // Mobile Browser geben die Sprachausgabe erst nach einer Berührung frei
@@ -1679,6 +1709,7 @@ function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   document.querySelector('.bottom-nav').style.display = ['screen-map','screen-stats','screen-grammar','screen-quests','screen-league'].includes(id) ? 'flex' : 'none';
+  try{ placeBuddy(id); }catch(e){}
   if(typeof updateQuestDot==='function') updateQuestDot();
   if(id==='screen-gameover' && typeof updateGameoverScreen==='function') updateGameoverScreen();
 }
@@ -2312,7 +2343,7 @@ function renderMemoryRound(wordPairs){
       busy = true;
       if(firstCard.dataset.idx===el.dataset.idx && firstCard!==el){
         firstCard.classList.add('matched'); el.classList.add('matched');
-        sndCorrect();
+        sndCorrect(); speak(wordPairs[+el.dataset.idx][1], LANGS[currentLang()].code);
         matchedCount++;
         document.getElementById('matchProgress').textContent = `${matchedCount} / ${wordPairs.length} Paare`;
         firstCard=null; busy=false;
@@ -2395,7 +2426,7 @@ function renderMatchRound(words){
       selLeft.el.classList.remove('selected'); selLeft.el.classList.add('matched');
       selRight.el.classList.remove('selected'); selRight.el.classList.add('matched');
       drawThread(selLeft.el, selRight.el, threadColors[matchedCount % threadColors.length]);
-      sndCorrect();
+      sndCorrect(); speak(words[selLeft.idx][1], LANGS[currentLang()].code);
       matchedCount++;
       document.getElementById('matchProgress').textContent = `${matchedCount} / ${words.length} Paare`;
       selLeft = selRight = null;
@@ -2453,6 +2484,11 @@ function submitTyped(correctAnswer, lenient){
 function handleAnswer(isCorrect, btnEl, correctAnswer){
   if(session.answered) return;
   session.answered = true;
+  try{ buddyReact(isCorrect ? 'wow' : 'sad'); }catch(e){}
+  try{ const q = session.questions && session.questions[session.qi]; const code = LANGS[currentLang()].code;
+    if(session.currentWord && !(q && /^speak|^dictation|^listen/.test(q.type))) speak(session.currentWord[1], code);
+    else if(session.mode==='phrases' && session.grammarFix && isCorrect) speak(session.grammarFix, code);
+  }catch(e){}
   if(session.speedTimer){ clearInterval(session.speedTimer); session.speedTimer=null; }
   if(btnEl){
     document.querySelectorAll('#optsBox .opt').forEach(o=>{
@@ -3897,8 +3933,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '3.3';
+const APP_VERSION = '3.4';
 const CHANGELOG = [
+  ['3.4', 'Flügo ist immer dabei – tippen und mit ihm reden (sprechen oder schreiben) · Wörter werden nach jeder Antwort vorgesprochen · Sprachausgabe am iPhone repariert'],
   ['3.3', 'Dein Drache Flügo begleitet dich: wächst mit deinem Level, Hüte/Brillen/Farben in der Drachenhöhle'],
   ['3.2', 'App verbessern läuft im Hintergrund: Idee senden, Status sehen (offen · in Arbeit · eingebaut)'],
   ['3.1', 'Neu unter Üben → 🗣️ Reden: Gesprächs-Missionen pro Level (Vokabeln → Zeitung/Radio → Gespräch) und Übungsplatz mit einstellbarer Korrektur'],
@@ -5467,6 +5504,116 @@ function renderDashTip(){
     : pick(['Tagesziel geschafft! Lust auf ein Spiel in 🎮 Spiele?','Super! Willst du über das Gelernte 🗣️ reden?','Ich hätte gern einen neuen Hut… 🎩 (tipp auf mich!)']);
   el.innerHTML = `<b></b> ${escapeHtml(t)}`; el.querySelector('b').textContent = d.name + ':';
 }
+
+/* =========================================================
+   🐉 FLÜGO IMMER DABEI: schwebender Drache + Chat (Sprechen/Tippen)
+   ========================================================= */
+const buddy = {turns:[], busy:false, greeted:false};
+const NAV_SCREENS = ['screen-map','screen-stats','screen-grammar','screen-quests','screen-league'];
+function placeBuddy(screenId){
+  const b = document.getElementById('buddy'); if(!b) return;
+  const hide = ['screen-language','screen-difficulty','screen-drive'].includes(screenId) || !state.difficulty;
+  b.classList.toggle('hidden', hide);
+  b.classList.toggle('peek', !NAV_SCREENS.includes(screenId));
+  b.innerHTML = dragonSVG({size:58, mood: b.dataset.mood || 'happy'});
+}
+function buddyReact(mood){
+  const b = document.getElementById('buddy'); if(!b || b.classList.contains('hidden')) return;
+  b.dataset.mood = mood; b.innerHTML = dragonSVG({size:58, mood});
+  b.classList.remove('jump'); void b.offsetWidth; b.classList.add('jump');
+  clearTimeout(buddy.moodT); buddy.moodT = setTimeout(()=>{ b.dataset.mood = 'happy'; b.innerHTML = dragonSVG({size:58, mood:'happy'}); }, 1600);
+}
+function buddyContext(){
+  const li = levelInfo(state.xp), d = dragon();
+  const wrong = (state.recent||[]).filter(r=>r && r.ok===false && r.w).slice(-6).map(r=>r.w).join(', ');
+  const cur = document.querySelector('.screen.active'); 
+  return `Learner: German-speaking adult from Austria, learning ${DRIVE_LANG[currentLang()]} at level ${myCefr()} (goal B2). App level ${li.level}, streak ${state.streak} days, today ${state.daily.xp}/${state.daily.goal} XP, hearts ${state.hearts}/5, coins ${state.coins}, gems ${state.gems||0}.${wrong ? ' Recently wrong words: ' + wrong + '.' : ''} Current screen: ${cur ? cur.id : '?'}.`;
+}
+function buddyRules(){
+  const d = dragon();
+  return `You are "${d.name}", the learner's small, cheerful ${DRAGON_STAGES[dragonStageIdx()].name} (a cute dragon companion) inside the language-learning app "Wortreise".
+${buddyContext()}
+How to answer:
+- Default language: German (casual "du"). If the learner writes or speaks in ${DRIVE_LANG[currentLang()]}, answer in ${DRIVE_LANG[currentLang()]} and add one short gentle correction in German if there was a mistake.
+- Help with: vocabulary ("Was heißt …?"), grammar explanations with one example, pronunciation tips, motivation, and how to use the app.
+- App features you can point to: Lernen (Level-Karte, Training), Üben (Regeln, Sätze, Reden: Missionen & Übungsplatz, Spiele inkl. Aussprache-Coach), Quests (Kalender, Glücksrad), Liga & Freunde, Profil (Shop, Drachenhöhle, Einstellungen, App verbessern), Fahrmodus.
+- Keep it short: at most 3 sentences, warm and a little funny (dragon jokes welcome). No markdown, no lists.`;
+}
+function buddyBubble(cls, text){
+  const list = document.getElementById('buddyList');
+  const el = document.createElement('div'); el.className = 'bb ' + cls; el.textContent = text;
+  if(cls==='bot'){ const h = document.createElement('button'); h.className = 'tb-hear'; h.textContent = '🔊'; h.onclick = ()=>speakBuddy(text); el.appendChild(h); }
+  list.appendChild(el); list.scrollTop = list.scrollHeight; return el;
+}
+function speakBuddy(text){
+  // Deutsch oder Zielsprache erkennen (grob)
+  const de = /[äöüß]|\b(du|ich|und|nicht|das|ist|ein|eine|wie|was)\b/i.test(text);
+  speak(text, de ? 'de-DE' : LANGS[currentLang()].code);
+}
+function openBuddy(){
+  sndTap();
+  document.getElementById('buddySheet').classList.remove('hidden');
+  document.getElementById('buddyFace').innerHTML = dragonSVG({size:54, mood:'wow'});
+  document.getElementById('buddyName').textContent = dragon().name;
+  if(!buddy.greeted){
+    buddy.greeted = true;
+    const left = state.daily.goal - state.daily.xp;
+    buddyBubble('bot', `Hallo, ich bin ${dragon().name}! 🐉 Frag mich alles – Wörter, Grammatik oder wie die App funktioniert. ${left>0 ? `Heute fehlen dir noch ${left} XP – gemeinsam schaffen wir das!` : 'Dein Tagesziel hast du schon – stark!'}`);
+  }
+  const q = document.getElementById('buddyQuick'); q.innerHTML = '';
+  ['Was soll ich heute üben?','Erklär mir eine Grammatikregel','Was heißt „Fernweh“?','Lass uns auf ' + LANGS[currentLang()].label.split(' ')[1] + ' plaudern!'].forEach(t=>{
+    const b = document.createElement('button'); b.className = 'chat-chip'; b.textContent = t; b.onclick = ()=>buddySend(t); q.appendChild(b);
+  });
+}
+function buddyOffline(text){
+  const t = text.toLowerCase();
+  if(/üben|heute|was soll/.test(t)) return state.lastPlayDate!==new Date().toDateString() ? 'Starte mit dem leuchtenden Level auf der Karte – 5 Minuten reichen schon! ✨' : 'Probier heute 🗣️ Reden oder den 🎤 Aussprache-Coach unter Üben!';
+  if(/herz/.test(t)) return 'Herzen wachsen alle 20 Minuten nach. Im 💪 Training übst du ohne Herzverlust!';
+  if(/drache|hut|kauf/.test(t)) return 'In der Drachenhöhle (tipp im Profil auf mich) kannst du mir Hüte und Farben kaufen 🎩';
+  return 'Für richtige Gespräche brauche ich Claude – öffne die App über den Claude-Link oder trag in Üben → Reden → ⚙️ einen API-Schlüssel ein. 🐉';
+}
+async function buddySend(text){
+  text = (text||'').trim(); if(!text || buddy.busy) return;
+  document.getElementById('buddyInput').value = '';
+  buddyBubble('me', text);
+  buddy.turns.push({role:'user', content:text}); buddy.turns = buddy.turns.slice(-16);
+  buddy.busy = true;
+  const dots = buddyBubble('bot dots', '…');
+  try{
+    const out = (await askClaude(buddy.turns, buddyRules(), false)).replace(/^REPLY:\s*/i,'').trim();
+    dots.remove(); buddy.busy = false;
+    buddy.turns.push({role:'assistant', content:out});
+    buddyBubble('bot', out); speakBuddy(out);
+    document.getElementById('buddyFace').innerHTML = dragonSVG({size:54, mood:'happy'});
+  }catch(e){
+    dots.remove(); buddy.busy = false;
+    const msg = buddyOffline(text); buddyBubble('bot', msg); speakBuddy(msg);
+  }
+}
+document.getElementById('buddy').addEventListener('click', openBuddy);
+document.getElementById('buddyClose').onclick = ()=>{ try{ speechSynthesis.cancel(); }catch(e){} document.getElementById('buddySheet').classList.add('hidden'); };
+document.getElementById('buddySend').onclick = ()=>buddySend(document.getElementById('buddyInput').value);
+document.getElementById('buddyInput').addEventListener('keydown', e=>{ if(e.key==='Enter') buddySend(e.target.value); });
+document.getElementById('buddyMic').addEventListener('click', async ()=>{
+  const b = document.getElementById('buddyMic'); if(b.classList.contains('on')) return;
+  try{ speechSynthesis.cancel(); }catch(e){}
+  b.classList.add('on');
+  // erst Deutsch versuchen; wer in der Zielsprache sprechen will, stellt im Chat um
+  const code = buddy.micLang==='target' ? LANGS[currentLang()].code : 'de-DE';
+  try{ const t = await recognizeOnce(code); b.classList.remove('on'); buddySend(t); }
+  catch(err){
+    b.classList.remove('on');
+    if(['not-allowed','service-not-allowed','start','unsupported'].includes(err)){
+      const el = buddyBubble('bot', '🎤 Hier ist das Mikrofon gesperrt – schreib mir einfach, oder öffne die App im Browser.');
+      if(window.claude){ const ob = document.createElement('button'); ob.className = 'chat-chip ob'; ob.textContent = '🌐 Im Browser öffnen'; ob.onclick = openInBrowser; el.appendChild(ob); }
+    } else toast('🤔 Nichts gehört – nochmal versuchen');
+  }
+});
+document.getElementById('buddyLang').addEventListener('click', ()=>{
+  buddy.micLang = buddy.micLang==='target' ? 'de' : 'target';
+  document.getElementById('buddyLang').textContent = buddy.micLang==='target' ? LANGS[currentLang()].label.split(' ')[0] : '🇩🇪';
+  toast(buddy.micLang==='target' ? '🎤 Sprich jetzt in deiner Lernsprache' : '🎤 Sprich jetzt Deutsch');
+});
 
 /* ---------- INIT ---------- */
 importFromLink();
