@@ -615,6 +615,39 @@ body{
 .my-ideas{text-align:left;margin-top:8px;max-height:30vh;overflow-y:auto;}
 .idea-row{border-top:1px solid #e6ecf0;padding:6px 2px;color:#1d4e63;font-size:14px;display:flex;flex-direction:column;}
 .idea-row small{color:var(--muted);font-weight:700;}
+
+/* ===== DRACHE ===== */
+.dragon{display:block;overflow:visible;}
+.dragon .dr-eyes{animation:blink 4s infinite;transform-origin:60px 46px;}
+@keyframes blink{0%,94%,100%{transform:scaleY(1);}97%{transform:scaleY(.1);}}
+.dragon .dr-wing{animation:flap 1.6s ease-in-out infinite;transform-box:fill-box;}
+.dragon .dr-wing.l{transform-origin:right bottom;}.dragon .dr-wing.r{transform-origin:left bottom;}
+@keyframes flap{0%,100%{transform:rotate(0);}50%{transform:rotate(-8deg);}}
+.dragon .dr-wing.r{animation-name:flapR;}
+@keyframes flapR{0%,100%{transform:rotate(0);}50%{transform:rotate(8deg);}}
+.rank-badge{background:radial-gradient(circle at 50% 60%,#fff6cf,#ffd36b);cursor:pointer;width:60px;height:60px;}
+.rank-badge.big{width:80px;height:80px;}
+.mascot .dragon{margin:0 auto;animation:mascotBounce 2s ease-in-out infinite;}
+.brand-dr{display:inline-block;vertical-align:middle;margin-right:4px;}
+.runner .dragon{display:inline-block;}
+.dash-tip{margin-top:8px;background:rgba(255,255,255,.14);border-radius:12px;padding:6px 10px;font-size:14px;color:#e8f6ff;cursor:pointer;}
+.dash-tip b{color:#ffd23f;}
+.den-card{max-height:92vh;overflow-y:auto;}
+.den-msg{background:#fff4c9;border-radius:12px;padding:8px;font-weight:800;color:#4a2c00;margin-bottom:6px;}
+.den-dragon{display:flex;justify-content:center;animation:mascotBounce 2.4s ease-in-out infinite;}
+.den-name{font-size:22px;color:#1d4e63;}
+.den-edit{border:none;background:none;font-size:18px;cursor:pointer;}
+.den-stage{color:var(--muted);font-weight:700;font-size:14px;margin:2px 0 6px;}
+.den-wallet{font-weight:900;color:#1d4e63;margin:6px 0;}
+.den-tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin:6px 0;}
+.den-tabs button{border:2px solid #e6ecf0;background:#fff;border-radius:10px;padding:6px 0;font-size:12px;font-weight:800;color:#1d4e63;cursor:pointer;font-family:inherit;}
+.den-tabs button.sel{border-color:#06d6a0;background:#e8fff6;}
+.den-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px;}
+.den-item{border:2px solid #e6ecf0;background:#fff;border-radius:14px;padding:8px 4px;cursor:pointer;font-family:inherit;color:#1d4e63;display:flex;flex-direction:column;align-items:center;gap:2px;}
+.den-item.on{border-color:#06d6a0;background:#e8fff6;}
+.di-ico{font-size:30px;height:36px;display:flex;align-items:center;}
+.di-ico i{display:inline-block;width:30px;height:30px;border-radius:50%;border:2px solid rgba(0,0,0,.15);}
+.den-item small{font-weight:800;font-size:13px;}.den-item em{font-style:normal;font-size:12px;color:var(--muted);font-weight:700;}
 </style>
 </head>
 <body>
@@ -670,6 +703,7 @@ body{
           <div class="mini-bar"><div class="mini-fill goal" id="goalFill"></div></div>
         </div>
       </div>
+      <div class="dash-tip" id="dashTip"></div>
       <div class="dash-actions">
         <button class="chip-btn" id="trainBtn">💪 Training</button>
         <button class="chip-btn drive-chip" id="driveChip">🚗 Fahren</button>
@@ -881,6 +915,11 @@ body{
     <button class="btn btn-yellow hidden" id="penRepair">🔧 Streak reparieren</button>
     <button class="btn btn-primary" id="penOk">💪 Jetzt aufholen</button>
   </div>
+</div>
+<div class="ad-overlay hidden" id="denOverlay">
+  <div class="ad-card den-card"><div class="intro-title">🏔️ Drachenhöhle</div>
+    <div id="denHead"></div><div class="den-tabs" id="denTabs"></div><div class="den-grid" id="denGrid"></div>
+    <button class="btn btn-secondary" id="denClose">Schließen</button></div>
 </div>
 <div class="ad-overlay hidden" id="talkSetOverlay">
   <div class="ad-card talk-set"><div class="intro-title">🎙️ Übungsplatz</div><div id="talkSetBody"></div></div>
@@ -2539,7 +2578,7 @@ function finishLevel(){
   checkAchievements();
   saveState();
 
-  document.getElementById('resultMascot').textContent = stars===3?'🥳':stars===2?'😄':stars===1?'🙂':'😅';
+  document.getElementById('resultMascot').innerHTML = dragonSVG({size:100, mood: stars>=2?'wow':stars===1?'happy':'sad'});
   document.getElementById('resultStars').innerHTML = [0,1,2].map(k=>`<span class="star-pop" style="animation-delay:${0.25+k*0.3}s">${k<stars?'⭐':'☆'}</span>`).join('');
   for(let k=0;k<stars;k++) setTimeout(()=>beep(700+k*180,0.12,'triangle',0.2), 250+k*300);
   document.getElementById('resultTitle').textContent = stars>=2 ? (session.mode==='phrases'?'Alltag gemeistert! 💬':isGrammar?'Grammatik gezähmt! 🧠':'Level geschafft! 🎉') : 'Fast geschafft!';
@@ -2713,6 +2752,7 @@ function addXP(n){
   if(after.level > before){
     toast(after.rank.name!==beforeInfo.rank.name ? `🎉 Level ${after.level}! Neuer Rang: ${after.rank.icon} ${after.rank.name}` : `🎉 Level ${after.level} erreicht!`);
     sndLevelUp(); launchConfetti();
+    setTimeout(()=>{ try{ checkDragonGrowth(); }catch(e){} }, 1200);
   }
   if(!goalBefore && state.daily.xp >= state.daily.goal){
     state.coins += 10;
@@ -2952,7 +2992,7 @@ function buy(item){
 function renderProfileExtras(){
   updateTopbar();
   const li = levelInfo(state.xp);
-  document.getElementById('profRank').textContent = li.rank.icon;
+  paintDragons();
   document.getElementById('profName').textContent = `Lv ${li.level} · ${li.rank.name}`;
   document.getElementById('profNext').textContent = `${li.span-li.cur} XP bis Level ${li.level+1} · ${LEAGUES[state.league.tier]}-Liga`;
   const acc = recentAccuracy();
@@ -2989,7 +3029,7 @@ document.getElementById('placementBtn').addEventListener('click', ()=>startPlace
 function renderDashboard(){
   ensureDaily(); ensureLeague(); updateTopbar();
   const li = levelInfo(state.xp);
-  document.getElementById('rankBadge').textContent = li.rank.icon;
+  paintDragons();
   document.getElementById('rankName').textContent = `Lv ${li.level} · ${li.rank.name}`;
   document.getElementById('rankXp').textContent = `${li.cur}/${li.span} XP`;
   document.getElementById('xpBarFill').style.width = (li.cur/li.span*100)+'%';
@@ -3857,8 +3897,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '3.2';
+const APP_VERSION = '3.3';
 const CHANGELOG = [
+  ['3.3', 'Dein Drache Flügo begleitet dich: wächst mit deinem Level, Hüte/Brillen/Farben in der Drachenhöhle'],
   ['3.2', 'App verbessern läuft im Hintergrund: Idee senden, Status sehen (offen · in Arbeit · eingebaut)'],
   ['3.1', 'Neu unter Üben → 🗣️ Reden: Gesprächs-Missionen pro Level (Vokabeln → Zeitung/Radio → Gespräch) und Übungsplatz mit einstellbarer Korrektur'],
   ['3.0', 'App verbessern direkt aus dem Profil · Versionsnummer & „Was ist neu?“'],
@@ -4498,21 +4539,8 @@ function renderGemShop(){
     box.appendChild(el);
   });
   const own = state.mascots || ['🦉'];
-  const mrow = document.createElement('div'); mrow.className = 'mascot-row';
-  MASCOTS.forEach(m=>{
-    const b = document.createElement('button'); b.className = 'mascot-pick' + ((state.mascot||'🦉')===m.e ? ' sel' : '');
-    b.innerHTML = `<span>${m.e}</span><small>${own.includes(m.e) ? m.name : '💎 '+m.price}</small>`;
-    b.onclick = ()=>{
-      if(!own.includes(m.e)){
-        if(state.gems < m.price){ toast(`${m.name} kostet ${m.price} 💎`); return; }
-        state.gems -= m.price; state.mascots = [...own, m.e]; toast(`🎉 ${m.name} ist jetzt dein Begleiter!`); launchConfetti();
-      }
-      state.mascot = m.e; saveState(); applyMascot(); updateTopbar(); renderStats();
-    };
-    mrow.appendChild(b);
-  });
-  box.appendChild(Object.assign(document.createElement('div'), {className:'panel-title dark', textContent:'🐾 Begleiter'}));
-  box.appendChild(mrow);
+  const den = document.createElement('button'); den.className = 'btn btn-yellow'; den.textContent = '🐉 Drachenhöhle – Hüte, Brillen & Farben';
+  den.onclick = ()=>openDragonDen(); box.appendChild(den);
   const packs = document.createElement('div'); packs.className = 'gem-packs';
   GEM_PACKS.forEach(p=>{
     const b = document.createElement('button'); b.className = 'gem-pack';
@@ -4522,7 +4550,7 @@ function renderGemShop(){
   });
   box.appendChild(packs);
 }
-function applyMascot(){ const b = document.querySelector('.brand'); if(b && b.firstChild) b.firstChild.nodeValue = (state.mascot||'🦉') + ' '; }
+function applyMascot(){ try{ paintDragons(); }catch(e){} }
 
 /* ---------- ☁️ Wolken-Verbinden ---------- */
 const CLOUD_COLS = ['#ffd6e8','#d6ecff','#e6dcff','#d8f7e4','#fff1c9'];
@@ -4604,7 +4632,7 @@ const QUICK = {
 function pairId(a,b){ return [a,b].sort().join('~'); }
 function myCard(){
   const li = levelInfo(state.xp);
-  return {nick: state.nick || 'Spieler', mascot: state.mascot || '🦉', lang: currentLang(), cefr: myCefr(),
+  return {nick: state.nick || 'Spieler', mascot: '🐲', lang: currentLang(), cefr: myCefr(),
     level: li.level, xp: state.xp, streak: state.streak, ach: Object.keys(state.achievements||{}), ts: Date.now()};
 }
 let frCardTimer = null;
@@ -5288,11 +5316,165 @@ function leaveTalk(){ try{ speechSynthesis.cancel(); }catch(e){} talk.busy = fal
 document.getElementById('talkBack').addEventListener('click', leaveTalk);
 document.getElementById('segTalk').addEventListener('click', ()=>{ sndTap(); practiceTab = 'talk'; pendingMode = 'talk'; renderGrammar(); });
 
+/* =========================================================
+   🐉 DRACHEN-BEGLEITER: wächst mit deinem Level, Garderobe & Farben
+   ========================================================= */
+const DRAGON_STAGES = [
+  {lv:1,  name:'Baby-Drache',   s:0.62},
+  {lv:4,  name:'Mini-Drache',   s:0.72},
+  {lv:8,  name:'Jung-Drache',   s:0.82},
+  {lv:14, name:'Drache',        s:0.9},
+  {lv:22, name:'Großer Drache', s:0.96},
+  {lv:32, name:'Legende',       s:1},
+];
+const DRAGON_COLORS = {
+  green:{n:'Grün', c:'#5ccf6a', d:'#2f9a45', b:'#d9f7c9', price:0},
+  blue:{n:'Blau', c:'#4fa8ff', d:'#2a6fc4', b:'#d6ecff', price:50},
+  pink:{n:'Rosa', c:'#ff8fc4', d:'#d9558f', b:'#ffe1ef', price:50},
+  purple:{n:'Lila', c:'#a17bff', d:'#6a45d4', b:'#ebe2ff', price:60},
+  red:{n:'Rot', c:'#ff6b5b', d:'#c83a2e', b:'#ffe0d6', price:60},
+  gold:{n:'Gold', c:'#ffcb3d', d:'#d89a00', b:'#fff4c9', gems:20},
+};
+const DRAGON_ITEMS = [
+  {id:'cap', slot:'hat', e:'🧢', n:'Kappe', price:30}, {id:'bow', slot:'hat', e:'🎀', n:'Schleife', price:25},
+  {id:'tophat', slot:'hat', e:'🎩', n:'Zylinder', price:40}, {id:'grad', slot:'hat', e:'🎓', n:'Doktorhut', price:80},
+  {id:'phones', slot:'hat', e:'🎧', n:'Kopfhörer', price:45}, {id:'crown', slot:'hat', e:'👑', n:'Krone', gems:15},
+  {id:'glasses', slot:'eyes', e:'👓', n:'Brille', price:25}, {id:'shades', slot:'eyes', e:'🕶️', n:'Sonnenbrille', price:35},
+  {id:'scarf', slot:'neck', e:'🧣', n:'Schal', price:30}, {id:'medal', slot:'neck', e:'🏅', n:'Medaille', price:50},
+  {id:'book', slot:'hand', e:'📚', n:'Buch', price:30}, {id:'wand', slot:'hand', e:'🪄', n:'Zauberstab', price:45},
+  {id:'icecream', slot:'hand', e:'🍦', n:'Eis', price:20}, {id:'flag', slot:'hand', e:'🚩', n:'Fahne', price:20},
+];
+const SLOTS = [['hat','🎩 Kopf'],['eyes','👓 Augen'],['neck','🧣 Hals'],['hand','🪄 Pfote'],['color','🎨 Farbe']];
+function dragon(){ return state.dragon = Object.assign({name:'Flügo', color:'green', owned:[], colors:['green'], wear:{}}, state.dragon||{}); }
+function dragonStageIdx(){ const lv = levelInfo(state.xp).level; let k = 0; DRAGON_STAGES.forEach((s,i)=>{ if(lv>=s.lv) k = i; }); return k; }
+function dragonMood(){ return state.lastPlayDate===new Date().toDateString() ? 'happy' : 'sleepy'; }
+function dragonSVG(opts={}){
+  const d = dragon(), st = opts.stage!=null ? opts.stage : dragonStageIdx(), col = DRAGON_COLORS[d.color] || DRAGON_COLORS.green;
+  const mood = opts.mood || dragonMood(), sc = DRAGON_STAGES[st].s, w = 12 + st*5;
+  const eyes = mood==='sleepy'
+    ? '<path d="M44 46 q5 4 10 0 M66 46 q5 4 10 0" stroke="#2b2b3a" stroke-width="3" fill="none" stroke-linecap="round"/>'
+    : mood==='sad'
+    ? '<circle cx="49" cy="46" r="5" fill="#2b2b3a"/><circle cx="71" cy="46" r="5" fill="#2b2b3a"/><path d="M42 38 l10 3 M78 38 l-10 3" stroke="#2b2b3a" stroke-width="2.5" stroke-linecap="round"/>'
+    : `<g class="dr-eyes"><circle cx="49" cy="46" r="${mood==='wow'?7:6}" fill="#2b2b3a"/><circle cx="71" cy="46" r="${mood==='wow'?7:6}" fill="#2b2b3a"/><circle cx="51" cy="44" r="2" fill="#fff"/><circle cx="73" cy="44" r="2" fill="#fff"/></g>`;
+  const mouth = mood==='sad' ? '<path d="M54 61 q6 -5 12 0" stroke="#2b2b3a" stroke-width="2.5" fill="none" stroke-linecap="round"/>'
+    : mood==='wow' ? '<ellipse cx="60" cy="61" rx="5" ry="6" fill="#7a2b3a"/>'
+    : '<path d="M53 58 q7 7 14 0" stroke="#2b2b3a" stroke-width="2.5" fill="none" stroke-linecap="round"/>';
+  const horns = st>=1 ? `<path d="M40 24 l-5 -${7+st*2} l11 5 z M80 24 l5 -${7+st*2} l-11 5 z" fill="${col.b}" stroke="${col.d}" stroke-width="1.5"/>` : '';
+  const spikes = st>=3 ? `<path d="M60 14 l4 -7 l4 7 z M52 15 l3 -6 l4 6 z M68 15 l3 -6 l4 6 z" fill="${col.d}"/>` : '';
+  const aura = st>=5 ? '<circle cx="60" cy="62" r="56" fill="url(#drAura)" opacity=".55"/>' : '';
+  const W = d.wear || {};
+  const item = (slot, x, y, size)=>{ const it = DRAGON_ITEMS.find(i=>i.id===W[slot]); return it ? `<text x="${x}" y="${y}" font-size="${size}" text-anchor="middle">${it.e}</text>` : ''; };
+  return `<svg class="dragon ${opts.cls||''}" viewBox="0 0 120 120" width="${opts.size||64}" height="${opts.size||64}" aria-label="${escapeHtml(d.name)}">
+    <defs><radialGradient id="drAura"><stop offset="0" stop-color="#ffd23f"/><stop offset="1" stop-color="#ffd23f" stop-opacity="0"/></radialGradient></defs>
+    ${aura}
+    <g transform="translate(60 112) scale(${sc}) translate(-60 -112)">
+      <path d="M86 92 q24 4 24 -16 q-2 10 -14 8" fill="${col.c}" stroke="${col.d}" stroke-width="2"/>
+      <path d="M38 70 q-${w+14} -${w} -${w+8} -${w+18} q${w/2} ${w/2+6} ${w+12} 10 z" fill="${col.b}" stroke="${col.d}" stroke-width="2" class="dr-wing l"/>
+      <path d="M82 70 q${w+14} -${w} ${w+8} -${w+18} q-${w/2} ${w/2+6} -${w+12} 10 z" fill="${col.b}" stroke="${col.d}" stroke-width="2" class="dr-wing r"/>
+      <ellipse cx="60" cy="88" rx="27" ry="24" fill="${col.c}" stroke="${col.d}" stroke-width="2"/>
+      <ellipse cx="60" cy="93" rx="16" ry="15" fill="${col.b}"/>
+      <ellipse cx="45" cy="110" rx="9" ry="5" fill="${col.d}"/><ellipse cx="75" cy="110" rx="9" ry="5" fill="${col.d}"/>
+      ${spikes}
+      <circle cx="60" cy="46" r="31" fill="${col.c}" stroke="${col.d}" stroke-width="2"/>
+      ${horns}
+      <ellipse cx="60" cy="58" rx="15" ry="10" fill="${col.b}"/>
+      <circle cx="54" cy="57" r="1.6" fill="${col.d}"/><circle cx="66" cy="57" r="1.6" fill="${col.d}"/>
+      ${eyes}${mouth}
+      <ellipse cx="39" cy="55" rx="5" ry="3" fill="#ff8fa3" opacity=".6"/><ellipse cx="81" cy="55" rx="5" ry="3" fill="#ff8fa3" opacity=".6"/>
+      ${item('neck', 60, 78, 18)}${item('eyes', 60, 52, 26)}${item('hat', 60, 22, 30)}${item('hand', 92, 98, 20)}
+    </g></svg>`;
+}
+function paintDragons(){
+  const set = (id, o)=>{ const el = document.getElementById(id); if(el) el.innerHTML = dragonSVG(o); };
+  set('rankBadge', {size:56}); set('profRank', {size:72});
+  document.querySelectorAll('.mascot').forEach(m=>{ if(!m.id) m.innerHTML = dragonSVG({size:96, mood:'happy'}); });
+  const r = document.getElementById('runner'); if(r) r.innerHTML = dragonSVG({size:34, mood:'happy'});
+  const b = document.querySelector('.brand');
+  if(b){ let sp = b.querySelector('.brand-dr'); if(!sp){ if(b.firstChild.nodeType===3) b.firstChild.nodeValue = ''; b.insertAdjacentHTML('afterbegin', '<span class="brand-dr"></span>'); sp = b.querySelector('.brand-dr'); } sp.innerHTML = dragonSVG({size:30}); }
+  renderDashTip();
+}
+let lastStage = null;
+function checkDragonGrowth(){
+  const k = dragonStageIdx();
+  if(state.dragonStage!=null && k > state.dragonStage){
+    state.dragonStage = k; saveState();
+    openDragonDen(`🎉 ${dragon().name} ist gewachsen! Jetzt: ${DRAGON_STAGES[k].name}`);
+    launchConfetti(); sndLevelUp();
+  } else if(state.dragonStage==null){ state.dragonStage = k; }
+  paintDragons();
+}
+
+/* ---------- 🏔️ Drachenhöhle ---------- */
+let denTab = 'hat';
+function openDragonDen(msg){
+  renderDen(msg);
+  document.getElementById('denOverlay').classList.remove('hidden');
+}
+function renderDen(msg){
+  const d = dragon(), k = dragonStageIdx(), next = DRAGON_STAGES[k+1], lv = levelInfo(state.xp).level;
+  document.getElementById('denHead').innerHTML = `
+    ${msg ? `<div class="den-msg">${msg}</div>` : ''}
+    <div class="den-dragon">${dragonSVG({size:170, mood: msg ? 'wow' : 'happy', cls:'big'})}</div>
+    <div class="den-name"><b id="denName"></b> <button class="den-edit" id="denRename">✏️</button></div>
+    <div class="den-stage">${DRAGON_STAGES[k].name}${next ? ` · noch ${next.lv-lv} Level bis <b>${next.name}</b>` : ' · voll ausgewachsen 🏆'}</div>
+    ${next ? `<div class="mini-bar big"><div class="mini-fill lvl" style="width:${Math.round(100*(lv-DRAGON_STAGES[k].lv)/(next.lv-DRAGON_STAGES[k].lv))}%"></div></div>` : ''}
+    <div class="den-wallet">🪙 ${state.coins} · 💎 ${state.gems||0}</div>`;
+  document.getElementById('denName').textContent = d.name;
+  document.getElementById('denRename').onclick = ()=>{
+    const n = (prompt('Wie soll dein Drache heißen?', d.name)||'').trim().slice(0,14);
+    if(n){ d.name = n; saveState(); renderDen(); }
+  };
+  document.getElementById('denTabs').innerHTML = SLOTS.map(([s,l])=>`<button class="${s===denTab?'sel':''}" data-s="${s}">${l}</button>`).join('');
+  document.querySelectorAll('#denTabs button').forEach(b=>b.onclick = ()=>{ sndTap(); denTab = b.dataset.s; renderDen(); });
+  const grid = document.getElementById('denGrid'); grid.innerHTML = '';
+  const list = denTab==='color'
+    ? Object.entries(DRAGON_COLORS).map(([id,c])=>({id, n:c.n, price:c.price, gems:c.gems, swatch:c.c, owned:d.colors.includes(id), on:d.color===id}))
+    : DRAGON_ITEMS.filter(i=>i.slot===denTab).map(i=>({...i, owned:d.owned.includes(i.id), on:d.wear[i.slot]===i.id}));
+  list.forEach(it=>{
+    const b = document.createElement('button'); b.className = 'den-item' + (it.on ? ' on' : '');
+    const cost = it.gems ? `💎 ${it.gems}` : it.price ? `🪙 ${it.price}` : 'gratis';
+    b.innerHTML = `<span class="di-ico">${it.swatch ? `<i style="background:${it.swatch}"></i>` : it.e}</span><small>${it.n}</small><em>${it.on ? '✅ an' : it.owned ? 'anziehen' : cost}</em>`;
+    b.onclick = ()=>denBuy(it);
+    grid.appendChild(b);
+  });
+}
+function denBuy(it){
+  const d = dragon(), isColor = denTab==='color';
+  if(!it.owned){
+    if(it.gems ? (state.gems||0) < it.gems : state.coins < (it.price||0)){ toast(it.gems ? 'Zu wenig 💎' : 'Zu wenig 🪙 – Quests & Spiele bringen Münzen!'); sndWrong(); return; }
+    if(it.gems) state.gems -= it.gems; else state.coins -= (it.price||0);
+    if(isColor) d.colors.push(it.id); else d.owned.push(it.id);
+    sndLevelUp(); toast(`🎉 ${it.n} gekauft!`);
+  } else sndTap();
+  if(isColor) d.color = it.id;
+  else d.wear[it.slot] = it.on ? null : it.id;
+  saveState(); updateTopbar(); renderDen(); paintDragons();
+}
+document.getElementById('denClose').onclick = ()=>document.getElementById('denOverlay').classList.add('hidden');
+document.getElementById('rankBadge').addEventListener('click', ()=>{ sndTap(); openDragonDen(); });
+document.getElementById('profRank').addEventListener('click', ()=>{ sndTap(); openDragonDen(); });
+
+/* ---------- Drache führt: kurzer Tipp auf der Startseite ---------- */
+function renderDashTip(){
+  const el = document.getElementById('dashTip'); if(!el || !state.difficulty) return;
+  ensureDaily();
+  const d = dragon(), left = state.daily.goal - state.daily.xp;
+  const played = state.lastPlayDate===new Date().toDateString();
+  const t = state.hearts<=0 ? 'Keine Herzen? Im 💪 Training übst du ohne Herzverlust!'
+    : !played ? 'Lass uns loslegen – tippe auf das leuchtende Level! ✨'
+    : left>0 ? `Noch ${left} XP bis zum Tagesziel – du schaffst das! 💪`
+    : questReady && questReady() ? 'Eine Quest ist fertig – hol dir die Belohnung bei 🎯 Quests!'
+    : pick(['Tagesziel geschafft! Lust auf ein Spiel in 🎮 Spiele?','Super! Willst du über das Gelernte 🗣️ reden?','Ich hätte gern einen neuen Hut… 🎩 (tipp auf mich!)']);
+  el.innerHTML = `<b></b> ${escapeHtml(t)}`; el.querySelector('b').textContent = d.name + ':';
+}
+
 /* ---------- INIT ---------- */
 importFromLink();
 ensureDaily(); ensureLeague(); applyAbsencePenalty(); checkAchievements(); saveState(); applyMascot(); updateTopbar();
 if(state.difficulty) setTimeout(maybeShowDaily, 1200);
 setTimeout(announceVersion, 2500);
+try{ checkDragonGrowth(); }catch(e){}
+document.getElementById('dashTip').addEventListener('click', ()=>{ sndTap(); openDragonDen(); });
 if(state.language && state.difficulty){
   renderMap();
   showScreen('screen-map');
