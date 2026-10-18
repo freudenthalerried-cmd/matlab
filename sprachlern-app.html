@@ -794,14 +794,18 @@ body{background:radial-gradient(ellipse at 50% 0%,#4a331e 0%,#2a1c11 55%,#1c130d
 .hub-say{max-width:86%;background:#fbf3df;color:#3b2a1a;border:2px solid #c9a86a;border-radius:18px;padding:10px 14px;font-weight:800;font-size:16px;text-align:center;box-shadow:0 6px 16px rgba(0,0,0,.35);margin-top:4px;}
 .hub-say::after{content:'';position:absolute;left:50%;bottom:-10px;margin-left:-9px;border:9px solid transparent;border-top-color:#c9a86a;border-bottom:0;}
 .hub-say.pop{animation:popIn .35s both;}
+.hub-say{max-height:40vh;overflow-y:auto;}
 .hub-say .hs-q{display:block;}
+.hub-say .hs-ear{display:block;font-size:13px;color:#b8442f;margin-top:5px;animation:earPulse 1s ease-in-out infinite;}
+@keyframes earPulse{50%{opacity:.45;}}
+.hub-mic.ear{animation:micPulse 1s infinite;}
 .hub-say .hs-de{display:block;font-size:13px;font-weight:700;color:#7a5a32;margin-top:3px;}
 .hs-chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:9px;}
 .hs-chip{border:none;border-radius:999px;padding:8px 14px;font-family:inherit;font-weight:800;font-size:15px;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.25);-webkit-tap-highlight-color:transparent;}
 .hs-chip.yes{background:linear-gradient(180deg,#7fd36b,#3f9a3a);color:#fff;}
 .hs-chip.no{background:#efe0bf;color:#3b2a1a;border:1px solid #c9a86a;}
 .hs-chip:active{transform:translateY(2px);box-shadow:none;}
-.hub-ring{position:relative;width:min(92vw,400px);aspect-ratio:1;max-height:60vh;}
+.hub-ring{position:relative;width:100%;flex:1 1 0;min-height:110px;}
 .hub-dragon{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);cursor:pointer;animation:buddyFloat 3s ease-in-out infinite;filter:drop-shadow(0 12px 14px rgba(0,0,0,.5));z-index:2;}
 @keyframes orbBob{0%,100%{margin-top:0;}50%{margin-top:-7px;}}
 .hub-name{text-align:center;color:#fbeed0;text-shadow:0 2px 4px #000;}
@@ -4244,8 +4248,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '5.1';
+const APP_VERSION = '5.2';
 const CHANGELOG = [
+  ['5.2', '🎤 Richtig reden: einmal auf „Sprich mit Flügo“ tippen – dann hört Flügo nach jeder Antwort automatisch wieder zu, antwortet als KI direkt am Drachen und macht Tricks, bis du „Stopp“ oder „Tschüss“ sagst'],
   ['5.1', '✨ Neuer Name: Flügo! Kein Menü mehr – Flügo fragt dich (z. B. „Do you want to play a game?“), du antwortest mit Ja/Etwas anderes oder per Stimme · 🎤 Sprich-Knopf unter dem Drachen · 🗣️ eigene deutsche Flügo-Stimme + Anleitung für schönere Gratis-Stimmen'],
   ['5.0', '🐉🔥 Flügo ist jetzt eine echte KI: beantwortet alles, merkt sich dich und macht Kunststücke auf Befehl – „Mach Feuer!“, „Flieg!“, „Tanz!“ (auch am großen Drachen per Sprache)'],
   ['4.9', '🐉❓ Flügo fragt dich ab und zu etwas (Übersetzen, Hören, Sprechen) – abschaltbar in den Einstellungen'],
@@ -5970,7 +5975,7 @@ function fqCanShow(minOnScreen){
   if(fqPopupVisible()){ fq.calmAt = now; return false; }
   if(now - fq.calmAt < 6000 || now - fq.screenAt < (minOnScreen||8000) || now - fq.closedAt < 60000) return false;
   const ae = document.activeElement; if(ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return false;
-  if(hubListening) return false;
+  if(hubListening || hubDlg.live || hubDlg.busy) return false;
   if(cur==='screen-stats' && document.querySelector('#screen-stats details[open]')) return false;
   try{ if(speechSynthesis.speaking) return false; }catch(e){}
   if(!seenWords().length && !state.lastPlayDate) return false;          // ganz neu → erst mal spielen lassen
@@ -7499,7 +7504,11 @@ function hubSayHTML(q, de, chips){
   if(de) s.querySelector('.hs-de').textContent = de;
   (chips||[]).forEach(([txt, fn, cls])=>{ const b = document.createElement('button'); b.className = 'hs-chip ' + (cls||''); b.textContent = txt; b.onclick = e=>{ e.stopPropagation(); fn(); }; s.querySelector('.hs-chips').appendChild(b); });
   s.classList.remove('pop'); void s.offsetWidth; s.classList.add('pop');
+  hubFit();
 }
+// Drache so groß wie Platz ist (Sprechblase kann wachsen)
+function hubFit(){ const r = document.querySelector('.hub-ring'), d = document.getElementById('hubDragon'); if(!r || !d) return; d.style.zoom = Math.max(.45, Math.min(1, (r.clientHeight - 6)/215)).toFixed(3); }
+addEventListener('resize', ()=>{ if(document.getElementById('screen-hub').classList.contains('active')) hubFit(); });
 function hubCur(){ if(!hubDlg.list.length) hubDlg.list = hubOfferList(); return hubDlg.list[hubDlg.i % hubDlg.list.length]; }
 // Aktuellen Vorschlag zeigen (und auf Wunsch vorlesen); Promise endet nach dem Sprechen
 function hubOffer(speakIt){
@@ -7553,7 +7562,7 @@ function renderHub(){
   hubDlg.list = hubOfferList(); hubDlg.i = 0; hubOffer(false);
 
 }
-function openHub(){ renderHub(); hubTalkUI(); clearTimeout(hubDlg.t); hubDlg.t = setTimeout(()=>{ if(document.getElementById('screen-hub').classList.contains('active') && !fqOpen() && !hubListening) hubOffer(true); }, 600); showScreen('screen-hub'); }
+function openHub(){ renderHub(); hubTalkUI(); hubDlg.mode = 'offer'; requestAnimationFrame(hubFit); clearTimeout(hubDlg.t); hubDlg.t = setTimeout(()=>{ if(document.getElementById('screen-hub').classList.contains('active') && !fqOpen() && !hubListening) hubOffer(true); }, 600); showScreen('screen-hub'); }
 document.querySelector('.brand').addEventListener('click', ()=>{ if(state.difficulty){ sndTap(); try{ stopTale(); }catch(e){} openHub(); } });
 const HUB_INTENTS = [
   [/m[äa]rchen|geschicht|story|stories|tale|cuento|histoire|storia|favola/i, 'tales'],
@@ -7567,60 +7576,117 @@ const HUB_INTENTS = [
   [/profil|profile|shop|einstellung|setting/i, 'profile'],
 ];
 document.getElementById('hubDragon').addEventListener('click', ()=>{
-  if(hubListening){ try{ buddy.rec && buddy.rec.abort(); }catch(e){} return; }
+  if(hubListening || hubDlg.live){ hubStopLive(); try{ speechSynthesis.cancel(); }catch(e){} return; }
   if(fqOpen()) return;
-  sndTap();
-  hubOffer(true).then(()=>{ if(document.getElementById('screen-hub').classList.contains('active') && micAvailable() && !hubDlg.micBlocked && !hubListening && !fqOpen()) hubListen(); });
+  sndTap(); hubDlg.mode = 'offer';
+  const talk = micAvailable() && !hubDlg.micBlocked; if(talk){ hubDlg.live = true; hubDlg.misses = 0; hubTalkUI(); }
+  hubOffer(true).then(()=>{ if(talk) hubContinue(); });
 });
 function hubTrick(id){
   const s = document.getElementById('hubSay'), L = DRAGON_LINES[id] || {}, line = pick(L[currentLang()] || L.en || ['✨']);
   s.textContent = line; s.classList.remove('pop'); void s.offsetWidth; s.classList.add('pop');
   speakAsync(line, LANGS[currentLang()].code);
-  runDragonAction(id).then(()=>{ if(document.getElementById('screen-hub').classList.contains('active')) hubOffer(false); });
+  runDragonAction(id).then(()=>{ if(!hubOnHub()) return; if(hubDlg.mode!=='chat') hubOffer(false); hubContinue(); });
 }
 let hubListening = false;
 function hubTalkUI(){
   const m = document.getElementById('hubMic'); if(!m) return;
   document.getElementById('hubLang').textContent = buddy.micLang==='target' ? LANGS[currentLang()].label.split(' ')[0] : '🇩🇪';
-  m.innerHTML = hubListening ? '<span>🎧</span> Ich höre zu …' : '<span>🎤</span> Sprich mit ' + escapeHtml(dragon().name);
-  m.classList.toggle('on', hubListening);
+  m.innerHTML = hubDlg.live ? '<span>⏹️</span> Gespräch beenden' : '<span>🎤</span> Sprich mit ' + escapeHtml(dragon().name);
+  m.classList.toggle('on', hubDlg.live); m.classList.toggle('ear', hubListening);
 }
 function hubTypeOpen(msg){
+  hubStopLive();
   buddy.greeted = true; buddy.voice = false; openBuddy();
   if(msg) buddyBubble('bot', msg);
   setTimeout(()=>document.getElementById('buddyInput').focus(), 250);
 }
+function hubOnHub(){ return document.getElementById('screen-hub').classList.contains('active'); }
+function hubStopLive(){ hubDlg.live = false; hubDlg.misses = 0; try{ buddy.ctl && hubDlg.busy && buddy.ctl.abort(); }catch(e){} try{ hubListening && buddy.rec && buddy.rec.abort(); }catch(e){} hubTalkUI(); }
+// Im Gesprächsmodus nach jeder Antwort von Flügo gleich wieder zuhören
+function hubContinue(){ if(hubDlg.live) setTimeout(()=>{ if(hubDlg.live && hubOnHub() && !hubListening && !hubDlg.busy && !fqOpen()) hubListen(true); }, 300); }
 function hubHeard(heard){
+  const t = heard.toLowerCase().trim(), words = t.split(/\s+/).length, L = currentLang();
+  if(words <= 3 && /^(stopp?|halt|ende|schluss|tsch[üu]ss|servus|baba|ciao|bye|goodbye|good ?bye|adi[óo]s|au revoir|basta|fertig|pause|that'?s all)\b/.test(t)){
+    hubStopLive(); hubDlg.mode = 'offer';
+    const bye = ({en:'See you soon!', es:'¡Hasta pronto!', fr:'À bientôt !', it:'A presto!'})[L] || 'Bis bald!';
+    hubSayHTML('👋 ' + bye, 'Bis gleich! Tipp auf 🎤, wenn du wieder reden willst.', [['💡 ' + ({en:'Ideas', es:'Ideas', fr:'Idées', it:'Idee'}[L] || 'Ideen'), ()=>hubOffer(true), 'no']]);
+    if(state.settings.sound!==false) speakAsync(bye, LANGS[L].code);
+    return;
+  }
   let cmd = dragonCommand(heard, true); if(cmd==='random') cmd = pick(DRAGON_RANDOM);
   if(cmd){ hubTrick(cmd); return; }
-  const hit = HUB_INTENTS.find(([re])=>re.test(heard));
-  if(hit){ toast('🐉 ' + heard); hubGo(hit[1]); return; }
-  const t = heard.toLowerCase().trim();
-  if(/^(ja+|jo|jep|yes|yeah|yep|sure|ok(ay)?|gerne?|klar|los|s[ií]|oui|ouais|d'accord|certo|claro|vale|let'?s go)\b/.test(t)){ hubAccept(); return; }
-  if(/^(nein|nö|no|nope|non|nah|lieber|was anderes|etwas anderes|anders|something else|otra|autre|altro)\b/.test(t)){ hubNext(true); return; }
-  buddy.greeted = true; buddy.voice = false; openBuddy(); buddy.voice = micAvailable(); updateBuddyControls();
-  setTimeout(()=>buddySend(heard, true), 300);
+  const offer = hubDlg.mode!=='chat';
+  if(offer || words <= 4){ const hit = HUB_INTENTS.find(([re])=>re.test(heard)); if(hit){ hubStopLive(); toast('🐉 ' + heard); hubGo(hit[1]); return; } }
+  if(offer && /^(ja+|jo|jep|yes|yeah|yep|sure|ok(ay)?|gerne?|klar|los|s[ií]|oui|ouais|d'accord|certo|claro|vale|let'?s go)\b/.test(t)){ hubStopLive(); hubAccept(); return; }
+  if(offer && /^(nein|nö|no|nope|non|nah|lieber|was anderes|etwas anderes|anders|something else|otra|autre|altro)\b/.test(t)){ hubNext(true).then(hubContinue); return; }
+  hubChat(heard);
 }
-async function hubListen(){
+// Freies Gespräch direkt am großen Drachen (KI), Antwort in der Sprechblase + vorlesen
+async function hubChat(text){
+  hubDlg.mode = 'chat';
+  if(!sampleFn && !apiKey() && !window.claude){ hubStopLive(); buddy.greeted = true; buddy.voice = false; openBuddy(); setTimeout(()=>buddySend(text), 300); return; }
+  const L = currentLang();
+  hubSayHTML('🤔 …', '„' + text + '“', null);
+  buddy.turns.push({role:'user', content:text}); buddy.turns = buddy.turns.slice(-BUDDY_TURNS);
+  const ctl = buddy.ctl = new AbortController(); hubDlg.busy = true; hubTalkUI();
+  let out;
+  try{
+    out = await askClaude(buddy.turns, buddyRules(true), false, {signal:ctl.signal, tier:'quick', effort:'low', maxTokens:2048,
+      onText: u=>{ const t = buddyLive(u.text), q = document.querySelector('#hubSay .hs-q'); if(t && q && hubOnHub()){ q.textContent = t; hubFit(); } }});
+    if(!buddyParse(out).reply) throw {code:'empty'};
+  }catch(e){
+    hubDlg.busy = false;
+    if(e && e.code==='cancelled'){ hubTalkUI(); return; }
+    hubStopLive();
+    if(!hubOnHub()) return;
+    buddy.greeted = true; buddy.voice = false; openBuddy(); buddyFail(e, buddyBubble('me', text), text);   // dort steht, was fehlt (Schlüssel, Limit …)
+    return;
+  }
+  hubDlg.busy = false;
+  buddy.turns.push({role:'assistant', content:out}); buddy.turns = buddy.turns.slice(-BUDDY_TURNS);
+  const r = buddyParse(out);
+  r.memory.forEach(f=>buddyRemember(f, null)); buddySaveRecent();
+  if(buddy.micLang==='target') track('talk', 1);
+  if(!hubOnHub()){ hubStopLive(); return; }
+  const app = r.action && BUDDY_ACTS[r.action].app ? r.action : null;
+  hubSayHTML(r.reply, r.grammar ? '✏️ ' + r.grammar : r.word ? '🔤 ' + r.word : r.memory.length ? '🧠 Gemerkt: ' + r.memory[0] : '',
+    [['💡 ' + ({en:'Ideas', es:'Ideas', fr:'Idées', it:'Idee'}[L] || 'Ideen'), ()=>{ hubDlg.mode = 'offer'; hubNext(true).then(hubContinue); }, 'no'],
+     ['⌨️ ' + ({en:'Type', es:'Escribir', fr:'Écrire', it:'Scrivi'}[L] || 'Tippen'), ()=>{ hubStopLive(); hubTypeOpen(''); }, 'no']]);
+  hubTalkUI();
+  if(r.action && !app) buddyAct(r.action);
+  if(state.settings.sound!==false || hubDlg.live) await speakAsync(r.reply, buddyVoiceCode(r.reply));
+  if(app){ hubStopLive(); buddyOpenApp(app); return; }
+  hubContinue();
+}
+async function hubListen(auto){
   if(hubListening){ try{ buddy.rec && buddy.rec.abort(); }catch(e){} return; }
-  if(!micAvailable()){ hubTypeOpen('🎤 Hier kann ich dein Mikro leider nicht benutzen – schreib mir einfach! Tipp: Mit dem 🎤 auf deiner Handy-Tastatur kannst du auch diktieren.'); return; }
+  if(!micAvailable() || hubDlg.micBlocked){ hubStopLive(); hubTypeOpen('🎤 Hier kann ich dein Mikro leider nicht benutzen – schreib mir einfach! Tipp: Mit dem 🎤 auf deiner Handy-Tastatur kannst du auch diktieren. Im Browser (Chrome/Safari) oder als installierte App kannst du richtig mit mir reden.'); return; }
   try{ speechSynthesis.cancel(); }catch(e){}
   try{ buddy.rec && buddy.rec.abort(); }catch(e){}
-  const s = document.getElementById('hubSay');
-  hubListening = true; hubTalkUI(); sndTap(); vib(15);
-  s.textContent = buddy.micLang==='target' ? '🎧 I\'m listening …' : '🎧 Ich höre dir zu …';
+  const s = document.getElementById('hubSay'), ear = document.createElement('small');
+  hubListening = true; hubTalkUI(); if(!auto){ sndTap(); vib(15); }
+  ear.className = 'hs-ear'; ear.textContent = buddy.micLang==='target' ? '🎧 I’m listening …' : '🎧 Ich höre dir zu …'; s.classList.remove('hidden'); s.appendChild(ear);
   let heard = '', err = '';
   try{ heard = await recognizeOnce(buddyCode()); }catch(e){ err = String(e||''); }
-  hubListening = false; hubTalkUI();
-  if(!document.getElementById('screen-hub').classList.contains('active')) return;
-  hubOffer(false);
+  hubListening = false; ear.remove(); hubTalkUI();
+  if(!hubOnHub()){ hubStopLive(); return; }
   if(['not-allowed','service-not-allowed'].includes(err)) hubDlg.micBlocked = true;
-  if(['not-allowed','service-not-allowed','start','unsupported','audio-capture'].includes(err)){ hubTypeOpen('🎤 Ich darf dein Mikro nicht benutzen. Erlaube es im Browser (Schloss-Symbol → Mikrofon) – oder schreib mir einfach. Mit dem 🎤 auf der Handy-Tastatur kannst du auch diktieren.'); return; }
-  if(!heard){ if(err!=='aborted') toast('🐉 Ich hab nichts gehört – tipp nochmal auf 🎤'); return; }
-  toast('🗣️ „' + heard + '“');
+  if(['not-allowed','service-not-allowed','start','unsupported','audio-capture'].includes(err)){ hubStopLive(); hubTypeOpen('🎤 Ich darf dein Mikro nicht benutzen. Erlaube es im Browser (Schloss-Symbol → Mikrofon → Zulassen) – das musst du nur einmal machen. Oder schreib mir einfach, mit dem 🎤 auf der Handy-Tastatur kannst du auch diktieren.'); return; }
+  if(!heard){
+    if(err==='aborted' || !hubDlg.live && auto) return;
+    if(hubDlg.live && ++hubDlg.misses < 2) return hubContinue();     // einmal still nachhaken
+    if(hubDlg.live){ hubStopLive(); toast('💤 Ich mach kurz Pause – tipp auf 🎤, wenn du weiterreden willst'); }
+    else toast('🐉 Ich hab nichts gehört – tipp nochmal auf 🎤');
+    return;
+  }
+  hubDlg.misses = 0;
   hubHeard(heard);
 }
-document.getElementById('hubMic').addEventListener('click', hubListen);
+document.getElementById('hubMic').addEventListener('click', ()=>{
+  if(hubDlg.live || hubListening){ hubStopLive(); try{ speechSynthesis.cancel(); }catch(e){} return; }
+  hubDlg.live = true; hubDlg.misses = 0; hubTalkUI(); hubListen();
+});
 document.getElementById('hubType').addEventListener('click', ()=>{ sndTap(); hubTypeOpen(''); });
 document.getElementById('hubLang').addEventListener('click', ()=>{
   sndTap(); buddy.micLang = buddy.micLang==='target' ? 'de' : 'target'; buddy.turns = []; hubTalkUI();
