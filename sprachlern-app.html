@@ -4265,8 +4265,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '5.3';
+const APP_VERSION = '5.4';
 const CHANGELOG = [
+  ['5.4', '🎤 Mikro einfacher: im Browser nur einmal „Zulassen“ (Flügo fragt selbst), bei Sperre die genaue Stelle zum Erlauben für dein Handy · in der Claude-App ein Knopf „Im Browser mit Mikro öffnen“ – mit deinem Fortschritt, direkt ins Gespräch'],
   ['5.3', '💬 Kein Chat-Fenster mehr: Drache antippen → du schreibst oder sprichst direkt am Drachen, er antwortet in einer kleineren Sprechblase und liest vor · Tricks als kleine Emoji-Knöpfe'],
   ['5.2', '🎤 Richtig reden: einmal auf „Sprich mit Flügo“ tippen – dann hört Flügo nach jeder Antwort automatisch wieder zu, antwortet als KI direkt am Drachen und macht Tricks, bis du „Stopp“ oder „Tschüss“ sagst'],
   ['5.1', '✨ Neuer Name: Flügo! Kein Menü mehr – Flügo fragt dich (z. B. „Do you want to play a game?“), du antwortest mit Ja/Etwas anderes oder per Stimme · 🎤 Sprich-Knopf unter dem Drachen · 🗣️ eigene deutsche Flügo-Stimme + Anleitung für schönere Gratis-Stimmen'],
@@ -5413,16 +5414,17 @@ try{ speechSynthesis.addEventListener('voiceschanged', renderVoiceSettings); }ca
 
 
 /* ---------- 🌐 Im Browser öffnen (Mikrofon) – Fortschritt wandert per Link mit ---------- */
-function openInBrowser(){
+function openInBrowser(go){
   const a = document.createElement('a');
-  a.href = PUBLIC_LINK + '#wr=' + encodeURIComponent(exportCode()); a.target = '_blank'; a.rel = 'noopener';
+  a.href = PUBLIC_LINK + '#wr=' + encodeURIComponent(exportCode()) + (typeof go==='string' ? '&go=' + go : ''); a.target = '_blank'; a.rel = 'noopener';
   document.body.appendChild(a); a.click(); a.remove();
   toast('🌐 Öffnet im Browser – dein Fortschritt kommt mit');
 }
 function importFromLink(){
   try{
-    const m = location.hash.match(/#wr=(.+)$/); if(!m) return;
+    const m = location.hash.match(/#wr=([^&]+)(?:&go=(\w+))?$/); if(!m) return;
     history.replaceState(null, '', location.href.replace(/#wr=.*$/, ''));
+    if(m[2]==='talk') hubDlg.micWelcome = true;
     const code = decodeURIComponent(m[1]); if(!code.startsWith('WR1.')) return;
     const obj = JSON.parse(decodeURIComponent(escape(atob(code.slice(4)))));
     if(progressScore(obj) >= progressScore(state)){ obj.savedAt = Date.now(); adoptState(obj, '✅ Dein Fortschritt wurde übernommen'); saveState(); }
@@ -7580,7 +7582,9 @@ function renderHub(){
   hubDlg.list = hubOfferList(); hubDlg.i = 0; hubOffer(false);
 
 }
-function openHub(){ renderHub(); hubTalkUI(); hubDlg.mode = 'offer'; hubDlg.typing = false; hubTypeUI(); requestAnimationFrame(hubFit); clearTimeout(hubDlg.t); hubDlg.t = setTimeout(()=>{ if(document.getElementById('screen-hub').classList.contains('active') && !fqOpen() && !hubListening) hubOffer(true); }, 600); showScreen('screen-hub'); }
+function openHub(){ renderHub(); hubTalkUI(); hubDlg.mode = 'offer'; hubDlg.typing = false; hubTypeUI(); requestAnimationFrame(hubFit); clearTimeout(hubDlg.t); hubDlg.t = setTimeout(()=>{ if(document.getElementById('screen-hub').classList.contains('active') && !fqOpen() && !hubListening) hubOffer(true); }, 600); showScreen('screen-hub');
+  if(hubDlg.micWelcome){ hubDlg.micWelcome = false; clearTimeout(hubDlg.t); hubSayHTML('🎤 Hier kann ich dich hören!', 'Tipp auf „Los“ – beim ersten Mal fragt dein Handy nach dem Mikrofon: einfach „Zulassen“. Das merkt es sich.', [['🎤 Los geht’s', ()=>{ hubDlg.live = true; hubDlg.misses = 0; hubTalkUI(); hubListen(); }, 'yes']]); }
+}
 document.querySelector('.brand').addEventListener('click', ()=>{ if(state.difficulty){ sndTap(); try{ stopTale(); }catch(e){} openHub(); } });
 const HUB_INTENTS = [
   [/m[äa]rchen|geschicht|story|stories|tale|cuento|histoire|storia|favola/i, 'tales'],
@@ -7597,7 +7601,7 @@ document.getElementById('hubDragon').addEventListener('click', ()=>{
   if(hubListening || hubDlg.live){ hubStopLive(); try{ speechSynthesis.cancel(); }catch(e){} return; }
   if(fqOpen()) return;
   sndTap(); hubDlg.mode = 'offer';
-  const talk = micAvailable() && !hubDlg.micBlocked && !hubDlg.typing;
+  const talk = micAvailable() && !hubDlg.micBlocked && !hubDlg.typing && !window.claude;
   if(talk){ hubDlg.live = true; hubDlg.misses = 0; hubTalkUI(); } else if(!hubDlg.typing){ hubDlg.typing = true; hubTypeUI(); }
   hubOffer(true).then(()=>{ if(talk) hubContinue(); });
 });
@@ -7608,6 +7612,33 @@ function hubTrick(id){
   runDragonAction(id).then(()=>{ if(!hubOnHub()) return; if(hubDlg.mode!=='chat') hubOffer(false); hubContinue(); });
 }
 let hubListening = false;
+// Einmal um Erlaubnis fragen (Systemdialog „Zulassen“) – der Browser merkt es sich für diese Seite
+async function micPrime(){
+  if(hubDlg.micOk) return 'ok';
+  try{ const st = await navigator.permissions.query({name:'microphone'}); if(st.state==='granted'){ hubDlg.micOk = true; return 'ok'; } if(st.state==='denied') return 'denied'; }catch(e){}
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return 'ok';
+  try{ const s = await navigator.mediaDevices.getUserMedia({audio:true}); s.getTracks().forEach(t=>t.stop()); hubDlg.micOk = true; return 'ok'; }
+  catch(e){ return e && (e.name==='NotAllowedError' || e.name==='SecurityError') ? 'denied' : 'ok'; }
+}
+function micSteps(){
+  const ua = navigator.userAgent, ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  if(ios) return /CriOS/.test(ua) ? 'iPhone-Einstellungen → Chrome → Mikrofon einschalten. Danach hier auf „Nochmal“ tippen.'
+    : 'In der Adressleiste links auf „aA“ tippen → Website-Einstellungen → Mikrofon → „Erlauben“. (Oder: iPhone-Einstellungen → Safari → Mikrofon → Erlauben.)';
+  if(/SamsungBrowser/.test(ua)) return 'Links neben der Adresse auf das 🔒-Schloss tippen → Berechtigungen → Mikrofon → Zulassen. Danach auf „Nochmal“ tippen.';
+  if(/Android/.test(ua)) return 'Oben links neben der Adresse auf das Symbol (🔒 bzw. ⓘ / ☰) tippen → Berechtigungen → Mikrofon → „Zulassen“. Danach auf „Nochmal“ tippen.';
+  if(/Firefox/.test(ua)) return 'Links in der Adressleiste auf das 🔒/Mikrofon-Symbol klicken → Mikrofon „Erlauben“. Danach auf „Nochmal“ klicken.';
+  return 'Links in der Adressleiste auf das Symbol neben der Adresse klicken → Mikrofon → „Zulassen“. Danach auf „Nochmal“ klicken.';
+}
+// Was tun, wenn das Mikro nicht geht: in Claude → Knopf „Im Browser öffnen“, im Browser → genaue Stelle zum Erlauben
+function hubMicHelp(){
+  clearTimeout(hubDlg.t); hubStopLive(); hubDlg.typing = true; hubTypeUI();
+  const ideas = ['💡 ' + ({en:'Ideas', es:'Ideas', fr:'Idées', it:'Idee'}[currentLang()] || 'Ideen'), ()=>hubNext(true), 'no'];
+  if(window.claude) hubSayHTML('🎤 In der Claude-App ist das Mikro gesperrt.', 'Im Browser kann ich dich hören – dein Fortschritt kommt mit. Oder schreib mir hier.',
+    [['🌐 Im Browser mit Mikro öffnen', ()=>openInBrowser('talk'), 'yes'], ideas]);
+  else if(!micAvailable()) hubSayHTML('🎤 Dieser Browser kann leider nicht zuhören.', 'Nimm Chrome (Android/PC) oder Safari (iPhone) – oder schreib mir hier.', [ideas]);
+  else hubSayHTML('🎤 Bitte erlaube mir einmal dein Mikrofon:', micSteps(),
+    [['🔄 Nochmal', ()=>{ hubDlg.micBlocked = false; hubDlg.typing = false; hubTypeUI(); hubDlg.live = true; hubDlg.misses = 0; hubTalkUI(); hubListen(); }, 'yes'], ideas]);
+}
 function hubTalkUI(){
   const m = document.getElementById('hubMic'); if(!m) return;
   document.getElementById('hubLang').textContent = buddy.micLang==='target' ? LANGS[currentLang()].label.split(' ')[0] : '🇩🇪';
@@ -7693,7 +7724,8 @@ async function hubChat(text){
 }
 async function hubListen(auto){
   if(hubListening){ try{ buddy.rec && buddy.rec.abort(); }catch(e){} return; }
-  if(!micAvailable() || hubDlg.micBlocked){ hubStopLive(); hubTypeOpen('🎤 Hier ist das Mikro gesperrt – schreib mir einfach! (Im Browser oder als App können wir reden.)'); return; }
+  if(!micAvailable() || hubDlg.micBlocked || window.claude){ hubMicHelp(); return; }
+  if(!auto && await micPrime()==='denied'){ hubDlg.micBlocked = true; hubMicHelp(); return; }
   try{ speechSynthesis.cancel(); }catch(e){}
   try{ buddy.rec && buddy.rec.abort(); }catch(e){}
   const s = document.getElementById('hubSay'), ear = document.createElement('small');
@@ -7704,7 +7736,7 @@ async function hubListen(auto){
   hubListening = false; ear.remove(); hubTalkUI();
   if(!hubOnHub()){ hubStopLive(); return; }
   if(['not-allowed','service-not-allowed'].includes(err)) hubDlg.micBlocked = true;
-  if(['not-allowed','service-not-allowed','start','unsupported','audio-capture'].includes(err)){ hubStopLive(); hubTypeOpen('🎤 Mikro nicht erlaubt – einmal im Browser freigeben (Schloss-Symbol → Mikrofon). Bis dahin schreib mir einfach!'); return; }
+  if(['not-allowed','service-not-allowed','start','unsupported','audio-capture'].includes(err)){ hubDlg.micOk = false; hubMicHelp(); return; }
   if(!heard){
     if(err==='aborted' || !hubDlg.live && auto) return;
     if(hubDlg.live && ++hubDlg.misses < 2) return hubContinue();     // einmal still nachhaken
