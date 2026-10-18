@@ -3957,6 +3957,7 @@ async function nvLoad(code, onP){
       const model = await nvFile(NV_HF + '/' + path + '.onnx', onP);
       nv.sess[path] = await ort.InferenceSession.create(await model.arrayBuffer(), {executionProviders:['wasm']});
       await nvPhonemes('Hi.', nv.cfg[path].espeak.voice);          // Lautschrift schon vorbereiten → erster Satz kommt schneller
+      state.settings.nvStored = [...new Set([...(state.settings.nvStored||[]), path])]; saveState();
       return path;
     }catch(e){ console.warn('Stimme laden', e); return null; }
     finally{ delete nv.loading[path]; }
@@ -4017,7 +4018,12 @@ async function nvPlay(pcm, sr, my){
 // Sprechen mit der natürlichen Stimme; null = (noch) nicht möglich → Gerätestimme
 async function nvSpeak(text, code, rate){
   const path = nvPath(code); if(!path) return null;
-  if(!nv.sess[path]){ nvLoad(code); return null; }          // erst laden – diesmal spricht die Gerätestimme
+  if(!nv.sess[path]){
+    const p = nvLoad(code);
+    if(!(state.settings.nvStored||[]).includes(path)) return null;          // noch nie geladen → diesmal Gerätestimme, im Hintergrund laden
+    await Promise.race([p, new Promise(r=>setTimeout(r, 6000))]);          // schon auf dem Gerät → kurz warten, dann natürlich sprechen
+    if(!nv.sess[path]) return null;
+  }
   const my = ++nv.gen, parts = ttsChunks(text), t0 = performance.now();
   let next = nvSynthQ(path, parts[0], rate);
   for(let i = 0; i < parts.length; i++){
@@ -4465,8 +4471,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '6.8';
+const APP_VERSION = '6.9';
 const CHANGELOG = [
+  ['6.9', '🎙️ Die natürliche Stimme ist nach dem Start sofort da: Flügo lädt sie gleich vom Gerät und spricht nicht mehr erst mit der Roboterstimme'],
   ['6.8', '🤗 Im Gespräch wartet Flügo nach jedem Satz auf dich (auch ohne Fragezeichen) · wenn du kurz nichts sagst, ermutigt dich Flügo einmal („Take your time!“) · beim Tschüss sagt er dir, wie viele Wörter du mit ihm gesprochen hast'],
   ['6.7', '🔊 Ton wird beim ersten Antippen sicher freigeschaltet, damit Flügos natürliche Stimme auf dem Handy gleich klappt'],
   ['6.6', '✋ Ins Wort fallen: tipp auf Flügo oder 🎤, während er spricht – er verstummt und hört dir sofort zu · begrüßt dich mit deinem Namen, wenn er ihn kennt'],
@@ -8674,6 +8681,7 @@ async function runDiagnostics(){
 document.getElementById('diagBtn').addEventListener('click', ()=>{ sndTap(); runDiagnostics(); });
 
 /* ---------- INIT ---------- */
+setTimeout(()=>{ try{ if(nvOn() && state.language) nvLoad(LANGS[currentLang()].code); }catch(e){} }, 200);   // natürliche Stimme gleich bereitlegen
 importFromLink();
 ensureDaily(); ensureLeague(); applyAbsencePenalty(); checkAchievements(); saveState(); updateTopbar();
 if(state.difficulty) setTimeout(maybeShowDaily, 1200);
