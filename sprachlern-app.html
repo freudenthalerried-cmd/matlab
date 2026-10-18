@@ -803,6 +803,18 @@ body{background:radial-gradient(ellipse at 50% 0%,#4a331e 0%,#2a1c11 55%,#1c130d
 .di-fx.tear{right:auto;left:28%;top:40%;}
 @keyframes diFloat{0%,100%{translate:0 0;opacity:1;}50%{translate:0 -8px;opacity:.6;}}
 .di-aura{position:absolute;inset:-12%;border-radius:50%;background:radial-gradient(circle,rgba(255,210,63,.55),rgba(255,210,63,0) 65%);animation:pop 2s infinite;}
+
+/* ===== NUR DER DRACHE ===== */
+.bottom-nav{display:none!important;}
+.brand{cursor:pointer;}
+.brand.home-btn::before{content:'‹';font-size:24px;font-weight:900;color:#e0b04a;margin-right:2px;vertical-align:middle;}
+.hub-orbs .orb{opacity:0;pointer-events:none;transform:translate(-50%,-50%) scale(.2);transition:opacity .35s var(--d,0s),transform .45s cubic-bezier(.3,1.6,.5,1) var(--d,0s),left .45s cubic-bezier(.3,1.4,.5,1) var(--d,0s),top .45s cubic-bezier(.3,1.4,.5,1) var(--d,0s);left:50%!important;top:50%!important;}
+.hub-orbs.open .orb{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);left:var(--x)!important;top:var(--y)!important;}
+.orb{width:68px;height:68px;}
+.orb span{font-size:26px;}
+.hub-ring{max-height:60vh;}
+#screen-hub{justify-content:space-around;padding-bottom:max(16px,env(safe-area-inset-bottom));}
+.hub-dragon{z-index:2;}
 </style>
 </head>
 <body>
@@ -856,7 +868,6 @@ body{background:radial-gradient(ellipse at 50% 0%,#4a331e 0%,#2a1c11 55%,#1c130d
     </div>
     <div class="hub-name" id="hubName"></div>
     <div class="hub-goal"><div class="mini-bar"><div class="mini-fill goal" id="hubXp"></div></div><small id="hubXpTxt"></small></div>
-    <div class="hub-small" id="hubSmall"></div>
   </section>
 
   <!-- ===== MAP SCREEN ===== -->
@@ -1906,6 +1917,7 @@ function showScreen(id){
   document.getElementById(id).classList.add('active');
   document.querySelector('.bottom-nav').style.display = ['screen-map','screen-stats','screen-grammar','screen-quests','screen-league','screen-campaign'].includes(id) ? 'flex' : 'none';
   if(id==='screen-hub') try{ renderHub(); }catch(e){}
+  document.querySelector('.brand').classList.toggle('home-btn', id!=='screen-hub' && !!state.difficulty);
   try{ placeBuddy(id); }catch(e){}
   try{ if(id!=='screen-story' && story.playing) stopTale(); }catch(e){}
   if(typeof updateQuestDot==='function') updateQuestDot();
@@ -4144,8 +4156,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '4.1';
+const APP_VERSION = '4.2';
 const CHANGELOG = [
+  ['4.2', 'Nur noch der Drache: Antippen öffnet die Zauberkugeln · Zubehör sitzt richtig · Leiste unten entfernt (oben links 🐉 = zurück)'],
   ['4.1', 'Neuer, viel niedlicherer Flügo (mit Canva gestaltet) – Farben & Zubehör bleiben'],
   ['4.0', '🐉 Flügo ist die Startseite: alle Spiele & Bereiche als magische Kugeln um den Drachen'],
   ['3.9', '📚 Märchenstunde: Flügo liest Märchen vor (Satz für Satz, Übersetzung, Quiz) – eingebaut oder neu erfunden'],
@@ -5629,7 +5642,7 @@ function dragonSVG(opts={}){
     ${st>=5 ? '<div class="di-aura"></div>' : ''}
     <div class="di-body" style="transform:scale(${sc.toFixed(3)})">
       <img src="${DRAGON_URL}" alt="" draggable="false" style="filter:${f||'none'}">
-      ${item('neck', 50, 60, .2)}${item('eyes', 50, 33, .3)}${item('hat', 50, 2, .32)}${item('hand', 80, 66, .2)}
+      ${item('neck', 50, 67, .25)}${item('eyes', 49, 37.5, .44)}${item('hat', 50, 9, .3)}${item('hand', 64, 69, .2)}
       ${fx}
     </div></div>`;
 }
@@ -6281,10 +6294,8 @@ const HUB_ORBS = [
   {go:'talk',     icon:'🗣️', name:'Reden'},
   {go:'quests',   icon:'🎯', name:'Quests'},
 ];
-const HUB_SMALL = [
-  {go:'train', icon:'💪', name:'Training'}, {go:'league', icon:'🏰', name:'Liga'},
-  {go:'den', icon:'🏔️', name:'Höhle'}, {go:'profile', icon:'🛡️', name:'Profil'},
-];
+HUB_ORBS.push({go:'train', icon:'💪', name:'Training'}, {go:'league', icon:'🏰', name:'Liga'}, {go:'profile', icon:'🛡️', name:'Profil'});
+const HUB_SMALL = [];
 function hubGo(go){
   sndTap();
   const tab = t=>{ practiceTab = t; pendingMode = t; renderGrammar(); showScreen('screen-grammar'); setNav('grammar'); };
@@ -6319,27 +6330,32 @@ function renderHub(){
   document.getElementById('hubName').querySelector('b').textContent = d.name;
   document.getElementById('hubXp').style.width = Math.round(100*Math.min(1, state.daily.xp/state.daily.goal)) + '%';
   document.getElementById('hubXpTxt').textContent = `🎯 ${state.daily.xp}/${state.daily.goal} XP heute`;
-  const say = document.getElementById('hubSay'); say.textContent = hubTip();
+  const say = document.getElementById('hubSay'); say.textContent = hubTip() + ' ' + hubHint();
+  document.getElementById('hubOrbs').classList.remove('open');
   const ring = document.getElementById('hubOrbs'); ring.innerHTML = '';
   HUB_ORBS.forEach((o,i)=>{
     const a = (-90 + i*360/HUB_ORBS.length) * Math.PI/180;
     const b = document.createElement('button'); b.className = 'orb';
-    b.style.left = (50 + 41*Math.cos(a)) + '%'; b.style.top = (50 + 41*Math.sin(a)) + '%';
-    b.style.animationDelay = (i*0.35) + 's';
-    const dot = (o.go==='quests' && (questReady() || dailyPending())) ? '<i class="orb-dot"></i>' : '';
+    b.style.setProperty('--x', (50 + 42*Math.cos(a)) + '%'); b.style.setProperty('--y', (50 + 42*Math.sin(a)) + '%');
+    b.style.setProperty('--d', (i*0.05) + 's');
+    const dot = ((o.go==='quests' && (questReady() || dailyPending())) || (o.go==='league' && !document.getElementById('friendDot').classList.contains('hidden'))) ? '<i class="orb-dot"></i>' : '';
     b.innerHTML = `<span>${o.icon}</span><small>${o.name}</small>${dot}`;
     b.onclick = ()=>hubGo(o.go);
     ring.appendChild(b);
   });
-  const row = document.getElementById('hubSmall'); row.innerHTML = '';
-  HUB_SMALL.forEach(o=>{
-    const b = document.createElement('button'); b.className = 'hub-sm';
-    const dot = o.go==='league' && !document.getElementById('friendDot').classList.contains('hidden') ? '<i class="orb-dot"></i>' : '';
-    b.innerHTML = `<span>${o.icon}</span><small>${o.name}</small>${dot}`; b.onclick = ()=>hubGo(o.go); row.appendChild(b);
-  });
+
 }
 function openHub(){ renderHub(); showScreen('screen-hub'); setNav('hub'); }
-document.getElementById('hubDragon').addEventListener('click', ()=>{ const s = document.getElementById('hubSay'); s.classList.remove('pop'); void s.offsetWidth; s.classList.add('pop'); speak(s.textContent, LANGS[currentLang()].code); setTimeout(openBuddy, 900); });
+document.querySelector('.brand').addEventListener('click', ()=>{ if(state.difficulty){ sndTap(); try{ stopTale(); }catch(e){} openHub(); } });
+document.getElementById('hubDragon').addEventListener('click', ()=>{
+  const ring = document.getElementById('hubOrbs'), open = !ring.classList.contains('open');
+  ring.classList.toggle('open', open); sndTap();
+  const s = document.getElementById('hubSay');
+  s.textContent = open ? ({en:'What shall we do?', es:'¿Qué hacemos?', fr:'On fait quoi ?', it:'Cosa facciamo?'}[currentLang()] || 'What shall we do?') : hubTip();
+  s.classList.remove('pop'); void s.offsetWidth; s.classList.add('pop');
+  if(open) speak(s.textContent, LANGS[currentLang()].code);
+});
+function hubHint(){ return ({en:'Tap me!', es:'¡Tócame!', fr:'Touche-moi !', it:'Toccami!'}[currentLang()] || 'Tap me!'); }
 
 /* ---------- INIT ---------- */
 importFromLink();
