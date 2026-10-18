@@ -1,4 +1,4 @@
-// Wortreise – Offline-Unterstützung: App-Datei zuerst aus dem Netz (für Updates), sonst aus dem Cache
+// Flügo – Offline-Unterstützung: App-Datei zuerst aus dem Netz (für Updates), sonst aus dem Cache
 const CACHE = 'wortreise-v1';
 const FILES = ['sprachlern-app.html', 'wortreise-manifest.json', 'wortreise-icon-192.png', 'wortreise-icon-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });

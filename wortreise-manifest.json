@@ -1,6 +1,6 @@
 {
-  "name": "Wortreise – Sprachen lernen mit Flügo",
-  "short_name": "Wortreise",
+  "name": "Flügo – Sprachabenteuer mit deinem Drachen",
+  "short_name": "Flügo",
   "start_url": "sprachlern-app.html",
   "scope": "./",
   "display": "standalone",
