@@ -631,7 +631,7 @@ body{
 .bs-who{margin-right:auto;}
 .bs-x{margin-left:6px;border:none;background:rgba(255,255,255,.15);color:#fff;border-radius:50%;width:36px;height:36px;font-size:16px;cursor:pointer;}
 .bs-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;min-height:0;}
-.bb{max-width:86%;padding:10px 12px;border-radius:18px;font-size:16px;line-height:1.35;position:relative;word-wrap:break-word;}
+.bb{max-width:82%;padding:7px 11px;border-radius:15px;font-size:14.5px;line-height:1.3;position:relative;word-wrap:break-word;}
 .bb.bot{align-self:flex-start;background:#fbf3df;color:#4a3220;border-bottom-left-radius:6px;padding-right:40px;}
 .bb.me{align-self:flex-end;background:#5f9a3e;color:#fff;border-bottom-right-radius:6px;}
 .bb.dots{color:#a89070;}
@@ -660,8 +660,8 @@ body{
 #dfx .dfx-clone .di-body{animation:dfxFlap .3s ease-in-out infinite;}
 @keyframes dfxFlap{0%,100%{scale:1 1;}50%{scale:1.05 .9;}}
 #buddyFace{display:inline-flex;cursor:pointer;-webkit-tap-highlight-color:transparent;}
-.bs-hint{font-size:12.5px;line-height:1.3;color:#e8d6ae;font-weight:700;padding:0 4px;}
-.bs-tricks .dt-chip{background:linear-gradient(180deg,#f0c35a,#c98b2e);color:#2a1c11;font-size:14px;padding:6px 10px;box-shadow:0 2px 0 #7a4f1a;}
+.bs-hint{display:none;}
+.bs-tricks .dt-chip{background:linear-gradient(180deg,#f0c35a,#c98b2e);color:#2a1c11;font-size:19px;width:40px;height:40px;padding:0;border-radius:50%;box-shadow:0 2px 0 #7a4f1a;}
 .bs-tricks .dt-chip:active{transform:translateY(2px);box-shadow:none;}
 @media (prefers-reduced-motion: reduce){ #dfx .dfx-clone .di-body{animation:none;} }
 
@@ -794,7 +794,18 @@ body{background:radial-gradient(ellipse at 50% 0%,#4a331e 0%,#2a1c11 55%,#1c130d
 .hub-say{max-width:86%;background:#fbf3df;color:#3b2a1a;border:2px solid #c9a86a;border-radius:18px;padding:10px 14px;font-weight:800;font-size:16px;text-align:center;box-shadow:0 6px 16px rgba(0,0,0,.35);margin-top:4px;}
 .hub-say::after{content:'';position:absolute;left:50%;bottom:-10px;margin-left:-9px;border:9px solid transparent;border-top-color:#c9a86a;border-bottom:0;}
 .hub-say.pop{animation:popIn .35s both;}
-.hub-say{max-height:40vh;overflow-y:auto;}
+.hub-say{max-height:32vh;overflow-y:auto;max-width:80%;font-size:14.5px;line-height:1.3;padding:8px 12px;border-radius:16px;}
+.hub-say .hs-de{font-size:12px;}
+.hs-chips{gap:6px;margin-top:7px;}
+.hs-chip{font-size:13.5px;padding:6px 11px;}
+.hub-tricks{display:flex;gap:6px;overflow-x:auto;max-width:100%;padding:2px 4px 6px;scrollbar-width:none;}
+.hub-tricks::-webkit-scrollbar{display:none;}
+.hub-trick{flex-shrink:0;width:40px;height:40px;border-radius:50%;border:2px solid #c9a86a;background:rgba(251,243,223,.92);font-size:20px;cursor:pointer;box-shadow:0 2px 0 rgba(0,0,0,.25);}
+.hub-trick:active{transform:translateY(2px);box-shadow:none;}
+.hub-typebar{display:flex;gap:8px;align-items:center;width:100%;max-width:440px;margin:4px 0 6px;}
+.hub-input{flex:1;min-width:0;border:2px solid #c9a86a;border-radius:999px;padding:11px 14px;font-family:inherit;font-size:16px;background:#fbf3df;color:#3b2a1a;}
+.hub-round.sm{width:42px;height:42px;font-size:17px;}
+.hub-round.send{background:linear-gradient(180deg,#7fd36b,#3f9a3a);border-color:#3f9a3a;}
 .hub-say .hs-q{display:block;}
 .hub-say .hs-ear{display:block;font-size:13px;color:#b8442f;margin-top:5px;animation:earPulse 1s ease-in-out infinite;}
 @keyframes earPulse{50%{opacity:.45;}}
@@ -949,6 +960,12 @@ body.night-mode .topbar{opacity:.18;transition:opacity 1s;}
       <button class="hub-mic" id="hubMic"></button>
       <button class="hub-round" id="hubType" aria-label="Schreiben">⌨️</button>
     </div>
+    <div class="hub-tricks hidden" id="hubTricks"></div>
+    <form class="hub-typebar hidden" id="hubTypeBar" autocomplete="off">
+      <button type="button" class="hub-round sm" id="hubTypeClose" aria-label="Schließen">✖</button>
+      <input id="hubInput" class="hub-input" enterkeyhint="send" maxlength="400">
+      <button class="hub-round sm send" id="hubSend" aria-label="Senden">➤</button>
+    </form>
   </section>
 
   <!-- ===== MAP SCREEN ===== -->
@@ -4248,8 +4265,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '5.2';
+const APP_VERSION = '5.3';
 const CHANGELOG = [
+  ['5.3', '💬 Kein Chat-Fenster mehr: Drache antippen → du schreibst oder sprichst direkt am Drachen, er antwortet in einer kleineren Sprechblase und liest vor · Tricks als kleine Emoji-Knöpfe'],
   ['5.2', '🎤 Richtig reden: einmal auf „Sprich mit Flügo“ tippen – dann hört Flügo nach jeder Antwort automatisch wieder zu, antwortet als KI direkt am Drachen und macht Tricks, bis du „Stopp“ oder „Tschüss“ sagst'],
   ['5.1', '✨ Neuer Name: Flügo! Kein Menü mehr – Flügo fragt dich (z. B. „Do you want to play a game?“), du antwortest mit Ja/Etwas anderes oder per Stimme · 🎤 Sprich-Knopf unter dem Drachen · 🗣️ eigene deutsche Flügo-Stimme + Anleitung für schönere Gratis-Stimmen'],
   ['5.0', '🐉🔥 Flügo ist jetzt eine echte KI: beantwortet alles, merkt sich dich und macht Kunststücke auf Befehl – „Mach Feuer!“, „Flieg!“, „Tanz!“ (auch am großen Drachen per Sprache)'],
@@ -6695,7 +6713,7 @@ function renderDragonTricks(){
   const T = DRAGON_CHIP_TXT[dragonLang()] || DRAGON_CHIP_TXT.de;
   if(row.dataset.lang!==dragonLang()){
     row.dataset.lang = dragonLang(); row.innerHTML = '';
-    DRAGON_CHIPS.forEach(id=>{ const b = document.createElement('button'); b.className = 'chat-chip dt-chip'; b.textContent = T[id]; b.onclick = ()=>buddySend(T[id]); row.appendChild(b); });
+    DRAGON_CHIPS.forEach(id=>{ const b = document.createElement('button'); b.className = 'chat-chip dt-chip'; b.textContent = T[id].split(' ')[0]; b.title = T[id]; b.setAttribute('aria-label', T[id]); b.onclick = ()=>buddySend(T[id]); row.appendChild(b); });
   }
   if(hint){
     const ex = ['fire','fly','dance'].map(id=>'„' + T[id].replace(/^\S+\s/, '') + '“').join(', ');
@@ -7562,7 +7580,7 @@ function renderHub(){
   hubDlg.list = hubOfferList(); hubDlg.i = 0; hubOffer(false);
 
 }
-function openHub(){ renderHub(); hubTalkUI(); hubDlg.mode = 'offer'; requestAnimationFrame(hubFit); clearTimeout(hubDlg.t); hubDlg.t = setTimeout(()=>{ if(document.getElementById('screen-hub').classList.contains('active') && !fqOpen() && !hubListening) hubOffer(true); }, 600); showScreen('screen-hub'); }
+function openHub(){ renderHub(); hubTalkUI(); hubDlg.mode = 'offer'; hubDlg.typing = false; hubTypeUI(); requestAnimationFrame(hubFit); clearTimeout(hubDlg.t); hubDlg.t = setTimeout(()=>{ if(document.getElementById('screen-hub').classList.contains('active') && !fqOpen() && !hubListening) hubOffer(true); }, 600); showScreen('screen-hub'); }
 document.querySelector('.brand').addEventListener('click', ()=>{ if(state.difficulty){ sndTap(); try{ stopTale(); }catch(e){} openHub(); } });
 const HUB_INTENTS = [
   [/m[äa]rchen|geschicht|story|stories|tale|cuento|histoire|storia|favola/i, 'tales'],
@@ -7579,7 +7597,8 @@ document.getElementById('hubDragon').addEventListener('click', ()=>{
   if(hubListening || hubDlg.live){ hubStopLive(); try{ speechSynthesis.cancel(); }catch(e){} return; }
   if(fqOpen()) return;
   sndTap(); hubDlg.mode = 'offer';
-  const talk = micAvailable() && !hubDlg.micBlocked; if(talk){ hubDlg.live = true; hubDlg.misses = 0; hubTalkUI(); }
+  const talk = micAvailable() && !hubDlg.micBlocked && !hubDlg.typing;
+  if(talk){ hubDlg.live = true; hubDlg.misses = 0; hubTalkUI(); } else if(!hubDlg.typing){ hubDlg.typing = true; hubTypeUI(); }
   hubOffer(true).then(()=>{ if(talk) hubContinue(); });
 });
 function hubTrick(id){
@@ -7597,9 +7616,22 @@ function hubTalkUI(){
 }
 function hubTypeOpen(msg){
   hubStopLive();
-  buddy.greeted = true; buddy.voice = false; openBuddy();
-  if(msg) buddyBubble('bot', msg);
-  setTimeout(()=>document.getElementById('buddyInput').focus(), 250);
+  hubDlg.typing = true; hubTypeUI();
+  if(msg){ hubDlg.mode = 'offer'; hubSayHTML(msg, '', [['💡 ' + ({en:'Ideas', es:'Ideas', fr:'Idées', it:'Idee'}[currentLang()] || 'Ideen'), ()=>hubNext(true), 'no']]); }
+  setTimeout(()=>{ const i = document.getElementById('hubInput'); if(i && hubDlg.typing) i.focus(); }, 200);
+}
+function hubTypeUI(){
+  const on = !!hubDlg.typing, tr = document.getElementById('hubTricks');
+  document.querySelector('.hub-talk').classList.toggle('hidden', on);
+  document.getElementById('hubTypeBar').classList.toggle('hidden', !on);
+  tr.classList.toggle('hidden', !on);
+  if(on && tr.dataset.lang!==currentLang()){
+    const T = DRAGON_CHIP_TXT[currentLang()] || DRAGON_CHIP_TXT.en; tr.dataset.lang = currentLang(); tr.innerHTML = '';
+    DRAGON_CHIPS.forEach(id=>{ const b = document.createElement('button'); b.type = 'button'; b.className = 'hub-trick'; b.textContent = T[id].split(' ')[0]; b.title = T[id]; b.setAttribute('aria-label', T[id]);
+      b.onclick = ()=>{ sndTap(); hubTrick(id==='random' ? pick(DRAGON_RANDOM) : id); }; tr.appendChild(b); });
+  }
+  document.getElementById('hubInput').placeholder = `Schreib ${dragon().name} … z. B. „Mach Feuer!“`;
+  requestAnimationFrame(hubFit);
 }
 function hubOnHub(){ return document.getElementById('screen-hub').classList.contains('active'); }
 function hubStopLive(){ hubDlg.live = false; hubDlg.misses = 0; try{ buddy.ctl && hubDlg.busy && buddy.ctl.abort(); }catch(e){} try{ hubListening && buddy.rec && buddy.rec.abort(); }catch(e){} hubTalkUI(); }
@@ -7652,7 +7684,7 @@ async function hubChat(text){
   const app = r.action && BUDDY_ACTS[r.action].app ? r.action : null;
   hubSayHTML(r.reply, r.grammar ? '✏️ ' + r.grammar : r.word ? '🔤 ' + r.word : r.memory.length ? '🧠 Gemerkt: ' + r.memory[0] : '',
     [['💡 ' + ({en:'Ideas', es:'Ideas', fr:'Idées', it:'Idee'}[L] || 'Ideen'), ()=>{ hubDlg.mode = 'offer'; hubNext(true).then(hubContinue); }, 'no'],
-     ['⌨️ ' + ({en:'Type', es:'Escribir', fr:'Écrire', it:'Scrivi'}[L] || 'Tippen'), ()=>{ hubStopLive(); hubTypeOpen(''); }, 'no']]);
+     ...(hubDlg.typing ? [] : [['⌨️ ' + ({en:'Type', es:'Escribir', fr:'Écrire', it:'Scrivi'}[L] || 'Tippen'), ()=>hubTypeOpen(''), 'no']])]);
   hubTalkUI();
   if(r.action && !app) buddyAct(r.action);
   if(state.settings.sound!==false || hubDlg.live) await speakAsync(r.reply, buddyVoiceCode(r.reply));
@@ -7661,7 +7693,7 @@ async function hubChat(text){
 }
 async function hubListen(auto){
   if(hubListening){ try{ buddy.rec && buddy.rec.abort(); }catch(e){} return; }
-  if(!micAvailable() || hubDlg.micBlocked){ hubStopLive(); hubTypeOpen('🎤 Hier kann ich dein Mikro leider nicht benutzen – schreib mir einfach! Tipp: Mit dem 🎤 auf deiner Handy-Tastatur kannst du auch diktieren. Im Browser (Chrome/Safari) oder als installierte App kannst du richtig mit mir reden.'); return; }
+  if(!micAvailable() || hubDlg.micBlocked){ hubStopLive(); hubTypeOpen('🎤 Hier ist das Mikro gesperrt – schreib mir einfach! (Im Browser oder als App können wir reden.)'); return; }
   try{ speechSynthesis.cancel(); }catch(e){}
   try{ buddy.rec && buddy.rec.abort(); }catch(e){}
   const s = document.getElementById('hubSay'), ear = document.createElement('small');
@@ -7672,7 +7704,7 @@ async function hubListen(auto){
   hubListening = false; ear.remove(); hubTalkUI();
   if(!hubOnHub()){ hubStopLive(); return; }
   if(['not-allowed','service-not-allowed'].includes(err)) hubDlg.micBlocked = true;
-  if(['not-allowed','service-not-allowed','start','unsupported','audio-capture'].includes(err)){ hubStopLive(); hubTypeOpen('🎤 Ich darf dein Mikro nicht benutzen. Erlaube es im Browser (Schloss-Symbol → Mikrofon → Zulassen) – das musst du nur einmal machen. Oder schreib mir einfach, mit dem 🎤 auf der Handy-Tastatur kannst du auch diktieren.'); return; }
+  if(['not-allowed','service-not-allowed','start','unsupported','audio-capture'].includes(err)){ hubStopLive(); hubTypeOpen('🎤 Mikro nicht erlaubt – einmal im Browser freigeben (Schloss-Symbol → Mikrofon). Bis dahin schreib mir einfach!'); return; }
   if(!heard){
     if(err==='aborted' || !hubDlg.live && auto) return;
     if(hubDlg.live && ++hubDlg.misses < 2) return hubContinue();     // einmal still nachhaken
@@ -7688,6 +7720,13 @@ document.getElementById('hubMic').addEventListener('click', ()=>{
   hubDlg.live = true; hubDlg.misses = 0; hubTalkUI(); hubListen();
 });
 document.getElementById('hubType').addEventListener('click', ()=>{ sndTap(); hubTypeOpen(''); });
+document.getElementById('hubTypeClose').addEventListener('click', ()=>{ sndTap(); hubDlg.typing = false; hubTypeUI(); });
+document.getElementById('hubTypeBar').addEventListener('submit', e=>{
+  e.preventDefault();
+  const i = document.getElementById('hubInput'), t = i.value.trim(); if(!t) return;
+  if(hubDlg.busy){ toast('🐉 Moment – ich antworte gleich …'); return; }
+  i.value = ''; sndTap(); hubHeard(t);
+});
 document.getElementById('hubLang').addEventListener('click', ()=>{
   sndTap(); buddy.micLang = buddy.micLang==='target' ? 'de' : 'target'; buddy.turns = []; hubTalkUI();
   toast(buddy.micLang==='target' ? '🗣️ Flügo hört jetzt in deiner Lernsprache zu' : '🇩🇪 Flügo hört jetzt Deutsch');
