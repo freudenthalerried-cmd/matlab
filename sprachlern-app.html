@@ -680,6 +680,34 @@ body{
 .bb.dots{color:#a89070;}
 .bb .ob{display:block;margin-top:6px;background:#efe0bf;color:#4a3220;}
 .bs-lang{border:none;background:rgba(255,255,255,.15);border-radius:14px;width:44px;font-size:20px;cursor:pointer;flex-shrink:0;}
+/* ===== FLÜGO: echte KI, Unterbrechen, Kunststücke ===== */
+#buddyMic.barge{background:#e0a03a;animation:micPulse 1.2s infinite;}
+.bb.bot{white-space:pre-line;}
+.bb.old{opacity:.7;}
+.bb-sep{align-self:center;color:#a89070;font-size:12px;font-weight:800;}
+.bb-mem{display:block;margin-top:6px;font-size:12px;font-weight:800;color:#8a6a3a;white-space:normal;}
+.bb-key{white-space:normal;}
+.bb-key .f-input{font-size:15px;padding:8px 10px;}
+/* ===== 🐉 DRACHEN-TRICKS (Feuer, Fliegen, Tanzen …) ===== */
+#dfx{position:fixed;inset:0;pointer-events:none;z-index:95;overflow:hidden;contain:strict;}
+#dfx .dfx-p{position:absolute;left:0;top:0;line-height:1;white-space:nowrap;will-change:transform,opacity;user-select:none;}
+#dfx .dfx-p i{display:inline-block;transform:scaleX(-1);font-style:normal;}
+#dfx .dfx-dot{width:10px;height:10px;border-radius:50%;background:radial-gradient(circle,#fff6b0 0,#ffb22e 45%,rgba(255,90,0,0) 72%);}
+#dfx .dfx-glow{border-radius:50%;background:radial-gradient(circle,rgba(255,226,120,.95) 0,rgba(255,140,0,.6) 32%,rgba(255,60,0,0) 70%);}
+#dfx .dfx-ring{border-radius:50%;border:4px solid rgba(255,214,120,.95);box-shadow:0 0 14px rgba(255,170,40,.8),inset 0 0 10px rgba(255,170,40,.6);}
+#dfx .dfx-word{font-family:'Cinzel',Georgia,serif;font-weight:900;color:#fff3c4;text-shadow:0 2px 0 #8a3b12,0 0 10px rgba(255,140,0,.85);}
+#dfx .dfx-z{font-family:Georgia,serif;font-weight:900;color:#d9ecff;text-shadow:0 2px 4px rgba(0,0,40,.6);}
+#dfx .dfx-arc{border-radius:999px 999px 0 0;background:radial-gradient(circle var(--r,80px) at 50% 100%,transparent 0 52%,#8f5bff 52% 60%,#3d7bff 60% 68%,#2ecc71 68% 76%,#ffd23f 76% 84%,#ff8c1a 84% 92%,#ff4d4d 92% 99%,transparent 100%);}
+#dfx .dfx-flash{position:absolute;inset:0;opacity:0;}
+#dfx .dfx-clone{position:absolute;margin:0;filter:drop-shadow(0 10px 12px rgba(0,0,0,.45));will-change:transform;}
+#dfx .dfx-clone .di-body{animation:dfxFlap .3s ease-in-out infinite;}
+@keyframes dfxFlap{0%,100%{scale:1 1;}50%{scale:1.05 .9;}}
+#buddyFace{display:inline-flex;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.bs-hint{font-size:12.5px;line-height:1.3;color:#e8d6ae;font-weight:700;padding:0 4px;}
+.bs-tricks .dt-chip{background:linear-gradient(180deg,#f0c35a,#c98b2e);color:#2a1c11;font-size:14px;padding:6px 10px;box-shadow:0 2px 0 #7a4f1a;}
+.bs-tricks .dt-chip:active{transform:translateY(2px);box-shadow:none;}
+@media (prefers-reduced-motion: reduce){ #dfx .dfx-clone .di-body{animation:none;} }
+
 /* ===== FLÜGO-FRAGE: der Drache fragt dich zwischendurch ===== */
 .fq-card{position:fixed;z-index:62;box-sizing:border-box;width:min(340px,calc(100vw - 20px));background:#fbf3df;color:#3b2a1a;border:2px solid #c9a86a;border-radius:18px;padding:10px 12px 4px;box-shadow:0 10px 28px rgba(0,0,0,.45),inset 0 0 18px rgba(160,120,60,.12);animation:popIn .3s both;max-height:calc(100vh - 16px);overflow-y:auto;}
 .fq-card::after{content:'';position:absolute;left:var(--tx,50%);bottom:-11px;margin-left:-10px;border-left:10px solid transparent;border-right:10px solid transparent;border-top:11px solid #c9a86a;}
@@ -1238,6 +1266,8 @@ body.night-mode .topbar{opacity:.18;transition:opacity 1s;}
 <div class="buddy-sheet hidden" id="buddySheet">
   <div class="bs-head"><span id="buddyFace"></span><span class="bs-who"><b id="buddyName">Flügo</b><small id="buddyStatus"></small></span><button class="bs-x" id="buddyDrive" title="Fahrmodus">🚗</button><button class="bs-x" id="buddyClose">✕</button></div>
   <div class="bs-list" id="buddyList"></div>
+  <div class="bs-hint" id="buddyHint"></div>
+  <div class="chat-quick bs-tricks" id="buddyTricks"></div>
   <div class="chat-quick" id="buddyQuick"></div>
   <div class="chat-bar"><button id="buddyLang" class="bs-lang" title="Sprache fürs Mikrofon">🇩🇪</button><button id="buddyMic" class="talk-mic">🎤</button><input id="buddyInput" maxlength="500" placeholder="Frag Flügo …" autocomplete="off"><button id="buddySend">➤</button></div>
 </div>
@@ -3794,18 +3824,23 @@ let sampleFn = null;
 
 // eigener Schlüssel – sonst der aus der Haushalt-App (gleiche Website htmlpreview.github.io, gleicher Gerätespeicher)
 function apiKey(){ try{ return (localStorage.getItem(KEY_STORE) || localStorage.getItem('apikey') || '').trim(); }catch(e){ return ''; } }
-async function claudeFetch(rules, turns){
+async function claudeFetch(rules, turns, opts){
+  opts = opts || {};
   const key = apiKey(); if(!key) throw {code:'no_backend'};
-  let r;
+  const body = {model:'claude-opus-5-5', max_tokens:opts.maxTokens || 1024, system:rules, messages:mergeTurns(turns)};
+  if(opts.effort) body.output_config = {effort:opts.effort};
+  const lost = ()=>({code: opts.signal && opts.signal.aborted ? 'cancelled' : 'network'});
+  let r, j;
   try{
-    r = await fetch('https://api.anthropic.com/v1/messages', {method:'POST',
+    r = await fetch('https://api.anthropic.com/v1/messages', {method:'POST', signal:opts.signal,
       headers:{'content-type':'application/json', 'x-api-key':key, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true'},
-      body: JSON.stringify({model:'claude-opus-5-5', max_tokens:1024, system:rules, messages:mergeTurns(turns)})});
-  }catch(e){ throw {code:'network'}; }
+      body: JSON.stringify(body)});
+  }catch(e){ throw lost(); }
   if(r.status===401 || r.status===403) throw {code:'bad_key'};
   if(r.status===429) throw {code:'rate_limited'};
   if(!r.ok) throw {code:'http_' + r.status};
-  const j = await r.json();
+  try{ j = await r.json(); }catch(e){ throw lost(); }
+  if(j.stop_reason==='refusal') throw {code:'refused'};
   return (j.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
 }
 function pointsOf(cefr, sub){ return CEFR.indexOf(cefr)*10 + sub; }
@@ -3832,14 +3867,18 @@ function mergeTurns(turns){
   while(out.length && out[0].role!=='user') out.shift();
   return out;
 }
-async function askClaude(turns, rules, asJson){
+async function askClaude(turns, rules, asJson, opts){
+  opts = opts || {};   // optional: {signal, tier, onText, effort, maxTokens} – ohne opts wie bisher (Fahrmodus, Reden)
   if(sampleFn){
-    drive.ctl = new AbortController();
+    let signal = opts.signal;
+    if(!signal){ drive.ctl = new AbortController(); signal = drive.ctl.signal; }
     const input = [{role:'user', content:rules}, ...turns];
-    if(asJson) return await sampleFn.json(input, {cache:false, signal:drive.ctl.signal});
-    return (await sampleFn(input, {cache:false, modelTier:'quick', signal:drive.ctl.signal})).text;
+    if(asJson) return await sampleFn.json(input, {cache:false, signal});
+    const o = {cache:false, modelTier:opts.tier || 'quick', signal};
+    if(opts.onText) o.onText = opts.onText;
+    return (await sampleFn(input, o)).text;
   }
-  const text = await claudeFetch(rules, turns);
+  const text = await claudeFetch(rules, turns, opts);
   if(!asJson) return text;
   return JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}')+1));
 }
@@ -4327,8 +4366,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '4.9';
+const APP_VERSION = '5.0';
 const CHANGELOG = [
+  ['5.0', '🐉🔥 Flügo ist jetzt eine echte KI: beantwortet alles, merkt sich dich und macht Kunststücke auf Befehl – „Mach Feuer!“, „Flieg!“, „Tanz!“ (auch am großen Drachen per Sprache)'],
   ['4.9', '🐉❓ Flügo fragt dich ab und zu etwas (Übersetzen, Hören, Sprechen) – abschaltbar in den Einstellungen'],
   ['4.8', '🗣️ Natürlichere Stimme: bessere Stimmenwahl (auch iPhone-Premium-Stimmen), Warten auf Stimmen, lange Texte in Sätzen, dein Tempo überall'],
   ['4.7', '🔧 Selbsttest für Ton/Mikro/KI · klarer Hinweis, wenn es keinen Ton gibt · Drache: ohne Mikro gleich Chat zum Tippen'],
@@ -6310,129 +6350,845 @@ function fqRefreshScreen(){
 // Tippt man auf den großen Drachen (Menü), geht die Frage höflich weg
 document.getElementById('hubDragon').addEventListener('click', ()=>{ if(fqOpen()) fqClose(true, 'nav'); });
 
-/* ---------- Gespräch mit Flügo ---------- */
+/* =========================================================
+   🐉 DRACHEN-TRICKS: „Mach Feuer!“, „Flieg!“, „Tanz!“ …
+   – Befehle werden offline erkannt (DE/EN/ES/FR/IT, tippfehlertolerant)
+   – oder Claude hängt eine Zeile „ACTION: fire“ an seine Antwort
+   ========================================================= */
+const DFX_RM = (()=>{ try{ return matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){ return false; } })();
+const dfx = {hosts:new Map()};
+const DRAGON_RANDOM = ['fire','fly','dance','spin','magic','rainbow','roar','sneeze','jump','laugh','heart'];
+function dragonLang(){ return buddy.micLang==='target' ? currentLang() : 'de'; }
+const dfxRnd = (a, b)=>a + Math.random()*(b - a);
+
+/* ---------- Effekt-Ebene & Partikel ---------- */
+function dfxLayer(){
+  let l = document.getElementById('dfx');
+  if(!l){ l = document.createElement('div'); l.id = 'dfx'; l.setAttribute('aria-hidden', 'true'); document.body.appendChild(l); }
+  return l;
+}
+// Ein Partikel: startet bei (x,y), fliegt um (dx,dy), skaliert s0→s1, dreht r0→rot, blendet aus, räumt sich selbst weg
+function dfxP(x, y, txt, o={}){
+  const L = dfxLayer(); if(L.childElementCount > 160 || !isFinite(x) || !isFinite(y)) return null;
+  const p = document.createElement('span'); p.className = 'dfx-p' + (o.cls ? ' ' + o.cls : '');
+  if(txt){ if(o.flip){ const i = document.createElement('i'); i.textContent = txt; p.appendChild(i); } else p.textContent = txt; }
+  p.style.left = x + 'px'; p.style.top = y + 'px';
+  if(o.size) p.style.fontSize = Math.round(o.size) + 'px';
+  if(o.css) for(const k in o.css){ if(o.css[k]==null) continue; if(k.startsWith('--')) p.style.setProperty(k, o.css[k]); else p.style[k] = o.css[k]; }
+  L.appendChild(p);
+  const dur = o.dur || 900, kill = setTimeout(()=>p.remove(), dur + 500);
+  if(!p.animate){ return p; }
+  const s0 = o.s0!=null ? o.s0 : .4, s1 = o.s1!=null ? o.s1 : 1.2, r0 = o.r0 || 0, r1 = o.rot || 0, dx = o.dx || 0, dy = o.dy || 0;
+  const frames = o.frames || [
+    {transform:`translate(-50%,-50%) scale(${s0}) rotate(${r0}deg)`, opacity:o.o0!=null ? o.o0 : 1},
+    {transform:`translate(-50%,-50%) translate(${dx*.55}px,${dy*.55 + (o.arc||0)}px) scale(${(s0+s1)/2}) rotate(${(r0+r1)/2}deg)`, opacity:o.o1!=null ? o.o1 : 1, offset:.55},
+    {transform:`translate(-50%,-50%) translate(${dx}px,${dy}px) scale(${s1}) rotate(${r1}deg)`, opacity:0}];
+  const a = p.animate(frames, {duration:dur, easing:o.ease || 'cubic-bezier(.2,.65,.35,1)', fill:'forwards'});
+  a.onfinish = ()=>{ clearTimeout(kill); p.remove(); };
+  return p;
+}
+function dfxFlash(x, y, color, ms){
+  const f = document.createElement('div'); f.className = 'dfx-flash';
+  f.style.background = `radial-gradient(circle at ${Math.round(x)}px ${Math.round(y)}px, ${color}, transparent 55%)`;
+  dfxLayer().appendChild(f);
+  const kill = setTimeout(()=>f.remove(), ms + 400);
+  if(f.animate){ const a = f.animate([{opacity:0},{opacity:1, offset:.2},{opacity:0}], {duration:ms, easing:'ease-out', fill:'forwards'}); a.onfinish = ()=>{ clearTimeout(kill); f.remove(); }; }
+}
+// Maul & Mitte des sichtbaren Drachenbilds (passt sich der Entwicklungsstufe an)
+function dfxBox(dr){ const im = dr.querySelector('img') || dr; return im.getBoundingClientRect(); }
+function dfxMouth(dr){
+  const r = dfxBox(dr), P = DRAGON_ITEM_POS[Math.min(dragonStageIdx(), 4)];
+  return {x: r.left + r.width*P.eyes[0]/100, y: r.top + r.height*(P.eyes[1] + (P.neck[1]-P.eyes[1])*.35)/100, w:r.width, h:r.height};
+}
+function dfxCenter(dr){ const r = dfxBox(dr); return {x:r.left + r.width/2, y:r.top + r.height*.55, w:r.width, h:r.height, top:r.top, bottom:r.bottom}; }
+function dfxBurst(c, emo, n, spread){
+  const m = dfxCenter(c.dr), N = Math.max(2, Math.round(n*c.dens));
+  for(let i=0;i<N;i++){
+    const a = i/N*Math.PI*2 + Math.random()*.5, d = dfxRnd(.55, .95)*(spread || m.w);
+    dfxP(m.x, m.y - m.h*.1, emo[i % emo.length], {size:dfxRnd(14, 22)*c.k, dx:Math.cos(a)*d, dy:Math.sin(a)*d, s0:.3, s1:1, rot:dfxRnd(-120, 120), dur:dfxRnd(750, 1100)});
+  }
+}
+function dfxDust(c, n){
+  const m = dfxCenter(c.dr), N = Math.max(2, Math.round(n*c.dens));
+  for(let i=0;i<N;i++){ const side = i%2 ? 1 : -1;
+    dfxP(m.x + side*m.w*dfxRnd(.05, .25), m.bottom - m.h*.06, '☁️', {size:dfxRnd(12, 18)*c.k, dx:side*dfxRnd(35, 75)*c.k, dy:-dfxRnd(4, 22)*c.k, s0:.5, s1:1.4, o1:.8, dur:dfxRnd(600, 850)}); }
+}
+// Wiederholter Effekt (z.B. Feuerstrahl), stoppt automatisch, wenn der Drache neu gezeichnet wurde
+function dfxStream(c, ms, every, fn){
+  const t0 = performance.now();
+  const tick = ()=>{ if(!c.dr.isConnected) return; const t = (performance.now() - t0)/ms; fn(Math.min(1, t)); if(t < 1) c.later(tick, every); };
+  tick();
+}
+function dfxBody(dr, frames, ms, origin, easing){
+  if(!dr || !dr.animate) return null;
+  if(DFX_RM){ frames = [{scale:'1'},{scale:'1.08'},{scale:'1'}]; ms = Math.min(ms, 600); }
+  dr.style.transformOrigin = origin || '50% 85%';
+  frames = frames.map(f=>f.easing ? f : Object.assign({easing:'ease-in-out'}, f));   // jede Teilbewegung weich, Takt bleibt gleichmäßig
+  const a = dr.animate(frames, {duration:ms, easing:easing || 'linear'});
+  const reset = ()=>{ dr.style.transformOrigin = ''; };
+  a.onfinish = reset; a.oncancel = reset;
+  return a;
+}
+function dfxFilter(dr, frames, ms){ return dr && dr.animate && !DFX_RM ? dr.animate(frames, {duration:ms, easing:'ease-in-out'}) : null; }
+
+/* ---------- Sounds (Web Audio, respektieren state.settings.sound über die Prüfung unten) ---------- */
+let dfxNoiseBuf = null;
+function dfxNoise(dur=.5, vol=.15, f0=800, f1=300, delay=0, q=.8){
+  if(state.settings && state.settings.sound===false) return;
+  try{
+    const c = ctx(), sr = c.sampleRate; if(c.state==='suspended') c.resume();
+    if(!dfxNoiseBuf){ dfxNoiseBuf = c.createBuffer(1, sr*2, sr); const d = dfxNoiseBuf.getChannelData(0); for(let i=0;i<d.length;i++) d[i] = Math.random()*2 - 1; }
+    const src = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(), t0 = c.currentTime + delay;
+    src.buffer = dfxNoiseBuf; src.loop = true; f.type = 'bandpass'; f.Q.value = q;
+    f.frequency.setValueAtTime(f0, t0); f.frequency.exponentialRampToValueAtTime(Math.max(40, f1), t0 + dur);
+    g.gain.setValueAtTime(.0001, t0); g.gain.exponentialRampToValueAtTime(vol, t0 + Math.min(.08, dur*.3)); g.gain.exponentialRampToValueAtTime(.0001, t0 + dur);
+    src.connect(f); f.connect(g); g.connect(c.destination); src.start(t0); src.stop(t0 + dur + .05);
+  }catch(e){}
+}
+function dfxSweep(f0, f1, dur, type='sine', vol=.1, delay=0){
+  if(state.settings && state.settings.sound===false) return;
+  try{
+    const c = ctx(); if(c.state==='suspended') c.resume();
+    const o = c.createOscillator(), g = c.createGain(), t0 = c.currentTime + delay;
+    o.type = type; o.frequency.setValueAtTime(f0, t0); o.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t0 + dur);
+    g.gain.setValueAtTime(.0001, t0); g.gain.exponentialRampToValueAtTime(vol, t0 + .03); g.gain.exponentialRampToValueAtTime(.0001, t0 + dur);
+    o.connect(g); g.connect(c.destination); o.start(t0); o.stop(t0 + dur + .05);
+  }catch(e){}
+}
+
+/* ---------- Fliegen: eine Kopie dreht einen Looping über den Bildschirm ---------- */
+function dfxFly(c, ms){
+  const dr = c.dr, r = dr.getBoundingClientRect();
+  if(!r.width || !dr.animate || DFX_RM){ c.anim(dfxBody(dr, [{translate:'0 0'},{translate:'0 -30%'},{translate:'0 0'}], 900)); return; }
+  const A = appRect(), s = Math.max(.6, Math.min(2.1, 110 / r.width)), half = r.width*s/2 + 8;
+  const L = Math.max(A.left, 0) + half, R = Math.min(A.right, innerWidth) - half;
+  const T = Math.max(A.top, 0) + half + 40, B = Math.max(T + 60, Math.min(A.bottom, innerHeight) - half - 30);
+  const sx = r.left + r.width/2, sy = r.top + r.height/2, side = sx < (A.left + A.right)/2 ? 1 : -1;
+  const cx = (L + R)/2, cy = T + (B - T)*.42, rad = Math.max(26, Math.min((R - L)*.28, (B - T)*.3));
+  const pts = [[sx, sy, 1, 0], [sx + side*20, sy - 50, (1 + s)/2, -side*12], [side>0 ? R : L, T, s, side*14], [cx + side*rad*.6, cy + rad, s, side*8]];
+  for(let i=0;i<=8;i++){ const a = (90 + side*i*45)*Math.PI/180; pts.push([cx + rad*Math.cos(a), cy + rad*Math.sin(a), s, side*i*45]); }
+  pts.push([side>0 ? L : R, cy + rad*.5, s, side*350], [sx, sy, 1, side*360]);
+  let tot = 0; const dist = [0];
+  for(let i=1;i<pts.length;i++){ tot += Math.hypot(pts[i][0] - pts[i-1][0], pts[i][1] - pts[i-1][1]) + 1; dist.push(tot); }
+  const frames = pts.map((p, i)=>({transform:`translate(${(p[0]-sx).toFixed(1)}px,${(p[1]-sy).toFixed(1)}px) rotate(${p[3]}deg) scale(${p[2].toFixed(2)})`, offset:dist[i]/tot}));
+  const cl = dr.cloneNode(true); cl.classList.add('dfx-clone'); cl.removeAttribute('id');
+  Object.assign(cl.style, {left:r.left + 'px', top:r.top + 'px', width:r.width + 'px', height:r.height + 'px', transformOrigin:'50% 50%'});
+  dfxLayer().appendChild(cl); dr.style.visibility = 'hidden';
+  c.undo(()=>{ cl.remove(); dr.style.visibility = ''; });
+  const fly = cl.animate(frames, {duration:ms, easing:'ease-in-out'}); c.anim(fly);
+  fly.onfinish = ()=>{ cl.remove(); dr.style.visibility = ''; c.anim(dfxBody(dr, [{scale:'1'},{scale:'1.14 .86', offset:.35},{scale:'.95 1.06', offset:.7},{scale:'1'}], 420, '50% 95%')); };
+  dfxStream(c, ms - 250, 75, ()=>{ if(!cl.isConnected) return; const q = cl.getBoundingClientRect();
+    dfxP(q.left + q.width/2 + dfxRnd(-8, 8), q.top + q.height*.7, Math.random()<.7 ? '✨' : '💨', {size:dfxRnd(11, 18), dy:dfxRnd(10, 24), s0:.9, s1:.2, dur:650}); });
+}
+
+/* ---------- Die Tricks ---------- */
+const DRAGON_ACTIONS = {
+  fire:{e:'🔥', ms:2200, vib:[30,60,220,40,160],
+    snd(){ dfxNoise(.35, .06, 300, 1100); dfxNoise(1.3, .22, 1600, 350, .35, .7); dfxSweep(150, 70, 1.1, 'sawtooth', .07, .35); beep(55, .9, 'triangle', .12, .35); },
+    run(c){ const d = c.dir;
+      c.anim(dfxBody(c.dr, [{translate:'0 0', rotate:'0deg', scale:'1'}, {translate:`${-5*d}% 2%`, rotate:`${-8*d}deg`, scale:'1.04 .96', offset:.15},
+        {translate:`${6*d}% -1%`, rotate:`${7*d}deg`, scale:'1.1', offset:.24}, {translate:`${7*d}% 0%`, rotate:`${5*d}deg`, scale:'1.08', offset:.5},
+        {translate:`${6*d}% -1%`, rotate:`${8*d}deg`, scale:'1.1', offset:.74}, {translate:'0 0', rotate:'0deg', scale:'1'}], 2100, '50% 85%'));
+      c.anim(dfxFilter(c.dr, [{filter:'none'}, {filter:'drop-shadow(0 0 10px #ff8a00) brightness(1.1)', offset:.3}, {filter:'drop-shadow(0 0 16px #ff5a00) brightness(1.12)', offset:.75}, {filter:'none'}], 2100));
+      c.later(()=>{
+        const m = dfxMouth(c.dr);
+        dfxP(m.x + d*m.w*.12, m.y, '', {cls:'dfx-glow', css:{width:Math.round(m.w*.7) + 'px', height:Math.round(m.w*.7) + 'px'}, s0:.3, s1:1.3, o1:.85, dx:d*m.w*.3, dur:1400, ease:'ease-out'});
+        dfxFlash(m.x + d*m.w*.8, m.y, 'rgba(255,140,0,.32)', 1400);
+        const A = appRect(), reach = Math.max(120, Math.min(340*c.k, (d>0 ? A.right - m.x : m.x - A.left) + 30));
+        dfxStream(c, 1250, 40, ()=>{ const m = dfxMouth(c.dr), k = c.k;
+          for(let i=0;i<Math.max(1, Math.round(2*c.dens));i++)
+            dfxP(m.x + d*m.w*.06, m.y + m.h*.03, Math.random()<.85 ? '🔥' : '💥', {size:dfxRnd(16, 30)*k, dx:d*reach*dfxRnd(.55, 1), dy:dfxRnd(-25, 35)*k, arc:-dfxRnd(10, 35)*k, s0:.35, s1:dfxRnd(1.5, 2.1), r0:-d*30, rot:d*dfxRnd(40, 100), dur:dfxRnd(650, 1000)});
+          if(Math.random() < .6*c.dens) dfxP(m.x, m.y, '', {cls:'dfx-dot', css:{width:Math.round(8*k) + 'px', height:Math.round(8*k) + 'px'}, dx:d*reach*dfxRnd(.5, 1.1), dy:dfxRnd(-70, 50)*k, s0:1, s1:.3, dur:900});
+        });
+      }, 330);
+      c.later(()=>{ const m = dfxMouth(c.dr); for(let i=0;i<3;i++) dfxP(m.x + (i-1)*m.w*.06, m.y - m.h*.05, '💨', {flip:d>0, size:13*c.k, dx:d*dfxRnd(10, 30)*c.k, dy:-dfxRnd(30, 55)*c.k, s0:.4, s1:1.3, o1:.7, dur:1000}); }, 1700);
+    }},
+  fly:{e:'🪽', ms:4000, vib:[15,90,15,90,15,90,25],
+    snd(){ [0, .9, 1.8, 2.7].forEach((t, i)=>dfxNoise(.6, .09, 350, 1300 - i*120, t, 1.2)); pluck(784, .1, .18); pluck(988, 3.4, .2); pluck(1318, 3.52, .2); },
+    run(c){ dfxFly(c, 3500); }},
+  dance:{e:'🕺', ms:2600, vib:[20,180,20,180,20,180,20],
+    snd(){ [523,659,784,659,880,784,659,523].forEach((f, i)=>pluck(f, i*.27, .22, .6)); [0, .54, 1.08, 1.62].forEach(t=>beep(131, .12, 'triangle', .12, t)); },
+    run(c){
+      c.anim(dfxBody(c.dr, [{translate:'0 0', rotate:'0deg', scale:'1'}, {translate:'-8% -4%', rotate:'-12deg', scale:'1.03 .97', offset:.125}, {translate:'0 0', rotate:'0deg', scale:'1.06 .94', offset:.25},
+        {translate:'8% -4%', rotate:'12deg', scale:'1.03 .97', offset:.375}, {translate:'0 0', rotate:'0deg', scale:'1.06 .94', offset:.5}, {translate:'-8% -9%', rotate:'-14deg', scale:'1', offset:.625},
+        {translate:'0 0', rotate:'0deg', scale:'1.06 .94', offset:.75}, {translate:'8% -9%', rotate:'14deg', scale:'1', offset:.875}, {translate:'0 0', rotate:'0deg', scale:'1'}], 2400, '50% 90%'));
+      dfxStream(c, 2300, 260, ()=>{ const m = dfxCenter(c.dr), side = Math.random()<.5 ? -1 : 1;
+        dfxP(m.x + side*m.w*.45, m.y - m.h*.1, pick(['🎵','🎶','🎵','✨']), {size:dfxRnd(18, 28)*c.k, dx:side*dfxRnd(20, 50)*c.k, dy:-dfxRnd(70, 120)*c.k, s0:.5, s1:1.2, r0:-side*15, rot:side*25, dur:1200}); });
+    }},
+  jump:{e:'🦘', ms:1400, vib:[10,320,40],
+    snd(){ dfxSweep(300, 900, .28, 'sine', .12); pluck(392, .62, .25, .4); beep(90, .12, 'sine', .18, .62); },
+    run(c){
+      c.anim(dfxBody(c.dr, [{translate:'0 0', scale:'1', easing:'ease-out'}, {translate:'0 4%', scale:'1.15 .82', offset:.15, easing:'cubic-bezier(.2,.8,.4,1)'}, {translate:'0 -58%', scale:'.92 1.1', offset:.48, easing:'linear'},
+        {translate:'0 -60%', scale:'1', offset:.54, easing:'cubic-bezier(.6,0,.9,.5)'}, {translate:'0 0', scale:'1.18 .8', offset:.82, easing:'ease-out'}, {translate:'0 0', scale:'1'}], 1250, '50% 95%'));
+      c.later(()=>dfxDust(c, 5), 1020);
+    }},
+  spin:{e:'🌀', ms:1600, vib:[15,40,15,40,15],
+    snd(){ dfxSweep(400, 1200, .7, 'triangle', .08); dfxNoise(.8, .07, 500, 1800, 0, 1.5); pluck(1046, .85, .2); },
+    run(c){ const d = c.dir;
+      c.anim(dfxBody(c.dr, [{rotate:'0deg', translate:'0 0', scale:'1'}, {rotate:`${-20*d}deg`, translate:'0 2%', scale:'1.05 .95', offset:.15}, {rotate:`${380*d}deg`, translate:'0 -18%', scale:'1', offset:.75},
+        {rotate:`${360*d}deg`, translate:'0 0', scale:'1.08 .92', offset:.88}, {rotate:`${360*d}deg`, translate:'0 0', scale:'1'}], 1450, '50% 55%', 'cubic-bezier(.45,0,.3,1)'));
+      c.later(()=>dfxBurst(c, ['✨','⭐','💫'], 8), 1050);
+    }},
+  sleep:{e:'💤', ms:5200, mood:'sleepy', vib:12,
+    snd(){ [0, 1.6, 3.2].forEach(t=>{ dfxNoise(.9, .05, 220, 140, t + .1, 2); beep(82, .8, 'sine', .07, t + .1); }); pluck(659, 4.8, .15); pluck(880, 4.95, .18); },
+    run(c){
+      c.anim(dfxBody(c.dr, [{rotate:'0deg', translate:'0 0', scale:'1'}, {rotate:'-9deg', translate:'0 4%', scale:'1.03 .95', offset:.12}, {rotate:'-9deg', translate:'0 4%', scale:'1.06 .92', offset:.27},
+        {rotate:'-9deg', translate:'0 4%', scale:'1.02 .96', offset:.42}, {rotate:'-9deg', translate:'0 4%', scale:'1.06 .92', offset:.58}, {rotate:'-9deg', translate:'0 4%', scale:'1.02 .96', offset:.74},
+        {rotate:'0deg', translate:'0 -8%', scale:'.96 1.08', offset:.9}, {rotate:'0deg', translate:'0 0', scale:'1'}], 5000, '50% 95%'));
+      c.anim(dfxFilter(c.dr, [{filter:'brightness(1)'}, {filter:'brightness(.78) saturate(.85)', offset:.15}, {filter:'brightness(.78) saturate(.85)', offset:.85}, {filter:'brightness(1)'}], 5000));
+      dfxStream(c, 4200, 520, ()=>{ const m = dfxCenter(c.dr);
+        dfxP(m.x + m.w*.22, m.top + m.h*.22, pick(['💤','Z','z']), {cls:'dfx-z', size:dfxRnd(16, 26)*c.k, dx:dfxRnd(30, 60)*c.k, dy:-dfxRnd(70, 110)*c.k, s0:.4, s1:1.3, r0:-10, rot:15, dur:1600, ease:'ease-out'}); });
+      c.later(()=>dfxBurst(c, ['✨'], 4), 4600);
+    }},
+  roar:{e:'🦖', ms:1800, vib:[60,30,300,30,120],
+    snd(){ dfxSweep(320, 110, .9, 'sawtooth', .11, .15); dfxSweep(240, 80, .95, 'square', .04, .15); dfxNoise(1, .16, 900, 180, .15, .6); beep(60, .9, 'sine', .16, .15); },
+    run(c){
+      c.anim(dfxBody(c.dr, [{translate:'0 0', rotate:'0deg', scale:'1'}, {translate:'0 3%', rotate:'-4deg', scale:'.94 1.03', offset:.1}, {translate:'0 -3%', rotate:'3deg', scale:'1.18', offset:.2},
+        {translate:'2% -3%', rotate:'-2deg', scale:'1.2', offset:.3}, {translate:'-2% -3%', rotate:'2deg', scale:'1.2', offset:.4}, {translate:'2% -3%', rotate:'-2deg', scale:'1.2', offset:.5},
+        {translate:'-2% -3%', rotate:'2deg', scale:'1.18', offset:.6}, {translate:'0 0', rotate:'0deg', scale:'1'}], 1700, '50% 90%'));
+      c.later(()=>{ const m = dfxMouth(c.dr);
+        for(let i=0;i<3;i++) c.later(()=>dfxP(m.x, m.y, '', {cls:'dfx-ring', css:{width:Math.round(m.w*.5) + 'px', height:Math.round(m.w*.5) + 'px'}, s0:.3, s1:4, o1:.8, dur:900, ease:'ease-out'}), i*220);
+        dfxP(m.x, m.y - m.h*.55, 'RAWR!', {cls:'dfx-word', size:24*c.k, dy:-30*c.k, s0:.3, s1:1.4, r0:-8, rot:6, o1:1, dur:1300});
+      }, 300);
+    }},
+  wave:{e:'👋', ms:1700, vib:[15,120,15],
+    snd(){ pluck(784, 0, .25); pluck(988, .12, .25); pluck(1175, .24, .28); },
+    run(c){
+      c.anim(dfxBody(c.dr, [{rotate:'0deg'}, {rotate:'-8deg', offset:.15}, {rotate:'8deg', offset:.3}, {rotate:'-8deg', offset:.45}, {rotate:'8deg', offset:.6}, {rotate:'-5deg', offset:.75}, {rotate:'0deg'}], 1600, '50% 95%'));
+      const m = dfxCenter(c.dr), T = 'translate(-50%,-50%)';
+      dfxP(m.x + c.dir*m.w*.5, m.y - m.h*.15, '👋', {size:30*c.k, dur:1600, ease:'linear', frames:[
+        {transform:`${T} scale(.2) rotate(0deg)`, opacity:0}, {transform:`${T} scale(1.1) rotate(-20deg)`, opacity:1, offset:.15}, {transform:`${T} scale(1) rotate(20deg)`, opacity:1, offset:.3},
+        {transform:`${T} scale(1) rotate(-20deg)`, opacity:1, offset:.45}, {transform:`${T} scale(1) rotate(20deg)`, opacity:1, offset:.6}, {transform:`${T} scale(1) rotate(-10deg)`, opacity:1, offset:.8},
+        {transform:`translate(-50%,-80%) scale(.6) rotate(0deg)`, opacity:0}]});
+    }},
+  heart:{e:'💖', ms:2300, vib:[20,80,20,240,20,80,20],
+    snd(){ [659,784,988,1318].forEach((f, i)=>pluck(f, i*.11, .25, .9)); beep(1318, .5, 'sine', .05, .45); },
+    run(c){
+      c.anim(dfxBody(c.dr, [{scale:'1', rotate:'0deg'}, {scale:'1.12 .92', rotate:'-5deg', offset:.12}, {scale:'1', rotate:'0deg', offset:.24}, {scale:'1.12 .92', rotate:'5deg', offset:.36},
+        {scale:'1', rotate:'0deg', offset:.48}, {scale:'1.08', rotate:'0deg', offset:.7}, {scale:'1', rotate:'0deg'}], 2100, '50% 90%'));
+      const m = dfxCenter(c.dr);
+      dfxP(m.x, m.y, '💖', {size:44*c.k, s0:.2, s1:2.4, o1:.9, dur:1100, ease:'cubic-bezier(.2,1.4,.4,1)'});
+      dfxStream(c, 1800, 110, ()=>{ const m = dfxCenter(c.dr);
+        dfxP(m.x + dfxRnd(-.45, .45)*m.w, m.y + dfxRnd(-.1, .2)*m.h, pick(['💖','💕','💗','❤️','💞']), {size:dfxRnd(14, 28)*c.k, dx:dfxRnd(-30, 30)*c.k, dy:-dfxRnd(90, 170)*c.k, s0:.4, s1:1.2, r0:-15, rot:15, dur:dfxRnd(1300, 1800), ease:'ease-out'}); });
+    }},
+  laugh:{e:'😂', ms:1900, mood:'wow', vib:[15,50,15,50,15,50,15],
+    snd(){ [0, .14, .28, .42, .6, .74].forEach((t, i)=>beep(i%2 ? 620 : 740, .09, 'triangle', .12, t)); },
+    run(c){
+      c.anim(dfxBody(c.dr, [{rotate:'0deg', translate:'0 0'}, {rotate:'-6deg', translate:'0 -3%', offset:.1}, {rotate:'6deg', translate:'0 0', offset:.2}, {rotate:'-6deg', translate:'0 -3%', offset:.3},
+        {rotate:'6deg', translate:'0 0', offset:.4}, {rotate:'-5deg', translate:'0 -3%', offset:.5}, {rotate:'5deg', translate:'0 0', offset:.6}, {rotate:'-3deg', translate:'0 -2%', offset:.7}, {rotate:'0deg', translate:'0 0'}], 1800, '50% 90%'));
+      ['Ha','ha','HA!','😂','hi','😆'].forEach((w, i)=>c.later(()=>{ const m = dfxCenter(c.dr), side = i%2 ? 1 : -1;
+        dfxP(m.x + side*m.w*dfxRnd(.35, .55), m.y - m.h*dfxRnd(.25, .45), w, {cls:'dfx-word', size:dfxRnd(15, 23)*c.k, dx:side*25*c.k, dy:-50*c.k, s0:.4, s1:1.2, r0:-side*20, rot:side*10, o1:1, dur:900}); }, i*200));
+    }},
+  sit:{e:'🐾', ms:2300, vib:[10,60,30],
+    snd(){ dfxSweep(500, 250, .25, 'sine', .1); beep(110, .15, 'sine', .15, .25); pluck(1046, .7, .15); },
+    run(c){
+      c.anim(dfxBody(c.dr, [{translate:'0 0', scale:'1'}, {translate:'0 10%', scale:'1.12 .8', offset:.12}, {translate:'0 8%', scale:'1.06 .86', offset:.22}, {translate:'0 8%', scale:'1.06 .86', offset:.8},
+        {translate:'0 -6%', scale:'.96 1.06', offset:.9}, {translate:'0 0', scale:'1'}], 2200, '50% 100%'));
+      c.later(()=>dfxDust(c, 4), 240);
+      c.later(()=>{ const m = dfxCenter(c.dr); dfxP(m.x, m.top - 4, '⭐', {size:22*c.k, dy:-18*c.k, s0:.2, s1:1.2, o1:1, rot:72, dur:1100}); }, 700);
+    }},
+  magic:{e:'✨', ms:2300, mood:'wow', vib:[10,40,10,40,10,40,80],
+    snd(){ [1046,1318,1568,2093,1568,2093,2637].forEach((f, i)=>pluck(f, i*.09, .16, .7)); beep(2093, .6, 'sine', .04, .65); },
+    run(c){
+      c.anim(dfxBody(c.dr, [{scale:'1', rotate:'0deg', translate:'0 0'}, {scale:'1.08', rotate:'-6deg', translate:'0 -6%', offset:.3}, {scale:'1.12', rotate:'6deg', translate:'0 -8%', offset:.6}, {scale:'1', rotate:'0deg', translate:'0 0'}], 2100, '50% 80%'));
+      c.anim(dfxFilter(c.dr, [{filter:'none'}, {filter:'brightness(1.35) drop-shadow(0 0 12px #ffe27a)', offset:.45}, {filter:'none'}], 2100));
+      const N = Math.max(5, Math.round(16*c.dens));
+      for(let i=0;i<N;i++) c.later(()=>{ const m = dfxCenter(c.dr), a = i*.8, r0 = m.w*.15, r1 = m.w*(.7 + (i%3)*.12);
+        dfxP(m.x + Math.cos(a)*r0, m.y + Math.sin(a)*r0, pick(['✨','⭐','💫','✨']), {size:dfxRnd(12, 24)*c.k, dx:Math.cos(a + 1.2)*r1, dy:Math.sin(a + 1.2)*r1 - 20*c.k, arc:-20*c.k, s0:.2, s1:1.1, rot:180, dur:900}); }, i*80);
+      c.later(()=>dfxBurst(c, ['✨','🌟','⭐'], 10), 1350);
+    }},
+  sneeze:{e:'🤧', ms:2100, vib:[70,30,30], vibAt:800,
+    snd(){ dfxSweep(400, 700, .3, 'sine', .07); dfxSweep(450, 800, .3, 'sine', .08, .4); dfxNoise(.45, .3, 3000, 700, .8, .9); beep(180, .12, 'square', .05, .8); },
+    run(c){ const d = c.dir;
+      c.anim(dfxBody(c.dr, [{translate:'0 0', rotate:'0deg', scale:'1'}, {translate:'0 -2%', rotate:`${-6*d}deg`, scale:'.97 1.05', offset:.18}, {translate:'0 0', rotate:'0deg', scale:'1', offset:.28},
+        {translate:'0 -4%', rotate:`${-10*d}deg`, scale:'.95 1.08', offset:.37}, {translate:'0 -4%', rotate:`${-12*d}deg`, scale:'.95 1.1', offset:.4}, {translate:`${8*d}% 3%`, rotate:`${14*d}deg`, scale:'1.12 .9', offset:.46},
+        {translate:`${4*d}% 0%`, rotate:`${6*d}deg`, scale:'1', offset:.6}, {translate:'0 0', rotate:'0deg', scale:'1'}], 2000, '50% 90%'));
+      c.later(()=>{ const m = dfxMouth(c.dr), k = c.k;
+        for(let i=0;i<Math.max(4, Math.round(9*c.dens));i++)
+          dfxP(m.x + d*m.w*.1, m.y, i%4===3 ? '🔥' : '💨', {flip:d>0, size:dfxRnd(16, 32)*k, dx:d*dfxRnd(90, 210)*k, dy:dfxRnd(-40, 30)*k, s0:.3, s1:1.7, rot:d*dfxRnd(0, 40), dur:dfxRnd(800, 1300)});
+        const W = {de:'HATSCHI!', en:'ACHOO!', es:'¡ACHÍS!', fr:'ATCHOUM !', it:'ETCIÙ!'}[dragonLang()] || 'ACHOO!';
+        dfxP(m.x, m.y - m.h*.6, W, {cls:'dfx-word', size:20*k, dy:-24*k, s0:.4, s1:1.3, r0:-6, rot:4, o1:1, dur:1200});
+      }, 820);
+    }},
+  grow:{e:'🦕', ms:2500, vib:[20,40,20,40,160],
+    snd(){ [196,247,294,392].forEach((f, i)=>beep(f, .22, 'triangle', .12, i*.12)); dfxSweep(120, 60, .6, 'sawtooth', .06, .5); },
+    run(c){
+      c.anim(dfxBody(c.dr, [{scale:'1'}, {scale:'1.15', offset:.1}, {scale:'1.05', offset:.14}, {scale:'1.35', offset:.24}, {scale:'1.25', offset:.28}, {scale:'1.6', offset:.38}, {scale:'1.55', offset:.45},
+        {scale:'1.6', offset:.75}, {scale:'.9', offset:.88}, {scale:'1'}], 2400, '50% 95%', 'ease-out'));
+      c.later(()=>dfxBurst(c, ['✨','💥'], 6, c.dr.getBoundingClientRect().width*.9), 800);
+      c.later(()=>dfxDust(c, 6), 850);
+    }},
+  shrink:{e:'🐭', ms:2500, vib:[10,30,10],
+    snd(){ [784,659,523,392].forEach((f, i)=>beep(f, .15, 'sine', .1, i*.1)); [1568,1760].forEach((f, i)=>pluck(f, .9 + i*.3, .12, .4)); },
+    run(c){
+      c.anim(dfxBody(c.dr, [{scale:'1', translate:'0 0'}, {scale:'.5', translate:'0 0', offset:.25}, {scale:'.56', translate:'0 0', offset:.3}, {scale:'.5', translate:'0 0', offset:.35},
+        {scale:'.5', translate:'0 -10%', offset:.5}, {scale:'.5', translate:'0 0', offset:.6}, {scale:'.5', translate:'0 -10%', offset:.7}, {scale:'.5', translate:'0 0', offset:.8},
+        {scale:'1.08', translate:'0 0', offset:.92}, {scale:'1', translate:'0 0'}], 2400, '50% 95%'));
+      c.later(()=>{ const m = dfxCenter(c.dr); dfxP(m.x, m.y, '💨', {size:20*c.k, s0:.4, s1:1.6, o1:.6, dur:600}); }, 250);
+    }},
+  rainbow:{e:'🌈', ms:2700, vib:[10,60,10,60,10,60,10],
+    snd(){ [523,587,659,698,784,880,988,1046].forEach((f, i)=>pluck(f, i*.08, .2, .8)); },
+    run(c){
+      c.anim(dfxBody(c.dr, [{translate:'0 0', scale:'1'}, {translate:'0 -8%', scale:'1.06', offset:.3}, {translate:'0 0', scale:'1', offset:.6}, {translate:'0 -4%', scale:'1.03', offset:.8}, {translate:'0 0', scale:'1'}], 2500, '50% 90%'));
+      c.anim(dfxFilter(c.dr, [{filter:'hue-rotate(0deg) saturate(1)'}, {filter:'hue-rotate(360deg) saturate(1.5)', offset:.5}, {filter:'hue-rotate(720deg) saturate(1)'}], 2500));
+      const m = dfxCenter(c.dr), R = Math.round(m.w*1.2), T = 'translate(-50%,-50%)';
+      dfxP(m.x, m.y + m.h*.1 - R/2, '', {cls:'dfx-arc', css:{width:R*2 + 'px', height:R + 'px', '--r':R + 'px'}, dur:2500, ease:'ease-out', frames:[
+        {transform:`${T} scale(.2)`, opacity:0}, {transform:`${T} scale(1.05)`, opacity:.95, offset:.25}, {transform:`${T} scale(1)`, opacity:.9, offset:.75}, {transform:'translate(-50%,-62%) scale(1.05)', opacity:0}]});
+      dfxStream(c, 2100, 90, ()=>{ const m = dfxCenter(c.dr), col = pick(['#ff4d4d','#ff8c1a','#ffd23f','#2ecc71','#3d7bff','#8f5bff']);
+        dfxP(m.x + dfxRnd(-.5, .5)*m.w, m.y - m.h*.1, '', {cls:'dfx-dot', css:{width:Math.round(9*c.k) + 'px', height:Math.round(9*c.k) + 'px', background:col}, dx:dfxRnd(-60, 60)*c.k, dy:-dfxRnd(60, 150)*c.k, s0:1, s1:.4, dur:1000}); });
+    }},
+};
+
+/* ---------- Welche Drachen spielen mit? (Chat-Kopf + Hub-Drache bzw. fliegender Begleiter, wenn sichtbar) ---------- */
+function dragonHosts(){
+  const out = [], sheet = document.getElementById('buddySheet'), open = sheet && !sheet.classList.contains('hidden');
+  const sTop = open ? sheet.getBoundingClientRect().top : Infinity;
+  if(open) out.push(document.getElementById('buddyFace'));
+  const hub = document.getElementById('screen-hub');
+  const main = hub && hub.classList.contains('active') ? document.getElementById('hubDragon') : buddyEl();
+  if(main && !main.classList.contains('hidden')){ const r = main.getBoundingClientRect(); if(r.width > 0 && r.top + r.height*.6 < sTop) out.push(main); }
+  return out.filter(h=>h && h.querySelector('.dragon'));
+}
+function dragonStop(host){ const end = dfx.hosts.get(host); if(end) end(); }
+function dragonStopAll(){ [...dfx.hosts.values()].forEach(end=>end()); }
+function dfxRun(host, id, dens){
+  dragonStop(host);
+  const A = DRAGON_ACTIONS[id]; let dr = host.querySelector('.dragon'); if(!dr) return Promise.resolve();
+  let swapped = null;
+  if(A.mood && !DFX_RM){
+    swapped = host.innerHTML;
+    const size = parseInt(dr.style.width) || Math.round(dr.getBoundingClientRect().width) || 64;
+    const cls = [...dr.classList].filter(x=>x!=='dragon' && x!=='dimg' && !x.startsWith('m-')).join(' ');
+    host.innerHTML = dragonSVG({size, mood:A.mood, cls}); dr = host.querySelector('.dragon');
+  }
+  const timers = [], anims = [], undo = [], rr = dr.getBoundingClientRect(), ar = appRect(), mid = (ar.left + ar.right)/2, cx = rr.left + rr.width/2;
+  const c = {host, dr, dens:(DFX_RM ? .4 : 1)*dens, k:Math.max(.7, Math.min(1.5, rr.width/100)),
+    dir: Math.abs(cx - mid) < 30 ? (Math.random()<.5 ? -1 : 1) : (cx < mid ? 1 : -1),
+    later:(fn, ms)=>timers.push(setTimeout(()=>{ if(dr.isConnected) fn(); }, ms)),
+    anim:a=>{ if(a) anims.push(a); return a; }, undo:fn=>undo.push(fn)};
+  try{ A.run(c); }catch(e){ console.warn('dragon action', id, e); }
+  return new Promise(res=>{
+    let done = false;
+    const end = ()=>{
+      if(done) return; done = true; if(dfx.hosts.get(host)===end) dfx.hosts.delete(host);
+      timers.forEach(clearTimeout); anims.forEach(a=>{ try{ a.cancel(); }catch(e){} }); undo.forEach(f=>{ try{ f(); }catch(e){} });
+      if(swapped!=null && host.firstElementChild===dr) host.innerHTML = swapped;
+      res();
+    };
+    dfx.hosts.set(host, end);
+    timers.push(setTimeout(end, A.ms));
+  });
+}
+// Öffentliche API: runDragonAction('fire') → Promise, die endet, wenn der Trick fertig ist
+function runDragonAction(id){
+  if(id==='random') id = pick(DRAGON_RANDOM);
+  const A = DRAGON_ACTIONS[id]; if(!A) return Promise.resolve();
+  const hosts = dragonHosts(); if(!hosts.length) return Promise.resolve();
+  try{ A.snd && A.snd(); }catch(e){}
+  if(A.vib) setTimeout(()=>vib(A.vib), A.vibAt || 0);
+  state.dragonTricks = (state.dragonTricks||0) + 1; try{ saveState(); }catch(e){}
+  return Promise.all(hosts.map((h, i)=>dfxRun(h, id, i===0 ? 1 : .6)));
+}
+
+/* ---------- Befehle verstehen (offline, mehrsprachig, Tippfehler-tolerant) ---------- */
+// "wort*" = Wortanfang, "*wort*" = irgendwo im Wort, "wort" = ganzes Wort; Leerzeichen = Wortfolge (kleine Lücken erlaubt)
+const DRAGON_KW = {
+  fire:['feuer*','*feuer*','feur*','fire','fireball*','firebreath*','flame*','flamm*','fuego','llamas','llamarada*','feu','feux','fuoco','fiamm*'],
+  fly:['flieg*','*flieg*','abheb*','heb ab','looping','loop','fly','flying','vola*','vuela*','vole','voler','vol','volo','take off','takeoff'],
+  dance:['tanz*','danc*','musik','music','musica','musique','bail*','danse*','dansez','balla*','balli','ballo','danza*','disco','boogie'],
+  jump:['spring*','*spring*','hupf*','hops*','jump*','salta*','salte','salto','saute*','sauter','wach* auf','wake up','aufwach*','despierta*','reveille*','svegli*'],
+  spin:['dreh*','*dreh*','spin','spinning','kreisel*','pirouett*','piroett*','pirueta*','wirbel*','turn around','gira','girar','girare','girati','gire','tourne*','rotate'],
+  sleep:['schlaf*','*schlaf*','leg* dich','nickerchen','mude','gahn*','sleep*','asleep','nap','tired','duerm*','dorm*','dodo','sieste','siesta','pisolino','nanna','gute nacht','good night','goodnight','buenas noches','bonne nuit','buonanotte','buona notte'],
+  roar:['brull*','roar*','rawr*','grr*','fauch*','growl*','ruge','rugi*','rugg*'],
+  wave:['wink*','wave*','waving','sag hallo','say hello','say hi','saluda*','salue','saluta*'],
+  heart:['hab* lieb','hast lieb','lieb dich','liebe dich','mag dich','magst mich','kuschel*','knuddel*','umarm*','bussi*','busserl','herzchen','love you','love me','hug*','cuddle*','te quiero','te amo','abraz*','besito*','t aime','calin*','bisou*','voglio bene','ti amo','abbracc*','coccol*','bacio*'],
+  laugh:['lach*','kicher*','haha*','hihi*','hehe*','laugh*','giggle*','lol','jaja*','jeje*','rie','reir','riete','rire','ris','rigole*','ridi','ridere','risata*'],
+  sit:['sitz*','setz* dich','hinsetz*','platz','sit','sitdown','sientate','sientese','sentado','assis*','assieds*','siediti','seduto','siedi'],
+  magic:['zauber*','*zauber*','magi*','funkel*','glitzer*','sparkle*','glitter*','abracadabra','abrakadabra','simsalabim','hokus*','hechizo*','sortilege','incantesim*'],
+  sneeze:['nies*','hatschi*','hatsch*','haptschi','sneez*','achoo*','atchoo*','atchoum','estornud*','achis','eternu*','starnut*','etciu'],
+  grow:['wachs*','gross','grosser','riesig','grow*','bigger','huge','giant*','gigant*','crece*','grandis','grandir','agrandis*','cresci*'],
+  shrink:['schrumpf*','klein','kleiner','winzig*','shrink*','tiny','smaller','encog*','rapetiss*','rimpicciol*','plus petit','piu piccolo','mas pequeno','mini'],
+  rainbow:['regenbog*','rainbow*','arcoiris','arco iris','arc en ciel','arcobalen*','bunt'],
+  random:['trick*','kunststuck*','uberrasch*','surpr*','sorpr*','truco*','trucco*'],
+};
+const dcSet = s=>new Set(s.split(' '));
+const DC_FILL = dcSet('bitte mal doch jetzt nochmal noch einmal einen eine ein einem mach machst mache macht machen zeig zeige zeigst mir mich dich dir du kannst konntest kannste tu tust los hey he ok okay und ich mochte will willst wurdest dass gern gerne spuck spucke spucken spuckst spuckt lass uns sofort schnell richtig ganz bisschen wieder auch so fur fuer please pls plz can could would you do make show me some a an the now again go to let lets just one more time quick little bit really your for breathe spit por favor puedes podrias haz hazme echa echame un una el la me te ahora otra vez vamos mas para escupe sil plait peux tu pourrais fais fait faire moi une du de le encore maintenant allez vas y toi pour crache per favore puoi potresti fai fammi mi lo ancora adesso dai su sputa');
+const DC_NEG = dcSet('nicht kein keine keinen keiner nie niemals nein dont not no never stopp stop aufhoren hor pas non jamais nunca basta cant wont');
+const DC_QW = dcSet('warum wieso weshalb wie was welche welcher welches wann wo woher wohin wer why how what when where which who porque que como cuando donde quien pourquoi comment quoi quand quel quelle perche quando dove cosa chi qual quale');
+const DC_TALK = dcSet('uber about sobre sur von erzahl erzahle erzahlst tell story geschichte marchen cuenta cuentame raconte racconta explain erklar erklare explique spiega wort word words heisst bedeutet means mean meaning translate ubersetz ubersetze ubersetzen like likes mag magst gusta gustan aime aimes piace piacciono englisch english spanisch spanish franzosisch french italienisch italian ingles espanol frances italiano anglais espagnol francais inglese spagnolo francese deutsch german aleman allemand tedesco');
+const DC_GREET = dcSet('hallo hello hi hey servus hallihallo moin gruss grussi griasdi griass gruezi guten tag morgen abend hola buenas buenos dias salut bonjour bonsoir coucou ciao buongiorno howdy yo');
+const DC_EMOJI = {'🔥':'fire','🐉':'fire','🪽':'fly','💃':'dance','🕺':'dance','🦘':'jump','🌀':'spin','💤':'sleep','😴':'sleep','🦖':'roar','👋':'wave','❤':'heart','💖':'heart','🥰':'heart','😂':'laugh','🤣':'laugh','✨':'magic','🪄':'magic','🤧':'sneeze','🌈':'rainbow','🎲':'random'};
+const DC_KW = Object.entries(DRAGON_KW).map(([id, list])=>[id, list.map(p=>p.split(' '))]);
+function dcNorm(s){ return String(s||'').toLowerCase().replace(/ß/g, 'ss').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim(); }
+function dcOSA(a, b){ // Tippfehler-Abstand (Einfügen, Löschen, Ersetzen, Vertauschen)
+  const m = a.length, n = b.length; if(Math.abs(m - n) > 2) return 9;
+  const d = []; for(let i=0;i<=m;i++){ d[i] = [i]; } for(let j=1;j<=n;j++) d[0][j] = j;
+  for(let i=1;i<=m;i++) for(let j=1;j<=n;j++){
+    d[i][j] = Math.min(d[i-1][j] + 1, d[i][j-1] + 1, d[i-1][j-1] + (a[i-1]===b[j-1] ? 0 : 1));
+    if(i>1 && j>1 && a[i-1]===b[j-2] && a[i-2]===b[j-1]) d[i][j] = Math.min(d[i][j], d[i-2][j-2] + 1);
+  }
+  return d[m][n];
+}
+function dcSwap(a, b){ // genau zwei benachbarte Buchstaben vertauscht („fleig“ → „flieg“)
+  if(a.length!==b.length || a.length < 4) return false;
+  let i = 0; while(i < a.length && a[i]===b[i]) i++;
+  return i < a.length - 1 && a[i]===b[i+1] && a[i+1]===b[i] && a.slice(i+2)===b.slice(i+2);
+}
+function dcWord(w, t){ // 2 = genau, 1 = mit Tippfehler, 0 = nein
+  const lead = w[0]==='*', trail = w.endsWith('*'), s = w.replace(/\*/g, '');
+  if(lead && trail ? t.includes(s) : trail ? t.startsWith(s) : lead ? t.endsWith(s) : t===s) return 2;
+  if(lead || s.length < 4 || t[0]!==s[0]) return 0;
+  const tol = s.length >= 9 ? 2 : s.length >= 6 ? 1 : 0;
+  const cands = trail ? [t.slice(0, s.length), t.slice(0, s.length + 1), t.slice(0, s.length - 1)] : [t];
+  for(const c of cands) if(dcSwap(c, s) || (tol && c.length >= s.length - 1 && dcOSA(c, s) <= tol)) return 1;
+  return 0;
+}
+function dcPattern(p, toks){
+  let last = -1, score = 0; const idx = [];
+  for(let k=0;k<p.length;k++){
+    let found = -1, q = 0; const to = k===0 ? toks.length : Math.min(toks.length, last + 4);
+    for(let j=last+1;j<to;j++){ const r = dcWord(p[k], toks[j]); if(r){ found = j; q = r; break; } }
+    if(found < 0) return null;
+    idx.push(found); last = found; score += p[k].replace(/\*/g, '').length*q;
+  }
+  return {score, idx};
+}
+// strict=true: nur kurze, eindeutige Befehle (sonst darf Claude antworten); strict=false: großzügig (ohne Claude/offline)
+function dragonCommand(text, strict){
+  const raw = String(text||''), toks = dcNorm(raw).split(' ').filter(Boolean);
+  if(!toks.length){ for(const e in DC_EMOJI) if(raw.includes(e)){ const id = DC_EMOJI[e]; return id==='random' ? pick(DRAGON_RANDOM) : id; } return null; }
+  if(toks.length > (strict ? 10 : 40)) return null;
+  const names = new Set(['flugo','flueggo','drache','drachen','drachi','dragon','dragoncito','dragone','draghetto','dragonnet', ...dcNorm(dragon().name).split(' ')]);
+  const core = toks.filter(t=>!names.has(t)); if(!core.length) return null;
+  if(core.some(t=>DC_NEG.has(t))) return null;
+  if(core.some(t=>DC_GREET.has(t)) && core.every(t=>DC_GREET.has(t) || DC_FILL.has(t))) return 'wave';
+  const first = core.find(t=>!DC_FILL.has(t));
+  if(strict && first && DC_QW.has(first)) return null;
+  let best = null;
+  for(const [id, pats] of DC_KW) for(const p of pats){ const m = dcPattern(p, core); if(m && (!best || m.score > best.score)) best = {id, ...m}; }
+  if(!best) return null;
+  if(strict){
+    const rest = core.filter((t, i)=>!best.idx.includes(i));
+    if(rest.some(t=>DC_TALK.has(t)) || rest.filter(t=>!DC_FILL.has(t)).length > 2) return null;
+  }
+  return best.id==='random' ? pick(DRAGON_RANDOM) : best.id;
+}
+
+/* ---------- Was Flügo dazu sagt ---------- */
+const DRAGON_LINES = {
+  fire:{de:['Fuuuh! 🔥 Heiß, heiß, heiß!','Achtung, Drachenfeuer! 🔥'], en:['Whoosh! 🔥 Hot, hot, hot!','Watch out – dragon fire! 🔥'], es:['¡Fuuu! 🔥 ¡Qué calor!','¡Cuidado, fuego de dragón! 🔥'], fr:['Fouuu ! 🔥 Ça chauffe !','Attention, feu de dragon ! 🔥'], it:['Fuuu! 🔥 Che caldo!','Attenzione, fuoco di drago! 🔥']},
+  fly:{de:['Wuuusch – ich fliege! 🪽','Eine Runde durch die Luft! 🪽'], en:['Wheee – I\'m flying! 🪽','One lap through the sky! 🪽'], es:['¡Yupiii, estoy volando! 🪽','¡Una vuelta por el cielo! 🪽'], fr:['Youpi, je vole ! 🪽','Un petit tour dans le ciel ! 🪽'], it:['Evviva, sto volando! 🪽','Un giro nel cielo! 🪽']},
+  dance:{de:['Musik an – ich tanze! 🎵','Schau dir meine Drachen-Moves an! 🕺'], en:['Music on – let\'s dance! 🎵','Check out my dragon moves! 🕺'], es:['¡Música! ¡A bailar! 🎵','¡Mira mis pasos de dragón! 🕺'], fr:['Musique ! On danse ! 🎵','Regarde mes pas de dragon ! 🕺'], it:['Musica! Balliamo! 🎵','Guarda i miei passi da drago! 🕺']},
+  jump:{de:['Hopp – so hoch ich kann!','Boing! Hoch hinaus!'], en:['Hop – as high as I can!','Boing! Up I go!'], es:['¡Hop! ¡Lo más alto que puedo!','¡Boing! ¡Arriba!'], fr:['Hop ! Le plus haut possible !','Boing ! Je saute !'], it:['Hop! Più in alto che posso!','Boing! Salto!']},
+  spin:{de:['Ich dreh mich – mir wird ganz schwindlig! 🌀','Eine Pirouette! 🌀'], en:['Spinning around – I\'m so dizzy! 🌀','A little pirouette! 🌀'], es:['¡Doy vueltas, qué mareo! 🌀','¡Una pirueta! 🌀'], fr:['Je tourne, j\'ai le tournis ! 🌀','Une pirouette ! 🌀'], it:['Giro giro… che vertigini! 🌀','Una piroetta! 🌀']},
+  sleep:{de:['Gähn … nur ein kleines Nickerchen. 💤','Gute Nacht … schnarch … 💤'], en:['Yawn… just a little nap. 💤','Good night… zzz… 💤'], es:['Ahhh… una siestecita. 💤','Buenas noches… zzz… 💤'], fr:['Bâille… une petite sieste. 💤','Bonne nuit… zzz… 💤'], it:['Sbadiglio… un pisolino. 💤','Buonanotte… zzz… 💤']},
+  roar:{de:['RAAAWR! War ich furchteinflößend?','ROOOAR! Hihi, nur Spaß.'], en:['RAAAWR! Was I scary?','ROOOAR! Just kidding, hehe.'], es:['¡GRRROAR! ¿Te asusté?','¡RAAAWR! ¡Es broma, jeje!'], fr:['GRRRAOU ! Je t\'ai fait peur ?','RAAAWR ! Je rigole, hihi.'], it:['GRRROAR! Ti ho spaventato?','RAAAWR! Scherzo, ihih.']},
+  wave:{de:['Hallihallo! 👋 Wie geht\'s dir?','Hallo du! Schön, dass du da bist! 👋'], en:['Hi there! 👋 How are you?','Hello, friend! 👋 Nice to see you!'], es:['¡Hola, hola! 👋 ¿Qué tal?','¡Hola, amigo! 👋 ¡Qué bien verte!'], fr:['Coucou ! 👋 Ça va ?','Salut, mon ami ! 👋 Content de te voir !'], it:['Ciao ciao! 👋 Come stai?','Ciao, amico! 👋 Che bello vederti!']},
+  heart:{de:['Ich hab dich auch lieb! 💖','Eine große Drachen-Umarmung! 💖'], en:['I love you too! 💖','A big dragon hug! 💖'], es:['¡Yo también te quiero! 💖','¡Un abrazo de dragón! 💖'], fr:['Moi aussi, je t\'aime ! 💖','Un gros câlin de dragon ! 💖'], it:['Ti voglio bene anch\'io! 💖','Un abbraccio da drago! 💖']},
+  laugh:{de:['Hahaha! Du bist so lustig! 😂','Hihihi, das kitzelt! 😂'], en:['Hahaha! You\'re so funny! 😂','Hehehe, that tickles! 😂'], es:['¡Jajaja! ¡Qué gracioso eres! 😂','¡Jijiji, me haces cosquillas! 😂'], fr:['Hahaha ! Tu es trop drôle ! 😂','Hihihi, ça chatouille ! 😂'], it:['Ahahah! Sei troppo simpatico! 😂','Ihihih, mi fai il solletico! 😂']},
+  sit:{de:['Sitz! Ein braver Drache, oder? 🐾','Okay, ich setz mich hin.'], en:['Sitting! Good dragon, right? 🐾','Okay, I\'m sitting down.'], es:['¡Sentado! Buen dragón, ¿verdad? 🐾','Vale, me siento.'], fr:['Assis ! Gentil dragon, non ? 🐾','D\'accord, je m\'assois.'], it:['Seduto! Bravo drago, vero? 🐾','Va bene, mi siedo.']},
+  magic:{de:['Simsalabim! ✨','Hokuspokus, Drachenzauber! ✨'], en:['Abracadabra! ✨','Hocus pocus, dragon magic! ✨'], es:['¡Abracadabra! ✨','¡Magia de dragón! ✨'], fr:['Abracadabra ! ✨','Magie de dragon ! ✨'], it:['Abracadabra! ✨','Magia di drago! ✨']},
+  sneeze:{de:['Ha… ha… HATSCHI! 💨 Ups, Rauch!','HATSCHI! Entschuldigung! 💨'], en:['Ah… ah… ACHOO! 💨 Oops, smoke!','ACHOO! Excuse me! 💨'], es:['Ah… ah… ¡ACHÍS! 💨 ¡Uy, humo!','¡ACHÍS! ¡Perdón! 💨'], fr:['Ah… ah… ATCHOUM ! 💨 Oups, de la fumée !','ATCHOUM ! Pardon ! 💨'], it:['Ah… ah… ETCIÙ! 💨 Ops, fumo!','ETCIÙ! Scusa! 💨']},
+  grow:{de:['Schau, ich bin RIESIG!','Ich wachse und wachse!'], en:['Look, I\'m HUGE!','Growing, growing, grown!'], es:['¡Mira, soy ENORME!','¡Crezco y crezco!'], fr:['Regarde, je suis ÉNORME !','Je grandis, je grandis !'], it:['Guarda, sono ENORME!','Cresco, cresco!']},
+  shrink:{de:['Ich bin so klein wie eine Maus! 🐭','Mini-Drache!'], en:['I\'m as tiny as a mouse! 🐭','Mini dragon!'], es:['¡Soy pequeñito como un ratón! 🐭','¡Mini dragón!'], fr:['Je suis petit comme une souris ! 🐭','Mini dragon !'], it:['Sono piccolo come un topolino! 🐭','Mini drago!']},
+  rainbow:{de:['Ein Regenbogen nur für dich! 🌈','Alle Farben auf einmal! 🌈'], en:['A rainbow just for you! 🌈','All the colours at once! 🌈'], es:['¡Un arcoíris para ti! 🌈','¡Todos los colores a la vez! 🌈'], fr:['Un arc-en-ciel rien que pour toi ! 🌈','Toutes les couleurs ! 🌈'], it:['Un arcobaleno solo per te! 🌈','Tutti i colori insieme! 🌈']},
+};
+function dragonLine(id){ const L = DRAGON_LINES[id] || {}; return pick(L[dragonLang()] || L.en || ['✨']); }
+
+const DRAGON_CHIPS = ['fire','dance','fly','magic','roar','sneeze','heart','sleep','rainbow','random'];
+const DRAGON_CHIP_TXT = {
+  de:{fire:'🔥 Mach Feuer!', dance:'🕺 Tanz!', fly:'🪽 Flieg!', magic:'✨ Zaubere!', roar:'🦖 Brüll mal!', sneeze:'🤧 Nies mal!', heart:'💖 Hab mich lieb!', sleep:'💤 Schlaf!', rainbow:'🌈 Regenbogen!', random:'🎲 Überrasch mich!'},
+  en:{fire:'🔥 Breathe fire!', dance:'🕺 Dance!', fly:'🪽 Fly!', magic:'✨ Do magic!', roar:'🦖 Roar!', sneeze:'🤧 Sneeze!', heart:'💖 Hug me!', sleep:'💤 Go to sleep!', rainbow:'🌈 Rainbow!', random:'🎲 Surprise me!'},
+  es:{fire:'🔥 ¡Echa fuego!', dance:'🕺 ¡Baila!', fly:'🪽 ¡Vuela!', magic:'✨ ¡Haz magia!', roar:'🦖 ¡Ruge!', sneeze:'🤧 ¡Estornuda!', heart:'💖 ¡Abrázame!', sleep:'💤 ¡A dormir!', rainbow:'🌈 ¡Arcoíris!', random:'🎲 ¡Sorpréndeme!'},
+  fr:{fire:'🔥 Crache du feu !', dance:'🕺 Danse !', fly:'🪽 Vole !', magic:'✨ Fais de la magie !', roar:'🦖 Rugis !', sneeze:'🤧 Éternue !', heart:'💖 Fais-moi un câlin !', sleep:'💤 Fais dodo !', rainbow:'🌈 Arc-en-ciel !', random:'🎲 Surprends-moi !'},
+  it:{fire:'🔥 Sputa fuoco!', dance:'🕺 Balla!', fly:'🪽 Vola!', magic:'✨ Fai una magia!', roar:'🦖 Ruggisci!', sneeze:'🤧 Starnutisci!', heart:'💖 Abbracciami!', sleep:'💤 Dormi!', rainbow:'🌈 Arcobaleno!', random:'🎲 Sorprendimi!'},
+};
+function renderDragonTricks(){
+  const row = document.getElementById('buddyTricks'), hint = document.getElementById('buddyHint'); if(!row) return;
+  const T = DRAGON_CHIP_TXT[dragonLang()] || DRAGON_CHIP_TXT.de;
+  if(row.dataset.lang!==dragonLang()){
+    row.dataset.lang = dragonLang(); row.innerHTML = '';
+    DRAGON_CHIPS.forEach(id=>{ const b = document.createElement('button'); b.className = 'chat-chip dt-chip'; b.textContent = T[id]; b.onclick = ()=>buddySend(T[id]); row.appendChild(b); });
+  }
+  if(hint){
+    const ex = ['fire','fly','dance'].map(id=>'„' + T[id].replace(/^\S+\s/, '') + '“').join(', ');
+    hint.textContent = `💡 Sag z. B. ${ex} – oder plaudere einfach. Tipp auf mich = Überraschung!`;
+    hint.classList.toggle('hidden', (state.dragonTricks||0) >= 8);
+  }
+  const inp = document.getElementById('buddyInput');
+  if(inp) inp.placeholder = `Frag ${dragon().name} oder sag „${T.fire.replace(/^\S+\s/, '')}“ …`;
+}
+
+/* ---------- Gespräch mit Flügo: echte KI, Gedächtnis, Kunststücke, freihändig ---------- */
+const BUDDY_TURNS = 30, BUDDY_FACTS = 16;
+function buddyMem(){ return state.buddyMemory = Object.assign({facts:[], recent:[], mode:null}, state.buddyMemory||{}); }
 function buddyContext(){
   const li = levelInfo(state.xp);
   const cur = document.querySelector('.screen.active');
   return `Learner: German-speaking adult from Austria, learning ${DRIVE_LANG[currentLang()]} at level ${myCefr()} (goal B2). App level ${li.level}, streak ${state.streak} days, today ${state.daily.xp}/${state.daily.goal} XP, hearts ${state.hearts}/5. Current screen: ${cur ? cur.id : '?'}.`;
 }
-function buddyRules(){
-  const d = dragon(), L = DRIVE_LANG[currentLang()];
-  const who = `You are "${d.name}", the learner's small, cheerful ${DRAGON_STAGES[dragonStageIdx()].name} (a cute dragon companion) in the language app "Wortreise". ${buddyContext()}
-App features you may suggest: Lernen (levels, Training), Üben (Regeln, Sätze, Reden, Spiele incl. Aussprache-Coach), Quests, Liga & Freunde, Profil (Shop, Drachenhöhle).`;
-  if(buddy.micLang==='target') return talkRules(`${who}
-This is a spoken, hands-free conversation in ${L}: chat about anything the learner likes, tell little dragon stories, ask about their day. If they ask something about learning, help briefly. Dragon jokes welcome.`);
-  return `${who}
-Answer in German (casual "du"), at most 3 short sentences, warm and a little funny. Help with vocabulary, grammar (one example), pronunciation, motivation and how to use the app. No markdown, no lists.`;
+// Kunststücke: Befehl erkennen (sofort, auch ohne Claude) + Animation im Gesprächsfenster
+const BUDDY_ACTS = {
+  fire:    {re:/feuer|flamm|\bfire\b|\bflames?\b|fuego|\bfeu\b|fuoco|fiamm/i, say:'🔥 Fffffhhhhh! Heiß, heiß, heiß!'},
+  smoke:   {re:/\brauch|\bsmoke|\bhumo\b|fumée|\bfumo\b/i, say:'💨 Pfffff … ein Rauchring für dich!'},
+  loop:    {re:/looping|salto|überschlag|purzelbaum|\bflip\b|voltereta|pirouette|capriola/i, say:'🌀 Juhuuu – ein Looping!'},
+  fly:     {re:/\bflieg|\bfl(y|ies|ying)\b|\bvuel[ae]\b|\bvolar\b|\bvol[ea]\b|\bvoler\b|\bvolare\b/i, say:'🪽 Wuuusch – ich fliege!'},
+  dance:   {re:/\btanz|\bdanc(e|ing)\b|\bbail[ae]\b|\bbailar\b|\bdanse\b|\bdanser\b|\bball[ai]\b|\bballare\b/i, say:'🎵 Schuppi-dupp-di-du – Drachentanz!'},
+  jump:    {re:/\bspring|\bhüpf|\bjump|\bsalt[ae]\b|\bsaltar\b|\bsaute\b|\bsauter\b|\bsaltare\b/i, say:'💫 Hopp, hopp, hopp!'},
+  sleep:   {re:/\bschlaf|gute nacht|\bsleep|good ?night|\bduerme|\bdormir\b|\bdors\b|bonne nuit|\bdormi(re)?\b|buona ?notte/i, say:'💤 Chrrr … chrrr …'},
+  hearts:  {re:/hab dich (lieb|gern)|lieb dich|kuschel|\bumarm|knuddel|love you|\bhug\b|te quiero|abrazo|je t'aime|câlin|ti voglio bene|abbraccio/i, say:'💖 Ich hab dich auch lieb!'},
+  magic:   {re:/zauber|\bmagic|\bmagia\b|\bmagie\b/i, say:'✨ Simsalabim – Drachenzauber!'},
+  roar:    {re:/brüll|fauch|knurr|\broar|\bruge\b|\brugir\b|\brugis|ruggisci|ruggire/i, say:'🐲 ROOOAAARRR!'},
+  rainbow: {re:/regenbogen|\bbunt\b|rainbow|arco ?[ií]ris|arc-en-ciel|arcobaleno/i, say:'🌈 Tadaaa – Regenbogendrache!'},
+  wave:    {re:/\bwink(e|st|t)?\b|\bwave\b|\bsalud[ae]\b|\bsalue\b|\bsaluta\b/i, say:'👋 Huhu!'},
+  spin:    {re:/dreh dich|\bspin\b|\bgira\b|tourne/i, say:'🌀 Wiiieee – ich dreh mich!'},
+  sneeze:  {re:/\bnies|\bsneeze|estornud|éternue|starnut/i, say:'🤧 Haaa-tschi! Hoppla, Funken!'},
+  laugh:   {re:/\blach|\blaugh|\bríe\b|\bris\b|\bridi\b/i, say:'😂 Hihihi – das kitzelt in den Schuppen!'},
+  grow:    {re:/\bwachs|groß werden|\bgrow\b|\bcrece|grandis|cresci/i, say:'⬆️ Schaut her – ich werde riesig!'},
+  shrink:  {re:/schrumpf|klein werden|\bshrink|encoge|rapetiss|rimpicciol/i, say:'⬇️ Huch, ich bin ganz winzig!'},
+  sit:     {re:/\bsitz\b|setz dich|\bsit\b|siéntate|assis|siediti/i, say:'🪑 Brav sitz ich da!'},
+  treasure:{re:/(zeig|show|muestra|montre|mostra).{0,30}(schatz|gold|treasure|tesoro|trésor)/i, say:'🪙 Mein Schatz! Glitzer, glitzer!'},
+  story:   {re:/märchen|fairy ?tale|cuento de hadas|conte de fées|\bfiab[ae]\b/i, app:true, say:'📚 Gern – ich hol mein Märchenbuch!'},
+  drive:   {re:/fahrmodus|driving mode|modo (de )?conducción|mode conduite|modalità guida/i, app:true, say:'🚗 Anschnallen – ab in den Fahrmodus!'},
+};
+function buddyDetect(text){
+  const t = String(text||'');
+  // nur kurze Befehle – „Was heißt Feuer auf Englisch?“ ist eine Frage, kein Befehl
+  if(t.split(/\s+/).length > 9 || /hei(ß|ss)t|wie sagt man|übersetz|bedeutet|auf (englisch|spanisch|französisch|italienisch)|what does|how do you say|translate|significa|se dice|veut dire|dit-on|si dice/i.test(t)) return null;
+  let c = dragonCommand(t, true); if(c==='random') c = pick(DRAGON_RANDOM);
+  if(c) return c==='heart' ? 'hearts' : c;
+  for(const k in BUDDY_ACTS){ if(!BUDDY_ACTS[k].app && BUDDY_ACTS[k].re.test(t)) return k; }
+  return null;
+}
+// Trick am echten Drachen (Chat-Kopf + großer Drache) abspielen
+const BUDDY_DFX = {hearts:'heart', smoke:'sneeze', loop:'spin', treasure:'magic'};
+function buddyAct(k){
+  const a = BUDDY_ACTS[k], id = BUDDY_DFX[k] || k;
+  if(!a || a.app || !DRAGON_ACTIONS[id]) return;
+  buddy.actUntil = Date.now() + DRAGON_ACTIONS[id].ms;
+  runDragonAction(id);
+}
+function buddyOpenApp(k){ closeBuddy(); if(k==='story') openStoryShelf(); else openDrive(); }
+
+function buddyRules(spoken){
+  const d = dragon(), L = DRIVE_LANG[currentLang()], s = talkSettings(), facts = buddyMem().facts, target = buddy.micLang==='target';
+  const tricks = Object.keys(BUDDY_ACTS).join(', ');
+  const now = new Date().toLocaleString('de-AT', {weekday:'long', day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit'});
+  return `You are "${d.name}", the learner's small, cute medieval dragon (${DRAGON_STAGES[dragonStageIdx()].name}) who lives in a cosy castle cave and keeps them company in the language app "Wortreise". At the same time you are a genuinely smart, knowledgeable AI assistant: talk about anything and answer any question well - general knowledge, science, history, everyday advice, cooking, travel, technology, maths, writing help, jokes, riddles, stories, and of course languages and this app.
+Personality: warm, witty, curious, a little cheeky; you love gold coins, castles, friendly knights and dragon jokes. Now and then (not in every reply) add a playful medieval touch such as "Bei meinen Schuppen!" or "edler Ritter". Never scary. The dragon role is only flavour: facts must be correct and advice genuinely useful; if you are unsure, say so honestly. You have no internet in your cave: for live data (news, weather, prices, sports results) say you cannot look it up and share what you generally know. If asked what you really are, say honestly that you are ${d.name}, a dragon character powered by the AI Claude from Anthropic.
+${buddyContext()} Local date and time: ${now}.
+App features you may suggest when it fits: Lernen (levels, Training), Üben (Regeln, Sätze, Reden, Spiele incl. Aussprache-Coach), Märchenstunde, Fahrmodus, Quests, Liga & Freunde, Profil (Shop, Drachenhöhle).
+What you remember about the learner from earlier chats: ${facts.length ? facts.join(' | ') : 'nothing yet'}. Use it naturally (e.g. their name), without listing it unprompted.
+Language: ${target
+  ? `${L} practice mode. Normally reply in ${L}, at about the learner's level (a little above is fine). If the learner writes in German (stuck, or asking for an explanation), answer helpfully in German, then add one easy ${L} sentence to keep practising.`
+  : `Reply in the language of the learner's last message - normally German (casual "du", Austrian-friendly). If they write in ${L} or another language, answer in that language.`}
+Length: ${spoken
+  ? 'Your reply is SPOKEN ALOUD in a hands-free voice chat: 1 to 3 short, natural sentences (about 45 words at most). Only if the learner explicitly asks for an explanation, a story, a recipe or details, use up to about 120 words in short spoken sentences. No lists.'
+  : 'Written chat: as long as the message deserves - 1 to 3 sentences for small talk, a clear and complete answer for real questions (up to about 200 words in short paragraphs; a few numbered steps only if they really help).'}
+Plain text only: no markdown (no #, no **, no tables), at most one emoji. Ask a follow-up question only when it feels natural, not every time.
+${target ? `Feedback policy for the learner's LAST message, only if it was written in ${L}:
+- GRAMMAR: ${FB_POLICY[s.grammar]}.
+- WORD (wrong or unnatural word choice): ${FB_POLICY[s.words]}.
+- UPGRADE (same idea said more naturally, one level higher): ${FB_POLICY[s.upgrade]}.
+Ignore punctuation, capitalisation and obvious speech-recognition glitches.
+` : ''}Tricks: the app animates these tricks of yours: ${tricks}. When the learner asks you to do one ("mach Feuer", "spuck Feuer", "flieg eine Runde", "tanz!", "brüll mal", "zeig deinen Schatz") or you want to show a strong feeling, add an ACTION line and describe the trick playfully in your reply (e.g. "Fffhhh!"). Use "story" only when they want the app's fairy-tale reader (Märchen vorlesen) and "drive" only for the hands-free driving mode; if they ask you to tell a story, tell it yourself.
+Memory: when the learner tells you a lasting personal fact (name, age, job, home town, family, pets, hobbies, likes and dislikes, learning goals, plans), add a MEMORY line written as "Label: fact" in German with a short specific label, e.g. "MEMORY: Name: Stefan" or "MEMORY: Hobbys: Radfahren, Kochen". Only new or changed facts the learner really said, at most two per reply; a changed fact repeats its label with the complete new value.
+Answer format - optional tag lines first, each on its own line, then the reply:
+${target ? `GRAMMAR: <corrected sentence> — <reason in German, max 10 words>
+WORD: <wrong word> → <better word> — <reason in German, max 10 words>
+UPGRADE: <better phrasing in ${L}>
+` : ''}ACTION: <one of: ${tricks}>
+MEMORY: <Label: fact>
+REPLY: <your reply, may span several lines>
+Leave out every tag line that has nothing to say. REPLY always comes last; write nothing after the reply.`;
+}
+function buddyClean(t){ return String(t||'').replace(/^\s*(GRAMMAR|WORD|UPGRADE|ACTION|MEMORY):.*$/gim, '').replace(/\*\*|__/g, '').replace(/^\s*#+\s*/gm, '').replace(/\n{3,}/g, '\n\n').trim(); }
+function buddyLive(out){ out = String(out||''); const i = out.search(/REPLY:/i); return i < 0 ? '' : buddyClean(out.slice(i + 6)); }
+function buddyParse(out){
+  out = String(out||'');
+  const r = parseTalk(out), act = (out.match(/^\s*ACTION:\s*([a-z]+)/im) || [])[1], k = act ? act.toLowerCase() : null;
+  const memory = (out.match(/^\s*MEMORY:.*$/gim) || []).map(l=>l.replace(/^\s*MEMORY:\s*/i, '').trim()).filter(m=>m && !/^(none|-|keine?)\.?$/i.test(m)).slice(0, 2);
+  return {grammar:r.grammar, word:r.word, upgrade:r.upgrade, reply:buddyClean(r.reply), action: k && BUDDY_ACTS[k] ? k : null, memory};
+}
+function buddyRemember(fact, el){
+  fact = String(fact||'').replace(/\s+/g, ' ').trim().slice(0, 140);
+  if(fact.length < 3) return;
+  const m = buddyMem(), label = f=>f.indexOf(':') > 0 ? f.slice(0, f.indexOf(':')).trim().toLowerCase() : null, lb = label(fact);
+  if(m.facts.some(f=>f.toLowerCase()===fact.toLowerCase())) return;
+  m.facts = m.facts.filter(f=>!(lb && label(f)===lb)).concat(fact).slice(-BUDDY_FACTS);
+  saveState();
+  if(el){ const s = document.createElement('small'); s.className = 'bb-mem'; s.textContent = '🧠 Gemerkt: ' + fact; el.appendChild(s); }
+}
+function buddySaveRecent(){
+  const m = buddyMem();
+  m.recent = buddy.turns.slice(-10).map(t=>({role:t.role, content:String(t.content).slice(0, 1200)}));
+  m.mode = buddy.micLang; saveState();
+}
+function buddyHistory(){
+  const list = document.getElementById('buddyList'); if(list.children.length) return;
+  buddy.turns.slice(-8).forEach(t=>{ const txt = t.role==='user' ? t.content : buddyParse(t.content).reply; if(txt) buddyBubble(t.role==='user' ? 'me' : 'bot', txt).classList.add('old'); });
+  const sep = document.createElement('div'); sep.className = 'bb-sep'; sep.textContent = '— weiter geht’s —'; list.appendChild(sep);
 }
 function buddyBubble(cls, text){
   const list = document.getElementById('buddyList');
   const el = document.createElement('div'); el.className = 'bb ' + cls; el.textContent = text;
-  if(cls==='bot'){ const h = document.createElement('button'); h.className = 'tb-hear'; h.textContent = '🔊'; h.onclick = ()=>speak(text, buddyCode()); el.appendChild(h); }
+  if(cls==='bot'){ const h = document.createElement('button'); h.className = 'tb-hear'; h.textContent = '🔊'; h.onclick = ()=>{ if(buddy.listening) buddy.voice = false; buddyHush(); buddyStatus(''); speak(text, buddyVoiceCode(text)); }; el.appendChild(h); }
   list.appendChild(el); list.scrollTop = list.scrollHeight; return el;
 }
 function buddyCode(){ return buddy.micLang==='target' ? LANGS[currentLang()].code : 'de-DE'; }
+// Stimme passend zur Sprache der Antwort (Flügo antwortet in der Sprache, in der du redest)
+function buddyVoiceCode(text){
+  const tgt = LANGS[currentLang()].code, t = String(text||'');
+  const de = (t.match(/[äöüß]|\b(ich|du|und|nicht|das|ist|ein|eine|mit|auf|für|bin|bist|wir|auch|aber|oder|wenn|noch|schon|kannst|dein|mein|heute|gerne?)\b/gi) || []).length;
+  if(buddy.micLang==='target') return de >= 2 ? 'de-DE' : tgt;
+  return de >= 1 || t.length < 25 ? 'de-DE' : tgt;
+}
 function buddyStatus(t){ document.getElementById('buddyStatus').textContent = t || ''; }
 function updateBuddyControls(){
-  document.getElementById('buddyMic').textContent = buddy.voice ? '⏹' : '🎤';
-  document.getElementById('buddyMic').classList.toggle('live', buddy.voice);
+  const m = document.getElementById('buddyMic');
+  m.textContent = buddy.voice && !buddy.speaking ? '⏹' : '🎤';
+  m.title = buddy.speaking ? 'Unterbrechen – jetzt rede ich!' : buddy.voice ? 'Freihändig-Modus beenden' : 'Freihändig reden';
+  m.classList.toggle('live', !!buddy.voice && !buddy.speaking);
+  m.classList.toggle('barge', !!buddy.speaking);
   document.getElementById('buddyLang').textContent = buddy.micLang==='target' ? LANGS[currentLang()].label.split(' ')[0] : '🇩🇪';
 }
+// alles Hörbare sofort stoppen; jede laufende Sprech-/Hör-Runde wird ungültig (buddy.gen)
+function buddyHush(){
+  buddy.gen = (buddy.gen||0) + 1; buddy.speaking = false; buddy.listening = false;
+  try{ speechSynthesis.cancel(); }catch(e){}
+  try{ buddy.rec && buddy.rec.abort(); }catch(e){}
+  updateBuddyControls();
+}
+function buddyChunks(text){
+  const out = []; let cur = '';
+  cleanForSpeech(text).replace(/([.!?:;])\s+/g, '$1\n').split('\n').forEach(s=>{
+    if(cur && (cur + ' ' + s).length > 220){ out.push(cur); cur = s; } else cur = cur ? cur + ' ' + s : s;
+  });
+  if(cur.trim()) out.push(cur);
+  return out;
+}
+// Satzweise vorlesen (kein Abbruch langer Texte, schnelles Unterbrechen); false = unterbrochen
+async function buddySpeak(text){
+  const g = buddy.gen = (buddy.gen||0) + 1, code = buddyVoiceCode(text);
+  buddy.speaking = true; updateBuddyControls();
+  buddyStatus('🗣️ ' + dragon().name + ' spricht … · 🎤 = unterbrechen');
+  for(const part of buddyChunks(text)){
+    await speakAsync(part, code);
+    if(g!==buddy.gen) return false;
+  }
+  buddy.speaking = false; buddyStatus(''); updateBuddyControls();
+  return true;
+}
 function openBuddy(){
-  sndTap(); hideBuddySay(); fqClose(true, 'nav');
+  sndTap(); hideBuddySay();
   document.getElementById('buddySheet').classList.remove('hidden');
   document.getElementById('buddyFace').innerHTML = dragonSVG({size:54, mood:'wow'});
   document.getElementById('buddyName').textContent = dragon().name;
   const q = document.getElementById('buddyQuick'); q.innerHTML = '';
   const quick = buddy.micLang==='target'
-    ? ({en:['How are you?','Tell me a story!','What did you do today?','Teach me a new word!'], es:['¿Qué tal?','¡Cuéntame una historia!'], fr:['Ça va ?','Raconte-moi une histoire !'], it:['Come stai?','Raccontami una storia!']}[currentLang()] || [])
-    : ['Was soll ich heute üben?','Erklär mir eine Grammatikregel','Was heißt „Fernweh“?'];
+    ? ({en:['How are you?','Tell me a joke!','What did you do today?','Teach me a new word!'], es:['¿Qué tal?','¡Cuéntame un chiste!','¡Cuéntame una historia!'], fr:['Ça va ?','Raconte-moi une blague !','Raconte-moi une histoire !'], it:['Come stai?','Raccontami una barzelletta!','Raccontami una storia!']}[currentLang()] || [])
+    : ['😂 Erzähl mir einen Witz','🤔 Warum ist der Himmel blau?','📅 Was soll ich heute üben?','🧠 Was weißt du über mich?'];
   const tb = document.createElement('button'); tb.className = 'chat-chip'; tb.textContent = '📚 Lies mir ein Märchen vor!'; tb.onclick = ()=>{ closeBuddy(); openStoryShelf(); }; q.appendChild(tb);
-  quick.forEach(t=>{ const b = document.createElement('button'); b.className = 'chat-chip'; b.textContent = t; b.onclick = ()=>buddySend(t); q.appendChild(b); });
+  quick.forEach(t=>{ const b = document.createElement('button'); b.className = 'chat-chip'; b.textContent = t; b.onclick = ()=>buddySend(t.replace(/^[^\p{L}\p{N}¿¡]+/u, '')); q.appendChild(b); });
+  renderDragonTricks();
   updateBuddyControls();
   if(!buddy.greeted){
     buddy.greeted = true;
+    const mem = buddyMem(), back = !buddy.turns.length && mem.recent.length > 0 && mem.mode===buddy.micLang, n = dragon().name;
+    if(back){ buddy.turns = mem.recent.slice(); buddyHistory(); }
     const hi = buddy.micLang==='target'
-      ? ({en:`Hi, I'm ${dragon().name}! Let's talk. Just speak – I'm listening!`, es:`¡Hola, soy ${dragon().name}! Habla conmigo, te escucho.`, fr:`Salut, je suis ${dragon().name} ! Parle-moi, je t'écoute.`, it:`Ciao, sono ${dragon().name}! Parla con me, ti ascolto.`}[currentLang()])
-      : `Hallo, ich bin ${dragon().name}! Frag mich alles.`;
+      ? ((back ? {en:'Welcome back to my cave! Where were we?', es:'¡Bienvenido de nuevo a mi cueva! ¿Dónde estábamos?', fr:'Re-bienvenue dans ma grotte ! On en était où ?', it:'Bentornato nella mia grotta! Dove eravamo rimasti?'}
+               : {en:`Hi, I'm ${n}! Ask me anything or just chat – I'm listening!`, es:`¡Hola, soy ${n}! Pregúntame lo que quieras – te escucho.`, fr:`Salut, je suis ${n} ! Demande-moi ce que tu veux – je t'écoute.`, it:`Ciao, sono ${n}! Chiedimi quello che vuoi – ti ascolto.`})[currentLang()] || `Hi, I'm ${n}!`)
+      : back ? 'Willkommen zurück in meiner Höhle! Wo waren wir stehengeblieben?' : `Hallo, ich bin ${n}! Frag mich alles, was du wissen willst – oder gib mir Befehle wie „Mach Feuer!“`;
     buddyBubble('bot', hi);
-    if(SpeechRec){ buddy.voice = true; updateBuddyControls(); speakAsync(hi, buddyCode()).then(()=>buddyListen()); }
+    if(!sampleFn && !apiKey() && !window.claude){ buddy.lastAct = null; buddyFail({code:'no_backend'}, null, ''); return; }
+    if(SpeechRec){ buddy.voice = true; updateBuddyControls(); buddySpeak(hi).then(ok=>{ if(ok) buddyListen(); }); }
     else speak(hi, buddyCode());
-  } else if(buddy.voice) buddyListen();
+  } else if(buddy.busy) buddyStatus('🤔 …');
+  else if(buddy.voice) buddyListen();
 }
 function closeBuddy(){
-  buddy.voice = false; buddyStatus('');
-  try{ speechSynthesis.cancel(); }catch(e){} try{ buddy.rec && buddy.rec.abort(); }catch(e){}
+  try{ dragonStopAll(); }catch(e){}
+  buddy.voice = false; buddyHush(); buddyStatus('');
   document.getElementById('buddySheet').classList.add('hidden');
 }
 async function buddyListen(){
-  if(!buddy.voice || document.getElementById('buddySheet').classList.contains('hidden') || buddy.busy) return;
-  buddyStatus('🎧 Ich höre zu …');
-  try{
-    const t = await recognizeOnce(buddyCode());
-    buddy.misses = 0; buddyStatus('');
-    await buddySend(t);
-  }catch(err){
-    buddyStatus('');
-    if(['not-allowed','service-not-allowed','start','unsupported'].includes(err)){
-      buddy.voice = false; updateBuddyControls();
-      const el = buddyBubble('bot', '🎤 Hier ist das Mikrofon gesperrt – schreib mir einfach, oder öffne die App im Browser.');
-      if(window.claude){ const ob = document.createElement('button'); ob.className = 'chat-chip ob'; ob.textContent = '🌐 Im Browser öffnen'; ob.onclick = openInBrowser; el.appendChild(ob); }
-      return;
+  if(!buddy.voice || document.getElementById('buddySheet').classList.contains('hidden') || buddy.busy || buddy.listening || buddy.speaking) return;
+  const g = buddy.gen = (buddy.gen||0) + 1;
+  buddy.listening = true; updateBuddyControls(); buddyStatus('🎧 Ich höre zu …');
+  try{ speechSynthesis.cancel(); }catch(e){}
+  beep(880, .07, 'sine', .08);
+  let t = '', err = null;
+  try{ t = await recognizeOnce(buddyCode()); }
+  catch(e1){
+    err = e1;
+    if(e1==='start' && g===buddy.gen){          // Mikro von vorhin noch nicht frei → kurz warten, einmal nachfassen
+      await new Promise(r=>setTimeout(r, 450));
+      if(g===buddy.gen){ try{ t = await recognizeOnce(buddyCode()); err = null; }catch(e2){ err = e2; } }
     }
-    buddy.misses = (buddy.misses||0) + 1;
-    if(buddy.misses >= 3){ buddy.voice = false; updateBuddyControls(); buddyStatus('⏸ Pause – tippe 🎤 zum Weiterreden'); return; }
-    buddyListen();
   }
+  if(g!==buddy.gen) return;                     // abgebrochen: Schließen, Tippen, 🎤, Sprachwechsel
+  buddy.listening = false; buddyStatus(''); updateBuddyControls();
+  t = String(t||'').trim();
+  if(!err && t){ buddy.misses = 0; return buddySend(t, true); }
+  if(['not-allowed','service-not-allowed','start','unsupported','audio-capture'].includes(err)){
+    buddy.voice = false; updateBuddyControls();
+    const el = buddyBubble('bot', err==='audio-capture' ? '🎤 Ich finde kein Mikrofon – schreib mir einfach.' : '🎤 Hier ist das Mikrofon gesperrt – schreib mir einfach, oder öffne die App im Browser.');
+    if(window.claude && err!=='audio-capture'){ const ob = document.createElement('button'); ob.className = 'chat-chip ob'; ob.textContent = '🌐 Im Browser öffnen'; ob.onclick = openInBrowser; el.appendChild(ob); }
+    return;
+  }
+  if(err==='language-not-supported'){ buddy.voice = false; updateBuddyControls(); buddyBubble('bot', '🎤 Diese Sprache versteht das Mikrofon hier nicht – tippe auf die Flagge für Deutsch, oder schreib mir.'); return; }
+  if(err==='network'){ buddy.voice = false; updateBuddyControls(); buddyStatus('📡 Spracherkennung braucht Internet – tippe 🎤 zum Weiterreden'); return; }
+  buddy.misses = (buddy.misses||0) + 1;
+  if(buddy.misses >= 3){ buddy.voice = false; updateBuddyControls(); buddyStatus('⏸ Pause – tippe 🎤 zum Weiterreden'); return; }
+  setTimeout(buddyListen, 250);
 }
 function buddyOffline(text){
-  const t = text.toLowerCase();
+  const t = String(text||'').toLowerCase();
+  if(/weißt du (über|von) mir|what do you know about me/.test(t)){ const f = buddyMem().facts; return f.length ? '🧠 Ich weiß über dich: ' + f.join(' · ') : '🧠 Noch nichts – erzähl mir von dir!'; }
   if(/üben|heute|was soll/.test(t)) return state.lastPlayDate!==new Date().toDateString() ? 'Starte mit dem leuchtenden Level auf der Karte – 5 Minuten reichen schon! ✨' : 'Probier heute 🗣️ Reden oder den 🎤 Aussprache-Coach unter Üben!';
   if(/herz/.test(t)) return 'Herzen wachsen alle 20 Minuten nach. Im 💪 Training übst du ohne Herzverlust!';
-  return window.claude
-    ? 'Ich konnte Claude gerade nicht erreichen. Bitte erlaube oben „Claude verwenden“ für diese Seite und versuch es nochmal. 🐉'
-    : 'Zum Reden brauche ich Claude: trag unter Üben → Reden → ⚙️ deinen API-Schlüssel ein (oder öffne die App über den Claude-Link). 🐉';
+  return '';
 }
-async function buddySend(text){
-  text = (text||'').trim(); if(!text || buddy.busy) return;
+const BUDDY_NOKEY = '🔑 Damit ich wie eine echte KI mit dir reden kann, brauche ich Claude. So klappt’s:\n① Öffne Wortreise über den Claude-Link – dann geht es ohne Schlüssel.\n② Oder trag hier deinen eigenen Claude-API-Schlüssel ein (beginnt mit „sk-ant-“, erhältlich auf console.anthropic.com). Das Feld gibt es auch unter Üben → Reden → ⚙️.\nKunststücke wie „Mach Feuer!“ 🔥 kann ich aber jetzt schon!';
+function buddyKeyForm(el, userEl, text){
+  const f = document.createElement('div'); f.className = 'bb-key';
+  const inp = document.createElement('input'); inp.type = 'password'; inp.autocomplete = 'off'; inp.placeholder = 'sk-ant-…'; inp.className = 'f-input'; inp.value = apiKey();
+  const b = document.createElement('button'); b.className = 'chat-chip ob'; b.textContent = text ? '💾 Speichern & nochmal fragen' : '💾 Schlüssel speichern';
+  b.onclick = ()=>{
+    const v = inp.value.trim();
+    if(!/^sk-ant-/.test(v)){ toast('🔑 Der Schlüssel beginnt mit „sk-ant-“'); return; }
+    try{ localStorage.setItem(KEY_STORE, v); }catch(e){}
+    f.remove(); toast('🔑 Gespeichert – jetzt kann ich richtig reden!');
+    if(text) buddyRetry(userEl, text);
+  };
+  f.appendChild(inp); f.appendChild(b);
+  if(window.claude){ const ob = document.createElement('button'); ob.className = 'chat-chip ob'; ob.textContent = '🌐 Im Browser öffnen'; ob.onclick = openInBrowser; f.appendChild(ob); }
+  el.appendChild(f);
+}
+function buddyFail(e, userEl, text){
+  const code = e && e.code;
+  buddy.voice = false; buddyHush(); buddyStatus('');
+  if(code==='no_backend'){
+    const app = Object.keys(BUDDY_ACTS).find(k=>BUDDY_ACTS[k].app && BUDDY_ACTS[k].re.test(text||''));
+    if(app){ buddyBubble('bot', BUDDY_ACTS[app].say); setTimeout(()=>buddyOpenApp(app), 900); return; }
+    const first = !buddy.keyHint, head = buddy.lastAct ? BUDDY_ACTS[buddy.lastAct].say : buddyOffline(text);
+    buddy.keyHint = true;
+    if(buddy.lastAct && !first){ buddyBubble('bot', head); return; }
+    const el = buddyBubble('bot', (head ? head + '\n\n' : '') + (first ? BUDDY_NOKEY : '🔑 Für echte Gespräche fehlt mir noch Claude – öffne den Claude-Link oder trag hier deinen API-Schlüssel ein:'));
+    buddyKeyForm(el, userEl, text);
+    return;
+  }
+  if(code==='prompt_too_large') buddy.turns = buddy.turns.slice(-1);
+  const msg = code==='bad_key' ? '🔑 Dein API-Schlüssel wurde abgelehnt. Bitte prüf ihn (beginnt mit „sk-ant-“) und trag ihn neu ein:'
+    : code==='rate_limited' ? '⏳ Puh, gerade zu viele Fragen auf einmal – warte einen Moment und tipp dann auf „Nochmal“.'
+    : code==='not_granted' || code==='sampling_disabled' ? '🚫 Claude ist für diese Seite nicht erlaubt. Lade die Seite neu und tippe bei der Nachfrage auf „Erlauben“ – oder trag unter Üben → Reden → ⚙️ einen eigenen API-Schlüssel ein.'
+    : code==='session_expired' ? '🔐 Deine Claude-Anmeldung ist abgelaufen – bitte neu anmelden und dann nochmal fragen.'
+    : code==='refused' ? '🙊 Darauf kann ich leider nicht antworten. Frag mich gern etwas anderes!'
+    : code==='network' ? '📡 Ich erreiche Claude gerade nicht – prüf dein Internet und tipp auf „Nochmal“.'
+    : code==='prompt_too_large' ? '📜 Unser Gespräch war zu lang – ich hab den Anfang vergessen. Tipp auf „Nochmal“.'
+    : '🐉 Hatschi! Da ging etwas schief. Tipp auf „Nochmal“.';
+  const el = buddyBubble('bot', msg);
+  if(code==='bad_key') buddyKeyForm(el, userEl, text);
+  else if(!['refused','not_granted','sampling_disabled','session_expired'].includes(code)){
+    const b = document.createElement('button'); b.className = 'chat-chip ob'; b.textContent = '🔁 Nochmal';
+    b.onclick = ()=>{ b.remove(); buddyRetry(userEl, text); }; el.appendChild(b);
+  }
+}
+async function buddyRetry(userEl, text){
+  if(buddy.busy || !text) return;
+  const last = buddy.turns[buddy.turns.length-1];
+  if(!last || last.role!=='user') buddy.turns.push({role:'user', content:text});
+  await buddyTurn(userEl, text, false);
+}
+// Kurze lokale Befehle ohne KI: „Stopp“ beendet das freihändige Reden, „Vergiss alles“ löscht das Gedächtnis
+function buddyLocal(text){
+  const t = text.toLowerCase().replace(/[.!?¡¿,]/g, '').trim();
+  if(/^(stopp?|halt|pause|ruhe|sei (mal |jetzt )?still|hör auf|aufhören|schluss|basta|silence|silencio|silenzio|arrête|tais-toi|cállate|zitto)$/.test(t)){
+    buddy.voice = false; buddyHush(); buddyStatus('');
+    buddyBubble('bot', '🤫 Okay, ich bin still. Tipp auf 🎤, wenn du weiterreden willst.');
+    return true;
+  }
+  if(/vergiss (alles|mich|was du (über|von) mir weißt)|lösch(e)? dein gedächtnis|forget (everything|me|all about me)/.test(t)){
+    try{ buddy.ctl && buddy.ctl.abort(); }catch(e){}
+    const m = buddyMem(); m.facts = []; m.recent = []; buddy.turns = []; saveState();
+    buddyBubble('bot', '🧠 Puff – alles vergessen! Wer bist du denn, edler Fremder?');
+    return true;
+  }
+  return false;
+}
+function buddyTier(text, spoken){
+  if(spoken) return 'quick';
+  return text.length > 140 || /erklär|warum|wieso|weshalb|wie funktioniert|unterschied|schreib mir|formulier|rechne|berechne|beweis|analys|vergleich|rezept|tipps? für|explain|\bwhy\b|how does|difference|write me|calculate|compare|recipe/i.test(text) ? 'default' : 'quick';
+}
+// Eine Antwort holen (live mitlesen, wenn Claude streamt); null bei Fehler/Abbruch
+async function buddyReply(userEl, text, spoken){
+  const list = document.getElementById('buddyList'), live = buddyBubble('bot dots', '…'), tier = buddyTier(text, spoken);
+  const ctl = buddy.ctl = new AbortController();
+  buddy.busy = true; updateBuddyControls();
+  buddyStatus(tier==='quick' ? '🤔 …' : '🤔 ' + dragon().name + ' denkt gründlich nach …');
+  let out;
+  try{
+    out = await askClaude(buddy.turns, buddyRules(spoken), false, {signal:ctl.signal, tier, effort: tier==='quick' ? 'low' : 'medium', maxTokens:4096,
+      onText: u=>{ const t = buddyLive(u.text); if(t){ live.textContent = t; live.classList.remove('dots'); list.scrollTop = list.scrollHeight; } }});
+    if(!buddyParse(out).reply) throw {code:'empty'};
+  }catch(e){
+    buddy.busy = false; live.remove(); buddyStatus(''); updateBuddyControls();
+    if(e && e.code==='cancelled'){ if(buddy.voice) buddyListen(); return null; }
+    buddyFail(e, userEl, text); return null;
+  }
+  buddy.busy = false; live.remove();
+  buddy.turns.push({role:'assistant', content:out}); buddy.turns = buddy.turns.slice(-BUDDY_TURNS);
+  const r = buddyParse(out);
+  if(buddy.micLang==='target'){ addFeedback(userEl, r); track('talk', 1); }
+  const el = buddyBubble('bot', r.reply);
+  r.memory.forEach(f=>buddyRemember(f, el));
+  buddySaveRecent();
+  if(!(buddy.actUntil > Date.now())) document.getElementById('buddyFace').innerHTML = dragonSVG({size:54, mood:'happy'});
+  if(r.action && !BUDDY_ACTS[r.action].app && r.action!==buddy.lastAct) buddyAct(r.action);
+  buddyStatus(''); updateBuddyControls();
+  return r;
+}
+async function buddyTurn(userEl, text, spoken){
+  const r = await buddyReply(userEl, text, spoken);
+  if(!r || document.getElementById('buddySheet').classList.contains('hidden')) return;   // geschlossen: nicht mehr vorlesen
+  const app = r.action && BUDDY_ACTS[r.action].app ? r.action : null;
+  const talkIt = spoken || buddy.voice || (talkSettings().voice!==false && r.reply.length <= 420);
+  if(talkIt && !(await buddySpeak(r.reply))) return;   // unterbrochen (🎤, Tippen, Schließen)
+  if(app){ buddyOpenApp(app); return; }
+  if(buddy.voice) buddyListen();
+}
+async function buddySend(text, spoken){
+  text = String(text||'').trim(); if(!text) return;
+  if(buddy.busy){ toast('🐉 Moment – ich antworte gleich …'); return; }
+  buddyHush();                                   // Tippen/Chip während Flügo spricht = unterbrechen
   document.getElementById('buddyInput').value = '';
   const userEl = buddyBubble('me', text);
-  buddy.turns.push({role:'user', content:text}); buddy.turns = buddy.turns.slice(-16);
-  buddy.busy = true; buddyStatus('🤔 …');
-  let reply;
-  try{
-    const out = await askClaude(buddy.turns, buddyRules(), false);
-    buddy.turns.push({role:'assistant', content:out});
-    if(buddy.micLang==='target'){ const r = parseTalk(out); addFeedback(userEl, r); reply = r.reply; track('talk', 1); }
-    else reply = out.replace(/^REPLY:\s*/i,'').trim();
-  }catch(e){
-    reply = buddyOffline(text); buddy.voice = false; updateBuddyControls(); buddy.offline = true;
-  }
-  buddy.busy = false;
-  buddyBubble('bot', reply);
-  document.getElementById('buddyFace').innerHTML = dragonSVG({size:54, mood:'happy'});
-  buddyStatus('🗣️ ' + dragon().name + ' spricht …');
-  const replyCode = buddy.offline ? 'de-DE' : buddyCode(); buddy.offline = false;
-  await speakAsync(reply, replyCode);
-  buddyStatus('');
-  if(buddy.voice) buddyListen();
+  if(buddyLocal(text)){ if(buddy.voice) setTimeout(buddyListen, 300); return; }
+  buddy.lastAct = buddyDetect(text);
+  if(buddy.lastAct) buddyAct(buddy.lastAct);     // „Mach Feuer!“ → sofort Feuer, die KI antwortet dazu
+  buddy.turns.push({role:'user', content:text}); buddy.turns = buddy.turns.slice(-BUDDY_TURNS);
+  await buddyTurn(userEl, text, !!spoken || buddy.voice);
 }
 document.getElementById('buddy').addEventListener('click', openBuddy);
 document.getElementById('buddyClose').onclick = closeBuddy;
 document.getElementById('buddySend').onclick = ()=>buddySend(document.getElementById('buddyInput').value);
 document.getElementById('buddyInput').addEventListener('keydown', e=>{ if(e.key==='Enter') buddySend(e.target.value); });
-document.getElementById('buddyInput').addEventListener('focus', ()=>{ if(buddy.voice){ buddy.voice = false; updateBuddyControls(); try{ buddy.rec && buddy.rec.abort(); }catch(e){} buddyStatus(''); } });
+document.getElementById('buddyInput').addEventListener('focus', ()=>{ if(buddy.voice || buddy.listening){ buddy.voice = false; buddyHush(); buddyStatus(buddy.busy ? '🤔 …' : ''); } });
 document.getElementById('buddyMic').addEventListener('click', ()=>{
-  buddy.voice = !buddy.voice; updateBuddyControls();
-  if(buddy.voice){ try{ speechSynthesis.cancel(); }catch(e){} buddy.misses = 0; buddyListen(); }
-  else { try{ buddy.rec && buddy.rec.abort(); }catch(e){} buddyStatus(''); }
+  if(buddy.speaking){ buddyHush(); buddy.voice = true; buddy.misses = 0; updateBuddyControls(); buddyListen(); return; }   // ins Wort fallen: Flügo verstummt, du bist dran
+  if(buddy.voice){ buddy.voice = false; buddyHush(); buddyStatus(buddy.busy ? '🤔 …' : ''); return; }
+  buddy.voice = true; buddy.misses = 0; updateBuddyControls(); buddyListen();
 });
 document.getElementById('buddyLang').addEventListener('click', ()=>{
+  try{ buddy.ctl && buddy.ctl.abort(); }catch(e){}
+  buddyHush();
   buddy.micLang = buddy.micLang==='target' ? 'de' : 'target'; buddy.turns = [];
   updateBuddyControls(); buddy.greeted = true; openBuddy();
   toast(buddy.micLang==='target' ? '🗣️ Wir reden jetzt in deiner Lernsprache' : '🇩🇪 Wir reden jetzt Deutsch');
 });
 document.getElementById('buddyDrive').addEventListener('click', ()=>{ closeBuddy(); openDrive(); });
+document.getElementById('buddyFace').addEventListener('click', ()=>buddyAct(buddyDetect('random') || 'magic'));
 
 
 /* ---------- Quest antippen → direkt dorthin, wo man sie erfüllt ---------- */
@@ -6909,6 +7665,8 @@ function hubAsk(){
     if(!document.getElementById('screen-hub').classList.contains('active')) return;
     s.textContent = hubTip();
     if(!heard) return;
+    let cmd = dragonCommand(heard, true); if(cmd==='random') cmd = pick(DRAGON_RANDOM);
+    if(cmd){ hubTrick(cmd); return; }
     const hit = HUB_INTENTS.find(([re])=>re.test(heard));
     if(hit){ toast('🐉 ' + heard); hubGo(hit[1]); }
     else { buddy.greeted = true; buddy.voice = false; openBuddy(); buddy.voice = !!SpeechRec; updateBuddyControls(); setTimeout(()=>buddySend(heard), 300); }
@@ -6920,6 +7678,13 @@ document.getElementById('hubDragon').addEventListener('click', ()=>{
   if(open) hubAsk();
   else { try{ buddy.rec && buddy.rec.abort(); }catch(e){} const s = document.getElementById('hubSay'); s.textContent = hubTip(); }
 });
+function hubTrick(id){
+  const s = document.getElementById('hubSay'), L = DRAGON_LINES[id] || {}, line = pick(L[currentLang()] || L.en || ['✨']);
+  s.textContent = line; s.classList.remove('pop'); void s.offsetWidth; s.classList.add('pop');
+  document.getElementById('hubOrbs').classList.remove('open');
+  speakAsync(line, LANGS[currentLang()].code);
+  runDragonAction(id).then(()=>{ if(document.getElementById('screen-hub').classList.contains('active')) s.textContent = hubTip(); });
+}
 function hubHint(){ return ({en:'Tap me!', es:'¡Tócame!', fr:'Touche-moi !', it:'Toccami!'}[currentLang()] || 'Tap me!'); }
 
 
