@@ -4028,7 +4028,12 @@ async function nvSpeak(text, code, rate){
   }
   return {ok:true, ms:performance.now() - t0};
 }
-try{ const sc = speechSynthesis.cancel.bind(speechSynthesis); speechSynthesis.cancel = ()=>{ nvStop(); sc(); }; }catch(e){}   // „Stopp“ beendet auch die natürliche Stimme
+try{ const sc = speechSynthesis.cancel.bind(speechSynthesis); speechSynthesis.cancel = ()=>{ nvStop(); sc(); }; }catch(e){}
+// Handys geben Ton erst nach einer Berührung frei: beim ersten Antippen Audio für die Stimme aufwecken
+['pointerdown','keydown'].forEach(ev=>document.addEventListener(ev, function unlock(){
+  try{ nv.ac = nv.ac || new (window.AudioContext || window.webkitAudioContext)(); if(nv.ac.state!=='running') nv.ac.resume(); }catch(e){}
+  if(nv.ac && nv.ac.state==='running') ['pointerdown','keydown'].forEach(x=>document.removeEventListener(x, unlock, true));
+}, true));   // „Stopp“ beendet auch die natürliche Stimme
 
 async function speakAsync(text, code, rate){
   document.body.classList.add('speaking'); try{ return await speakAsync0(text, code, rate); } finally{ document.body.classList.remove('speaking'); }
@@ -4460,8 +4465,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '6.6';
+const APP_VERSION = '6.7';
 const CHANGELOG = [
+  ['6.7', '🔊 Ton wird beim ersten Antippen sicher freigeschaltet, damit Flügos natürliche Stimme auf dem Handy gleich klappt'],
   ['6.6', '✋ Ins Wort fallen: tipp auf Flügo oder 🎤, während er spricht – er verstummt und hört dir sofort zu · begrüßt dich mit deinem Namen, wenn er ihn kennt'],
   ['6.5', '🔧 Die Schlüssel- und Stimmen-Frage wird nie mehr von einem Rätsel-Tipp verdrängt · ehrlichere Meldung, wenn ein Wort gerade nicht nachgeschlagen werden kann'],
   ['6.4', '🗨️ Flügo verbessert Fehler wie ein Muttersprachler ganz nebenbei im Satz („Oh, you went to the market?“) · hört sich nach dem Sprechen nicht mehr selbst (wartet Nachhall ab)'],
