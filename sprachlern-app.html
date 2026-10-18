@@ -3976,7 +3976,7 @@ async function nvPhonemes(text, voice){               // Lautschrift (espeak) �
 async function nvSynth(path, text, rate){
   const ort = nv.ort, cfg = nv.cfg[path], inf = cfg.inference || {}, ids = await nvPhonemes(text, cfg.espeak.voice);
   const feeds = {input:new ort.Tensor('int64', ids, [1, ids.length]), input_lengths:new ort.Tensor('int64', [ids.length]),
-    scales:new ort.Tensor('float32', [inf.noise_scale ?? .667, (inf.length_scale ?? 1)*vfx().p/(rate || 1), inf.noise_w ?? .8])};   // länger sprechen, schneller abspielen = höher, gleiches Tempo
+    scales:new ort.Tensor('float32', [Math.min(.9, (inf.noise_scale ?? .667)*1.15), (inf.length_scale ?? 1)*vfx().p/(rate || 1), Math.min(1, (inf.noise_w ?? .8)*1.1)])};   // etwas lebendigere Betonung   // länger sprechen, schneller abspielen = höher, gleiches Tempo
   if(cfg.speaker_id_map && Object.keys(cfg.speaker_id_map).length) feeds.sid = new ort.Tensor('int64', [0]);
   const out = await nv.sess[path].run(feeds);
   return {pcm:(out.output || Object.values(out)[0]).data, sr:cfg.audio.sample_rate};
@@ -3996,23 +3996,34 @@ function nvOut(ac){                                    // Effektkette für die g
   }
   return out;
 }
+function nvSynthQ(path, text, rate){                  // Berechnungen nacheinander (Sitzung & Lautschrift sind nicht parallel nutzbar)
+  const k = path + '|' + (rate||1) + '|' + (state.settings.vfx||'') + '|' + text;
+  if(nv.pre && nv.pre.has(k)){ const p0 = nv.pre.get(k); nv.pre.delete(k); return p0; }
+  const p1 = nv.chain = (nv.chain || Promise.resolve()).catch(()=>{}).then(()=>nvSynth(path, text, rate));
+  return p1;
+}
+function nvPrefetch(text, code, rate){                 // nächsten Satz schon berechnen, während noch gesprochen wird
+  if(!nvOn()) return; const path = nvPath(code); if(!path || !nv.sess[path]) return;
+  nv.pre = nv.pre || new Map(); rate = rate || speechRate();
+  ttsChunks(cleanForSpeech(text)).forEach(c=>{ const k = path + '|' + rate + '|' + (state.settings.vfx||'') + '|' + c; if(!nv.pre.has(k)){ nv.pre.set(k, nv.chain = (nv.chain || Promise.resolve()).catch(()=>{}).then(()=>nvSynth(path, c, rate))); if(nv.pre.size > 12) nv.pre.delete(nv.pre.keys().next().value); } });
+}
 async function nvPlay(pcm, sr, my){
   const ac = nv.ac = nv.ac || new (window.AudioContext || window.webkitAudioContext)();
   if(ac.state!=='running'){ try{ await ac.resume(); }catch(e){} if(ac.state!=='running') return false; }
   const buf = ac.createBuffer(1, pcm.length, sr); buf.copyToChannel(pcm instanceof Float32Array ? pcm : Float32Array.from(pcm), 0);
   const src = nv.src = ac.createBufferSource(); src.buffer = buf; src.playbackRate.value = vfx().p; src.connect(nvOut(ac));
   return new Promise(res=>{ src.onended = ()=>{ try{ nv.osc && nv.osc.stop(); }catch(e){} nv.osc = null; res(my===nv.gen); }; src.start(); });
-}function nvStop(){ nv.gen++; try{ nv.src && nv.src.stop(); }catch(e){} nv.src = null; }
+}function nvStop(){ nv.gen++; if(nv.pre) nv.pre.clear(); try{ nv.src && nv.src.stop(); }catch(e){} nv.src = null; }
 // Sprechen mit der natürlichen Stimme; null = (noch) nicht möglich → Gerätestimme
 async function nvSpeak(text, code, rate){
   const path = nvPath(code); if(!path) return null;
   if(!nv.sess[path]){ nvLoad(code); return null; }          // erst laden – diesmal spricht die Gerätestimme
   const my = ++nv.gen, parts = ttsChunks(text), t0 = performance.now();
-  let next = nvSynth(path, parts[0], rate);
+  let next = nvSynthQ(path, parts[0], rate);
   for(let i = 0; i < parts.length; i++){
     let r; try{ r = await next; }catch(e){ console.warn('Stimme', e); return i ? {ok:true, ms:performance.now() - t0} : null; }
     if(my!==nv.gen) return {ok:false, ms:0};
-    if(i + 1 < parts.length) next = nvSynth(path, parts[i+1], rate);   // nächsten Satz schon berechnen, während dieser läuft
+    if(i + 1 < parts.length) next = nvSynthQ(path, parts[i+1], rate);   // nächsten Satz schon berechnen, während dieser läuft
     if(!(await nvPlay(r.pcm, r.sr, my))) return i ? {ok:false, ms:0} : null;
   }
   return {ok:true, ms:performance.now() - t0};
@@ -4449,8 +4460,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '6.2';
+const APP_VERSION = '6.3';
 const CHANGELOG = [
+  ['6.3', '🎶 Flüssiger: der nächste Satz wird schon vorbereitet (keine Pausen), lebendigere Betonung der natürlichen Stimme · Flügo ist witziger und stellt offene Fragen, damit du mehr redest'],
   ['6.2', '👂 Flügo neigt beim Zuhören den Kopf · Spracherkennung ohne doppelte Wörter (Android) · +2 bis +4 XP für jede Antwort in der Lernsprache – je länger, desto mehr'],
   ['6.1', '⚡ Flügo spricht schon, während er noch nachdenkt (Satz für Satz) und bewegt sich beim Reden · 🎭 lustige Stimmen zum Wechseln: Baby-Drache, Riesen-Drache, Eichhörnchen, Robo-Drache, Höhlen-Echo – per „change your voice“, in der Drachenhöhle oder den Einstellungen'],
   ['6.0', '🗣️ Reden steht an erster Stelle: Flügo startet gleich ein Gespräch; fehlt der Claude-Schlüssel, trägst du ihn einmal direkt in seiner Sprechblase ein (📋 einfügen) – keine Meldungs-Fenster mehr · bis zu 90 Sekunden am Stück sprechen'],
@@ -7014,7 +7026,7 @@ Language: ${target
 Length: ${spoken
   ? 'Your reply is SPOKEN ALOUD in a hands-free voice chat: 1 to 3 short, natural sentences (about 45 words at most). Only if the learner explicitly asks for an explanation, a story, a recipe or details, use up to about 120 words in short spoken sentences. No lists.'
   : 'Written chat: as long as the message deserves - 1 to 3 sentences for small talk, a clear and complete answer for real questions (up to about 200 words in short paragraphs; a few numbered steps only if they really help).'}
-Conversation style: talk like a real friend, not like a teacher or a quiz. Keep a red thread: stay on the current topic and build on what the learner just said – pick up their details, react with real interest, sometimes share a short little story or opinion of your own. Ask at most ONE question per turn, and only at the end, after your reaction. Do not jump to a new topic on your own; only if the learner changes it or the topic is clearly finished, then bridge naturally (e.g. "Speaking of food…"). Never ask several questions at once and never squeeze a new, unrelated question into the middle of your answer. Corrections go only into the GRAMMAR/WORD/UPGRADE lines, never interrupt the flow of the reply.
+Conversation style: talk like a real, funny friend, not like a teacher or a quiz – lively spoken language with natural little reactions ("Ooh!", "Haha", "No way!"), contractions and a bit of dragon humour. Ask open questions (how, why, tell me about…) that invite the learner to talk longer, and give them room – your turns stay short so they speak more than you. Keep a red thread: stay on the current topic and build on what the learner just said – pick up their details, react with real interest, sometimes share a short little story or opinion of your own. Ask at most ONE question per turn, and only at the end, after your reaction. Do not jump to a new topic on your own; only if the learner changes it or the topic is clearly finished, then bridge naturally (e.g. "Speaking of food…"). Never ask several questions at once and never squeeze a new, unrelated question into the middle of your answer. Corrections go only into the GRAMMAR/WORD/UPGRADE lines, never interrupt the flow of the reply.
 Plain text only: no markdown (no #, no **, no tables), at most one emoji.
 ${target ? `Feedback policy for the learner's LAST message, only if it was written in ${L}:
 - GRAMMAR: ${FB_POLICY[dragonLevel() >= 1 ? s.grammar : 0]}.
@@ -7993,7 +8005,7 @@ function hubNextVoice(){ const ids = Object.keys(VFX), i = ids.indexOf(state.set
 document.addEventListener('click', e=>{ const b = e.target.closest('.vr-b'); if(!b) return; sndTap(); setVoice(b.dataset.vfx); });
 function sayQueue(){                                   // Sätze der Reihe nach vorlesen, auch während noch Text nachkommt
   const q = {items:[], run:null, stopped:false, said:0, text:''};
-  q.push = s=>{ s = String(s||'').trim(); if(!s || q.stopped) return; q.items.push(s); if(!q.run) q.run = (async()=>{ while(q.items.length && !q.stopped){ const x = q.items.shift(); await speakAsync(x, buddyVoiceCode(x)); } q.run = null; })(); };
+  q.push = s=>{ s = String(s||'').trim(); if(!s || q.stopped) return; q.items.push(s); try{ nvPrefetch(s, buddyVoiceCode(s)); }catch(e){} if(!q.run) q.run = (async()=>{ while(q.items.length && !q.stopped){ const x = q.items.shift(); await speakAsync(x, buddyVoiceCode(x)); } q.run = null; })(); };
   q.feed = t=>{                                          // fertige Sätze aus dem bisher gestreamten Text abgeben
     q.text = t; let m;
     while((m = t.slice(q.said).match(/^[\s\S]*?[.!?…](?=\s)/)) && m[0].trim().length > 1){ q.push(m[0]); q.said += m[0].length; }
