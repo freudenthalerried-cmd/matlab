@@ -4465,8 +4465,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '6.7';
+const APP_VERSION = '6.8';
 const CHANGELOG = [
+  ['6.8', '🤗 Im Gespräch wartet Flügo nach jedem Satz auf dich (auch ohne Fragezeichen) · wenn du kurz nichts sagst, ermutigt dich Flügo einmal („Take your time!“) · beim Tschüss sagt er dir, wie viele Wörter du mit ihm gesprochen hast'],
   ['6.7', '🔊 Ton wird beim ersten Antippen sicher freigeschaltet, damit Flügos natürliche Stimme auf dem Handy gleich klappt'],
   ['6.6', '✋ Ins Wort fallen: tipp auf Flügo oder 🎤, während er spricht – er verstummt und hört dir sofort zu · begrüßt dich mit deinem Namen, wenn er ihn kennt'],
   ['6.5', '🔧 Die Schlüssel- und Stimmen-Frage wird nie mehr von einem Rätsel-Tipp verdrängt · ehrlichere Meldung, wenn ein Wort gerade nicht nachgeschlagen werden kann'],
@@ -7980,7 +7981,7 @@ const PERSONA_STARTERS = {
 };
 function hubMicOk(){ return micAvailable() && !hubDlg.micBlocked && !window.claude && !hubDlg.typing; }
 // Wenn Flügo etwas fragt: danach automatisch zuhören (Gesprächsmodus)
-function hubAwait(q){ if(/[?？]\s*$/.test(String(q||'')) && hubMicOk() && hubOnHub()){ hubDlg.live = true; hubDlg.misses = 0; hubTalkUI(); hubContinue(); } }
+function hubAwait(q, always){ if((always || hubDlg.mode==='chat' || /[?？]\s*$/.test(String(q||''))) && hubMicOk() && hubOnHub()){ hubDlg.live = true; hubDlg.misses = 0; hubTalkUI(); hubContinue(); } }
 async function hubVoiceGet(){
   hubStopLive(); state.settings.neural = true; saveState(); hubDlg.mode = 'voice';
   const L = currentLang(), code = LANGS[L].code;
@@ -8383,7 +8384,9 @@ function hubHeard(heard){
   const t = heard.toLowerCase().trim(), words = t.split(/\s+/).length, L = currentLang();
   if(words <= 3 && /^(stopp?|halt|ende|schluss|tsch[üu]ss|servus|baba|ciao|bye|goodbye|good ?bye|adi[óo]s|au revoir|basta|fertig|pause|that'?s all)\b/.test(t)){
     hubStopLive(); hubDlg.mode = 'offer';
-    const bye = ({en:'See you soon!', es:'¡Hasta pronto!', fr:'À bientôt !', it:'A presto!'})[L] || 'Bis bald!';
+    const w = hubDlg.words || 0; hubDlg.words = 0;
+    const bye = (w >= 10 ? (({en:`Wow, you said ${w} words with me! `, es:`¡Guau, me dijiste ${w} palabras! `, fr:`Waouh, tu m’as dit ${w} mots ! `, it:`Wow, mi hai detto ${w} parole! `})[L] || '') : '') + (({en:'See you soon!', es:'¡Hasta pronto!', fr:'À bientôt !', it:'A presto!'})[L] || 'Bis bald!');
+    if(w >= 10) runDragonAction('jump');
     hubSayHTML('👋 ' + bye, 'Bis gleich! Tipp auf 🎤, wenn du wieder reden willst.', [['💡', ()=>hubOffer(true), 'no']]);
     if(state.settings.sound!==false) speakAsync(bye, LANGS[L].code);
     return;
@@ -8430,6 +8433,7 @@ async function hubChat(text){
   buddy.turns.push({role:'assistant', content:out}); buddy.turns = buddy.turns.slice(-BUDDY_TURNS);
   const r = buddyParse(out);
   r.memory.forEach(f=>buddyRemember(f, null)); buddySaveRecent();
+  hubDlg.words = (hubDlg.words||0) + String(text).trim().split(/\s+/).length;
   if(buddy.micLang==='target'){ track('talk', 1);
     const n = String(text).trim().split(/\s+/).length;                       // längere Antworten = mehr XP
     if(n >= 3){ const xp = n >= 12 ? 4 : n >= 6 ? 3 : 2; addXP(xp); saveState(); updateTopbar(); try{ hubBar(); }catch(e){}
@@ -8462,7 +8466,11 @@ async function hubListen(auto){
   if(['not-allowed','service-not-allowed','start','unsupported','audio-capture'].includes(err)){ hubDlg.micOk = false; hubMicHelp(); return; }
   if(!heard){
     if(err==='aborted' || !hubDlg.live && auto) return;
-    if(hubDlg.live && ++hubDlg.misses < 2) return hubContinue();     // einmal still nachhaken
+    if(hubDlg.live && ++hubDlg.misses < 2){                        // einmal freundlich nachhaken, dann nochmal zuhören
+      const L = currentLang(), nudge = buddy.micLang!=='target' ? 'Lass dir ruhig Zeit – ich hör dir zu!' : pick(({en:['Take your time!','No rush – I’m listening!','Hmm? Just say it in your own words!'], es:['¡Tómate tu tiempo!','Sin prisa, ¡te escucho!'], fr:['Prends ton temps !','Pas de stress, je t’écoute !'], it:['Prenditi il tuo tempo!','Con calma, ti ascolto!']})[L] || ['Take your time!']);
+      if(state.settings.sound!==false) return speakAsync(nudge, buddy.micLang!=='target' ? 'de-DE' : LANGS[L].code).then(hubContinue);
+      return hubContinue();
+    }
     hubStopLive();                                  // kein Hinweis-Fenster: der Knopf zeigt wieder 🎤
     return;
   }
