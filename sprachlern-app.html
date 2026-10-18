@@ -843,6 +843,34 @@ body{background:radial-gradient(ellipse at 50% 0%,#4a331e 0%,#2a1c11 55%,#1c130d
 @keyframes evoFlash{0%,70%{opacity:0;}88%{opacity:1;transform:scale(1.4);}100%{opacity:0;transform:scale(1.8);}}
 .evo-text{font-family:'Cinzel',Georgia,serif;font-size:20px;font-weight:900;margin-bottom:14px;text-shadow:0 2px 6px #000;}
 #evoOverlay .btn{max-width:240px;margin:0 auto;}
+
+/* ===== GUTE NACHT ===== */
+body.night-mode .topbar{opacity:.18;transition:opacity 1s;}
+#screen-night{position:relative;padding:8px 14px 18px;gap:10px;align-items:center;overflow:hidden;}
+.night-sky{position:absolute;inset:0;z-index:0;background:radial-gradient(ellipse at 50% 0%,#1d2550 0%,#0b1027 55%,#05070f 100%);}
+.night-sky i{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;box-shadow:0 0 6px #fff;animation:twinkle 3s ease-in-out infinite;}
+.night-sky i:nth-child(1){left:10%;top:12%;}.night-sky i:nth-child(2){left:22%;top:30%;animation-delay:.5s}.night-sky i:nth-child(3){left:35%;top:8%;animation-delay:1s}.night-sky i:nth-child(4){left:48%;top:22%;animation-delay:1.5s}
+.night-sky i:nth-child(5){left:62%;top:10%;animation-delay:2s}.night-sky i:nth-child(6){left:75%;top:28%;animation-delay:.8s}.night-sky i:nth-child(7){left:88%;top:16%;animation-delay:1.3s}.night-sky i:nth-child(8){left:15%;top:48%;animation-delay:2.4s}
+.night-sky i:nth-child(9){left:82%;top:46%;animation-delay:.3s}.night-sky i:nth-child(10){left:55%;top:40%;animation-delay:1.8s}.night-sky i:nth-child(11){left:30%;top:60%;animation-delay:2.7s}.night-sky i:nth-child(12){left:92%;top:64%;animation-delay:1.1s}
+@keyframes twinkle{0%,100%{opacity:.25;transform:scale(.7);}50%{opacity:1;transform:scale(1.2);}}
+.night-moon{position:absolute;top:7%;right:8%;font-size:44px;filter:drop-shadow(0 0 18px #fff6cf);}
+#screen-night>*:not(.night-sky):not(.night-dim){position:relative;z-index:1;}
+#screen-night .chat-head{align-self:stretch;}
+.night-dr{animation:buddyFloat 5s ease-in-out infinite;filter:drop-shadow(0 0 20px rgba(150,170,255,.35));}
+.night-setup{width:100%;max-width:400px;display:flex;flex-direction:column;gap:8px;color:#dfe6ff;}
+.night-intro{text-align:center;font-size:15px;line-height:1.4;color:#c9d2f5;}
+.night-lbl{font-weight:800;font-size:13px;color:#aab6e8;margin-top:4px;}
+.night-seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.night-seg button{border:2px solid #39447a;background:rgba(20,26,60,.8);color:#dfe6ff;border-radius:12px;padding:10px 4px;font-weight:800;font-family:inherit;cursor:pointer;}
+.night-seg button.sel{border-color:#e0b04a;background:rgba(224,176,74,.18);}
+.night-setup .btn{background:linear-gradient(180deg,#5462b8,#38418a);box-shadow:0 4px 0 #22285a;}
+.night-read{flex:1;width:100%;max-width:420px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;}
+.night-title{font-family:'Cinzel',Georgia,serif;color:#e8d6ae;font-size:17px;}
+.night-text{font-family:Georgia,serif;font-size:24px;line-height:1.45;color:#eef1ff;opacity:0;transition:opacity 1.2s;}
+.night-text.show{opacity:1;}
+.night-sub{font-size:15px;color:#9aa6d6;font-style:italic;min-height:20px;}
+.night-stop{border:1px solid #39447a;background:transparent;color:#9aa6d6;border-radius:12px;padding:8px 14px;font-family:inherit;cursor:pointer;margin-top:10px;}
+.night-dim{position:absolute;inset:0;background:#000;opacity:0;z-index:5;pointer-events:none;transition:opacity 8s linear;}
 </style>
 </head>
 <body>
@@ -982,6 +1010,25 @@ body{background:radial-gradient(ellipse at 50% 0%,#4a331e 0%,#2a1c11 55%,#1c130d
   <section class="screen" id="screen-campaign">
     <div class="seg map-seg"><button class="seg-btn" id="segLevels2">🗺️ Level</button><button class="seg-btn sel">⚔️ Abenteuer</button></div>
     <div class="camp-path" id="campPath"></div>
+  </section>
+
+  <!-- ===== GUTE NACHT ===== -->
+  <section class="screen" id="screen-night">
+    <div class="night-sky"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><span class="night-moon">🌙</span></div>
+    <div class="chat-head"><button class="back-link" id="nightBack">‹</button><b class="story-h">🌙 Gute Nacht</b></div>
+    <div class="night-dr" id="nightDr"></div>
+    <div id="nightSetup" class="night-setup">
+      <div class="night-intro">Kuschel dich ein – Flügo liest dir eine ruhige Geschichte vor. Der Bildschirm wird langsam dunkel.</div>
+      <div id="nightOpts"></div>
+      <button class="btn btn-primary" id="nightGo">🌙 Geschichte starten</button>
+    </div>
+    <div id="nightRead" class="night-read hidden">
+      <div class="night-title" id="nightTitle"></div>
+      <div class="night-text" id="nightText"></div>
+      <div class="night-sub" id="nightSub"></div>
+      <button class="night-stop" id="nightStop">⏹ Beenden</button>
+    </div>
+    <div class="night-dim" id="nightDim"></div>
   </section>
 
   <!-- ===== MÄRCHENSTUNDE ===== -->
@@ -1952,6 +1999,8 @@ function showScreen(id){
   document.querySelector('.brand').classList.toggle('home-btn', id!=='screen-hub' && !!state.difficulty);
   try{ placeBuddy(id); }catch(e){}
   try{ if(id!=='screen-story' && story.playing) stopTale(); }catch(e){}
+  try{ if(id!=='screen-night' && night.on) stopNight(); }catch(e){}
+  document.body.classList.toggle('night-mode', id==='screen-night');
   if(typeof updateQuestDot==='function') updateQuestDot();
   if(id==='screen-gameover' && typeof updateGameoverScreen==='function') updateGameoverScreen();
 }
@@ -4192,8 +4241,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '4.5';
+const APP_VERSION = '4.6';
 const CHANGELOG = [
+  ['4.6', '🌙 Gute-Nacht-Modus mit ruhiger Einschlafgeschichte, Meeresrauschen und dunkler werdendem Bildschirm · Flügo antippen: er fragt „What can I do for you?“ und hört zu'],
   ['4.5', '📚 Märchen: ruhiger vorlesen (Tempo 🐢/🚶/🐇, Pausen), kein Durchrasen mehr wenn die Sprachausgabe blockiert'],
   ['4.4', '🐉 Evolution: Flügo entwickelt sich in 6 Stufen mit eigenem Aussehen (Baby → Legende), Evolutions-Animation'],
   ['4.3', '📲 Als echte App installierbar (Startbildschirm, Drachen-Icon, offline) – Mikrofon direkt in der App'],
@@ -5813,7 +5863,7 @@ function buddyEl(){ return document.getElementById('buddy'); }
 function placeBuddy(screenId){
   const b = buddyEl(); if(!b) return;
   buddy.screen = screenId;
-  const hide = ['screen-language','screen-difficulty','screen-drive','screen-hub'].includes(screenId) || !state.difficulty;
+  const hide = ['screen-language','screen-difficulty','screen-drive','screen-hub','screen-night'].includes(screenId) || !state.difficulty;
   b.classList.toggle('hidden', hide);
   b.classList.toggle('small', !NAV_SCREENS.includes(screenId));
   b.innerHTML = dragonSVG({size:BUDDY_SIZE-6, mood: b.dataset.mood || 'happy'});
@@ -6040,6 +6090,7 @@ function handleBack(){
     case 'screen-talk': return click('talkBack');
     case 'screen-chat': return click('chatBack');
     case 'screen-story': return click('storyBack');
+    case 'screen-night': return click('nightBack');
     case 'screen-drive': return click('driveBack');
     case 'screen-difficulty': return state.language ? click('diffBackBtn') : false;
     case 'screen-language': if(state.difficulty){ goHome(); return true; } return false;
@@ -6387,6 +6438,7 @@ const HUB_ORBS = [
   {go:'learn',    icon:'📖', name:'Lernen'},
   {go:'games',    icon:'🎮', name:'Spiele'},
   {go:'tales',    icon:'📚', name:'Märchen'},
+  {go:'night',    icon:'🌙', name:'Gute Nacht'},
   {go:'talk',     icon:'🗣️', name:'Reden'},
   {go:'quests',   icon:'🎯', name:'Quests'},
 ];
@@ -6401,6 +6453,7 @@ function hubGo(go){
     case 'games': return tab('arcade');
     case 'talk': return openBuddy();
     case 'tales': return openStoryShelf();
+    case 'night': return openNight();
     case 'quests': renderQuests(); showScreen('screen-quests'); return setNav('quests');
     case 'train': return startReview();
     case 'league': renderLeague(); showScreen('screen-league'); renderFriendsIfOpen(); return setNav('');
@@ -6418,6 +6471,8 @@ function hubTip(){
     fr:{start:'Salut ! On part à l\'aventure ?', goal:`Plus que ${left} XP aujourd'hui !`, done:'Objectif atteint ! Une histoire ou un jeu ?', hearts:'Plus de cœurs ? Essaie l\'entraînement !'},
     it:{start:'Ciao! Andiamo all\'avventura?', goal:`Mancano solo ${left} XP oggi!`, done:'Obiettivo raggiunto! Una favola o un gioco?', hearts:'Niente cuori? Prova l\'allenamento!'},
   }[currentLang()] || {};
+  const h = new Date().getHours();
+  if(h>=20 || h<4) return ({en:'It\'s late… shall I tell you a bedtime story? 🌙', es:'Es tarde… ¿te cuento un cuento para dormir? 🌙', fr:'Il est tard… je te raconte une histoire ? 🌙', it:'È tardi… ti racconto una storia? 🌙'})[currentLang()] || 'Bedtime story? 🌙';
   return state.hearts<=0 ? lines.hearts : !played ? lines.start : left>0 ? lines.goal : lines.done;
 }
 function renderHub(){
@@ -6445,13 +6500,41 @@ function renderHub(){
 }
 function openHub(){ renderHub(); showScreen('screen-hub'); setNav('hub'); }
 document.querySelector('.brand').addEventListener('click', ()=>{ if(state.difficulty){ sndTap(); try{ stopTale(); }catch(e){} openHub(); } });
+const HUB_INTENTS = [
+  [/m[äa]rchen|geschicht|story|stories|tale|cuento|histoire|storia|favola/i, 'tales'],
+  [/gute ?nacht|schlaf|bett|good ?night|sleep|bed|buenas noches|dormir|bonne nuit|buonanotte|dormire/i, 'night'],
+  [/abenteuer|adventure|aventura|aventure|avventura|kampagne/i, 'campaign'],
+  [/spiel|game|play|juego|jeu|gioco/i, 'games'],
+  [/lern|lesson|learn|lektion|aprender|apprendre|imparare/i, 'learn'],
+  [/quest|aufgabe|mission/i, 'quests'],
+  [/training|trainier|üben|practi/i, 'train'],
+  [/liga|league|freund|friend/i, 'league'],
+  [/profil|profile|shop|einstellung|setting/i, 'profile'],
+];
+function hubAsk(){
+  const s = document.getElementById('hubSay');
+  const q = ({en:'Hi! What can I do for you?', es:'¡Hola! ¿Qué puedo hacer por ti?', fr:'Salut ! Que puis-je faire pour toi ?', it:'Ciao! Cosa posso fare per te?'})[currentLang()] || 'Hi! What can I do for you?';
+  s.textContent = q; s.classList.remove('pop'); void s.offsetWidth; s.classList.add('pop');
+  document.getElementById('hubDragon').innerHTML = dragonSVG({size:200, mood:'wow', cls:'hub-svg'});
+  const code = LANGS[currentLang()].code;
+  speakAsync(q, code).then(async ()=>{
+    if(!document.getElementById('screen-hub').classList.contains('active') || !SpeechRec || !micAvailable()) return;
+    s.textContent = '🎧 ' + q;
+    let heard = '';
+    try{ heard = await recognizeOnce(code); }catch(e){ try{ heard = ''; }catch(_){} }
+    if(!document.getElementById('screen-hub').classList.contains('active')) return;
+    s.textContent = hubTip();
+    if(!heard) return;
+    const hit = HUB_INTENTS.find(([re])=>re.test(heard));
+    if(hit){ toast('🐉 ' + heard); hubGo(hit[1]); }
+    else { buddy.greeted = true; buddy.voice = false; openBuddy(); buddy.voice = !!SpeechRec; updateBuddyControls(); setTimeout(()=>buddySend(heard), 300); }
+  });
+}
 document.getElementById('hubDragon').addEventListener('click', ()=>{
   const ring = document.getElementById('hubOrbs'), open = !ring.classList.contains('open');
   ring.classList.toggle('open', open); sndTap();
-  const s = document.getElementById('hubSay');
-  s.textContent = open ? ({en:'What shall we do?', es:'¿Qué hacemos?', fr:'On fait quoi ?', it:'Cosa facciamo?'}[currentLang()] || 'What shall we do?') : hubTip();
-  s.classList.remove('pop'); void s.offsetWidth; s.classList.add('pop');
-  if(open) speak(s.textContent, LANGS[currentLang()].code);
+  if(open) hubAsk();
+  else { try{ buddy.rec && buddy.rec.abort(); }catch(e){} const s = document.getElementById('hubSay'); s.textContent = hubTip(); }
 });
 function hubHint(){ return ({en:'Tap me!', es:'¡Tócame!', fr:'Touche-moi !', it:'Toccami!'}[currentLang()] || 'Tap me!'); }
 
@@ -6468,6 +6551,143 @@ async function installApp(){
   const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
   toast(ios ? '📲 Tippe unten auf „Teilen“ ⬆️ und dann „Zum Home-Bildschirm“' : '📲 Tippe im Browser-Menü ⋮ auf „App installieren“ bzw. „Zum Startbildschirm hinzufügen“');
 }
+
+/* =========================================================
+   🌙 GUTE-NACHT-MODUS: ruhige, spannende Einschlafgeschichte
+   ========================================================= */
+const NIGHT_TALES_EN = [
+  {title:'The Lighthouse Cat', s:[
+    ['On a quiet island stood an old white lighthouse.','Auf einer stillen Insel stand ein alter weißer Leuchtturm.'],
+    ['A grey cat named Pebble lived at the very top.','Ganz oben wohnte eine graue Katze namens Kiesel.'],
+    ['Every evening, Pebble watched the lamp begin to glow.','Jeden Abend sah Kiesel zu, wie die Lampe zu leuchten begann.'],
+    ['Its warm light turned slowly over the dark sea.','Ihr warmes Licht drehte sich langsam über dem dunklen Meer.'],
+    ['One night, a tiny boat was lost in the fog.','Eines Nachts hatte sich ein kleines Boot im Nebel verirrt.'],
+    ['Pebble saw the little boat and meowed softly.','Kiesel sah das kleine Boot und miaute leise.'],
+    ['The keeper woke up and made the light shine brighter.','Der Wärter wachte auf und ließ das Licht heller strahlen.'],
+    ['Slowly, the boat followed the golden beam home.','Langsam folgte das Boot dem goldenen Strahl nach Hause.'],
+    ['The fisherman waved and smiled at the lighthouse.','Der Fischer winkte und lächelte zum Leuchtturm hinauf.'],
+    ['The waves whispered softly against the rocks.','Die Wellen flüsterten leise gegen die Felsen.'],
+    ['Pebble curled up next to the warm lamp.','Kiesel rollte sich neben der warmen Lampe zusammen.'],
+    ['The stars came out, one by one.','Die Sterne kamen heraus, einer nach dem anderen.'],
+    ['Everyone was safe, and the sea was calm.','Alle waren in Sicherheit, und das Meer war ruhig.'],
+    ['Pebble closed her eyes and purred herself to sleep.','Kiesel schloss die Augen und schnurrte sich in den Schlaf.'],
+    ['Good night, little lighthouse. Good night, sea.','Gute Nacht, kleiner Leuchtturm. Gute Nacht, Meer.']]},
+  {title:'The Star Who Could Not Sleep', s:[
+    ['High above the mountains lived a very small star.','Hoch über den Bergen lebte ein sehr kleiner Stern.'],
+    ['Every night, the other stars fell asleep, but not him.','Jede Nacht schliefen die anderen Sterne ein, nur er nicht.'],
+    ['"Why can\'t I sleep?" he asked the moon.','„Warum kann ich nicht schlafen?“, fragte er den Mond.'],
+    ['The moon smiled and said, "Let\'s take a little walk."','Der Mond lächelte und sagte: „Lass uns einen kleinen Spaziergang machen.“'],
+    ['They floated over quiet forests and sleeping villages.','Sie schwebten über stille Wälder und schlafende Dörfer.'],
+    ['They saw an owl in a tree, softly saying "hoo".','Sie sahen eine Eule in einem Baum, die leise „hu“ sagte.'],
+    ['They saw a river shining like silver.','Sie sahen einen Fluss, der wie Silber glänzte.'],
+    ['In a small house, a child was looking out of the window.','In einem kleinen Haus schaute ein Kind aus dem Fenster.'],
+    ['The child saw the little star and made a wish.','Das Kind sah den kleinen Stern und wünschte sich etwas.'],
+    ['The star felt warm and happy inside.','Der Stern fühlte sich innen warm und glücklich.'],
+    ['"Now I know why I stay awake," he whispered.','„Jetzt weiß ich, warum ich wach bleibe“, flüsterte er.'],
+    ['"I watch over the people who are dreaming."','„Ich passe auf die Menschen auf, die träumen.“'],
+    ['The moon nodded, and the night was peaceful.','Der Mond nickte, und die Nacht war friedlich.'],
+    ['The child closed the curtains and lay down in bed.','Das Kind schloss die Vorhänge und legte sich ins Bett.'],
+    ['And the little star kept shining, gently, all night long.','Und der kleine Stern leuchtete weiter, sanft, die ganze Nacht.']]},
+];
+const night = {on:false, tale:null, i:0, token:0, wake:null, amb:null, lang:'target', len:'short', sound:true, timer:null};
+function openNight(){
+  stopTale && stopTale();
+  showScreen('screen-night');
+  document.getElementById('nightDr').innerHTML = dragonSVG({size:120, mood:'sleepy'});
+  document.getElementById('nightSetup').classList.remove('hidden');
+  document.getElementById('nightRead').classList.add('hidden');
+  document.getElementById('nightDim').style.opacity = 0;
+  renderNightSetup();
+}
+function renderNightSetup(){
+  const seg = (k, opts)=>`<div class="night-seg" data-k="${k}">${opts.map(([v,l])=>`<button data-v="${v}" class="${night[k]===v?'sel':''}">${l}</button>`).join('')}</div>`;
+  document.getElementById('nightOpts').innerHTML = `
+    <div class="night-lbl">Sprache</div>${seg('lang', [['target', LANGS[currentLang()].label], ['de','🇩🇪 Deutsch']])}
+    <div class="night-lbl">Länge</div>${seg('len', [['short','🌙 ~5 Min.'], ['long','🌌 ~10 Min.']])}
+    <div class="night-lbl">Meeresrauschen</div>${seg('sound', [[true,'🌊 an'], [false,'🔇 aus']])}`;
+  document.querySelectorAll('#nightOpts .night-seg button').forEach(b=>b.onclick = ()=>{
+    const k = b.parentNode.dataset.k; let v = b.dataset.v; if(v==='true') v = true; if(v==='false') v = false;
+    night[k] = v; sndTap(); renderNightSetup();
+  });
+}
+async function startNight(){
+  night.on = true; night.i = 0; night.token++;
+  const my = night.token;
+  document.getElementById('nightSetup').classList.add('hidden');
+  document.getElementById('nightRead').classList.remove('hidden');
+  const txt = document.getElementById('nightText'), sub = document.getElementById('nightSub');
+  txt.textContent = `${dragon().name} sucht eine Geschichte aus …`; sub.textContent = '';
+  try{ if(navigator.wakeLock) night.wake = await navigator.wakeLock.request('screen'); }catch(e){}
+  if(night.sound) nightAmbient(true);
+  let langCode = night.lang==='de' ? 'de-DE' : LANGS[currentLang()].code, deOnly = night.lang==='de';
+  const L = night.lang==='de' ? 'German' : DRIVE_LANG[currentLang()];
+  let tale = null;
+  try{
+    const n = night.len==='long' ? '35 to 45' : '18 to 24';
+    const r = await askClaude([{role:'user', content:`Write an original, calm but interesting bedtime story in ${L} for an adult ${night.lang==='de' ? '' : `language learner at level ${myCefr()}`}. ${n} short, gentle sentences. Soothing atmosphere (night, nature, travel, a small mystery that resolves warmly), no violence, slow pace, sensory details, ending with the characters falling asleep.
+JSON only: {"title": string, "s": [[sentence${night.lang==='de' ? ', ""' : ', German translation'}], ...]}`}], 'You are a soothing bedtime storyteller. JSON only.', true);
+    if(r && Array.isArray(r.s) && r.s.length > 5) tale = {title:r.title || 'Gute Nacht', s:r.s};
+  }catch(e){}
+  if(!tale){
+    const b = pick(NIGHT_TALES_EN);
+    if(night.lang!=='de' && currentLang()==='en') tale = b;
+    else { tale = {title:b.title, s:b.s.map(([t,de])=>[de, ''])}; langCode = 'de-DE'; deOnly = true;
+      if(night.lang!=='de') toast('🌙 Ohne Claude gibt es die Gute-Nacht-Geschichte nur auf Deutsch oder Englisch'); }
+  }
+  if(my!==night.token) return;
+  night.tale = tale;
+  document.getElementById('nightTitle').textContent = '🌙 ' + tale.title;
+  const total = tale.s.length;
+  while(night.on && my===night.token && night.i < total){
+    const [t, de] = tale.s[night.i];
+    txt.classList.remove('show'); void txt.offsetWidth;
+    txt.textContent = t; sub.textContent = deOnly ? '' : (de || ''); txt.classList.add('show');
+    document.getElementById('nightDim').style.opacity = Math.min(0.55, night.i/total*0.6);   // Bildschirm wird langsam dunkler
+    const res = await speakAsync(t, langCode, 0.62);
+    if(my!==night.token || !night.on) return;
+    if(res && !res.ok){ night.fails = (night.fails||0)+1; if(night.fails>2){ sub.textContent = '🔇 Vorlesen klappt hier nicht – lies einfach mit, es geht von selbst weiter.'; } }
+    await new Promise(r=>setTimeout(r, res && res.ok ? 2200 : 5500));
+    night.i++;
+  }
+  if(my!==night.token) return;
+  const bye = {en:'Good night. Sleep well and sweet dreams.', es:'Buenas noches. Que duermas bien.', fr:'Bonne nuit. Fais de beaux rêves.', it:'Buonanotte. Sogni d\'oro.'}[currentLang()] || 'Good night.';
+  txt.textContent = deOnly ? 'Gute Nacht. Schlaf gut und träum was Schönes.' : bye; sub.textContent = deOnly ? '' : 'Gute Nacht. Schlaf gut und träum was Schönes.';
+  await speakAsync(txt.textContent, langCode, 0.6);
+  if(my!==night.token) return;
+  state.nightsHeard = (state.nightsHeard||0) + 1; addXP(5); saveState();
+  const dim = document.getElementById('nightDim'); dim.style.opacity = 0.92; dim.style.pointerEvents = 'auto';
+  nightAmbient(false, 20000);                                          // Rauschen in 20 s ausblenden
+  releaseNight();
+}
+function releaseNight(){ try{ night.wake && night.wake.release(); }catch(e){} night.wake = null; }
+function stopNight(){ night.on = false; night.token++; try{ speechSynthesis.cancel(); }catch(e){} nightAmbient(false, 800); releaseNight(); document.getElementById('nightDim').style.opacity = 0; }
+// sanftes Meeresrauschen (gefiltertes Rauschen mit langsamen Wellen)
+function nightAmbient(on, fade=1500){
+  try{
+    const c = ctx();
+    if(on){
+      if(night.amb || state.settings.sound===false) return;
+      const len = c.sampleRate*4, buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
+      let last = 0; for(let i=0;i<len;i++){ last = (last + 0.02*(Math.random()*2-1)) / 1.02; d[i] = last*3.5; }
+      const src = c.createBufferSource(); src.buffer = buf; src.loop = true;
+      const f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 700;
+      const g = c.createGain(); g.gain.value = 0;
+      const lfo = c.createOscillator(), lg = c.createGain(); lfo.frequency.value = 0.09; lg.gain.value = 0.035; lfo.connect(lg); lg.connect(g.gain);
+      src.connect(f); f.connect(g); g.connect(c.destination); src.start(); lfo.start();
+      g.gain.linearRampToValueAtTime(0.06, c.currentTime + 3);
+      night.amb = {src, g, lfo};
+    } else if(night.amb){
+      const a = night.amb; night.amb = null;
+      a.g.gain.cancelScheduledValues(c.currentTime); a.g.gain.setValueAtTime(a.g.gain.value, c.currentTime);
+      a.g.gain.linearRampToValueAtTime(0, c.currentTime + fade/1000);
+      setTimeout(()=>{ try{ a.src.stop(); a.lfo.stop(); }catch(e){} }, fade + 100);
+    }
+  }catch(e){}
+}
+document.getElementById('nightGo').onclick = ()=>{ sndTap(); startNight(); };
+document.getElementById('nightBack').onclick = ()=>{ stopNight(); openHub(); };
+document.getElementById('nightDim').onclick = ()=>{ const d = document.getElementById('nightDim'); d.style.opacity = 0; d.style.pointerEvents = 'none'; };
+document.getElementById('nightStop').onclick = ()=>{ stopNight(); openNight(); };
 
 /* ---------- INIT ---------- */
 importFromLink();
