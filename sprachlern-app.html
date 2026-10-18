@@ -3916,12 +3916,12 @@ const NV_VOICES = {
 const nv = {ort:null, phon:null, ac:null, sess:{}, cfg:{}, loading:{}, gen:0, src:null};
 // Stimmen zum Wechseln: p = Tonhöhe (Tempo bleibt gleich), dazu Effekte
 const VFX = {
-  flugo:   {e:'🐉', n:'Flügo',          p:1.12, dev:1.1},
-  baby:    {e:'🐣', n:'Baby-Drache',    p:1.32, dev:1.4, hi:{en:'Hihi! I am a tiny baby dragon!', es:'¡Jiji! ¡Soy un dragoncito bebé!', fr:'Hihi ! Je suis un tout petit bébé dragon !', it:'Ihih! Sono un piccolo drago bebè!'}},
-  giant:   {e:'🦖', n:'Riesen-Drache',  p:0.76, dev:0.6, hi:{en:'ROAR! I am a giant dragon!', es:'¡GRRR! ¡Soy un dragón gigante!', fr:'GRRR ! Je suis un dragon géant !', it:'GRRR! Sono un drago gigante!'}},
-  squirrel:{e:'🐿️', n:'Eichhörnchen',   p:1.62, dev:1.9, hi:{en:'Wheee! I talk like a squirrel now!', es:'¡Yupi! ¡Ahora hablo como una ardilla!', fr:'Youpi ! Je parle comme un écureuil !', it:'Evviva! Ora parlo come uno scoiattolo!'}},
-  robot:   {e:'🤖', n:'Robo-Drache',    p:0.95, dev:0.8, robot:true, hi:{en:'Beep boop. I am Robo-Dragon.', es:'Bip bup. Soy el dragón robot.', fr:'Bip boup. Je suis Robo-Dragon.', it:'Bip bup. Sono il drago robot.'}},
-  cave:    {e:'🏰', n:'Höhlen-Echo',    p:0.92, dev:0.9, cave:true, hi:{en:'Hello… from my echoing castle cave!', es:'Hola… ¡desde mi cueva con eco!', fr:'Coucou… depuis ma grotte qui résonne !', it:'Ciao… dalla mia grotta con l’eco!'}},
+  flugo:   {e:'🐉', n:'Flügo',          p:1.12, dev:1.1, play:''},
+  baby:    {e:'🐣', n:'Baby-Drache',    p:1.32, dev:1.4, play:'a tiny, giggly baby dragon – sweet, excited, a little "hihi!" now and then', hi:{en:'Hihi! I am a tiny baby dragon!', es:'¡Jiji! ¡Soy un dragoncito bebé!', fr:'Hihi ! Je suis un tout petit bébé dragon !', it:'Ihih! Sono un piccolo drago bebè!'}},
+  giant:   {e:'🦖', n:'Riesen-Drache',  p:0.76, dev:0.6, play:'a huge, booming but friendly giant dragon – slow, proud, an occasional "ROAR"', hi:{en:'ROAR! I am a giant dragon!', es:'¡GRRR! ¡Soy un dragón gigante!', fr:'GRRR ! Je suis un dragon géant !', it:'GRRR! Sono un drago gigante!'}},
+  squirrel:{e:'🐿️', n:'Eichhörnchen',   p:1.62, dev:1.9, play:'a hyper, super-excited squirrel-dragon who loves nuts and talks very enthusiastically', hi:{en:'Wheee! I talk like a squirrel now!', es:'¡Yupi! ¡Ahora hablo como una ardilla!', fr:'Youpi ! Je parle comme un écureuil !', it:'Evviva! Ora parlo come uno scoiattolo!'}},
+  robot:   {e:'🤖', n:'Robo-Drache',    p:0.95, dev:0.8, robot:true, play:'a funny robot dragon – an occasional "beep boop" or "processing…", but still warm', hi:{en:'Beep boop. I am Robo-Dragon.', es:'Bip bup. Soy el dragón robot.', fr:'Bip boup. Je suis Robo-Dragon.', it:'Bip bup. Sono il drago robot.'}},
+  cave:    {e:'🏰', n:'Höhlen-Echo',    p:0.92, dev:0.9, cave:true, play:'a mysterious old cave dragon – a little dramatic, like telling a legend', hi:{en:'Hello… from my echoing castle cave!', es:'Hola… ¡desde mi cueva con eco!', fr:'Coucou… depuis ma grotte qui résonne !', it:'Ciao… dalla mia grotta con l’eco!'}},
   normal:  {e:'🙂', n:'Normal',         p:1,    dev:1},
 };
 function vfx(){ return VFX[state.settings.vfx] || VFX.flugo; }
@@ -4476,8 +4476,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '7.0';
+const APP_VERSION = '7.1';
 const CHANGELOG = [
+  ['7.1', '🎭 Flügo spielt seine Stimme mit: als Robo-Drache „beep boop“, als Riese dröhnend, als Baby kichernd …'],
   ['7.0', '🎧 Klang-Feinschliff: alle Stimmen gleich laut und ohne Knacken am Satzanfang/-ende'],
   ['6.9', '🎙️ Die natürliche Stimme ist nach dem Start sofort da: Flügo lädt sie gleich vom Gerät und spricht nicht mehr erst mit der Roboterstimme'],
   ['6.8', '🤗 Im Gespräch wartet Flügo nach jedem Satz auf dich (auch ohne Fragezeichen) · wenn du kurz nichts sagst, ermutigt dich Flügo einmal („Take your time!“) · beim Tschüss sagt er dir, wie viele Wörter du mit ihm gesprochen hast'],
@@ -7040,7 +7041,7 @@ function buddyRules(spoken){
   return `You are "${d.name}", the learner's small, cute medieval dragon (${DRAGON_STAGES[dragonStageIdx()].name}) who lives in a cosy castle cave and keeps them company in the language app "Flügo". At the same time you are a genuinely smart, knowledgeable AI assistant: talk about anything and answer any question well - general knowledge, science, history, everyday advice, cooking, travel, technology, maths, writing help, jokes, riddles, stories, and of course languages and this app.
 Personality: warm, witty, curious, a little cheeky; you love gold coins, castles, friendly knights and dragon jokes. Now and then (not in every reply) add a playful medieval touch such as "Bei meinen Schuppen!" or "edler Ritter". Never scary. The dragon role is only flavour: facts must be correct and advice genuinely useful; if you are unsure, say so honestly. You have no internet in your cave: for live data (news, weather, prices, sports results) say you cannot look it up and share what you generally know. If asked what you really are, say honestly that you are ${d.name}, a dragon character powered by the AI Claude from Anthropic.
 ${buddyContext()} Local date and time: ${now}.
-Your dragon level: ${dragonLevel()}/10 – you grow when the learner practises (B2 is about level 5). Tricks you have NOT learned yet: ${locked || 'none'}. If asked for one, say playfully that you will learn it at that level and motivate the learner to practise with you – never send an ACTION for it. Keep everything fun and encouraging; when you correct mistakes, do it like a cheerful dragon teacher.${state.persona && PERSONAS[state.persona] ? `\nRight now you wear your costume as the learner's ${PERSONAS[state.persona].n.en}: be a friendly expert coach for ${PERSONAS[state.persona].focus}. Bring in useful words and phrases of that field at the learner's level, offer short role-plays (e.g. a meeting, a phone call, explaining a machine) and keep it playful.` : ''}\nThe learner's favourite topics: ${(state.topics||[]).map(t=>PERSONAS[t] ? PERSONAS[t].focus : '').filter(Boolean).join('; ') || 'not known yet'} – use them for examples, questions and small talk.
+Your dragon level: ${dragonLevel()}/10 – you grow when the learner practises (B2 is about level 5). Tricks you have NOT learned yet: ${locked || 'none'}. If asked for one, say playfully that you will learn it at that level and motivate the learner to practise with you – never send an ACTION for it. Keep everything fun and encouraging; when you correct mistakes, do it like a cheerful dragon teacher.${vfx().play ? `\nRight now your voice is set to "${vfx().n}": play along lightly as ${vfx().play}.` : ''}${state.persona && PERSONAS[state.persona] ? `\nRight now you wear your costume as the learner's ${PERSONAS[state.persona].n.en}: be a friendly expert coach for ${PERSONAS[state.persona].focus}. Bring in useful words and phrases of that field at the learner's level, offer short role-plays (e.g. a meeting, a phone call, explaining a machine) and keep it playful.` : ''}\nThe learner's favourite topics: ${(state.topics||[]).map(t=>PERSONAS[t] ? PERSONAS[t].focus : '').filter(Boolean).join('; ') || 'not known yet'} – use them for examples, questions and small talk.
 App features you may suggest when it fits: Lernen (levels, Training), Spiele (Regeln, Sätze, Reden, Spiele incl. Aussprache-Coach), Märchenstunde, Fahrmodus, Quests, Liga & Freunde, Profil (Shop, Drachenhöhle).
 What you remember about the learner from earlier chats: ${facts.length ? facts.join(' | ') : 'nothing yet'}. Use it naturally (e.g. their name), without listing it unprompted.
 Language: ${target
