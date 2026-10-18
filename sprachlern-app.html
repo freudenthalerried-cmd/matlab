@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, interactive-widget=resizes-content">
 <title>Wortreise – Englisch lernen wie ein Spiel</title>
 <meta name="description" content="Lerne Englisch spielerisch: Level, Sterne, Münzen, Streaks und Mini-Spiele.">
+<link rel="manifest" href="wortreise-manifest.json">
+<meta name="theme-color" content="#3a2717">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Wortreise">
+<link rel="apple-touch-icon" href="wortreise-icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
@@ -4156,8 +4162,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '4.2';
+const APP_VERSION = '4.3';
 const CHANGELOG = [
+  ['4.3', '📲 Als echte App installierbar (Startbildschirm, Drachen-Icon, offline) – Mikrofon direkt in der App'],
   ['4.2', 'Nur noch der Drache: Antippen öffnet die Zauberkugeln · Zubehör sitzt richtig · Leiste unten entfernt (oben links 🐉 = zurück)'],
   ['4.1', 'Neuer, viel niedlicherer Flügo (mit Canva gestaltet) – Farben & Zubehör bleiben'],
   ['4.0', '🐉 Flügo ist die Startseite: alle Spiele & Bereiche als magische Kugeln um den Drachen'],
@@ -6310,6 +6317,7 @@ function hubGo(go){
     case 'league': renderLeague(); showScreen('screen-league'); renderFriendsIfOpen(); return setNav('');
     case 'den': return openDragonDen();
     case 'profile': renderStats(); showScreen('screen-stats'); return setNav('stats');
+    case 'install': return installApp();
   }
 }
 function hubTip(){
@@ -6333,8 +6341,9 @@ function renderHub(){
   const say = document.getElementById('hubSay'); say.textContent = hubTip() + ' ' + hubHint();
   document.getElementById('hubOrbs').classList.remove('open');
   const ring = document.getElementById('hubOrbs'); ring.innerHTML = '';
-  HUB_ORBS.forEach((o,i)=>{
-    const a = (-90 + i*360/HUB_ORBS.length) * Math.PI/180;
+  const orbs = canInstall() ? [...HUB_ORBS, {go:'install', icon:'📲', name:'Als App'}] : HUB_ORBS;
+  orbs.forEach((o,i)=>{
+    const a = (-90 + i*360/orbs.length) * Math.PI/180;
     const b = document.createElement('button'); b.className = 'orb';
     b.style.setProperty('--x', (50 + 42*Math.cos(a)) + '%'); b.style.setProperty('--y', (50 + 42*Math.sin(a)) + '%');
     b.style.setProperty('--d', (i*0.05) + 's');
@@ -6356,6 +6365,20 @@ document.getElementById('hubDragon').addEventListener('click', ()=>{
   if(open) speak(s.textContent, LANGS[currentLang()].code);
 });
 function hubHint(){ return ({en:'Tap me!', es:'¡Tócame!', fr:'Touche-moi !', it:'Toccami!'}[currentLang()] || 'Tap me!'); }
+
+
+/* ---------- 📲 Als App installieren (GitHub Pages) – Mikrofon direkt in der App ---------- */
+const APP_LINK = 'https://freudenthalerried-cmd.github.io/matlab/sprachlern-app.html';
+let installEvt = null;
+const isStandalone = ()=> matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+if('serviceWorker' in navigator && /github\.io$/.test(location.hostname)) navigator.serviceWorker.register('wortreise-sw.js').catch(()=>{});
+addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); installEvt = e; try{ if(document.getElementById('screen-hub').classList.contains('active')) renderHub(); }catch(err){} });
+function canInstall(){ return !isStandalone() && /github\.io$/.test(location.hostname); }
+async function installApp(){
+  if(installEvt){ installEvt.prompt(); const r = await installEvt.userChoice.catch(()=>null); installEvt = null; if(r && r.outcome==='accepted') toast('🎉 Wortreise ist jetzt eine App auf deinem Startbildschirm!'); renderHub(); return; }
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  toast(ios ? '📲 Tippe unten auf „Teilen“ ⬆️ und dann „Zum Home-Bildschirm“' : '📲 Tippe im Browser-Menü ⋮ auf „App installieren“ bzw. „Zum Startbildschirm hinzufügen“');
+}
 
 /* ---------- INIT ---------- */
 importFromLink();
