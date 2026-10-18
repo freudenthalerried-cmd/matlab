@@ -680,6 +680,39 @@ body{
 .bb.dots{color:#a89070;}
 .bb .ob{display:block;margin-top:6px;background:#efe0bf;color:#4a3220;}
 .bs-lang{border:none;background:rgba(255,255,255,.15);border-radius:14px;width:44px;font-size:20px;cursor:pointer;flex-shrink:0;}
+/* ===== FLÜGO-FRAGE: der Drache fragt dich zwischendurch ===== */
+.fq-card{position:fixed;z-index:62;box-sizing:border-box;width:min(340px,calc(100vw - 20px));background:#fbf3df;color:#3b2a1a;border:2px solid #c9a86a;border-radius:18px;padding:10px 12px 4px;box-shadow:0 10px 28px rgba(0,0,0,.45),inset 0 0 18px rgba(160,120,60,.12);animation:popIn .3s both;max-height:calc(100vh - 16px);overflow-y:auto;}
+.fq-card::after{content:'';position:absolute;left:var(--tx,50%);bottom:-11px;margin-left:-10px;border-left:10px solid transparent;border-right:10px solid transparent;border-top:11px solid #c9a86a;}
+.fq-card.tail-up::after{bottom:auto;top:-11px;border-top:0;border-bottom:11px solid #c9a86a;}
+.fq-head{display:flex;align-items:center;gap:6px;font-size:14px;color:#6b5236;}
+.fq-head b{font-family:'Cinzel',Georgia,serif;font-size:15px;color:#3b2a1a;margin-right:auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.fq-head small{flex-shrink:0;font-size:12px;font-weight:800;background:#efe0bf;border:1px solid #dcc9a3;border-radius:10px;padding:2px 8px;white-space:nowrap;}
+.fq-q{display:flex;align-items:center;gap:8px;margin:8px 0 2px;font-size:17px;font-weight:800;line-height:1.3;overflow-wrap:anywhere;}
+.fq-q>span{flex:1;min-width:0;}
+.fq-w{color:#7a3b12;}
+.fq-hear{flex-shrink:0;width:44px;height:44px;border-radius:50%;border:2px solid #c9a86a;background:#efe0bf;font-size:20px;cursor:pointer;padding:0;}
+.fq-opts{display:grid;gap:6px;margin:8px 0 4px;}
+.fq-opt{display:block;width:100%;min-height:44px;border:2px solid #dcc9a3;background:#efe0bf;color:#3b2a1a;border-radius:14px;padding:8px 12px;font-family:inherit;font-size:16px;font-weight:800;line-height:1.25;text-align:center;white-space:normal;overflow-wrap:anywhere;cursor:pointer;box-shadow:0 3px 0 #c9a86a;}
+.fq-opt:active{transform:translateY(2px);box-shadow:0 1px 0 #c9a86a;}
+.fq-opt:disabled{cursor:default;opacity:1;}
+.fq-opt.right{background:#5f9a3e;border-color:#4b7d30;color:#fff;box-shadow:0 3px 0 #2f4f1d;}
+.fq-opt.wrong{background:#b8442f;border-color:#8f3020;color:#fff;box-shadow:0 3px 0 #6a2216;}
+.fq-opt.fq-idk{min-height:40px;font-size:14px;background:transparent;box-shadow:none;border-style:dashed;color:#6b5236;}
+.fq-mic{display:block;width:100%;min-height:48px;margin-top:8px;border:1px solid #2f4f1d;border-radius:14px;background:linear-gradient(180deg,#6fae48,#4b7d30);color:#fff8e6;font-family:inherit;font-size:17px;font-weight:900;box-shadow:0 4px 0 #2f4f1d;cursor:pointer;}
+.fq-mic.live{animation:micPulse 1s infinite;}
+.fq-said{margin-top:6px;font-size:14px;font-weight:700;color:#6b5236;text-align:center;overflow-wrap:anywhere;}
+.fq-said:empty{display:none;}
+.fq-res{margin:6px 0 2px;padding:8px 10px;border-radius:12px;font-size:15px;font-weight:800;text-align:center;line-height:1.3;overflow-wrap:anywhere;}
+.fq-res.ok{background:#e3efcf;color:#2f4f1d;}
+.fq-res.bad{background:#f6ddd2;color:#7a2a1a;}
+.fq-foot{display:flex;align-items:center;gap:8px;}
+.fq-later{border:none;background:none;color:#6b5236;font-family:inherit;font-size:14px;font-weight:800;padding:10px 4px;min-height:40px;cursor:pointer;white-space:nowrap;}
+.fq-timer{flex:1;height:5px;border-radius:3px;background:#e6d3a8;overflow:hidden;}
+.fq-timer i{display:block;height:100%;background:#c9902f;transform-origin:left center;animation:fqTime var(--fqt,25s) linear forwards;}
+.fq-card.hold .fq-timer,.fq-card.done .fq-timer{visibility:hidden;}
+@keyframes fqTime{from{transform:scaleX(1);}to{transform:scaleX(0);}}
+@media (prefers-reduced-motion:reduce){.fq-card{animation:none;}.fq-mic.live{animation:none;}}
+@media (max-height:680px){.fq-q{margin-top:4px;font-size:16px;}.fq-opts{gap:5px;margin:6px 0 2px;}.fq-opt{min-height:40px;padding:6px 10px;font-size:15px;}.fq-hear{width:40px;height:40px;font-size:18px;}.fq-later{min-height:36px;padding:8px 4px;}}
 
 /* ===== MITTELALTER ===== */
 body{background:radial-gradient(ellipse at 50% 0%,#4a331e 0%,#2a1c11 55%,#1c130d 100%);}
@@ -1175,6 +1208,7 @@ body.night-mode .topbar{opacity:.18;transition:opacity 1s;}
       <div id="diagOut" class="diag-out"></div>
       <button class="btn btn-secondary" id="soundBtn">🔊 Ton: an</button>
       <button class="btn btn-secondary" id="vibBtn">📳 Vibration: an</button>
+      <button class="btn btn-secondary" id="fqBtn">🐉 Flügo-Fragen: an</button>
       <button class="btn btn-secondary" id="placementBtn">🧪 Einstufungstest wiederholen</button>
       <button class="btn btn-secondary" id="resetProgressBtn">Fortschritt zurücksetzen</button>
       <div class="panel-sub" style="margin:6px 0 12px;color:var(--muted)">⚠️ Ein ausgelassener Tag kostet XP, Münzen, 2 ❤️ und den Streak – außer du hast 🧊 Streak-Schutz.</div></details>
@@ -1200,6 +1234,7 @@ body.night-mode .topbar{opacity:.18;transition:opacity 1s;}
 </div>
 <button class="buddy hidden" id="buddy" aria-label="Mit deinem Drachen sprechen"></button>
 <div class="buddy-say hidden" id="buddySay"></div>
+<div class="fq-card hidden" id="fqCard" role="dialog" aria-live="polite" aria-label="Flügo-Frage"></div>
 <div class="buddy-sheet hidden" id="buddySheet">
   <div class="bs-head"><span id="buddyFace"></span><span class="bs-who"><b id="buddyName">Flügo</b><small id="buddyStatus"></small></span><button class="bs-x" id="buddyDrive" title="Fahrmodus">🚗</button><button class="bs-x" id="buddyClose">✕</button></div>
   <div class="bs-list" id="buddyList"></div>
@@ -3361,6 +3396,7 @@ function renderProfileExtras(){
   });
   document.getElementById('soundBtn').textContent = state.settings.sound===false ? '🔇 Ton: aus' : '🔊 Ton: an';
   document.getElementById('vibBtn').textContent = state.settings.vibrate===false ? '📴 Vibration: aus' : '📳 Vibration: an';
+  document.getElementById('fqBtn').textContent = state.settings.buddyQuiz===false ? '🐉 Flügo-Fragen: aus' : '🐉 Flügo-Fragen: an';
 }
 document.getElementById('vibBtn').addEventListener('click', ()=>{
   state.settings.vibrate = state.settings.vibrate===false; saveState(); renderProfileExtras(); vib([30,40,30]);
@@ -3368,6 +3404,12 @@ document.getElementById('vibBtn').addEventListener('click', ()=>{
 });
 document.getElementById('soundBtn').addEventListener('click', ()=>{
   state.settings.sound = state.settings.sound===false; saveState(); renderProfileExtras(); sndTap();
+});
+document.getElementById('fqBtn').addEventListener('click', ()=>{
+  state.settings.buddyQuiz = state.settings.buddyQuiz===false; sndTap();
+  if(state.settings.buddyQuiz===false) fqClose(true, 'nav'); else { fqDay().skip = 0; fq.nextAt = Math.min(fq.nextAt, fq.used + 20); }
+  saveState(); renderProfileExtras();
+  toast(state.settings.buddyQuiz===false ? '🐉 Flügo stellt dir keine Zwischenfragen mehr' : '🐉 Flügo fragt dich ab und zu etwas!');
 });
 document.getElementById('placementBtn').addEventListener('click', ()=>startPlacement());
 
@@ -4285,8 +4327,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '4.8';
+const APP_VERSION = '4.9';
 const CHANGELOG = [
+  ['4.9', '🐉❓ Flügo fragt dich ab und zu etwas (Übersetzen, Hören, Sprechen) – abschaltbar in den Einstellungen'],
   ['4.8', '🗣️ Natürlichere Stimme: bessere Stimmenwahl (auch iPhone-Premium-Stimmen), Warten auf Stimmen, lange Texte in Sätzen, dein Tempo überall'],
   ['4.7', '🔧 Selbsttest für Ton/Mikro/KI · klarer Hinweis, wenn es keinen Ton gibt · Drache: ohne Mikro gleich Chat zum Tippen'],
   ['4.6', '🌙 Gute-Nacht-Modus mit ruhiger Einschlafgeschichte, Meeresrauschen und dunkler werdendem Bildschirm · Flügo antippen: er fragt „What can I do for you?“ und hört zu'],
@@ -5909,6 +5952,7 @@ function buddyEl(){ return document.getElementById('buddy'); }
 function placeBuddy(screenId){
   const b = buddyEl(); if(!b) return;
   buddy.screen = screenId;
+  try{ fqOnScreen(screenId); }catch(e){}
   const hide = ['screen-language','screen-difficulty','screen-drive','screen-hub','screen-night'].includes(screenId) || !state.difficulty;
   b.classList.toggle('hidden', hide);
   b.classList.toggle('small', !NAV_SCREENS.includes(screenId));
@@ -5929,7 +5973,7 @@ function moveBuddy(x, y, instant){
   positionSay();
 }
 function buddyFly(){
-  const b = buddyEl(); if(!b || b.classList.contains('hidden') || !document.getElementById('buddySheet').classList.contains('hidden')) return;
+  const b = buddyEl(); if(!b || b.classList.contains('hidden') || !document.getElementById('buddySheet').classList.contains('hidden') || fqOpen()) return;
   const r = appRect(), H = innerHeight, s = b.classList.contains('small') ? 50 : BUDDY_SIZE;
   const nav = NAV_SCREENS.includes(buddy.screen), rnd = (a,z)=>a + Math.random()*(z-a);
   let x, y;
@@ -5954,7 +5998,7 @@ function positionSay(){
 function hideBuddySay(){ const s = document.getElementById('buddySay'); if(s) s.classList.add('hidden'); }
 function buddySay(text, voice){
   const b = buddyEl(), say = document.getElementById('buddySay');
-  if(!b || b.classList.contains('hidden') || !say) return;
+  if(!b || b.classList.contains('hidden') || !say || fqOpen()) return;
   say.textContent = text; say.classList.remove('hidden'); positionSay();
   clearTimeout(buddy.sayHide); buddy.sayHide = setTimeout(hideBuddySay, 5000);
   if(voice && state.settings.sound!==false && state.settings.buddyVoice!==false && !(window.speechSynthesis && speechSynthesis.speaking) && !(typeof story!=='undefined' && story.playing)) speak(text, LANGS[currentLang()].code);
@@ -5962,7 +6006,7 @@ function buddySay(text, voice){
 function scheduleSay(){
   clearTimeout(buddy.sayT);
   buddy.sayT = setTimeout(()=>{
-    if(NAV_SCREENS.includes(buddy.screen) && document.getElementById('buddySheet').classList.contains('hidden')){
+    if(NAV_SCREENS.includes(buddy.screen) && document.getElementById('buddySheet').classList.contains('hidden') && !fqOpen()){
       buddy.sayN++;
       buddySay(pick(BUDDY_LINES[currentLang()] || BUDDY_LINES.en), buddy.sayN % 2 === 1);
     }
@@ -5978,6 +6022,293 @@ function buddyReact(mood){
   if(mood==='sad' && Math.random()<.35) buddySay(pick({en:['Almost!','Don\'t give up!','Next one!'], es:['¡Casi!','¡Ánimo!'], fr:['Presque !','Courage !'], it:['Quasi!','Coraggio!']}[currentLang()] || ['Almost!']));
   clearTimeout(buddy.moodT); buddy.moodT = setTimeout(()=>{ b.dataset.mood = 'happy'; b.innerHTML = dragonSVG({size:BUDDY_SIZE-6, mood:'happy'}); }, 1600);
 }
+
+/* ---------- 🐉❓ FLÜGO-FRAGE: der Drache fragt dich ab und zu etwas ---------- */
+const FQ_MAX_DAY = 5, FQ_TIMEOUT = 25000;
+const FQ_TAGS = {de2t:'✍️ Übersetzen', t2de:'🤔 Bedeutung', listen:'🎧 Hören', say:'🎤 Sprechen'};
+// var statt const: die Flügo-Funktionen oben fragen fqOpen() ab, das darf nie an einer TDZ scheitern
+var fq = {open:false, answered:false, used:0, nextAt:300 + Math.random()*240, calmAt:0, screenAt:Date.now(), closedAt:0,
+  screen:null, q:null, t:null, hubT:null, moodT:null, lastT:null, noMic:false, listening:false, tries:0};
+function fqOpen(){ return !!(fq && fq.open); }
+function fqDay(){
+  const t = todayStr();
+  if(!state.fq || state.fq.date!==t) state.fq = {date:t, n:0, skip:0};
+  return state.fq;
+}
+function fqCurScreen(){ return (document.querySelector('.screen.active')||{}).id; }
+function fqCalm(id){ return id==='screen-hub' || NAV_SCREENS.includes(id); }
+function fqPopupVisible(){
+  return !!document.querySelector('.ad-overlay:not(.hidden)') || !document.getElementById('buddySheet').classList.contains('hidden')
+    || toastBusy || !document.getElementById('buddySay').classList.contains('hidden');
+}
+function fqCanShow(minOnScreen){
+  if(state.settings.buddyQuiz===false || !state.difficulty || !state.language || fqOpen() || document.hidden) return false;
+  const cur = fqCurScreen(); if(!fqCalm(cur)) return false;
+  const d = fqDay(); if(d.n >= FQ_MAX_DAY || d.skip >= 2) return false;   // 2× „Später“ → heute Ruhe
+  const now = Date.now();
+  if(fqPopupVisible()){ fq.calmAt = now; return false; }
+  if(now - fq.calmAt < 6000 || now - fq.screenAt < (minOnScreen||8000) || now - fq.closedAt < 60000) return false;
+  const ae = document.activeElement; if(ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return false;
+  if(cur==='screen-hub' ? document.getElementById('hubOrbs').classList.contains('open') : buddyEl().classList.contains('hidden')) return false;
+  if(cur==='screen-stats' && document.querySelector('#screen-stats details[open]')) return false;
+  try{ if(speechSynthesis.speaking) return false; }catch(e){}
+  if(!seenWords().length && !state.lastPlayDate) return false;          // ganz neu → erst mal spielen lassen
+  return true;
+}
+function fqTick(){
+  if(document.hidden) return;
+  fq.used += 5;                                  // Sekunden aktive App-Nutzung
+  if(fqPopupVisible()) fq.calmAt = Date.now();
+  if(fq.used >= fq.nextAt && fqCanShow()) fqShow();
+}
+setInterval(fqTick, 5000);
+function fqOnScreen(id){
+  if(!fq) return;
+  if(fq.open){
+    if(id===fq.screen){ setTimeout(fqPlace, 30); return; }   // gleicher Bildschirm (z. B. Drehen) → nur neu ausrichten
+    fqClose(true, 'nav');
+  }
+  fq.screenAt = Date.now();
+  clearTimeout(fq.hubT);
+  if(id==='screen-hub') fq.hubT = setTimeout(()=>fqHubTry(0), 4500);
+}
+function fqHubTry(n){                             // einmal am Tag gleich beim Öffnen der Drachen-Zentrale
+  if(fqOpen() || fqCurScreen()!=='screen-hub' || fqDay().n > 0) return;
+  if(fqCanShow(3000)){ fqShow(); return; }
+  if(n < 6) fq.hubT = setTimeout(()=>fqHubTry(n+1), 3000);
+}
+
+/* Wortwahl: zuerst Fehler-/fällige Wörter, sonst Lernstoff wie arcadePool() (mit Level für die Wiederholung) */
+function fqFallback(){
+  const prog = levelProg(); let max = 0; prog.forEach((p,i)=>{ if(p.stars>0) max = i+1; });
+  const out = [];
+  for(let i=0;i<Math.min(LEVELS.length, Math.max(1,max));i++) levelWords(i).forEach(w=>out.push({de:w[0], t:w[1], diff:state.difficulty, lvl:i}));
+  return out;
+}
+function fqValid(w){ return w && typeof w.de==='string' && typeof w.t==='string' && w.de.trim() && w.t.trim(); }
+function fqPickWord(){
+  let weak = [];
+  try{ weak = reviewCandidates().slice(0, 8).map(e=>({de:e.de, t:e.t, diff:e.diff, lvl:e.lvl})).filter(w=>fqValid(w) && w.t!==fq.lastT); }catch(e){}
+  if(weak.length && Math.random() < 0.75) return pick(weak);
+  let pool = [];
+  try{ pool = fqFallback().filter(w=>fqValid(w) && w.t!==fq.lastT); }catch(e){}
+  if(!pool.length) try{ pool = arcadePool().map(p=>({de:p[0], t:p[1], diff:state.difficulty, lvl:null})).filter(fqValid); }catch(e){}
+  return pool.length ? pick(pool) : (weak[0] || null);
+}
+function fqDistractors(w, field){                 // 2 falsche Antworten, eindeutig und nicht doppeldeutig
+  const other = field==='de' ? 't' : 'de', norm = s=>String(s||'').trim().toLowerCase();
+  const seen = new Set([norm(w[field])]), out = [];
+  let src = [];
+  try{ if(w.diff && w.lvl!=null) src = shuffle(wordsFor(w.diff, w.lvl)); }catch(e){}
+  try{ src = src.concat(shuffle(arcadePool())); }catch(e){}
+  for(const p of src){
+    const c = {de:p[0], t:p[1]};
+    if(!fqValid(c) || seen.has(norm(c[field])) || norm(c[other])===norm(w[other])) continue;
+    seen.add(norm(c[field])); out.push(c[field]);
+    if(out.length===2) break;
+  }
+  return out;
+}
+function fqBuild(){
+  const w = fqPickWord(); if(!w) return null;
+  const canSay = micAvailable() && !fq.noMic;
+  const types = ['de2t','de2t','t2de','t2de'];
+  if(state.settings.sound!==false) types.push('listen','listen');
+  if(canSay) types.push('say');
+  let type = pick(types);
+  if(type==='say') return {w, type, ans:w.t, opts:[]};
+  const field = type==='t2de' ? 'de' : 't';
+  const wrong = fqDistractors(w, field);
+  if(wrong.length < 2) return canSay ? {w, type:'say', ans:w.t, opts:[]} : null;
+  return {w, type, ans:w[field], opts:shuffle([w[field], ...wrong])};
+}
+function fqSay(t){ if(state.settings.sound!==false) speak(t, LANGS[currentLang()].code); }
+function fqArm(ms){                               // Auto-Schließen (+ Zeitbalken) neu starten
+  clearTimeout(fq.t); ms = ms || FQ_TIMEOUT;
+  fq.t = setTimeout(()=>fqClose(false, 'timeout'), ms);
+  const c = document.getElementById('fqCard'); c.classList.remove('hold');
+  const i = c.querySelector('.fq-timer i');
+  if(i){ c.style.setProperty('--fqt', (ms/1000) + 's'); i.style.animation = 'none'; void i.offsetWidth; i.style.animation = ''; }
+}
+function fqShow(){
+  const q = fqBuild(); if(!q) return false;
+  const d = fqDay(); d.n++; saveState();
+  Object.assign(fq, {q, open:true, answered:false, listening:false, tries:0, lastT:q.w.t, screen:fqCurScreen(), nextAt:fq.used + 300 + Math.random()*300});
+  hideBuddySay();
+  const L = LANGS[currentLang()].label.replace(/^\S+\s/, '');
+  const W = s=>`<b class="fq-w">„${escapeHtml(String(s))}“</b>`;
+  const ask = {
+    de2t:`Was heißt ${W(q.w.de)} auf ${L}?`,
+    t2de:`Was bedeutet ${W(q.w.t)}?`,
+    listen:'Hör gut zu! Welches Wort sage ich?',
+    say:`Sag auf ${L}: ${W(q.w.de)}`,
+  }[q.type];
+  const hear = (q.type==='listen' || q.type==='t2de') && state.settings.sound!==false;
+  const c = document.getElementById('fqCard');
+  c.innerHTML = `<div class="fq-head"><span>🐉</span><b></b><small>${FQ_TAGS[q.type]}</small></div>
+    <div class="fq-q"><span>${ask}</span>${hear ? '<button class="fq-hear" id="fqHear" aria-label="Anhören">🔊</button>' : ''}</div>
+    ${q.type==='say' ? '<button class="fq-mic" id="fqMic">🎤 Tippen &amp; sprechen</button><div class="fq-said" id="fqSaid"></div>' : ''}
+    <div class="fq-opts" id="fqOpts"></div>
+    <div class="fq-res hidden" id="fqRes"></div>
+    <div class="fq-foot"><button class="fq-later" id="fqLater">⏰ Später</button><span class="fq-timer"><i></i></span></div>`;
+  c.querySelector('.fq-head b').textContent = (dragon().name || 'Flügo') + ' fragt …';
+  fqRenderOpts(q);
+  if(q.type==='say'){
+    const idk = document.createElement('button'); idk.className = 'fq-opt fq-idk'; idk.textContent = '🤷 Weiß ich nicht';
+    idk.onclick = ()=>fqAnswer(false, null); c.querySelector('#fqOpts').appendChild(idk);
+    c.querySelector('#fqMic').onclick = fqListen;
+  }
+  const h = c.querySelector('#fqHear'); if(h) h.onclick = ()=>{ sndTap(); fqSay(q.w.t); };
+  c.querySelector('#fqLater').onclick = ()=>{ sndTap(); fqClose(false, fq.answered ? 'done' : 'later'); };
+  c.classList.remove('hidden'); fqPlace(); fqArm();
+  pluck(784, 0, 0.18, 0.6); pluck(1046, 0.09, 0.18, 0.7);
+  fqReact('wow');
+  if(fq.screen==='screen-hub'){ const s = document.getElementById('hubSay'); s.textContent = '🤔 Kleine Frage an dich!'; s.classList.remove('pop'); void s.offsetWidth; s.classList.add('pop'); }
+  if(q.type==='listen') setTimeout(()=>{ if(fqOpen() && fq.q===q && !fq.answered) fqSay(q.w.t); }, 450);
+  return true;
+}
+function fqRenderOpts(q){
+  const box = document.getElementById('fqOpts'); box.innerHTML = '';
+  q.opts.forEach(o=>{
+    const b = document.createElement('button'); b.className = 'fq-opt'; b.textContent = o;
+    if(o===q.ans) b.dataset.ok = '1';
+    b.onclick = ()=>fqAnswer(o===q.ans, b);
+    box.appendChild(b);
+  });
+}
+function fqRecord(w, ok){                         // in die Leitner-Wiederholung (wie updateMastery, ohne Lektions-Session)
+  try{
+    const k = mKey([w.de, w.t]);
+    let e = state.mastery[k];
+    if(!e){ if(w.lvl==null) return; e = {de:w.de, t:w.t, lang:currentLang(), diff:w.diff || state.difficulty || 'anfaenger', lvl:w.lvl, box:0, due:0, right:0, wrong:0}; }
+    if(ok){ e.right++; if(e.due <= Date.now()){ e.box = Math.min(5, e.box+1); e.due = Date.now() + INTERVALS[e.box]; } }
+    else { e.wrong++; e.box = 0; e.due = Date.now(); }
+    state.mastery[k] = e;
+  }catch(err){}
+}
+function fqAnswer(ok, btn){
+  if(!fqOpen() || fq.answered) return;
+  fq.answered = true; clearTimeout(fq.t);
+  try{ if(fq.listening && buddy.rec) buddy.rec.abort(); }catch(e){} fq.listening = false;
+  const q = fq.q, c = document.getElementById('fqCard');
+  c.classList.add('done');
+  c.querySelectorAll('.fq-opt').forEach(b=>{ b.disabled = true; if(b.dataset.ok) b.classList.add('right'); });
+  if(btn && !ok) btn.classList.add('wrong');
+  const mic = c.querySelector('#fqMic'); if(mic) mic.remove();
+  c.querySelectorAll('.fq-idk').forEach(b=>b.remove());
+  fqDay().skip = 0;
+  fqRecord(q.w, ok);
+  const res = c.querySelector('#fqRes');
+  if(ok){
+    touchStreak(); const g = addXP(3); state.coins += 2;
+    track('correct', 1);
+    if(q.type==='listen') track('listen', 1);
+    if(q.type==='say') track('pron', 1);
+    sndCorrect(); fqReact('wow');
+    res.className = 'fq-res ok';
+    res.innerHTML = `✅ ${pick(['Richtig!','Super!','Stark!','Genau!'])} <b>+${g} XP · +2 🪙</b>`;
+  } else {
+    sndWrong(); fqReact('sad');
+    res.className = 'fq-res bad';
+    res.innerHTML = `💡 <b>${escapeHtml(q.w.t)}</b> = ${escapeHtml(q.w.de)}<br><small>Kommt im 💪 Training wieder!</small>`;
+  }
+  saveState(); updateTopbar(); fqRefreshScreen();
+  clearTimeout(fq.sayT); fq.sayT = setTimeout(()=>{ if(fq.q===q && fqCurScreen()===fq.screen) fqSay(q.w.t); }, ok ? 350 : 650);   // Flügo sagt das richtige Wort vor
+  c.querySelector('#fqLater').textContent = 'Weiter ➜';
+  fq.t = setTimeout(()=>fqClose(false, 'done'), ok ? 3500 : 5500);
+  fqPlace();
+}
+function fqListen(){
+  if(!fqOpen() || fq.answered || fq.listening) return;
+  const q = fq.q, c = document.getElementById('fqCard'), mic = c.querySelector('#fqMic'), said = c.querySelector('#fqSaid');
+  clearTimeout(fq.t); c.classList.add('hold');     // beim Sprechen nicht automatisch schließen
+  try{ speechSynthesis.cancel(); }catch(e){}
+  fq.listening = true; mic.classList.add('live'); mic.textContent = '👂 Ich höre zu …';
+  clearTimeout(fq.recT); fq.recT = setTimeout(()=>{ try{ buddy.rec && buddy.rec.abort(); }catch(e){} }, 8000);
+  recognizeOnce(LANGS[currentLang()].code).then(text=>{
+    clearTimeout(fq.recT);
+    if(!fqOpen() || fq.q!==q || fq.answered) return;
+    fq.listening = false;
+    const sc = scorePron([text], q.w.t);
+    said.innerHTML = `Du: „${escapeHtml(text)}“ · <b>${sc.total} %</b>`;
+    if(sc.total >= 70) return fqAnswer(true, null);
+    if(++fq.tries >= 2) return fqAnswer(false, null);
+    mic.classList.remove('live'); mic.textContent = '🎤 Nochmal versuchen';
+    said.innerHTML += `<br>Tipp: fängt mit „${escapeHtml(q.w.t.trim().slice(0,2))}…“ an`;
+    fqArm(); fqPlace();
+  }).catch(err=>{
+    clearTimeout(fq.recT);
+    if(!fqOpen() || fq.q!==q || fq.answered) return;
+    fq.listening = false; mic.classList.remove('live');
+    if(++fq.tries >= 3) return fqAnswer(false, null);
+    if(['not-allowed','service-not-allowed','start','unsupported','audio-capture'].includes(err)){
+      fq.noMic = true;                               // Mikro geht hier nicht → als Antwort-Chips weiter
+      const wrong = fqDistractors(q.w, 't');
+      if(wrong.length < 2) return fqAnswer(false, null);
+      q.type = 'de2t'; q.ans = q.w.t; q.opts = shuffle([q.w.t, ...wrong]);
+      mic.remove(); said.textContent = '🎤 Mikro geht hier nicht – tipp die Antwort:';
+      fqRenderOpts(q);
+    } else mic.textContent = '🤔 Nichts gehört – nochmal';
+    fqArm(); fqPlace();
+  });
+}
+function fqClose(silent, why){
+  if(!fqOpen()) return;
+  const answered = fq.answered, wasHub = fq.screen==='screen-hub';
+  fq.open = false; clearTimeout(fq.t); clearTimeout(fq.sayT); clearTimeout(fq.recT);
+  try{ if(fq.listening && buddy.rec) buddy.rec.abort(); }catch(e){} fq.listening = false;
+  const c = document.getElementById('fqCard'); c.classList.add('hidden'); c.classList.remove('done','hold','tail-up'); c.innerHTML = '';
+  fq.closedAt = Date.now();
+  if(!answered){
+    if(why==='later' || why==='timeout' || why==='back'){
+      fqDay().skip++; saveState();
+      fq.nextAt = fq.used + 300 + Math.random()*180;   // nach „Später“ 5–8 Minuten Ruhe
+    } else fq.nextAt = Math.max(fq.nextAt, fq.used + 60);
+  }
+  if(wasHub && fqCurScreen()==='screen-hub'){ const s = document.getElementById('hubSay'); s.textContent = hubTip() + ' ' + hubHint(); }
+  if(!silent && !answered && why==='timeout') try{ buddyReact('happy'); }catch(e){}
+}
+function fqPlace(){
+  const c = document.getElementById('fqCard'); if(!fqOpen() || !c) return;
+  const r = appRect(), H = innerHeight, w = Math.max(220, Math.min(340, (r.right - r.left) - 20));
+  c.style.width = w + 'px';
+  if(fq.screen==='screen-hub'){                    // unter dem großen Drachen, Spitze zeigt nach oben
+    const d = document.getElementById('hubDragon').getBoundingClientRect();
+    const left = r.left + ((r.right - r.left) - w)/2;
+    const top = Math.max(56, Math.min(H - c.offsetHeight - 14, d.bottom - 18));
+    c.style.left = left + 'px'; c.style.top = top + 'px'; c.style.bottom = 'auto';
+    c.classList.add('tail-up');
+    c.style.setProperty('--tx', Math.max(22, Math.min(w - 22, d.left + d.width/2 - left)) + 'px');
+    return;
+  }
+  const b = buddyEl(), s = b.classList.contains('small') ? 50 : BUDDY_SIZE;   // Flügo fliegt in die Ecke unten rechts
+  const bx = r.right - s - 8, by = H - s - 18;
+  if(buddy.x==null || Math.abs(buddy.x - bx) > 2 || Math.abs(buddy.y - by) > 2) moveBuddy(bx, by);
+  const left = r.right - w - 10;
+  c.style.left = left + 'px'; c.style.top = 'auto'; c.style.bottom = (H - by + 12) + 'px';
+  c.classList.remove('tail-up');
+  c.style.setProperty('--tx', Math.max(22, Math.min(w - 22, bx + s/2 - left)) + 'px');
+  const cr = c.getBoundingClientRect(); if(cr.top < 8){ c.style.bottom = 'auto'; c.style.top = '8px'; }
+}
+function fqReact(mood){
+  if(fq.screen!=='screen-hub'){ try{ buddyReact(mood); }catch(e){} return; }
+  const h = document.getElementById('hubDragon'); if(!h) return;
+  h.innerHTML = dragonSVG({size:200, mood, cls:'hub-svg'});
+  clearTimeout(fq.moodT);
+  fq.moodT = setTimeout(()=>{ if(fqCurScreen()==='screen-hub') h.innerHTML = dragonSVG({size:200, mood: dragonMood()==='sleepy' ? 'sleepy' : 'happy', cls:'hub-svg'}); }, 1800);
+}
+function fqRefreshScreen(){
+  try{
+    const cur = fqCurScreen();
+    if(cur==='screen-hub'){
+      document.getElementById('hubXp').style.width = Math.round(100*Math.min(1, state.daily.xp/state.daily.goal)) + '%';
+      document.getElementById('hubXpTxt').textContent = `🎯 ${state.daily.xp}/${state.daily.goal} XP heute`;
+    } else if(cur==='screen-map') renderDashboard();
+    else if(cur==='screen-quests') renderQuests();
+  }catch(e){}
+}
+// Tippt man auf den großen Drachen (Menü), geht die Frage höflich weg
+document.getElementById('hubDragon').addEventListener('click', ()=>{ if(fqOpen()) fqClose(true, 'nav'); });
 
 /* ---------- Gespräch mit Flügo ---------- */
 function buddyContext(){
@@ -6008,7 +6339,7 @@ function updateBuddyControls(){
   document.getElementById('buddyLang').textContent = buddy.micLang==='target' ? LANGS[currentLang()].label.split(' ')[0] : '🇩🇪';
 }
 function openBuddy(){
-  sndTap(); hideBuddySay();
+  sndTap(); hideBuddySay(); fqClose(true, 'nav');
   document.getElementById('buddySheet').classList.remove('hidden');
   document.getElementById('buddyFace').innerHTML = dragonSVG({size:54, mood:'wow'});
   document.getElementById('buddyName').textContent = dragon().name;
@@ -6128,6 +6459,7 @@ function handleBack(){
   // 1) offene Fenster zuerst schließen
   const ov = [...document.querySelectorAll('.ad-overlay:not(.hidden)')].filter(o=>o.id!=='adOverlay');
   if(ov.length){ const o = ov[ov.length-1]; const close = o.querySelector('[id$="Close"],#bragClose,.btn-secondary'); if(close) close.click(); else o.classList.add('hidden'); return true; }
+  if(fqOpen()){ fqClose(false, 'back'); return true; }
   if(!document.getElementById('buddySheet').classList.contains('hidden')){ closeBuddy(); return true; }
   // 2) Bildschirm-abhängig zurück
   const cur = (document.querySelector('.screen.active')||{}).id;
