@@ -4460,8 +4460,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '6.5';
+const APP_VERSION = '6.6';
 const CHANGELOG = [
+  ['6.6', '✋ Ins Wort fallen: tipp auf Flügo oder 🎤, während er spricht – er verstummt und hört dir sofort zu · begrüßt dich mit deinem Namen, wenn er ihn kennt'],
   ['6.5', '🔧 Die Schlüssel- und Stimmen-Frage wird nie mehr von einem Rätsel-Tipp verdrängt · ehrlichere Meldung, wenn ein Wort gerade nicht nachgeschlagen werden kann'],
   ['6.4', '🗨️ Flügo verbessert Fehler wie ein Muttersprachler ganz nebenbei im Satz („Oh, you went to the market?“) · hört sich nach dem Sprechen nicht mehr selbst (wartet Nachhall ab)'],
   ['6.3', '🎶 Flüssiger: der nächste Satz wird schon vorbereitet (keine Pausen), lebendigere Betonung der natürlichen Stimme · Flügo ist witziger und stellt offene Fragen, damit du mehr redest'],
@@ -8016,6 +8017,12 @@ function sayQueue(){                                   // Sätze der Reihe nach 
   q.stop = ()=>{ q.stopped = true; q.items = []; };
   return q;
 }
+function hubBargeIn(){                                 // du fällst ihm ins Wort: er verstummt und hört dir zu
+  if(hubDlg.sq) hubDlg.sq.stop(); try{ speechSynthesis.cancel(); }catch(e){}
+  document.body.classList.remove('speaking');
+  hubDlg.live = true; hubDlg.misses = 0; hubTalkUI(); sndTap();
+  setTimeout(()=>{ if(!hubListening) hubListen(true); }, 250);
+}
 function hubHasAI(){ return !!(sampleFn || apiKey() || window.claude); }
 function hubKeySetup(pending, msg){
   hubStopLive(); clearTimeout(hubDlg.t); hubDlg.mode = 'key';
@@ -8043,6 +8050,7 @@ function hubKeySetup(pending, msg){
 function hubRetry(text){ const l = buddy.turns[buddy.turns.length - 1]; if(l && l.role==='user' && l.content===text) buddy.turns.pop(); hubChat(text); }
 function hubChatStart(speakIt){
   const L = currentLang(), de = buddy.micLang!=='target', SP = PERSONA_STARTERS[state.persona];
+  if(!speakIt && hubDlg.lastStarter && hubDlg.starterSeq===hubDlg.seq) return Promise.resolve();   // steht schon da – nicht neu würfeln
   if(speakIt && hubDlg.lastStarter && hubDlg.starterSeq===hubDlg.seq){   // steht schon da (z. B. beim Öffnen) → nur vorlesen und zuhören
     const q0 = hubDlg.lastStarter;
     return state.settings.sound!==false ? speakAsync(q0, de ? 'de-DE' : LANGS[L].code).then(()=>hubAwait(q0)) : Promise.resolve(hubAwait(q0));
@@ -8055,7 +8063,10 @@ function hubChatStart(speakIt){
       return state.settings.sound!==false ? speakAsync(q1, buddyVoiceCode(q1)).then(()=>hubAwait(q1)) : Promise.resolve(hubAwait(q1)); }
   }
   const pool = [...(STARTERS[de ? 'de' : L] || STARTERS.en), ...(SP && !de ? [SP[L] || SP.en] : [])].filter(x=>x!==hubDlg.lastStarter);
-  const q = pick(pool); hubDlg.lastStarter = q; hubDlg.mode = 'chat';
+  const nm = ((buddyMem().facts.find(f=>/^name\s*:/i.test(f)) || '').split(':')[1] || '').trim().split(/\s+/)[0];
+  const hi = nm && !hubDlg.greetedName ? (de ? 'Hallo ' : ({en:'Hi ', es:'¡Hola, ', fr:'Salut ', it:'Ciao '})[L] || 'Hi ') + nm + (L==='es' && !de ? '! ' : '! ') : '';
+  if(hi) hubDlg.greetedName = true;
+  const q = hi + pick(pool); hubDlg.lastStarter = q; hubDlg.mode = 'chat';
   buddy.turns.push({role:'assistant', content:(de ? '' : 'REPLY: ') + q}); buddy.turns = buddy.turns.slice(-BUDDY_TURNS);
   hubSayHTML('💬 ' + q, '', [['💡', ()=>{ hubDlg.mode = 'offer'; hubNext(true).then(hubContinue); }, 'no']], false, !de); hubDlg.starterSeq = hubDlg.seq;
   if(!speakIt) return Promise.resolve();                          // nur anzeigen – gefragt (und zugehört) wird erst beim Vorlesen
@@ -8239,6 +8250,7 @@ document.getElementById('hubDragon').addEventListener('click', ()=>{
   const now = Date.now(); hubDlg.taps = (hubDlg.taps||[]).filter(t=>now - t < 1500).concat(now);
   if(hubDlg.taps.length >= 3){ hubDlg.taps = []; hubStopLive(); try{ speechSynthesis.cancel(); }catch(e){} hubTrick('laugh'); return; }
   discover('hello');
+  if(document.body.classList.contains('speaking') && hubMicOk()){ hubBargeIn(); return; }
   if(hubListening || hubDlg.live){ hubStopLive(); try{ speechSynthesis.cancel(); }catch(e){} return; }
   if(fqOpen()) return;
   sndTap();
@@ -8452,6 +8464,7 @@ async function hubListen(auto){
   hubHeard(heard);
 }
 document.getElementById('hubMic').addEventListener('click', ()=>{
+  if(document.body.classList.contains('speaking') && hubMicOk()){ hubBargeIn(); return; }
   if(hubDlg.live || hubListening){ hubStopLive(); try{ speechSynthesis.cancel(); }catch(e){} return; }
   hubDlg.live = true; hubDlg.misses = 0; hubTalkUI(); hubListen();
 });
