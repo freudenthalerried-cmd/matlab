@@ -1226,6 +1226,7 @@ body.night-mode .topbar{opacity:.18;transition:opacity 1s;}
         <small class="vb-l">🐉 Flügo auf Deutsch</small>
         <select id="voiceSelDe" class="f-input"></select>
         <label class="rate-row">🐢 <input type="range" id="rateSel" min="0.6" max="1.2" step="0.05"> 🐇</label>
+        <button class="btn btn-secondary" id="nvBtn"></button>
         <button class="btn btn-secondary" id="voiceTest">▶️ Probe hören</button>
         <div class="voice-tip" id="voiceTip"></div></div>
       <button class="btn btn-yellow" id="diagBtn">🔧 Ton, Mikro & KI prüfen</button>
@@ -1945,6 +1946,7 @@ function sndTap(){ pluck(1318,0,0.12,0.25); vib(6); }
 function sndCombo(){ beep(1200,0.08,'sine',0.15); }
 let ttsWarned = false;
 function speak(text, lang='en-US'){
+  if(nvOn() && nv.sess[nvPath(lang)]){ speakAsync(text, lang); return; }
   try{
     const synth = window.speechSynthesis; text = cleanForSpeech(text); if(!synth || !text) return;
     const u = new SpeechSynthesisUtterance(text);
@@ -3863,7 +3865,98 @@ function ttsChunks(text){
   if(cur.trim()) out.push(cur.trim());
   return out;
 }
+/* ---------- 🎙️ Natürliche Stimme: neuronale Piper-Stimmen direkt im Browser (gratis, nach einmaligem Laden offline) ---------- */
+const NV_ORT = 'https://cdnjs.cloudflare.com/ajax/libs/onnxruntime-web/1.18.0/';
+const NV_PHON = 'https://cdn.jsdelivr.net/npm/@diffusionstudio/vits-web@1.0.3/dist/piper-DeOu3H9E.js';
+const NV_WASM = 'https://cdn.jsdelivr.net/npm/@diffusionstudio/piper-wasm@1.0.0/build/piper_phonemize';
+const NV_HF = 'https://huggingface.co/diffusionstudio/piper-voices/resolve/main';
+const NV_VOICES = {
+  f:{en:'en/en_US/hfc_female/medium/en_US-hfc_female-medium', de:'de/de_DE/kerstin/low/de_DE-kerstin-low', es:'es/es_ES/sharvard/medium/es_ES-sharvard-medium', fr:'fr/fr_FR/siwis/medium/fr_FR-siwis-medium', it:'it/it_IT/riccardo/x_low/it_IT-riccardo-x_low'},
+  m:{en:'en/en_US/ryan/medium/en_US-ryan-medium', de:'de/de_DE/thorsten/medium/de_DE-thorsten-medium', es:'es/es_ES/davefx/medium/es_ES-davefx-medium', fr:'fr/fr_FR/tom/medium/fr_FR-tom-medium', it:'it/it_IT/riccardo/x_low/it_IT-riccardo-x_low'},
+};
+const nv = {ort:null, phon:null, ac:null, sess:{}, cfg:{}, loading:{}, gen:0, src:null};
+function nvSupported(){ return !window.claude && typeof WebAssembly==='object' && !!(navigator.storage && navigator.storage.getDirectory); }
+function nvOn(){ return state.settings.neural===true && nvSupported(); }
+function nvPath(code){ return (NV_VOICES[state.settings.nVoice] || NV_VOICES.f)[String(code||'en').slice(0,2).toLowerCase()]; }
+async function nvFile(url, onP){                    // aus dem Gerätespeicher (OPFS) oder einmal herunterladen und ablegen
+  const name = url.split('/').pop(), dir = await (await navigator.storage.getDirectory()).getDirectoryHandle('piper', {create:true});
+  try{ const f = await (await dir.getFileHandle(name)).getFile(); if(f.size) return f; }catch(e){}
+  const r = await fetch(url); if(!r.ok) throw new Error('download ' + r.status);
+  const total = +(r.headers.get('Content-Length')||0), rd = r.body.getReader(), parts = []; let got = 0;
+  for(;;){ const {done, value} = await rd.read(); if(done) break; parts.push(value); got += value.length; if(onP && total) onP(got/total); }
+  const blob = new Blob(parts);
+  try{ const w = await (await dir.getFileHandle(name, {create:true})).createWritable(); await w.write(blob); await w.close(); }catch(e){}
+  return blob;
+}
+async function nvOrt(){
+  if(!nv.ort){
+    if(!window.ort) await new Promise((res, rej)=>{ const s = document.createElement('script'); s.src = NV_ORT + 'ort.wasm.min.js'; s.onload = res; s.onerror = rej; document.head.appendChild(s); });
+    nv.ort = window.ort; nv.ort.env.wasm.wasmPaths = NV_ORT; nv.ort.env.wasm.numThreads = self.crossOriginIsolated ? Math.min(4, navigator.hardwareConcurrency||1) : 1;
+  }
+  return nv.ort;
+}
+// Stimme einer Sprache vorbereiten (einmalig laden, Sitzung bleibt im Speicher)
+async function nvLoad(code, onP){
+  const path = nvPath(code); if(!path) return null;
+  if(nv.sess[path]) return path;
+  if(nv.loading[path]) return nv.loading[path];
+  return nv.loading[path] = (async()=>{
+    try{
+      const ort = await nvOrt();
+      nv.cfg[path] = JSON.parse(await (await nvFile(NV_HF + '/' + path + '.onnx.json')).text());
+      const model = await nvFile(NV_HF + '/' + path + '.onnx', onP);
+      nv.sess[path] = await ort.InferenceSession.create(await model.arrayBuffer(), {executionProviders:['wasm']});
+      await nvPhonemes('Hi.', nv.cfg[path].espeak.voice);          // Lautschrift schon vorbereiten → erster Satz kommt schneller
+      return path;
+    }catch(e){ console.warn('Stimme laden', e); return null; }
+    finally{ delete nv.loading[path]; }
+  })();
+}
+async function nvPhonemes(text, voice){               // Lautschrift (espeak) – eine Instanz, die für jeden Satz wiederverwendet wird
+  if(!nv.pm){
+    nv.phon = nv.phon || await import(NV_PHON);
+    nv.pm = await nv.phon.createPiperPhonemize({print:l=>{ const f = nv.pcb; nv.pcb = null; if(f) f(l); }, printErr:()=>{},
+      locateFile:f=>f.endsWith('.wasm') ? NV_WASM + '.wasm' : f.endsWith('.data') ? NV_WASM + '.data' : f});
+  }
+  return new Promise((res, rej)=>{
+    nv.pcb = l=>{ try{ res(JSON.parse(l).phoneme_ids); }catch(e){ rej(e); } };
+    try{ nv.pm.callMain(['-l', voice, '--input', JSON.stringify([{text}]), '--espeak_data', '/espeak-ng-data']); }catch(e){ nv.pcb = null; nv.pm = null; rej(e); }
+  });
+}
+async function nvSynth(path, text, rate){
+  const ort = nv.ort, cfg = nv.cfg[path], inf = cfg.inference || {}, ids = await nvPhonemes(text, cfg.espeak.voice);
+  const feeds = {input:new ort.Tensor('int64', ids, [1, ids.length]), input_lengths:new ort.Tensor('int64', [ids.length]),
+    scales:new ort.Tensor('float32', [inf.noise_scale ?? .667, (inf.length_scale ?? 1)/(rate || 1), inf.noise_w ?? .8])};
+  if(cfg.speaker_id_map && Object.keys(cfg.speaker_id_map).length) feeds.sid = new ort.Tensor('int64', [0]);
+  const out = await nv.sess[path].run(feeds);
+  return {pcm:(out.output || Object.values(out)[0]).data, sr:cfg.audio.sample_rate};
+}
+async function nvPlay(pcm, sr, my){
+  const ac = nv.ac = nv.ac || new (window.AudioContext || window.webkitAudioContext)();
+  if(ac.state!=='running'){ try{ await ac.resume(); }catch(e){} if(ac.state!=='running') return false; }
+  const buf = ac.createBuffer(1, pcm.length, sr); buf.copyToChannel(pcm instanceof Float32Array ? pcm : Float32Array.from(pcm), 0);
+  const src = nv.src = ac.createBufferSource(); src.buffer = buf; src.connect(ac.destination);
+  return new Promise(res=>{ src.onended = ()=>res(my===nv.gen); src.start(); });
+}
+function nvStop(){ nv.gen++; try{ nv.src && nv.src.stop(); }catch(e){} nv.src = null; }
+// Sprechen mit der natürlichen Stimme; null = (noch) nicht möglich → Gerätestimme
+async function nvSpeak(text, code, rate){
+  const path = nvPath(code); if(!path) return null;
+  if(!nv.sess[path]){ nvLoad(code); return null; }          // erst laden – diesmal spricht die Gerätestimme
+  const my = ++nv.gen, parts = ttsChunks(text), t0 = performance.now();
+  let next = nvSynth(path, parts[0], rate);
+  for(let i = 0; i < parts.length; i++){
+    let r; try{ r = await next; }catch(e){ console.warn('Stimme', e); return i ? {ok:true, ms:performance.now() - t0} : null; }
+    if(my!==nv.gen) return {ok:false, ms:0};
+    if(i + 1 < parts.length) next = nvSynth(path, parts[i+1], rate);   // nächsten Satz schon berechnen, während dieser läuft
+    if(!(await nvPlay(r.pcm, r.sr, my))) return i ? {ok:false, ms:0} : null;
+  }
+  return {ok:true, ms:performance.now() - t0};
+}
+try{ const sc = speechSynthesis.cancel.bind(speechSynthesis); speechSynthesis.cancel = ()=>{ nvStop(); sc(); }; }catch(e){}   // „Stopp“ beendet auch die natürliche Stimme
+
 async function speakAsync(text, code, rate){
+  if(nvOn()){ const t = cleanForSpeech(text); if(t){ const r = await nvSpeak(t, code || 'en-US', rate || speechRate()); if(r) return r; } }
   if(!window.speechSynthesis || !window.SpeechSynthesisUtterance){ ttsSeemsBroken = true; return {ok:false, ms:0}; }
   text = cleanForSpeech(text); if(!text) return {ok:true, ms:0};
   await voicesReady();
@@ -4289,8 +4382,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '5.8';
+const APP_VERSION = '5.9';
 const CHANGELOG = [
+  ['5.9', '🎙️ Natürliche KI-Stimme: Flügo spricht mit einer neuronalen Stimme (Piper), gratis und direkt im Browser – einmal laden, dann auch offline; in den Einstellungen an/aus und Frau/Mann'],
   ['5.8', '🧵 Echtes Gespräch: Flügo lässt dich ausreden (wartet auf eine echte Sprechpause, zeigt mit, was er hört), bleibt beim Thema und fragt nur eine Sache auf einmal · beim Zurückkommen geht das Gespräch dort weiter, wo ihr wart'],
   ['5.7', '💬 Flügo führt ein Gespräch in der Lernsprache: er fragt (z. B. „How are you today?“), wartet auf deine Antwort und antwortet als KI · jedes Wort in der Sprechblase antippen = Erklärung + Aussprache, Rest der Blase = ganzer Satz auf Deutsch'],
   ['5.6', '💛 Flügo fragt nach deinen Lieblingsthemen und wird zum Profi-Drachen: Ingenieur-Drache (technisches Englisch), Business-Drache, Forscher-, Koch-, Reise-, Sport-, Musik-, Gamer-, Tier- und Ritter-Drache – mit Kostüm, Themen-Wörtern und Rollenspielen'],
@@ -5407,7 +5501,7 @@ function renderVoiceSettings(){
     vs.filter(v=>voiceScore(v,code) > -10).forEach((v,i)=>{ const o = document.createElement('option'); o.value = v.voiceURI || v.name; const q = voiceScore(v,code); o.textContent = (i===0 ? '⭐ ' : '') + (q>=9 ? '💎 ' : '') + v.name + ' (' + v.lang + ')' + (/compact/i.test(v.voiceURI||'') ? ' · einfach' : ''); if(cur && (cur.voiceURI||cur.name)===(v.voiceURI||v.name)) o.selected = true; sel.appendChild(o); });
   });
   document.getElementById('rateSel').value = speechRate();
-  voiceTip();
+  voiceTip(); nvBtnUI();
 }
 // Anleitung: bessere (kostenlose) Gerätestimme laden – passend zum Gerät
 function voiceTip(){
@@ -5427,6 +5521,24 @@ function voiceTip(){
 document.getElementById('voiceSel').addEventListener('change', e=>{
   state.settings.voices = state.settings.voices || {}; state.settings.voices[currentLang()] = e.target.value; saveState();   // value = voiceURI
   speak(LANGS[currentLang()].code.startsWith('en') ? 'Hello, nice to meet you!' : wordOfDay() ? wordOfDay()[1] : 'Hello', LANGS[currentLang()].code);
+});
+function nvBtnUI(){
+  const b = document.getElementById('nvBtn'); if(!b) return;
+  b.classList.toggle('hidden', !nvSupported());
+  b.textContent = '🎙️ Natürliche Stimme: ' + (nvOn() ? (state.settings.nVoice==='m' ? 'an · 👨' : 'an · 👩') : 'aus');
+}
+document.getElementById('nvBtn').addEventListener('click', async ()=>{
+  sndTap();
+  if(!nvOn()){ state.settings.neural = true; state.settings.nVoice = 'f'; }
+  else if(state.settings.nVoice!=='m') state.settings.nVoice = 'm';
+  else state.settings.neural = false;
+  saveState(); nvBtnUI();
+  if(nvOn()){
+    const b = document.getElementById('nvBtn'), code = LANGS[currentLang()].code;
+    const ok = await nvLoad(code, f=>{ b.textContent = '🎙️ ⬇️ ' + Math.round(f*100) + ' %'; });
+    nvBtnUI(); if(!ok){ toast('😕 Stimme konnte nicht geladen werden – Gerätestimme bleibt'); return; }
+    speakAsync(({en:'Hello! This is my new voice.', es:'¡Hola! Esta es mi nueva voz.', fr:'Coucou ! Voici ma nouvelle voix.', it:'Ciao! Questa è la mia nuova voce.'})[currentLang()] || 'Hello!', code);
+  }
 });
 document.getElementById('voiceSelDe').addEventListener('change', e=>{
   state.settings.voices = state.settings.voices || {}; state.settings.voices.de = e.target.value; saveState();
@@ -7777,6 +7889,19 @@ const PERSONA_STARTERS = {
 function hubMicOk(){ return micAvailable() && !hubDlg.micBlocked && !window.claude && !hubDlg.typing; }
 // Wenn Flügo etwas fragt: danach automatisch zuhören (Gesprächsmodus)
 function hubAwait(q){ if(/[?？]\s*$/.test(String(q||'')) && hubMicOk() && hubOnHub()){ hubDlg.live = true; hubDlg.misses = 0; hubTalkUI(); hubContinue(); } }
+async function hubVoiceGet(){
+  hubStopLive(); state.settings.neural = true; saveState(); hubDlg.mode = 'voice';
+  const L = currentLang(), code = LANGS[L].code;
+  hubSayHTML('🎙️ ⬇️ 0 %', 'Ich lade meine Stimme …', null); const seq = hubDlg.seq;
+  const ok = await nvLoad(code, f=>{ const q = document.querySelector('#hubSay .hs-q'); if(q && hubDlg.seq===seq) q.textContent = '🎙️ ⬇️ ' + Math.round(f*100) + ' %'; });
+  if(hubDlg.seq!==seq) return;
+  hubDlg.mode = 'offer'; hubDlg.list = []; hubDlg.i = 0;
+  if(!ok){ hubSayHTML('😕', 'Das Laden hat nicht geklappt – ich spreche erstmal mit der Gerätestimme. In den Einstellungen kannst du es später nochmal versuchen.', [['👍', ()=>hubNext(true), 'yes']]); return; }
+  const hi = ({en:'Hello! Do you like my new voice?', es:'¡Hola! ¿Te gusta mi nueva voz?', fr:'Coucou ! Tu aimes ma nouvelle voix ?', it:'Ciao! Ti piace la mia nuova voce?'})[L] || 'Hello!';
+  hubSayHTML('🎉 ' + hi, '', null, false, true); runDragonAction('jump');
+  await speakAsync(hi, code); if(hubDlg.seq===seq + 1 && hubOnHub()) setTimeout(()=>hubOffer(true).then(hubContinue), 600);
+  setTimeout(()=>nvLoad('de-DE'), 4000);   // deutsche Stimme im Hintergrund nachladen
+}
 function hubChatStart(speakIt){
   const L = currentLang(), de = buddy.micLang!=='target', SP = PERSONA_STARTERS[state.persona];
   if(speakIt && hubDlg.lastStarter && hubDlg.starterSeq===hubDlg.seq){   // steht schon da (z. B. beim Öffnen) → nur vorlesen und zuhören
@@ -7812,6 +7937,7 @@ const HUB_OFFERS = {
   league:  {e:'🏰', de:'Schauen wir in die Liga und zu deinen Freunden?', en:'Shall we check the league and your friends?', es:'¿Miramos la liga y a tus amigos?', fr:'On regarde la ligue et tes amis ?', it:'Guardiamo la lega e i tuoi amici?'},
   night:   {e:'🌙', de:'Soll ich dir eine Gute-Nacht-Geschichte erzählen?', en:'Shall I tell you a bedtime story?', es:'¿Te cuento un cuento para dormir?', fr:'Je te raconte une histoire pour dormir ?', it:'Ti racconto una storia della buonanotte?'},
   profile: {e:'🛡️', de:'Willst du in meine Höhle und zu deinem Profil (Einstellungen)?', en:'Do you want to visit my cave and your profile?', es:'¿Vienes a mi cueva y a tu perfil?', fr:'Tu viens dans ma grotte et ton profil ?', it:'Vieni nella mia grotta e nel tuo profilo?'},
+  voice:   {e:'🎙️', de:'Soll ich meine neue, natürliche Stimme laden? Einmalig ca. 90–150 MB – am besten im WLAN.', en:'Shall I get my new, natural voice?', es:'¿Me pongo mi nueva voz natural?', fr:'Je prends ma nouvelle voix naturelle ?', it:'Prendo la mia nuova voce naturale?'},
   topics:  {e:'💛', de:'Was magst du am liebsten? Such dir Themen aus!', en:'What do you love most? Pick your topics!', es:'¿Qué te gusta más? ¡Elige tus temas!', fr:'Qu’est-ce que tu aimes ? Choisis tes thèmes !', it:'Cosa ti piace di più? Scegli i tuoi temi!'},
   pquiz:   {e:'📝', de:'Lernen wir Wörter zu deinem Thema?', en:'Shall we learn words for your topic?', es:'¿Aprendemos palabras de tu tema?', fr:'On apprend des mots de ton thème ?', it:'Impariamo parole del tuo tema?'},
   prole:   {e:'🎭', de:'Machen wir ein kleines Rollenspiel?', en:'Shall we do a little role-play?', es:'¿Hacemos un pequeño juego de rol?', fr:'On fait un petit jeu de rôle ?', it:'Facciamo un piccolo gioco di ruolo?'},
@@ -7830,7 +7956,8 @@ function hubOfferList(){
   if(questReady()) first.push('quests');
   first.push(...(!played ? ['campaign','learn'] : left > 0 ? ['learn','games'] : ['games','tales']));
   if(quiz) first.push('quiz');
-  if(!state.topics && state.lastPlayDate) first.unshift('topics');                       // nach dem ersten Spielen: Lieblingsthemen?
+  if(!state.topics && state.lastPlayDate) first.unshift('topics');
+  if(state.settings.neural===undefined && nvSupported()) first.unshift('voice');            // zuerst: schöne Stimme?                       // nach dem ersten Spielen: Lieblingsthemen?
   if(state.persona) first.unshift('pquiz', 'prole');
   if(sampleFn || apiKey() || window.claude) first.splice(first[0]==='topics' ? 1 : 0, 0, 'chat');   // zuerst ein kleines Gespräch (nach der Themenfrage)
   else (state.topics||[]).forEach(t=>{ if(PERSONAS[t]) first.push('p:' + t); });
@@ -7874,6 +8001,7 @@ function hubOffer(speakIt){
   if(k==='topics' && !state.topics){ hubTopicPicker(); return Promise.resolve(); }
   const P = k.startsWith('p:') && PERSONAS[k.slice(2)];
   const o = P ? {e:P.e, de:'Soll ich heute dein ' + P.de + ' sein?', [L]:(({en:'Shall I be your {n} today?', es:'¿Hoy soy tu {n}?', fr:'Je deviens ton {n} aujourd’hui ?', it:'Oggi faccio il tuo {n}?'})[L] || '{n}?').replace('{n}', P.n[L] || P.n.en)} : HUB_OFFERS[k], q = o[L] || o.en;
+  if(k==='voice'){ hubSayHTML(o.e + ' ' + q, o.de, [['👍', hubAccept, 'yes'], ['👎', ()=>{ state.settings.neural = false; saveState(); hubNext(true); }, 'no']], false, true); return speakIt && state.settings.sound!==false ? speakAsync(q, LANGS[L].code).then(()=>hubAwait(q)) : Promise.resolve(); }
   hubSayHTML(o.e + ' ' + q, o.de, [['👍', hubAccept, 'yes'], ['👎', ()=>hubNext(true), 'no']], true, true);
   return speakIt && state.settings.sound!==false ? speakAsync(q, LANGS[L].code).then(()=>hubAwait(q)) : Promise.resolve();
 }
@@ -7882,6 +8010,7 @@ function hubAccept(){
   hubDlg.recent = [k, ...hubDlg.recent.filter(x=>x!==k)].slice(0, 3); hubDlg.i = 0; hubDlg.list = [];
   try{ speechSynthesis.cancel(); }catch(e){}
   if(k==='topics') return hubTopicPicker();
+  if(k==='voice') return hubVoiceGet();
   if(k.startsWith('p:')) return wearPersona(k.slice(2));
   if(k==='poff') return wearPersona(null);
   if(k==='pquiz') return topicQuiz();
