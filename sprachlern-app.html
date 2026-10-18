@@ -804,6 +804,11 @@ body{background:radial-gradient(ellipse at 50% 0%,#4a331e 0%,#2a1c11 55%,#1c130d
 .hub-round.send{background:linear-gradient(180deg,#7fd36b,#3f9a3a);border-color:#3f9a3a;}
 .hub-say .hs-q{display:block;}
 .hub-say .hs-de.hide{display:none;}
+body.speaking #hubDragon img{animation:dTalk .3s ease-in-out infinite alternate;transform-origin:50% 92%;}
+@keyframes dTalk{from{transform:scaleY(1) translateY(0);}to{transform:scaleY(1.04) translateY(-1.5%);}}
+.voice-row{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:10px 0 4px;}
+.vr-b{width:44px;height:44px;border-radius:50%;border:2px solid #c9a86a;background:#efe0bf;font-size:22px;cursor:pointer;}
+.vr-b.on{background:#fff6cf;box-shadow:0 0 0 3px #e0b04a;}
 .hub-say .hs-key{margin-top:8px;}
 .hub-say .hs-key input{width:100%;box-sizing:border-box;border:2px solid #c9a86a;border-radius:12px;padding:9px 11px;font:inherit;font-size:15px;background:#fff;color:#3b2a1a;}
 .hub-say .hs-key a.hs-chip{text-decoration:none;display:inline-block;}
@@ -1230,6 +1235,7 @@ body.night-mode .topbar{opacity:.18;transition:opacity 1s;}
         <select id="voiceSelDe" class="f-input"></select>
         <label class="rate-row">🐢 <input type="range" id="rateSel" min="0.6" max="1.2" step="0.05"> 🐇</label>
         <button class="btn btn-secondary" id="nvBtn"></button>
+        <div class="voice-row" id="vfxRow"></div>
         <button class="btn btn-secondary" id="voiceTest">▶️ Probe hören</button>
         <div class="voice-tip" id="voiceTip"></div></div>
       <button class="btn btn-yellow" id="diagBtn">🔧 Ton, Mikro & KI prüfen</button>
@@ -1953,7 +1959,7 @@ function speak(text, lang='en-US'){
   try{
     const synth = window.speechSynthesis; text = cleanForSpeech(text); if(!synth || !text) return;
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = lang; u.rate = speechRate(); u.volume = 1; u.pitch = 1;
+    u.lang = lang; u.rate = speechRate(); u.volume = 1; u.pitch = vfx().dev;
     const v = pickVoice(lang);
     if(v) u.voice = v;
     else if(!ttsWarned && synth.getVoices().length){ ttsWarned = true; toast('🔇 Keine Stimme für diese Sprache auf dem Gerät – in den Handy-Einstellungen unter „Sprachausgabe“ nachinstallieren.'); }
@@ -3757,23 +3763,50 @@ function apiKey(){ try{ return (localStorage.getItem(KEY_STORE) || localStorage.
 async function claudeFetch(rules, turns, opts){
   opts = opts || {};
   const key = apiKey(); if(!key) throw {code:'no_backend'};
+  const stream = typeof opts.onText==='function';
   const body = {model:'claude-opus-5-5', max_tokens:opts.maxTokens || 1024, system:rules, messages:mergeTurns(turns)};
   if(opts.effort) body.output_config = {effort:opts.effort};
+  if(stream) body.stream = true;
   const lost = ()=>({code: opts.signal && opts.signal.aborted ? 'cancelled' : 'network'});
-  let r, j;
+  const send = fb=>fetch('https://api.anthropic.com/v1/messages', {method:'POST', signal:opts.signal,
+    headers:Object.assign({'content-type':'application/json', 'x-api-key':key, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true'}, fb ? {'anthropic-beta':'server-side-fallback-2026-07-01'} : {}),
+    body:JSON.stringify(fb ? Object.assign({}, body, {fallbacks:'default'}) : body)});
+  let r;
   try{
-    r = await fetch('https://api.anthropic.com/v1/messages', {method:'POST', signal:opts.signal,
-      headers:{'content-type':'application/json', 'x-api-key':key, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true'},
-      body: JSON.stringify(body)});
+    r = await send(claudeFetch.fb!==false);                         // Ausweichmodell bei Ablehnung; falls nicht angenommen → ohne
+    if(r.status===400 && claudeFetch.fb!==false){ claudeFetch.fb = false; r = await send(false); }
   }catch(e){ throw lost(); }
   if(r.status===401 || r.status===403) throw {code:'bad_key'};
   if(r.status===429) throw {code:'rate_limited'};
   if(!r.ok) throw {code:'http_' + r.status};
-  try{ j = await r.json(); }catch(e){ throw lost(); }
-  if(j.stop_reason==='refusal') throw {code:'refused'};
-  return (j.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
-}
-function pointsOf(cefr, sub){ return CEFR.indexOf(cefr)*10 + sub; }
+  if(!stream || !/event-stream/.test(r.headers.get('content-type')||'')){   // ohne Stream (oder Server antwortet doch am Stück)
+    let j; try{ j = await r.json(); }catch(e){ throw lost(); }
+    if(j.stop_reason==='refusal') throw {code:'refused'};
+    const t = (j.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
+    if(stream) try{ opts.onText({text:t, delta:t}); }catch(e){}
+    return t;
+  }
+  // Server-Sent Events: Text kommt Stück für Stück
+  let text = '', buf = '', stop = null;
+  const rd = r.body.getReader(), dec = new TextDecoder();
+  try{
+    for(;;){
+      const {done, value} = await rd.read(); if(done) break;
+      buf += dec.decode(value, {stream:true});
+      let i;
+      while((i = buf.indexOf('\n\n')) >= 0){
+        const ev = buf.slice(0, i); buf = buf.slice(i + 2);
+        const line = ev.split('\n').find(l=>l.startsWith('data:')); if(!line) continue;
+        let d; try{ d = JSON.parse(line.slice(5)); }catch(e){ continue; }
+        if(d.type==='content_block_delta' && d.delta && d.delta.type==='text_delta'){ text += d.delta.text; try{ opts.onText({text, delta:d.delta.text}); }catch(e){} }
+        else if(d.type==='message_delta' && d.delta) stop = d.delta.stop_reason || stop;
+        else if(d.type==='error') throw {code: d.error && d.error.type==='overloaded_error' ? 'rate_limited' : 'network'};
+      }
+    }
+  }catch(e){ if(e && e.code) throw e; throw lost(); }
+  if(stop==='refusal' && !text) throw {code:'refused'};
+  return text;
+}function pointsOf(cefr, sub){ return CEFR.indexOf(cefr)*10 + sub; }
 function levelLabel(l){ return l ? `${l.cefr} · Stufe ${l.sub}/10` : 'noch nicht eingestuft'; }
 
 function driveRules(){
@@ -3878,6 +3911,17 @@ const NV_VOICES = {
   m:{en:'en/en_US/ryan/medium/en_US-ryan-medium', de:'de/de_DE/thorsten/medium/de_DE-thorsten-medium', es:'es/es_ES/davefx/medium/es_ES-davefx-medium', fr:'fr/fr_FR/tom/medium/fr_FR-tom-medium', it:'it/it_IT/riccardo/x_low/it_IT-riccardo-x_low'},
 };
 const nv = {ort:null, phon:null, ac:null, sess:{}, cfg:{}, loading:{}, gen:0, src:null};
+// Stimmen zum Wechseln: p = Tonhöhe (Tempo bleibt gleich), dazu Effekte
+const VFX = {
+  flugo:   {e:'🐉', n:'Flügo',          p:1.12, dev:1.1},
+  baby:    {e:'🐣', n:'Baby-Drache',    p:1.32, dev:1.4, hi:{en:'Hihi! I am a tiny baby dragon!', es:'¡Jiji! ¡Soy un dragoncito bebé!', fr:'Hihi ! Je suis un tout petit bébé dragon !', it:'Ihih! Sono un piccolo drago bebè!'}},
+  giant:   {e:'🦖', n:'Riesen-Drache',  p:0.76, dev:0.6, hi:{en:'ROAR! I am a giant dragon!', es:'¡GRRR! ¡Soy un dragón gigante!', fr:'GRRR ! Je suis un dragon géant !', it:'GRRR! Sono un drago gigante!'}},
+  squirrel:{e:'🐿️', n:'Eichhörnchen',   p:1.62, dev:1.9, hi:{en:'Wheee! I talk like a squirrel now!', es:'¡Yupi! ¡Ahora hablo como una ardilla!', fr:'Youpi ! Je parle comme un écureuil !', it:'Evviva! Ora parlo come uno scoiattolo!'}},
+  robot:   {e:'🤖', n:'Robo-Drache',    p:0.95, dev:0.8, robot:true, hi:{en:'Beep boop. I am Robo-Dragon.', es:'Bip bup. Soy el dragón robot.', fr:'Bip boup. Je suis Robo-Dragon.', it:'Bip bup. Sono il drago robot.'}},
+  cave:    {e:'🏰', n:'Höhlen-Echo',    p:0.92, dev:0.9, cave:true, hi:{en:'Hello… from my echoing castle cave!', es:'Hola… ¡desde mi cueva con eco!', fr:'Coucou… depuis ma grotte qui résonne !', it:'Ciao… dalla mia grotta con l’eco!'}},
+  normal:  {e:'🙂', n:'Normal',         p:1,    dev:1},
+};
+function vfx(){ return VFX[state.settings.vfx] || VFX.flugo; }
 function nvSupported(){ return !window.claude && typeof WebAssembly==='object' && !!(navigator.storage && navigator.storage.getDirectory); }
 function nvOn(){ return state.settings.neural===true && nvSupported(); }
 function nvPath(code){ return (NV_VOICES[state.settings.nVoice] || NV_VOICES.f)[String(code||'en').slice(0,2).toLowerCase()]; }
@@ -3929,19 +3973,33 @@ async function nvPhonemes(text, voice){               // Lautschrift (espeak) �
 async function nvSynth(path, text, rate){
   const ort = nv.ort, cfg = nv.cfg[path], inf = cfg.inference || {}, ids = await nvPhonemes(text, cfg.espeak.voice);
   const feeds = {input:new ort.Tensor('int64', ids, [1, ids.length]), input_lengths:new ort.Tensor('int64', [ids.length]),
-    scales:new ort.Tensor('float32', [inf.noise_scale ?? .667, (inf.length_scale ?? 1)/(rate || 1), inf.noise_w ?? .8])};
+    scales:new ort.Tensor('float32', [inf.noise_scale ?? .667, (inf.length_scale ?? 1)*vfx().p/(rate || 1), inf.noise_w ?? .8])};   // länger sprechen, schneller abspielen = höher, gleiches Tempo
   if(cfg.speaker_id_map && Object.keys(cfg.speaker_id_map).length) feeds.sid = new ort.Tensor('int64', [0]);
   const out = await nv.sess[path].run(feeds);
   return {pcm:(out.output || Object.values(out)[0]).data, sr:cfg.audio.sample_rate};
+}
+function nvOut(ac){                                    // Effektkette für die gewählte Stimme
+  const fx = vfx(), out = ac.destination;
+  if(fx.cave){
+    if(!nv.ir){ const len = ac.sampleRate*1.8, ir = ac.createBuffer(2, len, ac.sampleRate); for(let c = 0; c < 2; c++){ const d = ir.getChannelData(c); for(let i = 0; i < len; i++) d[i] = (Math.random()*2 - 1)*Math.pow(1 - i/len, 3); } nv.ir = ir; }
+    const inp = ac.createGain(), dry = ac.createGain(), wet = ac.createGain(), conv = ac.createConvolver();
+    conv.buffer = nv.ir; dry.gain.value = .8; wet.gain.value = .45;
+    inp.connect(dry).connect(out); inp.connect(conv).connect(wet).connect(out); return inp;
+  }
+  if(fx.robot){
+    const inp = ac.createGain(), ring = ac.createGain(), osc = ac.createOscillator();
+    ring.gain.value = 0; osc.frequency.value = 48; osc.connect(ring.gain); osc.start();
+    inp.connect(ring).connect(out); nv.osc = osc; return inp;
+  }
+  return out;
 }
 async function nvPlay(pcm, sr, my){
   const ac = nv.ac = nv.ac || new (window.AudioContext || window.webkitAudioContext)();
   if(ac.state!=='running'){ try{ await ac.resume(); }catch(e){} if(ac.state!=='running') return false; }
   const buf = ac.createBuffer(1, pcm.length, sr); buf.copyToChannel(pcm instanceof Float32Array ? pcm : Float32Array.from(pcm), 0);
-  const src = nv.src = ac.createBufferSource(); src.buffer = buf; src.connect(ac.destination);
-  return new Promise(res=>{ src.onended = ()=>res(my===nv.gen); src.start(); });
-}
-function nvStop(){ nv.gen++; try{ nv.src && nv.src.stop(); }catch(e){} nv.src = null; }
+  const src = nv.src = ac.createBufferSource(); src.buffer = buf; src.playbackRate.value = vfx().p; src.connect(nvOut(ac));
+  return new Promise(res=>{ src.onended = ()=>{ try{ nv.osc && nv.osc.stop(); }catch(e){} nv.osc = null; res(my===nv.gen); }; src.start(); });
+}function nvStop(){ nv.gen++; try{ nv.src && nv.src.stop(); }catch(e){} nv.src = null; }
 // Sprechen mit der natürlichen Stimme; null = (noch) nicht möglich → Gerätestimme
 async function nvSpeak(text, code, rate){
   const path = nvPath(code); if(!path) return null;
@@ -3959,6 +4017,9 @@ async function nvSpeak(text, code, rate){
 try{ const sc = speechSynthesis.cancel.bind(speechSynthesis); speechSynthesis.cancel = ()=>{ nvStop(); sc(); }; }catch(e){}   // „Stopp“ beendet auch die natürliche Stimme
 
 async function speakAsync(text, code, rate){
+  document.body.classList.add('speaking'); try{ return await speakAsync0(text, code, rate); } finally{ document.body.classList.remove('speaking'); }
+}
+async function speakAsync0(text, code, rate){
   if(nvOn()){ const t = cleanForSpeech(text); if(t){ const r = await nvSpeak(t, code || 'en-US', rate || speechRate()); if(r) return r; } }
   if(!window.speechSynthesis || !window.SpeechSynthesisUtterance){ ttsSeemsBroken = true; return {ok:false, ms:0}; }
   text = cleanForSpeech(text); if(!text) return {ok:true, ms:0};
@@ -3975,7 +4036,7 @@ function speakOne(text, code, rate){
   return new Promise(resolve=>{
     try{
       const u = new SpeechSynthesisUtterance(text);
-      u.lang = code; u.rate = rate; u.volume = 1; u.pitch = 1;
+      u.lang = code; u.rate = rate; u.volume = 1; u.pitch = vfx().dev;
       const v = pickVoice(code); if(v){ u.voice = v; if(v.lang) u.lang = v.lang.replace('_','-'); }
       ttsKeep.push(u); if(ttsKeep.length > 20) ttsKeep.shift();
       // Ergebnis: {ok:true} wenn wirklich gesprochen wurde, sonst {ok:false} (blockiert/unterbrochen)
@@ -4385,8 +4446,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '6.0';
+const APP_VERSION = '6.1';
 const CHANGELOG = [
+  ['6.1', '⚡ Flügo spricht schon, während er noch nachdenkt (Satz für Satz) und bewegt sich beim Reden · 🎭 lustige Stimmen zum Wechseln: Baby-Drache, Riesen-Drache, Eichhörnchen, Robo-Drache, Höhlen-Echo – per „change your voice“, in der Drachenhöhle oder den Einstellungen'],
   ['6.0', '🗣️ Reden steht an erster Stelle: Flügo startet gleich ein Gespräch; fehlt der Claude-Schlüssel, trägst du ihn einmal direkt in seiner Sprechblase ein (📋 einfügen) – keine Meldungs-Fenster mehr · bis zu 90 Sekunden am Stück sprechen'],
   ['5.9', '🎙️ Natürliche KI-Stimme: Flügo spricht mit einer neuronalen Stimme (Piper), gratis und direkt im Browser – einmal laden, dann auch offline; in den Einstellungen an/aus und Frau/Mann'],
   ['5.8', '🧵 Echtes Gespräch: Flügo lässt dich ausreden (wartet auf eine echte Sprechpause, zeigt mit, was er hört), bleibt beim Thema und fragt nur eine Sache auf einmal · beim Zurückkommen geht das Gespräch dort weiter, wo ihr wart'],
@@ -5505,7 +5567,7 @@ function renderVoiceSettings(){
     vs.filter(v=>voiceScore(v,code) > -10).forEach((v,i)=>{ const o = document.createElement('option'); o.value = v.voiceURI || v.name; const q = voiceScore(v,code); o.textContent = (i===0 ? '⭐ ' : '') + (q>=9 ? '💎 ' : '') + v.name + ' (' + v.lang + ')' + (/compact/i.test(v.voiceURI||'') ? ' · einfach' : ''); if(cur && (cur.voiceURI||cur.name)===(v.voiceURI||v.name)) o.selected = true; sel.appendChild(o); });
   });
   document.getElementById('rateSel').value = speechRate();
-  voiceTip(); nvBtnUI();
+  voiceTip(); nvBtnUI(); const vr = document.getElementById('vfxRow'); if(vr) vr.innerHTML = voiceRowHTML();
 }
 // Anleitung: bessere (kostenlose) Gerätestimme laden – passend zum Gerät
 function voiceTip(){
@@ -5979,6 +6041,7 @@ function renderDen(msg){
     <div class="den-stage">${DRAGON_STAGES[k].name}${next ? ` · Lv ${Math.floor(lv)} · noch ${Math.max(1, next.lv - Math.floor(lv))} bis <b>${next.name}</b>` : ' · voll ausgewachsen 🏆'}</div>
     ${next ? `<div class="mini-bar big"><div class="mini-fill lvl" style="width:${Math.round(100*(lv-DRAGON_STAGES[k].lv)/(next.lv-DRAGON_STAGES[k].lv))}%"></div></div>` : ''}
     <div class="evo-row">${DRAGON_STAGES.map((sg,i)=>`<div class="evo ${i<=k?'got':''} ${i===k?'cur':''}">${dragonSVG({size:46, stage:i, mood:'happy', silhouette: i>k})}<small>${i<=k ? sg.name.replace('-Drache','') : 'Lv ' + sg.lv}</small></div>`).join('<span class="evo-arrow">›</span>')}</div>
+    <div class="voice-row">${voiceRowHTML()}</div>
     <div class="persona-row">${personaRowHTML()}</div>
     <div class="skill-grid">${skillGridHTML()}</div>
     <div class="den-wallet">🪙 ${state.coins} · 💎 ${state.gems||0}</div>`;
@@ -7906,6 +7969,35 @@ async function hubVoiceGet(){
   await speakAsync(hi, code); if(hubDlg.seq===seq + 1 && hubOnHub()) setTimeout(()=>hubOffer(true).then(hubContinue), 600);
   setTimeout(()=>nvLoad('de-DE'), 4000);   // deutsche Stimme im Hintergrund nachladen
 }
+function voiceRowHTML(){
+  const cur = state.settings.vfx || 'flugo';
+  return Object.entries(VFX).map(([id, v])=>`<button class="vr-b ${cur===id ? 'on' : ''}" data-vfx="${id}" title="${v.n}" aria-label="${v.n}">${v.e}</button>`).join('')
+    + (nvSupported() ? `<button class="vr-b" data-vfx="gender" title="Frau/Mann" aria-label="Frau oder Mann">${state.settings.nVoice==='m' ? '👨' : '👩'}</button>` : '');
+}
+// Neue Stimme wählen und gleich vorführen
+function setVoice(id){
+  if(id==='gender'){ state.settings.nVoice = state.settings.nVoice==='m' ? 'f' : 'm'; }
+  else if(VFX[id]) state.settings.vfx = id;
+  saveState(); try{ speechSynthesis.cancel(); }catch(e){}
+  const L = currentLang(), fx = vfx(), line = (fx.hi && fx.hi[L]) || ({en:'How do I sound now?', es:'¿Cómo sueno ahora?', fr:'Comment je sonne maintenant ?', it:'Come suono adesso?'})[L] || 'Hello!';
+  document.querySelectorAll('.voice-row').forEach(r=>r.innerHTML = voiceRowHTML());
+  if(hubOnHub()){ hubSayHTML(fx.e + ' ' + line, '', [['👍', ()=>{ hubDlg.mode = hubDlg.mode==='chat' ? 'chat' : 'offer'; hubOffer(true); }, 'yes'], ['🔁', ()=>hubNextVoice(), 'no']], false, true); }
+  if(nvOn()) nvLoad(LANGS[L].code);
+  return speakAsync(line, LANGS[L].code);
+}
+function hubNextVoice(){ const ids = Object.keys(VFX), i = ids.indexOf(state.settings.vfx || 'flugo'); return setVoice(ids[(i + 1) % ids.length]); }
+document.addEventListener('click', e=>{ const b = e.target.closest('.vr-b'); if(!b) return; sndTap(); setVoice(b.dataset.vfx); });
+function sayQueue(){                                   // Sätze der Reihe nach vorlesen, auch während noch Text nachkommt
+  const q = {items:[], run:null, stopped:false, said:0, text:''};
+  q.push = s=>{ s = String(s||'').trim(); if(!s || q.stopped) return; q.items.push(s); if(!q.run) q.run = (async()=>{ while(q.items.length && !q.stopped){ const x = q.items.shift(); await speakAsync(x, buddyVoiceCode(x)); } q.run = null; })(); };
+  q.feed = t=>{                                          // fertige Sätze aus dem bisher gestreamten Text abgeben
+    q.text = t; let m;
+    while((m = t.slice(q.said).match(/^[\s\S]*?[.!?…](?=\s)/)) && m[0].trim().length > 1){ q.push(m[0]); q.said += m[0].length; }
+  };
+  q.end = async final=>{ if(final && final.startsWith(q.text.slice(0, q.said))) q.push(final.slice(q.said)); else if(!q.said) q.push(final); while(q.run) await q.run; };
+  q.stop = ()=>{ q.stopped = true; q.items = []; };
+  return q;
+}
 function hubHasAI(){ return !!(sampleFn || apiKey() || window.claude); }
 function hubKeySetup(pending, msg){
   hubStopLive(); clearTimeout(hubDlg.t); hubDlg.mode = 'key';
@@ -7968,6 +8060,7 @@ const HUB_OFFERS = {
   profile: {e:'🛡️', de:'Willst du in meine Höhle und zu deinem Profil (Einstellungen)?', en:'Do you want to visit my cave and your profile?', es:'¿Vienes a mi cueva y a tu perfil?', fr:'Tu viens dans ma grotte et ton profil ?', it:'Vieni nella mia grotta e nel tuo profilo?'},
   voice:   {e:'🎙️', de:'Soll ich meine neue, natürliche Stimme laden? Einmalig ca. 90–150 MB – am besten im WLAN.', en:'Shall I get my new, natural voice?', es:'¿Me pongo mi nueva voz natural?', fr:'Je prends ma nouvelle voix naturelle ?', it:'Prendo la mia nuova voce naturale?'},
   topics:  {e:'💛', de:'Was magst du am liebsten? Such dir Themen aus!', en:'What do you love most? Pick your topics!', es:'¿Qué te gusta más? ¡Elige tus temas!', fr:'Qu’est-ce que tu aimes ? Choisis tes thèmes !', it:'Cosa ti piace di più? Scegli i tuoi temi!'},
+  vfx:     {e:'🎭', de:'Willst du meine lustigen Stimmen hören?', en:'Want to hear my funny voices?', es:'¿Quieres oír mis voces divertidas?', fr:'Tu veux entendre mes voix rigolotes ?', it:'Vuoi sentire le mie voci buffe?'},
   pquiz:   {e:'📝', de:'Lernen wir Wörter zu deinem Thema?', en:'Shall we learn words for your topic?', es:'¿Aprendemos palabras de tu tema?', fr:'On apprend des mots de ton thème ?', it:'Impariamo parole del tuo tema?'},
   prole:   {e:'🎭', de:'Machen wir ein kleines Rollenspiel?', en:'Shall we do a little role-play?', es:'¿Hacemos un pequeño juego de rol?', fr:'On fait un petit jeu de rôle ?', it:'Facciamo un piccolo gioco di ruolo?'},
   poff:    {e:'🐉', de:'Soll ich mein Kostüm ausziehen?', en:'Shall I take off my costume?', es:'¿Me quito el disfraz?', fr:'J’enlève mon costume ?', it:'Mi tolgo il costume?'},
@@ -7993,7 +8086,7 @@ function hubOfferList(){
   head.push(hubHasAI() ? 'chat' : 'key');
   if(!state.topics && state.lastPlayDate) head.push('topics');
   first.unshift(...head);
-  const all = [...new Set([...first, 'games','learn','campaign','tales','talk','train','quiz','quests','league','night','profile', 'topics', ...(state.persona ? ['poff'] : []), ...(canInstall() ? ['install'] : [])])].filter(k=>k!=='quiz' || quiz);
+  const all = [...new Set([...first, 'games','learn','campaign','tales','talk','train','quiz','quests','league','night','profile', 'vfx', 'topics', ...(state.persona ? ['poff'] : []), ...(canInstall() ? ['install'] : [])])].filter(k=>k!=='quiz' || quiz);
   return [...all.filter(k=>!hubDlg.recent.includes(k)), ...all.filter(k=>hubDlg.recent.includes(k))];   // gerade Gemachtes zuletzt
 }
 function hubSayHTML(q, de, chips, hideDe, tl){
@@ -8044,6 +8137,7 @@ function hubAccept(){
   try{ speechSynthesis.cancel(); }catch(e){}
   if(k==='topics') return hubTopicPicker();
   if(k==='voice') return hubVoiceGet();
+  if(k==='vfx') return hubNextVoice().then(hubContinue);
   if(k.startsWith('p:')) return wearPersona(k.slice(2));
   if(k==='poff') return wearPersona(null);
   if(k==='pquiz') return topicQuiz();
@@ -8224,7 +8318,7 @@ function hubTypeUI(){
   requestAnimationFrame(hubFit);
 }
 function hubOnHub(){ return document.getElementById('screen-hub').classList.contains('active'); }
-function hubStopLive(){ hubDlg.live = false; hubDlg.misses = 0; try{ buddy.ctl && hubDlg.busy && buddy.ctl.abort(); }catch(e){} try{ hubListening && buddy.rec && buddy.rec.abort(); }catch(e){} hubTalkUI(); }
+function hubStopLive(){ if(hubDlg.sq && !hubDlg.busy) hubDlg.sq.stop(); hubDlg.live = false; hubDlg.misses = 0; try{ buddy.ctl && hubDlg.busy && buddy.ctl.abort(); }catch(e){} try{ hubListening && buddy.rec && buddy.rec.abort(); }catch(e){} hubTalkUI(); }
 // Im Gesprächsmodus nach jeder Antwort von Flügo gleich wieder zuhören
 function hubContinue(){ if(hubDlg.live) setTimeout(()=>{ if(hubDlg.live && hubOnHub() && !hubListening && !hubDlg.busy && !fqOpen()) hubListen(true); }, 300); }
 function hubLang(m){
@@ -8245,6 +8339,7 @@ function hubHeard(heard){
   if(words <= 7 && /^((lass|lasst) uns|let'?s|bitte)?\s*(auf |in )?(deutsch|german)\b|\b(rede|sprich|speak|talk)\b.*\b(deutsch|german)\b/i.test(t)){ hubLang('de'); return; }
   if(words <= 7 && /\b(rede|sprich|speak|talk|(lass|lasst) uns|let'?s)\b.*\b(englisch|english|spanisch|spanish|español|französisch|french|français|italienisch|italian|italiano)\b/i.test(t)){ hubLang('target'); return; }
   const chatting = hubDlg.mode==='chat', cmdLike = /^(let'?s|lass uns|ich (will|möchte)|i (want|wanna)|open|öffne|starte?|zeig|mach|do|show)\b/i.test(t);
+  if(words <= 8 && /(change|switch|other|new|funny|different)\s+(your\s+)?voice|stimme\s+(wechseln|ändern|tauschen)|(andere|neue|lustige)\s+stimme|cambia\s+(tu\s+|la\s+)?voz|change\s+de\s+voix|(cambia|altra)\s+voce/i.test(t)){ hubNextVoice().then(hubContinue); return; }
   let cmd = !chatting || words <= 3 || cmdLike ? dragonCommand(heard, true) : null; if(cmd==='random') cmd = pick(DRAGON_RANDOM);
   if(cmd){ hubTrick(cmd); return; }
   const offer = !chatting;
@@ -8261,13 +8356,15 @@ async function hubChat(text){
   hubSayHTML('🤔 …', '„' + text + '“', null);
   buddy.turns.push({role:'user', content:text}); buddy.turns = buddy.turns.slice(-BUDDY_TURNS);
   const ctl = buddy.ctl = new AbortController(); hubDlg.busy = true; hubTalkUI();
+  const sq = hubDlg.sq = (state.settings.sound!==false || hubDlg.live) ? sayQueue() : null;
   let out;
   try{
     out = await askClaude(buddy.turns, buddyRules(true), false, {signal:ctl.signal, tier:'quick', effort:'low', maxTokens:2048,
-      onText: u=>{ const t = buddyLive(u.text), q = document.querySelector('#hubSay .hs-q'); if(t && q && hubOnHub()){ q.textContent = t; hubFit(); } }});
+      onText: u=>{ const t = buddyLive(u.text), q = document.querySelector('#hubSay .hs-q'); if(t && q && hubOnHub()){ q.textContent = t; hubFit(); if(sq) sq.feed(t); } }});
     if(!buddyParse(out).reply) throw {code:'empty'};
   }catch(e){
     hubDlg.busy = false;
+    if(sq) sq.stop();
     if(e && e.code==='cancelled'){ hubTalkUI(); return; }
     hubStopLive();
     if(!hubOnHub()) return;
@@ -8288,7 +8385,7 @@ async function hubChat(text){
   hubSayHTML(r.reply, r.grammar ? '✏️ ' + r.grammar : r.word ? '🔤 ' + r.word : r.upgrade ? '🎓 ' + r.upgrade : r.memory.length ? '🧠 ' + r.memory[0] : '', [['💡', ()=>{ hubStopLive(); hubDlg.mode = 'offer'; hubNext(true).then(hubContinue); }, 'no']], false, buddy.micLang==='target');
   hubTalkUI();
   if(r.action && !app) buddyAct(r.action);
-  if(state.settings.sound!==false || hubDlg.live) await speakAsync(r.reply, buddyVoiceCode(r.reply));
+  if(sq){ await sq.end(r.reply); if(sq.stopped) return; }
   if(app){ hubStopLive(); buddyOpenApp(app); return; }
   hubAwait(r.reply); hubContinue();
 }
