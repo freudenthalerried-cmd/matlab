@@ -756,7 +756,7 @@ body{background:radial-gradient(ellipse at 50% 0%,#4a331e 0%,#2a1c11 55%,#1c130d
 .no-de .st-de{display:none;}
 .st-s.cur{background:#ffe9a8;box-shadow:0 0 0 2px #e0b04a;}
 .st-s.past{opacity:.6;}
-.story-ctrl{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.story-ctrl{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;}
 .story-ctrl button{border:none;border-radius:14px;padding:12px 0;font-size:22px;background:linear-gradient(180deg,#8c6a45,#6b4d2f);color:#fff;box-shadow:0 4px 0 #3e2b19;cursor:pointer;}
 .story-ctrl #storyPlay{background:linear-gradient(180deg,#6fae48,#4b7d30);box-shadow:0 4px 0 #2f4f1d;}
 .story-ctrl #storyDe:not(.on){opacity:.5;}
@@ -992,7 +992,7 @@ body{background:radial-gradient(ellipse at 50% 0%,#4a331e 0%,#2a1c11 55%,#1c130d
       <div class="story-top"><div id="storyDr"></div><b id="storyTitle"></b></div>
       <div class="story-text" id="storyText"></div>
       <div class="story-quiz hidden" id="storyQuiz"></div>
-      <div class="story-ctrl"><button id="storyPrev">⏮</button><button id="storyPlay">⏸</button><button id="storyNext">⏭</button><button id="storyDe" class="on">🇩🇪</button></div>
+      <div class="story-ctrl"><button id="storyPrev">⏮</button><button id="storyPlay">⏸</button><button id="storyNext">⏭</button><button id="storySpeed">🐢</button><button id="storyDe" class="on">🇩🇪</button></div>
     </div>
   </section>
 
@@ -3781,14 +3781,18 @@ function speechRate(){ return (state.settings && state.settings.rate) || 0.9; }
 function speakAsync(text, code, rate){
   return new Promise(resolve=>{
     try{
-      text = cleanForSpeech(text); if(!text) return resolve();
+      text = cleanForSpeech(text); if(!text) return resolve({ok:true, ms:0});
       const u = new SpeechSynthesisUtterance(text);
       u.lang = code; u.rate = rate || drive.rate; u.volume = 1; const v = pickVoice(code); if(v) u.voice = v;
-      let done = false; const fin = ()=>{ if(!done){ done=true; resolve(); } };
-      u.onend = fin; u.onerror = fin;
-      setTimeout(fin, 4000 + text.length*110);   // falls onend auf manchen Geräten ausbleibt
+      // Ergebnis: {ok:true} wenn wirklich gesprochen wurde, sonst {ok:false} (blockiert/unterbrochen)
+      let done = false, started = false; const t0 = performance.now();
+      const fin = (ok)=>{ if(!done){ done=true; resolve({ok: ok!==false && (started || performance.now()-t0 > 700), ms: performance.now()-t0}); } };
+      u.onstart = ()=>{ started = true; };
+      u.onend = ()=>fin(true); u.onerror = e=>fin(e && (e.error==='interrupted' || e.error==='canceled') ? started : false);
+      setTimeout(()=>fin(started), 4000 + text.length*140);   // falls onend auf manchen Geräten ausbleibt
+      try{ speechSynthesis.resume(); }catch(e){}
       speechSynthesis.speak(u);
-    }catch(e){ resolve(); }
+    }catch(e){ resolve({ok:false, ms:0}); }
   });
 }
 function setDrive(icon, label, text){
@@ -4188,8 +4192,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '4.4';
+const APP_VERSION = '4.5';
 const CHANGELOG = [
+  ['4.5', '📚 Märchen: ruhiger vorlesen (Tempo 🐢/🚶/🐇, Pausen), kein Durchrasen mehr wenn die Sprachausgabe blockiert'],
   ['4.4', '🐉 Evolution: Flügo entwickelt sich in 6 Stufen mit eigenem Aussehen (Baby → Legende), Evolutions-Animation'],
   ['4.3', '📲 Als echte App installierbar (Startbildschirm, Drachen-Icon, offline) – Mikrofon direkt in der App'],
   ['4.2', 'Nur noch der Drache: Antippen öffnet die Zauberkugeln · Zubehör sitzt richtig · Leiste unten entfernt (oben links 🐉 = zurück)'],
@@ -5856,7 +5861,7 @@ function buddySay(text, voice){
   if(!b || b.classList.contains('hidden') || !say) return;
   say.textContent = text; say.classList.remove('hidden'); positionSay();
   clearTimeout(buddy.sayHide); buddy.sayHide = setTimeout(hideBuddySay, 5000);
-  if(voice && state.settings.sound!==false && state.settings.buddyVoice!==false && !(window.speechSynthesis && speechSynthesis.speaking)) speak(text, LANGS[currentLang()].code);
+  if(voice && state.settings.sound!==false && state.settings.buddyVoice!==false && !(window.speechSynthesis && speechSynthesis.speaking) && !(typeof story!=='undefined' && story.playing)) speak(text, LANGS[currentLang()].code);
 }
 function scheduleSay(){
   clearTimeout(buddy.sayT);
@@ -6305,6 +6310,7 @@ function startTale(t){
 }
 function updateStoryBtns(){
   document.getElementById('storyPlay').textContent = story.playing ? '⏸' : '▶️';
+  const r = storyRate(); document.getElementById('storySpeed').textContent = r===0.55 ? '🐢' : r===0.7 ? '🚶' : '🐇';
   document.getElementById('storyDe').classList.toggle('on', story.showDe);
 }
 async function readTale(){
@@ -6313,12 +6319,35 @@ async function readTale(){
     document.querySelectorAll('#storyText .st-s').forEach((el,k)=>{ el.classList.toggle('cur', k===story.i); el.classList.toggle('past', k<story.i); });
     const cur = document.querySelector('#storyText .st-s.cur'); if(cur) cur.scrollIntoView({block:'center', behavior:'smooth'});
     document.getElementById('storyDr').innerHTML = dragonSVG({size:84, mood: story.i%3===2 ? 'wow' : 'happy'});
-    await speakAsync(t.s[story.i][0], code, 0.85);
+    const res = await speakAsync(t.s[story.i][0], code, storyRate());
     if(my!==story.token || !story.playing) return;
-    await new Promise(r=>setTimeout(r, 450));
+    if(!res || !res.ok){
+      // Satz wurde nicht wirklich vorgelesen → nicht durchrasen, sondern anhalten und Hilfe zeigen
+      story.fails = (story.fails||0) + 1;
+      if(story.fails === 1){ await new Promise(r=>setTimeout(r, 300)); continue; }   // einmal neu versuchen
+      story.playing = false; updateStoryBtns();
+      storyNoVoice(); return;
+    }
+    story.fails = 0;
+    await new Promise(r=>setTimeout(r, 900 + Math.min(1200, t.s[story.i][0].length*12)));   // ruhige Pause zwischen den Sätzen
+    if(my!==story.token || !story.playing) return;
     story.i++;
   }
   if(my===story.token && story.i >= t.s.length) taleQuiz();
+}
+const STORY_RATES = [0.55, 0.7, 0.85];
+function storyRate(){ return state.settings.storyRate || 0.7; }
+function storyNoVoice(){
+  const box = document.getElementById('storyQuiz');
+  box.classList.remove('hidden');
+  box.innerHTML = `<div class="sq-end">🔇 Vorlesen klappt hier gerade nicht</div>
+    <div class="panel-sub" style="color:#6b5236;margin:4px 0 8px;">Lies selbst mit ⏭ weiter – oder öffne die App im Browser bzw. als installierte App, dort liest ${escapeHtml(dragon().name)} vor. Tipp: Handy nicht auf lautlos, Lautstärke hoch.</div>`;
+  const row = document.createElement('div'); row.className = 'sq-opts';
+  const again = document.createElement('button'); again.className = 'chat-chip'; again.textContent = '🔁 Nochmal versuchen';
+  again.onclick = ()=>{ story.fails = 0; box.classList.add('hidden'); story.playing = true; updateStoryBtns(); readTale(); };
+  row.appendChild(again);
+  if(window.claude){ const ob = document.createElement('button'); ob.className = 'chat-chip'; ob.textContent = '🌐 Im Browser öffnen'; ob.onclick = openInBrowser; row.appendChild(ob); }
+  box.appendChild(row);
 }
 function taleQuiz(){
   const t = story.tale; story.playing = false; updateStoryBtns();
@@ -6342,6 +6371,11 @@ function stopTale(){ story.playing = false; story.token++; try{ speechSynthesis.
 document.getElementById('storyPlay').onclick = ()=>{ story.playing = !story.playing; updateStoryBtns(); if(story.playing){ if(story.i >= story.tale.s.length) story.i = 0; document.getElementById('storyQuiz').classList.add('hidden'); readTale(); } else stopTale(); };
 document.getElementById('storyPrev').onclick = ()=>{ story.i = Math.max(0, story.i-1); story.playing = true; updateStoryBtns(); readTale(); };
 document.getElementById('storyNext').onclick = ()=>{ story.i = Math.min(story.tale.s.length-1, story.i+1); story.playing = true; updateStoryBtns(); readTale(); };
+document.getElementById('storySpeed').onclick = ()=>{
+  const r = storyRate(), i = STORY_RATES.indexOf(r), n = STORY_RATES[(i+1) % STORY_RATES.length];
+  state.settings.storyRate = n; saveState(); updateStoryBtns();
+  toast(n===0.55 ? '🐢 Ganz langsam' : n===0.7 ? '🚶 Langsam' : '🐇 Normal');
+};
 document.getElementById('storyDe').onclick = ()=>{ story.showDe = !story.showDe; document.getElementById('storyText').classList.toggle('no-de', !story.showDe); updateStoryBtns(); };
 document.getElementById('storyBack').onclick = ()=>{ stopTale(); if(!document.getElementById('storyStage').classList.contains('hidden')) openStoryShelf(); else { practiceTab = 'talk'; pendingMode = 'talk'; renderGrammar(); showScreen('screen-grammar'); setNav('grammar'); } };
 
