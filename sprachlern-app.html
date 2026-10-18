@@ -3,40 +3,33 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, interactive-widget=resizes-content">
-<title>Wortreise – Englisch lernen wie ein Spiel</title>
+<title>Flügo – Sprachabenteuer mit deinem Drachen</title>
 <meta name="description" content="Lerne Englisch spielerisch: Level, Sterne, Münzen, Streaks und Mini-Spiele.">
 <link rel="manifest" href="wortreise-manifest.json">
 <meta name="theme-color" content="#3a2717">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Wortreise">
+<meta name="apple-mobile-web-app-title" content="Flügo">
 <link rel="apple-touch-icon" href="wortreise-icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg1:#1c130d; --bg2:#3a2717; --accent:#e0b04a; --accent2:#5f9a3e;
+  --accent:#e0b04a; --accent2:#5f9a3e;
   --danger:#b8442f; --card:#f6ead0; --text:#3b2a1a; --muted:#7d6a52;
-  --purple:#8a3b52; --pink:#b85a72;
+  --purple:#8a3b52;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{margin:0;padding:0;height:100%;overflow:hidden;}
 body{
   font-family:'Baloo 2','Segoe UI',system-ui,sans-serif;
-  background:linear-gradient(160deg,var(--bg1),var(--bg2) 60%,#4a331e);
   height:100vh;height:100dvh;color:var(--text);overflow:hidden;
   -webkit-font-smoothing:antialiased;
 }
 #app{
   max-width:480px;margin:0 auto;height:100vh;height:100dvh;position:relative;
   display:flex;flex-direction:column;overflow:hidden;
-  background-image:
-    radial-gradient(circle at 15% 12%, rgba(255,255,255,0.06) 0, transparent 40%),
-    radial-gradient(circle at 85% 78%, rgba(255,255,255,0.05) 0, transparent 45%),
-    radial-gradient(circle at 75% 15%, rgba(255,255,255,0.05) 2px, transparent 3px),
-    radial-gradient(circle at 25% 70%, rgba(255,255,255,0.05) 2px, transparent 3px),
-    radial-gradient(circle at 55% 40%, rgba(255,255,255,0.04) 2px, transparent 3px);
 }
 
 /* ---------- MASKOTTCHEN ---------- */
@@ -46,7 +39,6 @@ body{
   animation:mascotBounce 2.4s ease-in-out infinite;
   filter:drop-shadow(0 8px 10px rgba(0,0,0,0.3));
 }
-.mascot.small{font-size:34px;}
 @keyframes mascotBounce{0%,100%{transform:translateY(0) rotate(-3deg);}50%{transform:translateY(-7px) rotate(3deg);}}
 .mascot-shadow{width:34px;height:9px;background:rgba(0,0,0,0.25);border-radius:50%;margin:0 auto;animation:shadowPulse 2.4s ease-in-out infinite;filter:blur(1px);}
 @keyframes shadowPulse{0%,100%{transform:scale(1);opacity:.5;}50%{transform:scale(0.65);opacity:.25;}}
@@ -63,10 +55,10 @@ body{
 .topbar{
   display:flex;align-items:center;justify-content:space-between;
   padding:10px 16px;color:#fff;flex-shrink:0;
-  background:rgba(15,32,39,0.65);backdrop-filter:blur(8px);
+  backdrop-filter:blur(8px);
 }
 .stat-pill{
-  display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.12);
+  display:flex;align-items:center;gap:6px;
   border-radius:20px;padding:6px 12px;font-weight:700;font-size:16px;
 }
 .stat-pill.hearts{color:var(--danger);}
@@ -109,7 +101,7 @@ body{
 .node-lock-icon{font-size:19px;}
 
 /* ---------- LEVEL INTRO / GAME ---------- */
-.card{background:var(--card);border-radius:20px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,0.25);margin:auto 0;}
+.card{background:var(--card);border-radius:20px;padding:18px;margin:auto 0;}
 .intro-icon{font-size:44px;text-align:center;}
 .intro-title{font-size:19px;font-weight:800;text-align:center;margin:4px 0 2px;}
 .intro-desc{color:var(--muted);text-align:center;font-size:15px;margin-bottom:12px;}
@@ -118,9 +110,7 @@ body{
   color:#fff;cursor:pointer;box-shadow:0 6px 0 rgba(0,0,0,0.15);transition:transform .1s;
 }
 .btn:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(0,0,0,0.15);}
-.btn-primary{background:linear-gradient(145deg,var(--accent2),#4b7d30);}
-.btn-secondary{background:linear-gradient(145deg,#8fa3b3,#6b7f8f);margin-top:8px;}
-.btn-yellow{background:linear-gradient(145deg,var(--accent),#c47f2c);color:#3a2a00;}
+.btn-secondary{margin-top:8px;}
 
 .progressbar-wrap{background:rgba(255,255,255,0.2);border-radius:20px;height:14px;margin:0 16px 6px;overflow:hidden;position:relative;flex-shrink:0;}
 .progressbar-fill{background:linear-gradient(90deg,var(--accent2),#5f9a3e);height:100%;border-radius:20px;transition:width .4s ease;}
@@ -208,9 +198,6 @@ body{
 .result-stat-row{display:flex;justify-content:space-between;background:#f4f7f9;border-radius:12px;padding:10px 16px;margin:6px 0;font-weight:700;font-size:16px;}
 .result-stat-row span:last-child{color:var(--accent2);}
 
-/* ---------- HOME OVERLAY ---------- */
-.gameover-icon{font-size:48px;text-align:center;}
-
 /* confetti */
 .confetti{position:fixed;top:-10px;width:8px;height:14px;z-index:50;pointer-events:none;border-radius:2px;}
 
@@ -221,11 +208,6 @@ body{
   opacity:0;transition:all .25s ease;box-shadow:0 4px 14px rgba(0,0,0,0.25);
 }
 .combo-toast.show{opacity:1;transform:translateX(-50%) scale(1);}
-
-.bottom-nav{display:flex;justify-content:space-around;flex-shrink:0;background:rgba(15,32,39,0.85);backdrop-filter:blur(8px);padding:8px 0;z-index:20;}
-.nav-btn{background:none;border:none;color:#a89070;font-size:14px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;}
-.nav-btn.active{color:var(--accent);}
-.nav-btn .icon{font-size:22px;}
 
 .hidden{display:none!important;}
 .runner-track{flex:1;position:relative;}
@@ -286,9 +268,8 @@ body{
 .account-card{font-size:16px;line-height:1.4;}
 .back-link{background:#eef2f5;border:none;border-radius:10px;padding:6px 12px;font-weight:800;font-size:15px;color:var(--muted);cursor:pointer;font-family:inherit;margin-bottom:4px;}
 .brand{white-space:nowrap;}
-.seg{display:flex;background:rgba(255,255,255,0.12);border-radius:14px;padding:4px;gap:4px;margin:2px 0 6px;flex-shrink:0;}
-.seg-btn{flex:1;border:none;background:transparent;color:#e8d6ae;font-weight:800;font-size:16px;padding:8px;border-radius:10px;cursor:pointer;font-family:inherit;}
-.seg-btn.sel{background:#fbf3df;color:var(--text);}
+.seg{display:flex;border-radius:14px;padding:4px;gap:4px;margin:2px 0 6px;flex-shrink:0;}
+.seg-btn{flex:1;border:none;background:transparent;color:#e8d6ae;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;}
 .fb-timer{position:absolute;left:0;bottom:0;height:4px;background:rgba(255,255,255,0.75);width:0;}
 @media (max-width:380px){
   .brand{font-size:18px;} .stat-pill{padding:4px 8px;font-size:15px;gap:4px;}
@@ -305,18 +286,12 @@ body{
   .level-node{width:50px;height:50px;font-size:18px;border-width:3px;}
   .node-label{top:-15px;font-size:10px;} .node-stars{bottom:-10px;} .node-stars span{font-size:11px;}
   .path{gap:4px 12px;padding-top:14px;}
-  .dash{padding:8px 10px;} .rank-badge{width:40px;height:40px;font-size:22px;} .rank-badge.big{width:52px;height:52px;font-size:30px;}
-  .quest{padding:8px 10px;} .panel{padding:10px;}
-  .q-word{font-size:22px;} .q-sentence{font-size:18px;}
+  .q-word{font-size:22px;}
   .opt{padding:11px 6px;font-size:16px;}
 }
 
 /* ---------- GAMIFICATION ---------- */
-.bottom-nav{order:10;}
-.nav-btn{font-size:12px;position:relative;}
-.nav-btn .icon{font-size:20px;}
-.nav-dot{position:absolute;top:0;right:6px;width:9px;height:9px;border-radius:50%;background:var(--danger);box-shadow:0 0 0 2px #1c130d;}
-.dash{background:rgba(255,255,255,0.08);border-radius:16px;padding:10px 12px;margin-bottom:6px;flex-shrink:0;}
+.dash{border-radius:16px;padding:10px 12px;margin-bottom:6px;flex-shrink:0;}
 .dash-row{display:flex;gap:10px;align-items:center;}
 .dash-col{flex:1;min-width:0;}
 .dash-label{display:flex;justify-content:space-between;color:#e8f4f7;font-size:14px;font-weight:700;margin:2px 0;}
@@ -326,14 +301,14 @@ body{
 .mini-fill.lvl{background:linear-gradient(90deg,var(--purple),#a78bff);}
 .mini-fill.goal{background:linear-gradient(90deg,#c47f2c,var(--accent));}
 .mini-fill.done{background:linear-gradient(90deg,var(--accent2),#7af0c8);}
-.rank-badge{width:48px;height:48px;border-radius:50%;background:linear-gradient(145deg,#f0d58a,#c9902f);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;box-shadow:0 4px 0 rgba(0,0,0,0.2);}
-.rank-badge.big{width:64px;height:64px;font-size:38px;}
+.rank-badge{border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;box-shadow:0 4px 0 rgba(0,0,0,0.2);}
+.rank-badge.big{font-size:38px;}
 .dash-actions{display:flex;gap:8px;margin-top:8px;align-items:center;}
 .chip-btn{white-space:nowrap;border:none;border-radius:12px;padding:7px 10px;font-weight:800;font-size:14px;cursor:pointer;background:#fbf3df;color:var(--text);font-family:inherit;box-shadow:0 3px 0 rgba(0,0,0,0.15);}
 .chip-btn:disabled{opacity:.45;}
 .chip-btn.active-boost{background:var(--accent);}
 .diff-chip{margin-left:auto;color:#e3cfa2;font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.panel{background:rgba(255,255,255,0.1);border-radius:16px;padding:12px;margin-bottom:10px;color:#fff;flex-shrink:0;}
+.panel{border-radius:16px;padding:12px;margin-bottom:10px;color:#fff;flex-shrink:0;}
 .panel-title{font-weight:800;font-size:17px;margin-bottom:8px;}
 .panel-title.dark{color:var(--text);}
 .panel-sub{color:#e3cfa2;font-size:14px;font-weight:600;margin-top:4px;}
@@ -375,9 +350,9 @@ body{
 .adapt-btns{display:flex;gap:8px;margin-top:8px;}
 .adapt-btns .btn{padding:9px;font-size:16px;margin:0;}
 .hint-btn{background:#fbf3df;border:none;border-radius:10px;padding:3px 7px;font-weight:800;font-size:15px;cursor:pointer;font-family:inherit;}
-.toast{position:fixed;top:12px;left:50%;transform:translate(-50%,-150%);background:#fbf3df;color:var(--text);border-radius:16px;padding:10px 16px;font-weight:800;font-size:16px;box-shadow:0 8px 24px rgba(0,0,0,0.3);z-index:60;transition:transform .35s cubic-bezier(.2,1.4,.4,1);max-width:90%;text-align:center;}
+.toast{position:fixed;top:12px;left:50%;transform:translate(-50%,-150%);border-radius:16px;padding:10px 16px;font-weight:800;font-size:16px;box-shadow:0 8px 24px rgba(0,0,0,0.3);z-index:60;transition:transform .35s cubic-bezier(.2,1.4,.4,1);max-width:90%;text-align:center;}
 .toast.show{transform:translate(-50%,0);}
-.xp-pop{pointer-events:none;position:fixed;top:45%;left:50%;transform:translate(-50%,-50%);color:var(--accent);font-size:26px;font-weight:800;text-shadow:0 3px 10px rgba(0,0,0,0.4);pointer-events:none;opacity:0;z-index:55;}
+.xp-pop{position:fixed;top:45%;left:50%;transform:translate(-50%,-50%);color:var(--accent);font-size:26px;font-weight:800;text-shadow:0 3px 10px rgba(0,0,0,0.4);pointer-events:none;opacity:0;z-index:55;}
 .xp-pop.go{animation:xpUp 1s ease-out;}
 @keyframes xpUp{0%{opacity:0;transform:translate(-50%,-30%) scale(.7);}20%{opacity:1;transform:translate(-50%,-50%) scale(1.1);}100%{opacity:0;transform:translate(-50%,-160%) scale(1);}}
 #screen-stats{display:none;}
@@ -397,7 +372,7 @@ body{
 .build-sentence{min-height:54px;background:rgba(255,255,255,0.12);border:2px dashed rgba(255,255,255,0.35);border-radius:14px;padding:8px;margin:4px 4px 12px;color:#fff;font-weight:800;font-size:18px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-items:center;}
 
 /* ===== SPIELE-ECKE ===== */
-.arc-card{width:100%;background:linear-gradient(145deg,#7a5532,#4a3220);border-radius:18px;padding:10px 8px;text-align:center;cursor:pointer;box-shadow:0 4px 0 #2a1c11;transition:transform .1s;}
+.arc-card{width:100%;border-radius:18px;padding:10px 8px;text-align:center;cursor:pointer;transition:transform .1s;}
 .arc-card:active{transform:translateY(3px);box-shadow:0 1px 0 #2a1c11;}
 .arc-icon{font-size:34px;animation:bob 2.4s ease-in-out infinite;}
 .arc-name{font-weight:900;font-size:16px;color:#fff;}
@@ -468,24 +443,11 @@ body{
 .cal-day.today{background:#e0b04a;color:#4a3220;animation:pop 1.2s infinite;}
 .cal-day.today small{color:#4a3220;}
 .cal-day.done{opacity:.55;}
-.daily-split{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
-.daily-half{display:flex;flex-direction:column;align-items:center;gap:6px;}
-.daily-half .btn{padding:8px;font-size:15px;margin:0;}
 .wheel-wrap{position:relative;width:140px;height:140px;}
 .wheel{width:140px;height:140px;border-radius:50%;border:4px solid #fff;position:relative;box-shadow:0 4px 0 rgba(0,0,0,.2);}
 .wheel span{position:absolute;left:50%;top:50%;width:24px;height:24px;margin:-12px;font-size:19px;text-align:center;line-height:24px;}
 .wheel-ptr{position:absolute;top:-10px;left:50%;transform:translateX(-50%);z-index:2;color:#fff;font-size:20px;text-shadow:0 2px 2px #000;}
-.wod{background:#fbf3df;color:#4a3220;border-radius:14px;padding:10px;text-align:center;cursor:pointer;width:100%;}
-.wod b{font-size:19px;display:block;}.wod small{display:block;color:var(--muted);}
 .buy-btn.gem{background:#3f6f8f;}
-.mascot-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:4px 0 8px;}
-.mascot-pick{border:2px solid #dcc9a3;background:#fbf3df;border-radius:14px;padding:6px;cursor:pointer;font-family:inherit;}
-.mascot-pick span{font-size:28px;display:block;}.mascot-pick small{font-size:13px;font-weight:800;color:#4a3220;}
-.mascot-pick.sel{border-color:#5f9a3e;background:#eef3dc;}
-.gem-packs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px;}
-.gem-pack{position:relative;border:none;border-radius:14px;background:linear-gradient(145deg,#3f6f8f,#8a3b52);color:#fff;padding:12px 4px 8px;font-weight:900;cursor:pointer;font-family:inherit;}
-.gem-pack span{display:block;font-size:17px;}.gem-pack small{opacity:.9;}
-.gem-pack em{position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:#e0b04a;color:#4a3220;font-size:11px;font-style:normal;border-radius:8px;padding:1px 6px;white-space:nowrap;}
 
 /* ===== AUFGERÄUMT ===== */
 .stat-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px;}
@@ -569,6 +531,8 @@ body{
 .voice-box .f-input{margin:6px 0;font-size:14px;}
 .rate-row{display:flex;align-items:center;gap:8px;font-size:20px;margin:6px 0;}
 .rate-row input{flex:1;}
+.vb-l{display:block;font-weight:800;color:#6b4a22;margin-top:4px;}
+.voice-tip{font-size:13px;line-height:1.4;color:#3b2a1a;background:#fbf3df;border:1px dashed #c9a86a;border-radius:10px;padding:8px 10px;margin-top:8px;}
 
 .changelog{text-align:left;max-height:55vh;overflow-y:auto;margin:10px 0;}
 .cl-row{display:flex;gap:10px;padding:8px 4px;border-bottom:1px solid #dcc9a3;color:#4a3220;font-size:15px;line-height:1.3;}
@@ -579,7 +543,7 @@ body{
 /* ===== REDEN ===== */
 .seg-btn{padding:8px 1px;font-size:13.5px;white-space:nowrap;}
 .arc-card.locked{opacity:.5;}
-.talk-free{grid-column:1/-1;background:linear-gradient(145deg,#8a3b52,#5e2236);box-shadow:0 4px 0 #3f1524;}
+.talk-free{grid-column:1/-1;}
 #screen-talk{padding:8px 12px;gap:6px;}
 .talk-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:4px 0;min-height:0;}
 .tb{max-width:86%;padding:10px 12px;border-radius:18px;font-size:16px;line-height:1.35;word-wrap:break-word;animation:popIn .25s both;position:relative;}
@@ -623,17 +587,10 @@ body{
 .idea-row small{color:var(--muted);font-weight:700;}
 
 /* ===== DRACHE ===== */
-.dragon{display:block;overflow:visible;}
-.dragon .dr-eyes{animation:blink 4s infinite;transform-origin:60px 46px;}
-@keyframes blink{0%,94%,100%{transform:scaleY(1);}97%{transform:scaleY(.1);}}
-.dragon .dr-wing{animation:flap 1.4s ease-in-out infinite;transform-box:fill-box;transform-origin:0% 100%;}
-@keyframes flap{0%,100%{transform:rotate(0);}50%{transform:rotate(-14deg);}}
-.buddy.flying .dragon .dr-wing{animation-duration:.35s;}
 .rank-badge{background:radial-gradient(circle at 50% 60%,#fff6cf,#ffd36b);cursor:pointer;width:60px;height:60px;}
 .rank-badge.big{width:80px;height:80px;}
 .mascot .dragon{margin:0 auto;animation:mascotBounce 2s ease-in-out infinite;}
 .brand-dr{display:inline-block;vertical-align:middle;margin-right:4px;}
-.runner .dragon{display:inline-block;}
 .dash-tip{margin-top:8px;background:rgba(255,255,255,.14);border-radius:12px;padding:6px 10px;font-size:14px;color:#f4e7c9;cursor:pointer;}
 .dash-tip b{color:#e0b04a;}
 .den-card{max-height:92vh;overflow-y:auto;}
@@ -656,7 +613,7 @@ body{
 /* ===== FLÜGO IMMER DABEI ===== */
 .buddy{position:fixed;left:0;top:0;z-index:60;border:none;background:none;width:64px;height:64px;padding:0;cursor:pointer;transition:left 2.6s cubic-bezier(.45,.05,.35,1),top 2.6s cubic-bezier(.45,.05,.35,1);filter:drop-shadow(0 6px 8px rgba(0,0,0,.45));}
 .buddy .dragon{animation:buddyFloat 2.4s ease-in-out infinite;}
-.buddy.small{width:50px;height:50px;}.buddy.small .dragon{width:46px;height:46px;}
+.buddy.small{width:50px;height:50px;}
 .buddy.face-left .dragon{transform:scaleX(-1);}
 .buddy.flying .dragon{animation:buddyFlap .5s ease-in-out infinite;}
 .buddy.jump{animation:buddyJump .6s ease;}
@@ -752,8 +709,6 @@ body{background:radial-gradient(ellipse at 50% 0%,#4a331e 0%,#2a1c11 55%,#1c130d
 .btn-primary{background:linear-gradient(180deg,#6fae48,#4b7d30);box-shadow:0 4px 0 #2f4f1d;border:1px solid #2f4f1d;color:#fff8e6;text-shadow:0 1px 0 rgba(0,0,0,.3);}
 .btn-secondary{background:linear-gradient(180deg,#8c6a45,#6b4d2f);box-shadow:0 4px 0 #3e2b19;color:#fbeed0;}
 .btn-yellow{background:linear-gradient(180deg,#f0c75e,#c9902f);box-shadow:0 4px 0 #8a6118;color:#3b2a1a;}
-.bottom-nav{background:linear-gradient(180deg,#3a2717,#22170e);border-top:2px solid rgba(201,168,106,.5);}
-.nav-btn.active{color:#e0b04a;text-shadow:0 0 8px rgba(224,176,74,.5);}
 .topbar{background:linear-gradient(180deg,#2a1c11,rgba(42,28,17,.85));border-bottom:1px solid rgba(201,168,106,.35);}
 .stat-pill{background:rgba(0,0,0,.35);border:1px solid rgba(201,168,106,.35);}
 .level-node{border-color:#c9a86a;}
@@ -765,7 +720,7 @@ body{background:radial-gradient(ellipse at 50% 0%,#4a331e 0%,#2a1c11 55%,#1c130d
 .quest.go{cursor:pointer;}
 .quest.go:active{transform:scale(.98);}
 .toast{background:#f6ead0;border:2px solid #c9a86a;color:#3b2a1a;width:max-content;max-width:min(90vw,420px);}
-.tb.bot,.bb.bot,.bubble.them{background:#fbf3df;}
+.bubble.them{background:#fbf3df;}
 
 /* ===== ABENTEUER ===== */
 .map-seg{margin:6px 0 2px;}
@@ -828,7 +783,7 @@ body{background:radial-gradient(ellipse at 50% 0%,#4a331e 0%,#2a1c11 55%,#1c130d
 .tale-entry{background:linear-gradient(160deg,#3f6f8f,#2b4f68);box-shadow:0 4px 0 #1c3446;}
 
 /* ===== DRACHEN-ZENTRALE ===== */
-#screen-hub{position:relative;align-items:center;justify-content:space-between;padding:8px 10px 14px;overflow:hidden;}
+#screen-hub{position:relative;align-items:center;justify-content:space-around;padding:8px 10px 14px;padding-bottom:max(16px,env(safe-area-inset-bottom));overflow:hidden;}
 .hub-sky{position:absolute;inset:0;z-index:0;background:linear-gradient(180deg,#1b2442 0%,#3b3560 38%,#8a5a4a 72%,#3a2717 100%);}
 .hub-hills{position:absolute;left:-10%;right:-10%;bottom:0;height:34%;background:radial-gradient(ellipse at 25% 100%,#2f4a24 0 55%,transparent 56%),radial-gradient(ellipse at 75% 100%,#3b5a2c 0 60%,transparent 61%),linear-gradient(#2a3d1e,#1d2b14);border-radius:50% 50% 0 0/30% 30% 0 0;}
 .hub-moon{position:absolute;top:6%;right:9%;font-size:38px;filter:drop-shadow(0 0 14px #fff6cf);}
@@ -839,23 +794,27 @@ body{background:radial-gradient(ellipse at 50% 0%,#4a331e 0%,#2a1c11 55%,#1c130d
 .hub-say{max-width:86%;background:#fbf3df;color:#3b2a1a;border:2px solid #c9a86a;border-radius:18px;padding:10px 14px;font-weight:800;font-size:16px;text-align:center;box-shadow:0 6px 16px rgba(0,0,0,.35);margin-top:4px;}
 .hub-say::after{content:'';position:absolute;left:50%;bottom:-10px;margin-left:-9px;border:9px solid transparent;border-top-color:#c9a86a;border-bottom:0;}
 .hub-say.pop{animation:popIn .35s both;}
-.hub-ring{position:relative;width:min(92vw,400px);aspect-ratio:1;max-height:56vh;}
-.hub-dragon{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);cursor:pointer;animation:buddyFloat 3s ease-in-out infinite;filter:drop-shadow(0 12px 14px rgba(0,0,0,.5));}
-.hub-orbs{position:absolute;inset:0;}
-.orb{position:absolute;transform:translate(-50%,-50%);width:74px;height:74px;border-radius:50%;border:3px solid #e0b04a;background:radial-gradient(circle at 35% 30%,#fff6dd,#e8cf95 45%,#a8783a);box-shadow:0 0 18px rgba(224,176,74,.55),0 5px 0 #5a3d1f;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;animation:orbBob 3.2s ease-in-out infinite;padding:0;}
-.orb span{font-size:28px;line-height:1;}
-.orb small{font-size:11px;font-weight:900;color:#3b2a1a;margin-top:2px;}
-.orb:active{transform:translate(-50%,-50%) scale(.93);}
+.hub-say .hs-q{display:block;}
+.hub-say .hs-de{display:block;font-size:13px;font-weight:700;color:#7a5a32;margin-top:3px;}
+.hs-chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:9px;}
+.hs-chip{border:none;border-radius:999px;padding:8px 14px;font-family:inherit;font-weight:800;font-size:15px;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.25);-webkit-tap-highlight-color:transparent;}
+.hs-chip.yes{background:linear-gradient(180deg,#7fd36b,#3f9a3a);color:#fff;}
+.hs-chip.no{background:#efe0bf;color:#3b2a1a;border:1px solid #c9a86a;}
+.hs-chip:active{transform:translateY(2px);box-shadow:none;}
+.hub-ring{position:relative;width:min(92vw,400px);aspect-ratio:1;max-height:60vh;}
+.hub-dragon{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);cursor:pointer;animation:buddyFloat 3s ease-in-out infinite;filter:drop-shadow(0 12px 14px rgba(0,0,0,.5));z-index:2;}
 @keyframes orbBob{0%,100%{margin-top:0;}50%{margin-top:-7px;}}
-.orb-dot{position:absolute;top:2px;right:4px;width:13px;height:13px;border-radius:50%;background:#b8442f;border:2px solid #fff;}
 .hub-name{text-align:center;color:#fbeed0;text-shadow:0 2px 4px #000;}
 .hub-name b{font-family:'Cinzel',Georgia,serif;font-size:22px;display:block;}
 .hub-name small{font-size:13px;font-weight:700;}
 .hub-goal{width:min(80vw,320px);text-align:center;}
 .hub-goal small{color:#e8d6ae;font-weight:800;font-size:13px;}
-.hub-small{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:min(94vw,420px);}
-.hub-sm{position:relative;border:2px solid rgba(201,168,106,.6);border-radius:14px;background:rgba(42,28,17,.75);color:#fbeed0;padding:6px 0;display:flex;flex-direction:column;align-items:center;cursor:pointer;font-family:inherit;}
-.hub-sm span{font-size:22px;}.hub-sm small{font-size:11px;font-weight:800;}
+.hub-talk{display:flex;gap:10px;align-items:center;justify-content:center;margin:8px 0 6px;position:relative;z-index:3;}
+.hub-mic{display:flex;align-items:center;gap:8px;border:none;border-radius:999px;padding:12px 18px;font-family:inherit;font-weight:800;font-size:16px;white-space:nowrap;background:linear-gradient(180deg,#f0c35a,#c98b2e);color:#2a1c11;box-shadow:0 4px 0 #7a4f1a,0 8px 18px rgba(0,0,0,.4);cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.hub-mic span{font-size:22px;}
+.hub-mic:active{transform:translateY(3px);box-shadow:0 1px 0 #7a4f1a;}
+.hub-mic.on{background:linear-gradient(180deg,#ff8a5c,#d9482b);color:#fff;animation:micPulse 1.2s infinite;}
+.hub-round{width:46px;height:46px;border-radius:50%;border:2px solid #c9a86a;background:rgba(251,243,223,.15);font-size:20px;cursor:pointer;color:#fff;flex-shrink:0;}
 
 /* ===== CANVA-DRACHE ===== */
 .dimg{position:relative;display:inline-block;}
@@ -872,16 +831,8 @@ body{background:radial-gradient(ellipse at 50% 0%,#4a331e 0%,#2a1c11 55%,#1c130d
 .di-aura{position:absolute;inset:-12%;border-radius:50%;background:radial-gradient(circle,rgba(255,210,63,.55),rgba(255,210,63,0) 65%);animation:pop 2s infinite;}
 
 /* ===== NUR DER DRACHE ===== */
-.bottom-nav{display:none!important;}
 .brand{cursor:pointer;}
 .brand.home-btn::before{content:'‹';font-size:24px;font-weight:900;color:#e0b04a;margin-right:2px;vertical-align:middle;}
-.hub-orbs .orb{opacity:0;pointer-events:none;transform:translate(-50%,-50%) scale(.2);transition:opacity .35s var(--d,0s),transform .45s cubic-bezier(.3,1.6,.5,1) var(--d,0s),left .45s cubic-bezier(.3,1.4,.5,1) var(--d,0s),top .45s cubic-bezier(.3,1.4,.5,1) var(--d,0s);left:50%!important;top:50%!important;}
-.hub-orbs.open .orb{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);left:var(--x)!important;top:var(--y)!important;}
-.orb{width:68px;height:68px;}
-.orb span{font-size:26px;}
-.hub-ring{max-height:60vh;}
-#screen-hub{justify-content:space-around;padding-bottom:max(16px,env(safe-area-inset-bottom));}
-.hub-dragon{z-index:2;}
 
 /* ===== EVOLUTION ===== */
 .evo-row{display:flex;align-items:center;justify-content:center;gap:1px;margin:6px 0 2px;flex-wrap:nowrap;}
@@ -943,7 +894,7 @@ body.night-mode .topbar{opacity:.18;transition:opacity 1s;}
 <div id="app">
 
   <div class="topbar">
-    <div class="brand">🦉 <span class="brand-text">Wortreise</span></div>
+    <div class="brand">🐉 <span class="brand-text">Flügo</span></div>
     <div style="display:flex;gap:8px;">
       <div class="stat-pill streak">🔥 <span id="streakVal">0</span></div>
       <div class="stat-pill coins">🪙 <span id="coinsVal">0</span></div>
@@ -985,11 +936,15 @@ body.night-mode .topbar{opacity:.18;transition:opacity 1s;}
     <div class="hub-sky"><span class="hub-moon">🌙</span><span class="hub-cloud c1">☁️</span><span class="hub-cloud c2">☁️</span><div class="hub-hills"></div></div>
     <div class="hub-say" id="hubSay"></div>
     <div class="hub-ring">
-      <div class="hub-orbs" id="hubOrbs"></div>
       <div class="hub-dragon" id="hubDragon"></div>
     </div>
     <div class="hub-name" id="hubName"></div>
     <div class="hub-goal"><div class="mini-bar"><div class="mini-fill goal" id="hubXp"></div></div><small id="hubXpTxt"></small></div>
+    <div class="hub-talk">
+      <button class="hub-round" id="hubLang" aria-label="Sprache wechseln"></button>
+      <button class="hub-mic" id="hubMic"></button>
+      <button class="hub-round" id="hubType" aria-label="Schreiben">⌨️</button>
+    </div>
   </section>
 
   <!-- ===== MAP SCREEN ===== -->
@@ -1000,14 +955,14 @@ body.night-mode .topbar{opacity:.18;transition:opacity 1s;}
         <div class="dash-col">
           <div class="dash-label"><span id="rankName">Lv 1 · Ei</span><span id="rankXp">0/50 XP</span></div>
           <div class="mini-bar"><div class="mini-fill lvl" id="xpBarFill"></div></div>
-          <div class="dash-label"><span id="goalLabel">🎯 Tagesziel</span><span id="goalXp">0/20 XP</span></div>
+          <div class="dash-label"><span>🎯 Tagesziel</span><span id="goalXp">0/20 XP</span></div>
           <div class="mini-bar"><div class="mini-fill goal" id="goalFill"></div></div>
         </div>
       </div>
       <div class="dash-tip" id="dashTip"></div>
       <div class="dash-actions">
         <button class="chip-btn" id="trainBtn">💪 Training</button>
-        <button class="chip-btn drive-chip" id="driveChip">🚗 Fahren</button>
+        <button class="chip-btn drive-chip" id="driveChip">🐉 Reden</button>
         <button class="chip-btn" id="boostChip">⚡ Doppel-XP</button>
         <span class="diff-chip" id="diffChip">🌱 Anfänger</span>
       </div>
@@ -1190,14 +1145,7 @@ body.night-mode .topbar{opacity:.18;transition:opacity 1s;}
     </div>
   </section>
 
-  <div class="bottom-nav">
-    <button class="nav-btn" data-nav="hub"><span class="icon">🐉</span>Flügo</button>
-    <button class="nav-btn active" data-nav="map"><span class="icon">🗺️</span>Lernen</button>
-    <button class="nav-btn" data-nav="grammar"><span class="icon">📜</span>Üben</button>
-    <button class="nav-btn" data-nav="quests"><span class="icon">⚔️</span>Quests<span class="nav-dot hidden" id="questDot"></span></button>
-    <span class="hidden" id="friendDot"></span>
-    <button class="nav-btn" data-nav="stats"><span class="icon">🛡️</span>Profil</button>
-  </div>
+  <span class="hidden" id="friendDot"></span>
 
   <!-- ===== STATS SCREEN (modal-ish, reuses screen system) ===== -->
   <section class="screen" id="screen-stats">
@@ -1213,7 +1161,6 @@ body.night-mode .topbar{opacity:.18;transition:opacity 1s;}
         <div><b id="statAcc">–</b><small>🎯 Treffer</small></div>
         <div><b id="statSpeak">–</b><small>🗣️ Sprechen</small></div>
       </div>
-      <span id="statCoins" hidden></span>
       <button class="btn btn-primary" id="inviteBtn" style="margin-top:10px;">📲 Freunde einladen</button>
       <div class="adapt-btns"><button class="btn btn-yellow" id="improveBtn">💡 App verbessern</button><button class="btn btn-secondary" id="versionBtn">📜 v<span id="verNum"></span> · Neu</button></div>
     </div>
@@ -1229,9 +1176,13 @@ body.night-mode .topbar{opacity:.18;transition:opacity 1s;}
       <button class="btn btn-secondary" id="changeLangBtn">🌍 Sprache ändern</button>
       <button class="btn btn-secondary" id="changeDiffBtn">🎯 Niveau ändern (A1–C1)</button>
       <div class="voice-box"><div class="panel-title dark">🗣️ Stimme</div>
+        <small class="vb-l">Lernsprache</small>
         <select id="voiceSel" class="f-input"></select>
+        <small class="vb-l">🐉 Flügo auf Deutsch</small>
+        <select id="voiceSelDe" class="f-input"></select>
         <label class="rate-row">🐢 <input type="range" id="rateSel" min="0.6" max="1.2" step="0.05"> 🐇</label>
-        <button class="btn btn-secondary" id="voiceTest">▶️ Probe hören</button></div>
+        <button class="btn btn-secondary" id="voiceTest">▶️ Probe hören</button>
+        <div class="voice-tip" id="voiceTip"></div></div>
       <button class="btn btn-yellow" id="diagBtn">🔧 Ton, Mikro & KI prüfen</button>
       <div id="diagOut" class="diag-out"></div>
       <button class="btn btn-secondary" id="soundBtn">🔊 Ton: an</button>
@@ -1822,12 +1773,7 @@ function progKey(){ return currentLang()+'|'+(state.difficulty||'anfaenger'); }
 function levelProg(){
   if(!state.progress) state.progress = {};
   const k = progKey();
-  if(!state.progress[k]){
-    // alten gemeinsamen Fortschritt einmalig übernehmen
-    const legacy = state.levelProgress && state.levelProgress.some(p=>p.stars>0) && !state.progress._migrated;
-    state.progress[k] = legacy ? state.levelProgress.map(p=>({...p})) : LEVELS.map(()=>({stars:0, bestCorrect:0}));
-    if(legacy) state.progress._migrated = true;
-  }
+  if(!state.progress[k]) state.progress[k] = LEVELS.map(()=>({stars:0, bestCorrect:0}));
   return state.progress[k];
 }
 function wordsFor(diff, levelIdx){
@@ -1837,10 +1783,7 @@ function wordsFor(diff, levelIdx){
   return words.map(w=>[w.de, w[lang]]);
 }
 function levelWords(levelIdx){
-  const lang = currentLang();
-  const set = VOCAB_BY_DIFF[state.difficulty];
-  const words = set ? set[levelIdx] : RAW_LEVELS[levelIdx].words;
-  return words.map(w=>[w.de, w[lang]]);
+  return wordsFor(state.difficulty, levelIdx);
 }
 
 const MAX_HEARTS = 5;
@@ -1858,7 +1801,6 @@ function defaultState(){
   return {
     xp:0, coins:20, gems:5, hearts:MAX_HEARTS, lastHeartLoss:null,
     streak:0, lastPlayDate:null, difficulty:null, language:null, grammarProgress:{},
-    levelProgress: LEVELS.map(()=>({stars:0, bestCorrect:0})),
     totalLevelsCompleted:0,
     progress:{}, daily:{date:null, xp:0, goal:20, quests:[], chestClaimed:false},
     inventory:{freeze:0, hints:1}, boostUntil:0,
@@ -1872,17 +1814,14 @@ function loadState(){
     const raw = localStorage.getItem(STORAGE_KEY);
     if(!raw) return defaultState();
     const parsed = JSON.parse(raw);
-    const d = defaultState();
-    return Object.assign(d, parsed, {
-      levelProgress: parsed.levelProgress && parsed.levelProgress.length===LEVELS.length ? parsed.levelProgress : d.levelProgress
-    });
+    return Object.assign(defaultState(), parsed);
   }catch(e){ return defaultState(); }
 }
 function saveState(){
   regenHearts();
   try{ pushMyCard(); }catch(e){}
   state.savedAt = Date.now();
-  if(typeof scheduleCloud==='function') scheduleCloud();
+  scheduleCloud();
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 function regenHearts(){
@@ -1965,7 +1904,7 @@ function speak(text, lang='en-US'){
     const synth = window.speechSynthesis; text = cleanForSpeech(text); if(!synth || !text) return;
     const u = new SpeechSynthesisUtterance(text);
     u.lang = lang; u.rate = speechRate(); u.volume = 1; u.pitch = 1;
-    const v = typeof pickVoice==='function' ? pickVoice(lang) : null;
+    const v = pickVoice(lang);
     if(v) u.voice = v;
     else if(!ttsWarned && synth.getVoices().length){ ttsWarned = true; toast('🔇 Keine Stimme für diese Sprache auf dem Gerät – in den Handy-Einstellungen unter „Sprachausgabe“ nachinstallieren.'); }
     // synchron sprechen (iPhone erlaubt Ton nur direkt beim Antippen) + Wächter für hängende Android-Sprachausgabe
@@ -1991,9 +1930,9 @@ const CEFR_PICK = {
 const DIFF_CEFR = {anfaenger:'A2', mittel:'B1', fortgeschritten:'B2'};
 function myCefr(){ return state.cefr || (state.speakLevel && state.speakLevel.cefr) || DIFF_CEFR[state.difficulty||'anfaenger']; }
 const DIFFICULTIES = {
-  anfaenger:{ label:'🌱 Anfänger', desc:'Grundwortschatz (Hund, Apfel, rot …) mit Zuordnen & Memory', tiers:['easy','medium'] },
-  mittel:{ label:'⚡ Mittel', desc:'Alltagswortschatz (Igel, Knoblauch, Ankunft …)', tiers:['medium','hard'] },
-  fortgeschritten:{ label:'🔥 Fortgeschritten', desc:'Gehobener Wortschatz (Zoll, Frist, Gewerkschaft …) mit Zeitdruck', tiers:['medium','hard'], hardWeight:0.65 },
+  anfaenger:{ label:'🌱 Anfänger', tiers:['easy','medium'] },
+  mittel:{ label:'⚡ Mittel', tiers:['medium','hard'] },
+  fortgeschritten:{ label:'🔥 Fortgeschritten', tiers:['medium','hard'], hardWeight:0.65 },
 };
 function populateDifficultyList(){
   const box = document.getElementById('diffList');
@@ -2062,19 +2001,16 @@ document.getElementById('langBackBtn').addEventListener('click', ()=>{
 
 /* ---------- NAVIGATION ---------- */
 function showScreen(id){
-  if(id==='screen-stats'){ const cur = document.querySelector('.screen.active'); if(cur && cur.id!=='screen-stats' && typeof lastScreenBeforeProfile!=='undefined') lastScreenBeforeProfile = cur.id; }
   if(id!=='screen-arcade' && typeof arc!=='undefined' && arc.running) stopArcade();
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  document.querySelector('.bottom-nav').style.display = ['screen-map','screen-stats','screen-grammar','screen-quests','screen-league','screen-campaign'].includes(id) ? 'flex' : 'none';
   if(id==='screen-hub') try{ renderHub(); }catch(e){}
   document.querySelector('.brand').classList.toggle('home-btn', id!=='screen-hub' && !!state.difficulty);
   try{ placeBuddy(id); }catch(e){}
   try{ if(id!=='screen-story' && story.playing) stopTale(); }catch(e){}
   try{ if(id!=='screen-night' && night.on) stopNight(); }catch(e){}
   document.body.classList.toggle('night-mode', id==='screen-night');
-  if(typeof updateQuestDot==='function') updateQuestDot();
-  if(id==='screen-gameover' && typeof updateGameoverScreen==='function') updateGameoverScreen();
+  if(id==='screen-gameover') updateGameoverScreen();
 }
 
 /* ---------- MAP RENDER ---------- */
@@ -2152,17 +2088,13 @@ function grammarStars(){
   if(!state.grammarProgress[lang]) state.grammarProgress[lang] = grammarTopics().map(()=>0);
   return state.grammarProgress[lang];
 }
-function setNav(name){
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active', b.dataset.nav===name));
-}
 function goHome(){
   if(session && session.speedTimer){ clearInterval(session.speedTimer); session.speedTimer=null; }
   clearTimeout(session && session.fbTimer); document.getElementById('feedbackBar').classList.remove('show');
   try{ if(campaignReturn()) return; }catch(e){}
   if(!state.difficulty){ populateDifficultyList(); showScreen('screen-difficulty'); return; }
-  clearTimeout(session && session.fbTimer); document.getElementById('feedbackBar').classList.remove('show');
-  if(['grammar','phrases','arcade','talk'].includes(pendingMode)){ practiceTab = pendingMode; renderGrammar(); showScreen('screen-grammar'); setNav('grammar'); }
-  else if(pendingMode==='vocab'){ renderMap(); showScreen('screen-map'); setNav('map'); }
+  if(['grammar','phrases','arcade','talk'].includes(pendingMode)){ practiceTab = pendingMode; renderGrammar(); showScreen('screen-grammar'); }
+  else if(pendingMode==='vocab'){ renderMap(); showScreen('screen-map'); }
   else openHub();
 }
 function renderGrammar(){
@@ -2412,7 +2344,7 @@ function startLevel(levelIdx){
 }
 
 function updateGameHeader(){
-  if(typeof updateTopbar==='function') updateTopbar();
+  updateTopbar();
   const pct = (session.qi/session.questions.length)*100;
   document.getElementById('gameProgressFill').style.width = pct+'%';
   document.getElementById('runner').style.left = Math.max(4, pct)+'%';
@@ -2437,7 +2369,6 @@ function renderQuestion(){
   if(q.type==='memory_round'){ renderMemoryRound(q.words); return; }
 
   const [de, en] = q.word;
-  const {article, noun:deNoun} = stripArticle(de);
   const langInfo = LANGS[currentLang()];
   const langCode = langInfo.code, langName = langInfo.name, langAdj = langInfo.adj;
 
@@ -2445,7 +2376,6 @@ function renderQuestion(){
   let type = q.type;
   const notSingle = s => /[^\p{L}]/u.test(s);
   if((type==='scramble_en'||type==='missing_en') && notSingle(en)) type = 'mc_de_en';
-  if((type==='scramble_de'||type==='missing_de') && notSingle(deNoun)) type = 'mc_en_de';
 
   switch(type){
     case 'mc_de_en': {
@@ -2476,12 +2406,6 @@ function renderQuestion(){
       renderMC(`<div class="q-hint">Welches Paar stimmt?</div>`, opts, correct);
       break;
     }
-    case 'listen_de': {
-      const opts = shuffle([de, ...randOthers(words,q.idx,3).map(i=>words[i][0])]);
-      renderMC(`<div class="q-hint">Höre zu und wähle das richtige Wort</div>
-        <button class="q-sound-btn" id="playSoundBtn">🔊</button>`, opts, de, ()=>speak(deNoun,'de-DE'));
-      break;
-    }
     case 'type_de_en':
       renderType(`<div class="q-hint">Tippe die ${langAdj} Übersetzung</div><div class="q-word">${de}</div>`, en, `Auf ${langInfo.label.split(" ")[1]} schreiben...`);
       break;
@@ -2505,22 +2429,9 @@ function renderQuestion(){
     case 'missing_en':
       renderMissingLetter(en, `<div class="q-hint">Welcher Buchstabe fehlt? (${de})</div>`);
       break;
-    case 'missing_de':
-      renderMissingLetter(deNoun, `<div class="q-hint">Welcher Buchstabe fehlt? (${en})</div>`, article);
-      break;
     case 'scramble_en':
       renderScramble(en, `<div class="q-hint">Baue das ${langAdj} Wort für „${de}“</div>`);
       break;
-    case 'scramble_de':
-      renderScramble(deNoun, `<div class="q-hint">Baue das deutsche Wort für „${en}“</div>`, article);
-      break;
-    case 'oddoneout_de': {
-      const others = randOthers(words,q.idx,2).map(i=>words[i][0]);
-      const foreign = randForeignWord(session.levelIdx)[0];
-      const opts = shuffle([de, ...others, foreign]);
-      renderMC(`<div class="q-hint">Welches Wort passt nicht in dieses Level?</div>`, opts, foreign);
-      break;
-    }
     case 'oddoneout_en': {
       const others = randOthers(words,q.idx,2).map(i=>words[i][1]);
       const foreign = randForeignWord(session.levelIdx)[1];
@@ -2547,9 +2458,6 @@ function renderQuestion(){
     }
     case 'dictation_en':
       renderDictation(en, en, langCode, `Auf ${langInfo.label.split(" ")[1]} schreiben...`);
-      break;
-    case 'dictation_de':
-      renderDictation(deNoun, deNoun, 'de-DE', 'Auf Deutsch schreiben...');
       break;
   }
 }
@@ -2617,26 +2525,24 @@ function renderTrueFalse(promptHTML, isTrue){
 }
 
 /* ---------- Fehlender Buchstabe ---------- */
-function renderMissingLetter(word, hintHTML, article){
+function renderMissingLetter(word, hintHTML){
   const letters = word.split('');
   const gapIdx = Math.floor(Math.random()*letters.length);
   const correctLetter = letters[gapIdx].toLowerCase();
   const display = letters.map((c,i)=> i===gapIdx ? '_' : c).join('');
-  const shown = (article ? article+' ' : '') + display;
   const alphabet = 'abcdefghijklmnopqrstuvwxyz';
   const wrongLetters = shuffle(alphabet.split('').filter(l=>l!==correctLetter)).slice(0,3);
   const opts = shuffle([correctLetter, ...wrongLetters]);
   const area = document.getElementById('questionArea');
-  area.innerHTML = `${hintHTML}<div class="q-word">${shown}</div><div class="options" id="optsBox"></div>`;
+  area.innerHTML = `${hintHTML}<div class="q-word">${display}</div><div class="options" id="optsBox"></div>`;
   renderOptions(opts, correctLetter);
 }
 
 /* ---------- Buchstabensalat (Wort bauen) ---------- */
-function renderScramble(word, hintHTML, article){
+function renderScramble(word, hintHTML){
   const area = document.getElementById('questionArea');
-  const prefix = article ? article+' ' : '';
   area.innerHTML = `${hintHTML}
-    <div class="build-slot" id="buildSlot">${prefix}${'_ '.repeat(word.length).trim()}</div>
+    <div class="build-slot" id="buildSlot">${'_ '.repeat(word.length).trim()}</div>
     <div class="letters-row" id="lettersRow"></div>
     <button class="btn btn-secondary" id="scrambleBack" style="margin-top:12px;">⌫ Zurück</button>`;
   const row = document.getElementById('lettersRow');
@@ -2659,11 +2565,11 @@ function renderScramble(word, hintHTML, article){
   });
   function updateSlot(){
     const built = stack.map(s=>s.ch).join('');
-    slot.textContent = prefix + built.padEnd(word.length,'_').split('').join(' ');
+    slot.textContent = built.padEnd(word.length,'_').split('').join(' ');
     if(built.length===word.length){
       const ok = built.toLowerCase()===word.toLowerCase();
       tiles.forEach(t=>t.classList.add('used'));
-      handleAnswer(ok, null, (article?article+' ':'')+word);
+      handleAnswer(ok, null, word);
     }
   }
   document.getElementById('scrambleBack').addEventListener('click', ()=>{
@@ -2677,7 +2583,7 @@ function renderScramble(word, hintHTML, article){
 /* ---------- Diktat (hören & tippen) ---------- */
 function renderDictation(spokenText, correctAnswer, lang, placeholder){
   renderType(`<div class="q-hint">Höre zu und tippe das Wort</div>
-    <button class="q-sound-btn" id="playSoundBtn">🔊</button>`, correctAnswer, placeholder, lang==='de-DE');
+    <button class="q-sound-btn" id="playSoundBtn">🔊</button>`, correctAnswer, placeholder);
   document.getElementById('playSoundBtn').addEventListener('click', ()=>speak(spokenText, lang));
   speak(spokenText, lang);
 }
@@ -3058,36 +2964,20 @@ function launchConfetti(){
   }
 }
 
-/* ---------- BOTTOM NAV / STATS ---------- */
-document.querySelectorAll('.nav-btn').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    sndTap();
-    if(btn.dataset.nav==='hub'){ openHub(); }
-    else if(btn.dataset.nav==='map'){ pendingMode='vocab'; renderMap(); showScreen('screen-map'); }
-    else if(btn.dataset.nav==='grammar'){ pendingMode=practiceTab; renderGrammar(); showScreen('screen-grammar'); }
-    else if(btn.dataset.nav==='quests'){ renderQuests(); showScreen('screen-quests'); }
-    else if(btn.dataset.nav==='league'){ renderLeague(); showScreen('screen-league'); renderFriendsIfOpen(); }
-    else { renderStats(); showScreen('screen-stats'); }
-  });
-});
+/* ---------- STATS ---------- */
 function renderStats(){
   document.getElementById('statXp').textContent = state.xp;
   document.getElementById('statStreak').textContent = state.streak;
-  document.getElementById('statCoins').textContent = state.coins;
   document.getElementById('statLevels').textContent = state.totalLevelsCompleted + '/' + LEVELS.length;
   const totalStars = levelProg().reduce((s,p)=>s+p.stars,0);
   document.getElementById('statStars').textContent = totalStars + '/' + (LEVELS.length*3);
   renderProfileExtras();
-  if(typeof updateAccountUI==='function') updateAccountUI();
+  updateAccountUI();
 }
 document.getElementById('resetProgressBtn').addEventListener('click', ()=>{
   if(confirm('Wirklich den GESAMTEN Fortschritt löschen? Das kann nicht rückgängig gemacht werden.')){
     state = defaultState();
     saveState();
-    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-    document.querySelector('.nav-btn[data-nav="map"]').classList.add('active');
     showLanguageScreen();
   }
 });
@@ -3203,7 +3093,6 @@ function track(ev, amt){
     q.p = d.max ? Math.max(q.p, amt) : q.p + amt;
     if(!was && q.p >= d.target) toast(`✅ Quest geschafft: ${d.text}`);
   });
-  updateQuestDot();
 }
 function swapQuest(q){
   const free = (state.daily.swaps||0) < 1;
@@ -3222,7 +3111,6 @@ function questReady(){
   return state.daily.quests.some(q=>!q.claimed && q.p>=qDef(q.id).target)
     || (state.daily.quests.length && state.daily.quests.every(q=>q.claimed) && !state.daily.chestClaimed);
 }
-function updateQuestDot(){ const d=document.getElementById('questDot'); if(d) d.classList.toggle('hidden', !(questReady() || (typeof dailyPending==='function' && state.difficulty && dailyPending()))); }
 function renderQuests(){
   ensureDaily(); updateTopbar(); renderDaily();
   const h = 24 - new Date().getHours();
@@ -3276,7 +3164,6 @@ function renderQuests(){
   chest.disabled = !allClaimed || state.daily.chestClaimed;
   chest.style.opacity = chest.disabled ? .5 : 1;
   chest.textContent = state.daily.chestClaimed ? '🎁 Truhe heute schon geöffnet' : allClaimed ? '🎁 Truhe öffnen!' : '🎁 Truhe: alle 3 Quests abholen';
-  updateQuestDot();
 }
 document.getElementById('chestBtn').addEventListener('click', ()=>{
   if(!state.daily.quests.every(q=>q.claimed) || state.daily.chestClaimed) return;
@@ -3463,12 +3350,10 @@ function renderDashboard(){
   bc.classList.toggle('active-boost', boostActive()); bc.style.display = boostActive() ? '' : 'none';
   bc.textContent = boostActive() ? `⚡ x2 · ${Math.ceil((state.boostUntil-Date.now())/60000)}′` : '⚡ x2';
   document.getElementById('diffChip').textContent = `${LANGS[currentLang()].label.split(' ')[0]} ${myCefr()} ⇄`;
-  document.getElementById('driveChip').textContent = '🐉 Reden';
-  updateQuestDot();
 }
 document.getElementById('trainBtn').addEventListener('click', ()=>{ sndTap(); startReview(); });
 document.getElementById('boostChip').addEventListener('click', ()=>{
-  sndTap(); setNav('stats'); renderStats(); showScreen('screen-stats');
+  sndTap(); renderStats(); showScreen('screen-stats');
 });
 
 /* ---------- Wiederholungssystem (Leitner) ---------- */
@@ -3594,7 +3479,7 @@ function finishSpecial(){
     const score = g => session.results.filter(r=>r.group===g && r.ok).length;
     const e = score('anfaenger'), m = score('mittel'), h = score('fortgeschritten');
     const lvl = (h>=3 && m>=3) ? 'fortgeschritten' : (m>=3 || (e>=4 && m>=2)) ? 'mittel' : 'anfaenger';
-    state.difficulty = lvl; state.cefr = DIFF_CEFR[lvl]; state.recent = []; state.placementDone = true;
+    state.difficulty = lvl; state.cefr = DIFF_CEFR[lvl]; state.recent = [];
     title = `Dein Niveau: ${DIFF_CEFR[lvl]}`; mascot = '🧪';
     desc = `Grundwortschatz ${e}/4 · Alltag ${m}/4 · Gehoben ${h}/4 – Flügo passt die Aufgaben jetzt an dich an.`;
   }
@@ -3746,11 +3631,6 @@ function startPhrases(topicIdx){
   showScreen('screen-game'); renderQuestion();
 }
 function normalizeSpeech(s){ return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9ñ ]/g,' ').replace(/\s+/g,' ').trim(); }
-function speechMatch(said, target){
-  const a = normalizeSpeech(said).split(' '), b = normalizeSpeech(target).split(' ');
-  const hits = b.filter(w=>a.includes(w)).length;
-  return hits / b.length >= 0.6;
-}
 function renderPhraseQuestion(q){
   const {t, de} = q.item;
   const others = session.topic.items.filter(x=>x!==q.item);
@@ -4315,8 +4195,6 @@ document.getElementById('heartsPill').addEventListener('click', ()=>{
   toast(state.hearts >= MAX_HEARTS ? `❤️ Alle ${MAX_HEARTS} Herzen voll!` : `❤️ ${state.hearts}/${MAX_HEARTS} – nächstes Herz in ${fmtMs(ms)} (alle ${HEART_REGEN_MINUTES} Min. eines)`);
 });
 
-/* ---------- 💡 Verbesserungsideen von unterwegs ---------- */
-let lastScreenBeforeProfile = 'screen-map';
 /* ---------- 💡 App verbessern → direkt in den Claude-Chat ---------- */
 async function ideaDb(){
   try{
@@ -4366,8 +4244,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '5.0';
+const APP_VERSION = '5.1';
 const CHANGELOG = [
+  ['5.1', '✨ Neuer Name: Flügo! Kein Menü mehr – Flügo fragt dich (z. B. „Do you want to play a game?“), du antwortest mit Ja/Etwas anderes oder per Stimme · 🎤 Sprich-Knopf unter dem Drachen · 🗣️ eigene deutsche Flügo-Stimme + Anleitung für schönere Gratis-Stimmen'],
   ['5.0', '🐉🔥 Flügo ist jetzt eine echte KI: beantwortet alles, merkt sich dich und macht Kunststücke auf Befehl – „Mach Feuer!“, „Flieg!“, „Tanz!“ (auch am großen Drachen per Sprache)'],
   ['4.9', '🐉❓ Flügo fragt dich ab und zu etwas (Übersetzen, Hören, Sprechen) – abschaltbar in den Einstellungen'],
   ['4.8', '🗣️ Natürlichere Stimme: bessere Stimmenwahl (auch iPhone-Premium-Stimmen), Warten auf Stimmen, lange Texte in Sätzen, dein Tempo überall'],
@@ -4409,7 +4288,7 @@ document.getElementById('versionBtn').onclick = ()=>{ sndTap(); renderChangelog(
 document.getElementById('versionClose').onclick = ()=>document.getElementById('versionOverlay').classList.add('hidden');
 function announceVersion(){
   if(!state.difficulty) return;
-  if(state.seenVersion && state.seenVersion !== APP_VERSION) toast(`✨ Neu in v${APP_VERSION}: ${CHANGELOG[0][1]}`);
+  if(state.seenVersion && state.seenVersion !== APP_VERSION) hubDlg.news = CHANGELOG[0][1];
   if(state.seenVersion !== APP_VERSION){ state.seenVersion = APP_VERSION; saveState(); }
 }
 
@@ -4426,9 +4305,8 @@ const AD_SPOTS = [
   {icon:'💪', title:'Fehler-Training', text:'Wörter, die du falsch hattest, kommen im Training gezielt wieder – und kosten keine Herzen.'},
 ];
 function adsLeft(){ ensureDaily(); return AD_PER_DAY - (state.daily.ads||0); }
-function watchAd(after, reward){
-  const gem = reward==='gem';
-  if(!gem && state.hearts >= MAX_HEARTS){ toast('Du hast schon alle Herzen ❤️'); return; }
+function watchAd(after){
+  if(state.hearts >= MAX_HEARTS){ toast('Du hast schon alle Herzen ❤️'); return; }
   if(adsLeft() <= 0){ toast('Heute keine Werbung mehr – morgen wieder! 📺'); return; }
   const spot = pick(AD_SPOTS);
   const ov = document.getElementById('adOverlay');
@@ -4445,17 +4323,15 @@ function watchAd(after, reward){
     left--;
     if(left>0){ btn.textContent = `Noch ${left} s …`; return; }
     clearInterval(iv);
-    btn.disabled = false; btn.textContent = gem ? '💎 +1 Diamant abholen' : '❤️ +1 Herz abholen';
+    btn.disabled = false; btn.textContent = '❤️ +1 Herz abholen';
   }, 1000);
   btn.onclick = ()=>{
     if(btn.disabled) return;
     ov.classList.add('hidden');
     state.daily.ads = (state.daily.ads||0) + 1;
-    if(gem){ state.gems = (state.gems||0) + 1; sndCorrect(); toast(`💎 +1 Diamant! (heute noch ${adsLeft()}× Werbung möglich)`); }
-    else {
     state.hearts = Math.min(MAX_HEARTS, state.hearts+1);
     if(state.hearts>=MAX_HEARTS) state.lastHeartLoss = null;
-    sndCorrect(); toast(`❤️ +1 Herz! (heute noch ${adsLeft()}× Werbung möglich)`); }
+    sndCorrect(); toast(`❤️ +1 Herz! (heute noch ${adsLeft()}× Werbung möglich)`);
     saveState(); updateTopbar();
     if(after) after();
   };
@@ -4673,7 +4549,7 @@ function endArcade(){
   document.getElementById('arcAgain').onclick = ()=>startArcade(id);
   document.getElementById('arcBack').onclick = ()=>leaveArcade();
 }
-function leaveArcade(){ stopArcade(); if(campaignReturn()) return; practiceTab = 'arcade'; pendingMode = 'arcade'; renderGrammar(); showScreen('screen-grammar'); setNav('grammar'); }
+function leaveArcade(){ stopArcade(); if(campaignReturn()) return; practiceTab = 'arcade'; pendingMode = 'arcade'; renderGrammar(); showScreen('screen-grammar'); }
 document.getElementById('arcQuit').addEventListener('click', ()=>{ if(arc.running && arc.score>0) endArcade(); else leaveArcade(); });
 
 /* ---------- 🎈 Ballon-Platzen & 🎧 Hör-Regen (gemeinsamer Motor) ---------- */
@@ -4902,16 +4778,11 @@ function startTower(){
    💎 DIAMANTEN · 📅 LOGIN-KALENDER · 🎡 GLÜCKSRAD · 💬 WORT DES TAGES · 📲 EINLADEN
    ========================================================= */
 const PUBLIC_LINK = 'https://htmlpreview.github.io/?https://github.com/freudenthalerried-cmd/matlab/blob/main/sprachlern-app.html';
-const MASCOTS = [
-  {e:'🦉', name:'Flügo', price:0}, {e:'🐧', name:'Pingu', price:15}, {e:'🦊', name:'Fuchsi', price:20},
-  {e:'🐼', name:'Panda-Paul', price:25}, {e:'🦄', name:'Glitzi', price:40}, {e:'🐲', name:'Drako', price:60},
-];
 const GEM_SHOP = [
   {id:'g_coins', icon:'🪙', name:'100 Münzen', price:5, can:()=>true, apply:()=>{ state.coins+=100; }},
   {id:'g_boost', icon:'⚡', name:'Doppel-XP 30 Min.', price:8, can:()=>true, apply:()=>{ state.boostUntil=Math.max(Date.now(),state.boostUntil||0)+30*60000; }},
   {id:'g_freeze', icon:'🧊', name:'Streak-Schutz', price:10, can:()=>state.inventory.freeze<2, apply:()=>{ state.inventory.freeze++; }},
 ];
-const GEM_PACKS = [{n:80, eur:'1,99 €'}, {n:250, eur:'4,99 €', tag:'Beliebt'}, {n:700, eur:'9,99 €', tag:'Bester Wert'}];
 const CAL_REWARDS = [
   {icon:'🪙', text:'20 Münzen', give:()=>{ state.coins+=20; }},
   {icon:'💎', text:'1 Diamant', give:()=>{ state.gems+=1; }},
@@ -4998,19 +4869,19 @@ function maybeShowDaily(){
   if(!state.difficulty || state.dailyShown===todayStr() || calInfo().claimedToday) return;
   if(!document.getElementById('penaltyOverlay').classList.contains('hidden') || !(document.getElementById('screen-map').classList.contains('active') || document.getElementById('screen-hub').classList.contains('active'))){ setTimeout(maybeShowDaily, 1500); return; }
   state.dailyShown = todayStr(); saveState();
-  renderQuests(); showScreen('screen-quests'); setNav('quests');
+  renderQuests(); showScreen('screen-quests');
 }
 
 /* ---------- 📲 WhatsApp-Einladung ---------- */
 function inviteWhatsApp(){
   const li = levelInfo(state.xp);
-  const msg = `Hey! 🦉 Ich lerne ${LANGS[currentLang()].label.replace(/^\S+\s/,'')} mit Wortreise – schon ${state.streak} 🔥 Tage am Stück, Level ${li.level}! Spiel mit und versuch mich in der Liga zu schlagen 😄 👉 ${PUBLIC_LINK}`;
+  const msg = `Hey! 🦉 Ich lerne ${LANGS[currentLang()].label.replace(/^\S+\s/,'')} mit Flügo – schon ${state.streak} 🔥 Tage am Stück, Level ${li.level}! Spiel mit und versuch mich in der Liga zu schlagen 😄 👉 ${PUBLIC_LINK}`;
   const url = 'https://wa.me/?text=' + encodeURIComponent(msg);
   const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove();
   if(state.inviteDate !== todayStr()){ state.inviteDate = todayStr(); state.gems += 3; state.stats.invites = (state.stats.invites||0)+1; toast('📲 Danke fürs Einladen! +3 💎'); checkAchievements(); saveState(); updateTopbar(); }
 }
 
-/* ---------- 💎 Diamanten-Shop & Begleiter ---------- */
+/* ---------- 💎 Diamanten-Shop ---------- */
 function renderGemShop(){
   const box = document.getElementById('gemShop'); if(!box) return;
   document.getElementById('gemCount').textContent = state.gems;
@@ -5025,19 +4896,9 @@ function renderGemShop(){
     };
     box.appendChild(el);
   });
-  const own = state.mascots || ['🦉'];
   const den = document.createElement('button'); den.className = 'btn btn-yellow'; den.textContent = '🐉 Drachenhöhle – Hüte, Brillen & Farben';
   den.onclick = ()=>openDragonDen(); box.appendChild(den);
-  const packs = document.createElement('div'); packs.className = 'gem-packs';
-  GEM_PACKS.forEach(p=>{
-    const b = document.createElement('button'); b.className = 'gem-pack';
-    b.innerHTML = `${p.tag ? `<em>${p.tag}</em>` : ''}<span>💎 ${p.n}</span><small>${p.eur}</small>`;
-    b.onclick = ()=>toast('💳 Echtgeld-Käufe sind noch nicht aktiv – sammle 💎 gratis über Kalender, Glücksrad, Werbung & Einladungen!');
-    packs.appendChild(b);
-  });
-  box.appendChild(packs);
 }
-function applyMascot(){ try{ paintDragons(); }catch(e){} }
 
 /* ---------- ☁️ Wolken-Verbinden ---------- */
 const CLOUD_COLS = ['#ffd6e8','#d6ecff','#e6dcff','#d8f7e4','#fff1c9'];
@@ -5101,7 +4962,7 @@ function startClouds(){
 
 document.getElementById('goalToggle').addEventListener('click', ()=>document.getElementById('goalChips').classList.toggle('hidden'));
 document.getElementById('inviteBtn').addEventListener('click', ()=>{ sndTap(); inviteWhatsApp(); });
-document.getElementById('gemsPill').addEventListener('click', ()=>{ sndTap(); renderStats(); showScreen('screen-stats'); setNav('stats'); const f = document.getElementById('shopList').closest('details'); f.open = true; setTimeout(()=>f.scrollIntoView({block:'start'}), 50); });
+document.getElementById('gemsPill').addEventListener('click', ()=>{ sndTap(); renderStats(); showScreen('screen-stats'); const f = document.getElementById('shopList').closest('details'); f.open = true; setTimeout(()=>f.scrollIntoView({block:'start'}), 50); });
 /* =========================================================
    👥 FREUNDE: Liste, Chat, Geschenke, Erfolge teilen
    Gemeinsame Daten im Artifact-Speicher:
@@ -5109,7 +4970,7 @@ document.getElementById('gemsPill').addEventListener('click', ()=>{ sndTap(); re
    msgs/<auto>   – Nachrichten {from,to,pair,text,gift,ach,ts,claimed}
    ========================================================= */
 const ARTIFACT_LINK = 'https://claude.ai/artifact/BSkBh8WuiAroC5Em3R9R2U';
-const fr = {db:null, uid:null, players:{}, msgs:[], open:null, unsubP:null, unsubM:null, ready:false, failed:false, tab:'league'};
+const fr = {db:null, uid:null, players:{}, msgs:[], open:null, ready:false, failed:false, tab:'league'};
 const QUICK = {
   en:['Great job! 👏','Keep going! 💪','Let\'s practice together!','See you tomorrow! 👋'],
   es:['¡Buen trabajo! 👏','¡Sigue así! 💪','¡Practiquemos juntos!','¡Hasta mañana! 👋'],
@@ -5139,11 +5000,11 @@ async function initFriends(){
     const uid = user && await user.id();
     if(!db || !uid) throw 0;
     Object.assign(fr, {db, uid, ready:true});
-    fr.unsubP = db.collection('players').onSnapshot(s=>{
+    db.collection('players').onSnapshot(s=>{
       fr.players = {}; s.docs.forEach(d=>{ if(d.exists) fr.players[d.id] = d.data(); });
       renderFriendsIfOpen();
     }, ()=>{});
-    fr.unsubM = db.collection('msgs').orderBy('ts','desc').limit(300).onSnapshot(s=>{
+    db.collection('msgs').orderBy('ts','desc').limit(300).onSnapshot(s=>{
       fr.msgs = s.docs.map(d=>({id:d.id, ...d.data()})).filter(m=>m.from===uid || m.to===uid).reverse();
       updateFriendDot(); renderFriendsIfOpen(); if(fr.open) renderChat();
     }, ()=>{});
@@ -5231,7 +5092,7 @@ function addFriend(id){
   renderFriends();
 }
 function inviteFriendsChat(){
-  const msg = `Hey! 🦉 Lern mit mir Sprachen in Wortreise – wir können uns schreiben und Herzen schenken 😄 👉 ${ARTIFACT_LINK}`;
+  const msg = `Hey! 🦉 Lern mit mir Sprachen in Flügo – wir können uns schreiben und Herzen schenken 😄 👉 ${ARTIFACT_LINK}`;
   const a = document.createElement('a'); a.href = 'https://wa.me/?text=' + encodeURIComponent(msg); a.target = '_blank'; a.rel = 'noopener';
   document.body.appendChild(a); a.click(); a.remove();
   toast('💡 Teile die App zusätzlich in Claude (Teilen → Mitwirkender), damit dein Freund schreiben kann.');
@@ -5322,7 +5183,7 @@ function openBrag(){
   ov.classList.remove('hidden');
 }
 function shareAchievement(a){
-  const text = `🏅 Ich habe in Wortreise den Erfolg „${a.name}“ freigeschaltet: ${a.desc}! ${a.icon} Spiel mit 👉 ${PUBLIC_LINK}`;
+  const text = `🏅 Ich habe in Flügo den Erfolg „${a.name}“ freigeschaltet: ${a.desc}! ${a.icon} Spiel mit 👉 ${PUBLIC_LINK}`;
   if(navigator.share){ navigator.share({text}).catch(()=>{}); return; }
   const l = document.createElement('a'); l.href = 'https://wa.me/?text=' + encodeURIComponent(text); l.target = '_blank'; l.rel = 'noopener';
   document.body.appendChild(l); l.click(); l.remove();
@@ -5334,7 +5195,7 @@ function showFriendProfile(){
 }
 document.getElementById('segLeague').onclick = ()=>{ sndTap(); setLeagueTab('league'); };
 document.getElementById('segFriends').onclick = ()=>{ sndTap(); setLeagueTab('friends'); };
-document.getElementById('chatBack').onclick = ()=>{ fr.open = null; renderLeague(); showScreen('screen-league'); setNav('league'); setLeagueTab('friends'); };
+document.getElementById('chatBack').onclick = ()=>{ fr.open = null; renderLeague(); showScreen('screen-league'); setLeagueTab('friends'); };
 document.getElementById('chatHead').onclick = showFriendProfile;
 document.getElementById('chatSend').onclick = ()=>{
   const i = document.getElementById('chatInput'); const t = i.value.trim(); if(!t || !fr.open) return;
@@ -5422,7 +5283,7 @@ function pronCard(box, target, code, opts={}){
   box.querySelector('#pronHear').onclick = ()=>speak(target, code);
   mine.onclick = ()=>{ if(myAudio) new Audio(myAudio).play().catch(()=>{}); };
   if(opts.skip) box.querySelector('#pronSkip').onclick = opts.skip;
-  if(opts.autoSpeak !== false) speak(target, code);
+  speak(target, code);
   mic.onclick = async ()=>{
     if(mic.classList.contains('on')) return;
     try{ speechSynthesis.cancel(); }catch(e){}
@@ -5488,16 +5349,37 @@ function startCoach(){
 
 /* ---------- 🗣️ Stimmen-Auswahl ---------- */
 function renderVoiceSettings(){
-  const sel = document.getElementById('voiceSel'); if(!sel) return;
-  const code = LANGS[currentLang()].code, vs = voicesFor(code).sort((a,b)=>voiceScore(b,code)-voiceScore(a,code));
-  const cur = pickVoice(code);
-  sel.innerHTML = vs.length ? '' : '<option>Keine Stimme gefunden – in den Handy-Einstellungen installieren</option>';
-  vs.filter(v=>voiceScore(v,code) > -10).forEach((v,i)=>{ const o = document.createElement('option'); o.value = v.voiceURI || v.name; const q = voiceScore(v,code); o.textContent = (i===0 ? '⭐ ' : '') + (q>=9 ? '💎 ' : '') + v.name + ' (' + v.lang + ')' + (/compact/i.test(v.voiceURI||'') ? ' · einfach' : ''); if(cur && (cur.voiceURI||cur.name)===(v.voiceURI||v.name)) o.selected = true; sel.appendChild(o); });
+  [['voiceSel', LANGS[currentLang()].code], ['voiceSelDe', 'de-DE']].forEach(([id, code])=>{
+    const sel = document.getElementById(id); if(!sel) return;
+    const vs = voicesFor(code).sort((a,b)=>voiceScore(b,code)-voiceScore(a,code)), cur = pickVoice(code);
+    sel.innerHTML = vs.length ? '' : '<option>Keine Stimme gefunden – in den Handy-Einstellungen installieren</option>';
+    vs.filter(v=>voiceScore(v,code) > -10).forEach((v,i)=>{ const o = document.createElement('option'); o.value = v.voiceURI || v.name; const q = voiceScore(v,code); o.textContent = (i===0 ? '⭐ ' : '') + (q>=9 ? '💎 ' : '') + v.name + ' (' + v.lang + ')' + (/compact/i.test(v.voiceURI||'') ? ' · einfach' : ''); if(cur && (cur.voiceURI||cur.name)===(v.voiceURI||v.name)) o.selected = true; sel.appendChild(o); });
+  });
   document.getElementById('rateSel').value = speechRate();
+  voiceTip();
+}
+// Anleitung: bessere (kostenlose) Gerätestimme laden – passend zum Gerät
+function voiceTip(){
+  const el = document.getElementById('voiceTip'); if(!el) return;
+  const ua = navigator.userAgent, ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  const android = /Android/.test(ua), mac = /Macintosh/.test(ua) && !ios, win = /Windows/.test(ua), edge = /Edg\//.test(ua);
+  const q = c=>{ const v = pickVoice(c); return v ? voiceScore(v, c) : -99; };
+  const lang = LANGS[currentLang()].label.split(' ')[1];
+  const steps = ios ? `Einstellungen → Bedienungshilfen → Gesprochene Inhalte → Stimmen → Deutsch → z. B. „Anna (Premium)“ oder „Helena (Erweitert)“ mit ⬇️ laden. Dasselbe unter ${lang} (Stimmen mit „Premium“ oder „Erweitert“). Danach Flügo neu öffnen und hier die 💎-Stimme wählen.`
+    : android ? 'Einstellungen → Allgemeine Verwaltung bzw. System → Sprache → Sprachausgabe → bevorzugtes Modul: „Google Sprachausgabe“ (bei Samsung nicht „Samsung TTS“). Dann ⚙️ daneben → „Sprachdaten installieren“ → Deutsch und ' + lang + ' laden (im WLAN) und eine natürlich klingende Stimme wählen. Danach Flügo neu öffnen.'
+    : win ? (edge ? 'Wähle oben eine Stimme mit „Online (Natural)“, z. B. „Microsoft Seraphina Online (Natural)“ – die klingen fast menschlich.' : 'Öffne Flügo im Browser Microsoft Edge – dort gibt es kostenlose „Natural“-Stimmen, die fast menschlich klingen.')
+    : mac ? 'Systemeinstellungen → Bedienungshilfen → Gesprochene Inhalte → Systemstimme → Stimmen verwalten → z. B. „Anna (Premium)“ laden. Danach Flügo neu laden.'
+    : 'In den Geräte-Einstellungen unter „Sprachausgabe“ eine Stimme in hoher Qualität installieren.';
+  const good = q('de-DE') >= 7 && q(LANGS[currentLang()].code) >= 7;
+  el.innerHTML = (good ? '✅ Du nutzt schon eine hochwertige Stimme. Noch schöner: ' : '💡 <b>So klingt Flügo viel natürlicher – gratis:</b><br>') + escapeHtml(steps);
 }
 document.getElementById('voiceSel').addEventListener('change', e=>{
   state.settings.voices = state.settings.voices || {}; state.settings.voices[currentLang()] = e.target.value; saveState();   // value = voiceURI
   speak(LANGS[currentLang()].code.startsWith('en') ? 'Hello, nice to meet you!' : wordOfDay() ? wordOfDay()[1] : 'Hello', LANGS[currentLang()].code);
+});
+document.getElementById('voiceSelDe').addEventListener('change', e=>{
+  state.settings.voices = state.settings.voices || {}; state.settings.voices.de = e.target.value; saveState();
+  speak('Hallo, ich bin ' + dragon().name + ', dein kleiner Drache. Schön, dass du da bist!', 'de-DE');
 });
 document.getElementById('rateSel').addEventListener('change', e=>{ state.settings.rate = parseFloat(e.target.value); saveState(); });
 document.getElementById('voiceTest').addEventListener('click', ()=>{
@@ -5745,7 +5627,7 @@ Answer as JSON only: {"headline": string, "text": string, "question": string}`;
   }catch(e){ talkError(e); }
 }
 function missionRules(){
-  const m = talk.mission, L = DRIVE_LANG[currentLang()];
+  const m = talk.mission;
   return talkRules(`This is a speaking mission. The learner just read/heard this text:
 "${m.story ? m.story.headline + ': ' + m.story.text : ''}"
 Talk with them about it. Encourage them to use these practised words: ${m.words.map(w=>w[1]).join(', ')}. React to what they say, ask a follow-up question about the text or their own life.`);
@@ -5806,7 +5688,7 @@ document.getElementById('talkMic').addEventListener('click', async ()=>{
 document.getElementById('talkSend').addEventListener('click', ()=>talkSend(document.getElementById('talkInput').value));
 document.getElementById('talkInput').addEventListener('keydown', e=>{ if(e.key==='Enter') talkSend(e.target.value); });
 document.getElementById('talkSet').addEventListener('click', ()=>openTalkSettings(false));
-function leaveTalk(){ try{ speechSynthesis.cancel(); }catch(e){} talk.busy = false; if(campaignReturn()) return; practiceTab = 'talk'; pendingMode = 'talk'; renderGrammar(); showScreen('screen-grammar'); setNav('grammar'); }
+function leaveTalk(){ try{ speechSynthesis.cancel(); }catch(e){} talk.busy = false; if(campaignReturn()) return; practiceTab = 'talk'; pendingMode = 'talk'; renderGrammar(); showScreen('screen-grammar'); }
 document.getElementById('talkBack').addEventListener('click', leaveTalk);
 document.getElementById('segTalk').addEventListener('click', ()=>{ sndTap(); practiceTab = 'talk'; pendingMode = 'talk'; renderGrammar(); });
 
@@ -5814,20 +5696,20 @@ document.getElementById('segTalk').addEventListener('click', ()=>{ sndTap(); pra
    🐉 DRACHEN-BEGLEITER: wächst mit deinem Level, Garderobe & Farben
    ========================================================= */
 const DRAGON_STAGES = [
-  {lv:1,  name:'Baby-Drache',   s:0.62},
-  {lv:4,  name:'Mini-Drache',   s:0.72},
-  {lv:8,  name:'Jung-Drache',   s:0.82},
-  {lv:14, name:'Drache',        s:0.9},
-  {lv:22, name:'Großer Drache', s:0.96},
-  {lv:32, name:'Legende',       s:1},
+  {lv:1,  name:'Baby-Drache'},
+  {lv:4,  name:'Mini-Drache'},
+  {lv:8,  name:'Jung-Drache'},
+  {lv:14, name:'Drache'},
+  {lv:22, name:'Großer Drache'},
+  {lv:32, name:'Legende'},
 ];
 const DRAGON_COLORS = {
-  green:{n:'Grün', c:'#5ccf6a', d:'#2f9a45', b:'#d9f7c9', price:0},
-  blue:{n:'Blau', c:'#4fa8ff', d:'#2a6fc4', b:'#d6ecff', price:50},
-  pink:{n:'Rosa', c:'#ff8fc4', d:'#d9558f', b:'#ffe1ef', price:50},
-  purple:{n:'Lila', c:'#a17bff', d:'#6a45d4', b:'#ebe2ff', price:60},
-  red:{n:'Rot', c:'#ff6b5b', d:'#c83a2e', b:'#ffe0d6', price:60},
-  gold:{n:'Gold', c:'#ffcb3d', d:'#d89a00', b:'#fff4c9', gems:20},
+  green:{n:'Grün', c:'#5ccf6a', price:0},
+  blue:{n:'Blau', c:'#4fa8ff', price:50},
+  pink:{n:'Rosa', c:'#ff8fc4', price:50},
+  purple:{n:'Lila', c:'#a17bff', price:60},
+  red:{n:'Rot', c:'#ff6b5b', price:60},
+  gold:{n:'Gold', c:'#ffcb3d', gems:20},
 };
 const DRAGON_ITEMS = [
   {id:'cap', slot:'hat', e:'🧢', n:'Kappe', price:30}, {id:'bow', slot:'hat', e:'🎀', n:'Schleife', price:25},
@@ -5891,7 +5773,6 @@ function paintDragons(){
   if(b){ let sp = b.querySelector('.brand-dr'); if(!sp){ if(b.firstChild.nodeType===3) b.firstChild.nodeValue = ''; b.insertAdjacentHTML('afterbegin', '<span class="brand-dr"></span>'); sp = b.querySelector('.brand-dr'); } sp.innerHTML = dragonSVG({size:30}); }
   renderDashTip();
 }
-let lastStage = null;
 function checkDragonGrowth(){
   const k = dragonStageIdx();
   if(state.dragonStage!=null && k > state.dragonStage){
@@ -6041,7 +5922,7 @@ function buddySay(text, voice){
   if(!b || b.classList.contains('hidden') || !say || fqOpen()) return;
   say.textContent = text; say.classList.remove('hidden'); positionSay();
   clearTimeout(buddy.sayHide); buddy.sayHide = setTimeout(hideBuddySay, 5000);
-  if(voice && state.settings.sound!==false && state.settings.buddyVoice!==false && !(window.speechSynthesis && speechSynthesis.speaking) && !(typeof story!=='undefined' && story.playing)) speak(text, LANGS[currentLang()].code);
+  if(voice && state.settings.sound!==false && !(window.speechSynthesis && speechSynthesis.speaking) && !(typeof story!=='undefined' && story.playing)) speak(text, LANGS[currentLang()].code);
 }
 function scheduleSay(){
   clearTimeout(buddy.sayT);
@@ -6076,7 +5957,7 @@ function fqDay(){
   return state.fq;
 }
 function fqCurScreen(){ return (document.querySelector('.screen.active')||{}).id; }
-function fqCalm(id){ return id==='screen-hub' || NAV_SCREENS.includes(id); }
+function fqCalm(id){ return id==='screen-hub'; }
 function fqPopupVisible(){
   return !!document.querySelector('.ad-overlay:not(.hidden)') || !document.getElementById('buddySheet').classList.contains('hidden')
     || toastBusy || !document.getElementById('buddySay').classList.contains('hidden');
@@ -6089,7 +5970,7 @@ function fqCanShow(minOnScreen){
   if(fqPopupVisible()){ fq.calmAt = now; return false; }
   if(now - fq.calmAt < 6000 || now - fq.screenAt < (minOnScreen||8000) || now - fq.closedAt < 60000) return false;
   const ae = document.activeElement; if(ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return false;
-  if(cur==='screen-hub' ? document.getElementById('hubOrbs').classList.contains('open') : buddyEl().classList.contains('hidden')) return false;
+  if(hubListening) return false;
   if(cur==='screen-stats' && document.querySelector('#screen-stats details[open]')) return false;
   try{ if(speechSynthesis.speaking) return false; }catch(e){}
   if(!seenWords().length && !state.lastPlayDate) return false;          // ganz neu → erst mal spielen lassen
@@ -6175,6 +6056,7 @@ function fqShow(){
   const d = fqDay(); d.n++; saveState();
   Object.assign(fq, {q, open:true, answered:false, listening:false, tries:0, lastT:q.w.t, screen:fqCurScreen(), nextAt:fq.used + 300 + Math.random()*300});
   hideBuddySay();
+  if(fq.screen==='screen-hub') document.getElementById('hubSay').classList.add('hidden');
   const L = LANGS[currentLang()].label.replace(/^\S+\s/, '');
   const W = s=>`<b class="fq-w">„${escapeHtml(String(s))}“</b>`;
   const ask = {
@@ -6305,7 +6187,7 @@ function fqClose(silent, why){
       fq.nextAt = fq.used + 300 + Math.random()*180;   // nach „Später“ 5–8 Minuten Ruhe
     } else fq.nextAt = Math.max(fq.nextAt, fq.used + 60);
   }
-  if(wasHub && fqCurScreen()==='screen-hub'){ const s = document.getElementById('hubSay'); s.textContent = hubTip() + ' ' + hubHint(); }
+  if(wasHub && fqCurScreen()==='screen-hub') hubOffer(false);
   if(!silent && !answered && why==='timeout') try{ buddyReact('happy'); }catch(e){}
 }
 function fqPlace(){
@@ -6686,7 +6568,7 @@ function runDragonAction(id){
   const hosts = dragonHosts(); if(!hosts.length) return Promise.resolve();
   try{ A.snd && A.snd(); }catch(e){}
   if(A.vib) setTimeout(()=>vib(A.vib), A.vibAt || 0);
-  state.dragonTricks = (state.dragonTricks||0) + 1; try{ saveState(); }catch(e){}
+  state.dragonTricks = (state.dragonTricks||0) + 1;   // nur für den Hinweis; wird beim nächsten normalen Speichern mitgesichert
   return Promise.all(hosts.map((h, i)=>dfxRun(h, id, i===0 ? 1 : .6)));
 }
 
@@ -6698,12 +6580,12 @@ const DRAGON_KW = {
   dance:['tanz*','danc*','musik','music','musica','musique','bail*','danse*','dansez','balla*','balli','ballo','danza*','disco','boogie'],
   jump:['spring*','*spring*','hupf*','hops*','jump*','salta*','salte','salto','saute*','sauter','wach* auf','wake up','aufwach*','despierta*','reveille*','svegli*'],
   spin:['dreh*','*dreh*','spin','spinning','kreisel*','pirouett*','piroett*','pirueta*','wirbel*','turn around','gira','girar','girare','girati','gire','tourne*','rotate'],
-  sleep:['schlaf*','*schlaf*','leg* dich','nickerchen','mude','gahn*','sleep*','asleep','nap','tired','duerm*','dorm*','dodo','sieste','siesta','pisolino','nanna','gute nacht','good night','goodnight','buenas noches','bonne nuit','buonanotte','buona notte'],
-  roar:['brull*','roar*','rawr*','grr*','fauch*','growl*','ruge','rugi*','rugg*'],
+  sleep:['schlaf*','*schlaf*','leg* dich','nickerchen','mude','gahn*','sleep*','asleep','nap','tired','duerm*','dorm*','dors','dodo','sieste','siesta','pisolino','nanna','gute nacht','good night','goodnight','buenas noches','bonne nuit','buonanotte','buona notte'],
+  roar:['brull*','knurr*','roar*','rawr*','grr*','fauch*','growl*','ruge','rugi*','rugg*'],
   wave:['wink*','wave*','waving','sag hallo','say hello','say hi','saluda*','salue','saluta*'],
-  heart:['hab* lieb','hast lieb','lieb dich','liebe dich','mag dich','magst mich','kuschel*','knuddel*','umarm*','bussi*','busserl','herzchen','love you','love me','hug*','cuddle*','te quiero','te amo','abraz*','besito*','t aime','calin*','bisou*','voglio bene','ti amo','abbracc*','coccol*','bacio*'],
+  heart:['hab* lieb','hab* dich gern','hast lieb','lieb dich','liebe dich','mag dich','magst mich','kuschel*','knuddel*','umarm*','bussi*','busserl','herzchen','love you','love me','hug*','cuddle*','te quiero','te amo','abraz*','besito*','t aime','calin*','bisou*','voglio bene','ti amo','abbracc*','coccol*','bacio*'],
   laugh:['lach*','kicher*','haha*','hihi*','hehe*','laugh*','giggle*','lol','jaja*','jeje*','rie','reir','riete','rire','ris','rigole*','ridi','ridere','risata*'],
-  sit:['sitz*','setz* dich','hinsetz*','platz','sit','sitdown','sientate','sientese','sentado','assis*','assieds*','siediti','seduto','siedi'],
+  sit:['sitz','setz* dich','hinsetz*','platz','sit','sitdown','sientate','sientese','sentado','assis*','assieds*','siediti','seduto','siedi'],
   magic:['zauber*','*zauber*','magi*','funkel*','glitzer*','sparkle*','glitter*','abracadabra','abrakadabra','simsalabim','hokus*','hechizo*','sortilege','incantesim*'],
   sneeze:['nies*','hatschi*','hatsch*','haptschi','sneez*','achoo*','atchoo*','atchoum','estornud*','achis','eternu*','starnut*','etciu'],
   grow:['wachs*','gross','grosser','riesig','grow*','bigger','huge','giant*','gigant*','crece*','grandis','grandir','agrandis*','cresci*'],
@@ -6857,11 +6739,15 @@ function buddyDetect(text){
   if(t.split(/\s+/).length > 9 || /hei(ß|ss)t|wie sagt man|übersetz|bedeutet|auf (englisch|spanisch|französisch|italienisch)|what does|how do you say|translate|significa|se dice|veut dire|dit-on|si dice/i.test(t)) return null;
   let c = dragonCommand(t, true); if(c==='random') c = pick(DRAGON_RANDOM);
   if(c) return c==='heart' ? 'hearts' : c;
-  for(const k in BUDDY_ACTS){ if(!BUDDY_ACTS[k].app && BUDDY_ACTS[k].re.test(t)) return k; }
+  // Extra-Tricks ohne eigene Wortliste (Rauchring, Looping/Purzelbaum, Schatz) – aber nie bei „kein …“ oder Fragen
+  const w = dcNorm(t).split(' ');
+  if(w.some(x=>DC_NEG.has(x)) || DC_QW.has(w[0])) return null;
+  for(const k of ['smoke','loop','treasure']) if(BUDDY_ACTS[k].re.test(t)) return k;
   return null;
 }
 // Trick am echten Drachen (Chat-Kopf + großer Drache) abspielen
 const BUDDY_DFX = {hearts:'heart', smoke:'sneeze', loop:'spin', treasure:'magic'};
+function buddyTrickLine(k){ const id = k==='hearts' ? 'heart' : k; return DRAGON_LINES[id] ? dragonLine(id) : BUDDY_ACTS[k].say; }
 function buddyAct(k){
   const a = BUDDY_ACTS[k], id = BUDDY_DFX[k] || k;
   if(!a || a.app || !DRAGON_ACTIONS[id]) return;
@@ -6874,10 +6760,10 @@ function buddyRules(spoken){
   const d = dragon(), L = DRIVE_LANG[currentLang()], s = talkSettings(), facts = buddyMem().facts, target = buddy.micLang==='target';
   const tricks = Object.keys(BUDDY_ACTS).join(', ');
   const now = new Date().toLocaleString('de-AT', {weekday:'long', day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit'});
-  return `You are "${d.name}", the learner's small, cute medieval dragon (${DRAGON_STAGES[dragonStageIdx()].name}) who lives in a cosy castle cave and keeps them company in the language app "Wortreise". At the same time you are a genuinely smart, knowledgeable AI assistant: talk about anything and answer any question well - general knowledge, science, history, everyday advice, cooking, travel, technology, maths, writing help, jokes, riddles, stories, and of course languages and this app.
+  return `You are "${d.name}", the learner's small, cute medieval dragon (${DRAGON_STAGES[dragonStageIdx()].name}) who lives in a cosy castle cave and keeps them company in the language app "Flügo". At the same time you are a genuinely smart, knowledgeable AI assistant: talk about anything and answer any question well - general knowledge, science, history, everyday advice, cooking, travel, technology, maths, writing help, jokes, riddles, stories, and of course languages and this app.
 Personality: warm, witty, curious, a little cheeky; you love gold coins, castles, friendly knights and dragon jokes. Now and then (not in every reply) add a playful medieval touch such as "Bei meinen Schuppen!" or "edler Ritter". Never scary. The dragon role is only flavour: facts must be correct and advice genuinely useful; if you are unsure, say so honestly. You have no internet in your cave: for live data (news, weather, prices, sports results) say you cannot look it up and share what you generally know. If asked what you really are, say honestly that you are ${d.name}, a dragon character powered by the AI Claude from Anthropic.
 ${buddyContext()} Local date and time: ${now}.
-App features you may suggest when it fits: Lernen (levels, Training), Üben (Regeln, Sätze, Reden, Spiele incl. Aussprache-Coach), Märchenstunde, Fahrmodus, Quests, Liga & Freunde, Profil (Shop, Drachenhöhle).
+App features you may suggest when it fits: Lernen (levels, Training), Spiele (Regeln, Sätze, Reden, Spiele incl. Aussprache-Coach), Märchenstunde, Fahrmodus, Quests, Liga & Freunde, Profil (Shop, Drachenhöhle).
 What you remember about the learner from earlier chats: ${facts.length ? facts.join(' | ') : 'nothing yet'}. Use it naturally (e.g. their name), without listing it unprompted.
 Language: ${target
   ? `${L} practice mode. Normally reply in ${L}, at about the learner's level (a little above is fine). If the learner writes in German (stuck, or asking for an explanation), answer helpfully in German, then add one easy ${L} sentence to keep practising.`
@@ -7046,11 +6932,11 @@ async function buddyListen(){
 function buddyOffline(text){
   const t = String(text||'').toLowerCase();
   if(/weißt du (über|von) mir|what do you know about me/.test(t)){ const f = buddyMem().facts; return f.length ? '🧠 Ich weiß über dich: ' + f.join(' · ') : '🧠 Noch nichts – erzähl mir von dir!'; }
-  if(/üben|heute|was soll/.test(t)) return state.lastPlayDate!==new Date().toDateString() ? 'Starte mit dem leuchtenden Level auf der Karte – 5 Minuten reichen schon! ✨' : 'Probier heute 🗣️ Reden oder den 🎤 Aussprache-Coach unter Üben!';
+  if(/üben|heute|was soll/.test(t)) return state.lastPlayDate!==new Date().toDateString() ? 'Starte mit dem leuchtenden Level auf der Karte – 5 Minuten reichen schon! ✨' : 'Probier heute 🗣️ Reden oder den 🎤 Aussprache-Coach unter 🎮 Spiele!';
   if(/herz/.test(t)) return 'Herzen wachsen alle 20 Minuten nach. Im 💪 Training übst du ohne Herzverlust!';
   return '';
 }
-const BUDDY_NOKEY = '🔑 Damit ich wie eine echte KI mit dir reden kann, brauche ich Claude. So klappt’s:\n① Öffne Wortreise über den Claude-Link – dann geht es ohne Schlüssel.\n② Oder trag hier deinen eigenen Claude-API-Schlüssel ein (beginnt mit „sk-ant-“, erhältlich auf console.anthropic.com). Das Feld gibt es auch unter Üben → Reden → ⚙️.\nKunststücke wie „Mach Feuer!“ 🔥 kann ich aber jetzt schon!';
+const BUDDY_NOKEY = '🔑 Damit ich wie eine echte KI mit dir reden kann, brauche ich Claude. So klappt’s:\n① Öffne Flügo über den Claude-Link – dann geht es ohne Schlüssel.\n② Oder trag hier deinen eigenen Claude-API-Schlüssel ein (beginnt mit „sk-ant-“, erhältlich auf console.anthropic.com). Das Feld gibt es auch unter 🎮 Spiele → 🗣️ Reden → ⚙️.\nKunststücke wie „Mach Feuer!“ 🔥 kann ich aber jetzt schon!';
 function buddyKeyForm(el, userEl, text){
   const f = document.createElement('div'); f.className = 'bb-key';
   const inp = document.createElement('input'); inp.type = 'password'; inp.autocomplete = 'off'; inp.placeholder = 'sk-ant-…'; inp.className = 'f-input'; inp.value = apiKey();
@@ -7068,11 +6954,17 @@ function buddyKeyForm(el, userEl, text){
 }
 function buddyFail(e, userEl, text){
   const code = e && e.code;
+  if(code==='no_backend' && buddy.lastAct && buddy.keyHint){   // ohne Claude: Trick + kurzer Satz in der Gesprächssprache, vorlesen, weiter zuhören
+    const line = buddyTrickLine(buddy.lastAct);
+    buddyBubble('bot', line); buddyStatus('');
+    if(buddy.voice || talkSettings().voice!==false) buddySpeak(line).then(ok=>{ if(ok && buddy.voice) buddyListen(); });
+    return;
+  }
   buddy.voice = false; buddyHush(); buddyStatus('');
   if(code==='no_backend'){
     const app = Object.keys(BUDDY_ACTS).find(k=>BUDDY_ACTS[k].app && BUDDY_ACTS[k].re.test(text||''));
     if(app){ buddyBubble('bot', BUDDY_ACTS[app].say); setTimeout(()=>buddyOpenApp(app), 900); return; }
-    const first = !buddy.keyHint, head = buddy.lastAct ? BUDDY_ACTS[buddy.lastAct].say : buddyOffline(text);
+    const first = !buddy.keyHint, head = buddy.lastAct ? buddyTrickLine(buddy.lastAct) : buddyOffline(text);
     buddy.keyHint = true;
     if(buddy.lastAct && !first){ buddyBubble('bot', head); return; }
     const el = buddyBubble('bot', (head ? head + '\n\n' : '') + (first ? BUDDY_NOKEY : '🔑 Für echte Gespräche fehlt mir noch Claude – öffne den Claude-Link oder trag hier deinen API-Schlüssel ein:'));
@@ -7082,7 +6974,7 @@ function buddyFail(e, userEl, text){
   if(code==='prompt_too_large') buddy.turns = buddy.turns.slice(-1);
   const msg = code==='bad_key' ? '🔑 Dein API-Schlüssel wurde abgelehnt. Bitte prüf ihn (beginnt mit „sk-ant-“) und trag ihn neu ein:'
     : code==='rate_limited' ? '⏳ Puh, gerade zu viele Fragen auf einmal – warte einen Moment und tipp dann auf „Nochmal“.'
-    : code==='not_granted' || code==='sampling_disabled' ? '🚫 Claude ist für diese Seite nicht erlaubt. Lade die Seite neu und tippe bei der Nachfrage auf „Erlauben“ – oder trag unter Üben → Reden → ⚙️ einen eigenen API-Schlüssel ein.'
+    : code==='not_granted' || code==='sampling_disabled' ? '🚫 Claude ist für diese Seite nicht erlaubt. Lade die Seite neu und tippe bei der Nachfrage auf „Erlauben“ – oder trag unter 🎮 Spiele → 🗣️ Reden → ⚙️ einen eigenen API-Schlüssel ein.'
     : code==='session_expired' ? '🔐 Deine Claude-Anmeldung ist abgelaufen – bitte neu anmelden und dann nochmal fragen.'
     : code==='refused' ? '🙊 Darauf kann ich leider nicht antworten. Frag mich gern etwas anderes!'
     : code==='network' ? '📡 Ich erreiche Claude gerade nicht – prüf dein Internet und tipp auf „Nochmal“.'
@@ -7188,13 +7080,13 @@ document.getElementById('buddyLang').addEventListener('click', ()=>{
   toast(buddy.micLang==='target' ? '🗣️ Wir reden jetzt in deiner Lernsprache' : '🇩🇪 Wir reden jetzt Deutsch');
 });
 document.getElementById('buddyDrive').addEventListener('click', ()=>{ closeBuddy(); openDrive(); });
-document.getElementById('buddyFace').addEventListener('click', ()=>buddyAct(buddyDetect('random') || 'magic'));
+document.getElementById('buddyFace').addEventListener('click', ()=>{ const id = pick(DRAGON_RANDOM); buddyAct(id==='heart' ? 'hearts' : id); });
 
 
 /* ---------- Quest antippen → direkt dorthin, wo man sie erfüllt ---------- */
 function goQuest(d){
-  const toPractice = tab=>{ practiceTab = tab; pendingMode = tab; renderGrammar(); showScreen('screen-grammar'); setNav('grammar'); };
-  const toLevel = ()=>{ pendingMode = 'vocab'; renderMap(); showScreen('screen-map'); setNav('map'); const n = document.querySelector('.level-node.current') || document.querySelector('.level-node.unlocked'); if(n) n.click(); };
+  const toPractice = tab=>{ practiceTab = tab; pendingMode = tab; renderGrammar(); showScreen('screen-grammar'); };
+  const toLevel = ()=>{ pendingMode = 'vocab'; renderMap(); showScreen('screen-map'); const n = document.querySelector('.level-node.current') || document.querySelector('.level-node.unlocked'); if(n) n.click(); };
   switch(d.ev){
     case 'grammar': return toPractice('grammar');
     case 'phrases': return toPractice('phrases');
@@ -7202,7 +7094,7 @@ function goQuest(d){
     case 'arcade': return toPractice('arcade');
     case 'pron': toPractice('arcade'); return setTimeout(()=>startArcade('coach'), 150);
     case 'review': return startReview();
-    case 'speak': if(typeof openDrive==='function') return openDrive(); return document.getElementById('driveChip').click();
+    case 'speak': return openDrive();
     default: toast('⚔️ Auf in den Kampf – starte ein Level!'); return toLevel();
   }
 }
@@ -7286,7 +7178,7 @@ function stationGoalText(st){
 
 function openCampaign(result){
   renderCampaign();
-  showScreen('screen-campaign'); setNav('map');
+  showScreen('screen-campaign');
   const cur = document.querySelector('.camp-node.current') || document.querySelector('.camp-node');
   if(cur) setTimeout(()=>cur.scrollIntoView({block:'center', behavior: result ? 'smooth' : 'auto'}), 60);
   if(result) showCampResult(result);
@@ -7395,8 +7287,8 @@ function showCampResult(r){
 }
 document.getElementById('campLater').onclick = ()=>document.getElementById('campOverlay').classList.add('hidden');
 document.getElementById('segCamp').addEventListener('click', ()=>{ sndTap(); openCampaign(); });
-document.getElementById('segLevels').addEventListener('click', ()=>{ sndTap(); pendingMode = 'vocab'; renderMap(); showScreen('screen-map'); setNav('map'); });
-document.getElementById('segLevels2').addEventListener('click', ()=>{ sndTap(); pendingMode = 'vocab'; renderMap(); showScreen('screen-map'); setNav('map'); });
+const toLevels = ()=>{ sndTap(); pendingMode = 'vocab'; renderMap(); showScreen('screen-map'); };
+['segLevels','segLevels2'].forEach(id=>document.getElementById(id).addEventListener('click', toLevels));
 addEventListener('resize', ()=>{ if(document.getElementById('screen-campaign').classList.contains('active')) drawCampLine(); });
 
 /* =========================================================
@@ -7529,7 +7421,7 @@ function storyNoVoice(){
   const box = document.getElementById('storyQuiz');
   box.classList.remove('hidden');
   box.innerHTML = `<div class="sq-end">🔇 Hier gibt es keine Sprachausgabe</div>
-    <div class="panel-sub" style="color:#6b5236;margin:4px 0 8px;">${window.claude ? 'In der Claude-App kann ' + escapeHtml(dragon().name) + ' leider nicht vorlesen. Öffne Wortreise im Browser (Chrome/Safari) oder als installierte App – dort hörst du alles.' : 'Prüfe: Handy nicht lautlos, Lautstärke hoch. Unter Profil → Einstellungen → „🔧 Ton, Mikro & KI prüfen“ siehst du, was fehlt.'} Du kannst mit ⏭ selbst weiterlesen.</div>`;
+    <div class="panel-sub" style="color:#6b5236;margin:4px 0 8px;">${window.claude ? 'In der Claude-App kann ' + escapeHtml(dragon().name) + ' leider nicht vorlesen. Öffne Flügo im Browser (Chrome/Safari) oder als installierte App – dort hörst du alles.' : 'Prüfe: Handy nicht lautlos, Lautstärke hoch. Unter Profil → Einstellungen → „🔧 Ton, Mikro & KI prüfen“ siehst du, was fehlt.'} Du kannst mit ⏭ selbst weiterlesen.</div>`;
   const row = document.createElement('div'); row.className = 'sq-opts';
   const again = document.createElement('button'); again.className = 'chat-chip'; again.textContent = '🔁 Nochmal versuchen';
   again.onclick = ()=>{ story.fails = 0; box.classList.add('hidden'); story.playing = true; updateStoryBtns(); readTale(); };
@@ -7565,52 +7457,91 @@ document.getElementById('storySpeed').onclick = ()=>{
   toast(n===0.55 ? '🐢 Ganz langsam' : n===0.7 ? '🚶 Langsam' : '🐇 Normal');
 };
 document.getElementById('storyDe').onclick = ()=>{ story.showDe = !story.showDe; document.getElementById('storyText').classList.toggle('no-de', !story.showDe); updateStoryBtns(); };
-document.getElementById('storyBack').onclick = ()=>{ stopTale(); if(!document.getElementById('storyStage').classList.contains('hidden')) openStoryShelf(); else { practiceTab = 'talk'; pendingMode = 'talk'; renderGrammar(); showScreen('screen-grammar'); setNav('grammar'); } };
+document.getElementById('storyBack').onclick = ()=>{ stopTale(); if(!document.getElementById('storyStage').classList.contains('hidden')) openStoryShelf(); else { practiceTab = 'talk'; pendingMode = 'talk'; renderGrammar(); showScreen('screen-grammar'); } };
 
 /* =========================================================
    🐉 DRACHEN-ZENTRALE: Flügo ist die Startseite, alles ist um ihn herum
    ========================================================= */
-const HUB_ORBS = [
-  {go:'campaign', icon:'⚔️', name:'Abenteuer'},
-  {go:'learn',    icon:'📖', name:'Lernen'},
-  {go:'games',    icon:'🎮', name:'Spiele'},
-  {go:'tales',    icon:'📚', name:'Märchen'},
-  {go:'night',    icon:'🌙', name:'Gute Nacht'},
-  {go:'talk',     icon:'🗣️', name:'Reden'},
-  {go:'quests',   icon:'🎯', name:'Quests'},
-];
-HUB_ORBS.push({go:'train', icon:'💪', name:'Training'}, {go:'league', icon:'🏰', name:'Liga'}, {go:'profile', icon:'🛡️', name:'Profil'});
-const HUB_SMALL = [];
+/* ---------- 🐉 Drachen-Dialog: Flügo schlägt vor, du antwortest (Knopf, Stimme oder Tippen) ---------- */
+const HUB_OFFERS = {
+  campaign:{e:'⚔️', de:'Gehen wir auf ein Abenteuer?', en:'Shall we go on an adventure?', es:'¿Nos vamos de aventura?', fr:'On part à l’aventure ?', it:'Andiamo all’avventura?'},
+  learn:   {e:'📖', de:'Sollen wir neue Wörter lernen?', en:'Shall we learn some new words?', es:'¿Aprendemos palabras nuevas?', fr:'On apprend de nouveaux mots ?', it:'Impariamo parole nuove?'},
+  games:   {e:'🎮', de:'Willst du ein Spiel spielen?', en:'Do you want to play a game?', es:'¿Quieres jugar a un juego?', fr:'Tu veux jouer à un jeu ?', it:'Vuoi fare un gioco?'},
+  quiz:    {e:'❓', de:'Darf ich dir eine kleine Frage stellen?', en:'May I ask you a little question?', es:'¿Te puedo hacer una preguntita?', fr:'Je peux te poser une petite question ?', it:'Posso farti una domandina?'},
+  tales:   {e:'📚', de:'Soll ich dir ein Märchen vorlesen?', en:'Shall I read you a fairy tale?', es:'¿Te leo un cuento?', fr:'Je te lis un conte ?', it:'Ti leggo una fiaba?'},
+  talk:    {e:'🗣️', de:'Willst du mit mir plaudern?', en:'Do you want to chat with me?', es:'¿Quieres charlar conmigo?', fr:'Tu veux discuter avec moi ?', it:'Vuoi chiacchierare con me?'},
+  train:   {e:'💪', de:'Wiederholen wir ein paar Wörter? Ganz ohne Herzen!', en:'Shall we repeat some words? No hearts needed!', es:'¿Repasamos palabras? ¡Sin corazones!', fr:'On révise des mots ? Sans cœurs !', it:'Ripassiamo qualche parola? Senza cuori!'},
+  quests:  {e:'🎯', de:'Schauen wir, welche Aufgaben heute warten?', en:'Shall we look at today’s quests?', es:'¿Vemos las misiones de hoy?', fr:'On regarde les quêtes du jour ?', it:'Guardiamo le missioni di oggi?'},
+  league:  {e:'🏰', de:'Schauen wir in die Liga und zu deinen Freunden?', en:'Shall we check the league and your friends?', es:'¿Miramos la liga y a tus amigos?', fr:'On regarde la ligue et tes amis ?', it:'Guardiamo la lega e i tuoi amici?'},
+  night:   {e:'🌙', de:'Soll ich dir eine Gute-Nacht-Geschichte erzählen?', en:'Shall I tell you a bedtime story?', es:'¿Te cuento un cuento para dormir?', fr:'Je te raconte une histoire pour dormir ?', it:'Ti racconto una storia della buonanotte?'},
+  profile: {e:'🛡️', de:'Willst du in meine Höhle und zu deinem Profil (Einstellungen)?', en:'Do you want to visit my cave and your profile?', es:'¿Vienes a mi cueva y a tu perfil?', fr:'Tu viens dans ma grotte et ton profil ?', it:'Vieni nella mia grotta e nel tuo profilo?'},
+  install: {e:'📲', de:'Soll ich als App auf deinen Startbildschirm ziehen?', en:'Shall I move onto your home screen as an app?', es:'¿Me instalo como app en tu pantalla?', fr:'Je m’installe comme appli sur ton écran ?', it:'Mi installo come app sulla tua schermata?'},
+};
+const HUB_YES = {en:'Yes!', es:'¡Sí!', fr:'Oui !', it:'Sì!'}, HUB_NO = {en:'Something else', es:'Otra cosa', fr:'Autre chose', it:'Altro'};
+const hubDlg = {list:[], i:0, recent:[], news:null, micBlocked:false};
+function hubOfferList(){
+  ensureDaily();
+  const hr = new Date().getHours(), left = state.daily.goal - state.daily.xp, played = state.lastPlayDate===new Date().toDateString();
+  const quiz = seenWords().length > 0 && state.settings.buddyQuiz!==false;
+  const first = [];
+  if(hr>=20 || hr<4) first.push('night');
+  if(state.hearts<=0) first.push('train');
+  if(questReady()) first.push('quests');
+  first.push(...(!played ? ['campaign','learn'] : left > 0 ? ['learn','games'] : ['games','tales']));
+  if(quiz) first.push('quiz');
+  const all = [...new Set([...first, 'games','learn','campaign','tales','talk','train','quiz','quests','league','night','profile', ...(canInstall() ? ['install'] : [])])].filter(k=>k!=='quiz' || quiz);
+  return [...all.filter(k=>!hubDlg.recent.includes(k)), ...all.filter(k=>hubDlg.recent.includes(k))];   // gerade Gemachtes zuletzt
+}
+function hubSayHTML(q, de, chips){
+  const s = document.getElementById('hubSay'); s.classList.remove('hidden');
+  s.innerHTML = '<span class="hs-q"></span>' + (de ? '<small class="hs-de"></small>' : '') + (chips ? '<div class="hs-chips"></div>' : '');
+  s.querySelector('.hs-q').textContent = q;
+  if(de) s.querySelector('.hs-de').textContent = de;
+  (chips||[]).forEach(([txt, fn, cls])=>{ const b = document.createElement('button'); b.className = 'hs-chip ' + (cls||''); b.textContent = txt; b.onclick = e=>{ e.stopPropagation(); fn(); }; s.querySelector('.hs-chips').appendChild(b); });
+  s.classList.remove('pop'); void s.offsetWidth; s.classList.add('pop');
+}
+function hubCur(){ if(!hubDlg.list.length) hubDlg.list = hubOfferList(); return hubDlg.list[hubDlg.i % hubDlg.list.length]; }
+// Aktuellen Vorschlag zeigen (und auf Wunsch vorlesen); Promise endet nach dem Sprechen
+function hubOffer(speakIt){
+  const L = currentLang();
+  if(hubDlg.news){
+    const n = hubDlg.news;
+    hubSayHTML('🆕 ' + ({en:'I learned something new!', es:'¡Aprendí algo nuevo!', fr:'J’ai appris un truc nouveau !', it:'Ho imparato qualcosa di nuovo!'}[L] || 'Something new!'), n,
+      [['👍 ' + (HUB_YES[L]||'Yes!'), ()=>{ hubDlg.news = null; sndTap(); hubOffer(true); }, 'yes']]);
+    return Promise.resolve();
+  }
+  const o = HUB_OFFERS[hubCur()], q = o[L] || o.en;
+  hubSayHTML(o.e + ' ' + q, o.de, [['✅ ' + (HUB_YES[L]||'Yes!'), hubAccept, 'yes'], ['🔀 ' + (HUB_NO[L]||'Something else'), ()=>hubNext(true), 'no']]);
+  return speakIt && state.settings.sound!==false ? speakAsync(q, LANGS[L].code) : Promise.resolve();
+}
+function hubAccept(){
+  const k = hubCur(); sndTap();
+  hubDlg.recent = [k, ...hubDlg.recent.filter(x=>x!==k)].slice(0, 3); hubDlg.i = 0; hubDlg.list = [];
+  try{ speechSynthesis.cancel(); }catch(e){}
+  if(k==='quiz'){ if(!fqShow()) { toast('🐉 Spiel erst ein paar Wörter, dann frag ich dich ab!'); hubOffer(false); } return; }
+  hubGo(k);
+}
+function hubNext(speakIt){
+  sndTap(); try{ speechSynthesis.cancel(); }catch(e){}
+  hubDlg.i++; if(hubDlg.i >= hubDlg.list.length) hubDlg.i = 0;
+  return hubOffer(speakIt);
+}
 function hubGo(go){
   sndTap();
-  const tab = t=>{ practiceTab = t; pendingMode = t; renderGrammar(); showScreen('screen-grammar'); setNav('grammar'); };
+  const tab = t=>{ practiceTab = t; pendingMode = t; renderGrammar(); showScreen('screen-grammar'); };
   switch(go){
     case 'campaign': return openCampaign();
-    case 'learn': pendingMode = 'vocab'; renderMap(); showScreen('screen-map'); return setNav('map');
+    case 'learn': pendingMode = 'vocab'; renderMap(); showScreen('screen-map'); return;
     case 'games': return tab('arcade');
     case 'talk': return openBuddy();
     case 'tales': return openStoryShelf();
     case 'night': return openNight();
-    case 'quests': renderQuests(); showScreen('screen-quests'); return setNav('quests');
+    case 'quests': renderQuests(); showScreen('screen-quests'); return;
     case 'train': return startReview();
-    case 'league': renderLeague(); showScreen('screen-league'); renderFriendsIfOpen(); return setNav('');
-    case 'den': return openDragonDen();
-    case 'profile': renderStats(); showScreen('screen-stats'); return setNav('stats');
+    case 'league': renderLeague(); showScreen('screen-league'); renderFriendsIfOpen(); return;
+    case 'profile': renderStats(); showScreen('screen-stats'); return;
     case 'install': return installApp();
   }
-}
-function hubTip(){
-  ensureDaily();
-  const left = state.daily.goal - state.daily.xp, played = state.lastPlayDate===new Date().toDateString();
-  const lines = {
-    en:{start:'Hello! Shall we go on an adventure?', goal:`Only ${left} XP left today – let's do it!`, done:'Daily goal done! Want a story or a game?', hearts:'No hearts? Try Training – no hearts needed!'},
-    es:{start:'¡Hola! ¿Vamos de aventura?', goal:`¡Solo faltan ${left} XP hoy!`, done:'¡Meta cumplida! ¿Un cuento o un juego?', hearts:'¿Sin corazones? ¡Prueba el entrenamiento!'},
-    fr:{start:'Salut ! On part à l\'aventure ?', goal:`Plus que ${left} XP aujourd'hui !`, done:'Objectif atteint ! Une histoire ou un jeu ?', hearts:'Plus de cœurs ? Essaie l\'entraînement !'},
-    it:{start:'Ciao! Andiamo all\'avventura?', goal:`Mancano solo ${left} XP oggi!`, done:'Obiettivo raggiunto! Una favola o un gioco?', hearts:'Niente cuori? Prova l\'allenamento!'},
-  }[currentLang()] || {};
-  const h = new Date().getHours();
-  if(h>=20 || h<4) return ({en:'It\'s late… shall I tell you a bedtime story? 🌙', es:'Es tarde… ¿te cuento un cuento para dormir? 🌙', fr:'Il est tard… je te raconte une histoire ? 🌙', it:'È tardi… ti racconto una storia? 🌙'})[currentLang()] || 'Bedtime story? 🌙';
-  return state.hearts<=0 ? lines.hearts : !played ? lines.start : left>0 ? lines.goal : lines.done;
 }
 function renderHub(){
   const d = dragon(), li = levelInfo(state.xp), k = dragonStageIdx();
@@ -7619,23 +7550,10 @@ function renderHub(){
   document.getElementById('hubName').querySelector('b').textContent = d.name;
   document.getElementById('hubXp').style.width = Math.round(100*Math.min(1, state.daily.xp/state.daily.goal)) + '%';
   document.getElementById('hubXpTxt').textContent = `🎯 ${state.daily.xp}/${state.daily.goal} XP heute`;
-  const say = document.getElementById('hubSay'); say.textContent = hubTip() + ' ' + hubHint();
-  document.getElementById('hubOrbs').classList.remove('open');
-  const ring = document.getElementById('hubOrbs'); ring.innerHTML = '';
-  const orbs = canInstall() ? [...HUB_ORBS, {go:'install', icon:'📲', name:'Als App'}] : HUB_ORBS;
-  orbs.forEach((o,i)=>{
-    const a = (-90 + i*360/orbs.length) * Math.PI/180;
-    const b = document.createElement('button'); b.className = 'orb';
-    b.style.setProperty('--x', (50 + 42*Math.cos(a)) + '%'); b.style.setProperty('--y', (50 + 42*Math.sin(a)) + '%');
-    b.style.setProperty('--d', (i*0.05) + 's');
-    const dot = ((o.go==='quests' && (questReady() || dailyPending())) || (o.go==='league' && !document.getElementById('friendDot').classList.contains('hidden'))) ? '<i class="orb-dot"></i>' : '';
-    b.innerHTML = `<span>${o.icon}</span><small>${o.name}</small>${dot}`;
-    b.onclick = ()=>hubGo(o.go);
-    ring.appendChild(b);
-  });
+  hubDlg.list = hubOfferList(); hubDlg.i = 0; hubOffer(false);
 
 }
-function openHub(){ renderHub(); showScreen('screen-hub'); setNav('hub'); }
+function openHub(){ renderHub(); hubTalkUI(); clearTimeout(hubDlg.t); hubDlg.t = setTimeout(()=>{ if(document.getElementById('screen-hub').classList.contains('active') && !fqOpen() && !hubListening) hubOffer(true); }, 600); showScreen('screen-hub'); }
 document.querySelector('.brand').addEventListener('click', ()=>{ if(state.difficulty){ sndTap(); try{ stopTale(); }catch(e){} openHub(); } });
 const HUB_INTENTS = [
   [/m[äa]rchen|geschicht|story|stories|tale|cuento|histoire|storia|favola/i, 'tales'],
@@ -7648,55 +7566,76 @@ const HUB_INTENTS = [
   [/liga|league|freund|friend/i, 'league'],
   [/profil|profile|shop|einstellung|setting/i, 'profile'],
 ];
-function hubAsk(){
-  const s = document.getElementById('hubSay');
-  const q = ({en:'Hi! What can I do for you?', es:'¡Hola! ¿Qué puedo hacer por ti?', fr:'Salut ! Que puis-je faire pour toi ?', it:'Ciao! Cosa posso fare per te?'})[currentLang()] || 'Hi! What can I do for you?';
-  s.textContent = q; s.classList.remove('pop'); void s.offsetWidth; s.classList.add('pop');
-  document.getElementById('hubDragon').innerHTML = dragonSVG({size:200, mood:'wow', cls:'hub-svg'});
-  const code = LANGS[currentLang()].code;
-  const openTyping = ()=>{ if(!document.getElementById('screen-hub').classList.contains('active')) return; buddy.greeted = true; buddy.voice = false; openBuddy(); buddyBubble('bot', q); setTimeout(()=>document.getElementById('buddyInput').focus(), 250); };
-  speakAsync(q, code).then(async ()=>{
-    if(!document.getElementById('screen-hub').classList.contains('active')) return;
-    if(!SpeechRec || !micAvailable()){ openTyping(); return; }
-    s.textContent = '🎧 ' + q;
-    let heard = '', err = '';
-    try{ heard = await recognizeOnce(code); }catch(e){ err = String(e||''); }
-    if(['not-allowed','service-not-allowed','start','unsupported','audio-capture'].includes(err)){ s.textContent = hubTip(); openTyping(); return; }
-    if(!document.getElementById('screen-hub').classList.contains('active')) return;
-    s.textContent = hubTip();
-    if(!heard) return;
-    let cmd = dragonCommand(heard, true); if(cmd==='random') cmd = pick(DRAGON_RANDOM);
-    if(cmd){ hubTrick(cmd); return; }
-    const hit = HUB_INTENTS.find(([re])=>re.test(heard));
-    if(hit){ toast('🐉 ' + heard); hubGo(hit[1]); }
-    else { buddy.greeted = true; buddy.voice = false; openBuddy(); buddy.voice = !!SpeechRec; updateBuddyControls(); setTimeout(()=>buddySend(heard), 300); }
-  });
-}
 document.getElementById('hubDragon').addEventListener('click', ()=>{
-  const ring = document.getElementById('hubOrbs'), open = !ring.classList.contains('open');
-  ring.classList.toggle('open', open); sndTap();
-  if(open) hubAsk();
-  else { try{ buddy.rec && buddy.rec.abort(); }catch(e){} const s = document.getElementById('hubSay'); s.textContent = hubTip(); }
+  if(hubListening){ try{ buddy.rec && buddy.rec.abort(); }catch(e){} return; }
+  if(fqOpen()) return;
+  sndTap();
+  hubOffer(true).then(()=>{ if(document.getElementById('screen-hub').classList.contains('active') && micAvailable() && !hubDlg.micBlocked && !hubListening && !fqOpen()) hubListen(); });
 });
 function hubTrick(id){
   const s = document.getElementById('hubSay'), L = DRAGON_LINES[id] || {}, line = pick(L[currentLang()] || L.en || ['✨']);
   s.textContent = line; s.classList.remove('pop'); void s.offsetWidth; s.classList.add('pop');
-  document.getElementById('hubOrbs').classList.remove('open');
   speakAsync(line, LANGS[currentLang()].code);
-  runDragonAction(id).then(()=>{ if(document.getElementById('screen-hub').classList.contains('active')) s.textContent = hubTip(); });
+  runDragonAction(id).then(()=>{ if(document.getElementById('screen-hub').classList.contains('active')) hubOffer(false); });
 }
-function hubHint(){ return ({en:'Tap me!', es:'¡Tócame!', fr:'Touche-moi !', it:'Toccami!'}[currentLang()] || 'Tap me!'); }
+let hubListening = false;
+function hubTalkUI(){
+  const m = document.getElementById('hubMic'); if(!m) return;
+  document.getElementById('hubLang').textContent = buddy.micLang==='target' ? LANGS[currentLang()].label.split(' ')[0] : '🇩🇪';
+  m.innerHTML = hubListening ? '<span>🎧</span> Ich höre zu …' : '<span>🎤</span> Sprich mit ' + escapeHtml(dragon().name);
+  m.classList.toggle('on', hubListening);
+}
+function hubTypeOpen(msg){
+  buddy.greeted = true; buddy.voice = false; openBuddy();
+  if(msg) buddyBubble('bot', msg);
+  setTimeout(()=>document.getElementById('buddyInput').focus(), 250);
+}
+function hubHeard(heard){
+  let cmd = dragonCommand(heard, true); if(cmd==='random') cmd = pick(DRAGON_RANDOM);
+  if(cmd){ hubTrick(cmd); return; }
+  const hit = HUB_INTENTS.find(([re])=>re.test(heard));
+  if(hit){ toast('🐉 ' + heard); hubGo(hit[1]); return; }
+  const t = heard.toLowerCase().trim();
+  if(/^(ja+|jo|jep|yes|yeah|yep|sure|ok(ay)?|gerne?|klar|los|s[ií]|oui|ouais|d'accord|certo|claro|vale|let'?s go)\b/.test(t)){ hubAccept(); return; }
+  if(/^(nein|nö|no|nope|non|nah|lieber|was anderes|etwas anderes|anders|something else|otra|autre|altro)\b/.test(t)){ hubNext(true); return; }
+  buddy.greeted = true; buddy.voice = false; openBuddy(); buddy.voice = micAvailable(); updateBuddyControls();
+  setTimeout(()=>buddySend(heard, true), 300);
+}
+async function hubListen(){
+  if(hubListening){ try{ buddy.rec && buddy.rec.abort(); }catch(e){} return; }
+  if(!micAvailable()){ hubTypeOpen('🎤 Hier kann ich dein Mikro leider nicht benutzen – schreib mir einfach! Tipp: Mit dem 🎤 auf deiner Handy-Tastatur kannst du auch diktieren.'); return; }
+  try{ speechSynthesis.cancel(); }catch(e){}
+  try{ buddy.rec && buddy.rec.abort(); }catch(e){}
+  const s = document.getElementById('hubSay');
+  hubListening = true; hubTalkUI(); sndTap(); vib(15);
+  s.textContent = buddy.micLang==='target' ? '🎧 I\'m listening …' : '🎧 Ich höre dir zu …';
+  let heard = '', err = '';
+  try{ heard = await recognizeOnce(buddyCode()); }catch(e){ err = String(e||''); }
+  hubListening = false; hubTalkUI();
+  if(!document.getElementById('screen-hub').classList.contains('active')) return;
+  hubOffer(false);
+  if(['not-allowed','service-not-allowed'].includes(err)) hubDlg.micBlocked = true;
+  if(['not-allowed','service-not-allowed','start','unsupported','audio-capture'].includes(err)){ hubTypeOpen('🎤 Ich darf dein Mikro nicht benutzen. Erlaube es im Browser (Schloss-Symbol → Mikrofon) – oder schreib mir einfach. Mit dem 🎤 auf der Handy-Tastatur kannst du auch diktieren.'); return; }
+  if(!heard){ if(err!=='aborted') toast('🐉 Ich hab nichts gehört – tipp nochmal auf 🎤'); return; }
+  toast('🗣️ „' + heard + '“');
+  hubHeard(heard);
+}
+document.getElementById('hubMic').addEventListener('click', hubListen);
+document.getElementById('hubType').addEventListener('click', ()=>{ sndTap(); hubTypeOpen(''); });
+document.getElementById('hubLang').addEventListener('click', ()=>{
+  sndTap(); buddy.micLang = buddy.micLang==='target' ? 'de' : 'target'; buddy.turns = []; hubTalkUI();
+  toast(buddy.micLang==='target' ? '🗣️ Flügo hört jetzt in deiner Lernsprache zu' : '🇩🇪 Flügo hört jetzt Deutsch');
+});
 
 
 /* ---------- 📲 Als App installieren (GitHub Pages) – Mikrofon direkt in der App ---------- */
-const APP_LINK = 'https://freudenthalerried-cmd.github.io/matlab/sprachlern-app.html';
 let installEvt = null;
 const isStandalone = ()=> matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 if('serviceWorker' in navigator && /github\.io$/.test(location.hostname)) navigator.serviceWorker.register('wortreise-sw.js').catch(()=>{});
 addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); installEvt = e; try{ if(document.getElementById('screen-hub').classList.contains('active')) renderHub(); }catch(err){} });
 function canInstall(){ return !isStandalone() && /github\.io$/.test(location.hostname); }
 async function installApp(){
-  if(installEvt){ installEvt.prompt(); const r = await installEvt.userChoice.catch(()=>null); installEvt = null; if(r && r.outcome==='accepted') toast('🎉 Wortreise ist jetzt eine App auf deinem Startbildschirm!'); renderHub(); return; }
+  if(installEvt){ installEvt.prompt(); const r = await installEvt.userChoice.catch(()=>null); installEvt = null; if(r && r.outcome==='accepted') toast('🎉 Flügo ist jetzt eine App auf deinem Startbildschirm!'); renderHub(); return; }
   const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
   toast(ios ? '📲 Tippe unten auf „Teilen“ ⬆️ und dann „Zum Home-Bildschirm“' : '📲 Tippe im Browser-Menü ⋮ auf „App installieren“ bzw. „Zum Startbildschirm hinzufügen“');
 }
@@ -7794,7 +7733,7 @@ JSON only: {"title": string, "s": [[sentence${night.lang==='de' ? ', ""' : ', Ge
     document.getElementById('nightDim').style.opacity = Math.min(0.55, night.i/total*0.6);   // Bildschirm wird langsam dunkler
     const res = await speakAsync(t, langCode, 0.62);
     if(my!==night.token || !night.on) return;
-    if(res && !res.ok){ night.fails = (night.fails||0)+1; if(night.fails>=1){ sub.textContent = window.claude ? '🔇 In der Claude-App gibt es keinen Ton – öffne Wortreise im Browser oder als App. Hier geht es zum Mitlesen weiter.' : '🔇 Kein Ton – lies einfach mit, es geht von selbst weiter.'; } }
+    if(res && !res.ok){ night.fails = (night.fails||0)+1; if(night.fails>=1){ sub.textContent = window.claude ? '🔇 In der Claude-App gibt es keinen Ton – öffne Flügo im Browser oder als App. Hier geht es zum Mitlesen weiter.' : '🔇 Kein Ton – lies einfach mit, es geht von selbst weiter.'; } }
     await new Promise(r=>setTimeout(r, res && res.ok ? 2200 : 5500));
     night.i++;
   }
@@ -7855,8 +7794,8 @@ async function runDiagnostics(){
   const micOk = !!SpeechRec;
   html += row(micOk ? null : false, micOk ? 'Spracherkennung vorhanden (Mikrofon-Erlaubnis wird beim Sprechen gefragt)' : 'Keine Spracherkennung in dieser Ansicht');
   const ai = sampleFn ? 'Claude (über den Claude-Link)' : apiKey() ? 'Claude über deinen API-Schlüssel' : '';
-  html += row(!!ai, ai ? 'KI-Gespräch: ' + ai : 'KI-Gespräch: kein Zugang (API-Schlüssel unter Üben → Reden → ⚙️)');
-  if(window.claude && !(r && r.ok)) html += `<div class="diag-tip">💡 In der Claude-App gibt es keinen Ton und kein Mikrofon. Öffne Wortreise im Browser oder als App – dein Fortschritt kommt mit.</div><button class="btn btn-primary" id="diagOpen">🌐 Im Browser öffnen</button>`;
+  html += row(!!ai, ai ? 'KI-Gespräch: ' + ai : 'KI-Gespräch: kein Zugang (API-Schlüssel unter 🎮 Spiele → 🗣️ Reden → ⚙️)');
+  if(window.claude && !(r && r.ok)) html += `<div class="diag-tip">💡 In der Claude-App gibt es keinen Ton und kein Mikrofon. Öffne Flügo im Browser oder als App – dein Fortschritt kommt mit.</div><button class="btn btn-primary" id="diagOpen">🌐 Im Browser öffnen</button>`;
   out.innerHTML = html;
   const ob = document.getElementById('diagOpen'); if(ob) ob.onclick = openInBrowser;
 }
@@ -7864,7 +7803,7 @@ document.getElementById('diagBtn').addEventListener('click', ()=>{ sndTap(); run
 
 /* ---------- INIT ---------- */
 importFromLink();
-ensureDaily(); ensureLeague(); applyAbsencePenalty(); checkAchievements(); saveState(); applyMascot(); updateTopbar();
+ensureDaily(); ensureLeague(); applyAbsencePenalty(); checkAchievements(); saveState(); updateTopbar();
 if(state.difficulty) setTimeout(maybeShowDaily, 1200);
 setTimeout(announceVersion, 2500);
 try{ checkDragonGrowth(); }catch(e){}
