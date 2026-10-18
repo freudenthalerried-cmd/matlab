@@ -871,6 +871,11 @@ body.night-mode .topbar{opacity:.18;transition:opacity 1s;}
 .night-sub{font-size:15px;color:#9aa6d6;font-style:italic;min-height:20px;}
 .night-stop{border:1px solid #39447a;background:transparent;color:#9aa6d6;border-radius:12px;padding:8px 14px;font-family:inherit;cursor:pointer;margin-top:10px;}
 .night-dim{position:absolute;inset:0;background:#000;opacity:0;z-index:5;pointer-events:none;transition:opacity 8s linear;}
+
+.diag-out{margin:6px 0 10px;}
+.diag-row{padding:6px 8px;border-radius:10px;margin:4px 0;font-size:14px;color:#3b2a1a;background:#efe0bf;}
+.diag-row.ok{background:#dcebc4;}.diag-row.bad{background:#f3d0c6;}
+.diag-tip{margin:8px 0;font-size:14px;color:#6b5236;}
 </style>
 </head>
 <body>
@@ -1166,6 +1171,8 @@ body.night-mode .topbar{opacity:.18;transition:opacity 1s;}
         <select id="voiceSel" class="f-input"></select>
         <label class="rate-row">🐢 <input type="range" id="rateSel" min="0.6" max="1.2" step="0.05"> 🐇</label>
         <button class="btn btn-secondary" id="voiceTest">▶️ Probe hören</button></div>
+      <button class="btn btn-yellow" id="diagBtn">🔧 Ton, Mikro & KI prüfen</button>
+      <div id="diagOut" class="diag-out"></div>
       <button class="btn btn-secondary" id="soundBtn">🔊 Ton: an</button>
       <button class="btn btn-secondary" id="vibBtn">📳 Vibration: an</button>
       <button class="btn btn-secondary" id="placementBtn">🧪 Einstufungstest wiederholen</button>
@@ -3827,9 +3834,11 @@ function pickVoice(code){
   return (chosen && vs.find(v=>v.name===chosen)) || vs.slice().sort((a,b)=>voiceScore(b,code)-voiceScore(a,code))[0];
 }
 function speechRate(){ return (state.settings && state.settings.rate) || 0.9; }
+let ttsSeemsBroken = false;
 function speakAsync(text, code, rate){
   return new Promise(resolve=>{
     try{
+      if(!window.speechSynthesis || !window.SpeechSynthesisUtterance){ ttsSeemsBroken = true; return resolve({ok:false, ms:0}); }
       text = cleanForSpeech(text); if(!text) return resolve({ok:true, ms:0});
       const u = new SpeechSynthesisUtterance(text);
       u.lang = code; u.rate = rate || drive.rate; u.volume = 1; const v = pickVoice(code); if(v) u.voice = v;
@@ -3839,6 +3848,7 @@ function speakAsync(text, code, rate){
       u.onstart = ()=>{ started = true; };
       u.onend = ()=>fin(true); u.onerror = e=>fin(e && (e.error==='interrupted' || e.error==='canceled') ? started : false);
       setTimeout(()=>fin(started), 4000 + text.length*140);   // falls onend auf manchen Geräten ausbleibt
+      setTimeout(()=>{ if(!started && !done){ ttsSeemsBroken = true; try{ speechSynthesis.cancel(); }catch(e){} fin(false); } }, 3000);
       try{ speechSynthesis.resume(); }catch(e){}
       speechSynthesis.speak(u);
     }catch(e){ resolve({ok:false, ms:0}); }
@@ -4241,8 +4251,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '4.6';
+const APP_VERSION = '4.7';
 const CHANGELOG = [
+  ['4.7', '🔧 Selbsttest für Ton/Mikro/KI · klarer Hinweis, wenn es keinen Ton gibt · Drache: ohne Mikro gleich Chat zum Tippen'],
   ['4.6', '🌙 Gute-Nacht-Modus mit ruhiger Einschlafgeschichte, Meeresrauschen und dunkler werdendem Bildschirm · Flügo antippen: er fragt „What can I do for you?“ und hört zu'],
   ['4.5', '📚 Märchen: ruhiger vorlesen (Tempo 🐢/🚶/🐇, Pausen), kein Durchrasen mehr wenn die Sprachausgabe blockiert'],
   ['4.4', '🐉 Evolution: Flügo entwickelt sich in 6 Stufen mit eigenem Aussehen (Baby → Legende), Evolutions-Animation'],
@@ -6012,7 +6023,9 @@ function buddyOffline(text){
   const t = text.toLowerCase();
   if(/üben|heute|was soll/.test(t)) return state.lastPlayDate!==new Date().toDateString() ? 'Starte mit dem leuchtenden Level auf der Karte – 5 Minuten reichen schon! ✨' : 'Probier heute 🗣️ Reden oder den 🎤 Aussprache-Coach unter Üben!';
   if(/herz/.test(t)) return 'Herzen wachsen alle 20 Minuten nach. Im 💪 Training übst du ohne Herzverlust!';
-  return 'Zum Reden brauche ich Claude – öffne die App über den Claude-Link oder trag in Üben → Reden → ⚙️ einen API-Schlüssel ein. 🐉';
+  return window.claude
+    ? 'Ich konnte Claude gerade nicht erreichen. Bitte erlaube oben „Claude verwenden“ für diese Seite und versuch es nochmal. 🐉'
+    : 'Zum Reden brauche ich Claude: trag unter Üben → Reden → ⚙️ deinen API-Schlüssel ein (oder öffne die App über den Claude-Link). 🐉';
 }
 async function buddySend(text){
   text = (text||'').trim(); if(!text || buddy.busy) return;
@@ -6375,7 +6388,7 @@ async function readTale(){
     if(!res || !res.ok){
       // Satz wurde nicht wirklich vorgelesen → nicht durchrasen, sondern anhalten und Hilfe zeigen
       story.fails = (story.fails||0) + 1;
-      if(story.fails === 1){ await new Promise(r=>setTimeout(r, 300)); continue; }   // einmal neu versuchen
+      if(story.fails === 1 && !ttsSeemsBroken){ await new Promise(r=>setTimeout(r, 300)); continue; }   // einmal neu versuchen
       story.playing = false; updateStoryBtns();
       storyNoVoice(); return;
     }
@@ -6391,8 +6404,8 @@ function storyRate(){ return state.settings.storyRate || 0.7; }
 function storyNoVoice(){
   const box = document.getElementById('storyQuiz');
   box.classList.remove('hidden');
-  box.innerHTML = `<div class="sq-end">🔇 Vorlesen klappt hier gerade nicht</div>
-    <div class="panel-sub" style="color:#6b5236;margin:4px 0 8px;">Lies selbst mit ⏭ weiter – oder öffne die App im Browser bzw. als installierte App, dort liest ${escapeHtml(dragon().name)} vor. Tipp: Handy nicht auf lautlos, Lautstärke hoch.</div>`;
+  box.innerHTML = `<div class="sq-end">🔇 Hier gibt es keine Sprachausgabe</div>
+    <div class="panel-sub" style="color:#6b5236;margin:4px 0 8px;">${window.claude ? 'In der Claude-App kann ' + escapeHtml(dragon().name) + ' leider nicht vorlesen. Öffne Wortreise im Browser (Chrome/Safari) oder als installierte App – dort hörst du alles.' : 'Prüfe: Handy nicht lautlos, Lautstärke hoch. Unter Profil → Einstellungen → „🔧 Ton, Mikro & KI prüfen“ siehst du, was fehlt.'} Du kannst mit ⏭ selbst weiterlesen.</div>`;
   const row = document.createElement('div'); row.className = 'sq-opts';
   const again = document.createElement('button'); again.className = 'chat-chip'; again.textContent = '🔁 Nochmal versuchen';
   again.onclick = ()=>{ story.fails = 0; box.classList.add('hidden'); story.playing = true; updateStoryBtns(); readTale(); };
@@ -6517,11 +6530,14 @@ function hubAsk(){
   s.textContent = q; s.classList.remove('pop'); void s.offsetWidth; s.classList.add('pop');
   document.getElementById('hubDragon').innerHTML = dragonSVG({size:200, mood:'wow', cls:'hub-svg'});
   const code = LANGS[currentLang()].code;
+  const openTyping = ()=>{ if(!document.getElementById('screen-hub').classList.contains('active')) return; buddy.greeted = true; buddy.voice = false; openBuddy(); buddyBubble('bot', q); setTimeout(()=>document.getElementById('buddyInput').focus(), 250); };
   speakAsync(q, code).then(async ()=>{
-    if(!document.getElementById('screen-hub').classList.contains('active') || !SpeechRec || !micAvailable()) return;
+    if(!document.getElementById('screen-hub').classList.contains('active')) return;
+    if(!SpeechRec || !micAvailable()){ openTyping(); return; }
     s.textContent = '🎧 ' + q;
-    let heard = '';
-    try{ heard = await recognizeOnce(code); }catch(e){ try{ heard = ''; }catch(_){} }
+    let heard = '', err = '';
+    try{ heard = await recognizeOnce(code); }catch(e){ err = String(e||''); }
+    if(['not-allowed','service-not-allowed','start','unsupported','audio-capture'].includes(err)){ s.textContent = hubTip(); openTyping(); return; }
     if(!document.getElementById('screen-hub').classList.contains('active')) return;
     s.textContent = hubTip();
     if(!heard) return;
@@ -6645,7 +6661,7 @@ JSON only: {"title": string, "s": [[sentence${night.lang==='de' ? ', ""' : ', Ge
     document.getElementById('nightDim').style.opacity = Math.min(0.55, night.i/total*0.6);   // Bildschirm wird langsam dunkler
     const res = await speakAsync(t, langCode, 0.62);
     if(my!==night.token || !night.on) return;
-    if(res && !res.ok){ night.fails = (night.fails||0)+1; if(night.fails>2){ sub.textContent = '🔇 Vorlesen klappt hier nicht – lies einfach mit, es geht von selbst weiter.'; } }
+    if(res && !res.ok){ night.fails = (night.fails||0)+1; if(night.fails>=1){ sub.textContent = window.claude ? '🔇 In der Claude-App gibt es keinen Ton – öffne Wortreise im Browser oder als App. Hier geht es zum Mitlesen weiter.' : '🔇 Kein Ton – lies einfach mit, es geht von selbst weiter.'; } }
     await new Promise(r=>setTimeout(r, res && res.ok ? 2200 : 5500));
     night.i++;
   }
@@ -6688,6 +6704,30 @@ document.getElementById('nightGo').onclick = ()=>{ sndTap(); startNight(); };
 document.getElementById('nightBack').onclick = ()=>{ stopNight(); openHub(); };
 document.getElementById('nightDim').onclick = ()=>{ const d = document.getElementById('nightDim'); d.style.opacity = 0; d.style.pointerEvents = 'none'; };
 document.getElementById('nightStop').onclick = ()=>{ stopNight(); openNight(); };
+
+
+/* ---------- 🔧 Ton, Mikro & KI prüfen ---------- */
+async function runDiagnostics(){
+  const out = document.getElementById('diagOut'); out.innerHTML = '⏳ Prüfe …';
+  const row = (ok, txt)=>`<div class="diag-row ${ok===true?'ok':ok===false?'bad':'mid'}">${ok===true?'✅':ok===false?'❌':'⚠️'} ${txt}</div>`;
+  let html = '';
+  const where = window.claude ? 'Claude-App/-Link' : /github\.io$/.test(location.hostname) ? 'Browser / installierte App' : 'Browser';
+  html += row(null, 'Geöffnet in: <b>' + where + '</b>');
+  const hasTTS = !!(window.speechSynthesis && window.SpeechSynthesisUtterance);
+  const voices = hasTTS ? voicesFor(LANGS[currentLang()].code) : [];
+  html += row(hasTTS, hasTTS ? `Sprachausgabe vorhanden · ${voices.length} Stimme(n) für ${LANGS[currentLang()].label}` : 'Keine Sprachausgabe in dieser Ansicht');
+  out.innerHTML = html + row(null, '🔊 Test-Ton läuft …');
+  const r = await speakAsync({en:'Hello, I am your dragon!', es:'¡Hola, soy tu dragón!', fr:'Bonjour, je suis ton dragon !', it:'Ciao, sono il tuo drago!'}[currentLang()] || 'Hello!', LANGS[currentLang()].code);
+  html += row(r && r.ok, r && r.ok ? 'Vorlesen funktioniert' : 'Vorlesen funktioniert hier NICHT');
+  const micOk = !!SpeechRec;
+  html += row(micOk ? null : false, micOk ? 'Spracherkennung vorhanden (Mikrofon-Erlaubnis wird beim Sprechen gefragt)' : 'Keine Spracherkennung in dieser Ansicht');
+  const ai = sampleFn ? 'Claude (über den Claude-Link)' : apiKey() ? 'Claude über deinen API-Schlüssel' : '';
+  html += row(!!ai, ai ? 'KI-Gespräch: ' + ai : 'KI-Gespräch: kein Zugang (API-Schlüssel unter Üben → Reden → ⚙️)');
+  if(window.claude && !(r && r.ok)) html += `<div class="diag-tip">💡 In der Claude-App gibt es keinen Ton und kein Mikrofon. Öffne Wortreise im Browser oder als App – dein Fortschritt kommt mit.</div><button class="btn btn-primary" id="diagOpen">🌐 Im Browser öffnen</button>`;
+  out.innerHTML = html;
+  const ob = document.getElementById('diagOpen'); if(ob) ob.onclick = openInBrowser;
+}
+document.getElementById('diagBtn').addEventListener('click', ()=>{ sndTap(); runDiagnostics(); });
 
 /* ---------- INIT ---------- */
 importFromLink();
