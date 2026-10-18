@@ -831,6 +831,12 @@ body{background:radial-gradient(ellipse at 50% 0%,#4a331e 0%,#2a1c11 55%,#1c130d
 .hs-chip.yes{background:linear-gradient(180deg,#7fd36b,#3f9a3a);color:#fff;}
 .hs-chip.no{background:#efe0bf;color:#3b2a1a;border:1px solid #c9a86a;}
 .hs-chip:active{transform:translateY(2px);box-shadow:none;}
+.hs-chip.topic{background:#efe0bf;font-size:21px;padding:4px 9px;opacity:.5;}
+.hs-chip.topic.on{opacity:1;background:#fff6cf;box-shadow:0 0 0 2px #e0b04a inset;}
+.hs-chip.word{background:#fbf3df;color:#3b2a1a;border:1px solid #c9a86a;}
+.persona-row{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:12px;}
+.pr-b{width:44px;height:44px;border-radius:50%;border:2px solid #c9a86a;background:#efe0bf;font-size:22px;cursor:pointer;}
+.pr-b.on{background:#fff6cf;box-shadow:0 0 0 3px #e0b04a;}
 .hub-ring{position:relative;width:100%;flex:1 1 0;min-height:110px;}
 .hub-dragon{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);cursor:pointer;animation:buddyFloat 3s ease-in-out infinite;filter:drop-shadow(0 12px 14px rgba(0,0,0,.5));z-index:2;}
 @keyframes orbBob{0%,100%{margin-top:0;}50%{margin-top:-7px;}}
@@ -4278,8 +4284,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '5.5';
+const APP_VERSION = '5.6';
 const CHANGELOG = [
+  ['5.6', '💛 Flügo fragt nach deinen Lieblingsthemen und wird zum Profi-Drachen: Ingenieur-Drache (technisches Englisch), Business-Drache, Forscher-, Koch-, Reise-, Sport-, Musik-, Gamer-, Tier- und Ritter-Drache – mit Kostüm, Themen-Wörtern und Rollenspielen'],
   ['5.5', '⭐ Flügo wächst mit dir: Drachen-Level 0–10 (B2 ≈ 5), mit jedem Level lernt er neue Fähigkeiten (Feuer, Fliegen, Zaubern …) und prüft deine Grammatik immer genauer · Fähigkeiten durch Ausprobieren entdecken (streicheln, kitzeln, hochwischen, Mond & Wolken) · weniger Text'],
   ['5.4', '🎤 Mikro einfacher: im Browser nur einmal „Zulassen“ (Flügo fragt selbst), bei Sperre die genaue Stelle zum Erlauben für dein Handy · in der Claude-App ein Knopf „Im Browser mit Mikro öffnen“ – mit deinem Fortschritt, direkt ins Gespräch'],
   ['5.3', '💬 Kein Chat-Fenster mehr: Drache antippen → du schreibst oder sprichst direkt am Drachen, er antwortet in einer kleineren Sprechblase und liest vor · Tricks als kleine Emoji-Knöpfe'],
@@ -5788,9 +5795,9 @@ function dragonSVG(opts={}){
   const d = dragon(), st = opts.stage!=null ? opts.stage : dragonStageIdx(), size = opts.size||64;
   const mood = opts.mood || dragonMood(), sc = DRAGON_STAGE_SCALE[st] || 1, im = Math.min(st, 4), P = DRAGON_ITEM_POS[im];
   const f = (DRAGON_FILTERS[d.color]||'') + (mood==='sleepy' ? ' brightness(.92)' : '');
-  const W = d.wear || {};
-  const item = slot=>{ const it = DRAGON_ITEMS.find(i=>i.id===W[slot]); const [x,y,k] = P[slot]; return it ? `<span class="di-wear" style="left:${x}%;top:${y}%;font-size:${Math.round(size*k)}px">${it.e}</span>` : ''; };
-  const crown = st>=5 && !W.hat ? `<span class="di-wear legend-crown" style="left:${P.hat[0]}%;top:${P.hat[1]+3}%;font-size:${Math.round(size*.17)}px">👑</span>` : '';
+  const W = d.wear || {}, PW = !opts.silhouette && state.persona && PERSONAS[state.persona] ? PERSONAS[state.persona].wear : null;
+  const item = slot=>{ const it = PW ? (PW[slot] ? {e:PW[slot]} : null) : DRAGON_ITEMS.find(i=>i.id===W[slot]); const [x,y,k] = P[slot]; return it ? `<span class="di-wear" style="left:${x}%;top:${y}%;font-size:${Math.round(size*k)}px">${it.e}</span>` : ''; };
+  const crown = st>=5 && !(PW ? PW.hat : W.hat) ? `<span class="di-wear legend-crown" style="left:${P.hat[0]}%;top:${P.hat[1]+3}%;font-size:${Math.round(size*.17)}px">👑</span>` : '';
   const fx = mood==='sleepy' ? `<span class="di-fx zz" style="font-size:${Math.round(size*.18)}px">💤</span>`
     : mood==='sad' ? `<span class="di-fx tear" style="font-size:${Math.round(size*.14)}px">💧</span>`
     : mood==='wow' ? `<span class="di-fx spark" style="font-size:${Math.round(size*.16)}px">✨</span>` : '';
@@ -5849,6 +5856,7 @@ function renderDen(msg){
     <div class="den-stage">${DRAGON_STAGES[k].name}${next ? ` · Lv ${Math.floor(lv)} · noch ${Math.max(1, next.lv - Math.floor(lv))} bis <b>${next.name}</b>` : ' · voll ausgewachsen 🏆'}</div>
     ${next ? `<div class="mini-bar big"><div class="mini-fill lvl" style="width:${Math.round(100*(lv-DRAGON_STAGES[k].lv)/(next.lv-DRAGON_STAGES[k].lv))}%"></div></div>` : ''}
     <div class="evo-row">${DRAGON_STAGES.map((sg,i)=>`<div class="evo ${i<=k?'got':''} ${i===k?'cur':''}">${dragonSVG({size:46, stage:i, mood:'happy', silhouette: i>k})}<small>${i<=k ? sg.name.replace('-Drache','') : 'Lv ' + sg.lv}</small></div>`).join('<span class="evo-arrow">›</span>')}</div>
+    <div class="persona-row">${personaRowHTML()}</div>
     <div class="skill-grid">${skillGridHTML()}</div>
     <div class="den-wallet">🪙 ${state.coins} · 💎 ${state.gems||0}</div>`;
   document.getElementById('denName').textContent = d.name;
@@ -6013,7 +6021,7 @@ function fqCanShow(minOnScreen){
   if(fqPopupVisible()){ fq.calmAt = now; return false; }
   if(now - fq.calmAt < 6000 || now - fq.screenAt < (minOnScreen||8000) || now - fq.closedAt < 60000) return false;
   const ae = document.activeElement; if(ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return false;
-  if(hubListening || hubDlg.live || hubDlg.busy) return false;
+  if(hubListening || hubDlg.live || hubDlg.busy || hubDlg.typing || (hubDlg.mode && hubDlg.mode!=='offer')) return false;   // nicht mitten in Gespräch, Themenwahl oder Quiz
   if(cur==='screen-stats' && document.querySelector('#screen-stats details[open]')) return false;
   try{ if(speechSynthesis.speaking) return false; }catch(e){}
   if(!seenWords().length && !state.lastPlayDate) return false;          // ganz neu → erst mal spielen lassen
@@ -6807,7 +6815,7 @@ function buddyRules(spoken){
   return `You are "${d.name}", the learner's small, cute medieval dragon (${DRAGON_STAGES[dragonStageIdx()].name}) who lives in a cosy castle cave and keeps them company in the language app "Flügo". At the same time you are a genuinely smart, knowledgeable AI assistant: talk about anything and answer any question well - general knowledge, science, history, everyday advice, cooking, travel, technology, maths, writing help, jokes, riddles, stories, and of course languages and this app.
 Personality: warm, witty, curious, a little cheeky; you love gold coins, castles, friendly knights and dragon jokes. Now and then (not in every reply) add a playful medieval touch such as "Bei meinen Schuppen!" or "edler Ritter". Never scary. The dragon role is only flavour: facts must be correct and advice genuinely useful; if you are unsure, say so honestly. You have no internet in your cave: for live data (news, weather, prices, sports results) say you cannot look it up and share what you generally know. If asked what you really are, say honestly that you are ${d.name}, a dragon character powered by the AI Claude from Anthropic.
 ${buddyContext()} Local date and time: ${now}.
-Your dragon level: ${dragonLevel()}/10 – you grow when the learner practises (B2 is about level 5). Tricks you have NOT learned yet: ${locked || 'none'}. If asked for one, say playfully that you will learn it at that level and motivate the learner to practise with you – never send an ACTION for it. Keep everything fun and encouraging; when you correct mistakes, do it like a cheerful dragon teacher.
+Your dragon level: ${dragonLevel()}/10 – you grow when the learner practises (B2 is about level 5). Tricks you have NOT learned yet: ${locked || 'none'}. If asked for one, say playfully that you will learn it at that level and motivate the learner to practise with you – never send an ACTION for it. Keep everything fun and encouraging; when you correct mistakes, do it like a cheerful dragon teacher.${state.persona && PERSONAS[state.persona] ? `\nRight now you wear your costume as the learner's ${PERSONAS[state.persona].n.en}: be a friendly expert coach for ${PERSONAS[state.persona].focus}. Bring in useful words and phrases of that field at the learner's level, offer short role-plays (e.g. a meeting, a phone call, explaining a machine) and keep it playful.` : ''}\nThe learner's favourite topics: ${(state.topics||[]).map(t=>PERSONAS[t] ? PERSONAS[t].focus : '').filter(Boolean).join('; ') || 'not known yet'} – use them for examples, questions and small talk.
 App features you may suggest when it fits: Lernen (levels, Training), Spiele (Regeln, Sätze, Reden, Spiele incl. Aussprache-Coach), Märchenstunde, Fahrmodus, Quests, Liga & Freunde, Profil (Shop, Drachenhöhle).
 What you remember about the learner from earlier chats: ${facts.length ? facts.join(' | ') : 'nothing yet'}. Use it naturally (e.g. their name), without listing it unprompted.
 Language: ${target
@@ -7610,6 +7618,97 @@ function hubShowLevelUp(){
 }
 function hubBar(){ const b = document.getElementById('hubXp'); if(b) b.style.width = Math.round(100*dragonLevelProgress()) + '%'; }
 
+/* ---------- 💛 Lieblingsthemen & Profi-Drachen (z. B. Ingenieur-Drache für technisches Englisch) ---------- */
+const PERSONAS = {
+  animals: {e:'🐾', de:'Tier-Drache',      n:{en:'animal dragon',   es:'dragón de los animales', fr:'dragon des animaux', it:'drago degli animali'}, wear:{hand:'🐶'}, focus:'animals, pets and nature'},
+  sport:   {e:'⚽', de:'Sport-Drache',     n:{en:'sporty dragon',   es:'dragón deportista', fr:'dragon sportif', it:'drago sportivo'}, wear:{hat:'🧢', hand:'⚽'}, focus:'sports, games and fitness'},
+  games:   {e:'🎮', de:'Gamer-Drache',     n:{en:'gamer dragon',    es:'dragón gamer', fr:'dragon gamer', it:'drago gamer'}, wear:{hat:'🎧', hand:'🎮'}, focus:'video games and gaming'},
+  music:   {e:'🎵', de:'Musik-Drache',     n:{en:'music dragon',    es:'dragón músico', fr:'dragon musicien', it:'drago musicista'}, wear:{hand:'🎸', neck:'🎵'}, focus:'music, instruments, bands and concerts'},
+  food:    {e:'🍕', de:'Koch-Drache',      n:{en:'chef dragon',     es:'dragón cocinero', fr:'dragon cuisinier', it:'drago cuoco'}, wear:{hand:'🍳', neck:'🍕'}, focus:'food, cooking, recipes and restaurants'},
+  travel:  {e:'✈️', de:'Reise-Drache',     n:{en:'travel dragon',   es:'dragón viajero', fr:'dragon voyageur', it:'drago viaggiatore'}, wear:{hand:'🧭', neck:'📸'}, focus:'travel: airport, hotel, directions, sightseeing'},
+  fantasy: {e:'🏰', de:'Ritter-Drache',    n:{en:'knight dragon',   es:'dragón caballero', fr:'dragon chevalier', it:'drago cavaliere'}, wear:{hand:'🗡️', neck:'🛡️'}, focus:'castles, knights, legends and fantasy stories'},
+  science: {e:'🔬', de:'Forscher-Drache',  n:{en:'scientist dragon', es:'dragón científico', fr:'dragon scientifique', it:'drago scienziato'}, wear:{eyes:'🥽', hand:'🧪'}, focus:'science: experiments, space, nature, describing results'},
+  business:{e:'💼', de:'Business-Drache',  n:{en:'business dragon', es:'dragón de negocios', fr:'dragon d’affaires', it:'drago d’affari'}, wear:{eyes:'👓', neck:'👔', hand:'💼'}, focus:'business English: meetings, e-mails, phone calls, presentations, negotiations, small talk with clients, job interviews'},
+  engineer:{e:'🛠️', de:'Ingenieur-Drache', n:{en:'engineer dragon', es:'dragón ingeniero', fr:'dragon ingénieur', it:'drago ingegnere'}, wear:{hat:'⛑️', eyes:'🥽', hand:'🔧'}, focus:'technical English: tools, machines, construction, measurements, materials, safety, explaining how things work, reading specifications'},
+};
+const TOPICS = Object.keys(PERSONAS);
+const TOPIC_WORDS_EN = {
+  business:[{t:'meeting',de:'Besprechung'},{t:'deadline',de:'Frist'},{t:'invoice',de:'Rechnung'},{t:'agenda',de:'Tagesordnung'},{t:'customer',de:'Kunde'},{t:'contract',de:'Vertrag'},{t:'offer',de:'Angebot'},{t:'colleague',de:'Kollege'}],
+  engineer:[{t:'screwdriver',de:'Schraubenzieher'},{t:'wrench',de:'Schraubenschlüssel'},{t:'measurement',de:'Messung'},{t:'blueprint',de:'Bauplan'},{t:'safety helmet',de:'Schutzhelm'},{t:'gear',de:'Zahnrad'},{t:'voltage',de:'Spannung'},{t:'drill',de:'Bohrmaschine'}],
+};
+function wearPersona(id){
+  state.persona = id && PERSONAS[id] ? id : null; saveState(); paintDragons();
+  if(!hubOnHub()) return;
+  const L = currentLang(), P = PERSONAS[state.persona];
+  document.getElementById('hubDragon').innerHTML = dragonSVG({size:200, mood:'wow', cls:'hub-svg'});
+  const q = P ? (({en:'Ta-da! I’m your {n}!', es:'¡Tachán! ¡Soy tu {n}!', fr:'Tadaa ! Je suis ton {n} !', it:'Tadaa! Sono il tuo {n}!'})[L] || '').replace('{n}', P.n[L] || P.n.en)
+              : ({en:'Back to normal!', es:'¡Vuelvo a ser yo!', fr:'Me revoilà normal !', it:'Torno normale!'})[L] || '';
+  hubDlg.mode = 'offer'; hubDlg.list = []; hubDlg.i = 0;
+  hubSayHTML((P ? P.e : '🐉') + ' ' + q, '', null); const seq = hubDlg.seq;
+  runDragonAction('jump');
+  (state.settings.sound!==false ? speakAsync(q, LANGS[L].code) : Promise.resolve()).then(()=>setTimeout(()=>{ if(hubOnHub() && hubDlg.seq===seq) hubOffer(true).then(hubContinue); }, 500));
+}
+// Flügo fragt nach deinen Lieblingsthemen – Antwort nur mit Symbolen
+function hubTopicPicker(){
+  hubStopLive(); clearTimeout(hubDlg.t); hubDlg.mode = 'topics';
+  const L = currentLang(), o = HUB_OFFERS.topics, sel = new Set(state.topics || []);
+  const done = ()=>{
+    state.topics = [...sel]; saveState(); sndCorrect();
+    hubDlg.list = []; hubDlg.i = 0; hubDlg.mode = 'offer';
+    const ok = ({en:'Cool, I’ll remember that!', es:'¡Genial, me lo apunto!', fr:'Super, je m’en souviens !', it:'Fantastico, me lo ricordo!'})[L] || '';
+    hubSayHTML('💛 ' + ok, '', null); runDragonAction('heart'); const seq = hubDlg.seq;
+    (state.settings.sound!==false ? speakAsync(ok, LANGS[L].code) : Promise.resolve()).then(()=>setTimeout(()=>{ if(hubOnHub() && hubDlg.seq===seq) hubOffer(true).then(hubContinue); }, 400));
+  };
+  hubSayHTML(o.e + ' ' + (o[L] || o.en), o.de, [...TOPICS.map(id=>[PERSONAS[id].e, ()=>{}, 'topic' + (sel.has(id) ? ' on' : '')]), ['✔️', done, 'yes']], true);
+  document.querySelectorAll('#hubSay .hs-chip.topic').forEach((b,i)=>{
+    const id = TOPICS[i]; b.title = PERSONAS[id].de; b.setAttribute('aria-label', PERSONAS[id].de);
+    b.onclick = e=>{ e.stopPropagation(); sndTap(); sel.has(id) ? sel.delete(id) : sel.add(id); b.classList.toggle('on', sel.has(id)); };
+  });
+  if(state.settings.sound!==false) speakAsync(o[L] || o.en, LANGS[L].code);
+}
+// Themen-Wörter: Claude stellt passende Wörter zusammen, Flügo fragt sie in der Sprechblase ab
+async function topicQuiz(){
+  const id = state.persona || (state.topics||[])[0], P = PERSONAS[id]; if(!P) return hubTopicPicker();
+  hubStopLive(); hubDlg.mode = 'quiz';
+  const L = currentLang(), code = LANGS[L].code;
+  hubSayHTML(P.e + ' 🤔 …', '', null);
+  let words = null;
+  try{
+    if(sampleFn || apiKey() || window.claude){
+      const r = await askClaude([{role:'user', content:`Give 6 useful ${DRIVE_LANG[L]} words or short phrases for the topic "${P.focus}", right for a learner at CEFR ${myCefr()}. JSON only: {"words":[{"t":"<${DRIVE_LANG[L]}>","de":"<German>"}]}`}],
+        'You write vocabulary lists for a language-learning app. Reply with JSON only, no other text.', true);
+      words = ((r && r.words) || []).filter(w=>w && typeof w.t==='string' && typeof w.de==='string' && w.t.trim() && w.de.trim()).slice(0, 6);
+    }
+  }catch(e){}
+  if((!words || words.length < 4) && L==='en' && TOPIC_WORDS_EN[id]) words = shuffle(TOPIC_WORDS_EN[id]).slice(0, 6);
+  if(!hubOnHub()) return;
+  if(!words || words.length < 4){ hubDlg.mode = 'offer'; hubSayHTML('🔑', 'Für Themen-Wörter brauche ich Claude – öffne Flügo über den Claude-Link oder trag einen API-Schlüssel ein.', [['💡', ()=>hubNext(true), 'no']]); return; }
+  let i = 0, ok = 0;
+  const ask = ()=>{
+    if(!hubOnHub()) return;
+    if(i >= words.length){
+      const xp = ok*3; if(xp){ addXP(xp); state.coins += ok; saveState(); updateTopbar(); }
+      hubDlg.mode = 'offer';
+      hubSayHTML('🏆 ' + ok + ' / ' + words.length, xp ? '+' + xp + ' XP · +' + ok + ' 🪙' : '', [['👍', ()=>hubNext(true), 'yes']]);
+      runDragonAction(ok >= words.length - 1 ? 'jump' : 'heart'); return;
+    }
+    const w = words[i], opts = shuffle([w, ...shuffle(words.filter(x=>x!==w)).slice(0, 2)]);
+    hubSayHTML(P.e + ' „' + w.de + '“ = ?', '', opts.map(o=>[o.t, ()=>{
+      const right = o===w; if(right){ ok++; sndCorrect(); } else sndWrong();
+      hubSayHTML((right ? '✅ ' : '❌ ') + w.t, w.de, null); const seq = hubDlg.seq;
+      speakAsync(w.t, code); i++; setTimeout(()=>{ if(hubDlg.seq===seq) ask(); }, 1500);
+    }, 'word']));
+  };
+  ask();
+}
+function personaRowHTML(){
+  return TOPICS.map(id=>`<button class="pr-b ${state.persona===id ? 'on' : ''}" data-persona="${id}" title="${PERSONAS[id].de}" aria-label="${PERSONAS[id].de}">${PERSONAS[id].e}</button>`).join('');
+}
+document.addEventListener('click', e=>{
+  const b = e.target.closest('.pr-b'); if(!b) return;
+  sndTap(); const id = b.dataset.persona; wearPersona(state.persona===id ? null : id); try{ renderDen(); }catch(err){}
+});
+
 /* ---------- 🐉 Drachen-Dialog: Flügo schlägt vor, du antwortest (Knopf, Stimme oder Tippen) ---------- */
 const HUB_OFFERS = {
   campaign:{e:'⚔️', de:'Gehen wir auf ein Abenteuer?', en:'Shall we go on an adventure?', es:'¿Nos vamos de aventura?', fr:'On part à l’aventure ?', it:'Andiamo all’avventura?'},
@@ -7623,6 +7722,10 @@ const HUB_OFFERS = {
   league:  {e:'🏰', de:'Schauen wir in die Liga und zu deinen Freunden?', en:'Shall we check the league and your friends?', es:'¿Miramos la liga y a tus amigos?', fr:'On regarde la ligue et tes amis ?', it:'Guardiamo la lega e i tuoi amici?'},
   night:   {e:'🌙', de:'Soll ich dir eine Gute-Nacht-Geschichte erzählen?', en:'Shall I tell you a bedtime story?', es:'¿Te cuento un cuento para dormir?', fr:'Je te raconte une histoire pour dormir ?', it:'Ti racconto una storia della buonanotte?'},
   profile: {e:'🛡️', de:'Willst du in meine Höhle und zu deinem Profil (Einstellungen)?', en:'Do you want to visit my cave and your profile?', es:'¿Vienes a mi cueva y a tu perfil?', fr:'Tu viens dans ma grotte et ton profil ?', it:'Vieni nella mia grotta e nel tuo profilo?'},
+  topics:  {e:'💛', de:'Was magst du am liebsten? Such dir Themen aus!', en:'What do you love most? Pick your topics!', es:'¿Qué te gusta más? ¡Elige tus temas!', fr:'Qu’est-ce que tu aimes ? Choisis tes thèmes !', it:'Cosa ti piace di più? Scegli i tuoi temi!'},
+  pquiz:   {e:'📝', de:'Lernen wir Wörter zu deinem Thema?', en:'Shall we learn words for your topic?', es:'¿Aprendemos palabras de tu tema?', fr:'On apprend des mots de ton thème ?', it:'Impariamo parole del tuo tema?'},
+  prole:   {e:'🎭', de:'Machen wir ein kleines Rollenspiel?', en:'Shall we do a little role-play?', es:'¿Hacemos un pequeño juego de rol?', fr:'On fait un petit jeu de rôle ?', it:'Facciamo un piccolo gioco di ruolo?'},
+  poff:    {e:'🐉', de:'Soll ich mein Kostüm ausziehen?', en:'Shall I take off my costume?', es:'¿Me quito el disfraz?', fr:'J’enlève mon costume ?', it:'Mi tolgo il costume?'},
   install: {e:'📲', de:'Soll ich als App auf deinen Startbildschirm ziehen?', en:'Shall I move onto your home screen as an app?', es:'¿Me instalo como app en tu pantalla?', fr:'Je m’installe comme appli sur ton écran ?', it:'Mi installo come app sulla tua schermata?'},
 };
 
@@ -7637,10 +7740,14 @@ function hubOfferList(){
   if(questReady()) first.push('quests');
   first.push(...(!played ? ['campaign','learn'] : left > 0 ? ['learn','games'] : ['games','tales']));
   if(quiz) first.push('quiz');
-  const all = [...new Set([...first, 'games','learn','campaign','tales','talk','train','quiz','quests','league','night','profile', ...(canInstall() ? ['install'] : [])])].filter(k=>k!=='quiz' || quiz);
+  if(!state.topics && state.lastPlayDate) first.unshift('topics');                       // nach dem ersten Spielen: Lieblingsthemen?
+  if(state.persona) first.unshift('pquiz', 'prole');
+  else (state.topics||[]).forEach(t=>{ if(PERSONAS[t]) first.push('p:' + t); });
+  const all = [...new Set([...first, 'games','learn','campaign','tales','talk','train','quiz','quests','league','night','profile', 'topics', ...(state.persona ? ['poff'] : []), ...(canInstall() ? ['install'] : [])])].filter(k=>k!=='quiz' || quiz);
   return [...all.filter(k=>!hubDlg.recent.includes(k)), ...all.filter(k=>hubDlg.recent.includes(k))];   // gerade Gemachtes zuletzt
 }
 function hubSayHTML(q, de, chips, hideDe){
+  hubDlg.seq = (hubDlg.seq||0) + 1;               // jede neue Sprechblase macht ältere, verzögerte Folgeschritte ungültig
   const s = document.getElementById('hubSay'); s.classList.remove('hidden');
   s.innerHTML = '<span class="hs-q"></span>' + (de ? '<small class="hs-de' + (hideDe ? ' hide' : '') + '"></small>' : '') + (chips ? '<div class="hs-chips"></div>' : '');
   s.querySelector('.hs-q').textContent = q;
@@ -7663,7 +7770,10 @@ function hubOffer(speakIt){
     return speakIt && state.settings.sound!==false ? speakAsync(hint.q, LANGS[L].code) : Promise.resolve();
   }
   hubDlg.mode = 'offer';
-  const o = HUB_OFFERS[hubCur()], q = o[L] || o.en;
+  const k = hubCur();
+  if(k==='topics' && !state.topics){ hubTopicPicker(); return Promise.resolve(); }
+  const P = k.startsWith('p:') && PERSONAS[k.slice(2)];
+  const o = P ? {e:P.e, de:'Soll ich heute dein ' + P.de + ' sein?', [L]:(({en:'Shall I be your {n} today?', es:'¿Hoy soy tu {n}?', fr:'Je deviens ton {n} aujourd’hui ?', it:'Oggi faccio il tuo {n}?'})[L] || '{n}?').replace('{n}', P.n[L] || P.n.en)} : HUB_OFFERS[k], q = o[L] || o.en;
   hubSayHTML(o.e + ' ' + q, o.de, [['👍', hubAccept, 'yes'], ['👎', ()=>hubNext(true), 'no']], true);
   return speakIt && state.settings.sound!==false ? speakAsync(q, LANGS[L].code) : Promise.resolve();
 }
@@ -7671,6 +7781,11 @@ function hubAccept(){
   const k = hubCur(); sndTap();
   hubDlg.recent = [k, ...hubDlg.recent.filter(x=>x!==k)].slice(0, 3); hubDlg.i = 0; hubDlg.list = [];
   try{ speechSynthesis.cancel(); }catch(e){}
+  if(k==='topics') return hubTopicPicker();
+  if(k.startsWith('p:')) return wearPersona(k.slice(2));
+  if(k==='poff') return wearPersona(null);
+  if(k==='pquiz') return topicQuiz();
+  if(k==='prole'){ hubDlg.mode = 'chat'; return hubChat(({en:'Let’s do a little role-play!', es:'¡Hagamos un juego de rol!', fr:'Faisons un jeu de rôle !', it:'Facciamo un gioco di ruolo!'})[currentLang()] || 'Role-play!'); }
   if(k==='quiz'){ if(!fqShow()) { toast('🐉 Spiel erst ein paar Wörter, dann frag ich dich ab!'); hubOffer(false); } return; }
   hubGo(k);
 }
@@ -7694,6 +7809,7 @@ function hubGo(go){
     case 'league': renderLeague(); showScreen('screen-league'); renderFriendsIfOpen(); return;
     case 'profile': renderStats(); showScreen('screen-stats'); return;
     case 'install': return installApp();
+    case 'topics': return hubTopicPicker();
   }
 }
 function renderHub(){
@@ -7720,6 +7836,7 @@ const HUB_INTENTS = [
   [/training|trainier|üben|practi/i, 'train'],
   [/liga|league|freund|friend/i, 'league'],
   [/profil|profile|shop|einstellung|setting/i, 'profile'],
+  [/lieblingsthem|themen|favou?rite topics?|my topics|temas favoritos|th[eè]mes pr[eé]f[eé]r[eé]s|temi preferiti/i, 'topics'],
 ];
 (()=>{
   const el = document.getElementById('hubDragon'); let x0 = 0, y0 = 0, lp = null;
@@ -7765,10 +7882,10 @@ function hubTrick(id){
   const sk = skillOfAct(id);
   if(sk && !skillOpen(sk)) return hubLocked(sk);
   if(sk) discover(sk.id);
-  const s = document.getElementById('hubSay'), L = DRAGON_LINES[id] || {}, line = pick(L[currentLang()] || L.en || ['✨']);
-  s.textContent = line; s.classList.remove('pop'); void s.offsetWidth; s.classList.add('pop');
+  const L = DRAGON_LINES[id] || {}, line = pick(L[currentLang()] || L.en || ['✨']);
+  hubSayHTML(line, '', null); const seq = hubDlg.seq;
   speakAsync(line, LANGS[currentLang()].code);
-  runDragonAction(id).then(()=>{ if(!hubOnHub()) return; if(hubDlg.mode!=='chat') hubOffer(false); hubContinue(); });
+  runDragonAction(id).then(()=>{ if(!hubOnHub() || hubDlg.seq!==seq) return; if(hubDlg.mode!=='chat') hubOffer(false); hubContinue(); });
 }
 let hubListening = false;
 // Einmal um Erlaubnis fragen (Systemdialog „Zulassen“) – der Browser merkt es sich für diese Seite
