@@ -4460,8 +4460,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '6.3';
+const APP_VERSION = '6.4';
 const CHANGELOG = [
+  ['6.4', '🗨️ Flügo verbessert Fehler wie ein Muttersprachler ganz nebenbei im Satz („Oh, you went to the market?“) · hört sich nach dem Sprechen nicht mehr selbst (wartet Nachhall ab)'],
   ['6.3', '🎶 Flüssiger: der nächste Satz wird schon vorbereitet (keine Pausen), lebendigere Betonung der natürlichen Stimme · Flügo ist witziger und stellt offene Fragen, damit du mehr redest'],
   ['6.2', '👂 Flügo neigt beim Zuhören den Kopf · Spracherkennung ohne doppelte Wörter (Android) · +2 bis +4 XP für jede Antwort in der Lernsprache – je länger, desto mehr'],
   ['6.1', '⚡ Flügo spricht schon, während er noch nachdenkt (Satz für Satz) und bewegt sich beim Reden · 🎭 lustige Stimmen zum Wechseln: Baby-Drache, Riesen-Drache, Eichhörnchen, Robo-Drache, Höhlen-Echo – per „change your voice“, in der Drachenhöhle oder den Einstellungen'],
@@ -7026,7 +7027,7 @@ Language: ${target
 Length: ${spoken
   ? 'Your reply is SPOKEN ALOUD in a hands-free voice chat: 1 to 3 short, natural sentences (about 45 words at most). Only if the learner explicitly asks for an explanation, a story, a recipe or details, use up to about 120 words in short spoken sentences. No lists.'
   : 'Written chat: as long as the message deserves - 1 to 3 sentences for small talk, a clear and complete answer for real questions (up to about 200 words in short paragraphs; a few numbered steps only if they really help).'}
-Conversation style: talk like a real, funny friend, not like a teacher or a quiz – lively spoken language with natural little reactions ("Ooh!", "Haha", "No way!"), contractions and a bit of dragon humour. Ask open questions (how, why, tell me about…) that invite the learner to talk longer, and give them room – your turns stay short so they speak more than you. Keep a red thread: stay on the current topic and build on what the learner just said – pick up their details, react with real interest, sometimes share a short little story or opinion of your own. Ask at most ONE question per turn, and only at the end, after your reaction. Do not jump to a new topic on your own; only if the learner changes it or the topic is clearly finished, then bridge naturally (e.g. "Speaking of food…"). Never ask several questions at once and never squeeze a new, unrelated question into the middle of your answer. Corrections go only into the GRAMMAR/WORD/UPGRADE lines, never interrupt the flow of the reply.
+Conversation style: talk like a real, funny friend, not like a teacher or a quiz – lively spoken language with natural little reactions ("Ooh!", "Haha", "No way!"), contractions and a bit of dragon humour. Ask open questions (how, why, tell me about…) that invite the learner to talk longer, and give them room – your turns stay short so they speak more than you. Keep a red thread: stay on the current topic and build on what the learner just said – pick up their details, react with real interest, sometimes share a short little story or opinion of your own. Ask at most ONE question per turn, and only at the end, after your reaction. Do not jump to a new topic on your own; only if the learner changes it or the topic is clearly finished, then bridge naturally (e.g. "Speaking of food…"). Never ask several questions at once and never squeeze a new, unrelated question into the middle of your answer. Corrections go only into the GRAMMAR/WORD/UPGRADE lines, never interrupt the flow of the reply – but when the learner made a mistake, naturally echo the correct form in your reply like a friendly native speaker would (a recast, e.g. learner: "I go to the market yesterday" → you: "Oh, you went to the market yesterday? What did you buy?"), without pointing at the mistake.
 Plain text only: no markdown (no #, no **, no tables), at most one emoji.
 ${target ? `Feedback policy for the learner's LAST message, only if it was written in ${L}:
 - GRAMMAR: ${FB_POLICY[dragonLevel() >= 1 ? s.grammar : 0]}.
@@ -8342,7 +8343,16 @@ function hubTypeUI(){
 function hubOnHub(){ return document.getElementById('screen-hub').classList.contains('active'); }
 function hubStopLive(){ if(hubDlg.sq && !hubDlg.busy) hubDlg.sq.stop(); hubDlg.live = false; hubDlg.misses = 0; try{ buddy.ctl && hubDlg.busy && buddy.ctl.abort(); }catch(e){} try{ hubListening && buddy.rec && buddy.rec.abort(); }catch(e){} hubTalkUI(); }
 // Im Gesprächsmodus nach jeder Antwort von Flügo gleich wieder zuhören
-function hubContinue(){ if(hubDlg.live) setTimeout(()=>{ if(hubDlg.live && hubOnHub() && !hubListening && !hubDlg.busy && !fqOpen()) hubListen(true); }, 300); }
+function hubContinue(){                                 // nach dem Sprechen (und Nachhall) wieder zuhören, damit er sich nicht selbst hört
+  if(!hubDlg.live) return;
+  let n = 0;
+  const go = ()=>setTimeout(()=>{
+    if(!(hubDlg.live && hubOnHub() && !hubListening && !hubDlg.busy && !fqOpen())) return;
+    if(document.body.classList.contains('speaking')){ if(++n < 60) go(); return; }   // spricht noch → warten
+    hubListen(true);
+  }, vfx().cave ? 1800 : 500);
+  go();
+}
 function hubLang(m){
   buddy.micLang = m; buddy.turns = [];
   const line = m==='de' ? 'Okay, ab jetzt reden wir Deutsch!' : (({en:'Great, let’s speak English!', es:'¡Genial, hablemos español!', fr:'Super, parlons français !', it:'Perfetto, parliamo italiano!'})[currentLang()] || 'OK!');
