@@ -4460,8 +4460,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '6.4';
+const APP_VERSION = '6.5';
 const CHANGELOG = [
+  ['6.5', '🔧 Die Schlüssel- und Stimmen-Frage wird nie mehr von einem Rätsel-Tipp verdrängt · ehrlichere Meldung, wenn ein Wort gerade nicht nachgeschlagen werden kann'],
   ['6.4', '🗨️ Flügo verbessert Fehler wie ein Muttersprachler ganz nebenbei im Satz („Oh, you went to the market?“) · hört sich nach dem Sprechen nicht mehr selbst (wartet Nachhall ab)'],
   ['6.3', '🎶 Flüssiger: der nächste Satz wird schon vorbereitet (keine Pausen), lebendigere Betonung der natürlichen Stimme · Flügo ist witziger und stellt offene Fragen, damit du mehr redest'],
   ['6.2', '👂 Flügo neigt beim Zuhören den Kopf · Spracherkennung ohne doppelte Wörter (Android) · +2 bis +4 XP für jede Antwort in der Lernsprache – je länger, desto mehr'],
@@ -7951,7 +7952,7 @@ async function hubExplain(wEl, sentence){
   }
   if(hubDlg.seq!==seq || !box.isConnected) return;
   box.innerHTML = '';
-  if(!r){ box.textContent = word ? '🔤 ' + word + ' – dafür brauche ich Claude.' : '🔑 Für Übersetzungen brauche ich Claude.'; hubFit(); return; }
+  if(!r){ box.textContent = !hubHasAI() ? (word ? '🔤 ' + word + ' – dafür brauche ich Claude.' : '🔑 Für Übersetzungen brauche ich Claude.') : '😕 Das kann ich gerade nicht nachschlagen – tipp gleich nochmal.'; hubFit(); return; }
   if(word){ const b = document.createElement('b'); b.textContent = word; box.append('🔤 ', b, ' = ' + r.de); }
   else box.append('🇩🇪 ' + r.de);
   if(r.note){ const n = document.createElement('small'); n.textContent = r.note; box.appendChild(n); }
@@ -8130,9 +8131,11 @@ function hubCur(){ if(!hubDlg.list.length) hubDlg.list = hubOfferList(); return 
 // Aktuellen Vorschlag zeigen (und auf Wunsch vorlesen); Promise endet nach dem Sprechen
 function hubOffer(speakIt){
   const L = currentLang();
-  if(hubCur()==='chat'){ hubDlg.mode = 'chat'; return hubChatStart(speakIt); }
+  const k0 = hubCur();
+  if(k0==='chat'){ hubDlg.mode = 'chat'; return hubChatStart(speakIt); }
+  if(k0==='key'){ hubKeySetup(); return Promise.resolve(); }
   hubDlg.n = (hubDlg.n||0) + 1;
-  const hint = hubDlg.n % 3 === 0 && skillHint();
+  const hint = !['voice','topics'].includes(k0) && hubDlg.n % 3 === 0 && skillHint();   // Tipps nie statt Gespräch, Schlüssel, Stimme oder Themen
   if(hint){
     hubDlg.mode = 'hint';
     hubSayHTML('🐉 ' + hint.q, hint.de, [['👍', ()=>hubNext(true), 'yes']], false, true);
@@ -8140,7 +8143,6 @@ function hubOffer(speakIt){
   }
   hubDlg.mode = 'offer';
   const k = hubCur();
-  if(k==='key'){ hubKeySetup(); return Promise.resolve(); }
   if(k==='topics' && !state.topics){ hubTopicPicker(); return Promise.resolve(); }
   const P = k.startsWith('p:') && PERSONAS[k.slice(2)];
   const o = P ? {e:P.e, de:'Soll ich heute dein ' + P.de + ' sein?', [L]:(({en:'Shall I be your {n} today?', es:'¿Hoy soy tu {n}?', fr:'Je deviens ton {n} aujourd’hui ?', it:'Oggi faccio il tuo {n}?'})[L] || '{n}?').replace('{n}', P.n[L] || P.n.en)} : HUB_OFFERS[k], q = o[L] || o.en;
