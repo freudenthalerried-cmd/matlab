@@ -804,6 +804,9 @@ body{background:radial-gradient(ellipse at 50% 0%,#4a331e 0%,#2a1c11 55%,#1c130d
 .hub-round.send{background:linear-gradient(180deg,#7fd36b,#3f9a3a);border-color:#3f9a3a;}
 .hub-say .hs-q{display:block;}
 .hub-say .hs-de.hide{display:none;}
+.hub-say .hs-key{margin-top:8px;}
+.hub-say .hs-key input{width:100%;box-sizing:border-box;border:2px solid #c9a86a;border-radius:12px;padding:9px 11px;font:inherit;font-size:15px;background:#fff;color:#3b2a1a;}
+.hub-say .hs-key a.hs-chip{text-decoration:none;display:inline-block;}
 .hub-say .w{cursor:pointer;border-radius:5px;transition:background .15s;}
 .hub-say .w:hover,.hub-say .w.sel{background:#f3d98f;}
 .hub-say .hs-x{display:block;margin-top:6px;padding:5px 8px;border-radius:10px;background:#efe0bf;font-size:13.5px;font-weight:700;color:#3b2a1a;text-align:left;}
@@ -4382,8 +4385,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '5.9';
+const APP_VERSION = '6.0';
 const CHANGELOG = [
+  ['6.0', '🗣️ Reden steht an erster Stelle: Flügo startet gleich ein Gespräch; fehlt der Claude-Schlüssel, trägst du ihn einmal direkt in seiner Sprechblase ein (📋 einfügen) – keine Meldungs-Fenster mehr · bis zu 90 Sekunden am Stück sprechen'],
   ['5.9', '🎙️ Natürliche KI-Stimme: Flügo spricht mit einer neuronalen Stimme (Piper), gratis und direkt im Browser – einmal laden, dann auch offline; in den Einstellungen an/aus und Frau/Mann'],
   ['5.8', '🧵 Echtes Gespräch: Flügo lässt dich ausreden (wartet auf eine echte Sprechpause, zeigt mit, was er hört), bleibt beim Thema und fragt nur eine Sache auf einmal · beim Zurückkommen geht das Gespräch dort weiter, wo ihr wart'],
   ['5.7', '💬 Flügo führt ein Gespräch in der Lernsprache: er fragt (z. B. „How are you today?“), wartet auf deine Antwort und antwortet als KI · jedes Wort in der Sprechblase antippen = Erklärung + Aussprache, Rest der Blase = ganzer Satz auf Deutsch'],
@@ -7902,6 +7906,31 @@ async function hubVoiceGet(){
   await speakAsync(hi, code); if(hubDlg.seq===seq + 1 && hubOnHub()) setTimeout(()=>hubOffer(true).then(hubContinue), 600);
   setTimeout(()=>nvLoad('de-DE'), 4000);   // deutsche Stimme im Hintergrund nachladen
 }
+function hubHasAI(){ return !!(sampleFn || apiKey() || window.claude); }
+function hubKeySetup(pending, msg){
+  hubStopLive(); clearTimeout(hubDlg.t); hubDlg.mode = 'key';
+  hubSayHTML(msg || '🔑 Damit wir lange reden können, brauche ich einmal deinen Claude-Schlüssel.', 'Er bleibt nur auf diesem Gerät. Einen Schlüssel bekommst du auf console.anthropic.com → API Keys (beginnt mit „sk-ant-“).', null);
+  const s = document.getElementById('hubSay'), f = document.createElement('div'); f.className = 'hs-key';
+  f.innerHTML = '<input type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-…">'
+    + '<div class="hs-chips"><button class="hs-chip no" data-a="paste" aria-label="Einfügen">📋</button><button class="hs-chip yes" data-a="save" aria-label="Speichern">💾</button>'
+    + '<a class="hs-chip no" href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener" aria-label="Schlüssel holen">🔗</a><button class="hs-chip no" data-a="later" aria-label="Später">⏭️</button></div>';
+  s.appendChild(f); f.addEventListener('click', e=>e.stopPropagation());
+  const inp = f.querySelector('input');
+  f.querySelector('[data-a=paste]').onclick = async ()=>{ try{ inp.value = (await navigator.clipboard.readText()).trim(); }catch(err){ inp.focus(); toast('📋 Lang drücken → Einfügen'); } };
+  f.querySelector('[data-a=later]').onclick = ()=>{ sndTap(); hubDlg.list = hubOfferList().filter(k=>k!=='key'); hubDlg.i = 0; hubOffer(true); };
+  const save = ()=>{
+    const v = inp.value.trim().replace(/\s+/g, '');
+    if(!/^sk-ant-[\w-]{20,}$/.test(v)){ toast('🔑 Der Schlüssel beginnt mit „sk-ant-“'); inp.focus(); return; }
+    try{ localStorage.setItem(KEY_STORE, v); }catch(err){}
+    sndCorrect(); hubDlg.list = []; hubDlg.i = 0;
+    if(pending) hubChat(pending); else hubOffer(true);
+  };
+  f.querySelector('[data-a=save]').onclick = save;
+  inp.addEventListener('keydown', e=>{ if(e.key==='Enter') save(); });
+  hubFit();
+}
+// Nach einem Fehler dieselbe Frage nochmal (ohne sie doppelt ins Gespräch zu schreiben)
+function hubRetry(text){ const l = buddy.turns[buddy.turns.length - 1]; if(l && l.role==='user' && l.content===text) buddy.turns.pop(); hubChat(text); }
 function hubChatStart(speakIt){
   const L = currentLang(), de = buddy.micLang!=='target', SP = PERSONA_STARTERS[state.persona];
   if(speakIt && hubDlg.lastStarter && hubDlg.starterSeq===hubDlg.seq){   // steht schon da (z. B. beim Öffnen) → nur vorlesen und zuhören
@@ -7956,11 +7985,14 @@ function hubOfferList(){
   if(questReady()) first.push('quests');
   first.push(...(!played ? ['campaign','learn'] : left > 0 ? ['learn','games'] : ['games','tales']));
   if(quiz) first.push('quiz');
-  if(!state.topics && state.lastPlayDate) first.unshift('topics');
-  if(state.settings.neural===undefined && nvSupported()) first.unshift('voice');            // zuerst: schöne Stimme?                       // nach dem ersten Spielen: Lieblingsthemen?
   if(state.persona) first.unshift('pquiz', 'prole');
-  if(sampleFn || apiKey() || window.claude) first.splice(first[0]==='topics' ? 1 : 0, 0, 'chat');   // zuerst ein kleines Gespräch (nach der Themenfrage)
   else (state.topics||[]).forEach(t=>{ if(PERSONAS[t]) first.push('p:' + t); });
+  // Ganz vorne, was echtes Reden möglich macht: schöne Stimme, KI-Zugang – dann gleich ein Gespräch
+  const head = [];
+  if(state.settings.neural===undefined && nvSupported()) head.push('voice');
+  head.push(hubHasAI() ? 'chat' : 'key');
+  if(!state.topics && state.lastPlayDate) head.push('topics');
+  first.unshift(...head);
   const all = [...new Set([...first, 'games','learn','campaign','tales','talk','train','quiz','quests','league','night','profile', 'topics', ...(state.persona ? ['poff'] : []), ...(canInstall() ? ['install'] : [])])].filter(k=>k!=='quiz' || quiz);
   return [...all.filter(k=>!hubDlg.recent.includes(k)), ...all.filter(k=>hubDlg.recent.includes(k))];   // gerade Gemachtes zuletzt
 }
@@ -7998,6 +8030,7 @@ function hubOffer(speakIt){
   }
   hubDlg.mode = 'offer';
   const k = hubCur();
+  if(k==='key'){ hubKeySetup(); return Promise.resolve(); }
   if(k==='topics' && !state.topics){ hubTopicPicker(); return Promise.resolve(); }
   const P = k.startsWith('p:') && PERSONAS[k.slice(2)];
   const o = P ? {e:P.e, de:'Soll ich heute dein ' + P.de + ' sein?', [L]:(({en:'Shall I be your {n} today?', es:'¿Hoy soy tu {n}?', fr:'Je deviens ton {n} aujourd’hui ?', it:'Oggi faccio il tuo {n}?'})[L] || '{n}?').replace('{n}', P.n[L] || P.n.en)} : HUB_OFFERS[k], q = o[L] || o.en;
@@ -8132,7 +8165,7 @@ function hubHear(code, onPart){
     const stopAll = ()=>{ done = true; clearTimeout(quietT); clearTimeout(startT); clearTimeout(maxT); };
     const finish = ()=>{ if(done) return; stopAll(); try{ rec.stop(); }catch(e){} resolve(text.trim()); };
     const startT = setTimeout(()=>{ if(!heard) finish(); }, 9000);      // niemand spricht
-    const maxT = setTimeout(finish, 45000);
+    const maxT = setTimeout(finish, 90000);
     rec.onresult = e=>{
       let fin = '', tmp = '';
       for(let i = 0; i < e.results.length; i++){ const r = e.results[i]; if(r.isFinal) fin += r[0].transcript + ' '; else tmp += r[0].transcript + ' '; }
@@ -8223,7 +8256,7 @@ function hubHeard(heard){
 // Freies Gespräch direkt am großen Drachen (KI), Antwort in der Sprechblase + vorlesen
 async function hubChat(text){
   hubDlg.mode = 'chat'; hubDlg.chatAt = Date.now();
-  if(!sampleFn && !apiKey() && !window.claude){ hubStopLive(); buddy.greeted = true; buddy.voice = false; openBuddy(); setTimeout(()=>buddySend(text), 300); return; }
+  if(!hubHasAI()){ hubKeySetup(text); return; }
   const L = currentLang();
   hubSayHTML('🤔 …', '„' + text + '“', null);
   buddy.turns.push({role:'user', content:text}); buddy.turns = buddy.turns.slice(-BUDDY_TURNS);
@@ -8238,7 +8271,10 @@ async function hubChat(text){
     if(e && e.code==='cancelled'){ hubTalkUI(); return; }
     hubStopLive();
     if(!hubOnHub()) return;
-    buddy.greeted = true; buddy.voice = false; openBuddy(); buddyFail(e, buddyBubble('me', text), text);   // dort steht, was fehlt (Schlüssel, Limit …)
+    const code = e && e.code;
+    if(code==='bad_key' || code==='no_backend'){ buddy.turns.pop(); if(code==='bad_key') try{ localStorage.removeItem(KEY_STORE); }catch(err){} hubKeySetup(text, code==='bad_key' ? '🔑 Dieser Schlüssel funktioniert leider nicht – bitte nochmal eintragen.' : null); return; }
+    const why = code==='rate_limited' ? '⏳ Kurz zu viele Fragen auf einmal.' : code==='network' || code==='offline' ? '📶 Keine Internetverbindung.' : code==='session_expired' ? '🔐 Anmeldung abgelaufen.' : '😕 Da ist etwas schiefgegangen.';
+    hubSayHTML(why, '', [['🔁', ()=>hubRetry(text), 'yes'], ['💡', ()=>{ hubDlg.mode = 'offer'; hubNext(true); }, 'no']]);
     return;
   }
   hubDlg.busy = false; hubDlg.chatAt = Date.now();
