@@ -4011,7 +4011,12 @@ function nvPrefetch(text, code, rate){                 // nächsten Satz schon b
 async function nvPlay(pcm, sr, my){
   const ac = nv.ac = nv.ac || new (window.AudioContext || window.webkitAudioContext)();
   if(ac.state!=='running'){ try{ await ac.resume(); }catch(e){} if(ac.state!=='running') return false; }
-  const buf = ac.createBuffer(1, pcm.length, sr); buf.copyToChannel(pcm instanceof Float32Array ? pcm : Float32Array.from(pcm), 0);
+  const a = pcm instanceof Float32Array ? new Float32Array(pcm) : Float32Array.from(pcm);
+  let peak = 0; for(let i = 0; i < a.length; i++){ const v = Math.abs(a[i]); if(v > peak) peak = v; }
+  const g = peak > .02 ? Math.min(3, .92/peak) : 1, fade = Math.min(a.length >> 2, Math.round(sr*.008));   // gleich laut, weich ein-/ausblenden (kein Knacken)
+  for(let i = 0; i < a.length; i++) a[i] *= g;
+  for(let i = 0; i < fade; i++){ const k = i/fade; a[i] *= k; a[a.length - 1 - i] *= k; }
+  const buf = ac.createBuffer(1, a.length, sr); buf.copyToChannel(a, 0);
   const src = nv.src = ac.createBufferSource(); src.buffer = buf; src.playbackRate.value = vfx().p; src.connect(nvOut(ac));
   return new Promise(res=>{ src.onended = ()=>{ try{ nv.osc && nv.osc.stop(); }catch(e){} nv.osc = null; res(my===nv.gen); }; src.start(); });
 }function nvStop(){ nv.gen++; if(nv.pre) nv.pre.clear(); try{ nv.src && nv.src.stop(); }catch(e){} nv.src = null; }
@@ -4471,8 +4476,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '6.9';
+const APP_VERSION = '7.0';
 const CHANGELOG = [
+  ['7.0', '🎧 Klang-Feinschliff: alle Stimmen gleich laut und ohne Knacken am Satzanfang/-ende'],
   ['6.9', '🎙️ Die natürliche Stimme ist nach dem Start sofort da: Flügo lädt sie gleich vom Gerät und spricht nicht mehr erst mit der Roboterstimme'],
   ['6.8', '🤗 Im Gespräch wartet Flügo nach jedem Satz auf dich (auch ohne Fragezeichen) · wenn du kurz nichts sagst, ermutigt dich Flügo einmal („Take your time!“) · beim Tschüss sagt er dir, wie viele Wörter du mit ihm gesprochen hast'],
   ['6.7', '🔊 Ton wird beim ersten Antippen sicher freigeschaltet, damit Flügos natürliche Stimme auf dem Handy gleich klappt'],
