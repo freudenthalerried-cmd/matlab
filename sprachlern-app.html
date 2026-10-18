@@ -703,7 +703,7 @@ body{background:radial-gradient(ellipse at 50% 0%,#4a331e 0%,#2a1c11 55%,#1c130d
 .talk-free{background:linear-gradient(160deg,#8a3b52,#5e2236);box-shadow:0 4px 0 #3f1524;}
 .quest.go{cursor:pointer;}
 .quest.go:active{transform:scale(.98);}
-.toast{background:#f6ead0;border:2px solid #c9a86a;color:#3b2a1a;}
+.toast{background:#f6ead0;border:2px solid #c9a86a;color:#3b2a1a;width:max-content;max-width:min(90vw,420px);}
 .tb.bot,.bb.bot,.bubble.them{background:#fbf3df;}
 
 /* ===== ABENTEUER ===== */
@@ -3063,9 +3063,9 @@ function nextToast(){
   const el = document.getElementById('toast');
   if(!toastQueue.length){ toastBusy=false; return; }
   toastBusy = true;
-  el.textContent = toastQueue.shift();
+  const msg = String(toastQueue.shift()); el.textContent = msg;
   el.classList.add('show');
-  setTimeout(()=>{ el.classList.remove('show'); setTimeout(nextToast, 350); }, 2300);
+  setTimeout(()=>{ el.classList.remove('show'); setTimeout(nextToast, 350); }, Math.min(6000, Math.max(2300, msg.length*45)));
 }
 function popXP(n){
   const el = document.getElementById('xpPop');
@@ -3819,29 +3819,63 @@ function cleanForSpeech(t){
 function voicesFor(code){
   try{ return speechSynthesis.getVoices().filter(v=>v.lang && v.lang.replace('_','-').toLowerCase().startsWith(code.slice(0,2).toLowerCase())); }catch(e){ return []; }
 }
+// Qualität aus Name UND voiceURI (iPhone versteckt „compact/enhanced/premium“ in der voiceURI)
 function voiceScore(v, code){
-  let s = 0; const n = v.name;
-  if(v.lang.replace('_','-').toLowerCase()===code.toLowerCase()) s += 2;
-  if(/natural|neural|premium|enhanced|siri|wavenet|online/i.test(n)) s += 4;
-  if(/google/i.test(n)) s += 3;
+  let s = 0; const n = v.name || '', u = (v.voiceURI || '').toLowerCase(), both = (n + ' ' + u).toLowerCase();
+  const lang = (v.lang||'').replace('_','-').toLowerCase();
+  if(lang===code.toLowerCase()) s += 2;
+  if(/eloquence|novelty|espeak|pico|robot|whisper|bad news|bells|zarvox|trinoids|albert|jester|organ|bubbles|boing|cellos|deranged|hysterical|superstar|wobble|bahh|fred|junior|ralph|kathy|good news|eddy|flo|grandma|grandpa|reed|rocko|sandy|shelley/i.test(both)) return s - 20;
+  if(/compact/.test(both)) s -= 4;                                   // zuerst prüfen: „siri … compact“ ist trotzdem kompakt
+  else if(/premium/.test(both)) s += 9;
+  else if(/enhanced|erweitert|siri|neural|natural|wavenet|online/.test(both)) s += 7;
+  if(/google/i.test(n)) s += 4;
+  if(/samantha|ava|allison|susan|zoe|evan|nathan|serena|daniel|karen|moira|tessa|monica|paulina|amelie|thomas|alice|federica|luca|anna|markus|petra|yannick/i.test(n)) s += 2;
   if(v.localService===false) s += 1;
-  if(/compact|espeak|robot|novelty|whisper|bad news|bells|zarvox|trinoids|albert|jester|organ|bubbles|boing|cellos|deranged|hysterical|superstar|wobble/i.test(n)) s -= 6;
   return s;
 }
 function pickVoice(code){
   const vs = voicesFor(code); if(!vs.length) return null;
   const chosen = state.settings && state.settings.voices && state.settings.voices[code.slice(0,2)];
-  return (chosen && vs.find(v=>v.name===chosen)) || vs.slice().sort((a,b)=>voiceScore(b,code)-voiceScore(a,code))[0];
+  const sorted = vs.slice().sort((a,b)=>voiceScore(b,code)-voiceScore(a,code));
+  return (chosen && (sorted.find(v=>v.voiceURI===chosen) || sorted.find(v=>v.name===chosen))) || sorted[0];
 }
 function speechRate(){ return (state.settings && state.settings.rate) || 0.9; }
 let ttsSeemsBroken = false;
-function speakAsync(text, code, rate){
+// Stimmen kommen in Chrome erst verzögert – beim ersten Mal kurz warten
+function voicesReady(ms=1200){
+  return new Promise(res=>{
+    try{ if(!window.speechSynthesis || speechSynthesis.getVoices().length) return res(); }catch(e){ return res(); }
+    const t = setTimeout(res, ms);
+    try{ speechSynthesis.addEventListener('voiceschanged', ()=>{ clearTimeout(t); res(); }, {once:true}); }catch(e){}
+  });
+}
+// lange Texte in Sätze teilen (Chrome bricht nach ~15 s ab)
+function ttsChunks(text){
+  const parts = text.match(/[^.!?…]+[.!?…]*["“”»)]*\s*/g) || [text];
+  const out = []; let cur = '';
+  parts.forEach(p=>{ if((cur + p).length > 180 && cur){ out.push(cur.trim()); cur = p; } else cur += p; });
+  if(cur.trim()) out.push(cur.trim());
+  return out;
+}
+async function speakAsync(text, code, rate){
+  if(!window.speechSynthesis || !window.SpeechSynthesisUtterance){ ttsSeemsBroken = true; return {ok:false, ms:0}; }
+  text = cleanForSpeech(text); if(!text) return {ok:true, ms:0};
+  await voicesReady();
+  const chunks = ttsChunks(text), t0 = performance.now(); let okAll = true;
+  for(const c of chunks){
+    const r = await speakOne(c, code, rate || speechRate());
+    if(!r.ok){ okAll = false; break; }
+  }
+  return {ok: okAll, ms: performance.now() - t0};
+}
+const ttsKeep = [];   // Chrome-Fehler: ohne Referenz feuert onend manchmal nie
+function speakOne(text, code, rate){
   return new Promise(resolve=>{
     try{
-      if(!window.speechSynthesis || !window.SpeechSynthesisUtterance){ ttsSeemsBroken = true; return resolve({ok:false, ms:0}); }
-      text = cleanForSpeech(text); if(!text) return resolve({ok:true, ms:0});
       const u = new SpeechSynthesisUtterance(text);
-      u.lang = code; u.rate = rate || drive.rate; u.volume = 1; const v = pickVoice(code); if(v) u.voice = v;
+      u.lang = code; u.rate = rate; u.volume = 1; u.pitch = 1;
+      const v = pickVoice(code); if(v){ u.voice = v; if(v.lang) u.lang = v.lang.replace('_','-'); }
+      ttsKeep.push(u); if(ttsKeep.length > 20) ttsKeep.shift();
       // Ergebnis: {ok:true} wenn wirklich gesprochen wurde, sonst {ok:false} (blockiert/unterbrochen)
       let done = false, started = false; const t0 = performance.now();
       const fin = (ok)=>{ if(!done){ done=true; resolve({ok: ok!==false && (started || performance.now()-t0 > 700), ms: performance.now()-t0}); } };
@@ -4251,8 +4285,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '4.7';
+const APP_VERSION = '4.8';
 const CHANGELOG = [
+  ['4.8', '🗣️ Natürlichere Stimme: bessere Stimmenwahl (auch iPhone-Premium-Stimmen), Warten auf Stimmen, lange Texte in Sätzen, dein Tempo überall'],
   ['4.7', '🔧 Selbsttest für Ton/Mikro/KI · klarer Hinweis, wenn es keinen Ton gibt · Drache: ohne Mikro gleich Chat zum Tippen'],
   ['4.6', '🌙 Gute-Nacht-Modus mit ruhiger Einschlafgeschichte, Meeresrauschen und dunkler werdendem Bildschirm · Flügo antippen: er fragt „What can I do for you?“ und hört zu'],
   ['4.5', '📚 Märchen: ruhiger vorlesen (Tempo 🐢/🚶/🐇, Pausen), kein Durchrasen mehr wenn die Sprachausgabe blockiert'],
@@ -5374,11 +5409,11 @@ function renderVoiceSettings(){
   const code = LANGS[currentLang()].code, vs = voicesFor(code).sort((a,b)=>voiceScore(b,code)-voiceScore(a,code));
   const cur = pickVoice(code);
   sel.innerHTML = vs.length ? '' : '<option>Keine Stimme gefunden – in den Handy-Einstellungen installieren</option>';
-  vs.forEach((v,i)=>{ const o = document.createElement('option'); o.value = v.name; o.textContent = (i===0 ? '⭐ ' : '') + v.name + ' (' + v.lang + ')'; if(cur && cur.name===v.name) o.selected = true; sel.appendChild(o); });
+  vs.filter(v=>voiceScore(v,code) > -10).forEach((v,i)=>{ const o = document.createElement('option'); o.value = v.voiceURI || v.name; const q = voiceScore(v,code); o.textContent = (i===0 ? '⭐ ' : '') + (q>=9 ? '💎 ' : '') + v.name + ' (' + v.lang + ')' + (/compact/i.test(v.voiceURI||'') ? ' · einfach' : ''); if(cur && (cur.voiceURI||cur.name)===(v.voiceURI||v.name)) o.selected = true; sel.appendChild(o); });
   document.getElementById('rateSel').value = speechRate();
 }
 document.getElementById('voiceSel').addEventListener('change', e=>{
-  state.settings.voices = state.settings.voices || {}; state.settings.voices[currentLang()] = e.target.value; saveState();
+  state.settings.voices = state.settings.voices || {}; state.settings.voices[currentLang()] = e.target.value; saveState();   // value = voiceURI
   speak(LANGS[currentLang()].code.startsWith('en') ? 'Hello, nice to meet you!' : wordOfDay() ? wordOfDay()[1] : 'Hello', LANGS[currentLang()].code);
 });
 document.getElementById('rateSel').addEventListener('change', e=>{ state.settings.rate = parseFloat(e.target.value); saveState(); });
@@ -5453,11 +5488,11 @@ function talkBubble(cls, html){
   const list = document.getElementById('talkList'); list.appendChild(el); list.scrollTop = list.scrollHeight;
   return el;
 }
-function talkSay(text, card){
+function talkSay(text, card, silent){
   const code = LANGS[currentLang()].code;
   const el = talkBubble('bot' + (card ? ' card ' + card : ''), escapeHtml(text).replace(/\n/g,'<br>') + '<button class="tb-hear">🔊</button>');
   el.querySelector('.tb-hear').onclick = ()=>speak(text, code);
-  if(talkSettings().voice) speak(text, code);
+  if(talkSettings().voice && !silent) speak(text, code);
   return el;
 }
 function talkThinking(on){
@@ -5620,10 +5655,10 @@ Answer as JSON only: {"headline": string, "text": string, "question": string}`;
     const card = talkBubble('bot card ' + m.kind, `<div class="card-h">${m.kind==='radio' ? '📻' : '📰'} ${escapeHtml(r.headline||'')}</div><div class="card-t">${escapeHtml(r.text||'')}</div><button class="tb-hear">🔊 Anhören</button>`);
     const code = LANGS[currentLang()].code;
     card.querySelector('.tb-hear').onclick = ()=>speak(r.text, code);
-    if(m.kind==='radio'){ beep(660,0.12,'sine',0.15); setTimeout(()=>speak((r.headline||'') + '. ' + r.text, code), 300); }
+    if(m.kind==='radio'){ beep(660,0.12,'sine',0.15); setTimeout(()=>{ speakAsync((r.headline||'') + '. ' + r.text, code).then(()=>{ if(talk.mission===m && talkSettings().voice) speak(r.question, code); }); }, 300); }
     talkBubble('sys', '③ Jetzt du! Antworte mit 3 Sätzen oder mehr – benutz die neuen Wörter 💬');
     talk.turns = [{role:'user', content:'[story shown]'}, {role:'assistant', content:'REPLY: ' + r.question}];
-    talkSay(r.question);
+    talkSay(r.question, null, m.kind==='radio');   // beim Radio erst nach der Durchsage vorlesen
   }catch(e){ talkError(e); }
 }
 function missionRules(){
@@ -6040,13 +6075,14 @@ async function buddySend(text){
     if(buddy.micLang==='target'){ const r = parseTalk(out); addFeedback(userEl, r); reply = r.reply; track('talk', 1); }
     else reply = out.replace(/^REPLY:\s*/i,'').trim();
   }catch(e){
-    reply = buddyOffline(text); buddy.voice = false; updateBuddyControls();
+    reply = buddyOffline(text); buddy.voice = false; updateBuddyControls(); buddy.offline = true;
   }
   buddy.busy = false;
   buddyBubble('bot', reply);
   document.getElementById('buddyFace').innerHTML = dragonSVG({size:54, mood:'happy'});
   buddyStatus('🗣️ ' + dragon().name + ' spricht …');
-  await speakAsync(reply, buddy.micLang==='target' || !/[äöüß]|\b(du|ich|und|nicht|das|ist)\b/i.test(reply) ? buddyCode() : 'de-DE');
+  const replyCode = buddy.offline ? 'de-DE' : buddyCode(); buddy.offline = false;
+  await speakAsync(reply, replyCode);
   buddyStatus('');
   if(buddy.voice) buddyListen();
 }
