@@ -804,6 +804,11 @@ body{background:radial-gradient(ellipse at 50% 0%,#4a331e 0%,#2a1c11 55%,#1c130d
 .hub-round.send{background:linear-gradient(180deg,#7fd36b,#3f9a3a);border-color:#3f9a3a;}
 .hub-say .hs-q{display:block;}
 .hub-say .hs-de.hide{display:none;}
+.hub-say .w{cursor:pointer;border-radius:5px;transition:background .15s;}
+.hub-say .w:hover,.hub-say .w.sel{background:#f3d98f;}
+.hub-say .hs-x{display:block;margin-top:6px;padding:5px 8px;border-radius:10px;background:#efe0bf;font-size:13.5px;font-weight:700;color:#3b2a1a;text-align:left;}
+.hub-say .hs-x small{display:block;font-weight:600;color:#6b4a22;font-size:12px;margin-top:2px;}
+.hub-say .hs-x button{margin-top:5px;border:none;border-radius:999px;background:#c9a86a;color:#2a1c11;font:inherit;font-size:12px;padding:3px 9px;cursor:pointer;}
 .hub-mic{width:66px;height:66px;padding:0;justify-content:center;border-radius:50%;}
 .hub-mic span{font-size:30px;}
 .hub-ring{pointer-events:none;}
@@ -4284,8 +4289,9 @@ document.getElementById('improveSend').addEventListener('click', async ()=>{
 setTimeout(flushLocalIdeas, 4000);
 
 /* ---------- 📜 Version & Änderungsprotokoll ---------- */
-const APP_VERSION = '5.6';
+const APP_VERSION = '5.7';
 const CHANGELOG = [
+  ['5.7', '💬 Flügo führt ein Gespräch in der Lernsprache: er fragt (z. B. „How are you today?“), wartet auf deine Antwort und antwortet als KI · jedes Wort in der Sprechblase antippen = Erklärung + Aussprache, Rest der Blase = ganzer Satz auf Deutsch'],
   ['5.6', '💛 Flügo fragt nach deinen Lieblingsthemen und wird zum Profi-Drachen: Ingenieur-Drache (technisches Englisch), Business-Drache, Forscher-, Koch-, Reise-, Sport-, Musik-, Gamer-, Tier- und Ritter-Drache – mit Kostüm, Themen-Wörtern und Rollenspielen'],
   ['5.5', '⭐ Flügo wächst mit dir: Drachen-Level 0–10 (B2 ≈ 5), mit jedem Level lernt er neue Fähigkeiten (Feuer, Fliegen, Zaubern …) und prüft deine Grammatik immer genauer · Fähigkeiten durch Ausprobieren entdecken (streicheln, kitzeln, hochwischen, Mond & Wolken) · weniger Text'],
   ['5.4', '🎤 Mikro einfacher: im Browser nur einmal „Zulassen“ (Flügo fragt selbst), bei Sperre die genaue Stelle zum Erlauben für dein Handy · in der Claude-App ein Knopf „Im Browser mit Mikro öffnen“ – mit deinem Fortschritt, direkt ins Gespräch'],
@@ -7644,7 +7650,7 @@ function wearPersona(id){
   const q = P ? (({en:'Ta-da! I’m your {n}!', es:'¡Tachán! ¡Soy tu {n}!', fr:'Tadaa ! Je suis ton {n} !', it:'Tadaa! Sono il tuo {n}!'})[L] || '').replace('{n}', P.n[L] || P.n.en)
               : ({en:'Back to normal!', es:'¡Vuelvo a ser yo!', fr:'Me revoilà normal !', it:'Torno normale!'})[L] || '';
   hubDlg.mode = 'offer'; hubDlg.list = []; hubDlg.i = 0;
-  hubSayHTML((P ? P.e : '🐉') + ' ' + q, '', null); const seq = hubDlg.seq;
+  hubSayHTML((P ? P.e : '🐉') + ' ' + q, '', null, false, true); const seq = hubDlg.seq;
   runDragonAction('jump');
   (state.settings.sound!==false ? speakAsync(q, LANGS[L].code) : Promise.resolve()).then(()=>setTimeout(()=>{ if(hubOnHub() && hubDlg.seq===seq) hubOffer(true).then(hubContinue); }, 500));
 }
@@ -7709,6 +7715,81 @@ document.addEventListener('click', e=>{
   sndTap(); const id = b.dataset.persona; wearPersona(state.persona===id ? null : id); try{ renderDen(); }catch(err){}
 });
 
+/* ---------- 🔤 Wort oder Satz in der Sprechblase erklären ---------- */
+const hubXCache = {};
+let hubDict = null;
+function hubLookup(word){
+  const lang = currentLang(), norm = s=>String(s||'').toLowerCase().replace(/^(the|a|an|to|el|la|los|las|un|una|le|les|l’|l'|une|il|lo|gli|uno)\s+/, '').trim();
+  if(!hubDict || hubDict.lang!==lang){
+    hubDict = {lang, m:new Map()};
+    const add = arr=>(arr||[]).forEach(x=>{ if(x && x[lang] && x.de){ const k = norm(x[lang]); if(k && !hubDict.m.has(k)) hubDict.m.set(k, x.de); } });
+    try{ RAW_LEVELS.forEach(l=>add(l.words)); Object.values(VOCAB_BY_DIFF).forEach(set=>(set||[]).forEach(lv=>Array.isArray(lv) && add(lv))); }catch(e){}
+  }
+  return hubDict.m.get(norm(word)) || null;
+}
+function hubXBox(){
+  const s = document.getElementById('hubSay'); let x = s.querySelector('.hs-x');
+  if(!x){ x = document.createElement('div'); x.className = 'hs-x'; const c = s.querySelector('.hs-chips'); c ? s.insertBefore(x, c) : s.appendChild(x); }
+  return x;
+}
+async function hubExplain(wEl, sentence){
+  const word = wEl ? wEl.textContent.replace(/[’']s$/,'') : null, L = currentLang(), code = buddy.micLang==='target' || !wEl ? LANGS[L].code : 'de-DE';
+  document.querySelectorAll('#hubSay .w.sel').forEach(x=>x.classList.remove('sel')); if(wEl) wEl.classList.add('sel');
+  const seq = hubDlg.seq, box = hubXBox(), resume = hubListening;
+  if(resume){ try{ buddy.rec && buddy.rec.abort(); }catch(e){} }
+  if(word) speakAsync(word, code).then(()=>{ if(resume && hubDlg.live) hubContinue(); }); else if(resume && hubDlg.live) setTimeout(hubContinue, 600);
+  box.textContent = '…'; hubFit();
+  const key = (word||'#') + '|' + (word ? sentence : sentence);
+  let r = hubXCache[key];
+  if(!r && word){ const loc = hubLookup(word); if(loc) r = {de:loc}; }
+  if(!r && (sampleFn || apiKey() || window.claude)){
+    try{
+      r = await askClaude([{role:'user', content: word
+        ? `Word: "${word}"\nSentence: "${sentence||word}"\nExplain this word for a German-speaking learner (CEFR ${myCefr()}). JSON only: {"de":"<German meaning in this sentence>","note":"<very short German hint, max 12 words, e.g. word type, base form or usage>"}`
+        : `Translate into natural German: "${sentence}". JSON only: {"de":"<German translation>"}`}],
+        'You are a concise bilingual dictionary inside a language-learning app. Reply with JSON only.', true);
+      if(r && r.de) hubXCache[key] = r; else r = null;
+    }catch(e){ r = null; }
+  }
+  if(hubDlg.seq!==seq || !box.isConnected) return;
+  box.innerHTML = '';
+  if(!r){ box.textContent = word ? '🔤 ' + word + ' – dafür brauche ich Claude.' : '🔑 Für Übersetzungen brauche ich Claude.'; hubFit(); return; }
+  if(word){ const b = document.createElement('b'); b.textContent = word; box.append('🔤 ', b, ' = ' + r.de); }
+  else box.append('🇩🇪 ' + r.de);
+  if(r.note){ const n = document.createElement('small'); n.textContent = r.note; box.appendChild(n); }
+  if(word && sentence && sentence.split(/\s+/).length > 1){ const sb = document.createElement('button'); sb.textContent = '🇩🇪 Ganzer Satz'; sb.onclick = ev=>{ ev.stopPropagation(); hubExplain(null, sentence); }; box.appendChild(sb); }
+  discover('translate'); hubFit();
+}
+// Gesprächseinstieg auf Englisch (bzw. in der Lernsprache) – Flügo fragt und wartet auf deine Antwort
+const STARTERS = {
+  en:['How are you today?','What did you do today?','What is your favourite food?','Do you have any pets?','What do you like to do at the weekend?','What was the best part of your day?','Where would you like to travel?','What music do you like?','What are you doing tomorrow?','Tell me about your family!','What is the weather like today?','What did you have for breakfast?'],
+  es:['¿Qué tal estás hoy?','¿Qué hiciste hoy?','¿Cuál es tu comida favorita?','¿Tienes mascotas?','¿Qué te gusta hacer el fin de semana?','¿Adónde te gustaría viajar?','¿Qué música te gusta?','¿Qué vas a hacer mañana?','¡Háblame de tu familia!','¿Qué tiempo hace hoy?'],
+  fr:['Comment ça va aujourd’hui ?','Qu’est-ce que tu as fait aujourd’hui ?','Quel est ton plat préféré ?','Tu as des animaux ?','Qu’est-ce que tu aimes faire le week-end ?','Où aimerais-tu voyager ?','Quelle musique aimes-tu ?','Qu’est-ce que tu fais demain ?','Parle-moi de ta famille !','Quel temps fait-il aujourd’hui ?'],
+  it:['Come stai oggi?','Che cosa hai fatto oggi?','Qual è il tuo cibo preferito?','Hai degli animali?','Che cosa ti piace fare nel fine settimana?','Dove ti piacerebbe viaggiare?','Che musica ti piace?','Che cosa fai domani?','Parlami della tua famiglia!','Che tempo fa oggi?'],
+  de:['Wie geht es dir heute?','Was hast du heute gemacht?','Was ist dein Lieblingsessen?','Hast du Haustiere?','Was machst du gern am Wochenende?','Wohin würdest du gern reisen?','Welche Musik magst du?','Was machst du morgen?'],
+};
+const PERSONA_STARTERS = {
+  business:{en:'Tell me about your job – what do you do at work?', es:'Háblame de tu trabajo: ¿qué haces?', fr:'Parle-moi de ton travail : qu’est-ce que tu fais ?', it:'Parlami del tuo lavoro: che cosa fai?'},
+  engineer:{en:'What machine or tool do you use most?', es:'¿Qué máquina o herramienta usas más?', fr:'Quelle machine ou quel outil utilises-tu le plus ?', it:'Quale macchina o attrezzo usi di più?'},
+};
+function hubMicOk(){ return micAvailable() && !hubDlg.micBlocked && !window.claude && !hubDlg.typing; }
+// Wenn Flügo etwas fragt: danach automatisch zuhören (Gesprächsmodus)
+function hubAwait(q){ if(/[?？]\s*$/.test(String(q||'')) && hubMicOk() && hubOnHub()){ hubDlg.live = true; hubDlg.misses = 0; hubTalkUI(); hubContinue(); } }
+function hubChatStart(speakIt){
+  const L = currentLang(), de = buddy.micLang!=='target', SP = PERSONA_STARTERS[state.persona];
+  if(speakIt && hubDlg.lastStarter && hubDlg.starterSeq===hubDlg.seq){   // steht schon da (z. B. beim Öffnen) → nur vorlesen und zuhören
+    const q0 = hubDlg.lastStarter;
+    return state.settings.sound!==false ? speakAsync(q0, de ? 'de-DE' : LANGS[L].code).then(()=>hubAwait(q0)) : Promise.resolve(hubAwait(q0));
+  }
+  const pool = [...(STARTERS[de ? 'de' : L] || STARTERS.en), ...(SP && !de ? [SP[L] || SP.en] : [])].filter(x=>x!==hubDlg.lastStarter);
+  const q = pick(pool); hubDlg.lastStarter = q; hubDlg.mode = 'chat';
+  buddy.turns.push({role:'assistant', content:(de ? '' : 'REPLY: ') + q}); buddy.turns = buddy.turns.slice(-BUDDY_TURNS);
+  hubSayHTML('💬 ' + q, '', [['💡', ()=>{ hubDlg.mode = 'offer'; hubNext(true).then(hubContinue); }, 'no']], false, !de); hubDlg.starterSeq = hubDlg.seq;
+  if(!speakIt) return Promise.resolve();                          // nur anzeigen – gefragt (und zugehört) wird erst beim Vorlesen
+  if(state.settings.sound!==false) return speakAsync(q, de ? 'de-DE' : LANGS[L].code).then(()=>hubAwait(q));
+  hubAwait(q); return Promise.resolve();
+}
+
 /* ---------- 🐉 Drachen-Dialog: Flügo schlägt vor, du antwortest (Knopf, Stimme oder Tippen) ---------- */
 const HUB_OFFERS = {
   campaign:{e:'⚔️', de:'Gehen wir auf ein Abenteuer?', en:'Shall we go on an adventure?', es:'¿Nos vamos de aventura?', fr:'On part à l’aventure ?', it:'Andiamo all’avventura?'},
@@ -7742,15 +7823,23 @@ function hubOfferList(){
   if(quiz) first.push('quiz');
   if(!state.topics && state.lastPlayDate) first.unshift('topics');                       // nach dem ersten Spielen: Lieblingsthemen?
   if(state.persona) first.unshift('pquiz', 'prole');
+  if(sampleFn || apiKey() || window.claude) first.splice(first[0]==='topics' ? 1 : 0, 0, 'chat');   // zuerst ein kleines Gespräch (nach der Themenfrage)
   else (state.topics||[]).forEach(t=>{ if(PERSONAS[t]) first.push('p:' + t); });
   const all = [...new Set([...first, 'games','learn','campaign','tales','talk','train','quiz','quests','league','night','profile', 'topics', ...(state.persona ? ['poff'] : []), ...(canInstall() ? ['install'] : [])])].filter(k=>k!=='quiz' || quiz);
   return [...all.filter(k=>!hubDlg.recent.includes(k)), ...all.filter(k=>hubDlg.recent.includes(k))];   // gerade Gemachtes zuletzt
 }
-function hubSayHTML(q, de, chips, hideDe){
+function hubSayHTML(q, de, chips, hideDe, tl){
   hubDlg.seq = (hubDlg.seq||0) + 1;               // jede neue Sprechblase macht ältere, verzögerte Folgeschritte ungültig
   const s = document.getElementById('hubSay'); s.classList.remove('hidden');
   s.innerHTML = '<span class="hs-q"></span>' + (de ? '<small class="hs-de' + (hideDe ? ' hide' : '') + '"></small>' : '') + (chips ? '<div class="hs-chips"></div>' : '');
-  s.querySelector('.hs-q').textContent = q;
+  const hq = s.querySelector('.hs-q');
+  if(tl){   // Lernsprache: jedes Wort antippbar (Erklärung), Rest der Blase = ganzer Satz
+    hq.dataset.text = q.replace(/^[^\p{L}\p{N}¿¡„"]+/u, '').trim();
+    String(q).split(/([\p{L}\p{N}][\p{L}\p{N}'’-]*)/u).forEach((part, i)=>{
+      if(i % 2){ const w = document.createElement('span'); w.className = 'w'; w.textContent = part; hq.appendChild(w); }
+      else if(part) hq.appendChild(document.createTextNode(part));
+    });
+  } else hq.textContent = q;
   if(de) s.querySelector('.hs-de').textContent = de;
   (chips||[]).forEach(([txt, fn, cls])=>{ const b = document.createElement('button'); b.className = 'hs-chip ' + (cls||''); b.textContent = txt; b.onclick = e=>{ e.stopPropagation(); fn(); }; s.querySelector('.hs-chips').appendChild(b); });
   s.classList.remove('pop'); void s.offsetWidth; s.classList.add('pop');
@@ -7766,16 +7855,17 @@ function hubOffer(speakIt){
   const hint = hubDlg.n % 3 === 0 && skillHint();
   if(hint){
     hubDlg.mode = 'hint';
-    hubSayHTML('🐉 ' + hint.q, hint.de, [['👍', ()=>hubNext(true), 'yes']]);
+    hubSayHTML('🐉 ' + hint.q, hint.de, [['👍', ()=>hubNext(true), 'yes']], false, true);
     return speakIt && state.settings.sound!==false ? speakAsync(hint.q, LANGS[L].code) : Promise.resolve();
   }
   hubDlg.mode = 'offer';
   const k = hubCur();
+  if(k==='chat') return hubChatStart(speakIt);
   if(k==='topics' && !state.topics){ hubTopicPicker(); return Promise.resolve(); }
   const P = k.startsWith('p:') && PERSONAS[k.slice(2)];
   const o = P ? {e:P.e, de:'Soll ich heute dein ' + P.de + ' sein?', [L]:(({en:'Shall I be your {n} today?', es:'¿Hoy soy tu {n}?', fr:'Je deviens ton {n} aujourd’hui ?', it:'Oggi faccio il tuo {n}?'})[L] || '{n}?').replace('{n}', P.n[L] || P.n.en)} : HUB_OFFERS[k], q = o[L] || o.en;
-  hubSayHTML(o.e + ' ' + q, o.de, [['👍', hubAccept, 'yes'], ['👎', ()=>hubNext(true), 'no']], true);
-  return speakIt && state.settings.sound!==false ? speakAsync(q, LANGS[L].code) : Promise.resolve();
+  hubSayHTML(o.e + ' ' + q, o.de, [['👍', hubAccept, 'yes'], ['👎', ()=>hubNext(true), 'no']], true, true);
+  return speakIt && state.settings.sound!==false ? speakAsync(q, LANGS[L].code).then(()=>hubAwait(q)) : Promise.resolve();
 }
 function hubAccept(){
   const k = hubCur(); sndTap();
@@ -7821,7 +7911,7 @@ function renderHub(){
   hubDlg.list = hubOfferList(); hubDlg.i = 0; hubOffer(false);
 
 }
-function openHub(){ try{ checkDragonGrowth(); }catch(e){} renderHub(); hubTalkUI(); hubDlg.mode = 'offer'; hubDlg.typing = false; hubTypeUI(); requestAnimationFrame(hubFit); clearTimeout(hubDlg.t); hubDlg.t = setTimeout(()=>{ if(document.getElementById('screen-hub').classList.contains('active') && !fqOpen() && !hubListening) hubOffer(true); }, 600); showScreen('screen-hub');
+function openHub(){ try{ checkDragonGrowth(); }catch(e){} renderHub(); hubTalkUI(); hubDlg.typing = false; hubTypeUI(); requestAnimationFrame(hubFit); clearTimeout(hubDlg.t); hubDlg.t = setTimeout(()=>{ if(document.getElementById('screen-hub').classList.contains('active') && hubDlg.seq===hubDlg.openSeq && !fqOpen() && !hubListening && !hubDlg.busy) hubOffer(true); }, 600); showScreen('screen-hub'); hubDlg.openSeq = hubDlg.seq;   // nur vorlesen, wenn danach nichts Neues gezeigt wurde
   if(hubDlg.lvUp) hubShowLevelUp();
   else if(hubDlg.micWelcome){ hubDlg.micWelcome = false; clearTimeout(hubDlg.t); hubSayHTML('🎤 Hier kann ich dich hören!', 'Tipp auf „Los“ – beim ersten Mal fragt dein Handy nach dem Mikrofon: einfach „Zulassen“. Das merkt es sich.', [['🎤 Los geht’s', ()=>{ hubDlg.live = true; hubDlg.misses = 0; hubTalkUI(); hubListen(); }, 'yes']]); }
 }
@@ -7883,7 +7973,7 @@ function hubTrick(id){
   if(sk && !skillOpen(sk)) return hubLocked(sk);
   if(sk) discover(sk.id);
   const L = DRAGON_LINES[id] || {}, line = pick(L[currentLang()] || L.en || ['✨']);
-  hubSayHTML(line, '', null); const seq = hubDlg.seq;
+  hubSayHTML(line, '', null, false, true); const seq = hubDlg.seq;
   speakAsync(line, LANGS[currentLang()].code);
   runDragonAction(id).then(()=>{ if(!hubOnHub() || hubDlg.seq!==seq) return; if(hubDlg.mode!=='chat') hubOffer(false); hubContinue(); });
 }
@@ -7954,10 +8044,11 @@ function hubHeard(heard){
   }
   if(words <= 7 && /^((lass|lasst) uns|let'?s|bitte)?\s*(auf |in )?(deutsch|german)\b|\b(rede|sprich|speak|talk)\b.*\b(deutsch|german)\b/i.test(t)){ hubLang('de'); return; }
   if(words <= 7 && /\b(rede|sprich|speak|talk|(lass|lasst) uns|let'?s)\b.*\b(englisch|english|spanisch|spanish|español|französisch|french|français|italienisch|italian|italiano)\b/i.test(t)){ hubLang('target'); return; }
-  let cmd = dragonCommand(heard, true); if(cmd==='random') cmd = pick(DRAGON_RANDOM);
+  const chatting = hubDlg.mode==='chat', cmdLike = /^(let'?s|lass uns|ich (will|möchte)|i (want|wanna)|open|öffne|starte?|zeig|mach|do|show)\b/i.test(t);
+  let cmd = !chatting || words <= 3 || cmdLike ? dragonCommand(heard, true) : null; if(cmd==='random') cmd = pick(DRAGON_RANDOM);
   if(cmd){ hubTrick(cmd); return; }
-  const offer = hubDlg.mode!=='chat';
-  if(offer || words <= 4){ const hit = HUB_INTENTS.find(([re])=>re.test(heard)); if(hit){ hubStopLive(); toast('🐉 ' + heard); hubGo(hit[1]); return; } }
+  const offer = !chatting;
+  if(offer || cmdLike){ const hit = HUB_INTENTS.find(([re])=>re.test(heard)); if(hit){ hubStopLive(); toast('🐉 ' + heard); hubGo(hit[1]); return; } }
   if(offer && /^(ja+|jo|jep|yes|yeah|yep|sure|ok(ay)?|gerne?|klar|los|s[ií]|oui|ouais|d'accord|certo|claro|vale|let'?s go)\b/.test(t)){ if(hubDlg.mode==='hint'){ hubNext(true).then(hubContinue); return; } hubStopLive(); hubAccept(); return; }
   if(offer && /^(nein|nö|no|nope|non|nah|lieber|was anderes|etwas anderes|anders|something else|otra|autre|altro)\b/.test(t)){ hubNext(true).then(hubContinue); return; }
   hubChat(heard);
@@ -7991,12 +8082,12 @@ async function hubChat(text){
   if(!hubOnHub()){ hubStopLive(); return; }
   const app = r.action && BUDDY_ACTS[r.action].app ? r.action : null;
   discover('talk'); if(r.grammar) discover('grammar'); if(r.word) discover('words'); if(r.upgrade) discover('upgrade');
-  hubSayHTML(r.reply, r.grammar ? '✏️ ' + r.grammar : r.word ? '🔤 ' + r.word : r.upgrade ? '🎓 ' + r.upgrade : r.memory.length ? '🧠 ' + r.memory[0] : '', null);
+  hubSayHTML(r.reply, r.grammar ? '✏️ ' + r.grammar : r.word ? '🔤 ' + r.word : r.upgrade ? '🎓 ' + r.upgrade : r.memory.length ? '🧠 ' + r.memory[0] : '', null, false, buddy.micLang==='target');
   hubTalkUI();
   if(r.action && !app) buddyAct(r.action);
   if(state.settings.sound!==false || hubDlg.live) await speakAsync(r.reply, buddyVoiceCode(r.reply));
   if(app){ hubStopLive(); buddyOpenApp(app); return; }
-  hubContinue();
+  hubAwait(r.reply); hubContinue();
 }
 async function hubListen(auto){
   if(hubListening){ try{ buddy.rec && buddy.rec.abort(); }catch(e){} return; }
@@ -8016,8 +8107,7 @@ async function hubListen(auto){
   if(!heard){
     if(err==='aborted' || !hubDlg.live && auto) return;
     if(hubDlg.live && ++hubDlg.misses < 2) return hubContinue();     // einmal still nachhaken
-    if(hubDlg.live){ hubStopLive(); toast('💤 Ich mach kurz Pause – tipp auf 🎤, wenn du weiterreden willst'); }
-    else toast('🐉 Ich hab nichts gehört – tipp nochmal auf 🎤');
+    hubStopLive();                                  // kein Hinweis-Fenster: der Knopf zeigt wieder 🎤
     return;
   }
   hubDlg.misses = 0;
@@ -8030,7 +8120,11 @@ document.getElementById('hubMic').addEventListener('click', ()=>{
 document.getElementById('hubType').addEventListener('click', ()=>{ sndTap(); hubTypeOpen(''); });
 document.getElementById('hubSay').addEventListener('click', e=>{
   if(e.target.closest('.hs-chip')) return;
-  const d = document.querySelector('#hubSay .hs-de.hide'); if(d){ d.classList.remove('hide'); discover('translate'); hubFit(); }
+  const w = e.target.closest('.w'), q = document.querySelector('#hubSay .hs-q');
+  if(w) return hubExplain(w, q && q.dataset.text);
+  if(e.target.closest('.hs-x')) return;
+  const d = document.querySelector('#hubSay .hs-de.hide'); if(d){ d.classList.remove('hide'); discover('translate'); hubFit(); return; }
+  if(q && q.dataset.text && !document.querySelector('#hubSay .hs-de')) hubExplain(null, q.dataset.text);
 });
 document.getElementById('hubTypeClose').addEventListener('click', ()=>{ sndTap(); hubDlg.typing = false; hubTypeUI(); });
 document.getElementById('hubTypeBar').addEventListener('submit', e=>{
