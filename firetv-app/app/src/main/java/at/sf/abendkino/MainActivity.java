@@ -51,7 +51,8 @@ public class MainActivity extends Activity {
                     + "dtscout|mgid|taboola|outbrain|syndication|popunder|adserver|^ads?\\.|\\.ads?\\.)");
     // Strict mode: only the video sites themselves and their CDNs may load anything.
     private static final String[] ALLOWED = {"eporner.com", "pornhub.com", "phncdn.com", "redtube.com", "rdtcdn.com",
-            "cdnjs.cloudflare.com", "ajax.googleapis.com", "jsdelivr.net"};
+            "cdnjs.cloudflare.com", "ajax.googleapis.com", "jsdelivr.net",
+            "akamaihd.net", "akamaized.net", "zdf.de", "ard.de", "ardmediathek.de", "arte.tv", "3sat.de", "orf.at", "srf.ch"};
     private static final Pattern MEDIA = Pattern.compile("\\.(mp4|m3u8|ts|m4s|webm)(\\?|$)");
 
     private FrameLayout root;
@@ -262,6 +263,31 @@ public class MainActivity extends Activity {
                     c.setConnectTimeout(8000);
                     c.setReadTimeout(12000);
                     c.setRequestProperty("User-Agent", UA);
+                    try (InputStream in = c.getInputStream()) { body = new String(read(in), "UTF-8"); }
+                    ok = c.getResponseCode() == 200;
+                } catch (Exception ex) {
+                    body = String.valueOf(ex.getMessage());
+                }
+                final String js = "__cb(" + JSONObject.quote(cb) + "," + ok + "," + JSONObject.quote(body) + ")";
+                runOnUiThread(() -> ui.evaluateJavascript(js, null));
+            });
+        }
+
+        /** POST with a plain-text body (used for the Mediathek search). Answer goes to __cb like get(). */
+        @JavascriptInterface
+        public void post(final String url, final String data, final String cb) {
+            pool.execute(() -> {
+                boolean ok = false;
+                String body;
+                try {
+                    HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
+                    c.setConnectTimeout(8000);
+                    c.setReadTimeout(15000);
+                    c.setRequestMethod("POST");
+                    c.setDoOutput(true);
+                    c.setRequestProperty("User-Agent", UA);
+                    c.setRequestProperty("Content-Type", "text/plain");
+                    try (OutputStream out = c.getOutputStream()) { out.write(data.getBytes("UTF-8")); }
                     try (InputStream in = c.getInputStream()) { body = new String(read(in), "UTF-8"); }
                     ok = c.getResponseCode() == 200;
                 } catch (Exception ex) {

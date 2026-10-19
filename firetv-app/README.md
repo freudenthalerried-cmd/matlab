@@ -32,3 +32,5 @@ GitHub Actions (`.github/workflows/firetv-apk.yml`) baut bei jedem Push und aktu
 - **Weiterschauen**: Filme starten dort, wo du aufgehört hast
 - **PIN-Sperre** beim Start (4 Pfeiltasten), **Diskret-Modus** (Vorschaubilder unscharf)
 - **Mindestlänge** 10/20/30 min, **Sleep-Timer** 30/60/90 min
+- **Filme**: kostenlose deutsche Spielfilme, Tatort, Fernsehfilme und Dokus in voller Länge aus den
+  Mediatheken (ARD, ZDF, arte, 3sat, ORF …) über die MediathekViewWeb-Suche – legal, HD, ohne Werbung
