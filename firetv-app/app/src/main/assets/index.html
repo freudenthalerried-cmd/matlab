@@ -44,14 +44,35 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0b0b10;color:#eee;f
 #toast{position:fixed;left:50%;bottom:6vh;transform:translateX(-50%);background:#222;padding:1.4vh 2vw;border-radius:1vh;font-size:2.4vh;
   opacity:0;transition:opacity .3s;z-index:9}
 #help{position:fixed;right:3vw;top:3vh;font-size:1.8vh;color:#666;z-index:6}
+#game{position:fixed;top:0;left:0;right:0;bottom:0;z-index:20;display:none;flex-direction:column;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 50% 40%,#3a0d1e,#0b0b10 70%)}
+#ghead{position:absolute;top:5vh;font-size:3vh;color:#e50914;font-weight:700}
+#gtimer{position:absolute;top:11vh;right:6vw;font-size:7vh;font-weight:800}
+#gcard{width:70vw;min-height:40vh;padding:5vh 4vw;border-radius:2vh;background:#1b1b24;box-shadow:0 0 6vh #e5091455;text-align:center;
+  display:flex;flex-direction:column;justify-content:center;gap:2vh}
+#gcard.pop{animation:pop .35s}
+@keyframes pop{from{transform:scale(.92);opacity:.3}to{transform:none;opacity:1}}
+#gwho{font-size:2.6vh;color:#f08a9a}
+#gtitle{font-size:5vh;font-weight:800}
+#gbody{font-size:4vh;line-height:1.35}
+#gsub{font-size:2.2vh;color:#999}
+#ghelp{position:absolute;bottom:5vh;font-size:2.2vh;color:#888}
+#lock{position:fixed;top:0;left:0;right:0;bottom:0;z-index:30;background:#0b0b10;display:none;flex-direction:column;align-items:center;justify-content:center;gap:3vh;font-size:3.4vh}
+#ldots{font-size:6vh;letter-spacing:2vw;min-height:8vh}
+.disc .card img{filter:blur(2vh)}
+.disc .card.foc img{filter:none}
+.disc #hero{background-image:none!important}
 </style>
 </head>
 <body>
 <div id="hero"><div id="info"><h1 id="ht"></h1><div class="meta" id="hm"></div><div class="tags" id="hg"></div></div></div>
 <div id="nav"></div>
-<div id="help">OK = abspielen · ☰ = Merken</div>
 <div id="main"><div id="rows"></div></div>
 <div id="toast"></div>
+<div id="game"><div id="ghead"></div><div id="gtimer"></div>
+  <div id="gcard"><div id="gwho"></div><div id="gtitle"></div><div id="gbody"></div><div id="gsub"></div></div><div id="ghelp"></div></div>
+<div id="lock"><div id="ltitle"></div><div id="ldots"></div><div style="font-size:2.2vh;color:#888">4 Pfeiltasten drücken · Zurück = Beenden</div></div>
+<script src="games.js"></script>
 <script>
 'use strict';
 var API = 'https://www.eporner.com/api/v2/video/search/';
@@ -75,6 +96,7 @@ var A = window.Android || {load:function(k){return localStorage.getItem(k)||''},
 function load(k, d) { try { var s = A.load(k); return s ? JSON.parse(s) : d; } catch (e) { return d; } }
 function save(k, v) { A.save(k, JSON.stringify(v)); }
 var P = load('profile', {tags:{}, watched:{}, favs:[], hist:[]});
+MIN_SEC = load('minlen', 10) * 60;
 var cbs = {}, cbn = 0;
 window.__cb = function (id, ok, body) { var c = cbs[id]; delete cbs[id]; if (c) c(ok, body); };
 function http(url) {
@@ -203,7 +225,7 @@ function dur(s) { s = +s; var m = Math.floor(s / 60); return m >= 60 ? Math.floo
 function toast(t) { var e = $('toast'); e.textContent = t; e.style.opacity = 1; clearTimeout(e.t); e.t = setTimeout(function () { e.style.opacity = 0; }, 1600); }
 function isFav(id) { return P.favs.some(function (v) { return v.id === id; }); }
 
-var TABS = [['home','Start'],['cats','Kategorien'],['search','Suche'],['mine','Meine Liste'],['set','Einstellungen']];
+var TABS = [['home','Start'],['rand','Zufall'],['cats','Kategorien'],['search','Suche'],['mine','Meine Liste'],['games','Paar-Spiele'],['set','Einstellungen']];
 function renderNav() {
   $('nav').innerHTML = '<span class="logo">AbendKino</span>' + TABS.map(function (t) {
     return '<span class="tab f' + (t[0] === view ? ' on' : '') + '" data-v="' + t[0] + '">' + t[1] + '</span>';
@@ -310,6 +332,8 @@ function focus() {
 }
 document.addEventListener('keydown', function (ev) {
   var k = ev.key, ln = lines[L];
+  if (lockOn) { lockKey(k); ev.preventDefault(); return; }
+  if (Games.active()) { if (/^Arrow|Enter/.test(k)) { Games.key(k); ev.preventDefault(); } return; }
   if (!ln) return;
   var cur = ln.items[ln.i];
   if (cur && cur.tagName === 'INPUT' && (k === 'ArrowLeft' || k === 'ArrowRight')) return;
@@ -326,6 +350,8 @@ document.addEventListener('keydown', function (ev) {
   extend(lines[L]);
 });
 window.onBack = function () {
+  if (lockOn) return false;
+  if (Games.active()) { Games.close(); return true; }
   var ln = lines[L];
   if (ln && ln.items[ln.i] && ln.items[ln.i].tagName === 'INPUT') { ln.items[ln.i].blur(); }
   if (view !== 'home') { go(view === 'cat' ? 'cats' : 'home'); return true; }
@@ -354,7 +380,10 @@ function play(v) {
   learn(v, 1);
   P.hist = [slim(v)].concat(P.hist.filter(function (x) { return x.id !== v.id; })).slice(0, 60);
   save('profile', P);
-  A.play(v.embed || ('https://www.eporner.com/embed/' + v.id + '/'), v.id);
+  // continue where it was left off (not in the first minute or the last two)
+  var pos = P.watched[v.id] || 0, start = pos > 60 && pos < v.length_sec - 120 ? pos : 0;
+  if (start) toast('Weiter bei ' + Math.floor(start / 60) + ':' + ('0' + start % 60).slice(-2));
+  A.play(v.embed || ('https://www.eporner.com/embed/' + v.id + '/'), v.id, start);
 }
 window.onPlayerClosed = function (id, sec) {
   var v = lastPlayed; if (!v || v.id !== id) return;
@@ -367,7 +396,53 @@ window.onPlayerClosed = function (id, sec) {
 function learnCat(c) { P.tags[c[1]] = (P.tags[c[1]] || 0) + 0.5; save('profile', P); }
 
 /* ---------- views ---------- */
-function go(v) { view = v; ({home:home, cats:cats, search:search, mine:mine, set:settings})[v](); }
+function go(v) {
+  if (v === 'rand') return randomPlay();
+  view = v; ({home:home, cats:cats, search:search, mine:mine, games:games, set:settings})[v]();
+}
+function randomPlay() {
+  toast('Suche einen Film für dich …');
+  var p = topTags(2).length > 1 ? forYou(rnd(3)) : api({order:'top-rated', page:rnd(10)});
+  p.then(function (list) {
+    list = list.filter(function (v) { return !P.watched[v.id]; });
+    if (!list.length) return toast('Nichts gefunden – nochmal versuchen');
+    var v = list[Math.floor(Math.random() * Math.min(10, list.length))];
+    toast('Zufall: ' + v.title);
+    play(v);
+  });
+}
+function games() {
+  begin();
+  addRow('Stufe wählen', Games.LEVELS.map(function (n, i) {
+    return [(Games.level() === i + 1 ? '● ' : '○ ') + n, function () { Games.level(i + 1); games(); lines[1].i = i; focus(); }];
+  }), 'btn');
+  addRow('Spiel starten (für zwei)', Games.GAMES.map(function (x) { return [x[1], function () { Games.open(x[0]); }]; }), 'btn');
+  msg('Alles ist freiwillig: Jede Karte darf übersprungen werden, ein „Stopp“ gilt immer.');
+  finish();
+}
+
+/* ---------- PIN lock (4 arrow keys, the remote has no digits) ---------- */
+var lockOn = false, lockBuf = [], pinSet = false;
+var ARW = {ArrowUp:'▲', ArrowDown:'▼', ArrowLeft:'◀', ArrowRight:'▶'};
+function showLock(setMode) {
+  lockOn = true; lockBuf = []; pinSet = setMode;
+  $('ltitle').textContent = setMode ? 'Neuen Code festlegen' : 'AbendKino ist gesperrt';
+  $('ldots').textContent = '';
+  $('lock').style.display = 'flex';
+}
+function hideLock() { lockOn = false; $('lock').style.display = 'none'; }
+function lockKey(k) {
+  if (!ARW[k]) return;
+  lockBuf.push(k);
+  $('ldots').textContent = lockBuf.map(function (x) { return pinSet ? ARW[x] : '●'; }).join(' ');
+  if (lockBuf.length < 4) return;
+  if (pinSet) {
+    save('pin', lockBuf);
+    toast('Code gespeichert: ' + lockBuf.map(function (x) { return ARW[x]; }).join(' '));
+    hideLock(); settings();
+  } else if (lockBuf.join() === load('pin', []).join()) hideLock();
+  else { lockBuf = []; setTimeout(function () { $('ldots').textContent = ''; }, 300); toast('Falscher Code'); }
+}
 
 function homeRows(cb) {
   var specs = [
@@ -479,7 +554,7 @@ function settings() {
   var keep = view === 'set' && lines[L] ? [L, lines[L].i] : null; // stay on the toggled button
   begin();
   var strict = A.load('strict') !== '0';
-  var tt = topTags(12);
+  var tt = topTags(12), disc = load('disc', false), ml = MIN_SEC / 60, pin = load('pin', []).length === 4;
   addRow('Version v' + curVer() + (newVer > curVer() ? ' – Update auf v' + newVer + ' verfügbar' : ''), [
     ['Jetzt aktualisieren', function () { if (A.update) A.update(UPD + 'AbendKino.apk'); }],
     ['Nach Update suchen', function () { checkUpdate(true); }]], 'btn');
@@ -492,6 +567,19 @@ function settings() {
       save('sources', srcOn); save('cache_home', null); settings();
     }];
   }), 'btn');
+  addRow('Filme', [[(disc ? '● ' : '○ ') + 'Diskret-Modus', function () {
+      save('disc', !disc); document.body.classList.toggle('disc', !disc); settings(); }]]
+    .concat([10, 20, 30].map(function (m) {
+      return [(ml === m ? '● ' : '○ ') + 'ab ' + m + ' min', function () {
+        save('minlen', m); MIN_SEC = m * 60; save('cache_home', null); toast('Nur Filme ab ' + m + ' Minuten'); settings(); }];
+    })), 'btn');
+  addRow('Sperre & Timer', [
+    [pin ? 'PIN ändern' : 'PIN festlegen', function () { showLock(true); }],
+    ['PIN entfernen', function () { save('pin', []); toast('PIN entfernt'); settings(); }],
+    ['Sleep-Timer: ' + (sleepMin ? sleepMin + ' min' : 'aus'), function () {
+      sleepMin = {0:30, 30:60, 60:90, 90:0}[sleepMin];
+      if (A.sleep) A.sleep(sleepMin);
+      toast(sleepMin ? 'App schließt in ' + sleepMin + ' Minuten' : 'Sleep-Timer aus'); settings(); }]], 'btn');
   addRow('Gelernte Vorlieben: ' + (tt.length ? tt.join(', ') : 'noch keine'), [['Vorlieben zurücksetzen', function () { P.tags = {}; save('profile', P); toast('Zurückgesetzt'); settings(); }],
     ['Verlauf löschen', function () { P.hist = []; P.watched = {}; save('profile', P); toast('Verlauf gelöscht'); settings(); }]], 'btn');
   addRow('Steuerung', [['OK: abspielen/pause'], ['◀ ▶: ±15 s'], ['▲ ▼: ±2 min'], ['Zurück: Player schließen']], 'btn');
@@ -499,7 +587,11 @@ function settings() {
   if (keep && lines[keep[0]]) { L = keep[0]; lines[L].i = keep[1]; focus(); }
 }
 
+var sleepMin = 0;
+Games.init();
+if (load('disc', false)) document.body.classList.add('disc');
 go('home');
+if (load('pin', []).length === 4) showLock(false);
 setTimeout(function () { checkUpdate(false); }, 4000);
 </script>
 </body>

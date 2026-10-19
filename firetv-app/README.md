@@ -24,3 +24,11 @@ Zurücksetzen unter Einstellungen.
 
 ## Build
 GitHub Actions (`.github/workflows/firetv-apk.yml`) baut bei jedem Push und aktualisiert das Release `firetv`.
+
+## Weitere Funktionen
+- **Paar-Spiele** (3 Stufen: Romantisch / Prickelnd / Heiß): Liebeswürfel, Wahrheit oder Pflicht,
+  Heiße Karten (mit Timer), Ich hab noch nie, Stellungs-Roulette, Massage-Reise (geführt, mit Timer)
+- **Zufall**: startet sofort einen passenden, noch nicht gesehenen Film
+- **Weiterschauen**: Filme starten dort, wo du aufgehört hast
+- **PIN-Sperre** beim Start (4 Pfeiltasten), **Diskret-Modus** (Vorschaubilder unscharf)
+- **Mindestlänge** 10/20/30 min, **Sleep-Timer** 30/60/90 min

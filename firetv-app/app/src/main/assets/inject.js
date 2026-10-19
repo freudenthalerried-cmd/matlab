@@ -53,7 +53,8 @@
     }
     if (!started && !e.paused) {
       started = true;
-      show('▶ ' + fmt(e.duration));
+      if (window.__start > 0) { e.currentTime = window.__start; window.__start = 0; } // continue watching
+      show('▶ ' + fmt(e.currentTime) + ' / ' + fmt(e.duration));
       var q = [].slice.call(document.querySelectorAll('.vjs-menu-item,[data-quality],[class*="quality"] li,[class*="Quality"] li'))
         .filter(function (i) { return /2160|1440|1080/.test(i.textContent); });
       if (q.length) q[0].click();

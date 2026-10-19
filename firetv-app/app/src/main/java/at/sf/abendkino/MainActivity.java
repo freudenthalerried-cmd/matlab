@@ -8,6 +8,8 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.Settings;
 import android.view.KeyEvent;
 import android.view.View;
@@ -59,6 +61,9 @@ public class MainActivity extends Activity {
     private final ExecutorService pool = Executors.newFixedThreadPool(4);
     private String playingId = "";
     private String playingHost = "";
+    private int playStart = 0;
+    private final Handler handler = new Handler(Looper.getMainLooper());
+    private final Runnable sleepRun = this::finish;
     private volatile boolean strict = true;
 
     @Override
@@ -117,7 +122,7 @@ public class MainActivity extends Activity {
 
             @Override
             public void onPageFinished(WebView v, String url) {
-                v.evaluateJavascript(asset("inject.js"), null);
+                v.evaluateJavascript("window.__start=" + playStart + ";" + asset("inject.js"), null);
             }
         });
         player.setVisibility(View.GONE);
@@ -156,8 +161,9 @@ public class MainActivity extends Activity {
         return o.toByteArray();
     }
 
-    private void openPlayer(String url, String id) {
+    private void openPlayer(String url, String id, int start) {
         playingId = id;
+        playStart = start;
         String h = Uri.parse(url).getHost();
         String[] parts = h == null ? new String[0] : h.split("\\.");
         // site domain (e.g. embed.redtube.com -> redtube.com) so same-site redirects still work
@@ -218,6 +224,14 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    protected void onDestroy() {
+        handler.removeCallbacks(sleepRun);
+        if (player != null) player.destroy();
+        ui.destroy();
+        super.onDestroy();
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
         if (playerVisible()) player.evaluateJavascript("window.__ctl&&window.__ctl('pause')", null);
@@ -259,7 +273,16 @@ public class MainActivity extends Activity {
         }
 
         @JavascriptInterface
-        public void play(final String url, final String id) { runOnUiThread(() -> openPlayer(url, id)); }
+        public void play(final String url, final String id, final int start) {
+            runOnUiThread(() -> openPlayer(url, id, start));
+        }
+
+        /** Sleep timer: closes the app after the given minutes, 0 = off. */
+        @JavascriptInterface
+        public void sleep(final int minutes) {
+            handler.removeCallbacks(sleepRun);
+            if (minutes > 0) handler.postDelayed(sleepRun, minutes * 60000L);
+        }
 
         @JavascriptInterface
         public void keyboard() {
