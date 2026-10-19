@@ -1,0 +1,756 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>
+<title>Weltkonzerne</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo+Narrow:wght@400;600;700&display=swap">
+<style>
+/* Layout: klassisches quadratisches Brett links, Spielerpanel rechts; unter 960px gestapelt. Brett bleibt in beiden Themes "physisch" hell. */
+:root{
+  --bg:#e9eee8; --ink:#17201b; --muted:#56655b; --panel:#fbfcf9; --line:#c6d1c6;
+  --accent:#163a68; --on-accent:#fff; --gold:#c9a03a;
+  --board:#cde6d0; --bline:#1b1b1b; --bink:#151515; --bmuted:#3c4a40; --navy:#163a68; --hub:#e3f1e4;
+  --display:'Archivo Black',Impact,'Arial Black',sans-serif;
+  --body:'Archivo Narrow','Arial Narrow','Roboto Condensed',Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1512;--ink:#e4ebe5;--muted:#97a69b;--panel:#18211c;--line:#2d3b32;--accent:#7fa7e0;--on-accent:#0b1830;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1512;--ink:#e4ebe5;--muted:#97a69b;--panel:#18211c;--line:#2d3b32;--accent:#7fa7e0;--on-accent:#0b1830;color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px}
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:20px;max-width:1320px;margin:0 auto;padding-block:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));align-items:start}
+@media (max-width:960px){.wrap{grid-template-columns:minmax(0,1fr)}}
+.boardbox{display:flex;justify-content:center;min-width:0}
+.board{position:relative;width:min(100%,calc(100vh - 40px));min-width:0;aspect-ratio:1;max-width:100%;container-type:inline-size;background:var(--board);border:.35cqw solid var(--bline);box-shadow:0 1.2cqw 3cqw rgba(0,0,0,.25);color:var(--bink);--c:13cqw;--s:calc(74cqw / 9);user-select:none}
+@media (max-width:960px){.board{width:100%}}
+.cell{position:absolute;border:.12cqw solid var(--bline);overflow:hidden;cursor:pointer;background:var(--board)}
+.cell:hover{background:#dff0e1}
+.cell:focus-visible{outline:.5cqw solid var(--navy);z-index:3}
+.cell .in{position:absolute;left:50%;top:50%;width:var(--s);height:var(--c);transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;text-align:center}
+.cell.L .in{transform:translate(-50%,-50%) rotate(90deg)}
+.cell.T .in{transform:translate(-50%,-50%) rotate(180deg)}
+.cell.R .in{transform:translate(-50%,-50%) rotate(-90deg)}
+.bar{height:22%;width:100%;border-bottom:.12cqw solid var(--bline);display:flex;align-items:center;justify-content:center;gap:.25cqw;flex:none}
+.zn{font:700 .78cqw/1 var(--body);text-transform:uppercase;letter-spacing:.06em}
+.house{width:1.35cqw;height:1.35cqw;background:#1f8a3a;border:.12cqw solid #0b3d18;border-radius:.15cqw}
+.hotel{width:3.6cqw;height:1.7cqw;background:#c62128;border:.12cqw solid #5b0a0e;border-radius:.2cqw}
+.nm{font:700 1.12cqw/1.05 var(--body);text-transform:uppercase;padding:.55cqw .25cqw 0;letter-spacing:.02em;text-wrap:balance}
+.sec{font:400 .86cqw/1.1 var(--body);color:var(--bmuted);margin-top:.3cqw;padding:0 .2cqw}
+.pr{margin-top:auto;font:600 1.05cqw/1 var(--body);padding-bottom:1.1cqw}
+.own{position:absolute;left:0;right:0;bottom:0;height:.75cqw}
+.ico{width:4.4cqw;height:4.4cqw;margin:.5cqw auto 0;flex:none}
+.ico svg{width:100%;height:100%;display:block}
+.q{font:400 5.6cqw/1 var(--display);margin-top:.6cqw}
+.mort .in::after{content:'HYPOTHEK';position:absolute;inset:22% 0 0;display:grid;place-items:center;font:700 1cqw var(--body);letter-spacing:.08em;color:#a3121a;background:repeating-linear-gradient(45deg,rgba(255,255,255,.72) 0 .6cqw,rgba(255,255,255,.45) .6cqw 1.2cqw)}
+.K .kc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:.4cqw}
+.K .big{font:400 2.2cqw/1 var(--display);letter-spacing:.02em}
+.K .small{font:600 .95cqw/1.1 var(--body);text-transform:uppercase;max-width:9cqw}
+.jailbox{position:absolute;right:0;top:0;width:70%;height:70%;background:#f08a24;border-left:.12cqw solid var(--bline);border-bottom:.12cqw solid var(--bline);display:flex;flex-direction:column;align-items:center;justify-content:center;background-image:repeating-linear-gradient(90deg,transparent 0 1.2cqw,rgba(0,0,0,.55) 1.2cqw 1.45cqw)}
+.jailbox span{background:#f08a24;font:400 1.15cqw/1.1 var(--display);padding:.3cqw .4cqw;text-align:center;transform:rotate(45deg)}
+.visit1{position:absolute;left:0;top:0;width:30%;height:70%;display:grid;place-items:center;font:700 .95cqw var(--body);writing-mode:vertical-rl;transform:rotate(180deg)}
+.visit2{position:absolute;left:0;right:0;bottom:0;height:30%;display:grid;place-items:center;font:700 .95cqw var(--body)}
+.center{position:absolute;left:13%;top:13%;width:74%;height:74%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.2cqw;padding:3cqw}
+.logo{background:var(--navy);color:#f3d27a;font:400 6.4cqw/1 var(--display);letter-spacing:.04em;padding:1.4cqw 3.4cqw 1.2cqw;border:.5cqw solid #f3d27a;outline:.35cqw solid var(--navy);box-shadow:0 .8cqw 0 rgba(0,0,0,.2);text-align:center}
+.logo small{display:block;font:700 1.45cqw/1 var(--body);letter-spacing:.32em;color:#fff;margin-top:.8cqw;text-transform:uppercase}
+.mid{display:flex;align-items:center;justify-content:center;gap:2cqw;width:100%}
+.pile{width:11cqw;height:15cqw;border:.3cqw dashed var(--bline);display:flex;flex-direction:column;align-items:center;justify-content:center;font:400 1.1cqw/1.1 var(--display);text-align:center;gap:.6cqw;flex:none;padding:.4cqw}
+.pile.chest{transform:rotate(-12deg);color:#17507d}
+.pile.chance{transform:rotate(12deg);color:#c2410c}
+.pile .q2{font:400 4cqw/1 var(--display)}
+.pile svg{width:3.6cqw;height:3.6cqw}
+.hub{background:var(--hub);border:.3cqw solid var(--bline);padding:1.4cqw 1.8cqw;width:40cqw;flex:none;display:flex;flex-direction:column;align-items:center;gap:1.1cqw;box-shadow:0 .6cqw 0 rgba(0,0,0,.18)}
+.turn{font:700 max(11px,1.7cqw)/1.1 var(--body);text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;gap:.8cqw}
+.turn i{width:max(10px,1.6cqw);height:max(10px,1.6cqw);border-radius:50%;display:inline-block;border:.15cqw solid #000}
+.dice{display:flex;gap:1.6cqw}
+.die{width:6.4cqw;height:6.4cqw;background:#fff;border:.25cqw solid #111;border-radius:1.1cqw;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:.7cqw;box-shadow:inset 0 -.5cqw 0 rgba(0,0,0,.12)}
+.die b{width:1.25cqw;height:1.25cqw;border-radius:50%;background:#111;place-self:center;visibility:hidden}
+.die b.on{visibility:visible}
+.die.roll{animation:shake .12s linear infinite}
+@keyframes shake{0%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}100%{transform:rotate(-8deg)}}
+#msg{font:600 max(11px,1.5cqw)/1.25 var(--body);text-align:center;min-height:2.6em;max-width:100%}
+#actions{display:flex;flex-wrap:wrap;gap:1cqw;justify-content:center}
+.bbtn{font:700 max(12px,1.5cqw)/1 var(--body);text-transform:uppercase;letter-spacing:.06em;padding:max(8px,1.1cqw) max(12px,2cqw);border:.25cqw solid #111;background:#fff;color:#111;cursor:pointer;border-radius:.6cqw}
+.bbtn.main{background:var(--navy);color:#fff}
+.bbtn:hover{filter:brightness(1.1)}
+.bbtn:focus-visible,.btn:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.tok{position:absolute;width:3.1cqw;height:3.1cqw;border-radius:50%;transform:translate(-50%,-50%);border:.3cqw solid #111;display:grid;place-items:center;font:400 1.5cqw/1 var(--display);color:#fff;transition:left .14s ease,top .14s ease;z-index:5;box-shadow:0 .4cqw 0 rgba(0,0,0,.35),inset 0 -.5cqw .4cqw rgba(0,0,0,.3),inset 0 .4cqw .4cqw rgba(255,255,255,.35);pointer-events:none;text-shadow:0 .1cqw 0 rgba(0,0,0,.5)}
+.tok.now{box-shadow:0 0 0 .5cqw #fff,0 0 0 .8cqw #111,0 .6cqw 0 rgba(0,0,0,.35)}
+@media (prefers-reduced-motion:reduce){.tok{transition:none}.die.roll{animation:none}}
+/* Seitenpanel */
+.side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
+.side h2{font:400 13px/1 var(--display);letter-spacing:.08em;text-transform:uppercase;margin:0 0 10px;color:var(--muted)}
+.pl{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:4px 10px;align-items:center;padding:8px;border-radius:8px}
+.pl.cur{background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.pl.out{opacity:.45;text-decoration:line-through}
+.pl i{width:26px;height:26px;border-radius:50%;border:2px solid #111;display:grid;place-items:center;color:#fff;font:400 13px var(--display);font-style:normal}
+.pl b{font-weight:700;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pl .m{font-weight:700;font-variant-numeric:tabular-nums;font-size:16px}
+.pl .chips{grid-column:2/4;display:flex;flex-wrap:wrap;gap:3px}
+.pl .chips span{width:11px;height:15px;border:1px solid rgba(0,0,0,.5);border-radius:2px}
+.pl .chips span.mo{opacity:.35}
+.pl .st{grid-column:2/4;font-size:12px;color:var(--muted)}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn{font:700 14px/1 var(--body);letter-spacing:.04em;text-transform:uppercase;padding:11px 10px;border-radius:8px;border:1.5px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer}
+.btn.main{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.bank{font-size:13px;color:var(--muted);margin-top:10px;font-variant-numeric:tabular-nums}
+#log{list-style:none;margin:0;padding:0;max-height:300px;overflow:auto;font-size:14px;line-height:1.35}
+#log li{padding:5px 0;border-bottom:1px solid var(--line)}
+#log li:first-child{font-weight:700}
+/* Dialoge */
+.ov{position:fixed;inset:0;background:rgba(10,16,12,.55);display:grid;place-items:center;z-index:50;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.box{background:var(--panel);color:var(--ink);border-radius:12px;padding:20px;width:min(560px,100%);max-height:calc(100vh - 32px);overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.box h3{font:400 22px/1.1 var(--display);margin:0 0 12px;text-wrap:balance}
+.box p{line-height:1.45;margin:0 0 10px}
+.row{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.field{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+.field input,.field select,.box select,.box input[type=number]{font:600 15px var(--body);padding:8px;border:1.5px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);min-width:0}
+.prow{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center;margin-bottom:6px}
+.setup .prow{grid-template-columns:22px minmax(0,1fr) 130px}
+.dot{width:20px;height:20px;border-radius:50%;border:2px solid #111}
+.deed{width:min(300px,100%);margin:0 auto;background:#fff;color:#111;border:2px solid #111;padding:8px;font-family:var(--body)}
+.deed .hd{border:2px solid #111;text-align:center;padding:8px 6px}
+.deed .hd small{display:block;font:700 10px var(--body);letter-spacing:.2em}
+.deed .hd b{display:block;font:400 19px/1.1 var(--display);margin-top:4px;text-transform:uppercase}
+.deed .hd em{display:block;font-style:normal;font-size:12px;margin-top:2px}
+.deed table{width:100%;border-collapse:collapse;margin-top:8px;font-size:14px;font-variant-numeric:tabular-nums}
+.deed td{padding:2px 4px}.deed td:last-child{text-align:right;font-weight:700}
+.deed .ft{text-align:center;font-size:12px;margin-top:8px;border-top:1px solid #111;padding-top:6px;line-height:1.4}
+.ccard{width:min(340px,100%);margin:0 auto;border:2px solid #111;background:#fff;color:#111;padding:16px;text-align:center;border-radius:6px}
+.ccard h4{font:400 18px var(--display);margin:0 0 10px}
+.ccard.chance{background:#fde4c8}.ccard.chest{background:#d6e8f7}
+.mgrow{display:grid;grid-template-columns:14px minmax(0,1fr) auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.mgrow .sw{width:14px;height:30px;border:1px solid #000;border-radius:2px}
+.mgrow .nmx{min-width:0}.mgrow .nmx b{display:block}.mgrow .nmx small{color:var(--muted)}
+.mini{font:700 13px var(--body);padding:7px 9px;border-radius:6px;border:1.5px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer}
+.mini:disabled{opacity:.3;cursor:not-allowed}
+.tgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:520px){.tgrid{grid-template-columns:1fr}}
+.tgrid label{display:flex;gap:6px;align-items:center;padding:3px 0;font-size:14px}
+.note{font-size:13px;color:var(--muted)}
+</style>
+
+<div class="wrap">
+  <div class="boardbox"><div class="board" id="board"></div></div>
+  <aside class="side">
+    <section class="card"><h2>Spieler</h2><div id="players"></div><div class="bank" id="bank"></div></section>
+    <section class="card"><div class="btns">
+      <button class="btn main" id="bManage">Firmen verwalten</button>
+      <button class="btn" id="bTrade">Handeln</button>
+      <button class="btn" id="bRules">Spielregeln</button>
+      <button class="btn" id="bNew">Neues Spiel</button>
+    </div></section>
+    <section class="card"><h2>Spielverlauf</h2><ol id="log"></ol></section>
+  </aside>
+</div>
+<div class="ov" id="ov" hidden><div class="box" id="box" role="dialog" aria-modal="true"></div></div>
+
+<script>
+'use strict';
+/* ===== Daten ===== */
+const ZONES={
+ af:{n:'Afrika',c:'#955436',t:'#fff',h:50}, sa:{n:'Südamerika',c:'#aae0fa',t:'#111',h:50},
+ oc:{n:'Ozeanien',c:'#d93a96',t:'#fff',h:100}, in:{n:'Indien & Nahost',c:'#f7941d',t:'#111',h:100},
+ eu:{n:'Europa',c:'#ed1b24',t:'#fff',h:150}, ea:{n:'Ostasien',c:'#fef200',t:'#111',h:150},
+ na:{n:'Nordamerika',c:'#1fb25a',t:'#fff',h:200}, sv:{n:'Silicon Valley',c:'#0072bb',t:'#fff',h:200}};
+const P=(z,n,sec,price,rent)=>({t:'prop',z,n,sec,price,rent});
+const SP=[
+ {t:'go',n:'START'},
+ P('af','Savanna Mobile','Mobilfunk',60,[2,10,30,90,160,250]),
+ {t:'chest',n:'Konzernkasse'},
+ P('af','Kilima Mining','Bergbau',60,[4,20,60,180,320,450]),
+ {t:'tax',n:'Gewinnsteuer',amt:200},
+ {t:'port',n:'Hafen Rotterdam',price:200,ic:'ship'},
+ P('sa','Rio Petro','Öl & Gas',100,[6,30,90,270,400,550]),
+ {t:'chance',n:'Börsen-News'},
+ P('sa','Pampa Agrar','Agrarkonzern',100,[6,30,90,270,400,550]),
+ P('sa','Andes Kupfer','Rohstoffe',120,[8,40,100,300,450,600]),
+ {t:'jail',n:'U-Haft'},
+ P('oc','Kiwi Dairy','Lebensmittel',140,[10,50,150,450,625,750]),
+ {t:'util',n:'Stromnetz',price:150,sec:'Energieversorger',ic:'bolt'},
+ P('oc','Koala Resources','Bergbau',140,[10,50,150,450,625,750]),
+ P('oc','Southern Cross Bank','Bank',160,[12,60,180,500,700,900]),
+ {t:'port',n:'Flughafen Dubai',price:200,ic:'plane'},
+ P('in','Ganges Generika','Pharma',180,[14,70,200,550,750,950]),
+ {t:'chest',n:'Konzernkasse'},
+ P('in','Golf Petrol','Energie',180,[14,70,200,550,750,950]),
+ P('in','Mumbai InfoTech','IT-Dienstleister',200,[16,80,220,600,800,1000]),
+ {t:'park',n:'Frei Parken'},
+ P('eu','Lumière Luxus','Luxusmode',220,[18,90,250,700,875,1050]),
+ {t:'chance',n:'Börsen-News'},
+ P('eu','Alpen Chronometer','Uhren',220,[18,90,250,700,875,1050]),
+ P('eu','Rhein Motoren','Automobil',240,[20,100,300,750,925,1100]),
+ {t:'port',n:'Hafen Singapur',price:200,ic:'ship'},
+ P('ea','Hanok Chips','Halbleiter',260,[22,110,330,800,975,1150]),
+ P('ea','Drachen Handel','E-Commerce',260,[22,110,330,800,975,1150]),
+ {t:'util',n:'Datennetz',price:150,sec:'Glasfaser & Cloud',ic:'net'},
+ P('ea','Sakura Elektronik','Elektronik',280,[24,120,360,850,1025,1200]),
+ {t:'gojail',n:'Kartellamt'},
+ P('na','Liberty Bank','Investmentbank',300,[26,130,390,900,1100,1275]),
+ P('na','Eagle Aerospace','Raumfahrt',300,[26,130,390,900,1100,1275]),
+ {t:'chest',n:'Konzernkasse'},
+ P('na','Starling Social','Soziale Medien',320,[28,150,450,1000,1200,1400]),
+ {t:'port',n:'Flughafen New York',price:200,ic:'plane'},
+ {t:'chance',n:'Börsen-News'},
+ P('sv','Nimbus Software','Software & Cloud',350,[35,175,500,1100,1300,1500]),
+ {t:'tax',n:'Kartellstrafe',amt:100},
+ P('sv','Voltara Motors','E-Autos',400,[50,200,600,1400,1700,2000])];
+const CHANCE=[
+ {x:'Hauptversammlung in der Zentrale: Rücke vor bis START und ziehe 200 Mio ein.',a:'move',to:0},
+ {x:'Übernahmegespräche im Silicon Valley: Rücke vor bis Voltara Motors.',a:'move',to:39},
+ {x:'Modemesse in Paris: Rücke vor bis Lumière Luxus. Kommst du über START, ziehe 200 Mio ein.',a:'move',to:21},
+ {x:'Lieferantenbesuch in Neuseeland: Rücke vor bis Kiwi Dairy. Kommst du über START, ziehe 200 Mio ein.',a:'move',to:11},
+ {x:'Eilfracht! Rücke vor zum nächsten Hafen oder Flughafen. Gehört er jemandem, zahle die doppelte Gebühr.',a:'nearport'},
+ {x:'Lieferkette unterbrochen! Rücke vor zum nächsten Hafen oder Flughafen. Gehört er jemandem, zahle die doppelte Gebühr.',a:'nearport'},
+ {x:'Serverausfall! Rücke vor zum nächsten Netz. Gehört es jemandem, würfle und zahle das 10-fache der Augenzahl.',a:'nearutil'},
+ {x:'Deine Aktien schütten Dividende aus: Erhalte 50 Mio.',a:'gain',v:50},
+ {x:'Kronzeugenregelung: Du kommst aus der U-Haft frei. Behalte diese Karte, bis du sie brauchst oder verkaufst.',a:'card'},
+ {x:'Gewinnwarnung! Gehe 3 Felder zurück.',a:'back'},
+ {x:'Insiderhandel aufgeflogen! Gehe direkt in U-Haft. Gehe nicht über START.',a:'jail'},
+ {x:'Modernisierung deiner Standorte: Zahle 25 Mio je Filiale und 100 Mio je Zentrale.',a:'repair',h:25,H:100},
+ {x:'Bilanz zu spät eingereicht: Zahle 15 Mio Strafe.',a:'pay',v:15},
+ {x:'Geschäftsreise nach Europa: Rücke vor bis Hafen Rotterdam. Kommst du über START, ziehe 200 Mio ein.',a:'move',to:5},
+ {x:'Du wirst Präsident des Branchenverbands: Zahle jedem Mitspieler 50 Mio.',a:'payeach',v:50},
+ {x:'Deine Firmenanleihe wird fällig: Erhalte 150 Mio.',a:'gain',v:150}];
+const CHEST=[
+ {x:'Rücke vor bis START und ziehe 200 Mio ein.',a:'move',to:0},
+ {x:'Buchungsfehler der Bank zu deinen Gunsten: Erhalte 200 Mio.',a:'gain',v:200},
+ {x:'Rechnung der Unternehmensberatung: Zahle 50 Mio.',a:'pay',v:50},
+ {x:'Verkauf eines Aktienpakets: Erhalte 50 Mio.',a:'gain',v:50},
+ {x:'Kronzeugenregelung: Du kommst aus der U-Haft frei. Behalte diese Karte, bis du sie brauchst oder verkaufst.',a:'card'},
+ {x:'Bilanzfälschung entdeckt! Gehe direkt in U-Haft. Gehe nicht über START.',a:'jail'},
+ {x:'Jahresbonus für den Vorstand: Erhalte 100 Mio.',a:'gain',v:100},
+ {x:'Steuerrückerstattung: Erhalte 20 Mio.',a:'gain',v:20},
+ {x:'Firmenjubiläum: Jeder Mitspieler zahlt dir 10 Mio.',a:'collecteach',v:10},
+ {x:'Die Versicherung zahlt aus: Erhalte 100 Mio.',a:'gain',v:100},
+ {x:'Patentstreit verloren: Zahle 100 Mio.',a:'pay',v:100},
+ {x:'Weiterbildung für das Management: Zahle 50 Mio.',a:'pay',v:50},
+ {x:'Beratungshonorar: Erhalte 25 Mio.',a:'gain',v:25},
+ {x:'Neue Umweltauflagen: Zahle 40 Mio je Filiale und 115 Mio je Zentrale.',a:'repair',h:40,H:115},
+ {x:'Innovationspreis gewonnen: Erhalte 10 Mio.',a:'gain',v:10},
+ {x:'Erbschaft eines Gründers: Erhalte 100 Mio.',a:'gain',v:100}];
+const CARDS={chance:CHANCE,chest:CHEST};
+const FREE={chance:CHANCE.findIndex(c=>c.a==='card'),chest:CHEST.findIndex(c=>c.a==='card')};
+const COLORS=['#d7263d','#1b6ca8','#23955a','#e39b0b','#7b3fa0','#3a3a3a'];
+const DEFN=['Stefan','KI Ada','KI Bruno','KI Carla','KI Dario','KI Elif'];
+const ICONS={
+ ship:'<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a3 3 0 0 0-1 5.83V9H8v2h3v8.93A7 7 0 0 1 5.07 14H7l-3-4-3 4h2.05A9 9 0 0 0 12 22a9 9 0 0 0 8.95-8H23l-3-4-3 4h1.93A7 7 0 0 1 13 19.93V11h3V9h-3V7.83A3 3 0 0 0 12 2zm0 2a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>',
+ plane:'<svg viewBox="0 0 24 24"><path fill="currentColor" d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg>',
+ bolt:'<svg viewBox="0 0 24 24"><path fill="#f2b705" stroke="#111" stroke-width="1.2" stroke-linejoin="round" d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>',
+ net:'<svg viewBox="0 0 24 24" fill="none" stroke="#1b6ca8" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3.2 3.5 3.2 14.5 0 18M12 3c-3.2 3.5-3.2 14.5 0 18"/></svg>',
+ case:'<svg viewBox="0 0 24 24"><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" fill="none" stroke="#17507d" stroke-width="2"/><rect x="3" y="7" width="18" height="13" rx="2" fill="#17507d"/><path d="M3 12.5h18" stroke="#fff" stroke-width="1.4"/><rect x="10.5" y="11" width="3" height="3" fill="#f3d27a"/></svg>',
+ arrow:'<svg viewBox="0 0 60 16"><path d="M58 8H8M16 1 6 8l10 7" fill="none" stroke="#c62128" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>'};
+
+/* ===== Hilfen ===== */
+const $=s=>document.querySelector(s);
+const fmt=n=>`${Math.round(n).toLocaleString('de-AT')} Mio`;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const BUY=s=>s.t==='prop'||s.t==='port'||s.t==='util';
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let gen=0;
+const sleep=ms=>{const g=gen;return new Promise((r,j)=>setTimeout(()=>g===gen?r():j('abort'),ms*(S?S.speed:1)*(reduced?.5:1)))};
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+let S=null, lastSave=null, cellEls={}, tokEls=[], pending=null;
+const idx=p=>S.players.indexOf(p);
+const others=p=>S.players.filter(q=>q!==p&&!q.bankrupt);
+const zoneProps=z=>SP.map((s,i)=>i).filter(i=>SP[i].z===z);
+const ownsZone=(k,z)=>zoneProps(z).every(i=>S.props[i].owner===k);
+const owned=k=>Object.keys(S.props).map(Number).filter(i=>S.props[i].owner===k);
+const mortVal=i=>SP[i].price/2, unmortCost=i=>Math.round(SP[i].price*.55);
+
+function log(m){S.log.unshift(m);if(S.log.length>150)S.log.pop();renderLog()}
+function say(m){$('#msg').textContent=m;log(m)}
+
+/* ===== Brett aufbauen ===== */
+const CC=13, SS=74/9;
+function rect(i){
+ if(i===0)return{x:100-CC,y:100-CC,w:CC,h:CC};
+ if(i<10)return{x:100-CC-i*SS,y:100-CC,w:SS,h:CC};
+ if(i===10)return{x:0,y:100-CC,w:CC,h:CC};
+ if(i<20)return{x:0,y:100-CC-(i-10)*SS,w:CC,h:SS};
+ if(i===20)return{x:0,y:0,w:CC,h:CC};
+ if(i<30)return{x:CC+(i-21)*SS,y:0,w:SS,h:CC};
+ if(i===30)return{x:100-CC,y:0,w:CC,h:CC};
+ return{x:100-CC,y:CC+(i-31)*SS,w:CC,h:SS};
+}
+function cellInner(i){
+ const s=SP[i];
+ switch(s.t){
+  case 'prop':return `<div class="bar" style="background:${ZONES[s.z].c};color:${ZONES[s.z].t}"></div><div class="nm">${s.n}</div><div class="sec">${s.sec}</div><div class="pr">${s.price} Mio</div><div class="own"></div>`;
+  case 'port':return `<div class="nm">${s.n}</div><div class="ico">${ICONS[s.ic]}</div><div class="pr">${s.price} Mio</div><div class="own"></div>`;
+  case 'util':return `<div class="nm">${s.n}</div><div class="ico">${ICONS[s.ic]}</div><div class="pr">${s.price} Mio</div><div class="own"></div>`;
+  case 'chance':return `<div class="nm">Börsen-<br>News</div><div class="q" style="color:#c2410c">?</div>`;
+  case 'chest':return `<div class="nm">Konzern-<br>kasse</div><div class="ico">${ICONS.case}</div>`;
+  case 'tax':return `<div class="nm">${s.n}</div><div class="q" style="font-size:3.6cqw;color:#163a68">${s.amt===200?'%':'§'}</div><div class="pr">Zahle ${s.amt} Mio</div>`;
+ }
+}
+function cornerInner(i){
+ if(i===0)return `<div class="kc" style="transform:rotate(-45deg)"><div class="small">Ziehe 200 Mio ein, wenn du vorbeikommst</div><div class="big" style="font-size:3.2cqw;color:#c62128">START</div><div style="width:9cqw">${ICONS.arrow}</div></div>`;
+ if(i===10)return `<div class="jailbox"><span>IN<br>U-HAFT</span></div><div class="visit1">NUR</div><div class="visit2">ZU BESUCH</div>`;
+ if(i===20)return `<div class="kc" style="transform:rotate(135deg)"><div class="small">Frei</div><div style="width:4.6cqw;height:4.6cqw;background:#1b6ca8;color:#fff;border-radius:.8cqw;display:grid;place-items:center;font:400 3.4cqw var(--display)">P</div><div class="small">Parken</div></div>`;
+ return `<div class="kc" style="transform:rotate(-135deg)"><div class="small">Kartellamt</div><div class="big" style="font-size:4.4cqw;color:#163a68">§</div><div class="small">Gehe in U-Haft</div></div>`;
+}
+function buildBoard(){
+ const b=$('#board'); let h='';
+ for(let i=0;i<40;i++){
+  const r=rect(i), side=i%10===0?'K':i<10?'B':i<20?'L':i<30?'T':'R';
+  h+=`<div class="cell ${side}" data-i="${i}" tabindex="0" aria-label="${esc(SP[i].n)}" style="left:${r.x}%;top:${r.y}%;width:${r.w}%;height:${r.h}%">${side==='K'?cornerInner(i):`<div class="in">${cellInner(i)}</div>`}</div>`;
+ }
+ h+=`<div class="center"><div class="logo">WELTKONZERNE<small>Das Spiel um die Weltmärkte</small></div>
+  <div class="mid"><div class="pile chest">${ICONS.case}Konzern&shy;kasse</div>
+  <div class="hub"><div class="turn" id="turn"></div><div class="dice"><div class="die" id="d1"></div><div class="die" id="d2"></div></div><div id="msg" aria-live="polite"></div><div id="actions"></div></div>
+  <div class="pile chance"><span class="q2">?</span>Börsen-News</div></div></div>`;
+ b.innerHTML=h;
+ b.querySelectorAll('.cell').forEach(el=>{cellEls[el.dataset.i]=el;
+  const open=()=>showDeed(+el.dataset.i);
+  el.addEventListener('click',open);el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}})});
+ for(const d of ['#d1','#d2'])$(d).innerHTML='<b></b>'.repeat(9);
+}
+const PIPS={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+function face(el,n){[...el.children].forEach((b,k)=>b.classList.toggle('on',PIPS[n].includes(k)))}
+
+/* ===== Rendern ===== */
+function render(){
+ if(!S)return;
+ for(const k in S.props){
+  const el=cellEls[k],pr=S.props[k],s=SP[k];
+  el.querySelector('.own').style.background=pr.owner>=0?S.players[pr.owner].color:'transparent';
+  el.classList.toggle('mort',pr.mort);
+  if(s.t==='prop')el.querySelector('.bar').innerHTML=pr.houses===0?`<span class="zn">${ZONES[s.z].n}</span>`:pr.houses===5?'<span class="hotel"></span>':'<span class="house"></span>'.repeat(pr.houses);
+ }
+ renderTokens();renderPlayers();face($('#d1'),S.dice[0]);face($('#d2'),S.dice[1]);
+ const p=S.players[S.cur];
+ $('#turn').innerHTML=S.over?'Spiel beendet':`<i style="background:${p.color}"></i>${esc(p.name)} ist am Zug`;
+ $('#bank').textContent=`Bank: ${S.houses} Filialen · ${S.hotels} Zentralen verfügbar`;
+ panelButtons();
+}
+function renderTokens(){
+ const b=$('#board');
+ S.players.forEach((p,k)=>{if(!tokEls[k]){const t=document.createElement('div');t.className='tok';b.appendChild(t);tokEls[k]=t}
+  const t=tokEls[k];t.style.background=p.color;t.textContent=p.name.replace(/^KI\s+/,'')[0].toUpperCase();t.hidden=p.bankrupt;t.classList.toggle('now',k===S.cur&&!S.over)});
+ tokEls.slice(S.players.length).forEach(t=>t.remove());tokEls.length=S.players.length;
+ const groups={};
+ S.players.forEach((p,k)=>{if(p.bankrupt)return;const key=p.pos+(p.jail?'j':'');(groups[key]=groups[key]||[]).push(k)});
+ for(const key in groups){
+  const ks=groups[key],pos=parseInt(key),r=rect(pos),jail=key.endsWith('j');
+  let cx=r.x+r.w/2,cy=r.y+r.h/2;
+  if(pos===10){if(jail){cx=r.x+r.w*.65;cy=r.y+r.h*.35}else{cx=r.x+r.w*.15;cy=r.y+r.h*.4}}
+  ks.forEach((k,j)=>{const n=ks.length,cols=pos===10&&!jail?1:Math.min(n,2),row=Math.floor(j/cols),col=j%cols,rows=Math.ceil(n/cols);
+   const dx=(col-(cols-1)/2)*3.2,dy=(row-(rows-1)/2)*3.2;
+   tokEls[k].style.left=(cx+dx)+'%';tokEls[k].style.top=(cy+dy)+'%'});
+ }
+}
+function renderPlayers(){
+ $('#players').innerHTML=S.players.map((p,k)=>{
+  const chips=owned(k).sort((a,b)=>a-b).map(i=>`<span class="${S.props[i].mort?'mo':''}" title="${esc(SP[i].n)}" style="background:${SP[i].t==='prop'?ZONES[SP[i].z].c:SP[i].t==='port'?'#222':'#ddd'}"></span>`).join('');
+  const st=[p.ai?'Computer':'Mensch',p.jail?'in U-Haft':'',p.free.length?`${p.free.length}× Freikarte`:''].filter(Boolean).join(' · ');
+  return `<div class="pl ${k===S.cur&&!S.over?'cur':''} ${p.bankrupt?'out':''}"><i style="background:${p.color}">${esc(p.name.replace(/^KI\s+/,'')[0].toUpperCase())}</i><b>${esc(p.name)}</b><span class="m">${fmt(p.money)}</span><div class="st">${st}</div><div class="chips">${chips}</div></div>`}).join('');
+}
+function renderLog(){$('#log').innerHTML=S.log.slice(0,60).map(m=>`<li>${esc(m)}</li>`).join('')}
+function panelButtons(){
+ const ok=pending&&!pending.p.ai&&['roll','end','debt','jail'].includes(pending.ctx);
+ $('#bManage').disabled=!ok;$('#bTrade').disabled=!ok||!others(pending.p).length;
+}
+
+/* ===== Dialoge ===== */
+function openModal(html){$('#box').innerHTML=html;$('#ov').hidden=false;const f=$('#box').querySelector('button,input,select');f&&f.focus();return $('#box')}
+function closeModal(){$('#ov').hidden=true;$('#box').innerHTML=''}
+const btnRow=(opts)=>`<div class="row">${opts.map((o,j)=>`<button class="btn ${o.main?'main':''}" data-o="${j}" ${o.dis?'disabled':''}>${esc(o.l)}</button>`).join('')}</div>`;
+function choose(p,opts,ctx,extra={}){
+ if(p.ai)return aiChoose(p,opts,ctx,extra);
+ return new Promise(res=>{
+  pending={p,ctx};
+  const done=v=>{pending=null;$('#actions').innerHTML='';if(extra.modal)closeModal();panelButtons();res(v)};
+  if(extra.modal){const box=openModal(extra.modal+btnRow(opts));box.querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>done(opts[+b.dataset.o].v))}
+  else{$('#actions').innerHTML=opts.map((o,j)=>`<button class="bbtn ${o.main?'main':''}" data-o="${j}">${esc(o.l)}</button>`).join('');
+   $('#actions').querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>done(opts[+b.dataset.o].v));
+   const m=$('#actions').querySelector('.main');m&&m.focus({preventScroll:true})}
+  panelButtons();
+ });
+}
+function deedHtml(i){
+ const s=SP[i],pr=S.props[i],own=pr.owner>=0?S.players[pr.owner].name:'Bank – frei';
+ if(s.t==='prop'){const z=ZONES[s.z],h=z.h,r=s.rent;
+  return `<div class="deed"><div class="hd" style="background:${z.c};color:${z.t}"><small>BESITZURKUNDE · ${z.n.toUpperCase()}</small><b>${s.n}</b><em>${s.sec}</em></div>
+  <table><tr><td>Miete</td><td>${r[0]}</td></tr><tr><td>Miete mit ganzer Zone</td><td>${r[0]*2}</td></tr>
+  <tr><td>mit 1 Filiale</td><td>${r[1]}</td></tr><tr><td>mit 2 Filialen</td><td>${r[2]}</td></tr><tr><td>mit 3 Filialen</td><td>${r[3]}</td></tr><tr><td>mit 4 Filialen</td><td>${r[4]}</td></tr><tr><td>mit Konzernzentrale</td><td>${r[5]}</td></tr></table>
+  <div class="ft">Filiale kostet ${h} Mio · Zentrale ${h} Mio + 4 Filialen<br>Kaufpreis ${s.price} Mio · Hypothek ${mortVal(i)} Mio<br>Besitzer: <b>${esc(own)}</b>${pr.mort?' · <b style="color:#a3121a">mit Hypothek</b>':''}</div></div>`}
+ const port=s.t==='port';
+ return `<div class="deed"><div class="hd" style="background:#f4f4f4"><small>BESITZURKUNDE · ${port?'LOGISTIK':'INFRASTRUKTUR'}</small><b>${s.n}</b><em>${port?'Hafen & Flughafen':s.sec}</em></div>
+ <table>${port?'<tr><td>Gebühr (1 Standort)</td><td>25</td></tr><tr><td>2 Standorte</td><td>50</td></tr><tr><td>3 Standorte</td><td>100</td></tr><tr><td>4 Standorte</td><td>200</td></tr>':'<tr><td>1 Netz: Augenzahl ×</td><td>4</td></tr><tr><td>Beide Netze: Augenzahl ×</td><td>10</td></tr>'}</table>
+ <div class="ft">Kaufpreis ${s.price} Mio · Hypothek ${mortVal(i)} Mio<br>Besitzer: <b>${esc(own)}</b>${pr.mort?' · <b style="color:#a3121a">mit Hypothek</b>':''}</div></div>`;
+}
+function showDeed(i){
+ if(!S||!$('#ov').hidden)return;
+ const s=SP[i];
+ if(!BUY(s)){const t={go:'Jedes Mal, wenn du über START ziehst oder darauf landest, bekommst du 200 Mio.',jail:'U-Haft: Raus mit 50 Mio Kaution, einer Freikarte oder einem Pasch (max. 3 Versuche). Wer nur hier landet, ist "nur zu Besuch".',park:'Frei Parken: Hier passiert nichts. Durchatmen.',gojail:'Kartellamt: Gehe direkt in U-Haft. Du ziehst nicht über START.',chance:'Börsen-News: Ziehe eine Karte vom orangen Stapel.',chest:'Konzernkasse: Ziehe eine Karte vom blauen Stapel.',tax:`${s.n}: Zahle ${s.amt} Mio an die Bank.`}[s.t];
+  const box=openModal(`<h3>${esc(s.n)}</h3><p>${esc(t)}</p><div class="row"><button class="btn main" id="x">Schließen</button></div>`);box.querySelector('#x').onclick=closeModal;return}
+ const box=openModal(deedHtml(i)+`<div class="row"><button class="btn main" id="x">Schließen</button></div>`);box.querySelector('#x').onclick=closeModal;
+}
+
+/* ===== Geld ===== */
+function gain(p,v){p.money+=v}
+function pay(p,v,to){p.money-=v;if(to!=null&&to>=0)S.players[to].money+=v;if(p.money<0)p.creditor=to;render()}
+function rent(i,dice){
+ const s=SP[i],pr=S.props[i];if(pr.mort)return 0;
+ if(s.t==='prop')return pr.houses?s.rent[pr.houses]:(ownsZone(pr.owner,s.z)?s.rent[0]*2:s.rent[0]);
+ const n=owned(pr.owner).filter(j=>SP[j].t===s.t).length;
+ if(s.t==='port')return 25*2**(n-1);
+ return dice*(n>=2?10:4);
+}
+
+/* ===== Bauen & Hypothek ===== */
+function whyNoBuild(k,i){
+ const s=SP[i],pr=S.props[i],p=S.players[k];
+ if(s.t!=='prop')return 'Hier kann man nicht bauen.';
+ if(!ownsZone(k,s.z))return 'Dafür brauchst du die ganze Zone.';
+ const zs=zoneProps(s.z);
+ if(zs.some(j=>S.props[j].mort))return 'In der Zone liegt eine Hypothek.';
+ if(pr.houses>=5)return 'Zentrale steht schon.';
+ if(pr.houses>Math.min(...zs.map(j=>S.props[j].houses)))return 'Gleichmäßig bauen: zuerst die anderen Firmen.';
+ if(pr.houses===4?S.hotels<1:S.houses<1)return 'Die Bank hat keine mehr.';
+ if(p.money<ZONES[s.z].h)return 'Zu wenig Kapital.';
+ return '';
+}
+function build(k,i){const pr=S.props[i];if(pr.houses===4){S.hotels--;S.houses+=4}else S.houses--;pr.houses++;S.players[k].money-=ZONES[SP[i].z].h}
+function whyNoSell(k,i){const s=SP[i],pr=S.props[i];if(s.t!=='prop'||pr.houses===0)return 'Keine Filiale vorhanden.';
+ if(pr.houses<Math.max(...zoneProps(s.z).map(j=>S.props[j].houses)))return 'Gleichmäßig verkaufen: zuerst die anderen.';return ''}
+function sellHouse(k,i){const pr=S.props[i],h=ZONES[SP[i].z].h/2,p=S.players[k];
+ if(pr.houses===5){if(S.houses>=4){S.houses-=4;S.hotels++;pr.houses=4;p.money+=h}else{S.hotels++;pr.houses=0;p.money+=h*5}}
+ else{pr.houses--;S.houses++;p.money+=h}}
+function whyNoMort(k,i){const s=SP[i],pr=S.props[i];if(pr.mort)return 'Schon belastet.';
+ if(s.t==='prop'&&zoneProps(s.z).some(j=>S.props[j].houses>0))return 'Zuerst alle Filialen der Zone verkaufen.';return ''}
+function mortgage(k,i){S.props[i].mort=true;S.players[k].money+=mortVal(i)}
+function unmortgage(k,i){S.props[i].mort=false;S.players[k].money-=unmortCost(i)}
+
+/* ===== Verwalten (Mensch) ===== */
+function openManage(p){
+ return new Promise(res=>{
+  const k=idx(p);
+  const draw=()=>{
+   const list=owned(k).sort((a,b)=>a-b);
+   const rows=list.map(i=>{const s=SP[i],pr=S.props[i],c=s.t==='prop'?ZONES[s.z].c:s.t==='port'?'#222':'#ddd';
+    const hs=s.t!=='prop'?'':pr.houses===5?'Zentrale':pr.houses?`${pr.houses} Filiale${pr.houses>1?'n':''}`:'keine Filiale';
+    const nb=whyNoBuild(k,i),ns=whyNoSell(k,i),nm=whyNoMort(k,i);
+    const um=pr.mort?(p.money>=unmortCost(i)?'':'Zu wenig Kapital.'):nm;
+    return `<div class="mgrow"><span class="sw" style="background:${c}"></span><div class="nmx"><b>${esc(s.n)}</b><small>${hs}${pr.mort?' · Hypothek':''} · Miete jetzt ${s.t==='util'?'Würfel ×'+(owned(k).filter(j=>SP[j].t==='util').length>1?10:4):rent(i,7)}</small></div>
+     <div class="row" style="margin:0;gap:6px">${s.t==='prop'?`<button class="mini" data-a="b" data-i="${i}" ${nb?`disabled title="${esc(nb)}"`:''}>+ Filiale ${ZONES[s.z].h}</button><button class="mini" data-a="s" data-i="${i}" ${ns?`disabled title="${esc(ns)}"`:''}>− Verkauf</button>`:''}
+     <button class="mini" data-a="${pr.mort?'u':'m'}" data-i="${i}" ${um?`disabled title="${esc(um)}"`:''}>${pr.mort?`Einlösen ${unmortCost(i)}`:`Hypothek +${mortVal(i)}`}</button></div></div>`}).join('');
+   const box=openModal(`<h3>Firmen von ${esc(p.name)}</h3><p><b>Kapital: ${fmt(p.money)}</b>${p.money<0?' · <b style="color:#c62128">Schulden begleichen!</b>':''}</p>
+    <p class="note">Filialen baust du nur mit einer kompletten Zone und gleichmäßig. Die 5. Stufe ist die Konzernzentrale. Verkauf und Hypothek bringen die Hälfte.</p>
+    ${rows||'<p>Noch keine Firmen gekauft.</p>'}<div class="row"><button class="btn main" id="x">Fertig</button></div>`);
+   box.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i,a=b.dataset.a;
+    if(a==='b'){build(k,i);log(`${p.name} baut eine ${S.props[i].houses===5?'Konzernzentrale':'Filiale'} bei ${SP[i].n}.`)}
+    if(a==='s'){sellHouse(k,i);log(`${p.name} verkauft bei ${SP[i].n}.`)}
+    if(a==='m'){mortgage(k,i);log(`${p.name} nimmt eine Hypothek auf ${SP[i].n}.`)}
+    if(a==='u'){unmortgage(k,i);log(`${p.name} löst ${SP[i].n} ein.`)}
+    render();draw()});
+   box.querySelector('#x').onclick=()=>{closeModal();render();res()};
+  };
+  draw();
+ });
+}
+
+/* ===== Handel ===== */
+const tradable=(k,i)=>S.props[i].owner===k&&(SP[i].t!=='prop'||zoneProps(SP[i].z).every(j=>S.props[j].houses===0));
+function tv(k,i){const s=SP[i];let v=s.price*(S.props[i].mort?.55:1);
+ if(s.t==='prop'&&zoneProps(s.z).filter(j=>j!==i).every(j=>S.props[j].owner===k))v*=2.5;
+ if(s.t==='port')v*=1+.25*owned(k).filter(j=>j!==i&&SP[j].t==='port').length;return v}
+function aiAccepts(q,give,get,other){// give: was q abgibt, get: was q bekommt
+ const kq=idx(q);
+ let g=get.money+get.cards*50,l=give.money+give.cards*50;
+ get.props.forEach(i=>g+=tv(kq,i));
+ give.props.forEach(i=>{l+=tv(kq,i);if(other!=null&&SP[i].t==='prop'&&zoneProps(SP[i].z).filter(j=>j!==i).every(j=>S.props[j].owner===other||get.props.includes(j)))l+=SP[i].price*1.5});
+ return q.money-give.money>=0&&g>=l*1.2+10;
+}
+function doTrade(a,b,ga,gb){// a gibt ga an b, b gibt gb an a
+ const A=S.players[a],B=S.players[b];
+ ga.props.forEach(i=>S.props[i].owner=b);gb.props.forEach(i=>S.props[i].owner=a);
+ A.money+=gb.money-ga.money;B.money+=ga.money-gb.money;
+ for(let n=0;n<ga.cards;n++)B.free.push(A.free.pop());for(let n=0;n<gb.cards;n++)A.free.push(B.free.pop());
+ log(`Handel: ${A.name} gibt ${tdesc(ga)} – ${B.name} gibt ${tdesc(gb)}.`);render();
+}
+function openTrade(p){
+ return new Promise(res=>{
+  const k=idx(p),ops=others(p);let partner=idx(ops[0]),note='';
+  const side=(kk,pre)=>{const q=S.players[kk];const ps=owned(kk).filter(i=>tradable(kk,i)).sort((a,b)=>a-b);
+   return `${ps.map(i=>`<label><input type="checkbox" id="${pre}${i}" data-i="${i}"> <span class="dot" style="width:12px;height:12px;border-radius:2px;border-width:1px;background:${SP[i].t==='prop'?ZONES[SP[i].z].c:SP[i].t==='port'?'#222':'#ddd'}"></span>${esc(SP[i].n)}${S.props[i].mort?' (Hyp.)':''}</label>`).join('')||'<p class="note">Keine handelbaren Firmen.</p>'}
+   <label class="field" style="flex-direction:column;align-items:stretch">Geld (max. ${fmt(q.money)})<input type="number" id="${pre}money" min="0" max="${Math.max(0,q.money)}" step="10" value="0"></label>
+   ${q.free.length?`<label><input type="checkbox" id="${pre}card"> Freikarte U-Haft</label>`:''}`};
+  const draw=()=>{const box=openModal(`<h3>Handel</h3><label class="field">Handelspartner<select id="tp">${ops.map(q=>`<option value="${idx(q)}" ${idx(q)===partner?'selected':''}>${esc(q.name)}</option>`).join('')}</select></label>
+   <p class="note" style="margin-top:8px">Firmen mit Filialen in ihrer Zone sind nicht handelbar. Hypotheken gehen mit über.</p>
+   <div class="tgrid"><div><h3 style="font-size:16px">Du gibst</h3>${side(k,'a')}</div><div><h3 style="font-size:16px">Du bekommst</h3>${side(partner,'b')}</div></div>
+   <p id="tnote" style="font-weight:700">${esc(note)}</p><div class="row"><button class="btn main" id="go">Angebot machen</button><button class="btn" id="x">Abbrechen</button></div>`);
+   box.querySelector('#tp').onchange=e=>{partner=+e.target.value;note='';draw()};
+   box.querySelector('#x').onclick=()=>{closeModal();res()};
+   box.querySelector('#go').onclick=async()=>{
+    const grab=(pre,kk)=>({props:[...box.querySelectorAll(`input[id^="${pre}"][data-i]:checked`)].map(c=>+c.dataset.i),money:Math.max(0,Math.min(S.players[kk].money,Math.floor(+box.querySelector('#'+pre+'money').value||0))),cards:box.querySelector('#'+pre+'card')?.checked?1:0});
+    const ga=grab('a',k),gb=grab('b',partner),q=S.players[partner];
+    if(!ga.props.length&&!gb.props.length&&!ga.cards&&!gb.cards){note='Wähle mindestens eine Firma oder Freikarte.';return draw()}
+    if(q.ai){if(aiAccepts(q,gb,ga,k)){doTrade(k,partner,ga,gb);closeModal();res()}else{note=`${q.name} lehnt ab. Mach ein besseres Angebot.`;draw()}return}
+    const b2=openModal(`<h3>${esc(q.name)}, nimmst du an?</h3><p>${esc(p.name)} bietet dir: <b>${esc(tdesc(ga))}</b></p><p>und möchte dafür: <b>${esc(tdesc(gb))}</b></p><div class="row"><button class="btn main" id="ok">Annehmen</button><button class="btn" id="no">Ablehnen</button></div>`);
+    b2.querySelector('#ok').onclick=()=>{doTrade(k,partner,ga,gb);closeModal();res()};
+    b2.querySelector('#no').onclick=()=>{note=`${q.name} hat abgelehnt.`;draw()};
+   };
+  };
+  draw();
+ });
+}
+
+/* ===== Computer-Gegner ===== */
+function aiValue(q,i){const k=idx(q),s=SP[i];let v=tv(k,i);
+ if(s.t==='prop'){const zs=zoneProps(s.z).filter(j=>j!==i);const o=S.props[zs[0]].owner;if(o>=0&&o!==k&&zs.every(j=>S.props[j].owner===o))v+=s.price*.4}
+ return v}
+function aiManage(p){const k=idx(p);
+ owned(k).filter(i=>S.props[i].mort).sort((a,b)=>SP[b].price-SP[a].price).forEach(i=>{if(p.money-unmortCost(i)>400){unmortgage(k,i);log(`${p.name} löst ${SP[i].n} ein.`)}});
+ for(let guard=0;guard<60;guard++){
+  const c=owned(k).filter(i=>whyNoBuild(k,i)==='').sort((a,b)=>S.props[a].houses-S.props[b].houses||SP[b].price-SP[a].price);
+  const i=c.find(i=>p.money-ZONES[SP[i].z].h>=220);if(i==null)break;
+  build(k,i);log(`${p.name} baut eine ${S.props[i].houses===5?'Konzernzentrale':'Filiale'} bei ${SP[i].n}.`);
+ }
+ render();
+}
+function aiRaise(p){const k=idx(p);
+ for(let guard=0;guard<80&&p.money<0;guard++){
+  const m=owned(k).filter(i=>whyNoMort(k,i)==='').sort((a,b)=>tv(k,a)-tv(k,b));
+  const nonZone=m.filter(i=>SP[i].t!=='prop'||!ownsZone(k,SP[i].z));
+  if(nonZone.length){mortgage(k,nonZone[0]);log(`${p.name} nimmt eine Hypothek auf ${SP[nonZone[0]].n}.`);continue}
+  const s=owned(k).filter(i=>whyNoSell(k,i)==='').sort((a,b)=>SP[a].price-SP[b].price);
+  if(s.length){sellHouse(k,s[0]);log(`${p.name} verkauft bei ${SP[s[0]].n}.`);continue}
+  if(m.length){mortgage(k,m[0]);log(`${p.name} nimmt eine Hypothek auf ${SP[m[0]].n}.`);continue}
+  break;
+ }
+}
+const tdesc=x=>[...x.props.map(i=>SP[i].n),x.money?fmt(x.money):'',x.cards?'1 Freikarte':''].filter(Boolean).join(', ')||'nichts';
+async function aiTryTrade(p){
+ const k=idx(p);S.cool=S.cool||{};if(S.cool[k]>0){S.cool[k]--;return}
+ const need=z=>{const zs=zoneProps(z),miss=zs.filter(i=>S.props[i].owner!==k);return zs.length-miss.length>0&&miss.length===1?miss[0]:null};
+ for(const z in ZONES){
+  const i=need(z);if(i==null)continue;const o=S.props[i].owner;if(o<0||o===k||!tradable(o,i))continue;
+  const q=S.players[o];let give={props:[],money:0,cards:0};
+  // Tausch: hat q eine Zone, der nur eine Firma von p fehlt?
+  for(const z2 in ZONES){const zs=zoneProps(z2),miss=zs.filter(j=>S.props[j].owner!==o);
+   if(z2!==z&&miss.length===1&&zs.length>1&&S.props[miss[0]].owner===k&&tradable(k,miss[0])){give.props=[miss[0]];break}}
+  if(give.props.length){const d=SP[i].price-SP[give.props[0]].price;if(d>0)give.money=Math.min(Math.max(0,p.money-100),d)}
+  else give.money=Math.min(p.money-150,Math.round(SP[i].price*3.4/10)*10);
+  if(give.money<0||(!give.props.length&&give.money<SP[i].price*3))continue;
+  const get={props:[i],money:0,cards:0};
+  if(q.ai){if(aiAccepts(q,get,give,k)){doTrade(k,o,give,get);say(`${p.name} kauft ${SP[i].n} von ${q.name}.`);await sleep(600)}else S.cool[k]=3;return}
+  S.cool[k]=6;
+  const c=await choose(q,[{v:1,l:'Annehmen',main:1},{v:0,l:'Ablehnen'}],'tradeoffer',{modal:`<h3>Angebot von ${esc(p.name)}</h3><p>${esc(q.name)}, ${esc(p.name)} bietet dir <b>${esc(tdesc(give))}</b> für <b>${esc(SP[i].n)}</b>.</p><p class="note">Damit hätte ${esc(p.name)} die komplette Zone ${ZONES[z].n}.</p>`});
+  if(c){doTrade(k,o,give,get)}else log(`${q.name} lehnt das Angebot von ${p.name} ab.`);
+  return;
+ }
+}
+async function aiChoose(p,opts,ctx,x){
+ await sleep(ctx==='auction'?260:520);
+ const has=v=>opts.some(o=>o.v===v);
+ if(ctx==='roll'){await aiTryTrade(p);aiManage(p);return opts[0].v}
+ if(ctx==='end'){aiManage(p);return opts[0].v}
+ if(ctx==='jail'){const free=Object.values(S.props).filter(r=>r.owner<0).length;
+  if(free>6){if(has('card'))return 'card';if(has('pay')&&p.money>=250)return 'pay'}return 'roll'}
+ if(ctx==='buy'){const s=SP[x.i];return(p.money-s.price>=90||(aiValue(p,x.i)>s.price*1.4&&p.money>=s.price))?'buy':'no'}
+ if(ctx==='auction'){const max=Math.min(p.money-60,aiValue(p,x.i)*.95);const step=[...opts].filter(o=>o.v>0&&x.bid+o.v<=max).sort((a,b)=>a.v-b.v);
+  if(!step.length)return 0;return (max-x.bid>200&&step.find(o=>o.v===50))?50:step[0].v}
+ return opts[0].v;
+}
+
+/* ===== Spielablauf ===== */
+async function rollDice(){
+ const d1=$('#d1'),d2=$('#d2');d1.classList.add('roll');d2.classList.add('roll');
+ for(let n=0;n<7;n++){face(d1,1+Math.random()*6|0);face(d2,1+Math.random()*6|0);await sleep(55)}
+ d1.classList.remove('roll');d2.classList.remove('roll');
+ const a=1+Math.random()*6|0,b=1+Math.random()*6|0;S.dice=[a,b];face(d1,a);face(d2,b);return[a,b];
+}
+async function step(p){p.pos=(p.pos+1)%40;if(p.pos===0){gain(p,200);log(`${p.name} zieht über START: +200 Mio.`)}renderTokens();renderPlayers();await sleep(130)}
+async function moveBy(p,n){for(let s=0;s<n;s++)await step(p)}
+async function moveTo(p,t){while(p.pos!==t)await step(p)}
+async function backTo(p,n){for(let s=0;s<n;s++){p.pos=(p.pos+39)%40;renderTokens();await sleep(130)}}
+function toJail(p){p.pos=10;p.jail=true;p.jailTurns=0;render()}
+
+async function land(p,dice,special){
+ const i=p.pos,s=SP[i],k=idx(p);
+ if(BUY(s)){const pr=S.props[i];
+  if(pr.owner<0)await offerBuy(p,i);
+  else if(pr.owner!==k){const o=S.players[pr.owner];
+   if(pr.mort)say(`${s.n} ist mit Hypothek belastet – keine Miete.`);
+   else{let r;if(special==='util10'){const[a,b]=await rollDice();r=(a+b)*10}else{r=rent(i,dice);if(special==='port2')r*=2}
+    pay(p,r,pr.owner);say(`${p.name} zahlt ${fmt(r)} Miete an ${o.name} (${s.n}).`)}}
+  else say(`${p.name} ist bei der eigenen Firma ${s.n}.`);
+ }else if(s.t==='tax'){pay(p,s.amt,null);say(`${p.name} zahlt ${fmt(s.amt)} ${s.n}.`)}
+ else if(s.t==='chance'||s.t==='chest')await drawCard(p,s.t,dice);
+ else if(s.t==='gojail'){say(`Kartellamt! ${p.name} muss in U-Haft.`);toJail(p)}
+ else if(s.t==='park')say(`${p.name} parkt kostenlos.`);
+ else if(s.t==='jail')say(`${p.name} ist nur zu Besuch in der U-Haft.`);
+ render();await settle(p);
+}
+async function offerBuy(p,i){
+ const s=SP[i];let c='no';
+ if(p.money>=s.price)c=await choose(p,[{v:'buy',l:`Kaufen für ${fmt(s.price)}`,main:1},{v:'no',l:'Nicht kaufen – versteigern'}],'buy',{i,modal:`<h3>${esc(p.name)}: ${esc(s.n)} kaufen?</h3>`+deedHtml(i)+`<p class="note" style="margin-top:10px">Dein Kapital: ${fmt(p.money)}</p>`});
+ else say(`${p.name} hat zu wenig Kapital für ${s.n}.`);
+ if(c==='buy'){p.money-=s.price;S.props[i].owner=idx(p);say(`${p.name} kauft ${s.n} für ${fmt(s.price)}.`);render()}
+ else await auction(i);
+}
+async function auction(i){
+ const s=SP[i];let bid=0,lead=-1;const passed=new Set();
+ const seats=[];for(let n=0;n<S.players.length;n++){const k=(S.cur+n)%S.players.length;if(!S.players[k].bankrupt)seats.push(k)}
+ say(`Versteigerung: ${s.n} (Listenpreis ${fmt(s.price)}).`);
+ for(let j=0;j<500;j++){
+  const un=seats.filter(k=>!passed.has(k));if(!un.length||(un.length===1&&un[0]===lead))break;
+  const k=seats[j%seats.length];if(passed.has(k)||k===lead)continue;
+  const q=S.players[k];
+  const opts=[10,50,100].filter(x=>bid+x<=q.money).map(x=>({v:x,l:`+${x} → ${fmt(bid+x)}`,main:x===10}));opts.push({v:0,l:'Passen'});
+  const c=await choose(q,opts,'auction',{i,bid,modal:`<h3>Versteigerung – ${esc(q.name)} bietet?</h3>`+deedHtml(i)+`<p style="margin-top:10px"><b>Höchstgebot: ${bid?fmt(bid)+' von '+esc(S.players[lead].name):'noch keines'}</b> · Dein Kapital: ${fmt(q.money)}</p>`});
+  if(!c){passed.add(k);log(`${q.name} passt.`)}else{bid+=c;lead=k;say(`${q.name} bietet ${fmt(bid)}.`)}
+ }
+ if(lead>=0){S.players[lead].money-=bid;S.props[i].owner=lead;say(`${S.players[lead].name} ersteigert ${s.n} für ${fmt(bid)}.`)}
+ else say(`Niemand bietet – ${s.n} bleibt bei der Bank.`);
+ render();
+}
+async function drawCard(p,d,dice){
+ const id=S.decks[d].shift(),c=CARDS[d][id];if(c.a!=='card')S.decks[d].push(id);
+ const title=d==='chance'?'Börsen-News':'Konzernkasse';
+ log(`${p.name} zieht ${title}: ${c.x}`);
+ if(p.ai){$('#msg').textContent=`${title}: ${c.x}`;await sleep(1500)}
+ else await choose(p,[{v:1,l:'OK',main:1}],'card',{modal:`<div class="ccard ${d}"><h4>${title.toUpperCase()}</h4><p>${esc(c.x)}</p></div>`});
+ const k=idx(p);
+ switch(c.a){
+  case 'move':await moveTo(p,c.to);await land(p,dice);break;
+  case 'nearport':{let t=p.pos;do t=(t+1)%40;while(SP[t].t!=='port');await moveTo(p,t);await land(p,dice,'port2');break}
+  case 'nearutil':{let t=p.pos;do t=(t+1)%40;while(SP[t].t!=='util');await moveTo(p,t);await land(p,dice,'util10');break}
+  case 'gain':gain(p,c.v);break;
+  case 'pay':pay(p,c.v,null);break;
+  case 'card':p.free.push(d);break;
+  case 'back':await backTo(p,3);await land(p,dice);break;
+  case 'jail':toJail(p);break;
+  case 'repair':{let h=0,H=0;owned(k).forEach(i=>{const n=S.props[i].houses;if(n===5)H++;else h+=n});pay(p,h*c.h+H*c.H,null);break}
+  case 'payeach':others(p).forEach(o=>pay(p,c.v,idx(o)));break;
+  case 'collecteach':for(const o of others(p)){pay(o,c.v,k);await settle(o)}break;
+ }
+ render();
+}
+async function settle(p){
+ if(p.money>=0||p.bankrupt)return;
+ if(p.ai){aiRaise(p);if(p.money<0)bankrupt(p);render();return}
+ while(p.money<0&&!p.bankrupt){
+  say(`${p.name} hat ${fmt(-p.money)} Schulden. Verkaufe Filialen, nimm Hypotheken auf oder handle.`);
+  const c=await choose(p,[{v:'m',l:'Vermögen verwalten',main:1},{v:'b',l:'Bankrott erklären'}],'debt');
+  if(c==='m')await openManage(p);
+  else if(await choose(p,[{v:1,l:'Ja, Bankrott',main:1},{v:0,l:'Zurück'}],'confirm',{modal:`<h3>Wirklich Bankrott erklären?</h3><p>${esc(p.name)} scheidet aus. Alle Firmen gehen an ${p.creditor>=0&&p.creditor!=null?esc(S.players[p.creditor].name):'die Bank'}.</p>`}))bankrupt(p);
+ }
+}
+function bankrupt(p){
+ const k=idx(p),cr=p.creditor!=null&&p.creditor>=0&&!S.players[p.creditor].bankrupt?p.creditor:null;
+ owned(k).forEach(i=>{const pr=S.props[i];if(pr.houses){const h=ZONES[SP[i].z].h/2;if(pr.houses===5){S.hotels++;p.money+=h*5}else{S.houses+=pr.houses;p.money+=h*pr.houses}pr.houses=0}});
+ if(cr!=null){const c=S.players[cr];c.money+=p.money;owned(k).forEach(i=>S.props[i].owner=cr);c.free.push(...p.free)}
+ else{owned(k).forEach(i=>{S.props[i].owner=-1;S.props[i].mort=false});p.free.forEach(d=>S.decks[d].push(FREE[d]))}
+ p.money=0;p.free=[];p.bankrupt=true;p.jail=false;
+ say(`${p.name} ist bankrott und scheidet aus.`);
+ const alive=S.players.filter(q=>!q.bankrupt);
+ if(alive.length===1){S.over=true;render();
+  const box=openModal(`<h3>${esc(alive[0].name)} gewinnt!</h3><p>${esc(alive[0].name)} beherrscht jetzt die Weltmärkte mit ${fmt(alive[0].money)} Kapital und ${owned(idx(alive[0])).length} Firmen.</p><div class="row"><button class="btn main" id="ng">Neues Spiel</button><button class="btn" id="x">Brett ansehen</button></div>`);
+  box.querySelector('#ng').onclick=showSetup;box.querySelector('#x').onclick=closeModal}
+ render();
+}
+async function jailTurn(p){
+ p.jailTurns++;
+ const o=[];if(p.money>=50)o.push({v:'pay',l:'50 Mio Kaution'});if(p.free.length)o.push({v:'card',l:'Freikarte nutzen'});o.push({v:'roll',l:`Pasch versuchen (${p.jailTurns}/3)`,main:1});
+ say(`${p.name} sitzt in U-Haft.`);
+ const c=await choose(p,o,'jail');
+ if(c==='pay'){pay(p,50,null);p.jail=false;say(`${p.name} zahlt 50 Mio Kaution.`);render();return 'free'}
+ if(c==='card'){const d=p.free.pop();S.decks[d].push(FREE[d]);p.jail=false;say(`${p.name} nutzt die Kronzeugenregelung.`);render();return 'free'}
+ const[a,b]=await rollDice();
+ if(a===b){p.jail=false;say(`Pasch! ${p.name} ist frei.`);await moveBy(p,a+b);await land(p,a+b);return 'moved'}
+ if(p.jailTurns>=3){p.jail=false;pay(p,50,null);say(`Dritter Versuch ohne Pasch: ${p.name} zahlt 50 Mio und zieht.`);await moveBy(p,a+b);await land(p,a+b);return 'moved'}
+ say(`Kein Pasch – ${p.name} bleibt in U-Haft.`);return 'stay';
+}
+async function playTurn(){
+ const p=S.players[S.cur];S.dbl=0;render();
+ if(p.jail){const r=await jailTurn(p);if(r!=='free')return endTurn(p)}
+ say(`${p.name} ist am Zug.`);
+ while(!p.bankrupt&&!S.over){
+  await choose(p,[{v:'roll',l:'Würfeln',main:1}],'roll');
+  const[a,b]=await rollDice(),d=a===b;
+  if(d&&++S.dbl===3){say(`Dreimal Pasch – Verdacht auf Kursmanipulation! ${p.name} muss in U-Haft.`);toJail(p);break}
+  log(`${p.name} würfelt ${a} + ${b}${d?' (Pasch)':''}.`);
+  await moveBy(p,a+b);await land(p,a+b);
+  if(p.bankrupt||p.jail||!d)break;
+  say(`Pasch! ${p.name} würfelt noch einmal.`);
+ }
+ await endTurn(p);
+}
+async function endTurn(p){
+ await settle(p);if(p.bankrupt||S.over)return;
+ await choose(p,[{v:'end',l:'Zug beenden',main:1}],'end');
+}
+function save(){lastSave=JSON.stringify(S);try{localStorage.setItem('weltkonzerne-save',lastSave)}catch(e){}}
+let loopId=0;
+async function gameLoop(){
+ const my=++loopId;
+ try{while(S&&!S.over&&my===loopId){
+  save();await playTurn();if(my!==loopId||S.over)break;
+  do S.cur=(S.cur+1)%S.players.length;while(S.players[S.cur].bankrupt);
+ }}catch(e){if(e!=='abort')throw e;return}
+ if(S&&S.over)try{localStorage.removeItem('weltkonzerne-save')}catch(e){}
+}
+function startGame(cfg,speed){
+ S={players:cfg.map((c,k)=>({name:c.name,ai:c.ai,color:COLORS[k],money:1500,pos:0,jail:false,jailTurns:0,free:[],bankrupt:false,creditor:null})),
+  props:{},cur:0,dbl:0,houses:32,hotels:12,decks:{chance:shuffle([...CHANCE.keys()]),chest:shuffle([...CHEST.keys()])},log:[],over:false,speed,dice:[3,4]};
+ SP.forEach((s,i)=>{if(BUY(s))S.props[i]={owner:-1,houses:0,mort:false}});
+ log('Neues Spiel. Jeder startet mit 1.500 Mio.');resume();
+}
+function resume(){gen++;pending=null;$('#actions').innerHTML='';tokEls.forEach(t=>t.remove());tokEls=[];closeModal();render();renderLog();gameLoop()}
+
+/* ===== Startbildschirm & Regeln ===== */
+function showSetup(){
+ let saved=null;try{saved=localStorage.getItem('weltkonzerne-save')}catch(e){}
+ let n=4;
+ const draw=()=>{const box=openModal(`<div class="setup"><h3>Weltkonzerne – neues Spiel</h3>
+  <p class="note">Würfeln, Firmen kaufen, Zonen komplettieren, Filialen bauen, Mitspieler in den Bankrott treiben. Mehrere Menschen spielen abwechselnd am selben Gerät.</p>
+  <label class="field">Anzahl Spieler<select id="np">${[2,3,4,5,6].map(v=>`<option ${v===n?'selected':''}>${v}</option>`).join('')}</select></label>
+  <div style="margin-top:12px">${Array.from({length:n},(_,k)=>`<div class="prow"><span class="dot" style="background:${COLORS[k]}"></span><input id="pn${k}" value="${esc(DEFN[k])}" maxlength="16" aria-label="Name Spieler ${k+1}"><select id="pt${k}" aria-label="Typ Spieler ${k+1}"><option value="h" ${k===0?'selected':''}>Mensch</option><option value="ai" ${k>0?'selected':''}>Computer</option></select></div>`).join('')}</div>
+  <label class="field">Tempo der Computer<select id="spd"><option value="1">Normal</option><option value="0.45">Schnell</option><option value="0.15">Sehr schnell</option></select></label>
+  <div class="row"><button class="btn main" id="go">Spiel starten</button>${saved?'<button class="btn" id="cont">Gespeichertes Spiel fortsetzen</button>':''}${S&&!S.over&&!S.demo?'<button class="btn" id="x">Abbrechen</button>':''}</div></div>`);
+  box.querySelector('#np').onchange=e=>{n=+e.target.value;draw()};
+  box.querySelector('#go').onclick=()=>{const cfg=Array.from({length:n},(_,k)=>({name:(box.querySelector('#pn'+k).value.trim()||`Spieler ${k+1}`).slice(0,16),ai:box.querySelector('#pt'+k).value==='ai'}));startGame(cfg,+box.querySelector('#spd').value)};
+  box.querySelector('#cont')?.addEventListener('click',()=>{try{S=JSON.parse(saved);resume()}catch(e){draw()}});
+  box.querySelector('#x')?.addEventListener('click',closeModal);
+ };
+ draw();
+}
+function showRules(){
+ const box=openModal(`<h3>Spielregeln</h3>
+ <p><b>Ziel:</b> Als Letzter nicht bankrott sein. Jeder startet mit 1.500 Mio.</p>
+ <p><b>Zug:</b> Würfeln und im Uhrzeigersinn ziehen. Bei einem Pasch würfelst du noch einmal; beim dritten Pasch in Folge geht es in U-Haft. Über START gibt es 200 Mio.</p>
+ <p><b>Firmen:</b> Landest du auf einer freien Firma, kannst du sie kaufen. Sonst wird sie versteigert. Wer auf einer fremden Firma landet, zahlt Miete. Besitzt du alle Firmen einer Zone (z. B. ganz Silicon Valley), verdoppelt sich die Grundmiete.</p>
+ <p><b>Filialen &amp; Zentralen:</b> Mit kompletter Zone baust du gleichmäßig bis zu 4 Filialen je Firma, danach eine Konzernzentrale. Die Bank hat nur 32 Filialen und 12 Zentralen.</p>
+ <p><b>Häfen &amp; Flughäfen:</b> Gebühr 25 / 50 / 100 / 200 je nach Anzahl. <b>Strom- und Datennetz:</b> 4× bzw. 10× die Augenzahl.</p>
+ <p><b>Hypothek:</b> Bringt den halben Kaufpreis; solange keine Miete. Einlösen kostet 10 % Zinsen extra.</p>
+ <p><b>U-Haft:</b> Raus mit 50 Mio Kaution, Freikarte oder Pasch. Nach dem dritten Fehlversuch zahlst du 50 Mio und ziehst.</p>
+ <p><b>Schulden:</b> Kannst du nicht zahlen, verkaufe Filialen, nimm Hypotheken auf oder handle. Reicht alles nicht, bist du bankrott und dein Besitz geht an den Gläubiger.</p>
+ <p class="note">Alle Firmen sind frei erfunden. Ähnlichkeiten mit echten Unternehmen sind Absicht der Branche, nicht der Marke.</p>
+ <div class="row"><button class="btn main" id="x">Verstanden</button></div>`);box.querySelector('#x').onclick=closeModal;
+}
+
+/* ===== Start ===== */
+buildBoard();
+$('#bManage').onclick=()=>pending&&openManage(pending.p);
+$('#bTrade').onclick=()=>pending&&openTrade(pending.p);
+$('#bRules').onclick=()=>$('#ov').hidden&&showRules();
+$('#bNew').onclick=()=>$('#ov').hidden&&showSetup();
+window.claude?.hot?.snapshot?.(()=>({save:lastSave}));
+const boot=d=>{
+ if(d&&d.save){try{S=JSON.parse(d.save);resume();return}catch(e){}}
+ // Vorschau-Zustand: Beispielspiel im Hintergrund, Startdialog darüber
+ startDemo();showSetup();
+};
+function startDemo(){
+ S={players:[{name:'Stefan',ai:false,color:COLORS[0],money:1240,pos:39,jail:false,jailTurns:0,free:[],bankrupt:false},{name:'KI Ada',ai:true,color:COLORS[1],money:980,pos:24,jail:false,jailTurns:0,free:[],bankrupt:false},{name:'KI Bruno',ai:true,color:COLORS[2],money:1510,pos:10,jail:true,jailTurns:1,free:[],bankrupt:false},{name:'KI Carla',ai:true,color:COLORS[3],money:760,pos:16,jail:false,jailTurns:0,free:[],bankrupt:false}],
+  props:{},cur:0,dbl:0,houses:27,hotels:12,decks:{chance:[],chest:[]},log:['Beispielpartie – starte ein neues Spiel.'],over:false,demo:true,speed:1,dice:[5,6]};
+ SP.forEach((s,i)=>{if(BUY(s))S.props[i]={owner:-1,houses:0,mort:false}});
+ [[37,0,2],[39,0,3],[21,1,0],[23,1,0],[24,1,0],[5,2,0],[15,2,0],[16,3,0],[29,3,0],[12,2,0]].forEach(([i,o,h])=>{S.props[i].owner=o;S.props[i].houses=h});
+ S.props[29].mort=true;render();renderLog();$('#msg').textContent='Starte ein neues Spiel.';
+}
+window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});
+</script>
+</body></html>
