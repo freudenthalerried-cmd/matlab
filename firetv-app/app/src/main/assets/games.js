@@ -199,6 +199,24 @@ var Games = (function () {
     GAMES:GAMES, LEVELS:LEVELS,
     level:function (l) { if (l) { level = l; save('glevel', l); } return level; },
     init:function () { level = load('glevel', 1); },
+    data:function () {
+      return {dice:DICE, truth:TRUTH, dare:DARE, cards:CARDS, never:NEVER, positions:POS, massage:MASSAGE};
+    },
+    // content.json override: only replaces lists that pass the type checks (plain text data only)
+    setContent:function (c) {
+      if (!c || typeof c !== 'object') return;
+      var d = c.dice || {};
+      if (levels(d.act, isText)) DICE.act = d.act;
+      if (levels(d.part, isText)) DICE.part = d.part;
+      if (list(d.how, isText)) DICE.how = d.how;
+      if (levels(c.truth, isText)) TRUTH = c.truth;
+      if (levels(c.dare, isText)) DARE = c.dare;
+      if (levels(c.cards, isTimed)) CARDS = c.cards;
+      if (levels(c.never, isText)) NEVER = c.never;
+      if (list(c.positions, isPair)) POS = c.positions;
+      if (list(c.massage, isTimed)) MASSAGE = c.massage;
+      used = {};
+    },
     open:open, close:close,
     active:function () { return !!g; },
     key:function (k) {

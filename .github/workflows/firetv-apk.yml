@@ -1,7 +1,7 @@
 name: Fire TV APK
 on:
   push:
-    paths: ['firetv-app/**', '.github/workflows/firetv-apk.yml']
+    paths: ['firetv-app/**', '!firetv-app/content.json', '.github/workflows/firetv-apk.yml']
   workflow_dispatch:
 permissions:
   contents: write

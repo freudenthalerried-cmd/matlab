@@ -508,6 +508,33 @@ function filme() {
   });
 }
 
+/* ---------- content.json: texts, categories and film rows as pure data, updated without reinstalling.
+   Strictly type-checked; it can only replace lists, never run code. ---------- */
+function isText(x) { return typeof x === 'string' && x.length > 0 && x.length <= 300; }
+function isTimed(x) { return Array.isArray(x) && x.length === 2 && isText(x[0]) && typeof x[1] === 'number' && x[1] >= 0 && x[1] <= 3600; }
+function isPair(x) { return Array.isArray(x) && x.length === 2 && isText(x[0]) && isText(x[1]); }
+function isRow(x) {
+  return Array.isArray(x) && x.length === 4 && isText(x[0]) && isText(x[1]) && (x[2] === 'tt' || x[2] === 'ttd') &&
+    typeof x[3] === 'number' && x[3] >= 0 && x[3] <= 20000;
+}
+function list(a, ok) { return Array.isArray(a) && a.length > 0 && a.length <= 500 && a.every(ok); }
+function levels(a, ok) { return Array.isArray(a) && a.length === 3 && a.every(function (l) { return list(l, ok); }); }
+var contentVer = 0;
+function applyContent(c) {
+  if (!c || typeof c !== 'object') return false;
+  if (list(c.categories, isPair)) CATS = c.categories;
+  if (list(c.filme, isRow)) MV_ROWS = c.filme.map(function (r) { return [r[0], {q:r[1], f:r[2] === 'ttd' ? TTD : TT, min:r[3]}]; });
+  Games.setContent(c.games);
+  contentVer = +c.version || 0;
+  return true;
+}
+function loadContent() {
+  http(UPD + 'content.json').then(function (t) {
+    var c = JSON.parse(t);
+    if (+c.version > contentVer && applyContent(c)) { save('content', c); toast('Neue Inhalte geladen (v' + contentVer + ')'); }
+  }).catch(function () { });
+}
+
 /* ---------- PIN lock (4 arrow keys, the remote has no digits) ---------- */
 var lockOn = false, lockBuf = [], pinSet = false;
 var ARW = {ArrowUp:'▲', ArrowDown:'▼', ArrowLeft:'◀', ArrowRight:'▶'};
@@ -652,7 +679,7 @@ function settings() {
   begin();
   var strict = A.load('strict') !== '0';
   var tt = topTags(12), disc = load('disc', false), ml = MIN_SEC / 60, pin = load('pin', []).length === 4;
-  addRow('Version v' + curVer() + (newVer > curVer() ? ' – Update auf v' + newVer + ' verfügbar' : ''), [
+  addRow('Version v' + curVer() + ' · Inhalte v' + contentVer + (newVer > curVer() ? ' – Update auf v' + newVer + ' verfügbar' : ''), [
     ['Jetzt aktualisieren', function () { if (A.update) A.update(UPD + 'AbendKino.apk'); }],
     ['Nach Update suchen', function () { checkUpdate(true); }]], 'btn');
   addRow('Werbeblocker', [[(strict ? '● Streng (empfohlen)' : '○ Streng'), function () { A.save('strict', '1'); toast('Werbeblocker: streng'); settings(); }],
@@ -686,6 +713,8 @@ function settings() {
 
 var sleepMin = 0;
 Games.init();
+applyContent(load('content', null));
+loadContent();
 if (load('disc', false)) document.body.classList.add('disc');
 go('home');
 if (load('pin', []).length === 4) showLock(false);
